@@ -15,7 +15,13 @@ let laufend;
 before(async () => {
   laufend = await starten(HAFEN, {
     schutz: { verbindungenJeAdresse: 200, verbindungenJeMinute: 500, raeumeJeAdresse: 100 },
-    konten: { datei: ':memory:', geheimnis: 'q'.repeat(48) },
+    konten: {
+      datei: ':memory:',
+      geheimnis: 'q'.repeat(48),
+      // Die Bremse gegen Rateversuche hat einen eigenen Test mit eigenen
+      // Werten - hier wuerde sie nur die uebrigen Faelle stoeren.
+      mehr: { rateLimit: { enabled: false } },
+    },
   });
 });
 
@@ -101,6 +107,29 @@ test('konten AC-9 / konten AC-17: die Spielverbindung erbt die Anmeldung, der Na
   wirt.zu();
 });
 
+test('konten AC-9: eine langsame Sitzungspruefung verschluckt keine Nachricht', async () => {
+  // Genau der Fehler, der nur auf einer langsameren Maschine auftrat: die
+  // Zuhoerer der Verbindung standen erst nach der Sitzungspruefung, und die
+  // erste Nachricht war da schon vorbei.
+  const echt = laufend.zugang.sitzung;
+  laufend.zugang.sitzung = async (kopf) => {
+    await new Promise((fertig) => setTimeout(fertig, 300));
+    return echt(kopf);
+  };
+  try {
+    const angelegt = await konto(HAFEN, laufend, { name: 'Traege', email: 'traege@example.test' });
+    const wirt = kunde(HAFEN, angelegt.kekse);
+    await wirt.offen();
+    // Sofort, ohne dem Server Zeit zu lassen.
+    wirt.senden({ typ: 'erstellen' });
+    const du = await wirt.warteAuf(istTyp('du'), 3000);
+    assert.ok(du.code, 'die Partie entsteht trotzdem');
+    wirt.zu();
+  } finally {
+    laufend.zugang.sitzung = echt;
+  }
+});
+
 test('konten AC-1: beitreten geht ohne Konto', async () => {
   const angelegt = await konto(HAFEN, laufend, { name: 'Wirtin', email: 'wirtin@example.test' });
   const wirt = kunde(HAFEN, angelegt.kekse);
@@ -164,6 +193,42 @@ test('konten AC-12: unbekannte Mailadresse und falsches Kennwort ergeben dieselb
   assert.equal(unbekannt.status, falsch.status, 'derselbe Statuscode');
   assert.equal(unbekannt.ok, false);
   assert.equal(falsch.ok, false);
+});
+
+test('konten AC-11: zu viele Anmeldeversuche werden gebremst', async (t) => {
+  // Eigener Server mit winzigen Werten, damit die Bremse im Test ausloest
+  // statt erst nach einer Stunde.
+  const hafen = 4195;
+  const eigener = await starten(hafen, {
+    schutz: { verbindungenJeAdresse: 50, verbindungenJeMinute: 200 },
+    konten: {
+      datei: ':memory:',
+      geheimnis: 'r'.repeat(48),
+      mehr: {
+        rateLimit: {
+          enabled: true,
+          window: 60,
+          max: 100,
+          customRules: { '/sign-in/email': { window: 60 * 60, max: 2 } },
+        },
+      },
+    },
+  });
+  t.after(() => beenden(eigener));
+
+  await konto(hafen, eigener, { email: 'bremse@example.test' });
+
+  const stati = [];
+  for (let i = 0; i < 4; i++) {
+    const versuch = await anmelden(hafen, {
+      email: 'bremse@example.test',
+      kennwort: 'falschesKennwort',
+    });
+    stati.push(versuch.status);
+  }
+
+  assert.equal(stati.includes(429), true, `nach zwei Versuchen wird gebremst, war ${stati}`);
+  assert.equal(stati.at(-1), 429, 'und es bleibt dabei');
 });
 
 test('konten AC-13: zwei Konten duerfen denselben Anzeigenamen fuehren', async () => {

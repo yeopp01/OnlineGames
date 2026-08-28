@@ -2,7 +2,7 @@
 
 **Bereich:** Plattform
 **Kuerzel:** konten
-**Stand:** 2 in qa · 2 geplant · 3 offen · 13 fertig
+**Stand:** 1 in qa · 2 geplant · 3 offen · 14 fertig
 
 ## Zweck
 
@@ -79,9 +79,9 @@ macht. Der bleibt.
 
 ### Missbrauch
 
-- **AC-11** `in qa` **Anmeldeversuche sind begrenzt** — Hoechstens fuenf Anmeldeversuche und zehn
-  Registrierungen je Stunde und Adresse. _(Eingeschaltet, aber noch nicht
-  durch einen Test belegt.)_
+- **AC-11** `fertig` **Anmeldeversuche sind begrenzt** — Hoechstens fuenf Anmeldeversuche und
+  zehn Registrierungen je Stunde und Adresse. Danach antwortet der Server mit
+  429, ohne den Versuch noch zu pruefen.
 - **AC-12** `fertig` **Keine Kontoauskunft** — „Mailadresse unbekannt" und „Kennwort falsch"
   ergeben dieselbe Antwort. Auch die Antwortzeit unterscheidet sich nicht.
 - **AC-13** `fertig` **Anzeigename ist kein Ausweis** — Zwei Konten duerfen denselben Anzeigenamen

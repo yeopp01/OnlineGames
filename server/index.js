@@ -81,13 +81,18 @@ async function starten(hafen = HAFEN, einstellungen = {}) {
     },
   });
 
-  wss.on('connection', async (draht, anfrage) => {
+  wss.on('connection', (draht, anfrage) => {
     let raum = null;
     let spieler = null;
     const adresse = adresseVon(anfrage, HINTER_PROXY);
     // Die Spielverbindung erbt die Anmeldung aus dem bestehenden Cookie -
     // kein zweiter Anmeldeschritt (→ specs konten AC-9).
-    const angemeldet = await zugang.sitzung(anfrage.headers);
+    //
+    // Wichtig: hier wird NICHT gewartet. Die Zuhoerer muessen stehen, bevor
+    // die erste Nachricht eintreffen kann - sonst geht sie verloren, und zwar
+    // nur auf langsameren Maschinen. Wer die Anmeldung braucht, wartet unten
+    // an seiner Stelle auf das Versprechen.
+    const sitzungBald = zugang.sitzung(anfrage.headers).catch(() => null);
     const eimer = schutz.eimerFuerVerbindung();
     schutz.verbindungOffen(adresse);
 
@@ -96,6 +101,34 @@ async function starten(hafen = HAFEN, einstellungen = {}) {
     // Vier Zeichen sind 614.656 Codes. Bei hundert laufenden Partien trifft
     // jeder 6.150. Versuch - ohne Bremse findet ein Skript in Minuten eine
     // fremde Partie. Wer die Bremse ausloest, fliegt raus.
+    // Eroeffnen verlangt ein Konto, Mitspielen nicht.
+    async function eroeffnen() {
+      const angemeldet = await sitzungBald;
+      if (draht.readyState !== 1) return;
+      if (raum) return;
+      if (!angemeldet) {
+        return fehler('Zum Eroeffnen einer Partie ist eine Anmeldung noetig.');
+      }
+      const erlaubt = schutz.raumErlaubt(adresse);
+      if (!erlaubt.ok) return fehler(erlaubt.grund);
+
+      raum = raeume.anlegen();
+      raum.adresse = adresse;
+      raum.eigentuemer = angemeldet.user.id;
+      schutz.raumAuf(adresse);
+      // Der Anzeigename kommt aus dem Konto, nicht aus der Nachricht.
+      const ergebnis = raum.beitreten(angemeldet.user.name, draht);
+      spieler = ergebnis.spieler;
+      draht.send(JSON.stringify({
+        typ: 'du',
+        id: spieler.id,
+        token: spieler.token,
+        code: raum.code,
+        anzeige: codeZeigen(raum.code),
+      }));
+      raum.senden(raum.vorraum());
+    }
+
     const codeDaneben = () => {
       fehler('Diesen Raumcode gibt es nicht.');
       if (!schutz.fehlversuch(adresse)) draht.close(1008, 'zu viele Fehlversuche');
@@ -118,21 +151,7 @@ async function starten(hafen = HAFEN, einstellungen = {}) {
       switch (nachricht.typ) {
         case 'erstellen': {
           if (raum) return;
-          // Eroeffnen verlangt ein Konto, Mitspielen nicht.
-          if (!angemeldet) {
-            return fehler('Zum Eroeffnen einer Partie ist eine Anmeldung noetig.');
-          }
-          const erlaubt = schutz.raumErlaubt(adresse);
-          if (!erlaubt.ok) return fehler(erlaubt.grund);
-          raum = raeume.anlegen();
-          raum.adresse = adresse;
-          raum.eigentuemer = angemeldet.user.id;
-          schutz.raumAuf(adresse);
-          // Der Anzeigename kommt aus dem Konto, nicht aus der Nachricht.
-          const ergebnis = raum.beitreten(angemeldet.user.name, draht);
-          spieler = ergebnis.spieler;
-          draht.send(JSON.stringify({ typ: 'du', id: spieler.id, token: spieler.token, code: raum.code, anzeige: codeZeigen(raum.code) }));
-          raum.senden(raum.vorraum());
+          eroeffnen();
           break;
         }
         case 'beitreten': {

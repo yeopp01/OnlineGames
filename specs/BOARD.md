@@ -7,13 +7,13 @@ Eine Zeile je Abnahmekriterium. Gepflegt wird der Status in der Spec selbst,
 hier steht er zusammengefasst. Erzeugt mit `npm run specs:board`, als Seite
 zum Filtern und Suchen mit `npm run qa:report`.
 
-**Gesamt:** 12 in qa · 4 geplant · 137 offen · 53 fertig
+**Gesamt:** 11 in qa · 4 geplant · 137 offen · 54 fertig
 
 ## Nach Spezifikation
 
 | Spezifikation                                                  | In Arbeit | In QA | Geplant | Offen | Zurueckgestellt | Fertig |
 | -------------------------------------------------------------- | --------- | ----- | ------- | ----- | --------------- | ------ |
-| [Konten und Anmeldung](00-plattform/konten.md)                 | -         | 2     | 2       | 3     | -               | 13     |
+| [Konten und Anmeldung](00-plattform/konten.md)                 | -         | 1     | 2       | 3     | -               | 14     |
 | [Raeume und Partien](00-plattform/raeume.md)                   | -         | 2     | -       | 3     | -               | 10     |
 | [Schutz vor Fremdnutzung](00-plattform/schutz.md)              | -         | 1     | -       | 4     | -               | 7      |
 | [Anhalten und Fortsetzen](00-plattform/speichern.md)           | -         | -     | -       | 26    | -               | -      |
@@ -27,10 +27,9 @@ zum Filtern und Suchen mit `npm run qa:report`.
 | [Spielziel und Partieverlauf](10-strategie/spielziel.md)       | -         | -     | -       | 18    | -               | -      |
 | [Betrieb](20-betrieb/betrieb.md)                               | -         | -     | -       | 12    | -               | -      |
 
-## In QA (12)
+## In QA (11)
 
 - **Einladungscodes lassen sich erzeugen und zuruecknehmen** — [Konten und Anmeldung](00-plattform/konten.md) AC-20
-- **Anmeldeversuche sind begrenzt** — [Konten und Anmeldung](00-plattform/konten.md) AC-11
 - **Verwaister Raum wird geschlossen** — [Raeume und Partien](00-plattform/raeume.md) AC-12
 - **Leerlauf endet nach 30 Minuten** — [Raeume und Partien](00-plattform/raeume.md) AC-13
 - **Nachrichtenflut trennt die Verbindung** — [Schutz vor Fremdnutzung](00-plattform/schutz.md) AC-7
