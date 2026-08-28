@@ -38,6 +38,20 @@ export function kunde(hafen, kekse = null) {
 }
 
 export const istTyp = (typ) => (n) => n.typ === typ;
+
+// Alles zumachen, was den Prozess sonst offen haelt. `fetch` haelt seine
+// Verbindungen absichtlich am Leben - ohne closeAllConnections endet der
+// Testlauf nie, und zwar nur dort, wo das Aufraeumen langsamer ist als der
+// Rechner daheim.
+export function beenden(laufend) {
+  laufend.zugang.schliessen();
+  laufend.schutz.halt();
+  laufend.raeume.halt();
+  for (const draht of laufend.wss.clients) draht.terminate();
+  laufend.wss.close();
+  laufend.server.closeAllConnections();
+  laufend.server.close();
+}
 export const warte = (ms) => new Promise((fertig) => setTimeout(fertig, ms));
 
 // Ein Konto anlegen und die Sitzungskekse zurueckgeben. Genau der Weg, den

@@ -4,7 +4,7 @@ import { test, before, after } from 'node:test';
 import assert from 'node:assert/strict';
 import { createRequire } from 'node:module';
 import WebSocket from 'ws';
-import { konto } from './hilfe.mjs';
+import { konto, beenden } from './hilfe.mjs';
 
 const require = createRequire(import.meta.url);
 const { starten } = require('../server/index.js');
@@ -29,13 +29,7 @@ before(async () => {
   kekse = angelegt.kekse;
 });
 
-after(() => {
-  laufend.zugang.schliessen();
-  laufend.schutz.halt();
-  laufend.raeume.halt();
-  laufend.wss.close();
-  laufend.server.close();
-});
+after(() => beenden(laufend));
 
 function verbinde(angemeldet = false) {
   const draht = new WebSocket(`ws://localhost:${HAFEN}`, {

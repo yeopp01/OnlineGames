@@ -4,7 +4,7 @@ import { test, before, after } from 'node:test';
 import assert from 'node:assert/strict';
 import { createRequire } from 'node:module';
 import WebSocket from 'ws';
-import { kunde as kundeMit, istTyp, konto } from './hilfe.mjs';
+import { kunde as kundeMit, istTyp, konto, beenden } from './hilfe.mjs';
 
 const require = createRequire(import.meta.url);
 const { starten } = require('../server/index.js');
@@ -30,13 +30,7 @@ before(async () => {
   kekse = angelegt.kekse;
 });
 
-after(() => {
-  laufend.zugang.schliessen();
-  laufend.schutz.halt();
-  laufend.raeume.halt();
-  laufend.wss.close();
-  laufend.server.close();
-});
+after(() => beenden(laufend));
 
 // Wer eroeffnet, ist angemeldet; wer beitritt, braucht nur den Code.
 const gastgeber = () => kundeMit(HAFEN, kekse);

@@ -3,7 +3,7 @@
 import { test, before, after } from 'node:test';
 import assert from 'node:assert/strict';
 import { createRequire } from 'node:module';
-import { kunde, istTyp, konto, anmelden } from './hilfe.mjs';
+import { kunde, istTyp, konto, anmelden, beenden } from './hilfe.mjs';
 
 const require = createRequire(import.meta.url);
 const { starten } = require('../server/index.js');
@@ -19,13 +19,7 @@ before(async () => {
   });
 });
 
-after(() => {
-  laufend.zugang.schliessen();
-  laufend.schutz.halt();
-  laufend.raeume.halt();
-  laufend.wss.close();
-  laufend.server.close();
-});
+after(() => beenden(laufend));
 
 test('konten AC-2 / konten AC-18: Registrieren mit Mail, Kennwort und gueltigem Einladungscode', async () => {
   const ohne = await konto(HAFEN, laufend, { einladung: '' });
