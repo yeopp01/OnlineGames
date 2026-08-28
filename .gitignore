@@ -1,2 +1,17 @@
 node_modules/
 *.log
+
+# Geheimnisse - nie ins Repo, auch nicht einmal versehentlich.
+.env
+.env.*
+*.pem
+*.key
+
+# Daten des laufenden Betriebs: Konten, Sitzungen, Einladungscodes.
+daten/
+*.sqlite
+*.sqlite-journal
+*.db
+
+# Erzeugt, nicht gepflegt.
+qa/report/

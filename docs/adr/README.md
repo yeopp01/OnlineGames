@@ -12,3 +12,5 @@ Nachfolgerin.
 | 0003 | [Anmeldung ohne eigenen Identitaetsserver](0003-anmeldung.md)         | entschieden |
 | 0004 | [Tests ueber den echten Anfrageweg](0004-teststrategie.md)            | entschieden |
 | 0005 | [Grenzen greifen vor der Anmeldung](0005-grenzen-statt-vertrauen.md)  | entschieden |
+| 0006 | [Mehrere Spiele, aber erst wenn es zwei gibt](0006-mehrere-spiele.md) | entschieden |
+| 0007 | [Der Raum ist fluechtig, der Spielstand ist dauerhaft](0007-zwei-arten-von-partien.md) | entschieden |

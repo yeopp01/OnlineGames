@@ -34,8 +34,10 @@ Riegel unabhaengig davon, ob die Bremse richtig arbeitet.
 
 ## Folgen
 
-- Der Server haelt alles im Arbeitsspeicher. Ein Neustart beendet alle Partien.
-  Das ist bei Partien von 15 Minuten vertretbar.
+- Der Server haelt eine laufende Partie im Arbeitsspeicher. Ein Neustart
+  beendet sie. Das ist bei Partien von 15 Minuten vertretbar - fuer
+  fortlaufende Spiele ausdruecklich nicht mehr, siehe
+  [ADR-0007](0007-zwei-arten-von-partien.md).
 - Ohne Konto gibt es keine Wiedererkennung ueber Partien hinweg - genau das
   loest ADR-0003.
 - Fuer die Rueckkehr nach einem Absturz braucht es doch eine Kennung: ein

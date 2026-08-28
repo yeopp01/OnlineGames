@@ -2,7 +2,7 @@
 
 **Bereich:** Strategie
 **Kuerzel:** spielziel
-**Stand:** 15 offen
+**Stand:** 18 offen
 
 ## Zweck
 
@@ -18,22 +18,40 @@ Basen der anderen niederzureißen. Wer als Letzter eine Basis hat, gewinnt.
 
 ## Was es ausdrücklich **nicht** wird
 
-Ein Nachbau von Age of Empires 2. Vierzig Völker, hundert Einheitentypen,
-Kampagnen und Zeitalter sind Mannjahre an **Inhalt** — kein Code hilft dabei.
-Der Reiz eines Strategiespiels steckt in der Entscheidung „noch ein Sammler
-oder schon Soldaten?", nicht in der Anzahl der Einheitentypen.
+Ein vollstaendiger Nachbau von Age of Empires 2. Vierzig Voelker, hundert
+Einheitentypen mit Animationen aus acht Richtungen, Kampagnen und Zeitalter
+sind Mannjahre an **Inhalt** — kein Code hilft dabei. Der Reiz eines
+Strategiespiels steckt in der Entscheidung „noch ein Sammler oder schon
+Soldaten?", nicht in der Anzahl der Einheitentypen.
 
-| Wird gebaut               | Wird nicht gebaut                  |
-| ------------------------- | ---------------------------------- |
-| 2 Rohstoffe               | 4 Rohstoffe, Handel, Markt         |
-| 4 Einheitentypen          | Belagerung, Schiffe, Helden        |
-| 3 Gebäudetypen            | Mauern, Türme, Wunder              |
-| 1 Karte je Partie, zufällig | Karteneditor, Kampagnen, Szenarien |
-| Formen und Farben         | Sprites, Animationen, Sprachausgabe |
-| 15 Minuten                | 90 Minuten, Speicherstände         |
+| Wird gebaut                     | Wird nicht gebaut                   |
+| ------------------------------- | ----------------------------------- |
+| 2 Rohstoffe                     | 4 Rohstoffe, Handel, Markt          |
+| 4 Einheitentypen                | Belagerung, Schiffe, Helden         |
+| 3 Gebäudetypen                  | Mauern, Türme, Wunder               |
+| 3 Völker zu Beginn, später 5–10 | 40 Völker mit eigenem Technikbaum   |
+| 1 Karte je Partie, zufällig     | Karteneditor, Kampagnen, Szenarien  |
+| Formen und Farben               | Sprites, Animationen, Sprachausgabe |
+| 15 Minuten                      | 90 Minuten, Speicherstände          |
 
 Diese Tabelle ist die wichtigste in diesem Projekt. Jede Zeile rechts ist
 eine Woche, die wir nicht ausgeben.
+
+## Zu den Völkern
+
+Namen wie Teutonen, Franken oder Byzantiner sind historisch und frei
+verwendbar — es sind reale Voelker, so wie Trebuchet, Paladin und Chevalier
+reale Waffen und Raenge sind. Was ein Volk kostet, haengt allein daran, wie
+viel **eigenes** daran haengt:
+
+| Ein Volk als …                                | Kostet        |
+| --------------------------------------------- | ------------- |
+| Name, Farbe und **ein** Zahlenunterschied     | einen Nachmittag |
+| dazu eine eigene Sonderregel                  | einen Tag     |
+| eigener Technikbaum und eigene Einheitentypen | Wochen        |
+
+Deshalb: 5 bis 10 Voelker der ersten beiden Sorten sind ein realistisches
+Ziel. Ein eigener Technikbaum je Volk ist es nicht.
 
 ## Abnahmekriterien
 
@@ -77,6 +95,14 @@ eine Woche, die wir nicht ausgeben.
 
 - **AC-13** `offen` **Zwei bis sechs Spieler** — Die Partie funktioniert mit jeder Zahl zwischen
   zwei und sechs, ohne dass Werte von Hand angepasst werden.
+- **AC-16** `offen` **Drei Völker zum Start** — Jedes mit genau einem spürbaren Unterschied, etwa
+  zähere Gebäude, billigere Reiter oder ein stärkerer Konter. Nicht mehr:
+  drei Unterschiede lassen sich noch ausbalancieren, dreißig nicht.
+- **AC-17** `offen` **Ein Volk ist Daten, kein Code** — Ein neues Volk entsteht durch einen Eintrag
+  in einer Tabelle, nicht durch eine Verzweigung in der Simulation. Sonst
+  wird das fünfte Volk teurer als das erste statt billiger.
+- **AC-18** `offen` **Kein Volk gewinnt gegen alle** — Über zwanzig Partien liegt keines dauerhaft
+  vorn. Belegt durch Partien, nicht durch Behauptung.
 - **AC-14** `offen` **Bündnisse sind nicht vorgesehen** — Jeder gegen jeden. Absprachen finden am
   Tisch statt, nicht im Spiel — das spart eine ganze Mechanik.
 - **AC-15** `offen` **Ein Aussteiger blockiert nicht** — Verlässt jemand die Partie endgültig,

@@ -7,7 +7,7 @@ Eine Zeile je Abnahmekriterium. Gepflegt wird der Status in der Spec selbst,
 hier steht er zusammengefasst. Erzeugt mit `npm run specs:board`, als Seite
 zum Filtern und Suchen mit `npm run qa:report`.
 
-**Gesamt:** 10 in qa · 18 geplant · 92 offen · 40 fertig
+**Gesamt:** 10 in qa · 18 geplant · 138 offen · 40 fertig
 
 ## Nach Spezifikation
 
@@ -16,13 +16,15 @@ zum Filtern und Suchen mit `npm run qa:report`.
 | [Konten und Anmeldung](00-plattform/konten.md)                 | -         | -     | 16      | 4     | -               | -      |
 | [Raeume und Partien](00-plattform/raeume.md)                   | -         | 2     | -       | 3     | -               | 10     |
 | [Schutz vor Fremdnutzung](00-plattform/schutz.md)              | -         | 1     | -       | 4     | -               | 7      |
+| [Anhalten und Fortsetzen](00-plattform/speichern.md)           | -         | -     | -       | 26    | -               | -      |
+| [Spielauswahl und Einstellungen](00-plattform/spielauswahl.md) | -         | -     | -       | 17    | -               | -      |
 | [Uebertragung](00-plattform/uebertragung.md)                   | -         | 1     | 2       | 1     | -               | 6      |
 | [Bauen und Ausbilden](10-strategie/bauen.md)                   | -         | -     | -       | 19    | -               | -      |
 | [Bedienung](10-strategie/bedienung.md)                         | -         | 6     | -       | 17    | -               | -      |
 | [Einheiten und Befehle](10-strategie/einheiten-und-befehle.md) | -         | -     | -       | 1     | -               | 9      |
 | [Kampf](10-strategie/kampf.md)                                 | -         | -     | -       | 14    | -               | -      |
 | [Karte und Vorraete](10-strategie/karte-und-vorraete.md)       | -         | -     | -       | 2     | -               | 8      |
-| [Spielziel und Partieverlauf](10-strategie/spielziel.md)       | -         | -     | -       | 15    | -               | -      |
+| [Spielziel und Partieverlauf](10-strategie/spielziel.md)       | -         | -     | -       | 18    | -               | -      |
 | [Betrieb](20-betrieb/betrieb.md)                               | -         | -     | -       | 12    | -               | -      |
 
 ## In QA (10)
@@ -59,7 +61,7 @@ zum Filtern und Suchen mit `npm run qa:report`.
 - **Abbruch ist sichtbar** — [Uebertragung](00-plattform/uebertragung.md) AC-9
 - **Automatischer Wiederaufbau** — [Uebertragung](00-plattform/uebertragung.md) AC-10
 
-## Offen (92)
+## Offen (138)
 
 - **Einladungscodes lassen sich erzeugen und zuruecknehmen** — [Konten und Anmeldung](00-plattform/konten.md) AC-20
 - **Anmeldung ueber Google/GitHub** — [Konten und Anmeldung](00-plattform/konten.md) AC-6
@@ -72,6 +74,49 @@ zum Filtern und Suchen mit `npm run qa:report`.
 - **Partien haben eine Höchstdauer** — [Schutz vor Fremdnutzung](00-plattform/schutz.md) AC-10
 - **Statische Dateien haben eine eigene Bremse** — [Schutz vor Fremdnutzung](00-plattform/schutz.md) AC-11
 - **Auffälligkeiten sind sichtbar** — [Schutz vor Fremdnutzung](00-plattform/schutz.md) AC-12
+- **Ein Spielstand ist ein Datenwert** — [Anhalten und Fortsetzen](00-plattform/speichern.md) AC-1
+- **Laden ergibt exakt dieselbe Welt** — [Anhalten und Fortsetzen](00-plattform/speichern.md) AC-2
+- **Selbsttätig jede Minute** — [Anhalten und Fortsetzen](00-plattform/speichern.md) AC-3
+- **Gesichert wird auch beim Anhalten** — [Anhalten und Fortsetzen](00-plattform/speichern.md) AC-4
+- **Ein Spielstand bleibt klein** — [Anhalten und Fortsetzen](00-plattform/speichern.md) AC-5
+- **Ein kaputter Spielstand nimmt nichts mit** — [Anhalten und Fortsetzen](00-plattform/speichern.md) AC-6
+- **Anhalten ist jederzeit möglich** — [Anhalten und Fortsetzen](00-plattform/speichern.md) AC-7
+- **Wegklicken ist dasselbe wie Anhalten** — [Anhalten und Fortsetzen](00-plattform/speichern.md) AC-8
+- **Fortsetzen öffnet einen neuen Raum** — [Anhalten und Fortsetzen](00-plattform/speichern.md) AC-9
+- **Fortsetzen ist an der Stelle, an der aufgehört wurde** — [Anhalten und Fortsetzen](00-plattform/speichern.md) AC-10
+- **Ein Spielstand läuft nur einmal** — [Anhalten und Fortsetzen](00-plattform/speichern.md) AC-11
+- **Ein Spielstand gehört einem Konto** — [Anhalten und Fortsetzen](00-plattform/speichern.md) AC-12
+- **Nur der Eigentümer öffnet, benennt und löscht** — [Anhalten und Fortsetzen](00-plattform/speichern.md) AC-13
+- **Mitspieler dürfen mitbauen, nicht besitzen** — [Anhalten und Fortsetzen](00-plattform/speichern.md) AC-14
+- **Ein gelöschtes Konto nimmt seine Spielstände mit** — [Anhalten und Fortsetzen](00-plattform/speichern.md) AC-15
+- **Jeder Spielstand trägt eine Fassungsnummer** — [Anhalten und Fortsetzen](00-plattform/speichern.md) AC-16
+- **Eine unbekannte Fassung wird abgelehnt, nicht geraten** — [Anhalten und Fortsetzen](00-plattform/speichern.md) AC-17
+- **Ältere Fassungen werden beim Laden hochgezogen** — [Anhalten und Fortsetzen](00-plattform/speichern.md) AC-18
+- **Pause hält die Uhr für alle an** — [Anhalten und Fortsetzen](00-plattform/speichern.md) AC-19
+- **Jeder darf anhalten, aber nicht beliebig oft** — [Anhalten und Fortsetzen](00-plattform/speichern.md) AC-20
+- **Fortsetzen kann jeder** — [Anhalten und Fortsetzen](00-plattform/speichern.md) AC-21
+- **Sichern verlangt Einigkeit** — [Anhalten und Fortsetzen](00-plattform/speichern.md) AC-22
+- **Der Gastgeber besitzt den Stand** — [Anhalten und Fortsetzen](00-plattform/speichern.md) AC-23
+- **Fortsetzen wartet auf dieselben Plätze** — [Anhalten und Fortsetzen](00-plattform/speichern.md) AC-24
+- **Ein fehlender Spieler blockiert nicht ewig** — [Anhalten und Fortsetzen](00-plattform/speichern.md) AC-25
+- **Wer beim Sichern dabei war, steht im Stand** — [Anhalten und Fortsetzen](00-plattform/speichern.md) AC-26
+- **Spiele stehen zur Wahl** — [Spielauswahl und Einstellungen](00-plattform/spielauswahl.md) AC-1
+- **Ein Spiel ist ein Eintrag, keine Seite** — [Spielauswahl und Einstellungen](00-plattform/spielauswahl.md) AC-2
+- **Nicht spielbare Spiele sind sichtbar, aber gesperrt** — [Spielauswahl und Einstellungen](00-plattform/spielauswahl.md) AC-3
+- **Jedes Spiel bringt seine Einstellungen mit** — [Spielauswahl und Einstellungen](00-plattform/spielauswahl.md) AC-4
+- **Vorgaben fuehren zu einer spielbaren Partie** — [Spielauswahl und Einstellungen](00-plattform/spielauswahl.md) AC-5
+- **Einstellungen des Strategiespiels** — [Spielauswahl und Einstellungen](00-plattform/spielauswahl.md) AC-6
+- **Der Startwert ist sichtbar und eingebbar** — [Spielauswahl und Einstellungen](00-plattform/spielauswahl.md) AC-7
+- **Ungueltige Werte werden abgewiesen, nicht uebernommen** — [Spielauswahl und Einstellungen](00-plattform/spielauswahl.md) AC-8
+- **Einstellungen stehen im Warteraum** — [Spielauswahl und Einstellungen](00-plattform/spielauswahl.md) AC-9
+- **Nur der Gastgeber aendert sie** — [Spielauswahl und Einstellungen](00-plattform/spielauswahl.md) AC-10
+- **Eroeffnen verlangt ein Konto** — [Spielauswahl und Einstellungen](00-plattform/spielauswahl.md) AC-11
+- **Fortlaufende Spiele brauchen keinen zweiten Spieler** — [Spielauswahl und Einstellungen](00-plattform/spielauswahl.md) AC-12
+- **Der Code erscheint sofort** — [Spielauswahl und Einstellungen](00-plattform/spielauswahl.md) AC-13
+- **Liste der eigenen Spielstaende** — [Spielauswahl und Einstellungen](00-plattform/spielauswahl.md) AC-14
+- **Fortsetzen ist ein Klick** — [Spielauswahl und Einstellungen](00-plattform/spielauswahl.md) AC-15
+- **Umbenennen und Loeschen** — [Spielauswahl und Einstellungen](00-plattform/spielauswahl.md) AC-16
+- **Sitzungsspiele erscheinen dort nicht** — [Spielauswahl und Einstellungen](00-plattform/spielauswahl.md) AC-17
 - **Befehlsflut wird gebremst** — [Uebertragung](00-plattform/uebertragung.md) AC-4
 - **Sammler bauen Gebäude** — [Bauen und Ausbilden](10-strategie/bauen.md) AC-1
 - **Mehrere Sammler bauen schneller** — [Bauen und Ausbilden](10-strategie/bauen.md) AC-2
@@ -139,6 +184,9 @@ zum Filtern und Suchen mit `npm run qa:report`.
 - **Rein sammeln verliert** — [Spielziel und Partieverlauf](10-strategie/spielziel.md) AC-11
 - **Rein angreifen verliert auch** — [Spielziel und Partieverlauf](10-strategie/spielziel.md) AC-12
 - **Zwei bis sechs Spieler** — [Spielziel und Partieverlauf](10-strategie/spielziel.md) AC-13
+- **Drei Völker zum Start** — [Spielziel und Partieverlauf](10-strategie/spielziel.md) AC-16
+- **Ein Volk ist Daten, kein Code** — [Spielziel und Partieverlauf](10-strategie/spielziel.md) AC-17
+- **Kein Volk gewinnt gegen alle** — [Spielziel und Partieverlauf](10-strategie/spielziel.md) AC-18
 - **Bündnisse sind nicht vorgesehen** — [Spielziel und Partieverlauf](10-strategie/spielziel.md) AC-14
 - **Ein Aussteiger blockiert nicht** — [Spielziel und Partieverlauf](10-strategie/spielziel.md) AC-15
 - **Nur über HTTPS** — [Betrieb](20-betrieb/betrieb.md) AC-1
