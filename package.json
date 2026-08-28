@@ -1,0 +1,24 @@
+{
+  "name": "onlinegames",
+  "version": "0.1.0",
+  "description": "Spiele fuer mehrere, ueber einen Raumcode",
+  "private": true,
+  "license": "MIT",
+  "type": "commonjs",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "start": "node server/index.js",
+    "dev": "node --watch server/index.js",
+    "test": "node --test tests/",
+    "check": "npm run specs:check && npm run specs:belege && npm run qa:report && npm test",
+    "specs:board": "node scripts/spec-board.mjs",
+    "specs:check": "node scripts/spec-board.mjs --check",
+    "specs:belege": "node scripts/check-belege.mjs",
+    "qa:report": "node scripts/qa-report.mjs"
+  },
+  "dependencies": {
+    "ws": "^8.18.0"
+  }
+}

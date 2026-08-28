@@ -1,0 +1,211 @@
+// Reine Rechenteile - Kartenerzeugung, Wegfindung, Sammelschleife. Die haben
+// keine Naht zum Browser und duerfen deshalb direkt geprueft werden
+// (→ docs/adr/0004-teststrategie.md).
+import { test } from 'node:test';
+import assert from 'node:assert/strict';
+import { createRequire } from 'node:module';
+
+const require = createRequire(import.meta.url);
+const karten = require('../server/karte.js');
+const { suchen } = require('../server/wege.js');
+const { Welt } = require('../server/welt.js');
+
+const ZWEI = [{ id: 'a', name: 'Anna' }, { id: 'b', name: 'Bert' }];
+
+test('karte AC-1: gleicher Startwert ergibt dieselbe Karte', () => {
+  const eine = karten.erzeugen(4711, 4);
+  const andere = karten.erzeugen(4711, 4);
+  assert.deepEqual([...eine.felder], [...andere.felder]);
+  assert.deepEqual(eine.basen, andere.basen);
+
+  const dritte = karten.erzeugen(4712, 4);
+  assert.notDeepEqual([...eine.felder], [...dritte.felder]);
+});
+
+test('karte AC-2: nur Gras ist begehbar', () => {
+  const karte = karten.erzeugen(7, 2);
+  const gefunden = new Set(karte.felder);
+  for (const art of gefunden) assert.ok(art <= karten.WASSER, `unbekannte Feldart ${art}`);
+
+  for (let y = 0; y < karte.groesse; y++) {
+    for (let x = 0; x < karte.groesse; x++) {
+      const art = karte.felder[y * karte.groesse + x];
+      assert.equal(karten.begehbar(karte, x, y), art === karten.GRAS);
+    }
+  }
+});
+
+test('karte AC-3: die Karte ist 64 x 64', () => {
+  const karte = karten.erzeugen(7, 6);
+  assert.equal(karte.groesse, 64);
+  assert.equal(karte.felder.length, 64 * 64);
+});
+
+test('karte AC-4: alle Basen haben denselben Abstand zur Mitte', () => {
+  for (const anzahl of [2, 3, 4, 5, 6]) {
+    const karte = karten.erzeugen(99, anzahl);
+    assert.equal(karte.basen.length, anzahl);
+    const mitte = karte.groesse / 2;
+    const abstaende = karte.basen.map((b) => Math.hypot(b.x - mitte, b.y - mitte));
+    const kleinster = Math.min(...abstaende);
+    const groesster = Math.max(...abstaende);
+    assert.ok(groesster - kleinster < 1.5, `Abstaende ${kleinster} bis ${groesster}`);
+  }
+});
+
+test('karte AC-5: um jede Basis sind zwei Felder frei', () => {
+  const karte = karten.erzeugen(31, 6);
+  for (const basis of karte.basen) {
+    for (let dy = -2; dy <= 2; dy++) {
+      for (let dx = -2; dx <= 2; dx++) {
+        if (Math.hypot(dx, dy) > 2) continue;
+        assert.ok(
+          karten.begehbar(karte, basis.x + dx, basis.y + dy),
+          `Basis ${basis.x}/${basis.y} ist bei ${dx}/${dy} verbaut`,
+        );
+      }
+    }
+  }
+});
+
+test('karte AC-6: jede Basis hat Holz und Nahrung in Reichweite', () => {
+  for (const startwert of [1, 2, 3, 42, 4711]) {
+    const karte = karten.erzeugen(startwert, 5);
+    for (const basis of karte.basen) {
+      let holz = 0;
+      let nahrung = 0;
+      for (const index of karte.vorrat.keys()) {
+        const x = index % karte.groesse;
+        const y = (index / karte.groesse) | 0;
+        if (Math.hypot(x - basis.x, y - basis.y) > 10) continue;
+        if (karte.felder[index] === karten.WALD) holz++;
+        else nahrung++;
+      }
+      assert.ok(holz > 0, `Basis ${basis.x}/${basis.y} ohne Wald in Reichweite`);
+      assert.ok(nahrung > 0, `Basis ${basis.x}/${basis.y} ohne Beeren in Reichweite`);
+    }
+  }
+});
+
+test('karte AC-8: Wald traegt 120, Beeren tragen 80', () => {
+  const karte = karten.erzeugen(7, 2);
+  for (const [index, menge] of karte.vorrat) {
+    assert.equal(menge, karte.felder[index] === karten.WALD ? 120 : 80);
+  }
+});
+
+test('karte AC-9: ein erschoepftes Feld wird Gras und wird gemeldet', () => {
+  const welt = new Welt(ZWEI, 7);
+  const index = [...welt.karte.vorrat.keys()].find((i) => welt.karte.felder[i] === karten.WALD);
+  const feld = { x: index % 64, y: (index / 64) | 0 };
+  welt.karte.vorrat.set(index, 5); // fast leer
+
+  const einheit = [...welt.einheiten.values()][0];
+  einheit.x = feld.x + 1;
+  einheit.y = feld.y;
+  einheit.auftrag = { art: 'sammeln', feld };
+  einheit.weg = [];
+  welt.feldAenderungen = [];
+
+  welt.sammelnBeginnen(einheit);
+  for (let i = 0; i < 21; i++) welt.einheitTakten(einheit);
+
+  assert.equal(welt.karte.felder[index], karten.GRAS);
+  assert.equal(welt.karte.vorrat.has(index), false);
+  assert.ok(welt.feldAenderungen.some((a) => a.i === index), 'die Aenderung wird gemeldet');
+  assert.ok(karten.begehbar(welt.karte, feld.x, feld.y), 'das Feld ist jetzt begehbar');
+});
+
+test('einheiten AC-6: der Weg fuehrt um Hindernisse herum', () => {
+  const karte = karten.erzeugen(7, 2);
+  // Eine Mauer aus Wald quer durch einen freien Bereich ziehen.
+  for (let y = 10; y < 20; y++) karte.felder[y * 64 + 15] = karten.WALD;
+  for (let y = 10; y < 20; y++) {
+    for (const x of [14, 16]) karte.felder[y * 64 + x] = karten.GRAS;
+  }
+
+  const weg = suchen(karte, { x: 14, y: 15 }, { x: 16, y: 15 });
+  assert.ok(weg.length > 2, 'ein gerader Durchmarsch waere zwei Felder');
+  for (const feld of weg) {
+    assert.ok(karten.begehbar(karte, feld.x, feld.y), 'kein Feld des Weges ist gesperrt');
+  }
+});
+
+test('einheiten AC-7: keine Abkuerzung durch eine Ecke', () => {
+  const karte = karten.erzeugen(7, 2);
+  for (let y = 8; y <= 12; y++) {
+    for (let x = 8; x <= 12; x++) karte.felder[y * 64 + x] = karten.GRAS;
+  }
+  // Eine Ecke aus zwei Sperren: von 10/10 nach 11/11 darf es nicht diagonal gehen.
+  karte.felder[10 * 64 + 11] = karten.WASSER;
+  karte.felder[11 * 64 + 10] = karten.WASSER;
+
+  const weg = suchen(karte, { x: 10, y: 10 }, { x: 11, y: 11 });
+  const direkt = weg.length === 1 && weg[0].x === 11 && weg[0].y === 11;
+  assert.equal(direkt, false, 'die Einheit darf nicht durch die Ecke schluepfen');
+});
+
+test('einheiten AC-8: eine Wegsuche quer ueber die Karte bleibt unter 1 ms', () => {
+  const karte = karten.erzeugen(7, 5);
+  const von = karte.basen[0];
+  const nach = karte.basen[2];
+  suchen(karte, von, nach); // einmal warmlaufen
+
+  const start = process.hrtime.bigint();
+  const durchlaeufe = 200;
+  for (let i = 0; i < durchlaeufe; i++) suchen(karte, von, nach);
+  const je = Number(process.hrtime.bigint() - start) / 1e6 / durchlaeufe;
+  assert.ok(je < 1, `eine Suche dauerte ${je.toFixed(2)} ms`);
+});
+
+test('einheiten AC-9: ein unerreichbares Ziel laesst die Einheit stehen', () => {
+  const karte = karten.erzeugen(7, 2);
+  for (let y = 20; y <= 24; y++) {
+    for (let x = 20; x <= 24; x++) karte.felder[y * 64 + x] = karten.WASSER;
+  }
+  karte.felder[22 * 64 + 22] = karten.GRAS; // eine Insel
+
+  const weg = suchen(karte, karte.basen[0], { x: 22, y: 22 });
+  assert.deepEqual(weg, [], 'ohne Weg kommt eine leere Liste zurueck');
+});
+
+test('einheiten AC-13: bei Erschoepfung wird das naechste Feld gleicher Art gesucht', () => {
+  const welt = new Welt(ZWEI, 7);
+  const einheit = [...welt.einheiten.values()][0];
+
+  // Ein leeres Waldfeld direkt neben einem vollen.
+  const voll = [...welt.karte.vorrat.keys()].find((i) => welt.karte.felder[i] === karten.WALD);
+  const leer = [...welt.karte.vorrat.keys()].find(
+    (i) => welt.karte.felder[i] === karten.WALD && i !== voll
+      && Math.hypot((i % 64) - (voll % 64), ((i / 64) | 0) - ((voll / 64) | 0)) < 8,
+  );
+  assert.ok(leer !== undefined, 'zwei Waldfelder nebeneinander');
+
+  welt.karte.vorrat.set(leer, 0);
+  const leeresFeld = { x: leer % 64, y: (leer / 64) | 0 };
+  einheit.x = leeresFeld.x + 1;
+  einheit.y = leeresFeld.y;
+  einheit.zuletztGesammelt = karten.WALD;
+  einheit.auftrag = { art: 'sammeln', feld: leeresFeld };
+
+  welt.sammelnBeginnen(einheit);
+  assert.ok(einheit.auftrag, 'die Einheit bekommt einen Ersatzauftrag');
+  assert.notDeepEqual(einheit.auftrag.feld, leeresFeld);
+  const neu = einheit.auftrag.feld.y * 64 + einheit.auftrag.feld.x;
+  assert.equal(welt.karte.felder[neu], karten.WALD, 'Ersatz ist wieder Wald');
+});
+
+test('einheiten AC-14: ohne Ersatz in Reichweite bleibt die Einheit stehen', () => {
+  const welt = new Welt(ZWEI, 7);
+  const einheit = [...welt.einheiten.values()][0];
+  const feld = { x: 32, y: 32 };
+
+  welt.karte.vorrat.clear(); // nichts mehr da
+  einheit.auftrag = { art: 'sammeln', feld };
+  einheit.x = feld.x;
+  einheit.y = feld.y;
+
+  welt.sammelnBeginnen(einheit);
+  assert.equal(einheit.auftrag, null, 'kein Auftrag mehr');
+  assert.deepEqual(einheit.weg, [], 'und kein Weg quer ueber die Karte');
+});
