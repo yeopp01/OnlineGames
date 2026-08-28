@@ -9,23 +9,76 @@
   <body>
     <main id="vorraum" class="tafel">
       <h1>OnlineGames</h1>
-      <p class="unterzeile">Ein Raumcode, kein Konto.</p>
+      <p class="unterzeile">Ein Raumcode, kein Konto — ausser du eroeffnest.</p>
 
-      <label class="feld">
-        <span>Dein Name</span>
-        <input id="name" maxlength="20" autocomplete="off" placeholder="Daniel" />
-      </label>
+      <section class="block">
+        <h2>Mitspielen</h2>
+        <label class="feld">
+          <span>Dein Name</span>
+          <input id="name" maxlength="20" autocomplete="off" placeholder="Daniel" />
+        </label>
+        <div class="reihe">
+          <input id="code" maxlength="7" autocomplete="off" placeholder="ABC-DEF" class="code" />
+          <button id="beitreten">Beitreten</button>
+        </div>
+      </section>
 
-      <div class="reihe">
-        <button id="erstellen" class="haupt">Partie eroeffnen</button>
-      </div>
+      <section class="block" id="eroeffnen-block">
+        <h2>Partie eroeffnen</h2>
 
-      <p class="trenner">oder</p>
+        <div id="angemeldet" hidden>
+          <p class="wer">Angemeldet als <strong id="werName"></strong>
+            <button id="abmelden" class="leise">abmelden</button>
+          </p>
+          <div class="reihe">
+            <button id="erstellen" class="haupt">Partie eroeffnen</button>
+          </div>
+        </div>
 
-      <div class="reihe">
-        <input id="code" maxlength="7" autocomplete="off" placeholder="ABC-DEF" class="code" />
-        <button id="beitreten">Beitreten</button>
-      </div>
+        <div id="abgemeldet">
+          <p class="unterzeile">
+            Wer eine Partie eroeffnet, belegt Rechenzeit auf dem Server —
+            dafuer braucht es ein Konto. Mitspielen nicht.
+          </p>
+
+          <div class="reiter">
+            <button id="reiterAnmelden" class="reiterKnopf" aria-pressed="true">Anmelden</button>
+            <button id="reiterRegistrieren" class="reiterKnopf" aria-pressed="false">Registrieren</button>
+          </div>
+
+          <form id="formAnmelden" class="formular">
+            <label class="feld">
+              <span>Mailadresse</span>
+              <input type="email" id="anEmail" autocomplete="email" required />
+            </label>
+            <label class="feld">
+              <span>Kennwort</span>
+              <input type="password" id="anKennwort" autocomplete="current-password" required />
+            </label>
+            <button type="submit" class="haupt breit">Anmelden</button>
+          </form>
+
+          <form id="formRegistrieren" class="formular" hidden>
+            <label class="feld">
+              <span>Einladungscode</span>
+              <input id="regEinladung" class="code" maxlength="9" autocomplete="off" required />
+            </label>
+            <label class="feld">
+              <span>Anzeigename</span>
+              <input id="regName" maxlength="20" autocomplete="nickname" required />
+            </label>
+            <label class="feld">
+              <span>Mailadresse</span>
+              <input type="email" id="regEmail" autocomplete="email" required />
+            </label>
+            <label class="feld">
+              <span>Kennwort <em>mindestens 10 Zeichen</em></span>
+              <input type="password" id="regKennwort" autocomplete="new-password" minlength="10" required />
+            </label>
+            <button type="submit" class="haupt breit">Konto anlegen</button>
+          </form>
+        </div>
+      </section>
 
       <p id="meldung" class="meldung" hidden></p>
     </main>

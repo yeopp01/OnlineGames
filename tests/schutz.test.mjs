@@ -4,6 +4,7 @@ import { test, before, after } from 'node:test';
 import assert from 'node:assert/strict';
 import { createRequire } from 'node:module';
 import WebSocket from 'ws';
+import { konto } from './hilfe.mjs';
 
 const require = createRequire(import.meta.url);
 const { starten } = require('../server/index.js');
@@ -11,9 +12,10 @@ const { Schutz, Eimer } = require('../server/schutz.js');
 
 const HAFEN = 4198;
 let laufend;
+let kekse;
 
 before(async () => {
-  laufend = starten(HAFEN, {
+  laufend = await starten(HAFEN, {
     schutz: {
       verbindungenJeAdresse: 4,
       verbindungenJeMinute: 100,
@@ -21,19 +23,24 @@ before(async () => {
       raeumeGesamt: 100,
       raeumeJeAdresse: 2,
     },
+    konten: { datei: ':memory:', geheimnis: 'p'.repeat(48) },
   });
-  await new Promise((fertig) => laufend.server.on('listening', fertig));
+  const angelegt = await konto(HAFEN, laufend, { name: 'Anna' });
+  kekse = angelegt.kekse;
 });
 
 after(() => {
+  laufend.zugang.schliessen();
   laufend.schutz.halt();
   laufend.raeume.halt();
   laufend.wss.close();
   laufend.server.close();
 });
 
-function verbinde() {
-  const draht = new WebSocket(`ws://localhost:${HAFEN}`);
+function verbinde(angemeldet = false) {
+  const draht = new WebSocket(`ws://localhost:${HAFEN}`, {
+    headers: angemeldet ? { cookie: kekse } : {},
+  });
   const eingang = [];
   draht.on('message', (roh) => eingang.push(JSON.parse(roh.toString())));
   return {
@@ -107,7 +114,7 @@ test('schutz AC-3: nach zu vielen falschen Raumcodes wird getrennt', async () =>
 test('schutz AC-4: eine Adresse haelt nur begrenzt viele Partien offen', async () => {
   const eroeffner = [];
   for (let i = 0; i < 2; i++) {
-    const k = verbinde();
+    const k = verbinde(true);
     await k.offen();
     k.senden({ typ: 'erstellen', name: `Anna${i}` });
     await warte(80);
@@ -115,7 +122,7 @@ test('schutz AC-4: eine Adresse haelt nur begrenzt viele Partien offen', async (
     eroeffner.push(k);
   }
 
-  const dritter = verbinde();
+  const dritter = verbinde(true);
   await dritter.offen();
   dritter.senden({ typ: 'erstellen', name: 'Anna3' });
   await warte(80);
@@ -127,7 +134,7 @@ test('schutz AC-4: eine Adresse haelt nur begrenzt viele Partien offen', async (
   // Wird eine Partie geschlossen, ist der Platz wieder frei.
   eroeffner[0].zu();
   await warte(200);
-  const vierter = verbinde();
+  const vierter = verbinde(true);
   await vierter.offen();
   vierter.senden({ typ: 'erstellen', name: 'Anna4' });
   await warte(80);

@@ -2,7 +2,7 @@
 
 **Bereich:** Plattform
 **Kuerzel:** konten
-**Stand:** 16 geplant · 4 offen
+**Stand:** 2 in qa · 2 geplant · 3 offen · 13 fertig
 
 ## Zweck
 
@@ -40,23 +40,24 @@ macht. Der bleibt.
 
 ### Zugang
 
-- **AC-1** `geplant` **Beitreten ohne Konto** — Mit Raumcode und Namen tritt jeder bei. Auf diesem
+- **AC-1** `fertig` **Beitreten ohne Konto** — Mit Raumcode und Namen tritt jeder bei. Auf diesem
   Weg verlangt kein Bildschirm eine Anmeldung.
-- **AC-16** `geplant` **Eroeffnen verlangt ein Konto** — Eine Partie eroeffnet nur, wer angemeldet
+- **AC-16** `fertig` **Eroeffnen verlangt ein Konto** — Eine Partie eroeffnet nur, wer angemeldet
   ist. Der Versuch ohne Anmeldung fuehrt zur Anmeldemaske, nicht zu einer
   Fehlermeldung, und danach zurueck zum Eroeffnen.
-- **AC-17** `geplant` **Anzeigename kommt aus dem Konto** — Beim Eroeffnen wird der Name nicht
+- **AC-17** `fertig` **Anzeigename kommt aus dem Konto** — Beim Eroeffnen wird der Name nicht
   abgefragt; er steht im Profil. Aendern geht dort, nicht je Partie.
-- **AC-18** `geplant` **Registrieren nur mit Einladungscode** — Ohne gueltigen Einladungscode
+- **AC-18** `fertig` **Registrieren nur mit Einladungscode** — Ohne gueltigen Einladungscode
   entsteht kein Konto. Damit steht fest, wer Partien eroeffnen kann
   (→ [ADR-0003](../../docs/adr/0003-anmeldung.md)).
-- **AC-19** `geplant` **Einladungscodes sind einmalig und verfallen** — Ein Code gilt fuer genau
+- **AC-19** `fertig` **Einladungscodes sind einmalig und verfallen** — Ein Code gilt fuer genau
   eine Registrierung und laeuft nach 14 Tagen ab.
-- **AC-20** `offen` **Einladungscodes lassen sich erzeugen und zuruecknehmen** — Ueber einen Weg,
-  den nur der Betreiber erreicht.
-- **AC-2** `geplant` **Registrieren mit Mail und Kennwort** — Registrierung mit Mailadresse,
+- **AC-20** `in qa` **Einladungscodes lassen sich erzeugen und zuruecknehmen** — Ueber
+  `npm run einladung`, also nur auf der Maschine selbst. Es gibt bewusst
+  keinen Weg ueber das Netz.
+- **AC-2** `fertig` **Registrieren mit Mail und Kennwort** — Registrierung mit Mailadresse,
   Kennwort und Anzeigename.
-- **AC-3** `geplant` **Kennwort nie im Klartext** — Kennwoerter liegen ausschliesslich als
+- **AC-3** `fertig` **Kennwort nie im Klartext** — Kennwoerter liegen ausschliesslich als
   Argon2id-Hash vor. Auch nicht im Protokoll, auch nicht in Fehlermeldungen.
 - **AC-4** `geplant` **Mailadresse wird bestaetigt** — Ein Konto gilt erst nach Bestaetigung der
   Mailadresse als vollwertig; bis dahin ist es ein Gastkonto mit Namen.
@@ -67,22 +68,23 @@ macht. Der bleibt.
 
 ### Sitzung
 
-- **AC-7** `geplant` **Sitzung ueberlebt das Neuladen** — Nach der Anmeldung bleibt der Spieler
+- **AC-7** `fertig` **Sitzung ueberlebt das Neuladen** — Nach der Anmeldung bleibt der Spieler
   angemeldet, bis er abmeldet oder 30 Tage vergangen sind.
-- **AC-8** `geplant` **Sitzungscookie ist abgesichert** — `HttpOnly`, `Secure`, `SameSite=Lax`.
+- **AC-8** `fertig` **Sitzungscookie ist abgesichert** — `HttpOnly`, `Secure`, `SameSite=Lax`.
   Kein Token im `localStorage`.
-- **AC-9** `geplant` **WebSocket erbt die Anmeldung** — Die Spielverbindung erkennt das angemeldete
+- **AC-9** `fertig` **WebSocket erbt die Anmeldung** — Die Spielverbindung erkennt das angemeldete
   Konto aus der bestehenden Sitzung. Kein zweiter Anmeldeschritt.
-- **AC-10** `geplant` **Abmelden beendet ueberall** — Abmelden macht die Sitzung serverseitig
+- **AC-10** `fertig` **Abmelden beendet ueberall** — Abmelden macht die Sitzung serverseitig
   ungueltig, nicht nur im Browser.
 
 ### Missbrauch
 
-- **AC-11** `geplant` **Anmeldeversuche sind begrenzt** — Nach fuenf Fehlversuchen je Konto und
-  Stunde wird verzoegert geantwortet.
-- **AC-12** `geplant` **Keine Kontoauskunft** — „Mailadresse unbekannt" und „Kennwort falsch"
+- **AC-11** `in qa` **Anmeldeversuche sind begrenzt** — Hoechstens fuenf Anmeldeversuche und zehn
+  Registrierungen je Stunde und Adresse. _(Eingeschaltet, aber noch nicht
+  durch einen Test belegt.)_
+- **AC-12** `fertig` **Keine Kontoauskunft** — „Mailadresse unbekannt" und „Kennwort falsch"
   ergeben dieselbe Antwort. Auch die Antwortzeit unterscheidet sich nicht.
-- **AC-13** `geplant` **Anzeigename ist kein Ausweis** — Zwei Konten duerfen denselben Anzeigenamen
+- **AC-13** `fertig` **Anzeigename ist kein Ausweis** — Zwei Konten duerfen denselben Anzeigenamen
   fuehren. Eindeutig ist die Kennung, nicht der Name.
 
 ### Profil

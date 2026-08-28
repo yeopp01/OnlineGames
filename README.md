@@ -19,7 +19,22 @@ npm install
 npm start
 ```
 
-Dann `http://localhost:4180/` aufrufen. Für einen Test allein: zwei
+Braucht **Node 24** (wegen `node:sqlite`). Mit `fnm` schaltet die `.node-version`
+im Ordner automatisch um.
+
+Dann `http://localhost:4180/` aufrufen.
+
+**Mitspielen** geht sofort: Code und Name eintippen. **Eroeffnen** verlangt ein
+Konto, und ein Konto verlangt einen Einladungscode:
+
+```bash
+npm run einladung -- neu "fuer Bert"    # legt einen Code an, gilt 14 Tage
+npm run einladung                        # zeigt alle, mit Stand
+npm run einladung -- weg ABCD-EFGH       # nimmt einen unbenutzten zurueck
+```
+
+Im Betrieb gehoert `KONTEN_GEHEIMNIS` gesetzt — sonst macht jeder Neustart
+alle Sitzungen ungueltig. Für einen Test allein: zwei
 Browserfenster nebeneinander, im ersten eröffnen, im zweiten mit dem Code
 beitreten.
 
@@ -56,6 +71,7 @@ server/     karte.js    Kartenerzeugung, wiederholbar über einen Startwert
             welt.js     die Simulation: Einheiten, Aufträge, Vorräte
             raeume.js   Räume, Beitritt, Rückkehr nach Abbruch
             schutz.js   Grenzen je Adresse und je Server
+            konten.js   Better Auth, Sitzungen, Einladungscodes
             index.js    HTTP für die Dateien, WebSocket für das Spiel
 public/     app.js      Verbindung, Vorraum, Warteraum
             ansicht.js  zeichnet die Welt, nimmt Maus und Tastatur
@@ -63,7 +79,8 @@ specs/      was das Produkt ist, mit Abnahmekriterien
 docs/adr/   warum es so gebaut ist
 scripts/    Board, Belegprüfung, QA-Report
 qa/report/  die Übersicht als Seite (erzeugt)
-tests/      netz: über den echten Anfrageweg · regeln und schutz: direkt
+daten/      konten.sqlite - Konten und Einladungen (nicht im Repo)
+tests/      netz, konten, schutz: über den echten Anfrageweg · regeln: direkt
 ```
 
 Der Server rechnet, der Browser malt — warum, steht in
@@ -79,13 +96,14 @@ Abgleichproblem, kein Schummeln und eine Rückkehr nach dem Absturz geschenkt.
 | 60 Sekunden Spiel | in 15 ms gerechnet |
 | Wegsuche quer über die Karte | 0,2 ms |
 | Spieler je Partie | 2 bis 6 |
+| Kennwoerter | Argon2id, mindestens 10 Zeichen |
+| Sitzung | 30 Tage, HttpOnly-Keks, SameSite=Lax |
 
 ## Was als Nächstes kommt
 
 Das Fundament steht: gemeinsame Welt, Befehle, Wegfindung, Sammeln, Rückkehr
-nach Abbruch. Was fehlt, ist das Spiel — Bauen, Einheiten ausbilden, Kampf,
-ein Ende mit Sieger. Und die Anmeldung, deren Werkzeugwahl in
-[ADR-0003](docs/adr/0003-anmeldung.md) zur Entscheidung steht.
+nach Abbruch, Schutzschicht und Anmeldung. Was fehlt, ist das Spiel — Bauen,
+Einheiten ausbilden, Kampf, ein Ende mit Sieger.
 
 Der ehrlichste nächste Schritt ist aber keiner am Rechner: einmal zu fünft
 spielen und sehen, ob die Grundschleife trägt.

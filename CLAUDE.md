@@ -58,6 +58,7 @@ server/  karte.js    Kartenerzeugung, wiederholbar über einen Startwert
          welt.js     die Simulation: Einheiten, Aufträge, Vorräte
          raeume.js   Räume, Beitritt, Rückkehr nach Abbruch
          schutz.js   Grenzen je Adresse und je Server (tropfende Eimer)
+         konten.js   Better Auth in SQLite, Sitzungen, Einladungscodes
          index.js    HTTP für die Dateien, WebSocket für das Spiel
 public/  app.js      Verbindung, Vorraum, Warteraum
          ansicht.js  zeichnet die Welt, nimmt Maus und Tastatur
@@ -88,8 +89,13 @@ Umfang hinzufügt, dort nachsehen.
 
 ## Stand
 
-40 von 160 Kriterien fertig, 31 Tests grün. Gebaut ist der Unterbau: Räume,
-Übertragung, Karte, Wegfindung, Sammeln, Rückkehr nach Abbruch, Schutzschicht.
+53 von 206 Kriterien fertig, 42 Tests grün. Gebaut ist der Unterbau: Räume,
+Übertragung, Karte, Wegfindung, Sammeln, Rückkehr nach Abbruch, Schutzschicht
+und die Anmeldung.
+
+**Node 24 ist Pflicht** (`node:sqlite`). `fnm` schaltet über `.node-version`
+automatisch um. `npm test` braucht in Node 24 ein Muster statt eines Ordners —
+deshalb `node --test "tests/**/*.test.mjs"`.
 
 **Nie in einem echten Browser geprüft.** Server, Simulation und Protokoll sind
 über echte Verbindungen belegt; die Leinwand-Darstellung, der Auswahlrahmen
@@ -104,9 +110,8 @@ die Bedienkriterien auf `in qa`, nicht auf `fertig`.
    Entscheidung, und ohne Entscheidung kein Spiel.
 3. **[Kampf](specs/10-strategie/kampf.md)** und das Ende der Partie
    ([Spielziel](specs/10-strategie/spielziel.md)).
-4. **Anmeldung** — braucht vorher `fnm` und Node 24 auf dem Rechner. Bis
-   dahin steht `.node-version` bewusst auf `20.19.5`, weil das der Wahrheit
-   entspricht.
+4. **Mailversand** — erst damit werden Mailbestätigung (konten AC-4) und
+   „Kennwort vergessen" (AC-5) möglich; beide stehen auf `geplant`.
 
 Der ehrlichste nächste Schritt ist aber keiner am Rechner: einmal zu fünft
 spielen und sehen, ob die Grundschleife trägt.

@@ -12,6 +12,11 @@ const teile = {
   wartemeldung: document.getElementById('wartemeldung'),
   vorraete: document.getElementById('vorraete'),
   brett: document.getElementById('brett'),
+  angemeldet: document.getElementById('angemeldet'),
+  abgemeldet: document.getElementById('abgemeldet'),
+  werName: document.getElementById('werName'),
+  formAnmelden: document.getElementById('formAnmelden'),
+  formRegistrieren: document.getElementById('formRegistrieren'),
 };
 
 let draht = null;
@@ -95,11 +100,9 @@ function spielerlisteZeichnen(spieler) {
 }
 
 document.getElementById('erstellen').addEventListener('click', () => {
-  const name = teile.name.value.trim();
-  if (!name) return melden('Bitte einen Namen eintragen.');
-  localStorage.setItem('name', name);
+  // Kein Name noetig: der Server nimmt den aus dem Konto.
   melden('');
-  verbinden(() => senden({ typ: 'erstellen', name }));
+  verbinden(() => senden({ typ: 'erstellen' }));
 });
 
 document.getElementById('beitreten').addEventListener('click', () => {
@@ -117,6 +120,78 @@ document.getElementById('starten').addEventListener('click', () => {
   melden('', teile.wartemeldung);
   senden({ typ: 'start' });
 });
+
+// ---- Konto -------------------------------------------------------------
+// Die Sitzung liegt in einem HttpOnly-Keks; JavaScript kommt nicht daran und
+// soll es auch nicht. Der Server sagt, wer da ist.
+
+async function konto(weg, koerper) {
+  const antwort = await fetch(`/api/auth/${weg}`, {
+    method: koerper ? 'POST' : 'GET',
+    headers: koerper ? { 'Content-Type': 'application/json' } : undefined,
+    body: koerper ? JSON.stringify(koerper) : undefined,
+  });
+  const daten = await antwort.json().catch(() => ({}));
+  return { ok: antwort.ok, status: antwort.status, daten };
+}
+
+async function sitzungPruefen() {
+  const { ok, daten } = await konto('get-session');
+  const wer = ok && daten && daten.user ? daten.user : null;
+  teile.angemeldet.hidden = !wer;
+  teile.abgemeldet.hidden = Boolean(wer);
+  if (wer) {
+    teile.werName.textContent = wer.name;
+    // Wer angemeldet ist, tritt auch unter seinem Kontonamen bei.
+    if (!teile.name.value) teile.name.value = wer.name;
+  }
+  return wer;
+}
+
+function reiter(aufRegistrieren) {
+  document.getElementById('reiterAnmelden').setAttribute('aria-pressed', String(!aufRegistrieren));
+  document.getElementById('reiterRegistrieren').setAttribute('aria-pressed', String(aufRegistrieren));
+  teile.formAnmelden.hidden = aufRegistrieren;
+  teile.formRegistrieren.hidden = !aufRegistrieren;
+  melden('');
+}
+
+document.getElementById('reiterAnmelden').addEventListener('click', () => reiter(false));
+document.getElementById('reiterRegistrieren').addEventListener('click', () => reiter(true));
+
+teile.formAnmelden.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  melden('');
+  const { ok, daten } = await konto('sign-in/email', {
+    email: document.getElementById('anEmail').value.trim(),
+    password: document.getElementById('anKennwort').value,
+  });
+  // Nie verraten, welcher Teil falsch war.
+  if (!ok) return melden(daten.message || 'Mailadresse oder Kennwort stimmen nicht.');
+  await sitzungPruefen();
+});
+
+teile.formRegistrieren.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  melden('');
+  const { ok, daten } = await konto('sign-up/email', {
+    einladung: document.getElementById('regEinladung').value,
+    name: document.getElementById('regName').value.trim(),
+    email: document.getElementById('regEmail').value.trim(),
+    password: document.getElementById('regKennwort').value,
+  });
+  if (!ok) return melden(daten.message || 'Das Konto konnte nicht angelegt werden.');
+  await sitzungPruefen();
+});
+
+document.getElementById('abmelden').addEventListener('click', async () => {
+  await konto('sign-out', {});
+  await sitzungPruefen();
+});
+
+// ---- Start -------------------------------------------------------------
+
+await sitzungPruefen();
 
 // Nach einem Neuladen zurueck in die eigene Partie, ohne Code abzutippen.
 const platz = sessionStorage.getItem('platz');

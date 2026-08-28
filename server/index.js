@@ -6,6 +6,7 @@ const path = require('node:path');
 const { WebSocketServer } = require('ws');
 const { Raeume, MAX_SPIELER, codeZeigen } = require('./raeume');
 const { Schutz, adresseVon } = require('./schutz');
+const { konten } = require('./konten');
 
 const HAFEN = Number(process.env.PORT) || 4180;
 // Nur einschalten, wenn wirklich ein Reverse Proxy davorsteht - sonst darf
@@ -40,10 +41,29 @@ function ausliefern(anfrage, antwort) {
   });
 }
 
-function starten(hafen = HAFEN, einstellungen = {}) {
+async function starten(hafen = HAFEN, einstellungen = {}) {
   const raeume = new Raeume();
   const schutz = new Schutz(einstellungen.schutz);
-  const server = http.createServer(ausliefern);
+  const zugang = await konten({
+    hafen,
+    ...einstellungen.konten,
+  });
+
+  if (!zugang.geheimnisGesetzt && process.env.NODE_ENV === 'production') {
+    console.warn('KONTEN_GEHEIMNIS ist nicht gesetzt - jeder Neustart meldet alle ab.');
+  }
+
+  const server = http.createServer((anfrage, antwort) => {
+    // Alles unter /api/auth gehoert Better Auth: anmelden, registrieren,
+    // abmelden, Sitzung abfragen.
+    if ((anfrage.url || '').startsWith('/api/auth')) {
+      zugang.behandeln(anfrage, antwort).catch(() => {
+        if (!antwort.headersSent) antwort.writeHead(500).end('Fehler');
+      });
+      return;
+    }
+    ausliefern(anfrage, antwort);
+  });
 
   raeume.beimSchliessen = (raum) => {
     if (raum.adresse) schutz.raumZu(raum.adresse);
@@ -61,10 +81,13 @@ function starten(hafen = HAFEN, einstellungen = {}) {
     },
   });
 
-  wss.on('connection', (draht, anfrage) => {
+  wss.on('connection', async (draht, anfrage) => {
     let raum = null;
     let spieler = null;
     const adresse = adresseVon(anfrage, HINTER_PROXY);
+    // Die Spielverbindung erbt die Anmeldung aus dem bestehenden Cookie -
+    // kein zweiter Anmeldeschritt (→ specs konten AC-9).
+    const angemeldet = await zugang.sitzung(anfrage.headers);
     const eimer = schutz.eimerFuerVerbindung();
     schutz.verbindungOffen(adresse);
 
@@ -95,12 +118,18 @@ function starten(hafen = HAFEN, einstellungen = {}) {
       switch (nachricht.typ) {
         case 'erstellen': {
           if (raum) return;
+          // Eroeffnen verlangt ein Konto, Mitspielen nicht.
+          if (!angemeldet) {
+            return fehler('Zum Eroeffnen einer Partie ist eine Anmeldung noetig.');
+          }
           const erlaubt = schutz.raumErlaubt(adresse);
           if (!erlaubt.ok) return fehler(erlaubt.grund);
           raum = raeume.anlegen();
           raum.adresse = adresse;
+          raum.eigentuemer = angemeldet.user.id;
           schutz.raumAuf(adresse);
-          const ergebnis = raum.beitreten(nachricht.name, draht);
+          // Der Anzeigename kommt aus dem Konto, nicht aus der Nachricht.
+          const ergebnis = raum.beitreten(angemeldet.user.name, draht);
           spieler = ergebnis.spieler;
           draht.send(JSON.stringify({ typ: 'du', id: spieler.id, token: spieler.token, code: raum.code, anzeige: codeZeigen(raum.code) }));
           raum.senden(raum.vorraum());
@@ -162,13 +191,17 @@ function starten(hafen = HAFEN, einstellungen = {}) {
     });
   });
 
-  server.listen(hafen, () => {
-    console.log(`OnlineGames laeuft auf http://localhost:${hafen}/ (bis zu ${MAX_SPIELER} Spieler je Raum)`);
-  });
+  await new Promise((fertig) => server.listen(hafen, fertig));
+  console.log(`OnlineGames laeuft auf http://localhost:${hafen}/ (bis zu ${MAX_SPIELER} Spieler je Raum)`);
 
-  return { server, wss, raeume, schutz };
+  return { server, wss, raeume, schutz, zugang };
 }
 
-if (require.main === module) starten();
+if (require.main === module) {
+  starten().catch((fehler) => {
+    console.error('Start fehlgeschlagen:', fehler.message);
+    process.exit(1);
+  });
+}
 
 module.exports = { starten };

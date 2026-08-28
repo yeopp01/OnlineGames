@@ -4,65 +4,47 @@ import { test, before, after } from 'node:test';
 import assert from 'node:assert/strict';
 import { createRequire } from 'node:module';
 import WebSocket from 'ws';
+import { kunde as kundeMit, istTyp, konto } from './hilfe.mjs';
 
 const require = createRequire(import.meta.url);
 const { starten } = require('../server/index.js');
 
 const HAFEN = 4199;
 let laufend;
+let kekse;
 
 before(async () => {
   // Alle Testkunden kommen von derselben Adresse. Die Grenzen des Schutzes
   // werden hier bewusst weit gesetzt - sie haben ihre eigenen Tests.
-  laufend = starten(HAFEN, {
+  laufend = await starten(HAFEN, {
     schutz: {
       verbindungenJeAdresse: 200,
       verbindungenJeMinute: 500,
       raeumeGesamt: 200,
       raeumeJeAdresse: 100,
     },
+    konten: { datei: ':memory:', geheimnis: 'p'.repeat(48) },
   });
-  await new Promise((fertig) => laufend.server.on('listening', fertig));
+  // Eroeffnen verlangt ein Konto - also gibt es hier eines.
+  const angelegt = await konto(HAFEN, laufend, { name: 'Anna' });
+  kekse = angelegt.kekse;
 });
 
 after(() => {
+  laufend.zugang.schliessen();
+  laufend.schutz.halt();
   laufend.raeume.halt();
   laufend.wss.close();
   laufend.server.close();
 });
 
-// Ein Testkunde, der Nachrichten sammelt und auf eine bestimmte wartet.
-function kunde() {
-  const draht = new WebSocket(`ws://localhost:${HAFEN}`);
-  const eingang = [];
-  const wartende = [];
-  draht.on('message', (roh) => {
-    const nachricht = JSON.parse(roh.toString());
-    eingang.push(nachricht);
-    for (let i = wartende.length - 1; i >= 0; i--) {
-      if (wartende[i].passt(nachricht)) wartende.splice(i, 1)[0].fertig(nachricht);
-    }
-  });
-  return {
-    draht,
-    offen: () => new Promise((fertig) => draht.on('open', fertig)),
-    senden: (n) => draht.send(JSON.stringify(n)),
-    warteAuf(passt, frist = 5000) {
-      const treffer = eingang.find(passt);
-      if (treffer) return Promise.resolve(treffer);
-      return new Promise((fertig, scheitern) => {
-        const uhr = setTimeout(() => scheitern(new Error('Nichts empfangen')), frist);
-        wartende.push({ passt, fertig: (n) => { clearTimeout(uhr); fertig(n); } });
-      });
-    },
-    zu: () => draht.close(),
-  };
-}
+// Wer eroeffnet, ist angemeldet; wer beitritt, braucht nur den Code.
+const gastgeber = () => kundeMit(HAFEN, kekse);
+const kunde = () => kundeMit(HAFEN);
 
-const istTyp = (typ) => (n) => n.typ === typ;
 
 test('raeume AC-1 / raeume AC-2: Raum eroeffnen liefert einen Code, ein zweiter tritt bei', async () => {
-  const gast = kunde();
+  const gast = gastgeber();
   await gast.offen();
   gast.senden({ typ: 'erstellen', name: 'Anna' });
   const du = await gast.warteAuf(istTyp('du'));
@@ -80,7 +62,7 @@ test('raeume AC-1 / raeume AC-2: Raum eroeffnen liefert einen Code, ein zweiter 
 });
 
 test('raeume AC-15: der Code wird nachsichtig gelesen', async () => {
-  const gast = kunde();
+  const gast = gastgeber();
   await gast.offen();
   gast.senden({ typ: 'erstellen', name: 'Anna' });
   const du = await gast.warteAuf(istTyp('du'));
@@ -108,7 +90,7 @@ test('raeume AC-3: ein falscher Code wird abgewiesen', async () => {
 });
 
 test('raeume AC-6: allein laesst sich nicht starten', async () => {
-  const gast = kunde();
+  const gast = gastgeber();
   await gast.offen();
   gast.senden({ typ: 'erstellen', name: 'Anna' });
   await gast.warteAuf(istTyp('du'));
@@ -119,7 +101,7 @@ test('raeume AC-6: allein laesst sich nicht starten', async () => {
 });
 
 test('raeume AC-7: nur der Gastgeber startet', async () => {
-  const anna = kunde();
+  const anna = gastgeber();
   await anna.offen();
   anna.senden({ typ: 'erstellen', name: 'Anna' });
   const du = await anna.warteAuf(istTyp('du'));
@@ -138,7 +120,7 @@ test('raeume AC-7: nur der Gastgeber startet', async () => {
 });
 
 test('raeume AC-8 / uebertragung AC-5 / uebertragung AC-6 / uebertragung AC-7: Aufbau und laufende Zustaende', async () => {
-  const anna = kunde();
+  const anna = gastgeber();
   await anna.offen();
   anna.senden({ typ: 'erstellen', name: 'Anna' });
   const du = await anna.warteAuf(istTyp('du'));
@@ -166,7 +148,7 @@ test('raeume AC-8 / uebertragung AC-5 / uebertragung AC-6 / uebertragung AC-7: A
 });
 
 test('einheiten AC-11 / einheiten AC-12: ein Sammelbefehl fuellt den Vorrat', async () => {
-  const anna = kunde();
+  const anna = gastgeber();
   await anna.offen();
   anna.senden({ typ: 'erstellen', name: 'Anna' });
   const du = await anna.warteAuf(istTyp('du'));
@@ -214,7 +196,7 @@ test('einheiten AC-11 / einheiten AC-12: ein Sammelbefehl fuellt den Vorrat', as
 });
 
 test('uebertragung AC-1 / uebertragung AC-2 / einheiten AC-4: fremde Einheiten gehorchen nicht', async () => {
-  const anna = kunde();
+  const anna = gastgeber();
   await anna.offen();
   anna.senden({ typ: 'erstellen', name: 'Anna' });
   const du = await anna.warteAuf(istTyp('du'));
@@ -246,7 +228,7 @@ test('uebertragung AC-1 / uebertragung AC-2 / einheiten AC-4: fremde Einheiten g
 });
 
 test('raeume AC-9 / raeume AC-10: nach Verbindungsabbruch kehrt der Spieler zurueck', async () => {
-  const anna = kunde();
+  const anna = gastgeber();
   await anna.offen();
   anna.senden({ typ: 'erstellen', name: 'Anna' });
   const du = await anna.warteAuf(istTyp('du'));
@@ -279,7 +261,7 @@ test('raeume AC-9 / raeume AC-10: nach Verbindungsabbruch kehrt der Spieler zuru
 });
 
 test('raeume AC-14 / uebertragung AC-3: unsinnige Nachrichten bringen den Server nicht um', async () => {
-  const anna = kunde();
+  const anna = gastgeber();
   await anna.offen();
   anna.senden({ typ: 'erstellen', name: 'Anna' });
   const du = await anna.warteAuf(istTyp('du'));

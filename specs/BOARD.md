@@ -7,13 +7,13 @@ Eine Zeile je Abnahmekriterium. Gepflegt wird der Status in der Spec selbst,
 hier steht er zusammengefasst. Erzeugt mit `npm run specs:board`, als Seite
 zum Filtern und Suchen mit `npm run qa:report`.
 
-**Gesamt:** 10 in qa · 18 geplant · 138 offen · 40 fertig
+**Gesamt:** 12 in qa · 4 geplant · 137 offen · 53 fertig
 
 ## Nach Spezifikation
 
 | Spezifikation                                                  | In Arbeit | In QA | Geplant | Offen | Zurueckgestellt | Fertig |
 | -------------------------------------------------------------- | --------- | ----- | ------- | ----- | --------------- | ------ |
-| [Konten und Anmeldung](00-plattform/konten.md)                 | -         | -     | 16      | 4     | -               | -      |
+| [Konten und Anmeldung](00-plattform/konten.md)                 | -         | 2     | 2       | 3     | -               | 13     |
 | [Raeume und Partien](00-plattform/raeume.md)                   | -         | 2     | -       | 3     | -               | 10     |
 | [Schutz vor Fremdnutzung](00-plattform/schutz.md)              | -         | 1     | -       | 4     | -               | 7      |
 | [Anhalten und Fortsetzen](00-plattform/speichern.md)           | -         | -     | -       | 26    | -               | -      |
@@ -27,8 +27,10 @@ zum Filtern und Suchen mit `npm run qa:report`.
 | [Spielziel und Partieverlauf](10-strategie/spielziel.md)       | -         | -     | -       | 18    | -               | -      |
 | [Betrieb](20-betrieb/betrieb.md)                               | -         | -     | -       | 12    | -               | -      |
 
-## In QA (10)
+## In QA (12)
 
+- **Einladungscodes lassen sich erzeugen und zuruecknehmen** — [Konten und Anmeldung](00-plattform/konten.md) AC-20
+- **Anmeldeversuche sind begrenzt** — [Konten und Anmeldung](00-plattform/konten.md) AC-11
 - **Verwaister Raum wird geschlossen** — [Raeume und Partien](00-plattform/raeume.md) AC-12
 - **Leerlauf endet nach 30 Minuten** — [Raeume und Partien](00-plattform/raeume.md) AC-13
 - **Nachrichtenflut trennt die Verbindung** — [Schutz vor Fremdnutzung](00-plattform/schutz.md) AC-7
@@ -40,30 +42,15 @@ zum Filtern und Suchen mit `npm run qa:report`.
 - **Rechtsklick befiehlt** — [Bedienung](10-strategie/bedienung.md) AC-12
 - **Ladung ist sichtbar** — [Bedienung](10-strategie/bedienung.md) AC-16
 
-## Geplant (18)
+## Geplant (4)
 
-- **Beitreten ohne Konto** — [Konten und Anmeldung](00-plattform/konten.md) AC-1
-- **Eroeffnen verlangt ein Konto** — [Konten und Anmeldung](00-plattform/konten.md) AC-16
-- **Anzeigename kommt aus dem Konto** — [Konten und Anmeldung](00-plattform/konten.md) AC-17
-- **Registrieren nur mit Einladungscode** — [Konten und Anmeldung](00-plattform/konten.md) AC-18
-- **Einladungscodes sind einmalig und verfallen** — [Konten und Anmeldung](00-plattform/konten.md) AC-19
-- **Registrieren mit Mail und Kennwort** — [Konten und Anmeldung](00-plattform/konten.md) AC-2
-- **Kennwort nie im Klartext** — [Konten und Anmeldung](00-plattform/konten.md) AC-3
 - **Mailadresse wird bestaetigt** — [Konten und Anmeldung](00-plattform/konten.md) AC-4
 - **Kennwort vergessen** — [Konten und Anmeldung](00-plattform/konten.md) AC-5
-- **Sitzung ueberlebt das Neuladen** — [Konten und Anmeldung](00-plattform/konten.md) AC-7
-- **Sitzungscookie ist abgesichert** — [Konten und Anmeldung](00-plattform/konten.md) AC-8
-- **WebSocket erbt die Anmeldung** — [Konten und Anmeldung](00-plattform/konten.md) AC-9
-- **Abmelden beendet ueberall** — [Konten und Anmeldung](00-plattform/konten.md) AC-10
-- **Anmeldeversuche sind begrenzt** — [Konten und Anmeldung](00-plattform/konten.md) AC-11
-- **Keine Kontoauskunft** — [Konten und Anmeldung](00-plattform/konten.md) AC-12
-- **Anzeigename ist kein Ausweis** — [Konten und Anmeldung](00-plattform/konten.md) AC-13
 - **Abbruch ist sichtbar** — [Uebertragung](00-plattform/uebertragung.md) AC-9
 - **Automatischer Wiederaufbau** — [Uebertragung](00-plattform/uebertragung.md) AC-10
 
-## Offen (138)
+## Offen (137)
 
-- **Einladungscodes lassen sich erzeugen und zuruecknehmen** — [Konten und Anmeldung](00-plattform/konten.md) AC-20
 - **Anmeldung ueber Google/GitHub** — [Konten und Anmeldung](00-plattform/konten.md) AC-6
 - **Bilanz je Konto** — [Konten und Anmeldung](00-plattform/konten.md) AC-14
 - **Konto loeschen** — [Konten und Anmeldung](00-plattform/konten.md) AC-15
