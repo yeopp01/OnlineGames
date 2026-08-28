@@ -1,0 +1,32 @@
+# Bei jedem Push dasselbe, was auch oertlich gilt: npm run check.
+# Board aktuell, Belege vollstaendig, Report erzeugbar, Tests gruen.
+name: Pruefung
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .node-version
+          cache: npm
+
+      - run: npm ci
+
+      - run: npm run check
+
+      # Der Report ist erzeugt und liegt nicht im Repo - hier laesst er sich
+      # nach einem Lauf herunterladen, ohne ihn einzuchecken.
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: qa-report
+          path: qa/report/
+          retention-days: 14
