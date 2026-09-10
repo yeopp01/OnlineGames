@@ -1,0 +1,10 @@
+{
+  "spec": "00-plattform/raeume.md",
+  "ac": "AC-15",
+  "titel": "Der Code klein und mit Leerzeichen eingetippt, unmittelbar vor dem Beitritt",
+  "datei": "e2e/tests/vorraum.spec.mjs",
+  "pfad": [
+    "Anna eroeffnet, Bert tritt bei",
+    "raeume AC-15: der Code wird nachsichtig gelesen"
+  ]
+}

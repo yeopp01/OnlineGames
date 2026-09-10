@@ -1,0 +1,9 @@
+{
+  "spec": "15-manager/liga.md",
+  "ac": "AC-5",
+  "titel": "Die Tabelle der ersten Liga nach der Hinrunde: Spiele, Siege, Tore und Punkte, der eigene Verein hervorgehoben",
+  "datei": "e2e/tests/manager-liga.spec.mjs",
+  "pfad": [
+    "liga AC-5 und liga AC-15: zwei Tabellen, gerechnet wie gezaehlt"
+  ]
+}

@@ -1,0 +1,10 @@
+{
+  "spec": "15-manager/karriere.md",
+  "ac": "AC-1",
+  "titel": "Beide Ligen zur Wahl, je Verein Kaderstaerke, erwarteter Platz, Konto, Stadion und Kaderwert",
+  "datei": "e2e/tests/manager-start.spec.mjs",
+  "pfad": [
+    "Anfangen und weiterspielen",
+    "karriere AC-1: der Mensch waehlt seinen Verein, in beiden Ligen"
+  ]
+}

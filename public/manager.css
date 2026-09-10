@@ -1,0 +1,957 @@
+/* Das Managerspiel bringt seinen Stil selbst mit und laedt `stil.css`
+   **nicht**. Grund: dort steht `#spiel { position: fixed; inset: 0 }` und
+   `.kopfreihe { position: fixed }` - richtig fuer das Strategiespiel, das
+   eine Leinwand ueber das ganze Fenster legt, toedlich fuer eine Seite mit
+   langen Listen. Ein fixierter Kasten scrollt nicht und laesst den Body
+   nicht mitwachsen; die Marktliste war 7.325 px hoch, der Body 80 px.
+
+   Zwei Spiele, zwei Oberflaechen. Geteilt werden nur die Farben, und die
+   stehen hier noch einmal - lieber doppelt als heimlich gekoppelt. */
+
+:root {
+  /* Regler, Auswahllisten und Rollbalken im dunklen Kleid des Browsers. */
+  color-scheme: dark;
+  --grund: #14171c;
+  --tafel: #1d222a;
+  --rand: #2c333d;
+  --schrift: #e6e9ee;
+  --leise: #97a1b0;
+  --betont: #4a90d9;
+  --gut: #8fd0a0;
+  --schlecht: #d99a9a;
+  --warnung: #d9b36a;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+/* Wer `hidden` traegt, ist weg - auch wenn eine Klasse `display` setzt. */
+[hidden] {
+  display: none !important;
+}
+
+html {
+  height: auto;
+  min-height: 100%;
+  overflow: visible;
+}
+
+body.manager {
+  margin: 0;
+  display: block;
+  min-height: 100%;
+  padding: 0 0 5rem;
+  background: var(--grund);
+  color: var(--schrift);
+  font: 16px/1.5 system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+
+a { color: var(--betont); }
+
+h1 {
+  margin: 0;
+  font-size: 1.6rem;
+  letter-spacing: -0.01em;
+}
+
+h2 {
+  font-size: 1.05rem;
+  margin: 0 0 0.6rem;
+}
+
+section + section { margin-top: 1.75rem; }
+
+/* Im Raster stehen Abschnitte nebeneinander, nicht untereinander - sonst
+   beginnt die rechte Spalte tiefer als die linke. */
+.zweispalten > section { margin-top: 0; }
+
+.zweispalten + .zweispalten,
+.abstand { margin-top: 1.75rem; }
+
+.unterzeile {
+  margin: 0.25rem 0 1rem;
+  color: var(--leise);
+  font-size: 0.9rem;
+}
+
+.gut { color: var(--gut); }
+.schlecht { color: var(--schlecht); }
+.leise { color: var(--leise); }
+
+/* ------------------------------------------------- Knoepfe und Felder */
+
+button {
+  padding: 0.5rem 1rem;
+  background: #262d38;
+  border: 1px solid var(--rand);
+  border-radius: 8px;
+  color: var(--schrift);
+  font: inherit;
+  cursor: pointer;
+}
+
+button:hover:not(:disabled) { border-color: #3d4756; }
+button:disabled { opacity: 0.45; cursor: default; }
+
+button.haupt {
+  background: var(--betont);
+  border-color: var(--betont);
+  color: #0d1117;
+  font-weight: 600;
+}
+
+button.haupt:hover:not(:disabled) { background: #5c9ee0; }
+button.leise { color: var(--leise); }
+button.klein { padding: 0.2rem 0.55rem; font-size: 0.82rem; }
+button.warnung { border-color: var(--warnung); color: var(--warnung); }
+button.an { border-color: var(--warnung); }
+
+button.gross {
+  padding: 0.6rem 1.6rem;
+  font-size: 1.05rem;
+}
+
+input,
+select {
+  width: 100%;
+  padding: 0.5rem 0.6rem;
+  background: #12151a;
+  border: 1px solid var(--rand);
+  border-radius: 8px;
+  color: var(--schrift);
+  font: inherit;
+}
+
+input[type="range"] {
+  padding: 0;
+  background: none;
+  border: 0;
+  accent-color: var(--betont);
+}
+
+input:focus-visible,
+select:focus-visible,
+button:focus-visible {
+  outline: 2px solid var(--betont);
+  outline-offset: 2px;
+}
+
+.feld { display: block; }
+.feld.klein { width: 8rem; }
+
+.feld span {
+  display: block;
+  margin-bottom: 0.3rem;
+  color: var(--leise);
+  font-size: 0.85rem;
+}
+
+.reihe {
+  display: flex;
+  gap: 0.6rem;
+  align-items: flex-end;
+  flex-wrap: wrap;
+}
+
+.formular {
+  display: grid;
+  gap: 0.8rem;
+  margin: 1rem 0;
+}
+
+/* ------------------------------------------------------------ Rahmen */
+
+.mitte {
+  max-width: 64rem;
+  margin: 0 auto;
+  padding: 2.5rem clamp(0.75rem, 4vw, 2rem);
+}
+
+.mitte.schmal { max-width: 28rem; }
+
+.kopf {
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  background: var(--grund);
+  padding: 0.9rem clamp(0.75rem, 4vw, 2rem) 0.5rem;
+  border-bottom: 1px solid var(--rand);
+}
+
+.kopfreihe,
+.anpfiff,
+.reiter,
+main#inhalt {
+  max-width: 72rem;
+  margin: 0 auto;
+}
+
+.kopfreihe {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.kopf h1 { font-size: 1.35rem; }
+.kopf .unterzeile { margin-bottom: 0.3rem; }
+
+.kopfzahlen {
+  display: flex;
+  gap: 1.25rem;
+  text-align: right;
+}
+
+.kopfzahlen span {
+  display: block;
+  font-size: 1.35rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.kopfzahlen small {
+  color: var(--leise);
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.anpfiff {
+  display: flex;
+  gap: 0.6rem;
+  align-items: flex-end;
+  flex-wrap: wrap;
+  margin: 0.6rem auto;
+}
+
+.tempo { margin-left: auto; }
+
+.reiter {
+  display: flex;
+  gap: 0.3rem;
+  padding: 0.25rem;
+  background: #12151a;
+  border-radius: 9px;
+  overflow-x: auto;
+}
+
+.reiterKnopf {
+  flex: 1;
+  padding: 0.45rem 0.6rem;
+  background: none;
+  border: none;
+  color: var(--leise);
+  font-size: 0.9rem;
+  white-space: nowrap;
+}
+
+.reiterKnopf[aria-pressed='true'] {
+  background: #262d38;
+  color: var(--schrift);
+  font-weight: 600;
+}
+
+.zaehler {
+  display: inline-block;
+  min-width: 1.2rem;
+  margin-left: 0.3rem;
+  padding: 0 0.3rem;
+  border-radius: 9px;
+  background: var(--warnung);
+  color: #14171c;
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
+main#inhalt { padding: 1rem clamp(0.75rem, 4vw, 2rem); }
+
+.umschalter {
+  display: flex;
+  gap: 0.3rem;
+  max-width: 20rem;
+  margin-bottom: 1rem;
+  padding: 0.25rem;
+  background: #12151a;
+  border-radius: 9px;
+}
+
+.umschalter.breit { max-width: 32rem; }
+
+/* Wer per Knopf hierher springt, landet unter dem klebenden Kopf, nicht dahinter. */
+#entwicklung { scroll-margin-top: 15rem; }
+
+@media (max-width: 640px) {
+  #entwicklung { scroll-margin-top: 1rem; }
+}
+
+.zweispalten {
+  display: grid;
+  grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
+  gap: 1.5rem;
+  align-items: start;
+}
+
+@media (max-width: 860px) {
+  .zweispalten { grid-template-columns: minmax(0, 1fr); }
+}
+
+.karte {
+  background: var(--tafel);
+  border: 1px solid var(--rand);
+  border-radius: 12px;
+  padding: 0.9rem 1rem;
+}
+
+.karte + .karte { margin-top: 1rem; }
+
+.karte.warnung { border-color: var(--warnung); }
+
+/* ------------------------------------------------------------- Tabellen */
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-variant-numeric: tabular-nums;
+}
+
+th,
+td {
+  padding: 0.32rem 0.45rem;
+  border-bottom: 1px solid var(--rand);
+  text-align: right;
+  white-space: nowrap;
+}
+
+th.links,
+td.links { text-align: left; }
+
+/* Kein klebender Tabellenkopf: die Kopfzeile der Seite klebt schon. */
+thead th {
+  color: var(--leise);
+  font-weight: 500;
+  font-size: 0.8rem;
+  background: var(--grund);
+}
+
+tbody tr:hover { background: var(--tafel); }
+
+tr.ich td,
+tr.naechster td {
+  background: #23303f;
+  font-weight: 600;
+}
+
+tr.erledigt td { color: var(--leise); }
+tr[data-verein] { cursor: pointer; }
+
+tr.meister td:first-child,
+tr.aufstieg td:first-child { box-shadow: inset 3px 0 0 var(--gut); }
+tr.abstieg td:first-child { box-shadow: inset 3px 0 0 var(--schlecht); }
+
+/* Breite Tabellen scrollen fuer sich, damit die Seite nicht seitlich reisst. */
+.tabellenrahmen {
+  overflow-x: auto;
+  max-width: 100%;
+}
+
+.zweispalten .tabellenrahmen th,
+.zweispalten .tabellenrahmen td {
+  padding: 0.28rem 0.35rem;
+  font-size: 0.88rem;
+}
+
+.marke {
+  display: inline-block;
+  margin-left: 0.25rem;
+  padding: 0 0.35rem;
+  border: 1px solid var(--rand);
+  border-radius: 6px;
+  color: var(--leise);
+  font-size: 0.72rem;
+}
+
+.marke.ende { border-color: var(--schlecht); color: var(--schlecht); }
+
+/* Ein Name, der die Akte oeffnet: sieht aus wie Text, bis man darauf zeigt. */
+.namelink {
+  padding: 0;
+  background: none;
+  border: 0;
+  border-radius: 0;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.namelink:hover { color: var(--betont); text-decoration: underline; }
+
+.verlauf {
+  display: block;
+  width: 100%;
+  max-width: 26rem;
+  height: auto;
+  margin: 0.4rem 0 0.8rem;
+  color: var(--betont);
+}
+
+.verlauf text { fill: var(--schrift); font-size: 10px; }
+.verlauf text.achse { fill: var(--leise); font-size: 9px; }
+tr.laufend td { color: var(--leise); }
+tfoot td { border-bottom: 0; }
+
+td.aktionen { text-align: left; }
+td.aktionen button { padding: 0.15rem 0.5rem; font-size: 0.8rem; margin-right: 0.25rem; }
+
+/* ---------------------------------------------------------- Aufstellung */
+
+.platz {
+  background: radial-gradient(circle at 50% -10%, #23402c, #1b2f22 70%);
+  border: 1px solid var(--rand);
+  border-radius: 12px;
+  padding: 1rem 0.75rem;
+  display: grid;
+  /* minmax(0, ...): sonst waechst die Spalte auf die Breite der Reihe, statt die Trikots enger zu machen. */
+  grid-template-columns: minmax(0, 1fr);
+  gap: 0.7rem;
+}
+
+/* Eine Reihe bleibt eine Reihe, auch schmal: die Trikots werden enger statt
+   umzubrechen - sonst stuende im 4-4-2 ein Mittelfeldspieler allein. */
+.reihe-elf {
+  display: flex;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+.trikot {
+  flex: 0 1 6.4rem;
+  min-width: 0;
+  padding: 0.4rem 0.35rem;
+  border-radius: 8px;
+  background: #1d222a;
+  border: 1px solid var(--rand);
+  cursor: pointer;
+  text-align: center;
+  font-size: 0.78rem;
+  line-height: 1.25;
+}
+
+.trikot:hover { border-color: var(--betont); }
+
+/* Ein Platz auf dem Feld: sein Name, darunter wer dort steht. */
+.platz { user-select: none; }
+.reihe-elf { align-items: flex-start; }
+
+.platzfeld {
+  display: flex;
+  flex: 0 1 6.4rem;
+  flex-direction: column;
+  gap: 0.15rem;
+  min-width: 0;
+  border-radius: 10px;
+}
+
+/* Der Sechser steht etwas tiefer, der Zehner etwas hoeher als seine Reihe. */
+.platzfeld.lage-dm { margin-top: 1.1rem; }
+.platzfeld.lage-om { margin-bottom: 1.1rem; }
+
+.platzname {
+  color: #9fc5a8;
+  font-size: 0.66rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-align: center;
+}
+
+.platzfeld .trikot {
+  flex: none;
+  width: 100%;
+  cursor: grab;
+  touch-action: none;
+}
+
+.platzfeld .leer {
+  padding: 0.9rem 0;
+  border: 1px dashed var(--rand);
+  border-radius: 8px;
+  color: var(--leise);
+  font-size: 0.78rem;
+  text-align: center;
+}
+
+.platzfeld.ziel,
+#bankBereich.ziel {
+  outline: 2px dashed var(--betont);
+  outline-offset: 3px;
+}
+
+.trikot.fremd { border-style: dashed; }
+.trikot .bringt small { color: var(--leise); font-size: 0.66rem; font-weight: 400; }
+.trikot .mau { color: var(--warnung); }
+.wird-gezogen { opacity: 0.35; }
+.bankzeile { cursor: grab; user-select: none; }
+
+.geist {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 40;
+  padding: 0.3rem 0.65rem;
+  background: var(--tafel);
+  border: 1px solid var(--betont);
+  border-radius: 8px;
+  font-size: 0.85rem;
+  pointer-events: none;
+  white-space: nowrap;
+}
+.trikot b {
+  display: block;
+  overflow: hidden;
+  font-size: 0.82rem;
+  font-weight: 600;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.trikot .wert { display: block; color: var(--leise); font-size: 0.72rem; }
+.trikot.muede { border-color: #7a5a2a; }
+
+.regler {
+  display: grid;
+  gap: 0.85rem;
+  margin-top: 1rem;
+}
+
+.regler label {
+  display: grid;
+  grid-template-columns: 6.5rem 1fr 6rem;
+  gap: 0.6rem;
+  align-items: center;
+  font-size: 0.9rem;
+}
+
+#einstudiert { margin-top: 1rem; }
+
+.uebung {
+  display: grid;
+  grid-template-columns: 7.5rem 1fr 3.5rem;
+  gap: 0.6rem;
+  align-items: center;
+  margin-bottom: 0.45rem;
+  font-size: 0.9rem;
+}
+
+.uebung b { text-align: right; font-variant-numeric: tabular-nums; }
+
+.balken-rahmen {
+  height: 0.6rem;
+  background: #12151a;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.balken {
+  height: 100%;
+  background: var(--gut);
+}
+
+.balken.mittel { background: var(--warnung); }
+.balken.tief { background: var(--schlecht); }
+
+/* ------------------------------------------------------------- Spieltag */
+
+.ergebnis {
+  text-align: center;
+  padding: 1.25rem 1rem;
+  background: var(--tafel);
+  border: 1px solid var(--rand);
+  border-radius: 12px;
+  margin-bottom: 1.25rem;
+}
+
+.ergebnis .stand {
+  font-size: 2.6rem;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.02em;
+}
+
+/* Der Stand bleibt in der Mitte, die Namen brechen in ihrer Spalte um. */
+.ergebnis .wer {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  gap: 1rem;
+  align-items: center;
+}
+
+.ergebnis .wer strong:first-child { text-align: right; }
+.ergebnis .wer strong:last-child { text-align: left; }
+
+.ticker {
+  margin: 0.75rem auto 0;
+  max-width: 38rem;
+  text-align: left;
+  min-height: 6rem;
+}
+
+.ticker div {
+  padding: 0.15rem 0;
+  animation: auftauchen 0.25s ease-out;
+}
+
+.ticker .minute {
+  display: inline-block;
+  width: 2.6rem;
+  color: var(--leise);
+  font-variant-numeric: tabular-nums;
+}
+
+.ticker .t-tor { font-weight: 600; }
+
+.ticker .zeichen {
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  width: 1.5rem;
+  margin-right: 0.3rem;
+  vertical-align: -0.12em;
+}
+
+.ticker .t-marke {
+  margin: 0.3rem 0;
+  color: var(--leise);
+  font-size: 0.78rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.ball { width: 0.95rem; height: 0.95rem; }
+
+.kartenzeichen {
+  display: inline-block;
+  width: 0.55rem;
+  height: 0.8rem;
+  border-radius: 2px;
+}
+
+.kartenzeichen.gelb { background: #e8c547; }
+.kartenzeichen.rot { background: #d9534f; }
+.kartenzeichen.dahinter { margin-left: -0.2rem; transform: rotate(14deg); }
+.kreuz { color: #d9534f; font-size: 1.15rem; line-height: 1; }
+.pfeile { color: var(--betont); }
+
+@keyframes auftauchen {
+  from { opacity: 0; transform: translateY(-3px); }
+  to { opacity: 1; transform: none; }
+}
+
+.paarung {
+  display: grid;
+  grid-template-columns: 1fr 6.5rem 1fr;
+  gap: 0.5rem;
+  padding: 0.3rem 0.5rem;
+  border-bottom: 1px solid var(--rand);
+  font-size: 0.92rem;
+}
+
+.paarung .heim { text-align: right; }
+.paarung .stand { text-align: center; color: var(--betont); font-variant-numeric: tabular-nums; }
+.paarung .stand small { color: var(--leise); }
+.paarung.eigenes { background: #23303f; }
+.paarung .sieger { font-weight: 600; }
+
+.pokal {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(15rem, 1fr));
+  gap: 1rem 1.25rem;
+}
+
+.pokal .pokalrunde + .pokalrunde { margin-top: 0; }
+
+.paarung.pokalpaarung {
+  display: block;
+  margin-bottom: 0.4rem;
+  padding: 0.35rem 0.65rem;
+  background: var(--tafel);
+  border: 1px solid var(--rand);
+  border-radius: 8px;
+}
+
+.paarung.pokalpaarung.eigenes { background: #23303f; border-color: #35506e; }
+
+.pokalpaarung .seite {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.pokalpaarung .tore { color: var(--betont); font-variant-numeric: tabular-nums; }
+
+.pokalpaarung .zusatz {
+  display: block;
+  color: var(--leise);
+  font-size: 0.75rem;
+  line-height: 1.2;
+  text-align: right;
+}
+
+/* ------------------------------------------------------------- Vorschau */
+
+.vorschau h2 .leise { font-weight: 400; }
+
+.gegenueber {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  gap: 1rem;
+  align-items: center;
+  margin: 0.5rem 0 1rem;
+}
+
+.gegenueber .verein b { display: block; font-size: 1.1rem; }
+.gegenueber .verein small { display: block; color: var(--leise); }
+.gegenueber .rechts { text-align: right; }
+
+.einschaetzung {
+  padding: 0.25rem 0.75rem;
+  border: 1px solid var(--rand);
+  border-radius: 999px;
+  font-size: 0.85rem;
+  white-space: nowrap;
+}
+
+.einschaetzung.favorit { border-color: var(--gut); color: var(--gut); }
+.einschaetzung.aussenseiter { border-color: var(--schlecht); color: var(--schlecht); }
+
+.form {
+  display: inline-flex;
+  gap: 0.2rem;
+  margin-top: 0.35rem;
+}
+
+.form i {
+  display: inline-grid;
+  place-items: center;
+  width: 1.3rem;
+  height: 1.3rem;
+  border-radius: 4px;
+  background: var(--leise);
+  color: #14171c;
+  font-size: 0.7rem;
+  font-style: normal;
+  font-weight: 700;
+}
+
+.form i.form-S { background: var(--gut); }
+.form i.form-N { background: var(--schlecht); }
+
+.vergleich {
+  display: grid;
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
+}
+
+.vergleich .zeile {
+  display: grid;
+  grid-template-columns: 2.2rem minmax(0, 1fr) 6rem minmax(0, 1fr) 2.2rem;
+  gap: 0.5rem;
+  align-items: center;
+  font-variant-numeric: tabular-nums;
+}
+
+.vergleich .zeile > span { color: var(--leise); font-size: 0.88rem; text-align: center; }
+.vergleich .zeile > b:last-child { text-align: right; }
+
+.balken-links,
+.balken-rechts {
+  display: flex;
+  height: 0.7rem;
+  overflow: hidden;
+  background: #12151a;
+  border-radius: 4px;
+}
+
+.balken-links { justify-content: flex-end; }
+.balken-links div,
+.balken-rechts div { height: 100%; background: #3a4452; }
+.balken-links div.vorn { background: var(--gut); }
+.balken-rechts div.vorn { background: var(--schlecht); }
+
+.ausfaelle { font-size: 0.9rem; }
+
+/* ------------------------------------------------------------ Transfer */
+
+.marktfilter {
+  display: flex;
+  gap: 0.6rem;
+  align-items: flex-end;
+  flex-wrap: wrap;
+  margin-bottom: 0.75rem;
+}
+
+.marktfilter .feld { width: 8.5rem; }
+
+.angebot {
+  border: 1px solid var(--rand);
+  border-left: 3px solid var(--betont);
+  border-radius: 8px;
+  padding: 0.6rem 0.85rem;
+  margin-bottom: 0.6rem;
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.angebot span { flex: 1 1 auto; }
+
+.liste-einfach {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.liste-einfach li,
+.nachricht,
+.buchzeile {
+  padding: 0.3rem 0;
+  border-bottom: 1px solid var(--rand);
+  font-size: 0.9rem;
+}
+
+/* Postfach und Buch: das Datum einmal je Termin, darunter seine Zeilen. */
+.termingruppe {
+  padding: 0.45rem 0 0.3rem;
+  border-bottom: 1px solid var(--rand);
+}
+
+.termingruppe .datum {
+  display: flex;
+  justify-content: space-between;
+  color: var(--leise);
+  font-size: 0.78rem;
+}
+
+.termingruppe .nachricht,
+.termingruppe .buchzeile {
+  padding: 0.1rem 0;
+  border-bottom: 0;
+}
+
+.buchzeile .betrag {
+  display: inline-block;
+  min-width: 4.5rem;
+  margin-right: 0.5rem;
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+}
+
+/* ------------------------------------------------------------ Sonstiges */
+
+.spielstaende { display: grid; gap: 0.6rem; }
+
+.spielstand {
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+  flex-wrap: wrap;
+  padding: 0.7rem 0.85rem;
+  background: var(--tafel);
+  border: 1px solid var(--rand);
+  border-radius: 10px;
+}
+
+.spielstand > div { flex: 1 1 16rem; }
+.spielstand small { display: block; color: var(--leise); }
+
+.vereinsliste {
+  display: grid;
+  gap: 0.5rem;
+}
+
+.vereinskarte {
+  display: block;
+  width: 100%;
+  text-align: left;
+  padding: 0.6rem 0.85rem;
+  background: var(--tafel);
+  border: 1px solid var(--rand);
+  border-radius: 10px;
+  cursor: pointer;
+  color: inherit;
+  font: inherit;
+}
+
+.vereinskarte:hover { border-color: var(--betont); }
+.vereinskarte b { display: block; font-size: 0.98rem; }
+.vereinskarte small { display: block; color: var(--leise); }
+
+.meldung {
+  position: fixed;
+  left: 50%;
+  bottom: 1.5rem;
+  transform: translateX(-50%);
+  background: var(--tafel);
+  border: 1px solid var(--rand);
+  border-left: 3px solid var(--betont);
+  border-radius: 8px;
+  padding: 0.6rem 1rem;
+  max-width: min(38rem, 92vw);
+  z-index: 30;
+}
+
+.meldung.schlimm { border-left-color: var(--schlecht); }
+
+.ueberlagerung {
+  position: fixed;
+  inset: 0;
+  z-index: 20;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 4rem 1rem 1rem;
+  background: rgba(8, 10, 13, 0.7);
+  overflow-y: auto;
+}
+
+.dialog {
+  position: relative;
+  width: min(46rem, 100%);
+  padding: 1.25rem 1.4rem;
+  background: var(--grund);
+  border: 1px solid var(--rand);
+  border-radius: 12px;
+}
+
+.dialog .zu {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.5rem;
+  padding: 0.1rem 0.6rem;
+  font-size: 1.3rem;
+}
+
+/* ------------------------------------------------------------- Schmal */
+
+/* Auf dem Telefon klebt der Kopf nicht - er naehme sonst die halbe Hoehe.
+   Die Knoepfe stehen in zwei Spalten statt in einer zerrissenen Reihe. */
+@media (max-width: 640px) {
+  .kopf { position: static; }
+
+  .anpfiff {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.5rem;
+    align-items: end;
+  }
+
+  .anpfiff button { padding: 0.45rem 0.5rem; font-size: 0.85rem; }
+  .anpfiff #weiter { grid-column: 1 / -1; font-size: 1rem; }
+  .anpfiff .tempo { width: auto; margin-left: 0; }
+  #lauf { grid-column: 1 / -1; grid-row: 4; margin: 0; }
+
+  .ergebnis .stand { font-size: 2rem; }
+
+  .gegenueber { grid-template-columns: 1fr 1fr; }
+  .einschaetzung { grid-column: 1 / -1; grid-row: 2; justify-self: center; }
+  .vergleich .zeile { grid-template-columns: 2rem minmax(0, 1fr) 4.8rem minmax(0, 1fr) 2rem; gap: 0.35rem; }
+}

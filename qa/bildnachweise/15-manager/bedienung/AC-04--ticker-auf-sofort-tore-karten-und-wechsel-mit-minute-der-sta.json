@@ -1,0 +1,10 @@
+{
+  "spec": "15-manager/bedienung.md",
+  "ac": "AC-4",
+  "titel": "Ticker auf sofort: Tore, Karten und Wechsel mit Minute, der Stand wie in der Liste darunter",
+  "datei": "e2e/tests/manager-start.spec.mjs",
+  "pfad": [
+    "Anfangen und weiterspielen",
+    "karriere AC-5 und oberflaeche AC-4: der Bericht zeigt den Termin, der Ticker laeuft"
+  ]
+}

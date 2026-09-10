@@ -1,0 +1,9 @@
+{
+  "spec": "15-manager/aufstellung.md",
+  "ac": "AC-14",
+  "titel": "Nach zwei Spieltagen steht die abgegebene 4-3-3-Elf noch - sie gilt bis zum Widerruf",
+  "datei": "e2e/tests/manager-mannschaft.spec.mjs",
+  "pfad": [
+    "aufstellung AC-14: die Elf gilt bis zum Widerruf"
+  ]
+}

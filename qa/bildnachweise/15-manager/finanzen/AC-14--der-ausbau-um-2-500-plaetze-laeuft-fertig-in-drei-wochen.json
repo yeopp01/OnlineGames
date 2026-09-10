@@ -1,0 +1,10 @@
+{
+  "spec": "15-manager/finanzen.md",
+  "ac": "AC-14",
+  "titel": "Der Ausbau um 2.500 Plaetze laeuft, fertig in drei Wochen",
+  "datei": "e2e/tests/manager-markt.spec.mjs",
+  "pfad": [
+    "Kasse",
+    "finanzen AC-14: Stadionausbau"
+  ]
+}

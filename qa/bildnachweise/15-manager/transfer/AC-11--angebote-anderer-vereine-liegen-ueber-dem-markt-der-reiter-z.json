@@ -1,0 +1,10 @@
+{
+  "spec": "15-manager/transfer.md",
+  "ac": "AC-11",
+  "titel": "Angebote anderer Vereine liegen ueber dem Markt, der Reiter zaehlt sie",
+  "datei": "e2e/tests/manager-markt.spec.mjs",
+  "pfad": [
+    "Transfermarkt",
+    "transfer AC-11: die anderen Vereine bieten von sich aus"
+  ]
+}

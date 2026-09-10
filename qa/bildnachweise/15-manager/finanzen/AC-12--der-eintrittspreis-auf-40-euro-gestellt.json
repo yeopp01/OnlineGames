@@ -1,0 +1,10 @@
+{
+  "spec": "15-manager/finanzen.md",
+  "ac": "AC-12",
+  "titel": "Der Eintrittspreis auf 40 Euro gestellt",
+  "datei": "e2e/tests/manager-markt.spec.mjs",
+  "pfad": [
+    "Kasse",
+    "finanzen AC-12: der Eintrittspreis ist ein Regler"
+  ]
+}

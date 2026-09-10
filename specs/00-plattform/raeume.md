@@ -2,7 +2,7 @@
 
 **Bereich:** Plattform
 **Kuerzel:** raeume
-**Stand:** 2 in qa · 3 offen · 10 fertig
+**Stand:** 10/15 fertig · 2 in QA · 3 offen
 
 ## Zweck
 
@@ -62,14 +62,14 @@ Name eintragen → Partie eroeffnen → Code weitergeben
 
 ### Aufraeumen
 
-- **AC-12** `in qa` **Verwaister Raum wird geschlossen** — Ein Raum, in dem nach einer Minute niemand
+- **AC-12** `in-qa` **Verwaister Raum wird geschlossen** — Ein Raum, in dem nach einer Minute niemand
   mehr verbunden ist, wird geschlossen und seine Uhr angehalten.
-- **AC-13** `in qa` **Leerlauf endet nach 30 Minuten** — Ein Raum ohne jeden Befehl wird nach 30
+- **AC-13** `in-qa` **Leerlauf endet nach 30 Minuten** — Ein Raum ohne jeden Befehl wird nach 30
   Minuten geschlossen.
 
 ### Robustheit
 
-- **AC-14** `fertig` **Unsinn bringt den Server nicht um** — Kein JSON, unbekannte Nachrichtentypen,
+- **AC-14** `fertig` **Unsinn bringt Server nicht um** — Kein JSON, unbekannte Nachrichtentypen,
   falsche Datentypen und Ziele ausserhalb der Karte lassen den Server
   weiterlaufen und andere Raeume unberuehrt.
 

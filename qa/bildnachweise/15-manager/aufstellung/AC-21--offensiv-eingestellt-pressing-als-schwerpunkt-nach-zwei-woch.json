@@ -1,0 +1,9 @@
+{
+  "spec": "15-manager/aufstellung.md",
+  "ac": "AC-21",
+  "titel": "Offensiv eingestellt, Pressing als Schwerpunkt - nach zwei Wochen sitzt das Pressing besser",
+  "datei": "e2e/tests/manager-mannschaft.spec.mjs",
+  "pfad": [
+    "aufstellung AC-21: Ausrichtung, Schwerpunkt und was eingeuebt ist"
+  ]
+}

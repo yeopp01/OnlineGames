@@ -2,7 +2,7 @@
 
 **Bereich:** Plattform
 **Kuerzel:** schutz
-**Stand:** 1 in qa · 4 offen · 7 fertig
+**Stand:** 7/12 fertig · 1 in QA · 4 offen
 
 ## Zweck
 
@@ -58,7 +58,7 @@ ein Treffer alle 6.150 Versuche, ohne Bremse **etwa jede Minute** einer.
   verrät nie, ob es den Raum gibt.
 - **AC-4** `fertig` **Offene Partien je Adresse begrenzt** — Eine Adresse hält höchstens drei
   Partien gleichzeitig offen. Endet eine, wird der Platz wieder frei.
-- **AC-7** `in qa` **Nachrichtenflut trennt die Verbindung** — Mehr als 25 Nachrichten je Sekunde
+- **AC-7** `in-qa` **Nachrichtenflut trennt die Verbindung** — Mehr als 25 Nachrichten je Sekunde
   auf einer Verbindung führen zur Trennung. Jede Verbindung hat einen eigenen
   Eimer, damit eine laute die anderen derselben Adresse nicht mitreißt.
 
@@ -73,7 +73,7 @@ ein Treffer alle 6.150 Versuche, ohne Bremse **etwa jede Minute** einer.
 
 ### Vertrauen
 
-- **AC-8** `fertig` **Weitergereichte Adresse nur hinter dem Proxy** — Der Kopf `X-Forwarded-For`
+- **AC-8** `fertig` **Weitergereichte Adresse nur hinter Proxy** — Der Kopf `X-Forwarded-For`
   wird nur geglaubt, wenn `HINTER_PROXY=1` gesetzt ist. Sonst darf jeder seine
   Adresse selbst behaupten und alle Grenzen umgehen.
 - **AC-9** `offen` **Nachricht bleibt klein** — Über 8 kB je Nachricht wird die Verbindung
@@ -83,7 +83,7 @@ ein Treffer alle 6.150 Versuche, ohne Bremse **etwa jede Minute** einer.
 
 - **AC-10** `offen` **Partien haben eine Höchstdauer** — Eine Partie endet spätestens nach zwei
   Stunden, auch wenn ununterbrochen Befehle kommen.
-- **AC-11** `offen` **Statische Dateien haben eine eigene Bremse** — Heute greift die Bremse nur
+- **AC-11** `offen` **Statische Dateien haben eigene Bremse** — Heute greift die Bremse nur
   auf der Spielverbindung. Wer nur `index.html` millionenfach abruft, wird
   nicht gebremst.
 - **AC-12** `offen` **Auffälligkeiten sind sichtbar** — Ausgelöste Grenzen werden gezählt und sind

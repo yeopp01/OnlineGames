@@ -1,0 +1,10 @@
+{
+  "spec": "15-manager/bedienung.md",
+  "ac": "AC-14",
+  "titel": "Der Kalender mit allen 42 Terminen, Gegnern und Ergebnissen, die Winterpause hervorgehoben",
+  "datei": "e2e/tests/manager-start.spec.mjs",
+  "pfad": [
+    "Anfangen und weiterspielen",
+    "oberflaeche AC-14: der Kalender der Saison"
+  ]
+}

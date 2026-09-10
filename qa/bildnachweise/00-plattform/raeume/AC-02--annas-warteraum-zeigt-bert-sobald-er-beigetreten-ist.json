@@ -1,0 +1,10 @@
+{
+  "spec": "00-plattform/raeume.md",
+  "ac": "AC-2",
+  "titel": "Annas Warteraum zeigt Bert, sobald er beigetreten ist",
+  "datei": "e2e/tests/vorraum.spec.mjs",
+  "pfad": [
+    "Anna eroeffnet, Bert tritt bei",
+    "raeume AC-2: beide sehen dieselbe Spielerliste"
+  ]
+}

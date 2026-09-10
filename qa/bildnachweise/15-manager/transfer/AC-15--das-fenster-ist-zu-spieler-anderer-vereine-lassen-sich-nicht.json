@@ -1,0 +1,10 @@
+{
+  "spec": "15-manager/transfer.md",
+  "ac": "AC-15",
+  "titel": "Das Fenster ist zu: Spieler anderer Vereine lassen sich nicht holen",
+  "datei": "e2e/tests/manager-markt.spec.mjs",
+  "pfad": [
+    "Transfermarkt",
+    "transfer AC-15: ausserhalb des Fensters nur Vereinslose"
+  ]
+}

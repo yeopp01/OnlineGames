@@ -1,0 +1,10 @@
+{
+  "spec": "15-manager/transfer.md",
+  "ac": "AC-9",
+  "titel": "Vereinslose stehen mit einer Forderung von null auf dem Markt",
+  "datei": "e2e/tests/manager-markt.spec.mjs",
+  "pfad": [
+    "Transfermarkt",
+    "transfer AC-9: Vereinslose kosten keine Abloese"
+  ]
+}

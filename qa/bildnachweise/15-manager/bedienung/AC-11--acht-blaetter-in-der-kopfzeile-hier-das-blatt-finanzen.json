@@ -1,0 +1,10 @@
+{
+  "spec": "15-manager/bedienung.md",
+  "ac": "AC-11",
+  "titel": "Acht Blaetter in der Kopfzeile, hier das Blatt Finanzen",
+  "datei": "e2e/tests/manager-start.spec.mjs",
+  "pfad": [
+    "Anfangen und weiterspielen",
+    "oberflaeche AC-11 und oberflaeche AC-10: acht Blaetter, lange Listen scrollen"
+  ]
+}

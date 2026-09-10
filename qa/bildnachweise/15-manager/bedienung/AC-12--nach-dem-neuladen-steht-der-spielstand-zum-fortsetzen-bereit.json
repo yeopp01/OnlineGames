@@ -1,0 +1,10 @@
+{
+  "spec": "15-manager/bedienung.md",
+  "ac": "AC-12",
+  "titel": "Nach dem Neuladen steht der Spielstand zum Fortsetzen bereit",
+  "datei": "e2e/tests/manager-start.spec.mjs",
+  "pfad": [
+    "Anfangen und weiterspielen",
+    "karriere AC-15 und oberflaeche AC-12: Spielstaende zur Wahl, auch nach dem Neuladen"
+  ]
+}

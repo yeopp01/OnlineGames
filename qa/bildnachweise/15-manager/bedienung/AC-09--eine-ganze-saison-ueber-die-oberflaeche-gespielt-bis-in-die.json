@@ -1,0 +1,10 @@
+{
+  "spec": "15-manager/bedienung.md",
+  "ac": "AC-9",
+  "titel": "Eine ganze Saison ueber die Oberflaeche gespielt, bis in die zweite, ohne einen Fehler in der Seite",
+  "datei": "e2e/tests/manager-start.spec.mjs",
+  "pfad": [
+    "Anfangen und weiterspielen",
+    "oberflaeche AC-9: einmal im Browser gesehen, ohne Fehler"
+  ]
+}

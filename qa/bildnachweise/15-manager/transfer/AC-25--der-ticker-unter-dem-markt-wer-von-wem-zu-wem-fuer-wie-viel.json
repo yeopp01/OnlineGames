@@ -1,0 +1,10 @@
+{
+  "spec": "15-manager/transfer.md",
+  "ac": "AC-25",
+  "titel": "Der Ticker unter dem Markt: wer von wem zu wem, fuer wie viel",
+  "datei": "e2e/tests/manager-markt.spec.mjs",
+  "pfad": [
+    "Transfermarkt",
+    "transfer AC-25: der Ticker zeigt jeden Wechsel"
+  ]
+}

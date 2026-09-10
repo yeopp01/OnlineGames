@@ -1,0 +1,9 @@
+{
+  "spec": "15-manager/bedienung.md",
+  "ac": "AC-2",
+  "titel": "Ein Spieler von der Bank steht nach einem Klick in der Elf, die Aenderung ist noch nicht abgegeben",
+  "datei": "e2e/tests/manager-mannschaft.spec.mjs",
+  "pfad": [
+    "oberflaeche AC-2: ein Klick tauscht einen Spieler"
+  ]
+}

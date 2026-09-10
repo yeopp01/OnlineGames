@@ -1,0 +1,10 @@
+{
+  "spec": "00-plattform/konten.md",
+  "ac": "AC-2",
+  "titel": "Die Registrierung fragt Einladungscode, Anzeigename, Mailadresse und Kennwort ab",
+  "datei": "e2e/tests/vorraum.spec.mjs",
+  "pfad": [
+    "Registrieren",
+    "konten AC-2: registriert wird mit Mail, Kennwort und Anzeigename"
+  ]
+}

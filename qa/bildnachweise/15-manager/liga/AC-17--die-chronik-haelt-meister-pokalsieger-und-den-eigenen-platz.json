@@ -1,0 +1,10 @@
+{
+  "spec": "15-manager/liga.md",
+  "ac": "AC-17",
+  "titel": "Die Chronik haelt Meister, Pokalsieger und den eigenen Platz jeder Saison",
+  "datei": "e2e/tests/manager-start.spec.mjs",
+  "pfad": [
+    "Anfangen und weiterspielen",
+    "karriere AC-21, oberflaeche AC-16, manager AC-4 und liga AC-17: die Saison geht weiter"
+  ]
+}

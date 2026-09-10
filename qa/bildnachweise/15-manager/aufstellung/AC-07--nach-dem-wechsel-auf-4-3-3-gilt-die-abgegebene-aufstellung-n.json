@@ -1,0 +1,9 @@
+{
+  "spec": "15-manager/aufstellung.md",
+  "ac": "AC-7",
+  "titel": "Nach dem Wechsel auf 4-3-3 gilt die abgegebene Aufstellung nicht mehr",
+  "datei": "e2e/tests/manager-mannschaft.spec.mjs",
+  "pfad": [
+    "aufstellung AC-7: ein Systemwechsel verwirft die Aufstellung"
+  ]
+}

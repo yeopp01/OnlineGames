@@ -1,0 +1,9 @@
+{
+  "spec": "15-manager/aufstellung.md",
+  "ac": "AC-8",
+  "titel": "System, Haerte und Pressing - Haerte auf fuenf, Pressing auf eins gestellt",
+  "datei": "e2e/tests/manager-mannschaft.spec.mjs",
+  "pfad": [
+    "aufstellung AC-8: drei Regler, eins bis fuenf"
+  ]
+}

@@ -14,3 +14,7 @@ Nachfolgerin.
 | 0005 | [Grenzen greifen vor der Anmeldung](0005-grenzen-statt-vertrauen.md)  | entschieden |
 | 0006 | [Mehrere Spiele, aber erst wenn es zwei gibt](0006-mehrere-spiele.md) | entschieden |
 | 0007 | [Der Raum ist fluechtig, der Spielstand ist dauerhaft](0007-zwei-arten-von-partien.md) | entschieden |
+| 0008 | [Das zweite Spiel ist ein Fussballmanager](0008-zweites-spiel-manager.md) | entschieden |
+| 0009 | [Die Oberflaeche wird in einem echten Browser geprueft](0009-oberflaeche-im-browser.md) | teilweise abgeloest (Werkzeug → 0010) |
+| 0010 | [Playwright statt eigener Fernsteuerung](0010-playwright.md) | entschieden |
+| 0011 | [Bildnachweise gehoeren an das Abnahmekriterium](0011-bildnachweise.md) | entschieden |

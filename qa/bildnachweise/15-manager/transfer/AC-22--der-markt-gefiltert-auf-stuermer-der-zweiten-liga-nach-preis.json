@@ -1,0 +1,10 @@
+{
+  "spec": "15-manager/transfer.md",
+  "ac": "AC-22",
+  "titel": "Der Markt gefiltert auf Stuermer der zweiten Liga, nach Preis sortiert",
+  "datei": "e2e/tests/manager-markt.spec.mjs",
+  "pfad": [
+    "Transfermarkt",
+    "transfer AC-22: der Markt laesst sich filtern"
+  ]
+}

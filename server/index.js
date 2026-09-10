@@ -7,6 +7,7 @@ const { WebSocketServer } = require('ws');
 const { Raeume, MAX_SPIELER, codeZeigen } = require('./raeume');
 const { Schutz, adresseVon } = require('./schutz');
 const { konten } = require('./konten');
+const { manager } = require('./spiele/manager/netz');
 
 const HAFEN = Number(process.env.PORT) || 4180;
 // Nur einschalten, wenn wirklich ein Reverse Proxy davorsteht - sonst darf
@@ -53,6 +54,15 @@ async function starten(hafen = HAFEN, einstellungen = {}) {
     console.warn('KONTEN_GEHEIMNIS ist nicht gesetzt - jeder Neustart meldet alle ab.');
   }
 
+  // Das Managerspiel bringt seinen eigenen Anfrageweg mit - hier steht nur,
+  // dass es ihn gibt (→ docs/adr/0006-mehrere-spiele.md).
+  const spielManager = manager({
+    schutz,
+    adresseVon: (a) => adresseVon(a, HINTER_PROXY),
+    db: zugang.db,
+    sitzung: zugang.sitzung,
+  });
+
   const server = http.createServer((anfrage, antwort) => {
     // Alles unter /api/auth gehoert Better Auth: anmelden, registrieren,
     // abmelden, Sitzung abfragen.
@@ -62,6 +72,7 @@ async function starten(hafen = HAFEN, einstellungen = {}) {
       });
       return;
     }
+    if (spielManager.behandeln(anfrage, antwort)) return;
     ausliefern(anfrage, antwort);
   });
 
@@ -213,7 +224,7 @@ async function starten(hafen = HAFEN, einstellungen = {}) {
   await new Promise((fertig) => server.listen(hafen, fertig));
   console.log(`OnlineGames laeuft auf http://localhost:${hafen}/ (bis zu ${MAX_SPIELER} Spieler je Raum)`);
 
-  return { server, wss, raeume, schutz, zugang };
+  return { server, wss, raeume, schutz, zugang, manager: spielManager };
 }
 
 if (require.main === module) {

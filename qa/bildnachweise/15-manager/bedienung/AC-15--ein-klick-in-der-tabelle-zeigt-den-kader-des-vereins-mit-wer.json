@@ -1,0 +1,9 @@
+{
+  "spec": "15-manager/bedienung.md",
+  "ac": "AC-15",
+  "titel": "Ein Klick in der Tabelle zeigt den Kader des Vereins mit Werten und Forderungen",
+  "datei": "e2e/tests/manager-liga.spec.mjs",
+  "pfad": [
+    "oberflaeche AC-15: andere Vereine ansehen"
+  ]
+}

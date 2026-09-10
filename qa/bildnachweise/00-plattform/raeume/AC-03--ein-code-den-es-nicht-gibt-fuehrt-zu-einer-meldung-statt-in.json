@@ -1,0 +1,10 @@
+{
+  "spec": "00-plattform/raeume.md",
+  "ac": "AC-3",
+  "titel": "Ein Code, den es nicht gibt, fuehrt zu einer Meldung statt in einen leeren Raum",
+  "datei": "e2e/tests/vorraum.spec.mjs",
+  "pfad": [
+    "Anna eroeffnet, Bert tritt bei",
+    "raeume AC-3: ein unbekannter Code wird abgewiesen"
+  ]
+}

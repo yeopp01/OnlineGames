@@ -1,0 +1,9 @@
+{
+  "spec": "15-manager/aufstellung.md",
+  "ac": "AC-10",
+  "titel": "Der Trainingsregler ganz auf Technik - beides zugleich geht nicht",
+  "datei": "e2e/tests/manager-mannschaft.spec.mjs",
+  "pfad": [
+    "aufstellung AC-10: ein Regler zwischen Kondition und Entwicklung"
+  ]
+}

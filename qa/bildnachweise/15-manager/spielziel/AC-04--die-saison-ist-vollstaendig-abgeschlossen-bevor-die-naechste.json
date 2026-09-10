@@ -1,0 +1,10 @@
+{
+  "spec": "15-manager/spielziel.md",
+  "ac": "AC-4",
+  "titel": "Die Saison ist vollstaendig abgeschlossen, bevor die naechste beginnt",
+  "datei": "e2e/tests/manager-start.spec.mjs",
+  "pfad": [
+    "Anfangen und weiterspielen",
+    "karriere AC-21, oberflaeche AC-16, manager AC-4 und liga AC-17: die Saison geht weiter"
+  ]
+}

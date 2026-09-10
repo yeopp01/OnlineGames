@@ -1,0 +1,10 @@
+{
+  "spec": "15-manager/finanzen.md",
+  "ac": "AC-13",
+  "titel": "Drei Sponsorangebote vor der Saison: sicher, ausgewogen, erfolgsabhaengig",
+  "datei": "e2e/tests/manager-markt.spec.mjs",
+  "pfad": [
+    "Kasse",
+    "finanzen AC-13: drei Sponsoren zur Wahl"
+  ]
+}

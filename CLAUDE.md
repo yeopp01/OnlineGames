@@ -1,7 +1,8 @@
 # OnlineGames
 
 Spiele für mehrere über einen Raumcode. Erstes Spiel: ein bewusst klein
-geschnittenes Echtzeit-Strategiespiel im Geist von Age of Empires.
+geschnittenes Echtzeit-Strategiespiel im Geist von Age of Empires. Zweites
+Spiel: ein Fußballmanager im Geist von Anstoss 3.
 
 Schwesterprojekt von [LocalGames](../LocalGames/) — dort liegen die Partien im
 Gerät und verlassen es nicht. Hier gibt es einen Server, weil ein gemeinsames
@@ -18,54 +19,82 @@ Kodierungen hängt.
 ## Arbeitsweise
 
 ```bash
-npm run check        # Board aktuell? Belege vollständig? Report? Tests grün?
+npm run check        # Specs, Belege, Nachweise, Bericht, Tests - ohne Browser, auch in der CI
+npm run check:alles  # erst der Browserlauf, dann npm run check - vor jedem Abschluss an der Oberfläche
+npm run qa:report    # die Übersicht als Seite: qa/report/index.html
 npm start            # http://localhost:4180/
 npm run dev          # dasselbe mit --watch
 ```
 
-**`npm run check` muss vor jedem Abschluss grün sein.** Er prüft vier Dinge:
+**`npm run check` muss vor jedem Abschluss grün sein.** Er prüft:
 
-1. `specs/BOARD.md` und die Stand-Zeilen passen zu den Specs
-2. jedes Kriterium auf `fertig` wird von einem Test genannt
-3. `qa/report/index.html` ist neu erzeugt
-4. alle Tests laufen
+1. die Specs sind lesbar (Status, Kurztitel, Nummern), `specs/BOARD.md` und
+   die Stand-Zeilen passen
+2. jedes Kriterium auf `fertig` wird von einem **Testnamen** genannt
+3. jedes Kriterium auf `fertig` hat **ein Bild oder eine Begründung**, und
+   jeder Bildnachweis passt zu Spec, Kriterium und erzeugendem Test
+4. `qa/report/index.html` ist neu erzeugt
+5. alle Tests ohne Browser laufen
+
+**Wer die Oberfläche anfasst, fährt `npm run check:alles`.** Der Browserlauf
+(Playwright) gehört nicht in die CI; er läuft örtlich und schreibt die Bilder,
+die `npm run check` danach ohne Browser prüft.
 
 ### Die wichtigste Regel
 
-**`fertig` heißt: gebaut _und_ von einem Test belegt, dessen Name das
-Kriterium mit Kürzel und Nummer nennt** — etwa `raeume AC-7: nur der Gastgeber
-startet`. Das erzwingt `scripts/check-belege.mjs`.
+**`fertig` heißt: gebaut, von einem Test belegt, dessen Name das Kriterium mit
+Kürzel und Nummer nennt — etwa `raeume AC-7: nur der Gastgeber startet` —,
+_und_ nachgewiesen:** mit einem Bild aus dem Browserlauf, oder mit einer
+Begründung in [`qa/ohne-bild.json`](qa/ohne-bild.json), warum es kein Aussehen
+hat (→ [ADR-0011](docs/adr/0011-bildnachweise.md)).
 
-Gebaut, aber unbelegt, ist `in qa`. Diese Unterscheidung nicht aufweichen: sie
-ist der einzige Grund, warum die Zahlen im Board etwas wert sind.
+Gebaut, aber nicht so belegt, ist `in-qa`. Diese Unterscheidung nicht
+aufweichen: sie ist der einzige Grund, warum die Zahlen im Board etwas wert
+sind. Eine Begründung, die nur „nicht sichtbar" sagt, ist keine — sie nennt,
+**was** das Kriterium ist und **warum** ein Bildschirm es nicht zeigen kann.
 
 ### Beim Bauen einer neuen Funktion
 
-1. Kriterium in der passenden Spec unter `specs/` anlegen oder finden
+1. Kriterium in der passenden Spec unter `specs/` anlegen oder finden —
+   Kurztitel höchstens fünf Wörter
 2. bauen
 3. Test schreiben, dessen Name `<kuerzel> AC-<n>` enthält
-4. Status auf `fertig` setzen, `npm run specs:board`, `npm run check`
+4. Hat es einen Bildschirm: Browsertest unter `e2e/tests/` mit `nachweis()`
+   ([`qa/README.md`](qa/README.md)). Hat es keinen: Eintrag mit Begründung in
+   `qa/ohne-bild.json`
+5. Status auf `fertig`, `npm run specs:board`, `npm run check:alles`
 
 Neue Kriterien bekommen die nächste freie Nummer. **Nummern werden nie neu
-vergeben und nie umsortiert** — sie sind die Identität, die Reihenfolge in der
-Datei ist es nicht.
+vergeben und nie umsortiert** — an ihnen hängen Test und Bildnachweis.
 
 ## Aufbau
 
 ```
-server/  karte.js    Kartenerzeugung, wiederholbar über einen Startwert
-         wege.js     A* auf dem Raster, acht Richtungen
-         welt.js     die Simulation: Einheiten, Aufträge, Vorräte
-         raeume.js   Räume, Beitritt, Rückkehr nach Abbruch
+server/  raeume.js   Räume, Beitritt, Rückkehr nach Abbruch
          schutz.js   Grenzen je Adresse und je Server (tropfende Eimer)
          konten.js   Better Auth in SQLite, Sitzungen, Einladungscodes
          index.js    HTTP für die Dateien, WebSocket für das Spiel
+   spiele/strategie/  karte.js Kartenerzeugung · wege.js A* auf dem Raster
+                      welt.js  die Simulation: Einheiten, Aufträge, Vorräte
+   spiele/manager/    kader.js Welt, Spieler, Aufstellung, Training, Entwicklung
+                      spieltag.js die Begegnung in Fünf-Minuten-Abschnitten, Taktik
+                      liga.js Spielplan, Tabelle · pokal.js · kalender.js 42 Termine
+                      finanzen.js · vertraege.js · vorstand.js · transfer.js Markt, KI-Handel
+                      karriere.js Saison um Saison · spielstaende.js SQLite am Konto
+                      netz.js der Anfrageweg (nur mit Anmeldung)
 public/  app.js      Verbindung, Vorraum, Warteraum
          ansicht.js  zeichnet die Welt, nimmt Maus und Tastatur
+         manager.js  das Managerspiel (/manager.html), acht Blätter
 specs/   was das Produkt ist, mit Abnahmekriterien
 docs/adr/ warum es so gebaut ist
-scripts/ specs-lesen.mjs ist die eine Quelle; Board, Belege und Report hängen daran
-tests/   netz + schutz: über den echten Anfrageweg · regeln: reine Rechenteile
+qa/      bildnachweise/ Bilder je Kriterium (eingecheckt) · ohne-bild.json Begründungen
+         report/ der erzeugte Bericht (nicht eingecheckt)
+scripts/ specs-lesen.mjs ist die eine Quelle; Board, Belege und Bericht hängen daran
+         qa-nachweis.mjs legt Bildnachweise ab · qa-report.mjs prüft und schreibt den Bericht
+tests/   Anfrageweg: netz, schutz, konten, manager-netz · Rechenteile: regeln, manager, manager-spiel
+         manager-welt: sechs Saisons ohne Menschen, jedes Spiel auf Widersprüche geprüft
+e2e/     Playwright: tests/ im Browser; server.mjs startet den Server samt Prüfgriffen
+         (eigener Hafen, nur im Test); anmeldung.setup.mjs meldet einmal je Lauf an
 ```
 
 ## Entschieden (nicht neu aufrollen)
@@ -77,6 +106,12 @@ tests/   netz + schutz: über den echten Anfrageweg · regeln: reine Rechenteile
 | [ADR-0003](docs/adr/0003-anmeldung.md) | **Better Auth** im Spielserver mit `node:sqlite`, dafür Node 24. Kein Keycloak, kein zweiter Dienst. Registrieren **nur mit Einladungscode**. |
 | [ADR-0004](docs/adr/0004-teststrategie.md) | Pflichttests laufen **über WebSocket gegen den laufenden Server**, nicht gegen die Klassen. Reine Rechenteile dürfen direkt geprüft werden. |
 | [ADR-0005](docs/adr/0005-grenzen-statt-vertrauen.md) | **Grenzen greifen vor der Anmeldung.** Ein Angreifer will kein Konto — er kostet trotzdem. |
+| [ADR-0006](docs/adr/0006-mehrere-spiele.md) | **Mehrere Spiele, aber die Schnittstelle erst, wenn es zwei gibt.** Nichts Spielspezifisches in `raeume.js`, `schutz.js`, `index.js`. |
+| [ADR-0007](docs/adr/0007-zwei-arten-von-partien.md) | **Der Raum ist flüchtig, der Spielstand ist dauerhaft.** Sitzungsspiel gegen fortlaufendes Spiel; `server/spiele/<art>/`. |
+| [ADR-0008](docs/adr/0008-zweites-spiel-manager.md) | **Das zweite Spiel ist ein Fußballmanager**, nicht der Hausbau. Rundenbasiert, deshalb billig — und ohne die Netzfragen des Strategiespiels. |
+| [ADR-0009](docs/adr/0009-oberflaeche-im-browser.md) | **Die Oberfläche wird in einem echten Browser geprüft.** Jedes Spiel bringt sein eigenes Stylesheet mit — keine geteilte Kaskade. |
+| [ADR-0010](docs/adr/0010-playwright.md) | **Playwright** statt eigener Fernsteuerung: warten auf Zustände statt nach der Uhr. **Nur örtlich**, nicht in der CI. |
+| [ADR-0011](docs/adr/0011-bildnachweise.md) | **Bildnachweise gehören an das Abnahmekriterium.** `fertig` = Testname **und** (Bild **oder** Begründung). Bilder eingecheckt, Bericht erzeugt. |
 
 **Eröffnen verlangt ein Konto, Mitspielen nicht.** Wer eine Partie eröffnet,
 belegt Rechenzeit — dort leistet ein Konto etwas. Wer mitspielt, tippt Code
@@ -89,28 +124,56 @@ Umfang hinzufügt, dort nachsehen.
 
 ## Stand
 
-53 von 206 Kriterien fertig, 42 Tests grün. Gebaut ist der Unterbau: Räume,
-Übertragung, Karte, Wegfindung, Sammeln, Rückkehr nach Abbruch, Schutzschicht
-und die Anmeldung.
+**261 von 420 Kriterien fertig.** 237 Tests ohne Browser, 58 im Browser. Die
+Übersicht ist der Bericht: `npm run qa:report`.
+
+Gebaut ist der Unterbau: Räume, Übertragung, Karte, Wegfindung, Sammeln,
+Rückkehr nach Abbruch, Schutzschicht und die Anmeldung — dazu das
+**[Managerspiel](specs/15-manager/) als Karriere über viele Saisons**: zwei
+Ligen mit Auf- und Abstieg, Pokal, Kalender mit Transferfenstern, Taktik mit
+Ausrichtung und Einspielen, zwölf Positionen mit Abzug auf fremden Plätzen
+(Ziehen im Mannschaftsblatt), Vorschau auf den Gegner, Entwicklungsberichte,
+eine Akte je Spieler, Karriereende mit Ankündigung zur Winterpause,
+Trainingsschwerpunkt, Verträge, Jugend,
+Karriereende, Finanzen mit Sponsor und Stadion, Vorstand mit Entlassung —
+und 35 Vereine, die nach denselben Regeln spielen und handeln. Der Spielstand
+liegt in SQLite am Konto; ohne Anmeldung geht im Managerspiel nichts.
+
+Gemessen: **3,10 Tore je Spiel, 48 % Heimsiege, 21 % Unentschieden**
+(Bundesliga: 3,1 / 44 % / 24 %); der Favorit gewinnt 64 %. Über sechs Saisons
+ohne Menschen null Widersprüche in den Spielen, Kader, Stärke und Markt
+stabil. Eine Saison rechnet in rund 400 ms, ein Spielstand ist nach zwei
+Saisons unter 1 MB. Der Browserlauf dauert rund 45 Sekunden.
+
+**Stellschrauben des Managerspiels** stehen gesammelt in `WIRKUNG` in
+`server/spiele/manager/spieltag.js`. Wer daran dreht, misst danach: keine
+Einstellung darf für alle die beste sein (manager AC-15, spieltag AC-23 bis
+AC-25).
 
 **Node 24 ist Pflicht** (`node:sqlite`). `fnm` schaltet über `.node-version`
-automatisch um. `npm test` braucht in Node 24 ein Muster statt eines Ordners —
-deshalb `node --test "tests/**/*.test.mjs"`.
+automatisch um. `npm test` braucht in Node 24 ein Muster statt eines Ordners.
+Den Browser für Playwright holt einmal `npm run e2e:browser`.
 
-**Nie in einem echten Browser geprüft.** Server, Simulation und Protokoll sind
-über echte Verbindungen belegt; die Leinwand-Darstellung, der Auswahlrahmen
-und der Rechtsklick sind geschrieben, aber nie laufend gesehen. Deshalb stehen
-die Bedienkriterien auf `in qa`, nicht auf `fertig`.
+**Im Browser gesehen** sind die Manager-Oberfläche und der Vorraum: Anmeldung,
+Registrierung, Eröffnen, Beitreten, Code, Spielerliste, Absagen.
+**Nie im Browser gesehen** ist das Spielbild des Strategiespiels — Leinwand,
+Auswahlrahmen, Rechtsklick stehen auf `in-qa`, nicht auf `fertig`.
 
 ### Offen, in dieser Reihenfolge
 
-1. **Einmal im Browser ansehen** — zwei Fenster, eröffnen, beitreten, spielen.
-   Der billigste Erkenntnisgewinn, der noch aussteht.
-2. **[Bauen](specs/10-strategie/bauen.md)** — ohne etwas zu bauen gibt es keine
-   Entscheidung, und ohne Entscheidung kein Spiel.
-3. **[Kampf](specs/10-strategie/kampf.md)** und das Ende der Partie
+1. **Das Spielbild des Strategiespiels im Browser** — zwei Fenster, starten,
+   Einheiten wählen, befehlen. Der Vorraum davor ist erledigt
+   (`e2e/tests/vorraum.spec.mjs`); der Browserlauf lässt sich direkt erweitern.
+2. **Mehrere Menschen in einer Liga**
+   ([Manager-Spielziel](specs/15-manager/spielziel.md) AC-1, AC-2) — der
+   Grund, warum das Spiel hier liegt und nicht in LocalGames. Die Welt ist
+   dafür gebaut: die 35 anderen Vereine laufen schon nach den Regeln des
+   Menschen.
+3. **[Bauen](specs/10-strategie/bauen.md)** — ohne etwas zu bauen gibt es keine
+   Entscheidung, und ohne Entscheidung kein Strategiespiel.
+4. **[Kampf](specs/10-strategie/kampf.md)** und das Ende der Partie
    ([Spielziel](specs/10-strategie/spielziel.md)).
-4. **Mailversand** — erst damit werden Mailbestätigung (konten AC-4) und
+5. **Mailversand** — erst damit werden Mailbestätigung (konten AC-4) und
    „Kennwort vergessen" (AC-5) möglich; beide stehen auf `geplant`.
 
 Der ehrlichste nächste Schritt ist aber keiner am Rechner: einmal zu fünft

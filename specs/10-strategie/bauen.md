@@ -2,7 +2,7 @@
 
 **Bereich:** Strategie
 **Kuerzel:** bauen
-**Stand:** 19 offen
+**Stand:** 0/19 fertig · 19 offen
 
 ## Zweck
 
@@ -59,7 +59,7 @@ Gebäude müsste eine vierte Entscheidung tragen — sonst ist es nur Arbeit.
   laufende Auftrag ist mit Restzeit sichtbar.
 - **AC-11** `offen` **Abbruch erstattet vollständig** — Ein noch nicht begonnener Auftrag aus der
   Warteschlange erstattet die vollen Kosten.
-- **AC-12** `offen` **Neue Einheiten treten neben das Gebäude** — Auf ein freies Feld, nicht in ein
+- **AC-12** `offen` **Neue Einheiten erscheinen nebenan** — Auf ein freies Feld, nicht in ein
   Hindernis, nicht in ein anderes Gebäude.
 - **AC-13** `offen` **Sammelpunkt je Gebäude** — Wo neue Einheiten hinlaufen sollen, ist einstellbar
   und sichtbar.

@@ -1,0 +1,9 @@
+{
+  "spec": "15-manager/bedienung.md",
+  "ac": "AC-3",
+  "titel": "Die Elf als Spielfeld in vier Reihen, daneben Bank und Tribuene",
+  "datei": "e2e/tests/manager-mannschaft.spec.mjs",
+  "pfad": [
+    "oberflaeche AC-3: die Aufstellung ist ein Spielfeld"
+  ]
+}

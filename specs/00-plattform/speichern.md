@@ -2,7 +2,7 @@
 
 **Bereich:** Plattform
 **Kuerzel:** speichern
-**Stand:** 26 offen
+**Stand:** 0/26 fertig · 26 offen
 
 ## Zweck
 
@@ -54,7 +54,7 @@ nicht das Sichern, sondern das Wiederzusammenkommen.
   Servers.
 - **AC-5** `offen` **Ein Spielstand bleibt klein** — Unter 1 MB. Was oft geschrieben wird, muss
   klein sein; das ist eine Anforderung an das Spiel, nicht an die Ablage.
-- **AC-6** `offen` **Ein kaputter Spielstand nimmt nichts mit** — Lässt er sich nicht laden, sagt
+- **AC-6** `offen` **Kaputter Spielstand nimmt nichts mit** — Lässt er sich nicht laden, sagt
   das die Oberfläche, und der vorherige Stand ist noch da. Es wird also
   mindestens ein Stand zurückgehalten.
 
@@ -67,7 +67,7 @@ nicht das Sichern, sondern das Wiederzusammenkommen.
   geschlossen.
 - **AC-9** `offen` **Fortsetzen öffnet einen neuen Raum** — Mit neuem Code. Der alte Code führt
   nirgendwohin — er war nie der Weg zurück.
-- **AC-10** `offen` **Fortsetzen ist an der Stelle, an der aufgehört wurde** — Auch die
+- **AC-10** `offen` **Fortsetzen, wo aufgehört wurde** — Auch die
   Kameraposition, damit man sich nicht neu zurechtfinden muss.
 - **AC-11** `offen` **Ein Spielstand läuft nur einmal** — Wird derselbe Stand ein zweites Mal
   geöffnet, wird die erste Sitzung beendet. Zwei laufende Welten aus einer
@@ -77,21 +77,21 @@ nicht das Sichern, sondern das Wiederzusammenkommen.
 
 - **AC-12** `offen` **Ein Spielstand gehört einem Konto** — Das ist der zweite und stärkere Grund
   für [Konten](konten.md) AC-16: ohne Konto gäbe es niemanden, dem er gehört.
-- **AC-13** `offen` **Nur der Eigentümer öffnet, benennt und löscht** — Geprüft auf dem Server bei
+- **AC-13** `offen` **Nur Eigentümer öffnet, benennt, löscht** — Geprüft auf dem Server bei
   jedem Zugriff, nicht nur beim Anzeigen der Liste.
 - **AC-14** `offen` **Mitspieler dürfen mitbauen, nicht besitzen** — Wer per Code dazukommt, darf
   im Spiel handeln, aber den Stand weder löschen noch umbenennen noch allein
   fortsetzen.
-- **AC-15** `offen` **Ein gelöschtes Konto nimmt seine Spielstände mit** — Deckungsgleich mit
+- **AC-15** `offen` **Gelöschtes Konto nimmt Spielstände mit** — Deckungsgleich mit
   [Konten](konten.md) AC-15.
 
 ### Über Änderungen hinweg
 
 - **AC-16** `offen` **Jeder Spielstand trägt eine Fassungsnummer** — Ohne sie ist beim ersten
   Update nicht mehr feststellbar, was ein alter Stand bedeutet.
-- **AC-17** `offen` **Eine unbekannte Fassung wird abgelehnt, nicht geraten** — Lieber „dieser
+- **AC-17** `offen` **Unbekannte Fassung wird abgelehnt** — Lieber „dieser
   Stand stammt aus einer neueren Fassung" als eine halb geladene Welt.
-- **AC-18** `offen` **Ältere Fassungen werden beim Laden hochgezogen** — Solange es fachlich geht.
+- **AC-18** `offen` **Ältere Fassungen werden hochgezogen** — Solange es fachlich geht.
   Geht es nicht, ist das eine Entscheidung für ein ADR.
 
 ### Anhalten zu mehreren
@@ -100,10 +100,10 @@ Anhalten und Speichern sind zwei verschiedene Dinge. **Pause** hält die Uhr
 an, alle bleiben verbunden — für den Gang zur Tür. **Sichern** beendet die
 Sitzung und macht sie später wieder aufrufbar.
 
-- **AC-19** `offen` **Pause hält die Uhr für alle an** — Die Welt taktet nicht mehr, Befehle
+- **AC-19** `offen` **Pause hält die Uhr an** — Die Welt taktet nicht mehr, Befehle
   werden verworfen, alle sehen dasselbe Standbild mit dem Namen dessen, der
   angehalten hat.
-- **AC-20** `offen` **Jeder darf anhalten, aber nicht beliebig oft** — Zweimal je Spieler und
+- **AC-20** `offen` **Anhalten ist begrenzt** — Zweimal je Spieler und
   Partie, höchstens fünf Minuten am Stück, danach läuft sie von selbst
   weiter. Ohne Grenze ist Pause im Wettstreit ein Werkzeug, kein Dienst.
 - **AC-21** `offen` **Fortsetzen kann jeder** — Auch wer nicht angehalten hat. Sonst hält eine
@@ -117,10 +117,10 @@ Sitzung und macht sie später wieder aufrufbar.
 - **AC-24** `offen` **Fortsetzen wartet auf dieselben Plätze** — Der Warteraum zeigt die Plätze der
   ursprünglichen Partie. Wer sich mit dem Konto oder Namen von damals
   meldet, bekommt seinen Platz zurück.
-- **AC-25** `offen` **Ein fehlender Spieler blockiert nicht ewig** — Sind alle bis auf einen da,
+- **AC-25** `offen` **Fehlender Spieler blockiert nicht ewig** — Sind alle bis auf einen da,
   kann der Gastgeber dessen Platz stilllegen: Einheiten bleiben stehen, die
   Partie läuft.
-- **AC-26** `offen` **Wer beim Sichern dabei war, steht im Stand** — Damit später nachvollziehbar
+- **AC-26** `offen` **Beteiligte stehen im Spielstand** — Damit später nachvollziehbar
   ist, wer eingeladen werden muss.
 
 ## Grenzfaelle

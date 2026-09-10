@@ -44,6 +44,7 @@ export const istTyp = (typ) => (n) => n.typ === typ;
 // Testlauf nie, und zwar nur dort, wo das Aufraeumen langsamer ist als der
 // Rechner daheim.
 export function beenden(laufend) {
+  laufend.manager?.halt();
   laufend.zugang.schliessen();
   laufend.schutz.halt();
   laufend.raeume.halt();

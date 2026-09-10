@@ -1,0 +1,9 @@
+{
+  "spec": "15-manager/kader.md",
+  "ac": "AC-20",
+  "titel": "Die Entwicklung zur Winterpause: jeder Spieler mit Alter, Talent, Spielzeit, Staerke vorher und nachher und der Regel dazu",
+  "datei": "e2e/tests/manager-liga.spec.mjs",
+  "pfad": [
+    "kader AC-20: die Entwicklung auf einen Blick"
+  ]
+}

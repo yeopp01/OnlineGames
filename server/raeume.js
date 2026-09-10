@@ -1,7 +1,7 @@
 'use strict';
 
 const { randomUUID, randomInt } = require('node:crypto');
-const { Welt, TAKTE_PRO_SEKUNDE } = require('./welt');
+const { Welt, TAKTE_PRO_SEKUNDE } = require('./spiele/strategie/welt');
 
 const MAX_SPIELER = 6;
 const MIN_SPIELER = 2;

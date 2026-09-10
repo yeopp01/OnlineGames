@@ -1,0 +1,10 @@
+{
+  "spec": "15-manager/bedienung.md",
+  "ac": "AC-1",
+  "titel": "Weiter steht in der Kopfzeile; die Leertaste hat den ersten Spieltag gerechnet",
+  "datei": "e2e/tests/manager-start.spec.mjs",
+  "pfad": [
+    "Anfangen und weiterspielen",
+    "karriere AC-4 und oberflaeche AC-1: ein Knopf, ein Termin, die Leertaste auch"
+  ]
+}

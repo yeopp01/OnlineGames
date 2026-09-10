@@ -2,7 +2,7 @@
 
 **Bereich:** Plattform
 **Kuerzel:** uebertragung
-**Stand:** 1 in qa · 2 geplant · 1 offen · 6 fertig
+**Stand:** 6/10 fertig · 1 in QA · 2 geplant · 1 offen
 
 ## Zweck
 
@@ -41,7 +41,7 @@ und warum es so wenig ist.
   Leitung, danach nur noch einzelne geaenderte Felder.
 - **AC-7** `fertig` **Ein Zustand bleibt klein** — Bei zehn Einheiten liegt ein Zustand unter 1 kB.
   Bei sechs Spielern zu je zwanzig Einheiten muss er unter 8 kB bleiben.
-- **AC-8** `in qa` **Weiches Bild trotz zehn Takten** — Der Browser rechnet zwischen zwei Zustaenden
+- **AC-8** `in-qa` **Weiches Bild trotz zehn Takten** — Der Browser rechnet zwischen zwei Zustaenden
   linear weiter, damit Bewegung bei 60 Bildern je Sekunde nicht ruckelt.
 
 ### Verbindung

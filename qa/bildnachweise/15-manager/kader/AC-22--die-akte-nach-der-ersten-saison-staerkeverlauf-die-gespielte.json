@@ -1,0 +1,10 @@
+{
+  "spec": "15-manager/kader.md",
+  "ac": "AC-22",
+  "titel": "Die Akte nach der ersten Saison: Staerkeverlauf, die gespielte Saison, die laufende und der Wechsel mit Datum",
+  "datei": "e2e/tests/manager-markt.spec.mjs",
+  "pfad": [
+    "Kader und Vertraege",
+    "kader AC-22: die Akte eines Spielers"
+  ]
+}

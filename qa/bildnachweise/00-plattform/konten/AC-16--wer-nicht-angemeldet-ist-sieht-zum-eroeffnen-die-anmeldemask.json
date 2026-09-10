@@ -1,0 +1,10 @@
+{
+  "spec": "00-plattform/konten.md",
+  "ac": "AC-16",
+  "titel": "Wer nicht angemeldet ist, sieht zum Eroeffnen die Anmeldemaske statt einer Fehlermeldung",
+  "datei": "e2e/tests/vorraum.spec.mjs",
+  "pfad": [
+    "Anna eroeffnet, Bert tritt bei",
+    "konten AC-16: ohne Anmeldung fuehrt Eroeffnen zur Anmeldemaske"
+  ]
+}

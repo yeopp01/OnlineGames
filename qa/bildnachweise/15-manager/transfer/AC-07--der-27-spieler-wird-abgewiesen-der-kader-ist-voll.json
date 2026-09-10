@@ -1,0 +1,10 @@
+{
+  "spec": "15-manager/transfer.md",
+  "ac": "AC-7",
+  "titel": "Der 27. Spieler wird abgewiesen: der Kader ist voll",
+  "datei": "e2e/tests/manager-markt.spec.mjs",
+  "pfad": [
+    "Transfermarkt",
+    "transfer AC-7 und oberflaeche AC-7: ein voller Kader wird mit einem Satz abgewiesen"
+  ]
+}

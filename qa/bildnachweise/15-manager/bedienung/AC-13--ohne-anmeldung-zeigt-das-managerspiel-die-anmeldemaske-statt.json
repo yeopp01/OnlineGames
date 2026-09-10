@@ -1,0 +1,10 @@
+{
+  "spec": "15-manager/bedienung.md",
+  "ac": "AC-13",
+  "titel": "Ohne Anmeldung zeigt das Managerspiel die Anmeldemaske statt einer Fehlermeldung",
+  "datei": "e2e/tests/manager-start.spec.mjs",
+  "pfad": [
+    "Ohne Konto",
+    "oberflaeche AC-13: ohne Konto die Anmeldemaske"
+  ]
+}

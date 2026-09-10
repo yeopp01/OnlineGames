@@ -2,7 +2,7 @@
 
 **Bereich:** Strategie
 **Kuerzel:** spielziel
-**Stand:** 18 offen
+**Stand:** 0/18 fertig · 18 offen
 
 ## Zweck
 
@@ -60,9 +60,9 @@ Ziel. Ein eigener Technikbaum je Volk ist es nicht.
 - **AC-1** `offen` **Eine Partie hat drei Abschnitte** — Aufbau (nur sammeln, ~4 min), Ausbau
   (bauen und ausbilden, ~6 min), Entscheidung (Kampf, ~5 min). Nicht als
   Regel erzwungen, sondern über Kosten und Bauzeiten so bemessen.
-- **AC-2** `offen` **Eine Partie dauert 12 bis 20 Minuten** — Gemessen über zehn Partien mit
+- **AC-2** `offen` **Partiedauer 12 bis 20 Minuten** — Gemessen über zehn Partien mit
   echten Spielern. Dauert sie regelmäßig länger, sind die Kosten falsch.
-- **AC-3** `offen` **Niemand ist nach drei Minuten raus** — Ein Angriff in den ersten fünf Minuten
+- **AC-3** `offen` **Kein Aus nach drei Minuten** — Ein Angriff in den ersten fünf Minuten
   darf einen Spieler nicht ausschalten. Wer früh verliert, sitzt zwölf
   Minuten daneben — das killt den Abend.
 - **AC-4** `offen` **Aufholen ist möglich** — Ein Spieler mit halb so vielen Einheiten muss noch
@@ -98,7 +98,7 @@ Ziel. Ein eigener Technikbaum je Volk ist es nicht.
 - **AC-16** `offen` **Drei Völker zum Start** — Jedes mit genau einem spürbaren Unterschied, etwa
   zähere Gebäude, billigere Reiter oder ein stärkerer Konter. Nicht mehr:
   drei Unterschiede lassen sich noch ausbalancieren, dreißig nicht.
-- **AC-17** `offen` **Ein Volk ist Daten, kein Code** — Ein neues Volk entsteht durch einen Eintrag
+- **AC-17** `offen` **Ein Volk ist Daten** — Ein neues Volk entsteht durch einen Eintrag
   in einer Tabelle, nicht durch eine Verzweigung in der Simulation. Sonst
   wird das fünfte Volk teurer als das erste statt billiger.
 - **AC-18** `offen` **Kein Volk gewinnt gegen alle** — Über zwanzig Partien liegt keines dauerhaft

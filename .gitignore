@@ -15,3 +15,8 @@ daten/
 
 # Erzeugt, nicht gepflegt.
 qa/report/
+
+# Spuren des Browserlaufs - entstehen nur bei einem Fehlschlag.
+e2e/.ergebnisse/
+test-results/
+playwright-report/

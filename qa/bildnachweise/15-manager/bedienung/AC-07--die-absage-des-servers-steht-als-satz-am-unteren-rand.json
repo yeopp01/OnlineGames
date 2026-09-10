@@ -1,0 +1,10 @@
+{
+  "spec": "15-manager/bedienung.md",
+  "ac": "AC-7",
+  "titel": "Die Absage des Servers steht als Satz am unteren Rand",
+  "datei": "e2e/tests/manager-markt.spec.mjs",
+  "pfad": [
+    "Transfermarkt",
+    "transfer AC-7 und oberflaeche AC-7: ein voller Kader wird mit einem Satz abgewiesen"
+  ]
+}

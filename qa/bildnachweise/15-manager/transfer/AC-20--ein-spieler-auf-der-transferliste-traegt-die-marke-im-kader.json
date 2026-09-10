@@ -1,0 +1,10 @@
+{
+  "spec": "15-manager/transfer.md",
+  "ac": "AC-20",
+  "titel": "Ein Spieler auf der Transferliste traegt die Marke im Kader",
+  "datei": "e2e/tests/manager-markt.spec.mjs",
+  "pfad": [
+    "Kader und Vertraege",
+    "transfer AC-20: die Transferliste"
+  ]
+}

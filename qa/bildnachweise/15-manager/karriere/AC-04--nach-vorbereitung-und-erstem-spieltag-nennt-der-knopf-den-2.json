@@ -1,0 +1,10 @@
+{
+  "spec": "15-manager/karriere.md",
+  "ac": "AC-4",
+  "titel": "Nach Vorbereitung und erstem Spieltag nennt der Knopf den 2. Spieltag, der Kopf den Platz",
+  "datei": "e2e/tests/manager-start.spec.mjs",
+  "pfad": [
+    "Anfangen und weiterspielen",
+    "karriere AC-4 und oberflaeche AC-1: ein Knopf, ein Termin, die Leertaste auch"
+  ]
+}

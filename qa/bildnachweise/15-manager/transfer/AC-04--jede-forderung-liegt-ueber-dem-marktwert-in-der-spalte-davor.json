@@ -1,0 +1,10 @@
+{
+  "spec": "15-manager/transfer.md",
+  "ac": "AC-4",
+  "titel": "Jede Forderung liegt ueber dem Marktwert in der Spalte davor",
+  "datei": "e2e/tests/manager-markt.spec.mjs",
+  "pfad": [
+    "Transfermarkt",
+    "transfer AC-4: die Forderung liegt ueber dem Marktwert"
+  ]
+}

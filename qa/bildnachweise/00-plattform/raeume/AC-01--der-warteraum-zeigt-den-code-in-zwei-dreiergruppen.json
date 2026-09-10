@@ -1,0 +1,10 @@
+{
+  "spec": "00-plattform/raeume.md",
+  "ac": "AC-1",
+  "titel": "Der Warteraum zeigt den Code in zwei Dreiergruppen",
+  "datei": "e2e/tests/vorraum.spec.mjs",
+  "pfad": [
+    "Anna eroeffnet, Bert tritt bei",
+    "raeume AC-1: ein eroeffneter Raum zeigt seinen Code"
+  ]
+}

@@ -1,0 +1,10 @@
+{
+  "spec": "15-manager/bedienung.md",
+  "ac": "AC-10",
+  "titel": "Der Transfermarkt nach dem Scrollen: Kopfzeile und Reiter bleiben stehen, die Liste laeuft darunter",
+  "datei": "e2e/tests/manager-start.spec.mjs",
+  "pfad": [
+    "Anfangen und weiterspielen",
+    "oberflaeche AC-11 und oberflaeche AC-10: acht Blaetter, lange Listen scrollen"
+  ]
+}

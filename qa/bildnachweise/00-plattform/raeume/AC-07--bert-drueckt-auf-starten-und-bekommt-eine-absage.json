@@ -1,0 +1,10 @@
+{
+  "spec": "00-plattform/raeume.md",
+  "ac": "AC-7",
+  "titel": "Bert drueckt auf Starten und bekommt eine Absage",
+  "datei": "e2e/tests/vorraum.spec.mjs",
+  "pfad": [
+    "Anna eroeffnet, Bert tritt bei",
+    "raeume AC-7: nur der Gastgeber startet"
+  ]
+}

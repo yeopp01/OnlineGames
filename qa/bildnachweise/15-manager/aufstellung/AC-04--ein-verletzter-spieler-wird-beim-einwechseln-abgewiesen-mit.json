@@ -1,0 +1,9 @@
+{
+  "spec": "15-manager/aufstellung.md",
+  "ac": "AC-4",
+  "titel": "Ein verletzter Spieler wird beim Einwechseln abgewiesen, mit Grund und Dauer",
+  "datei": "e2e/tests/manager-mannschaft.spec.mjs",
+  "pfad": [
+    "aufstellung AC-4: Ausfaelle lassen sich nicht aufstellen"
+  ]
+}

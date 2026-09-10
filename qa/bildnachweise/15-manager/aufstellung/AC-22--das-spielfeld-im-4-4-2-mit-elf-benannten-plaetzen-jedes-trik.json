@@ -1,0 +1,9 @@
+{
+  "spec": "15-manager/aufstellung.md",
+  "ac": "AC-22",
+  "titel": "Das Spielfeld im 4-4-2 mit elf benannten Plaetzen, jedes Trikot mit Stammposition und Kondition",
+  "datei": "e2e/tests/manager-mannschaft.spec.mjs",
+  "pfad": [
+    "aufstellung AC-25, aufstellung AC-22 und aufstellung AC-23: Spieler auf Plaetze ziehen"
+  ]
+}

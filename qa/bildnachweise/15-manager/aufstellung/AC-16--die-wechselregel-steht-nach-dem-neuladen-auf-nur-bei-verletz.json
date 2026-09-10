@@ -1,0 +1,9 @@
+{
+  "spec": "15-manager/aufstellung.md",
+  "ac": "AC-16",
+  "titel": "Die Wechselregel steht nach dem Neuladen auf nur bei Verletzung",
+  "datei": "e2e/tests/manager-mannschaft.spec.mjs",
+  "pfad": [
+    "aufstellung AC-16: die Wechselregel bleibt eingestellt"
+  ]
+}

@@ -1,0 +1,10 @@
+{
+  "spec": "15-manager/karriere.md",
+  "ac": "AC-5",
+  "titel": "Der erste Spieltag: das eigene Spiel mit Ticker, Chancen, Besitz, beiden Aufstellungen mit Noten und allen 18 Ergebnissen",
+  "datei": "e2e/tests/manager-start.spec.mjs",
+  "pfad": [
+    "Anfangen und weiterspielen",
+    "karriere AC-5 und oberflaeche AC-4: der Bericht zeigt den Termin, der Ticker laeuft"
+  ]
+}

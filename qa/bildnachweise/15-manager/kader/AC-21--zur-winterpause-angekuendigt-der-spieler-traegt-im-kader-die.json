@@ -1,0 +1,9 @@
+{
+  "spec": "15-manager/kader.md",
+  "ac": "AC-21",
+  "titel": "Zur Winterpause angekuendigt: der Spieler traegt im Kader die Marke und laesst sich nicht mehr verlaengern",
+  "datei": "e2e/tests/manager-liga.spec.mjs",
+  "pfad": [
+    "kader AC-21: das Karriereende wird zur Winterpause angekuendigt"
+  ]
+}

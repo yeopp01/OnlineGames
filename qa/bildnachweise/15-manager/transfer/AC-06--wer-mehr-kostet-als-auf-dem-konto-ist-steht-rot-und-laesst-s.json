@@ -1,0 +1,10 @@
+{
+  "spec": "15-manager/transfer.md",
+  "ac": "AC-6",
+  "titel": "Wer mehr kostet, als auf dem Konto ist, steht rot und laesst sich nicht holen",
+  "datei": "e2e/tests/manager-markt.spec.mjs",
+  "pfad": [
+    "Transfermarkt",
+    "transfer AC-6: was nicht auf dem Konto ist, kann nicht geholt werden"
+  ]
+}

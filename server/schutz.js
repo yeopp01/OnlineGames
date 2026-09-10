@@ -12,6 +12,8 @@ const VORGABE = {
   fehlversucheJeMinute: 5,         // falsche Raumcodes je Adresse
   raeumeGesamt: 50,                // gleichzeitig laufende Partien
   raeumeJeAdresse: 3,
+  rechnungenJeMinute: 12,          // teure Anfragen je Adresse, etwa eine Saison
+  zuegeJeMinute: 240,              // Zuege in einem rundenbasierten Spiel
 };
 
 // Tropfender Eimer: `stand` fuellt sich mit `jeSekunde` wieder auf, jede
@@ -58,6 +60,8 @@ class Schutz {
         offen: 0,
         raeume: 0,
         neue: new Eimer(this.werte.verbindungenJeMinute / 60, this.werte.verbindungenJeMinute, jetzt),
+        rechnung: new Eimer(this.werte.rechnungenJeMinute / 60, this.werte.rechnungenJeMinute, jetzt),
+        zug: new Eimer(this.werte.zuegeJeMinute / 60, this.werte.zuegeJeMinute, jetzt),
         fehler: new Eimer(this.werte.fehlversucheJeMinute / 60, this.werte.fehlversucheJeMinute, jetzt),
       };
       this.adressen.set(adresse, vorhanden);
@@ -102,6 +106,19 @@ class Schutz {
     return this.eintrag(adresse).fehler.nimm(this.uhr());
   }
 
+  // Eine Anfrage, die den Server rechnen laesst statt nur eine Datei zu
+  // schicken. Eine Saison sind 306 Begegnungen - billig genug fuer einen
+  // Aufruf, teuer genug fuer tausend.
+  rechnenErlaubt(adresse) {
+    return this.eintrag(adresse).rechnung.nimm(this.uhr());
+  }
+
+  // Ein Zug in einem rundenbasierten Spiel: aufstellen, kaufen, einen
+  // Spieltag rechnen. Billiger als eine Saison, haeufiger als ein Raum.
+  zugErlaubt(adresse) {
+    return this.eintrag(adresse).zug.nimm(this.uhr());
+  }
+
   raumErlaubt(adresse) {
     if (this.raeumeGesamt >= this.werte.raeumeGesamt) {
       return { ok: false, grund: 'Der Server ist ausgelastet. Bitte spaeter noch einmal.' };
@@ -129,7 +146,8 @@ class Schutz {
     const jetzt = this.uhr();
     for (const [adresse, eintrag] of this.adressen) {
       if (eintrag.offen === 0 && eintrag.raeume === 0
-        && eintrag.neue.voll(jetzt) && eintrag.fehler.voll(jetzt)) {
+        && eintrag.neue.voll(jetzt) && eintrag.fehler.voll(jetzt)
+        && eintrag.rechnung.voll(jetzt) && eintrag.zug.voll(jetzt)) {
         this.adressen.delete(adresse);
       }
     }

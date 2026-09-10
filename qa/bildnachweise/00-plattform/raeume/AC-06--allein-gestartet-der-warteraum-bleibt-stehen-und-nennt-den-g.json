@@ -1,0 +1,10 @@
+{
+  "spec": "00-plattform/raeume.md",
+  "ac": "AC-6",
+  "titel": "Allein gestartet: der Warteraum bleibt stehen und nennt den Grund",
+  "datei": "e2e/tests/vorraum.spec.mjs",
+  "pfad": [
+    "Anna eroeffnet, Bert tritt bei",
+    "raeume AC-6: allein startet niemand"
+  ]
+}

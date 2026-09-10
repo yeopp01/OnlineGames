@@ -1,0 +1,10 @@
+{
+  "spec": "00-plattform/konten.md",
+  "ac": "AC-1",
+  "titel": "Bert ohne Konto im Warteraum - Name und Code haben gereicht",
+  "datei": "e2e/tests/vorraum.spec.mjs",
+  "pfad": [
+    "Anna eroeffnet, Bert tritt bei",
+    "konten AC-1: beitreten geht ohne Konto"
+  ]
+}

@@ -1,0 +1,10 @@
+{
+  "spec": "15-manager/vorstand.md",
+  "ac": "AC-9",
+  "titel": "Das Buero zeigt Saisonziel, Zielplatz und das Vertrauen des Vorstands",
+  "datei": "e2e/tests/manager-start.spec.mjs",
+  "pfad": [
+    "Anfangen und weiterspielen",
+    "karriere AC-9 und vorstand AC-9: Postfach und Vorstand im Buero"
+  ]
+}

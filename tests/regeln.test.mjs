@@ -6,9 +6,9 @@ import assert from 'node:assert/strict';
 import { createRequire } from 'node:module';
 
 const require = createRequire(import.meta.url);
-const karten = require('../server/karte.js');
-const { suchen } = require('../server/wege.js');
-const { Welt } = require('../server/welt.js');
+const karten = require('../server/spiele/strategie/karte.js');
+const { suchen } = require('../server/spiele/strategie/wege.js');
+const { Welt } = require('../server/spiele/strategie/welt.js');
 
 const ZWEI = [{ id: 'a', name: 'Anna' }, { id: 'b', name: 'Bert' }];
 

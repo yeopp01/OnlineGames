@@ -2,7 +2,7 @@
 
 **Bereich:** Strategie
 **Kuerzel:** kampf
-**Stand:** 14 offen
+**Stand:** 0/14 fertig · 14 offen
 
 ## Zweck
 
@@ -48,7 +48,7 @@ selbst, ist das eine Entscheidung und gehört in ein ADR.
   ein ganzes Heer quer über die Karte.
 - **AC-4** `offen` **Angriffslauf** — Ein Befehl auf ein leeres Feld, bei dem unterwegs alles
   angegriffen wird, was im Weg steht.
-- **AC-5** `offen` **Sammler kämpfen schlecht, aber sie kämpfen** — Damit ein früher Überfall auf
+- **AC-5** `offen` **Sammler kämpfen schlecht** — Damit ein früher Überfall auf
   die Basis nicht widerstandslos durchgeht.
 
 ### Schaden

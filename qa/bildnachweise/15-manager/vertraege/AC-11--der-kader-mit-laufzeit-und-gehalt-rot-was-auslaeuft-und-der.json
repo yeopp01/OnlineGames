@@ -1,0 +1,10 @@
+{
+  "spec": "15-manager/vertraege.md",
+  "ac": "AC-11",
+  "titel": "Der Kader mit Laufzeit und Gehalt, rot was auslaeuft, und der Dialog zum Verlaengern",
+  "datei": "e2e/tests/manager-markt.spec.mjs",
+  "pfad": [
+    "Kader und Vertraege",
+    "vertraege AC-11: Vertraege im Browser"
+  ]
+}

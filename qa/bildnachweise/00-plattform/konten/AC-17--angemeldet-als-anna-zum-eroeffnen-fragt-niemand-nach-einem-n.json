@@ -1,0 +1,10 @@
+{
+  "spec": "00-plattform/konten.md",
+  "ac": "AC-17",
+  "titel": "Angemeldet als Anna - zum Eroeffnen fragt niemand nach einem Namen",
+  "datei": "e2e/tests/vorraum.spec.mjs",
+  "pfad": [
+    "Anna eroeffnet, Bert tritt bei",
+    "konten AC-17: der Anzeigename kommt aus dem Konto"
+  ]
+}

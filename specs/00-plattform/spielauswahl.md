@@ -2,7 +2,7 @@
 
 **Bereich:** Plattform
 **Kuerzel:** auswahl
-**Stand:** 17 offen
+**Stand:** 0/17 fertig · 17 offen
 
 ## Zweck
 
@@ -35,24 +35,24 @@ Wer nur mitspielt, ueberspringt alles: Code eingeben, Namen eingeben, drin
 - **AC-1** `offen` **Spiele stehen zur Wahl** — Nach dem Anmelden zeigt eine Uebersicht alle
   verfuegbaren Spiele mit Namen, einem Satz Beschreibung und der Spielerzahl,
   fuer die sie gedacht sind.
-- **AC-2** `offen` **Ein Spiel ist ein Eintrag, keine Seite** — Ein neues Spiel taucht in der
+- **AC-2** `offen` **Ein Spiel ist ein Eintrag** — Ein neues Spiel taucht in der
   Uebersicht auf, ohne dass jemand die Uebersicht anfasst.
-- **AC-3** `offen` **Nicht spielbare Spiele sind sichtbar, aber gesperrt** — Ein Spiel in Arbeit
+- **AC-3** `offen` **Unfertige Spiele sichtbar gesperrt** — Ein Spiel in Arbeit
   wird gezeigt und als solches gekennzeichnet, statt zu fehlen.
 
 ### Einstellungen
 
-- **AC-4** `offen` **Jedes Spiel bringt seine Einstellungen mit** — Die Plattform kennt sie nicht,
+- **AC-4** `offen` **Spiel bringt Einstellungen mit** — Die Plattform kennt sie nicht,
   sie zeigt nur an, was das Spiel als Liste liefert: Name, Art, Vorgabe,
   Grenzen.
-- **AC-5** `offen` **Vorgaben fuehren zu einer spielbaren Partie** — Wer nichts anfasst und sofort
+- **AC-5** `offen` **Vorgaben ergeben spielbare Partie** — Wer nichts anfasst und sofort
   eroeffnet, bekommt eine sinnvolle Runde. Einstellungen sind zum Abweichen
   da, nicht zum Ausfuellen.
 - **AC-6** `offen` **Einstellungen des Strategiespiels** — Kartengroesse, Spielerzahl, Startwert
   der Karte, Vorratsmenge, Volk je Spieler.
-- **AC-7** `offen` **Der Startwert ist sichtbar und eingebbar** — Wer eine gute Karte hatte, kann
+- **AC-7** `offen` **Startwert sichtbar und eingebbar** — Wer eine gute Karte hatte, kann
   sie wieder spielen; wer einen Fehler gefunden hat, kann ihn wiederholen.
-- **AC-8** `offen` **Ungueltige Werte werden abgewiesen, nicht uebernommen** — Geprueft wird auf
+- **AC-8** `offen` **Ungueltige Werte werden abgewiesen** — Geprueft wird auf
   dem Server, nicht nur im Browser.
 - **AC-9** `offen` **Einstellungen stehen im Warteraum** — Die Mitspieler sehen vor dem Start, worauf
   sie sich einlassen.
@@ -62,7 +62,7 @@ Wer nur mitspielt, ueberspringt alles: Code eingeben, Namen eingeben, drin
 
 - **AC-11** `offen` **Eroeffnen verlangt ein Konto** — Deckungsgleich mit
   [Konten](konten.md) AC-16; hier ist der Bildschirm, an dem es auffaellt.
-- **AC-12** `offen` **Fortlaufende Spiele brauchen keinen zweiten Spieler** — Ein Hausbau startet
+- **AC-12** `offen` **Fortlaufend auch allein spielbar** — Ein Hausbau startet
   allein. Die Untergrenze von zwei Spielern gilt nur fuer Sitzungsspiele.
 - **AC-13** `offen` **Der Code erscheint sofort** — Zum Weitergeben, mit einem Knopf zum Kopieren.
 

@@ -1,0 +1,9 @@
+{
+  "spec": "15-manager/vorstand.md",
+  "ac": "AC-10",
+  "titel": "Entlassen: drei Vereine bieten eine Stelle an, mit Liga, Kaderstaerke und Ruf",
+  "datei": "e2e/tests/manager-liga.spec.mjs",
+  "pfad": [
+    "vorstand AC-10: Entlassung im Browser"
+  ]
+}

@@ -2,7 +2,7 @@
 
 **Bereich:** Betrieb
 **Kuerzel:** betrieb
-**Stand:** 12 offen
+**Stand:** 0/12 fertig · 12 offen
 
 ## Zweck
 
@@ -26,13 +26,13 @@ nachts wach liegt.
 - **AC-2** `offen` **Proxy-Adresse ist eingeschaltet** — Steht ein Proxy davor, ist
   `HINTER_PROXY=1` gesetzt. Sonst greift jede Grenze aus
   [Schutz](../00-plattform/schutz.md) für alle Spieler gemeinsam.
-- **AC-3** `offen` **Der Dienst startet von selbst neu** — Nach Absturz und nach Neustart der
+- **AC-3** `offen` **Dienst startet selbst neu** — Nach Absturz und nach Neustart der
   Maschine, ohne dass jemand sich anmeldet.
 - **AC-4** `offen` **Der Hafen ist einstellbar** — Über `PORT`, ohne Änderung am Code.
 
 ### Neustart und Aktualisierung
 
-- **AC-5** `offen` **Laufende Partien überleben einen Neustart nicht — und das ist gesagt** — Alles
+- **AC-5** `offen` **Neustart beendet Partien, angekündigt** — Alles
   liegt im Arbeitsspeicher. Vor einer Aktualisierung sehen die Spieler eine
   Vorwarnung im Bild.
 - **AC-6** `offen` **Aktualisierung wartet auf leere Räume** — Wenn möglich wird gewartet, bis die
@@ -44,9 +44,9 @@ nachts wach liegt.
 
 - **AC-8** `offen` **Zahlen sind abrufbar** — Laufende Partien, verbundene Spieler, ausgelöste
   Grenzen. Über einen Weg, den nur der Betreiber erreicht.
-- **AC-9** `offen` **Fehler landen im Protokoll, Geheimnisse nie** — Keine Kennwörter, keine
+- **AC-9** `offen` **Fehler ins Protokoll, Geheimnisse nie** — Keine Kennwörter, keine
   Sitzungstoken, keine Raumcodes laufender Partien.
-- **AC-10** `offen` **Ein Absturz nimmt nicht alle Partien mit** — Ein Fehler in einer Partie darf
+- **AC-10** `offen` **Absturz trifft nicht alle Partien** — Ein Fehler in einer Partie darf
   den Prozess nicht beenden. Heute nicht abgesichert: eine Ausnahme im Takt
   einer Partie beendet den Server für alle.
 

@@ -1,0 +1,10 @@
+{
+  "spec": "15-manager/finanzen.md",
+  "ac": "AC-15",
+  "titel": "Die Saison nach Posten mit Einnahmen und Ausgaben",
+  "datei": "e2e/tests/manager-markt.spec.mjs",
+  "pfad": [
+    "Kasse",
+    "finanzen AC-8 und finanzen AC-15: das Buch und die Saison nach Posten"
+  ]
+}

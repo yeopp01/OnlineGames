@@ -2,7 +2,7 @@
 
 **Bereich:** Strategie
 **Kuerzel:** einheiten
-**Stand:** 1 offen · 9 fertig
+**Stand:** 9/10 fertig · 1 offen
 
 ## Zweck
 
@@ -36,7 +36,7 @@ Befehl bewirkt.
   1 ms, damit auch 120 Einheiten in einem Takt neu planen koennen.
 - **AC-9** `fertig` **Unerreichbares Ziel laesst stehen** — Fuehrt kein Weg zum Ziel, bleibt die
   Einheit stehen, statt sich zu verhaken.
-- **AC-10** `offen` **Einheiten stehen sich nicht im Weg** — Heute laufen sie durcheinander hindurch.
+- **AC-10** `offen` **Einheiten blockieren sich nicht** — Heute laufen sie durcheinander hindurch.
   _(Bewusst so: Ausweichverhalten ist aufwendig und faellt erst bei vielen
   Einheiten auf.)_
 

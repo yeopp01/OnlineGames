@@ -1,0 +1,9 @@
+{
+  "spec": "15-manager/pokal.md",
+  "ac": "AC-7",
+  "titel": "Der Pokal zur Winterpause: zwei Runden gespielt, das Viertelfinale ausgelost, der eigene Verein hervorgehoben",
+  "datei": "e2e/tests/manager-liga.spec.mjs",
+  "pfad": [
+    "pokal AC-7: der Pokal im Browser"
+  ]
+}

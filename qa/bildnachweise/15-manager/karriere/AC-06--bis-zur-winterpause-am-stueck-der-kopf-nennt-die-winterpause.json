@@ -1,0 +1,10 @@
+{
+  "spec": "15-manager/karriere.md",
+  "ac": "AC-6",
+  "titel": "Bis zur Winterpause am Stueck: der Kopf nennt die Winterpause, daneben Termine und Rechendauer",
+  "datei": "e2e/tests/manager-start.spec.mjs",
+  "pfad": [
+    "Anfangen und weiterspielen",
+    "karriere AC-6: vorspulen bis zur Winterpause"
+  ]
+}

@@ -1,0 +1,9 @@
+{
+  "spec": "15-manager/liga.md",
+  "ac": "AC-15",
+  "titel": "Umgeschaltet auf die zweite Liga, die drei Aufstiegsplaetze markiert",
+  "datei": "e2e/tests/manager-liga.spec.mjs",
+  "pfad": [
+    "liga AC-5 und liga AC-15: zwei Tabellen, gerechnet wie gezaehlt"
+  ]
+}

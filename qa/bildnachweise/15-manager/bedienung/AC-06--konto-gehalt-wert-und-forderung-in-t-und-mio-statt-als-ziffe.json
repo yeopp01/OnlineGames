@@ -1,0 +1,10 @@
+{
+  "spec": "15-manager/bedienung.md",
+  "ac": "AC-6",
+  "titel": "Konto, Gehalt, Wert und Forderung in T und Mio statt als Ziffernkette",
+  "datei": "e2e/tests/manager-start.spec.mjs",
+  "pfad": [
+    "Anfangen und weiterspielen",
+    "oberflaeche AC-6: Betraege lesen sich als Zahl"
+  ]
+}

@@ -1,0 +1,10 @@
+{
+  "spec": "15-manager/karriere.md",
+  "ac": "AC-27",
+  "titel": "Vor dem 18. Spieltag: beide Vereine mit Platz, Form und Kader, Tor, Abwehr, Mittelfeld und Angriff im Vergleich, dazu das Hinspiel",
+  "datei": "e2e/tests/manager-start.spec.mjs",
+  "pfad": [
+    "Anfangen und weiterspielen",
+    "karriere AC-27: vor dem Spiel die Vorschau auf den Gegner"
+  ]
+}

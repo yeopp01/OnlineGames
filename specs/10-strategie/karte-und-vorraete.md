@@ -2,7 +2,7 @@
 
 **Bereich:** Strategie
 **Kuerzel:** karte
-**Stand:** 2 offen · 8 fertig
+**Stand:** 8/10 fertig · 2 offen
 
 ## Zweck
 

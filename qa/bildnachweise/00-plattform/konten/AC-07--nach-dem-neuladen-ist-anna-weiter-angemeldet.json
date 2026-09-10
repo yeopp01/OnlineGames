@@ -1,0 +1,10 @@
+{
+  "spec": "00-plattform/konten.md",
+  "ac": "AC-7",
+  "titel": "Nach dem Neuladen ist Anna weiter angemeldet",
+  "datei": "e2e/tests/vorraum.spec.mjs",
+  "pfad": [
+    "Anna eroeffnet, Bert tritt bei",
+    "konten AC-7: die Sitzung ueberlebt das Neuladen"
+  ]
+}

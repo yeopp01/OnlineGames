@@ -2,7 +2,7 @@
 
 **Bereich:** Plattform
 **Kuerzel:** konten
-**Stand:** 1 in qa · 2 geplant · 3 offen · 14 fertig
+**Stand:** 14/20 fertig · 1 in QA · 2 geplant · 3 offen
 
 ## Zweck
 
@@ -52,7 +52,7 @@ macht. Der bleibt.
   (→ [ADR-0003](../../docs/adr/0003-anmeldung.md)).
 - **AC-19** `fertig` **Einladungscodes sind einmalig und verfallen** — Ein Code gilt fuer genau
   eine Registrierung und laeuft nach 14 Tagen ab.
-- **AC-20** `in qa` **Einladungscodes lassen sich erzeugen und zuruecknehmen** — Ueber
+- **AC-20** `in-qa` **Einladungscodes erzeugen und zuruecknehmen** — Ueber
   `npm run einladung`, also nur auf der Maschine selbst. Es gibt bewusst
   keinen Weg ueber das Netz.
 - **AC-2** `fertig` **Registrieren mit Mail und Kennwort** — Registrierung mit Mailadresse,

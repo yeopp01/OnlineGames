@@ -1,0 +1,9 @@
+{
+  "spec": "15-manager/liga.md",
+  "ac": "AC-7",
+  "titel": "Die Torjaegerliste der ersten Liga nach der Hinrunde, darunter der Spielplan des eigenen Vereins",
+  "datei": "e2e/tests/manager-liga.spec.mjs",
+  "pfad": [
+    "liga AC-7: die Torjaegerliste je Liga"
+  ]
+}
