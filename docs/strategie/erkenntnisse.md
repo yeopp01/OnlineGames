@@ -54,9 +54,6 @@ etwas anderem gearbeitet.
 - Figuren liegen in `public/figuren.js` (Raster 24 hoch, Fußpunkt unten),
   Schautafel unter `/schautafel.html`. Jede neue Einheit bekommt dort zuerst
   eine Figur und einen Eintrag, dann kommt sie ins Spiel.
-- Zum schnellen Ansehen ohne Testlauf: ein Wegwerfskript unter `e2e/` (dort
-  findet es `@playwright/test`), Server auf eigenem Hafen, Screenshot in den
-  Temp-Ordner, danach löschen. Auf den Server warten, nicht schlafen.
 - Die Welt entsteht über den Steckbrief: `erzeugen(spieler, einstellungen)`
   bekommt alle Einstellungen samt Startwert (raeume AC-16). Kartengröße und
   Vorrat (A2) kommen dort an, ohne `raeume.js` anzufassen.
@@ -108,11 +105,34 @@ das Strategiespiel gestrichen, Nummer bleibt.
 Nicht geändert: der Zuschnitt (1–3 Kriterien je Runde) hat getragen; keine
 Runde ist gescheitert oder halb liegen geblieben.
 
+### Nach Runde 10 (2026-09-16)
+
+Runden 6–9: Einstieg erreicht, Spec für Stufe A (41 Kriterien), A1 und A1b —
+4 Kriterien `fertig`, dazu die Figuren auf Wunsch des Benutzers vorgezogen.
+Was sich wiederholt hat:
+
+1. **Falsche Annahme im Test, nicht falsches Produkt** — dreimal (Taktzähler
+   mit echter Uhr, „Ladung macht größer", „Holz und Beeren unterscheiden sich
+   im Umriss"). → Anweisung: Schwelle aus der Eigenschaft, bei Fehlschlag
+   zuerst die Annahme prüfen und am Test begründen; Schein-Uhren.
+2. **Ansehen ohne Testlauf über Wegwerfskripte** — einmal gescheitert (Server
+   nicht bereit). → Werkzeug `npm run sicht -- seite.html`; die Git-Bash
+   schreibt `/seite.html` in einen Dateipfad um, deshalb ohne Schrägstrich.
+3. **Herangezoomte Bilder täuschen** — die Figuren wirken groß gut, bei Zoom 1
+   sind sie 26 Bildpunkte hoch. → Anweisung: immer auch in Spielgröße
+   beurteilen.
+
+Beobachtet, nicht geändert: Eine Runde mit Oberfläche fährt den Browser
+zweimal (`qa:nachweis`, dann `check:alles`) — bei belasteter Maschine je drei
+Minuten. Tragbar; ein Teillauf für `check:alles` würde die Regel aufweichen.
+
 ## Runden
 
 Neueste oben. Eine Zeile je Runde: Nummer, Datum, Kriterien, Ergebnis,
 wichtigste Erkenntnis.
 
+- **10** · 2026-09-16 · Rückschau: `npm run sicht`, Regeln zu Messannahmen
+  und Spielgröße in die Anweisung. Nächste Runde: **A2 Karte**.
 - **9** · 2026-09-16 · A1b: darstellung AC-6 fertig — Dorfbewohner (Hut,
   Kittel in Spielerfarbe, Axt; trägt Holzbündel, Beerenkorb, Gold), Miliz
   (Helm, Schwert, Schild), Späherreiter zu Pferd; Schautafel; im Spiel

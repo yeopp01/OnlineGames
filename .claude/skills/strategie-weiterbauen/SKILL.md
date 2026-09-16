@@ -98,6 +98,13 @@ Setze die gewählten Kriterien auf `in-arbeit`.
 - Regeln der Simulation direkt gegen die Rechenteile (`tests/regeln.test.mjs`
   oder eine neue `tests/strategie-*.test.mjs`); alles, was über das Netz geht,
   über WebSocket gegen den laufenden Server (ADR-0004).
+- **Messbare Stellvertreter für Aussehen oder Zeit** (Bildpunkte, Überdeckung,
+  Taktzahl): Die Schwelle kommt aus der Eigenschaft, die das Kriterium
+  verlangt, nicht aus dem ersten Messwert. Scheitert der Test, zuerst fragen:
+  Ist das Produkt falsch oder meine Annahme darüber, wie es sich zeigt? Die
+  Antwort steht als Kommentar am Test. Echte Uhren in Tests nur, wenn die Zeit
+  selbst geprüft wird; sonst `t.mock.timers` (Runden 8 und 9: dreimal war die
+  Annahme falsch, nie das Produkt).
 - **Nie** einen Test überspringen, eine Schwelle senken oder eine Zusicherung
   lockern, um grün zu werden. Ist eine Schwelle wirklich falsch, ändere das
   Kriterium in der Spec, mit Begründung im Commit und einer Zeile in den
@@ -121,6 +128,13 @@ Setze die gewählten Kriterien auf `in-arbeit`.
   überdeckt? Wenn nicht: verbessern, nicht einchecken. Auf der Leinwand hilft
   kein `toBeInViewport` — dort ist das Ansehen die einzige Prüfung. (Runde 4:
   der Ladungspunkt lag unter dem Auswahlring.)
+- **Beim Zeichnen zuerst ansehen, dann testen:** `npm run sicht --
+  schautafel.html` (Seite ohne führenden Schrägstrich) schreibt ein Wegwerfbild
+  in den Temp-Ordner und nennt den Pfad. Erst wenn es gut aussieht, kommt der
+  Browsertest mit `nachweis()`.
+- **Spielgröße ansehen, nicht nur herangezoomt.** Jede Figur und jedes Gebäude
+  wird auch bei Zoom 1 beurteilt — dort spielt man. Die Schautafel zeigt
+  beides nebeneinander.
 - **Eine geänderte Seite heißt: alle Bilder dieser Seite neu.** Der gewöhnliche
   Lauf schreibt nur fehlende Bilder, alte zeigen dann den alten Stand.
 

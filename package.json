@@ -21,7 +21,8 @@
     "qa:report": "node scripts/qa-report.mjs",
     "qa:nachweis": "node scripts/qa-nachweis-lauf.mjs",
     "e2e:browser": "playwright install chromium",
-    "einladung": "node scripts/einladung.mjs"
+    "einladung": "node scripts/einladung.mjs",
+    "sicht": "node scripts/sicht.mjs"
   },
   "dependencies": {
     "better-auth": "^1.7.2",

@@ -25,6 +25,7 @@ npm run check:alles  # erst der Browserlauf, dann npm run check - vor jedem Absc
 npm run qa:report    # die Übersicht als Seite: qa/report/index.html
 npm start            # http://localhost:4180/
 npm run dev          # dasselbe mit --watch
+npm run sicht -- schautafel.html  # eine Seite als Wegwerfbild ansehen, ohne Testlauf
 ```
 
 **Am Strategiespiel wird in Runden gearbeitet:** `/strategie-weiterbauen`
