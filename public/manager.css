@@ -373,6 +373,11 @@ tr.abstieg td:first-child { box-shadow: inset 3px 0 0 var(--schlecht); }
 
 .marke.ende { border-color: var(--schlecht); color: var(--schlecht); }
 
+/* Die Staerke oben im Kaderblatt: schmal genug fuer einen Blick. */
+#staerkeTabelle { width: auto; min-width: min(100%, 32rem); }
+#staerkeTabelle td,
+#staerkeTabelle th { padding-inline: 0.7rem; }
+
 /* Ein Name, der die Akte oeffnet: sieht aus wie Text, bis man darauf zeigt. */
 .namelink {
   padding: 0;

@@ -1211,6 +1211,23 @@ class Karriere {
     (spieler.laufbahn.stationen ||= []).push([this.saison, verein ? verein.id : null, liga ?? null, s.spiele, s.tore, s.vorlagen, note, spieler.staerke, alter]);
   }
 
+  /**
+   * Die Staerke des eigenen Vereins auf einen Blick: der Kader im Vergleich
+   * der Liga und die Mannschaftsteile der Elf, die heute spielen wuerde -
+   * gerechnet wie in der Vorschau auf den Gegner.
+   */
+  staerkeZeigen(verein) {
+    const eigen = kader.niveau(verein);
+    const liga = this.vereine.filter((v) => v.liga === verein.liga);
+    const { elf, system } = kader.elfFuerSpiel(verein);
+    return {
+      niveau: Math.round(eigen),
+      rang: 1 + liga.filter((v) => kader.niveau(v) > eigen).length,
+      vereine: liga.length,
+      teile: mannschaftsteile(verein, elf, system),
+    };
+  }
+
   /** Die Akte eines Spielers, wo immer er steht: Saison fuer Saison, jeder Wechsel, die laufende Saison. */
   spielerAkte(spielerId) {
     const gefunden = transfer.finden(this, spielerId);
@@ -1339,6 +1356,7 @@ class Karriere {
         aufstellung: eigener.aufstellung,
         // Fuer "Beste Elf" und zum Vergleich: so wuerde der Rechner heute aufstellen.
         besteElf: kader.elfStellen(eigener, eigener.taktik.system).map((s) => s.id),
+        staerke: this.staerkeZeigen(eigener),
         gehaltJahr,
         gehaltJeTermin: finanzen.gehaelter(eigener),
         fernsehgeld: finanzen.fernsehgeld(eigener),

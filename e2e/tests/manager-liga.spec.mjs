@@ -132,6 +132,36 @@ test('kader AC-20: die Entwicklung auf einen Blick', async ({ page }, info) => {
   });
 });
 
+test('oberflaeche AC-17: die Staerke auf einen Blick im Kader', async ({ page }, info) => {
+  await karriereBeginnen(page);
+  await tempo(page, 0);
+  // Vor der Saison steht kein Spiel an: nur die eigene Zeile.
+  await aufBlatt(page, 'kader');
+  await expect(page.locator('#staerke h2')).toContainText(/Kader \d+ · Platz \d+ von 18/);
+  await expect(page.locator('#staerkeTabelle tbody tr')).toHaveCount(1);
+
+  await weiter(page);
+  await aufBlatt(page, 'spieltag');
+  const vorschau = (await page.locator('#vorschau .vergleich .zeile b').allTextContents()).map((t) => t.trim());
+  await aufBlatt(page, 'kader');
+  const zeilen = page.locator('#staerkeTabelle tbody tr');
+  await expect(zeilen).toHaveCount(3);
+  const zellen = async (i) => (await zeilen.nth(i).locator('td').allTextContents()).map((t) => t.trim());
+  const [eigen, gegner, vorteil] = [await zellen(0), await zellen(1), await zellen(2)];
+  // Tor bis Angriff sind dieselben Zahlen wie in der Vorschau, der Vorteil ist die Differenz.
+  expect(eigen.slice(2)).toEqual([vorschau[0], vorschau[2], vorschau[4], vorschau[6]]);
+  expect(gegner.slice(2)).toEqual([vorschau[1], vorschau[3], vorschau[5], vorschau[7]]);
+  for (let i = 1; i < 6; i++) expect(Number(vorteil[i]), vorteil[0]).toBe(Number(eigen[i]) - Number(gegner[i]));
+  const name = (await page.locator('#kopfLage').textContent()).split(/ gegen | bei /).at(-1).trim();
+  expect(gegner[0]).toBe(name);
+  await nachweis(page, {
+    spec: '15-manager/bedienung.md',
+    ac: 'AC-17',
+    titel: 'Oben im Kader: die eigene Staerke gegen die des naechsten Gegners, Spalte fuer Spalte mit dem Vorteil',
+    test: info,
+  });
+});
+
 test('kader AC-21: das Karriereende wird zur Winterpause angekuendigt', async ({ page }, info) => {
   await karriereBeginnen(page);
   await griff(page, 'vertrauen', { wert: 100 });

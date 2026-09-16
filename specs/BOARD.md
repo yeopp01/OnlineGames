@@ -7,9 +7,9 @@ Eine Zeile je Abnahmekriterium. Gepflegt wird der Status in der Spec selbst,
 hier steht er zusammengefasst. Erzeugt mit `npm run specs:board`; als Seite
 mit Bildnachweisen, Filter und Suche mit `npm run qa:report`.
 
-**Gesamt:** 261/420 fertig · 12 in QA · 4 geplant · 140 offen · 3 zurueckgestellt
+**Gesamt:** 262/421 fertig · 12 in QA · 4 geplant · 140 offen · 3 zurueckgestellt
 
-**Nachweise:** 70 Kriterien mit Bild · 191 ohne Bild, begruendet in `qa/ohne-bild.json`
+**Nachweise:** 71 Kriterien mit Bild · 191 ohne Bild, begruendet in `qa/ohne-bild.json`
 
 ## Nach Spezifikation
 
@@ -28,7 +28,7 @@ mit Bildnachweisen, Filter und Suche mit `npm run qa:report`.
 | [Karte und Vorraete](10-strategie/karte-und-vorraete.md)       | -         | -     | -       | 2     | -               | 8      |
 | [Spielziel und Partieverlauf](10-strategie/spielziel.md)       | -         | -     | -       | 18    | -               | -      |
 | [Aufstellung, Taktik und Training](15-manager/aufstellung.md)  | -         | -     | -       | -     | 2               | 23     |
-| [Bedienung des Managerspiels](15-manager/bedienung.md)         | -         | -     | -       | -     | -               | 14     |
+| [Bedienung des Managerspiels](15-manager/bedienung.md)         | -         | -     | -       | -     | -               | 15     |
 | [Finanzen](15-manager/finanzen.md)                             | -         | -     | -       | -     | -               | 16     |
 | [Kader und Spieler](15-manager/kader.md)                       | -         | 1     | -       | -     | -               | 21     |
 | [Karriere: Saison um Saison](15-manager/karriere.md)           | -         | -     | -       | 1     | -               | 25     |

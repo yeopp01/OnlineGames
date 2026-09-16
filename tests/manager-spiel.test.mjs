@@ -57,6 +57,22 @@ const angebot = (k, spieler, gebot = 1000, vereinId = 'v1') => ({
   position: spieler.position, staerke: spieler.staerke, wert: kader.marktwert(spieler), gebot, gueltigBis: 99,
 });
 
+test('oberflaeche AC-17: die Staerke des eigenen Vereins, gerechnet wie in der Vorschau', () => {
+  const k = neu();
+  const vorher = k.zustand();
+  assert.equal(vorher.vorschau, null, 'vor der Saison steht kein Spiel an');
+  const staerke = vorher.verein.staerke;
+  const niveaus = k.vereine.filter((v) => v.liga === k.verein.liga).map((v) => kader.niveau(v)).sort((a, b) => b - a);
+  assert.equal(staerke.niveau, Math.round(kader.niveau(k.verein)));
+  assert.equal(staerke.vereine, 18);
+  assert.equal(niveaus[staerke.rang - 1], kader.niveau(k.verein), `Platz ${staerke.rang} passt nicht`);
+  for (const teil of ['torwart', 'abwehr', 'mittelfeld', 'angriff']) assert.ok(staerke.teile[teil] > 20, teil);
+  k.weiter();
+  const z = k.zustand();
+  assert.deepEqual(z.verein.staerke.teile, z.vorschau.eigen.teile);
+  assert.equal(z.verein.staerke.niveau, z.vorschau.eigen.niveau);
+});
+
 test('kader AC-21: das Karriereende wird zur Winterpause angekuendigt', () => {
   const k = neu();
   // Ein 35-Jaehriger mit Vertrag bis Saison 3 - er hoert trotzdem auf.

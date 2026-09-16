@@ -2,7 +2,7 @@
 
 **Bereich:** Manager
 **Kuerzel:** oberflaeche
-**Stand:** 14/14 fertig
+**Stand:** 15/15 fertig
 
 ## Zweck
 
@@ -26,7 +26,7 @@ gescrollt, gemessen (→ [ADR-0010](../../docs/adr/0010-playwright.md)).
 | ----------- | ------------------------------------------------------------------ |
 | Büro        | nächster Termin, Vorstand, Postfach, Kalender der Saison, Chronik  |
 | Mannschaft  | Spielfeld, Bank, System, Regler, Wechselregel, Training            |
-| Kader       | alle Spieler mit Werten, Statistik, Vertrag; verlängern, abgeben   |
+| Kader       | Stärke gegen den nächsten Gegner; alle Spieler mit Werten, Statistik, Vertrag; verlängern, abgeben |
 | Spieltag    | Vorschau auf den Gegner; der letzte Termin: Ticker, Noten, alle Ergebnisse |
 | Liga        | beide Tabellen, Torjäger, Spielplan des eigenen Vereins            |
 | Pokal       | alle Runden                                                        |
@@ -39,8 +39,10 @@ gescrollt, gemessen (→ [ADR-0010](../../docs/adr/0010-playwright.md)).
   Kopfzeile, nennt den nächsten Termin und ist von jedem Blatt aus erreichbar.
   Die Leertaste tut dasselbe.
 - **AC-2** `fertig` **Ein Klick tauscht einen Spieler** — Wer auf der Bank
-  sitzt, ersetzt mit einem Klick den schwächsten seiner Position; wer in der
-  Elf steht, weicht dem stärksten von der Bank.
+  sitzt, kommt mit einem Klick auf den Platz, auf dem er gegenüber dem, der
+  dort steht, am meisten bringt; wer in der Elf steht, weicht dem Besten von
+  der Bank für seinen Platz. Ziehen geht auch (→ [Aufstellung](aufstellung.md)
+  AC-25).
 - **AC-3** `fertig` **Aufstellung als Spielfeld** — Vier Reihen, jeder Spieler
   mit Stärke und Kondition. Wer müde ist, fällt ins Auge.
 - **AC-4** `fertig` **Ticker läuft, Ergebnis steht** — Tore, Karten und Wechsel
@@ -68,6 +70,12 @@ gescrollt, gemessen (→ [ADR-0010](../../docs/adr/0010-playwright.md)).
   hervorgehoben.
 - **AC-15** `fertig` **Andere Vereine ansehen** — Ein Klick auf einen Verein in
   der Tabelle zeigt seinen Kader mit Werten und Forderungen.
+- **AC-17** `fertig` **Stärke auf einen Blick** — Oben im Kaderblatt steht
+  die eigene Stärke in einer Zeile: der Kader (Schnitt der fünfzehn Besten)
+  mit seinem Platz in der Liga, dazu Tor, Abwehr, Mittelfeld und Angriff der
+  Elf, die heute spielen würde. Steht ein eigenes Spiel an, folgt der nächste
+  Gegner mit denselben Werten, der Vorteil je Spalte und die Einschätzung —
+  dieselben Zahlen wie in der Vorschau (→ [Karriere](karriere.md) AC-27).
 - **AC-16** `fertig` **Die Saisonbilanz** — Nach dem Saisonende zeigt das Büro
   Meister, Pokalsieger, Auf- und Absteiger, den eigenen Platz gegen das Ziel
   und die Abschlusstabelle.

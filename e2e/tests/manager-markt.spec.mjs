@@ -171,6 +171,10 @@ test.describe('Transfermarkt', () => {
   test('transfer AC-22: der Markt laesst sich filtern', async ({ page }, info) => {
     await karriereBeginnen(page);
     await aufBlatt(page, 'transfer');
+    // Die Filter stehen nebeneinander, nicht ineinander verschachtelt untereinander.
+    const oben = await page.locator('.marktfilter > *').evaluateAll((felder) => felder.map((f) => Math.round(f.getBoundingClientRect().bottom)));
+    expect(oben.length, 'jeder Filter ist ein eigenes Feld').toBe(6);
+    expect(new Set(oben).size, `Filter auf verschiedenen Hoehen: ${oben.join(', ')}`).toBe(1);
     await filtern(page, '#filterPosition', 'ANG');
     await filtern(page, '#filterLiga', '2');
     await filtern(page, '#filterSortierung', 'preis');

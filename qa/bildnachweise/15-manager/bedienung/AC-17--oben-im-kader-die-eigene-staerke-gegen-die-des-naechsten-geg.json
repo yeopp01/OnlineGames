@@ -1,0 +1,9 @@
+{
+  "spec": "15-manager/bedienung.md",
+  "ac": "AC-17",
+  "titel": "Oben im Kader: die eigene Staerke gegen die des naechsten Gegners, Spalte fuer Spalte mit dem Vorteil",
+  "datei": "e2e/tests/manager-liga.spec.mjs",
+  "pfad": [
+    "oberflaeche AC-17: die Staerke auf einen Blick im Kader"
+  ]
+}

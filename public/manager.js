@@ -762,6 +762,33 @@ document.addEventListener('click', (e) => {
 
 const veraenderung = (d) => (d > 0 ? `<span class="gut">+${d}</span>` : d < 0 ? `<span class="schlecht">-${-d}</span>` : '<span class="leise">0</span>');
 
+/** Die eigene Staerke auf einen Blick - und die des naechsten Gegners, wenn ein eigenes Spiel ansteht. */
+function staerkeZeigen() {
+  const s = stand.verein.staerke;
+  const v = stand.vorschau;
+  const spalten = [['niveau', 'Kader'], ['torwart', 'Tor'], ['abwehr', 'Abwehr'], ['mittelfeld', 'Mittelfeld'], ['angriff', 'Angriff']];
+  const werte = (niveau, teile) => spalten.map(([teil]) => (teil === 'niveau' ? niveau : teile[teil]));
+  const eigen = werte(s.niveau, s.teile);
+  const gegner = v ? werte(v.gegner.niveau, v.gegner.teile) : null;
+  const zeile = (name, zellen) => `<tr><td class="links">${name}</td>${zellen.map((z) => `<td>${z}</td>`).join('')}</tr>`;
+  const wo = v ? (v.neutral ? 'neutraler Platz' : v.daheim ? 'daheim' : 'auswaerts') : '';
+  return `<section id="staerke" class="karte">
+    <h2>Staerke <span class="leise">Kader ${s.niveau} · Platz ${s.rang} von ${s.vereine} in der ${stand.verein.liga}. Liga</span></h2>
+    <div class="tabellenrahmen"><table id="staerkeTabelle">
+      <thead><tr><th class="links"></th>${spalten.map(([, name]) => `<th>${name}</th>`).join('')}</tr></thead>
+      <tbody>
+        ${zeile(`<b>${text(stand.verein.name)}</b>`, eigen.map((z) => `<b>${z}</b>`))}
+        ${gegner ? zeile(text(v.gegner.name), gegner) : ''}
+        ${gegner ? zeile('<span class="leise">Vorteil</span>', eigen.map((z, i) => veraenderung(z - gegner[i]))) : ''}
+      </tbody>
+    </table></div>
+    <p class="unterzeile">${v ? `Naechster Gegner: ${text(v.titel)}, ${wo} - ${EINSCHAETZUNG[v.einschaetzung]}.
+      <button class="klein" data-gehe="spieltag" data-spieltag="vorschau">zur Vorschau</button><br />` : 'Als Naechstes steht kein eigenes Spiel an. '}
+      Kader ist der Schnitt der fuenfzehn Besten; Tor bis Angriff bringt die Elf, die heute spielen wuerde - mit Tagesform, System
+      und Eingeuebtem, gerechnet wie im Spiel.</p>
+  </section>`;
+}
+
 /** Die letzten Entwicklungsberichte: wer wie viel besser oder schlechter wurde, und nach welcher Regel. */
 function entwicklungZeigen(berichte) {
   if (!berichte.length) {
@@ -804,6 +831,7 @@ function blattKader() {
   const berichte = stand.entwicklungen || [];
   const zuletzt = new Map((berichte[0]?.spieler || []).map((e) => [e.id, e.nachher - e.vorher]));
   inhalt.innerHTML = `
+    ${staerkeZeigen()}
     <section>
       <h2>Kader <span class="leise">${v.spieler.length} Spieler · Gehaelter ${geld(v.gehaltJahr)} im Jahr ·
         Kaderwert ${geld(v.spieler.reduce((s, x) => s + x.wert, 0))}</span></h2>
@@ -1226,7 +1254,7 @@ function blattTransfer() {
       <h2>Transfermarkt <span class="leise">${markt.gesamt} passende Spieler · Konto ${geld(konto)}</span></h2>
       <div class="marktfilter">
         <label class="feld"><span>Position</span><select id="filterPosition"><option value="">alle</option>
-          ${POSITIONEN.map((p) => `<option value="${p}"${f.position === p ? ' selected' : ''}>${TEILNAMEN[p]}</option>`).join('')}</select>
+          ${POSITIONEN.map((p) => `<option value="${p}"${f.position === p ? ' selected' : ''}>${TEILNAMEN[p]}</option>`).join('')}</select></label>
         <label class="feld"><span>Liga</span><select id="filterLiga">
           ${[['', 'alle'], ['1', '1. Liga'], ['2', '2. Liga'], ['frei', 'vereinslos']].map(([wert, name]) => `<option value="${wert}"${f.liga === wert ? ' selected' : ''}>${name}</option>`).join('')}
         </select></label>
