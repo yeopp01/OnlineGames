@@ -139,8 +139,7 @@ async function starten(hafen = HAFEN, einstellungen = {}) {
       const erlaubt = schutz.raumErlaubt(adresse);
       if (!erlaubt.ok) return fehler(erlaubt.grund);
 
-      raum = raeume.anlegen();
-      raum.art = spiel.art;
+      raum = raeume.anlegen(spiel);
       raum.einstellungen = geprueft.werte;
       raum.einstellungsliste = spiel.einstellungen;
       raum.adresse = adresse;

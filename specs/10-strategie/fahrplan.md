@@ -71,7 +71,8 @@ mit etwas, das im Browser zu sehen ist.
 
 | Schritt | Inhalt | Kriterien |
 | --- | --- | --- |
-| A1 | Werte als Daten, Spiel erzeugt seine Welt selbst (Schnittstelle aus ADR-0006) | bauen AC-20 (Datenteil), ki AC-2 (Zufall nur aus Startwert) |
+| A1 | Das Spiel erzeugt seine Welt selbst (Schnittstelle aus ADR-0006) | raeume AC-16 |
+| A1b | **Figuren statt Punkte** — auf Wunsch des Benutzers vorgezogen: Dorfbewohner, Miliz, Späher als gezeichnete Figuren mit Werkzeug und Ladung, Schautafel | darstellung AC-6, AC-9 (Anfang) |
 | A2 | Karte nach Vorlage: Größe, Einzelvorräte, Startausstattung, Schafe, Wegsuche | karte AC-11 bis AC-17, auswahl AC-6 |
 | A3 | Isometrischer Blick, Gelände, Vorräte als Dinge | darstellung AC-1 bis AC-3, AC-7 |
 | A4 | Vier Rohstoffe sammeln, Abgabe, Werte der Einheiten, Leiste | einheiten AC-15, AC-16, AC-19, bedienung AC-24, AC-17 |

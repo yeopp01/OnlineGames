@@ -7,16 +7,16 @@ Eine Zeile je Abnahmekriterium. Gepflegt wird der Status in der Spec selbst,
 hier steht er zusammengefasst. Erzeugt mit `npm run specs:board`; als Seite
 mit Bildnachweisen, Filter und Suche mit `npm run qa:report`.
 
-**Gesamt:** 281/484 fertig · 6 in QA · 4 geplant · 190 offen · 3 zurueckgestellt
+**Gesamt:** 282/485 fertig · 6 in QA · 4 geplant · 190 offen · 3 zurueckgestellt
 
-**Nachweise:** 89 Kriterien mit Bild · 192 ohne Bild, begruendet in `qa/ohne-bild.json`
+**Nachweise:** 89 Kriterien mit Bild · 193 ohne Bild, begruendet in `qa/ohne-bild.json`
 
 ## Nach Spezifikation
 
 | Spezifikation                                                  | In Arbeit | In QA | Geplant | Offen | Zurueckgestellt | Fertig |
 | -------------------------------------------------------------- | --------- | ----- | ------- | ----- | --------------- | ------ |
 | [Konten und Anmeldung](00-plattform/konten.md)                 | -         | 1     | 2       | 3     | -               | 14     |
-| [Raeume und Partien](00-plattform/raeume.md)                   | -         | 2     | -       | 3     | -               | 10     |
+| [Raeume und Partien](00-plattform/raeume.md)                   | -         | 2     | -       | 3     | -               | 11     |
 | [Schutz vor Fremdnutzung](00-plattform/schutz.md)              | -         | 1     | -       | 4     | -               | 7      |
 | [Anhalten und Fortsetzen](00-plattform/speichern.md)           | -         | -     | -       | 26    | -               | -      |
 | [Spielauswahl und Einstellungen](00-plattform/spielauswahl.md) | -         | -     | -       | 6     | -               | 11     |

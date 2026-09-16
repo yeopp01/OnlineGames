@@ -1,7 +1,8 @@
 'use strict';
 
 const { randomUUID, randomInt } = require('node:crypto');
-const { Welt, TAKTE_PRO_SEKUNDE } = require('./spiele/strategie/welt');
+// Kein Spiel wird hier geladen: der Raum bekommt den Steckbrief des Spiels
+// beim Anlegen (→ specs/00-plattform/raeume.md AC-16, ADR-0006).
 const partieEinstellungen = require('./spiele/einstellungen');
 
 const MAX_SPIELER = 6;
@@ -37,13 +38,16 @@ function namePruefen(name) {
 }
 
 class Raum {
-  constructor(code) {
+  constructor(code, spiel = null) {
     this.code = code;
     this.spieler = []; // { id, name, token, draht, verbunden }
+    // Der Steckbrief (server/spiele/<art>/steckbrief.js). Von ihm braucht der
+    // Raum genau zwei Dinge: erzeugen(spieler, einstellungen) und takte.
+    this.spiel = spiel;
     this.welt = null;
     this.uhr = null;
     this.beruehrt = Date.now();
-    this.art = 'strategie';
+    this.art = spiel ? spiel.art : null;
     // Die geprueften Werte aus server/spiele/einstellungen.js. `spieler`
     // begrenzt den Raum; alles andere gehoert dem Spiel.
     this.einstellungen = {};
@@ -129,9 +133,13 @@ class Raum {
     if (this.spieler.length < MIN_SPIELER) {
       return { fehler: `Es fehlen Mitspieler - mindestens ${MIN_SPIELER}.` };
     }
-    this.welt = new Welt(this.spieler.map((s) => ({ id: s.id, name: s.name })), startwert);
+    if (!this.spiel) return { fehler: 'Dieser Raum hat kein Spiel.' };
+    this.welt = this.spiel.erzeugen(
+      this.spieler.map((s) => ({ id: s.id, name: s.name })),
+      { ...this.einstellungen, startwert },
+    );
     this.senden(this.welt.aufbau());
-    this.uhr = setInterval(() => this.schlag(), 1000 / TAKTE_PRO_SEKUNDE);
+    this.uhr = setInterval(() => this.schlag(), 1000 / this.spiel.takte);
     return {};
   }
 
@@ -173,10 +181,10 @@ class Raeume {
     this.aufraeumer.unref?.();
   }
 
-  anlegen() {
+  anlegen(spiel = null) {
     let code = codeErzeugen();
     while (this.nachCode.has(code)) code = codeErzeugen();
-    const raum = new Raum(code);
+    const raum = new Raum(code, spiel);
     this.nachCode.set(code, raum);
     return raum;
   }

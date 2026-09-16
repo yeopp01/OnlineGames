@@ -29,6 +29,14 @@ function pruefen(steckbrief, ordner) {
   if (einstieg.art === 'seite' && !/^\/[\w.-]+$/.test(einstieg.adresse || '')) {
     throw new Error(`${wo}: einstieg.adresse muss eine Seite wie /manager.html sein.`);
   }
+  // Ein Spiel, das ueber einen Raum laeuft, erzeugt seine Welt selbst
+  // (→ specs/00-plattform/raeume.md AC-16). Gesperrte duerfen es noch nicht koennen.
+  if (einstieg.art === 'raum' && stand !== 'gesperrt') {
+    if (typeof steckbrief.erzeugen !== 'function') throw new Error(`${wo}: erzeugen(spieler, einstellungen) fehlt.`);
+    if (!Number.isInteger(steckbrief.takte) || steckbrief.takte < 1 || steckbrief.takte > 60) {
+      throw new Error(`${wo}: takte muss eine ganze Zahl von 1 bis 60 sein.`);
+    }
+  }
   einstellungen.listePruefen(steckbrief.einstellungen, wo);
 }
 
@@ -48,6 +56,9 @@ function lesen(wurzel = __dirname) {
       stand: steckbrief.stand,
       einstieg: { ...steckbrief.einstieg },
       einstellungen: steckbrief.einstellungen || [],
+      // Fuer den Raum; beim Ausliefern an den Browser faellt die Funktion weg.
+      erzeugen: steckbrief.erzeugen,
+      takte: steckbrief.takte,
       reihenfolge: Number.isInteger(steckbrief.reihenfolge) ? steckbrief.reihenfolge : 100,
     });
   }

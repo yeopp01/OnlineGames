@@ -2,7 +2,7 @@
 
 **Bereich:** Plattform
 **Kuerzel:** raeume
-**Stand:** 10/15 fertig · 2 in QA · 3 offen
+**Stand:** 11/16 fertig · 2 in QA · 3 offen
 
 ## Zweck
 
@@ -72,6 +72,15 @@ Name eintragen → Partie eroeffnen → Code weitergeben
 - **AC-14** `fertig` **Unsinn bringt Server nicht um** — Kein JSON, unbekannte Nachrichtentypen,
   falsche Datentypen und Ziele ausserhalb der Karte lassen den Server
   weiterlaufen und andere Raeume unberuehrt.
+
+### Mehrere Spiele
+
+- **AC-16** `fertig` **Der Raum kennt kein Spiel** — Der Raum erzeugt die Welt ueber den
+  Steckbrief des gewaehlten Spiels (`erzeugen(spieler, einstellungen)`,
+  `takte` je Sekunde) und spricht mit ihr nur ueber `aufbau`, `takten`,
+  `zustand` und `befehl` ([ADR-0006](../../docs/adr/0006-mehrere-spiele.md)).
+  `raeume.js` laedt kein Spiel selbst; ein zweites Spiel mit Raum braucht dort
+  keine Zeile.
 
 ## Grenzfaelle
 

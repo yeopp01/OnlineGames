@@ -43,12 +43,13 @@ etwas anderem gearbeitet.
 - Der Server schickt heute jedem den Vollzustand. Das trägt nicht bis 8×200
   Einheiten (fahrplan AC-20) und nicht für den Nebel (AC-13). Nicht vorziehen,
   aber keine Entscheidung treffen, die gebündelte Änderungen verbaut.
-- Einstellungen laufen: Steckbrief → `server/spiele/einstellungen.js` prüft →
-  `raum.einstellungen`. Aber `raeume.js` erzeugt weiter fest eine
-  Strategie-`Welt` und reicht nur den Startwert durch. Sobald die Welt selbst
-  Einstellungen braucht (Kartengröße, Vorrat), gehört die Erzeugung ans Spiel
-  (Schnittstelle aus [ADR-0006](../adr/0006-mehrere-spiele.md): `aufbau`,
-  `takten`, `zustand`, `befehl`).
+- **Wunsch des Benutzers (Runde 8): Aussehen zählt schon jetzt.** „Nicht nur
+  schäbige Punkte, sondern etwas, das halbwegs wie ein Sammler aussieht."
+  Jede Runde, die etwas Neues ins Spielbild bringt, zeichnet es als erkennbare
+  Figur oder Form — nie als Platzhalterpunkt. Deshalb A1b vorgezogen.
+- Die Welt entsteht über den Steckbrief: `erzeugen(spieler, einstellungen)`
+  bekommt alle Einstellungen samt Startwert (raeume AC-16). Kartengröße und
+  Vorrat (A2) kommen dort an, ohne `raeume.js` anzufassen.
 - **Der Einstieg ist erreicht** (fahrplan AC-1, Runde 6). Offen bleibt dort nur
   auswahl AC-6 (Kartengröße, Vorrat → Stufe A). AC-12 und AC-14 bis AC-17 betreffen fortlaufende Spiele
   und Spielstände; für das Strategiespiel nicht nötig — nicht vorziehen.
@@ -102,6 +103,11 @@ Runde ist gescheitert oder halb liegen geblieben.
 Neueste oben. Eine Zeile je Runde: Nummer, Datum, Kriterien, Ergebnis,
 wichtigste Erkenntnis.
 
+- **8** · 2026-09-16 · A1: raeume AC-16 fertig — `raeume.js` lädt kein Spiel
+  mehr, die Welt entsteht über den Steckbrief. Gelernt: ein Taktzähler mit
+  echter Uhr schwankt unter Windows (7 statt 10 in 0,5 s); `t.mock.timers`
+  macht solche Tests genau, ohne die Schwelle zu lockern. Nächste Runde:
+  **A1b Figuren** (Wunsch des Benutzers).
 - **7** · 2026-09-16 · Spec-Runde Stufe A: bauen neu gefasst (Gebäude der
   Dunklen Zeit, AC-20, AC-21), karte AC-11–17, einheiten AC-15–21, bedienung
   AC-24–29, neue Specs darstellung (11) und ki (8), Bauabfolge A1–A10 im
