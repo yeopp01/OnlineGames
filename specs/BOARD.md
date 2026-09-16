@@ -7,7 +7,7 @@ Eine Zeile je Abnahmekriterium. Gepflegt wird der Status in der Spec selbst,
 hier steht er zusammengefasst. Erzeugt mit `npm run specs:board`; als Seite
 mit Bildnachweisen, Filter und Suche mit `npm run qa:report`.
 
-**Gesamt:** 281/443 fertig · 6 in QA · 4 geplant · 149 offen · 3 zurueckgestellt
+**Gesamt:** 281/484 fertig · 6 in QA · 4 geplant · 190 offen · 3 zurueckgestellt
 
 **Nachweise:** 89 Kriterien mit Bild · 192 ohne Bild, begruendet in `qa/ohne-bild.json`
 
@@ -21,12 +21,14 @@ mit Bildnachweisen, Filter und Suche mit `npm run qa:report`.
 | [Anhalten und Fortsetzen](00-plattform/speichern.md)           | -         | -     | -       | 26    | -               | -      |
 | [Spielauswahl und Einstellungen](00-plattform/spielauswahl.md) | -         | -     | -       | 6     | -               | 11     |
 | [Uebertragung](00-plattform/uebertragung.md)                   | -         | 1     | 2       | 1     | -               | 6      |
-| [Bauen und Ausbilden](10-strategie/bauen.md)                   | -         | -     | -       | 19    | -               | -      |
-| [Bedienung](10-strategie/bedienung.md)                         | -         | -     | -       | 17    | -               | 6      |
-| [Einheiten und Befehle](10-strategie/einheiten-und-befehle.md) | -         | -     | -       | 1     | -               | 9      |
+| [Bauen und Ausbilden](10-strategie/bauen.md)                   | -         | -     | -       | 21    | -               | -      |
+| [Bedienung](10-strategie/bedienung.md)                         | -         | -     | -       | 23    | -               | 6      |
+| [Darstellung](10-strategie/darstellung.md)                     | -         | -     | -       | 11    | -               | -      |
+| [Einheiten und Befehle](10-strategie/einheiten-und-befehle.md) | -         | -     | -       | 8     | -               | 9      |
 | [Fahrplan zum Klon](10-strategie/fahrplan.md)                  | -         | -     | -       | 20    | -               | 2      |
 | [Kampf](10-strategie/kampf.md)                                 | -         | -     | -       | 14    | -               | -      |
-| [Karte und Vorraete](10-strategie/karte-und-vorraete.md)       | -         | -     | -       | 2     | -               | 8      |
+| [Karte und Vorraete](10-strategie/karte-und-vorraete.md)       | -         | -     | -       | 9     | -               | 8      |
+| [KI-Spieler](10-strategie/ki.md)                               | -         | -     | -       | 8     | -               | -      |
 | [Spielziel und Partieverlauf](10-strategie/spielziel.md)       | -         | -     | -       | 18    | -               | -      |
 | [Aufstellung, Taktik und Training](15-manager/aufstellung.md)  | -         | -     | -       | -     | 2               | 23     |
 | [Bedienung des Managerspiels](15-manager/bedienung.md)         | -         | -     | -       | -     | -               | 15     |
@@ -59,7 +61,7 @@ mit Bildnachweisen, Filter und Suche mit `npm run qa:report`.
 - **Abbruch ist sichtbar** — [Uebertragung](00-plattform/uebertragung.md) AC-9
 - **Automatischer Wiederaufbau** — [Uebertragung](00-plattform/uebertragung.md) AC-10
 
-## Offen (149)
+## Offen (190)
 
 - **Anmeldung ueber Google/GitHub** — [Konten und Anmeldung](00-plattform/konten.md) AC-6
 - **Bilanz je Konto** — [Konten und Anmeldung](00-plattform/konten.md) AC-14
@@ -104,25 +106,27 @@ mit Bildnachweisen, Filter und Suche mit `npm run qa:report`.
 - **Umbenennen und Loeschen** — [Spielauswahl und Einstellungen](00-plattform/spielauswahl.md) AC-16
 - **Sitzungsspiele erscheinen dort nicht** — [Spielauswahl und Einstellungen](00-plattform/spielauswahl.md) AC-17
 - **Befehlsflut wird gebremst** — [Uebertragung](00-plattform/uebertragung.md) AC-4
-- **Sammler bauen Gebäude** — [Bauen und Ausbilden](10-strategie/bauen.md) AC-1
-- **Mehrere Sammler bauen schneller** — [Bauen und Ausbilden](10-strategie/bauen.md) AC-2
+- **Dorfbewohner bauen Gebäude** — [Bauen und Ausbilden](10-strategie/bauen.md) AC-1
+- **Mehrere bauen schneller** — [Bauen und Ausbilden](10-strategie/bauen.md) AC-2
 - **Bauplatz muss frei sein** — [Bauen und Ausbilden](10-strategie/bauen.md) AC-3
 - **Bauplatz wird vorher gezeigt** — [Bauen und Ausbilden](10-strategie/bauen.md) AC-4
-- **Rohstoffe werden beim Baubeginn abgezogen** — [Bauen und Ausbilden](10-strategie/bauen.md) AC-5
-- **Abbruch gibt die Hälfte zurück** — [Bauen und Ausbilden](10-strategie/bauen.md) AC-6
-- **Gebäude im Bau sind angreifbar** — [Bauen und Ausbilden](10-strategie/bauen.md) AC-7
-- **Zentrum bildet Sammler aus** — [Bauen und Ausbilden](10-strategie/bauen.md) AC-8
-- **Kaserne bildet Kämpfer aus** — [Bauen und Ausbilden](10-strategie/bauen.md) AC-9
+- **Kosten beim Baubeginn abgezogen** — [Bauen und Ausbilden](10-strategie/bauen.md) AC-5
+- **Abbruch erstattet den Rest** — [Bauen und Ausbilden](10-strategie/bauen.md) AC-6
+- **Gebäude im Bau angreifbar** — [Bauen und Ausbilden](10-strategie/bauen.md) AC-7
+- **Die Gebäude der Dunklen Zeit** — [Bauen und Ausbilden](10-strategie/bauen.md) AC-20
+- **Dorfzentrum bildet Dorfbewohner aus** — [Bauen und Ausbilden](10-strategie/bauen.md) AC-8
+- **Kaserne bildet Miliz aus** — [Bauen und Ausbilden](10-strategie/bauen.md) AC-9
 - **Warteschlange je Gebäude** — [Bauen und Ausbilden](10-strategie/bauen.md) AC-10
 - **Abbruch erstattet vollständig** — [Bauen und Ausbilden](10-strategie/bauen.md) AC-11
 - **Neue Einheiten erscheinen nebenan** — [Bauen und Ausbilden](10-strategie/bauen.md) AC-12
 - **Sammelpunkt je Gebäude** — [Bauen und Ausbilden](10-strategie/bauen.md) AC-13
+- **Webstuhl stärkt Dorfbewohner** — [Bauen und Ausbilden](10-strategie/bauen.md) AC-21
 - **Bevölkerung ist begrenzt** — [Bauen und Ausbilden](10-strategie/bauen.md) AC-14
 - **Volle Bevölkerung sperrt Ausbildung** — [Bauen und Ausbilden](10-strategie/bauen.md) AC-15
 - **Verlorene Einheiten geben Plätze frei** — [Bauen und Ausbilden](10-strategie/bauen.md) AC-16
-- **Gebäude haben Widerstand** — [Bauen und Ausbilden](10-strategie/bauen.md) AC-17
+- **Gebäude haben Leben** — [Bauen und Ausbilden](10-strategie/bauen.md) AC-17
 - **Zerstörte Gebäude nehmen Plätze mit** — [Bauen und Ausbilden](10-strategie/bauen.md) AC-18
-- **Letztes Zentrum entscheidet** — [Bauen und Ausbilden](10-strategie/bauen.md) AC-19
+- **Eroberung entscheidet** — [Bauen und Ausbilden](10-strategie/bauen.md) AC-19
 - **Umschalt erweitert** — [Bedienung](10-strategie/bedienung.md) AC-3
 - **Doppelklick wählt den Typ** — [Bedienung](10-strategie/bedienung.md) AC-4
 - **Auswahl merken** — [Bedienung](10-strategie/bedienung.md) AC-5
@@ -140,7 +144,31 @@ mit Bildnachweisen, Filter und Suche mit `npm run qa:report`.
 - **Die erste Partie erklärt sich** — [Bedienung](10-strategie/bedienung.md) AC-21
 - **Tastenübersicht** — [Bedienung](10-strategie/bedienung.md) AC-22
 - **Läuft auf einem Laptop-Bildschirm** — [Bedienung](10-strategie/bedienung.md) AC-23
+- **Leiste mit vier Rohstoffen** — [Bedienung](10-strategie/bedienung.md) AC-24
+- **Baumenü am Dorfbewohner** — [Bedienung](10-strategie/bedienung.md) AC-25
+- **Gebäude zeigt Ausbildung** — [Bedienung](10-strategie/bedienung.md) AC-26
+- **Tastenkürzel für Häufiges** — [Bedienung](10-strategie/bedienung.md) AC-27
+- **Untätige Dorfbewohner finden** — [Bedienung](10-strategie/bedienung.md) AC-28
+- **Ausgewähltes zeigt Werte** — [Bedienung](10-strategie/bedienung.md) AC-29
+- **Isometrischer Blick** — [Darstellung](10-strategie/darstellung.md) AC-1
+- **Gelände lebt** — [Darstellung](10-strategie/darstellung.md) AC-2
+- **Bäume, Sträucher, Felsen** — [Darstellung](10-strategie/darstellung.md) AC-3
+- **Gebäude haben Körper** — [Darstellung](10-strategie/darstellung.md) AC-4
+- **Baustelle sichtbar** — [Darstellung](10-strategie/darstellung.md) AC-5
+- **Einheiten sind Figuren** — [Darstellung](10-strategie/darstellung.md) AC-6
+- **Vorn verdeckt hinten** — [Darstellung](10-strategie/darstellung.md) AC-7
+- **Auswahl und Leben am Boden** — [Darstellung](10-strategie/darstellung.md) AC-8
+- **Eine Schautafel** — [Darstellung](10-strategie/darstellung.md) AC-9
+- **Flüssig im Browser** — [Darstellung](10-strategie/darstellung.md) AC-10
+- **Nur eigenes Material** — [Darstellung](10-strategie/darstellung.md) AC-11
 - **Einheiten blockieren sich nicht** — [Einheiten und Befehle](10-strategie/einheiten-und-befehle.md) AC-10
+- **Vier Rohstoffe sammeln** — [Einheiten und Befehle](10-strategie/einheiten-und-befehle.md) AC-15
+- **Abgabe am nächsten Lager** — [Einheiten und Befehle](10-strategie/einheiten-und-befehle.md) AC-16
+- **Schafe schlachten und hüten** — [Einheiten und Befehle](10-strategie/einheiten-und-befehle.md) AC-17
+- **Farm bestellen** — [Einheiten und Befehle](10-strategie/einheiten-und-befehle.md) AC-18
+- **Werte nach der Vorlage** — [Einheiten und Befehle](10-strategie/einheiten-und-befehle.md) AC-19
+- **Ein Befehl für viele** — [Einheiten und Befehle](10-strategie/einheiten-und-befehle.md) AC-20
+- **Untätig ist erkennbar** — [Einheiten und Befehle](10-strategie/einheiten-und-befehle.md) AC-21
 - **Dunkle Zeit spielbar** — [Fahrplan zum Klon](10-strategie/fahrplan.md) AC-3
 - **Prüfstand ohne Menschen** — [Fahrplan zum Klon](10-strategie/fahrplan.md) AC-4
 - **Die Wirtschaft trägt** — [Fahrplan zum Klon](10-strategie/fahrplan.md) AC-5
@@ -177,6 +205,21 @@ mit Bildnachweisen, Filter und Suche mit `npm run qa:report`.
 - **Angriff wird gemeldet** — [Kampf](10-strategie/kampf.md) AC-14
 - **Kein Spieler ist abgeschnitten** — [Karte und Vorraete](10-strategie/karte-und-vorraete.md) AC-7
 - **Vorraete sind endlich und knapp** — [Karte und Vorraete](10-strategie/karte-und-vorraete.md) AC-10
+- **Die Karte wächst mit** — [Karte und Vorraete](10-strategie/karte-und-vorraete.md) AC-11
+- **Vier Rohstoffe, Startvorrat** — [Karte und Vorraete](10-strategie/karte-und-vorraete.md) AC-12
+- **Vorräte sind einzelne Dinge** — [Karte und Vorraete](10-strategie/karte-und-vorraete.md) AC-13
+- **Jede Basis gleich ausgestattet** — [Karte und Vorraete](10-strategie/karte-und-vorraete.md) AC-14
+- **Wegsuche bleibt bezahlbar** — [Karte und Vorraete](10-strategie/karte-und-vorraete.md) AC-15
+- **Schafe gehören dem Spieler** — [Karte und Vorraete](10-strategie/karte-und-vorraete.md) AC-16
+- **Karte in einer Nachricht** — [Karte und Vorraete](10-strategie/karte-und-vorraete.md) AC-17
+- **Befehle wie ein Mensch** — [KI-Spieler](10-strategie/ki.md) AC-1
+- **Gleicher Zufall, gleiche Partie** — [KI-Spieler](10-strategie/ki.md) AC-2
+- **KI kostet wenig** — [KI-Spieler](10-strategie/ki.md) AC-3
+- **Baut die Wirtschaft auf** — [KI-Spieler](10-strategie/ki.md) AC-4
+- **Lager an die Vorräte** — [KI-Spieler](10-strategie/ki.md) AC-5
+- **Niemand steht herum** — [KI-Spieler](10-strategie/ki.md) AC-6
+- **Partien ohne Browser** — [KI-Spieler](10-strategie/ki.md) AC-7
+- **Jeder Takt wird geprüft** — [KI-Spieler](10-strategie/ki.md) AC-8
 - **Zeitalter gliedern die Partie** — [Spielziel und Partieverlauf](10-strategie/spielziel.md) AC-1
 - **Partiedauer 25 bis 45 Minuten** — [Spielziel und Partieverlauf](10-strategie/spielziel.md) AC-2
 - **Kein Aus nach drei Minuten** — [Spielziel und Partieverlauf](10-strategie/spielziel.md) AC-3

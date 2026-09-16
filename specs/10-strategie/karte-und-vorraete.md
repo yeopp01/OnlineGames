@@ -2,17 +2,17 @@
 
 **Bereich:** Strategie
 **Kuerzel:** karte
-**Stand:** 8/10 fertig · 2 offen
+**Stand:** 8/17 fertig · 9 offen
 
 ## Zweck
 
 Ein Spielfeld, das in jeder Partie neu ist, aber niemanden benachteiligt.
 
-> **Wird umgeschrieben.** Die Zahlen und Kriterien hier stammen aus der kleinen
-> Fassung vor [ADR-0012](../../docs/adr/0012-aoe2-als-vorlage.md). Sie werden zu
-> Beginn von **Stufe A** im [Fahrplan](fahrplan.md) auf die
-> [Vorlage](../../docs/strategie/vorlage-aoe2.md) umgestellt und gelten bis dahin
-> nicht als Ziel.
+> **Stufe A löst ab.** AC-2 (vier Feldarten), AC-3 (64 × 64) und AC-8 (Wald
+> 120, Beeren 80) beschreiben die kleine Fassung vor
+> [ADR-0012](../../docs/adr/0012-aoe2-als-vorlage.md). Sie gelten, bis AC-11
+> bis AC-15 gebaut sind; die Runde, die das tut, stellt sie auf
+> `zurueckgestellt (abgelöst durch karte AC-…)` und passt ihre Tests an.
 
 ## Abgrenzung
 
@@ -53,6 +53,33 @@ Ein Spielfeld, das in jeder Partie neu ist, aber niemanden benachteiligt.
 - **AC-10** `offen` **Vorraete sind endlich und knapp** — Die Gesamtmenge auf der Karte muss so
   bemessen sein, dass sie in einer Partie zum Streitpunkt wird. _(Heute
   reichlich vorhanden — Balance kommt, wenn es etwas zu bauen gibt.)_
+
+### Stufe A — Karte nach der Vorlage
+
+- **AC-11** `offen` **Die Karte wächst mit** — Zwei Spieler 120 × 120 Felder, je weiterer
+  Spieler mehr, bis 200 × 200 bei acht. Einstellung „Kartengröße" klein,
+  normal, groß (→ [Spielauswahl](../00-plattform/spielauswahl.md) AC-6).
+  _(Das Original geht bis 220; 200 hält die Aufbaunachricht und die
+  Wegsuche bezahlbar — gemessen wird das mit AC-15.)_
+- **AC-12** `offen` **Vier Rohstoffe, Startvorrat** — Holz, Nahrung, Gold, Stein. Jeder Spieler
+  beginnt mit 200 Holz, 200 Nahrung, 100 Gold, 200 Stein. Einstellung
+  „Startvorrat" wenig (Vorlage), mittel (je 500), viel (je 1000).
+- **AC-13** `offen` **Vorräte sind einzelne Dinge** — Ein Baum trägt 100 Holz, ein Beerenstrauch
+  125 Nahrung, ein Goldfeld 800, ein Steinfeld 350. Jedes belegt ein Feld und
+  ist unbegehbar, bis es leer ist; dann verschwindet es. Wald ist eine Gruppe
+  von Bäumen.
+- **AC-14** `offen` **Jede Basis gleich ausgestattet** — Um jedes Dorfzentrum in 5 bis 12
+  Feldern: 6 Beerensträucher, ein Goldfeld aus 7 Feldern, ein Steinfeld aus 5,
+  8 Schafe näher am Zentrum, Wald in mindestens zwei Richtungen. Gleiche
+  Mengen und gleiche Abstände für alle, nur gedreht.
+- **AC-15** `offen` **Wegsuche bleibt bezahlbar** — Auf der größten Karte kostet eine Suche von
+  Ecke zu Ecke unter 5 ms, im Mittel über hundert zufällige Suchen unter 1 ms
+  (→ [Einheiten](einheiten-und-befehle.md) AC-8).
+- **AC-16** `offen` **Schafe gehören dem Spieler** — Die acht Schafe zu Beginn tragen die
+  Farbe des Spielers und je 100 Nahrung. Sie stehen still, bis ein Dorfbewohner
+  sie nutzt (→ [Einheiten](einheiten-und-befehle.md) AC-17).
+- **AC-17** `offen` **Karte in einer Nachricht** — Der Aufbau einer Karte von
+  200 × 200 mit allen Vorräten ist gepackt unter 200 KB groß.
 
 ## Grenzfaelle
 

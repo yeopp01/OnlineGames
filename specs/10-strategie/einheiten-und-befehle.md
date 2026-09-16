@@ -2,18 +2,23 @@
 
 **Bereich:** Strategie
 **Kuerzel:** einheiten
-**Stand:** 9/10 fertig · 1 offen
+**Stand:** 9/17 fertig · 8 offen
 
 ## Zweck
 
 Was ein Spieler tun kann, und was daraufhin passiert.
+
+> **Stufe A löst ab.** AC-11 (zwei Sekunden, zehn Einheiten) beschreibt das
+> Sammeln der kleinen Fassung. Es gilt, bis AC-15 gebaut ist; die Runde, die
+> das tut, stellt AC-11 auf `zurueckgestellt (abgelöst durch einheiten AC-15)`
+> und passt den Test an.
 
 ## Abgrenzung
 
 | Gehoert dazu                       | Gehoert nicht dazu                            |
 | ---------------------------------- | --------------------------------------------- |
 | Auswahl, Bewegung, Sammeln         | Feldarten → [Karte](karte-und-vorraete.md)    |
-| Wegfindung                         | Kampf und Bauen (spaetere Spec)               |
+| Wegfindung                         | Bauen → [Bauen](bauen.md), Kampf → [Kampf](kampf.md) |
 
 ## Abnahmekriterien
 
@@ -50,6 +55,47 @@ Befehl bewirkt.
   selbstaendig das naechste gleicher Art im Umkreis von zwoelf Feldern.
 - **AC-14** `fertig` **Ohne Ersatz wird gewartet** — Findet er keines, bleibt er stehen, statt quer
   ueber die Karte zu laufen.
+
+### Stufe A — Dorfbewohner und Späher nach der Vorlage
+
+| Einheit      | Leben | Tempo (Felder/s) | Sicht | Tragkraft |
+| ------------ | ----- | ---------------- | ----- | --------- |
+| Dorfbewohner | 25    | 0,8              | 4     | 10        |
+| Späherreiter | 45    | 1,2              | 4     | –         |
+| Miliz        | 40    | 0,9              | 4     | –         |
+
+| Tätigkeit     | je Sekunde | Abgabe an |
+| ------------- | ---------- | --------- |
+| Holz fällen   | 0,39       | Dorfzentrum, Holzfällerlager |
+| Schafe hüten  | 0,33       | Dorfzentrum, Mühle |
+| Beeren        | 0,31       | Dorfzentrum, Mühle |
+| Farm          | 0,32       | Dorfzentrum, Mühle |
+| Gold          | 0,38       | Dorfzentrum, Bergbaulager |
+| Stein         | 0,36       | Dorfzentrum, Bergbaulager |
+
+- **AC-15** `offen` **Vier Rohstoffe sammeln** — Rechtsklick eines Dorfbewohners auf Baum,
+  Beerenstrauch, Gold- oder Steinfeld: er sammelt mit der Rate aus der Tabelle,
+  trägt bis zu zehn und bringt sie weg. Wechselt er den Rohstoff, verfällt die
+  alte Ladung.
+- **AC-16** `offen` **Abgabe am nächsten Lager** — Ein voller Dorfbewohner bringt seine Ladung zum
+  nächsten fertigen Gebäude, das diesen Rohstoff annimmt, und kehrt zum selben
+  Vorrat zurück.
+- **AC-17** `offen` **Schafe schlachten und hüten** — Rechtsklick eines Dorfbewohners auf ein
+  eigenes Schaf: er schlachtet es und nimmt Nahrung vom Kadaver. Ein Kadaver
+  verliert je 4 Sekunden eine Nahrung, solange niemand an ihm arbeitet — wie
+  im Original, damit man nicht alle Schafe zugleich schlachtet.
+- **AC-18** `offen` **Farm bestellen** — Ein Dorfbewohner auf einer fertigen Farm sammelt dort
+  Nahrung, bis die Farm leer ist. Auf einer Farm arbeitet höchstens einer.
+- **AC-19** `offen` **Werte nach der Vorlage** — Dorfbewohner, Späherreiter und
+  Miliz haben die Werte aus der Tabelle; der Späher ist anderthalbmal so
+  schnell wie ein Dorfbewohner.
+- **AC-20** `offen` **Ein Befehl für viele** — Mehrere ausgewählte Einheiten, zum selben Punkt
+  geschickt, stellen sich dort nebeneinander auf, statt auf einem Feld zu
+  stehen. Mehrere Sammler auf einem Vorrat verteilen sich auf die Nachbarn
+  derselben Art.
+- **AC-21** `offen` **Untätig ist erkennbar** — Die Welt weiß je Spieler, welche Dorfbewohner
+  nichts tun. Die Oberfläche zeigt die Zahl und springt zum nächsten
+  (→ [Bedienung](bedienung.md) AC-28).
 
 ## Grenzfaelle
 

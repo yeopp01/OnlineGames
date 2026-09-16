@@ -53,9 +53,15 @@ Setze die gewählten Kriterien auf `in-arbeit`.
 
 - Lies die Fach-Specs, die die Stufe betrifft, und die Vorlage.
 - **Offene Kriterien**, die nicht mehr passen: neuer Text, **gleiche Nummer**.
-- **Fertige Kriterien**, die nicht mehr gelten: `zurueckgestellt (abgelöst durch
-  <kuerzel> AC-n)`. Zugehörige Tests und Einträge in `qa/ohne-bild.json` werden
-  in der Runde angepasst, die den Nachfolger baut — bis dahin bleiben sie grün.
+- **Fertige Kriterien**, die nicht mehr gelten: **in der Spec-Runde nicht
+  anfassen.** Sie bleiben `fertig`, bis ihr Nachfolger gebaut ist, und stehen
+  im Fahrplan unter „Was Stufe X ablöst". Die Runde, die den Nachfolger baut,
+  setzt sie auf `zurueckgestellt (abgelöst durch <kuerzel> AC-n)` und passt im
+  selben Commit Test, Bild und Eintrag in `qa/ohne-bild.json` an. So ist jeder
+  Zwischenstand prüfbar. (Runde 7.)
+- **Zu jeder Stufe eine Bauabfolge** im Fahrplan: Schritte von einer bis drei
+  Runden, jeder mit etwas im Browser Sichtbarem am Ende. Die Arbeitswahl
+  (Abschnitt 1, Punkt 5) folgt dieser Abfolge.
 - Neue Kriterien bekommen die nächste freie Nummer. Kurztitel höchstens fünf
   Wörter. Ein Kriterium ist **prüfbar**: eine Zahl, ein Verhalten, ein Bild.
 - Zahlen aus der Vorlage übernehmen. Abweichen nur mit einem Satz Begründung

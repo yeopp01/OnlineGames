@@ -66,6 +66,30 @@ außen mitspielen soll.
   ist ohne Beschriftung von den anderen zu unterscheiden. Bildnachweis: eine
   Schautafel mit allen nebeneinander, in zwei Volksfarben.
 
+**Bauabfolge der Stufe A.** Jeder Schritt ist eine bis drei Runden und endet
+mit etwas, das im Browser zu sehen ist.
+
+| Schritt | Inhalt | Kriterien |
+| --- | --- | --- |
+| A1 | Werte als Daten, Spiel erzeugt seine Welt selbst (Schnittstelle aus ADR-0006) | bauen AC-20 (Datenteil), ki AC-2 (Zufall nur aus Startwert) |
+| A2 | Karte nach Vorlage: Größe, Einzelvorräte, Startausstattung, Schafe, Wegsuche | karte AC-11 bis AC-17, auswahl AC-6 |
+| A3 | Isometrischer Blick, Gelände, Vorräte als Dinge | darstellung AC-1 bis AC-3, AC-7 |
+| A4 | Vier Rohstoffe sammeln, Abgabe, Werte der Einheiten, Leiste | einheiten AC-15, AC-16, AC-19, bedienung AC-24, AC-17 |
+| A5 | Dorfbewohner ausbilden, Bevölkerung, Gebäude zeigt Ausbildung | bauen AC-8, AC-10 bis AC-12, AC-14 bis AC-16, bedienung AC-26, AC-29 |
+| A6 | Bauen: Haus, Lager, Mühle; Platz, Vorschau, mehrere Bauer | bauen AC-1 bis AC-6, bedienung AC-25, AC-15, AC-18, darstellung AC-4, AC-5 |
+| A7 | Schafe, Farm, Kaserne, Miliz, Webstuhl, Sammelpunkt | einheiten AC-17, AC-18, bauen AC-9, AC-13, AC-21, darstellung AC-6, AC-8 |
+| A8 | Wirtschafts-KI und Prüfstand | ki AC-1 bis AC-8, fahrplan AC-4, AC-5 |
+| A9 | Übersicht und Tempo: Übersichtskarte, Untätige, Tasten, Auswahlliste, viele Einheiten | bedienung AC-6, AC-11, AC-27, AC-28, einheiten AC-20, AC-21, darstellung AC-9, AC-10, fahrplan AC-6, AC-7 |
+| A10 | Stufe A am Stück im Browser | fahrplan AC-3 |
+
+**Was Stufe A ablöst.** Fertige Kriterien der kleinen Fassung bleiben
+`fertig`, bis ihr Nachfolger gebaut ist; die Runde, die ihn baut, setzt sie auf
+`zurueckgestellt (abgelöst durch …)` und passt Test und Begründung an:
+karte AC-2, AC-3, AC-8 (→ karte AC-11, AC-13), einheiten AC-11 (→ einheiten
+AC-15). Die bestehenden Tests zu Wegsuche, Sammelschleife und Ersatzfeld
+(einheiten AC-6 bis AC-9, AC-12 bis AC-14) gelten weiter und müssen auf der
+neuen Karte grün bleiben.
+
 ### Stufe B — Feudalzeit
 
 - **AC-8** `offen` **Feudalzeit spielbar** — Zeitalterwechsel mit Voraussetzung und Dauer;

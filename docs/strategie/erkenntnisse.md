@@ -102,6 +102,13 @@ Runde ist gescheitert oder halb liegen geblieben.
 Neueste oben. Eine Zeile je Runde: Nummer, Datum, Kriterien, Ergebnis,
 wichtigste Erkenntnis.
 
+- **7** · 2026-09-16 · Spec-Runde Stufe A: bauen neu gefasst (Gebäude der
+  Dunklen Zeit, AC-20, AC-21), karte AC-11–17, einheiten AC-15–21, bedienung
+  AC-24–29, neue Specs darstellung (11) und ki (8), Bauabfolge A1–A10 im
+  Fahrplan. 41 neue Kriterien. Entschieden: fertige Kriterien der kleinen
+  Fassung bleiben `fertig`, bis ihr Nachfolger steht (Anweisung angepasst).
+  Abweichungen von der Vorlage, begründet: Karte bis 200 statt 220,
+  Warteschlange 15. Nächste Runde: **A1**.
 - **6** · 2026-09-16 · auswahl AC-11 und fahrplan AC-1 fertig: der Einstieg
   am Stück, von der Anmeldemaske bis zur laufenden Partie, Code über die
   Zwischenablage. Gelernt: eine Bildunterschrift behauptete „beide Basen",

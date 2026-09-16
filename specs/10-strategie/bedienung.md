@@ -2,7 +2,7 @@
 
 **Bereich:** Strategie
 **Kuerzel:** bedienung
-**Stand:** 6/23 fertig · 17 offen
+**Stand:** 6/29 fertig · 23 offen
 
 ## Zweck
 
@@ -73,6 +73,31 @@ Befehl steht.
 - **AC-23** `offen` **Läuft auf einem Laptop-Bildschirm** — 1366 × 768 ohne Abschneiden. Die
   Bedienung auf dem Handy ist ausdrücklich **kein** Ziel — ein Strategiespiel
   mit Rahmenauswahl braucht eine Maus.
+
+### Stufe A — Wirtschaft bedienen
+
+- **AC-24** `offen` **Leiste mit vier Rohstoffen** — Oben Holz, Nahrung, Gold, Stein und die
+  Bevölkerung als „7/10". Die Zahlen zählen hoch statt zu springen (AC-17).
+- **AC-25** `offen` **Baumenü am Dorfbewohner** — Ist ein Dorfbewohner ausgewählt, zeigt der
+  untere Rand die baubaren Gebäude mit Bild und Kosten. Was nicht bezahlbar
+  ist, ist ausgegraut und nennt beim Überfahren, was fehlt. Ein Klick beginnt
+  das Platzieren (→ [Bauen](bauen.md) AC-4).
+- **AC-26** `offen` **Gebäude zeigt Ausbildung** — Ein ausgewähltes eigenes Gebäude zeigt seine
+  Einheiten und Verbesserungen mit Kosten und die Warteschlange mit
+  Fortschrittsbalken; ein Klick auf einen Eintrag der Schlange bricht ihn ab.
+- **AC-27** `offen` **Tastenkürzel für Häufiges** — `H` wählt das Dorfzentrum, im
+  Dorfzentrum bildet `Q` einen Dorfbewohner aus; mit ausgewähltem
+  Dorfbewohner öffnet `B` das Baumenü und je ein Buchstabe wählt das Gebäude.
+  Die Belegung steht in der Tastenübersicht (AC-22).
+- **AC-28** `offen` **Untätige Dorfbewohner finden** — Ein Knopf unten zeigt die Zahl der
+  untätigen Dorfbewohner; er und die Taste `.` wählen den nächsten und holen
+  ihn ins Bild.
+- **AC-29** `offen` **Ausgewähltes zeigt Werte** — Eine ausgewählte Einheit oder ein Gebäude
+  zeigt unten Name, Leben und — beim Dorfbewohner — was er trägt.
+
+Aus den offenen Kriterien oben gehören zu Stufe A: AC-6 (Auswahl
+aufgelistet), AC-11 (Übersichtskarte — auf 120 × 120 unverzichtbar), AC-15
+(Esc), AC-17 (Zahlen zählen hoch), AC-18 (Absagen sagen warum).
 
 ## Grenzfaelle
 

@@ -14,6 +14,8 @@ Spiel es wird.
 | [Bauen und Ausbilden](bauen.md)                  | Wie wird aus Rohstoffen Wirtschaft und Heer? |
 | [Kampf](kampf.md)                                | Wie wird gekaempft?                          |
 | [Bedienung](bedienung.md)                        | Wie schnell kommt eine Absicht zum Befehl?   |
+| [Darstellung](darstellung.md)                    | Wie sieht es aus, ohne das Original zu kopieren? |
+| [KI-Spieler](ki.md)                              | Wer spielt, wenn kein Mensch da ist — und wie misst man damit? |
 
 Regeln und Zahlen des Originals stehen in der
 [Vorlage](../../docs/strategie/vorlage-aoe2.md) — dort, was AoE II tut; hier,
