@@ -2,6 +2,7 @@
 
 const { randomUUID, randomInt } = require('node:crypto');
 const { Welt, TAKTE_PRO_SEKUNDE } = require('./spiele/strategie/welt');
+const partieEinstellungen = require('./spiele/einstellungen');
 
 const MAX_SPIELER = 6;
 const MIN_SPIELER = 2;
@@ -46,6 +47,31 @@ class Raum {
     // Die geprueften Werte aus server/spiele/einstellungen.js. `spieler`
     // begrenzt den Raum; alles andere gehoert dem Spiel.
     this.einstellungen = {};
+    // Die Beschreibung aus dem Steckbrief - fuer die Anzeige im Warteraum und
+    // zum Pruefen spaeterer Aenderungen.
+    this.einstellungsliste = [];
+  }
+
+  get gastgeber() {
+    return this.spieler[0] || null;
+  }
+
+  // Nur der Gastgeber, nur vor dem Start (→ spielauswahl AC-10). Geaendert
+  // wird, was mitkommt; der Rest bleibt, wie er war.
+  einstellen(wer, aenderung) {
+    if (this.gestartet) return { fehler: 'Die Partie laeuft schon.' };
+    if (wer !== this.gastgeber) return { fehler: 'Nur der Gastgeber aendert die Einstellungen.' };
+    if (!aenderung || typeof aenderung !== 'object' || Array.isArray(aenderung)) {
+      return { fehler: 'Die Einstellungen sind unverstaendlich.' };
+    }
+    const geprueft = partieEinstellungen.pruefen(this.einstellungsliste, { ...this.einstellungen, ...aenderung });
+    if (geprueft.fehler) return geprueft;
+    if (Number.isInteger(geprueft.werte.spieler) && geprueft.werte.spieler < this.spieler.length) {
+      return { fehler: `Es sind schon ${this.spieler.length} Spieler im Raum.` };
+    }
+    this.einstellungen = geprueft.werte;
+    this.beruehrt = Date.now();
+    return {};
   }
 
   get hoechstens() {
@@ -125,7 +151,8 @@ class Raum {
       code: this.code,
       gestartet: this.gestartet,
       art: this.art,
-      einstellungen: this.einstellungen,
+      gastgeber: this.gastgeber ? this.gastgeber.id : null,
+      einstellungen: this.einstellungsliste.map((e) => ({ ...e, wert: this.einstellungen[e.schluessel] })),
       spieler: this.spieler.map((s) => ({ id: s.id, name: s.name, verbunden: s.verbunden })),
     };
   }

@@ -1,0 +1,10 @@
+{
+  "spec": "00-plattform/spielauswahl.md",
+  "ac": "AC-10",
+  "titel": "Bei Bert steht die Aenderung sofort: drei Spieler, zufaellige Karte",
+  "datei": "e2e/tests/spielauswahl.spec.mjs",
+  "pfad": [
+    "Im Warteraum",
+    "auswahl AC-10: der Gastgeber aendert, der Mitspieler sieht es sofort"
+  ]
+}

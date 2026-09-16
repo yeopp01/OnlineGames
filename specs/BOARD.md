@@ -7,9 +7,9 @@ Eine Zeile je Abnahmekriterium. Gepflegt wird der Status in der Spec selbst,
 hier steht er zusammengefasst. Erzeugt mit `npm run specs:board`; als Seite
 mit Bildnachweisen, Filter und Suche mit `npm run qa:report`.
 
-**Gesamt:** 268/443 fertig · 12 in QA · 4 geplant · 156 offen · 3 zurueckgestellt
+**Gesamt:** 271/443 fertig · 12 in QA · 4 geplant · 153 offen · 3 zurueckgestellt
 
-**Nachweise:** 76 Kriterien mit Bild · 192 ohne Bild, begruendet in `qa/ohne-bild.json`
+**Nachweise:** 79 Kriterien mit Bild · 192 ohne Bild, begruendet in `qa/ohne-bild.json`
 
 ## Nach Spezifikation
 
@@ -19,7 +19,7 @@ mit Bildnachweisen, Filter und Suche mit `npm run qa:report`.
 | [Raeume und Partien](00-plattform/raeume.md)                   | -         | 2     | -       | 3     | -               | 10     |
 | [Schutz vor Fremdnutzung](00-plattform/schutz.md)              | -         | 1     | -       | 4     | -               | 7      |
 | [Anhalten und Fortsetzen](00-plattform/speichern.md)           | -         | -     | -       | 26    | -               | -      |
-| [Spielauswahl und Einstellungen](00-plattform/spielauswahl.md) | -         | -     | -       | 11    | -               | 6      |
+| [Spielauswahl und Einstellungen](00-plattform/spielauswahl.md) | -         | -     | -       | 8     | -               | 9      |
 | [Uebertragung](00-plattform/uebertragung.md)                   | -         | 1     | 2       | 1     | -               | 6      |
 | [Bauen und Ausbilden](10-strategie/bauen.md)                   | -         | -     | -       | 19    | -               | -      |
 | [Bedienung](10-strategie/bedienung.md)                         | -         | 6     | -       | 17    | -               | -      |
@@ -65,7 +65,7 @@ mit Bildnachweisen, Filter und Suche mit `npm run qa:report`.
 - **Abbruch ist sichtbar** — [Uebertragung](00-plattform/uebertragung.md) AC-9
 - **Automatischer Wiederaufbau** — [Uebertragung](00-plattform/uebertragung.md) AC-10
 
-## Offen (156)
+## Offen (153)
 
 - **Anmeldung ueber Google/GitHub** — [Konten und Anmeldung](00-plattform/konten.md) AC-6
 - **Bilanz je Konto** — [Konten und Anmeldung](00-plattform/konten.md) AC-14
@@ -105,11 +105,8 @@ mit Bildnachweisen, Filter und Suche mit `npm run qa:report`.
 - **Beteiligte stehen im Spielstand** — [Anhalten und Fortsetzen](00-plattform/speichern.md) AC-26
 - **Einstellungen des Strategiespiels** — [Spielauswahl und Einstellungen](00-plattform/spielauswahl.md) AC-6
 - **Startwert sichtbar und eingebbar** — [Spielauswahl und Einstellungen](00-plattform/spielauswahl.md) AC-7
-- **Einstellungen stehen im Warteraum** — [Spielauswahl und Einstellungen](00-plattform/spielauswahl.md) AC-9
-- **Nur der Gastgeber aendert sie** — [Spielauswahl und Einstellungen](00-plattform/spielauswahl.md) AC-10
 - **Eroeffnen verlangt ein Konto** — [Spielauswahl und Einstellungen](00-plattform/spielauswahl.md) AC-11
 - **Fortlaufend auch allein spielbar** — [Spielauswahl und Einstellungen](00-plattform/spielauswahl.md) AC-12
-- **Der Code erscheint sofort** — [Spielauswahl und Einstellungen](00-plattform/spielauswahl.md) AC-13
 - **Liste der eigenen Spielstaende** — [Spielauswahl und Einstellungen](00-plattform/spielauswahl.md) AC-14
 - **Fortsetzen ist ein Klick** — [Spielauswahl und Einstellungen](00-plattform/spielauswahl.md) AC-15
 - **Umbenennen und Loeschen** — [Spielauswahl und Einstellungen](00-plattform/spielauswahl.md) AC-16

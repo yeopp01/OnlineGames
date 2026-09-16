@@ -1,0 +1,10 @@
+{
+  "spec": "00-plattform/spielauswahl.md",
+  "ac": "AC-9",
+  "titel": "Bert im Warteraum: hoechstens vier Spieler, Startwert 4711 - zu lesen, nicht zu aendern",
+  "datei": "e2e/tests/spielauswahl.spec.mjs",
+  "pfad": [
+    "Im Warteraum",
+    "auswahl AC-9: wer beitritt, sieht vor dem Start, worauf er sich einlaesst"
+  ]
+}

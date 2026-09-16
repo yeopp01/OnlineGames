@@ -1,7 +1,7 @@
 // Die Uebersicht der Spiele nach dem Anmelden, im Browser gesehen
 // (→ specs/00-plattform/spielauswahl.md).
 import { nachweis } from '../../scripts/qa-nachweis.mjs';
-import { ANMELDUNG, expect, test } from '../helpers/seite.mjs';
+import { ANMELDUNG, expect, fehlerSammeln, test } from '../helpers/seite.mjs';
 
 const AUSWAHL = '00-plattform/spielauswahl.md';
 
@@ -148,5 +148,95 @@ test.describe('Spiel waehlen', () => {
       titel: 'Startwert mit Buchstaben: der Server weist ab, die Seite nennt den Grund, kein Raum entsteht',
       test: info,
     });
+  });
+});
+
+test.describe('Im Warteraum', () => {
+  test.describe.configure({ mode: 'serial' });
+
+  let anna;
+  let bert;
+  const fehler = [];
+
+  test.beforeAll(async ({ browser }, info) => {
+    const optionen = { baseURL: info.project.use.baseURL, viewport: { width: 1400, height: 950 }, locale: 'de-DE' };
+    const annasFenster = await browser.newContext({ ...optionen, storageState: ANMELDUNG });
+    await annasFenster.grantPermissions(['clipboard-read', 'clipboard-write']);
+    anna = await annasFenster.newPage();
+    bert = await (await browser.newContext(optionen)).newPage();
+    fehler.push(fehlerSammeln(anna), fehlerSammeln(bert));
+
+    await anna.goto('/');
+    await anna.locator('[data-oeffnen="strategie"]').click();
+    await anna.locator('[data-einstellung="spieler"]').fill('4');
+    await anna.locator('[data-einstellung="startwert"]').fill('4711');
+    await anna.locator('[data-eroeffnen="strategie"]').click();
+    await expect(anna.locator('#raumcode')).toHaveText(/^[A-Z0-9]{3}-[A-Z0-9]{3}$/);
+  });
+
+  test.afterAll(async () => {
+    expect(fehler.flat(), 'Eine der Seiten hat Fehler gemeldet').toEqual([]);
+    await anna?.context().close();
+    await bert?.context().close();
+  });
+
+  test('auswahl AC-13: der Code steht sofort da und laesst sich kopieren', async ({}, info) => {
+    const code = (await anna.locator('#raumcode').textContent()).trim();
+    await anna.locator('#codeKopieren').click();
+    await expect(anna.locator('#codeKopieren')).toHaveText('kopiert');
+    expect(await anna.evaluate(() => navigator.clipboard.readText())).toBe(code);
+    await nachweis(anna, {
+      spec: AUSWAHL,
+      ac: 'AC-13',
+      titel: 'Gleich nach dem Eroeffnen: der Code oben, daneben der Knopf, der ihn kopiert hat',
+      test: info,
+    });
+  });
+
+  test('auswahl AC-9: wer beitritt, sieht vor dem Start, worauf er sich einlaesst', async ({}, info) => {
+    const code = (await anna.locator('#raumcode').textContent()).trim();
+    await bert.goto('/');
+    await bert.locator('#name').fill('Bert');
+    await bert.locator('#code').fill(code);
+    await bert.locator('#beitreten').click();
+    await expect(bert.locator('#warteraum')).toBeVisible();
+    await expect(bert.locator('#raumEinstellungen dt')).toHaveText(['Hoechstens Spieler', 'Startwert der Karte']);
+    await expect(bert.locator('[data-wert="spieler"]')).toHaveText('4');
+    await expect(bert.locator('[data-wert="startwert"]')).toHaveText('4711');
+    // Bert hat keine Felder, nur Werte.
+    await expect(bert.locator('#raumEinstellungen input')).toHaveCount(0);
+    await nachweis(bert, {
+      spec: AUSWAHL,
+      ac: 'AC-9',
+      titel: 'Bert im Warteraum: hoechstens vier Spieler, Startwert 4711 - zu lesen, nicht zu aendern',
+      test: info,
+    });
+  });
+
+  test('auswahl AC-10: der Gastgeber aendert, der Mitspieler sieht es sofort', async ({}, info) => {
+    await expect(anna.locator('#raumEinstellungen [data-einstellung="spieler"]')).toHaveValue('4');
+    await anna.locator('#raumEinstellungen [data-einstellung="spieler"]').fill('3');
+    await anna.locator('#raumEinstellungen [data-einstellung="startwert"]').fill('');
+    await anna.locator('#raumEinstellungen [data-einstellung="startwert"]').press('Tab');
+    await expect(bert.locator('[data-wert="spieler"]')).toHaveText('3');
+    await expect(bert.locator('[data-wert="startwert"]')).toHaveText('zufaellig');
+    await nachweis(anna, {
+      spec: AUSWAHL,
+      ac: 'AC-10',
+      titel: 'Anna als Gastgeberin: die Einstellungen als Felder, auf drei Spieler und zufaellige Karte umgestellt',
+      test: info,
+    });
+    await nachweis(bert, {
+      spec: AUSWAHL,
+      ac: 'AC-10',
+      titel: 'Bei Bert steht die Aenderung sofort: drei Spieler, zufaellige Karte',
+      test: info,
+    });
+
+    // Unter die Zahl der Anwesenden geht es nicht - die Absage steht im Raum.
+    await anna.locator('#raumEinstellungen [data-einstellung="spieler"]').fill('1');
+    await anna.locator('#raumEinstellungen [data-einstellung="spieler"]').press('Tab');
+    await expect(anna.locator('#wartemeldung')).toContainText('Hoechstens Spieler');
+    await expect(bert.locator('[data-wert="spieler"]')).toHaveText('3');
   });
 });

@@ -142,6 +142,7 @@ async function starten(hafen = HAFEN, einstellungen = {}) {
       raum = raeume.anlegen();
       raum.art = spiel.art;
       raum.einstellungen = geprueft.werte;
+      raum.einstellungsliste = spiel.einstellungen;
       raum.adresse = adresse;
       raum.eigentuemer = angemeldet.user.id;
       schutz.raumAuf(adresse);
@@ -220,6 +221,13 @@ async function starten(hafen = HAFEN, einstellungen = {}) {
             : Number.isInteger(nachricht.startwert) ? nachricht.startwert : Math.floor(Math.random() * 1e9);
           const ergebnis = raum.starten(startwert);
           if (ergebnis.fehler) return fehler(ergebnis.fehler);
+          break;
+        }
+        case 'einstellen': {
+          if (!raum || !spieler) return;
+          const ergebnis = raum.einstellen(spieler, nachricht.einstellungen);
+          if (ergebnis.fehler) return fehler(ergebnis.fehler);
+          raum.senden(raum.vorraum());
           break;
         }
         case 'befehl': {

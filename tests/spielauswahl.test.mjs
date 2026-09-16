@@ -122,7 +122,7 @@ test('auswahl AC-5: wer nichts einstellt, eroeffnet mit den Vorgaben und kann sp
   const { gast, antwort } = await eroeffnen({ art: 'strategie' });
   assert.equal(antwort.typ, 'du');
   const raum = await gast.warteAuf(istTyp('raum'));
-  assert.deepEqual(raum.einstellungen, { spieler: 6, startwert: null });
+  assert.deepEqual(Object.fromEntries(raum.einstellungen.map((e) => [e.schluessel, e.wert])), { spieler: 6, startwert: null });
   assert.equal(raum.art, 'strategie');
 
   const bert = kunde(HAFEN);
@@ -201,4 +201,69 @@ test('auswahl AC-8: ein eingestellter Startwert gilt beim Start, nicht der aus d
     bert.zu();
   }
   assert.equal(karten[0], karten[1]);
+});
+
+// ---- Warteraum -----------------------------------------------------------
+
+async function raumMitBert(einstellungenBeimEroeffnen = {}) {
+  const { gast, antwort } = await eroeffnen({ art: 'strategie', einstellungen: einstellungenBeimEroeffnen });
+  const bert = kunde(HAFEN);
+  await bert.offen();
+  bert.senden({ typ: 'beitreten', code: antwort.code, name: 'Bert' });
+  await bert.warteAuf(istTyp('du'));
+  await gast.warteAuf((n) => n.typ === 'raum' && n.spieler.length === 2);
+  return { gast, bert, code: antwort.code };
+}
+
+const werteAus = (raum) => Object.fromEntries(raum.einstellungen.map((e) => [e.schluessel, e.wert]));
+
+test('auswahl AC-9: wer beitritt, sieht die Einstellungen mit Namen und Wert', async () => {
+  const { gast, bert } = await raumMitBert({ spieler: 4, startwert: 4711 });
+  const raum = await bert.warteAuf((n) => n.typ === 'raum' && n.spieler.length === 2);
+  assert.deepEqual(raum.einstellungen.map((e) => [e.name, e.wert]), [['Hoechstens Spieler', 4], ['Startwert der Karte', 4711]]);
+  assert.equal(raum.gastgeber, raum.spieler[0].id);
+  gast.zu();
+  bert.zu();
+});
+
+test('auswahl AC-10: der Gastgeber aendert bis zum Start, alle sehen es', async () => {
+  const { gast, bert } = await raumMitBert();
+  gast.senden({ typ: 'einstellen', einstellungen: { spieler: 3 } });
+  const beiBert = await bert.warteAuf((n) => n.typ === 'raum' && werteAus(n).spieler === 3);
+  // Was nicht mitkam, bleibt.
+  assert.equal(werteAus(beiBert).startwert, null);
+
+  gast.senden({ typ: 'einstellen', einstellungen: { startwert: 99 } });
+  await bert.warteAuf((n) => n.typ === 'raum' && werteAus(n).startwert === 99 && werteAus(n).spieler === 3);
+
+  gast.senden({ typ: 'start' });
+  await gast.warteAuf(istTyp('aufbau'));
+  gast.senden({ typ: 'einstellen', einstellungen: { spieler: 4 } });
+  assert.equal((await gast.warteAuf((n) => n.typ === 'fehler')).text, 'Die Partie laeuft schon.');
+  gast.zu();
+  bert.zu();
+});
+
+test('auswahl AC-10: Mitspieler aendern nichts, und ungueltige Aenderungen gelten nicht', async () => {
+  const { gast, bert, code } = await raumMitBert();
+  bert.senden({ typ: 'einstellen', einstellungen: { spieler: 2 } });
+  assert.equal((await bert.warteAuf(istTyp('fehler'))).text, 'Nur der Gastgeber aendert die Einstellungen.');
+
+  gast.senden({ typ: 'einstellen', einstellungen: { spieler: 7 } });
+  assert.match((await gast.warteAuf(istTyp('fehler'))).text, /Hoechstens Spieler/);
+  gast.eingang.length = 0;
+
+  // Zwei sind schon da - weniger als zwei geht nicht, auch wenn die Grenze es erlaubt.
+  const carla = kunde(HAFEN);
+  await carla.offen();
+  carla.senden({ typ: 'beitreten', code, name: 'Carla' });
+  await gast.warteAuf((n) => n.typ === 'raum' && n.spieler.length === 3);
+  gast.senden({ typ: 'einstellen', einstellungen: { spieler: 2 } });
+  assert.equal((await gast.warteAuf(istTyp('fehler'))).text, 'Es sind schon 3 Spieler im Raum.');
+
+  // Der Raum steht unveraendert.
+  bert.eingang.length = 0;
+  gast.senden({ typ: 'einstellen', einstellungen: {} });
+  assert.equal(werteAus(await bert.warteAuf(istTyp('raum'))).spieler, 6);
+  for (const k of [gast, bert, carla]) k.zu();
 });

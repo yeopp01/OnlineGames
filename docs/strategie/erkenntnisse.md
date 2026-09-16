@@ -40,9 +40,14 @@ etwas anderem gearbeitet.
   Einstellungen braucht (Kartengröße, Vorrat), gehört die Erzeugung ans Spiel
   (Schnittstelle aus [ADR-0006](../adr/0006-mehrere-spiele.md): `aufbau`,
   `takten`, `zustand`, `befehl`).
-- Offen im Einstieg: auswahl AC-7 (Startwert nach dem Start sichtbar), AC-9
-  (Einstellungen im Warteraum), AC-10 (Gastgeber ändert sie bis zum Start),
-  AC-13 (Code kopieren).
+- Offen im Einstieg: auswahl AC-7 (Startwert nach dem Start sichtbar — gehört
+  ins Spielbild, also zusammen mit fahrplan AC-2), AC-11 (Eröffnen verlangt
+  Konto — deckungsgleich mit konten AC-16, nur Beleg nachziehen), AC-6 (Karte,
+  Vorrat → Stufe A). AC-12 und AC-14 bis AC-17 betreffen fortlaufende Spiele
+  und Spielstände; für das Strategiespiel nicht nötig — nicht vorziehen.
+- Laufzeiten nur messen, wenn die Maschine ruhig ist: vor einer Messung
+  nach fremden `node`-/`chrome`-Prozessen sehen. Andere Projekte laufen hier
+  parallel und verdoppeln den Browserlauf.
 - Bei Änderungen am Vorraum: `npm run qa:nachweis -- vorraum spielauswahl`,
   sonst zeigen die Bilder zu konten und raeume den alten Stand.
 
@@ -55,6 +60,7 @@ Zahlen, gegen die spätere Runden vergleichen. Mit Datum und Commit.
 | 2026-09-16 | Tests ohne Browser / im Browser | 242 / 63 | Runde 1 |
 | 2026-09-16 | Dauer Browserlauf gesamt | 46,6 s | Runde 1 |
 | 2026-09-16 | Tests ohne Browser / im Browser; Browserlauf | 247 / 66; 51,9 s | Runde 2 |
+| 2026-09-16 | Tests ohne Browser / im Browser; Browserlauf | 250 / 69; 1,3–2,2 min — **nicht vergleichbar**: gleichzeitig liefen Tests anderer Projekte (Conjola) | Runde 3 |
 
 ## Rückschauen
 
@@ -68,6 +74,12 @@ _(noch keine)_
 Neueste oben. Eine Zeile je Runde: Nummer, Datum, Kriterien, Ergebnis,
 wichtigste Erkenntnis.
 
+- **3** · 2026-09-16 · auswahl AC-9, 10, 13 fertig: Einstellungen im
+  Warteraum (Gastgeber Felder, Mitspieler Werte), Änderung per `einstellen`
+  bis zum Start, Code kopieren. Gelernt: ein Test, der `eingang` leert und
+  danach auf eine alte Nachrichtenart wartet, hängt bis zur Frist — Werte
+  vorher festhalten. Felder des Gastgebers nur einmal je Raum bauen, sonst
+  löscht jede Raumnachricht die laufende Eingabe.
 - **2** · 2026-09-16 · auswahl AC-4, 5, 8 fertig: Einstellungen als Liste im
   Steckbrief, Formular daraus, Prüfung auf dem Server. Gelernt: (1) Ein Import
   namens `einstellungen` wurde vom gleichnamigen Parameter in `starten()`

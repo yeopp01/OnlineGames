@@ -18,6 +18,10 @@ const teile = {
   formAnmelden: document.getElementById('formAnmelden'),
   formRegistrieren: document.getElementById('formRegistrieren'),
   spiele: document.getElementById('spiele'),
+  raumEinstellungen: document.getElementById('raumEinstellungen'),
+  einstellungsliste: document.getElementById('einstellungsliste'),
+  einstellungsHinweis: document.getElementById('einstellungsHinweis'),
+  codeKopieren: document.getElementById('codeKopieren'),
 };
 
 let draht = null;
@@ -62,6 +66,7 @@ function empfangen(nachricht) {
   switch (nachricht.typ) {
     case 'du':
       ich = nachricht.id;
+      gastgeberFelder = null;
       // Fuer die Rueckkehr nach einem Absturz - lebt nur solange die Partie laeuft.
       sessionStorage.setItem('platz', JSON.stringify({ code: nachricht.code, token: nachricht.token }));
       teile.raumcode.textContent = nachricht.anzeige || nachricht.code;
@@ -70,6 +75,7 @@ function empfangen(nachricht) {
 
     case 'raum':
       spielerlisteZeichnen(nachricht.spieler);
+      raumEinstellungenZeichnen(nachricht);
       break;
 
     case 'aufbau':
@@ -93,6 +99,71 @@ function empfangen(nachricht) {
       break;
   }
 }
+
+// ---- Einstellungen im Warteraum (AC-9, AC-10) ----------------------------
+// Der Gastgeber bekommt Felder, alle anderen lesen mit. Die Felder entstehen
+// einmal je Raum - neu gezeichnet waere bei jeder Nachricht die Eingabe weg.
+
+let gastgeberFelder = null;
+
+function wertText(e) {
+  if (e.art === 'startwert') return e.wert === null ? 'zufaellig' : String(e.wert);
+  if (e.art === 'wahl') return (e.werte.find((w) => w.wert === e.wert) || {}).name || String(e.wert);
+  return String(e.wert);
+}
+
+function raumEinstellungenZeichnen(nachricht) {
+  const liste = nachricht.einstellungen || [];
+  teile.raumEinstellungen.hidden = liste.length === 0 || nachricht.gestartet;
+  if (liste.length === 0) return;
+
+  if (nachricht.gastgeber !== ich) {
+    gastgeberFelder = null;
+    teile.einstellungsHinweis.textContent = 'Der Gastgeber kann sie bis zum Start aendern.';
+    const tafel = document.createElement('dl');
+    tafel.className = 'werte';
+    for (const e of liste) {
+      const name = document.createElement('dt');
+      name.textContent = e.name;
+      const wert = document.createElement('dd');
+      wert.dataset.wert = e.schluessel;
+      wert.textContent = wertText(e);
+      tafel.append(name, wert);
+    }
+    teile.einstellungsliste.replaceChildren(tafel);
+    return;
+  }
+
+  teile.einstellungsHinweis.textContent = 'Aenderungen sehen alle sofort - bis zum Start.';
+  if (!gastgeberFelder) {
+    gastgeberFelder = document.createElement('form');
+    gastgeberFelder.className = 'einstellungen im-raum';
+    gastgeberFelder.append(...liste.map(einstellungsfeld));
+    gastgeberFelder.addEventListener('submit', (ereignis) => ereignis.preventDefault());
+    gastgeberFelder.addEventListener('change', () => {
+      melden('', teile.wartemeldung);
+      senden({ typ: 'einstellen', einstellungen: einstellungenLesen(gastgeberFelder) });
+    });
+    teile.einstellungsliste.replaceChildren(gastgeberFelder);
+  }
+  // Was der Server sagt, gilt - ausser im Feld, in dem gerade getippt wird.
+  for (const e of liste) {
+    const feld = gastgeberFelder.querySelector(`[data-einstellung="${e.schluessel}"]`);
+    if (!feld || feld === document.activeElement) continue;
+    if (e.art === 'wahl') feld.value = JSON.stringify(e.wert);
+    else feld.value = e.wert === null ? '' : String(e.wert);
+  }
+}
+
+teile.codeKopieren.addEventListener('click', async () => {
+  try {
+    await navigator.clipboard.writeText(teile.raumcode.textContent);
+    teile.codeKopieren.textContent = 'kopiert';
+    setTimeout(() => { teile.codeKopieren.textContent = 'Code kopieren'; }, 2000);
+  } catch {
+    melden('Kopieren ging nicht - bitte den Code abschreiben.', teile.wartemeldung);
+  }
+});
 
 function spielerlisteZeichnen(spieler) {
   teile.spielerliste.innerHTML = '';

@@ -1,0 +1,10 @@
+{
+  "spec": "00-plattform/spielauswahl.md",
+  "ac": "AC-13",
+  "titel": "Gleich nach dem Eroeffnen: der Code oben, daneben der Knopf, der ihn kopiert hat",
+  "datei": "e2e/tests/spielauswahl.spec.mjs",
+  "pfad": [
+    "Im Warteraum",
+    "auswahl AC-13: der Code steht sofort da und laesst sich kopieren"
+  ]
+}

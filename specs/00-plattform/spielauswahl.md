@@ -2,7 +2,7 @@
 
 **Bereich:** Plattform
 **Kuerzel:** auswahl
-**Stand:** 6/17 fertig · 11 offen
+**Stand:** 9/17 fertig · 8 offen
 
 ## Zweck
 
@@ -58,9 +58,9 @@ Wer nur mitspielt, ueberspringt alles: Code eingeben, Namen eingeben, drin
   sie wieder spielen; wer einen Fehler gefunden hat, kann ihn wiederholen.
 - **AC-8** `fertig` **Ungueltige Werte werden abgewiesen** — Geprueft wird auf
   dem Server, nicht nur im Browser.
-- **AC-9** `offen` **Einstellungen stehen im Warteraum** — Die Mitspieler sehen vor dem Start, worauf
+- **AC-9** `fertig` **Einstellungen stehen im Warteraum** — Die Mitspieler sehen vor dem Start, worauf
   sie sich einlassen.
-- **AC-10** `offen` **Nur der Gastgeber aendert sie** — Und Aenderungen sind bis zum Start moeglich.
+- **AC-10** `fertig` **Nur der Gastgeber aendert sie** — Und Aenderungen sind bis zum Start moeglich.
 
 ### Eroeffnen
 
@@ -68,7 +68,7 @@ Wer nur mitspielt, ueberspringt alles: Code eingeben, Namen eingeben, drin
   [Konten](konten.md) AC-16; hier ist der Bildschirm, an dem es auffaellt.
 - **AC-12** `offen` **Fortlaufend auch allein spielbar** — Ein Hausbau startet
   allein. Die Untergrenze von zwei Spielern gilt nur fuer Sitzungsspiele.
-- **AC-13** `offen` **Der Code erscheint sofort** — Zum Weitergeben, mit einem Knopf zum Kopieren.
+- **AC-13** `fertig` **Der Code erscheint sofort** — Zum Weitergeben, mit einem Knopf zum Kopieren.
 
 ### Eigene Spielstaende
 

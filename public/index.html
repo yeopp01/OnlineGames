@@ -82,9 +82,17 @@
     </main>
 
     <main id="warteraum" class="tafel" hidden>
-      <h1>Raum <span id="raumcode" class="code-gross"></span></h1>
+      <div class="raumkopf">
+        <h1>Raum <span id="raumcode" class="code-gross"></span></h1>
+        <button id="codeKopieren" class="leise-knopf">Code kopieren</button>
+      </div>
       <p class="unterzeile">Diesen Code an die Mitspieler weitergeben.</p>
       <ul id="spielerliste" class="spieler"></ul>
+      <section id="raumEinstellungen" class="raumeinstellungen" hidden>
+        <h2>Einstellungen</h2>
+        <p id="einstellungsHinweis" class="unterzeile"></p>
+        <div id="einstellungsliste"></div>
+      </section>
       <div class="reihe">
         <button id="starten" class="haupt">Partie starten</button>
       </div>
