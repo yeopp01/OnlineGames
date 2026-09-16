@@ -2,7 +2,7 @@
 
 **Bereich:** Strategie
 **Kuerzel:** fahrplan
-**Stand:** 1/22 fertig · 21 offen
+**Stand:** 2/22 fertig · 20 offen
 
 ## Zweck
 
@@ -37,7 +37,7 @@ außen mitspielen soll.
 
 ### Vor den Stufen
 
-- **AC-1** `offen` **Einstieg führt zur Partie** — Nach dem Anmelden wählt man das Spiel,
+- **AC-1** `fertig` **Einstieg führt zur Partie** — Nach dem Anmelden wählt man das Spiel,
   stellt die Partie ein, eröffnet, gibt den Code weiter und startet — in einem
   Browserlauf, ohne Umweg über eine Adresse. Belegt, wenn
   [Spielauswahl](../00-plattform/spielauswahl.md) AC-1 bis AC-11 und AC-13

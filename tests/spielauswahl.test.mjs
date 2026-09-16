@@ -279,3 +279,17 @@ test('auswahl AC-7: auch ein zufaelliger Startwert wird nach dem Start genannt',
   gast.zu();
   bert.zu();
 });
+
+test('auswahl AC-11: ohne Konto eroeffnet niemand, auch nicht mit Spiel und Einstellungen', async () => {
+  const vorher = new Set(laufend.raeume.nachCode.keys());
+  const fremder = kunde(HAFEN);
+  await fremder.offen();
+  fremder.senden({ typ: 'erstellen', art: 'strategie', einstellungen: { spieler: 2, startwert: 1 } });
+  const antwort = await fremder.warteAuf((n) => n.typ === 'du' || n.typ === 'fehler');
+  assert.equal(antwort.typ, 'fehler');
+  assert.equal(antwort.text, 'Zum Eroeffnen einer Partie ist eine Anmeldung noetig.');
+  assert.deepEqual([...laufend.raeume.nachCode.keys()].filter((c) => !vorher.has(c)), []);
+  // Und die Liste der Spiele darf jeder sehen - sie verraet nichts.
+  assert.equal((await fetch(`http://localhost:${HAFEN}/api/spiele`)).status, 200);
+  fremder.zu();
+});

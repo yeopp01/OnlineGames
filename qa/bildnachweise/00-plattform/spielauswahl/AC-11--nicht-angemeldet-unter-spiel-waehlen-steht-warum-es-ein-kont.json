@@ -1,0 +1,10 @@
+{
+  "spec": "00-plattform/spielauswahl.md",
+  "ac": "AC-11",
+  "titel": "Nicht angemeldet: unter Spiel waehlen steht, warum es ein Konto braucht, und die Anmeldemaske",
+  "datei": "e2e/tests/strategie-einstieg.spec.mjs",
+  "pfad": [
+    "Einstieg am Stueck",
+    "auswahl AC-11: ohne Anmeldung gibt es statt der Spiele die Anmeldemaske"
+  ]
+}

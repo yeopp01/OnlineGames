@@ -49,9 +49,8 @@ etwas anderem gearbeitet.
   Einstellungen braucht (Kartengröße, Vorrat), gehört die Erzeugung ans Spiel
   (Schnittstelle aus [ADR-0006](../adr/0006-mehrere-spiele.md): `aufbau`,
   `takten`, `zustand`, `befehl`).
-- Offen im Einstieg: AC-11 (Eröffnen verlangt
-  Konto — deckungsgleich mit konten AC-16, nur Beleg nachziehen), AC-6 (Karte,
-  Vorrat → Stufe A). AC-12 und AC-14 bis AC-17 betreffen fortlaufende Spiele
+- **Der Einstieg ist erreicht** (fahrplan AC-1, Runde 6). Offen bleibt dort nur
+  auswahl AC-6 (Kartengröße, Vorrat → Stufe A). AC-12 und AC-14 bis AC-17 betreffen fortlaufende Spiele
   und Spielstände; für das Strategiespiel nicht nötig — nicht vorziehen.
 - Laufzeiten nur messen, wenn die Maschine ruhig ist: vor einer Messung
   nach fremden `node`-/`chrome`-Prozessen sehen. Andere Projekte laufen hier
@@ -70,6 +69,7 @@ Zahlen, gegen die spätere Runden vergleichen. Mit Datum und Commit.
 | 2026-09-16 | Tests ohne Browser / im Browser; Browserlauf | 247 / 66; 51,9 s | Runde 2 |
 | 2026-09-16 | Tests ohne Browser / im Browser; Browserlauf | 250 / 69; 1,3–2,2 min — **nicht vergleichbar**: gleichzeitig liefen Tests anderer Projekte (Conjola) | Runde 3 |
 | 2026-09-16 | Tests ohne Browser / im Browser; Browserlauf (Maschine ruhig) | 251 / 75; 55,0 s | Runde 4 |
+| 2026-09-16 | Tests ohne Browser / im Browser; Browserlauf | 252 / 77; 1,1 min — nicht vergleichbar, 8 fremde Testprozesse | Runde 6 |
 
 ## Rückschauen
 
@@ -102,6 +102,11 @@ Runde ist gescheitert oder halb liegen geblieben.
 Neueste oben. Eine Zeile je Runde: Nummer, Datum, Kriterien, Ergebnis,
 wichtigste Erkenntnis.
 
+- **6** · 2026-09-16 · auswahl AC-11 und fahrplan AC-1 fertig: der Einstieg
+  am Stück, von der Anmeldemaske bis zur laufenden Partie, Code über die
+  Zwischenablage. Gelernt: eine Bildunterschrift behauptete „beide Basen",
+  zu sehen war eine — auch Unterschriften gehören geprüft, nicht nur Bilder.
+  Nächste Runde: **Spec-Runde Stufe A**.
 - **5** · 2026-09-16 · Rückschau: drei Regeln in die Anweisung, Bilder in
   jeder Abschlussnachricht, fahrplan AC-1 von auswahl AC-12 gelöst.
 - **4** · 2026-09-16 · fahrplan AC-2, bedienung AC-1, 2, 7, 8, 12, 16 und

@@ -2,7 +2,7 @@
 
 **Bereich:** Plattform
 **Kuerzel:** auswahl
-**Stand:** 10/17 fertig · 7 offen
+**Stand:** 11/17 fertig · 6 offen
 
 ## Zweck
 
@@ -64,7 +64,7 @@ Wer nur mitspielt, ueberspringt alles: Code eingeben, Namen eingeben, drin
 
 ### Eroeffnen
 
-- **AC-11** `offen` **Eroeffnen verlangt ein Konto** — Deckungsgleich mit
+- **AC-11** `fertig` **Eroeffnen verlangt ein Konto** — Deckungsgleich mit
   [Konten](konten.md) AC-16; hier ist der Bildschirm, an dem es auffaellt.
 - **AC-12** `offen` **Fortlaufend auch allein spielbar** — Ein Hausbau startet
   allein. Die Untergrenze von zwei Spielern gilt nur fuer Sitzungsspiele.

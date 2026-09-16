@@ -132,7 +132,7 @@ Umfang hinzufügt, dort nachsehen.
 
 ## Stand
 
-**279 von 443 Kriterien fertig.** 251 Tests ohne Browser, 75 im Browser. Die
+**281 von 443 Kriterien fertig.** 252 Tests ohne Browser, 77 im Browser. Die
 Übersicht ist der Bericht: `npm run qa:report`.
 
 Gebaut ist der Unterbau: Räume, Übertragung, Karte, Wegfindung, Sammeln,
@@ -172,9 +172,10 @@ Raster — die Darstellung kommt mit Stufe A.
 
 Der [Fahrplan](specs/10-strategie/fahrplan.md) ist die Reihenfolge:
 
-1. **Einstieg** — fast fertig: Auswahl, Einstellungen, Warteraum stehen;
-   fehlt der Beleg zu auswahl AC-11 (fahrplan AC-1).
-2. **Stufe A** Dunkle Zeit mit Wirtschafts-KI und Prüfstand · **B** Feudalzeit
+Einstieg (Spielauswahl, Einstellungen, Warteraum) und Spielbild im Browser
+sind erreicht (fahrplan AC-1, AC-2). Als Nächstes:
+
+1. **Stufe A** Dunkle Zeit mit Wirtschafts-KI und Prüfstand · **B** Feudalzeit
    · **C** Partieende und KI-Gegner · **D** Ritterzeit · **E** fünf Völker ·
    **F** Imperialzeit · **G** Betrieb auf dem Hetzner-VPS.
 

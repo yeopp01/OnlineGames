@@ -1,0 +1,10 @@
+{
+  "spec": "10-strategie/fahrplan.md",
+  "ac": "AC-1",
+  "titel": "Vor dem Start: Anna hat angemeldet, eingestellt und eroeffnet, Bert ist mit dem kopierten Code da",
+  "datei": "e2e/tests/strategie-einstieg.spec.mjs",
+  "pfad": [
+    "Einstieg am Stueck",
+    "fahrplan AC-1: anmelden, waehlen, einstellen, eroeffnen, Code weitergeben, starten"
+  ]
+}
