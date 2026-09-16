@@ -102,7 +102,7 @@ test.describe('Das Spielbild', () => {
     await nachweis(anna, {
       spec: BEDIENUNG,
       ac: 'AC-1',
-      titel: 'Losgelassen: alle fuenf tragen den weissen Ring der Auswahl',
+      titel: 'Losgelassen: alle fuenf stehen auf der weissen Auswahlellipse',
       test: info,
     });
   });
@@ -114,7 +114,7 @@ test.describe('Das Spielbild', () => {
     await nachweis(anna, {
       spec: BEDIENUNG,
       ac: 'AC-2',
-      titel: 'Ein Klick auf einen Sammler: nur er traegt den Ring',
+      titel: 'Ein Klick auf einen Dorfbewohner: nur er steht auf der Auswahlellipse',
       test: info,
     });
   });
@@ -215,7 +215,7 @@ test.describe('Das Spielbild', () => {
     await nachweis(anna, {
       spec: BEDIENUNG,
       ac: 'AC-16',
-      titel: 'Nah herangeholt: beladene Sammler tragen oben rechts einen braunen Punkt fuer Holz',
+      titel: 'Nah herangeholt: beladene Dorfbewohner tragen ein Holzbuendel auf dem Ruecken',
       test: info,
     });
     for (let i = 0; i < 5; i++) await anna.mouse.wheel(0, 100);

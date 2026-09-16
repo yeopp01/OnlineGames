@@ -2,7 +2,7 @@
 
 **Bereich:** Strategie
 **Kuerzel:** darstellung
-**Stand:** 0/11 fertig · 11 offen
+**Stand:** 1/11 fertig · 10 offen
 
 ## Zweck
 
@@ -42,7 +42,7 @@ der Spieler. Keine Bilddateien aus fremder Quelle.
   Dachkante), nicht als ganze Fläche.
 - **AC-5** `offen` **Baustelle sichtbar** — Eine Baustelle zeigt Gerüst und Fundament und
   wächst mit dem Fortschritt.
-- **AC-6** `offen` **Einheiten sind Figuren** — Dorfbewohner, Miliz und Späherreiter sind an der
+- **AC-6** `fertig` **Einheiten sind Figuren** — Dorfbewohner, Miliz und Späherreiter sind an der
   Gestalt zu unterscheiden (Werkzeug, Schwert und Schild, Pferd), mit
   Spielerfarbe am Körper. Ein Dorfbewohner zeigt, was er trägt.
 - **AC-7** `offen` **Vorn verdeckt hinten** — Was weiter unten im Bild steht, wird später

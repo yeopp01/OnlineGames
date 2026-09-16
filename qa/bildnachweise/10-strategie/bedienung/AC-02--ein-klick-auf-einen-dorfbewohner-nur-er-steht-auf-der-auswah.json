@@ -1,7 +1,7 @@
 {
   "spec": "10-strategie/bedienung.md",
   "ac": "AC-2",
-  "titel": "Ein Klick auf einen Sammler: nur er traegt den Ring",
+  "titel": "Ein Klick auf einen Dorfbewohner: nur er steht auf der Auswahlellipse",
   "datei": "e2e/tests/strategie-spielbild.spec.mjs",
   "pfad": [
     "Das Spielbild",

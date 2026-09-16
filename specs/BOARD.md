@@ -7,9 +7,9 @@ Eine Zeile je Abnahmekriterium. Gepflegt wird der Status in der Spec selbst,
 hier steht er zusammengefasst. Erzeugt mit `npm run specs:board`; als Seite
 mit Bildnachweisen, Filter und Suche mit `npm run qa:report`.
 
-**Gesamt:** 282/485 fertig · 6 in QA · 4 geplant · 190 offen · 3 zurueckgestellt
+**Gesamt:** 283/485 fertig · 6 in QA · 4 geplant · 189 offen · 3 zurueckgestellt
 
-**Nachweise:** 89 Kriterien mit Bild · 193 ohne Bild, begruendet in `qa/ohne-bild.json`
+**Nachweise:** 90 Kriterien mit Bild · 193 ohne Bild, begruendet in `qa/ohne-bild.json`
 
 ## Nach Spezifikation
 
@@ -23,7 +23,7 @@ mit Bildnachweisen, Filter und Suche mit `npm run qa:report`.
 | [Uebertragung](00-plattform/uebertragung.md)                   | -         | 1     | 2       | 1     | -               | 6      |
 | [Bauen und Ausbilden](10-strategie/bauen.md)                   | -         | -     | -       | 21    | -               | -      |
 | [Bedienung](10-strategie/bedienung.md)                         | -         | -     | -       | 23    | -               | 6      |
-| [Darstellung](10-strategie/darstellung.md)                     | -         | -     | -       | 11    | -               | -      |
+| [Darstellung](10-strategie/darstellung.md)                     | -         | -     | -       | 10    | -               | 1      |
 | [Einheiten und Befehle](10-strategie/einheiten-und-befehle.md) | -         | -     | -       | 8     | -               | 9      |
 | [Fahrplan zum Klon](10-strategie/fahrplan.md)                  | -         | -     | -       | 20    | -               | 2      |
 | [Kampf](10-strategie/kampf.md)                                 | -         | -     | -       | 14    | -               | -      |
@@ -61,7 +61,7 @@ mit Bildnachweisen, Filter und Suche mit `npm run qa:report`.
 - **Abbruch ist sichtbar** — [Uebertragung](00-plattform/uebertragung.md) AC-9
 - **Automatischer Wiederaufbau** — [Uebertragung](00-plattform/uebertragung.md) AC-10
 
-## Offen (190)
+## Offen (189)
 
 - **Anmeldung ueber Google/GitHub** — [Konten und Anmeldung](00-plattform/konten.md) AC-6
 - **Bilanz je Konto** — [Konten und Anmeldung](00-plattform/konten.md) AC-14
@@ -155,7 +155,6 @@ mit Bildnachweisen, Filter und Suche mit `npm run qa:report`.
 - **Bäume, Sträucher, Felsen** — [Darstellung](10-strategie/darstellung.md) AC-3
 - **Gebäude haben Körper** — [Darstellung](10-strategie/darstellung.md) AC-4
 - **Baustelle sichtbar** — [Darstellung](10-strategie/darstellung.md) AC-5
-- **Einheiten sind Figuren** — [Darstellung](10-strategie/darstellung.md) AC-6
 - **Vorn verdeckt hinten** — [Darstellung](10-strategie/darstellung.md) AC-7
 - **Auswahl und Leben am Boden** — [Darstellung](10-strategie/darstellung.md) AC-8
 - **Eine Schautafel** — [Darstellung](10-strategie/darstellung.md) AC-9

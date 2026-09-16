@@ -1,0 +1,9 @@
+{
+  "spec": "10-strategie/darstellung.md",
+  "ac": "AC-6",
+  "titel": "Schautafel: Dorfbewohner mit Axt, mit Holz, Beeren und Gold, Miliz mit Schwert und Schild, Spaeherreiter zu Pferd",
+  "datei": "e2e/tests/strategie-figuren.spec.mjs",
+  "pfad": [
+    "darstellung AC-6: Dorfbewohner, Miliz und Spaeherreiter sind drei Gestalten in Spielerfarbe"
+  ]
+}

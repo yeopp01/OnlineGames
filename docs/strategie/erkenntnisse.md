@@ -47,6 +47,16 @@ etwas anderem gearbeitet.
   schäbige Punkte, sondern etwas, das halbwegs wie ein Sammler aussieht."
   Jede Runde, die etwas Neues ins Spielbild bringt, zeichnet es als erkennbare
   Figur oder Form — nie als Platzhalterpunkt. Deshalb A1b vorgezogen.
+- **Einheiten stapeln sich** (Runde 9 gesehen): mehrere Dorfbewohner auf
+  demselben Waldfeld werden übereinander gezeichnet — zwei Figuren sehen aus
+  wie eine mit Bündel *und* Axt. Gehört zu einheiten AC-10/AC-20 (Schritt A9);
+  mit Figuren fällt es jetzt auf, früher nicht.
+- Figuren liegen in `public/figuren.js` (Raster 24 hoch, Fußpunkt unten),
+  Schautafel unter `/schautafel.html`. Jede neue Einheit bekommt dort zuerst
+  eine Figur und einen Eintrag, dann kommt sie ins Spiel.
+- Zum schnellen Ansehen ohne Testlauf: ein Wegwerfskript unter `e2e/` (dort
+  findet es `@playwright/test`), Server auf eigenem Hafen, Screenshot in den
+  Temp-Ordner, danach löschen. Auf den Server warten, nicht schlafen.
 - Die Welt entsteht über den Steckbrief: `erzeugen(spieler, einstellungen)`
   bekommt alle Einstellungen samt Startwert (raeume AC-16). Kartengröße und
   Vorrat (A2) kommen dort an, ohne `raeume.js` anzufassen.
@@ -103,6 +113,14 @@ Runde ist gescheitert oder halb liegen geblieben.
 Neueste oben. Eine Zeile je Runde: Nummer, Datum, Kriterien, Ergebnis,
 wichtigste Erkenntnis.
 
+- **9** · 2026-09-16 · A1b: darstellung AC-6 fertig — Dorfbewohner (Hut,
+  Kittel in Spielerfarbe, Axt; trägt Holzbündel, Beerenkorb, Gold), Miliz
+  (Helm, Schwert, Schild), Späherreiter zu Pferd; Schautafel; im Spiel
+  Figuren mit Blickrichtung, Schritt und Auswahlellipse. Erster Wurf beim
+  Ansehen verworfen (Axt vor dem Gesicht, schwebender Reiterkopf). Zwei
+  Testannahmen waren falsch, nicht die Figuren: Ladung macht die Figur nicht
+  größer (Axt fällt weg), Holz und Beeren unterscheiden sich in der Farbe,
+  nicht im Umriss. Nächste Runde: **A2 Karte**.
 - **8** · 2026-09-16 · A1: raeume AC-16 fertig — `raeume.js` lädt kein Spiel
   mehr, die Welt entsteht über den Steckbrief. Gelernt: ein Taktzähler mit
   echter Uhr schwankt unter Windows (7 statt 10 in 0,5 s); `t.mock.timers`

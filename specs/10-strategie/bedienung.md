@@ -54,8 +54,9 @@ Befehl steht.
 
 ### Rückmeldung
 
-- **AC-16** `fertig` **Ladung ist sichtbar** — Ein beladener Sammler trägt einen Punkt in der Farbe
-  seiner Ware.
+- **AC-16** `fertig` **Ladung ist sichtbar** — Ein beladener Dorfbewohner trägt seine Ware
+  sichtbar auf dem Rücken: Holzbündel, Beerenkorb, Gold- oder Steinbrocken
+  (→ [Darstellung](darstellung.md) AC-6).
 - **AC-17** `offen` **Rohstoffe zählen sichtbar hoch** — Nicht springen. Man muss sehen, dass die
   Wirtschaft läuft.
 - **AC-18** `offen` **Abgelehnte Befehle sagen warum** — „Zu wenig Holz", „Bevölkerung voll" — kurz

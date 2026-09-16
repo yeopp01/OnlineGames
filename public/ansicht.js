@@ -1,9 +1,20 @@
 // Zeichnet die Welt und nimmt Maus und Tastatur entgegen. Rechnen tut hier
 // nichts - der Server schickt den Zustand, wir malen ihn.
+import { figurZeichnen } from './figuren.js';
 
 const FELD = 22; // Bildpunkte je Feld bei Vergroesserung 1
+// Eine Figur ist etwas hoeher als ein Feld; ihr Koerper liegt ueber dem
+// Fusspunkt, deshalb zielt ein Klick auf die Mitte des Koerpers.
+const FIGUR_HOEHE = 1.2; // in Feldern
+const KOERPER_MITTE = 0.5; // in Feldern ueber dem Fusspunkt
 const FARBEN = ['#2f4636', '#1f3a24', '#4a3a52', '#1b2f4a']; // Gras, Wald, Beere, Wasser
 const GRAS = 0;
+
+// Schrittphase fuer die Beine: laeuft mit der Uhr, je Einheit versetzt, damit
+// eine Gruppe nicht im Gleichschritt marschiert.
+function jetztPhase(id) {
+  return performance.now() / 110 + id * 1.7;
+}
 
 export class Ansicht {
   constructor(leinwand, befehlSenden) {
@@ -20,6 +31,7 @@ export class Ansicht {
     this.nachher = new Map();
     this.empfangen = 0;
     this.ausgewaehlt = new Set();
+    this.blicke = new Map(); // Einheit → -1 links, 1 rechts
     this.vorraete = { holz: 0, nahrung: 0 };
 
     this.kamera = { x: 0, y: 0, zoom: 1 };
@@ -148,7 +160,7 @@ export class Ansicht {
       let besterAbstand = 1.2;
       for (const einheit of this.nachher.values()) {
         if (einheit.b !== this.ich) continue;
-        const abstand = Math.hypot(einheit.x - a.x, einheit.y - a.y);
+        const abstand = Math.hypot(einheit.x - a.x, einheit.y - KOERPER_MITTE - a.y);
         if (abstand < besterAbstand) {
           besterAbstand = abstand;
           bestes = einheit;
@@ -266,38 +278,32 @@ export class Ansicht {
     const x = alt ? alt.x + (einheit.x - alt.x) * anteil : einheit.x;
     const y = alt ? alt.y + (einheit.y - alt.y) * anteil : einheit.y;
     const punkt = this.zuBild(x, y);
-    const r = Math.max(3, FELD * 0.32 * this.kamera.zoom);
+    const hoehe = Math.max(12, FELD * FIGUR_HOEHE * this.kamera.zoom);
     const spieler = this.spieler.get(einheit.b);
     const stift = this.stift;
 
+    // Blickrichtung aus der Bewegung; wer steht, schaut weiter dorthin, wohin
+    // er zuletzt ging.
+    const dx = alt ? einheit.x - alt.x : 0;
+    const laeuft = alt && Math.hypot(dx, einheit.y - alt.y) > 0.001;
+    if (Math.abs(dx) > 0.001) this.blicke.set(einheit.i, dx < 0 ? -1 : 1);
+
     if (this.ausgewaehlt.has(einheit.i)) {
+      // Die Auswahl liegt als Ellipse am Boden, unter den Fuessen.
       stift.strokeStyle = '#ffffff';
       stift.lineWidth = 2;
       stift.beginPath();
-      stift.arc(punkt.x, punkt.y, r + 4, 0, Math.PI * 2);
+      stift.ellipse(punkt.x, punkt.y, hoehe * 0.42, hoehe * 0.17, 0, 0, Math.PI * 2);
       stift.stroke();
     }
 
-    stift.fillStyle = spieler ? spieler.farbe : '#888';
-    stift.beginPath();
-    stift.arc(punkt.x, punkt.y, r, 0, Math.PI * 2);
-    stift.fill();
-
-    // Ein Sammler mit Ladung traegt einen Punkt in der Farbe der Ware - schraeg
-    // oben rechts, ausserhalb des Auswahlrings, mit dunklem Rand, damit er auf
-    // Gras, Wald und Einheit gleichermassen zu sehen ist (bedienung AC-16).
-    if (einheit.l > 0) {
-      const ladung = Math.max(3, r * 0.55);
-      const lx = punkt.x + r * 0.9;
-      const ly = punkt.y - r * 0.9;
-      stift.fillStyle = einheit.a === 'h' ? '#c08a3e' : '#e0566f';
-      stift.strokeStyle = '#0f1216';
-      stift.lineWidth = 1.5;
-      stift.beginPath();
-      stift.arc(lx, ly, ladung, 0, Math.PI * 2);
-      stift.fill();
-      stift.stroke();
-    }
+    // Ein Dorfbewohner mit Ladung traegt sie sichtbar: Holzbuendel oder
+    // Beerenkorb auf dem Ruecken (bedienung AC-16, darstellung AC-6).
+    figurZeichnen(stift, 'dorfbewohner', punkt.x, punkt.y, hoehe, spieler ? spieler.farbe : '#888888', {
+      blick: this.blicke.get(einheit.i) || 1,
+      ladung: einheit.l > 0 ? einheit.a : null,
+      schritt: laeuft ? jetztPhase(einheit.i) : 0,
+    });
   }
 
   rahmenZeichnen() {
