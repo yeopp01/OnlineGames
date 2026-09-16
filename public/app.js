@@ -23,6 +23,8 @@ const teile = {
 let draht = null;
 let ich = null;
 let ansicht = null;
+// Wo eine Absage beim Eroeffnen hingehoert: an das Formular, aus dem es kam.
+let meldeort = null;
 
 teile.name.value = localStorage.getItem('name') || '';
 
@@ -45,6 +47,8 @@ function senden(nachricht) {
 }
 
 function verbinden(dann) {
+  // Ein abgewiesener Versuch laesst eine offene Verbindung ohne Raum zurueck.
+  if (draht && !ansicht) draht.close();
   const schema = location.protocol === 'https:' ? 'wss' : 'ws';
   draht = new WebSocket(`${schema}://${location.host}`);
   draht.addEventListener('open', dann);
@@ -85,7 +89,7 @@ function empfangen(nachricht) {
       break;
 
     case 'fehler':
-      melden(nachricht.text, teile.warteraum.hidden ? teile.meldung : teile.wartemeldung);
+      melden(nachricht.text, teile.warteraum.hidden ? meldeort || teile.meldung : teile.wartemeldung);
       break;
   }
 }
@@ -113,10 +117,62 @@ function spielerzahl({ von, bis }) {
   return `${von} bis ${bis} Spieler`;
 }
 
-function eroeffnen() {
+function eroeffnen(art, einstellungen, ort) {
   // Kein Name noetig: der Server nimmt den aus dem Konto.
   melden('');
-  verbinden(() => senden({ typ: 'erstellen' }));
+  meldeort = ort;
+  melden('', ort);
+  verbinden(() => senden({ typ: 'erstellen', art, einstellungen }));
+}
+
+// Ein Feld je Einstellung, so wie das Spiel sie beschreibt (AC-4). Die Seite
+// kennt nur die drei Arten, keine einzelne Einstellung.
+function einstellungsfeld(e) {
+  const feld = document.createElement('label');
+  feld.className = 'feld';
+  const titel = document.createElement('span');
+  titel.textContent = e.name;
+  let eingabe;
+  if (e.art === 'wahl') {
+    eingabe = document.createElement('select');
+    for (const w of e.werte) {
+      const option = document.createElement('option');
+      option.value = JSON.stringify(w.wert);
+      option.textContent = w.name;
+      option.selected = w.wert === e.vorgabe;
+      eingabe.append(option);
+    }
+  } else {
+    eingabe = document.createElement('input');
+    eingabe.autocomplete = 'off';
+    if (e.art === 'zahl') {
+      eingabe.type = 'number';
+      eingabe.min = e.von;
+      eingabe.max = e.bis;
+      eingabe.value = e.vorgabe;
+      titel.textContent = `${e.name} (${e.von} bis ${e.bis})`;
+    } else {
+      eingabe.inputMode = 'numeric';
+      eingabe.placeholder = 'zufaellig';
+    }
+  }
+  eingabe.dataset.einstellung = e.schluessel;
+  eingabe.dataset.art = e.art;
+  feld.append(titel, eingabe);
+  return feld;
+}
+
+// Was im Formular steht, so roh wie noetig: pruefen tut der Server (AC-8).
+function einstellungenLesen(form) {
+  const werte = {};
+  for (const eingabe of form.querySelectorAll('[data-einstellung]')) {
+    const roh = eingabe.value.trim();
+    const { art, einstellung } = eingabe.dataset;
+    if (art === 'wahl') werte[einstellung] = JSON.parse(roh);
+    else if (art === 'startwert') werte[einstellung] = roh === '' ? null : /^\d+$/.test(roh) ? Number(roh) : roh;
+    else if (roh !== '') werte[einstellung] = /^-?\d+$/.test(roh) ? Number(roh) : roh;
+  }
+  return werte;
 }
 
 function spielkarte(spiel) {
@@ -157,11 +213,38 @@ function spielkarte(spiel) {
     knopf.addEventListener('click', () => location.assign(spiel.einstieg.adresse));
   } else {
     knopf.textContent = 'Eroeffnen';
-    knopf.addEventListener('click', eroeffnen);
   }
   fuss.append(zahl, knopf);
-
   karte.append(kopf, satz, fuss);
+
+  if (spiel.stand !== 'gesperrt' && spiel.einstieg.art === 'raum') {
+    // Erst die Einstellungen zeigen; wer nichts aendert, eroeffnet mit den
+    // Vorgaben (AC-5).
+    const form = document.createElement('form');
+    form.className = 'einstellungen';
+    form.hidden = true;
+    form.dataset.einstellungenFuer = spiel.art;
+    form.append(...spiel.einstellungen.map(einstellungsfeld));
+    const los = document.createElement('button');
+    los.type = 'submit';
+    los.className = 'haupt breit';
+    los.dataset.eroeffnen = spiel.art;
+    los.textContent = 'Partie eroeffnen';
+    const absage = document.createElement('p');
+    absage.className = 'meldung';
+    absage.hidden = true;
+    form.append(absage, los);
+    form.addEventListener('submit', (ereignis) => {
+      ereignis.preventDefault();
+      eroeffnen(spiel.art, einstellungenLesen(form), absage);
+    });
+    knopf.addEventListener('click', () => {
+      form.hidden = false;
+      knopf.hidden = true;
+      form.querySelector('input, select, button')?.focus();
+    });
+    karte.append(form);
+  }
   return karte;
 }
 
@@ -176,6 +259,7 @@ async function spieleLaden() {
 }
 
 document.getElementById('beitreten').addEventListener('click', () => {
+  meldeort = null;
   const name = teile.name.value.trim();
   // Bindestriche und Leerzeichen fallen weg - vorgelesen wird ABC-DEF.
   const code = teile.code.value.toUpperCase().replace(/[^A-Z0-9]/g, '');

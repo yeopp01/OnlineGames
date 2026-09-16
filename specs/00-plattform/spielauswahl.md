@@ -2,7 +2,7 @@
 
 **Bereich:** Plattform
 **Kuerzel:** auswahl
-**Stand:** 3/17 fertig · 14 offen
+**Stand:** 6/17 fertig · 11 offen
 
 ## Zweck
 
@@ -44,17 +44,19 @@ Wer nur mitspielt, ueberspringt alles: Code eingeben, Namen eingeben, drin
 
 ### Einstellungen
 
-- **AC-4** `offen` **Spiel bringt Einstellungen mit** — Die Plattform kennt sie nicht,
+- **AC-4** `fertig` **Spiel bringt Einstellungen mit** — Die Plattform kennt sie nicht,
   sie zeigt nur an, was das Spiel als Liste liefert: Name, Art, Vorgabe,
   Grenzen.
-- **AC-5** `offen` **Vorgaben ergeben spielbare Partie** — Wer nichts anfasst und sofort
+- **AC-5** `fertig` **Vorgaben ergeben spielbare Partie** — Wer nichts anfasst und sofort
   eroeffnet, bekommt eine sinnvolle Runde. Einstellungen sind zum Abweichen
   da, nicht zum Ausfuellen.
 - **AC-6** `offen` **Einstellungen des Strategiespiels** — Kartengroesse, Spielerzahl, Startwert
-  der Karte, Vorratsmenge, Volk je Spieler.
+  der Karte, Vorratsmenge. _(Spielerzahl und Startwert stehen schon; Karte und
+  Vorrat kommen mit dem Kartenumbau in Stufe A, das Volk je Spieler mit
+  Stufe E → [Fahrplan](../10-strategie/fahrplan.md) AC-16.)_
 - **AC-7** `offen` **Startwert sichtbar und eingebbar** — Wer eine gute Karte hatte, kann
   sie wieder spielen; wer einen Fehler gefunden hat, kann ihn wiederholen.
-- **AC-8** `offen` **Ungueltige Werte werden abgewiesen** — Geprueft wird auf
+- **AC-8** `fertig` **Ungueltige Werte werden abgewiesen** — Geprueft wird auf
   dem Server, nicht nur im Browser.
 - **AC-9** `offen` **Einstellungen stehen im Warteraum** — Die Mitspieler sehen vor dem Start, worauf
   sie sich einlassen.

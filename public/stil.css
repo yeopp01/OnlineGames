@@ -357,3 +357,23 @@ button.haupt:disabled {
   color: var(--leise);
   cursor: not-allowed;
 }
+
+.einstellungen {
+  margin-top: 0.8rem;
+  padding-top: 0.8rem;
+  border-top: 1px solid var(--rand);
+}
+
+select {
+  width: 100%;
+  padding: 0.65rem 0.8rem;
+  background: #12151a;
+  border: 1px solid var(--rand);
+  border-radius: 8px;
+  color: var(--schrift);
+  font: inherit;
+}
+
+.einstellungen .meldung {
+  margin: 0 0 0.8rem;
+}

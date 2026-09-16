@@ -1,0 +1,10 @@
+{
+  "spec": "00-plattform/spielauswahl.md",
+  "ac": "AC-8",
+  "titel": "Startwert mit Buchstaben: der Server weist ab, die Seite nennt den Grund, kein Raum entsteht",
+  "datei": "e2e/tests/spielauswahl.spec.mjs",
+  "pfad": [
+    "Spiel waehlen",
+    "auswahl AC-8: ein unsinniger Startwert kommt als Satz vom Server zurueck"
+  ]
+}

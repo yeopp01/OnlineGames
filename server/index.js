@@ -9,6 +9,7 @@ const { Schutz, adresseVon } = require('./schutz');
 const { konten } = require('./konten');
 const { manager } = require('./spiele/manager/netz');
 const verzeichnis = require('./spiele/verzeichnis');
+const partieEinstellungen = require('./spiele/einstellungen');
 
 const HAFEN = Number(process.env.PORT) || 4180;
 // Nur einschalten, wenn wirklich ein Reverse Proxy davorsteht - sonst darf
@@ -47,7 +48,8 @@ async function starten(hafen = HAFEN, einstellungen = {}) {
   const raeume = new Raeume();
   // Einmal beim Start gelesen: ein kaputter Steckbrief verhindert den Start,
   // statt spaeter eine leere Uebersicht zu zeigen.
-  const spiele = JSON.stringify({ spiele: verzeichnis.lesen() });
+  const spielliste = verzeichnis.lesen();
+  const spiele = JSON.stringify({ spiele: spielliste });
   const schutz = new Schutz(einstellungen.schutz);
   const zugang = await konten({
     hafen,
@@ -121,17 +123,25 @@ async function starten(hafen = HAFEN, einstellungen = {}) {
     // jeder 6.150. Versuch - ohne Bremse findet ein Skript in Minuten eine
     // fremde Partie. Wer die Bremse ausloest, fliegt raus.
     // Eroeffnen verlangt ein Konto, Mitspielen nicht.
-    async function eroeffnen() {
+    async function eroeffnen(nachricht) {
       const angemeldet = await sitzungBald;
       if (draht.readyState !== 1) return;
       if (raum) return;
       if (!angemeldet) {
         return fehler('Zum Eroeffnen einer Partie ist eine Anmeldung noetig.');
       }
+      // Ohne Angabe das Strategiespiel - so haben es aeltere Seiten geschickt.
+      const spiel = verzeichnis.eroeffenbar(spielliste, nachricht.art === undefined ? 'strategie' : nachricht.art);
+      if (!spiel) return fehler('Dieses Spiel laesst sich nicht eroeffnen.');
+      const geprueft = partieEinstellungen.pruefen(spiel.einstellungen, nachricht.einstellungen);
+      if (geprueft.fehler) return fehler(geprueft.fehler);
+
       const erlaubt = schutz.raumErlaubt(adresse);
       if (!erlaubt.ok) return fehler(erlaubt.grund);
 
       raum = raeume.anlegen();
+      raum.art = spiel.art;
+      raum.einstellungen = geprueft.werte;
       raum.adresse = adresse;
       raum.eigentuemer = angemeldet.user.id;
       schutz.raumAuf(adresse);
@@ -170,7 +180,7 @@ async function starten(hafen = HAFEN, einstellungen = {}) {
       switch (nachricht.typ) {
         case 'erstellen': {
           if (raum) return;
-          eroeffnen();
+          eroeffnen(nachricht);
           break;
         }
         case 'beitreten': {
@@ -202,9 +212,12 @@ async function starten(hafen = HAFEN, einstellungen = {}) {
           if (!raum || !spieler) return;
           // Nur wer den Raum eroeffnet hat, startet die Partie.
           if (raum.spieler[0] !== spieler) return fehler('Nur der Gastgeber startet.');
-          const startwert = Number.isInteger(nachricht.startwert)
-            ? nachricht.startwert
-            : Math.floor(Math.random() * 1e9);
+          // Ein eingestellter Startwert gilt; sonst der aus der Nachricht
+          // (Tests), sonst zufaellig.
+          const eingestellt = raum.einstellungen.startwert;
+          const startwert = Number.isInteger(eingestellt)
+            ? eingestellt
+            : Number.isInteger(nachricht.startwert) ? nachricht.startwert : Math.floor(Math.random() * 1e9);
           const ergebnis = raum.starten(startwert);
           if (ergebnis.fehler) return fehler(ergebnis.fehler);
           break;

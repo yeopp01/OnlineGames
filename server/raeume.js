@@ -42,6 +42,14 @@ class Raum {
     this.welt = null;
     this.uhr = null;
     this.beruehrt = Date.now();
+    this.art = 'strategie';
+    // Die geprueften Werte aus server/spiele/einstellungen.js. `spieler`
+    // begrenzt den Raum; alles andere gehoert dem Spiel.
+    this.einstellungen = {};
+  }
+
+  get hoechstens() {
+    return Math.min(MAX_SPIELER, this.einstellungen.spieler || MAX_SPIELER);
   }
 
   get gestartet() {
@@ -50,7 +58,7 @@ class Raum {
 
   beitreten(name, draht) {
     if (this.gestartet) return { fehler: 'Die Partie laeuft schon.' };
-    if (this.spieler.length >= MAX_SPIELER) return { fehler: 'Der Raum ist voll.' };
+    if (this.spieler.length >= this.hoechstens) return { fehler: 'Der Raum ist voll.' };
     const spieler = {
       id: randomUUID().slice(0, 8),
       name: namePruefen(name),
@@ -116,6 +124,8 @@ class Raum {
       typ: 'raum',
       code: this.code,
       gestartet: this.gestartet,
+      art: this.art,
+      einstellungen: this.einstellungen,
       spieler: this.spieler.map((s) => ({ id: s.id, name: s.name, verbunden: s.verbunden })),
     };
   }

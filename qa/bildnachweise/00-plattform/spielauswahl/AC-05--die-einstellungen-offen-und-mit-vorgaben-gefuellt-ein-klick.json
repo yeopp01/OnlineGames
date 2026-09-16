@@ -1,0 +1,10 @@
+{
+  "spec": "00-plattform/spielauswahl.md",
+  "ac": "AC-5",
+  "titel": "Die Einstellungen offen und mit Vorgaben gefuellt - ein Klick auf Partie eroeffnen genuegt",
+  "datei": "e2e/tests/spielauswahl.spec.mjs",
+  "pfad": [
+    "Spiel waehlen",
+    "auswahl AC-5: ohne etwas anzufassen eroeffnet, mit den Vorgaben im Raum"
+  ]
+}

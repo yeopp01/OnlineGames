@@ -98,6 +98,7 @@ test.describe('Anna eroeffnet, Bert tritt bei', () => {
 
   test('raeume AC-1: ein eroeffneter Raum zeigt seinen Code', async ({}, info) => {
     await anna.locator('[data-oeffnen="strategie"]').click();
+    await anna.locator('[data-eroeffnen="strategie"]').click();
     await expect(anna.locator('#warteraum')).toBeVisible();
     await expect(anna.locator('#raumcode')).toHaveText(/^[A-Z0-9]{3}-[A-Z0-9]{3}$/);
     raumcode = (await anna.locator('#raumcode').textContent()).trim();
@@ -119,6 +120,7 @@ test.describe('Anna eroeffnet, Bert tritt bei', () => {
     fehler.push(fehlerSammeln(allein));
     await allein.goto('/');
     await allein.locator('[data-oeffnen="strategie"]').click();
+    await allein.locator('[data-eroeffnen="strategie"]').click();
     await expect(allein.locator('#warteraum')).toBeVisible();
 
     await allein.locator('#starten').click();

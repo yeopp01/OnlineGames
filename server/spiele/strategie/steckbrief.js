@@ -10,5 +10,11 @@ module.exports = {
   spieler: { von: 2, bis: 6 },
   stand: 'im-bau',
   einstieg: { art: 'raum' },
+  // Die Vorgaben ergeben eine spielbare Partie (auswahl AC-5). Kartengroesse
+  // und Vorratsmenge kommen mit dem Umbau der Karte in Stufe A.
+  einstellungen: [
+    { schluessel: 'spieler', name: 'Hoechstens Spieler', art: 'zahl', von: 2, bis: 6, vorgabe: 6 },
+    { schluessel: 'startwert', name: 'Startwert der Karte', art: 'startwert', vorgabe: null },
+  ],
   reihenfolge: 1,
 };

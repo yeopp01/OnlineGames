@@ -18,8 +18,9 @@ etwas anderem gearbeitet.
   feststeht, heißt es in der Oberfläche „Strategie".
 - **Umlaute in sichtbaren Texten?** `CLAUDE.md` verlangt Umschreibung im
   Quelltext, und bisher gilt das auch für Texte auf dem Bildschirm („Fuehrt
-  einen Verein ueber …"). Das liest sich holprig. Vorschlag: im Quelltext `ü`
-  oder echte Umlaute nur in Zeichenketten für die Oberfläche. Bis zur Antwort
+  einen Verein ueber …"). Das liest sich holprig. Vorschlag: echte Umlaute
+  nur in Zeichenketten, die auf dem Bildschirm stehen; Bezeichner bleiben
+  umschrieben. Bis zur Antwort
   bleibt es bei der Umschreibung.
 
 ## Offene Fäden
@@ -33,11 +34,15 @@ etwas anderem gearbeitet.
 - Der Server schickt heute jedem den Vollzustand. Das trägt nicht bis 8×200
   Einheiten (fahrplan AC-20) und nicht für den Nebel (AC-13). Nicht vorziehen,
   aber keine Entscheidung treffen, die gebündelte Änderungen verbaut.
-- `raeume.js` startet heute fest das Strategiespiel. Die Übersicht steht
-  (auswahl AC-1 bis AC-3, Steckbriefe unter `server/spiele/<art>/steckbrief.js`);
-  für die Einstellungen (auswahl AC-4 ff.) muss der Raum wissen, **welches**
-  Spiel er startet, und das Spiel seine Einstellungen liefern. Das ist die
-  Schnittstelle aus [ADR-0006](../adr/0006-mehrere-spiele.md).
+- Einstellungen laufen: Steckbrief → `server/spiele/einstellungen.js` prüft →
+  `raum.einstellungen`. Aber `raeume.js` erzeugt weiter fest eine
+  Strategie-`Welt` und reicht nur den Startwert durch. Sobald die Welt selbst
+  Einstellungen braucht (Kartengröße, Vorrat), gehört die Erzeugung ans Spiel
+  (Schnittstelle aus [ADR-0006](../adr/0006-mehrere-spiele.md): `aufbau`,
+  `takten`, `zustand`, `befehl`).
+- Offen im Einstieg: auswahl AC-7 (Startwert nach dem Start sichtbar), AC-9
+  (Einstellungen im Warteraum), AC-10 (Gastgeber ändert sie bis zum Start),
+  AC-13 (Code kopieren).
 - Bei Änderungen am Vorraum: `npm run qa:nachweis -- vorraum spielauswahl`,
   sonst zeigen die Bilder zu konten und raeume den alten Stand.
 
@@ -49,6 +54,7 @@ Zahlen, gegen die spätere Runden vergleichen. Mit Datum und Commit.
 | --- | --- | --- | --- |
 | 2026-09-16 | Tests ohne Browser / im Browser | 242 / 63 | Runde 1 |
 | 2026-09-16 | Dauer Browserlauf gesamt | 46,6 s | Runde 1 |
+| 2026-09-16 | Tests ohne Browser / im Browser; Browserlauf | 247 / 66; 51,9 s | Runde 2 |
 
 ## Rückschauen
 
@@ -62,6 +68,13 @@ _(noch keine)_
 Neueste oben. Eine Zeile je Runde: Nummer, Datum, Kriterien, Ergebnis,
 wichtigste Erkenntnis.
 
+- **2** · 2026-09-16 · auswahl AC-4, 5, 8 fertig: Einstellungen als Liste im
+  Steckbrief, Formular daraus, Prüfung auf dem Server. Gelernt: (1) Ein Import
+  namens `einstellungen` wurde vom gleichnamigen Parameter in `starten()`
+  überdeckt — „is not a function" erst zur Laufzeit. (2) Das Bild zu AC-8
+  zeigte die Absage nicht, weil sie am Tafelende stand; beim Ansehen gefunden,
+  jetzt steht sie am Formular und der Test prüft `toBeInViewport`. Bilder
+  ansehen lohnt sich.
 - **1** · 2026-09-16 · auswahl AC-1–3 fertig: Übersicht der Spiele aus
   Steckbriefen, Kennzeichen „im Bau"/gesperrt. Gelernt: `body` war
   `overflow: hidden` und zentriert — jede längere Tafel wäre auf 1366×768

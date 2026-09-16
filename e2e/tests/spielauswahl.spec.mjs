@@ -41,6 +41,7 @@ test.describe('Spiel waehlen', () => {
 
     await page.goto('/');
     await page.locator('[data-oeffnen="strategie"]').click();
+    await page.locator('[data-eroeffnen="strategie"]').click();
     await expect(page.locator('#warteraum')).toBeVisible();
   });
 
@@ -70,6 +71,81 @@ test.describe('Spiel waehlen', () => {
       spec: AUSWAHL,
       ac: 'AC-3',
       titel: 'Strategie traegt im Bau und laesst sich eroeffnen, ein nicht spielbares Spiel steht gesperrt',
+      test: info,
+    });
+  });
+
+  test('auswahl AC-4: die Seite zeigt die Einstellungen, die das Spiel liefert', async ({ page }, info) => {
+    // Ein Spiel mit einer Wahl, die das Strategiespiel nicht hat: die Seite
+    // baut das Feld aus der Liste, ohne das Spiel zu kennen.
+    await page.route('/api/spiele', async (route) => {
+      const antwort = await route.fetch();
+      const { spiele } = await antwort.json();
+      spiele.push({
+        art: 'hausbau',
+        name: 'Hausbau',
+        beschreibung: 'Ein Haus waechst Zimmer um Zimmer, gemeinsam gebaut.',
+        spieler: { von: 1, bis: 4 },
+        stand: 'im-bau',
+        einstieg: { art: 'raum' },
+        einstellungen: [
+          { schluessel: 'grundstueck', name: 'Grundstueck', art: 'wahl', vorgabe: 'mittel', werte: [{ wert: 'klein', name: 'klein' }, { wert: 'mittel', name: 'mittel' }, { wert: 'gross', name: 'gross' }] },
+          { schluessel: 'stockwerke', name: 'Stockwerke', art: 'zahl', von: 1, bis: 3, vorgabe: 2 },
+        ],
+      });
+      await route.fulfill({ response: antwort, json: { spiele } });
+    });
+    // Hoch genug, dass beide Formulare ganz im Bild stehen.
+    await page.setViewportSize({ width: 1400, height: 1500 });
+    await page.goto('/');
+    await page.locator('[data-oeffnen="strategie"]').click();
+    const strategie = page.locator('[data-einstellungen-fuer="strategie"]');
+    await expect(strategie.locator('[data-einstellung]')).toHaveCount(2);
+    await expect(strategie.locator('[data-einstellung="spieler"]')).toHaveValue('6');
+    await expect(strategie.locator('[data-einstellung="spieler"]')).toHaveAttribute('max', '6');
+    await expect(strategie.locator('[data-einstellung="startwert"]')).toHaveAttribute('placeholder', 'zufaellig');
+
+    await page.locator('[data-oeffnen="hausbau"]').click();
+    const hausbau = page.locator('[data-einstellungen-fuer="hausbau"]');
+    await expect(hausbau.locator('select[data-einstellung="grundstueck"] option')).toHaveText(['klein', 'mittel', 'gross']);
+    await expect(hausbau.locator('select[data-einstellung="grundstueck"]')).toHaveValue('"mittel"');
+    await nachweis(page, {
+      spec: AUSWAHL,
+      ac: 'AC-4',
+      titel: 'Zwei Spiele, zwei Formulare - beide aus der Liste gebaut, die das Spiel liefert',
+      test: info,
+    });
+  });
+
+  test('auswahl AC-5: ohne etwas anzufassen eroeffnet, mit den Vorgaben im Raum', async ({ page }, info) => {
+    await page.goto('/');
+    await page.locator('[data-oeffnen="strategie"]').click();
+    await expect(page.locator('[data-einstellung="spieler"]')).toHaveValue('6');
+    await expect(page.locator('[data-einstellung="startwert"]')).toHaveValue('');
+    await nachweis(page, {
+      spec: AUSWAHL,
+      ac: 'AC-5',
+      titel: 'Die Einstellungen offen und mit Vorgaben gefuellt - ein Klick auf Partie eroeffnen genuegt',
+      test: info,
+    });
+    await page.locator('[data-eroeffnen="strategie"]').click();
+    await expect(page.locator('#warteraum')).toBeVisible();
+    await expect(page.locator('#raumcode')).toHaveText(/^[A-Z0-9]{3}-[A-Z0-9]{3}$/);
+  });
+
+  test('auswahl AC-8: ein unsinniger Startwert kommt als Satz vom Server zurueck', async ({ page }, info) => {
+    await page.goto('/');
+    await page.locator('[data-oeffnen="strategie"]').click();
+    await page.locator('[data-einstellung="startwert"]').fill('meine Lieblingskarte');
+    await page.locator('[data-eroeffnen="strategie"]').click();
+    const absage = page.locator('[data-einstellungen-fuer="strategie"] .meldung');
+    await expect(absage).toHaveText(/Startwert der Karte: eine ganze Zahl von 0 bis 999999999/);
+    await expect(absage).toBeInViewport();
+    await expect(page.locator('#warteraum')).toBeHidden();
+    await nachweis(page, {
+      spec: AUSWAHL,
+      ac: 'AC-8',
+      titel: 'Startwert mit Buchstaben: der Server weist ab, die Seite nennt den Grund, kein Raum entsteht',
       test: info,
     });
   });

@@ -9,6 +9,7 @@
 
 const fs = require('node:fs');
 const path = require('node:path');
+const einstellungen = require('./einstellungen');
 
 const STAENDE = ['spielbar', 'im-bau', 'gesperrt'];
 const EINSTIEGE = ['raum', 'seite'];
@@ -28,6 +29,7 @@ function pruefen(steckbrief, ordner) {
   if (einstieg.art === 'seite' && !/^\/[\w.-]+$/.test(einstieg.adresse || '')) {
     throw new Error(`${wo}: einstieg.adresse muss eine Seite wie /manager.html sein.`);
   }
+  einstellungen.listePruefen(steckbrief.einstellungen, wo);
 }
 
 function lesen(wurzel = __dirname) {
@@ -45,10 +47,17 @@ function lesen(wurzel = __dirname) {
       spieler: { von: steckbrief.spieler.von, bis: steckbrief.spieler.bis },
       stand: steckbrief.stand,
       einstieg: { ...steckbrief.einstieg },
+      einstellungen: steckbrief.einstellungen || [],
       reihenfolge: Number.isInteger(steckbrief.reihenfolge) ? steckbrief.reihenfolge : 100,
     });
   }
   return spiele.sort((a, b) => a.reihenfolge - b.reihenfolge || a.name.localeCompare(b.name, 'de'));
 }
 
-module.exports = { lesen, STAENDE };
+// Nur Spiele, die ueber einen Raum laufen und nicht gesperrt sind, lassen sich
+// eroeffnen.
+function eroeffenbar(spiele, art) {
+  return spiele.find((s) => s.art === art && s.einstieg.art === 'raum' && s.stand !== 'gesperrt') || null;
+}
+
+module.exports = { lesen, eroeffenbar, STAENDE };

@@ -1,0 +1,10 @@
+{
+  "spec": "00-plattform/spielauswahl.md",
+  "ac": "AC-4",
+  "titel": "Zwei Spiele, zwei Formulare - beide aus der Liste gebaut, die das Spiel liefert",
+  "datei": "e2e/tests/spielauswahl.spec.mjs",
+  "pfad": [
+    "Spiel waehlen",
+    "auswahl AC-4: die Seite zeigt die Einstellungen, die das Spiel liefert"
+  ]
+}
