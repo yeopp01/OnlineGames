@@ -79,6 +79,12 @@ Setze die gewählten Kriterien auf `in-arbeit`.
   `server/spiele/<art>/`.
 - Das Managerspiel ruht. Anfassen nur, wenn eine gemeinsame Stelle (Vorraum,
   Spielauswahl) es verlangt, und dann muss sein Browserlauf grün bleiben.
+- **Werkzeug:** neue Dateien mit Write, Änderungen mit Edit. Keine langen
+  Inhalte als Heredoc in der Shell, und nie zwei Heredocs in einem Aufruf —
+  Anführungszeichen im Inhalt brechen das Kommando mittendrin ab (Runde 4).
+- Ein Import darf nicht heißen wie ein Parameter der umgebenden Funktion
+  (`starten(hafen, einstellungen)` hat einen Import `einstellungen`
+  überdeckt, Runde 2) — der Fehler zeigt sich erst zur Laufzeit.
 
 ## 4. Belegen
 
@@ -98,10 +104,25 @@ Setze die gewählten Kriterien auf `in-arbeit`.
   eigene Dateien (`strategie-*.spec.mjs`). Braucht der Test einen Zustand, der
   im Spiel Minuten dauert, dafür einen **Prüfgriff** in `e2e/server.mjs`, nie
   eine Abkürzung im Produktcode.
+- **Was die Bildunterschrift behauptet, sichert der Test vor `nachweis()`
+  mit `toBeInViewport()`** — die Meldung, der Knopf, das Feld. Ein Screenshot
+  zeigt nur den sichtbaren Ausschnitt; was darunter liegt, ist für das Bild
+  nicht da. (Runde 2: die Absage stand unter dem Rand.) Wo nötig, ein höheres
+  Fenster für diesen einen Test.
 - **Sieh dir jedes neue Bild mit dem Read-Werkzeug an.** Frage: Zeigt es, was
   die Bildunterschrift behauptet — für jemanden, der das Spiel nicht kennt? Ist
   die Einheit erkennbar, der Text lesbar, nichts abgeschnitten, nichts
-  überdeckt? Wenn nicht: verbessern, nicht einchecken.
+  überdeckt? Wenn nicht: verbessern, nicht einchecken. Auf der Leinwand hilft
+  kein `toBeInViewport` — dort ist das Ansehen die einzige Prüfung. (Runde 4:
+  der Ladungspunkt lag unter dem Auswahlring.)
+- **Eine geänderte Seite heißt: alle Bilder dieser Seite neu.** Der gewöhnliche
+  Lauf schreibt nur fehlende Bilder, alte zeigen dann den alten Stand.
+
+  | Geändert                               | Neu erzeugen                                             |
+  | -------------------------------------- | -------------------------------------------------------- |
+  | `public/index.html`, `app.js`, `stil.css` | `npm run qa:nachweis -- vorraum spielauswahl strategie` |
+  | `public/ansicht.js`                    | `npm run qa:nachweis -- strategie`                       |
+  | `public/manager.*`                     | `npm run qa:nachweis -- manager`                         |
 - Kein Bildschirm: Eintrag in `qa/ohne-bild.json`, der sagt, **was** das
   Kriterium ist und **warum** ein Bild es nicht zeigen kann.
 
@@ -119,6 +140,12 @@ Setze die gewählten Kriterien auf `in-arbeit`.
    deutscher Text, Betreff sagt, was jetzt geht. **Kein Push, kein Deploy.**
 6. Ist mit dem Commit eine Stufe erreicht: Zeile „Stand" in `CLAUDE.md`
    nachziehen.
+7. **Zwischenstand in der Abschlussnachricht:** Der Benutzer will den
+   Fortschritt sehen, nicht nur lesen. Nenne am Ende jeder Runde zwei bis drei
+   Bilder dieser Runde als Markdown-Link auf die Datei unter
+   `qa/bildnachweise/…` — das aussagekräftigste zuerst, je mit einem halben
+   Satz, was darauf zu sehen ist. Hatte die Runde keinen Bildschirm (Rechenteil,
+   Rückschau), das aktuellste Bild des Spielbilds.
 
 ## 7. Wann du anhältst
 
@@ -149,5 +176,9 @@ Nicht bauen. Stattdessen:
    Lücken** in Lesbarkeit und Aussehen? Lege sie als `offen`-Kriterien in
    `bedienung.md` an.
 4. Miss, was sich messen lässt (Tests, Laufzeit des Browserlaufs, Takt), und
-   trage es unter **Messwerte** ein.
+   trage es unter **Messwerte** ein. **Vorher prüfen, ob die Maschine ruhig
+   ist** — hier laufen oft Tests anderer Projekte mit:
+   `Get-Process node, chrome | Group-Object ProcessName` in PowerShell. Sind
+   fremde `vitest`-/`playwright`-Prozesse da, die Zeit nicht eintragen oder als
+   „nicht vergleichbar" kennzeichnen (Runde 3: 52 s wurden 2,2 min).
 5. Eintrag unter **Rückschauen**, Commit `Rueckschau nach Runde n`.

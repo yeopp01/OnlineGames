@@ -20,8 +20,11 @@ etwas anderem gearbeitet.
   Quelltext, und bisher gilt das auch für Texte auf dem Bildschirm („Fuehrt
   einen Verein ueber …"). Das liest sich holprig. Vorschlag: echte Umlaute
   nur in Zeichenketten, die auf dem Bildschirm stehen; Bezeichner bleiben
-  umschrieben. Bis zur Antwort
-  bleibt es bei der Umschreibung.
+  umschrieben. Bis zur Antwort bleibt es bei der Umschreibung.
+- **Berechtigungen für die Schleife.** Das Anlegen von `.claude/settings.json`
+  wurde vom Sicherheitsfilter abgelehnt (Selbständerung). Solange sie fehlen,
+  kann jede Runde an einer Rückfrage hängen bleiben. Der Vorschlag steht in der
+  Nachricht vom 2026-09-16; eintragen kann nur der Benutzer.
 
 ## Offene Fäden
 
@@ -73,13 +76,34 @@ Zahlen, gegen die spätere Runden vergleichen. Mit Datum und Commit.
 Alle fünf Runden und am Ende jeder Stufe: Was hat Zeit gekostet, was hat sich
 wiederholt, was ändert sich an der Anweisung oder am Werkzeug?
 
-_(noch keine)_
+### Nach Runde 5 (2026-09-16)
+
+In vier Runden 18 Kriterien auf `fertig`, Einstieg fast und Spielbild ganz
+im Browser. Was sich wiederholt hat:
+
+1. **Grüne Tests, Bild zeigt es nicht** — zweimal (Absage unter dem Rand,
+   Ladung unter dem Ring). → Anweisung: `toBeInViewport` vor `nachweis()`;
+   auf der Leinwand bleibt nur das Ansehen.
+2. **Veraltete Bilder nach Änderung an gemeinsamer Seite** — dreimal von Hand
+   erinnert. → Anweisung: Tabelle „geändert → neu erzeugen".
+3. **Werkzeugreibung** — Heredoc brach ab, Messung von fremden Prozessen
+   verdoppelt, überdeckter Import. → Anweisung: Write/Edit statt Heredoc,
+   ruhige Maschine prüfen, Namensregel.
+
+Dazu auf Wunsch des Benutzers: jede Runde nennt am Ende zwei bis drei Bilder
+als Link. Fahrplan AC-1 verlangte auswahl AC-12 (fortlaufende Spiele) — für
+das Strategiespiel gestrichen, Nummer bleibt.
+
+Nicht geändert: der Zuschnitt (1–3 Kriterien je Runde) hat getragen; keine
+Runde ist gescheitert oder halb liegen geblieben.
 
 ## Runden
 
 Neueste oben. Eine Zeile je Runde: Nummer, Datum, Kriterien, Ergebnis,
 wichtigste Erkenntnis.
 
+- **5** · 2026-09-16 · Rückschau: drei Regeln in die Anweisung, Bilder in
+  jeder Abschlussnachricht, fahrplan AC-1 von auswahl AC-12 gelöst.
 - **4** · 2026-09-16 · fahrplan AC-2, bedienung AC-1, 2, 7, 8, 12, 16 und
   auswahl AC-7 fertig: das Spielbild zum ersten Mal im Browser. Alle Tests
   beim ersten Lauf grün — aber das Bild zu AC-16 zeigte die Ladung nicht:

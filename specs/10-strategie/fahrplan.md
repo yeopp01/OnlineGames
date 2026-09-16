@@ -40,7 +40,9 @@ außen mitspielen soll.
 - **AC-1** `offen` **Einstieg führt zur Partie** — Nach dem Anmelden wählt man das Spiel,
   stellt die Partie ein, eröffnet, gibt den Code weiter und startet — in einem
   Browserlauf, ohne Umweg über eine Adresse. Belegt, wenn
-  [Spielauswahl](../00-plattform/spielauswahl.md) AC-1 bis AC-13 `fertig` sind.
+  [Spielauswahl](../00-plattform/spielauswahl.md) AC-1 bis AC-11 und AC-13
+  `fertig` sind. AC-12 und AC-14 ff. gelten fortlaufenden Spielen und
+  Spielständen, nicht dem Strategiespiel.
 - **AC-2** `fertig` **Spielbild im Browser gesehen** — Zwei Fenster, Partie gestartet, Einheiten mit
   Rahmen gewählt, per Rechtsklick zum Sammeln geschickt, der Vorrat steigt. Die
   sechs Bedienkriterien auf `in-qa` stehen danach auf `fertig`.
