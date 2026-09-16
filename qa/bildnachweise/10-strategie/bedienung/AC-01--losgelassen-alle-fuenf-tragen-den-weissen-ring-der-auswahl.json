@@ -1,0 +1,10 @@
+{
+  "spec": "10-strategie/bedienung.md",
+  "ac": "AC-1",
+  "titel": "Losgelassen: alle fuenf tragen den weissen Ring der Auswahl",
+  "datei": "e2e/tests/strategie-spielbild.spec.mjs",
+  "pfad": [
+    "Das Spielbild",
+    "bedienung AC-1: ein Rahmen waehlt die eigenen Einheiten darin"
+  ]
+}

@@ -1,0 +1,10 @@
+{
+  "spec": "10-strategie/fahrplan.md",
+  "ac": "AC-2",
+  "titel": "Das erste Spielbild im Browser: Holz ist abgeliefert, der Vorrat oben steigt",
+  "datei": "e2e/tests/strategie-spielbild.spec.mjs",
+  "pfad": [
+    "Das Spielbild",
+    "bedienung AC-12 / bedienung AC-16 / fahrplan AC-2: Rechtsklick auf den Wald, gesammelt wird sichtbar"
+  ]
+}

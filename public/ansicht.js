@@ -229,6 +229,7 @@ export class Ansicht {
 
     const anteil = this.anteil(jetzt);
     for (const einheit of this.nachher.values()) this.einheitZeichnen(einheit, anteil);
+    for (const spieler of this.spieler.values()) this.namenZeichnen(spieler);
 
     if (this.zug) this.rahmenZeichnen();
   }
@@ -244,13 +245,20 @@ export class Ansicht {
     stift.strokeStyle = spieler.farbe;
     stift.lineWidth = 2;
     stift.strokeRect(punkt.x - r, punkt.y - r, r * 2, r * 2);
+  }
 
-    if (this.kamera.zoom > 0.6) {
-      stift.fillStyle = '#e6e9ee';
-      stift.font = '12px system-ui, sans-serif';
-      stift.textAlign = 'center';
-      stift.fillText(spieler.name, punkt.x, punkt.y - r - 6);
-    }
+  namenZeichnen(spieler) {
+    if (this.kamera.zoom <= 0.6) return;
+    const stift = this.stift;
+    const punkt = this.zuBild(spieler.basis.x, spieler.basis.y);
+    const r = FELD * 1.5 * this.kamera.zoom;
+    stift.font = '600 12px system-ui, sans-serif';
+    stift.textAlign = 'center';
+    stift.lineWidth = 3;
+    stift.strokeStyle = '#0f1216';
+    stift.strokeText(spieler.name, punkt.x, punkt.y - r - 10);
+    stift.fillStyle = '#e6e9ee';
+    stift.fillText(spieler.name, punkt.x, punkt.y - r - 10);
   }
 
   einheitZeichnen(einheit, anteil) {
@@ -275,12 +283,20 @@ export class Ansicht {
     stift.arc(punkt.x, punkt.y, r, 0, Math.PI * 2);
     stift.fill();
 
-    // Ein Sammler mit Ladung traegt einen Punkt in der Farbe der Ware.
+    // Ein Sammler mit Ladung traegt einen Punkt in der Farbe der Ware - schraeg
+    // oben rechts, ausserhalb des Auswahlrings, mit dunklem Rand, damit er auf
+    // Gras, Wald und Einheit gleichermassen zu sehen ist (bedienung AC-16).
     if (einheit.l > 0) {
-      stift.fillStyle = einheit.a === 'h' ? '#8a6b3d' : '#c9536b';
+      const ladung = Math.max(3, r * 0.55);
+      const lx = punkt.x + r * 0.9;
+      const ly = punkt.y - r * 0.9;
+      stift.fillStyle = einheit.a === 'h' ? '#c08a3e' : '#e0566f';
+      stift.strokeStyle = '#0f1216';
+      stift.lineWidth = 1.5;
       stift.beginPath();
-      stift.arc(punkt.x, punkt.y - r - 3, Math.max(2, r * 0.4), 0, Math.PI * 2);
+      stift.arc(lx, ly, ladung, 0, Math.PI * 2);
       stift.fill();
+      stift.stroke();
     }
   }
 

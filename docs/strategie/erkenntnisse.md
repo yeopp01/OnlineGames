@@ -25,8 +25,14 @@ etwas anderem gearbeitet.
 
 ## Offene Fäden
 
-- Das Spielbild ist von keinem Browser gesehen. Auswahlrahmen, Rechtsklick,
-  Zoom stehen auf `in-qa` (bedienung AC-1, 2, 7, 8, 12, 16) → fahrplan AC-2.
+- Das Spielbild im Browser liest `window.ansicht` (nur lesen, befohlen wird
+  mit Maus und Tastatur) — Muster in `e2e/tests/strategie-spielbild.spec.mjs`.
+  Für neue Bedienkriterien dort anbauen.
+- **Erster ehrlicher Blick aufs Spielbild (Runde 4):** farbige Kreise auf einem
+  Raster, Basis als Quadrat, dunkles Loch am Kartenrand, keine Übersichtskarte.
+  Weit weg von AoE II. Das ist erwartet — aber Stufe A braucht eigene
+  Darstellungskriterien (isometrisch, Gebäude und Einheiten als Gestalt,
+  fahrplan AC-7), sonst bleibt das Bild so.
 - Die Karte ist 64×64 mit Feldarten Gras, Wald, Beeren, Wasser. Das Original
   rechnet mit 120×120 bis 220×220 und Einzelobjekten (Baum, Goldfeld, Schaf).
   Umbau zu Beginn von Stufe A; `wege.js` muss dann größere Karten
@@ -40,8 +46,7 @@ etwas anderem gearbeitet.
   Einstellungen braucht (Kartengröße, Vorrat), gehört die Erzeugung ans Spiel
   (Schnittstelle aus [ADR-0006](../adr/0006-mehrere-spiele.md): `aufbau`,
   `takten`, `zustand`, `befehl`).
-- Offen im Einstieg: auswahl AC-7 (Startwert nach dem Start sichtbar — gehört
-  ins Spielbild, also zusammen mit fahrplan AC-2), AC-11 (Eröffnen verlangt
+- Offen im Einstieg: AC-11 (Eröffnen verlangt
   Konto — deckungsgleich mit konten AC-16, nur Beleg nachziehen), AC-6 (Karte,
   Vorrat → Stufe A). AC-12 und AC-14 bis AC-17 betreffen fortlaufende Spiele
   und Spielstände; für das Strategiespiel nicht nötig — nicht vorziehen.
@@ -61,6 +66,7 @@ Zahlen, gegen die spätere Runden vergleichen. Mit Datum und Commit.
 | 2026-09-16 | Dauer Browserlauf gesamt | 46,6 s | Runde 1 |
 | 2026-09-16 | Tests ohne Browser / im Browser; Browserlauf | 247 / 66; 51,9 s | Runde 2 |
 | 2026-09-16 | Tests ohne Browser / im Browser; Browserlauf | 250 / 69; 1,3–2,2 min — **nicht vergleichbar**: gleichzeitig liefen Tests anderer Projekte (Conjola) | Runde 3 |
+| 2026-09-16 | Tests ohne Browser / im Browser; Browserlauf (Maschine ruhig) | 251 / 75; 55,0 s | Runde 4 |
 
 ## Rückschauen
 
@@ -74,6 +80,11 @@ _(noch keine)_
 Neueste oben. Eine Zeile je Runde: Nummer, Datum, Kriterien, Ergebnis,
 wichtigste Erkenntnis.
 
+- **4** · 2026-09-16 · fahrplan AC-2, bedienung AC-1, 2, 7, 8, 12, 16 und
+  auswahl AC-7 fertig: das Spielbild zum ersten Mal im Browser. Alle Tests
+  beim ersten Lauf grün — aber das Bild zu AC-16 zeigte die Ladung nicht:
+  winziger Punkt unter dem Auswahlring. Größer, außerhalb des Rings, mit
+  Rand; Namen über den Einheiten. Wieder: erst das Ansehen hat es gefunden.
 - **3** · 2026-09-16 · auswahl AC-9, 10, 13 fertig: Einstellungen im
   Warteraum (Gastgeber Felder, Mitspieler Werte), Änderung per `einstellen`
   bis zum Start, Code kopieren. Gelernt: ein Test, der `eingang` leert und

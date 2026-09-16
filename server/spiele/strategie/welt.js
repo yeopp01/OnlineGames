@@ -15,6 +15,7 @@ const FARBEN = ['#4a90d9', '#d94a4a', '#4ad98a', '#d9c04a', '#a44ad9', '#4ad9d0'
 
 class Welt {
   constructor(spielerListe, startwert) {
+    this.startwert = startwert;
     this.karte = karten.erzeugen(startwert, spielerListe.length);
     this.takt = 0;
     this.naechsteId = 1;
@@ -245,6 +246,8 @@ class Welt {
     return {
       typ: 'aufbau',
       takte: TAKTE_PRO_SEKUNDE,
+      // Sichtbar, damit eine gute Karte wieder gespielt werden kann (auswahl AC-7).
+      startwert: this.startwert,
       karte: {
         groesse: this.karte.groesse,
         felder: Buffer.from(this.karte.felder).toString('base64'),

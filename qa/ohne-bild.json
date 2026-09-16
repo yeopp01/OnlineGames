@@ -11,7 +11,7 @@
     { "spec": "00-plattform/konten.md", "ac": "AC-18", "begruendung": "Die Ablehnung einer Registrierung ohne gueltigen Code auf dem Server. Die Maske mit dem Codefeld zeigt konten AC-2; ob ohne Code ein Konto entsteht, sieht man keinem Bildschirm an." },
     { "spec": "00-plattform/konten.md", "ac": "AC-19", "begruendung": "Ein Code gilt fuer eine Registrierung und vierzehn Tage. Eine Eigenschaft von Zeit und Bestand, kein Bildschirm." },
 
-    { "spec": "00-plattform/raeume.md", "ac": "AC-8", "begruendung": "Dieselbe Karte als Daten an alle Spieler. Das Spielbild nach dem Start gehoert zu 10-strategie/bedienung.md und war noch in keinem Browser; der Nachweis hier vergleicht die Nachrichten." },
+    { "spec": "00-plattform/raeume.md", "ac": "AC-8", "begruendung": "Dieselbe Karte als Daten an alle Spieler. Ein Bild zeigt die Karte eines Fensters, nicht ihre Gleichheit in allen; der Nachweis vergleicht die Nachrichten. Das Spielbild selbst steht bei 10-strategie/bedienung.md." },
     { "spec": "00-plattform/raeume.md", "ac": "AC-9", "begruendung": "Was der Server bei einer gerissenen Verbindung mit einer laufenden Partie macht. Sichtbar waere es nur im Spielbild des Strategiespiels (10-strategie/bedienung.md)." },
     { "spec": "00-plattform/raeume.md", "ac": "AC-10", "begruendung": "Die Rueckkehr auf den eigenen Platz ueber das Token. Ein Ablauf im Protokoll; sichtbar waere er nur im laufenden Spielbild (10-strategie/bedienung.md)." },
     { "spec": "00-plattform/raeume.md", "ac": "AC-14", "begruendung": "Kaputte Nachrichten an den Server. Die eigene Oberflaeche schickt keine - der Nachweis kommt ueber eine rohe WebSocket-Verbindung." },
@@ -34,7 +34,7 @@
     { "spec": "00-plattform/uebertragung.md", "ac": "AC-7", "begruendung": "Groesse einer Zustandsnachricht in Bytes. Eine Messung, kein Bild." },
 
     { "spec": "10-strategie/einheiten-und-befehle.md", "ac": "AC-4", "begruendung": "Dieselbe Zusage wie uebertragung AC-2, belegt ueber den Befehlsweg. Dass eine fremde Einheit stehen bleibt, zeigt kein Bild." },
-    { "spec": "10-strategie/einheiten-und-befehle.md", "ac": "AC-6", "begruendung": "Die Wegfindung als Rechenteil. Wie ein Weg auf der Karte aussieht, gehoert zum Spielbild in 10-strategie/bedienung.md, das noch in keinem Browser war." },
+    { "spec": "10-strategie/einheiten-und-befehle.md", "ac": "AC-6", "begruendung": "Die Wegfindung als Rechenteil. Ein Standbild zeigt, wo eine Einheit steht, nicht welchen Weg sie genommen hat; das Spielbild selbst steht bei 10-strategie/bedienung.md." },
     { "spec": "10-strategie/einheiten-und-befehle.md", "ac": "AC-7", "begruendung": "Eine Regel der Wegfindung, geprueft an einer gebauten Karte. Im Spielbild waere sie nur als Bewegung ueber mehrere Takte zu sehen, nicht in einem Einzelbild." },
     { "spec": "10-strategie/einheiten-und-befehle.md", "ac": "AC-8", "begruendung": "Laufzeit einer Wegsuche unter einer Millisekunde. Eine Messung, kein Bild." },
     { "spec": "10-strategie/einheiten-und-befehle.md", "ac": "AC-9", "begruendung": "Eine Einheit bleibt stehen, wenn kein Weg zum Ziel fuehrt. Ein Bild zeigt Stillstand, nicht dass es keinen Weg gab." },

@@ -2,7 +2,7 @@
 
 **Bereich:** Strategie
 **Kuerzel:** bedienung
-**Stand:** 0/23 fertig · 6 in QA · 17 offen
+**Stand:** 6/23 fertig · 17 offen
 
 ## Zweck
 
@@ -22,9 +22,9 @@ Befehl steht.
 
 ### Auswahl
 
-- **AC-1** `in-qa` **Rahmen wählt aus** — Ein aufgezogener Rahmen wählt alle eigenen Einheiten
+- **AC-1** `fertig` **Rahmen wählt aus** — Ein aufgezogener Rahmen wählt alle eigenen Einheiten
   darin.
-- **AC-2** `in-qa` **Klick wählt eine** — Ein Klick ohne Rahmen wählt die nächste eigene Einheit in
+- **AC-2** `fertig` **Klick wählt eine** — Ein Klick ohne Rahmen wählt die nächste eigene Einheit in
   Reichweite.
 - **AC-3** `offen` **Umschalt erweitert** — Mit gedrückter Umschalttaste kommt zur Auswahl hinzu,
   statt sie zu ersetzen.
@@ -35,8 +35,8 @@ Befehl steht.
 
 ### Kamera
 
-- **AC-7** `in-qa` **Schieben mit Tasten** — `W A S D` und die Pfeiltasten.
-- **AC-8** `in-qa` **Zoom mit dem Rad** — Der Punkt unter dem Zeiger bleibt dabei stehen.
+- **AC-7** `fertig` **Schieben mit Tasten** — `W A S D` und die Pfeiltasten.
+- **AC-8** `fertig` **Zoom mit dem Rad** — Der Punkt unter dem Zeiger bleibt dabei stehen.
 - **AC-9** `offen` **Schieben am Bildschirmrand** — Mit der Maus am Rand, abschaltbar.
 - **AC-10** `offen` **Leertaste springt zur Basis** — Und ein zweites Mal zurück.
 - **AC-11** `offen` **Übersichtskarte unten rechts** — Gelände, eigene und fremde Einheiten als
@@ -44,7 +44,7 @@ Befehl steht.
 
 ### Befehle
 
-- **AC-12** `in-qa` **Rechtsklick befiehlt** — Laufen, sammeln oder angreifen, je nach Ziel. Kein
+- **AC-12** `fertig` **Rechtsklick befiehlt** — Laufen, sammeln oder angreifen, je nach Ziel. Kein
   Umschalten der Betriebsart.
 - **AC-13** `offen` **Der Befehl ist sofort sichtbar** — Ein Kringel am Zielpunkt, ohne auf die
   Antwort des Servers zu warten. Zehn Takte je Sekunde heißt bis zu 100 ms
@@ -54,7 +54,7 @@ Befehl steht.
 
 ### Rückmeldung
 
-- **AC-16** `in-qa` **Ladung ist sichtbar** — Ein beladener Sammler trägt einen Punkt in der Farbe
+- **AC-16** `fertig` **Ladung ist sichtbar** — Ein beladener Sammler trägt einen Punkt in der Farbe
   seiner Ware.
 - **AC-17** `offen` **Rohstoffe zählen sichtbar hoch** — Nicht springen. Man muss sehen, dass die
   Wirtschaft läuft.

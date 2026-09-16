@@ -11,6 +11,7 @@ const teile = {
   meldung: document.getElementById('meldung'),
   wartemeldung: document.getElementById('wartemeldung'),
   vorraete: document.getElementById('vorraete'),
+  kartenwert: document.getElementById('kartenwert'),
   brett: document.getElementById('brett'),
   angemeldet: document.getElementById('angemeldet'),
   abgemeldet: document.getElementById('abgemeldet'),
@@ -82,8 +83,13 @@ function empfangen(nachricht) {
       if (!ansicht) {
         ansicht = new Ansicht(teile.brett, (einheiten, ziel) =>
           senden({ typ: 'befehl', einheiten, ziel }));
+        // Fuer den Browserlauf: die Leinwand laesst sich nicht befragen, die
+        // Ansicht schon (e2e/tests/strategie-spielbild.spec.mjs). Lesen, nicht
+        // schreiben - befohlen wird dort ueber Maus und Tastatur.
+        window.ansicht = ansicht;
       }
       zeigen('spiel');
+      teile.kartenwert.textContent = `· Karte ${nachricht.startwert}`;
       ansicht.aufbau(nachricht, ich);
       break;
 

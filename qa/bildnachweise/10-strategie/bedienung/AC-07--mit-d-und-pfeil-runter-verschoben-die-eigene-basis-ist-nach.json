@@ -1,0 +1,10 @@
+{
+  "spec": "10-strategie/bedienung.md",
+  "ac": "AC-7",
+  "titel": "Mit D und Pfeil runter verschoben: die eigene Basis ist nach links oben gewandert",
+  "datei": "e2e/tests/strategie-spielbild.spec.mjs",
+  "pfad": [
+    "Das Spielbild",
+    "bedienung AC-7: W A S D und Pfeiltasten schieben die Karte"
+  ]
+}

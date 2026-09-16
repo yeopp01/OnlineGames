@@ -196,7 +196,10 @@ test('auswahl AC-8: ein eingestellter Startwert gilt beim Start, nicht der aus d
     bert.senden({ typ: 'beitreten', code: antwort.code, name: 'Bert' });
     await bert.warteAuf((n) => n.typ === 'raum' && n.spieler.length === 2);
     gast.senden({ typ: 'start', startwert: nachricht });
-    karten.push(JSON.stringify((await gast.warteAuf(istTyp('aufbau'))).karte));
+    const aufbau = await gast.warteAuf(istTyp('aufbau'));
+    karten.push(JSON.stringify(aufbau.karte));
+    // Und er steht im Aufbau, damit ihn jeder sieht (AC-7).
+    assert.equal(aufbau.startwert, 4711);
     gast.zu();
     bert.zu();
   }
@@ -266,4 +269,13 @@ test('auswahl AC-10: Mitspieler aendern nichts, und ungueltige Aenderungen gelte
   gast.senden({ typ: 'einstellen', einstellungen: {} });
   assert.equal(werteAus(await bert.warteAuf(istTyp('raum'))).spieler, 6);
   for (const k of [gast, bert, carla]) k.zu();
+});
+
+test('auswahl AC-7: auch ein zufaelliger Startwert wird nach dem Start genannt', async () => {
+  const { gast, bert } = await raumMitBert();
+  gast.senden({ typ: 'start' });
+  const aufbau = await bert.warteAuf(istTyp('aufbau'));
+  assert.ok(Number.isInteger(aufbau.startwert));
+  gast.zu();
+  bert.zu();
 });

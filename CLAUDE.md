@@ -132,7 +132,7 @@ Umfang hinzufügt, dort nachsehen.
 
 ## Stand
 
-**271 von 443 Kriterien fertig.** 250 Tests ohne Browser, 69 im Browser. Die
+**279 von 443 Kriterien fertig.** 251 Tests ohne Browser, 75 im Browser. Die
 Übersicht ist der Bericht: `npm run qa:report`.
 
 Gebaut ist der Unterbau: Räume, Übertragung, Karte, Wegfindung, Sammeln,
@@ -162,19 +162,19 @@ AC-25).
 automatisch um. `npm test` braucht in Node 24 ein Muster statt eines Ordners.
 Den Browser für Playwright holt einmal `npm run e2e:browser`.
 
-**Im Browser gesehen** sind die Manager-Oberfläche und der Vorraum: Anmeldung,
-Registrierung, Eröffnen, Beitreten, Code, Spielerliste, Absagen.
-**Nie im Browser gesehen** ist das Spielbild des Strategiespiels — Leinwand,
-Auswahlrahmen, Rechtsklick stehen auf `in-qa`, nicht auf `fertig`.
+**Im Browser gesehen** sind die Manager-Oberfläche, der Vorraum mit
+Spielauswahl und Einstellungen und das **Spielbild des Strategiespiels**:
+Rahmen, Klick, Zoom, Tasten, Rechtsklick zum Sammeln, Ladung, Vorrat
+(`e2e/tests/strategie-spielbild.spec.mjs`). Es sind farbige Kreise auf einem
+Raster — die Darstellung kommt mit Stufe A.
 
 ### Offen, in dieser Reihenfolge
 
 Der [Fahrplan](specs/10-strategie/fahrplan.md) ist die Reihenfolge:
 
-1. **Einstieg** — nach dem Anmelden Spiel wählen, Einstellungen, eröffnen
-   ([Spielauswahl](specs/00-plattform/spielauswahl.md)).
-2. **Das Spielbild im Browser** — zwei Fenster, starten, wählen, befehlen.
-3. **Stufe A** Dunkle Zeit mit Wirtschafts-KI und Prüfstand · **B** Feudalzeit
+1. **Einstieg** — fast fertig: Auswahl, Einstellungen, Warteraum stehen;
+   fehlt der Beleg zu auswahl AC-11 (fahrplan AC-1).
+2. **Stufe A** Dunkle Zeit mit Wirtschafts-KI und Prüfstand · **B** Feudalzeit
    · **C** Partieende und KI-Gegner · **D** Ritterzeit · **E** fünf Völker ·
    **F** Imperialzeit · **G** Betrieb auf dem Hetzner-VPS.
 

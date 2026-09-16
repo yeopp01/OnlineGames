@@ -2,7 +2,7 @@
 
 **Bereich:** Plattform
 **Kuerzel:** auswahl
-**Stand:** 9/17 fertig · 8 offen
+**Stand:** 10/17 fertig · 7 offen
 
 ## Zweck
 
@@ -54,7 +54,7 @@ Wer nur mitspielt, ueberspringt alles: Code eingeben, Namen eingeben, drin
   der Karte, Vorratsmenge. _(Spielerzahl und Startwert stehen schon; Karte und
   Vorrat kommen mit dem Kartenumbau in Stufe A, das Volk je Spieler mit
   Stufe E → [Fahrplan](../10-strategie/fahrplan.md) AC-16.)_
-- **AC-7** `offen` **Startwert sichtbar und eingebbar** — Wer eine gute Karte hatte, kann
+- **AC-7** `fertig` **Startwert sichtbar und eingebbar** — Wer eine gute Karte hatte, kann
   sie wieder spielen; wer einen Fehler gefunden hat, kann ihn wiederholen.
 - **AC-8** `fertig` **Ungueltige Werte werden abgewiesen** — Geprueft wird auf
   dem Server, nicht nur im Browser.

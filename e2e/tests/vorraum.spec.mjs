@@ -6,9 +6,7 @@
 // nacheinander - und angemeldet wird im ganzen Lauf genau einmal
 // (e2e/helpers/konto.mjs).
 //
-// Das Spielbild selbst - die Leinwand nach dem Start - ist hier bewusst
-// nicht dabei. Es gehoert zu specs/10-strategie/bedienung.md und war noch in
-// keinem Browser.
+// Das Spielbild nach dem Start steht in strategie-spielbild.spec.mjs.
 import { nachweis } from '../../scripts/qa-nachweis.mjs';
 import { KONTO } from '../helpers/konto.mjs';
 import { expect, fehlerSammeln, test } from '../helpers/seite.mjs';

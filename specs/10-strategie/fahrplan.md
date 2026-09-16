@@ -2,7 +2,7 @@
 
 **Bereich:** Strategie
 **Kuerzel:** fahrplan
-**Stand:** 0/22 fertig · 22 offen
+**Stand:** 1/22 fertig · 21 offen
 
 ## Zweck
 
@@ -41,7 +41,7 @@ außen mitspielen soll.
   stellt die Partie ein, eröffnet, gibt den Code weiter und startet — in einem
   Browserlauf, ohne Umweg über eine Adresse. Belegt, wenn
   [Spielauswahl](../00-plattform/spielauswahl.md) AC-1 bis AC-13 `fertig` sind.
-- **AC-2** `offen` **Spielbild im Browser gesehen** — Zwei Fenster, Partie gestartet, Einheiten mit
+- **AC-2** `fertig` **Spielbild im Browser gesehen** — Zwei Fenster, Partie gestartet, Einheiten mit
   Rahmen gewählt, per Rechtsklick zum Sammeln geschickt, der Vorrat steigt. Die
   sechs Bedienkriterien auf `in-qa` stehen danach auf `fertig`.
 
