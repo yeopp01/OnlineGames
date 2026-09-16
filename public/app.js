@@ -17,6 +17,7 @@ const teile = {
   werName: document.getElementById('werName'),
   formAnmelden: document.getElementById('formAnmelden'),
   formRegistrieren: document.getElementById('formRegistrieren'),
+  spiele: document.getElementById('spiele'),
 };
 
 let draht = null;
@@ -30,6 +31,8 @@ function zeigen(welcher) {
   teile.warteraum.hidden = welcher !== 'warteraum';
   teile.spiel.hidden = welcher !== 'spiel';
   document.body.style.display = welcher === 'spiel' ? 'block' : 'grid';
+  // Im Spiel gehoert jede Bewegung der Karte, nicht der Seite.
+  document.body.style.overflow = welcher === 'spiel' ? 'hidden' : '';
 }
 
 function melden(text, wo = teile.meldung) {
@@ -99,11 +102,78 @@ function spielerlisteZeichnen(spieler) {
   }
 }
 
-document.getElementById('erstellen').addEventListener('click', () => {
+// ---- Spiele ------------------------------------------------------------
+// Die Uebersicht zeigt, was der Server als Steckbriefe liefert. Ein neues
+// Spiel braucht hier keine Zeile (→ specs/00-plattform/spielauswahl.md AC-2).
+
+const STAND = { 'im-bau': 'im Bau', gesperrt: 'noch nicht spielbar' };
+
+function spielerzahl({ von, bis }) {
+  if (von === bis) return von === 1 ? 'allein' : `${von} Spieler`;
+  return `${von} bis ${bis} Spieler`;
+}
+
+function eroeffnen() {
   // Kein Name noetig: der Server nimmt den aus dem Konto.
   melden('');
   verbinden(() => senden({ typ: 'erstellen' }));
-});
+}
+
+function spielkarte(spiel) {
+  const karte = document.createElement('li');
+  karte.className = `spielkarte stand-${spiel.stand}`;
+  karte.dataset.spiel = spiel.art;
+
+  const kopf = document.createElement('div');
+  kopf.className = 'spielkopf';
+  const name = document.createElement('strong');
+  name.textContent = spiel.name;
+  kopf.append(name);
+  if (STAND[spiel.stand]) {
+    const marke = document.createElement('span');
+    marke.className = 'marke';
+    marke.textContent = STAND[spiel.stand];
+    kopf.append(marke);
+  }
+
+  const satz = document.createElement('p');
+  satz.className = 'spielsatz';
+  satz.textContent = spiel.beschreibung;
+
+  const fuss = document.createElement('div');
+  fuss.className = 'spielfuss';
+  const zahl = document.createElement('span');
+  zahl.className = 'spielerzahl';
+  zahl.textContent = spielerzahl(spiel.spieler);
+
+  const knopf = document.createElement('button');
+  knopf.className = 'haupt';
+  knopf.dataset.oeffnen = spiel.art;
+  if (spiel.stand === 'gesperrt') {
+    knopf.disabled = true;
+    knopf.textContent = 'gesperrt';
+  } else if (spiel.einstieg.art === 'seite') {
+    knopf.textContent = 'Oeffnen';
+    knopf.addEventListener('click', () => location.assign(spiel.einstieg.adresse));
+  } else {
+    knopf.textContent = 'Eroeffnen';
+    knopf.addEventListener('click', eroeffnen);
+  }
+  fuss.append(zahl, knopf);
+
+  karte.append(kopf, satz, fuss);
+  return karte;
+}
+
+async function spieleLaden() {
+  try {
+    const antwort = await fetch('/api/spiele');
+    const { spiele } = await antwort.json();
+    teile.spiele.replaceChildren(...spiele.map(spielkarte));
+  } catch {
+    melden('Die Liste der Spiele liess sich nicht laden.');
+  }
+}
 
 document.getElementById('beitreten').addEventListener('click', () => {
   const name = teile.name.value.trim();
@@ -144,6 +214,7 @@ async function sitzungPruefen() {
     teile.werName.textContent = wer.name;
     // Wer angemeldet ist, tritt auch unter seinem Kontonamen bei.
     if (!teile.name.value) teile.name.value = wer.name;
+    await spieleLaden();
   }
   return wer;
 }

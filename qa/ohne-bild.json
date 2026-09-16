@@ -16,6 +16,8 @@
     { "spec": "00-plattform/raeume.md", "ac": "AC-10", "begruendung": "Die Rueckkehr auf den eigenen Platz ueber das Token. Ein Ablauf im Protokoll; sichtbar waere er nur im laufenden Spielbild (10-strategie/bedienung.md)." },
     { "spec": "00-plattform/raeume.md", "ac": "AC-14", "begruendung": "Kaputte Nachrichten an den Server. Die eigene Oberflaeche schickt keine - der Nachweis kommt ueber eine rohe WebSocket-Verbindung." },
 
+    { "spec": "00-plattform/spielauswahl.md", "ac": "AC-2", "begruendung": "Dass ein neuer Steckbrief ohne Aenderung an Verzeichnis und Seite erscheint, ist eine Eigenschaft des Codes. Ein Bild zeigt eine Uebersicht, nicht, wie viel man fuer den naechsten Eintrag anfassen musste; das Bild zu AC-3 zeigt ein drittes Spiel, das nur aus der Antwort kommt." },
+
     { "spec": "00-plattform/schutz.md", "ac": "AC-1", "begruendung": "Die Rechenregel hinter allen Grenzen - eine Zeitreihe von Tropfen, kein Bildschirm." },
     { "spec": "00-plattform/schutz.md", "ac": "AC-2", "begruendung": "Abgewiesen wird vor dem WebSocket-Handshake mit HTTP 429. Dann gibt es noch keine Seite, die etwas zeigen koennte." },
     { "spec": "00-plattform/schutz.md", "ac": "AC-3", "begruendung": "Die Trennung nach fuenf falschen Codes je Minute. Die Meldung zu einem falschen Code zeigt raeume AC-3; die Trennung selbst ist eine geschlossene Verbindung." },

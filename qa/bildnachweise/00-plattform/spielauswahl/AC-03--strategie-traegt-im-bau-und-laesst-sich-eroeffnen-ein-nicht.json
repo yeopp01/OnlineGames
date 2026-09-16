@@ -1,0 +1,10 @@
+{
+  "spec": "00-plattform/spielauswahl.md",
+  "ac": "AC-3",
+  "titel": "Strategie traegt im Bau und laesst sich eroeffnen, ein nicht spielbares Spiel steht gesperrt",
+  "datei": "e2e/tests/spielauswahl.spec.mjs",
+  "pfad": [
+    "Spiel waehlen",
+    "auswahl AC-3: im Bau gekennzeichnet, nicht spielbar gesperrt"
+  ]
+}

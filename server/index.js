@@ -8,6 +8,7 @@ const { Raeume, MAX_SPIELER, codeZeigen } = require('./raeume');
 const { Schutz, adresseVon } = require('./schutz');
 const { konten } = require('./konten');
 const { manager } = require('./spiele/manager/netz');
+const verzeichnis = require('./spiele/verzeichnis');
 
 const HAFEN = Number(process.env.PORT) || 4180;
 // Nur einschalten, wenn wirklich ein Reverse Proxy davorsteht - sonst darf
@@ -44,6 +45,9 @@ function ausliefern(anfrage, antwort) {
 
 async function starten(hafen = HAFEN, einstellungen = {}) {
   const raeume = new Raeume();
+  // Einmal beim Start gelesen: ein kaputter Steckbrief verhindert den Start,
+  // statt spaeter eine leere Uebersicht zu zeigen.
+  const spiele = JSON.stringify({ spiele: verzeichnis.lesen() });
   const schutz = new Schutz(einstellungen.schutz);
   const zugang = await konten({
     hafen,
@@ -70,6 +74,10 @@ async function starten(hafen = HAFEN, einstellungen = {}) {
       zugang.behandeln(anfrage, antwort).catch(() => {
         if (!antwort.headersSent) antwort.writeHead(500).end('Fehler');
       });
+      return;
+    }
+    if (anfrage.method === 'GET' && (anfrage.url || '').split('?')[0] === '/api/spiele') {
+      antwort.writeHead(200, { 'Content-Type': TYPEN['.json'], 'Cache-Control': 'no-store' }).end(spiele);
       return;
     }
     if (spielManager.behandeln(anfrage, antwort)) return;

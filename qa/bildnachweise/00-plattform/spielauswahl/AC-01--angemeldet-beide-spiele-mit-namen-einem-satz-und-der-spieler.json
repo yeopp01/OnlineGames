@@ -1,0 +1,10 @@
+{
+  "spec": "00-plattform/spielauswahl.md",
+  "ac": "AC-1",
+  "titel": "Angemeldet: beide Spiele mit Namen, einem Satz und der Spielerzahl",
+  "datei": "e2e/tests/spielauswahl.spec.mjs",
+  "pfad": [
+    "Spiel waehlen",
+    "auswahl AC-1: nach dem Anmelden stehen alle Spiele zur Wahl"
+  ]
+}

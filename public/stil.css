@@ -22,8 +22,11 @@ body {
 
 body {
   display: grid;
-  place-items: center;
-  overflow: hidden;
+  /* safe: wird die Tafel hoeher als das Fenster, beginnt sie oben und laesst
+     sich rollen, statt oben abgeschnitten zu werden. */
+  place-items: safe center;
+  padding: 1rem 0;
+  overflow: auto;
 }
 
 .tafel {
@@ -281,4 +284,76 @@ button.breit {
 .feld em {
   font-style: normal;
   opacity: 0.7;
+}
+
+/* ---- Spielauswahl ---------------------------------------------------- */
+
+.spiele {
+  display: grid;
+  gap: 0.7rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.spielkarte {
+  padding: 0.85rem 0.95rem;
+  background: #171b21;
+  border: 1px solid var(--rand);
+  border-radius: 10px;
+}
+
+.spielkopf {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.6rem;
+}
+
+.marke {
+  padding: 0.05rem 0.5rem;
+  border: 1px solid #8a6d2b;
+  border-radius: 999px;
+  color: #e3bf6a;
+  font-size: 0.75rem;
+  white-space: nowrap;
+}
+
+.stand-gesperrt {
+  opacity: 0.6;
+}
+
+.stand-gesperrt .marke {
+  border-color: var(--rand);
+  color: var(--leise);
+}
+
+.spielsatz {
+  margin: 0.3rem 0 0.7rem;
+  color: var(--leise);
+  font-size: 0.88rem;
+}
+
+.spielfuss {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.6rem;
+}
+
+.spielerzahl {
+  color: var(--leise);
+  font-size: 0.82rem;
+}
+
+.spielfuss button.haupt {
+  flex: 0 0 auto;
+}
+
+button:disabled,
+button.haupt:disabled {
+  background: #262d38;
+  border-color: var(--rand);
+  color: var(--leise);
+  cursor: not-allowed;
 }

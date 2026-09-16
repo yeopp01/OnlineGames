@@ -1,0 +1,54 @@
+'use strict';
+
+// Welche Spiele es gibt (→ specs/00-plattform/spielauswahl.md AC-1 bis AC-3).
+//
+// Jedes Spiel legt in seinem Ordner unter server/spiele/<art>/ einen
+// `steckbrief.js` ab. Das Verzeichnis sammelt sie ein - ein neues Spiel taucht
+// in der Uebersicht auf, ohne dass hier oder im Browser jemand etwas aendert
+// (AC-2). Die Plattform kennt nur die Form des Steckbriefs, nicht die Spiele.
+
+const fs = require('node:fs');
+const path = require('node:path');
+
+const STAENDE = ['spielbar', 'im-bau', 'gesperrt'];
+const EINSTIEGE = ['raum', 'seite'];
+
+// Ein kaputter Steckbrief soll beim Start auffallen, nicht erst im Browser.
+function pruefen(steckbrief, ordner) {
+  const wo = `Steckbrief in ${ordner}`;
+  const { art, name, beschreibung, spieler, stand, einstieg } = steckbrief;
+  if (typeof art !== 'string' || !/^[a-z]+$/.test(art)) throw new Error(`${wo}: art fehlt oder ist nicht klein geschrieben.`);
+  if (typeof name !== 'string' || !name) throw new Error(`${wo}: name fehlt.`);
+  if (typeof beschreibung !== 'string' || !beschreibung) throw new Error(`${wo}: beschreibung fehlt.`);
+  if (!spieler || !Number.isInteger(spieler.von) || !Number.isInteger(spieler.bis) || spieler.von < 1 || spieler.bis < spieler.von) {
+    throw new Error(`${wo}: spieler braucht von und bis, 1 <= von <= bis.`);
+  }
+  if (!STAENDE.includes(stand)) throw new Error(`${wo}: stand muss einer sein aus ${STAENDE.join(', ')}.`);
+  if (!einstieg || !EINSTIEGE.includes(einstieg.art)) throw new Error(`${wo}: einstieg.art muss einer sein aus ${EINSTIEGE.join(', ')}.`);
+  if (einstieg.art === 'seite' && !/^\/[\w.-]+$/.test(einstieg.adresse || '')) {
+    throw new Error(`${wo}: einstieg.adresse muss eine Seite wie /manager.html sein.`);
+  }
+}
+
+function lesen(wurzel = __dirname) {
+  const spiele = [];
+  for (const eintrag of fs.readdirSync(wurzel, { withFileTypes: true })) {
+    if (!eintrag.isDirectory()) continue;
+    const datei = path.join(wurzel, eintrag.name, 'steckbrief.js');
+    if (!fs.existsSync(datei)) continue;
+    const steckbrief = require(datei);
+    pruefen(steckbrief, eintrag.name);
+    spiele.push({
+      art: steckbrief.art,
+      name: steckbrief.name,
+      beschreibung: steckbrief.beschreibung,
+      spieler: { von: steckbrief.spieler.von, bis: steckbrief.spieler.bis },
+      stand: steckbrief.stand,
+      einstieg: { ...steckbrief.einstieg },
+      reihenfolge: Number.isInteger(steckbrief.reihenfolge) ? steckbrief.reihenfolge : 100,
+    });
+  }
+  return spiele.sort((a, b) => a.reihenfolge - b.reihenfolge || a.name.localeCompare(b.name, 'de'));
+}
+
+module.exports = { lesen, STAENDE };

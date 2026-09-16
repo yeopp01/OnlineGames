@@ -16,6 +16,11 @@ etwas anderem gearbeitet.
 - **Name des Spiels.** „Age of Empires" ist eine Marke und darf nicht
   erscheinen ([ADR-0012](../adr/0012-aoe2-als-vorlage.md)). Bis ein Name
   feststeht, heißt es in der Oberfläche „Strategie".
+- **Umlaute in sichtbaren Texten?** `CLAUDE.md` verlangt Umschreibung im
+  Quelltext, und bisher gilt das auch für Texte auf dem Bildschirm („Fuehrt
+  einen Verein ueber …"). Das liest sich holprig. Vorschlag: im Quelltext `ü`
+  oder echte Umlaute nur in Zeichenketten für die Oberfläche. Bis zur Antwort
+  bleibt es bei der Umschreibung.
 
 ## Offene Fäden
 
@@ -28,10 +33,13 @@ etwas anderem gearbeitet.
 - Der Server schickt heute jedem den Vollzustand. Das trägt nicht bis 8×200
   Einheiten (fahrplan AC-20) und nicht für den Nebel (AC-13). Nicht vorziehen,
   aber keine Entscheidung treffen, die gebündelte Änderungen verbaut.
-- `raeume.js` startet heute fest das Strategiespiel. Die Spielauswahl
-  (fahrplan AC-1) braucht die Schnittstelle aus
-  [ADR-0006](../adr/0006-mehrere-spiele.md) — jetzt gibt es zwei Spiele, also
-  ist sie fällig.
+- `raeume.js` startet heute fest das Strategiespiel. Die Übersicht steht
+  (auswahl AC-1 bis AC-3, Steckbriefe unter `server/spiele/<art>/steckbrief.js`);
+  für die Einstellungen (auswahl AC-4 ff.) muss der Raum wissen, **welches**
+  Spiel er startet, und das Spiel seine Einstellungen liefern. Das ist die
+  Schnittstelle aus [ADR-0006](../adr/0006-mehrere-spiele.md).
+- Bei Änderungen am Vorraum: `npm run qa:nachweis -- vorraum spielauswahl`,
+  sonst zeigen die Bilder zu konten und raeume den alten Stand.
 
 ## Messwerte
 
@@ -39,7 +47,8 @@ Zahlen, gegen die spätere Runden vergleichen. Mit Datum und Commit.
 
 | Datum | Was | Wert | Commit |
 | --- | --- | --- | --- |
-| – | – | – | – |
+| 2026-09-16 | Tests ohne Browser / im Browser | 242 / 63 | Runde 1 |
+| 2026-09-16 | Dauer Browserlauf gesamt | 46,6 s | Runde 1 |
 
 ## Rückschauen
 
@@ -53,5 +62,9 @@ _(noch keine)_
 Neueste oben. Eine Zeile je Runde: Nummer, Datum, Kriterien, Ergebnis,
 wichtigste Erkenntnis.
 
+- **1** · 2026-09-16 · auswahl AC-1–3 fertig: Übersicht der Spiele aus
+  Steckbriefen, Kennzeichen „im Bau"/gesperrt. Gelernt: `body` war
+  `overflow: hidden` und zentriert — jede längere Tafel wäre auf 1366×768
+  oben abgeschnitten worden; jetzt `place-items: safe center` mit Test.
 - **0** · 2026-09-16 · Einrichtung: ADR-0012, Fahrplan, Vorlage, diese Datei,
   Anweisung. Noch nichts gebaut.

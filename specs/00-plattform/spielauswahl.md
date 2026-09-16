@@ -2,7 +2,7 @@
 
 **Bereich:** Plattform
 **Kuerzel:** auswahl
-**Stand:** 0/17 fertig · 17 offen
+**Stand:** 3/17 fertig · 14 offen
 
 ## Zweck
 
@@ -32,13 +32,15 @@ Wer nur mitspielt, ueberspringt alles: Code eingeben, Namen eingeben, drin
 
 ### Auswahl
 
-- **AC-1** `offen` **Spiele stehen zur Wahl** — Nach dem Anmelden zeigt eine Uebersicht alle
+- **AC-1** `fertig` **Spiele stehen zur Wahl** — Nach dem Anmelden zeigt eine Uebersicht alle
   verfuegbaren Spiele mit Namen, einem Satz Beschreibung und der Spielerzahl,
   fuer die sie gedacht sind.
-- **AC-2** `offen` **Ein Spiel ist ein Eintrag** — Ein neues Spiel taucht in der
+- **AC-2** `fertig` **Ein Spiel ist ein Eintrag** — Ein neues Spiel taucht in der
   Uebersicht auf, ohne dass jemand die Uebersicht anfasst.
-- **AC-3** `offen` **Unfertige Spiele sichtbar gesperrt** — Ein Spiel in Arbeit
-  wird gezeigt und als solches gekennzeichnet, statt zu fehlen.
+- **AC-3** `fertig` **Unfertige Spiele sind gekennzeichnet** — Ein Spiel im Bau
+  steht mit Kennzeichen in der Uebersicht, statt zu fehlen, und laesst sich
+  schon eroeffnen. Ein Spiel, das noch gar nicht spielbar ist, steht dort
+  sichtbar gesperrt.
 
 ### Einstellungen
 

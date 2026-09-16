@@ -59,7 +59,7 @@ test.describe('Anna eroeffnet, Bert tritt bei', () => {
     await anna.goto('/');
     await expect(anna.locator('#abgemeldet')).toBeVisible();
     await expect(anna.locator('#formAnmelden')).toBeVisible();
-    await expect(anna.locator('#erstellen')).toBeHidden();
+    await expect(anna.locator('[data-oeffnen="strategie"]')).toBeHidden();
     await nachweis(anna, {
       spec: KONTEN,
       ac: 'AC-16',
@@ -71,7 +71,7 @@ test.describe('Anna eroeffnet, Bert tritt bei', () => {
     await anna.locator('#anKennwort').fill(KONTO.kennwort);
     await anna.locator('#formAnmelden button[type="submit"]').click();
     // Und danach zurueck zum Eroeffnen.
-    await expect(anna.locator('#erstellen')).toBeVisible();
+    await expect(anna.locator('[data-oeffnen="strategie"]')).toBeVisible();
   });
 
   test('konten AC-17: der Anzeigename kommt aus dem Konto', async ({}, info) => {
@@ -97,7 +97,7 @@ test.describe('Anna eroeffnet, Bert tritt bei', () => {
   });
 
   test('raeume AC-1: ein eroeffneter Raum zeigt seinen Code', async ({}, info) => {
-    await anna.locator('#erstellen').click();
+    await anna.locator('[data-oeffnen="strategie"]').click();
     await expect(anna.locator('#warteraum')).toBeVisible();
     await expect(anna.locator('#raumcode')).toHaveText(/^[A-Z0-9]{3}-[A-Z0-9]{3}$/);
     raumcode = (await anna.locator('#raumcode').textContent()).trim();
@@ -118,7 +118,7 @@ test.describe('Anna eroeffnet, Bert tritt bei', () => {
     const allein = await anna.context().newPage();
     fehler.push(fehlerSammeln(allein));
     await allein.goto('/');
-    await allein.locator('#erstellen').click();
+    await allein.locator('[data-oeffnen="strategie"]').click();
     await expect(allein.locator('#warteraum')).toBeVisible();
 
     await allein.locator('#starten').click();
