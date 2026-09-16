@@ -18,3 +18,4 @@ Nachfolgerin.
 | 0009 | [Die Oberflaeche wird in einem echten Browser geprueft](0009-oberflaeche-im-browser.md) | teilweise abgeloest (Werkzeug → 0010) |
 | 0010 | [Playwright statt eigener Fernsteuerung](0010-playwright.md) | entschieden |
 | 0011 | [Bildnachweise gehoeren an das Abnahmekriterium](0011-bildnachweise.md) | entschieden |
+| 0012 | [Age of Empires II ist die Vorlage, gebaut wird in Stufen](0012-aoe2-als-vorlage.md) | entschieden |

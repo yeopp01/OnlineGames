@@ -9,6 +9,9 @@
 Was gelten muss, damit der Server im Netz stehen kann, ohne dass jemand
 nachts wach liegt.
 
+Ziel ist ein eigener **VPS bei Hetzner** (→ [Fahrplan](../10-strategie/fahrplan.md)
+Stufe G). Zugangsdaten und Adressen stehen nicht im Repository.
+
 ## Abgrenzung
 
 | Gehoert dazu                   | Gehoert nicht dazu                          |

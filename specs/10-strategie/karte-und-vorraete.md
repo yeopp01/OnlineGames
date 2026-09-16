@@ -8,6 +8,12 @@
 
 Ein Spielfeld, das in jeder Partie neu ist, aber niemanden benachteiligt.
 
+> **Wird umgeschrieben.** Die Zahlen und Kriterien hier stammen aus der kleinen
+> Fassung vor [ADR-0012](../../docs/adr/0012-aoe2-als-vorlage.md). Sie werden zu
+> Beginn von **Stufe A** im [Fahrplan](fahrplan.md) auf die
+> [Vorlage](../../docs/strategie/vorlage-aoe2.md) umgestellt und gelten bis dahin
+> nicht als Ziel.
+
 ## Abgrenzung
 
 | Gehoert dazu                    | Gehoert nicht dazu                              |

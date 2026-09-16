@@ -1,8 +1,9 @@
 # OnlineGames
 
-Spiele für mehrere über einen Raumcode. Erstes Spiel: ein bewusst klein
-geschnittenes Echtzeit-Strategiespiel im Geist von Age of Empires. Zweites
-Spiel: ein Fußballmanager im Geist von Anstoss 3.
+Spiele für mehrere über einen Raumcode. Erstes Spiel: ein Echtzeit-Strategiespiel
+nach den Regeln von Age of Empires II, gebaut in Stufen bis zu fünf Völkern auf
+einem eigenen Server ([ADR-0012](docs/adr/0012-aoe2-als-vorlage.md)). Zweites
+Spiel: ein Fußballmanager im Geist von Anstoss 3 — **die Arbeit daran ruht.**
 
 Schwesterprojekt von [LocalGames](../LocalGames/) — dort liegen die Partien im
 Gerät und verlassen es nicht. Hier gibt es einen Server, weil ein gemeinsames
@@ -25,6 +26,12 @@ npm run qa:report    # die Übersicht als Seite: qa/report/index.html
 npm start            # http://localhost:4180/
 npm run dev          # dasselbe mit --watch
 ```
+
+**Am Strategiespiel wird in Runden gearbeitet:** `/strategie-weiterbauen`
+([Anweisung](.claude/skills/strategie-weiterbauen/SKILL.md)), eigenständig mit
+`/loop /strategie-weiterbauen`. Gearbeitet wird auf dem Branch `strategie`; was
+dabei gelernt wird, steht in [`docs/strategie/erkenntnisse.md`](docs/strategie/erkenntnisse.md),
+die Werte des Originals in [`docs/strategie/vorlage-aoe2.md`](docs/strategie/vorlage-aoe2.md).
 
 **`npm run check` muss vor jedem Abschluss grün sein.** Er prüft:
 
@@ -112,19 +119,20 @@ e2e/     Playwright: tests/ im Browser; server.mjs startet den Server samt Prüf
 | [ADR-0009](docs/adr/0009-oberflaeche-im-browser.md) | **Die Oberfläche wird in einem echten Browser geprüft.** Jedes Spiel bringt sein eigenes Stylesheet mit — keine geteilte Kaskade. |
 | [ADR-0010](docs/adr/0010-playwright.md) | **Playwright** statt eigener Fernsteuerung: warten auf Zustände statt nach der Uhr. **Nur örtlich**, nicht in der CI. |
 | [ADR-0011](docs/adr/0011-bildnachweise.md) | **Bildnachweise gehören an das Abnahmekriterium.** `fertig` = Testname **und** (Bild **oder** Begründung). Bilder eingecheckt, Bericht erzeugt. |
+| [ADR-0012](docs/adr/0012-aoe2-als-vorlage.md) | **AoE II ist die Vorlage, gebaut wird in Stufen A–G.** Keine Schiffe, kein Karrenhandel, keine Kampagnen, kein Material aus dem Original, kein „Age of Empires" im Spiel. Völker sind Daten. |
 
 **Eröffnen verlangt ein Konto, Mitspielen nicht.** Wer eine Partie eröffnet,
 belegt Rechenzeit — dort leistet ein Konto etwas. Wer mitspielt, tippt Code
 und Namen. Diese Regel ist der Kern des Projekts, sie wird nicht verwässert.
 
-Und die Tabelle in [`specs/10-strategie/spielziel.md`](specs/10-strategie/spielziel.md)
-unter „Was es ausdrücklich **nicht** wird" ist die wichtigste im Projekt: jede
-Zeile rechts ist eine Woche, die wir nicht ausgeben. Vor jedem Vorschlag, der
+Und die Tabelle „Wird nicht gebaut" in [ADR-0012](docs/adr/0012-aoe2-als-vorlage.md)
+ist die wichtigste im Projekt: jede Zeile rechts ist eine Woche, die wir nicht
+ausgeben. Vor jedem Vorschlag, der
 Umfang hinzufügt, dort nachsehen.
 
 ## Stand
 
-**262 von 421 Kriterien fertig.** 238 Tests ohne Browser, 59 im Browser. Die
+**262 von 443 Kriterien fertig.** 238 Tests ohne Browser, 59 im Browser. Die
 Übersicht ist der Bericht: `npm run qa:report`.
 
 Gebaut ist der Unterbau: Räume, Übertragung, Karte, Wegfindung, Sammeln,
@@ -161,23 +169,20 @@ Auswahlrahmen, Rechtsklick stehen auf `in-qa`, nicht auf `fertig`.
 
 ### Offen, in dieser Reihenfolge
 
-1. **Das Spielbild des Strategiespiels im Browser** — zwei Fenster, starten,
-   Einheiten wählen, befehlen. Der Vorraum davor ist erledigt
-   (`e2e/tests/vorraum.spec.mjs`); der Browserlauf lässt sich direkt erweitern.
-2. **Mehrere Menschen in einer Liga**
-   ([Manager-Spielziel](specs/15-manager/spielziel.md) AC-1, AC-2) — der
-   Grund, warum das Spiel hier liegt und nicht in LocalGames. Die Welt ist
-   dafür gebaut: die 35 anderen Vereine laufen schon nach den Regeln des
-   Menschen.
-3. **[Bauen](specs/10-strategie/bauen.md)** — ohne etwas zu bauen gibt es keine
-   Entscheidung, und ohne Entscheidung kein Strategiespiel.
-4. **[Kampf](specs/10-strategie/kampf.md)** und das Ende der Partie
-   ([Spielziel](specs/10-strategie/spielziel.md)).
-5. **Mailversand** — erst damit werden Mailbestätigung (konten AC-4) und
-   „Kennwort vergessen" (AC-5) möglich; beide stehen auf `geplant`.
+Der [Fahrplan](specs/10-strategie/fahrplan.md) ist die Reihenfolge:
 
-Der ehrlichste nächste Schritt ist aber keiner am Rechner: einmal zu fünft
-spielen und sehen, ob die Grundschleife trägt.
+1. **Einstieg** — nach dem Anmelden Spiel wählen, Einstellungen, eröffnen
+   ([Spielauswahl](specs/00-plattform/spielauswahl.md)).
+2. **Das Spielbild im Browser** — zwei Fenster, starten, wählen, befehlen.
+3. **Stufe A** Dunkle Zeit mit Wirtschafts-KI und Prüfstand · **B** Feudalzeit
+   · **C** Partieende und KI-Gegner · **D** Ritterzeit · **E** fünf Völker ·
+   **F** Imperialzeit · **G** Betrieb auf dem Hetzner-VPS.
+
+Außerhalb der Reihe, aber nicht vergessen: Mailversand (konten AC-4, AC-5) und
+mehrere Menschen in einer Manager-Liga — beides ruht mit dem Managerspiel.
+
+Der ehrlichste Prüfstein bleibt keiner am Rechner: einmal zu fünft spielen und
+sehen, ob es trägt.
 
 ## Ton
 

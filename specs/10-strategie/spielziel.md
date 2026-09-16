@@ -12,56 +12,49 @@ ist. Diese Spec ist die Klammer über [Bauen](bauen.md), [Kampf](kampf.md),
 
 ## Die Idee in drei Sätzen
 
-Fünf Freunde spielen fünfzehn Minuten auf einer Karte. Jeder baut aus zwei
-Rohstoffen eine kleine Wirtschaft auf, bildet Truppen aus und versucht, die
-Basen der anderen niederzureißen. Wer als Letzter eine Basis hat, gewinnt.
+Zwei bis acht Leute spielen eine Partie nach den Regeln von Age of Empires II:
+Dorfbewohner sammeln vier Rohstoffe, die Siedlung steigt durch die Zeitalter
+auf, jedes Volk hat seine Stärken. Wer die anderen erobert, gewinnt. Gebaut
+wird in Stufen ([Fahrplan](fahrplan.md)), jede endet mit einer spielbaren
+Partie.
 
-## Was es ausdrücklich **nicht** wird
+## Was ausdrücklich **nicht** gebaut wird
 
-Ein vollstaendiger Nachbau von Age of Empires 2. Vierzig Voelker, hundert
-Einheitentypen mit Animationen aus acht Richtungen, Kampagnen und Zeitalter
-sind Mannjahre an **Inhalt** — kein Code hilft dabei. Der Reiz eines
-Strategiespiels steckt in der Entscheidung „noch ein Sammler oder schon
-Soldaten?", nicht in der Anzahl der Einheitentypen.
+Die Tabelle steht in [ADR-0012](../../docs/adr/0012-aoe2-als-vorlage.md) und
+löst die frühere Fassung (2 Rohstoffe, 4 Einheiten, 3 Gebäude, 15 Minuten) ab.
+Das Wichtigste daraus: **keine Schiffe, kein Handel über Karren, keine
+Kampagnen, kein Karteneditor, kein Material aus dem Original, keine 40 Völker.**
+Eine Zeile von dort hierher zu holen ist ein neues ADR.
 
-| Wird gebaut                     | Wird nicht gebaut                   |
-| ------------------------------- | ----------------------------------- |
-| 2 Rohstoffe                     | 4 Rohstoffe, Handel, Markt          |
-| 4 Einheitentypen                | Belagerung, Schiffe, Helden         |
-| 3 Gebäudetypen                  | Mauern, Türme, Wunder               |
-| 3 Völker zu Beginn, später 5–10 | 40 Völker mit eigenem Technikbaum   |
-| 1 Karte je Partie, zufällig     | Karteneditor, Kampagnen, Szenarien  |
-| Formen und Farben               | Sprites, Animationen, Sprachausgabe |
-| 15 Minuten                      | 90 Minuten, Speicherstände          |
-
-Diese Tabelle ist die wichtigste in diesem Projekt. Jede Zeile rechts ist
-eine Woche, die wir nicht ausgeben.
+Der Reiz eines Strategiespiels steckt weiterhin in der Entscheidung „noch ein
+Dorfbewohner oder schon Soldaten?" — nicht in der Anzahl der Einheitentypen.
+Jede Stufe wird daran gemessen, ob sie neue Entscheidungen bringt.
 
 ## Zu den Völkern
 
 Namen wie Teutonen, Franken oder Byzantiner sind historisch und frei
-verwendbar — es sind reale Voelker, so wie Trebuchet, Paladin und Chevalier
-reale Waffen und Raenge sind. Was ein Volk kostet, haengt allein daran, wie
-viel **eigenes** daran haengt:
+verwendbar. Was ein Volk kostet, hängt allein daran, wie viel **eigenes**
+daran hängt:
 
 | Ein Volk als …                                | Kostet        |
 | --------------------------------------------- | ------------- |
-| Name, Farbe und **ein** Zahlenunterschied     | einen Nachmittag |
-| dazu eine eigene Sonderregel                  | einen Tag     |
-| eigener Technikbaum und eigene Einheitentypen | Wochen        |
+| Name, Farbe und Boni als Zahlen               | einen Nachmittag |
+| dazu eine Spezialeinheit aus vorhandenen Fähigkeiten | einen Tag |
+| eigener Technikbaum und eigene Mechaniken     | Wochen        |
 
-Deshalb: 5 bis 10 Voelker der ersten beiden Sorten sind ein realistisches
-Ziel. Ein eigener Technikbaum je Volk ist es nicht.
+Deshalb bekommen die fünf Völker Boni und eine Spezialeinheit, aber keinen
+eigenen Technikbaum ([Vorlage](../../docs/strategie/vorlage-aoe2.md)).
 
 ## Abnahmekriterien
 
 ### Partieverlauf
 
-- **AC-1** `offen` **Eine Partie hat drei Abschnitte** — Aufbau (nur sammeln, ~4 min), Ausbau
-  (bauen und ausbilden, ~6 min), Entscheidung (Kampf, ~5 min). Nicht als
-  Regel erzwungen, sondern über Kosten und Bauzeiten so bemessen.
-- **AC-2** `offen` **Partiedauer 12 bis 20 Minuten** — Gemessen über zehn Partien mit
-  echten Spielern. Dauert sie regelmäßig länger, sind die Kosten falsch.
+- **AC-1** `offen` **Zeitalter gliedern die Partie** — Dunkle Zeit, Feudal-, Ritter- und
+  Imperialzeit. Jeder Aufstieg kostet und dauert, und er öffnet neue Gebäude und
+  Einheiten. Wann man aufsteigt, ist eine Entscheidung, keine Pflicht.
+- **AC-2** `offen` **Partiedauer 25 bis 45 Minuten** — Mit Standardeinstellungen, gemessen
+  über zehn Partien mit echten Spielern. Einstellungen wie Startzeitalter und
+  Startrohstoffe verkürzen sie für einen Abend mit mehreren Partien.
 - **AC-3** `offen` **Kein Aus nach drei Minuten** — Ein Angriff in den ersten fünf Minuten
   darf einen Spieler nicht ausschalten. Wer früh verliert, sitzt zwölf
   Minuten daneben — das killt den Abend.
@@ -71,8 +64,9 @@ Ziel. Ein eigener Technikbaum je Volk ist es nicht.
 
 ### Sieg und Ende
 
-- **AC-5** `offen` **Sieg durch letzte Basis** — Wer als Einziger noch ein Zentrum hat, gewinnt.
-  Die Partie endet sofort und zeigt allen das Ergebnis.
+- **AC-5** `offen` **Sieg durch Eroberung** — Wer als Einziger noch Einheiten oder Gebäude
+  außer Mauern, Toren und Farmen hat, gewinnt. Die Partie endet sofort und
+  zeigt allen das Ergebnis.
 - **AC-6** `offen` **Aufgeben ist möglich** — Ein Spieler kann aufgeben. Seine Einheiten
   verschwinden, die Partie läuft für die anderen weiter.
 - **AC-7** `offen` **Verlierer bleiben Zuschauer** — Wer ausgeschieden ist, sieht die Partie
@@ -93,11 +87,12 @@ Ziel. Ein eigener Technikbaum je Volk ist es nicht.
 
 ### Zu mehreren
 
-- **AC-13** `offen` **Zwei bis sechs Spieler** — Die Partie funktioniert mit jeder Zahl zwischen
-  zwei und sechs, ohne dass Werte von Hand angepasst werden.
-- **AC-16** `offen` **Drei Völker zum Start** — Jedes mit genau einem spürbaren Unterschied, etwa
-  zähere Gebäude, billigere Reiter oder ein stärkerer Konter. Nicht mehr:
-  drei Unterschiede lassen sich noch ausbalancieren, dreißig nicht.
+- **AC-13** `offen` **Zwei bis acht Spieler** — Die Partie funktioniert mit jeder Zahl zwischen
+  zwei und acht, ohne dass Werte von Hand angepasst werden; die Karte wächst
+  mit.
+- **AC-16** `offen` **Fünf Völker mit Profil** — Jedes mit zwei bis drei Boni, einer
+  Spezialeinheit und einem Mannschaftsbonus, die einen eigenen Weg zum Sieg
+  nahelegen (→ [Fahrplan](fahrplan.md) AC-16).
 - **AC-17** `offen` **Ein Volk ist Daten** — Ein neues Volk entsteht durch einen Eintrag
   in einer Tabelle, nicht durch eine Verzweigung in der Simulation. Sonst
   wird das fünfte Volk teurer als das erste statt billiger.
@@ -110,8 +105,8 @@ Ziel. Ein eigener Technikbaum je Volk ist es nicht.
 
 ## Der Prüfstein
 
-Diese Spec gilt als erfüllt, wenn **fünf Menschen an einem Abend drei Partien
-hintereinander spielen und danach eine vierte wollen.** Alles andere hier
+Diese Spec gilt als erfüllt, wenn **fünf Menschen an einem Abend zwei Partien
+hintereinander spielen und danach eine dritte wollen.** Alles andere hier
 sind Hilfsmittel für dieses eine Ergebnis.
 
 Das lässt sich nicht testen, nur feststellen — und zwar nur an einem echten
