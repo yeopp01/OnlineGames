@@ -26,6 +26,12 @@ const SAMMELN = {
   5: { rohstoff: 'stein', rate: 0.36 }, // Steinfeld
 };
 
+// Tiere (einheiten AC-17): Nahrung am Kadaver, Rate beim Hueten je Sekunde, und
+// wie viele Sekunden ein unbearbeiteter Kadaver fuer eine Nahrung braucht.
+const TIERE = {
+  schaf: { nahrung: 100, rate: 0.33, verfall: 4 },
+};
+
 // Gebaeude der Dunklen Zeit (bauen AC-20): Groesse in Feldern (quadratisch),
 // Kosten, Bauzeit in Sekunden, Leben, Wohnraum, welche Rohstoffe dort
 // abgegeben werden (einheiten AC-16) und was sie ausbilden.
@@ -51,4 +57,4 @@ const STARTAUFSTELLUNG = ['dorfbewohner', 'dorfbewohner', 'dorfbewohner', 'spaeh
 // Mehr Wohnraum zaehlt nicht, wie in der Vorlage.
 const BEVOELKERUNG_MAX = 200;
 
-module.exports = { EINHEITEN, SAMMELN, GEBAEUDE, BEVOELKERUNG_MAX, SCHLANGE_MAX, STARTAUFSTELLUNG };
+module.exports = { EINHEITEN, SAMMELN, TIERE, GEBAEUDE, BEVOELKERUNG_MAX, SCHLANGE_MAX, STARTAUFSTELLUNG };

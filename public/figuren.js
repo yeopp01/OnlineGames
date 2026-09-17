@@ -200,7 +200,11 @@ function spaeherreiter(stift, farbe, { schritt = 0 }) {
 
 // Ein Schaf: helle Wolle aus Buckeln, dunkler Kopf und Beine, das Halsband in
 // Spielerfarbe zeigt, wem es gehoert (karte AC-16). Kleiner als ein Mensch.
-function schaf(stift, farbe, { schritt = 0 }) {
+function schaf(stift, farbe, { schritt = 0, liegt = false, rest = 1 }) {
+  if (liegt) {
+    kadaver(stift, farbe, rest);
+    return;
+  }
   schatten(stift, 6.5);
   const WOLLE = '#ece6d8';
   const WOLLE_SCHATTEN = '#cfc7b5';
@@ -220,6 +224,37 @@ function schaf(stift, farbe, { schritt = 0 }) {
   ellipse(stift, 7, -12.2, 1.4, 0.7, KOPF, false);
   stift.fillStyle = '#f2f2f2';
   stift.fillRect(9, -10.4, 0.8, 0.8);
+}
+
+// Ein geschlachtetes Schaf (einheiten AC-17): liegt auf der Seite, die Beine
+// seitlich, eine rote Stelle waechst, und das Ganze wird mit der Nahrung
+// kleiner. Das Halsband bleibt - man sieht, wessen Nahrung da liegt.
+function kadaver(stift, farbe, rest) {
+  const voll = Math.max(0, Math.min(1, rest));
+  const m = 0.55 + 0.45 * voll;
+  stift.save();
+  stift.scale(m, m);
+  schatten(stift, 8.5);
+  const WOLLE = '#ece6d8';
+  const WOLLE_SCHATTEN = '#cfc7b5';
+  const KOPF = '#2e2a28';
+  // Beine steif nach oben und zur Seite - so liegt ein Tier, das nicht mehr steht.
+  for (const [x, neigung] of [[1.2, 0.2], [3, 0.5], [4.6, 0.1], [6, 0.45]]) {
+    const fuss = [x + 2.2 + neigung * 3, -10.5 + neigung * 2];
+    vieleck(stift, [[x - 0.6, -4.5], [x + 0.6, -4.5], [fuss[0] + 0.6, fuss[1]], [fuss[0] - 0.6, fuss[1]]], KOPF, false);
+  }
+  // Der Koerper liegt auf der Seite: breit und niedrig, Wolle in Buckeln.
+  ellipse(stift, 0, -3.4, 8.2, 3.6, WOLLE_SCHATTEN);
+  for (const [x, y, r] of [[-5, -4, 2.4], [-2, -5, 2.8], [1.4, -5.2, 2.6], [4.4, -4.4, 2.3]]) {
+    ellipse(stift, x, y, r, r * 0.75, WOLLE, false);
+  }
+  // Wo schon Nahrung genommen wurde, ist es rot - je weniger uebrig, desto mehr.
+  const schnitt = 1.2 + (1 - voll) * 3.2;
+  ellipse(stift, 0.5, -2.6, schnitt, schnitt * 0.5, '#b8434a');
+  // Kopf flach am Boden links, das Halsband bleibt: man sieht, wem es gehoert.
+  vieleck(stift, [[-8.4, -4.4], [-6.8, -4.6], [-6.6, -2.2], [-8.2, -2]], farbe);
+  vieleck(stift, [[-12.2, -3.4], [-8.2, -4.8], [-8, -1.8], [-11.8, -1]], KOPF);
+  stift.restore();
 }
 
 export const FIGUREN = {

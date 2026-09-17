@@ -7,9 +7,9 @@ Eine Zeile je Abnahmekriterium. Gepflegt wird der Status in der Spec selbst,
 hier steht er zusammengefasst. Erzeugt mit `npm run specs:board`; als Seite
 mit Bildnachweisen, Filter und Suche mit `npm run qa:report`.
 
-**Gesamt:** 318/486 fertig · 5 in QA · 4 geplant · 152 offen · 7 zurueckgestellt
+**Gesamt:** 319/488 fertig · 5 in QA · 4 geplant · 153 offen · 7 zurueckgestellt
 
-**Nachweise:** 111 Kriterien mit Bild · 211 ohne Bild, begruendet in `qa/ohne-bild.json`
+**Nachweise:** 112 Kriterien mit Bild · 211 ohne Bild, begruendet in `qa/ohne-bild.json`
 
 ## Nach Spezifikation
 
@@ -23,8 +23,8 @@ mit Bildnachweisen, Filter und Suche mit `npm run qa:report`.
 | [Uebertragung](00-plattform/uebertragung.md)                   | -         | -     | 2       | 1     | -               | 7      |
 | [Bauen und Ausbilden](10-strategie/bauen.md)                   | -         | -     | -       | 8     | -               | 14     |
 | [Bedienung](10-strategie/bedienung.md)                         | -         | -     | -       | 16    | -               | 13     |
-| [Darstellung](10-strategie/darstellung.md)                     | -         | -     | -       | 4     | -               | 7      |
-| [Einheiten und Befehle](10-strategie/einheiten-und-befehle.md) | -         | -     | -       | 5     | 1               | 11     |
+| [Darstellung](10-strategie/darstellung.md)                     | -         | -     | -       | 5     | -               | 7      |
+| [Einheiten und Befehle](10-strategie/einheiten-und-befehle.md) | -         | -     | -       | 5     | 1               | 12     |
 | [Fahrplan zum Klon](10-strategie/fahrplan.md)                  | -         | -     | -       | 20    | -               | 2      |
 | [Kampf](10-strategie/kampf.md)                                 | -         | -     | -       | 14    | -               | -      |
 | [Karte und Vorraete](10-strategie/karte-und-vorraete.md)       | -         | -     | -       | 2     | 3               | 12     |
@@ -60,7 +60,7 @@ mit Bildnachweisen, Filter und Suche mit `npm run qa:report`.
 - **Abbruch ist sichtbar** — [Uebertragung](00-plattform/uebertragung.md) AC-9
 - **Automatischer Wiederaufbau** — [Uebertragung](00-plattform/uebertragung.md) AC-10
 
-## Offen (152)
+## Offen (153)
 
 - **Anmeldung ueber Google/GitHub** — [Konten und Anmeldung](00-plattform/konten.md) AC-6
 - **Bilanz je Konto** — [Konten und Anmeldung](00-plattform/konten.md) AC-14
@@ -132,10 +132,11 @@ mit Bildnachweisen, Filter und Suche mit `npm run qa:report`.
 - **Eine Schautafel** — [Darstellung](10-strategie/darstellung.md) AC-9
 - **Flüssig im Browser** — [Darstellung](10-strategie/darstellung.md) AC-10
 - **Nur eigenes Material** — [Darstellung](10-strategie/darstellung.md) AC-11
+- **Gezeichnet statt flach** — [Darstellung](10-strategie/darstellung.md) AC-12
 - **Einheiten blockieren sich nicht** — [Einheiten und Befehle](10-strategie/einheiten-und-befehle.md) AC-10
-- **Schafe schlachten und hüten** — [Einheiten und Befehle](10-strategie/einheiten-und-befehle.md) AC-17
 - **Farm bestellen** — [Einheiten und Befehle](10-strategie/einheiten-und-befehle.md) AC-18
 - **Ein Befehl für viele** — [Einheiten und Befehle](10-strategie/einheiten-und-befehle.md) AC-20
+- **Schafe wählen und treiben** — [Einheiten und Befehle](10-strategie/einheiten-und-befehle.md) AC-22
 - **Untätig ist erkennbar** — [Einheiten und Befehle](10-strategie/einheiten-und-befehle.md) AC-21
 - **Dunkle Zeit spielbar** — [Fahrplan zum Klon](10-strategie/fahrplan.md) AC-3
 - **Prüfstand ohne Menschen** — [Fahrplan zum Klon](10-strategie/fahrplan.md) AC-4

@@ -1,0 +1,10 @@
+{
+  "spec": "10-strategie/einheiten-und-befehle.md",
+  "ac": "AC-17",
+  "titel": "Das Schaf liegt geschlachtet, Beine nach oben, der Dorfbewohner daneben traegt Nahrung im Korb",
+  "datei": "e2e/tests/strategie-tiere.spec.mjs",
+  "pfad": [
+    "Schafe",
+    "einheiten AC-17: Rechtsklick auf ein eigenes Schaf - geschlachtet, der Dorfbewohner huetet Nahrung"
+  ]
+}

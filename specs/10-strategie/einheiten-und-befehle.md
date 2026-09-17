@@ -2,7 +2,7 @@
 
 **Bereich:** Strategie
 **Kuerzel:** einheiten
-**Stand:** 11/17 fertig · 5 offen · 1 zurueckgestellt
+**Stand:** 12/18 fertig · 5 offen · 1 zurueckgestellt
 
 ## Zweck
 
@@ -79,7 +79,7 @@ Befehl bewirkt.
 - **AC-16** `fertig` **Abgabe am nächsten Lager** — Ein voller Dorfbewohner bringt seine Ladung zum
   nächsten fertigen Gebäude, das diesen Rohstoff annimmt, und kehrt zum selben
   Vorrat zurück.
-- **AC-17** `offen` **Schafe schlachten und hüten** — Rechtsklick eines Dorfbewohners auf ein
+- **AC-17** `fertig` **Schafe schlachten und hüten** — Rechtsklick eines Dorfbewohners auf ein
   eigenes Schaf: er schlachtet es und nimmt Nahrung vom Kadaver. Ein Kadaver
   verliert je 4 Sekunden eine Nahrung, solange niemand an ihm arbeitet — wie
   im Original, damit man nicht alle Schafe zugleich schlachtet.
@@ -92,6 +92,11 @@ Befehl bewirkt.
   geschickt, stellen sich dort nebeneinander auf, statt auf einem Feld zu
   stehen. Mehrere Sammler auf einem Vorrat verteilen sich auf die Nachbarn
   derselben Art.
+- **AC-22** `offen` **Schafe wählen und treiben** — Eigene Schafe lassen sich wie Einheiten
+  anklicken oder mit dem Rahmen wählen und per Rechtsklick an einen Ort
+  schicken, etwa ans Dorfzentrum; so werden die Wege beim Hüten kurz. Fremde
+  Schafe in Sichtweite eigener Einheiten wechseln den Besitzer — wie in der
+  Vorlage. _(Auf Frage des Benutzers in Runde 26 angelegt.)_
 - **AC-21** `offen` **Untätig ist erkennbar** — Die Welt weiß je Spieler, welche Dorfbewohner
   nichts tun. Die Oberfläche zeigt die Zahl und springt zum nächsten
   (→ [Bedienung](bedienung.md) AC-28).

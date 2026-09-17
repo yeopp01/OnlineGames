@@ -491,6 +491,9 @@ export class Ansicht {
         const spieler = this.spieler.get(ding.tier.b);
         figurZeichnen(stift, ding.tier.art, p.x, p.y, Math.max(9, HALB_B * 0.9 * zoom), spieler ? spieler.farbe : '#888888', {
           blick: ding.tier.i % 2 ? 1 : -1,
+          // Geschlachtet: ein Kadaver, der mit der Nahrung kleiner wird (einheiten AC-17).
+          liegt: Boolean(ding.tier.g),
+          rest: (ding.tier.n ?? 100) / 100,
         });
       } else {
         this.einheitZeichnen(ding.einheit, ding.alt, p);

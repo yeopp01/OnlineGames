@@ -3,7 +3,7 @@
 const karten = require('./karte');
 const { suchen, nachbarfeld } = require('./wege');
 const {
-  EINHEITEN, SAMMELN, GEBAEUDE, BEVOELKERUNG_MAX, SCHLANGE_MAX, STARTAUFSTELLUNG,
+  EINHEITEN, SAMMELN, TIERE, GEBAEUDE, BEVOELKERUNG_MAX, SCHLANGE_MAX, STARTAUFSTELLUNG,
 } = require('./daten');
 
 const TAKTE_PRO_SEKUNDE = 10;
@@ -58,7 +58,14 @@ class Welt {
     for (const schaf of this.karte.schafe) {
       const id = this.naechsteId++;
       this.tiere.set(id, {
-        id, art: 'schaf', besitzer: this.spieler[schaf.spieler].id, x: schaf.x, y: schaf.y, nahrung: karten.SCHAF_NAHRUNG,
+        id,
+        art: 'schaf',
+        besitzer: this.spieler[schaf.spieler].id,
+        x: schaf.x,
+        y: schaf.y,
+        nahrung: TIERE.schaf.nahrung,
+        geschlachtet: false,
+        verfall: 0, // Takte ohne Arbeit seit der letzten verfallenen Nahrung
       });
     }
 
@@ -457,6 +464,9 @@ class Welt {
     const sammeln = SAMMELN[this.karte.felder[zy * g + zx]];
     // Eine eigene Baustelle: wer bauen kann, baut mit (bauen AC-2).
     const baustelle = this.gebaeudeAn(zx, zy);
+    // Ein eigenes Schaf in der Naehe des Klicks (einheiten AC-17) - aber nur,
+    // wenn auf dem Feld selbst nichts zu sammeln ist: neben Beeren weiden Schafe.
+    const schaf = sammeln ? null : this.tierAn(spielerId, Number(ziel.x), Number(ziel.y));
 
     for (const id of einheitIds.slice(0, 200)) {
       const einheit = this.einheiten.get(id);
@@ -466,6 +476,14 @@ class Welt {
       if (baustelle && !baustelle.fertig && baustelle.besitzer === spielerId
         && (EINHEITEN[einheit.art].baut || []).includes(baustelle.art)) {
         this.bauenBeginnen(einheit, baustelle);
+      } else if (schaf && EINHEITEN[einheit.art].tragkraft > 0) {
+        if (einheit.ladung > 0 && einheit.ladungsart !== 'nahrung') {
+          einheit.ladung = 0;
+          einheit.ladungsart = null;
+        }
+        einheit.angefangen = 0;
+        einheit.auftrag = { art: 'tier', tier: schaf.id };
+        this.wegZumTier(einheit, schaf);
       } else if (sammeln && EINHEITEN[einheit.art].tragkraft > 0) {
         // Wer den Rohstoff wechselt, laesst die alte Ladung fallen.
         if (einheit.ladung > 0 && einheit.ladungsart !== sammeln.rohstoff) {
@@ -479,6 +497,103 @@ class Welt {
         einheit.auftrag = { art: 'gehen', feld: { x: zx, y: zy } };
         einheit.weg = suchen(this.karte, this.feldVon(einheit), { x: zx, y: zy });
       }
+    }
+  }
+
+  // Das naechste eigene Tier hoechstens ein Feld vom Klick entfernt.
+  tierAn(spielerId, x, y) {
+    let bestes = null;
+    let besterAbstand = 1.01;
+    for (const tier of this.tiere.values()) {
+      if (tier.besitzer !== spielerId) continue;
+      const abstand = Math.hypot(tier.x - x, tier.y - y);
+      if (abstand < besterAbstand) {
+        besterAbstand = abstand;
+        bestes = tier;
+      }
+    }
+    return bestes;
+  }
+
+  // Neben das Tier, nicht darauf - sonst verdeckt der Hirte den Kadaver.
+  wegZumTier(einheit, tier) {
+    const feld = { x: Math.round(tier.x), y: Math.round(tier.y) };
+    const stand = nachbarfeld(this.karte, feld, einheit);
+    einheit.weg = stand ? suchen(this.karte, this.feldVon(einheit), stand) : [];
+  }
+
+  // Am Tier: beim ersten Mal schlachten, dann Nahrung nehmen wie an einem
+  // Vorrat. Ist es leer, geht es zum naechsten eigenen Tier in der Naehe.
+  tierTakten(einheit) {
+    let tier = this.tiere.get(einheit.auftrag.tier);
+    if (!tier) {
+      tier = this.naechstesTier(einheit);
+      if (!tier) {
+        einheit.auftrag = null;
+        einheit.sammelt = false;
+        return;
+      }
+      einheit.auftrag = { art: 'tier', tier: tier.id };
+    }
+    if (einheit.ladung >= EINHEITEN[einheit.art].tragkraft) {
+      einheit.sammelt = false;
+      this.abladen(einheit);
+      return;
+    }
+    // Ein Nachbarfeld, auch schraeg (Wurzel aus 2), gilt als am Tier.
+    if (Math.hypot(einheit.x - tier.x, einheit.y - tier.y) > 1.5) {
+      einheit.sammelt = false;
+      this.wegZumTier(einheit, tier);
+      if (!einheit.weg.length) einheit.auftrag = null;
+      return;
+    }
+    if (!tier.geschlachtet) {
+      tier.geschlachtet = true;
+      this.tierAenderungen.push(tier.id);
+    }
+    einheit.sammelt = true;
+    einheit.angefangen += TIERE[tier.art].rate / TAKTE_PRO_SEKUNDE;
+    if (einheit.angefangen < 1) return;
+    einheit.angefangen -= 1;
+    this.tierNahrungNehmen(tier);
+    einheit.ladung += 1;
+    einheit.ladungsart = 'nahrung';
+    if (!this.tiere.has(tier.id) || einheit.ladung >= EINHEITEN[einheit.art].tragkraft) einheit.sammelt = false;
+  }
+
+  tierNahrungNehmen(tier) {
+    tier.nahrung -= 1;
+    this.tierAenderungen.push(tier.id);
+    if (tier.nahrung <= 0) this.tiere.delete(tier.id);
+  }
+
+  naechstesTier(einheit) {
+    let bestes = null;
+    let besterAbstand = SUCHWEITE_ERSATZ;
+    for (const tier of this.tiere.values()) {
+      if (tier.besitzer !== einheit.besitzer) continue;
+      // Angefangene Kadaver zuerst: sie verlieren sonst Nahrung.
+      const abstand = Math.hypot(tier.x - einheit.x, tier.y - einheit.y) - (tier.geschlachtet ? SUCHWEITE_ERSATZ : 0);
+      if (abstand < besterAbstand) {
+        besterAbstand = abstand;
+        bestes = tier;
+      }
+    }
+    return bestes;
+  }
+
+  // Ein Kadaver, an dem niemand arbeitet, verliert je 4 Sekunden eine Nahrung.
+  tiereTakten() {
+    const bearbeitet = new Set();
+    for (const einheit of this.einheiten.values()) {
+      if (einheit.sammelt && einheit.auftrag?.art === 'tier') bearbeitet.add(einheit.auftrag.tier);
+    }
+    for (const tier of [...this.tiere.values()]) {
+      if (!tier.geschlachtet || bearbeitet.has(tier.id)) continue;
+      tier.verfall += 1;
+      if (tier.verfall < TIERE[tier.art].verfall * TAKTE_PRO_SEKUNDE) continue;
+      tier.verfall = 0;
+      this.tierNahrungNehmen(tier);
     }
   }
 
@@ -514,6 +629,7 @@ class Welt {
     this.takt++;
     const bevoelkerung = this.bevoelkerung();
     for (const gebaeude of this.gebaeude.values()) this.gebaeudeTakten(gebaeude, bevoelkerung);
+    this.tiereTakten();
     for (const einheit of this.einheiten.values()) this.einheitTakten(einheit);
   }
 
@@ -539,6 +655,10 @@ class Welt {
         einheit.weg = stand ? suchen(this.karte, this.feldVon(einheit), stand) : [];
         if (!einheit.weg.length) einheit.auftrag = null;
       }
+      return;
+    }
+    if (einheit.auftrag.art === 'tier') {
+      this.tierTakten(einheit);
       return;
     }
     if (einheit.auftrag.art !== 'sammeln') {
@@ -651,6 +771,15 @@ class Welt {
     einheit.ladung = 0;
     einheit.ladungsart = null;
     einheit.angefangen = 0;
+    // Zurueck an die Arbeit: zum selben Vorrat oder zum selben Tier.
+    if (einheit.auftrag?.art === 'tier') {
+      const tier = this.tiere.get(einheit.auftrag.tier) || this.naechstesTier(einheit);
+      if (tier) {
+        einheit.auftrag = { art: 'tier', tier: tier.id };
+        this.wegZumTier(einheit, tier);
+      }
+      return;
+    }
     this.wegZumVorrat(einheit);
   }
 
@@ -757,7 +886,8 @@ class Welt {
   tierFuerDraht(id) {
     const tier = this.tiere.get(id);
     if (!tier) return { i: id, weg: true };
-    return { i: tier.id, art: tier.art, b: tier.besitzer, x: tier.x, y: tier.y, n: tier.nahrung };
+    // g: geschlachtet - der Browser zeichnet dann einen Kadaver, der mit n kleiner wird.
+    return { i: tier.id, art: tier.art, b: tier.besitzer, x: tier.x, y: tier.y, n: tier.nahrung, g: tier.geschlachtet };
   }
 
   // Einmalig beim Start: Karte und Spielerliste.

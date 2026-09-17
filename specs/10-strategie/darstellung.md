@@ -2,7 +2,7 @@
 
 **Bereich:** Strategie
 **Kuerzel:** darstellung
-**Stand:** 7/11 fertig · 4 offen
+**Stand:** 7/12 fertig · 5 offen
 
 ## Zweck
 
@@ -63,6 +63,13 @@ der Spieler. Keine Bilddateien aus fremder Quelle.
 - **AC-11** `offen` **Nur eigenes Material** — Kein Bild, kein Klang, keine Schrift aus dem
   Original; kein „Age of Empires" im Spiel. Geprüft: `public/` enthält keine
   Rastergrafik außer selbst erzeugten, und die Oberfläche nennt die Marke nicht.
+- **AC-12** `offen` **Gezeichnet statt flach** — Wunsch des Benutzers (Runde 26):
+  „je gezeichneter es wirkt, umso besser". Jede Figur, jedes Gebäude und jeder
+  Vorrat hat Licht und Schatten in mindestens drei Tonstufen je Hauptfläche,
+  eine Oberfläche (Holzmaserung, Dachziegel oder Stroh, Wolle, Blattwerk,
+  Steinfugen) und Konturen, die nicht überall gleich dick sind. Das Gras hat
+  Büschel statt nur Tönung. Geprüft bei Zoom 1 im Spielbild und auf der
+  Schautafel, mit einem Vorher-Nachher-Bild.
 
 ## Grenzfaelle
 

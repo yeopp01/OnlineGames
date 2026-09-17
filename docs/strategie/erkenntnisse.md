@@ -42,6 +42,10 @@ etwas anderem gearbeitet.
 - Der Server schickt heute jedem den Vollzustand. Das trägt nicht bis 8×200
   Einheiten (fahrplan AC-20) und nicht für den Nebel (AC-13). Nicht vorziehen,
   aber keine Entscheidung treffen, die gebündelte Änderungen verbaut.
+- **Wunsch des Benutzers (Runde 26): gezeichneter, detaillierter.** „Alle
+  Bilder nochmal einen Tick detaillierter, je gezeichneter es wirkt, umso
+  besser." Deshalb Schritt A6b vor dem Rest von A7, Kriterium darstellung
+  AC-12. Vorher-Nachher-Bilder verlinken.
 - **Wunsch des Benutzers (Runde 8): Aussehen zählt schon jetzt.** „Nicht nur
   schäbige Punkte, sondern etwas, das halbwegs wie ein Sammler aussieht."
   Jede Runde, die etwas Neues ins Spielbild bringt, zeichnet es als erkennbare
@@ -218,6 +222,19 @@ Erstattung vor dem Sperren) — beide Male stand danach ein Kommentar am Test.
 Neueste oben. Eine Zeile je Runde: Nummer, Datum, Kriterien, Ergebnis,
 wichtigste Erkenntnis.
 
+- **26** · 2026-09-17 · einheiten AC-17 fertig: Schafe schlachten und hüten —
+  0,33 Nahrung je Sekunde, ein liegengelassener Kadaver verliert je 4 s eine,
+  der Hirte steht neben dem Tier und geht nach dem Abgeben zurück. Kadaver
+  gezeichnet (liegt, Beine nach oben, wird kleiner). Neu angelegt: einheiten
+  AC-22 (Schafe wählen und treiben, auf Frage des Benutzers) und darstellung
+  AC-12 (gezeichnet statt flach, Wunsch des Benutzers) mit Schritt A6b.
+  Gelernt: (1) Ein Klick auf Beeren traf das Schaf daneben — ein Vorrat auf
+  dem Feld hat Vorrang; der alte Test zu einheiten AC-15 hat es gefunden.
+  (2) Im ersten Bild verdeckte der Hirte den Kadaver: er stand auf dessen
+  Feld. (3) karte AC-15 (Zeitmessung Wegsuche) riss unter Last im vollen Lauf,
+  allein grün — wie karriere AC-7; nach einmaliger Wiederholung grün. (4) Und
+  noch einmal ein Heredoc mit Anführungszeichen — abgebrochen, nichts
+  geschrieben; die Regel gilt auch für Doku-Texte.
 - **25** · 2026-09-17 · Rückschau: Zeitraffer in den langsamen Browsertests,
   `npm run e2e:laufzeiten`, Bauplatz-Helfer geteilt, Heredoc-Regel ohne
   Ausnahme. Browserlauf 2,8 → 2,1 min. Nächster Schritt: **A7** (Schafe,
