@@ -142,11 +142,32 @@ Beobachtet, nicht geändert: Eine Runde mit Oberfläche fährt den Browser
 zweimal (`qa:nachweis`, dann `check:alles`) — bei belasteter Maschine je drei
 Minuten. Tragbar; ein Teillauf für `check:alles` würde die Regel aufweichen.
 
+### Nach Runde 15 (2026-09-17)
+
+Runden 11–14: Karte (A2) und isometrischer Blick (A3) ganz, 10 Kriterien
+`fertig`; fünf Stunden Stillstand wegen Last auf der Maschine. Was sich
+wiederholt hat:
+
+1. **Der erste Wurf fürs Aussehen hielt im Spielbild nicht** — viermal
+   (Halsband, Größe der Vorräte, Schachbrett-Gras, Fliesen-Ufer), jedes Mal
+   sah die Schautafel gut aus. → Werkzeug `npm run sicht -- --spiel` für ein
+   laufendes Spielbild ohne Testlauf; Anweisung: immer auch dort ansehen.
+2. **Datenänderung macht Test stumpf** — einmal bemerkt (Startvorrat), die
+   Art Fehler bleibt sonst unsichtbar. → Anweisung: vor Wertänderungen Tests
+   nach alten Zahlen und schwachen Mustern durchsuchen.
+3. **Heredoc bricht ab** — trotz Regel. → Anweisung ergänzt: Skript als Datei.
+
+Nicht geändert: die Frage „Zeittest unter Last" liegt beim Benutzer; die
+Schleife hat gewartet statt Regeln zu lockern und das ist richtig so.
+
 ## Runden
 
 Neueste oben. Eine Zeile je Runde: Nummer, Datum, Kriterien, Ergebnis,
 wichtigste Erkenntnis.
 
+- **15** · 2026-09-17 · Rückschau: `npm run sicht -- --spiel`, Regeln zu
+  Wertänderungen und Änderungsskripten. Nächste Runde: **A4** (vier Rohstoffe
+  sammeln, Abgabe, Werte der Einheiten, Rohstoffleiste).
 - **14** · 2026-09-17 · darstellung AC-2 fertig: Gras-Tönung aus dem
   Startwert, Wasser als Vereinigung von Ellipsen mit Sandsaum und Wellen, Seen
   bei der Erzeugung geglättet. Erster Ansatz (Sand an jeder Rautenkante) war

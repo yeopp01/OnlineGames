@@ -91,7 +91,14 @@ Setze die gewählten Kriterien auf `in-arbeit`.
   nach gelesenem „fail 0".
 - **Werkzeug:** neue Dateien mit Write, Änderungen mit Edit. Keine langen
   Inhalte als Heredoc in der Shell, und nie zwei Heredocs in einem Aufruf —
-  Anführungszeichen im Inhalt brechen das Kommando mittendrin ab (Runde 4).
+  Anführungszeichen im Inhalt brechen das Kommando mittendrin ab (Runden 4
+  und 11). Viele Änderungen auf einmal: das Skript mit Write in den
+  Temp-Ordner legen und dann mit `python "$(cygpath -w …)"` ausführen.
+- **Wer Werte ändert, sucht Tests, die an den alten hängen.** Startvorrat,
+  Kartengröße, Mengen, Raten: vorher nach der alten Zahl und nach Mustern wie
+  `[1-9]` oder `> 0` in `tests/` und `e2e/` suchen. Ein Test, der nach der
+  Änderung schon vor der Handlung grün ist, prüft nichts mehr (Runde 11:
+  „Holz steigt" traf den Startvorrat).
 - Ein Import darf nicht heißen wie ein Parameter der umgebenden Funktion
   (`starten(hafen, einstellungen)` hat einen Import `einstellungen`
   überdeckt, Runde 2) — der Fehler zeigt sich erst zur Laufzeit.
@@ -134,8 +141,11 @@ Setze die gewählten Kriterien auf `in-arbeit`.
   der Ladungspunkt lag unter dem Auswahlring.)
 - **Beim Zeichnen zuerst ansehen, dann testen:** `npm run sicht --
   schautafel.html` (Seite ohne führenden Schrägstrich) schreibt ein Wegwerfbild
-  in den Temp-Ordner und nennt den Pfad. Erst wenn es gut aussieht, kommt der
-  Browsertest mit `nachweis()`.
+  in den Temp-Ordner und nennt den Pfad. **Und immer auch im Spielbild:**
+  `npm run sicht -- --spiel --zoom 2 --ziel wald --warten 5` (Ziele: basis,
+  wald, gold, stein, beere, wasser). Die Schautafel sah in den Runden 12–14
+  jedes Mal gut aus, das Spielbild nicht. Erst wenn beides gut aussieht, kommt
+  der Browsertest mit `nachweis()`.
 - **Spielgröße ansehen, nicht nur herangezoomt.** Jede Figur und jedes Gebäude
   wird auch bei Zoom 1 beurteilt — dort spielt man. Die Schautafel zeigt
   beides nebeneinander.
