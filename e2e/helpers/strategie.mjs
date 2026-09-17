@@ -66,22 +66,9 @@ export async function dorfbewohnerAnklicken(page, { ohne = [] } = {}) {
 export function platzImBild(page, { n = 2, um, abstand = 5, seitlich = false }) {
   return page.evaluate(({ n, um, abstand, seitlich }) => {
     const a = window.ansicht;
-    const g = a.karte.groesse;
-    const frei = (x0, y0) => {
-      for (let y = y0 - 1; y < y0 + n + 1; y++) {
-        for (let x = x0 - 1; x < x0 + n + 1; x++) {
-          if (x < 0 || y < 0 || x >= g || y >= g || a.karte.felder[y * g + x] !== 0) return false;
-        }
-      }
-      if ([...a.tiere.values()].some((t) => Math.abs(t.x - (x0 + n / 2)) < n + 1 && Math.abs(t.y - (y0 + n / 2)) < n + 1)) return false;
-      // Farmen liegen auf Gras, belegen aber ihren Platz (Runde 32).
-      return ![...a.gebaeude.values()].some((b) => {
-        const m = a.werte.gebaeude[b.art]?.groesse || 1;
-        const bx0 = b.x - Math.floor(m / 2);
-        const by0 = b.y - Math.floor(m / 2);
-        return bx0 <= x0 + n && bx0 + m >= x0 - 1 && by0 <= y0 + n && by0 + m >= y0 - 1;
-      });
-    };
+    // Frei heisst: die Vorschau im Spiel zeigte Gruen - mit einem Feld Rand, damit
+    // Figuren daneben nicht im Weg stehen.
+    const frei = (x0, y0) => a.platzTaugt(Object.keys(a.werte.gebaeude).find((art) => (a.werte.gebaeude[art].groesse || 1) === n && !a.werte.gebaeude[art].begehbar) || 'haus', x0 + Math.floor(n / 2), y0 + Math.floor(n / 2), 1);
     for (let r = abstand; r < abstand + 10; r++) {
       // Vorn zuerst (dx + dy gross): dahinter verdeckt das Dorfzentrum Baustelle
       // und Bauer (Runde 23, beim Ansehen gefunden).

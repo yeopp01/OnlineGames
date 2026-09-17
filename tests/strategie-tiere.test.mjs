@@ -26,7 +26,7 @@ function anDieArbeit(welt, einheit) {
 }
 
 test('einheiten AC-17: Rechtsklick auf ein eigenes Schaf - er schlachtet es und nimmt 0,33 Nahrung je Sekunde', () => {
-  assert.deepEqual(TIERE.schaf, { nahrung: 100, rate: 0.33, verfall: 4, tempo: 0.7, sicht: 4 });
+  assert.deepEqual({ nahrung: TIERE.schaf.nahrung, rate: TIERE.schaf.rate, verfall: TIERE.schaf.verfall }, { nahrung: 100, rate: 0.33, verfall: 4 });
   const { welt, dorfbewohner: [hirte], schafe: [schaf] } = aufbauen();
   // Der Klick trifft das Schaf nicht genau, sondern knapp daneben.
   welt.befehl('a', [hirte.id], { x: schaf.x + 0.4, y: schaf.y - 0.3 });

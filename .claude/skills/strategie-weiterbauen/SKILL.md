@@ -95,6 +95,12 @@ Setze die gewählten Kriterien auf `in-arbeit`.
   verändert den Inhalt still (Runden 4, 11, 22, 25). Viele Änderungen auf
   einmal: das Skript mit Write in den Temp-Ordner legen und dann mit
   `python "$(cygpath -w …)"` ausführen; anzuhängender Testtext ebenso als Datei.
+- **Listen, die mit den Stufen wachsen, prüft ein Test nie auf Gleichheit.**
+  Was ein Dorfbewohner baut, was ein Gebäude anbietet, wie viele Knöpfe ein
+  Menü hat: „enthält" oder aus den Werten zählen (`werte.einheiten…baut.length`).
+  Und als Beispiel für „gibt es nicht" ein erfundener Name, nie ein Gebäude
+  späterer Stufen (Runden 31–34: fünfmal gebrochen). Browsertests fragen nach
+  freien Plätzen `window.ansicht.platzTaugt`, nicht eine eigene Regel.
 - **Wer Werte ändert, sucht Tests, die an den alten hängen.** Startvorrat,
   Kartengröße, Mengen, Raten: vorher nach der alten Zahl und nach Mustern wie
   `[1-9]` oder `> 0` in `tests/` und `e2e/` suchen. Ein Test, der nach der

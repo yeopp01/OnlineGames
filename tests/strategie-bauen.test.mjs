@@ -192,7 +192,8 @@ test('bedienung AC-29: der Aufbau nennt die Werte je Art, der Zustand das Leben 
   });
   assert.deepEqual(werte.einheiten.spaeherreiter, { kuerzel: 's', leben: 45, tragkraft: 0, kosten: null, zeit: null, baut: [] });
   assert.equal(werte.gebaeude.dorfzentrum.leben, 2400);
-  assert.deepEqual(werte.gebaeude.dorfzentrum.bildetAus, ['dorfbewohner', 'webstuhl']);
+  // Was ein Gebaeude anbietet, waechst mit den Stufen: enthalten, nicht gleich.
+  for (const art of ['dorfbewohner', 'webstuhl']) assert.ok(werte.gebaeude.dorfzentrum.bildetAus.includes(art), art);
 
   // Unverletzt geht kein Leben ueber die Leitung, verletzt schon.
   const einheit = eigene(welt)[0];
@@ -445,12 +446,12 @@ test('einheiten AC-16: abgegeben wird am naechsten fertigen Gebaeude, das den Ro
 // ---- Kaserne und Miliz (bauen AC-9) ---------------------------------------------
 
 test('bauen AC-20: alle sieben Gebaeude der Dunklen Zeit sind da, Dorfbewohner bauen sechs davon', () => {
-  assert.deepEqual(
-    Object.keys(GEBAEUDE).sort(),
-    ['bergbaulager', 'dorfzentrum', 'farm', 'haus', 'holzfaellerlager', 'kaserne', 'muehle'],
-  );
+  for (const art of ['bergbaulager', 'dorfzentrum', 'farm', 'haus', 'holzfaellerlager', 'kaserne', 'muehle']) assert.ok(GEBAEUDE[art], art);
   // Das Dorfzentrum erst ab der Ritterzeit (Stufe D), wie in der Vorlage.
-  assert.deepEqual(EINHEITEN.dorfbewohner.baut.sort(), ['bergbaulager', 'farm', 'haus', 'holzfaellerlager', 'kaserne', 'muehle']);
+  // Ab Stufe B kommen Gebaeude dazu: die sechs der Dunklen Zeit muessen dabei sein.
+  for (const art of ['bergbaulager', 'farm', 'haus', 'holzfaellerlager', 'kaserne', 'muehle']) {
+    assert.ok(EINHEITEN.dorfbewohner.baut.includes(art), art);
+  }
 });
 
 test('bauen AC-9: die Kaserne bildet Miliz fuer 60 Nahrung und 20 Gold in 21 Sekunden aus', () => {

@@ -79,6 +79,7 @@ mit etwas, das im Browser zu sehen ist.
 | A5 | Dorfbewohner ausbilden, Bevölkerung, Gebäude zeigt Ausbildung, Startaufstellung | bauen AC-8, AC-10 bis AC-12, AC-14 bis AC-16, AC-22, bedienung AC-26, AC-29 |
 | A6 | Bauen: Haus, Lager, Mühle; Platz, Vorschau, mehrere Bauer | bauen AC-1 bis AC-6, bedienung AC-25, AC-15, AC-18, darstellung AC-4, AC-5 |
 | A6b | **Gezeichnet statt flach** — auf Wunsch des Benutzers vorgezogen: Figuren, Gebäude, Vorräte und Gras detaillierter, mit Schattierung und Oberflächen | darstellung AC-12 |
+| A6c | **Naturalistisch statt Comic** — auf Wunsch des Benutzers vor A8: erst Boden und Schatten, dann Gebäude, dann Figuren mit echten Proportionen; alles unterscheidbar | darstellung AC-13, AC-14 |
 | A7 | Schafe, Farm, Kaserne, Miliz, Webstuhl, Sammelpunkt | einheiten AC-17, AC-18, bauen AC-9, AC-13, AC-21, darstellung AC-6, AC-8 |
 | A8 | Wirtschafts-KI und Prüfstand | ki AC-1 bis AC-8, fahrplan AC-4, AC-5 |
 | A9 | Übersicht und Tempo: Übersichtskarte, Untätige, Tasten, Auswahlliste, viele Einheiten | bedienung AC-6, AC-11, AC-27, AC-28, einheiten AC-20, AC-21, darstellung AC-9, AC-10, fahrplan AC-6, AC-7 |

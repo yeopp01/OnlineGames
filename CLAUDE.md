@@ -135,7 +135,7 @@ Umfang hinzufügt, dort nachsehen.
 
 ## Stand
 
-**320 von 488 Kriterien fertig.** 292 Tests ohne Browser, 101 im Browser. Die
+**326 von 488 Kriterien fertig.** 305 Tests ohne Browser, 105 im Browser. Die
 Übersicht ist der Bericht: `npm run qa:report`.
 
 Gebaut ist der Unterbau: Räume, Übertragung, Karte, Wegfindung, Sammeln,
@@ -183,8 +183,9 @@ Der [Fahrplan](specs/10-strategie/fahrplan.md) ist die Reihenfolge:
 
 Einstieg (Spielauswahl, Einstellungen, Warteraum) und Spielbild im Browser
 sind erreicht (fahrplan AC-1, AC-2); in Stufe A sind die Schritte A1 bis A6b
-gebaut. Als Nächstes der Rest von A7 (Farm, Kaserne, Miliz, Webstuhl,
-Sammelpunkt, Schafe treiben), dann A8 bis A10:
+gebaut, dazu aus A7 Schafe, Farm, Kaserne mit Miliz, Webstuhl und
+Sammelpunkt. Als Nächstes darstellung AC-8, dann A8 (Wirtschafts-KI und
+Prüfstand) bis A10:
 
 1. **Stufe A** Dunkle Zeit mit Wirtschafts-KI und Prüfstand · **B** Feudalzeit
    · **C** Partieende und KI-Gegner · **D** Ritterzeit · **E** fünf Völker ·

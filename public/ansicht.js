@@ -346,26 +346,36 @@ export class Ansicht {
     const y = Math.round(welt.y + versatz);
     const x0 = x - Math.floor(n / 2);
     const y0 = y - Math.floor(n / 2);
+    return { art, x, y, groesse: n, mitte: { x: x0 + (n - 1) / 2, y: y0 + (n - 1) / 2 }, taugt: this.platzTaugt(art, x, y) };
+  }
+
+  // Taugt der Platz fuer ein Gebaeude? Dieselbe Regel wie auf dem Server
+  // (bauen AC-3). Auch die Browsertests fragen hier - so kann ihr Helfer nicht
+  // von der Vorschau abweichen (Rueckschau Runde 35).
+  platzTaugt(art, x, y, rand = 0) {
+    const n = this.werte.gebaeude[art]?.groesse || 1;
+    const x0 = x - Math.floor(n / 2) - rand;
+    const y0 = y - Math.floor(n / 2) - rand;
+    const m = n + 2 * rand;
     const g = this.karte.groesse;
-    let taugt = true;
-    for (let fy = y0; fy < y0 + n && taugt; fy++) {
-      for (let fx = x0; fx < x0 + n; fx++) {
-        if (fx < 0 || fy < 0 || fx >= g || fy >= g || this.karte.felder[fy * g + fx] !== GRAS) { taugt = false; break; }
+    for (let fy = y0; fy < y0 + m; fy++) {
+      for (let fx = x0; fx < x0 + m; fx++) {
+        if (fx < 0 || fy < 0 || fx >= g || fy >= g || this.karte.felder[fy * g + fx] !== GRAS) return false;
       }
     }
     for (const tier of this.tiere.values()) {
       const tx = Math.round(tier.x);
       const ty = Math.round(tier.y);
-      if (tx >= x0 && tx < x0 + n && ty >= y0 && ty < y0 + n) taugt = false;
+      if (tx >= x0 && tx < x0 + m && ty >= y0 && ty < y0 + m) return false;
     }
     // Farmen liegen auf Gras, belegen ihren Platz aber trotzdem.
     for (const gebaeude of this.gebaeude.values()) {
-      const m = this.werte.gebaeude[gebaeude.art]?.groesse || 1;
-      const gx0 = gebaeude.x - Math.floor(m / 2);
-      const gy0 = gebaeude.y - Math.floor(m / 2);
-      if (gx0 < x0 + n && gx0 + m > x0 && gy0 < y0 + n && gy0 + m > y0) taugt = false;
+      const k = this.werte.gebaeude[gebaeude.art]?.groesse || 1;
+      const gx0 = gebaeude.x - Math.floor(k / 2);
+      const gy0 = gebaeude.y - Math.floor(k / 2);
+      if (gx0 < x0 + m && gx0 + k > x0 && gy0 < y0 + m && gy0 + k > y0) return false;
     }
-    return { art, x, y, groesse: n, mitte: { x: x0 + (n - 1) / 2, y: y0 + (n - 1) / 2 }, taugt };
+    return true;
   }
 
   platzierenKlick() {

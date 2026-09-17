@@ -28,7 +28,9 @@ etwas anderem gearbeitet.
   eigenen, seriellen Schritt von `npm run check` legen (`node --test
   --test-concurrency=1` nur für die Messtests), die Grenze bleibt 1 s. Ohne
   Antwort ändert die Schleife weder Grenze noch Testaufruf und committet nur
-  bei grüner Prüfung.
+  bei grüner Prüfung. Seit Runde 26 reißt auch `karte AC-15` (Wegsuche auf der
+  größten Karte) auf dieselbe Weise, dreimal in neun Läufen — der Vorschlag
+  würde beide in den seriellen Schritt legen.
 - **Berechtigungen für die Schleife.** Das Anlegen von `.claude/settings.json`
   wurde vom Sicherheitsfilter abgelehnt (Selbständerung). Solange sie fehlen,
   kann jede Runde an einer Rückfrage hängen bleiben. Der Vorschlag steht in der
@@ -42,6 +44,12 @@ etwas anderem gearbeitet.
 - Der Server schickt heute jedem den Vollzustand. Das trägt nicht bis 8×200
   Einheiten (fahrplan AC-20) und nicht für den Nebel (AC-13). Nicht vorziehen,
   aber keine Entscheidung treffen, die gebündelte Änderungen verbaut.
+- **Wunsch des Benutzers (Runde 35): realistischer, weniger Comic, alles
+  unterscheidbar.** Mit einem Bild des Originals als Maßstab: keine schwarzen
+  Umrisse, erdige gedämpfte Farben, kleine Figuren mit echten Proportionen,
+  Boden als Textur ohne Rautenraster, Schlagschatten. Das Bild ist nur
+  Maßstab für die Anmutung - nichts davon abzeichnen, nichts einchecken
+  (ADR-0012). Schritt A6c vor A8, Kriterien darstellung AC-13, AC-14.
 - **Wunsch des Benutzers (Runde 26): gezeichneter, detaillierter.** „Alle
   Bilder nochmal einen Tick detaillierter, je gezeichneter es wirkt, umso
   besser." Deshalb Schritt A6b vor dem Rest von A7, Kriterium darstellung
@@ -243,11 +251,32 @@ eine Zahl gemacht, und zweimal hat ein alter Test einen neuen Fehler gefunden
 (Klick auf Beeren traf ein Schaf; zwei Lager zu ähnlich). Browserlauf bei
 ruhigerer Maschine 141 s Testzeit, langsamster Fall weiter der Lagertest (28 s).
 
+### Nach Runde 35 (2026-09-17)
+
+Runden 31–34: Farm, Kaserne mit Miliz, Schafe treiben, Webstuhl, Sammelpunkt —
+alle sieben Gebäude der Dunklen Zeit stehen. Was sich wiederholt hat:
+
+1. **Alte Tests brachen, weil Listen wuchsen** — fünfmal: Knöpfe im Baumenü
+   gezählt (zweimal), „kaserne" als Beispiel für Unbaubares, `bildetAus` und
+   `TIERE` auf Gleichheit, Preis als Text „60 / 20". → Anweisung: wachsende
+   Listen mit „enthält" oder aus den Werten; die verbliebenen vier
+   Gleichsetzungen in den Tests gleich umgestellt.
+2. **Test-Helfer wichen von der Spielregel ab** — `platzImBild` übersah
+   Farmen, ein Treibe-Test schickte ein Schaf auf einen Baum. → Die Vorschau
+   hat jetzt `platzTaugt(art, x, y, rand)`, und der Helfer fragt dort.
+3. **`karte AC-15` riss unter Last** — dreimal in neun `npm run check`-Läufen
+   (Runden 26, 30, 34), allein jedes Mal grün. Nicht gelockert: der Ablauf aus
+   Runde 30 hat jedes Mal gegriffen. Die Frage an den Benutzer (Zeitmessungen
+   seriell) betrifft diesen Test genauso; dort vermerkt.
+
 ## Runden
 
 Neueste oben. Eine Zeile je Runde: Nummer, Datum, Kriterien, Ergebnis,
 wichtigste Erkenntnis.
 
+- **35** · 2026-09-17 · Rückschau: wachsende Listen in Tests, `platzTaugt` für
+  Vorschau und Test-Helfer, Stand in CLAUDE.md. Nächstes: darstellung AC-8,
+  dann **A8** Wirtschafts-KI und Prüfstand.
 - **34** · 2026-09-17 · bauen AC-13 und AC-21 fertig. Webstuhl als erste
   Verbesserung (`VERBESSERUNGEN` in `daten.js`): im Dorfzentrum wie eine
   Einheit eingereiht, braucht keinen Wohnraum, einmal je Partie, +15 Leben für

@@ -2,7 +2,7 @@
 
 **Bereich:** Strategie
 **Kuerzel:** darstellung
-**Stand:** 8/12 fertig · 4 offen
+**Stand:** 8/14 fertig · 6 offen
 
 ## Zweck
 
@@ -70,6 +70,21 @@ der Spieler. Keine Bilddateien aus fremder Quelle.
   Steinfugen) und Konturen, die nicht überall gleich dick sind. Das Gras hat
   Büschel statt nur Tönung. Geprüft bei Zoom 1 im Spielbild und auf der
   Schautafel, mit einem Vorher-Nachher-Bild.
+- **AC-13** `offen` **Naturalistisch statt Comic** — Wunsch des Benutzers (Runde 35),
+  mit einem Bild des Originals als Maßstab für die Anmutung, nicht als Vorlage
+  zum Abzeichnen. Messbar: (1) keine schwarzen Umrisse — in keiner Figur und
+  keinem Gebäude mehr als 3 % fast schwarze Bildpunkte; (2) gedämpfte,
+  erdige Farben — mittlere Sättigung des Spielbilds unter der heutigen;
+  (3) Proportionen statt Kindchenschema — der Kopf höchstens ein Sechstel der
+  Figur, ein Dorfbewohner bei Zoom 1 höchstens halb so hoch wie ein Haus;
+  (4) der Boden zeigt kein Rautenraster, sondern Gras, Erde und Flecken, die
+  über Feldgrenzen hinweglaufen; (5) Gebäude und Bäume werfen Schlagschatten
+  in eine Richtung. Vorher-Nachher-Bild bei Zoom 1.
+- **AC-14** `offen` **Alles auf einen Blick unterscheidbar** — Wunsch des Benutzers
+  (Runde 35). Je zwei Einheiten und je zwei Gebäude unterscheiden sich auf der
+  Schautafel in mindestens einem Drittel ihrer Fläche (Umriss oder Farbe); bei
+  Zoom 1 im Spielbild trägt jedes Gebäude ein eigenes Merkmal, das man ohne
+  Auswahl erkennt (Flügel, Stapel, Karre, Zinnen, Acker, Stroh, Fahne).
 
 ## Grenzfaelle
 
