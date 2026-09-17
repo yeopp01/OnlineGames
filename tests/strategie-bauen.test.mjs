@@ -599,3 +599,34 @@ test('bauen AC-3: wer unterwegs ueber den neuen Bauplatz laeuft, sucht einen neu
   }
   assert.deepEqual({ x: laeufer.x, y: laeufer.y }, ziel, 'angekommen');
 });
+
+test('bauen AC-1: ein Bauer, der auf seinem Standfeld nur nicht in der Mitte steht, baut trotzdem', () => {
+  // Vom Pruefstand gefunden (Startwert 19): gerundet stand der Bauer schon auf
+  // dem Feld neben der Baustelle, genau gemessen 1,24 Felder entfernt - die
+  // Wegsuche lieferte keinen Weg, und er gab auf.
+  const welt = new Welt(ZWEI, 7);
+  const basis = welt.spielerVon('a').basis;
+  const bauer = eigene(welt).find((e) => e.art === 'dorfbewohner');
+  let stelle = null;
+  for (let r = 6; r < 20 && !stelle; r++) {
+    for (const [dx, dy] of [[r, 0], [0, r], [-r, 0], [0, -r]]) {
+      if (welt.platzPruefen('haus', basis.x + dx, basis.y + dy) && karten.begehbar(welt.karte, basis.x + dx, basis.y + dy - 2)) {
+        stelle = { x: basis.x + dx, y: basis.y + dy };
+        break;
+      }
+    }
+  }
+  assert.ok(stelle, 'ein Bauplatz');
+  const baustelle = welt.gebaeudeAnlegen('a', 'haus', stelle.x, stelle.y, false);
+  const { y0 } = welt.grundflaeche('haus', stelle.x, stelle.y);
+  // Ueber der Grundflaeche, auf dem Feld davor, aber 0,24 Felder weiter weg.
+  bauer.x = stelle.x;
+  bauer.y = y0 - 1 - 0.24;
+  bauer.weg = [];
+  assert.deepEqual(welt.feldVon(bauer), { x: stelle.x, y: y0 - 1 });
+  assert.ok(welt.abstandZu(bauer, baustelle) > 1.2, 'genau gemessen noch nicht nah genug');
+  welt.bauenBeginnen(bauer, baustelle);
+  for (let t = 0; t < 20; t++) welt.takten();
+  assert.equal(bauer.auftrag?.art, 'bauen', 'er gibt nicht auf');
+  assert.ok(bauer.baut, 'er baut');
+});

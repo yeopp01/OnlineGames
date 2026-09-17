@@ -5,6 +5,11 @@
     { "spec": "10-strategie/ki.md", "ac": "AC-2", "begruendung": "Zwei Partien mit demselben Startwert enden Takt fuer Takt gleich. Eine Aussage ueber zwei ganze Laeufe, die ohne Browser verglichen werden; ein Bild zeigt einen Augenblick einer Partie." },
     { "spec": "10-strategie/ki.md", "ac": "AC-7", "begruendung": "Der Pruefstand ist ein Werkzeug ohne Oberflaeche: er spielt ohne Server und Browser und schreibt Zeilen auf die Konsole. Der Nachweis liest diese Ausgabe." },
     { "spec": "10-strategie/ki.md", "ac": "AC-8", "begruendung": "Die Pruefung jedes Takts auf Widersprueche (Vorrat, Bevoelkerung, Hindernis, Ueberlappung) laeuft im Pruefstand ohne Bildschirm; sichtbar waere nur, dass nichts passiert." },
+    { "spec": "10-strategie/ki.md", "ac": "AC-3", "begruendung": "Rechenzeit je Takt und Takt der Entscheidungen. Eine Zahl aus der Messung im Rechenteil; kein Bildschirm zeigt, wie lange eine Entscheidung dauerte." },
+    { "spec": "10-strategie/ki.md", "ac": "AC-4", "begruendung": "Ausbilden ohne Pause, Haeuser rechtzeitig, Verteilung nach Plan - Eigenschaften ganzer Partien ueber zehn Spielminuten und mehrere Startwerte, gemessen im Pruefstand ohne Browser. Ein Bild zeigt einen Augenblick." },
+    { "spec": "10-strategie/ki.md", "ac": "AC-5", "begruendung": "Wo die KI Lager und Farmen baut und wann, gemessen beim Baubeginn in Partien ohne Browser. Ein einzelnes Spielbild zeigt ein Dorf, nicht die Regel dahinter." },
+    { "spec": "10-strategie/ki.md", "ac": "AC-6", "begruendung": "Die laengste Zeit, die ein Dorfbewohner herumsteht, ueber ganze Partien - eine Messung je Takt im Pruefstand; ein Bild zeigt keine Dauer." },
+    { "spec": "10-strategie/fahrplan.md", "ac": "AC-5", "begruendung": "Dorfbewohner und Nahrung nach zehn Spielminuten ueber zwanzig Startwerte - Zahlen aus Partien KI gegen KI ohne Browser." },
     { "spec": "10-strategie/fahrplan.md", "ac": "AC-4", "begruendung": "Partien KI gegen KI ohne Menschen, jeder Takt geprueft - ein Lauf auf der Konsole, kein Bildschirm. Belegt durch zehn Spielminuten ueber mehrere Startwerte ohne Widerspruch." },
 
     { "spec": "00-plattform/konten.md", "ac": "AC-3", "begruendung": "Wie das Kennwort in der Datenbank liegt. Ueber die Oberflaeche nicht beobachtbar - und waere es das, waere es der Fehler." },

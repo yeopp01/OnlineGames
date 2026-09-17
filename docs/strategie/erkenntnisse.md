@@ -115,6 +115,7 @@ Zahlen, gegen die spätere Runden vergleichen. Mit Datum und Commit.
 | 2026-09-17 | Zeichnen je Bild (sicht --messen, ohne Grafikkarte), Zoom 1 / 0,5 / 2 | vorher 23,8 / 29,3 / 17,9 ms, nachher 18,2 / 23,1 / 29,3 ms | Runde 29 |
 | 2026-09-17 | Tests ohne Browser / im Browser | 305 / 109 | Runde 40 |
 | 2026-09-17 | Pruefstand, Grund-KI: 20 Partien x 10 Spielminuten, 2 Spieler — Dauer je Partie / Dorfbewohner nach 10 min | 30–90 ms / 15–16 | Runde 43 |
+| 2026-09-17 | Pruefstand, Wirtschafts-KI: 20 Startwerte x 2 Spieler nach 10 min — Dorfbewohner / Nahrung min / laengste Untaetigkeit / Warten auf Wohnraum max; 20 Partien gesamt | 22 / 520 / 0,6 s / 3,5 s; 1,4 s | Runde 44 |
 | 2026-09-17 | Zeichnen je Bild nach A6c (Boden in Kacheln, Wasser im Boden), Zoom 1 / 2 — Last nicht geprüft | 20,4 / 40,2 ms | Runde 39 |
 | 2026-09-17 | Fast schwarze Bildpunkte Gebäude / Figuren (tafel `anmutung`) | vorher 7–12 % / 7,7–16 %, nachher 0 / 0 % | Runden 37, 38 |
 | 2026-09-17 | Sättigung im Mittel Gebäude / Vorräte / Figuren | vorher 0,283 / 0,371 / 0,331, nachher 0,238 / 0,305 / 0,342 | Runde 39 |
@@ -313,6 +314,29 @@ alle sieben Gebäude der Dunklen Zeit stehen. Was sich wiederholt hat:
 Neueste oben. Eine Zeile je Runde: Nummer, Datum, Kriterien, Ergebnis,
 wichtigste Erkenntnis.
 
+- **44** · 2026-09-17 · A8 fertig: ki AC-3 bis AC-6 und fahrplan AC-5
+  **fertig**. Wirtschaftsplan der KI: fester Plan je n-tem Dorfbewohner
+  (Nahrung, Holz, Gold), höchstens sechs an Schafen, sechs an Beeren, dann
+  Farmen; Lager, wo mindestens drei (Gold: zwei) weiter als fünf Felder vom
+  nächsten Lager arbeiten; erstes Haus mit zwei Bauern; Ziel 22 Dorfbewohner,
+  dann sparen. Gemessen über 20 Startwerte × 2 Spieler nach 10 Spielminuten:
+  22 Dorfbewohner, Nahrung mindestens 520, längste Untätigkeit 0,6 s, Warten
+  auf Wohnraum höchstens 3,5 s. Der Weg dorthin, alles mit dem Prüfstand
+  gefunden: (1) zu lange an den Schafen, Beeren blieben liegen → Grenzen je
+  Quelle; (2) ein Schaf zwischen zwei Feldern, gerundet ein Steinfeld — der
+  Befehl „zum Schaf" wurde „Stein sammeln" → KI zielt auf ein Grasfeld am
+  Schaf; (3) Stein gewann die Wahl, wenn alles andere voll war („fehlt 0"
+  schlug „fehlt −1"); (4) **zweiter Fehler in der Simulation**: ein Bauer
+  stand gerundet schon auf seinem Standfeld, genau gemessen 1,24 statt ≤ 1,2
+  entfernt — die Wegsuche lieferte nichts, er gab auf, die Baustelle blieb
+  ewig stehen, und die KI hing bei 14 Dorfbewohnern → `wegNach` geht den
+  letzten Rest (Test bauen AC-1, ohne Korrektur rot); (5) ein größerer
+  Hauspuffer änderte nichts, das Warten lag nur am ersten Haus. Ehrlich:
+  Kriterientext von ki AC-4 und AC-5 präzisiert (Sparziel 22; Farmen, wenn
+  der Plan mehr Leute an der Nahrung will, als an Schafen und Beeren Platz
+  haben) — die zuerst geschätzten Testgrenzen („≥ 5 im Holz", „30 s Warten")
+  jetzt aus Plan und Messung. `karriere AC-7` riss unter 100 % Last, allein
+  und wiederholt grün.
 - **43** · 2026-09-17 · A8 Teil 1: ki AC-1, AC-2, AC-7, AC-8 und fahrplan AC-4
   **fertig**. Grund-KI in `server/spiele/strategie/ki.js`: liest die Welt,
   ändert sie nur über `welt.nachricht` (Test ersetzt die Nachricht beim

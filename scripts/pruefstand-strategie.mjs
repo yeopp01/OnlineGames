@@ -30,7 +30,7 @@ const spieler = zahl('spieler', 2);
 
 const kurz = (p) => {
   const gebaeude = Object.entries(p.gebaeude).map(([art, n]) => `${n} ${art}`).join(', ');
-  return `${p.name}: ${p.dorfbewohner} Dorfbewohner (${p.einheiten}/${p.wohnraum}), Holz ${p.holz}, Nahrung ${p.nahrung}, Gold ${p.gold}, Stein ${p.stein}; ${gebaeude}; abgewiesen ${p.abgewiesen}`;
+  return `${p.name}: ${p.dorfbewohner} Dorfbewohner (${p.einheiten}/${p.wohnraum}), Holz ${p.holz}, Nahrung ${p.nahrung}, Gold ${p.gold}, Stein ${p.stein}; ${gebaeude}; abgewiesen ${p.abgewiesen}, laengste Untaetigkeit ${p.untaetigMax} s`;
 };
 
 console.log(`Pruefstand: ${partien} Partien, ${spieler} KI-Spieler, je ${minuten} Spielminuten, Startwerte ab ${erster}`);

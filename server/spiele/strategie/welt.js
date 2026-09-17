@@ -287,7 +287,18 @@ class Welt {
     einheit.baut = false;
     einheit.auftrag = { art: 'bauen', gebaeude: baustelle.id };
     const stand = this.randfeld(baustelle, einheit);
-    einheit.weg = stand ? suchen(this.karte, this.feldVon(einheit), stand) : [];
+    einheit.weg = stand ? this.wegNach(einheit, stand) : [];
+  }
+
+  // Ein Weg zu einem Feld. Steht die Einheit schon auf dem Feld, aber nicht in
+  // seiner Mitte, geht sie den Rest - die Suche allein lieferte dann keinen
+  // Weg, und ein Bauer gab 0,04 Felder vor dem Ziel auf (Pruefstand, Runde 44).
+  wegNach(einheit, ziel) {
+    const feld = this.feldVon(einheit);
+    if (feld.x === ziel.x && feld.y === ziel.y) {
+      return einheit.x === ziel.x && einheit.y === ziel.y ? [] : [{ x: ziel.x, y: ziel.y }];
+    }
+    return suchen(this.karte, feld, ziel);
   }
 
   // Eine Baustelle abreissen: erstattet wird, was noch nicht verbaut ist
@@ -851,7 +862,7 @@ class Welt {
       } else if (!einheit.baut) {
         // Nicht angekommen und kein Weg mehr: noch einmal suchen, sonst aufgeben.
         const stand = this.randfeld(baustelle, einheit);
-        einheit.weg = stand ? suchen(this.karte, this.feldVon(einheit), stand) : [];
+        einheit.weg = stand ? this.wegNach(einheit, stand) : [];
         if (!einheit.weg.length) einheit.auftrag = null;
       }
       return;

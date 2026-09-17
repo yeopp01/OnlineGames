@@ -2,7 +2,7 @@
 
 **Bereich:** Strategie
 **Kuerzel:** fahrplan
-**Stand:** 3/22 fertig · 19 offen
+**Stand:** 4/22 fertig · 18 offen
 
 ## Zweck
 
@@ -57,7 +57,7 @@ außen mitspielen soll.
   KI gegen KI ohne Browser und prüft jeden Takt auf Widersprüche: kein Vorrat
   unter null, keine Bevölkerung über der Grenze, keine Einheit in einem
   Hindernis, kein Gebäude auf einem anderen.
-- **AC-5** `offen` **Die Wirtschaft trägt** — Die Wirtschafts-KI hat nach zehn Spielminuten
+- **AC-5** `fertig` **Die Wirtschaft trägt** — Die Wirtschafts-KI hat nach zehn Spielminuten
   20 bis 30 Dorfbewohner und genug Nahrung für die Feudalzeit. Gemessen über
   zwanzig Startwerte, wie im Original.
 - **AC-6** `offen` **Der Takt bleibt billig** — Acht Spieler mit je 100 Einheiten: ein Takt

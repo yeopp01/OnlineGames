@@ -139,7 +139,7 @@ Umfang hinzufügt, dort nachsehen.
 
 ## Stand
 
-**334 von 490 Kriterien fertig.** 312 Tests ohne Browser, 113 im Browser. Die
+**339 von 490 Kriterien fertig.** 318 Tests ohne Browser, 113 im Browser. Die
 Übersicht ist der Bericht: `npm run qa:report`.
 
 Gebaut ist der Unterbau: Räume, Übertragung, Karte, Wegfindung, Sammeln,
@@ -190,9 +190,10 @@ sind erreicht (fahrplan AC-1, AC-2); in Stufe A sind die Schritte A1 bis A6b
 gebaut, aus A6c das naturalistische Aussehen (darstellung AC-13: keine
 schwarzen Umrisse, erdige Farben, Proportionen, Boden als Textur mit Wasser,
 Schlagschatten; AC-14: alles unterscheidbar) und A7 ganz: Schafe, Farm,
-Kaserne mit Miliz, Webstuhl, Sammelpunkt, Lebensbalken im Bild. Aus A8 steht
-der Prüfstand (`npm run pruefstand:strategie`) mit einer Grund-KI; als
-Nächstes deren Wirtschaftsplan (ki AC-3 bis AC-6, fahrplan AC-5), dann A9 und A10:
+Kaserne mit Miliz, Webstuhl, Sammelpunkt, Lebensbalken im Bild. A8 ist fertig:
+der Prüfstand (`npm run pruefstand:strategie`) spielt KI gegen KI, die
+Wirtschafts-KI hat nach zehn Minuten 22 Dorfbewohner und 500 Nahrung. Als
+Nächstes A9 (Übersicht und Tempo), dann A10:
 
 1. **Stufe A** Dunkle Zeit mit Wirtschafts-KI und Prüfstand · **B** Feudalzeit
    · **C** Partieende und KI-Gegner · **D** Ritterzeit · **E** fünf Völker ·

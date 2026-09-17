@@ -50,8 +50,26 @@ function pruefen(welt) {
   return befunde;
 }
 
+/**
+ * Wer steht herum? Ein Dorfbewohner, der weder laeuft noch sammelt, hueten
+ * oder Farm bestellt noch baut. Gezaehlt in Takten je Einheit, die laengste
+ * Strecke je Spieler bleibt.
+ */
+function untaetigkeitZaehlen(welt, untaetig) {
+  for (const e of welt.einheiten.values()) {
+    if (e.art !== 'dorfbewohner') continue;
+    if (e.weg.length || e.sammelt || e.baut) {
+      untaetig.seit.delete(e.id);
+      continue;
+    }
+    const n = (untaetig.seit.get(e.id) || 0) + 1;
+    untaetig.seit.set(e.id, n);
+    if (n > (untaetig.laengste.get(e.besitzer) || 0)) untaetig.laengste.set(e.besitzer, n);
+  }
+}
+
 /** Kennzahlen eines Spielers am Ende einer Partie. */
-function kennzahlen(welt, spieler, ki) {
+function kennzahlen(welt, spieler, ki, untaetig) {
   const eigene = [...welt.einheiten.values()].filter((e) => e.besitzer === spieler.id);
   const gebaeude = {};
   for (const g of welt.gebaeude.values()) {
@@ -65,6 +83,9 @@ function kennzahlen(welt, spieler, ki) {
     gebaeude,
     ...Object.fromEntries(ROHSTOFFE.map((r) => [r, Math.floor(spieler[r])])),
     abgewiesen: ki.abgewiesen,
+    // Laengste Zeit, die ein Dorfbewohner herumstand, in Sekunden (ki AC-6) -
+    // von aussen gemessen, nicht nach der Meinung der KI.
+    untaetigMax: (untaetig.laengste.get(spieler.id) || 0) / TAKTE_PRO_SEKUNDE,
   };
 }
 
@@ -80,18 +101,20 @@ function partieSpielen({ startwert, spieler = 2, minuten = 10, einstellungen = {
   const welt = new Welt(liste, startwert, einstellungen);
   const kis = welt.spieler.map((s) => new Ki(welt, s.id));
   const takte = Math.round(minuten * 60 * TAKTE_PRO_SEKUNDE);
+  const untaetig = { seit: new Map(), laengste: new Map() };
   for (let t = 0; t < takte; t++) {
     for (const ki of kis) ki.takt();
     welt.takten();
     if (eingriff) eingriff(welt, welt.takt);
     const befunde = pruefen(welt);
     if (befunde.length) throw new Widerspruch(startwert, welt.takt, befunde);
+    untaetigkeitZaehlen(welt, untaetig);
   }
   return {
     startwert,
     takte,
     dauerMs: Number(process.hrtime.bigint() - beginn) / 1e6,
-    spieler: welt.spieler.map((s, i) => kennzahlen(welt, s, kis[i])),
+    spieler: welt.spieler.map((s, i) => kennzahlen(welt, s, kis[i], untaetig)),
     welt,
   };
 }

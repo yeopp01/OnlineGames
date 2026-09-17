@@ -2,7 +2,7 @@
 
 **Bereich:** Strategie
 **Kuerzel:** ki
-**Stand:** 4/8 fertig · 4 offen
+**Stand:** 8/8 fertig
 
 ## Zweck
 
@@ -32,18 +32,21 @@ nicht die Regeln.
 - **AC-2** `fertig` **Gleicher Zufall, gleiche Partie** — Die KI zieht Zufall nur aus dem
   Startwert. Zwei Partien KI gegen KI mit demselben Startwert enden Takt für
   Takt gleich.
-- **AC-3** `offen` **KI kostet wenig** — Eine KI rechnet im Mittel unter 1 ms je Takt und
+- **AC-3** `fertig` **KI kostet wenig** — Eine KI rechnet im Mittel unter 1 ms je Takt und
   entscheidet nicht in jedem Takt neu, sondern alle halbe Sekunde.
 
 ### Wirtschaft (Stufe A)
 
-- **AC-4** `offen` **Baut die Wirtschaft auf** — Bildet ohne Pause Dorfbewohner aus, baut ein
+- **AC-4** `fertig` **Baut die Wirtschaft auf** — Bildet ohne Pause Dorfbewohner aus, baut ein
   Haus, bevor die Bevölkerung voll ist, und verteilt Dorfbewohner auf
-  Nahrung, Holz und Gold nach einem festen Plan der Dunklen Zeit.
-- **AC-5** `offen` **Lager an die Vorräte** — Baut Holzfällerlager am nächsten Wald,
+  Nahrung, Holz und Gold nach einem festen Plan der Dunklen Zeit. Ist das
+  Ziel von 22 Dorfbewohnern erreicht, spart sie für die Feudalzeit.
+- **AC-5** `fertig` **Lager an die Vorräte** — Baut Holzfällerlager am nächsten Wald,
   Bergbaulager am Gold, Mühle an den Beeren, und Farmen, sobald Schafe und
-  Beeren zur Neige gehen.
-- **AC-6** `offen` **Niemand steht herum** — Kein Dorfbewohner der KI ist länger als 20 Sekunden
+  Beeren nicht mehr reichen: wenn der Plan mehr Dorfbewohner an der Nahrung
+  will, als dort Platz haben (je sechs), spätestens wenn die Schafe
+  aufgegessen sind.
+- **AC-6** `fertig` **Niemand steht herum** — Kein Dorfbewohner der KI ist länger als 20 Sekunden
   untätig, außer alle Vorräte in Reichweite sind leer.
 
 ### Prüfstand (Stufe A)
