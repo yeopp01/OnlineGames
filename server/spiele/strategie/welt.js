@@ -3,7 +3,7 @@
 const karten = require('./karte');
 const { suchen, nachbarfeld } = require('./wege');
 const {
-  EINHEITEN, SAMMELN, TIERE, GEBAEUDE, BEVOELKERUNG_MAX, SCHLANGE_MAX, STARTAUFSTELLUNG,
+  EINHEITEN, SAMMELN, TIERE, GEBAEUDE, VERBESSERUNGEN, BEVOELKERUNG_MAX, SCHLANGE_MAX, STARTAUFSTELLUNG,
 } = require('./daten');
 
 const TAKTE_PRO_SEKUNDE = 10;
@@ -47,6 +47,7 @@ class Welt {
       farbe: FARBEN[i % FARBEN.length],
       ...start,
       basis: this.karte.basen[i],
+      verbesserungen: [], // erforscht, in der Reihenfolge des Abschlusses
     }));
 
     // Tiere gehoeren einem Spieler, stehen aber nicht in den Einheiten: sie
@@ -79,8 +80,21 @@ class Welt {
     }
   }
 
+  // Werte eines Auftrags in der Schlange: Einheit oder Verbesserung.
+  auftragWerte(art) {
+    return EINHEITEN[art] || VERBESSERUNGEN[art];
+  }
+
+  // Leben einer Einheit mit allen Verbesserungen ihres Spielers (bauen AC-21).
+  lebenMax(besitzer, art) {
+    const spieler = this.spielerVon(besitzer);
+    let leben = EINHEITEN[art].leben;
+    for (const v of spieler?.verbesserungen || []) leben += VERBESSERUNGEN[v].wirkung[art]?.leben || 0;
+    return leben;
+  }
+
   einheitAnlegen(besitzer, x, y, art = 'dorfbewohner') {
-    const werte = EINHEITEN[art];
+    const werte = { ...EINHEITEN[art], leben: this.lebenMax(besitzer, art) };
     const einheit = {
       id: this.naechsteId++,
       art,
@@ -348,6 +362,8 @@ class Welt {
         return this.bauen(spielerId, nachricht.einheiten, nachricht.art, nachricht.ziel);
       case 'abreissen':
         return this.abreissen(spielerId, nachricht.gebaeude);
+      case 'sammelpunkt':
+        return this.sammelpunktSetzen(spielerId, nachricht.gebaeude, nachricht.ziel);
       default:
         return this.befehl(spielerId, nachricht.einheiten, nachricht.ziel);
     }
@@ -362,7 +378,12 @@ class Welt {
     if (!GEBAEUDE[gebaeude.art].bildetAus.includes(art)) return { fehler: 'Das bildet dieses Gebaeude nicht aus.' };
     if (gebaeude.schlange.length >= SCHLANGE_MAX) return { fehler: 'Die Warteschlange ist voll.' };
     const spieler = this.spielerVon(spielerId);
-    const kosten = EINHEITEN[art].kosten;
+    // Eine Verbesserung gibt es einmal: erforscht oder schon irgendwo eingereiht.
+    if (VERBESSERUNGEN[art]) {
+      const eingereiht = [...this.gebaeude.values()].some((g) => g.besitzer === spielerId && g.schlange.includes(art));
+      if (spieler.verbesserungen.includes(art) || eingereiht) return { fehler: `${VERBESSERUNGEN[art].name} gibt es nur einmal.` };
+    }
+    const kosten = this.auftragWerte(art).kosten;
     for (const [rohstoff, menge] of Object.entries(kosten)) {
       if (spieler[rohstoff] < menge) return { fehler: `Zu wenig ${ROHSTOFF_NAMEN[rohstoff]}.` };
     }
@@ -379,11 +400,35 @@ class Welt {
     if (!Number.isInteger(platz) || platz < 0 || platz >= gebaeude.schlange.length) return { fehler: 'Diesen Auftrag gibt es nicht.' };
     const [art] = gebaeude.schlange.splice(platz, 1);
     const spieler = this.spielerVon(spielerId);
-    for (const [rohstoff, menge] of Object.entries(EINHEITEN[art].kosten)) spieler[rohstoff] += menge;
+    for (const [rohstoff, menge] of Object.entries(this.auftragWerte(art).kosten)) spieler[rohstoff] += menge;
     if (platz === 0) {
       gebaeude.fortschritt = 0;
       gebaeude.wartet = false;
     }
+    this.gebaeudeGeaendert(gebaeude);
+    return {};
+  }
+
+  // Eine Verbesserung wirkt sofort auf alle, die es schon gibt, und auf alle
+  // spaeteren (bauen AC-21).
+  erforschen(spieler, art) {
+    spieler.verbesserungen.push(art);
+    for (const [einheitArt, wirkung] of Object.entries(VERBESSERUNGEN[art].wirkung)) {
+      for (const einheit of this.einheiten.values()) {
+        if (einheit.besitzer === spieler.id && einheit.art === einheitArt) einheit.leben += wirkung.leben || 0;
+      }
+    }
+  }
+
+  // Rechtsklick mit ausgewaehltem Gebaeude (bauen AC-13).
+  sammelpunktSetzen(spielerId, gebaeudeId, ziel) {
+    const gebaeude = this.gebaeude.get(gebaeudeId);
+    if (!gebaeude || gebaeude.besitzer !== spielerId) return { fehler: 'Das ist nicht dein Gebaeude.' };
+    const g = this.karte.groesse;
+    const x = Math.round(Number(ziel?.x));
+    const y = Math.round(Number(ziel?.y));
+    if (!Number.isInteger(x) || !Number.isInteger(y) || x < 0 || y < 0 || x >= g || y >= g) return { fehler: 'Dort geht kein Sammelpunkt.' };
+    gebaeude.sammelpunkt = { x, y };
     this.gebaeudeGeaendert(gebaeude);
     return {};
   }
@@ -413,23 +458,33 @@ class Welt {
     if (!gebaeude.schlange.length) return;
     const spieler = this.spielerVon(gebaeude.besitzer);
     const belegt = bevoelkerung.get(spieler.id) || 0;
-    // Voll: der Auftrag wartet, statt anzufangen (bauen AC-15).
-    const wartet = belegt >= this.wohnraum(spieler);
+    const art = gebaeude.schlange[0];
+    const verbesserung = VERBESSERUNGEN[art];
+    // Voll: der Auftrag wartet, statt anzufangen (bauen AC-15) - eine
+    // Verbesserung braucht keinen Platz.
+    const wartet = !verbesserung && belegt >= this.wohnraum(spieler);
     if (wartet !== gebaeude.wartet) this.gebaeudeGeaendert(gebaeude);
     gebaeude.wartet = wartet;
     if (wartet) return;
 
-    const art = gebaeude.schlange[0];
     gebaeude.fortschritt++;
     this.gebaeudeGeaendert(gebaeude);
-    if (gebaeude.fortschritt < EINHEITEN[art].zeit * TAKTE_PRO_SEKUNDE) return;
+    if (gebaeude.fortschritt < this.auftragWerte(art).zeit * TAKTE_PRO_SEKUNDE) return;
 
+    if (verbesserung) {
+      gebaeude.schlange.shift();
+      gebaeude.fortschritt = 0;
+      this.erforschen(spieler, art);
+      return;
+    }
     const feld = this.freiesFeldAm(gebaeude);
     if (!feld) return; // alles verstellt: im naechsten Takt wieder versuchen
     gebaeude.schlange.shift();
     gebaeude.fortschritt = 0;
-    this.einheitAnlegen(spieler.id, feld.x, feld.y, art);
+    const neu = this.einheitAnlegen(spieler.id, feld.x, feld.y, art);
     bevoelkerung.set(spieler.id, belegt + 1);
+    // Zum Sammelpunkt; liegt er auf einem Vorrat, wird dort gleich gesammelt (bauen AC-13).
+    if (gebaeude.sammelpunkt) this.befehl(spieler.id, [neu.id], gebaeude.sammelpunkt);
   }
 
   // Ein begehbares Feld am Rand des Gebaeudes, auf dem niemand steht
@@ -982,7 +1037,7 @@ class Welt {
         a: e.ladungsart ? e.ladungsart[0] : null,
         // Leben nur, wenn es fehlt: das volle steht im Aufbau (bedienung AC-29),
         // und ein Zustand bleibt klein (uebertragung AC-7).
-        ...(e.leben < EINHEITEN[e.art].leben ? { h: e.leben } : {}),
+        ...(e.leben < this.lebenMax(e.besitzer, e.art) ? { h: e.leben } : {}),
       });
     }
     const felder = this.feldAenderungen;
@@ -998,6 +1053,7 @@ class Welt {
         stein: s.stein,
         bev: bevoelkerung.get(s.id) || 0,
         raum: this.wohnraum(s),
+        ...(s.verbesserungen.length ? { v: s.verbesserungen } : {}),
       })),
       einheiten,
       felder,
@@ -1031,7 +1087,8 @@ class Welt {
       ...(g.fertig ? {} : { u: Math.round(g.bau * 100) / 100 }),
       ...(g.nahrung !== undefined ? { n: g.nahrung } : {}),
       s: g.schlange,
-      f: laufend ? Math.round((g.fortschritt / (EINHEITEN[laufend].zeit * TAKTE_PRO_SEKUNDE)) * 100) / 100 : 0,
+      f: laufend ? Math.round((g.fortschritt / (this.auftragWerte(laufend).zeit * TAKTE_PRO_SEKUNDE)) * 100) / 100 : 0,
+      ...(g.sammelpunkt ? { p: g.sammelpunkt } : {}),
       w: g.wartet,
     };
   }
@@ -1073,6 +1130,7 @@ class Welt {
           leben: w.leben, bildetAus: w.bildetAus, groesse: w.groesse, kosten: w.kosten, bauzeit: w.bauzeit,
           wohnraum: w.wohnraum, annahme: w.annahme, begehbar: Boolean(w.begehbar), nahrung: w.nahrung || null,
         }])),
+        verbesserungen: VERBESSERUNGEN,
       },
     };
   }

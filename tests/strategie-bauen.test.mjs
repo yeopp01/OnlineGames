@@ -192,7 +192,7 @@ test('bedienung AC-29: der Aufbau nennt die Werte je Art, der Zustand das Leben 
   });
   assert.deepEqual(werte.einheiten.spaeherreiter, { kuerzel: 's', leben: 45, tragkraft: 0, kosten: null, zeit: null, baut: [] });
   assert.equal(werte.gebaeude.dorfzentrum.leben, 2400);
-  assert.deepEqual(werte.gebaeude.dorfzentrum.bildetAus, ['dorfbewohner']);
+  assert.deepEqual(werte.gebaeude.dorfzentrum.bildetAus, ['dorfbewohner', 'webstuhl']);
 
   // Unverletzt geht kein Leben ueber die Leitung, verletzt schon.
   const einheit = eigene(welt)[0];
@@ -486,4 +486,80 @@ test('bauen AC-9: die Kaserne bildet Miliz fuer 60 Nahrung und 20 Gold in 21 Sek
   welt.befehl('a', [miliz.id], { x: baum % g, y: (baum / g) | 0 });
   assert.equal(miliz.auftrag.art, 'gehen');
   assert.match(welt.bauen('a', [miliz.id], 'haus', freierPlatz(welt, 'haus')).fehler, /Niemand/);
+});
+
+// ---- Webstuhl und Sammelpunkt (bauen AC-21, AC-13) ---------------------------------
+
+test('bauen AC-21: der Webstuhl - 50 Gold, 25 s, alle Dorfbewohner +15 Leben, einmal je Partie', () => {
+  const { VERBESSERUNGEN } = require('../server/spiele/strategie/daten.js');
+  assert.deepEqual(VERBESSERUNGEN.webstuhl.kosten, { gold: 50 });
+  assert.equal(VERBESSERUNGEN.webstuhl.zeit, 25);
+  assert.deepEqual(VERBESSERUNGEN.webstuhl.wirkung.dorfbewohner, { leben: 15, nahruestung: 1, fernruestung: 2 });
+
+  const welt = voll(); // Bevoelkerung voll: eine Verbesserung braucht keinen Platz
+  const zentrum = dorfzentrum(welt);
+  const anna = welt.spielerVon('a');
+  const vorhanden = eigene(welt).filter((e) => e.art === 'dorfbewohner');
+  const reiter = eigene(welt).find((e) => e.art === 'spaeherreiter');
+  assert.deepEqual(welt.ausbilden('a', zentrum.id, 'webstuhl'), {});
+  assert.equal(anna.gold, 50);
+  assert.match(welt.ausbilden('a', zentrum.id, 'webstuhl').fehler, /nur einmal/, 'nicht zweimal eingereiht');
+
+  for (let i = 0; i < 25 * TAKTE_PRO_SEKUNDE - 1; i++) welt.takten();
+  assert.equal(vorhanden[0].leben, 25, 'kurz vorher noch nicht');
+  welt.takten();
+  assert.deepEqual(anna.verbesserungen, ['webstuhl']);
+  for (const e of vorhanden) assert.equal(e.leben, 40, 'alle vorhandenen Dorfbewohner');
+  assert.equal(reiter.leben, 45, 'der Reiter nicht');
+  assert.equal(welt.zustand().einheiten.find((e) => e.i === vorhanden[0].id).h, undefined, 'volles Leben geht nicht ueber die Leitung');
+  assert.deepEqual(welt.zustand().spieler.find((s) => s.id === 'a').v, ['webstuhl']);
+
+  // Neue Dorfbewohner kommen mit 40 Leben.
+  welt.einheiten.delete(reiter.id);
+  anna.nahrung = 500;
+  welt.ausbilden('a', zentrum.id, 'dorfbewohner');
+  for (let i = 0; i < 25 * TAKTE_PRO_SEKUNDE; i++) welt.takten();
+  assert.equal(eigene(welt).at(-1).leben, 40);
+  assert.match(welt.ausbilden('a', zentrum.id, 'webstuhl').fehler, /nur einmal/, 'erforscht ist erforscht');
+});
+
+test('bauen AC-21: ein abgebrochener Webstuhl erstattet voll und laesst sich wieder einreihen', () => {
+  const welt = new Welt(ZWEI, 7);
+  const zentrum = dorfzentrum(welt);
+  const anna = welt.spielerVon('a');
+  welt.ausbilden('a', zentrum.id, 'webstuhl');
+  sekunden(welt, 10);
+  assert.deepEqual(welt.abbrechen('a', zentrum.id, 0), {});
+  assert.equal(anna.gold, 100);
+  assert.deepEqual(welt.ausbilden('a', zentrum.id, 'webstuhl'), {});
+});
+
+test('bauen AC-13: ein Sammelpunkt schickt neue Einheiten hin, auf einem Vorrat sammeln sie gleich', () => {
+  const welt = new Welt(ZWEI, 7, { vorrat: 'viel' });
+  const zentrum = dorfzentrum(welt);
+  const g = welt.karte.groesse;
+  assert.match(welt.sammelpunktSetzen('b', zentrum.id, { x: 1, y: 1 }).fehler, /nicht dein/);
+  assert.match(welt.sammelpunktSetzen('a', zentrum.id, { x: -5, y: 1 }).fehler, /kein Sammelpunkt/);
+
+  // Auf Gras: der Neue geht dorthin.
+  const gras = freierPlatz(welt, 'haus', 8);
+  assert.deepEqual(welt.sammelpunktSetzen('a', zentrum.id, gras), {});
+  assert.deepEqual(welt.gebaeudeFuerDraht(zentrum.id).p, gras);
+  welt.ausbilden('a', zentrum.id, 'dorfbewohner');
+  sekunden(welt, 25);
+  const erster = eigene(welt).at(-1);
+  assert.equal(erster.auftrag?.art, 'gehen');
+  assert.deepEqual(erster.auftrag.feld, gras);
+
+  // Auf einem Baum: der Neue sammelt dort Holz.
+  const basis = welt.spielerVon('a').basis;
+  const baum = [...welt.karte.vorrat.keys()].filter((i) => welt.karte.felder[i] === karten.WALD)
+    .sort((a, b) => Math.hypot(a % g - basis.x, ((a / g) | 0) - basis.y) - Math.hypot(b % g - basis.x, ((b / g) | 0) - basis.y))[0];
+  welt.sammelpunktSetzen('a', zentrum.id, { x: baum % g, y: (baum / g) | 0 });
+  welt.einheiten.delete(erster.id);
+  welt.ausbilden('a', zentrum.id, 'dorfbewohner');
+  sekunden(welt, 25);
+  const zweiter = eigene(welt).at(-1);
+  assert.equal(zweiter.auftrag?.art, 'sammeln');
+  assert.deepEqual(zweiter.auftrag.feld, { x: baum % g, y: (baum / g) | 0 });
 });

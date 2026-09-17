@@ -1,0 +1,10 @@
+{
+  "spec": "10-strategie/bauen.md",
+  "ac": "AC-21",
+  "titel": "Nach dem Webstuhl: ein Dorfbewohner gewaehlt, unten 40 / 40 Leben statt 25",
+  "datei": "e2e/tests/strategie-ausbilden.spec.mjs",
+  "pfad": [
+    "Ausbilden",
+    "bauen AC-21 / bauen AC-13: Webstuhl im Dorfzentrum, Sammelpunkt per Rechtsklick"
+  ]
+}

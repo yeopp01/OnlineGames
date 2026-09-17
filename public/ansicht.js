@@ -51,6 +51,8 @@ export class Ansicht {
     this.platzieren = null;
     this.zeiger = null;
     this.bauenSenden = () => {};
+    this.sammelpunktSenden = () => {};
+    this.verbesserungen = [];
     // Kurz eingeblendete Absagen (bedienung AC-18); app.js setzt die Anzeige.
     this.melden = () => {};
     this.blicke = new Map(); // Einheit → -1 links, 1 rechts
@@ -130,6 +132,7 @@ export class Ansicht {
     if (meine) {
       const { holz, nahrung, gold, stein, bev, raum } = meine;
       this.vorraete = { holz, nahrung, gold, stein, bev, raum };
+      this.verbesserungen = meine.v || [];
     }
 
     // Eingesammelte Einheiten, die es nicht mehr gibt, fallen aus der Auswahl.
@@ -395,8 +398,13 @@ export class Ansicht {
   }
 
   befehlen(px, py) {
-    if (!this.ausgewaehlt.size) return;
     const ziel = this.zuWelt(px, py);
+    // Ein eigenes Gebaeude gewaehlt: der Rechtsklick setzt seinen Sammelpunkt (bauen AC-13).
+    if (this.gewaehltesGebaeude) {
+      this.sammelpunktSenden(this.gewaehltesGebaeude, { x: Math.round(ziel.x), y: Math.round(ziel.y) });
+      return;
+    }
+    if (!this.ausgewaehlt.size) return;
     this.befehlSenden([...this.ausgewaehlt], {
       x: Math.round(ziel.x),
       y: Math.round(ziel.y),
@@ -579,7 +587,51 @@ export class Ansicht {
 
     for (const spieler of this.spieler.values()) this.namenZeichnen(spieler);
     if (this.platzieren) this.platzVorschau(e);
+    this.sammelpunktZeichnen(e);
     if (this.zug) this.rahmenZeichnen();
+  }
+
+  // Der Sammelpunkt des gewaehlten Gebaeudes: eine Fahne in Spielerfarbe und
+  // eine gestrichelte Linie dorthin.
+  sammelpunktZeichnen(e) {
+    const gebaeude = this.gewaehltesGebaeude && this.gebaeude.get(this.gewaehltesGebaeude);
+    if (!gebaeude?.p) return;
+    const stift = this.stift;
+    const mitte = this.gebaeudeMitte(gebaeude);
+    const von = this.zuBild(mitte.x, mitte.y);
+    const bis = this.zuBild(gebaeude.p.x, gebaeude.p.y);
+    const farbe = this.spieler.get(gebaeude.b)?.farbe || '#888888';
+    stift.save();
+    stift.setLineDash([6, 5]);
+    stift.strokeStyle = 'rgba(255,255,255,0.7)';
+    stift.lineWidth = 1.5;
+    stift.beginPath();
+    stift.moveTo(von.x, von.y);
+    stift.lineTo(bis.x, bis.y);
+    stift.stroke();
+    stift.setLineDash([]);
+    const h = e * 1.3;
+    stift.strokeStyle = '#3a2c1f';
+    stift.lineWidth = Math.max(1.5, e * 0.08);
+    stift.beginPath();
+    stift.moveTo(bis.x, bis.y);
+    stift.lineTo(bis.x, bis.y - h);
+    stift.stroke();
+    stift.fillStyle = farbe;
+    stift.strokeStyle = 'rgba(15,18,22,0.85)';
+    stift.lineWidth = 1;
+    stift.beginPath();
+    stift.moveTo(bis.x, bis.y - h);
+    stift.quadraticCurveTo(bis.x + e * 0.4, bis.y - h - e * 0.05, bis.x + e * 0.75, bis.y - h + e * 0.2);
+    stift.quadraticCurveTo(bis.x + e * 0.4, bis.y - h + e * 0.32, bis.x, bis.y - h + e * 0.45);
+    stift.closePath();
+    stift.fill();
+    stift.stroke();
+    stift.fillStyle = 'rgba(0,0,0,0.3)';
+    stift.beginPath();
+    stift.ellipse(bis.x, bis.y, e * 0.25, e * 0.1, 0, 0, Math.PI * 2);
+    stift.fill();
+    stift.restore();
   }
 
   gebaeudeBild(gebaeude, p, e) {

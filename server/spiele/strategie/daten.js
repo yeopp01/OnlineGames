@@ -43,7 +43,7 @@ const ALLE = ['holz', 'nahrung', 'gold', 'stein'];
 const GEBAEUDE = {
   dorfzentrum: {
     groesse: 4, kosten: { holz: 275, stein: 100 }, bauzeit: 150, leben: 2400, wohnraum: 5,
-    annahme: ALLE, bildetAus: ['dorfbewohner'],
+    annahme: ALLE, bildetAus: ['dorfbewohner', 'webstuhl'],
   },
   haus: { groesse: 2, kosten: { holz: 25 }, bauzeit: 25, leben: 550, wohnraum: 5, annahme: [], bildetAus: [] },
   muehle: { groesse: 2, kosten: { holz: 100 }, bauzeit: 35, leben: 1000, wohnraum: 0, annahme: ['nahrung'], bildetAus: [] },
@@ -67,4 +67,16 @@ const STARTAUFSTELLUNG = ['dorfbewohner', 'dorfbewohner', 'dorfbewohner', 'spaeh
 // Mehr Wohnraum zaehlt nicht, wie in der Vorlage.
 const BEVOELKERUNG_MAX = 200;
 
-module.exports = { EINHEITEN, SAMMELN, TIERE, GEBAEUDE, BEVOELKERUNG_MAX, SCHLANGE_MAX, STARTAUFSTELLUNG };
+// Verbesserungen: einmal je Partie, im Gebaeude wie eine Einheit eingereiht.
+// `wirkung` gibt je Einheitenart Zuschlaege (bauen AC-21). Ruestung wirkt ab
+// Stufe B mit dem Kampf; sie steht schon hier, damit die Werte an einer Stelle sind.
+const VERBESSERUNGEN = {
+  webstuhl: {
+    name: 'Webstuhl', kosten: { gold: 50 }, zeit: 25,
+    wirkung: { dorfbewohner: { leben: 15, nahruestung: 1, fernruestung: 2 } },
+  },
+};
+
+module.exports = {
+  EINHEITEN, SAMMELN, TIERE, GEBAEUDE, VERBESSERUNGEN, BEVOELKERUNG_MAX, SCHLANGE_MAX, STARTAUFSTELLUNG,
+};

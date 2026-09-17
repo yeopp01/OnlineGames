@@ -268,4 +268,86 @@ test.describe('Ausbilden', () => {
     expect(messung.zustaende).toBeGreaterThanOrEqual(5);
     expect(messung.stellen, JSON.stringify(messung)).toBeGreaterThan(messung.zustaende * 1.5);
   });
+
+  test('bauen AC-21 / bauen AC-13: Webstuhl im Dorfzentrum, Sammelpunkt per Rechtsklick', async ({}, info) => {
+    test.setTimeout(90_000);
+    await anna.keyboard.press('Escape');
+    await rohstoffe(anna, code, 'Anna', { gold: 300, nahrung: 300 });
+    const zentrum = await meinZentrum();
+    await anna.evaluate((z) => {
+      const a = window.ansicht;
+      a.kamera.zoom = 1.6;
+      a.blickAuf(z.x + 2, z.y + 2);
+    }, zentrum);
+    await anna.waitForTimeout(150);
+    const klick = await anna.evaluate((z) => {
+      const p = window.ansicht.zuBild(z.x, z.y);
+      return { x: p.x, y: p.y - 70 };
+    }, zentrum);
+    await anna.mouse.click(klick.x, klick.y);
+    await expect(anna.locator('#auswahlleiste')).toContainText('Dorfzentrum');
+    // Was noch in der Schlange wartet, abbrechen - sonst wartet der Webstuhl dahinter.
+    while (await anna.locator('[data-abbrechen]').count()) {
+      const vorher = await anna.locator('[data-abbrechen]').count();
+      await anna.locator('[data-abbrechen="0"]').click();
+      await expect(anna.locator('[data-abbrechen]')).toHaveCount(vorher - 1);
+    }
+
+    // Sammelpunkt: Rechtsklick auf freies Gras vor dem Dorfzentrum.
+    const punkt = await anna.evaluate((z) => {
+      const a = window.ansicht;
+      const g = a.karte.groesse;
+      for (const [dx, dy] of [[4, 3], [3, 4], [5, 2], [2, 5], [5, 5]]) {
+        const x = z.x + dx;
+        const y = z.y + dy;
+        if (a.karte.felder[y * g + x] === 0) return { x, y, bild: a.zuBild(x, y) };
+      }
+      return null;
+    }, zentrum);
+    expect(punkt).not.toBeNull();
+    await anna.mouse.click(punkt.bild.x, punkt.bild.y, { button: 'right' });
+    await anna.waitForFunction(({ id, x, y }) => {
+      const g = window.ansicht.gebaeude.get(id);
+      return g?.p && g.p.x === x && g.p.y === y;
+    }, { id: zentrum.i, x: punkt.x, y: punkt.y });
+
+    // Webstuhl: der Knopf mit Webstuhl-Bild und 50 Gold.
+    const knopf = anna.locator('[data-ausbilden="webstuhl"]');
+    await expect(knopf).toHaveAttribute('aria-disabled', 'false');
+    await expect(knopf.locator('.ware-g + span')).toHaveText('50');
+    await knopf.click();
+    await expect(anna.locator('[data-abbrechen]')).toHaveCount(1);
+    await zeitraffer(anna, code, 4);
+    await expect.poll(() => anna.locator('.laufend .fortschritt > span').evaluate((sp) => parseFloat(sp.style.width) || 0), { timeout: 20_000 }).toBeGreaterThanOrEqual(35);
+    await zeitraffer(anna, code, 1);
+    await expect(anna.locator('#auswahlleiste')).toBeInViewport();
+    await nachweis(anna, {
+      spec: BAUEN,
+      ac: 'AC-13',
+      titel: 'Dorfzentrum gewaehlt: gestrichelte Linie zur Sammelpunkt-Fahne, unten der Webstuhl in Arbeit',
+      test: info,
+    });
+
+    // Fertig: kein Webstuhl-Knopf mehr, Dorfbewohner haben 40 Leben.
+    await zeitraffer(anna, code, 10);
+    await anna.waitForFunction(() => window.ansicht.verbesserungen.includes('webstuhl'), null, { timeout: 20_000 });
+    await zeitraffer(anna, code, 1);
+    await expect(knopf).toHaveCount(0);
+    const dorfbewohner = await anna.evaluate(() => {
+      const a = window.ansicht;
+      const e = [...a.nachher.values()].find((f) => f.b === a.ich && f.k === 'd');
+      const p = a.zuBild(e.x, e.y);
+      return { i: e.i, x: p.x, y: p.y - a.figurenHoehe() * 0.6 };
+    });
+    await anna.mouse.click(dorfbewohner.x, dorfbewohner.y);
+    await expect.poll(() => anna.evaluate(() => [...window.ansicht.ausgewaehlt])).toEqual([dorfbewohner.i]);
+    await expect(anna.locator('#auswahlleiste .leben')).toHaveAttribute('data-leben', '40/40');
+    await nachweis(anna, {
+      spec: BAUEN,
+      ac: 'AC-21',
+      titel: 'Nach dem Webstuhl: ein Dorfbewohner gewaehlt, unten 40 / 40 Leben statt 25',
+      test: info,
+    });
+    await anna.keyboard.press('Escape');
+  });
 });

@@ -248,6 +248,17 @@ ruhigerer Maschine 141 s Testzeit, langsamster Fall weiter der Lagertest (28 s).
 Neueste oben. Eine Zeile je Runde: Nummer, Datum, Kriterien, Ergebnis,
 wichtigste Erkenntnis.
 
+- **34** · 2026-09-17 · bauen AC-13 und AC-21 fertig. Webstuhl als erste
+  Verbesserung (`VERBESSERUNGEN` in `daten.js`): im Dorfzentrum wie eine
+  Einheit eingereiht, braucht keinen Wohnraum, einmal je Partie, +15 Leben für
+  vorhandene und neue Dorfbewohner (Rüstung als Wert schon da, wirkt ab Stufe B).
+  Sammelpunkt: Rechtsklick mit gewähltem Gebäude, Fahne mit gestrichelter
+  Linie; Neue gehen hin oder sammeln dort. Gelernt: (1) Ein wartender
+  Dorfbewohner vorn in der Schlange blockiert alles dahinter — der Test räumt
+  die Schlange erst. (2) Der Preis im Ausbildungsknopf ist jetzt wie im
+  Baumenü je Rohstoff gezeichnet; ein Test, der „60 / 20" als Text las, liest
+  die Zahlen an ihren Symbolen. Offen aus A7: darstellung AC-8 (Auswahl und
+  Leben am Boden). Danach A8: Wirtschafts-KI und Prüfstand.
 - **33** · 2026-09-17 · einheiten AC-22 fertig (auf Frage des Benutzers):
   eigene Schafe per Klick oder Rahmen wählen, per Rechtsklick treiben
   (0,7 Felder/s, weich gezeichnet mit Schritten); fremde Schafe, die nur

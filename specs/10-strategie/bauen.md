@@ -2,7 +2,7 @@
 
 **Bereich:** Strategie
 **Kuerzel:** bauen
-**Stand:** 16/22 fertig · 6 offen
+**Stand:** 18/22 fertig · 4 offen
 
 ## Zweck
 
@@ -92,9 +92,9 @@ Stufe B im Stall.
   der laufende, erstattet beim Abbruch die vollen Kosten.
 - **AC-12** `fertig` **Neue Einheiten erscheinen nebenan** — Auf einem freien Feld am Rand des
   Gebäudes, nicht in einem Hindernis, nicht in einem anderen Gebäude.
-- **AC-13** `offen` **Sammelpunkt je Gebäude** — Rechtsklick mit ausgewähltem Gebäude setzt ihn;
+- **AC-13** `fertig` **Sammelpunkt je Gebäude** — Rechtsklick mit ausgewähltem Gebäude setzt ihn;
   zeigt er auf einen Vorrat, gehen neue Dorfbewohner dort gleich sammeln.
-- **AC-21** `offen` **Webstuhl stärkt Dorfbewohner** — 50 Gold, 25 s im Dorfzentrum: alle
+- **AC-21** `fertig` **Webstuhl stärkt Dorfbewohner** — 50 Gold, 25 s im Dorfzentrum: alle
   Dorfbewohner des Spielers +15 Leben, +1 Nah- und +2 Fernrüstung. Einmal je
   Partie.
 - **AC-22** `fertig` **Startaufstellung nach der Vorlage** — Zu Beginn: ein Dorfzentrum, drei

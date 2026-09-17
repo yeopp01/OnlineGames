@@ -27,6 +27,51 @@ function bildchen(art, groesse, farbe, lage = {}) {
   return leinwand;
 }
 
+// Ein kleiner Webstuhl als Bild fuer den Knopf: Rahmen, Kettfaeden, ein Stueck Tuch.
+function webstuhlBildchen(groesse, farbe) {
+  const leinwand = document.createElement('canvas');
+  const dichte = window.devicePixelRatio || 1;
+  leinwand.width = groesse * dichte;
+  leinwand.height = groesse * dichte;
+  leinwand.style.width = `${groesse}px`;
+  leinwand.style.height = `${groesse}px`;
+  const s = leinwand.getContext('2d');
+  s.scale(dichte, dichte);
+  const g = groesse;
+  s.lineCap = 'round';
+  s.strokeStyle = '#6b4a2b';
+  s.lineWidth = g * 0.07;
+  for (const [x0, y0, x1, y1] of [[0.2, 0.9, 0.2, 0.15], [0.8, 0.9, 0.8, 0.15], [0.15, 0.22, 0.85, 0.22], [0.15, 0.75, 0.85, 0.75]]) {
+    s.beginPath();
+    s.moveTo(x0 * g, y0 * g);
+    s.lineTo(x1 * g, y1 * g);
+    s.stroke();
+  }
+  s.strokeStyle = 'rgba(240, 230, 200, 0.85)';
+  s.lineWidth = g * 0.015;
+  for (let i = 0; i < 8; i++) {
+    const x = (0.27 + i * 0.066) * g;
+    s.beginPath();
+    s.moveTo(x, 0.24 * g);
+    s.lineTo(x, 0.73 * g);
+    s.stroke();
+  }
+  const tuch = s.createLinearGradient(0, 0.5 * g, 0, 0.73 * g);
+  tuch.addColorStop(0, farbe);
+  tuch.addColorStop(1, 'rgba(0,0,0,0.5)');
+  s.fillStyle = tuch;
+  s.fillRect(0.26 * g, 0.5 * g, 0.48 * g, 0.23 * g);
+  s.strokeStyle = 'rgba(255,255,255,0.35)';
+  s.lineWidth = g * 0.012;
+  for (let i = 0; i < 4; i++) {
+    s.beginPath();
+    s.moveTo(0.26 * g, (0.54 + i * 0.05) * g);
+    s.lineTo(0.74 * g, (0.54 + i * 0.05) * g);
+    s.stroke();
+  }
+  return leinwand;
+}
+
 function gebaeudeBildchen(art, groesse, farbe, n) {
   const leinwand = document.createElement('canvas');
   const dichte = window.devicePixelRatio || 1;
@@ -91,7 +136,7 @@ export class Auswahlleiste {
       // Neu gebaut wird nur, wenn sich etwas Sichtbares aendert - sonst nur
       // der Balken. So flackert nichts unter dem Zeiger.
       const bezahlbar = angebot.map((e) => this.fehlt(e.kosten)).join('|');
-      const schluessel = `g${gebaeude.i}:${gebaeude.h}:${gebaeude.n}:${gebaeude.s.join(',')}:${gebaeude.w}:${bezahlbar}`;
+      const schluessel = `g${gebaeude.i}:${gebaeude.h}:${gebaeude.n}:${gebaeude.s.join(',')}:${gebaeude.w}:${bezahlbar}:${a.verbesserungen.join(',')}`;
       if (schluessel !== this.gezeigt) {
         this.gebaeudeBauen(gebaeude, angebot, farbe);
         this.gezeigt = schluessel;
@@ -127,7 +172,7 @@ export class Auswahlleiste {
       const bezahlbar = bauplan.map((e) => this.fehlt(e.kosten)).join('|');
       const einzeln = auswahl.length === 1 ? auswahl[0] : null;
       const schluessel = einzeln
-        ? `e${einzeln.i}:${einzeln.h}:${einzeln.l}:${einzeln.a}:${bezahlbar}:${a.platzieren?.art}`
+        ? `e${einzeln.i}:${einzeln.h}:${einzeln.l}:${einzeln.a}:${bezahlbar}:${a.platzieren?.art}:${a.verbesserungen.length}`
         : `m${auswahl.map((e) => e.i).join(',')}:${bezahlbar}:${a.platzieren?.art}`;
       if (schluessel !== this.gezeigt) {
         this.wurzel.replaceChildren();
@@ -147,11 +192,15 @@ export class Auswahlleiste {
   // Was ein Gebaeude ausbildet, mit den Kosten aus den Werten des Servers.
   angebot(gebaeude) {
     const werte = this.ansicht.werte;
-    return (werte.gebaeude[gebaeude.art]?.bildetAus || []).map((art) => ({
-      art,
-      name: FIGUREN[art]?.name || art,
-      kosten: werte.einheiten[art]?.kosten || {},
-    }));
+    return (werte.gebaeude[gebaeude.art]?.bildetAus || [])
+      // Eine erforschte Verbesserung verschwindet aus dem Angebot (bauen AC-21).
+      .filter((art) => !this.ansicht.verbesserungen.includes(art))
+      .map((art) => ({
+        art,
+        name: werte.verbesserungen?.[art]?.name || FIGUREN[art]?.name || art,
+        kosten: werte.einheiten[art]?.kosten || werte.verbesserungen?.[art]?.kosten || {},
+        verbesserung: Boolean(werte.verbesserungen?.[art]),
+      }));
   }
 
   // Was die Auswahl bauen kann: jedes Gebaeude, das mindestens einer baut.
@@ -255,7 +304,8 @@ export class Auswahlleiste {
     const w = this.wurzel;
     const werte = this.ansicht.werte.einheiten;
     const art = this.ansicht.arten[einheit.k] || 'dorfbewohner';
-    const voll = werte[art]?.leben ?? 0;
+    let voll = werte[art]?.leben ?? 0;
+    for (const v of this.ansicht.verbesserungen) voll += this.ansicht.werte.verbesserungen?.[v]?.wirkung?.[art]?.leben || 0;
     const leben = einheit.h ?? voll;
 
     const bild = element('div', 'auswahl-bild');
@@ -305,7 +355,9 @@ export class Auswahlleiste {
       if (fehlt) knopf.dataset.fehlt = fehlt;
       const kosten = Object.entries(eintrag.kosten).map(([r, m]) => `${m} ${ROHSTOFF_NAMEN[r]}`).join(', ');
       knopf.title = fehlt ? `${eintrag.name} - zu wenig ${fehlt}` : `${eintrag.name} ausbilden (${kosten})`;
-      knopf.append(bildchen(eintrag.art, 58, farbe), element('span', 'kosten', Object.values(eintrag.kosten).join(' / ')));
+      const preis = element('span', 'preis');
+      for (const [r, m] of Object.entries(eintrag.kosten)) preis.append(element('span', `ware ware-${r[0]}`), element('span', null, String(m)));
+      knopf.append(eintrag.verbesserung ? webstuhlBildchen(58, farbe) : bildchen(eintrag.art, 58, farbe), preis);
       knopf.addEventListener('click', () => {
         if (fehlt) this.ansicht.melden(`Zu wenig ${fehlt}.`);
         else this.senden({ auftrag: 'ausbilden', gebaeude: gebaeude.i, einheit: eintrag.art });
@@ -320,7 +372,8 @@ export class Auswahlleiste {
       eintrag.type = 'button';
       eintrag.dataset.abbrechen = String(platz);
       eintrag.title = 'Abbrechen - die Kosten kommen voll zurueck';
-      eintrag.append(bildchen(art, platz === 0 ? 50 : 38, farbe));
+      const verbesserung = Boolean(this.ansicht.werte.verbesserungen?.[art]);
+      eintrag.append(verbesserung ? webstuhlBildchen(platz === 0 ? 50 : 38, farbe) : bildchen(art, platz === 0 ? 50 : 38, farbe));
       if (platz === 0) {
         eintrag.classList.add('laufend');
         const balken = element('div', 'fortschritt');

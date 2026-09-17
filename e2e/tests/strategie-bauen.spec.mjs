@@ -262,7 +262,8 @@ test.describe('Bauen', () => {
     await expect(anna.locator('#auswahlleiste')).toContainText('Kaserne');
     const knopf = anna.locator('[data-ausbilden="miliz"]');
     await expect(knopf).toHaveAttribute('aria-disabled', 'false');
-    await expect(knopf).toContainText('60 / 20');
+    await expect(knopf.locator('.ware-n + span')).toHaveText('60');
+    await expect(knopf.locator('.ware-g + span')).toHaveText('20');
     await knopf.click();
     await expect(anna.locator('[data-abbrechen]')).toHaveCount(1);
 

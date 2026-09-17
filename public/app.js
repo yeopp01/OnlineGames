@@ -94,6 +94,8 @@ function empfangen(nachricht) {
           senden({ typ: 'befehl', ...auftrag }));
         ansicht.beiAuswahl = () => auswahlleiste.aktualisieren();
         ansicht.melden = spielMelden;
+        ansicht.sammelpunktSenden = (gebaeude, ziel) =>
+          senden({ typ: 'befehl', auftrag: 'sammelpunkt', gebaeude, ziel });
         ansicht.bauenSenden = (einheiten, art, ziel) =>
           senden({ typ: 'befehl', auftrag: 'bauen', einheiten, art, ziel });
       }

@@ -1,0 +1,10 @@
+{
+  "spec": "10-strategie/bauen.md",
+  "ac": "AC-13",
+  "titel": "Dorfzentrum gewaehlt: gestrichelte Linie zur Sammelpunkt-Fahne, unten der Webstuhl in Arbeit",
+  "datei": "e2e/tests/strategie-ausbilden.spec.mjs",
+  "pfad": [
+    "Ausbilden",
+    "bauen AC-21 / bauen AC-13: Webstuhl im Dorfzentrum, Sammelpunkt per Rechtsklick"
+  ]
+}
