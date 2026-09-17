@@ -33,6 +33,7 @@ export class Ansicht {
     this.empfangen = 0;
     this.ausgewaehlt = new Set();
     this.blicke = new Map(); // Einheit → -1 links, 1 rechts
+    this.tiere = new Map();
     this.vorraete = { holz: 0, nahrung: 0 };
 
     this.kamera = { x: 0, y: 0, zoom: 1 };
@@ -52,6 +53,8 @@ export class Ansicht {
     this.taktdauer = 1000 / nachricht.takte;
     this.ich = ichId;
     this.spieler = new Map(nachricht.spieler.map((s) => [s.id, s]));
+    // Tiere kommen einmal im Aufbau und danach nur bei Aenderung.
+    this.tiere = new Map((nachricht.tiere || []).map((t) => [t.i, t]));
 
     const meine = this.spieler.get(ichId);
     if (meine) this.blickAuf(meine.basis.x, meine.basis.y);
@@ -66,6 +69,10 @@ export class Ansicht {
   zustand(nachricht) {
     for (const aenderung of nachricht.felder || []) {
       this.karte.felder[aenderung.i] = aenderung.a;
+    }
+    for (const tier of nachricht.tiere || []) {
+      if (tier.weg) this.tiere.delete(tier.i);
+      else this.tiere.set(tier.i, tier);
     }
     this.vorher = this.nachher;
     this.nachher = new Map(nachricht.einheiten.map((e) => [e.i, e]));
@@ -239,6 +246,14 @@ export class Ansicht {
     }
 
     for (const spieler of this.spieler.values()) this.basisZeichnen(spieler);
+
+    for (const tier of this.tiere.values()) {
+      const punkt = this.zuBild(tier.x, tier.y);
+      const spieler = this.spieler.get(tier.b);
+      figurZeichnen(this.stift, tier.art, punkt.x, punkt.y, Math.max(9, FELD * 1.0 * this.kamera.zoom), spieler ? spieler.farbe : '#888888', {
+        blick: tier.i % 2 ? 1 : -1,
+      });
+    }
 
     const anteil = this.anteil(jetzt);
     for (const einheit of this.nachher.values()) this.einheitZeichnen(einheit, anteil);

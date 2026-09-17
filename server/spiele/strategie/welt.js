@@ -44,6 +44,19 @@ class Welt {
       basis: this.karte.basen[i],
     }));
 
+    // Tiere gehoeren einem Spieler, stehen aber nicht in den Einheiten: sie
+    // stehen still, bis jemand sie nutzt, und gehen deshalb nicht zehnmal je
+    // Sekunde ueber die Leitung - einmal im Aufbau, danach nur bei Aenderung
+    // (karte AC-16, uebertragung AC-7).
+    this.tiere = new Map();
+    this.tierAenderungen = [];
+    for (const schaf of this.karte.schafe) {
+      const id = this.naechsteId++;
+      this.tiere.set(id, {
+        id, art: 'schaf', besitzer: this.spieler[schaf.spieler].id, x: schaf.x, y: schaf.y, nahrung: karten.SCHAF_NAHRUNG,
+      });
+    }
+
     for (const spieler of this.spieler) {
       for (let i = 0; i < SAMMLER_ZU_BEGINN; i++) {
         const winkel = (i / SAMMLER_ZU_BEGINN) * Math.PI * 2;
@@ -245,13 +258,25 @@ class Welt {
     }
     const felder = this.feldAenderungen;
     this.feldAenderungen = [];
-    return {
+    const zustand = {
       typ: 'zustand',
       t: this.takt,
       spieler: this.spieler.map((s) => ({ id: s.id, holz: s.holz, nahrung: s.nahrung, gold: s.gold, stein: s.stein })),
       einheiten,
       felder,
     };
+    // Tiere nur, wenn sich eines geaendert hat.
+    if (this.tierAenderungen.length) {
+      zustand.tiere = this.tierAenderungen.map((id) => this.tierFuerDraht(id));
+      this.tierAenderungen = [];
+    }
+    return zustand;
+  }
+
+  tierFuerDraht(id) {
+    const tier = this.tiere.get(id);
+    if (!tier) return { i: id, weg: true };
+    return { i: tier.id, art: tier.art, b: tier.besitzer, x: tier.x, y: tier.y, n: tier.nahrung };
   }
 
   // Einmalig beim Start: Karte und Spielerliste.
@@ -271,6 +296,7 @@ class Welt {
         farbe: s.farbe,
         basis: s.basis,
       })),
+      tiere: [...this.tiere.keys()].map((id) => this.tierFuerDraht(id)),
     };
   }
 }

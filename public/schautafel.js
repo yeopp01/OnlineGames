@@ -14,6 +14,7 @@ const EINTRAEGE = [
   { art: 'dorfbewohner', titel: 'traegt Gold', lage: { ladung: 'g' } },
   { art: 'miliz', titel: 'Miliz', lage: {} },
   { art: 'spaeherreiter', titel: 'Spaeherreiter', lage: {} },
+  { art: 'schaf', titel: 'Schaf', lage: {} },
 ];
 
 const leinwand = document.getElementById('tafel');

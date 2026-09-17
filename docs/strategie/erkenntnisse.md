@@ -86,6 +86,8 @@ Zahlen, gegen die spätere Runden vergleichen. Mit Datum und Commit.
 | 2026-09-16 | Tests ohne Browser / im Browser; Browserlauf | 250 / 69; 1,3–2,2 min — **nicht vergleichbar**: gleichzeitig liefen Tests anderer Projekte (Conjola) | Runde 3 |
 | 2026-09-16 | Tests ohne Browser / im Browser; Browserlauf (Maschine ruhig) | 251 / 75; 55,0 s | Runde 4 |
 | 2026-09-16 | Tests ohne Browser / im Browser; Browserlauf | 252 / 77; 1,1 min — nicht vergleichbar, 8 fremde Testprozesse | Runde 6 |
+| 2026-09-17 | Tests ohne Browser / im Browser; Browserlauf (Last 16 %) | 260 / 80; 59,8 s | Runde 12 |
+| 2026-09-17 | Wegsuche 200 x 200: Ecke zu Ecke / Mittel 100 zufaellig | 1,19 ms / 0,28 ms | Runde 12 |
 
 ## Rückschauen
 
@@ -146,6 +148,13 @@ Minuten. Tragbar; ein Teillauf für `check:alles` würde die Regel aufweichen.
 Neueste oben. Eine Zeile je Runde: Nummer, Datum, Kriterien, Ergebnis,
 wichtigste Erkenntnis.
 
+- **12** · 2026-09-17 · A2 abgeschlossen: karte AC-15 (Ecke zu Ecke 1,2 ms,
+  Mittel 0,28 ms auf 200 × 200), AC-16 (acht Schafe mit Halsband in
+  Spielerfarbe), AC-17 (Aufbau bei acht Spielern 53 KB). Entschieden: Tiere
+  gehen einmal im Aufbau und danach nur bei Änderung über die Leitung —
+  Zustand bleibt klein (uebertragung AC-7). Das Bild behauptete ein Halsband,
+  das in Spielgröße kaum zu sehen war: Schafe größer, Bild näher. Nächste
+  Runde: **A3 isometrischer Blick** (Gelände, Bäume, Gold, Stein als Dinge).
 - **11** · 2026-09-17 · A2 (Teil 1), nach fünf Stunden Warten committet, als
   `npm run check` bei 18 % Last grün war (257/257). Beleg dazwischen: auch der
   letzte Commit ohne diese Änderungen scheiterte unter Last am selben Zeittest. karte AC-11–14 und

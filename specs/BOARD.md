@@ -7,9 +7,9 @@ Eine Zeile je Abnahmekriterium. Gepflegt wird der Status in der Spec selbst,
 hier steht er zusammengefasst. Erzeugt mit `npm run specs:board`; als Seite
 mit Bildnachweisen, Filter und Suche mit `npm run qa:report`.
 
-**Gesamt:** 285/485 fertig · 6 in QA · 4 geplant · 184 offen · 6 zurueckgestellt
+**Gesamt:** 288/485 fertig · 6 in QA · 4 geplant · 181 offen · 6 zurueckgestellt
 
-**Nachweise:** 91 Kriterien mit Bild · 197 ohne Bild, begruendet in `qa/ohne-bild.json`
+**Nachweise:** 92 Kriterien mit Bild · 199 ohne Bild, begruendet in `qa/ohne-bild.json`
 
 ## Nach Spezifikation
 
@@ -27,7 +27,7 @@ mit Bildnachweisen, Filter und Suche mit `npm run qa:report`.
 | [Einheiten und Befehle](10-strategie/einheiten-und-befehle.md) | -         | -     | -       | 8     | -               | 9      |
 | [Fahrplan zum Klon](10-strategie/fahrplan.md)                  | -         | -     | -       | 20    | -               | 2      |
 | [Kampf](10-strategie/kampf.md)                                 | -         | -     | -       | 14    | -               | -      |
-| [Karte und Vorraete](10-strategie/karte-und-vorraete.md)       | -         | -     | -       | 5     | 3               | 9      |
+| [Karte und Vorraete](10-strategie/karte-und-vorraete.md)       | -         | -     | -       | 2     | 3               | 12     |
 | [KI-Spieler](10-strategie/ki.md)                               | -         | -     | -       | 8     | -               | -      |
 | [Spielziel und Partieverlauf](10-strategie/spielziel.md)       | -         | -     | -       | 18    | -               | -      |
 | [Aufstellung, Taktik und Training](15-manager/aufstellung.md)  | -         | -     | -       | -     | 2               | 23     |
@@ -61,7 +61,7 @@ mit Bildnachweisen, Filter und Suche mit `npm run qa:report`.
 - **Abbruch ist sichtbar** — [Uebertragung](00-plattform/uebertragung.md) AC-9
 - **Automatischer Wiederaufbau** — [Uebertragung](00-plattform/uebertragung.md) AC-10
 
-## Offen (184)
+## Offen (181)
 
 - **Anmeldung ueber Google/GitHub** — [Konten und Anmeldung](00-plattform/konten.md) AC-6
 - **Bilanz je Konto** — [Konten und Anmeldung](00-plattform/konten.md) AC-14
@@ -203,9 +203,6 @@ mit Bildnachweisen, Filter und Suche mit `npm run qa:report`.
 - **Angriff wird gemeldet** — [Kampf](10-strategie/kampf.md) AC-14
 - **Kein Spieler ist abgeschnitten** — [Karte und Vorraete](10-strategie/karte-und-vorraete.md) AC-7
 - **Vorraete sind endlich und knapp** — [Karte und Vorraete](10-strategie/karte-und-vorraete.md) AC-10
-- **Wegsuche bleibt bezahlbar** — [Karte und Vorraete](10-strategie/karte-und-vorraete.md) AC-15
-- **Schafe gehören dem Spieler** — [Karte und Vorraete](10-strategie/karte-und-vorraete.md) AC-16
-- **Karte in einer Nachricht** — [Karte und Vorraete](10-strategie/karte-und-vorraete.md) AC-17
 - **Befehle wie ein Mensch** — [KI-Spieler](10-strategie/ki.md) AC-1
 - **Gleicher Zufall, gleiche Partie** — [KI-Spieler](10-strategie/ki.md) AC-2
 - **KI kostet wenig** — [KI-Spieler](10-strategie/ki.md) AC-3

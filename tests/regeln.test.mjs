@@ -271,3 +271,76 @@ test('einheiten AC-14: ohne Ersatz in Reichweite bleibt die Einheit stehen', () 
   assert.equal(einheit.auftrag, null, 'kein Auftrag mehr');
   assert.deepEqual(einheit.weg, [], 'und kein Weg quer ueber die Karte');
 });
+
+test('karte AC-15: auf der groessten Karte bleibt die Wegsuche bezahlbar', () => {
+  const karte = karten.erzeugen(99, 8, { kartengroesse: 'gross' });
+  const g = karte.groesse;
+  assert.equal(g, 200);
+  // Das freie Feld, das einer Ecke am naechsten liegt.
+  const frei = (x0, y0) => {
+    for (let r = 0; r < g; r++) {
+      for (let dy = -r; dy <= r; dy++) {
+        for (let dx = -r; dx <= r; dx++) {
+          if (karten.begehbar(karte, x0 + dx, y0 + dy)) return { x: x0 + dx, y: y0 + dy };
+        }
+      }
+    }
+    return null;
+  };
+  const oben = frei(0, 0);
+  const unten = frei(g - 1, g - 1);
+  const messen = (lauf, wiederholungen) => {
+    lauf(); // warmlaufen
+    const start = process.hrtime.bigint();
+    for (let i = 0; i < wiederholungen; i++) lauf();
+    return Number(process.hrtime.bigint() - start) / 1e6 / wiederholungen;
+  };
+
+  let weg = [];
+  const eckeZuEcke = messen(() => { weg = suchen(karte, oben, unten); }, 20);
+  assert.ok(weg.length > g, `ein Weg quer ueber die Karte, ${weg.length} Felder`);
+  assert.ok(eckeZuEcke < 5, `Ecke zu Ecke ${eckeZuEcke.toFixed(2)} ms`);
+
+  const zufall = karten.zufallAus(5);
+  const paare = [];
+  while (paare.length < 100) {
+    const a = { x: Math.floor(zufall() * g), y: Math.floor(zufall() * g) };
+    const b = { x: Math.floor(zufall() * g), y: Math.floor(zufall() * g) };
+    if (karten.begehbar(karte, a.x, a.y) && karten.begehbar(karte, b.x, b.y)) paare.push([a, b]);
+  }
+  const zufaellig = messen(() => { for (const [a, b] of paare) suchen(karte, a, b); }, 1) / 100;
+  assert.ok(zufaellig < 1, `im Mittel ${zufaellig.toFixed(2)} ms je Suche`);
+});
+
+test('karte AC-16: acht Schafe je Spieler, mit 100 Nahrung, sie stehen still', () => {
+  const welt = new Welt(ZWEI, 7);
+  const tiere = [...welt.tiere.values()];
+  for (const spieler of welt.spieler) {
+    const eigene = tiere.filter((t) => t.besitzer === spieler.id);
+    assert.equal(eigene.length, 8);
+    for (const schaf of eigene) {
+      assert.equal(schaf.art, 'schaf');
+      assert.equal(schaf.nahrung, 100);
+      assert.ok(karten.begehbar(welt.karte, schaf.x, schaf.y), 'ein Schaf steht auf Gras');
+      // Naeher am Zentrum als Beeren (7), Gold (10) und Stein (11).
+      const abstand = Math.hypot(schaf.x - spieler.basis.x, schaf.y - spieler.basis.y);
+      assert.ok(abstand >= 3 && abstand <= 5, `Abstand ${abstand}`);
+    }
+  }
+  // Im Aufbau alle, mit Besitzer; danach stehen sie und kommen nicht wieder.
+  const aufbau = welt.aufbau();
+  assert.equal(aufbau.tiere.length, 16);
+  assert.ok(aufbau.tiere.every((t) => t.art === 'schaf' && ZWEI.some((s) => s.id === t.b)));
+  const vorher = tiere.map((t) => `${t.x}/${t.y}`);
+  for (let i = 0; i < 50; i++) welt.takten();
+  assert.deepEqual([...welt.tiere.values()].map((t) => `${t.x}/${t.y}`), vorher);
+  assert.equal(welt.zustand().tiere, undefined, 'unveraenderte Tiere gehen nicht ueber die Leitung');
+});
+
+test('karte AC-17: der Aufbau der groessten Partie passt in eine Nachricht unter 200 KB', () => {
+  const acht = Array.from({ length: 8 }, (_, i) => ({ id: `s${i}`, name: `Spieler ${i}` }));
+  const welt = new Welt(acht, 99, { kartengroesse: 'gross' });
+  const byte = Buffer.byteLength(JSON.stringify(welt.aufbau()));
+  assert.equal(welt.karte.groesse, 200);
+  assert.ok(byte < 200 * 1024, `Aufbau ${(byte / 1024).toFixed(1)} KB`);
+});

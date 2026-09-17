@@ -56,6 +56,8 @@
     { "spec": "10-strategie/karte-und-vorraete.md", "ac": "AC-12", "begruendung": "Startvorrat je Einstellung als Zahlen im Zustand. Sichtbar wird er mit der Rohstoffleiste (10-strategie/bedienung.md AC-24)." },
     { "spec": "10-strategie/karte-und-vorraete.md", "ac": "AC-13", "begruendung": "Menge je Vorrat und dass er sein Feld belegt - Zahlen und Begehbarkeit, auf der ganzen Karte nachgeprueft. Wie Baeume, Gold und Stein aussehen, gehoert zu 10-strategie/darstellung.md AC-3." },
     { "spec": "10-strategie/karte-und-vorraete.md", "ac": "AC-14", "begruendung": "Gleiche Zahl und gleicher mittlerer Abstand der Vorraete um jede Basis, fuer vier Startwerte und bis zu acht Spieler nachgezaehlt. Ein Bild zeigt eine Basis, nicht die Gleichheit aller." },
+    { "spec": "10-strategie/karte-und-vorraete.md", "ac": "AC-15", "begruendung": "Rechenzeit der Wegsuche auf der groessten Karte - Ecke zu Ecke und im Mittel ueber hundert Suchen gemessen. Ein Bild zeigt einen Weg, keine Millisekunden." },
+    { "spec": "10-strategie/karte-und-vorraete.md", "ac": "AC-17", "begruendung": "Die Groesse der Aufbaunachricht in Byte. Sie steht auf der Leitung, nicht auf dem Bildschirm." },
     { "spec": "10-strategie/karte-und-vorraete.md", "ac": "AC-9", "begruendung": "Die Aenderung eines Feldes und ihre Meldung an alle. Ein Vorgang im Protokoll; im Spielbild gehoert er zu 10-strategie/bedienung.md." },
 
     { "spec": "15-manager/spielziel.md", "ac": "AC-3", "begruendung": "Welche Elf der Server einsetzt, wenn keine abgegeben wurde. Ein Bild zeigt den Hinweis 'keine feste Elf', nicht wer gespielt hat; der Test vergleicht die gespielte Elf mit der besten." },

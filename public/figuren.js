@@ -198,8 +198,33 @@ function spaeherreiter(stift, farbe, { schritt = 0 }) {
   kopf(stift, -25.2, { helm: true });
 }
 
+// Ein Schaf: helle Wolle aus Buckeln, dunkler Kopf und Beine, das Halsband in
+// Spielerfarbe zeigt, wem es gehoert (karte AC-16). Kleiner als ein Mensch.
+function schaf(stift, farbe, { schritt = 0 }) {
+  schatten(stift, 6.5);
+  const WOLLE = '#ece6d8';
+  const WOLLE_SCHATTEN = '#cfc7b5';
+  const KOPF = '#2e2a28';
+  const aus = Math.sin(schritt) * 1.2;
+  for (const [x, phase] of [[-4.2, aus], [-2, -aus], [2.2, -aus], [4.2, aus]]) {
+    vieleck(stift, [[x - 0.7 + phase, 0], [x + 0.7 + phase, 0], [x + 0.7, -4.5], [x - 0.7, -4.5]], KOPF, false);
+  }
+  // Wolle als Wolke aus Buckeln, unten etwas dunkler.
+  ellipse(stift, 0, -7.6, 7, 4.2, WOLLE_SCHATTEN);
+  for (const [x, y, r] of [[-4.2, -8.4, 2.8], [-1.2, -10.4, 3.2], [2.2, -10, 3], [4.6, -8, 2.6], [0.6, -7.2, 3.4]]) {
+    ellipse(stift, x, y, r, r * 0.9, WOLLE, false);
+  }
+  // Halsband in Spielerfarbe, dann der Kopf nach vorn.
+  vieleck(stift, [[5, -10.6], [7, -11.4], [7.6, -8.6], [5.6, -7.8]], farbe);
+  vieleck(stift, [[6.6, -12], [10.8, -10.6], [10.6, -7.8], [7.2, -7.6]], KOPF);
+  ellipse(stift, 7, -12.2, 1.4, 0.7, KOPF, false);
+  stift.fillStyle = '#f2f2f2';
+  stift.fillRect(9, -10.4, 0.8, 0.8);
+}
+
 export const FIGUREN = {
   dorfbewohner: { name: 'Dorfbewohner', zeichnen: dorfbewohner, breite: 1 },
+  schaf: { name: 'Schaf', zeichnen: schaf, breite: 1.1 },
   miliz: { name: 'Miliz', zeichnen: miliz, breite: 1 },
   spaeherreiter: { name: 'Spaeherreiter', zeichnen: spaeherreiter, breite: 1.6 },
 };

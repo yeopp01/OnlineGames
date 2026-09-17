@@ -94,6 +94,10 @@ const AUSSTATTUNG = [
   { art: GOLD, abstand: 10, winkel: -Math.PI / 3, form: [[0, 0], [1, 0], [-1, 0], [0, 1], [0, -1], [1, 1], [-1, -1]] },
   { art: STEIN, abstand: 11, winkel: (5 * Math.PI) / 6, form: [[0, 0], [1, 0], [-1, 0], [0, 1], [0, -1]] },
 ];
+const SCHAFE_JE_BASIS = 8;
+const SCHAF_ABSTAND = 4;
+const SCHAF_NAHRUNG = 100;
+
 // Zwei Waeldchen in verschiedenen Richtungen, je ein voller Kreis.
 const WAELDCHEN = [
   { abstand: 12, winkel: 0, radius: 3 },
@@ -170,7 +174,18 @@ function erzeugen(startwert, anzahlSpieler, einstellungen = {}) {
     if (VORRAT[felder[i]]) vorrat.set(i, VORRAT[felder[i]]);
   }
 
-  return { groesse, felder, basen: basen.map(({ x, y }) => ({ x, y })), vorrat };
+  // Acht Schafe je Basis im Kreis naeher am Zentrum als alles andere (AC-14,
+  // AC-16). Sie stehen auf Gras und sperren kein Feld - Tiere sind keine
+  // Vorraete auf dem Raster, sondern gehoeren dem Spieler.
+  const schafe = [];
+  basen.forEach((basis, spieler) => {
+    for (let i = 0; i < SCHAFE_JE_BASIS; i++) {
+      const stelle = vorkommen(basis, { abstand: SCHAF_ABSTAND, winkel: Math.PI / 4 + (i * 2 * Math.PI) / SCHAFE_JE_BASIS });
+      schafe.push({ spieler, x: stelle.x, y: stelle.y });
+    }
+  });
+
+  return { groesse, felder, basen: basen.map(({ x, y }) => ({ x, y })), vorrat, schafe };
 }
 
 function begehbar(karte, x, y) {
@@ -180,5 +195,6 @@ function begehbar(karte, x, y) {
 
 module.exports = {
   GRAS, WALD, BEERE, WASSER, GOLD, STEIN, VORRAT, AUSSTATTUNG, WAELDCHEN,
+  SCHAFE_JE_BASIS, SCHAF_NAHRUNG,
   erzeugen, begehbar, zufallAus, kartengroesse, GROESSE_MAX,
 };

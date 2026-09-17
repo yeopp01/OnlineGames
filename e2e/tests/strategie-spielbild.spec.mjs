@@ -13,6 +13,7 @@ import { ANMELDUNG, expect, fehlerSammeln, test } from '../helpers/seite.mjs';
 const BEDIENUNG = '10-strategie/bedienung.md';
 const FAHRPLAN = '10-strategie/fahrplan.md';
 const AUSWAHL = '00-plattform/spielauswahl.md';
+const KARTE = '10-strategie/karte-und-vorraete.md';
 const STARTWERT = 4711;
 const WALD = 1;
 
@@ -240,6 +241,26 @@ test.describe('Das Spielbild', () => {
     await bert.waitForFunction(() => {
       const a = window.ansicht;
       return [...a.nachher.values()].some((e) => e.b !== a.ich && e.l > 0);
+    });
+  });
+
+  test('karte AC-16: acht Schafe mit dem Halsband des Spielers stehen am Dorfzentrum', async ({}, info) => {
+    const lage = await bert.evaluate(() => {
+      const a = window.ansicht;
+      const eigene = [...a.tiere.values()].filter((t) => t.b === a.ich);
+      const basis = a.spieler.get(a.ich).basis;
+      return { anzahl: eigene.length, arten: [...new Set(eigene.map((t) => t.art))], basis: a.zuBild(basis.x, basis.y) };
+    });
+    expect(lage).toMatchObject({ anzahl: 8, arten: ['schaf'] });
+    // Nah heran, damit Wolle und Halsband zu sehen sind.
+    await bert.mouse.move(lage.basis.x, lage.basis.y);
+    for (let i = 0; i < 8; i++) await bert.mouse.wheel(0, -100);
+    await bert.waitForFunction(() => window.ansicht.kamera.zoom >= 2.5);
+    await nachweis(bert, {
+      spec: KARTE,
+      ac: 'AC-16',
+      titel: 'Berts Dorfzentrum nah: acht Schafe im Kreis, das Halsband in seinem Rot',
+      test: info,
     });
   });
 });

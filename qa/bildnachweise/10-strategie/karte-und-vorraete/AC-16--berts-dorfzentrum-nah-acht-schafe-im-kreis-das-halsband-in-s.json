@@ -1,0 +1,10 @@
+{
+  "spec": "10-strategie/karte-und-vorraete.md",
+  "ac": "AC-16",
+  "titel": "Berts Dorfzentrum nah: acht Schafe im Kreis, das Halsband in seinem Rot",
+  "datei": "e2e/tests/strategie-spielbild.spec.mjs",
+  "pfad": [
+    "Das Spielbild",
+    "karte AC-16: acht Schafe mit dem Halsband des Spielers stehen am Dorfzentrum"
+  ]
+}

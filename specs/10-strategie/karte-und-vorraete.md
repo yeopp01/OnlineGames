@@ -2,7 +2,7 @@
 
 **Bereich:** Strategie
 **Kuerzel:** karte
-**Stand:** 9/17 fertig · 5 offen · 3 zurueckgestellt
+**Stand:** 12/17 fertig · 2 offen · 3 zurueckgestellt
 
 ## Zweck
 
@@ -72,13 +72,13 @@ Ein Spielfeld, das in jeder Partie neu ist, aber niemanden benachteiligt.
   Feldern: 6 Beerensträucher, ein Goldfeld aus 7 Feldern, ein Steinfeld aus 5,
   8 Schafe näher am Zentrum, Wald in mindestens zwei Richtungen. Gleiche
   Mengen und gleiche Abstände für alle, nur gedreht.
-- **AC-15** `offen` **Wegsuche bleibt bezahlbar** — Auf der größten Karte kostet eine Suche von
+- **AC-15** `fertig` **Wegsuche bleibt bezahlbar** — Auf der größten Karte kostet eine Suche von
   Ecke zu Ecke unter 5 ms, im Mittel über hundert zufällige Suchen unter 1 ms
   (→ [Einheiten](einheiten-und-befehle.md) AC-8).
-- **AC-16** `offen` **Schafe gehören dem Spieler** — Die acht Schafe zu Beginn tragen die
+- **AC-16** `fertig` **Schafe gehören dem Spieler** — Die acht Schafe zu Beginn tragen die
   Farbe des Spielers und je 100 Nahrung. Sie stehen still, bis ein Dorfbewohner
   sie nutzt (→ [Einheiten](einheiten-und-befehle.md) AC-17).
-- **AC-17** `offen` **Karte in einer Nachricht** — Der Aufbau einer Karte von
+- **AC-17** `fertig` **Karte in einer Nachricht** — Der Aufbau einer Karte von
   200 × 200 mit allen Vorräten ist gepackt unter 200 KB groß.
 
 ## Grenzfaelle
