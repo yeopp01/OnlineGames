@@ -369,6 +369,20 @@ alle sieben Gebäude der Dunklen Zeit stehen. Was sich wiederholt hat:
 Neueste oben. Eine Zeile je Runde: Nummer, Datum, Kriterien, Ergebnis,
 wichtigste Erkenntnis.
 
+- **53** · 2026-09-17 · fahrplan AC-3 **fertig** — **Stufe A erreicht** (alle
+  Kriterien der Bauabfolge A1–A10 `fertig`). Ein Browsertest spielt die
+  Dunkle Zeit am Stück wie ein Mensch, im Zeitraffer: Schaf, Holz, Gold per
+  Rechtsklick, `H`/`Q` bildet aus, `.` schickt den Neuen an den Stein, jeder
+  Rohstoff kommt im Lager an; dann alle sechs Gebäude mit `B` + Buchstabe und
+  Klick, Miliz aus der Kaserne, ein Dorfbewohner an die Beeren (Prüfgriff
+  füllt nur Holz fürs Bauen auf, gesammelt ist jeder Rohstoff). Gefunden: (1)
+  **Bedienfehler** — überlappten Gebäude im Bild, wählte ein Klick das zuerst
+  gebaute statt des vorderen; `gebaeudeUnter` nimmt jetzt das vorderste; (2)
+  `dorfbewohnerAnklicken` nahm den ersten Dorfbewohner, auch wenn ein anderer
+  im Bild dicht daneben stand — jetzt den freiesten; (3) mein eigener
+  Aufbaufehler: zu Beginn ist Wohnraum für einen, nicht für drei. Nächste
+  Runde: Rückschau zum Ende der Stufe mit Partie im Browser und den drei
+  größten Lücken.
 - **52** · 2026-09-17 · darstellung AC-10 **fertig** — Schritt A9
   abgeschlossen. Gemessen mit 100 Einheiten und 30 Häusern bei Zoom 1
   (Prüfgriffe `gebaeude` und neu `einheiten`): erst **24 Bilder je

@@ -1,0 +1,10 @@
+{
+  "spec": "10-strategie/fahrplan.md",
+  "ac": "AC-3",
+  "titel": "Die Dunkle Zeit im Browser gespielt: vier Rohstoffe gesammelt, alle sieben Gebaeude gebaut, fuenf Dorfbewohner und eine Miliz",
+  "datei": "e2e/tests/strategie-dunkle-zeit.spec.mjs",
+  "pfad": [
+    "Dunkle Zeit am Stueck",
+    "fahrplan AC-3: vier Rohstoffe, alle Gebaeude, Dorfbewohner und Miliz - im Browser gesammelt, gebaut, ausgebildet"
+  ]
+}

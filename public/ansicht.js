@@ -357,15 +357,10 @@ export class Ansicht {
         return;
       }
       // Keine Einheit getroffen: vielleicht ein eigenes Gebaeude.
-      const e = HALB_B * this.kamera.zoom;
-      for (const gebaeude of this.gebaeude.values()) {
-        if (gebaeude.b !== this.ich) continue;
-        const mitte = this.gebaeudeMitte(gebaeude);
-        const p = this.zuBild(mitte.x, mitte.y);
-        if (gebaeudeGetroffen(gebaeude.art, rahmen.vonX - p.x, rahmen.vonY - p.y, e, mitte.groesse)) {
-          this.gewaehltesGebaeude = gebaeude.i;
-          return;
-        }
+      const getroffen = this.gebaeudeUnter(rahmen.vonX, rahmen.vonY);
+      if (getroffen) {
+        this.gewaehltesGebaeude = getroffen.i;
+        return;
       }
       return;
     }
@@ -678,6 +673,28 @@ export class Ansicht {
     this.blickAuf(einheit.x, einheit.y);
     this.beiAuswahl();
     return id;
+  }
+
+  /**
+   * Das eigene Gebaeude unter einem Bildpunkt - von mehreren das vorderste, das
+   * im Bild auch oben liegt (Runde 53: vorher gewann das zuerst gebaute, und ein
+   * Klick auf die Kaserne waehlte das Haus dahinter).
+   */
+  gebaeudeUnter(px, py) {
+    const e = HALB_B * this.kamera.zoom;
+    let bestes = null;
+    let tiefe = -Infinity;
+    for (const gebaeude of this.gebaeude.values()) {
+      if (gebaeude.b !== this.ich) continue;
+      const mitte = this.gebaeudeMitte(gebaeude);
+      const p = this.zuBild(mitte.x, mitte.y);
+      if (!gebaeudeGetroffen(gebaeude.art, px - p.x, py - p.y, e, mitte.groesse)) continue;
+      if (mitte.x + mitte.y > tiefe) {
+        tiefe = mitte.x + mitte.y;
+        bestes = gebaeude;
+      }
+    }
+    return bestes;
   }
 
   /** Das volle Leben einer Einheit, mit den Verbesserungen ihres Besitzers (bauen AC-21). */

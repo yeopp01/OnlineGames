@@ -2,7 +2,7 @@
 
 **Bereich:** Strategie
 **Kuerzel:** fahrplan
-**Stand:** 6/22 fertig · 16 offen
+**Stand:** 7/22 fertig · 15 offen
 
 ## Zweck
 
@@ -49,7 +49,7 @@ außen mitspielen soll.
 
 ### Stufe A — Dunkle Zeit
 
-- **AC-3** `offen` **Dunkle Zeit spielbar** — Vier Rohstoffe, Dorfzentrum, Haus, Mühle,
+- **AC-3** `fertig` **Dunkle Zeit spielbar** — Vier Rohstoffe, Dorfzentrum, Haus, Mühle,
   Holzfäller- und Bergbaulager, Farm, Kaserne; Dorfbewohner, Miliz und
   Späherreiter; Schafe, Beeren, Bäume, Gold, Stein. Im Browser gebaut, gesammelt,
   ausgebildet.

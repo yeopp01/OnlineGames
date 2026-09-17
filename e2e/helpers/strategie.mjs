@@ -45,13 +45,27 @@ export async function partieBeenden({ anna, bert, fehler }) {
   await bert?.context().close();
 }
 
-/** Einen eigenen Dorfbewohner anklicken, an der Koerpermitte. */
+/**
+ * Einen eigenen Dorfbewohner anklicken, an der Koerpermitte - bevorzugt einen,
+ * der im Bild frei steht: stand ein anderer dicht daneben, traf der Klick den
+ * (Runde 53, im Test der ganzen Dunklen Zeit).
+ */
 export async function dorfbewohnerAnklicken(page, { ohne = [] } = {}) {
   const ziel = await page.evaluate((ausser) => {
     const a = window.ansicht;
-    const e = [...a.nachher.values()].find((f) => f.b === a.ich && f.k === 'd' && !ausser.includes(f.i));
-    const p = a.zuBild(e.x, e.y);
-    return { i: e.i, x: p.x, y: p.y - a.figurenHoehe() * 0.6 };
+    const h = a.figurenHoehe();
+    const alle = [...a.nachher.values()].map((e) => ({ e, p: a.zuBild(e.x, e.y) }));
+    const tiere = [...a.tiere.values()].map((t) => a.zuBild(t.x, t.y));
+    const kandidaten = alle.filter(({ e, p }) => e.b === a.ich && e.k === 'd' && !ausser.includes(e.i)
+      && p.x > 20 && p.y > h + 60 && p.x < a.leinwand.clientWidth - 20 && p.y < a.leinwand.clientHeight - 160);
+    const abstand = ({ e, p }) => Math.min(
+      ...alle.filter((o) => o.e.i !== e.i).map((o) => Math.hypot(o.p.x - p.x, o.p.y - p.y)),
+      ...tiere.map((q) => Math.hypot(q.x - p.x, q.y - p.y)),
+      Infinity,
+    );
+    const frei = kandidaten.sort((x, y) => abstand(y) - abstand(x))[0]
+      || alle.find(({ e }) => e.b === a.ich && e.k === 'd' && !ausser.includes(e.i));
+    return { i: frei.e.i, x: frei.p.x, y: frei.p.y - h * 0.6 };
   }, ohne);
   await page.mouse.click(ziel.x, ziel.y);
   await expect.poll(() => page.evaluate(() => [...window.ansicht.ausgewaehlt])).toEqual([ziel.i]);

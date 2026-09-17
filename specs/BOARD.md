@@ -7,9 +7,9 @@ Eine Zeile je Abnahmekriterium. Gepflegt wird der Status in der Spec selbst,
 hier steht er zusammengefasst. Erzeugt mit `npm run specs:board`; als Seite
 mit Bildnachweisen, Filter und Suche mit `npm run qa:report`.
 
-**Gesamt:** 350/490 fertig · 5 in QA · 4 geplant · 124 offen · 7 zurueckgestellt
+**Gesamt:** 351/490 fertig · 5 in QA · 4 geplant · 123 offen · 7 zurueckgestellt
 
-**Nachweise:** 132 Kriterien mit Bild · 222 ohne Bild, begruendet in `qa/ohne-bild.json`
+**Nachweise:** 133 Kriterien mit Bild · 222 ohne Bild, begruendet in `qa/ohne-bild.json`
 
 ## Nach Spezifikation
 
@@ -25,7 +25,7 @@ mit Bildnachweisen, Filter und Suche mit `npm run qa:report`.
 | [Bedienung](10-strategie/bedienung.md)                         | -         | -     | -       | 11    | -               | 18     |
 | [Darstellung](10-strategie/darstellung.md)                     | -         | -     | -       | 1     | -               | 13     |
 | [Einheiten und Befehle](10-strategie/einheiten-und-befehle.md) | -         | -     | -       | 1     | 1               | 16     |
-| [Fahrplan zum Klon](10-strategie/fahrplan.md)                  | -         | -     | -       | 16    | -               | 6      |
+| [Fahrplan zum Klon](10-strategie/fahrplan.md)                  | -         | -     | -       | 15    | -               | 7      |
 | [Kampf](10-strategie/kampf.md)                                 | -         | -     | -       | 14    | -               | -      |
 | [Karte und Vorraete](10-strategie/karte-und-vorraete.md)       | -         | -     | -       | 2     | 3               | 12     |
 | [KI-Spieler](10-strategie/ki.md)                               | -         | -     | -       | -     | -               | 8      |
@@ -60,7 +60,7 @@ mit Bildnachweisen, Filter und Suche mit `npm run qa:report`.
 - **Abbruch ist sichtbar** — [Uebertragung](00-plattform/uebertragung.md) AC-9
 - **Automatischer Wiederaufbau** — [Uebertragung](00-plattform/uebertragung.md) AC-10
 
-## Offen (124)
+## Offen (123)
 
 - **Anmeldung ueber Google/GitHub** — [Konten und Anmeldung](00-plattform/konten.md) AC-6
 - **Bilanz je Konto** — [Konten und Anmeldung](00-plattform/konten.md) AC-14
@@ -121,7 +121,6 @@ mit Bildnachweisen, Filter und Suche mit `npm run qa:report`.
 - **Läuft auf einem Laptop-Bildschirm** — [Bedienung](10-strategie/bedienung.md) AC-23
 - **Nur eigenes Material** — [Darstellung](10-strategie/darstellung.md) AC-11
 - **Einheiten blockieren sich nicht** — [Einheiten und Befehle](10-strategie/einheiten-und-befehle.md) AC-10
-- **Dunkle Zeit spielbar** — [Fahrplan zum Klon](10-strategie/fahrplan.md) AC-3
 - **Feudalzeit spielbar** — [Fahrplan zum Klon](10-strategie/fahrplan.md) AC-8
 - **Der Konterkreis hält** — [Fahrplan zum Klon](10-strategie/fahrplan.md) AC-9
 - **Kein Schlachtenglück** — [Fahrplan zum Klon](10-strategie/fahrplan.md) AC-10
