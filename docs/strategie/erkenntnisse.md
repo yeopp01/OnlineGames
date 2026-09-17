@@ -343,6 +343,21 @@ alle sieben Gebäude der Dunklen Zeit stehen. Was sich wiederholt hat:
 Neueste oben. Eine Zeile je Runde: Nummer, Datum, Kriterien, Ergebnis,
 wichtigste Erkenntnis.
 
+- **46** · 2026-09-17 · A9 Teil 1: einheiten AC-21, bedienung AC-28,
+  darstellung AC-9, fahrplan AC-7 **fertig**. Untätig ist jetzt eine Regel
+  der Welt (`welt.untaetig`, weder laufen noch sammeln noch bauen) — der
+  Prüfstand nutzt dieselbe statt einer eigenen; der Zustand schickt je Spieler
+  `u` mit den Nummern, nur wenn es welche gibt. Unten links ein Knopf mit der
+  Zahl (gelb, wenn jemand steht, aus bei null); Knopf und Taste `.` wählen
+  reihum und holen den Dorfbewohner in die Bildmitte. Die Schautafel wird
+  gegen `daten.js` geprüft: jede Einheit und jedes Gebäude in zwei Farben
+  mit Namen — eine neue Art ohne Eintrag fällt auf. Gelernt: (1) wieder eine
+  wachsende Liste auf Gleichheit geprüft (Felder je Spieler, bedienung
+  AC-24) — auf „enthält" umgestellt, keine weitere gefunden; (2) zwei
+  Unterschriften behaupteten zu viel: „Alle drei im Wald", als sie noch
+  liefen, und „mit Namen", als die Namen der zweiten Gebäudereihe unter dem
+  Rand lagen; (3) ein Test, der zwei Kriterien nennt, braucht für beide ein
+  Bild — sonst beanstandet das Board.
 - **44** · 2026-09-17 · A8 fertig: ki AC-3 bis AC-6 und fahrplan AC-5
   **fertig**. Wirtschaftsplan der KI: fester Plan je n-tem Dorfbewohner
   (Nahrung, Holz, Gold), höchstens sechs an Schafen, sechs an Beeren, dann

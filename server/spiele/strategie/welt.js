@@ -23,6 +23,11 @@ const STARTVORRAT = {
 const ROHSTOFFE = ['holz', 'nahrung', 'gold', 'stein'];
 const ROHSTOFF_NAMEN = { holz: 'Holz', nahrung: 'Nahrung', gold: 'Gold', stein: 'Stein' };
 
+function untaetigeListe(welt, spielerId) {
+  const ids = welt.untaetigeVon(spielerId);
+  return ids.length ? { u: ids } : {};
+}
+
 class Welt {
   /**
    * @param {{id: string, name: string}[]} spielerListe
@@ -531,6 +536,19 @@ class Welt {
       }
     }
     return null;
+  }
+
+  // Untaetig (einheiten AC-21): ein Dorfbewohner, der weder laeuft noch
+  // sammelt, huetet, eine Farm bestellt oder baut. Dieselbe Regel nutzt der
+  // Pruefstand (ki AC-6) - eine Stelle, nicht zwei.
+  untaetig(einheit) {
+    return einheit.art === 'dorfbewohner' && !einheit.weg.length && !einheit.sammelt && !einheit.baut;
+  }
+
+  untaetigeVon(spielerId) {
+    const ids = [];
+    for (const e of this.einheiten.values()) if (e.besitzer === spielerId && this.untaetig(e)) ids.push(e.id);
+    return ids;
   }
 
   spielerVon(id) {
@@ -1073,6 +1091,8 @@ class Welt {
         bev: bevoelkerung.get(s.id) || 0,
         raum: this.wohnraum(s),
         ...(s.verbesserungen.length ? { v: s.verbesserungen } : {}),
+        // Untaetige Dorfbewohner, nur wenn es welche gibt (einheiten AC-21).
+        ...untaetigeListe(this, s.id),
       })),
       einheiten,
       felder,

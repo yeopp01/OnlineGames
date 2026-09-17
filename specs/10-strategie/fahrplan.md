@@ -2,7 +2,7 @@
 
 **Bereich:** Strategie
 **Kuerzel:** fahrplan
-**Stand:** 4/22 fertig · 18 offen
+**Stand:** 5/22 fertig · 17 offen
 
 ## Zweck
 
@@ -62,7 +62,7 @@ außen mitspielen soll.
   zwanzig Startwerte, wie im Original.
 - **AC-6** `offen` **Der Takt bleibt billig** — Acht Spieler mit je 100 Einheiten: ein Takt
   rechnet im Mittel unter 10 ms.
-- **AC-7** `offen` **Gebäude an Gestalt erkennbar** — Jedes Gebäude und jede Einheit der Stufe
+- **AC-7** `fertig` **Gebäude an Gestalt erkennbar** — Jedes Gebäude und jede Einheit der Stufe
   ist ohne Beschriftung von den anderen zu unterscheiden. Bildnachweis: eine
   Schautafel mit allen nebeneinander, in zwei Volksfarben.
 

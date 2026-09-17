@@ -1,0 +1,10 @@
+{
+  "spec": "10-strategie/bedienung.md",
+  "ac": "AC-28",
+  "titel": "Alle drei in den Wald geschickt und unterwegs: unten links zeigt der Knopf 0 und ist abgeschaltet",
+  "datei": "e2e/tests/strategie-untaetig.spec.mjs",
+  "pfad": [
+    "Untaetige Dorfbewohner",
+    "einheiten AC-21 / bedienung AC-28: wer arbeitet, zaehlt nicht mehr - bei null ist der Knopf aus"
+  ]
+}

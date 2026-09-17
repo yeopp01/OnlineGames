@@ -58,7 +58,7 @@ function pruefen(welt) {
 function untaetigkeitZaehlen(welt, untaetig) {
   for (const e of welt.einheiten.values()) {
     if (e.art !== 'dorfbewohner') continue;
-    if (e.weg.length || e.sammelt || e.baut) {
+    if (!welt.untaetig(e)) {
       untaetig.seit.delete(e.id);
       continue;
     }

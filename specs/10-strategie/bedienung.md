@@ -2,7 +2,7 @@
 
 **Bereich:** Strategie
 **Kuerzel:** bedienung
-**Stand:** 13/29 fertig · 16 offen
+**Stand:** 14/29 fertig · 15 offen
 
 ## Zweck
 
@@ -91,7 +91,7 @@ Befehl steht.
   Dorfzentrum bildet `Q` einen Dorfbewohner aus; mit ausgewähltem
   Dorfbewohner öffnet `B` das Baumenü und je ein Buchstabe wählt das Gebäude.
   Die Belegung steht in der Tastenübersicht (AC-22).
-- **AC-28** `offen` **Untätige Dorfbewohner finden** — Ein Knopf unten zeigt die Zahl der
+- **AC-28** `fertig` **Untätige Dorfbewohner finden** — Ein Knopf unten zeigt die Zahl der
   untätigen Dorfbewohner; er und die Taste `.` wählen den nächsten und holen
   ihn ins Bild.
 - **AC-29** `fertig` **Ausgewähltes zeigt Werte** — Eine ausgewählte Einheit oder ein Gebäude

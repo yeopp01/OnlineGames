@@ -257,6 +257,36 @@ canvas {
 
 /* ---- Absagen im Spielbild (bedienung AC-18) ------------------------------ */
 
+/* Untaetige Dorfbewohner (bedienung AC-28): unten links, ueber dem Spielfeld. */
+.untaetig {
+  position: fixed;
+  left: 1rem;
+  bottom: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.45rem 0.8rem;
+  border: 1px solid #ffffff24;
+  border-radius: 0.7rem;
+  background: #161b22ee;
+  color: #e6e9ee;
+  font: 600 1rem system-ui, sans-serif;
+  box-shadow: 0 4px 14px #0008;
+  cursor: pointer;
+}
+.untaetig svg {
+  width: 1.4rem;
+  height: 1.4rem;
+}
+.untaetig.hat {
+  border-color: #f0b35a;
+  color: #ffd79a;
+}
+.untaetig:disabled {
+  opacity: 0.55;
+  cursor: default;
+}
+
 .spielmeldung {
   position: fixed;
   left: 50%;

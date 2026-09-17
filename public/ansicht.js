@@ -53,6 +53,9 @@ export class Ansicht {
     this.arten = {};
     this.gewaehltesGebaeude = null; // id; entweder Einheiten oder ein Gebaeude
     this.beiAuswahl = () => {};
+    // Die eigenen untaetigen Dorfbewohner, wie der Server sie meldet (einheiten AC-21).
+    this.untaetige = [];
+    this.letzterUntaetiger = null;
     // Platzieren eines Gebaeudes (bauen AC-4): welche Art, und wo der Zeiger ist.
     this.platzieren = null;
     this.zeiger = null;
@@ -140,6 +143,7 @@ export class Ansicht {
       const { holz, nahrung, gold, stein, bev, raum } = meine;
       this.vorraete = { holz, nahrung, gold, stein, bev, raum };
       this.verbesserungen = meine.v || [];
+      this.untaetige = meine.u || [];
     }
 
     // Eingesammelte Einheiten, die es nicht mehr gibt, fallen aus der Auswahl.
@@ -288,6 +292,11 @@ export class Ansicht {
           this.gewaehltesGebaeude = null;
           this.beiAuswahl();
         }
+        return;
+      }
+      // Der naechste untaetige Dorfbewohner (bedienung AC-28).
+      if (e.key === '.' && !e.ctrlKey && !e.metaKey && !e.altKey) {
+        this.naechsterUntaetiger();
         return;
       }
       this.tasten.add(e.key.toLowerCase());
@@ -638,6 +647,27 @@ export class Ansicht {
     if (this.platzieren) this.platzVorschau(e);
     this.sammelpunktZeichnen(e);
     if (this.zug) this.rahmenZeichnen();
+  }
+
+  /**
+   * Waehlt den naechsten untaetigen Dorfbewohner und holt ihn ins Bild -
+   * reihum, damit zweimal gedrueckt auch zwei verschiedene zeigt
+   * (bedienung AC-28).
+   */
+  naechsterUntaetiger() {
+    const liste = this.untaetige.filter((id) => this.nachher.has(id));
+    if (!liste.length) return null;
+    const bisher = liste.indexOf(this.letzterUntaetiger);
+    const id = liste[(bisher + 1) % liste.length];
+    this.letzterUntaetiger = id;
+    const einheit = this.nachher.get(id);
+    if (this.platzieren) this.platzierenBeenden();
+    this.gewaehltesGebaeude = null;
+    this.ausgewaehlt.clear();
+    this.ausgewaehlt.add(id);
+    this.blickAuf(einheit.x, einheit.y);
+    this.beiAuswahl();
+    return id;
   }
 
   /** Das volle Leben einer Einheit, mit den Verbesserungen ihres Besitzers (bauen AC-21). */

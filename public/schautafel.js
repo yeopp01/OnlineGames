@@ -171,7 +171,7 @@ FARBEN.forEach((farbe, reihe) => {
       stift.textAlign = 'center';
       stift.fillText(eintrag.titel, x + gebaeudeSpalte / 2, oben + 164);
     }
-    gebaeudeZellen.push({ art: eintrag.art, bau: eintrag.bau ?? 1, farbe, x: x + 6, y: oben, breite: gebaeudeSpalte - 12, hoehe: 170 });
+    gebaeudeZellen.push({ art: eintrag.art, titel: eintrag.titel, bau: eintrag.bau ?? 1, farbe, x: x + 6, y: oben, breite: gebaeudeSpalte - 12, hoehe: 170 });
   });
 });
 

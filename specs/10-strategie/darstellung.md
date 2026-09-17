@@ -2,7 +2,7 @@
 
 **Bereich:** Strategie
 **Kuerzel:** darstellung
-**Stand:** 11/14 fertig · 3 offen
+**Stand:** 12/14 fertig · 2 offen
 
 ## Zweck
 
@@ -54,7 +54,7 @@ der Spieler. Keine Bilddateien aus fremder Quelle.
 
 ### Prüfbar machen
 
-- **AC-9** `offen` **Eine Schautafel** — Eine Seite zeigt jedes Gebäude und jede Einheit der
+- **AC-9** `fertig` **Eine Schautafel** — Eine Seite zeigt jedes Gebäude und jede Einheit der
   aktuellen Stufe nebeneinander, in zwei Spielerfarben, mit Namen darunter.
   Sie ist der Bildnachweis zu [Fahrplan](fahrplan.md) AC-7 und wird mit jeder
   Stufe länger.

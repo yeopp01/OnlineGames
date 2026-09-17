@@ -465,7 +465,8 @@ test('bedienung AC-24: der Zustand nennt je Spieler vier Rohstoffe und die Bevoe
   const { spieler } = welt.zustand();
   assert.equal(spieler.length, 2);
   for (const s of spieler) {
-    assert.deepEqual(Object.keys(s).sort(), ['bev', 'gold', 'holz', 'id', 'nahrung', 'raum', 'stein']);
+    // Enthaelt - die Liste waechst mit den Stufen (seit Runde 46: u, die Untaetigen).
+    for (const schluessel of ['bev', 'gold', 'holz', 'id', 'nahrung', 'raum', 'stein']) assert.ok(schluessel in s, schluessel);
     // Fuenf Dorfbewohner zu Beginn, Wohnraum aus dem Dorfzentrum.
     assert.equal(s.bev, [...welt.einheiten.values()].filter((e) => e.besitzer === s.id).length);
     assert.equal(s.raum, GEBAEUDE.dorfzentrum.wohnraum);

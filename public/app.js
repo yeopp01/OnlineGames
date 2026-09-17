@@ -109,6 +109,7 @@ function empfangen(nachricht) {
       ansicht.zustand(nachricht);
       leisteZiel(ansicht.vorraete);
       auswahlleiste.aktualisieren();
+      untaetigZeigen(ansicht.untaetige.length);
       break;
 
     case 'fehler':
@@ -144,6 +145,19 @@ function leisteFeld(name) {
   if (name === 'raum') return teile.vorraete.querySelector('[data-teil="raum"]');
   return teile.vorraete.querySelector(`[data-rohstoff="${name}"] b`);
 }
+
+// Der Knopf fuer untaetige Dorfbewohner (bedienung AC-28): die Zahl, und
+// gelb, sobald einer herumsteht.
+function untaetigZeigen(zahl) {
+  const knopf = document.getElementById('untaetig');
+  const text = String(zahl);
+  if (knopf.querySelector('b').textContent !== text) knopf.querySelector('b').textContent = text;
+  knopf.disabled = zahl === 0;
+  knopf.classList.toggle('hat', zahl > 0);
+  knopf.setAttribute('aria-label', `Untätige Dorfbewohner: ${zahl}`);
+}
+
+document.getElementById('untaetig').addEventListener('click', () => ansicht?.naechsterUntaetiger());
 
 function leisteZiel(werte) {
   let geaendert = false;

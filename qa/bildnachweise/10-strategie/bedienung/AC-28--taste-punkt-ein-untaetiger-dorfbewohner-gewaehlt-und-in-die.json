@@ -1,0 +1,10 @@
+{
+  "spec": "10-strategie/bedienung.md",
+  "ac": "AC-28",
+  "titel": "Taste Punkt: ein untaetiger Dorfbewohner gewaehlt und in die Bildmitte geholt, unten links der Knopf mit 3",
+  "datei": "e2e/tests/strategie-untaetig.spec.mjs",
+  "pfad": [
+    "Untaetige Dorfbewohner",
+    "bedienung AC-28: der Knopf zaehlt die Untaetigen, \".\" und der Knopf waehlen reihum und holen sie ins Bild"
+  ]
+}

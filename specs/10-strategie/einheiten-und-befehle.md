@@ -2,7 +2,7 @@
 
 **Bereich:** Strategie
 **Kuerzel:** einheiten
-**Stand:** 14/18 fertig · 3 offen · 1 zurueckgestellt
+**Stand:** 15/18 fertig · 2 offen · 1 zurueckgestellt
 
 ## Zweck
 
@@ -97,7 +97,7 @@ Befehl bewirkt.
   schicken, etwa ans Dorfzentrum; so werden die Wege beim Hüten kurz. Fremde
   Schafe in Sichtweite eigener Einheiten wechseln den Besitzer — wie in der
   Vorlage. _(Auf Frage des Benutzers in Runde 26 angelegt.)_
-- **AC-21** `offen` **Untätig ist erkennbar** — Die Welt weiß je Spieler, welche Dorfbewohner
+- **AC-21** `fertig` **Untätig ist erkennbar** — Die Welt weiß je Spieler, welche Dorfbewohner
   nichts tun. Die Oberfläche zeigt die Zahl und springt zum nächsten
   (→ [Bedienung](bedienung.md) AC-28).
 

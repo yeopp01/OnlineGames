@@ -3,11 +3,14 @@
 // Auf der Schautafel: je zwei Einheiten und je zwei Gebaeude unterscheiden sich
 // auf mindestens einem Drittel ihrer Flaeche. Im Spielbild: alle Gebaeude der
 // Dunklen Zeit bei Zoom 1 nebeneinander, fuer das Ansehen.
+import { createRequire } from 'node:module';
 import { nachweis } from '../../scripts/qa-nachweis.mjs';
 import { expect, gebaeudeAufstellen, test } from '../helpers/seite.mjs';
 import { partieBeenden, partieZuZweit } from '../helpers/strategie.mjs';
 
 const DARSTELLUNG = '10-strategie/darstellung.md';
+const FAHRPLAN = '10-strategie/fahrplan.md';
+const { EINHEITEN, GEBAEUDE } = createRequire(import.meta.url)('../../server/spiele/strategie/daten.js');
 
 test('darstellung AC-14: je zwei Einheiten und je zwei Gebaeude unterscheiden sich auf einem Drittel der Flaeche', async ({ page }) => {
   await page.goto('/schautafel.html');
@@ -23,6 +26,44 @@ test('darstellung AC-14: je zwei Einheiten und je zwei Gebaeude unterscheiden si
   expect(figuren.length, 'alle Paare der Einheiten').toBeGreaterThanOrEqual(6);
   expect(gebaeude.length, 'alle Paare der Gebaeude').toBeGreaterThanOrEqual(21);
   for (const { paar, anteil } of [...figuren, ...gebaeude]) expect(anteil, paar).toBeGreaterThanOrEqual(1 / 3);
+});
+
+test('darstellung AC-9 / fahrplan AC-7: die Schautafel zeigt jede Einheit und jedes Gebaeude der Stufe in zwei Farben mit Namen', async ({ page }, info) => {
+  // Hoch genug fuer die Namen unter der zweiten Gebaeudereihe.
+  await page.setViewportSize({ width: 1300, height: 1400 });
+  await page.goto('/schautafel.html');
+  await page.waitForFunction(() => window.schautafel?.unterschiede);
+  const tafel = await page.evaluate(() => {
+    const t = window.schautafel;
+    return {
+      figuren: t.zellen.map((z) => ({ art: z.art, farbe: z.farbe, titel: z.titel })),
+      gebaeude: t.gebaeudeZellen.map((z) => ({ art: z.art, farbe: z.farbe, titel: z.titel, bau: z.bau })),
+      paare: [...t.unterschiede('figur'), ...t.unterschiede('gebaeude')],
+    };
+  });
+  // Vollstaendig gegen die Werte des Servers: was es in der Stufe gibt, steht da -
+  // eine neue Einheit ohne Eintrag auf der Tafel faellt hier auf.
+  const farben = (liste, art) => new Set(liste.filter((z) => z.art === art).map((z) => z.farbe));
+  for (const art of Object.keys(EINHEITEN)) {
+    expect(farben(tafel.figuren, art).size, `${art} in zwei Farben`).toBe(2);
+    expect(tafel.figuren.find((z) => z.art === art).titel, `${art} mit Namen`).toBeTruthy();
+  }
+  for (const art of Object.keys(GEBAEUDE)) {
+    const fertige = tafel.gebaeude.filter((z) => z.bau === 1);
+    expect(farben(fertige, art).size, `${art} in zwei Farben`).toBe(2);
+    expect(fertige.find((z) => z.art === art).titel, `${art} mit Namen`).toBeTruthy();
+  }
+  // Ohne Beschriftung unterscheidbar (fahrplan AC-7): dieselbe Messung wie darstellung AC-14.
+  for (const { paar, anteil } of tafel.paare) expect(anteil, paar).toBeGreaterThanOrEqual(1 / 3);
+  await expect(page.locator('#tafel')).toBeInViewport();
+  for (const [spec, ac] of [[DARSTELLUNG, 'AC-9'], [FAHRPLAN, 'AC-7']]) {
+    await nachweis(page, {
+      spec,
+      ac,
+      titel: 'Die Schautafel: Dorfbewohner, Miliz, Spaeherreiter, Schaf, Gelaende und alle sieben Gebaeude in Blau und Rot, mit Namen',
+      test: info,
+    });
+  }
 });
 
 test.describe('Alle Gebaeude im Spielbild', () => {

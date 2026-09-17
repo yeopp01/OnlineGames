@@ -139,7 +139,7 @@ Umfang hinzufügt, dort nachsehen.
 
 ## Stand
 
-**339 von 490 Kriterien fertig.** 318 Tests ohne Browser, 113 im Browser. Die
+**343 von 490 Kriterien fertig.** 319 Tests ohne Browser, 116 im Browser. Die
 Übersicht ist der Bericht: `npm run qa:report`.
 
 Gebaut ist der Unterbau: Räume, Übertragung, Karte, Wegfindung, Sammeln,
@@ -192,8 +192,10 @@ schwarzen Umrisse, erdige Farben, Proportionen, Boden als Textur mit Wasser,
 Schlagschatten; AC-14: alles unterscheidbar) und A7 ganz: Schafe, Farm,
 Kaserne mit Miliz, Webstuhl, Sammelpunkt, Lebensbalken im Bild. A8 ist fertig:
 der Prüfstand (`npm run pruefstand:strategie`) spielt KI gegen KI, die
-Wirtschafts-KI hat nach zehn Minuten 22 Dorfbewohner und 500 Nahrung. Als
-Nächstes A9 (Übersicht und Tempo), dann A10:
+Wirtschafts-KI hat nach zehn Minuten 22 Dorfbewohner und 500 Nahrung. Aus A9
+stehen untätige Dorfbewohner (Knopf und Taste `.`) und die Schautafel als
+Nachweis; als Nächstes Übersichtskarte, Tasten, Auswahlliste, viele Einheiten,
+dann A10:
 
 1. **Stufe A** Dunkle Zeit mit Wirtschafts-KI und Prüfstand · **B** Feudalzeit
    · **C** Partieende und KI-Gegner · **D** Ritterzeit · **E** fünf Völker ·
