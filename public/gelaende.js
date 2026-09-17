@@ -47,23 +47,7 @@ function ton(farbe, anteil) {
   return rgb(r, g, b);
 }
 
-// Vier Toenungen je Bodenart reichen fuers Auge.
-export const TOENUNGEN = 4;
-
-// `salz` kommt aus dem Startwert der Partie: jede Karte hat ihr eigenes
-// Muster, dieselbe Karte immer dasselbe (darstellung AC-2).
-export function bodenTon(index, salz = 0) {
-  return Math.min(TOENUNGEN - 1, Math.floor(streuung(index, salz) * TOENUNGEN));
-}
-
-/** Boden eines Feldes: Gras leicht getoent, Wasser blau, unter Wald dunkler. */
-export function bodenFarbe(art, index, salz = 0) {
-  const s = (bodenTon(index, salz) + 0.5) / TOENUNGEN;
-  if (art === WASSER) return rgb(34 + s * 6, 70 + s * 8, 104 + s * 10);
-  if (art === WALD) return rgb(40 + s * 6, 64 + s * 8, 42 + s * 5);
-  // Nur leicht getoent - staerker wirkt es wie ein Schachbrett.
-  return rgb(60 + s * 4, 91 + s * 5, 56 + s * 3);
-}
+// Die Farbe des Bodens kommt seit Runde 36 aus public/boden.js (darstellung AC-13).
 
 export function raute(stift, x, y, hb, hh) {
   stift.beginPath();
@@ -111,7 +95,8 @@ export function grasZeichnen(stift, gras, e) {
   stift.save();
   stift.lineCap = 'round';
   stift.lineWidth = Math.max(0.8, e * 0.035);
-  for (const [liste, farbe] of [[gras.dunkel, 'rgba(38, 66, 36, 0.7)'], [gras.hell, 'rgba(150, 190, 110, 0.75)']]) {
+  // Gedaempft, sonst wirken die Halme wie aufgeklebt (Runde 36).
+  for (const [liste, farbe] of [[gras.dunkel, 'rgba(38, 48, 20, 0.5)'], [gras.hell, 'rgba(140, 146, 80, 0.5)']]) {
     if (!liste.length) continue;
     stift.beginPath();
     for (let k = 0; k < liste.length; k += 6) {
@@ -219,6 +204,25 @@ function schatten(stift, x, y, rx) {
   stift.restore();
 }
 
+// Der Schlagschatten eines Baums faellt nach rechts unten (darstellung AC-13):
+// eine gestreckte, weiche Ellipse, so lang wie der Baum hoch ist.
+function wurfschatten(stift, x, y, breite, hoehe) {
+  stift.save();
+  stift.translate(x + hoehe * 0.42, y + hoehe * 0.1);
+  stift.rotate(0.22);
+  stift.scale(1, 0.34);
+  const r = hoehe * 0.55 + breite * 0.35;
+  const v = stift.createRadialGradient(0, 0, 0, 0, 0, r);
+  v.addColorStop(0, 'rgba(18, 16, 6, 0.36)');
+  v.addColorStop(0.65, 'rgba(18, 16, 6, 0.22)');
+  v.addColorStop(1, 'rgba(18, 16, 6, 0)');
+  stift.fillStyle = v;
+  stift.beginPath();
+  stift.arc(0, 0, r, 0, Math.PI * 2);
+  stift.fill();
+  stift.restore();
+}
+
 function stammZeichnen(stift, x, y, e, hoehe, breite) {
   const b = breite;
   const v = stift.createLinearGradient(x - b, 0, x + b, 0);
@@ -251,7 +255,8 @@ function laubbaum(stift, x, y, e, variante) {
   const s = streuung(variante, 1);
   const hoehe = e * (1.5 + s * 0.5);
   const breite = e * (0.72 + streuung(variante, 2) * 0.2);
-  schatten(stift, x + e * 0.1, y, breite * 1.05);
+  wurfschatten(stift, x, y, breite, hoehe);
+  schatten(stift, x + e * 0.05, y, breite * 0.7);
   // Kurzer Stamm, die Krone traegt das Bild (Runde 29: lange Staemme mit
   // kleiner Krone sahen aus wie Luftballons).
   stammZeichnen(stift, x, y, e, hoehe * 0.38, e * 0.085);
@@ -284,7 +289,8 @@ function laubbaum(stift, x, y, e, variante) {
 function tanne(stift, x, y, e, variante) {
   const hoehe = e * (1.7 + streuung(variante, 1) * 0.5);
   const breite = e * (0.55 + streuung(variante, 2) * 0.15);
-  schatten(stift, x + e * 0.1, y, breite * 1.05);
+  wurfschatten(stift, x, y, breite, hoehe);
+  schatten(stift, x + e * 0.05, y, breite * 0.7);
   stammZeichnen(stift, x, y, e, hoehe * 0.28, e * 0.06);
   const stufen = 4;
   for (let i = 0; i < stufen; i++) {
@@ -321,7 +327,8 @@ function baum(stift, x, y, e, variante) {
 // Ein Strauch aus Blattballen, darauf rote Beeren mit Glanz.
 function beerenstrauch(stift, x, y, e, variante) {
   const b = e * 0.85;
-  schatten(stift, x + e * 0.05, y, b * 1.05);
+  wurfschatten(stift, x, y, b, b * 1.1);
+  schatten(stift, x + e * 0.05, y, b * 0.8);
   const ballenListe = [
     [-0.42, -0.4, 0.5, '#24502b'], [0.44, -0.38, 0.48, '#24502b'], [0, -0.3, 0.46, '#2c5a31'],
     [-0.2, -0.72, 0.5, '#336b38'], [0.26, -0.7, 0.46, '#3b7440'], [-0.05, -0.95, 0.34, '#4a8a4c'],
@@ -350,7 +357,8 @@ function beerenstrauch(stift, x, y, e, variante) {
 function brocken(stift, x, y, e, variante, hell, mittel, dunkel, glanz) {
   // Ein Haufen, der sein Feld fuellt - Gold und Stein liegen im Genre gross da.
   const b = e * 0.95;
-  schatten(stift, x + e * 0.05, y + e * 0.05, b * 1.15);
+  wurfschatten(stift, x, y, b, b * 0.9);
+  schatten(stift, x + e * 0.05, y + e * 0.05, b * 0.95);
   const teile = [[-0.5, -0.05, 0.5], [0.48, 0, 0.46], [-0.12, -0.3, 0.6], [0.28, -0.55, 0.42]];
   teile.forEach(([dx, dy, g], i) => {
     const k = b * g * (0.85 + streuung(variante, 30 + i) * 0.3);
@@ -460,7 +468,8 @@ export function dingBildZeichnen(stift, art, x, y, e, index, fuellung = 1) {
   const viertel = Math.max(1, Math.round(fuellung * 4)) / 4;
   const variante = Math.floor(streuung(index, 77) * VARIANTEN);
   const schluessel = `${art}|${variante}|${e.toFixed(2)}|${viertel}|${dichte}`;
-  const breite = 3.2 * e;
+  // Breit genug fuer den Schlagschatten nach rechts.
+  const breite = 5.2 * e;
   const oben = 3 * e;
   const unten = 0.8 * e;
   let bild = ZWISCHENSPEICHER.get(schluessel);

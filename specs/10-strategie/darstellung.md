@@ -2,7 +2,7 @@
 
 **Bereich:** Strategie
 **Kuerzel:** darstellung
-**Stand:** 8/14 fertig · 6 offen
+**Stand:** 8/14 fertig · 1 in Arbeit · 5 offen
 
 ## Zweck
 
@@ -70,7 +70,7 @@ der Spieler. Keine Bilddateien aus fremder Quelle.
   Steinfugen) und Konturen, die nicht überall gleich dick sind. Das Gras hat
   Büschel statt nur Tönung. Geprüft bei Zoom 1 im Spielbild und auf der
   Schautafel, mit einem Vorher-Nachher-Bild.
-- **AC-13** `offen` **Naturalistisch statt Comic** — Wunsch des Benutzers (Runde 35),
+- **AC-13** `in-arbeit` **Naturalistisch statt Comic** — Wunsch des Benutzers (Runde 35),
   mit einem Bild des Originals als Maßstab für die Anmutung, nicht als Vorlage
   zum Abzeichnen. Messbar: (1) keine schwarzen Umrisse — in keiner Figur und
   keinem Gebäude mehr als 3 % fast schwarze Bildpunkte; (2) gedämpfte,

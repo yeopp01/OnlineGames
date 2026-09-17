@@ -333,7 +333,7 @@ test.describe('Das Spielbild', () => {
     await nachweis(bert, {
       spec: DARSTELLUNG,
       ac: 'AC-1',
-      titel: 'Berts Siedlung im isometrischen Blick: Rautenfelder, Wald, Beeren, Gold und Stein als Dinge',
+      titel: 'Berts Siedlung im isometrischen Blick: Boden ohne Raster, Wald, Beeren, Gold und Stein als Dinge',
       test: info,
     });
   });

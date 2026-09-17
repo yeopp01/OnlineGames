@@ -1,7 +1,7 @@
 {
   "spec": "10-strategie/darstellung.md",
   "ac": "AC-1",
-  "titel": "Berts Siedlung im isometrischen Blick: Rautenfelder, Wald, Beeren, Gold und Stein als Dinge",
+  "titel": "Berts Siedlung im isometrischen Blick: Boden ohne Raster, Wald, Beeren, Gold und Stein als Dinge",
   "datei": "e2e/tests/strategie-spielbild.spec.mjs",
   "pfad": [
     "Das Spielbild",

@@ -209,9 +209,14 @@ test.describe('Ausbilden', () => {
     await expect(anna.locator('[data-abbrechen]')).toHaveCount(15);
     await expect(meldung).toBeHidden();
 
+    // Text und Lage in einem Blick: die Meldung geht nach drei Sekunden, und unter
+    // Last waren zwei getrennte Pruefungen schon zu langsam (Runde 36).
     await knopf.click();
-    await expect(meldung).toHaveText('Die Warteschlange ist voll.');
-    await expect(meldung).toBeInViewport();
+    await anna.waitForFunction(() => {
+      const m = document.getElementById('spielmeldung');
+      const r = m.getBoundingClientRect();
+      return !m.hidden && m.textContent === 'Die Warteschlange ist voll.' && r.top >= 0 && r.bottom <= window.innerHeight;
+    }, null, { polling: 50 });
     await nachweis(anna, {
       spec: BEDIENUNG,
       ac: 'AC-18',

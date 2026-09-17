@@ -274,6 +274,24 @@ alle sieben Gebäude der Dunklen Zeit stehen. Was sich wiederholt hat:
 Neueste oben. Eine Zeile je Runde: Nummer, Datum, Kriterien, Ergebnis,
 wichtigste Erkenntnis.
 
+- **36** · 2026-09-17 · darstellung AC-13 in Arbeit, Teil 1 (A6c): Boden und
+  Schatten. Der Boden kommt aus `public/boden.js`: Farben aus glattem Rauschen
+  in einem Punktgitter alle 6 Bildpunkte, weich vergrößert — erdiges Oliv,
+  trockene Stellen, Erdflecken über Feldgrenzen, Sprenkel, kein Rautenraster.
+  Vorgezeichnet in Kacheln (528 px, drei Auflösungen), ein geändertes Feld
+  verwirft die Kacheln darum. Erster Versuch mit einer Farbe je Feld zeigte
+  weiter Treppen — erst das Punktgitter löste das. Gebäude werfen einen
+  weichen Schlagschatten nach rechts unten, Bäume, Sträucher und Brocken eine
+  gestreckte Ellipse. Gemessen unter Last (CPU 70 %): Zoom 1 21–22 ms statt
+  25, Zoom 2 36–40 statt 28 — Zoom 2 teurer, offen. Gelernt: (1) der Test zu
+  darstellung AC-2 prüfte noch die alte Farbfunktion, die das Bild nicht mehr
+  nutzt — umgestellt; (2) eine Bildunterschrift sprach von „Rautenfeldern";
+  (3) unter voller Last (Lauf 11 min) zeigten zwei Tests Schwächen: eine
+  3-Sekunden-Meldung und Lieferungen vor dem fertigen Lager — beide robuster.
+  Aufgefallen: der See wirkt mit seinen Bögen noch comichaft. Nächster Teil:
+  Gebäude ohne schwarze Umrisse, gedämpfte Farben. Nachtrag: karte AC-15 fiel
+  unter fremder Last (CPU 97 %) zweimal durch — misst jetzt den schnellsten von
+  fünf Durchgängen statt eines Mittels, die Grenzen bleiben.
 - **35** · 2026-09-17 · Rückschau: wachsende Listen in Tests, `platzTaugt` für
   Vorschau und Test-Helfer, Stand in CLAUDE.md. Nächstes: darstellung AC-8,
   dann **A8** Wirtschafts-KI und Prüfstand.

@@ -339,6 +339,10 @@ test.describe('Bauen', () => {
       a.zustand = (n) => {
         const alt = new Map([...a.nachher].map(([id, e]) => [id, e.l]));
         vorher(n);
+        // Gezaehlt erst, wenn das Lager steht: vorher geben Sammler rechtmaessig am
+        // Dorfzentrum ab (unter Last in Runde 36 gesehen).
+        const lager = [...a.gebaeude.values()].find((g) => g.art === 'holzfaellerlager');
+        if (!lager || lager.u !== undefined) return;
         for (const e of a.nachher.values()) {
           if (e.b === a.ich && e.l === 0 && (alt.get(e.i) || 0) >= 10) window.lieferungen.push({ x: e.x, y: e.y });
         }

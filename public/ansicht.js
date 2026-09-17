@@ -7,8 +7,9 @@
 // Raute. Die Kamera liegt in Bildpunkten der Raute bei Vergroesserung 1.
 import { figurZeichnen } from './figuren.js';
 import { gebaeudeBildZeichnen, gebaeudeGetroffen } from './gebaeude.js';
+import { KACHEL, kachelMassstab, kachelZeichnen } from './boden.js';
 import {
-  DINGE, GRAS, WALD, WASSER, bodenFarbe, dingBildZeichnen, gewaesserZeichnen, grasBeginnen, grasSammeln, grasZeichnen, raute, wellenZeichnen,
+  DINGE, GRAS, WALD, WASSER, dingBildZeichnen, gewaesserZeichnen, grasBeginnen, grasSammeln, grasZeichnen, raute, wellenZeichnen,
 } from './gelaende.js';
 
 const HALB_B = 22; // halbe Rautenbreite in Bildpunkten bei Vergroesserung 1
@@ -103,6 +104,7 @@ export class Ansicht {
 
   zustand(nachricht) {
     for (const aenderung of nachricht.felder || []) {
+      if (this.karte.felder[aenderung.i] !== aenderung.a) this.kachelnVerwerfen(aenderung.i);
       this.karte.felder[aenderung.i] = aenderung.a;
       if (aenderung.v !== undefined) this.fuellung.set(aenderung.i, aenderung.v);
       else this.fuellung.delete(aenderung.i);
@@ -150,6 +152,49 @@ export class Ansicht {
     const n = this.werte.gebaeude[gebaeude.art]?.groesse || 1;
     const versatz = -Math.floor(n / 2) + (n - 1) / 2;
     return { x: gebaeude.x + versatz, y: gebaeude.y + versatz, groesse: n };
+  }
+
+  // ---- Boden in Kacheln (darstellung AC-13) --------------------------------
+
+  kachelnVerwerfen(index) {
+    if (!this.kacheln) return;
+    const g = this.karte.groesse;
+    const x = index % g;
+    const y = (index / g) | 0;
+    const cx = Math.floor(((x - y) * HALB_B) / KACHEL);
+    const cy = Math.floor(((x + y) * HALB_H) / KACHEL);
+    for (const massstab of [0.5, 1, 2]) {
+      for (let dy = -1; dy <= 1; dy++) {
+        for (let dx = -1; dx <= 1; dx++) this.kacheln.delete(`${massstab}|${cx + dx}|${cy + dy}`);
+      }
+    }
+  }
+
+  bodenZeichnen(stift, zoom) {
+    if (!this.kacheln) this.kacheln = new Map();
+    const massstab = kachelMassstab(zoom);
+    const breite = this.leinwand.clientWidth / zoom;
+    const hoehe = this.leinwand.clientHeight / zoom;
+    const cx0 = Math.floor(this.kamera.x / KACHEL);
+    const cx1 = Math.floor((this.kamera.x + breite) / KACHEL);
+    const cy0 = Math.max(0, Math.floor(this.kamera.y / KACHEL));
+    const cy1 = Math.floor((this.kamera.y + hoehe) / KACHEL);
+    for (let cy = cy0; cy <= cy1; cy++) {
+      for (let cx = cx0; cx <= cx1; cx++) {
+        const schluessel = `${massstab}|${cx}|${cy}`;
+        let kachel = this.kacheln.get(schluessel);
+        if (!kachel) {
+          kachel = kachelZeichnen(this.karte, cx * KACHEL, cy * KACHEL, massstab, HALB_B, HALB_H, this.salz);
+          this.kacheln.set(schluessel, kachel);
+          // Hoechstens rund 150 Kacheln im Speicher; die aeltesten gehen zuerst.
+          if (this.kacheln.size > 150) this.kacheln.delete(this.kacheln.keys().next().value);
+        }
+        const x = (cx * KACHEL - this.kamera.x) * zoom;
+        const y = (cy * KACHEL - this.kamera.y) * zoom;
+        // Eine Spur groesser, sonst schimmern die Kachelgrenzen.
+        stift.drawImage(kachel, x, y, KACHEL * zoom + 1, KACHEL * zoom + 1);
+      }
+    }
   }
 
   // ---- Raute ------------------------------------------------------------
@@ -478,24 +523,9 @@ export class Ansicht {
 
     const g = this.karte.groesse;
     const { vonX, bisX, vonY, bisY } = this.sichtbareFelder();
-    const hb = HALB_B * zoom + 0.6; // eine Spur groesser, sonst schimmern Fugen
-    const hh = HALB_H * zoom + 0.3;
 
-    // 1. Boden: jede Raute einzeln gefuellt. In Runde 13 im Browserlauf
-    //    gemessen, weit herausgezoomt je Bild: einzeln 20 ms, vorgezeichnete
-    //    Kacheln kopiert 30 ms, ein gemeinsamer Pfad 160 ms. Einzeln gewinnt.
-    for (let y = vonY; y <= bisY; y++) {
-      for (let x = vonX; x <= bisX; x++) {
-        const index = y * g + x;
-        const feld = this.karte.felder[index];
-        // Unter dem Wasser liegt Gras; das Wasser selbst kommt gleich als weiche Flaeche.
-        const boden = feld === WALD ? WALD : GRAS;
-        const p = this.zuBild(x, y);
-        raute(stift, p.x, p.y, hb, hh);
-        stift.fillStyle = bodenFarbe(boden, index, this.salz);
-        stift.fill();
-      }
-    }
+    // 1. Boden: eine durchgehende Textur in vorgezeichneten Kacheln (AC-13).
+    this.bodenZeichnen(stift, zoom);
     // Grasbueschel und Blumen (darstellung AC-12) - vor dem Wasser, damit das
     // Ufer sie ueberdeckt, und nur auf freiem Gras.
     const felder = this.karte.felder;

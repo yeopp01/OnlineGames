@@ -4,8 +4,9 @@
 // Browserlauf liest `window.schautafel`.
 import { FIGUREN, figurZeichnen } from './figuren.js';
 import { GEBAEUDE, gebaeudeZeichnen } from './gebaeude.js';
+import { bodenAn } from './boden.js';
 import {
-  BEERE, GOLD, GRAS as BODEN_GRAS, STEIN, WALD, WASSER, bodenFarbe, bodenTon, dingZeichnen, gewaesserZeichnen, raute, wellenZeichnen,
+  BEERE, GOLD, GRAS as BODEN_GRAS, STEIN, WALD, WASSER, dingZeichnen, gewaesserZeichnen, raute, wellenZeichnen,
 } from './gelaende.js';
 
 const FARBEN = ['#4a90d9', '#d94a4a'];
@@ -79,7 +80,8 @@ function flecken(mitteX, mitteY, e, art, fuellung) {
     const y = mitteY + (gx + gy - 2) * e * 0.5;
     const hier = art === WALD ? WALD : BODEN_GRAS;
     raute(stift, x, y, e, e * 0.5);
-    stift.fillStyle = bodenFarbe(hier, gx * 7 + gy * 13);
+    const farbe = bodenAn(gx * 2.3, gy * 2.3, hier, 4711);
+    stift.fillStyle = `rgb(${farbe[0] | 0}, ${farbe[1] | 0}, ${farbe[2] | 0})`;
     stift.fill();
   }
   if (art === WASSER) {
@@ -252,9 +254,14 @@ function maske(art, farbe, lage = {}) {
 function bodenProbe() {
   const toene = new Set();
   let verschieden = 0;
+  // Der Boden, wie ihn das Spielbild zeichnet (public/boden.js, darstellung AC-13).
   for (let i = 0; i < 1000; i++) {
-    toene.add(bodenFarbe(BODEN_GRAS, i, 4711));
-    if (bodenTon(i, 4711) !== bodenTon(i, 1234)) verschieden += 1;
+    const x = (i % 40) * 1.7;
+    const y = Math.floor(i / 40) * 1.7;
+    const a = bodenAn(x, y, BODEN_GRAS, 4711);
+    const b = bodenAn(x, y, BODEN_GRAS, 1234);
+    toene.add(a.map((k) => Math.round(k) >> 3).join(','));
+    if (Math.abs(a[0] - b[0]) + Math.abs(a[1] - b[1]) + Math.abs(a[2] - b[2]) > 6) verschieden += 1;
   }
   const blatt = document.createElement('canvas');
   blatt.width = 80;

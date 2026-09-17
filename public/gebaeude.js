@@ -250,6 +250,26 @@ function tuerZeichnen(stift, a, b, h, u, e, farbe, breite = 0.2, hoehe = 0.62) {
 }
 
 function vorbereiten(stift, e, W, H) {
+  // Schlagschatten (darstellung AC-13): Licht von links oben, der Schatten
+  // faellt nach rechts unten auf den Boden - die Grundflaeche, weich zu einer
+  // um die Gebaeudehoehe verschobenen Grundflaeche gezogen.
+  const lang = [W * 0.95, W * 0.2];
+  const L = [-W, 0];
+  const B = [0, H];
+  const R = [W, 0];
+  const T = [0, -H];
+  const plus = (p) => [p[0] + lang[0], p[1] + lang[1]];
+  stift.save();
+  stift.filter = `blur(${Math.max(1, e * 0.12)}px)`;
+  stift.fillStyle = 'rgba(20, 16, 8, 0.38)';
+  stift.beginPath();
+  for (const [i, p] of [L, T, plus(T), plus(R), plus(B), B].entries()) {
+    if (i === 0) stift.moveTo(p[0], p[1]);
+    else stift.lineTo(p[0], p[1]);
+  }
+  stift.closePath();
+  stift.fill();
+  stift.restore();
   const schatten = stift.createRadialGradient(0.25 * e, 0.12 * e, 0, 0.25 * e, 0.12 * e, W * 1.2);
   schatten.addColorStop(0, 'rgba(0,0,0,0.36)');
   schatten.addColorStop(0.7, 'rgba(0,0,0,0.22)');
@@ -871,9 +891,10 @@ export function gebaeudeBildZeichnen(stift, art, x, y, e, farbe, groesse, bau = 
   const stufe = bau < 1 ? Math.floor(bau * 20) / 20 : 1;
   const schluessel = `${art}|${farbe}|${m.toFixed(2)}|${stufe}|${restStufe}|${dichte}`;
   let bild = ZWISCHENSPEICHER.get(schluessel);
-  const breite = 6.4 * m;
+  // Breit genug fuer den Schlagschatten nach rechts.
+  const breite = 10 * m;
   const oben = 6.4 * m;
-  const unten = 2.2 * m;
+  const unten = 2.6 * m;
   if (!bild) {
     bild = document.createElement('canvas');
     bild.width = Math.ceil(breite * dichte);
