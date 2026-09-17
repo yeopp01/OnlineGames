@@ -8,8 +8,12 @@
 // Gezeichnet statt flach (AC-12, Runde 28): jede Wand und jede Dachflaeche hat
 // einen Verlauf und eine Oberflaeche - Mauerwerk mit versetzten Fugen, Putz,
 // Bretter, Ziegelreihen, Stroh, Schindeln -, auf die Flaeche zugeschnitten.
+//
+// Naturalistisch statt Comic (AC-13, Runde 37): keine schwarzen Umrisse mehr,
+// sondern eine duenne, halb durchsichtige dunkelbraune Kante, und gedaempfte,
+// erdige Farben fuer Daecher und Holz.
 
-const KONTUR = '#1d1a17';
+const KONTUR = 'rgba(48, 34, 22, 0.5)';
 
 // ---- Werkzeug -------------------------------------------------------------------
 
@@ -218,7 +222,7 @@ function fenster(stift, a, b, h, u, v, e, breite = 0.12, hoehe = 0.28) {
     wandpunkt(a, b, h, u - breite / 2, v - hoehe / 2), wandpunkt(a, b, h, u + breite / 2, v - hoehe / 2),
     wandpunkt(a, b, h, u + breite / 2, v + hoehe / 2), wandpunkt(a, b, h, u - breite / 2, v + hoehe / 2),
   ];
-  flaeche(stift, ecken, '#2a1f16', false);
+  flaeche(stift, ecken, '#463a2c', false);
   stift.strokeStyle = '#d9c7a4';
   stift.lineWidth = Math.max(0.6, e * 0.05);
   pfad(stift, ecken);
@@ -242,7 +246,7 @@ function tuerZeichnen(stift, a, b, h, u, e, farbe, breite = 0.2, hoehe = 0.62) {
     linie(stift, wandpunkt(a, b, h, u - breite / 2 + breite * t, 0.03), wandpunkt(a, b, h, u - breite / 2 + breite * t, hoehe - 0.03), 'rgba(0,0,0,0.35)', Math.max(0.4, e * 0.025));
   }
   for (const v of [0.18, 0.46]) {
-    linie(stift, wandpunkt(a, b, h, u - breite / 2 + 0.01, v), wandpunkt(a, b, h, u + breite * 0.15, v), '#3a3632', Math.max(0.6, e * 0.05));
+    linie(stift, wandpunkt(a, b, h, u - breite / 2 + 0.01, v), wandpunkt(a, b, h, u + breite * 0.15, v), '#5a5048', Math.max(0.6, e * 0.05));
   }
   const griff = wandpunkt(a, b, h, u + breite * 0.3, hoehe * 0.45);
   kreis(stift, griff[0], griff[1], Math.max(0.6, e * 0.035), '#c9a24a', false);
@@ -283,7 +287,7 @@ function vorbereiten(stift, e, W, H) {
   stift.restore();
   stift.fill();
   stift.strokeStyle = KONTUR;
-  stift.lineWidth = Math.max(1, e * 0.05);
+  stift.lineWidth = Math.max(0.7, e * 0.035);
   stift.lineJoin = 'round';
 }
 
@@ -374,11 +378,11 @@ function dorfzentrum(stift, e, farbe) {
   vorbereiten(stift, e, W, W / 2);
   const wand = 1.25 * e;
   const { L1, B1, R1, traufe } = kasten(stift, W, 0.28 * e, wand, e, {
-    sockelL: '#8d8a83', sockelR: '#a9a59c', wandL: '#c9b089', wandR: '#e3cc9f',
+    sockelL: '#86817a', sockelR: '#a09a90', wandL: '#b9a483', wandR: '#d2bf98',
   });
 
   // Fachwerk: Balken mit Lichtkante, Riegel und Streben.
-  const balken = '#5c3d22';
+  const balken = '#5a4230';
   const dicke = Math.max(1, e * 0.1);
   for (const [a, b] of [[L1, B1], [B1, R1]]) {
     for (const t of [0.02, 0.35, 0.65, 0.98]) {
@@ -391,14 +395,14 @@ function dorfzentrum(stift, e, farbe) {
     linie(stift, hoch(zwischen(a, b, 0.35), wand * 0.5), hoch(zwischen(a, b, 0.65), wand), balken, dicke * 0.7);
     linie(stift, hoch(zwischen(a, b, 0.65), wand * 0.5), hoch(zwischen(a, b, 0.98), wand), balken, dicke * 0.7);
   }
-  stift.lineWidth = Math.max(1, e * 0.05);
+  stift.lineWidth = Math.max(0.7, e * 0.035);
 
   // Fenster links, Tuer rechts.
   for (const u of [0.18, 0.5, 0.82]) fenster(stift, L1, B1, wand, u, 0.25, e, 0.1, 0.22);
   tuerZeichnen(stift, B1, R1, wand, 0.5, e, '#5b3a22', 0.2, 0.6);
 
   const dach = walmdach(stift, W, traufe, 1.35 * e, e, {
-    hinten: '#6f2c20', links: '#8a3526', rechts: '#a8432f', seite: '#7c3022',
+    hinten: '#66392c', links: '#7d4634', rechts: '#955640', seite: '#70402f',
   }, 'ziegel');
   fahne(stift, dach.F2, e, farbe);
 }
@@ -412,9 +416,9 @@ function haus(stift, e, farbe) {
   vorbereiten(stift, e, W, W / 2);
   const wand = 0.85 * e;
   const { L1, B1, R1, traufe } = kasten(stift, W, 0.14 * e, wand, e, {
-    sockelL: '#8d8a83', sockelR: '#a9a59c', wandL: '#d9ccb0', wandR: '#efe4cc',
+    sockelL: '#86817a', sockelR: '#a09a90', wandL: '#c8bca2', wandR: '#ddd2ba',
   });
-  const balken = '#6b4a2b';
+  const balken = '#5e4632';
   const dicke = Math.max(1, e * 0.09);
   for (const [a, b] of [[L1, B1], [B1, R1]]) {
     for (const t of [0.03, 0.97]) {
@@ -425,13 +429,13 @@ function haus(stift, e, farbe) {
     // Ein schraeger Balken macht das Fachwerk.
     linie(stift, zwischen(a, b, 0.08), hoch(zwischen(a, b, 0.4), wand), balken, dicke * 0.8);
   }
-  stift.lineWidth = Math.max(1, e * 0.05);
+  stift.lineWidth = Math.max(0.7, e * 0.035);
   fenster(stift, L1, B1, wand, 0.6, 0.5, e, 0.18, 0.38);
   // Tuer rechts, in Spielerfarbe.
   tuerZeichnen(stift, B1, R1, wand, 0.45, e, farbe, 0.24, 0.68);
 
   walmdach(stift, W, traufe, 1.25 * e, e, {
-    hinten: '#8a6a30', links: '#b38a3f', rechts: '#d6ad5c', seite: '#a07b37',
+    hinten: '#7a6840', links: '#9c8656', rechts: '#b8a270', seite: '#8a7649',
   }, 'stroh', 1.18);
   // Schornstein aus Ziegeln mit Abdeckung.
   const schlot = [0.55 * W, -traufe - 0.75 * e];
@@ -441,8 +445,8 @@ function haus(stift, e, farbe) {
     [schlot[0] + 0.14 * e, schlot[1] - 0.6 * e],
     [schlot[0] - 0.14 * e, schlot[1] - 0.53 * e],
   ];
-  flaeche(stift, schlotFlaeche, verlauf(stift, '#9a6a52', schlotFlaeche[3], schlotFlaeche[1]));
-  mauerwerk(stift, schlotFlaeche[0], schlotFlaeche[1], 0.53 * e, e, { reihen: 4, steine: 2, grund: '#9a6a52' });
+  flaeche(stift, schlotFlaeche, verlauf(stift, '#8a6a5a', schlotFlaeche[3], schlotFlaeche[1]));
+  mauerwerk(stift, schlotFlaeche[0], schlotFlaeche[1], 0.53 * e, e, { reihen: 4, steine: 2, grund: '#8a6a5a' });
   flaeche(stift, [
     [schlot[0] - 0.18 * e, schlot[1] - 0.53 * e], [schlot[0] + 0.18 * e, schlot[1] - 0.62 * e],
     [schlot[0] + 0.18 * e, schlot[1] - 0.7 * e], [schlot[0] - 0.18 * e, schlot[1] - 0.61 * e],
@@ -475,17 +479,17 @@ function muehle(stift, e, farbe) {
     const quer = [-Math.sin(w) * 0.3 * e, Math.cos(w) * 0.3 * e];
     const anfang = zwischen(nabe, ende, 0.25);
     const tuch = [anfang, ende, [ende[0] + quer[0], ende[1] + quer[1]], [anfang[0] + quer[0], anfang[1] + quer[1]]];
-    stift.lineWidth = Math.max(1, e * 0.05);
-    flaeche(stift, tuch, verlauf(stift, '#efe8d6', anfang, tuch[2], 0.1, -0.15));
+    stift.lineWidth = Math.max(0.7, e * 0.035);
+    flaeche(stift, tuch, verlauf(stift, '#ddd4c0', anfang, tuch[2], 0.1, -0.15));
     for (const t of [0.25, 0.5, 0.75]) {
       const a = zwischen(anfang, ende, t);
       linie(stift, a, [a[0] + quer[0], a[1] + quer[1]], '#6b4f35', Math.max(0.5, e * 0.03));
     }
     linie(stift, tuch[3], tuch[2], '#6b4f35', Math.max(0.5, e * 0.03));
-    linie(stift, nabe, ende, '#4a3522', Math.max(1, e * 0.08));
+    linie(stift, nabe, ende, '#5e4632', Math.max(1, e * 0.08));
   }
-  stift.lineWidth = Math.max(1, e * 0.05);
-  kreis(stift, nabe[0], nabe[1], 0.14 * e, '#3a2c1f');
+  stift.lineWidth = Math.max(0.7, e * 0.035);
+  kreis(stift, nabe[0], nabe[1], 0.14 * e, '#5a4634');
   kreis(stift, nabe[0] - 0.04 * e, nabe[1] - 0.04 * e, 0.05 * e, 'rgba(255,255,255,0.35)', false);
 }
 
@@ -502,30 +506,34 @@ function unterstand(stift, e, farbe, dachFarben, ware) {
   const R = [W, 0];
   const T = [0, -H];
   // Boden aus Brettern, quer gelegt.
-  flaeche(stift, [L, B, R, T], verlauf(stift, '#7a5a38', T, B, 0.1, -0.15));
+  flaeche(stift, [L, B, R, T], verlauf(stift, '#6e5a44', T, B, 0.1, -0.15));
   innerhalb(stift, [L, B, R, T], () => {
-    for (let i = 1; i < 9; i++) {
-      const t = i / 9;
-      linie(stift, zwischen(L, T, t), zwischen(B, R, t), 'rgba(40,25,10,0.45)', Math.max(0.5, e * 0.03));
+    for (let i = 0; i < 9; i++) {
+      // Jedes Brett etwas anders getoent - verwittertes Holz ist nie einfarbig.
+      const brett = [zwischen(L, T, i / 9), zwischen(L, T, (i + 1) / 9), zwischen(B, R, (i + 1) / 9), zwischen(B, R, i / 9)];
+      pfad(stift, brett);
+      stift.fillStyle = `rgba(${zufall(i * 11) > 0.5 ? '230,210,180' : '30,20,10'},${0.06 + zufall(i * 4) * 0.12})`;
+      stift.fill();
+      if (i > 0) linie(stift, zwischen(L, T, i / 9), zwischen(B, R, i / 9), 'rgba(40,25,10,0.45)', Math.max(0.5, e * 0.03));
     }
   });
-  stift.lineWidth = Math.max(1, e * 0.05);
+  stift.lineWidth = Math.max(0.7, e * 0.035);
   // Hoch genug, dass man unter das Dach sieht.
   const hinten = 1.9 * e;
   const vorn = 1.45 * e;
   const mitte = (hinten + vorn) / 2;
   const pfosten = (p, h) => {
-    linie(stift, p, hoch(p, h), '#4a3522', Math.max(1.4, e * 0.14));
+    linie(stift, p, hoch(p, h), '#5e4632', Math.max(1.4, e * 0.14));
     linie(stift, [p[0] - e * 0.03, p[1]], [p[0] - e * 0.03, p[1] - h], 'rgba(255,220,170,0.3)', Math.max(0.4, e * 0.04));
   };
   pfosten(L, mitte);
   pfosten(T, hinten);
   pfosten(R, mitte);
   pfosten(B, vorn);
-  stift.lineWidth = Math.max(1, e * 0.05);
+  stift.lineWidth = Math.max(0.7, e * 0.035);
   // Pultdach mit Schindeln, hinten hoeher.
   const dach = [hoch([-W * 1.1, 0], mitte), hoch([0, -H * 1.1], hinten), hoch([W * 1.1, 0], mitte), hoch([0, H * 1.1], vorn)];
-  flaeche(stift, dach, verlauf(stift, dachFarben.oben, dach[1], dach[3], 0.14, -0.2), false);
+  flaeche(stift, dach, verlauf(stift, dachFarben.oben, dach[1], dach[3], dachFarben.hell ?? 0.14, dachFarben.dunkel ?? -0.2), false);
   deckung(stift, dach, dach[3], dach[2], dach[0], dach[1], e, 'schindel');
   pfad(stift, dach);
   stift.stroke();
@@ -540,8 +548,10 @@ function unterstand(stift, e, farbe, dachFarben, ware) {
   fahne(stift, hoch(B, vorn), e, farbe, 0.7);
 }
 
-function stamm(stift, x, y, r) {
-  kreis(stift, x, y, r, verlauf(stift, '#d9b27a', [x - r, y - r], [x + r, y + r], 0.15, -0.2));
+const STIRNHOLZ = ['#c2a680', '#b09070', '#cdb38e'];
+
+function stamm(stift, x, y, r, n = 0) {
+  kreis(stift, x, y, r, verlauf(stift, STIRNHOLZ[n % STIRNHOLZ.length], [x - r, y - r], [x + r, y + r], 0.15, -0.2));
   const alt = stift.lineWidth;
   stift.strokeStyle = 'rgba(140,95,50,0.6)';
   stift.lineWidth = Math.max(0.4, r * 0.12);
@@ -550,6 +560,12 @@ function stamm(stift, x, y, r) {
     stift.arc(x, y, r * f, 0, Math.PI * 2);
     stift.stroke();
   }
+  // Rinde als dunkler Ring statt eines schwarzen Umrisses.
+  stift.strokeStyle = '#6a5440';
+  stift.lineWidth = Math.max(0.8, r * 0.22);
+  stift.beginPath();
+  stift.arc(x, y, r * 0.9, 0, Math.PI * 2);
+  stift.stroke();
   stift.strokeStyle = KONTUR;
   stift.lineWidth = alt;
   kreis(stift, x, y, r * 0.12, '#8a5a2b', false);
@@ -558,22 +574,22 @@ function stamm(stift, x, y, r) {
 function holzfaellerlager(stift, e, farbe) {
   // Warmes braunes Holzdach - das Bergbaulager hat Schiefer (Runde 28: sonst
   // unterschieden sich die beiden Lager nur noch an der Ware).
-  unterstand(stift, e, farbe, { oben: '#8a6440', kante: '#5a4029', kanteHell: '#a07a52' }, (s, e2, W) => {
+  unterstand(stift, e, farbe, { oben: '#8a6440', kante: '#5a4029', kanteHell: '#a07a52', hell: 0.22, dunkel: -0.3 }, (s, e2, W) => {
     // Gestapelte Staemme mit Jahresringen, rechts ein Hackklotz mit Axt.
     for (let reihe = 0; reihe < 3; reihe++) {
       for (let i = 0; i < 3 - reihe; i++) {
-        stamm(s, -0.55 * W + i * 0.36 * e2 + reihe * 0.18 * e2, 0.05 * e2 - reihe * 0.3 * e2, 0.17 * e2);
+        stamm(s, -0.55 * W + i * 0.36 * e2 + reihe * 0.18 * e2, 0.05 * e2 - reihe * 0.3 * e2, 0.17 * e2, reihe * 2 + i);
       }
     }
     const klotz = [[0.35 * W, 0.1 * e2], [0.62 * W, 0.1 * e2], [0.62 * W, -0.25 * e2], [0.35 * W, -0.25 * e2]];
-    flaeche(s, klotz, verlauf(s, '#8a6238', klotz[3], klotz[1]));
+    flaeche(s, klotz, verlauf(s, '#7a6048', klotz[3], klotz[1]));
     s.beginPath();
     s.ellipse(0.485 * W, -0.25 * e2, 0.135 * W, 0.06 * e2, 0, 0, Math.PI * 2);
-    s.fillStyle = '#c8a06a';
+    s.fillStyle = '#b49c78';
     s.fill();
     s.stroke();
     linie(s, [0.48 * W, -0.25 * e2], [0.62 * W, -0.75 * e2], '#5b3d22', Math.max(1, e2 * 0.07));
-    s.lineWidth = Math.max(1, e2 * 0.05);
+    s.lineWidth = Math.max(0.7, e2 * 0.035);
     flaeche(s, [[0.58 * W, -0.72 * e2], [0.8 * W, -0.72 * e2], [0.72 * W, -0.52 * e2]], verlauf(s, '#b7bcc2', [0.58 * W, -0.72 * e2], [0.8 * W, -0.52 * e2], 0.3, -0.25));
     linie(s, [0.79 * W, -0.71 * e2], [0.72 * W, -0.53 * e2], 'rgba(255,255,255,0.7)', Math.max(0.4, e2 * 0.03));
   });
@@ -582,7 +598,7 @@ function holzfaellerlager(stift, e, farbe) {
 function bergbaulager(stift, e, farbe) {
   unterstand(stift, e, farbe, { oben: '#56657a', kante: '#3a4452', kanteHell: '#74849a' }, (s, e2, W) => {
     // Links ein Haufen Stein, rechts eine Karre voll Gold.
-    s.lineWidth = Math.max(1, e2 * 0.05);
+    s.lineWidth = Math.max(0.7, e2 * 0.035);
     for (const [x, y, r] of [[-0.62, 0, 0.3], [-0.35, 0.02, 0.26], [-0.5, -0.28, 0.24]]) {
       const brocken = [
         [x * W - r * e2, y * e2], [x * W - r * 0.4 * e2, y * e2 - r * e2],
@@ -590,7 +606,7 @@ function bergbaulager(stift, e, farbe) {
       ];
       flaeche(s, brocken, verlauf(s, '#a3a8ad', brocken[1], brocken[3], 0.25, -0.3));
       linie(s, brocken[1], [x * W + r * 0.1 * e2, y * e2 - r * 0.2 * e2], 'rgba(255,255,255,0.35)', Math.max(0.4, e2 * 0.03));
-      s.lineWidth = Math.max(1, e2 * 0.05);
+      s.lineWidth = Math.max(0.7, e2 * 0.035);
     }
     const karre = [0.25 * W, -0.05 * e2];
     const wanne = [
@@ -599,15 +615,15 @@ function bergbaulager(stift, e, farbe) {
     ];
     flaeche(s, wanne, verlauf(s, '#6b4a2b', wanne[0], wanne[2]));
     linie(s, zwischen(wanne[0], wanne[3], 0.5), zwischen(wanne[1], wanne[2], 0.5), 'rgba(0,0,0,0.3)', Math.max(0.4, e2 * 0.025));
-    s.lineWidth = Math.max(1, e2 * 0.05);
+    s.lineWidth = Math.max(0.7, e2 * 0.035);
     for (const [dx, dy] of [[-0.25, -0.42], [0, -0.5], [0.22, -0.42], [-0.1, -0.62], [0.12, -0.6]]) {
       const x = karre[0] + dx * e2;
       const y = karre[1] + dy * e2;
-      kreis(s, x, y, 0.12 * e2, verlauf(s, '#e0b43a', [x - 0.12 * e2, y - 0.12 * e2], [x + 0.12 * e2, y + 0.12 * e2], 0.35, -0.3));
+      kreis(s, x, y, 0.12 * e2, verlauf(s, '#cfab4a', [x - 0.12 * e2, y - 0.12 * e2], [x + 0.12 * e2, y + 0.12 * e2], 0.35, -0.3));
       kreis(s, x - 0.04 * e2, y - 0.05 * e2, 0.03 * e2, 'rgba(255,255,255,0.8)', false);
     }
     for (const dx of [-0.25, 0.25]) {
-      kreis(s, karre[0] + dx * e2, karre[1] + 0.05 * e2, 0.14 * e2, '#3a2c1f');
+      kreis(s, karre[0] + dx * e2, karre[1] + 0.05 * e2, 0.14 * e2, '#5a4634');
       kreis(s, karre[0] + dx * e2, karre[1] + 0.05 * e2, 0.04 * e2, '#8a7a60', false);
     }
   });
@@ -633,12 +649,12 @@ function kaserne(stift, e, farbe) {
     wandpunkt(B1, R1, wand, 0.5 + torBreite / 2, 0.55), wandpunkt(B1, R1, wand, 0.5, 0.72),
     wandpunkt(B1, R1, wand, 0.5 - torBreite / 2, 0.55),
   ];
-  flaeche(stift, tor, verlauf(stift, '#4a3320', tor[4], tor[1], 0.1, -0.3));
+  flaeche(stift, tor, verlauf(stift, '#5e4630', tor[4], tor[1], 0.1, -0.2));
   for (const t of [0.25, 0.5, 0.75]) {
     linie(stift, zwischen(tor[0], tor[1], t), zwischen(tor[4], tor[2], t), 'rgba(0,0,0,0.35)', Math.max(0.4, e * 0.025));
   }
-  linie(stift, zwischen(tor[0], tor[4], 0.4), zwischen(tor[1], tor[2], 0.4), '#2e2b28', Math.max(0.8, e * 0.05));
-  stift.lineWidth = Math.max(1, e * 0.05);
+  linie(stift, zwischen(tor[0], tor[4], 0.4), zwischen(tor[1], tor[2], 0.4), '#55493e', Math.max(0.8, e * 0.05));
+  stift.lineWidth = Math.max(0.7, e * 0.035);
   // Obergeschoss aus Holz, leicht vorkragend.
   const og = 0.55 * e;
   const L2 = hoch([-W * 1.04, 0], traufe);
@@ -692,7 +708,7 @@ function kaserne(stift, e, farbe) {
     const mitte = hoch(zwischen(s0, s1, t), 0.2 * e);
     stift.beginPath();
     stift.ellipse(mitte[0], mitte[1], 0.16 * e, 0.2 * e, -0.4, 0, Math.PI * 2);
-    stift.fillStyle = verlauf(stift, '#8a6238', [mitte[0] - 0.16 * e, mitte[1] - 0.2 * e], [mitte[0] + 0.16 * e, mitte[1] + 0.2 * e], 0.2, -0.3);
+    stift.fillStyle = verlauf(stift, '#7a6048', [mitte[0] - 0.16 * e, mitte[1] - 0.2 * e], [mitte[0] + 0.16 * e, mitte[1] + 0.2 * e], 0.2, -0.3);
     stift.fill();
     stift.stroke();
     kreis(stift, mitte[0], mitte[1], 0.05 * e, '#c9ced4', false);
@@ -712,7 +728,7 @@ function farm(stift, e, farbe, { rest = 1 } = {}) {
   const R = [W, 0];
   const T = [0, -H];
   // Acker: Erde mit Licht von hinten links.
-  flaeche(stift, [L, B, R, T], verlauf(stift, '#7a5a36', T, B, 0.12, -0.18), false);
+  flaeche(stift, [L, B, R, T], verlauf(stift, '#6c5840', T, B, 0.12, -0.18), false);
   const reihen = 8;
   innerhalb(stift, [L, B, R, T], () => {
     for (let i = 0; i <= reihen; i++) {
@@ -728,12 +744,12 @@ function farm(stift, e, farbe, { rest = 1 } = {}) {
         const u = (k + 0.5 + (zufall(i * 7 + k) - 0.5) * 0.4) / 10;
         const fuss = zwischen([a[0], a[1] - e * 0.06], [b[0], b[1] - e * 0.06], u);
         const hoehe = e * (0.28 + zufall(i * 3 + k) * 0.12) * (0.6 + 0.4 * rest);
-        linie(stift, fuss, [fuss[0] + e * 0.03, fuss[1] - hoehe], 'rgba(120, 140, 50, 0.9)', Math.max(0.6, e * 0.04));
-        kreis(stift, fuss[0] + e * 0.035, fuss[1] - hoehe, Math.max(0.8, e * 0.06), 'rgba(222, 190, 90, 0.95)', false);
+        linie(stift, fuss, [fuss[0] + e * 0.03, fuss[1] - hoehe], 'rgba(122, 128, 72, 0.9)', Math.max(0.6, e * 0.04));
+        kreis(stift, fuss[0] + e * 0.035, fuss[1] - hoehe, Math.max(0.8, e * 0.06), 'rgba(196, 176, 112, 0.95)', false);
       }
     }
   });
-  stift.lineWidth = Math.max(1, e * 0.05);
+  stift.lineWidth = Math.max(0.7, e * 0.035);
   pfad(stift, [L, B, R, T]);
   stift.strokeStyle = 'rgba(40, 28, 16, 0.6)';
   stift.stroke();
@@ -744,7 +760,7 @@ function farm(stift, e, farbe, { rest = 1 } = {}) {
       const p = zwischen(a, b, k / 6);
       linie(stift, p, hoch(p, 0.42 * e), '#5b3d22', Math.max(1, e * 0.07));
     }
-    for (const h of [0.18, 0.36]) linie(stift, hoch(a, h * e), hoch(b, h * e), '#8a6238', Math.max(0.8, e * 0.05));
+    for (const h of [0.18, 0.36]) linie(stift, hoch(a, h * e), hoch(b, h * e), '#7a6048', Math.max(0.8, e * 0.05));
   }
   // Vogelscheuche in der hinteren Ecke - in der Mitte arbeitet der Bauer und
   // verdeckte sie (Runde 31).
@@ -759,7 +775,7 @@ function farm(stift, e, farbe, { rest = 1 } = {}) {
   kreis(stift, fuss[0], fuss[1] - 1.08 * e, 0.14 * e, '#d8c49a');
   stift.beginPath();
   stift.ellipse(fuss[0], fuss[1] - 1.18 * e, 0.24 * e, 0.07 * e, 0, 0, Math.PI * 2);
-  stift.fillStyle = '#d8b978';
+  stift.fillStyle = '#c4ad80';
   stift.fill();
   stift.stroke();
 }
@@ -792,10 +808,10 @@ function baustelle(stift, e, W, anteil) {
   const L1 = hoch(L, 0.15 * e);
   const B1 = hoch(B, 0.15 * e);
   const R1 = hoch(R, 0.15 * e);
-  flaeche(stift, [L1, B1, hoch(B1, wand), hoch(L1, wand)], '#b99562', false);
-  flaeche(stift, [B1, R1, hoch(R1, wand), hoch(B1, wand)], '#d4ae78', false);
-  bretter(stift, L1, B1, wand, e, 7, '#b99562');
-  bretter(stift, B1, R1, wand, e, 7, '#d4ae78');
+  flaeche(stift, [L1, B1, hoch(B1, wand), hoch(L1, wand)], '#a88f6c', false);
+  flaeche(stift, [B1, R1, hoch(R1, wand), hoch(B1, wand)], '#c0a882', false);
+  bretter(stift, L1, B1, wand, e, 7, '#a88f6c');
+  bretter(stift, B1, R1, wand, e, 7, '#c0a882');
   pfad(stift, [L1, B1, hoch(B1, wand), hoch(L1, wand)]);
   stift.stroke();
   pfad(stift, [B1, R1, hoch(R1, wand), hoch(B1, wand)]);
@@ -808,8 +824,8 @@ function baustelle(stift, e, W, anteil) {
   }
   for (const z of [0.5, 1]) {
     const h = 0.15 * e + stange * z;
-    linie(stift, hoch(L, h), hoch(B, h), '#a07a4a', Math.max(1.2, e * 0.1));
-    linie(stift, hoch(B, h), hoch(R, h), '#b58d58', Math.max(1.2, e * 0.1));
+    linie(stift, hoch(L, h), hoch(B, h), '#907a5a', Math.max(1.2, e * 0.1));
+    linie(stift, hoch(B, h), hoch(R, h), '#a48c68', Math.max(1.2, e * 0.1));
   }
   // Querstreben am Geruest.
   linie(stift, hoch(L, 0.15 * e), hoch(B, 0.15 * e + stange * 0.5), 'rgba(90,60,30,0.8)', Math.max(0.6, e * 0.04));
@@ -819,7 +835,7 @@ function baustelle(stift, e, W, anteil) {
   for (let i = 0; i < 3; i++) {
     const y = H * 0.55 - i * 0.12 * e;
     const brett = [[-0.5 * e, y], [0.4 * e, y + 0.2 * e], [0.5 * e, y + 0.12 * e], [-0.4 * e, y - 0.08 * e]];
-    flaeche(stift, brett, verlauf(stift, '#c8a06a', brett[3], brett[1], 0.15, -0.15));
+    flaeche(stift, brett, verlauf(stift, '#b49c78', brett[3], brett[1], 0.15, -0.15));
   }
 }
 

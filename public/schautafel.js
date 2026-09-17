@@ -305,7 +305,43 @@ function tonstufen(welche, art) {
   return deutlich;
 }
 
+/**
+ * Fuer den Browserlauf (darstellung AC-13): wie comichaft eine Zeichnung ist.
+ * `schwarz` ist der Anteil fast schwarzer Bildpunkte (kein Kanal ueber 50) -
+ * das sind vor allem Umrisse; `saettigung` die mittlere Saettigung (HSL, 0..1).
+ * Gezeichnet in Spielgroesse, gezaehlt nur deckende Punkte - der
+ * Schlagschatten ist halb durchsichtig und zaehlt nicht.
+ */
+const GEBAEUDE_GROESSE = { dorfzentrum: 4, haus: 2, muehle: 2, holzfaellerlager: 2, bergbaulager: 2, kaserne: 3, farm: 3 };
+
+function anmutung(welche, art) {
+  const g = 260;
+  const blatt = document.createElement('canvas');
+  blatt.width = g;
+  blatt.height = g;
+  const s = blatt.getContext('2d');
+  if (welche === 'figur') figurZeichnen(s, art, g / 2, g - 20, 40, '#4a90d9', {});
+  else gebaeudeZeichnen(s, art, g / 2, g * 0.72, 22, '#4a90d9', GEBAEUDE_GROESSE[art] ?? 2);
+  const { data } = s.getImageData(0, 0, g, g);
+  let pixel = 0;
+  let schwarz = 0;
+  let saettigung = 0;
+  for (let i = 0; i < data.length; i += 4) {
+    if (data[i + 3] < 250) continue;
+    const r = data[i] / 255;
+    const gr = data[i + 1] / 255;
+    const b = data[i + 2] / 255;
+    pixel += 1;
+    const hoch = Math.max(r, gr, b);
+    const tief = Math.min(r, gr, b);
+    if (hoch * 255 <= 50) schwarz += 1;
+    const l = (hoch + tief) / 2;
+    if (hoch > tief) saettigung += (hoch - tief) / (1 - Math.abs(2 * l - 1));
+  }
+  return { pixel, schwarz: schwarz / pixel, saettigung: saettigung / pixel };
+}
+
 window.schautafel = {
   zellen, maske, dingMaske, bodenProbe, arten: Object.keys(FIGUREN), dinge: { WALD, BEERE, GOLD, STEIN },
-  gebaeudeZellen, gebaeudeMaske, gebaeudeArten: Object.keys(GEBAEUDE), tonstufen,
+  gebaeudeZellen, gebaeudeMaske, gebaeudeArten: Object.keys(GEBAEUDE), tonstufen, anmutung,
 };

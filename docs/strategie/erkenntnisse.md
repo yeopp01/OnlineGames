@@ -281,6 +281,23 @@ alle sieben Gebäude der Dunklen Zeit stehen. Was sich wiederholt hat:
 Neueste oben. Eine Zeile je Runde: Nummer, Datum, Kriterien, Ergebnis,
 wichtigste Erkenntnis.
 
+- **37** · 2026-09-17 · darstellung AC-13 in Arbeit, Teil 2 (A6c): Gebäude
+  ohne schwarze Umrisse. Die Kante ist jetzt ein dünnes, halb durchsichtiges
+  Dunkelbraun; Fenster, Tor, Nabe, Räder dunkelbraun statt schwarz; Ziegel
+  Terrakotta statt Signalrot, Stroh grau-gelb, Holz und Acker grauer.
+  Gemessen mit `schautafel.anmutung` in Spielgröße: fast schwarze Bildpunkte
+  vorher 7–12 %, jetzt 0 % bei allen sieben Gebäuden — es waren nur die
+  Umrisse. Sättigung Dorfzentrum 0,37 → 0,29, Haus 0,34 → 0,25, Farm 0,40 →
+  0,29; Mühle und Kaserne gleich (ohne Umriss fallen auch graue Kantenpunkte
+  weg). Neuer Test prüft ≤ 3 % je Gebäude, auf dem alten Stand rot (7,3 %).
+  Gelernt: gedämpfte Farben kosten Tonstufen — darstellung AC-12 fiel beim
+  Holzfällerlager auf 17 (Grenze 19); behoben mit verschieden getönten
+  Brettern, Stämmen und Rinde, nicht mit der Grenze. Der stärkere Dachverlauf
+  dafür machte die beiden Lager zu ähnlich (bauen AC-20/darstellung AC-4) —
+  jetzt nur am Holzdach. Vorher/nachher:
+  `bilder/vorher-runde37-gebaeude-zoom2.png`, `nachher-runde37-…`. Nächster
+  Teil: Figuren mit echten Proportionen und ohne Umriss (jetzt fallen sie
+  neben den Gebäuden als Comic auf).
 - **36** · 2026-09-17 · darstellung AC-13 in Arbeit, Teil 1 (A6c): Boden und
   Schatten. Der Boden kommt aus `public/boden.js`: Farben aus glattem Rauschen
   in einem Punktgitter alle 6 Bildpunkte, weich vergrößert — erdiges Oliv,

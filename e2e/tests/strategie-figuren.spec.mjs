@@ -128,3 +128,19 @@ test('darstellung AC-2: Gras in Toenungen je Startwert, am Wasser ein Ufer aus S
   // Das Ufer: Sand an den Kanten zum Land.
   expect(probe.sand).toBeGreaterThan(20);
 });
+
+test('darstellung AC-13: Gebaeude ohne schwarze Umrisse - hoechstens 3 % fast schwarze Bildpunkte', async ({ page }) => {
+  await page.goto('/schautafel.html');
+  await page.waitForFunction(() => window.schautafel?.anmutung);
+  const werte = await page.evaluate(() => {
+    const t = window.schautafel;
+    return Object.fromEntries(t.gebaeudeArten.map((art) => [art, t.anmutung('gebaeude', art)]));
+  });
+  // Die 3 % kommen aus dem Kriterium: ein schwarzer Umriss von 1 px um ein
+  // Gebaeude in Spielgroesse machte 7 bis 12 % aus (gemessen Runde 37 vor dem
+  // Umbau), dunkle Fenster und Tueren allein bleiben darunter.
+  for (const [art, w] of Object.entries(werte)) {
+    expect(w.pixel, `${art} ist gezeichnet`).toBeGreaterThan(1000);
+    expect(w.schwarz, `${art}: ${(w.schwarz * 100).toFixed(1)} % fast schwarz`).toBeLessThanOrEqual(0.03);
+  }
+});
