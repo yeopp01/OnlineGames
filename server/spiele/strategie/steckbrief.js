@@ -17,9 +17,21 @@ module.exports = {
   einstellungen: [
     { schluessel: 'spieler', name: 'Hoechstens Spieler', art: 'zahl', von: 2, bis: 6, vorgabe: 6 },
     { schluessel: 'startwert', name: 'Startwert der Karte', art: 'startwert', vorgabe: null },
+    {
+      schluessel: 'kartengroesse', name: 'Kartengroesse', art: 'wahl', vorgabe: 'normal',
+      werte: [{ wert: 'klein', name: 'klein' }, { wert: 'normal', name: 'normal' }, { wert: 'gross', name: 'gross' }],
+    },
+    {
+      schluessel: 'vorrat', name: 'Startvorrat', art: 'wahl', vorgabe: 'wenig',
+      werte: [
+        { wert: 'wenig', name: 'wenig (200 Holz, 200 Nahrung, 100 Gold, 200 Stein)' },
+        { wert: 'mittel', name: 'mittel (je 500)' },
+        { wert: 'viel', name: 'viel (je 1000)' },
+      ],
+    },
   ],
   // Was der Raum von diesem Spiel braucht (→ specs/00-plattform/raeume.md AC-16).
   takte: TAKTE_PRO_SEKUNDE,
-  erzeugen: (spieler, einstellungen) => new Welt(spieler, einstellungen.startwert),
+  erzeugen: (spieler, einstellungen) => new Welt(spieler, einstellungen.startwert, einstellungen),
   reihenfolge: 1,
 };

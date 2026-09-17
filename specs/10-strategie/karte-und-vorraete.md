@@ -2,7 +2,7 @@
 
 **Bereich:** Strategie
 **Kuerzel:** karte
-**Stand:** 8/17 fertig · 9 offen
+**Stand:** 9/17 fertig · 5 offen · 3 zurueckgestellt
 
 ## Zweck
 
@@ -27,8 +27,8 @@ Ein Spielfeld, das in jeder Partie neu ist, aber niemanden benachteiligt.
 
 - **AC-1** `fertig` **Gleiche Zahl, gleiche Karte** — Derselbe Startwert erzeugt dieselbe Karte.
   Ein Fehler laesst sich damit wiederholen, statt ihn zu suchen.
-- **AC-2** `fertig` **Vier Feldarten** — Gras ist begehbar; Wald, Beeren und Wasser sind es nicht.
-- **AC-3** `fertig` **Karte ist 64 x 64** — Gross genug fuer sechs Spieler, klein genug, um sie in
+- **AC-2** `zurueckgestellt` (abgeloest durch karte AC-13) **Vier Feldarten** — Gras ist begehbar; Wald, Beeren und Wasser sind es nicht.
+- **AC-3** `zurueckgestellt` (abgeloest durch karte AC-11) **Karte ist 64 x 64** — Gross genug fuer sechs Spieler, klein genug, um sie in
   einer Nachricht zu verschicken.
 
 ### Gleiche Startlage
@@ -46,7 +46,7 @@ Ein Spielfeld, das in jeder Partie neu ist, aber niemanden benachteiligt.
 
 ### Vorraete
 
-- **AC-8** `fertig` **Wald traegt mehr als Beeren** — Ein Waldfeld hat 120 Einheiten Holz, ein
+- **AC-8** `zurueckgestellt` (abgeloest durch karte AC-13) **Wald traegt mehr als Beeren** — Ein Waldfeld hat 120 Einheiten Holz, ein
   Beerenfeld 80 Nahrung.
 - **AC-9** `fertig` **Erschoepftes Feld wird Gras** — Ist ein Vorrat aufgebraucht, wird das Feld zu
   Gras und damit begehbar. Alle Spieler erfahren die Aenderung.
@@ -56,19 +56,19 @@ Ein Spielfeld, das in jeder Partie neu ist, aber niemanden benachteiligt.
 
 ### Stufe A — Karte nach der Vorlage
 
-- **AC-11** `offen` **Die Karte wächst mit** — Zwei Spieler 120 × 120 Felder, je weiterer
+- **AC-11** `fertig` **Die Karte wächst mit** — Zwei Spieler 120 × 120 Felder, je weiterer
   Spieler mehr, bis 200 × 200 bei acht. Einstellung „Kartengröße" klein,
   normal, groß (→ [Spielauswahl](../00-plattform/spielauswahl.md) AC-6).
   _(Das Original geht bis 220; 200 hält die Aufbaunachricht und die
   Wegsuche bezahlbar — gemessen wird das mit AC-15.)_
-- **AC-12** `offen` **Vier Rohstoffe, Startvorrat** — Holz, Nahrung, Gold, Stein. Jeder Spieler
+- **AC-12** `fertig` **Vier Rohstoffe, Startvorrat** — Holz, Nahrung, Gold, Stein. Jeder Spieler
   beginnt mit 200 Holz, 200 Nahrung, 100 Gold, 200 Stein. Einstellung
   „Startvorrat" wenig (Vorlage), mittel (je 500), viel (je 1000).
-- **AC-13** `offen` **Vorräte sind einzelne Dinge** — Ein Baum trägt 100 Holz, ein Beerenstrauch
+- **AC-13** `fertig` **Vorräte sind einzelne Dinge** — Ein Baum trägt 100 Holz, ein Beerenstrauch
   125 Nahrung, ein Goldfeld 800, ein Steinfeld 350. Jedes belegt ein Feld und
   ist unbegehbar, bis es leer ist; dann verschwindet es. Wald ist eine Gruppe
   von Bäumen.
-- **AC-14** `offen` **Jede Basis gleich ausgestattet** — Um jedes Dorfzentrum in 5 bis 12
+- **AC-14** `fertig` **Jede Basis gleich ausgestattet** — Um jedes Dorfzentrum in 5 bis 12
   Feldern: 6 Beerensträucher, ein Goldfeld aus 7 Feldern, ein Steinfeld aus 5,
   8 Schafe näher am Zentrum, Wald in mindestens zwei Richtungen. Gleiche
   Mengen und gleiche Abstände für alle, nur gedreht.

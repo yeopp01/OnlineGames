@@ -7,9 +7,9 @@ Eine Zeile je Abnahmekriterium. Gepflegt wird der Status in der Spec selbst,
 hier steht er zusammengefasst. Erzeugt mit `npm run specs:board`; als Seite
 mit Bildnachweisen, Filter und Suche mit `npm run qa:report`.
 
-**Gesamt:** 283/485 fertig · 6 in QA · 4 geplant · 189 offen · 3 zurueckgestellt
+**Gesamt:** 285/485 fertig · 6 in QA · 4 geplant · 184 offen · 6 zurueckgestellt
 
-**Nachweise:** 90 Kriterien mit Bild · 193 ohne Bild, begruendet in `qa/ohne-bild.json`
+**Nachweise:** 91 Kriterien mit Bild · 197 ohne Bild, begruendet in `qa/ohne-bild.json`
 
 ## Nach Spezifikation
 
@@ -19,7 +19,7 @@ mit Bildnachweisen, Filter und Suche mit `npm run qa:report`.
 | [Raeume und Partien](00-plattform/raeume.md)                   | -         | 2     | -       | 3     | -               | 11     |
 | [Schutz vor Fremdnutzung](00-plattform/schutz.md)              | -         | 1     | -       | 4     | -               | 7      |
 | [Anhalten und Fortsetzen](00-plattform/speichern.md)           | -         | -     | -       | 26    | -               | -      |
-| [Spielauswahl und Einstellungen](00-plattform/spielauswahl.md) | -         | -     | -       | 6     | -               | 11     |
+| [Spielauswahl und Einstellungen](00-plattform/spielauswahl.md) | -         | -     | -       | 5     | -               | 12     |
 | [Uebertragung](00-plattform/uebertragung.md)                   | -         | 1     | 2       | 1     | -               | 6      |
 | [Bauen und Ausbilden](10-strategie/bauen.md)                   | -         | -     | -       | 21    | -               | -      |
 | [Bedienung](10-strategie/bedienung.md)                         | -         | -     | -       | 23    | -               | 6      |
@@ -27,7 +27,7 @@ mit Bildnachweisen, Filter und Suche mit `npm run qa:report`.
 | [Einheiten und Befehle](10-strategie/einheiten-und-befehle.md) | -         | -     | -       | 8     | -               | 9      |
 | [Fahrplan zum Klon](10-strategie/fahrplan.md)                  | -         | -     | -       | 20    | -               | 2      |
 | [Kampf](10-strategie/kampf.md)                                 | -         | -     | -       | 14    | -               | -      |
-| [Karte und Vorraete](10-strategie/karte-und-vorraete.md)       | -         | -     | -       | 9     | -               | 8      |
+| [Karte und Vorraete](10-strategie/karte-und-vorraete.md)       | -         | -     | -       | 5     | 3               | 9      |
 | [KI-Spieler](10-strategie/ki.md)                               | -         | -     | -       | 8     | -               | -      |
 | [Spielziel und Partieverlauf](10-strategie/spielziel.md)       | -         | -     | -       | 18    | -               | -      |
 | [Aufstellung, Taktik und Training](15-manager/aufstellung.md)  | -         | -     | -       | -     | 2               | 23     |
@@ -61,7 +61,7 @@ mit Bildnachweisen, Filter und Suche mit `npm run qa:report`.
 - **Abbruch ist sichtbar** — [Uebertragung](00-plattform/uebertragung.md) AC-9
 - **Automatischer Wiederaufbau** — [Uebertragung](00-plattform/uebertragung.md) AC-10
 
-## Offen (189)
+## Offen (184)
 
 - **Anmeldung ueber Google/GitHub** — [Konten und Anmeldung](00-plattform/konten.md) AC-6
 - **Bilanz je Konto** — [Konten und Anmeldung](00-plattform/konten.md) AC-14
@@ -99,7 +99,6 @@ mit Bildnachweisen, Filter und Suche mit `npm run qa:report`.
 - **Fortsetzen wartet auf dieselben Plätze** — [Anhalten und Fortsetzen](00-plattform/speichern.md) AC-24
 - **Fehlender Spieler blockiert nicht ewig** — [Anhalten und Fortsetzen](00-plattform/speichern.md) AC-25
 - **Beteiligte stehen im Spielstand** — [Anhalten und Fortsetzen](00-plattform/speichern.md) AC-26
-- **Einstellungen des Strategiespiels** — [Spielauswahl und Einstellungen](00-plattform/spielauswahl.md) AC-6
 - **Fortlaufend auch allein spielbar** — [Spielauswahl und Einstellungen](00-plattform/spielauswahl.md) AC-12
 - **Liste der eigenen Spielstaende** — [Spielauswahl und Einstellungen](00-plattform/spielauswahl.md) AC-14
 - **Fortsetzen ist ein Klick** — [Spielauswahl und Einstellungen](00-plattform/spielauswahl.md) AC-15
@@ -204,10 +203,6 @@ mit Bildnachweisen, Filter und Suche mit `npm run qa:report`.
 - **Angriff wird gemeldet** — [Kampf](10-strategie/kampf.md) AC-14
 - **Kein Spieler ist abgeschnitten** — [Karte und Vorraete](10-strategie/karte-und-vorraete.md) AC-7
 - **Vorraete sind endlich und knapp** — [Karte und Vorraete](10-strategie/karte-und-vorraete.md) AC-10
-- **Die Karte wächst mit** — [Karte und Vorraete](10-strategie/karte-und-vorraete.md) AC-11
-- **Vier Rohstoffe, Startvorrat** — [Karte und Vorraete](10-strategie/karte-und-vorraete.md) AC-12
-- **Vorräte sind einzelne Dinge** — [Karte und Vorraete](10-strategie/karte-und-vorraete.md) AC-13
-- **Jede Basis gleich ausgestattet** — [Karte und Vorraete](10-strategie/karte-und-vorraete.md) AC-14
 - **Wegsuche bleibt bezahlbar** — [Karte und Vorraete](10-strategie/karte-und-vorraete.md) AC-15
 - **Schafe gehören dem Spieler** — [Karte und Vorraete](10-strategie/karte-und-vorraete.md) AC-16
 - **Karte in einer Nachricht** — [Karte und Vorraete](10-strategie/karte-und-vorraete.md) AC-17
@@ -253,8 +248,11 @@ mit Bildnachweisen, Filter und Suche mit `npm run qa:report`.
 - **Eine kleine Maschine reicht** — [Betrieb](20-betrieb/betrieb.md) AC-11
 - **Bekannte Grenze** — [Betrieb](20-betrieb/betrieb.md) AC-12
 
-## Zurueckgestellt (3)
+## Zurueckgestellt (6)
 
+- **Vier Feldarten** — [Karte und Vorraete](10-strategie/karte-und-vorraete.md) AC-2
+- **Karte ist 64 x 64** — [Karte und Vorraete](10-strategie/karte-und-vorraete.md) AC-3
+- **Wald traegt mehr als Beeren** — [Karte und Vorraete](10-strategie/karte-und-vorraete.md) AC-8
 - **Wechsel vorher festlegen** — [Aufstellung, Taktik und Training](15-manager/aufstellung.md) AC-13
 - **Anweisung je Spieler** — [Aufstellung, Taktik und Training](15-manager/aufstellung.md) AC-15
 - **Gehaltsverhandlung** — [Transfermarkt](15-manager/transfer.md) AC-17

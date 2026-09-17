@@ -7,7 +7,8 @@ const FELD = 22; // Bildpunkte je Feld bei Vergroesserung 1
 // Fusspunkt, deshalb zielt ein Klick auf die Mitte des Koerpers.
 const FIGUR_HOEHE = 1.2; // in Feldern
 const KOERPER_MITTE = 0.5; // in Feldern ueber dem Fusspunkt
-const FARBEN = ['#2f4636', '#1f3a24', '#4a3a52', '#1b2f4a']; // Gras, Wald, Beere, Wasser
+// Gras, Wald, Beere, Wasser, Gold, Stein - Formen dafuer kommen mit darstellung AC-3.
+const FARBEN = ['#2f4636', '#1f3a24', '#4a3a52', '#1b2f4a', '#8a7a2e', '#5d636b'];
 const GRAS = 0;
 
 // Schrittphase fuer die Beine: laeuft mit der Uhr, je Einheit versetzt, damit

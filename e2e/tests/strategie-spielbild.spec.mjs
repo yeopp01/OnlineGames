@@ -164,6 +164,8 @@ test.describe('Das Spielbild', () => {
   });
 
   test('bedienung AC-12 / bedienung AC-16 / fahrplan AC-2: Rechtsklick auf den Wald, gesammelt wird sichtbar', async ({}, info) => {
+    // Wie viel Holz vorher da ist: seit dem Startvorrat (karte AC-12) nicht null.
+    const holzVorher = await anna.evaluate(() => window.ansicht.vorraete.holz);
     await rahmenUmAlle(anna);
     expect((await auswahl(anna)).length).toBe(5);
 
@@ -222,7 +224,13 @@ test.describe('Das Spielbild', () => {
     await anna.waitForFunction(() => window.ansicht.kamera.zoom < 1.01);
 
     // Und das Holz kommt an - bei Anna im Vorrat, bei Bert sichtbar als Bewegung.
-    await expect(anna.locator('#vorraete')).toHaveText(/Holz [1-9]\d*/, { timeout: 30_000 });
+    // Gewartet wird, bis der Vorrat ueber dem Startwert steht - ein Muster wie
+    // "Holz [1-9]" traefe schon den Startvorrat und bewiese nichts.
+    await anna.waitForFunction((vorher) => window.ansicht.vorraete.holz > vorher, holzVorher, { timeout: 40_000 });
+    // Und die Leiste zeigt es. Nicht "genau eine Ladung mehr": bis zum Ablesen
+    // koennen weitere angekommen sein (unter Last gesehen: 250 statt 210).
+    const angezeigt = Number((await anna.locator('#vorraete').textContent()).match(/Holz (\d+)/)[1]);
+    expect(angezeigt).toBeGreaterThan(holzVorher);
     await nachweis(anna, {
       spec: FAHRPLAN,
       ac: 'AC-2',

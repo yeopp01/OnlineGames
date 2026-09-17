@@ -4,43 +4,35 @@ const { begehbar } = require('./karte');
 
 // A* auf dem Raster, acht Richtungen. Diagonal nur, wenn beide angrenzenden
 // Felder frei sind - sonst laufen Einheiten durch Hausecken.
-const RICHTUNGEN = [
-  [1, 0, 1], [-1, 0, 1], [0, 1, 1], [0, -1, 1],
-  [1, 1, Math.SQRT2], [1, -1, Math.SQRT2], [-1, 1, Math.SQRT2], [-1, -1, Math.SQRT2],
-];
+//
+// Auf Karten bis 200 × 200 wird viel gesucht (→ karte AC-15, einheiten AC-8).
+// Deshalb ohne Objekte je Schritt: der Haufen liegt in zwei Zahlenfeldern, und
+// die Puffer fuer Kosten und Herkunft werden von Suche zu Suche
+// weiterverwendet. Welche Eintraege zur laufenden Suche gehoeren, sagt eine
+// Suchnummer je Feld - so muss nichts neu gefuellt werden.
+const DX = [1, -1, 0, 0, 1, 1, -1, -1];
+const DY = [0, 0, 1, -1, 1, -1, 1, -1];
+const PREIS = [1, 1, 1, 1, Math.SQRT2, Math.SQRT2, Math.SQRT2, Math.SQRT2];
 
-// Kleiner Vorrang-Haufen. Reicht fuer 64 x 64 locker.
-class Haufen {
-  constructor() { this.liste = []; }
-  get laenge() { return this.liste.length; }
-  rein(wert, rang) {
-    this.liste.push({ wert, rang });
-    let i = this.liste.length - 1;
-    while (i > 0) {
-      const eltern = (i - 1) >> 1;
-      if (this.liste[eltern].rang <= this.liste[i].rang) break;
-      [this.liste[eltern], this.liste[i]] = [this.liste[i], this.liste[eltern]];
-      i = eltern;
-    }
-  }
-  raus() {
-    const oben = this.liste[0];
-    const letzte = this.liste.pop();
-    if (this.liste.length) {
-      this.liste[0] = letzte;
-      let i = 0;
-      for (;;) {
-        const l = 2 * i + 1, r = 2 * i + 2;
-        let klein = i;
-        if (l < this.liste.length && this.liste[l].rang < this.liste[klein].rang) klein = l;
-        if (r < this.liste.length && this.liste[r].rang < this.liste[klein].rang) klein = r;
-        if (klein === i) break;
-        [this.liste[klein], this.liste[i]] = [this.liste[i], this.liste[klein]];
-        i = klein;
-      }
-    }
-    return oben.wert;
-  }
+const GRAS = 0;
+
+let flaeche = 0;
+let kosten = null;
+let woher = null;
+let besucht = null; // Suchnummer, in der das Feld Kosten bekam
+let erledigt = null; // Suchnummer, in der das Feld fertig wurde
+let suche = 0;
+let haufenFeld = new Int32Array(1024);
+let haufenRang = new Float64Array(1024);
+
+function puffer(g) {
+  if (g * g === flaeche) return;
+  flaeche = g * g;
+  kosten = new Float64Array(flaeche);
+  woher = new Int32Array(flaeche);
+  besucht = new Uint32Array(flaeche);
+  erledigt = new Uint32Array(flaeche);
+  suche = 0;
 }
 
 function schaetzung(x1, y1, x2, y2) {
@@ -49,51 +41,96 @@ function schaetzung(x1, y1, x2, y2) {
   return (dx + dy) + (Math.SQRT2 - 2) * Math.min(dx, dy);
 }
 
-function diagonalErlaubt(karte, x, y, dx, dy) {
-  if (dx === 0 || dy === 0) return true;
-  return begehbar(karte, x + dx, y) && begehbar(karte, x, y + dy);
-}
-
 // Gibt eine Liste von Feldern zurueck, ohne das Startfeld. Leer heisst:
 // kein Weg gefunden.
 function suchen(karte, start, ziel) {
   const g = karte.groesse;
+  const felder = karte.felder;
   const startIndex = start.y * g + start.x;
   const zielIndex = ziel.y * g + ziel.x;
   if (startIndex === zielIndex) return [];
   if (!begehbar(karte, ziel.x, ziel.y)) return [];
 
-  const kosten = new Float32Array(g * g).fill(Infinity);
-  const woher = new Int32Array(g * g).fill(-1);
-  const fertig = new Uint8Array(g * g);
-  const offen = new Haufen();
+  puffer(g);
+  suche += 1;
+  if (suche === 0xffffffff) { // alle vier Milliarden Suchen neu anfangen
+    besucht.fill(0);
+    erledigt.fill(0);
+    suche = 1;
+  }
+
+  let laenge = 0;
+  const rein = (feld, rang) => {
+    if (laenge === haufenFeld.length) {
+      const f = new Int32Array(laenge * 2); f.set(haufenFeld); haufenFeld = f;
+      const r = new Float64Array(laenge * 2); r.set(haufenRang); haufenRang = r;
+    }
+    let i = laenge++;
+    while (i > 0) {
+      const eltern = (i - 1) >> 1;
+      if (haufenRang[eltern] <= rang) break;
+      haufenFeld[i] = haufenFeld[eltern];
+      haufenRang[i] = haufenRang[eltern];
+      i = eltern;
+    }
+    haufenFeld[i] = feld;
+    haufenRang[i] = rang;
+  };
+  const raus = () => {
+    const oben = haufenFeld[0];
+    laenge -= 1;
+    if (laenge > 0) {
+      const feld = haufenFeld[laenge];
+      const rang = haufenRang[laenge];
+      let i = 0;
+      for (;;) {
+        const l = 2 * i + 1;
+        if (l >= laenge) break;
+        const r = l + 1;
+        const klein = r < laenge && haufenRang[r] < haufenRang[l] ? r : l;
+        if (haufenRang[klein] >= rang) break;
+        haufenFeld[i] = haufenFeld[klein];
+        haufenRang[i] = haufenRang[klein];
+        i = klein;
+      }
+      haufenFeld[i] = feld;
+      haufenRang[i] = rang;
+    }
+    return oben;
+  };
 
   kosten[startIndex] = 0;
-  offen.rein(startIndex, schaetzung(start.x, start.y, ziel.x, ziel.y));
+  besucht[startIndex] = suche;
+  rein(startIndex, schaetzung(start.x, start.y, ziel.x, ziel.y));
+  let gefunden = false;
 
-  while (offen.laenge) {
-    const jetzt = offen.raus();
-    if (fertig[jetzt]) continue;
-    fertig[jetzt] = 1;
-    if (jetzt === zielIndex) break;
+  while (laenge) {
+    const jetzt = raus();
+    if (erledigt[jetzt] === suche) continue;
+    erledigt[jetzt] = suche;
+    if (jetzt === zielIndex) { gefunden = true; break; }
 
     const x = jetzt % g;
     const y = (jetzt / g) | 0;
-    for (const [dx, dy, preis] of RICHTUNGEN) {
-      const nx = x + dx;
-      const ny = y + dy;
-      if (!begehbar(karte, nx, ny)) continue;
-      if (!diagonalErlaubt(karte, x, y, dx, dy)) continue;
+    const hier = kosten[jetzt];
+    for (let r = 0; r < 8; r++) {
+      const nx = x + DX[r];
+      const ny = y + DY[r];
+      if (nx < 0 || ny < 0 || nx >= g || ny >= g) continue;
       const nachbar = ny * g + nx;
-      const neu = kosten[jetzt] + preis;
-      if (neu >= kosten[nachbar]) continue;
+      if (felder[nachbar] !== GRAS) continue;
+      // Diagonal nur, wenn beide Nachbarfelder frei sind.
+      if (r >= 4 && (felder[y * g + nx] !== GRAS || felder[ny * g + x] !== GRAS)) continue;
+      const neu = hier + PREIS[r];
+      if (besucht[nachbar] === suche && neu >= kosten[nachbar]) continue;
+      besucht[nachbar] = suche;
       kosten[nachbar] = neu;
       woher[nachbar] = jetzt;
-      offen.rein(nachbar, neu + schaetzung(nx, ny, ziel.x, ziel.y));
+      rein(nachbar, neu + schaetzung(nx, ny, ziel.x, ziel.y));
     }
   }
 
-  if (woher[zielIndex] === -1) return [];
+  if (!gefunden) return [];
   const weg = [];
   let lauf = zielIndex;
   while (lauf !== startIndex) {
@@ -109,9 +146,9 @@ function suchen(karte, start, ziel) {
 function nachbarfeld(karte, feld, von) {
   let bestes = null;
   let besterAbstand = Infinity;
-  for (const [dx, dy] of RICHTUNGEN) {
-    const nx = feld.x + dx;
-    const ny = feld.y + dy;
+  for (let r = 0; r < 8; r++) {
+    const nx = feld.x + DX[r];
+    const ny = feld.y + DY[r];
     if (!begehbar(karte, nx, ny)) continue;
     const abstand = Math.hypot(nx - von.x, ny - von.y);
     if (abstand < besterAbstand) {

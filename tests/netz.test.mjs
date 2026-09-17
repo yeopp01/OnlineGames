@@ -126,7 +126,7 @@ test('raeume AC-8 / uebertragung AC-5 / uebertragung AC-6 / uebertragung AC-7: A
 
   anna.senden({ typ: 'start', startwert: 7 });
   const aufbau = await bert.warteAuf(istTyp('aufbau'));
-  assert.equal(aufbau.karte.groesse, 64);
+  assert.equal(aufbau.karte.groesse, 120); // zwei Spieler (karte AC-11)
   assert.equal(aufbau.spieler.length, 2);
 
   const zustand = await bert.warteAuf((n) => n.typ === 'zustand' && n.t >= 3);
@@ -163,8 +163,8 @@ test('einheiten AC-11 / einheiten AC-12: ein Sammelbefehl fuellt den Vorrat', as
   let besterAbstand = Infinity;
   for (let i = 0; i < roh.length; i++) {
     if (roh[i] !== 1) continue;
-    const x = i % 64;
-    const y = (i / 64) | 0;
+    const x = i % aufbau.karte.groesse;
+    const y = (i / aufbau.karte.groesse) | 0;
     const abstand = Math.hypot(x - meine.basis.x, y - meine.basis.y);
     if (abstand < besterAbstand) {
       besterAbstand = abstand;

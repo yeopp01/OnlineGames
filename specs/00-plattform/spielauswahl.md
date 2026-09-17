@@ -2,7 +2,7 @@
 
 **Bereich:** Plattform
 **Kuerzel:** auswahl
-**Stand:** 11/17 fertig · 6 offen
+**Stand:** 12/17 fertig · 5 offen
 
 ## Zweck
 
@@ -50,7 +50,7 @@ Wer nur mitspielt, ueberspringt alles: Code eingeben, Namen eingeben, drin
 - **AC-5** `fertig` **Vorgaben ergeben spielbare Partie** — Wer nichts anfasst und sofort
   eroeffnet, bekommt eine sinnvolle Runde. Einstellungen sind zum Abweichen
   da, nicht zum Ausfuellen.
-- **AC-6** `offen` **Einstellungen des Strategiespiels** — Kartengroesse, Spielerzahl, Startwert
+- **AC-6** `fertig` **Einstellungen des Strategiespiels** — Kartengroesse, Spielerzahl, Startwert
   der Karte, Vorratsmenge. _(Spielerzahl und Startwert stehen schon; Karte und
   Vorrat kommen mit dem Kartenumbau in Stufe A, das Volk je Spieler mit
   Stufe E → [Fahrplan](../10-strategie/fahrplan.md) AC-16.)_

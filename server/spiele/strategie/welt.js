@@ -13,10 +13,24 @@ const SUCHWEITE_ERSATZ = 12;
 
 const FARBEN = ['#4a90d9', '#d94a4a', '#4ad98a', '#d9c04a', '#a44ad9', '#4ad9d0'];
 
+// Startvorrat je Einstellung (karte AC-12); "wenig" ist die Vorlage.
+const STARTVORRAT = {
+  wenig: { holz: 200, nahrung: 200, gold: 100, stein: 200 },
+  mittel: { holz: 500, nahrung: 500, gold: 500, stein: 500 },
+  viel: { holz: 1000, nahrung: 1000, gold: 1000, stein: 1000 },
+};
+const ROHSTOFFE = ['holz', 'nahrung', 'gold', 'stein'];
+
 class Welt {
-  constructor(spielerListe, startwert) {
+  /**
+   * @param {{id: string, name: string}[]} spielerListe
+   * @param {number} startwert
+   * @param {{kartengroesse?: string, vorrat?: string}} [einstellungen]
+   */
+  constructor(spielerListe, startwert, einstellungen = {}) {
     this.startwert = startwert;
-    this.karte = karten.erzeugen(startwert, spielerListe.length);
+    this.karte = karten.erzeugen(startwert, spielerListe.length, einstellungen);
+    const start = STARTVORRAT[einstellungen.vorrat] || STARTVORRAT.wenig;
     this.takt = 0;
     this.naechsteId = 1;
     this.einheiten = new Map();
@@ -26,8 +40,7 @@ class Welt {
       id: eintrag.id,
       name: eintrag.name,
       farbe: FARBEN[i % FARBEN.length],
-      holz: 0,
-      nahrung: 0,
+      ...start,
       basis: this.karte.basen[i],
     }));
 
@@ -235,7 +248,7 @@ class Welt {
     return {
       typ: 'zustand',
       t: this.takt,
-      spieler: this.spieler.map((s) => ({ id: s.id, holz: s.holz, nahrung: s.nahrung })),
+      spieler: this.spieler.map((s) => ({ id: s.id, holz: s.holz, nahrung: s.nahrung, gold: s.gold, stein: s.stein })),
       einheiten,
       felder,
     };
@@ -262,4 +275,4 @@ class Welt {
   }
 }
 
-module.exports = { Welt, TAKTE_PRO_SEKUNDE, TRAGKRAFT, SAMMELTAKTE };
+module.exports = { Welt, TAKTE_PRO_SEKUNDE, TRAGKRAFT, SAMMELTAKTE, STARTVORRAT, ROHSTOFFE };

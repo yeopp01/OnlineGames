@@ -106,7 +106,7 @@ async function eroeffnen(nachricht) {
 test('auswahl AC-4: das Spiel liefert seine Einstellungen als Liste mit Name, Art, Vorgabe und Grenzen', async () => {
   const { spiele } = await (await fetch(`http://localhost:${HAFEN}/api/spiele`)).json();
   const strategie = spiele.find((s) => s.art === 'strategie');
-  assert.deepEqual(strategie.einstellungen.map((e) => [e.schluessel, e.art]), [['spieler', 'zahl'], ['startwert', 'startwert']]);
+  assert.deepEqual(strategie.einstellungen.map((e) => [e.schluessel, e.art]), [['spieler', 'zahl'], ['startwert', 'startwert'], ['kartengroesse', 'wahl'], ['vorrat', 'wahl']]);
   const zahl = strategie.einstellungen[0];
   assert.equal(typeof zahl.name, 'string');
   assert.deepEqual([zahl.von, zahl.bis, zahl.vorgabe], [2, 6, 6]);
@@ -122,7 +122,7 @@ test('auswahl AC-5: wer nichts einstellt, eroeffnet mit den Vorgaben und kann sp
   const { gast, antwort } = await eroeffnen({ art: 'strategie' });
   assert.equal(antwort.typ, 'du');
   const raum = await gast.warteAuf(istTyp('raum'));
-  assert.deepEqual(Object.fromEntries(raum.einstellungen.map((e) => [e.schluessel, e.wert])), { spieler: 6, startwert: null });
+  assert.deepEqual(Object.fromEntries(raum.einstellungen.map((e) => [e.schluessel, e.wert])), { spieler: 6, startwert: null, kartengroesse: 'normal', vorrat: 'wenig' });
   assert.equal(raum.art, 'strategie');
 
   const bert = kunde(HAFEN);
@@ -223,7 +223,7 @@ const werteAus = (raum) => Object.fromEntries(raum.einstellungen.map((e) => [e.s
 test('auswahl AC-9: wer beitritt, sieht die Einstellungen mit Namen und Wert', async () => {
   const { gast, bert } = await raumMitBert({ spieler: 4, startwert: 4711 });
   const raum = await bert.warteAuf((n) => n.typ === 'raum' && n.spieler.length === 2);
-  assert.deepEqual(raum.einstellungen.map((e) => [e.name, e.wert]), [['Hoechstens Spieler', 4], ['Startwert der Karte', 4711]]);
+  assert.deepEqual(raum.einstellungen.map((e) => [e.name, e.wert]), [['Hoechstens Spieler', 4], ['Startwert der Karte', 4711], ['Kartengroesse', 'normal'], ['Startvorrat', 'wenig']]);
   assert.equal(raum.gastgeber, raum.spieler[0].id);
   gast.zu();
   bert.zu();
@@ -292,4 +292,18 @@ test('auswahl AC-11: ohne Konto eroeffnet niemand, auch nicht mit Spiel und Eins
   // Und die Liste der Spiele darf jeder sehen - sie verraet nichts.
   assert.equal((await fetch(`http://localhost:${HAFEN}/api/spiele`)).status, 200);
   fremder.zu();
+});
+
+test('auswahl AC-6: Kartengroesse und Startvorrat kommen in der Partie an', async () => {
+  const { gast, bert } = await raumMitBert({ kartengroesse: 'gross', vorrat: 'viel', startwert: 5 });
+  gast.senden({ typ: 'start' });
+  const aufbau = await bert.warteAuf(istTyp('aufbau'));
+  assert.equal(aufbau.karte.groesse, 144, 'zwei Spieler, gross: 120 mal 1,2');
+  const zustand = await bert.warteAuf(istTyp('zustand'));
+  assert.deepEqual(
+    zustand.spieler.map((s) => [s.holz, s.nahrung, s.gold, s.stein]),
+    [[1000, 1000, 1000, 1000], [1000, 1000, 1000, 1000]],
+  );
+  gast.zu();
+  bert.zu();
 });

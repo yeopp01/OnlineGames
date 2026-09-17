@@ -22,23 +22,36 @@ test('karte AC-1: gleicher Startwert ergibt dieselbe Karte', () => {
   assert.notDeepEqual([...eine.felder], [...dritte.felder]);
 });
 
-test('karte AC-2: nur Gras ist begehbar', () => {
-  const karte = karten.erzeugen(7, 2);
-  const gefunden = new Set(karte.felder);
-  for (const art of gefunden) assert.ok(art <= karten.WASSER, `unbekannte Feldart ${art}`);
-
-  for (let y = 0; y < karte.groesse; y++) {
-    for (let x = 0; x < karte.groesse; x++) {
-      const art = karte.felder[y * karte.groesse + x];
-      assert.equal(karten.begehbar(karte, x, y), art === karten.GRAS);
-    }
-  }
+test('karte AC-11: die Karte waechst mit der Zahl der Spieler und der Einstellung', () => {
+  assert.equal(karten.erzeugen(7, 2).groesse, 120);
+  assert.equal(karten.erzeugen(7, 8).groesse, 200);
+  const groessen = [2, 3, 4, 5, 6, 7, 8].map((n) => karten.erzeugen(7, n).groesse);
+  for (let i = 1; i < groessen.length; i++) assert.ok(groessen[i] > groessen[i - 1], `waechst: ${groessen}`);
+  assert.ok(karten.erzeugen(7, 2, { kartengroesse: 'klein' }).groesse < 120);
+  assert.ok(karten.erzeugen(7, 2, { kartengroesse: 'gross' }).groesse > 120);
+  // Nie ueber 200, auch gross mit acht Spielern nicht.
+  assert.equal(karten.erzeugen(7, 8, { kartengroesse: 'gross' }).groesse, 200);
+  const karte = karten.erzeugen(7, 4);
+  assert.equal(karte.felder.length, karte.groesse * karte.groesse);
 });
 
-test('karte AC-3: die Karte ist 64 x 64', () => {
-  const karte = karten.erzeugen(7, 6);
-  assert.equal(karte.groesse, 64);
-  assert.equal(karte.felder.length, 64 * 64);
+test('karte AC-13: Vorraete sind einzelne Dinge mit den Mengen der Vorlage', () => {
+  const karte = karten.erzeugen(7, 2);
+  const erwartet = { [karten.WALD]: 100, [karten.BEERE]: 125, [karten.GOLD]: 800, [karten.STEIN]: 350 };
+  const arten = new Set();
+  for (let i = 0; i < karte.felder.length; i++) {
+    const art = karte.felder[i];
+    assert.ok(art <= karten.STEIN, `unbekannte Feldart ${art}`);
+    if (art in erwartet) {
+      arten.add(art);
+      assert.equal(karte.vorrat.get(i), erwartet[art], `Feld ${i}`);
+    } else {
+      assert.equal(karte.vorrat.has(i), false, 'Gras und Wasser tragen nichts');
+    }
+    // Ein Vorrat belegt sein Feld: begehbar ist nur Gras.
+    assert.equal(karten.begehbar(karte, i % karte.groesse, (i / karte.groesse) | 0), art === karten.GRAS);
+  }
+  assert.deepEqual([...arten].sort(), [karten.WALD, karten.BEERE, karten.GOLD, karten.STEIN].sort());
 });
 
 test('karte AC-4: alle Basen haben denselben Abstand zur Mitte', () => {
@@ -79,7 +92,7 @@ test('karte AC-6: jede Basis hat Holz und Nahrung in Reichweite', () => {
         const y = (index / karte.groesse) | 0;
         if (Math.hypot(x - basis.x, y - basis.y) > 10) continue;
         if (karte.felder[index] === karten.WALD) holz++;
-        else nahrung++;
+        if (karte.felder[index] === karten.BEERE) nahrung++;
       }
       assert.ok(holz > 0, `Basis ${basis.x}/${basis.y} ohne Wald in Reichweite`);
       assert.ok(nahrung > 0, `Basis ${basis.x}/${basis.y} ohne Beeren in Reichweite`);
@@ -87,17 +100,62 @@ test('karte AC-6: jede Basis hat Holz und Nahrung in Reichweite', () => {
   }
 });
 
-test('karte AC-8: Wald traegt 120, Beeren tragen 80', () => {
-  const karte = karten.erzeugen(7, 2);
-  for (const [index, menge] of karte.vorrat) {
-    assert.equal(menge, karte.felder[index] === karten.WALD ? 120 : 80);
+test('karte AC-14: jede Basis ist gleich ausgestattet, nur gedreht', () => {
+  // Gezaehlt wird im Umkreis von 16 Feldern: so weit ist vorher freigeraeumt,
+  // Zufallswald steht dort nicht.
+  const zaehlen = (karte, basis) => {
+    const anzahl = { beeren: 0, gold: 0, stein: 0, baeume: 0 };
+    const abstaende = { beeren: [], gold: [], stein: [] };
+    for (const index of karte.vorrat.keys()) {
+      const x = index % karte.groesse;
+      const y = (index / karte.groesse) | 0;
+      const abstand = Math.hypot(x - basis.x, y - basis.y);
+      if (abstand > 16) continue;
+      const art = karte.felder[index];
+      if (art === karten.WALD) anzahl.baeume++;
+      if (art === karten.BEERE) { anzahl.beeren++; abstaende.beeren.push(abstand); }
+      if (art === karten.GOLD) { anzahl.gold++; abstaende.gold.push(abstand); }
+      if (art === karten.STEIN) { anzahl.stein++; abstaende.stein.push(abstand); }
+    }
+    return { anzahl, abstaende };
+  };
+  const mittel = (liste) => liste.reduce((a, b) => a + b, 0) / liste.length;
+
+  for (const [startwert, spieler] of [[1, 2], [42, 3], [4711, 5], [99, 8]]) {
+    const karte = karten.erzeugen(startwert, spieler);
+    const alle = karte.basen.map((b) => zaehlen(karte, b));
+    for (const { anzahl, abstaende } of alle) {
+      assert.deepEqual(
+        { beeren: anzahl.beeren, gold: anzahl.gold, stein: anzahl.stein },
+        { beeren: 6, gold: 7, stein: 5 },
+        `Startwert ${startwert}, ${spieler} Spieler`,
+      );
+      assert.ok(anzahl.baeume >= 2 * 29, `zwei volle Waeldchen, gefunden ${anzahl.baeume} Baeume`);
+      for (const art of ['beeren', 'gold', 'stein']) {
+        assert.ok(Math.min(...abstaende[art]) >= 5 && Math.max(...abstaende[art]) <= 13, `${art} in 5 bis 12 Feldern`);
+        // Gleicher Abstand fuer alle: die Mittel weichen hoechstens um ein Feld ab.
+        const mittelwerte = alle.map((a) => mittel(a.abstaende[art]));
+        assert.ok(Math.max(...mittelwerte) - Math.min(...mittelwerte) <= 1, `${art}: ${mittelwerte}`);
+      }
+    }
   }
+});
+
+test('karte AC-12: vier Rohstoffe mit Startvorrat nach Einstellung', () => {
+  const wenig = new Welt(ZWEI, 7);
+  for (const s of wenig.spieler) assert.deepEqual([s.holz, s.nahrung, s.gold, s.stein], [200, 200, 100, 200]);
+  const viel = new Welt(ZWEI, 7, { vorrat: 'viel' });
+  for (const s of viel.spieler) assert.deepEqual([s.holz, s.nahrung, s.gold, s.stein], [1000, 1000, 1000, 1000]);
+  const mittel = new Welt(ZWEI, 7, { vorrat: 'mittel' });
+  assert.deepEqual(Object.keys(mittel.zustand().spieler[0]).sort(), ['gold', 'holz', 'id', 'nahrung', 'stein']);
+  assert.equal(mittel.zustand().spieler[0].stein, 500);
 });
 
 test('karte AC-9: ein erschoepftes Feld wird Gras und wird gemeldet', () => {
   const welt = new Welt(ZWEI, 7);
   const index = [...welt.karte.vorrat.keys()].find((i) => welt.karte.felder[i] === karten.WALD);
-  const feld = { x: index % 64, y: (index / 64) | 0 };
+  const g = welt.karte.groesse;
+  const feld = { x: index % g, y: (index / g) | 0 };
   welt.karte.vorrat.set(index, 5); // fast leer
 
   const einheit = [...welt.einheiten.values()][0];
@@ -118,10 +176,11 @@ test('karte AC-9: ein erschoepftes Feld wird Gras und wird gemeldet', () => {
 
 test('einheiten AC-6: der Weg fuehrt um Hindernisse herum', () => {
   const karte = karten.erzeugen(7, 2);
+  const g = karte.groesse;
   // Eine Mauer aus Wald quer durch einen freien Bereich ziehen.
-  for (let y = 10; y < 20; y++) karte.felder[y * 64 + 15] = karten.WALD;
+  for (let y = 10; y < 20; y++) karte.felder[y * g + 15] = karten.WALD;
   for (let y = 10; y < 20; y++) {
-    for (const x of [14, 16]) karte.felder[y * 64 + x] = karten.GRAS;
+    for (const x of [14, 16]) karte.felder[y * g + x] = karten.GRAS;
   }
 
   const weg = suchen(karte, { x: 14, y: 15 }, { x: 16, y: 15 });
@@ -133,12 +192,13 @@ test('einheiten AC-6: der Weg fuehrt um Hindernisse herum', () => {
 
 test('einheiten AC-7: keine Abkuerzung durch eine Ecke', () => {
   const karte = karten.erzeugen(7, 2);
+  const g = karte.groesse;
   for (let y = 8; y <= 12; y++) {
-    for (let x = 8; x <= 12; x++) karte.felder[y * 64 + x] = karten.GRAS;
+    for (let x = 8; x <= 12; x++) karte.felder[y * g + x] = karten.GRAS;
   }
   // Eine Ecke aus zwei Sperren: von 10/10 nach 11/11 darf es nicht diagonal gehen.
-  karte.felder[10 * 64 + 11] = karten.WASSER;
-  karte.felder[11 * 64 + 10] = karten.WASSER;
+  karte.felder[10 * g + 11] = karten.WASSER;
+  karte.felder[11 * g + 10] = karten.WASSER;
 
   const weg = suchen(karte, { x: 10, y: 10 }, { x: 11, y: 11 });
   const direkt = weg.length === 1 && weg[0].x === 11 && weg[0].y === 11;
@@ -160,10 +220,11 @@ test('einheiten AC-8: eine Wegsuche quer ueber die Karte bleibt unter 1 ms', () 
 
 test('einheiten AC-9: ein unerreichbares Ziel laesst die Einheit stehen', () => {
   const karte = karten.erzeugen(7, 2);
+  const g = karte.groesse;
   for (let y = 20; y <= 24; y++) {
-    for (let x = 20; x <= 24; x++) karte.felder[y * 64 + x] = karten.WASSER;
+    for (let x = 20; x <= 24; x++) karte.felder[y * g + x] = karten.WASSER;
   }
-  karte.felder[22 * 64 + 22] = karten.GRAS; // eine Insel
+  karte.felder[22 * g + 22] = karten.GRAS; // eine Insel
 
   const weg = suchen(karte, karte.basen[0], { x: 22, y: 22 });
   assert.deepEqual(weg, [], 'ohne Weg kommt eine leere Liste zurueck');
@@ -174,15 +235,16 @@ test('einheiten AC-13: bei Erschoepfung wird das naechste Feld gleicher Art gesu
   const einheit = [...welt.einheiten.values()][0];
 
   // Ein leeres Waldfeld direkt neben einem vollen.
+  const g = welt.karte.groesse;
   const voll = [...welt.karte.vorrat.keys()].find((i) => welt.karte.felder[i] === karten.WALD);
   const leer = [...welt.karte.vorrat.keys()].find(
     (i) => welt.karte.felder[i] === karten.WALD && i !== voll
-      && Math.hypot((i % 64) - (voll % 64), ((i / 64) | 0) - ((voll / 64) | 0)) < 8,
+      && Math.hypot((i % g) - (voll % g), ((i / g) | 0) - ((voll / g) | 0)) < 8,
   );
   assert.ok(leer !== undefined, 'zwei Waldfelder nebeneinander');
 
   welt.karte.vorrat.set(leer, 0);
-  const leeresFeld = { x: leer % 64, y: (leer / 64) | 0 };
+  const leeresFeld = { x: leer % g, y: (leer / g) | 0 };
   einheit.x = leeresFeld.x + 1;
   einheit.y = leeresFeld.y;
   einheit.zuletztGesammelt = karten.WALD;
@@ -191,7 +253,7 @@ test('einheiten AC-13: bei Erschoepfung wird das naechste Feld gleicher Art gesu
   welt.sammelnBeginnen(einheit);
   assert.ok(einheit.auftrag, 'die Einheit bekommt einen Ersatzauftrag');
   assert.notDeepEqual(einheit.auftrag.feld, leeresFeld);
-  const neu = einheit.auftrag.feld.y * 64 + einheit.auftrag.feld.x;
+  const neu = einheit.auftrag.feld.y * g + einheit.auftrag.feld.x;
   assert.equal(welt.karte.felder[neu], karten.WALD, 'Ersatz ist wieder Wald');
 });
 

@@ -21,6 +21,14 @@ etwas anderem gearbeitet.
   einen Verein ueber …"). Das liest sich holprig. Vorschlag: echte Umlaute
   nur in Zeichenketten, die auf dem Bildschirm stehen; Bezeichner bleiben
   umschrieben. Bis zur Antwort bleibt es bei der Umschreibung.
+- **Zeittest des Managerspiels unter Last (seit 2026-09-16, Runde 10).**
+  `karriere AC-7` (Saison unter 1 s) reißt in `npm run check`, sobald fremde
+  Rechenjobs laufen: 1,7–3,2 s. Nacheinander (`--test-concurrency=1`) sind
+  alle 255 Tests grün, AC-7 mit 516 ms. Vorschlag: Zeitmessungen in einen
+  eigenen, seriellen Schritt von `npm run check` legen (`node --test
+  --test-concurrency=1` nur für die Messtests), die Grenze bleibt 1 s. Ohne
+  Antwort ändert die Schleife weder Grenze noch Testaufruf und committet nur
+  bei grüner Prüfung.
 - **Berechtigungen für die Schleife.** Das Anlegen von `.claude/settings.json`
   wurde vom Sicherheitsfilter abgelehnt (Selbständerung). Solange sie fehlen,
   kann jede Runde an einer Rückfrage hängen bleiben. Der Vorschlag steht in der
@@ -122,6 +130,13 @@ Was sich wiederholt hat:
    sind sie 26 Bildpunkte hoch. → Anweisung: immer auch in Spielgröße
    beurteilen.
 
+**Fehler in dieser Rückschau:** Prüfung und Commit waren mit `;` verkettet —
+`npm run check` war rot (karriere AC-7, Saison 1754 ms statt unter 1 s) und der
+Commit lief trotzdem. Ursache des Rots: Last (sechs fremde Testprozesse);
+einzeln dreimal grün mit 580–700 ms, die Runde hat keinen Rechenteil berührt.
+→ Anweisung: nur `&&`, besser getrennt. Die Zeitgrenzen des Managerspiels
+sind unter Last knapp; nicht lockern, aber bei Rot zuerst die Last prüfen.
+
 Beobachtet, nicht geändert: Eine Runde mit Oberfläche fährt den Browser
 zweimal (`qa:nachweis`, dann `check:alles`) — bei belasteter Maschine je drei
 Minuten. Tragbar; ein Teillauf für `check:alles` würde die Regel aufweichen.
@@ -131,6 +146,17 @@ Minuten. Tragbar; ein Teillauf für `check:alles` würde die Regel aufweichen.
 Neueste oben. Eine Zeile je Runde: Nummer, Datum, Kriterien, Ergebnis,
 wichtigste Erkenntnis.
 
+- **11** · 2026-09-17 · A2 (Teil 1), nach fünf Stunden Warten committet, als
+  `npm run check` bei 18 % Last grün war (257/257). Beleg dazwischen: auch der
+  letzte Commit ohne diese Änderungen scheiterte unter Last am selben Zeittest. karte AC-11–14 und
+  auswahl AC-6 gebaut und belegt, karte AC-2, 3, 8 abgelöst; Browserlauf 79/79
+  grün, ohne Browser 256/257 — rot nur karriere AC-7 unter fremder Last
+  (drittes Mal). Gefunden: länglicher Beerenblock und Runden aufs Raster
+  machten die Abstände ungleich (im Produkt behoben); Wegsuche auf flache
+  Zahlenfelder umgebaut, zufällige Suche auf 200 × 200 im Mittel 0,25 ms; ein
+  Vorratstest war durch den Startvorrat wirkungslos geworden und ist wieder
+  scharf. `zurueckgestellt` neben alter Begründung beanstandet die Prüfung
+  nicht. Wartet auf grüne Prüfung oder Antwort zur Frage „Zeittest unter Last".
 - **10** · 2026-09-16 · Rückschau: `npm run sicht`, Regeln zu Messannahmen
   und Spielgröße in die Anweisung. Nächste Runde: **A2 Karte**.
 - **9** · 2026-09-16 · A1b: darstellung AC-6 fertig — Dorfbewohner (Hut,

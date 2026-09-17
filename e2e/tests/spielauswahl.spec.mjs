@@ -100,7 +100,7 @@ test.describe('Spiel waehlen', () => {
     await page.goto('/');
     await page.locator('[data-oeffnen="strategie"]').click();
     const strategie = page.locator('[data-einstellungen-fuer="strategie"]');
-    await expect(strategie.locator('[data-einstellung]')).toHaveCount(2);
+    await expect(strategie.locator('[data-einstellung]')).toHaveCount(4);
     await expect(strategie.locator('[data-einstellung="spieler"]')).toHaveValue('6');
     await expect(strategie.locator('[data-einstellung="spieler"]')).toHaveAttribute('max', '6');
     await expect(strategie.locator('[data-einstellung="startwert"]')).toHaveAttribute('placeholder', 'zufaellig');
@@ -131,6 +131,28 @@ test.describe('Spiel waehlen', () => {
     await page.locator('[data-eroeffnen="strategie"]').click();
     await expect(page.locator('#warteraum')).toBeVisible();
     await expect(page.locator('#raumcode')).toHaveText(/^[A-Z0-9]{3}-[A-Z0-9]{3}$/);
+  });
+
+  test('auswahl AC-6: Spielerzahl, Startwert, Kartengroesse und Startvorrat stellt man vor dem Eroeffnen ein', async ({ page }, info) => {
+    await page.setViewportSize({ width: 1400, height: 1150 });
+    await page.goto('/');
+    await page.locator('[data-oeffnen="strategie"]').click();
+    const form = page.locator('[data-einstellungen-fuer="strategie"]');
+    await form.locator('[data-einstellung="spieler"]').fill('4');
+    await form.locator('[data-einstellung="startwert"]').fill('4711');
+    await form.locator('[data-einstellung="kartengroesse"]').selectOption({ label: 'gross' });
+    await form.locator('[data-einstellung="vorrat"]').selectOption({ label: 'viel (je 1000)' });
+    await expect(form.locator('[data-eroeffnen="strategie"]')).toBeInViewport();
+    await nachweis(page, {
+      spec: AUSWAHL,
+      ac: 'AC-6',
+      titel: 'Vier Einstellungen des Strategiespiels: vier Spieler, Karte 4711, gross, viel Startvorrat',
+      test: info,
+    });
+    await form.locator('[data-eroeffnen="strategie"]').click();
+    // Im Warteraum stehen sie so, wie sie eingestellt wurden.
+    await expect(page.locator('#raumEinstellungen [data-einstellung="kartengroesse"]')).toHaveValue('"gross"');
+    await expect(page.locator('#raumEinstellungen [data-einstellung="vorrat"]')).toHaveValue('"viel"');
   });
 
   test('auswahl AC-8: ein unsinniger Startwert kommt als Satz vom Server zurueck', async ({ page }, info) => {
@@ -200,7 +222,7 @@ test.describe('Im Warteraum', () => {
     await bert.locator('#code').fill(code);
     await bert.locator('#beitreten').click();
     await expect(bert.locator('#warteraum')).toBeVisible();
-    await expect(bert.locator('#raumEinstellungen dt')).toHaveText(['Hoechstens Spieler', 'Startwert der Karte']);
+    await expect(bert.locator('#raumEinstellungen dt')).toHaveText(['Hoechstens Spieler', 'Startwert der Karte', 'Kartengroesse', 'Startvorrat']);
     await expect(bert.locator('[data-wert="spieler"]')).toHaveText('4');
     await expect(bert.locator('[data-wert="startwert"]')).toHaveText('4711');
     // Bert hat keine Felder, nur Werte.
