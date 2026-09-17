@@ -245,6 +245,17 @@ ruhigerer Maschine 141 s Testzeit, langsamster Fall weiter der Lagertest (28 s).
 Neueste oben. Eine Zeile je Runde: Nummer, Datum, Kriterien, Ergebnis,
 wichtigste Erkenntnis.
 
+- **31** · 2026-09-17 · einheiten AC-18 fertig: die Farm — 3 × 3, begehbar,
+  175 Nahrung, 0,32 je Sekunde, höchstens ein Bauer; nach dem Bau bestellt der
+  Bauer sie, leer verschwindet sie. Gezeichnet als Acker mit Furchen, Getreide,
+  Zaun und Vogelscheuche in Spielerfarbe, im Bodendurchgang unter Figuren.
+  Begehbare Gebäude belegen kein Kartenfeld, deshalb prüft der Bauplatz sie
+  eigens — auf dem Server und in der Vorschau. Gelernt: (1) Der alte
+  Baumenü-Test zählte vier Knöpfe und behauptete „Haus bereit" — mit der Farm
+  falsch, samt Unterschrift. (2) „Hat Höhe" gilt nicht für ein flaches Gebäude;
+  die Ausnahme steht mit Grund am Test. (3) Im Bild sah die Vogelscheuche aus
+  wie der Hut des Bauern — in die Ecke gerückt. Nächster Teil von A7: Kaserne
+  und Miliz, dann bauen AC-20 fertig.
 - **30** · 2026-09-17 · Rückschau: Regel für alle Zeitmessungen, Messen beim
   Zeichnen, CLAUDE.md nachgezogen. Nächster Schritt: Rest von **A7** — Farm
   (einheiten AC-18), Kaserne und Miliz, Webstuhl, Sammelpunkt, Schafe treiben.

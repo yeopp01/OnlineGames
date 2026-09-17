@@ -2,7 +2,7 @@
 
 **Bereich:** Strategie
 **Kuerzel:** einheiten
-**Stand:** 12/18 fertig · 5 offen · 1 zurueckgestellt
+**Stand:** 13/18 fertig · 4 offen · 1 zurueckgestellt
 
 ## Zweck
 
@@ -83,7 +83,7 @@ Befehl bewirkt.
   eigenes Schaf: er schlachtet es und nimmt Nahrung vom Kadaver. Ein Kadaver
   verliert je 4 Sekunden eine Nahrung, solange niemand an ihm arbeitet — wie
   im Original, damit man nicht alle Schafe zugleich schlachtet.
-- **AC-18** `offen` **Farm bestellen** — Ein Dorfbewohner auf einer fertigen Farm sammelt dort
+- **AC-18** `fertig` **Farm bestellen** — Ein Dorfbewohner auf einer fertigen Farm sammelt dort
   Nahrung, bis die Farm leer ist. Auf einer Farm arbeitet höchstens einer.
 - **AC-19** `fertig` **Werte nach der Vorlage** — Dorfbewohner, Späherreiter und
   Miliz haben die Werte aus der Tabelle; der Späher ist anderthalbmal so

@@ -91,7 +91,7 @@ export class Auswahlleiste {
       // Neu gebaut wird nur, wenn sich etwas Sichtbares aendert - sonst nur
       // der Balken. So flackert nichts unter dem Zeiger.
       const bezahlbar = angebot.map((e) => this.fehlt(e.kosten)).join('|');
-      const schluessel = `g${gebaeude.i}:${gebaeude.h}:${gebaeude.s.join(',')}:${gebaeude.w}:${bezahlbar}`;
+      const schluessel = `g${gebaeude.i}:${gebaeude.h}:${gebaeude.n}:${gebaeude.s.join(',')}:${gebaeude.w}:${bezahlbar}`;
       if (schluessel !== this.gezeigt) {
         this.gebaeudeBauen(gebaeude, angebot, farbe);
         this.gezeigt = schluessel;
@@ -264,7 +264,17 @@ export class Auswahlleiste {
     w.replaceChildren();
     const voll = this.ansicht.werte.gebaeude[gebaeude.art]?.leben ?? gebaeude.h;
     w.append(kopf(GEBAEUDE[gebaeude.art]?.name || gebaeude.art, gebaeude.h ?? voll, voll));
+    // Eine Farm zeigt, wie viel Nahrung sie noch traegt (einheiten AC-18).
+    const vorrat = this.ansicht.werte.gebaeude[gebaeude.art]?.nahrung;
+    if (vorrat && gebaeude.n !== undefined) {
+      const zeile = element('div', 'ladung');
+      zeile.id = 'farmvorrat';
+      zeile.append(element('span', 'ware ware-n'), element('span', null, `noch ${gebaeude.n} Nahrung`), element('span', 'leise', ` von ${vorrat}`));
+      w.append(zeile);
+    }
 
+    // Was nichts ausbildet, zeigt weder Knoepfe noch eine leere Schlange.
+    if (!angebot.length && !gebaeude.s.length) return;
     const knoepfe = element('div', 'ausbilden');
     for (const eintrag of angebot) {
       const knopf = document.createElement('button');

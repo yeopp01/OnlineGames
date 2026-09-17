@@ -112,6 +112,8 @@ class Welt {
       fertig,
       bau: fertig ? 1 : 0, // Anteil der Bauarbeit
       leben: GEBAEUDE[art].leben,
+      // Eine Farm traegt Nahrung, und nur einer arbeitet darauf (einheiten AC-18).
+      ...(GEBAEUDE[art].nahrung ? { nahrung: GEBAEUDE[art].nahrung, arbeiter: null } : {}),
       schlange: [], // Arten der bezahlten Auftraege, der erste laeuft
       fortschritt: 0, // Takte am laufenden Auftrag
       wartet: false, // Bevoelkerung voll (bauen AC-15)
@@ -144,12 +146,19 @@ class Welt {
       const ty = Math.round(tier.y);
       if (tx >= x0 && tx <= x1 && ty >= y0 && ty <= y1) return false;
     }
+    // Begehbare Gebaeude (Farmen) belegen kein Feld der Karte - sie werden hier
+    // eigens ausgeschlossen, damit niemand ueber sie baut.
+    for (const gebaeude of this.gebaeude.values()) {
+      const g = this.grundflaeche(gebaeude.art, gebaeude.x, gebaeude.y);
+      if (g.x0 <= x1 && g.x1 >= x0 && g.y0 <= y1 && g.y1 >= y0) return false;
+    }
     return true;
   }
 
   // Die Grundflaeche wird unbegehbar; wer darauf steht, geht zum naechsten
   // freien Feld daneben.
   belegen(gebaeude) {
+    if (GEBAEUDE[gebaeude.art].begehbar) return;
     const g = this.karte.groesse;
     const { x0, y0, x1, y1 } = this.grundflaeche(gebaeude.art, gebaeude.x, gebaeude.y);
     for (let fy = Math.max(0, y0); fy <= Math.min(g - 1, y1); fy++) {
@@ -171,6 +180,7 @@ class Welt {
   }
 
   freigeben(gebaeude) {
+    if (GEBAEUDE[gebaeude.art].begehbar) return;
     const g = this.karte.groesse;
     const { x0, y0, x1, y1 } = this.grundflaeche(gebaeude.art, gebaeude.x, gebaeude.y);
     for (let fy = y0; fy <= y1; fy++) {
@@ -249,6 +259,7 @@ class Welt {
   }
 
   bauenBeginnen(einheit, baustelle) {
+    this.farmVerlassen(einheit);
     einheit.sammelt = false;
     einheit.baut = false;
     einheit.auftrag = { art: 'bauen', gebaeude: baustelle.id };
@@ -307,6 +318,11 @@ class Welt {
       if (einheit.auftrag?.art !== 'bauen' || einheit.auftrag.gebaeude !== gebaeude.id) continue;
       einheit.baut = false;
       einheit.auftrag = null;
+      // Nach einer Farm bestellt der erste Bauer sie gleich (bauen AC-1).
+      if (GEBAEUDE[gebaeude.art].nahrung && !gebaeude.arbeiter) {
+        this.farmBeginnen(einheit, gebaeude);
+        continue;
+      }
       if (!arten.size || gebaeude.art === 'dorfzentrum') continue;
       const feld = this.naechsterVorratAus(einheit, arten);
       if (!feld) continue;
@@ -471,11 +487,16 @@ class Welt {
     for (const id of einheitIds.slice(0, 200)) {
       const einheit = this.einheiten.get(id);
       if (!einheit || einheit.besitzer !== spielerId) continue;
+      this.farmVerlassen(einheit);
       einheit.sammelt = false;
       einheit.baut = false;
       if (baustelle && !baustelle.fertig && baustelle.besitzer === spielerId
         && (EINHEITEN[einheit.art].baut || []).includes(baustelle.art)) {
         this.bauenBeginnen(einheit, baustelle);
+      } else if (baustelle && baustelle.fertig && GEBAEUDE[baustelle.art].nahrung && baustelle.besitzer === spielerId
+        && EINHEITEN[einheit.art].tragkraft > 0
+        && (!baustelle.arbeiter || baustelle.arbeiter === einheit.id || !this.einheiten.has(baustelle.arbeiter))) {
+        this.farmBeginnen(einheit, baustelle);
       } else if (schaf && EINHEITEN[einheit.art].tragkraft > 0) {
         if (einheit.ladung > 0 && einheit.ladungsart !== 'nahrung') {
           einheit.ladung = 0;
@@ -497,6 +518,76 @@ class Welt {
         einheit.auftrag = { art: 'gehen', feld: { x: zx, y: zy } };
         einheit.weg = suchen(this.karte, this.feldVon(einheit), { x: zx, y: zy });
       }
+    }
+  }
+
+  // ---- Farm (einheiten AC-18) ----------------------------------------------
+
+  farmBeginnen(einheit, farm) {
+    this.farmVerlassen(einheit);
+    if (einheit.ladung > 0 && einheit.ladungsart !== 'nahrung') {
+      einheit.ladung = 0;
+      einheit.ladungsart = null;
+    }
+    einheit.angefangen = 0;
+    einheit.sammelt = false;
+    einheit.auftrag = { art: 'farm', gebaeude: farm.id };
+    farm.arbeiter = einheit.id;
+    this.gebaeudeGeaendert(farm);
+    this.wegZurFarm(einheit, farm);
+  }
+
+  // Wer etwas anderes tut, gibt seine Farm frei.
+  farmVerlassen(einheit) {
+    if (einheit.auftrag?.art !== 'farm') return;
+    const farm = this.gebaeude.get(einheit.auftrag.gebaeude);
+    if (farm && farm.arbeiter === einheit.id) {
+      farm.arbeiter = null;
+      this.gebaeudeGeaendert(farm);
+    }
+  }
+
+  wegZurFarm(einheit, farm) {
+    const ziel = { x: Math.round(farm.x), y: Math.round(farm.y) };
+    if (this.aufGrundflaeche(einheit, farm)) {
+      einheit.weg = [];
+      return;
+    }
+    einheit.weg = suchen(this.karte, this.feldVon(einheit), ziel);
+  }
+
+  farmTakten(einheit) {
+    const farm = this.gebaeude.get(einheit.auftrag.gebaeude);
+    if (!farm || !farm.fertig || farm.arbeiter !== einheit.id) {
+      einheit.auftrag = null;
+      einheit.sammelt = false;
+      return;
+    }
+    if (einheit.ladung >= EINHEITEN[einheit.art].tragkraft) {
+      einheit.sammelt = false;
+      this.abladen(einheit);
+      return;
+    }
+    if (!this.aufGrundflaeche(einheit, farm)) {
+      einheit.sammelt = false;
+      this.wegZurFarm(einheit, farm);
+      if (!einheit.weg.length) einheit.auftrag = null;
+      return;
+    }
+    einheit.sammelt = true;
+    einheit.angefangen += GEBAEUDE[farm.art].rate / TAKTE_PRO_SEKUNDE;
+    if (einheit.angefangen < 1) return;
+    einheit.angefangen -= 1;
+    farm.nahrung -= 1;
+    einheit.ladung += 1;
+    einheit.ladungsart = 'nahrung';
+    this.gebaeudeGeaendert(farm);
+    // Leer: die Farm ist weg, wie im Original muss eine neue her.
+    if (farm.nahrung <= 0) {
+      this.gebaeude.delete(farm.id);
+      einheit.sammelt = false;
+      einheit.auftrag = null;
+      if (einheit.ladung > 0) einheit.auftrag = { art: 'farm', gebaeude: farm.id, leer: true };
     }
   }
 
@@ -661,6 +752,16 @@ class Welt {
       this.tierTakten(einheit);
       return;
     }
+    if (einheit.auftrag.art === 'farm') {
+      // Eine leer gewordene Farm: die letzte Ladung noch abgeben.
+      if (einheit.auftrag.leer) {
+        if (einheit.ladung > 0) this.abladen(einheit);
+        else einheit.auftrag = null;
+        return;
+      }
+      this.farmTakten(einheit);
+      return;
+    }
     if (einheit.auftrag.art !== 'sammeln') {
       einheit.auftrag = null;
       return;
@@ -771,7 +872,13 @@ class Welt {
     einheit.ladung = 0;
     einheit.ladungsart = null;
     einheit.angefangen = 0;
-    // Zurueck an die Arbeit: zum selben Vorrat oder zum selben Tier.
+    // Zurueck an die Arbeit: zum selben Vorrat, Tier oder zur selben Farm.
+    if (einheit.auftrag?.art === 'farm') {
+      const farm = this.gebaeude.get(einheit.auftrag.gebaeude);
+      if (farm && !einheit.auftrag.leer) this.wegZurFarm(einheit, farm);
+      else einheit.auftrag = null;
+      return;
+    }
     if (einheit.auftrag?.art === 'tier') {
       const tier = this.tiere.get(einheit.auftrag.tier) || this.naechstesTier(einheit);
       if (tier) {
@@ -877,6 +984,7 @@ class Welt {
       h: g.leben,
       // Baufortschritt nur fuer Baustellen (darstellung AC-5).
       ...(g.fertig ? {} : { u: Math.round(g.bau * 100) / 100 }),
+      ...(g.nahrung !== undefined ? { n: g.nahrung } : {}),
       s: g.schlange,
       f: laufend ? Math.round((g.fortschritt / (EINHEITEN[laufend].zeit * TAKTE_PRO_SEKUNDE)) * 100) / 100 : 0,
       w: g.wartet,
@@ -918,7 +1026,7 @@ class Welt {
         }])),
         gebaeude: Object.fromEntries(Object.entries(GEBAEUDE).map(([art, w]) => [art, {
           leben: w.leben, bildetAus: w.bildetAus, groesse: w.groesse, kosten: w.kosten, bauzeit: w.bauzeit,
-          wohnraum: w.wohnraum, annahme: w.annahme,
+          wohnraum: w.wohnraum, annahme: w.annahme, begehbar: Boolean(w.begehbar), nahrung: w.nahrung || null,
         }])),
       },
     };

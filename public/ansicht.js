@@ -326,6 +326,13 @@ export class Ansicht {
       const ty = Math.round(tier.y);
       if (tx >= x0 && tx < x0 + n && ty >= y0 && ty < y0 + n) taugt = false;
     }
+    // Farmen liegen auf Gras, belegen ihren Platz aber trotzdem.
+    for (const gebaeude of this.gebaeude.values()) {
+      const m = this.werte.gebaeude[gebaeude.art]?.groesse || 1;
+      const gx0 = gebaeude.x - Math.floor(m / 2);
+      const gy0 = gebaeude.y - Math.floor(m / 2);
+      if (gx0 < x0 + n && gx0 + m > x0 && gy0 < y0 + n && gy0 + m > y0) taugt = false;
+    }
     return { art, x, y, groesse: n, mitte: { x: x0 + (n - 1) / 2, y: y0 + (n - 1) / 2 }, taugt };
   }
 
@@ -468,6 +475,13 @@ export class Ansicht {
     gewaesserZeichnen(stift, wasser, HALB_B * zoom);
     for (const p of wasser) wellenZeichnen(stift, p.x, p.y, HALB_B * zoom, p.index, this.salz);
 
+    // Flache Gebaeude (Farmen) gehoeren zum Boden: unter Figuren und Baeume.
+    for (const gebaeude of this.gebaeude.values()) {
+      if (!this.werte.gebaeude[gebaeude.art]?.begehbar) continue;
+      const mitte = this.gebaeudeMitte(gebaeude);
+      this.gebaeudeBild(gebaeude, this.zuBild(mitte.x, mitte.y), HALB_B * zoom);
+    }
+
     // 2. Alles, was steht, nach Tiefe: was weiter unten im Bild steht, verdeckt,
     //    was dahinter steht (darstellung AC-7).
     const stehend = [];
@@ -479,6 +493,8 @@ export class Ansicht {
       }
     }
     for (const gebaeude of this.gebaeude.values()) {
+      // Farmen liegen flach am Boden und sind schon gezeichnet.
+      if (this.werte.gebaeude[gebaeude.art]?.begehbar) continue;
       const mitte = this.gebaeudeMitte(gebaeude);
       stehend.push({ tiefe: mitte.x + mitte.y, x: mitte.x, y: mitte.y, art: 'gebaeude', gebaeude });
     }
@@ -533,7 +549,8 @@ export class Ansicht {
       stift.lineWidth = 2;
       stift.stroke();
     }
-    gebaeudeBildZeichnen(stift, gebaeude.art, p.x, p.y, e, spieler ? spieler.farbe : '#888888', groesse, gebaeude.u ?? 1);
+    const voll = this.werte.gebaeude[gebaeude.art]?.nahrung;
+    gebaeudeBildZeichnen(stift, gebaeude.art, p.x, p.y, e, spieler ? spieler.farbe : '#888888', groesse, gebaeude.u ?? 1, voll ? (gebaeude.n ?? voll) / voll : 1);
   }
 
   namenZeichnen(spieler) {

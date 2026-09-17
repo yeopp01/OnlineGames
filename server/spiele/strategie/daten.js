@@ -11,7 +11,7 @@ const EINHEITEN = {
   // baut: welche Gebaeude er errichten kann (bauen AC-1).
   dorfbewohner: {
     leben: 25, tempo: 0.8, sicht: 4, tragkraft: 10, kosten: { nahrung: 50 }, zeit: 25, kuerzel: 'd',
-    baut: ['haus', 'muehle', 'holzfaellerlager', 'bergbaulager'],
+    baut: ['haus', 'muehle', 'holzfaellerlager', 'bergbaulager', 'farm'],
   },
   spaeherreiter: { leben: 45, tempo: 1.2, sicht: 4, tragkraft: 0, kuerzel: 's' },
   miliz: { leben: 40, tempo: 0.9, sicht: 4, tragkraft: 0, kuerzel: 'm' },
@@ -46,6 +46,12 @@ const GEBAEUDE = {
   muehle: { groesse: 2, kosten: { holz: 100 }, bauzeit: 35, leben: 1000, wohnraum: 0, annahme: ['nahrung'], bildetAus: [] },
   holzfaellerlager: { groesse: 2, kosten: { holz: 100 }, bauzeit: 35, leben: 1000, wohnraum: 0, annahme: ['holz'], bildetAus: [] },
   bergbaulager: { groesse: 2, kosten: { holz: 100 }, bauzeit: 35, leben: 1000, wohnraum: 0, annahme: ['gold', 'stein'], bildetAus: [] },
+  // Eine Farm ist begehbar, traegt 175 Nahrung und wird mit 0,32 je Sekunde
+  // bestellt - von hoechstens einem (einheiten AC-18).
+  farm: {
+    groesse: 3, kosten: { holz: 60 }, bauzeit: 15, leben: 480, wohnraum: 0, annahme: [], bildetAus: [],
+    begehbar: true, nahrung: 175, rate: 0.32,
+  },
 };
 
 // Auftraege je Gebaeude (bauen AC-10).

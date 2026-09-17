@@ -130,6 +130,7 @@ const GEBAEUDE_REIHE = [
   { art: 'muehle', groesse: 2, titel: 'Muehle' },
   { art: 'holzfaellerlager', groesse: 2, titel: 'Holzfaellerlager' },
   { art: 'bergbaulager', groesse: 2, titel: 'Bergbaulager' },
+  { art: 'farm', groesse: 3, titel: 'Farm' },
   { art: 'haus', groesse: 2, titel: 'Baustelle 20 %', bau: 0.2 },
   { art: 'haus', groesse: 2, titel: 'Baustelle 70 %', bau: 0.7 },
 ];
@@ -147,7 +148,7 @@ FARBEN.forEach((farbe, reihe) => {
     stift.fillStyle = GRAS;
     stift.fillRect(x + 6, oben, gebaeudeSpalte - 12, 170);
     // In Spielgroesse (e = 22 wie bei Zoom 1); das Dorfzentrum halb so gross, sonst passt es nicht.
-    const e = eintrag.groesse === 4 ? 11 : 22;
+    const e = eintrag.groesse === 4 ? 11 : eintrag.groesse === 3 ? 15 : 22;
     gebaeudeZeichnen(stift, eintrag.art, x + gebaeudeSpalte / 2 - 8, oben + 120, e, farbe, eintrag.groesse, eintrag.bau ?? 1);
     if (reihe === 1) {
       stift.fillStyle = '#e6e9ee';

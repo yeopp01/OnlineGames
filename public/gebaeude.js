@@ -593,6 +593,71 @@ function bergbaulager(stift, e, farbe) {
   });
 }
 
+// ---- Farm -----------------------------------------------------------------------
+
+// Flach und begehbar (einheiten AC-18): ein Acker mit Furchen, darauf Getreide,
+// das mit der Nahrung weniger wird, ein niedriger Zaun vorn und eine
+// Vogelscheuche, deren Hemd die Spielerfarbe traegt.
+function farm(stift, e, farbe, { rest = 1 } = {}) {
+  const W = 2.9 * e;
+  const H = W / 2;
+  const L = [-W, 0];
+  const B = [0, H];
+  const R = [W, 0];
+  const T = [0, -H];
+  // Acker: Erde mit Licht von hinten links.
+  flaeche(stift, [L, B, R, T], verlauf(stift, '#7a5a36', T, B, 0.12, -0.18), false);
+  const reihen = 8;
+  innerhalb(stift, [L, B, R, T], () => {
+    for (let i = 0; i <= reihen; i++) {
+      const t = (i + 0.5) / (reihen + 1);
+      const a = zwischen(L, T, t);
+      const b = zwischen(B, R, t);
+      // Furche: dunkler Graben, heller Wall daneben.
+      linie(stift, a, b, 'rgba(45, 30, 15, 0.55)', Math.max(0.8, e * 0.08));
+      linie(stift, [a[0], a[1] - e * 0.06], [b[0], b[1] - e * 0.06], 'rgba(170, 130, 85, 0.35)', Math.max(0.5, e * 0.04));
+      // Getreide auf dem Wall: Anzahl und Hoehe mit dem Rest.
+      const halme = Math.round(10 * Math.max(0, Math.min(1, rest)));
+      for (let k = 0; k < halme; k++) {
+        const u = (k + 0.5 + (zufall(i * 7 + k) - 0.5) * 0.4) / 10;
+        const fuss = zwischen([a[0], a[1] - e * 0.06], [b[0], b[1] - e * 0.06], u);
+        const hoehe = e * (0.28 + zufall(i * 3 + k) * 0.12) * (0.6 + 0.4 * rest);
+        linie(stift, fuss, [fuss[0] + e * 0.03, fuss[1] - hoehe], 'rgba(120, 140, 50, 0.9)', Math.max(0.6, e * 0.04));
+        kreis(stift, fuss[0] + e * 0.035, fuss[1] - hoehe, Math.max(0.8, e * 0.06), 'rgba(222, 190, 90, 0.95)', false);
+      }
+    }
+  });
+  stift.lineWidth = Math.max(1, e * 0.05);
+  pfad(stift, [L, B, R, T]);
+  stift.strokeStyle = 'rgba(40, 28, 16, 0.6)';
+  stift.stroke();
+  stift.strokeStyle = KONTUR;
+  // Zaun an den beiden vorderen Kanten: Pfosten und zwei Latten.
+  for (const [a, b] of [[L, B], [B, R]]) {
+    for (let k = 0; k <= 6; k++) {
+      const p = zwischen(a, b, k / 6);
+      linie(stift, p, hoch(p, 0.42 * e), '#5b3d22', Math.max(1, e * 0.07));
+    }
+    for (const h of [0.18, 0.36]) linie(stift, hoch(a, h * e), hoch(b, h * e), '#8a6238', Math.max(0.8, e * 0.05));
+  }
+  // Vogelscheuche in der hinteren Ecke - in der Mitte arbeitet der Bauer und
+  // verdeckte sie (Runde 31).
+  const fuss = zwischen(T, B, 0.1);
+  linie(stift, fuss, hoch(fuss, 1.2 * e), '#5b3d22', Math.max(1, e * 0.07));
+  linie(stift, hoch([fuss[0] - 0.45 * e, fuss[1]], 0.85 * e), hoch([fuss[0] + 0.45 * e, fuss[1]], 0.85 * e), '#5b3d22', Math.max(1, e * 0.06));
+  stift.lineWidth = Math.max(0.8, e * 0.04);
+  flaeche(stift, [
+    hoch([fuss[0] - 0.3 * e, fuss[1]], 0.95 * e), hoch([fuss[0] + 0.3 * e, fuss[1]], 0.95 * e),
+    hoch([fuss[0] + 0.24 * e, fuss[1]], 0.45 * e), hoch([fuss[0] - 0.24 * e, fuss[1]], 0.45 * e),
+  ], verlauf(stift, farbe, hoch(fuss, 0.95 * e), hoch(fuss, 0.45 * e), 0.2, -0.25));
+  kreis(stift, fuss[0], fuss[1] - 1.08 * e, 0.14 * e, '#d8c49a');
+  stift.beginPath();
+  stift.ellipse(fuss[0], fuss[1] - 1.18 * e, 0.24 * e, 0.07 * e, 0, 0, Math.PI * 2);
+  stift.fillStyle = '#d8b978';
+  stift.fill();
+  stift.stroke();
+}
+
 // ---- Baustelle ----------------------------------------------------------------
 
 // Fundament, Geruest und Bretter, die mit dem Fortschritt hoeher werden
@@ -674,6 +739,7 @@ export const GEBAEUDE = {
   bergbaulager: {
     name: 'Bergbaulager', zeichnen: bergbaulager, halbeBreite: 1.8, trefferBreite: 1.9, trefferOben: 2.4, trefferUnten: 1,
   },
+  farm: { name: 'Farm', zeichnen: farm, halbeBreite: 2.9, trefferBreite: 2.9, trefferOben: 1.6, trefferUnten: 1.4, flach: true },
 };
 
 /**
@@ -685,15 +751,16 @@ export const GEBAEUDE = {
  * @param {string} farbe Spielerfarbe
  * @param {number} [groesse] Kantenlaenge der Grundflaeche in Feldern
  * @param {number} [bau] Baufortschritt 0 bis 1; darunter eine Baustelle
+ * @param {number} [rest] bei einer Farm: Anteil der Nahrung, die noch da ist
  */
-export function gebaeudeZeichnen(stift, art, x, y, e, farbe, groesse, bau = 1) {
+export function gebaeudeZeichnen(stift, art, x, y, e, farbe, groesse, bau = 1, rest = 1) {
   const gebaeude = GEBAEUDE[art];
   if (!gebaeude) return;
   const m = e * massstab(gebaeude, groesse);
   stift.save();
   stift.translate(x, y);
   if (bau < 1) baustelle(stift, m, gebaeude.halbeBreite * m, bau);
-  else gebaeude.zeichnen(stift, m, farbe);
+  else gebaeude.zeichnen(stift, m, farbe, { rest });
   stift.restore();
 }
 
@@ -703,18 +770,19 @@ export function gebaeudeZeichnen(stift, art, x, y, e, farbe, groesse, bau = 1) {
 const ZWISCHENSPEICHER = new Map();
 const SPEICHER_MAX = 64;
 
-export function gebaeudeBildZeichnen(stift, art, x, y, e, farbe, groesse, bau = 1) {
+export function gebaeudeBildZeichnen(stift, art, x, y, e, farbe, groesse, bau = 1, rest = 1) {
   const gebaeude = GEBAEUDE[art];
   if (!gebaeude || typeof document === 'undefined') {
-    gebaeudeZeichnen(stift, art, x, y, e, farbe, groesse, bau);
+    gebaeudeZeichnen(stift, art, x, y, e, farbe, groesse, bau, rest);
     return;
   }
+  const restStufe = Math.ceil(Math.max(0, Math.min(1, rest)) * 10) / 10;
   const m = e * massstab(gebaeude, groesse);
   const dichte = window.devicePixelRatio || 1;
   // Baufortschritt in Zwanzigsteln: die Baustelle waechst sichtbar, der
   // Speicher bleibt klein.
   const stufe = bau < 1 ? Math.floor(bau * 20) / 20 : 1;
-  const schluessel = `${art}|${farbe}|${m.toFixed(2)}|${stufe}|${dichte}`;
+  const schluessel = `${art}|${farbe}|${m.toFixed(2)}|${stufe}|${restStufe}|${dichte}`;
   let bild = ZWISCHENSPEICHER.get(schluessel);
   const breite = 6.4 * m;
   const oben = 6.4 * m;
@@ -725,7 +793,7 @@ export function gebaeudeBildZeichnen(stift, art, x, y, e, farbe, groesse, bau = 
     bild.height = Math.ceil((oben + unten) * dichte);
     const s = bild.getContext('2d');
     s.scale(dichte, dichte);
-    gebaeudeZeichnen(s, art, breite / 2, oben, e, farbe, groesse, stufe);
+    gebaeudeZeichnen(s, art, breite / 2, oben, e, farbe, groesse, stufe, restStufe);
     ZWISCHENSPEICHER.set(schluessel, bild);
     if (ZWISCHENSPEICHER.size > SPEICHER_MAX) ZWISCHENSPEICHER.delete(ZWISCHENSPEICHER.keys().next().value);
   } else {

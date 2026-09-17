@@ -188,7 +188,7 @@ test('bedienung AC-29: der Aufbau nennt die Werte je Art, der Zustand das Leben 
   const { werte } = welt.aufbau();
   assert.deepEqual(werte.einheiten.dorfbewohner, {
     kuerzel: 'd', leben: 25, tragkraft: 10, kosten: { nahrung: 50 }, zeit: 25,
-    baut: ['haus', 'muehle', 'holzfaellerlager', 'bergbaulager'],
+    baut: ['haus', 'muehle', 'holzfaellerlager', 'bergbaulager', 'farm'],
   });
   assert.deepEqual(werte.einheiten.spaeherreiter, { kuerzel: 's', leben: 45, tragkraft: 0, kosten: null, zeit: null, baut: [] });
   assert.equal(werte.gebaeude.dorfzentrum.leben, 2400);

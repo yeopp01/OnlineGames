@@ -1,0 +1,10 @@
+{
+  "spec": "10-strategie/einheiten-und-befehle.md",
+  "ac": "AC-18",
+  "titel": "Eine Farm: Acker mit Getreide, Zaun und Vogelscheuche, der Dorfbewohner erntet, unten wie viel Nahrung sie noch traegt",
+  "datei": "e2e/tests/strategie-bauen.spec.mjs",
+  "pfad": [
+    "Bauen",
+    "einheiten AC-18: eine Farm bauen - der Bauer bestellt sie, die Leiste zeigt die Nahrung"
+  ]
+}

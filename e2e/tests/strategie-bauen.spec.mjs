@@ -36,16 +36,18 @@ test.describe('Bauen', () => {
   test.afterAll(() => partieBeenden(partie));
 
   test('bedienung AC-25: ein Dorfbewohner zeigt das Baumenue, was zu teuer ist, ist grau und sagt warum', async ({}, info) => {
-    // 60 Holz: ein Haus (25) geht, Muehle und Lager (100) nicht.
+    // 60 Holz: Haus (25) und Farm (60) gehen, Muehle und Lager (100) nicht.
     await rohstoffe(anna, code, 'Anna', { holz: 60 });
     await expect(anna.locator('[data-rohstoff="holz"] b')).toHaveText('60');
     await dorfbewohnerAnklicken(anna);
 
     const menue = anna.locator('#baumenue');
     await expect(menue).toBeInViewport();
-    await expect(menue.locator('[data-bauen]')).toHaveCount(4);
+    await expect(menue.locator('[data-bauen]')).toHaveCount(5);
     await expect(menue.locator('[data-bauen="haus"]')).toHaveAttribute('aria-disabled', 'false');
     await expect(menue.locator('[data-bauen="haus"]')).toContainText('25');
+    await expect(menue.locator('[data-bauen="farm"]')).toHaveAttribute('aria-disabled', 'false');
+    await expect(menue.locator('[data-bauen="farm"]')).toContainText('60');
     for (const art of ['muehle', 'holzfaellerlager', 'bergbaulager']) {
       const knopf = menue.locator(`[data-bauen="${art}"]`);
       await expect(knopf).toHaveAttribute('aria-disabled', 'true');
@@ -59,7 +61,7 @@ test.describe('Bauen', () => {
     await nachweis(anna, {
       spec: BEDIENUNG,
       ac: 'AC-25',
-      titel: 'Dorfbewohner gewaehlt, 60 Holz: unten Haus fuer 25 bereit, Muehle und beide Lager fuer 100 ausgegraut',
+      titel: 'Dorfbewohner gewaehlt, 60 Holz: unten Haus fuer 25 und Farm fuer 60 bereit, Muehle und beide Lager fuer 100 ausgegraut',
       test: info,
     });
     await rohstoffe(anna, code, 'Anna', { holz: 200 });
@@ -168,6 +170,58 @@ test.describe('Bauen', () => {
       titel: 'Das fertige Haus mit Strohdach und blauer Tuer neben dem Dorfzentrum, oben Bevoelkerung 4/10',
       test: info,
     });
+  });
+
+  test('einheiten AC-18: eine Farm bauen - der Bauer bestellt sie, die Leiste zeigt die Nahrung', async ({}, info) => {
+    test.setTimeout(120_000);
+    await anna.evaluate((b) => {
+      const a = window.ansicht;
+      a.kamera.zoom = 1.4;
+      a.blickAuf(b.x + 2, b.y + 2);
+    }, basis);
+    const bauer = await dorfbewohnerAnklicken(anna);
+    await anna.locator('[data-bauen="farm"]').click();
+    const platz = await platzImBild(anna, { n: 3, um: basis, abstand: 6 });
+    expect(platz).not.toBeNull();
+    await anna.mouse.move(platz.bild.x, platz.bild.y, { steps: 4 });
+    await expect.poll(() => anna.evaluate(() => window.ansicht.platzLage()?.taugt)).toBe(true);
+    await anna.mouse.click(platz.bild.x, platz.bild.y);
+    await anna.waitForFunction(() => [...window.ansicht.gebaeude.values()].some((g) => g.art === 'farm'));
+
+    // Bauen und ernten im Zeitraffer, bis der Bauer auf der Farm Nahrung traegt.
+    await zeitraffer(anna, code, 10);
+    await anna.waitForFunction((id) => {
+      const a = window.ansicht;
+      const farm = [...a.gebaeude.values()].find((g) => g.art === 'farm');
+      const e = a.nachher.get(id);
+      return farm && farm.u === undefined && farm.n < 175 && e && e.a === 'n' && e.l >= 3
+        && Math.abs(e.x - farm.x) <= 1.5 && Math.abs(e.y - farm.y) <= 1.5;
+    }, bauer, { timeout: 60_000 });
+    await zeitraffer(anna, code, 1);
+
+    // Nah heran und die Farm anklicken - dort, wo der Bauer nicht steht.
+    const klick = await anna.evaluate((id) => {
+      const a = window.ansicht;
+      const farm = [...a.gebaeude.values()].find((g) => g.art === 'farm');
+      a.kamera.zoom = 2;
+      a.blickAuf(farm.x, farm.y);
+      const e = a.nachher.get(id);
+      const kandidaten = [[farm.x - 1, farm.y + 1], [farm.x + 1, farm.y - 1], [farm.x + 1, farm.y + 1], [farm.x - 1, farm.y - 1]];
+      kandidaten.sort((p, q) => Math.hypot(q[0] - e.x, q[1] - e.y) - Math.hypot(p[0] - e.x, p[1] - e.y));
+      return a.zuBild(kandidaten[0][0], kandidaten[0][1]);
+    }, bauer);
+    await anna.waitForTimeout(150);
+    await anna.mouse.click(klick.x, klick.y);
+    await expect(anna.locator('#auswahlleiste')).toContainText('Farm');
+    await expect(anna.locator('#farmvorrat')).toContainText(/noch \d+ Nahrung von 175/);
+    await expect(anna.locator('#auswahlleiste')).toBeInViewport();
+    await nachweis(anna, {
+      spec: EINHEITEN,
+      ac: 'AC-18',
+      titel: 'Eine Farm: Acker mit Getreide, Zaun und Vogelscheuche, der Dorfbewohner erntet, unten wie viel Nahrung sie noch traegt',
+      test: info,
+    });
+    await anna.keyboard.press('Escape');
   });
 
   test('einheiten AC-16: ein Holzfaellerlager am Wald - dort wird das Holz abgegeben', async ({}, info) => {
@@ -326,8 +380,9 @@ test('darstellung AC-4: jedes Gebaeude hat Koerper, die Spielerfarbe steht nur a
     expect(m.farbeBlau, `${m.art} traegt Blau`).toBeGreaterThan(8);
     expect(m.farbeRot, `${m.art} traegt Rot`).toBeGreaterThan(8);
     expect(m.farbeBlau / m.pixel, `${m.art}: Farbe nur an einer Stelle`).toBeLessThan(0.1);
-    // Koerper: das Gebaeude ragt ueber seine Grundflaeche hinaus nach oben.
-    expect(m.oben, `${m.art} hat Hoehe`).toBeLessThan(60);
+    // Koerper: das Gebaeude ragt ueber seine Grundflaeche hinaus nach oben -
+    // ausser der Farm, die ist ein Acker und begehbar, wie in der Vorlage.
+    if (m.art !== 'farm') expect(m.oben, `${m.art} hat Hoehe`).toBeLessThan(60);
   }
   // Mindestens ein Viertel der Flaeche anders: das sieht man ohne Hinschauen.
   for (const { paar, anteil } of unterschiede) expect(anteil, paar).toBeGreaterThan(0.25);
