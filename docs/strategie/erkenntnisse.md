@@ -409,6 +409,17 @@ alle sieben Gebäude der Dunklen Zeit stehen. Was sich wiederholt hat:
 Neueste oben. Eine Zeile je Runde: Nummer, Datum, Kriterien, Ergebnis,
 wichtigste Erkenntnis.
 
+- **56** · 2026-09-17 · B1, Teil 1: bedienung AC-30 und AC-31 **fertig**.
+  Verdeckte Einheiten: wer hinter einem Gebäude steht (dessen x + y größer ist),
+  wird nach allem anderen noch einmal als Umriss in Spielerfarbe gezeichnet —
+  dieselbe Gestalt aus dem Zwischenspeicher, mit `source-in` eingefärbt;
+  `ansicht.umrisse` sagt dem Test, wer gerade so gezeichnet wurde. Arbeit:
+  der Zustand schickt `w: 1`, wenn jemand sammelt, hütet, eine Farm bestellt
+  oder baut (nur dann, der Zustand bleibt unter 1 kB); die Figur holt dann mit
+  der Axt aus und beugt sich, in acht Stufen wie der Schritt. Gemessen: 60
+  Bilder je Sekunde bleiben. Gelernt: ein Muster, das in zwei Figuren gleich
+  vorkommt, trifft zweimal — die Ersetzung lief erst auf dem Ausschnitt der
+  Funktion.
 - **55** · 2026-09-17 · Spec-Runde Stufe B (Feudalzeit), kein Code. Neu aus
   der Vorlage: bauen AC-23 (Aufstieg 500 Nahrung, 130 s, zwei Gebäude der
   Dunklen Zeit außer Häusern), AC-24 (Schießanlage, Stall, Schmiede mit Werten),

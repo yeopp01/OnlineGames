@@ -1,0 +1,10 @@
+{
+  "spec": "10-strategie/bedienung.md",
+  "ac": "AC-31",
+  "titel": "Am Baum: der Dorfbewohner holt mit der Axt aus - die Wartenden am Dorfzentrum stehen still",
+  "datei": "e2e/tests/strategie-arbeit.spec.mjs",
+  "pfad": [
+    "Im Spielbild",
+    "bedienung AC-31: wer sammelt, meldet es im Zustand und bewegt sich - wer wartet, nicht"
+  ]
+}

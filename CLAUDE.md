@@ -139,7 +139,7 @@ Umfang hinzufügt, dort nachsehen.
 
 ## Stand
 
-**351 von 503 Kriterien fertig.** 322 Tests ohne Browser, 123 im Browser. Die
+**353 von 503 Kriterien fertig.** 322 Tests ohne Browser, 127 im Browser. Die
 Übersicht ist der Bericht: `npm run qa:report`.
 
 Gebaut ist der Unterbau: Räume, Übertragung, Karte, Wegfindung, Sammeln,
@@ -200,7 +200,9 @@ Ziel und die Schautafel als Nachweis, ein Takt mit 800 Einheiten unter 1 ms,
 erreicht**: die Dunkle Zeit ist am Stück im Browser spielbar (fahrplan AC-3).
 Die Rückschau zur Stufe hat drei Lücken angelegt (bedienung AC-30 bis AC-32:
 verdeckte Einheiten, sichtbare Arbeit, Arbeiter je Rohstoff). Stufe B ist
-spezifiziert (Bauabfolge B1 bis B7); als Nächstes B1, diese drei Lücken:
+spezifiziert (Bauabfolge B1 bis B7). Aus B1 stehen verdeckte Einheiten als
+Umriss und sichtbare Arbeit; als Nächstes die Arbeiter je Rohstoff, dann der
+Zeitalterwechsel:
 
 1. **Stufe A** Dunkle Zeit mit Wirtschafts-KI und Prüfstand · **B** Feudalzeit
    · **C** Partieende und KI-Gegner · **D** Ritterzeit · **E** fünf Völker ·

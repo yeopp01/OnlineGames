@@ -272,7 +272,7 @@ function ladungZeichnen(stift, ware, fein) {
   }
 }
 
-function dorfbewohner(stift, farbe, { ladung = null, schritt = 0, fein = true, haut = HAUT }) {
+function dorfbewohner(stift, farbe, { ladung = null, schritt = 0, fein = true, haut = HAUT, arbeit = 0 }) {
   schatten(stift, 5.5);
   stift.save();
   stift.translate(0, -RUMPF_HEBEN);
@@ -280,7 +280,8 @@ function dorfbewohner(stift, farbe, { ladung = null, schritt = 0, fein = true, h
   stift.restore();
   beine(stift, schritt, HOSE, fein);
   stift.save();
-  stift.translate(0, -RUMPF_HEBEN);
+  // Beim Arbeiten beugt sich der Oberkoerper vor und zurueck.
+  stift.translate(arbeit ? Math.sin(arbeit) * 0.7 : 0, -RUMPF_HEBEN + (arbeit ? Math.abs(Math.sin(arbeit)) * 0.5 : 0));
   // Schmaler: Schultern etwa zwei Kopfbreiten, nicht vier.
   stift.scale(RUMPF_BREITE, 1);
   // Hinterer Arm im Schatten.
@@ -305,7 +306,9 @@ function dorfbewohner(stift, farbe, { ladung = null, schritt = 0, fein = true, h
   if (!ladung) {
     stift.save();
     stift.translate(4.2, -11.4);
-    stift.rotate(2.55 + Math.sin(schritt) * 0.12);
+    // Beim Arbeiten holt er aus und schlaegt zu (bedienung AC-31); sonst haengt
+    // die Axt nur leicht mit dem Schritt.
+    stift.rotate(arbeit ? 2.0 + Math.sin(arbeit) * 0.85 : 2.55 + Math.sin(schritt) * 0.12);
     vieleck(stift, [[-0.6, 1.5], [0.6, 1.5], [0.6, -10], [-0.6, -10]], licht(stift, HOLZ, -0.6, 0, 0.6, 0, 0.25, -0.3));
     if (fein) strich(stift, [[0, 0.5], [0.1, -9]], 'rgba(50,25,5,0.45)', 0.3);
     vieleck(stift, [[0.4, -10.4], [4, -11.6], [4.4, -7.4], [0.4, -8]], licht(stift, EISEN, 0.4, -11.6, 4.4, -7.4, 0.25, -0.35));
@@ -553,7 +556,7 @@ const SCHRITT_STUFEN = 8;
 const ZWISCHENSPEICHER = new Map();
 const SPEICHER_MAX = 400;
 
-export function figurBildZeichnen(stift, art, x, y, hoehe, farbe, lage = {}) {
+export function figurBildZeichnen(stift, art, x, y, hoehe, farbe, lage = {}, umriss = false) {
   if (typeof document === 'undefined') {
     figurZeichnen(stift, art, x, y, hoehe, farbe, lage);
     return;
@@ -564,7 +567,9 @@ export function figurBildZeichnen(stift, art, x, y, hoehe, farbe, lage = {}) {
   const stufe = lage.schritt ? Math.round(((lage.schritt % (Math.PI * 2)) + Math.PI * 2) % (Math.PI * 2) / (Math.PI * 2) * SCHRITT_STUFEN) % SCHRITT_STUFEN : -1;
   const schritt = stufe < 0 ? 0 : ((stufe || SCHRITT_STUFEN) / SCHRITT_STUFEN) * Math.PI * 2;
   const rest = lage.rest === undefined ? 1 : Math.round(lage.rest * 10) / 10;
-  const schluessel = `${art}|${farbe}|${h}|${lage.blick === -1 ? -1 : 1}|${lage.ladung || ''}|${stufe}|${lage.liegt ? 1 : 0}|${rest}|${dichte}`;
+  const arbeitStufe = lage.arbeit ? Math.round(((lage.arbeit % (Math.PI * 2)) + Math.PI * 2) % (Math.PI * 2) / (Math.PI * 2) * SCHRITT_STUFEN) % SCHRITT_STUFEN : -1;
+  const arbeit = arbeitStufe < 0 ? 0 : ((arbeitStufe || SCHRITT_STUFEN) / SCHRITT_STUFEN) * Math.PI * 2;
+  const schluessel = `${art}|${farbe}|${h}|${lage.blick === -1 ? -1 : 1}|${lage.ladung || ''}|${stufe}|${arbeitStufe}|${lage.liegt ? 1 : 0}|${rest}|${umriss ? 'u' : ''}|${dichte}`;
   // Platz fuer Reiter, Ladung auf dem Ruecken und Schatten.
   const breite = h * 2.2 * (figur.breite || 1);
   const oben = h * 1.3;
@@ -576,7 +581,15 @@ export function figurBildZeichnen(stift, art, x, y, hoehe, farbe, lage = {}) {
     bild.height = Math.ceil((oben + unten) * dichte);
     const s = bild.getContext('2d');
     s.scale(dichte, dichte);
-    figurZeichnen(s, art, breite / 2, oben, h, farbe, { ...lage, schritt, rest });
+    figurZeichnen(s, art, breite / 2, oben, h, farbe, { ...lage, schritt, arbeit, rest });
+    if (umriss) {
+      // Der Umriss (bedienung AC-30): dieselbe Gestalt, ganz in Spielerfarbe -
+      // so sieht man durch ein Gebaeude hindurch, wer dahinter steht.
+      s.globalCompositeOperation = 'source-in';
+      s.fillStyle = farbe;
+      s.fillRect(0, 0, breite, oben + unten);
+      s.globalCompositeOperation = 'source-over';
+    }
     ZWISCHENSPEICHER.set(schluessel, bild);
     if (ZWISCHENSPEICHER.size > SPEICHER_MAX) ZWISCHENSPEICHER.delete(ZWISCHENSPEICHER.keys().next().value);
   }

@@ -2,7 +2,7 @@
 
 **Bereich:** Strategie
 **Kuerzel:** bedienung
-**Stand:** 18/34 fertig · 16 offen
+**Stand:** 20/34 fertig · 14 offen
 
 ## Zweck
 
@@ -103,11 +103,11 @@ Eine Partie mit Wirtschafts-KI auf beiden Seiten, zehn Spielminuten, im
 Browser angesehen (Rückschau nach Runde 54) und ehrlich mit dem Original
 verglichen: die drei größten Lücken in Lesbarkeit und Aussehen.
 
-- **AC-30** `offen` **Verdeckte Einheiten als Umriss** — Steht eine Einheit hinter einem
+- **AC-30** `fertig` **Verdeckte Einheiten als Umriss** — Steht eine Einheit hinter einem
   Gebäude, ist sie als Umriss in Spielerfarbe durch das Gebäude sichtbar. Im
   Dorf nach zehn Minuten verschwanden Dorfbewohner hinter Häusern und Lagern
   ganz.
-- **AC-31** `offen` **Arbeit ist zu sehen** — Wer sammelt, baut oder eine Farm bestellt,
+- **AC-31** `fertig` **Arbeit ist zu sehen** — Wer sammelt, baut oder eine Farm bestellt,
   bewegt sich dabei sichtbar (Schlag, Bücken); wer untätig steht, steht still.
   Heute sehen Arbeitende und Wartende gleich aus.
 - **AC-32** `offen` **Arbeiter je Rohstoff** — Die Rohstoffleiste zeigt neben jedem Vorrat,

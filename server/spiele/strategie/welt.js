@@ -1162,6 +1162,9 @@ class Welt {
         // Leben nur, wenn es fehlt: das volle steht im Aufbau (bedienung AC-29),
         // und ein Zustand bleibt klein (uebertragung AC-7).
         ...(e.leben < this.lebenMax(e.besitzer, e.art) ? { h: e.leben } : {}),
+        // Arbeitet gerade: sammelt, huetet, bestellt eine Farm oder baut
+        // (bedienung AC-31). Nur wenn es zutrifft - ein Zustand bleibt klein.
+        ...(e.sammelt || e.baut ? { w: 1 } : {}),
       });
     }
     const felder = this.feldAenderungen;

@@ -613,6 +613,7 @@ export class Ansicht {
     stehend.sort((a, b) => a.tiefe - b.tiefe || rang[a.art] - rang[b.art] || a.x - b.x);
 
     const e = HALB_B * zoom;
+    this.verdeckte = [];
     // Lebensbalken sammeln die Zeichnungen unterwegs; gemalt werden sie danach,
     // ueber allem, damit kein Baum sie verdeckt (darstellung AC-8).
     this.lebensbalken = [];
@@ -646,6 +647,17 @@ export class Ansicht {
       }
     }
     this.reihenfolge = stehend.map((d) => ({ art: d.art, tiefe: d.tiefe, id: d.einheit?.i }));
+    // Verdeckte Einheiten als Umriss in Spielerfarbe, ueber allem (bedienung AC-30).
+    this.umrisse = this.verdeckte.map((v) => v.einheit.i);
+    for (const { einheit, punkt, hoehe, laeuft } of this.verdeckte) {
+      const spieler = this.spieler.get(einheit.b);
+      figurBildZeichnen(stift, this.arten[einheit.k] || 'dorfbewohner', punkt.x, punkt.y, hoehe, spieler ? spieler.farbe : '#888888', {
+        blick: this.blicke.get(einheit.i) || 1,
+        ladung: einheit.l > 0 ? einheit.a : null,
+        schritt: laeuft ? jetztPhase(einheit.i) : 0,
+        arbeit: einheit.w && !laeuft ? jetztPhase(einheit.i) : 0,
+      }, true);
+    }
     for (const balken of this.lebensbalken) this.lebensbalkenZeichnen(balken);
 
     for (const spieler of this.spieler.values()) this.namenZeichnen(spieler);
@@ -695,6 +707,25 @@ export class Ansicht {
       }
     }
     return bestes;
+  }
+
+  /**
+   * Steht die Einheit hinter einem Gebaeude, das sie verdeckt? Nur Gebaeude,
+   * die tiefer im Bild stehen (groesseres x + y), liegen ueber ihr; flache
+   * (Farmen) verdecken nichts (bedienung AC-30).
+   */
+  hinterGebaeude(einheit, punkt) {
+    const e = HALB_B * this.kamera.zoom;
+    const tiefe = einheit.x + einheit.y;
+    for (const gebaeude of this.gebaeude.values()) {
+      if (this.werte.gebaeude[gebaeude.art]?.begehbar) continue;
+      const mitte = this.gebaeudeMitte(gebaeude);
+      if (mitte.x + mitte.y <= tiefe) continue;
+      const p = this.zuBild(mitte.x, mitte.y);
+      // Etwas ueber dem Fusspunkt gemessen: dort steht der Koerper.
+      if (gebaeudeGetroffen(gebaeude.art, punkt.x - p.x, punkt.y - this.figurenHoehe() * 0.5 - p.y, e, mitte.groesse)) return true;
+    }
+    return false;
   }
 
   /** Das volle Leben einer Einheit, mit den Verbesserungen ihres Besitzers (bauen AC-21). */
@@ -841,7 +872,11 @@ export class Ansicht {
       blick: this.blicke.get(einheit.i) || 1,
       ladung: einheit.l > 0 ? einheit.a : null,
       schritt: laeuft ? jetztPhase(einheit.i) : 0,
+      // Wer arbeitet, bewegt sich dabei (bedienung AC-31).
+      arbeit: einheit.w && !laeuft ? jetztPhase(einheit.i) : 0,
     });
+    // Steht jemand hinter einem Gebaeude, kommt er danach als Umriss darueber.
+    if (this.hinterGebaeude(einheit, punkt)) this.verdeckte.push({ einheit, punkt, hoehe, laeuft });
   }
 
   rahmenZeichnen() {

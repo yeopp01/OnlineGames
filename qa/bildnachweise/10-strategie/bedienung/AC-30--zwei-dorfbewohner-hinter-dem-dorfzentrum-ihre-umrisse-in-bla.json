@@ -1,0 +1,10 @@
+{
+  "spec": "10-strategie/bedienung.md",
+  "ac": "AC-30",
+  "titel": "Zwei Dorfbewohner hinter dem Dorfzentrum: ihre Umrisse in Blau stehen ueber dem Dach, davor die anderen ganz gezeichnet",
+  "datei": "e2e/tests/strategie-arbeit.spec.mjs",
+  "pfad": [
+    "Im Spielbild",
+    "bedienung AC-30: wer hinter einem Gebaeude steht, ist als Umriss in Spielerfarbe zu sehen"
+  ]
+}
