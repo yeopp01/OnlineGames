@@ -87,6 +87,7 @@ Zahlen, gegen die spätere Runden vergleichen. Mit Datum und Commit.
 | 2026-09-17 | Wegsuche 200 x 200: Ecke zu Ecke / Mittel 100 zufaellig | 1,19 ms / 0,28 ms | Runde 12 |
 | 2026-09-17 | Zeichnen je Bild im Browserlauf, Zoom 1 / Zoom 0,4 | 4,9–6,2 ms / 10–11 ms | Runde 13 |
 | 2026-09-17 | Tests ohne Browser / im Browser; Browserlauf (Last 16 %) | 260 / 83; 58,5 s | Runde 13 |
+| 2026-09-17 | Tests ohne Browser / im Browser; Browserlauf | 264 / 86; 1,1 min | Runde 16 |
 
 ## Rückschauen
 
@@ -165,6 +166,16 @@ Schleife hat gewartet statt Regeln zu lockern und das ist richtig so.
 Neueste oben. Eine Zeile je Runde: Nummer, Datum, Kriterien, Ergebnis,
 wichtigste Erkenntnis.
 
+- **16** · 2026-09-17 · einheiten AC-15, AC-19 fertig, AC-11 abgelöst: Werte
+  in `daten.js`, Sammeln je Takt mit der Rate der Vorlage, Tempo 0,8, Gold und
+  Stein sammelbar, Ladung verfällt nur beim Rohstoffwechsel. Gelernt: mit den
+  echten Werten dauert die erste Holzlieferung knapp eine Minute — dafür ein
+  **Zeitraffer als Prüfgriff** (`raum.zeitraffer`, im Browserlauf über
+  `zeitraffer(page, code, faktor)`), nicht längere Wartezeiten. Der stumpfe
+  Netztest (`holz >= 10` trotz Startvorrat 200) prüft jetzt: tragend steht der
+  Vorrat still, danach mindestens +10. Bildunterschrift „die Dorfbewohner
+  arbeiten" beim Ansehen korrigiert — im Bild war nur einer. Offen aus A4:
+  AC-16 (Lager, mit A6), bedienung AC-24/AC-17 (Leiste mit Gold und Stein).
 - **15** · 2026-09-17 · Rückschau: `npm run sicht -- --spiel`, Regeln zu
   Wertänderungen und Änderungsskripten. Nächste Runde: **A4** (vier Rohstoffe
   sammeln, Abgabe, Werte der Einheiten, Rohstoffleiste).

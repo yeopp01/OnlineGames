@@ -8,7 +8,7 @@
 // `window.ansicht` (public/app.js); befohlen wird nur ueber Maus und Tastatur,
 // so wie ein Mensch es tut.
 import { nachweis } from '../../scripts/qa-nachweis.mjs';
-import { ANMELDUNG, expect, fehlerSammeln, test } from '../helpers/seite.mjs';
+import { ANMELDUNG, expect, fehlerSammeln, test, zeitraffer } from '../helpers/seite.mjs';
 
 const BEDIENUNG = '10-strategie/bedienung.md';
 const FAHRPLAN = '10-strategie/fahrplan.md';
@@ -45,6 +45,7 @@ test.describe('Das Spielbild', () => {
 
   let anna;
   let bert;
+  let code;
   const fehler = [];
 
   test.beforeAll(async ({ browser }, info) => {
@@ -58,7 +59,7 @@ test.describe('Das Spielbild', () => {
     await anna.locator('[data-einstellung="startwert"]').fill(String(STARTWERT));
     await anna.locator('[data-eroeffnen="strategie"]').click();
     await expect(anna.locator('#raumcode')).toHaveText(/^[A-Z0-9]{3}-[A-Z0-9]{3}$/);
-    const code = (await anna.locator('#raumcode').textContent()).trim();
+    code = (await anna.locator('#raumcode').textContent()).trim();
 
     await bert.goto('/');
     await bert.locator('#name').fill('Bert');
@@ -187,6 +188,9 @@ test.describe('Das Spielbild', () => {
       return a.zuBild(bestes.x, bestes.y);
     }, WALD);
     await anna.mouse.click(wald.x, wald.y, { button: 'right' });
+    // Mit den Werten der Vorlage dauert eine volle Ladung Holz gut 25 Sekunden
+    // (einheiten AC-15) - der Test laesst die Partie fuenfmal so schnell laufen.
+    await zeitraffer(anna, code, 5);
 
     // Der Befehl hat gewirkt: Sammler tragen Holz.
     await anna.waitForFunction(() => {
@@ -243,6 +247,7 @@ test.describe('Das Spielbild', () => {
       const a = window.ansicht;
       return [...a.nachher.values()].some((e) => e.b !== a.ich && e.l > 0);
     });
+    await zeitraffer(anna, code, 1);
   });
 
   test('karte AC-16: acht Schafe mit dem Halsband des Spielers stehen am Dorfzentrum', async ({}, info) => {
@@ -360,6 +365,56 @@ test.describe('Das Spielbild', () => {
       spec: DARSTELLUNG,
       ac: 'AC-2',
       titel: 'Am See: Sandufer an den Kanten zum Land, helle Wellen auf dem Wasser, das Gras leicht getoent',
+      test: info,
+    });
+  });
+
+  test('einheiten AC-15: Rechtsklick auf Gold, der Dorfbewohner traegt Gold', async ({}, info) => {
+    // Die Sammler stehen im Wald, also ausserhalb des Bildes: gewaehlt wird hier
+    // direkt, der Rechtsklick geht wie beim Spieler ueber die Leinwand
+    // (bedienung AC-12 prueft das Waehlen).
+    const gold = await anna.evaluate(() => {
+      const a = window.ansicht;
+      const g = a.karte.groesse;
+      const basis = a.spieler.get(a.ich).basis;
+      let bestes = null;
+      for (let i = 0; i < a.karte.felder.length; i++) {
+        if (a.karte.felder[i] !== 4) continue;
+        const x = i % g;
+        const y = (i / g) | 0;
+        const abstand = Math.hypot(x - basis.x, y - basis.y);
+        if (!bestes || abstand < bestes.abstand) bestes = { x, y, abstand };
+      }
+      a.ausgewaehlt.clear();
+      for (const e of a.nachher.values()) if (e.b === a.ich) a.ausgewaehlt.add(e.i);
+      a.kamera.zoom = 1;
+      a.blickAuf(bestes.x, bestes.y);
+      return a.zuBild(bestes.x, bestes.y);
+    });
+    await anna.waitForTimeout(100);
+    await anna.mouse.click(gold.x, gold.y, { button: 'right' });
+    await zeitraffer(anna, code, 5);
+
+    // Einer hat schon einiges Gold in der Hand.
+    const traeger = await anna.waitForFunction(() => {
+      const a = window.ansicht;
+      const e = [...a.nachher.values()].find((f) => f.b === a.ich && f.a === 'g' && f.l >= 4);
+      return e ? e.i : false;
+    }, null, { timeout: 30_000 });
+    const id = await traeger.jsonValue();
+    await zeitraffer(anna, code, 1);
+    await anna.evaluate((eid) => {
+      const a = window.ansicht;
+      a.ausgewaehlt.clear();
+      const e = a.nachher.get(eid);
+      a.kamera.zoom = 3;
+      a.blickAuf(e.x, e.y);
+    }, id);
+    await anna.waitForTimeout(200);
+    await nachweis(anna, {
+      spec: '10-strategie/einheiten-und-befehle.md',
+      ac: 'AC-15',
+      titel: 'Am Goldvorkommen: ein Dorfbewohner traegt gelbe Goldbrocken in beiden Haenden - Gold in der Leiste erst mit bedienung AC-24',
       test: info,
     });
   });

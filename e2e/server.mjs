@@ -66,6 +66,15 @@ const griffe = http.createServer(async (anfrage, antwortGriff) => {
   for await (const stueck of anfrage) roh += stueck;
   try {
     const { id, befehl, werte = {} } = JSON.parse(roh || '{}');
+    // Der Zeitraffer gilt einem Raum, nicht einem Spielstand: eine Minute
+    // Sammeln soll im Browserlauf keine Minute kosten.
+    if (befehl === 'zeitraffer') {
+      const raum = laufend.raeume.finden(id);
+      if (!raum) throw new Error(`Raum ${id} gibt es nicht.`);
+      raum.zeitraffer = Math.max(1, Math.min(20, Number(werte.faktor) || 1));
+      antwortGriff.writeHead(200, { 'Content-Type': 'application/json' }).end(JSON.stringify({ ok: true }));
+      return;
+    }
     const eintrag = laufend.manager.staende.offen.get(id);
     if (!eintrag) throw new Error(`Spielstand ${id} liegt nicht im Speicher.`);
     if (!GRIFFE[befehl]) throw new Error(`Unbekannter Griff: ${befehl}`);

@@ -141,7 +141,7 @@ test('raeume AC-8 / uebertragung AC-5 / uebertragung AC-6 / uebertragung AC-7: A
   bert.zu();
 });
 
-test('einheiten AC-11 / einheiten AC-12: ein Sammelbefehl fuellt den Vorrat', async () => {
+test('einheiten AC-12: erst die Ablieferung fuellt den Vorrat', async () => {
   const anna = gastgeber();
   await anna.offen();
   anna.senden({ typ: 'erstellen', name: 'Anna' });
@@ -175,15 +175,28 @@ test('einheiten AC-11 / einheiten AC-12: ein Sammelbefehl fuellt den Vorrat', as
 
   const zustand = await anna.warteAuf(istTyp('zustand'));
   const meineEinheiten = zustand.einheiten.filter((e) => e.b === du.id).map((e) => e.i);
+  // Zeitraffer als Pruefgriff: eine volle Ladung braucht bei 0,39 je Sekunde
+  // gut 25 Sekunden Spielzeit, dazu die Wege.
+  laufend.raeume.finden(du.code).zeitraffer = 10;
   anna.senden({ typ: 'befehl', einheiten: meineEinheiten, ziel });
+
+  const holzVorher = zustand.spieler.find((s) => s.id === du.id).holz;
+
+  // Getragen ist noch nicht abgeliefert: waehrend die ersten schon Holz in
+  // der Hand haben, steht der Vorrat still.
+  const tragend = await anna.warteAuf(
+    (n) => n.typ === 'zustand' && n.einheiten.some((e) => e.b === du.id && e.l > 0),
+    30000,
+  );
+  assert.equal(tragend.spieler.find((s) => s.id === du.id).holz, holzVorher);
 
   const voll = await anna.warteAuf((n) => {
     if (n.typ !== 'zustand') return false;
     const stand = n.spieler.find((s) => s.id === du.id);
-    return stand && stand.holz > 0;
+    return stand && stand.holz > holzVorher;
   }, 30000);
   const stand = voll.spieler.find((s) => s.id === du.id);
-  assert.ok(stand.holz >= 10, `Holz sollte steigen, war ${stand.holz}`);
+  assert.ok(stand.holz >= holzVorher + 10, `eine volle Ladung sind zehn, gestiegen um ${stand.holz - holzVorher}`);
 
   anna.zu();
   bert.zu();

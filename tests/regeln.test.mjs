@@ -8,7 +8,8 @@ import { createRequire } from 'node:module';
 const require = createRequire(import.meta.url);
 const karten = require('../server/spiele/strategie/karte.js');
 const { suchen } = require('../server/spiele/strategie/wege.js');
-const { Welt } = require('../server/spiele/strategie/welt.js');
+const { Welt, TAKTE_PRO_SEKUNDE } = require('../server/spiele/strategie/welt.js');
+const { EINHEITEN, SAMMELN } = require('../server/spiele/strategie/daten.js');
 
 const ZWEI = [{ id: 'a', name: 'Anna' }, { id: 'b', name: 'Bert' }];
 
@@ -165,8 +166,10 @@ test('karte AC-9: ein erschoepftes Feld wird Gras und wird gemeldet', () => {
   einheit.weg = [];
   welt.feldAenderungen = [];
 
+  // Fuenf Einheiten Holz bei der Rate aus den Daten, und zwei Takte Spiel.
+  const takte = Math.ceil(5 / (SAMMELN[karten.WALD].rate / TAKTE_PRO_SEKUNDE)) + 2;
   welt.sammelnBeginnen(einheit);
-  for (let i = 0; i < 21; i++) welt.einheitTakten(einheit);
+  for (let i = 0; i < takte; i++) welt.einheitTakten(einheit);
 
   assert.equal(welt.karte.felder[index], karten.GRAS);
   assert.equal(welt.karte.vorrat.has(index), false);
@@ -343,4 +346,102 @@ test('karte AC-17: der Aufbau der groessten Partie passt in eine Nachricht unter
   const byte = Buffer.byteLength(JSON.stringify(welt.aufbau()));
   assert.equal(welt.karte.groesse, 200);
   assert.ok(byte < 200 * 1024, `Aufbau ${(byte / 1024).toFixed(1)} KB`);
+});
+
+// Ein Dorfbewohner, zum naechsten Vorrat einer Feldart geschickt und so lange
+// getaktet, bis er dort arbeitet.
+function amVorrat(welt, art) {
+  const einheit = [...welt.einheiten.values()].find((e) => e.besitzer === 'a');
+  const g = welt.karte.groesse;
+  let bester = null;
+  let abstand = Infinity;
+  for (const i of welt.karte.vorrat.keys()) {
+    if (welt.karte.felder[i] !== art) continue;
+    const d = Math.hypot((i % g) - einheit.x, ((i / g) | 0) - einheit.y);
+    if (d < abstand) { abstand = d; bester = { x: i % g, y: (i / g) | 0 }; }
+  }
+  welt.befehl('a', [einheit.id], bester);
+  for (let i = 0; i < 3000 && !einheit.sammelt; i++) welt.einheitTakten(einheit);
+  assert.ok(einheit.sammelt, `die Einheit arbeitet an Feldart ${art}`);
+  return { einheit, feld: bester };
+}
+
+test('einheiten AC-15: vier Rohstoffe mit der Rate aus der Tabelle', () => {
+  const erwartet = {
+    [karten.WALD]: ['holz', 0.39],
+    [karten.BEERE]: ['nahrung', 0.31],
+    [karten.GOLD]: ['gold', 0.38],
+    [karten.STEIN]: ['stein', 0.36],
+  };
+  for (const [art, [rohstoff, rate]] of Object.entries(erwartet)) {
+    assert.deepEqual(SAMMELN[art], { rohstoff, rate });
+    const welt = new Welt(ZWEI, 7);
+    const { einheit, feld } = amVorrat(welt, Number(art));
+    const index = feld.y * welt.karte.groesse + feld.x;
+    const vorher = welt.karte.vorrat.get(index);
+
+    // Zwanzig Sekunden Arbeit: die Ladung ist die Rate mal zwanzig, abgerundet,
+    // und genau so viel fehlt dem Vorrat.
+    for (let i = 0; i < 20 * TAKTE_PRO_SEKUNDE; i++) welt.einheitTakten(einheit);
+    assert.equal(einheit.ladungsart, rohstoff);
+    assert.equal(einheit.ladung, Math.floor(rate * 20), `${rohstoff} nach 20 s`);
+    assert.equal(welt.karte.vorrat.get(index), vorher - einheit.ladung);
+  }
+});
+
+test('einheiten AC-15: hoechstens zehn tragen, dann zur Basis', () => {
+  const welt = new Welt(ZWEI, 7);
+  const { einheit } = amVorrat(welt, karten.GOLD);
+  for (let i = 0; i < 60 * TAKTE_PRO_SEKUNDE && einheit.ladung < 10; i++) welt.einheitTakten(einheit);
+  assert.equal(einheit.ladung, EINHEITEN.dorfbewohner.tragkraft);
+  assert.equal(einheit.sammelt, false, 'voll hoert er auf');
+  const ziel = einheit.weg.at(-1);
+  const basis = welt.spielerVon('a').basis;
+  assert.ok(Math.hypot(ziel.x - basis.x, ziel.y - basis.y) <= 2.5, 'der Weg endet an der Basis');
+
+  // Zehn Sekunden weiter hat er nichts dazugenommen.
+  for (let i = 0; i < 10 * TAKTE_PRO_SEKUNDE; i++) welt.einheitTakten(einheit);
+  assert.ok(einheit.ladung <= 10);
+});
+
+test('einheiten AC-15: wer den Rohstoff wechselt, verliert die Ladung', () => {
+  const welt = new Welt(ZWEI, 7);
+  const { einheit } = amVorrat(welt, karten.WALD);
+  for (let i = 0; i < 10 * TAKTE_PRO_SEKUNDE; i++) welt.einheitTakten(einheit);
+  assert.ok(einheit.ladung > 0);
+
+  // Derselbe Rohstoff an einem anderen Baum: die Ladung bleibt.
+  const g = welt.karte.groesse;
+  const andererBaum = [...welt.karte.vorrat.keys()].find((i) => welt.karte.felder[i] === karten.WALD);
+  const getragen = einheit.ladung;
+  welt.befehl('a', [einheit.id], { x: andererBaum % g, y: (andererBaum / g) | 0 });
+  assert.equal(einheit.ladung, getragen);
+
+  const stein = [...welt.karte.vorrat.keys()].find((i) => welt.karte.felder[i] === karten.STEIN);
+  welt.befehl('a', [einheit.id], { x: stein % g, y: (stein / g) | 0 });
+  assert.equal(einheit.ladung, 0);
+  assert.equal(einheit.ladungsart, null);
+});
+
+test('einheiten AC-19: Leben und Tempo nach der Vorlage', () => {
+  assert.deepEqual(EINHEITEN, {
+    dorfbewohner: { leben: 25, tempo: 0.8, sicht: 4, tragkraft: 10 },
+    spaeherreiter: { leben: 45, tempo: 1.2, sicht: 4, tragkraft: 0 },
+    miliz: { leben: 40, tempo: 0.9, sicht: 4, tragkraft: 0 },
+  });
+  assert.ok(Math.abs(EINHEITEN.spaeherreiter.tempo / EINHEITEN.dorfbewohner.tempo - 1.5) < 1e-9);
+
+  // Die Welt nimmt die Werte: zehn Sekunden geradeaus laufen.
+  const welt = new Welt(ZWEI, 7);
+  const strecke = {};
+  for (const art of Object.keys(EINHEITEN)) {
+    const einheit = welt.einheitAnlegen('a', 10, 10, art);
+    assert.equal(einheit.leben, EINHEITEN[art].leben);
+    einheit.weg = [{ x: 40, y: 10 }];
+    for (let i = 0; i < 10 * TAKTE_PRO_SEKUNDE; i++) welt.einheitTakten(einheit);
+    strecke[art] = einheit.x - 10;
+  }
+  assert.ok(Math.abs(strecke.dorfbewohner - 8) < 1e-6, `Dorfbewohner ${strecke.dorfbewohner}`);
+  assert.ok(Math.abs(strecke.spaeherreiter - 12) < 1e-6, `Spaeher ${strecke.spaeherreiter}`);
+  assert.ok(Math.abs(strecke.miliz - 9) < 1e-6, `Miliz ${strecke.miliz}`);
 });

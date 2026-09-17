@@ -2,11 +2,9 @@
 
 const karten = require('./karte');
 const { suchen, nachbarfeld } = require('./wege');
+const { EINHEITEN, SAMMELN } = require('./daten');
 
 const TAKTE_PRO_SEKUNDE = 10;
-const TEMPO = 3 / TAKTE_PRO_SEKUNDE; // Felder je Takt
-const TRAGKRAFT = 10;
-const SAMMELTAKTE = 20; // zwei Sekunden fuer eine volle Ladung
 const ABLADEWEITE = 2.2;
 const SAMMLER_ZU_BEGINN = 5;
 const SUCHWEITE_ERSATZ = 12;
@@ -69,17 +67,21 @@ class Welt {
     }
   }
 
-  einheitAnlegen(besitzer, x, y) {
+  einheitAnlegen(besitzer, x, y, art = 'dorfbewohner') {
+    const werte = EINHEITEN[art];
     const einheit = {
       id: this.naechsteId++,
+      art,
       besitzer,
       x,
       y,
+      leben: werte.leben,
       weg: [],
       auftrag: null, // { art: 'gehen' | 'sammeln', feld }
       ladung: 0,
       ladungsart: null,
-      sammelrest: 0,
+      sammelt: false, // steht am Vorrat und arbeitet
+      angefangen: 0, // Bruchteil der naechsten Einheit Rohstoff
     };
     this.einheiten.set(einheit.id, einheit);
     return einheit;
@@ -103,14 +105,20 @@ class Welt {
     if (!Number.isInteger(zx) || !Number.isInteger(zy)) return;
     if (zx < 0 || zy < 0 || zx >= g || zy >= g) return;
 
-    const art = this.karte.felder[zy * g + zx];
-    const sammelbar = art === karten.WALD || art === karten.BEERE;
+    // Holz, Beeren, Gold und Stein sind sammelbar (einheiten AC-15).
+    const sammeln = SAMMELN[this.karte.felder[zy * g + zx]];
 
     for (const id of einheitIds.slice(0, 200)) {
       const einheit = this.einheiten.get(id);
       if (!einheit || einheit.besitzer !== spielerId) continue;
-      einheit.sammelrest = 0;
-      if (sammelbar) {
+      einheit.sammelt = false;
+      if (sammeln && EINHEITEN[einheit.art].tragkraft > 0) {
+        // Wer den Rohstoff wechselt, laesst die alte Ladung fallen.
+        if (einheit.ladung > 0 && einheit.ladungsart !== sammeln.rohstoff) {
+          einheit.ladung = 0;
+          einheit.ladungsart = null;
+        }
+        einheit.angefangen = 0;
         einheit.auftrag = { art: 'sammeln', feld: { x: zx, y: zy } };
         this.wegZumVorrat(einheit);
       } else {
@@ -136,12 +144,8 @@ class Welt {
   }
 
   einheitTakten(einheit) {
-    if (einheit.sammelrest > 0) {
-      einheit.sammelrest--;
-      if (einheit.sammelrest === 0) this.ladungNehmen(einheit);
-      return;
-    }
     if (einheit.weg.length) {
+      einheit.sammelt = false;
       this.laufen(einheit);
       return;
     }
@@ -151,25 +155,30 @@ class Welt {
       einheit.auftrag = null;
       return;
     }
-    if (einheit.ladung >= TRAGKRAFT) this.abladen(einheit);
+    if (einheit.ladung >= EINHEITEN[einheit.art].tragkraft) this.abladen(einheit);
+    else if (einheit.sammelt) this.sammelnSchritt(einheit);
     else this.sammelnBeginnen(einheit);
   }
 
+  // Tempo aus den Daten, in Feldern je Sekunde (einheiten AC-19).
   laufen(einheit) {
+    const tempo = EINHEITEN[einheit.art].tempo / TAKTE_PRO_SEKUNDE;
     const naechstes = einheit.weg[0];
     const dx = naechstes.x - einheit.x;
     const dy = naechstes.y - einheit.y;
     const abstand = Math.hypot(dx, dy);
-    if (abstand <= TEMPO) {
+    if (abstand <= tempo) {
       einheit.x = naechstes.x;
       einheit.y = naechstes.y;
       einheit.weg.shift();
       return;
     }
-    einheit.x += (dx / abstand) * TEMPO;
-    einheit.y += (dy / abstand) * TEMPO;
+    einheit.x += (dx / abstand) * tempo;
+    einheit.y += (dy / abstand) * tempo;
   }
 
+  // Steht die Einheit am Vorrat, faengt sie an zu arbeiten; sonst laeuft sie
+  // hin, oder - ist der Vorrat leer - zum naechsten gleicher Art.
   sammelnBeginnen(einheit) {
     const feld = einheit.auftrag.feld;
     const index = feld.y * this.karte.groesse + feld.x;
@@ -181,6 +190,7 @@ class Welt {
       const ersatz = this.naechsterVorrat(einheit, einheit.zuletztGesammelt);
       if (!ersatz) {
         einheit.auftrag = null;
+        einheit.sammelt = false;
         return;
       }
       einheit.auftrag = { art: 'sammeln', feld: ersatz };
@@ -192,35 +202,51 @@ class Welt {
       return;
     }
     einheit.zuletztGesammelt = this.karte.felder[index];
-    einheit.sammelrest = SAMMELTAKTE;
+    einheit.sammelt = true;
   }
 
-  ladungNehmen(einheit) {
+  // Ein Takt Arbeit am Vorrat: die Rate der Vorlage, in ganzen Einheiten vom
+  // Vorrat genommen (einheiten AC-15). Voll geht es zur Abgabe.
+  sammelnSchritt(einheit) {
     const feld = einheit.auftrag.feld;
     const index = feld.y * this.karte.groesse + feld.x;
+    const art = this.karte.felder[index];
+    const sammeln = SAMMELN[art];
     const rest = this.karte.vorrat.get(index) || 0;
-    const menge = Math.min(TRAGKRAFT, rest);
-    if (menge <= 0) return;
-
-    this.karte.vorrat.set(index, rest - menge);
-    // Das Bild zeigt, wie voll ein Vorrat noch ist - in Vierteln, und nur wenn
-    // ein Viertel verloren geht, damit keine Nachricht je Ladung entsteht
-    // (darstellung AC-3).
-    const voll = karten.VORRAT[this.karte.felder[index]];
-    const viertelVorher = Math.ceil((rest / voll) * 4);
-    const viertelNachher = Math.ceil(((rest - menge) / voll) * 4);
-    if (rest - menge > 0 && viertelNachher !== viertelVorher) {
-      this.feldAenderungen.push({ i: index, a: this.karte.felder[index], v: viertelNachher });
+    if (!sammeln || rest <= 0) {
+      einheit.sammelt = false;
+      this.sammelnBeginnen(einheit);
+      return;
     }
-    einheit.ladung = menge;
-    einheit.ladungsart = this.karte.felder[index] === karten.WALD ? 'holz' : 'nahrung';
 
-    if (rest - menge <= 0) {
+    einheit.angefangen += sammeln.rate / TAKTE_PRO_SEKUNDE;
+    if (einheit.angefangen < 1) return;
+    einheit.angefangen -= 1;
+
+    this.karte.vorrat.set(index, rest - 1);
+    einheit.ladung += 1;
+    einheit.ladungsart = sammeln.rohstoff;
+
+    // Das Bild zeigt, wie voll ein Vorrat noch ist - in Vierteln, und nur wenn
+    // ein Viertel verloren geht, damit keine Nachricht je Einheit entsteht
+    // (darstellung AC-3).
+    const voll = karten.VORRAT[art];
+    const viertelVorher = Math.ceil((rest / voll) * 4);
+    const viertelNachher = Math.ceil(((rest - 1) / voll) * 4);
+    if (rest - 1 > 0 && viertelNachher !== viertelVorher) {
+      this.feldAenderungen.push({ i: index, a: art, v: viertelNachher });
+    }
+    if (rest - 1 <= 0) {
       this.karte.felder[index] = karten.GRAS;
       this.karte.vorrat.delete(index);
       this.feldAenderungen.push({ i: index, a: karten.GRAS });
+      einheit.sammelt = false;
     }
-    this.wegZurBasis(einheit);
+
+    if (einheit.ladung >= EINHEITEN[einheit.art].tragkraft) {
+      einheit.sammelt = false;
+      this.wegZurBasis(einheit);
+    }
   }
 
   abladen(einheit) {
@@ -233,6 +259,7 @@ class Welt {
     spieler[einheit.ladungsart] += einheit.ladung;
     einheit.ladung = 0;
     einheit.ladungsart = null;
+    einheit.angefangen = 0;
     this.wegZumVorrat(einheit);
   }
 
@@ -310,4 +337,4 @@ class Welt {
   }
 }
 
-module.exports = { Welt, TAKTE_PRO_SEKUNDE, TRAGKRAFT, SAMMELTAKTE, STARTVORRAT, ROHSTOFFE };
+module.exports = { Welt, TAKTE_PRO_SEKUNDE, STARTVORRAT, ROHSTOFFE };

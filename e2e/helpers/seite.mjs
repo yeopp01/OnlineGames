@@ -103,6 +103,17 @@ export async function griff(page, befehl, werte = {}) {
   return JSON.parse(inhalt);
 }
 
+/**
+ * Der Zeitraffer als Pruefgriff: der Raum rechnet je Schlag `faktor` Takte.
+ * Fuer Ablaeufe, die mit den Werten der Vorlage Minuten dauern.
+ */
+export async function zeitraffer(page, code, faktor) {
+  const antwort = await page.request.post(`http://localhost:${GRIFFHAFEN}/griff`, {
+    data: { id: code, befehl: 'zeitraffer', werte: { faktor } },
+  });
+  expect(antwort.ok(), await antwort.text()).toBe(true);
+}
+
 /** "7,3 Mio" oder "329 T" als Tausender. */
 export function tausend(text) {
   const wert = text.trim();

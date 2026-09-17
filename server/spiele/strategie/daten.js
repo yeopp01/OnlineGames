@@ -1,0 +1,23 @@
+'use strict';
+
+// Die Werte des Strategiespiels an einer Stelle (→ specs/10-strategie/bauen.md
+// AC-20, docs/strategie/vorlage-aoe2.md). Die Simulation liest sie hier und
+// verzweigt nicht nach Einheit oder Volk.
+
+// Einheiten: Leben, Tempo in Feldern je Sekunde, Sicht in Feldern, Tragkraft.
+const EINHEITEN = {
+  dorfbewohner: { leben: 25, tempo: 0.8, sicht: 4, tragkraft: 10 },
+  spaeherreiter: { leben: 45, tempo: 1.2, sicht: 4, tragkraft: 0 },
+  miliz: { leben: 40, tempo: 0.9, sicht: 4, tragkraft: 0 },
+};
+
+// Sammelraten je Sekunde, nach dem Vorrat, an dem gearbeitet wird
+// (einheiten AC-15). Schlüssel ist die Feldart aus karte.js.
+const SAMMELN = {
+  1: { rohstoff: 'holz', rate: 0.39 }, // Baum
+  2: { rohstoff: 'nahrung', rate: 0.31 }, // Beerenstrauch
+  4: { rohstoff: 'gold', rate: 0.38 }, // Goldfeld
+  5: { rohstoff: 'stein', rate: 0.36 }, // Steinfeld
+};
+
+module.exports = { EINHEITEN, SAMMELN };

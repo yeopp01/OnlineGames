@@ -45,6 +45,7 @@ class Raum {
     // Raum genau zwei Dinge: erzeugen(spieler, einstellungen) und takte.
     this.spiel = spiel;
     this.welt = null;
+    this.zeitraffer = 1;
     this.uhr = null;
     this.beruehrt = Date.now();
     this.art = spiel ? spiel.art : null;
@@ -144,7 +145,9 @@ class Raum {
   }
 
   schlag() {
-    this.welt.takten();
+    // Der Zeitraffer ist ein Pruefgriff: Tests setzen ihn, damit eine Minute
+    // Spiel keine Minute Warten kostet. Im Betrieb bleibt er 1.
+    for (let i = 0; i < this.zeitraffer; i++) this.welt.takten();
     this.senden(this.welt.zustand());
   }
 

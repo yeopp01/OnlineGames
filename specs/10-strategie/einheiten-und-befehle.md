@@ -2,16 +2,15 @@
 
 **Bereich:** Strategie
 **Kuerzel:** einheiten
-**Stand:** 9/17 fertig · 8 offen
+**Stand:** 10/17 fertig · 6 offen · 1 zurueckgestellt
 
 ## Zweck
 
 Was ein Spieler tun kann, und was daraufhin passiert.
 
-> **Stufe A löst ab.** AC-11 (zwei Sekunden, zehn Einheiten) beschreibt das
-> Sammeln der kleinen Fassung. Es gilt, bis AC-15 gebaut ist; die Runde, die
-> das tut, stellt AC-11 auf `zurueckgestellt (abgelöst durch einheiten AC-15)`
-> und passt den Test an.
+> **Stufe A löst ab.** AC-11 (zwei Sekunden, zehn Einheiten) beschrieb das
+> Sammeln der kleinen Fassung. Seit Runde 16 gilt AC-15: gesammelt wird mit
+> der Rate der Vorlage, eine volle Ladung Holz dauert gut 25 Sekunden.
 
 ## Abgrenzung
 
@@ -47,7 +46,7 @@ Befehl bewirkt.
 
 ### Sammeln
 
-- **AC-11** `fertig` **Vollstaendige Sammelschleife** — Ein Sammler laeuft zum Vorrat, sammelt zwei
+- **AC-11** `zurueckgestellt` (abgeloest durch einheiten AC-15) **Vollstaendige Sammelschleife** — Ein Sammler laeuft zum Vorrat, sammelt zwei
   Sekunden, traegt zehn Einheiten zur Basis und kehrt von selbst zurueck.
 - **AC-12** `fertig` **Ablieferung erhoeht den Vorrat** — Erst an der Basis steigt der Vorrat des
   Spielers, nicht schon beim Sammeln.
@@ -73,7 +72,7 @@ Befehl bewirkt.
 | Gold          | 0,38       | Dorfzentrum, Bergbaulager |
 | Stein         | 0,36       | Dorfzentrum, Bergbaulager |
 
-- **AC-15** `offen` **Vier Rohstoffe sammeln** — Rechtsklick eines Dorfbewohners auf Baum,
+- **AC-15** `fertig` **Vier Rohstoffe sammeln** — Rechtsklick eines Dorfbewohners auf Baum,
   Beerenstrauch, Gold- oder Steinfeld: er sammelt mit der Rate aus der Tabelle,
   trägt bis zu zehn und bringt sie weg. Wechselt er den Rohstoff, verfällt die
   alte Ladung.
@@ -86,7 +85,7 @@ Befehl bewirkt.
   im Original, damit man nicht alle Schafe zugleich schlachtet.
 - **AC-18** `offen` **Farm bestellen** — Ein Dorfbewohner auf einer fertigen Farm sammelt dort
   Nahrung, bis die Farm leer ist. Auf einer Farm arbeitet höchstens einer.
-- **AC-19** `offen` **Werte nach der Vorlage** — Dorfbewohner, Späherreiter und
+- **AC-19** `fertig` **Werte nach der Vorlage** — Dorfbewohner, Späherreiter und
   Miliz haben die Werte aus der Tabelle; der Späher ist anderthalbmal so
   schnell wie ein Dorfbewohner.
 - **AC-20** `offen` **Ein Befehl für viele** — Mehrere ausgewählte Einheiten, zum selben Punkt
@@ -100,5 +99,9 @@ Befehl bewirkt.
 ## Grenzfaelle
 
 - Ein Sammelbefehl auf ein bereits leeres Feld greift sofort auf AC-13 zurueck.
-- Wird ein Sammler mitten im Tragen umbefohlen, verfaellt seine Ladung. Das ist
-  bewusst so — ein Zwischenlager waere eine eigene Mechanik.
+- Wird ein Sammler mitten im Tragen auf einen **anderen Rohstoff** geschickt,
+  verfällt seine Ladung (AC-15). Schickt man ihn nur woanders hin oder an einen
+  Vorrat derselben Art, behält er sie — wie in der Vorlage.
+- Gesammelt wird in ganzen Einheiten: der Vorrat verliert eine, sobald die
+  Rate eine volle Einheit ergibt. Wer umbefohlen wird, verliert den
+  angefangenen Bruchteil.
