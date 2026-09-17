@@ -2,7 +2,7 @@
 
 **Bereich:** Strategie
 **Kuerzel:** bauen
-**Stand:** 0/21 fertig · 21 offen
+**Stand:** 4/22 fertig · 1 in Arbeit · 2 in QA · 15 offen
 
 ## Zweck
 
@@ -79,29 +79,33 @@ Stufe B im Stall.
 
 ### Ausbilden
 
-- **AC-8** `offen` **Dorfzentrum bildet Dorfbewohner aus** — 50 Nahrung, 25 Sekunden. Zu Beginn:
-  ein Dorfzentrum, drei Dorfbewohner, ein Späherreiter.
+- **AC-8** `fertig` **Dorfzentrum bildet Dorfbewohner aus** — 50 Nahrung, 25 Sekunden. Jeder
+  Spieler beginnt mit einem Dorfzentrum an seiner Basis. _(Die Startaufstellung
+  steht seit Runde 18 in AC-22.)_
 - **AC-9** `offen` **Kaserne bildet Miliz aus** — 60 Nahrung, 20 Gold, 21 Sekunden. Kämpfen kann
   sie ab Stufe B; in Stufe A läuft sie und nimmt Bevölkerung.
-- **AC-10** `offen` **Warteschlange je Gebäude** — Bis zu 15 Aufträge; bezahlt wird beim
+- **AC-10** `in-qa` **Warteschlange je Gebäude** — Bis zu 15 Aufträge; bezahlt wird beim
   Einreihen. Der laufende Auftrag zeigt seinen Fortschritt.
-- **AC-11** `offen` **Abbruch erstattet vollständig** — Ein Auftrag aus der Warteschlange, auch
+- **AC-11** `fertig` **Abbruch erstattet vollständig** — Ein Auftrag aus der Warteschlange, auch
   der laufende, erstattet beim Abbruch die vollen Kosten.
-- **AC-12** `offen` **Neue Einheiten erscheinen nebenan** — Auf einem freien Feld am Rand des
+- **AC-12** `in-qa` **Neue Einheiten erscheinen nebenan** — Auf einem freien Feld am Rand des
   Gebäudes, nicht in einem Hindernis, nicht in einem anderen Gebäude.
 - **AC-13** `offen` **Sammelpunkt je Gebäude** — Rechtsklick mit ausgewähltem Gebäude setzt ihn;
   zeigt er auf einen Vorrat, gehen neue Dorfbewohner dort gleich sammeln.
 - **AC-21** `offen` **Webstuhl stärkt Dorfbewohner** — 50 Gold, 25 s im Dorfzentrum: alle
   Dorfbewohner des Spielers +15 Leben, +1 Nah- und +2 Fernrüstung. Einmal je
   Partie.
+- **AC-22** `offen` **Startaufstellung nach der Vorlage** — Zu Beginn: ein Dorfzentrum, drei
+  Dorfbewohner, ein Späherreiter. Heute sind es fünf Dorfbewohner — damit ist
+  der Wohnraum von Anfang an voll, und ausbilden geht erst nach einem Haus.
 
 ### Bevölkerung
 
-- **AC-14** `offen` **Bevölkerung ist begrenzt** — Dorfzentrum und Häuser geben je fünf Plätze,
+- **AC-14** `fertig` **Bevölkerung ist begrenzt** — Dorfzentrum und Häuser geben je fünf Plätze,
   höchstens 200. Jede Einheit belegt einen.
-- **AC-15** `offen` **Volle Bevölkerung sperrt Ausbildung** — Der Auftrag bleibt in der Schlange
+- **AC-15** `in-arbeit` **Volle Bevölkerung sperrt Ausbildung** — Der Auftrag bleibt in der Schlange
   und wartet, und die Oberfläche sagt, warum: „Bevölkerung voll — Haus bauen".
-- **AC-16** `offen` **Verlorene Einheiten geben Plätze frei** — Sofort, nicht erst beim nächsten Bau.
+- **AC-16** `fertig` **Verlorene Einheiten geben Plätze frei** — Sofort, nicht erst beim nächsten Bau.
 
 ### Zerstörung
 

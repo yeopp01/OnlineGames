@@ -2,7 +2,7 @@
 
 const karten = require('./karte');
 const { suchen, nachbarfeld } = require('./wege');
-const { EINHEITEN, SAMMELN, GEBAEUDE, BEVOELKERUNG_MAX } = require('./daten');
+const { EINHEITEN, SAMMELN, GEBAEUDE, BEVOELKERUNG_MAX, SCHLANGE_MAX } = require('./daten');
 
 const TAKTE_PRO_SEKUNDE = 10;
 const ABLADEWEITE = 2.2;
@@ -18,6 +18,7 @@ const STARTVORRAT = {
   viel: { holz: 1000, nahrung: 1000, gold: 1000, stein: 1000 },
 };
 const ROHSTOFFE = ['holz', 'nahrung', 'gold', 'stein'];
+const ROHSTOFF_NAMEN = { holz: 'Holz', nahrung: 'Nahrung', gold: 'Gold', stein: 'Stein' };
 
 class Welt {
   /**
@@ -32,6 +33,7 @@ class Welt {
     this.takt = 0;
     this.naechsteId = 1;
     this.einheiten = new Map();
+    this.gebaeude = new Map();
     this.feldAenderungen = [];
 
     this.spieler = spielerListe.map((eintrag, i) => ({
@@ -56,6 +58,7 @@ class Welt {
     }
 
     for (const spieler of this.spieler) {
+      this.gebaeudeAnlegen(spieler.id, 'dorfzentrum', spieler.basis.x, spieler.basis.y);
       for (let i = 0; i < SAMMLER_ZU_BEGINN; i++) {
         const winkel = (i / SAMMLER_ZU_BEGINN) * Math.PI * 2;
         this.einheitAnlegen(
@@ -85,6 +88,125 @@ class Welt {
     };
     this.einheiten.set(einheit.id, einheit);
     return einheit;
+  }
+
+  gebaeudeAnlegen(besitzer, art, x, y) {
+    const gebaeude = {
+      id: this.naechsteId++,
+      art,
+      besitzer,
+      x,
+      y,
+      schlange: [], // Arten der bezahlten Auftraege, der erste laeuft
+      fortschritt: 0, // Takte am laufenden Auftrag
+      wartet: false, // Bevoelkerung voll (bauen AC-15)
+    };
+    this.gebaeude.set(gebaeude.id, gebaeude);
+    return gebaeude;
+  }
+
+  // Alles, was der Browser waehrend der Partie schickt, kommt hier an. Der
+  // Server kennt die Arten nicht (ADR-0006).
+  nachricht(spielerId, nachricht) {
+    switch (nachricht.auftrag) {
+      case 'ausbilden':
+        return this.ausbilden(spielerId, nachricht.gebaeude, nachricht.einheit);
+      case 'abbrechen':
+        return this.abbrechen(spielerId, nachricht.gebaeude, nachricht.platz);
+      default:
+        return this.befehl(spielerId, nachricht.einheiten, nachricht.ziel);
+    }
+  }
+
+  // Bezahlt wird beim Einreihen (bauen AC-10). Die Absage sagt, warum
+  // (bedienung AC-18).
+  ausbilden(spielerId, gebaeudeId, art) {
+    const gebaeude = this.gebaeude.get(gebaeudeId);
+    if (!gebaeude || gebaeude.besitzer !== spielerId) return { fehler: 'Das ist nicht dein Gebaeude.' };
+    if (!GEBAEUDE[gebaeude.art].bildetAus.includes(art)) return { fehler: 'Das bildet dieses Gebaeude nicht aus.' };
+    if (gebaeude.schlange.length >= SCHLANGE_MAX) return { fehler: 'Die Warteschlange ist voll.' };
+    const spieler = this.spielerVon(spielerId);
+    const kosten = EINHEITEN[art].kosten;
+    for (const [rohstoff, menge] of Object.entries(kosten)) {
+      if (spieler[rohstoff] < menge) return { fehler: `Zu wenig ${ROHSTOFF_NAMEN[rohstoff]}.` };
+    }
+    for (const [rohstoff, menge] of Object.entries(kosten)) spieler[rohstoff] -= menge;
+    gebaeude.schlange.push(art);
+    return {};
+  }
+
+  // Jeder Auftrag, auch der laufende, erstattet die vollen Kosten (bauen AC-11).
+  abbrechen(spielerId, gebaeudeId, platz) {
+    const gebaeude = this.gebaeude.get(gebaeudeId);
+    if (!gebaeude || gebaeude.besitzer !== spielerId) return { fehler: 'Das ist nicht dein Gebaeude.' };
+    if (!Number.isInteger(platz) || platz < 0 || platz >= gebaeude.schlange.length) return { fehler: 'Diesen Auftrag gibt es nicht.' };
+    const [art] = gebaeude.schlange.splice(platz, 1);
+    const spieler = this.spielerVon(spielerId);
+    for (const [rohstoff, menge] of Object.entries(EINHEITEN[art].kosten)) spieler[rohstoff] += menge;
+    if (platz === 0) {
+      gebaeude.fortschritt = 0;
+      gebaeude.wartet = false;
+    }
+    return {};
+  }
+
+  // Wohnraum aus den eigenen Gebaeuden, hoechstens 200 (bauen AC-14).
+  wohnraum(spieler) {
+    let raum = 0;
+    for (const g of this.gebaeude.values()) {
+      if (g.besitzer === spieler.id) raum += GEBAEUDE[g.art].wohnraum || 0;
+    }
+    return Math.min(BEVOELKERUNG_MAX, raum);
+  }
+
+  // Gezaehlt wird, was steht - eine verlorene Einheit gibt ihren Platz sofort
+  // frei (bauen AC-16).
+  bevoelkerung() {
+    const zahl = new Map();
+    for (const e of this.einheiten.values()) zahl.set(e.besitzer, (zahl.get(e.besitzer) || 0) + 1);
+    return zahl;
+  }
+
+  gebaeudeTakten(gebaeude, bevoelkerung) {
+    if (!gebaeude.schlange.length) return;
+    const spieler = this.spielerVon(gebaeude.besitzer);
+    const belegt = bevoelkerung.get(spieler.id) || 0;
+    // Voll: der Auftrag wartet, statt anzufangen (bauen AC-15).
+    gebaeude.wartet = belegt >= this.wohnraum(spieler);
+    if (gebaeude.wartet) return;
+
+    const art = gebaeude.schlange[0];
+    gebaeude.fortschritt++;
+    if (gebaeude.fortschritt < EINHEITEN[art].zeit * TAKTE_PRO_SEKUNDE) return;
+
+    const feld = this.freiesFeldAm(gebaeude);
+    if (!feld) return; // alles verstellt: im naechsten Takt wieder versuchen
+    gebaeude.schlange.shift();
+    gebaeude.fortschritt = 0;
+    this.einheitAnlegen(spieler.id, feld.x, feld.y, art);
+    bevoelkerung.set(spieler.id, belegt + 1);
+  }
+
+  // Ein begehbares Feld am Rand des Gebaeudes, auf dem niemand steht
+  // (bauen AC-12). Gesucht wird ringweise nach aussen, immer in derselben
+  // Reihenfolge - die Simulation bleibt deterministisch.
+  freiesFeldAm(gebaeude) {
+    const besetzt = new Set();
+    for (const e of this.einheiten.values()) besetzt.add(`${Math.round(e.x)},${Math.round(e.y)}`);
+    const mx = Math.round(gebaeude.x);
+    const my = Math.round(gebaeude.y);
+    for (let r = 2; r <= 8; r++) {
+      for (let dy = -r; dy <= r; dy++) {
+        for (let dx = -r; dx <= r; dx++) {
+          if (Math.max(Math.abs(dx), Math.abs(dy)) !== r) continue;
+          const x = mx + dx;
+          const y = my + dy;
+          if (!karten.begehbar(this.karte, x, y) || besetzt.has(`${x},${y}`)) continue;
+          return { x, y };
+        }
+      }
+    }
+    return null;
   }
 
   spielerVon(id) {
@@ -140,6 +262,8 @@ class Welt {
 
   takten() {
     this.takt++;
+    const bevoelkerung = this.bevoelkerung();
+    for (const gebaeude of this.gebaeude.values()) this.gebaeudeTakten(gebaeude, bevoelkerung);
     for (const einheit of this.einheiten.values()) this.einheitTakten(einheit);
   }
 
@@ -282,9 +406,8 @@ class Welt {
   // Was der Browser braucht, um ein Bild zu zeichnen - mehr nicht.
   zustand() {
     const einheiten = [];
-    const bevoelkerung = new Map();
+    const bevoelkerung = this.bevoelkerung();
     for (const e of this.einheiten.values()) {
-      bevoelkerung.set(e.besitzer, (bevoelkerung.get(e.besitzer) || 0) + 1);
       einheiten.push({
         i: e.id,
         b: e.besitzer,
@@ -292,6 +415,22 @@ class Welt {
         y: Math.round(e.y * 100) / 100,
         l: e.ladung,
         a: e.ladungsart ? e.ladungsart[0] : null,
+      });
+    }
+    // Gebaeude mit Schlange und Fortschritt (bauen AC-10), fuer die
+    // Ausbildungsleiste (bedienung AC-26).
+    const gebaeude = [];
+    for (const g of this.gebaeude.values()) {
+      const laufend = g.schlange[0];
+      gebaeude.push({
+        i: g.id,
+        art: g.art,
+        b: g.besitzer,
+        x: g.x,
+        y: g.y,
+        s: g.schlange,
+        f: laufend ? Math.round((g.fortschritt / (EINHEITEN[laufend].zeit * TAKTE_PRO_SEKUNDE)) * 100) / 100 : 0,
+        w: g.wartet,
       });
     }
     const felder = this.feldAenderungen;
@@ -309,6 +448,7 @@ class Welt {
         raum: this.wohnraum(s),
       })),
       einheiten,
+      gebaeude,
       felder,
     };
     // Tiere nur, wenn sich eines geaendert hat.
@@ -317,11 +457,6 @@ class Welt {
       this.tierAenderungen = [];
     }
     return zustand;
-  }
-
-  // Bisher steht je Spieler genau ein Dorfzentrum; Haeuser kommen mit A6.
-  wohnraum() {
-    return Math.min(BEVOELKERUNG_MAX, GEBAEUDE.dorfzentrum.wohnraum);
   }
 
   tierFuerDraht(id) {

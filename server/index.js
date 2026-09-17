@@ -231,8 +231,10 @@ async function starten(hafen = HAFEN, einstellungen = {}) {
         }
         case 'befehl': {
           if (!raum || !spieler || !raum.gestartet) return;
-          raum.welt.befehl(spieler.id, nachricht.einheiten, nachricht.ziel);
+          // Was der Befehl bedeutet, weiss nur das Spiel (ADR-0006).
+          const ergebnis = raum.welt.nachricht(spieler.id, nachricht);
           raum.beruehrt = Date.now();
+          if (ergebnis?.fehler) return fehler(ergebnis.fehler);
           break;
         }
         default:

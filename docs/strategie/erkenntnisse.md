@@ -167,6 +167,15 @@ Schleife hat gewartet statt Regeln zu lockern und das ist richtig so.
 Neueste oben. Eine Zeile je Runde: Nummer, Datum, Kriterien, Ergebnis,
 wichtigste Erkenntnis.
 
+- **18** · 2026-09-17 · bauen AC-8, AC-11, AC-14, AC-16 fertig; AC-10, AC-12
+  in-qa (Bild mit bedienung AC-26), AC-15 in Arbeit (Hinweis in der
+  Oberfläche fehlt). Dorfzentrum als Gebäude mit Schlange, Bezahlen beim
+  Einreihen, Abbruch mit voller Erstattung, Wohnraum aus Gebäuden. Der Server
+  reicht Partienachrichten jetzt an `welt.nachricht()` weiter — `index.js`
+  kennt kein Ausbilden (ADR-0006). Gelernt beim Zuschneiden: mit fünf
+  Dorfbewohnern zu Beginn ist der Wohnraum voll, Ausbilden ginge im Spiel nie
+  — die Startaufstellung der Vorlage (drei plus Späher) ist deshalb als
+  bauen AC-22 abgetrennt und kommt vor oder mit der Oberfläche.
 - **17** · 2026-09-17 · bedienung AC-24, AC-17 fertig: Leiste mit gezeichneten
   Symbolen für Holz, Nahrung, Gold, Stein und Bevölkerung 5/5 (Wohnraum aus
   `GEBAEUDE` in `daten.js`), Zahlen laufen in 0,5 s auf den neuen Wert.

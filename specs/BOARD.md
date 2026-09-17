@@ -7,9 +7,9 @@ Eine Zeile je Abnahmekriterium. Gepflegt wird der Status in der Spec selbst,
 hier steht er zusammengefasst. Erzeugt mit `npm run specs:board`; als Seite
 mit Bildnachweisen, Filter und Suche mit `npm run qa:report`.
 
-**Gesamt:** 295/485 fertig · 6 in QA · 4 geplant · 173 offen · 7 zurueckgestellt
+**Gesamt:** 299/486 fertig · 1 in Arbeit · 8 in QA · 4 geplant · 167 offen · 7 zurueckgestellt
 
-**Nachweise:** 98 Kriterien mit Bild · 201 ohne Bild, begruendet in `qa/ohne-bild.json`
+**Nachweise:** 98 Kriterien mit Bild · 205 ohne Bild, begruendet in `qa/ohne-bild.json`
 
 ## Nach Spezifikation
 
@@ -21,7 +21,7 @@ mit Bildnachweisen, Filter und Suche mit `npm run qa:report`.
 | [Anhalten und Fortsetzen](00-plattform/speichern.md)           | -         | -     | -       | 26    | -               | -      |
 | [Spielauswahl und Einstellungen](00-plattform/spielauswahl.md) | -         | -     | -       | 5     | -               | 12     |
 | [Uebertragung](00-plattform/uebertragung.md)                   | -         | 1     | 2       | 1     | -               | 6      |
-| [Bauen und Ausbilden](10-strategie/bauen.md)                   | -         | -     | -       | 21    | -               | -      |
+| [Bauen und Ausbilden](10-strategie/bauen.md)                   | 1         | 2     | -       | 15    | -               | 4      |
 | [Bedienung](10-strategie/bedienung.md)                         | -         | -     | -       | 21    | -               | 8      |
 | [Darstellung](10-strategie/darstellung.md)                     | -         | -     | -       | 6     | -               | 5      |
 | [Einheiten und Befehle](10-strategie/einheiten-und-befehle.md) | -         | -     | -       | 6     | 1               | 10     |
@@ -45,13 +45,19 @@ mit Bildnachweisen, Filter und Suche mit `npm run qa:report`.
 | [Vorstand](15-manager/vorstand.md)                             | -         | -     | -       | -     | -               | 10     |
 | [Betrieb](20-betrieb/betrieb.md)                               | -         | -     | -       | 12    | -               | -      |
 
-## In QA (6)
+## In Arbeit (1)
+
+- **Volle Bevölkerung sperrt Ausbildung** — [Bauen und Ausbilden](10-strategie/bauen.md) AC-15
+
+## In QA (8)
 
 - **Einladungscodes erzeugen und zuruecknehmen** — [Konten und Anmeldung](00-plattform/konten.md) AC-20
 - **Verwaister Raum wird geschlossen** — [Raeume und Partien](00-plattform/raeume.md) AC-12
 - **Leerlauf endet nach 30 Minuten** — [Raeume und Partien](00-plattform/raeume.md) AC-13
 - **Nachrichtenflut trennt die Verbindung** — [Schutz vor Fremdnutzung](00-plattform/schutz.md) AC-7
 - **Weiches Bild trotz zehn Takten** — [Uebertragung](00-plattform/uebertragung.md) AC-8
+- **Warteschlange je Gebäude** — [Bauen und Ausbilden](10-strategie/bauen.md) AC-10
+- **Neue Einheiten erscheinen nebenan** — [Bauen und Ausbilden](10-strategie/bauen.md) AC-12
 - **Alle Namen sind erfunden** — [Kader und Spieler](15-manager/kader.md) AC-7
 
 ## Geplant (4)
@@ -61,7 +67,7 @@ mit Bildnachweisen, Filter und Suche mit `npm run qa:report`.
 - **Abbruch ist sichtbar** — [Uebertragung](00-plattform/uebertragung.md) AC-9
 - **Automatischer Wiederaufbau** — [Uebertragung](00-plattform/uebertragung.md) AC-10
 
-## Offen (173)
+## Offen (167)
 
 - **Anmeldung ueber Google/GitHub** — [Konten und Anmeldung](00-plattform/konten.md) AC-6
 - **Bilanz je Konto** — [Konten und Anmeldung](00-plattform/konten.md) AC-14
@@ -113,16 +119,10 @@ mit Bildnachweisen, Filter und Suche mit `npm run qa:report`.
 - **Abbruch erstattet den Rest** — [Bauen und Ausbilden](10-strategie/bauen.md) AC-6
 - **Gebäude im Bau angreifbar** — [Bauen und Ausbilden](10-strategie/bauen.md) AC-7
 - **Die Gebäude der Dunklen Zeit** — [Bauen und Ausbilden](10-strategie/bauen.md) AC-20
-- **Dorfzentrum bildet Dorfbewohner aus** — [Bauen und Ausbilden](10-strategie/bauen.md) AC-8
 - **Kaserne bildet Miliz aus** — [Bauen und Ausbilden](10-strategie/bauen.md) AC-9
-- **Warteschlange je Gebäude** — [Bauen und Ausbilden](10-strategie/bauen.md) AC-10
-- **Abbruch erstattet vollständig** — [Bauen und Ausbilden](10-strategie/bauen.md) AC-11
-- **Neue Einheiten erscheinen nebenan** — [Bauen und Ausbilden](10-strategie/bauen.md) AC-12
 - **Sammelpunkt je Gebäude** — [Bauen und Ausbilden](10-strategie/bauen.md) AC-13
 - **Webstuhl stärkt Dorfbewohner** — [Bauen und Ausbilden](10-strategie/bauen.md) AC-21
-- **Bevölkerung ist begrenzt** — [Bauen und Ausbilden](10-strategie/bauen.md) AC-14
-- **Volle Bevölkerung sperrt Ausbildung** — [Bauen und Ausbilden](10-strategie/bauen.md) AC-15
-- **Verlorene Einheiten geben Plätze frei** — [Bauen und Ausbilden](10-strategie/bauen.md) AC-16
+- **Startaufstellung nach der Vorlage** — [Bauen und Ausbilden](10-strategie/bauen.md) AC-22
 - **Gebäude haben Leben** — [Bauen und Ausbilden](10-strategie/bauen.md) AC-17
 - **Zerstörte Gebäude nehmen Plätze mit** — [Bauen und Ausbilden](10-strategie/bauen.md) AC-18
 - **Eroberung entscheidet** — [Bauen und Ausbilden](10-strategie/bauen.md) AC-19

@@ -76,7 +76,7 @@ mit etwas, das im Browser zu sehen ist.
 | A2 | Karte nach Vorlage: Größe, Einzelvorräte, Startausstattung, Schafe, Wegsuche | karte AC-11 bis AC-17, auswahl AC-6 |
 | A3 | Isometrischer Blick, Gelände, Vorräte als Dinge | darstellung AC-1 bis AC-3, AC-7 |
 | A4 | Vier Rohstoffe sammeln, Abgabe, Werte der Einheiten, Leiste | einheiten AC-15, AC-16, AC-19, bedienung AC-24, AC-17 |
-| A5 | Dorfbewohner ausbilden, Bevölkerung, Gebäude zeigt Ausbildung | bauen AC-8, AC-10 bis AC-12, AC-14 bis AC-16, bedienung AC-26, AC-29 |
+| A5 | Dorfbewohner ausbilden, Bevölkerung, Gebäude zeigt Ausbildung, Startaufstellung | bauen AC-8, AC-10 bis AC-12, AC-14 bis AC-16, AC-22, bedienung AC-26, AC-29 |
 | A6 | Bauen: Haus, Lager, Mühle; Platz, Vorschau, mehrere Bauer | bauen AC-1 bis AC-6, bedienung AC-25, AC-15, AC-18, darstellung AC-4, AC-5 |
 | A7 | Schafe, Farm, Kaserne, Miliz, Webstuhl, Sammelpunkt | einheiten AC-17, AC-18, bauen AC-9, AC-13, AC-21, darstellung AC-6, AC-8 |
 | A8 | Wirtschafts-KI und Prüfstand | ki AC-1 bis AC-8, fahrplan AC-4, AC-5 |

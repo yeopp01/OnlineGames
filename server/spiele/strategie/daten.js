@@ -6,7 +6,8 @@
 
 // Einheiten: Leben, Tempo in Feldern je Sekunde, Sicht in Feldern, Tragkraft.
 const EINHEITEN = {
-  dorfbewohner: { leben: 25, tempo: 0.8, sicht: 4, tragkraft: 10 },
+  // kosten und zeit (Sekunden): Ausbildung (bauen AC-8).
+  dorfbewohner: { leben: 25, tempo: 0.8, sicht: 4, tragkraft: 10, kosten: { nahrung: 50 }, zeit: 25 },
   spaeherreiter: { leben: 45, tempo: 1.2, sicht: 4, tragkraft: 0 },
   miliz: { leben: 40, tempo: 0.9, sicht: 4, tragkraft: 0 },
 };
@@ -23,10 +24,13 @@ const SAMMELN = {
 // Gebaeude: Wohnraum fuer die Bevoelkerung. Weitere Werte kommen mit dem
 // Bauen (Stufe A, Schritt A6).
 const GEBAEUDE = {
-  dorfzentrum: { wohnraum: 5 },
+  dorfzentrum: { wohnraum: 5, bildetAus: ['dorfbewohner'] },
 };
+
+// Auftraege je Gebaeude (bauen AC-10).
+const SCHLANGE_MAX = 15;
 
 // Mehr Wohnraum zaehlt nicht, wie in der Vorlage.
 const BEVOELKERUNG_MAX = 200;
 
-module.exports = { EINHEITEN, SAMMELN, GEBAEUDE, BEVOELKERUNG_MAX };
+module.exports = { EINHEITEN, SAMMELN, GEBAEUDE, BEVOELKERUNG_MAX, SCHLANGE_MAX };

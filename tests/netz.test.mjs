@@ -234,6 +234,48 @@ test('uebertragung AC-1 / uebertragung AC-2 / einheiten AC-4: fremde Einheiten g
   bert.zu();
 });
 
+test('bauen AC-8 / bauen AC-11: Ausbilden und Abbrechen gehen ueber die Leitung, Absagen kommen zurueck', async () => {
+  const anna = gastgeber();
+  await anna.offen();
+  anna.senden({ typ: 'erstellen', name: 'Anna' });
+  const du = await anna.warteAuf(istTyp('du'));
+
+  const bert = kunde();
+  await bert.offen();
+  bert.senden({ typ: 'beitreten', code: du.code, name: 'Bert' });
+  const duBert = await bert.warteAuf(istTyp('du'));
+
+  anna.senden({ typ: 'start', startwert: 7 });
+  await anna.warteAuf(istTyp('aufbau'));
+  const zustand = await anna.warteAuf(istTyp('zustand'));
+  const meines = zustand.gebaeude.find((g) => g.b === du.id && g.art === 'dorfzentrum');
+  const fremdes = zustand.gebaeude.find((g) => g.b === duBert.id);
+  assert.ok(meines && fremdes, 'jeder hat ein Dorfzentrum im Zustand');
+
+  const nahrung = (n) => n.spieler.find((s) => s.id === du.id).nahrung;
+  anna.senden({ typ: 'befehl', auftrag: 'ausbilden', gebaeude: meines.i, einheit: 'dorfbewohner' });
+  anna.senden({ typ: 'befehl', auftrag: 'ausbilden', gebaeude: meines.i, einheit: 'dorfbewohner' });
+  const eingereiht = await anna.warteAuf(
+    (n) => n.typ === 'zustand' && n.gebaeude.find((g) => g.i === meines.i).s.length === 2,
+  );
+  assert.equal(nahrung(eingereiht), nahrung(zustand) - 100);
+  // Fuenf Dorfbewohner, fuenf Plaetze: der Auftrag wartet.
+  assert.equal(eingereiht.gebaeude.find((g) => g.i === meines.i).w, true);
+
+  anna.senden({ typ: 'befehl', auftrag: 'abbrechen', gebaeude: meines.i, platz: 0 });
+  const abgebrochen = await anna.warteAuf(
+    (n) => n.typ === 'zustand' && n.gebaeude.find((g) => g.i === meines.i).s.length === 1,
+  );
+  assert.equal(nahrung(abgebrochen), nahrung(zustand) - 50);
+
+  anna.senden({ typ: 'befehl', auftrag: 'ausbilden', gebaeude: fremdes.i, einheit: 'dorfbewohner' });
+  const absage = await anna.warteAuf(istTyp('fehler'));
+  assert.match(absage.text, /nicht dein Gebaeude/);
+
+  anna.zu();
+  bert.zu();
+});
+
 test('raeume AC-9 / raeume AC-10: nach Verbindungsabbruch kehrt der Spieler zurueck', async () => {
   const anna = gastgeber();
   await anna.offen();

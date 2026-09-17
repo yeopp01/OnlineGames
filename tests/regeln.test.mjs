@@ -425,7 +425,10 @@ test('einheiten AC-15: wer den Rohstoff wechselt, verliert die Ladung', () => {
 });
 
 test('einheiten AC-19: Leben und Tempo nach der Vorlage', () => {
-  assert.deepEqual(EINHEITEN, {
+  const werte = Object.fromEntries(Object.entries(EINHEITEN).map(([art, w]) => [
+    art, { leben: w.leben, tempo: w.tempo, sicht: w.sicht, tragkraft: w.tragkraft },
+  ]));
+  assert.deepEqual(werte, {
     dorfbewohner: { leben: 25, tempo: 0.8, sicht: 4, tragkraft: 10 },
     spaeherreiter: { leben: 45, tempo: 1.2, sicht: 4, tragkraft: 0 },
     miliz: { leben: 40, tempo: 0.9, sicht: 4, tragkraft: 0 },
