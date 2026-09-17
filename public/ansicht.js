@@ -6,6 +6,7 @@
 // (x nach rechts unten, y nach links unten); nur zuBild und zuWelt kennen die
 // Raute. Die Kamera liegt in Bildpunkten der Raute bei Vergroesserung 1.
 import { figurZeichnen } from './figuren.js';
+import { gebaeudeGetroffen, gebaeudeZeichnen } from './gebaeude.js';
 import {
   DINGE, GRAS, WALD, WASSER, bodenFarbe, dingZeichnen, gewaesserZeichnen, raute, wellenZeichnen,
 } from './gelaende.js';
@@ -20,6 +21,9 @@ const KLICK_WEITE = 16; // Bildpunkte bei Vergroesserung 1
 
 // Schrittphase fuer die Beine: laeuft mit der Uhr, je Einheit versetzt, damit
 // eine Gruppe nicht im Gleichschritt marschiert.
+// Die Art einer Einheit kommt als Kuerzel (server/spiele/strategie/daten.js).
+const ARTEN = { d: 'dorfbewohner', s: 'spaeherreiter', m: 'miliz' };
+
 function jetztPhase(id) {
   return performance.now() / 110 + id * 1.7;
 }
@@ -40,6 +44,9 @@ export class Ansicht {
     this.nachher = new Map();
     this.empfangen = 0;
     this.ausgewaehlt = new Set();
+    this.gebaeude = new Map();
+    this.gewaehltesGebaeude = null; // id; entweder Einheiten oder ein Gebaeude
+    this.beiAuswahl = () => {};
     this.blicke = new Map(); // Einheit → -1 links, 1 rechts
     this.tiere = new Map();
     this.vorraete = { holz: 0, nahrung: 0, gold: 0, stein: 0, bev: 0, raum: 0 };
@@ -69,6 +76,8 @@ export class Ansicht {
     this.spieler = new Map(nachricht.spieler.map((s) => [s.id, s]));
     // Tiere kommen einmal im Aufbau und danach nur bei Aenderung.
     this.tiere = new Map((nachricht.tiere || []).map((t) => [t.i, t]));
+    // Gebaeude ebenso: einmal ganz, danach nur, was sich aendert.
+    this.gebaeude = new Map((nachricht.gebaeude || []).map((g) => [g.i, g]));
 
     const meine = this.spieler.get(ichId);
     if (meine) this.blickAuf(meine.basis.x, meine.basis.y);
@@ -89,6 +98,10 @@ export class Ansicht {
     for (const tier of nachricht.tiere || []) {
       if (tier.weg) this.tiere.delete(tier.i);
       else this.tiere.set(tier.i, tier);
+    }
+    for (const gebaeude of nachricht.gebaeude || []) {
+      if (gebaeude.weg) this.gebaeude.delete(gebaeude.i);
+      else this.gebaeude.set(gebaeude.i, gebaeude);
     }
     this.vorher = this.nachher;
     this.nachher = new Map(nachricht.einheiten.map((e) => [e.i, e]));
@@ -183,9 +196,15 @@ export class Ansicht {
   // Ausgewaehlt wird im Bild, nicht auf der Karte: ein Rechteck auf dem
   // Bildschirm ist in der Raute kein Rechteck aus Feldern mehr.
   auswaehlen(rahmen) {
+    this.auswahlTreffen(rahmen);
+    this.beiAuswahl();
+  }
+
+  auswahlTreffen(rahmen) {
     const breite = Math.abs(rahmen.bisX - rahmen.vonX);
     const hoehe = Math.abs(rahmen.bisY - rahmen.vonY);
     this.ausgewaehlt.clear();
+    this.gewaehltesGebaeude = null;
 
     const figur = this.figurenHoehe();
     if (breite < 5 && hoehe < 5) {
@@ -202,7 +221,20 @@ export class Ansicht {
           bestes = einheit;
         }
       }
-      if (bestes) this.ausgewaehlt.add(bestes.i);
+      if (bestes) {
+        this.ausgewaehlt.add(bestes.i);
+        return;
+      }
+      // Keine Einheit getroffen: vielleicht ein eigenes Gebaeude.
+      const e = HALB_B * this.kamera.zoom;
+      for (const gebaeude of this.gebaeude.values()) {
+        if (gebaeude.b !== this.ich) continue;
+        const p = this.zuBild(gebaeude.x, gebaeude.y);
+        if (gebaeudeGetroffen(gebaeude.art, rahmen.vonX - p.x, rahmen.vonY - p.y, e)) {
+          this.gewaehltesGebaeude = gebaeude.i;
+          return;
+        }
+      }
       return;
     }
     const links = Math.min(rahmen.vonX, rahmen.bisX);
@@ -311,7 +343,6 @@ export class Ansicht {
     }
     gewaesserZeichnen(stift, wasser, HALB_B * zoom);
     for (const p of wasser) wellenZeichnen(stift, p.x, p.y, HALB_B * zoom, p.index, this.salz);
-    for (const spieler of this.spieler.values()) this.basisZeichnen(spieler);
 
     // 2. Alles, was steht, nach Tiefe: was weiter unten im Bild steht, verdeckt,
     //    was dahinter steht (darstellung AC-7).
@@ -323,6 +354,9 @@ export class Ansicht {
         if (DINGE.includes(art)) stehend.push({ tiefe: x + y, x, y, art: 'vorrat', feld: art, index });
       }
     }
+    for (const gebaeude of this.gebaeude.values()) {
+      stehend.push({ tiefe: gebaeude.x + gebaeude.y, x: gebaeude.x, y: gebaeude.y, art: 'gebaeude', gebaeude });
+    }
     for (const tier of this.tiere.values()) stehend.push({ tiefe: tier.x + tier.y, x: tier.x, y: tier.y, art: 'tier', tier });
     const anteil = this.anteil(jetzt);
     for (const einheit of this.nachher.values()) {
@@ -333,7 +367,7 @@ export class Ansicht {
     }
     // Gleiche Tiefe: der Vorrat zuerst, sonst verschwindet ein Sammler im Baum,
     // vor dem er steht.
-    const rang = { vorrat: 0, tier: 1, einheit: 2 };
+    const rang = { vorrat: 0, gebaeude: 1, tier: 2, einheit: 3 };
     stehend.sort((a, b) => a.tiefe - b.tiefe || rang[a.art] - rang[b.art] || a.x - b.x);
 
     const e = HALB_B * zoom;
@@ -341,6 +375,8 @@ export class Ansicht {
       const p = this.zuBild(ding.x, ding.y);
       if (ding.art === 'vorrat') {
         dingZeichnen(stift, ding.feld, p.x, p.y, e, ding.index, (this.fuellung.get(ding.index) || 4) / 4);
+      } else if (ding.art === 'gebaeude') {
+        this.gebaeudeBild(ding.gebaeude, p, e);
       } else if (ding.art === 'tier') {
         const spieler = this.spieler.get(ding.tier.b);
         figurZeichnen(stift, ding.tier.art, p.x, p.y, Math.max(9, HALB_B * 0.9 * zoom), spieler ? spieler.farbe : '#888888', {
@@ -356,27 +392,25 @@ export class Ansicht {
     if (this.zug) this.rahmenZeichnen();
   }
 
-  // Der Platz der Basis: eine Raute aus 3 x 3 Feldern in Spielerfarbe. Das
-  // Dorfzentrum als Gebaeude kommt mit Schritt A6.
-  basisZeichnen(spieler) {
+  gebaeudeBild(gebaeude, p, e) {
+    const spieler = this.spieler.get(gebaeude.b);
     const stift = this.stift;
-    const p = this.zuBild(spieler.basis.x, spieler.basis.y);
-    const zoom = this.kamera.zoom;
-    raute(stift, p.x, p.y, HALB_B * 1.5 * zoom, HALB_H * 1.5 * zoom);
-    stift.fillStyle = spieler.farbe;
-    stift.globalAlpha = 0.25;
-    stift.fill();
-    stift.globalAlpha = 1;
-    stift.strokeStyle = spieler.farbe;
-    stift.lineWidth = 2;
-    stift.stroke();
+    if (this.gewaehltesGebaeude === gebaeude.i) {
+      // Ausgewaehlt: ein heller Rand um die Grundflaeche, wie die Ellipse bei Figuren.
+      raute(stift, p.x, p.y, e * 2.6, e * 1.3);
+      stift.strokeStyle = '#ffffff';
+      stift.lineWidth = 2;
+      stift.stroke();
+    }
+    gebaeudeZeichnen(stift, gebaeude.art, p.x, p.y, e, spieler ? spieler.farbe : '#888888');
   }
 
   namenZeichnen(spieler) {
     if (this.kamera.zoom <= 0.6) return;
     const stift = this.stift;
     const p = this.zuBild(spieler.basis.x, spieler.basis.y);
-    const oben = p.y - HALB_H * 1.5 * this.kamera.zoom - 10;
+    // Ueber der Fahne des Dorfzentrums.
+    const oben = p.y - HALB_B * 5.2 * this.kamera.zoom - 6;
     stift.font = '600 12px system-ui, sans-serif';
     stift.textAlign = 'center';
     stift.lineWidth = 3;
@@ -408,7 +442,7 @@ export class Ansicht {
 
     // Ein Dorfbewohner mit Ladung traegt sie sichtbar: Holzbuendel oder
     // Beerenkorb auf dem Ruecken (bedienung AC-16, darstellung AC-6).
-    figurZeichnen(stift, 'dorfbewohner', punkt.x, punkt.y, hoehe, spieler ? spieler.farbe : '#888888', {
+    figurZeichnen(stift, ARTEN[einheit.k] || 'dorfbewohner', punkt.x, punkt.y, hoehe, spieler ? spieler.farbe : '#888888', {
       blick: this.blicke.get(einheit.i) || 1,
       ladung: einheit.l > 0 ? einheit.a : null,
       schritt: laeuft ? jetztPhase(einheit.i) : 0,

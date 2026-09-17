@@ -1,0 +1,10 @@
+{
+  "spec": "10-strategie/bedienung.md",
+  "ac": "AC-26",
+  "titel": "Dorfzentrum ausgewaehlt: unten der Knopf Dorfbewohner fuer 50 Nahrung, daneben zwei Auftraege",
+  "datei": "e2e/tests/strategie-ausbilden.spec.mjs",
+  "pfad": [
+    "Ausbilden",
+    "bedienung AC-26 / bauen AC-10: das Dorfzentrum zeigt Ausbildung, Schlange und Fortschritt"
+  ]
+}

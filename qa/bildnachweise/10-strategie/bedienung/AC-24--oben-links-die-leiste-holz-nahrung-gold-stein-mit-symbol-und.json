@@ -1,7 +1,7 @@
 {
   "spec": "10-strategie/bedienung.md",
   "ac": "AC-24",
-  "titel": "Oben links die Leiste: Holz, Nahrung, Gold, Stein mit Symbol und Zahl, dazu Bevoelkerung 5/5",
+  "titel": "Oben links die Leiste: Holz, Nahrung, Gold, Stein mit Symbol und Zahl, dazu Bevoelkerung",
   "datei": "e2e/tests/strategie-spielbild.spec.mjs",
   "pfad": [
     "Das Spielbild",

@@ -6,10 +6,11 @@
 
 // Einheiten: Leben, Tempo in Feldern je Sekunde, Sicht in Feldern, Tragkraft.
 const EINHEITEN = {
-  // kosten und zeit (Sekunden): Ausbildung (bauen AC-8).
-  dorfbewohner: { leben: 25, tempo: 0.8, sicht: 4, tragkraft: 10, kosten: { nahrung: 50 }, zeit: 25 },
-  spaeherreiter: { leben: 45, tempo: 1.2, sicht: 4, tragkraft: 0 },
-  miliz: { leben: 40, tempo: 0.9, sicht: 4, tragkraft: 0 },
+  // kosten und zeit (Sekunden): Ausbildung (bauen AC-8). kuerzel: so geht die
+  // Art ueber die Leitung - ein Zustand bleibt unter 1 kB (uebertragung AC-7).
+  dorfbewohner: { leben: 25, tempo: 0.8, sicht: 4, tragkraft: 10, kosten: { nahrung: 50 }, zeit: 25, kuerzel: 'd' },
+  spaeherreiter: { leben: 45, tempo: 1.2, sicht: 4, tragkraft: 0, kuerzel: 's' },
+  miliz: { leben: 40, tempo: 0.9, sicht: 4, tragkraft: 0, kuerzel: 'm' },
 };
 
 // Sammelraten je Sekunde, nach dem Vorrat, an dem gearbeitet wird
@@ -30,7 +31,10 @@ const GEBAEUDE = {
 // Auftraege je Gebaeude (bauen AC-10).
 const SCHLANGE_MAX = 15;
 
+// Womit jeder Spieler beginnt, neben seinem Dorfzentrum (bauen AC-22).
+const STARTAUFSTELLUNG = ['dorfbewohner', 'dorfbewohner', 'dorfbewohner', 'spaeherreiter'];
+
 // Mehr Wohnraum zaehlt nicht, wie in der Vorlage.
 const BEVOELKERUNG_MAX = 200;
 
-module.exports = { EINHEITEN, SAMMELN, GEBAEUDE, BEVOELKERUNG_MAX, SCHLANGE_MAX };
+module.exports = { EINHEITEN, SAMMELN, GEBAEUDE, BEVOELKERUNG_MAX, SCHLANGE_MAX, STARTAUFSTELLUNG };

@@ -1,7 +1,7 @@
 {
   "spec": "10-strategie/fahrplan.md",
   "ac": "AC-1",
-  "titel": "Nach dem Start bei Bert: seine Basis mit fuenf Sammlern, oben der Startwert der Karte",
+  "titel": "Nach dem Start bei Bert: sein Dorfzentrum mit drei Dorfbewohnern und einem Reiter, oben der Startwert",
   "datei": "e2e/tests/strategie-einstieg.spec.mjs",
   "pfad": [
     "Einstieg am Stueck",

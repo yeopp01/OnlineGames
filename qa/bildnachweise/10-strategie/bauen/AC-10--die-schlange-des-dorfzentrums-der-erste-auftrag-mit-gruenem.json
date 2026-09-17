@@ -1,0 +1,10 @@
+{
+  "spec": "10-strategie/bauen.md",
+  "ac": "AC-10",
+  "titel": "Die Schlange des Dorfzentrums: der erste Auftrag mit gruenem Fortschrittsbalken, der zweite wartet",
+  "datei": "e2e/tests/strategie-ausbilden.spec.mjs",
+  "pfad": [
+    "Ausbilden",
+    "bedienung AC-26 / bauen AC-10: das Dorfzentrum zeigt Ausbildung, Schlange und Fortschritt"
+  ]
+}

@@ -1,7 +1,7 @@
 {
   "spec": "10-strategie/bedienung.md",
   "ac": "AC-1",
-  "titel": "Anna zieht einen Rahmen um ihre fuenf Sammler, noch mit gedrueckter Taste",
+  "titel": "Losgelassen: alle vier stehen auf der weissen Auswahlellipse",
   "datei": "e2e/tests/strategie-spielbild.spec.mjs",
   "pfad": [
     "Das Spielbild",

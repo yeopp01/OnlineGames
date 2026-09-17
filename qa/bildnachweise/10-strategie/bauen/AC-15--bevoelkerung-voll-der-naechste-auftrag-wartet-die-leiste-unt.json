@@ -1,0 +1,10 @@
+{
+  "spec": "10-strategie/bauen.md",
+  "ac": "AC-15",
+  "titel": "Bevoelkerung voll: der naechste Auftrag wartet, die Leiste unten sagt Haus bauen",
+  "datei": "e2e/tests/strategie-ausbilden.spec.mjs",
+  "pfad": [
+    "Ausbilden",
+    "bauen AC-12 / bauen AC-15: der Neue steht vor dem Dorfzentrum, danach ist die Bevoelkerung voll"
+  ]
+}

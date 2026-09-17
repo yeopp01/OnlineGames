@@ -2,12 +2,16 @@
 
 const karten = require('./karte');
 const { suchen, nachbarfeld } = require('./wege');
-const { EINHEITEN, SAMMELN, GEBAEUDE, BEVOELKERUNG_MAX, SCHLANGE_MAX } = require('./daten');
+const {
+  EINHEITEN, SAMMELN, GEBAEUDE, BEVOELKERUNG_MAX, SCHLANGE_MAX, STARTAUFSTELLUNG,
+} = require('./daten');
 
 const TAKTE_PRO_SEKUNDE = 10;
 const ABLADEWEITE = 2.2;
-const SAMMLER_ZU_BEGINN = 5;
 const SUCHWEITE_ERSATZ = 12;
+// Wo die Startaufstellung steht, relativ zur Basis: alle vor dem Dorfzentrum.
+// Hinter ihm (dx + dy < 0) verdeckte es sie im Bild.
+const STARTPLAETZE = [[2.5, 0.5], [0.5, 2.5], [2.2, 2.2], [3, -1]];
 
 const FARBEN = ['#4a90d9', '#d94a4a', '#4ad98a', '#d9c04a', '#a44ad9', '#4ad9d0'];
 
@@ -34,6 +38,8 @@ class Welt {
     this.naechsteId = 1;
     this.einheiten = new Map();
     this.gebaeude = new Map();
+    // Gebaeude gehen wie Tiere nur bei Aenderung ueber die Leitung.
+    this.gebaeudeAenderungen = new Set();
     this.feldAenderungen = [];
 
     this.spieler = spielerListe.map((eintrag, i) => ({
@@ -59,14 +65,10 @@ class Welt {
 
     for (const spieler of this.spieler) {
       this.gebaeudeAnlegen(spieler.id, 'dorfzentrum', spieler.basis.x, spieler.basis.y);
-      for (let i = 0; i < SAMMLER_ZU_BEGINN; i++) {
-        const winkel = (i / SAMMLER_ZU_BEGINN) * Math.PI * 2;
-        this.einheitAnlegen(
-          spieler.id,
-          spieler.basis.x + Math.cos(winkel) * 2,
-          spieler.basis.y + Math.sin(winkel) * 2,
-        );
-      }
+      STARTAUFSTELLUNG.forEach((art, i) => {
+        const [dx, dy] = STARTPLAETZE[i % STARTPLAETZE.length];
+        this.einheitAnlegen(spieler.id, spieler.basis.x + dx, spieler.basis.y + dy, art);
+      });
     }
   }
 
@@ -102,7 +104,12 @@ class Welt {
       wartet: false, // Bevoelkerung voll (bauen AC-15)
     };
     this.gebaeude.set(gebaeude.id, gebaeude);
+    this.gebaeudeGeaendert(gebaeude);
     return gebaeude;
+  }
+
+  gebaeudeGeaendert(gebaeude) {
+    this.gebaeudeAenderungen.add(gebaeude.id);
   }
 
   // Alles, was der Browser waehrend der Partie schickt, kommt hier an. Der
@@ -132,6 +139,7 @@ class Welt {
     }
     for (const [rohstoff, menge] of Object.entries(kosten)) spieler[rohstoff] -= menge;
     gebaeude.schlange.push(art);
+    this.gebaeudeGeaendert(gebaeude);
     return {};
   }
 
@@ -147,6 +155,7 @@ class Welt {
       gebaeude.fortschritt = 0;
       gebaeude.wartet = false;
     }
+    this.gebaeudeGeaendert(gebaeude);
     return {};
   }
 
@@ -172,11 +181,14 @@ class Welt {
     const spieler = this.spielerVon(gebaeude.besitzer);
     const belegt = bevoelkerung.get(spieler.id) || 0;
     // Voll: der Auftrag wartet, statt anzufangen (bauen AC-15).
-    gebaeude.wartet = belegt >= this.wohnraum(spieler);
-    if (gebaeude.wartet) return;
+    const wartet = belegt >= this.wohnraum(spieler);
+    if (wartet !== gebaeude.wartet) this.gebaeudeGeaendert(gebaeude);
+    gebaeude.wartet = wartet;
+    if (wartet) return;
 
     const art = gebaeude.schlange[0];
     gebaeude.fortschritt++;
+    this.gebaeudeGeaendert(gebaeude);
     if (gebaeude.fortschritt < EINHEITEN[art].zeit * TAKTE_PRO_SEKUNDE) return;
 
     const feld = this.freiesFeldAm(gebaeude);
@@ -196,14 +208,19 @@ class Welt {
     const mx = Math.round(gebaeude.x);
     const my = Math.round(gebaeude.y);
     for (let r = 2; r <= 8; r++) {
+      // Vorn zuerst (dx + dy gross): dahinter verdeckte das Gebaeude den Neuen.
+      const ring = [];
       for (let dy = -r; dy <= r; dy++) {
         for (let dx = -r; dx <= r; dx++) {
-          if (Math.max(Math.abs(dx), Math.abs(dy)) !== r) continue;
-          const x = mx + dx;
-          const y = my + dy;
-          if (!karten.begehbar(this.karte, x, y) || besetzt.has(`${x},${y}`)) continue;
-          return { x, y };
+          if (Math.max(Math.abs(dx), Math.abs(dy)) === r) ring.push([dx, dy]);
         }
+      }
+      ring.sort((a, b) => (b[0] + b[1]) - (a[0] + a[1]) || a[0] - b[0]);
+      for (const [dx, dy] of ring) {
+        const x = mx + dx;
+        const y = my + dy;
+        if (!karten.begehbar(this.karte, x, y) || besetzt.has(`${x},${y}`)) continue;
+        return { x, y };
       }
     }
     return null;
@@ -410,27 +427,12 @@ class Welt {
     for (const e of this.einheiten.values()) {
       einheiten.push({
         i: e.id,
+        k: EINHEITEN[e.art].kuerzel,
         b: e.besitzer,
         x: Math.round(e.x * 100) / 100,
         y: Math.round(e.y * 100) / 100,
         l: e.ladung,
         a: e.ladungsart ? e.ladungsart[0] : null,
-      });
-    }
-    // Gebaeude mit Schlange und Fortschritt (bauen AC-10), fuer die
-    // Ausbildungsleiste (bedienung AC-26).
-    const gebaeude = [];
-    for (const g of this.gebaeude.values()) {
-      const laufend = g.schlange[0];
-      gebaeude.push({
-        i: g.id,
-        art: g.art,
-        b: g.besitzer,
-        x: g.x,
-        y: g.y,
-        s: g.schlange,
-        f: laufend ? Math.round((g.fortschritt / (EINHEITEN[laufend].zeit * TAKTE_PRO_SEKUNDE)) * 100) / 100 : 0,
-        w: g.wartet,
       });
     }
     const felder = this.feldAenderungen;
@@ -448,15 +450,36 @@ class Welt {
         raum: this.wohnraum(s),
       })),
       einheiten,
-      gebaeude,
       felder,
     };
+    if (this.gebaeudeAenderungen.size) {
+      zustand.gebaeude = [...this.gebaeudeAenderungen].map((id) => this.gebaeudeFuerDraht(id));
+      this.gebaeudeAenderungen.clear();
+    }
     // Tiere nur, wenn sich eines geaendert hat.
     if (this.tierAenderungen.length) {
       zustand.tiere = this.tierAenderungen.map((id) => this.tierFuerDraht(id));
       this.tierAenderungen = [];
     }
     return zustand;
+  }
+
+  // Gebaeude mit Schlange und Fortschritt (bauen AC-10), fuer die
+  // Ausbildungsleiste (bedienung AC-26).
+  gebaeudeFuerDraht(id) {
+    const g = this.gebaeude.get(id);
+    if (!g) return { i: id, weg: true };
+    const laufend = g.schlange[0];
+    return {
+      i: g.id,
+      art: g.art,
+      b: g.besitzer,
+      x: g.x,
+      y: g.y,
+      s: g.schlange,
+      f: laufend ? Math.round((g.fortschritt / (EINHEITEN[laufend].zeit * TAKTE_PRO_SEKUNDE)) * 100) / 100 : 0,
+      w: g.wartet,
+    };
   }
 
   tierFuerDraht(id) {
@@ -483,6 +506,7 @@ class Welt {
         basis: s.basis,
       })),
       tiere: [...this.tiere.keys()].map((id) => this.tierFuerDraht(id)),
+      gebaeude: [...this.gebaeude.keys()].map((id) => this.gebaeudeFuerDraht(id)),
     };
   }
 }

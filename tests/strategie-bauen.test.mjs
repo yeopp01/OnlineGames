@@ -8,7 +8,9 @@ import { createRequire } from 'node:module';
 const require = createRequire(import.meta.url);
 const karten = require('../server/spiele/strategie/karte.js');
 const { Welt, TAKTE_PRO_SEKUNDE } = require('../server/spiele/strategie/welt.js');
-const { EINHEITEN, GEBAEUDE, SCHLANGE_MAX, BEVOELKERUNG_MAX } = require('../server/spiele/strategie/daten.js');
+const {
+  EINHEITEN, GEBAEUDE, SCHLANGE_MAX, BEVOELKERUNG_MAX, STARTAUFSTELLUNG,
+} = require('../server/spiele/strategie/daten.js');
 
 const ZWEI = [{ id: 'a', name: 'Anna' }, { id: 'b', name: 'Bert' }];
 
@@ -16,13 +18,34 @@ const dorfzentrum = (welt, spieler = 'a') =>
   [...welt.gebaeude.values()].find((g) => g.besitzer === spieler && g.art === 'dorfzentrum');
 const eigene = (welt, spieler = 'a') => [...welt.einheiten.values()].filter((e) => e.besitzer === spieler);
 
-// Zu Beginn ist der Wohnraum voll (fuenf Dorfbewohner, fuenf Plaetze). Wer
-// ausbilden will, gibt hier einen Platz frei.
-function mitPlatz(einstellungen = {}) {
-  const welt = new Welt(ZWEI, 7, einstellungen);
-  welt.einheiten.delete(eigene(welt)[0].id);
+// Zu Beginn sind vier von fuenf Plaetzen belegt (bauen AC-22).
+const mitPlatz = (einstellungen = {}) => new Welt(ZWEI, 7, einstellungen);
+
+// Mit einem fuenften Dorfbewohner ist der Wohnraum voll.
+function voll() {
+  const welt = new Welt(ZWEI, 7);
+  const basis = welt.spielerVon('a').basis;
+  welt.einheitAnlegen('a', basis.x + 3, basis.y);
   return welt;
 }
+
+test('bauen AC-22: zu Beginn ein Dorfzentrum, drei Dorfbewohner und ein Spaeherreiter', () => {
+  assert.deepEqual(STARTAUFSTELLUNG, ['dorfbewohner', 'dorfbewohner', 'dorfbewohner', 'spaeherreiter']);
+  const welt = new Welt(ZWEI, 7);
+  for (const spieler of ['a', 'b']) {
+    const arten = eigene(welt, spieler).map((e) => e.art).sort();
+    assert.deepEqual(arten, ['dorfbewohner', 'dorfbewohner', 'dorfbewohner', 'spaeherreiter']);
+    assert.equal([...welt.gebaeude.values()].filter((g) => g.besitzer === spieler).length, 1);
+    for (const e of eigene(welt, spieler)) {
+      assert.ok(karten.begehbar(welt.karte, Math.round(e.x), Math.round(e.y)), 'niemand steht in einem Hindernis');
+    }
+  }
+  // Die Art geht ueber die Leitung, damit der Browser den Reiter als Reiter zeichnet.
+  const gesendet = welt.zustand().einheiten.filter((e) => e.b === 'a').map((e) => e.k).sort();
+  assert.deepEqual(gesendet, ['d', 'd', 'd', 's'], 'als Kuerzel, damit der Zustand klein bleibt');
+  const anna = welt.zustand().spieler.find((s) => s.id === 'a');
+  assert.deepEqual({ bev: anna.bev, raum: anna.raum }, { bev: 4, raum: 5 }, 'ein Platz ist frei zum Ausbilden');
+});
 
 const sekunden = (welt, s) => { for (let i = 0; i < s * TAKTE_PRO_SEKUNDE; i++) welt.takten(); };
 
@@ -73,6 +96,7 @@ test('bauen AC-10: bis zu 15 Auftraege, bezahlt beim Einreihen, der erste zeigt 
   assert.equal(anna.nahrung, 250);
 
   sekunden(welt, 10);
+  // Waehrend ausgebildet wird, geht das Gebaeude in jedem Zustand mit.
   const gesendet = welt.zustand().gebaeude.find((g) => g.i === zentrum.id);
   assert.equal(gesendet.s.length, 15);
   assert.equal(gesendet.f, 0.4, 'zehn von 25 Sekunden');
@@ -117,6 +141,8 @@ test('bauen AC-12: neue Einheiten erscheinen auf einem freien, begehbaren Feld n
     felder.add(`${e.x},${e.y}`);
   }
   assert.equal(felder.size, 5, 'keiner auf dem Feld eines anderen');
+  // Vor dem Gebaeude, nicht dahinter, wo es sie im Bild verdeckte.
+  for (const e of neue) assert.ok(e.x + e.y > zentrum.x + zentrum.y, `vorn: ${e.x}/${e.y}`);
 });
 
 test('bauen AC-14: Wohnraum fuenf je Dorfzentrum, hoechstens 200, jede Einheit belegt einen Platz', () => {
@@ -125,7 +151,7 @@ test('bauen AC-14: Wohnraum fuenf je Dorfzentrum, hoechstens 200, jede Einheit b
   const welt = new Welt(ZWEI, 7);
   const anna = welt.spielerVon('a');
   assert.equal(welt.wohnraum(anna), 5);
-  assert.equal(welt.bevoelkerung().get('a'), 5);
+  assert.equal(welt.bevoelkerung().get('a'), 4);
   welt.gebaeudeAnlegen('a', 'dorfzentrum', 10, 10);
   assert.equal(welt.wohnraum(anna), 10);
   for (let i = 0; i < 50; i++) welt.gebaeudeAnlegen('a', 'dorfzentrum', 10, 10);
@@ -134,17 +160,17 @@ test('bauen AC-14: Wohnraum fuenf je Dorfzentrum, hoechstens 200, jede Einheit b
 });
 
 test('bauen AC-14: bei voller Bevoelkerung faengt der Auftrag nicht an', () => {
-  const welt = new Welt(ZWEI, 7); // fuenf von fuenf
+  const welt = voll();
   const zentrum = dorfzentrum(welt);
   assert.deepEqual(welt.ausbilden('a', zentrum.id, 'dorfbewohner'), {}, 'einreihen geht');
   sekunden(welt, 60);
   assert.equal(eigene(welt).length, 5, 'niemand ueber den Wohnraum hinaus');
   assert.equal(zentrum.fortschritt, 0);
-  assert.equal(welt.zustand().gebaeude.find((g) => g.i === zentrum.id).w, true, 'der Zustand sagt, dass er wartet');
+  assert.equal(welt.gebaeudeFuerDraht(zentrum.id).w, true, 'der Zustand sagt, dass er wartet');
 });
 
 test('bauen AC-16: eine verlorene Einheit gibt ihren Platz sofort frei', () => {
-  const welt = new Welt(ZWEI, 7);
+  const welt = voll();
   const zentrum = dorfzentrum(welt);
   welt.ausbilden('a', zentrum.id, 'dorfbewohner');
   welt.takten();

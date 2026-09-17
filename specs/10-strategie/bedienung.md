@@ -2,7 +2,7 @@
 
 **Bereich:** Strategie
 **Kuerzel:** bedienung
-**Stand:** 8/29 fertig · 21 offen
+**Stand:** 9/29 fertig · 20 offen
 
 ## Zweck
 
@@ -84,7 +84,7 @@ Befehl steht.
   untere Rand die baubaren Gebäude mit Bild und Kosten. Was nicht bezahlbar
   ist, ist ausgegraut und nennt beim Überfahren, was fehlt. Ein Klick beginnt
   das Platzieren (→ [Bauen](bauen.md) AC-4).
-- **AC-26** `offen` **Gebäude zeigt Ausbildung** — Ein ausgewähltes eigenes Gebäude zeigt seine
+- **AC-26** `fertig` **Gebäude zeigt Ausbildung** — Ein ausgewähltes eigenes Gebäude zeigt seine
   Einheiten und Verbesserungen mit Kosten und die Warteschlange mit
   Fortschrittsbalken; ein Klick auf einen Eintrag der Schlange bricht ihn ab.
 - **AC-27** `offen` **Tastenkürzel für Häufiges** — `H` wählt das Dorfzentrum, im

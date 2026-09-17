@@ -8,6 +8,7 @@ import { kunde as kundeMit, istTyp, konto, beenden } from './hilfe.mjs';
 
 const require = createRequire(import.meta.url);
 const { starten } = require('../server/index.js');
+const { STARTAUFSTELLUNG } = require('../server/spiele/strategie/daten.js');
 
 const HAFEN = 4199;
 let laufend;
@@ -129,8 +130,15 @@ test('raeume AC-8 / uebertragung AC-5 / uebertragung AC-6 / uebertragung AC-7: A
   assert.equal(aufbau.karte.groesse, 120); // zwei Spieler (karte AC-11)
   assert.equal(aufbau.spieler.length, 2);
 
-  const zustand = await bert.warteAuf((n) => n.typ === 'zustand' && n.t >= 3);
-  assert.equal(zustand.einheiten.length, 10); // 5 Sammler je Spieler
+  const erster = await bert.warteAuf(istTyp('zustand'));
+  // Drei Dorfbewohner und ein Spaeherreiter je Spieler (bauen AC-22).
+  assert.equal(erster.einheiten.length, 2 * STARTAUFSTELLUNG.length);
+
+  // uebertragung AC-7 spricht von zehn Einheiten: zwei kommen als Pruefgriff dazu.
+  const welt = laufend.raeume.finden(du.code).welt;
+  welt.einheitAnlegen(du.id, 20, 20);
+  welt.einheitAnlegen(du.id, 21, 20);
+  const zustand = await bert.warteAuf((n) => n.typ === 'zustand' && n.einheiten.length === 10);
   assert.ok(zustand.einheiten.every((e) => typeof e.x === 'number'));
 
   // uebertragung AC-7: ein Zustand mit zehn Einheiten bleibt unter 1 kB.
@@ -246,25 +254,28 @@ test('bauen AC-8 / bauen AC-11: Ausbilden und Abbrechen gehen ueber die Leitung,
   const duBert = await bert.warteAuf(istTyp('du'));
 
   anna.senden({ typ: 'start', startwert: 7 });
-  await anna.warteAuf(istTyp('aufbau'));
+  const aufbau = await anna.warteAuf(istTyp('aufbau'));
   const zustand = await anna.warteAuf(istTyp('zustand'));
-  const meines = zustand.gebaeude.find((g) => g.b === du.id && g.art === 'dorfzentrum');
-  const fremdes = zustand.gebaeude.find((g) => g.b === duBert.id);
+  const meines = aufbau.gebaeude.find((g) => g.b === du.id && g.art === 'dorfzentrum');
+  const fremdes = aufbau.gebaeude.find((g) => g.b === duBert.id);
   assert.ok(meines && fremdes, 'jeder hat ein Dorfzentrum im Zustand');
 
   const nahrung = (n) => n.spieler.find((s) => s.id === du.id).nahrung;
   anna.senden({ typ: 'befehl', auftrag: 'ausbilden', gebaeude: meines.i, einheit: 'dorfbewohner' });
   anna.senden({ typ: 'befehl', auftrag: 'ausbilden', gebaeude: meines.i, einheit: 'dorfbewohner' });
   const eingereiht = await anna.warteAuf(
-    (n) => n.typ === 'zustand' && n.gebaeude.find((g) => g.i === meines.i).s.length === 2,
+    (n) => n.typ === 'zustand' && n.gebaeude?.find((g) => g.i === meines.i)?.s.length === 2,
   );
   assert.equal(nahrung(eingereiht), nahrung(zustand) - 100);
-  // Fuenf Dorfbewohner, fuenf Plaetze: der Auftrag wartet.
-  assert.equal(eingereiht.gebaeude.find((g) => g.i === meines.i).w, true);
+  // Vier von fuenf Plaetzen belegt: der erste Auftrag laeuft.
+  assert.equal(eingereiht.gebaeude.find((g) => g.i === meines.i).w, false);
+  // Solange nichts ausgebildet wird, schweigt das Gebaeude (uebertragung AC-7).
+  const fremdesSchweigt = await anna.warteAuf((n) => n.typ === 'zustand' && n.t > zustand.t + 3);
+  assert.ok(!fremdesSchweigt.gebaeude?.some((g) => g.i === fremdes.i));
 
   anna.senden({ typ: 'befehl', auftrag: 'abbrechen', gebaeude: meines.i, platz: 0 });
   const abgebrochen = await anna.warteAuf(
-    (n) => n.typ === 'zustand' && n.gebaeude.find((g) => g.i === meines.i).s.length === 1,
+    (n) => n.typ === 'zustand' && n.gebaeude?.find((g) => g.i === meines.i)?.s.length === 1,
   );
   assert.equal(nahrung(abgebrochen), nahrung(zustand) - 50);
 

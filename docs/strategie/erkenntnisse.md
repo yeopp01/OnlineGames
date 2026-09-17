@@ -167,6 +167,19 @@ Schleife hat gewartet statt Regeln zu lockern und das ist richtig so.
 Neueste oben. Eine Zeile je Runde: Nummer, Datum, Kriterien, Ergebnis,
 wichtigste Erkenntnis.
 
+- **19** · 2026-09-17 · bauen AC-10, AC-12, AC-15, AC-22 und bedienung AC-26
+  fertig: Start mit drei Dorfbewohnern und Späherreiter, Dorfzentrum als
+  gezeichnetes Gebäude (`public/gebaeude.js`), anklickbar, unten eine
+  Ausbildungsleiste mit Schlange, Balken, Abbruch und „Bevoelkerung voll".
+  Gelernt: (1) uebertragung AC-7 riss mit Art und Gebäuden (1177 Byte) —
+  nicht gelockert, sondern Art als Kürzel und Gebäude nur bei Änderung, und
+  der Test legt wieder zehn Einheiten an, wie das Kriterium sagt. (2) Zweimal
+  verdeckte das Gebäude eine Figur (Startplatz und Erscheinungsfeld dahinter)
+  — beides erst im Bild gesehen, jetzt „vorn zuerst" mit Test. (3) Zweimal
+  stimmte die eigene Bildunterschrift nicht (Balken bei 8 % unsichtbar;
+  „fünf Dorfbewohner" waren vier plus Reiter). Unterschrift zählen, nicht
+  schätzen. karriere AC-7 riss wieder unter fremder Last (1,2–2,4 s, allein
+  459 ms).
 - **18** · 2026-09-17 · bauen AC-8, AC-11, AC-14, AC-16 fertig; AC-10, AC-12
   in-qa (Bild mit bedienung AC-26), AC-15 in Arbeit (Hinweis in der
   Oberfläche fehlt). Dorfzentrum als Gebäude mit Schlange, Bezahlen beim

@@ -93,11 +93,11 @@ test.describe('Das Spielbild', () => {
 
   test('bedienung AC-1: ein Rahmen waehlt die eigenen Einheiten darin', async ({}, info) => {
     const eigene = await rahmenUmAlle(anna, { offen: true });
-    expect(eigene.length).toBe(5);
+    expect(eigene.length).toBe(4); // drei Dorfbewohner und ein Spaeherreiter (bauen AC-22)
     await nachweis(anna, {
       spec: BEDIENUNG,
       ac: 'AC-1',
-      titel: 'Anna zieht einen Rahmen um ihre fuenf Sammler, noch mit gedrueckter Taste',
+      titel: 'Anna zieht einen Rahmen um ihre vier Einheiten, noch mit gedrueckter Taste',
       test: info,
     });
     await anna.mouse.up();
@@ -105,7 +105,7 @@ test.describe('Das Spielbild', () => {
     await nachweis(anna, {
       spec: BEDIENUNG,
       ac: 'AC-1',
-      titel: 'Losgelassen: alle fuenf stehen auf der weissen Auswahlellipse',
+      titel: 'Losgelassen: alle vier stehen auf der weissen Auswahlellipse',
       test: info,
     });
   });
@@ -170,7 +170,7 @@ test.describe('Das Spielbild', () => {
     // Wie viel Holz vorher da ist: seit dem Startvorrat (karte AC-12) nicht null.
     const holzVorher = await anna.evaluate(() => window.ansicht.vorraete.holz);
     await rahmenUmAlle(anna);
-    expect((await auswahl(anna)).length).toBe(5);
+    expect((await auswahl(anna)).length).toBe(4);
 
     // Rechts auf das Waldfeld, das der eigenen Basis am naechsten liegt.
     const wald = await anna.evaluate((art) => {
@@ -263,12 +263,12 @@ test.describe('Das Spielbild', () => {
       stein: Number(await leiste.locator('[data-rohstoff="stein"] b').textContent()),
     })).toEqual({ holz: expect.any(Number), nahrung: stand.nahrung, gold: stand.gold, stein: stand.stein });
     await expect(leiste.locator('[data-rohstoff="bev"]')).toHaveText(new RegExp(`^\\s*${stand.bev}\\s*/\\s*${stand.raum}\\s*$`));
-    expect(stand.bev).toBe(5);
+    expect(stand.bev).toBe(4);
     expect(stand.raum).toBe(5);
     await nachweis(anna, {
       spec: BEDIENUNG,
       ac: 'AC-24',
-      titel: 'Oben links die Leiste: Holz, Nahrung, Gold, Stein mit Symbol und Zahl, dazu Bevoelkerung 5/5',
+      titel: 'Oben links die Leiste: Holz, Nahrung, Gold, Stein mit Symbol und Zahl, dazu Bevoelkerung',
       test: info,
     });
   });

@@ -1,0 +1,10 @@
+{
+  "spec": "10-strategie/bauen.md",
+  "ac": "AC-22",
+  "titel": "Der Anfang: Dorfzentrum mit blauer Fahne, davor drei Dorfbewohner und ein Spaeherreiter, oben 4/5",
+  "datei": "e2e/tests/strategie-ausbilden.spec.mjs",
+  "pfad": [
+    "Ausbilden",
+    "bauen AC-22: zu Beginn ein Dorfzentrum, drei Dorfbewohner und ein Spaeherreiter"
+  ]
+}

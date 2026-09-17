@@ -1,4 +1,5 @@
 import { Ansicht } from './ansicht.js';
+import { Auswahlleiste } from './auswahlleiste.js';
 
 const teile = {
   vorraum: document.getElementById('vorraum'),
@@ -23,11 +24,13 @@ const teile = {
   einstellungsliste: document.getElementById('einstellungsliste'),
   einstellungsHinweis: document.getElementById('einstellungsHinweis'),
   codeKopieren: document.getElementById('codeKopieren'),
+  auswahlleiste: document.getElementById('auswahlleiste'),
 };
 
 let draht = null;
 let ich = null;
 let ansicht = null;
+let auswahlleiste = null;
 // Wo eine Absage beim Eroeffnen hingehoert: an das Formular, aus dem es kam.
 let meldeort = null;
 
@@ -87,6 +90,9 @@ function empfangen(nachricht) {
         // Ansicht schon (e2e/tests/strategie-spielbild.spec.mjs). Lesen, nicht
         // schreiben - befohlen wird dort ueber Maus und Tastatur.
         window.ansicht = ansicht;
+        auswahlleiste = new Auswahlleiste(teile.auswahlleiste, ansicht, (auftrag) =>
+          senden({ typ: 'befehl', ...auftrag }));
+        ansicht.beiAuswahl = () => auswahlleiste.aktualisieren();
       }
       zeigen('spiel');
       teile.kartenwert.textContent = `· Karte ${nachricht.startwert}`;
@@ -97,6 +103,7 @@ function empfangen(nachricht) {
       if (!ansicht) return;
       ansicht.zustand(nachricht);
       leisteZiel(ansicht.vorraete);
+      auswahlleiste.aktualisieren();
       break;
 
     case 'fehler':

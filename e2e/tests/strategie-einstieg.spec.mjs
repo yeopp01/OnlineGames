@@ -89,7 +89,7 @@ test.describe('Einstieg am Stueck', () => {
     await nachweis(bert, {
       spec: FAHRPLAN,
       ac: 'AC-1',
-      titel: 'Nach dem Start bei Bert: seine Basis mit fuenf Sammlern, oben der Startwert der Karte',
+      titel: 'Nach dem Start bei Bert: sein Dorfzentrum mit drei Dorfbewohnern und einem Reiter, oben der Startwert',
       test: info,
     });
   });

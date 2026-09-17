@@ -255,6 +255,116 @@ canvas {
   }
 }
 
+/* ---- Auswahlleiste unten im Spielbild (bedienung AC-26) ------------------- */
+
+.auswahlleiste {
+  position: fixed;
+  left: 50%;
+  bottom: 1rem;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  min-width: 26rem;
+  max-width: calc(100vw - 2rem);
+  padding: 0.7rem 1.1rem;
+  border: 1px solid #ffffff24;
+  border-radius: 0.8rem;
+  background: linear-gradient(#232a33f2, #171b21f2);
+  box-shadow: 0 6px 20px #000a;
+}
+
+.auswahlleiste[hidden] {
+  display: none;
+}
+
+.auswahl-kopf strong {
+  display: block;
+  font-size: 1.05rem;
+  white-space: nowrap;
+}
+
+.auswahlleiste button {
+  position: relative;
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 0.25rem;
+  border: 1px solid #ffffff2e;
+  border-radius: 0.5rem;
+  background: #0f1216;
+  color: var(--schrift);
+  font: inherit;
+  cursor: pointer;
+}
+
+.auswahlleiste button:hover:not(:disabled) {
+  border-color: var(--betont);
+  background: #16202c;
+}
+
+.auswahlleiste button:disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
+  filter: grayscale(0.8);
+}
+
+.ausbilden .kosten {
+  font-size: 0.85rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.ausbilden .kosten::before {
+  content: "";
+  display: inline-block;
+  width: 0.55rem;
+  height: 0.55rem;
+  margin-right: 0.25rem;
+  border-radius: 50%;
+  background: #c8323c;
+}
+
+.schlange {
+  display: flex;
+  align-items: flex-end;
+  gap: 0.3rem;
+  min-height: 4rem;
+  padding-left: 1rem;
+  border-left: 1px solid #ffffff1f;
+}
+
+.schlange:empty::before {
+  content: "Nichts in Ausbildung";
+  color: var(--leise);
+  font-size: 0.8rem;
+  align-self: center;
+}
+
+.fortschritt {
+  width: 100%;
+  height: 0.45rem;
+  margin-top: 0.15rem;
+  border-radius: 999px;
+  background: #ffffff1c;
+  overflow: hidden;
+}
+
+.fortschritt > span {
+  display: block;
+  height: 100%;
+  width: 0;
+  background: linear-gradient(90deg, #6fbf5a, #a9e07a);
+}
+
+.wartegrund {
+  margin: 0;
+  color: #f0b35a;
+  font-size: 0.85rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
 /* ---- Konto und Bloecke ------------------------------------------------ */
 
 .block {
