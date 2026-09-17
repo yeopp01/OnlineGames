@@ -89,6 +89,7 @@ Zahlen, gegen die spätere Runden vergleichen. Mit Datum und Commit.
 | 2026-09-17 | Tests ohne Browser / im Browser; Browserlauf (Last 16 %) | 260 / 83; 58,5 s | Runde 13 |
 | 2026-09-17 | Tests ohne Browser / im Browser; Browserlauf | 264 / 86; 1,1 min | Runde 16 |
 | 2026-09-17 | Tests ohne Browser / im Browser; Browserlauf | 265 / 88; 1,3 min | Runde 17 |
+| 2026-09-17 | Tests ohne Browser / im Browser; Browserlauf (CPU 7 %, 13 fremde node-Prozesse im Leerlauf) | 275 / 91; 1,7 min — davon rund 20 s die neue Datei strategie-ausbilden | Runde 20 |
 
 ## Rückschauen
 
@@ -162,11 +163,35 @@ wiederholt hat:
 Nicht geändert: die Frage „Zeittest unter Last" liegt beim Benutzer; die
 Schleife hat gewartet statt Regeln zu lockern und das ist richtig so.
 
+### Nach Runde 20 (2026-09-17)
+
+Runden 16–19: Schritt A4 ganz und A5 fast ganz, 15 Kriterien `fertig` — Sammeln
+nach der Vorlage, Rohstoffleiste, Ausbilden mit Schlange, Dorfzentrum im Bild.
+Was sich wiederholt hat:
+
+1. **Bildunterschriften behaupteten zu viel** — zweimal in Runde 19 (Zahl
+   geschätzt, Balken zu klein), davor schon Runde 16 („die Dorfbewohner").
+   → Anweisung: jede Zahl und jedes „sichtbar" in der Unterschrift sichert der
+   Test vorher ab; beim Ansehen auch nach Verdeckung fragen.
+2. **Der Start einer Partie zu zweit** stand kopiert in jeder neuen
+   Spielbild-Datei. → `e2e/helpers/strategie.mjs` mit `partieZuZweit` und
+   `partieBeenden`; Spielbild und Ausbilden nutzen es.
+3. **karriere AC-7 unter fremder Last** kostete wieder eine halbe Runde
+   Rätseln. → Anweisung: Ablauf dafür (Last ansehen, Test allein, einmal
+   wiederholen, nur bei „fail 0" committen).
+
+Gut gelaufen: Tests haben zweimal echte Fehler gefunden, die niemand gesucht
+hatte — die rückwärts zählende Leiste (R17) und den zu großen Zustand (R19).
+Beide Male wurde das Produkt geändert, nicht die Zusicherung.
+
 ## Runden
 
 Neueste oben. Eine Zeile je Runde: Nummer, Datum, Kriterien, Ergebnis,
 wichtigste Erkenntnis.
 
+- **20** · 2026-09-17 · Rückschau: Helfer `partieZuZweit`, Regeln zu
+  Bildunterschriften und zum Zeittest unter Last. Nächste Runde: bedienung
+  AC-29 (Werte der Auswahl), dann **A6** Bauen.
 - **19** · 2026-09-17 · bauen AC-10, AC-12, AC-15, AC-22 und bedienung AC-26
   fertig: Start mit drei Dorfbewohnern und Späherreiter, Dorfzentrum als
   gezeichnetes Gebäude (`public/gebaeude.js`), anklickbar, unten eine

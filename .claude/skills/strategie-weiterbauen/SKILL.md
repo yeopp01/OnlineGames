@@ -139,6 +139,15 @@ Setze die gewählten Kriterien auf `in-arbeit`.
   überdeckt? Wenn nicht: verbessern, nicht einchecken. Auf der Leinwand hilft
   kein `toBeInViewport` — dort ist das Ansehen die einzige Prüfung. (Runde 4:
   der Ladungspunkt lag unter dem Auswahlring.)
+- **Jede Zahl und jedes „sichtbar" in einer Bildunterschrift sichert der Test
+  vorher ab** — gezählt aus `window.ansicht`, nicht geschätzt („vier
+  Dorfbewohner und ein Reiter" statt „fünf Dorfbewohner"), und ein Balken oder
+  eine Ladung erst ab einer Größe, die man im Bild sieht (Runde 19: zweimal
+  falsch). Beim Ansehen auch fragen: **Verdeckt das Neue etwas, oder wird es
+  verdeckt?** Gebäude standen zweimal vor Figuren.
+- **Eine Partie zu zweit** startet `partieZuZweit(browser, info)` aus
+  `e2e/helpers/strategie.mjs`, beendet wird sie mit `partieBeenden`. Neue
+  Spielbild-Dateien kopieren den Start nicht.
 - **Beim Zeichnen zuerst ansehen, dann testen:** `npm run sicht --
   schautafel.html` (Seite ohne führenden Schrägstrich) schreibt ein Wegwerfbild
   in den Temp-Ordner und nennt den Pfad. **Und immer auch im Spielbild:**
@@ -166,15 +175,22 @@ Setze die gewählten Kriterien auf `in-arbeit`.
 2. Oberfläche angefasst → `npm run check:alles`, sonst `npm run check`.
 3. Regeln oder Werte geändert und der Prüfstand existiert (fahrplan AC-4) →
    `npm run pruefstand:strategie`, Zahlen unter **Messwerte**.
-4. Rot → beheben. Geht es nach ernsthaftem Versuch nicht: Kriterium zurück auf
+4. **Rot nur durch `karriere AC-7`** (Saison unter 1 s, Managerspiel): das ist
+   fast immer fremde Last (Runden 10, 19). Nachsehen
+   (`Get-CimInstance Win32_Process -Filter "Name='node.exe'"`), den Test
+   allein laufen lassen (`node --test --test-name-pattern="karriere AC-7"
+   tests/manager-spiel.test.mjs`), dann `npm run check` einmal wiederholen.
+   Committet wird erst bei „fail 0". Grenze und Testaufruf bleiben, bis der
+   Benutzer die offene Frage beantwortet.
+5. Rot → beheben. Geht es nach ernsthaftem Versuch nicht: Kriterium zurück auf
    `in-arbeit` oder `in-qa`, die Ursache als offenen Faden aufschreiben,
    **nicht** committen, was rot ist.
-5. Grün → eine Zeile unter **Runden** in den Erkenntnissen, offene Fäden
+6. Grün → eine Zeile unter **Runden** in den Erkenntnissen, offene Fäden
    aktualisieren (erledigte streichen). Dann **ein Commit** auf `strategie`,
    deutscher Text, Betreff sagt, was jetzt geht. **Kein Push, kein Deploy.**
-6. Ist mit dem Commit eine Stufe erreicht: Zeile „Stand" in `CLAUDE.md`
+7. Ist mit dem Commit eine Stufe erreicht: Zeile „Stand" in `CLAUDE.md`
    nachziehen.
-7. **Zwischenstand in der Abschlussnachricht:** Der Benutzer will den
+8. **Zwischenstand in der Abschlussnachricht:** Der Benutzer will den
    Fortschritt sehen, nicht nur lesen. Nenne am Ende jeder Runde zwei bis drei
    Bilder dieser Runde als Markdown-Link auf die Datei unter
    `qa/bildnachweise/…` — das aussagekräftigste zuerst, je mit einem halben

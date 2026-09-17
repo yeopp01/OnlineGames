@@ -6,7 +6,8 @@
 // nichts an der Nahrung und an der Bevoelkerung verschieben. Gelesen wird ueber
 // `window.ansicht`, geklickt wie ein Mensch.
 import { nachweis } from '../../scripts/qa-nachweis.mjs';
-import { ANMELDUNG, expect, fehlerSammeln, test, zeitraffer } from '../helpers/seite.mjs';
+import { expect, test, zeitraffer } from '../helpers/seite.mjs';
+import { partieBeenden, partieZuZweit } from '../helpers/strategie.mjs';
 
 const BAUEN = '10-strategie/bauen.md';
 const BEDIENUNG = '10-strategie/bedienung.md';
@@ -15,32 +16,13 @@ const STARTWERT = 4711;
 test.describe('Ausbilden', () => {
   test.describe.configure({ mode: 'serial' });
 
+  let partie;
   let anna;
-  let bert;
   let code;
-  const fehler = [];
 
   test.beforeAll(async ({ browser }, info) => {
-    const optionen = { baseURL: info.project.use.baseURL, viewport: { width: 1400, height: 950 }, locale: 'de-DE' };
-    anna = await (await browser.newContext({ ...optionen, storageState: ANMELDUNG })).newPage();
-    bert = await (await browser.newContext(optionen)).newPage();
-    fehler.push(fehlerSammeln(anna), fehlerSammeln(bert));
-
-    await anna.goto('/');
-    await anna.locator('[data-oeffnen="strategie"]').click();
-    await anna.locator('[data-einstellung="startwert"]').fill(String(STARTWERT));
-    await anna.locator('[data-eroeffnen="strategie"]').click();
-    await expect(anna.locator('#raumcode')).toHaveText(/^[A-Z0-9]{3}-[A-Z0-9]{3}$/);
-    code = (await anna.locator('#raumcode').textContent()).trim();
-
-    await bert.goto('/');
-    await bert.locator('#name').fill('Bert');
-    await bert.locator('#code').fill(code);
-    await bert.locator('#beitreten').click();
-    await expect(anna.locator('#spielerliste li')).toHaveCount(2);
-
-    await anna.locator('#starten').click();
-    await anna.waitForFunction(() => window.ansicht && window.ansicht.nachher.size > 0 && window.ansicht.gebaeude.size > 0);
+    partie = await partieZuZweit(browser, info, { startwert: STARTWERT });
+    ({ anna, code } = partie);
     // Naeher heran, damit Gebaeude und Figuren im Bild gut zu erkennen sind.
     await anna.evaluate(() => {
       const a = window.ansicht;
@@ -50,11 +32,7 @@ test.describe('Ausbilden', () => {
     });
   });
 
-  test.afterAll(async () => {
-    expect(fehler.flat(), 'Eine der Seiten hat Fehler gemeldet').toEqual([]);
-    await anna?.context().close();
-    await bert?.context().close();
-  });
+  test.afterAll(() => partieBeenden(partie));
 
   const meinZentrum = () => anna.evaluate(() => {
     const a = window.ansicht;

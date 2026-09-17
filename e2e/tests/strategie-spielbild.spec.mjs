@@ -8,7 +8,8 @@
 // `window.ansicht` (public/app.js); befohlen wird nur ueber Maus und Tastatur,
 // so wie ein Mensch es tut.
 import { nachweis } from '../../scripts/qa-nachweis.mjs';
-import { ANMELDUNG, expect, fehlerSammeln, test, zeitraffer } from '../helpers/seite.mjs';
+import { expect, test, zeitraffer } from '../helpers/seite.mjs';
+import { partieBeenden, partieZuZweit } from '../helpers/strategie.mjs';
 
 const BEDIENUNG = '10-strategie/bedienung.md';
 const FAHRPLAN = '10-strategie/fahrplan.md';
@@ -43,42 +44,17 @@ async function rahmenUmAlle(page, { offen = false } = {}) {
 test.describe('Das Spielbild', () => {
   test.describe.configure({ mode: 'serial' });
 
+  let partie;
   let anna;
   let bert;
   let code;
-  const fehler = [];
 
   test.beforeAll(async ({ browser }, info) => {
-    const optionen = { baseURL: info.project.use.baseURL, viewport: { width: 1400, height: 950 }, locale: 'de-DE' };
-    anna = await (await browser.newContext({ ...optionen, storageState: ANMELDUNG })).newPage();
-    bert = await (await browser.newContext(optionen)).newPage();
-    fehler.push(fehlerSammeln(anna), fehlerSammeln(bert));
-
-    await anna.goto('/');
-    await anna.locator('[data-oeffnen="strategie"]').click();
-    await anna.locator('[data-einstellung="startwert"]').fill(String(STARTWERT));
-    await anna.locator('[data-eroeffnen="strategie"]').click();
-    await expect(anna.locator('#raumcode')).toHaveText(/^[A-Z0-9]{3}-[A-Z0-9]{3}$/);
-    code = (await anna.locator('#raumcode').textContent()).trim();
-
-    await bert.goto('/');
-    await bert.locator('#name').fill('Bert');
-    await bert.locator('#code').fill(code);
-    await bert.locator('#beitreten').click();
-    await expect(anna.locator('#spielerliste li')).toHaveCount(2);
-
-    await anna.locator('#starten').click();
-    for (const seite of [anna, bert]) {
-      await expect(seite.locator('#brett')).toBeVisible();
-      await seite.waitForFunction(() => window.ansicht && window.ansicht.nachher.size > 0);
-    }
+    partie = await partieZuZweit(browser, info, { startwert: STARTWERT });
+    ({ anna, bert, code } = partie);
   });
 
-  test.afterAll(async () => {
-    expect(fehler.flat(), 'Eine der Seiten hat Fehler gemeldet').toEqual([]);
-    await anna?.context().close();
-    await bert?.context().close();
-  });
+  test.afterAll(() => partieBeenden(partie));
 
   test('auswahl AC-7: nach dem Start steht der Startwert der Karte im Bild', async ({}, info) => {
     await expect(anna.locator('#kartenwert')).toHaveText(`· Karte ${STARTWERT}`);
