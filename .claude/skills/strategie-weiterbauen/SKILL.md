@@ -85,6 +85,10 @@ Setze die gewählten Kriterien auf `in-arbeit`.
   `server/spiele/<art>/`.
 - Das Managerspiel ruht. Anfassen nur, wenn eine gemeinsame Stelle (Vorraum,
   Spielauswahl) es verlangt, und dann muss sein Browserlauf grün bleiben.
+- **Prüfen und committen nur mit `&&` verketten**, nie mit `;` — sonst läuft
+  der Commit auch, wenn `npm run check` rot ist (Runde 10 passiert). Am
+  sichersten: Prüfung und Commit als zwei getrennte Aufrufe, der Commit erst
+  nach gelesenem „fail 0".
 - **Werkzeug:** neue Dateien mit Write, Änderungen mit Edit. Keine langen
   Inhalte als Heredoc in der Shell, und nie zwei Heredocs in einem Aufruf —
   Anführungszeichen im Inhalt brechen das Kommando mittendrin ab (Runde 4).
