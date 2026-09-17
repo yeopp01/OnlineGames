@@ -129,6 +129,12 @@ Setze die gewählten Kriterien auf `in-arbeit`.
   Bild besser und die Zahl schlechter, misst die Zahl das Falsche (Runde 39:
   „Sättigung des ganzen Bildes" stieg, weil erdiges Oliv in HSL gesättigter
   ist als Graugrün). Dann das Kriterium neu fassen, bevor gebaut wird.
+- **Tests über ganze Partien** (Prüfstand, KI): erst messen, dann die Grenze
+  setzen. Die Werte über alle Startwerte ausgeben (`npm run
+  pruefstand:strategie` oder ein kurzer `eingriff`), die Grenze aus dem
+  Kriterium oder dem Plan ableiten und die gemessenen Werte als Kommentar an
+  den Test schreiben (Runde 44: „mindestens 5 im Holz" und „30 s Warten" waren
+  geschätzt, das erste falsch, das zweite zu lasch).
 - **Nie** einen Test überspringen, eine Schwelle senken oder eine Zusicherung
   lockern, um grün zu werden. Ist eine Schwelle wirklich falsch, ändere das
   Kriterium in der Spec, mit Begründung im Commit und einer Zeile in den
@@ -200,6 +206,11 @@ Setze die gewählten Kriterien auf `in-arbeit`.
   | `public/index.html`, `app.js`, `stil.css` | `npm run qa:nachweis -- vorraum spielauswahl strategie` |
   | `public/ansicht.js`                    | `npm run qa:nachweis -- strategie`                       |
   | `public/manager.*`                     | `npm run qa:nachweis -- manager`                         |
+  | Aufstellung oder Kamera in einem Test  | `npm run qa:nachweis -- <datei ohne .spec.mjs>`          |
+
+  Auch ein Test, der sein Bild nur anders aufstellt, schreibt es im
+  gewöhnlichen Lauf nicht neu (Runde 41: das alte Bild mit der verdeckten
+  Karre blieb liegen).
 - Kein Bildschirm: Eintrag in `qa/ohne-bild.json`, der sagt, **was** das
   Kriterium ist und **warum** ein Bild es nicht zeigen kann.
 
@@ -218,8 +229,10 @@ Setze die gewählten Kriterien auf `in-arbeit`.
    <datei>`), dann `npm run check` einmal wiederholen. Committet wird erst bei
    „fail 0". Grenzen und Testaufruf bleiben, bis der Benutzer die offene Frage
    beantwortet. `karte AC-15` misst seit Runde 36 den schnellsten von fünf
-   Durchgängen und hielt damit 97 % fremde Last aus; ein weiterer Zeittest,
-   der wiederholt reißt, bekommt dieselbe Messweise (Grenze unverändert).
+   Durchgängen, `karriere AC-7` seit Runde 45 die schnellste von bis zu drei
+   gleichen Saisons (nur wenn die erste über der Grenze liegt); ein weiterer
+   Zeittest, der wiederholt reißt, bekommt dieselbe Messweise (Grenze
+   unverändert).
 5. Rot → beheben. Geht es nach ernsthaftem Versuch nicht: Kriterium zurück auf
    `in-arbeit` oder `in-qa`, die Ursache als offenen Faden aufschreiben,
    **nicht** committen, was rot ist.

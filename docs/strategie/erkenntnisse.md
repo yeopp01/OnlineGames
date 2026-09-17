@@ -31,8 +31,10 @@ etwas anderem gearbeitet.
   größten Karte) auf dieselbe Weise, dreimal in neun Läufen — der Vorschlag
   würde beide in den seriellen Schritt legen. Runde 36: `karte AC-15` misst
   jetzt den schnellsten von fünf Durchgängen statt eines Mittels (Grenzen
-  unverändert) — unter 97 % fremder Last grün. Dasselbe ginge für
-  `karriere AC-7`.
+  unverändert) — unter 97 % fremder Last grün. Runde 45: `karriere AC-7`
+  misst ebenso die schnellste von bis zu drei gleichen Saisons, nur wenn die
+  erste über 1 s liegt; die Grenze bleibt. Damit ist der serielle Schritt
+  vielleicht unnötig — die Frage bleibt offen, bis der Benutzer entscheidet.
 - **Berechtigungen für die Schleife.** Das Anlegen von `.claude/settings.json`
   wurde vom Sicherheitsfilter abgelehnt (Selbständerung). Solange sie fehlen,
   kann jede Runde an einer Rückfrage hängen bleiben. Der Vorschlag steht in der
@@ -114,6 +116,7 @@ Zahlen, gegen die spätere Runden vergleichen. Mit Datum und Commit.
 | 2026-09-17 | Browsertests je Datei (e2e:laufzeiten, CPU 20 %): strategie-bauen / -ausbilden / -spielbild / Summe | 45,8 / 29,3 / 25,7 / 141 s | Runde 30 |
 | 2026-09-17 | Zeichnen je Bild (sicht --messen, ohne Grafikkarte), Zoom 1 / 0,5 / 2 | vorher 23,8 / 29,3 / 17,9 ms, nachher 18,2 / 23,1 / 29,3 ms | Runde 29 |
 | 2026-09-17 | Tests ohne Browser / im Browser | 305 / 109 | Runde 40 |
+| 2026-09-17 | Tests ohne Browser / im Browser | 318 / 113 | Runde 45 |
 | 2026-09-17 | Pruefstand, Grund-KI: 20 Partien x 10 Spielminuten, 2 Spieler — Dauer je Partie / Dorfbewohner nach 10 min | 30–90 ms / 15–16 | Runde 43 |
 | 2026-09-17 | Pruefstand, Wirtschafts-KI: 20 Startwerte x 2 Spieler nach 10 min — Dorfbewohner / Nahrung min / laengste Untaetigkeit / Warten auf Wohnraum max; 20 Partien gesamt | 22 / 520 / 0,6 s / 3,5 s; 1,4 s | Runde 44 |
 | 2026-09-17 | Zeichnen je Bild nach A6c (Boden in Kacheln, Wasser im Boden), Zoom 1 / 2 — Last nicht geprüft | 20,4 / 40,2 ms | Runde 39 |
@@ -263,6 +266,32 @@ Gut gelaufen: Die Tonstufen-Messung alt gegen neu hat aus „wirkt gezeichneter"
 eine Zahl gemacht, und zweimal hat ein alter Test einen neuen Fehler gefunden
 (Klick auf Beeren traf ein Schaf; zwei Lager zu ähnlich). Browserlauf bei
 ruhigerer Maschine 141 s Testzeit, langsamster Fall weiter der Lagertest (28 s).
+
+### Nach Runde 45 (2026-09-17)
+
+Runden 41–44: darstellung AC-14 und AC-8 (A6c und A7 abgeschlossen), dann A8
+ganz — Prüfstand und Wirtschafts-KI; 15 Kriterien `fertig`. Was sich
+wiederholt hat:
+
+1. **Zeittests rissen unter fremder Last** — `karte AC-15` bei 99 % (trotz
+   „schnellster von fünf") und `karriere AC-7` bei 100 % CPU, beide allein
+   grün. → `karriere AC-7` misst jetzt ebenso die schnellste von bis zu drei
+   gleichen Saisons, die Grenze bleibt 1 s; Anweisung nachgezogen.
+   In dieser Rückschau riss `karte AC-15` noch einmal (100 % CPU, 22
+   Node-Prozesse fremder Projekte), allein dreimal grün, Wiederholung grün:
+   fünf Durchgänge liegen zu dicht beieinander, um einer Lastspitze
+   auszuweichen. Beobachten; ohne Antwort des Benutzers bleibt der Aufruf.
+2. **Testgrenzen erst geschätzt, dann gemessen** — zweimal in Runde 44. →
+   Anweisung: Tests über ganze Partien setzen ihre Grenze nach einer Messung
+   über alle Startwerte, die Werte stehen als Kommentar am Test.
+3. **Ein altes Bild blieb liegen** — der gewöhnliche Lauf schreibt vorhandene
+   Bilder nicht neu, auch nicht nach geänderter Aufstellung. → Zeile in der
+   Tabelle „geändert → neu erzeugen".
+
+Gut gelaufen: Der Prüfstand hat in zwei Runden zwei echte Fehler der
+Simulation gefunden, die kein Browsertest gezeigt hatte (Weg durch ein neues
+Gebäude, Bauer gibt 0,04 Felder vor dem Ziel auf). Jede Wirtschaftsänderung
+wurde über 20 Startwerte gemessen statt an einer Partie beurteilt.
 
 ### Nach Runde 40 (2026-09-17)
 
