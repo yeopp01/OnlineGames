@@ -163,6 +163,14 @@ Setze die gewählten Kriterien auf `in-arbeit`.
   wald, gold, stein, beere, wasser). Die Schautafel sah in den Runden 12–14
   jedes Mal gut aus, das Spielbild nicht. Erst wenn beides gut aussieht, kommt
   der Browsertest mit `nachweis()`.
+- **Wer mehr zeichnet, misst die Zeit** (Runden 27–29): vorher und nachher
+  `npm run sicht -- --spiel --zoom 1 --messen` und dasselbe bei Zoom 0,5 und 2.
+  Wird es bei Zoom 1 mehr als ein Fünftel teurer, hilft eines von zwei Dingen,
+  die gemessen gewirkt haben: **Zwischenspeicher** (einmal in ein kleines Bild
+  zeichnen, dann kopieren - `gebaeudeBildZeichnen`, `dingBildZeichnen`) für
+  Dinge, die gleich aussehen, oder **Sammeln** gleichfarbiger Striche in einen
+  Pfad (`grasSammeln`) für viele kleine. Kacheln für den Boden waren in Runde 13
+  langsamer - nicht ohne Messung wieder versuchen.
 - **Spielgröße ansehen, nicht nur herangezoomt.** Jede Figur und jedes Gebäude
   wird auch bei Zoom 1 beurteilt — dort spielt man. Die Schautafel zeigt
   beides nebeneinander.
@@ -183,13 +191,15 @@ Setze die gewählten Kriterien auf `in-arbeit`.
 2. Oberfläche angefasst → `npm run check:alles`, sonst `npm run check`.
 3. Regeln oder Werte geändert und der Prüfstand existiert (fahrplan AC-4) →
    `npm run pruefstand:strategie`, Zahlen unter **Messwerte**.
-4. **Rot nur durch `karriere AC-7`** (Saison unter 1 s, Managerspiel): das ist
-   fast immer fremde Last (Runden 10, 19). Nachsehen
+4. **Rot nur durch eine Zeitmessung** — `karriere AC-7` (Saison unter 1 s),
+   `einheiten AC-8` (Wegsuche unter 1 ms), `karte AC-15` (Wegsuche auf der
+   größten Karte): das ist fast immer fremde Last oder der parallele Lauf
+   (Runden 10, 19, 26). Nachsehen
    (`Get-CimInstance Win32_Process -Filter "Name='node.exe'"`), den Test
-   allein laufen lassen (`node --test --test-name-pattern="karriere AC-7"
-   tests/manager-spiel.test.mjs`), dann `npm run check` einmal wiederholen.
-   Committet wird erst bei „fail 0". Grenze und Testaufruf bleiben, bis der
-   Benutzer die offene Frage beantwortet.
+   allein laufen lassen (`node --test --test-name-pattern="<kuerzel> AC-n"
+   <datei>`), dann `npm run check` einmal wiederholen. Committet wird erst bei
+   „fail 0". Grenzen und Testaufruf bleiben, bis der Benutzer die offene Frage
+   beantwortet.
 5. Rot → beheben. Geht es nach ernsthaftem Versuch nicht: Kriterium zurück auf
    `in-arbeit` oder `in-qa`, die Ursache als offenen Faden aufschreiben,
    **nicht** committen, was rot ist.

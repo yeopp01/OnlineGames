@@ -93,6 +93,7 @@ Zahlen, gegen die spätere Runden vergleichen. Mit Datum und Commit.
 | 2026-09-16 | Tests ohne Browser / im Browser; Browserlauf | 252 / 77; 1,1 min — nicht vergleichbar, 8 fremde Testprozesse | Runde 6 |
 | 2026-09-17 | Tests ohne Browser / im Browser; Browserlauf (Last 16 %) | 260 / 80; 59,8 s | Runde 12 |
 | 2026-09-17 | Wegsuche 200 x 200: Ecke zu Ecke / Mittel 100 zufaellig | 1,19 ms / 0,28 ms | Runde 12 |
+| 2026-09-17 | Browsertests je Datei (e2e:laufzeiten, CPU 20 %): strategie-bauen / -ausbilden / -spielbild / Summe | 45,8 / 29,3 / 25,7 / 141 s | Runde 30 |
 | 2026-09-17 | Zeichnen je Bild (sicht --messen, ohne Grafikkarte), Zoom 1 / 0,5 / 2 | vorher 23,8 / 29,3 / 17,9 ms, nachher 18,2 / 23,1 / 29,3 ms | Runde 29 |
 | 2026-09-17 | Zeichnen je Bild im Browserlauf, Zoom 1 / Zoom 0,4 | 4,9–6,2 ms / 10–11 ms | Runde 13 |
 | 2026-09-17 | Tests ohne Browser / im Browser; Browserlauf (Last 16 %) | 260 / 83; 58,5 s | Runde 13 |
@@ -218,11 +219,35 @@ prüfen) hat zweimal einen falschen Satz verhindert, und zweimal hat ein Test
 einen eigenen Denkfehler gefunden statt einen Produktfehler (Zeitraffer-Weg,
 Erstattung vor dem Sperren) — beide Male stand danach ein Kommentar am Test.
 
+### Nach Runde 30 (2026-09-17)
+
+Runden 26–29: Schafe (A7 begonnen) und Schritt A6b ganz — auf Wunsch des
+Benutzers Figuren, Gebäude, Wald, Vorräte und Gras gezeichnet statt flach.
+Was sich wiederholt hat:
+
+1. **Zeitmessungen rissen unter Last** — diesmal `karte AC-15`, nicht nur der
+   Zeittest des Managerspiels. → Anweisung: der Ablauf „Last ansehen, allein
+   laufen lassen, einmal wiederholen" gilt für alle drei Zeitmessungen.
+2. **Mehr Zeichnung kostete unbemerkt Zeit** — Grasbüschel +28 ms je Bild,
+   erst mit dem neuen `--messen` gesehen; Zwischenspeicher und gesammelte Pfade
+   haben es mehr als ausgeglichen. → Anweisung: wer mehr zeichnet, misst vorher
+   und nachher, mit den zwei Abhilfen, die gewirkt haben.
+3. **CLAUDE.md war veraltet** (292 statt 320 Kriterien, ohne Bauen und
+   Grafik). → Stand nachgezogen, damit eine neue Sitzung richtig anfängt.
+
+Gut gelaufen: Die Tonstufen-Messung alt gegen neu hat aus „wirkt gezeichneter"
+eine Zahl gemacht, und zweimal hat ein alter Test einen neuen Fehler gefunden
+(Klick auf Beeren traf ein Schaf; zwei Lager zu ähnlich). Browserlauf bei
+ruhigerer Maschine 141 s Testzeit, langsamster Fall weiter der Lagertest (28 s).
+
 ## Runden
 
 Neueste oben. Eine Zeile je Runde: Nummer, Datum, Kriterien, Ergebnis,
 wichtigste Erkenntnis.
 
+- **30** · 2026-09-17 · Rückschau: Regel für alle Zeitmessungen, Messen beim
+  Zeichnen, CLAUDE.md nachgezogen. Nächster Schritt: Rest von **A7** — Farm
+  (einheiten AC-18), Kaserne und Miliz, Webstuhl, Sammelpunkt, Schafe treiben.
 - **29** · 2026-09-17 · darstellung AC-12 fertig — Schritt **A6b
   abgeschlossen**. Teil 3: Mischwald aus Laubbäumen (volle Kronen aus
   Blattballen) und Tannen, Sträucher aus Blättern, Brocken mit Rissen und

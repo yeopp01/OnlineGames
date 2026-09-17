@@ -135,7 +135,7 @@ Umfang hinzufügt, dort nachsehen.
 
 ## Stand
 
-**292 von 485 Kriterien fertig.** 260 Tests ohne Browser, 85 im Browser. Die
+**320 von 488 Kriterien fertig.** 292 Tests ohne Browser, 101 im Browser. Die
 Übersicht ist der Bericht: `npm run qa:report`.
 
 Gebaut ist der Unterbau: Räume, Übertragung, Karte, Wegfindung, Sammeln,
@@ -154,7 +154,8 @@ Gemessen: **3,10 Tore je Spiel, 48 % Heimsiege, 21 % Unentschieden**
 (Bundesliga: 3,1 / 44 % / 24 %); der Favorit gewinnt 64 %. Über sechs Saisons
 ohne Menschen null Widersprüche in den Spielen, Kader, Stärke und Markt
 stabil. Eine Saison rechnet in rund 400 ms, ein Spielstand ist nach zwei
-Saisons unter 1 MB. Der Browserlauf dauert rund 45 Sekunden.
+Saisons unter 1 MB. Der Browserlauf dauert bei ruhiger Maschine rund 2,5
+Minuten (`npm run e2e:laufzeiten` zeigt, wo).
 
 **Stellschrauben des Managerspiels** stehen gesammelt in `WIRKUNG` in
 `server/spiele/manager/spieltag.js`. Wer daran dreht, misst danach: keine
@@ -166,18 +167,24 @@ automatisch um. `npm test` braucht in Node 24 ein Muster statt eines Ordners.
 Den Browser für Playwright holt einmal `npm run e2e:browser`.
 
 **Im Browser gesehen** sind die Manager-Oberfläche, der Vorraum mit
-Spielauswahl und Einstellungen und das **Spielbild des Strategiespiels**:
-Rahmen, Klick, Zoom, Tasten, Rechtsklick zum Sammeln, Ladung, Vorrat
-(`e2e/tests/strategie-spielbild.spec.mjs`). Isometrisch, mit gezeichneten
-Figuren, Bäumen, Beeren, Gold, Stein und Schafen (`public/figuren.js`,
-`public/gelaende.js`, Schautafel unter `/schautafel.html`).
+Spielauswahl und Einstellungen und das **Strategiespiel bis Schritt A6b**:
+Rahmen, Klick, Zoom, Tasten, Sammeln von vier Rohstoffen mit Ladung und
+Lagern, Rohstoffleiste, Ausbilden am Dorfzentrum mit Schlange, Bauen mit
+Baumenü und grün/roter Vorschau, Baustellen, Schafe schlachten, Absagen im
+Bild (`e2e/tests/strategie-*.spec.mjs`). Isometrisch und gezeichnet statt
+flach: Figuren, Gebäude, Wald, Vorräte und Gras mit Licht, Schatten und
+Oberflächen (`public/figuren.js`, `public/gebaeude.js`, `public/gelaende.js`,
+Schautafel unter `/schautafel.html`). Werte der Einheiten und Gebäude stehen
+als Daten in `server/spiele/strategie/daten.js`.
 
 ### Offen, in dieser Reihenfolge
 
 Der [Fahrplan](specs/10-strategie/fahrplan.md) ist die Reihenfolge:
 
 Einstieg (Spielauswahl, Einstellungen, Warteraum) und Spielbild im Browser
-sind erreicht (fahrplan AC-1, AC-2). Als Nächstes:
+sind erreicht (fahrplan AC-1, AC-2); in Stufe A sind die Schritte A1 bis A6b
+gebaut. Als Nächstes der Rest von A7 (Farm, Kaserne, Miliz, Webstuhl,
+Sammelpunkt, Schafe treiben), dann A8 bis A10:
 
 1. **Stufe A** Dunkle Zeit mit Wirtschafts-KI und Prüfstand · **B** Feudalzeit
    · **C** Partieende und KI-Gegner · **D** Ritterzeit · **E** fünf Völker ·
