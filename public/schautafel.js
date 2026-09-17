@@ -4,10 +4,10 @@
 // Browserlauf liest `window.schautafel`.
 import { FIGUREN, figurZeichnen } from './figuren.js';
 import { GEBAEUDE, gebaeudeZeichnen } from './gebaeude.js';
-import { bodenAn } from './boden.js';
+import { KACHEL, bodenAn, kachelZeichnen } from './boden.js';
 import { figurHoeheBei } from './ansicht.js';
 import {
-  BEERE, GOLD, GRAS as BODEN_GRAS, STEIN, WALD, WASSER, dingZeichnen, gewaesserZeichnen, raute, wellenZeichnen,
+  BEERE, GOLD, GRAS as BODEN_GRAS, STEIN, WALD, WASSER, dingZeichnen, raute, wellenZeichnen,
 } from './gelaende.js';
 
 const FARBEN = ['#4a90d9', '#d94a4a'];
@@ -69,6 +69,12 @@ const DINGE = [
   { art: WASSER, titel: 'Wasser am Ufer' },
 ];
 
+// Eine Bodenkachel um ein kleines Stueck Karte, dessen Mitte (Feld 1, 1) in
+// der Mitte der Kachel liegt.
+function wasserKachel(karte, e) {
+  return kachelZeichnen(karte, -KACHEL / 2, -KACHEL / 2 + e, 1, e, e / 2, 4711);
+}
+
 function flecken(mitteX, mitteY, e, art, fuellung) {
   // Ein 3 x 3-Stueck Boden, hinten beginnend, dann die Dinge nach Tiefe.
   const felder = [];
@@ -86,12 +92,17 @@ function flecken(mitteX, mitteY, e, art, fuellung) {
     stift.fill();
   }
   if (art === WASSER) {
-    // Wie im Spiel: die Wasserfelder als weiche Flaeche mit Sandufer.
-    const mitten = felder
-      .filter(({ gx, gy }) => gx + gy >= 2)
-      .map(({ gx, gy }) => ({ x: mitteX + (gx - gy) * e, y: mitteY + (gx + gy - 2) * e * 0.5, index: gx * 7 + gy * 13 }));
-    gewaesserZeichnen(stift, mitten, e);
-    for (const p of mitten) wellenZeichnen(stift, p.x, p.y, e, p.index);
+    // Wie im Spiel: das Wasser liegt mit seinem Ufer in der Bodentextur.
+    const karte = { groesse: 3, felder: felder.map(() => 0) };
+    for (const { gx, gy } of felder) if (gx + gy >= 2) karte.felder[gy * 3 + gx] = WASSER;
+    stift.save();
+    raute(stift, mitteX, mitteY, e * 3, e * 1.5);
+    stift.clip();
+    stift.drawImage(wasserKachel(karte, e), mitteX - KACHEL / 2, mitteY - KACHEL / 2);
+    stift.restore();
+    for (const { gx, gy } of felder) {
+      if (gx + gy >= 2) wellenZeichnen(stift, mitteX + (gx - gy) * e, mitteY + (gx + gy - 2) * e * 0.5, e, gx * 7 + gy * 13);
+    }
     return;
   }
   for (const { gx, gy } of felder) {
@@ -264,17 +275,30 @@ function bodenProbe() {
     toene.add(a.map((k) => Math.round(k) >> 3).join(','));
     if (Math.abs(a[0] - b[0]) + Math.abs(a[1] - b[1]) + Math.abs(a[2] - b[2]) > 6) verschieden += 1;
   }
+  // Ein See aus einem Feld mitten im Gras, wie im Spiel gezeichnet.
+  const karte = { groesse: 3, felder: [0, 0, 0, 0, WASSER, 0, 0, 0, 0] };
   const blatt = document.createElement('canvas');
-  blatt.width = 80;
-  blatt.height = 50;
+  blatt.width = 160;
+  blatt.height = 100;
   const s = blatt.getContext('2d');
-  gewaesserZeichnen(s, [{ x: 40, y: 25 }], 22);
-  const { data } = s.getImageData(0, 0, 80, 50);
+  s.drawImage(wasserKachel(karte, 22), 80 - KACHEL / 2, 50 - KACHEL / 2);
+  const { data } = s.getImageData(0, 0, 160, 100);
   let sand = 0;
   for (let i = 0; i < data.length; i += 4) {
     if (data[i + 3] > 200 && data[i] > 150 && data[i + 1] > 140 && data[i + 2] < 140) sand += 1;
   }
-  return { toene: toene.size, verschieden: verschieden / 1000, sand };
+  // Farbtoene (Grad) an einigen Stellen des Grases, fuer AC-13: erdig statt gruen.
+  const farbtoene = [];
+  for (let i = 0; i < 12; i++) {
+    const [r, g, b] = bodenAn(i * 3.7, i * 2.3, BODEN_GRAS, 4711).map((k) => k / 255);
+    const hoch = Math.max(r, g, b);
+    const tief = Math.min(r, g, b);
+    const d = hoch - tief;
+    let ton = hoch === r ? ((g - b) / d) % 6 : hoch === g ? (b - r) / d + 2 : (r - g) / d + 4;
+    ton *= 60;
+    farbtoene.push(Math.round(ton < 0 ? ton + 360 : ton));
+  }
+  return { toene: toene.size, verschieden: verschieden / 1000, sand, farbtoene };
 }
 
 /**
@@ -322,6 +346,7 @@ function anmutung(welche, art) {
   blatt.height = g;
   const s = blatt.getContext('2d');
   if (welche === 'figur') figurZeichnen(s, art, g / 2, g - 20, 40, '#4a90d9', {});
+  else if (welche === 'ding') dingZeichnen(s, art, g / 2, g * 0.72, 22, 17, 1);
   else gebaeudeZeichnen(s, art, g / 2, g * 0.72, 22, '#4a90d9', GEBAEUDE_GROESSE[art] ?? 2);
   const { data } = s.getImageData(0, 0, g, g);
   let pixel = 0;
@@ -401,7 +426,81 @@ function groessen() {
   };
 }
 
+/**
+ * Fuer den Browserlauf (darstellung AC-13, kein Rautenraster): eine Bodenkachel
+ * aus lauter Gras, wie im Spiel. Verglichen wird der Farbsprung zwischen zwei
+ * benachbarten Bildpunkten, die auf verschiedenen Feldern liegen, mit dem
+ * Sprung innerhalb eines Feldes. Ein Raster zeigt sich als groesserer Sprung
+ * an den Feldgrenzen.
+ */
+function bodenRaster() {
+  const g = 30;
+  const karte = { groesse: g, felder: new Array(g * g).fill(0) };
+  const hb = 22;
+  const hh = 11;
+  const x0 = -KACHEL / 2;
+  const y0 = 100;
+  const kachel = kachelZeichnen(karte, x0, y0, 1, hb, hh, 4711);
+  const { data } = kachel.getContext('2d').getImageData(0, 0, KACHEL, KACHEL);
+  const feld = (i, j) => {
+    const px = x0 + i + 0.5;
+    const py = y0 + j + 0.5;
+    return [Math.round((px / hb + py / hh) / 2), Math.round((py / hh - px / hb) / 2)];
+  };
+  const grenze = { summe: 0, n: 0 };
+  const innen = { summe: 0, n: 0 };
+  for (let j = 40; j < KACHEL - 40; j += 3) {
+    for (let i = 40; i < KACHEL - 40; i++) {
+      for (const [di, dj] of [[1, 0], [0, 1]]) {
+        const a = (j * KACHEL + i) * 4;
+        const b = ((j + dj) * KACHEL + i + di) * 4;
+        if (data[a + 3] < 255 || data[b + 3] < 255) continue;
+        const sprung = Math.abs(data[a] - data[b]) + Math.abs(data[a + 1] - data[b + 1]) + Math.abs(data[a + 2] - data[b + 2]);
+        const [fa, ga] = feld(i, j);
+        const [fb, gb] = feld(i + di, j + dj);
+        const ziel = fa !== fb || ga !== gb ? grenze : innen;
+        ziel.summe += sprung;
+        ziel.n += 1;
+      }
+    }
+  }
+  return { grenze: grenze.summe / grenze.n, innen: innen.summe / innen.n, paareGrenze: grenze.n };
+}
+
+/**
+ * Fuer den Browserlauf (darstellung AC-13, Schlagschatten): halb durchsichtige
+ * dunkle Bildpunkte rechts und links neben einer Zeichnung. Licht von links
+ * oben heisst: der Schatten liegt rechts.
+ */
+function schlagschatten(welche, art) {
+  const g = 300;
+  const blatt = document.createElement('canvas');
+  blatt.width = g;
+  blatt.height = g;
+  const s = blatt.getContext('2d');
+  const e = 22;
+  let halb;
+  if (welche === 'ding') {
+    dingZeichnen(s, art, g / 2, g * 0.6, e, 17, 1);
+    halb = e;
+  } else {
+    gebaeudeZeichnen(s, art, g / 2, g * 0.6, e, '#4a90d9', GEBAEUDE_GROESSE[art] ?? 2);
+    halb = (GEBAEUDE_GROESSE[art] ?? 2) * e;
+  }
+  const { data } = s.getImageData(0, 0, g, g);
+  let rechts = 0;
+  let links = 0;
+  for (let i = 0; i < data.length; i += 4) {
+    const a = data[i + 3];
+    if (a < 20 || a > 200 || Math.max(data[i], data[i + 1], data[i + 2]) > 90) continue;
+    const x = (i / 4) % g;
+    if (x > g / 2 + halb) rechts += 1;
+    else if (x < g / 2 - halb) links += 1;
+  }
+  return { rechts, links };
+}
+
 window.schautafel = {
   zellen, maske, dingMaske, bodenProbe, arten: Object.keys(FIGUREN), dinge: { WALD, BEERE, GOLD, STEIN },
-  gebaeudeZellen, gebaeudeMaske, gebaeudeArten: Object.keys(GEBAEUDE), tonstufen, anmutung, proportionen, groessen,
+  gebaeudeZellen, gebaeudeMaske, gebaeudeArten: Object.keys(GEBAEUDE), tonstufen, anmutung, proportionen, groessen, bodenRaster, schlagschatten,
 };

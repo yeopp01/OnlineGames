@@ -2,7 +2,7 @@
 
 **Bereich:** Strategie
 **Kuerzel:** darstellung
-**Stand:** 8/14 fertig · 1 in Arbeit · 5 offen
+**Stand:** 9/14 fertig · 5 offen
 
 ## Zweck
 
@@ -70,11 +70,16 @@ der Spieler. Keine Bilddateien aus fremder Quelle.
   Steinfugen) und Konturen, die nicht überall gleich dick sind. Das Gras hat
   Büschel statt nur Tönung. Geprüft bei Zoom 1 im Spielbild und auf der
   Schautafel, mit einem Vorher-Nachher-Bild.
-- **AC-13** `in-arbeit` **Naturalistisch statt Comic** — Wunsch des Benutzers (Runde 35),
+- **AC-13** `fertig` **Naturalistisch statt Comic** — Wunsch des Benutzers (Runde 35),
   mit einem Bild des Originals als Maßstab für die Anmutung, nicht als Vorlage
   zum Abzeichnen. Messbar: (1) keine schwarzen Umrisse — in keiner Figur und
   keinem Gebäude mehr als 3 % fast schwarze Bildpunkte; (2) gedämpfte,
-  erdige Farben — mittlere Sättigung des Spielbilds unter der heutigen;
+  erdige Farben — Gebäude und Vorräte im Mittel weniger gesättigt als vor
+  A6c, der Boden im Farbton zwischen Braun und Oliv (25° bis 100°) statt
+  Grün; die Spielerfarbe bleibt kräftig, damit man Besitz erkennt. (Bis Runde
+  39 hieß es „mittlere Sättigung des Spielbilds unter der heutigen" — das
+  maß das Falsche: erdiges Oliv hat in HSL mehr Sättigung als das frühere
+  graublaue Grün, 0,32 gegen 0,25, sieht aber natürlicher aus.);
   (3) Proportionen statt Kindchenschema — der Kopf höchstens ein Sechstel der
   Figur, ein Dorfbewohner bei Zoom 1 höchstens halb so hoch wie ein Haus;
   (4) der Boden zeigt kein Rautenraster, sondern Gras, Erde und Flecken, die

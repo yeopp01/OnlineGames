@@ -281,6 +281,26 @@ alle sieben Gebäude der Dunklen Zeit stehen. Was sich wiederholt hat:
 Neueste oben. Eine Zeile je Runde: Nummer, Datum, Kriterien, Ergebnis,
 wichtigste Erkenntnis.
 
+- **39** · 2026-09-17 · darstellung AC-13 **fertig** (A6c, Teil 4): Wasser
+  und Vorräte. Das Wasser liegt jetzt in der Bodentextur: Anteil Wasser
+  bilinear zwischen den Feldmitten, über ±0,3 Felder gemittelt, mit Rauschen
+  verschoben — ein weiches Ufer aus Sand und Schlamm statt Ellipsen mit
+  Bogenrand; die Wellenschnörkel sind leise Lichtstreifen. Erster Versuch
+  mittelte über ±0,45: das Ufer war schön, aber ein einzelnes Wasserfeld
+  verschwand fast — gefährlich, dort kann niemand laufen. Gold wie Erz, Stein
+  warmgrau, Beeren dunkler, Laub olivgrün; gemessen Wald 0,36 → 0,25, Gold
+  0,68 → 0,57 Sättigung, Gebäude im Mittel 0,28 → 0,24. **Kriterium
+  umformuliert:** „mittlere Sättigung des Spielbilds unter der heutigen" maß
+  das Falsche — das erdige Oliv hat in HSL mehr Sättigung (0,32) als das
+  frühere graublaue Grün (0,25) und sieht doch natürlicher aus. Jetzt:
+  Gebäude und Vorräte weniger gesättigt als vor A6c, Boden im Farbton 25°–100°
+  (vorher 112°). Die Figuren sind nicht weniger gesättigt (0,33 → 0,34): die
+  Spielerfarbe bleibt bewusst kräftig. Weitere Belege: kein Raster (Sprung an
+  Feldgrenzen 1,11-mal der innen), Schatten rechts (Haus 852 zu 8 Punkte).
+  Zeichenzeit Zoom 1 20,4 ms, Zoom 2 40 ms — unverändert. Unter 57 % Last riss
+  einmal bedienung AC-1 („Rahmen wählt vier") — beim zweiten Lauf grün,
+  vorher nie gesehen; beobachten. Bilder: `darstellung/AC-13--zoom-1-…`,
+  `darstellung/AC-02--am-see-ein-weiches-ufer-…`.
 - **38** · 2026-09-17 · darstellung AC-13 in Arbeit, Teil 3 (A6c): Figuren
   mit Proportionen. Kopf auf 60 % (`KOPF_MASS`), Beine 1,3-mal so lang, Rumpf
   höher und schmaler (0,82), Hände kleiner; Umriss zart dunkelbraun statt

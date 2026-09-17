@@ -392,7 +392,39 @@ test.describe('Das Spielbild', () => {
     await nachweis(anna, {
       spec: DARSTELLUNG,
       ac: 'AC-2',
-      titel: 'Am See: Sandufer an den Kanten zum Land, helle Wellen auf dem Wasser, das Gras leicht getoent',
+      titel: 'Am See: ein weiches Ufer aus Sand und Schlamm, auf dem Wasser leise Lichtstreifen, das Gras getoent',
+      test: info,
+    });
+  });
+
+  test('darstellung AC-13: das Spielbild bei Zoom 1 - erdig, ohne Umrisse und Raster, mit Schatten', async ({}, info) => {
+    await anna.evaluate(() => {
+      const a = window.ansicht;
+      const b = a.spieler.get(a.ich).basis;
+      a.gewaehltesGebaeude = null;
+      a.ausgewaehlt.clear();
+      a.kamera.zoom = 1;
+      a.blickAuf(b.x, b.y);
+    });
+    // Im Bild: das eigene Dorfzentrum, Einheiten und Baeume - sonst zeigt es nichts.
+    const imBild = await anna.evaluate(() => {
+      const a = window.ansicht;
+      const breite = a.leinwand.clientWidth;
+      const hoehe = a.leinwand.clientHeight;
+      const drin = (p) => p.x > 0 && p.y > 60 && p.x < breite && p.y < hoehe;
+      const g = a.karte.groesse;
+      let baeume = 0;
+      for (let y = 0; y < g; y++) for (let x = 0; x < g; x++) if (a.karte.felder[y * g + x] === 1 && drin(a.zuBild(x, y))) baeume += 1;
+      const einheiten = [...a.nachher.values()].filter((e) => e.b === a.ich && drin(a.zuBild(e.x, e.y))).length;
+      return { baeume, einheiten };
+    });
+    expect(imBild.baeume, 'Wald im Bild').toBeGreaterThan(20);
+    expect(imBild.einheiten, 'eigene Einheiten im Bild').toBeGreaterThanOrEqual(4);
+    await anna.waitForTimeout(300);
+    await nachweis(anna, {
+      spec: DARSTELLUNG,
+      ac: 'AC-13',
+      titel: 'Zoom 1: olivbrauner Boden ohne Raster, Gebaeude und Baeume mit Schatten nach rechts, See mit weichem Ufer - vorher siehe docs/strategie/bilder/vorher-runde35',
       test: info,
     });
   });

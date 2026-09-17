@@ -9,7 +9,7 @@ import { figurZeichnen } from './figuren.js';
 import { gebaeudeBildZeichnen, gebaeudeGetroffen } from './gebaeude.js';
 import { KACHEL, kachelMassstab, kachelZeichnen } from './boden.js';
 import {
-  DINGE, GRAS, WALD, WASSER, dingBildZeichnen, gewaesserZeichnen, grasBeginnen, grasSammeln, grasZeichnen, raute, wellenZeichnen,
+  DINGE, GRAS, WALD, WASSER, dingBildZeichnen, grasBeginnen, grasSammeln, grasZeichnen, raute, wellenZeichnen,
 } from './gelaende.js';
 
 const HALB_B = 22; // halbe Rautenbreite in Bildpunkten bei Vergroesserung 1
@@ -547,15 +547,15 @@ export class Ansicht {
       }
       grasZeichnen(stift, gras, HALB_B * zoom);
     }
-    // Wasser als weiche Flaeche mit Sandufer ueber dem Gras, dann Wellen.
-    const wasser = [];
+    // Das Wasser liegt mit seinem Ufer in der Bodentextur (boden.js); darauf
+    // nur ein leises Glitzern.
     for (let y = vonY; y <= bisY; y++) {
       for (let x = vonX; x <= bisX; x++) {
-        if (felder[y * g + x] === WASSER) wasser.push({ ...this.zuBild(x, y), index: y * g + x });
+        if (felder[y * g + x] !== WASSER) continue;
+        const p = this.zuBild(x, y);
+        wellenZeichnen(stift, p.x, p.y, HALB_B * zoom, y * g + x, this.salz);
       }
     }
-    gewaesserZeichnen(stift, wasser, HALB_B * zoom);
-    for (const p of wasser) wellenZeichnen(stift, p.x, p.y, HALB_B * zoom, p.index, this.salz);
 
     // Flache Gebaeude (Farmen) gehoeren zum Boden: unter Figuren und Baeume.
     for (const gebaeude of this.gebaeude.values()) {

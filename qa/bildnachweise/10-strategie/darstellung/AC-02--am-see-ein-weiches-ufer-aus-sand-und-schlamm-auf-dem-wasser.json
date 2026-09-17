@@ -1,7 +1,7 @@
 {
   "spec": "10-strategie/darstellung.md",
   "ac": "AC-2",
-  "titel": "Am See: Sandufer an den Kanten zum Land, helle Wellen auf dem Wasser, das Gras leicht getoent",
+  "titel": "Am See: ein weiches Ufer aus Sand und Schlamm, auf dem Wasser leise Lichtstreifen, das Gras getoent",
   "datei": "e2e/tests/strategie-spielbild.spec.mjs",
   "pfad": [
     "Das Spielbild",

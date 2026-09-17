@@ -1,0 +1,10 @@
+{
+  "spec": "10-strategie/darstellung.md",
+  "ac": "AC-13",
+  "titel": "Zoom 1: olivbrauner Boden ohne Raster, Gebaeude und Baeume mit Schatten nach rechts, See mit weichem Ufer - vorher siehe docs/strategie/bilder/vorher-runde35",
+  "datei": "e2e/tests/strategie-spielbild.spec.mjs",
+  "pfad": [
+    "Das Spielbild",
+    "darstellung AC-13: das Spielbild bei Zoom 1 - erdig, ohne Umrisse und Raster, mit Schatten"
+  ]
+}

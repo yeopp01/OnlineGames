@@ -149,6 +149,44 @@ test('darstellung AC-13: Gebaeude und Figuren ohne schwarze Umrisse - hoechstens
   }
 });
 
+test('darstellung AC-13: gedaempfte erdige Farben, Boden ohne Raster, Schlagschatten nach rechts', async ({ page }) => {
+  await page.goto('/schautafel.html');
+  await page.waitForFunction(() => window.schautafel?.bodenRaster);
+  const m = await page.evaluate(() => {
+    const t = window.schautafel;
+    const mittel = (liste) => liste.reduce((a, w) => a + w.saettigung, 0) / liste.length;
+    return {
+      gebaeude: mittel(t.gebaeudeArten.map((art) => t.anmutung('gebaeude', art))),
+      vorraete: mittel(Object.values(t.dinge).map((art) => t.anmutung('ding', art))),
+      boden: t.bodenProbe().farbtoene,
+      raster: t.bodenRaster(),
+      schatten: Object.fromEntries([
+        ...t.gebaeudeArten.filter((art) => art !== 'farm').map((art) => [art, t.schlagschatten('gebaeude', art)]),
+        ['baum', t.schlagschatten('ding', t.dinge.WALD)],
+      ]),
+    };
+  });
+  // (2) Gemessen vor A6c (Runden 37 bis 39, gleiche Zeichengroesse): Gebaeude im
+  // Mittel 0,283, Vorraete 0,371. Weniger heisst gedaempft.
+  expect(m.gebaeude, 'Gebaeude gedaempft').toBeLessThan(0.283);
+  expect(m.vorraete, 'Vorraete gedaempft').toBeLessThan(0.371);
+  // Erdig: der Farbton des Grases zwischen Braun und Oliv - vorher 112 Grad, gruen.
+  for (const ton of m.boden) {
+    expect(ton, `Farbton des Bodens ${ton} Grad`).toBeGreaterThanOrEqual(25);
+    expect(ton).toBeLessThanOrEqual(100);
+  }
+  // (4) Kein Raster: an Feldgrenzen springt die Farbe hoechstens ein Viertel
+  // staerker als innerhalb eines Feldes. Rautenweise gefuellt waere der Sprung
+  // an der Grenze ein Vielfaches, innen null.
+  expect(m.raster.paareGrenze).toBeGreaterThan(1000);
+  expect(m.raster.grenze / m.raster.innen, JSON.stringify(m.raster)).toBeLessThan(1.25);
+  // (5) Schatten in eine Richtung: Licht von links oben, also rechts.
+  for (const [art, s] of Object.entries(m.schatten)) {
+    expect(s.rechts, `${art}: Schatten rechts ${s.rechts}, links ${s.links}`).toBeGreaterThan(100);
+    expect(s.rechts, `${art}: rechts viel mehr als links`).toBeGreaterThan(s.links * 5);
+  }
+});
+
 test('darstellung AC-13: Proportionen statt Kindchenschema - kleiner Kopf, Dorfbewohner halb so hoch wie ein Haus', async ({ page }) => {
   await page.goto('/schautafel.html');
   await page.waitForFunction(() => window.schautafel?.proportionen);

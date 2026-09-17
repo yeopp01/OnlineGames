@@ -125,52 +125,24 @@ export function grasZeichnen(stift, gras, e) {
   stift.restore();
 }
 
-/**
- * Wasser mit weichem Ufer (darstellung AC-2). Nicht als Rauten - deren Treppe
- * sah in Runde 14 aus wie ein geflieste Becken -, sondern als Vereinigung von
- * Ellipsen, eine je Wasserfeld: ueberlappend ergeben sie von selbst runde
- * Uferlinien. Darunter dieselben Ellipsen groesser in Sand: das Ufer.
- * `mitten` sind die Bildpunkte der Wasserfelder, `e` die halbe Rautenbreite.
- */
-export function gewaesserZeichnen(stift, mitten, e) {
-  if (!mitten.length) return;
-  const flaeche = (faktor, farbe) => {
-    stift.beginPath();
-    for (const p of mitten) {
-      stift.moveTo(p.x + e * faktor, p.y);
-      stift.ellipse(p.x, p.y, e * faktor, e * 0.5 * faktor, 0, 0, Math.PI * 2);
-    }
-    stift.fillStyle = farbe;
-    stift.fill();
-  };
-  // Jede Schicht muss die Rautenecke (Faktor 1 auf der Achse) sicher decken,
-  // sonst schimmert zwischen vier Wasserfeldern die Schicht darunter durch.
-  flaeche(1.42, 'rgba(176, 160, 112, 0.9)'); // Sand
-  flaeche(1.3, 'rgba(206, 192, 140, 0.55)'); // heller, nasser Sandsaum
-  flaeche(1.24, 'rgb(58, 104, 128)'); // flaches Wasser am Rand
-  flaeche(1.1, 'rgb(38, 76, 110)'); // tiefes Wasser
-  flaeche(0.8, 'rgba(24, 56, 90, 0.45)'); // tiefer in der Mitte
-}
+// Wasser und Ufer liegen seit Runde 39 in der Bodentextur (boden.js, AC-13).
 
-/** Kleine helle Wellen auf offenem Wasser, nicht auf jedem Feld. */
+/** Ein leiser Lichtstreif auf offenem Wasser, nicht auf jedem Feld. */
 export function wellenZeichnen(stift, x, y, e, index, salz = 0) {
-  if (e < 12 || streuung(index, salz + 7) < 0.55) return;
+  // Runde 39: keine gezeichneten Wellenschnoerkel mehr (Comic), nur ab und zu
+  // ein flacher, halb durchsichtiger Lichtstreif auf der Oberflaeche.
+  if (e < 12 || streuung(index, salz + 7) < 0.6) return;
   const dx = (streuung(index, salz + 8) - 0.5) * e * 0.6;
   const dy = (streuung(index, salz + 9) - 0.5) * e * 0.3;
+  const lang = e * (0.25 + streuung(index, salz + 10) * 0.25);
   stift.save();
-  stift.strokeStyle = 'rgba(190, 225, 240, 0.35)';
-  stift.lineWidth = Math.max(1, e * 0.06);
+  stift.strokeStyle = 'rgba(180, 205, 210, 0.2)';
+  stift.lineWidth = Math.max(0.8, e * 0.04);
   stift.lineCap = 'round';
   stift.beginPath();
-  stift.moveTo(x + dx - e * 0.3, y + dy);
-  stift.quadraticCurveTo(x + dx - e * 0.15, y + dy - e * 0.1, x + dx, y + dy);
-  stift.quadraticCurveTo(x + dx + e * 0.15, y + dy + e * 0.1, x + dx + e * 0.3, y + dy);
+  stift.moveTo(x + dx - lang, y + dy);
+  stift.lineTo(x + dx + lang, y + dy);
   stift.stroke();
-  // Ein Glitzern daneben.
-  stift.fillStyle = 'rgba(230, 245, 255, 0.35)';
-  stift.beginPath();
-  stift.arc(x + dx + e * 0.38, y + dy - e * 0.08, Math.max(0.6, e * 0.03), 0, Math.PI * 2);
-  stift.fill();
   stift.restore();
 }
 
@@ -260,7 +232,7 @@ function laubbaum(stift, x, y, e, variante) {
   // Kurzer Stamm, die Krone traegt das Bild (Runde 29: lange Staemme mit
   // kleiner Krone sahen aus wie Luftballons).
   stammZeichnen(stift, x, y, e, hoehe * 0.38, e * 0.085);
-  const gruen = ['#1c4225', '#25552e', '#2f6838', '#3f7e45'];
+  const gruen = ['#223d26', '#2c4c2f', '#395c39', '#4a6e46'];
   const verschiebung = streuung(variante, 3) * 0.1 - 0.05;
   // Hinten und unten die dunklen Ballen, vorn oben die hellen.
   const ballenListe = [];
@@ -281,7 +253,7 @@ function laubbaum(stift, x, y, e, variante) {
   for (let i = 0; i < 7; i++) {
     const fx = x - breite * 0.35 + streuung(variante, 160 + i) * breite * 0.7;
     const fy = y - hoehe * (0.78 + streuung(variante, 170 + i) * 0.22);
-    kreis(stift, fx, fy, breite * 0.05, 'rgba(140, 190, 105, 0.35)');
+    kreis(stift, fx, fy, breite * 0.05, 'rgba(140, 170, 105, 0.3)');
   }
 }
 
@@ -298,9 +270,9 @@ function tanne(stift, x, y, e, variante) {
     const oben = unten - hoehe * 0.36;
     const b = breite * (1 - i * 0.2);
     const v = stift.createLinearGradient(x - b, oben, x + b, unten);
-    v.addColorStop(0, '#3f7a47');
-    v.addColorStop(0.5, '#2a5a32');
-    v.addColorStop(1, '#173a20');
+    v.addColorStop(0, '#466e48');
+    v.addColorStop(0.5, '#2f5034');
+    v.addColorStop(1, '#1d3522');
     stift.fillStyle = v;
     stift.beginPath();
     stift.moveTo(x, oben);
@@ -347,8 +319,8 @@ function beerenstrauch(stift, x, y, e, variante) {
     const r = (0.25 + streuung(variante, 20 + i) * 0.75) * b * 0.62;
     const bx = x + Math.cos(w) * r;
     const by = y - b * 0.6 + Math.sin(w) * r * 0.62;
-    ballen(stift, bx, by, beere, '#d8354f', 0.25, -0.35);
-    kreis(stift, bx - beere * 0.35, by - beere * 0.35, beere * 0.3, 'rgba(255, 225, 230, 0.85)');
+    ballen(stift, bx, by, beere, '#b8323f', 0.18, -0.35);
+    kreis(stift, bx - beere * 0.35, by - beere * 0.35, beere * 0.25, 'rgba(255, 225, 230, 0.45)');
   }
 }
 
@@ -410,7 +382,7 @@ function brocken(stift, x, y, e, variante, hell, mittel, dunkel, glanz) {
     stift.stroke();
   });
   if (glanz) {
-    for (let i = 0; i < 2; i++) {
+    for (let i = 0; i < 1; i++) {
       const gx = x + (streuung(variante, 40 + i) - 0.5) * b;
       const gy = y - b * (0.3 + streuung(variante, 50 + i) * 0.5);
       const r = Math.max(1, b * 0.08);
@@ -443,8 +415,8 @@ export function dingZeichnen(stift, art, x, y, e, index, fuellung = 1) {
   const variante = VARIANTE(index);
   if (art === WALD) baum(stift, x, y, g, variante);
   else if (art === BEERE) beerenstrauch(stift, x, y, g, variante);
-  else if (art === GOLD) brocken(stift, x, y, g, variante, '#f6dc7a', '#d6a93a', '#9a7422', '#fffbe0');
-  else if (art === STEIN) brocken(stift, x, y, g, variante, '#cdd1d6', '#9aa0a7', '#6a7077', null);
+  else if (art === GOLD) brocken(stift, x, y, g, variante, '#e6c874', '#c49a3e', '#8c6a2c', 'rgba(255, 246, 214, 0.6)');
+  else if (art === STEIN) brocken(stift, x, y, g, variante, '#c2c0ba', '#94918a', '#64615c', null);
 }
 
 // Acht Gestalten je Art: genug Abwechslung, und das Bild jeder Gestalt laesst
@@ -492,10 +464,10 @@ function einfach(stift, art, x, y, g) {
     kreis(stift, x - g * 0.2, y - g * 1.3, g * 0.25, '#3f7f46');
   } else if (art === BEERE) {
     kreis(stift, x, y - g * 0.5, g * 0.6, '#3b7440');
-    kreis(stift, x, y - g * 0.55, g * 0.25, '#d8354f');
+    kreis(stift, x, y - g * 0.55, g * 0.25, '#b8323f');
   } else {
-    kreis(stift, x, y - g * 0.4, g * 0.7, art === GOLD ? '#e0b64a' : '#a2a8ae');
-    kreis(stift, x - g * 0.2, y - g * 0.6, g * 0.25, art === GOLD ? '#f3d36a' : '#c3c7cc');
+    kreis(stift, x, y - g * 0.4, g * 0.7, art === GOLD ? '#d2ac4c' : '#9e9c96');
+    kreis(stift, x - g * 0.2, y - g * 0.6, g * 0.25, art === GOLD ? '#e6c874' : '#c2c0ba');
   }
 }
 

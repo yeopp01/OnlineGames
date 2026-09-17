@@ -11,6 +11,11 @@
 // KACHEL x KACHEL Bildpunkten (bei Zoom 1) einmal gezeichnet und danach nur
 // kopiert. Ein geaendertes Feld (Baum gefaellt, Gebaeude gebaut) verwirft die
 // Kacheln darum herum.
+//
+// Wasser gehoert seit Runde 39 auch in die Textur (AC-13): aus dem Anteil der
+// Wasserfelder um eine Stelle (bilinear zwischen den Feldmitten) wird ein
+// weiches Ufer - Schlamm und Sand, flaches, dann tiefes Wasser -, statt
+// Ellipsen mit Bogenrand, die wie eine Wolke aussahen.
 
 const WALD = 1;
 const WASSER = 3;
@@ -53,6 +58,50 @@ const GRAS_TROCKEN = [138, 132, 74];
 const ERDE = [124, 98, 64];
 const ERDE_HELL = [150, 124, 84];
 const WALDBODEN = [50, 60, 32];
+const SAND = [186, 170, 124];
+const SCHLAMM = [104, 92, 62];
+const FLACH = [66, 98, 98];
+const TIEF = [36, 62, 78];
+
+const stufe = (a, b, t) => glatt(klemme((t - a) / (b - a)));
+
+/**
+ * Anteil Wasser an einer Stelle: 0 an Land, 1 mitten im See, um 0,5 am Ufer.
+ * Ueber eine Nachbarschaft gemittelt, sonst zeichnet das Ufer die Treppe der
+ * Felder nach (Runde 39 gesehen).
+ */
+export function wasserAnteil(karte, fx, fy) {
+  let summe = 0;
+  for (const dy of [-0.3, 0, 0.3]) {
+    for (const dx of [-0.3, 0, 0.3]) summe += wasserPunkt(karte, fx + dx, fy + dy);
+  }
+  return summe / 9;
+}
+
+function wasserPunkt(karte, fx, fy) {
+  const g = karte.groesse;
+  const x0 = Math.floor(fx);
+  const y0 = Math.floor(fy);
+  const w = (x, y) => (x >= 0 && y >= 0 && x < g && y < g && karte.felder[y * g + x] === WASSER ? 1 : 0);
+  const tx = fx - x0;
+  const ty = fy - y0;
+  const oben = w(x0, y0) + (w(x0 + 1, y0) - w(x0, y0)) * tx;
+  const unten = w(x0, y0 + 1) + (w(x0 + 1, y0 + 1) - w(x0, y0 + 1)) * tx;
+  return oben + (unten - oben) * ty;
+}
+
+/** Die Farbe am Ufer und im Wasser - `land` ist die Bodenfarbe darunter. */
+export function wasserFarbe(land, anteil, fx, fy, salz) {
+  if (anteil <= 0.12) return land;
+  const ton = wolken(fx / 2.4, fy / 2.4, salz + 61);
+  // Das Ufer laeuft nicht gerade: ein wenig Rauschen verschiebt die Linie.
+  anteil = klemme(anteil + (wolken(fx / 1.3, fy / 1.3, salz + 67) - 0.5) * 0.22);
+  // Ein schmaler Saum: aussen heller Sand, zum Wasser hin nasser Schlamm.
+  let farbe = mische(land, mische(SAND, SCHLAMM, stufe(0.4, 0.5, anteil)), stufe(0.2, 0.44, anteil) * 0.8);
+  const wasser = mische(FLACH, TIEF, stufe(0.55, 0.95, anteil) * (0.75 + ton * 0.25));
+  farbe = mische(farbe, wasser, stufe(0.47, 0.56, anteil));
+  return farbe;
+}
 
 /** Die Farbe des Bodens an einer Stelle der Karte (in Feldern, gebrochen erlaubt). */
 export function bodenAn(x, y, feld, salz) {
@@ -117,7 +166,8 @@ export function kachelZeichnen(karte, x0, y0, massstab, halbB, halbH, salz) {
       const y = Math.round(fy);
       if (x < 0 || y < 0 || x >= g || y >= g) continue;
       const art = karte.felder[y * g + x];
-      const farbe = bodenAn(fx, fy, art === WASSER ? 0 : art, salz);
+      const land = bodenAn(fx, fy, art === WASSER ? 0 : art, salz);
+      const farbe = wasserFarbe(land, wasserAnteil(karte, fx, fy), fx, fy, salz);
       const o = (j * breite + i) * 4;
       bild.data[o] = farbe[0];
       bild.data[o + 1] = farbe[1];
@@ -132,6 +182,7 @@ export function kachelZeichnen(karte, x0, y0, massstab, halbB, halbH, salz) {
 
   // 3. Sprenkel: kleine hellere und dunklere Tupfen, auf Erde Kiesel.
   for (const f of felder) {
+    if (f.art === WASSER) continue;
     const auf = hash2(f.x, f.y, salz + 91);
     const erde = f.art === BEBAUT || klemme((wolken(f.x / 6.5, f.y / 6.5, salz + 11) - 0.6) * 4.5) > 0.5;
     for (let i = 0; i < 7; i++) {
