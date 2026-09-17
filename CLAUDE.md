@@ -13,9 +13,10 @@ Spiel ohne ihn nicht geht. Anderes Versprechen, deshalb anderes Projekt.
 
 **Alles auf Deutsch** — Bezeichner im Code, Kommentare, Specs, Commit-Texte,
 Testnamen. `einheit`, `vorrat`, `wegZurBasis`, nicht `unit`, `resource`,
-`pathToBase`. In `.md`-Dateien sind Umlaute erwünscht, in Quelltext und
-Testnamen werden sie umschrieben (`Raeume`, `zurueck`), damit nichts an
-Kodierungen hängt.
+`pathToBase`. In `.md`-Dateien sind Umlaute erwünscht, in Bezeichnern,
+Dateinamen und Testnamen werden sie umschrieben (`Raeume`, `zurueck`), damit
+nichts an Kodierungen hängt. **Texte, die auf dem Bildschirm stehen, bekommen
+echte Umlaute** („Eröffnen", nicht „Eroeffnen").
 
 ## Arbeitsweise
 

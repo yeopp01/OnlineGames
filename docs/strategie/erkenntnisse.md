@@ -15,12 +15,11 @@ etwas anderem gearbeitet.
 
 - **Name des Spiels.** „Age of Empires" ist eine Marke und darf nicht
   erscheinen ([ADR-0012](../adr/0012-aoe2-als-vorlage.md)). Bis ein Name
-  feststeht, heißt es in der Oberfläche „Strategie".
-- **Umlaute in sichtbaren Texten?** `CLAUDE.md` verlangt Umschreibung im
-  Quelltext, und bisher gilt das auch für Texte auf dem Bildschirm („Fuehrt
-  einen Verein ueber …"). Das liest sich holprig. Vorschlag: echte Umlaute
-  nur in Zeichenketten, die auf dem Bildschirm stehen; Bezeichner bleiben
-  umschrieben. Bis zur Antwort bleibt es bei der Umschreibung.
+  feststeht, heißt es in der Oberfläche „Strategie". Vorschlag des Benutzers
+  (2026-09-17): **Rise to Hegemony** („Enough diplomacy. Rise to Hegemony.").
+  Gegenvorschlag der Schleife: „Vormacht" (deutsch, dasselbe Wort). Nicht
+  geprüft: Markenregister; es gibt eine Strategiereihe „Hegemony". Wartet auf
+  die endgültige Wahl.
 - **Zeittest des Managerspiels unter Last (seit 2026-09-16, Runde 10).**
   `karriere AC-7` (Saison unter 1 s) reißt in `npm run check`, sobald fremde
   Rechenjobs laufen: 1,7–3,2 s. Nacheinander (`--test-concurrency=1`) sind
@@ -30,7 +29,10 @@ etwas anderem gearbeitet.
   Antwort ändert die Schleife weder Grenze noch Testaufruf und committet nur
   bei grüner Prüfung. Seit Runde 26 reißt auch `karte AC-15` (Wegsuche auf der
   größten Karte) auf dieselbe Weise, dreimal in neun Läufen — der Vorschlag
-  würde beide in den seriellen Schritt legen.
+  würde beide in den seriellen Schritt legen. Runde 36: `karte AC-15` misst
+  jetzt den schnellsten von fünf Durchgängen statt eines Mittels (Grenzen
+  unverändert) — unter 97 % fremder Last grün. Dasselbe ginge für
+  `karriere AC-7`.
 - **Berechtigungen für die Schleife.** Das Anlegen von `.claude/settings.json`
   wurde vom Sicherheitsfilter abgelehnt (Selbständerung). Solange sie fehlen,
   kann jede Runde an einer Rückfrage hängen bleiben. Der Vorschlag steht in der
@@ -38,6 +40,11 @@ etwas anderem gearbeitet.
 
 ## Offene Fäden
 
+- **Umlaute auf dem Bildschirm (entschieden 2026-09-17).** Texte, die im
+  Browser stehen, bekommen echte Umlaute („Eröffnen", „zufällig");
+  Bezeichner, Dateinamen und Testnamen bleiben umschrieben. Bestehende Texte
+  umstellen: eine eigene Runde, weil Browsertests und Bildunterschriften
+  Texte wörtlich prüfen. Neue Texte ab sofort mit Umlauten.
 - Das Spielbild im Browser liest `window.ansicht` (nur lesen, befohlen wird
   mit Maus und Tastatur) — Muster in `e2e/tests/strategie-spielbild.spec.mjs`.
   Für neue Bedienkriterien dort anbauen.
