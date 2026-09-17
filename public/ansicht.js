@@ -5,8 +5,8 @@
 // Raute, doppelt so breit wie hoch. Die Welt rechnet weiter in Feldern
 // (x nach rechts unten, y nach links unten); nur zuBild und zuWelt kennen die
 // Raute. Die Kamera liegt in Bildpunkten der Raute bei Vergroesserung 1.
-import { figurZeichnen } from './figuren.js';
-import { gebaeudeBildZeichnen, gebaeudeGetroffen } from './gebaeude.js';
+import { FIGUREN, figurZeichnen } from './figuren.js';
+import { GEBAEUDE, gebaeudeBildZeichnen, gebaeudeGetroffen } from './gebaeude.js';
 import { KACHEL, kachelMassstab, kachelZeichnen } from './boden.js';
 import {
   DINGE, GRAS, WALD, WASSER, dingBildZeichnen, grasBeginnen, grasSammeln, grasZeichnen, raute, wellenZeichnen,
@@ -599,6 +599,9 @@ export class Ansicht {
     stehend.sort((a, b) => a.tiefe - b.tiefe || rang[a.art] - rang[b.art] || a.x - b.x);
 
     const e = HALB_B * zoom;
+    // Lebensbalken sammeln die Zeichnungen unterwegs; gemalt werden sie danach,
+    // ueber allem, damit kein Baum sie verdeckt (darstellung AC-8).
+    this.lebensbalken = [];
     for (const ding of stehend) {
       const p = this.zuBild(ding.x, ding.y);
       if (ding.art === 'vorrat') {
@@ -629,11 +632,35 @@ export class Ansicht {
       }
     }
     this.reihenfolge = stehend.map((d) => ({ art: d.art, tiefe: d.tiefe, id: d.einheit?.i }));
+    for (const balken of this.lebensbalken) this.lebensbalkenZeichnen(balken);
 
     for (const spieler of this.spieler.values()) this.namenZeichnen(spieler);
     if (this.platzieren) this.platzVorschau(e);
     this.sammelpunktZeichnen(e);
     if (this.zug) this.rahmenZeichnen();
+  }
+
+  /** Das volle Leben einer Einheit, mit den Verbesserungen ihres Besitzers (bauen AC-21). */
+  lebenVoll(einheit) {
+    const art = this.arten[einheit.k] || 'dorfbewohner';
+    let voll = this.werte.einheiten[art]?.leben ?? 0;
+    if (einheit.b === this.ich) {
+      for (const v of this.verbesserungen) voll += this.werte.verbesserungen?.[v]?.wirkung?.[art]?.leben || 0;
+    }
+    return voll;
+  }
+
+  // Ein Lebensbalken (darstellung AC-8): dunkler Grund, darauf der Anteil in
+  // Gruen, unter einem Drittel in Rot - schmal, damit er nichts zudeckt.
+  lebensbalkenZeichnen({ x, y, breite, anteil }) {
+    const stift = this.stift;
+    const hoch = Math.min(5, Math.max(3, Math.round(breite / 9)));
+    const links = Math.round(x - breite / 2);
+    const oben = Math.round(y - hoch);
+    stift.fillStyle = 'rgba(16, 18, 20, 0.8)';
+    stift.fillRect(links - 1, oben - 1, breite + 2, hoch + 2);
+    stift.fillStyle = anteil < 1 / 3 ? '#c8463c' : '#5daa45';
+    stift.fillRect(links, oben, Math.max(1, Math.round(breite * Math.max(0, Math.min(1, anteil)))), hoch);
   }
 
   // Der Sammelpunkt des gewaehlten Gebaeudes: eine Fahne in Spielerfarbe und
@@ -683,6 +710,21 @@ export class Ansicht {
     const spieler = this.spieler.get(gebaeude.b);
     const stift = this.stift;
     const { groesse } = this.gebaeudeMitte(gebaeude);
+    // Balken, wenn ausgewaehlt oder beschaedigt - eine Baustelle hat ihren
+    // Fortschritt in der Auswahlleiste und zaehlt hier nicht als beschaedigt.
+    const lebenVoll = this.werte.gebaeude[gebaeude.art]?.leben;
+    const fertig = (gebaeude.u ?? 1) >= 1;
+    const beschaedigt = fertig && lebenVoll && gebaeude.h < lebenVoll;
+    if (lebenVoll && (this.gewaehltesGebaeude === gebaeude.i || beschaedigt)) {
+      const zeichnung = GEBAEUDE[gebaeude.art];
+      const m = zeichnung ? (e * groesse * 0.95) / zeichnung.halbeBreite : e;
+      // Knapp ueber dem Dach - die Trefferhoehe reicht bis zur Fahnenspitze, drei
+      // Viertel davon sind der First (Runde 42: ganz oben deckte er den Namen zu).
+      const oben = zeichnung?.flach ? e * groesse * 0.6 : (zeichnung?.trefferOben ?? 3) * m * 0.75;
+      this.lebensbalken.push({
+        art: 'gebaeude', i: gebaeude.i, x: p.x, y: p.y - oben - 4, breite: Math.round(Math.min(e * groesse * 0.6, 140)), anteil: (gebaeude.h ?? lebenVoll) / lebenVoll,
+      });
+    }
     if (this.gewaehltesGebaeude === gebaeude.i) {
       // Ausgewaehlt: ein heller Rand um die Grundflaeche, wie die Ellipse bei Figuren.
       raute(stift, p.x, p.y, e * groesse, e * groesse / 2);
@@ -727,6 +769,13 @@ export class Ansicht {
       stift.beginPath();
       stift.ellipse(punkt.x, punkt.y, hoehe * 0.42, hoehe * 0.2, 0, 0, Math.PI * 2);
       stift.stroke();
+      // Darueber, ueber dem Kopf, das Leben.
+      const voll = this.lebenVoll(einheit);
+      if (voll) {
+        this.lebensbalken.push({
+          art: 'einheit', i: einheit.i, x: punkt.x, y: punkt.y - hoehe * (FIGUREN[this.arten[einheit.k]]?.oben ?? 1) - 5, breite: Math.max(16, Math.round(hoehe * 0.9)), anteil: (einheit.h ?? voll) / voll,
+        });
+      }
     }
 
     // Ein Dorfbewohner mit Ladung traegt sie sichtbar: Holzbuendel oder

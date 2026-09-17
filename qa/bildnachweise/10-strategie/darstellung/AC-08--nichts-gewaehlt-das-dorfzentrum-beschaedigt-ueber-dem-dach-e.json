@@ -1,0 +1,10 @@
+{
+  "spec": "10-strategie/darstellung.md",
+  "ac": "AC-8",
+  "titel": "Nichts gewaehlt, das Dorfzentrum beschaedigt: ueber dem Dach ein Balken, ein Viertel rot",
+  "datei": "e2e/tests/strategie-lebensbalken.spec.mjs",
+  "pfad": [
+    "Lebensbalken",
+    "darstellung AC-8: ein Gebaeude zeigt den Balken gewaehlt, und ungewaehlt erst, wenn es beschaedigt ist"
+  ]
+}

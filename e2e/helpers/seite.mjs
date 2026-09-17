@@ -131,6 +131,14 @@ export async function gebaeudeAufstellen(page, code, name, art, x, y) {
   return (await antwort.json()).id;
 }
 
+/** Das Leben einer Einheit oder eines Gebaeudes setzen (Pruefgriff, e2e/server.mjs). */
+export async function lebenSetzen(page, code, id, leben) {
+  const antwort = await page.request.post(`http://localhost:${GRIFFHAFEN}/griff`, {
+    data: { id: code, befehl: 'leben', werte: { id, leben } },
+  });
+  expect(antwort.ok(), await antwort.text()).toBe(true);
+}
+
 /** "7,3 Mio" oder "329 T" als Tausender. */
 export function tausend(text) {
   const wert = text.trim();

@@ -304,8 +304,7 @@ export class Auswahlleiste {
     const w = this.wurzel;
     const werte = this.ansicht.werte.einheiten;
     const art = this.ansicht.arten[einheit.k] || 'dorfbewohner';
-    let voll = werte[art]?.leben ?? 0;
-    for (const v of this.ansicht.verbesserungen) voll += this.ansicht.werte.verbesserungen?.[v]?.wirkung?.[art]?.leben || 0;
+    const voll = this.ansicht.lebenVoll(einheit);
     const leben = einheit.h ?? voll;
 
     const bild = element('div', 'auswahl-bild');

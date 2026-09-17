@@ -515,7 +515,8 @@ export const FIGUREN = {
   dorfbewohner: { name: 'Dorfbewohner', zeichnen: dorfbewohner, breite: 1 },
   schaf: { name: 'Schaf', zeichnen: schaf, breite: 1.1 },
   miliz: { name: 'Miliz', zeichnen: miliz, breite: 1 },
-  spaeherreiter: { name: 'Spaeherreiter', zeichnen: spaeherreiter, breite: 1.6 },
+  // Der Reiter ragt ueber die Figurenhoehe hinaus - `oben` sagt, wie weit (Lebensbalken).
+  spaeherreiter: { name: 'Spaeherreiter', zeichnen: spaeherreiter, breite: 1.6, oben: 1.15 },
 };
 
 export { WAREN };

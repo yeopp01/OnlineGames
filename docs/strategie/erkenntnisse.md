@@ -312,6 +312,21 @@ alle sieben Gebäude der Dunklen Zeit stehen. Was sich wiederholt hat:
 Neueste oben. Eine Zeile je Runde: Nummer, Datum, Kriterien, Ergebnis,
 wichtigste Erkenntnis.
 
+- **42** · 2026-09-17 · darstellung AC-8 **fertig** — Schritt A7 vollständig.
+  Lebensbalken im Spielbild: über dem Kopf jeder gewählten Einheit, über dem
+  Dach eines gewählten oder beschädigten Gebäudes (Baustellen nicht — deren
+  Fortschritt steht in der Leiste); grün, unter einem Drittel rot; gemalt
+  nach allem anderen, damit kein Baum sie verdeckt. `ansicht.lebensbalken`
+  hält fest, was gemalt wurde — daran zählt der Test. Neuer Prüfgriff
+  `leben` (Schaden, solange es keinen Kampf gibt), `lebenVoll(einheit)` in
+  der Ansicht statt doppelt in der Auswahlleiste. Gelernt beim Ansehen: (1)
+  der Gebäudebalken saß zuerst über der Fahnenspitze, 17 px dick, und deckte
+  den Spielernamen zu — jetzt drei Viertel der Trefferhöhe, höchstens 5 px;
+  (2) der Reiter ragt über die Figurenhöhe, sein Balken klebte am Helm —
+  `FIGUREN.spaeherreiter.oben`. Neue Datei `strategie-lebensbalken.spec.mjs`.
+  Bilder: `darstellung/AC-08--…`.
+  `karte AC-15` riss einmal unter 99 % fremder Last trotz „schnellster von
+  fünf" — allein grün, Wiederholung grün. Weiter beobachten.
 - **41** · 2026-09-17 · darstellung AC-14 **fertig** — Schritt A6c
   abgeschlossen. Zuerst gemessen (neue Regel aus Runde 40, `npm run tafel`):
   Einheiten paarweise 0,55–0,97 verschieden, Gebäude 0,40–0,87 — nur

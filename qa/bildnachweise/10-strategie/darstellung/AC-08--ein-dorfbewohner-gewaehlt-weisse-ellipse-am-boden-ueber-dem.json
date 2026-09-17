@@ -1,0 +1,10 @@
+{
+  "spec": "10-strategie/darstellung.md",
+  "ac": "AC-8",
+  "titel": "Ein Dorfbewohner gewaehlt: weisse Ellipse am Boden, ueber dem Kopf sein Lebensbalken, zwei Fuenftel gruen",
+  "datei": "e2e/tests/strategie-lebensbalken.spec.mjs",
+  "pfad": [
+    "Lebensbalken",
+    "darstellung AC-8: ein gewaehlter Dorfbewohner traegt die Ellipse und darueber seinen Lebensbalken"
+  ]
+}

@@ -2,7 +2,7 @@
 
 **Bereich:** Strategie
 **Kuerzel:** darstellung
-**Stand:** 10/14 fertig · 4 offen
+**Stand:** 11/14 fertig · 3 offen
 
 ## Zweck
 
@@ -48,7 +48,7 @@ der Spieler. Keine Bilddateien aus fremder Quelle.
 - **AC-7** `fertig` **Vorn verdeckt hinten** — Was weiter unten im Bild steht, wird später
   gezeichnet. Eine Einheit hinter einem Haus ist verdeckt; eine ausgewählte
   bleibt als Umriss erkennbar.
-- **AC-8** `offen` **Auswahl und Leben am Boden** — Ausgewähltes trägt eine Ellipse am Boden,
+- **AC-8** `fertig` **Auswahl und Leben am Boden** — Ausgewähltes trägt eine Ellipse am Boden,
   darüber einen Lebensbalken. Gebäude zeigen ihren Balken, wenn sie
   ausgewählt oder beschädigt sind.
 

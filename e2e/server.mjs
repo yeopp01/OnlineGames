@@ -89,6 +89,17 @@ const griffe = http.createServer(async (anfrage, antwortGriff) => {
       antwortGriff.writeHead(200, { 'Content-Type': 'application/json', Connection: 'close' }).end(JSON.stringify({ ok: true, id: gebaeude.id }));
       return;
     }
+    // Leben einer Einheit oder eines Gebaeudes setzen, fuer beschaedigte
+    // Zustaende, solange es keinen Kampf gibt (darstellung AC-8).
+    if (befehl === 'leben') {
+      const welt = laufend.raeume.finden(id)?.welt;
+      const ziel = welt?.einheiten.get(werte.id) || welt?.gebaeude.get(werte.id);
+      if (!ziel) throw new Error(`Nichts mit der Nummer ${werte.id} in Raum ${id}.`);
+      ziel.leben = Math.max(1, Math.round(Number(werte.leben)));
+      if (welt.gebaeude.get(werte.id) === ziel) welt.gebaeudeGeaendert(ziel);
+      antwortGriff.writeHead(200, { 'Content-Type': 'application/json', Connection: 'close' }).end(JSON.stringify({ ok: true }));
+      return;
+    }
     if (befehl === 'zeitraffer') {
       const raum = laufend.raeume.finden(id);
       if (!raum) throw new Error(`Raum ${id} gibt es nicht.`);
