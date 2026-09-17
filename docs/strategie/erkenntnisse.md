@@ -343,6 +343,15 @@ alle sieben Gebäude der Dunklen Zeit stehen. Was sich wiederholt hat:
 Neueste oben. Eine Zeile je Runde: Nummer, Datum, Kriterien, Ergebnis,
 wichtigste Erkenntnis.
 
+- **49** · 2026-09-17 · einheiten AC-20 und bedienung AC-6 **fertig**. Ein
+  Befehl für viele: wer geht, bekommt ein eigenes freies Feld in Ringen um das
+  Ziel (das nächste noch freie, damit sich Wege wenig kreuzen); wer sammelt,
+  einen eigenen Vorrat derselben Art im Umkreis von drei Feldern, der
+  geklickte zuerst. Einer allein geht weiter genau dorthin. Test ohne
+  Änderung rot; Prüfstand 20 Partien ohne Widerspruch, Wirtschaft unverändert
+  (22 Dorfbewohner). Die Auswahlliste gab es schon (Anzahl gesamt, je Typ Bild
+  mit Zahl) — jetzt belegt; „ausgewählt" mit Umlaut. Der Browsertest wartet,
+  bis alle vier ganzzahlig und still stehen, bevor er das Bild macht.
 - **48** · 2026-09-17 · bedienung AC-27 und AC-22 **fertig**: Tastenkürzel
   und Tastenübersicht (`public/tasten.js`). `H` wählt das eigene Dorfzentrum
   und holt es ins Bild, dort bildet `Q` aus (über denselben Knopf wie die

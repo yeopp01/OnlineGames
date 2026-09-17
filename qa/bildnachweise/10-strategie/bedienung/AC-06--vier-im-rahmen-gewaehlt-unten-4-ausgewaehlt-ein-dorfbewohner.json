@@ -1,0 +1,10 @@
+{
+  "spec": "10-strategie/bedienung.md",
+  "ac": "AC-6",
+  "titel": "Vier im Rahmen gewaehlt: unten 4 ausgewaehlt, ein Dorfbewohner mit 3, ein Spaeherreiter mit 1",
+  "datei": "e2e/tests/strategie-gruppe.spec.mjs",
+  "pfad": [
+    "Gruppe",
+    "bedienung AC-6: vier im Rahmen - unten die Zahl und je Typ ein Bild mit Anzahl"
+  ]
+}

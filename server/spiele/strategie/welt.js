@@ -576,6 +576,12 @@ class Welt {
     // Ein eigenes Schaf in der Naehe des Klicks (einheiten AC-17) - aber nur,
     // wenn auf dem Feld selbst nichts zu sammeln ist: neben Beeren weiden Schafe.
     const schaf = sammeln ? null : this.tierAn(spielerId, Number(ziel.x), Number(ziel.y));
+    // Ein Befehl fuer viele (einheiten AC-20): wer geht, bekommt ein eigenes Feld
+    // um das Ziel; wer sammelt, einen eigenen Vorrat derselben Art daneben.
+    const gruppe = einheitIds.slice(0, 200).map((id) => this.einheiten.get(id)).filter((e) => e && e.besitzer === spielerId);
+    let aufstellung = null;
+    let vorraete = null;
+    let naechsterVorrat = 0;
 
     for (const id of einheitIds.slice(0, 200)) {
       // Ein eigenes, lebendes Schaf wird getrieben (einheiten AC-22).
@@ -612,13 +618,73 @@ class Welt {
           einheit.ladungsart = null;
         }
         einheit.angefangen = 0;
-        einheit.auftrag = { art: 'sammeln', feld: { x: zx, y: zy } };
+        vorraete ??= this.vorraeteUm({ x: zx, y: zy }, gruppe.length);
+        const feld = vorraete[naechsterVorrat++ % vorraete.length];
+        einheit.auftrag = { art: 'sammeln', feld };
         this.wegZumVorrat(einheit);
       } else {
-        einheit.auftrag = { art: 'gehen', feld: { x: zx, y: zy } };
-        einheit.weg = suchen(this.karte, this.feldVon(einheit), { x: zx, y: zy });
+        aufstellung ??= this.aufstellungUm({ x: zx, y: zy }, gruppe.length);
+        const feld = this.naechstesFreies(einheit, aufstellung) || { x: zx, y: zy };
+        einheit.auftrag = { art: 'gehen', feld };
+        einheit.weg = this.wegNach(einheit, feld);
       }
     }
+  }
+
+  // Freie Felder um ein Ziel, nach Abstand - das Ziel selbst zuerst, wenn frei
+  // (einheiten AC-20). Genug fuer n Einheiten, oder so viele es gibt.
+  aufstellungUm(ziel, n) {
+    const felder = [];
+    for (let r = 0; r < 12 && felder.length < n; r++) {
+      const ring = [];
+      for (let dy = -r; dy <= r; dy++) {
+        for (let dx = -r; dx <= r; dx++) {
+          if (Math.max(Math.abs(dx), Math.abs(dy)) !== r) continue;
+          if (karten.begehbar(this.karte, ziel.x + dx, ziel.y + dy)) ring.push({ x: ziel.x + dx, y: ziel.y + dy, d: Math.hypot(dx, dy) });
+        }
+      }
+      ring.sort((a, b) => a.d - b.d || a.y - b.y || a.x - b.x);
+      for (const f of ring) felder.push({ x: f.x, y: f.y, frei: true });
+    }
+    return felder;
+  }
+
+  // Das naechste noch freie Feld der Aufstellung - wer nahe steht, nimmt nahe Felder.
+  naechstesFreies(einheit, aufstellung) {
+    let bestes = null;
+    let besterAbstand = Infinity;
+    for (const f of aufstellung) {
+      if (!f.frei) continue;
+      const abstand = Math.hypot(f.x - einheit.x, f.y - einheit.y);
+      if (abstand < besterAbstand) {
+        besterAbstand = abstand;
+        bestes = f;
+      }
+    }
+    if (!bestes) return null;
+    bestes.frei = false;
+    return { x: bestes.x, y: bestes.y };
+  }
+
+  // Vorraete derselben Art um ein Feld, das Feld selbst zuerst, dann nach
+  // Abstand - Sammler verteilen sich darauf, statt alle an einem zu stehen.
+  vorraeteUm(ziel, n) {
+    const g = this.karte.groesse;
+    const art = this.karte.felder[ziel.y * g + ziel.x];
+    const felder = [];
+    for (let dy = -3; dy <= 3; dy++) {
+      for (let dx = -3; dx <= 3; dx++) {
+        const x = ziel.x + dx;
+        const y = ziel.y + dy;
+        if (x < 0 || y < 0 || x >= g || y >= g) continue;
+        const index = y * g + x;
+        if (this.karte.felder[index] !== art || !(this.karte.vorrat.get(index) > 0)) continue;
+        felder.push({ x, y, d: Math.hypot(dx, dy) });
+      }
+    }
+    felder.sort((a, b) => a.d - b.d || a.y - b.y || a.x - b.x);
+    const auswahl = felder.slice(0, Math.max(1, n)).map(({ x, y }) => ({ x, y }));
+    return auswahl.length ? auswahl : [ziel];
   }
 
   // ---- Farm (einheiten AC-18) ----------------------------------------------

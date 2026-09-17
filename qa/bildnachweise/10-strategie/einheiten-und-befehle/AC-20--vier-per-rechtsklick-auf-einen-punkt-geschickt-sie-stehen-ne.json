@@ -1,0 +1,10 @@
+{
+  "spec": "10-strategie/einheiten-und-befehle.md",
+  "ac": "AC-20",
+  "titel": "Vier per Rechtsklick auf einen Punkt geschickt: sie stehen nebeneinander um das Ziel, jeder auf einem eigenen Feld",
+  "datei": "e2e/tests/strategie-gruppe.spec.mjs",
+  "pfad": [
+    "Gruppe",
+    "einheiten AC-20: vier zum selben Punkt geschickt stehen dort nebeneinander, nicht auf einem Feld"
+  ]
+}

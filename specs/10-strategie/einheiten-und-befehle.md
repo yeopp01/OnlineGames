@@ -2,7 +2,7 @@
 
 **Bereich:** Strategie
 **Kuerzel:** einheiten
-**Stand:** 15/18 fertig · 2 offen · 1 zurueckgestellt
+**Stand:** 16/18 fertig · 1 offen · 1 zurueckgestellt
 
 ## Zweck
 
@@ -88,7 +88,7 @@ Befehl bewirkt.
 - **AC-19** `fertig` **Werte nach der Vorlage** — Dorfbewohner, Späherreiter und
   Miliz haben die Werte aus der Tabelle; der Späher ist anderthalbmal so
   schnell wie ein Dorfbewohner.
-- **AC-20** `offen` **Ein Befehl für viele** — Mehrere ausgewählte Einheiten, zum selben Punkt
+- **AC-20** `fertig` **Ein Befehl für viele** — Mehrere ausgewählte Einheiten, zum selben Punkt
   geschickt, stellen sich dort nebeneinander auf, statt auf einem Feld zu
   stehen. Mehrere Sammler auf einem Vorrat verteilen sich auf die Nachbarn
   derselben Art.

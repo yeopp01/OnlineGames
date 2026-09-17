@@ -49,3 +49,49 @@ test('einheiten AC-21: die Welt weiss je Spieler, welche Dorfbewohner nichts tun
   welt.takten();
   assert.equal(welt.zustand().spieler.find((s) => s.id === 'a').u, undefined, 'niemand untaetig - kein Eintrag');
 });
+
+test('einheiten AC-20: viele zum selben Punkt stellen sich nebeneinander, viele Sammler verteilen sich auf den Vorrat', () => {
+  const welt = new Welt(ZWEI, 7);
+  const basis = welt.spielerVon('a').basis;
+  for (let i = 0; i < 4; i++) welt.einheitAnlegen('a', basis.x + 3, basis.y + 3 + (i % 2));
+  const leute = [...welt.einheiten.values()].filter((e) => e.besitzer === 'a');
+  // Ein freier Punkt ein Stueck vor der Basis.
+  let ziel = null;
+  for (let r = 8; r < 30 && !ziel; r++) {
+    const x = basis.x + r;
+    const y = basis.y + r;
+    let frei = true;
+    for (let dy = -2; dy <= 2; dy++) for (let dx = -2; dx <= 2; dx++) if (!karten.begehbar(welt.karte, x + dx, y + dy)) frei = false;
+    if (frei) ziel = { x, y };
+  }
+  assert.ok(ziel);
+  welt.befehl('a', leute.map((e) => e.id), ziel);
+  sekunden(welt, 40);
+  const plaetze = leute.map((e) => `${Math.round(e.x)},${Math.round(e.y)}`);
+  assert.equal(new Set(plaetze).size, leute.length, `jeder auf eigenem Feld: ${plaetze.join(' ')}`);
+  for (const e of leute) {
+    assert.ok(Math.hypot(e.x - ziel.x, e.y - ziel.y) <= 2, `nah am Ziel: ${e.x},${e.y}`);
+    assert.equal(e.weg.length, 0, 'angekommen');
+  }
+
+  // Einer allein geht genau dorthin.
+  const einzeln = leute[0];
+  welt.befehl('a', [einzeln.id], { x: ziel.x - 1, y: ziel.y });
+  sekunden(welt, 10);
+  assert.deepEqual({ x: einzeln.x, y: einzeln.y }, { x: ziel.x - 1, y: ziel.y });
+
+  // Vier Sammler auf einen Baum: vier verschiedene Baeume, alle nah am geklickten.
+  const dorfbewohner = leute.filter((e) => e.art === 'dorfbewohner').slice(0, 4);
+  const g = welt.karte.groesse;
+  const baum = welt.karte.felder.findIndex((f, i) => f === karten.WALD
+    && [[1, 0], [-1, 0], [0, 1], [0, -1]].every(([dx, dy]) => welt.karte.felder[i + dx + dy * g] === karten.WALD));
+  const geklickt = { x: baum % g, y: Math.floor(baum / g) };
+  welt.befehl('a', dorfbewohner.map((e) => e.id), geklickt);
+  const felder = dorfbewohner.map((e) => e.auftrag.feld);
+  assert.equal(new Set(felder.map((f) => `${f.x},${f.y}`)).size, 4, `vier Baeume: ${JSON.stringify(felder)}`);
+  assert.deepEqual(felder[0], geklickt, 'der erste an den geklickten');
+  for (const f of felder) {
+    assert.equal(welt.karte.felder[f.y * g + f.x], karten.WALD);
+    assert.ok(Math.hypot(f.x - geklickt.x, f.y - geklickt.y) <= 3);
+  }
+});

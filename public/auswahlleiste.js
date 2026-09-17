@@ -233,7 +233,7 @@ export class Auswahlleiste {
       eintrag.title = `${anzahl} ${FIGUREN[art]?.name || art}`;
       gruppe.append(eintrag);
     }
-    this.wurzel.append(element('div', 'auswahl-kopf', `${auswahl.length} ausgewaehlt`), gruppe);
+    this.wurzel.append(element('div', 'auswahl-kopf', `${auswahl.length} ausgewählt`), gruppe);
   }
 
   // Das Baumenue (bedienung AC-25): ein Knopf je Gebaeude, ein Klick beginnt

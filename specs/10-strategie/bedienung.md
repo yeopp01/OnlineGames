@@ -2,7 +2,7 @@
 
 **Bereich:** Strategie
 **Kuerzel:** bedienung
-**Stand:** 17/29 fertig · 12 offen
+**Stand:** 18/29 fertig · 11 offen
 
 ## Zweck
 
@@ -31,7 +31,7 @@ Befehl steht.
 - **AC-4** `offen` **Doppelklick wählt den Typ** — Alle sichtbaren Einheiten desselben Typs.
 - **AC-5** `offen` **Auswahl merken** — `Strg`+`1` bis `9` legt eine Auswahl ab, die Zifferntaste
   ruft sie zurück. Ohne das ist ein Echtzeitspiel nicht spielbar.
-- **AC-6** `offen` **Ausgewählte sind aufgelistet** — Am unteren Rand mit Anzahl je Typ.
+- **AC-6** `fertig` **Ausgewählte sind aufgelistet** — Am unteren Rand mit Anzahl je Typ.
 
 ### Kamera
 
