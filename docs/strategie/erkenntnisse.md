@@ -270,6 +270,46 @@ eine Zahl gemacht, und zweimal hat ein alter Test einen neuen Fehler gefunden
 (Klick auf Beeren traf ein Schaf; zwei Lager zu ähnlich). Browserlauf bei
 ruhigerer Maschine 141 s Testzeit, langsamster Fall weiter der Lagertest (28 s).
 
+### Nach Runde 54 — Ende von Stufe A (2026-09-17)
+
+Stufe A ist erreicht: die Dunkle Zeit am Stück im Browser spielbar, mit
+Prüfstand, Wirtschafts-KI, Übersicht und Tempo. Seit Runde 50 (51–53): ein
+Takt mit 800 Einheiten 58 → 0,5 ms, 24 → 60 Bilder je Sekunde, die ganze
+Dunkle Zeit als ein Browsertest.
+
+**Angesehen:** eine Partie, beide Seiten von der Wirtschafts-KI gespielt (neuer
+Prüfgriff `ki`), zehn Spielminuten im Zeitraffer. Anna hat 22 Dorfbewohner,
+Häuser, Mühle, Lager, Farmen, 700 Nahrung, niemand untätig
+(`bilder/rueckschau-stufe-a-ki-10min-zoom1.png`, `…-zoom2.png`). Ehrlich mit dem
+Original verglichen, die drei größten Lücken — als `offen` angelegt:
+
+1. **bedienung AC-30 Verdeckte Einheiten als Umriss** — Dorfbewohner hinter
+   Häusern, Lagern und Dorfzentrum sind weg.
+2. **bedienung AC-31 Arbeit ist zu sehen** — Arbeitende und Wartende sehen
+   gleich aus.
+3. **bedienung AC-32 Arbeiter je Rohstoff** — die Leiste nennt Vorräte, nicht
+   wie viele daran arbeiten.
+
+Außerdem gesehen, kleiner: die KI baut Häuser dicht ans Dorfzentrum und das
+Bergbaulager ins Gold, so dass sich alles überdeckt; eine Farm im Bau sieht
+aus wie ein Hausgerüst.
+
+Was sich in 51–53 wiederholt hat, und was sich ändert:
+
+1. **Tempo fiel erst beim gezielten Messen auf** — 58 ms je Takt und 24 Bilder
+   je Sekunde, lange unbemerkt. → Der Prüfstand schreibt jetzt „ms je Takt"
+   zu jeder Partie; Anweisung: `sicht --messen` misst nur JavaScript, wer
+   Zeichnung ändert, fährt `strategie-tempo`.
+2. **Integration zeigte Fehler, die Einzeltests nicht sahen** — der Test der
+   ganzen Dunklen Zeit fand den Klick, der das hintere Gebäude wählte, und eine
+   wackelige Testhilfe. → bleibt als Regressionstest; nichts weiter.
+3. **Die Rückschau am Stufenende brauchte ein lebendiges Dorf** — ein Dorf
+   ohne Spieler zeigt nichts. → Prüfgriff `ki`, in der Anweisung vermerkt.
+
+Messwerte nicht eingetragen: Browserlauf bei 54 % fremder Last nicht
+vergleichbar. Nächste Runde: Spec-Runde für Stufe B (Feudalzeit); die drei
+Lücken gehören in deren Bauabfolge.
+
 ### Nach Runde 50 (2026-09-17)
 
 Runden 46–49: aus A9 untätige Dorfbewohner, Übersichtskarte, Tastenkürzel mit

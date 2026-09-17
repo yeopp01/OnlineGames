@@ -87,8 +87,8 @@ test('ki AC-7: npm run pruefstand:strategie spielt Partien ohne Server und Brows
   const skript = fileURLToPath(new URL('../scripts/pruefstand-strategie.mjs', import.meta.url));
   const ausgabe = execFileSync(process.execPath, [skript, '--partien', '2', '--minuten', '1', '--startwert', '5'], { encoding: 'utf8' });
   // Je Partie Startwert und Dauer, je Spieler Kennzahlen.
-  assert.match(ausgabe, /^Startwert 5 · \d+ ms · 600 Takte$/m);
-  assert.match(ausgabe, /^Startwert 6 · \d+ ms · 600 Takte$/m);
+  assert.match(ausgabe, /^Startwert 5 · \d+ ms · 600 Takte · [\d.]+ ms je Takt$/m);
+  assert.match(ausgabe, /^Startwert 6 · \d+ ms · 600 Takte · [\d.]+ ms je Takt$/m);
   const zeilen = ausgabe.split('\n').filter((z) => /^ {2}KI \d: \d+ Dorfbewohner/.test(z));
   assert.equal(zeilen.length, 4, 'zwei Partien mal zwei Spieler');
   for (const zeile of zeilen) assert.match(zeile, /Holz \d+, Nahrung \d+, Gold \d+, Stein \d+/);

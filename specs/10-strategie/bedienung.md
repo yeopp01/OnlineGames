@@ -2,7 +2,7 @@
 
 **Bereich:** Strategie
 **Kuerzel:** bedienung
-**Stand:** 18/29 fertig · 11 offen
+**Stand:** 18/32 fertig · 14 offen
 
 ## Zweck
 
@@ -96,6 +96,23 @@ Befehl steht.
   ihn ins Bild.
 - **AC-29** `fertig` **Ausgewähltes zeigt Werte** — Eine ausgewählte Einheit oder ein Gebäude
   zeigt unten Name, Leben und — beim Dorfbewohner — was er trägt.
+
+### Nach Stufe A — Lücken aus der Rückschau
+
+Eine Partie mit Wirtschafts-KI auf beiden Seiten, zehn Spielminuten, im
+Browser angesehen (Rückschau nach Runde 54) und ehrlich mit dem Original
+verglichen: die drei größten Lücken in Lesbarkeit und Aussehen.
+
+- **AC-30** `offen` **Verdeckte Einheiten als Umriss** — Steht eine Einheit hinter einem
+  Gebäude, ist sie als Umriss in Spielerfarbe durch das Gebäude sichtbar. Im
+  Dorf nach zehn Minuten verschwanden Dorfbewohner hinter Häusern und Lagern
+  ganz.
+- **AC-31** `offen` **Arbeit ist zu sehen** — Wer sammelt, baut oder eine Farm bestellt,
+  bewegt sich dabei sichtbar (Schlag, Bücken); wer untätig steht, steht still.
+  Heute sehen Arbeitende und Wartende gleich aus.
+- **AC-32** `offen` **Arbeiter je Rohstoff** — Die Rohstoffleiste zeigt neben jedem Vorrat,
+  wie viele Dorfbewohner gerade daran arbeiten. Ohne diese Zahl lässt sich ein
+  Wirtschaftsplan nicht steuern.
 
 Aus den offenen Kriterien oben gehören zu Stufe A: AC-6 (Auswahl
 aufgelistet), AC-11 (Übersichtskarte — auf 120 × 120 unverzichtbar), AC-15

@@ -206,6 +206,11 @@ Setze die gewählten Kriterien auf `in-arbeit`.
   (gut zwei Minuten). Gedämpfte Farben kosteten Tonstufen (darstellung AC-12)
   und die Unterscheidbarkeit der Lager (bauen AC-20) — beides fiel in Runde 37
   erst im Lauf über alle Bilder auf.
+- **`sicht --messen` misst nur die JavaScript-Zeit von `zeichnen`**, nicht die
+  Bildrate: Canvas-Befehle werden beim Darstellen gerastert. Wer Zeichnung,
+  Zwischenspeicher oder Kopien ändert, fährt `strategie-tempo` (Bilder je
+  Sekunde mit 100 Einheiten und 30 Gebäuden). In Runde 52 sagte `zeichnen`
+  1,4 ms, das Bild lief mit 38 je Sekunde.
 - **Spielgröße ansehen, nicht nur herangezoomt.** Jede Figur und jedes Gebäude
   wird auch bei Zoom 1 beurteilt — dort spielt man. Die Schautafel zeigt
   beides nebeneinander.
@@ -283,7 +288,10 @@ Nicht bauen. Stattdessen:
    Diese Anweisung darfst du ändern; die Regeln unter „Wann du anhältst" und
    die Bedeutung von `fertig` nicht.
 3. **Am Ende einer Stufe zusätzlich:** Starte eine Partie im Browser, mache ein
-   Bild vom Spielbild nach einigen Minuten und sieh es an. Vergleiche ehrlich
+   Bild vom Spielbild nach einigen Minuten und sieh es an. Damit dort etwas
+   passiert, spielt der Prüfgriff `ki` (`e2e/server.mjs`, Befehl `ki` mit
+   `name`) die Wirtschafts-KI für beide Seiten; mit Zeitraffer 20 sind zehn
+   Spielminuten eine halbe Minute (Rückschau nach Runde 54). Vergleiche ehrlich
    mit dem, was ein Spieler von AoE II erwartet: Was sind die **drei größten
    Lücken** in Lesbarkeit und Aussehen? Lege sie als `offen`-Kriterien in
    `bedienung.md` an.

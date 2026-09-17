@@ -139,7 +139,7 @@ Umfang hinzufügt, dort nachsehen.
 
 ## Stand
 
-**351 von 490 Kriterien fertig.** 322 Tests ohne Browser, 123 im Browser. Die
+**351 von 493 Kriterien fertig.** 322 Tests ohne Browser, 123 im Browser. Die
 Übersicht ist der Bericht: `npm run qa:report`.
 
 Gebaut ist der Unterbau: Räume, Übertragung, Karte, Wegfindung, Sammeln,
@@ -198,7 +198,9 @@ Tastenkürzel mit Übersicht (`?`), Auswahlliste, Aufstellung einer Gruppe am
 Ziel und die Schautafel als Nachweis, ein Takt mit 800 Einheiten unter 1 ms,
 60 Bilder je Sekunde mit 100 Einheiten und 30 Gebäuden. **Stufe A ist
 erreicht**: die Dunkle Zeit ist am Stück im Browser spielbar (fahrplan AC-3).
-Als Nächstes die Rückschau zur Stufe, dann Stufe B:
+Die Rückschau zur Stufe hat drei Lücken angelegt (bedienung AC-30 bis AC-32:
+verdeckte Einheiten, sichtbare Arbeit, Arbeiter je Rohstoff). Als Nächstes die
+Spec-Runde für Stufe B:
 
 1. **Stufe A** Dunkle Zeit mit Wirtschafts-KI und Prüfstand · **B** Feudalzeit
    · **C** Partieende und KI-Gegner · **D** Ritterzeit · **E** fünf Völker ·

@@ -40,7 +40,9 @@ for (let n = 0; n < partien; n++) {
   const startwert = erster + n;
   try {
     const ergebnis = partieSpielen({ startwert, minuten, spieler });
-    console.log(`Startwert ${startwert} · ${Math.round(ergebnis.dauerMs)} ms · ${ergebnis.takte} Takte`);
+    // Rechenzeit je Takt mitschreiben: ein Tempoverlust faellt so bei jedem Lauf auf
+    // (Rueckschau nach Runde 54 - in Runde 51 kostete ein Takt 58 ms, unbemerkt).
+    console.log(`Startwert ${startwert} · ${Math.round(ergebnis.dauerMs)} ms · ${ergebnis.takte} Takte · ${(ergebnis.dauerMs / ergebnis.takte).toFixed(3)} ms je Takt`);
     for (const p of ergebnis.spieler) {
       console.log(`  ${kurz(p)}`);
       dorfbewohner.push(p.dorfbewohner);

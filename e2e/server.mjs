@@ -9,6 +9,7 @@ import { KONTO } from './helpers/konto.mjs';
 
 const require = createRequire(import.meta.url);
 const { starten } = require('../server/index.js');
+const { Ki } = require('../server/spiele/strategie/ki.js');
 
 const hafen = Number(process.env.E2E_HAFEN) || 4191;
 
@@ -87,6 +88,25 @@ const griffe = http.createServer(async (anfrage, antwortGriff) => {
       if (!welt.platzPruefen(werte.art, werte.x, werte.y)) throw new Error(`Kein Platz fuer ${werte.art} auf ${werte.x}, ${werte.y}.`);
       const gebaeude = welt.gebaeudeAnlegen(spieler.id, werte.art, werte.x, werte.y, true);
       antwortGriff.writeHead(200, { 'Content-Type': 'application/json', Connection: 'close' }).end(JSON.stringify({ ok: true, id: gebaeude.id }));
+      return;
+    }
+    // Die Wirtschafts-KI spielt fuer einen Spieler im Raum - fuer Bilder einer
+    // gewachsenen Partie (Rueckschau zum Ende einer Stufe). Sie schickt ihre
+    // Befehle wie sonst ueber welt.nachricht.
+    if (befehl === 'ki') {
+      const welt = laufend.raeume.finden(id)?.welt;
+      const spieler = welt?.spieler.find((s) => s.name === werte.name);
+      if (!spieler) throw new Error(`Spieler ${werte.name} gibt es in Raum ${id} nicht.`);
+      if (!welt.kis) {
+        welt.kis = [];
+        const takten = welt.takten.bind(welt);
+        welt.takten = () => {
+          for (const ki of welt.kis) ki.takt();
+          takten();
+        };
+      }
+      welt.kis.push(new Ki(welt, spieler.id));
+      antwortGriff.writeHead(200, { 'Content-Type': 'application/json', Connection: 'close' }).end(JSON.stringify({ ok: true }));
       return;
     }
     // Viele Einheiten fuer einen Spieler, ringweise um einen Punkt auf freiem
