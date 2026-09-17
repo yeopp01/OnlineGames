@@ -1,0 +1,10 @@
+{
+  "spec": "10-strategie/bedienung.md",
+  "ac": "AC-25",
+  "titel": "Dorfbewohner gewaehlt, 60 Holz: unten Haus fuer 25 bereit, Muehle und beide Lager fuer 100 ausgegraut",
+  "datei": "e2e/tests/strategie-bauen.spec.mjs",
+  "pfad": [
+    "Bauen",
+    "bedienung AC-25: ein Dorfbewohner zeigt das Baumenue, was zu teuer ist, ist grau und sagt warum"
+  ]
+}

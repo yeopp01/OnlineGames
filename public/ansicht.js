@@ -47,6 +47,10 @@ export class Ansicht {
     this.arten = {};
     this.gewaehltesGebaeude = null; // id; entweder Einheiten oder ein Gebaeude
     this.beiAuswahl = () => {};
+    // Platzieren eines Gebaeudes (bauen AC-4): welche Art, und wo der Zeiger ist.
+    this.platzieren = null;
+    this.zeiger = null;
+    this.bauenSenden = () => {};
     this.blicke = new Map(); // Einheit → -1 links, 1 rechts
     this.tiere = new Map();
     this.vorraete = { holz: 0, nahrung: 0, gold: 0, stein: 0, bev: 0, raum: 0 };
@@ -170,6 +174,13 @@ export class Ansicht {
     this.leinwand.addEventListener('contextmenu', (e) => e.preventDefault());
 
     this.leinwand.addEventListener('pointerdown', (e) => {
+      this.zeiger = { x: e.offsetX, y: e.offsetY };
+      if (this.platzieren) {
+        // Links setzt die Baustelle, rechts bricht ab.
+        if (e.button === 0) this.platzierenKlick();
+        else if (e.button === 2) this.platzierenBeenden();
+        return;
+      }
       if (e.button === 0) {
         this.zug = { vonX: e.offsetX, vonY: e.offsetY, bisX: e.offsetX, bisY: e.offsetY };
         this.leinwand.setPointerCapture(e.pointerId);
@@ -179,6 +190,7 @@ export class Ansicht {
     });
 
     this.leinwand.addEventListener('pointermove', (e) => {
+      this.zeiger = { x: e.offsetX, y: e.offsetY };
       if (!this.zug) return;
       this.zug.bisX = e.offsetX;
       this.zug.bisY = e.offsetY;
@@ -201,7 +213,19 @@ export class Ansicht {
       this.kamera.y = iy - e.offsetY / this.kamera.zoom;
     }, { passive: false });
 
-    window.addEventListener('keydown', (e) => this.tasten.add(e.key.toLowerCase()));
+    window.addEventListener('keydown', (e) => {
+      // Esc hebt erst die Platzierung auf, dann die Auswahl (bedienung AC-15).
+      if (e.key === 'Escape') {
+        if (this.platzieren) this.platzierenBeenden();
+        else {
+          this.ausgewaehlt.clear();
+          this.gewaehltesGebaeude = null;
+          this.beiAuswahl();
+        }
+        return;
+      }
+      this.tasten.add(e.key.toLowerCase());
+    });
     window.addEventListener('keyup', (e) => this.tasten.delete(e.key.toLowerCase()));
     window.addEventListener('blur', () => this.tasten.clear());
   }
@@ -261,6 +285,71 @@ export class Ansicht {
       const mitte = p.y - figur * KOERPER_MITTE * 0.5;
       if (p.x >= links && p.x <= rechts && mitte >= oben && mitte <= unten) this.ausgewaehlt.add(einheit.i);
     }
+  }
+
+  // ---- Bauplatz waehlen (bauen AC-4) ----------------------------------------
+
+  platzierenBeginnen(art) {
+    this.platzieren = { art };
+    this.beiAuswahl();
+  }
+
+  platzierenBeenden() {
+    this.platzieren = null;
+    this.beiAuswahl();
+  }
+
+  // Wo die Baustelle unter dem Zeiger laege, und ob der Platz taugt - dieselbe
+  // Regel wie auf dem Server (bauen AC-3), damit Gruen und Rot vor dem Klick
+  // stimmen. Einheiten stehen nicht im Weg; sie gehen beiseite.
+  platzLage() {
+    if (!this.platzieren || !this.zeiger) return null;
+    const art = this.platzieren.art;
+    const n = this.werte.gebaeude[art]?.groesse || 1;
+    const welt = this.zuWelt(this.zeiger.x, this.zeiger.y);
+    const versatz = Math.floor(n / 2) - (n - 1) / 2;
+    const x = Math.round(welt.x + versatz);
+    const y = Math.round(welt.y + versatz);
+    const x0 = x - Math.floor(n / 2);
+    const y0 = y - Math.floor(n / 2);
+    const g = this.karte.groesse;
+    let taugt = true;
+    for (let fy = y0; fy < y0 + n && taugt; fy++) {
+      for (let fx = x0; fx < x0 + n; fx++) {
+        if (fx < 0 || fy < 0 || fx >= g || fy >= g || this.karte.felder[fy * g + fx] !== GRAS) { taugt = false; break; }
+      }
+    }
+    for (const tier of this.tiere.values()) {
+      const tx = Math.round(tier.x);
+      const ty = Math.round(tier.y);
+      if (tx >= x0 && tx < x0 + n && ty >= y0 && ty < y0 + n) taugt = false;
+    }
+    return { art, x, y, groesse: n, mitte: { x: x0 + (n - 1) / 2, y: y0 + (n - 1) / 2 }, taugt };
+  }
+
+  platzierenKlick() {
+    const lage = this.platzLage();
+    // Auf Rot passiert nichts: die Vorschau hat schon gesagt, dass es nicht geht.
+    if (!lage || !lage.taugt) return;
+    this.bauenSenden([...this.ausgewaehlt], lage.art, { x: lage.x, y: lage.y });
+    this.platzierenBeenden();
+  }
+
+  platzVorschau(e) {
+    const lage = this.platzLage();
+    if (!lage) return;
+    const stift = this.stift;
+    const p = this.zuBild(lage.mitte.x, lage.mitte.y);
+    const spieler = this.spieler.get(this.ich);
+    raute(stift, p.x, p.y, e * lage.groesse, (e * lage.groesse) / 2);
+    stift.fillStyle = lage.taugt ? 'rgba(80, 220, 110, 0.35)' : 'rgba(235, 70, 60, 0.4)';
+    stift.fill();
+    stift.strokeStyle = lage.taugt ? '#5fe07a' : '#ff5a4a';
+    stift.lineWidth = 2;
+    stift.stroke();
+    stift.globalAlpha = 0.55;
+    gebaeudeZeichnen(stift, lage.art, p.x, p.y, e, spieler ? spieler.farbe : '#888888', lage.groesse);
+    stift.globalAlpha = 1;
   }
 
   befehlen(px, py) {
@@ -404,6 +493,7 @@ export class Ansicht {
     this.reihenfolge = stehend.map((d) => ({ art: d.art, tiefe: d.tiefe }));
 
     for (const spieler of this.spieler.values()) this.namenZeichnen(spieler);
+    if (this.platzieren) this.platzVorschau(e);
     if (this.zug) this.rahmenZeichnen();
   }
 
@@ -418,7 +508,7 @@ export class Ansicht {
       stift.lineWidth = 2;
       stift.stroke();
     }
-    gebaeudeZeichnen(stift, gebaeude.art, p.x, p.y, e, spieler ? spieler.farbe : '#888888', groesse);
+    gebaeudeZeichnen(stift, gebaeude.art, p.x, p.y, e, spieler ? spieler.farbe : '#888888', groesse, gebaeude.u ?? 1);
   }
 
   namenZeichnen(spieler) {

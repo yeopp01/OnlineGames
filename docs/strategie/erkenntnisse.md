@@ -91,6 +91,7 @@ Zahlen, gegen die spätere Runden vergleichen. Mit Datum und Commit.
 | 2026-09-17 | Tests ohne Browser / im Browser; Browserlauf (Last 16 %) | 260 / 83; 58,5 s | Runde 13 |
 | 2026-09-17 | Tests ohne Browser / im Browser; Browserlauf | 264 / 86; 1,1 min | Runde 16 |
 | 2026-09-17 | Tests ohne Browser / im Browser; Browserlauf | 265 / 88; 1,3 min | Runde 17 |
+| 2026-09-17 | Tests ohne Browser / im Browser; Browserlauf | 287 / 97; 2,8 min — davon rund 1,3 min strategie-bauen | Runde 23 |
 | 2026-09-17 | Tests ohne Browser / im Browser; Browserlauf (CPU 7 %, 13 fremde node-Prozesse im Leerlauf) | 275 / 91; 1,7 min — davon rund 20 s die neue Datei strategie-ausbilden | Runde 20 |
 
 ## Rückschauen
@@ -191,6 +192,19 @@ Beide Male wurde das Produkt geändert, nicht die Zusicherung.
 Neueste oben. Eine Zeile je Runde: Nummer, Datum, Kriterien, Ergebnis,
 wichtigste Erkenntnis.
 
+- **23** · 2026-09-17 · bauen AC-1, AC-4, bedienung AC-15, AC-25,
+  darstellung AC-4, AC-5 und einheiten AC-16 fertig: Baumenü am Dorfbewohner,
+  grün/rote Vorschau unter dem Zeiger, Esc, gezeichnete Häuser, Mühle, Lager
+  und Baustellen, Abriss in der Leiste. bauen AC-20 zurück auf `offen` — Farm
+  und Kaserne gehören zu A7, nicht vorgezogen. Gelernt: (1) Beim Ansehen drei
+  Bilder verworfen: Baustelle hinter dem Dorfzentrum, Lager ohne sichtbaren
+  Träger (die Wege liefen hinter dem Dach), Bretter als schwarzer Klecks
+  (geerbte Linienbreite). Tests suchen Plätze jetzt „vorn" oder „seitlich".
+  (2) Ein Zustand im Zeitraffer fasst mehrere Takte — Abstandsgrenzen im Test
+  müssen den Weg dazwischen einrechnen. (3) `aria-disabled` statt `disabled`,
+  damit der Knopf beim Überfahren sagt, was fehlt; Playwright klickt ihn nur
+  mit `force`. Der Browserlauf ist auf 2,8 min gewachsen (Lagertest wartet
+  auf Lieferungen) — ein Faden für die Rückschau nach Runde 25.
 - **22** · 2026-09-17 · bauen AC-2, AC-3, AC-5, AC-6 fertig; AC-1 und
   einheiten AC-16 in-qa (Bild mit der Bauoberfläche), AC-20 in Arbeit (Farm,
   Kaserne fehlen). Gebäude belegen ihre Grundfläche als Feldart `BEBAUT` —

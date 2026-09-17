@@ -1,0 +1,9 @@
+{
+  "spec": "10-strategie/darstellung.md",
+  "ac": "AC-4",
+  "titel": "Schautafel unten: Dorfzentrum, Haus, Muehle, Holzfaeller- und Bergbaulager in Blau und Rot, dazu zwei Baustellen",
+  "datei": "e2e/tests/strategie-bauen.spec.mjs",
+  "pfad": [
+    "darstellung AC-4: jedes Gebaeude hat Koerper, die Spielerfarbe steht nur an einer Stelle"
+  ]
+}

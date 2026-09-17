@@ -1,0 +1,10 @@
+{
+  "spec": "10-strategie/bauen.md",
+  "ac": "AC-4",
+  "titel": "Dieselbe Vorschau ueber dem Dorfzentrum: die Grundflaeche ist rot, dort geht es nicht",
+  "datei": "e2e/tests/strategie-bauen.spec.mjs",
+  "pfad": [
+    "Bauen",
+    "bauen AC-4 / bedienung AC-15: die Grundflaeche folgt dem Zeiger, gruen oder rot, Esc bricht ab"
+  ]
+}

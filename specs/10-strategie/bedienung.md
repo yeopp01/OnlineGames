@@ -2,7 +2,7 @@
 
 **Bereich:** Strategie
 **Kuerzel:** bedienung
-**Stand:** 10/29 fertig · 19 offen
+**Stand:** 12/29 fertig · 17 offen
 
 ## Zweck
 
@@ -50,7 +50,7 @@ Befehl steht.
   Antwort des Servers zu warten. Zehn Takte je Sekunde heißt bis zu 100 ms
   Verzögerung — ohne Rückmeldung fühlt sich das kaputt an.
 - **AC-14** `offen` **Warteschlange mit Umschalt** — Mehrere Ziele hintereinander abarbeiten.
-- **AC-15** `offen` **Abbrechen mit Esc** — Hebt Auswahl und angefangene Platzierung auf.
+- **AC-15** `fertig` **Abbrechen mit Esc** — Hebt Auswahl und angefangene Platzierung auf.
 
 ### Rückmeldung
 
@@ -80,7 +80,7 @@ Befehl steht.
 - **AC-24** `fertig` **Leiste mit vier Rohstoffen** — Oben Holz, Nahrung, Gold, Stein und die
   Bevölkerung als „7/10". Die Zahlen zählen hoch statt zu springen (AC-17).
   Bis Häuser gebaut werden (A6), gibt allein das Dorfzentrum Wohnraum 5.
-- **AC-25** `offen` **Baumenü am Dorfbewohner** — Ist ein Dorfbewohner ausgewählt, zeigt der
+- **AC-25** `fertig` **Baumenü am Dorfbewohner** — Ist ein Dorfbewohner ausgewählt, zeigt der
   untere Rand die baubaren Gebäude mit Bild und Kosten. Was nicht bezahlbar
   ist, ist ausgegraut und nennt beim Überfahren, was fehlt. Ein Klick beginnt
   das Platzieren (→ [Bauen](bauen.md) AC-4).

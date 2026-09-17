@@ -4,10 +4,13 @@
 //   Fortschritt, ein Klick auf einen Eintrag bricht ihn ab
 //   (→ specs/10-strategie/bedienung.md AC-26, bauen AC-10, AC-11)
 // - eine Einheit: Bild, Name, Leben und beim Dorfbewohner, was er traegt (AC-29)
+// - Dorfbewohner in der Auswahl: das Baumenue mit Bild und Kosten; was nicht
+//   bezahlbar ist, ist ausgegraut und sagt, was fehlt (AC-25)
+// - eine eigene Baustelle: Fortschritt und Abriss (bauen AC-6)
 // Rechnen tut hier nichts: die Leiste zeigt den Zustand und schickt Absichten.
 // Werte wie Leben und Kosten kommen vom Server mit dem Aufbau (ansicht.werte).
 import { FIGUREN, WAREN, figurZeichnen } from './figuren.js';
-import { GEBAEUDE } from './gebaeude.js';
+import { GEBAEUDE, gebaeudeZeichnen } from './gebaeude.js';
 
 const ROHSTOFF_NAMEN = { holz: 'Holz', nahrung: 'Nahrung', gold: 'Gold', stein: 'Stein' };
 
@@ -21,6 +24,20 @@ function bildchen(art, groesse, farbe, lage = {}) {
   const stift = leinwand.getContext('2d');
   stift.scale(dichte, dichte);
   figurZeichnen(stift, art, groesse / 2, groesse * 0.95, groesse * 0.95, farbe, lage);
+  return leinwand;
+}
+
+function gebaeudeBildchen(art, groesse, farbe, n) {
+  const leinwand = document.createElement('canvas');
+  const dichte = window.devicePixelRatio || 1;
+  leinwand.width = groesse * dichte;
+  leinwand.height = groesse * dichte;
+  leinwand.style.width = `${groesse}px`;
+  leinwand.style.height = `${groesse}px`;
+  const stift = leinwand.getContext('2d');
+  stift.scale(dichte, dichte);
+  // Jedes Gebaeude gleich breit im Knopf, egal wie gross es im Spiel ist.
+  gebaeudeZeichnen(stift, art, groesse / 2, groesse * 0.74, groesse / (2.3 * n), farbe, n);
   return leinwand;
 }
 
@@ -59,6 +76,16 @@ export class Auswahlleiste {
     const gebaeude = a.gewaehltesGebaeude ? a.gebaeude.get(a.gewaehltesGebaeude) : null;
     const farbe = a.spieler.get(a.ich)?.farbe || '#888888';
 
+    if (gebaeude && gebaeude.b === a.ich && gebaeude.u !== undefined) {
+      const schluessel = `b${gebaeude.i}:${gebaeude.u}`;
+      if (schluessel !== this.gezeigt) {
+        this.baustelleBauen(gebaeude, farbe);
+        this.gezeigt = schluessel;
+      }
+      this.wurzel.hidden = false;
+      return;
+    }
+
     if (gebaeude && gebaeude.b === a.ich) {
       const angebot = this.angebot(gebaeude);
       // Neu gebaut wird nur, wenn sich etwas Sichtbares aendert - sonst nur
@@ -75,11 +102,19 @@ export class Auswahlleiste {
       return;
     }
 
-    const einheit = a.ausgewaehlt.size === 1 ? a.nachher.get([...a.ausgewaehlt][0]) : null;
-    if (einheit) {
-      const schluessel = `e${einheit.i}:${einheit.h}:${einheit.l}:${einheit.a}`;
+    const auswahl = [...a.ausgewaehlt].map((id) => a.nachher.get(id)).filter(Boolean);
+    if (auswahl.length) {
+      const bauplan = this.bauplan(auswahl);
+      const bezahlbar = bauplan.map((e) => this.fehlt(e.kosten)).join('|');
+      const einzeln = auswahl.length === 1 ? auswahl[0] : null;
+      const schluessel = einzeln
+        ? `e${einzeln.i}:${einzeln.h}:${einzeln.l}:${einzeln.a}:${bezahlbar}:${a.platzieren?.art}`
+        : `m${auswahl.map((e) => e.i).join(',')}:${bezahlbar}:${a.platzieren?.art}`;
       if (schluessel !== this.gezeigt) {
-        this.einheitBauen(einheit, farbe);
+        this.wurzel.replaceChildren();
+        if (einzeln) this.einheitBauen(einzeln, farbe);
+        else this.gruppeBauen(auswahl, farbe);
+        if (bauplan.length) this.baumenueBauen(bauplan, farbe);
         this.gezeigt = schluessel;
       }
       this.wurzel.hidden = false;
@@ -100,6 +135,93 @@ export class Auswahlleiste {
     }));
   }
 
+  // Was die Auswahl bauen kann: jedes Gebaeude, das mindestens einer baut.
+  bauplan(auswahl) {
+    const werte = this.ansicht.werte;
+    const arten = new Set();
+    for (const e of auswahl) {
+      if (e.b !== this.ansicht.ich) continue;
+      for (const art of werte.einheiten[this.ansicht.arten[e.k]]?.baut || []) arten.add(art);
+    }
+    return [...arten].map((art) => ({
+      art,
+      name: GEBAEUDE[art]?.name || art,
+      kosten: werte.gebaeude[art]?.kosten || {},
+      groesse: werte.gebaeude[art]?.groesse || 1,
+    }));
+  }
+
+  gruppeBauen(auswahl, farbe) {
+    const zaehlung = new Map();
+    for (const e of auswahl) {
+      const art = this.ansicht.arten[e.k] || 'dorfbewohner';
+      zaehlung.set(art, (zaehlung.get(art) || 0) + 1);
+    }
+    const gruppe = element('div', 'gruppe');
+    for (const [art, anzahl] of zaehlung) {
+      const eintrag = element('div', 'gruppe-eintrag');
+      eintrag.append(bildchen(art, 40, farbe), element('span', null, `${anzahl}`));
+      eintrag.title = `${anzahl} ${FIGUREN[art]?.name || art}`;
+      gruppe.append(eintrag);
+    }
+    this.wurzel.append(element('div', 'auswahl-kopf', `${auswahl.length} ausgewaehlt`), gruppe);
+  }
+
+  // Das Baumenue (bedienung AC-25): ein Knopf je Gebaeude, ein Klick beginnt
+  // das Platzieren (bauen AC-4).
+  baumenueBauen(bauplan, farbe) {
+    const menue = element('div', 'baumenue');
+    menue.id = 'baumenue';
+    for (const eintrag of bauplan) {
+      const knopf = document.createElement('button');
+      knopf.type = 'button';
+      knopf.dataset.bauen = eintrag.art;
+      const fehlt = this.fehlt(eintrag.kosten);
+      // Nicht `disabled`: ein gesperrter Knopf soll beim Ueberfahren noch sagen,
+      // was fehlt - das tut er in Chrome nur, wenn er Zeigerereignisse bekommt.
+      knopf.setAttribute('aria-disabled', fehlt ? 'true' : 'false');
+      if (fehlt) knopf.dataset.fehlt = fehlt;
+      const kosten = Object.entries(eintrag.kosten).map(([r, m]) => `${m} ${ROHSTOFF_NAMEN[r]}`).join(', ');
+      knopf.title = fehlt ? `${eintrag.name} - zu wenig ${fehlt}` : `${eintrag.name} bauen (${kosten})`;
+      if (this.ansicht.platzieren?.art === eintrag.art) knopf.classList.add('aktiv');
+      const preis = element('span', 'preis');
+      for (const [r, m] of Object.entries(eintrag.kosten)) preis.append(element('span', `ware ware-${r[0]}`), element('span', null, String(m)));
+      knopf.append(gebaeudeBildchen(eintrag.art, 52, farbe, eintrag.groesse), element('span', 'bauname', eintrag.name), preis);
+      knopf.addEventListener('click', () => {
+        if (!fehlt) this.ansicht.platzierenBeginnen(eintrag.art);
+      });
+      menue.append(knopf);
+    }
+    this.wurzel.append(menue);
+  }
+
+  baustelleBauen(gebaeude, farbe) {
+    const w = this.wurzel;
+    w.replaceChildren();
+    const name = GEBAEUDE[gebaeude.art]?.name || gebaeude.art;
+    const bild = element('div', 'auswahl-bild');
+    bild.append(gebaeudeBildchen(gebaeude.art, 58, farbe, 2));
+    const kopfteil = element('div', 'auswahl-kopf');
+    kopfteil.append(element('strong', null, `${name} im Bau`));
+    const stand = element('div', 'leben');
+    stand.id = 'baufortschritt';
+    stand.dataset.bau = String(gebaeude.u);
+    const balken = element('div', 'lebensbalken baubalken');
+    const fuellung = element('span');
+    fuellung.style.width = `${Math.round(gebaeude.u * 100)}%`;
+    balken.append(fuellung);
+    stand.append(balken, element('span', 'lebenszahl', `${Math.round(gebaeude.u * 100)} %`));
+    kopfteil.append(stand);
+    const abriss = document.createElement('button');
+    abriss.type = 'button';
+    abriss.dataset.abreissen = String(gebaeude.i);
+    abriss.className = 'abriss';
+    abriss.textContent = 'Abreissen';
+    abriss.title = 'Was noch nicht verbaut ist, kommt zurueck';
+    abriss.addEventListener('click', () => this.senden({ auftrag: 'abreissen', gebaeude: gebaeude.i }));
+    w.append(bild, kopfteil, abriss);
+  }
+
   fehlt(kosten) {
     const vorraete = this.ansicht.vorraete;
     return Object.entries(kosten)
@@ -110,7 +232,6 @@ export class Auswahlleiste {
 
   einheitBauen(einheit, farbe) {
     const w = this.wurzel;
-    w.replaceChildren();
     const werte = this.ansicht.werte.einheiten;
     const art = this.ansicht.arten[einheit.k] || 'dorfbewohner';
     const voll = werte[art]?.leben ?? 0;

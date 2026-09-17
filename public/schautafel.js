@@ -3,6 +3,7 @@
 // Spielerfarben. Sie ist Bildnachweis und Pruefstueck zugleich - der
 // Browserlauf liest `window.schautafel`.
 import { FIGUREN, figurZeichnen } from './figuren.js';
+import { GEBAEUDE, gebaeudeZeichnen } from './gebaeude.js';
 import {
   BEERE, GOLD, GRAS as BODEN_GRAS, STEIN, WALD, WASSER, bodenFarbe, bodenTon, dingZeichnen, gewaesserZeichnen, raute, wellenZeichnen,
 } from './gelaende.js';
@@ -24,7 +25,7 @@ const leinwand = document.getElementById('tafel');
 const stift = leinwand.getContext('2d');
 const dichte = window.devicePixelRatio || 1;
 const BREITE = 1100;
-const HOEHE = 780;
+const HOEHE = 1180;
 leinwand.width = BREITE * dichte;
 leinwand.height = HOEHE * dichte;
 stift.scale(dichte, dichte);
@@ -118,6 +119,75 @@ DINGE.forEach((ding, i) => {
   stift.fillText(ding.titel, x + dingSpalte / 2, gelaendeOben + 232);
 });
 
+// ---- Gebaeude und Baustellen (darstellung AC-4, AC-5) -----------------------
+// Jedes Gebaeude der Stufe gross in beiden Spielerfarben, dazu die Baustelle
+// in drei Staenden und alles noch einmal in Spielgroesse (Zoom 1).
+
+const GEBAEUDE_REIHE = [
+  { art: 'dorfzentrum', groesse: 4, titel: 'Dorfzentrum' },
+  { art: 'haus', groesse: 2, titel: 'Haus' },
+  { art: 'muehle', groesse: 2, titel: 'Muehle' },
+  { art: 'holzfaellerlager', groesse: 2, titel: 'Holzfaellerlager' },
+  { art: 'bergbaulager', groesse: 2, titel: 'Bergbaulager' },
+  { art: 'haus', groesse: 2, titel: 'Baustelle 20 %', bau: 0.2 },
+  { art: 'haus', groesse: 2, titel: 'Baustelle 70 %', bau: 0.7 },
+];
+const gebaeudeOben = 790;
+stift.fillStyle = '#e6e9ee';
+stift.font = '600 15px system-ui, sans-serif';
+stift.textAlign = 'left';
+stift.fillText('Gebaeude und Baustellen - in Spielgroesse (Zoom 1), das Dorfzentrum halb so gross, in zwei Spielerfarben', 12, gebaeudeOben - 6);
+const gebaeudeSpalte = BREITE / GEBAEUDE_REIHE.length;
+const gebaeudeZellen = [];
+FARBEN.forEach((farbe, reihe) => {
+  const oben = gebaeudeOben + 6 + reihe * 190;
+  GEBAEUDE_REIHE.forEach((eintrag, i) => {
+    const x = i * gebaeudeSpalte;
+    stift.fillStyle = GRAS;
+    stift.fillRect(x + 6, oben, gebaeudeSpalte - 12, 170);
+    // In Spielgroesse (e = 22 wie bei Zoom 1); das Dorfzentrum halb so gross, sonst passt es nicht.
+    const e = eintrag.groesse === 4 ? 11 : 22;
+    gebaeudeZeichnen(stift, eintrag.art, x + gebaeudeSpalte / 2 - 8, oben + 120, e, farbe, eintrag.groesse, eintrag.bau ?? 1);
+    if (reihe === 1) {
+      stift.fillStyle = '#e6e9ee';
+      stift.font = '600 13px system-ui, sans-serif';
+      stift.textAlign = 'center';
+      stift.fillText(eintrag.titel, x + gebaeudeSpalte / 2, oben + 164);
+    }
+    gebaeudeZellen.push({ art: eintrag.art, bau: eintrag.bau ?? 1, farbe, x: x + 6, y: oben, breite: gebaeudeSpalte - 12, hoehe: 170 });
+  });
+});
+
+/**
+ * Fuer den Browserlauf (darstellung AC-4): ein Gebaeude allein auf
+ * durchsichtigem Grund - welche Bildpunkte es belegt und wie viele die
+ * Spielerfarbe tragen.
+ */
+function gebaeudeMaske(art, farbe, bau = 1) {
+  const groesse = 140;
+  const blatt = document.createElement('canvas');
+  blatt.width = groesse;
+  blatt.height = groesse;
+  const s = blatt.getContext('2d');
+  gebaeudeZeichnen(s, art, groesse / 2, groesse * 0.72, 20, farbe, 2, bau);
+  const { data } = s.getImageData(0, 0, groesse, groesse);
+  const r = parseInt(farbe.slice(1, 3), 16);
+  const g = parseInt(farbe.slice(3, 5), 16);
+  const b = parseInt(farbe.slice(5, 7), 16);
+  const belegt = [];
+  const farben = [];
+  let farbpixel = 0;
+  let hoechster = groesse;
+  for (let i = 0; i < data.length; i += 4) {
+    const voll = data[i + 3] > 200;
+    belegt.push(voll ? 1 : 0);
+    farben.push(voll ? [data[i], data[i + 1], data[i + 2]] : null);
+    if (voll) hoechster = Math.min(hoechster, Math.floor(i / 4 / groesse));
+    if (voll && Math.abs(data[i] - r) < 30 && Math.abs(data[i + 1] - g) < 30 && Math.abs(data[i + 2] - b) < 30) farbpixel += 1;
+  }
+  return { belegt, farben, pixel: belegt.reduce((a, v) => a + v, 0), farbpixel, oben: hoechster };
+}
+
 /**
  * Fuer den Browserlauf: ein Vorrat allein auf durchsichtigem Grund, mit dem
  * Anteil der Bildpunkte in einer Farbfamilie (gelb, rot, grau, gruen).
@@ -198,4 +268,5 @@ function bodenProbe() {
 
 window.schautafel = {
   zellen, maske, dingMaske, bodenProbe, arten: Object.keys(FIGUREN), dinge: { WALD, BEERE, GOLD, STEIN },
+  gebaeudeZellen, gebaeudeMaske, gebaeudeArten: Object.keys(GEBAEUDE),
 };

@@ -1,0 +1,10 @@
+{
+  "spec": "10-strategie/bauen.md",
+  "ac": "AC-1",
+  "titel": "Das fertige Haus mit Strohdach und blauer Tuer neben dem Dorfzentrum, oben Bevoelkerung 4/10",
+  "datei": "e2e/tests/strategie-bauen.spec.mjs",
+  "pfad": [
+    "Bauen",
+    "bauen AC-1 / darstellung AC-5: der Dorfbewohner geht hin und baut, die Baustelle waechst zum Haus"
+  ]
+}

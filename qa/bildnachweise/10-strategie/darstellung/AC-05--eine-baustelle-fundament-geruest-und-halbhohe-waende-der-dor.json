@@ -1,0 +1,10 @@
+{
+  "spec": "10-strategie/darstellung.md",
+  "ac": "AC-5",
+  "titel": "Eine Baustelle: Fundament, Geruest und halbhohe Waende, der Dorfbewohner baut daneben",
+  "datei": "e2e/tests/strategie-bauen.spec.mjs",
+  "pfad": [
+    "Bauen",
+    "bauen AC-1 / darstellung AC-5: der Dorfbewohner geht hin und baut, die Baustelle waechst zum Haus"
+  ]
+}

@@ -114,6 +114,14 @@ export async function zeitraffer(page, code, faktor) {
   expect(antwort.ok(), await antwort.text()).toBe(true);
 }
 
+/** Rohstoffe eines Spielers im Raum setzen (Pruefgriff, e2e/server.mjs). */
+export async function rohstoffe(page, code, name, werte) {
+  const antwort = await page.request.post(`http://localhost:${GRIFFHAFEN}/griff`, {
+    data: { id: code, befehl: 'rohstoffe', werte: { name, ...werte } },
+  });
+  expect(antwort.ok(), await antwort.text()).toBe(true);
+}
+
 /** "7,3 Mio" oder "329 T" als Tausender. */
 export function tausend(text) {
   const wert = text.trim();

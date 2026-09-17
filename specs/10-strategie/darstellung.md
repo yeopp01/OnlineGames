@@ -2,7 +2,7 @@
 
 **Bereich:** Strategie
 **Kuerzel:** darstellung
-**Stand:** 5/11 fertig · 6 offen
+**Stand:** 7/11 fertig · 4 offen
 
 ## Zweck
 
@@ -37,10 +37,10 @@ der Spieler. Keine Bilddateien aus fremder Quelle.
 
 ### Gebäude und Einheiten (Stufe A)
 
-- **AC-4** `offen` **Gebäude haben Körper** — Jedes Gebäude hat Grundfläche, Wände und Dach mit
+- **AC-4** `fertig` **Gebäude haben Körper** — Jedes Gebäude hat Grundfläche, Wände und Dach mit
   Licht von links oben. Die Spielerfarbe steht an einer festen Stelle (Banner,
   Dachkante), nicht als ganze Fläche.
-- **AC-5** `offen` **Baustelle sichtbar** — Eine Baustelle zeigt Gerüst und Fundament und
+- **AC-5** `fertig` **Baustelle sichtbar** — Eine Baustelle zeigt Gerüst und Fundament und
   wächst mit dem Fortschritt.
 - **AC-6** `fertig` **Einheiten sind Figuren** — Dorfbewohner, Miliz und Späherreiter sind an der
   Gestalt zu unterscheiden (Werkzeug, Schwert und Schild, Pferd), mit

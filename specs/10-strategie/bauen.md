@@ -2,7 +2,7 @@
 
 **Bereich:** Strategie
 **Kuerzel:** bauen
-**Stand:** 12/22 fertig · 1 in Arbeit · 1 in QA · 8 offen
+**Stand:** 14/22 fertig · 8 offen
 
 ## Zweck
 
@@ -53,7 +53,7 @@ Stufe B im Stall.
 
 ### Bauen
 
-- **AC-1** `in-qa` **Dorfbewohner bauen Gebäude** — Ein ausgewählter Dorfbewohner bekommt einen
+- **AC-1** `fertig` **Dorfbewohner bauen Gebäude** — Ein ausgewählter Dorfbewohner bekommt einen
   Bauauftrag für einen Platz; er läuft hin und baut. Während er baut, sammelt
   er nicht. Nach dem Bau eines Lagers oder einer Mühle sammelt er am nächsten
   passenden Vorrat, nach einer Farm bestellt er sie.
@@ -63,7 +63,7 @@ Stufe B im Stall.
 - **AC-3** `fertig` **Bauplatz muss frei sein** — Alle Felder der Grundfläche sind begehbar und
   von keinem Gebäude, Baum, Vorrat oder Schaf belegt. Einheiten auf dem Platz
   gehen beiseite.
-- **AC-4** `offen` **Bauplatz wird vorher gezeigt** — Beim Platzieren folgt die Grundfläche dem
+- **AC-4** `fertig` **Bauplatz wird vorher gezeigt** — Beim Platzieren folgt die Grundfläche dem
   Zeiger, grün wenn der Platz taugt, rot wenn nicht — vor dem Klick. Esc
   bricht das Platzieren ab.
 - **AC-5** `fertig` **Kosten beim Baubeginn abgezogen** — Nicht bei Fertigstellung. Reicht der
@@ -72,10 +72,12 @@ Stufe B im Stall.
   wird der Anteil der Kosten, der noch nicht verbaut ist.
 - **AC-7** `offen` **Gebäude im Bau angreifbar** — Mit Leben im Verhältnis zum Baufortschritt.
   _(Stufe B, mit dem Kampf.)_
-- **AC-20** `in-arbeit` **Die Gebäude der Dunklen Zeit** — Dorfzentrum, Haus, Mühle,
+- **AC-20** `offen` **Die Gebäude der Dunklen Zeit** — Dorfzentrum, Haus, Mühle,
   Holzfällerlager, Bergbaulager, Farm und Kaserne lassen sich mit Kosten,
   Bauzeit, Größe und Leben aus der Tabelle oben bauen. Die Werte stehen als
-  Daten an einer Stelle, nicht in der Simulation verteilt.
+  Daten an einer Stelle, nicht in der Simulation verteilt. _(Seit Runde 22
+  gebaut: Dorfzentrum, Haus, Mühle, beide Lager. Farm und Kaserne folgen mit
+  Schritt A7.)_
 
 ### Ausbilden
 

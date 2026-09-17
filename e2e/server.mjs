@@ -68,6 +68,15 @@ const griffe = http.createServer(async (anfrage, antwortGriff) => {
     const { id, befehl, werte = {} } = JSON.parse(roh || '{}');
     // Der Zeitraffer gilt einem Raum, nicht einem Spielstand: eine Minute
     // Sammeln soll im Browserlauf keine Minute kosten.
+    // Rohstoffe eines Spielers setzen, fuer Zustaende wie "zu wenig Holz".
+    if (befehl === 'rohstoffe') {
+      const raum = laufend.raeume.finden(id);
+      const spieler = raum?.welt?.spieler.find((s) => s.name === werte.name);
+      if (!spieler) throw new Error(`Spieler ${werte.name} gibt es in Raum ${id} nicht.`);
+      for (const r of ['holz', 'nahrung', 'gold', 'stein']) if (Number.isInteger(werte[r])) spieler[r] = werte[r];
+      antwortGriff.writeHead(200, { 'Content-Type': 'application/json', Connection: 'close' }).end(JSON.stringify({ ok: true }));
+      return;
+    }
     if (befehl === 'zeitraffer') {
       const raum = laufend.raeume.finden(id);
       if (!raum) throw new Error(`Raum ${id} gibt es nicht.`);

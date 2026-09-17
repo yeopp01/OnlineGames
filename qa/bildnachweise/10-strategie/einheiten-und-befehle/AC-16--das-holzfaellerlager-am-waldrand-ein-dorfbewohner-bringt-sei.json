@@ -1,0 +1,10 @@
+{
+  "spec": "10-strategie/einheiten-und-befehle.md",
+  "ac": "AC-16",
+  "titel": "Das Holzfaellerlager am Waldrand: ein Dorfbewohner bringt sein Holz hierher, nicht zum Dorfzentrum",
+  "datei": "e2e/tests/strategie-bauen.spec.mjs",
+  "pfad": [
+    "Bauen",
+    "einheiten AC-16: ein Holzfaellerlager am Wald - dort wird das Holz abgegeben"
+  ]
+}

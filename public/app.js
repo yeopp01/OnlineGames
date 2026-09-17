@@ -93,6 +93,8 @@ function empfangen(nachricht) {
         auswahlleiste = new Auswahlleiste(teile.auswahlleiste, ansicht, (auftrag) =>
           senden({ typ: 'befehl', ...auftrag }));
         ansicht.beiAuswahl = () => auswahlleiste.aktualisieren();
+        ansicht.bauenSenden = (einheiten, art, ziel) =>
+          senden({ typ: 'befehl', auftrag: 'bauen', einheiten, art, ziel });
       }
       zeigen('spiel');
       teile.kartenwert.textContent = `· Karte ${nachricht.startwert}`;
