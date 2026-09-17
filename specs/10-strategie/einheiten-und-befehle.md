@@ -2,7 +2,7 @@
 
 **Bereich:** Strategie
 **Kuerzel:** einheiten
-**Stand:** 13/18 fertig · 4 offen · 1 zurueckgestellt
+**Stand:** 14/18 fertig · 3 offen · 1 zurueckgestellt
 
 ## Zweck
 
@@ -92,7 +92,7 @@ Befehl bewirkt.
   geschickt, stellen sich dort nebeneinander auf, statt auf einem Feld zu
   stehen. Mehrere Sammler auf einem Vorrat verteilen sich auf die Nachbarn
   derselben Art.
-- **AC-22** `offen` **Schafe wählen und treiben** — Eigene Schafe lassen sich wie Einheiten
+- **AC-22** `fertig` **Schafe wählen und treiben** — Eigene Schafe lassen sich wie Einheiten
   anklicken oder mit dem Rahmen wählen und per Rechtsklick an einen Ort
   schicken, etwa ans Dorfzentrum; so werden die Wege beim Hüten kurz. Fremde
   Schafe in Sichtweite eigener Einheiten wechseln den Besitzer — wie in der

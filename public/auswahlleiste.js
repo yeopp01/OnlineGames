@@ -103,6 +103,25 @@ export class Auswahlleiste {
     }
 
     const auswahl = [...a.ausgewaehlt].map((id) => a.nachher.get(id)).filter(Boolean);
+    const schafe = [...a.ausgewaehlt].map((id) => a.tiere.get(id)).filter(Boolean);
+    if (!auswahl.length && schafe.length) {
+      const schluessel = `t${schafe.map((t) => t.i).join(',')}`;
+      if (schluessel !== this.gezeigt) {
+        this.wurzel.replaceChildren();
+        const bild = element('div', 'auswahl-bild');
+        bild.append(bildchen('schaf', 58, farbe));
+        const k = element('div', 'auswahl-kopf');
+        k.append(element('strong', null, schafe.length === 1 ? 'Schaf' : `${schafe.length} Schafe`));
+        const nahrung = schafe.reduce((s, t) => s + (t.n ?? 0), 0);
+        const zeile = element('div', 'ladung');
+        zeile.id = 'schafnahrung';
+        zeile.append(element('span', 'ware ware-n'), element('span', null, `${nahrung} Nahrung`), element('span', 'leise', ' - Rechtsklick treibt'));
+        this.wurzel.append(bild, k, zeile);
+        this.gezeigt = schluessel;
+      }
+      this.wurzel.hidden = false;
+      return;
+    }
     if (auswahl.length) {
       const bauplan = this.bauplan(auswahl);
       const bezahlbar = bauplan.map((e) => this.fehlt(e.kosten)).join('|');

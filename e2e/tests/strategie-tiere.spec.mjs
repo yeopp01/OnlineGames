@@ -130,4 +130,66 @@ test.describe('Schafe', () => {
       test: info,
     });
   });
+
+  test('einheiten AC-22: ein Rahmen waehlt ein eigenes Schaf, ein Rechtsklick treibt es', async ({}, info) => {
+    await anna.keyboard.press('Escape');
+    // Ein lebendes eigenes Schaf, das frei steht, nah heran.
+    const schaf = await anna.evaluate(() => {
+      const a = window.ansicht;
+      a.ausgewaehlt.clear();
+      a.gewaehltesGebaeude = null;
+      const basis = a.spieler.get(a.ich).basis;
+      const lebend = [...a.tiere.values()].filter((t) => t.b === a.ich && !t.g)
+        .sort((p, q) => (q.x + q.y) - (p.x + p.y));
+      const t = lebend[0];
+      a.kamera.zoom = 2;
+      a.blickAuf(t.x + 1, t.y + 1);
+      void basis;
+      return { i: t.i, x: t.x, y: t.y };
+    });
+    await anna.waitForTimeout(150);
+    const bild = await anna.evaluate((t) => window.ansicht.zuBild(t.x, t.y), schaf);
+    // Ein kleiner Rahmen nur um das Schaf.
+    await anna.mouse.move(bild.x - 25, bild.y - 30);
+    await anna.mouse.down();
+    await anna.mouse.move(bild.x + 25, bild.y + 12, { steps: 5 });
+    await anna.mouse.up();
+    await expect.poll(() => anna.evaluate(() => [...window.ansicht.ausgewaehlt])).toEqual([schaf.i]);
+    await expect(anna.locator('#auswahlleiste')).toContainText('Schaf');
+    await expect(anna.locator('#schafnahrung')).toContainText('100 Nahrung');
+
+    // Rechtsklick drei Felder weiter: es laeuft hin.
+    // Ein freies Grasfeld drei Felder weiter - auf einen Baum laeuft kein Schaf.
+    const ziel = await anna.evaluate((t) => {
+      const a = window.ansicht;
+      const g = a.karte.groesse;
+      for (const [dx, dy] of [[3, 1], [1, 3], [3, -1], [-1, 3], [2, 2], [-3, 1], [1, -3]]) {
+        const x = Math.round(t.x) + dx;
+        const y = Math.round(t.y) + dy;
+        if (a.karte.felder[y * g + x] === 0 && ![...a.gebaeude.values()].some((b) => Math.abs(b.x - x) <= 2 && Math.abs(b.y - y) <= 2)) return { x, y };
+      }
+      return null;
+    }, schaf);
+    expect(ziel).not.toBeNull();
+    const zielBild = await anna.evaluate((z) => window.ansicht.zuBild(z.x, z.y), ziel);
+    await anna.mouse.click(zielBild.x, zielBild.y, { button: 'right' });
+    await anna.waitForFunction(({ id, x, y }) => {
+      const t = window.ansicht.tiere.get(id);
+      return t && Math.hypot(t.x - x, t.y - y) > 0.8;
+    }, { id: schaf.i, x: schaf.x, y: schaf.y }, { timeout: 10_000 });
+    await expect(anna.locator('#auswahlleiste')).toBeInViewport();
+    await nachweis(anna, {
+      spec: EINHEITEN,
+      ac: 'AC-22',
+      titel: 'Ein Schaf mit dem Rahmen gewaehlt - weisse Ellipse, unten Schaf mit 100 Nahrung -, per Rechtsklick losgeschickt',
+      test: info,
+    });
+    await zeitraffer(anna, code, 10);
+    await anna.waitForFunction(({ id, x, y }) => {
+      const t = window.ansicht.tiere.get(id);
+      return t && Math.hypot(t.x - x, t.y - y) < 0.05;
+    }, { id: schaf.i, x: ziel.x, y: ziel.y }, { timeout: 20_000 });
+    await zeitraffer(anna, code, 1);
+    await anna.keyboard.press('Escape');
+  });
 });

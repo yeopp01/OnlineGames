@@ -26,7 +26,7 @@ function anDieArbeit(welt, einheit) {
 }
 
 test('einheiten AC-17: Rechtsklick auf ein eigenes Schaf - er schlachtet es und nimmt 0,33 Nahrung je Sekunde', () => {
-  assert.deepEqual(TIERE.schaf, { nahrung: 100, rate: 0.33, verfall: 4 });
+  assert.deepEqual(TIERE.schaf, { nahrung: 100, rate: 0.33, verfall: 4, tempo: 0.7, sicht: 4 });
   const { welt, dorfbewohner: [hirte], schafe: [schaf] } = aufbauen();
   // Der Klick trifft das Schaf nicht genau, sondern knapp daneben.
   welt.befehl('a', [hirte.id], { x: schaf.x + 0.4, y: schaf.y - 0.3 });
@@ -101,4 +101,53 @@ test('einheiten AC-17: fremde Schafe schlachtet niemand', () => {
   welt.befehl('a', [hirte.id], fremdes);
   assert.notEqual(hirte.auftrag?.art, 'tier');
   assert.equal(fremdes.geschlachtet, false);
+});
+
+// ---- Schafe waehlen und treiben (einheiten AC-22) ----------------------------------
+
+test('einheiten AC-22: ein eigenes Schaf laesst sich mit 0,7 Feldern je Sekunde an einen Ort treiben', () => {
+  const { welt, schafe: [schaf] } = aufbauen();
+  const ziel = { x: Math.round(schaf.x) + 3, y: Math.round(schaf.y) };
+  welt.befehl('a', [schaf.id], ziel);
+  assert.ok(schaf.weg.length > 0, 'es hat einen Weg');
+  welt.zustand();
+  welt.takten();
+  assert.ok(welt.zustand().tiere.some((t) => t.i === schaf.id), 'ein laufendes Schaf geht ueber die Leitung');
+  sekunden(welt, 10);
+  assert.deepEqual({ x: schaf.x, y: schaf.y }, ziel, 'drei Felder in zehn Sekunden sind geschafft');
+  assert.equal(schaf.geschlachtet, false, 'getrieben wird es nicht geschlachtet');
+  welt.zustand();
+  welt.takten();
+  assert.equal(welt.zustand().tiere, undefined, 'am Ziel steht es wieder still');
+});
+
+test('einheiten AC-22: fremde oder geschlachtete Schafe gehorchen nicht', () => {
+  const { welt, schafe: [, zweites], fremde: [fremdes] } = aufbauen();
+  welt.befehl('a', [fremdes.id], { x: fremdes.x + 3, y: fremdes.y });
+  assert.equal(fremdes.weg.length, 0);
+  zweites.geschlachtet = true;
+  welt.befehl('a', [zweites.id], { x: zweites.x + 3, y: zweites.y });
+  assert.equal(zweites.weg.length, 0);
+});
+
+test('einheiten AC-22: ein fremdes Schaf, das nur eigene Einheiten sehen, wechselt den Besitzer', () => {
+  const { welt, dorfbewohner: [spaeher], fremde: [fremdes] } = aufbauen();
+  // Berts Einheiten fort von seinem Schaf, Annas Dorfbewohner daneben.
+  for (const e of welt.einheiten.values()) {
+    if (e.besitzer === 'b' && Math.hypot(e.x - fremdes.x, e.y - fremdes.y) <= 6) { e.x += 30; e.y += 30; }
+  }
+  spaeher.x = fremdes.x + 2;
+  spaeher.y = fremdes.y;
+  sekunden(welt, 1.1);
+  assert.equal(fremdes.besitzer, 'a', 'Anna hat es jetzt');
+
+  // Stehen Einheiten beider daneben, bleibt es, wem es gehoert.
+  const { welt: zweite, dorfbewohner: [anna], fremde: [bertsSchaf] } = aufbauen();
+  anna.x = bertsSchaf.x + 2;
+  anna.y = bertsSchaf.y;
+  const bert = [...zweite.einheiten.values()].find((e) => e.besitzer === 'b');
+  bert.x = bertsSchaf.x - 2;
+  bert.y = bertsSchaf.y;
+  sekunden(zweite, 1.1);
+  assert.equal(bertsSchaf.besitzer, 'b');
 });

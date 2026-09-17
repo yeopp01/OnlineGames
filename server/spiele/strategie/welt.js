@@ -66,6 +66,7 @@ class Welt {
         nahrung: TIERE.schaf.nahrung,
         geschlachtet: false,
         verfall: 0, // Takte ohne Arbeit seit der letzten verfallenen Nahrung
+        weg: [],
       });
     }
 
@@ -485,6 +486,13 @@ class Welt {
     const schaf = sammeln ? null : this.tierAn(spielerId, Number(ziel.x), Number(ziel.y));
 
     for (const id of einheitIds.slice(0, 200)) {
+      // Ein eigenes, lebendes Schaf wird getrieben (einheiten AC-22).
+      const tier = this.tiere.get(id);
+      if (tier) {
+        if (tier.besitzer !== spielerId || tier.geschlachtet) continue;
+        tier.weg = suchen(this.karte, { x: Math.round(tier.x), y: Math.round(tier.y) }, { x: zx, y: zy });
+        continue;
+      }
       const einheit = this.einheiten.get(id);
       if (!einheit || einheit.besitzer !== spielerId) continue;
       this.farmVerlassen(einheit);
@@ -675,6 +683,27 @@ class Welt {
 
   // Ein Kadaver, an dem niemand arbeitet, verliert je 4 Sekunden eine Nahrung.
   tiereTakten() {
+    // Getriebene Schafe laufen; eine Aenderung geht nur, wenn sie sich bewegen.
+    for (const tier of this.tiere.values()) {
+      if (!tier.weg.length || tier.geschlachtet) continue;
+      const tempo = TIERE[tier.art].tempo / TAKTE_PRO_SEKUNDE;
+      const ziel = tier.weg[0];
+      const dx = ziel.x - tier.x;
+      const dy = ziel.y - tier.y;
+      const abstand = Math.hypot(dx, dy);
+      if (abstand <= tempo) {
+        tier.x = ziel.x;
+        tier.y = ziel.y;
+        tier.weg.shift();
+      } else {
+        tier.x = Math.round((tier.x + (dx / abstand) * tempo) * 100) / 100;
+        tier.y = Math.round((tier.y + (dy / abstand) * tempo) * 100) / 100;
+      }
+      this.tierAenderungen.push(tier.id);
+    }
+    // Einmal je Sekunde: fremde Schafe in Sichtweite wechseln den Besitzer,
+    // wenn nur einer sie sieht und der alte Besitzer keine Einheit dort hat.
+    if (this.takt % TAKTE_PRO_SEKUNDE === 0) this.schafeUebernehmen();
     const bearbeitet = new Set();
     for (const einheit of this.einheiten.values()) {
       if (einheit.sammelt && einheit.auftrag?.art === 'tier') bearbeitet.add(einheit.auftrag.tier);
@@ -685,6 +714,22 @@ class Welt {
       if (tier.verfall < TIERE[tier.art].verfall * TAKTE_PRO_SEKUNDE) continue;
       tier.verfall = 0;
       this.tierNahrungNehmen(tier);
+    }
+  }
+
+  schafeUebernehmen() {
+    for (const tier of this.tiere.values()) {
+      if (tier.geschlachtet) continue;
+      const sicht = TIERE[tier.art].sicht;
+      const nahe = new Set();
+      for (const einheit of this.einheiten.values()) {
+        if (Math.abs(einheit.x - tier.x) > sicht || Math.abs(einheit.y - tier.y) > sicht) continue;
+        if (Math.hypot(einheit.x - tier.x, einheit.y - tier.y) <= sicht) nahe.add(einheit.besitzer);
+      }
+      if (nahe.size !== 1 || nahe.has(tier.besitzer)) continue;
+      tier.besitzer = [...nahe][0];
+      tier.weg = [];
+      this.tierAenderungen.push(tier.id);
     }
   }
 

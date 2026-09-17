@@ -1,0 +1,10 @@
+{
+  "spec": "10-strategie/einheiten-und-befehle.md",
+  "ac": "AC-22",
+  "titel": "Ein Schaf mit dem Rahmen gewaehlt - weisse Ellipse, unten Schaf mit 100 Nahrung -, per Rechtsklick losgeschickt",
+  "datei": "e2e/tests/strategie-tiere.spec.mjs",
+  "pfad": [
+    "Schafe",
+    "einheiten AC-22: ein Rahmen waehlt ein eigenes Schaf, ein Rechtsklick treibt es"
+  ]
+}

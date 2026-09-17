@@ -107,7 +107,16 @@ export class Ansicht {
     }
     for (const tier of nachricht.tiere || []) {
       if (tier.weg) this.tiere.delete(tier.i);
-      else this.tiere.set(tier.i, tier);
+      else {
+        const alt = this.tiere.get(tier.i);
+        // Die vorige Lage, damit ein getriebenes Schaf weich laeuft.
+        if (alt) {
+          tier.vx = alt.x;
+          tier.vy = alt.y;
+          tier.seit = performance.now();
+        }
+        this.tiere.set(tier.i, tier);
+      }
     }
     for (const gebaeude of nachricht.gebaeude || []) {
       if (gebaeude.weg) this.gebaeude.delete(gebaeude.i);
@@ -125,7 +134,9 @@ export class Ansicht {
 
     // Eingesammelte Einheiten, die es nicht mehr gibt, fallen aus der Auswahl.
     for (const id of this.ausgewaehlt) {
-      if (!this.nachher.has(id)) this.ausgewaehlt.delete(id);
+      const tier = this.tiere.get(id);
+      // Ein Schaf bleibt gewaehlt, solange es lebt und uns gehoert.
+      if (tier ? (tier.g || tier.b !== this.ich) : !this.nachher.has(id)) this.ausgewaehlt.delete(id);
     }
     if (this.gewaehltesGebaeude && !this.gebaeude.has(this.gewaehltesGebaeude)) this.gewaehltesGebaeude = null;
   }
@@ -260,6 +271,16 @@ export class Ansicht {
           bestes = einheit;
         }
       }
+      // Eigene lebende Schafe lassen sich auch waehlen (einheiten AC-22).
+      for (const tier of this.tiere.values()) {
+        if (tier.b !== this.ich || tier.g) continue;
+        const p = this.zuBild(tier.x, tier.y);
+        const abstand = Math.hypot(p.x - rahmen.vonX, p.y - figur * 0.3 - rahmen.vonY);
+        if (abstand < besterAbstand) {
+          besterAbstand = abstand;
+          bestes = tier;
+        }
+      }
       if (bestes) {
         this.ausgewaehlt.add(bestes.i);
         return;
@@ -286,6 +307,14 @@ export class Ansicht {
       const p = this.zuBild(einheit.x, einheit.y);
       const mitte = p.y - figur * KOERPER_MITTE * 0.5;
       if (p.x >= links && p.x <= rechts && mitte >= oben && mitte <= unten) this.ausgewaehlt.add(einheit.i);
+    }
+    // Schafe nur, wenn der Rahmen keine Einheit trifft - wer Dorfbewohner
+    // zusammenfasst, will die Schafe daneben nicht mitschicken.
+    if (this.ausgewaehlt.size) return;
+    for (const tier of this.tiere.values()) {
+      if (tier.b !== this.ich || tier.g) continue;
+      const p = this.zuBild(tier.x, tier.y);
+      if (p.x >= links && p.x <= rechts && p.y >= oben && p.y <= unten + figur * 0.3) this.ausgewaehlt.add(tier.i);
     }
   }
 
@@ -498,7 +527,12 @@ export class Ansicht {
       const mitte = this.gebaeudeMitte(gebaeude);
       stehend.push({ tiefe: mitte.x + mitte.y, x: mitte.x, y: mitte.y, art: 'gebaeude', gebaeude });
     }
-    for (const tier of this.tiere.values()) stehend.push({ tiefe: tier.x + tier.y, x: tier.x, y: tier.y, art: 'tier', tier });
+    for (const tier of this.tiere.values()) {
+      const t = tier.seit === undefined ? 1 : Math.min(1, (jetzt - tier.seit) / this.taktdauer);
+      const x = tier.vx === undefined ? tier.x : tier.vx + (tier.x - tier.vx) * t;
+      const y = tier.vy === undefined ? tier.y : tier.vy + (tier.y - tier.vy) * t;
+      stehend.push({ tiefe: x + y, x, y, art: 'tier', tier });
+    }
     const anteil = this.anteil(jetzt);
     for (const einheit of this.nachher.values()) {
       const alt = this.vorher.get(einheit.i);
@@ -521,11 +555,21 @@ export class Ansicht {
         this.gebaeudeBild(ding.gebaeude, p, e);
       } else if (ding.art === 'tier') {
         const spieler = this.spieler.get(ding.tier.b);
+        if (this.ausgewaehlt.has(ding.tier.i)) {
+          const r = Math.max(9, HALB_B * 0.9 * zoom);
+          stift.strokeStyle = '#ffffff';
+          stift.lineWidth = 2;
+          stift.beginPath();
+          stift.ellipse(p.x, p.y, r * 0.55, r * 0.26, 0, 0, Math.PI * 2);
+          stift.stroke();
+        }
+        const laeuft = ding.tier.vx !== undefined && (ding.tier.vx !== ding.tier.x || ding.tier.vy !== ding.tier.y);
         figurZeichnen(stift, ding.tier.art, p.x, p.y, Math.max(9, HALB_B * 0.9 * zoom), spieler ? spieler.farbe : '#888888', {
           blick: ding.tier.i % 2 ? 1 : -1,
           // Geschlachtet: ein Kadaver, der mit der Nahrung kleiner wird (einheiten AC-17).
           liegt: Boolean(ding.tier.g),
           rest: (ding.tier.n ?? 100) / 100,
+          schritt: laeuft ? jetztPhase(ding.tier.i) : 0,
         });
       } else {
         this.einheitZeichnen(ding.einheit, ding.alt, p);

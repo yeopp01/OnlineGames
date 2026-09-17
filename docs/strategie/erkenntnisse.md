@@ -248,6 +248,17 @@ ruhigerer Maschine 141 s Testzeit, langsamster Fall weiter der Lagertest (28 s).
 Neueste oben. Eine Zeile je Runde: Nummer, Datum, Kriterien, Ergebnis,
 wichtigste Erkenntnis.
 
+- **33** · 2026-09-17 · einheiten AC-22 fertig (auf Frage des Benutzers):
+  eigene Schafe per Klick oder Rahmen wählen, per Rechtsklick treiben
+  (0,7 Felder/s, weich gezeichnet mit Schritten); fremde Schafe, die nur
+  Einheiten eines anderen Spielers sehen, wechseln einmal je Sekunde den
+  Besitzer. Gelernt: (1) Der alte Rahmen-Test (bedienung AC-1) fand, dass ein
+  Rahmen um die Dorfbewohner die Schafe daneben mitnahm — jetzt Einheiten
+  zuerst, Schafe nur allein, wie in der Vorlage. (2) Ein Schaf auf ein
+  Baumfeld zu schicken tut nichts; der Test sucht ein Grasfeld. (3) Das
+  Standbild zeigt nicht, dass etwas läuft — Unterschrift ehrlich gemacht.
+  Offen aus A7: Webstuhl (bauen AC-21), Sammelpunkt (bauen AC-13),
+  darstellung AC-8.
 - **32** · 2026-09-17 · bauen AC-9 und AC-20 fertig: Kaserne (3 × 3, 175 Holz,
   50 s) mit Steinmauern, Holzobergeschoss, Zinnen, Banner in Spielerfarbe und
   Waffenständer; sie bildet Miliz für 60 Nahrung und 20 Gold in 21 s aus. Die

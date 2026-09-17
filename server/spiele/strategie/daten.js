@@ -30,7 +30,9 @@ const SAMMELN = {
 // Tiere (einheiten AC-17): Nahrung am Kadaver, Rate beim Hueten je Sekunde, und
 // wie viele Sekunden ein unbearbeiteter Kadaver fuer eine Nahrung braucht.
 const TIERE = {
-  schaf: { nahrung: 100, rate: 0.33, verfall: 4 },
+  // tempo in Feldern je Sekunde; sicht: so nah muss eine Einheit sein, damit ein
+  // fremdes Schaf den Besitzer wechselt (einheiten AC-22).
+  schaf: { nahrung: 100, rate: 0.33, verfall: 4, tempo: 0.7, sicht: 4 },
 };
 
 // Gebaeude der Dunklen Zeit (bauen AC-20): Groesse in Feldern (quadratisch),
