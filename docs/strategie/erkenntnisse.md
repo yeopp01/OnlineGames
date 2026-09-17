@@ -119,6 +119,7 @@ Zahlen, gegen die spätere Runden vergleichen. Mit Datum und Commit.
 | 2026-09-17 | Tests ohne Browser / im Browser | 318 / 113 | Runde 45 |
 | 2026-09-17 | Tests ohne Browser / im Browser | 320 / 121 | Runde 50 |
 | 2026-09-17 | Takt mit 8 x 100 Einheiten, groesste Karte, Mittel (CPU 43 %) | vorher 58 ms, nachher 0,5 ms | Runde 51 |
+| 2026-09-17 | Bilder je Sekunde mit 100 Einheiten + 30 Haeusern, Zoom 1 (CPU 21 %); sicht --messen Zoom 1 / 2 | vorher 24, nachher 60; vorher 20,4 / 40,2 ms, nachher 9,4 / 25,2 ms | Runde 52 |
 | 2026-09-17 | Pruefstand, Grund-KI: 20 Partien x 10 Spielminuten, 2 Spieler — Dauer je Partie / Dorfbewohner nach 10 min | 30–90 ms / 15–16 | Runde 43 |
 | 2026-09-17 | Pruefstand, Wirtschafts-KI: 20 Startwerte x 2 Spieler nach 10 min — Dorfbewohner / Nahrung min / laengste Untaetigkeit / Warten auf Wohnraum max; 20 Partien gesamt | 22 / 520 / 0,6 s / 3,5 s; 1,4 s | Runde 44 |
 | 2026-09-17 | Zeichnen je Bild nach A6c (Boden in Kacheln, Wasser im Boden), Zoom 1 / 2 — Last nicht geprüft | 20,4 / 40,2 ms | Runde 39 |
@@ -368,6 +369,21 @@ alle sieben Gebäude der Dunklen Zeit stehen. Was sich wiederholt hat:
 Neueste oben. Eine Zeile je Runde: Nummer, Datum, Kriterien, Ergebnis,
 wichtigste Erkenntnis.
 
+- **52** · 2026-09-17 · darstellung AC-10 **fertig** — Schritt A9
+  abgeschlossen. Gemessen mit 100 Einheiten und 30 Häusern bei Zoom 1
+  (Prüfgriffe `gebaeude` und neu `einheiten`): erst **24 Bilder je
+  Sekunde**, `zeichnen` 12 ms. Leere Szene 60. Versuche mit Ausschalten:
+  ohne Figuren 47, ohne Gebäude 27 — die Figuren kosteten es. (1) Figuren
+  jetzt wie Gebäude und Vorräte in einem Zwischenspeicher
+  (`figurBildZeichnen`), der Schritt in acht Stufen: `zeichnen` 1,4 ms, aber
+  erst 38 Bilder — die Arbeit lag jetzt beim Darstellen. (2) Alle
+  Zwischenbilder wurden mit krummen Koordinaten und leicht anderer Größe
+  kopiert, der Browser glättete jedes Mal; auf ganze Bildpunkte und
+  Originalgröße: **60 Bilder je Sekunde** (52, solange Berts Seite im selben
+  Browser mitzeichnet — der Test lässt Bert die Seite verlassen, im Spiel
+  sitzt er an einem anderen Rechner). Gelernt: die JavaScript-Zeit von
+  `zeichnen` sagt wenig über die Bildrate; Canvas-Befehle werden beim
+  Darstellen gerastert — nur Bilder je Sekunde zählen zeigt das.
 - **51** · 2026-09-17 · fahrplan AC-6 **fertig** — und ein großer Fehler
   gefunden. Erst gemessen (8 Spieler × 100 Dorfbewohner bei Arbeit auf der
   größten Karte): **58 ms je Takt**, Spitzen über 150 ms — länger als ein Takt

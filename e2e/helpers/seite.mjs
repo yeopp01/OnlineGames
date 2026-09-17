@@ -131,6 +131,15 @@ export async function gebaeudeAufstellen(page, code, name, art, x, y) {
   return (await antwort.json()).id;
 }
 
+/** Viele Einheiten fuer einen Spieler aufstellen (Pruefgriff, e2e/server.mjs). */
+export async function einheitenAufstellen(page, code, name, anzahl, werte = {}) {
+  const antwort = await page.request.post(`http://localhost:${GRIFFHAFEN}/griff`, {
+    data: { id: code, befehl: 'einheiten', werte: { name, anzahl, ...werte } },
+  });
+  expect(antwort.ok(), await antwort.text()).toBe(true);
+  return (await antwort.json()).angelegt;
+}
+
 /** Das Leben einer Einheit oder eines Gebaeudes setzen (Pruefgriff, e2e/server.mjs). */
 export async function lebenSetzen(page, code, id, leben) {
   const antwort = await page.request.post(`http://localhost:${GRIFFHAFEN}/griff`, {

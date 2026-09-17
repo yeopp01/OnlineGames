@@ -1,0 +1,10 @@
+{
+  "spec": "10-strategie/darstellung.md",
+  "ac": "AC-10",
+  "titel": "Zoom 1 mit 100 Einheiten und 30 Gebaeuden im Bild - gemessen mindestens 50 Bilder je Sekunde",
+  "datei": "e2e/tests/strategie-tempo.spec.mjs",
+  "pfad": [
+    "Tempo im Browser",
+    "darstellung AC-10: mit 100 Einheiten und 30 Gebaeuden im Bild mindestens 50 Bilder je Sekunde"
+  ]
+}

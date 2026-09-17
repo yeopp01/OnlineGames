@@ -968,7 +968,10 @@ export function gebaeudeBildZeichnen(stift, art, x, y, e, farbe, groesse, bau = 
     ZWISCHENSPEICHER.delete(schluessel);
     ZWISCHENSPEICHER.set(schluessel, bild);
   }
-  stift.drawImage(bild, x - breite / 2, y - oben, breite, oben + unten);
+  // Auf ganze Bildpunkte und in Originalgroesse: sonst glaettet der Browser bei
+  // jedem Kopieren, und das kostete mit 100 Figuren und 30 Gebaeuden ein
+  // Drittel der Bilder je Sekunde (darstellung AC-10, Runde 52).
+  stift.drawImage(bild, Math.round((x - breite / 2) * dichte) / dichte, Math.round((y - oben) * dichte) / dichte, bild.width / dichte, bild.height / dichte);
 }
 
 // Eine Grundflaeche aus n Feldern ist im Bild n halbe Rautenbreiten halb breit;

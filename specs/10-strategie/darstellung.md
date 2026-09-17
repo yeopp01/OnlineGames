@@ -2,7 +2,7 @@
 
 **Bereich:** Strategie
 **Kuerzel:** darstellung
-**Stand:** 12/14 fertig · 2 offen
+**Stand:** 13/14 fertig · 1 offen
 
 ## Zweck
 
@@ -58,7 +58,7 @@ der Spieler. Keine Bilddateien aus fremder Quelle.
   aktuellen Stufe nebeneinander, in zwei Spielerfarben, mit Namen darunter.
   Sie ist der Bildnachweis zu [Fahrplan](fahrplan.md) AC-7 und wird mit jeder
   Stufe länger.
-- **AC-10** `offen` **Flüssig im Browser** — Mit 100 Einheiten und 30 Gebäuden im Bild zeichnet
+- **AC-10** `fertig` **Flüssig im Browser** — Mit 100 Einheiten und 30 Gebäuden im Bild zeichnet
   der Browser im Browserlauf mindestens 50 Bilder je Sekunde.
 - **AC-11** `offen` **Nur eigenes Material** — Kein Bild, kein Klang, keine Schrift aus dem
   Original; kein „Age of Empires" im Spiel. Geprüft: `public/` enthält keine

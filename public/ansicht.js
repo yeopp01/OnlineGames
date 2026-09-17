@@ -5,7 +5,7 @@
 // Raute, doppelt so breit wie hoch. Die Welt rechnet weiter in Feldern
 // (x nach rechts unten, y nach links unten); nur zuBild und zuWelt kennen die
 // Raute. Die Kamera liegt in Bildpunkten der Raute bei Vergroesserung 1.
-import { FIGUREN, figurZeichnen } from './figuren.js';
+import { FIGUREN, figurBildZeichnen } from './figuren.js';
 import { GEBAEUDE, gebaeudeBildZeichnen, gebaeudeGetroffen } from './gebaeude.js';
 import { KACHEL, kachelMassstab, kachelZeichnen } from './boden.js';
 import {
@@ -639,7 +639,7 @@ export class Ansicht {
           stift.stroke();
         }
         const laeuft = ding.tier.vx !== undefined && (ding.tier.vx !== ding.tier.x || ding.tier.vy !== ding.tier.y);
-        figurZeichnen(stift, ding.tier.art, p.x, p.y, Math.max(9, HALB_B * 0.9 * zoom), spieler ? spieler.farbe : '#888888', {
+        figurBildZeichnen(stift, ding.tier.art, p.x, p.y, Math.max(9, HALB_B * 0.9 * zoom), spieler ? spieler.farbe : '#888888', {
           blick: ding.tier.i % 2 ? 1 : -1,
           // Geschlachtet: ein Kadaver, der mit der Nahrung kleiner wird (einheiten AC-17).
           liegt: Boolean(ding.tier.g),
@@ -820,7 +820,7 @@ export class Ansicht {
 
     // Ein Dorfbewohner mit Ladung traegt sie sichtbar: Holzbuendel oder
     // Beerenkorb auf dem Ruecken (bedienung AC-16, darstellung AC-6).
-    figurZeichnen(stift, this.arten[einheit.k] || 'dorfbewohner', punkt.x, punkt.y, hoehe, spieler ? spieler.farbe : '#888888', {
+    figurBildZeichnen(stift, this.arten[einheit.k] || 'dorfbewohner', punkt.x, punkt.y, hoehe, spieler ? spieler.farbe : '#888888', {
       blick: this.blicke.get(einheit.i) || 1,
       ladung: einheit.l > 0 ? einheit.a : null,
       schritt: laeuft ? jetztPhase(einheit.i) : 0,

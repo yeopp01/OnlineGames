@@ -89,6 +89,31 @@ const griffe = http.createServer(async (anfrage, antwortGriff) => {
       antwortGriff.writeHead(200, { 'Content-Type': 'application/json', Connection: 'close' }).end(JSON.stringify({ ok: true, id: gebaeude.id }));
       return;
     }
+    // Viele Einheiten fuer einen Spieler, ringweise um einen Punkt auf freiem
+    // Gras - fuer Messungen mit vollem Bild (darstellung AC-10).
+    if (befehl === 'einheiten') {
+      const welt = laufend.raeume.finden(id)?.welt;
+      const spieler = welt?.spieler.find((s) => s.name === werte.name);
+      if (!spieler) throw new Error(`Spieler ${werte.name} gibt es in Raum ${id} nicht.`);
+      const um = { x: werte.x ?? spieler.basis.x, y: werte.y ?? spieler.basis.y };
+      const belegt = new Set([...welt.einheiten.values()].map((e) => `${Math.round(e.x)},${Math.round(e.y)}`));
+      let angelegt = 0;
+      for (let r = 1; angelegt < werte.anzahl && r < 40; r++) {
+        for (let dy = -r; dy <= r && angelegt < werte.anzahl; dy++) {
+          for (let dx = -r; dx <= r && angelegt < werte.anzahl; dx++) {
+            if (Math.max(Math.abs(dx), Math.abs(dy)) !== r) continue;
+            const x = um.x + dx;
+            const y = um.y + dy;
+            if (belegt.has(`${x},${y}`) || welt.karte.felder[y * welt.karte.groesse + x] !== 0 || welt.gebaeudeAn(x, y)) continue;
+            welt.einheitAnlegen(spieler.id, x, y, werte.art || 'dorfbewohner');
+            belegt.add(`${x},${y}`);
+            angelegt += 1;
+          }
+        }
+      }
+      antwortGriff.writeHead(200, { 'Content-Type': 'application/json', Connection: 'close' }).end(JSON.stringify({ ok: true, angelegt }));
+      return;
+    }
     // Leben einer Einheit oder eines Gebaeudes setzen, fuer beschaedigte
     // Zustaende, solange es keinen Kampf gibt (darstellung AC-8).
     if (befehl === 'leben') {

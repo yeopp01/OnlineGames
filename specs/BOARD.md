@@ -7,9 +7,9 @@ Eine Zeile je Abnahmekriterium. Gepflegt wird der Status in der Spec selbst,
 hier steht er zusammengefasst. Erzeugt mit `npm run specs:board`; als Seite
 mit Bildnachweisen, Filter und Suche mit `npm run qa:report`.
 
-**Gesamt:** 349/490 fertig · 5 in QA · 4 geplant · 125 offen · 7 zurueckgestellt
+**Gesamt:** 350/490 fertig · 5 in QA · 4 geplant · 124 offen · 7 zurueckgestellt
 
-**Nachweise:** 131 Kriterien mit Bild · 222 ohne Bild, begruendet in `qa/ohne-bild.json`
+**Nachweise:** 132 Kriterien mit Bild · 222 ohne Bild, begruendet in `qa/ohne-bild.json`
 
 ## Nach Spezifikation
 
@@ -23,7 +23,7 @@ mit Bildnachweisen, Filter und Suche mit `npm run qa:report`.
 | [Uebertragung](00-plattform/uebertragung.md)                   | -         | -     | 2       | 1     | -               | 7      |
 | [Bauen und Ausbilden](10-strategie/bauen.md)                   | -         | -     | -       | 4     | -               | 18     |
 | [Bedienung](10-strategie/bedienung.md)                         | -         | -     | -       | 11    | -               | 18     |
-| [Darstellung](10-strategie/darstellung.md)                     | -         | -     | -       | 2     | -               | 12     |
+| [Darstellung](10-strategie/darstellung.md)                     | -         | -     | -       | 1     | -               | 13     |
 | [Einheiten und Befehle](10-strategie/einheiten-und-befehle.md) | -         | -     | -       | 1     | 1               | 16     |
 | [Fahrplan zum Klon](10-strategie/fahrplan.md)                  | -         | -     | -       | 16    | -               | 6      |
 | [Kampf](10-strategie/kampf.md)                                 | -         | -     | -       | 14    | -               | -      |
@@ -60,7 +60,7 @@ mit Bildnachweisen, Filter und Suche mit `npm run qa:report`.
 - **Abbruch ist sichtbar** — [Uebertragung](00-plattform/uebertragung.md) AC-9
 - **Automatischer Wiederaufbau** — [Uebertragung](00-plattform/uebertragung.md) AC-10
 
-## Offen (125)
+## Offen (124)
 
 - **Anmeldung ueber Google/GitHub** — [Konten und Anmeldung](00-plattform/konten.md) AC-6
 - **Bilanz je Konto** — [Konten und Anmeldung](00-plattform/konten.md) AC-14
@@ -119,7 +119,6 @@ mit Bildnachweisen, Filter und Suche mit `npm run qa:report`.
 - **Spielstand aller Spieler einsehbar** — [Bedienung](10-strategie/bedienung.md) AC-20
 - **Die erste Partie erklärt sich** — [Bedienung](10-strategie/bedienung.md) AC-21
 - **Läuft auf einem Laptop-Bildschirm** — [Bedienung](10-strategie/bedienung.md) AC-23
-- **Flüssig im Browser** — [Darstellung](10-strategie/darstellung.md) AC-10
 - **Nur eigenes Material** — [Darstellung](10-strategie/darstellung.md) AC-11
 - **Einheiten blockieren sich nicht** — [Einheiten und Befehle](10-strategie/einheiten-und-befehle.md) AC-10
 - **Dunkle Zeit spielbar** — [Fahrplan zum Klon](10-strategie/fahrplan.md) AC-3

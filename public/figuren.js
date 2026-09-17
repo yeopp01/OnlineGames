@@ -544,3 +544,44 @@ export function figurZeichnen(stift, art, x, y, hoehe, farbe, lage = {}) {
   figur.zeichnen(stift, farbe, { ...lage, fein: hoehe >= 20 });
   stift.restore();
 }
+
+// Gezeichnet kostet eine Figur viele Verlaeufe; 100 davon drueckten das
+// Spielbild auf 24 Bilder je Sekunde (darstellung AC-10, Runde 52). Im Spielbild
+// wird deshalb jede Gestalt einmal in ein kleines Bild gezeichnet und danach
+// kopiert - wie Gebaeude und Vorraete. Der Schritt geht dafuer in acht Stufen.
+const SCHRITT_STUFEN = 8;
+const ZWISCHENSPEICHER = new Map();
+const SPEICHER_MAX = 400;
+
+export function figurBildZeichnen(stift, art, x, y, hoehe, farbe, lage = {}) {
+  if (typeof document === 'undefined') {
+    figurZeichnen(stift, art, x, y, hoehe, farbe, lage);
+    return;
+  }
+  const figur = FIGUREN[art] || FIGUREN.dorfbewohner;
+  const dichte = window.devicePixelRatio || 1;
+  const h = Math.round(hoehe * 2) / 2;
+  const stufe = lage.schritt ? Math.round(((lage.schritt % (Math.PI * 2)) + Math.PI * 2) % (Math.PI * 2) / (Math.PI * 2) * SCHRITT_STUFEN) % SCHRITT_STUFEN : -1;
+  const schritt = stufe < 0 ? 0 : ((stufe || SCHRITT_STUFEN) / SCHRITT_STUFEN) * Math.PI * 2;
+  const rest = lage.rest === undefined ? 1 : Math.round(lage.rest * 10) / 10;
+  const schluessel = `${art}|${farbe}|${h}|${lage.blick === -1 ? -1 : 1}|${lage.ladung || ''}|${stufe}|${lage.liegt ? 1 : 0}|${rest}|${dichte}`;
+  // Platz fuer Reiter, Ladung auf dem Ruecken und Schatten.
+  const breite = h * 2.2 * (figur.breite || 1);
+  const oben = h * 1.3;
+  const unten = h * 0.35;
+  let bild = ZWISCHENSPEICHER.get(schluessel);
+  if (!bild) {
+    bild = document.createElement('canvas');
+    bild.width = Math.ceil(breite * dichte);
+    bild.height = Math.ceil((oben + unten) * dichte);
+    const s = bild.getContext('2d');
+    s.scale(dichte, dichte);
+    figurZeichnen(s, art, breite / 2, oben, h, farbe, { ...lage, schritt, rest });
+    ZWISCHENSPEICHER.set(schluessel, bild);
+    if (ZWISCHENSPEICHER.size > SPEICHER_MAX) ZWISCHENSPEICHER.delete(ZWISCHENSPEICHER.keys().next().value);
+  }
+  // Auf ganze Bildpunkte und in Originalgroesse: sonst glaettet der Browser bei
+  // jedem Kopieren, und das kostete mit 100 Figuren und 30 Gebaeuden ein
+  // Drittel der Bilder je Sekunde (darstellung AC-10, Runde 52).
+  stift.drawImage(bild, Math.round((x - breite / 2) * dichte) / dichte, Math.round((y - oben) * dichte) / dichte, bild.width / dichte, bild.height / dichte);
+}
