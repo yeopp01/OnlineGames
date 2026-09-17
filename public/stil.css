@@ -336,14 +336,17 @@ canvas {
 
 .auswahlleiste {
   position: fixed;
-  left: 50%;
+  /* Mittig zwischen dem Knopf fuer Untaetige links und der Uebersichtskarte
+     rechts - vorher lag der letzte Bauknopf unter der Karte (Runde 48). */
+  left: 6rem;
+  right: calc(240px + 2rem);
+  width: fit-content;
+  margin-inline: auto;
   bottom: 1rem;
-  transform: translateX(-50%);
   display: flex;
   align-items: center;
   gap: 1rem;
   min-width: 26rem;
-  max-width: calc(100vw - 2rem);
   padding: 0.7rem 1.1rem;
   border: 1px solid #ffffff24;
   border-radius: 0.8rem;
@@ -465,6 +468,66 @@ canvas {
 .baumenue button.aktiv {
   border-color: #5fe07a;
   box-shadow: 0 0 0 2px #5fe07a55;
+}
+
+/* Die Taste nach B (bedienung AC-27): leise in der Ecke, hell, sobald B gedrueckt ist. */
+.baumenue button {
+  position: relative;
+}
+.baumenue .taste {
+  position: absolute;
+  top: 2px;
+  right: 3px;
+  padding: 0 0.25rem;
+  border: 1px solid #ffffff30;
+  border-radius: 0.25rem;
+  font: 600 0.62rem system-ui, sans-serif;
+  color: #ffffff80;
+}
+.baumenue.tasten .taste {
+  border-color: #f0b35a;
+  background: #f0b35a;
+  color: #1a1206;
+}
+
+/* Tastenuebersicht (bedienung AC-22): mitten im Bild, ein Klick schliesst. */
+.tastenuebersicht {
+  position: fixed;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  min-width: 26rem;
+  max-width: calc(100vw - 2rem);
+  padding: 1.2rem 1.5rem;
+  border: 1px solid #ffffff30;
+  border-radius: 0.9rem;
+  background: #12161ef5;
+  color: #e6e9ee;
+  box-shadow: 0 10px 40px #000b;
+  z-index: 20;
+}
+.tastenuebersicht h2 {
+  margin: 0 0 0.7rem;
+  font-size: 1.15rem;
+}
+.tastenuebersicht dl {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 0.35rem 1.2rem;
+  margin: 0;
+}
+.tastenuebersicht dt {
+  font-weight: 700;
+  color: #ffd79a;
+  white-space: nowrap;
+}
+.tastenuebersicht dd {
+  margin: 0;
+}
+.tastenuebersicht .leise {
+  margin: 0.8rem 0 0;
+  color: #9aa3ad;
+  font-size: 0.85rem;
 }
 
 .bauname {

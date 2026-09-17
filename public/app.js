@@ -1,6 +1,7 @@
 import { Ansicht } from './ansicht.js';
 import { Auswahlleiste } from './auswahlleiste.js';
 import { Uebersicht } from './uebersicht.js';
+import { Tasten } from './tasten.js';
 
 const teile = {
   vorraum: document.getElementById('vorraum'),
@@ -99,6 +100,8 @@ function empfangen(nachricht) {
         ansicht.beiFeldern = () => uebersicht.feldGeaendert();
         // Fuer den Browserlauf, wie window.ansicht: lesen, nicht schreiben.
         window.uebersicht = uebersicht;
+        const tasten = new Tasten(ansicht, teile.auswahlleiste, document.getElementById('tastenuebersicht'));
+        ansicht.beiTaste = (e) => tasten.taste(e);
         ansicht.melden = spielMelden;
         ansicht.sammelpunktSenden = (gebaeude, ziel) =>
           senden({ typ: 'befehl', auftrag: 'sammelpunkt', gebaeude, ziel });

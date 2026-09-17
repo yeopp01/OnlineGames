@@ -1,0 +1,10 @@
+{
+  "spec": "10-strategie/bedienung.md",
+  "ac": "AC-27",
+  "titel": "Ein Dorfbewohner gewaehlt, B gedrueckt: im Baumenue leuchten die Tasten Q W E R T Z auf den Gebaeuden",
+  "datei": "e2e/tests/strategie-tasten.spec.mjs",
+  "pfad": [
+    "Tasten",
+    "bedienung AC-27: H waehlt das Dorfzentrum, Q bildet aus, B und die obere Reihe waehlen ein Gebaeude"
+  ]
+}

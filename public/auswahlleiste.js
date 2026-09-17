@@ -9,6 +9,7 @@
 // - eine eigene Baustelle: Fortschritt und Abriss (bauen AC-6)
 // Rechnen tut hier nichts: die Leiste zeigt den Zustand und schickt Absichten.
 // Werte wie Leben und Kosten kommen vom Server mit dem Aufbau (ansicht.werte).
+import { BAUTASTEN } from './tasten.js';
 import { FIGUREN, WAREN, figurZeichnen } from './figuren.js';
 import { GEBAEUDE, gebaeudeZeichnen } from './gebaeude.js';
 
@@ -240,6 +241,7 @@ export class Auswahlleiste {
   baumenueBauen(bauplan, farbe) {
     const menue = element('div', 'baumenue');
     menue.id = 'baumenue';
+    if (this.ansicht.bautasten) menue.classList.add('tasten');
     for (const eintrag of bauplan) {
       const knopf = document.createElement('button');
       knopf.type = 'button';
@@ -255,6 +257,9 @@ export class Auswahlleiste {
       const preis = element('span', 'preis');
       for (const [r, m] of Object.entries(eintrag.kosten)) preis.append(element('span', `ware ware-${r[0]}`), element('span', null, String(m)));
       knopf.append(gebaeudeBildchen(eintrag.art, 52, farbe, eintrag.groesse), element('span', 'bauname', eintrag.name), preis);
+      // Die Taste nach B (bedienung AC-27), in der Reihenfolge des Menues.
+      const nummer = bauplan.indexOf(eintrag);
+      if (nummer < BAUTASTEN.length) knopf.append(element('kbd', 'taste', BAUTASTEN[nummer].toUpperCase()));
       knopf.addEventListener('click', () => {
         // Gesperrt sagt der Klick, warum (bedienung AC-18).
         if (fehlt) this.ansicht.melden(`Zu wenig ${fehlt}.`);

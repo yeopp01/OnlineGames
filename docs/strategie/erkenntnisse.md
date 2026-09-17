@@ -343,6 +343,18 @@ alle sieben Gebäude der Dunklen Zeit stehen. Was sich wiederholt hat:
 Neueste oben. Eine Zeile je Runde: Nummer, Datum, Kriterien, Ergebnis,
 wichtigste Erkenntnis.
 
+- **48** · 2026-09-17 · bedienung AC-27 und AC-22 **fertig**: Tastenkürzel
+  und Tastenübersicht (`public/tasten.js`). `H` wählt das eigene Dorfzentrum
+  und holt es ins Bild, dort bildet `Q` aus (über denselben Knopf wie die
+  Maus, also mit denselben Absagen); `B` schaltet bei gewählten Dorfbewohnern
+  die Bautasten ein, `Q W E R T Z` wählt das Gebäude in der Reihenfolge des
+  Menüs — erst nach `B`, damit `W A S D` sonst weiter schieben (Test: nach
+  `B` bewegt `W` die Kamera nicht). `?`/`F1` zeigt die Übersicht, gebaut aus
+  derselben Liste `BELEGUNG`, die der Test Zeile für Zeile prüft; erste Texte
+  mit echten Umlauten. Die Ansicht fragt Tasten zuerst über `beiTaste`.
+  Gelernt beim Ansehen: die Auswahlleiste ragte seit Runde 47 unter die
+  Übersichtskarte (Kasernenknopf halb verdeckt) — jetzt mittig im freien Raum
+  zwischen Untätig-Knopf und Karte; kein Test hatte das gesehen.
 - **47** · 2026-09-17 · bedienung AC-11 **fertig**: Übersichtskarte unten
   rechts (`public/uebersicht.js`), 240 × 120 als Raute wie das Spielbild.
   Gelände einmal in ein Bild, neu nur bei geänderten Feldern (Haken

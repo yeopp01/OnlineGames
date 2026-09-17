@@ -1,0 +1,10 @@
+{
+  "spec": "10-strategie/bedienung.md",
+  "ac": "AC-22",
+  "titel": "Nach ? mitten im Bild die Tastenuebersicht: Maus, W A S D, H, Q, B mit Q W E R T Z, Punkt, Esc, F1",
+  "datei": "e2e/tests/strategie-tasten.spec.mjs",
+  "pfad": [
+    "Tasten",
+    "bedienung AC-22: ? oder F1 zeigt die Tastenuebersicht mit jeder Belegung, noch einmal schliesst sie"
+  ]
+}

@@ -2,7 +2,7 @@
 
 **Bereich:** Strategie
 **Kuerzel:** bedienung
-**Stand:** 15/29 fertig · 14 offen
+**Stand:** 17/29 fertig · 12 offen
 
 ## Zweck
 
@@ -70,7 +70,7 @@ Befehl steht.
 
 - **AC-21** `offen` **Die erste Partie erklärt sich** — Beim ersten Start eine kurze Einblendung:
   ziehen, rechtsklicken, sammeln. Drei Sätze, wegklickbar.
-- **AC-22** `offen` **Tastenübersicht** — Auf `?` oder `F1`.
+- **AC-22** `fertig` **Tastenübersicht** — Auf `?` oder `F1`.
 - **AC-23** `offen` **Läuft auf einem Laptop-Bildschirm** — 1366 × 768 ohne Abschneiden. Die
   Bedienung auf dem Handy ist ausdrücklich **kein** Ziel — ein Strategiespiel
   mit Rahmenauswahl braucht eine Maus.
@@ -87,7 +87,7 @@ Befehl steht.
 - **AC-26** `fertig` **Gebäude zeigt Ausbildung** — Ein ausgewähltes eigenes Gebäude zeigt seine
   Einheiten und Verbesserungen mit Kosten und die Warteschlange mit
   Fortschrittsbalken; ein Klick auf einen Eintrag der Schlange bricht ihn ab.
-- **AC-27** `offen` **Tastenkürzel für Häufiges** — `H` wählt das Dorfzentrum, im
+- **AC-27** `fertig` **Tastenkürzel für Häufiges** — `H` wählt das Dorfzentrum, im
   Dorfzentrum bildet `Q` einen Dorfbewohner aus; mit ausgewähltem
   Dorfbewohner öffnet `B` das Baumenü und je ein Buchstabe wählt das Gebäude.
   Die Belegung steht in der Tastenübersicht (AC-22).

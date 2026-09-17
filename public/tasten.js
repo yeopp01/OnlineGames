@@ -1,0 +1,120 @@
+// Tastenkuerzel und Tastenuebersicht (→ specs/10-strategie/bedienung.md AC-27, AC-22).
+//
+// H waehlt das Dorfzentrum, dort bildet Q einen Dorfbewohner aus. Mit
+// ausgewaehlten Dorfbewohnern schaltet B die Bautasten ein, und die obere
+// Buchstabenreihe waehlt das Gebaeude in der Reihenfolge des Baumenues - erst
+// nach B, damit W A S D sonst weiter die Karte schieben. ? oder F1 zeigt die
+// Uebersicht; sie entsteht aus derselben Liste, die hier die Tasten belegt.
+
+// Die Reihe, in der die Gebaeude des Baumenues ihre Tasten bekommen.
+export const BAUTASTEN = ['q', 'w', 'e', 'r', 't', 'z'];
+
+// Texte auf dem Bildschirm mit echten Umlauten (Entscheidung vom 2026-09-17).
+export const BELEGUNG = [
+  ['Ziehen mit links', 'Einheiten im Rahmen wählen'],
+  ['Klick links', 'eine Einheit oder ein Gebäude wählen'],
+  ['Rechtsklick', 'hingehen, sammeln, bauen – oder Sammelpunkt setzen'],
+  ['W A S D, Pfeile', 'Karte schieben'],
+  ['Mausrad', 'näher, weiter'],
+  ['H', 'Dorfzentrum wählen'],
+  ['Q (Dorfzentrum gewählt)', 'Dorfbewohner ausbilden'],
+  ['B (Dorfbewohner gewählt)', 'Bautasten an, dann Q W E R T Z für das Gebäude'],
+  ['.', 'nächster untätiger Dorfbewohner'],
+  ['Esc', 'Platzieren abbrechen, Auswahl aufheben'],
+  ['? oder F1', 'diese Übersicht'],
+];
+
+export class Tasten {
+  /**
+   * @param {import('./ansicht.js').Ansicht} ansicht
+   * @param {HTMLElement} wurzel die Auswahlleiste
+   * @param {HTMLElement} uebersicht das Feld der Tastenuebersicht
+   */
+  constructor(ansicht, wurzel, uebersicht) {
+    this.ansicht = ansicht;
+    this.wurzel = wurzel;
+    this.uebersicht = uebersicht;
+    this.bauen = false; // B gedrueckt, die naechste Buchstabentaste waehlt ein Gebaeude
+    this.uebersichtFuellen();
+    uebersicht.addEventListener('click', () => this.uebersichtZeigen(false));
+  }
+
+  uebersichtFuellen() {
+    const liste = document.createElement('dl');
+    for (const [taste, wirkung] of BELEGUNG) {
+      const dt = document.createElement('dt');
+      dt.textContent = taste;
+      const dd = document.createElement('dd');
+      dd.textContent = wirkung;
+      liste.append(dt, dd);
+    }
+    const titel = document.createElement('h2');
+    titel.textContent = 'Tasten';
+    const hinweis = document.createElement('p');
+    hinweis.className = 'leise';
+    hinweis.textContent = 'Schließen: noch einmal ? oder F1, Esc oder ein Klick.';
+    this.uebersicht.replaceChildren(titel, liste, hinweis);
+  }
+
+  uebersichtZeigen(an = this.uebersicht.hidden) {
+    this.uebersicht.hidden = !an;
+  }
+
+  /** Eine Taste; `true` heisst: verbraucht, die Ansicht soll sie nicht sehen. */
+  taste(e) {
+    if (e.ctrlKey || e.metaKey || e.altKey) return false;
+    const taste = e.key.toLowerCase();
+    if (taste === '?' || e.key === 'F1') {
+      e.preventDefault();
+      this.uebersichtZeigen();
+      return true;
+    }
+    if (!this.uebersicht.hidden && e.key === 'Escape') {
+      this.uebersichtZeigen(false);
+      return true;
+    }
+    const a = this.ansicht;
+
+    if (this.bauen) {
+      const nummer = BAUTASTEN.indexOf(taste);
+      this.bauenSetzen(false);
+      if (nummer >= 0) {
+        const knoepfe = this.wurzel.querySelectorAll('#baumenue [data-bauen]');
+        knoepfe[nummer]?.click();
+        return true;
+      }
+      if (e.key === 'Escape') return true;
+    }
+
+    if (taste === 'h') {
+      const zentrum = [...a.gebaeude.values()].find((g) => g.b === a.ich && g.art === 'dorfzentrum' && g.u === undefined);
+      if (!zentrum) return true;
+      if (a.platzieren) a.platzierenBeenden();
+      a.ausgewaehlt.clear();
+      a.gewaehltesGebaeude = zentrum.i;
+      const mitte = a.gebaeudeMitte(zentrum);
+      a.blickAuf(mitte.x, mitte.y);
+      a.beiAuswahl();
+      return true;
+    }
+    if (taste === 'q' && a.gewaehltesGebaeude) {
+      const knopf = this.wurzel.querySelector('[data-ausbilden="dorfbewohner"]');
+      if (knopf) {
+        knopf.click();
+        return true;
+      }
+    }
+    if (taste === 'b' && this.wurzel.querySelector('#baumenue')) {
+      this.bauenSetzen(true);
+      return true;
+    }
+    return false;
+  }
+
+  bauenSetzen(an) {
+    this.bauen = an;
+    // Die Auswahlleiste baut ihr Menue oft neu - sie liest den Zustand hier.
+    this.ansicht.bautasten = an;
+    this.wurzel.querySelector('#baumenue')?.classList.toggle('tasten', an);
+  }
+}

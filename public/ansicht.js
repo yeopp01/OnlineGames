@@ -55,6 +55,7 @@ export class Ansicht {
     this.beiAuswahl = () => {};
     // Nach jedem Bild und bei geaenderten Feldern - fuer die Uebersichtskarte (bedienung AC-11).
     this.nachBild = () => {};
+    this.beiTaste = () => false;
     this.beiFeldern = () => {};
     // Die eigenen untaetigen Dorfbewohner, wie der Server sie meldet (einheiten AC-21).
     this.untaetige = [];
@@ -290,6 +291,8 @@ export class Ansicht {
     }, { passive: false });
 
     window.addEventListener('keydown', (e) => {
+      // Tastenkuerzel zuerst (bedienung AC-27): was sie verbrauchen, sieht die Ansicht nicht.
+      if (this.beiTaste(e)) return;
       // Esc hebt erst die Platzierung auf, dann die Auswahl (bedienung AC-15).
       if (e.key === 'Escape') {
         if (this.platzieren) this.platzierenBeenden();
