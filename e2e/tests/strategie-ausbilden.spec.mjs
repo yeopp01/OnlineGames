@@ -77,7 +77,10 @@ test.describe('Ausbilden', () => {
     // Der laufende Auftrag zeigt seinen Fortschritt: der Balken waechst.
     const breite = () => anna.locator('.laufend .fortschritt > span').evaluate((s) => parseFloat(s.style.width) || 0);
     // Fuer das Bild ein Stueck weit: bei ein paar Prozent sieht man den Balken kaum.
+    // Im Zeitraffer, sonst wartet der Test siebeneinhalb Sekunden (Rueckschau Runde 25).
+    await zeitraffer(anna, code, 4);
     await expect.poll(breite, { timeout: 20_000 }).toBeGreaterThanOrEqual(30);
+    await zeitraffer(anna, code, 1);
     await expect(anna.locator('#auswahlleiste')).toBeInViewport();
     await nachweis(anna, {
       spec: BEDIENUNG,

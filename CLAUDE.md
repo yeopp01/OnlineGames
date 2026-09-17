@@ -27,6 +27,7 @@ npm start            # http://localhost:4180/
 npm run dev          # dasselbe mit --watch
 npm run sicht -- schautafel.html  # eine Seite als Wegwerfbild ansehen, ohne Testlauf
 npm run sicht -- --spiel --zoom 2 --ziel wald  # dasselbe fuer eine laufende Partie
+npm run e2e:laufzeiten -- strategie   # Dauer des Browserlaufs je Datei, die langsamsten Faelle
 ```
 
 **Am Strategiespiel wird in Runden gearbeitet:** `/strategie-weiterbauen`

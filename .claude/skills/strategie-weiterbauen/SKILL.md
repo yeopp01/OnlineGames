@@ -89,11 +89,12 @@ Setze die gewählten Kriterien auf `in-arbeit`.
   der Commit auch, wenn `npm run check` rot ist (Runde 10 passiert). Am
   sichersten: Prüfung und Commit als zwei getrennte Aufrufe, der Commit erst
   nach gelesenem „fail 0".
-- **Werkzeug:** neue Dateien mit Write, Änderungen mit Edit. Keine langen
-  Inhalte als Heredoc in der Shell, und nie zwei Heredocs in einem Aufruf —
-  Anführungszeichen im Inhalt brechen das Kommando mittendrin ab (Runden 4
-  und 11). Viele Änderungen auf einmal: das Skript mit Write in den
-  Temp-Ordner legen und dann mit `python "$(cygpath -w …)"` ausführen.
+- **Werkzeug:** neue Dateien mit Write, Änderungen mit Edit. **Kein Heredoc
+  mit Quelltext** — sobald Backticks, `${…}`, Backslashes oder Anführungszeichen
+  darin stehen (also bei jedem Test), bricht die Shell mittendrin ab oder
+  verändert den Inhalt still (Runden 4, 11, 22, 25). Viele Änderungen auf
+  einmal: das Skript mit Write in den Temp-Ordner legen und dann mit
+  `python "$(cygpath -w …)"` ausführen; anzuhängender Testtext ebenso als Datei.
 - **Wer Werte ändert, sucht Tests, die an den alten hängen.** Startvorrat,
   Kartengröße, Mengen, Raten: vorher nach der alten Zahl und nach Mustern wie
   `[1-9]` oder `> 0` in `tests/` und `e2e/` suchen. Ein Test, der nach der
@@ -146,8 +147,15 @@ Setze die gewählten Kriterien auf `in-arbeit`.
   falsch). Beim Ansehen auch fragen: **Verdeckt das Neue etwas, oder wird es
   verdeckt?** Gebäude standen zweimal vor Figuren.
 - **Eine Partie zu zweit** startet `partieZuZweit(browser, info)` aus
-  `e2e/helpers/strategie.mjs`, beendet wird sie mit `partieBeenden`. Neue
-  Spielbild-Dateien kopieren den Start nicht.
+  `e2e/helpers/strategie.mjs`, beendet wird sie mit `partieBeenden`. Dort
+  liegen auch `dorfbewohnerAnklicken` und `platzImBild` (ein freier Bauplatz
+  **vorn** oder **seitlich**, damit Gebäude nichts verdecken). Neue
+  Spielbild-Dateien kopieren nichts davon.
+- **Warten auf Spielzeit** geht über den Zeitraffer (bis 20), nicht über die
+  Uhr: wer länger als fünf Sekunden auf etwas wartet, das im Spiel dauert, dreht
+  ihn hoch — und rechnet Abstandsgrenzen mit ein, denn ein Zustand fasst dann
+  mehrere Takte. `npm run e2e:laufzeiten -- strategie` zeigt die Dauer je Datei
+  und die langsamsten Fälle; nach einer Runde mit neuen Browsertests ansehen.
 - **Beim Zeichnen zuerst ansehen, dann testen:** `npm run sicht --
   schautafel.html` (Seite ohne führenden Schrägstrich) schreibt ein Wegwerfbild
   in den Temp-Ordner und nennt den Pfad. **Und immer auch im Spielbild:**

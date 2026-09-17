@@ -4,67 +4,14 @@
 // darstellung.md AC-4, AC-5, einheiten-und-befehle.md AC-16).
 import { nachweis } from '../../scripts/qa-nachweis.mjs';
 import { expect, rohstoffe, test, zeitraffer } from '../helpers/seite.mjs';
-import { partieBeenden, partieZuZweit } from '../helpers/strategie.mjs';
+import {
+  dorfbewohnerAnklicken, partieBeenden, partieZuZweit, platzImBild,
+} from '../helpers/strategie.mjs';
 
 const BAUEN = '10-strategie/bauen.md';
 const BEDIENUNG = '10-strategie/bedienung.md';
 const DARSTELLUNG = '10-strategie/darstellung.md';
 const EINHEITEN = '10-strategie/einheiten-und-befehle.md';
-
-/** Einen eigenen Dorfbewohner anklicken, an der Koerpermitte. */
-async function dorfbewohnerAnklicken(page, { ohne = [] } = {}) {
-  const ziel = await page.evaluate((ausser) => {
-    const a = window.ansicht;
-    const e = [...a.nachher.values()].find((f) => f.b === a.ich && f.k === 'd' && !ausser.includes(f.i));
-    const p = a.zuBild(e.x, e.y);
-    return { i: e.i, x: p.x, y: p.y - a.figurenHoehe() * 0.6 };
-  }, ohne);
-  await page.mouse.click(ziel.x, ziel.y);
-  await expect.poll(() => page.evaluate(() => [...window.ansicht.ausgewaehlt])).toEqual([ziel.i]);
-  return ziel.i;
-}
-
-/**
- * Wo im Bild ein Gebaeude der Groesse n ganz auf Gras stuende, ohne Schaf -
- * gerechnet aus der Karte der Ansicht, ringweise um einen Punkt. Ob die
- * Vorschau das auch so sieht, prueft der Test danach mit dem Zeiger.
- */
-function platzImBild(page, { n = 2, um, abstand = 5, seitlich = false }) {
-  return page.evaluate(({ n, um, abstand, seitlich }) => {
-    const a = window.ansicht;
-    const g = a.karte.groesse;
-    const frei = (x0, y0) => {
-      for (let y = y0 - 1; y < y0 + n + 1; y++) {
-        for (let x = x0 - 1; x < x0 + n + 1; x++) {
-          if (x < 0 || y < 0 || x >= g || y >= g || a.karte.felder[y * g + x] !== 0) return false;
-        }
-      }
-      return ![...a.tiere.values()].some((t) => Math.abs(t.x - (x0 + n / 2)) < n + 1 && Math.abs(t.y - (y0 + n / 2)) < n + 1);
-    };
-    for (let r = abstand; r < abstand + 10; r++) {
-      // Vorn zuerst (dx + dy gross): dahinter verdeckt das Dorfzentrum Baustelle
-      // und Bauer (Runde 23, beim Ansehen gefunden).
-      const ring = [];
-      for (let dy = -r; dy <= r; dy++) {
-        for (let dx = -r; dx <= r; dx++) if (Math.max(Math.abs(dx), Math.abs(dy)) === r) ring.push([dx, dy]);
-      }
-      // Seitlich: im Bild rechts daneben (dx - dy gross), fuer Wege, die man sehen will.
-      ring.sort((p, q) => (seitlich ? (q[0] - q[1]) - (p[0] - p[1]) : (q[0] + q[1]) - (p[0] + p[1])));
-      for (const [dx, dy] of ring) {
-        const x = Math.round(um.x) + dx;
-        const y = Math.round(um.y) + dy;
-        const x0 = x - Math.floor(n / 2);
-        const y0 = y - Math.floor(n / 2);
-        if (!frei(x0, y0)) continue;
-        const p = a.zuBild(x0 + (n - 1) / 2, y0 + (n - 1) / 2);
-        // Im Bild und nicht unter der Leiste unten.
-        if (p.x < 120 || p.x > a.leinwand.clientWidth - 120 || p.y < 120 || p.y > a.leinwand.clientHeight - 260) continue;
-        return { x, y, bild: p };
-      }
-    }
-    return null;
-  }, { n, um, abstand, seitlich });
-}
 
 test.describe('Bauen', () => {
   test.describe.configure({ mode: 'serial' });
@@ -281,7 +228,8 @@ test.describe('Bauen', () => {
         }
       };
     });
-    await zeitraffer(anna, code, 10);
+    // Rueckschau nach Runde 25: dieser Fall brauchte 58 s - Zeitraffer 20 statt 10.
+    await zeitraffer(anna, code, 20);
     await anna.waitForFunction(() => window.lieferungen.length >= 2, null, { timeout: 60_000 });
     await zeitraffer(anna, code, 1);
 
@@ -291,10 +239,10 @@ test.describe('Bauen', () => {
       const rand = (e, x0, y0, n) => Math.max(Math.max(x0 - e.x, 0, e.x - (x0 + n - 1)), Math.max(y0 - e.y, 0, e.y - (y0 + n - 1)));
       return {
         fertig: lager.u === undefined,
-        // Abgegeben wird bis 1,2 Felder vom Rand; im Zeitraffer 10 liegen zehn Takte
-        // in einem Zustand, bis dahin ist er bis 0,8 Felder weitergegangen.
-        amLager: window.lieferungen.filter((l) => rand(l, lager.x - 1, lager.y - 1, 2) <= 2.05).length,
-        amZentrum: window.lieferungen.filter((l) => rand(l, b.x - 2, b.y - 2, 4) <= 2.05).length,
+        // Abgegeben wird bis 1,2 Felder vom Rand; im Zeitraffer 20 liegen zwanzig
+        // Takte in einem Zustand, bis dahin ist er bis 1,6 Felder weitergegangen.
+        amLager: window.lieferungen.filter((l) => rand(l, lager.x - 1, lager.y - 1, 2) <= 2.85).length,
+        amZentrum: window.lieferungen.filter((l) => rand(l, b.x - 2, b.y - 2, 4) <= 2.85).length,
         alle: window.lieferungen.length,
       };
     }, basis);
@@ -309,7 +257,7 @@ test.describe('Bauen', () => {
       a.kamera.zoom = 2;
       a.blickAuf(lager.x, lager.y);
     });
-    await zeitraffer(anna, code, 2);
+    await zeitraffer(anna, code, 5);
     // Gewartet wird auf einen Traeger am Lager, der im Bild auch zu sehen ist:
     // vor dem Lager oder seitlich daneben, nicht hinter dem Dach.
     await anna.waitForFunction(() => {

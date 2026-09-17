@@ -63,6 +63,8 @@ etwas anderem gearbeitet.
   kopierte Kacheln (30 ms) deutlich. Vor jedem „Optimieren" messen — zwei
   naheliegende Ideen waren hier Verschlechterungen. Stand Runde 13: Zoom 1
   rund 5 ms, Zoom 0,4 rund 10 ms je Bild.
+- Der Browserlauf: `npm run e2e:laufzeiten` nach Runden mit neuen
+  Browsertests; Ziel unter 2,5 min bei ruhiger Maschine.
 - Offen im Aussehen: Dorfbewohner bei Zoom 1 recht klein; was hinter einem
   Gebäude steht, ist ganz verdeckt (Runde 22: ein Schaf). Das Original zeigt
   solche Figuren als Umriss durch das Gebäude — ein Kandidat für die
@@ -92,6 +94,7 @@ Zahlen, gegen die spätere Runden vergleichen. Mit Datum und Commit.
 | 2026-09-17 | Tests ohne Browser / im Browser; Browserlauf | 264 / 86; 1,1 min | Runde 16 |
 | 2026-09-17 | Tests ohne Browser / im Browser; Browserlauf | 265 / 88; 1,3 min | Runde 17 |
 | 2026-09-17 | Tests ohne Browser / im Browser; Browserlauf | 287 / 97; 2,8 min — davon rund 1,3 min strategie-bauen | Runde 23 |
+| 2026-09-17 | Tests ohne Browser / im Browser; Browserlauf (CPU 25 %) | 287 / 99; 2,1 min — strategie-* 82 s, langsamster Fall 22 s | Runde 25 |
 | 2026-09-17 | Tests ohne Browser / im Browser; Browserlauf (CPU 7 %, 13 fremde node-Prozesse im Leerlauf) | 275 / 91; 1,7 min — davon rund 20 s die neue Datei strategie-ausbilden | Runde 20 |
 
 ## Rückschauen
@@ -187,11 +190,38 @@ Gut gelaufen: Tests haben zweimal echte Fehler gefunden, die niemand gesucht
 hatte — die rückwärts zählende Leiste (R17) und den zu großen Zustand (R19).
 Beide Male wurde das Produkt geändert, nicht die Zusicherung.
 
+### Nach Runde 25 (2026-09-17)
+
+Runden 21–24: Schritte A5 und A6 abgeschlossen, 20 Kriterien `fertig` —
+Werte der Auswahl, Bauen im Rechenkern und im Browser, Gebäude und Baustellen
+gezeichnet, Absagen im Bild. Was sich wiederholt hat:
+
+1. **Der Browserlauf wuchs unbemerkt** von 1,6 auf 2,8 min. Gemessen: ein
+   einziger Fall (Lagertest) brauchte 58 von 157 Sekunden, ein zweiter wartete
+   siebeneinhalb Sekunden in Echtzeit auf einen Balken. → Zeitraffer hoch
+   (58 → 22 s, 9 → 4 s), Werkzeug `npm run e2e:laufzeiten`, Regel: wer länger
+   als fünf Sekunden auf Spielzeit wartet, dreht den Zeitraffer hoch.
+2. **Gebäude verdeckten, was das Bild zeigen sollte** — in drei Runden
+   (Schaf, Baustelle, Lagerträger). → `platzImBild` mit „vorn" und „seitlich"
+   und `dorfbewohnerAnklicken` liegen jetzt in `e2e/helpers/strategie.mjs`.
+3. **Heredoc mit Quelltext** ist trotz Regel wieder gebrochen (Runde 22, und
+   in dieser Rückschau beim Auswerten noch einmal). → Regel ohne Ausnahme: kein
+   Heredoc mit Quelltext, auch nicht für kleine Auswertungen.
+
+Gut gelaufen: Die Regel aus Runde 20 (Zahlen in Bildunterschriften vorher
+prüfen) hat zweimal einen falschen Satz verhindert, und zweimal hat ein Test
+einen eigenen Denkfehler gefunden statt einen Produktfehler (Zeitraffer-Weg,
+Erstattung vor dem Sperren) — beide Male stand danach ein Kommentar am Test.
+
 ## Runden
 
 Neueste oben. Eine Zeile je Runde: Nummer, Datum, Kriterien, Ergebnis,
 wichtigste Erkenntnis.
 
+- **25** · 2026-09-17 · Rückschau: Zeitraffer in den langsamen Browsertests,
+  `npm run e2e:laufzeiten`, Bauplatz-Helfer geteilt, Heredoc-Regel ohne
+  Ausnahme. Browserlauf 2,8 → 2,1 min. Nächster Schritt: **A7** (Schafe,
+  Farm, Kaserne, Miliz, Webstuhl, Sammelpunkt).
 - **24** · 2026-09-17 · bedienung AC-18 und uebertragung AC-8 fertig — Schritt
   **A6 abgeschlossen**. Absagen des Servers und Klicks auf Gesperrtes (Knopf,
   roter Bauplatz) blenden sich oben kurz ein; auch der Ausbildungsknopf ist
