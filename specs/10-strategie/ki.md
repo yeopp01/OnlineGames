@@ -2,7 +2,7 @@
 
 **Bereich:** Strategie
 **Kuerzel:** ki
-**Stand:** 8/8 fertig
+**Stand:** 8/9 fertig · 1 offen
 
 ## Zweck
 
@@ -58,6 +58,13 @@ nicht die Regeln.
   wenn ein Vorrat negativ wird, die Bevölkerung die Grenze übersteigt, eine
   Einheit in einem Hindernis steht oder zwei Gebäude sich überlappen
   (→ [Fahrplan](fahrplan.md) AC-4).
+
+### Feudalzeit (Stufe B)
+
+- **AC-9** `offen` **Die KI steigt auf** — Sobald 500 Nahrung und zwei Gebäude der Dunklen
+  Zeit da sind, beginnt sie den Aufstieg, baut danach Schießanlage oder Stall
+  und bildet Kampfeinheiten aus. Im Prüfstand erreicht sie die Feudalzeit über
+  zwanzig Startwerte nach 11 bis 16 Spielminuten.
 
 ## Grenzfaelle
 

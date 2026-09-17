@@ -85,6 +85,18 @@ mit etwas, das im Browser zu sehen ist.
 | A9 | Übersicht und Tempo: Übersichtskarte, Untätige, Tasten, Auswahlliste, viele Einheiten | bedienung AC-6, AC-11, AC-27, AC-28, einheiten AC-20, AC-21, darstellung AC-9, AC-10, fahrplan AC-6, AC-7 |
 | A10 | Stufe A am Stück im Browser | fahrplan AC-3 |
 
+**Bauabfolge Stufe B.** Jeder Schritt endet mit etwas im Browser Sichtbarem.
+
+| Schritt | Was | Kriterien |
+| --- | --- | --- |
+| B1 | **Lücken aus der Rückschau zu Stufe A** schließen: verdeckte Einheiten als Umriss, sichtbare Arbeit, Arbeiter je Rohstoff in der Leiste | bedienung AC-30 bis AC-32 |
+| B2 | Zeitalter: Aufstieg im Dorfzentrum mit Kosten, Dauer, Voraussetzung; Anzeige und Meldung | bauen AC-23, bedienung AC-33, spielziel AC-1 |
+| B3 | Die drei Gebäude der Feudalzeit: Schießanlage, Stall, Schmiede — gezeichnet und unterscheidbar | bauen AC-24, darstellung AC-14 (erweitert) |
+| B4 | Die neuen Einheiten: Speerkämpfer, Bogenschütze, Plänkler, Späherreiter aus dem Stall; Miliz wird Soldat | einheiten AC-23, AC-24 |
+| B5 | Kampf: Angreifen, sich wehren, Schaden mit Rüstung und Bonus, Tote, Lebensbalken | kampf AC-1 bis AC-10, bedienung AC-34, einheiten AC-25 |
+| B6 | Verbesserungen: Schmiede, Doppelaxt, Pferdekummet; die KI nutzt sie und steigt auf | bauen AC-25, AC-26, ki AC-9 (neu) |
+| B7 | Gleichgewicht messen: Konterkreis im Prüfstand, kein Schlachtenglück | fahrplan AC-8 bis AC-10 |
+
 **Was Stufe A ablöst.** Fertige Kriterien der kleinen Fassung bleiben
 `fertig`, bis ihr Nachfolger gebaut ist; die Runde, die ihn baut, setzt sie auf
 `zurueckgestellt (abgelöst durch …)` und passt Test und Begründung an:

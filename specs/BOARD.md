@@ -7,7 +7,7 @@ Eine Zeile je Abnahmekriterium. Gepflegt wird der Status in der Spec selbst,
 hier steht er zusammengefasst. Erzeugt mit `npm run specs:board`; als Seite
 mit Bildnachweisen, Filter und Suche mit `npm run qa:report`.
 
-**Gesamt:** 351/493 fertig · 5 in QA · 4 geplant · 126 offen · 7 zurueckgestellt
+**Gesamt:** 351/503 fertig · 5 in QA · 4 geplant · 136 offen · 7 zurueckgestellt
 
 **Nachweise:** 133 Kriterien mit Bild · 222 ohne Bild, begruendet in `qa/ohne-bild.json`
 
@@ -21,14 +21,14 @@ mit Bildnachweisen, Filter und Suche mit `npm run qa:report`.
 | [Anhalten und Fortsetzen](00-plattform/speichern.md)           | -         | -     | -       | 26    | -               | -      |
 | [Spielauswahl und Einstellungen](00-plattform/spielauswahl.md) | -         | -     | -       | 5     | -               | 12     |
 | [Uebertragung](00-plattform/uebertragung.md)                   | -         | -     | 2       | 1     | -               | 7      |
-| [Bauen und Ausbilden](10-strategie/bauen.md)                   | -         | -     | -       | 4     | -               | 18     |
-| [Bedienung](10-strategie/bedienung.md)                         | -         | -     | -       | 14    | -               | 18     |
+| [Bauen und Ausbilden](10-strategie/bauen.md)                   | -         | -     | -       | 8     | -               | 18     |
+| [Bedienung](10-strategie/bedienung.md)                         | -         | -     | -       | 16    | -               | 18     |
 | [Darstellung](10-strategie/darstellung.md)                     | -         | -     | -       | 1     | -               | 13     |
-| [Einheiten und Befehle](10-strategie/einheiten-und-befehle.md) | -         | -     | -       | 1     | 1               | 16     |
+| [Einheiten und Befehle](10-strategie/einheiten-und-befehle.md) | -         | -     | -       | 4     | 1               | 16     |
 | [Fahrplan zum Klon](10-strategie/fahrplan.md)                  | -         | -     | -       | 15    | -               | 7      |
 | [Kampf](10-strategie/kampf.md)                                 | -         | -     | -       | 14    | -               | -      |
 | [Karte und Vorraete](10-strategie/karte-und-vorraete.md)       | -         | -     | -       | 2     | 3               | 12     |
-| [KI-Spieler](10-strategie/ki.md)                               | -         | -     | -       | -     | -               | 8      |
+| [KI-Spieler](10-strategie/ki.md)                               | -         | -     | -       | 1     | -               | 8      |
 | [Spielziel und Partieverlauf](10-strategie/spielziel.md)       | -         | -     | -       | 18    | -               | -      |
 | [Aufstellung, Taktik und Training](15-manager/aufstellung.md)  | -         | -     | -       | -     | 2               | 23     |
 | [Bedienung des Managerspiels](15-manager/bedienung.md)         | -         | -     | -       | -     | -               | 15     |
@@ -60,7 +60,7 @@ mit Bildnachweisen, Filter und Suche mit `npm run qa:report`.
 - **Abbruch ist sichtbar** — [Uebertragung](00-plattform/uebertragung.md) AC-9
 - **Automatischer Wiederaufbau** — [Uebertragung](00-plattform/uebertragung.md) AC-10
 
-## Offen (126)
+## Offen (136)
 
 - **Anmeldung ueber Google/GitHub** — [Konten und Anmeldung](00-plattform/konten.md) AC-6
 - **Bilanz je Konto** — [Konten und Anmeldung](00-plattform/konten.md) AC-14
@@ -105,6 +105,10 @@ mit Bildnachweisen, Filter und Suche mit `npm run qa:report`.
 - **Sitzungsspiele erscheinen dort nicht** — [Spielauswahl und Einstellungen](00-plattform/spielauswahl.md) AC-17
 - **Befehlsflut wird gebremst** — [Uebertragung](00-plattform/uebertragung.md) AC-4
 - **Gebäude im Bau angreifbar** — [Bauen und Ausbilden](10-strategie/bauen.md) AC-7
+- **Aufstieg in die Feudalzeit** — [Bauen und Ausbilden](10-strategie/bauen.md) AC-23
+- **Gebäude der Feudalzeit** — [Bauen und Ausbilden](10-strategie/bauen.md) AC-24
+- **Schmiede verbessert Angriff und Rüstung** — [Bauen und Ausbilden](10-strategie/bauen.md) AC-25
+- **Verbesserungen der Wirtschaft** — [Bauen und Ausbilden](10-strategie/bauen.md) AC-26
 - **Gebäude haben Leben** — [Bauen und Ausbilden](10-strategie/bauen.md) AC-17
 - **Zerstörte Gebäude nehmen Plätze mit** — [Bauen und Ausbilden](10-strategie/bauen.md) AC-18
 - **Eroberung entscheidet** — [Bauen und Ausbilden](10-strategie/bauen.md) AC-19
@@ -122,8 +126,13 @@ mit Bildnachweisen, Filter und Suche mit `npm run qa:report`.
 - **Verdeckte Einheiten als Umriss** — [Bedienung](10-strategie/bedienung.md) AC-30
 - **Arbeit ist zu sehen** — [Bedienung](10-strategie/bedienung.md) AC-31
 - **Arbeiter je Rohstoff** — [Bedienung](10-strategie/bedienung.md) AC-32
+- **Zeitalter steht im Bild** — [Bedienung](10-strategie/bedienung.md) AC-33
+- **Angriffsbefehl ist erkennbar** — [Bedienung](10-strategie/bedienung.md) AC-34
 - **Nur eigenes Material** — [Darstellung](10-strategie/darstellung.md) AC-11
 - **Einheiten blockieren sich nicht** — [Einheiten und Befehle](10-strategie/einheiten-und-befehle.md) AC-10
+- **Drei neue Einheiten** — [Einheiten und Befehle](10-strategie/einheiten-und-befehle.md) AC-23
+- **Miliz wird Soldat** — [Einheiten und Befehle](10-strategie/einheiten-und-befehle.md) AC-24
+- **Fernkämpfer halten Abstand** — [Einheiten und Befehle](10-strategie/einheiten-und-befehle.md) AC-25
 - **Feudalzeit spielbar** — [Fahrplan zum Klon](10-strategie/fahrplan.md) AC-8
 - **Der Konterkreis hält** — [Fahrplan zum Klon](10-strategie/fahrplan.md) AC-9
 - **Kein Schlachtenglück** — [Fahrplan zum Klon](10-strategie/fahrplan.md) AC-10
@@ -155,6 +164,7 @@ mit Bildnachweisen, Filter und Suche mit `npm run qa:report`.
 - **Angriff wird gemeldet** — [Kampf](10-strategie/kampf.md) AC-14
 - **Kein Spieler ist abgeschnitten** — [Karte und Vorraete](10-strategie/karte-und-vorraete.md) AC-7
 - **Vorraete sind endlich und knapp** — [Karte und Vorraete](10-strategie/karte-und-vorraete.md) AC-10
+- **Die KI steigt auf** — [KI-Spieler](10-strategie/ki.md) AC-9
 - **Zeitalter gliedern die Partie** — [Spielziel und Partieverlauf](10-strategie/spielziel.md) AC-1
 - **Partiedauer 25 bis 45 Minuten** — [Spielziel und Partieverlauf](10-strategie/spielziel.md) AC-2
 - **Kein Aus nach drei Minuten** — [Spielziel und Partieverlauf](10-strategie/spielziel.md) AC-3

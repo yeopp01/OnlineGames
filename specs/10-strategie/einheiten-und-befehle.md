@@ -2,7 +2,7 @@
 
 **Bereich:** Strategie
 **Kuerzel:** einheiten
-**Stand:** 16/18 fertig · 1 offen · 1 zurueckgestellt
+**Stand:** 16/21 fertig · 4 offen · 1 zurueckgestellt
 
 ## Zweck
 
@@ -100,6 +100,20 @@ Befehl bewirkt.
 - **AC-21** `fertig` **Untätig ist erkennbar** — Die Welt weiß je Spieler, welche Dorfbewohner
   nichts tun. Die Oberfläche zeigt die Zahl und springt zum nächsten
   (→ [Bedienung](bedienung.md) AC-28).
+
+### Feudalzeit (Stufe B)
+
+- **AC-23** `offen` **Drei neue Einheiten** — Speerkämpfer (35 Nahrung, 25 Holz, 22 s) in der
+  Kaserne, Bogenschütze (25 Holz, 45 Gold, 35 s) und Plänkler (25 Nahrung,
+  35 Holz, 22 s) in der Schießanlage, Späherreiter (80 Nahrung, 30 s) im
+  Stall. Werte für Leben, Angriff, Rüstung, Reichweite und Tempo nach der
+  [Vorlage](../../docs/strategie/vorlage-aoe2.md).
+- **AC-24** `offen` **Miliz wird Soldat** — Die Kaserne erforscht ab der Feudalzeit die
+  Stufe Soldat (Leben 45, Angriff 6); alle vorhandenen Milizen werden dadurch
+  zu Soldaten, ohne neu ausgebildet zu werden.
+- **AC-25** `offen` **Fernkämpfer halten Abstand** — Bogenschütze und Plänkler schießen aus
+  vier Feldern und laufen nicht in den Nahkampf, solange ihr Ziel in
+  Reichweite ist.
 
 ## Grenzfaelle
 

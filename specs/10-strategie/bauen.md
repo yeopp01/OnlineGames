@@ -2,7 +2,7 @@
 
 **Bereich:** Strategie
 **Kuerzel:** bauen
-**Stand:** 18/22 fertig · 4 offen
+**Stand:** 18/26 fertig · 8 offen
 
 ## Zweck
 
@@ -48,6 +48,18 @@ ausbreiten.
 
 Der Späherreiter steht nur zu Beginn auf der Karte; ausgebildet wird er ab
 Stufe B im Stall.
+
+## Die Gebäude der Feudalzeit (Stufe B)
+
+| Gebäude           | Größe | Kosten    | Bauzeit | Leben | Leistet |
+| ----------------- | ----- | --------- | ------- | ----- | ------- |
+| **Schießanlage**  | 3×3   | 175 Holz  | 50 s    | 1000  | Bogenschütze, Plänkler |
+| **Stall**         | 3×3   | 175 Holz  | 50 s    | 1000  | Späherreiter |
+| **Schmiede**      | 2×2   | 150 Holz  | 40 s    | 1200  | Angriff und Rüstung, nah und fern |
+
+Markt, Wachturm, Mauer und Tor stehen in der Vorlage ebenfalls in der
+Feudalzeit; sie kommen mit Stufe D (Befestigung, Handel) und nicht hier — Stufe
+B ist der Kampf der drei Einheiten gegeneinander.
 
 ## Abnahmekriterien
 
@@ -108,6 +120,24 @@ Stufe B im Stall.
 - **AC-15** `fertig` **Volle Bevölkerung sperrt Ausbildung** — Der Auftrag bleibt in der Schlange
   und wartet, und die Oberfläche sagt, warum: „Bevölkerung voll — Haus bauen".
 - **AC-16** `fertig` **Verlorene Einheiten geben Plätze frei** — Sofort, nicht erst beim nächsten Bau.
+
+### Feudalzeit (Stufe B)
+
+- **AC-23** `offen` **Aufstieg in die Feudalzeit** — Das Dorfzentrum bietet den Aufstieg an:
+  500 Nahrung, 130 Sekunden. Voraussetzung sind zwei fertige Gebäude der
+  Dunklen Zeit außer Häusern, wie im Original. Während der Aufstieg läuft,
+  bildet das Dorfzentrum nichts anderes aus; ein Abbruch erstattet die Nahrung.
+- **AC-24** `offen` **Gebäude der Feudalzeit** — Schießanlage, Stall und
+  Schmiede lassen sich erst bauen, wenn die Feudalzeit erreicht ist; vorher
+  stehen sie nicht im Baumenü. Werte nach der Tabelle oben.
+- **AC-25** `offen` **Schmiede verbessert Angriff und Rüstung** — Die Schmiede erforscht
+  Schmiedeangriff (100 Nahrung, +1 Nahangriff) und Befiederte Pfeile
+  (100 Nahrung, 50 Gold, +1 Fernangriff und +1 Reichweite). Die Wirkung gilt
+  sofort für alle eigenen Einheiten der Art, auch für die schon gebauten.
+- **AC-26** `offen` **Verbesserungen der Wirtschaft** — Doppelaxt im Holzfällerlager
+  (100 Nahrung, 50 Holz, +20 % Holz) und Pferdekummet in der Mühle
+  (75 Nahrung, 75 Holz, +75 Nahrung je Farm) sind ab der Feudalzeit
+  erforschbar und wirken auf alle vorhandenen Sammler und Farmen.
 
 ### Zerstörung
 

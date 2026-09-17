@@ -409,6 +409,19 @@ alle sieben Gebäude der Dunklen Zeit stehen. Was sich wiederholt hat:
 Neueste oben. Eine Zeile je Runde: Nummer, Datum, Kriterien, Ergebnis,
 wichtigste Erkenntnis.
 
+- **55** · 2026-09-17 · Spec-Runde Stufe B (Feudalzeit), kein Code. Neu aus
+  der Vorlage: bauen AC-23 (Aufstieg 500 Nahrung, 130 s, zwei Gebäude der
+  Dunklen Zeit außer Häusern), AC-24 (Schießanlage, Stall, Schmiede mit Werten),
+  AC-25 (Schmiedeangriff, Befiederte Pfeile), AC-26 (Doppelaxt, Pferdekummet);
+  einheiten AC-23 bis AC-25 (Speerkämpfer, Bogenschütze, Plänkler, Späherreiter
+  aus dem Stall; Miliz wird Soldat; Fernkämpfer halten Abstand); bedienung
+  AC-33, AC-34 (Zeitalter im Bild, Angriffsbefehl erkennbar); ki AC-9 (die KI
+  steigt auf). Kampf stand schon in `kampf.md` (AC-1 bis AC-10 für Stufe B,
+  AC-11 bis AC-14 Sicht für Stufe C) — nichts doppelt geschrieben. Bauabfolge
+  B1 bis B7 im Fahrplan; **B1 sind die drei Lücken aus der Rückschau**, sie
+  kommen vor der Feudalzeit. Markt, Wachturm, Mauer und Tor stehen in der
+  Vorlage in der Feudalzeit, gehören hier aber zu Stufe D — im Spec vermerkt,
+  damit die Abweichung nicht verlorengeht.
 - **53** · 2026-09-17 · fahrplan AC-3 **fertig** — **Stufe A erreicht** (alle
   Kriterien der Bauabfolge A1–A10 `fertig`). Ein Browsertest spielt die
   Dunkle Zeit am Stück wie ein Mensch, im Zeitraffer: Schaf, Holz, Gold per

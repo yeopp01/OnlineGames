@@ -2,7 +2,7 @@
 
 **Bereich:** Strategie
 **Kuerzel:** bedienung
-**Stand:** 18/32 fertig · 14 offen
+**Stand:** 18/34 fertig · 16 offen
 
 ## Zweck
 
@@ -113,6 +113,15 @@ verglichen: die drei größten Lücken in Lesbarkeit und Aussehen.
 - **AC-32** `offen` **Arbeiter je Rohstoff** — Die Rohstoffleiste zeigt neben jedem Vorrat,
   wie viele Dorfbewohner gerade daran arbeiten. Ohne diese Zahl lässt sich ein
   Wirtschaftsplan nicht steuern.
+
+### Stufe B — Zeitalter und Kampf bedienen
+
+- **AC-33** `offen` **Zeitalter steht im Bild** — Oben steht, in welchem Zeitalter man ist;
+  während eines Aufstiegs zeigt das Dorfzentrum den Fortschritt, und der
+  Wechsel wird einmal im Bild gemeldet.
+- **AC-34** `offen` **Angriffsbefehl ist erkennbar** — Ein Rechtsklick auf Feindliches zeigt
+  kurz ein rotes Zeichen am Ziel, ein Befehl auf freies Gelände ein weißes
+  (→ [Kampf](kampf.md) AC-1).
 
 Aus den offenen Kriterien oben gehören zu Stufe A: AC-6 (Auswahl
 aufgelistet), AC-11 (Übersichtskarte — auf 120 × 120 unverzichtbar), AC-15
