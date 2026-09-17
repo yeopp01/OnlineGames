@@ -202,6 +202,53 @@ canvas {
   font-size: 0.82rem;
 }
 
+.leiste {
+  display: flex;
+  align-items: center;
+  gap: 0.9rem;
+}
+
+.rohstoffe {
+  display: flex;
+  gap: 0.35rem;
+}
+
+.rohstoff {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  min-width: 4.6rem;
+  padding: 0.22rem 0.6rem 0.22rem 0.4rem;
+  border: 1px solid #ffffff1f;
+  border-radius: 999px;
+  background: #0d1014c4;
+  box-shadow: 0 1px 3px #0008;
+}
+
+.rohstoff svg {
+  width: 1.2rem;
+  height: 1.2rem;
+  flex: none;
+}
+
+.rohstoff b {
+  font-weight: 600;
+}
+
+.rohstoff .name {
+  /* Fuer Vorleser da, im Bild sagen es die Symbole. */
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+}
+
+.rohstoff i {
+  font-style: normal;
+  color: var(--leise);
+}
+
 @media (max-width: 560px) {
   .hinweis {
     display: none;

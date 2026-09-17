@@ -9,7 +9,7 @@ const require = createRequire(import.meta.url);
 const karten = require('../server/spiele/strategie/karte.js');
 const { suchen } = require('../server/spiele/strategie/wege.js');
 const { Welt, TAKTE_PRO_SEKUNDE } = require('../server/spiele/strategie/welt.js');
-const { EINHEITEN, SAMMELN } = require('../server/spiele/strategie/daten.js');
+const { EINHEITEN, SAMMELN, GEBAEUDE } = require('../server/spiele/strategie/daten.js');
 
 const ZWEI = [{ id: 'a', name: 'Anna' }, { id: 'b', name: 'Bert' }];
 
@@ -148,7 +148,8 @@ test('karte AC-12: vier Rohstoffe mit Startvorrat nach Einstellung', () => {
   const viel = new Welt(ZWEI, 7, { vorrat: 'viel' });
   for (const s of viel.spieler) assert.deepEqual([s.holz, s.nahrung, s.gold, s.stein], [1000, 1000, 1000, 1000]);
   const mittel = new Welt(ZWEI, 7, { vorrat: 'mittel' });
-  assert.deepEqual(Object.keys(mittel.zustand().spieler[0]).sort(), ['gold', 'holz', 'id', 'nahrung', 'stein']);
+  const gesendet = mittel.zustand().spieler[0];
+  for (const rohstoff of ['holz', 'nahrung', 'gold', 'stein']) assert.equal(gesendet[rohstoff], 500);
   assert.equal(mittel.zustand().spieler[0].stein, 500);
 });
 
@@ -444,4 +445,16 @@ test('einheiten AC-19: Leben und Tempo nach der Vorlage', () => {
   assert.ok(Math.abs(strecke.dorfbewohner - 8) < 1e-6, `Dorfbewohner ${strecke.dorfbewohner}`);
   assert.ok(Math.abs(strecke.spaeherreiter - 12) < 1e-6, `Spaeher ${strecke.spaeherreiter}`);
   assert.ok(Math.abs(strecke.miliz - 9) < 1e-6, `Miliz ${strecke.miliz}`);
+});
+
+test('bedienung AC-24: der Zustand nennt je Spieler vier Rohstoffe und die Bevoelkerung', () => {
+  const welt = new Welt(ZWEI, 7);
+  const { spieler } = welt.zustand();
+  assert.equal(spieler.length, 2);
+  for (const s of spieler) {
+    assert.deepEqual(Object.keys(s).sort(), ['bev', 'gold', 'holz', 'id', 'nahrung', 'raum', 'stein']);
+    // Fuenf Dorfbewohner zu Beginn, Wohnraum aus dem Dorfzentrum.
+    assert.equal(s.bev, [...welt.einheiten.values()].filter((e) => e.besitzer === s.id).length);
+    assert.equal(s.raum, GEBAEUDE.dorfzentrum.wohnraum);
+  }
 });

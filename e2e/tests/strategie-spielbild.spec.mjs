@@ -235,8 +235,9 @@ test.describe('Das Spielbild', () => {
     await anna.waitForFunction((vorher) => window.ansicht.vorraete.holz > vorher, holzVorher, { timeout: 40_000 });
     // Und die Leiste zeigt es. Nicht "genau eine Ladung mehr": bis zum Ablesen
     // koennen weitere angekommen sein (unter Last gesehen: 250 statt 210).
-    const angezeigt = Number((await anna.locator('#vorraete').textContent()).match(/Holz (\d+)/)[1]);
-    expect(angezeigt).toBeGreaterThan(holzVorher);
+    // Die Leiste zaehlt hoch (bedienung AC-17) - also warten, bis sie dort ist.
+    await expect.poll(async () => Number(await anna.locator('[data-rohstoff="holz"] b').textContent()))
+      .toBeGreaterThan(holzVorher);
     await nachweis(anna, {
       spec: FAHRPLAN,
       ac: 'AC-2',
@@ -248,6 +249,57 @@ test.describe('Das Spielbild', () => {
       return [...a.nachher.values()].some((e) => e.b !== a.ich && e.l > 0);
     });
     await zeitraffer(anna, code, 1);
+  });
+
+  test('bedienung AC-24: oben Holz, Nahrung, Gold, Stein und die Bevoelkerung', async ({}, info) => {
+    const leiste = anna.locator('#vorraete');
+    await expect(leiste).toBeInViewport();
+    const stand = await anna.evaluate(() => window.ansicht.vorraete);
+    // Die Leiste zeigt, was der Server schickt - bei ruhendem Stand genau das.
+    await expect.poll(async () => ({
+      holz: Number(await leiste.locator('[data-rohstoff="holz"] b').textContent()),
+      nahrung: Number(await leiste.locator('[data-rohstoff="nahrung"] b').textContent()),
+      gold: Number(await leiste.locator('[data-rohstoff="gold"] b').textContent()),
+      stein: Number(await leiste.locator('[data-rohstoff="stein"] b').textContent()),
+    })).toEqual({ holz: expect.any(Number), nahrung: stand.nahrung, gold: stand.gold, stein: stand.stein });
+    await expect(leiste.locator('[data-rohstoff="bev"]')).toHaveText(new RegExp(`^\\s*${stand.bev}\\s*/\\s*${stand.raum}\\s*$`));
+    expect(stand.bev).toBe(5);
+    expect(stand.raum).toBe(5);
+    await nachweis(anna, {
+      spec: BEDIENUNG,
+      ac: 'AC-24',
+      titel: 'Oben links die Leiste: Holz, Nahrung, Gold, Stein mit Symbol und Zahl, dazu Bevoelkerung 5/5',
+      test: info,
+    });
+  });
+
+  test('bedienung AC-17: eine Lieferung zaehlt in der Leiste hoch, statt zu springen', async () => {
+    // Bild fuer Bild mitschreiben, was die Leiste beim Holz zeigt.
+    const vorher = await anna.evaluate(() => {
+      const feld = document.querySelector('[data-rohstoff="holz"] b');
+      window.holzFolge = [Number(feld.textContent)];
+      const schreiben = () => {
+        const wert = Number(feld.textContent);
+        if (wert !== window.holzFolge.at(-1)) window.holzFolge.push(wert);
+        window.holzSchreiber = requestAnimationFrame(schreiben);
+      };
+      schreiben();
+      return window.ansicht.vorraete.holz;
+    });
+    await zeitraffer(anna, code, 5);
+    await anna.waitForFunction((v) => window.ansicht.vorraete.holz > v, vorher, { timeout: 30_000 });
+    await zeitraffer(anna, code, 1);
+    const ziel = await anna.evaluate(() => window.ansicht.vorraete.holz);
+    await anna.waitForFunction((z) => window.holzFolge.at(-1) >= z, ziel);
+    const folge = await anna.evaluate(() => {
+      cancelAnimationFrame(window.holzSchreiber);
+      return window.holzFolge;
+    });
+    // Eine Ladung sind zehn: dazwischen muss die Leiste Zwischenwerte gezeigt
+    // haben, und nie rueckwaerts.
+    const zwischen = folge.filter((w) => w > vorher && w < vorher + 10);
+    expect(zwischen.length, `gezeigt: ${folge.join(', ')}`).toBeGreaterThanOrEqual(3);
+    for (let i = 1; i < folge.length; i++) expect(folge[i]).toBeGreaterThan(folge[i - 1]);
   });
 
   test('karte AC-16: acht Schafe mit dem Halsband des Spielers stehen am Dorfzentrum', async ({}, info) => {

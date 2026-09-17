@@ -42,7 +42,7 @@ export class Ansicht {
     this.ausgewaehlt = new Set();
     this.blicke = new Map(); // Einheit → -1 links, 1 rechts
     this.tiere = new Map();
-    this.vorraete = { holz: 0, nahrung: 0 };
+    this.vorraete = { holz: 0, nahrung: 0, gold: 0, stein: 0, bev: 0, raum: 0 };
     // Was im letzten Bild in welcher Reihenfolge gezeichnet wurde - fuer den
     // Browserlauf (darstellung AC-7).
     this.reihenfolge = [];
@@ -95,7 +95,10 @@ export class Ansicht {
     this.empfangen = performance.now();
 
     const meine = nachricht.spieler.find((s) => s.id === this.ich);
-    if (meine) this.vorraete = { holz: meine.holz, nahrung: meine.nahrung };
+    if (meine) {
+      const { holz, nahrung, gold, stein, bev, raum } = meine;
+      this.vorraete = { holz, nahrung, gold, stein, bev, raum };
+    }
 
     // Eingesammelte Einheiten, die es nicht mehr gibt, fallen aus der Auswahl.
     for (const id of this.ausgewaehlt) {

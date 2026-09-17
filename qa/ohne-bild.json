@@ -41,6 +41,7 @@
     { "spec": "10-strategie/einheiten-und-befehle.md", "ac": "AC-8", "begruendung": "Laufzeit einer Wegsuche unter einer Millisekunde. Eine Messung, kein Bild." },
     { "spec": "10-strategie/einheiten-und-befehle.md", "ac": "AC-9", "begruendung": "Eine Einheit bleibt stehen, wenn kein Weg zum Ziel fuehrt. Ein Bild zeigt Stillstand, nicht dass es keinen Weg gab." },
     { "spec": "10-strategie/einheiten-und-befehle.md", "ac": "AC-11", "begruendung": "Ein Ablauf ueber Sekunden - laufen, sammeln, tragen, zurueck. Kein Einzelbild; im Spielbild gehoert er zu 10-strategie/bedienung.md." },
+    { "spec": "10-strategie/bedienung.md", "ac": "AC-17", "begruendung": "Eine Bewegung: eine Lieferung laeuft in einer halben Sekunde durch die Zwischenwerte. Ein Einzelbild zeigt eine Zahl, nicht dass sie gezaehlt wurde; der Test schreibt die Folge Bild fuer Bild mit. Die Leiste selbst zeigt das Bild zu bedienung AC-24." },
     { "spec": "10-strategie/einheiten-und-befehle.md", "ac": "AC-12", "begruendung": "Wann der Vorrat steigt: an der Basis, nicht beim Sammeln. Ein Zeitpunkt in einem Ablauf, geprueft im Test." },
     { "spec": "10-strategie/einheiten-und-befehle.md", "ac": "AC-19", "begruendung": "Leben, Tempo, Sicht und Tragkraft als Zahlen, dazu zehn Sekunden Laufweg je Einheit. Ein Einzelbild zeigt keine Geschwindigkeit, und Spaeherreiter und Miliz stehen noch nicht auf der Karte." },
     { "spec": "10-strategie/einheiten-und-befehle.md", "ac": "AC-13", "begruendung": "Die Suche nach einem Ersatzfeld im Umkreis von zwoelf Feldern. Ein Rechenteil." },

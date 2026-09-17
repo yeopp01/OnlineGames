@@ -2,7 +2,7 @@
 
 **Bereich:** Strategie
 **Kuerzel:** bedienung
-**Stand:** 6/29 fertig · 23 offen
+**Stand:** 8/29 fertig · 21 offen
 
 ## Zweck
 
@@ -57,7 +57,7 @@ Befehl steht.
 - **AC-16** `fertig` **Ladung ist sichtbar** — Ein beladener Dorfbewohner trägt seine Ware
   sichtbar auf dem Rücken: Holzbündel, Beerenkorb, Gold- oder Steinbrocken
   (→ [Darstellung](darstellung.md) AC-6).
-- **AC-17** `offen` **Rohstoffe zählen sichtbar hoch** — Nicht springen. Man muss sehen, dass die
+- **AC-17** `fertig` **Rohstoffe zählen sichtbar hoch** — Nicht springen. Man muss sehen, dass die
   Wirtschaft läuft.
 - **AC-18** `offen` **Abgelehnte Befehle sagen warum** — „Zu wenig Holz", „Bevölkerung voll" — kurz
   eingeblendet, nicht als Fenster mit Knopf.
@@ -77,8 +77,9 @@ Befehl steht.
 
 ### Stufe A — Wirtschaft bedienen
 
-- **AC-24** `offen` **Leiste mit vier Rohstoffen** — Oben Holz, Nahrung, Gold, Stein und die
+- **AC-24** `fertig` **Leiste mit vier Rohstoffen** — Oben Holz, Nahrung, Gold, Stein und die
   Bevölkerung als „7/10". Die Zahlen zählen hoch statt zu springen (AC-17).
+  Bis Häuser gebaut werden (A6), gibt allein das Dorfzentrum Wohnraum 5.
 - **AC-25** `offen` **Baumenü am Dorfbewohner** — Ist ein Dorfbewohner ausgewählt, zeigt der
   untere Rand die baubaren Gebäude mit Bild und Kosten. Was nicht bezahlbar
   ist, ist ausgegraut und nennt beim Überfahren, was fehlt. Ein Klick beginnt

@@ -7,9 +7,9 @@ Eine Zeile je Abnahmekriterium. Gepflegt wird der Status in der Spec selbst,
 hier steht er zusammengefasst. Erzeugt mit `npm run specs:board`; als Seite
 mit Bildnachweisen, Filter und Suche mit `npm run qa:report`.
 
-**Gesamt:** 293/485 fertig · 6 in QA · 4 geplant · 175 offen · 7 zurueckgestellt
+**Gesamt:** 295/485 fertig · 6 in QA · 4 geplant · 173 offen · 7 zurueckgestellt
 
-**Nachweise:** 97 Kriterien mit Bild · 200 ohne Bild, begruendet in `qa/ohne-bild.json`
+**Nachweise:** 98 Kriterien mit Bild · 201 ohne Bild, begruendet in `qa/ohne-bild.json`
 
 ## Nach Spezifikation
 
@@ -22,7 +22,7 @@ mit Bildnachweisen, Filter und Suche mit `npm run qa:report`.
 | [Spielauswahl und Einstellungen](00-plattform/spielauswahl.md) | -         | -     | -       | 5     | -               | 12     |
 | [Uebertragung](00-plattform/uebertragung.md)                   | -         | 1     | 2       | 1     | -               | 6      |
 | [Bauen und Ausbilden](10-strategie/bauen.md)                   | -         | -     | -       | 21    | -               | -      |
-| [Bedienung](10-strategie/bedienung.md)                         | -         | -     | -       | 23    | -               | 6      |
+| [Bedienung](10-strategie/bedienung.md)                         | -         | -     | -       | 21    | -               | 8      |
 | [Darstellung](10-strategie/darstellung.md)                     | -         | -     | -       | 6     | -               | 5      |
 | [Einheiten und Befehle](10-strategie/einheiten-und-befehle.md) | -         | -     | -       | 6     | 1               | 10     |
 | [Fahrplan zum Klon](10-strategie/fahrplan.md)                  | -         | -     | -       | 20    | -               | 2      |
@@ -61,7 +61,7 @@ mit Bildnachweisen, Filter und Suche mit `npm run qa:report`.
 - **Abbruch ist sichtbar** — [Uebertragung](00-plattform/uebertragung.md) AC-9
 - **Automatischer Wiederaufbau** — [Uebertragung](00-plattform/uebertragung.md) AC-10
 
-## Offen (175)
+## Offen (173)
 
 - **Anmeldung ueber Google/GitHub** — [Konten und Anmeldung](00-plattform/konten.md) AC-6
 - **Bilanz je Konto** — [Konten und Anmeldung](00-plattform/konten.md) AC-14
@@ -136,14 +136,12 @@ mit Bildnachweisen, Filter und Suche mit `npm run qa:report`.
 - **Der Befehl ist sofort sichtbar** — [Bedienung](10-strategie/bedienung.md) AC-13
 - **Warteschlange mit Umschalt** — [Bedienung](10-strategie/bedienung.md) AC-14
 - **Abbrechen mit Esc** — [Bedienung](10-strategie/bedienung.md) AC-15
-- **Rohstoffe zählen sichtbar hoch** — [Bedienung](10-strategie/bedienung.md) AC-17
 - **Abgelehnte Befehle sagen warum** — [Bedienung](10-strategie/bedienung.md) AC-18
 - **Verbindungsverlust ist sichtbar** — [Bedienung](10-strategie/bedienung.md) AC-19
 - **Spielstand aller Spieler einsehbar** — [Bedienung](10-strategie/bedienung.md) AC-20
 - **Die erste Partie erklärt sich** — [Bedienung](10-strategie/bedienung.md) AC-21
 - **Tastenübersicht** — [Bedienung](10-strategie/bedienung.md) AC-22
 - **Läuft auf einem Laptop-Bildschirm** — [Bedienung](10-strategie/bedienung.md) AC-23
-- **Leiste mit vier Rohstoffen** — [Bedienung](10-strategie/bedienung.md) AC-24
 - **Baumenü am Dorfbewohner** — [Bedienung](10-strategie/bedienung.md) AC-25
 - **Gebäude zeigt Ausbildung** — [Bedienung](10-strategie/bedienung.md) AC-26
 - **Tastenkürzel für Häufiges** — [Bedienung](10-strategie/bedienung.md) AC-27

@@ -20,4 +20,13 @@ const SAMMELN = {
   5: { rohstoff: 'stein', rate: 0.36 }, // Steinfeld
 };
 
-module.exports = { EINHEITEN, SAMMELN };
+// Gebaeude: Wohnraum fuer die Bevoelkerung. Weitere Werte kommen mit dem
+// Bauen (Stufe A, Schritt A6).
+const GEBAEUDE = {
+  dorfzentrum: { wohnraum: 5 },
+};
+
+// Mehr Wohnraum zaehlt nicht, wie in der Vorlage.
+const BEVOELKERUNG_MAX = 200;
+
+module.exports = { EINHEITEN, SAMMELN, GEBAEUDE, BEVOELKERUNG_MAX };

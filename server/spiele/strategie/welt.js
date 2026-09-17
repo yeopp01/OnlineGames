@@ -2,7 +2,7 @@
 
 const karten = require('./karte');
 const { suchen, nachbarfeld } = require('./wege');
-const { EINHEITEN, SAMMELN } = require('./daten');
+const { EINHEITEN, SAMMELN, GEBAEUDE, BEVOELKERUNG_MAX } = require('./daten');
 
 const TAKTE_PRO_SEKUNDE = 10;
 const ABLADEWEITE = 2.2;
@@ -282,7 +282,9 @@ class Welt {
   // Was der Browser braucht, um ein Bild zu zeichnen - mehr nicht.
   zustand() {
     const einheiten = [];
+    const bevoelkerung = new Map();
     for (const e of this.einheiten.values()) {
+      bevoelkerung.set(e.besitzer, (bevoelkerung.get(e.besitzer) || 0) + 1);
       einheiten.push({
         i: e.id,
         b: e.besitzer,
@@ -297,7 +299,15 @@ class Welt {
     const zustand = {
       typ: 'zustand',
       t: this.takt,
-      spieler: this.spieler.map((s) => ({ id: s.id, holz: s.holz, nahrung: s.nahrung, gold: s.gold, stein: s.stein })),
+      spieler: this.spieler.map((s) => ({
+        id: s.id,
+        holz: s.holz,
+        nahrung: s.nahrung,
+        gold: s.gold,
+        stein: s.stein,
+        bev: bevoelkerung.get(s.id) || 0,
+        raum: this.wohnraum(s),
+      })),
       einheiten,
       felder,
     };
@@ -307,6 +317,11 @@ class Welt {
       this.tierAenderungen = [];
     }
     return zustand;
+  }
+
+  // Bisher steht je Spieler genau ein Dorfzentrum; Haeuser kommen mit A6.
+  wohnraum() {
+    return Math.min(BEVOELKERUNG_MAX, GEBAEUDE.dorfzentrum.wohnraum);
   }
 
   tierFuerDraht(id) {

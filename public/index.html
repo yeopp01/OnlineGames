@@ -102,7 +102,31 @@
     <div id="spiel" hidden>
       <canvas id="brett"></canvas>
       <div id="kopfzeile" class="kopfzeile">
-        <span><span id="vorraete"></span> <span id="kartenwert" class="hinweis"></span></span>
+        <span class="leiste">
+          <span id="vorraete" class="rohstoffe">
+            <span class="rohstoff" data-rohstoff="holz" title="Holz">
+              <svg viewBox="0 0 20 20" aria-hidden="true"><rect x="2" y="9" width="15" height="6" rx="3" fill="#8a5a2b"/><rect x="4" y="4" width="14" height="6" rx="3" fill="#a06a35"/><circle cx="16" cy="7" r="2.4" fill="#e2b77a" stroke="#6b4420"/><circle cx="15" cy="12" r="2.4" fill="#e2b77a" stroke="#6b4420"/></svg>
+              <b>0</b><span class="name">Holz</span>
+            </span>
+            <span class="rohstoff" data-rohstoff="nahrung" title="Nahrung">
+              <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M10 3c1-2 4-2 5 0" stroke="#3f7a35" stroke-width="1.6" fill="none"/><circle cx="7" cy="12" r="4" fill="#c8323c"/><circle cx="13" cy="11" r="4" fill="#d9444c"/><circle cx="10" cy="15.5" r="3.4" fill="#b02a33"/><circle cx="12" cy="9.5" r="1" fill="#fff" opacity=".7"/></svg>
+              <b>0</b><span class="name">Nahrung</span>
+            </span>
+            <span class="rohstoff" data-rohstoff="gold" title="Gold">
+              <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M2 15l4-7 5 2 3-5 4 10z" fill="#e0b43a" stroke="#8a6a12"/><path d="M6 8l5 2-2 5z" fill="#f6d86b"/><circle cx="13" cy="8" r="1" fill="#fff"/></svg>
+              <b>0</b><span class="name">Gold</span>
+            </span>
+            <span class="rohstoff" data-rohstoff="stein" title="Stein">
+              <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M2 16l3-8 6-3 6 4 1 7z" fill="#9aa0a6" stroke="#55595e"/><path d="M5 8l6-3 1 6z" fill="#c4c9ce"/></svg>
+              <b>0</b><span class="name">Stein</span>
+            </span>
+            <span class="rohstoff bevoelkerung" data-rohstoff="bev" title="Bevoelkerung">
+              <svg viewBox="0 0 20 20" aria-hidden="true"><circle cx="10" cy="5.5" r="3.2" fill="#e8c9a0"/><path d="M4 18c0-6 2.5-8.5 6-8.5s6 2.5 6 8.5z" fill="#4a86c5"/></svg>
+              <b>0</b><i>/</i><b data-teil="raum">0</b>
+            </span>
+          </span>
+          <span id="kartenwert" class="hinweis"></span>
+        </span>
         <span id="hinweis" class="hinweis">Ziehen waehlt aus · Rechtsklick befiehlt · WASD schiebt die Karte</span>
       </div>
     </div>

@@ -96,14 +96,60 @@ function empfangen(nachricht) {
     case 'zustand':
       if (!ansicht) return;
       ansicht.zustand(nachricht);
-      teile.vorraete.textContent =
-        `Holz ${ansicht.vorraete.holz}  ·  Nahrung ${ansicht.vorraete.nahrung}`;
+      leisteZiel(ansicht.vorraete);
       break;
 
     case 'fehler':
       melden(nachricht.text, teile.warteraum.hidden ? meldeort || teile.meldung : teile.wartemeldung);
       break;
   }
+}
+
+// ---- Rohstoffleiste (bedienung AC-24, AC-17) ------------------------------
+// Die Zahlen springen nicht: jede Anzeige laeuft in rund einer halben Sekunde
+// auf den neuen Wert, damit man sieht, dass die Wirtschaft arbeitet.
+const LEISTE_DAUER = 500;
+const leiste = { ziel: {}, gezeigt: {}, von: {}, start: 0, laeuft: false };
+
+function leisteFeld(name) {
+  if (name === 'raum') return teile.vorraete.querySelector('[data-teil="raum"]');
+  return teile.vorraete.querySelector(`[data-rohstoff="${name}"] b`);
+}
+
+function leisteZiel(werte) {
+  let geaendert = false;
+  for (const [name, wert] of Object.entries(werte)) {
+    if (leiste.ziel[name] === wert) continue;
+    // Der erste Wert erscheint sofort - hochzaehlen ab null waere falsch.
+    if (leiste.ziel[name] === undefined) {
+      leiste.gezeigt[name] = wert;
+      leisteFeld(name).textContent = wert;
+    }
+    leiste.ziel[name] = wert;
+    geaendert = true;
+  }
+  if (!geaendert) return;
+  leiste.von = { ...leiste.gezeigt };
+  leiste.start = performance.now();
+  if (!leiste.laeuft) {
+    leiste.laeuft = true;
+    requestAnimationFrame(leisteZaehlen);
+  }
+}
+
+function leisteZaehlen(jetzt) {
+  // Der Zeitstempel des Bildes kann vor der Lieferung liegen, die mitten im
+  // Bild ankam - ohne Untergrenze zaehlte die Leiste kurz rueckwaerts.
+  const anteil = Math.max(0, Math.min(1, (jetzt - leiste.start) / LEISTE_DAUER));
+  for (const [name, ziel] of Object.entries(leiste.ziel)) {
+    const von = leiste.von[name] ?? ziel;
+    const wert = Math.round(von + (ziel - von) * anteil);
+    if (wert === leiste.gezeigt[name]) continue;
+    leiste.gezeigt[name] = wert;
+    leisteFeld(name).textContent = wert;
+  }
+  if (anteil < 1) requestAnimationFrame(leisteZaehlen);
+  else leiste.laeuft = false;
 }
 
 // ---- Einstellungen im Warteraum (AC-9, AC-10) ----------------------------

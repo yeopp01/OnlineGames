@@ -88,6 +88,7 @@ Zahlen, gegen die spätere Runden vergleichen. Mit Datum und Commit.
 | 2026-09-17 | Zeichnen je Bild im Browserlauf, Zoom 1 / Zoom 0,4 | 4,9–6,2 ms / 10–11 ms | Runde 13 |
 | 2026-09-17 | Tests ohne Browser / im Browser; Browserlauf (Last 16 %) | 260 / 83; 58,5 s | Runde 13 |
 | 2026-09-17 | Tests ohne Browser / im Browser; Browserlauf | 264 / 86; 1,1 min | Runde 16 |
+| 2026-09-17 | Tests ohne Browser / im Browser; Browserlauf | 265 / 88; 1,3 min | Runde 17 |
 
 ## Rückschauen
 
@@ -166,6 +167,14 @@ Schleife hat gewartet statt Regeln zu lockern und das ist richtig so.
 Neueste oben. Eine Zeile je Runde: Nummer, Datum, Kriterien, Ergebnis,
 wichtigste Erkenntnis.
 
+- **17** · 2026-09-17 · bedienung AC-24, AC-17 fertig: Leiste mit gezeichneten
+  Symbolen für Holz, Nahrung, Gold, Stein und Bevölkerung 5/5 (Wohnraum aus
+  `GEBAEUDE` in `daten.js`), Zahlen laufen in 0,5 s auf den neuen Wert.
+  Gelernt: der Zeitstempel von `requestAnimationFrame` liegt vor einem
+  `performance.now()`, das im selben Bild gesetzt wurde — der Anteil wurde
+  negativ, die Leiste zählte kurz rückwärts (250 → 249). Gefunden nur, weil
+  der Test die Folge Bild für Bild mitschreibt und „nie rückwärts" prüft.
+  Aus A4 offen: einheiten AC-16 (Lager) mit A6. Nächster Schritt: **A5**.
 - **16** · 2026-09-17 · einheiten AC-15, AC-19 fertig, AC-11 abgelöst: Werte
   in `daten.js`, Sammeln je Takt mit der Rate der Vorlage, Tempo 0,8, Gold und
   Stein sammelbar, Ladung verfällt nur beim Rohstoffwechsel. Gelernt: mit den
