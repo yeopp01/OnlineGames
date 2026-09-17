@@ -122,6 +122,9 @@ export const GEBAEUDE = {
   dorfzentrum: {
     name: 'Dorfzentrum',
     zeichnen: dorfzentrum,
+    // So viele halbe Rautenbreiten ist die Zeichnung halb breit - daraus wird
+    // der Massstab fuer die echte Grundflaeche (groesse Felder).
+    halbeBreite: 2.3,
     // Wo ein Klick das Gebaeude trifft, in halben Rautenbreiten um den Fusspunkt.
     trefferBreite: 2.4,
     trefferOben: 4.2,
@@ -136,19 +139,27 @@ export const GEBAEUDE = {
  * @param {number} y Fusspunkt im Bild
  * @param {number} e halbe Rautenbreite in Bildpunkten
  * @param {string} farbe Spielerfarbe
+ * @param {number} [groesse] Kantenlaenge der Grundflaeche in Feldern
  */
-export function gebaeudeZeichnen(stift, art, x, y, e, farbe) {
+export function gebaeudeZeichnen(stift, art, x, y, e, farbe, groesse) {
   const gebaeude = GEBAEUDE[art];
   if (!gebaeude) return;
   stift.save();
   stift.translate(x, y);
-  gebaeude.zeichnen(stift, e, farbe);
+  gebaeude.zeichnen(stift, e * massstab(gebaeude, groesse), farbe);
   stift.restore();
 }
 
+// Eine Grundflaeche aus n Feldern ist im Bild n halbe Rautenbreiten halb breit;
+// das Gebaeude fuellt sie fast ganz aus.
+function massstab(gebaeude, groesse) {
+  return groesse ? (groesse * 0.95) / gebaeude.halbeBreite : 1;
+}
+
 /** Trifft ein Bildpunkt (relativ zum Fusspunkt) das Gebaeude? */
-export function gebaeudeGetroffen(art, dx, dy, e) {
+export function gebaeudeGetroffen(art, dx, dy, e, groesse) {
   const g = GEBAEUDE[art];
   if (!g) return false;
-  return Math.abs(dx) <= g.trefferBreite * e && dy >= -g.trefferOben * e && dy <= g.trefferUnten * e;
+  const m = e * massstab(g, groesse);
+  return Math.abs(dx) <= g.trefferBreite * m && dy >= -g.trefferOben * m && dy <= g.trefferUnten * m;
 }

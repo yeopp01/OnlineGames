@@ -124,6 +124,14 @@ export class Ansicht {
     if (this.gewaehltesGebaeude && !this.gebaeude.has(this.gewaehltesGebaeude)) this.gewaehltesGebaeude = null;
   }
 
+  // Die Mitte der Grundflaeche: der Server nennt das Ankerfeld, die Flaeche
+  // reicht von x - groesse/2 (abgerundet) ueber groesse Felder.
+  gebaeudeMitte(gebaeude) {
+    const n = this.werte.gebaeude[gebaeude.art]?.groesse || 1;
+    const versatz = -Math.floor(n / 2) + (n - 1) / 2;
+    return { x: gebaeude.x + versatz, y: gebaeude.y + versatz, groesse: n };
+  }
+
   // ---- Raute ------------------------------------------------------------
 
   /** Feld (auch gebrochen) zu Bildpunkt auf der Leinwand. */
@@ -234,8 +242,9 @@ export class Ansicht {
       const e = HALB_B * this.kamera.zoom;
       for (const gebaeude of this.gebaeude.values()) {
         if (gebaeude.b !== this.ich) continue;
-        const p = this.zuBild(gebaeude.x, gebaeude.y);
-        if (gebaeudeGetroffen(gebaeude.art, rahmen.vonX - p.x, rahmen.vonY - p.y, e)) {
+        const mitte = this.gebaeudeMitte(gebaeude);
+        const p = this.zuBild(mitte.x, mitte.y);
+        if (gebaeudeGetroffen(gebaeude.art, rahmen.vonX - p.x, rahmen.vonY - p.y, e, mitte.groesse)) {
           this.gewaehltesGebaeude = gebaeude.i;
           return;
         }
@@ -360,7 +369,8 @@ export class Ansicht {
       }
     }
     for (const gebaeude of this.gebaeude.values()) {
-      stehend.push({ tiefe: gebaeude.x + gebaeude.y, x: gebaeude.x, y: gebaeude.y, art: 'gebaeude', gebaeude });
+      const mitte = this.gebaeudeMitte(gebaeude);
+      stehend.push({ tiefe: mitte.x + mitte.y, x: mitte.x, y: mitte.y, art: 'gebaeude', gebaeude });
     }
     for (const tier of this.tiere.values()) stehend.push({ tiefe: tier.x + tier.y, x: tier.x, y: tier.y, art: 'tier', tier });
     const anteil = this.anteil(jetzt);
@@ -400,14 +410,15 @@ export class Ansicht {
   gebaeudeBild(gebaeude, p, e) {
     const spieler = this.spieler.get(gebaeude.b);
     const stift = this.stift;
+    const { groesse } = this.gebaeudeMitte(gebaeude);
     if (this.gewaehltesGebaeude === gebaeude.i) {
       // Ausgewaehlt: ein heller Rand um die Grundflaeche, wie die Ellipse bei Figuren.
-      raute(stift, p.x, p.y, e * 2.6, e * 1.3);
+      raute(stift, p.x, p.y, e * groesse, e * groesse / 2);
       stift.strokeStyle = '#ffffff';
       stift.lineWidth = 2;
       stift.stroke();
     }
-    gebaeudeZeichnen(stift, gebaeude.art, p.x, p.y, e, spieler ? spieler.farbe : '#888888');
+    gebaeudeZeichnen(stift, gebaeude.art, p.x, p.y, e, spieler ? spieler.farbe : '#888888', groesse);
   }
 
   namenZeichnen(spieler) {
@@ -415,7 +426,7 @@ export class Ansicht {
     const stift = this.stift;
     const p = this.zuBild(spieler.basis.x, spieler.basis.y);
     // Ueber der Fahne des Dorfzentrums.
-    const oben = p.y - HALB_B * 5.2 * this.kamera.zoom - 6;
+    const oben = p.y - HALB_B * 7.6 * this.kamera.zoom - 4;
     stift.font = '600 12px system-ui, sans-serif';
     stift.textAlign = 'center';
     stift.lineWidth = 3;

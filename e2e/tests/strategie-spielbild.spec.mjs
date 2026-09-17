@@ -293,7 +293,7 @@ test.describe('Das Spielbild', () => {
     await nachweis(bert, {
       spec: KARTE,
       ac: 'AC-16',
-      titel: 'Berts Dorfzentrum nah: acht Schafe im Kreis, das Halsband in seinem Rot',
+      titel: 'Berts Dorfzentrum nah: Schafe im Kreis darum, das Halsband in seinem Rot - eines steht dahinter',
       test: info,
     });
   });

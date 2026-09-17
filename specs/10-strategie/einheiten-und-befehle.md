@@ -2,7 +2,7 @@
 
 **Bereich:** Strategie
 **Kuerzel:** einheiten
-**Stand:** 10/17 fertig · 6 offen · 1 zurueckgestellt
+**Stand:** 10/17 fertig · 1 in QA · 5 offen · 1 zurueckgestellt
 
 ## Zweck
 
@@ -76,7 +76,7 @@ Befehl bewirkt.
   Beerenstrauch, Gold- oder Steinfeld: er sammelt mit der Rate aus der Tabelle,
   trägt bis zu zehn und bringt sie weg. Wechselt er den Rohstoff, verfällt die
   alte Ladung.
-- **AC-16** `offen` **Abgabe am nächsten Lager** — Ein voller Dorfbewohner bringt seine Ladung zum
+- **AC-16** `in-qa` **Abgabe am nächsten Lager** — Ein voller Dorfbewohner bringt seine Ladung zum
   nächsten fertigen Gebäude, das diesen Rohstoff annimmt, und kehrt zum selben
   Vorrat zurück.
 - **AC-17** `offen` **Schafe schlachten und hüten** — Rechtsklick eines Dorfbewohners auf ein

@@ -287,6 +287,53 @@ test('bauen AC-8 / bauen AC-11: Ausbilden und Abbrechen gehen ueber die Leitung,
   bert.zu();
 });
 
+test('bauen AC-1 / bauen AC-5 / bauen AC-6: Bauen und Abreissen gehen ueber die Leitung', async () => {
+  const anna = gastgeber();
+  await anna.offen();
+  anna.senden({ typ: 'erstellen', name: 'Anna' });
+  const du = await anna.warteAuf(istTyp('du'));
+
+  const bert = kunde();
+  await bert.offen();
+  bert.senden({ typ: 'beitreten', code: du.code, name: 'Bert' });
+  await bert.warteAuf(istTyp('du'));
+
+  anna.senden({ typ: 'start', startwert: 7 });
+  const aufbau = await anna.warteAuf(istTyp('aufbau'));
+  assert.equal(aufbau.werte.gebaeude.haus.groesse, 2);
+  const zustand = await anna.warteAuf(istTyp('zustand'));
+  const bauer = zustand.einheiten.find((e) => e.b === du.id && e.k === 'd');
+
+  // Einen freien Platz liest der Test aus der Welt - befohlen wird ueber die Leitung.
+  const welt = laufend.raeume.finden(du.code).welt;
+  const basis = aufbau.spieler.find((s) => s.id === du.id).basis;
+  let platz = null;
+  for (let r = 6; !platz && r < 20; r++) {
+    for (const [dx, dy] of [[r, 0], [0, r], [r, r], [-r, 0], [0, -r]]) {
+      if (welt.platzPruefen('haus', basis.x + dx, basis.y + dy)) { platz = { x: basis.x + dx, y: basis.y + dy }; break; }
+    }
+  }
+  const holz = (n) => n.spieler.find((s) => s.id === du.id).holz;
+
+  anna.senden({ typ: 'befehl', auftrag: 'bauen', einheiten: [bauer.i], art: 'haus', ziel: platz });
+  const baustelle = await anna.warteAuf((n) => n.typ === 'zustand' && n.gebaeude?.some((g) => g.art === 'haus' && g.b === du.id));
+  const haus = baustelle.gebaeude.find((g) => g.art === 'haus');
+  assert.equal(holz(baustelle), holz(zustand) - 25, 'bezahlt bei Baubeginn');
+  assert.equal(haus.u, 0, 'eine Baustelle, noch nichts gebaut');
+  assert.ok(baustelle.felder.some((f) => f.a === 6), 'die Grundflaeche ist bebaut');
+
+  anna.senden({ typ: 'befehl', auftrag: 'bauen', einheiten: [bauer.i], art: 'haus', ziel: platz });
+  const absage = await anna.warteAuf(istTyp('fehler'));
+  assert.equal(absage.text, 'Hier ist kein Platz.');
+
+  anna.senden({ typ: 'befehl', auftrag: 'abreissen', gebaeude: haus.i });
+  const weg = await anna.warteAuf((n) => n.typ === 'zustand' && n.gebaeude?.some((g) => g.i === haus.i && g.weg));
+  assert.equal(holz(weg), holz(zustand), 'nichts verbaut: alles zurueck');
+
+  anna.zu();
+  bert.zu();
+});
+
 test('raeume AC-9 / raeume AC-10: nach Verbindungsabbruch kehrt der Spieler zurueck', async () => {
   const anna = gastgeber();
   await anna.offen();

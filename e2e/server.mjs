@@ -72,7 +72,7 @@ const griffe = http.createServer(async (anfrage, antwortGriff) => {
       const raum = laufend.raeume.finden(id);
       if (!raum) throw new Error(`Raum ${id} gibt es nicht.`);
       raum.zeitraffer = Math.max(1, Math.min(20, Number(werte.faktor) || 1));
-      antwortGriff.writeHead(200, { 'Content-Type': 'application/json' }).end(JSON.stringify({ ok: true }));
+      antwortGriff.writeHead(200, { 'Content-Type': 'application/json', Connection: 'close' }).end(JSON.stringify({ ok: true }));
       return;
     }
     const eintrag = laufend.manager.staende.offen.get(id);
@@ -80,11 +80,13 @@ const griffe = http.createServer(async (anfrage, antwortGriff) => {
     if (!GRIFFE[befehl]) throw new Error(`Unbekannter Griff: ${befehl}`);
     const ergebnis = GRIFFE[befehl](eintrag.karriere, werte) || {};
     laufend.manager.staende.schreiben(eintrag.konto, id, eintrag.karriere);
-    antwortGriff.writeHead(200, { 'Content-Type': 'application/json' }).end(JSON.stringify({ ok: true, ...ergebnis }));
+    antwortGriff.writeHead(200, { 'Content-Type': 'application/json', Connection: 'close' }).end(JSON.stringify({ ok: true, ...ergebnis }));
   } catch (fehler) {
-    antwortGriff.writeHead(400, { 'Content-Type': 'application/json' }).end(JSON.stringify({ fehler: fehler.message }));
+    antwortGriff.writeHead(400, { 'Content-Type': 'application/json', Connection: 'close' }).end(JSON.stringify({ fehler: fehler.message }));
   }
 });
+// Jede Antwort schliesst ihre Verbindung: eine wiederverwendete, die der Server
+// nach seiner Wartezeit schon zugemacht hat, endete sonst in ECONNRESET (Runde 22).
 griffe.listen(hafen + 1);
 
 const beenden = () => {

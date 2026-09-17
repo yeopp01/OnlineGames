@@ -7,7 +7,6 @@ const {
 } = require('./daten');
 
 const TAKTE_PRO_SEKUNDE = 10;
-const ABLADEWEITE = 2.2;
 const SUCHWEITE_ERSATZ = 12;
 // Wo die Startaufstellung steht, relativ zur Basis: alle vor dem Dorfzentrum.
 // Hinter ihm (dx + dy < 0) verdeckte es sie im Bild.
@@ -86,27 +85,227 @@ class Welt {
       ladung: 0,
       ladungsart: null,
       sammelt: false, // steht am Vorrat und arbeitet
+      baut: false, // steht an einer Baustelle und arbeitet
       angefangen: 0, // Bruchteil der naechsten Einheit Rohstoff
     };
     this.einheiten.set(einheit.id, einheit);
     return einheit;
   }
 
-  gebaeudeAnlegen(besitzer, art, x, y) {
+  // x, y ist das Ankerfeld; die Grundflaeche reicht von x - groesse/2 (abgerundet)
+  // ueber groesse Felder (grundflaeche). Fertig steht ein Gebaeude nur zu Beginn
+  // da - alles andere ist erst eine Baustelle (bauen AC-1).
+  gebaeudeAnlegen(besitzer, art, x, y, fertig = true) {
     const gebaeude = {
       id: this.naechsteId++,
       art,
       besitzer,
       x,
       y,
+      fertig,
+      bau: fertig ? 1 : 0, // Anteil der Bauarbeit
       leben: GEBAEUDE[art].leben,
       schlange: [], // Arten der bezahlten Auftraege, der erste laeuft
       fortschritt: 0, // Takte am laufenden Auftrag
       wartet: false, // Bevoelkerung voll (bauen AC-15)
     };
     this.gebaeude.set(gebaeude.id, gebaeude);
+    this.belegen(gebaeude);
     this.gebaeudeGeaendert(gebaeude);
     return gebaeude;
+  }
+
+  grundflaeche(art, x, y) {
+    const groesse = GEBAEUDE[art].groesse;
+    const x0 = x - Math.floor(groesse / 2);
+    const y0 = y - Math.floor(groesse / 2);
+    return { x0, y0, x1: x0 + groesse - 1, y1: y0 + groesse - 1 };
+  }
+
+  // Taugt der Platz? Alle Felder auf der Karte, Gras, kein Tier darauf
+  // (bauen AC-3). Einheiten stehen nicht im Weg - sie gehen beiseite.
+  platzPruefen(art, x, y) {
+    if (!GEBAEUDE[art] || !Number.isInteger(x) || !Number.isInteger(y)) return false;
+    const { x0, y0, x1, y1 } = this.grundflaeche(art, x, y);
+    for (let fy = y0; fy <= y1; fy++) {
+      for (let fx = x0; fx <= x1; fx++) {
+        if (!karten.begehbar(this.karte, fx, fy)) return false;
+      }
+    }
+    for (const tier of this.tiere.values()) {
+      const tx = Math.round(tier.x);
+      const ty = Math.round(tier.y);
+      if (tx >= x0 && tx <= x1 && ty >= y0 && ty <= y1) return false;
+    }
+    return true;
+  }
+
+  // Die Grundflaeche wird unbegehbar; wer darauf steht, geht zum naechsten
+  // freien Feld daneben.
+  belegen(gebaeude) {
+    const g = this.karte.groesse;
+    const { x0, y0, x1, y1 } = this.grundflaeche(gebaeude.art, gebaeude.x, gebaeude.y);
+    for (let fy = Math.max(0, y0); fy <= Math.min(g - 1, y1); fy++) {
+      for (let fx = Math.max(0, x0); fx <= Math.min(g - 1, x1); fx++) {
+        const i = fy * g + fx;
+        this.karte.felder[i] = karten.BEBAUT;
+        this.karte.vorrat.delete(i);
+        this.feldAenderungen.push({ i, a: karten.BEBAUT });
+      }
+    }
+    for (const einheit of this.einheiten.values()) {
+      if (!this.aufGrundflaeche(einheit, gebaeude)) continue;
+      const frei = this.randfeld(gebaeude, einheit);
+      if (!frei) continue;
+      einheit.x = frei.x;
+      einheit.y = frei.y;
+      einheit.weg = [];
+    }
+  }
+
+  freigeben(gebaeude) {
+    const g = this.karte.groesse;
+    const { x0, y0, x1, y1 } = this.grundflaeche(gebaeude.art, gebaeude.x, gebaeude.y);
+    for (let fy = y0; fy <= y1; fy++) {
+      for (let fx = x0; fx <= x1; fx++) {
+        const i = fy * g + fx;
+        this.karte.felder[i] = karten.GRAS;
+        this.feldAenderungen.push({ i, a: karten.GRAS });
+      }
+    }
+  }
+
+  aufGrundflaeche(einheit, gebaeude) {
+    const { x0, y0, x1, y1 } = this.grundflaeche(gebaeude.art, gebaeude.x, gebaeude.y);
+    const ex = Math.round(einheit.x);
+    const ey = Math.round(einheit.y);
+    return ex >= x0 && ex <= x1 && ey >= y0 && ey <= y1;
+  }
+
+  // Abstand in Feldern von einer Einheit zum Rand der Grundflaeche.
+  abstandZu(einheit, gebaeude) {
+    const { x0, y0, x1, y1 } = this.grundflaeche(gebaeude.art, gebaeude.x, gebaeude.y);
+    const dx = Math.max(x0 - einheit.x, 0, einheit.x - x1);
+    const dy = Math.max(y0 - einheit.y, 0, einheit.y - y1);
+    return Math.max(dx, dy);
+  }
+
+  // Das begehbare Feld rund um die Grundflaeche, das `von` am naechsten liegt.
+  randfeld(gebaeude, von) {
+    const { x0, y0, x1, y1 } = this.grundflaeche(gebaeude.art, gebaeude.x, gebaeude.y);
+    let bestes = null;
+    let besterAbstand = Infinity;
+    for (let r = 1; r <= 3 && !bestes; r++) {
+      for (let fy = y0 - r; fy <= y1 + r; fy++) {
+        for (let fx = x0 - r; fx <= x1 + r; fx++) {
+          if (fx > x0 - r && fx < x1 + r && fy > y0 - r && fy < y1 + r) continue;
+          if (!karten.begehbar(this.karte, fx, fy)) continue;
+          const abstand = Math.hypot(fx - von.x, fy - von.y);
+          if (abstand < besterAbstand) {
+            besterAbstand = abstand;
+            bestes = { x: fx, y: fy };
+          }
+        }
+      }
+    }
+    return bestes;
+  }
+
+  gebaeudeAn(x, y) {
+    for (const gebaeude of this.gebaeude.values()) {
+      const { x0, y0, x1, y1 } = this.grundflaeche(gebaeude.art, gebaeude.x, gebaeude.y);
+      if (x >= x0 && x <= x1 && y >= y0 && y <= y1) return gebaeude;
+    }
+    return null;
+  }
+
+  // Ein Bauauftrag: der Platz wird geprueft, die Kosten gehen sofort ab
+  // (bauen AC-5), die Baustelle entsteht, die Dorfbewohner gehen hin (AC-1).
+  bauen(spielerId, einheitIds, art, ziel) {
+    if (!Array.isArray(einheitIds) || !ziel || !GEBAEUDE[art]) return { fehler: 'Das laesst sich nicht bauen.' };
+    const bauer = einheitIds.slice(0, 200)
+      .map((id) => this.einheiten.get(id))
+      .filter((e) => e && e.besitzer === spielerId && (EINHEITEN[e.art].baut || []).includes(art));
+    if (!bauer.length) return { fehler: 'Niemand in der Auswahl kann das bauen.' };
+    const x = Math.round(Number(ziel.x));
+    const y = Math.round(Number(ziel.y));
+    if (!this.platzPruefen(art, x, y)) return { fehler: 'Hier ist kein Platz.' };
+    const spieler = this.spielerVon(spielerId);
+    const kosten = GEBAEUDE[art].kosten;
+    for (const [rohstoff, menge] of Object.entries(kosten)) {
+      if (spieler[rohstoff] < menge) return { fehler: `Zu wenig ${ROHSTOFF_NAMEN[rohstoff]}.` };
+    }
+    for (const [rohstoff, menge] of Object.entries(kosten)) spieler[rohstoff] -= menge;
+    const baustelle = this.gebaeudeAnlegen(spielerId, art, x, y, false);
+    for (const einheit of bauer) this.bauenBeginnen(einheit, baustelle);
+    return { gebaeude: baustelle.id };
+  }
+
+  bauenBeginnen(einheit, baustelle) {
+    einheit.sammelt = false;
+    einheit.baut = false;
+    einheit.auftrag = { art: 'bauen', gebaeude: baustelle.id };
+    const stand = this.randfeld(baustelle, einheit);
+    einheit.weg = stand ? suchen(this.karte, this.feldVon(einheit), stand) : [];
+  }
+
+  // Eine Baustelle abreissen: erstattet wird, was noch nicht verbaut ist
+  // (bauen AC-6).
+  abreissen(spielerId, gebaeudeId) {
+    const gebaeude = this.gebaeude.get(gebaeudeId);
+    if (!gebaeude || gebaeude.besitzer !== spielerId) return { fehler: 'Das ist nicht dein Gebaeude.' };
+    if (gebaeude.fertig) return { fehler: 'Nur Baustellen lassen sich abreissen.' };
+    const spieler = this.spielerVon(spielerId);
+    for (const [rohstoff, menge] of Object.entries(GEBAEUDE[gebaeude.art].kosten)) {
+      spieler[rohstoff] += Math.floor(menge * (1 - gebaeude.bau));
+    }
+    this.freigeben(gebaeude);
+    this.gebaeude.delete(gebaeude.id);
+    this.gebaeudeGeaendert(gebaeude);
+    for (const einheit of this.einheiten.values()) {
+      if (einheit.auftrag?.art === 'bauen' && einheit.auftrag.gebaeude === gebaeude.id) {
+        einheit.auftrag = null;
+        einheit.baut = false;
+      }
+    }
+    return {};
+  }
+
+  // Wer an einer Baustelle arbeitet, baut sie mit (bauen AC-2):
+  // n Bauleute brauchen 3 t / (n + 2).
+  baustelleTakten(gebaeude) {
+    let bauleute = 0;
+    for (const einheit of this.einheiten.values()) {
+      if (einheit.baut && einheit.auftrag?.gebaeude === gebaeude.id) bauleute++;
+    }
+    if (!bauleute) return;
+    gebaeude.bau = Math.min(1, gebaeude.bau + (bauleute + 2) / (3 * GEBAEUDE[gebaeude.art].bauzeit * TAKTE_PRO_SEKUNDE));
+    this.gebaeudeGeaendert(gebaeude);
+    // Ein Hauch Rechenspiel: 1 - 1e-9 zaehlt als fertig, sonst fehlt der
+    // letzte Takt wegen der Rundung.
+    if (gebaeude.bau < 1 - 1e-9) return;
+    gebaeude.bau = 1;
+    gebaeude.fertig = true;
+    this.nachDemBau(gebaeude);
+  }
+
+  // Nach einem Lager oder einer Muehle sammeln die Bauleute am naechsten
+  // passenden Vorrat (bauen AC-1); nach einem Haus stehen sie bereit.
+  nachDemBau(gebaeude) {
+    const annahme = GEBAEUDE[gebaeude.art].annahme;
+    const arten = new Set(Object.entries(SAMMELN)
+      .filter(([, s]) => annahme.includes(s.rohstoff))
+      .map(([art]) => Number(art)));
+    for (const einheit of this.einheiten.values()) {
+      if (einheit.auftrag?.art !== 'bauen' || einheit.auftrag.gebaeude !== gebaeude.id) continue;
+      einheit.baut = false;
+      einheit.auftrag = null;
+      if (!arten.size || gebaeude.art === 'dorfzentrum') continue;
+      const feld = this.naechsterVorratAus(einheit, arten);
+      if (!feld) continue;
+      einheit.auftrag = { art: 'sammeln', feld };
+      this.wegZumVorrat(einheit);
+    }
   }
 
   gebaeudeGeaendert(gebaeude) {
@@ -121,6 +320,10 @@ class Welt {
         return this.ausbilden(spielerId, nachricht.gebaeude, nachricht.einheit);
       case 'abbrechen':
         return this.abbrechen(spielerId, nachricht.gebaeude, nachricht.platz);
+      case 'bauen':
+        return this.bauen(spielerId, nachricht.einheiten, nachricht.art, nachricht.ziel);
+      case 'abreissen':
+        return this.abreissen(spielerId, nachricht.gebaeude);
       default:
         return this.befehl(spielerId, nachricht.einheiten, nachricht.ziel);
     }
@@ -131,6 +334,7 @@ class Welt {
   ausbilden(spielerId, gebaeudeId, art) {
     const gebaeude = this.gebaeude.get(gebaeudeId);
     if (!gebaeude || gebaeude.besitzer !== spielerId) return { fehler: 'Das ist nicht dein Gebaeude.' };
+    if (!gebaeude.fertig) return { fehler: 'Das Gebaeude ist noch nicht fertig.' };
     if (!GEBAEUDE[gebaeude.art].bildetAus.includes(art)) return { fehler: 'Das bildet dieses Gebaeude nicht aus.' };
     if (gebaeude.schlange.length >= SCHLANGE_MAX) return { fehler: 'Die Warteschlange ist voll.' };
     const spieler = this.spielerVon(spielerId);
@@ -164,7 +368,7 @@ class Welt {
   wohnraum(spieler) {
     let raum = 0;
     for (const g of this.gebaeude.values()) {
-      if (g.besitzer === spieler.id) raum += GEBAEUDE[g.art].wohnraum || 0;
+      if (g.besitzer === spieler.id && g.fertig) raum += GEBAEUDE[g.art].wohnraum || 0;
     }
     return Math.min(BEVOELKERUNG_MAX, raum);
   }
@@ -178,6 +382,10 @@ class Welt {
   }
 
   gebaeudeTakten(gebaeude, bevoelkerung) {
+    if (!gebaeude.fertig) {
+      this.baustelleTakten(gebaeude);
+      return;
+    }
     if (!gebaeude.schlange.length) return;
     const spieler = this.spielerVon(gebaeude.besitzer);
     const belegt = bevoelkerung.get(spieler.id) || 0;
@@ -247,12 +455,18 @@ class Welt {
 
     // Holz, Beeren, Gold und Stein sind sammelbar (einheiten AC-15).
     const sammeln = SAMMELN[this.karte.felder[zy * g + zx]];
+    // Eine eigene Baustelle: wer bauen kann, baut mit (bauen AC-2).
+    const baustelle = this.gebaeudeAn(zx, zy);
 
     for (const id of einheitIds.slice(0, 200)) {
       const einheit = this.einheiten.get(id);
       if (!einheit || einheit.besitzer !== spielerId) continue;
       einheit.sammelt = false;
-      if (sammeln && EINHEITEN[einheit.art].tragkraft > 0) {
+      einheit.baut = false;
+      if (baustelle && !baustelle.fertig && baustelle.besitzer === spielerId
+        && (EINHEITEN[einheit.art].baut || []).includes(baustelle.art)) {
+        this.bauenBeginnen(einheit, baustelle);
+      } else if (sammeln && EINHEITEN[einheit.art].tragkraft > 0) {
         // Wer den Rohstoff wechselt, laesst die alte Ladung fallen.
         if (einheit.ladung > 0 && einheit.ladungsart !== sammeln.rohstoff) {
           einheit.ladung = 0;
@@ -273,9 +487,27 @@ class Welt {
     einheit.weg = stand ? suchen(this.karte, this.feldVon(einheit), stand) : [];
   }
 
-  wegZurBasis(einheit) {
-    const spieler = this.spielerVon(einheit.besitzer);
-    einheit.weg = suchen(this.karte, this.feldVon(einheit), spieler.basis);
+  // Abgegeben wird am naechsten fertigen eigenen Gebaeude, das den Rohstoff
+  // annimmt (einheiten AC-16) - gemessen an seinem Rand.
+  lagerFuer(einheit) {
+    let bestes = null;
+    let besterAbstand = Infinity;
+    for (const gebaeude of this.gebaeude.values()) {
+      if (gebaeude.besitzer !== einheit.besitzer || !gebaeude.fertig) continue;
+      if (!GEBAEUDE[gebaeude.art].annahme.includes(einheit.ladungsart)) continue;
+      const abstand = this.abstandZu(einheit, gebaeude);
+      if (abstand < besterAbstand) {
+        besterAbstand = abstand;
+        bestes = gebaeude;
+      }
+    }
+    return bestes;
+  }
+
+  wegZumLager(einheit) {
+    const lager = this.lagerFuer(einheit);
+    const stand = lager && this.randfeld(lager, einheit);
+    einheit.weg = stand ? suchen(this.karte, this.feldVon(einheit), stand) : [];
   }
 
   takten() {
@@ -288,11 +520,27 @@ class Welt {
   einheitTakten(einheit) {
     if (einheit.weg.length) {
       einheit.sammelt = false;
+      einheit.baut = false;
       this.laufen(einheit);
       return;
     }
     if (!einheit.auftrag) return;
 
+    if (einheit.auftrag.art === 'bauen') {
+      const baustelle = this.gebaeude.get(einheit.auftrag.gebaeude);
+      if (!baustelle || baustelle.fertig) {
+        einheit.auftrag = null;
+        einheit.baut = false;
+      } else if (this.abstandZu(einheit, baustelle) <= 1.2) {
+        einheit.baut = true;
+      } else if (!einheit.baut) {
+        // Nicht angekommen und kein Weg mehr: noch einmal suchen, sonst aufgeben.
+        const stand = this.randfeld(baustelle, einheit);
+        einheit.weg = stand ? suchen(this.karte, this.feldVon(einheit), stand) : [];
+        if (!einheit.weg.length) einheit.auftrag = null;
+      }
+      return;
+    }
     if (einheit.auftrag.art !== 'sammeln') {
       einheit.auftrag = null;
       return;
@@ -387,15 +635,16 @@ class Welt {
 
     if (einheit.ladung >= EINHEITEN[einheit.art].tragkraft) {
       einheit.sammelt = false;
-      this.wegZurBasis(einheit);
+      this.wegZumLager(einheit);
     }
   }
 
   abladen(einheit) {
     const spieler = this.spielerVon(einheit.besitzer);
-    const weg = Math.hypot(einheit.x - spieler.basis.x, einheit.y - spieler.basis.y);
-    if (weg > ABLADEWEITE) {
-      this.wegZurBasis(einheit);
+    const lager = this.lagerFuer(einheit);
+    if (!lager) return; // nirgends abzugeben: er wartet mit seiner Ladung
+    if (this.abstandZu(einheit, lager) > 1.2) {
+      this.wegZumLager(einheit);
       return;
     }
     spieler[einheit.ladungsart] += einheit.ladung;
@@ -403,6 +652,22 @@ class Welt {
     einheit.ladungsart = null;
     einheit.angefangen = 0;
     this.wegZumVorrat(einheit);
+  }
+
+  naechsterVorratAus(einheit, arten) {
+    let bestes = null;
+    let besterAbstand = SUCHWEITE_ERSATZ;
+    for (const index of this.karte.vorrat.keys()) {
+      if (!arten.has(this.karte.felder[index])) continue;
+      const x = index % this.karte.groesse;
+      const y = (index / this.karte.groesse) | 0;
+      const abstand = Math.hypot(x - einheit.x, y - einheit.y);
+      if (abstand < besterAbstand) {
+        besterAbstand = abstand;
+        bestes = { x, y };
+      }
+    }
+    return bestes;
   }
 
   naechsterVorrat(einheit, art) {
@@ -481,6 +746,8 @@ class Welt {
       x: g.x,
       y: g.y,
       h: g.leben,
+      // Baufortschritt nur fuer Baustellen (darstellung AC-5).
+      ...(g.fertig ? {} : { u: Math.round(g.bau * 100) / 100 }),
       s: g.schlange,
       f: laufend ? Math.round((g.fortschritt / (EINHEITEN[laufend].zeit * TAKTE_PRO_SEKUNDE)) * 100) / 100 : 0,
       w: g.wartet,
@@ -517,9 +784,11 @@ class Welt {
       werte: {
         einheiten: Object.fromEntries(Object.entries(EINHEITEN).map(([art, w]) => [art, {
           kuerzel: w.kuerzel, leben: w.leben, tragkraft: w.tragkraft, kosten: w.kosten || null, zeit: w.zeit || null,
+          baut: w.baut || [],
         }])),
         gebaeude: Object.fromEntries(Object.entries(GEBAEUDE).map(([art, w]) => [art, {
-          leben: w.leben, bildetAus: w.bildetAus || [],
+          leben: w.leben, bildetAus: w.bildetAus, groesse: w.groesse, kosten: w.kosten, bauzeit: w.bauzeit,
+          wohnraum: w.wohnraum, annahme: w.annahme,
         }])),
       },
     };

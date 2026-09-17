@@ -8,7 +8,11 @@
 const EINHEITEN = {
   // kosten und zeit (Sekunden): Ausbildung (bauen AC-8). kuerzel: so geht die
   // Art ueber die Leitung - ein Zustand bleibt unter 1 kB (uebertragung AC-7).
-  dorfbewohner: { leben: 25, tempo: 0.8, sicht: 4, tragkraft: 10, kosten: { nahrung: 50 }, zeit: 25, kuerzel: 'd' },
+  // baut: welche Gebaeude er errichten kann (bauen AC-1).
+  dorfbewohner: {
+    leben: 25, tempo: 0.8, sicht: 4, tragkraft: 10, kosten: { nahrung: 50 }, zeit: 25, kuerzel: 'd',
+    baut: ['haus', 'muehle', 'holzfaellerlager', 'bergbaulager'],
+  },
   spaeherreiter: { leben: 45, tempo: 1.2, sicht: 4, tragkraft: 0, kuerzel: 's' },
   miliz: { leben: 40, tempo: 0.9, sicht: 4, tragkraft: 0, kuerzel: 'm' },
 };
@@ -22,10 +26,20 @@ const SAMMELN = {
   5: { rohstoff: 'stein', rate: 0.36 }, // Steinfeld
 };
 
-// Gebaeude: Wohnraum fuer die Bevoelkerung. Weitere Werte kommen mit dem
-// Bauen (Stufe A, Schritt A6).
+// Gebaeude der Dunklen Zeit (bauen AC-20): Groesse in Feldern (quadratisch),
+// Kosten, Bauzeit in Sekunden, Leben, Wohnraum, welche Rohstoffe dort
+// abgegeben werden (einheiten AC-16) und was sie ausbilden.
+// Farm und Kaserne kommen mit Schritt A7.
+const ALLE = ['holz', 'nahrung', 'gold', 'stein'];
 const GEBAEUDE = {
-  dorfzentrum: { leben: 2400, wohnraum: 5, bildetAus: ['dorfbewohner'] },
+  dorfzentrum: {
+    groesse: 4, kosten: { holz: 275, stein: 100 }, bauzeit: 150, leben: 2400, wohnraum: 5,
+    annahme: ALLE, bildetAus: ['dorfbewohner'],
+  },
+  haus: { groesse: 2, kosten: { holz: 25 }, bauzeit: 25, leben: 550, wohnraum: 5, annahme: [], bildetAus: [] },
+  muehle: { groesse: 2, kosten: { holz: 100 }, bauzeit: 35, leben: 1000, wohnraum: 0, annahme: ['nahrung'], bildetAus: [] },
+  holzfaellerlager: { groesse: 2, kosten: { holz: 100 }, bauzeit: 35, leben: 1000, wohnraum: 0, annahme: ['holz'], bildetAus: [] },
+  bergbaulager: { groesse: 2, kosten: { holz: 100 }, bauzeit: 35, leben: 1000, wohnraum: 0, annahme: ['gold', 'stein'], bildetAus: [] },
 };
 
 // Auftraege je Gebaeude (bauen AC-10).

@@ -2,7 +2,7 @@
 
 **Bereich:** Strategie
 **Kuerzel:** bauen
-**Stand:** 8/22 fertig · 14 offen
+**Stand:** 12/22 fertig · 1 in Arbeit · 1 in QA · 8 offen
 
 ## Zweck
 
@@ -53,26 +53,26 @@ Stufe B im Stall.
 
 ### Bauen
 
-- **AC-1** `offen` **Dorfbewohner bauen Gebäude** — Ein ausgewählter Dorfbewohner bekommt einen
+- **AC-1** `in-qa` **Dorfbewohner bauen Gebäude** — Ein ausgewählter Dorfbewohner bekommt einen
   Bauauftrag für einen Platz; er läuft hin und baut. Während er baut, sammelt
   er nicht. Nach dem Bau eines Lagers oder einer Mühle sammelt er am nächsten
   passenden Vorrat, nach einer Farm bestellt er sie.
-- **AC-2** `offen` **Mehrere bauen schneller** — n Dorfbewohner brauchen `3·t / (n + 2)`: einer
+- **AC-2** `fertig` **Mehrere bauen schneller** — n Dorfbewohner brauchen `3·t / (n + 2)`: einer
   die volle Zeit, zwei drei Viertel, drei drei Fünftel. Mehr hilft, aber
   immer weniger — wie im Original.
-- **AC-3** `offen` **Bauplatz muss frei sein** — Alle Felder der Grundfläche sind begehbar und
+- **AC-3** `fertig` **Bauplatz muss frei sein** — Alle Felder der Grundfläche sind begehbar und
   von keinem Gebäude, Baum, Vorrat oder Schaf belegt. Einheiten auf dem Platz
   gehen beiseite.
 - **AC-4** `offen` **Bauplatz wird vorher gezeigt** — Beim Platzieren folgt die Grundfläche dem
   Zeiger, grün wenn der Platz taugt, rot wenn nicht — vor dem Klick. Esc
   bricht das Platzieren ab.
-- **AC-5** `offen` **Kosten beim Baubeginn abgezogen** — Nicht bei Fertigstellung. Reicht der
+- **AC-5** `fertig` **Kosten beim Baubeginn abgezogen** — Nicht bei Fertigstellung. Reicht der
   Vorrat nicht, entsteht keine Baustelle.
-- **AC-6** `offen` **Abbruch erstattet den Rest** — Eine Baustelle lässt sich abreißen. Erstattet
+- **AC-6** `fertig` **Abbruch erstattet den Rest** — Eine Baustelle lässt sich abreißen. Erstattet
   wird der Anteil der Kosten, der noch nicht verbaut ist.
 - **AC-7** `offen` **Gebäude im Bau angreifbar** — Mit Leben im Verhältnis zum Baufortschritt.
   _(Stufe B, mit dem Kampf.)_
-- **AC-20** `offen` **Die Gebäude der Dunklen Zeit** — Dorfzentrum, Haus, Mühle,
+- **AC-20** `in-arbeit` **Die Gebäude der Dunklen Zeit** — Dorfzentrum, Haus, Mühle,
   Holzfällerlager, Bergbaulager, Farm und Kaserne lassen sich mit Kosten,
   Bauzeit, Größe und Leben aus der Tabelle oben bauen. Die Werte stehen als
   Daten an einer Stelle, nicht in der Simulation verteilt.

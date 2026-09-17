@@ -186,9 +186,13 @@ test('bauen AC-16: eine verlorene Einheit gibt ihren Platz sofort frei', () => {
 test('bedienung AC-29: der Aufbau nennt die Werte je Art, der Zustand das Leben erst, wenn es fehlt', () => {
   const welt = new Welt(ZWEI, 7);
   const { werte } = welt.aufbau();
-  assert.deepEqual(werte.einheiten.dorfbewohner, { kuerzel: 'd', leben: 25, tragkraft: 10, kosten: { nahrung: 50 }, zeit: 25 });
-  assert.deepEqual(werte.einheiten.spaeherreiter, { kuerzel: 's', leben: 45, tragkraft: 0, kosten: null, zeit: null });
-  assert.deepEqual(werte.gebaeude.dorfzentrum, { leben: 2400, bildetAus: ['dorfbewohner'] });
+  assert.deepEqual(werte.einheiten.dorfbewohner, {
+    kuerzel: 'd', leben: 25, tragkraft: 10, kosten: { nahrung: 50 }, zeit: 25,
+    baut: ['haus', 'muehle', 'holzfaellerlager', 'bergbaulager'],
+  });
+  assert.deepEqual(werte.einheiten.spaeherreiter, { kuerzel: 's', leben: 45, tragkraft: 0, kosten: null, zeit: null, baut: [] });
+  assert.equal(werte.gebaeude.dorfzentrum.leben, 2400);
+  assert.deepEqual(werte.gebaeude.dorfzentrum.bildetAus, ['dorfbewohner']);
 
   // Unverletzt geht kein Leben ueber die Leitung, verletzt schon.
   const einheit = eigene(welt)[0];
@@ -196,4 +200,242 @@ test('bedienung AC-29: der Aufbau nennt die Werte je Art, der Zustand das Leben 
   einheit.leben = 17;
   assert.equal(welt.zustand().einheiten.find((e) => e.i === einheit.id).h, 17);
   assert.equal(welt.gebaeudeFuerDraht(dorfzentrum(welt).id).h, 2400);
+});
+
+// ---- Bauen (Schritt A6) -----------------------------------------------------
+
+// Ein freier Platz fuer ein Gebaeude, ringweise um die eigene Basis gesucht.
+function freierPlatz(welt, art, abstand = 5, spieler = 'a') {
+  const basis = welt.spielerVon(spieler).basis;
+  for (let r = abstand; r < 30; r++) {
+    for (let dy = -r; dy <= r; dy++) {
+      for (let dx = -r; dx <= r; dx++) {
+        if (Math.max(Math.abs(dx), Math.abs(dy)) !== r) continue;
+        if (welt.platzPruefen(art, basis.x + dx, basis.y + dy)) return { x: basis.x + dx, y: basis.y + dy };
+      }
+    }
+  }
+  throw new Error('kein Platz');
+}
+const dorfbewohner = (welt, spieler = 'a') => eigene(welt, spieler).filter((e) => e.art === 'dorfbewohner');
+
+test('bauen AC-20: die Gebaeude der Dunklen Zeit mit den Werten der Tabelle', () => {
+  const tabelle = {
+    dorfzentrum: [4, { holz: 275, stein: 100 }, 150, 2400],
+    haus: [2, { holz: 25 }, 25, 550],
+    muehle: [2, { holz: 100 }, 35, 1000],
+    holzfaellerlager: [2, { holz: 100 }, 35, 1000],
+    bergbaulager: [2, { holz: 100 }, 35, 1000],
+  };
+  for (const [art, [groesse, kosten, bauzeit, leben]] of Object.entries(tabelle)) {
+    assert.deepEqual(
+      { groesse: GEBAEUDE[art].groesse, kosten: GEBAEUDE[art].kosten, bauzeit: GEBAEUDE[art].bauzeit, leben: GEBAEUDE[art].leben },
+      { groesse, kosten, bauzeit, leben },
+      art,
+    );
+  }
+  assert.deepEqual(GEBAEUDE.muehle.annahme, ['nahrung']);
+  assert.deepEqual(GEBAEUDE.holzfaellerlager.annahme, ['holz']);
+  assert.deepEqual(GEBAEUDE.bergbaulager.annahme, ['gold', 'stein']);
+  assert.equal(GEBAEUDE.haus.wohnraum, 5);
+});
+
+test('bauen AC-3: das Dorfzentrum belegt 4 x 4 Felder, dort geht niemand durch und baut niemand', () => {
+  const welt = new Welt(ZWEI, 7);
+  const zentrum = dorfzentrum(welt);
+  const { x0, y0, x1, y1 } = welt.grundflaeche('dorfzentrum', zentrum.x, zentrum.y);
+  assert.deepEqual([x1 - x0 + 1, y1 - y0 + 1], [4, 4]);
+  for (let y = y0; y <= y1; y++) {
+    for (let x = x0; x <= x1; x++) assert.equal(karten.begehbar(welt.karte, x, y), false, `${x}/${y} ist bebaut`);
+  }
+  assert.equal(welt.platzPruefen('haus', zentrum.x, zentrum.y), false, 'nicht auf ein Gebaeude');
+});
+
+test('bauen AC-3: kein Bau auf Baeumen, Wasser, Vorraeten, Schafen oder ueber den Kartenrand', () => {
+  const welt = new Welt(ZWEI, 7);
+  const g = welt.karte.groesse;
+  const baum = [...welt.karte.vorrat.keys()].find((i) => welt.karte.felder[i] === karten.WALD);
+  assert.equal(welt.platzPruefen('haus', baum % g, (baum / g) | 0), false, 'Baum');
+  const gold = [...welt.karte.vorrat.keys()].find((i) => welt.karte.felder[i] === karten.GOLD);
+  assert.equal(welt.platzPruefen('haus', gold % g, (gold / g) | 0), false, 'Gold');
+  const wasser = welt.karte.felder.indexOf(karten.WASSER);
+  if (wasser >= 0) assert.equal(welt.platzPruefen('haus', wasser % g, (wasser / g) | 0), false, 'Wasser');
+  const schaf = [...welt.tiere.values()][0];
+  assert.equal(welt.platzPruefen('haus', Math.round(schaf.x), Math.round(schaf.y)), false, 'Schaf');
+  assert.equal(welt.platzPruefen('haus', 0, 0), false, 'ueber den Rand');
+  assert.equal(welt.platzPruefen('haus', 1.5, 3), false, 'nur ganze Felder');
+
+  // Ein Dorfbewohner auf dem Platz geht beiseite, statt den Bau zu verhindern.
+  const platz = freierPlatz(welt, 'haus');
+  const [bauer, zuschauer] = dorfbewohner(welt);
+  zuschauer.x = platz.x;
+  zuschauer.y = platz.y;
+  assert.equal(welt.platzPruefen('haus', platz.x, platz.y), true);
+  assert.ok(welt.bauen('a', [bauer.id], 'haus', platz).gebaeude);
+  assert.ok(karten.begehbar(welt.karte, zuschauer.x, zuschauer.y), `beiseite: ${zuschauer.x}/${zuschauer.y}`);
+});
+
+test('bauen AC-5: die Kosten gehen bei Baubeginn ab, ohne genug Holz entsteht keine Baustelle', () => {
+  const welt = new Welt(ZWEI, 7);
+  const anna = welt.spielerVon('a');
+  const [bauer] = dorfbewohner(welt);
+  const platz = freierPlatz(welt, 'muehle');
+  anna.holz = 99;
+  assert.deepEqual(welt.bauen('a', [bauer.id], 'muehle', platz), { fehler: 'Zu wenig Holz.' });
+  assert.equal(welt.gebaeude.size, 2, 'keine Baustelle');
+  assert.equal(anna.holz, 99);
+  assert.equal(karten.begehbar(welt.karte, platz.x, platz.y), true);
+
+  anna.holz = 100;
+  const { gebaeude } = welt.bauen('a', [bauer.id], 'muehle', platz);
+  assert.equal(anna.holz, 0, 'sofort bezahlt, nicht erst am Ende');
+  assert.equal(welt.gebaeude.get(gebaeude).fertig, false);
+
+  assert.match(welt.bauen('a', [bauer.id], 'kaserne', freierPlatz(welt, 'haus')).fehler, /laesst sich nicht bauen/);
+  const reiter = eigene(welt).find((e) => e.art === 'spaeherreiter');
+  assert.match(welt.bauen('a', [reiter.id], 'haus', freierPlatz(welt, 'haus')).fehler, /Niemand/);
+  assert.match(welt.bauen('b', [bauer.id], 'haus', freierPlatz(welt, 'haus')).fehler, /Niemand/, 'fremde Dorfbewohner bauen nicht');
+});
+
+test('bauen AC-1: ein Dorfbewohner geht hin, baut ein Haus in 25 Sekunden, und das Haus gibt Wohnraum', () => {
+  const welt = new Welt(ZWEI, 7);
+  const anna = welt.spielerVon('a');
+  const [bauer] = dorfbewohner(welt);
+  const { gebaeude: id } = welt.bauen('a', [bauer.id], 'haus', freierPlatz(welt, 'haus', 6));
+  const haus = welt.gebaeude.get(id);
+  assert.equal(bauer.auftrag.art, 'bauen');
+
+  // Erst laufen: ohne Bauleute am Platz waechst nichts.
+  let takte = 0;
+  while (!bauer.baut && takte < 600) { welt.takten(); takte++; }
+  assert.ok(bauer.baut, 'er ist angekommen und baut');
+  assert.ok(welt.abstandZu(bauer, haus) <= 1.2);
+  assert.equal(haus.bau, 0, 'unterwegs waechst nichts');
+  assert.equal(welt.wohnraum(anna), 5, 'die Baustelle gibt noch keinen Wohnraum');
+
+  // Die Bauzeit zaehlt ab dem ersten Takt am Platz: 25 Sekunden fuer einen.
+  for (let i = 0; i < 25 * TAKTE_PRO_SEKUNDE - 1; i++) welt.takten();
+  assert.equal(haus.fertig, false, `einen Takt vorher noch nicht (bau ${haus.bau})`);
+  welt.takten();
+  assert.equal(haus.fertig, true);
+  assert.equal(welt.wohnraum(anna), 10, 'fertig: fuenf Plaetze mehr');
+  assert.equal(bauer.auftrag, null, 'nach einem Haus steht er bereit');
+  assert.equal(bauer.sammelt, false, 'waehrend er baute, sammelte er nicht');
+});
+
+test('bauen AC-1: nach dem Holzfaellerlager geht der Bauer gleich Holz sammeln', () => {
+  const welt = new Welt(ZWEI, 7, { vorrat: 'viel' });
+  const [bauer] = dorfbewohner(welt);
+  const g = welt.karte.groesse;
+  // Ein Platz nahe am naechsten Waldstueck.
+  const basis = welt.spielerVon('a').basis;
+  const baeume = [...welt.karte.vorrat.keys()].filter((i) => welt.karte.felder[i] === karten.WALD)
+    .map((i) => ({ x: i % g, y: (i / g) | 0 }))
+    .sort((a, b) => Math.hypot(a.x - basis.x, a.y - basis.y) - Math.hypot(b.x - basis.x, b.y - basis.y));
+  let platz = null;
+  for (const baum of baeume) {
+    for (const [dx, dy] of [[3, 0], [-3, 0], [0, 3], [0, -3], [3, 3], [-3, -3]]) {
+      if (welt.platzPruefen('holzfaellerlager', baum.x + dx, baum.y + dy)) { platz = { x: baum.x + dx, y: baum.y + dy }; break; }
+    }
+    if (platz) break;
+  }
+  const { gebaeude: id } = welt.bauen('a', [bauer.id], 'holzfaellerlager', platz);
+  for (let i = 0; i < 120 * TAKTE_PRO_SEKUNDE && !welt.gebaeude.get(id).fertig; i++) welt.takten();
+  assert.equal(welt.gebaeude.get(id).fertig, true);
+  assert.equal(bauer.auftrag?.art, 'sammeln');
+  assert.equal(welt.karte.felder[bauer.auftrag.feld.y * g + bauer.auftrag.feld.x], karten.WALD);
+});
+
+test('bauen AC-2: n Bauleute brauchen 3 t / (n + 2)', () => {
+  // Gezaehlt wird ab dem Takt, in dem alle am Platz arbeiten.
+  const dauer = (anzahl) => {
+    const welt = new Welt(ZWEI, 7);
+    const platz = freierPlatz(welt, 'muehle', 6);
+    const muehleFlaeche = welt.grundflaeche('muehle', platz.x, platz.y);
+    // Alle stellen sich gleich an den Rand, damit niemand spaeter ankommt.
+    const bauleute = [];
+    for (let i = 0; i < anzahl; i++) bauleute.push(welt.einheitAnlegen('a', muehleFlaeche.x1 + 1, muehleFlaeche.y0 + i));
+    const { gebaeude: id } = welt.bauen('a', bauleute.map((e) => e.id), 'muehle', platz);
+    const muehle = welt.gebaeude.get(id);
+    let takte = 0;
+    while (!muehle.fertig && takte < 1000) { welt.takten(); takte++; }
+    return takte / TAKTE_PRO_SEKUNDE;
+  };
+  // Muehle: 35 Sekunden. Einer 35 s, zwei 26,25 s, drei 21 s. Ein Takt kommt
+  // dazu: im ersten merken die Bauleute, dass sie angekommen sind.
+  for (const [anzahl, erwartet] of [[1, 35], [2, 26.25], [3, 21]]) {
+    const gemessen = dauer(anzahl);
+    assert.ok(Math.abs(gemessen - erwartet) <= 0.2, `${anzahl} Bauleute: ${gemessen} s statt ${erwartet} s`);
+  }
+});
+
+test('bauen AC-2: Rechtsklick auf die eigene Baustelle - der Zweite baut mit', () => {
+  const welt = new Welt(ZWEI, 7);
+  const [erster, zweiter] = dorfbewohner(welt);
+  const platz = freierPlatz(welt, 'haus', 6);
+  const { gebaeude: id } = welt.bauen('a', [erster.id], 'haus', platz);
+  welt.befehl('a', [zweiter.id], platz);
+  assert.deepEqual(zweiter.auftrag, { art: 'bauen', gebaeude: id });
+  // Bert kann Annas Baustelle nicht mitbauen.
+  const fremder = dorfbewohner(welt, 'b')[0];
+  welt.befehl('b', [fremder.id], platz);
+  assert.notEqual(fremder.auftrag?.art, 'bauen');
+});
+
+test('bauen AC-6: eine Baustelle abreissen erstattet, was noch nicht verbaut ist', () => {
+  const welt = new Welt(ZWEI, 7);
+  const anna = welt.spielerVon('a');
+  const [bauer] = dorfbewohner(welt);
+  const platz = freierPlatz(welt, 'muehle', 6);
+  const { gebaeude: id } = welt.bauen('a', [bauer.id], 'muehle', platz);
+  assert.equal(anna.holz, 100);
+  const muehle = welt.gebaeude.get(id);
+  muehle.bau = 0.4; // vier Zehntel verbaut
+  welt.zustand(); // Aenderungen bis hier abholen
+  assert.match(welt.abreissen('b', id).fehler, /nicht dein/);
+  assert.deepEqual(welt.abreissen('a', id), {});
+  assert.equal(anna.holz, 160, 'sechzig von hundert zurueck');
+  assert.equal(welt.gebaeude.has(id), false);
+  assert.equal(karten.begehbar(welt.karte, platz.x, platz.y), true, 'der Platz ist wieder frei');
+  assert.equal(bauer.auftrag, null);
+  assert.ok(welt.zustand().gebaeude.some((g) => g.i === id && g.weg), 'der Browser erfaehrt es');
+  assert.match(welt.abreissen('a', dorfzentrum(welt).id).fehler, /Nur Baustellen/);
+});
+
+test('einheiten AC-16: abgegeben wird am naechsten fertigen Gebaeude, das den Rohstoff annimmt', () => {
+  const welt = new Welt(ZWEI, 7);
+  const anna = welt.spielerVon('a');
+  const zentrum = dorfzentrum(welt);
+  const [sammler] = dorfbewohner(welt);
+  const basis = anna.basis;
+  // Ein fertiges Holzfaellerlager weit weg vom Dorfzentrum, der Sammler steht daneben.
+  const platz = freierPlatz(welt, 'holzfaellerlager', 12);
+  const lager = welt.gebaeudeAnlegen('a', 'holzfaellerlager', platz.x, platz.y, true);
+  const stand = welt.randfeld(lager, basis);
+  sammler.x = stand.x;
+  sammler.y = stand.y;
+
+  // Mit Holz: das Lager ist naeher.
+  sammler.ladung = 10;
+  sammler.ladungsart = 'holz';
+  assert.equal(welt.lagerFuer(sammler), lager);
+  // Mit Gold: das Lager nimmt kein Gold, also das Dorfzentrum.
+  sammler.ladungsart = 'gold';
+  assert.equal(welt.lagerFuer(sammler), zentrum);
+  // Eine Baustelle nimmt nichts an.
+  lager.fertig = false;
+  sammler.ladungsart = 'holz';
+  assert.equal(welt.lagerFuer(sammler), zentrum);
+  lager.fertig = true;
+
+  // Die Abgabe am Lager zaehlt, und danach geht er zurueck zum selben Vorrat.
+  const g = welt.karte.groesse;
+  const baum = [...welt.karte.vorrat.keys()].find((i) => welt.karte.felder[i] === karten.WALD);
+  sammler.auftrag = { art: 'sammeln', feld: { x: baum % g, y: (baum / g) | 0 } };
+  const holz = anna.holz;
+  welt.abladen(sammler);
+  assert.equal(anna.holz, holz + 10);
+  assert.equal(sammler.ladung, 0);
+  assert.ok(sammler.weg.length > 0, 'er geht zurueck zum selben Baum');
+  assert.deepEqual(sammler.auftrag.feld, { x: baum % g, y: (baum / g) | 0 });
 });

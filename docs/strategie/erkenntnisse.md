@@ -63,8 +63,10 @@ etwas anderem gearbeitet.
   kopierte Kacheln (30 ms) deutlich. Vor jedem „Optimieren" messen — zwei
   naheliegende Ideen waren hier Verschlechterungen. Stand Runde 13: Zoom 1
   rund 5 ms, Zoom 0,4 rund 10 ms je Bild.
-- Offen im Aussehen: die Basis ist
-  noch eine Raute ohne Gebäude (A6), Dorfbewohner bei Zoom 1 recht klein.
+- Offen im Aussehen: Dorfbewohner bei Zoom 1 recht klein; was hinter einem
+  Gebäude steht, ist ganz verdeckt (Runde 22: ein Schaf). Das Original zeigt
+  solche Figuren als Umriss durch das Gebäude — ein Kandidat für die
+  Rückschau am Ende von Stufe A.
 - Laufzeiten nur messen, wenn die Maschine ruhig ist: vor einer Messung
   nach fremden `node`-/`chrome`-Prozessen sehen. Andere Projekte laufen hier
   parallel und verdoppeln den Browserlauf.
@@ -189,6 +191,18 @@ Beide Male wurde das Produkt geändert, nicht die Zusicherung.
 Neueste oben. Eine Zeile je Runde: Nummer, Datum, Kriterien, Ergebnis,
 wichtigste Erkenntnis.
 
+- **22** · 2026-09-17 · bauen AC-2, AC-3, AC-5, AC-6 fertig; AC-1 und
+  einheiten AC-16 in-qa (Bild mit der Bauoberfläche), AC-20 in Arbeit (Farm,
+  Kaserne fehlen). Gebäude belegen ihre Grundfläche als Feldart `BEBAUT` —
+  die Wegsuche weicht ohne Änderung aus. Dorfbewohner bauen, mehrere
+  schneller (3 t / (n + 2), auf zwei Takte gemessen), Abriss erstattet den
+  Rest, Abgabe am nächsten passenden Lager. Das Dorfzentrum ist jetzt so groß
+  wie seine 4 × 4 Felder; die Schafe rücken von 4 auf 5 Felder hinaus.
+  Gelernt: (1) Wieder ein Heredoc mit Anführungszeichen abgebrochen — trotz
+  Regel; lange Testtexte gehören in eine Datei. (2) ECONNRESET am Prüfgriff:
+  wiederverwendete Verbindung, die der Server gerade schloss — jetzt
+  `Connection: close`. (3) Die Regel aus Runde 20 hat gegriffen: „acht Schafe"
+  stand im Bild nur siebenmal, weil das größere Gebäude eines verdeckt.
 - **21** · 2026-09-17 · bedienung AC-29 fertig — Schritt **A5 abgeschlossen**.
   Eine ausgewählte Einheit zeigt unten Bild, Name, Lebensbalken und Ladung,
   ein Gebäude zusätzlich sein Leben. Die Werte der Arten (Leben, Tragkraft,

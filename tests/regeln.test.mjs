@@ -326,9 +326,12 @@ test('karte AC-16: acht Schafe je Spieler, mit 100 Nahrung, sie stehen still', (
       assert.equal(schaf.art, 'schaf');
       assert.equal(schaf.nahrung, 100);
       assert.ok(karten.begehbar(welt.karte, schaf.x, schaf.y), 'ein Schaf steht auf Gras');
-      // Naeher am Zentrum als Beeren (7), Gold (10) und Stein (11).
+      // Naeher am Zentrum als Beeren (7), Gold (10) und Stein (11), aber ausserhalb
+      // seiner Grundflaeche von 4 x 4 Feldern - dort verdeckte es sie (Runde 22).
       const abstand = Math.hypot(schaf.x - spieler.basis.x, schaf.y - spieler.basis.y);
-      assert.ok(abstand >= 3 && abstand <= 5, `Abstand ${abstand}`);
+      assert.ok(abstand >= 4 && abstand < 7, `Abstand ${abstand}`);
+      const zentrum = [...welt.gebaeude.values()].find((g) => g.besitzer === spieler.id);
+      assert.ok(welt.abstandZu(schaf, zentrum) >= 2, `nicht am Gebaeude: ${schaf.x}/${schaf.y}`);
     }
   }
   // Im Aufbau alle, mit Besitzer; danach stehen sie und kommen nicht wieder.
@@ -390,15 +393,16 @@ test('einheiten AC-15: vier Rohstoffe mit der Rate aus der Tabelle', () => {
   }
 });
 
-test('einheiten AC-15: hoechstens zehn tragen, dann zur Basis', () => {
+test('einheiten AC-15: hoechstens zehn tragen, dann zum Dorfzentrum', () => {
   const welt = new Welt(ZWEI, 7);
   const { einheit } = amVorrat(welt, karten.GOLD);
   for (let i = 0; i < 60 * TAKTE_PRO_SEKUNDE && einheit.ladung < 10; i++) welt.einheitTakten(einheit);
   assert.equal(einheit.ladung, EINHEITEN.dorfbewohner.tragkraft);
   assert.equal(einheit.sammelt, false, 'voll hoert er auf');
+  // Der Weg endet am Rand des Dorfzentrums - das Gebaeude selbst ist nicht begehbar.
   const ziel = einheit.weg.at(-1);
-  const basis = welt.spielerVon('a').basis;
-  assert.ok(Math.hypot(ziel.x - basis.x, ziel.y - basis.y) <= 2.5, 'der Weg endet an der Basis');
+  const zentrum = [...welt.gebaeude.values()].find((g) => g.besitzer === 'a');
+  assert.ok(welt.abstandZu(ziel, zentrum) <= 1, `der Weg endet am Dorfzentrum: ${ziel.x}/${ziel.y}`);
 
   // Zehn Sekunden weiter hat er nichts dazugenommen.
   for (let i = 0; i < 10 * TAKTE_PRO_SEKUNDE; i++) welt.einheitTakten(einheit);

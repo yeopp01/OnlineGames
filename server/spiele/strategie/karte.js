@@ -123,7 +123,8 @@ const AUSSTATTUNG = [
   { art: STEIN, abstand: 11, winkel: (5 * Math.PI) / 6, form: [[0, 0], [1, 0], [-1, 0], [0, 1], [0, -1]] },
 ];
 const SCHAFE_JE_BASIS = 8;
-const SCHAF_ABSTAND = 4;
+// Ausserhalb des Dorfzentrums (4 x 4 Felder, bauen AC-3), sonst verdeckt es sie.
+const SCHAF_ABSTAND = 5;
 const SCHAF_NAHRUNG = 100;
 
 // Zwei Waeldchen in verschiedenen Richtungen, je ein voller Kreis.
@@ -217,13 +218,17 @@ function erzeugen(startwert, anzahlSpieler, einstellungen = {}) {
   return { groesse, felder, basen: basen.map(({ x, y }) => ({ x, y })), vorrat, schafe };
 }
 
+// Ein Gebaeude belegt seine Grundflaeche mit dieser Feldart. Die Wegsuche geht
+// nur ueber Gras und weicht damit von selbst aus (bauen AC-3).
+const BEBAUT = 6;
+
 function begehbar(karte, x, y) {
   if (x < 0 || y < 0 || x >= karte.groesse || y >= karte.groesse) return false;
   return karte.felder[y * karte.groesse + x] === GRAS;
 }
 
 module.exports = {
-  GRAS, WALD, BEERE, WASSER, GOLD, STEIN, VORRAT, AUSSTATTUNG, WAELDCHEN,
+  GRAS, WALD, BEERE, WASSER, GOLD, STEIN, BEBAUT, VORRAT, AUSSTATTUNG, WAELDCHEN,
   SCHAFE_JE_BASIS, SCHAF_NAHRUNG,
   erzeugen, begehbar, zufallAus, kartengroesse, GROESSE_MAX,
 };
