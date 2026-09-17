@@ -1,15 +1,22 @@
 // Zeichnet die Welt und nimmt Maus und Tastatur entgegen. Rechnen tut hier
 // nichts - der Server schickt den Zustand, wir malen ihn.
+//
+// Isometrisch (→ specs/10-strategie/darstellung.md AC-1): ein Feld ist eine
+// Raute, doppelt so breit wie hoch. Die Welt rechnet weiter in Feldern
+// (x nach rechts unten, y nach links unten); nur zuBild und zuWelt kennen die
+// Raute. Die Kamera liegt in Bildpunkten der Raute bei Vergroesserung 1.
 import { figurZeichnen } from './figuren.js';
+import {
+  DINGE, GRAS, WALD, WASSER, bodenFarbe, dingZeichnen, raute,
+} from './gelaende.js';
 
-const FELD = 22; // Bildpunkte je Feld bei Vergroesserung 1
-// Eine Figur ist etwas hoeher als ein Feld; ihr Koerper liegt ueber dem
-// Fusspunkt, deshalb zielt ein Klick auf die Mitte des Koerpers.
-const FIGUR_HOEHE = 1.2; // in Feldern
-const KOERPER_MITTE = 0.5; // in Feldern ueber dem Fusspunkt
-// Gras, Wald, Beere, Wasser, Gold, Stein - Formen dafuer kommen mit darstellung AC-3.
-const FARBEN = ['#2f4636', '#1f3a24', '#4a3a52', '#1b2f4a', '#8a7a2e', '#5d636b'];
-const GRAS = 0;
+const HALB_B = 22; // halbe Rautenbreite in Bildpunkten bei Vergroesserung 1
+const HALB_H = 11; // halbe Rautenhoehe
+// Eine Figur ist etwas hoeher als eine Raute breit ist; ihr Koerper liegt ueber
+// dem Fusspunkt, deshalb zielt ein Klick auf die Mitte des Koerpers.
+const FIGUR_HOEHE = 1.3; // in halben Rautenbreiten * 2
+const KOERPER_MITTE = 0.6; // Anteil der Figurenhoehe ueber dem Fusspunkt, auf den ein Klick zielt
+const KLICK_WEITE = 16; // Bildpunkte bei Vergroesserung 1
 
 // Schrittphase fuer die Beine: laeuft mit der Uhr, je Einheit versetzt, damit
 // eine Gruppe nicht im Gleichschritt marschiert.
@@ -24,6 +31,7 @@ export class Ansicht {
     this.befehlSenden = befehlSenden;
 
     this.karte = null;
+    this.fuellung = new Map(); // Feld → Viertel des Vorrats, der noch da ist (1 bis 4)
     this.spieler = new Map();
     this.ich = null;
     this.taktdauer = 100;
@@ -35,6 +43,9 @@ export class Ansicht {
     this.blicke = new Map(); // Einheit → -1 links, 1 rechts
     this.tiere = new Map();
     this.vorraete = { holz: 0, nahrung: 0 };
+    // Was im letzten Bild in welcher Reihenfolge gezeichnet wurde - fuer den
+    // Browserlauf (darstellung AC-7).
+    this.reihenfolge = [];
 
     this.kamera = { x: 0, y: 0, zoom: 1 };
     this.tasten = new Set();
@@ -50,6 +61,7 @@ export class Ansicht {
     for (let i = 0; i < roh.length; i++) felder[i] = roh.charCodeAt(i);
 
     this.karte = { groesse: nachricht.karte.groesse, felder };
+    this.fuellung = new Map();
     this.taktdauer = 1000 / nachricht.takte;
     this.ich = ichId;
     this.spieler = new Map(nachricht.spieler.map((s) => [s.id, s]));
@@ -69,6 +81,8 @@ export class Ansicht {
   zustand(nachricht) {
     for (const aenderung of nachricht.felder || []) {
       this.karte.felder[aenderung.i] = aenderung.a;
+      if (aenderung.v !== undefined) this.fuellung.set(aenderung.i, aenderung.v);
+      else this.fuellung.delete(aenderung.i);
     }
     for (const tier of nachricht.tiere || []) {
       if (tier.weg) this.tiere.delete(tier.i);
@@ -87,9 +101,29 @@ export class Ansicht {
     }
   }
 
+  // ---- Raute ------------------------------------------------------------
+
+  /** Feld (auch gebrochen) zu Bildpunkt auf der Leinwand. */
+  zuBild(wx, wy) {
+    return {
+      x: ((wx - wy) * HALB_B - this.kamera.x) * this.kamera.zoom,
+      y: ((wx + wy) * HALB_H - this.kamera.y) * this.kamera.zoom,
+    };
+  }
+
+  /** Bildpunkt auf der Leinwand zu Feld (gebrochen) - die Umkehrung von zuBild. */
+  zuWelt(px, py) {
+    const ix = px / this.kamera.zoom + this.kamera.x;
+    const iy = py / this.kamera.zoom + this.kamera.y;
+    return {
+      x: (ix / HALB_B + iy / HALB_H) / 2,
+      y: (iy / HALB_H - ix / HALB_B) / 2,
+    };
+  }
+
   blickAuf(x, y) {
-    this.kamera.x = x * FELD - this.leinwand.clientWidth / 2 / this.kamera.zoom;
-    this.kamera.y = y * FELD - this.leinwand.clientHeight / 2 / this.kamera.zoom;
+    this.kamera.x = (x - y) * HALB_B - this.leinwand.clientWidth / 2 / this.kamera.zoom;
+    this.kamera.y = (x + y) * HALB_H - this.leinwand.clientHeight / 2 / this.kamera.zoom;
   }
 
   groesseAnpassen() {
@@ -97,21 +131,6 @@ export class Ansicht {
     this.leinwand.width = this.leinwand.clientWidth * dichte;
     this.leinwand.height = this.leinwand.clientHeight * dichte;
     this.stift.setTransform(dichte, 0, 0, dichte, 0, 0);
-  }
-
-  // Bildpunkt zu Feldkoordinate und zurueck.
-  zuWelt(px, py) {
-    return {
-      x: (px / this.kamera.zoom + this.kamera.x) / FELD,
-      y: (py / this.kamera.zoom + this.kamera.y) / FELD,
-    };
-  }
-
-  zuBild(wx, wy) {
-    return {
-      x: (wx * FELD - this.kamera.x) * this.kamera.zoom,
-      y: (wy * FELD - this.kamera.y) * this.kamera.zoom,
-    };
   }
 
   binden() {
@@ -134,7 +153,7 @@ export class Ansicht {
       this.zug.bisY = e.offsetY;
     });
 
-    this.leinwand.addEventListener('pointerup', (e) => {
+    this.leinwand.addEventListener('pointerup', () => {
       if (!this.zug) return;
       this.auswaehlen(this.zug);
       this.zug = null;
@@ -142,12 +161,13 @@ export class Ansicht {
 
     this.leinwand.addEventListener('wheel', (e) => {
       e.preventDefault();
-      const vorher = this.zuWelt(e.offsetX, e.offsetY);
+      // Der Punkt unter dem Zeiger bleibt stehen (bedienung AC-8).
+      const ix = e.offsetX / this.kamera.zoom + this.kamera.x;
+      const iy = e.offsetY / this.kamera.zoom + this.kamera.y;
       const faktor = e.deltaY < 0 ? 1.15 : 1 / 1.15;
       this.kamera.zoom = Math.min(2.5, Math.max(0.4, this.kamera.zoom * faktor));
-      const nachher = this.zuWelt(e.offsetX, e.offsetY);
-      this.kamera.x += (vorher.x - nachher.x) * FELD;
-      this.kamera.y += (vorher.y - nachher.y) * FELD;
+      this.kamera.x = ix - e.offsetX / this.kamera.zoom;
+      this.kamera.y = iy - e.offsetY / this.kamera.zoom;
     }, { passive: false });
 
     window.addEventListener('keydown', (e) => this.tasten.add(e.key.toLowerCase()));
@@ -155,20 +175,23 @@ export class Ansicht {
     window.addEventListener('blur', () => this.tasten.clear());
   }
 
+  // Ausgewaehlt wird im Bild, nicht auf der Karte: ein Rechteck auf dem
+  // Bildschirm ist in der Raute kein Rechteck aus Feldern mehr.
   auswaehlen(rahmen) {
     const breite = Math.abs(rahmen.bisX - rahmen.vonX);
     const hoehe = Math.abs(rahmen.bisY - rahmen.vonY);
-    const a = this.zuWelt(Math.min(rahmen.vonX, rahmen.bisX), Math.min(rahmen.vonY, rahmen.bisY));
-    const b = this.zuWelt(Math.max(rahmen.vonX, rahmen.bisX), Math.max(rahmen.vonY, rahmen.bisY));
-
     this.ausgewaehlt.clear();
-    // Ein Klick statt eines Rahmens: das naechste eigene Fussvolk in Reichweite.
+
+    const figur = this.figurenHoehe();
     if (breite < 5 && hoehe < 5) {
+      // Ein Klick: die naechste eigene Einheit, gemessen an der Koerpermitte.
       let bestes = null;
-      let besterAbstand = 1.2;
+      // Trifft die ganze Figur, vom Fuss bis zum Kopf.
+      let besterAbstand = Math.max(KLICK_WEITE * this.kamera.zoom, figur * 0.75);
       for (const einheit of this.nachher.values()) {
         if (einheit.b !== this.ich) continue;
-        const abstand = Math.hypot(einheit.x - a.x, einheit.y - KOERPER_MITTE - a.y);
+        const p = this.zuBild(einheit.x, einheit.y);
+        const abstand = Math.hypot(p.x - rahmen.vonX, p.y - figur * KOERPER_MITTE - rahmen.vonY);
         if (abstand < besterAbstand) {
           besterAbstand = abstand;
           bestes = einheit;
@@ -177,11 +200,15 @@ export class Ansicht {
       if (bestes) this.ausgewaehlt.add(bestes.i);
       return;
     }
+    const links = Math.min(rahmen.vonX, rahmen.bisX);
+    const rechts = Math.max(rahmen.vonX, rahmen.bisX);
+    const oben = Math.min(rahmen.vonY, rahmen.bisY);
+    const unten = Math.max(rahmen.vonY, rahmen.bisY);
     for (const einheit of this.nachher.values()) {
       if (einheit.b !== this.ich) continue;
-      if (einheit.x >= a.x && einheit.x <= b.x && einheit.y >= a.y && einheit.y <= b.y) {
-        this.ausgewaehlt.add(einheit.i);
-      }
+      const p = this.zuBild(einheit.x, einheit.y);
+      const mitte = p.y - figur * KOERPER_MITTE * 0.5;
+      if (p.x >= links && p.x <= rechts && mitte >= oben && mitte <= unten) this.ausgewaehlt.add(einheit.i);
     }
   }
 
@@ -201,9 +228,12 @@ export class Ansicht {
     if (this.tasten.has('a') || this.tasten.has('arrowleft')) this.kamera.x -= tempo;
     if (this.tasten.has('d') || this.tasten.has('arrowright')) this.kamera.x += tempo;
 
-    const rand = this.karte.groesse * FELD;
-    this.kamera.x = Math.max(-200, Math.min(rand - 100, this.kamera.x));
-    this.kamera.y = Math.max(-200, Math.min(rand - 100, this.kamera.y));
+    // Die Karte als Raute: links und rechts je g Halbbreiten, unten 2g Halbhoehen.
+    const g = this.karte.groesse;
+    const breite = this.leinwand.clientWidth / this.kamera.zoom;
+    const hoehe = this.leinwand.clientHeight / this.kamera.zoom;
+    this.kamera.x = Math.max(-g * HALB_B - breite / 2, Math.min(g * HALB_B - breite / 2, this.kamera.x));
+    this.kamera.y = Math.max(-hoehe / 2, Math.min(2 * g * HALB_H - hoehe / 2, this.kamera.y));
   }
 
   bild(jetzt = performance.now()) {
@@ -221,87 +251,134 @@ export class Ansicht {
     return Math.min(1, (jetzt - this.empfangen) / this.taktdauer);
   }
 
-  zeichnen(jetzt) {
-    const stift = this.stift;
+  figurenHoehe() {
+    return Math.max(12, HALB_B * FIGUR_HOEHE * this.kamera.zoom);
+  }
+
+  /** Welche Felder das Bild beruehrt - aus den vier Ecken der Leinwand. */
+  sichtbareFelder() {
     const breite = this.leinwand.clientWidth;
     const hoehe = this.leinwand.clientHeight;
-    stift.fillStyle = '#0f1216';
-    stift.fillRect(0, 0, breite, hoehe);
-
-    const zoom = this.kamera.zoom;
+    const ecken = [this.zuWelt(0, 0), this.zuWelt(breite, 0), this.zuWelt(0, hoehe), this.zuWelt(breite, hoehe)];
     const g = this.karte.groesse;
-    const vonX = Math.max(0, Math.floor(this.kamera.x / FELD));
-    const vonY = Math.max(0, Math.floor(this.kamera.y / FELD));
-    const bisX = Math.min(g, Math.ceil((this.kamera.x + breite / zoom) / FELD) + 1);
-    const bisY = Math.min(g, Math.ceil((this.kamera.y + hoehe / zoom) / FELD) + 1);
-    const kante = FELD * zoom + 1;
+    // Zwei Felder Rand, damit hohe Baeume am unteren Rand nicht abgeschnitten werden.
+    return {
+      vonX: Math.max(0, Math.floor(Math.min(...ecken.map((e) => e.x))) - 1),
+      bisX: Math.min(g - 1, Math.ceil(Math.max(...ecken.map((e) => e.x))) + 2),
+      vonY: Math.max(0, Math.floor(Math.min(...ecken.map((e) => e.y))) - 1),
+      bisY: Math.min(g - 1, Math.ceil(Math.max(...ecken.map((e) => e.y))) + 2),
+    };
+  }
 
-    for (let y = vonY; y < bisY; y++) {
-      for (let x = vonX; x < bisX; x++) {
-        const art = this.karte.felder[y * g + x];
-        const punkt = this.zuBild(x - 0.5, y - 0.5);
-        stift.fillStyle = FARBEN[art] || FARBEN[GRAS];
-        stift.fillRect(punkt.x, punkt.y, kante, kante);
+  zeichnen(jetzt) {
+    const stift = this.stift;
+    const zoom = this.kamera.zoom;
+    stift.fillStyle = '#0f1216';
+    stift.fillRect(0, 0, this.leinwand.clientWidth, this.leinwand.clientHeight);
+
+    const g = this.karte.groesse;
+    const { vonX, bisX, vonY, bisY } = this.sichtbareFelder();
+    const hb = HALB_B * zoom + 0.6; // eine Spur groesser, sonst schimmern Fugen
+    const hh = HALB_H * zoom + 0.3;
+
+    // 1. Boden: jede Raute einzeln gefuellt. In Runde 13 im Browserlauf
+    //    gemessen, weit herausgezoomt je Bild: einzeln 20 ms, vorgezeichnete
+    //    Kacheln kopiert 30 ms, ein gemeinsamer Pfad 160 ms. Einzeln gewinnt.
+    for (let y = vonY; y <= bisY; y++) {
+      for (let x = vonX; x <= bisX; x++) {
+        const index = y * g + x;
+        const feld = this.karte.felder[index];
+        const boden = feld === WASSER ? WASSER : feld === WALD ? WALD : GRAS;
+        const p = this.zuBild(x, y);
+        raute(stift, p.x, p.y, hb, hh);
+        stift.fillStyle = bodenFarbe(boden, index);
+        stift.fill();
       }
     }
-
     for (const spieler of this.spieler.values()) this.basisZeichnen(spieler);
 
-    for (const tier of this.tiere.values()) {
-      const punkt = this.zuBild(tier.x, tier.y);
-      const spieler = this.spieler.get(tier.b);
-      figurZeichnen(this.stift, tier.art, punkt.x, punkt.y, Math.max(9, FELD * 1.0 * this.kamera.zoom), spieler ? spieler.farbe : '#888888', {
-        blick: tier.i % 2 ? 1 : -1,
-      });
+    // 2. Alles, was steht, nach Tiefe: was weiter unten im Bild steht, verdeckt,
+    //    was dahinter steht (darstellung AC-7).
+    const stehend = [];
+    for (let y = vonY; y <= bisY; y++) {
+      for (let x = vonX; x <= bisX; x++) {
+        const index = y * g + x;
+        const art = this.karte.felder[index];
+        if (DINGE.includes(art)) stehend.push({ tiefe: x + y, x, y, art: 'vorrat', feld: art, index });
+      }
     }
-
+    for (const tier of this.tiere.values()) stehend.push({ tiefe: tier.x + tier.y, x: tier.x, y: tier.y, art: 'tier', tier });
     const anteil = this.anteil(jetzt);
-    for (const einheit of this.nachher.values()) this.einheitZeichnen(einheit, anteil);
-    for (const spieler of this.spieler.values()) this.namenZeichnen(spieler);
+    for (const einheit of this.nachher.values()) {
+      const alt = this.vorher.get(einheit.i);
+      const x = alt ? alt.x + (einheit.x - alt.x) * anteil : einheit.x;
+      const y = alt ? alt.y + (einheit.y - alt.y) * anteil : einheit.y;
+      stehend.push({ tiefe: x + y, x, y, art: 'einheit', einheit, alt });
+    }
+    // Gleiche Tiefe: der Vorrat zuerst, sonst verschwindet ein Sammler im Baum,
+    // vor dem er steht.
+    const rang = { vorrat: 0, tier: 1, einheit: 2 };
+    stehend.sort((a, b) => a.tiefe - b.tiefe || rang[a.art] - rang[b.art] || a.x - b.x);
 
+    const e = HALB_B * zoom;
+    for (const ding of stehend) {
+      const p = this.zuBild(ding.x, ding.y);
+      if (ding.art === 'vorrat') {
+        dingZeichnen(stift, ding.feld, p.x, p.y, e, ding.index, (this.fuellung.get(ding.index) || 4) / 4);
+      } else if (ding.art === 'tier') {
+        const spieler = this.spieler.get(ding.tier.b);
+        figurZeichnen(stift, ding.tier.art, p.x, p.y, Math.max(9, HALB_B * 0.9 * zoom), spieler ? spieler.farbe : '#888888', {
+          blick: ding.tier.i % 2 ? 1 : -1,
+        });
+      } else {
+        this.einheitZeichnen(ding.einheit, ding.alt, p);
+      }
+    }
+    this.reihenfolge = stehend.map((d) => ({ art: d.art, tiefe: d.tiefe }));
+
+    for (const spieler of this.spieler.values()) this.namenZeichnen(spieler);
     if (this.zug) this.rahmenZeichnen();
   }
 
+  // Der Platz der Basis: eine Raute aus 3 x 3 Feldern in Spielerfarbe. Das
+  // Dorfzentrum als Gebaeude kommt mit Schritt A6.
   basisZeichnen(spieler) {
     const stift = this.stift;
-    const punkt = this.zuBild(spieler.basis.x, spieler.basis.y);
-    const r = FELD * 1.5 * this.kamera.zoom;
+    const p = this.zuBild(spieler.basis.x, spieler.basis.y);
+    const zoom = this.kamera.zoom;
+    raute(stift, p.x, p.y, HALB_B * 1.5 * zoom, HALB_H * 1.5 * zoom);
     stift.fillStyle = spieler.farbe;
-    stift.globalAlpha = 0.22;
-    stift.fillRect(punkt.x - r, punkt.y - r, r * 2, r * 2);
+    stift.globalAlpha = 0.25;
+    stift.fill();
     stift.globalAlpha = 1;
     stift.strokeStyle = spieler.farbe;
     stift.lineWidth = 2;
-    stift.strokeRect(punkt.x - r, punkt.y - r, r * 2, r * 2);
+    stift.stroke();
   }
 
   namenZeichnen(spieler) {
     if (this.kamera.zoom <= 0.6) return;
     const stift = this.stift;
-    const punkt = this.zuBild(spieler.basis.x, spieler.basis.y);
-    const r = FELD * 1.5 * this.kamera.zoom;
+    const p = this.zuBild(spieler.basis.x, spieler.basis.y);
+    const oben = p.y - HALB_H * 1.5 * this.kamera.zoom - 10;
     stift.font = '600 12px system-ui, sans-serif';
     stift.textAlign = 'center';
     stift.lineWidth = 3;
     stift.strokeStyle = '#0f1216';
-    stift.strokeText(spieler.name, punkt.x, punkt.y - r - 10);
+    stift.strokeText(spieler.name, p.x, oben);
     stift.fillStyle = '#e6e9ee';
-    stift.fillText(spieler.name, punkt.x, punkt.y - r - 10);
+    stift.fillText(spieler.name, p.x, oben);
   }
 
-  einheitZeichnen(einheit, anteil) {
-    const alt = this.vorher.get(einheit.i);
-    const x = alt ? alt.x + (einheit.x - alt.x) * anteil : einheit.x;
-    const y = alt ? alt.y + (einheit.y - alt.y) * anteil : einheit.y;
-    const punkt = this.zuBild(x, y);
-    const hoehe = Math.max(12, FELD * FIGUR_HOEHE * this.kamera.zoom);
+  einheitZeichnen(einheit, alt, punkt) {
+    const hoehe = this.figurenHoehe();
     const spieler = this.spieler.get(einheit.b);
     const stift = this.stift;
 
-    // Blickrichtung aus der Bewegung; wer steht, schaut weiter dorthin, wohin
-    // er zuletzt ging.
-    const dx = alt ? einheit.x - alt.x : 0;
-    const laeuft = alt && Math.hypot(dx, einheit.y - alt.y) > 0.001;
+    // Blickrichtung aus der Bewegung im Bild; wer steht, schaut weiter dorthin,
+    // wohin er zuletzt ging.
+    const dx = alt ? (einheit.x - alt.x) - (einheit.y - alt.y) : 0;
+    const laeuft = alt && Math.hypot(einheit.x - alt.x, einheit.y - alt.y) > 0.001;
     if (Math.abs(dx) > 0.001) this.blicke.set(einheit.i, dx < 0 ? -1 : 1);
 
     if (this.ausgewaehlt.has(einheit.i)) {
@@ -309,7 +386,7 @@ export class Ansicht {
       stift.strokeStyle = '#ffffff';
       stift.lineWidth = 2;
       stift.beginPath();
-      stift.ellipse(punkt.x, punkt.y, hoehe * 0.42, hoehe * 0.17, 0, 0, Math.PI * 2);
+      stift.ellipse(punkt.x, punkt.y, hoehe * 0.42, hoehe * 0.2, 0, 0, Math.PI * 2);
       stift.stroke();
     }
 

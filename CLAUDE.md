@@ -133,7 +133,7 @@ Umfang hinzufügt, dort nachsehen.
 
 ## Stand
 
-**288 von 485 Kriterien fertig.** 260 Tests ohne Browser, 80 im Browser. Die
+**291 von 485 Kriterien fertig.** 260 Tests ohne Browser, 83 im Browser. Die
 Übersicht ist der Bericht: `npm run qa:report`.
 
 Gebaut ist der Unterbau: Räume, Übertragung, Karte, Wegfindung, Sammeln,
@@ -166,8 +166,9 @@ Den Browser für Playwright holt einmal `npm run e2e:browser`.
 **Im Browser gesehen** sind die Manager-Oberfläche, der Vorraum mit
 Spielauswahl und Einstellungen und das **Spielbild des Strategiespiels**:
 Rahmen, Klick, Zoom, Tasten, Rechtsklick zum Sammeln, Ladung, Vorrat
-(`e2e/tests/strategie-spielbild.spec.mjs`). Es sind farbige Kreise auf einem
-Raster — die Darstellung kommt mit Stufe A.
+(`e2e/tests/strategie-spielbild.spec.mjs`). Isometrisch, mit gezeichneten
+Figuren, Bäumen, Beeren, Gold, Stein und Schafen (`public/figuren.js`,
+`public/gelaende.js`, Schautafel unter `/schautafel.html`).
 
 ### Offen, in dieser Reihenfolge
 

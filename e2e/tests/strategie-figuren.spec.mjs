@@ -82,3 +82,36 @@ test('darstellung AC-6: Dorfbewohner, Miliz und Spaeherreiter sind drei Gestalte
     test: info,
   });
 });
+
+test('darstellung AC-3: Baum, Beerenstrauch, Gold und Stein an der Farbe erkennbar, leer werdend kleiner', async ({ page }, info) => {
+  await page.setViewportSize({ width: 1400, height: 1000 });
+  await page.goto('/schautafel.html');
+  await page.waitForFunction(() => window.schautafel);
+  const m = await page.evaluate(() => {
+    const { dingMaske, dinge } = window.schautafel;
+    const aus = {};
+    for (const [name, art] of Object.entries(dinge)) aus[name] = { voll: dingMaske(art, 1), leer: dingMaske(art, 0.25) };
+    return aus;
+  });
+  const anteil = (maske, farbe) => maske[farbe] / maske.pixel;
+  // Jedes Ding traegt seine Farbe als Hauptfarbe - und nicht die der anderen.
+  expect(anteil(m.WALD.voll, 'gruen')).toBeGreaterThan(0.6);
+  expect(anteil(m.GOLD.voll, 'gelb')).toBeGreaterThan(0.6);
+  expect(anteil(m.STEIN.voll, 'grau')).toBeGreaterThan(0.6);
+  expect(anteil(m.BEERE.voll, 'gruen')).toBeGreaterThan(0.5);
+  // Den Beerenstrauch macht aus, dass rote Beeren zu sehen sind.
+  expect(anteil(m.BEERE.voll, 'rot')).toBeGreaterThan(0.08);
+  expect(anteil(m.WALD.voll, 'rot') + anteil(m.WALD.voll, 'gelb')).toBeLessThan(0.02);
+  expect(anteil(m.GOLD.voll, 'grau') + anteil(m.STEIN.voll, 'gelb')).toBeLessThan(0.02);
+  // Ein fast leerer Vorrat ist sichtbar kleiner als ein voller.
+  for (const name of ['WALD', 'BEERE', 'GOLD', 'STEIN']) {
+    expect(m[name].leer.pixel, name).toBeLessThan(m[name].voll.pixel * 0.7);
+  }
+  await expect(page.locator('#tafel')).toBeInViewport();
+  await nachweis(page, {
+    spec: DARSTELLUNG,
+    ac: 'AC-3',
+    titel: 'Schautafel unten: Wald aus Baeumen, Beerenstrauch mit roten Beeren, Goldhaufen, Steinbrocken - voll, fast leer, in Spielgroesse',
+    test: info,
+  });
+});

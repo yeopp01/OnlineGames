@@ -2,7 +2,7 @@
 
 **Bereich:** Strategie
 **Kuerzel:** darstellung
-**Stand:** 1/11 fertig · 10 offen
+**Stand:** 4/11 fertig · 7 offen
 
 ## Zweck
 
@@ -26,12 +26,12 @@ der Spieler. Keine Bilddateien aus fremder Quelle.
 
 ### Blick und Gelände (Stufe A)
 
-- **AC-1** `offen` **Isometrischer Blick** — Die Karte liegt als Raute: ein Feld ist doppelt so
+- **AC-1** `fertig` **Isometrischer Blick** — Die Karte liegt als Raute: ein Feld ist doppelt so
   breit wie hoch. Rahmen, Klick und Rechtsklick treffen im neuen Blick
   dieselben Felder wie vorher (die Umrechnung ist geprüft, nicht geschätzt).
 - **AC-2** `offen` **Gelände lebt** — Gras ist nicht einfarbig: leichte Tönung je Feld aus dem
   Startwert, weiche Kanten zu Wasser. Wasser ist als Wasser erkennbar.
-- **AC-3** `offen` **Bäume, Sträucher, Felsen** — Ein Baum hat Stamm und Krone, ein
+- **AC-3** `fertig` **Bäume, Sträucher, Felsen** — Ein Baum hat Stamm und Krone, ein
   Beerenstrauch rote Punkte, Gold glänzt gelb, Stein ist grau und kantig.
   Leert sich ein Vorrat, wird er sichtbar kleiner.
 
@@ -45,7 +45,7 @@ der Spieler. Keine Bilddateien aus fremder Quelle.
 - **AC-6** `fertig` **Einheiten sind Figuren** — Dorfbewohner, Miliz und Späherreiter sind an der
   Gestalt zu unterscheiden (Werkzeug, Schwert und Schild, Pferd), mit
   Spielerfarbe am Körper. Ein Dorfbewohner zeigt, was er trägt.
-- **AC-7** `offen` **Vorn verdeckt hinten** — Was weiter unten im Bild steht, wird später
+- **AC-7** `fertig` **Vorn verdeckt hinten** — Was weiter unten im Bild steht, wird später
   gezeichnet. Eine Einheit hinter einem Haus ist verdeckt; eine ausgewählte
   bleibt als Umriss erkennbar.
 - **AC-8** `offen` **Auswahl und Leben am Boden** — Ausgewähltes trägt eine Ellipse am Boden,

@@ -203,6 +203,15 @@ class Welt {
     if (menge <= 0) return;
 
     this.karte.vorrat.set(index, rest - menge);
+    // Das Bild zeigt, wie voll ein Vorrat noch ist - in Vierteln, und nur wenn
+    // ein Viertel verloren geht, damit keine Nachricht je Ladung entsteht
+    // (darstellung AC-3).
+    const voll = karten.VORRAT[this.karte.felder[index]];
+    const viertelVorher = Math.ceil((rest / voll) * 4);
+    const viertelNachher = Math.ceil(((rest - menge) / voll) * 4);
+    if (rest - menge > 0 && viertelNachher !== viertelVorher) {
+      this.feldAenderungen.push({ i: index, a: this.karte.felder[index], v: viertelNachher });
+    }
     einheit.ladung = menge;
     einheit.ladungsart = this.karte.felder[index] === karten.WALD ? 'holz' : 'nahrung';
 

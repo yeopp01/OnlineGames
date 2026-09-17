@@ -1,0 +1,10 @@
+{
+  "spec": "10-strategie/darstellung.md",
+  "ac": "AC-7",
+  "titel": "Nah am Wald: Baeume, Dorfbewohner, Schafe, Gold und Stein nach Tiefe gezeichnet - die Reihenfolge prueft der Test",
+  "datei": "e2e/tests/strategie-spielbild.spec.mjs",
+  "pfad": [
+    "Das Spielbild",
+    "darstellung AC-7: was weiter unten steht, verdeckt, was dahinter steht"
+  ]
+}

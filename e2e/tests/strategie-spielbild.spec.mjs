@@ -14,6 +14,7 @@ const BEDIENUNG = '10-strategie/bedienung.md';
 const FAHRPLAN = '10-strategie/fahrplan.md';
 const AUSWAHL = '00-plattform/spielauswahl.md';
 const KARTE = '10-strategie/karte-und-vorraete.md';
+const DARSTELLUNG = '10-strategie/darstellung.md';
 const STARTWERT = 4711;
 const WALD = 1;
 
@@ -260,6 +261,75 @@ test.describe('Das Spielbild', () => {
       spec: KARTE,
       ac: 'AC-16',
       titel: 'Berts Dorfzentrum nah: acht Schafe im Kreis, das Halsband in seinem Rot',
+      test: info,
+    });
+  });
+
+  test('darstellung AC-1: die Karte liegt als Raute, und Bild und Feld rechnen sich genau um', async ({}, info) => {
+    await bert.evaluate(() => { window.ansicht.kamera.zoom = 1; });
+    const probe = await bert.evaluate(() => {
+      const a = window.ansicht;
+      const nullpunkt = a.zuBild(40, 50);
+      const rechts = a.zuBild(41, 50);
+      const unten = a.zuBild(40, 51);
+      // Hin und zurueck fuer viele gebrochene Punkte.
+      let groessterFehler = 0;
+      for (let i = 0; i < 200; i++) {
+        const x = (i * 37) % 120 + ((i * 13) % 100) / 100;
+        const y = (i * 53) % 120 + ((i * 29) % 100) / 100;
+        const b = a.zuBild(x, y);
+        const w = a.zuWelt(b.x, b.y);
+        groessterFehler = Math.max(groessterFehler, Math.abs(w.x - x), Math.abs(w.y - y));
+      }
+      // Ein Klick auf die Mitte einer Raute trifft genau dieses Feld.
+      const mitte = a.zuBild(17, 23);
+      const getroffen = a.zuWelt(mitte.x + 5, mitte.y - 3);
+      return {
+        schrittX: [rechts.x - nullpunkt.x, rechts.y - nullpunkt.y],
+        schrittY: [unten.x - nullpunkt.x, unten.y - nullpunkt.y],
+        groessterFehler,
+        feld: [Math.round(getroffen.x), Math.round(getroffen.y)],
+      };
+    });
+    // Ein Schritt in x geht nach rechts unten, in y nach links unten - doppelt so breit wie hoch.
+    expect(probe.schrittX).toEqual([22, 11]);
+    expect(probe.schrittY).toEqual([-22, 11]);
+    expect(probe.groessterFehler).toBeLessThan(1e-9);
+    expect(probe.feld).toEqual([17, 23]);
+    await bert.waitForTimeout(100);
+    await nachweis(bert, {
+      spec: DARSTELLUNG,
+      ac: 'AC-1',
+      titel: 'Berts Siedlung im isometrischen Blick: Rautenfelder, Wald, Beeren, Gold und Stein als Dinge',
+      test: info,
+    });
+  });
+
+  test('darstellung AC-7: was weiter unten steht, verdeckt, was dahinter steht', async ({}, info) => {
+    // Zum Wald, in dem Anna sammelt, nah heran.
+    const ziel = await anna.evaluate(() => {
+      const a = window.ansicht;
+      const sammler = [...a.nachher.values()].find((e) => e.b === a.ich && e.a === 'h') || [...a.nachher.values()].find((e) => e.b === a.ich);
+      a.kamera.zoom = 2.2;
+      a.blickAuf(sammler.x, sammler.y);
+      return true;
+    });
+    expect(ziel).toBe(true);
+    await anna.waitForTimeout(200);
+    const reihenfolge = await anna.evaluate(() => window.ansicht.reihenfolge);
+    expect(reihenfolge.length).toBeGreaterThan(20);
+    for (let i = 1; i < reihenfolge.length; i++) {
+      expect(reihenfolge[i].tiefe, `Platz ${i}`).toBeGreaterThanOrEqual(reihenfolge[i - 1].tiefe);
+    }
+    // Einheiten stehen zwischen den Baeumen, nicht alle darueber.
+    const arten = reihenfolge.map((d) => d.art);
+    const ersteEinheit = arten.indexOf('einheit');
+    expect(ersteEinheit).toBeGreaterThan(-1);
+    expect(arten.slice(ersteEinheit).includes('vorrat')).toBe(true);
+    await nachweis(anna, {
+      spec: DARSTELLUNG,
+      ac: 'AC-7',
+      titel: 'Nah am Wald: Baeume, Dorfbewohner, Schafe, Gold und Stein nach Tiefe gezeichnet - die Reihenfolge prueft der Test',
       test: info,
     });
   });

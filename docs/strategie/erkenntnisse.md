@@ -39,15 +39,6 @@ etwas anderem gearbeitet.
 - Das Spielbild im Browser liest `window.ansicht` (nur lesen, befohlen wird
   mit Maus und Tastatur) — Muster in `e2e/tests/strategie-spielbild.spec.mjs`.
   Für neue Bedienkriterien dort anbauen.
-- **Erster ehrlicher Blick aufs Spielbild (Runde 4):** farbige Kreise auf einem
-  Raster, Basis als Quadrat, dunkles Loch am Kartenrand, keine Übersichtskarte.
-  Weit weg von AoE II. Das ist erwartet — aber Stufe A braucht eigene
-  Darstellungskriterien (isometrisch, Gebäude und Einheiten als Gestalt,
-  fahrplan AC-7), sonst bleibt das Bild so.
-- Die Karte ist 64×64 mit Feldarten Gras, Wald, Beeren, Wasser. Das Original
-  rechnet mit 120×120 bis 220×220 und Einzelobjekten (Baum, Goldfeld, Schaf).
-  Umbau zu Beginn von Stufe A; `wege.js` muss dann größere Karten
-  bezahlbar halten (einheiten AC-8: unter 1 ms quer über die Karte).
 - Der Server schickt heute jedem den Vollzustand. Das trägt nicht bis 8×200
   Einheiten (fahrplan AC-20) und nicht für den Nebel (AC-13). Nicht vorziehen,
   aber keine Entscheidung treffen, die gebündelte Änderungen verbaut.
@@ -65,9 +56,15 @@ etwas anderem gearbeitet.
 - Die Welt entsteht über den Steckbrief: `erzeugen(spieler, einstellungen)`
   bekommt alle Einstellungen samt Startwert (raeume AC-16). Kartengröße und
   Vorrat (A2) kommen dort an, ohne `raeume.js` anzufassen.
-- **Der Einstieg ist erreicht** (fahrplan AC-1, Runde 6). Offen bleibt dort nur
-  auswahl AC-6 (Kartengröße, Vorrat → Stufe A). AC-12 und AC-14 bis AC-17 betreffen fortlaufende Spiele
-  und Spielstände; für das Strategiespiel nicht nötig — nicht vorziehen.
+- Der Einstieg ist erreicht (Runde 6), auswahl AC-6 seit Runde 11. AC-12 und
+  AC-14 bis AC-17 betreffen fortlaufende Spiele — nicht vorziehen.
+- **Zeichnen im Browserlauf (ohne Grafikkarte) ist langsam und eigenwillig:**
+  einzeln gefüllte Rauten schlagen einen gemeinsamen Path2D (160 ms) und
+  kopierte Kacheln (30 ms) deutlich. Vor jedem „Optimieren" messen — zwei
+  naheliegende Ideen waren hier Verschlechterungen. Stand Runde 13: Zoom 1
+  rund 5 ms, Zoom 0,4 rund 10 ms je Bild.
+- Offen im Aussehen: Wasser hat harte Kanten (darstellung AC-2), die Basis ist
+  noch eine Raute ohne Gebäude (A6), Dorfbewohner bei Zoom 1 recht klein.
 - Laufzeiten nur messen, wenn die Maschine ruhig ist: vor einer Messung
   nach fremden `node`-/`chrome`-Prozessen sehen. Andere Projekte laufen hier
   parallel und verdoppeln den Browserlauf.
@@ -88,6 +85,8 @@ Zahlen, gegen die spätere Runden vergleichen. Mit Datum und Commit.
 | 2026-09-16 | Tests ohne Browser / im Browser; Browserlauf | 252 / 77; 1,1 min — nicht vergleichbar, 8 fremde Testprozesse | Runde 6 |
 | 2026-09-17 | Tests ohne Browser / im Browser; Browserlauf (Last 16 %) | 260 / 80; 59,8 s | Runde 12 |
 | 2026-09-17 | Wegsuche 200 x 200: Ecke zu Ecke / Mittel 100 zufaellig | 1,19 ms / 0,28 ms | Runde 12 |
+| 2026-09-17 | Zeichnen je Bild im Browserlauf, Zoom 1 / Zoom 0,4 | 4,9–6,2 ms / 10–11 ms | Runde 13 |
+| 2026-09-17 | Tests ohne Browser / im Browser; Browserlauf (Last 16 %) | 260 / 83; 58,5 s | Runde 13 |
 
 ## Rückschauen
 
@@ -148,6 +147,14 @@ Minuten. Tragbar; ein Teillauf für `check:alles` würde die Regel aufweichen.
 Neueste oben. Eine Zeile je Runde: Nummer, Datum, Kriterien, Ergebnis,
 wichtigste Erkenntnis.
 
+- **13** · 2026-09-17 · A3: darstellung AC-1 (Raute, Umrechnung auf 1e-9
+  genau), AC-3 (Bäume, Beeren, Gold, Stein als Dinge, schrumpfen beim Leeren),
+  AC-7 (Tiefenordnung) fertig. Erster Wurf beim Ansehen nachgebessert:
+  Beerenstrauch zu klein, Gold und Stein zu klein, Gras wie ein Schachbrett.
+  Zwei Optimierungen gemessen und verworfen (siehe Offene Fäden). Eine
+  Bildunterschrift behauptete Verdeckung, die das Bild nicht zeigte — ersetzt.
+  Nächste Runde: **A3-Rest darstellung AC-2** (Gelände lebt, weiche
+  Wasserkanten); Runde 15 ist die nächste Rückschau.
 - **12** · 2026-09-17 · A2 abgeschlossen: karte AC-15 (Ecke zu Ecke 1,2 ms,
   Mittel 0,28 ms auf 200 × 200), AC-16 (acht Schafe mit Halsband in
   Spielerfarbe), AC-17 (Aufbau bei acht Spielern 53 KB). Entschieden: Tiere
