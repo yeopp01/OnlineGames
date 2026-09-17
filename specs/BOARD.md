@@ -7,9 +7,9 @@ Eine Zeile je Abnahmekriterium. Gepflegt wird der Status in der Spec selbst,
 hier steht er zusammengefasst. Erzeugt mit `npm run specs:board`; als Seite
 mit Bildnachweisen, Filter und Suche mit `npm run qa:report`.
 
-**Gesamt:** 343/490 fertig · 5 in QA · 4 geplant · 131 offen · 7 zurueckgestellt
+**Gesamt:** 344/490 fertig · 5 in QA · 4 geplant · 130 offen · 7 zurueckgestellt
 
-**Nachweise:** 126 Kriterien mit Bild · 221 ohne Bild, begruendet in `qa/ohne-bild.json`
+**Nachweise:** 127 Kriterien mit Bild · 221 ohne Bild, begruendet in `qa/ohne-bild.json`
 
 ## Nach Spezifikation
 
@@ -22,7 +22,7 @@ mit Bildnachweisen, Filter und Suche mit `npm run qa:report`.
 | [Spielauswahl und Einstellungen](00-plattform/spielauswahl.md) | -         | -     | -       | 5     | -               | 12     |
 | [Uebertragung](00-plattform/uebertragung.md)                   | -         | -     | 2       | 1     | -               | 7      |
 | [Bauen und Ausbilden](10-strategie/bauen.md)                   | -         | -     | -       | 4     | -               | 18     |
-| [Bedienung](10-strategie/bedienung.md)                         | -         | -     | -       | 15    | -               | 14     |
+| [Bedienung](10-strategie/bedienung.md)                         | -         | -     | -       | 14    | -               | 15     |
 | [Darstellung](10-strategie/darstellung.md)                     | -         | -     | -       | 2     | -               | 12     |
 | [Einheiten und Befehle](10-strategie/einheiten-und-befehle.md) | -         | -     | -       | 2     | 1               | 15     |
 | [Fahrplan zum Klon](10-strategie/fahrplan.md)                  | -         | -     | -       | 17    | -               | 5      |
@@ -60,7 +60,7 @@ mit Bildnachweisen, Filter und Suche mit `npm run qa:report`.
 - **Abbruch ist sichtbar** — [Uebertragung](00-plattform/uebertragung.md) AC-9
 - **Automatischer Wiederaufbau** — [Uebertragung](00-plattform/uebertragung.md) AC-10
 
-## Offen (131)
+## Offen (130)
 
 - **Anmeldung ueber Google/GitHub** — [Konten und Anmeldung](00-plattform/konten.md) AC-6
 - **Bilanz je Konto** — [Konten und Anmeldung](00-plattform/konten.md) AC-14
@@ -114,7 +114,6 @@ mit Bildnachweisen, Filter und Suche mit `npm run qa:report`.
 - **Ausgewählte sind aufgelistet** — [Bedienung](10-strategie/bedienung.md) AC-6
 - **Schieben am Bildschirmrand** — [Bedienung](10-strategie/bedienung.md) AC-9
 - **Leertaste springt zur Basis** — [Bedienung](10-strategie/bedienung.md) AC-10
-- **Übersichtskarte unten rechts** — [Bedienung](10-strategie/bedienung.md) AC-11
 - **Der Befehl ist sofort sichtbar** — [Bedienung](10-strategie/bedienung.md) AC-13
 - **Warteschlange mit Umschalt** — [Bedienung](10-strategie/bedienung.md) AC-14
 - **Verbindungsverlust ist sichtbar** — [Bedienung](10-strategie/bedienung.md) AC-19

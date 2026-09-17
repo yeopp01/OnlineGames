@@ -1,5 +1,6 @@
 import { Ansicht } from './ansicht.js';
 import { Auswahlleiste } from './auswahlleiste.js';
+import { Uebersicht } from './uebersicht.js';
 
 const teile = {
   vorraum: document.getElementById('vorraum'),
@@ -93,6 +94,11 @@ function empfangen(nachricht) {
         auswahlleiste = new Auswahlleiste(teile.auswahlleiste, ansicht, (auftrag) =>
           senden({ typ: 'befehl', ...auftrag }));
         ansicht.beiAuswahl = () => auswahlleiste.aktualisieren();
+        const uebersicht = new Uebersicht(document.getElementById('uebersicht'), ansicht);
+        ansicht.nachBild = (jetzt) => uebersicht.zeichnen(jetzt);
+        ansicht.beiFeldern = () => uebersicht.feldGeaendert();
+        // Fuer den Browserlauf, wie window.ansicht: lesen, nicht schreiben.
+        window.uebersicht = uebersicht;
         ansicht.melden = spielMelden;
         ansicht.sammelpunktSenden = (gebaeude, ziel) =>
           senden({ typ: 'befehl', auftrag: 'sammelpunkt', gebaeude, ziel });

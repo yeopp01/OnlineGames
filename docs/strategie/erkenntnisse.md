@@ -343,6 +343,17 @@ alle sieben Gebäude der Dunklen Zeit stehen. Was sich wiederholt hat:
 Neueste oben. Eine Zeile je Runde: Nummer, Datum, Kriterien, Ergebnis,
 wichtigste Erkenntnis.
 
+- **47** · 2026-09-17 · bedienung AC-11 **fertig**: Übersichtskarte unten
+  rechts (`public/uebersicht.js`), 240 × 120 als Raute wie das Spielbild.
+  Gelände einmal in ein Bild, neu nur bei geänderten Feldern (Haken
+  `beiFeldern` der Ansicht); Punkte für Einheiten, Quadrate für Gebäude in
+  Spielerfarbe und der Ausschnitt als weißer Rahmen fünfmal je Sekunde über
+  `nachBild`. Klick oder Ziehen schiebt die Ansicht. Der Test liest
+  `window.uebersicht.punkte`/`rahmen`, prüft das Gelände an den Bildpunkten
+  (Wald dunkler als Gras) und springt per Klick auf die fremde Basis. Gelernt:
+  Innenabstand an einer Leinwand verschiebt `clientWidth` gegen die
+  Zeichenfläche — weggelassen. Zeichenzeit nicht gemessen: die Übersicht
+  zeichnet außerhalb von `zeichnen` und nur alle 200 ms.
 - **46** · 2026-09-17 · A9 Teil 1: einheiten AC-21, bedienung AC-28,
   darstellung AC-9, fahrplan AC-7 **fertig**. Untätig ist jetzt eine Regel
   der Welt (`welt.untaetig`, weder laufen noch sammeln noch bauen) — der

@@ -2,7 +2,7 @@
 
 **Bereich:** Strategie
 **Kuerzel:** bedienung
-**Stand:** 14/29 fertig · 15 offen
+**Stand:** 15/29 fertig · 14 offen
 
 ## Zweck
 
@@ -39,7 +39,7 @@ Befehl steht.
 - **AC-8** `fertig` **Zoom mit dem Rad** — Der Punkt unter dem Zeiger bleibt dabei stehen.
 - **AC-9** `offen` **Schieben am Bildschirmrand** — Mit der Maus am Rand, abschaltbar.
 - **AC-10** `offen` **Leertaste springt zur Basis** — Und ein zweites Mal zurück.
-- **AC-11** `offen` **Übersichtskarte unten rechts** — Gelände, eigene und fremde Einheiten als
+- **AC-11** `fertig` **Übersichtskarte unten rechts** — Gelände, eigene und fremde Einheiten als
   Punkte, der Bildausschnitt als Rahmen. Klick springt hin.
 
 ### Befehle

@@ -53,6 +53,9 @@ export class Ansicht {
     this.arten = {};
     this.gewaehltesGebaeude = null; // id; entweder Einheiten oder ein Gebaeude
     this.beiAuswahl = () => {};
+    // Nach jedem Bild und bei geaenderten Feldern - fuer die Uebersichtskarte (bedienung AC-11).
+    this.nachBild = () => {};
+    this.beiFeldern = () => {};
     // Die eigenen untaetigen Dorfbewohner, wie der Server sie meldet (einheiten AC-21).
     this.untaetige = [];
     this.letzterUntaetiger = null;
@@ -112,7 +115,10 @@ export class Ansicht {
 
   zustand(nachricht) {
     for (const aenderung of nachricht.felder || []) {
-      if (this.karte.felder[aenderung.i] !== aenderung.a) this.kachelnVerwerfen(aenderung.i);
+      if (this.karte.felder[aenderung.i] !== aenderung.a) {
+        this.kachelnVerwerfen(aenderung.i);
+        this.beiFeldern();
+      }
       this.karte.felder[aenderung.i] = aenderung.a;
       if (aenderung.v !== undefined) this.fuellung.set(aenderung.i, aenderung.v);
       else this.fuellung.delete(aenderung.i);
@@ -501,6 +507,7 @@ export class Ansicht {
     this.letztesBild = jetzt;
     this.schieben(dauer);
     this.zeichnen(jetzt);
+    this.nachBild(jetzt);
     requestAnimationFrame((t) => this.bild(t));
   }
 

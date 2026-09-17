@@ -1,0 +1,10 @@
+{
+  "spec": "10-strategie/bedienung.md",
+  "ac": "AC-11",
+  "titel": "Unten rechts die Uebersichtskarte, nach einem Klick auf die roten Punkte: die Ansicht zeigt Berts Basis, der weisse Rahmen steht dort",
+  "datei": "e2e/tests/strategie-uebersicht.spec.mjs",
+  "pfad": [
+    "Uebersichtskarte",
+    "bedienung AC-11: Gelaende, eigene und fremde Punkte, der Ausschnitt als Rahmen - ein Klick springt hin"
+  ]
+}

@@ -257,6 +257,22 @@ canvas {
 
 /* ---- Absagen im Spielbild (bedienung AC-18) ------------------------------ */
 
+/* Die Uebersichtskarte (bedienung AC-11): unten rechts, als Raute doppelt so
+   breit wie hoch - wie die Karte im Spielbild. */
+.uebersicht {
+  position: fixed;
+  right: 1rem;
+  bottom: 1rem;
+  width: 240px;
+  height: 120px;
+  /* Kein Innenabstand: clientWidth und Mauslage muessen die Zeichenflaeche sein. */
+  border: 1px solid #ffffff24;
+  border-radius: 0.7rem;
+  background: #10141aee;
+  box-shadow: 0 4px 14px #0008;
+  cursor: crosshair;
+}
+
 /* Untaetige Dorfbewohner (bedienung AC-28): unten links, ueber dem Spielfeld. */
 .untaetig {
   position: fixed;
