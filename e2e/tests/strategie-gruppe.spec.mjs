@@ -3,7 +3,7 @@
 // am Ziel nebeneinander aufstellen (einheiten-und-befehle.md AC-20).
 import { nachweis } from '../../scripts/qa-nachweis.mjs';
 import { expect, test } from '../helpers/seite.mjs';
-import { partieBeenden, partieZuZweit } from '../helpers/strategie.mjs';
+import { bedienteileFrei, partieBeenden, partieZuZweit } from '../helpers/strategie.mjs';
 
 const BEDIENUNG = '10-strategie/bedienung.md';
 const EINHEITEN = '10-strategie/einheiten-und-befehle.md';
@@ -50,6 +50,8 @@ test.describe('Gruppe', () => {
     await expect(eintraege.nth(1)).toHaveAttribute('title', '1 Spaeherreiter');
     await expect(eintraege.nth(1)).toContainText('1');
     await expect(leiste).toBeInViewport();
+    // Die breiteste Leiste - eine Gruppe mit Baumenue - neben Knopf und Uebersichtskarte.
+    expect(await bedienteileFrei(anna)).toEqual([]);
     await nachweis(anna, {
       spec: BEDIENUNG,
       ac: 'AC-6',

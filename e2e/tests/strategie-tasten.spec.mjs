@@ -1,7 +1,7 @@
 // Tastenkuerzel und Tastenuebersicht (→ specs/10-strategie/bedienung.md AC-27, AC-22).
 import { nachweis } from '../../scripts/qa-nachweis.mjs';
 import { expect, test } from '../helpers/seite.mjs';
-import { dorfbewohnerAnklicken, partieBeenden, partieZuZweit } from '../helpers/strategie.mjs';
+import { bedienteileFrei, dorfbewohnerAnklicken, partieBeenden, partieZuZweit } from '../helpers/strategie.mjs';
 import { BAUTASTEN, BELEGUNG } from '../../public/tasten.js';
 
 const BEDIENUNG = '10-strategie/bedienung.md';
@@ -58,6 +58,9 @@ test.describe('Tasten', () => {
     await anna.keyboard.press('b');
     await expect(menue).toHaveClass(/tasten/);
     await expect(menue).toBeInViewport();
+    // Die breiteste Leiste - ein Dorfbewohner mit Lebensbalken und Baumenue -
+    // ueberdeckt weder Uebersichtskarte noch Knopf (Rueckschau nach Runde 50).
+    expect(await bedienteileFrei(anna)).toEqual([]);
     await nachweis(anna, {
       spec: BEDIENUNG,
       ac: 'AC-27',

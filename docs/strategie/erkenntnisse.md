@@ -117,6 +117,7 @@ Zahlen, gegen die spätere Runden vergleichen. Mit Datum und Commit.
 | 2026-09-17 | Zeichnen je Bild (sicht --messen, ohne Grafikkarte), Zoom 1 / 0,5 / 2 | vorher 23,8 / 29,3 / 17,9 ms, nachher 18,2 / 23,1 / 29,3 ms | Runde 29 |
 | 2026-09-17 | Tests ohne Browser / im Browser | 305 / 109 | Runde 40 |
 | 2026-09-17 | Tests ohne Browser / im Browser | 318 / 113 | Runde 45 |
+| 2026-09-17 | Tests ohne Browser / im Browser | 320 / 121 | Runde 50 |
 | 2026-09-17 | Pruefstand, Grund-KI: 20 Partien x 10 Spielminuten, 2 Spieler — Dauer je Partie / Dorfbewohner nach 10 min | 30–90 ms / 15–16 | Runde 43 |
 | 2026-09-17 | Pruefstand, Wirtschafts-KI: 20 Startwerte x 2 Spieler nach 10 min — Dorfbewohner / Nahrung min / laengste Untaetigkeit / Warten auf Wohnraum max; 20 Partien gesamt | 22 / 520 / 0,6 s / 3,5 s; 1,4 s | Runde 44 |
 | 2026-09-17 | Zeichnen je Bild nach A6c (Boden in Kacheln, Wasser im Boden), Zoom 1 / 2 — Last nicht geprüft | 20,4 / 40,2 ms | Runde 39 |
@@ -266,6 +267,29 @@ Gut gelaufen: Die Tonstufen-Messung alt gegen neu hat aus „wirkt gezeichneter"
 eine Zahl gemacht, und zweimal hat ein alter Test einen neuen Fehler gefunden
 (Klick auf Beeren traf ein Schaf; zwei Lager zu ähnlich). Browserlauf bei
 ruhigerer Maschine 141 s Testzeit, langsamster Fall weiter der Lagertest (28 s).
+
+### Nach Runde 50 (2026-09-17)
+
+Runden 46–49: aus A9 untätige Dorfbewohner, Übersichtskarte, Tastenkürzel mit
+Übersicht, Auswahlliste und Aufstellung einer Gruppe, dazu die Schautafel als
+Nachweis; 10 Kriterien `fertig`. Was sich wiederholt hat:
+
+1. **Bedienteile überdeckten einander, kein Test sah es** — die Auswahlleiste
+   ragte ab Runde 47 unter die Übersichtskarte, gefunden erst beim Ansehen in
+   Runde 48. → Hilfe `bedienteileFrei(page)`: feste Teile über dem Spielfeld
+   dürfen sich nicht überdecken und nicht aus dem Fenster ragen. Geprüft im
+   breitesten Zustand (ein Dorfbewohner mit Baumenü); mit der alten Lage der
+   Leiste schlägt sie an („#auswahlleiste ueberdeckt #uebersicht"), mit einer
+   Gruppe nicht — die Leiste ist dann schmaler. Anweisung nachgezogen.
+2. **Unterschriften zu früh** — „Alle drei im Wald", als sie liefen; „mit
+   Namen" unter dem Rand. → Anweisung: auf den behaupteten Zustand warten.
+3. **Ein Test, zwei Kriterien, ein Bild** — das Board beanstandete das
+   zweite. → Anweisung: Schleife über beide Specs.
+
+Außerdem wieder eine wachsende Liste auf Gleichheit (Felder je Spieler) —
+die Regel galt schon; eine Suche nach `Object.keys(…).sort(), [` fand keine
+weitere. Browserlauf nicht gemessen: die Maschine lief die ganze Zeit mit
+fremder Last.
 
 ### Nach Runde 45 (2026-09-17)
 

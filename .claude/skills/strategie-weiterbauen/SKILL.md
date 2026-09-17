@@ -158,6 +158,17 @@ Setze die gewählten Kriterien auf `in-arbeit`.
   überdeckt? Wenn nicht: verbessern, nicht einchecken. Auf der Leinwand hilft
   kein `toBeInViewport` — dort ist das Ansehen die einzige Prüfung. (Runde 4:
   der Ladungspunkt lag unter dem Auswahlring.)
+- **Ein neues festes Bedienteil über dem Spielfeld** (Leiste, Knopf, Karte,
+  Fenster) prüft `bedienteileFrei(page)` aus `e2e/helpers/strategie.mjs` im
+  breitesten Zustand — dort, wo die Auswahlleiste am längsten ist (ein
+  Dorfbewohner mit Baumenü). Nachsehen allein hat die Überdeckung in Runde 47
+  erst eine Runde später gefunden. Neue Teile in die Liste der Hilfe
+  aufnehmen.
+- **Behauptet die Unterschrift einen Zustand, wartet der Test darauf** —
+  „angekommen", „im Wald", „mit Namen": erst `waitForFunction` auf genau
+  diesen Zustand, dann `nachweis()` (Runde 46: zweimal zu früh). Nennt ein Test
+  zwei Kriterien, legt er das Bild für beide ab (Schleife über
+  `[[SPEC, 'AC-n'], …]`), sonst beanstandet das Board.
 - **Jede Zahl und jedes „sichtbar" in einer Bildunterschrift sichert der Test
   vorher ab** — gezählt aus `window.ansicht`, nicht geschätzt („vier
   Dorfbewohner und ein Reiter" statt „fünf Dorfbewohner"), und ein Balken oder

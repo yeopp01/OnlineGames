@@ -93,3 +93,35 @@ export function platzImBild(page, { n = 2, um, abstand = 5, seitlich = false }) 
     return null;
   }, { n, um, abstand, seitlich });
 }
+
+/**
+ * Die festen Teile ueber dem Spielfeld - Kopfzeile, Auswahlleiste, Knopf fuer
+ * Untaetige, Uebersichtskarte, Meldung - duerfen einander nicht ueberdecken
+ * und nicht aus dem Fenster ragen. Rueckschau nach Runde 50: die Auswahlleiste
+ * lag eine Runde lang unter der Uebersichtskarte, kein Test hatte es gesehen.
+ * Zurueck kommt die Liste der Beanstandungen, leer heisst in Ordnung.
+ */
+export function bedienteileFrei(page) {
+  return page.evaluate(() => {
+    const teile = ['#kopfzeile', '#auswahlleiste', '#untaetig', '#uebersicht', '#spielmeldung']
+      .map((wahl) => ({ wahl, el: document.querySelector(wahl) }))
+      .filter(({ el }) => el && !el.hidden && el.getClientRects().length)
+      .map(({ wahl, el }) => ({ wahl, r: el.getBoundingClientRect() }));
+    const beanstandet = [];
+    const breite = window.innerWidth;
+    const hoehe = window.innerHeight;
+    for (const { wahl, r } of teile) {
+      if (r.left < 0 || r.top < 0 || r.right > breite || r.bottom > hoehe) beanstandet.push(`${wahl} ragt aus dem Fenster`);
+    }
+    for (let i = 0; i < teile.length; i++) {
+      for (let j = i + 1; j < teile.length; j++) {
+        const a = teile[i].r;
+        const b = teile[j].r;
+        if (a.left < b.right && b.left < a.right && a.top < b.bottom && b.top < a.bottom) {
+          beanstandet.push(`${teile[i].wahl} ueberdeckt ${teile[j].wahl}`);
+        }
+      }
+    }
+    return beanstandet;
+  });
+}
