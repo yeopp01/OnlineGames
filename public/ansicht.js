@@ -20,6 +20,11 @@ const FIGUR_HOEHE = 1.3; // in halben Rautenbreiten * 2
 const KOERPER_MITTE = 0.6; // Anteil der Figurenhoehe ueber dem Fusspunkt, auf den ein Klick zielt
 const KLICK_WEITE = 16; // Bildpunkte bei Vergroesserung 1
 
+/** Hoehe einer Figur in Bildpunkten bei einem Zoom - auch fuer die Schautafel. */
+export function figurHoeheBei(zoom) {
+  return Math.max(12, HALB_B * FIGUR_HOEHE * zoom);
+}
+
 // Schrittphase fuer die Beine: laeuft mit der Uhr, je Einheit versetzt, damit
 // eine Gruppe nicht im Gleichschritt marschiert.
 
@@ -497,7 +502,7 @@ export class Ansicht {
   }
 
   figurenHoehe() {
-    return Math.max(12, HALB_B * FIGUR_HOEHE * this.kamera.zoom);
+    return figurHoeheBei(this.kamera.zoom);
   }
 
   /** Welche Felder das Bild beruehrt - aus den vier Ecken der Leinwand. */

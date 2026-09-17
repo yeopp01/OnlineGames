@@ -11,17 +11,30 @@
 // von links oben als Verlauf ueber drei Toene, dazu Falten, Maserung, Kette
 // oder Wolle; der Umriss ist kraeftiger als die Linien innen. Unter
 // Spielgroesse fallen die feinsten Striche weg (`fein`), sonst verschwimmen sie.
+//
+// Naturalistisch statt Comic (AC-13, Runde 38): der Kopf ist hoechstens ein
+// Sechstel der Figur (KOPF_MASS), die Beine laenger, der Rumpf darueber um
+// RUMPF_HEBEN hoeher; kein schwarzer Umriss, sondern eine zarte dunkelbraune
+// Kante, und nichts Dunkles mehr fast schwarz - Stiefel, Hufe, Schafskoepfe
+// sind dunkles Braun.
 
 const HAUT = '#e2b48c';
 const HAAR = '#5b3a24';
 const LEDER = '#6b4a2e';
-const HOSE = '#4a4036';
-const STIEFEL = '#3a2a1e';
+const HOSE = '#5c5246';
+const STIEFEL = '#54402e';
 const EISEN = '#b9c0c8';
 const EISEN_DUNKEL = '#7d858e';
 const HOLZ = '#8a5a2b';
 const STROH = '#d8b978';
-const KONTUR = 'rgba(15, 18, 22, 0.88)';
+const KONTUR = 'rgba(46, 34, 24, 0.5)';
+const AUGE = '#3a3028';
+// Kopf auf gut die Haelfte der Comic-Groesse; Beine 1,3-mal so lang, der
+// Rumpf sitzt entsprechend hoeher.
+const KOPF_MASS = 0.6;
+const BEIN_MASS = 1.3;
+const RUMPF_HEBEN = 2.1;
+const RUMPF_BREITE = 0.82;
 const FEIN = 'rgba(20, 16, 12, 0.45)';
 
 const WAREN = {
@@ -132,7 +145,7 @@ function schatten(stift, breite) {
 function umriss(stift, zeichnen) {
   stift.save();
   const breite = stift.lineWidth;
-  stift.lineWidth = breite * 2.1;
+  stift.lineWidth = breite * 1.4;
   stift.strokeStyle = KONTUR;
   zeichnen();
   stift.restore();
@@ -140,6 +153,13 @@ function umriss(stift, zeichnen) {
 
 // Beine im Schritt: `schritt` ist eine Phase in Bogenmass, 0 heisst Stillstand.
 function beine(stift, schritt, farbe = HOSE, fein = true) {
+  stift.save();
+  stift.scale(1, BEIN_MASS);
+  beineZeichnen(stift, schritt, farbe, fein);
+  stift.restore();
+}
+
+function beineZeichnen(stift, schritt, farbe, fein) {
   const aus = Math.sin(schritt) * 2.2;
   // Hinteres Bein dunkler, vorderes im Licht; Stiefel mit hellem Rand.
   const hinten = [[0.4 - aus, 0], [2.7 - aus, 0], [2.9, -7], [0.3, -7]];
@@ -156,7 +176,19 @@ function beine(stift, schritt, farbe = HOSE, fein = true) {
   }
 }
 
-function kopf(stift, y, { hut = null, helm = false, fein = true } = {}) {
+function kopf(stift, y, { hut = null, helm = false, fein = true, haut = HAUT } = {}) {
+  // Um die Mitte des Gesichts verkleinert; der Kopf sitzt mit dem Kinn auf den
+  // Schultern (RUMPF_HEBEN).
+  stift.save();
+  stift.translate(0.6, y + 3.3);
+  stift.scale(KOPF_MASS, KOPF_MASS);
+  stift.translate(-0.6, -y - 3.3);
+  kopfZeichnen(stift, y, { hut, helm, fein, haut });
+  stift.restore();
+}
+
+function kopfZeichnen(stift, y, { hut, helm, fein, haut }) {
+  const HAUT = haut;
   // Ohr hinten, dann das Gesicht mit Licht von links oben.
   ellipse(stift, -2.1, y + 0.2, 0.9, 1.2, toenen(HAUT, -0.15));
   umriss(stift, () => { stift.beginPath(); stift.ellipse(0.6, y, 3.1, 3.3, 0, 0, Math.PI * 2); stift.stroke(); });
@@ -193,7 +225,7 @@ function kopf(stift, y, { hut = null, helm = false, fein = true } = {}) {
   }
   // Das Auge in Blickrichtung, mit Braue und Lichtpunkt.
   ellipse(stift, 2.55, y - 0.15, 0.62, 0.72, '#f4efe6', false);
-  ellipse(stift, 2.8, y - 0.1, 0.42, 0.5, '#1b1b1b', false);
+  ellipse(stift, 2.8, y - 0.1, 0.42, 0.5, AUGE, false);
   if (fein) {
     glanz(stift, 2.95, y - 0.35, 0.14, 0.14, 0.9);
     strich(stift, [[1.8, y - 1.2], [3.2, y - 1.35]], 'rgba(60,40,25,0.8)', 0.45);
@@ -217,7 +249,7 @@ function ladungZeichnen(stift, ware, fein) {
       holzscheit(stift, laenge, fein);
       stift.restore();
     }
-    strich(stift, [[-7.2, -16.4], [-6, -9.4]], '#3a2616', 0.7);
+    strich(stift, [[-7.2, -16.4], [-6, -9.4]], '#5a4030', 0.7);
   } else if (ware === 'n') {
     // Ein geflochtener Korb mit Beeren.
     const korb = [[-9, -13.5], [-2.5, -13.5], [-3.3, -8.5], [-8.2, -8.5]];
@@ -240,14 +272,21 @@ function ladungZeichnen(stift, ware, fein) {
   }
 }
 
-function dorfbewohner(stift, farbe, { ladung = null, schritt = 0, fein = true }) {
+function dorfbewohner(stift, farbe, { ladung = null, schritt = 0, fein = true, haut = HAUT }) {
   schatten(stift, 5.5);
+  stift.save();
+  stift.translate(0, -RUMPF_HEBEN);
   ladungZeichnen(stift, ladung, fein);
+  stift.restore();
   beine(stift, schritt, HOSE, fein);
+  stift.save();
+  stift.translate(0, -RUMPF_HEBEN);
+  // Schmaler: Schultern etwa zwei Kopfbreiten, nicht vier.
+  stift.scale(RUMPF_BREITE, 1);
   // Hinterer Arm im Schatten.
   rund(stift, [[-4.2, -15.8], [-2.8, -15.8], [-3.2, -10.6], [-4.6, -10.8]], toenen(farbe, -0.3));
   // Kittel in Spielerfarbe, weich geschnitten, mit Licht und Falten.
-  const kittel = [[-4.6, -6.3], [4.8, -6.3], [3.6, -16.6], [0.2, -17.4], [-3.4, -16.6]];
+  const kittel = [[-4.4, -6.3], [4.6, -6.3], [3.9, -15.6], [3, -17.2], [-2.4, -17.2], [-3.6, -15.6]];
   umriss(stift, () => rund(stift, kittel, 'rgba(0,0,0,0)', true));
   rund(stift, kittel, licht(stift, farbe, -4, -17, 4, -6), false);
   if (fein) {
@@ -260,7 +299,7 @@ function dorfbewohner(stift, farbe, { ladung = null, schritt = 0, fein = true })
   // Guertel mit Messingschnalle.
   vieleck(stift, [[-4, -10.3], [4.2, -10.3], [4.1, -9], [-4.1, -9]], licht(stift, LEDER, 0, -10.3, 0, -9), false);
   vieleck(stift, [[0.6, -10.5], [1.9, -10.5], [1.9, -8.8], [0.6, -8.8]], '#c9a24a', false);
-  kopf(stift, -19.6, { hut: STROH, fein });
+  kopf(stift, -19.6, { hut: STROH, fein, haut });
   // Werkzeug: ohne Ladung haelt er die Axt gesenkt in der vorderen Hand,
   // das Blatt vor den Beinen - nie vor dem Gesicht.
   if (!ladung) {
@@ -275,7 +314,8 @@ function dorfbewohner(stift, farbe, { ladung = null, schritt = 0, fein = true })
   }
   // Vorderer Arm und Hand.
   rund(stift, [[2.4, -16.2], [4.2, -15.6], [4.9, -11.6], [3.3, -11.2]], licht(stift, farbe, 2, -16, 5, -11, 0.2, -0.15));
-  ellipse(stift, 4, -11.2, 1.45, 1.45, licht(stift, HAUT, 3, -12.5, 5, -10, 0.15, -0.2));
+  ellipse(stift, 4, -11.2, 1.1, 1.2, licht(stift, haut, 3, -12.5, 5, -10, 0.15, -0.2));
+  stift.restore();
 }
 
 // Kettenhemd: kleine Boegen in Reihen.
@@ -294,9 +334,13 @@ function kette(stift, x0, x1, y0, y1) {
   stift.restore();
 }
 
-function miliz(stift, farbe, { schritt = 0, fein = true }) {
+function miliz(stift, farbe, { schritt = 0, fein = true, haut = HAUT }) {
   schatten(stift, 6);
-  beine(stift, schritt, '#4a4036', fein);
+  beine(stift, schritt, HOSE, fein);
+  stift.save();
+  stift.translate(0, -RUMPF_HEBEN);
+  // Schmaler: Schultern etwa zwei Kopfbreiten, nicht vier.
+  stift.scale(RUMPF_BREITE, 1);
   // Schwert erhoben hinter dem Koerper: Klinge mit Hohlkehle, Parierstange, Knauf.
   stift.save();
   stift.translate(4.4, -12.5);
@@ -321,8 +365,8 @@ function miliz(stift, farbe, { schritt = 0, fein = true }) {
     strich(stift, [[-1.2, -14], [2, -14]], toenen(farbe, 0.4), 0.7);
   }
   vieleck(stift, [[-4.2, -10.4], [4.4, -10.4], [4.3, -9.2], [-4.3, -9.2]], licht(stift, LEDER, 0, -10.4, 0, -9.2), false);
-  kopf(stift, -19.8, { helm: true, fein });
-  ellipse(stift, 4.4, -12.4, 1.5, 1.5, licht(stift, HAUT, 3.4, -13.5, 5.4, -11, 0.15, -0.2));
+  kopf(stift, -19.8, { helm: true, fein, haut });
+  ellipse(stift, 4.4, -12.4, 1.1, 1.2, licht(stift, haut, 3.4, -13.5, 5.4, -11, 0.15, -0.2));
   // Schild vorn: Holz mit Beschlag, in Spielerfarbe bemalt, heller Rand, Buckel.
   const schild = [[-6.8, -15.5], [-0.4, -15.5], [-0.6, -9.5], [-3.6, -6.6], [-6.6, -9.5]];
   umriss(stift, () => vieleck(stift, schild, 'rgba(0,0,0,0)', true));
@@ -337,17 +381,18 @@ function miliz(stift, farbe, { schritt = 0, fein = true }) {
     glanz(stift, -4, -12.3, 0.35, 0.3, 0.9);
     for (const [nx, ny] of [[-6, -14.6], [-1.2, -14.6], [-3.6, -7.8]]) ellipse(stift, nx, ny, 0.3, 0.3, '#5c636b', false);
   }
+  stift.restore();
 }
 
-function spaeherreiter(stift, farbe, { schritt = 0, fein = true }) {
+function spaeherreiter(stift, farbe, { schritt = 0, fein = true, haut = HAUT }) {
   schatten(stift, 10);
   const PFERD = '#8b5a33';
-  const MAEHNE = '#3a2616';
+  const MAEHNE = '#56402c';
   const aus = Math.sin(schritt) * 1.8;
   // Hintere Beine (dunkler), dann Schweif, Rumpf, vordere Beine.
   for (const [x, phase] of [[-5.2, -aus], [5.6, aus]]) {
     vieleck(stift, [[x - 1 + phase, 0], [x + 0.9 + phase, 0], [x + 1.2, -7], [x - 1.2, -7]], licht(stift, toenen(PFERD, -0.35), x - 1, -7, x + 1, 0));
-    vieleck(stift, [[x - 1.1 + phase, 0], [x + 1 + phase, 0], [x + 0.9 + phase, -1.1], [x - 1 + phase, -1.1]], '#1f1a17', false);
+    vieleck(stift, [[x - 1.1 + phase, 0], [x + 1 + phase, 0], [x + 0.9 + phase, -1.1], [x - 1 + phase, -1.1]], '#4a3e34', false);
   }
   // Schweif aus Straehnen.
   rund(stift, [[-8.6, -11.2], [-12.2, -6], [-11.4, -3.6], [-9.4, -4.6], [-7.4, -9.2]], licht(stift, MAEHNE, -12, -11, -7, -4, 0.2, -0.2));
@@ -367,7 +412,7 @@ function spaeherreiter(stift, farbe, { schritt = 0, fein = true }) {
   }
   for (const [x, phase] of [[-7, aus], [7.4, -aus]]) {
     vieleck(stift, [[x - 1 + phase, 0], [x + 1 + phase, 0], [x + 1.2, -7.4], [x - 1.2, -7.4]], licht(stift, toenen(PFERD, -0.12), x - 1, -7, x + 1, 0));
-    vieleck(stift, [[x - 1.1 + phase, 0], [x + 1.1 + phase, 0], [x + 1 + phase, -1.2], [x - 1 + phase, -1.2]], '#2a2320', false);
+    vieleck(stift, [[x - 1.1 + phase, 0], [x + 1.1 + phase, 0], [x + 1 + phase, -1.2], [x - 1 + phase, -1.2]], '#4e4238', false);
   }
   // Hals und Kopf mit Maehne, Ohr, Auge, Nuestern und Zaumzeug.
   rund(stift, [[4.8, -12.4], [7.8, -19.8], [11.8, -19.8], [10.8, -10.4]], licht(stift, PFERD, 6, -20, 11, -11, 0.2, -0.25));
@@ -377,9 +422,9 @@ function spaeherreiter(stift, farbe, { schritt = 0, fein = true }) {
   if (fein) {
     for (const t of [0.25, 0.5, 0.75]) strich(stift, [[5.2 + t * 2.4, -13.4 - t * 6.6], [6.2 + t * 2.6, -13 - t * 6.8]], 'rgba(120,85,55,0.5)', 0.3);
   }
-  ellipse(stift, 12.6, -18.7, 0.55, 0.6, '#1b1b1b', false);
+  ellipse(stift, 12.6, -18.7, 0.55, 0.6, AUGE, false);
   if (fein) glanz(stift, 12.75, -18.9, 0.15, 0.15, 0.9);
-  ellipse(stift, 15, -16.1, 0.45, 0.35, '#2a1a10', false);
+  ellipse(stift, 15, -16.1, 0.45, 0.35, '#4a3426', false);
   // Zaumzeug in Spielerfarbe.
   strich(stift, [[10.2, -20], [14.8, -17.6], [14.6, -15.6]], toenen(farbe, -0.1), 0.65);
   // Sattel mit Decke in Spielerfarbe, Decke mit hellem Rand.
@@ -392,8 +437,8 @@ function spaeherreiter(stift, farbe, { schritt = 0, fein = true }) {
   const rumpfReiter = [[-2.6, -14.4], [2.8, -14.4], [2.2, -22.4], [-1.9, -22.4]];
   vieleck(stift, rumpfReiter, licht(stift, farbe, -2.6, -22.4, 2.8, -14.4), true);
   if (fein) strich(stift, [[0.2, -21.6], [0.5, -15.2]], 'rgba(0,0,0,0.22)', 0.4);
-  ellipse(stift, 3.2, -18.6, 1.4, 1.4, licht(stift, HAUT, 2, -20, 4.5, -17, 0.15, -0.2));
-  kopf(stift, -25.2, { helm: true, fein });
+  ellipse(stift, 3.2, -18.6, 1.1, 1.2, licht(stift, haut, 2, -20, 4.5, -17, 0.15, -0.2));
+  kopf(stift, -25.7, { helm: true, fein, haut });
 }
 
 // Wolle aus vielen Kringeln, oben im Licht, unten im Schatten.
@@ -420,11 +465,11 @@ function schaf(stift, farbe, { schritt = 0, liegt = false, rest = 1, fein = true
     return;
   }
   schatten(stift, 7);
-  const KOPF = '#2e2a28';
+  const KOPF = '#524840';
   const aus = Math.sin(schritt) * 1.2;
   for (const [x, phase, dunkel] of [[-4.2, aus, -0.2], [-2, -aus, 0], [2.2, -aus, -0.2], [4.2, aus, 0]]) {
     vieleck(stift, [[x - 0.7 + phase, 0], [x + 0.7 + phase, 0], [x + 0.7, -4.5], [x - 0.7, -4.5]], toenen(KOPF, dunkel), false);
-    ellipse(stift, x + phase, -0.1, 0.8, 0.4, '#151210', false);
+    ellipse(stift, x + phase, -0.1, 0.8, 0.4, '#42382f', false);
   }
   // Wolle als Wolke aus Buckeln, unten etwas dunkler.
   umriss(stift, () => { stift.beginPath(); stift.ellipse(0, -8.2, 7.4, 4.8, 0, 0, Math.PI * 2); stift.stroke(); });
@@ -435,7 +480,7 @@ function schaf(stift, farbe, { schritt = 0, liegt = false, rest = 1, fein = true
   rund(stift, [[6.6, -12.2], [11, -10.8], [10.8, -7.6], [7.2, -7.4]], licht(stift, KOPF, 7, -12, 11, -7.5, 0.25, -0.1));
   ellipse(stift, 7.2, -12.3, 1.5, 0.75, toenen(KOPF, 0.1), false);
   ellipse(stift, 9.2, -10.2, 0.5, 0.5, '#f2f2f2', false);
-  ellipse(stift, 9.35, -10.15, 0.25, 0.28, '#111', false);
+  ellipse(stift, 9.35, -10.15, 0.25, 0.28, AUGE, false);
   if (fein) strich(stift, [[10.3, -8.6], [10.8, -8.3]], 'rgba(255,255,255,0.3)', 0.3);
 }
 
@@ -448,11 +493,11 @@ function kadaver(stift, farbe, rest, fein = true) {
   stift.save();
   stift.scale(m, m);
   schatten(stift, 9);
-  const KOPF = '#2e2a28';
+  const KOPF = '#524840';
   for (const [x, neigung] of [[1.2, 0.2], [3, 0.5], [4.6, 0.1], [6, 0.45]]) {
     const fuss = [x + 2.2 + neigung * 3, -10.5 + neigung * 2];
     vieleck(stift, [[x - 0.6, -4.5], [x + 0.6, -4.5], [fuss[0] + 0.6, fuss[1]], [fuss[0] - 0.6, fuss[1]]], licht(stift, KOPF, x, -10, x + 2, -4, 0.25, -0.1), false);
-    ellipse(stift, fuss[0], fuss[1], 0.75, 0.45, '#151210', false);
+    ellipse(stift, fuss[0], fuss[1], 0.75, 0.45, '#42382f', false);
   }
   umriss(stift, () => { stift.beginPath(); stift.ellipse(0, -3.6, 8.6, 4, 0, 0, Math.PI * 2); stift.stroke(); });
   ellipse(stift, 0, -3.4, 8.2, 3.6, '#cfc7b5', false);

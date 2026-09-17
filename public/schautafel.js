@@ -5,6 +5,7 @@
 import { FIGUREN, figurZeichnen } from './figuren.js';
 import { GEBAEUDE, gebaeudeZeichnen } from './gebaeude.js';
 import { bodenAn } from './boden.js';
+import { figurHoeheBei } from './ansicht.js';
 import {
   BEERE, GOLD, GRAS as BODEN_GRAS, STEIN, WALD, WASSER, dingZeichnen, gewaesserZeichnen, raute, wellenZeichnen,
 } from './gelaende.js';
@@ -341,7 +342,66 @@ function anmutung(welche, art) {
   return { pixel, schwarz: schwarz / pixel, saettigung: saettigung / pixel };
 }
 
+/** Hoehe der deckenden Bildpunkte (Alpha ueber 200) einer Zeichnung. */
+function deckendeHoehe(daten, breite) {
+  let oben = Infinity;
+  let unten = -Infinity;
+  for (let i = 3; i < daten.length; i += 4) {
+    if (daten[i] <= 200) continue;
+    const zeile = Math.floor((i - 3) / 4 / breite);
+    oben = Math.min(oben, zeile);
+    unten = Math.max(unten, zeile);
+  }
+  return unten >= oben ? unten - oben + 1 : 0;
+}
+
+/**
+ * Fuer den Browserlauf (darstellung AC-13, Proportionen): die Figur einmal mit
+ * einem Hautton gezeichnet, den sonst nichts hat. `kopf` ist die Zahl der
+ * Zeilen im oberen Drittel mit diesem Ton - das Gesicht; die Hand haengt
+ * tiefer. `figur` die Hoehe der ganzen Figur.
+ */
+function proportionen(art) {
+  const g = 200;
+  const blatt = document.createElement('canvas');
+  blatt.width = g;
+  blatt.height = g;
+  const s = blatt.getContext('2d');
+  figurZeichnen(s, art, g / 2, g - 20, 150, '#4a90d9', { haut: '#ff00ff' });
+  const { data } = s.getImageData(0, 0, g, g);
+  const figur = deckendeHoehe(data, g);
+  let oben = Infinity;
+  for (let i = 3; i < data.length; i += 4) if (data[i] > 200) { oben = Math.floor((i - 3) / 4 / g); break; }
+  const zeilen = new Set();
+  for (let i = 0; i < data.length; i += 4) {
+    const zeile = Math.floor(i / 4 / g);
+    if (zeile > oben + figur / 3) break;
+    if (data[i + 3] > 200 && data[i] > 120 && data[i + 2] > 120 && data[i + 1] < 90) zeilen.add(zeile);
+  }
+  return { figur, kopf: zeilen.size };
+}
+
+/**
+ * Fuer den Browserlauf (darstellung AC-13): ein Dorfbewohner und ein Haus bei
+ * Zoom 1, so gross wie im Spielbild - wie hoch ist jedes?
+ */
+function groessen() {
+  const g = 300;
+  const zeichnen = (malen) => {
+    const blatt = document.createElement('canvas');
+    blatt.width = g;
+    blatt.height = g;
+    const s = blatt.getContext('2d');
+    malen(s);
+    return deckendeHoehe(s.getImageData(0, 0, g, g).data, g);
+  };
+  return {
+    dorfbewohner: zeichnen((s) => figurZeichnen(s, 'dorfbewohner', g / 2, g - 20, figurHoeheBei(1), '#4a90d9', {})),
+    haus: zeichnen((s) => gebaeudeZeichnen(s, 'haus', g / 2, g * 0.7, 22, '#4a90d9', 2)),
+  };
+}
+
 window.schautafel = {
   zellen, maske, dingMaske, bodenProbe, arten: Object.keys(FIGUREN), dinge: { WALD, BEERE, GOLD, STEIN },
-  gebaeudeZellen, gebaeudeMaske, gebaeudeArten: Object.keys(GEBAEUDE), tonstufen, anmutung,
+  gebaeudeZellen, gebaeudeMaske, gebaeudeArten: Object.keys(GEBAEUDE), tonstufen, anmutung, proportionen, groessen,
 };

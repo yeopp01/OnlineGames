@@ -129,18 +129,44 @@ test('darstellung AC-2: Gras in Toenungen je Startwert, am Wasser ein Ufer aus S
   expect(probe.sand).toBeGreaterThan(20);
 });
 
-test('darstellung AC-13: Gebaeude ohne schwarze Umrisse - hoechstens 3 % fast schwarze Bildpunkte', async ({ page }) => {
+test('darstellung AC-13: Gebaeude und Figuren ohne schwarze Umrisse - hoechstens 3 % fast schwarze Bildpunkte', async ({ page }) => {
   await page.goto('/schautafel.html');
   await page.waitForFunction(() => window.schautafel?.anmutung);
   const werte = await page.evaluate(() => {
     const t = window.schautafel;
-    return Object.fromEntries(t.gebaeudeArten.map((art) => [art, t.anmutung('gebaeude', art)]));
+    return Object.fromEntries([
+      ...t.gebaeudeArten.map((art) => [art, t.anmutung('gebaeude', art)]),
+      ...t.arten.map((art) => [art, t.anmutung('figur', art)]),
+    ]);
   });
   // Die 3 % kommen aus dem Kriterium: ein schwarzer Umriss von 1 px um ein
   // Gebaeude in Spielgroesse machte 7 bis 12 % aus (gemessen Runde 37 vor dem
-  // Umbau), dunkle Fenster und Tueren allein bleiben darunter.
+  // Umbau), dunkle Fenster und Tueren allein bleiben darunter. Bei den Figuren
+  // waren es 7,7 bis 16 % (Runde 38 vor dem Umbau; Stiefel, Hufe, Schafskopf).
   for (const [art, w] of Object.entries(werte)) {
-    expect(w.pixel, `${art} ist gezeichnet`).toBeGreaterThan(1000);
+    expect(w.pixel, `${art} ist gezeichnet`).toBeGreaterThan(250);
     expect(w.schwarz, `${art}: ${(w.schwarz * 100).toFixed(1)} % fast schwarz`).toBeLessThanOrEqual(0.03);
   }
+});
+
+test('darstellung AC-13: Proportionen statt Kindchenschema - kleiner Kopf, Dorfbewohner halb so hoch wie ein Haus', async ({ page }) => {
+  await page.goto('/schautafel.html');
+  await page.waitForFunction(() => window.schautafel?.proportionen);
+  const { figuren, groessen } = await page.evaluate(() => {
+    const t = window.schautafel;
+    return {
+      figuren: Object.fromEntries(['dorfbewohner', 'miliz', 'spaeherreiter'].map((art) => [art, t.proportionen(art)])),
+      groessen: t.groessen(),
+    };
+  });
+  // Der Kopf ist hier das Gesicht vom Hut- oder Helmrand bis zum Kinn, gezaehlt
+  // an einem Hautton, den sonst nichts traegt. Ein Sechstel der Figur ist die
+  // Grenze aus dem Kriterium; vor dem Umbau war der Kopf gut ein Viertel.
+  for (const [art, p] of Object.entries(figuren)) {
+    expect(p.kopf, `${art}: Gesicht zu sehen`).toBeGreaterThan(4);
+    expect(p.kopf / p.figur, `${art}: Kopf ${p.kopf} von ${p.figur} Zeilen`).toBeLessThanOrEqual(1 / 6);
+  }
+  // Bei Zoom 1, so gross wie im Spielbild: ein Mensch reicht nicht bis unter das Dach.
+  expect(groessen.dorfbewohner, 'Dorfbewohner gezeichnet').toBeGreaterThan(15);
+  expect(groessen.dorfbewohner / groessen.haus, `Dorfbewohner ${groessen.dorfbewohner}, Haus ${groessen.haus}`).toBeLessThanOrEqual(0.5);
 });

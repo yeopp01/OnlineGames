@@ -281,6 +281,24 @@ alle sieben Gebäude der Dunklen Zeit stehen. Was sich wiederholt hat:
 Neueste oben. Eine Zeile je Runde: Nummer, Datum, Kriterien, Ergebnis,
 wichtigste Erkenntnis.
 
+- **38** · 2026-09-17 · darstellung AC-13 in Arbeit, Teil 3 (A6c): Figuren
+  mit Proportionen. Kopf auf 60 % (`KOPF_MASS`), Beine 1,3-mal so lang, Rumpf
+  höher und schmaler (0,82), Hände kleiner; Umriss zart dunkelbraun statt
+  fast schwarz; Stiefel, Hufe, Mähne, Schafskopf dunkles Braun. Gemessen:
+  fast schwarze Bildpunkte vorher 7,7–16 %, jetzt 0 %; das Gesicht (Hutrand bis
+  Kinn) 16 von 150 Zeilen beim Dorfbewohner, vorher gut ein Viertel der
+  Figur. Ehrlich: „Dorfbewohner höchstens halb so hoch wie ein Haus" galt
+  schon vorher (29 zu 77 Bildpunkte) — der Test sichert es nur ab. Messbar
+  gemacht über einen wählbaren Hautton (`lage.haut`), den später auch Völker
+  brauchen; `figurHoeheBei(zoom)` aus `ansicht.js`, damit die Schautafel die
+  Spielgröße nicht nachbaut. Erster Versuch hatte zum kleinen Kopf den alten
+  breiten Rumpf — wirkte wie eine Kartoffel; erst schmaler sah es nach
+  Mensch aus. Die älteren Figurentests (Gestalten, Spielerfarbe, Tonstufen)
+  blieben grün. Aufgefallen: jetzt wirken Gold (leuchtend gelb), Beeren
+  (knallrot), Schafe und der See am meisten nach Comic. Bilder:
+  `bilder/nachher-runde38-figuren-zoom2.png`, `nachher-runde38-schautafel.png`.
+  Offen für AC-13: (2) Sättigung des Spielbilds messen, (4)/(5) Boden und
+  Schatten per Test belegen, Vorräte und Wasser dämpfen.
 - **37** · 2026-09-17 · darstellung AC-13 in Arbeit, Teil 2 (A6c): Gebäude
   ohne schwarze Umrisse. Die Kante ist jetzt ein dünnes, halb durchsichtiges
   Dunkelbraun; Fenster, Tor, Nabe, Räder dunkelbraun statt schwarz; Ziegel
