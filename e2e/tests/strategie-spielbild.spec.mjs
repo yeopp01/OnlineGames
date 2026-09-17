@@ -199,7 +199,7 @@ test.describe('Das Spielbild', () => {
     await nachweis(anna, {
       spec: BEDIENUNG,
       ac: 'AC-16',
-      titel: 'Nah herangeholt: beladene Dorfbewohner tragen ein Holzbuendel auf dem Ruecken',
+      titel: 'Nah herangeholt: ein beladener Dorfbewohner am Waldrand traegt ein Holzbuendel auf dem Ruecken',
       test: info,
     });
     for (let i = 0; i < 5; i++) await anna.mouse.wheel(0, 100);

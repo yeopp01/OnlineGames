@@ -1,7 +1,7 @@
 {
   "spec": "10-strategie/bedienung.md",
   "ac": "AC-16",
-  "titel": "Nah herangeholt: beladene Dorfbewohner tragen ein Holzbuendel auf dem Ruecken",
+  "titel": "Nah herangeholt: ein beladener Dorfbewohner am Waldrand traegt ein Holzbuendel auf dem Ruecken",
   "datei": "e2e/tests/strategie-spielbild.spec.mjs",
   "pfad": [
     "Das Spielbild",

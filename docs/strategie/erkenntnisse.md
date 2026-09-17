@@ -222,6 +222,15 @@ Erstattung vor dem Sperren) — beide Male stand danach ein Kommentar am Test.
 Neueste oben. Eine Zeile je Runde: Nummer, Datum, Kriterien, Ergebnis,
 wichtigste Erkenntnis.
 
+- **27** · 2026-09-17 · darstellung AC-12 in Arbeit, Teil 1: die Figuren.
+  Licht von links oben als Verlauf über drei Töne, weiche Umrisse, außen
+  kräftiger als innen, Falten, Gürtelschnalle, Strohhut mit Geflecht,
+  Kettenhemd, Hohlkehle am Schwert, Pferd mit Muskel und Glanz, Wolle aus
+  Kringeln, Auge mit Lichtpunkt. Unter 20 Bildpunkten Höhe fallen die feinsten
+  Striche weg. Vorher/Nachher in `docs/strategie/bilder/`. Die Masken-Tests
+  (Gestalt, Spielerfarbe) hielten ohne Änderung. Beim Ansehen wieder eine
+  Unterschrift im Plural bei einem sichtbaren Träger korrigiert. Nächste
+  Teile: Gebäude, Vorräte, Gras.
 - **26** · 2026-09-17 · einheiten AC-17 fertig: Schafe schlachten und hüten —
   0,33 Nahrung je Sekunde, ein liegengelassener Kadaver verliert je 4 s eine,
   der Hirte steht neben dem Tier und geht nach dem Abgeben zurück. Kadaver
