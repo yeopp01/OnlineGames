@@ -73,7 +73,14 @@ export function platzImBild(page, { n = 2, um, abstand = 5, seitlich = false }) 
           if (x < 0 || y < 0 || x >= g || y >= g || a.karte.felder[y * g + x] !== 0) return false;
         }
       }
-      return ![...a.tiere.values()].some((t) => Math.abs(t.x - (x0 + n / 2)) < n + 1 && Math.abs(t.y - (y0 + n / 2)) < n + 1);
+      if ([...a.tiere.values()].some((t) => Math.abs(t.x - (x0 + n / 2)) < n + 1 && Math.abs(t.y - (y0 + n / 2)) < n + 1)) return false;
+      // Farmen liegen auf Gras, belegen aber ihren Platz (Runde 32).
+      return ![...a.gebaeude.values()].some((b) => {
+        const m = a.werte.gebaeude[b.art]?.groesse || 1;
+        const bx0 = b.x - Math.floor(m / 2);
+        const by0 = b.y - Math.floor(m / 2);
+        return bx0 <= x0 + n && bx0 + m >= x0 - 1 && by0 <= y0 + n && by0 + m >= y0 - 1;
+      });
     };
     for (let r = abstand; r < abstand + 10; r++) {
       // Vorn zuerst (dx + dy gross): dahinter verdeckt das Dorfzentrum Baustelle

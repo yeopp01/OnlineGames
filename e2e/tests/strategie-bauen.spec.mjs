@@ -36,14 +36,16 @@ test.describe('Bauen', () => {
   test.afterAll(() => partieBeenden(partie));
 
   test('bedienung AC-25: ein Dorfbewohner zeigt das Baumenue, was zu teuer ist, ist grau und sagt warum', async ({}, info) => {
-    // 60 Holz: Haus (25) und Farm (60) gehen, Muehle und Lager (100) nicht.
+    // 60 Holz: Haus (25) und Farm (60) gehen, Muehle, Lager (100) und Kaserne (175) nicht.
     await rohstoffe(anna, code, 'Anna', { holz: 60 });
     await expect(anna.locator('[data-rohstoff="holz"] b')).toHaveText('60');
     await dorfbewohnerAnklicken(anna);
 
     const menue = anna.locator('#baumenue');
     await expect(menue).toBeInViewport();
-    await expect(menue.locator('[data-bauen]')).toHaveCount(5);
+    // So viele Knoepfe, wie ein Dorfbewohner Gebaeude bauen kann.
+    const baubar = await anna.evaluate(() => window.ansicht.werte.einheiten.dorfbewohner.baut.length);
+    await expect(menue.locator('[data-bauen]')).toHaveCount(baubar);
     await expect(menue.locator('[data-bauen="haus"]')).toHaveAttribute('aria-disabled', 'false');
     await expect(menue.locator('[data-bauen="haus"]')).toContainText('25');
     await expect(menue.locator('[data-bauen="farm"]')).toHaveAttribute('aria-disabled', 'false');
@@ -54,6 +56,8 @@ test.describe('Bauen', () => {
       await expect(knopf).toHaveAttribute('title', /zu wenig Holz$/);
       await expect(knopf).toContainText('100');
     }
+    await expect(menue.locator('[data-bauen="kaserne"]')).toHaveAttribute('aria-disabled', 'true');
+    await expect(menue.locator('[data-bauen="kaserne"]')).toContainText('175');
     // Ein Klick auf das Gesperrte beginnt nichts. `force`: Playwright klickt
     // aria-disabled sonst gar nicht - genau diesen Klick wollen wir aber pruefen.
     await menue.locator('[data-bauen="muehle"]').click({ force: true });
@@ -61,7 +65,7 @@ test.describe('Bauen', () => {
     await nachweis(anna, {
       spec: BEDIENUNG,
       ac: 'AC-25',
-      titel: 'Dorfbewohner gewaehlt, 60 Holz: unten Haus fuer 25 und Farm fuer 60 bereit, Muehle und beide Lager fuer 100 ausgegraut',
+      titel: 'Dorfbewohner gewaehlt, 60 Holz: Haus und Farm bereit, Muehle, beide Lager und Kaserne ausgegraut',
       test: info,
     });
     await rohstoffe(anna, code, 'Anna', { holz: 200 });
@@ -224,6 +228,63 @@ test.describe('Bauen', () => {
     await anna.keyboard.press('Escape');
   });
 
+  test('bauen AC-9: eine Kaserne bauen und darin Miliz ausbilden', async ({}, info) => {
+    test.setTimeout(150_000);
+    await rohstoffe(anna, code, 'Anna', { holz: 500, nahrung: 500, gold: 200 });
+    await anna.evaluate((b) => {
+      const a = window.ansicht;
+      a.kamera.zoom = 1.4;
+      a.blickAuf(b.x + 2, b.y + 2);
+    }, basis);
+    await dorfbewohnerAnklicken(anna);
+    await anna.locator('[data-bauen="kaserne"]').click();
+    const platz = await platzImBild(anna, { n: 3, um: basis, abstand: 7 });
+    expect(platz).not.toBeNull();
+    await anna.mouse.move(platz.bild.x, platz.bild.y, { steps: 4 });
+    await expect.poll(() => anna.evaluate(() => window.ansicht.platzLage()?.taugt)).toBe(true);
+    await anna.mouse.click(platz.bild.x, platz.bild.y);
+    await anna.waitForFunction(() => [...window.ansicht.gebaeude.values()].some((g) => g.art === 'kaserne'));
+    await zeitraffer(anna, code, 20);
+    await anna.waitForFunction(() => [...window.ansicht.gebaeude.values()].some((g) => g.art === 'kaserne' && g.u === undefined), null, { timeout: 60_000 });
+    await zeitraffer(anna, code, 1);
+
+    // Die fertige Kaserne anklicken: Dach, oberhalb der Figuren.
+    const kaserne = await anna.evaluate(() => {
+      const a = window.ansicht;
+      const k = [...a.gebaeude.values()].find((g) => g.art === 'kaserne');
+      a.kamera.zoom = 2;
+      a.blickAuf(k.x + 1, k.y + 1);
+      const p = a.zuBild(k.x, k.y);
+      return { i: k.i, x: k.x, y: k.y, klick: { x: p.x, y: p.y - 70 } };
+    });
+    await anna.waitForTimeout(150);
+    await anna.mouse.click(kaserne.klick.x, kaserne.klick.y);
+    await expect(anna.locator('#auswahlleiste')).toContainText('Kaserne');
+    const knopf = anna.locator('[data-ausbilden="miliz"]');
+    await expect(knopf).toHaveAttribute('aria-disabled', 'false');
+    await expect(knopf).toContainText('60 / 20');
+    await knopf.click();
+    await expect(anna.locator('[data-abbrechen]')).toHaveCount(1);
+
+    await zeitraffer(anna, code, 10);
+    await anna.waitForFunction(() => [...window.ansicht.nachher.values()].some((e) => e.b === window.ansicht.ich && e.k === 'm'), null, { timeout: 30_000 });
+    await zeitraffer(anna, code, 1);
+    const miliz = await anna.evaluate((k) => {
+      const e = [...window.ansicht.nachher.values()].find((f) => f.b === window.ansicht.ich && f.k === 'm');
+      return { x: e.x, y: e.y, vorn: e.x + e.y > k.x + k.y, abstand: Math.max(Math.abs(e.x - k.x), Math.abs(e.y - k.y)) };
+    }, kaserne);
+    expect(miliz.vorn, 'vor der Kaserne, nicht dahinter').toBe(true);
+    expect(miliz.abstand).toBeLessThanOrEqual(3);
+    await expect(anna.locator('#auswahlleiste')).toBeInViewport();
+    await nachweis(anna, {
+      spec: BAUEN,
+      ac: 'AC-9',
+      titel: 'Die Kaserne mit Banner und Waffenstaender, davor die erste Miliz mit Schwert und Schild',
+      test: info,
+    });
+    await anna.keyboard.press('Escape');
+  });
+
   test('einheiten AC-16: ein Holzfaellerlager am Wald - dort wird das Holz abgegeben', async ({}, info) => {
     test.setTimeout(180_000);
     // Den naechsten Wald suchen und das Bild dorthin.
@@ -335,7 +396,7 @@ test.describe('Bauen', () => {
   });
 });
 
-test('darstellung AC-4: jedes Gebaeude hat Koerper, die Spielerfarbe steht nur an einer Stelle', async ({ page }, info) => {
+test('darstellung AC-4 / bauen AC-20: jedes Gebaeude hat Koerper, die Spielerfarbe steht nur an einer Stelle', async ({ page }, info) => {
   await page.goto('/schautafel.html');
   await page.waitForFunction(() => window.schautafel?.gebaeudeMaske);
   const messung = await page.evaluate(() => {
@@ -394,6 +455,12 @@ test('darstellung AC-4: jedes Gebaeude hat Koerper, die Spielerfarbe steht nur a
     spec: DARSTELLUNG,
     ac: 'AC-4',
     titel: 'Schautafel unten: Dorfzentrum, Haus, Muehle, Holzfaeller- und Bergbaulager in Blau und Rot, dazu zwei Baustellen',
+    test: info,
+  });
+  await nachweis(page, {
+    spec: BAUEN,
+    ac: 'AC-20',
+    titel: 'Alle sieben Gebaeude der Dunklen Zeit auf der Schautafel: Dorfzentrum, Haus, Muehle, zwei Lager, Kaserne, Farm',
     test: info,
   });
 });

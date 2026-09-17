@@ -593,6 +593,92 @@ function bergbaulager(stift, e, farbe) {
   });
 }
 
+// ---- Kaserne --------------------------------------------------------------------
+
+// Wehrhaft: Mauern aus Stein, ein Obergeschoss aus dunklem Holz, flaches
+// Schindeldach mit Zinnenkranz, davor ein Waffenstaender mit Speeren und
+// Schilden. Das Banner an der Front traegt die Spielerfarbe.
+function kaserne(stift, e, farbe) {
+  const W = 2.2 * e;
+  vorbereiten(stift, e, W, W / 2);
+  const wand = 1.1 * e;
+  const { L1, B1, R1, traufe } = kasten(stift, W, 0.22 * e, wand, e, {
+    sockelL: '#6f6b64', sockelR: '#8a857c', wandL: '#8f8a80', wandR: '#aba59a', wandMuster: 'stein',
+  });
+  // Schiessscharten links, Tor rechts.
+  for (const u of [0.25, 0.55, 0.85]) fenster(stift, L1, B1, wand, u, 0.62, e, 0.05, 0.3);
+  const torBreite = 0.3;
+  const tor = [
+    wandpunkt(B1, R1, wand, 0.5 - torBreite / 2, 0), wandpunkt(B1, R1, wand, 0.5 + torBreite / 2, 0),
+    wandpunkt(B1, R1, wand, 0.5 + torBreite / 2, 0.55), wandpunkt(B1, R1, wand, 0.5, 0.72),
+    wandpunkt(B1, R1, wand, 0.5 - torBreite / 2, 0.55),
+  ];
+  flaeche(stift, tor, verlauf(stift, '#4a3320', tor[4], tor[1], 0.1, -0.3));
+  for (const t of [0.25, 0.5, 0.75]) {
+    linie(stift, zwischen(tor[0], tor[1], t), zwischen(tor[4], tor[2], t), 'rgba(0,0,0,0.35)', Math.max(0.4, e * 0.025));
+  }
+  linie(stift, zwischen(tor[0], tor[4], 0.4), zwischen(tor[1], tor[2], 0.4), '#2e2b28', Math.max(0.8, e * 0.05));
+  stift.lineWidth = Math.max(1, e * 0.05);
+  // Obergeschoss aus Holz, leicht vorkragend.
+  const og = 0.55 * e;
+  const L2 = hoch([-W * 1.04, 0], traufe);
+  const B2 = hoch([0, (W / 2) * 1.04], traufe);
+  const R2 = hoch([W * 1.04, 0], traufe);
+  flaeche(stift, [L2, B2, hoch(B2, og), hoch(L2, og)], verlauf(stift, '#5a3d24', hoch(L2, og), B2, 0.1, -0.2), false);
+  flaeche(stift, [B2, R2, hoch(R2, og), hoch(B2, og)], verlauf(stift, '#76512f', hoch(B2, og), R2, 0.14, -0.14), false);
+  bretter(stift, L2, B2, og, e, 9, '#5a3d24');
+  bretter(stift, B2, R2, og, e, 9, '#76512f');
+  pfad(stift, [L2, B2, hoch(B2, og), hoch(L2, og)]);
+  stift.stroke();
+  pfad(stift, [B2, R2, hoch(R2, og), hoch(B2, og)]);
+  stift.stroke();
+  // Flaches Dach mit Zinnen.
+  const oben = traufe + og;
+  const H = (W / 2) * 1.04;
+  const dach = [hoch([-W * 1.04, 0], oben), hoch([0, -H], oben), hoch([W * 1.04, 0], oben), hoch([0, H], oben)];
+  flaeche(stift, dach, verlauf(stift, '#5b554e', dach[1], dach[3], 0.12, -0.2), false);
+  deckung(stift, dach, dach[3], dach[2], dach[0], dach[1], e, 'schindel');
+  pfad(stift, dach);
+  stift.stroke();
+  for (const [a, b] of [[dach[0], dach[3]], [dach[3], dach[2]]]) {
+    for (let k = 0; k < 6; k++) {
+      const p0 = zwischen(a, b, k / 6 + 0.02);
+      const p1 = zwischen(a, b, k / 6 + 0.1);
+      flaeche(stift, [p0, p1, hoch(p1, 0.2 * e), hoch(p0, 0.2 * e)], k % 2 ? '#8a857c' : '#a39d93');
+    }
+  }
+  // Banner in Spielerfarbe an der Front, mit gekreuzten Schwertern.
+  const oberkante = hoch(zwischen(B2, R2, 0.5), og * 0.95);
+  const banner = [
+    [oberkante[0] - 0.22 * e, oberkante[1] + 0.11 * e], [oberkante[0] + 0.22 * e, oberkante[1] - 0.11 * e],
+    [oberkante[0] + 0.22 * e, oberkante[1] + 0.55 * e], [oberkante[0], oberkante[1] + 0.75 * e],
+    [oberkante[0] - 0.22 * e, oberkante[1] + 0.77 * e],
+  ];
+  flaeche(stift, banner, verlauf(stift, farbe, banner[0], banner[3], 0.2, -0.3));
+  linie(stift, [oberkante[0] - 0.12 * e, oberkante[1] + 0.2 * e], [oberkante[0] + 0.12 * e, oberkante[1] + 0.55 * e], '#e8e4da', Math.max(0.6, e * 0.04));
+  linie(stift, [oberkante[0] + 0.12 * e, oberkante[1] + 0.12 * e], [oberkante[0] - 0.12 * e, oberkante[1] + 0.6 * e], '#e8e4da', Math.max(0.6, e * 0.04));
+  // Waffenstaender vorn links: Querholz mit Speeren und zwei Schilden.
+  const staender = zwischen([-W, 0], [0, W / 2], 0.78);
+  // Dicht an der Wand, innerhalb der Grundflaeche.
+  const s0 = [staender[0] - 0.45 * e, staender[1] + 0.02 * e];
+  const s1 = [staender[0] + 0.25 * e, staender[1] + 0.32 * e];
+  for (const t of [0.1, 0.35, 0.6, 0.85]) {
+    const fuss = zwischen(s0, s1, t);
+    linie(stift, fuss, [fuss[0] - 0.05 * e, fuss[1] - 0.9 * e], '#6b4a2b', Math.max(0.7, e * 0.04));
+    flaeche(stift, [[fuss[0] - 0.1 * e, fuss[1] - 0.9 * e], [fuss[0], fuss[1] - 1.05 * e], [fuss[0] + 0.04 * e, fuss[1] - 0.88 * e]], '#c9ced4');
+  }
+  linie(stift, hoch(s0, 0.55 * e), hoch(s1, 0.55 * e), '#5b3d22', Math.max(0.8, e * 0.06));
+  for (const t of [0.25, 0.7]) {
+    const mitte = hoch(zwischen(s0, s1, t), 0.2 * e);
+    stift.beginPath();
+    stift.ellipse(mitte[0], mitte[1], 0.16 * e, 0.2 * e, -0.4, 0, Math.PI * 2);
+    stift.fillStyle = verlauf(stift, '#8a6238', [mitte[0] - 0.16 * e, mitte[1] - 0.2 * e], [mitte[0] + 0.16 * e, mitte[1] + 0.2 * e], 0.2, -0.3);
+    stift.fill();
+    stift.stroke();
+    kreis(stift, mitte[0], mitte[1], 0.05 * e, '#c9ced4', false);
+  }
+}
+
 // ---- Farm -----------------------------------------------------------------------
 
 // Flach und begehbar (einheiten AC-18): ein Acker mit Furchen, darauf Getreide,
@@ -739,6 +825,7 @@ export const GEBAEUDE = {
   bergbaulager: {
     name: 'Bergbaulager', zeichnen: bergbaulager, halbeBreite: 1.8, trefferBreite: 1.9, trefferOben: 2.4, trefferUnten: 1,
   },
+  kaserne: { name: 'Kaserne', zeichnen: kaserne, halbeBreite: 2.2, trefferBreite: 2.3, trefferOben: 3.3, trefferUnten: 1.2 },
   farm: { name: 'Farm', zeichnen: farm, halbeBreite: 2.9, trefferBreite: 2.9, trefferOben: 1.6, trefferUnten: 1.4, flach: true },
 };
 

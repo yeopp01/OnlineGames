@@ -11,10 +11,11 @@ const EINHEITEN = {
   // baut: welche Gebaeude er errichten kann (bauen AC-1).
   dorfbewohner: {
     leben: 25, tempo: 0.8, sicht: 4, tragkraft: 10, kosten: { nahrung: 50 }, zeit: 25, kuerzel: 'd',
-    baut: ['haus', 'muehle', 'holzfaellerlager', 'bergbaulager', 'farm'],
+    baut: ['haus', 'muehle', 'holzfaellerlager', 'bergbaulager', 'farm', 'kaserne'],
   },
   spaeherreiter: { leben: 45, tempo: 1.2, sicht: 4, tragkraft: 0, kuerzel: 's' },
-  miliz: { leben: 40, tempo: 0.9, sicht: 4, tragkraft: 0, kuerzel: 'm' },
+  // Kaempfen kann die Miliz ab Stufe B; bis dahin laeuft sie (bauen AC-9).
+  miliz: { leben: 40, tempo: 0.9, sicht: 4, tragkraft: 0, kosten: { nahrung: 60, gold: 20 }, zeit: 21, kuerzel: 'm' },
 };
 
 // Sammelraten je Sekunde, nach dem Vorrat, an dem gearbeitet wird
@@ -52,6 +53,7 @@ const GEBAEUDE = {
     groesse: 3, kosten: { holz: 60 }, bauzeit: 15, leben: 480, wohnraum: 0, annahme: [], bildetAus: [],
     begehbar: true, nahrung: 175, rate: 0.32,
   },
+  kaserne: { groesse: 3, kosten: { holz: 175 }, bauzeit: 50, leben: 1200, wohnraum: 0, annahme: [], bildetAus: ['miliz'] },
 };
 
 // Auftraege je Gebaeude (bauen AC-10).

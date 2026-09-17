@@ -67,6 +67,9 @@ etwas anderem gearbeitet.
   kopierte Kacheln (30 ms) deutlich. Vor jedem „Optimieren" messen — zwei
   naheliegende Ideen waren hier Verschlechterungen. Stand Runde 13: Zoom 1
   rund 5 ms, Zoom 0,4 rund 10 ms je Bild.
+- Die Kopfzeile oben liegt über der Spielfläche und verdeckt dort Figuren
+  (Runde 32 gesehen). Kandidat für bedienung AC-23 (Laptop-Bildschirm) oder
+  die Rückschau am Ende von Stufe A: halbdurchsichtiger Grund oder Rand.
 - Der Browserlauf: `npm run e2e:laufzeiten` nach Runden mit neuen
   Browsertests; Ziel unter 2,5 min bei ruhiger Maschine.
 - Offen im Aussehen: Dorfbewohner bei Zoom 1 recht klein; was hinter einem
@@ -245,6 +248,17 @@ ruhigerer Maschine 141 s Testzeit, langsamster Fall weiter der Lagertest (28 s).
 Neueste oben. Eine Zeile je Runde: Nummer, Datum, Kriterien, Ergebnis,
 wichtigste Erkenntnis.
 
+- **32** · 2026-09-17 · bauen AC-9 und AC-20 fertig: Kaserne (3 × 3, 175 Holz,
+  50 s) mit Steinmauern, Holzobergeschoss, Zinnen, Banner in Spielerfarbe und
+  Waffenständer; sie bildet Miliz für 60 Nahrung und 20 Gold in 21 s aus. Die
+  Miliz läuft, sammelt und baut nicht (Kampf in Stufe B). Damit stehen alle
+  sieben Gebäude der Dunklen Zeit als Daten. Gelernt: (1) Zum zweiten Mal in
+  Folge zählte der Baumenü-Test fest — jetzt aus `werte.einheiten.dorfbewohner.baut`.
+  (2) Ein alter Test nahm „kaserne" als Beispiel für Unbaubares; ein erfundener
+  Name („burg") altert nicht. (3) `platzImBild` übersah Farmen (begehbar, aber
+  belegt) und schlug einen roten Platz vor. Gesehen, nicht behoben: oben links
+  überdeckt die Kopfzeile Spielfläche (ein Schaf unter „Karte 4711"). Nächster
+  Teil von A7: Webstuhl, Sammelpunkt, Schafe treiben.
 - **31** · 2026-09-17 · einheiten AC-18 fertig: die Farm — 3 × 3, begehbar,
   175 Nahrung, 0,32 je Sekunde, höchstens ein Bauer; nach dem Bau bestellt der
   Bauer sie, leer verschwindet sie. Gezeichnet als Acker mit Furchen, Getreide,

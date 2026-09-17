@@ -2,7 +2,7 @@
 
 **Bereich:** Strategie
 **Kuerzel:** bauen
-**Stand:** 14/22 fertig · 8 offen
+**Stand:** 16/22 fertig · 6 offen
 
 ## Zweck
 
@@ -72,19 +72,19 @@ Stufe B im Stall.
   wird der Anteil der Kosten, der noch nicht verbaut ist.
 - **AC-7** `offen` **Gebäude im Bau angreifbar** — Mit Leben im Verhältnis zum Baufortschritt.
   _(Stufe B, mit dem Kampf.)_
-- **AC-20** `offen` **Die Gebäude der Dunklen Zeit** — Dorfzentrum, Haus, Mühle,
+- **AC-20** `fertig` **Die Gebäude der Dunklen Zeit** — Dorfzentrum, Haus, Mühle,
   Holzfällerlager, Bergbaulager, Farm und Kaserne lassen sich mit Kosten,
   Bauzeit, Größe und Leben aus der Tabelle oben bauen. Die Werte stehen als
-  Daten an einer Stelle, nicht in der Simulation verteilt. _(Seit Runde 22
-  gebaut: Dorfzentrum, Haus, Mühle, beide Lager. Farm und Kaserne folgen mit
-  Schritt A7.)_
+  Daten an einer Stelle, nicht in der Simulation verteilt. _(Runde 22
+  bis 32 gebaut; das Dorfzentrum als Bauauftrag erst in Stufe D, wie in der
+  Vorlage.)_
 
 ### Ausbilden
 
 - **AC-8** `fertig` **Dorfzentrum bildet Dorfbewohner aus** — 50 Nahrung, 25 Sekunden. Jeder
   Spieler beginnt mit einem Dorfzentrum an seiner Basis. _(Die Startaufstellung
   steht seit Runde 18 in AC-22.)_
-- **AC-9** `offen` **Kaserne bildet Miliz aus** — 60 Nahrung, 20 Gold, 21 Sekunden. Kämpfen kann
+- **AC-9** `fertig` **Kaserne bildet Miliz aus** — 60 Nahrung, 20 Gold, 21 Sekunden. Kämpfen kann
   sie ab Stufe B; in Stufe A läuft sie und nimmt Bevölkerung.
 - **AC-10** `fertig` **Warteschlange je Gebäude** — Bis zu 15 Aufträge; bezahlt wird beim
   Einreihen. Der laufende Auftrag zeigt seinen Fortschritt.

@@ -188,7 +188,7 @@ test('bedienung AC-29: der Aufbau nennt die Werte je Art, der Zustand das Leben 
   const { werte } = welt.aufbau();
   assert.deepEqual(werte.einheiten.dorfbewohner, {
     kuerzel: 'd', leben: 25, tragkraft: 10, kosten: { nahrung: 50 }, zeit: 25,
-    baut: ['haus', 'muehle', 'holzfaellerlager', 'bergbaulager', 'farm'],
+    baut: ['haus', 'muehle', 'holzfaellerlager', 'bergbaulager', 'farm', 'kaserne'],
   });
   assert.deepEqual(werte.einheiten.spaeherreiter, { kuerzel: 's', leben: 45, tragkraft: 0, kosten: null, zeit: null, baut: [] });
   assert.equal(werte.gebaeude.dorfzentrum.leben, 2400);
@@ -226,6 +226,8 @@ test('bauen AC-20: die Gebaeude der Dunklen Zeit mit den Werten der Tabelle', ()
     muehle: [2, { holz: 100 }, 35, 1000],
     holzfaellerlager: [2, { holz: 100 }, 35, 1000],
     bergbaulager: [2, { holz: 100 }, 35, 1000],
+    farm: [3, { holz: 60 }, 15, 480],
+    kaserne: [3, { holz: 175 }, 50, 1200],
   };
   for (const [art, [groesse, kosten, bauzeit, leben]] of Object.entries(tabelle)) {
     assert.deepEqual(
@@ -291,7 +293,7 @@ test('bauen AC-5: die Kosten gehen bei Baubeginn ab, ohne genug Holz entsteht ke
   assert.equal(anna.holz, 0, 'sofort bezahlt, nicht erst am Ende');
   assert.equal(welt.gebaeude.get(gebaeude).fertig, false);
 
-  assert.match(welt.bauen('a', [bauer.id], 'kaserne', freierPlatz(welt, 'haus')).fehler, /laesst sich nicht bauen/);
+  assert.match(welt.bauen('a', [bauer.id], 'burg', freierPlatz(welt, 'haus')).fehler, /laesst sich nicht bauen/);
   const reiter = eigene(welt).find((e) => e.art === 'spaeherreiter');
   assert.match(welt.bauen('a', [reiter.id], 'haus', freierPlatz(welt, 'haus')).fehler, /Niemand/);
   assert.match(welt.bauen('b', [bauer.id], 'haus', freierPlatz(welt, 'haus')).fehler, /Niemand/, 'fremde Dorfbewohner bauen nicht');
@@ -438,4 +440,50 @@ test('einheiten AC-16: abgegeben wird am naechsten fertigen Gebaeude, das den Ro
   assert.equal(sammler.ladung, 0);
   assert.ok(sammler.weg.length > 0, 'er geht zurueck zum selben Baum');
   assert.deepEqual(sammler.auftrag.feld, { x: baum % g, y: (baum / g) | 0 });
+});
+
+// ---- Kaserne und Miliz (bauen AC-9) ---------------------------------------------
+
+test('bauen AC-20: alle sieben Gebaeude der Dunklen Zeit sind da, Dorfbewohner bauen sechs davon', () => {
+  assert.deepEqual(
+    Object.keys(GEBAEUDE).sort(),
+    ['bergbaulager', 'dorfzentrum', 'farm', 'haus', 'holzfaellerlager', 'kaserne', 'muehle'],
+  );
+  // Das Dorfzentrum erst ab der Ritterzeit (Stufe D), wie in der Vorlage.
+  assert.deepEqual(EINHEITEN.dorfbewohner.baut.sort(), ['bergbaulager', 'farm', 'haus', 'holzfaellerlager', 'kaserne', 'muehle']);
+});
+
+test('bauen AC-9: die Kaserne bildet Miliz fuer 60 Nahrung und 20 Gold in 21 Sekunden aus', () => {
+  assert.deepEqual(EINHEITEN.miliz.kosten, { nahrung: 60, gold: 20 });
+  assert.equal(EINHEITEN.miliz.zeit, 21);
+  assert.deepEqual(GEBAEUDE.kaserne.bildetAus, ['miliz']);
+  const welt = new Welt(ZWEI, 7, { vorrat: 'viel' });
+  const anna = welt.spielerVon('a');
+  const platz = freierPlatz(welt, 'kaserne', 6);
+  const kaserne = welt.gebaeudeAnlegen('a', 'kaserne', platz.x, platz.y, true);
+
+  assert.match(welt.ausbilden('a', kaserne.id, 'dorfbewohner').fehler, /bildet dieses Gebaeude nicht aus/);
+  assert.match(welt.ausbilden('a', dorfzentrum(welt).id, 'miliz').fehler, /bildet dieses Gebaeude nicht aus/);
+  anna.gold = 19;
+  assert.equal(welt.ausbilden('a', kaserne.id, 'miliz').fehler, 'Zu wenig Gold.');
+  anna.gold = 1000;
+
+  assert.deepEqual(welt.ausbilden('a', kaserne.id, 'miliz'), {});
+  assert.deepEqual([anna.nahrung, anna.gold], [940, 980]);
+  const vorher = eigene(welt).length;
+  for (let i = 0; i < 21 * TAKTE_PRO_SEKUNDE - 1; i++) welt.takten();
+  assert.equal(eigene(welt).length, vorher);
+  welt.takten();
+  const miliz = eigene(welt).at(-1);
+  assert.equal(miliz.art, 'miliz');
+  assert.equal(miliz.leben, 40);
+  assert.equal(welt.bevoelkerung().get('a'), vorher + 1, 'sie nimmt einen Platz');
+  assert.ok(welt.abstandZu(miliz, kaserne) <= 1.5, 'neben der Kaserne');
+
+  // In Stufe A laeuft sie - sie sammelt nicht und baut nicht.
+  const g = welt.karte.groesse;
+  const baum = [...welt.karte.vorrat.keys()].find((i) => welt.karte.felder[i] === karten.WALD);
+  welt.befehl('a', [miliz.id], { x: baum % g, y: (baum / g) | 0 });
+  assert.equal(miliz.auftrag.art, 'gehen');
+  assert.match(welt.bauen('a', [miliz.id], 'haus', freierPlatz(welt, 'haus')).fehler, /Niemand/);
 });

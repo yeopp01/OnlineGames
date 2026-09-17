@@ -130,6 +130,7 @@ const GEBAEUDE_REIHE = [
   { art: 'muehle', groesse: 2, titel: 'Muehle' },
   { art: 'holzfaellerlager', groesse: 2, titel: 'Holzfaellerlager' },
   { art: 'bergbaulager', groesse: 2, titel: 'Bergbaulager' },
+  { art: 'kaserne', groesse: 3, titel: 'Kaserne' },
   { art: 'farm', groesse: 3, titel: 'Farm' },
   { art: 'haus', groesse: 2, titel: 'Baustelle 20 %', bau: 0.2 },
   { art: 'haus', groesse: 2, titel: 'Baustelle 70 %', bau: 0.7 },

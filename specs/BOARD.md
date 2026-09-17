@@ -7,9 +7,9 @@ Eine Zeile je Abnahmekriterium. Gepflegt wird der Status in der Spec selbst,
 hier steht er zusammengefasst. Erzeugt mit `npm run specs:board`; als Seite
 mit Bildnachweisen, Filter und Suche mit `npm run qa:report`.
 
-**Gesamt:** 321/488 fertig · 5 in QA · 4 geplant · 151 offen · 7 zurueckgestellt
+**Gesamt:** 323/488 fertig · 5 in QA · 4 geplant · 149 offen · 7 zurueckgestellt
 
-**Nachweise:** 114 Kriterien mit Bild · 211 ohne Bild, begruendet in `qa/ohne-bild.json`
+**Nachweise:** 116 Kriterien mit Bild · 211 ohne Bild, begruendet in `qa/ohne-bild.json`
 
 ## Nach Spezifikation
 
@@ -21,7 +21,7 @@ mit Bildnachweisen, Filter und Suche mit `npm run qa:report`.
 | [Anhalten und Fortsetzen](00-plattform/speichern.md)           | -         | -     | -       | 26    | -               | -      |
 | [Spielauswahl und Einstellungen](00-plattform/spielauswahl.md) | -         | -     | -       | 5     | -               | 12     |
 | [Uebertragung](00-plattform/uebertragung.md)                   | -         | -     | 2       | 1     | -               | 7      |
-| [Bauen und Ausbilden](10-strategie/bauen.md)                   | -         | -     | -       | 8     | -               | 14     |
+| [Bauen und Ausbilden](10-strategie/bauen.md)                   | -         | -     | -       | 6     | -               | 16     |
 | [Bedienung](10-strategie/bedienung.md)                         | -         | -     | -       | 16    | -               | 13     |
 | [Darstellung](10-strategie/darstellung.md)                     | -         | -     | -       | 4     | -               | 8      |
 | [Einheiten und Befehle](10-strategie/einheiten-und-befehle.md) | -         | -     | -       | 4     | 1               | 13     |
@@ -60,7 +60,7 @@ mit Bildnachweisen, Filter und Suche mit `npm run qa:report`.
 - **Abbruch ist sichtbar** — [Uebertragung](00-plattform/uebertragung.md) AC-9
 - **Automatischer Wiederaufbau** — [Uebertragung](00-plattform/uebertragung.md) AC-10
 
-## Offen (151)
+## Offen (149)
 
 - **Anmeldung ueber Google/GitHub** — [Konten und Anmeldung](00-plattform/konten.md) AC-6
 - **Bilanz je Konto** — [Konten und Anmeldung](00-plattform/konten.md) AC-14
@@ -105,8 +105,6 @@ mit Bildnachweisen, Filter und Suche mit `npm run qa:report`.
 - **Sitzungsspiele erscheinen dort nicht** — [Spielauswahl und Einstellungen](00-plattform/spielauswahl.md) AC-17
 - **Befehlsflut wird gebremst** — [Uebertragung](00-plattform/uebertragung.md) AC-4
 - **Gebäude im Bau angreifbar** — [Bauen und Ausbilden](10-strategie/bauen.md) AC-7
-- **Die Gebäude der Dunklen Zeit** — [Bauen und Ausbilden](10-strategie/bauen.md) AC-20
-- **Kaserne bildet Miliz aus** — [Bauen und Ausbilden](10-strategie/bauen.md) AC-9
 - **Sammelpunkt je Gebäude** — [Bauen und Ausbilden](10-strategie/bauen.md) AC-13
 - **Webstuhl stärkt Dorfbewohner** — [Bauen und Ausbilden](10-strategie/bauen.md) AC-21
 - **Gebäude haben Leben** — [Bauen und Ausbilden](10-strategie/bauen.md) AC-17
