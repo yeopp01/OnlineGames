@@ -6,6 +6,7 @@ import { expect, test, zeitraffer } from '../helpers/seite.mjs';
 import { dorfbewohnerAnklicken, partieBeenden, partieZuZweit } from '../helpers/strategie.mjs';
 
 const EINHEITEN = '10-strategie/einheiten-und-befehle.md';
+const DARSTELLUNG = '10-strategie/darstellung.md';
 
 test.describe('Schafe', () => {
   test.describe.configure({ mode: 'serial' });
@@ -82,6 +83,50 @@ test.describe('Schafe', () => {
       spec: EINHEITEN,
       ac: 'AC-17',
       titel: 'Das Schaf liegt geschlachtet, Beine nach oben, der Dorfbewohner daneben traegt Nahrung im Korb',
+      test: info,
+    });
+  });
+
+  test('darstellung AC-12: gezeichnet statt flach - Toene je Zeichnung und das Spielbild aus der Naehe', async ({ browser }, info) => {
+    // Gezaehlt auf der Schautafel: deutlich verschiedene Farbtoene je Zeichnung.
+    // Vor Runde 27 (flach) gemessen: Figuren 13-15, Schaf 5, Gebaeude 6-17,
+    // Vorraete 5-6. Nach dem Umzeichnen: 26-30, 13, 20-35, 16-23.
+    const tafel = await browser.newPage();
+    await tafel.goto(new URL('/schautafel.html', anna.url()).href);
+    await tafel.waitForFunction(() => window.schautafel?.tonstufen);
+    const stufen = await tafel.evaluate(() => {
+      const t = window.schautafel.tonstufen;
+      const aus = {};
+      for (const art of ['dorfbewohner', 'miliz', 'spaeherreiter']) aus[art] = t('figur', art);
+      aus.schaf = t('figur', 'schaf');
+      for (const art of ['dorfzentrum', 'haus', 'muehle', 'holzfaellerlager', 'bergbaulager']) aus[art] = t('gebaeude', art);
+      for (const [name, art] of [['wald', 1], ['beere', 2], ['gold', 4], ['stein', 5]]) aus[name] = t('ding', art);
+      return aus;
+    });
+    await tafel.close();
+    const schwelle = {
+      dorfbewohner: 20, miliz: 20, spaeherreiter: 20, schaf: 10,
+      dorfzentrum: 19, haus: 19, muehle: 19, holzfaellerlager: 19, bergbaulager: 19,
+      wald: 12, beere: 12, gold: 12, stein: 12,
+    };
+    for (const [name, mindestens] of Object.entries(schwelle)) {
+      expect(stufen[name], `${name}: ${JSON.stringify(stufen)}`).toBeGreaterThanOrEqual(mindestens);
+    }
+
+    // Im Spielbild: Grasbueschel erst ab Zoom 1,2, bei Zoom 1 bleibt der Boden ruhig.
+    await anna.evaluate(() => {
+      const a = window.ansicht;
+      const b = a.spieler.get(a.ich).basis;
+      a.gewaehltesGebaeude = null;
+      a.ausgewaehlt.clear();
+      a.kamera.zoom = 2.2;
+      a.blickAuf(b.x - 3, b.y + 2);
+    });
+    await anna.waitForTimeout(200);
+    await nachweis(anna, {
+      spec: DARSTELLUNG,
+      ac: 'AC-12',
+      titel: 'Aus der Naehe: Ziegeldach und Mauerwerk, schattierte Figuren, Mischwald mit Tannen, Grasbueschel - vorher flach, siehe docs/strategie/bilder',
       test: info,
     });
   });

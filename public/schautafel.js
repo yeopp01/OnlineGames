@@ -267,7 +267,36 @@ function bodenProbe() {
   return { toene: toene.size, verschieden: verschieden / 1000, sand };
 }
 
+/**
+ * Fuer den Browserlauf (darstellung AC-12): wie viele deutlich verschiedene
+ * Farbtoene eine Zeichnung hat - Kanaele auf 16 Stufen gerundet, gezaehlt nur
+ * Toene mit mindestens einem Hundertstel der Flaeche. Flach gezeichnet ist das
+ * etwa eine Stufe je Flaeche, schattiert ein Mehrfaches.
+ */
+function tonstufen(welche, art) {
+  const g = 160;
+  const blatt = document.createElement('canvas');
+  blatt.width = g;
+  blatt.height = g;
+  const s = blatt.getContext('2d');
+  if (welche === 'figur') figurZeichnen(s, art, g / 2, g - 10, 130, '#4a90d9', {});
+  else if (welche === 'gebaeude') gebaeudeZeichnen(s, art, g / 2, g * 0.72, 22, '#4a90d9', 2);
+  else dingZeichnen(s, art, g / 2, g * 0.8, 50, 17, 1);
+  const { data } = s.getImageData(0, 0, g, g);
+  const zaehler = new Map();
+  let pixel = 0;
+  for (let i = 0; i < data.length; i += 4) {
+    if (data[i + 3] < 250) continue;
+    pixel += 1;
+    const k = ((data[i] >> 4) << 8) | ((data[i + 1] >> 4) << 4) | (data[i + 2] >> 4);
+    zaehler.set(k, (zaehler.get(k) || 0) + 1);
+  }
+  let deutlich = 0;
+  for (const n of zaehler.values()) if (n >= pixel * 0.01) deutlich += 1;
+  return deutlich;
+}
+
 window.schautafel = {
   zellen, maske, dingMaske, bodenProbe, arten: Object.keys(FIGUREN), dinge: { WALD, BEERE, GOLD, STEIN },
-  gebaeudeZellen, gebaeudeMaske, gebaeudeArten: Object.keys(GEBAEUDE),
+  gebaeudeZellen, gebaeudeMaske, gebaeudeArten: Object.keys(GEBAEUDE), tonstufen,
 };

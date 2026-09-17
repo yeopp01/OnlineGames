@@ -8,7 +8,7 @@
 import { figurZeichnen } from './figuren.js';
 import { gebaeudeBildZeichnen, gebaeudeGetroffen } from './gebaeude.js';
 import {
-  DINGE, GRAS, WALD, WASSER, bodenFarbe, dingZeichnen, gewaesserZeichnen, raute, wellenZeichnen,
+  DINGE, GRAS, WALD, WASSER, bodenFarbe, dingBildZeichnen, gewaesserZeichnen, grasBeginnen, grasSammeln, grasZeichnen, raute, wellenZeichnen,
 } from './gelaende.js';
 
 const HALB_B = 22; // halbe Rautenbreite in Bildpunkten bei Vergroesserung 1
@@ -442,8 +442,23 @@ export class Ansicht {
         stift.fill();
       }
     }
-    // Wasser als weiche Flaeche mit Sandufer ueber dem Gras, dann Wellen.
+    // Grasbueschel und Blumen (darstellung AC-12) - vor dem Wasser, damit das
+    // Ufer sie ueberdeckt, und nur auf freiem Gras.
     const felder = this.karte.felder;
+    // Erst ab rund Zoom 1,2: kleiner wirken Halme und Blumen wie Rauschen.
+    if (HALB_B * zoom >= 26) {
+      const gras = grasBeginnen();
+      for (let y = vonY; y <= bisY; y++) {
+        for (let x = vonX; x <= bisX; x++) {
+          const index = y * g + x;
+          if (felder[index] !== GRAS) continue;
+          const p = this.zuBild(x, y);
+          grasSammeln(gras, p.x, p.y, HALB_B * zoom, index, this.salz);
+        }
+      }
+      grasZeichnen(stift, gras, HALB_B * zoom);
+    }
+    // Wasser als weiche Flaeche mit Sandufer ueber dem Gras, dann Wellen.
     const wasser = [];
     for (let y = vonY; y <= bisY; y++) {
       for (let x = vonX; x <= bisX; x++) {
@@ -484,7 +499,8 @@ export class Ansicht {
     for (const ding of stehend) {
       const p = this.zuBild(ding.x, ding.y);
       if (ding.art === 'vorrat') {
-        dingZeichnen(stift, ding.feld, p.x, p.y, e, ding.index, (this.fuellung.get(ding.index) || 4) / 4);
+        // Aus dem Zwischenspeicher: direkt gezeichnet kostete es bei Zoom 1 doppelt so viel (Runde 29).
+        dingBildZeichnen(stift, ding.feld, p.x, p.y, e, ding.index, (this.fuellung.get(ding.index) || 4) / 4);
       } else if (ding.art === 'gebaeude') {
         this.gebaeudeBild(ding.gebaeude, p, e);
       } else if (ding.art === 'tier') {

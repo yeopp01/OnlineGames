@@ -1,0 +1,10 @@
+{
+  "spec": "10-strategie/darstellung.md",
+  "ac": "AC-12",
+  "titel": "Aus der Naehe: Ziegeldach und Mauerwerk, schattierte Figuren, Mischwald mit Tannen, Grasbueschel - vorher flach, siehe docs/strategie/bilder",
+  "datei": "e2e/tests/strategie-tiere.spec.mjs",
+  "pfad": [
+    "Schafe",
+    "darstellung AC-12: gezeichnet statt flach - Toene je Zeichnung und das Spielbild aus der Naehe"
+  ]
+}

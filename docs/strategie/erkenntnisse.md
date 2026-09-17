@@ -93,6 +93,7 @@ Zahlen, gegen die spätere Runden vergleichen. Mit Datum und Commit.
 | 2026-09-16 | Tests ohne Browser / im Browser; Browserlauf | 252 / 77; 1,1 min — nicht vergleichbar, 8 fremde Testprozesse | Runde 6 |
 | 2026-09-17 | Tests ohne Browser / im Browser; Browserlauf (Last 16 %) | 260 / 80; 59,8 s | Runde 12 |
 | 2026-09-17 | Wegsuche 200 x 200: Ecke zu Ecke / Mittel 100 zufaellig | 1,19 ms / 0,28 ms | Runde 12 |
+| 2026-09-17 | Zeichnen je Bild (sicht --messen, ohne Grafikkarte), Zoom 1 / 0,5 / 2 | vorher 23,8 / 29,3 / 17,9 ms, nachher 18,2 / 23,1 / 29,3 ms | Runde 29 |
 | 2026-09-17 | Zeichnen je Bild im Browserlauf, Zoom 1 / Zoom 0,4 | 4,9–6,2 ms / 10–11 ms | Runde 13 |
 | 2026-09-17 | Tests ohne Browser / im Browser; Browserlauf (Last 16 %) | 260 / 83; 58,5 s | Runde 13 |
 | 2026-09-17 | Tests ohne Browser / im Browser; Browserlauf | 264 / 86; 1,1 min | Runde 16 |
@@ -222,6 +223,19 @@ Erstattung vor dem Sperren) — beide Male stand danach ein Kommentar am Test.
 Neueste oben. Eine Zeile je Runde: Nummer, Datum, Kriterien, Ergebnis,
 wichtigste Erkenntnis.
 
+- **29** · 2026-09-17 · darstellung AC-12 fertig — Schritt **A6b
+  abgeschlossen**. Teil 3: Mischwald aus Laubbäumen (volle Kronen aus
+  Blattballen) und Tannen, Sträucher aus Blättern, Brocken mit Rissen und
+  Funkeln, Grasbüschel und Blumen ab Zoom 1,2, Wasser mit nassem Saum.
+  Gemessen, weil Hunderte Dinge im Bild stehen (`npm run sicht -- --spiel
+  --messen`, ohne Grafikkarte): Grasbüschel einzeln gezeichnet +28 ms je Bild,
+  in zwei Pfaden gesammelt praktisch nichts; Vorräte aus dem Zwischenspeicher
+  halb so teuer wie direkt. Ergebnis bei Zoom 1: 18 ms statt 24 ms vorher,
+  bei Zoom 2: 29 ms statt 18 ms. Belegt über Tonstufen je Zeichnung, alt gegen
+  neu gemessen (Figuren 13–15 → 26–30, Vorräte 5–6 → 16–23). Gelernt: Laubbäume
+  mit langem Stamm und kleiner Krone sahen aus wie Luftballons; Halme bei
+  Zoom 1 wie Rauschen — beides erst im Bild gesehen. Browserlauf 5,9 min —
+  für die Rückschau (30).
 - **28** · 2026-09-17 · darstellung AC-12 in Arbeit, Teil 2: die Gebäude.
   Mauerwerk mit versetzten Fugen, Putz, Bretter, Ziegelreihen, Stroh,
   Schindeln, Fenster mit Sprossen, Brettertüren mit Beschlag, gewellte Fahne,

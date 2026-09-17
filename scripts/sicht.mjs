@@ -5,6 +5,7 @@
 //   npm run sicht -- schautafel.html
 //   npm run sicht -- schautafel.html --breite 1600 --hoehe 900 --name tafel
 //   npm run sicht -- --spiel --zoom 2 --ziel wald --warten 5
+//   npm run sicht -- --spiel --zoom 1 --messen   (Zeichenzeit je Bild)
 //
 // Fuer das schnelle Hinsehen beim Zeichnen (Rueckschau nach Runde 10). Die
 // Bilder sind Wegwerfbilder und gehoeren nicht ins Repository - belegt wird
@@ -106,6 +107,18 @@ async function spielbild() {
     a.blickAuf(blick.x, blick.y);
   }, { zoom: Number(wert('zoom', 1)), ziel: wert('ziel', 'basis') });
   await anna.waitForTimeout(300);
+  // --messen: wie lange ein Bild im Mittel braucht, ueber 40 Bilder
+  // (Rueckschau-Werkzeug, Runde 29: detaillierte Zeichnung kostet Zeit).
+  if (argumente.includes('--messen')) {
+    const ms = await anna.evaluate(() => {
+      const a = window.ansicht;
+      a.zeichnen(performance.now());
+      const start = performance.now();
+      for (let i = 0; i < 40; i++) a.zeichnen(performance.now());
+      return ((performance.now() - start) / 40).toFixed(1);
+    });
+    console.log(`Zeichnen je Bild: ${ms} ms (Zoom ${wert('zoom', 1)})`);
+  }
   await anna.screenshot({ path: ziel });
 }
 
