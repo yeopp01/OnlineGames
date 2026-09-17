@@ -114,6 +114,7 @@ Zahlen, gegen die spätere Runden vergleichen. Mit Datum und Commit.
 | 2026-09-17 | Browsertests je Datei (e2e:laufzeiten, CPU 20 %): strategie-bauen / -ausbilden / -spielbild / Summe | 45,8 / 29,3 / 25,7 / 141 s | Runde 30 |
 | 2026-09-17 | Zeichnen je Bild (sicht --messen, ohne Grafikkarte), Zoom 1 / 0,5 / 2 | vorher 23,8 / 29,3 / 17,9 ms, nachher 18,2 / 23,1 / 29,3 ms | Runde 29 |
 | 2026-09-17 | Tests ohne Browser / im Browser | 305 / 109 | Runde 40 |
+| 2026-09-17 | Pruefstand, Grund-KI: 20 Partien x 10 Spielminuten, 2 Spieler — Dauer je Partie / Dorfbewohner nach 10 min | 30–90 ms / 15–16 | Runde 43 |
 | 2026-09-17 | Zeichnen je Bild nach A6c (Boden in Kacheln, Wasser im Boden), Zoom 1 / 2 — Last nicht geprüft | 20,4 / 40,2 ms | Runde 39 |
 | 2026-09-17 | Fast schwarze Bildpunkte Gebäude / Figuren (tafel `anmutung`) | vorher 7–12 % / 7,7–16 %, nachher 0 / 0 % | Runden 37, 38 |
 | 2026-09-17 | Sättigung im Mittel Gebäude / Vorräte / Figuren | vorher 0,283 / 0,371 / 0,331, nachher 0,238 / 0,305 / 0,342 | Runde 39 |
@@ -312,6 +313,23 @@ alle sieben Gebäude der Dunklen Zeit stehen. Was sich wiederholt hat:
 Neueste oben. Eine Zeile je Runde: Nummer, Datum, Kriterien, Ergebnis,
 wichtigste Erkenntnis.
 
+- **43** · 2026-09-17 · A8 Teil 1: ki AC-1, AC-2, AC-7, AC-8 und fahrplan AC-4
+  **fertig**. Grund-KI in `server/spiele/strategie/ki.js`: liest die Welt,
+  ändert sie nur über `welt.nachricht` (Test ersetzt die Nachricht beim
+  Entscheiden und vergleicht die Welt davor und danach), entscheidet alle
+  halbe Sekunde mit festem Versatz je Spieler, Zufall aus dem Startwert.
+  Plan noch schlicht: Schlange nie leer, Haus bei zwei freien Plätzen,
+  Untätige reihum zu Beeren, Wald, Gold. Prüfstand in `pruefstand.js` und
+  `npm run pruefstand:strategie`: nach jedem Takt Vorrat ≥ 0, Bevölkerung
+  ≤ 200, keine Einheit im Hindernis, keine überlappenden Gebäude. **Im ersten
+  Lauf einen echten Fehler gefunden** (Startwert 1, Takt 1015): ein Haus
+  entstand auf Feldern, über die ein Dorfbewohner schon seinen Weg hatte — er
+  lief hindurch. `belegen` sucht jetzt für jeden, dessen Weg über die neue
+  Grundfläche führt, neu (Test bauen AC-3, ohne die Korrektur rot). Danach 20
+  Startwerte × 10 Spielminuten ohne Widerspruch, je Partie 30–90 ms. Ehrlich:
+  die Grund-KI kommt auf 15–16 Dorfbewohner und hat am Ende keine Nahrung —
+  Beeren leer, keine Schafe, keine Farmen; das ist ki AC-4 bis AC-6 und
+  fahrplan AC-5 (Ziel 20–30).
 - **42** · 2026-09-17 · darstellung AC-8 **fertig** — Schritt A7 vollständig.
   Lebensbalken im Spielbild: über dem Kopf jeder gewählten Einheit, über dem
   Dach eines gewählten oder beschädigten Gebäudes (Baustellen nicht — deren

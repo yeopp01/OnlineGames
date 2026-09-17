@@ -88,6 +88,8 @@ server/  raeume.js   Räume, Beitritt, Rückkehr nach Abbruch
          index.js    HTTP für die Dateien, WebSocket für das Spiel
    spiele/strategie/  karte.js Kartenerzeugung · wege.js A* auf dem Raster
                       welt.js  die Simulation: Einheiten, Aufträge, Vorräte
+                      ki.js    Computerspieler, nur über welt.nachricht
+                      pruefstand.js  KI gegen KI ohne Browser, jeder Takt geprüft
    spiele/manager/    kader.js Welt, Spieler, Aufstellung, Training, Entwicklung
                       spieltag.js die Begegnung in Fünf-Minuten-Abschnitten, Taktik
                       liga.js Spielplan, Tabelle · pokal.js · kalender.js 42 Termine
@@ -137,7 +139,7 @@ Umfang hinzufügt, dort nachsehen.
 
 ## Stand
 
-**329 von 490 Kriterien fertig.** 305 Tests ohne Browser, 113 im Browser. Die
+**334 von 490 Kriterien fertig.** 312 Tests ohne Browser, 113 im Browser. Die
 Übersicht ist der Bericht: `npm run qa:report`.
 
 Gebaut ist der Unterbau: Räume, Übertragung, Karte, Wegfindung, Sammeln,
@@ -188,8 +190,9 @@ sind erreicht (fahrplan AC-1, AC-2); in Stufe A sind die Schritte A1 bis A6b
 gebaut, aus A6c das naturalistische Aussehen (darstellung AC-13: keine
 schwarzen Umrisse, erdige Farben, Proportionen, Boden als Textur mit Wasser,
 Schlagschatten; AC-14: alles unterscheidbar) und A7 ganz: Schafe, Farm,
-Kaserne mit Miliz, Webstuhl, Sammelpunkt, Lebensbalken im Bild. Als Nächstes
-A8 (Wirtschafts-KI und Prüfstand) bis A10:
+Kaserne mit Miliz, Webstuhl, Sammelpunkt, Lebensbalken im Bild. Aus A8 steht
+der Prüfstand (`npm run pruefstand:strategie`) mit einer Grund-KI; als
+Nächstes deren Wirtschaftsplan (ki AC-3 bis AC-6, fahrplan AC-5), dann A9 und A10:
 
 1. **Stufe A** Dunkle Zeit mit Wirtschafts-KI und Prüfstand · **B** Feudalzeit
    · **C** Partieende und KI-Gegner · **D** Ritterzeit · **E** fünf Völker ·

@@ -2,7 +2,7 @@
 
 **Bereich:** Strategie
 **Kuerzel:** fahrplan
-**Stand:** 2/22 fertig · 20 offen
+**Stand:** 3/22 fertig · 19 offen
 
 ## Zweck
 
@@ -53,7 +53,7 @@ außen mitspielen soll.
   Holzfäller- und Bergbaulager, Farm, Kaserne; Dorfbewohner, Miliz und
   Späherreiter; Schafe, Beeren, Bäume, Gold, Stein. Im Browser gebaut, gesammelt,
   ausgebildet.
-- **AC-4** `offen` **Prüfstand ohne Menschen** — `npm run pruefstand:strategie` spielt Partien
+- **AC-4** `fertig` **Prüfstand ohne Menschen** — `npm run pruefstand:strategie` spielt Partien
   KI gegen KI ohne Browser und prüft jeden Takt auf Widersprüche: kein Vorrat
   unter null, keine Bevölkerung über der Grenze, keine Einheit in einem
   Hindernis, kein Gebäude auf einem anderen.

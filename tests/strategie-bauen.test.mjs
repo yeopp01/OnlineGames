@@ -564,3 +564,38 @@ test('bauen AC-13: ein Sammelpunkt schickt neue Einheiten hin, auf einem Vorrat 
   assert.equal(zweiter.auftrag?.art, 'sammeln');
   assert.deepEqual(zweiter.auftrag.feld, { x: baum % g, y: (baum / g) | 0 });
 });
+
+test('bauen AC-3: wer unterwegs ueber den neuen Bauplatz laeuft, sucht einen neuen Weg', () => {
+  // Vom Pruefstand gefunden (Startwert 1, Takt 1015): ein Haus entstand auf
+  // Feldern, ueber die ein Dorfbewohner schon seinen Weg hatte.
+  const welt = new Welt(ZWEI, 7);
+  const basis = welt.spielerVon('a').basis;
+  const laeufer = eigene(welt).find((e) => e.art === 'dorfbewohner');
+  // Ein gerader Weg auf freiem Gras, zehn Felder weit.
+  let start = null;
+  for (let r = 6; r < 30 && !start; r++) {
+    for (const [dx, dy] of [[r, 0], [0, r], [-r, 0], [0, -r]]) {
+      const x = basis.x + dx;
+      const y = basis.y + dy;
+      let frei = true;
+      for (let i = -1; i <= 11; i++) for (let j = -2; j <= 2; j++) if (!karten.begehbar(welt.karte, x + i, y + j)) frei = false;
+      if (frei) { start = { x, y }; break; }
+    }
+  }
+  assert.ok(start, 'ein freier Streifen');
+  laeufer.x = start.x;
+  laeufer.y = start.y;
+  const ziel = { x: start.x + 10, y: start.y };
+  welt.befehl('a', [laeufer.id], ziel);
+  assert.ok(laeufer.weg.some((p) => p.x === start.x + 5 && p.y === start.y), 'der Weg fuehrt geradeaus');
+
+  const haus = welt.gebaeudeAnlegen('b', 'haus', start.x + 5, start.y, false);
+  const { x0, y0, x1, y1 } = welt.grundflaeche('haus', haus.x, haus.y);
+  assert.ok(!laeufer.weg.some((p) => p.x >= x0 && p.x <= x1 && p.y >= y0 && p.y <= y1), 'der neue Weg meidet die Grundflaeche');
+  assert.deepEqual(laeufer.weg[laeufer.weg.length - 1], ziel, 'und fuehrt zum selben Ziel');
+  for (let t = 0; t < 400 && laeufer.weg.length; t++) {
+    welt.takten();
+    assert.ok(karten.begehbar(welt.karte, Math.round(laeufer.x), Math.round(laeufer.y)), `Takt ${t}: nicht im Haus`);
+  }
+  assert.deepEqual({ x: laeufer.x, y: laeufer.y }, ziel, 'angekommen');
+});

@@ -1,6 +1,12 @@
 {
   "hinweis": "Ausnahmeliste zu den Bildnachweisen (docs/adr/0011-bildnachweise.md). Ein Abnahmekriterium steht hier, wenn es kein Aussehen hat oder ein Bildschirm es nicht zeigen kann - dann verlangt der Bericht kein Bild. Die Begruendung sagt, was das Kriterium ist und warum kein Bild. Ein Eintrag auf eine Spec oder ein Kriterium, das es nicht mehr gibt, laesst npm run check scheitern. Liegt trotz Eintrag ein Bild vor, wird es angezeigt.",
   "eintraege": [
+    { "spec": "10-strategie/ki.md", "ac": "AC-1", "begruendung": "Dass die KI die Welt nur ueber Nachrichten aendert und dieselben Absagen bekommt wie ein Mensch, ist eine Eigenschaft des Codes. Ein Bild zeigt, was sie tut, nicht auf welchem Weg." },
+    { "spec": "10-strategie/ki.md", "ac": "AC-2", "begruendung": "Zwei Partien mit demselben Startwert enden Takt fuer Takt gleich. Eine Aussage ueber zwei ganze Laeufe, die ohne Browser verglichen werden; ein Bild zeigt einen Augenblick einer Partie." },
+    { "spec": "10-strategie/ki.md", "ac": "AC-7", "begruendung": "Der Pruefstand ist ein Werkzeug ohne Oberflaeche: er spielt ohne Server und Browser und schreibt Zeilen auf die Konsole. Der Nachweis liest diese Ausgabe." },
+    { "spec": "10-strategie/ki.md", "ac": "AC-8", "begruendung": "Die Pruefung jedes Takts auf Widersprueche (Vorrat, Bevoelkerung, Hindernis, Ueberlappung) laeuft im Pruefstand ohne Bildschirm; sichtbar waere nur, dass nichts passiert." },
+    { "spec": "10-strategie/fahrplan.md", "ac": "AC-4", "begruendung": "Partien KI gegen KI ohne Menschen, jeder Takt geprueft - ein Lauf auf der Konsole, kein Bildschirm. Belegt durch zehn Spielminuten ueber mehrere Startwerte ohne Widerspruch." },
+
     { "spec": "00-plattform/konten.md", "ac": "AC-3", "begruendung": "Wie das Kennwort in der Datenbank liegt. Ueber die Oberflaeche nicht beobachtbar - und waere es das, waere es der Fehler." },
     { "spec": "00-plattform/konten.md", "ac": "AC-8", "begruendung": "Attribute des Sitzungskekses (HttpOnly, Secure, SameSite). Sie stehen in der Antwort des Servers, nicht auf einem Bildschirm." },
     { "spec": "00-plattform/konten.md", "ac": "AC-9", "begruendung": "Die Spielverbindung liest die Sitzung aus dem Keks. Sichtbar ist nur die Folge - Eroeffnen ohne zweite Anmeldung -, und die zeigt schon das Bild zu raeume AC-1." },

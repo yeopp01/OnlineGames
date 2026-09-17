@@ -192,6 +192,14 @@ class Welt {
       einheit.y = frei.y;
       einheit.weg = [];
     }
+    // Wer unterwegs ist und dessen Weg ueber die neue Grundflaeche fuehrt, sucht
+    // neu - sonst lief er durch das Gebaeude (bauen AC-3, vom Pruefstand
+    // gefunden: Startwert 1, Takt 1015).
+    for (const einheit of this.einheiten.values()) {
+      if (!einheit.weg.some((p) => p.x >= x0 && p.x <= x1 && p.y >= y0 && p.y <= y1)) continue;
+      const ziel = einheit.weg[einheit.weg.length - 1];
+      einheit.weg = suchen(this.karte, this.feldVon(einheit), ziel);
+    }
   }
 
   freigeben(gebaeude) {

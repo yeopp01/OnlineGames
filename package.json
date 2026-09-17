@@ -24,7 +24,8 @@
     "e2e:laufzeiten": "node scripts/e2e-laufzeiten.mjs",
     "einladung": "node scripts/einladung.mjs",
     "sicht": "node scripts/sicht.mjs",
-    "tafel": "node scripts/tafel.mjs"
+    "tafel": "node scripts/tafel.mjs",
+    "pruefstand:strategie": "node scripts/pruefstand-strategie.mjs"
   },
   "dependencies": {
     "better-auth": "^1.7.2",

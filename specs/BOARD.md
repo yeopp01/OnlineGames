@@ -7,9 +7,9 @@ Eine Zeile je Abnahmekriterium. Gepflegt wird der Status in der Spec selbst,
 hier steht er zusammengefasst. Erzeugt mit `npm run specs:board`; als Seite
 mit Bildnachweisen, Filter und Suche mit `npm run qa:report`.
 
-**Gesamt:** 329/490 fertig · 5 in QA · 4 geplant · 145 offen · 7 zurueckgestellt
+**Gesamt:** 334/490 fertig · 5 in QA · 4 geplant · 140 offen · 7 zurueckgestellt
 
-**Nachweise:** 122 Kriterien mit Bild · 211 ohne Bild, begruendet in `qa/ohne-bild.json`
+**Nachweise:** 122 Kriterien mit Bild · 216 ohne Bild, begruendet in `qa/ohne-bild.json`
 
 ## Nach Spezifikation
 
@@ -25,10 +25,10 @@ mit Bildnachweisen, Filter und Suche mit `npm run qa:report`.
 | [Bedienung](10-strategie/bedienung.md)                         | -         | -     | -       | 16    | -               | 13     |
 | [Darstellung](10-strategie/darstellung.md)                     | -         | -     | -       | 3     | -               | 11     |
 | [Einheiten und Befehle](10-strategie/einheiten-und-befehle.md) | -         | -     | -       | 3     | 1               | 14     |
-| [Fahrplan zum Klon](10-strategie/fahrplan.md)                  | -         | -     | -       | 20    | -               | 2      |
+| [Fahrplan zum Klon](10-strategie/fahrplan.md)                  | -         | -     | -       | 19    | -               | 3      |
 | [Kampf](10-strategie/kampf.md)                                 | -         | -     | -       | 14    | -               | -      |
 | [Karte und Vorraete](10-strategie/karte-und-vorraete.md)       | -         | -     | -       | 2     | 3               | 12     |
-| [KI-Spieler](10-strategie/ki.md)                               | -         | -     | -       | 8     | -               | -      |
+| [KI-Spieler](10-strategie/ki.md)                               | -         | -     | -       | 4     | -               | 4      |
 | [Spielziel und Partieverlauf](10-strategie/spielziel.md)       | -         | -     | -       | 18    | -               | -      |
 | [Aufstellung, Taktik und Training](15-manager/aufstellung.md)  | -         | -     | -       | -     | 2               | 23     |
 | [Bedienung des Managerspiels](15-manager/bedienung.md)         | -         | -     | -       | -     | -               | 15     |
@@ -60,7 +60,7 @@ mit Bildnachweisen, Filter und Suche mit `npm run qa:report`.
 - **Abbruch ist sichtbar** — [Uebertragung](00-plattform/uebertragung.md) AC-9
 - **Automatischer Wiederaufbau** — [Uebertragung](00-plattform/uebertragung.md) AC-10
 
-## Offen (145)
+## Offen (140)
 
 - **Anmeldung ueber Google/GitHub** — [Konten und Anmeldung](00-plattform/konten.md) AC-6
 - **Bilanz je Konto** — [Konten und Anmeldung](00-plattform/konten.md) AC-14
@@ -131,7 +131,6 @@ mit Bildnachweisen, Filter und Suche mit `npm run qa:report`.
 - **Ein Befehl für viele** — [Einheiten und Befehle](10-strategie/einheiten-und-befehle.md) AC-20
 - **Untätig ist erkennbar** — [Einheiten und Befehle](10-strategie/einheiten-und-befehle.md) AC-21
 - **Dunkle Zeit spielbar** — [Fahrplan zum Klon](10-strategie/fahrplan.md) AC-3
-- **Prüfstand ohne Menschen** — [Fahrplan zum Klon](10-strategie/fahrplan.md) AC-4
 - **Die Wirtschaft trägt** — [Fahrplan zum Klon](10-strategie/fahrplan.md) AC-5
 - **Der Takt bleibt billig** — [Fahrplan zum Klon](10-strategie/fahrplan.md) AC-6
 - **Gebäude an Gestalt erkennbar** — [Fahrplan zum Klon](10-strategie/fahrplan.md) AC-7
@@ -166,14 +165,10 @@ mit Bildnachweisen, Filter und Suche mit `npm run qa:report`.
 - **Angriff wird gemeldet** — [Kampf](10-strategie/kampf.md) AC-14
 - **Kein Spieler ist abgeschnitten** — [Karte und Vorraete](10-strategie/karte-und-vorraete.md) AC-7
 - **Vorraete sind endlich und knapp** — [Karte und Vorraete](10-strategie/karte-und-vorraete.md) AC-10
-- **Befehle wie ein Mensch** — [KI-Spieler](10-strategie/ki.md) AC-1
-- **Gleicher Zufall, gleiche Partie** — [KI-Spieler](10-strategie/ki.md) AC-2
 - **KI kostet wenig** — [KI-Spieler](10-strategie/ki.md) AC-3
 - **Baut die Wirtschaft auf** — [KI-Spieler](10-strategie/ki.md) AC-4
 - **Lager an die Vorräte** — [KI-Spieler](10-strategie/ki.md) AC-5
 - **Niemand steht herum** — [KI-Spieler](10-strategie/ki.md) AC-6
-- **Partien ohne Browser** — [KI-Spieler](10-strategie/ki.md) AC-7
-- **Jeder Takt wird geprüft** — [KI-Spieler](10-strategie/ki.md) AC-8
 - **Zeitalter gliedern die Partie** — [Spielziel und Partieverlauf](10-strategie/spielziel.md) AC-1
 - **Partiedauer 25 bis 45 Minuten** — [Spielziel und Partieverlauf](10-strategie/spielziel.md) AC-2
 - **Kein Aus nach drei Minuten** — [Spielziel und Partieverlauf](10-strategie/spielziel.md) AC-3

@@ -2,7 +2,7 @@
 
 **Bereich:** Strategie
 **Kuerzel:** ki
-**Stand:** 0/8 fertig · 8 offen
+**Stand:** 4/8 fertig · 4 offen
 
 ## Zweck
 
@@ -26,10 +26,10 @@ nicht die Regeln.
 
 ### Ehrlich (Stufe A)
 
-- **AC-1** `offen` **Befehle wie ein Mensch** — Die KI schickt dieselben Befehle über denselben
+- **AC-1** `fertig` **Befehle wie ein Mensch** — Die KI schickt dieselben Befehle über denselben
   Weg wie der Browser (`befehl`, `bauen`, `ausbilden`). Ein Befehl, der für
   einen Menschen abgewiesen würde, wird auch für sie abgewiesen.
-- **AC-2** `offen` **Gleicher Zufall, gleiche Partie** — Die KI zieht Zufall nur aus dem
+- **AC-2** `fertig` **Gleicher Zufall, gleiche Partie** — Die KI zieht Zufall nur aus dem
   Startwert. Zwei Partien KI gegen KI mit demselben Startwert enden Takt für
   Takt gleich.
 - **AC-3** `offen` **KI kostet wenig** — Eine KI rechnet im Mittel unter 1 ms je Takt und
@@ -48,10 +48,10 @@ nicht die Regeln.
 
 ### Prüfstand (Stufe A)
 
-- **AC-7** `offen` **Partien ohne Browser** — `npm run pruefstand:strategie -- --partien 20`
+- **AC-7** `fertig` **Partien ohne Browser** — `npm run pruefstand:strategie -- --partien 20`
   spielt KI gegen KI ohne Server und Browser, so schnell die Maschine kann,
   und schreibt je Partie Startwert, Dauer und Kennzahlen je Spieler.
-- **AC-8** `offen` **Jeder Takt wird geprüft** — Der Prüfstand bricht mit Startwert und Takt ab,
+- **AC-8** `fertig` **Jeder Takt wird geprüft** — Der Prüfstand bricht mit Startwert und Takt ab,
   wenn ein Vorrat negativ wird, die Bevölkerung die Grenze übersteigt, eine
   Einheit in einem Hindernis steht oder zwei Gebäude sich überlappen
   (→ [Fahrplan](fahrplan.md) AC-4).
