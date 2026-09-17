@@ -25,7 +25,7 @@ const SAMMELN = {
 // Gebaeude: Wohnraum fuer die Bevoelkerung. Weitere Werte kommen mit dem
 // Bauen (Stufe A, Schritt A6).
 const GEBAEUDE = {
-  dorfzentrum: { wohnraum: 5, bildetAus: ['dorfbewohner'] },
+  dorfzentrum: { leben: 2400, wohnraum: 5, bildetAus: ['dorfbewohner'] },
 };
 
 // Auftraege je Gebaeude (bauen AC-10).

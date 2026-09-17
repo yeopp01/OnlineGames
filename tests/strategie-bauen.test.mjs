@@ -182,3 +182,18 @@ test('bauen AC-16: eine verlorene Einheit gibt ihren Platz sofort frei', () => {
   assert.equal(zentrum.wartet, false, 'und der Auftrag laeuft im naechsten Takt');
   assert.equal(zentrum.fortschritt, 1);
 });
+
+test('bedienung AC-29: der Aufbau nennt die Werte je Art, der Zustand das Leben erst, wenn es fehlt', () => {
+  const welt = new Welt(ZWEI, 7);
+  const { werte } = welt.aufbau();
+  assert.deepEqual(werte.einheiten.dorfbewohner, { kuerzel: 'd', leben: 25, tragkraft: 10, kosten: { nahrung: 50 }, zeit: 25 });
+  assert.deepEqual(werte.einheiten.spaeherreiter, { kuerzel: 's', leben: 45, tragkraft: 0, kosten: null, zeit: null });
+  assert.deepEqual(werte.gebaeude.dorfzentrum, { leben: 2400, bildetAus: ['dorfbewohner'] });
+
+  // Unverletzt geht kein Leben ueber die Leitung, verletzt schon.
+  const einheit = eigene(welt)[0];
+  assert.equal(welt.zustand().einheiten.find((e) => e.i === einheit.id).h, undefined);
+  einheit.leben = 17;
+  assert.equal(welt.zustand().einheiten.find((e) => e.i === einheit.id).h, 17);
+  assert.equal(welt.gebaeudeFuerDraht(dorfzentrum(welt).id).h, 2400);
+});

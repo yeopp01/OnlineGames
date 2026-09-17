@@ -99,6 +99,7 @@ class Welt {
       besitzer,
       x,
       y,
+      leben: GEBAEUDE[art].leben,
       schlange: [], // Arten der bezahlten Auftraege, der erste laeuft
       fortschritt: 0, // Takte am laufenden Auftrag
       wartet: false, // Bevoelkerung voll (bauen AC-15)
@@ -433,6 +434,9 @@ class Welt {
         y: Math.round(e.y * 100) / 100,
         l: e.ladung,
         a: e.ladungsart ? e.ladungsart[0] : null,
+        // Leben nur, wenn es fehlt: das volle steht im Aufbau (bedienung AC-29),
+        // und ein Zustand bleibt klein (uebertragung AC-7).
+        ...(e.leben < EINHEITEN[e.art].leben ? { h: e.leben } : {}),
       });
     }
     const felder = this.feldAenderungen;
@@ -476,6 +480,7 @@ class Welt {
       b: g.besitzer,
       x: g.x,
       y: g.y,
+      h: g.leben,
       s: g.schlange,
       f: laufend ? Math.round((g.fortschritt / (EINHEITEN[laufend].zeit * TAKTE_PRO_SEKUNDE)) * 100) / 100 : 0,
       w: g.wartet,
@@ -507,6 +512,16 @@ class Welt {
       })),
       tiere: [...this.tiere.keys()].map((id) => this.tierFuerDraht(id)),
       gebaeude: [...this.gebaeude.keys()].map((id) => this.gebaeudeFuerDraht(id)),
+      // Die Werte der Arten, einmal: der Browser zeigt Leben, Tragkraft und
+      // Kosten, ohne sie selbst zu kennen (bedienung AC-26, AC-29).
+      werte: {
+        einheiten: Object.fromEntries(Object.entries(EINHEITEN).map(([art, w]) => [art, {
+          kuerzel: w.kuerzel, leben: w.leben, tragkraft: w.tragkraft, kosten: w.kosten || null, zeit: w.zeit || null,
+        }])),
+        gebaeude: Object.fromEntries(Object.entries(GEBAEUDE).map(([art, w]) => [art, {
+          leben: w.leben, bildetAus: w.bildetAus || [],
+        }])),
+      },
     };
   }
 }

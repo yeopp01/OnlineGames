@@ -309,6 +309,65 @@ canvas {
   filter: grayscale(0.8);
 }
 
+.leben {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  margin-top: 0.25rem;
+  font-size: 0.8rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.lebensbalken {
+  width: 6rem;
+  height: 0.5rem;
+  border-radius: 999px;
+  background: #5a1f1f;
+  overflow: hidden;
+}
+
+.lebensbalken > span {
+  display: block;
+  height: 100%;
+  background: linear-gradient(90deg, #3fae4f, #7bd66b);
+}
+
+.auswahl-bild {
+  display: grid;
+  place-items: center;
+  width: 4rem;
+  height: 4rem;
+  border: 1px solid #ffffff24;
+  border-radius: 0.5rem;
+  background: #0f1216;
+}
+
+.ladung {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding-left: 1rem;
+  border-left: 1px solid #ffffff1f;
+  font-size: 0.9rem;
+  white-space: nowrap;
+}
+
+.ladung .leise {
+  color: var(--leise);
+}
+
+.ware {
+  width: 0.75rem;
+  height: 0.75rem;
+  border-radius: 0.2rem;
+  border: 1px solid #0008;
+}
+
+.ware-h { background: #9a6433; }
+.ware-n { background: #c8323c; border-radius: 50%; }
+.ware-g { background: #e0b43a; }
+.ware-s { background: #9aa0a6; }
+
 .ausbilden .kosten {
   font-size: 0.85rem;
   font-weight: 600;

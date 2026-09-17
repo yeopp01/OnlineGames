@@ -7,9 +7,9 @@ Eine Zeile je Abnahmekriterium. Gepflegt wird der Status in der Spec selbst,
 hier steht er zusammengefasst. Erzeugt mit `npm run specs:board`; als Seite
 mit Bildnachweisen, Filter und Suche mit `npm run qa:report`.
 
-**Gesamt:** 304/486 fertig · 6 in QA · 4 geplant · 165 offen · 7 zurueckgestellt
+**Gesamt:** 305/486 fertig · 6 in QA · 4 geplant · 164 offen · 7 zurueckgestellt
 
-**Nachweise:** 103 Kriterien mit Bild · 205 ohne Bild, begruendet in `qa/ohne-bild.json`
+**Nachweise:** 104 Kriterien mit Bild · 205 ohne Bild, begruendet in `qa/ohne-bild.json`
 
 ## Nach Spezifikation
 
@@ -22,7 +22,7 @@ mit Bildnachweisen, Filter und Suche mit `npm run qa:report`.
 | [Spielauswahl und Einstellungen](00-plattform/spielauswahl.md) | -         | -     | -       | 5     | -               | 12     |
 | [Uebertragung](00-plattform/uebertragung.md)                   | -         | 1     | 2       | 1     | -               | 6      |
 | [Bauen und Ausbilden](10-strategie/bauen.md)                   | -         | -     | -       | 14    | -               | 8      |
-| [Bedienung](10-strategie/bedienung.md)                         | -         | -     | -       | 20    | -               | 9      |
+| [Bedienung](10-strategie/bedienung.md)                         | -         | -     | -       | 19    | -               | 10     |
 | [Darstellung](10-strategie/darstellung.md)                     | -         | -     | -       | 6     | -               | 5      |
 | [Einheiten und Befehle](10-strategie/einheiten-und-befehle.md) | -         | -     | -       | 6     | 1               | 10     |
 | [Fahrplan zum Klon](10-strategie/fahrplan.md)                  | -         | -     | -       | 20    | -               | 2      |
@@ -61,7 +61,7 @@ mit Bildnachweisen, Filter und Suche mit `npm run qa:report`.
 - **Abbruch ist sichtbar** — [Uebertragung](00-plattform/uebertragung.md) AC-9
 - **Automatischer Wiederaufbau** — [Uebertragung](00-plattform/uebertragung.md) AC-10
 
-## Offen (165)
+## Offen (164)
 
 - **Anmeldung ueber Google/GitHub** — [Konten und Anmeldung](00-plattform/konten.md) AC-6
 - **Bilanz je Konto** — [Konten und Anmeldung](00-plattform/konten.md) AC-14
@@ -138,7 +138,6 @@ mit Bildnachweisen, Filter und Suche mit `npm run qa:report`.
 - **Baumenü am Dorfbewohner** — [Bedienung](10-strategie/bedienung.md) AC-25
 - **Tastenkürzel für Häufiges** — [Bedienung](10-strategie/bedienung.md) AC-27
 - **Untätige Dorfbewohner finden** — [Bedienung](10-strategie/bedienung.md) AC-28
-- **Ausgewähltes zeigt Werte** — [Bedienung](10-strategie/bedienung.md) AC-29
 - **Gebäude haben Körper** — [Darstellung](10-strategie/darstellung.md) AC-4
 - **Baustelle sichtbar** — [Darstellung](10-strategie/darstellung.md) AC-5
 - **Auswahl und Leben am Boden** — [Darstellung](10-strategie/darstellung.md) AC-8

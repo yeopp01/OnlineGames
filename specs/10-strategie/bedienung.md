@@ -2,7 +2,7 @@
 
 **Bereich:** Strategie
 **Kuerzel:** bedienung
-**Stand:** 9/29 fertig · 20 offen
+**Stand:** 10/29 fertig · 19 offen
 
 ## Zweck
 
@@ -94,7 +94,7 @@ Befehl steht.
 - **AC-28** `offen` **Untätige Dorfbewohner finden** — Ein Knopf unten zeigt die Zahl der
   untätigen Dorfbewohner; er und die Taste `.` wählen den nächsten und holen
   ihn ins Bild.
-- **AC-29** `offen` **Ausgewähltes zeigt Werte** — Eine ausgewählte Einheit oder ein Gebäude
+- **AC-29** `fertig` **Ausgewähltes zeigt Werte** — Eine ausgewählte Einheit oder ein Gebäude
   zeigt unten Name, Leben und — beim Dorfbewohner — was er trägt.
 
 Aus den offenen Kriterien oben gehören zu Stufe A: AC-6 (Auswahl

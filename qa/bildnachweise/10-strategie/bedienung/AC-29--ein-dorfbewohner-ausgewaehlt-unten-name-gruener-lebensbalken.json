@@ -1,0 +1,10 @@
+{
+  "spec": "10-strategie/bedienung.md",
+  "ac": "AC-29",
+  "titel": "Ein Dorfbewohner ausgewaehlt: unten Name, gruener Lebensbalken 25 / 25 und wie viel Nahrung er traegt",
+  "datei": "e2e/tests/strategie-ausbilden.spec.mjs",
+  "pfad": [
+    "Ausbilden",
+    "bedienung AC-29: Auswahl zeigt Name, Leben und was der Dorfbewohner traegt"
+  ]
+}

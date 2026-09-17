@@ -21,8 +21,6 @@ const KLICK_WEITE = 16; // Bildpunkte bei Vergroesserung 1
 
 // Schrittphase fuer die Beine: laeuft mit der Uhr, je Einheit versetzt, damit
 // eine Gruppe nicht im Gleichschritt marschiert.
-// Die Art einer Einheit kommt als Kuerzel (server/spiele/strategie/daten.js).
-const ARTEN = { d: 'dorfbewohner', s: 'spaeherreiter', m: 'miliz' };
 
 function jetztPhase(id) {
   return performance.now() / 110 + id * 1.7;
@@ -45,6 +43,8 @@ export class Ansicht {
     this.empfangen = 0;
     this.ausgewaehlt = new Set();
     this.gebaeude = new Map();
+    this.werte = { einheiten: {}, gebaeude: {} };
+    this.arten = {};
     this.gewaehltesGebaeude = null; // id; entweder Einheiten oder ein Gebaeude
     this.beiAuswahl = () => {};
     this.blicke = new Map(); // Einheit → -1 links, 1 rechts
@@ -71,6 +71,10 @@ export class Ansicht {
     this.fuellung = new Map();
     this.taktdauer = 1000 / nachricht.takte;
     // Das Muster des Bodens haengt am Startwert: jede Karte ihr eigenes.
+    // Die Werte der Arten kommen einmal mit dem Aufbau (bedienung AC-29); die
+    // Art einer Einheit kommt danach nur als Kuerzel.
+    this.werte = nachricht.werte || { einheiten: {}, gebaeude: {} };
+    this.arten = Object.fromEntries(Object.entries(this.werte.einheiten).map(([art, w]) => [w.kuerzel, art]));
     this.salz = Number.isInteger(nachricht.startwert) ? nachricht.startwert % 65521 : 0;
     this.ich = ichId;
     this.spieler = new Map(nachricht.spieler.map((s) => [s.id, s]));
@@ -117,6 +121,7 @@ export class Ansicht {
     for (const id of this.ausgewaehlt) {
       if (!this.nachher.has(id)) this.ausgewaehlt.delete(id);
     }
+    if (this.gewaehltesGebaeude && !this.gebaeude.has(this.gewaehltesGebaeude)) this.gewaehltesGebaeude = null;
   }
 
   // ---- Raute ------------------------------------------------------------
@@ -442,7 +447,7 @@ export class Ansicht {
 
     // Ein Dorfbewohner mit Ladung traegt sie sichtbar: Holzbuendel oder
     // Beerenkorb auf dem Ruecken (bedienung AC-16, darstellung AC-6).
-    figurZeichnen(stift, ARTEN[einheit.k] || 'dorfbewohner', punkt.x, punkt.y, hoehe, spieler ? spieler.farbe : '#888888', {
+    figurZeichnen(stift, this.arten[einheit.k] || 'dorfbewohner', punkt.x, punkt.y, hoehe, spieler ? spieler.farbe : '#888888', {
       blick: this.blicke.get(einheit.i) || 1,
       ladung: einheit.l > 0 ? einheit.a : null,
       schritt: laeuft ? jetztPhase(einheit.i) : 0,

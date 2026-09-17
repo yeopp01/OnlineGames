@@ -137,4 +137,58 @@ test.describe('Ausbilden', () => {
       test: info,
     });
   });
+
+  test('bedienung AC-29: Auswahl zeigt Name, Leben und was der Dorfbewohner traegt', async ({}, info) => {
+    // Erst das Gebaeude: Name und Leben.
+    const zentrum = await meinZentrum();
+    await anna.mouse.click(zentrum.bild.x, zentrum.bild.y - 60);
+    await expect(anna.locator('#auswahlleiste .leben')).toHaveAttribute('data-leben', '2400/2400');
+
+    // Dann ein Dorfbewohner: angeklickt wie ein Mensch, an der Koerpermitte.
+    const ziel = await anna.evaluate(() => {
+      const a = window.ansicht;
+      const e = [...a.nachher.values()].find((f) => f.b === a.ich && f.k === 'd' && f.l === 0);
+      const p = a.zuBild(e.x, e.y);
+      return { i: e.i, x: p.x, y: p.y - a.figurenHoehe() * 0.6 };
+    });
+    await anna.mouse.click(ziel.x, ziel.y);
+    expect(await anna.evaluate(() => [...window.ansicht.ausgewaehlt])).toEqual([ziel.i]);
+    const leiste = anna.locator('#auswahlleiste');
+    await expect(leiste).toContainText('Dorfbewohner');
+    await expect(leiste.locator('.leben')).toHaveAttribute('data-leben', '25/25');
+    await expect(leiste.locator('#ladung')).toHaveText('traegt nichts');
+
+    // Rechtsklick auf den naechsten Beerenstrauch, dann sammelt er.
+    const beere = await anna.evaluate(() => {
+      const a = window.ansicht;
+      const g = a.karte.groesse;
+      const e = a.nachher.get([...a.ausgewaehlt][0]);
+      let bestes = null;
+      for (let i = 0; i < a.karte.felder.length; i++) {
+        if (a.karte.felder[i] !== 2) continue;
+        const d = Math.hypot((i % g) - e.x, ((i / g) | 0) - e.y);
+        if (!bestes || d < bestes.d) bestes = { d, x: i % g, y: (i / g) | 0 };
+      }
+      return a.zuBild(bestes.x, bestes.y);
+    });
+    await anna.mouse.click(beere.x, beere.y, { button: 'right' });
+    await zeitraffer(anna, code, 5);
+    await anna.waitForFunction((id) => (window.ansicht.nachher.get(id)?.l || 0) >= 4, ziel.i, { timeout: 30_000 });
+    await zeitraffer(anna, code, 1);
+
+    // Die Leiste zeigt, was er in diesem Augenblick traegt - genau die Zahl der Ansicht.
+    const traegt = await anna.evaluate((id) => window.ansicht.nachher.get(id).l, ziel.i);
+    await expect(leiste.locator('#ladung')).toHaveAttribute('data-ware', 'n');
+    await expect(leiste.locator('#ladung')).toContainText(/traegt \d+ Nahrung von 10/);
+    const gezeigt = Number((await leiste.locator('#ladung').textContent()).match(/traegt (\d+)/)[1]);
+    expect(gezeigt).toBeGreaterThanOrEqual(traegt);
+    expect(gezeigt).toBeGreaterThanOrEqual(4);
+    await expect(leiste).toBeInViewport();
+    await nachweis(anna, {
+      spec: BEDIENUNG,
+      ac: 'AC-29',
+      titel: 'Ein Dorfbewohner ausgewaehlt: unten Name, gruener Lebensbalken 25 / 25 und wie viel Nahrung er traegt',
+      test: info,
+    });
+  });
 });

@@ -189,6 +189,14 @@ Beide Male wurde das Produkt geändert, nicht die Zusicherung.
 Neueste oben. Eine Zeile je Runde: Nummer, Datum, Kriterien, Ergebnis,
 wichtigste Erkenntnis.
 
+- **21** · 2026-09-17 · bedienung AC-29 fertig — Schritt **A5 abgeschlossen**.
+  Eine ausgewählte Einheit zeigt unten Bild, Name, Lebensbalken und Ladung,
+  ein Gebäude zusätzlich sein Leben. Die Werte der Arten (Leben, Tragkraft,
+  Kosten, was ein Gebäude ausbildet) kommen einmal im Aufbau; die doppelte
+  Kostentabelle im Browser aus Runde 19 ist damit weg. Leben geht im Zustand
+  nur mit, wenn es fehlt — für uebertragung AC-7. Gelernt: Die neue Regel aus
+  der Rückschau (Zahl in der Unterschrift vorher im Test) hat gleich getragen,
+  das Bild passte beim ersten Ansehen. Nächster Schritt: **A6** Bauen.
 - **20** · 2026-09-17 · Rückschau: Helfer `partieZuZweit`, Regeln zu
   Bildunterschriften und zum Zeittest unter Last. Nächste Runde: bedienung
   AC-29 (Werte der Auswahl), dann **A6** Bauen.

@@ -1,19 +1,17 @@
-// Unten im Spielbild: was ein ausgewaehltes eigenes Gebaeude kann
-// (→ specs/10-strategie/bedienung.md AC-26). Ein Knopf je Einheit mit Bild
-// und Kosten, darunter die Warteschlange; der laufende Auftrag zeigt seinen
-// Fortschritt, ein Klick auf einen Eintrag bricht ihn ab (bauen AC-10, AC-11).
+// Unten im Spielbild: was ausgewaehlt ist und was es kann.
+// - ein eigenes Gebaeude: Name, Leben, ein Knopf je Einheit mit Bild und
+//   Kosten, darunter die Warteschlange; der laufende Auftrag zeigt seinen
+//   Fortschritt, ein Klick auf einen Eintrag bricht ihn ab
+//   (→ specs/10-strategie/bedienung.md AC-26, bauen AC-10, AC-11)
+// - eine Einheit: Bild, Name, Leben und beim Dorfbewohner, was er traegt (AC-29)
 // Rechnen tut hier nichts: die Leiste zeigt den Zustand und schickt Absichten.
-import { figurZeichnen } from './figuren.js';
+// Werte wie Leben und Kosten kommen vom Server mit dem Aufbau (ansicht.werte).
+import { FIGUREN, WAREN, figurZeichnen } from './figuren.js';
 import { GEBAEUDE } from './gebaeude.js';
 
-// Was Gebaeude ausbilden und was es kostet. Der Server prueft es noch einmal;
-// hier steht es nur, damit der Knopf vorher sagen kann, was fehlt.
-const AUSBILDUNG = {
-  dorfzentrum: [{ art: 'dorfbewohner', name: 'Dorfbewohner', kosten: { nahrung: 50 }, taste: 'Q' }],
-};
 const ROHSTOFF_NAMEN = { holz: 'Holz', nahrung: 'Nahrung', gold: 'Gold', stein: 'Stein' };
 
-function bildchen(art, groesse, farbe) {
+function bildchen(art, groesse, farbe, lage = {}) {
   const leinwand = document.createElement('canvas');
   const dichte = window.devicePixelRatio || 1;
   leinwand.width = groesse * dichte;
@@ -22,8 +20,30 @@ function bildchen(art, groesse, farbe) {
   leinwand.style.height = `${groesse}px`;
   const stift = leinwand.getContext('2d');
   stift.scale(dichte, dichte);
-  figurZeichnen(stift, art, groesse / 2, groesse * 0.95, groesse * 0.95, farbe);
+  figurZeichnen(stift, art, groesse / 2, groesse * 0.95, groesse * 0.95, farbe, lage);
   return leinwand;
+}
+
+function element(name, klasse, text) {
+  const e = document.createElement(name);
+  if (klasse) e.className = klasse;
+  if (text !== undefined) e.textContent = text;
+  return e;
+}
+
+/** Name und Lebensbalken, fuer Einheit und Gebaeude gleich. */
+function kopf(name, leben, voll) {
+  const k = element('div', 'auswahl-kopf');
+  k.append(element('strong', null, name));
+  const zeile = element('div', 'leben');
+  zeile.dataset.leben = `${leben}/${voll}`;
+  const balken = element('div', 'lebensbalken');
+  const fuellung = element('span');
+  fuellung.style.width = `${Math.round((leben / voll) * 100)}%`;
+  balken.append(fuellung);
+  zeile.append(balken, element('span', 'lebenszahl', `${leben} / ${voll}`));
+  k.append(zeile);
+  return k;
 }
 
 export class Auswahlleiste {
@@ -37,24 +57,47 @@ export class Auswahlleiste {
   aktualisieren() {
     const a = this.ansicht;
     const gebaeude = a.gewaehltesGebaeude ? a.gebaeude.get(a.gewaehltesGebaeude) : null;
-    if (!gebaeude || gebaeude.b !== a.ich) {
-      this.wurzel.hidden = true;
-      this.gezeigt = null;
+    const farbe = a.spieler.get(a.ich)?.farbe || '#888888';
+
+    if (gebaeude && gebaeude.b === a.ich) {
+      const angebot = this.angebot(gebaeude);
+      // Neu gebaut wird nur, wenn sich etwas Sichtbares aendert - sonst nur
+      // der Balken. So flackert nichts unter dem Zeiger.
+      const bezahlbar = angebot.map((e) => this.fehlt(e.kosten)).join('|');
+      const schluessel = `g${gebaeude.i}:${gebaeude.h}:${gebaeude.s.join(',')}:${gebaeude.w}:${bezahlbar}`;
+      if (schluessel !== this.gezeigt) {
+        this.gebaeudeBauen(gebaeude, angebot, farbe);
+        this.gezeigt = schluessel;
+      }
+      const balken = this.wurzel.querySelector('.fortschritt > span');
+      if (balken) balken.style.width = `${Math.round(gebaeude.f * 100)}%`;
+      this.wurzel.hidden = false;
       return;
     }
-    const farbe = a.spieler.get(a.ich)?.farbe || '#888888';
-    const angebot = AUSBILDUNG[gebaeude.art] || [];
-    // Neu gebaut wird nur, wenn sich Schlange, Wartegrund oder Bezahlbarkeit
-    // aendern - sonst nur der Balken. So flackert nichts unter dem Zeiger.
-    const bezahlbar = angebot.map((e) => this.fehlt(e.kosten)).join('|');
-    const schluessel = `${gebaeude.i}:${gebaeude.s.join(',')}:${gebaeude.w}:${bezahlbar}`;
-    if (schluessel !== this.gezeigt) {
-      this.bauen(gebaeude, angebot, farbe);
-      this.gezeigt = schluessel;
+
+    const einheit = a.ausgewaehlt.size === 1 ? a.nachher.get([...a.ausgewaehlt][0]) : null;
+    if (einheit) {
+      const schluessel = `e${einheit.i}:${einheit.h}:${einheit.l}:${einheit.a}`;
+      if (schluessel !== this.gezeigt) {
+        this.einheitBauen(einheit, farbe);
+        this.gezeigt = schluessel;
+      }
+      this.wurzel.hidden = false;
+      return;
     }
-    const balken = this.wurzel.querySelector('.fortschritt > span');
-    if (balken) balken.style.width = `${Math.round(gebaeude.f * 100)}%`;
-    this.wurzel.hidden = false;
+
+    this.wurzel.hidden = true;
+    this.gezeigt = null;
+  }
+
+  // Was ein Gebaeude ausbildet, mit den Kosten aus den Werten des Servers.
+  angebot(gebaeude) {
+    const werte = this.ansicht.werte;
+    return (werte.gebaeude[gebaeude.art]?.bildetAus || []).map((art) => ({
+      art,
+      name: FIGUREN[art]?.name || art,
+      kosten: werte.einheiten[art]?.kosten || {},
+    }));
   }
 
   fehlt(kosten) {
@@ -65,19 +108,41 @@ export class Auswahlleiste {
       .join(', ');
   }
 
-  bauen(gebaeude, angebot, farbe) {
+  einheitBauen(einheit, farbe) {
     const w = this.wurzel;
     w.replaceChildren();
+    const werte = this.ansicht.werte.einheiten;
+    const art = this.ansicht.arten[einheit.k] || 'dorfbewohner';
+    const voll = werte[art]?.leben ?? 0;
+    const leben = einheit.h ?? voll;
 
-    const kopf = document.createElement('div');
-    kopf.className = 'auswahl-kopf';
-    const name = document.createElement('strong');
-    name.textContent = GEBAEUDE[gebaeude.art]?.name || gebaeude.art;
-    kopf.append(name);
-    w.append(kopf);
+    const bild = element('div', 'auswahl-bild');
+    bild.append(bildchen(art, 58, farbe, { ladung: einheit.l > 0 ? einheit.a : null }));
+    w.append(bild, kopf(FIGUREN[art]?.name || art, leben, voll));
 
-    const knoepfe = document.createElement('div');
-    knoepfe.className = 'ausbilden';
+    // Nur wer tragen kann, zeigt, was er traegt.
+    const tragkraft = werte[art]?.tragkraft || 0;
+    if (tragkraft > 0) {
+      const ladung = element('div', 'ladung');
+      ladung.id = 'ladung';
+      if (einheit.l > 0) {
+        ladung.dataset.ware = einheit.a;
+        ladung.append(element('span', `ware ware-${einheit.a}`), element('span', null, `traegt ${einheit.l} ${WAREN[einheit.a]?.name || ''}`));
+        ladung.append(element('span', 'leise', ` von ${tragkraft}`));
+      } else {
+        ladung.append(element('span', 'leise', 'traegt nichts'));
+      }
+      w.append(ladung);
+    }
+  }
+
+  gebaeudeBauen(gebaeude, angebot, farbe) {
+    const w = this.wurzel;
+    w.replaceChildren();
+    const voll = this.ansicht.werte.gebaeude[gebaeude.art]?.leben ?? gebaeude.h;
+    w.append(kopf(GEBAEUDE[gebaeude.art]?.name || gebaeude.art, gebaeude.h ?? voll, voll));
+
+    const knoepfe = element('div', 'ausbilden');
     for (const eintrag of angebot) {
       const knopf = document.createElement('button');
       knopf.type = 'button';
@@ -86,10 +151,7 @@ export class Auswahlleiste {
       knopf.disabled = Boolean(fehlt);
       const kosten = Object.entries(eintrag.kosten).map(([r, m]) => `${m} ${ROHSTOFF_NAMEN[r]}`).join(', ');
       knopf.title = fehlt ? `${eintrag.name} - zu wenig ${fehlt}` : `${eintrag.name} ausbilden (${kosten})`;
-      const text = document.createElement('span');
-      text.className = 'kosten';
-      text.textContent = Object.values(eintrag.kosten).join(' / ');
-      knopf.append(bildchen(eintrag.art, 58, farbe), text);
+      knopf.append(bildchen(eintrag.art, 58, farbe), element('span', 'kosten', Object.values(eintrag.kosten).join(' / ')));
       knopf.addEventListener('click', () => {
         this.senden({ auftrag: 'ausbilden', gebaeude: gebaeude.i, einheit: eintrag.art });
       });
@@ -97,8 +159,7 @@ export class Auswahlleiste {
     }
     w.append(knoepfe);
 
-    const schlange = document.createElement('div');
-    schlange.className = 'schlange';
+    const schlange = element('div', 'schlange');
     gebaeude.s.forEach((art, platz) => {
       const eintrag = document.createElement('button');
       eintrag.type = 'button';
@@ -107,9 +168,8 @@ export class Auswahlleiste {
       eintrag.append(bildchen(art, platz === 0 ? 50 : 38, farbe));
       if (platz === 0) {
         eintrag.classList.add('laufend');
-        const balken = document.createElement('div');
-        balken.className = 'fortschritt';
-        balken.append(document.createElement('span'));
+        const balken = element('div', 'fortschritt');
+        balken.append(element('span'));
         eintrag.append(balken);
       }
       eintrag.addEventListener('click', () => {
@@ -121,10 +181,8 @@ export class Auswahlleiste {
 
     // Warum nichts vorangeht (bauen AC-15).
     if (gebaeude.w) {
-      const hinweis = document.createElement('p');
-      hinweis.className = 'wartegrund';
+      const hinweis = element('p', 'wartegrund', 'Bevoelkerung voll - Haus bauen');
       hinweis.id = 'wartegrund';
-      hinweis.textContent = 'Bevoelkerung voll - Haus bauen';
       w.append(hinweis);
     }
   }
