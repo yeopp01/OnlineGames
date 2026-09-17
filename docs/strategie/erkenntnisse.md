@@ -222,6 +222,16 @@ Erstattung vor dem Sperren) — beide Male stand danach ein Kommentar am Test.
 Neueste oben. Eine Zeile je Runde: Nummer, Datum, Kriterien, Ergebnis,
 wichtigste Erkenntnis.
 
+- **28** · 2026-09-17 · darstellung AC-12 in Arbeit, Teil 2: die Gebäude.
+  Mauerwerk mit versetzten Fugen, Putz, Bretter, Ziegelreihen, Stroh,
+  Schindeln, Fenster mit Sprossen, Brettertüren mit Beschlag, gewellte Fahne,
+  Mühlenflügel mit Latten, Stämme mit Jahresringen, Goldkarre mit Glanz. Jede
+  Oberfläche auf ihre Fläche zugeschnitten (clip). Weil ein Gebäude jetzt
+  Hunderte Striche braucht, wird es im Spielbild einmal in ein kleines Bild
+  gezeichnet und dann kopiert (`gebaeudeBildZeichnen`, höchstens 64 Bilder).
+  Gelernt: darstellung AC-4 (Gebäude unterscheidbar) fiel für die beiden Lager
+  unter 25 % — gleiche Schindeln auf gleichem Dach. Dächer farblich getrennt
+  statt die Schwelle zu senken. Nächster Teil: Bäume, Vorräte, Gras.
 - **27** · 2026-09-17 · darstellung AC-12 in Arbeit, Teil 1: die Figuren.
   Licht von links oben als Verlauf über drei Töne, weiche Umrisse, außen
   kräftiger als innen, Falten, Gürtelschnalle, Strohhut mit Geflecht,

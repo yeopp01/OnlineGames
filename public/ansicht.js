@@ -6,7 +6,7 @@
 // (x nach rechts unten, y nach links unten); nur zuBild und zuWelt kennen die
 // Raute. Die Kamera liegt in Bildpunkten der Raute bei Vergroesserung 1.
 import { figurZeichnen } from './figuren.js';
-import { gebaeudeGetroffen, gebaeudeZeichnen } from './gebaeude.js';
+import { gebaeudeBildZeichnen, gebaeudeGetroffen } from './gebaeude.js';
 import {
   DINGE, GRAS, WALD, WASSER, bodenFarbe, dingZeichnen, gewaesserZeichnen, raute, wellenZeichnen,
 } from './gelaende.js';
@@ -354,7 +354,7 @@ export class Ansicht {
     stift.lineWidth = 2;
     stift.stroke();
     stift.globalAlpha = 0.55;
-    gebaeudeZeichnen(stift, lage.art, p.x, p.y, e, spieler ? spieler.farbe : '#888888', lage.groesse);
+    gebaeudeBildZeichnen(stift, lage.art, p.x, p.y, e, spieler ? spieler.farbe : '#888888', lage.groesse);
     stift.globalAlpha = 1;
   }
 
@@ -517,7 +517,7 @@ export class Ansicht {
       stift.lineWidth = 2;
       stift.stroke();
     }
-    gebaeudeZeichnen(stift, gebaeude.art, p.x, p.y, e, spieler ? spieler.farbe : '#888888', groesse, gebaeude.u ?? 1);
+    gebaeudeBildZeichnen(stift, gebaeude.art, p.x, p.y, e, spieler ? spieler.farbe : '#888888', groesse, gebaeude.u ?? 1);
   }
 
   namenZeichnen(spieler) {
