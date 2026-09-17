@@ -6,7 +6,7 @@
 // nichts an der Nahrung und an der Bevoelkerung verschieben. Gelesen wird ueber
 // `window.ansicht`, geklickt wie ein Mensch.
 import { nachweis } from '../../scripts/qa-nachweis.mjs';
-import { expect, test, zeitraffer } from '../helpers/seite.mjs';
+import { expect, rohstoffe, test, zeitraffer } from '../helpers/seite.mjs';
 import { partieBeenden, partieZuZweit } from '../helpers/strategie.mjs';
 
 const BAUEN = '10-strategie/bauen.md';
@@ -190,5 +190,79 @@ test.describe('Ausbilden', () => {
       titel: 'Ein Dorfbewohner ausgewaehlt: unten Name, gruener Lebensbalken 25 / 25 und wie viel Nahrung er traegt',
       test: info,
     });
+  });
+
+  test('bedienung AC-18: abgelehnte Befehle sagen kurz, warum - vom Server und vor dem Klick', async ({}, info) => {
+    const meldung = anna.locator('#spielmeldung');
+    // Genug Nahrung fuer sechzehn: der Browser prueft die Schlange nicht, der Server schon.
+    await rohstoffe(anna, code, 'Anna', { nahrung: 2000 });
+    await expect(anna.locator('[data-rohstoff="nahrung"] b')).toHaveText('2000');
+    const zentrum = await meinZentrum();
+    await anna.mouse.click(zentrum.bild.x, zentrum.bild.y - 60);
+    const knopf = anna.locator('[data-ausbilden="dorfbewohner"]');
+    await expect(knopf).toHaveAttribute('aria-disabled', 'false');
+    const schon = await anna.locator('[data-abbrechen]').count();
+    for (let i = schon; i < 15; i++) await knopf.click();
+    await expect(anna.locator('[data-abbrechen]')).toHaveCount(15);
+    await expect(meldung).toBeHidden();
+
+    await knopf.click();
+    await expect(meldung).toHaveText('Die Warteschlange ist voll.');
+    await expect(meldung).toBeInViewport();
+    await nachweis(anna, {
+      spec: BEDIENUNG,
+      ac: 'AC-18',
+      titel: 'Der sechzehnte Dorfbewohner: oben blendet sich ein, dass die Warteschlange voll ist - kein Fenster',
+      test: info,
+    });
+    // Sie geht von selbst wieder.
+    await expect(meldung).toBeHidden({ timeout: 5000 });
+
+    // Vor dem Klick: ohne Nahrung ist der Knopf grau und sagt es beim Klicken.
+    await rohstoffe(anna, code, 'Anna', { nahrung: 0 });
+    await expect(knopf).toHaveAttribute('aria-disabled', 'true');
+    await knopf.click({ force: true });
+    await expect(meldung).toHaveText('Zu wenig Nahrung.');
+  });
+
+  test('uebertragung AC-8: zwischen zwei Zustaenden rechnet der Browser die Bewegung weiter', async () => {
+    // Der Spaeherreiter reitet los; gezaehlt wird, an wie vielen Stellen er in
+    // einer Sekunde gezeichnet wird - und wie viele Zustaende in der Zeit kamen.
+    const reiter = await anna.evaluate(() => {
+      const a = window.ansicht;
+      a.gewaehltesGebaeude = null;
+      a.ausgewaehlt.clear();
+      const e = [...a.nachher.values()].find((f) => f.b === a.ich && f.k === 's');
+      const p = a.zuBild(e.x, e.y);
+      return { i: e.i, x: p.x, y: p.y - a.figurenHoehe() * 0.5, feld: { x: e.x, y: e.y } };
+    });
+    await anna.mouse.click(reiter.x, reiter.y);
+    await expect.poll(() => anna.evaluate(() => [...window.ansicht.ausgewaehlt])).toEqual([reiter.i]);
+    const ziel = await anna.evaluate((f) => window.ansicht.zuBild(f.x + 6, f.y + 6), reiter.feld);
+    await anna.mouse.click(ziel.x, ziel.y, { button: 'right' });
+    await anna.waitForFunction((id) => {
+      const a = window.ansicht;
+      const alt = a.vorher.get(id);
+      const neu = a.nachher.get(id);
+      return alt && neu && (alt.x !== neu.x || alt.y !== neu.y);
+    }, reiter.i);
+
+    const messung = await anna.evaluate((id) => new Promise((fertig) => {
+      const a = window.ansicht;
+      const stellen = new Set();
+      const zustaende = new Set();
+      const start = performance.now();
+      const bild = () => {
+        const eintrag = a.reihenfolge.find((d) => d.id === id);
+        if (eintrag) stellen.add(eintrag.tiefe.toFixed(4));
+        zustaende.add(a.empfangen);
+        if (performance.now() - start < 1000) requestAnimationFrame(bild);
+        else fertig({ stellen: stellen.size, zustaende: zustaende.size });
+      };
+      requestAnimationFrame(bild);
+    }), reiter.i);
+    // Ohne Weiterrechnen gaebe es hoechstens so viele Stellen wie Zustaende.
+    expect(messung.zustaende).toBeGreaterThanOrEqual(5);
+    expect(messung.stellen, JSON.stringify(messung)).toBeGreaterThan(messung.zustaende * 1.5);
   });
 });

@@ -93,6 +93,7 @@ function empfangen(nachricht) {
         auswahlleiste = new Auswahlleiste(teile.auswahlleiste, ansicht, (auftrag) =>
           senden({ typ: 'befehl', ...auftrag }));
         ansicht.beiAuswahl = () => auswahlleiste.aktualisieren();
+        ansicht.melden = spielMelden;
         ansicht.bauenSenden = (einheiten, art, ziel) =>
           senden({ typ: 'befehl', auftrag: 'bauen', einheiten, art, ziel });
       }
@@ -109,9 +110,26 @@ function empfangen(nachricht) {
       break;
 
     case 'fehler':
-      melden(nachricht.text, teile.warteraum.hidden ? meldeort || teile.meldung : teile.wartemeldung);
+      // Im Spiel als kurze Einblendung, nicht in einem verdeckten Formular.
+      if (!teile.spiel.hidden) spielMelden(nachricht.text);
+      else melden(nachricht.text, teile.warteraum.hidden ? meldeort || teile.meldung : teile.wartemeldung);
       break;
   }
+}
+
+// ---- Absagen im Spielbild (bedienung AC-18) -------------------------------
+// Kurz eingeblendet und von selbst wieder weg - kein Fenster mit Knopf.
+let spielMeldungUhr = null;
+
+function spielMelden(text) {
+  const ort = document.getElementById('spielmeldung');
+  ort.textContent = text;
+  ort.hidden = false;
+  ort.classList.remove('neu');
+  void ort.offsetWidth; // die Einblendung von vorn beginnen
+  ort.classList.add('neu');
+  clearTimeout(spielMeldungUhr);
+  spielMeldungUhr = setTimeout(() => { ort.hidden = true; }, 3000);
 }
 
 // ---- Rohstoffleiste (bedienung AC-24, AC-17) ------------------------------

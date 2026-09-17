@@ -188,7 +188,9 @@ export class Auswahlleiste {
       for (const [r, m] of Object.entries(eintrag.kosten)) preis.append(element('span', `ware ware-${r[0]}`), element('span', null, String(m)));
       knopf.append(gebaeudeBildchen(eintrag.art, 52, farbe, eintrag.groesse), element('span', 'bauname', eintrag.name), preis);
       knopf.addEventListener('click', () => {
-        if (!fehlt) this.ansicht.platzierenBeginnen(eintrag.art);
+        // Gesperrt sagt der Klick, warum (bedienung AC-18).
+        if (fehlt) this.ansicht.melden(`Zu wenig ${fehlt}.`);
+        else this.ansicht.platzierenBeginnen(eintrag.art);
       });
       menue.append(knopf);
     }
@@ -269,12 +271,15 @@ export class Auswahlleiste {
       knopf.type = 'button';
       knopf.dataset.ausbilden = eintrag.art;
       const fehlt = this.fehlt(eintrag.kosten);
-      knopf.disabled = Boolean(fehlt);
+      // Wie im Baumenue: gesperrt, aber noch ansprechbar - er sagt, was fehlt.
+      knopf.setAttribute('aria-disabled', fehlt ? 'true' : 'false');
+      if (fehlt) knopf.dataset.fehlt = fehlt;
       const kosten = Object.entries(eintrag.kosten).map(([r, m]) => `${m} ${ROHSTOFF_NAMEN[r]}`).join(', ');
       knopf.title = fehlt ? `${eintrag.name} - zu wenig ${fehlt}` : `${eintrag.name} ausbilden (${kosten})`;
       knopf.append(bildchen(eintrag.art, 58, farbe), element('span', 'kosten', Object.values(eintrag.kosten).join(' / ')));
       knopf.addEventListener('click', () => {
-        this.senden({ auftrag: 'ausbilden', gebaeude: gebaeude.i, einheit: eintrag.art });
+        if (fehlt) this.ansicht.melden(`Zu wenig ${fehlt}.`);
+        else this.senden({ auftrag: 'ausbilden', gebaeude: gebaeude.i, einheit: eintrag.art });
       });
       knoepfe.append(knopf);
     }

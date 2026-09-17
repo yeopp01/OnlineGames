@@ -192,6 +192,15 @@ Beide Male wurde das Produkt geändert, nicht die Zusicherung.
 Neueste oben. Eine Zeile je Runde: Nummer, Datum, Kriterien, Ergebnis,
 wichtigste Erkenntnis.
 
+- **24** · 2026-09-17 · bedienung AC-18 und uebertragung AC-8 fertig — Schritt
+  **A6 abgeschlossen**. Absagen des Servers und Klicks auf Gesperrtes (Knopf,
+  roter Bauplatz) blenden sich oben kurz ein; auch der Ausbildungsknopf ist
+  jetzt `aria-disabled`. Die weiche Bewegung ist belegt: ein Reiter wird in
+  einer Sekunde an mehr als 1,5-mal so vielen Stellen gezeichnet, wie Zustände
+  kommen. Gelernt: ein Test, der erst Nahrung auf 0 setzt und dann einen
+  Auftrag abbricht, bekommt 50 zurück — die Reihenfolge im Test ist Teil der
+  Behauptung. Browserlauf 3,6 min, aber unter fremder Last (CPU 88 %) —
+  nicht vergleichbar. Nächste Runde ist die Rückschau (25).
 - **23** · 2026-09-17 · bauen AC-1, AC-4, bedienung AC-15, AC-25,
   darstellung AC-4, AC-5 und einheiten AC-16 fertig: Baumenü am Dorfbewohner,
   grün/rote Vorschau unter dem Zeiger, Esc, gezeichnete Häuser, Mühle, Lager

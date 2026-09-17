@@ -51,6 +51,8 @@ export class Ansicht {
     this.platzieren = null;
     this.zeiger = null;
     this.bauenSenden = () => {};
+    // Kurz eingeblendete Absagen (bedienung AC-18); app.js setzt die Anzeige.
+    this.melden = () => {};
     this.blicke = new Map(); // Einheit → -1 links, 1 rechts
     this.tiere = new Map();
     this.vorraete = { holz: 0, nahrung: 0, gold: 0, stein: 0, bev: 0, raum: 0 };
@@ -329,8 +331,12 @@ export class Ansicht {
 
   platzierenKlick() {
     const lage = this.platzLage();
-    // Auf Rot passiert nichts: die Vorschau hat schon gesagt, dass es nicht geht.
-    if (!lage || !lage.taugt) return;
+    // Auf Rot baut nichts - und die Absage sagt es noch einmal in Worten.
+    if (!lage) return;
+    if (!lage.taugt) {
+      this.melden('Hier ist kein Platz.');
+      return;
+    }
     this.bauenSenden([...this.ausgewaehlt], lage.art, { x: lage.x, y: lage.y });
     this.platzierenBeenden();
   }
@@ -490,7 +496,7 @@ export class Ansicht {
         this.einheitZeichnen(ding.einheit, ding.alt, p);
       }
     }
-    this.reihenfolge = stehend.map((d) => ({ art: d.art, tiefe: d.tiefe }));
+    this.reihenfolge = stehend.map((d) => ({ art: d.art, tiefe: d.tiefe, id: d.einheit?.i }));
 
     for (const spieler of this.spieler.values()) this.namenZeichnen(spieler);
     if (this.platzieren) this.platzVorschau(e);

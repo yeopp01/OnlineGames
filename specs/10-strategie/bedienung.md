@@ -2,7 +2,7 @@
 
 **Bereich:** Strategie
 **Kuerzel:** bedienung
-**Stand:** 12/29 fertig · 17 offen
+**Stand:** 13/29 fertig · 16 offen
 
 ## Zweck
 
@@ -59,7 +59,7 @@ Befehl steht.
   (→ [Darstellung](darstellung.md) AC-6).
 - **AC-17** `fertig` **Rohstoffe zählen sichtbar hoch** — Nicht springen. Man muss sehen, dass die
   Wirtschaft läuft.
-- **AC-18** `offen` **Abgelehnte Befehle sagen warum** — „Zu wenig Holz", „Bevölkerung voll" — kurz
+- **AC-18** `fertig` **Abgelehnte Befehle sagen warum** — „Zu wenig Holz", „Bevölkerung voll" — kurz
   eingeblendet, nicht als Fenster mit Knopf.
 - **AC-19** `offen` **Verbindungsverlust ist sichtbar** — Ein Hinweis im Bild, nicht erst
   stehenbleibende Einheiten (→ [Übertragung](../00-plattform/uebertragung.md) AC-9).

@@ -1,0 +1,10 @@
+{
+  "spec": "10-strategie/bedienung.md",
+  "ac": "AC-18",
+  "titel": "Der sechzehnte Dorfbewohner: oben blendet sich ein, dass die Warteschlange voll ist - kein Fenster",
+  "datei": "e2e/tests/strategie-ausbilden.spec.mjs",
+  "pfad": [
+    "Ausbilden",
+    "bedienung AC-18: abgelehnte Befehle sagen kurz, warum - vom Server und vor dem Klick"
+  ]
+}

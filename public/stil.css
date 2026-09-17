@@ -255,6 +255,37 @@ canvas {
   }
 }
 
+/* ---- Absagen im Spielbild (bedienung AC-18) ------------------------------ */
+
+.spielmeldung {
+  position: fixed;
+  left: 50%;
+  top: 4.2rem;
+  transform: translateX(-50%);
+  margin: 0;
+  padding: 0.5rem 1.1rem;
+  border: 1px solid #f0b35a88;
+  border-radius: 999px;
+  background: #2a1d10ee;
+  color: #ffd79a;
+  font-weight: 600;
+  box-shadow: 0 4px 14px #0009;
+  pointer-events: none;
+}
+
+.spielmeldung[hidden] {
+  display: none;
+}
+
+.spielmeldung.neu {
+  animation: einblenden 0.2s ease-out;
+}
+
+@keyframes einblenden {
+  from { opacity: 0; transform: translate(-50%, -0.4rem); }
+  to { opacity: 1; transform: translate(-50%, 0); }
+}
+
 /* ---- Auswahlleiste unten im Spielbild (bedienung AC-26) ------------------- */
 
 .auswahlleiste {
