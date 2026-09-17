@@ -122,6 +122,15 @@ export async function rohstoffe(page, code, name, werte) {
   expect(antwort.ok(), await antwort.text()).toBe(true);
 }
 
+/** Ein fertiges Gebaeude fuer einen Spieler aufstellen (Pruefgriff, e2e/server.mjs). */
+export async function gebaeudeAufstellen(page, code, name, art, x, y) {
+  const antwort = await page.request.post(`http://localhost:${GRIFFHAFEN}/griff`, {
+    data: { id: code, befehl: 'gebaeude', werte: { name, art, x, y } },
+  });
+  expect(antwort.ok(), await antwort.text()).toBe(true);
+  return (await antwort.json()).id;
+}
+
 /** "7,3 Mio" oder "329 T" als Tausender. */
 export function tausend(text) {
   const wert = text.trim();

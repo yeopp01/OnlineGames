@@ -312,6 +312,22 @@ alle sieben Gebäude der Dunklen Zeit stehen. Was sich wiederholt hat:
 Neueste oben. Eine Zeile je Runde: Nummer, Datum, Kriterien, Ergebnis,
 wichtigste Erkenntnis.
 
+- **41** · 2026-09-17 · darstellung AC-14 **fertig** — Schritt A6c
+  abgeschlossen. Zuerst gemessen (neue Regel aus Runde 40, `npm run tafel`):
+  Einheiten paarweise 0,55–0,97 verschieden, Gebäude 0,40–0,87 — nur
+  Holzfäller- gegen Bergbaulager 0,29, unter dem Drittel. Das Bergbaulager hat
+  jetzt ein Satteldach aus Schiefer mit First von hinten nach vorn statt
+  desselben Pultdachs: das Paar liegt nun über 0,53, das knappste ist
+  Dorfzentrum gegen Kaserne mit 0,40. Neuer Prüfgriff `gebaeude` (stellt ein
+  fertiges Gebäude auf, nur wo `platzPruefen` es erlaubt) und
+  `gebaeudeAufstellen` in `e2e/helpers/seite.mjs`; neue Datei
+  `strategie-unterscheidbar.spec.mjs` mit allen sieben Gebäuden bei Zoom 1.
+  Gelernt: (1) beim ersten Bild stand das Bergbaulager halb hinter der
+  Kaserne — die Unterschrift nannte die Karre, die man nicht sah; jetzt eine
+  Reihe gleicher Tiefe (x + y fest), nebeneinander im Bild, die flache Farm
+  davor; (2) der gewöhnliche Lauf schreibt vorhandene Bilder nicht neu, auch
+  nicht im selben Test mit geänderter Aufstellung — `qa:nachweis` nehmen.
+  Bild: `darstellung/AC-14--zoom-1-dorfzentrum-mit-fahne-…`.
 - **39** · 2026-09-17 · darstellung AC-13 **fertig** (A6c, Teil 4): Wasser
   und Vorräte. Das Wasser liegt jetzt in der Bodentextur: Anteil Wasser
   bilinear zwischen den Feldmitten, über ±0,3 Felder gemittelt, mit Rauschen

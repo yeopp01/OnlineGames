@@ -137,7 +137,7 @@ Umfang hinzufügt, dort nachsehen.
 
 ## Stand
 
-**327 von 490 Kriterien fertig.** 305 Tests ohne Browser, 109 im Browser. Die
+**328 von 490 Kriterien fertig.** 305 Tests ohne Browser, 111 im Browser. Die
 Übersicht ist der Bericht: `npm run qa:report`.
 
 Gebaut ist der Unterbau: Räume, Übertragung, Karte, Wegfindung, Sammeln,
@@ -187,9 +187,9 @@ Einstieg (Spielauswahl, Einstellungen, Warteraum) und Spielbild im Browser
 sind erreicht (fahrplan AC-1, AC-2); in Stufe A sind die Schritte A1 bis A6b
 gebaut, aus A6c das naturalistische Aussehen (darstellung AC-13: keine
 schwarzen Umrisse, erdige Farben, Proportionen, Boden als Textur mit Wasser,
-Schlagschatten), dazu aus A7 Schafe, Farm, Kaserne mit Miliz, Webstuhl und
-Sammelpunkt. Als Nächstes darstellung AC-14 (alles unterscheidbar), dann
-darstellung AC-8, dann A8 (Wirtschafts-KI und Prüfstand) bis A10:
+Schlagschatten; AC-14: alles unterscheidbar), dazu aus A7 Schafe, Farm,
+Kaserne mit Miliz, Webstuhl und Sammelpunkt. Als Nächstes darstellung AC-8,
+dann A8 (Wirtschafts-KI und Prüfstand) bis A10:
 
 1. **Stufe A** Dunkle Zeit mit Wirtschafts-KI und Prüfstand · **B** Feudalzeit
    · **C** Partieende und KI-Gegner · **D** Ritterzeit · **E** fünf Völker ·

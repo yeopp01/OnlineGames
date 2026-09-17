@@ -526,12 +526,27 @@ function unterstand(stift, e, farbe, dachFarben, ware) {
     linie(stift, p, hoch(p, h), '#5e4632', Math.max(1.4, e * 0.14));
     linie(stift, [p[0] - e * 0.03, p[1]], [p[0] - e * 0.03, p[1] - h], 'rgba(255,220,170,0.3)', Math.max(0.4, e * 0.04));
   };
+  if (dachFarben.form === 'sattel') {
+    satteldach(stift, e, W, H, pfosten, dachFarben);
+  } else {
+    pultdach(stift, e, W, H, { hinten, vorn, mitte, pfosten, dachFarben, L, T, R, B });
+  }
+  // Die Ware steht vorn unter dem Dach und ist das, woran man das Lager erkennt.
+  stift.save();
+  stift.translate(0, 0.3 * e);
+  ware(stift, e, W);
+  stift.restore();
+  // Wimpel in Spielerfarbe am vorderen Pfosten.
+  fahne(stift, hoch(B, dachFarben.form === 'sattel' ? SATTEL_FIRST * e : vorn), e, farbe, 0.7);
+}
+
+// Pultdach mit Schindeln, hinten hoeher - das Holzfaellerlager.
+function pultdach(stift, e, W, H, { hinten, vorn, mitte, pfosten, dachFarben, L, T, R, B }) {
   pfosten(L, mitte);
   pfosten(T, hinten);
   pfosten(R, mitte);
   pfosten(B, vorn);
   stift.lineWidth = Math.max(0.7, e * 0.035);
-  // Pultdach mit Schindeln, hinten hoeher.
   const dach = [hoch([-W * 1.1, 0], mitte), hoch([0, -H * 1.1], hinten), hoch([W * 1.1, 0], mitte), hoch([0, H * 1.1], vorn)];
   flaeche(stift, dach, verlauf(stift, dachFarben.oben, dach[1], dach[3], dachFarben.hell ?? 0.14, dachFarben.dunkel ?? -0.2), false);
   deckung(stift, dach, dach[3], dach[2], dach[0], dach[1], e, 'schindel');
@@ -539,13 +554,41 @@ function unterstand(stift, e, farbe, dachFarben, ware) {
   stift.stroke();
   flaeche(stift, [dach[0], dach[3], hoch(dach[3], 0.14 * e), hoch(dach[0], 0.14 * e)], dachFarben.kante);
   flaeche(stift, [dach[3], dach[2], hoch(dach[2], 0.14 * e), hoch(dach[3], 0.14 * e)], dachFarben.kanteHell);
-  // Die Ware steht vorn unter dem Dach und ist das, woran man das Lager erkennt.
-  stift.save();
-  stift.translate(0, 0.3 * e);
-  ware(stift, e, W);
-  stift.restore();
-  // Wimpel in Spielerfarbe am vorderen Pfosten.
-  fahne(stift, hoch(B, vorn), e, farbe, 0.7);
+}
+
+// Satteldach aus Schiefer, der First laeuft von hinten nach vorn - das
+// Bergbaulager (darstellung AC-14, Runde 41: mit demselben Pultdach wie das
+// Holzfaellerlager unterschieden sich die beiden nur auf 29 % der Flaeche).
+const SATTEL_TRAUFE = 1.2;
+const SATTEL_FIRST = 2.25;
+
+function satteldach(stift, e, W, H, pfosten, dachFarben) {
+  const traufe = SATTEL_TRAUFE * e;
+  const first = SATTEL_FIRST * e;
+  pfosten([-W, 0], traufe);
+  pfosten([0, -H], first);
+  pfosten([W, 0], traufe);
+  pfosten([0, H], first);
+  stift.lineWidth = Math.max(0.7, e * 0.035);
+  const links = hoch([-W * 1.18, 0], traufe - 0.12 * e);
+  const rechts = hoch([W * 1.18, 0], traufe - 0.12 * e);
+  const firstHinten = hoch([0, -H * 1.12], first);
+  const firstVorn = hoch([0, H * 1.12], first);
+  const linkeFlaeche = [links, firstHinten, firstVorn];
+  const rechteFlaeche = [rechts, firstHinten, firstVorn];
+  flaeche(stift, linkeFlaeche, verlauf(stift, ton(dachFarben.oben, -0.18), firstHinten, links, 0.1, -0.25), false);
+  deckung(stift, linkeFlaeche, links, links, firstHinten, firstVorn, e, 'schindel');
+  flaeche(stift, rechteFlaeche, verlauf(stift, dachFarben.oben, firstVorn, rechts, 0.2, -0.2), false);
+  deckung(stift, rechteFlaeche, rechts, rechts, firstHinten, firstVorn, e, 'schindel');
+  for (const f of [linkeFlaeche, rechteFlaeche]) {
+    pfad(stift, f);
+    stift.stroke();
+  }
+  // Firstbalken und die Kante zur Bildseite.
+  linie(stift, firstHinten, firstVorn, dachFarben.kante, Math.max(1.2, e * 0.12));
+  linie(stift, links, firstVorn, dachFarben.kante, Math.max(0.8, e * 0.06));
+  linie(stift, firstVorn, rechts, dachFarben.kanteHell, Math.max(0.8, e * 0.06));
+  stift.lineWidth = Math.max(0.7, e * 0.035);
 }
 
 const STIRNHOLZ = ['#c2a680', '#b09070', '#cdb38e'];
@@ -596,7 +639,7 @@ function holzfaellerlager(stift, e, farbe) {
 }
 
 function bergbaulager(stift, e, farbe) {
-  unterstand(stift, e, farbe, { oben: '#56657a', kante: '#3a4452', kanteHell: '#74849a' }, (s, e2, W) => {
+  unterstand(stift, e, farbe, { oben: '#56657a', kante: '#3a4452', kanteHell: '#74849a', form: 'sattel' }, (s, e2, W) => {
     // Links ein Haufen Stein, rechts eine Karre voll Gold.
     s.lineWidth = Math.max(0.7, e2 * 0.035);
     for (const [x, y, r] of [[-0.62, 0, 0.3], [-0.35, 0.02, 0.26], [-0.5, -0.28, 0.24]]) {

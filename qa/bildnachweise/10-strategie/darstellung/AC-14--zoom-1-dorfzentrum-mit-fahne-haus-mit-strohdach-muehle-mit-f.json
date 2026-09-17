@@ -1,0 +1,10 @@
+{
+  "spec": "10-strategie/darstellung.md",
+  "ac": "AC-14",
+  "titel": "Zoom 1: Dorfzentrum mit Fahne, Haus mit Strohdach, Muehle mit Fluegeln, Holzfaellerlager mit Staemmen, Bergbaulager mit Schieferfirst und Karre, Kaserne mit Zinnen, Farm als Acker",
+  "datei": "e2e/tests/strategie-unterscheidbar.spec.mjs",
+  "pfad": [
+    "Alle Gebaeude im Spielbild",
+    "darstellung AC-14: bei Zoom 1 hat jedes Gebaeude ein eigenes Merkmal"
+  ]
+}

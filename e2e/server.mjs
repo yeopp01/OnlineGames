@@ -77,6 +77,18 @@ const griffe = http.createServer(async (anfrage, antwortGriff) => {
       antwortGriff.writeHead(200, { 'Content-Type': 'application/json', Connection: 'close' }).end(JSON.stringify({ ok: true }));
       return;
     }
+    // Ein fertiges Gebaeude aufstellen, fuer Bilder mit vielen Gebaeuden - nur
+    // wo die Spielregel einen Bauplatz erlaubt (bauen AC-3).
+    if (befehl === 'gebaeude') {
+      const raum = laufend.raeume.finden(id);
+      const welt = raum?.welt;
+      const spieler = welt?.spieler.find((s) => s.name === werte.name);
+      if (!spieler) throw new Error(`Spieler ${werte.name} gibt es in Raum ${id} nicht.`);
+      if (!welt.platzPruefen(werte.art, werte.x, werte.y)) throw new Error(`Kein Platz fuer ${werte.art} auf ${werte.x}, ${werte.y}.`);
+      const gebaeude = welt.gebaeudeAnlegen(spieler.id, werte.art, werte.x, werte.y, true);
+      antwortGriff.writeHead(200, { 'Content-Type': 'application/json', Connection: 'close' }).end(JSON.stringify({ ok: true, id: gebaeude.id }));
+      return;
+    }
     if (befehl === 'zeitraffer') {
       const raum = laufend.raeume.finden(id);
       if (!raum) throw new Error(`Raum ${id} gibt es nicht.`);

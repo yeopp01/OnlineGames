@@ -2,7 +2,7 @@
 
 **Bereich:** Strategie
 **Kuerzel:** darstellung
-**Stand:** 9/14 fertig · 5 offen
+**Stand:** 10/14 fertig · 4 offen
 
 ## Zweck
 
@@ -85,7 +85,7 @@ der Spieler. Keine Bilddateien aus fremder Quelle.
   (4) der Boden zeigt kein Rautenraster, sondern Gras, Erde und Flecken, die
   über Feldgrenzen hinweglaufen; (5) Gebäude und Bäume werfen Schlagschatten
   in eine Richtung. Vorher-Nachher-Bild bei Zoom 1.
-- **AC-14** `offen` **Alles auf einen Blick unterscheidbar** — Wunsch des Benutzers
+- **AC-14** `fertig` **Alles auf einen Blick unterscheidbar** — Wunsch des Benutzers
   (Runde 35). Je zwei Einheiten und je zwei Gebäude unterscheiden sich auf der
   Schautafel in mindestens einem Drittel ihrer Fläche (Umriss oder Farbe); bei
   Zoom 1 im Spielbild trägt jedes Gebäude ein eigenes Merkmal, das man ohne

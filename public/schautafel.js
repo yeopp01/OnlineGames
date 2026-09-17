@@ -500,7 +500,37 @@ function schlagschatten(welche, art) {
   return { rechts, links };
 }
 
+/**
+ * Fuer den Browserlauf (darstellung AC-14): wie verschieden je zwei Einheiten
+ * oder je zwei Gebaeude sind - Anteil der gemeinsamen Flaeche, die sich im
+ * Umriss oder deutlich in der Farbe (Summe der Kanaele ueber 90) unterscheidet.
+ * Alle in Blau und gleich gross gezeichnet, damit nur die Gestalt zaehlt.
+ */
+function unterschiede(welche) {
+  const arten = welche === 'figur' ? Object.keys(FIGUREN) : Object.keys(GEBAEUDE);
+  const masken = arten.map((art) => [art, welche === 'figur' ? maske(art, FARBEN[0]) : gebaeudeMaske(art, FARBEN[0])]);
+  const paare = [];
+  for (let i = 0; i < masken.length; i++) {
+    for (let j = i + 1; j < masken.length; j++) {
+      const a = masken[i][1];
+      const b = masken[j][1];
+      let anders = 0;
+      let flaeche = 0;
+      for (let k = 0; k < a.belegt.length; k++) {
+        if (!a.belegt[k] && !b.belegt[k]) continue;
+        flaeche += 1;
+        if (a.belegt[k] !== b.belegt[k]) { anders += 1; continue; }
+        const [r1, g1, b1] = a.farben[k];
+        const [r2, g2, b2] = b.farben[k];
+        if (Math.abs(r1 - r2) + Math.abs(g1 - g2) + Math.abs(b1 - b2) > 90) anders += 1;
+      }
+      paare.push({ paar: `${masken[i][0]} gegen ${masken[j][0]}`, anteil: Math.round((anders / flaeche) * 1000) / 1000 });
+    }
+  }
+  return paare.sort((x, y) => x.anteil - y.anteil);
+}
+
 window.schautafel = {
   zellen, maske, dingMaske, bodenProbe, arten: Object.keys(FIGUREN), dinge: { WALD, BEERE, GOLD, STEIN },
-  gebaeudeZellen, gebaeudeMaske, gebaeudeArten: Object.keys(GEBAEUDE), tonstufen, anmutung, proportionen, groessen, bodenRaster, schlagschatten,
+  gebaeudeZellen, gebaeudeMaske, gebaeudeArten: Object.keys(GEBAEUDE), tonstufen, anmutung, proportionen, groessen, bodenRaster, schlagschatten, unterschiede,
 };
