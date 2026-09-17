@@ -333,4 +333,34 @@ test.describe('Das Spielbild', () => {
       test: info,
     });
   });
+
+  test('darstellung AC-2: am See ein Ufer, auf dem Wasser Wellen, das Gras getoent', async ({}, info) => {
+    // Zum Wasser, das Annas Basis am naechsten liegt und an Land grenzt.
+    const gefunden = await anna.evaluate(() => {
+      const a = window.ansicht;
+      const g = a.karte.groesse;
+      const basis = a.spieler.get(a.ich).basis;
+      let bestes = null;
+      for (let y = 1; y < g - 1; y++) {
+        for (let x = 1; x < g - 1; x++) {
+          if (a.karte.felder[y * g + x] !== 3) continue;
+          if (a.karte.felder[y * g + x + 1] === 3 && a.karte.felder[(y + 1) * g + x] === 3) continue;
+          const abstand = Math.hypot(x - basis.x, y - basis.y);
+          if (!bestes || abstand < bestes.abstand) bestes = { x, y, abstand };
+        }
+      }
+      if (!bestes) return false;
+      a.kamera.zoom = 2;
+      a.blickAuf(bestes.x, bestes.y);
+      return true;
+    });
+    expect(gefunden).toBe(true);
+    await anna.waitForTimeout(200);
+    await nachweis(anna, {
+      spec: DARSTELLUNG,
+      ac: 'AC-2',
+      titel: 'Am See: Sandufer an den Kanten zum Land, helle Wellen auf dem Wasser, das Gras leicht getoent',
+      test: info,
+    });
+  });
 });

@@ -2,7 +2,7 @@
 
 **Bereich:** Strategie
 **Kuerzel:** darstellung
-**Stand:** 4/11 fertig · 7 offen
+**Stand:** 5/11 fertig · 6 offen
 
 ## Zweck
 
@@ -29,7 +29,7 @@ der Spieler. Keine Bilddateien aus fremder Quelle.
 - **AC-1** `fertig` **Isometrischer Blick** — Die Karte liegt als Raute: ein Feld ist doppelt so
   breit wie hoch. Rahmen, Klick und Rechtsklick treffen im neuen Blick
   dieselben Felder wie vorher (die Umrechnung ist geprüft, nicht geschätzt).
-- **AC-2** `offen` **Gelände lebt** — Gras ist nicht einfarbig: leichte Tönung je Feld aus dem
+- **AC-2** `fertig` **Gelände lebt** — Gras ist nicht einfarbig: leichte Tönung je Feld aus dem
   Startwert, weiche Kanten zu Wasser. Wasser ist als Wasser erkennbar.
 - **AC-3** `fertig` **Bäume, Sträucher, Felsen** — Ein Baum hat Stamm und Krone, ein
   Beerenstrauch rote Punkte, Gold glänzt gelb, Stein ist grau und kantig.

@@ -115,3 +115,16 @@ test('darstellung AC-3: Baum, Beerenstrauch, Gold und Stein an der Farbe erkennb
     test: info,
   });
 });
+
+test('darstellung AC-2: Gras in Toenungen je Startwert, am Wasser ein Ufer aus Sand', async ({ page }) => {
+  await page.goto('/schautafel.html');
+  await page.waitForFunction(() => window.schautafel);
+  const probe = await page.evaluate(() => window.schautafel.bodenProbe());
+  // Nicht einfarbig: mehrere Toenungen.
+  expect(probe.toene).toBeGreaterThanOrEqual(3);
+  // Aus dem Startwert: zwei Karten sind auf gut der Haelfte der Felder anders getoent
+  // (bei vier Toenungen waeren es im Zufall drei Viertel).
+  expect(probe.verschieden).toBeGreaterThan(0.5);
+  // Das Ufer: Sand an den Kanten zum Land.
+  expect(probe.sand).toBeGreaterThan(20);
+});

@@ -1,0 +1,10 @@
+{
+  "spec": "10-strategie/darstellung.md",
+  "ac": "AC-2",
+  "titel": "Am See: Sandufer an den Kanten zum Land, helle Wellen auf dem Wasser, das Gras leicht getoent",
+  "datei": "e2e/tests/strategie-spielbild.spec.mjs",
+  "pfad": [
+    "Das Spielbild",
+    "darstellung AC-2: am See ein Ufer, auf dem Wasser Wellen, das Gras getoent"
+  ]
+}

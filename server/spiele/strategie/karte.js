@@ -57,6 +57,34 @@ function klecks(felder, groesse, zufall, mx, my, radius, art) {
   }
 }
 
+// Seen ohne Loecher und ohne Spritzer: Land, das fast ganz von Wasser umgeben
+// ist, wird Wasser; einzelne Wasserfelder an Land werden Gras. Sonst zeigte das
+// weiche Ufer (darstellung AC-2) mitten im See kleine Sandinseln.
+function seenGlaetten(felder, groesse) {
+  const nachbarn = (x, y) => {
+    let wasser = 0;
+    for (let dy = -1; dy <= 1; dy++) {
+      for (let dx = -1; dx <= 1; dx++) {
+        if (!dx && !dy) continue;
+        const nx = x + dx;
+        const ny = y + dy;
+        if (nx >= 0 && ny >= 0 && nx < groesse && ny < groesse && felder[ny * groesse + nx] === WASSER) wasser++;
+      }
+    }
+    return wasser;
+  };
+  const neu = felder.slice();
+  for (let y = 0; y < groesse; y++) {
+    for (let x = 0; x < groesse; x++) {
+      const i = y * groesse + x;
+      const wasser = nachbarn(x, y);
+      if (felder[i] !== WASSER && wasser >= 6) neu[i] = WASSER;
+      else if (felder[i] === WASSER && wasser <= 2) neu[i] = GRAS;
+    }
+  }
+  felder.set(neu);
+}
+
 // Die Basen liegen gleichmaessig auf einem Kreis um die Kartenmitte, damit
 // niemand einen kuerzeren Weg zur Mitte hat als die anderen.
 function basisplaetze(groesse, anzahl) {
@@ -143,6 +171,7 @@ function erzeugen(startwert, anzahlSpieler, einstellungen = {}) {
   for (let i = 0; i < Math.round(4 * flaeche); i++) {
     klecks(felder, groesse, zufall, zufallsZahl(0, groesse - 1), zufallsZahl(0, groesse - 1), zufallsZahl(3, 6), WASSER);
   }
+  seenGlaetten(felder, groesse);
   for (let i = 0; i < Math.round(22 * flaeche); i++) {
     klecks(felder, groesse, zufall, zufallsZahl(0, groesse - 1), zufallsZahl(0, groesse - 1), zufallsZahl(2, 5), WALD);
   }

@@ -7,7 +7,7 @@
 // Raute. Die Kamera liegt in Bildpunkten der Raute bei Vergroesserung 1.
 import { figurZeichnen } from './figuren.js';
 import {
-  DINGE, GRAS, WALD, WASSER, bodenFarbe, dingZeichnen, raute,
+  DINGE, GRAS, WALD, WASSER, bodenFarbe, dingZeichnen, gewaesserZeichnen, raute, wellenZeichnen,
 } from './gelaende.js';
 
 const HALB_B = 22; // halbe Rautenbreite in Bildpunkten bei Vergroesserung 1
@@ -63,6 +63,8 @@ export class Ansicht {
     this.karte = { groesse: nachricht.karte.groesse, felder };
     this.fuellung = new Map();
     this.taktdauer = 1000 / nachricht.takte;
+    // Das Muster des Bodens haengt am Startwert: jede Karte ihr eigenes.
+    this.salz = Number.isInteger(nachricht.startwert) ? nachricht.startwert % 65521 : 0;
     this.ich = ichId;
     this.spieler = new Map(nachricht.spieler.map((s) => [s.id, s]));
     // Tiere kommen einmal im Aufbau und danach nur bei Aenderung.
@@ -288,13 +290,24 @@ export class Ansicht {
       for (let x = vonX; x <= bisX; x++) {
         const index = y * g + x;
         const feld = this.karte.felder[index];
-        const boden = feld === WASSER ? WASSER : feld === WALD ? WALD : GRAS;
+        // Unter dem Wasser liegt Gras; das Wasser selbst kommt gleich als weiche Flaeche.
+        const boden = feld === WALD ? WALD : GRAS;
         const p = this.zuBild(x, y);
         raute(stift, p.x, p.y, hb, hh);
-        stift.fillStyle = bodenFarbe(boden, index);
+        stift.fillStyle = bodenFarbe(boden, index, this.salz);
         stift.fill();
       }
     }
+    // Wasser als weiche Flaeche mit Sandufer ueber dem Gras, dann Wellen.
+    const felder = this.karte.felder;
+    const wasser = [];
+    for (let y = vonY; y <= bisY; y++) {
+      for (let x = vonX; x <= bisX; x++) {
+        if (felder[y * g + x] === WASSER) wasser.push({ ...this.zuBild(x, y), index: y * g + x });
+      }
+    }
+    gewaesserZeichnen(stift, wasser, HALB_B * zoom);
+    for (const p of wasser) wellenZeichnen(stift, p.x, p.y, HALB_B * zoom, p.index, this.salz);
     for (const spieler of this.spieler.values()) this.basisZeichnen(spieler);
 
     // 2. Alles, was steht, nach Tiefe: was weiter unten im Bild steht, verdeckt,

@@ -4,7 +4,7 @@
 // Browserlauf liest `window.schautafel`.
 import { FIGUREN, figurZeichnen } from './figuren.js';
 import {
-  BEERE, GOLD, GRAS as BODEN_GRAS, STEIN, WALD, WASSER, bodenFarbe, dingZeichnen, raute,
+  BEERE, GOLD, GRAS as BODEN_GRAS, STEIN, WALD, WASSER, bodenFarbe, bodenTon, dingZeichnen, gewaesserZeichnen, raute, wellenZeichnen,
 } from './gelaende.js';
 
 const FARBEN = ['#4a90d9', '#d94a4a'];
@@ -75,12 +75,20 @@ function flecken(mitteX, mitteY, e, art, fuellung) {
   for (const { gx, gy } of felder) {
     const x = mitteX + (gx - gy) * e;
     const y = mitteY + (gx + gy - 2) * e * 0.5;
-    const hier = art === WASSER ? (gx + gy >= 3 ? WASSER : BODEN_GRAS) : art === WALD ? WALD : BODEN_GRAS;
+    const hier = art === WALD ? WALD : BODEN_GRAS;
     raute(stift, x, y, e, e * 0.5);
     stift.fillStyle = bodenFarbe(hier, gx * 7 + gy * 13);
     stift.fill();
   }
-  if (art === WASSER) return;
+  if (art === WASSER) {
+    // Wie im Spiel: die Wasserfelder als weiche Flaeche mit Sandufer.
+    const mitten = felder
+      .filter(({ gx, gy }) => gx + gy >= 2)
+      .map(({ gx, gy }) => ({ x: mitteX + (gx - gy) * e, y: mitteY + (gx + gy - 2) * e * 0.5, index: gx * 7 + gy * 13 }));
+    gewaesserZeichnen(stift, mitten, e);
+    for (const p of mitten) wellenZeichnen(stift, p.x, p.y, e, p.index);
+    return;
+  }
   for (const { gx, gy } of felder) {
     const mitte = gx === 1 && gy === 1;
     if (art !== WALD && !mitte) continue;
@@ -164,6 +172,30 @@ function maske(art, farbe, lage = {}) {
   return { belegt, farben, pixel: belegt.reduce((a, v) => a + v, 0), farbpixel };
 }
 
+/**
+ * Fuer den Browserlauf (darstellung AC-2): wie viele Toenungen das Gras hat,
+ * wie verschieden zwei Startwerte es toenen, und ob am Ufer Sand liegt.
+ */
+function bodenProbe() {
+  const toene = new Set();
+  let verschieden = 0;
+  for (let i = 0; i < 1000; i++) {
+    toene.add(bodenFarbe(BODEN_GRAS, i, 4711));
+    if (bodenTon(i, 4711) !== bodenTon(i, 1234)) verschieden += 1;
+  }
+  const blatt = document.createElement('canvas');
+  blatt.width = 80;
+  blatt.height = 50;
+  const s = blatt.getContext('2d');
+  gewaesserZeichnen(s, [{ x: 40, y: 25 }], 22);
+  const { data } = s.getImageData(0, 0, 80, 50);
+  let sand = 0;
+  for (let i = 0; i < data.length; i += 4) {
+    if (data[i + 3] > 200 && data[i] > 150 && data[i + 1] > 140 && data[i + 2] < 140) sand += 1;
+  }
+  return { toene: toene.size, verschieden: verschieden / 1000, sand };
+}
+
 window.schautafel = {
-  zellen, maske, dingMaske, arten: Object.keys(FIGUREN), dinge: { WALD, BEERE, GOLD, STEIN },
+  zellen, maske, dingMaske, bodenProbe, arten: Object.keys(FIGUREN), dinge: { WALD, BEERE, GOLD, STEIN },
 };

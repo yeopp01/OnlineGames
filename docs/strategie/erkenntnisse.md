@@ -63,7 +63,7 @@ etwas anderem gearbeitet.
   kopierte Kacheln (30 ms) deutlich. Vor jedem „Optimieren" messen — zwei
   naheliegende Ideen waren hier Verschlechterungen. Stand Runde 13: Zoom 1
   rund 5 ms, Zoom 0,4 rund 10 ms je Bild.
-- Offen im Aussehen: Wasser hat harte Kanten (darstellung AC-2), die Basis ist
+- Offen im Aussehen: die Basis ist
   noch eine Raute ohne Gebäude (A6), Dorfbewohner bei Zoom 1 recht klein.
 - Laufzeiten nur messen, wenn die Maschine ruhig ist: vor einer Messung
   nach fremden `node`-/`chrome`-Prozessen sehen. Andere Projekte laufen hier
@@ -147,6 +147,12 @@ Minuten. Tragbar; ein Teillauf für `check:alles` würde die Regel aufweichen.
 Neueste oben. Eine Zeile je Runde: Nummer, Datum, Kriterien, Ergebnis,
 wichtigste Erkenntnis.
 
+- **14** · 2026-09-17 · darstellung AC-2 fertig: Gras-Tönung aus dem
+  Startwert, Wasser als Vereinigung von Ellipsen mit Sandsaum und Wellen, Seen
+  bei der Erzeugung geglättet. Erster Ansatz (Sand an jeder Rautenkante) war
+  grün getestet und sah aus wie ein geflieste Becken — beim Ansehen verworfen.
+  Gelernt: gerade bei Aussehen reicht ein grüner Test nie; und manche
+  „Zeichenfehler" sind Daten (Grasinseln im See aus der Kartenerzeugung).
 - **13** · 2026-09-17 · A3: darstellung AC-1 (Raute, Umrechnung auf 1e-9
   genau), AC-3 (Bäume, Beeren, Gold, Stein als Dinge, schrumpfen beim Leeren),
   AC-7 (Tiefenordnung) fertig. Erster Wurf beim Ansehen nachgebessert:

@@ -29,13 +29,15 @@ function rgb(r, g, b) {
 // gleicher Farbe in einem Zug zu fuellen statt jede einzeln (darstellung AC-10).
 export const TOENUNGEN = 4;
 
-export function bodenTon(index) {
-  return Math.min(TOENUNGEN - 1, Math.floor(streuung(index) * TOENUNGEN));
+// `salz` kommt aus dem Startwert der Partie: jede Karte hat ihr eigenes
+// Muster, dieselbe Karte immer dasselbe (darstellung AC-2).
+export function bodenTon(index, salz = 0) {
+  return Math.min(TOENUNGEN - 1, Math.floor(streuung(index, salz) * TOENUNGEN));
 }
 
 /** Boden eines Feldes: Gras leicht getoent, Wasser blau, unter Wald dunkler. */
-export function bodenFarbe(art, index) {
-  const s = (bodenTon(index) + 0.5) / TOENUNGEN;
+export function bodenFarbe(art, index, salz = 0) {
+  const s = (bodenTon(index, salz) + 0.5) / TOENUNGEN;
   if (art === WASSER) return rgb(34 + s * 6, 70 + s * 8, 104 + s * 10);
   if (art === WALD) return rgb(40 + s * 6, 64 + s * 8, 42 + s * 5);
   // Nur leicht getoent - staerker wirkt es wie ein Schachbrett.
@@ -49,6 +51,48 @@ export function raute(stift, x, y, hb, hh) {
   stift.lineTo(x, y + hh);
   stift.lineTo(x - hb, y);
   stift.closePath();
+}
+
+/**
+ * Wasser mit weichem Ufer (darstellung AC-2). Nicht als Rauten - deren Treppe
+ * sah in Runde 14 aus wie ein geflieste Becken -, sondern als Vereinigung von
+ * Ellipsen, eine je Wasserfeld: ueberlappend ergeben sie von selbst runde
+ * Uferlinien. Darunter dieselben Ellipsen groesser in Sand: das Ufer.
+ * `mitten` sind die Bildpunkte der Wasserfelder, `e` die halbe Rautenbreite.
+ */
+export function gewaesserZeichnen(stift, mitten, e) {
+  if (!mitten.length) return;
+  const flaeche = (faktor, farbe) => {
+    stift.beginPath();
+    for (const p of mitten) {
+      stift.moveTo(p.x + e * faktor, p.y);
+      stift.ellipse(p.x, p.y, e * faktor, e * 0.5 * faktor, 0, 0, Math.PI * 2);
+    }
+    stift.fillStyle = farbe;
+    stift.fill();
+  };
+  // Jede Schicht muss die Rautenecke (Faktor 1 auf der Achse) sicher decken,
+  // sonst schimmert zwischen vier Wasserfeldern die Schicht darunter durch.
+  flaeche(1.42, 'rgba(176, 160, 112, 0.9)'); // Sand
+  flaeche(1.24, 'rgb(58, 104, 128)'); // flaches Wasser am Rand
+  flaeche(1.1, 'rgb(38, 76, 110)'); // tiefes Wasser
+}
+
+/** Kleine helle Wellen auf offenem Wasser, nicht auf jedem Feld. */
+export function wellenZeichnen(stift, x, y, e, index, salz = 0) {
+  if (e < 12 || streuung(index, salz + 7) < 0.55) return;
+  const dx = (streuung(index, salz + 8) - 0.5) * e * 0.6;
+  const dy = (streuung(index, salz + 9) - 0.5) * e * 0.3;
+  stift.save();
+  stift.strokeStyle = 'rgba(190, 225, 240, 0.35)';
+  stift.lineWidth = Math.max(1, e * 0.06);
+  stift.lineCap = 'round';
+  stift.beginPath();
+  stift.moveTo(x + dx - e * 0.3, y + dy);
+  stift.quadraticCurveTo(x + dx - e * 0.15, y + dy - e * 0.1, x + dx, y + dy);
+  stift.quadraticCurveTo(x + dx + e * 0.15, y + dy + e * 0.1, x + dx + e * 0.3, y + dy);
+  stift.stroke();
+  stift.restore();
 }
 
 function kreis(stift, x, y, r, farbe) {
