@@ -113,6 +113,10 @@ Zahlen, gegen die spätere Runden vergleichen. Mit Datum und Commit.
 | 2026-09-17 | Wegsuche 200 x 200: Ecke zu Ecke / Mittel 100 zufaellig | 1,19 ms / 0,28 ms | Runde 12 |
 | 2026-09-17 | Browsertests je Datei (e2e:laufzeiten, CPU 20 %): strategie-bauen / -ausbilden / -spielbild / Summe | 45,8 / 29,3 / 25,7 / 141 s | Runde 30 |
 | 2026-09-17 | Zeichnen je Bild (sicht --messen, ohne Grafikkarte), Zoom 1 / 0,5 / 2 | vorher 23,8 / 29,3 / 17,9 ms, nachher 18,2 / 23,1 / 29,3 ms | Runde 29 |
+| 2026-09-17 | Tests ohne Browser / im Browser | 305 / 109 | Runde 40 |
+| 2026-09-17 | Zeichnen je Bild nach A6c (Boden in Kacheln, Wasser im Boden), Zoom 1 / 2 — Last nicht geprüft | 20,4 / 40,2 ms | Runde 39 |
+| 2026-09-17 | Fast schwarze Bildpunkte Gebäude / Figuren (tafel `anmutung`) | vorher 7–12 % / 7,7–16 %, nachher 0 / 0 % | Runden 37, 38 |
+| 2026-09-17 | Sättigung im Mittel Gebäude / Vorräte / Figuren | vorher 0,283 / 0,371 / 0,331, nachher 0,238 / 0,305 / 0,342 | Runde 39 |
 | 2026-09-17 | Zeichnen je Bild im Browserlauf, Zoom 1 / Zoom 0,4 | 4,9–6,2 ms / 10–11 ms | Runde 13 |
 | 2026-09-17 | Tests ohne Browser / im Browser; Browserlauf (Last 16 %) | 260 / 83; 58,5 s | Runde 13 |
 | 2026-09-17 | Tests ohne Browser / im Browser; Browserlauf | 264 / 86; 1,1 min | Runde 16 |
@@ -257,6 +261,33 @@ Gut gelaufen: Die Tonstufen-Messung alt gegen neu hat aus „wirkt gezeichneter"
 eine Zahl gemacht, und zweimal hat ein alter Test einen neuen Fehler gefunden
 (Klick auf Beeren traf ein Schaf; zwei Lager zu ähnlich). Browserlauf bei
 ruhigerer Maschine 141 s Testzeit, langsamster Fall weiter der Lagertest (28 s).
+
+### Nach Runde 40 (2026-09-17)
+
+Runden 36–39: Schritt A6c auf Wunsch des Benutzers — Boden als Textur mit
+Schatten, Gebäude und Figuren ohne schwarze Umrisse, Figuren mit Proportionen,
+Wasser im Boden, gedämpfte Vorräte; darstellung AC-13 `fertig`. Was sich
+wiederholt hat:
+
+1. **Wegwerfskripte zum Messen auf der Schautafel** — viermal in drei Runden
+   neu geschrieben (Schwarzanteil, Sättigung, Proportionen, Raster und
+   Schatten). → `npm run tafel -- "<Ausdruck>"` wertet beliebige Ausdrücke
+   mit `t = window.schautafel` aus; in `CLAUDE.md` und hier vermerkt.
+2. **Ein Stellvertreter maß das Falsche** — „Sättigung des ganzen Spielbilds"
+   stieg, obwohl das Bild natürlicher wurde; es fiel erst auf, als alles
+   gebaut war, und das Kriterium musste neu gefasst werden. → Anweisung:
+   einen Stellvertreter fürs Aussehen vorher und an einem Entwurf messen, bevor
+   er festgeschrieben wird.
+3. **Gedämpfte Farben brachen alte Darstellungstests** — Tonstufen des
+   Holzfällerlagers, dann die Unterscheidbarkeit der Lager; beides erst im
+   Lauf über alle Bilder (je rund 4–5 Minuten). → Anweisung: wer Farben oder
+   Formen ändert, fährt zuerst die drei Darstellungsdateien (gut zwei Minuten).
+
+Außerdem: `karte AC-15` misst den schnellsten von fünf Durchgängen und hielt
+97 % fremde Last; in der Anweisung als Muster für weitere Zeittests vermerkt.
+Die Frage zu `karriere AC-7` bleibt offen. Nicht geändert: der Zuschnitt in
+Teile (Boden, Gebäude, Figuren, Wasser) je Runde hat getragen — jede Runde
+endete grün mit Vorher-Nachher-Bild.
 
 ### Nach Runde 35 (2026-09-17)
 

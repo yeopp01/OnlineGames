@@ -123,6 +123,12 @@ Setze die gewählten Kriterien auf `in-arbeit`.
   Antwort steht als Kommentar am Test. Echte Uhren in Tests nur, wenn die Zeit
   selbst geprüft wird; sonst `t.mock.timers` (Runden 8 und 9: dreimal war die
   Annahme falsch, nie das Produkt).
+- **Einen Stellvertreter fürs Aussehen erst festschreiben, wenn er gemessen
+  ist:** den Wert vorher und an einem schnellen Entwurf nachher
+  (`npm run tafel -- "<Ausdruck>"`, Spielbild mit `npm run sicht`). Wird das
+  Bild besser und die Zahl schlechter, misst die Zahl das Falsche (Runde 39:
+  „Sättigung des ganzen Bildes" stieg, weil erdiges Oliv in HSL gesättigter
+  ist als Graugrün). Dann das Kriterium neu fassen, bevor gebaut wird.
 - **Nie** einen Test überspringen, eine Schwelle senken oder eine Zusicherung
   lockern, um grün zu werden. Ist eine Schwelle wirklich falsch, ändere das
   Kriterium in der Spec, mit Begründung im Commit und einer Zeile in den
@@ -177,6 +183,12 @@ Setze die gewählten Kriterien auf `in-arbeit`.
   Dinge, die gleich aussehen, oder **Sammeln** gleichfarbiger Striche in einen
   Pfad (`grasSammeln`) für viele kleine. Kacheln für den Boden waren in Runde 13
   langsamer - nicht ohne Messung wieder versuchen.
+- **Wer Farben oder Formen ändert, fährt zuerst die Darstellungstests**, nicht
+  erst beim Neuerzeugen aller Bilder: `npx playwright test --config
+  e2e/playwright.config.mjs strategie-figuren strategie-tiere strategie-bauen`
+  (gut zwei Minuten). Gedämpfte Farben kosteten Tonstufen (darstellung AC-12)
+  und die Unterscheidbarkeit der Lager (bauen AC-20) — beides fiel in Runde 37
+  erst im Lauf über alle Bilder auf.
 - **Spielgröße ansehen, nicht nur herangezoomt.** Jede Figur und jedes Gebäude
   wird auch bei Zoom 1 beurteilt — dort spielt man. Die Schautafel zeigt
   beides nebeneinander.
@@ -205,7 +217,9 @@ Setze die gewählten Kriterien auf `in-arbeit`.
    allein laufen lassen (`node --test --test-name-pattern="<kuerzel> AC-n"
    <datei>`), dann `npm run check` einmal wiederholen. Committet wird erst bei
    „fail 0". Grenzen und Testaufruf bleiben, bis der Benutzer die offene Frage
-   beantwortet.
+   beantwortet. `karte AC-15` misst seit Runde 36 den schnellsten von fünf
+   Durchgängen und hielt damit 97 % fremde Last aus; ein weiterer Zeittest,
+   der wiederholt reißt, bekommt dieselbe Messweise (Grenze unverändert).
 5. Rot → beheben. Geht es nach ernsthaftem Versuch nicht: Kriterium zurück auf
    `in-arbeit` oder `in-qa`, die Ursache als offenen Faden aufschreiben,
    **nicht** committen, was rot ist.

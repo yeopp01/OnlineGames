@@ -28,6 +28,7 @@ npm start            # http://localhost:4180/
 npm run dev          # dasselbe mit --watch
 npm run sicht -- schautafel.html  # eine Seite als Wegwerfbild ansehen, ohne Testlauf
 npm run sicht -- --spiel --zoom 2 --ziel wald  # dasselbe fuer eine laufende Partie
+npm run tafel -- "t.anmutung('gebaeude', 'haus')"  # auf der Schautafel messen, Ergebnis als JSON
 npm run e2e:laufzeiten -- strategie   # Dauer des Browserlaufs je Datei, die langsamsten Faelle
 ```
 
@@ -136,7 +137,7 @@ Umfang hinzufügt, dort nachsehen.
 
 ## Stand
 
-**326 von 488 Kriterien fertig.** 305 Tests ohne Browser, 105 im Browser. Die
+**327 von 490 Kriterien fertig.** 305 Tests ohne Browser, 109 im Browser. Die
 Übersicht ist der Bericht: `npm run qa:report`.
 
 Gebaut ist der Unterbau: Räume, Übertragung, Karte, Wegfindung, Sammeln,
@@ -184,9 +185,11 @@ Der [Fahrplan](specs/10-strategie/fahrplan.md) ist die Reihenfolge:
 
 Einstieg (Spielauswahl, Einstellungen, Warteraum) und Spielbild im Browser
 sind erreicht (fahrplan AC-1, AC-2); in Stufe A sind die Schritte A1 bis A6b
-gebaut, dazu aus A7 Schafe, Farm, Kaserne mit Miliz, Webstuhl und
-Sammelpunkt. Als Nächstes darstellung AC-8, dann A8 (Wirtschafts-KI und
-Prüfstand) bis A10:
+gebaut, aus A6c das naturalistische Aussehen (darstellung AC-13: keine
+schwarzen Umrisse, erdige Farben, Proportionen, Boden als Textur mit Wasser,
+Schlagschatten), dazu aus A7 Schafe, Farm, Kaserne mit Miliz, Webstuhl und
+Sammelpunkt. Als Nächstes darstellung AC-14 (alles unterscheidbar), dann
+darstellung AC-8, dann A8 (Wirtschafts-KI und Prüfstand) bis A10:
 
 1. **Stufe A** Dunkle Zeit mit Wirtschafts-KI und Prüfstand · **B** Feudalzeit
    · **C** Partieende und KI-Gegner · **D** Ritterzeit · **E** fünf Völker ·
