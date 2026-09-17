@@ -596,6 +596,7 @@ class Welt {
       this.farmVerlassen(einheit);
       einheit.sammelt = false;
       einheit.baut = false;
+      einheit.unerreichbar = null;
       if (baustelle && !baustelle.fertig && baustelle.besitzer === spielerId
         && (EINHEITEN[einheit.art].baut || []).includes(baustelle.art)) {
         this.bauenBeginnen(einheit, baustelle);
@@ -1013,10 +1014,29 @@ class Welt {
     }
     if (Math.hypot(einheit.x - feld.x, einheit.y - feld.y) > 1.9) {
       this.wegZumVorrat(einheit);
+      if (!einheit.weg.length) this.vorratUnerreichbar(einheit, index);
       return;
     }
     einheit.zuletztGesammelt = this.karte.felder[index];
+    einheit.unerreichbar = null;
     einheit.sammelt = true;
+  }
+
+  // Kein Weg zum Vorrat (fahrplan AC-6): ein anderer derselben Art nimmt seinen
+  // Platz ein, nach dreien gibt die Einheit auf. Vorher suchte sie in jedem
+  // Takt neu ueber die ganze Karte - mit 800 Einheiten 98 % der Rechenzeit.
+  vorratUnerreichbar(einheit, index) {
+    einheit.unerreichbar ??= [];
+    einheit.unerreichbar.push(index);
+    const ersatz = einheit.unerreichbar.length <= 3
+      ? this.naechsterVorrat(einheit, this.karte.felder[index], einheit.unerreichbar)
+      : null;
+    if (!ersatz) {
+      einheit.auftrag = null;
+      einheit.unerreichbar = null;
+      return;
+    }
+    einheit.auftrag = { art: 'sammeln', feld: ersatz };
   }
 
   // Ein Takt Arbeit am Vorrat: die Rate der Vorlage, in ganzen Einheiten vom
@@ -1109,11 +1129,12 @@ class Welt {
     return bestes;
   }
 
-  naechsterVorrat(einheit, art) {
+  naechsterVorrat(einheit, art, ausser = null) {
     let bestes = null;
     let besterAbstand = SUCHWEITE_ERSATZ;
     for (const index of this.karte.vorrat.keys()) {
       if (art !== undefined && this.karte.felder[index] !== art) continue;
+      if (ausser && ausser.includes(index)) continue;
       const x = index % this.karte.groesse;
       const y = (index / this.karte.groesse) | 0;
       const abstand = Math.hypot(x - einheit.x, y - einheit.y);

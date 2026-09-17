@@ -118,6 +118,7 @@ Zahlen, gegen die spätere Runden vergleichen. Mit Datum und Commit.
 | 2026-09-17 | Tests ohne Browser / im Browser | 305 / 109 | Runde 40 |
 | 2026-09-17 | Tests ohne Browser / im Browser | 318 / 113 | Runde 45 |
 | 2026-09-17 | Tests ohne Browser / im Browser | 320 / 121 | Runde 50 |
+| 2026-09-17 | Takt mit 8 x 100 Einheiten, groesste Karte, Mittel (CPU 43 %) | vorher 58 ms, nachher 0,5 ms | Runde 51 |
 | 2026-09-17 | Pruefstand, Grund-KI: 20 Partien x 10 Spielminuten, 2 Spieler — Dauer je Partie / Dorfbewohner nach 10 min | 30–90 ms / 15–16 | Runde 43 |
 | 2026-09-17 | Pruefstand, Wirtschafts-KI: 20 Startwerte x 2 Spieler nach 10 min — Dorfbewohner / Nahrung min / laengste Untaetigkeit / Warten auf Wohnraum max; 20 Partien gesamt | 22 / 520 / 0,6 s / 3,5 s; 1,4 s | Runde 44 |
 | 2026-09-17 | Zeichnen je Bild nach A6c (Boden in Kacheln, Wasser im Boden), Zoom 1 / 2 — Last nicht geprüft | 20,4 / 40,2 ms | Runde 39 |
@@ -367,6 +368,18 @@ alle sieben Gebäude der Dunklen Zeit stehen. Was sich wiederholt hat:
 Neueste oben. Eine Zeile je Runde: Nummer, Datum, Kriterien, Ergebnis,
 wichtigste Erkenntnis.
 
+- **51** · 2026-09-17 · fahrplan AC-6 **fertig** — und ein großer Fehler
+  gefunden. Erst gemessen (8 Spieler × 100 Dorfbewohner bei Arbeit auf der
+  größten Karte): **58 ms je Takt**, Spitzen über 150 ms — länger als ein Takt
+  (100 ms). CPU-Profil (`node --cpu-prof`): 98 % in `suchen`; gezählt: 5845
+  gescheiterte Wegsuchen zu Vorräten, je 8,6 ms. Wer einem unerreichbaren
+  Vorrat zugeteilt war, suchte in jedem Takt neu über die ganze Karte. Jetzt
+  merkt er sich das Feld, nimmt einen anderen derselben Art, nach dreien steht
+  er (einheiten AC-9). Danach **0,5 ms je Takt**, erster Abschnitt mit einer
+  Spitze von 61 ms beim ersten Wegesuchen aller. Beide Tests ohne Korrektur
+  rot (AC-6 brauchte 37 s). Aufgefallen, nicht behoben: `zustand()` mit 800
+  Einheiten kostet 3–10 ms und geht jeden Takt über die Leitung — gehört zu
+  den gebündelten Änderungen (offener Faden).
 - **49** · 2026-09-17 · einheiten AC-20 und bedienung AC-6 **fertig**. Ein
   Befehl für viele: wer geht, bekommt ein eigenes freies Feld in Ringen um das
   Ziel (das nächste noch freie, damit sich Wege wenig kreuzen); wer sammelt,

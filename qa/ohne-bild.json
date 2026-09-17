@@ -10,6 +10,7 @@
     { "spec": "10-strategie/ki.md", "ac": "AC-5", "begruendung": "Wo die KI Lager und Farmen baut und wann, gemessen beim Baubeginn in Partien ohne Browser. Ein einzelnes Spielbild zeigt ein Dorf, nicht die Regel dahinter." },
     { "spec": "10-strategie/ki.md", "ac": "AC-6", "begruendung": "Die laengste Zeit, die ein Dorfbewohner herumsteht, ueber ganze Partien - eine Messung je Takt im Pruefstand; ein Bild zeigt keine Dauer." },
     { "spec": "10-strategie/fahrplan.md", "ac": "AC-5", "begruendung": "Dorfbewohner und Nahrung nach zehn Spielminuten ueber zwanzig Startwerte - Zahlen aus Partien KI gegen KI ohne Browser." },
+    { "spec": "10-strategie/fahrplan.md", "ac": "AC-6", "begruendung": "Rechenzeit eines Takts mit acht Spielern und 800 Einheiten - eine Messung im Rechenteil ohne Browser. Ein Bild zeigt Einheiten, nicht wie lange ein Takt dauert." },
     { "spec": "10-strategie/fahrplan.md", "ac": "AC-4", "begruendung": "Partien KI gegen KI ohne Menschen, jeder Takt geprueft - ein Lauf auf der Konsole, kein Bildschirm. Belegt durch zehn Spielminuten ueber mehrere Startwerte ohne Widerspruch." },
 
     { "spec": "00-plattform/konten.md", "ac": "AC-3", "begruendung": "Wie das Kennwort in der Datenbank liegt. Ueber die Oberflaeche nicht beobachtbar - und waere es das, waere es der Fehler." },
