@@ -409,6 +409,28 @@ alle sieben Gebäude der Dunklen Zeit stehen. Was sich wiederholt hat:
 Neueste oben. Eine Zeile je Runde: Nummer, Datum, Kriterien, Ergebnis,
 wichtigste Erkenntnis.
 
+- **58** · 2026-11-07 · bauen AC-23 und bedienung AC-33 **fertig** —
+  **Schritt B2, der Zeitalterwechsel**. Die vier Zeitalter und alle drei
+  Aufstiege stehen als Daten; der Aufstieg ist ein Auftrag im Dorfzentrum wie
+  eine Verbesserung, deshalb erbt er Bezahlen beim Einreihen, Fortschritt in
+  der Schlange und volle Erstattung beim Abbruch, ohne eine Zeile dafür.
+  Oben in der Leiste steht das Zeitalter, der Wechsel wird einmal groß
+  gemeldet. `spielziel AC-1` steht bewusst auf `in-arbeit`: die Aufstiege
+  rechnen, aber noch öffnet keiner etwas — das kommt mit B3.
+  Gelernt, dreierlei: (1) Die Voraussetzung „zwei Gebäude der Dunklen Zeit"
+  ist mehrdeutig; entschieden und in der Spec notiert: **das Dorfzentrum zählt
+  mit**. (2) Neue Bildschirmtexte bekommen echte Umlaute („Gebäude", „außer") —
+  die alten Texte des Strategiespiels haben keine, das ist ein offener Faden.
+  (3) `dorfbewohnerAnklicken` riss in zwei von fünf Läufen, erst nach dieser
+  Runde sichtbar: im 20-fachen Zeitraffer läuft das Ziel zwischen Messen und
+  Klicken mehrere Felder weit, **und** wer seit B1 hinter einem Gebäude steht,
+  ist nur ein Umriss — der Klick trifft das Gebäude. Die Hilfe hält jetzt auf
+  Wunsch die Zeit an, überspringt Verdeckte, führt den Blick nach und klickt
+  bis zu zwölfmal; danach fünf von fünf grün und 38 s statt 40 s bis 1,6 min.
+  Dazu: Better Auth wies gegen Ende des Browserlaufs mit „Too many requests"
+  ab, weil der Lauf länger wurde — der Testserver bekommt jetzt wie bei
+  `schutz` eine weite Grenze, die echten Werte prüft `tests/konten.test.mjs`.
+  Nächste Runde: **B3**, die drei Gebäude der Feudalzeit.
 - **57** · 2026-09-17 · bedienung AC-32 **fertig** — **Schritt B1 fertig**.
   Die Welt zählt je Rohstoff, wer daran arbeitet (`arbeiterVon`, Schaf und Farm
   zählen als Nahrung, wer trägt zählt zu seiner Ladung) und schickt die vier

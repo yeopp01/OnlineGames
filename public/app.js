@@ -103,6 +103,7 @@ function empfangen(nachricht) {
         const tasten = new Tasten(ansicht, teile.auswahlleiste, document.getElementById('tastenuebersicht'));
         ansicht.beiTaste = (e) => tasten.taste(e);
         ansicht.melden = spielMelden;
+        ansicht.beiZeitalter = (stufe, name) => zeitalterwechselMelden(name);
         ansicht.sammelpunktSenden = (gebaeude, ziel) =>
           senden({ typ: 'befehl', auftrag: 'sammelpunkt', gebaeude, ziel });
         ansicht.bauenSenden = (einheiten, art, ziel) =>
@@ -120,6 +121,7 @@ function empfangen(nachricht) {
       auswahlleiste.aktualisieren();
       untaetigZeigen(ansicht.untaetige.length);
       arbeiterZeigen(ansicht.arbeiter);
+      zeitalterZeigen(ansicht.zeitalterName());
       break;
 
     case 'fehler':
@@ -143,6 +145,27 @@ function spielMelden(text) {
   ort.classList.add('neu');
   clearTimeout(spielMeldungUhr);
   spielMeldungUhr = setTimeout(() => { ort.hidden = true; }, 3000);
+}
+
+// ---- Zeitalter (bedienung AC-33) -----------------------------------------
+// Oben in der Leiste steht, in welchem Zeitalter man ist; der Wechsel wird
+// einmal gross in der Mitte angekuendigt und verschwindet von selbst.
+let zeitalterUhr = null;
+
+function zeitalterZeigen(name) {
+  const feld = document.querySelector('#zeitalter b');
+  if (feld && feld.textContent !== name) feld.textContent = name;
+}
+
+function zeitalterwechselMelden(name) {
+  const ort = document.getElementById('zeitalterwechsel');
+  ort.textContent = `${name} erreicht`;
+  ort.hidden = false;
+  ort.classList.remove('neu');
+  void ort.offsetWidth; // die Einblendung von vorn beginnen
+  ort.classList.add('neu');
+  clearTimeout(zeitalterUhr);
+  zeitalterUhr = setTimeout(() => { ort.hidden = true; }, 4000);
 }
 
 // ---- Rohstoffleiste (bedienung AC-24, AC-17) ------------------------------

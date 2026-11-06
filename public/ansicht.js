@@ -67,8 +67,12 @@ export class Ansicht {
     this.bauenSenden = () => {};
     this.sammelpunktSenden = () => {};
     this.verbesserungen = [];
+    // Das eigene Zeitalter als Stufe, 0 ist die Dunkle Zeit (bedienung AC-33).
+    this.zeitalter = 0;
     // Kurz eingeblendete Absagen (bedienung AC-18); app.js setzt die Anzeige.
     this.melden = () => {};
+    // Der Aufstieg ist vollzogen: app.js kuendigt ihn im Bild an (bedienung AC-33).
+    this.beiZeitalter = () => {};
     this.blicke = new Map(); // Einheit → -1 links, 1 rechts
     this.tiere = new Map();
     this.vorraete = { holz: 0, nahrung: 0, gold: 0, stein: 0, bev: 0, raum: 0 };
@@ -151,6 +155,14 @@ export class Ansicht {
       const { holz, nahrung, gold, stein, bev, raum } = meine;
       this.vorraete = { holz, nahrung, gold, stein, bev, raum };
       this.verbesserungen = meine.v || [];
+      // Ein Aufstieg wird einmal gemeldet - erkannt an der Stufe, die der
+      // Server schickt (bedienung AC-33).
+      const stufe = meine.z || 0;
+      if (stufe !== this.zeitalter) {
+        const vorher = this.zeitalter;
+        this.zeitalter = stufe;
+        if (stufe > vorher) this.beiZeitalter(stufe, this.zeitalterName(stufe));
+      }
       this.untaetige = meine.u || [];
       // Arbeiter je Rohstoff (bedienung AC-32), in der Reihenfolge des Servers.
       const [amHolz, anNahrung, amGold, amStein] = meine.a || [0, 0, 0, 0];
@@ -164,6 +176,11 @@ export class Ansicht {
       if (tier ? (tier.g || tier.b !== this.ich) : !this.nachher.has(id)) this.ausgewaehlt.delete(id);
     }
     if (this.gewaehltesGebaeude && !this.gebaeude.has(this.gewaehltesGebaeude)) this.gewaehltesGebaeude = null;
+  }
+
+  // Name eines Zeitalters, wie der Server ihn mit dem Aufbau geschickt hat.
+  zeitalterName(stufe = this.zeitalter) {
+    return this.werte?.zeitalter?.[stufe]?.name || 'Dunkle Zeit';
   }
 
   // Die Mitte der Grundflaeche: der Server nennt das Ankerfeld, die Flaeche

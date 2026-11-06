@@ -1,0 +1,10 @@
+{
+  "spec": "10-strategie/bauen.md",
+  "ac": "AC-23",
+  "titel": "Der Aufstieg läuft: in der Schlange des Dorfzentrums das Tor mit dem Fortschrittsbalken, oben noch „Dunkle Zeit\" und 100 Nahrung",
+  "datei": "e2e/tests/strategie-zeitalter.spec.mjs",
+  "pfad": [
+    "Zeitalterwechsel",
+    "bauen AC-23: mit zwei Gebaeuden laeuft der Aufstieg, die Schlange zeigt ihn mit Fortschritt"
+  ]
+}

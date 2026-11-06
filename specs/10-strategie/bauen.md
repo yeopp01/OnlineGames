@@ -2,7 +2,7 @@
 
 **Bereich:** Strategie
 **Kuerzel:** bauen
-**Stand:** 18/26 fertig · 8 offen
+**Stand:** 19/26 fertig · 7 offen
 
 ## Zweck
 
@@ -123,10 +123,12 @@ B ist der Kampf der drei Einheiten gegeneinander.
 
 ### Feudalzeit (Stufe B)
 
-- **AC-23** `offen` **Aufstieg in die Feudalzeit** — Das Dorfzentrum bietet den Aufstieg an:
+- **AC-23** `fertig` **Aufstieg in die Feudalzeit** — Das Dorfzentrum bietet den Aufstieg an:
   500 Nahrung, 130 Sekunden. Voraussetzung sind zwei fertige Gebäude der
-  Dunklen Zeit außer Häusern, wie im Original. Während der Aufstieg läuft,
-  bildet das Dorfzentrum nichts anderes aus; ein Abbruch erstattet die Nahrung.
+  Dunklen Zeit außer Häusern, wie im Original — **das Dorfzentrum zählt mit**,
+  es fehlt also ein gebautes. Während der Aufstieg läuft, bildet das Dorfzentrum
+  nichts anderes aus; ein Abbruch erstattet die Nahrung. Zur Wahl steht nur das
+  nächste Zeitalter.
 - **AC-24** `offen` **Gebäude der Feudalzeit** — Schießanlage, Stall und
   Schmiede lassen sich erst bauen, wenn die Feudalzeit erreicht ist; vorher
   stehen sie nicht im Baumenü. Werte nach der Tabelle oben.

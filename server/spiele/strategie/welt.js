@@ -3,7 +3,8 @@
 const karten = require('./karte');
 const { suchen, nachbarfeld } = require('./wege');
 const {
-  EINHEITEN, SAMMELN, TIERE, GEBAEUDE, VERBESSERUNGEN, BEVOELKERUNG_MAX, SCHLANGE_MAX, STARTAUFSTELLUNG,
+  EINHEITEN, SAMMELN, TIERE, GEBAEUDE, VERBESSERUNGEN, ZEITALTER, AUFSTIEGE,
+  BEVOELKERUNG_MAX, SCHLANGE_MAX, STARTAUFSTELLUNG,
 } = require('./daten');
 
 const TAKTE_PRO_SEKUNDE = 10;
@@ -53,6 +54,7 @@ class Welt {
       ...start,
       basis: this.karte.basen[i],
       verbesserungen: [], // erforscht, in der Reihenfolge des Abschlusses
+      zeitalter: 0, // jede Partie beginnt in der Dunklen Zeit (spielziel AC-1)
     }));
 
     // Tiere gehoeren einem Spieler, stehen aber nicht in den Einheiten: sie
@@ -85,9 +87,36 @@ class Welt {
     }
   }
 
-  // Werte eines Auftrags in der Schlange: Einheit oder Verbesserung.
+  // Werte eines Auftrags in der Schlange: Einheit, Verbesserung oder Aufstieg.
+  // Alle drei haben `kosten` und `zeit` - deshalb rechnet die Schlange mit
+  // allen dreien gleich, und ein Abbruch erstattet voll (bauen AC-11, AC-23).
   auftragWerte(art) {
-    return EINHEITEN[art] || VERBESSERUNGEN[art];
+    return EINHEITEN[art] || VERBESSERUNGEN[art] || AUFSTIEGE[art];
+  }
+
+  // Ein Auftrag, der keinen Platz in der Bevoelkerung braucht: Verbesserung
+  // oder Aufstieg. Er laeuft auch, wenn die Bevoelkerung voll ist.
+  ohnePlatz(art) {
+    return Boolean(VERBESSERUNGEN[art] || AUFSTIEGE[art]);
+  }
+
+  // Zeitalter eines Gebaeudes; ohne Angabe die Dunkle Zeit.
+  gebaeudeZeitalter(art) {
+    return GEBAEUDE[art].zeitalter || 0;
+  }
+
+  /**
+   * Fertige eigene Gebaeude des laufenden Zeitalters, ausser Haeusern - die
+   * Voraussetzung des Aufstiegs (bauen AC-23). Das Dorfzentrum zaehlt mit,
+   * also fehlt noch ein gebautes.
+   */
+  gebaeudeDerZeit(spieler) {
+    let zahl = 0;
+    for (const g of this.gebaeude.values()) {
+      if (g.besitzer !== spieler.id || !g.fertig || g.art === 'haus') continue;
+      if (this.gebaeudeZeitalter(g.art) === spieler.zeitalter) zahl += 1;
+    }
+    return zahl;
   }
 
   // Leben einer Einheit mit allen Verbesserungen ihres Spielers (bauen AC-21).
@@ -402,6 +431,21 @@ class Welt {
     if (!GEBAEUDE[gebaeude.art].bildetAus.includes(art)) return { fehler: 'Das bildet dieses Gebaeude nicht aus.' };
     if (gebaeude.schlange.length >= SCHLANGE_MAX) return { fehler: 'Die Warteschlange ist voll.' };
     const spieler = this.spielerVon(spielerId);
+    // Der Aufstieg: nur der naechste, nur einmal, und nur mit genug Gebaeuden
+    // des laufenden Zeitalters (bauen AC-23).
+    if (AUFSTIEGE[art]) {
+      const aufstieg = AUFSTIEGE[art];
+      if (aufstieg.stufe <= spieler.zeitalter) return { fehler: `Die ${aufstieg.name} ist schon erreicht.` };
+      if (aufstieg.stufe > spieler.zeitalter + 1) {
+        return { fehler: `Erst die ${ZEITALTER[spieler.zeitalter + 1].name}, dann die ${aufstieg.name}.` };
+      }
+      const laeuft = [...this.gebaeude.values()].some((g) => g.besitzer === spielerId && g.schlange.includes(art));
+      if (laeuft) return { fehler: `Der Aufstieg in die ${aufstieg.name} läuft schon.` };
+      const haben = this.gebaeudeDerZeit(spieler);
+      if (haben < aufstieg.voraussetzung) {
+        return { fehler: `Erst ${aufstieg.voraussetzung} fertige Gebäude ${ZEITALTER[spieler.zeitalter].genitiv} außer Häusern — vorhanden: ${haben}.` };
+      }
+    }
     // Eine Verbesserung gibt es einmal: erforscht oder schon irgendwo eingereiht.
     if (VERBESSERUNGEN[art]) {
       const eingereiht = [...this.gebaeude.values()].some((g) => g.besitzer === spielerId && g.schlange.includes(art));
@@ -484,9 +528,10 @@ class Welt {
     const belegt = bevoelkerung.get(spieler.id) || 0;
     const art = gebaeude.schlange[0];
     const verbesserung = VERBESSERUNGEN[art];
+    const aufstieg = AUFSTIEGE[art];
     // Voll: der Auftrag wartet, statt anzufangen (bauen AC-15) - eine
-    // Verbesserung braucht keinen Platz.
-    const wartet = !verbesserung && belegt >= this.wohnraum(spieler);
+    // Verbesserung und ein Aufstieg brauchen keinen Platz.
+    const wartet = !this.ohnePlatz(art) && belegt >= this.wohnraum(spieler);
     if (wartet !== gebaeude.wartet) this.gebaeudeGeaendert(gebaeude);
     gebaeude.wartet = wartet;
     if (wartet) return;
@@ -499,6 +544,14 @@ class Welt {
       gebaeude.schlange.shift();
       gebaeude.fortschritt = 0;
       this.erforschen(spieler, art);
+      return;
+    }
+    // Der Aufstieg aendert nur die Stufe; was er oeffnet, haengt an den Daten
+    // der Gebaeude und Einheiten (bauen AC-23, spielziel AC-1).
+    if (aufstieg) {
+      gebaeude.schlange.shift();
+      gebaeude.fortschritt = 0;
+      spieler.zeitalter = aufstieg.stufe;
       return;
     }
     const feld = this.freiesFeldAm(gebaeude);
@@ -1208,6 +1261,9 @@ class Welt {
         bev: bevoelkerung.get(s.id) || 0,
         raum: this.wohnraum(s),
         ...(s.verbesserungen.length ? { v: s.verbesserungen } : {}),
+        // Zeitalter als Stufe, nur wenn es nicht die Dunkle Zeit ist
+        // (bedienung AC-33) - ein Zustand bleibt klein.
+        ...(s.zeitalter ? { z: s.zeitalter } : {}),
         // Untaetige Dorfbewohner, nur wenn es welche gibt (einheiten AC-21).
         ...untaetigeListe(this, s.id),
         // Arbeiter je Rohstoff, in der Reihenfolge holz, nahrung, gold, stein
@@ -1288,8 +1344,12 @@ class Welt {
         gebaeude: Object.fromEntries(Object.entries(GEBAEUDE).map(([art, w]) => [art, {
           leben: w.leben, bildetAus: w.bildetAus, groesse: w.groesse, kosten: w.kosten, bauzeit: w.bauzeit,
           wohnraum: w.wohnraum, annahme: w.annahme, begehbar: Boolean(w.begehbar), nahrung: w.nahrung || null,
+          zeitalter: w.zeitalter || 0,
         }])),
         verbesserungen: VERBESSERUNGEN,
+        // Die Zeitalter und was ein Aufstieg kostet (bauen AC-23, bedienung AC-33).
+        zeitalter: ZEITALTER,
+        aufstiege: AUFSTIEGE,
       },
     };
   }

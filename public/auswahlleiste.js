@@ -28,6 +28,55 @@ function bildchen(art, groesse, farbe, lage = {}) {
   return leinwand;
 }
 
+// Der Aufstieg als Bild: ein Torbogen mit Zinnen, davor eine Fahne in der
+// Volksfarbe - das naechste Zeitalter oeffnet sich (bauen AC-23).
+function aufstiegBildchen(groesse, farbe) {
+  const leinwand = document.createElement('canvas');
+  const dichte = window.devicePixelRatio || 1;
+  leinwand.width = groesse * dichte;
+  leinwand.height = groesse * dichte;
+  leinwand.style.width = `${groesse}px`;
+  leinwand.style.height = `${groesse}px`;
+  const s = leinwand.getContext('2d');
+  s.scale(dichte, dichte);
+  const g = groesse;
+  // Zwei Tuerme und der Riegel darueber, aus warmem Stein.
+  const stein = s.createLinearGradient(0, 0.2 * g, 0, 0.9 * g);
+  stein.addColorStop(0, '#b9a98c');
+  stein.addColorStop(1, '#7d705a');
+  s.fillStyle = stein;
+  s.fillRect(0.12 * g, 0.3 * g, 0.2 * g, 0.6 * g);
+  s.fillRect(0.68 * g, 0.3 * g, 0.2 * g, 0.6 * g);
+  s.fillRect(0.12 * g, 0.3 * g, 0.76 * g, 0.16 * g);
+  // Zinnen auf beiden Tuermen.
+  for (const x of [0.12, 0.23, 0.68, 0.79]) s.fillRect(x * g, 0.2 * g, 0.09 * g, 0.12 * g);
+  // Die Durchfahrt: dunkel, oben rund.
+  s.fillStyle = '#2b2219';
+  s.beginPath();
+  s.moveTo(0.36 * g, 0.9 * g);
+  s.lineTo(0.36 * g, 0.66 * g);
+  s.arc(0.5 * g, 0.66 * g, 0.14 * g, Math.PI, 0);
+  s.lineTo(0.64 * g, 0.9 * g);
+  s.closePath();
+  s.fill();
+  // Die Fahne am Riegel, in der Volksfarbe.
+  s.fillStyle = farbe;
+  s.beginPath();
+  s.moveTo(0.5 * g, 0.46 * g);
+  s.lineTo(0.5 * g, 0.12 * g);
+  s.lineTo(0.78 * g, 0.19 * g);
+  s.lineTo(0.5 * g, 0.26 * g);
+  s.closePath();
+  s.fill();
+  s.strokeStyle = 'rgba(46, 34, 24, 0.6)';
+  s.lineWidth = g * 0.03;
+  s.beginPath();
+  s.moveTo(0.5 * g, 0.46 * g);
+  s.lineTo(0.5 * g, 0.1 * g);
+  s.stroke();
+  return leinwand;
+}
+
 // Ein kleiner Webstuhl als Bild fuer den Knopf: Rahmen, Kettfaeden, ein Stueck Tuch.
 function webstuhlBildchen(groesse, farbe) {
   const leinwand = document.createElement('canvas');
@@ -137,7 +186,7 @@ export class Auswahlleiste {
       // Neu gebaut wird nur, wenn sich etwas Sichtbares aendert - sonst nur
       // der Balken. So flackert nichts unter dem Zeiger.
       const bezahlbar = angebot.map((e) => this.fehlt(e.kosten)).join('|');
-      const schluessel = `g${gebaeude.i}:${gebaeude.h}:${gebaeude.n}:${gebaeude.s.join(',')}:${gebaeude.w}:${bezahlbar}:${a.verbesserungen.join(',')}`;
+      const schluessel = `g${gebaeude.i}:${gebaeude.h}:${gebaeude.n}:${gebaeude.s.join(',')}:${gebaeude.w}:${bezahlbar}:${a.verbesserungen.join(',')}:${a.zeitalter}`;
       if (schluessel !== this.gezeigt) {
         this.gebaeudeBauen(gebaeude, angebot, farbe);
         this.gezeigt = schluessel;
@@ -193,14 +242,19 @@ export class Auswahlleiste {
   // Was ein Gebaeude ausbildet, mit den Kosten aus den Werten des Servers.
   angebot(gebaeude) {
     const werte = this.ansicht.werte;
+    const aufstiege = werte.aufstiege || {};
     return (werte.gebaeude[gebaeude.art]?.bildetAus || [])
       // Eine erforschte Verbesserung verschwindet aus dem Angebot (bauen AC-21).
       .filter((art) => !this.ansicht.verbesserungen.includes(art))
+      // Von den Zeitaltern steht nur das naechste zur Wahl (bauen AC-23) -
+      // alle drei auf einmal waeren drei Knoepfe, von denen zwei absagen.
+      .filter((art) => !aufstiege[art] || aufstiege[art].stufe === this.ansicht.zeitalter + 1)
       .map((art) => ({
         art,
-        name: werte.verbesserungen?.[art]?.name || FIGUREN[art]?.name || art,
-        kosten: werte.einheiten[art]?.kosten || werte.verbesserungen?.[art]?.kosten || {},
+        name: aufstiege[art]?.name || werte.verbesserungen?.[art]?.name || FIGUREN[art]?.name || art,
+        kosten: werte.einheiten[art]?.kosten || werte.verbesserungen?.[art]?.kosten || aufstiege[art]?.kosten || {},
         verbesserung: Boolean(werte.verbesserungen?.[art]),
+        aufstieg: Boolean(aufstiege[art]),
       }));
   }
 
@@ -358,10 +412,20 @@ export class Auswahlleiste {
       knopf.setAttribute('aria-disabled', fehlt ? 'true' : 'false');
       if (fehlt) knopf.dataset.fehlt = fehlt;
       const kosten = Object.entries(eintrag.kosten).map(([r, m]) => `${m} ${ROHSTOFF_NAMEN[r]}`).join(', ');
-      knopf.title = fehlt ? `${eintrag.name} - zu wenig ${fehlt}` : `${eintrag.name} ausbilden (${kosten})`;
+      if (eintrag.aufstieg) {
+        knopf.dataset.aufstieg = eintrag.art;
+        knopf.title = fehlt
+          ? `Aufstieg in die ${eintrag.name} - zu wenig ${fehlt}`
+          : `Aufstieg in die ${eintrag.name} (${kosten})`;
+      } else {
+        knopf.title = fehlt ? `${eintrag.name} - zu wenig ${fehlt}` : `${eintrag.name} ausbilden (${kosten})`;
+      }
       const preis = element('span', 'preis');
       for (const [r, m] of Object.entries(eintrag.kosten)) preis.append(element('span', `ware ware-${r[0]}`), element('span', null, String(m)));
-      knopf.append(eintrag.verbesserung ? webstuhlBildchen(58, farbe) : bildchen(eintrag.art, 58, farbe), preis);
+      if (eintrag.aufstieg) knopf.append(aufstiegBildchen(58, farbe));
+      else if (eintrag.verbesserung) knopf.append(webstuhlBildchen(58, farbe));
+      else knopf.append(bildchen(eintrag.art, 58, farbe));
+      knopf.append(preis);
       knopf.addEventListener('click', () => {
         if (fehlt) this.ansicht.melden(`Zu wenig ${fehlt}.`);
         else this.senden({ auftrag: 'ausbilden', gebaeude: gebaeude.i, einheit: eintrag.art });
@@ -376,8 +440,17 @@ export class Auswahlleiste {
       eintrag.type = 'button';
       eintrag.dataset.abbrechen = String(platz);
       eintrag.title = 'Abbrechen - die Kosten kommen voll zurueck';
+      const mass = platz === 0 ? 50 : 38;
       const verbesserung = Boolean(this.ansicht.werte.verbesserungen?.[art]);
-      eintrag.append(verbesserung ? webstuhlBildchen(platz === 0 ? 50 : 38, farbe) : bildchen(art, platz === 0 ? 50 : 38, farbe));
+      const aufstieg = Boolean(this.ansicht.werte.aufstiege?.[art]);
+      if (aufstieg) {
+        eintrag.append(aufstiegBildchen(mass, farbe));
+        eintrag.dataset.laufenderAufstieg = art;
+      } else if (verbesserung) {
+        eintrag.append(webstuhlBildchen(mass, farbe));
+      } else {
+        eintrag.append(bildchen(art, mass, farbe));
+      }
       if (platz === 0) {
         eintrag.classList.add('laufend');
         const balken = element('div', 'fortschritt');

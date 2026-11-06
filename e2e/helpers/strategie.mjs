@@ -1,6 +1,6 @@
 // Handgriffe fuer das Strategiespiel im Browser. Rueckschau nach Runde 20:
 // der Start einer Partie zu zweit stand kopiert in jeder Spielbild-Datei.
-import { ANMELDUNG, expect, fehlerSammeln } from './seite.mjs';
+import { ANMELDUNG, expect, fehlerSammeln, zeitraffer } from './seite.mjs';
 
 /**
  * Anna (angemeldet) eroeffnet mit festem Startwert, Bert tritt bei, Anna
@@ -49,27 +49,69 @@ export async function partieBeenden({ anna, bert, fehler }) {
  * Einen eigenen Dorfbewohner anklicken, an der Koerpermitte - bevorzugt einen,
  * der im Bild frei steht: stand ein anderer dicht daneben, traf der Klick den
  * (Runde 53, im Test der ganzen Dunklen Zeit).
+ *
+ * Zwei Fallen, beide in Runde 58 gefunden, beide im Zeitraffer haeufig:
+ * - Wer **hinter** einem Gebaeude steht, ist seit Schritt B1 nur ein Umriss;
+ *   der Klick trifft das Gebaeude davor. Solche kommen nicht in Frage.
+ * - Wer **laeuft**, ist beim Klick nicht mehr dort, wo eben gemessen wurde.
+ *   Im Zeitraffer steht fast nie einer still, also wird neu gemessen und noch
+ *   einmal geklickt, bis einer sitzt.
  */
-export async function dorfbewohnerAnklicken(page, { ohne = [] } = {}) {
-  const ziel = await page.evaluate((ausser) => {
+export async function dorfbewohnerAnklicken(page, { ohne = [], code = null, raffer = 1 } = {}) {
+  // Mit `code` haelt die Hilfe die Zeit an, waehrend sie zielt: im Zeitraffer
+  // laeuft das Ziel zwischen Messen und Klicken mehrere Felder weit.
+  if (code) await zeitraffer(page, code, 1);
+  const messen = () => page.evaluate((nicht) => {
     const a = window.ansicht;
     const h = a.figurenHoehe();
     const alle = [...a.nachher.values()].map((e) => ({ e, p: a.zuBild(e.x, e.y) }));
     const tiere = [...a.tiere.values()].map((t) => a.zuBild(t.x, t.y));
-    const kandidaten = alle.filter(({ e, p }) => e.b === a.ich && e.k === 'd' && !ausser.includes(e.i)
+    // Verdeckte sind nur ein Umriss hinter dem Gebaeude - ein Klick trifft das Gebaeude.
+    const verdeckt = new Set(a.umrisse || []);
+    const kandidaten = alle.filter(({ e, p }) => e.b === a.ich && e.k === 'd' && !nicht.includes(e.i)
+      && !verdeckt.has(e.i)
       && p.x > 20 && p.y > h + 60 && p.x < a.leinwand.clientWidth - 20 && p.y < a.leinwand.clientHeight - 160);
     const abstand = ({ e, p }) => Math.min(
       ...alle.filter((o) => o.e.i !== e.i).map((o) => Math.hypot(o.p.x - p.x, o.p.y - p.y)),
       ...tiere.map((q) => Math.hypot(q.x - p.x, q.y - p.y)),
       Infinity,
     );
-    const frei = kandidaten.sort((x, y) => abstand(y) - abstand(x))[0]
-      || alle.find(({ e }) => e.b === a.ich && e.k === 'd' && !ausser.includes(e.i));
-    return { i: frei.e.i, x: frei.p.x, y: frei.p.y - h * 0.6 };
+    const beste = kandidaten.sort((x, y) => abstand(y) - abstand(x))[0];
+    if (beste) return { i: beste.e.i, x: beste.p.x, y: beste.p.y - h * 0.6 };
+    // Keiner im Bild: im Zeitraffer laufen sie weit vom Dorf weg. Einen in
+    // die Mitte holen und beim naechsten Versuch wieder messen.
+    const weit = alle.find(({ e }) => e.b === a.ich && e.k === 'd' && !nicht.includes(e.i) && !verdeckt.has(e.i));
+    if (weit) a.blickAuf(weit.e.x, weit.e.y);
+    return null;
   }, ohne);
-  await page.mouse.click(ziel.x, ziel.y);
-  await expect.poll(() => page.evaluate(() => [...window.ansicht.ausgewaehlt])).toEqual([ziel.i]);
-  return ziel.i;
+
+  const gewaehlt = (id) => page.evaluate((i) => {
+    const gleich = [...window.ansicht.ausgewaehlt];
+    return gleich.length === 1 && gleich[0] === i;
+  }, id);
+
+  let letzte = null;
+  for (let versuch = 0; versuch < 12; versuch++) {
+    const ziel = await messen();
+    if (!ziel) {
+      await page.waitForTimeout(200);
+      continue;
+    }
+    letzte = ziel;
+    await page.mouse.click(ziel.x, ziel.y);
+    // Kurz warten: der Zustand des naechsten Takts darf die Auswahl bestaetigen.
+    for (let n = 0; n < 6; n++) {
+      if (await gewaehlt(ziel.i)) {
+        if (code) await zeitraffer(page, code, raffer);
+        return ziel.i;
+      }
+      await page.waitForTimeout(100);
+    }
+  }
+  expect(letzte, 'ein freistehender, unverdeckter Dorfbewohner').not.toBeNull();
+  // Zwoelfmal danebengeklickt: die Zusicherung sagt, was zuletzt zu sehen war.
+  await expect.poll(() => page.evaluate(() => [...window.ansicht.ausgewaehlt])).toEqual([letzte.i]);
+  return letzte.i;
 }
 
 /**

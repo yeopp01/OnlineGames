@@ -2,7 +2,7 @@
 
 **Bereich:** Strategie
 **Kuerzel:** bedienung
-**Stand:** 21/34 fertig · 13 offen
+**Stand:** 22/34 fertig · 12 offen
 
 ## Zweck
 
@@ -116,7 +116,7 @@ verglichen: die drei größten Lücken in Lesbarkeit und Aussehen.
 
 ### Stufe B — Zeitalter und Kampf bedienen
 
-- **AC-33** `offen` **Zeitalter steht im Bild** — Oben steht, in welchem Zeitalter man ist;
+- **AC-33** `fertig` **Zeitalter steht im Bild** — Oben steht, in welchem Zeitalter man ist;
   während eines Aufstiegs zeigt das Dorfzentrum den Fortschritt, und der
   Wechsel wird einmal im Bild gemeldet.
 - **AC-34** `offen` **Angriffsbefehl ist erkennbar** — Ein Rechtsklick auf Feindliches zeigt

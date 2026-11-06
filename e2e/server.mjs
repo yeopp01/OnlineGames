@@ -22,7 +22,16 @@ const laufend = await starten(hafen, {
     rechnungenJeMinute: 1000,
     zuegeJeMinute: 20000,
   },
-  konten: { datei: ':memory:', geheimnis: randomBytes(32).toString('hex') },
+  konten: {
+    datei: ':memory:',
+    geheimnis: randomBytes(32).toString('hex'),
+    // Wie bei `schutz`: alle Tests kommen von einer Adresse, und Better Auth
+    // faellt ohne weitergereichte Adresse auf einen gemeinsamen Eimer je Pfad
+    // zurueck. Mit den echten Werten (30 je Minute) riss der Lauf, sobald er
+    // laenger wurde - Runde 58. Dass die Grenze greift, pruefen
+    // tests/konten.test.mjs und tests/schutz.test.mjs mit den echten Werten.
+    mehr: { rateLimit: { enabled: true, window: 60, max: 5000, customRules: {} } },
+  },
 });
 
 // Ein Konto zum Anmelden. Genau der Weg, den auch der Browser geht:

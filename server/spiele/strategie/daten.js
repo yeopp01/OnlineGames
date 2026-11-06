@@ -38,12 +38,13 @@ const TIERE = {
 // Gebaeude der Dunklen Zeit (bauen AC-20): Groesse in Feldern (quadratisch),
 // Kosten, Bauzeit in Sekunden, Leben, Wohnraum, welche Rohstoffe dort
 // abgegeben werden (einheiten AC-16) und was sie ausbilden.
-// Farm und Kaserne kommen mit Schritt A7.
+// `zeitalter` fehlt hier ueberall: ohne Angabe gehoert ein Gebaeude der
+// Dunklen Zeit (Stufe 0). Die Gebaeude der Feudalzeit tragen Stufe 1.
 const ALLE = ['holz', 'nahrung', 'gold', 'stein'];
 const GEBAEUDE = {
   dorfzentrum: {
     groesse: 4, kosten: { holz: 275, stein: 100 }, bauzeit: 150, leben: 2400, wohnraum: 5,
-    annahme: ALLE, bildetAus: ['dorfbewohner', 'webstuhl'],
+    annahme: ALLE, bildetAus: ['dorfbewohner', 'webstuhl', 'feudalzeit', 'ritterzeit', 'imperialzeit'],
   },
   haus: { groesse: 2, kosten: { holz: 25 }, bauzeit: 25, leben: 550, wohnraum: 5, annahme: [], bildetAus: [] },
   muehle: { groesse: 2, kosten: { holz: 100 }, bauzeit: 35, leben: 1000, wohnraum: 0, annahme: ['nahrung'], bildetAus: [] },
@@ -67,6 +68,28 @@ const STARTAUFSTELLUNG = ['dorfbewohner', 'dorfbewohner', 'dorfbewohner', 'spaeh
 // Mehr Wohnraum zaehlt nicht, wie in der Vorlage.
 const BEVOELKERUNG_MAX = 200;
 
+// Die vier Zeitalter (spielziel AC-1). `stufe` ist der Index: 0 ist die
+// Dunkle Zeit, in der jede Partie beginnt.
+// `genitiv` steht in Meldungen („Gebäude der Dunklen Zeit"), deshalb gebeugt
+// und mit echten Umlauten - es ist ein Text für den Bildschirm.
+const ZEITALTER = [
+  { id: 'dunkel', name: 'Dunkle Zeit', genitiv: 'der Dunklen Zeit' },
+  { id: 'feudal', name: 'Feudalzeit', genitiv: 'der Feudalzeit' },
+  { id: 'ritter', name: 'Ritterzeit', genitiv: 'der Ritterzeit' },
+  { id: 'imperial', name: 'Imperialzeit', genitiv: 'der Imperialzeit' },
+];
+
+// Der Aufstieg ist ein Auftrag im Dorfzentrum wie eine Verbesserung: bezahlt
+// beim Einreihen, mit einer Dauer, und ein Abbruch erstattet voll (bauen
+// AC-23). `voraussetzung` ist die Zahl fertiger eigener Gebaeude des
+// **laufenden** Zeitalters ausser Haeusern - das Dorfzentrum zaehlt mit.
+// Werte aus der Vorlage (docs/strategie/vorlage-aoe2.md).
+const AUFSTIEGE = {
+  feudalzeit: { name: 'Feudalzeit', stufe: 1, kosten: { nahrung: 500 }, zeit: 130, voraussetzung: 2 },
+  ritterzeit: { name: 'Ritterzeit', stufe: 2, kosten: { nahrung: 800, gold: 200 }, zeit: 160, voraussetzung: 2 },
+  imperialzeit: { name: 'Imperialzeit', stufe: 3, kosten: { nahrung: 1000, gold: 800 }, zeit: 190, voraussetzung: 2 },
+};
+
 // Verbesserungen: einmal je Partie, im Gebaeude wie eine Einheit eingereiht.
 // `wirkung` gibt je Einheitenart Zuschlaege (bauen AC-21). Ruestung wirkt ab
 // Stufe B mit dem Kampf; sie steht schon hier, damit die Werte an einer Stelle sind.
@@ -78,5 +101,6 @@ const VERBESSERUNGEN = {
 };
 
 module.exports = {
-  EINHEITEN, SAMMELN, TIERE, GEBAEUDE, VERBESSERUNGEN, BEVOELKERUNG_MAX, SCHLANGE_MAX, STARTAUFSTELLUNG,
+  EINHEITEN, SAMMELN, TIERE, GEBAEUDE, VERBESSERUNGEN, ZEITALTER, AUFSTIEGE,
+  BEVOELKERUNG_MAX, SCHLANGE_MAX, STARTAUFSTELLUNG,
 };

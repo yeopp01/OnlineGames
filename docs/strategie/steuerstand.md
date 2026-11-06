@@ -13,59 +13,51 @@ hier nichts eintraegt, verliert den Faden beim naechsten Autocompact.
 
 ## Zuletzt fortgeschrieben
 
-2026-11-06, waehrend Runde 57 (noch nicht committet).
+2026-11-07, nach Runde 58 (Schritt B2 fertig und committet).
 
 ## Wo ich stehe
 
 - **Branch:** `strategie`. Nie auf `main` arbeiten, **nie pushen, nie deployen.**
-- **Board:** 354 von 503 Kriterien fertig (vor dem Commit von Runde 57).
-- **Stufe A ist erreicht** (fahrplan AC-3 bis AC-7). Die Dunkle Zeit ist am
-  Stueck im Browser spielbar.
-- **Stufe B (Feudalzeit) ist spezifiziert**, Bauabfolge B1 bis B7 steht im
-  [Fahrplan](fahrplan.md).
-- **B1 ist gebaut** (verdeckte Einheiten als Umriss, sichtbare Arbeit, Arbeiter
-  je Rohstoff) — siehe „Offener Rest von Runde 57".
+- **Board:** 356 von 503 Kriterien fertig · 1 in Arbeit · 5 in QA · 4 geplant ·
+  130 offen · 7 zurueckgestellt. 331 Tests ohne Browser, 130 im Browser.
+- **Stufe A ist erreicht** (fahrplan AC-3 bis AC-7).
+- **Stufe B:** Bauabfolge B1 bis B7 im [Fahrplan](fahrplan.md). **B1 und B2
+  sind fertig.** Der Arbeitsbaum ist sauber.
 
-## Offener Rest von Runde 57
+## Was B2 gebracht hat (zum Weiterbauen wissen)
 
-Im Arbeitsbaum liegt uncommittet:
+- `daten.js`: `ZEITALTER` (vier Stufen, mit `genitiv` fuer Meldungen) und
+  `AUFSTIEGE` (`feudalzeit`/`ritterzeit`/`imperialzeit` mit `stufe`, `kosten`,
+  `zeit`, `voraussetzung`). Das Dorfzentrum bildet alle drei aus; der Browser
+  zeigt nur den naechsten.
+- **Ein Gebaeude ohne `zeitalter` gehoert der Dunklen Zeit (Stufe 0).** Die
+  Gebaeude der Feudalzeit tragen `zeitalter: 1` — daran haengt B3.
+- `welt.js`: `spieler.zeitalter`, `ohnePlatz(art)` (Verbesserung oder Aufstieg
+  braucht keinen Bevoelkerungsplatz), `gebaeudeZeitalter(art)`,
+  `gebaeudeDerZeit(spieler)`. Im Zustand je Spieler `z` (nur wenn > 0), im
+  Aufbau `werte.zeitalter` und `werte.aufstiege`.
+- Browser: `ansicht.zeitalter`, `ansicht.zeitalterName()`,
+  `ansicht.beiZeitalter(stufe, name)`; `#zeitalter` in der Kopfzeile,
+  `#zeitalterwechsel` als grosse Ankuendigung; in der Auswahlleiste
+  `aufstiegBildchen` und `data-aufstieg` bzw. `data-laufender-aufstieg`.
+- **Entschieden:** die Voraussetzung „zwei Gebaeude der Dunklen Zeit ausser
+  Haeusern" zaehlt **das Dorfzentrum mit** (in bauen AC-23 notiert).
 
-- `bedienung AC-32` (Arbeiter je Rohstoff in der Leiste) — gebaut, Test
-  `tests/strategie-untaetig.test.mjs` („bedienung AC-32: die Welt zaehlt je
-  Rohstoff, wer daran arbeitet") und Browsertest in
-  `e2e/tests/strategie-arbeit.spec.mjs`, Bildnachweis liegt als neue Datei
-  unter `qa/bildnachweise/10-strategie/bedienung/AC-32--…png` (noch nicht
-  eingecheckt).
-- `welt.js`: `arbeiterVon(spielerId)`, im Zustand je Spieler `a: [holz,
-  nahrung, gold, stein]`.
-- `public/ansicht.js`: `this.arbeiter`, Anzeige mit `data-arbeiter="<rohstoff>"`
-  und Klasse `keiner` bei null.
-- **Noch zu tun vor dem Commit:** `npm run check` gruen lesen, Notiz zu Runde
-  57 in [erkenntnisse.md](erkenntnisse.md), Stand in `CLAUDE.md` aktualisieren,
-  dann committen (Betreff etwa „Arbeiter je Rohstoff in der Leiste: Schritt B1
-  fertig").
+## Was als Naechstes kommt: Schritt B3
 
-## Was als Naechstes kommt: Schritt B2, der Zeitalterwechsel
+Die drei Gebaeude der Feudalzeit, **bauen AC-24** und **darstellung AC-14**
+(erweitert): Schiessanlage (175 Holz, 50 s, 1000 Leben), Stall (175 Holz,
+50 s, 1000), Schmiede (150 Holz, 40 s, 1200). Sie stehen erst im Baumenue,
+wenn die Feudalzeit erreicht ist — also `zeitalter: 1` in `GEBAEUDE`, und
+`baut` des Dorfbewohners bzw. das Baumenue muss nach dem Zeitalter filtern.
+Gezeichnet und unterscheidbar wie die anderen (`public/gebaeude.js`,
+Schautafel). Mit B3 wird **spielziel AC-1** von `in-arbeit` auf `fertig`
+gesetzt: dann oeffnet ein Aufstieg zum ersten Mal etwas.
 
-Drei Kriterien, alle noch `offen`:
-
-- **bauen AC-23 — Aufstieg in die Feudalzeit.** Das Dorfzentrum bietet den
-  Aufstieg an: **500 Nahrung, 130 Sekunden.** Voraussetzung: **zwei fertige
-  Gebaeude der Dunklen Zeit ausser Haeusern.** Waehrend der Aufstieg laeuft,
-  bildet das Dorfzentrum nichts anderes aus; ein Abbruch erstattet die Nahrung.
-- **bedienung AC-33 — Zeitalter steht im Bild.** Oben steht das Zeitalter;
-  waehrend des Aufstiegs zeigt das Dorfzentrum den Fortschritt, der Wechsel
-  wird einmal im Bild gemeldet.
-- **spielziel AC-1 — Zeitalter gliedern die Partie.** Dunkle, Feudal-, Ritter-
-  und Imperialzeit; jeder Aufstieg kostet und dauert und oeffnet Neues. Fuer
-  B2 reicht der Weg Dunkel → Feudal, die Namen der spaeteren Zeitalter gehoeren
-  als Daten dazu.
-
-Danach: **B3** die drei Gebaeude der Feudalzeit (bauen AC-24, darstellung
-AC-14 erweitert) · **B4** die neuen Einheiten (einheiten AC-23, AC-24) ·
-**B5** Kampf (kampf AC-1 bis AC-10, bedienung AC-34, einheiten AC-25) ·
-**B6** Verbesserungen (bauen AC-25, AC-26, ki AC-9) · **B7** Gleichgewicht
-messen (fahrplan AC-8 bis AC-10).
+Danach: **B4** die neuen Einheiten (einheiten AC-23, AC-24) · **B5** Kampf
+(kampf AC-1 bis AC-10, bedienung AC-34, einheiten AC-25) · **B6**
+Verbesserungen (bauen AC-25, AC-26, ki AC-9) · **B7** Gleichgewicht messen
+(fahrplan AC-8 bis AC-10).
 
 ## Die Regeln, die ich am ehesten vergesse
 
@@ -107,6 +99,19 @@ messen (fahrplan AC-8 bis AC-10).
 - **Doppelte Deklaration beim Destrukturieren** in `ansicht.js` (`holz` gab es
   schon) — die Rohstoff-Zaehler heissen deshalb `amHolz`, `anNahrung`,
   `amGold`, `amStein`.
+- **Einen Dorfbewohner im Zeitraffer anklicken geht schief** (Runde 58): das
+  Ziel laeuft zwischen Messen und Klick weg, und wer hinter einem Gebaeude
+  steht, ist seit B1 nur ein Umriss — der Klick trifft das Gebaeude.
+  `dorfbewohnerAnklicken(page, { ohne, code, raffer })` loest beides; mit
+  `code` haelt es die Zeit an. Nie ohne `code` im Zeitraffer aufrufen.
+- **Der Browserlauf lief in die Ratengrenze von Better Auth** („Too many
+  requests"), als er laenger wurde. Der Testserver (`e2e/server.mjs`) setzt sie
+  jetzt weit, wie schon `schutz`; die echten Werte prueft
+  `tests/konten.test.mjs`. Wer den Lauf stark verlaengert, prueft das erneut.
+- **Alte Bildschirmtexte des Strategiespiels haben keine Umlaute**
+  („Bevoelkerung voll", „Das ist nicht dein Gebaeude."), obwohl CLAUDE.md sie
+  verlangt. Neue Texte werden richtig geschrieben; die alten aufzuraeumen ist
+  ein offener Faden (es haengen Testtexte daran).
 
 ## Werkzeuge, die ich brauche
 
