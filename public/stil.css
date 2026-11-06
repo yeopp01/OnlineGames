@@ -303,6 +303,20 @@ canvas {
   cursor: default;
 }
 
+/* Arbeiter je Rohstoff (bedienung AC-32). */
+.arbeiter {
+  margin-left: 0.3rem;
+  padding: 0 0.3rem;
+  border-radius: 0.6rem;
+  background: #ffffff1a;
+  color: #cfd6de;
+  font: 600 0.72rem system-ui, sans-serif;
+  font-style: normal;
+}
+.arbeiter.keiner {
+  opacity: 0.4;
+}
+
 .spielmeldung {
   position: fixed;
   left: 50%;

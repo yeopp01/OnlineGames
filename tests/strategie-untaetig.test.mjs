@@ -95,3 +95,36 @@ test('einheiten AC-20: viele zum selben Punkt stellen sich nebeneinander, viele 
     assert.ok(Math.hypot(f.x - geklickt.x, f.y - geklickt.y) <= 3);
   }
 });
+
+test('bedienung AC-32: die Welt zaehlt je Rohstoff, wer daran arbeitet', () => {
+  const welt = new Welt(ZWEI, 7);
+  const g = welt.karte.groesse;
+  const [holzer, hirte, goldgraeber] = [...welt.einheiten.values()].filter((e) => e.besitzer === 'a' && e.art === 'dorfbewohner');
+  const nahes = (art) => {
+    const basis = welt.spielerVon('a').basis;
+    let bestes = null;
+    for (let i = 0; i < welt.karte.felder.length; i++) {
+      if (welt.karte.felder[i] !== art) continue;
+      const d = Math.hypot((i % g) - basis.x, Math.floor(i / g) - basis.y);
+      if (!bestes || d < bestes.d) bestes = { x: i % g, y: Math.floor(i / g), d };
+    }
+    return bestes;
+  };
+  // Zu Beginn arbeitet niemand.
+  assert.deepEqual(welt.arbeiterVon('a'), [0, 0, 0, 0]);
+
+  welt.befehl('a', [holzer.id], nahes(karten.WALD));
+  welt.befehl('a', [goldgraeber.id], nahes(karten.GOLD));
+  const schaf = [...welt.tiere.values()].find((t) => t.besitzer === 'a');
+  welt.befehl('a', [hirte.id], { x: Math.round(schaf.x), y: Math.round(schaf.y) });
+  // Reihenfolge: Holz, Nahrung, Gold, Stein - schon unterwegs zaehlt der Auftrag.
+  assert.deepEqual(welt.arbeiterVon('a'), [1, 1, 1, 0]);
+  assert.deepEqual(welt.arbeiterVon('b'), [0, 0, 0, 0], 'fremde Spieler zaehlen getrennt');
+
+  // Wer abliefert, zaehlt weiter zu seinem Rohstoff; der Reiter zaehlt nie.
+  for (let t = 0; t < 600; t++) welt.takten();
+  const [holz] = welt.arbeiterVon('a');
+  assert.equal(holz, 1, 'der Holzfaeller zaehlt auch auf dem Weg zum Lager');
+  const zustand = welt.zustand().spieler.find((s) => s.id === 'a');
+  assert.deepEqual(zustand.a, welt.arbeiterVon('a'), 'und steht so im Zustand');
+});

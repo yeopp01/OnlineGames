@@ -60,6 +60,7 @@ export class Ansicht {
     // Die eigenen untaetigen Dorfbewohner, wie der Server sie meldet (einheiten AC-21).
     this.untaetige = [];
     this.letzterUntaetiger = null;
+    this.arbeiter = { holz: 0, nahrung: 0, gold: 0, stein: 0 };
     // Platzieren eines Gebaeudes (bauen AC-4): welche Art, und wo der Zeiger ist.
     this.platzieren = null;
     this.zeiger = null;
@@ -151,6 +152,9 @@ export class Ansicht {
       this.vorraete = { holz, nahrung, gold, stein, bev, raum };
       this.verbesserungen = meine.v || [];
       this.untaetige = meine.u || [];
+      // Arbeiter je Rohstoff (bedienung AC-32), in der Reihenfolge des Servers.
+      const [amHolz, anNahrung, amGold, amStein] = meine.a || [0, 0, 0, 0];
+      this.arbeiter = { holz: amHolz, nahrung: anNahrung, gold: amGold, stein: amStein };
     }
 
     // Eingesammelte Einheiten, die es nicht mehr gibt, fallen aus der Auswahl.

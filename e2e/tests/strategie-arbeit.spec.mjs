@@ -81,6 +81,55 @@ test.describe('Im Spielbild', () => {
     });
   });
 
+  test('bedienung AC-32: die Leiste zeigt je Rohstoff, wie viele daran arbeiten', async ({}, info) => {
+    const { anna, code } = partie;
+    const zahl = (rohstoff) => anna.locator(`[data-arbeiter="${rohstoff}"]`);
+    // Aus dem Test davor arbeitet einer im Holz; an Nahrung, Gold und Stein niemand.
+    await expect(zahl('holz')).toHaveText('1');
+    for (const rohstoff of ['nahrung', 'gold', 'stein']) {
+      await expect(zahl(rohstoff)).toHaveText('0');
+      await expect(zahl(rohstoff)).toHaveClass(/keiner/);
+    }
+    await expect(zahl('holz')).not.toHaveClass(/keiner/);
+
+    // Noch einer an die Beeren: die Nahrung zaehlt hoch.
+    await zeitraffer(anna, code, 5);
+    await anna.evaluate(() => {
+      const a = window.ansicht;
+      const b = a.spieler.get(a.ich).basis;
+      a.kamera.zoom = 1.4;
+      a.blickAuf(b.x + 2, b.y + 2);
+    });
+    const genommen = await anna.evaluate(() => [...window.ansicht.nachher.values()].filter((e) => e.w).map((e) => e.i));
+    const zweiter = await dorfbewohnerAnklicken(anna, { ohne: genommen });
+    const beere = await anna.evaluate(() => {
+      const a = window.ansicht;
+      const b = a.spieler.get(a.ich).basis;
+      const g = a.karte.groesse;
+      let bestes = null;
+      for (let y = 0; y < g; y++) {
+        for (let x = 0; x < g; x++) {
+          if (a.karte.felder[y * g + x] !== 2) continue;
+          const d = Math.hypot(x - b.x, y - b.y);
+          if (!bestes || d < bestes.d) bestes = { x, y, d };
+        }
+      }
+      return a.zuBild(bestes.x, bestes.y);
+    });
+    await anna.mouse.click(beere.x, beere.y, { button: 'right' });
+    await expect(zahl('nahrung')).toHaveText('1');
+    await anna.waitForFunction((id) => window.ansicht.nachher.get(id)?.w === 1, zweiter, { timeout: 40_000 });
+    await zeitraffer(anna, code, 1);
+    await expect(anna.locator('#kopfzeile')).toBeInViewport();
+    await anna.waitForTimeout(300);
+    await nachweis(anna, {
+      spec: BEDIENUNG,
+      ac: 'AC-32',
+      titel: 'Oben in der Leiste: 1 Arbeiter am Holz, 1 an der Nahrung, an Gold und Stein blass die Null',
+      test: info,
+    });
+  });
+
   test('bedienung AC-30: wer hinter einem Gebaeude steht, ist als Umriss in Spielerfarbe zu sehen', async ({}, info) => {
     const { anna, code } = partie;
     // Zwei Einheiten hinter dem Dorfzentrum - im Bild dahinter, also verdeckt.

@@ -2,7 +2,7 @@
 
 **Bereich:** Strategie
 **Kuerzel:** bedienung
-**Stand:** 20/34 fertig · 14 offen
+**Stand:** 21/34 fertig · 13 offen
 
 ## Zweck
 
@@ -110,7 +110,7 @@ verglichen: die drei größten Lücken in Lesbarkeit und Aussehen.
 - **AC-31** `fertig` **Arbeit ist zu sehen** — Wer sammelt, baut oder eine Farm bestellt,
   bewegt sich dabei sichtbar (Schlag, Bücken); wer untätig steht, steht still.
   Heute sehen Arbeitende und Wartende gleich aus.
-- **AC-32** `offen` **Arbeiter je Rohstoff** — Die Rohstoffleiste zeigt neben jedem Vorrat,
+- **AC-32** `fertig` **Arbeiter je Rohstoff** — Die Rohstoffleiste zeigt neben jedem Vorrat,
   wie viele Dorfbewohner gerade daran arbeiten. Ohne diese Zahl lässt sich ein
   Wirtschaftsplan nicht steuern.
 

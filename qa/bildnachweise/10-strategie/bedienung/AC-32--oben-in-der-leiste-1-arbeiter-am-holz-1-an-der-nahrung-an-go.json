@@ -1,0 +1,10 @@
+{
+  "spec": "10-strategie/bedienung.md",
+  "ac": "AC-32",
+  "titel": "Oben in der Leiste: 1 Arbeiter am Holz, 1 an der Nahrung, an Gold und Stein blass die Null",
+  "datei": "e2e/tests/strategie-arbeit.spec.mjs",
+  "pfad": [
+    "Im Spielbild",
+    "bedienung AC-32: die Leiste zeigt je Rohstoff, wie viele daran arbeiten"
+  ]
+}

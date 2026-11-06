@@ -545,6 +545,33 @@ class Welt {
     return einheit.art === 'dorfbewohner' && !einheit.weg.length && !einheit.sammelt && !einheit.baut;
   }
 
+  /**
+   * Woran ein Dorfbewohner gerade arbeitet (bedienung AC-32): Schaf und Farm
+   * sind Nahrung, ein Vorratsfeld sagt es selbst; wer nur traegt, zaehlt zu
+   * seiner Ladung. Zurueck kommt der Rohstoff oder null.
+   */
+  arbeitetAn(einheit) {
+    if (einheit.art !== 'dorfbewohner') return null;
+    const auftrag = einheit.auftrag;
+    if (auftrag?.art === 'tier' || auftrag?.art === 'farm') return 'nahrung';
+    if (auftrag?.art === 'sammeln') {
+      const feld = this.karte.felder[auftrag.feld.y * this.karte.groesse + auftrag.feld.x];
+      return SAMMELN[feld]?.rohstoff || einheit.ladungsart || null;
+    }
+    return einheit.ladung > 0 ? einheit.ladungsart : null;
+  }
+
+  /** Arbeiter je Rohstoff eines Spielers, in der Reihenfolge von ROHSTOFFE. */
+  arbeiterVon(spielerId) {
+    const zahl = { holz: 0, nahrung: 0, gold: 0, stein: 0 };
+    for (const e of this.einheiten.values()) {
+      if (e.besitzer !== spielerId) continue;
+      const rohstoff = this.arbeitetAn(e);
+      if (rohstoff) zahl[rohstoff] += 1;
+    }
+    return ROHSTOFFE.map((r) => zahl[r]);
+  }
+
   untaetigeVon(spielerId) {
     const ids = [];
     for (const e of this.einheiten.values()) if (e.besitzer === spielerId && this.untaetig(e)) ids.push(e.id);
@@ -1183,6 +1210,9 @@ class Welt {
         ...(s.verbesserungen.length ? { v: s.verbesserungen } : {}),
         // Untaetige Dorfbewohner, nur wenn es welche gibt (einheiten AC-21).
         ...untaetigeListe(this, s.id),
+        // Arbeiter je Rohstoff, in der Reihenfolge holz, nahrung, gold, stein
+        // (bedienung AC-32).
+        a: this.arbeiterVon(s.id),
       })),
       einheiten,
       felder,

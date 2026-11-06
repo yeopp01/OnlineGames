@@ -409,6 +409,16 @@ alle sieben Gebäude der Dunklen Zeit stehen. Was sich wiederholt hat:
 Neueste oben. Eine Zeile je Runde: Nummer, Datum, Kriterien, Ergebnis,
 wichtigste Erkenntnis.
 
+- **57** · 2026-09-17 · bedienung AC-32 **fertig** — **Schritt B1 fertig**.
+  Die Welt zählt je Rohstoff, wer daran arbeitet (`arbeiterVon`, Schaf und Farm
+  zählen als Nahrung, wer trägt zählt zu seiner Ladung) und schickt die vier
+  Zahlen je Spieler mit; die Leiste zeigt sie am Vorrat, null bleibt blass.
+  Gelernt: `const [holz, …]` neben einem schon vorhandenen `const { holz, … }`
+  in derselben Funktion — „Identifier has already been declared", und die ganze
+  Seite blieb schwarz; der Browsertest fand es sofort. `darstellung AC-10` riss
+  im großen Lauf bei 100 % fremder Last (Bilder je Sekunde), allein 57 und grün
+  — der Test nimmt schon den besseren von zwei Durchgängen; wenn er noch einmal
+  reißt, bekommt er einen dritten.
 - **56** · 2026-09-17 · B1, Teil 1: bedienung AC-30 und AC-31 **fertig**.
   Verdeckte Einheiten: wer hinter einem Gebäude steht (dessen x + y größer ist),
   wird nach allem anderen noch einmal als Umriss in Spielerfarbe gezeichnet —

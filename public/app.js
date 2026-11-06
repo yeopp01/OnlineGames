@@ -119,6 +119,7 @@ function empfangen(nachricht) {
       leisteZiel(ansicht.vorraete);
       auswahlleiste.aktualisieren();
       untaetigZeigen(ansicht.untaetige.length);
+      arbeiterZeigen(ansicht.arbeiter);
       break;
 
     case 'fehler':
@@ -167,6 +168,18 @@ function untaetigZeigen(zahl) {
 }
 
 document.getElementById('untaetig').addEventListener('click', () => ansicht?.naechsterUntaetiger());
+
+// Arbeiter je Rohstoff in der Leiste (bedienung AC-32): die Zahl steht am
+// Vorrat, null bleibt blass - so sieht man auf einen Blick, wo niemand steht.
+function arbeiterZeigen(arbeiter) {
+  for (const [rohstoff, zahl] of Object.entries(arbeiter)) {
+    const feld = document.querySelector(`[data-arbeiter="${rohstoff}"]`);
+    if (!feld) continue;
+    const text = String(zahl);
+    if (feld.textContent !== text) feld.textContent = text;
+    feld.classList.toggle('keiner', zahl === 0);
+  }
+}
 
 function leisteZiel(werte) {
   let geaendert = false;
