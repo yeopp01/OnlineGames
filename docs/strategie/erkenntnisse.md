@@ -634,6 +634,29 @@ alle sieben Gebäude der Dunklen Zeit stehen. Was sich wiederholt hat:
 Neueste oben. Eine Zeile je Runde: Nummer, Datum, Kriterien, Ergebnis,
 wichtigste Erkenntnis.
 
+- **76** · 2026-11-07 · **bedienung AC-36 fertig** — jede Kampfeinheit
+  unterscheidet sich bei Zoom 1 **im Umriss** auf mindestens einem Drittel der
+  Fläche vom Dorfbewohner. Gelernt: **was eine Einheit kenntlich macht, muss
+  außerhalb ihres Körperumrisses liegen.** Bei Zoom 1 ist eine Figur knapp 29
+  Bildpunkte hoch; ein Schild vor der Brust, ein Bogen mit 1,2 Einheiten
+  Strichstärke (1,4 Bildpunkte) oder mehr Farbe im Kittel tragen dann nichts
+  mehr bei. Fünf von sechs lagen vorher unter der Schwelle (0,295 bis 0,321),
+  und zwar genau die fünf, deren Ausrüstung im Körper lag. Geholfen haben drei
+  Griffe: der Milizschild von der Brust an die Seite und lang bis zum Knie,
+  die dünnen Waffen (Bogen, Wurfspieß, Speerschaft, Axtstiel) um die Hälfte
+  dicker, und beim Soldaten ein Axtblatt mit ausgezogenen Hörnern statt eines
+  größeren Vierecks. Zweite Erkenntnis: **eine Zahl, die steigt, kann ein Bild
+  verderben.** Der erste Versuch am Soldaten brachte 0,359, sah aber aus wie
+  ein weißes Segel am Stiel; der Halbmond bringt 0,352 und sieht aus wie eine
+  Axt. Die Schautafel entscheidet, nicht die Messung. Dritte: die **Gegenprobe
+  über alle Paare** hat gezeigt, dass der Milizschild an der Seite die Miliz
+  vom Speerkämpfer entfernt hat (0,246 statt vorher mehr) — beide tragen links
+  einen Schild. Die Länge des Normannenschilds hat es auf 0,306 gehoben;
+  darstellung AC-14 misst Umriss **oder** Farbe und liegt mit 0,568 weiter
+  bequem darüber. Werkzeug: `schautafel.umrissUnterschied(a, b, hoehe)` misst
+  den Umriss allein, `sicht --waehlen a,b,c --ziel auswahl` stellt eine Reihe
+  bei Zoom 1 auf.
+
 - **75** · 2026-11-07 · **C1 beginnt: bedienung AC-35 fertig** — die Auswahl
   nennt Angriff, Rüstung nah und fern, Reichweite und den Bonus mit seinem
   Ziel („+15 gegen Kavallerie"). Gelernt: **die Summierung der Verbesserungen

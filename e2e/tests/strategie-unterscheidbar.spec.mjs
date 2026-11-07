@@ -4,11 +4,16 @@
 // auf mindestens einem Drittel ihrer Flaeche. Im Spielbild: alle Gebaeude bei
 // Zoom 1 nebeneinander, fuer das Ansehen - seit Schritt B3 auch die drei der
 // Feudalzeit (Schiessanlage, Stall, Schmiede).
+//
+// Dazu seit Runde 76 die schaerfere Messung fuer Kampfeinheiten
+// (→ bedienung.md AC-36): nur der **Umriss**, und nur in der Hoehe, die Zoom 1
+// einer Figur gibt.
 import { createRequire } from 'node:module';
 import { nachweis } from '../../scripts/qa-nachweis.mjs';
-import { expect, gebaeudeAufstellen, test } from '../helpers/seite.mjs';
-import { partieBeenden, partieZuZweit } from '../helpers/strategie.mjs';
+import { einheitenAufstellen, expect, gebaeudeAufstellen, test } from '../helpers/seite.mjs';
+import { figurenFrei, partieBeenden, partieZuZweit } from '../helpers/strategie.mjs';
 
+const BEDIENUNG = '10-strategie/bedienung.md';
 const DARSTELLUNG = '10-strategie/darstellung.md';
 const FAHRPLAN = '10-strategie/fahrplan.md';
 const { EINHEITEN, GEBAEUDE } = createRequire(import.meta.url)('../../server/spiele/strategie/daten.js');
@@ -27,6 +32,35 @@ test('darstellung AC-14: je zwei Einheiten und je zwei Gebaeude unterscheiden si
   expect(figuren.length, 'alle Paare der Einheiten').toBeGreaterThanOrEqual(28);
   expect(gebaeude.length, 'alle Paare der Gebaeude').toBeGreaterThanOrEqual(45);
   for (const { paar, anteil } of [...figuren, ...gebaeude]) expect(anteil, paar).toBeGreaterThanOrEqual(1 / 3);
+});
+
+test('bedienung AC-36: jede Kampfeinheit unterscheidet sich bei Spielgroesse im Umriss vom Dorfbewohner', async ({ page }) => {
+  await page.goto('/schautafel.html');
+  await page.waitForFunction(() => window.schautafel?.umrissUnterschied);
+  // Was eine Kampfeinheit ist, sagen die Daten des Servers, keine Liste im
+  // Test: alles, was nicht zur Klasse "dorf" gehoert. Eine neue Einheit faellt
+  // damit von selbst unter das Kriterium.
+  const kaempfer = Object.entries(EINHEITEN)
+    .filter(([, werte]) => !(werte.klassen || []).includes('dorf'))
+    .map(([art]) => art);
+  expect(kaempfer.length, kaempfer.join(', ')).toBeGreaterThanOrEqual(6);
+  // Gemessen wird in der Hoehe, die Zoom 1 einer Figur gibt - nicht
+  // herangezoomt. Darum geht es: bei knapp 29 Bildpunkten traegt Ausruestung
+  // innerhalb des Koerpers nichts mehr zur Gestalt bei.
+  const hoehe = await page.evaluate(() => window.schautafel.spielhoehe);
+  expect(hoehe, 'Figurenhoehe bei Zoom 1').toBeLessThan(32);
+  const gemessen = {};
+  for (const art of kaempfer) {
+    gemessen[art] = await page.evaluate((art) => window.schautafel.umrissUnterschied('dorfbewohner', art), art);
+  }
+  // Vor der Arbeit in Runde 76 lagen fuenf von sechs darunter: Miliz 0,295,
+  // Soldat 0,321, Speerkaempfer 0,310, Bogenschuetze 0,318, Plaenkler 0,304 -
+  // nur der Spaeherreiter kam mit 0,705 ueber die Schwelle. Danach gemessen:
+  // 0,401 · 0,352 · 0,371 · 0,356 · 0,348 · 0,705. Das Drittel ist dieselbe
+  // Schwelle wie in darstellung AC-14, nur haerter gemessen.
+  for (const [art, anteil] of Object.entries(gemessen)) {
+    expect(anteil, `${art} gegen Dorfbewohner: ${JSON.stringify(gemessen)}`).toBeGreaterThanOrEqual(1 / 3);
+  }
 });
 
 test('darstellung AC-9 / fahrplan AC-7: die Schautafel zeigt jede Einheit und jedes Gebaeude der Stufe in zwei Farben mit Namen', async ({ page }, info) => {
@@ -133,6 +167,113 @@ test.describe('Alle Gebaeude im Spielbild', () => {
       spec: DARSTELLUNG,
       ac: 'AC-14',
       titel: 'Zoom 1: Dorfzentrum mit Fahne, Haus mit Strohdach, Mühle mit Flügeln, Holzfällerlager mit Stämmen, Bergbaulager mit Schieferfirst und Karre, Kaserne mit Zinnen, Farm als Acker, Schießanlage mit Zielscheibe, Stall mit Koppel, Schmiede mit Schornstein',
+      test: info,
+    });
+  });
+});
+
+test.describe('Militaer bei Spielgroesse', () => {
+  let partie;
+
+  test.beforeAll(async ({ browser }, info) => {
+    partie = await partieZuZweit(browser, info);
+  });
+  test.afterAll(() => partieBeenden(partie));
+
+  test('bedienung AC-36: bei Zoom 1 steht jede Kampfeinheit neben dem Dorfbewohner im Bild', async ({}, info) => {
+    const { anna, code } = partie;
+    const reihe = ['dorfbewohner', 'miliz', 'soldat', 'speerkaempfer', 'bogenschuetze', 'plaenkler'];
+    // Ein kleineres Fenster: bei Zoom 1 ist eine Figur 29 Bildpunkte hoch,
+    // und in 1400 x 950 waere das Bild zu neun Zehnteln Wiese. Der Zoom
+    // bleibt 1 - genau darum geht es.
+    await anna.setViewportSize({ width: 1000, height: 480 });
+    // Die Wiese liegt mitten auf der Karte, nicht an ihrem Rand: dort steht
+    // die Reihe sonst vor dem Schwarz ausserhalb der Karte, und das liest
+    // sich auf dem Bild wie Nebel, den es noch gar nicht gibt.
+    const wiese = await anna.evaluate(() => {
+      const a = window.ansicht;
+      const g = a.karte.groesse;
+      const b = a.spieler.get(a.ich).basis;
+      const grasUm = (x, y, r) => {
+        for (let dy = -r; dy <= r; dy++) {
+          for (let dx = -r; dx <= r; dx++) if (a.karte.felder[(y + dy) * g + (x + dx)] !== 0) return false;
+        }
+        return true;
+      };
+      let bester = null;
+      for (let y = 14; y < g - 14; y++) {
+        for (let x = 14; x < g - 14; x++) {
+          if (!grasUm(x, y, 7)) continue;
+          const weg = Math.hypot(x - b.x, y - b.y);
+          // Nahe genug, dass das Dorfzentrum noch als Massstab im Bild steht,
+          // weit genug, dass die eigenen Dorfbewohner nicht dazwischenstehen.
+          if (weg < 10 || weg > 22) continue;
+          const rand = Math.min(x, y, g - 1 - x, g - 1 - y);
+          if (!bester || rand > bester.rand) bester = { x, y, rand };
+        }
+      }
+      if (!bester) throw new Error('keine Wiese mitten auf der Karte gefunden');
+      return bester;
+    });
+    // Zwei Felder Abstand in Richtung (+1, -1): auf der isometrischen Karte
+    // ist das eine **waagerechte** Reihe im Bild, keine Diagonale.
+    const angelegt = [];
+    for (let i = 0; i < reihe.length; i++) {
+      const versatz = 2 * i - 5;
+      const x = wiese.x + versatz;
+      const y = wiese.y - versatz;
+      expect(await einheitenAufstellen(anna, code, 'Anna', 1, { art: reihe[i], x, y }), reihe[i]).toBe(1);
+      angelegt.push({ art: reihe[i], x, y });
+    }
+    await anna.evaluate(() => {
+      const a = window.ansicht;
+      a.kamera.zoom = 1;
+      a.ausgewaehlt.clear();
+      a.gewaehltesGebaeude = null;
+      a.beiAuswahl();
+    });
+    // Alle sechs stehen und sind im Bild - sonst zeigt der Screenshot Wiese.
+    // Der Pruefgriff setzt eine Einheit auf den **Ring** um den genannten
+    // Platz, nicht auf ihn: gesucht wird deshalb in der Nachbarschaft. Weil
+    // alle denselben Versatz bekommen, bleibt die Reihe eine Reihe.
+    const suchen = (plaetze) => {
+      const a = window.ansicht;
+      const gefunden = plaetze.map(({ art, x, y }) => {
+        const k = a.werte.einheiten[art].kuerzel;
+        const nah = [...a.nachher.values()].filter((e) => e.b === a.ich && e.k === k
+          && Math.abs(e.x - x) <= 1.5 && Math.abs(e.y - y) <= 1.5);
+        return nah.length === 1 ? { art, x: nah[0].x, y: nah[0].y } : null;
+      });
+      return gefunden.every(Boolean) ? gefunden : null;
+    };
+    await anna.waitForFunction(suchen, angelegt);
+    const stehen = await anna.evaluate(suchen, angelegt);
+    // Erst jetzt die Kamera: auf die Mitte der Reihe, wie sie wirklich steht.
+    await anna.evaluate((plaetze) => {
+      const a = window.ansicht;
+      a.blickAuf(plaetze.reduce((m, p) => m + p.x, 0) / plaetze.length,
+        plaetze.reduce((m, p) => m + p.y, 0) / plaetze.length);
+    }, stehen);
+    const ausserhalb = await anna.evaluate((plaetze) => {
+      const a = window.ansicht;
+      return plaetze.filter(({ x, y }) => {
+        const p = a.zuBild(x, y);
+        return p.x < 40 || p.y < 80 || p.x > a.leinwand.clientWidth - 40 || p.y > a.leinwand.clientHeight - 40;
+      }).map((p) => p.art);
+    }, stehen);
+    expect(ausserhalb, 'alle sechs im Bild').toEqual([]);
+    // Von links nach rechts in der Reihenfolge der Bildunterschrift.
+    const vonLinks = await anna.evaluate((plaetze) => plaetze
+      .map(({ art, x, y }) => ({ art, bx: window.ansicht.zuBild(x, y).x }))
+      .sort((p, q) => p.bx - q.bx)
+      .map((p) => p.art), stehen);
+    expect(vonLinks).toEqual(reihe);
+    expect(await figurenFrei(anna)).toEqual([]);
+    await anna.waitForTimeout(300);
+    await nachweis(anna, {
+      spec: BEDIENUNG,
+      ac: 'AC-36',
+      titel: 'Zoom 1, von links nach rechts: Dorfbewohner mit Axt, Miliz mit langem Schild, Soldat mit Streitaxt, Speerkämpfer mit Rundschild und hohem Speer, Bogenschütze mit gespanntem Bogen, Plänkler mit Wurfspieß über der Schulter',
       test: info,
     });
   });

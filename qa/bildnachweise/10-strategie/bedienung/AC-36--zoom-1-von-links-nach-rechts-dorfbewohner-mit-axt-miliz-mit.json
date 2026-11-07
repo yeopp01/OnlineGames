@@ -1,0 +1,10 @@
+{
+  "spec": "10-strategie/bedienung.md",
+  "ac": "AC-36",
+  "titel": "Zoom 1, von links nach rechts: Dorfbewohner mit Axt, Miliz mit langem Schild, Soldat mit Streitaxt, Speerkämpfer mit Rundschild und hohem Speer, Bogenschütze mit gespanntem Bogen, Plänkler mit Wurfspieß über der Schulter",
+  "datei": "e2e/tests/strategie-unterscheidbar.spec.mjs",
+  "pfad": [
+    "Militaer bei Spielgroesse",
+    "bedienung AC-36: bei Zoom 1 steht jede Kampfeinheit neben dem Dorfbewohner im Bild"
+  ]
+}

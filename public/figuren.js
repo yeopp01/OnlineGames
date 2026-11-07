@@ -399,19 +399,27 @@ function miliz(stift, farbe, { schritt = 0, fein = true, haut = HAUT }) {
   vieleck(stift, [[-4.2, -10.4], [4.4, -10.4], [4.3, -9.2], [-4.3, -9.2]], licht(stift, LEDER, 0, -10.4, 0, -9.2), false);
   kopf(stift, -19.8, { helm: true, fein, haut });
   ellipse(stift, 4.4, -12.4, 1.1, 1.2, licht(stift, haut, 3.4, -13.5, 5.4, -11, 0.15, -0.2));
-  // Schild vorn: Holz mit Beschlag, in Spielerfarbe bemalt, heller Rand, Buckel.
-  const schild = [[-6.8, -15.5], [-0.4, -15.5], [-0.6, -9.5], [-3.6, -6.6], [-6.6, -9.5]];
+  // Schild **seitlich vorgehalten**, nicht vor der Brust, und lang bis zum
+  // Knie (bedienung AC-36): bei Zoom 1 ist eine Figur 29 Bildpunkte hoch, und
+  // was innerhalb des Koerpers liegt, traegt dann nichts zum Umriss bei.
+  // Vorher lag der Schild zu zwei Dritteln ueber dem Kittel - gemessen
+  // unterschied sich die Miliz vom Dorfbewohner nur auf 0,295 der Flaeche,
+  // verlangt ist ein Drittel. Die Laenge trennt ihn ausserdem vom kleinen
+  // Rundschild des Speerkaempfers, der an derselben Seite haengt.
+  const schild = [[-9.8, -16.4], [-3, -16.4], [-3.2, -8.6], [-6.4, -3.2], [-9.6, -8.6]];
   umriss(stift, () => vieleck(stift, schild, 'rgba(0,0,0,0)', true));
-  vieleck(stift, schild, licht(stift, toenen(farbe, 0.05), -6.8, -15.5, -0.4, -7, 0.22, -0.28), false);
+  vieleck(stift, schild, licht(stift, toenen(farbe, 0.05), -9.8, -16.4, -3, -3.6, 0.22, -0.28), false);
   stift.save();
   stift.strokeStyle = toenen(farbe, 0.55);
   stift.lineWidth = 0.8;
-  vieleck(stift, [[-6, -14.8], [-1.2, -14.8], [-1.3, -9.8], [-3.6, -7.6], [-5.9, -9.8]], 'rgba(0,0,0,0)');
+  vieleck(stift, [[-8.9, -15.6], [-3.9, -15.6], [-4, -8.9], [-6.4, -4.4], [-8.8, -8.9]], 'rgba(0,0,0,0)');
   stift.restore();
-  ellipse(stift, -3.6, -11.8, 1.15, 1.15, licht(stift, EISEN, -4.6, -12.8, -2.6, -10.8, 0.4, -0.3));
+  // Der Arm reicht vom Rumpf zum Schildbuckel, sonst schwebt der Schild.
+  vieleck(stift, [[-4.2, -14.4], [-2.6, -14.9], [-5.6, -11.6], [-6.6, -12.2]], licht(stift, toenen(farbe, -0.2), -4, -14, -6, -12), false);
+  ellipse(stift, -6.2, -12.4, 1.15, 1.15, licht(stift, EISEN, -7.2, -13.4, -5.2, -11.4, 0.4, -0.3));
   if (fein) {
-    glanz(stift, -4, -12.3, 0.35, 0.3, 0.9);
-    for (const [nx, ny] of [[-6, -14.6], [-1.2, -14.6], [-3.6, -7.8]]) ellipse(stift, nx, ny, 0.3, 0.3, '#5c636b', false);
+    glanz(stift, -6.6, -12.9, 0.35, 0.3, 0.9);
+    for (const [nx, ny] of [[-8.9, -15.4], [-3.9, -15.4], [-6.4, -4.8]]) ellipse(stift, nx, ny, 0.3, 0.3, '#5c636b', false);
   }
   stift.restore();
 }
@@ -433,18 +441,18 @@ function soldat(stift, farbe, { schritt = 0, fein = true, haut = HAUT }) {
   stift.save();
   stift.translate(-5.5, -4.1);
   stift.rotate(0.648); // dieselbe Neigung wie der Stiel vor dem Koerper
-  const stiel = [[-0.55, 0.9], [0.55, 0.9], [0.55, -20.6], [-0.55, -20.6]];
+  const stiel = [[-0.85, 4.6], [0.85, 4.6], [0.85, -20.6], [-0.85, -20.6]];
   umriss(stift, () => vieleck(stift, stiel, 'rgba(0,0,0,0)', true));
   vieleck(stift, stiel, licht(stift, LEDER, -0.6, -20, 0.6, 0, 0.25, -0.25), false);
-  const blatt = [[0.2, -15.8], [0.7, -20.2], [3.5, -21.1], [4.9, -18.4], [3.3, -14.6]];
+  const blatt = [[0.3, -14.4], [0.6, -21.6], [3.4, -20.1], [4.6, -17.6], [3.1, -14.9], [4.2, -12.8], [1.9, -12.6]];
   umriss(stift, () => vieleck(stift, blatt, 'rgba(0,0,0,0)', true));
-  vieleck(stift, blatt, licht(stift, EISEN, 0.2, -21, 4.9, -14.6, 0.35, -0.3), false);
+  vieleck(stift, blatt, licht(stift, EISEN, 0.3, -21.6, 4.6, -12.6, 0.35, -0.3), false);
   if (fein) {
-    strich(stift, [[3.6, -20.8], [4.7, -18.5]], 'rgba(255,255,255,0.65)', 0.7);
-    strich(stift, [[1.3, -16], [1.6, -19.6]], 'rgba(70,78,88,0.6)', 0.4);
+    strich(stift, [[3.2, -19.8], [4.4, -17.7]], 'rgba(255,255,255,0.65)', 0.7);
+    strich(stift, [[1.5, -14.6], [1.3, -20.4]], 'rgba(70,78,88,0.6)', 0.45);
   }
   // Spitze ueber dem Blatt.
-  vieleck(stift, [[-0.5, -20.3], [0.6, -20.5], [0.1, -23.4]], licht(stift, EISEN, 0, -23, 0.6, -20.3), false);
+  vieleck(stift, [[-0.75, -20.3], [0.8, -20.6], [0.1, -24.2]], licht(stift, EISEN, 0, -24, 0.8, -20.3), false);
   stift.restore();
   // Kettenhemd ueber den ganzen Rumpf, bis auf die Schenkel.
   const hemd = [[-5.1, -5.2], [5.3, -5.2], [4.1, -17.2], [0.2, -17.8], [-3.9, -17.2]];
@@ -465,7 +473,7 @@ function soldat(stift, farbe, { schritt = 0, fein = true, haut = HAUT }) {
   kopf(stift, -19.8, { topfhelm: true, fein, haut });
   // Der Stiel noch einmal vor dem Koerper, zwischen den Haenden - sonst
   // greifen sie ins Leere (Runde 61 beim Ansehen gefunden).
-  const vorn = [[-5.5, -4.1], [-4.6, -4.9], [3.4, -15.7], [2.5, -14.9]];
+  const vorn = [[-5.8, -4], [-4.4, -5.1], [3.6, -15.9], [2.2, -14.8]];
   umriss(stift, () => vieleck(stift, vorn, 'rgba(0,0,0,0)', true));
   vieleck(stift, vorn, licht(stift, LEDER, -5, -4, 3.4, -15.7, 0.3, -0.2), false);
   // Beide Haende am Stiel - eine Zweihandwaffe haelt man nicht einarmig.
@@ -621,8 +629,8 @@ function speerkaempfer(stift, farbe, { schritt = 0, fein = true, haut = HAUT }) 
   stift.save();
   stift.translate(4.6, -13);
   stift.rotate(0.1);
-  vieleck(stift, [[-0.6, 5.2], [0.6, 5.2], [0.6, -13.5], [-0.6, -13.5]], licht(stift, HOLZ, -0.7, 0, 0.7, 0, 0.32, -0.3));
-  vieleck(stift, [[-1.5, -13.3], [1.5, -13.3], [0.95, -15.6], [0, -17.6], [-0.95, -15.6]], licht(stift, EISEN, -1.5, -17, 1.5, -13, 0.4, -0.3));
+  vieleck(stift, [[-0.85, 5.2], [0.85, 5.2], [0.85, -13.5], [-0.85, -13.5]], licht(stift, HOLZ, -0.9, 0, 0.9, 0, 0.32, -0.3));
+  vieleck(stift, [[-1.9, -13.3], [1.9, -13.3], [1.2, -15.8], [0, -18.4], [-1.2, -15.8]], licht(stift, EISEN, -1.9, -18, 1.9, -13, 0.4, -0.3));
   if (fein) {
     strich(stift, [[0, -13.9], [0, -16.8]], 'rgba(70,78,88,0.75)', 0.3);
     for (const wy of [1.3, 2.8]) strich(stift, [[-0.7, wy], [0.7, wy]], 'rgba(60,40,24,0.8)', 0.5);
@@ -639,12 +647,12 @@ function speerkaempfer(stift, farbe, { schritt = 0, fein = true, haut = HAUT }) 
   kopf(stift, -19.8, { kappe: '#9a8c6a', fein, haut });
   ellipse(stift, 4.5, -12.9, 1.1, 1.2, licht(stift, haut, 3.5, -14, 5.5, -11.5, 0.15, -0.2));
   // Kleiner Rundschild am linken Arm, viel kleiner als der Schild der Miliz.
-  umriss(stift, () => { stift.beginPath(); stift.ellipse(-5.2, -12.2, 3.1, 3.3, 0, 0, Math.PI * 2); stift.stroke(); });
-  ellipse(stift, -5.2, -12.2, 3.1, 3.3, licht(stift, HOLZ, -8.3, -15.5, -2.1, -8.9, 0.25, -0.3), false);
-  ellipse(stift, -5.2, -12.2, 1.1, 1.1, licht(stift, EISEN, -6.3, -13.3, -4.1, -11.1, 0.4, -0.3));
+  umriss(stift, () => { stift.beginPath(); stift.ellipse(-5.6, -12.2, 3.9, 4.1, 0, 0, Math.PI * 2); stift.stroke(); });
+  ellipse(stift, -5.6, -12.2, 3.9, 4.1, licht(stift, HOLZ, -9.5, -16.3, -1.7, -8.1, 0.25, -0.3), false);
+  ellipse(stift, -5.6, -12.2, 1.25, 1.25, licht(stift, EISEN, -6.9, -13.5, -4.3, -10.9, 0.4, -0.3));
   if (fein) {
-    strich(stift, [[-7.9, -13.6], [-2.5, -13.6]], 'rgba(60,40,24,0.5)', 0.4);
-    glanz(stift, -5.6, -12.7, 0.35, 0.3, 0.9);
+    strich(stift, [[-8.9, -13.8], [-2.3, -13.8]], 'rgba(60,40,24,0.5)', 0.4);
+    glanz(stift, -6, -12.7, 0.4, 0.3, 0.9);
   }
   stift.restore();
 }
@@ -678,10 +686,10 @@ function bogenschuetze(stift, farbe, { schritt = 0, fein = true, haut = HAUT }) 
   stift.save();
   stift.lineCap = 'round';
   stift.strokeStyle = licht(stift, HOLZ, 5, -20, 12, -7, 0.3, -0.3);
-  stift.lineWidth = 1.2;
+  stift.lineWidth = 1.9;
   stift.beginPath();
   stift.moveTo(5.2, -20.6);
-  stift.quadraticCurveTo(11.8, -13.4, 5.2, -6.2);
+  stift.quadraticCurveTo(12.4, -13.4, 5.2, -6.2);
   stift.stroke();
   stift.strokeStyle = 'rgba(246,242,228,0.95)';
   stift.lineWidth = 0.25;
@@ -692,8 +700,8 @@ function bogenschuetze(stift, farbe, { schritt = 0, fein = true, haut = HAUT }) 
   stift.stroke();
   stift.restore();
   // Pfeil auf der Sehne, waagerecht nach vorn.
-  strich(stift, [[2.6, -13.4], [10.6, -13.4]], '#9a7a4a', 0.6);
-  vieleck(stift, [[10.4, -14.1], [12.2, -13.4], [10.4, -12.7]], EISEN, false);
+  strich(stift, [[2.6, -13.4], [10.6, -13.4]], '#9a7a4a', 0.95);
+  vieleck(stift, [[10.2, -14.6], [12.8, -13.4], [10.2, -12.2]], EISEN, false);
   // Beide Arme greifen von der Schulter aus - ohne sie haengen die Haende in
   // der Luft -, die Haende selbst klein.
   vieleck(stift, [[3.4, -15.6], [4.4, -15.9], [8.6, -13], [7.6, -12.2]], licht(stift, haut, 3.4, -15.9, 8.6, -12.2, 0.16, -0.2), false);
@@ -747,8 +755,8 @@ function plaenkler(stift, farbe, { schritt = 0, fein = true, haut = HAUT }) {
   stift.save();
   stift.translate(-2.6, -22.2);
   stift.rotate(-0.28);
-  vieleck(stift, [[-4.2, -0.5], [12.6, -0.5], [12.6, 0.5], [-4.2, 0.5]], licht(stift, HOLZ, -4.2, 0, 12.6, 0, 0.3, -0.3));
-  vieleck(stift, [[12.4, -1.25], [15.4, 0], [12.4, 1.25]], licht(stift, EISEN, 12.4, -1.25, 15.4, 1.25, 0.4, -0.3), false);
+  vieleck(stift, [[-7.6, -0.72], [12.6, -0.72], [12.6, 0.72], [-7.6, 0.72]], licht(stift, HOLZ, -7.6, 0, 12.6, 0, 0.3, -0.3));
+  vieleck(stift, [[12.4, -1.7], [16, 0], [12.4, 1.7]], licht(stift, EISEN, 12.4, -1.7, 16, 1.7, 0.4, -0.3), false);
   if (fein) strich(stift, [[1.4, -0.1], [3, -0.1]], 'rgba(60,40,24,0.8)', 0.5);
   stift.restore();
   ellipse(stift, -2.5, -21.6, 0.95, 1, licht(stift, haut, -3.5, -22.6, -1.5, -20.6, 0.15, -0.2));

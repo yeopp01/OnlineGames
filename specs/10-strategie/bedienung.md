@@ -2,7 +2,7 @@
 
 **Bereich:** Strategie
 **Kuerzel:** bedienung
-**Stand:** 24/38 fertig · 14 offen
+**Stand:** 25/38 fertig · 13 offen
 
 ## Zweck
 
@@ -141,12 +141,20 @@ Reihenfolge:
   die Werte schon schickt. Zu prüfen am Bild und an den Zahlen, die
   `welt.einheitenwert()` liefert (nicht an den rohen Daten: Verbesserungen
   müssen sich zeigen).
-- **AC-36** `offen` **Militär bei Spielgröße erkennbar** — Bei Zoom 1 unterscheidet
-  sich eine Kampfeinheit von einem Dorfbewohner auf einem Drittel ihrer
-  Fläche, so wie [Darstellung](darstellung.md) AC-14 es für die Schautafel
-  verlangt. Dort wird herangezoomt gemessen; im Spielbild bei Zoom 1 sind
-  heute alle Figuren derselben Farbe kaum zu trennen, und man spielt bei
-  Zoom 1.
+- **AC-36** `fertig` **Militär bei Spielgröße erkennbar** — Bei Zoom 1 unterscheidet
+  sich jede Kampfeinheit von einem Dorfbewohner **im Umriss** auf mindestens
+  einem Drittel der gemeinsamen Fläche. Gemessen wird die Figur in der Höhe,
+  die Zoom 1 ihr gibt (`figurHoeheBei(1)`, rund 29 Bildpunkte), und nur der
+  Umriss — nicht Umriss **oder** Farbe wie bei [Darstellung](darstellung.md)
+  AC-14. Begründung: bei 29 Bildpunkten ist die Farbe im Körper eine Handvoll
+  Punkte, die gegen das Gelände verschwindet; was bleibt, ist die Gestalt.
+  Das Drittel ist dasselbe wie in AC-14. **Gemessen vor der Arbeit** (Runde
+  76): Dorfbewohner gegen Miliz 0,295 · Soldat 0,321 · Speerkämpfer 0,310 ·
+  Bogenschütze 0,318 · Plänkler 0,304 — nur der Späherreiter liegt mit 0,705
+  darüber, weil ihn sein Pferd breit macht. Der Hebel ist deshalb die Waffe
+  **außerhalb** des Körperumrisses, nicht mehr Farbe im Körper. **Danach
+  gemessen:** Miliz 0,401 · Soldat 0,352 · Speerkämpfer 0,371 · Bogenschütze
+  0,356 · Plänkler 0,348 · Späherreiter 0,705.
 - **AC-37** `offen` **Die Spielzeit steht im Bild** — Oben, neben dem Zeitalter,
   steht die verstrichene Spielzeit als `m:ss`. Ohne sie lässt sich nicht
   sagen, ob ein Aufstieg schnell war — die erste Frage, die ein Spieler an

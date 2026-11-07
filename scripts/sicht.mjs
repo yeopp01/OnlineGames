@@ -102,26 +102,36 @@ async function spielbild() {
     welt.spieler.find((sp) => sp.name === 'Anna').zeitalter = stufe;
   }
   if (waehlen) {
+    // Mehrere Arten durch Komma: "--waehlen dorfbewohner,miliz,bogenschuetze"
+    // stellt sie nebeneinander - so sieht man bei Zoom 1, ob man sie
+    // auseinanderhalten kann (bedienung AC-36).
+    const arten = waehlen.split(',').map((a) => a.trim()).filter(Boolean);
     const welt = laufend.raeume.finden(code)?.welt;
     const spieler = welt.spieler.find((sp) => sp.name === 'Anna');
     const belegt = new Set([...welt.einheiten.values()].map((e) => `${Math.round(e.x)},${Math.round(e.y)}`));
-    let angelegt = null;
-    for (let r = 3; r < 20 && !angelegt; r++) {
-      for (let dx = -r; dx <= r && !angelegt; dx++) {
-        const x = spieler.basis.x + dx;
-        const y = spieler.basis.y + r;
+    const angelegt = [];
+    // In einer Reihe mit zwei Feldern Abstand, acht Felder vor der Basis -
+    // so verdeckt keine die andere und nichts steht hinter dem Dorfzentrum.
+    arten.forEach((art, i) => {
+      let einheit = null;
+      for (let versatz = 0; versatz < 12 && !einheit; versatz++) {
+        const x = spieler.basis.x - arten.length + i * 2;
+        const y = spieler.basis.y + 8 + versatz;
         if (belegt.has(`${x},${y}`) || welt.karte.felder[y * welt.karte.groesse + x] !== 0 || welt.gebaeudeAn(x, y)) continue;
-        angelegt = welt.einheitAnlegen(spieler.id, x, y, waehlen);
+        belegt.add(`${x},${y}`);
+        einheit = welt.einheitAnlegen(spieler.id, x, y, art);
       }
-    }
-    if (!angelegt) throw new Error(`kein Platz fuer ${waehlen}`);
-    await anna.waitForFunction((id) => window.ansicht.nachher.has(id), angelegt.id);
-    await anna.evaluate((id) => {
+      if (!einheit) throw new Error(`kein Platz fuer ${art}`);
+      angelegt.push(einheit.id);
+    });
+    await anna.waitForFunction((ids) => ids.every((id) => window.ansicht.nachher.has(id)), angelegt);
+    await anna.evaluate((ids) => {
       const a = window.ansicht;
-      a.ausgewaehlt = new Set([id]);
+      a.ausgewaehlt = new Set([ids[0]]);
       a.gewaehltesGebaeude = null;
       a.beiAuswahl();
-    }, angelegt.id);
+      a.blickAuf(a.nachher.get(ids[Math.floor(ids.length / 2)]).x, a.nachher.get(ids[0]).y);
+    }, angelegt);
   }
 
   await anna.evaluate(({ zoom, ziel: art }) => {
@@ -130,7 +140,12 @@ async function spielbild() {
     const basis = a.spieler.get(a.ich).basis;
     const arten = { wald: 1, beere: 2, wasser: 3, gold: 4, stein: 5 };
     let blick = basis;
-    if (arten[art] !== undefined) {
+    // --ziel auswahl: auf die Einheiten aus --waehlen schauen.
+    if (art === 'auswahl' && a.ausgewaehlt.size) {
+      const meine = [...a.nachher.values()].filter((e) => e.b === a.ich);
+      const neu = meine.slice(-6);
+      blick = { x: neu.reduce((m, e) => m + e.x, 0) / neu.length, y: neu.reduce((m, e) => m + e.y, 0) / neu.length };
+    } else if (arten[art] !== undefined) {
       let bester = Infinity;
       for (let i = 0; i < a.karte.felder.length; i++) {
         if (a.karte.felder[i] !== arten[art]) continue;

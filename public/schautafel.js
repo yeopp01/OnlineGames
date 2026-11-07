@@ -245,11 +245,16 @@ function dingMaske(art, fuellung = 1) {
  */
 function maske(art, farbe, lage = {}) {
   const groesse = 96;
+  // `hoehe` ist die Figurenhoehe in Bildpunkten; ohne Angabe herangezoomt
+  // (72), fuer die Spielgroesse `figurHoeheBei(1)` - rund 29 (bedienung
+  // AC-36). Die Leinwand bleibt gleich gross, damit zwei Masken Punkt fuer
+  // Punkt vergleichbar bleiben.
+  const { hoehe = 72, ...rest } = lage;
   const blatt = document.createElement('canvas');
   blatt.width = groesse;
   blatt.height = groesse;
   const s = blatt.getContext('2d');
-  figurZeichnen(s, art, groesse / 2, groesse - 10, 72, farbe, { blick: 1, ...lage });
+  figurZeichnen(s, art, groesse / 2, groesse / 2 + hoehe / 2, hoehe, farbe, { blick: 1, ...rest });
   const { data } = s.getImageData(0, 0, groesse, groesse);
   const r = parseInt(farbe.slice(1, 3), 16);
   const g = parseInt(farbe.slice(3, 5), 16);
@@ -514,9 +519,9 @@ function schlagschatten(welche, art) {
  * Umriss oder deutlich in der Farbe (Summe der Kanaele ueber 90) unterscheidet.
  * Alle in Blau und gleich gross gezeichnet, damit nur die Gestalt zaehlt.
  */
-function unterschiede(welche) {
+function unterschiede(welche, lage = {}) {
   const arten = welche === 'figur' ? Object.keys(FIGUREN) : Object.keys(GEBAEUDE);
-  const masken = arten.map((art) => [art, welche === 'figur' ? maske(art, FARBEN[0]) : gebaeudeMaske(art, FARBEN[0])]);
+  const masken = arten.map((art) => [art, welche === 'figur' ? maske(art, FARBEN[0], lage) : gebaeudeMaske(art, FARBEN[0])]);
   const paare = [];
   for (let i = 0; i < masken.length; i++) {
     for (let j = i + 1; j < masken.length; j++) {
@@ -538,7 +543,31 @@ function unterschiede(welche) {
   return paare.sort((x, y) => x.anteil - y.anteil);
 }
 
+/**
+ * Fuer den Browserlauf (bedienung AC-36): wie verschieden zwei Figuren **im
+ * Umriss** sind, in der Hoehe, die Zoom 1 ihnen gibt - Anteil der gemeinsamen
+ * Flaeche, auf dem die eine belegt ist und die andere nicht.
+ *
+ * Anders als `unterschiede` zaehlt die Farbe hier **nicht** mit. Bei 29
+ * Bildpunkten Hoehe ist die Spielerfarbe im Koerper eine Handvoll Punkte, die
+ * gegen das Gelaende verschwindet; was bleibt, ist die Gestalt. Deshalb misst
+ * das Kriterium nur sie.
+ */
+function umrissUnterschied(eine, andere, hoehe = figurHoeheBei(1)) {
+  const a = maske(eine, FARBEN[0], { hoehe });
+  const b = maske(andere, FARBEN[0], { hoehe });
+  let anders = 0;
+  let flaeche = 0;
+  for (let k = 0; k < a.belegt.length; k++) {
+    if (!a.belegt[k] && !b.belegt[k]) continue;
+    flaeche += 1;
+    if (a.belegt[k] !== b.belegt[k]) anders += 1;
+  }
+  return Math.round((anders / flaeche) * 1000) / 1000;
+}
+
 window.schautafel = {
   zellen, maske, dingMaske, bodenProbe, arten: Object.keys(FIGUREN), dinge: { WALD, BEERE, GOLD, STEIN },
   gebaeudeZellen, gebaeudeMaske, gebaeudeArten: Object.keys(GEBAEUDE), tonstufen, anmutung, proportionen, groessen, bodenRaster, schlagschatten, unterschiede,
+  umrissUnterschied, spielhoehe: figurHoeheBei(1),
 };

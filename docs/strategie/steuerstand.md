@@ -13,15 +13,15 @@ hier nichts eintraegt, verliert den Faden beim naechsten Autocompact.
 
 ## Zuletzt fortgeschrieben
 
-2026-11-07, nach Runde 75 (**C1 begonnen**: `bedienung AC-35` ist fertig -
-die Kampfwerte stehen an der Auswahl. Als Naechstes **AC-36**, Militaer bei
-Zoom 1 erkennbar).
+2026-11-07, nach Runde 76 (**C1 zu zwei Dritteln**: `bedienung AC-35` und
+`AC-36` sind fertig - Kampfwerte an der Auswahl, Militaer bei Zoom 1 im
+Umriss erkennbar. Als Naechstes **AC-37**, Spielzeit im Bild).
 
 ## Wo ich stehe
 
 - **Branch:** `strategie`. Nie auf `main` arbeiten, **nie pushen, nie deployen.**
-- **Board:** 377 von 516 Kriterien fertig · 1 in Arbeit · 5 in QA · 4 geplant ·
-  121 offen · 8 zurueckgestellt. 402 Tests ohne Browser, 149 im Browser.
+- **Board:** 378 von 516 Kriterien fertig · 1 in Arbeit · 5 in QA · 4 geplant ·
+  120 offen · 8 zurueckgestellt. 402 Tests ohne Browser, 151 im Browser.
 - **Vier Waechter in `tests/waechter-*.test.mjs`:** Gleichheit auf wachsenden
   Listen, verbesserbare Werte an `welt.einheitenwert()` vorbei,
   Bildunterschriften mit `${...}`, und (neu in Runde 73) die **Kuerzeltafel**
@@ -68,11 +68,27 @@ Zoom 1 erkennbar).
   **Klasse**, nicht die Art. Neu beim Browser ausserdem
   `werte.einheiten[art].klassen`, `.bonus` und `werte.klassen` (Anzeigenamen) -
   die Tafel in `e2e/helpers/strategie.mjs` ist nachgezogen.
-- **Als Naechstes: `bedienung AC-36`** - bei Zoom 1 ist eine Kampfeinheit vom
-  Dorfbewohner kaum zu unterscheiden; verlangt ist ein Drittel der Flaeche
-  anders, wie darstellung AC-14 es herangezoomt misst. Gemessen wird im
-  Spielbild, nicht auf der Schautafel. Danach **AC-37** (Spielzeit als `m:ss`
-  oben neben dem Zeitalter, aus den Takten des Servers).
+- **`bedienung AC-36` ist fertig** (Runde 76): jede Kampfeinheit
+  unterscheidet sich bei Zoom 1 **im Umriss** auf mindestens einem Drittel der
+  gemeinsamen Flaeche vom Dorfbewohner. Zu wissen, bevor jemand wieder an den
+  Figuren zeichnet: **gemessen wird nur der Umriss, und nur in der Hoehe, die
+  Zoom 1 gibt** (`figurHoeheBei(1)`, knapp 29 Bildpunkte) - darstellung AC-14
+  misst dagegen Umriss **oder** Farbe und herangezoomt. Der Messgriff ist
+  `window.schautafel.umrissUnterschied(a, b, hoehe)`, die Schwelle 1/3 wie in
+  AC-14, der Test steht in `e2e/tests/strategie-unterscheidbar.spec.mjs`. Wer
+  eine Figur aendert, faehrt ihn. **Die Regel dahinter:** was eine Einheit
+  kenntlich macht, muss **ausserhalb** ihres Koerperumrisses liegen und
+  mindestens anderthalb Einheiten dick sein (ein Strich mit `lineWidth 1.2`
+  ist bei Zoom 1 1,4 Bildpunkte und zaehlt praktisch nicht). Gemessen jetzt:
+  Miliz 0,401 · Soldat 0,352 · Speerkaempfer 0,371 · Bogenschuetze 0,356 ·
+  Plaenkler 0,348 · Spaeherreiter 0,705; schwaechstes Paar untereinander ist
+  Miliz gegen Speerkaempfer mit 0,306 (beide tragen links einen Schild) -
+  unter AC-14 gemessen sind es 0,568, also keine Gefahr, aber die Stelle, an
+  der es als Naechstes eng wird.
+- **Als Naechstes: `bedienung AC-37`** - Spielzeit als `m:ss` oben neben dem
+  Zeitalter, aus den Takten des Servers (`TAKTE_PRO_SEKUNDE = 10`), nicht aus
+  der Uhr des Browsers; im Zeitraffer laeuft sie entsprechend schneller. Damit
+  ist C1 fertig und C2 faengt an (spielziel AC-5, AC-6, bedienung AC-38).
 - **Der Gefechtsstand** (neu in Runde 71) steht in
   `server/spiele/strategie/pruefstand.js` als `gefechtSpielen`:
   `npm run konterkreis:strategie` stellt zwei Heere gleicher Kosten auf freiem
