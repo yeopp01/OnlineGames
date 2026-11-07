@@ -24,6 +24,20 @@ const STARTVORRAT = {
 const ROHSTOFFE = ['holz', 'nahrung', 'gold', 'stein'];
 const ROHSTOFF_NAMEN = { holz: 'Holz', nahrung: 'Nahrung', gold: 'Gold', stein: 'Stein' };
 
+// Namen der Gebaeude fuer Meldungen auf dem Bildschirm - mit echten Umlauten.
+const GEBAEUDE_NAMEN = {
+  dorfzentrum: 'Das Dorfzentrum',
+  haus: 'Das Haus',
+  muehle: 'Die Mühle',
+  holzfaellerlager: 'Das Holzfällerlager',
+  bergbaulager: 'Das Bergbaulager',
+  farm: 'Die Farm',
+  kaserne: 'Die Kaserne',
+  schiessanlage: 'Die Schießanlage',
+  stall: 'Der Stall',
+  schmiede: 'Die Schmiede',
+};
+
 function untaetigeListe(welt, spielerId) {
   const ids = welt.untaetigeVon(spielerId);
   return ids.length ? { u: ids } : {};
@@ -301,10 +315,15 @@ class Welt {
       .map((id) => this.einheiten.get(id))
       .filter((e) => e && e.besitzer === spielerId && (EINHEITEN[e.art].baut || []).includes(art));
     if (!bauer.length) return { fehler: 'Niemand in der Auswahl kann das bauen.' };
+    const spieler = this.spielerVon(spielerId);
+    // Erst das Zeitalter, dann der Platz (bauen AC-24).
+    const noetig = this.gebaeudeZeitalter(art);
+    if (noetig > spieler.zeitalter) {
+      return { fehler: `${GEBAEUDE_NAMEN[art] || art} gibt es erst in ${ZEITALTER[noetig].genitiv}.` };
+    }
     const x = Math.round(Number(ziel.x));
     const y = Math.round(Number(ziel.y));
     if (!this.platzPruefen(art, x, y)) return { fehler: 'Hier ist kein Platz.' };
-    const spieler = this.spielerVon(spielerId);
     const kosten = GEBAEUDE[art].kosten;
     for (const [rohstoff, menge] of Object.entries(kosten)) {
       if (spieler[rohstoff] < menge) return { fehler: `Zu wenig ${ROHSTOFF_NAMEN[rohstoff]}.` };

@@ -884,6 +884,241 @@ function baustelle(stift, e, W, anteil) {
 
 // ---- Verzeichnis ----------------------------------------------------------------
 
+// ---- Gebaeude der Feudalzeit (bauen AC-24) --------------------------------
+
+// Schiessanlage: ein weiter, niedriger Unterstand auf Pfosten ueber gestampftem
+// Sand, vorn rechts die Zielscheibe mit roten Ringen, links ein Bogenstaender.
+// Das Merkmal ist die Scheibe - und dass das Dach flach und breit liegt, wo
+// alle anderen hoch bauen (darstellung AC-14).
+function schiessanlage(stift, e, farbe) {
+  const W = 2.5 * e;
+  const H = W / 2;
+  vorbereiten(stift, e, W, H);
+  const L = [-W, 0];
+  const B = [0, H];
+  const R = [W, 0];
+  const T = [0, -H];
+  // Gestampfter Sand mit Spuren.
+  flaeche(stift, [L, B, R, T], verlauf(stift, '#b5a075', T, B, 0.1, -0.18));
+  innerhalb(stift, [L, B, R, T], () => {
+    for (let i = 1; i < 8; i++) {
+      linie(stift, zwischen(L, T, i / 8), zwischen(B, R, i / 8), 'rgba(90,70,40,0.22)', Math.max(0.4, e * 0.03));
+    }
+  });
+  stift.lineWidth = Math.max(0.7, e * 0.035);
+  const pfosten = (q, h) => {
+    linie(stift, q, hoch(q, h), '#5e4632', Math.max(1.3, e * 0.12));
+    linie(stift, [q[0] - e * 0.03, q[1]], [q[0] - e * 0.03, q[1] - h], 'rgba(255,220,170,0.28)', Math.max(0.4, e * 0.04));
+  };
+  const hinten = 1.65 * e;
+  const vorn = 1.35 * e;
+  const mitte = (hinten + vorn) / 2;
+  for (const [q, h] of [[L, mitte], [T, hinten], [R, mitte], [B, vorn]]) pfosten(q, h);
+  // Flaches Segeltuchdach, gespannt statt gedeckt - eine eigene Oberflaeche.
+  const dach = [hoch([-W * 1.12, 0], mitte), hoch([0, -H * 1.12], hinten), hoch([W * 1.12, 0], mitte), hoch([0, H * 1.12], vorn)];
+  flaeche(stift, dach, verlauf(stift, '#5c6b4a', dach[1], dach[3], 0.14, -0.22), false);
+  innerhalb(stift, dach, () => {
+    for (let i = 1; i < 7; i++) {
+      linie(stift, zwischen(dach[0], dach[1], i / 7), zwischen(dach[3], dach[2], i / 7), 'rgba(30,40,20,0.3)', Math.max(0.5, e * 0.04));
+    }
+  });
+  pfad(stift, dach);
+  stift.stroke();
+  // Zielscheibe vorn rechts: Strohscheibe auf einem Bock, rote Ringe.
+  const fuss = zwischen(B, R, 0.52);
+  for (const q of [[fuss[0] - 0.5 * e, fuss[1] + 0.12 * e], [fuss[0] + 0.5 * e, fuss[1] + 0.12 * e]]) {
+    linie(stift, q, hoch(q, 0.45 * e), '#6b4a2b', Math.max(1, e * 0.07));
+  }
+  const m = hoch(fuss, 1.0 * e);
+  for (const [r, f] of [[0.52, '#d9cba0'], [0.36, '#c23a2e'], [0.2, '#e8e2d2'], [0.08, '#c23a2e']]) {
+    stift.beginPath();
+    stift.ellipse(m[0], m[1], r * e, r * e * 1.02, 0, 0, Math.PI * 2);
+    stift.fillStyle = f;
+    stift.fill();
+    stift.stroke();
+  }
+  // Ein Pfeil steckt im zweiten Ring.
+  linie(stift, [m[0] + 0.1 * e, m[1] - 0.26 * e], [m[0] + 0.52 * e, m[1] - 0.62 * e], '#7a5a33', Math.max(0.6, e * 0.04));
+  flaeche(stift, [[m[0] + 0.46 * e, m[1] - 0.52 * e], [m[0] + 0.56 * e, m[1] - 0.68 * e], [m[0] + 0.6 * e, m[1] - 0.5 * e]], '#e8e4da');
+  // Bogenstaender links unter dem Dach.
+  const st = zwischen(L, B, 0.55);
+  const s0 = [st[0] - 0.3 * e, st[1] - 0.1 * e];
+  const s1 = [st[0] + 0.35 * e, st[1] + 0.18 * e];
+  linie(stift, s0, s1, '#5b3d22', Math.max(0.9, e * 0.06));
+  for (const t of [0.15, 0.45, 0.75]) {
+    const q = zwischen(s0, s1, t);
+    stift.beginPath();
+    stift.moveTo(q[0], q[1]);
+    stift.quadraticCurveTo(q[0] - 0.3 * e, q[1] - 0.45 * e, q[0], q[1] - 0.85 * e);
+    stift.strokeStyle = '#6b4a2b';
+    stift.lineWidth = Math.max(0.6, e * 0.045);
+    stift.stroke();
+    linie(stift, q, hoch(q, 0.85 * e), 'rgba(235,230,210,0.8)', Math.max(0.4, e * 0.025));
+    stift.strokeStyle = KONTUR;
+    stift.lineWidth = Math.max(0.7, e * 0.035);
+  }
+  // Wimpel in Spielerfarbe am vorderen Pfosten.
+  fahne(stift, hoch(B, vorn), e, farbe, 0.65);
+}
+
+// Stall: eine Scheune aus Brettern mit weitem Tor, davor eine Koppel aus
+// Querlatten mit Heu und Trog. Das Merkmal ist der Zaun - kein anderes
+// Gebaeude hat eine Einfriedung (darstellung AC-14).
+function stall(stift, e, farbe) {
+  const W = 2.2 * e;
+  const H = W / 2;
+  vorbereiten(stift, e, W, H);
+  const wand = 1.05 * e;
+  const { L1, B1, R1, traufe } = kasten(stift, W, 0.18 * e, wand, e, {
+    sockelL: '#6a6158', sockelR: '#847a6d', wandL: '#6d4e30', wandR: '#8d6a44', wandMuster: 'keins',
+  });
+  bretter(stift, L1, B1, wand, e, 10, '#6d4e30');
+  bretter(stift, B1, R1, wand, e, 10, '#8d6a44');
+  // Weites Tor, oben und unten geteilt - die obere Haelfte steht offen.
+  const breit = 0.42;
+  const tor = [
+    wandpunkt(B1, R1, wand, 0.5 - breit / 2, 0), wandpunkt(B1, R1, wand, 0.5 + breit / 2, 0),
+    wandpunkt(B1, R1, wand, 0.5 + breit / 2, 0.78), wandpunkt(B1, R1, wand, 0.5 - breit / 2, 0.78),
+  ];
+  flaeche(stift, tor, '#3f3528');
+  const halb = [zwischen(tor[0], tor[3], 0.45), zwischen(tor[1], tor[2], 0.45)];
+  flaeche(stift, [tor[0], tor[1], halb[1], halb[0]], verlauf(stift, '#5e4630', tor[0], halb[1], 0.12, -0.2));
+  for (const t of [0.3, 0.7]) linie(stift, zwischen(tor[0], tor[1], t), zwischen(halb[0], halb[1], t), 'rgba(0,0,0,0.35)', Math.max(0.4, e * 0.025));
+  linie(stift, halb[0], halb[1], '#4a3a28', Math.max(0.8, e * 0.05));
+  // Hufeisen ueber dem Tor, in Spielerfarbe.
+  const ueber = zwischen(tor[3], tor[2], 0.5);
+  stift.beginPath();
+  stift.arc(ueber[0], ueber[1] - 0.18 * e, 0.17 * e, Math.PI * 0.15, Math.PI * 0.85, true);
+  stift.strokeStyle = farbe;
+  stift.lineWidth = Math.max(1, e * 0.08);
+  stift.stroke();
+  stift.strokeStyle = KONTUR;
+  stift.lineWidth = Math.max(0.7, e * 0.035);
+  // Dach aus dunklem Schiefer, flach und weit ueberstehend - zusammen mit dem
+  // Heuschober darueber die Gestalt einer Scheune.
+  const { F1, F2, B2, R2 } = walmdach(stift, W, traufe, 0.52 * e, e, {
+    hinten: '#3f4a44', links: '#4a564f', rechts: '#64736a', seite: '#44504a',
+  }, 'schindel', 1.2);
+  // Heuschober auf dem First: ein kleiner Giebel mit offener Luke und Balken,
+  // an dem eine Garbe haengt - das sieht man auch bei Zoom 1.
+  const sMitte = zwischen(F1, F2, 0.5);
+  const sch = [[sMitte[0] - 0.42 * e, sMitte[1] + 0.1 * e], [sMitte[0] + 0.42 * e, sMitte[1] + 0.1 * e],
+    [sMitte[0] + 0.42 * e, sMitte[1] - 0.46 * e], [sMitte[0] - 0.42 * e, sMitte[1] - 0.46 * e]];
+  flaeche(stift, sch, verlauf(stift, '#7b5a36', sch[3], sch[1], 0.16, -0.24));
+  bretter(stift, sch[0], sch[1], 0.56 * e, e, 5, '#7b5a36');
+  flaeche(stift, [[sMitte[0] - 0.5 * e, sMitte[1] - 0.44 * e], [sMitte[0] + 0.5 * e, sMitte[1] - 0.44 * e],
+    [sMitte[0], sMitte[1] - 0.82 * e]], '#3f4a44');
+  flaeche(stift, [[sMitte[0] - 0.16 * e, sMitte[1] + 0.08 * e], [sMitte[0] + 0.16 * e, sMitte[1] + 0.08 * e],
+    [sMitte[0] + 0.16 * e, sMitte[1] - 0.3 * e], [sMitte[0] - 0.16 * e, sMitte[1] - 0.3 * e]], '#3b3024');
+  linie(stift, [sMitte[0], sMitte[1] - 0.46 * e], [sMitte[0], sMitte[1] - 0.72 * e], '#5b3d22', Math.max(0.7, e * 0.05));
+  linie(stift, [sMitte[0] - 0.08 * e, sMitte[1] - 0.6 * e], [sMitte[0] + 0.34 * e, sMitte[1] - 0.6 * e], '#5b3d22', Math.max(0.7, e * 0.05));
+  for (let i = 0; i < 4; i++) {
+    const q = [sMitte[0] + (0.18 + i * 0.05) * e, sMitte[1] - 0.58 * e];
+    linie(stift, q, [q[0] + 0.06 * e, q[1] + 0.3 * e], '#cdb259', Math.max(0.5, e * 0.035));
+  }
+  void B2;
+  void R2;
+  // Koppel vorn links, das Merkmal des Stalls: vier helle Pfosten mit zwei
+  // Querlatten, dahinter ein Heuballen und der Trog. Hell und hoch genug, dass
+  // der Zaun bei Zoom 1 noch zu sehen ist (darstellung AC-14).
+  const z0 = [-W * 1.12, 0.1 * e];
+  const z1 = [-0.06 * W, H * 1.06];
+  const zaun = 0.85 * e;
+  for (const t of [0, 0.34, 0.67, 1]) {
+    const q = zwischen(z0, z1, t);
+    linie(stift, q, hoch(q, zaun), '#9b7a4a', Math.max(1.2, e * 0.085));
+    linie(stift, [q[0] - e * 0.03, q[1]], [q[0] - e * 0.03, q[1] - zaun], 'rgba(255,230,190,0.35)', Math.max(0.4, e * 0.04));
+  }
+  for (const h of [0.38, 0.72]) {
+    linie(stift, hoch(z0, h * e), hoch(z1, h * e), '#b08c54', Math.max(1, e * 0.062));
+  }
+  // Ein Heuballen hinter dem Zaun, als Block mit Halmen - kein Haufen Striche.
+  const heu = zwischen(z0, z1, 0.6);
+  const hb = [[heu[0] - 0.3 * e, heu[1] - 0.12 * e], [heu[0] + 0.26 * e, heu[1] + 0.06 * e],
+    [heu[0] + 0.26 * e, heu[1] - 0.44 * e], [heu[0] - 0.3 * e, heu[1] - 0.62 * e]];
+  flaeche(stift, hb, verlauf(stift, '#cdb259', hb[3], hb[1], 0.16, -0.26));
+  for (let i = 1; i < 4; i++) {
+    linie(stift, zwischen(hb[0], hb[3], i / 4), zwischen(hb[1], hb[2], i / 4), 'rgba(120,95,30,0.45)', Math.max(0.4, e * 0.03));
+  }
+  const trog = zwischen(z0, z1, 0.2);
+  flaeche(stift, [[trog[0] - 0.02 * e, trog[1]], [trog[0] + 0.46 * e, trog[1] + 0.18 * e],
+    [trog[0] + 0.46 * e, trog[1] - 0.1 * e], [trog[0] - 0.02 * e, trog[1] - 0.28 * e]], '#7a5f3c');
+  fahne(stift, hoch([0, H], traufe + 0.1 * e), e, farbe, 0.8);
+}
+
+// Schmiede: ein gedrungener Steinbau mit hohem Schornstein und Rauch, die
+// Esse glueht orange durch die Oeffnung, davor der Amboss. Das Merkmal ist der
+// Schornstein - sonst hat keines einen (darstellung AC-14).
+function schmiede(stift, e, farbe) {
+  const W = 2.0 * e;
+  const H = W / 2;
+  vorbereiten(stift, e, W, H);
+  const wand = 0.74 * e;
+  const { L1, B1, R1, traufe } = kasten(stift, W, 0.3 * e, wand, e, {
+    sockelL: '#5c564e', sockelR: '#6f685d', wandL: '#7b736a', wandR: '#968c80', wandMuster: 'stein',
+  });
+  // Die Esse: eine breite Oeffnung rechts, in der es glueht.
+  const o = [
+    wandpunkt(B1, R1, wand, 0.34, 0.12), wandpunkt(B1, R1, wand, 0.72, 0.12),
+    wandpunkt(B1, R1, wand, 0.72, 0.72), wandpunkt(B1, R1, wand, 0.34, 0.72),
+  ];
+  flaeche(stift, o, '#3a2c22');
+  const mx = (o[0][0] + o[2][0]) / 2;
+  const my = (o[0][1] + o[2][1]) / 2;
+  const glut = stift.createRadialGradient(mx, my, 0, mx, my, 0.42 * e);
+  glut.addColorStop(0, '#ffd27a');
+  glut.addColorStop(0.45, '#e8732a');
+  glut.addColorStop(1, 'rgba(120,30,0,0)');
+  stift.save();
+  pfad(stift, o);
+  stift.clip();
+  stift.fillStyle = glut;
+  stift.fillRect(mx - 1.5 * e, my - 1.5 * e, 3 * e, 3 * e);
+  stift.restore();
+  pfad(stift, o);
+  stift.stroke();
+  // Kleines Fenster links, vergittert.
+  fenster(stift, L1, B1, wand, 0.4, 0.6, e, 0.12, 0.3);
+  // Flaches, fast schwarzes Pultdach - kein Walmdach wie die Wohnbauten.
+  const dach = [hoch([-W * 1.1, 0], traufe + 0.2 * e), hoch([0, -H * 1.1], traufe + 0.45 * e),
+    hoch([W * 1.1, 0], traufe + 0.2 * e), hoch([0, H * 1.1], traufe)];
+  flaeche(stift, dach, verlauf(stift, '#5f4a33', dach[1], dach[3], 0.14, -0.18), false);
+  deckung(stift, dach, dach[3], dach[2], dach[0], dach[1], e, 'schindel');
+  pfad(stift, dach);
+  stift.stroke();
+  // Der Schornstein, hinten links, aus Backstein - und Rauch darueber.
+  const sFuss = hoch([-0.52 * W, -0.16 * H], traufe + 0.3 * e);
+  const sB = 0.3 * e;
+  const sH = 1.5 * e;
+  const sch = [[sFuss[0] - sB, sFuss[1]], [sFuss[0] + sB, sFuss[1] - 0.1 * e],
+    [sFuss[0] + sB, sFuss[1] - sH], [sFuss[0] - sB, sFuss[1] - sH + 0.1 * e]];
+  flaeche(stift, sch, verlauf(stift, '#8a4a33', sch[3], sch[1], 0.14, -0.28));
+  for (let i = 1; i < 6; i++) {
+    const t = i / 6;
+    linie(stift, zwischen(sch[0], sch[3], t), zwischen(sch[1], sch[2], t), 'rgba(40,20,10,0.4)', Math.max(0.4, e * 0.025));
+  }
+  flaeche(stift, [[sFuss[0] - sB * 1.3, sFuss[1] - sH + 0.12 * e], [sFuss[0] + sB * 1.3, sFuss[1] - sH + 0.02 * e],
+    [sFuss[0] + sB * 1.3, sFuss[1] - sH - 0.14 * e], [sFuss[0] - sB * 1.3, sFuss[1] - sH - 0.04 * e]], '#5e4034');
+  for (const [i, r] of [0.26, 0.34, 0.42].entries()) {
+    kreis(stift, sFuss[0] + (i - 0.3) * 0.22 * e, sFuss[1] - sH - (0.3 + i * 0.5) * e, r * e, 'rgba(205,200,190,' + (0.5 - i * 0.12) + ')', false);
+  }
+  // Der Amboss vorn, auf einem Klotz, daneben ein Hammer.
+  const a = zwischen(B1, R1, 0.12);
+  const klotz = [[a[0] - 0.3 * e, a[1] + 0.3 * e], [a[0] + 0.3 * e, a[1] + 0.44 * e],
+    [a[0] + 0.3 * e, a[1] + 0.1 * e], [a[0] - 0.3 * e, a[1] - 0.04 * e]];
+  flaeche(stift, klotz, verlauf(stift, '#6b4a2b', klotz[3], klotz[1], 0.14, -0.24));
+  const ao = klotz.map((q) => hoch(q, 0.3 * e));
+  flaeche(stift, [[ao[3][0] + 0.04 * e, ao[3][1]], [ao[2][0] - 0.04 * e, ao[2][1]],
+    [ao[2][0] - 0.16 * e, ao[2][1] + 0.16 * e], [ao[3][0] + 0.16 * e, ao[3][1] + 0.16 * e]], '#4a4e52');
+  flaeche(stift, [[ao[3][0] - 0.12 * e, ao[3][1] - 0.1 * e], [ao[2][0] + 0.12 * e, ao[2][1] - 0.04 * e],
+    [ao[2][0], ao[2][1] + 0.06 * e], [ao[3][0], ao[3][1]]], '#6a7076');
+  linie(stift, [a[0] + 0.36 * e, a[1] + 0.3 * e], [a[0] + 0.52 * e, a[1] - 0.2 * e], '#7a5a33', Math.max(0.7, e * 0.05));
+  flaeche(stift, [[a[0] + 0.44 * e, a[1] - 0.2 * e], [a[0] + 0.64 * e, a[1] - 0.26 * e],
+    [a[0] + 0.62 * e, a[1] - 0.42 * e], [a[0] + 0.42 * e, a[1] - 0.36 * e]], '#55595e');
+  // Wimpel in Spielerfarbe am First.
+  fahne(stift, hoch([0, H * 0.2], traufe + 0.5 * e), e, farbe, 0.75);
+}
+
 export const GEBAEUDE = {
   dorfzentrum: {
     name: 'Dorfzentrum',
@@ -906,6 +1141,12 @@ export const GEBAEUDE = {
   },
   kaserne: { name: 'Kaserne', zeichnen: kaserne, halbeBreite: 2.2, trefferBreite: 2.3, trefferOben: 3.3, trefferUnten: 1.2 },
   farm: { name: 'Farm', zeichnen: farm, halbeBreite: 2.9, trefferBreite: 2.9, trefferOben: 1.6, trefferUnten: 1.4, flach: true },
+  // Gebaeude der Feudalzeit (bauen AC-24).
+  schiessanlage: {
+    name: 'Schiessanlage', zeichnen: schiessanlage, halbeBreite: 2.5, trefferBreite: 2.6, trefferOben: 2.2, trefferUnten: 1.3,
+  },
+  stall: { name: 'Stall', zeichnen: stall, halbeBreite: 2.2, trefferBreite: 2.4, trefferOben: 3.0, trefferUnten: 1.2 },
+  schmiede: { name: 'Schmiede', zeichnen: schmiede, halbeBreite: 2.0, trefferBreite: 2.2, trefferOben: 3.6, trefferUnten: 1.2 },
 };
 
 /**

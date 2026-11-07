@@ -1,8 +1,9 @@
 // Alles auf einen Blick unterscheidbar (→ specs/10-strategie/darstellung.md AC-14).
 //
 // Auf der Schautafel: je zwei Einheiten und je zwei Gebaeude unterscheiden sich
-// auf mindestens einem Drittel ihrer Flaeche. Im Spielbild: alle Gebaeude der
-// Dunklen Zeit bei Zoom 1 nebeneinander, fuer das Ansehen.
+// auf mindestens einem Drittel ihrer Flaeche. Im Spielbild: alle Gebaeude bei
+// Zoom 1 nebeneinander, fuer das Ansehen - seit Schritt B3 auch die drei der
+// Feudalzeit (Schiessanlage, Stall, Schmiede).
 import { createRequire } from 'node:module';
 import { nachweis } from '../../scripts/qa-nachweis.mjs';
 import { expect, gebaeudeAufstellen, test } from '../helpers/seite.mjs';
@@ -24,7 +25,7 @@ test('darstellung AC-14: je zwei Einheiten und je zwei Gebaeude unterscheiden si
   // aus dem Kriterium; vor Runde 41 lagen Holzfaeller- und Bergbaulager mit
   // demselben Pultdach bei 0,29.
   expect(figuren.length, 'alle Paare der Einheiten').toBeGreaterThanOrEqual(6);
-  expect(gebaeude.length, 'alle Paare der Gebaeude').toBeGreaterThanOrEqual(21);
+  expect(gebaeude.length, 'alle Paare der Gebaeude').toBeGreaterThanOrEqual(45);
   for (const { paar, anteil } of [...figuren, ...gebaeude]) expect(anteil, paar).toBeGreaterThanOrEqual(1 / 3);
 });
 
@@ -60,7 +61,7 @@ test('darstellung AC-9 / fahrplan AC-7: die Schautafel zeigt jede Einheit und je
     await nachweis(page, {
       spec,
       ac,
-      titel: 'Die Schautafel: Dorfbewohner, Miliz, Spaeherreiter, Schaf, Gelaende und alle sieben Gebaeude in Blau und Rot, mit Namen',
+      titel: 'Die Schautafel: Dorfbewohner, Miliz, Spaeherreiter, Schaf, Gelaende und alle zehn Gebaeude in Blau und Rot, mit Namen',
       test: info,
     });
   }
@@ -76,7 +77,13 @@ test.describe('Alle Gebaeude im Spielbild', () => {
 
   test('darstellung AC-14: bei Zoom 1 hat jedes Gebaeude ein eigenes Merkmal', async ({}, info) => {
     const { anna, code } = partie;
-    const arten = ['haus', 'muehle', 'holzfaellerlager', 'bergbaulager', 'kaserne', 'farm'];
+    // Zwei Reihen: die hohen Bauten hinten, die flache Farm und die drei der
+    // Feudalzeit vorn - zehn in einer Reihe passten nicht ins Fenster.
+    const reihen = {
+      haus: 7, muehle: 7, holzfaellerlager: 7, bergbaulager: 7, kaserne: 7,
+      farm: 13, schiessanlage: 13, stall: 13, schmiede: 13,
+    };
+    const arten = Object.keys(reihen);
     await anna.evaluate(() => {
       const a = window.ansicht;
       const b = a.spieler.get(a.ich).basis;
@@ -87,10 +94,9 @@ test.describe('Alle Gebaeude im Spielbild', () => {
     // Bild, die flache Farm davor - so verdeckt keines ein anderes (beim
     // ersten Versuch stand das Bergbaulager halb hinter der Kaserne).
     for (const art of arten) {
-      const platz = await anna.evaluate((art) => {
+      const platz = await anna.evaluate(([art, reihe]) => {
         const a = window.ansicht;
         const b = a.spieler.get(a.ich).basis;
-        const reihe = art === 'farm' ? 12 : 7;
         const kandidaten = [];
         for (let dy = -8; dy <= 16; dy++) {
           for (let dx = -8; dx <= 16; dx++) {
@@ -105,12 +111,12 @@ test.describe('Alle Gebaeude im Spielbild', () => {
         }
         kandidaten.sort((p, q) => p.seite - q.seite);
         return kandidaten[0] || null;
-      }, art);
+      }, [art, reihen[art]]);
       expect(platz, `Platz fuer ${art}`).not.toBeNull();
       const id = await gebaeudeAufstellen(anna, code, 'Anna', art, platz.x, platz.y);
       await anna.waitForFunction((id) => window.ansicht.gebaeude.has(id), id);
     }
-    // Alle sieben fertig und im Bild.
+    // Alle zehn fertig und im Bild.
     const imBild = await anna.evaluate(() => {
       const a = window.ansicht;
       return [...a.gebaeude.values()]
@@ -121,12 +127,12 @@ test.describe('Alle Gebaeude im Spielbild', () => {
         })
         .map((g) => g.art);
     });
-    expect(new Set(imBild).size, imBild.join(', ')).toBe(7);
+    expect(new Set(imBild).size, imBild.join(', ')).toBe(10);
     await anna.waitForTimeout(300);
     await nachweis(anna, {
       spec: DARSTELLUNG,
       ac: 'AC-14',
-      titel: 'Zoom 1: Dorfzentrum mit Fahne, Haus mit Strohdach, Muehle mit Fluegeln, Holzfaellerlager mit Staemmen, Bergbaulager mit Schieferfirst und Karre, Kaserne mit Zinnen, Farm als Acker',
+      titel: 'Zoom 1: Dorfzentrum mit Fahne, Haus mit Strohdach, Mühle mit Flügeln, Holzfällerlager mit Stämmen, Bergbaulager mit Schieferfirst und Karre, Kaserne mit Zinnen, Farm als Acker, Schießanlage mit Zielscheibe, Stall mit Koppel, Schmiede mit Schornstein',
       test: info,
     });
   });

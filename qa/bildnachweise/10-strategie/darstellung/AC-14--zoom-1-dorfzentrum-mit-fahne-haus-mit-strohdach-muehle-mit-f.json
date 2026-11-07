@@ -1,7 +1,7 @@
 {
   "spec": "10-strategie/darstellung.md",
   "ac": "AC-14",
-  "titel": "Zoom 1: Dorfzentrum mit Fahne, Haus mit Strohdach, Muehle mit Fluegeln, Holzfaellerlager mit Staemmen, Bergbaulager mit Schieferfirst und Karre, Kaserne mit Zinnen, Farm als Acker",
+  "titel": "Zoom 1: Dorfzentrum mit Fahne, Haus mit Strohdach, Mühle mit Flügeln, Holzfällerlager mit Stämmen, Bergbaulager mit Schieferfirst und Karre, Kaserne mit Zinnen, Farm als Acker, Schießanlage mit Zielscheibe, Stall mit Koppel, Schmiede mit Schornstein",
   "datei": "e2e/tests/strategie-unterscheidbar.spec.mjs",
   "pfad": [
     "Alle Gebaeude im Spielbild",

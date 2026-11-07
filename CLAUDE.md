@@ -139,7 +139,7 @@ Umfang hinzufügt, dort nachsehen.
 
 ## Stand
 
-**356 von 503 Kriterien fertig.** 331 Tests ohne Browser, 130 im Browser. Die
+**357 von 503 Kriterien fertig.** 336 Tests ohne Browser, 133 im Browser. Die
 Übersicht ist der Bericht: `npm run qa:report`.
 
 Gebaut ist der Unterbau: Räume, Übertragung, Karte, Wegfindung, Sammeln,
@@ -200,12 +200,15 @@ Ziel und die Schautafel als Nachweis, ein Takt mit 800 Einheiten unter 1 ms,
 erreicht**: die Dunkle Zeit ist am Stück im Browser spielbar (fahrplan AC-3).
 Die Rückschau zur Stufe hat drei Lücken angelegt (bedienung AC-30 bis AC-32:
 verdeckte Einheiten, sichtbare Arbeit, Arbeiter je Rohstoff). Stufe B ist
-spezifiziert (Bauabfolge B1 bis B7). **B1 und B2 sind fertig**: verdeckte
-Einheiten als Umriss, sichtbare Arbeit, Arbeiter je Rohstoff in der Leiste —
-und der **Zeitalterwechsel**: vier Zeitalter als Daten, der Aufstieg als
-Auftrag im Dorfzentrum (500 Nahrung, 130 Sekunden, zwei fertige Gebäude der
-laufenden Zeit außer Häusern), das Zeitalter oben in der Leiste, der Wechsel
-einmal im Bild gemeldet. Als Nächstes B3, die drei Gebäude der Feudalzeit:
+spezifiziert (Bauabfolge B1 bis B7). **B1 bis B3 sind fertig**: verdeckte
+Einheiten als Umriss, sichtbare Arbeit, Arbeiter je Rohstoff in der Leiste;
+der **Zeitalterwechsel** (vier Zeitalter als Daten, der Aufstieg als Auftrag
+im Dorfzentrum — 500 Nahrung, 130 Sekunden, zwei fertige Gebäude der laufenden
+Zeit außer Häusern —, das Zeitalter oben in der Leiste, der Wechsel einmal im
+Bild gemeldet); und die **drei Gebäude der Feudalzeit**: Schießanlage mit
+Zielscheibe, Stall mit Koppel (bildet den Späherreiter aus), Schmiede mit
+Schornstein, alle erst ab der Feudalzeit im Baumenü. Als Nächstes B4, die
+Einheiten der Feudalzeit:
 
 1. **Stufe A** Dunkle Zeit mit Wirtschafts-KI und Prüfstand · **B** Feudalzeit
    · **C** Partieende und KI-Gegner · **D** Ritterzeit · **E** fünf Völker ·

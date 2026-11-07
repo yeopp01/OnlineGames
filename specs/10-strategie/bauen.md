@@ -2,7 +2,7 @@
 
 **Bereich:** Strategie
 **Kuerzel:** bauen
-**Stand:** 19/26 fertig · 7 offen
+**Stand:** 20/26 fertig · 6 offen
 
 ## Zweck
 
@@ -129,9 +129,13 @@ B ist der Kampf der drei Einheiten gegeneinander.
   es fehlt also ein gebautes. Während der Aufstieg läuft, bildet das Dorfzentrum
   nichts anderes aus; ein Abbruch erstattet die Nahrung. Zur Wahl steht nur das
   nächste Zeitalter.
-- **AC-24** `offen` **Gebäude der Feudalzeit** — Schießanlage, Stall und
+- **AC-24** `fertig` **Gebäude der Feudalzeit** — Schießanlage, Stall und
   Schmiede lassen sich erst bauen, wenn die Feudalzeit erreicht ist; vorher
-  stehen sie nicht im Baumenü. Werte nach der Tabelle oben.
+  stehen sie nicht im Baumenü, und der Server weist sie auch dann ab, wenn
+  jemand es trotzdem versucht. Werte nach der Tabelle oben. Der Stall bildet
+  den Späherreiter aus (80 Nahrung, 30 Sekunden); was Schießanlage und
+  Schmiede anbieten, kommt mit den Einheiten und Verbesserungen (AC-25, AC-26,
+  [Einheiten](einheiten-und-befehle.md) AC-23).
 - **AC-25** `offen` **Schmiede verbessert Angriff und Rüstung** — Die Schmiede erforscht
   Schmiedeangriff (100 Nahrung, +1 Nahangriff) und Befiederte Pfeile
   (100 Nahrung, 50 Gold, +1 Fernangriff und +1 Reichweite). Die Wirkung gilt

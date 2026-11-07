@@ -258,13 +258,17 @@ export class Auswahlleiste {
       }));
   }
 
-  // Was die Auswahl bauen kann: jedes Gebaeude, das mindestens einer baut.
+  // Was die Auswahl bauen kann: jedes Gebaeude, das mindestens einer baut -
+  // und das im erreichten Zeitalter schon zu haben ist (bauen AC-24). Was
+  // spaeter kommt, steht gar nicht erst im Menue.
   bauplan(auswahl) {
     const werte = this.ansicht.werte;
     const arten = new Set();
     for (const e of auswahl) {
       if (e.b !== this.ansicht.ich) continue;
-      for (const art of werte.einheiten[this.ansicht.arten[e.k]]?.baut || []) arten.add(art);
+      for (const art of werte.einheiten[this.ansicht.arten[e.k]]?.baut || []) {
+        if ((werte.gebaeude[art]?.zeitalter || 0) <= this.ansicht.zeitalter) arten.add(art);
+      }
     }
     return [...arten].map((art) => ({
       art,

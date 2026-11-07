@@ -13,51 +13,58 @@ hier nichts eintraegt, verliert den Faden beim naechsten Autocompact.
 
 ## Zuletzt fortgeschrieben
 
-2026-11-07, nach Runde 58 (Schritt B2 fertig und committet).
+2026-11-07, nach Runde 59 (Schritt B3 fertig und committet).
 
 ## Wo ich stehe
 
 - **Branch:** `strategie`. Nie auf `main` arbeiten, **nie pushen, nie deployen.**
-- **Board:** 356 von 503 Kriterien fertig · 1 in Arbeit · 5 in QA · 4 geplant ·
-  130 offen · 7 zurueckgestellt. 331 Tests ohne Browser, 130 im Browser.
+- **Board:** 357 von 503 Kriterien fertig · 1 in Arbeit · 5 in QA · 4 geplant ·
+  129 offen · 7 zurueckgestellt. 336 Tests ohne Browser, 133 im Browser.
 - **Stufe A ist erreicht** (fahrplan AC-3 bis AC-7).
-- **Stufe B:** Bauabfolge B1 bis B7 im [Fahrplan](fahrplan.md). **B1 und B2
+- **Stufe B:** Bauabfolge B1 bis B7 im [Fahrplan](fahrplan.md). **B1, B2 und B3
   sind fertig.** Der Arbeitsbaum ist sauber.
 
-## Was B2 gebracht hat (zum Weiterbauen wissen)
+## Was B2 und B3 gebracht haben (zum Weiterbauen wissen)
 
 - `daten.js`: `ZEITALTER` (vier Stufen, mit `genitiv` fuer Meldungen) und
   `AUFSTIEGE` (`feudalzeit`/`ritterzeit`/`imperialzeit` mit `stufe`, `kosten`,
   `zeit`, `voraussetzung`). Das Dorfzentrum bildet alle drei aus; der Browser
   zeigt nur den naechsten.
-- **Ein Gebaeude ohne `zeitalter` gehoert der Dunklen Zeit (Stufe 0).** Die
-  Gebaeude der Feudalzeit tragen `zeitalter: 1` — daran haengt B3.
-- `welt.js`: `spieler.zeitalter`, `ohnePlatz(art)` (Verbesserung oder Aufstieg
-  braucht keinen Bevoelkerungsplatz), `gebaeudeZeitalter(art)`,
-  `gebaeudeDerZeit(spieler)`. Im Zustand je Spieler `z` (nur wenn > 0), im
-  Aufbau `werte.zeitalter` und `werte.aufstiege`.
+- **Ein Gebaeude ohne `zeitalter` gehoert der Dunklen Zeit (Stufe 0).**
+  Schiessanlage, Stall und Schmiede tragen `zeitalter: 1`. **An diesem einen
+  Feld haengt die ganze Sperre**: `welt.bauen()` weist ab, `bauplan()` im
+  Browser laesst sie aus dem Menue, und zwei aeltere Tests filtern danach
+  (bedienung AC-25, fahrplan AC-3).
+- `welt.js`: `spieler.zeitalter`, `ohnePlatz(art)`, `gebaeudeZeitalter(art)`,
+  `gebaeudeDerZeit(spieler)`, `GEBAEUDE_NAMEN` fuer Meldungen. Im Zustand je
+  Spieler `z` (nur wenn > 0), im Aufbau `werte.zeitalter`, `werte.aufstiege`
+  und `zeitalter` je Gebaeudeart.
 - Browser: `ansicht.zeitalter`, `ansicht.zeitalterName()`,
   `ansicht.beiZeitalter(stufe, name)`; `#zeitalter` in der Kopfzeile,
   `#zeitalterwechsel` als grosse Ankuendigung; in der Auswahlleiste
-  `aufstiegBildchen` und `data-aufstieg` bzw. `data-laufender-aufstieg`.
+  `aufstiegBildchen`, `data-aufstieg`, `data-laufender-aufstieg`.
+- `tasten.js`: **neun Bautasten** `q w e r t z u i o`. Wer ein Gebaeude
+  hinzufuegt, braucht eine Taste mehr.
+- Der **Stall bildet den Spaeherreiter aus** (80 Nahrung, 30 s) - die erste
+  Einheit, die gebaut statt mitgeliefert wird.
 - **Entschieden:** die Voraussetzung „zwei Gebaeude der Dunklen Zeit ausser
   Haeusern" zaehlt **das Dorfzentrum mit** (in bauen AC-23 notiert).
 
-## Was als Naechstes kommt: Schritt B3
+## Was als Naechstes kommt: Schritt B4
 
-Die drei Gebaeude der Feudalzeit, **bauen AC-24** und **darstellung AC-14**
-(erweitert): Schiessanlage (175 Holz, 50 s, 1000 Leben), Stall (175 Holz,
-50 s, 1000), Schmiede (150 Holz, 40 s, 1200). Sie stehen erst im Baumenue,
-wenn die Feudalzeit erreicht ist — also `zeitalter: 1` in `GEBAEUDE`, und
-`baut` des Dorfbewohners bzw. das Baumenue muss nach dem Zeitalter filtern.
-Gezeichnet und unterscheidbar wie die anderen (`public/gebaeude.js`,
-Schautafel). Mit B3 wird **spielziel AC-1** von `in-arbeit` auf `fertig`
-gesetzt: dann oeffnet ein Aufstieg zum ersten Mal etwas.
+Die Einheiten der Feudalzeit, **einheiten AC-23 und AC-24**: Speerkaempfer
+(35 N, 25 H, 22 s) und Plaenkler (25 N, 35 H, 22 s) aus der Kaserne,
+Bogenschuetze (25 H, 45 G, 35 s) und Plaenkler aus der Schiessanlage, der
+Spaeherreiter aus dem Stall (steht schon), und die **Miliz wird zum Soldaten**
+(60 N, 20 G, 21 s). Werte in [vorlage-aoe2.md](vorlage-aoe2.md). Jede neue
+Einheit braucht eine Figur in `public/figuren.js`, einen Platz auf der
+Schautafel (`public/schautafel.js`) und muss sich von allen anderen auf einem
+Drittel der Flaeche unterscheiden - **vorher und nachher messen** mit
+`npm run tafel -- "t.unterschiede('figur')"`.
 
-Danach: **B4** die neuen Einheiten (einheiten AC-23, AC-24) · **B5** Kampf
-(kampf AC-1 bis AC-10, bedienung AC-34, einheiten AC-25) · **B6**
-Verbesserungen (bauen AC-25, AC-26, ki AC-9) · **B7** Gleichgewicht messen
-(fahrplan AC-8 bis AC-10).
+Danach: **B5** Kampf (kampf AC-1 bis AC-10, bedienung AC-34, einheiten AC-25)
+· **B6** Verbesserungen (bauen AC-25, AC-26, ki AC-9) · **B7** Gleichgewicht
+messen (fahrplan AC-8 bis AC-10).
 
 ## Die Regeln, die ich am ehesten vergesse
 
@@ -108,6 +115,16 @@ Verbesserungen (bauen AC-25, AC-26, ki AC-9) · **B7** Gleichgewicht messen
   requests"), als er laenger wurde. Der Testserver (`e2e/server.mjs`) setzt sie
   jetzt weit, wie schon `schutz`; die echten Werte prueft
   `tests/konten.test.mjs`. Wer den Lauf stark verlaengert, prueft das erneut.
+- **Bildnachweise werden nur geschrieben, wenn sie fehlen** (ADR-0011). Ein
+  bestehendes Bild erneuert nur `QA_NACHWEIS=1 npx playwright test …`. Wer ein
+  Aussehen aendert und dann das alte Bild ansieht, sucht lange (Runde 59).
+- **Ein neues Gebaeude oder eine neue Figur misst sich gegen alle alten:**
+  `npm run tafel -- "t.unterschiede('gebaeude')"` bzw. `('figur')`, jedes Paar
+  ueber einem Drittel (darstellung AC-14). Und `t.anmutung(...)`: **„fast
+  schwarz" heisst hoechster Kanal unter 50** und trifft auch das dunkle Ende
+  eines Verlaufs - hoechstens 3 % (darstellung AC-13). `t.gebaeudeMaske(...)`
+  gibt `oben`, das unter 60 liegen muss (darstellung AC-4): ein Gebaeude hat
+  einen Koerper, nur die Farm nicht.
 - **Alte Bildschirmtexte des Strategiespiels haben keine Umlaute**
   („Bevoelkerung voll", „Das ist nicht dein Gebaeude."), obwohl CLAUDE.md sie
   verlangt. Neue Texte werden richtig geschrieben; die alten aufzuraeumen ist

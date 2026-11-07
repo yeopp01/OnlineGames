@@ -1,7 +1,7 @@
 {
   "spec": "10-strategie/fahrplan.md",
   "ac": "AC-7",
-  "titel": "Die Schautafel: Dorfbewohner, Miliz, Spaeherreiter, Schaf, Gelaende und alle sieben Gebaeude in Blau und Rot, mit Namen",
+  "titel": "Die Schautafel: Dorfbewohner, Miliz, Spaeherreiter, Schaf, Gelaende und alle zehn Gebaeude in Blau und Rot, mit Namen",
   "datei": "e2e/tests/strategie-unterscheidbar.spec.mjs",
   "pfad": [
     "darstellung AC-9 / fahrplan AC-7: die Schautafel zeigt jede Einheit und jedes Gebaeude der Stufe in zwei Farben mit Namen"

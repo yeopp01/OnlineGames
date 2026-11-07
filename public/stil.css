@@ -409,10 +409,13 @@ canvas {
 .auswahlleiste {
   position: fixed;
   /* Mittig zwischen dem Knopf fuer Untaetige links und der Uebersichtskarte
-     rechts - vorher lag der letzte Bauknopf unter der Karte (Runde 48). */
+     rechts - vorher lag der letzte Bauknopf unter der Karte (Runde 48).
+     `max-width` dazu in Runde 59: mit neun Bauknoepfen in der Feudalzeit war
+     `fit-content` breiter als der Platz und ragte wieder unter die Karte. */
   left: 6rem;
   right: calc(240px + 2rem);
   width: fit-content;
+  max-width: calc(100vw - 6rem - 240px - 2rem - 1rem);
   margin-inline: auto;
   bottom: 1rem;
   display: flex;
@@ -527,6 +530,8 @@ canvas {
 
 .baumenue {
   display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
   gap: 0.35rem;
   padding-left: 1rem;
   border-left: 1px solid #ffffff1f;

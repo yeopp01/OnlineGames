@@ -7,7 +7,7 @@
 // Uebersicht; sie entsteht aus derselben Liste, die hier die Tasten belegt.
 
 // Die Reihe, in der die Gebaeude des Baumenues ihre Tasten bekommen.
-export const BAUTASTEN = ['q', 'w', 'e', 'r', 't', 'z'];
+export const BAUTASTEN = ['q', 'w', 'e', 'r', 't', 'z', 'u', 'i', 'o'];
 
 // Texte auf dem Bildschirm mit echten Umlauten (Entscheidung vom 2026-09-17).
 export const BELEGUNG = [
@@ -18,7 +18,7 @@ export const BELEGUNG = [
   ['Mausrad', 'näher, weiter'],
   ['H', 'Dorfzentrum wählen'],
   ['Q (Dorfzentrum gewählt)', 'Dorfbewohner ausbilden'],
-  ['B (Dorfbewohner gewählt)', 'Bautasten an, dann Q W E R T Z für das Gebäude'],
+  ['B (Dorfbewohner gewählt)', 'Bautasten an, dann Q W E R T Z U I O für das Gebäude'],
   ['.', 'nächster untätiger Dorfbewohner'],
   ['Esc', 'Platzieren abbrechen, Auswahl aufheben'],
   ['? oder F1', 'diese Übersicht'],

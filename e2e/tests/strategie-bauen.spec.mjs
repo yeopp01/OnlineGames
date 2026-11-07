@@ -43,8 +43,13 @@ test.describe('Bauen', () => {
 
     const menue = anna.locator('#baumenue');
     await expect(menue).toBeInViewport();
-    // So viele Knoepfe, wie ein Dorfbewohner Gebaeude bauen kann.
-    const baubar = await anna.evaluate(() => window.ansicht.werte.einheiten.dorfbewohner.baut.length);
+    // So viele Knoepfe, wie ein Dorfbewohner im erreichten Zeitalter bauen
+    // kann - was spaeter kommt, steht noch nicht im Menue (bauen AC-24).
+    const baubar = await anna.evaluate(() => {
+      const w = window.ansicht.werte;
+      return w.einheiten.dorfbewohner.baut
+        .filter((art) => (w.gebaeude[art]?.zeitalter || 0) <= window.ansicht.zeitalter).length;
+    });
     await expect(menue.locator('[data-bauen]')).toHaveCount(baubar);
     await expect(menue.locator('[data-bauen="haus"]')).toHaveAttribute('aria-disabled', 'false');
     await expect(menue.locator('[data-bauen="haus"]')).toContainText('25');

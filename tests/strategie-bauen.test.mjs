@@ -186,11 +186,14 @@ test('bauen AC-16: eine verlorene Einheit gibt ihren Platz sofort frei', () => {
 test('bedienung AC-29: der Aufbau nennt die Werte je Art, der Zustand das Leben erst, wenn es fehlt', () => {
   const welt = new Welt(ZWEI, 7);
   const { werte } = welt.aufbau();
-  assert.deepEqual(werte.einheiten.dorfbewohner, {
-    kuerzel: 'd', leben: 25, tragkraft: 10, kosten: { nahrung: 50 }, zeit: 25,
-    baut: ['haus', 'muehle', 'holzfaellerlager', 'bergbaulager', 'farm', 'kaserne'],
-  });
-  assert.deepEqual(werte.einheiten.spaeherreiter, { kuerzel: 's', leben: 45, tragkraft: 0, kosten: null, zeit: null, baut: [] });
+  const { baut, ...dorfbewohner } = werte.einheiten.dorfbewohner;
+  assert.deepEqual(dorfbewohner, { kuerzel: 'd', leben: 25, tragkraft: 10, kosten: { nahrung: 50 }, zeit: 25 });
+  // Was ein Dorfbewohner bauen kann, waechst mit den Stufen: enthalten, nicht gleich.
+  for (const art of ['haus', 'muehle', 'holzfaellerlager', 'bergbaulager', 'farm', 'kaserne']) {
+    assert.ok(baut.includes(art), art);
+  }
+  assert.deepEqual(werte.einheiten.spaeherreiter,
+    { kuerzel: 's', leben: 45, tragkraft: 0, kosten: { nahrung: 80 }, zeit: 30, baut: [] });
   assert.equal(werte.gebaeude.dorfzentrum.leben, 2400);
   // Was ein Gebaeude anbietet, waechst mit den Stufen: enthalten, nicht gleich.
   for (const art of ['dorfbewohner', 'webstuhl']) assert.ok(werte.gebaeude.dorfzentrum.bildetAus.includes(art), art);

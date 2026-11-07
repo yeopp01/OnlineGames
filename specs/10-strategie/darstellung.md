@@ -89,7 +89,9 @@ der Spieler. Keine Bilddateien aus fremder Quelle.
   (Runde 35). Je zwei Einheiten und je zwei Gebäude unterscheiden sich auf der
   Schautafel in mindestens einem Drittel ihrer Fläche (Umriss oder Farbe); bei
   Zoom 1 im Spielbild trägt jedes Gebäude ein eigenes Merkmal, das man ohne
-  Auswahl erkennt (Flügel, Stapel, Karre, Zinnen, Acker, Stroh, Fahne).
+  Auswahl erkennt (Flügel, Stapel, Karre, Zinnen, Acker, Stroh, Fahne; ab der
+  Feudalzeit Zielscheibe, Koppel, Schornstein). Gilt für jede Stufe neu: ein
+  neues Gebäude wird gegen alle vorhandenen gemessen.
 
 ## Grenzfaelle
 

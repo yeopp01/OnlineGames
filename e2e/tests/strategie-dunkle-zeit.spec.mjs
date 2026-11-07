@@ -94,7 +94,12 @@ test.describe('Dunkle Zeit am Stueck', () => {
     // oben jeder Rohstoff. Der Pruefgriff fuellt nur auf, gebaut wird mit Taste und Klick.
     await rohstoffe(anna, code, 'Anna', { holz: 2000, nahrung: 500, gold: 500, stein: 500 });
     await zeitraffer(anna, code, 20);
-    const arten = await anna.evaluate(() => window.ansicht.werte.einheiten.dorfbewohner.baut);
+    // Nur die Gebaeude der Dunklen Zeit - die Feudalzeit hat dieser Test nicht
+    // erreicht, ihre Gebaeude stehen deshalb nicht im Menue (bauen AC-24).
+    const arten = await anna.evaluate(() => {
+      const w = window.ansicht.werte;
+      return w.einheiten.dorfbewohner.baut.filter((art) => (w.gebaeude[art]?.zeitalter || 0) === 0);
+    });
     // Ein Bauer baut eins nach dem anderen, jedes bis es steht.
     for (const [nummerBau, art] of arten.entries()) {
       await aufBasis();

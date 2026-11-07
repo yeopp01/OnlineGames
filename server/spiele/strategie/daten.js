@@ -11,9 +11,11 @@ const EINHEITEN = {
   // baut: welche Gebaeude er errichten kann (bauen AC-1).
   dorfbewohner: {
     leben: 25, tempo: 0.8, sicht: 4, tragkraft: 10, kosten: { nahrung: 50 }, zeit: 25, kuerzel: 'd',
-    baut: ['haus', 'muehle', 'holzfaellerlager', 'bergbaulager', 'farm', 'kaserne'],
+    baut: ['haus', 'muehle', 'holzfaellerlager', 'bergbaulager', 'farm', 'kaserne', 'schiessanlage', 'stall', 'schmiede'],
   },
-  spaeherreiter: { leben: 45, tempo: 1.2, sicht: 4, tragkraft: 0, kuerzel: 's' },
+  // Ausgebildet wird er im Stall, also ab der Feudalzeit; zu Beginn steht
+  // einer in der Startaufstellung (bauen AC-22).
+  spaeherreiter: { leben: 45, tempo: 1.2, sicht: 4, tragkraft: 0, kosten: { nahrung: 80 }, zeit: 30, kuerzel: 's' },
   // Kaempfen kann die Miliz ab Stufe B; bis dahin laeuft sie (bauen AC-9).
   miliz: { leben: 40, tempo: 0.9, sicht: 4, tragkraft: 0, kosten: { nahrung: 60, gold: 20 }, zeit: 21, kuerzel: 'm' },
 };
@@ -57,6 +59,18 @@ const GEBAEUDE = {
     begehbar: true, nahrung: 175, rate: 0.32,
   },
   kaserne: { groesse: 3, kosten: { holz: 175 }, bauzeit: 50, leben: 1200, wohnraum: 0, annahme: [], bildetAus: ['miliz'] },
+  // Gebaeude der Feudalzeit (bauen AC-24): `zeitalter: 1` sperrt sie, bis die
+  // Feudalzeit erreicht ist. Was sie ausbilden, kommt mit Schritt B4 - der
+  // Spaeherreiter steht schon und zieht deshalb in den Stall ein.
+  schiessanlage: {
+    groesse: 3, kosten: { holz: 175 }, bauzeit: 50, leben: 1000, wohnraum: 0, annahme: [], bildetAus: [], zeitalter: 1,
+  },
+  stall: {
+    groesse: 3, kosten: { holz: 175 }, bauzeit: 50, leben: 1000, wohnraum: 0, annahme: [], bildetAus: ['spaeherreiter'], zeitalter: 1,
+  },
+  schmiede: {
+    groesse: 3, kosten: { holz: 150 }, bauzeit: 40, leben: 1200, wohnraum: 0, annahme: [], bildetAus: [], zeitalter: 1,
+  },
 };
 
 // Auftraege je Gebaeude (bauen AC-10).

@@ -53,9 +53,10 @@ eigenen Technikbaum ([Vorlage](../../docs/strategie/vorlage-aoe2.md)).
   Imperialzeit. Jeder Aufstieg kostet und dauert, und er öffnet neue Gebäude und
   Einheiten. Wann man aufsteigt, ist eine Entscheidung, keine Pflicht.
   **Stand:** die vier Zeitalter und alle drei Aufstiege rechnen und sind im Bild
-  zu bedienen ([Bauen](bauen.md) AC-23, [Bedienung](bedienung.md) AC-33). Was
-  der Aufstieg **öffnet**, fehlt noch — deshalb nicht `fertig`: mit Schritt B3
-  öffnet die Feudalzeit ihre drei Gebäude, mit D und F die späteren Zeitalter.
+  zu bedienen ([Bauen](bauen.md) AC-23, [Bedienung](bedienung.md) AC-33), und
+  der Aufstieg in die Feudalzeit öffnet drei Gebäude und mit dem Stall eine
+  Einheit (AC-24). Noch nicht `fertig`, weil Ritter- und Imperialzeit nichts
+  öffnen — das kommen Stufe D und F.
 - **AC-2** `offen` **Partiedauer 25 bis 45 Minuten** — Mit Standardeinstellungen, gemessen
   über zehn Partien mit echten Spielern. Einstellungen wie Startzeitalter und
   Startrohstoffe verkürzen sie für einen Abend mit mehreren Partien.

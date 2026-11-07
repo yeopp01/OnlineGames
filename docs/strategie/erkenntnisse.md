@@ -409,6 +409,26 @@ alle sieben Gebäude der Dunklen Zeit stehen. Was sich wiederholt hat:
 Neueste oben. Eine Zeile je Runde: Nummer, Datum, Kriterien, Ergebnis,
 wichtigste Erkenntnis.
 
+- **59** · 2026-11-07 · bauen AC-24 **fertig**, darstellung AC-14 erweitert —
+  **Schritt B3**: Schießanlage, Stall und Schmiede. Sie tragen `zeitalter: 1`
+  in den Daten; daran hängt alles andere — das Baumenü lässt sie weg, der
+  Server weist sie ab, und ein Gebäude ohne Angabe gehört der Dunklen Zeit.
+  Der Stall bildet den Späherreiter aus (80 Nahrung, 30 s), der damit zum
+  ersten Mal gebaut statt mitgeliefert wird. Gezeichnet mit eigenen Merkmalen:
+  Zielscheibe, Koppel mit Heuschober, Schornstein mit Rauch und glühender Esse.
+  Fünf Dinge gelernt: (1) **Ein neues Gebäude misst sich gegen alle alten** —
+  `npm run tafel -- "t.unterschiede('gebaeude')"` nach jeder Änderung, der
+  schlechteste Paarwert liegt jetzt bei 0,38 (Grenze ein Drittel). (2) Mein
+  erstes Stalldach war ein dunkler Keil, weil ich den First auf Traufenhöhe
+  gesetzt hatte — erst das Hinsehen hat es gezeigt, keine Messung. (3) **Dunkle
+  Öffnungen reißen `darstellung AC-13`**: „fast schwarz" heißt höchster Kanal
+  unter 50, und das trifft auch das dunkle Ende eines Verlaufs — das
+  Schmiededach lag bei 4,9 %. (4) Neun Bauknöpfe schoben die Auswahlleiste
+  unter die Übersichtskarte; `bedienteileFrei` hat es gefangen, das Baumenü
+  bricht jetzt um. (5) **Bildnachweise werden nur geschrieben, wenn sie
+  fehlen** (ADR-0011) — wer ein bestehendes Bild erneuern will, braucht
+  `QA_NACHWEIS=1`. Ich habe dreimal dasselbe alte Bild angesehen, bevor es mir
+  auffiel. Nächste Runde: **B4**, die Einheiten der Feudalzeit.
 - **58** · 2026-11-07 · bauen AC-23 und bedienung AC-33 **fertig** —
   **Schritt B2, der Zeitalterwechsel**. Die vier Zeitalter und alle drei
   Aufstiege stehen als Daten; der Aufstieg ist ein Auftrag im Dorfzentrum wie
