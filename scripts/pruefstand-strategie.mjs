@@ -2,7 +2,7 @@
 // Der Pruefstand des Strategiespiels (→ specs/10-strategie/ki.md AC-7, AC-8):
 // Partien KI gegen KI ohne Server und Browser, jeder Takt geprueft.
 //
-//   npm run pruefstand:strategie                      zwanzig Partien, je sechzehn Spielminuten
+//   npm run pruefstand:strategie                      zwanzig Partien, je 22 Spielminuten
 //   npm run pruefstand:strategie -- --partien 5 --minuten 3 --startwert 100 --spieler 4
 //
 // Je Partie eine Zeile: Startwert, Dauer, Kennzahlen je Spieler. Ein
@@ -24,23 +24,27 @@ const zahl = (name, vorgabe) => {
   return wert;
 };
 const partien = zahl('partien', 20);
-// Sechzehn Minuten, nicht zehn: in der zwoelften steigt die KI in die
-// Feudalzeit auf (ki AC-9), und ein Lauf, der vorher endet, zeigt das nie.
-const minuten = zahl('minuten', 16);
+// Zweiundzwanzig Minuten, nicht sechzehn: in der zwoelften steigt die KI in
+// die Feudalzeit auf (ki AC-9), und in der achtzehnten bricht ihr erstes Heer
+// zum Gegner auf (ki AC-11) - ein Lauf, der vorher endet, zeigt das nie.
+const minuten = zahl('minuten', 22);
 const erster = zahl('startwert', 1);
 const spieler = zahl('spieler', 2);
 
 const kurz = (p) => {
   const gebaeude = Object.entries(p.gebaeude).map(([art, n]) => `${n} ${art}`).join(', ');
   const feudal = p.feudalMinute === null ? 'Dunkle Zeit' : `Feudalzeit ab ${p.feudalMinute.toFixed(1)} min`;
-  return `${p.name}: ${p.dorfbewohner} Dorfbewohner, ${p.kampf} Kampf (${p.einheiten}/${p.wohnraum}), ${feudal}, Holz ${p.holz}, Nahrung ${p.nahrung}, Gold ${p.gold}, Stein ${p.stein}; ${gebaeude}; abgewiesen ${p.abgewiesen}, laengste Untaetigkeit ${p.untaetigMax} s`;
+  const angriff = p.angriffMinute === null ? 'kein Angriff' : `${p.angriffe} Angriffe ab ${p.angriffMinute.toFixed(1)} min`;
+  return `${p.name}: ${p.dorfbewohner} Dorfbewohner, ${p.kampf} Kampf (${p.einheiten}/${p.wohnraum}), ${feudal}, ${angriff}, Holz ${p.holz}, Nahrung ${p.nahrung}, Gold ${p.gold}, Stein ${p.stein}; ${gebaeude}; abgewiesen ${p.abgewiesen}, laengste Untaetigkeit ${p.untaetigMax} s`;
 };
 
 console.log(`Pruefstand: ${partien} Partien, ${spieler} KI-Spieler, je ${minuten} Spielminuten, Startwerte ab ${erster}`);
 const beginn = Date.now();
 const dorfbewohner = [];
 const feudalMinuten = [];
+const angriffMinuten = [];
 let ohneFeudalzeit = 0;
+let ohneAngriff = 0;
 for (let n = 0; n < partien; n++) {
   const startwert = erster + n;
   try {
@@ -53,6 +57,8 @@ for (let n = 0; n < partien; n++) {
       dorfbewohner.push(p.dorfbewohner);
       if (p.feudalMinute === null) ohneFeudalzeit += 1;
       else feudalMinuten.push(p.feudalMinute);
+      if (p.angriffMinute === null) ohneAngriff += 1;
+      else angriffMinuten.push(p.angriffMinute);
     }
   } catch (fehler) {
     if (!(fehler instanceof Widerspruch)) throw fehler;
@@ -70,4 +76,11 @@ if (feudalMinuten.length) {
   console.log(`Feudalzeit: ${feudalMinuten[0].toFixed(1)} bis ${feudalMinuten[feudalMinuten.length - 1].toFixed(1)} min, Median ${m.toFixed(1)} min; ohne Aufstieg ${ohneFeudalzeit}.`);
 } else {
   console.log(`Feudalzeit: kein Spieler ist in ${minuten} min aufgestiegen.`);
+}
+angriffMinuten.sort((a, b) => a - b);
+if (angriffMinuten.length) {
+  const m = angriffMinuten[Math.floor(angriffMinuten.length / 2)];
+  console.log(`Erstes Heer: ${angriffMinuten[0].toFixed(1)} bis ${angriffMinuten[angriffMinuten.length - 1].toFixed(1)} min, Median ${m.toFixed(1)} min; ohne Angriff ${ohneAngriff}.`);
+} else {
+  console.log(`Erstes Heer: keine KI ist in ${minuten} min aufgebrochen.`);
 }

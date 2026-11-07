@@ -121,6 +121,16 @@ test.describe('Das Spielbild', () => {
     await anna.keyboard.down('w');
     await anna.waitForFunction((y) => window.ansicht.kamera.y <= y, start.y);
     await anna.keyboard.up('w');
+    // Und dann genau auf den Ausgangspunkt gesetzt. Zwischen dem Blick auf
+    // `kamera.x` und dem Loslassen der Taste schiebt die Karte weiter - in
+    // Runde 85 stand sie danach so weit daneben, dass `rahmenUmAlle` im
+    // naechsten Fall nur **eine** statt vier Einheiten im Bild fand und der
+    // Browserlauf an einer Stelle rot wurde, die mit der Runde nichts zu tun
+    // hatte.
+    await anna.evaluate((anfang) => {
+      window.ansicht.kamera.x = anfang.x;
+      window.ansicht.kamera.y = anfang.y;
+    }, start);
   });
 
   test('bedienung AC-12 / bedienung AC-16 / fahrplan AC-2: Rechtsklick auf den Wald, gesammelt wird sichtbar', async ({}, info) => {

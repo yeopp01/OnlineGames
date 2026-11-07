@@ -10,7 +10,7 @@ const require = createRequire(import.meta.url);
 const karten = require('../server/spiele/strategie/karte.js');
 const { Welt } = require('../server/spiele/strategie/welt.js');
 const {
-  Ki, ENTSCHEIDEN_ALLE, ZIEL_DORFBEWOHNER, FEUDALZEIT_NAHRUNG, AN_SCHAFEN, AN_BEEREN, MILITAER, plan,
+  Ki, ENTSCHEIDEN_ALLE, ZIEL_DORFBEWOHNER, FEUDALZEIT_NAHRUNG, AN_SCHAFEN, AN_BEEREN, MILITAER, HEER, WACHE, HEER_ABSTAND, plan,
 } = require('../server/spiele/strategie/ki.js');
 const { TAKTE_PRO_SEKUNDE } = require('../server/spiele/strategie/welt.js');
 const { EINHEITEN, SAMMELN } = require('../server/spiele/strategie/daten.js');
@@ -337,4 +337,123 @@ test('ki AC-9: ohne 500 Nahrung oder ohne zwei Gebaeude der Dunklen Zeit steigt 
   spieler.nahrung = FEUDALZEIT_NAHRUNG - 1;
   ki.feudalzeitPruefen(zentrum, dorfbewohner);
   assert.deepEqual(zentrum.schlange, [], 'zu wenig Nahrung - kein Aufstieg');
+});
+
+// Kampfeinheiten auf freien Feldern um einen Punkt anlegen - dasselbe
+// ringweise Suchen wie im Pruefgriff `einheiten` (e2e/server.mjs).
+function kampfeinheitenAnlegen(welt, spielerId, um, anzahl, art = 'miliz') {
+  const belegt = new Set([...welt.einheiten.values()].map((e) => `${Math.round(e.x)},${Math.round(e.y)}`));
+  const angelegt = [];
+  for (let r = 1; angelegt.length < anzahl && r < 30; r++) {
+    for (let dy = -r; dy <= r && angelegt.length < anzahl; dy++) {
+      for (let dx = -r; dx <= r && angelegt.length < anzahl; dx++) {
+        if (Math.max(Math.abs(dx), Math.abs(dy)) !== r) continue;
+        const x = Math.round(um.x) + dx;
+        const y = Math.round(um.y) + dy;
+        if (belegt.has(`${x},${y}`) || !karten.begehbar(welt.karte, x, y) || welt.gebaeudeAn(x, y)) continue;
+        belegt.add(`${x},${y}`);
+        angelegt.push(welt.einheitAnlegen(spielerId, x, y, art));
+      }
+    }
+  }
+  assert.equal(angelegt.length, anzahl, 'genug Platz fuer die Einheiten');
+  return angelegt;
+}
+
+const eigeneVon = (welt, spielerId) => [...welt.einheiten.values()].filter((e) => e.besitzer === spielerId);
+const kampfVon = (welt, spielerId) => eigeneVon(welt, spielerId)
+  .filter((e) => !(EINHEITEN[e.art].klassen || []).includes('dorf'));
+
+test('ki AC-11: acht brechen auf, zwei bleiben als Wache - und unter zehn Kampfeinheiten niemand', () => {
+  const welt = new Welt(ZWEI, 5);
+  const ki = new Ki(welt, 'a');
+  const a = welt.spielerVon('a');
+  const zentrumB = [...welt.gebaeude.values()].find((g) => g.besitzer === 'b' && g.art === 'dorfzentrum');
+
+  // Einer steht schon da: der Spaeherreiter aus der Startaufstellung.
+  const schon = kampfVon(welt, 'a').length;
+  assert.ok(schon >= 1, 'der Spaeher zaehlt als Kampfeinheit');
+
+  // Eine unter zehn: niemand marschiert. Nicht neun fest hinschreiben - was
+  // in der Startaufstellung steht, kann sich aendern (HEER und WACHE sind die
+  // Zahlen, die das Kriterium nennt).
+  kampfeinheitenAnlegen(welt, 'a', a.basis, HEER + WACHE - 1 - schon);
+  assert.equal(kampfVon(welt, 'a').length, HEER + WACHE - 1);
+  ki.heerPruefen(eigeneVon(welt, 'a'));
+  assert.equal(ki.angriffe, 0, 'eine zu wenig - kein Aufbruch');
+  assert.equal(ki.heer.size, 0);
+  assert.equal(kampfVon(welt, 'a').filter((e) => e.angriffslauf).length, 0, 'und niemand im Angriffslauf');
+
+  // Die zehnte: acht brechen auf.
+  kampfeinheitenAnlegen(welt, 'a', a.basis, 1);
+  ki.heerPruefen(eigeneVon(welt, 'a'));
+  assert.equal(ki.angriffe, 1, 'ein Heer ist aufgebrochen');
+  assert.equal(ki.angriffTakt, welt.takt, 'und der Takt ist vermerkt');
+  assert.equal(ki.heer.size, HEER, 'acht marschieren');
+
+  // Gegenprobe: dass acht einen Befehl haben, genuegt nicht - sie muessen im
+  // **Angriffslauf** zum Gegner gehen. Sonst waere der Test auch gruen, wenn
+  // die KI acht Leute irgendwohin schickt.
+  const marschierend = kampfVon(welt, 'a').filter((e) => e.angriffslauf);
+  assert.equal(marschierend.length, HEER, 'acht im Angriffslauf (kampf AC-4)');
+  for (const e of marschierend) {
+    assert.ok(ki.heer.has(e.id), `${e.id} gehoert zum Heer`);
+    assert.ok(e.weg.length, `${e.id} ist unterwegs`);
+    const weit = Math.hypot(e.angriffslauf.x - zentrumB.x, e.angriffslauf.y - zentrumB.y);
+    assert.ok(weit <= HEER_ABSTAND + 2, `${e.id}: Marschziel ${weit.toFixed(1)} Felder vom fremden Dorfzentrum`);
+  }
+
+  // Die Wache bleibt, und zwar die, die der eigenen Basis am naechsten steht.
+  const daheim = kampfVon(welt, 'a').filter((e) => !ki.heer.has(e.id));
+  assert.equal(daheim.length, WACHE, 'zwei bleiben zu Hause');
+  const weiteste = Math.max(...daheim.map((e) => Math.hypot(e.x - a.basis.x, e.y - a.basis.y)));
+  const naechste = Math.min(...marschierend.map((e) => Math.hypot(e.x - a.basis.x, e.y - a.basis.y)));
+  assert.ok(weiteste <= naechste, `die Wache steht naeher an der Basis (${weiteste.toFixed(1)} <= ${naechste.toFixed(1)})`);
+});
+
+test('ki AC-11: am Marschziel greift das Heer das Dorfzentrum an', () => {
+  const welt = new Welt(ZWEI, 5);
+  const ki = new Ki(welt, 'a');
+  const b = welt.spielerVon('b');
+  const zentrumB = [...welt.gebaeude.values()].find((g) => g.besitzer === 'b' && g.art === 'dorfzentrum');
+
+  // Das Heer steht schon beim Gegner - so wie es nach dem Marsch dasteht.
+  const heer = kampfeinheitenAnlegen(welt, 'a', { x: zentrumB.x + HEER_ABSTAND, y: zentrumB.y }, HEER + WACHE);
+  ki.heerPruefen(eigeneVon(welt, 'a'));
+  assert.equal(ki.angriffe, 1);
+  // Jetzt sind sie da und stehen: der Angriffslauf sieht nur Einheiten
+  // (welt.wacheTakten), das Dorfzentrum muesste er stehen lassen. Die KI setzt
+  // nach - wie ein Mensch, der noch einmal darauf klickt.
+  for (const e of heer) {
+    e.angriffslauf = null;
+    e.auftrag = null;
+    e.weg = [];
+  }
+  ki.heerPruefen(eigeneVon(welt, 'a'));
+  const angreifend = [...ki.heer].map((id) => welt.einheiten.get(id))
+    .filter((e) => e.auftrag?.art === 'angreifen' && e.auftrag.gebaeude && e.auftrag.ziel === zentrumB.id);
+  assert.equal(angreifend.length, HEER, 'alle acht gehen auf das Dorfzentrum');
+
+  // Und sie schlagen es wirklich: nach einer halben Spielminute hat es Schaden.
+  const vorher = zentrumB.leben;
+  for (let t = 0; t < 30 * TAKTE_PRO_SEKUNDE; t++) welt.takten();
+  assert.ok(zentrumB.leben < vorher, `Dorfzentrum ${zentrumB.leben} statt ${vorher} Leben`);
+  assert.ok(!b.aus, 'ausgeschieden ist er davon noch nicht');
+});
+
+// Gemessen in Runde 85 ueber die Startwerte 1 bis 20, je zwei KIs, 22
+// Spielminuten: jede der vierzig KIs brach auf, die erste nach 17,5, die
+// letzte nach 19,8 Spielminuten - zehn Kampfeinheiten stehen rund sechs
+// Minuten nach dem Aufstieg bereit (ki AC-9: Feudalzeit nach 11 bis 12). Die
+// 22 Minuten kommen daher: 19,8 plus Spielraum. Rechenzeit 17 s.
+test('ki AC-11: ueber zwanzig Startwerte bricht jede KI mindestens einmal zum Gegner auf', () => {
+  for (let startwert = 1; startwert <= 20; startwert++) {
+    const { spieler } = partieSpielen({ startwert, minuten: 22 });
+    for (const p of spieler) {
+      assert.ok(p.angriffe >= 1, `${startwert} ${p.name}: ${p.angriffe} Angriffe`);
+      // Nicht vor der Feudalzeit - vorher hat sie keine zehn Kampfeinheiten.
+      assert.ok(p.angriffMinute > p.feudalMinute, `${startwert} ${p.name}: Angriff ab ${p.angriffMinute} min, Feudalzeit ab ${p.feudalMinute} min`);
+      assert.ok(p.angriffMinute <= 22, `${startwert} ${p.name}: Angriff ab ${p.angriffMinute} min`);
+    }
+  }
 });

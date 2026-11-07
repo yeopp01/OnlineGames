@@ -153,7 +153,7 @@ Umfang hinzufügt, dort nachsehen.
 
 ## Stand
 
-**385 von 516 Kriterien fertig.** 427 Tests ohne Browser, 164 im Browser. Die
+**386 von 516 Kriterien fertig.** 431 Tests ohne Browser, 165 im Browser. Die
 Übersicht ist der Bericht: `npm run qa:report`.
 
 Gebaut ist der Unterbau: Räume, Übertragung, Karte, Wegfindung, Sammeln,
@@ -287,10 +287,17 @@ stimmen, von dem am Ende nichts mehr auf der Karte steht. Unter der Tafel steht
 die **Revanche**: ein Klick des Gastgebers startet dieselbe Runde neu —
 dieselben Leute, dieselben Einstellungen, niemand tippt einen Code. Für den
 Server ist das ein **zweiter Start desselben Raums**, erlaubt, sobald
-`welt.vorbei` es sagt; wer die Verbindung verloren hat, spielt nicht mit. Es
-folgt die **kämpfende KI** (ab acht Kampfeinheiten greift sie an, zwei bleiben
-zur Wache), Mensch gegen KI — und **zuletzt der Nebel**, weil er die
-Zustandsnachricht umbaut.
+`welt.vorbei` es sagt; wer die Verbindung verloren hat, spielt nicht mit.
+**C4 hat begonnen: die KI greift an.** Sobald zehn Kampfeinheiten bereitstehen,
+schickt sie acht davon im Angriffslauf zum nächsten Gegner — Marschziel ist ein
+freies Feld vier Felder vor dessen Dorfzentrum, denn ein Befehl auf ein fremdes
+Gebäude wäre ein Angriff auf genau dieses Gebäude und kein Angriffslauf —, und
+am Ziel setzt sie auf das Dorfzentrum nach. Die zwei, die dem eigenen Dorf am
+nächsten stehen, bleiben als Wache. Über zwanzig Startwerte bricht jede KI auf,
+die erste zwischen Spielminute 17,5 und 19,8; die Vorgabe von
+`npm run pruefstand:strategie` steht deshalb auf 22 Minuten. Es folgen
+Verteidigung daheim, Nachschub, Mensch gegen KI — und **zuletzt der Nebel**,
+weil er die Zustandsnachricht umbaut.
 
 1. **Stufe A** Dunkle Zeit mit Wirtschafts-KI und Prüfstand · **B** Feudalzeit
    · **C** Partieende und KI-Gegner · **D** Ritterzeit · **E** fünf Völker ·

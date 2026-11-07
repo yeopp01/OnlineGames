@@ -274,6 +274,8 @@ Zahlen, gegen die spätere Runden vergleichen. Mit Datum und Commit.
 | 2026-11-07 | Spielerfarbe je Einheit (Anteil der Figurenflaeche, Schautafel) | Plaenkler **0,039 → 0,119**; Soldat 0,105 · Speerkaempfer 0,108 · Bogenschuetze 0,144 · Spaeherreiter 0,171 · Dorfbewohner 0,270 · Miliz 0,308. Abstand Bogenschuetze/Plaenkler 0,589 → 0,584 | Runde 83 |
 | 2026-11-07 | Geaenderte Bildnachweise nach dem `:neu`-Lauf | 114: **28 ueber 1 %**, davon 20 die zwoelf absichtlichen Umbenennungen (je neu + geloescht); 8 wirklich angesehen, kein Rueckschritt, eines besser (bedienung AC-34). 86 darunter, alle unter 0,91 % | Runde 83 |
 | 2026-11-07 | Tests ohne Browser / im Browser; `npm run check:alles:kurz` | 427 / 164; 583 s (Browserlauf allein 9,3 min) | Runde 84 |
+| 2026-11-07 | Erstes Heer der KI ueber zwanzig Startwerte (Pruefstand, 22 min) | Spielminute **17,5 bis 19,8**, Median 18,1; ohne Angriff 0 von 20. Rechenzeit 0,84 s je Partie | Runde 85 |
+| 2026-11-07 | Konterkreis nach dem engen `angekommen`-Fix (`npm run konterkreis:strategie`) | 20/20 in allen vier Richtungen, 0/20 umgekehrt. Die **weite** Fassung: Spaeherreiter gegen Bogenschuetze 14/20, umgekehrt 10/20 | Runde 85 |
 | 2026-11-07 | Geaenderte Bildnachweise nach einer Aenderung **nur** am Abschlussbild | 6: zwei neue (AC-9), eines zu 94 % (Kamera tiefer, AC-6), zwei zu 6,0 % (der neue Knopf, AC-5 und AC-8), eines zu 0,0 %. Kein `:neu`-Lauf noetig - das Bedienteil steht in genau einer Testdatei, und die wurde mit `QA_NACHWEIS=1` einzeln gefahren (36 s statt 11 min) | Runde 84 |
 
 ## Rückschauen
@@ -827,6 +829,41 @@ alle sieben Gebäude der Dunklen Zeit stehen. Was sich wiederholt hat:
 Neueste oben. Eine Zeile je Runde: Nummer, Datum, Kriterien, Ergebnis,
 wichtigste Erkenntnis.
 
+- **85** · 2026-11-07 · **ki AC-11** — die KI greift an: sobald zehn
+  Kampfeinheiten bereitstehen, schickt sie acht davon im Angriffslauf zum
+  nächsten Gegner und setzt am Ziel auf dessen Dorfzentrum nach; die zwei, die
+  dem eigenen Dorf am nächsten stehen, bleiben als Wache. Über zwanzig
+  Startwerte bricht jede KI auf, die erste zwischen Spielminute **17,5 und
+  19,8** (Median 18,1) — die Vorgabe des Prüfstands steigt deshalb von 16 auf
+  22 Minuten. Gelernt, viererlei: (1) **Das Bild hat zwei echte Fehler im Kampf
+  gefunden, die seit Stufe B dalagen.** `figurenFrei` fand drei Milizen auf
+  einem Punkt; dahinter steckten zwei Sachen in `welt.js`: die Verteilung auf
+  die Angriffsfelder galt nur innerhalb **eines** Befehls, und wer einzeln
+  nachkam, bekam dasselbe Feld noch einmal — und `auftrag.angekommen` wurde
+  gesetzt, **bevor** geprüft war, ob die Einheit noch läuft, weshalb ein
+  Nahkämpfer am ersten Punkt in Reichweite stehenblieb. Beide haben jetzt
+  einen eigenen Test unter `kampf AC-1`, beide mit Gegenprobe. (2) **Ein Griff
+  in den Kampfkern wird am Gefechtsstand gemessen, bevor er bleibt.** Die weite
+  Fassung des zweiten Fehlers sah richtiger aus und kippte den Konterkreis:
+  Späherreiter gegen Bogenschütze fiel von 20/20 auf 14/20, die Gegenrichtung
+  stieg von 0/20 auf 10/20. Eng gefasst — nur bei Gebäuden als Ziel — hält der
+  Kreis wieder in allen vier Richtungen 20/20. Ohne `npm run
+  konterkreis:strategie` wäre das eingecheckt worden. (3) **Ein Bild vom
+  Sturm auf das Dorfzentrum gibt es nicht**: die Angreifer stehen hinter dem
+  Gebäude und werden dort als Umriss gezeichnet (B1, bedienung AC-30) — zwei
+  Läufe, bis das Ansehen es zeigte. Was die Sache erzählt, ist der **Marsch**:
+  acht rote Figuren vierzig Felder vom eigenen Dorf auf offener Wiese.
+  (4) **„Gesammelt" war in der Unterschrift falsch** — der Späherreiter läuft
+  doppelt so schnell wie eine Miliz und ist dem Verband weit voraus. Der Test
+  zählt jetzt sieben Milizen und einen Reiter im Bild und die Unterschrift
+  sagt genau das. (5) Nebenbei, aus dem Browserlauf: **eine Taste, die die
+  Karte schiebt, hört nicht in dem Augenblick auf, in dem die Bedingung wahr
+  wird.** `bedienung AC-7` fuhr mit `a` und `w` zur Basis zurück und ließ los,
+  sobald `kamera.x <= start.x` — in der Zeit bis zum Loslassen schob sie
+  weiter, und im nächsten Fall fand `rahmenUmAlle` nur **eine** statt vier
+  Einheiten im Bild. Ein roter Lauf an einer Stelle, die mit der Runde nichts
+  zu tun hatte. Wer in einem Fall die Kamera bewegt, setzt sie am Ende
+  **genau** zurück, statt sie zurückzufahren.
 - **84** · 2026-11-07 · **spielziel AC-9** — die Revanche mit einem Klick: unter
   der Tafel am Ende steht ein Knopf, der dieselbe Runde neu startet. Gebaut
   **ohne eine einzige neue Nachricht**: der Knopf schickt `start`, und der Raum

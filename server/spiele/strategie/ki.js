@@ -56,6 +56,19 @@ const MILITAER_SCHLANGE = 2;
 // Was ein Militaergebaeude an Holz kostet - dafuer wird es zurueckgehalten.
 const MILITAER_HOLZ = Math.max(...MILITAER.map((art) => GEBAEUDE[art].kosten.holz || 0));
 
+// Das Heer (ki AC-11): so viele marschieren los, so viele bleiben zu Hause.
+// Acht, weil zehn Speerkaempfer im Gefechtsstand gegen sieben Reiter gewinnen
+// (fahrplan AC-9) - ein kleineres Heer verliert gegen jede Wache. Der Aufbruch
+// braucht also zehn Kampfeinheiten: acht fuer den Marsch, zwei fuer daheim.
+const HEER = 8;
+const WACHE = 2;
+// So weit vor dem fremden Dorfzentrum endet der Marsch. Nicht auf ihm: ein
+// Befehl auf ein fremdes Gebaeude ist ein Angriff auf genau dieses Gebaeude
+// und **kein** Angriffslauf (welt.befehl) - unterwegs wuerde dann niemand
+// angegriffen. Vier Felder, weil die Fernkaempfer vier Felder weit schlagen:
+// so steht das Heer am Ende in Reichweite, bevor es einzeln nachsetzt.
+const HEER_ABSTAND = 4;
+
 const FELD_FUER = { holz: [karten.WALD], nahrung: [karten.BEERE], gold: [karten.GOLD], stein: [karten.STEIN] };
 const LAGER_FUER = { holz: 'holzfaellerlager', nahrung: 'muehle', gold: 'bergbaulager', stein: 'bergbaulager' };
 
@@ -85,6 +98,11 @@ class Ki {
     // In welchem Takt die Feudalzeit erreicht war - der Pruefstand misst daran
     // (ki AC-9). `null` heisst: noch nicht.
     this.feudalTakt = null;
+    // Wer marschiert (ki AC-11), wie oft ein Heer aufgebrochen ist und in
+    // welchem Takt das erste - daran misst der Pruefstand.
+    this.heer = new Set();
+    this.angriffe = 0;
+    this.angriffTakt = null;
   }
 
   get spieler() {
@@ -136,6 +154,7 @@ class Ki {
     if (this.feudalTakt === null && this.spieler.zeitalter > 0) this.feudalTakt = welt.takt;
     this.feudalzeitPruefen(zentrum, dorfbewohner);
     this.militaerPruefen(gebaeude, dorfbewohner);
+    this.heerPruefen(eigene);
 
     // Lager an die Vorraete, sobald dort mehrere arbeiten und es weit ist.
     const rollen = this.rollen(dorfbewohner);
@@ -207,6 +226,95 @@ class Ki {
       return art;
     }
     return null;
+  }
+
+  /**
+   * Das Heer (ki AC-11). Sind acht Kampfeinheiten marschbereit - also zehn da,
+   * denn zwei bleiben als Wache -, brechen die acht gesammelt zum naechsten
+   * Gegner auf. Sie gehen im **Angriffslauf** (kampf AC-4): was ihnen
+   * unterwegs in Sichtweite kommt, wird angegriffen.
+   *
+   * Am Ziel reicht das nicht: der Angriffslauf sieht nur Einheiten, Gebaeude
+   * bleiben ungeschoren (welt.wacheTakten, kampf AC-2) - sonst liefe jede
+   * Wache ins fremde Dorfzentrum. Deshalb setzt die KI nach, so wie es ein
+   * Mensch tut: wer am Marschziel steht und nichts mehr zu tun hat, bekommt
+   * das Dorfzentrum als Ziel. Faellt es, das naechste Gebaeude.
+   */
+  heerPruefen(eigene) {
+    // Wer gefallen ist, marschiert nicht mehr.
+    for (const id of this.heer) if (!this.welt.einheiten.has(id)) this.heer.delete(id);
+    const kampf = eigene.filter((e) => !e.tot && !(EINHEITEN[e.art].klassen || []).includes('dorf'));
+    if (!kampf.length) return;
+    const gegner = this.naechsterGegner();
+    if (!gegner) return;
+    const ziel = this.gegnerZiel(gegner);
+    if (!ziel) return;
+
+    // Nachsetzen: wer steht, geht auf das Ziel. Nicht `untaetig()` - das
+    // beantwortet die Frage nur fuer Dorfbewohner (ki AC-6).
+    const stehend = kampf.filter((e) => this.heer.has(e.id) && !e.auftrag && !e.weg.length && !e.angriffslauf);
+    if (stehend.length) this.senden({ auftrag: 'befehl', einheiten: stehend.map((e) => e.id), ziel });
+
+    // Der Aufbruch. Die beiden, die der Basis am naechsten stehen, bleiben:
+    // so wacht die Wache dort, wo das Dorf ist.
+    const daheim = kampf.filter((e) => !this.heer.has(e.id));
+    if (daheim.length < HEER + WACHE) return;
+    const { basis } = this.spieler;
+    const nachAbstand = [...daheim].sort((a, b) => Math.hypot(a.x - basis.x, a.y - basis.y) - Math.hypot(b.x - basis.x, b.y - basis.y));
+    const marsch = nachAbstand.slice(WACHE, WACHE + HEER);
+    const feld = this.marschziel(ziel);
+    if (!feld) return;
+    this.senden({ auftrag: 'befehl', einheiten: marsch.map((e) => e.id), ziel: feld, angriffslauf: true });
+    for (const e of marsch) this.heer.add(e.id);
+    this.angriffe += 1;
+    if (this.angriffTakt === null) this.angriffTakt = this.welt.takt;
+  }
+
+  // Der naechste Gegner, der noch mitspielt - gemessen von Basis zu Basis.
+  naechsterGegner() {
+    const { basis } = this.spieler;
+    let bester = Infinity;
+    let gegner = null;
+    for (const s of this.welt.spieler) {
+      if (s.id === this.spielerId || s.aus) continue;
+      const d = Math.hypot(s.basis.x - basis.x, s.basis.y - basis.y);
+      if (d < bester) {
+        bester = d;
+        gegner = s;
+      }
+    }
+    return gegner;
+  }
+
+  // Worauf das Heer zielt: das Dorfzentrum des Gegners, sonst irgendein
+  // Gebaeude von ihm, sonst seine Basis - dort stehen dann seine Einheiten.
+  gegnerZiel(gegner) {
+    const seine = [...this.welt.gebaeude.values()].filter((g) => g.besitzer === gegner.id);
+    const zentrum = seine.find((g) => g.art === 'dorfzentrum');
+    const gebaeude = zentrum || seine[0];
+    return gebaeude ? { x: gebaeude.x, y: gebaeude.y } : { x: gegner.basis.x, y: gegner.basis.y };
+  }
+
+  // Ein freies Feld im Abstand vor dem Ziel, auf der Seite der eigenen Basis:
+  // der kuerzeste Weg, und das Heer laeuft nicht um das Dorf herum.
+  marschziel(um) {
+    const { basis } = this.spieler;
+    let bestes = null;
+    let bester = Infinity;
+    for (let dy = -HEER_ABSTAND; dy <= HEER_ABSTAND; dy++) {
+      for (let dx = -HEER_ABSTAND; dx <= HEER_ABSTAND; dx++) {
+        if (Math.max(Math.abs(dx), Math.abs(dy)) !== HEER_ABSTAND) continue;
+        const x = Math.round(um.x) + dx;
+        const y = Math.round(um.y) + dy;
+        if (!karten.begehbar(this.welt.karte, x, y) || this.welt.gebaeudeAn(x, y)) continue;
+        const d = Math.hypot(x - basis.x, y - basis.y);
+        if (d < bester) {
+          bester = d;
+          bestes = { x, y };
+        }
+      }
+    }
+    return bestes;
   }
 
   untaetig(einheit) {
@@ -431,5 +539,5 @@ class Ki {
 }
 
 module.exports = {
-  Ki, ENTSCHEIDEN_ALLE, ZIEL_DORFBEWOHNER, FEUDALZEIT_NAHRUNG, AN_SCHAFEN, AN_BEEREN, MILITAER, plan,
+  Ki, ENTSCHEIDEN_ALLE, ZIEL_DORFBEWOHNER, FEUDALZEIT_NAHRUNG, AN_SCHAFEN, AN_BEEREN, MILITAER, HEER, WACHE, HEER_ABSTAND, plan,
 };

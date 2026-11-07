@@ -1,0 +1,10 @@
+{
+  "spec": "10-strategie/ki.md",
+  "ac": "AC-11",
+  "titel": "Das Heer der KI auf dem Weg zum Gegner: acht Kampfeinheiten ziehen über die offene Karte, vierzig Felder von ihrem eigenen Dorf entfernt — sieben Milizen im Verband, der schnellere Späherreiter voraus. Befohlen hat das kein Mensch",
+  "datei": "e2e/tests/strategie-ki.spec.mjs",
+  "pfad": [
+    "Die KI greift an",
+    "ki AC-11: acht Kampfeinheiten ziehen gesammelt zum Gegner, zwei bleiben als Wache"
+  ]
+}

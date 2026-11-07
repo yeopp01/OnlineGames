@@ -928,7 +928,7 @@ class Welt {
         const opfer = feind || feindBau;
         // Mehrere Angreifer stellen sich um das Ziel herum, statt uebereinander
         // zu stehen - dieselbe Aufstellung wie beim Gehen (einheiten AC-20).
-        angriffsfelder ??= this.angriffsfelder(opfer, gruppe.length, Boolean(feindBau));
+        angriffsfelder ??= this.angriffsfelderOhneBesetzte(opfer, gruppe.length, Boolean(feindBau), einheitIds);
         this.angriffBeginnen(einheit, opfer, Boolean(feindBau), this.naechstesFreies(einheit, angriffsfelder));
       } else if (!angriffslauf && baustelle && !baustelle.fertig && baustelle.besitzer === spielerId
         && (EINHEITEN[einheit.art].baut || []).includes(baustelle.art)) {
@@ -1281,6 +1281,34 @@ class Welt {
     return this.aufstellungUm(mitte, anzahl + 1).filter((f) => f.x !== mitte.x || f.y !== mitte.y);
   }
 
+  /**
+   * Dieselben Angriffsfelder, aber die Plaetze derer, die dasselbe Ziel schon
+   * angreifen, sind belegt (kampf AC-1: mehrere Angreifer verteilen sich).
+   *
+   * Ohne das gilt die Verteilung nur **innerhalb eines Befehls**: kommt ein
+   * zweiter hinterher - und die KI setzt am Ziel einzeln nach (ki AC-11) -,
+   * bekommt der Nachzuegler dasselbe Feld noch einmal, und zwei Angreifer
+   * stehen uebereinander. Im Bild zu ki AC-11 waren es drei auf einem Punkt
+   * (Runde 85). `wacheTakten` tut dasselbe schon lange, nur fuer Einheiten.
+   *
+   * @param {string[]} ausser Ids, die jetzt neu verteilt werden - ihr alter
+   *   Platz zaehlt nicht als belegt.
+   */
+  angriffsfelderOhneBesetzte(ziel, anzahl, istGebaeude, ausser) {
+    const felder = this.angriffsfelder(ziel, anzahl, istGebaeude);
+    const neu = new Set(ausser);
+    for (const andere of this.einheiten.values()) {
+      if (andere.tot || neu.has(andere.id)) continue;
+      const auftrag = andere.auftrag;
+      if (auftrag?.art !== 'angreifen' || auftrag.ziel !== ziel.id) continue;
+      if (Boolean(auftrag.gebaeude) !== Boolean(istGebaeude)) continue;
+      // Wohin er unterwegs ist - und wenn er schon steht, wo er steht.
+      const platz = andere.weg.length ? andere.weg[andere.weg.length - 1] : this.feldVon(andere);
+      for (const f of felder) if (f.x === platz.x && f.y === platz.y) f.frei = false;
+    }
+    return felder;
+  }
+
   // Gemerkt wird das **Ziel**, nicht sein Platz: eine Einheit laeuft weg.
   // `heimat` steht nur in einem Angriff, den niemand befohlen hat - er begrenzt
   // die Verfolgung (kampf AC-3).
@@ -1469,7 +1497,20 @@ class Welt {
     // einmal angekommen war, schlaegt dagegen zu, sobald er wieder in
     // Reichweite ist: zwei, die hintereinander herlaufen, kaempfen sonst nie
     // (Runde 64).
-    if (nahGenug) auftrag.angekommen = true;
+    //
+    // **Vor einem Gebaeude geht ein Nahkaempfer seinen Platz zu Ende**
+    // (Runde 85): dort gilt `angekommen` erst, wenn sein Weg zu Ende ist.
+    // Eine Grundflaeche ist breit, also ist jeder schon auf halbem Weg nah
+    // genug - und weil `angekommen` im ersten solchen Takt stand, lief er
+    // genau einen Takt weiter und blieb stehen. Drei Milizen am selben
+    // Dorfzentrum standen deshalb auf demselben Punkt ihres gemeinsamen Wegs,
+    // obwohl jede ihr eigenes Feld zugewiesen hatte (im Bild zu ki AC-11).
+    //
+    // **Nur fuer Gebaeude**, denn die laufen nicht weg. Fuer eine Einheit
+    // bleibt es beim alten Verhalten: dort wuerde das Zuendeglaufen die
+    // ersten Treffer verzoegern, und der Konterkreis kippte - Reiter gegen
+    // Bogen fiel von 20/20 auf 14/20 (fahrplan AC-9, gemessen in Runde 85).
+    if (nahGenug && (fern || !auftrag.gebaeude || !einheit.weg.length)) auftrag.angekommen = true;
     if (!nahGenug || (einheit.weg.length && !fern && !auftrag.angekommen)) {
       if (einheit.weg.length) {
         this.laufen(einheit);

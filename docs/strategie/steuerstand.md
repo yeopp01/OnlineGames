@@ -13,22 +13,25 @@ hier nichts eintraegt, verliert den Faden beim naechsten Autocompact.
 
 ## Zuletzt fortgeschrieben
 
-2026-11-07, nach Runde 84 (**spielziel AC-9**, die Revanche mit einem Klick -
-**damit ist C3 abgeschlossen**. Gebaut ohne neue Nachricht: der Knopf unter der
-Tafel schickt `start`, und `raum.starten()` erlaubt einen zweiten Start,
-sobald `welt.vorbei` es sagt. Davor Runde 83, die **Rueckschau** ueber alle
-167 Bildnachweise - ihr Rueckstand von 28 Beanstandungen steht in den
-Erkenntnissen unter **Offene Faeden**, je zwei bis drei fuer eine spaetere
-Runde. Als Naechstes **C4: die kaempfende KI** - ki AC-10 bis AC-12 und AC-14,
-dazu fahrplan AC-11. Der erste Schritt dort ist `ki AC-10` (ein Dorfbewohner
-steht spaet in der Partie bis zu acht Minuten still) oder gleich das Heer:
-ab acht Kampfeinheiten angreifen, zwei bleiben zur Wache).
+2026-11-07, nach Runde 85 (**ki AC-11**, die KI greift an - **C4 hat
+begonnen**. Ab zehn Kampfeinheiten marschieren acht im Angriffslauf zum
+naechsten Gegner, zwei bleiben als Wache; ueber zwanzig Startwerte bricht
+jede KI zwischen Spielminute 17,5 und 19,8 auf. Nebenher zwei echte Fehler im
+Kampf gefunden und behoben, beide unter `kampf AC-1` (Verteilung der
+Angriffsfelder nur innerhalb eines Befehls; `angekommen` vor der Wegpruefung).
+Davor Runde 84 mit der Revanche, **damit stand C3**, und Runde 83, die
+**Rueckschau** ueber alle 167 Bildnachweise - ihr Rueckstand von 28
+Beanstandungen steht in den Erkenntnissen unter **Offene Faeden**, je zwei bis
+drei fuer eine spaetere Runde. Als Naechstes in C4: **ki AC-14** (daheim
+verteidigen), **ki AC-12** (Nachschub, bei Spielminute 30 noch 20
+Dorfbewohner) und **ki AC-10** (spaet untaetige Dorfbewohner - der Pruefstand
+zeigt bei 22 Minuten bis zu 44,5 s Stillstand)).
 
 ## Wo ich stehe
 
 - **Branch:** `strategie`. Nie auf `main` arbeiten, **nie pushen, nie deployen.**
-- **Board:** 385 von 516 Kriterien fertig · 1 in Arbeit · 5 in QA · 4 geplant ·
-  113 offen · 8 zurueckgestellt. 427 Tests ohne Browser, 164 im Browser.
+- **Board:** 386 von 516 Kriterien fertig · 1 in Arbeit · 5 in QA · 4 geplant ·
+  112 offen · 8 zurueckgestellt. 431 Tests ohne Browser, 165 im Browser.
 - **Vier Waechter in `tests/waechter-*.test.mjs`:** Gleichheit auf wachsenden
   Listen, verbesserbare Werte an `welt.einheitenwert()` vorbei,
   Bildunterschriften mit `${...}`, und (neu in Runde 73) die **Kuerzeltafel**
@@ -212,6 +215,40 @@ ab acht Kampfeinheiten angreifen, zwei bleiben zur Wache).
   jeder Zeile nach unten, und die neue Zeile lag genau auf den Gefallenen im
   Bild von `spielziel AC-6`. Der Test setzt die Kamera jetzt tiefer und
   **zaehlt**, wie viele Gefallene frei unter der Tafel liegen.
+- **`ki AC-11` ist fertig** (Runde 85), **damit hat C4 begonnen**. **Wie es
+  gebaut ist:** `Ki.heerPruefen()` laeuft in jeder Entscheidung (alle 0,5 s).
+  Sind mindestens `HEER + WACHE` = 10 Kampfeinheiten daheim, schickt sie die
+  acht, die der eigenen Basis am **weitesten** stehen - die zwei naechsten
+  bleiben. Befohlen wird ueber `welt.nachricht` wie bei jedem Menschen:
+  `{auftrag:'befehl', einheiten:[…], ziel:<freies Feld>, angriffslauf:true}`.
+  **Das Marschziel ist ein freies Feld vier Felder vor dem fremden
+  Dorfzentrum, nicht das Gebaeude selbst** - ein Befehl auf ein fremdes
+  Gebaeude ist in `welt.befehl` ein Angriff auf genau dieses Gebaeude und
+  setzt `angriffslauf` gar nicht erst. Am Ziel angekommen, setzt
+  `heerPruefen` nach: wer steht und keinen Auftrag hat, bekommt das
+  Dorfzentrum als Ziel. Noetig ist das, weil `welt.wacheTakten()` einem
+  Angriffslauf nur **Einheiten** in Sichtweite gibt, keine Gebaeude.
+  `this.heer` merkt sich, wer schon unterwegs ist (und vergisst Tote), damit
+  der Aufbruch nicht in jeder Entscheidung von vorn beginnt.
+  **Gemessen** (`npm run pruefstand:strategie`, jetzt mit `angriffe` und
+  `angriffMinute` in den Kennzahlen): ueber zwanzig Startwerte greift jede KI
+  an, die erste zwischen Spielminute **17,5 und 19,8** (Median 18,1). Die
+  Vorgabe des Pruefstands steht deshalb auf **22 Minuten** (vorher 16).
+  **Zwei Fehler im Kampf lagen seit Stufe B darunter**, beide in `welt.js`,
+  beide mit eigenem Test unter `kampf AC-1`: (1) `angriffsfelder` verteilte
+  nur innerhalb **eines** Befehls - wer einzeln nachkam (und genau das tut die
+  KI am Dorfzentrum), bekam dasselbe Feld noch einmal; jetzt streicht
+  `angriffsfelderOhneBesetzte` die Felder, auf die schon jemand zugeht.
+  (2) `auftrag.angekommen` wurde gesetzt, **bevor** geprueft war, ob die
+  Einheit noch laeuft - ein Nahkaempfer blieb am ersten Punkt in Reichweite
+  stehen. Der Fix gilt **nur bei Gebaeuden als Ziel**: weit gefasst kippte er
+  den Konterkreis (Spaeherreiter gegen Bogenschuetze 20/20 → 14/20). Wer am
+  Kampf etwas aendert, faehrt `npm run konterkreis:strategie`.
+  **Fuer den Bildnachweis**: ein Bild vom Sturm auf das Dorfzentrum gibt es
+  nicht - die Angreifer stehen hinter dem Gebaeude und werden als Umriss
+  gezeichnet. Das Bild ist der **Marsch**, vierzig Felder vom eigenen Dorf.
+  Und der Spaeherreiter laeuft doppelt so schnell wie eine Miliz: von einem
+  geschlossenen Verband darf keine Unterschrift sprechen.
 - **Der Gefechtsstand** (neu in Runde 71) steht in
   `server/spiele/strategie/pruefstand.js` als `gefechtSpielen`:
   `npm run konterkreis:strategie` stellt zwei Heere gleicher Kosten auf freiem

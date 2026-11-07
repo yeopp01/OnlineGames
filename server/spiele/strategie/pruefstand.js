@@ -86,6 +86,10 @@ function kennzahlen(welt, spieler, ki, untaetig) {
     zeitalter: spieler.zeitalter,
     // In welcher Spielminute die Feudalzeit stand, `null` wenn gar nicht.
     feudalMinute: ki.feudalTakt === null ? null : ki.feudalTakt / (60 * TAKTE_PRO_SEKUNDE),
+    // Wie oft ein Heer aufgebrochen ist und in welcher Spielminute das erste
+    // (ki AC-11). `null` heisst: diese KI hat nie angegriffen.
+    angriffe: ki.angriffe,
+    angriffMinute: ki.angriffTakt === null ? null : ki.angriffTakt / (60 * TAKTE_PRO_SEKUNDE),
     gebaeude,
     ...Object.fromEntries(ROHSTOFFE.map((r) => [r, Math.floor(spieler[r])])),
     abgewiesen: ki.abgewiesen,

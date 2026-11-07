@@ -2,7 +2,7 @@
 
 **Bereich:** Strategie
 **Kuerzel:** ki
-**Stand:** 9/14 fertig · 5 offen
+**Stand:** 10/14 fertig · 4 offen
 
 ## Zweck
 
@@ -73,13 +73,14 @@ nicht die Regeln.
 
 ### Kampf und Partieende (Stufe C)
 
-- **AC-11** `offen` **Die KI greift an** — Sobald **acht** Kampfeinheiten
-  bereitstehen, schickt sie sie gesammelt zum nächsten Gegner: unterwegs
-  greift sie an, was ihr in Sichtweite kommt (Angriffslauf,
-  [Kampf](kampf.md) AC-8), am Ziel das Dorfzentrum. **Zwei** bleiben als Wache
-  zu Hause. Acht, weil zehn Speerkämpfer im Gefechtsstand gegen sieben Reiter
-  gewinnen ([Fahrplan](fahrplan.md) AC-9) — ein kleineres Heer verliert gegen
-  jede Wache. Im Prüfstand greift sie über zwanzig Startwerte in jeder Partie
+- **AC-11** `fertig` **Die KI greift an** — Sobald **zehn** Kampfeinheiten
+  bereitstehen, schickt sie **acht** davon zum nächsten Gegner: unterwegs
+  greifen sie an, was ihnen in Sichtweite kommt (Angriffslauf,
+  [Kampf](kampf.md) AC-8), am Ziel das Dorfzentrum. Die **zwei**, die dem
+  eigenen Dorf am nächsten stehen, bleiben als Wache zu Hause. Acht, weil zehn
+  Speerkämpfer im Gefechtsstand gegen sieben Reiter gewinnen
+  ([Fahrplan](fahrplan.md) AC-9) — ein kleineres Heer verliert gegen jede
+  Wache. Im Prüfstand greift sie über zwanzig Startwerte in jeder Partie
   mindestens einmal an.
 - **AC-12** `offen` **Nachschub statt alles auf einmal** — Ist das Heer
   gefallen, bildet sie weiter aus und greift wieder an. Die Wirtschaft läuft

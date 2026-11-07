@@ -463,3 +463,30 @@ test('einheiten AC-25: ein Nahkaempfer geht dagegen bis ans Ziel', () => {
   const { abstand } = ersterTreffer('miliz');
   assert.ok(abstand < 1.5, `die Miliz trifft erst auf ${abstand.toFixed(2)} Feldern`);
 });
+
+// Runde 85: die Verteilung galt nur innerhalb **eines** Befehls. Die KI setzt
+// am fremden Dorfzentrum einzeln nach (ki AC-11), und jeder Nachzuegler
+// bekam dasselbe Feld noch einmal - im Bild standen drei Milizen auf einem
+// Punkt. Gefunden hat es `figurenFrei` am Bildnachweis, nicht das Auge.
+test('kampf AC-1: auch nacheinander gegebene Befehle stellen die Angreifer nebeneinander', () => {
+  const welt = new Welt(ZWEI, 7);
+  const basis = welt.spielerVon('a').basis;
+  const zentrum = [...welt.gebaeude.values()].find((g) => g.besitzer === 'b' && g.art === 'dorfzentrum');
+  // Sechs Milizen, einzeln losgeschickt - nicht als Gruppe.
+  const sechs = [0, 1, 2, 3, 4, 5].map((i) => welt.einheitAnlegen('a', zentrum.x + 4, zentrum.y - 2 + i, 'miliz'));
+  zentrum.leben = 100000;
+  for (const einheit of sechs) {
+    rechtsklick(welt, 'a', [einheit], zentrum);
+    takten(welt, 2);
+  }
+  taktenBis(welt, () => sechs.every((e) => !e.weg.length), 600);
+
+  for (const [i, e] of sechs.entries()) {
+    assert.equal(e.auftrag.art, 'angreifen', `${i} greift an`);
+    for (const f of sechs.slice(i + 1)) {
+      const abstand = Math.hypot(e.x - f.x, e.y - f.y);
+      assert.ok(abstand >= 0.5, `${abstand.toFixed(2)} Felder zwischen zwei Angreifern`);
+    }
+  }
+  assert.ok(zentrum.leben < 100000, 'und geschlagen wird auch');
+});
