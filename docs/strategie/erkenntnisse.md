@@ -67,6 +67,14 @@ etwas anderem gearbeitet.
   Bezeichner, Dateinamen und Testnamen bleiben umschrieben. Bestehende Texte
   umstellen: eine eigene Runde, weil Browsertests und Bildunterschriften
   Texte wörtlich prüfen. Neue Texte ab sofort mit Umlauten.
+  **Stand nach Runde 72:** die **Einheitennamen** sind durch — `Späherreiter`
+  war der einzige Ausreißer in `public/figuren.js` (Miliz, Soldat,
+  Speerkämpfer, Bogenschütze, Plänkler hatten ihn schon), und die Schautafel
+  (`public/schautafel.js`) nennt sie jetzt genauso. Offen bleiben die
+  **Gebäudenamen** in `public/gebaeude.js` (`Muehle`, `Holzfaellerlager`,
+  `Bergbaulager`, `Schiessanlage`) — die stehen im Baumenü und in der
+  Auswahlleiste, daran hängen Browsertests — und die Überschriften der
+  Schautafel.
 - Das Spielbild im Browser liest `window.ansicht` (nur lesen, befohlen wird
   mit Maus und Tastatur) — Muster in `e2e/tests/strategie-spielbild.spec.mjs`.
   Für neue Bedienkriterien dort anbauen.
@@ -179,6 +187,9 @@ Zahlen, gegen die spätere Runden vergleichen. Mit Datum und Commit.
 | 2026-11-07 | Pruefstand nach der Wache: 20 Startwerte x 10 Spielminuten — Dorfbewohner / Zeit je Takt | 22 (Median 22) / 0,008 ms, keine Widersprueche | Runde 64 |
 | 2026-11-07 | Treffer des neuen Wächters gegen Gleichheit auf wachsenden Daten, erster Lauf | 10 Stellen in 5 Dateien (alle repariert) | Runde 65 |
 | 2026-11-07 | Abstand zweier Angreifer im Bild zu kampf AC-1 (`figurenFrei`) | 0,27–0,39 Felder — Soll: ≥ 0,5 (einheiten AC-29, offen) | Runde 65 |
+| 2026-11-07 | Browserlauf nach Runde 72 | 149 Faelle in 8,6 min (vorher 148 in 7,1); `npm run check` 18 s, 397 Tests ohne Browser | Runde 72 |
+| 2026-11-07 | Langsamster Browserfall: `fahrplan AC-8` (Aufstieg, drei Gebaeude, vier Einheiten, zwei Gefechte) | 1,4 min — loest `ki AC-9` (45 s) ab | Runde 72 |
+| 2026-11-07 | Gemessener Schaden im Browser: Speer→Reiter / Bogen→Reiter (mit Schmiedeangriff) | 19 / 2 — der Bonus traegt, die Verbesserung geht ueber die Klasse | Runde 72 |
 | 2026-11-07 | Konterkreis, 20 Startwerte je Paarung, Budget 600 — Konter / gekontert | 20/20 = 100 % / 0/20 = 0 % in allen vier Paarungen, 0 ohne Ende | Runde 71 |
 | 2026-11-07 | Gefechtsdauer (Takte, Median): Speer–Reiter / Plaenkler–Bogen / Bogen–Speer / Reiter–Bogen | 80 / 125 / 190 / 346 | Runde 71 |
 | 2026-11-07 | Rechenzeit des Gefechtsstands: 160 Gefechte (8 Richtungen x 20 Startwerte) | 0,2 s | Runde 71 |
@@ -562,6 +573,23 @@ alle sieben Gebäude der Dunklen Zeit stehen. Was sich wiederholt hat:
 Neueste oben. Eine Zeile je Runde: Nummer, Datum, Kriterien, Ergebnis,
 wichtigste Erkenntnis.
 
+- **72** · 2026-11-07 · **fahrplan AC-8 fertig — damit ist Stufe B erreicht:
+  die Feudalzeit ist am Stück im Browser spielbar.** Ein Test
+  (`e2e/tests/strategie-feudalzeit.spec.mjs`) spielt sie durch wie ein Mensch:
+  der Aufstieg als Auftrag im Dorfzentrum, Schießanlage, Stall und Schmiede
+  mit `B` und einem Buchstaben gebaut, die vier neuen Einheiten aus ihren
+  Knöpfen, der Schmiedeangriff erforscht — und am Ende zwei gemessene Schläge:
+  Speerkämpfer gegen Späherreiter 19 (3 Angriff + 1 Schmiedeangriff + 15 Bonus
+  gegen Kavallerie), Bogenschütze gegen denselben Reiter 2 (4 Angriff − 2
+  Fernrüstung, **ohne** den Schmiedeangriff, denn der geht über die Klasse).
+  Gelernt, dreimal: **der Browser weiß weniger, als man denkt** — `klassen` und
+  `bonus` werden ihm gar nicht geschickt, die Erwartung wird deshalb in Node
+  aus `daten.js` gerechnet. **Die Kürzel sind `p` Speerkämpfer und `k`
+  Plänkler**, nicht umgekehrt; seit dieser Runde liest der Test sie aus den
+  Daten statt sie zu tippen. Und **freie Wiesen sucht man vor dem Bauen** — ein
+  Dorf der Feudalzeit frisst das Gras um die Basis auf. Nebenbei: der
+  Späherreiter hieß auf dem Bildschirm „Spaeherreiter"; eine Bildunterschrift
+  behauptete schon den Umlaut.
 - **71** · 2026-11-07 · **fahrplan AC-9 und AC-10 fertig — der Konterkreis
   hält, und zwar in beiden Richtungen.** Neu ist ein **Gefechtsstand** im
   Prüfstand (`gefechtSpielen`, `npm run konterkreis:strategie`): zwei Heere

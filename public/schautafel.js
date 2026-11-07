@@ -15,15 +15,15 @@ const GRAS = '#2f4636';
 
 const EINTRAEGE = [
   { art: 'dorfbewohner', titel: 'Dorfbewohner', lage: {} },
-  { art: 'dorfbewohner', titel: 'traegt Holz', lage: { ladung: 'h' } },
-  { art: 'dorfbewohner', titel: 'traegt Nahrung', lage: { ladung: 'n' } },
-  { art: 'dorfbewohner', titel: 'traegt Gold', lage: { ladung: 'g' } },
+  { art: 'dorfbewohner', titel: 'trägt Holz', lage: { ladung: 'h' } },
+  { art: 'dorfbewohner', titel: 'trägt Nahrung', lage: { ladung: 'n' } },
+  { art: 'dorfbewohner', titel: 'trägt Gold', lage: { ladung: 'g' } },
   { art: 'miliz', titel: 'Miliz', lage: {} },
   { art: 'soldat', titel: 'Soldat', lage: {} },
-  { art: 'spaeherreiter', titel: 'Spaeherreiter', lage: {} },
-  { art: 'speerkaempfer', titel: 'Speerkaempfer', lage: {} },
-  { art: 'bogenschuetze', titel: 'Bogenschuetze', lage: {} },
-  { art: 'plaenkler', titel: 'Plaenkler', lage: {} },
+  { art: 'spaeherreiter', titel: 'Späherreiter', lage: {} },
+  { art: 'speerkaempfer', titel: 'Speerkämpfer', lage: {} },
+  { art: 'bogenschuetze', titel: 'Bogenschütze', lage: {} },
+  { art: 'plaenkler', titel: 'Plänkler', lage: {} },
   { art: 'schaf', titel: 'Schaf', lage: {} },
   { art: 'schaf', titel: 'Kadaver, halb', lage: { liegt: true, rest: 0.5 } },
 ];

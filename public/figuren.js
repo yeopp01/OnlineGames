@@ -760,7 +760,7 @@ export const FIGUREN = {
   schaf: { name: 'Schaf', zeichnen: schaf, breite: 1.1 },
   miliz: { name: 'Miliz', zeichnen: miliz, breite: 1 },
   // Der Reiter ragt ueber die Figurenhoehe hinaus - `oben` sagt, wie weit (Lebensbalken).
-  spaeherreiter: { name: 'Spaeherreiter', zeichnen: spaeherreiter, breite: 1.6, oben: 1.15 },
+  spaeherreiter: { name: 'Späherreiter', zeichnen: spaeherreiter, breite: 1.6, oben: 1.15 },
   // Feudalzeit (einheiten AC-23). Speer und Wurfspiess ragen nach oben hinaus,
   // der Bogen nach vorn - daher `oben` und `breite`.
   soldat: { name: 'Soldat', zeichnen: soldat, breite: 1.3, oben: 1.2 },

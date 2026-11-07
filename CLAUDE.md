@@ -142,7 +142,7 @@ Umfang hinzufügt, dort nachsehen.
 
 ## Stand
 
-**375 von 505 Kriterien fertig.** 397 Tests ohne Browser, 148 im Browser. Die
+**376 von 505 Kriterien fertig.** 397 Tests ohne Browser, 149 im Browser. Die
 Übersicht ist der Bericht: `npm run qa:report`.
 
 Gebaut ist der Unterbau: Räume, Übertragung, Karte, Wegfindung, Sammeln,
@@ -240,7 +240,11 @@ Dunklen Zeit, dann der Aufstieg, danach eine Schießanlage (oder ein Stall, je
 nach Gold) und ohne Pause Kampfeinheiten daraus. Welche, liest sie aus den
 Daten des Gebäudes. Im Prüfstand steht die Feudalzeit über zwanzig Startwerte
 nach 11,1 bis 11,9 Spielminuten; die Vorgabe von `npm run pruefstand:strategie`
-ist deshalb 16 Minuten. **Aus B7 stehen die Messungen**: der
+ist deshalb 16 Minuten. **Stufe B ist erreicht** (fahrplan AC-8): ein Browsertest spielt die
+Feudalzeit am Stück — Aufstieg im Dorfzentrum bestellt, Schießanlage, Stall und
+Schmiede mit Taste und Klick gebaut, Speerkämpfer, Bogenschütze, Plänkler und
+Späherreiter ausgebildet, der Schmiedeangriff erforscht, und zwei Schläge
+gemessen: Speer gegen Reiter 19, Bogen gegen denselben Reiter 2. **Aus B7 die Messungen**: der
 **Gefechtsstand** (`npm run konterkreis:strategie`) stellt zwei Heere gleicher
 Kosten gegenüber — 600 Rohstoffe, also zehn Speerkämpfer gegen sieben Reiter —
 und lässt sie aufeinander laufen. Der **Konterkreis hält in beiden

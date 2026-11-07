@@ -43,11 +43,12 @@ test.describe('Gruppe', () => {
     await expect(leiste).toBeVisible();
     await expect(leiste).toContainText('4 ausgewählt');
     // Je Typ ein Eintrag mit Anzahl: drei Dorfbewohner, ein Spaeherreiter (bauen AC-22).
+    // Der Name steht mit echtem Umlaut auf dem Bildschirm (CLAUDE.md, Sprache).
     const eintraege = leiste.locator('.gruppe-eintrag');
     await expect(eintraege).toHaveCount(2);
     await expect(eintraege.nth(0)).toHaveAttribute('title', '3 Dorfbewohner');
     await expect(eintraege.nth(0)).toContainText('3');
-    await expect(eintraege.nth(1)).toHaveAttribute('title', '1 Spaeherreiter');
+    await expect(eintraege.nth(1)).toHaveAttribute('title', '1 Späherreiter');
     await expect(eintraege.nth(1)).toContainText('1');
     await expect(leiste).toBeInViewport();
     // Die breiteste Leiste - eine Gruppe mit Baumenue - neben Knopf und Uebersichtskarte.
@@ -55,7 +56,7 @@ test.describe('Gruppe', () => {
     await nachweis(anna, {
       spec: BEDIENUNG,
       ac: 'AC-6',
-      titel: 'Vier im Rahmen gewaehlt: unten 4 ausgewaehlt, ein Dorfbewohner mit 3, ein Spaeherreiter mit 1',
+      titel: 'Vier im Rahmen gewaehlt: unten 4 ausgewaehlt, ein Dorfbewohner mit 3, ein Späherreiter mit 1',
       test: info,
     });
   });

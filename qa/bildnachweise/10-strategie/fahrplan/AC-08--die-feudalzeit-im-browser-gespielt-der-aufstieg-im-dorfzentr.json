@@ -1,0 +1,10 @@
+{
+  "spec": "10-strategie/fahrplan.md",
+  "ac": "AC-8",
+  "titel": "Die Feudalzeit im Browser gespielt: der Aufstieg im Dorfzentrum bestellt, Schießanlage, Stall und Schmiede gebaut, der Schmiedeangriff erforscht — und davor Speerkämpfer, Bogenschütze, Plänkler und Späherreiter, unten in der Leiste mit Namen",
+  "datei": "e2e/tests/strategie-feudalzeit.spec.mjs",
+  "pfad": [
+    "Feudalzeit am Stueck",
+    "fahrplan AC-8: Aufstieg, die drei Gebaeude, die neuen Einheiten, Ruestung und Bonus - im Browser gespielt"
+  ]
+}

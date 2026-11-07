@@ -13,25 +13,29 @@ hier nichts eintraegt, verliert den Faden beim naechsten Autocompact.
 
 ## Zuletzt fortgeschrieben
 
-2026-11-07, nach Runde 71 (**B7 bis auf fahrplan AC-8 fertig**; als
-Naechstes AC-8, der Pruefstein der Stufe B).
+2026-11-07, nach Runde 72 (**Stufe B ist erreicht**; als Naechstes die
+**Rueckschau zur Stufe B**, dann Stufe C).
 
 ## Wo ich stehe
 
 - **Branch:** `strategie`. Nie auf `main` arbeiten, **nie pushen, nie deployen.**
-- **Board:** 375 von 505 Kriterien fertig · 1 in Arbeit · 5 in QA · 4 geplant ·
-  112 offen · 8 zurueckgestellt. 397 Tests ohne Browser, 148 im Browser.
+- **Board:** 376 von 505 Kriterien fertig · 1 in Arbeit · 5 in QA · 4 geplant ·
+  111 offen · 8 zurueckgestellt. 397 Tests ohne Browser, 149 im Browser.
 - **Drei Waechter in `tests/waechter-*.test.mjs`:** Gleichheit auf wachsenden
   Listen, verbesserbare Werte an `welt.einheitenwert()` vorbei,
   Bildunterschriften mit `${...}`. Wer eine neue Regel dieser Art aufstellt,
   legt einen Waechter dazu.
 - **Stufe A ist erreicht** (fahrplan AC-3 bis AC-7).
-- **Stufe B:** Bauabfolge B1 bis B7 im [Fahrplan](fahrplan.md). **B1 bis B6
-  sind fertig, aus B7 die Messungen** (fahrplan AC-9 Konterkreis, AC-10 kein
-  Schlachtenglueck). **Als Naechstes fahrplan AC-8** - der Pruefstein
-  "Feudalzeit spielbar", mit Bild aus dem Browser; damit ist Stufe B erreicht
-  und die Rueckschau zur Stufe faellig (Abschnitt 8 des Skills: Partie im
-  Browser ansehen, drei Luecken als `offen` in `bedienung.md`).
+- **Stufe B ist erreicht** (fahrplan AC-8 bis AC-10, Bauabfolge B1 bis B7).
+  Die Feudalzeit ist am Stueck im Browser spielbar:
+  `e2e/tests/strategie-feudalzeit.spec.mjs` ist der Pruefstein - und mit
+  1,4 min der langsamste Fall im Browserlauf (der dauert jetzt 8,6 min).
+- **Als Naechstes: die Rueckschau zur Stufe B** (Abschnitt 8 des Skills, der
+  Teil fuer das Ende einer Stufe): eine Partie im Browser ansehen, ehrlich mit
+  AoE II vergleichen, die **drei groessten Luecken** als `offen`-Kriterien in
+  `bedienung.md` anlegen, Messwerte eintragen, und hier die naechste Rueckschau
+  auf Runde 78 setzen. Danach **Stufe C**: Partieende und KI-Gegner
+  (fahrplan AC-11 bis AC-13).
 - **Der Gefechtsstand** (neu in Runde 71) steht in
   `server/spiele/strategie/pruefstand.js` als `gefechtSpielen`:
   `npm run konterkreis:strategie` stellt zwei Heere gleicher Kosten auf freiem
@@ -44,7 +48,10 @@ Naechstes AC-8, der Pruefstein der Stufe B).
   bei 20 min). Aelter als Runde 69, nur nie gemessen, weil der Pruefstand bei
   zehn Minuten endete. Ursache und Hebel stehen in den Erkenntnissen unter
   **Offene Faeden**.
-- **Naechste Rueckschau: Runde 75.** Diese Zeile ist der Termin - nicht
+- **Naechste Rueckschau: Runde 73** - ausserhalb der Reihe, weil mit Runde 72
+  eine Stufe erreicht wurde. (Der Termin 75 ist damit erledigt; die naechste
+  danach traegt die Rueckschau selbst ein.)
+- Frueherer Termin, erledigt: **Runde 75.** Diese Zeile ist der Termin - nicht
   nachzaehlen. Die Rueckschauen 55 und 60 sind ausgefallen, weil nach der
   Rueckschau zur Stufe A niemand mehr gezaehlt hat (Rueckschau nach Runde 65).
   Wer eine Rueckschau haelt, traegt hier die naechste Nummer ein.

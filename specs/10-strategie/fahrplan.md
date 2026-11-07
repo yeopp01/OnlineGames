@@ -2,7 +2,7 @@
 
 **Bereich:** Strategie
 **Kuerzel:** fahrplan
-**Stand:** 9/22 fertig · 13 offen
+**Stand:** 10/22 fertig · 12 offen
 
 ## Zweck
 
@@ -95,7 +95,7 @@ mit etwas, das im Browser zu sehen ist.
 | B4 | Die neuen Einheiten: Speerkämpfer, Bogenschütze, Plänkler, Späherreiter aus dem Stall; Miliz wird Soldat — **fertig** | einheiten AC-23, AC-24 |
 | B5 | Kampf: Angreifen, sich wehren, Schaden mit Rüstung und Bonus, Tote, Lebensbalken, Angriffslauf — **fertig** | kampf AC-1 bis AC-10, bedienung AC-34, einheiten AC-25 |
 | B6 | Verbesserungen: Schmiede, Doppelaxt, Pferdekummet; die KI steigt auf und baut Militaer — **fertig** | bauen AC-25, AC-26, ki AC-9 |
-| B7 | Gleichgewicht messen: Konterkreis im Prüfstand, kein Schlachtenglück | fahrplan AC-8 bis AC-10 |
+| B7 | Gleichgewicht messen: Konterkreis im Prüfstand, kein Schlachtenglück; die Feudalzeit am Stück im Browser — **fertig** | fahrplan AC-8 bis AC-10 |
 
 **Was Stufe A ablöst.** Fertige Kriterien der kleinen Fassung bleiben
 `fertig`, bis ihr Nachfolger gebaut ist; die Runde, die ihn baut, setzt sie auf
@@ -107,7 +107,7 @@ neuen Karte grün bleiben.
 
 ### Stufe B — Feudalzeit
 
-- **AC-8** `offen` **Feudalzeit spielbar** — Zeitalterwechsel mit Voraussetzung und Dauer;
+- **AC-8** `fertig` **Feudalzeit spielbar** — Zeitalterwechsel mit Voraussetzung und Dauer;
   Schießanlage, Stall, Schmiede; Speer, Bogen, Plänkler; Rüstung nah und fern,
   Bonusschaden.
 - **AC-9** `fertig` **Der Konterkreis hält** — Im Prüfstand gewinnt bei gleichen Kosten der Konter
