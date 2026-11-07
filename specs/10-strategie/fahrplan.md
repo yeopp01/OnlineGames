@@ -125,6 +125,24 @@ neuen Karte grün bleiben.
 - **AC-13** `offen` **Nebel auf dem Server** — Ein Spieler erhält nur, was seine Einheiten und
   Gebäude sehen oder gesehen haben (→ [Kampf](kampf.md) AC-13).
 
+**Bauabfolge Stufe C.** Jeder Schritt endet mit etwas im Browser Sichtbarem.
+
+| Schritt | Was | Kriterien |
+| --- | --- | --- |
+| C1 | **Lücken aus der Rückschau zu Stufe B** schließen: Kampfwerte an der Auswahl, Militär bei Zoom 1 erkennbar, Spielzeit im Bild | bedienung AC-35 bis AC-37 |
+| C2 | Partieende rechnet: ausgeschieden, Sieger, Aufgeben, unentschieden nach 90 Spielminuten; der Prüfstand zählt Sieger statt Takte | spielziel AC-5, AC-6, bedienung AC-38 |
+| C3 | Abschlussbild mit Zahlen, Zuschauen nach dem Ausscheiden, Revanche aus dem Abschlussbild | spielziel AC-7 bis AC-9 |
+| C4 | Die KI kämpft: Heer sammeln, angreifen, zu Hause verteidigen, Nachschub — und auch spät steht niemand herum | ki AC-10 bis AC-12, AC-14, fahrplan AC-11 |
+| C5 | Mensch gegen KI: KI-Gegner einstellen, allein eröffnen, eine Partie bis zum Abschlussbild spielen | spielauswahl AC-18, AC-19, fahrplan AC-12 |
+| C6 | Nebel: Sichtweite aus den Daten, Erkundetes bleibt erinnert, der Server schickt nur Sichtbares, Meldung bei Angriff, drei Zustände im Bild, die KI sieht nur ihre Sicht | kampf AC-11 bis AC-14, darstellung AC-15, ki AC-13, fahrplan AC-13 |
+
+**Reihenfolge begründet:** C2 und C3 vor der kämpfenden KI, weil eine Partie
+erst enden können muss, bevor jemand sie gewinnt — ohne das Ende misst der
+Prüfstand nur Takte. C4 vor C5, weil ein Mensch gegen eine KI, die nicht
+angreift, nichts zu tun hat. **C6 (Nebel) zuletzt**, weil er die
+Zustandsnachricht umbaut und damit jeden Browsertest berührt: was dort heute
+„alles" ist, wird dann „was ich sehe".
+
 ### Stufe D — Ritterzeit
 
 - **AC-14** `offen` **Ritterzeit spielbar** — Burg, Kloster, Universität, Belagerungswerkstatt;

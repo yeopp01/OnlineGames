@@ -2,7 +2,7 @@
 
 **Bereich:** Strategie
 **Kuerzel:** bedienung
-**Stand:** 23/37 fertig · 14 offen
+**Stand:** 23/38 fertig · 15 offen
 
 ## Zweck
 
@@ -152,6 +152,14 @@ Reihenfolge:
   sagen, ob ein Aufstieg schnell war — die erste Frage, die ein Spieler an
   seine eigene Partie stellt. Sie zählt die Takte des Servers, nicht die Uhr
   des Browsers, und steht im Zeitraffer entsprechend schneller.
+
+### Aus Stufe C (Partieende)
+
+- **AC-38** `offen` **Aufgeben fragt einmal zurück** — Aufgeben ist im Spiel
+  erreichbar und fragt genau einmal zurück; ein Fehlklick beendet die Partie
+  nicht. Danach sieht der Spieler das Abschlussbild und darf zusehen
+  ([Spielziel](spielziel.md) AC-6, AC-7). Erreichbar heißt: ein Knopf, der nicht
+  neben einem viel benutzten liegt — nicht nur eine Taste.
 
 Aus den offenen Kriterien oben gehören zu Stufe A: AC-6 (Auswahl
 aufgelistet), AC-11 (Übersichtskarte — auf 120 × 120 unverzichtbar), AC-15

@@ -56,7 +56,9 @@ eigenen Technikbaum ([Vorlage](../../docs/strategie/vorlage-aoe2.md)).
   zu bedienen ([Bauen](bauen.md) AC-23, [Bedienung](bedienung.md) AC-33), und
   der Aufstieg in die Feudalzeit öffnet drei Gebäude und mit dem Stall eine
   Einheit (AC-24). Noch nicht `fertig`, weil Ritter- und Imperialzeit nichts
-  öffnen — das kommen Stufe D und F.
+  öffnen — das kommen Stufe D und F. **Die Arbeitswahl nimmt es nicht auf:** es
+  wird mit D und F fertig, nicht in einer eigenen Runde; `in-arbeit` steht hier
+  für „über Stufen hinweg im Bau".
 - **AC-2** `offen` **Partiedauer 25 bis 45 Minuten** — Mit Standardeinstellungen, gemessen
   über zehn Partien mit echten Spielern. Einstellungen wie Startzeitalter und
   Startrohstoffe verkürzen sie für einen Abend mit mehreren Partien.
@@ -69,15 +71,25 @@ eigenen Technikbaum ([Vorlage](../../docs/strategie/vorlage-aoe2.md)).
 
 ### Sieg und Ende
 
-- **AC-5** `offen` **Sieg durch Eroberung** — Wer als Einziger noch Einheiten oder Gebäude
-  außer Mauern, Toren und Farmen hat, gewinnt. Die Partie endet sofort und
-  zeigt allen das Ergebnis.
-- **AC-6** `offen` **Aufgeben ist möglich** — Ein Spieler kann aufgeben. Seine Einheiten
-  verschwinden, die Partie läuft für die anderen weiter.
+- **AC-5** `offen` **Sieg durch Eroberung** — **Ausgeschieden** ist, wer keine
+  Einheit und kein Gebäude außer Mauern, Toren und Farmen mehr hat. Bleibt
+  einer übrig, endet die Partie sofort und alle bekommen dasselbe Ergebnis.
+  Entschieden wird das auf dem **Server**, in demselben Takt, in dem der letzte
+  Verlust abgerechnet wird — nicht im Browser. Steht nach **90 Spielminuten**
+  noch keine Entscheidung, endet die Partie unentschieden; der Prüfstand zählt
+  das als eigenen Ausgang (→ [KI](ki.md), Grenzfälle).
+- **AC-6** `offen` **Aufgeben ist möglich** — Ein Spieler kann aufgeben: seine
+  Einheiten und Gebäude fallen, er gilt als ausgeschieden (AC-5), und die
+  Partie läuft für die anderen weiter. Gibt der Vorletzte auf, gewinnt der
+  Letzte — Aufgeben ist kein eigener Ausgang, sondern ein schneller Weg in
+  AC-5. Der Bildschirm dazu ist [Bedienung](bedienung.md) AC-38.
 - **AC-7** `offen` **Verlierer bleiben Zuschauer** — Wer ausgeschieden ist, sieht die Partie
   weiterlaufen, statt auf einen leeren Bildschirm zu schauen.
-- **AC-8** `offen` **Abschlussbild mit Zahlen** — Am Ende sehen alle: gesammelte Rohstoffe,
-  gebaute Einheiten, Verluste, Dauer. Der Stoff, aus dem Revanchen entstehen.
+- **AC-8** `offen` **Abschlussbild mit Zahlen** — Am Ende sehen alle dieselbe
+  Tafel: je Spieler gesammelte Rohstoffe, ausgebildete Einheiten, Verluste,
+  erreichtes Zeitalter, dazu Sieger und Dauer der Partie. Der Stoff, aus dem
+  Revanchen entstehen. Die Zahlen zählt der Server über die ganze Partie mit,
+  damit sie auch für einen stimmen, der früh ausgeschieden ist.
 - **AC-9** `offen` **Revanche mit einem Klick** — Vom Abschlussbild aus startet dieselbe Runde neu,
   ohne dass jemand einen Code neu eintippen muss.
 

@@ -7,7 +7,7 @@ Eine Zeile je Abnahmekriterium. Gepflegt wird der Status in der Spec selbst,
 hier steht er zusammengefasst. Erzeugt mit `npm run specs:board`; als Seite
 mit Bildnachweisen, Filter und Suche mit `npm run qa:report`.
 
-**Gesamt:** 376/508 fertig · 1 in Arbeit · 5 in QA · 4 geplant · 114 offen · 8 zurueckgestellt
+**Gesamt:** 376/516 fertig · 1 in Arbeit · 5 in QA · 4 geplant · 122 offen · 8 zurueckgestellt
 
 **Nachweise:** 150 Kriterien mit Bild · 230 ohne Bild, begruendet in `qa/ohne-bild.json`
 
@@ -19,16 +19,16 @@ mit Bildnachweisen, Filter und Suche mit `npm run qa:report`.
 | [Raeume und Partien](00-plattform/raeume.md)                   | -         | 2     | -       | 3     | -               | 11     |
 | [Schutz vor Fremdnutzung](00-plattform/schutz.md)              | -         | 1     | -       | 4     | -               | 7      |
 | [Anhalten und Fortsetzen](00-plattform/speichern.md)           | -         | -     | -       | 26    | -               | -      |
-| [Spielauswahl und Einstellungen](00-plattform/spielauswahl.md) | -         | -     | -       | 5     | -               | 12     |
+| [Spielauswahl und Einstellungen](00-plattform/spielauswahl.md) | -         | -     | -       | 7     | -               | 12     |
 | [Uebertragung](00-plattform/uebertragung.md)                   | -         | -     | 2       | 1     | -               | 7      |
 | [Bauen und Ausbilden](10-strategie/bauen.md)                   | -         | -     | -       | 4     | -               | 22     |
-| [Bedienung](10-strategie/bedienung.md)                         | -         | -     | -       | 14    | -               | 23     |
-| [Darstellung](10-strategie/darstellung.md)                     | -         | -     | -       | 1     | -               | 13     |
+| [Bedienung](10-strategie/bedienung.md)                         | -         | -     | -       | 15    | -               | 23     |
+| [Darstellung](10-strategie/darstellung.md)                     | -         | -     | -       | 2     | -               | 13     |
 | [Einheiten und Befehle](10-strategie/einheiten-und-befehle.md) | -         | -     | -       | 2     | 1               | 19     |
 | [Fahrplan zum Klon](10-strategie/fahrplan.md)                  | -         | -     | -       | 12    | -               | 10     |
 | [Kampf](10-strategie/kampf.md)                                 | -         | -     | -       | 4     | 1               | 9      |
 | [Karte und Vorraete](10-strategie/karte-und-vorraete.md)       | -         | -     | -       | 2     | 3               | 12     |
-| [KI-Spieler](10-strategie/ki.md)                               | -         | -     | -       | 1     | -               | 9      |
+| [KI-Spieler](10-strategie/ki.md)                               | -         | -     | -       | 5     | -               | 9      |
 | [Spielziel und Partieverlauf](10-strategie/spielziel.md)       | 1         | -     | -       | 17    | -               | -      |
 | [Aufstellung, Taktik und Training](15-manager/aufstellung.md)  | -         | -     | -       | -     | 2               | 23     |
 | [Bedienung des Managerspiels](15-manager/bedienung.md)         | -         | -     | -       | -     | -               | 15     |
@@ -64,7 +64,7 @@ mit Bildnachweisen, Filter und Suche mit `npm run qa:report`.
 - **Abbruch ist sichtbar** — [Uebertragung](00-plattform/uebertragung.md) AC-9
 - **Automatischer Wiederaufbau** — [Uebertragung](00-plattform/uebertragung.md) AC-10
 
-## Offen (114)
+## Offen (122)
 
 - **Anmeldung ueber Google/GitHub** — [Konten und Anmeldung](00-plattform/konten.md) AC-6
 - **Bilanz je Konto** — [Konten und Anmeldung](00-plattform/konten.md) AC-14
@@ -103,6 +103,8 @@ mit Bildnachweisen, Filter und Suche mit `npm run qa:report`.
 - **Fehlender Spieler blockiert nicht ewig** — [Anhalten und Fortsetzen](00-plattform/speichern.md) AC-25
 - **Beteiligte stehen im Spielstand** — [Anhalten und Fortsetzen](00-plattform/speichern.md) AC-26
 - **Fortlaufend auch allein spielbar** — [Spielauswahl und Einstellungen](00-plattform/spielauswahl.md) AC-12
+- **KI-Gegner einstellen** — [Spielauswahl und Einstellungen](00-plattform/spielauswahl.md) AC-18
+- **Allein gegen die KI eroeffnen** — [Spielauswahl und Einstellungen](00-plattform/spielauswahl.md) AC-19
 - **Liste der eigenen Spielstaende** — [Spielauswahl und Einstellungen](00-plattform/spielauswahl.md) AC-14
 - **Fortsetzen ist ein Klick** — [Spielauswahl und Einstellungen](00-plattform/spielauswahl.md) AC-15
 - **Umbenennen und Loeschen** — [Spielauswahl und Einstellungen](00-plattform/spielauswahl.md) AC-16
@@ -126,6 +128,8 @@ mit Bildnachweisen, Filter und Suche mit `npm run qa:report`.
 - **Kampfwerte an der Auswahl** — [Bedienung](10-strategie/bedienung.md) AC-35
 - **Militär bei Spielgröße erkennbar** — [Bedienung](10-strategie/bedienung.md) AC-36
 - **Die Spielzeit steht im Bild** — [Bedienung](10-strategie/bedienung.md) AC-37
+- **Aufgeben fragt einmal zurück** — [Bedienung](10-strategie/bedienung.md) AC-38
+- **Nebel in drei Stufen** — [Darstellung](10-strategie/darstellung.md) AC-15
 - **Nur eigenes Material** — [Darstellung](10-strategie/darstellung.md) AC-11
 - **Einheiten blockieren sich nicht** — [Einheiten und Befehle](10-strategie/einheiten-und-befehle.md) AC-10
 - **Keine zwei Einheiten übereinander** — [Einheiten und Befehle](10-strategie/einheiten-und-befehle.md) AC-29
@@ -148,6 +152,10 @@ mit Bildnachweisen, Filter und Suche mit `npm run qa:report`.
 - **Kein Spieler ist abgeschnitten** — [Karte und Vorraete](10-strategie/karte-und-vorraete.md) AC-7
 - **Vorraete sind endlich und knapp** — [Karte und Vorraete](10-strategie/karte-und-vorraete.md) AC-10
 - **Auch spät steht niemand herum** — [KI-Spieler](10-strategie/ki.md) AC-10
+- **Die KI greift an** — [KI-Spieler](10-strategie/ki.md) AC-11
+- **Nachschub statt alles auf einmal** — [KI-Spieler](10-strategie/ki.md) AC-12
+- **KI sieht nur ihr Sichtfeld** — [KI-Spieler](10-strategie/ki.md) AC-13
+- **Die KI verteidigt zu Hause** — [KI-Spieler](10-strategie/ki.md) AC-14
 - **Partiedauer 25 bis 45 Minuten** — [Spielziel und Partieverlauf](10-strategie/spielziel.md) AC-2
 - **Kein Aus nach drei Minuten** — [Spielziel und Partieverlauf](10-strategie/spielziel.md) AC-3
 - **Aufholen ist möglich** — [Spielziel und Partieverlauf](10-strategie/spielziel.md) AC-4

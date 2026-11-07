@@ -2,7 +2,7 @@
 
 **Bereich:** Strategie
 **Kuerzel:** ki
-**Stand:** 9/10 fertig · 1 offen
+**Stand:** 9/14 fertig · 5 offen
 
 ## Zweck
 
@@ -70,6 +70,31 @@ nicht die Regeln.
   stehen einzelne bis zu acht Minuten: Wald und Gold im Umkreis von 30 Feldern
   um die Basis sind aufgebraucht, Farmen sind alle besetzt, und wer dann
   untätig wird, findet kein Ziel mehr. AC-6 misst dasselbe nach zehn Minuten.
+
+### Kampf und Partieende (Stufe C)
+
+- **AC-11** `offen` **Die KI greift an** — Sobald **acht** Kampfeinheiten
+  bereitstehen, schickt sie sie gesammelt zum nächsten Gegner: unterwegs
+  greift sie an, was ihr in Sichtweite kommt (Angriffslauf,
+  [Kampf](kampf.md) AC-8), am Ziel das Dorfzentrum. **Zwei** bleiben als Wache
+  zu Hause. Acht, weil zehn Speerkämpfer im Gefechtsstand gegen sieben Reiter
+  gewinnen ([Fahrplan](fahrplan.md) AC-9) — ein kleineres Heer verliert gegen
+  jede Wache. Im Prüfstand greift sie über zwanzig Startwerte in jeder Partie
+  mindestens einmal an.
+- **AC-12** `offen` **Nachschub statt alles auf einmal** — Ist das Heer
+  gefallen, bildet sie weiter aus und greift wieder an. Die Wirtschaft läuft
+  dabei weiter: bei Spielminute 30 hat sie noch mindestens 20 Dorfbewohner.
+  Ohne das endet jede Partie damit, dass beide Seiten einander zusehen.
+- **AC-13** `offen` **KI sieht nur ihr Sichtfeld** — Mit dem Nebel (C6)
+  entscheidet sie allein aus dem, was der Server ihr schickt: Sie kennt die
+  Basis des Gegners erst, wenn eine ihrer Einheiten sie gesehen hat, und
+  schickt dafür ihren Späherreiter los. Belegt dadurch, dass sie dieselbe
+  Zustandsnachricht bekommt wie ein Browser — nicht die Welt.
+- **AC-14** `offen` **Die KI verteidigt zu Hause** — Wird eines ihrer Gebäude
+  oder ein Dorfbewohner angegriffen, zieht die Wache zum Angriffsort, und ein
+  getroffener Dorfbewohner lässt die Arbeit und läuft zum Dorfzentrum
+  ([Kampf](kampf.md) AC-5 gilt weiter: er wehrt sich nicht von selbst). Ohne
+  das ist eine Partie gegen die KI ein Spaziergang.
 
 ## Grenzfaelle
 

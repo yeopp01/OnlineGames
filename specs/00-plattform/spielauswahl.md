@@ -2,7 +2,7 @@
 
 **Bereich:** Plattform
 **Kuerzel:** auswahl
-**Stand:** 12/17 fertig · 5 offen
+**Stand:** 12/19 fertig · 7 offen
 
 ## Zweck
 
@@ -69,6 +69,16 @@ Wer nur mitspielt, ueberspringt alles: Code eingeben, Namen eingeben, drin
 - **AC-12** `offen` **Fortlaufend auch allein spielbar** — Ein Hausbau startet
   allein. Die Untergrenze von zwei Spielern gilt nur fuer Sitzungsspiele.
 - **AC-13** `fertig` **Der Code erscheint sofort** — Zum Weitergeben, mit einem Knopf zum Kopieren.
+- **AC-18** `offen` **KI-Gegner einstellen** — Beim Eroeffnen einer
+  Strategiepartie wird je Platz eingestellt, ob ein Mensch oder die KI ihn
+  besetzt. Die Zahl der KI-Gegner steht im Warteraum (AC-9), damit niemand
+  ueberrascht wird. Es bleibt eine Einstellung des Spiels, nicht der Plattform
+  (AC-4).
+- **AC-19** `offen` **Allein gegen die KI eroeffnen** — Mit mindestens einem
+  KI-Gegner startet eine Sitzungspartie auch mit einem einzigen Menschen. Die
+  Untergrenze von zwei Spielern gilt fuer **Plaetze**, nicht fuer Menschen —
+  sonst ist das Strategiespiel allein nicht spielbar, und genau das ist der
+  haeufigste Fall beim Ausprobieren.
 
 ### Eigene Spielstaende
 

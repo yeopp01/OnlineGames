@@ -13,14 +13,15 @@ hier nichts eintraegt, verliert den Faden beim naechsten Autocompact.
 
 ## Zuletzt fortgeschrieben
 
-2026-11-07, nach Runde 73 (**Rueckschau zur Stufe B gehalten**; als Naechstes
-**Stufe C**: Partieende und KI-Gegner).
+2026-11-07, nach Runde 74 (**Spec-Runde zur Stufe C**: Bauabfolge C1 bis C6
+steht; als Naechstes **C1**, die drei Luecken aus der Rueckschau).
 
 ## Wo ich stehe
 
 - **Branch:** `strategie`. Nie auf `main` arbeiten, **nie pushen, nie deployen.**
-- **Board:** 376 von 508 Kriterien fertig · 1 in Arbeit · 5 in QA · 4 geplant ·
-  114 offen · 8 zurueckgestellt. 398 Tests ohne Browser, 148 im Browser.
+- **Board:** 376 von 516 Kriterien fertig · 1 in Arbeit · 5 in QA · 4 geplant ·
+  122 offen · 8 zurueckgestellt. 398 Tests ohne Browser, 148 im Browser.
+  (Acht neue Kriterien aus der Spec-Runde zur Stufe C - nichts kaputt.)
 - **Vier Waechter in `tests/waechter-*.test.mjs`:** Gleichheit auf wachsenden
   Listen, verbesserbare Werte an `welt.einheitenwert()` vorbei,
   Bildunterschriften mit `${...}`, und (neu in Runde 73) die **Kuerzeltafel**
@@ -38,13 +39,23 @@ hier nichts eintraegt, verliert den Faden beim naechsten Autocompact.
   der Auswahl, **AC-36** Militaer bei Zoom 1 erkennbar, **AC-37** Spielzeit im
   Bild. Alle drei sind Lesbarkeit, nicht Schoenheit, und passen als Anfang zu
   Stufe C.
-- **Als Naechstes: Stufe C** - Partieende und KI-Gegner (fahrplan AC-11 bis
-  AC-13). AC-11: eine Partie KI gegen KI endet mit einem Sieger. AC-12: Mensch
-  gegen KI im Browser. AC-13: Nebel. Die Stufe hat noch keine Bauabfolge und
-  vermutlich noch keine Fach-Kriterien - dann ist das Erste eine **Spec-Runde**
-  (Abschnitt 2 des Skills). Lohnend davor: eines der drei neuen
-  Bedienungs-Kriterien, weil ein KI-Gegner nur taugt, wenn man seine Einheiten
-  lesen kann.
+- **Stufe C ist spezifiziert** (Runde 74). Die Bauabfolge steht im Fahrplan:
+  **C1** die drei Luecken aus der Rueckschau (bedienung AC-35 bis AC-37) ·
+  **C2** Partieende rechnet (spielziel AC-5, AC-6, bedienung AC-38) · **C3**
+  Abschlussbild, Zuschauen, Revanche (spielziel AC-7 bis AC-9) · **C4** die KI
+  kaempft (ki AC-10 bis AC-12, AC-14, fahrplan AC-11) · **C5** Mensch gegen KI
+  (spielauswahl AC-18, AC-19, fahrplan AC-12) · **C6** Nebel (kampf AC-11 bis
+  AC-14, darstellung AC-15, ki AC-13, fahrplan AC-13).
+  Begruendung der Reihenfolge: **das Ende zuerst**, weil ohne Partieende der
+  Pruefstand nur Takte misst; **Nebel zuletzt**, weil er die Zustandsnachricht
+  umbaut und damit jeden Browsertest beruehrt (heute steht dort „alles", dann
+  „was ich sehe").
+- **Als Naechstes: C1** - `bedienung AC-35` (Kampfwerte an der Auswahl) ist das
+  erste Stueck: die Leiste sagt heute nur „Bogenschuetze 30/30", obwohl der
+  Server Angriff, Ruestung, Reichweite und Bonus schon schickt. Die Werte
+  kommen aus `welt.einheitenwert()`, damit Verbesserungen sich zeigen; `klassen`
+  und `bonus` muessten dem Browser **neu** mitgegeben werden (er bekommt sie
+  heute nicht - siehe die Tafel in `e2e/helpers/strategie.mjs`).
 - **Der Gefechtsstand** (neu in Runde 71) steht in
   `server/spiele/strategie/pruefstand.js` als `gefechtSpielen`:
   `npm run konterkreis:strategie` stellt zwei Heere gleicher Kosten auf freiem

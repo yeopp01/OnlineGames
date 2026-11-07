@@ -631,6 +631,24 @@ alle sieben Gebäude der Dunklen Zeit stehen. Was sich wiederholt hat:
 Neueste oben. Eine Zeile je Runde: Nummer, Datum, Kriterien, Ergebnis,
 wichtigste Erkenntnis.
 
+- **74** · 2026-11-07 · **Spec-Runde zur Stufe C**, kein Code. Die Stufe hatte
+  Kriterien (spielziel AC-5 bis AC-9, kampf AC-11 bis AC-14), aber keine
+  Bauabfolge und **keine kämpfende KI** — die größte Lücke: `fahrplan AC-11`
+  verlangt „KI gegen KI endet mit einem Sieger", und keine Zeile sagte, wann
+  die KI angreift. Neu: **ki AC-11 bis AC-14** (angreifen ab acht
+  Kampfeinheiten mit zwei zur Wache, Nachschub nach einem verlorenen Heer, nur
+  das eigene Sichtfeld, zu Hause verteidigen), **darstellung AC-15** (Nebel in
+  drei Stufen), **bedienung AC-38** (Aufgeben fragt einmal zurück),
+  **spielauswahl AC-18, AC-19** (KI-Gegner einstellen, allein eröffnen) — und
+  eine Bauabfolge C1 bis C6 mit begründeter Reihenfolge: **das Ende zuerst**
+  (ohne Partieende misst der Prüfstand nur Takte), **Nebel zuletzt** (er baut
+  die Zustandsnachricht um und berührt damit jeden Browsertest). Geschärft:
+  spielziel AC-5, AC-6 und AC-8 sagen jetzt, wer „ausgeschieden" ist, dass der
+  Server im Takt des letzten Verlusts entscheidet und dass nach 90
+  Spielminuten unentschieden Schluss ist. Gelernt: `spielziel AC-1` stand seit
+  Stufe B auf `in-arbeit` und hätte die Arbeitswahl jede Runde auf sich
+  gezogen, obwohl es erst mit Stufe D und F fertig wird — jetzt steht im
+  Kriterium, dass es keine eigene Runde ist.
 - **73** · 2026-11-07 · **Rückschau zur Stufe B**, nicht gebaut. Drei
   Verbesserungen: der Wächter über die Kürzeltafel
   (`tests/waechter-drahttafel.test.mjs`, vierter Wächter), und zwei Regeln in

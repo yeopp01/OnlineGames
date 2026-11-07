@@ -2,7 +2,7 @@
 
 **Bereich:** Strategie
 **Kuerzel:** darstellung
-**Stand:** 13/14 fertig · 1 offen
+**Stand:** 13/15 fertig · 2 offen
 
 ## Zweck
 
@@ -51,6 +51,15 @@ der Spieler. Keine Bilddateien aus fremder Quelle.
 - **AC-8** `fertig` **Auswahl und Leben am Boden** — Ausgewähltes trägt eine Ellipse am Boden,
   darüber einen Lebensbalken. Gebäude zeigen ihren Balken, wenn sie
   ausgewählt oder beschädigt sind.
+
+### Nebel (Stufe C)
+
+- **AC-15** `offen` **Nebel in drei Stufen** — Das Bild unterscheidet drei
+  Zustände: **nie gesehen** (schwarz, nichts darin), **gesehen, aber jetzt
+  unbeobachtet** (gedämpft, mit erinnertem Gelände und erinnerten Gebäuden,
+  ohne fremde Einheiten) und **beobachtet** (voll). Die Übersichtskarte zeigt
+  dieselben drei Zustände. Bildnachweis: ein Spielbild mit allen drei
+  nebeneinander (→ [Kampf](kampf.md) AC-11, AC-12).
 
 ### Prüfbar machen
 

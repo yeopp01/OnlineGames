@@ -142,7 +142,7 @@ Umfang hinzufügt, dort nachsehen.
 
 ## Stand
 
-**376 von 508 Kriterien fertig.** 398 Tests ohne Browser, 148 im Browser. Die
+**376 von 516 Kriterien fertig.** 398 Tests ohne Browser, 148 im Browser. Die
 Übersicht ist der Bericht: `npm run qa:report`.
 
 Gebaut ist der Unterbau: Räume, Übertragung, Karte, Wegfindung, Sammeln,
@@ -255,7 +255,11 @@ Startwert anders. 160 Gefechte kosten 0,2 s; wer an Angriff, Rüstung, Bonus
 oder Nachladezeit dreht, fährt ihn danach. Die **Rückschau zur Stufe B** hat
 drei Lücken angelegt, alle in der Lesbarkeit (bedienung AC-35 bis AC-37):
 Kampfwerte an der Auswahl, Militär bei Zoom 1 vom Dorfbewohner unterscheidbar,
-Spielzeit im Bild.
+Spielzeit im Bild. **Stufe C ist spezifiziert** (Bauabfolge C1 bis C6): erst
+diese drei Lücken, dann das Partieende (ausgeschieden, Sieger, Aufgeben,
+unentschieden nach 90 Spielminuten), das Abschlussbild, dann die **kämpfende
+KI** (ab acht Kampfeinheiten greift sie an, zwei bleiben zur Wache), Mensch
+gegen KI — und **zuletzt der Nebel**, weil er die Zustandsnachricht umbaut.
 
 1. **Stufe A** Dunkle Zeit mit Wirtschafts-KI und Prüfstand · **B** Feudalzeit
    · **C** Partieende und KI-Gegner · **D** Ritterzeit · **E** fünf Völker ·
