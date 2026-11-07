@@ -13,16 +13,19 @@ hier nichts eintraegt, verliert den Faden beim naechsten Autocompact.
 
 ## Zuletzt fortgeschrieben
 
-2026-11-07, nach Runde 63 (kampf AC-1, AC-6, AC-7, AC-8, AC-10 fertig - **die erste Haelfte von B5 steht**).
+2026-11-07, nach Runde 64 (kampf AC-2, AC-3, AC-5 und einheiten AC-25 fertig - **von B5 fehlen nur noch der Angriffslauf und das rote Zeichen**).
 
 ## Wo ich stehe
 
 - **Branch:** `strategie`. Nie auf `main` arbeiten, **nie pushen, nie deployen.**
-- **Board:** 364 von 503 Kriterien fertig · 1 in Arbeit · 5 in QA · 4 geplant ·
-  121 offen · 8 zurueckgestellt. 361 Tests ohne Browser, 140 im Browser.
+- **Board:** 368 von 504 Kriterien fertig · 1 in Arbeit · 5 in QA · 4 geplant ·
+  118 offen · 8 zurueckgestellt. 372 Tests ohne Browser, 141 im Browser.
 - **Stufe A ist erreicht** (fahrplan AC-3 bis AC-7).
 - **Stufe B:** Bauabfolge B1 bis B7 im [Fahrplan](fahrplan.md). **B1 bis B4
-  sind fertig, aus B5 der Kampf selbst.** Der Arbeitsbaum ist sauber.
+  sind fertig, aus B5 alles ausser dem Angriffslauf (kampf AC-4) und dem roten
+  Zeichen (bedienung AC-34).** Der Arbeitsbaum ist sauber.
+- **Runde 65 ist eine Rueckschau** (jede fuenfte Runde, Abschnitt 8 der
+  Anweisung) - nicht bauen.
 
 ## Was B2 und B3 gebracht haben (zum Weiterbauen wissen)
 
@@ -127,16 +130,51 @@ hier nichts eintraegt, verliert den Faden beim naechsten Autocompact.
   Zustand geht weiter). Damit laesst sich ein Augenblick festhalten, der im
   Spiel zwei Sekunden dauert.
 
-## Was als Naechstes kommt: der Rest von B5
+## Was B5 noch gebracht hat (kampf AC-2, AC-3, AC-5, einheiten AC-25)
 
-**kampf AC-2 (sich wehren), AC-3 (Verfolgung endet nach fuenf Feldern),
-AC-4 (Angriffslauf), AC-5 (Dorfbewohner kaempfen schlecht), dazu
-bedienung AC-34 (Angriffsbefehl erkennbar) und einheiten AC-25 (Fernkaempfer
-halten Abstand).** AC-5 ist fast geschenkt - Angriff 3 ohne Bonus steht in den
-Daten -, verlangt aber den Nachweis, dass vier Dorfbewohner einen Soldaten
-nicht aufhalten. Fuer AC-2 braucht es eine Sichtpruefung je stehender
-Kampfeinheit; das ist die erste Stelle, an der der Kampf Rechenzeit je Takt
-kostet - vorher messen (fahrplan AC-6: Takt mit 800 Einheiten unter 1 ms).
+- **Die Wache** (`wacheTakten()`, aufgerufen in `takten()` alle `WACHE_TAKTE`
+  = 5 Takte, also zweimal je Sekunde): jede Einheit **ohne Auftrag und ohne
+  Weg**, deren Daten `wacht: true` sagen, greift den naechsten Feind in ihrer
+  `sicht` an. Gesucht wird ueber `einheitenRaster()` (Zellen zu
+  `RASTER_FELDER` = 8, eigene Zelle plus acht Nachbarn) - nicht ueber alle
+  Einheiten, sonst waere es Einheiten mal Einheiten.
+- **`wacht` steht in den Daten**, nicht in der Simulation: `daten.js` setzt es
+  am Ende der Tabelle per Schleife auf `angriff > 0`, der Dorfbewohner hat
+  ausdruecklich `wacht: false`. Eine neue Kampfeinheit braucht keinen Eintrag.
+- **Gegenwehr:** `schlaegeAbrechnen()` ruft fuer jedes **ueberlebende** Opfer
+  `wehren(ziel, angreifer)`. Wer nicht wacht (der Dorfbewohner) bekommt dadurch
+  einen Angriffsauftrag auf seinen Angreifer. Deshalb traegt jeder Schlag jetzt
+  auch den `angreifer`.
+- **Verfolgungsgrenze:** Ein Auftrag, den niemand befohlen hat, traegt
+  `heimat` (das Feld, auf dem die Einheit stand). `angriffTakten` bricht ab,
+  sobald die Einheit weiter als `VERFOLGUNG_FELDER` = 5 davon entfernt ist, und
+  laeuft zurueck. **Ein Rechtsklick setzt kein `heimat`** - ein befohlener
+  Angriff folgt beliebig weit.
+- **Der Platz am Ziel wandert mit:** Der Auftrag merkt sich `platz` als
+  **Versatz** `{dx, dy}` zum Zielfeld, nicht als Feld. `angriffsplatz()` nimmt
+  ihn beim Neusuchen wieder - aber nur im Ring 1 (|dx|,|dy| <= 1), sonst wie
+  bisher `nachbarfeld`. Ohne das stehen zwei Angreifer eines laufenden Ziels
+  wieder auf einem Fleck.
+- **`auftrag.angekommen`:** Die Regel aus Runde 63 (ein Nahkaempfer geht seinen
+  Platz zu Ende) gilt nur beim **ersten** Hinlaufen. Wer einmal in Reichweite
+  war, schlaegt zu, sobald er wieder nah genug ist - sonst laufen zwei, die
+  einander jagen, ewig aneinander vorbei.
+- **Gemessen:** Takt mit 832 Milizen 0,11 ms in Ruhe, 0,53 ms, wenn acht Heere
+  auf einem Haufen kaempfen (Grenze 10 ms, `tests/strategie-tempo.test.mjs`).
+  Pruefstand unveraendert: 22 Dorfbewohner, 0,008 ms je Takt.
+
+## Was als Naechstes kommt
+
+**Runde 65 ist eine Rueckschau.** Danach der Rest von B5: **kampf AC-4**
+(Angriffslauf - ein Befehl auf ein leeres Feld, bei dem unterwegs alles
+angegriffen wird) und **bedienung AC-34** (ein rotes Zeichen am Ziel beim
+Angriffsbefehl, ein weisses bei einem Befehl auf freies Gelaende). AC-34 ist
+reine Oberflaeche und gibt ein gutes Bild; AC-4 braucht eine zweite Betriebsart
+im Browser (Taste, dann Klick) - das erste Mal, dass ein Befehl nicht aus dem
+Feld gelesen werden kann.
+
+Offen daneben, in Runde 64 gesehen: **einheiten AC-29** (Fernkaempfer stehen
+uebereinander, weil sie keinen Schussring haben).
 
 Danach: **B6** Verbesserungen (bauen AC-25, AC-26, ki AC-9) · **B7**
 Gleichgewicht messen (fahrplan AC-8 bis AC-10).
@@ -229,6 +267,15 @@ Gleichgewicht messen (fahrplan AC-8 bis AC-10).
 - **Wer in einer Schleife ueber Einheiten sofort Schaden verrechnet, gibt dem
   Ersten den Vorrang** (Runde 63). Wirkungen eines Takts sammeln und am Ende
   abrechnen.
+- **Ein Auftrag ist auch eine wachsende Liste** (Runde 64): das
+  `deepEqual(auftrag, { art, ziel, gebaeude })` in kampf AC-1 brach, sobald
+  `platz` dazukam - dieselbe Falle wie `GEBAEUDE.farm` in Runde 63. Auftraege
+  Feld um Feld pruefen.
+- **Wer Einheiten von selbst handeln laesst, bricht Tests, deren Aufbau ein
+  stillhaltendes Ziel annahm** (Runde 64): mit der Wache wehrt sich das Ziel,
+  laeuft los, und `warte, bis alle ihren Weg zu Ende haben` trifft einen
+  Augenblick, in dem niemand da ist. Auf den **Zustand** warten (alle stehen
+  *und* sind in Reichweite), nicht auf das Ende einer Bewegung.
 - **Alte Bildschirmtexte des Strategiespiels haben keine Umlaute**
   („Bevoelkerung voll", „Das ist nicht dein Gebaeude."), obwohl CLAUDE.md sie
   verlangt. Neue Texte werden richtig geschrieben; die alten aufzuraeumen ist

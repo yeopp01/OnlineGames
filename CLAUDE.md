@@ -141,7 +141,7 @@ Umfang hinzufügt, dort nachsehen.
 
 ## Stand
 
-**364 von 503 Kriterien fertig.** 361 Tests ohne Browser, 140 im Browser. Die
+**368 von 504 Kriterien fertig.** 372 Tests ohne Browser, 141 im Browser. Die
 Übersicht ist der Bericht: `npm run qa:report`.
 
 Gebaut ist der Unterbau: Räume, Übertragung, Karte, Wegfindung, Sammeln,
@@ -218,8 +218,14 @@ Einheit oder ein fremdes Gebäude greift an — kein eigener Knopf, der Server
 liest es aus dem geklickten Feld; mehrere Angreifer verteilen sich um das
 Ziel. Der Schaden ist `max(1, Angriff − Rüstung + Bonus)` ohne Ausnahme und
 ohne Zufall, jede Einheit hat ihre Nachladezeit, Gebäude tragen 0/7 Rüstung
-und fallen samt ihrem Platz. Wer stirbt, liegt zwei Sekunden am Boden. Als
-Nächstes der Rest von B5: sich wehren, Verfolgung, Angriffslauf.
+und fallen samt ihrem Platz. Wer stirbt, liegt zwei Sekunden am Boden.
+**Kampfeinheiten wehren sich von selbst**: was in die Sichtweite einer
+stehenden Einheit kommt, wird ohne Befehl angegriffen (wer wacht, steht als
+Wert in den Daten); ein Dorfbewohner arbeitet weiter, bis ihn ein Schlag
+trifft. Eine Verfolgung, die niemand befohlen hat, endet fünf Felder vom
+Ausgangsplatz, ein befohlener Angriff nicht. Fernkämpfer halten ihre vier
+Felder, Nahkämpfer gehen bis ans Ziel. Aus B5 fehlen nur noch der Angriffslauf
+und das rote Zeichen am Ziel.
 
 1. **Stufe A** Dunkle Zeit mit Wirtschafts-KI und Prüfstand · **B** Feudalzeit
    · **C** Partieende und KI-Gegner · **D** Ritterzeit · **E** fünf Völker ·

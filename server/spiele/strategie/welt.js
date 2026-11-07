@@ -16,6 +16,15 @@ const TOT_SEKUNDEN = 2;
 // Felder) zuschlaegt; am Rand einer Grundflaeche messen wir genauer.
 const SCHLAGRAND = 0.5;
 const SCHLAGRAND_BAU = 0.2;
+// So oft sieht sich eine stehende Kampfeinheit um (kampf AC-2): zweimal je
+// Sekunde. Jeder Takt waere fuenfmal so teuer und im Spiel nicht zu merken.
+const WACHE_TAKTE = 5;
+// So weit folgt eine Einheit einem Fluechtenden, gemessen von dem Platz, an
+// dem sie stand (kampf AC-3).
+const VERFOLGUNG_FELDER = 5;
+// Zellengroesse des Suchrasters fuer die Wache. Groesser als jede Sichtweite,
+// damit die eigene Zelle und ihre acht Nachbarn alles Sichtbare enthalten.
+const RASTER_FELDER = 8;
 // Wo die Startaufstellung steht, relativ zur Basis: alle vor dem Dorfzentrum.
 // Hinter ihm (dx + dy < 0) verdeckte es sie im Bild.
 const STARTPLAETZE = [[2.5, 0.5], [0.5, 2.5], [2.2, 2.2], [3, -1]];
@@ -1136,10 +1145,107 @@ class Welt {
   }
 
   // Gemerkt wird das **Ziel**, nicht sein Platz: eine Einheit laeuft weg.
-  angriffBeginnen(einheit, ziel, istGebaeude, stand = null) {
-    einheit.auftrag = { art: 'angreifen', ziel: ziel.id, gebaeude: Boolean(istGebaeude) };
+  // `heimat` steht nur in einem Angriff, den niemand befohlen hat - er begrenzt
+  // die Verfolgung (kampf AC-3).
+  angriffBeginnen(einheit, ziel, istGebaeude, stand = null, heimat = null) {
+    // Die Seite, von der aus angegriffen wird, wird als Versatz zum Ziel
+    // gemerkt - nicht als Feld. Ein Ziel laeuft weg, und ohne diesen Versatz
+    // suchen danach zwei Angreifer dasselbe Nachbarfeld (Runde 64).
+    let platz = null;
+    if (stand && !istGebaeude) {
+      const feld = this.feldVon(ziel);
+      platz = { dx: stand.x - feld.x, dy: stand.y - feld.y };
+    }
+    einheit.auftrag = {
+      art: 'angreifen',
+      ziel: ziel.id,
+      gebaeude: Boolean(istGebaeude),
+      ...(platz ? { platz } : {}),
+      ...(heimat ? { heimat } : {}),
+    };
     einheit.nachladen = 0;
     einheit.weg = stand ? this.wegNach(einheit, stand) : [];
+  }
+
+  /**
+   * Wohin ein Nahkaempfer laeuft, der sein Ziel neu suchen muss: auf die Seite,
+   * die ihm beim Befehl zugewiesen wurde (`platz`), gemessen am jetzigen Feld
+   * des Ziels. Nur die acht Felder rundum taugen - wer weiter aussen aufgestellt
+   * war, nimmt wie bisher das naechste Nachbarfeld, sonst stuende er neben dem
+   * Kampf.
+   */
+  angriffsplatz(einheit, ziel, platz) {
+    const feld = this.feldVon(ziel);
+    if (platz && Math.abs(platz.dx) <= 1 && Math.abs(platz.dy) <= 1) {
+      const seite = { x: feld.x + platz.dx, y: feld.y + platz.dy };
+      if (karten.begehbar(this.karte, seite.x, seite.y)) return seite;
+    }
+    return nachbarfeld(this.karte, feld, einheit);
+  }
+
+  /**
+   * Ein grobes Raster aller lebenden Einheiten. Damit sucht eine Wache nur in
+   * ihrer Zelle und den acht Nachbarn statt in der ganzen Partie: aus
+   * Einheiten x Einheiten wird Einheiten x Nachbarschaft.
+   */
+  einheitenRaster() {
+    const raster = new Map();
+    for (const einheit of this.einheiten.values()) {
+      if (einheit.tot) continue;
+      const schluessel = `${Math.floor(einheit.x / RASTER_FELDER)},${Math.floor(einheit.y / RASTER_FELDER)}`;
+      const zelle = raster.get(schluessel);
+      if (zelle) zelle.push(einheit);
+      else raster.set(schluessel, [einheit]);
+    }
+    return raster;
+  }
+
+  /** Die naechste fremde, lebende Einheit in Sichtweite - gesucht im Raster. */
+  feindInSicht(einheit, raster, sicht) {
+    const zx = Math.floor(einheit.x / RASTER_FELDER);
+    const zy = Math.floor(einheit.y / RASTER_FELDER);
+    let bestes = null;
+    let besterAbstand = sicht;
+    for (let dy = -1; dy <= 1; dy++) {
+      for (let dx = -1; dx <= 1; dx++) {
+        const zelle = raster.get(`${zx + dx},${zy + dy}`);
+        if (!zelle) continue;
+        for (const anderer of zelle) {
+          if (anderer.besitzer === einheit.besitzer) continue;
+          const abstand = Math.hypot(anderer.x - einheit.x, anderer.y - einheit.y);
+          if (abstand <= besterAbstand) {
+            besterAbstand = abstand;
+            bestes = anderer;
+          }
+        }
+      }
+    }
+    return bestes;
+  }
+
+  /**
+   * Was in die Sichtweite einer stehenden Kampfeinheit kommt, wird ohne Befehl
+   * angegriffen (kampf AC-2). Stehend heisst: kein Auftrag und kein Weg - wer
+   * unterwegs ist, geht weiter. Gebaeude bleiben ungeschoren; sonst liefe jede
+   * Wache ins fremde Dorfzentrum, statt zu Hause zu wachen.
+   */
+  wacheTakten() {
+    const wachen = [];
+    for (const einheit of this.einheiten.values()) {
+      if (einheit.tot || einheit.auftrag || einheit.weg.length) continue;
+      if (!EINHEITEN[einheit.art].wacht) continue;
+      wachen.push(einheit);
+    }
+    if (!wachen.length) return;
+    const raster = this.einheitenRaster();
+    for (const einheit of wachen) {
+      const feind = this.feindInSicht(einheit, raster, EINHEITEN[einheit.art].sicht);
+      if (!feind) continue;
+      const stand = EINHEITEN[einheit.art].reichweite
+        ? null
+        : nachbarfeld(this.karte, this.feldVon(feind), einheit);
+      this.angriffBeginnen(einheit, feind, false, stand, this.feldVon(einheit));
+    }
   }
 
   // Ein Takt im Angriff: hinlaufen, bis das Ziel in Reichweite ist, dann
@@ -1156,6 +1262,15 @@ class Welt {
       einheit.weg = [];
       return;
     }
+    // Eine Verfolgung, die niemand befohlen hat, endet fuenf Felder vom
+    // Ausgangsplatz (kampf AC-3) - sonst zieht ein einzelner Reiter ein ganzes
+    // Heer quer ueber die Karte. Die Einheit kehrt dorthin zurueck.
+    if (auftrag.heimat
+      && Math.hypot(einheit.x - auftrag.heimat.x, einheit.y - auftrag.heimat.y) > VERFOLGUNG_FELDER) {
+      einheit.auftrag = null;
+      einheit.weg = this.wegNach(einheit, auftrag.heimat);
+      return;
+    }
     const fern = EINHEITEN[einheit.art].reichweite;
     const reichweite = fern || 1;
     const abstand = auftrag.gebaeude
@@ -1163,10 +1278,14 @@ class Welt {
       : Math.hypot(ziel.x - einheit.x, ziel.y - einheit.y);
     const nahGenug = abstand <= reichweite + (auftrag.gebaeude ? SCHLAGRAND_BAU : SCHLAGRAND);
     // Ein Fernkaempfer bleibt stehen, sobald das Ziel in Reichweite ist. Ein
-    // Nahkaempfer geht den Platz zu Ende, der ihm zugewiesen wurde - sonst
-    // bleiben drei Angreifer dort stehen, wo der erste gerade nah genug war,
-    // und stehen im Bild uebereinander (Runde 63).
-    if (!nahGenug || (einheit.weg.length && !fern)) {
+    // Nahkaempfer geht beim **ersten** Hinlaufen den Platz zu Ende, der ihm
+    // zugewiesen wurde - sonst bleiben drei Angreifer dort stehen, wo der erste
+    // gerade nah genug war, und stehen im Bild uebereinander (Runde 63). Wer
+    // einmal angekommen war, schlaegt dagegen zu, sobald er wieder in
+    // Reichweite ist: zwei, die hintereinander herlaufen, kaempfen sonst nie
+    // (Runde 64).
+    if (nahGenug) auftrag.angekommen = true;
+    if (!nahGenug || (einheit.weg.length && !fern && !auftrag.angekommen)) {
       if (einheit.weg.length) {
         this.laufen(einheit);
         return;
@@ -1175,7 +1294,7 @@ class Welt {
       // Auftrag - sonst rechnete die Einheit in jedem Takt die ganze Karte ab.
       const stand = auftrag.gebaeude
         ? this.randfeld(ziel, einheit)
-        : nachbarfeld(this.karte, this.feldVon(ziel), einheit);
+        : this.angriffsplatz(einheit, ziel, auftrag.platz);
       einheit.weg = stand ? this.wegNach(einheit, stand) : [];
       if (!einheit.weg.length) einheit.auftrag = null;
       return;
@@ -1211,22 +1330,40 @@ class Welt {
   // Ende des Taktes. So toeten zwei Einheiten, die einander den letzten Schlag
   // versetzen, sich beide - kein Vorrang fuer den, der zuerst dran war.
   schlagen(angreifer, ziel, istGebaeude) {
-    this.schlaege.push({ ziel, schaden: this.schaden(angreifer, ziel, istGebaeude), gebaeude: istGebaeude });
+    this.schlaege.push({
+      angreifer, ziel, schaden: this.schaden(angreifer, ziel, istGebaeude), gebaeude: istGebaeude,
+    });
   }
 
   schlaegeAbrechnen() {
     if (!this.schlaege.length) return;
     for (const schlag of this.schlaege) schlag.ziel.leben -= schlag.schaden;
-    for (const { ziel, gebaeude } of this.schlaege) {
+    for (const { angreifer, ziel, gebaeude } of this.schlaege) {
       if (gebaeude) {
         if (!this.gebaeude.has(ziel.id)) continue;
         this.gebaeudeGeaendert(ziel);
         if (ziel.leben <= 0) this.gebaeudeZerstoeren(ziel);
       } else if (ziel.leben <= 0 && !ziel.tot) {
         this.einheitSterben(ziel);
+      } else {
+        this.wehren(ziel, angreifer);
       }
     }
     this.schlaege = [];
+  }
+
+  /**
+   * Wer getroffen wird und nicht von selbst wacht, laesst die Arbeit liegen und
+   * schlaegt zurueck (kampf AC-2, zweiter Satz). Das betrifft den Dorfbewohner:
+   * er arbeitet weiter, **bis** er getroffen wird. Auch diese Gegenwehr ist
+   * eine Verfolgung, die niemand befohlen hat - sie endet nach fuenf Feldern.
+   */
+  wehren(einheit, angreifer) {
+    if (einheit.tot || !angreifer || angreifer.tot) return;
+    if (EINHEITEN[einheit.art].wacht) return;
+    if (einheit.auftrag?.art === 'angreifen' || !EINHEITEN[einheit.art].angriff) return;
+    const stand = nachbarfeld(this.karte, this.feldVon(angreifer), einheit);
+    this.angriffBeginnen(einheit, angreifer, false, stand, this.feldVon(einheit));
   }
 
   // Ein Toter liegt noch zwei Sekunden im Bild (kampf AC-10), tut aber nichts
@@ -1257,6 +1394,8 @@ class Welt {
     const bevoelkerung = this.bevoelkerung();
     for (const gebaeude of this.gebaeude.values()) this.gebaeudeTakten(gebaeude, bevoelkerung);
     this.tiereTakten();
+    // Zweimal je Sekunde sehen sich stehende Kampfeinheiten um (kampf AC-2).
+    if (this.takt % WACHE_TAKTE === 0) this.wacheTakten();
     for (const einheit of this.einheiten.values()) this.einheitTakten(einheit);
     this.schlaegeAbrechnen();
   }
@@ -1628,4 +1767,6 @@ class Welt {
   }
 }
 
-module.exports = { Welt, TAKTE_PRO_SEKUNDE, STARTVORRAT, ROHSTOFFE };
+module.exports = {
+  Welt, TAKTE_PRO_SEKUNDE, STARTVORRAT, ROHSTOFFE, VERFOLGUNG_FELDER, WACHE_TAKTE,
+};

@@ -22,6 +22,10 @@ const EINHEITEN = {
   dorfbewohner: {
     leben: 25, tempo: 0.8, sicht: 4, tragkraft: 10, kosten: { nahrung: 50 }, zeit: 25, kuerzel: 'd',
     angriff: 3, nahruestung: 0, fernruestung: 0, reichweite: 0, nachladen: 2, klassen: ['dorf'],
+    // Er wehrt sich nicht von selbst (kampf AC-2): ein Dorfbewohner, der jedem
+    // Spaeher entgegenlaeuft, hoert auf zu arbeiten, und die Wirtschaft ist das
+    // Spiel. Getroffen wird er trotzdem wehrhaft.
+    wacht: false,
     baut: ['haus', 'muehle', 'holzfaellerlager', 'bergbaulager', 'farm', 'kaserne', 'schiessanlage', 'stall', 'schmiede'],
   },
   // Ausgebildet wird er im Stall, also ab der Feudalzeit; zu Beginn steht
@@ -63,6 +67,14 @@ const EINHEITEN = {
     klassen: ['infanterie'], zeitalter: 1, stufeVon: 'miliz',
   },
 };
+
+// Wer von selbst wacht, greift an, was in seine Sichtweite kommt, ohne Befehl
+// (kampf AC-2). Jede Einheit mit einem Angriff tut das - ausser denen, bei
+// denen `wacht: false` steht. So braucht eine neue Kampfeinheit keinen
+// Eintrag, und die Simulation fragt nie nach der Art.
+for (const einheit of Object.values(EINHEITEN)) {
+  einheit.wacht ??= einheit.angriff > 0;
+}
 
 // Sammelraten je Sekunde, nach dem Vorrat, an dem gearbeitet wird
 // (einheiten AC-15). Schlüssel ist die Feldart aus karte.js.

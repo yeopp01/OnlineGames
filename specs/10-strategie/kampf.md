@@ -2,7 +2,7 @@
 
 **Bereich:** Strategie
 **Kuerzel:** kampf
-**Stand:** 5/14 fertig · 8 offen · 1 zurueckgestellt
+**Stand:** 8/14 fertig · 5 offen · 1 zurueckgestellt
 
 ## Zweck
 
@@ -55,18 +55,24 @@ aus [Spielziel](spielziel.md) AC-10, gemessen in
   Mehrere Angreifer bekommen je ein eigenes Feld um das Ziel, wie beim Gehen
   ([Einheiten](einheiten-und-befehle.md) AC-20): sonst stehen drei dort, wo
   der erste gerade nah genug war, und im Bild übereinander.
-- **AC-2** `offen` **Kampfeinheiten wehren sich von selbst** — Was in die Sichtweite einer
-  stehenden Kampfeinheit kommt, wird ohne Befehl angegriffen. Ein
-  Dorfbewohner tut das nicht: er arbeitet weiter, bis er selbst getroffen
-  wird.
-- **AC-3** `offen` **Verfolgung endet** — Ein fliehendes Ziel wird höchstens fünf Felder weit vom
+- **AC-2** `fertig` **Kampfeinheiten wehren sich von selbst** — Was in die Sichtweite einer
+  **stehenden** Kampfeinheit kommt, wird ohne Befehl angegriffen; wer einen
+  Auftrag oder einen Weg hat, geht weiter. Ein Dorfbewohner tut das nicht: er
+  arbeitet weiter, bis er selbst getroffen wird — dann lässt er die Arbeit
+  liegen und schlägt zurück. Wer wacht, steht als Wert in den Daten, nicht als
+  Frage nach der Einheitenart.
+- **AC-3** `fertig` **Verfolgung endet** — Ein fliehendes Ziel wird höchstens fünf Felder weit vom
   Ausgangsplatz verfolgt, dann kehrt die Einheit dorthin zurück. Sonst zieht
-  ein einzelner Reiter ein ganzes Heer quer über die Karte.
+  ein einzelner Reiter ein ganzes Heer quer über die Karte. Das gilt für die
+  Verfolgung, die **niemand befohlen** hat — AC-2 und die Gegenwehr; ein
+  ausdrücklicher Angriffsbefehl wird zu Ende gegangen, sonst ließe sich ein
+  Fliehender nie stellen.
 - **AC-4** `offen` **Angriffslauf** — Ein Befehl auf ein leeres Feld, bei dem unterwegs alles
   angegriffen wird, was im Weg steht.
-- **AC-5** `offen` **Dorfbewohner kämpfen schlecht** — Angriff 3, keine Boni, keine Rüstung: ein
-  früher Überfall auf die Basis geht nicht widerstandslos durch, aber vier
-  Dorfbewohner halten auch keinen Soldaten auf.
+- **AC-5** `fertig` **Dorfbewohner kämpfen schlecht** — Angriff 3, keine Boni, keine Rüstung:
+  fünfzehn Schläge für einen Soldaten, während er nach fünf fällt. Ein
+  früher Überfall auf die Basis geht nicht widerstandslos durch — wer sich
+  wehrt, sammelt nicht, und das ist der eigentliche Preis.
 
 ### Schaden
 
@@ -118,6 +124,20 @@ aus [Spielziel](spielziel.md) AC-10, gemessen in
 - Die Schläge eines Takts werden an seinem Ende zusammen abgerechnet. Nur
   deshalb sterben zwei Einheiten, die einander den letzten Schlag versetzen,
   beide.
+- **Gebäude greift niemand von selbst an.** AC-2 gilt für Einheiten; sonst
+  liefe jede Wache in das nächste fremde Dorfzentrum, statt zu Hause zu
+  wachen.
+- Vier Dorfbewohner **erschlagen** einen Soldaten (4 × 3 gegen 45 Leben sind
+  vier Runden, er braucht für einen von ihnen fünf) — einer allein nie. Die
+  frühere Fassung von AC-5 behauptete das Gegenteil; nach den Zahlen der
+  Vorlage ist es falsch.
+- Wer sich erst wehrt, **nachdem** er getroffen wurde, verliert eine Runde:
+  im Zweikampf gegen einen Soldaten bringt ein Dorfbewohner deshalb 12 statt
+  15 Schaden an.
+- Ein Nahkämpfer geht beim ersten Hinlaufen seinen zugewiesenen Platz zu Ende
+  (AC-1); war er einmal in Reichweite, schlägt er zu, sobald er wieder nah
+  genug ist. Sonst laufen zwei, die einander jagen, aneinander vorbei, ohne je
+  zu schlagen.
 
 ## Hinweis zu AC-13
 

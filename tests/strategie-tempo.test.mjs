@@ -93,3 +93,47 @@ test('einheiten AC-9: ein unerreichbarer Vorrat wird nicht in jedem Takt neu ges
   const jeTakt = Number(process.hrtime.bigint() - beginn) / 1e6 / 300;
   assert.ok(jeTakt < 2, `${jeTakt.toFixed(2)} ms je Takt`);
 });
+
+// Acht Heere auf einem Haufen: die schlimmste Lage fuer die Wache (kampf
+// AC-2). Jede stehende Kampfeinheit sieht sich zweimal je Sekunde um, und hier
+// hat jede hunderte Nachbarn in Sichtweite - dichter wird es in einer Partie
+// nicht.
+function einHaufen() {
+  const spieler = Array.from({ length: 8 }, (_, i) => ({ id: `s${i}`, name: `S${i}` }));
+  const welt = new Welt(spieler, 4711, { kartengroesse: 'gross' });
+  const mitte = welt.spieler[0].basis;
+  for (const s of welt.spieler) {
+    let zahl = 0;
+    for (let r = 0; zahl < 100 && r < 30; r++) {
+      for (let dy = -r; dy <= r && zahl < 100; dy++) {
+        for (let dx = -r; dx <= r && zahl < 100; dx++) {
+          if (Math.max(Math.abs(dx), Math.abs(dy)) !== r) continue;
+          if (!karten.begehbar(welt.karte, mitte.x + dx, mitte.y + dy)) continue;
+          welt.einheitAnlegen(s.id, mitte.x + dx, mitte.y + dy, 'miliz');
+          zahl += 1;
+        }
+      }
+    }
+  }
+  return welt;
+}
+
+test('fahrplan AC-6: acht Heere mit je 100 Milizen im Kampf - ein Takt bleibt unter 10 ms', () => {
+  const welt = einHaufen();
+  assert.ok(welt.einheiten.size >= 800, `${welt.einheiten.size} Einheiten`);
+  // Gemessen Runde 64: 0,53 ms je Takt im teuersten Abschnitt (zum Vergleich:
+  // 0,11 ms, wenn dieselben 800 Milizen bei ihren eigenen Basen stehen und
+  // niemand einen Feind sieht). Gemessen wird der **teuerste** Abschnitt, nicht
+  // der schnellste: hier soll die Spitze unter der Grenze liegen.
+  let teuerster = 0;
+  for (let abschnitt = 0; abschnitt < 3; abschnitt++) {
+    const beginn = process.hrtime.bigint();
+    for (let t = 0; t < 100; t++) welt.takten();
+    teuerster = Math.max(teuerster, Number(process.hrtime.bigint() - beginn) / 1e6 / 100);
+  }
+  assert.ok(teuerster < 10, `teuerster Abschnitt ${teuerster.toFixed(2)} ms je Takt`);
+  // Und es wurde wirklich gekaempft - sonst waere der Takt billig, weil nichts
+  // passiert: von 832 Milizen leben nach 300 Takten weniger als die Haelfte.
+  const lebend = [...welt.einheiten.values()].filter((e) => !e.tot).length;
+  assert.ok(lebend < 500, `${lebend} leben noch`);
+});

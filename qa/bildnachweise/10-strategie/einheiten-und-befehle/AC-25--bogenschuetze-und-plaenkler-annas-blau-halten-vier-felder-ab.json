@@ -1,0 +1,10 @@
+{
+  "spec": "10-strategie/einheiten-und-befehle.md",
+  "ac": "AC-25",
+  "titel": "Bogenschütze und Plänkler Annas (blau) halten vier Felder Abstand zu Berts Miliz (rot), während Annas Miliz daneben im Nahkampf steht",
+  "datei": "e2e/tests/strategie-kampf.spec.mjs",
+  "pfad": [
+    "Kampf",
+    "einheiten AC-25: ein Bogenschuetze schiesst aus vier Feldern, die Miliz steht daneben im Nahkampf"
+  ]
+}

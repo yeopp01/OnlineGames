@@ -2,7 +2,7 @@
 
 **Bereich:** Strategie
 **Kuerzel:** einheiten
-**Stand:** 18/21 fertig · 2 offen · 1 zurueckgestellt
+**Stand:** 19/22 fertig · 2 offen · 1 zurueckgestellt
 
 ## Zweck
 
@@ -122,9 +122,16 @@ Befehl bewirkt.
   danach bildet die Kaserne nur noch Soldaten aus, auch eine Miliz in der
   Warteschlange wird als Soldat fertig, und der Schaden einer verwundeten
   Miliz bleibt beim Wechsel stehen.
-- **AC-25** `offen` **Fernkämpfer halten Abstand** — Bogenschütze und Plänkler schießen aus
+- **AC-25** `fertig` **Fernkämpfer halten Abstand** — Bogenschütze und Plänkler schießen aus
   vier Feldern und laufen nicht in den Nahkampf, solange ihr Ziel in
-  Reichweite ist.
+  Reichweite ist. Ein Nahkämpfer mit demselben Befehl geht dagegen bis ans
+  Ziel — derselbe Rechtsklick, zwei Abstände.
+- **AC-29** `offen` **Fernkämpfer stehen nicht übereinander** — Zwei Bogenschützen, die
+  aus derselben Richtung auf dasselbe Ziel geschickt werden, halten heute am
+  selben Punkt und sind im Bild eine Figur mit zwei Bögen. Sie brauchen eine
+  Aufstellung auf ihrem Schussring, wie Nahkämpfer sie um das Ziel haben
+  (AC-20, [Kampf](kampf.md) AC-1). Gesehen in Runde 64 — nicht von den Tests,
+  sondern vom Bild.
 
 ## Grenzfaelle
 

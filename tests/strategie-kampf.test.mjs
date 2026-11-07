@@ -1,12 +1,12 @@
-// Der Kampf (kampf AC-1, AC-6, AC-7, AC-8, AC-10) - Rechenteile, direkt
-// geprueft (→ docs/adr/0004-teststrategie.md). Die Oberflaeche dazu steht in
-// e2e/tests/strategie-kampf.spec.mjs.
+// Der Kampf (kampf AC-1 bis AC-3, AC-5 bis AC-8, AC-10 und einheiten AC-25) -
+// Rechenteile, direkt geprueft (→ docs/adr/0004-teststrategie.md). Die
+// Oberflaeche dazu steht in e2e/tests/strategie-kampf.spec.mjs.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { createRequire } from 'node:module';
 
 const require = createRequire(import.meta.url);
-const { Welt, TAKTE_PRO_SEKUNDE } = require('../server/spiele/strategie/welt.js');
+const { Welt, TAKTE_PRO_SEKUNDE, VERFOLGUNG_FELDER } = require('../server/spiele/strategie/welt.js');
 const { EINHEITEN, GEBAEUDE } = require('../server/spiele/strategie/daten.js');
 
 const ZWEI = [{ id: 'a', name: 'Anna' }, { id: 'b', name: 'Bert' }];
@@ -52,7 +52,11 @@ function taktenBis(welt, bedingung, grenze = 2000) {
 test('kampf AC-1: ein Rechtsklick auf eine fremde Einheit wird zum Angriff', () => {
   const { welt, angreifer, ziel } = gegenueber('soldat', 'miliz', 4);
   rechtsklick(welt, 'a', [angreifer], ziel);
-  assert.deepEqual(angreifer.auftrag, { art: 'angreifen', ziel: ziel.id, gebaeude: false });
+  // Feld um Feld, nicht als ganzes Objekt: ein Auftrag bekommt mit den Stufen
+  // mehr Felder (Platz, Heimat), und ein deepEqual waere dann falsch.
+  assert.equal(angreifer.auftrag.art, 'angreifen');
+  assert.equal(angreifer.auftrag.ziel, ziel.id);
+  assert.equal(angreifer.auftrag.gebaeude, false);
 
   // Er laeuft hin - und schlaegt erst zu, wenn das Ziel in Reichweite ist.
   const vorher = { x: angreifer.x, y: angreifer.y };
@@ -99,7 +103,10 @@ test('kampf AC-1: mehrere Angreifer stellen sich um das Ziel, nicht uebereinande
   const ziel = welt.einheitAnlegen('b', basis.x + 5, basis.y + 8, 'spaeherreiter');
   ziel.leben = 10000;
   rechtsklick(welt, 'a', vier, ziel);
-  taktenBis(welt, () => vier.every((e) => !e.weg.length), 400);
+  // Der Reiter wehrt sich (kampf AC-2) und laeuft dabei einem der vier
+  // entgegen: gewartet wird, bis alle vier **gleichzeitig** stehen und in
+  // Reichweite sind, nicht nur bis ihr erster Weg zu Ende ist (Runde 64).
+  taktenBis(welt, () => vier.every((e) => !e.weg.length && Math.hypot(e.x - ziel.x, e.y - ziel.y) <= 1.5), 600);
 
   // Keine zwei auf demselben Fleck: ein halbes Feld Abstand ist die Schwelle,
   // ab der zwei Figuren im Bild noch zwei sind (Runde 63).
@@ -273,4 +280,184 @@ test('kampf AC-10: ein Gebaeude mit Leben 0 steht nicht mehr im Weg', () => {
       assert.equal(require('../server/spiele/strategie/karte.js').begehbar(welt.karte, x, y), true, `${x}/${y} ist frei`);
     }
   }
+});
+
+// ---- Sich wehren (kampf AC-2) ----------------------------------------------
+
+test('kampf AC-2: eine stehende Miliz greift ohne Befehl an, was in ihre Sichtweite kommt', () => {
+  // Drei Felder auseinander, Sichtweite der Miliz ist vier - niemand bekommt
+  // einen Befehl.
+  const { welt, angreifer, ziel } = gegenueber('miliz', 'miliz', 3);
+  assert.equal(angreifer.auftrag, null);
+  // Umgesehen wird zweimal je Sekunde, nicht in jedem Takt (WACHE_TAKTE).
+  taktenBis(welt, () => angreifer.auftrag, 10);
+  assert.equal(angreifer.auftrag.art, 'angreifen');
+  assert.equal(angreifer.auftrag.ziel, ziel.id);
+  // Und der Angegriffene wehrt sich seinerseits - beide sind Kampfeinheiten.
+  assert.equal(ziel.auftrag.art, 'angreifen');
+  assert.equal(ziel.auftrag.ziel, angreifer.id);
+  // Es wird wirklich geschlagen, nicht nur befohlen.
+  taktenBis(welt, () => ziel.leben < EINHEITEN.miliz.leben, 100);
+});
+
+test('kampf AC-2: was ausser Sichtweite steht, wird nicht angegriffen', () => {
+  // Sechs Felder: weiter als die Sichtweite vier der Miliz.
+  const { welt, angreifer, ziel } = gegenueber('miliz', 'miliz', 6);
+  takten(welt, 60);
+  assert.equal(angreifer.auftrag, null, 'sie bleibt stehen');
+  assert.equal(ziel.leben, EINHEITEN.miliz.leben, 'und niemand wird geschlagen');
+});
+
+test('kampf AC-2: ein Dorfbewohner wacht nicht - er arbeitet weiter', () => {
+  const welt = new Welt(ZWEI, 7);
+  const basis = welt.spielerVon('a').basis;
+  const [sammler] = [...welt.einheiten.values()].filter((e) => e.besitzer === 'a' && e.art === 'dorfbewohner');
+  const wald = welt.naechsterVorrat(basis, 1);
+  assert.ok(wald, 'ein Baum in der Naehe');
+  welt.befehl('a', [sammler.id], wald);
+  taktenBis(welt, () => sammler.sammelt, 600);
+  // Ein fremder Dorfbewohner stellt sich daneben. Er wacht auch nicht, also
+  // bleibt die Arbeit die einzige Handlung in dieser Welt.
+  welt.einheitAnlegen('b', Math.round(sammler.x) + 1, Math.round(sammler.y), 'dorfbewohner');
+  takten(welt, 60);
+  assert.equal(sammler.sammelt, true, 'er sammelt weiter');
+  assert.equal(sammler.auftrag.art, 'sammeln');
+});
+
+test('kampf AC-2: ein getroffener Dorfbewohner laesst die Arbeit liegen und schlaegt zurueck', () => {
+  const welt = new Welt(ZWEI, 7);
+  const basis = welt.spielerVon('a').basis;
+  const [sammler] = [...welt.einheiten.values()].filter((e) => e.besitzer === 'a' && e.art === 'dorfbewohner');
+  const wald = welt.naechsterVorrat(basis, 1);
+  welt.befehl('a', [sammler.id], wald);
+  taktenBis(welt, () => sammler.sammelt, 600);
+  const raeuber = welt.einheitAnlegen('b', Math.round(sammler.x) + 2, Math.round(sammler.y), 'miliz');
+
+  // Die Miliz wacht von selbst, der Dorfbewohner nicht - bis der erste Schlag
+  // sitzt.
+  taktenBis(welt, () => sammler.leben < EINHEITEN.dorfbewohner.leben, 100);
+  // Der Auftrag steht schon, aber abgerechnet wird am Ende des Taktes: die
+  // Arbeit liegt erst im naechsten, wenn die Einheit wieder getaktet wird.
+  assert.equal(sammler.auftrag.art, 'angreifen');
+  welt.takten();
+  assert.equal(sammler.sammelt, false, 'die Arbeit liegt');
+  assert.equal(sammler.auftrag.ziel, raeuber.id);
+  // Er richtet etwas aus, wenn auch wenig (kampf AC-5).
+  taktenBis(welt, () => raeuber.leben < EINHEITEN.miliz.leben, 100);
+});
+
+// ---- Verfolgung (kampf AC-3) -----------------------------------------------
+
+test('kampf AC-3: eine Verfolgung ohne Befehl endet fuenf Felder vom Ausgangsplatz', () => {
+  const { welt, angreifer, ziel } = gegenueber('miliz', 'spaeherreiter', 3);
+  const heimat = { x: angreifer.x, y: angreifer.y };
+  // Der Reiter laeuft weg - und ist schneller als die Miliz (1,2 gegen 0,9).
+  welt.befehl('b', [ziel.id], welt.spielerVon('b').basis);
+  taktenBis(welt, () => angreifer.auftrag?.art === 'angreifen', 10);
+
+  // In keinem Takt weiter als fuenf Felder von dort, wo sie stand. Ein Schritt
+  // je Takt ist hoechstens 0,09 Felder lang, deshalb die kleine Zugabe.
+  let weiteste = 0;
+  taktenBis(welt, () => {
+    weiteste = Math.max(weiteste, Math.hypot(angreifer.x - heimat.x, angreifer.y - heimat.y));
+    return !angreifer.auftrag;
+  }, 2000);
+  assert.ok(weiteste > 1, `sie hat ihn ueberhaupt verfolgt (${weiteste.toFixed(2)} Felder)`);
+  assert.ok(weiteste <= VERFOLGUNG_FELDER + 0.2, `nie weiter als fuenf Felder: ${weiteste.toFixed(2)}`);
+
+  // Und sie kehrt an ihren Platz zurueck.
+  taktenBis(welt, () => Math.hypot(angreifer.x - heimat.x, angreifer.y - heimat.y) < 0.6, 2000);
+  assert.equal(angreifer.auftrag, null);
+});
+
+test('kampf AC-3: ein befohlener Angriff folgt weiter - sonst stellt man keinen Fluechtenden', () => {
+  const { welt, angreifer, ziel } = gegenueber('miliz', 'spaeherreiter', 3);
+  const start = { x: angreifer.x, y: angreifer.y };
+  rechtsklick(welt, 'a', [angreifer], ziel);
+  welt.befehl('b', [ziel.id], welt.spielerVon('b').basis);
+  assert.equal(angreifer.auftrag.heimat, undefined, 'ein Befehl kennt keine Heimat');
+  taktenBis(welt, () => Math.hypot(angreifer.x - start.x, angreifer.y - start.y) > VERFOLGUNG_FELDER + 1, 2000);
+  assert.equal(angreifer.auftrag.art, 'angreifen', 'der Auftrag gilt noch');
+});
+
+// ---- Dorfbewohner (kampf AC-5) ---------------------------------------------
+
+test('kampf AC-5: ein Dorfbewohner kaempft schlecht - fuenfzehn Schlaege gegen fuenf', () => {
+  const werte = EINHEITEN.dorfbewohner;
+  assert.equal(werte.angriff, 3);
+  assert.equal(werte.nahruestung, 0);
+  assert.equal(werte.fernruestung, 0);
+  assert.equal(werte.bonus, undefined, 'keine Boni');
+
+  const { welt, angreifer: bauer, ziel: soldat } = gegenueber('dorfbewohner', 'soldat', 1);
+  assert.equal(welt.schaden(bauer, soldat, false), 3, 'drei gegen einen Soldaten');
+  assert.equal(welt.schaden(soldat, bauer, false), 6, 'sechs gegen einen Dorfbewohner');
+  assert.equal(Math.ceil(EINHEITEN.soldat.leben / 3), 15, 'fuenfzehn Schlaege fuer 45 Leben');
+  assert.equal(Math.ceil(werte.leben / 6), 5, 'und er fallt nach fuenf');
+
+  // Im Zweikampf: der Soldat wacht von selbst, der Dorfbewohner wehrt sich erst,
+  // wenn er getroffen ist - und verliert damit eine Runde. Er schlaegt viermal,
+  // waehrend der Soldat fuenfmal schlaegt: 12 von 45 Schaden. Gemessen, nicht
+  // gerechnet - die verlorene Runde war in der Rechnung nicht vorgesehen.
+  taktenBis(welt, () => bauer.tot, 600);
+  assert.equal(soldat.leben, EINHEITEN.soldat.leben - 12, 'der Soldat steht mit 33 von 45 Leben da');
+});
+
+test('kampf AC-5: vier Dorfbewohner erschlagen einen Soldaten - einer nie', () => {
+  const welt = new Welt(ZWEI, 7);
+  const basis = welt.spielerVon('a').basis;
+  const soldat = welt.einheitAnlegen('b', basis.x + 7, basis.y + 7, 'soldat');
+  const bauern = [[0, 1], [1, 0], [0, -1], [-1, 0]]
+    .map(([dx, dy]) => welt.einheitAnlegen('a', soldat.x + dx, soldat.y + dy, 'dorfbewohner'));
+  for (const bauer of bauern) rechtsklick(welt, 'a', [bauer], soldat);
+
+  // Vier mal drei Schaden je zwei Sekunden gegen 45 Leben: vier Runden. Der
+  // Soldat braucht fuer einen Dorfbewohner fuenf - deshalb verliert er.
+  taktenBis(welt, () => soldat.tot, 600);
+  assert.equal(bauern.filter((b) => b.tot).length, 0, 'keiner von ihnen fallt');
+  // Teuer bleibt es: wer die Schlaege abbekommt, verliert mehr als ein Drittel
+  // seines Lebens (25 / 3 = 8,3 - also 16 oder weniger uebrig). Gemessen: 7 von
+  // 25 nach 6,1 Sekunden.
+  const wundester = Math.min(...bauern.map((b) => b.leben));
+  assert.ok(wundester <= 16, `einer hat mehr als ein Drittel verloren: ${wundester} von 25`);
+});
+
+// ---- Fernkaempfer (einheiten AC-25) ----------------------------------------
+
+/**
+ * Der Abstand, aus dem ein Angreifer seinen ersten Treffer landet - und ob er
+ * danach stehenblieb. Das Ziel steht acht Felder weit weg, also doppelt so weit
+ * wie die Reichweite eines Fernkaempfers.
+ */
+function ersterTreffer(art) {
+  const welt = new Welt(ZWEI, 7);
+  const basis = welt.spielerVon('a').basis;
+  const angreifer = welt.einheitAnlegen('a', basis.x + 4, basis.y + 4, art);
+  const ziel = welt.einheitAnlegen('b', basis.x + 12, basis.y + 4, 'miliz');
+  rechtsklick(welt, 'a', [angreifer], ziel);
+  taktenBis(welt, () => ziel.leben < EINHEITEN.miliz.leben, 600);
+  const abstand = Math.hypot(angreifer.x - ziel.x, angreifer.y - ziel.y);
+  let naechster = abstand;
+  takten(welt, 100);
+  naechster = Math.min(naechster, Math.hypot(angreifer.x - ziel.x, angreifer.y - ziel.y));
+  return { abstand, naechster, ziel, angreifer };
+}
+
+test('einheiten AC-25: Bogenschuetze und Plaenkler schiessen aus vier Feldern', () => {
+  for (const art of ['bogenschuetze', 'plaenkler']) {
+    assert.equal(EINHEITEN[art].reichweite, 4, `${art} hat Reichweite vier`);
+    const { abstand, naechster } = ersterTreffer(art);
+    // Reichweite vier plus den Spielraum fuer die Schraege: nie naeher als
+    // dreieinhalb Felder, nie weiter als viereinhalb. Gemessen 4,42.
+    assert.ok(abstand > 3.5 && abstand < 4.6, `${art} trifft aus ${abstand.toFixed(2)} Feldern`);
+    // Und er laeuft auch danach nicht in den Nahkampf, solange das Ziel in
+    // Reichweite bleibt.
+    assert.ok(naechster > 3.5, `${art} bleibt auf ${naechster.toFixed(2)} Feldern`);
+  }
+});
+
+test('einheiten AC-25: ein Nahkaempfer geht dagegen bis ans Ziel', () => {
+  assert.equal(EINHEITEN.miliz.reichweite, 0);
+  const { abstand } = ersterTreffer('miliz');
+  assert.ok(abstand < 1.5, `die Miliz trifft erst auf ${abstand.toFixed(2)} Feldern`);
 });

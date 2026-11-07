@@ -7,9 +7,9 @@ Eine Zeile je Abnahmekriterium. Gepflegt wird der Status in der Spec selbst,
 hier steht er zusammengefasst. Erzeugt mit `npm run specs:board`; als Seite
 mit Bildnachweisen, Filter und Suche mit `npm run qa:report`.
 
-**Gesamt:** 364/503 fertig · 1 in Arbeit · 5 in QA · 4 geplant · 121 offen · 8 zurueckgestellt
+**Gesamt:** 368/504 fertig · 1 in Arbeit · 5 in QA · 4 geplant · 118 offen · 8 zurueckgestellt
 
-**Nachweise:** 143 Kriterien mit Bild · 225 ohne Bild, begruendet in `qa/ohne-bild.json`
+**Nachweise:** 144 Kriterien mit Bild · 228 ohne Bild, begruendet in `qa/ohne-bild.json`
 
 ## Nach Spezifikation
 
@@ -24,9 +24,9 @@ mit Bildnachweisen, Filter und Suche mit `npm run qa:report`.
 | [Bauen und Ausbilden](10-strategie/bauen.md)                   | -         | -     | -       | 6     | -               | 20     |
 | [Bedienung](10-strategie/bedienung.md)                         | -         | -     | -       | 12    | -               | 22     |
 | [Darstellung](10-strategie/darstellung.md)                     | -         | -     | -       | 1     | -               | 13     |
-| [Einheiten und Befehle](10-strategie/einheiten-und-befehle.md) | -         | -     | -       | 2     | 1               | 18     |
+| [Einheiten und Befehle](10-strategie/einheiten-und-befehle.md) | -         | -     | -       | 2     | 1               | 19     |
 | [Fahrplan zum Klon](10-strategie/fahrplan.md)                  | -         | -     | -       | 15    | -               | 7      |
-| [Kampf](10-strategie/kampf.md)                                 | -         | -     | -       | 8     | 1               | 5      |
+| [Kampf](10-strategie/kampf.md)                                 | -         | -     | -       | 5     | 1               | 8      |
 | [Karte und Vorraete](10-strategie/karte-und-vorraete.md)       | -         | -     | -       | 2     | 3               | 12     |
 | [KI-Spieler](10-strategie/ki.md)                               | -         | -     | -       | 1     | -               | 8      |
 | [Spielziel und Partieverlauf](10-strategie/spielziel.md)       | 1         | -     | -       | 17    | -               | -      |
@@ -64,7 +64,7 @@ mit Bildnachweisen, Filter und Suche mit `npm run qa:report`.
 - **Abbruch ist sichtbar** — [Uebertragung](00-plattform/uebertragung.md) AC-9
 - **Automatischer Wiederaufbau** — [Uebertragung](00-plattform/uebertragung.md) AC-10
 
-## Offen (121)
+## Offen (118)
 
 - **Anmeldung ueber Google/GitHub** — [Konten und Anmeldung](00-plattform/konten.md) AC-6
 - **Bilanz je Konto** — [Konten und Anmeldung](00-plattform/konten.md) AC-14
@@ -128,7 +128,7 @@ mit Bildnachweisen, Filter und Suche mit `npm run qa:report`.
 - **Angriffsbefehl ist erkennbar** — [Bedienung](10-strategie/bedienung.md) AC-34
 - **Nur eigenes Material** — [Darstellung](10-strategie/darstellung.md) AC-11
 - **Einheiten blockieren sich nicht** — [Einheiten und Befehle](10-strategie/einheiten-und-befehle.md) AC-10
-- **Fernkämpfer halten Abstand** — [Einheiten und Befehle](10-strategie/einheiten-und-befehle.md) AC-25
+- **Fernkämpfer stehen nicht übereinander** — [Einheiten und Befehle](10-strategie/einheiten-und-befehle.md) AC-29
 - **Feudalzeit spielbar** — [Fahrplan zum Klon](10-strategie/fahrplan.md) AC-8
 - **Der Konterkreis hält** — [Fahrplan zum Klon](10-strategie/fahrplan.md) AC-9
 - **Kein Schlachtenglück** — [Fahrplan zum Klon](10-strategie/fahrplan.md) AC-10
@@ -144,10 +144,7 @@ mit Bildnachweisen, Filter und Suche mit `npm run qa:report`.
 - **Große Partie bleibt flüssig** — [Fahrplan zum Klon](10-strategie/fahrplan.md) AC-20
 - **Läuft auf dem VPS** — [Fahrplan zum Klon](10-strategie/fahrplan.md) AC-21
 - **Aktualisieren ist ein Befehl** — [Fahrplan zum Klon](10-strategie/fahrplan.md) AC-22
-- **Kampfeinheiten wehren sich von selbst** — [Kampf](10-strategie/kampf.md) AC-2
-- **Verfolgung endet** — [Kampf](10-strategie/kampf.md) AC-3
 - **Angriffslauf** — [Kampf](10-strategie/kampf.md) AC-4
-- **Dorfbewohner kämpfen schlecht** — [Kampf](10-strategie/kampf.md) AC-5
 - **Sichtweite aus den Daten** — [Kampf](10-strategie/kampf.md) AC-11
 - **Erkundetes bleibt erinnert** — [Kampf](10-strategie/kampf.md) AC-12
 - **Kein Blick durch fremde Augen** — [Kampf](10-strategie/kampf.md) AC-13

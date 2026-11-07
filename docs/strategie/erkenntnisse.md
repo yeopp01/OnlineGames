@@ -67,6 +67,10 @@ etwas anderem gearbeitet.
   schäbige Punkte, sondern etwas, das halbwegs wie ein Sammler aussieht."
   Jede Runde, die etwas Neues ins Spielbild bringt, zeichnet es als erkennbare
   Figur oder Form — nie als Platzhalterpunkt. Deshalb A1b vorgezogen.
+- **Fernkämpfer stapeln sich** (Runde 64 gesehen, jetzt einheiten AC-29): zwei
+  Bogenschützen aus derselben Richtung halten auf demselben Punkt. Nahkämpfer
+  bekommen je ein Feld um das Ziel; Fernkämpfer bräuchten dasselbe auf ihrem
+  Schussring. Kandidat für den Rest von B5 oder B7.
 - **Einheiten stapeln sich** (Runde 9 gesehen): mehrere Dorfbewohner auf
   demselben Waldfeld werden übereinander gezeichnet — zwei Figuren sehen aus
   wie eine mit Bündel *und* Axt. Gehört zu einheiten AC-10/AC-20 (Schritt A9);
@@ -135,6 +139,9 @@ Zahlen, gegen die spätere Runden vergleichen. Mit Datum und Commit.
 | 2026-11-07 | Tests ohne Browser / im Browser; Browserlauf | 348 / 138; 5,3 min — **nicht vergleichbar**: 30 fremde Browserprozesse. Langsamster Fall 9,2 s | Runde 61 |
 | 2026-11-07 | Tests ohne Browser / im Browser; Browserlauf | 361 / 140; 5,6 min — **nicht vergleichbar**: wieder 30 fremde Browserprozesse (16 chrome, 14 msedge) | Runde 63 |
 | 2026-11-07 | Pruefstand nach dem Kampf: 20 Startwerte x 10 Spielminuten — Dorfbewohner / Zeit je Takt | 22 (Median 22) / 0,007 ms, keine Widersprueche | Runde 63 |
+| 2026-11-07 | Tests ohne Browser / im Browser; Browserlauf | 372 / 141; 6,6 min — **nicht vergleichbar**: 35 fremde Browserprozesse (21 chrome, 14 msedge) | Runde 64 |
+| 2026-11-07 | Takt mit 832 Milizen nach der Wache (kampf AC-2): bei den eigenen Basen / acht Heere auf einem Haufen im Kampf | 0,11 ms / 0,53 ms (Grenze 10 ms) | Runde 64 |
+| 2026-11-07 | Pruefstand nach der Wache: 20 Startwerte x 10 Spielminuten — Dorfbewohner / Zeit je Takt | 22 (Median 22) / 0,008 ms, keine Widersprueche | Runde 64 |
 
 ## Rückschauen
 
@@ -412,6 +419,37 @@ alle sieben Gebäude der Dunklen Zeit stehen. Was sich wiederholt hat:
 Neueste oben. Eine Zeile je Runde: Nummer, Datum, Kriterien, Ergebnis,
 wichtigste Erkenntnis.
 
+- **64** · 2026-11-07 · **kampf AC-2, AC-3, AC-5 und einheiten AC-25 fertig —
+  der Kampf läuft jetzt von selbst**: Was in die Sichtweite einer *stehenden*
+  Kampfeinheit kommt, wird ohne Befehl angegriffen (zweimal je Sekunde, über ein
+  grobes Raster statt über alle Einheiten); ein Dorfbewohner arbeitet weiter,
+  bis ihn ein Schlag trifft, dann lässt er die Arbeit liegen und schlägt
+  zurück. Wer wacht, steht als Wert in den Daten (`wacht`), nicht als Frage nach
+  der Einheitenart. Eine Verfolgung, die niemand befohlen hat, endet fünf Felder
+  vom Ausgangsplatz und führt dorthin zurück — ein befohlener Angriff nicht,
+  sonst ließe sich ein Fliehender nie stellen. Vier Erkenntnisse: (1) **Ein
+  Platz am Ziel muss mit dem Ziel wandern.** Die Verteilung aus Runde 63 galt
+  nur für den Augenblick des Befehls; sobald das Ziel wegläuft, suchten zwei
+  Angreifer wieder dasselbe Nachbarfeld und standen auf einem Fleck. Gemerkt
+  wird jetzt der **Versatz** zum Ziel, nicht das Feld. (2) **Wer einmal in
+  Reichweite war, darf stehenbleiben.** Die Regel aus Runde 63 — ein
+  Nahkämpfer geht seinen Platz zu Ende — wird bei einem laufenden Ziel zum Hund,
+  der seinen Schwanz jagt: zwei Milizen liefen aneinander vorbei und schlugen
+  nie zu. Die Regel gilt jetzt nur beim ersten Hinlaufen. (3) **Der alte Text
+  von AC-5 war falsch**, nicht nur ungenau: „vier Dorfbewohner halten auch keinen
+  Soldaten auf“ — nach den Zahlen der Vorlage erschlagen vier ihn in vier
+  Runden, ohne einen zu verlieren (gemessen: 6,1 Sekunden, der Angeschlagene bei
+  7 von 25 Leben). Kriterium neu gefasst, Nummer geblieben. Wer sich erst wehrt,
+  **nachdem** er getroffen wurde, verliert dabei eine Runde — im Zweikampf 12
+  statt 15 Schaden. (4) **Die Wache ist billig, wenn sie ein Raster benutzt**:
+  0,11 ms je Takt mit 832 Milizen in Ruhe, 0,53 ms, wenn acht Heere auf einem
+  Haufen stehen und sich gegenseitig erschlagen — gegen eine Grenze von 10 ms.
+  Ohne Raster wäre es Einheiten mal Einheiten. Und wieder hat das **Bild**
+  gefunden, was zehn grüne Tests nicht sahen: zwei Bogenschützen aus derselben
+  Richtung halten auf demselben Punkt und sind im Bild eine Figur mit zwei Bögen
+  (jetzt offen als einheiten AC-29).
+  Nächste Runde: **Runde 65 ist eine Rückschau.** Danach der Rest von B5 —
+  Angriffslauf (kampf AC-4) und das rote Zeichen am Ziel (bedienung AC-34).
 - **63** · 2026-11-07 · **kampf AC-1, AC-6, AC-7, AC-8, AC-10 fertig — der
   Kampf steht** (Schritt B5, erste Hälfte): Ein Rechtsklick auf eine fremde
   Einheit oder ein fremdes Gebäude wird zum Angriff; der Server liest das aus
