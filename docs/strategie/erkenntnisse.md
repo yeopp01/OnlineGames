@@ -634,6 +634,24 @@ alle sieben Gebäude der Dunklen Zeit stehen. Was sich wiederholt hat:
 Neueste oben. Eine Zeile je Runde: Nummer, Datum, Kriterien, Ergebnis,
 wichtigste Erkenntnis.
 
+- **77** · 2026-11-07 · **bedienung AC-37 fertig, damit steht C1** — oben
+  neben dem Zeitalter läuft die Spielzeit als `m:ss`. Gelernt: **die Daten
+  lagen schon auf dem Draht.** `zustand()` schickt `t: this.takt` seit der
+  ersten Stufe, `aufbau()` schickt `takte: TAKTE_PRO_SEKUNDE` — der Browser
+  hat beides nur nie gelesen. Das Kriterium kostete vier kleine Änderungen und
+  keine einzige am Server. Vor dem Bauen nachsehen, was schon ankommt, lohnt
+  sich; die Tafel oben in `e2e/helpers/strategie.mjs` sagt es. Zweite
+  Erkenntnis zur Prüfung: **„zählt die Takte des Servers" braucht die
+  Gegenprobe, sonst prüft der Test nur „eine Zahl wächst".** Gemessen wird
+  deshalb zweimal über dieselben zwei Sekunden Wanduhr — gewöhnlich und im
+  Zehnfachen: 19 Takte gegen 180. Läge die Uhr am Browser, wären beide
+  Messungen gleich. Die reine Formatierung (`0:09`, `9:59`, `10:00`, `90:00`)
+  steht als eigener Fall daneben, weil ein fehlendes `padStart` sonst erst
+  nach neun Spielminuten auffiele. Entschieden: die Minuten laufen über
+  sechzig hinaus — `90:00` statt `1:30:00`, weil eine Partie nach 90
+  Spielminuten unentschieden endet und die Frage „wie lange noch" sich so
+  ohne Rechnen beantwortet.
+
 - **76** · 2026-11-07 · **bedienung AC-36 fertig** — jede Kampfeinheit
   unterscheidet sich bei Zoom 1 **im Umriss** auf mindestens einem Drittel der
   Fläche vom Dorfbewohner. Gelernt: **was eine Einheit kenntlich macht, muss

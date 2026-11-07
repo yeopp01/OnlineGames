@@ -13,15 +13,16 @@ hier nichts eintraegt, verliert den Faden beim naechsten Autocompact.
 
 ## Zuletzt fortgeschrieben
 
-2026-11-07, nach Runde 76 (**C1 zu zwei Dritteln**: `bedienung AC-35` und
-`AC-36` sind fertig - Kampfwerte an der Auswahl, Militaer bei Zoom 1 im
-Umriss erkennbar. Als Naechstes **AC-37**, Spielzeit im Bild).
+2026-11-07, nach Runde 77 (**C1 ist fertig**: `bedienung AC-35`, `AC-36` und
+`AC-37` stehen - Kampfwerte an der Auswahl, Militaer bei Zoom 1 im Umriss
+erkennbar, Spielzeit oben in der Leiste. Als Naechstes **C2**, das
+Partieende: spielziel AC-5, AC-6, bedienung AC-38).
 
 ## Wo ich stehe
 
 - **Branch:** `strategie`. Nie auf `main` arbeiten, **nie pushen, nie deployen.**
-- **Board:** 378 von 516 Kriterien fertig · 1 in Arbeit · 5 in QA · 4 geplant ·
-  120 offen · 8 zurueckgestellt. 402 Tests ohne Browser, 151 im Browser.
+- **Board:** 379 von 516 Kriterien fertig · 1 in Arbeit · 5 in QA · 4 geplant ·
+  119 offen · 8 zurueckgestellt. 402 Tests ohne Browser, 155 im Browser.
 - **Vier Waechter in `tests/waechter-*.test.mjs`:** Gleichheit auf wachsenden
   Listen, verbesserbare Werte an `welt.einheitenwert()` vorbei,
   Bildunterschriften mit `${...}`, und (neu in Runde 73) die **Kuerzeltafel**
@@ -85,10 +86,21 @@ Umriss erkennbar. Als Naechstes **AC-37**, Spielzeit im Bild).
   Miliz gegen Speerkaempfer mit 0,306 (beide tragen links einen Schild) -
   unter AC-14 gemessen sind es 0,568, also keine Gefahr, aber die Stelle, an
   der es als Naechstes eng wird.
-- **Als Naechstes: `bedienung AC-37`** - Spielzeit als `m:ss` oben neben dem
-  Zeitalter, aus den Takten des Servers (`TAKTE_PRO_SEKUNDE = 10`), nicht aus
-  der Uhr des Browsers; im Zeitraffer laeuft sie entsprechend schneller. Damit
-  ist C1 fertig und C2 faengt an (spielziel AC-5, AC-6, bedienung AC-38).
+- **`bedienung AC-37` ist fertig** (Runde 77), **damit ist C1 abgeschlossen**:
+  oben neben dem Zeitalter laeuft die Spielzeit als `m:ss`. Der Server musste
+  dafuer nichts lernen - `zustand()` schickt `t: this.takt` seit der ersten
+  Stufe, `aufbau()` schickt `takte: TAKTE_PRO_SEKUNDE`. Im Browser steht die
+  Rechnung in `ansicht.spielzeit()` (aus `this.takt` und
+  `this.takteProSekunde`), geschrieben wird sie in `spielzeitZeigen()` in
+  `app.js` bei jedem Zustand - **kein Intervall im Browser**, sonst laeuft die
+  Uhr im Zeitraffer falsch. Die Minuten laufen ueber sechzig hinaus
+  (`90:00`). Test: `e2e/tests/strategie-spielzeit.spec.mjs`, mit der
+  Gegenprobe gewoehnlich gegen Zehnfaches (19 Takte gegen 180 in denselben
+  zwei Sekunden Wanduhr).
+- **Als Naechstes: C2, das Partieende.** `spielziel AC-5` (ausgeschieden,
+  Sieger), `AC-6` (unentschieden nach 90 Spielminuten - die Uhr dafuer steht
+  jetzt) und `bedienung AC-38` (Aufgeben fragt einmal zurueck). Danach C3
+  (Abschlussbild, Zuschauen, Revanche).
 - **Der Gefechtsstand** (neu in Runde 71) steht in
   `server/spiele/strategie/pruefstand.js` als `gefechtSpielen`:
   `npm run konterkreis:strategie` stellt zwei Heere gleicher Kosten auf freiem

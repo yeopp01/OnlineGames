@@ -1,0 +1,10 @@
+{
+  "spec": "10-strategie/bedienung.md",
+  "ac": "AC-37",
+  "titel": "Oben in der Leiste, rechts neben „Dunkle Zeit\": die verstrichene Spielzeit als m:ss mit Zifferblatt",
+  "datei": "e2e/tests/strategie-spielzeit.spec.mjs",
+  "pfad": [
+    "Spielzeit",
+    "bedienung AC-37: im Zeitraffer laeuft die Uhr schneller als die des Browsers"
+  ]
+}

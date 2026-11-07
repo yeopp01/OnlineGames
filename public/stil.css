@@ -376,6 +376,16 @@ canvas.angriffslauf {
   font-weight: 600;
 }
 
+/* Die Spielzeit (bedienung AC-37) sitzt in derselben Kapsel wie das
+   Zeitalter. Ziffern in gleicher Breite, sonst wackelt die Leiste bei jedem
+   Sekundenschlag; die Mindestbreite haelt sie auch beim Sprung von 9:59 auf
+   10:00 ruhig. */
+.spielzeit b {
+  font-variant-numeric: tabular-nums;
+  min-width: 2.8rem;
+  text-align: right;
+}
+
 /* Der Wechsel, einmal gross in der Mitte - und von selbst wieder weg. */
 .zeitalterwechsel {
   position: fixed;

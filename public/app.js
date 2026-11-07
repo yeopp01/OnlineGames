@@ -122,6 +122,7 @@ function empfangen(nachricht) {
       untaetigZeigen(ansicht.untaetige.length);
       arbeiterZeigen(ansicht.arbeiter);
       zeitalterZeigen(ansicht.zeitalterName());
+      spielzeitZeigen(ansicht.spielzeit());
       break;
 
     case 'fehler':
@@ -155,6 +156,14 @@ let zeitalterUhr = null;
 function zeitalterZeigen(name) {
   const feld = document.querySelector('#zeitalter b');
   if (feld && feld.textContent !== name) feld.textContent = name;
+}
+
+// Die Spielzeit oben neben dem Zeitalter (bedienung AC-37). Sie kommt aus
+// den Takten des Servers, nicht aus einer Uhr im Browser - deshalb steht hier
+// kein Intervall, sondern nur das Schreiben bei jedem Zustand.
+function spielzeitZeigen(text) {
+  const feld = document.querySelector('#spielzeit b');
+  if (feld && feld.textContent !== text) feld.textContent = text;
 }
 
 function zeitalterwechselMelden(name) {

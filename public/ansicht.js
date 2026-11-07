@@ -46,6 +46,10 @@ export class Ansicht {
     this.spieler = new Map();
     this.ich = null;
     this.taktdauer = 100;
+    // Takte des Servers und wie viele davon auf eine Spielsekunde gehen -
+    // daraus die Spielzeit im Bild (bedienung AC-37).
+    this.takt = 0;
+    this.takteProSekunde = 10;
 
     this.vorher = new Map();
     this.nachher = new Map();
@@ -110,6 +114,7 @@ export class Ansicht {
     this.karte = { groesse: nachricht.karte.groesse, felder };
     this.fuellung = new Map();
     this.taktdauer = 1000 / nachricht.takte;
+    this.takteProSekunde = nachricht.takte;
     // Das Muster des Bodens haengt am Startwert: jede Karte ihr eigenes.
     // Die Werte der Arten kommen einmal mit dem Aufbau (bedienung AC-29); die
     // Art einer Einheit kommt danach nur als Kuerzel.
@@ -164,6 +169,9 @@ export class Ansicht {
     this.vorher = this.nachher;
     this.nachher = new Map(nachricht.einheiten.map((e) => [e.i, e]));
     this.empfangen = performance.now();
+    // Die Spielzeit zaehlt die Takte des Servers (bedienung AC-37) - im
+    // Zeitraffer kommen sie schneller, und genau so soll die Uhr laufen.
+    if (Number.isInteger(nachricht.t)) this.takt = nachricht.t;
 
     // Geaenderte Werte eines Spielers kommen nur, wenn er etwas erforscht hat.
     for (const s of nachricht.spieler) if (s.kw) this.einheitenwerte.set(s.id, s.kw);
@@ -197,6 +205,21 @@ export class Ansicht {
       if (tier ? (tier.g || tier.b !== this.ich) : (!einheit || einheit.s)) this.ausgewaehlt.delete(id);
     }
     if (this.gewaehltesGebaeude && !this.gebaeude.has(this.gewaehltesGebaeude)) this.gewaehltesGebaeude = null;
+  }
+
+  /**
+   * Die verstrichene Spielzeit als `m:ss` (bedienung AC-37). Gezaehlt werden
+   * die Takte des Servers, nicht die Uhr des Browsers: wer den Zeitraffer
+   * anstellt, soll die Uhr schneller laufen sehen, und wer nach einem Abbruch
+   * zurueckkommt, soll die richtige Zeit sehen und nicht bei null anfangen.
+   *
+   * Die Minuten laufen ueber 60 hinaus (`90:00`), weil eine Partie nach 90
+   * Spielminuten unentschieden endet und `1:30:00` die Frage "wie lange noch"
+   * schwerer macht als `90:00`.
+   */
+  spielzeit() {
+    const sekunden = Math.floor(this.takt / (this.takteProSekunde || 10));
+    return `${Math.floor(sekunden / 60)}:${String(sekunden % 60).padStart(2, '0')}`;
   }
 
   // Name eines Zeitalters, wie der Server ihn mit dem Aufbau geschickt hat.

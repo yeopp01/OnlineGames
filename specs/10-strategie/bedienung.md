@@ -2,7 +2,7 @@
 
 **Bereich:** Strategie
 **Kuerzel:** bedienung
-**Stand:** 25/38 fertig · 13 offen
+**Stand:** 26/38 fertig · 12 offen
 
 ## Zweck
 
@@ -155,11 +155,14 @@ Reihenfolge:
   **außerhalb** des Körperumrisses, nicht mehr Farbe im Körper. **Danach
   gemessen:** Miliz 0,401 · Soldat 0,352 · Speerkämpfer 0,371 · Bogenschütze
   0,356 · Plänkler 0,348 · Späherreiter 0,705.
-- **AC-37** `offen` **Die Spielzeit steht im Bild** — Oben, neben dem Zeitalter,
+- **AC-37** `fertig` **Die Spielzeit steht im Bild** — Oben, neben dem Zeitalter,
   steht die verstrichene Spielzeit als `m:ss`. Ohne sie lässt sich nicht
   sagen, ob ein Aufstieg schnell war — die erste Frage, die ein Spieler an
   seine eigene Partie stellt. Sie zählt die Takte des Servers, nicht die Uhr
-  des Browsers, und steht im Zeitraffer entsprechend schneller.
+  des Browsers, und steht im Zeitraffer entsprechend schneller. Die Minuten
+  laufen über sechzig hinaus (`90:00` statt `1:30:00`), weil eine Partie nach
+  90 Spielminuten unentschieden endet und die Frage „wie lange noch" sich so
+  ohne Rechnen beantwortet.
 
 ### Aus Stufe C (Partieende)
 
