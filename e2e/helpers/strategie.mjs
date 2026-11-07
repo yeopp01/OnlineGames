@@ -183,6 +183,52 @@ export function bedienteileFrei(page) {
 }
 
 /**
+ * Figuren, die im Bild uebereinander stehen. Zurueck kommt die Liste der
+ * Beanstandungen, leer heisst in Ordnung - wie bei `bedienteileFrei`.
+ *
+ * Rueckschau nach Runde 65: viermal (Runden 56, 61, 63, 64) hat erst das
+ * Ansehen eines fertigen Bildes gezeigt, dass zwei Figuren auf einem Fleck
+ * stehen - "eine Figur mit drei Schwertern", "eine Figur mit zwei Boegen". Das
+ * Auge hat es jedes Mal gefunden, aber erst, nachdem das Bild schon lag. Eine
+ * Zahl findet es vorher.
+ *
+ * Gemessen wird der Abstand in **Feldern**, nicht in Bildpunkten: er haengt
+ * nicht am Zoom und ist damit eine Eigenschaft der Aufstellung, nicht der
+ * Kamera. Unter einem halben Feld sind zwei Figuren ein Klumpen.
+ *
+ * Gefallene bleiben aussen vor - die liegen mit Absicht unter den Lebenden
+ * (kampf AC-10). Nur Figuren im Bild zaehlen; was ausserhalb des Ausschnitts
+ * steht, zeigt der Screenshot nicht. Gebaeude vor Figuren prueft das nicht,
+ * dafuer braucht es die Grundflaeche - noch offen.
+ *
+ * @param {import('@playwright/test').Page} page
+ * @param {{abstand?: number, nur?: string[]}} [wie] `abstand` in Feldern,
+ *   `nur` beschraenkt auf diese Einheiten-Ids.
+ * @returns {Promise<string[]>}
+ */
+export function figurenFrei(page, { abstand = 0.5, nur = null } = {}) {
+  return page.evaluate(({ abstand, nur }) => {
+    const a = window.ansicht;
+    const auswahl = nur ? new Set(nur) : null;
+    const figuren = [...a.nachher.values()]
+      .filter((e) => !e.s && (!auswahl || auswahl.has(e.i)))
+      .map((e) => ({ ...e, bild: a.zuBild(e.x, e.y) }))
+      .filter((e) => e.bild.x >= 0 && e.bild.x <= a.leinwand.clientWidth
+        && e.bild.y >= 0 && e.bild.y <= a.leinwand.clientHeight);
+    const beanstandet = [];
+    for (let i = 0; i < figuren.length; i++) {
+      for (let j = i + 1; j < figuren.length; j++) {
+        const weit = Math.hypot(figuren[i].x - figuren[j].x, figuren[i].y - figuren[j].y);
+        if (weit >= abstand) continue;
+        beanstandet.push(`${figuren[i].k} ${figuren[i].i} und ${figuren[j].k} ${figuren[j].i}`
+          + ` stehen ${weit.toFixed(2)} Felder auseinander`);
+      }
+    }
+    return beanstandet;
+  }, { abstand, nur });
+}
+
+/**
  * Ein Gebaeude in der Naehe eines Punktes aufstellen - das erste Feld, auf dem
  * Platz ist. Ein fester Versatz geht schief, sobald dort ein Baum steht oder
  * die Karte anders faellt (Runde 60).

@@ -40,6 +40,26 @@ etwas anderem gearbeitet.
   kann jede Runde an einer Rückfrage hängen bleiben. Der Vorschlag steht in der
   Nachricht vom 2026-09-16; eintragen kann nur der Benutzer.
 
+- **Gezeichnete Figuren oder erzeugte Bilder?** Frage des Benutzers
+  (2026-11-07): „sollte ChatGPT ein paar Figuren erschaffen, die wir dann
+  einbinden?“ Antwort der Schleife: der Einbau ist der kleinere Teil — wir
+  zeichnen Gebäude und Dinge schon in Zwischenbilder (`gebaeudeBildZeichnen`,
+  `dingBildZeichnen`) und kopieren die, ein PNG paßt genau dort hinein und ist
+  schneller als unsere Pfade. Das Problem ist der **Satz**: acht Richtungen ×
+  fünf Bewegungen × rund zehn Bilder sind etwa 400 Bilder je Einheit, und ein
+  Generator würfelt jedes neu — dazu die Spielerfarbe, die bei uns zur Laufzeit
+  eingefärbt wird. Empfehlung, dreigeteilt: **ja** für Unbewegliches (Gebäude,
+  Bäume, Vorräte, Bodentextur, Symbole — ein Bild, eine Richtung, die große
+  Fläche); **nein** für generierte Figuren, die stattdessen als Maßstab für das
+  Zeichnen im Code dienen; und wenn Figuren wirklich auf Original-Niveau
+  sollen, je ein 3D-Modell mechanisch aus acht Richtungen gerendert — so wurde
+  AoE II selbst gemacht, aber das ist eine eigene Stufe mit Blender im
+  Werkzeugkasten. Achtung: „kein Material aus dem Original“
+  ([ADR-0012](../adr/0012-aoe2-als-vorlage.md)) hält ein Generator nicht von
+  selbst ein — die Beschreibung muß das Ding nennen, nie das Spiel. **Billigste
+  Entscheidungshilfe:** eine Runde, in der ein Gebäude als PNG neben dem
+  gezeichneten steht, gleiches Bild, gleiche Messung. Wartet auf ein Ja.
+
 ## Offene Fäden
 
 - **Umlaute auf dem Bildschirm (entschieden 2026-09-17).** Texte, die im
@@ -67,14 +87,15 @@ etwas anderem gearbeitet.
   schäbige Punkte, sondern etwas, das halbwegs wie ein Sammler aussieht."
   Jede Runde, die etwas Neues ins Spielbild bringt, zeichnet es als erkennbare
   Figur oder Form — nie als Platzhalterpunkt. Deshalb A1b vorgezogen.
-- **Fernkämpfer stapeln sich** (Runde 64 gesehen, jetzt einheiten AC-29): zwei
-  Bogenschützen aus derselben Richtung halten auf demselben Punkt. Nahkämpfer
-  bekommen je ein Feld um das Ziel; Fernkämpfer bräuchten dasselbe auf ihrem
-  Schussring. Kandidat für den Rest von B5 oder B7.
-- **Einheiten stapeln sich** (Runde 9 gesehen): mehrere Dorfbewohner auf
-  demselben Waldfeld werden übereinander gezeichnet — zwei Figuren sehen aus
-  wie eine mit Bündel *und* Axt. Gehört zu einheiten AC-10/AC-20 (Schritt A9);
-  mit Figuren fällt es jetzt auf, früher nicht.
+- **Einheiten stapeln sich** (einheiten AC-29, offen). Dreimal gesehen, jetzt
+  **gemessen**: Dorfbewohner auf demselben Waldfeld (Runde 9), zwei
+  Bogenschützen aus derselben Richtung (Runde 64), und in der Rückschau nach
+  Runde 65 zwei von drei Angreifern **0,27 bis 0,39 Felder** auseinander — die
+  Verteilung um das Ziel (Runde 63) hält nicht mehr, seit sich Verteidiger von
+  selbst bewegen (Runde 64). Ursache: `nachbarfeld` fragt die Karte, nicht die
+  Einheiten; Fernkämpfer haben gar keine Verteilung auf ihrem Schussring.
+  `figurenFrei` misst es, die Prüfung steht in `strategie-kampf.spec.mjs` bei
+  `kampf AC-1` auskommentiert bereit. **Nächster Kandidat nach B5.**
 - Figuren liegen in `public/figuren.js` (Raster 24 hoch, Fußpunkt unten),
   Schautafel unter `/schautafel.html`. Jede neue Einheit bekommt dort zuerst
   eine Figur und einen Eintrag, dann kommt sie ins Spiel.
@@ -142,6 +163,8 @@ Zahlen, gegen die spätere Runden vergleichen. Mit Datum und Commit.
 | 2026-11-07 | Tests ohne Browser / im Browser; Browserlauf | 372 / 141; 6,6 min — **nicht vergleichbar**: 35 fremde Browserprozesse (21 chrome, 14 msedge) | Runde 64 |
 | 2026-11-07 | Takt mit 832 Milizen nach der Wache (kampf AC-2): bei den eigenen Basen / acht Heere auf einem Haufen im Kampf | 0,11 ms / 0,53 ms (Grenze 10 ms) | Runde 64 |
 | 2026-11-07 | Pruefstand nach der Wache: 20 Startwerte x 10 Spielminuten — Dorfbewohner / Zeit je Takt | 22 (Median 22) / 0,008 ms, keine Widersprueche | Runde 64 |
+| 2026-11-07 | Treffer des neuen Wächters gegen Gleichheit auf wachsenden Daten, erster Lauf | 10 Stellen in 5 Dateien (alle repariert) | Runde 65 |
+| 2026-11-07 | Abstand zweier Angreifer im Bild zu kampf AC-1 (`figurenFrei`) | 0,27–0,39 Felder — Soll: ≥ 0,5 (einheiten AC-29, offen) | Runde 65 |
 
 ## Rückschauen
 
@@ -279,6 +302,64 @@ Gut gelaufen: Die Tonstufen-Messung alt gegen neu hat aus „wirkt gezeichneter"
 eine Zahl gemacht, und zweimal hat ein alter Test einen neuen Fehler gefunden
 (Klick auf Beeren traf ein Schaf; zwei Lager zu ähnlich). Browserlauf bei
 ruhigerer Maschine 141 s Testzeit, langsamster Fall weiter der Lagertest (28 s).
+
+### Nach Runde 65 (2026-11-07)
+
+Zehn Runden ohne Rückschau: 55 und 60 sind **ausgefallen**. Nach der
+Rückschau zur Stufe A (Runde 54) hat niemand mehr gezählt — die Anweisung sagte
+„Rundennummer durch fünf teilbar“, und das prüft in der Runde selbst niemand
+nach. Das ist die dritte Verbesserung unten.
+
+**Was wiederholt Zeit gekostet hat (55–64):**
+
+1. **Gleichheit auf Daten, die mit den Stufen wachsen** — viermal in fünf
+   Runden gebrochen: `EINHEITEN` (60, Zeitalter), `bildetAus` (61, „dieselbe
+   Falle wie gestern“), `GEBAEUDE.farm` (63, Rüstung), `auftrag` (64, Platz und
+   Heimat). Die Regel stand jedes Mal schon in der Anweisung. Eine Regel, die
+   viermal gelesen und viermal nicht angewandt wird, ist keine Regel, sondern
+   eine Bitte.
+2. **Überdeckung im Bild fand nur das Auge** — Umrisse (56), Miliz hinter der
+   Kaserne (61), „eine Figur mit drei Schwertern“ (63), „mit zwei Bögen“ (64).
+   Jedes Mal lag das Bild schon, als es auffiel.
+3. Bildnachweise werden nur geschrieben, wenn sie fehlen (59: „ich habe dreimal
+   dasselbe alte Bild angesehen“) — das steht seit Runde 59 als Tabelle in der
+   Anweisung und hat seitdem gehalten.
+
+**Drei Verbesserungen, umgesetzt:**
+
+1. **Ein Wächter-Test** (`tests/waechter-gleichheit.test.mjs`) liest `tests/`
+   und `e2e/` und beanstandet jede Gleichheitsprüfung auf einem ganzen
+   `auftrag`, `bildetAus`, `baut` oder einem Eintrag aus `EINHEITEN`,
+   `GEBAEUDE`, `VERBESSERUNGEN`, `TIERE`, `ZEITALTER`, `AUFSTIEGE`. Blätter
+   (`…miliz.kosten`) bleiben erlaubt, Ausnahmen gehen mit `gleichheit-ok` plus
+   Grund. **Beim ersten Lauf zehn Treffer** in fünf Dateien — alle zehn echte
+   Zeitbomben, alle repariert (Feld für Feld statt `deepEqual`, `includes`
+   statt Liste, `.length` statt `[]`).
+2. **`figurenFrei(page)`** in `e2e/helpers/strategie.mjs`, im Geist von
+   `bedienteileFrei`: keine zwei lebenden Figuren im Bild näher als ein halbes
+   Feld. Gemessen wird in **Feldern**, nicht in Bildpunkten — das hängt nicht
+   am Zoom und ist damit eine Eigenschaft der Aufstellung, nicht der Kamera.
+   Gefallene sind ausgenommen (kampf AC-10). **Beim ersten Lauf einen echten
+   Fehler gefunden**, siehe unten.
+3. **Der Termin der nächsten Rückschau steht im Steuerstand**, nicht im
+   Kopfrechnen: Abschnitt 0 der Anweisung liest ihn dort, Abschnitt 8 trägt den
+   nächsten ein. Nachzählen hat zweimal versagt.
+
+**Was der neue Helfer sofort fand:** Im Bild zu `kampf AC-1` stehen zwei von
+Annas drei Angreifern **0,27 bis 0,39 Felder** auseinander — die Verteilung um
+das Ziel aus Runde 63 hält nicht mehr, seit Verteidiger sich von selbst bewegen
+(Runde 64), und `nachbarfeld` fragt die Karte, nicht die Einheiten. Das ist ein
+Produktfehler, kein Testfehler; in einer Rückschau wird nicht gebaut, also ist
+er als `einheiten AC-29` aufgeschrieben (von „Fernkämpfer“ auf „keine zwei
+Einheiten“ erweitert, mit der Messung als Schwelle) und die Prüfung steht
+auskommentiert an der Stelle bereit, an der sie gelten soll. Im Bild zu
+`einheiten AC-25` gilt sie ab jetzt scharf — genau dort war in Runde 64 „eine
+Figur mit zwei Bögen“ zu sehen.
+
+**Gelernt:** Eine Regel, die viermal in der Anweisung steht und viermal
+gebrochen wird, gehört nicht fetter geschrieben, sondern in einen Test. Beide
+Wächter dieser Rückschau haben beim ersten Lauf etwas gefunden, das kein Mensch
+gesucht hatte — zehn Zeitbomben und einen echten Fehler im Spiel.
 
 ### Nach Runde 54 — Ende von Stufe A (2026-09-17)
 
@@ -419,6 +500,14 @@ alle sieben Gebäude der Dunklen Zeit stehen. Was sich wiederholt hat:
 Neueste oben. Eine Zeile je Runde: Nummer, Datum, Kriterien, Ergebnis,
 wichtigste Erkenntnis.
 
+- **65** · 2026-11-07 · **Rückschau nach Runde 64** (55 und 60 waren
+  ausgefallen): drei Verbesserungen — ein Wächter-Test gegen Gleichheit auf
+  wachsenden Daten (zehn Treffer beim ersten Lauf, alle repariert),
+  `figurenFrei` gegen Figuren auf einem Fleck (fand sofort einen echten
+  Produktfehler, jetzt einheiten AC-29 mit Messwert), und der Termin der
+  nächsten Rückschau im Steuerstand statt im Kopf. 373 Tests ohne Browser.
+  Gelernt: eine Regel, die viermal gebrochen wird, gehört in einen Test, nicht
+  in Fettdruck.
 - **64** · 2026-11-07 · **kampf AC-2, AC-3, AC-5 und einheiten AC-25 fertig —
   der Kampf läuft jetzt von selbst**: Was in die Sichtweite einer *stehenden*
   Kampfeinheit kommt, wird ohne Befehl angegriffen (zweimal je Sekunde, über ein

@@ -111,13 +111,14 @@ test('einheiten AC-23: nach dem Aufstieg bildet die Kaserne den Speerkaempfer au
 
 test('einheiten AC-23: die Schiessanlage bildet Bogenschuetze und Plaenkler aus', () => {
   const { welt, anna } = bereit(1);
-  assert.deepEqual(GEBAEUDE.schiessanlage.bildetAus, ['bogenschuetze', 'plaenkler']);
-  // Keine Gleichheit: die Liste waechst mit den Stufen (seit AC-24 steht die
-  // Soldatenstufe mit darin).
+  // Keine Gleichheit: jede dieser Listen waechst mit den Stufen (die Kaserne hat
+  // mit AC-24 die Soldatenstufe bekommen, der Stall bekommt in Stufe D den
+  // Ritter). Geprueft wird, was drin sein muss.
+  for (const art of ['bogenschuetze', 'plaenkler']) assert.ok(GEBAEUDE.schiessanlage.bildetAus.includes(art), art);
   for (const art of ['miliz', 'speerkaempfer']) assert.ok(GEBAEUDE.kaserne.bildetAus.includes(art), art);
-  assert.deepEqual(GEBAEUDE.stall.bildetAus, ['spaeherreiter']);
+  assert.ok(GEBAEUDE.stall.bildetAus.includes('spaeherreiter'));
   // Die Schmiede forscht nur - sie bildet nichts aus (das kommt mit B6).
-  assert.deepEqual(GEBAEUDE.schmiede.bildetAus, []);
+  assert.equal(GEBAEUDE.schmiede.bildetAus.length, 0);
 
   const ziel = platz(welt, anna);
   const anlage = welt.gebaeudeAnlegen('a', 'schiessanlage', ziel.x, ziel.y);

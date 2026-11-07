@@ -4,7 +4,7 @@
 // Schaden, Nachladezeit, kein Zufall - stehen in tests/strategie-kampf.test.mjs.
 import { nachweis } from '../../scripts/qa-nachweis.mjs';
 import { einheitenAufstellen, expect, test, zeitraffer } from '../helpers/seite.mjs';
-import { bedienteileFrei, partieBeenden, partieZuZweit } from '../helpers/strategie.mjs';
+import { bedienteileFrei, figurenFrei, partieBeenden, partieZuZweit } from '../helpers/strategie.mjs';
 
 const KAMPF = '10-strategie/kampf.md';
 const BEFEHLE = '10-strategie/einheiten-und-befehle.md';
@@ -127,6 +127,12 @@ test.describe('Kampf', () => {
       expect(p.y).toBeLessThan(lage.feld.h - 220);
     }
     expect(await bedienteileFrei(bert)).toEqual([]);
+    // Hier fehlt `figurenFrei` mit Absicht: es schlaegt heute fehl, und zwar zu
+    // Recht. Gemessen in der Rueckschau nach Runde 65 stehen zwei von Annas
+    // drei Angreifern 0,27 bis 0,39 Felder auseinander - die Verteilung um das
+    // Ziel (Runde 63) haelt nicht mehr, seit sich Verteidiger von selbst
+    // bewegen (Runde 64), und Einheiten blockieren einander nicht. Das ist
+    // `einheiten AC-29`; die Runde, die es baut, setzt die Pruefung hier ein.
     await bert.waitForTimeout(300);
     await nachweis(bert, {
       spec: KAMPF,
@@ -289,6 +295,9 @@ test.describe('Kampf', () => {
       expect(p.y).toBeLessThan(lage.feld.h - 220);
     }
     expect(await bedienteileFrei(anna)).toEqual([]);
+    // Das erste Bild zu diesem Kriterium zeigte zwei Bogenschuetzen als eine
+    // Figur mit zwei Boegen (Runde 64). Jetzt sagt es eine Zahl.
+    expect(await figurenFrei(anna)).toEqual([]);
     await anna.waitForTimeout(300);
     await nachweis(anna, {
       spec: BEFEHLE,

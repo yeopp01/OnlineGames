@@ -61,7 +61,8 @@ test('einheiten AC-18: ein Dorfbewohner bestellt die Farm mit 0,32 Nahrung je Se
   const { welt, farm } = mitFarm();
   const [bauer] = dorfbewohner(welt);
   welt.befehl('a', [bauer.id], { x: farm.x, y: farm.y });
-  assert.deepEqual(bauer.auftrag, { art: 'farm', gebaeude: farm.id });
+  assert.equal(bauer.auftrag.art, 'farm');
+  assert.equal(bauer.auftrag.gebaeude, farm.id);
   bisAufDerFarm(welt, bauer);
   assert.ok(welt.aufGrundflaeche(bauer, farm), 'er steht auf der Farm');
   sekunden(welt, 20);
@@ -95,7 +96,8 @@ test('einheiten AC-18: voll zum Dorfzentrum, zurueck auf dieselbe Farm; leer ist
   for (let i = 0; i < 120 * TAKTE_PRO_SEKUNDE && anna.nahrung === nahrung; i++) welt.takten();
   assert.equal(anna.nahrung, nahrung + 10);
   for (let i = 0; i < 60 * TAKTE_PRO_SEKUNDE && !bauer.sammelt; i++) welt.takten();
-  assert.deepEqual(bauer.auftrag, { art: 'farm', gebaeude: farm.id }, 'zurueck auf dieselbe Farm');
+  assert.equal(bauer.auftrag.art, 'farm');
+  assert.equal(bauer.auftrag.gebaeude, farm.id, 'zurueck auf dieselbe Farm');
 
   // Die letzte Nahrung: danach ist die Farm fort, der Rest wird abgegeben.
   farm.nahrung = 1;
@@ -118,6 +120,7 @@ test('bauen AC-1: nach dem Bau einer Farm bestellt der Bauer sie', () => {
   const { gebaeude: id } = welt.bauen('a', [bauer.id], 'farm', platz);
   for (let i = 0; i < 90 * TAKTE_PRO_SEKUNDE && !welt.gebaeude.get(id).fertig; i++) welt.takten();
   assert.equal(welt.gebaeude.get(id).fertig, true);
-  assert.deepEqual(bauer.auftrag, { art: 'farm', gebaeude: id });
+  assert.equal(bauer.auftrag.art, 'farm');
+  assert.equal(bauer.auftrag.gebaeude, id);
   assert.equal(welt.gebaeude.get(id).arbeiter, bauer.id);
 });

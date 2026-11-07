@@ -387,7 +387,8 @@ test('bauen AC-2: Rechtsklick auf die eigene Baustelle - der Zweite baut mit', (
   const platz = freierPlatz(welt, 'haus', 6);
   const { gebaeude: id } = welt.bauen('a', [erster.id], 'haus', platz);
   welt.befehl('a', [zweiter.id], platz);
-  assert.deepEqual(zweiter.auftrag, { art: 'bauen', gebaeude: id });
+  assert.equal(zweiter.auftrag.art, 'bauen');
+  assert.equal(zweiter.auftrag.gebaeude, id);
   // Bert kann Annas Baustelle nicht mitbauen.
   const fremder = dorfbewohner(welt, 'b')[0];
   welt.befehl('b', [fremder.id], platz);

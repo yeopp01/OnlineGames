@@ -13,19 +13,22 @@ hier nichts eintraegt, verliert den Faden beim naechsten Autocompact.
 
 ## Zuletzt fortgeschrieben
 
-2026-11-07, nach Runde 64 (kampf AC-2, AC-3, AC-5 und einheiten AC-25 fertig - **von B5 fehlen nur noch der Angriffslauf und das rote Zeichen**).
+2026-11-07, nach Runde 65 (**Rueckschau**: Waechter gegen Gleichheit auf wachsenden Daten, `figurenFrei` gegen Figuren auf einem Fleck, Rueckschau-Termin hier im Steuerstand).
 
 ## Wo ich stehe
 
 - **Branch:** `strategie`. Nie auf `main` arbeiten, **nie pushen, nie deployen.**
 - **Board:** 368 von 504 Kriterien fertig · 1 in Arbeit · 5 in QA · 4 geplant ·
-  118 offen · 8 zurueckgestellt. 372 Tests ohne Browser, 141 im Browser.
+  118 offen · 8 zurueckgestellt. 373 Tests ohne Browser, 141 im Browser.
 - **Stufe A ist erreicht** (fahrplan AC-3 bis AC-7).
 - **Stufe B:** Bauabfolge B1 bis B7 im [Fahrplan](fahrplan.md). **B1 bis B4
   sind fertig, aus B5 alles ausser dem Angriffslauf (kampf AC-4) und dem roten
   Zeichen (bedienung AC-34).** Der Arbeitsbaum ist sauber.
-- **Runde 65 ist eine Rueckschau** (jede fuenfte Runde, Abschnitt 8 der
-  Anweisung) - nicht bauen.
+- **Naechste Rueckschau: Runde 70.** Diese Zeile ist der Termin - nicht
+  nachzaehlen. Die Rueckschauen 55 und 60 sind ausgefallen, weil nach der
+  Rueckschau zur Stufe A niemand mehr gezaehlt hat (Rueckschau nach Runde 65).
+  Wer eine Rueckschau haelt, traegt hier die naechste Nummer ein.
+- **Runde 66 baut wieder**: der Rest von B5.
 
 ## Was B2 und B3 gebracht haben (zum Weiterbauen wissen)
 
@@ -165,7 +168,7 @@ hier nichts eintraegt, verliert den Faden beim naechsten Autocompact.
 
 ## Was als Naechstes kommt
 
-**Runde 65 ist eine Rueckschau.** Danach der Rest von B5: **kampf AC-4**
+Der Rest von B5: **kampf AC-4**
 (Angriffslauf - ein Befehl auf ein leeres Feld, bei dem unterwegs alles
 angegriffen wird) und **bedienung AC-34** (ein rotes Zeichen am Ziel beim
 Angriffsbefehl, ein weisses bei einem Befehl auf freies Gelaende). AC-34 ist
@@ -173,8 +176,14 @@ reine Oberflaeche und gibt ein gutes Bild; AC-4 braucht eine zweite Betriebsart
 im Browser (Taste, dann Klick) - das erste Mal, dass ein Befehl nicht aus dem
 Feld gelesen werden kann.
 
-Offen daneben, in Runde 64 gesehen: **einheiten AC-29** (Fernkaempfer stehen
-uebereinander, weil sie keinen Schussring haben).
+Offen daneben und in der Rueckschau nach Runde 65 **gemessen**: **einheiten
+AC-29** (keine zwei Einheiten uebereinander). Zwei von drei Angreifern standen
+0,27 bis 0,39 Felder auseinander - die Verteilung um das Ziel aus Runde 63 haelt
+nicht mehr, seit sich Verteidiger von selbst bewegen, und `nachbarfeld` fragt
+nur die Karte, nicht die Einheiten. `figurenFrei(page)` aus
+`e2e/helpers/strategie.mjs` misst es; die Pruefung steht in
+`e2e/tests/strategie-kampf.spec.mjs` bei `kampf AC-1` auskommentiert bereit und
+wird scharf, sobald AC-29 gebaut ist.
 
 Danach: **B6** Verbesserungen (bauen AC-25, AC-26, ki AC-9) · **B7**
 Gleichgewicht messen (fahrplan AC-8 bis AC-10).

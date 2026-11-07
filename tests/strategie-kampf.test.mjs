@@ -82,7 +82,9 @@ test('kampf AC-1: ein Rechtsklick auf ein fremdes Gebaeude greift es an, bis es 
   const feld = haus.y * welt.karte.groesse + haus.x;
 
   rechtsklick(welt, 'a', [angreifer], { x: haus.x, y: haus.y });
-  assert.deepEqual(angreifer.auftrag, { art: 'angreifen', ziel: haus.id, gebaeude: true });
+  assert.equal(angreifer.auftrag.art, 'angreifen');
+  assert.equal(angreifer.auftrag.ziel, haus.id);
+  assert.equal(angreifer.auftrag.gebaeude, true);
   taktenBis(welt, () => !welt.gebaeude.has(haus.id));
 
   assert.equal(welt.gebaeude.has(haus.id), false, 'das Haus ist weg');

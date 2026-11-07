@@ -126,12 +126,19 @@ Befehl bewirkt.
   vier Feldern und laufen nicht in den Nahkampf, solange ihr Ziel in
   Reichweite ist. Ein Nahkämpfer mit demselben Befehl geht dagegen bis ans
   Ziel — derselbe Rechtsklick, zwei Abstände.
-- **AC-29** `offen` **Fernkämpfer stehen nicht übereinander** — Zwei Bogenschützen, die
-  aus derselben Richtung auf dasselbe Ziel geschickt werden, halten heute am
-  selben Punkt und sind im Bild eine Figur mit zwei Bögen. Sie brauchen eine
-  Aufstellung auf ihrem Schussring, wie Nahkämpfer sie um das Ziel haben
-  (AC-20, [Kampf](kampf.md) AC-1). Gesehen in Runde 64 — nicht von den Tests,
-  sondern vom Bild.
+- **AC-29** `offen` **Keine zwei Einheiten übereinander** — Zwei Einheiten, die
+  auf dasselbe Ziel geschickt werden, halten heute am selben Punkt und sind im
+  Bild eine Figur mit zwei Bögen oder zwei Schwertern. **Messbar: keine zwei
+  lebenden Einheiten im Bild näher als ein halbes Feld** (`figurenFrei` aus
+  `e2e/helpers/strategie.mjs`). Fernkämpfer brauchen dazu eine Aufstellung auf
+  ihrem Schussring, wie Nahkämpfer sie um das Ziel haben (AC-20,
+  [Kampf](kampf.md) AC-1); und ein Platz am Ziel wird nur vergeben, wenn dort
+  niemand steht — heute fragt `nachbarfeld` nur die Karte, nicht die Einheiten.
+  Gesehen in Runde 64 am Bild; in der Rückschau nach Runde 65 **gemessen**:
+  zwei von drei Angreifern standen 0,27 bis 0,39 Felder auseinander, obwohl die
+  Verteilung aus Runde 63 greift — sie hält nicht mehr, seit Verteidiger sich
+  von selbst bewegen (Runde 64). Die Prüfung steht auskommentiert in
+  `e2e/tests/strategie-kampf.spec.mjs` bei `kampf AC-1` bereit.
 
 ## Grenzfaelle
 

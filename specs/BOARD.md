@@ -128,7 +128,7 @@ mit Bildnachweisen, Filter und Suche mit `npm run qa:report`.
 - **Angriffsbefehl ist erkennbar** — [Bedienung](10-strategie/bedienung.md) AC-34
 - **Nur eigenes Material** — [Darstellung](10-strategie/darstellung.md) AC-11
 - **Einheiten blockieren sich nicht** — [Einheiten und Befehle](10-strategie/einheiten-und-befehle.md) AC-10
-- **Fernkämpfer stehen nicht übereinander** — [Einheiten und Befehle](10-strategie/einheiten-und-befehle.md) AC-29
+- **Keine zwei Einheiten übereinander** — [Einheiten und Befehle](10-strategie/einheiten-und-befehle.md) AC-29
 - **Feudalzeit spielbar** — [Fahrplan zum Klon](10-strategie/fahrplan.md) AC-8
 - **Der Konterkreis hält** — [Fahrplan zum Klon](10-strategie/fahrplan.md) AC-9
 - **Kein Schlachtenglück** — [Fahrplan zum Klon](10-strategie/fahrplan.md) AC-10

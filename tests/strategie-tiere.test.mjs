@@ -30,7 +30,8 @@ test('einheiten AC-17: Rechtsklick auf ein eigenes Schaf - er schlachtet es und 
   const { welt, dorfbewohner: [hirte], schafe: [schaf] } = aufbauen();
   // Der Klick trifft das Schaf nicht genau, sondern knapp daneben.
   welt.befehl('a', [hirte.id], { x: schaf.x + 0.4, y: schaf.y - 0.3 });
-  assert.deepEqual(hirte.auftrag, { art: 'tier', tier: schaf.id });
+  assert.equal(hirte.auftrag.art, 'tier');
+  assert.equal(hirte.auftrag.tier, schaf.id);
   assert.equal(schaf.geschlachtet, false, 'erst am Schaf wird geschlachtet');
 
   anDieArbeit(welt, hirte);
@@ -52,7 +53,8 @@ test('einheiten AC-17: voll zum Dorfzentrum, abgeben, und zurueck zum selben Sch
   let takte = 0;
   while (anna.nahrung === nahrung && takte < 120 * TAKTE_PRO_SEKUNDE) { welt.takten(); takte++; }
   assert.equal(anna.nahrung, nahrung + 10);
-  assert.deepEqual(hirte.auftrag, { art: 'tier', tier: schaf.id }, 'es geht zurueck zum Kadaver');
+  assert.equal(hirte.auftrag.art, 'tier');
+  assert.equal(hirte.auftrag.tier, schaf.id, 'es geht zurueck zum Kadaver');
   // Zurueck an der Arbeit - ob er dafuer laufen muss, haengt davon ab, wie nah
   // das Schaf am Dorfzentrum steht (bei Startwert 7 steht er schon daneben).
   for (let i = 0; i < 60 * TAKTE_PRO_SEKUNDE && !hirte.sammelt; i++) welt.takten();

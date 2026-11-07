@@ -24,9 +24,13 @@ halb.** Die Regeln aus `CLAUDE.md` gelten ohne Abstrich — vor allem, was
 3. Lies [`specs/10-strategie/fahrplan.md`](../../../specs/10-strategie/fahrplan.md)
    und bestimme die **aktuelle Stufe**: die erste mit einem Kriterium, das
    nicht `fertig` ist.
-4. Zähle die Runden. Ist die neue Rundennummer durch fünf teilbar, oder wurde
-   in der letzten Runde eine Stufe erreicht: **Rückschau** (Abschnitt 8) statt
-   Bauen.
+4. **Im [Steuerstand](../../../docs/strategie/steuerstand.md) steht unter „Wo
+   ich stehe", welche Runde die nächste Rückschau ist.** Ist es diese, oder
+   wurde in der letzten Runde eine Stufe erreicht: **Rückschau** (Abschnitt 8)
+   statt Bauen. Nicht nachzählen — die Rückschauen 55 und 60 sind ausgefallen,
+   weil nach der Rückschau zur Stufe A niemand mehr gezählt hat (Rückschau nach
+   Runde 65). Steht dort keine Zahl, gilt wieder „durch fünf teilbar", und die
+   Runde trägt sie ein.
 
 ## 1. Arbeit wählen
 
@@ -101,6 +105,11 @@ Setze die gewählten Kriterien auf `in-arbeit`.
   Und als Beispiel für „gibt es nicht" ein erfundener Name, nie ein Gebäude
   späterer Stufen (Runden 31–34: fünfmal gebrochen). Browsertests fragen nach
   freien Plätzen `window.ansicht.platzTaugt`, nicht eine eigene Regel.
+  **Das sucht jetzt ein Wächter:** `tests/waechter-gleichheit.test.mjs` liest
+  `tests/` und `e2e/` und beanstandet Gleichheit auf einem ganzen `auftrag`,
+  `bildetAus`, `baut` oder einem Eintrag aus `EINHEITEN`, `GEBAEUDE`,
+  `VERBESSERUNGEN`, `TIERE`, `ZEITALTER`, `AUFSTIEGE`. Wer eine neue wachsende
+  Liste anlegt, trägt sie dort ein. Ein Blatt (`…miliz.kosten`) bleibt erlaubt.
 - **Wer Werte ändert, sucht Tests, die an den alten hängen.** Startvorrat,
   Kartengröße, Mengen, Raten: vorher nach der alten Zahl und nach Mustern wie
   `[1-9]` oder `> 0` in `tests/` und `e2e/` suchen. Ein Test, der nach der
@@ -164,6 +173,12 @@ Setze die gewählten Kriterien auf `in-arbeit`.
   Dorfbewohner mit Baumenü). Nachsehen allein hat die Überdeckung in Runde 47
   erst eine Runde später gefunden. Neue Teile in die Liste der Hilfe
   aufnehmen.
+- **Stehen auf dem Bild mehrere Figuren, prüft `figurenFrei(page)`** aus
+  derselben Hilfe, dass keine zwei näher als ein halbes Feld beieinander
+  stehen. Vier Bilder in zehn Runden zeigten „eine Figur mit drei Schwertern"
+  oder „zwei Bögen" (Runden 56, 61, 63, 64) — jedes Mal hat es erst das Auge am
+  fertigen Bild gefunden. Gefallene sind ausgenommen, Gebäude vor Figuren prüft
+  es nicht.
 - **Behauptet die Unterschrift einen Zustand, wartet der Test darauf** —
   „angekommen", „im Wald", „mit Namen": erst `waitForFunction` auf genau
   diesen Zustand, dann `nachweis()` (Runde 46: zweimal zu früh). Nennt ein Test
@@ -305,4 +320,5 @@ Nicht bauen. Stattdessen:
    `Get-Process node, chrome | Group-Object ProcessName` in PowerShell. Sind
    fremde `vitest`-/`playwright`-Prozesse da, die Zeit nicht eintragen oder als
    „nicht vergleichbar" kennzeichnen (Runde 3: 52 s wurden 2,2 min).
-5. Eintrag unter **Rückschauen**, Commit `Rueckschau nach Runde n`.
+5. Eintrag unter **Rückschauen**, und im Steuerstand die **nächste** Rückschau
+   eintragen (diese Nummer plus fünf). Commit `Rueckschau nach Runde n`.
