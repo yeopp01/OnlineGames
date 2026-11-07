@@ -460,6 +460,31 @@ canvas.angriffslauf {
   display: none;
 }
 
+/* Wer ausgeschieden ist, schaut weiter zu (spielziel AC-7). Die Meldung bleibt
+   stehen, solange die Partie laeuft - sie ist aber kein Partieende: deshalb
+   kleiner, schmucklos und weiter oben, damit sie nichts vom Spiel verdeckt.
+   Mit dem Ende der Partie weicht sie der Tafel. */
+.zuschauer {
+  position: fixed;
+  left: 50%;
+  top: 4.4rem;
+  transform: translateX(-50%);
+  margin: 0;
+  padding: 0.45rem 1.4rem;
+  border: 1px solid #ffffff2e;
+  border-radius: 999px;
+  background: #12161ee8;
+  color: #c7ccd6;
+  font-size: 0.95rem;
+  text-align: center;
+  box-shadow: 0 4px 18px #0009;
+  pointer-events: none;
+}
+
+.zuschauer[hidden] {
+  display: none;
+}
+
 @keyframes aufsteigen {
   from { opacity: 0; transform: translate(-50%, 0.8rem) scale(0.94); }
   to { opacity: 1; transform: translate(-50%, 0) scale(1); }

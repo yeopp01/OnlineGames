@@ -13,16 +13,17 @@ hier nichts eintraegt, verliert den Faden beim naechsten Autocompact.
 
 ## Zuletzt fortgeschrieben
 
-2026-11-07, nach Runde 80 (**bedienung AC-38 ist fertig, damit steht C2**:
-Aufgeben als Knopf oben rechts mit genau einer Rueckfrage. Davor Runde 79:
-spielziel AC-5 und AC-6, das Partieende rechnet. Als Naechstes **C3**:
-Abschlussbild, Zuschauen, Revanche - spielziel AC-7 bis AC-9).
+2026-11-07, nach Runde 81 (**spielziel AC-7 ist fertig**: wer ausgeschieden
+ist, bleibt Zuschauer - Meldung im Bild und die Kamera springt zu einem, der
+noch spielt. Davor Runde 80: bedienung AC-38, damit steht C2. Als Naechstes
+aus **C3**: spielziel AC-8, das Abschlussbild mit Zahlen - dafuer muss der
+Server ueber die ganze Partie mitzaehlen -, danach AC-9, die Revanche).
 
 ## Wo ich stehe
 
 - **Branch:** `strategie`. Nie auf `main` arbeiten, **nie pushen, nie deployen.**
-- **Board:** 382 von 516 Kriterien fertig · 1 in Arbeit · 5 in QA · 4 geplant ·
-  116 offen · 8 zurueckgestellt. 419 Tests ohne Browser, 159 im Browser.
+- **Board:** 383 von 516 Kriterien fertig · 1 in Arbeit · 5 in QA · 4 geplant ·
+  115 offen · 8 zurueckgestellt. 420 Tests ohne Browser, 161 im Browser.
 - **Vier Waechter in `tests/waechter-*.test.mjs`:** Gleichheit auf wachsenden
   Listen, verbesserbare Werte an `welt.einheitenwert()` vorbei,
   Bildunterschriften mit `${...}`, und (neu in Runde 73) die **Kuerzeltafel**
@@ -149,9 +150,19 @@ Abschlussbild, Zuschauen, Revanche - spielziel AC-7 bis AC-9).
   schmaleres Fenster - `strategie-unterscheidbar` (1300, 1000) und
   `strategie-bauen` (1200); fuer die reicht danach
   `npm run qa:nachweis -- strategie-unterscheidbar strategie-bauen`.
-- **Als Naechstes: C3** - `spielziel AC-7` (ausgeschieden und doch zusehen),
-  `AC-8` (Abschlussbild mit Zahlen: der Server muss dafuer ueber die ganze
-  Partie mitzaehlen) und `AC-9` (Revanche mit einem Klick).
+- **`spielziel AC-7` ist fertig** (Runde 81). Wer ausscheidet, bekommt weiter
+  jeden Zustand (der Server schickt allen denselben), `#zuschauer` steht ueber
+  dem Bild, und `ansicht.ausMerken()` springt beim Uebergang mit der Kamera
+  zur Basis des ersten Spielers, der noch nicht `aus` ist. **Zu zweit ist das
+  Kriterium nicht pruefbar** - dort endet die Partie im selben Takt. Deshalb
+  gibt es jetzt `partieZuDritt` in `e2e/helpers/strategie.mjs` (beide Wege
+  laufen ueber `partieMit`, das die Gaeste nacheinander beitreten laesst);
+  `partieBeenden` schliesst `seiten`, nicht mehr `anna`/`bert`.
+- **Als Naechstes aus C3:** `AC-8` (Abschlussbild mit Zahlen: der Server muss
+  dafuer ueber die ganze Partie mitzaehlen - gesammelte Rohstoffe,
+  ausgebildete Einheiten, Verluste, erreichtes Zeitalter, je Spieler und auch
+  fuer einen, der frueh ausgeschieden ist) und `AC-9` (Revanche mit einem
+  Klick; die liegt am Raum, nicht an der Welt - ADR-0006 beachten).
 - **Der Gefechtsstand** (neu in Runde 71) steht in
   `server/spiele/strategie/pruefstand.js` als `gefechtSpielen`:
   `npm run konterkreis:strategie` stellt zwei Heere gleicher Kosten auf freiem

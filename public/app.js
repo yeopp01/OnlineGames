@@ -114,6 +114,7 @@ function empfangen(nachricht) {
       teile.kartenwert.textContent = `· Karte ${nachricht.startwert}`;
       ansicht.aufbau(nachricht, ich);
       aufgebenZeigen();
+      zuschauerZeigen();
       break;
 
     case 'zustand':
@@ -126,6 +127,7 @@ function empfangen(nachricht) {
       zeitalterZeigen(ansicht.zeitalterName());
       spielzeitZeigen(ansicht.spielzeit());
       aufgebenZeigen();
+      zuschauerZeigen();
       break;
 
     case 'fehler':
@@ -179,6 +181,18 @@ function partieendeZeigen(text) {
   ort.hidden = false;
   aufgebenFrageSchliessen();
   aufgebenZeigen();
+  zuschauerZeigen();
+}
+
+// ---- Zuschauen nach dem Ausscheiden (spielziel AC-7) ---------------------
+// Wer nichts mehr hat, sieht die Partie weiterlaufen. Die Meldung sagt ihm,
+// warum er nichts mehr befehlen kann; mit dem Ende der Partie weicht sie der
+// Meldung darueber, wer gewonnen hat. Gerechnet wird bei jedem Zustand und
+// nicht bei einem Ereignis: Ausscheiden und Partieende koennen in denselben
+// Takt fallen (wer als Vorletzter aufgibt).
+function zuschauerZeigen() {
+  const ort = document.getElementById('zuschauer');
+  ort.hidden = !ansicht || !ansicht.aus || ansicht.ende !== null;
 }
 
 // ---- Aufgeben (bedienung AC-38) ------------------------------------------

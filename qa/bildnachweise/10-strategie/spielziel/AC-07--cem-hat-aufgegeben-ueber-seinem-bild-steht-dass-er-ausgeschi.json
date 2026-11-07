@@ -1,0 +1,10 @@
+{
+  "spec": "10-strategie/spielziel.md",
+  "ac": "AC-7",
+  "titel": "Cem hat aufgegeben: über seinem Bild steht, dass er ausgeschieden ist — die Kamera zeigt ihm Annas Dorf statt den leeren Platz, wo seines stand",
+  "datei": "e2e/tests/strategie-partieende.spec.mjs",
+  "pfad": [
+    "Zuschauen nach dem Ausscheiden",
+    "spielziel AC-7: Cem gibt auf, die Partie laeuft weiter, und er sieht ihr zu"
+  ]
+}

@@ -8,7 +8,7 @@
 // bedienung AC-38. Der Griff schickt dieselbe Nachricht wie spaeter der Knopf.
 import { nachweis } from '../../scripts/qa-nachweis.mjs';
 import { aufgebenLassen, expect, test, zeitraffer } from '../helpers/seite.mjs';
-import { bedienteileFrei, dorfbewohnerAnklicken, partieBeenden, partieZuZweit } from '../helpers/strategie.mjs';
+import { bedienteileFrei, dorfbewohnerAnklicken, partieBeenden, partieZuDritt, partieZuZweit } from '../helpers/strategie.mjs';
 
 const SPIELZIEL = '10-strategie/spielziel.md';
 const BEDIENUNG = '10-strategie/bedienung.md';
@@ -197,5 +197,102 @@ test.describe('Partieende', () => {
       titel: 'Berts Sicht, nachdem er aufgegeben hat: „Anna hat gewonnen" — seine Leute liegen gefallen, seine Gebäude sind weg',
       test: info,
     });
+  });
+});
+
+// Zuschauen nach dem Ausscheiden (spielziel AC-7). Zu dritt, denn zu zweit
+// ist mit dem Ausscheiden die Partie zu Ende - dann gibt es keinen Zuschauer,
+// sondern einen Verlierer (AC-5).
+test.describe('Zuschauen nach dem Ausscheiden', () => {
+  test.describe.configure({ mode: 'serial' });
+  let partie;
+
+  test.beforeAll(async ({ browser }, info) => {
+    partie = await partieZuDritt(browser, info);
+  });
+  test.afterAll(() => partieBeenden(partie));
+
+  test('spielziel AC-7: Cem gibt auf, die Partie laeuft weiter, und er sieht ihr zu', async ({}, info) => {
+    const { anna, bert, cem, code } = partie;
+    await expect(cem.locator('#zuschauer')).toBeHidden();
+
+    // Eine halbe Spielminute, damit im Bild eine Partie laeuft und nicht eine
+    // beginnt (gelernt in Runde 79).
+    await zeitraffer(anna, code, 10);
+    for (const seite of [anna, bert, cem]) {
+      await seite.waitForFunction(() => window.ansicht.takt >= 300, undefined, { timeout: 15_000 });
+    }
+
+    // Aufgeben wie ein Mensch: Knopf, Rueckfrage, zweiter Klick.
+    await cem.locator('#aufgeben').click();
+    await cem.locator('#aufgebenJa').click();
+    await cem.waitForFunction(() => window.ansicht.aus, undefined, { timeout: 15_000 });
+
+    // Die Partie ist nicht zu Ende - zwei spielen weiter.
+    for (const seite of [anna, bert, cem]) {
+      expect(await seite.evaluate(() => window.ansicht.ende), 'zu dritt endet die Partie nicht').toBe(null);
+    }
+    await expect(cem.locator('#partieende')).toBeHidden();
+    await expect(cem.locator('#aufgeben')).toBeHidden();
+    await expect(anna.locator('#aufgeben')).toBeVisible();
+
+    // Er bekommt weiter Zustaende: die Uhr laeuft bei ihm wie bei Anna.
+    const vorher = await cem.evaluate(() => window.ansicht.takt);
+    await cem.waitForFunction((t) => window.ansicht.takt > t + 20, vorher, { timeout: 15_000 });
+
+    // Und er sieht die Partie - nicht nur in den Daten, sondern im Bild: die
+    // Kamera ist zu einem gesprungen, der noch spielt. Ohne den Sprung staende
+    // er vor dem leeren Platz, wo eben sein Dorf war.
+    const gesehen = await cem.evaluate(() => {
+      const a = window.ansicht;
+      const imBild = (e) => {
+        const p = a.zuBild(e.x, e.y);
+        return p.x > 0 && p.y > 0 && p.x < a.leinwand.clientWidth && p.y < a.leinwand.clientHeight;
+      };
+      const alle = [...a.nachher.values()];
+      return {
+        fremdeImBild: alle.filter((e) => e.b !== a.ich && !e.s && imBild(e)).length,
+        fremdeGebaeudeImBild: [...a.gebaeude.values()].filter((g) => g.b !== a.ich && imBild(g)).length,
+        eigeneLebend: alle.filter((e) => e.b === a.ich && !e.s).length,
+        eigeneGebaeude: [...a.gebaeude.values()].filter((g) => g.b === a.ich).length,
+      };
+    });
+    expect(gesehen.eigeneLebend, 'von ihm lebt nichts mehr').toBe(0);
+    expect(gesehen.eigeneGebaeude, 'und es steht nichts mehr von ihm').toBe(0);
+    expect(gesehen.fremdeImBild, 'fremde Einheiten im Bild').toBeGreaterThan(0);
+    expect(gesehen.fremdeGebaeudeImBild, 'ein fremdes Gebaeude im Bild').toBeGreaterThan(0);
+
+    await expect(cem.locator('#zuschauer')).toBeInViewport();
+    await expect(cem.locator('#zuschauer')).toContainText('Du bist ausgeschieden');
+    expect(await bedienteileFrei(cem)).toEqual([]);
+
+    await nachweis(cem, {
+      spec: SPIELZIEL,
+      ac: 'AC-7',
+      titel: 'Cem hat aufgegeben: über seinem Bild steht, dass er ausgeschieden ist — die Kamera zeigt ihm Annas Dorf statt den leeren Platz, wo seines stand',
+      test: info,
+    });
+  });
+
+  test('spielziel AC-7: bei den anderen aendert sich nichts ausser der Spielerzahl', async () => {
+    const { anna, cem } = partie;
+    // Anna sieht keine Zuschauermeldung und kann weiter befehlen - geprueft
+    // daran, dass sie noch waehlen kann und ihre Leute leben.
+    await expect(anna.locator('#zuschauer')).toBeHidden();
+    const annas = await anna.evaluate(() => {
+      const a = window.ansicht;
+      return {
+        lebend: [...a.nachher.values()].filter((e) => e.b === a.ich && !e.s).length,
+        aus: a.aus,
+      };
+    });
+    expect(annas.aus, 'Anna ist nicht ausgeschieden').toBe(false);
+    expect(annas.lebend, 'Annas Leute leben').toBeGreaterThan(0);
+
+    // Und Cem bleibt Zuschauer, solange die Partie laeuft: die Meldung geht
+    // nicht nach ein paar Sekunden von selbst weg (anders als eine Absage).
+    const vorher = await cem.evaluate(() => window.ansicht.takt);
+    await cem.waitForFunction((t) => window.ansicht.takt > t + 40, vorher, { timeout: 15_000 });
+    await expect(cem.locator('#zuschauer')).toBeVisible();
   });
 });

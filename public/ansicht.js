@@ -138,10 +138,8 @@ export class Ansicht {
     this.gebaeude = new Map((nachricht.gebaeude || []).map((g) => [g.i, g]));
 
     const meine = this.spieler.get(ichId);
-    if (meine) {
-      this.blickAuf(meine.basis.x, meine.basis.y);
-      this.aus = meine.aus === 1;
-    }
+    if (meine) this.blickAuf(meine.basis.x, meine.basis.y);
+    this.ausMerken(nachricht.spieler);
     // Wer nach dem Ende zurueckkommt, sieht es sofort (spielziel AC-5).
     if (nachricht.ende) this.endeMerken(nachricht.ende);
 
@@ -189,9 +187,9 @@ export class Ansicht {
     // Geaenderte Werte eines Spielers kommen nur, wenn er etwas erforscht hat.
     for (const s of nachricht.spieler) if (s.kw) this.einheitenwerte.set(s.id, s.kw);
 
+    this.ausMerken(nachricht.spieler);
     const meine = nachricht.spieler.find((s) => s.id === this.ich);
     if (meine) {
-      this.aus = meine.aus === 1;
       const { holz, nahrung, gold, stein, bev, raum } = meine;
       this.vorraete = { holz, nahrung, gold, stein, bev, raum };
       this.verbesserungen = meine.v || [];
@@ -230,6 +228,30 @@ export class Ansicht {
    * nach dem letzten Zustand noch ein Aufbau kaeme - etwa nach einer
    * Rueckkehr.
    */
+  /**
+   * Ausgeschieden - und die Partie laeuft fuer die anderen weiter
+   * (spielziel AC-7). Zwei Dinge geschehen genau einmal, beim Uebergang:
+   * die Kamera geht zu einem, der noch spielt, und von da an steht die
+   * Meldung im Bild (die setzt app.js bei jedem Zustand, damit sie auch
+   * stimmt, wenn Ausscheiden und Partieende in denselben Takt fallen).
+   *
+   * Der Sprung ist kein Luxus: ohne ihn sieht der Zuschauer auf den leeren
+   * Platz, wo eben sein Dorf stand - genau das, was das Kriterium verbietet.
+   *
+   * @param {{id: string, aus?: number}[]} liste die Spieler aus der Nachricht
+   */
+  ausMerken(liste) {
+    const jetzt = liste.find((s) => s.id === this.ich)?.aus === 1;
+    const uebergang = jetzt && !this.aus;
+    this.aus = jetzt;
+    if (!uebergang) return;
+    // Der erste, der noch spielt - die Reihenfolge der Liste ist die des
+    // Servers, also bei allen dieselbe.
+    const weiter = liste.find((s) => s.id !== this.ich && s.aus !== 1);
+    const basis = weiter && this.spieler.get(weiter.id)?.basis;
+    if (basis) this.blickAuf(basis.x, basis.y);
+  }
+
   endeMerken(ende) {
     if (this.ende) return;
     this.ende = ende;

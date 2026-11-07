@@ -153,7 +153,7 @@ Umfang hinzufügt, dort nachsehen.
 
 ## Stand
 
-**382 von 516 Kriterien fertig.** 419 Tests ohne Browser, 159 im Browser. Die
+**383 von 516 Kriterien fertig.** 420 Tests ohne Browser, 161 im Browser. Die
 Übersicht ist der Bericht: `npm run qa:report`.
 
 Gebaut ist der Unterbau: Räume, Übertragung, Karte, Wegfindung, Sammeln,
@@ -276,7 +276,10 @@ nur `welt.vorbei` und hält daran seine Uhr an (ADR-0006). Im Bild steht eine
 Meldung, die stehen bleibt. **Aufgeben ist ein Knopf oben rechts** — dort, wo
 im Spiel nichts geklickt wird — und er fragt genau einmal zurück; Esc und
 „Weiterspielen" sind die zwei Auswege, der gefährliche Knopf ist nicht der
-größte. Es folgen das Abschlussbild,
+größte. **Aus C3 steht das Zuschauen**: wer ausgeschieden ist, bekommt weiter
+jeden Zustand, über dem Bild steht, dass er draußen ist, und die Kamera
+springt zu einem, der noch spielt — sonst sähe er auf den leeren Platz, wo
+eben sein Dorf stand. Es folgen das Abschlussbild mit Zahlen und die Revanche,
 dann die **kämpfende KI** (ab acht Kampfeinheiten greift sie an, zwei bleiben
 zur Wache), Mensch gegen KI — und **zuletzt der Nebel**, weil er die
 Zustandsnachricht umbaut.

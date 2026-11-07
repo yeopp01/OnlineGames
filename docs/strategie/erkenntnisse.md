@@ -723,6 +723,20 @@ alle sieben Gebäude der Dunklen Zeit stehen. Was sich wiederholt hat:
 Neueste oben. Eine Zeile je Runde: Nummer, Datum, Kriterien, Ergebnis,
 wichtigste Erkenntnis.
 
+- **81** · 2026-11-07 · **spielziel AC-7** — wer ausgeschieden ist, bleibt
+  Zuschauer: er bekommt weiter jeden Zustand, über dem Bild steht, dass er
+  draußen ist, und **die Kamera springt zu einem, der noch spielt**. Der
+  Sprung ist der eigentliche Inhalt des Kriteriums — ohne ihn sähe der
+  Zuschauer auf den leeren Platz, wo eben sein Dorf stand, also genau auf den
+  „leeren Bildschirm", den das Kriterium verbietet. Gelernt: **dieses
+  Kriterium ist zu zweit nicht prüfbar.** Zu zweit endet die Partie in
+  demselben Takt, in dem einer ausscheidet; es gibt dann keinen Zuschauer,
+  sondern einen Verlierer. Dafür ist `partieZuZweit` zu `partieMit` geöffnet
+  worden, mit `partieZuDritt` daneben; `partieBeenden` schließt jetzt
+  `seiten` statt zweier fester Namen. Und: die Meldung hängt **nicht** an
+  einem Ereignis, sondern wird bei jedem Zustand gerechnet — Ausscheiden und
+  Partieende können in denselben Takt fallen (wer als Vorletzter aufgibt),
+  und ein Ereignis hätte dann zwei Meldungen übereinander gestellt.
 - **80** · 2026-11-07 · **bedienung AC-38** — Aufgeben ist ein Knopf oben
   rechts, am weitesten weg von allem, was im Spiel oft geklickt wird
   (Auswahlleiste unten, Untätige unten links, Übersichtskarte unten rechts),

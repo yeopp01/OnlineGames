@@ -2,7 +2,7 @@
 
 **Bereich:** Strategie
 **Kuerzel:** spielziel
-**Stand:** 2/18 fertig · 1 in Arbeit · 15 offen
+**Stand:** 3/18 fertig · 1 in Arbeit · 14 offen
 
 ## Zweck
 
@@ -83,8 +83,11 @@ eigenen Technikbaum ([Vorlage](../../docs/strategie/vorlage-aoe2.md)).
   Partie läuft für die anderen weiter. Gibt der Vorletzte auf, gewinnt der
   Letzte — Aufgeben ist kein eigener Ausgang, sondern ein schneller Weg in
   AC-5. Der Bildschirm dazu ist [Bedienung](bedienung.md) AC-38.
-- **AC-7** `offen` **Verlierer bleiben Zuschauer** — Wer ausgeschieden ist, sieht die Partie
-  weiterlaufen, statt auf einen leeren Bildschirm zu schauen.
+- **AC-7** `fertig` **Verlierer bleiben Zuschauer** — Wer ausgeschieden ist,
+  sieht die Partie weiterlaufen, statt auf einen leeren Bildschirm zu schauen.
+  Er bekommt weiter jeden Zustand, im Bild steht, dass er ausgeschieden ist,
+  und die Kamera springt zu einem, der noch spielt — sonst sähe er auf den
+  leeren Platz, wo eben sein Dorf stand.
 - **AC-8** `offen` **Abschlussbild mit Zahlen** — Am Ende sehen alle dieselbe
   Tafel: je Spieler gesammelte Rohstoffe, ausgebildete Einheiten, Verluste,
   erreichtes Zeitalter, dazu Sieger und Dauer der Partie. Der Stoff, aus dem

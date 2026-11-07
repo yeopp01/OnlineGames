@@ -63,11 +63,38 @@ import { ANMELDUNG, GRIFFHAFEN, expect, fehlerSammeln, zeitraffer } from './seit
  * @param {import('@playwright/test').TestInfo} info
  * @param {{startwert?: number, breite?: number, hoehe?: number}} [wie]
  */
-export async function partieZuZweit(browser, info, { startwert = 4711, breite = 1400, hoehe = 950 } = {}) {
+export function partieZuZweit(browser, info, wie = {}) {
+  return partieMit(browser, info, ['Bert'], wie);
+}
+
+/**
+ * Dieselbe Partie zu dritt: Anna eroeffnet, Bert und Cem treten bei. Gebraucht
+ * fuer alles, was erst mit einem dritten Spieler zu sehen ist - allen voran
+ * das Ausscheiden, denn zu zweit ist mit dem Ausscheiden die Partie zu Ende
+ * (spielziel AC-5, AC-7).
+ *
+ * @param {import('@playwright/test').Browser} browser
+ * @param {import('@playwright/test').TestInfo} info
+ * @param {{startwert?: number, breite?: number, hoehe?: number}} [wie]
+ */
+export function partieZuDritt(browser, info, wie = {}) {
+  return partieMit(browser, info, ['Bert', 'Cem'], wie);
+}
+
+/**
+ * Der gemeinsame Weg: Anna eroeffnet, die Genannten treten der Reihe nach bei,
+ * Anna startet. Zurueck kommen die Seiten einzeln (`anna`, `bert`, `cem`) und
+ * als Liste (`seiten`), der Raumcode und die gesammelten Fehler aller Seiten.
+ *
+ * @param {import('@playwright/test').Browser} browser
+ * @param {import('@playwright/test').TestInfo} info
+ * @param {string[]} gaeste die Namen der Beitretenden, in dieser Reihenfolge
+ * @param {{startwert?: number, breite?: number, hoehe?: number}} [wie]
+ */
+async function partieMit(browser, info, gaeste, { startwert = 4711, breite = 1400, hoehe = 950 } = {}) {
   const optionen = { baseURL: info.project.use.baseURL, viewport: { width: breite, height: hoehe }, locale: 'de-DE' };
   const anna = await (await browser.newContext({ ...optionen, storageState: ANMELDUNG })).newPage();
-  const bert = await (await browser.newContext(optionen)).newPage();
-  const fehler = [fehlerSammeln(anna), fehlerSammeln(bert)];
+  const fehler = [fehlerSammeln(anna)];
 
   await anna.goto('/');
   await anna.locator('[data-oeffnen="strategie"]').click();
@@ -76,25 +103,32 @@ export async function partieZuZweit(browser, info, { startwert = 4711, breite = 
   await expect(anna.locator('#raumcode')).toHaveText(/^[A-Z0-9]{3}-[A-Z0-9]{3}$/);
   const code = (await anna.locator('#raumcode').textContent()).trim();
 
-  await bert.goto('/');
-  await bert.locator('#name').fill('Bert');
-  await bert.locator('#code').fill(code);
-  await bert.locator('#beitreten').click();
-  await expect(anna.locator('#spielerliste li')).toHaveCount(2);
+  const seiten = [anna];
+  for (const name of gaeste) {
+    const gast = await (await browser.newContext(optionen)).newPage();
+    fehler.push(fehlerSammeln(gast));
+    seiten.push(gast);
+    await gast.goto('/');
+    await gast.locator('#name').fill(name);
+    await gast.locator('#code').fill(code);
+    await gast.locator('#beitreten').click();
+    // Erst weiter, wenn der Gastgeber ihn sieht: zwei Beitritte zugleich
+    // haetten sonst eine unbestimmte Reihenfolge im Raum.
+    await expect(anna.locator('#spielerliste li')).toHaveCount(seiten.length);
+  }
 
   await anna.locator('#starten').click();
-  for (const seite of [anna, bert]) {
+  for (const seite of seiten) {
     await expect(seite.locator('#brett')).toBeVisible();
     await seite.waitForFunction(() => window.ansicht && window.ansicht.nachher.size > 0 && window.ansicht.gebaeude.size > 0);
   }
-  return { anna, bert, code, fehler };
+  return { anna, bert: seiten[1], cem: seiten[2], seiten, code, fehler };
 }
 
-/** Beide Seiten schliessen; vorher duerfen sie keine Fehler gemeldet haben. */
-export async function partieBeenden({ anna, bert, fehler }) {
+/** Alle Seiten schliessen; vorher duerfen sie keine Fehler gemeldet haben. */
+export async function partieBeenden({ anna, bert, seiten, fehler }) {
   expect(fehler.flat(), 'Eine der Seiten hat Fehler gemeldet').toEqual([]);
-  await anna?.context().close();
-  await bert?.context().close();
+  for (const seite of seiten || [anna, bert]) await seite?.context().close();
 }
 
 /**
@@ -211,7 +245,7 @@ export function platzImBild(page, { n = 2, um, abstand = 5, seitlich = false }) 
  */
 export function bedienteileFrei(page) {
   return page.evaluate(() => {
-    const teile = ['#kopfzeile', '#auswahlleiste', '#untaetig', '#uebersicht', '#spielmeldung', '#partieende']
+    const teile = ['#kopfzeile', '#auswahlleiste', '#untaetig', '#uebersicht', '#spielmeldung', '#partieende', '#zuschauer']
       .map((wahl) => ({ wahl, el: document.querySelector(wahl) }))
       .filter(({ el }) => el && !el.hidden && el.getClientRects().length)
       .map(({ wahl, el }) => ({ wahl, r: el.getBoundingClientRect() }));

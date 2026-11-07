@@ -145,3 +145,23 @@ test('spielziel AC-5: das Ende steht im Zustand und im Aufbau', () => {
   // Wer nach dem Ende zurueckkommt, bekommt es im Aufbau (raeume AC-12).
   assert.equal(w.aufbau().ende.sieger, 'a1');
 });
+
+test('spielziel AC-7: wer ausgeschieden ist, bekommt weiter den ganzen Zustand', () => {
+  const w = welt(4711, [...ZWEI, { id: 'c1', name: 'Cora' }]);
+  w.aufgeben('c1');
+  // Die Partie laeuft: der Takt steigt, obwohl einer ausgeschieden ist.
+  const vorher = w.takt;
+  for (let i = 0; i < 20; i++) w.takten();
+  assert.equal(w.takt, vorher + 20, 'eine Partie zu dritt rechnet nach einem Ausscheiden weiter');
+
+  // Und Cora sieht sie: der Zustand ist fuer sie derselbe wie fuer die
+  // anderen - mit den Einheiten und Gebaeuden, die noch im Spiel sind.
+  const zustand = w.zustand();
+  assert.equal(zustand.ende, undefined, 'kein Ende, solange zwei spielen');
+  assert.equal(zustand.spieler.find((s) => s.id === 'c1').aus, 1, 'sie weiss, dass sie draussen ist');
+  const fremde = zustand.einheiten.filter((e) => e.b !== 'c1' && !e.s).length;
+  const fremdeGebaeude = (zustand.gebaeude || []).filter((g) => g.b !== 'c1').length;
+  assert.ok(fremde > 0, `fremde lebende Einheiten im Zustand, gezaehlt ${fremde}`);
+  assert.ok(fremdeGebaeude > 0, `fremde Gebaeude im Zustand, gezaehlt ${fremdeGebaeude}`);
+  assert.equal(zustand.einheiten.filter((e) => e.b === 'c1' && !e.s).length, 0, 'von ihr lebt nichts');
+});
