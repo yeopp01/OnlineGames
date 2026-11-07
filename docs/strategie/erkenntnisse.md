@@ -75,7 +75,9 @@ etwas anderem gearbeitet.
   Dorfzentrum bei Spielgröße, und der Beladene steht klein am linken Rand.
   Entweder der Test holt für dieses eine Bild heran (wie es Runde 79 für
   `spielziel AC-6` getan hat), oder die Unterschrift sagt, was zu sehen ist.
-  Eine halbe Runde Arbeit, gehört in die nächste Rückschau.
+  Eine halbe Runde Arbeit, gehört in die nächste Rückschau — das ist **Runde 83**.
+  Beide Bilder sind in Runde 82 erneut angesehen worden und beide stehen
+  unverändert falsch da.
 
 - **Umlaute auf dem Bildschirm (entschieden 2026-09-17).** Texte, die im
   Browser stehen, bekommen echte Umlaute („Eröffnen", „zufällig");
@@ -723,6 +725,25 @@ alle sieben Gebäude der Dunklen Zeit stehen. Was sich wiederholt hat:
 Neueste oben. Eine Zeile je Runde: Nummer, Datum, Kriterien, Ergebnis,
 wichtigste Erkenntnis.
 
+- **82** · 2026-11-07 · **spielziel AC-8** — das Abschlussbild mit Zahlen:
+  je Spieler eine Zeile mit Zeitalter, gesammelten Rohstoffen, ausgebildeten
+  Einheiten und Verlusten, darunter die Dauer der Partie. Gelernt: **die
+  Zahlen müssen während der Partie gezählt werden, nicht am Ende hergeleitet.**
+  Von einem, der ausgeschieden ist, steht nichts mehr auf der Karte — wer am
+  Ende zählt, zählt bei ihm null. Deshalb führt jeder Spieler jetzt
+  `gesammelt`, `ausgebildet` und `verloren`, hochgezählt beim Abladen, beim
+  Fertigwerden eines Auftrags und beim Sterben. Gezählt wird beim **Abladen**,
+  nicht beim Aufnehmen: sonst ließe sich die Tafel mit einer Ladung füllen,
+  die nie ankommt — und ein abgebrochener Auftrag gibt Rohstoffe zurück, ohne
+  dass jemand etwas gesammelt hätte. Die Tafel wird einmal in `endeSetzen()`
+  **abgeschrieben** und reist danach in `zustand()` und `aufbau()` mit, damit
+  auch ein Zurückkehrender sie sieht. In der Reihenfolge der Spieler, mit
+  hervorgehobenem Sieger statt sortiert: eine Rangfolge wäre eine Behauptung
+  darüber, was zählt, und die gehört dem Spieler. Werkzeug: `#partieende` ist
+  als Überschrift **im** neuen `#abschluss` geblieben — so haben alle
+  Zusicherungen aus AC-5 und AC-6 den Umbau überlebt, ohne eine Zeile Test.
+  `rahmenUmAlle`, `eigeneImBild` und `waldInDerNaehe` sind aus dem Spielbild-Test
+  in die Hilfe gezogen, weil eine Tafel voller Nullen nichts belegt hätte.
 - **81** · 2026-11-07 · **spielziel AC-7** — wer ausgeschieden ist, bleibt
   Zuschauer: er bekommt weiter jeden Zustand, über dem Bild steht, dass er
   draußen ist, und **die Kamera springt zu einem, der noch spielt**. Der

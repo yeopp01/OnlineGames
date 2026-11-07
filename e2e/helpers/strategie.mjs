@@ -200,6 +200,48 @@ export async function dorfbewohnerAnklicken(page, { ohne = [], code = null, raff
   return letzte.i;
 }
 
+/** Die eigenen Einheiten mit ihrer Lage auf dem Bildschirm. */
+export const eigeneImBild = (page) => page.evaluate(() => {
+  const a = window.ansicht;
+  return [...a.nachher.values()]
+    .filter((e) => e.b === a.ich)
+    .map((e) => ({ id: e.i, ...a.zuBild(e.x, e.y) }));
+});
+
+/** Einen Rahmen um alle eigenen Einheiten ziehen; `offen` laesst die Taste gedrueckt. */
+export async function rahmenUmAlle(page, { offen = false } = {}) {
+  const eigene = await eigeneImBild(page);
+  const xs = eigene.map((e) => e.x);
+  const ys = eigene.map((e) => e.y);
+  await page.mouse.move(Math.min(...xs) - 30, Math.min(...ys) - 30);
+  await page.mouse.down();
+  await page.mouse.move(Math.max(...xs) + 30, Math.max(...ys) + 30, { steps: 8 });
+  if (!offen) await page.mouse.up();
+  return eigene;
+}
+
+// Die Feldwerte der Karte, wie `karte.js` sie zaehlt: Gras 0, Wald 1.
+export const WALDFELD = 1;
+
+/**
+ * Das Waldfeld, das der eigenen Basis am naechsten liegt, als Bildpunkt - das
+ * Ziel fuer einen Rechtsklick, der Holz sammeln laesst.
+ */
+export const waldInDerNaehe = (page) => page.evaluate((wald) => {
+  const a = window.ansicht;
+  const basis = a.spieler.get(a.ich).basis;
+  const g = a.karte.groesse;
+  let bestes = null;
+  for (let y = 0; y < g; y++) {
+    for (let x = 0; x < g; x++) {
+      if (a.karte.felder[y * g + x] !== wald) continue;
+      const abstand = Math.hypot(x - basis.x, y - basis.y);
+      if (!bestes || abstand < bestes.abstand) bestes = { x, y, abstand };
+    }
+  }
+  return a.zuBild(bestes.x, bestes.y);
+}, WALDFELD);
+
 /**
  * Wo im Bild ein Gebaeude der Groesse n ganz auf Gras stuende, ohne Schaf -
  * gerechnet aus der Karte der Ansicht, ringweise um einen Punkt. Ob die
@@ -245,7 +287,7 @@ export function platzImBild(page, { n = 2, um, abstand = 5, seitlich = false }) 
  */
 export function bedienteileFrei(page) {
   return page.evaluate(() => {
-    const teile = ['#kopfzeile', '#auswahlleiste', '#untaetig', '#uebersicht', '#spielmeldung', '#partieende', '#zuschauer']
+    const teile = ['#kopfzeile', '#auswahlleiste', '#untaetig', '#uebersicht', '#spielmeldung', '#abschluss', '#zuschauer']
       .map((wahl) => ({ wahl, el: document.querySelector(wahl) }))
       .filter(({ el }) => el && !el.hidden && el.getClientRects().length)
       .map(({ wahl, el }) => ({ wahl, r: el.getBoundingClientRect() }));

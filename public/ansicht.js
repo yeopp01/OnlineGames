@@ -272,6 +272,49 @@ export class Ansicht {
   }
 
   /**
+   * Die Tafel am Ende, fertig zum Anzeigen (spielziel AC-8). Die Zahlen
+   * kommen vom Server, die Namen und Farben aus der Spielerliste des
+   * Aufbaus - der Browser erfindet nichts dazu und rechnet nichts nach.
+   *
+   * Die Reihenfolge ist die der Spieler, nicht die des Ergebnisses: eine
+   * Rangfolge waere eine Behauptung (woran gemessen?), und der Sieger steht
+   * ohnehin in der Zeile darueber und ist in seiner Zeile gezeichnet.
+   *
+   * @returns {{id: string, name: string, farbe: string, sieger: boolean,
+   *   aus: boolean, zeitalter: string, gesammelt: object,
+   *   ausgebildet: number, verloren: number}[]}
+   */
+  abschlusszeilen() {
+    if (!this.ende?.tafel) return [];
+    return this.ende.tafel.map((zeile) => {
+      const spieler = this.spieler.get(zeile.id);
+      return {
+        id: zeile.id,
+        name: spieler?.name || 'Unbekannt',
+        farbe: spieler?.farbe || '#888888',
+        sieger: zeile.id === this.ende.sieger,
+        aus: zeile.aus === 1,
+        zeitalter: this.zeitalterName(zeile.zeitalter || 0),
+        gesammelt: zeile.gesammelt,
+        ausgebildet: zeile.ausgebildet,
+        verloren: zeile.verloren,
+      };
+    });
+  }
+
+  /**
+   * Wie lange die Partie gedauert hat (spielziel AC-8) - gerechnet aus dem
+   * Takt, in dem sie entschieden wurde, nicht aus dem letzten gesehenen:
+   * beides ist dasselbe, solange nichts dazwischenkommt, aber der Takt des
+   * Endes steht fuer jeden gleich, auch fuer einen, der spaeter zurueckkommt.
+   */
+  abschlussdauer() {
+    if (!this.ende) return '';
+    const sekunden = Math.floor(this.ende.takt / (this.takteProSekunde || 10));
+    return `${Math.floor(sekunden / 60)}:${String(sekunden % 60).padStart(2, '0')}`;
+  }
+
+  /**
    * Die verstrichene Spielzeit als `m:ss` (bedienung AC-37). Gezaehlt werden
    * die Takte des Servers, nicht die Uhr des Browsers: wer den Zeitraffer
    * anstellt, soll die Uhr schneller laufen sehen, und wer nach einem Abbruch

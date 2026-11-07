@@ -8,7 +8,10 @@
 // bedienung AC-38. Der Griff schickt dieselbe Nachricht wie spaeter der Knopf.
 import { nachweis } from '../../scripts/qa-nachweis.mjs';
 import { aufgebenLassen, expect, test, zeitraffer } from '../helpers/seite.mjs';
-import { bedienteileFrei, dorfbewohnerAnklicken, partieBeenden, partieZuDritt, partieZuZweit } from '../helpers/strategie.mjs';
+import {
+  bedienteileFrei, dorfbewohnerAnklicken, partieBeenden, partieZuDritt, partieZuZweit,
+  rahmenUmAlle, waldInDerNaehe,
+} from '../helpers/strategie.mjs';
 
 const SPIELZIEL = '10-strategie/spielziel.md';
 const BEDIENUNG = '10-strategie/bedienung.md';
@@ -195,6 +198,89 @@ test.describe('Partieende', () => {
       spec: SPIELZIEL,
       ac: 'AC-6',
       titel: 'Berts Sicht, nachdem er aufgegeben hat: „Anna hat gewonnen" — seine Leute liegen gefallen, seine Gebäude sind weg',
+      test: info,
+    });
+  });
+});
+
+// Die Tafel am Ende (spielziel AC-8). Eine eigene Partie, in der erst
+// gespielt wird: eine Tafel voller Nullen wuerde nicht zeigen, dass der Server
+// ueber die ganze Partie mitzaehlt.
+test.describe('Das Abschlussbild', () => {
+  test.describe.configure({ mode: 'serial' });
+  let partie;
+
+  test.beforeAll(async ({ browser }, info) => {
+    partie = await partieZuZweit(browser, info);
+  });
+  test.afterAll(() => partieBeenden(partie));
+
+  test('spielziel AC-8: die Tafel nennt je Spieler Rohstoffe, Einheiten, Verluste und Zeitalter', async ({}, info) => {
+    const { anna, bert, code } = partie;
+    await expect(anna.locator('#abschluss')).toBeHidden();
+
+    // Erst spielen: alle in den Wald, und am Dorfzentrum einen neuen
+    // Dorfbewohner bestellen. Gezaehlt wird beim Abladen, nicht beim
+    // Aufnehmen - eine Ladung Holz braucht mit den Werten der Vorlage gut
+    // 25 Spielsekunden hin und zurueck (einheiten AC-15).
+    const holzVorher = await anna.evaluate(() => window.ansicht.vorraete.holz);
+    await rahmenUmAlle(anna);
+    const wald = await waldInDerNaehe(anna);
+    await anna.mouse.click(wald.x, wald.y, { button: 'right' });
+
+    const zentrum = await anna.evaluate(() => {
+      const a = window.ansicht;
+      const g = [...a.gebaeude.values()].find((b) => b.b === a.ich && b.art === 'dorfzentrum');
+      return { i: g.i, bild: a.zuBild(g.x, g.y) };
+    });
+    // Auf das Dach klicken, oberhalb der Figuren davor.
+    await anna.mouse.click(zentrum.bild.x, zentrum.bild.y - 60);
+    await anna.locator('[data-ausbilden="dorfbewohner"]').click();
+
+    await zeitraffer(anna, code, 20);
+    // Holz ist abgeladen, wenn der Vorrat steigt, und ausgebildet ist einer,
+    // wenn die Bevoelkerung von vier auf fuenf geht (bauen AC-22).
+    await anna.waitForFunction((h) => window.ansicht.vorraete.holz > h, holzVorher, { timeout: 30_000 });
+    await anna.waitForFunction(() => window.ansicht.vorraete.bev >= 5, undefined, { timeout: 30_000 });
+
+    const bertsEinheiten = await bert.evaluate(() => {
+      const a = window.ansicht;
+      return [...a.nachher.values()].filter((e) => e.b === a.ich && !e.s).length;
+    });
+    expect(bertsEinheiten, 'Bert hat Leute, die fallen koennen').toBeGreaterThan(0);
+
+    await aufgebenLassen(anna, code, 'Bert');
+    await anna.waitForFunction(() => window.ansicht.ende !== null, undefined, { timeout: 15_000 });
+    await bert.waitForFunction(() => window.ansicht.ende !== null, undefined, { timeout: 15_000 });
+
+    // Die Zahlen, die der Server mitgezaehlt hat - beide bekommen dieselbe
+    // Tafel, auch der, von dem nichts mehr auf der Karte steht.
+    const tafel = await anna.evaluate(() => window.ansicht.ende.tafel);
+    expect(await bert.evaluate(() => window.ansicht.ende.tafel), 'beide sehen dieselbe Tafel').toEqual(tafel);
+    const ich = await anna.evaluate(() => window.ansicht.ich);
+    const annas = tafel.find((z) => z.id === ich);
+    const berts = tafel.find((z) => z.id !== ich);
+    expect(annas.gesammelt.holz, 'Anna hat Holz abgeliefert').toBeGreaterThan(0);
+    expect(annas.ausgebildet, 'und einen Dorfbewohner ausgebildet').toBeGreaterThanOrEqual(1);
+    expect(annas.verloren, 'sie hat niemanden verloren').toBe(0);
+    expect(berts.verloren, 'Bert hat alles verloren').toBe(bertsEinheiten);
+    expect(berts.aus, 'und ist ausgeschieden').toBe(1);
+
+    // Und die Tafel steht auch so im Bild: eine Zeile je Spieler unter einem
+    // Kopf, die Siegerzeile hervorgehoben, die des Ausgeschiedenen gedaempft.
+    await expect(anna.locator('#abschlusstafel tr')).toHaveCount(3);
+    await expect(anna.locator('#abschlusstafel tr.sieger')).toContainText('Anna');
+    await expect(anna.locator('#abschlusstafel tr.draussen')).toContainText('Bert');
+    await expect(anna.locator('#abschlusstafel tr.sieger td').first()).toHaveText('Dunkle Zeit');
+    await expect(anna.locator('#abschlusstafel tr.sieger')).toContainText(String(annas.gesammelt.holz));
+    await expect(anna.locator('#abschlussdauer')).toHaveText(/^Dauer \d+:\d\d$/);
+    await expect(anna.locator('#abschluss')).toBeInViewport();
+    expect(await bedienteileFrei(anna)).toEqual([]);
+
+    await nachweis(anna, {
+      spec: SPIELZIEL,
+      ac: 'AC-8',
+      titel: 'Die Tafel am Ende: je Spieler Zeitalter, gesammelte Rohstoffe, ausgebildete Einheiten und Verluste — Annas Zeile als Sieger, Berts gedämpft als ausgeschieden, darunter die Dauer der Partie',
       test: info,
     });
   });

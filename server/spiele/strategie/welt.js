@@ -141,6 +141,13 @@ class Welt {
       verbesserungen: [], // erforscht, in der Reihenfolge des Abschlusses
       zeitalter: 0, // jede Partie beginnt in der Dunklen Zeit (spielziel AC-1)
       aus: false, // ausgeschieden oder aufgegeben (spielziel AC-5, AC-6)
+      // Fuer die Tafel am Ende (spielziel AC-8). Gezaehlt wird waehrend der
+      // ganzen Partie, nicht am Schluss ausgerechnet: wer frueh ausscheidet,
+      // hat am Ende weder Einheiten noch Vorraete, und seine Zahlen waeren
+      // sonst alle null.
+      gesammelt: { holz: 0, nahrung: 0, gold: 0, stein: 0 },
+      ausgebildet: 0, // Einheiten, die er aus einem Gebaeude bekommen hat
+      verloren: 0, // eigene Einheiten, die gefallen sind
     }));
 
     // Tiere gehoeren einem Spieler, stehen aber nicht in den Einheiten: sie
@@ -777,6 +784,9 @@ class Welt {
     gebaeude.schlange.shift();
     gebaeude.fortschritt = 0;
     const neu = this.einheitAnlegen(spieler.id, feld.x, feld.y, art);
+    // Fuer die Tafel (spielziel AC-8): die drei vom Anfang zaehlen nicht mit,
+    // die hat niemand ausgebildet.
+    spieler.ausgebildet++;
     bevoelkerung.set(spieler.id, belegt + 1);
     // Zum Sammelpunkt; liegt er auf einem Vorrat, wird dort gleich gesammelt (bauen AC-13).
     if (gebaeude.sammelpunkt) this.befehl(spieler.id, [neu.id], gebaeude.sammelpunkt);
@@ -1551,6 +1561,10 @@ class Welt {
   // mehr: kein Auftrag, keine Bevoelkerung, kein Ziel fuer einen Angriff.
   einheitSterben(einheit) {
     this.farmVerlassen(einheit);
+    // Fuer die Tafel (spielziel AC-8). Wer aufgibt, verliert damit alles auf
+    // einmal - das ist richtig so: gefallen ist gefallen.
+    const spieler = this.spielerVon(einheit.besitzer);
+    if (spieler) spieler.verloren++;
     einheit.leben = 0;
     einheit.tot = true;
     // Der Takt des Todes steht getrennt daneben: Takt 0 waere als Schalter
@@ -1614,12 +1628,37 @@ class Welt {
     }
     const uebrig = this.spieler.filter((s) => !s.aus);
     if (uebrig.length <= 1) {
-      this.ende = { sieger: uebrig[0]?.id || null, grund: 'eroberung', takt: this.takt };
+      this.endeSetzen(uebrig[0]?.id || null, 'eroberung');
       return;
     }
     if (this.takt >= PARTIE_MINUTEN * 60 * TAKTE_PRO_SEKUNDE) {
-      this.ende = { sieger: null, grund: 'zeit', takt: this.takt };
+      this.endeSetzen(null, 'zeit');
     }
+  }
+
+  /**
+   * Das Ende festhalten - mit der Tafel, die alle am Schluss sehen
+   * (spielziel AC-8). Sie entsteht genau einmal, in dem Takt, in dem die
+   * Partie entschieden ist, und geht danach mit jedem Zustand und jedem
+   * Aufbau mit: so sieht sie auch, wer nach einem Abbruch zurueckkommt.
+   *
+   * Die Reihenfolge ist die der Spieler, nicht die des Ergebnisses - wer die
+   * Tafel zeigt, sortiert sie, und bei allen steht dasselbe.
+   */
+  endeSetzen(sieger, grund) {
+    this.ende = {
+      sieger,
+      grund,
+      takt: this.takt,
+      tafel: this.spieler.map((s) => ({
+        id: s.id,
+        gesammelt: { ...s.gesammelt },
+        ausgebildet: s.ausgebildet,
+        verloren: s.verloren,
+        zeitalter: s.zeitalter,
+        ...(s.aus ? { aus: 1 } : {}),
+      })),
+    };
   }
 
   /**
@@ -1848,6 +1887,9 @@ class Welt {
       return;
     }
     spieler[einheit.ladungsart] += einheit.ladung;
+    // Mitgezaehlt fuer die Tafel (spielziel AC-8). Hier und nur hier: eine
+    // Rueckerstattung aus einem abgebrochenen Auftrag ist nichts Gesammeltes.
+    spieler.gesammelt[einheit.ladungsart] += einheit.ladung;
     einheit.ladung = 0;
     einheit.ladungsart = null;
     einheit.angefangen = 0;

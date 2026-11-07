@@ -176,12 +176,61 @@ function spielzeitZeigen(text) {
 // Partie ist zu Ende, es kommt nichts mehr nach. Die Tafel mit den Zahlen
 // (spielziel AC-8) nimmt spaeter diesen Platz ein.
 function partieendeZeigen(text) {
-  const ort = document.getElementById('partieende');
-  ort.textContent = text;
-  ort.hidden = false;
+  document.getElementById('partieende').textContent = text;
+  abschlusstafelFuellen();
+  document.getElementById('abschluss').hidden = false;
   aufgebenFrageSchliessen();
   aufgebenZeigen();
   zuschauerZeigen();
+}
+
+// Die Tafel darunter (spielziel AC-8): je Spieler eine Zeile mit dem, was er
+// in dieser Partie zusammengebracht hat. Gezaehlt hat der Server ueber die
+// ganze Partie - deshalb stehen hier auch die Zahlen eines Spielers, von dem
+// am Ende nichts mehr auf der Karte ist.
+const TAFELKOPF = ['Spieler', 'Zeitalter', 'Holz', 'Nahrung', 'Gold', 'Stein', 'Ausgebildet', 'Verloren'];
+
+function abschlusstafelFuellen() {
+  const tafel = document.getElementById('abschlusstafel');
+  const zeilen = ansicht.abschlusszeilen();
+  const kopf = document.createElement('tr');
+  for (const [i, titel] of TAFELKOPF.entries()) {
+    const zelle = document.createElement('th');
+    zelle.textContent = titel;
+    zelle.scope = 'col';
+    if (i > 0) zelle.className = 'zahl';
+    kopf.append(zelle);
+  }
+  const koerper = zeilen.map((zeile) => {
+    const tr = document.createElement('tr');
+    if (zeile.sieger) tr.className = 'sieger';
+    else if (zeile.aus) tr.className = 'draussen';
+    const name = document.createElement('th');
+    name.scope = 'row';
+    const punkt = document.createElement('span');
+    punkt.className = 'farbpunkt';
+    punkt.style.background = zeile.farbe;
+    name.append(punkt, document.createTextNode(zeile.name));
+    tr.append(name);
+    const werte = [
+      zeile.zeitalter,
+      zeile.gesammelt.holz,
+      zeile.gesammelt.nahrung,
+      zeile.gesammelt.gold,
+      zeile.gesammelt.stein,
+      zeile.ausgebildet,
+      zeile.verloren,
+    ];
+    for (const wert of werte) {
+      const td = document.createElement('td');
+      td.className = 'zahl';
+      td.textContent = String(wert);
+      tr.append(td);
+    }
+    return tr;
+  });
+  tafel.replaceChildren(kopf, ...koerper);
+  document.getElementById('abschlussdauer').textContent = `Dauer ${ansicht.abschlussdauer()}`;
 }
 
 // ---- Zuschauen nach dem Ausscheiden (spielziel AC-7) ---------------------

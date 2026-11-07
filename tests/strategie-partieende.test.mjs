@@ -165,3 +165,101 @@ test('spielziel AC-7: wer ausgeschieden ist, bekommt weiter den ganzen Zustand',
   assert.ok(fremdeGebaeude > 0, `fremde Gebaeude im Zustand, gezaehlt ${fremdeGebaeude}`);
   assert.equal(zustand.einheiten.filter((e) => e.b === 'c1' && !e.s).length, 0, 'von ihr lebt nichts');
 });
+
+// ---- Die Tafel am Ende (spielziel AC-8) ----------------------------------
+
+test('spielziel AC-8: gesammelt wird gezaehlt, wenn abgeladen wird - nicht, was zurueckkommt', () => {
+  const w = welt();
+  const spieler = w.spielerVon('a1');
+  assert.deepEqual(spieler.gesammelt, { holz: 0, nahrung: 0, gold: 0, stein: 0 });
+
+  // Einen Dorfbewohner mit Ladung an sein Dorfzentrum stellen und abladen
+  // lassen - derselbe Weg, den das Sammeln nimmt.
+  const einheit = [...w.einheiten.values()].find((e) => e.besitzer === 'a1');
+  const lager = [...w.gebaeude.values()].find((g) => g.besitzer === 'a1');
+  einheit.x = lager.x;
+  einheit.y = lager.y;
+  einheit.ladung = 10;
+  einheit.ladungsart = 'holz';
+  // Mit Auftrag, denn `abladen` schickt danach zurueck an die Arbeit: im
+  // Spiel kommt es nur aus dem Takt eines Sammelauftrags, nie ohne.
+  einheit.auftrag = { art: 'sammeln', feld: [...w.karte.vorrat.keys()][0] };
+  const vorrat = spieler.holz;
+  w.abladen(einheit);
+  assert.equal(spieler.holz, vorrat + 10, 'der Vorrat steigt');
+  assert.equal(spieler.gesammelt.holz, 10, 'und es ist mitgezaehlt');
+
+  // Ein abgebrochener Auftrag gibt Rohstoffe zurueck. Gesammelt ist das
+  // nicht: sonst liesse sich die Tafel durch Bestellen und Abbrechen fuellen.
+  const vorHolz = spieler.gesammelt.holz;
+  const vorNahrung = spieler.gesammelt.nahrung;
+  w.nachricht('a1', { typ: 'befehl', auftrag: 'ausbilden', gebaeude: lager.id, einheit: 'dorfbewohner' });
+  w.nachricht('a1', { typ: 'befehl', auftrag: 'abbrechen', gebaeude: lager.id, platz: 0 });
+  assert.equal(spieler.gesammelt.holz, vorHolz);
+  assert.equal(spieler.gesammelt.nahrung, vorNahrung);
+});
+
+test('spielziel AC-8: ausgebildet zaehlt nur, wer aus einem Gebaeude kommt', () => {
+  const w = welt();
+  const spieler = w.spielerVon('a1');
+  const amAnfang = [...w.einheiten.values()].filter((e) => e.besitzer === 'a1').length;
+  assert.ok(amAnfang > 0, 'die Partie beginnt mit Dorfbewohnern');
+  assert.equal(spieler.ausgebildet, 0, 'die vom Anfang hat niemand ausgebildet');
+
+  const lager = [...w.gebaeude.values()].find((g) => g.besitzer === 'a1' && g.art === 'dorfzentrum');
+  spieler.nahrung += 1000;
+  assert.deepEqual(w.nachricht('a1', { typ: 'befehl', auftrag: 'ausbilden', gebaeude: lager.id, einheit: 'dorfbewohner' }), {});
+  // Bis der Dorfbewohner fertig ist, dauert es - so lange takten.
+  for (let i = 0; i < 30 * TAKTE_PRO_SEKUNDE && spieler.ausgebildet === 0; i++) w.takten();
+  assert.equal(spieler.ausgebildet, 1, 'genau einer ist dazugekommen');
+  assert.equal([...w.einheiten.values()].filter((e) => e.besitzer === 'a1').length, amAnfang + 1);
+});
+
+test('spielziel AC-8: verloren zaehlt jede eigene gefallene Einheit', () => {
+  const w = welt();
+  const spieler = w.spielerVon('b1');
+  const seine = [...w.einheiten.values()].filter((e) => e.besitzer === 'b1').length;
+  assert.equal(spieler.verloren, 0);
+  // Wer aufgibt, verliert alles auf einmal - gefallen ist gefallen.
+  w.aufgeben('b1');
+  assert.equal(spieler.verloren, seine);
+  assert.equal(w.spielerVon('a1').verloren, 0, 'der andere hat nichts verloren');
+});
+
+test('spielziel AC-8: die Tafel steht im Ende, mit Zahlen fuer jeden', () => {
+  const w = welt();
+  const anna = w.spielerVon('a1');
+  anna.gesammelt = { holz: 120, nahrung: 80, gold: 0, stein: 40 };
+  anna.ausgebildet = 3;
+  anna.zeitalter = 1;
+  const seine = [...w.einheiten.values()].filter((e) => e.besitzer === 'b1').length;
+
+  w.aufgeben('b1');
+  const tafel = w.ende.tafel;
+  assert.equal(tafel.length, 2, 'eine Zeile je Spieler');
+  const ihre = tafel.find((z) => z.id === 'a1');
+  assert.deepEqual(ihre.gesammelt, { holz: 120, nahrung: 80, gold: 0, stein: 40 });
+  assert.equal(ihre.ausgebildet, 3);
+  assert.equal(ihre.zeitalter, 1);
+  assert.equal(ihre.aus, undefined, 'sie ist nicht ausgeschieden');
+
+  // Und die des Ausgeschiedenen: seine Zahlen bleiben stehen, obwohl von ihm
+  // nichts mehr auf der Karte ist. Genau dafuer wird mitgezaehlt.
+  const berts = tafel.find((z) => z.id === 'b1');
+  assert.equal(berts.verloren, seine);
+  assert.equal(berts.aus, 1);
+
+  // Die Tafel ist eine Abschrift, kein Verweis: was danach geschieht, aendert
+  // sie nicht mehr.
+  anna.ausgebildet = 99;
+  assert.equal(w.ende.tafel.find((z) => z.id === 'a1').ausgebildet, 3);
+});
+
+test('spielziel AC-8: die Tafel kommt im Zustand und im Aufbau mit', () => {
+  const w = welt();
+  w.aufgeben('b1');
+  assert.equal(w.zustand().ende.tafel.length, 2);
+  assert.equal(w.aufbau().ende.tafel.length, 2, 'auch fuer einen, der zurueckkommt');
+  // Die Dauer steht als Takt daran - der Browser macht daraus die Spielzeit.
+  assert.equal(Number.isInteger(w.ende.takt), true);
+});

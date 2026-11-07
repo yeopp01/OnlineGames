@@ -9,7 +9,7 @@
 // so wie ein Mensch es tut.
 import { nachweis } from '../../scripts/qa-nachweis.mjs';
 import { expect, test, zeitraffer } from '../helpers/seite.mjs';
-import { partieBeenden, partieZuZweit } from '../helpers/strategie.mjs';
+import { eigeneImBild, partieBeenden, partieZuZweit, rahmenUmAlle, waldInDerNaehe } from '../helpers/strategie.mjs';
 
 const BEDIENUNG = '10-strategie/bedienung.md';
 const FAHRPLAN = '10-strategie/fahrplan.md';
@@ -17,29 +17,10 @@ const AUSWAHL = '00-plattform/spielauswahl.md';
 const KARTE = '10-strategie/karte-und-vorraete.md';
 const DARSTELLUNG = '10-strategie/darstellung.md';
 const STARTWERT = 4711;
-const WALD = 1;
 
-/** Die eigenen Einheiten mit ihrer Lage auf dem Bildschirm. */
-const eigeneImBild = (page) => page.evaluate(() => {
-  const a = window.ansicht;
-  return [...a.nachher.values()]
-    .filter((e) => e.b === a.ich)
-    .map((e) => ({ id: e.i, ...a.zuBild(e.x, e.y) }));
-});
-
+// `eigeneImBild`, `rahmenUmAlle` und `waldInDerNaehe` liegen in der Hilfe:
+// seit Runde 82 braucht sie auch der Test des Abschlussbildes (spielziel AC-8).
 const auswahl = (page) => page.evaluate(() => [...window.ansicht.ausgewaehlt]);
-
-/** Einen Rahmen um alle eigenen Einheiten ziehen; `offen` laesst die Taste gedrueckt. */
-async function rahmenUmAlle(page, { offen = false } = {}) {
-  const eigene = await eigeneImBild(page);
-  const xs = eigene.map((e) => e.x);
-  const ys = eigene.map((e) => e.y);
-  await page.mouse.move(Math.min(...xs) - 30, Math.min(...ys) - 30);
-  await page.mouse.down();
-  await page.mouse.move(Math.max(...xs) + 30, Math.max(...ys) + 30, { steps: 8 });
-  if (!offen) await page.mouse.up();
-  return eigene;
-}
 
 test.describe('Das Spielbild', () => {
   test.describe.configure({ mode: 'serial' });
@@ -149,20 +130,7 @@ test.describe('Das Spielbild', () => {
     expect((await auswahl(anna)).length).toBe(4);
 
     // Rechts auf das Waldfeld, das der eigenen Basis am naechsten liegt.
-    const wald = await anna.evaluate((art) => {
-      const a = window.ansicht;
-      const basis = a.spieler.get(a.ich).basis;
-      const g = a.karte.groesse;
-      let bestes = null;
-      for (let y = 0; y < g; y++) {
-        for (let x = 0; x < g; x++) {
-          if (a.karte.felder[y * g + x] !== art) continue;
-          const abstand = Math.hypot(x - basis.x, y - basis.y);
-          if (!bestes || abstand < bestes.abstand) bestes = { x, y, abstand };
-        }
-      }
-      return a.zuBild(bestes.x, bestes.y);
-    }, WALD);
+    const wald = await waldInDerNaehe(anna);
     await anna.mouse.click(wald.x, wald.y, { button: 'right' });
     // Mit den Werten der Vorlage dauert eine volle Ladung Holz gut 25 Sekunden
     // (einheiten AC-15) - der Test laesst die Partie fuenfmal so schnell laufen.

@@ -2,7 +2,7 @@
 
 **Bereich:** Strategie
 **Kuerzel:** spielziel
-**Stand:** 3/18 fertig · 1 in Arbeit · 14 offen
+**Stand:** 4/18 fertig · 1 in Arbeit · 13 offen
 
 ## Zweck
 
@@ -88,7 +88,7 @@ eigenen Technikbaum ([Vorlage](../../docs/strategie/vorlage-aoe2.md)).
   Er bekommt weiter jeden Zustand, im Bild steht, dass er ausgeschieden ist,
   und die Kamera springt zu einem, der noch spielt — sonst sähe er auf den
   leeren Platz, wo eben sein Dorf stand.
-- **AC-8** `offen` **Abschlussbild mit Zahlen** — Am Ende sehen alle dieselbe
+- **AC-8** `fertig` **Abschlussbild mit Zahlen** — Am Ende sehen alle dieselbe
   Tafel: je Spieler gesammelte Rohstoffe, ausgebildete Einheiten, Verluste,
   erreichtes Zeitalter, dazu Sieger und Dauer der Partie. Der Stoff, aus dem
   Revanchen entstehen. Die Zahlen zählt der Server über die ganze Partie mit,

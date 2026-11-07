@@ -1,0 +1,10 @@
+{
+  "spec": "10-strategie/spielziel.md",
+  "ac": "AC-8",
+  "titel": "Die Tafel am Ende: je Spieler Zeitalter, gesammelte Rohstoffe, ausgebildete Einheiten und Verluste — Annas Zeile als Sieger, Berts gedämpft als ausgeschieden, darunter die Dauer der Partie",
+  "datei": "e2e/tests/strategie-partieende.spec.mjs",
+  "pfad": [
+    "Das Abschlussbild",
+    "spielziel AC-8: die Tafel nennt je Spieler Rohstoffe, Einheiten, Verluste und Zeitalter"
+  ]
+}

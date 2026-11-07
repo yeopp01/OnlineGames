@@ -436,28 +436,90 @@ canvas.angriffslauf {
    die Auswahlleiste unten beruehrt. Die ausfuehrliche Tafel mit Zahlen kommt
    mit spielziel AC-8. */
 
-.partieende {
+/* Das Abschlussbild (spielziel AC-5, AC-8): oben die Meldung, wer gewonnen
+   hat, darunter die Tafel mit den Zahlen. Ein Feld, nicht zwei - sonst
+   stuenden zwei Kaesten uebereinander. Die Meldung behaelt ihre Kennung
+   `#partieende`, weil Tests und Hilfen sie daran lesen. */
+.abschluss {
   position: fixed;
   left: 50%;
   top: 22%;
   transform: translateX(-50%);
-  margin: 0;
-  padding: 1rem 2.6rem;
+  max-width: calc(100vw - 2rem);
+  padding: 1.1rem 1.6rem 1.3rem;
   border: 2px solid #f0c060;
   border-radius: 0.6rem;
   background: #1b1309f7;
+  box-shadow: 0 8px 30px #000d;
+  pointer-events: none;
+}
+
+.abschluss[hidden] {
+  display: none;
+}
+
+.partieende {
+  margin: 0 0 0.9rem;
   color: #ffe9bd;
   font-size: 2rem;
   font-weight: 700;
   letter-spacing: 0.04em;
   text-align: center;
   text-shadow: 0 2px 8px #000c;
-  box-shadow: 0 8px 30px #000d;
-  pointer-events: none;
 }
 
-.partieende[hidden] {
-  display: none;
+.abschlusstafel {
+  border-collapse: collapse;
+  width: 100%;
+  color: #e6d8bd;
+  font-size: 0.95rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.abschlusstafel th,
+.abschlusstafel td {
+  padding: 0.3rem 0.75rem;
+  text-align: left;
+  white-space: nowrap;
+}
+
+.abschlusstafel .zahl {
+  text-align: right;
+}
+
+/* Die Kopfzeile leiser als die Zahlen: gelesen werden die Zahlen. */
+.abschlusstafel tr:first-child th {
+  border-bottom: 1px solid #f0c06055;
+  color: #c3ab84;
+  font-size: 0.82rem;
+  font-weight: 600;
+}
+
+.abschlusstafel .sieger {
+  color: #ffe9bd;
+  font-weight: 700;
+}
+
+/* Wer ausgeschieden ist, steht blasser da - seine Zahlen gelten trotzdem. */
+.abschlusstafel .draussen {
+  color: #9b907f;
+}
+
+.farbpunkt {
+  display: inline-block;
+  width: 0.7rem;
+  height: 0.7rem;
+  margin-right: 0.5rem;
+  border: 1px solid #0008;
+  border-radius: 50%;
+  vertical-align: -0.05rem;
+}
+
+.abschlussdauer {
+  margin: 0.8rem 0 0;
+  color: #c3ab84;
+  font-size: 0.85rem;
+  text-align: center;
 }
 
 /* Wer ausgeschieden ist, schaut weiter zu (spielziel AC-7). Die Meldung bleibt
