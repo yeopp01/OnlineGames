@@ -410,6 +410,19 @@ alle sieben Gebäude der Dunklen Zeit stehen. Was sich wiederholt hat:
 Neueste oben. Eine Zeile je Runde: Nummer, Datum, Kriterien, Ergebnis,
 wichtigste Erkenntnis.
 
+- **62** · 2026-11-07 · **Spec-Runde Kampf**: `kampf.md` trug noch die Zahlen
+  der kleinen Fassung vor ADR-0012 — vier erfundene Einheiten mit Tempo 4,5
+  und „doppelter Schaden gegen die schwache Seite". Jetzt steht dort die
+  Formel der Vorlage (`max(1, Angriff − Rüstung + Bonus)`, nah gegen
+  Nahrüstung, fern gegen Fernrüstung) und **keine zweite Wertetabelle** —
+  die Werte stehen in `daten.js`, eine Tabelle daneben ist nach der dritten
+  Änderung falsch. AC-7 heißt jetzt „jede Einheit hat ihre Nachladezeit"
+  statt „ein Schlag je Sekunde": ein gemeinsamer Takt wäre lesbarer,
+  verfälscht aber den Konterkreis. AC-9 (Lebensbalken) ist
+  `zurueckgestellt` — das hat Stufe A unter darstellung AC-8 schon gebaut.
+  Zwei Grenzfälle dazu, die beim Bauen sonst Zeit kosten: stirbt das Ziel
+  unterwegs, bleibt der Angreifer stehen; ein unerreichbares Ziel beendet
+  den Auftrag, statt endlos zu rechnen. Nächste Runde: **B5 bauen**.
 - **61** · 2026-11-07 · einheiten AC-24 **fertig** — **Schritt B4 ist ganz
   durch**: die Kaserne erforscht ab der Feudalzeit die Stufe Soldat (100 N,
   40 G, 40 s), jede Miliz wird dadurch zum Soldaten, und danach bildet die

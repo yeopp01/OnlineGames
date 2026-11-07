@@ -7,7 +7,7 @@ Eine Zeile je Abnahmekriterium. Gepflegt wird der Status in der Spec selbst,
 hier steht er zusammengefasst. Erzeugt mit `npm run specs:board`; als Seite
 mit Bildnachweisen, Filter und Suche mit `npm run qa:report`.
 
-**Gesamt:** 359/503 fertig · 1 in Arbeit · 5 in QA · 4 geplant · 127 offen · 7 zurueckgestellt
+**Gesamt:** 359/503 fertig · 1 in Arbeit · 5 in QA · 4 geplant · 126 offen · 8 zurueckgestellt
 
 **Nachweise:** 141 Kriterien mit Bild · 222 ohne Bild, begruendet in `qa/ohne-bild.json`
 
@@ -26,7 +26,7 @@ mit Bildnachweisen, Filter und Suche mit `npm run qa:report`.
 | [Darstellung](10-strategie/darstellung.md)                     | -         | -     | -       | 1     | -               | 13     |
 | [Einheiten und Befehle](10-strategie/einheiten-und-befehle.md) | -         | -     | -       | 2     | 1               | 18     |
 | [Fahrplan zum Klon](10-strategie/fahrplan.md)                  | -         | -     | -       | 15    | -               | 7      |
-| [Kampf](10-strategie/kampf.md)                                 | -         | -     | -       | 14    | -               | -      |
+| [Kampf](10-strategie/kampf.md)                                 | -         | -     | -       | 13    | 1               | -      |
 | [Karte und Vorraete](10-strategie/karte-und-vorraete.md)       | -         | -     | -       | 2     | 3               | 12     |
 | [KI-Spieler](10-strategie/ki.md)                               | -         | -     | -       | 1     | -               | 8      |
 | [Spielziel und Partieverlauf](10-strategie/spielziel.md)       | 1         | -     | -       | 17    | -               | -      |
@@ -64,7 +64,7 @@ mit Bildnachweisen, Filter und Suche mit `npm run qa:report`.
 - **Abbruch ist sichtbar** — [Uebertragung](00-plattform/uebertragung.md) AC-9
 - **Automatischer Wiederaufbau** — [Uebertragung](00-plattform/uebertragung.md) AC-10
 
-## Offen (127)
+## Offen (126)
 
 - **Anmeldung ueber Google/GitHub** — [Konten und Anmeldung](00-plattform/konten.md) AC-6
 - **Bilanz je Konto** — [Konten und Anmeldung](00-plattform/konten.md) AC-14
@@ -145,16 +145,15 @@ mit Bildnachweisen, Filter und Suche mit `npm run qa:report`.
 - **Läuft auf dem VPS** — [Fahrplan zum Klon](10-strategie/fahrplan.md) AC-21
 - **Aktualisieren ist ein Befehl** — [Fahrplan zum Klon](10-strategie/fahrplan.md) AC-22
 - **Rechtsklick auf Feindliches greift an** — [Kampf](10-strategie/kampf.md) AC-1
-- **Einheiten wehren sich von selbst** — [Kampf](10-strategie/kampf.md) AC-2
+- **Kampfeinheiten wehren sich von selbst** — [Kampf](10-strategie/kampf.md) AC-2
 - **Verfolgung endet** — [Kampf](10-strategie/kampf.md) AC-3
 - **Angriffslauf** — [Kampf](10-strategie/kampf.md) AC-4
-- **Sammler kämpfen schlecht** — [Kampf](10-strategie/kampf.md) AC-5
-- **Bonus gegen die schwache Seite** — [Kampf](10-strategie/kampf.md) AC-6
-- **Ein Schlag je Sekunde** — [Kampf](10-strategie/kampf.md) AC-7
+- **Dorfbewohner kämpfen schlecht** — [Kampf](10-strategie/kampf.md) AC-5
+- **Schaden nach der Vorlage** — [Kampf](10-strategie/kampf.md) AC-6
+- **Jede Einheit hat ihre Nachladezeit** — [Kampf](10-strategie/kampf.md) AC-7
 - **Kein Zufall im Schaden** — [Kampf](10-strategie/kampf.md) AC-8
-- **Leben ist sichtbar** — [Kampf](10-strategie/kampf.md) AC-9
 - **Tote verschwinden nach zwei Sekunden** — [Kampf](10-strategie/kampf.md) AC-10
-- **Einheiten sehen fünf Felder weit** — [Kampf](10-strategie/kampf.md) AC-11
+- **Sichtweite aus den Daten** — [Kampf](10-strategie/kampf.md) AC-11
 - **Erkundetes bleibt erinnert** — [Kampf](10-strategie/kampf.md) AC-12
 - **Kein Blick durch fremde Augen** — [Kampf](10-strategie/kampf.md) AC-13
 - **Angriff wird gemeldet** — [Kampf](10-strategie/kampf.md) AC-14
@@ -194,9 +193,10 @@ mit Bildnachweisen, Filter und Suche mit `npm run qa:report`.
 - **Eine kleine Maschine reicht** — [Betrieb](20-betrieb/betrieb.md) AC-11
 - **Bekannte Grenze** — [Betrieb](20-betrieb/betrieb.md) AC-12
 
-## Zurueckgestellt (7)
+## Zurueckgestellt (8)
 
 - **Vollstaendige Sammelschleife** — [Einheiten und Befehle](10-strategie/einheiten-und-befehle.md) AC-11
+- **Leben ist sichtbar** — [Kampf](10-strategie/kampf.md) AC-9
 - **Vier Feldarten** — [Karte und Vorraete](10-strategie/karte-und-vorraete.md) AC-2
 - **Karte ist 64 x 64** — [Karte und Vorraete](10-strategie/karte-und-vorraete.md) AC-3
 - **Wald traegt mehr als Beeren** — [Karte und Vorraete](10-strategie/karte-und-vorraete.md) AC-8
