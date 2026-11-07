@@ -142,7 +142,7 @@ Umfang hinzufügt, dort nachsehen.
 
 ## Stand
 
-**376 von 505 Kriterien fertig.** 397 Tests ohne Browser, 149 im Browser. Die
+**376 von 508 Kriterien fertig.** 398 Tests ohne Browser, 148 im Browser. Die
 Übersicht ist der Bericht: `npm run qa:report`.
 
 Gebaut ist der Unterbau: Räume, Übertragung, Karte, Wegfindung, Sammeln,
@@ -252,7 +252,10 @@ Richtungen**: Speer gegen Reiter, Plänkler gegen Bogen, Bogen gegen Speer,
 Reiter gegen Bogen gewinnen je 20 von 20 Startwerten, umgekehrt 0 von 20.
 Dasselbe Gefecht zweimal gerechnet verläuft Takt für Takt gleich, ein anderer
 Startwert anders. 160 Gefechte kosten 0,2 s; wer an Angriff, Rüstung, Bonus
-oder Nachladezeit dreht, fährt ihn danach.
+oder Nachladezeit dreht, fährt ihn danach. Die **Rückschau zur Stufe B** hat
+drei Lücken angelegt, alle in der Lesbarkeit (bedienung AC-35 bis AC-37):
+Kampfwerte an der Auswahl, Militär bei Zoom 1 vom Dorfbewohner unterscheidbar,
+Spielzeit im Bild.
 
 1. **Stufe A** Dunkle Zeit mit Wirtschafts-KI und Prüfstand · **B** Feudalzeit
    · **C** Partieende und KI-Gegner · **D** Ritterzeit · **E** fünf Völker ·

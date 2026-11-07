@@ -2,7 +2,7 @@
 
 **Bereich:** Strategie
 **Kuerzel:** bedienung
-**Stand:** 23/34 fertig · 11 offen
+**Stand:** 23/37 fertig · 14 offen
 
 ## Zweck
 
@@ -126,6 +126,32 @@ verglichen: die drei größten Lücken in Lesbarkeit und Aussehen.
   damit die Unterscheidung nicht allein an der Farbe hängt. Das Zeichen steht
   **sofort**, ohne auf den Server zu warten — ein Weg hin und zurück wäre ein
   Zehntel später, und das ist für eine Rückmeldung auf einen Klick zu viel.
+
+### Aus der Rückschau zur Stufe B (Runde 73)
+
+Eine Partie KI gegen KI, nach dem Aufstieg angesehen und mit dem verglichen,
+was ein Spieler von Age of Empires II erwartet. Drei Lücken, in dieser
+Reihenfolge:
+
+- **AC-35** `offen` **Kampfwerte an der Auswahl** — Wer eine Einheit anwählt, sieht
+  neben Namen und Leben auch Angriff, Rüstung nah und fern und die Reichweite;
+  eine Einheit mit Bonusschaden nennt ihn mit dem Ziel („+15 gegen
+  Kavallerie"). Heute steht dort nur „Bogenschütze 30/30" — der ganze
+  Konterkreis der Stufe B ist für den Spieler unsichtbar, obwohl der Server
+  die Werte schon schickt. Zu prüfen am Bild und an den Zahlen, die
+  `welt.einheitenwert()` liefert (nicht an den rohen Daten: Verbesserungen
+  müssen sich zeigen).
+- **AC-36** `offen` **Militär bei Spielgröße erkennbar** — Bei Zoom 1 unterscheidet
+  sich eine Kampfeinheit von einem Dorfbewohner auf einem Drittel ihrer
+  Fläche, so wie [Darstellung](darstellung.md) AC-14 es für die Schautafel
+  verlangt. Dort wird herangezoomt gemessen; im Spielbild bei Zoom 1 sind
+  heute alle Figuren derselben Farbe kaum zu trennen, und man spielt bei
+  Zoom 1.
+- **AC-37** `offen` **Die Spielzeit steht im Bild** — Oben, neben dem Zeitalter,
+  steht die verstrichene Spielzeit als `m:ss`. Ohne sie lässt sich nicht
+  sagen, ob ein Aufstieg schnell war — die erste Frage, die ein Spieler an
+  seine eigene Partie stellt. Sie zählt die Takte des Servers, nicht die Uhr
+  des Browsers, und steht im Zeitraffer entsprechend schneller.
 
 Aus den offenen Kriterien oben gehören zu Stufe A: AC-6 (Auswahl
 aufgelistet), AC-11 (Übersichtskarte — auf 120 × 120 unverzichtbar), AC-15

@@ -1,19 +1,31 @@
 // Handgriffe fuer das Strategiespiel im Browser. Rueckschau nach Runde 20:
 // der Start einer Partie zu zweit stand kopiert in jeder Spielbild-Datei.
 //
-// ## Was `window.ansicht` fuehrt (Stand Rueckschau nach Runde 69)
+// ## Was `window.ansicht` fuehrt (Stand Rueckschau nach Runde 72)
 //
 // Der Server schickt kurze Namen, damit ein Zustand klein bleibt
-// (uebertragung AC-7) - das hat schon zweimal Zeit gekostet (Runden 67, 69).
-// Die Tafel steht deshalb hier und nicht in `welt.js`:
+// (uebertragung AC-7) - das hat schon dreimal Zeit gekostet (Runden 67, 69,
+// 72). Die Tafel steht deshalb hier und nicht in `welt.js`:
 //
 // **`ansicht.nachher`** (Map id -> Einheit), auch `ansicht.vorher`:
-//   `i` Id · `b` Besitzer · `k` Kuerzel der Art (`d` Dorfbewohner, `s`
-//   Spaeher, `m` Miliz, `p` Plaenkler, `b` Bogenschuetze, `k` Speerkaempfer -
-//   die Wahrheit steht als `kuerzel` in `daten.js`) · `x`/`y` · `l` Ladung ·
+//   `i` Id · `b` Besitzer · `k` Kuerzel der Art · `x`/`y` · `l` Ladung ·
 //   `a` erster Buchstabe der Ladungsart · `h` Lebenspunkte, **absolut, und nur
 //   wenn welche fehlen** (voll wird gar nicht geschickt - der Anteil ist
 //   `h / ansicht.lebenVoll(e)`) · `w` arbeitet gerade · `s` gefallen.
+//
+// ### KUERZEL
+// Diese Liste prueft `tests/waechter-drahttafel.test.mjs` gegen `daten.js` -
+// in Runde 72 stand hier `p` Plaenkler und `k` Speerkaempfer, beides falsch
+// herum, und der Fehler kostete einen Browserlauf. Nie aus dem Kopf tippen:
+// im Test `window.ansicht.werte.einheiten[art].kuerzel` lesen.
+//   `d` = dorfbewohner
+//   `m` = miliz
+//   `o` = soldat
+//   `s` = spaeherreiter
+//   `p` = speerkaempfer
+//   `b` = bogenschuetze
+//   `k` = plaenkler
+// ### ENDE KUERZEL
 //
 // **`ansicht.gebaeude`** (Map id -> Gebaeude): `i` · `art` **ausgeschrieben**
 //   (nicht `a`!) · `b` Besitzer · `x`/`y` · `h` Leben · `u` Baufortschritt,
@@ -25,6 +37,13 @@
 // Dazu `ansicht.ich`, `ansicht.spieler` (Map, mit `basis`), `ansicht.zeitalter`,
 // `ansicht.werte`, `ansicht.verbesserungen`, `ansicht.zuBild(x, y)`,
 // `ansicht.gebaeudeMitte(g)`, `ansicht.platzTaugt(x, y)`.
+//
+// **Was der Browser NICHT bekommt** (Runde 72): `ansicht.werte.einheiten`
+// fuehrt Kuerzel, Leben, Tragkraft, Kosten, Zeit, `baut`, Zeitalter, Angriff,
+// Ruestung nah und fern, Reichweite - aber **nicht `klassen` und nicht
+// `bonus`**. Wer im Test Schaden oder die Wirkung einer Verbesserung
+// ausrechnen will, importiert `daten.js` in Node (so macht es
+// `strategie-feudalzeit.spec.mjs`), statt es im Browser zu versuchen.
 import { ANMELDUNG, GRIFFHAFEN, expect, fehlerSammeln, zeitraffer } from './seite.mjs';
 
 /**

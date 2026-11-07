@@ -201,6 +201,10 @@ Zahlen, gegen die spätere Runden vergleichen. Mit Datum und Commit.
 | 2026-11-07 | Erster Lauf des Waechters gegen Werte an `einheitenwert()` vorbei | 7 Stellen in `welt.js` (alle umgestellt) | Rueckschau 69 |
 | 2026-11-07 | Pruefstand vor/nach der Umstellung auf `einheitenwert()`, 20 Startwerte x 16 min | Zeile fuer Zeile identisch, 0,013 ms je Takt | Rueckschau 69 |
 | 2026-11-07 | Tests ohne Browser / im Browser; davon Waechter in `tests/waechter-*` | 393 / 148; 3 | Rueckschau 69 |
+| 2026-11-07 | Tests ohne Browser / im Browser; davon Waechter in `tests/waechter-*` | 398 / 148; 4 | Rueckschau 72 |
+| 2026-11-07 | `npm run check` ohne Browser | 18 s (unveraendert zu Runde 72) | Rueckschau 72 |
+| 2026-11-07 | Partie KI gegen KI im Browser bis nach dem Aufstieg, fuenf Bilder (Zeitraffer 20) | 53,8 s — **nicht vergleichbar**: 26 fremde Browserprozesse (19 chrome, 7 msedge) | Rueckschau 72 |
+| 2026-11-07 | Treffer des Waechters gegen die Kuerzeltafel, erster Lauf | 2 Stellen (`p`/`k` vertauscht) — die Ursache von 45 s Browserlauf in Runde 72 | Rueckschau 72 |
 
 ## Rückschauen
 
@@ -338,6 +342,60 @@ Gut gelaufen: Die Tonstufen-Messung alt gegen neu hat aus „wirkt gezeichneter"
 eine Zahl gemacht, und zweimal hat ein alter Test einen neuen Fehler gefunden
 (Klick auf Beeren traf ein Schaf; zwei Lager zu ähnlich). Browserlauf bei
 ruhigerer Maschine 141 s Testzeit, langsamster Fall weiter der Lagertest (28 s).
+
+### Nach Runde 72 — Ende von Stufe B (2026-11-07)
+
+Drei Runden (70 bis 72), alle gruen, **Stufe B erreicht**. Fuenfmal in diesen
+drei Runden war der rote Test im Recht und **meine Annahme falsch** — nie das
+Produkt: die Kuerzel der Einheiten, was der Browser ueberhaupt geschickt
+bekommt, wo nach dem Aufstieg noch Gras liegt, und zweimal ein Messaufbau, der
+zwanzig Startwerte zwanzigmal dasselbe rechnen liess. Daraus die drei
+Verbesserungen.
+
+1. **Die Kürzeltafel war seit Runde 70 falsch** — sie nannte `p` den Plänkler
+   und `k` den Speerkämpfer, es ist umgekehrt. Ein Browsertest griff danach,
+   die Zusicherung schlug fehl, und bis die Ursache gefunden war, kostete es
+   einen Lauf von 45 s. Eine Tafel, die von Hand gepflegt wird, veraltet — und
+   genau diese Tafel war selbst eine Verbesserung der letzten Rückschau.
+   → **`tests/waechter-drahttafel.test.mjs`** liest den Abschnitt
+   `### KUERZEL` in `e2e/helpers/strategie.mjs` Zeile für Zeile gegen
+   `EINHEITEN` und beanstandet Fehlendes, Falsches und Überzähliges. Gegenprobe
+   gemacht: mit vertauschten Zeilen ist er rot und nennt beide Stellen.
+2. **Ein Messaufbau über viele Läufe braucht eine Gegenprobe.** Der
+   Gefechtsstand zeigte „Takte 65 – 65" über zwanzig Startwerte: auf freiem
+   Grund ist jedes Gefecht dasselbe, das Gelände war vorher die einzige
+   Abwechslung. Der Test wäre grün gewesen und hätte einen Startwert geprüft,
+   nicht zwanzig. → Zwei Fragen stehen jetzt in der Anweisung (Abschnitt 4):
+   **Ist jeder Lauf wirklich ein anderer Lauf** (die Streuung ansehen, nicht
+   nur das Ergebnis), und **wäre der Test grün, wenn die Ursache eine andere
+   wäre**?
+3. **Was im Browser steht, wird im Browser gelesen — nicht aus dem Kopf.**
+   `ansicht.werte.einheiten` trägt weder `klassen` noch `bonus`; die Erwartung
+   „Speer gegen Reiter 19" musste in Node aus `daten.js` gerechnet werden. →
+   Dieselbe Regel in der Anweisung, und in der Drahttafel ein Abschnitt **Was
+   der Browser NICHT bekommt**.
+
+**Die Partie angesehen** (Abschnitt 8): die KI spielt beide Seiten, Zeitraffer
+20, Bilder nach dem Aufstieg bei Zoom 1, 0,6 und 1,6. Ehrlich verglichen mit
+AoE II sind die drei größten Lücken keine Schönheitsfragen, sondern Lesbarkeit
+— als `offen` in [`bedienung.md`](../../specs/10-strategie/bedienung.md)
+angelegt:
+
+- **AC-35 Kampfwerte an der Auswahl.** Die Leiste sagt „Bogenschütze 30/30"
+  und sonst nichts. Stufe B hat einen Konterkreis gebaut, den der Spieler
+  nicht lesen kann — Angriff, Rüstung, Reichweite und Bonus schickt der Server
+  längst mit.
+- **AC-36 Militär bei Spielgröße erkennbar.** Bei Zoom 1 sind Miliz,
+  Speerkämpfer und Dorfbewohner derselbe blaue Fleck. `darstellung AC-14`
+  misst die Unterscheidbarkeit auf der Schautafel, also herangezoomt; gespielt
+  wird bei Zoom 1.
+- **AC-37 Die Spielzeit steht im Bild.** An den Bildern war nicht zu sagen, ob
+  das Dorf zwölf oder fünfundzwanzig Minuten alt ist. Ein AoE-II-Spieler
+  fragt das zuerst, und ohne die Zahl ist „schneller Aufstieg" nicht sagbar.
+
+Nicht gemacht, bewusst: die drei Lücken bleiben `offen` — eine Rückschau legt
+sie an und baut sie nicht. Sie sind der natürliche Anfang von Stufe C, denn
+wer gegen eine KI spielt, muss ihre Einheiten lesen können.
 
 ### Nach Runde 69 (2026-11-07)
 
@@ -573,6 +631,16 @@ alle sieben Gebäude der Dunklen Zeit stehen. Was sich wiederholt hat:
 Neueste oben. Eine Zeile je Runde: Nummer, Datum, Kriterien, Ergebnis,
 wichtigste Erkenntnis.
 
+- **73** · 2026-11-07 · **Rückschau zur Stufe B**, nicht gebaut. Drei
+  Verbesserungen: der Wächter über die Kürzeltafel
+  (`tests/waechter-drahttafel.test.mjs`, vierter Wächter), und zwei Regeln in
+  der Anweisung — jeder Messaufbau über viele Läufe braucht eine Gegenprobe,
+  und was im Browser steht, wird im Browser gelesen. Eine Partie KI gegen KI
+  angesehen und daraus `bedienung AC-35` bis `AC-37` angelegt: Kampfwerte an
+  der Auswahl, Militär bei Zoom 1 erkennbar, Spielzeit im Bild. Gelernt:
+  **fünf rote Tests in drei Runden, fünfmal war die Annahme falsch und nicht
+  das Produkt** — das ist das Muster der Stufe B, und die Tafel, die es
+  verhindern sollte, war selbst von Hand gepflegt.
 - **72** · 2026-11-07 · **fahrplan AC-8 fertig — damit ist Stufe B erreicht:
   die Feudalzeit ist am Stück im Browser spielbar.** Ein Test
   (`e2e/tests/strategie-feudalzeit.spec.mjs`) spielt sie durch wie ein Mensch:

@@ -150,6 +150,23 @@ Setze die gewählten Kriterien auf `in-arbeit`.
   Bild besser und die Zahl schlechter, misst die Zahl das Falsche (Runde 39:
   „Sättigung des ganzen Bildes" stieg, weil erdiges Oliv in HSL gesättigter
   ist als Graugrün). Dann das Kriterium neu fassen, bevor gebaut wird.
+- **Jeder Messaufbau über viele Läufe braucht eine Gegenprobe.** Ein Test, der
+  zwanzigmal dasselbe misst, ist nicht zwanzig Messungen — und ein Test, der
+  „A schlägt B" zeigt, zeigt vielleicht nur „die linke Seite gewinnt". Deshalb
+  zwei Fragen, bevor die Zahl gilt: **Ist jeder Lauf ein anderer?** (Runde 71:
+  alle zwanzig Startwerte endeten Takt für Takt gleich, weil die Heere auf
+  freiem Grund standen — das Gelände war die einzige Abwechslung gewesen.) Und
+  **wäre der Test auch grün, wenn die Ursache eine andere wäre?** (Runde 71:
+  ohne die umgekehrte Richtung hätte der Konterkreis auch gehalten, wenn
+  schlicht immer links gewinnt.) Beides als eigene Zusicherung schreiben, nicht
+  nur prüfen und wegwerfen.
+- **Was im Browser steht, wird im Browser gelesen — nicht aus dem Kopf.**
+  Kürzel, Zeitalter, Werte: `window.ansicht.werte` fragen oder `daten.js` in
+  Node importieren. In Runde 72 kosteten drei Annahmen je einen Lauf (`p` ist
+  der Speerkämpfer, nicht der Plänkler; der Späherreiter steht auf Zeitalter 0;
+  `klassen` und `bonus` bekommt der Browser gar nicht). Die Tafel oben in
+  `e2e/helpers/strategie.mjs` sagt, was ankommt und was nicht —
+  `tests/waechter-drahttafel.test.mjs` hält sie richtig.
 - **Tests über ganze Partien** (Prüfstand, KI): erst messen, dann die Grenze
   setzen. Die Werte über alle Startwerte ausgeben (`npm run
   pruefstand:strategie` oder ein kurzer `eingriff`), die Grenze aus dem
