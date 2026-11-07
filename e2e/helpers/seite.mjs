@@ -152,6 +152,19 @@ export async function einheitenAufstellen(page, code, name, anzahl, werte = {}) 
   return (await antwort.json()).angelegt;
 }
 
+/**
+ * Einen Spieler aufgeben lassen (Pruefgriff, e2e/server.mjs). Schickt dem
+ * Server dieselbe Nachricht wie spaeter der Knopf (bedienung AC-38); alles
+ * dieses Spielers faellt, und ist er der Vorletzte, endet die Partie
+ * (spielziel AC-5, AC-6).
+ */
+export async function aufgebenLassen(page, code, name) {
+  const antwort = await page.request.post(`http://localhost:${GRIFFHAFEN}/griff`, {
+    data: { id: code, befehl: 'aufgeben', werte: { name } },
+  });
+  expect(antwort.ok(), await antwort.text()).toBe(true);
+}
+
 /** Das Leben einer Einheit oder eines Gebaeudes setzen (Pruefgriff, e2e/server.mjs). */
 export async function lebenSetzen(page, code, id, leben) {
   const antwort = await page.request.post(`http://localhost:${GRIFFHAFEN}/griff`, {

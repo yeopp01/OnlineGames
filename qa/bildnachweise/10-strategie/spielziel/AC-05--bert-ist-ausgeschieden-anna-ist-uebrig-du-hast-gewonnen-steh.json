@@ -1,0 +1,10 @@
+{
+  "spec": "10-strategie/spielziel.md",
+  "ac": "AC-5",
+  "titel": "Bert ist ausgeschieden, Anna ist übrig: „Du hast gewonnen\" steht über ihrem Spielfeld",
+  "datei": "e2e/tests/strategie-partieende.spec.mjs",
+  "pfad": [
+    "Partieende",
+    "spielziel AC-5: wer uebrig bleibt, sieht \"Du hast gewonnen\", und die Uhr steht"
+  ]
+}

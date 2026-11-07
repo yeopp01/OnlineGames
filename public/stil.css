@@ -415,6 +415,37 @@ canvas.angriffslauf {
   animation: aufsteigen 0.45s ease-out;
 }
 
+/* ---- Das Ende der Partie (spielziel AC-5) --------------------------------
+   Wie die Ankuendigung des Zeitalters, aber sie bleibt stehen: die Partie ist
+   vorbei, da soll nichts von selbst verschwinden. Hoeher als der Wechsel
+   (22 % statt 30 %), damit beide nebeneinander bestehen koennen und keines
+   die Auswahlleiste unten beruehrt. Die ausfuehrliche Tafel mit Zahlen kommt
+   mit spielziel AC-8. */
+
+.partieende {
+  position: fixed;
+  left: 50%;
+  top: 22%;
+  transform: translateX(-50%);
+  margin: 0;
+  padding: 1rem 2.6rem;
+  border: 2px solid #f0c060;
+  border-radius: 0.6rem;
+  background: #1b1309f7;
+  color: #ffe9bd;
+  font-size: 2rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-align: center;
+  text-shadow: 0 2px 8px #000c;
+  box-shadow: 0 8px 30px #000d;
+  pointer-events: none;
+}
+
+.partieende[hidden] {
+  display: none;
+}
+
 @keyframes aufsteigen {
   from { opacity: 0; transform: translate(-50%, 0.8rem) scale(0.94); }
   to { opacity: 1; transform: translate(-50%, 0) scale(1); }

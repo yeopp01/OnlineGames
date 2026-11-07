@@ -165,6 +165,19 @@ const griffe = http.createServer(async (anfrage, antwortGriff) => {
       antwortGriff.writeHead(200, { 'Content-Type': 'application/json', Connection: 'close' }).end(JSON.stringify({ ok: true }));
       return;
     }
+    // Einen Spieler aufgeben lassen (spielziel AC-6), ohne seinen Browser:
+    // den Knopf dafuer baut bedienung AC-38. Bis dahin schickt der Griff
+    // dieselbe Nachricht, die der Knopf schicken wird - keine Abkuerzung an
+    // der Regel vorbei, nur eine am Bildschirm vorbei.
+    if (befehl === 'aufgeben') {
+      const raum = laufend.raeume.finden(id);
+      const spieler = raum?.spieler.find((s) => s.name === werte.name);
+      if (!spieler) throw new Error(`Spieler ${werte.name} gibt es in Raum ${id} nicht.`);
+      const ergebnis = raum.welt.nachricht(spieler.id, { auftrag: 'aufgeben' });
+      if (ergebnis?.fehler) throw new Error(ergebnis.fehler);
+      antwortGriff.writeHead(200, { 'Content-Type': 'application/json', Connection: 'close' }).end(JSON.stringify({ ok: true }));
+      return;
+    }
     if (befehl === 'zeitraffer') {
       const raum = laufend.raeume.finden(id);
       if (!raum) throw new Error(`Raum ${id} gibt es nicht.`);

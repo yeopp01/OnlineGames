@@ -2,7 +2,7 @@
 
 **Bereich:** Strategie
 **Kuerzel:** spielziel
-**Stand:** 0/18 fertig · 1 in Arbeit · 17 offen
+**Stand:** 2/18 fertig · 1 in Arbeit · 15 offen
 
 ## Zweck
 
@@ -71,14 +71,14 @@ eigenen Technikbaum ([Vorlage](../../docs/strategie/vorlage-aoe2.md)).
 
 ### Sieg und Ende
 
-- **AC-5** `offen` **Sieg durch Eroberung** — **Ausgeschieden** ist, wer keine
+- **AC-5** `fertig` **Sieg durch Eroberung** — **Ausgeschieden** ist, wer keine
   Einheit und kein Gebäude außer Mauern, Toren und Farmen mehr hat. Bleibt
   einer übrig, endet die Partie sofort und alle bekommen dasselbe Ergebnis.
   Entschieden wird das auf dem **Server**, in demselben Takt, in dem der letzte
   Verlust abgerechnet wird — nicht im Browser. Steht nach **90 Spielminuten**
   noch keine Entscheidung, endet die Partie unentschieden; der Prüfstand zählt
   das als eigenen Ausgang (→ [KI](ki.md), Grenzfälle).
-- **AC-6** `offen` **Aufgeben ist möglich** — Ein Spieler kann aufgeben: seine
+- **AC-6** `fertig` **Aufgeben ist möglich** — Ein Spieler kann aufgeben: seine
   Einheiten und Gebäude fallen, er gilt als ausgeschieden (AC-5), und die
   Partie läuft für die anderen weiter. Gibt der Vorletzte auf, gewinnt der
   Letzte — Aufgeben ist kein eigener Ausgang, sondern ein schneller Weg in

@@ -211,7 +211,7 @@ export function platzImBild(page, { n = 2, um, abstand = 5, seitlich = false }) 
  */
 export function bedienteileFrei(page) {
   return page.evaluate(() => {
-    const teile = ['#kopfzeile', '#auswahlleiste', '#untaetig', '#uebersicht', '#spielmeldung']
+    const teile = ['#kopfzeile', '#auswahlleiste', '#untaetig', '#uebersicht', '#spielmeldung', '#partieende']
       .map((wahl) => ({ wahl, el: document.querySelector(wahl) }))
       .filter(({ el }) => el && !el.hidden && el.getClientRects().length)
       .map(({ wahl, el }) => ({ wahl, r: el.getBoundingClientRect() }));

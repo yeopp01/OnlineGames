@@ -387,3 +387,40 @@ test('raeume AC-14 / uebertragung AC-3: unsinnige Nachrichten bringen den Server
   anna.zu();
   bert.zu();
 });
+
+test('spielziel AC-6 / spielziel AC-5: Aufgeben geht ueber die Leitung, das Ende kommt bei beiden an', async () => {
+  const anna = gastgeber();
+  await anna.offen();
+  anna.senden({ typ: 'erstellen', name: 'Anna' });
+  const du = await anna.warteAuf(istTyp('du'));
+
+  const bert = kunde();
+  await bert.offen();
+  bert.senden({ typ: 'beitreten', code: du.code, name: 'Bert' });
+  await bert.warteAuf(istTyp('du'));
+
+  anna.senden({ typ: 'start', startwert: 7 });
+  await bert.warteAuf(istTyp('aufbau'));
+  const laeuft = await anna.warteAuf(istTyp('zustand'));
+  assert.equal(laeuft.ende, undefined, 'solange die Partie laeuft, steht kein Ende im Zustand');
+
+  // Bert gibt auf. Das Ergebnis ist fuer beide dasselbe (spielziel AC-5),
+  // also wird es auch bei beiden abgeholt - der Verlierer bekommt es so gut
+  // wie der Sieger.
+  bert.senden({ typ: 'befehl', auftrag: 'aufgeben' });
+  const beiAnna = await anna.warteAuf((n) => n.typ === 'zustand' && n.ende);
+  const beiBert = await bert.warteAuf((n) => n.typ === 'zustand' && n.ende);
+  assert.deepEqual(beiAnna.ende, beiBert.ende);
+  assert.equal(beiAnna.ende.grund, 'eroberung');
+  assert.equal(beiAnna.ende.sieger, du.id, 'Anna hat gewonnen');
+  assert.equal(beiAnna.spieler.find((s) => s.id === du.id).aus, undefined);
+  assert.ok(beiAnna.spieler.some((s) => s.aus === 1), 'Bert ist ausgeschieden');
+
+  // Der Raum haelt seine Uhr an: nach dem Ende kommt kein Zustand mehr.
+  const raum = laufend.raeume.finden(du.code);
+  assert.equal(raum.uhr, null, 'die Uhr des Raums steht');
+  assert.equal(raum.welt.vorbei, true);
+
+  anna.zu();
+  bert.zu();
+});

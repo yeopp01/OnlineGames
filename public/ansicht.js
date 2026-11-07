@@ -91,6 +91,11 @@ export class Ansicht {
     this.melden = () => {};
     // Der Aufstieg ist vollzogen: app.js kuendigt ihn im Bild an (bedienung AC-33).
     this.beiZeitalter = () => {};
+    // Das Ende der Partie, wie der Server es schickt (spielziel AC-5), und
+    // die Meldung dazu. `beiEnde` laeuft genau einmal - der Raum haelt danach
+    // seine Uhr an, aber ein zurueckkehrender Spieler bekommt es im Aufbau.
+    this.ende = null;
+    this.beiEnde = () => {};
     this.blicke = new Map(); // Einheit → -1 links, 1 rechts
     this.tiere = new Map();
     this.vorraete = { holz: 0, nahrung: 0, gold: 0, stein: 0, bev: 0, raum: 0 };
@@ -131,6 +136,8 @@ export class Ansicht {
 
     const meine = this.spieler.get(ichId);
     if (meine) this.blickAuf(meine.basis.x, meine.basis.y);
+    // Wer nach dem Ende zurueckkommt, sieht es sofort (spielziel AC-5).
+    if (nachricht.ende) this.endeMerken(nachricht.ende);
 
     this.groesseAnpassen();
     if (!this.laeuft) {
@@ -205,6 +212,34 @@ export class Ansicht {
       if (tier ? (tier.g || tier.b !== this.ich) : (!einheit || einheit.s)) this.ausgewaehlt.delete(id);
     }
     if (this.gewaehltesGebaeude && !this.gebaeude.has(this.gewaehltesGebaeude)) this.gewaehltesGebaeude = null;
+
+    // Zuletzt, damit die Meldung auf dem letzten Stand sitzt: das Ende kommt
+    // im selben Zustand wie der letzte Verlust (spielziel AC-5).
+    if (nachricht.ende) this.endeMerken(nachricht.ende);
+  }
+
+  /**
+   * Das Ende einmal melden (spielziel AC-5). Zweimal gemeldet wuerde es, wenn
+   * nach dem letzten Zustand noch ein Aufbau kaeme - etwa nach einer
+   * Rueckkehr.
+   */
+  endeMerken(ende) {
+    if (this.ende) return;
+    this.ende = ende;
+    this.beiEnde(ende, this.endeText());
+  }
+
+  /**
+   * Was am Ende im Bild steht. Der Sieger kommt als Kennung vom Server, der
+   * Name steht in der Spielerliste aus dem Aufbau - der Browser erfindet
+   * nichts dazu.
+   */
+  endeText() {
+    if (!this.ende) return '';
+    const { sieger, grund } = this.ende;
+    if (!sieger) return grund === 'zeit' ? 'Unentschieden — 90 Minuten sind um' : 'Unentschieden';
+    if (sieger === this.ich) return 'Du hast gewonnen';
+    return `${this.spieler.get(sieger)?.name || 'Ein Mitspieler'} hat gewonnen`;
   }
 
   /**

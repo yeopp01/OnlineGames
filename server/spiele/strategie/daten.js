@@ -110,9 +110,13 @@ const GEBAEUDE = {
   bergbaulager: { groesse: 2, kosten: { holz: 100 }, bauzeit: 35, leben: 1000, wohnraum: 0, annahme: ['gold', 'stein'], bildetAus: [] },
   // Eine Farm ist begehbar, traegt 175 Nahrung und wird mit 0,32 je Sekunde
   // bestellt - von hoechstens einem (einheiten AC-18).
+  //
+  // `bestand: false` heisst: sie haelt niemanden im Spiel. Wer nur noch ein
+  // Feld Weizen hat, ist ausgeschieden (spielziel AC-5). Mauern und Tore
+  // bekommen in Stufe D dieselbe Zeile; alles ohne sie zaehlt zum Bestand.
   farm: {
     groesse: 3, kosten: { holz: 60 }, bauzeit: 15, leben: 480, wohnraum: 0, annahme: [], bildetAus: [],
-    begehbar: true, nahrung: 175, rate: 0.32,
+    begehbar: true, nahrung: 175, rate: 0.32, bestand: false,
   },
   kaserne: { groesse: 3, kosten: { holz: 175 }, bauzeit: 50, leben: 1200, wohnraum: 0, annahme: [], bildetAus: ['miliz', 'speerkaempfer', 'soldatenstufe'] },
   // Gebaeude der Feudalzeit (bauen AC-24): `zeitalter: 1` sperrt sie, bis die

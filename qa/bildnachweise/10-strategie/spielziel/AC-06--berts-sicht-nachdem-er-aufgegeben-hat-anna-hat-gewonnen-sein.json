@@ -1,0 +1,10 @@
+{
+  "spec": "10-strategie/spielziel.md",
+  "ac": "AC-6",
+  "titel": "Berts Sicht, nachdem er aufgegeben hat: „Anna hat gewonnen\" — seine Leute liegen gefallen, seine Gebäude sind weg",
+  "datei": "e2e/tests/strategie-partieende.spec.mjs",
+  "pfad": [
+    "Partieende",
+    "spielziel AC-6: wer aufgegeben hat, sieht dasselbe Ergebnis aus seiner Sicht"
+  ]
+}

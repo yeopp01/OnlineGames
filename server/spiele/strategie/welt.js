@@ -25,6 +25,11 @@ const WACHE_TAKTE = 5;
 // So weit folgt eine Einheit einem Fluechtenden, gemessen von dem Platz, an
 // dem sie stand (kampf AC-3).
 const VERFOLGUNG_FELDER = 5;
+// So lange dauert eine Partie hoechstens (spielziel AC-5): steht nach 90
+// Spielminuten keine Entscheidung, endet sie unentschieden. Die Zahl kommt
+// aus der Vorlage; sie ist eine Grenze, keine erwartete Dauer - gespielt
+// werden 25 bis 45 Minuten (AC-2).
+const PARTIE_MINUTEN = 90;
 // Zellengroesse des Suchrasters fuer die Wache. Groesser als jede Sichtweite,
 // damit die eigene Zelle und ihre acht Nachbarn alles Sichtbare enthalten.
 const RASTER_FELDER = 8;
@@ -120,6 +125,12 @@ class Welt {
     this.feldAenderungen = [];
     // Die Schlaege dieses Taktes, abgerechnet an seinem Ende (kampf AC-10).
     this.schlaege = [];
+    // Das Ende der Partie, sobald es feststeht (spielziel AC-5):
+    // `{ sieger, grund, takt }` mit `grund` "eroberung" oder "zeit".
+    this.ende = null;
+    // Gezaehlt wird der Bestand nur, wenn etwas verloren ging - sonst liefe
+    // die Suche ueber alle Einheiten und Gebaeude in jedem Takt mit.
+    this.bestandPruefen = false;
 
     this.spieler = spielerListe.map((eintrag, i) => ({
       id: eintrag.id,
@@ -129,6 +140,7 @@ class Welt {
       basis: this.karte.basen[i],
       verbesserungen: [], // erforscht, in der Reihenfolge des Abschlusses
       zeitalter: 0, // jede Partie beginnt in der Dunklen Zeit (spielziel AC-1)
+      aus: false, // ausgeschieden oder aufgegeben (spielziel AC-5, AC-6)
     }));
 
     // Tiere gehoeren einem Spieler, stehen aber nicht in den Einheiten: sie
@@ -557,6 +569,8 @@ class Welt {
         return this.abreissen(spielerId, nachricht.gebaeude);
       case 'sammelpunkt':
         return this.sammelpunktSetzen(spielerId, nachricht.gebaeude, nachricht.ziel);
+      case 'aufgeben':
+        return this.aufgeben(spielerId);
       default:
         return this.befehl(spielerId, nachricht.einheiten, nachricht.ziel, Boolean(nachricht.angriffslauf));
     }
@@ -1546,6 +1560,7 @@ class Welt {
     einheit.weg = [];
     einheit.sammelt = false;
     einheit.baut = false;
+    this.bestandPruefen = true;
   }
 
   // Ein Gebaeude ohne Leben verschwindet samt seinem Platz auf der Karte.
@@ -1554,9 +1569,90 @@ class Welt {
     this.gebaeude.delete(gebaeude.id);
     this.freigeben(gebaeude);
     this.gebaeudeGeaendert(gebaeude);
+    this.bestandPruefen = true;
+  }
+
+  // ---- Partieende (spielziel AC-5, AC-6) ----------------------------------
+
+  /** Die Partie ist entschieden. Der Raum haelt daran seine Uhr an. */
+  get vorbei() {
+    return this.ende !== null;
+  }
+
+  /**
+   * Hat dieser Spieler noch etwas, das ihn im Spiel haelt? Eine lebende
+   * Einheit oder ein Gebaeude, das zum Bestand zaehlt - Farmen (spaeter
+   * Mauern und Tore) zaehlen nicht, die Zeile dazu steht an den Daten.
+   * Eine Baustelle zaehlt: aus ihr kann noch ein Dorfzentrum werden.
+   */
+  imBestand(spielerId) {
+    for (const e of this.einheiten.values()) if (e.besitzer === spielerId && !e.tot) return true;
+    for (const g of this.gebaeude.values()) {
+      if (g.besitzer === spielerId && GEBAEUDE[g.art].bestand !== false) return true;
+    }
+    return false;
+  }
+
+  /**
+   * Wer nichts mehr hat, scheidet aus; bleibt einer uebrig, ist die Partie
+   * entschieden. Gerechnet **auf dem Server und in dem Takt**, in dem der
+   * letzte Verlust abgerechnet wurde - deshalb steht der Aufruf am Ende von
+   * `takten()`, hinter `schlaegeAbrechnen()`.
+   *
+   * Zwei Enden gibt es: "eroberung" (einer blieb uebrig) und "zeit" (nach
+   * 90 Spielminuten ohne Entscheidung, unentschieden). Faellt der vorletzte
+   * und der letzte im selben Takt, bleibt niemand uebrig - das ist dann auch
+   * unentschieden, mit dem Grund "eroberung" und ohne Sieger.
+   */
+  endePruefen() {
+    if (this.ende) return;
+    if (this.bestandPruefen) {
+      this.bestandPruefen = false;
+      for (const spieler of this.spieler) {
+        if (!spieler.aus && !this.imBestand(spieler.id)) spieler.aus = true;
+      }
+    }
+    const uebrig = this.spieler.filter((s) => !s.aus);
+    if (uebrig.length <= 1) {
+      this.ende = { sieger: uebrig[0]?.id || null, grund: 'eroberung', takt: this.takt };
+      return;
+    }
+    if (this.takt >= PARTIE_MINUTEN * 60 * TAKTE_PRO_SEKUNDE) {
+      this.ende = { sieger: null, grund: 'zeit', takt: this.takt };
+    }
+  }
+
+  /**
+   * Aufgeben (spielziel AC-6): alles faellt, der Spieler gilt als
+   * ausgeschieden, und die Partie laeuft fuer die anderen weiter. Ein eigener
+   * Ausgang ist das nicht - es ist der schnelle Weg in AC-5, deshalb
+   * entscheidet dieselbe Pruefung, ob damit eine Partie zu Ende ist.
+   */
+  aufgeben(spielerId) {
+    const spieler = this.spielerVon(spielerId);
+    if (!spieler) return { fehler: 'Diesen Spieler gibt es hier nicht.' };
+    if (this.ende) return { fehler: 'Die Partie ist schon zu Ende.' };
+    if (spieler.aus) return { fehler: 'Du bist schon ausgeschieden.' };
+    // Die Einheiten fallen, wie sie im Kampf fallen: sie liegen zwei Sekunden
+    // im Bild, statt zu verschwinden (kampf AC-10).
+    for (const einheit of this.einheiten.values()) {
+      if (einheit.besitzer === spielerId && !einheit.tot) this.einheitSterben(einheit);
+    }
+    for (const gebaeude of [...this.gebaeude.values()]) {
+      if (gebaeude.besitzer === spielerId) this.gebaeudeZerstoeren(gebaeude);
+    }
+    spieler.aus = true;
+    // Sofort und nicht erst im naechsten Takt: wer aufgibt, soll nicht noch
+    // ein Zehntel lang als Mitspieler zaehlen.
+    this.endePruefen();
+    return {};
   }
 
   takten() {
+    // Eine entschiedene Partie rechnet nicht weiter. Der Raum haelt seine Uhr
+    // an (`vorbei`); dies ist die zweite Sperre, fuer den Pruefstand und fuer
+    // Takte, die noch im Zeitraffer unterwegs sind.
+    if (this.ende) return;
     this.takt++;
     const bevoelkerung = this.bevoelkerung();
     for (const gebaeude of this.gebaeude.values()) this.gebaeudeTakten(gebaeude, bevoelkerung);
@@ -1565,6 +1661,7 @@ class Welt {
     if (this.takt % WACHE_TAKTE === 0) this.wacheTakten();
     for (const einheit of this.einheiten.values()) this.einheitTakten(einheit);
     this.schlaegeAbrechnen();
+    this.endePruefen();
   }
 
   einheitTakten(einheit) {
@@ -1854,9 +1951,14 @@ class Welt {
         // Arbeiter je Rohstoff, in der Reihenfolge holz, nahrung, gold, stein
         // (bedienung AC-32).
         a: this.arbeiterVon(s.id),
+        // Ausgeschieden, nur wenn es zutrifft (spielziel AC-5).
+        ...(s.aus ? { aus: 1 } : {}),
       })),
       einheiten,
       felder,
+      // Das Ende, sobald es feststeht - danach schickt der Raum keinen
+      // Zustand mehr (spielziel AC-5).
+      ...(this.ende ? { ende: this.ende } : {}),
     };
     this.werteAenderungen.clear();
     if (this.gebaeudeAenderungen.size) {
@@ -1921,7 +2023,11 @@ class Welt {
         // jeden, damit auch einer, der nach einem Abbruch zurueckkehrt, die
         // schon erforschten Verbesserungen sieht (raeume AC-12).
         kw: this.kampfwerte(s.id),
+        ...(s.aus ? { aus: 1 } : {}),
       })),
+      // Wer nach dem Ende zurueckkommt, sieht das Ende und nicht eine
+      // Partie, die nicht mehr laeuft (spielziel AC-5).
+      ...(this.ende ? { ende: this.ende } : {}),
       tiere: [...this.tiere.keys()].map((id) => this.tierFuerDraht(id)),
       gebaeude: [...this.gebaeude.keys()].map((id) => this.gebaeudeFuerDraht(id)),
       // Die Werte der Arten, einmal: der Browser zeigt Leben, Tragkraft und
@@ -1961,4 +2067,5 @@ class Welt {
 
 module.exports = {
   Welt, TAKTE_PRO_SEKUNDE, STARTVORRAT, ROHSTOFFE, VERFOLGUNG_FELDER, WACHE_TAKTE,
+  PARTIE_MINUTEN,
 };

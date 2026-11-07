@@ -149,6 +149,12 @@ class Raum {
     // Spiel keine Minute Warten kostet. Im Betrieb bleibt er 1.
     for (let i = 0; i < this.zeitraffer; i++) this.welt.takten();
     this.senden(this.welt.zustand());
+    // `vorbei` gehoert zur Form dessen, was `erzeugen` liefert, nicht zu
+    // einem einzelnen Spiel (ADR-0006): sagt es, die Partie sei entschieden,
+    // haelt der Raum seine Uhr an. **Was** entscheidet, weiss nur das Spiel -
+    // der Raum fragt bloss. Der letzte Zustand ist schon unterwegs und traegt
+    // das Ergebnis.
+    if (this.welt.vorbei) this.beenden();
   }
 
   beenden() {

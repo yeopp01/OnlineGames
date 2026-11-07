@@ -108,7 +108,9 @@ function partieSpielen({ startwert, spieler = 2, minuten = 10, einstellungen = {
   const kis = welt.spieler.map((s) => new Ki(welt, s.id));
   const takte = Math.round(minuten * 60 * TAKTE_PRO_SEKUNDE);
   const untaetig = { seit: new Map(), laengste: new Map() };
-  for (let t = 0; t < takte; t++) {
+  // Eine entschiedene Partie wird nicht weitergerechnet (spielziel AC-5):
+  // gezaehlt wird, wer gewonnen hat, nicht wie viele Takte noch passen.
+  for (let t = 0; t < takte && !welt.ende; t++) {
     for (const ki of kis) ki.takt();
     welt.takten();
     if (eingriff) eingriff(welt, welt.takt);
@@ -119,6 +121,11 @@ function partieSpielen({ startwert, spieler = 2, minuten = 10, einstellungen = {
   return {
     startwert,
     takte,
+    // Wie weit wirklich gespielt wurde, und wie es ausging: `null`, solange
+    // niemand gewonnen hat - dann war die Vorgabe `minuten` zuerst am Ende.
+    gespielt: welt.takt,
+    ende: welt.ende,
+    sieger: welt.ende?.sieger ? welt.spieler.find((s) => s.id === welt.ende.sieger)?.name || null : null,
     dauerMs: Number(process.hrtime.bigint() - beginn) / 1e6,
     spieler: welt.spieler.map((s, i) => kennzahlen(welt, s, kis[i], untaetig)),
     welt,

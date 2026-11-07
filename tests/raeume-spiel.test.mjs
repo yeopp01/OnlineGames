@@ -73,3 +73,43 @@ test('raeume AC-16: ein Raum-Spiel ohne erzeugen oder takte faellt beim Start de
   // Beim Ausliefern an den Browser bleibt die Funktion auf dem Server.
   assert.equal(JSON.parse(JSON.stringify(strategie)).erzeugen, undefined);
 });
+
+test('raeume AC-16 / spielziel AC-5: sagt die Welt "vorbei", haelt der Raum seine Uhr an', (t) => {
+  // Geprueft am erfundenen Spiel, nicht am Strategiespiel: dass eine Partie
+  // enden kann, gehoert zur Form einer Welt - was sie beendet, weiss nur das
+  // Spiel (ADR-0006). Der letzte Zustand geht noch raus, danach keiner mehr.
+  t.mock.timers.enable({ apis: ['setInterval'] });
+  const stand = { takte: 0, vorbei: false };
+  const puzzle = {
+    art: 'puzzle',
+    takte: 10,
+    erzeugen() {
+      return {
+        aufbau: () => ({ typ: 'aufbau' }),
+        takten: () => { stand.takte += 1; if (stand.takte === 3) stand.vorbei = true; },
+        zustand: () => ({ typ: 'zustand', takt: stand.takte }),
+        get vorbei() { return stand.vorbei; },
+      };
+    },
+  };
+  const raeume = new Raeume();
+  try {
+    const raum = raeume.anlegen(puzzle);
+    const anna = draht();
+    raum.beitreten('Anna', anna);
+    raum.beitreten('Bert', draht());
+    assert.deepEqual(raum.starten(7), {});
+
+    t.mock.timers.tick(300); // drei Takte: beim dritten ist die Partie aus
+    assert.equal(stand.takte, 3);
+    assert.equal(anna.eingang.at(-1).takt, 3, 'der letzte Zustand traegt das Ergebnis');
+    assert.equal(raum.uhr, null, 'die Uhr steht');
+
+    const danach = anna.eingang.length;
+    t.mock.timers.tick(2000);
+    assert.equal(stand.takte, 3, 'es wird nicht weitergerechnet');
+    assert.equal(anna.eingang.length, danach, 'und nichts mehr geschickt');
+  } finally {
+    raeume.halt();
+  }
+});

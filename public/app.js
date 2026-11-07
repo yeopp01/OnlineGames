@@ -104,6 +104,7 @@ function empfangen(nachricht) {
         ansicht.beiTaste = (e) => tasten.taste(e);
         ansicht.melden = spielMelden;
         ansicht.beiZeitalter = (stufe, name) => zeitalterwechselMelden(name);
+        ansicht.beiEnde = (ende, text) => partieendeZeigen(text);
         ansicht.sammelpunktSenden = (gebaeude, ziel) =>
           senden({ typ: 'befehl', auftrag: 'sammelpunkt', gebaeude, ziel });
         ansicht.bauenSenden = (einheiten, art, ziel) =>
@@ -164,6 +165,16 @@ function zeitalterZeigen(name) {
 function spielzeitZeigen(text) {
   const feld = document.querySelector('#spielzeit b');
   if (feld && feld.textContent !== text) feld.textContent = text;
+}
+
+// ---- Das Ende der Partie (spielziel AC-5) --------------------------------
+// Die Meldung bleibt stehen, anders als Absage und Zeitalterwechsel: die
+// Partie ist zu Ende, es kommt nichts mehr nach. Die Tafel mit den Zahlen
+// (spielziel AC-8) nimmt spaeter diesen Platz ein.
+function partieendeZeigen(text) {
+  const ort = document.getElementById('partieende');
+  ort.textContent = text;
+  ort.hidden = false;
 }
 
 function zeitalterwechselMelden(name) {

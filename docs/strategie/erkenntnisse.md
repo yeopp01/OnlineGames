@@ -62,6 +62,14 @@ etwas anderem gearbeitet.
 
 ## Offene Fäden
 
+- **Eine Bildunterschrift, die nicht stimmt: `bedienung AC-16`** (gesehen in
+  Runde 79 beim Durchsehen der Abweichungen). Sie sagt „Nah herangeholt: ein
+  beladener Dorfbewohner am Waldrand", das Bild zeigt aber das ganze
+  Dorfzentrum bei Spielgröße, und der Beladene steht klein am linken Rand.
+  Entweder der Test holt für dieses eine Bild heran (wie es Runde 79 für
+  `spielziel AC-6` getan hat), oder die Unterschrift sagt, was zu sehen ist.
+  Eine halbe Runde Arbeit, gehört in die nächste Rückschau.
+
 - **Umlaute auf dem Bildschirm (entschieden 2026-09-17).** Texte, die im
   Browser stehen, bekommen echte Umlaute („Eröffnen", „zufällig");
   Bezeichner, Dateinamen und Testnamen bleiben umschrieben. Bestehende Texte
@@ -217,6 +225,9 @@ Zahlen, gegen die spätere Runden vergleichen. Mit Datum und Commit.
 | 2026-11-07 | Eigener PNG-Leser gegen PIL, dieselben 85 Bilder | gleiche Werte auf zwei Nachkommastellen (96,83 % / 95,58 % / 93,18 %) | Rueckschau 78 |
 | 2026-11-07 | Tests ohne Browser / im Browser; `npm run check` | 406 / 155; 20 s | Rueckschau 78 |
 | 2026-11-07 | `fahrplan AC-8` (der laengste Browsertest) im vollen `:neu`-Lauf / allein | gefallen nach 90 s Warten auf den ersten Treffer / gruen in 1,4 min — Last, nicht Produkt; der Lauf dauerte 9,9 statt 8,6 min | Rueckschau 78 |
+| 2026-11-07 | Tests ohne Browser / im Browser; `npm run check:alles:neu:kurz` | 419 / 157; 572 s | Runde 79 |
+| 2026-11-07 | Pruefstand nach dem Partieende (20 Startwerte x 16 min) | unveraendert: Feudalzeit 11,1–11,9 min (Median 11,6), 22 Dorfbewohner, keine Widersprueche, 3,5 s | Runde 79 |
+| 2026-11-07 | Geaenderte Bildnachweise nach dem `:neu`-Lauf | 94: **12 ueber 1 %** (2 neu, 10 Kamerazittern zwischen 55 und 91 %), 82 darunter — wieder nichts zwischen 0,53 % und 55 % | Runde 79 |
 
 ## Rückschauen
 
@@ -702,6 +713,21 @@ alle sieben Gebäude der Dunklen Zeit stehen. Was sich wiederholt hat:
 Neueste oben. Eine Zeile je Runde: Nummer, Datum, Kriterien, Ergebnis,
 wichtigste Erkenntnis.
 
+- **79** · 2026-11-07 · **spielziel AC-5, AC-6** — das Partieende rechnet:
+  wer keine Einheit und kein Gebäude außer Farmen mehr hat, ist ausgeschieden;
+  bleibt einer übrig, endet die Partie im selben Takt, in dem der letzte
+  Verlust abgerechnet wird. Aufgeben ist der schnelle Weg dorthin. Nach 90
+  Spielminuten endet sie unentschieden. Gelernt: **die Entscheidung gehört in
+  die Welt, das Anhalten in den Raum.** `raeume.js` fragt nur eine Eigenschaft
+  `welt.vorbei` und hält daran seine Uhr an — so bleibt es frei von diesem
+  Spiel (ADR-0006), und der Wächter `raeume AC-16` hat das sofort bewiesen: er
+  wurde rot, weil im neuen Kommentar das Wort „Welt" groß geschrieben stand.
+  Zweite Erkenntnis: **eine stehende Uhr auf 0:00 ist kein Beweis.** Das erste
+  Bild zeigte das Ende in der nullten Spielsekunde; eine halbe Spielminute im
+  Zeitraffer vorher kostet drei Sekunden Lauf und macht aus „die Uhr steht"
+  eine sichtbare Aussage. Und: **die Gefallenen bleiben liegen**, weil das
+  Aufräumen in `takten()` passiert und eine entschiedene Partie nicht mehr
+  taktet — für das Abschlussbild genau richtig, aber es stand nirgends.
 - **78** · 2026-11-07 · **Rückschau, kein neues Kriterium** — drei
   Verbesserungen am Umgang mit den Bildnachweisen: `npm run check:alles:neu`
   (ein Browserlauf statt zwei, 580 s gegen 18 min), `npm run qa:abweichung`

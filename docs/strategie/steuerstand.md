@@ -13,19 +13,16 @@ hier nichts eintraegt, verliert den Faden beim naechsten Autocompact.
 
 ## Zuletzt fortgeschrieben
 
-2026-11-07, nach Runde 78 (**Rueckschau**, kein neues Kriterium: ein
-Browserlauf statt zwei beim Neuerzeugen der Bilder, `npm run qa:abweichung`
-sortiert die geaenderten Bilder nach Abweichung, und der Pruefgriff
-`einheiten` ist dokumentiert statt geaendert - der Versuch, ihn zu "reparieren",
-hat Figuren uebereinander geschoben und wurde zurueckgenommen. Davor Runde 77:
-**C1 ist fertig**, `bedienung AC-35` bis `AC-37`. Als Naechstes **C2**, das
-Partieende: spielziel AC-5, AC-6, bedienung AC-38).
+2026-11-07, nach Runde 79 (**spielziel AC-5 und AC-6 sind fertig**: das
+Partieende rechnet, Aufgeben geht, beide sehen dasselbe Ergebnis. Damit fehlt
+aus C2 nur noch `bedienung AC-38`, der Knopf mit Rueckfrage. Davor Runde 78:
+Rueckschau zum Bilderwerkzeug; Runde 77: **C1 ist fertig**).
 
 ## Wo ich stehe
 
 - **Branch:** `strategie`. Nie auf `main` arbeiten, **nie pushen, nie deployen.**
-- **Board:** 379 von 516 Kriterien fertig · 1 in Arbeit · 5 in QA · 4 geplant ·
-  119 offen · 8 zurueckgestellt. 406 Tests ohne Browser, 155 im Browser.
+- **Board:** 381 von 516 Kriterien fertig · 1 in Arbeit · 5 in QA · 4 geplant ·
+  117 offen · 8 zurueckgestellt. 419 Tests ohne Browser, 157 im Browser.
 - **Vier Waechter in `tests/waechter-*.test.mjs`:** Gleichheit auf wachsenden
   Listen, verbesserbare Werte an `welt.einheitenwert()` vorbei,
   Bildunterschriften mit `${...}`, und (neu in Runde 73) die **Kuerzeltafel**
@@ -107,10 +104,30 @@ Partieende: spielziel AC-5, AC-6, bedienung AC-38).
   (`90:00`). Test: `e2e/tests/strategie-spielzeit.spec.mjs`, mit der
   Gegenprobe gewoehnlich gegen Zehnfaches (19 Takte gegen 180 in denselben
   zwei Sekunden Wanduhr).
-- **Als Naechstes: C2, das Partieende.** `spielziel AC-5` (ausgeschieden,
-  Sieger), `AC-6` (unentschieden nach 90 Spielminuten - die Uhr dafuer steht
-  jetzt) und `bedienung AC-38` (Aufgeben fragt einmal zurueck). Danach C3
-  (Abschlussbild, Zuschauen, Revanche).
+- **C2 laeuft. `spielziel AC-5` und `AC-6` sind fertig** (Runde 79). **Wie es
+  gebaut ist:** entschieden wird in der **Welt**, angehalten wird im **Raum**.
+  `welt.endePruefen()` steht am Ende von `takten()` und noch einmal in
+  `aufgeben()`; es setzt `welt.ende = {sieger, grund, takt}` (`grund` ist
+  `eroberung` oder `zeit`). Ausgeschieden ist, wer weder lebende Einheit noch
+  Gebaeude hat - **Farmen zaehlen nicht**, das steht als `bestand: false` in
+  `daten.js` (Mauern und Tore bekommen in Stufe D dieselbe Zeile, keine
+  Verzweigung). Gezaehlt wird nur, wenn seit dem letzten Mal etwas gefallen
+  ist (`bestandPruefen`, gesetzt in `einheitSterben` und `gebaeudeZerstoeren`).
+  `raeume.js` kennt davon nichts: es fragt nach jedem Schlag die Eigenschaft
+  **`welt.vorbei`** und haelt daran seine Uhr an (ADR-0006) - der letzte
+  Zustand ist schon unterwegs und traegt `ende`. `aufbau()` schickt `ende`
+  mit, damit auch sieht, wer nach einem Abbruch zurueckkommt.
+  **Zu wissen:** eine entschiedene Partie taktet nicht mehr, also bleiben die
+  **Gefallenen liegen** (das Aufraeumen nach zwei Sekunden steckt in
+  `takten()`) - fuer das Abschlussbild richtig, aber es ueberrascht.
+  Unentschieden nach 90 Spielminuten (`PARTIE_MINUTEN`). Im Browser merkt sich
+  `ansicht.endeMerken()` das Ende **einmal**, `endeText()` macht daraus "Du
+  hast gewonnen" / "<Name> hat gewonnen" / "Unentschieden - 90 Minuten sind
+  um", `app.js` stellt es als `#partieende` ins Bild - eine Meldung, die
+  **stehen bleibt**. Der Pruefgriff `aufgeben` in `e2e/server.mjs` schickt
+  dieselbe Nachricht wie spaeter der Knopf.
+- **Als Naechstes: `bedienung AC-38`**, Aufgeben als Knopf mit genau einer
+  Rueckfrage. Danach C3 (Abschlussbild, Zuschauen, Revanche).
 - **Der Gefechtsstand** (neu in Runde 71) steht in
   `server/spiele/strategie/pruefstand.js` als `gefechtSpielen`:
   `npm run konterkreis:strategie` stellt zwei Heere gleicher Kosten auf freiem
