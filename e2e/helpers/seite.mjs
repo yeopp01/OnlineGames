@@ -131,7 +131,19 @@ export async function gebaeudeAufstellen(page, code, name, art, x, y) {
   return (await antwort.json()).id;
 }
 
-/** Viele Einheiten fuer einen Spieler aufstellen (Pruefgriff, e2e/server.mjs). */
+/**
+ * Viele Einheiten fuer einen Spieler aufstellen (Pruefgriff, e2e/server.mjs).
+ *
+ * `werte` nimmt `art`, `x` und `y`. Gesucht wird **ringweise um (x, y) herum,
+ * beginnend einen Schritt daneben** - auch eine einzelne Einheit steht also
+ * nicht genau an (x, y). Wer sie wiederfinden will, sucht mit anderthalb
+ * Feldern Spielraum. Ohne `x`/`y` wird um die Basis herum aufgestellt.
+ * Zurueck kommt die **Zahl** der aufgestellten Einheiten, nicht ihre Nummern -
+ * wer sie wiederfinden will, sucht in `window.ansicht.nachher` nach dem
+ * Kuerzel der Art in der Naehe des Platzes.
+ *
+ * @returns {Promise<number>} wie viele aufgestellt wurden
+ */
 export async function einheitenAufstellen(page, code, name, anzahl, werte = {}) {
   const antwort = await page.request.post(`http://localhost:${GRIFFHAFEN}/griff`, {
     data: { id: code, befehl: 'einheiten', werte: { name, anzahl, ...werte } },

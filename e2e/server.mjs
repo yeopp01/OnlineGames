@@ -120,6 +120,17 @@ const griffe = http.createServer(async (anfrage, antwortGriff) => {
     }
     // Viele Einheiten fuer einen Spieler, ringweise um einen Punkt auf freiem
     // Gras - fuer Messungen mit vollem Bild (darstellung AC-10).
+    //
+    // **Die Suche faengt beim Ring r = 1 an, nicht in der Mitte.** Eine
+    // einzelne Einheit landet also nicht an (x, y), sondern einen Schritt
+    // schraeg daneben; wer genau dort sucht, findet nichts (Runde 76, ein
+    // Browserlauf). Richtig ist, mit anderthalb Feldern Spielraum zu suchen -
+    // nicht, hier r = 0 zu setzen: das wurde in der Rueckschau nach Runde 78
+    // versucht und wieder zurueckgenommen. Es rueckte in acht Bildern die
+    // Einheiten um ein Feld zusammen, und weil Figuren noch uebereinander
+    // stehen duerfen (einheiten AC-29 ist offen), verdeckten sie einander -
+    // in `kampf AC-1` standen statt drei blauen Milizen zwei rote
+    // uebereinander, und die Bildunterschrift stimmte nicht mehr.
     if (befehl === 'einheiten') {
       const welt = laufend.raeume.finden(id)?.welt;
       const spieler = welt?.spieler.find((s) => s.name === werte.name);

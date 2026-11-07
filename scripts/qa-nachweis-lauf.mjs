@@ -4,6 +4,13 @@
 //   npm run qa:nachweis                  # alle
 //   npm run qa:nachweis -- transfer      # nur aus passenden Testdateien
 //
+// Meist will man danach ohnehin pruefen. Dafuer gibt es
+// `npm run check:alles:neu` (und `:neu:kurz`): **ein** Browserlauf, der jedes
+// Bild neu schreibt, danach `npm run check` ohne Browser. Vorher waren es
+// zwei Browserlaeufe hintereinander - erst Bilder, dann `check:alles` -, und
+// das kostete in den Runden 76 und 77 je neun Minuten umsonst (Rueckschau
+// nach Runde 78).
+//
 // Der gewoehnliche Lauf (`npm run test:e2e`) schreibt nur Bilder, die FEHLEN.
 // Warum, steht in scripts/qa-nachweis.mjs. Dieser Aufruf ist die Ansage
 // "jetzt bitte doch alle" - nach einer Aenderung an der Oberflaeche, vor

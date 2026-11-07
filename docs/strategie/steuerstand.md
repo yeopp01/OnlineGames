@@ -13,16 +13,19 @@ hier nichts eintraegt, verliert den Faden beim naechsten Autocompact.
 
 ## Zuletzt fortgeschrieben
 
-2026-11-07, nach Runde 77 (**C1 ist fertig**: `bedienung AC-35`, `AC-36` und
-`AC-37` stehen - Kampfwerte an der Auswahl, Militaer bei Zoom 1 im Umriss
-erkennbar, Spielzeit oben in der Leiste. Als Naechstes **C2**, das
+2026-11-07, nach Runde 78 (**Rueckschau**, kein neues Kriterium: ein
+Browserlauf statt zwei beim Neuerzeugen der Bilder, `npm run qa:abweichung`
+sortiert die geaenderten Bilder nach Abweichung, und der Pruefgriff
+`einheiten` ist dokumentiert statt geaendert - der Versuch, ihn zu "reparieren",
+hat Figuren uebereinander geschoben und wurde zurueckgenommen. Davor Runde 77:
+**C1 ist fertig**, `bedienung AC-35` bis `AC-37`. Als Naechstes **C2**, das
 Partieende: spielziel AC-5, AC-6, bedienung AC-38).
 
 ## Wo ich stehe
 
 - **Branch:** `strategie`. Nie auf `main` arbeiten, **nie pushen, nie deployen.**
 - **Board:** 379 von 516 Kriterien fertig · 1 in Arbeit · 5 in QA · 4 geplant ·
-  119 offen · 8 zurueckgestellt. 402 Tests ohne Browser, 155 im Browser.
+  119 offen · 8 zurueckgestellt. 406 Tests ohne Browser, 155 im Browser.
 - **Vier Waechter in `tests/waechter-*.test.mjs`:** Gleichheit auf wachsenden
   Listen, verbesserbare Werte an `welt.einheitenwert()` vorbei,
   Bildunterschriften mit `${...}`, und (neu in Runde 73) die **Kuerzeltafel**
@@ -30,6 +33,13 @@ Partieende: spielziel AC-5, AC-6, bedienung AC-38).
   Art aufstellt, legt einen Waechter dazu. Der erste kennt seit Runde 75 auch
   die Fassung auf dem Draht (`werte.einheiten.<art>`) und Namen aus einem
   `const { x, ...rest } = <wachsende Daten>`.
+- **Bilder, seit Runde 78:** Aussehen geaendert → **ein** Lauf
+  `npm run check:alles:neu:kurz` (schreibt jedes Bild neu, prueft danach ohne
+  Browser; 580 s) statt `qa:nachweis` + `check:alles` (18 min). Danach
+  **`npm run qa:abweichung`**: listet die geaenderten Bildnachweise nach Anteil
+  geaenderter Bildpunkte, Grenze 1 %. Was darueber steht, wird angesehen -
+  darunter liegen nur Raumcode, Uhr und Zaehler. PNG liest `scripts/png-lesen.mjs`
+  selbst, `tests/png-lesen.test.mjs` haelt ihn richtig.
 - **Stufe A ist erreicht** (fahrplan AC-3 bis AC-7).
 - **Stufe B ist erreicht** (fahrplan AC-8 bis AC-10, Bauabfolge B1 bis B7).
   Die Feudalzeit ist am Stueck im Browser spielbar:
@@ -113,9 +123,11 @@ Partieende: spielziel AC-5, AC-6, bedienung AC-38).
   bei 20 min). Aelter als Runde 69, nur nie gemessen, weil der Pruefstand bei
   zehn Minuten endete. Ursache und Hebel stehen in den Erkenntnissen unter
   **Offene Faeden**.
-- **Naechste Rueckschau: Runde 78** - oder frueher, wenn Stufe C erreicht wird.
+- **Naechste Rueckschau: Runde 83** - oder frueher, wenn Stufe C erreicht wird.
   Diese Zeile ist der Termin, nicht nachzaehlen.
-- Frueherer Termin, erledigt: **Runde 73** (die Rueckschau zur Stufe B) - nicht
+- Frueherer Termin, erledigt: **Runde 78** (Bilderwerkzeug: `check:alles:neu`,
+  `qa:abweichung`, der Pruefgriff dokumentiert statt geaendert) und **Runde 73**
+  (die Rueckschau zur Stufe B) - nicht
   nachzaehlen. Die Rueckschauen 55 und 60 sind ausgefallen, weil nach der
   Rueckschau zur Stufe A niemand mehr gezaehlt hat (Rueckschau nach Runde 65).
   Wer eine Rueckschau haelt, traegt hier die naechste Nummer ein.

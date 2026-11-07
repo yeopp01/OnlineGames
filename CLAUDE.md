@@ -25,6 +25,8 @@ npm run check        # Specs, Belege, Nachweise, Bericht, Tests - ohne Browser, 
 npm run check:alles  # erst der Browserlauf, dann npm run check - vor jedem Abschluss an der Oberfläche
 npm run check:kurz        # dasselbe leise: nur Zahlen und Fehler, alles in qa/letzter-lauf.log
 npm run check:alles:kurz  # dasselbe mit Browserlauf
+npm run check:alles:neu:kurz  # ein Browserlauf, der ALLE Bilder neu schreibt, dann check
+npm run qa:abweichung  # welche Bildnachweise haben sich geändert - und wie stark?
 npm run qa:report    # die Übersicht als Seite: qa/report/index.html
 npm start            # http://localhost:4180/
 npm run dev          # dasselbe mit --watch
@@ -54,6 +56,14 @@ die Werte des Originals in [`docs/strategie/vorlage-aoe2.md`](docs/strategie/vor
 **Wer die Oberfläche anfasst, fährt `npm run check:alles`.** Der Browserlauf
 (Playwright) gehört nicht in die CI; er läuft örtlich und schreibt die Bilder,
 die `npm run check` danach ohne Browser prüft.
+
+**Hat sich das Aussehen geändert, ist es `npm run check:alles:neu`** — ein
+Browserlauf schreibt jedes Bild neu _und_ prüft. Nicht erst `qa:nachweis` und
+dann `check:alles`: das sind zwei Browserläufe und neun Minuten umsonst
+(Rückschau nach Runde 78). **Danach `npm run qa:abweichung`** — ein solcher
+Lauf ändert achtzig Bilder, an den meisten nur den zufälligen Raumcode. Die
+Liste sortiert nach Anteil geänderter Bildpunkte; was über 1 % steht, wird
+angesehen, bevor etwas eingecheckt wird.
 
 ### Die wichtigste Regel
 

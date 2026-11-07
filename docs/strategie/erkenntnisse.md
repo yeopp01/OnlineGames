@@ -117,7 +117,11 @@ etwas anderem gearbeitet.
   Wächter desselben Ziels verteilen sich jetzt wie befohlene Angreifer (vorher
   standen zwei zusammen losgeschickte Milizen auf **0,00 Feldern**). Es bleiben
   der Schussring der Fernkämpfer und die Enge während des Hinlaufens.
-  **Nächster Kandidat nach B5.**
+  **Nächster Kandidat nach B5.** In der Rückschau nach Runde 78 hat dieser
+  Faden eine Verbesserung am Prüfgriff zu Fall gebracht: stellt man die
+  Angreifer ein Feld enger auf, verdecken sie einander im Bild. Solange
+  AC-29 offen ist, hängen Bildnachweise an der Aufstellung — wer sie ändert,
+  fährt danach `npm run qa:abweichung` und sieht nach.
 - Figuren liegen in `public/figuren.js` (Raster 24 hoch, Fußpunkt unten),
   Schautafel unter `/schautafel.html`. Jede neue Einheit bekommt dort zuerst
   eine Figur und einen Eintrag, dann kommt sie ins Spiel.
@@ -208,6 +212,11 @@ Zahlen, gegen die spätere Runden vergleichen. Mit Datum und Commit.
 | 2026-11-07 | Tests ohne Browser / im Browser nach Runde 75; `npm run check` | 402 / 149; 19 s | Runde 75 |
 | 2026-11-07 | Bilder, die eine geaenderte `stil.css` neu erzeugen musste | 66 von 151 — der Lauf dafuer dauerte 10,7 min | Runde 75 |
 | 2026-11-07 | Gegenprobe: faengt der erweiterte Waechter die alte Form? | beide Formen (`werte.einheiten.<art>` und der Rest-Name) in einer Wegwerfdatei beanstandet | Runde 75 |
+| 2026-11-07 | `npm run check:alles:neu:kurz` (ein Lauf, alle Bilder neu + pruefen) gegen `qa:nachweis` + `check:alles` | **580 s** gegen 8,8 + 9,1 = 17,9 min — acht Minuten je Runde an der Oberflaeche | Rueckschau 78 |
+| 2026-11-07 | Geaenderte Bildnachweise nach einem `:neu`-Lauf, nach Abweichung | 85 von 162: **10 ueber 60 %**, **0 zwischen 0,6 % und 60 %**, 75 darunter, die meisten bei 0,08 % (= 135 x 18 Bildpunkte: der Raumcode) | Rueckschau 78 |
+| 2026-11-07 | Eigener PNG-Leser gegen PIL, dieselben 85 Bilder | gleiche Werte auf zwei Nachkommastellen (96,83 % / 95,58 % / 93,18 %) | Rueckschau 78 |
+| 2026-11-07 | Tests ohne Browser / im Browser; `npm run check` | 406 / 155; 20 s | Rueckschau 78 |
+| 2026-11-07 | `fahrplan AC-8` (der laengste Browsertest) im vollen `:neu`-Lauf / allein | gefallen nach 90 s Warten auf den ersten Treffer / gruen in 1,4 min — Last, nicht Produkt; der Lauf dauerte 9,9 statt 8,6 min | Rueckschau 78 |
 
 ## Rückschauen
 
@@ -345,6 +354,65 @@ Gut gelaufen: Die Tonstufen-Messung alt gegen neu hat aus „wirkt gezeichneter"
 eine Zahl gemacht, und zweimal hat ein alter Test einen neuen Fehler gefunden
 (Klick auf Beeren traf ein Schaf; zwei Lager zu ähnlich). Browserlauf bei
 ruhigerer Maschine 141 s Testzeit, langsamster Fall weiter der Lagertest (28 s).
+
+### Nach Runde 78 (2026-11-07)
+
+Fünf Runden (73 bis 77), alle grün: die Rückschau zu Stufe B, die Spec zu
+Stufe C und dann ihre drei Lücken — Kampfwerte an der Auswahl, Militär bei
+Zoom 1 im Umriss erkennbar, Spielzeit in der Leiste. **C1 steht.** Was Zeit
+gekostet hat, war dreimal dasselbe: der Umgang mit den Bildern.
+
+1. **Zwei Browserläufe hintereinander, neunmal neun Minuten umsonst.** Wer das
+   Aussehen ändert, musste bisher `npm run qa:nachweis` fahren (Bilder neu)
+   und danach `npm run check:alles` (prüfen) — das sind zwei volle
+   Browserläufe. In den Runden 76 und 77 je einer zu viel. Neu ist
+   **`npm run check:alles:neu`** (und `:neu:kurz`): ein Lauf, der jedes Bild
+   neu schreibt, danach `npm run check` ohne Browser. Gemessen: **580 s gegen
+   8,8 + 9,1 min** — acht Minuten je Runde an der Oberfläche, ohne dass eine
+   Prüfung wegfällt.
+
+2. **Der Prüfgriff stellt Einheiten nicht dorthin, wo der Test sie hinschreibt.**
+   `einheitenAufstellen(…, { x, y })` sucht ringweise **um** (x, y) herum und
+   beginnt einen Schritt daneben; eine einzelne Einheit steht also nie genau
+   dort. Das hat in Runde 76 einen Lauf gekostet. Mein erster Griff war, das
+   Verhalten zu ändern (Suche ab dem Feld selbst). **Das war falsch, und zwar
+   auf lehrreiche Weise:** die Einheiten rückten dadurch in acht Bildern um
+   ein Feld zusammen, und weil Figuren noch übereinander stehen dürfen
+   (`einheiten AC-29` ist offen), verdeckten sie einander — in `kampf AC-1`
+   standen statt drei blauen Milizen zwei rote übereinander, und die
+   Bildunterschrift stimmte nicht mehr. Zurückgenommen. Geblieben ist, was
+   gereicht hätte: **ein JSDoc, das das Verhalten nennt**, und die Regel, mit
+   anderthalb Feldern Spielraum zu suchen. Merksatz: *Eine Eigenart der
+   Prüfumgebung, auf die sich Bilder eingestellt haben, ist kein Fehler —
+   sie zu „reparieren" ändert die Bilder.*
+
+3. **Nach einem Lauf, der alle Bilder neu schreibt, stehen 85 im `git status`.**
+   Wer die mit einem pauschalen `git add` abtut, checkt früher oder später
+   eine verdorbene Aufstellung ein; wer alle 85 ansieht, sieht keines richtig
+   an. Gemessen hat die Verteilung aber eine **Lücke**: zehn Bilder über 60 %
+   geänderter Bildpunkte, **kein einziges zwischen 0,6 % und 60 %**, die
+   übrigen 75 darunter — die meisten bei 0,08 %, das sind 135 × 18 Bildpunkte
+   in 1280 × 720, also genau ein zufälliger Raumcode. Der Grund für den
+   Sprung: verschiebt sich die Kamera um drei Bildpunkte, ändert sich fast
+   jeder Bildpunkt; ändert sich nur eine Beschriftung, fast keiner. Oben
+   stehen damit die Bilder, deren Kamera an laufenden Positionen hängt — und
+   das sind genau die, bei denen eine Aufstellung kippen kann. Daraus
+   **`npm run qa:abweichung`**: listet die geänderten Bildnachweise nach
+   Abweichung sortiert und trennt bei 1 %. Gelesen wird PNG dafür selbst
+   (`scripts/png-lesen.mjs`, `node:zlib` und die fünf Filter der Norm) —
+   kein Paket mehr im Baum, und die Zahlen stimmen mit PIL auf die zweite
+   Stelle überein.
+
+Das dritte Werkzeug hat sich **in derselben Runde bezahlt gemacht**: der erste
+Lauf von `qa:abweichung` hat den Rückschritt aus Punkt 2 nach oben sortiert,
+und das Bild dazu war in zwei Minuten angesehen statt in 85.
+
+Nebenbei gemessen: **der längste Browsertest fällt unter der Last eines
+`:neu`-Laufs.** `fahrplan AC-8` wartet 90 s auf den ersten Treffer und lief
+in die Grenze, während der Lauf 9,9 statt 8,6 min brauchte; allein gefahren
+war er in 1,4 min grün. Keine Schwelle gesenkt — aufgeschrieben, und wenn es
+wiederkommt, bekommt er dieselbe Behandlung wie `karte AC-15`: den besten von
+mehreren Durchgängen messen, Grenze unverändert.
 
 ### Nach Runde 72 — Ende von Stufe B (2026-11-07)
 
@@ -634,6 +702,18 @@ alle sieben Gebäude der Dunklen Zeit stehen. Was sich wiederholt hat:
 Neueste oben. Eine Zeile je Runde: Nummer, Datum, Kriterien, Ergebnis,
 wichtigste Erkenntnis.
 
+- **78** · 2026-11-07 · **Rückschau, kein neues Kriterium** — drei
+  Verbesserungen am Umgang mit den Bildnachweisen: `npm run check:alles:neu`
+  (ein Browserlauf statt zwei, 580 s gegen 18 min), `npm run qa:abweichung`
+  (die geänderten Bilder nach Anteil geänderter Bildpunkte sortiert, mit
+  eigenem PNG-Leser ohne Paket) und der Prüfgriff `einheiten` **dokumentiert
+  statt geändert**. Gelernt: **eine Eigenart der Prüfumgebung, auf die sich
+  Bilder eingestellt haben, ist kein Fehler — sie zu „reparieren" ändert die
+  Bilder.** Der Versuch, Einheiten genau auf das genannte Feld zu stellen,
+  schob sie in acht Bildern um ein Feld zusammen; in `kampf AC-1` standen
+  danach zwei rote Milizen übereinander statt drei blauen nebeneinander, und
+  die Bildunterschrift stimmte nicht mehr. Gefunden hat es das Werkzeug aus
+  derselben Runde, das den Fall nach oben sortiert hat.
 - **77** · 2026-11-07 · **bedienung AC-37 fertig, damit steht C1** — oben
   neben dem Zeitalter läuft die Spielzeit als `m:ss`. Gelernt: **die Daten
   lagen schon auf dem Draht.** `zustand()` schickt `t: this.takt` seit der

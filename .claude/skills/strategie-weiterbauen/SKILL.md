@@ -263,18 +263,37 @@ Setze die gewählten Kriterien auf `in-arbeit`.
   wird auch bei Zoom 1 beurteilt — dort spielt man. Die Schautafel zeigt
   beides nebeneinander.
 - **Eine geänderte Seite heißt: alle Bilder dieser Seite neu.** Der gewöhnliche
-  Lauf schreibt nur fehlende Bilder, alte zeigen dann den alten Stand.
+  Lauf schreibt nur fehlende Bilder, alte zeigen dann den alten Stand. Auch
+  ein Test, der sein Bild nur anders aufstellt, schreibt es im gewöhnlichen
+  Lauf nicht neu (Runde 41: das alte Bild mit der verdeckten Karre blieb
+  liegen).
 
-  | Geändert                               | Neu erzeugen                                             |
-  | -------------------------------------- | -------------------------------------------------------- |
-  | `public/index.html`, `app.js`, `stil.css` | `npm run qa:nachweis -- vorraum spielauswahl strategie` |
-  | `public/ansicht.js`                    | `npm run qa:nachweis -- strategie`                       |
-  | `public/manager.*`                     | `npm run qa:nachweis -- manager`                         |
-  | Aufstellung oder Kamera in einem Test  | `npm run qa:nachweis -- <datei ohne .spec.mjs>`          |
+  **Hat sich das Aussehen geändert, ist der Abschlusslauf
+  `npm run check:alles:neu:kurz`** — ein Browserlauf, der jedes Bild neu
+  schreibt, danach `npm run check` ohne Browser. **Nicht** erst
+  `npm run qa:nachweis -- <muster>` und dann `npm run check:alles`: das sind
+  zwei Browserläufe hintereinander und kostet neun Minuten umsonst. In den
+  Runden 76 und 77 ging so jedes Mal die Hälfte der Rundenzeit weg
+  (Rückschau nach Runde 78).
 
-  Auch ein Test, der sein Bild nur anders aufstellt, schreibt es im
-  gewöhnlichen Lauf nicht neu (Runde 41: das alte Bild mit der verdeckten
-  Karre blieb liegen).
+  `npm run qa:nachweis -- <muster>` bleibt für das Zwischendurch, wenn man
+  **ein** Bild ansehen will, ohne alles zu fahren:
+
+  | Gemeint                                | Muster                                      |
+  | -------------------------------------- | ------------------------------------------- |
+  | ein einzelner Test                     | `npm run qa:nachweis -- <datei ohne .spec.mjs>` |
+  | nur das Strategiespiel                 | `npm run qa:nachweis -- strategie`          |
+  | nur das Managerspiel                   | `npm run qa:nachweis -- manager`            |
+- **Nach einem Lauf, der alle Bilder neu schreibt, erst `npm run qa:abweichung`,
+  dann `git add`.** Ein solcher Lauf ändert leicht 80 Bilder, die meisten nur
+  um den zufälligen Raumcode oder die laufende Uhr. Die Ausgabe sortiert nach
+  Anteil geänderter Bildpunkte und trennt bei 1 % — gemessen liegt zwischen
+  0,6 % und 60 % **nichts**: darunter sind es Beschriftungen, darüber hängt
+  die Kamera an laufenden Positionen, und dort kann eine Aufstellung kippen.
+  **Jedes Bild über der Grenze wird
+  angesehen**, bevor irgendetwas eingecheckt wird. In der Rückschau nach
+  Runde 78 stand dort ein Rückschritt, den sonst niemand gefunden hätte: zwei
+  Milizen übereinander statt drei nebeneinander.
 - Kein Bildschirm: Eintrag in `qa/ohne-bild.json`, der sagt, **was** das
   Kriterium ist und **warum** ein Bild es nicht zeigen kann.
 
@@ -282,6 +301,10 @@ Setze die gewählten Kriterien auf `in-arbeit`.
 
 1. Status auf `fertig`, `npm run specs:board`.
 2. Oberfläche angefasst → `npm run check:alles:kurz`, sonst `npm run check:kurz`.
+   **Hat sich das Aussehen geändert** (Figuren, Gebäude, Gelände, Leiste,
+   Stylesheet), dann `npm run check:alles:neu:kurz`: derselbe Lauf, aber er
+   schreibt jedes Bild neu. Ein Lauf statt zwei — danach
+   `npm run qa:abweichung` und die Bilder über 1 % ansehen.
    **In der Schleife immer die `:kurz`-Form**: sie zeigt die Zahlen und bei
    einem Fehler die Fehlerstelle, und spart je Lauf rund 8.000 Token an „ok"
    nach „ok" (Runde 60). Die ganze Ausgabe steht in `qa/letzter-lauf.log`,

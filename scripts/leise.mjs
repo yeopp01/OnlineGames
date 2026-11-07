@@ -8,8 +8,9 @@
 // ueberfliegt es. Fuer ein Sprachmodell in der Arbeitsschleife sind es rund
 // 8.000 Token je Lauf, zwei bis drei Mal in jeder Runde.
 //
-//   npm run check:kurz          # wie npm run check, nur leise
-//   npm run check:alles:kurz    # wie npm run check:alles, nur leise
+//   npm run check:kurz            # wie npm run check, nur leise
+//   npm run check:alles:kurz      # wie npm run check:alles, nur leise
+//   npm run check:alles:neu:kurz  # dasselbe, aber alle Bilder neu
 //   node scripts/leise.mjs test:e2e
 //
 // Bei einem Fehler wird mehr gezeigt, nicht weniger: die Fehlerzeilen und das
