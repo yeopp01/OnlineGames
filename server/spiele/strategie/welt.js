@@ -9,6 +9,13 @@ const {
 
 const TAKTE_PRO_SEKUNDE = 10;
 const SUCHWEITE_ERSATZ = 12;
+// So lange liegt ein Toter noch im Bild, bevor er aus dem Zustand faellt
+// (kampf AC-10): lang genug, um zu sehen, was passiert ist.
+const TOT_SEKUNDEN = 2;
+// Spielraum auf die Reichweite, damit ein Nahkaempfer auch schraeg (1,41
+// Felder) zuschlaegt; am Rand einer Grundflaeche messen wir genauer.
+const SCHLAGRAND = 0.5;
+const SCHLAGRAND_BAU = 0.2;
 // Wo die Startaufstellung steht, relativ zur Basis: alle vor dem Dorfzentrum.
 // Hinter ihm (dx + dy < 0) verdeckte es sie im Bild.
 const STARTPLAETZE = [[2.5, 0.5], [0.5, 2.5], [2.2, 2.2], [3, -1]];
@@ -78,6 +85,8 @@ class Welt {
     // Gebaeude gehen wie Tiere nur bei Aenderung ueber die Leitung.
     this.gebaeudeAenderungen = new Set();
     this.feldAenderungen = [];
+    // Die Schlaege dieses Taktes, abgerechnet an seinem Ende (kampf AC-10).
+    this.schlaege = [];
 
     this.spieler = spielerListe.map((eintrag, i) => ({
       id: eintrag.id,
@@ -599,7 +608,11 @@ class Welt {
   // frei (bauen AC-16).
   bevoelkerung() {
     const zahl = new Map();
-    for (const e of this.einheiten.values()) zahl.set(e.besitzer, (zahl.get(e.besitzer) || 0) + 1);
+    // Ein Toter zaehlt nicht mehr mit, auch wenn er noch liegt (kampf AC-10).
+    for (const e of this.einheiten.values()) {
+      if (e.tot) continue;
+      zahl.set(e.besitzer, (zahl.get(e.besitzer) || 0) + 1);
+    }
     return zahl;
   }
 
@@ -680,6 +693,7 @@ class Welt {
   // sammelt, huetet, eine Farm bestellt oder baut. Dieselbe Regel nutzt der
   // Pruefstand (ki AC-6) - eine Stelle, nicht zwei.
   untaetig(einheit) {
+    if (einheit.tot) return false;
     return einheit.art === 'dorfbewohner' && !einheit.weg.length && !einheit.sammelt && !einheit.baut;
   }
 
@@ -738,6 +752,10 @@ class Welt {
     const sammeln = SAMMELN[this.karte.felder[zy * g + zx]];
     // Eine eigene Baustelle: wer bauen kann, baut mit (bauen AC-2).
     const baustelle = this.gebaeudeAn(zx, zy);
+    // Etwas Fremdes unter dem Klick wird angegriffen (kampf AC-1) - kein
+    // eigener Knopf, keine eigene Betriebsart: der Server liest es aus dem Feld.
+    const feind = this.feindAn(spielerId, Number(ziel.x), Number(ziel.y));
+    const feindBau = !feind && baustelle && baustelle.besitzer !== spielerId ? baustelle : null;
     // Ein eigenes Schaf in der Naehe des Klicks (einheiten AC-17) - aber nur,
     // wenn auf dem Feld selbst nichts zu sammeln ist: neben Beeren weiden Schafe.
     const schaf = sammeln ? null : this.tierAn(spielerId, Number(ziel.x), Number(ziel.y));
@@ -745,6 +763,7 @@ class Welt {
     // um das Ziel; wer sammelt, einen eigenen Vorrat derselben Art daneben.
     const gruppe = einheitIds.slice(0, 200).map((id) => this.einheiten.get(id)).filter((e) => e && e.besitzer === spielerId);
     let aufstellung = null;
+    let angriffsfelder = null;
     let vorraete = null;
     let naechsterVorrat = 0;
 
@@ -762,7 +781,13 @@ class Welt {
       einheit.sammelt = false;
       einheit.baut = false;
       einheit.unerreichbar = null;
-      if (baustelle && !baustelle.fertig && baustelle.besitzer === spielerId
+      if ((feind || feindBau) && EINHEITEN[einheit.art].angriff > 0) {
+        const opfer = feind || feindBau;
+        // Mehrere Angreifer stellen sich um das Ziel herum, statt uebereinander
+        // zu stehen - dieselbe Aufstellung wie beim Gehen (einheiten AC-20).
+        angriffsfelder ??= this.angriffsfelder(opfer, gruppe.length, Boolean(feindBau));
+        this.angriffBeginnen(einheit, opfer, Boolean(feindBau), this.naechstesFreies(einheit, angriffsfelder));
+      } else if (baustelle && !baustelle.fertig && baustelle.besitzer === spielerId
         && (EINHEITEN[einheit.art].baut || []).includes(baustelle.art)) {
         this.bauenBeginnen(einheit, baustelle);
       } else if (baustelle && baustelle.fertig && GEBAEUDE[baustelle.art].nahrung && baustelle.besitzer === spielerId
@@ -1085,15 +1110,169 @@ class Welt {
     einheit.weg = stand ? suchen(this.karte, this.feldVon(einheit), stand) : [];
   }
 
+  // ---- Kampf (kampf AC-1, AC-6 bis AC-8, AC-10) ---------------------------
+
+  // Die naechste fremde, lebende Einheit hoechstens ein Feld vom Klick
+  // entfernt - gemessen wie beim eigenen Schaf (einheiten AC-17).
+  feindAn(spielerId, x, y) {
+    let bestes = null;
+    let besterAbstand = 1.01;
+    for (const einheit of this.einheiten.values()) {
+      if (einheit.besitzer === spielerId || einheit.tot) continue;
+      const abstand = Math.hypot(einheit.x - x, einheit.y - y);
+      if (abstand < besterAbstand) {
+        besterAbstand = abstand;
+        bestes = einheit;
+      }
+    }
+    return bestes;
+  }
+
+  // Freie Felder um ein Ziel, auf die sich Angreifer verteilen. Das Ziel
+  // selbst ist keines - darauf stellt sich niemand.
+  angriffsfelder(ziel, anzahl, istGebaeude) {
+    const mitte = istGebaeude ? { x: ziel.x, y: ziel.y } : this.feldVon(ziel);
+    return this.aufstellungUm(mitte, anzahl + 1).filter((f) => f.x !== mitte.x || f.y !== mitte.y);
+  }
+
+  // Gemerkt wird das **Ziel**, nicht sein Platz: eine Einheit laeuft weg.
+  angriffBeginnen(einheit, ziel, istGebaeude, stand = null) {
+    einheit.auftrag = { art: 'angreifen', ziel: ziel.id, gebaeude: Boolean(istGebaeude) };
+    einheit.nachladen = 0;
+    einheit.weg = stand ? this.wegNach(einheit, stand) : [];
+  }
+
+  // Ein Takt im Angriff: hinlaufen, bis das Ziel in Reichweite ist, dann
+  // zuschlagen, sooft die Nachladezeit es erlaubt (kampf AC-1, AC-7).
+  angriffTakten(einheit) {
+    einheit.sammelt = false;
+    einheit.baut = false;
+    const auftrag = einheit.auftrag;
+    const ziel = auftrag.gebaeude ? this.gebaeude.get(auftrag.ziel) : this.einheiten.get(auftrag.ziel);
+    // Das Ziel ist gefallen, waehrend der Angreifer noch hinlief: stehenbleiben,
+    // nicht auf das leere Feld weiterlaufen.
+    if (!ziel || ziel.tot) {
+      einheit.auftrag = null;
+      einheit.weg = [];
+      return;
+    }
+    const fern = EINHEITEN[einheit.art].reichweite;
+    const reichweite = fern || 1;
+    const abstand = auftrag.gebaeude
+      ? this.abstandZu(einheit, ziel)
+      : Math.hypot(ziel.x - einheit.x, ziel.y - einheit.y);
+    const nahGenug = abstand <= reichweite + (auftrag.gebaeude ? SCHLAGRAND_BAU : SCHLAGRAND);
+    // Ein Fernkaempfer bleibt stehen, sobald das Ziel in Reichweite ist. Ein
+    // Nahkaempfer geht den Platz zu Ende, der ihm zugewiesen wurde - sonst
+    // bleiben drei Angreifer dort stehen, wo der erste gerade nah genug war,
+    // und stehen im Bild uebereinander (Runde 63).
+    if (!nahGenug || (einheit.weg.length && !fern)) {
+      if (einheit.weg.length) {
+        this.laufen(einheit);
+        return;
+      }
+      // Kein Weg mehr: einen neuen suchen. Findet die Suche keinen, endet der
+      // Auftrag - sonst rechnete die Einheit in jedem Takt die ganze Karte ab.
+      const stand = auftrag.gebaeude
+        ? this.randfeld(ziel, einheit)
+        : nachbarfeld(this.karte, this.feldVon(ziel), einheit);
+      einheit.weg = stand ? this.wegNach(einheit, stand) : [];
+      if (!einheit.weg.length) einheit.auftrag = null;
+      return;
+    }
+    einheit.weg = [];
+    if (einheit.nachladen > 0) {
+      einheit.nachladen--;
+      return;
+    }
+    // Der erste Schlag kommt sofort, danach zaehlt die Nachladezeit aus den
+    // Daten (kampf AC-7). Der Takt dieses Schlages geht mit ab, damit zwischen
+    // zwei Treffern genau die Zeit der Vorlage liegt und nicht ein Takt mehr.
+    einheit.nachladen = Math.round(EINHEITEN[einheit.art].nachladen * TAKTE_PRO_SEKUNDE) - 1;
+    this.schlagen(einheit, ziel, auftrag.gebaeude);
+  }
+
+  /**
+   * Schaden nach der Vorlage (kampf AC-6): Angriff minus die Ruestung des Ziels
+   * in der Art dieses Angriffs - nah oder fern -, plus den Bonus des
+   * Angreifers auf eine Ruestungsklasse des Ziels, mindestens 1. Eine Formel
+   * fuer alle, ohne Zufall (kampf AC-8).
+   */
+  schaden(angreifer, ziel, istGebaeude) {
+    const a = EINHEITEN[angreifer.art];
+    const werte = istGebaeude ? GEBAEUDE[ziel.art] : EINHEITEN[ziel.art];
+    const ruestung = (a.reichweite ? werte.fernruestung : werte.nahruestung) || 0;
+    let bonus = 0;
+    for (const klasse of werte.klassen || []) bonus += a.bonus?.[klasse] || 0;
+    return Math.max(1, a.angriff - ruestung + bonus);
+  }
+
+  // Ein Schlag wird vorgemerkt, nicht sofort verrechnet: abgerechnet wird am
+  // Ende des Taktes. So toeten zwei Einheiten, die einander den letzten Schlag
+  // versetzen, sich beide - kein Vorrang fuer den, der zuerst dran war.
+  schlagen(angreifer, ziel, istGebaeude) {
+    this.schlaege.push({ ziel, schaden: this.schaden(angreifer, ziel, istGebaeude), gebaeude: istGebaeude });
+  }
+
+  schlaegeAbrechnen() {
+    if (!this.schlaege.length) return;
+    for (const schlag of this.schlaege) schlag.ziel.leben -= schlag.schaden;
+    for (const { ziel, gebaeude } of this.schlaege) {
+      if (gebaeude) {
+        if (!this.gebaeude.has(ziel.id)) continue;
+        this.gebaeudeGeaendert(ziel);
+        if (ziel.leben <= 0) this.gebaeudeZerstoeren(ziel);
+      } else if (ziel.leben <= 0 && !ziel.tot) {
+        this.einheitSterben(ziel);
+      }
+    }
+    this.schlaege = [];
+  }
+
+  // Ein Toter liegt noch zwei Sekunden im Bild (kampf AC-10), tut aber nichts
+  // mehr: kein Auftrag, keine Bevoelkerung, kein Ziel fuer einen Angriff.
+  einheitSterben(einheit) {
+    this.farmVerlassen(einheit);
+    einheit.leben = 0;
+    einheit.tot = true;
+    // Der Takt des Todes steht getrennt daneben: Takt 0 waere als Schalter
+    // falsch gelesen worden.
+    einheit.gefallen = this.takt;
+    einheit.auftrag = null;
+    einheit.weg = [];
+    einheit.sammelt = false;
+    einheit.baut = false;
+  }
+
+  // Ein Gebaeude ohne Leben verschwindet samt seinem Platz auf der Karte.
+  // Truemmer gibt es nicht - die waeren eine Entscheidung fuer Stufe C.
+  gebaeudeZerstoeren(gebaeude) {
+    this.gebaeude.delete(gebaeude.id);
+    this.freigeben(gebaeude);
+    this.gebaeudeGeaendert(gebaeude);
+  }
+
   takten() {
     this.takt++;
     const bevoelkerung = this.bevoelkerung();
     for (const gebaeude of this.gebaeude.values()) this.gebaeudeTakten(gebaeude, bevoelkerung);
     this.tiereTakten();
     for (const einheit of this.einheiten.values()) this.einheitTakten(einheit);
+    this.schlaegeAbrechnen();
   }
 
   einheitTakten(einheit) {
+    // Ein Toter liegt zwei Sekunden, dann ist er weg (kampf AC-10).
+    if (einheit.tot) {
+      if (this.takt - einheit.gefallen >= TOT_SEKUNDEN * TAKTE_PRO_SEKUNDE) this.einheiten.delete(einheit.id);
+      return;
+    }
+    // Angreifen geht vor dem Laufen: wer in Reichweite ist, schlaegt zu, statt
+    // seinen Weg zu Ende zu gehen (kampf AC-1).
+    if (einheit.auftrag?.art === 'angreifen') {
+      this.angriffTakten(einheit);
+      return;
+    }
     if (einheit.weg.length) {
       einheit.sammelt = false;
       einheit.baut = false;
@@ -1330,6 +1509,9 @@ class Welt {
         // Arbeitet gerade: sammelt, huetet, bestellt eine Farm oder baut
         // (bedienung AC-31). Nur wenn es zutrifft - ein Zustand bleibt klein.
         ...(e.sammelt || e.baut ? { w: 1 } : {}),
+        // Gefallen: der Browser legt ihn hin, bis der Server ihn nimmt
+        // (kampf AC-10).
+        ...(e.tot ? { s: 1 } : {}),
       });
     }
     const felder = this.feldAenderungen;

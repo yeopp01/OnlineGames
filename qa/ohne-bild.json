@@ -9,6 +9,10 @@
     { "spec": "10-strategie/ki.md", "ac": "AC-4", "begruendung": "Ausbilden ohne Pause, Haeuser rechtzeitig, Verteilung nach Plan - Eigenschaften ganzer Partien ueber zehn Spielminuten und mehrere Startwerte, gemessen im Pruefstand ohne Browser. Ein Bild zeigt einen Augenblick." },
     { "spec": "10-strategie/ki.md", "ac": "AC-5", "begruendung": "Wo die KI Lager und Farmen baut und wann, gemessen beim Baubeginn in Partien ohne Browser. Ein einzelnes Spielbild zeigt ein Dorf, nicht die Regel dahinter." },
     { "spec": "10-strategie/ki.md", "ac": "AC-6", "begruendung": "Die laengste Zeit, die ein Dorfbewohner herumsteht, ueber ganze Partien - eine Messung je Takt im Pruefstand; ein Bild zeigt keine Dauer." },
+    { "spec": "10-strategie/kampf.md", "ac": "AC-6", "begruendung": "Die Schadensformel: Angriff minus Ruestung plus Bonus, mindestens 1. Ein Bild zeigt, dass Leben fehlt, nicht wie viel davon aus welchem Summanden kam - geprueft wird sie Fall fuer Fall im Rechenteil." },
+    { "spec": "10-strategie/kampf.md", "ac": "AC-7", "begruendung": "Die Zeit zwischen zwei Schlaegen, je Einheit zwei oder drei Sekunden. Ein Bildschirmfoto hat keine Dauer; gemessen wird sie in Takten im Rechenteil." },
+    { "spec": "10-strategie/kampf.md", "ac": "AC-8", "begruendung": "Kein Zufall im Schaden: zwei Partien mit gleichem Startwert laufen Takt fuer Takt gleich. Eine Aussage ueber zwei ganze Laeufe, die verglichen werden - ein Bild zeigt einen Augenblick eines Laufs." },
+
     { "spec": "10-strategie/fahrplan.md", "ac": "AC-5", "begruendung": "Dorfbewohner und Nahrung nach zehn Spielminuten ueber zwanzig Startwerte - Zahlen aus Partien KI gegen KI ohne Browser." },
     { "spec": "10-strategie/fahrplan.md", "ac": "AC-6", "begruendung": "Rechenzeit eines Takts mit acht Spielern und 800 Einheiten - eine Messung im Rechenteil ohne Browser. Ein Bild zeigt Einheiten, nicht wie lange ein Takt dauert." },
     { "spec": "10-strategie/fahrplan.md", "ac": "AC-4", "begruendung": "Partien KI gegen KI ohne Menschen, jeder Takt geprueft - ein Lauf auf der Konsole, kein Bildschirm. Belegt durch zehn Spielminuten ueber mehrere Startwerte ohne Widerspruch." },

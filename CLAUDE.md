@@ -141,7 +141,7 @@ Umfang hinzufügt, dort nachsehen.
 
 ## Stand
 
-**359 von 503 Kriterien fertig.** 348 Tests ohne Browser, 138 im Browser. Die
+**364 von 503 Kriterien fertig.** 361 Tests ohne Browser, 140 im Browser. Die
 Übersicht ist der Bericht: `npm run qa:report`.
 
 Gebaut ist der Unterbau: Räume, Übertragung, Karte, Wegfindung, Sammeln,
@@ -213,7 +213,13 @@ Schornstein, alle erst ab der Feudalzeit im Baumenü; und **B4 ganz**: die drei 
 — Speerkämpfer (Kaserne), Bogenschütze und Plänkler (Schießanlage), jede mit
 eigener Figur, Angriff, Rüstung und Bonus als Daten und gesperrt bis zum
 Aufstieg — und die Verbesserung **Soldat**, die jede Miliz austauscht statt
-sie aufzuwerten. Als Nächstes B5, der Kampf.
+sie aufzuwerten. **Aus B5 steht der Kampf**: Ein Rechtsklick auf eine fremde
+Einheit oder ein fremdes Gebäude greift an — kein eigener Knopf, der Server
+liest es aus dem geklickten Feld; mehrere Angreifer verteilen sich um das
+Ziel. Der Schaden ist `max(1, Angriff − Rüstung + Bonus)` ohne Ausnahme und
+ohne Zufall, jede Einheit hat ihre Nachladezeit, Gebäude tragen 0/7 Rüstung
+und fallen samt ihrem Platz. Wer stirbt, liegt zwei Sekunden am Boden. Als
+Nächstes der Rest von B5: sich wehren, Verfolgung, Angriffslauf.
 
 1. **Stufe A** Dunkle Zeit mit Wirtschafts-KI und Prüfstand · **B** Feudalzeit
    · **C** Partieende und KI-Gegner · **D** Ritterzeit · **E** fünf Völker ·

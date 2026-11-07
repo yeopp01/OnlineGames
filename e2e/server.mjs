@@ -157,7 +157,11 @@ const griffe = http.createServer(async (anfrage, antwortGriff) => {
     if (befehl === 'zeitraffer') {
       const raum = laufend.raeume.finden(id);
       if (!raum) throw new Error(`Raum ${id} gibt es nicht.`);
-      raum.zeitraffer = Math.max(1, Math.min(20, Number(werte.faktor) || 1));
+      // 0 haelt die Welt an: der Zustand geht weiter zum Browser, aber nichts
+      // bewegt sich. Damit laesst sich ein Augenblick festhalten, der im Spiel
+      // nur zwei Sekunden dauert - ein Gefallener etwa (kampf AC-10).
+      const faktor = Number(werte.faktor);
+      raum.zeitraffer = Math.max(0, Math.min(20, Number.isFinite(faktor) ? faktor : 1));
       antwortGriff.writeHead(200, { 'Content-Type': 'application/json', Connection: 'close' }).end(JSON.stringify({ ok: true }));
       return;
     }

@@ -97,6 +97,11 @@ Ritterzeit nach 16 bis 20.
 Bonusschaden gegen Rüstungsklassen (Kavallerie, Infanterie, Bogenschütze,
 Gebäude, Belagerung …), minus die Rüstung des Ziels in dieser Klasse.
 
+**Nachladezeit**, die Pause zwischen zwei Schlägen: Miliz, Soldat,
+Späherreiter, Dorfbewohner und Bogenschütze 2,0 s, Speerkämpfer und Plänkler
+3,0 s. **Gebäude** tragen keine Nahrüstung, aber 7 Fernrüstung und zählen als
+Rüstungsklasse „Gebäude" — Pfeile richten an Mauerwerk kaum etwas aus.
+
 | Einheit | Zeitalter | Kosten | Zeit | Leben | Angriff | Rüstung Nah/Fern | Reichweite | Tempo | Bonus |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | Miliz | Dunkel | 60 N, 20 G | 21 s | 40 | 4 | 0/1 | – | 0,9 | |

@@ -13,16 +13,16 @@ hier nichts eintraegt, verliert den Faden beim naechsten Autocompact.
 
 ## Zuletzt fortgeschrieben
 
-2026-11-07, nach Runde 61 (einheiten AC-24 fertig, **Schritt B4 ist ganz durch**).
+2026-11-07, nach Runde 63 (kampf AC-1, AC-6, AC-7, AC-8, AC-10 fertig - **die erste Haelfte von B5 steht**).
 
 ## Wo ich stehe
 
 - **Branch:** `strategie`. Nie auf `main` arbeiten, **nie pushen, nie deployen.**
-- **Board:** 359 von 503 Kriterien fertig · 1 in Arbeit · 5 in QA · 4 geplant ·
-  127 offen · 7 zurueckgestellt. 348 Tests ohne Browser, 138 im Browser.
+- **Board:** 364 von 503 Kriterien fertig · 1 in Arbeit · 5 in QA · 4 geplant ·
+  121 offen · 8 zurueckgestellt. 361 Tests ohne Browser, 140 im Browser.
 - **Stufe A ist erreicht** (fahrplan AC-3 bis AC-7).
 - **Stufe B:** Bauabfolge B1 bis B7 im [Fahrplan](fahrplan.md). **B1 bis B4
-  sind fertig.** Der Arbeitsbaum ist sauber.
+  sind fertig, aus B5 der Kampf selbst.** Der Arbeitsbaum ist sauber.
 
 ## Was B2 und B3 gebracht haben (zum Weiterbauen wissen)
 
@@ -93,19 +93,53 @@ hier nichts eintraegt, verliert den Faden beim naechsten Autocompact.
   Kettenhemd, kurzem Waffenrock und zweihaendiger Streitaxt. Alle 28
   Figurenpaare ueber 0,60.
 
-## Was als Naechstes kommt: Schritt B5, der Kampf
+## Was B5 bisher gebracht hat (kampf AC-1, AC-6, AC-7, AC-8, AC-10)
 
-**kampf AC-1 bis AC-10, bedienung AC-34, einheiten AC-25.** Die Werte stehen
-schon alle in `daten.js`: `angriff`, `nahruestung`, `fernruestung`,
-`reichweite`, `klassen`, `bonus` je Einheit. Zu bauen sind der Auftrag
-„angreifen", der Schlagtakt, der Schaden mit Bonus auf die Ruestungsklasse,
-Pfeile als Flugbahn, das Sterben, und dass Fernkaempfer Abstand halten
-(einheiten AC-25). **Vorher die Spec kampf.md lesen** - sie ist seit der
-Spec-Runde zu Stufe B geschrieben.
+- **Der Angriff ist kein eigener Befehl.** `welt.befehl()` liest wie bisher
+  aus dem geklickten Feld, was zu tun ist; neu zuerst `feindAn(spielerId, x, y)`
+  (fremde, lebende Einheit hoechstens ein Feld vom Klick) und ein fremdes
+  Gebaeude unter dem Klick. Der Auftrag heisst
+  `{ art: 'angreifen', ziel: <id>, gebaeude: true|false }` - **die Nummer, nicht
+  der Platz**, denn das Ziel laeuft weg.
+- **`angriffTakten()` geht dem Laufen vor** (in `einheitTakten` ganz oben, nach
+  der Pruefung auf Tote): wer in Reichweite ist, schlaegt zu, statt seinen Weg
+  zu Ende zu gehen.
+- **Nahkaempfer gehen ihren zugewiesenen Platz zu Ende, Fernkaempfer halten in
+  Reichweite.** Ohne das standen drei Angreifer dort, wo der erste nah genug
+  war - im Bild eine Figur mit drei Schwertern. Die Plaetze kommen aus
+  `angriffsfelder(ziel, n, istGebaeude)` = `aufstellungUm` ohne das Zielfeld.
+- **`schaden(angreifer, ziel, istGebaeude)`** ist die eine Formel:
+  `max(1, angriff - (reichweite ? fernruestung : nahruestung) + bonus auf eine
+  klasse)`. **Gebaeude tragen jetzt auch Ruestung**: in `daten.js` bekommt jedes
+  per Schleife `nahruestung: 0`, `fernruestung: 7`, `klassen: ['gebaeude']`.
+- **Schlaege werden am Ende des Takts abgerechnet** (`this.schlaege`,
+  `schlaegeAbrechnen()` nach der Einheitenschleife). Nur so sterben zwei
+  Einheiten, die einander den letzten Schlag versetzen, beide.
+- **Tod:** `einheitSterben()` setzt `tot = true` **und** `gefallen = takt` -
+  ein Takt allein taugt nicht als Schalter, Takt 0 ist falsy. Ein Toter zaehlt
+  nicht zur Bevoelkerung, nicht als untaetig, nicht als Ziel; nach
+  `TOT_SEKUNDEN` (2) nimmt ihn `einheitTakten` aus der Karte. Im Zustand
+  `s: 1`; der Browser legt ihn um (`rotate(-1.45)`, Alpha 0,65), nimmt ihn aus
+  der Auswahl und zeichnet ihn unter den Lebenden.
+- **Ein Gebaeude mit 0 Leben** wird geloescht, `freigeben()` gibt die Felder
+  frei, `gebaeudeGeaendert` schickt `{ weg: true }`.
+- **Neuer Pruefgriff:** `zeitraffer(page, code, 0)` **haelt die Welt an** (der
+  Zustand geht weiter). Damit laesst sich ein Augenblick festhalten, der im
+  Spiel zwei Sekunden dauert.
 
-Danach: **B5** Kampf (kampf AC-1 bis AC-10, bedienung AC-34, einheiten AC-25)
-· **B6** Verbesserungen (bauen AC-25, AC-26, ki AC-9) · **B7** Gleichgewicht
-messen (fahrplan AC-8 bis AC-10).
+## Was als Naechstes kommt: der Rest von B5
+
+**kampf AC-2 (sich wehren), AC-3 (Verfolgung endet nach fuenf Feldern),
+AC-4 (Angriffslauf), AC-5 (Dorfbewohner kaempfen schlecht), dazu
+bedienung AC-34 (Angriffsbefehl erkennbar) und einheiten AC-25 (Fernkaempfer
+halten Abstand).** AC-5 ist fast geschenkt - Angriff 3 ohne Bonus steht in den
+Daten -, verlangt aber den Nachweis, dass vier Dorfbewohner einen Soldaten
+nicht aufhalten. Fuer AC-2 braucht es eine Sichtpruefung je stehender
+Kampfeinheit; das ist die erste Stelle, an der der Kampf Rechenzeit je Takt
+kostet - vorher messen (fahrplan AC-6: Takt mit 800 Einheiten unter 1 ms).
+
+Danach: **B6** Verbesserungen (bauen AC-25, AC-26, ki AC-9) · **B7**
+Gleichgewicht messen (fahrplan AC-8 bis AC-10).
 
 ## Die Regeln, die ich am ehesten vergesse
 
@@ -189,6 +223,12 @@ messen (fahrplan AC-8 bis AC-10).
   (`stift.save(); translate(fuss); rotate(winkel);` dann Stiel und Blatt
   senkrecht, `restore()`). Punkte auf einer schraegen Linie von Hand zu
   rechnen ging in Runde 61 schief - das Axtblatt hing neben dem Stiel.
+- **Ein Takt als Schalter ist im ersten Takt falsch** (Runde 63):
+  `einheit.tot = this.takt` war `0` und damit falsy. Schalter und Zeitpunkt
+  trennen.
+- **Wer in einer Schleife ueber Einheiten sofort Schaden verrechnet, gibt dem
+  Ersten den Vorrang** (Runde 63). Wirkungen eines Takts sammeln und am Ende
+  abrechnen.
 - **Alte Bildschirmtexte des Strategiespiels haben keine Umlaute**
   („Bevoelkerung voll", „Das ist nicht dein Gebaeude."), obwohl CLAUDE.md sie
   verlangt. Neue Texte werden richtig geschrieben; die alten aufzuraeumen ist

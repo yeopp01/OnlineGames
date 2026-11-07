@@ -1,0 +1,10 @@
+{
+  "spec": "10-strategie/kampf.md",
+  "ac": "AC-10",
+  "titel": "Berts Miliz ist gefallen: sie liegt umgekippt am Boden, zwei Sekunden lang, während Annas drei Milizen daneben stehen",
+  "datei": "e2e/tests/strategie-kampf.spec.mjs",
+  "pfad": [
+    "Kampf",
+    "kampf AC-10: wer fallt, liegt zwei Sekunden am Boden"
+  ]
+}

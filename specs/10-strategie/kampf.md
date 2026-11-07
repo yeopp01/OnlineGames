@@ -2,7 +2,7 @@
 
 **Bereich:** Strategie
 **Kuerzel:** kampf
-**Stand:** 0/14 fertig · 13 offen · 1 zurueckgestellt
+**Stand:** 5/14 fertig · 8 offen · 1 zurueckgestellt
 
 ## Zweck
 
@@ -49,9 +49,12 @@ aus [Spielziel](spielziel.md) AC-10, gemessen in
 
 ### Angreifen
 
-- **AC-1** `offen` **Rechtsklick auf Feindliches greift an** — Auf eine fremde Einheit oder ein
+- **AC-1** `fertig` **Rechtsklick auf Feindliches greift an** — Auf eine fremde Einheit oder ein
   fremdes Gebäude. Kein eigener Knopf, keine eigene Betriebsart. Die Einheit
   läuft hin, bis das Ziel in ihrer Reichweite ist, und schlägt dann zu.
+  Mehrere Angreifer bekommen je ein eigenes Feld um das Ziel, wie beim Gehen
+  ([Einheiten](einheiten-und-befehle.md) AC-20): sonst stehen drei dort, wo
+  der erste gerade nah genug war, und im Bild übereinander.
 - **AC-2** `offen` **Kampfeinheiten wehren sich von selbst** — Was in die Sichtweite einer
   stehenden Kampfeinheit kommt, wird ohne Befehl angegriffen. Ein
   Dorfbewohner tut das nicht: er arbeitet weiter, bis er selbst getroffen
@@ -67,21 +70,22 @@ aus [Spielziel](spielziel.md) AC-10, gemessen in
 
 ### Schaden
 
-- **AC-6** `offen` **Schaden nach der Vorlage** — `max(1, Angriff − Rüstung + Bonus)`, nah gegen
+- **AC-6** `fertig` **Schaden nach der Vorlage** — `max(1, Angriff − Rüstung + Bonus)`, nah gegen
   die Nahrüstung, fern gegen die Fernrüstung, der Bonus auf die
   Rüstungsklasse des Ziels. Keine Verdopplung, keine Ausnahme je Einheit —
   eine Formel für alle.
-- **AC-7** `offen` **Jede Einheit hat ihre Nachladezeit** — Nach der Vorlage: Miliz, Soldat,
+- **AC-7** `fertig` **Jede Einheit hat ihre Nachladezeit** — Nach der Vorlage: Miliz, Soldat,
   Späherreiter und Dorfbewohner 2,0 s, Bogenschütze 2,0 s, Speerkämpfer und
   Plänkler 3,0 s. Ein gemeinsamer Takt für alle wäre lesbarer, verfälscht
   aber den Kreis — der Plänkler ist langsam, dafür billig.
-- **AC-8** `offen` **Kein Zufall im Schaden** — Gleiche Lage, gleiches Ergebnis. Würfel machen
+- **AC-8** `fertig` **Kein Zufall im Schaden** — Gleiche Lage, gleiches Ergebnis. Würfel machen
   Niederlagen unerklärlich, und erklärbare Niederlagen sind das, was zur
   nächsten Partie führt.
 - **AC-9** `zurueckgestellt` (abgeloest durch darstellung AC-8) **Leben ist sichtbar** — Der Lebensbalken über Beschädigtem ist
   mit Stufe A gebaut, dort geprüft und dort bebildert.
-- **AC-10** `offen` **Tote verschwinden nach zwei Sekunden** — Lange genug, um zu sehen, was passiert
-  ist.
+- **AC-10** `fertig` **Tote verschwinden nach zwei Sekunden** — Lange genug, um zu sehen, was passiert
+  ist: der Gefallene kippt um, liegt blass am Boden und zählt vom Schlag an
+  nicht mehr — nicht zur Bevölkerung, nicht zur Auswahl, nicht als Ziel.
 
 ### Sicht
 
@@ -108,6 +112,12 @@ aus [Spielziel](spielziel.md) AC-10, gemessen in
 - Ein Ziel, das die Einheit nicht erreichen kann (eingemauert, auf der
   anderen Seite eines Gebäudes), lässt sie nach erfolgloser Wegsuche stehen;
   der Auftrag endet, statt endlos zu rechnen.
+- Ein Gebäude ohne Leben verschwindet samt seinem Platz auf der Karte — über
+  die Fläche lässt sich danach laufen und bauen. Trümmer gibt es nicht; die
+  wären eine Entscheidung für Stufe C.
+- Die Schläge eines Takts werden an seinem Ende zusammen abgerechnet. Nur
+  deshalb sterben zwei Einheiten, die einander den letzten Schlag versetzen,
+  beide.
 
 ## Hinweis zu AC-13
 

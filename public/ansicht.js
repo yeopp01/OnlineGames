@@ -172,8 +172,11 @@ export class Ansicht {
     // Eingesammelte Einheiten, die es nicht mehr gibt, fallen aus der Auswahl.
     for (const id of this.ausgewaehlt) {
       const tier = this.tiere.get(id);
-      // Ein Schaf bleibt gewaehlt, solange es lebt und uns gehoert.
-      if (tier ? (tier.g || tier.b !== this.ich) : !this.nachher.has(id)) this.ausgewaehlt.delete(id);
+      // Ein Schaf bleibt gewaehlt, solange es lebt und uns gehoert; eine
+      // gefallene Einheit faellt sofort heraus, auch wenn sie noch liegt
+      // (kampf AC-10).
+      const einheit = this.nachher.get(id);
+      if (tier ? (tier.g || tier.b !== this.ich) : (!einheit || einheit.s)) this.ausgewaehlt.delete(id);
     }
     if (this.gewaehltesGebaeude && !this.gebaeude.has(this.gewaehltesGebaeude)) this.gewaehltesGebaeude = null;
   }
@@ -355,7 +358,7 @@ export class Ansicht {
       // Trifft die ganze Figur, vom Fuss bis zum Kopf.
       let besterAbstand = Math.max(KLICK_WEITE * this.kamera.zoom, figur * 0.75);
       for (const einheit of this.nachher.values()) {
-        if (einheit.b !== this.ich) continue;
+        if (einheit.b !== this.ich || einheit.s) continue;
         const p = this.zuBild(einheit.x, einheit.y);
         const abstand = Math.hypot(p.x - rahmen.vonX, p.y - figur * KOERPER_MITTE - rahmen.vonY);
         if (abstand < besterAbstand) {
@@ -390,7 +393,7 @@ export class Ansicht {
     const oben = Math.min(rahmen.vonY, rahmen.bisY);
     const unten = Math.max(rahmen.vonY, rahmen.bisY);
     for (const einheit of this.nachher.values()) {
-      if (einheit.b !== this.ich) continue;
+      if (einheit.b !== this.ich || einheit.s) continue;
       const p = this.zuBild(einheit.x, einheit.y);
       const mitte = p.y - figur * KOERPER_MITTE * 0.5;
       if (p.x >= links && p.x <= rechts && mitte >= oben && mitte <= unten) this.ausgewaehlt.add(einheit.i);
@@ -631,7 +634,9 @@ export class Ansicht {
     // Gleiche Tiefe: der Vorrat zuerst, sonst verschwindet ein Sammler im Baum,
     // vor dem er steht.
     const rang = { vorrat: 0, gebaeude: 1, tier: 2, einheit: 3 };
-    stehend.sort((a, b) => a.tiefe - b.tiefe || rang[a.art] - rang[b.art] || a.x - b.x);
+    // Gleiche Tiefe: ein Gefallener liegt unter den Lebenden (kampf AC-10).
+    const stufe = (d) => (d.art === 'einheit' && d.einheit.s ? 2.5 : rang[d.art]);
+    stehend.sort((a, b) => a.tiefe - b.tiefe || stufe(a) - stufe(b) || a.x - b.x);
 
     const e = HALB_B * zoom;
     this.verdeckte = [];
@@ -870,6 +875,22 @@ export class Ansicht {
     const dx = alt ? (einheit.x - alt.x) - (einheit.y - alt.y) : 0;
     const laeuft = alt && Math.hypot(einheit.x - alt.x, einheit.y - alt.y) > 0.001;
     if (Math.abs(dx) > 0.001) this.blicke.set(einheit.i, dx < 0 ? -1 : 1);
+
+    // Gefallen (kampf AC-10): liegt zwei Sekunden am Boden, blass und ohne
+    // Ring - so sieht man, wer den Kampf verloren hat, bevor er verschwindet.
+    if (einheit.s) {
+      stift.save();
+      stift.globalAlpha = 0.65;
+      // Gedreht um die Fuesse, bis der Koerper flach liegt, und ein Stueck
+      // zur Seite gerueckt, damit er neben dem Platz liegt und nicht darauf.
+      stift.translate(punkt.x + hoehe * 0.2, punkt.y + hoehe * 0.12);
+      stift.rotate(-1.45);
+      figurBildZeichnen(stift, this.arten[einheit.k] || 'dorfbewohner', 0, 0, hoehe, spieler ? spieler.farbe : '#888888', {
+        blick: this.blicke.get(einheit.i) || 1,
+      });
+      stift.restore();
+      return;
+    }
 
     if (this.ausgewaehlt.has(einheit.i)) {
       // Die Auswahl liegt als Ellipse am Boden, unter den Fuessen.

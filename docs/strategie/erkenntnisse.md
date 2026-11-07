@@ -133,6 +133,8 @@ Zahlen, gegen die spätere Runden vergleichen. Mit Datum und Commit.
 | 2026-09-17 | Tests ohne Browser / im Browser; Browserlauf (CPU 25 %) | 287 / 99; 2,1 min — strategie-* 82 s, langsamster Fall 22 s | Runde 25 |
 | 2026-09-17 | Tests ohne Browser / im Browser; Browserlauf (CPU 7 %, 13 fremde node-Prozesse im Leerlauf) | 275 / 91; 1,7 min — davon rund 20 s die neue Datei strategie-ausbilden | Runde 20 |
 | 2026-11-07 | Tests ohne Browser / im Browser; Browserlauf | 348 / 138; 5,3 min — **nicht vergleichbar**: 30 fremde Browserprozesse. Langsamster Fall 9,2 s | Runde 61 |
+| 2026-11-07 | Tests ohne Browser / im Browser; Browserlauf | 361 / 140; 5,6 min — **nicht vergleichbar**: wieder 30 fremde Browserprozesse (16 chrome, 14 msedge) | Runde 63 |
+| 2026-11-07 | Pruefstand nach dem Kampf: 20 Startwerte x 10 Spielminuten — Dorfbewohner / Zeit je Takt | 22 (Median 22) / 0,007 ms, keine Widersprueche | Runde 63 |
 
 ## Rückschauen
 
@@ -410,6 +412,29 @@ alle sieben Gebäude der Dunklen Zeit stehen. Was sich wiederholt hat:
 Neueste oben. Eine Zeile je Runde: Nummer, Datum, Kriterien, Ergebnis,
 wichtigste Erkenntnis.
 
+- **63** · 2026-11-07 · **kampf AC-1, AC-6, AC-7, AC-8, AC-10 fertig — der
+  Kampf steht** (Schritt B5, erste Hälfte): Ein Rechtsklick auf eine fremde
+  Einheit oder ein fremdes Gebäude wird zum Angriff; der Server liest das aus
+  dem geklickten Feld, wie er schon Sammeln, Bauen und Hüten daraus liest —
+  kein neuer Knopf, keine neue Nachricht. Schaden ist
+  `max(1, Angriff − Rüstung + Bonus)` ohne Ausnahme, die Nachladezeit steht
+  je Einheit in `daten.js` (2,0 s, Speerkämpfer und Plänkler 3,0 s), Gebäude
+  haben 0/7 Rüstung bekommen. Wer fällt, kippt um, liegt zwei Sekunden blass
+  am Boden und zählt vom Schlag an nicht mehr. Drei Erkenntnisse: (1) **Der
+  Takt eines Todes ist 0.** `einheit.tot = this.takt` war als Schalter falsch,
+  solange die Partie im ersten Takt stand — jetzt ein `tot`-Schalter *und*
+  ein `gefallen`-Takt. (2) **Schläge gehören ans Ende des Takts.** Sofort
+  verrechnet, überlebt immer der, der in der Schleife zuerst drankam; der
+  Grenzfall „beide sterben" aus der Spec geht nur mit einer Abrechnung nach
+  allen Einheiten. (3) **Wer in Reichweite stehenbleibt, steht auf dem
+  Nächsten.** Drei Angreifer hielten alle dort an, wo der erste nah genug war
+  — im Bild eine Figur mit drei Schwertern. Jetzt bekommt jeder Angreifer ein
+  eigenes Feld um das Ziel (wie `aufstellungUm` beim Gehen), und ein
+  Nahkämpfer geht es zu Ende, statt vorher zu halten; nur Fernkämpfer halten
+  in Reichweite. Gefunden hat das keiner der 13 Tests, sondern das Bild.
+  Nächste Runde: **B5 zu Ende** — sich wehren (AC-2), Verfolgung (AC-3),
+  Angriffslauf (AC-4), Dorfbewohner (AC-5), dazu bedienung AC-34 und
+  einheiten AC-25.
 - **62** · 2026-11-07 · **Spec-Runde Kampf**: `kampf.md` trug noch die Zahlen
   der kleinen Fassung vor ADR-0012 — vier erfundene Einheiten mit Tempo 4,5
   und „doppelter Schaden gegen die schwache Seite". Jetzt steht dort die

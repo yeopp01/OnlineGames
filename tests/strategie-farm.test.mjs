@@ -40,9 +40,12 @@ function bisAufDerFarm(welt, einheit) {
 }
 
 test('bauen AC-20: die Farm nach der Tabelle - 3 x 3, 60 Holz, 15 Sekunden, 480 Leben, 175 Nahrung, begehbar', () => {
+  // Feld fuer Feld statt deepEqual: die Tabelle waechst mit den Stufen
+  // (Ruestung kam mit dem Kampf dazu), die Zahlen der Vorlage bleiben.
+  const f = GEBAEUDE.farm;
   assert.deepEqual(
-    { ...GEBAEUDE.farm },
-    { groesse: 3, kosten: { holz: 60 }, bauzeit: 15, leben: 480, wohnraum: 0, annahme: [], bildetAus: [], begehbar: true, nahrung: 175, rate: 0.32 },
+    [f.groesse, f.kosten, f.bauzeit, f.leben, f.wohnraum, f.annahme, f.bildetAus, f.begehbar, f.nahrung, f.rate],
+    [3, { holz: 60 }, 15, 480, 0, [], [], true, 175, 0.32],
   );
   const { welt, farm } = mitFarm();
   const { x0, y0, x1, y1 } = welt.grundflaeche('farm', farm.x, farm.y);

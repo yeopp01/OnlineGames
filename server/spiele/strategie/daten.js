@@ -6,10 +6,11 @@
 
 // Einheiten: Leben, Tempo in Feldern je Sekunde, Sicht in Feldern, Tragkraft.
 //
-// Kampfwerte stehen bei jeder Einheit, auch wenn der Kampf erst mit Schritt B5
-// kommt: `angriff`, `nahruestung`, `fernruestung`, `reichweite` (0 heisst
-// Nahkampf) und `bonus` je Ruestungsklasse. `klassen` sagt, als was eine
-// Einheit **getroffen** wird - der Speerkaempfer ist Infanterie *und* Speer,
+// Kampfwerte stehen bei jeder Einheit: `angriff`, `nahruestung`,
+// `fernruestung`, `reichweite` (0 heisst Nahkampf), `nachladen` in Sekunden
+// zwischen zwei Schlaegen (kampf AC-7) und `bonus` je Ruestungsklasse.
+// `klassen` sagt, als was eine Einheit **getroffen** wird - der
+// Speerkaempfer ist Infanterie *und* Speer,
 // damit der Bogenschuetze seinen Bonus gegen ihn findet (einheiten AC-23).
 // Der Kreis, auf den es ankommt: Speer schlaegt Reiter, Reiter schlaegt
 // Bogen, Bogen schlaegt Speer, Plaenkler schlaegt Bogen.
@@ -20,36 +21,36 @@ const EINHEITEN = {
   // `zeitalter` fehlt: wie bei den Gebaeuden heisst das Dunkle Zeit (Stufe 0).
   dorfbewohner: {
     leben: 25, tempo: 0.8, sicht: 4, tragkraft: 10, kosten: { nahrung: 50 }, zeit: 25, kuerzel: 'd',
-    angriff: 3, nahruestung: 0, fernruestung: 0, reichweite: 0, klassen: ['dorf'],
+    angriff: 3, nahruestung: 0, fernruestung: 0, reichweite: 0, nachladen: 2, klassen: ['dorf'],
     baut: ['haus', 'muehle', 'holzfaellerlager', 'bergbaulager', 'farm', 'kaserne', 'schiessanlage', 'stall', 'schmiede'],
   },
   // Ausgebildet wird er im Stall, also ab der Feudalzeit; zu Beginn steht
   // einer in der Startaufstellung (bauen AC-22).
   spaeherreiter: {
     leben: 45, tempo: 1.2, sicht: 4, tragkraft: 0, kosten: { nahrung: 80 }, zeit: 30, kuerzel: 's',
-    angriff: 3, nahruestung: 0, fernruestung: 2, reichweite: 0, klassen: ['kavallerie'],
+    angriff: 3, nahruestung: 0, fernruestung: 2, reichweite: 0, nachladen: 2, klassen: ['kavallerie'],
   },
   // Kaempfen kann die Miliz ab Stufe B; bis dahin laeuft sie (bauen AC-9).
   miliz: {
     leben: 40, tempo: 0.9, sicht: 4, tragkraft: 0, kosten: { nahrung: 60, gold: 20 }, zeit: 21, kuerzel: 'm',
-    angriff: 4, nahruestung: 0, fernruestung: 1, reichweite: 0, klassen: ['infanterie'],
+    angriff: 4, nahruestung: 0, fernruestung: 1, reichweite: 0, nachladen: 2, klassen: ['infanterie'],
   },
   // Die drei Einheiten der Feudalzeit (einheiten AC-23). `zeitalter: 1` sperrt
   // sie bis zum Aufstieg - auch in der Kaserne, die schon in der Dunklen Zeit
   // steht.
   speerkaempfer: {
     leben: 45, tempo: 1.0, sicht: 4, tragkraft: 0, kosten: { nahrung: 35, holz: 25 }, zeit: 22, kuerzel: 'p',
-    angriff: 3, nahruestung: 0, fernruestung: 0, reichweite: 0,
+    angriff: 3, nahruestung: 0, fernruestung: 0, reichweite: 0, nachladen: 3,
     klassen: ['infanterie', 'speer'], bonus: { kavallerie: 15 }, zeitalter: 1,
   },
   bogenschuetze: {
     leben: 30, tempo: 0.96, sicht: 6, tragkraft: 0, kosten: { holz: 25, gold: 45 }, zeit: 35, kuerzel: 'b',
-    angriff: 4, nahruestung: 0, fernruestung: 0, reichweite: 4,
+    angriff: 4, nahruestung: 0, fernruestung: 0, reichweite: 4, nachladen: 2,
     klassen: ['bogenschuetze'], bonus: { speer: 3 }, zeitalter: 1,
   },
   plaenkler: {
     leben: 30, tempo: 0.96, sicht: 6, tragkraft: 0, kosten: { nahrung: 25, holz: 35 }, zeit: 22, kuerzel: 'k',
-    angriff: 2, nahruestung: 0, fernruestung: 3, reichweite: 4,
+    angriff: 2, nahruestung: 0, fernruestung: 3, reichweite: 4, nachladen: 3,
     klassen: ['bogenschuetze'], bonus: { bogenschuetze: 3 }, zeitalter: 1,
   },
   // Die zweite Stufe der Miliz (einheiten AC-24). Sie wird nicht neben der
@@ -58,7 +59,7 @@ const EINHEITEN = {
   // Milizen sind schon welche. Deshalb kostet sie dasselbe wie die Miliz.
   soldat: {
     leben: 45, tempo: 0.9, sicht: 4, tragkraft: 0, kosten: { nahrung: 60, gold: 20 }, zeit: 21, kuerzel: 'o',
-    angriff: 6, nahruestung: 0, fernruestung: 1, reichweite: 0,
+    angriff: 6, nahruestung: 0, fernruestung: 1, reichweite: 0, nachladen: 2,
     klassen: ['infanterie'], zeitalter: 1, stufeVon: 'miliz',
   },
 };
@@ -116,6 +117,17 @@ const GEBAEUDE = {
     groesse: 3, kosten: { holz: 150 }, bauzeit: 40, leben: 1200, wohnraum: 0, annahme: [], bildetAus: [], zeitalter: 1,
   },
 };
+
+// Jedes Gebaeude ist auch ein Ziel (kampf AC-1), also braucht es Ruestung und
+// eine Ruestungsklasse. Nach dem Original: keine Nahruestung, aber 7
+// Fernruestung - Pfeile richten an Mauerwerk kaum etwas aus, ein Rammbock
+// umso mehr. Hier als Grundwert, damit nicht zehnmal dasselbe dasteht; ein
+// Turm in einer spaeteren Stufe traegt seine eigenen Zahlen.
+for (const gebaeude of Object.values(GEBAEUDE)) {
+  gebaeude.nahruestung ??= 0;
+  gebaeude.fernruestung ??= 7;
+  gebaeude.klassen ??= ['gebaeude'];
+}
 
 // Auftraege je Gebaeude (bauen AC-10).
 const SCHLANGE_MAX = 15;
