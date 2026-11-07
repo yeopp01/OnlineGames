@@ -409,6 +409,26 @@ alle sieben Gebäude der Dunklen Zeit stehen. Was sich wiederholt hat:
 Neueste oben. Eine Zeile je Runde: Nummer, Datum, Kriterien, Ergebnis,
 wichtigste Erkenntnis.
 
+- **60** · 2026-11-07 · einheiten AC-23 **fertig** (Schritt B4, erster Teil):
+  Speerkämpfer, Bogenschütze und Plänkler — Werte, Sperre bis zur Feudalzeit,
+  drei neue Figuren, zwei Bildnachweise. Gelernt: (1) **Ein neues Feld in den
+  Werten einer Einheit reißt jeden Test, der die Werte auf Gleichheit prüft**
+  — `bedienung AC-29` und `einheiten AC-19` rissen beide an `deepEqual` über
+  `EINHEITEN`. Wachsende Listen auf „enthält" prüfen stand schon hier; dass
+  es auch für wachsende **Objekte** gilt, war neu. (2) **Das Zeitalter muss
+  über die Leitung**: in `daten.js` stand `zeitalter: 1`, im Aufbau fehlte es
+  — der Browser bot den Speerkämpfer in der Dunklen Zeit an, obwohl der
+  Server ihn abwies. Wer eine Regel an ein Datenfeld hängt, prüft, dass das
+  Feld beim Browser ankommt. (3) **`ausgewaehlt` hält den Schlüssel der Map
+  `nachher`, nicht `e.id`** — eine Auswahl per Hand setzt man aus
+  `[...a.nachher.entries()]`. (4) Drei Runden Hinsehen und Nachbessern an den
+  Figuren: der Plänkler warf den Speer quer durchs Gesicht, der Speerkämpfer
+  trug den Strohhut des Dorfbewohners, die Kapuze des Bogenschützen schwebte
+  als Scheibe vor dem Kopf. Gemessen wurde vorher schon alles über einem
+  Drittel — **die Messung findet keine Peinlichkeit, nur das Auge.** Dafür
+  jetzt `npm run sicht -- --ausschnitt x,y,b,h --lupe 3`: 92 Bildpunkte je
+  Figur reichen nicht, um eine Hand am Griff zu beurteilen.
+  Nächste Runde: **einheiten AC-24** (Miliz wird Soldat).
 - **59** · 2026-11-07 · bauen AC-24 **fertig**, darstellung AC-14 erweitert —
   **Schritt B3**: Schießanlage, Stall und Schmiede. Sie tragen `zeitalter: 1`
   in den Daten; daran hängt alles andere — das Baumenü lässt sie weg, der

@@ -2,7 +2,7 @@
 
 **Bereich:** Strategie
 **Kuerzel:** einheiten
-**Stand:** 16/21 fertig · 4 offen · 1 zurueckgestellt
+**Stand:** 17/21 fertig · 3 offen · 1 zurueckgestellt
 
 ## Zweck
 
@@ -103,11 +103,17 @@ Befehl bewirkt.
 
 ### Feudalzeit (Stufe B)
 
-- **AC-23** `offen` **Drei neue Einheiten** — Speerkämpfer (35 Nahrung, 25 Holz, 22 s) in der
+- **AC-23** `fertig` **Drei neue Einheiten** — Speerkämpfer (35 Nahrung, 25 Holz, 22 s) in der
   Kaserne, Bogenschütze (25 Holz, 45 Gold, 35 s) und Plänkler (25 Nahrung,
   35 Holz, 22 s) in der Schießanlage, Späherreiter (80 Nahrung, 30 s) im
   Stall. Werte für Leben, Angriff, Rüstung, Reichweite und Tempo nach der
-  [Vorlage](../../docs/strategie/vorlage-aoe2.md).
+  [Vorlage](../../docs/strategie/vorlage-aoe2.md). Alle drei tragen
+  `zeitalter: 1`: die Kaserne steht schon in der Dunklen Zeit, bietet den
+  Speerkämpfer aber erst nach dem Aufstieg an — im Menü und auf dem Server.
+  Angriff, Rüstung und Bonus stehen als Daten bereit; **gekämpft wird erst mit
+  [Kampf](kampf.md)**. Der Bonus zielt auf die Rüstungsklasse, nicht auf die
+  Art: Speer schlägt Kavallerie, Bogen schlägt Speer, Plänkler schlägt
+  Bogenschützen.
 - **AC-24** `offen` **Miliz wird Soldat** — Die Kaserne erforscht ab der Feudalzeit die
   Stufe Soldat (Leben 45, Angriff 6); alle vorhandenen Milizen werden dadurch
   zu Soldaten, ohne neu ausgebildet zu werden.

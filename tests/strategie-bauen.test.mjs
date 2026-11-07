@@ -187,13 +187,19 @@ test('bedienung AC-29: der Aufbau nennt die Werte je Art, der Zustand das Leben 
   const welt = new Welt(ZWEI, 7);
   const { werte } = welt.aufbau();
   const { baut, ...dorfbewohner } = werte.einheiten.dorfbewohner;
-  assert.deepEqual(dorfbewohner, { kuerzel: 'd', leben: 25, tragkraft: 10, kosten: { nahrung: 50 }, zeit: 25 });
+  assert.deepEqual(dorfbewohner, {
+    kuerzel: 'd', leben: 25, tragkraft: 10, kosten: { nahrung: 50 }, zeit: 25,
+    // Seit B4 gehen Zeitalter und Kampfwerte mit ueber die Leitung (einheiten AC-23).
+    zeitalter: 0, angriff: 3, nahruestung: 0, fernruestung: 0, reichweite: 0,
+  });
   // Was ein Dorfbewohner bauen kann, waechst mit den Stufen: enthalten, nicht gleich.
   for (const art of ['haus', 'muehle', 'holzfaellerlager', 'bergbaulager', 'farm', 'kaserne']) {
     assert.ok(baut.includes(art), art);
   }
-  assert.deepEqual(werte.einheiten.spaeherreiter,
-    { kuerzel: 's', leben: 45, tragkraft: 0, kosten: { nahrung: 80 }, zeit: 30, baut: [] });
+  assert.deepEqual(werte.einheiten.spaeherreiter, {
+    kuerzel: 's', leben: 45, tragkraft: 0, kosten: { nahrung: 80 }, zeit: 30, baut: [],
+    zeitalter: 0, angriff: 3, nahruestung: 0, fernruestung: 2, reichweite: 0,
+  });
   assert.equal(werte.gebaeude.dorfzentrum.leben, 2400);
   // Was ein Gebaeude anbietet, waechst mit den Stufen: enthalten, nicht gleich.
   for (const art of ['dorfbewohner', 'webstuhl']) assert.ok(werte.gebaeude.dorfzentrum.bildetAus.includes(art), art);
@@ -460,7 +466,9 @@ test('bauen AC-20: alle sieben Gebaeude der Dunklen Zeit sind da, Dorfbewohner b
 test('bauen AC-9: die Kaserne bildet Miliz fuer 60 Nahrung und 20 Gold in 21 Sekunden aus', () => {
   assert.deepEqual(EINHEITEN.miliz.kosten, { nahrung: 60, gold: 20 });
   assert.equal(EINHEITEN.miliz.zeit, 21);
-  assert.deepEqual(GEBAEUDE.kaserne.bildetAus, ['miliz']);
+  // „Enthaelt", nicht „ist gleich": die Kaserne bildet ab der Feudalzeit auch
+  // den Speerkaempfer aus (einheiten AC-23), und das soll hier nichts reissen.
+  assert.ok(GEBAEUDE.kaserne.bildetAus.includes('miliz'));
   const welt = new Welt(ZWEI, 7, { vorrat: 'viel' });
   const anna = welt.spielerVon('a');
   const platz = freierPlatz(welt, 'kaserne', 6);

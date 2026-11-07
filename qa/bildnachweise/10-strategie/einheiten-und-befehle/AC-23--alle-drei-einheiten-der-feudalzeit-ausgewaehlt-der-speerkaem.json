@@ -1,0 +1,10 @@
+{
+  "spec": "10-strategie/einheiten-und-befehle.md",
+  "ac": "AC-23",
+  "titel": "Alle drei Einheiten der Feudalzeit ausgewählt: der Speerkämpfer an der Kaserne, Bogenschütze und Plänkler an der Schießanlage",
+  "datei": "e2e/tests/strategie-feudaleinheiten.spec.mjs",
+  "pfad": [
+    "Einheiten der Feudalzeit",
+    "einheiten AC-23: die Schiessanlage bildet Bogenschuetze und Plaenkler aus"
+  ]
+}

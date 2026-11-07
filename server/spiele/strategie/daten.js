@@ -5,19 +5,53 @@
 // verzweigt nicht nach Einheit oder Volk.
 
 // Einheiten: Leben, Tempo in Feldern je Sekunde, Sicht in Feldern, Tragkraft.
+//
+// Kampfwerte stehen bei jeder Einheit, auch wenn der Kampf erst mit Schritt B5
+// kommt: `angriff`, `nahruestung`, `fernruestung`, `reichweite` (0 heisst
+// Nahkampf) und `bonus` je Ruestungsklasse. `klassen` sagt, als was eine
+// Einheit **getroffen** wird - der Speerkaempfer ist Infanterie *und* Speer,
+// damit der Bogenschuetze seinen Bonus gegen ihn findet (einheiten AC-23).
+// Der Kreis, auf den es ankommt: Speer schlaegt Reiter, Reiter schlaegt
+// Bogen, Bogen schlaegt Speer, Plaenkler schlaegt Bogen.
 const EINHEITEN = {
   // kosten und zeit (Sekunden): Ausbildung (bauen AC-8). kuerzel: so geht die
   // Art ueber die Leitung - ein Zustand bleibt unter 1 kB (uebertragung AC-7).
   // baut: welche Gebaeude er errichten kann (bauen AC-1).
+  // `zeitalter` fehlt: wie bei den Gebaeuden heisst das Dunkle Zeit (Stufe 0).
   dorfbewohner: {
     leben: 25, tempo: 0.8, sicht: 4, tragkraft: 10, kosten: { nahrung: 50 }, zeit: 25, kuerzel: 'd',
+    angriff: 3, nahruestung: 0, fernruestung: 0, reichweite: 0, klassen: ['dorf'],
     baut: ['haus', 'muehle', 'holzfaellerlager', 'bergbaulager', 'farm', 'kaserne', 'schiessanlage', 'stall', 'schmiede'],
   },
   // Ausgebildet wird er im Stall, also ab der Feudalzeit; zu Beginn steht
   // einer in der Startaufstellung (bauen AC-22).
-  spaeherreiter: { leben: 45, tempo: 1.2, sicht: 4, tragkraft: 0, kosten: { nahrung: 80 }, zeit: 30, kuerzel: 's' },
+  spaeherreiter: {
+    leben: 45, tempo: 1.2, sicht: 4, tragkraft: 0, kosten: { nahrung: 80 }, zeit: 30, kuerzel: 's',
+    angriff: 3, nahruestung: 0, fernruestung: 2, reichweite: 0, klassen: ['kavallerie'],
+  },
   // Kaempfen kann die Miliz ab Stufe B; bis dahin laeuft sie (bauen AC-9).
-  miliz: { leben: 40, tempo: 0.9, sicht: 4, tragkraft: 0, kosten: { nahrung: 60, gold: 20 }, zeit: 21, kuerzel: 'm' },
+  miliz: {
+    leben: 40, tempo: 0.9, sicht: 4, tragkraft: 0, kosten: { nahrung: 60, gold: 20 }, zeit: 21, kuerzel: 'm',
+    angriff: 4, nahruestung: 0, fernruestung: 1, reichweite: 0, klassen: ['infanterie'],
+  },
+  // Die drei Einheiten der Feudalzeit (einheiten AC-23). `zeitalter: 1` sperrt
+  // sie bis zum Aufstieg - auch in der Kaserne, die schon in der Dunklen Zeit
+  // steht.
+  speerkaempfer: {
+    leben: 45, tempo: 1.0, sicht: 4, tragkraft: 0, kosten: { nahrung: 35, holz: 25 }, zeit: 22, kuerzel: 'p',
+    angriff: 3, nahruestung: 0, fernruestung: 0, reichweite: 0,
+    klassen: ['infanterie', 'speer'], bonus: { kavallerie: 15 }, zeitalter: 1,
+  },
+  bogenschuetze: {
+    leben: 30, tempo: 0.96, sicht: 6, tragkraft: 0, kosten: { holz: 25, gold: 45 }, zeit: 35, kuerzel: 'b',
+    angriff: 4, nahruestung: 0, fernruestung: 0, reichweite: 4,
+    klassen: ['bogenschuetze'], bonus: { speer: 3 }, zeitalter: 1,
+  },
+  plaenkler: {
+    leben: 30, tempo: 0.96, sicht: 6, tragkraft: 0, kosten: { nahrung: 25, holz: 35 }, zeit: 22, kuerzel: 'k',
+    angriff: 2, nahruestung: 0, fernruestung: 3, reichweite: 4,
+    klassen: ['bogenschuetze'], bonus: { bogenschuetze: 3 }, zeitalter: 1,
+  },
 };
 
 // Sammelraten je Sekunde, nach dem Vorrat, an dem gearbeitet wird
@@ -58,12 +92,13 @@ const GEBAEUDE = {
     groesse: 3, kosten: { holz: 60 }, bauzeit: 15, leben: 480, wohnraum: 0, annahme: [], bildetAus: [],
     begehbar: true, nahrung: 175, rate: 0.32,
   },
-  kaserne: { groesse: 3, kosten: { holz: 175 }, bauzeit: 50, leben: 1200, wohnraum: 0, annahme: [], bildetAus: ['miliz'] },
+  kaserne: { groesse: 3, kosten: { holz: 175 }, bauzeit: 50, leben: 1200, wohnraum: 0, annahme: [], bildetAus: ['miliz', 'speerkaempfer'] },
   // Gebaeude der Feudalzeit (bauen AC-24): `zeitalter: 1` sperrt sie, bis die
-  // Feudalzeit erreicht ist. Was sie ausbilden, kommt mit Schritt B4 - der
-  // Spaeherreiter steht schon und zieht deshalb in den Stall ein.
+  // Feudalzeit erreicht ist. Die Schmiede bildet nichts aus - sie forscht, und
+  // das kommt mit Schritt B6.
   schiessanlage: {
-    groesse: 3, kosten: { holz: 175 }, bauzeit: 50, leben: 1000, wohnraum: 0, annahme: [], bildetAus: [], zeitalter: 1,
+    groesse: 3, kosten: { holz: 175 }, bauzeit: 50, leben: 1000, wohnraum: 0, annahme: [],
+    bildetAus: ['bogenschuetze', 'plaenkler'], zeitalter: 1,
   },
   stall: {
     groesse: 3, kosten: { holz: 175 }, bauzeit: 50, leben: 1000, wohnraum: 0, annahme: [], bildetAus: ['spaeherreiter'], zeitalter: 1,

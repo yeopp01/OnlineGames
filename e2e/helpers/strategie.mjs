@@ -1,6 +1,6 @@
 // Handgriffe fuer das Strategiespiel im Browser. Rueckschau nach Runde 20:
 // der Start einer Partie zu zweit stand kopiert in jeder Spielbild-Datei.
-import { ANMELDUNG, expect, fehlerSammeln, zeitraffer } from './seite.mjs';
+import { ANMELDUNG, GRIFFHAFEN, expect, fehlerSammeln, zeitraffer } from './seite.mjs';
 
 /**
  * Anna (angemeldet) eroeffnet mit festem Startwert, Bert tritt bei, Anna
@@ -180,4 +180,27 @@ export function bedienteileFrei(page) {
     }
     return beanstandet;
   });
+}
+
+/**
+ * Ein Gebaeude in der Naehe eines Punktes aufstellen - das erste Feld, auf dem
+ * Platz ist. Ein fester Versatz geht schief, sobald dort ein Baum steht oder
+ * die Karte anders faellt (Runde 60).
+ *
+ * @returns {Promise<string>} die Id des Gebaeudes
+ */
+export async function gebaeudeInDerNaehe(page, code, name, art, um, { von = 4, bis = 14 } = {}) {
+  const versuche = [];
+  for (let r = von; r <= bis; r++) {
+    for (const [dx, dy] of [[-1, 0], [0, 1], [1, 0], [0, -1], [-1, 1], [1, 1], [-1, -1], [1, -1]]) {
+      versuche.push([um.x + dx * r, um.y + dy * r]);
+    }
+  }
+  for (const [x, y] of versuche) {
+    const antwort = await page.request.post(`http://localhost:${GRIFFHAFEN}/griff`, {
+      data: { id: code, befehl: 'gebaeude', werte: { name, art, x, y } },
+    });
+    if (antwort.ok()) return (await antwort.json()).id;
+  }
+  throw new Error(`Nirgends Platz fuer ${art} um ${um.x}, ${um.y}`);
 }

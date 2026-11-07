@@ -176,18 +176,18 @@ function beineZeichnen(stift, schritt, farbe, fein) {
   }
 }
 
-function kopf(stift, y, { hut = null, helm = false, fein = true, haut = HAUT } = {}) {
+function kopf(stift, y, { hut = null, helm = false, kappe = null, fein = true, haut = HAUT } = {}) {
   // Um die Mitte des Gesichts verkleinert; der Kopf sitzt mit dem Kinn auf den
   // Schultern (RUMPF_HEBEN).
   stift.save();
   stift.translate(0.6, y + 3.3);
   stift.scale(KOPF_MASS, KOPF_MASS);
   stift.translate(-0.6, -y - 3.3);
-  kopfZeichnen(stift, y, { hut, helm, fein, haut });
+  kopfZeichnen(stift, y, { hut, helm, kappe, fein, haut });
   stift.restore();
 }
 
-function kopfZeichnen(stift, y, { hut, helm, fein, haut }) {
+function kopfZeichnen(stift, y, { hut, helm, kappe, fein, haut }) {
   const HAUT = haut;
   // Ohr hinten, dann das Gesicht mit Licht von links oben.
   ellipse(stift, -2.1, y + 0.2, 0.9, 1.2, toenen(HAUT, -0.15));
@@ -209,6 +209,16 @@ function kopfZeichnen(stift, y, { hut, helm, fein, haut }) {
     if (fein) {
       for (const nx of [-2.2, 0.2, 2.6]) ellipse(stift, nx, y - 1.1, 0.32, 0.32, '#5c636b', false);
       strich(stift, [[-1.4, y - 4], [0.6, y - 4.7]], 'rgba(255,255,255,0.6)', 0.6);
+    }
+  } else if (kappe) {
+    // Eine schlichte Kappe ohne Krempe: anliegend, mit Stirnband - so sieht
+    // man auf einen Blick, dass es kein Strohhut und kein Helm ist.
+    ellipse(stift, 0.2, y - 2.1, 3.1, 1.7, HAAR, false);
+    rund(stift, [[-3.2, y - 1], [3.7, y - 1], [3.2, y - 4.2], [0.3, y - 5.1], [-2.6, y - 4.2]],
+      licht(stift, kappe, -3.2, y - 5.1, 3.7, y - 1, 0.22, -0.26), true);
+    if (fein) {
+      strich(stift, [[-3.1, y - 1.4], [3.5, y - 1.4]], 'rgba(40,30,18,0.45)', 0.6);
+      strich(stift, [[-1.6, y - 4.3], [1, y - 4.8]], 'rgba(255,255,255,0.3)', 0.5);
     }
   } else if (hut) {
     // Haar lugt unter dem Hut hervor.
@@ -514,12 +524,170 @@ function kadaver(stift, farbe, rest, fein = true) {
   stift.restore();
 }
 
+// --- Die drei Einheiten der Feudalzeit (einheiten AC-23) --------------------
+// Jede muss sich von jeder anderen auf einem Drittel der Flaeche unterscheiden
+// (darstellung AC-14). Das leistet nicht die Ausruestung im Kleinen, sondern
+// der Umriss: der Speer steht senkrecht ueber dem Kopf, der Bogen woelbt sich
+// nach vorn, der Wurfspiess liegt waagerecht ueber der Schulter.
+const LEINEN = '#cfc0a4';
+const FELL = '#7a6243';
+
+function speerkaempfer(stift, farbe, { schritt = 0, fein = true, haut = HAUT }) {
+  schatten(stift, 6);
+  beine(stift, schritt, HOSE, fein);
+  stift.save();
+  stift.translate(0, -RUMPF_HEBEN);
+  stift.scale(RUMPF_BREITE, 1);
+  // Der Speer macht den Umriss: Schaft von der Hand weit ueber den Kopf,
+  // Blattspitze aus Eisen, Lederwicklung am Griff.
+  stift.save();
+  stift.translate(4.6, -13);
+  stift.rotate(0.1);
+  vieleck(stift, [[-0.6, 5.2], [0.6, 5.2], [0.6, -13.5], [-0.6, -13.5]], licht(stift, HOLZ, -0.7, 0, 0.7, 0, 0.32, -0.3));
+  vieleck(stift, [[-1.5, -13.3], [1.5, -13.3], [0.95, -15.6], [0, -17.6], [-0.95, -15.6]], licht(stift, EISEN, -1.5, -17, 1.5, -13, 0.4, -0.3));
+  if (fein) {
+    strich(stift, [[0, -13.9], [0, -16.8]], 'rgba(70,78,88,0.75)', 0.3);
+    for (const wy of [1.3, 2.8]) strich(stift, [[-0.7, wy], [0.7, wy]], 'rgba(60,40,24,0.8)', 0.5);
+  }
+  stift.restore();
+  // Gesteppter Waffenrock aus Leinen - heller als alles andere im Spiel -,
+  // darueber ein Wappenstreifen in Spielerfarbe.
+  const rock = [[-4.6, -6.4], [4.8, -6.4], [4, -17.2], [0.2, -17.9], [-3.7, -17.2]];
+  umriss(stift, () => rund(stift, rock, 'rgba(0,0,0,0)', true));
+  rund(stift, rock, licht(stift, LEINEN, -4, -17, 5, -6, 0.2, -0.24), false);
+  if (fein) for (const sy of [-8.4, -10.8, -13.2, -15.6]) strich(stift, [[-4.2, sy], [4.4, sy]], 'rgba(120,100,70,0.45)', 0.4);
+  vieleck(stift, [[-1.7, -6.8], [1.9, -6.8], [1.6, -17.6], [-1.4, -17.6]], licht(stift, farbe, -1.7, -17, 2, -7), false);
+  vieleck(stift, [[-4.4, -10.2], [4.6, -10.2], [4.5, -8.9], [-4.3, -8.9]], licht(stift, LEDER, 0, -10.2, 0, -8.9), false);
+  kopf(stift, -19.8, { kappe: '#9a8c6a', fein, haut });
+  ellipse(stift, 4.5, -12.9, 1.1, 1.2, licht(stift, haut, 3.5, -14, 5.5, -11.5, 0.15, -0.2));
+  // Kleiner Rundschild am linken Arm, viel kleiner als der Schild der Miliz.
+  umriss(stift, () => { stift.beginPath(); stift.ellipse(-5.2, -12.2, 3.1, 3.3, 0, 0, Math.PI * 2); stift.stroke(); });
+  ellipse(stift, -5.2, -12.2, 3.1, 3.3, licht(stift, HOLZ, -8.3, -15.5, -2.1, -8.9, 0.25, -0.3), false);
+  ellipse(stift, -5.2, -12.2, 1.1, 1.1, licht(stift, EISEN, -6.3, -13.3, -4.1, -11.1, 0.4, -0.3));
+  if (fein) {
+    strich(stift, [[-7.9, -13.6], [-2.5, -13.6]], 'rgba(60,40,24,0.5)', 0.4);
+    glanz(stift, -5.6, -12.7, 0.35, 0.3, 0.9);
+  }
+  stift.restore();
+}
+
+function bogenschuetze(stift, farbe, { schritt = 0, fein = true, haut = HAUT }) {
+  schatten(stift, 6);
+  beine(stift, schritt, '#4a4336', fein);
+  stift.save();
+  stift.translate(0, -RUMPF_HEBEN);
+  stift.scale(RUMPF_BREITE, 1);
+  // Koecher auf dem Ruecken; die Pfeilfedern ragen ueber die Schulter.
+  vieleck(stift, [[-6.4, -8.2], [-3.4, -8.8], [-2.6, -15.4], [-5.6, -15]], licht(stift, LEDER, -6.4, -15.4, -2.6, -8.2, 0.22, -0.26), true);
+  for (const [px, ph] of [[-5.4, -19.6], [-4.2, -20.6], [-3, -19.4]]) {
+    strich(stift, [[px - 0.4, -15.2], [px, ph]], '#b59a6a', 0.7);
+    vieleck(stift, [[px - 0.95, ph], [px + 0.95, ph], [px + 0.5, ph + 2.3], [px - 0.6, ph + 2.3]], '#ded2b8', false);
+  }
+  // Schmales Wams in Spielerfarbe mit Guertel - kein Schild, keine Ruestung.
+  const wams = [[-4, -6.4], [4.2, -6.4], [3.6, -17], [0.2, -17.7], [-3.3, -17]];
+  umriss(stift, () => rund(stift, wams, 'rgba(0,0,0,0)', true));
+  rund(stift, wams, licht(stift, farbe, -4, -17, 4.2, -6.4, 0.22, -0.26), false);
+  if (fein) strich(stift, [[-3.5, -12.2], [3.7, -12.2]], toenen(farbe, 0.4), 0.5);
+  vieleck(stift, [[-3.8, -10], [4, -10], [3.9, -8.8], [-3.7, -8.8]], licht(stift, LEDER, 0, -10, 0, -8.8), false);
+  // Die Kapuze liegt **hinter** dem Kopf und geht in einen Schulterkragen
+  // ueber - sonst klebt sie als Scheibe am Hinterkopf.
+  rund(stift, [[-4.6, -15.6], [-4, -19.6], [-1.6, -21.8], [1.8, -21], [1.4, -18.6], [-1.4, -16.4]],
+    licht(stift, '#6a6a52', -4.6, -21.8, 1.8, -15.6, 0.2, -0.26), true);
+  kopf(stift, -19.8, { fein, haut });
+  rund(stift, [[-4.8, -15.2], [-1.4, -16.4], [1.6, -15.8], [1.2, -14], [-4.4, -13.6]],
+    licht(stift, toenen('#6a6a52', -0.12), -4.8, -16.4, 1.6, -13.6, 0.2, -0.26), true);
+  // Der Bogen vorn: Holzbogen, gespannte Sehne nach hinten gezogen, Pfeil auf.
+  stift.save();
+  stift.lineCap = 'round';
+  stift.strokeStyle = licht(stift, HOLZ, 5, -20, 12, -7, 0.3, -0.3);
+  stift.lineWidth = 1.2;
+  stift.beginPath();
+  stift.moveTo(5.2, -20.6);
+  stift.quadraticCurveTo(11.8, -13.4, 5.2, -6.2);
+  stift.stroke();
+  stift.strokeStyle = 'rgba(246,242,228,0.95)';
+  stift.lineWidth = 0.25;
+  stift.beginPath();
+  stift.moveTo(5.2, -20.6);
+  stift.lineTo(2.6, -13.4);
+  stift.lineTo(5.2, -6.2);
+  stift.stroke();
+  stift.restore();
+  // Pfeil auf der Sehne, waagerecht nach vorn.
+  strich(stift, [[2.6, -13.4], [10.6, -13.4]], '#9a7a4a', 0.6);
+  vieleck(stift, [[10.4, -14.1], [12.2, -13.4], [10.4, -12.7]], EISEN, false);
+  // Beide Arme greifen von der Schulter aus - ohne sie haengen die Haende in
+  // der Luft -, die Haende selbst klein.
+  vieleck(stift, [[3.4, -15.6], [4.4, -15.9], [8.6, -13], [7.6, -12.2]], licht(stift, haut, 3.4, -15.9, 8.6, -12.2, 0.16, -0.2), false);
+  vieleck(stift, [[3.2, -15.4], [4, -15.7], [3.4, -12.8], [2.5, -12.8]], licht(stift, haut, 2.5, -15.7, 4, -12.8, 0.16, -0.2), false);
+  ellipse(stift, 8.3, -13.3, 0.85, 0.95, licht(stift, haut, 7.5, -14.3, 9.2, -12.4, 0.15, -0.2));
+  ellipse(stift, 2.9, -13.3, 0.8, 0.9, licht(stift, haut, 2.1, -14.2, 3.7, -12.4, 0.15, -0.2));
+  stift.restore();
+}
+
+function plaenkler(stift, farbe, { schritt = 0, fein = true, haut = HAUT }) {
+  schatten(stift, 6);
+  beine(stift, schritt, '#5a4a36', fein);
+  stift.save();
+  stift.translate(0, -RUMPF_HEBEN);
+  stift.scale(RUMPF_BREITE, 1);
+  // Wams in Spielerfarbe, darueber eine Fellweste - der groesste
+  // Farbunterschied zum Bogenschuetzen, der nur Stoff traegt.
+  const wams = [[-4.3, -6.4], [4.5, -6.4], [3.8, -17.1], [0.2, -17.8], [-3.5, -17.1]];
+  umriss(stift, () => rund(stift, wams, 'rgba(0,0,0,0)', true));
+  rund(stift, wams, licht(stift, farbe, -4.3, -17.1, 4.5, -6.4, 0.22, -0.26), false);
+  const weste = [[-4.1, -8.6], [-1.2, -9.2], [1.6, -9.2], [4.3, -8.6], [3.6, -16.8], [0.2, -17.5], [-3.4, -16.8]];
+  rund(stift, weste, licht(stift, FELL, -4.1, -17.5, 4.3, -8.6, 0.24, -0.28), true);
+  if (fein) {
+    for (const fy of [-10.4, -12.4, -14.4, -16]) {
+      strich(stift, [[-3.6, fy], [-1.4, fy + 0.5]], 'rgba(60,46,28,0.5)', 0.5);
+      strich(stift, [[1.4, fy + 0.3], [3.6, fy - 0.2]], 'rgba(60,46,28,0.5)', 0.5);
+    }
+  }
+  vieleck(stift, [[-4.1, -9.6], [4.3, -9.6], [4.2, -8.4], [-4, -8.4]], licht(stift, LEDER, 0, -9.6, 0, -8.4), false);
+  // Der Wurfarm geht von der Schulter nach hinten oben, nicht ueber das
+  // Gesicht. Schmaler als ein Rumpf, sonst sieht er aus wie ein Balken.
+  vieleck(stift, [[-1.6, -16.2], [-0.2, -16.6], [-2.4, -21.4], [-3.6, -21]],
+    licht(stift, haut, -3.6, -21.4, -0.2, -16.2, 0.16, -0.2), false);
+  kopf(stift, -19.8, { kappe: '#6b5a3c', fein, haut });
+  // Drei Wurfspiesse im Buendel vor dem Koerper, kurz und mit kleiner Spitze -
+  // so sieht man, dass er wirft und nicht sticht. Sie stehen **vor** der
+  // Weste, sonst verschwinden sie darin.
+  for (const [vx, vy, dreh] of [[-5, -11.4, 0.1], [-6, -11, 0.24], [-4.1, -11.6, -0.04]]) {
+    stift.save();
+    stift.translate(vx, vy);
+    stift.rotate(dreh);
+    vieleck(stift, [[-0.4, 4.6], [0.4, 4.6], [0.4, -4.6], [-0.4, -4.6]], licht(stift, toenen(HOLZ, -0.1), -0.5, 0, 0.5, 0, 0.26, -0.26));
+    vieleck(stift, [[-0.85, -4.4], [0.85, -4.4], [0, -6.4]], licht(stift, EISEN_DUNKEL, -0.9, -6.4, 0.9, -4.4, 0.38, -0.3), false);
+    stift.restore();
+  }
+  // Die Faust haelt das Buendel in der Mitte - klein, sonst deckt sie es zu.
+  vieleck(stift, [[-3.9, -12.6], [-3, -12.9], [-4.3, -10.4], [-5.2, -10.6]], licht(stift, haut, -5.2, -12.9, -3, -10.4, 0.16, -0.2), false);
+  ellipse(stift, -4.9, -10.9, 0.9, 0.95, licht(stift, haut, -5.8, -11.8, -4, -10, 0.15, -0.2));
+  // Der geworfene Spiess hoch und weit nach vorn: ein schraeger Balken ueber
+  // allem, wo keine andere Figur etwas hat.
+  stift.save();
+  stift.translate(-2.6, -22.2);
+  stift.rotate(-0.28);
+  vieleck(stift, [[-4.2, -0.5], [12.6, -0.5], [12.6, 0.5], [-4.2, 0.5]], licht(stift, HOLZ, -4.2, 0, 12.6, 0, 0.3, -0.3));
+  vieleck(stift, [[12.4, -1.25], [15.4, 0], [12.4, 1.25]], licht(stift, EISEN, 12.4, -1.25, 15.4, 1.25, 0.4, -0.3), false);
+  if (fein) strich(stift, [[1.4, -0.1], [3, -0.1]], 'rgba(60,40,24,0.8)', 0.5);
+  stift.restore();
+  ellipse(stift, -2.5, -21.6, 0.95, 1, licht(stift, haut, -3.5, -22.6, -1.5, -20.6, 0.15, -0.2));
+  stift.restore();
+}
+
 export const FIGUREN = {
   dorfbewohner: { name: 'Dorfbewohner', zeichnen: dorfbewohner, breite: 1 },
   schaf: { name: 'Schaf', zeichnen: schaf, breite: 1.1 },
   miliz: { name: 'Miliz', zeichnen: miliz, breite: 1 },
   // Der Reiter ragt ueber die Figurenhoehe hinaus - `oben` sagt, wie weit (Lebensbalken).
   spaeherreiter: { name: 'Spaeherreiter', zeichnen: spaeherreiter, breite: 1.6, oben: 1.15 },
+  // Feudalzeit (einheiten AC-23). Speer und Wurfspiess ragen nach oben hinaus,
+  // der Bogen nach vorn - daher `oben` und `breite`.
+  speerkaempfer: { name: 'Speerkämpfer', zeichnen: speerkaempfer, breite: 1.1, oben: 1.2 },
+  bogenschuetze: { name: 'Bogenschütze', zeichnen: bogenschuetze, breite: 1.3 },
+  plaenkler: { name: 'Plänkler', zeichnen: plaenkler, breite: 1.3, oben: 1.05 },
 };
 
 export { WAREN };

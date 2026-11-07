@@ -126,10 +126,24 @@ try {
   if (argumente.includes('--spiel')) {
     await spielbild();
   } else {
-    const blatt = await browser.newPage({ viewport: { width: breite, height: hoehe } });
+    // --ausschnitt x,y,b,h schneidet ein Stueck heraus und zeichnet es mit
+    // --lupe <faktor> vergroessert. Dafuer gibt es einen Grund: ein Blick auf
+    // die ganze Schautafel zeigt jede Figur 92 Bildpunkte breit - zu wenig,
+    // um zu beurteilen, ob eine Hand am Griff sitzt.
+    const lupe = Number(wert('lupe', 1));
+    const roh = wert('ausschnitt', null);
+    const blatt = await browser.newPage({
+      viewport: { width: breite, height: hoehe },
+      deviceScaleFactor: lupe,
+    });
     beobachten(blatt);
     await blatt.goto(`http://localhost:${HAFEN}${seite}`, { waitUntil: 'networkidle' });
-    await blatt.screenshot({ path: ziel });
+    if (roh) {
+      const [x, y, b, h] = roh.split(',').map(Number);
+      await blatt.screenshot({ path: ziel, clip: { x, y, width: b, height: h } });
+    } else {
+      await blatt.screenshot({ path: ziel });
+    }
   }
   console.log(ziel);
   if (fehler.length) console.log(`Die Seite hat Fehler gemeldet:\n  ${fehler.join('\n  ')}`);

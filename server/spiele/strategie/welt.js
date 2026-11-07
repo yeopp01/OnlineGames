@@ -38,6 +38,16 @@ const GEBAEUDE_NAMEN = {
   schmiede: 'Die Schmiede',
 };
 
+// Dasselbe für die Einheiten (einheiten AC-23).
+const EINHEIT_NAMEN = {
+  dorfbewohner: 'Den Dorfbewohner',
+  spaeherreiter: 'Den Späherreiter',
+  miliz: 'Die Miliz',
+  speerkaempfer: 'Den Speerkämpfer',
+  bogenschuetze: 'Den Bogenschützen',
+  plaenkler: 'Den Plänkler',
+};
+
 function untaetigeListe(welt, spielerId) {
   const ids = welt.untaetigeVon(spielerId);
   return ids.length ? { u: ids } : {};
@@ -450,6 +460,13 @@ class Welt {
     if (!GEBAEUDE[gebaeude.art].bildetAus.includes(art)) return { fehler: 'Das bildet dieses Gebaeude nicht aus.' };
     if (gebaeude.schlange.length >= SCHLANGE_MAX) return { fehler: 'Die Warteschlange ist voll.' };
     const spieler = this.spielerVon(spielerId);
+    // Eine Einheit kann ein spaeteres Zeitalter verlangen als ihr Gebaeude:
+    // die Kaserne steht in der Dunklen Zeit, der Speerkaempfer kommt erst mit
+    // der Feudalzeit (einheiten AC-23).
+    const noetig = EINHEITEN[art]?.zeitalter || 0;
+    if (noetig > spieler.zeitalter) {
+      return { fehler: `${EINHEIT_NAMEN[art] || art} gibt es erst in ${ZEITALTER[noetig].genitiv}.` };
+    }
     // Der Aufstieg: nur der naechste, nur einmal, und nur mit genug Gebaeuden
     // des laufenden Zeitalters (bauen AC-23).
     if (AUFSTIEGE[art]) {
@@ -1359,6 +1376,12 @@ class Welt {
         einheiten: Object.fromEntries(Object.entries(EINHEITEN).map(([art, w]) => [art, {
           kuerzel: w.kuerzel, leben: w.leben, tragkraft: w.tragkraft, kosten: w.kosten || null, zeit: w.zeit || null,
           baut: w.baut || [],
+          // Ohne diese Zeile stuende der Speerkaempfer schon in der Dunklen
+          // Zeit im Ausbildungsmenue (einheiten AC-23).
+          zeitalter: w.zeitalter || 0,
+          // Kampfwerte: die Leiste zeigt sie ab Stufe B5 an der Auswahl.
+          angriff: w.angriff || 0, nahruestung: w.nahruestung || 0, fernruestung: w.fernruestung || 0,
+          reichweite: w.reichweite || 0,
         }])),
         gebaeude: Object.fromEntries(Object.entries(GEBAEUDE).map(([art, w]) => [art, {
           leben: w.leben, bildetAus: w.bildetAus, groesse: w.groesse, kosten: w.kosten, bauzeit: w.bauzeit,

@@ -24,7 +24,7 @@ test('darstellung AC-14: je zwei Einheiten und je zwei Gebaeude unterscheiden si
   // Spielerfarbe - was bleibt, ist Umriss und Farbe der Gestalt. Ein Drittel
   // aus dem Kriterium; vor Runde 41 lagen Holzfaeller- und Bergbaulager mit
   // demselben Pultdach bei 0,29.
-  expect(figuren.length, 'alle Paare der Einheiten').toBeGreaterThanOrEqual(6);
+  expect(figuren.length, 'alle Paare der Einheiten').toBeGreaterThanOrEqual(21);
   expect(gebaeude.length, 'alle Paare der Gebaeude').toBeGreaterThanOrEqual(45);
   for (const { paar, anteil } of [...figuren, ...gebaeude]) expect(anteil, paar).toBeGreaterThanOrEqual(1 / 3);
 });
@@ -61,7 +61,7 @@ test('darstellung AC-9 / fahrplan AC-7: die Schautafel zeigt jede Einheit und je
     await nachweis(page, {
       spec,
       ac,
-      titel: 'Die Schautafel: Dorfbewohner, Miliz, Spaeherreiter, Schaf, Gelaende und alle zehn Gebaeude in Blau und Rot, mit Namen',
+      titel: 'Die Schautafel: Dorfbewohner, Miliz, Späherreiter, Speerkämpfer, Bogenschütze, Plänkler, Schaf, Gelände und alle zehn Gebäude in Blau und Rot, mit Namen',
       test: info,
     });
   }

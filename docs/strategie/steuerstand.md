@@ -13,16 +13,17 @@ hier nichts eintraegt, verliert den Faden beim naechsten Autocompact.
 
 ## Zuletzt fortgeschrieben
 
-2026-11-07, nach Runde 59 (Schritt B3 fertig und committet).
+2026-11-07, nach Runde 60 (einheiten AC-23 fertig, erster Teil von B4).
 
 ## Wo ich stehe
 
 - **Branch:** `strategie`. Nie auf `main` arbeiten, **nie pushen, nie deployen.**
-- **Board:** 357 von 503 Kriterien fertig · 1 in Arbeit · 5 in QA · 4 geplant ·
-  129 offen · 7 zurueckgestellt. 336 Tests ohne Browser, 133 im Browser.
+- **Board:** 358 von 503 Kriterien fertig · 1 in Arbeit · 5 in QA · 4 geplant ·
+  128 offen · 7 zurueckgestellt. 342 Tests ohne Browser, 136 im Browser.
 - **Stufe A ist erreicht** (fahrplan AC-3 bis AC-7).
-- **Stufe B:** Bauabfolge B1 bis B7 im [Fahrplan](fahrplan.md). **B1, B2 und B3
-  sind fertig.** Der Arbeitsbaum ist sauber.
+- **Stufe B:** Bauabfolge B1 bis B7 im [Fahrplan](fahrplan.md). **B1, B2, B3
+  und der erste Teil von B4 (einheiten AC-23) sind fertig.** Der Arbeitsbaum
+  ist sauber.
 
 ## Was B2 und B3 gebracht haben (zum Weiterbauen wissen)
 
@@ -50,17 +51,36 @@ hier nichts eintraegt, verliert den Faden beim naechsten Autocompact.
 - **Entschieden:** die Voraussetzung „zwei Gebaeude der Dunklen Zeit ausser
   Haeusern" zaehlt **das Dorfzentrum mit** (in bauen AC-23 notiert).
 
-## Was als Naechstes kommt: Schritt B4
+## Was B4 bisher gebracht hat (einheiten AC-23)
 
-Die Einheiten der Feudalzeit, **einheiten AC-23 und AC-24**: Speerkaempfer
-(35 N, 25 H, 22 s) und Plaenkler (25 N, 35 H, 22 s) aus der Kaserne,
-Bogenschuetze (25 H, 45 G, 35 s) und Plaenkler aus der Schiessanlage, der
-Spaeherreiter aus dem Stall (steht schon), und die **Miliz wird zum Soldaten**
-(60 N, 20 G, 21 s). Werte in [vorlage-aoe2.md](vorlage-aoe2.md). Jede neue
-Einheit braucht eine Figur in `public/figuren.js`, einen Platz auf der
-Schautafel (`public/schautafel.js`) und muss sich von allen anderen auf einem
-Drittel der Flaeche unterscheiden - **vorher und nachher messen** mit
-`npm run tafel -- "t.unterschiede('figur')"`.
+- **Drei neue Einheiten** in `daten.js`, alle mit `zeitalter: 1`:
+  Speerkaempfer (35 N, 25 H, 22 s, Kaserne), Bogenschuetze (25 H, 45 G, 35 s)
+  und Plaenkler (25 N, 35 H, 22 s, beide Schiessanlage).
+- **Jede Einheit traegt jetzt Kampfwerte**: `angriff`, `nahruestung`,
+  `fernruestung`, `reichweite`, `klassen` und `bonus`. Der Bonus zielt auf
+  eine **Klasse**, nicht auf eine Art - Speer schlaegt `kavallerie`, Bogen
+  schlaegt `speer`, Plaenkler schlaegt `bogenschuetze`. **Gekaempft wird noch
+  nicht**; das ist B5.
+- **Die Sperre bis zur Feudalzeit haengt an zwei Stellen**: `welt.ausbilden()`
+  weist ab (mit `EINHEIT_NAMEN` im Akkusativ fuer die Meldung), und
+  `auswahlleiste.angebot()` laesst die Einheit aus dem Menue. Damit der
+  Browser das kann, steht `zeitalter` seit dieser Runde **im Aufbau**
+  (`welt.aufbau()`), zusammen mit den Kampfwerten.
+- **Drei Figuren** in `public/figuren.js` (`speerkaempfer`, `bogenschuetze`,
+  `plaenkler`), drei Eintraege auf der Schautafel. `kopf()` kennt jetzt
+  `kappe` - ohne das trug der Speerkaempfer den Strohhut des Dorfbewohners.
+- Gemessen: alle 21 Figurenpaare ueber 0,53 (Grenze ein Drittel), fast
+  schwarz 0 / 1,4 / 0 %.
+
+## Was als Naechstes kommt: einheiten AC-24
+
+**Die Miliz wird zum Soldaten** (60 N, 20 G, 21 s Forschung in der Kaserne ab
+der Feudalzeit; der Soldat hat 45 Leben und 6 Angriff). Alle vorhandenen
+Milizen werden mit, ohne neu auszubilden - das ist die erste Verbesserung,
+die bestehende Einheiten aendert, also eine eigene Runde wert. Der Soldat
+braucht eine **eigene Figur**, die sich von der Miliz auf einem Drittel der
+Flaeche unterscheidet; gemessen mit
+`npm run tafel -- "t.unterschiede('figur')"` **vorher und nachher**.
 
 Danach: **B5** Kampf (kampf AC-1 bis AC-10, bedienung AC-34, einheiten AC-25)
 · **B6** Verbesserungen (bauen AC-25, AC-26, ki AC-9) · **B7** Gleichgewicht
@@ -125,6 +145,22 @@ messen (fahrplan AC-8 bis AC-10).
   eines Verlaufs - hoechstens 3 % (darstellung AC-13). `t.gebaeudeMaske(...)`
   gibt `oben`, das unter 60 liegen muss (darstellung AC-4): ein Gebaeude hat
   einen Koerper, nur die Farm nicht.
+- **Ein neues Feld in `EINHEITEN` oder `GEBAEUDE` reisst jeden Test, der die
+  Werte auf Gleichheit prueft** (Runde 60: `bedienung AC-29` und
+  `einheiten AC-19`). Die Regel „wachsende Listen auf enthaelt pruefen" gilt
+  genauso fuer wachsende **Objekte**.
+- **Eine Regel an einem Datenfeld wirkt nur, wenn das Feld beim Browser
+  ankommt.** `zeitalter: 1` stand in `daten.js`, fehlte aber in
+  `welt.aufbau()` - der Server wies den Speerkaempfer in der Dunklen Zeit ab,
+  das Menue bot ihn trotzdem an (Runde 60).
+- **`ansicht.ausgewaehlt` haelt den Schluessel der Map `nachher`**, nicht
+  `einheit.id`. Wer im Test eine Auswahl von Hand setzt, nimmt
+  `[...a.nachher.entries()]` - mit `e.id` waehlt man nichts aus.
+- **Die Messung findet keine Peinlichkeit, nur das Auge** (Runde 60): alle
+  Paare lagen ueber einem Drittel, waehrend der Plaenkler seinen Speer quer
+  durchs Gesicht warf. Fuer das Hinsehen
+  `npm run sicht -- --ausschnitt x,y,b,h --lupe 3` - 92 Bildpunkte je Figur
+  auf der ganzen Schautafel reichen nicht.
 - **Alte Bildschirmtexte des Strategiespiels haben keine Umlaute**
   („Bevoelkerung voll", „Das ist nicht dein Gebaeude."), obwohl CLAUDE.md sie
   verlangt. Neue Texte werden richtig geschrieben; die alten aufzuraeumen ist

@@ -249,6 +249,10 @@ export class Auswahlleiste {
       // Von den Zeitaltern steht nur das naechste zur Wahl (bauen AC-23) -
       // alle drei auf einmal waeren drei Knoepfe, von denen zwei absagen.
       .filter((art) => !aufstiege[art] || aufstiege[art].stufe === this.ansicht.zeitalter + 1)
+      // Eine Einheit kann ein spaeteres Zeitalter verlangen als ihr Gebaeude
+      // (einheiten AC-23): die Kaserne steht schon in der Dunklen Zeit, den
+      // Speerkaempfer bildet sie erst ab der Feudalzeit aus.
+      .filter((art) => (werte.einheiten[art]?.zeitalter || 0) <= this.ansicht.zeitalter)
       .map((art) => ({
         art,
         name: aufstiege[art]?.name || werte.verbesserungen?.[art]?.name || FIGUREN[art]?.name || art,
