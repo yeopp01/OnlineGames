@@ -183,6 +183,44 @@ export function bedienteileFrei(page) {
 }
 
 /**
+ * Freie Wiesen neben der eigenen Basis, je mit fuenf Feldern Gras ringsum und
+ * mindestens 16 Felder auseinander. Auf Stein oder Wald sieht man die Figuren
+ * zwar, aber das Bild erzaehlt dann vom Steinbruch (Runde 63); und wer zwei
+ * Gefechte in einer Partie aufstellt, braucht sie weit genug auseinander, weil
+ * eine stehende Kampfeinheit von selbst angreift, was sie sieht (kampf AC-2).
+ *
+ * @param {import('@playwright/test').Page} page
+ * @param {number} [anzahl]
+ * @returns {Promise<{x: number, y: number}[]>}
+ */
+export function freieWiesen(page, anzahl = 1) {
+  return page.evaluate((anzahl) => {
+    const a = window.ansicht;
+    const g = a.karte.groesse;
+    const b = a.spieler.get(a.ich).basis;
+    const grasUm = (x, y, r) => {
+      for (let dy = -r; dy <= r; dy++) {
+        for (let dx = -r; dx <= r; dx++) {
+          if (a.karte.felder[(y + dy) * g + (x + dx)] !== 0) return false;
+        }
+      }
+      return true;
+    };
+    const gefunden = [];
+    for (let r = 7; r < 26; r++) {
+      for (const [sx, sy] of [[1, 1], [1, 0], [0, 1], [1, -1], [-1, 1], [-1, 0], [0, -1], [-1, -1]]) {
+        const x = b.x + r * sx;
+        const y = b.y + r * sy;
+        if (x <= 5 || y <= 5 || x >= g - 6 || y >= g - 6 || !grasUm(x, y, 5)) continue;
+        if (gefunden.every((w) => Math.hypot(w.x - x, w.y - y) > 16)) gefunden.push({ x, y });
+        if (gefunden.length === anzahl) return gefunden;
+      }
+    }
+    throw new Error(`nur ${gefunden.length} von ${anzahl} freien Wiesen gefunden`);
+  }, anzahl);
+}
+
+/**
  * Figuren, die im Bild uebereinander stehen. Zurueck kommt die Liste der
  * Beanstandungen, leer heisst in Ordnung - wie bei `bedienteileFrei`.
  *

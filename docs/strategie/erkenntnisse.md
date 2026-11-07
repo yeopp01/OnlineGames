@@ -500,6 +500,17 @@ alle sieben Gebäude der Dunklen Zeit stehen. Was sich wiederholt hat:
 Neueste oben. Eine Zeile je Runde: Nummer, Datum, Kriterien, Ergebnis,
 wichtigste Erkenntnis.
 
+- **66** · 2026-11-07 · **bedienung AC-34 fertig — der Befehl zeigt sich am
+  Ziel**: ein Ring auf dem Boden, der zusammenläuft und in 0,8 s verblasst,
+  weiß auf freiem Gelände, rot mit vier Haken nach innen auf Feindlichem. Er
+  steht **sofort**, ohne Weg zum Server — deshalb entscheidet der Browser
+  dieselbe Frage noch einmal (`feindlichAn` gegen `feindAn`/`gebaeudeAn`); die
+  Doppelung steht als Grenzfall in der Spec, damit sie niemand still
+  auseinanderlaufen lässt. Gelernt: ein zeitlich begrenztes Zeichen lässt sich
+  für ein Bild **ohne Prüfgriff** anhalten, indem der Test seinen Beginn in die
+  Zukunft setzt — der Lauf wird auf 0 geklemmt und das erste Bild bleibt
+  stehen. Nebenbei: die Suche nach freien Wiesen aus dem Kampftest ist als
+  `freieWiesen` in die Hilfe gewandert, statt kopiert zu werden.
 - **65** · 2026-11-07 · **Rückschau nach Runde 64** (55 und 60 waren
   ausgefallen): drei Verbesserungen — ein Wächter-Test gegen Gleichheit auf
   wachsenden Daten (zehn Treffer beim ersten Lauf, alle repariert),

@@ -2,7 +2,7 @@
 
 **Bereich:** Strategie
 **Kuerzel:** bedienung
-**Stand:** 22/34 fertig · 12 offen
+**Stand:** 23/34 fertig · 11 offen
 
 ## Zweck
 
@@ -119,9 +119,13 @@ verglichen: die drei größten Lücken in Lesbarkeit und Aussehen.
 - **AC-33** `fertig` **Zeitalter steht im Bild** — Oben steht, in welchem Zeitalter man ist;
   während eines Aufstiegs zeigt das Dorfzentrum den Fortschritt, und der
   Wechsel wird einmal im Bild gemeldet.
-- **AC-34** `offen` **Angriffsbefehl ist erkennbar** — Ein Rechtsklick auf Feindliches zeigt
+- **AC-34** `fertig` **Angriffsbefehl ist erkennbar** — Ein Rechtsklick auf Feindliches zeigt
   kurz ein rotes Zeichen am Ziel, ein Befehl auf freies Gelände ein weißes
-  (→ [Kampf](kampf.md) AC-1).
+  (→ [Kampf](kampf.md) AC-1). Beide sind ein Ring auf dem Boden, der
+  zusammenläuft und in 0,8 s verblasst; der rote bekommt vier Haken nach innen,
+  damit die Unterscheidung nicht allein an der Farbe hängt. Das Zeichen steht
+  **sofort**, ohne auf den Server zu warten — ein Weg hin und zurück wäre ein
+  Zehntel später, und das ist für eine Rückmeldung auf einen Klick zu viel.
 
 Aus den offenen Kriterien oben gehören zu Stufe A: AC-6 (Auswahl
 aufgelistet), AC-11 (Übersichtskarte — auf 120 × 120 unverzichtbar), AC-15
@@ -132,4 +136,13 @@ aufgelistet), AC-11 (Übersichtskarte — auf 120 × 120 unverzichtbar), AC-15
 - Bei starkem Zoom heraus werden Einheiten kleiner als drei Bildpunkte. Dann
   wird eine Mindestgröße gezeichnet, sonst verschwindet das Heer.
 - Ein Rechtsklick, während nichts ausgewählt ist, tut nichts — und darf keine
-  Meldung erzeugen. Das passiert ständig und ist kein Fehler.
+  Meldung erzeugen. Das passiert ständig und ist kein Fehler. Auch kein Zeichen
+  am Ziel (AC-34): angezeigt wird, was geschieht, nicht, wohin geklickt wurde.
+- Das weiße Zeichen (AC-34) sieht im Standbild aus wie ein Auswahlring. In
+  Bewegung nicht: es läuft zusammen und verblasst, der Auswahlring bleibt. Der
+  Fall, auf den es ankommt — Angriff oder nicht — hängt an Rot gegen Weiß und
+  an den vier Haken.
+- Weil das Zeichen sofort steht, entscheidet der Browser dieselbe Frage noch
+  einmal, die der Server beim Befehl entscheidet (`feindAn`, `gebaeudeAn` in
+  `welt.js`). Beide Regeln müssen gleich bleiben: eine fremde lebende Einheit
+  näher als 1,01 Felder, sonst ein fremdes Gebäude unter dem gerundeten Feld.

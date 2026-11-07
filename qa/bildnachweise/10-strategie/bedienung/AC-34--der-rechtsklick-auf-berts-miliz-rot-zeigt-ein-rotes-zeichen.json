@@ -1,0 +1,10 @@
+{
+  "spec": "10-strategie/bedienung.md",
+  "ac": "AC-34",
+  "titel": "Der Rechtsklick auf Berts Miliz (rot) zeigt ein rotes Zeichen mit vier Haken am Ziel — auf freies Gelände wäre es ein weißer Ring",
+  "datei": "e2e/tests/strategie-befehlszeichen.spec.mjs",
+  "pfad": [
+    "Befehlszeichen",
+    "bedienung AC-34: ein Rechtsklick auf Feindliches zeigt ein rotes Zeichen, einer auf freies Gelaende ein weisses"
+  ]
+}

@@ -13,22 +13,22 @@ hier nichts eintraegt, verliert den Faden beim naechsten Autocompact.
 
 ## Zuletzt fortgeschrieben
 
-2026-11-07, nach Runde 65 (**Rueckschau**: Waechter gegen Gleichheit auf wachsenden Daten, `figurenFrei` gegen Figuren auf einem Fleck, Rueckschau-Termin hier im Steuerstand).
+2026-11-07, nach Runde 66 (bedienung AC-34 fertig - **von B5 fehlt nur noch der Angriffslauf, kampf AC-4**).
 
 ## Wo ich stehe
 
 - **Branch:** `strategie`. Nie auf `main` arbeiten, **nie pushen, nie deployen.**
-- **Board:** 368 von 504 Kriterien fertig · 1 in Arbeit · 5 in QA · 4 geplant ·
-  118 offen · 8 zurueckgestellt. 373 Tests ohne Browser, 141 im Browser.
+- **Board:** 369 von 504 Kriterien fertig · 1 in Arbeit · 5 in QA · 4 geplant ·
+  117 offen · 8 zurueckgestellt. 373 Tests ohne Browser, 142 im Browser.
 - **Stufe A ist erreicht** (fahrplan AC-3 bis AC-7).
 - **Stufe B:** Bauabfolge B1 bis B7 im [Fahrplan](fahrplan.md). **B1 bis B4
-  sind fertig, aus B5 alles ausser dem Angriffslauf (kampf AC-4) und dem roten
-  Zeichen (bedienung AC-34).** Der Arbeitsbaum ist sauber.
+  sind fertig, aus B5 alles ausser dem Angriffslauf (kampf AC-4).** Der
+  Arbeitsbaum ist sauber.
 - **Naechste Rueckschau: Runde 70.** Diese Zeile ist der Termin - nicht
   nachzaehlen. Die Rueckschauen 55 und 60 sind ausgefallen, weil nach der
   Rueckschau zur Stufe A niemand mehr gezaehlt hat (Rueckschau nach Runde 65).
   Wer eine Rueckschau haelt, traegt hier die naechste Nummer ein.
-- **Runde 66 baut wieder**: der Rest von B5.
+- **Runde 67 baut** kampf AC-4, den Angriffslauf - danach ist B5 fertig.
 
 ## Was B2 und B3 gebracht haben (zum Weiterbauen wissen)
 
@@ -168,13 +168,13 @@ hier nichts eintraegt, verliert den Faden beim naechsten Autocompact.
 
 ## Was als Naechstes kommt
 
-Der Rest von B5: **kampf AC-4**
-(Angriffslauf - ein Befehl auf ein leeres Feld, bei dem unterwegs alles
-angegriffen wird) und **bedienung AC-34** (ein rotes Zeichen am Ziel beim
-Angriffsbefehl, ein weisses bei einem Befehl auf freies Gelaende). AC-34 ist
-reine Oberflaeche und gibt ein gutes Bild; AC-4 braucht eine zweite Betriebsart
-im Browser (Taste, dann Klick) - das erste Mal, dass ein Befehl nicht aus dem
-Feld gelesen werden kann.
+Der Rest von B5 ist **kampf AC-4**: der Angriffslauf - ein Befehl auf ein
+leeres Feld, bei dem unterwegs alles angegriffen wird, was im Weg steht. Er
+braucht eine zweite Betriebsart im Browser (Taste, dann Klick) - das erste Mal,
+dass ein Befehl nicht aus dem geklickten Feld gelesen werden kann. Das Zeichen
+am Ziel steht schon (bedienung AC-34, Runde 66) und sollte den Angriffslauf
+mitnehmen: `zielzeichenSetzen` kennt bisher nur das, was unter dem Klick
+steht.
 
 Offen daneben und in der Rueckschau nach Runde 65 **gemessen**: **einheiten
 AC-29** (keine zwei Einheiten uebereinander). Zwei von drei Angreifern standen

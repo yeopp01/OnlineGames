@@ -19,6 +19,9 @@ const HALB_H = 11; // halbe Rautenhoehe
 const FIGUR_HOEHE = 1.3; // in halben Rautenbreiten * 2
 const KOERPER_MITTE = 0.6; // Anteil der Figurenhoehe ueber dem Fusspunkt, auf den ein Klick zielt
 const KLICK_WEITE = 16; // Bildpunkte bei Vergroesserung 1
+// Wie lange das Zeichen am Ziel steht (bedienung AC-34). Kurz genug, dass es
+// nicht im Weg ist, lang genug, dass man es bei einem Klick bemerkt.
+const ZIELZEICHEN_DAUER = 800; // Millisekunden
 
 /** Hoehe einer Figur in Bildpunkten bei einem Zoom - auch fuer die Schautafel. */
 export function figurHoeheBei(zoom) {
@@ -52,6 +55,9 @@ export class Ansicht {
     this.werte = { einheiten: {}, gebaeude: {} };
     this.arten = {};
     this.gewaehltesGebaeude = null; // id; entweder Einheiten oder ein Gebaeude
+    // Das Zeichen am Ziel eines Befehls (bedienung AC-34): rot auf Feindliches,
+    // weiss auf freies Gelaende. { x, y, feindlich, seit }.
+    this.zielzeichen = null;
     this.beiAuswahl = () => {};
     // Nach jedem Bild und bei geaenderten Feldern - fuer die Uebersichtskarte (bedienung AC-11).
     this.nachBild = () => {};
@@ -499,13 +505,66 @@ export class Ansicht {
     // Ein eigenes Gebaeude gewaehlt: der Rechtsklick setzt seinen Sammelpunkt (bauen AC-13).
     if (this.gewaehltesGebaeude) {
       this.sammelpunktSenden(this.gewaehltesGebaeude, { x: Math.round(ziel.x), y: Math.round(ziel.y) });
+      this.zielzeichenSetzen(ziel);
       return;
     }
+    // Ein Rechtsklick ohne Auswahl tut nichts - und zeigt deshalb auch nichts
+    // (Grenzfall zu bedienung AC-34).
     if (!this.ausgewaehlt.size) return;
+    this.zielzeichenSetzen(ziel);
     this.befehlSenden([...this.ausgewaehlt], {
       x: Math.round(ziel.x),
       y: Math.round(ziel.y),
     });
+  }
+
+  /**
+   * Das Zeichen am Ziel eines Befehls (bedienung AC-34). Es steht sofort, ohne
+   * auf den Server zu warten: ein Weg hin und zurueck waere ein Zehntel
+   * spaeter, und das ist bei einer Rueckmeldung auf einen Klick zu viel.
+   * Deshalb entscheidet der Browser hier **dieselbe** Frage noch einmal, die
+   * der Server beim Befehl entscheidet (`welt.js`: `feindAn`, `gebaeudeAn`).
+   */
+  zielzeichenSetzen(ziel) {
+    const feind = this.feindlichAn(ziel);
+    this.zielzeichen = {
+      x: feind ? feind.x : Math.round(ziel.x),
+      y: feind ? feind.y : Math.round(ziel.y),
+      feindlich: Boolean(feind),
+      seit: performance.now(),
+    };
+  }
+
+  /**
+   * Was unter dem Klick angegriffen wuerde: die naechste fremde lebende Einheit
+   * naeher als ein Feld, sonst ein fremdes Gebaeude unter dem gerundeten Feld.
+   * Dieselben Grenzen wie im Server (1,01 Felder, Grundflaeche des Gebaeudes).
+   *
+   * @returns {{x: number, y: number}|null} die Mitte des Ziels
+   */
+  feindlichAn(ziel) {
+    let bestes = null;
+    let besterAbstand = 1.01;
+    for (const einheit of this.nachher.values()) {
+      if (einheit.b === this.ich || einheit.s) continue;
+      const abstand = Math.hypot(einheit.x - ziel.x, einheit.y - ziel.y);
+      if (abstand < besterAbstand) {
+        besterAbstand = abstand;
+        bestes = einheit;
+      }
+    }
+    if (bestes) return { x: bestes.x, y: bestes.y };
+    const zx = Math.round(ziel.x);
+    const zy = Math.round(ziel.y);
+    for (const gebaeude of this.gebaeude.values()) {
+      if (gebaeude.b === this.ich) continue;
+      const mitte = this.gebaeudeMitte(gebaeude);
+      const halb = (mitte.groesse - 1) / 2;
+      if (zx >= mitte.x - halb && zx <= mitte.x + halb && zy >= mitte.y - halb && zy <= mitte.y + halb) {
+        return { x: mitte.x, y: mitte.y };
+      }
+    }
+    return null;
   }
 
   schieben(dauer) {
@@ -685,6 +744,7 @@ export class Ansicht {
       }, true);
     }
     for (const balken of this.lebensbalken) this.lebensbalkenZeichnen(balken);
+    this.zielzeichenZeichnen(e, jetzt);
 
     for (const spieler of this.spieler.values()) this.namenZeichnen(spieler);
     if (this.platzieren) this.platzVorschau(e);
@@ -779,6 +839,56 @@ export class Ansicht {
 
   // Der Sammelpunkt des gewaehlten Gebaeudes: eine Fahne in Spielerfarbe und
   // eine gestrichelte Linie dorthin.
+  /**
+   * Das Zeichen am Ziel eines Befehls (bedienung AC-34): ein Ring auf dem
+   * Boden, der zusammenlaeuft und verblasst. Weiss auf freiem Gelaende, rot
+   * auf Feindlichem - und rot bekommt vier Haken nach innen, damit es nicht
+   * nur an der Farbe haengt (jeder zwoelfte Mann sieht Rot und Gruen gleich).
+   *
+   * Gezeichnet wird ueber der Welt, nicht darunter: ein Ring unter der
+   * getroffenen Einheit waere genau dann verdeckt, wenn er gebraucht wird.
+   */
+  zielzeichenZeichnen(e, jetzt) {
+    const zeichen = this.zielzeichen;
+    if (!zeichen) return;
+    const t = (jetzt - zeichen.seit) / ZIELZEICHEN_DAUER;
+    if (t > 1) {
+      this.zielzeichen = null;
+      return;
+    }
+    // Vor dem Beginn (negatives t) bleibt das erste Bild stehen - so laesst
+    // sich der Augenblick fuer einen Nachweis anhalten.
+    const lauf = Math.max(0, t);
+    const stift = this.stift;
+    const p = this.zuBild(zeichen.x, zeichen.y);
+    const r = e * (1.6 - 0.9 * lauf);
+    const sicht = lauf < 0.6 ? 1 : 1 - (lauf - 0.6) / 0.4;
+    const farbe = zeichen.feindlich ? '#e23c2a' : '#ffffff';
+    stift.save();
+    stift.globalAlpha = sicht;
+    stift.lineCap = 'round';
+    // Erst dunkel darunter, dann die Farbe: sonst verschwindet Weiss im Sand
+    // und Rot im Schatten.
+    for (const [strich, breite] of [['rgba(20,16,12,0.75)', e * 0.16], [farbe, e * 0.09]]) {
+      stift.strokeStyle = strich;
+      stift.lineWidth = Math.max(1.5, breite);
+      stift.beginPath();
+      stift.ellipse(p.x, p.y, r, r / 2, 0, 0, Math.PI * 2);
+      stift.stroke();
+      if (!zeichen.feindlich) continue;
+      // Vier Haken, die auf das Ziel zeigen - oben, unten, links, rechts der Raute.
+      stift.beginPath();
+      for (const [dx, dy] of [[-1, 0], [1, 0], [0, -1], [0, 1]]) {
+        const ax = p.x + dx * r * 1.45;
+        const ay = p.y + dy * r * 0.72;
+        stift.moveTo(ax, ay);
+        stift.lineTo(p.x + dx * r * 1.05, p.y + dy * r * 0.52);
+      }
+      stift.stroke();
+    }
+    stift.restore();
+  }
+
   sammelpunktZeichnen(e) {
     const gebaeude = this.gewaehltesGebaeude && this.gebaeude.get(this.gewaehltesGebaeude);
     if (!gebaeude?.p) return;

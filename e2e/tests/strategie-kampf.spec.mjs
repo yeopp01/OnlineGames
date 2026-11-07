@@ -4,7 +4,7 @@
 // Schaden, Nachladezeit, kein Zufall - stehen in tests/strategie-kampf.test.mjs.
 import { nachweis } from '../../scripts/qa-nachweis.mjs';
 import { einheitenAufstellen, expect, test, zeitraffer } from '../helpers/seite.mjs';
-import { bedienteileFrei, figurenFrei, partieBeenden, partieZuZweit } from '../helpers/strategie.mjs';
+import { bedienteileFrei, figurenFrei, freieWiesen, partieBeenden, partieZuZweit } from '../helpers/strategie.mjs';
 
 const KAMPF = '10-strategie/kampf.md';
 const BEFEHLE = '10-strategie/einheiten-und-befehle.md';
@@ -25,35 +25,9 @@ test.describe('Kampf', () => {
   test.beforeAll(async ({ browser }, info) => {
     partie = await partieZuZweit(browser, info);
     const { anna, code } = partie;
-    // Eine freie Wiese neben der Basis: auf Stein oder Wald sieht man die
-    // Figuren zwar, aber das Bild erzaehlt dann vom Steinbruch (Runde 63).
-    // Zwei Wiesen, weit genug auseinander: auf der zweiten steht der Fernkampf,
-    // damit die Ueberlebenden des ersten Gefechts nicht hineinlaufen - eine
-    // stehende Kampfeinheit greift von selbst an, was sie sieht (kampf AC-2).
-    const wiesen = await anna.evaluate(() => {
-      const a = window.ansicht;
-      const g = a.karte.groesse;
-      const b = a.spieler.get(a.ich).basis;
-      const grasUm = (x, y, r) => {
-        for (let dy = -r; dy <= r; dy++) {
-          for (let dx = -r; dx <= r; dx++) {
-            if (a.karte.felder[(y + dy) * g + (x + dx)] !== 0) return false;
-          }
-        }
-        return true;
-      };
-      const gefunden = [];
-      for (let r = 7; r < 26; r++) {
-        for (const [sx, sy] of [[1, 1], [1, 0], [0, 1], [1, -1], [-1, 1], [-1, 0], [0, -1], [-1, -1]]) {
-          const x = b.x + r * sx;
-          const y = b.y + r * sy;
-          if (x <= 5 || y <= 5 || x >= g - 6 || y >= g - 6 || !grasUm(x, y, 5)) continue;
-          if (gefunden.every((w) => Math.hypot(w.x - x, w.y - y) > 16)) gefunden.push({ x, y });
-          if (gefunden.length === 2) return gefunden;
-        }
-      }
-      throw new Error(`nur ${gefunden.length} freie Wiesen gefunden`);
-    });
+    // Zwei freie Wiesen, weit genug auseinander: auf der zweiten steht der
+    // Fernkampf, damit die Ueberlebenden des ersten Gefechts nicht hineinlaufen.
+    const wiesen = await freieWiesen(anna, 2);
     const wiese = wiesen[0];
     [, fernwiese] = wiesen;
     // Drei Milizen Annas, zwei Berts fuenf Felder weiter: weit genug, dass man
