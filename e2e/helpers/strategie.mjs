@@ -38,12 +38,20 @@
 // `ansicht.werte`, `ansicht.verbesserungen`, `ansicht.zuBild(x, y)`,
 // `ansicht.gebaeudeMitte(g)`, `ansicht.platzTaugt(x, y)`.
 //
-// **Was der Browser NICHT bekommt** (Runde 72): `ansicht.werte.einheiten`
-// fuehrt Kuerzel, Leben, Tragkraft, Kosten, Zeit, `baut`, Zeitalter, Angriff,
-// Ruestung nah und fern, Reichweite - aber **nicht `klassen` und nicht
-// `bonus`**. Wer im Test Schaden oder die Wirkung einer Verbesserung
-// ausrechnen will, importiert `daten.js` in Node (so macht es
-// `strategie-feudalzeit.spec.mjs`), statt es im Browser zu versuchen.
+// **Werte im Browser** (Runde 75): `ansicht.werte.einheiten[art]` fuehrt
+// Kuerzel, Leben, Tragkraft, Kosten, Zeit, `baut`, Zeitalter, Angriff,
+// Ruestung nah und fern, Reichweite - und seit Runde 75 auch `klassen` und
+// `bonus`; `ansicht.werte.klassen` nennt den Anzeigenamen je Klasse. Das sind
+// die **rohen** Werte ohne Verbesserungen.
+//
+// **Mit Verbesserungen** steht die Tafel je Spieler in
+// `ansicht.einheitenwerte` (Map Spieler-Id -> art -> {leben, angriff,
+// nahruestung, fernruestung, reichweite}); der Server rechnet sie mit
+// `welt.einheitenwert()` und schickt sie als `kw` im Aufbau und danach nur,
+// wenn sich etwas geaendert hat. Im Test fragt man
+// `ansicht.einheitenwert(einheit, 'angriff')` - nie selbst summieren.
+// Wer den Schaden eines Treffers ausrechnen will, importiert `daten.js` in
+// Node (so macht es `strategie-feudalzeit.spec.mjs`).
 import { ANMELDUNG, GRIFFHAFEN, expect, fehlerSammeln, zeitraffer } from './seite.mjs';
 
 /**

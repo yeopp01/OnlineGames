@@ -13,20 +13,22 @@ hier nichts eintraegt, verliert den Faden beim naechsten Autocompact.
 
 ## Zuletzt fortgeschrieben
 
-2026-11-07, nach Runde 74 (**Spec-Runde zur Stufe C**: Bauabfolge C1 bis C6
-steht; als Naechstes **C1**, die drei Luecken aus der Rueckschau).
+2026-11-07, nach Runde 75 (**C1 begonnen**: `bedienung AC-35` ist fertig -
+die Kampfwerte stehen an der Auswahl. Als Naechstes **AC-36**, Militaer bei
+Zoom 1 erkennbar).
 
 ## Wo ich stehe
 
 - **Branch:** `strategie`. Nie auf `main` arbeiten, **nie pushen, nie deployen.**
-- **Board:** 376 von 516 Kriterien fertig · 1 in Arbeit · 5 in QA · 4 geplant ·
-  122 offen · 8 zurueckgestellt. 398 Tests ohne Browser, 148 im Browser.
-  (Acht neue Kriterien aus der Spec-Runde zur Stufe C - nichts kaputt.)
+- **Board:** 377 von 516 Kriterien fertig · 1 in Arbeit · 5 in QA · 4 geplant ·
+  121 offen · 8 zurueckgestellt. 402 Tests ohne Browser, 149 im Browser.
 - **Vier Waechter in `tests/waechter-*.test.mjs`:** Gleichheit auf wachsenden
   Listen, verbesserbare Werte an `welt.einheitenwert()` vorbei,
   Bildunterschriften mit `${...}`, und (neu in Runde 73) die **Kuerzeltafel**
   in `e2e/helpers/strategie.mjs` gegen `EINHEITEN`. Wer eine neue Regel dieser
-  Art aufstellt, legt einen Waechter dazu.
+  Art aufstellt, legt einen Waechter dazu. Der erste kennt seit Runde 75 auch
+  die Fassung auf dem Draht (`werte.einheiten.<art>`) und Namen aus einem
+  `const { x, ...rest } = <wachsende Daten>`.
 - **Stufe A ist erreicht** (fahrplan AC-3 bis AC-7).
 - **Stufe B ist erreicht** (fahrplan AC-8 bis AC-10, Bauabfolge B1 bis B7).
   Die Feudalzeit ist am Stueck im Browser spielbar:
@@ -50,12 +52,27 @@ steht; als Naechstes **C1**, die drei Luecken aus der Rueckschau).
   Pruefstand nur Takte misst; **Nebel zuletzt**, weil er die Zustandsnachricht
   umbaut und damit jeden Browsertest beruehrt (heute steht dort „alles", dann
   „was ich sehe").
-- **Als Naechstes: C1** - `bedienung AC-35` (Kampfwerte an der Auswahl) ist das
-  erste Stueck: die Leiste sagt heute nur „Bogenschuetze 30/30", obwohl der
-  Server Angriff, Ruestung, Reichweite und Bonus schon schickt. Die Werte
-  kommen aus `welt.einheitenwert()`, damit Verbesserungen sich zeigen; `klassen`
-  und `bonus` muessten dem Browser **neu** mitgegeben werden (er bekommt sie
-  heute nicht - siehe die Tafel in `e2e/helpers/strategie.mjs`).
+- **C1 laeuft. `bedienung AC-35` ist fertig** (Runde 75): die Auswahlleiste
+  nennt Angriff, Ruestung nah und fern, Reichweite und den Bonus mit seinem
+  Ziel. **Wie es gebaut ist, weil es die Vorlage fuer alles Weitere ist:** der
+  Server rechnet mit `welt.kampfwerte(besitzer)` eine Tafel
+  `art -> {leben, angriff, nahruestung, fernruestung, reichweite}`, allein ueber
+  `welt.einheitenwert()`, und schickt sie als `kw` je Spieler - im `aufbau()`
+  an alle (damit auch sieht, wer nach einem Abbruch zurueckkommt), im
+  `zustand()` nur fuer Spieler in `werteAenderungen` (gesetzt in
+  `erforschen()`, geleert am Ende von `zustand()`), dasselbe Muster wie
+  `gebaeudeAenderungen`. Im Browser liest `ansicht.einheitenwert(einheit, feld)`
+  daraus; `lebenVoll` geht jetzt durch dieselbe Stelle - vorher las es die
+  Rohdaten und sah Verbesserungen nicht (latenter Fehler, gefunden beim Bauen).
+  **Der Browser summiert nie selbst**: Verbesserungen wirken ueber die
+  **Klasse**, nicht die Art. Neu beim Browser ausserdem
+  `werte.einheiten[art].klassen`, `.bonus` und `werte.klassen` (Anzeigenamen) -
+  die Tafel in `e2e/helpers/strategie.mjs` ist nachgezogen.
+- **Als Naechstes: `bedienung AC-36`** - bei Zoom 1 ist eine Kampfeinheit vom
+  Dorfbewohner kaum zu unterscheiden; verlangt ist ein Drittel der Flaeche
+  anders, wie darstellung AC-14 es herangezoomt misst. Gemessen wird im
+  Spielbild, nicht auf der Schautafel. Danach **AC-37** (Spielzeit als `m:ss`
+  oben neben dem Zeitalter, aus den Takten des Servers).
 - **Der Gefechtsstand** (neu in Runde 71) steht in
   `server/spiele/strategie/pruefstand.js` als `gefechtSpielen`:
   `npm run konterkreis:strategie` stellt zwei Heere gleicher Kosten auf freiem

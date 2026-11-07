@@ -550,7 +550,9 @@ export class Auswahlleiste {
 
     const bild = element('div', 'auswahl-bild');
     bild.append(bildchen(art, 58, farbe, { ladung: einheit.l > 0 ? einheit.a : null }));
-    w.append(bild, kopf(FIGUREN[art]?.name || art, leben, voll));
+    const kopfteil = kopf(FIGUREN[art]?.name || art, leben, voll);
+    kopfteil.append(this.kampfwerteZeile(einheit, art));
+    w.append(bild, kopfteil);
 
     // Nur wer tragen kann, zeigt, was er traegt.
     const tragkraft = werte[art]?.tragkraft || 0;
@@ -566,6 +568,56 @@ export class Auswahlleiste {
       }
       w.append(ladung);
     }
+  }
+
+  /**
+   * Die Kampfwerte unter dem Namen (bedienung AC-35): Angriff, Ruestung nah
+   * und fern, Reichweite - und der Bonus mit seinem Ziel ("+15 gegen
+   * Kavallerie"). Ohne sie ist der Konterkreis der Stufe B fuer den Spieler
+   * unsichtbar: er sieht, dass der Speerkaempfer den Reiter faellt, aber
+   * nicht, warum.
+   *
+   * Die Zahlen kommen aus der Tafel, die der Server je Spieler schickt
+   * (`welt.einheitenwert`), nicht aus den Grunddaten - sonst stuende hier 3
+   * Angriff, wo der Schmiedeangriff 4 macht.
+   */
+  kampfwerteZeile(einheit, art) {
+    const a = this.ansicht;
+    const zeile = element('div', 'kampfwerte');
+    zeile.id = 'kampfwerte';
+    const angriff = a.einheitenwert(einheit, 'angriff');
+    const nah = a.einheitenwert(einheit, 'nahruestung');
+    const fern = a.einheitenwert(einheit, 'fernruestung');
+    const reichweite = a.einheitenwert(einheit, 'reichweite');
+    Object.assign(zeile.dataset, {
+      angriff: String(angriff), nahruestung: String(nah), fernruestung: String(fern), reichweite: String(reichweite),
+    });
+    const wert = (name, zahl, titel) => {
+      const e = element('span', 'wert');
+      if (name) e.append(element('span', 'leise', name));
+      e.append(element('b', null, zahl));
+      e.title = titel;
+      return e;
+    };
+    zeile.append(
+      wert('Angriff', String(angriff), 'Schaden je Schlag, bevor die Rüstung des Ziels abgeht'),
+      wert('Rüstung', `${nah} / ${fern}`, 'Rüstung gegen Nahkampf / gegen Fernkampf'),
+      reichweite > 0
+        ? wert('Reichweite', `${reichweite}`, 'Schussweite in Feldern')
+        : wert(null, 'Nahkampf', 'Trifft nur, wer daneben steht'),
+    );
+    // Der Bonus steht in einer eigenen Zeile - er ist der Grund, warum eine
+    // Einheit gegen eine andere taugt.
+    const bonus = a.werte.einheiten[art]?.bonus;
+    if (bonus) {
+      const text = Object.entries(bonus)
+        .map(([klasse, zuschlag]) => `+${zuschlag} gegen ${a.werte.klassen?.[klasse]?.name || klasse}`)
+        .join(', ');
+      const e = element('span', 'bonus', text);
+      e.title = 'Zuschlag auf den Angriff gegen diese Einheiten';
+      zeile.append(e);
+    }
+    return zeile;
   }
 
   gebaeudeBauen(gebaeude, angebot, farbe) {

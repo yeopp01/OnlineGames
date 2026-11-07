@@ -3,11 +3,14 @@
 const karten = require('./karte');
 const { suchen, nachbarfeld } = require('./wege');
 const {
-  EINHEITEN, SAMMELN, TIERE, GEBAEUDE, VERBESSERUNGEN, ZEITALTER, AUFSTIEGE,
+  EINHEITEN, SAMMELN, TIERE, GEBAEUDE, VERBESSERUNGEN, ZEITALTER, AUFSTIEGE, KLASSEN,
   BEVOELKERUNG_MAX, SCHLANGE_MAX, STARTAUFSTELLUNG,
 } = require('./daten');
 
 const TAKTE_PRO_SEKUNDE = 10;
+// Welche Werte die Auswahlleiste je Einheit zeigt (bedienung AC-35). Leben
+// steht dabei, weil der Lebensbalken denselben Weg nimmt.
+const KAMPFFELDER = ['leben', 'angriff', 'nahruestung', 'fernruestung', 'reichweite'];
 const SUCHWEITE_ERSATZ = 12;
 // So lange liegt ein Toter noch im Bild, bevor er aus dem Zustand faellt
 // (kampf AC-10): lang genug, um zu sehen, was passiert ist.
@@ -109,6 +112,11 @@ class Welt {
     this.werteGemerkt = new Map();
     // Gebaeude gehen wie Tiere nur bei Aenderung ueber die Leitung.
     this.gebaeudeAenderungen = new Set();
+    // Wessen Kampfwerte sich geaendert haben (bedienung AC-35): der naechste
+    // Zustand schickt ihm seine Tafel. Ohne das muesste sie in jedem Takt
+    // mitfahren, oder der Browser muesste die Verbesserungen selbst
+    // zusammenrechnen - und damit stuende die Regel zweimal im Haus.
+    this.werteAenderungen = new Set();
     this.feldAenderungen = [];
     // Die Schlaege dieses Taktes, abgerechnet an seinem Ende (kampf AC-10).
     this.schlaege = [];
@@ -217,6 +225,21 @@ class Welt {
   // Leben einer Einheit mit allen Verbesserungen ihres Spielers (bauen AC-21).
   lebenMax(besitzer, art) {
     return this.einheitenwert(besitzer, art, 'leben');
+  }
+
+  /**
+   * Die Werte jeder Einheitenart, wie sie fuer diesen Spieler gelten - fuer
+   * die Auswahlleiste (bedienung AC-35). Gelesen wird nur ueber
+   * `einheitenwert()`, damit Verbesserungen sich zeigen: nach dem
+   * Schmiedeangriff steht beim Speerkaempfer 4 Angriff, nicht 3.
+   */
+  kampfwerte(besitzer) {
+    const tafel = {};
+    for (const art of Object.keys(EINHEITEN)) {
+      tafel[art] = {};
+      for (const feld of KAMPFFELDER) tafel[art][feld] = this.einheitenwert(besitzer, art, feld);
+    }
+    return tafel;
   }
 
   /**
@@ -621,6 +644,7 @@ class Welt {
   erforschen(spieler, art) {
     spieler.verbesserungen.push(art);
     this.werteGemerkt.delete(spieler.id);
+    this.werteAenderungen.add(spieler.id);
     const wirkung = VERBESSERUNGEN[art].wirkung;
     for (const einheit of this.einheiten.values()) {
       if (einheit.besitzer !== spieler.id) continue;
@@ -1819,6 +1843,9 @@ class Welt {
         bev: bevoelkerung.get(s.id) || 0,
         raum: this.wohnraum(s),
         ...(s.verbesserungen.length ? { v: s.verbesserungen } : {}),
+        // Die Kampfwerte dieses Spielers, nur wenn sich etwas geaendert hat
+        // (bedienung AC-35) - wie Gebaeude und Tiere.
+        ...(this.werteAenderungen.has(s.id) ? { kw: this.kampfwerte(s.id) } : {}),
         // Zeitalter als Stufe, nur wenn es nicht die Dunkle Zeit ist
         // (bedienung AC-33) - ein Zustand bleibt klein.
         ...(s.zeitalter ? { z: s.zeitalter } : {}),
@@ -1831,6 +1858,7 @@ class Welt {
       einheiten,
       felder,
     };
+    this.werteAenderungen.clear();
     if (this.gebaeudeAenderungen.size) {
       zustand.gebaeude = [...this.gebaeudeAenderungen].map((id) => this.gebaeudeFuerDraht(id));
       this.gebaeudeAenderungen.clear();
@@ -1889,6 +1917,10 @@ class Welt {
         name: s.name,
         farbe: s.farbe,
         basis: s.basis,
+        // Die Werte, wie sie fuer ihn gelten (bedienung AC-35). Im Aufbau fuer
+        // jeden, damit auch einer, der nach einem Abbruch zurueckkehrt, die
+        // schon erforschten Verbesserungen sieht (raeume AC-12).
+        kw: this.kampfwerte(s.id),
       })),
       tiere: [...this.tiere.keys()].map((id) => this.tierFuerDraht(id)),
       gebaeude: [...this.gebaeude.keys()].map((id) => this.gebaeudeFuerDraht(id)),
@@ -1901,9 +1933,15 @@ class Welt {
           // Ohne diese Zeile stuende der Speerkaempfer schon in der Dunklen
           // Zeit im Ausbildungsmenue (einheiten AC-23).
           zeitalter: w.zeitalter || 0,
-          // Kampfwerte: die Leiste zeigt sie ab Stufe B5 an der Auswahl.
+          // Kampfwerte als Grundwerte; was fuer einen Spieler gilt, steht in
+          // seiner Tafel `kw` (bedienung AC-35).
           angriff: w.angriff || 0, nahruestung: w.nahruestung || 0, fernruestung: w.fernruestung || 0,
           reichweite: w.reichweite || 0,
+          // Klassen und Bonus, damit die Leiste "+15 gegen Kavallerie"
+          // schreiben kann (bedienung AC-35). Der Browser rechnet damit
+          // keinen Schaden - das tut der Server (kampf AC-3).
+          klassen: w.klassen || [],
+          bonus: w.bonus || null,
         }])),
         gebaeude: Object.fromEntries(Object.entries(GEBAEUDE).map(([art, w]) => [art, {
           leben: w.leben, bildetAus: w.bildetAus, groesse: w.groesse, kosten: w.kosten, bauzeit: w.bauzeit,
@@ -1911,6 +1949,8 @@ class Welt {
           zeitalter: w.zeitalter || 0,
         }])),
         verbesserungen: VERBESSERUNGEN,
+        // Die Namen der Klassen, fuer den Bonus an der Auswahl (bedienung AC-35).
+        klassen: KLASSEN,
         // Die Zeitalter und was ein Aufstieg kostet (bauen AC-23, bedienung AC-33).
         zeitalter: ZEITALTER,
         aufstiege: AUFSTIEGE,

@@ -222,7 +222,20 @@ const VERBESSERUNGEN = {
   },
 };
 
+// Die Klassen, auf die Bonusschaden und Verbesserungen greifen (kampf AC-3,
+// bauen AC-25). Hier stehen nur die **Namen**: welche Einheit zu welcher
+// Klasse gehoert, steht als `klassen` an der Einheit. Die Leiste braucht den
+// Namen, um "+15 gegen Kavallerie" zu schreiben (bedienung AC-35) - ohne
+// Tabelle stuende dort "kavallerie".
+const KLASSEN = {
+  dorf: { name: 'Dorfbewohner' },
+  infanterie: { name: 'Infanterie' },
+  speer: { name: 'Speerkämpfer' },
+  bogenschuetze: { name: 'Bogenschützen' },
+  kavallerie: { name: 'Kavallerie' },
+};
+
 module.exports = {
-  EINHEITEN, SAMMELN, TIERE, GEBAEUDE, VERBESSERUNGEN, ZEITALTER, AUFSTIEGE,
+  EINHEITEN, SAMMELN, TIERE, GEBAEUDE, VERBESSERUNGEN, ZEITALTER, AUFSTIEGE, KLASSEN,
   BEVOELKERUNG_MAX, SCHLANGE_MAX, STARTAUFSTELLUNG,
 };

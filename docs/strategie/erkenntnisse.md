@@ -205,6 +205,9 @@ Zahlen, gegen die spätere Runden vergleichen. Mit Datum und Commit.
 | 2026-11-07 | `npm run check` ohne Browser | 18 s (unveraendert zu Runde 72) | Rueckschau 72 |
 | 2026-11-07 | Partie KI gegen KI im Browser bis nach dem Aufstieg, fuenf Bilder (Zeitraffer 20) | 53,8 s — **nicht vergleichbar**: 26 fremde Browserprozesse (19 chrome, 7 msedge) | Rueckschau 72 |
 | 2026-11-07 | Treffer des Waechters gegen die Kuerzeltafel, erster Lauf | 2 Stellen (`p`/`k` vertauscht) — die Ursache von 45 s Browserlauf in Runde 72 | Rueckschau 72 |
+| 2026-11-07 | Tests ohne Browser / im Browser nach Runde 75; `npm run check` | 402 / 149; 19 s | Runde 75 |
+| 2026-11-07 | Bilder, die eine geaenderte `stil.css` neu erzeugen musste | 66 von 151 — der Lauf dafuer dauerte 10,7 min | Runde 75 |
+| 2026-11-07 | Gegenprobe: faengt der erweiterte Waechter die alte Form? | beide Formen (`werte.einheiten.<art>` und der Rest-Name) in einer Wegwerfdatei beanstandet | Runde 75 |
 
 ## Rückschauen
 
@@ -631,6 +634,26 @@ alle sieben Gebäude der Dunklen Zeit stehen. Was sich wiederholt hat:
 Neueste oben. Eine Zeile je Runde: Nummer, Datum, Kriterien, Ergebnis,
 wichtigste Erkenntnis.
 
+- **75** · 2026-11-07 · **C1 beginnt: bedienung AC-35 fertig** — die Auswahl
+  nennt Angriff, Rüstung nah und fern, Reichweite und den Bonus mit seinem
+  Ziel („+15 gegen Kavallerie"). Gelernt: **die Summierung der Verbesserungen
+  gehört nicht in den Browser.** Sie läuft über die **Klasse** einer Einheit
+  (`wirkungsschluessel`), nicht über ihre Art — wer sie im Browser nachbaut,
+  hat sie zweimal, und die zweite veraltet still. Stattdessen rechnet der
+  Server eine fertige Tafel je Spieler (`welt.kampfwerte()`, allein über
+  `welt.einheitenwert()`) und schickt sie im Aufbau an alle, im Zustand nur
+  bei Änderung — dasselbe Muster wie `gebaeudeAenderungen`. Dabei fiel ein
+  latenter Fehler auf: `ansicht.lebenVoll` las die Verbesserungen schon vorher
+  nicht, sie geht jetzt durch dieselbe Tafel. Die Leiste hält den breitesten
+  Zustand aus (Dorfbewohner in der Feudalzeit: neun Bauknöpfe in zwei
+  Reihen plus die neue Werte-Zeile), nachgesehen mit dem neuen
+  `npm run sicht -- --waehlen <art> --zeitalter <n>`. **Und der Wächter gegen
+  Gleichheit hatte zwei Löcher**, beide an einem Test über `aufbau().werte`:
+  er kannte nur die Tabellen aus `daten.js`, nicht ihre Fassung auf dem Draht
+  (`werte.einheiten.<art>`) — und ein `const { baut, ...rest } = …` machte aus
+  wachsenden Daten einen harmlos aussehenden Namen. Beides fällt jetzt auf,
+  mit Gegenprobe an einer Wegwerfdatei geprüft. Kosten des Lochs: ein
+  Browserlauf von 9 Minuten, der am Ende an einem Rechenteil-Test scheiterte.
 - **74** · 2026-11-07 · **Spec-Runde zur Stufe C**, kein Code. Die Stufe hatte
   Kriterien (spielziel AC-5 bis AC-9, kampf AC-11 bis AC-14), aber keine
   Bauabfolge und **keine kämpfende KI** — die größte Lücke: `fahrplan AC-11`

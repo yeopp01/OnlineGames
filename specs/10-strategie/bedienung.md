@@ -2,7 +2,7 @@
 
 **Bereich:** Strategie
 **Kuerzel:** bedienung
-**Stand:** 23/38 fertig · 15 offen
+**Stand:** 24/38 fertig · 14 offen
 
 ## Zweck
 
@@ -133,7 +133,7 @@ Eine Partie KI gegen KI, nach dem Aufstieg angesehen und mit dem verglichen,
 was ein Spieler von Age of Empires II erwartet. Drei Lücken, in dieser
 Reihenfolge:
 
-- **AC-35** `offen` **Kampfwerte an der Auswahl** — Wer eine Einheit anwählt, sieht
+- **AC-35** `fertig` **Kampfwerte an der Auswahl** — Wer eine Einheit anwählt, sieht
   neben Namen und Leben auch Angriff, Rüstung nah und fern und die Reichweite;
   eine Einheit mit Bonusschaden nennt ihn mit dem Ziel („+15 gegen
   Kavallerie"). Heute steht dort nur „Bogenschütze 30/30" — der ganze

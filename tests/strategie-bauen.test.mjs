@@ -186,20 +186,32 @@ test('bauen AC-16: eine verlorene Einheit gibt ihren Platz sofort frei', () => {
 test('bedienung AC-29: der Aufbau nennt die Werte je Art, der Zustand das Leben erst, wenn es fehlt', () => {
   const welt = new Welt(ZWEI, 7);
   const { werte } = welt.aufbau();
-  const { baut, ...dorfbewohner } = werte.einheiten.dorfbewohner;
-  assert.deepEqual(dorfbewohner, {
-    kuerzel: 'd', leben: 25, tragkraft: 10, kosten: { nahrung: 50 }, zeit: 25,
+  // Feld fuer Feld, nicht als Ganzes: was ein Eintrag fuehrt, waechst mit den
+  // Stufen - in Runde 75 kamen `klassen` und `bonus` dazu, und eine
+  // Gleichheit auf dem ganzen Eintrag riss (so wie schon fuenfmal zuvor,
+  // Runden 31-34).
+  const dorfbewohner = {
+    kuerzel: 'd', leben: 25, tragkraft: 10, zeit: 25,
     // Seit B4 gehen Zeitalter und Kampfwerte mit ueber die Leitung (einheiten AC-23).
     zeitalter: 0, angriff: 3, nahruestung: 0, fernruestung: 0, reichweite: 0,
-  });
+  };
+  for (const [feld, wert] of Object.entries(dorfbewohner)) {
+    assert.equal(werte.einheiten.dorfbewohner[feld], wert, `dorfbewohner.${feld}`);
+  }
+  assert.deepEqual(werte.einheiten.dorfbewohner.kosten, { nahrung: 50 });
   // Was ein Dorfbewohner bauen kann, waechst mit den Stufen: enthalten, nicht gleich.
   for (const art of ['haus', 'muehle', 'holzfaellerlager', 'bergbaulager', 'farm', 'kaserne']) {
-    assert.ok(baut.includes(art), art);
+    assert.ok(werte.einheiten.dorfbewohner.baut.includes(art), art);
   }
-  assert.deepEqual(werte.einheiten.spaeherreiter, {
-    kuerzel: 's', leben: 45, tragkraft: 0, kosten: { nahrung: 80 }, zeit: 30, baut: [],
+  const spaeher = {
+    kuerzel: 's', leben: 45, tragkraft: 0, zeit: 30,
     zeitalter: 0, angriff: 3, nahruestung: 0, fernruestung: 2, reichweite: 0,
-  });
+  };
+  for (const [feld, wert] of Object.entries(spaeher)) {
+    assert.equal(werte.einheiten.spaeherreiter[feld], wert, `spaeherreiter.${feld}`);
+  }
+  assert.deepEqual(werte.einheiten.spaeherreiter.kosten, { nahrung: 80 });
+  assert.equal(werte.einheiten.spaeherreiter.baut.length, 0, 'ein Reiter baut nichts');
   assert.equal(werte.gebaeude.dorfzentrum.leben, 2400);
   // Was ein Gebaeude anbietet, waechst mit den Stufen: enthalten, nicht gleich.
   for (const art of ['dorfbewohner', 'webstuhl']) assert.ok(werte.gebaeude.dorfzentrum.bildetAus.includes(art), art);

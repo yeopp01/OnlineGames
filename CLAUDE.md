@@ -30,6 +30,7 @@ npm start            # http://localhost:4180/
 npm run dev          # dasselbe mit --watch
 npm run sicht -- schautafel.html  # eine Seite als Wegwerfbild ansehen, ohne Testlauf
 npm run sicht -- --spiel --zoom 2 --ziel wald  # dasselbe fuer eine laufende Partie
+npm run sicht -- --spiel --waehlen speerkaempfer --zeitalter 1  # die Auswahlleiste im breitesten Zustand
 npm run tafel -- "t.anmutung('gebaeude', 'haus')"  # auf der Schautafel messen, Ergebnis als JSON
 npm run e2e:laufzeiten -- strategie   # Dauer des Browserlaufs je Datei, die langsamsten Faelle
 ```

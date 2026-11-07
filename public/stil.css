@@ -498,6 +498,33 @@ canvas.angriffslauf {
   background: linear-gradient(90deg, #3fae4f, #7bd66b);
 }
 
+/* Die Kampfwerte unter dem Lebensbalken (bedienung AC-35). Der Bonus bekommt
+   eine eigene Zeile: er ist der Grund, warum die Einheit taugt. */
+.kampfwerte {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.2rem 0.7rem;
+  margin-top: 0.3rem;
+  font-size: 0.8rem;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.kampfwerte .wert {
+  display: inline-flex;
+  gap: 0.25rem;
+}
+
+.kampfwerte .leise {
+  color: var(--leise);
+}
+
+.kampfwerte .bonus {
+  flex-basis: 100%;
+  color: #f3c266;
+}
+
 .auswahl-bild {
   display: grid;
   place-items: center;

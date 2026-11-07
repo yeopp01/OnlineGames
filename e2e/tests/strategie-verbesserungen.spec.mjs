@@ -3,10 +3,11 @@
 // Holzfaellerlager und Muehle verbessern die Wirtschaft. Jede hat ihr eigenes
 // Bildchen - vier gleiche Knoepfe waeren keine Auswahl (darstellung AC-14).
 import { nachweis } from '../../scripts/qa-nachweis.mjs';
-import { expect, gebaeudeAufstellen, rohstoffe, test, zeitraffer } from '../helpers/seite.mjs';
-import { bedienteileFrei, gebaeudeInDerNaehe, partieBeenden, partieZuZweit, platzImBild } from '../helpers/strategie.mjs';
+import { einheitenAufstellen, expect, gebaeudeAufstellen, rohstoffe, test, zeitraffer } from '../helpers/seite.mjs';
+import { bedienteileFrei, freieWiesen, gebaeudeInDerNaehe, partieBeenden, partieZuZweit, platzImBild } from '../helpers/strategie.mjs';
 
 const BAUEN = '10-strategie/bauen.md';
+const BEDIENUNG = '10-strategie/bedienung.md';
 
 /** Ein Gebaeude anwaehlen und die Kamera darauf richten. */
 async function gebaeudeWaehlen(page, id, zoom = 1.8) {
@@ -157,5 +158,64 @@ test.describe('Verbesserungen der Feudalzeit', () => {
     await gebaeudeWaehlen(anna, lager);
     await expect(anna.locator('[data-ausbilden="doppelaxt"]')).toHaveCount(0);
     expect(await anna.evaluate(() => window.ansicht.verbesserungen)).toContain('doppelaxt');
+  });
+
+  // Hierher gehoert dieser Test, weil Anna an dieser Stelle den
+  // Schmiedeangriff erforscht hat: die Leiste muss 4 zeigen, nicht die 3 aus
+  // der Tabelle. Genau das war die Luecke (bedienung AC-35).
+  test('bedienung AC-35: die Auswahl nennt Angriff, Rüstung, Reichweite und den Bonus', async ({}, info) => {
+    const { anna, code } = partie;
+    expect(await anna.evaluate(() => window.ansicht.verbesserungen)).toContain('schmiedeangriff');
+
+    const [wiese] = await freieWiesen(anna, 1);
+    expect(await einheitenAufstellen(anna, code, 'Anna', 1, { art: 'speerkaempfer', x: wiese.x, y: wiese.y })).toBe(1);
+
+    // Das Kuerzel nicht aus dem Kopf, sondern aus den Werten (Runde 72).
+    const kuerzel = await anna.evaluate(() => window.ansicht.werte.einheiten.speerkaempfer.kuerzel);
+    await anna.waitForFunction((k) => [...window.ansicht.nachher.values()].some((e) => e.k === k), kuerzel);
+
+    // Anwaehlen wie im Spiel: Kamera hin, dann auf die Figur klicken.
+    const speer = await anna.evaluate((k) => {
+      const a = window.ansicht;
+      a.gewaehltesGebaeude = null;
+      a.ausgewaehlt.clear();
+      a.kamera.zoom = 1.6;
+      const e = [...a.nachher.values()].find((f) => f.b === a.ich && f.k === k);
+      a.blickAuf(e.x, e.y);
+      const p = a.zuBild(e.x, e.y);
+      return { i: e.i, x: p.x, y: p.y - a.figurenHoehe() * 0.5 };
+    }, kuerzel);
+    await anna.mouse.click(speer.x, speer.y);
+    await expect.poll(() => anna.evaluate(() => [...window.ansicht.ausgewaehlt])).toEqual([speer.i]);
+
+    // Die Zahlen sind die des Spielers mit seinen Verbesserungen, nicht die
+    // der Tabelle: der Schmiedeangriff macht aus 3 Angriff 4.
+    const zeile = anna.locator('#kampfwerte');
+    const roh = await anna.evaluate(() => window.ansicht.werte.einheiten.speerkaempfer.angriff);
+    const meins = await anna.evaluate((id) => window.ansicht.einheitenwert(window.ansicht.nachher.get(id), 'angriff'), speer.i);
+    expect(meins, 'der Schmiedeangriff zeigt sich an der Auswahl').toBe(roh + 1);
+    // Die Zahlen stehen als Daten an der Zeile; im Text trennt sie nur der
+    // Abstand aus dem Stylesheet, deshalb wird dort auf das Wort geprueft.
+    await expect(zeile).toHaveAttribute('data-angriff', String(meins));
+    await expect(zeile).toHaveAttribute('data-nahruestung', '0');
+    await expect(zeile).toHaveAttribute('data-fernruestung', '0');
+    await expect(zeile).toHaveAttribute('data-reichweite', '0');
+    await expect(zeile).toContainText('Angriff');
+    await expect(zeile).toContainText('Rüstung');
+    await expect(zeile).toContainText('Nahkampf');
+    await expect(zeile.locator('.wert').nth(0)).toContainText(String(meins));
+    await expect(zeile.locator('.wert').nth(1)).toContainText('0 / 0');
+    await expect(zeile.locator('.bonus')).toHaveText('+15 gegen Kavallerie');
+    await expect(zeile).toBeInViewport();
+    await expect(anna.locator('.auswahl-kopf strong')).toHaveText('Speerkämpfer');
+
+    expect(await bedienteileFrei(anna)).toEqual([]);
+    await anna.waitForTimeout(300);
+    await nachweis(anna, {
+      spec: BEDIENUNG,
+      ac: 'AC-35',
+      titel: 'Ein Speerkämpfer gewählt: unten Angriff 4 (3 plus Schmiedeangriff), Rüstung 0 / 0, Nahkampf und „+15 gegen Kavallerie"',
+      test: info,
+    });
   });
 });

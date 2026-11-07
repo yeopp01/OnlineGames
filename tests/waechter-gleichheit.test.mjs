@@ -7,6 +7,12 @@
 // stand jedes Mal schon in der Anweisung - sie wurde nur nicht angewandt.
 // Deshalb sucht sie jetzt ein Test statt eines Menschen.
 //
+// Runde 75 hat zwei Luecken gezeigt, beide an einem Test, der `aufbau().werte`
+// prueft: der Waechter kannte nur die Tabellen aus `daten.js`, nicht ihre
+// Fassung auf dem Draht (`werte.einheiten.<art>`) - und ein
+// `const { baut, ...rest } = ...` machte aus wachsenden Daten einen harmlos
+// aussehenden Namen. Beides faellt jetzt auf.
+//
 // Erlaubt bleibt Gleichheit auf einem **Blatt**: `EINHEITEN.miliz.kosten`
 // waechst nicht. Verboten ist sie auf dem Datensatz selbst und auf den Listen,
 // die mit jeder Stufe laenger werden. Wer es doch braucht, schreibt
@@ -20,11 +26,17 @@ const WURZEL = new URL('..', import.meta.url).pathname.replace(/^\/([A-Za-z]:)/,
 const ORDNER = ['tests', 'e2e'];
 
 // Tabellen aus daten.js: die Tabelle selbst und jeder einzelne Eintrag wachsen.
-const TABELLEN = 'EINHEITEN|GEBAEUDE|VERBESSERUNGEN|TIERE|ZEITALTER|AUFSTIEGE';
+const TABELLEN = 'EINHEITEN|GEBAEUDE|VERBESSERUNGEN|TIERE|ZEITALTER|AUFSTIEGE|KLASSEN';
 // Felder, die mit den Stufen mehr werden: ein Auftrag bekommt Angaben, ein
 // Gebaeude bildet mehr aus, ein Dorfbewohner baut mehr.
 const FELDER = 'auftrag|bildetAus|baut';
-const WAECHST = new RegExp(`(^|[^.\\w])(${TABELLEN})(\\.\\w+)?$|\\.(${FELDER})$`);
+// Dasselbe ueber die Leitung: `aufbau().werte` reicht die Tabellen an den
+// Browser weiter und waechst mit ihnen. In Runde 75 kamen `klassen` und
+// `bonus` dazu und rissen eine Gleichheit auf `werte.einheiten.dorfbewohner`.
+const DRAHT = 'einheiten|gebaeude|verbesserungen|klassen|zeitalter|aufstiege';
+const WAECHST = new RegExp(
+  `(^|[^.\\w])(${TABELLEN})(\\.\\w+)?$|\\.(${FELDER})$|\\bwerte\\.(${DRAHT})(\\.\\w+)?$`,
+);
 
 /** Alle .mjs-Dateien unter einem Ordner, auch in Unterordnern. */
 function dateien(ordner) {
@@ -77,12 +89,21 @@ test('waechter: kein Test prueft wachsende Daten auf Gleichheit', () => {
     for (const pfad of dateien(join(WURZEL, ordner))) {
       const quelle = readFileSync(pfad, 'utf8');
       const zeilen = quelle.split('\n');
+      // `const { baut, ...rest } = werte.einheiten.dorfbewohner` macht aus
+      // wachsenden Daten einen harmlos aussehenden Namen - und genau so ist
+      // der Test in Runde 75 durchgerutscht. Solche Namen gelten hier als
+      // wachsend wie ihre Quelle.
+      const uebernommen = new Set();
+      for (const [, name, quellAusdruck] of quelle.matchAll(/\{[^{}]*\.\.\.(\w+)\s*\}\s*=\s*([^;\n]+)/g)) {
+        if (WAECHST.test(kern(quellAusdruck.replace(/[;,]\s*$/, '')))) uebernommen.add(name);
+      }
       const muster = /(?:assert\.deepEqual|deepStrictEqual|\.toEqual)\s*\(/g;
       let gefunden;
       while ((gefunden = muster.exec(quelle)) !== null) {
         const klammer = muster.lastIndex - 1;
         const argument = erstesArgument(quelle, klammer);
-        if (argument === null || !WAECHST.test(kern(argument))) continue;
+        if (argument === null) continue;
+        if (!WAECHST.test(kern(argument)) && !uebernommen.has(kern(argument))) continue;
         const nummer = quelle.slice(0, klammer).split('\n').length;
         const umgebung = `${zeilen[nummer - 2] || ''}\n${zeilen[nummer - 1]}`;
         if (umgebung.includes('gleichheit-ok')) continue;

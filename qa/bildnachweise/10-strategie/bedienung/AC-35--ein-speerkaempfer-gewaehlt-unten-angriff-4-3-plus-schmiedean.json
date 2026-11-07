@@ -1,0 +1,10 @@
+{
+  "spec": "10-strategie/bedienung.md",
+  "ac": "AC-35",
+  "titel": "Ein Speerkämpfer gewählt: unten Angriff 4 (3 plus Schmiedeangriff), Rüstung 0 / 0, Nahkampf und „+15 gegen Kavallerie\"",
+  "datei": "e2e/tests/strategie-verbesserungen.spec.mjs",
+  "pfad": [
+    "Verbesserungen der Feudalzeit",
+    "bedienung AC-35: die Auswahl nennt Angriff, Rüstung, Reichweite und den Bonus"
+  ]
+}

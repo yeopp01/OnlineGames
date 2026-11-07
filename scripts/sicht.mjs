@@ -6,6 +6,8 @@
 //   npm run sicht -- schautafel.html --breite 1600 --hoehe 900 --name tafel
 //   npm run sicht -- --spiel --zoom 2 --ziel wald --warten 5
 //   npm run sicht -- --spiel --zoom 1 --messen   (Zeichenzeit je Bild)
+//   npm run sicht -- --spiel --waehlen speerkaempfer   (Einheit anlegen und
+//       anwaehlen - fuer die Auswahlleiste, die ohne Auswahl nicht da ist)
 //
 // Fuer das schnelle Hinsehen beim Zeichnen (Rueckschau nach Runde 10). Die
 // Bilder sind Wegwerfbilder und gehoeren nicht ins Repository - belegt wird
@@ -86,6 +88,41 @@ async function spielbild() {
   await anna.locator('#starten').click();
   await anna.waitForFunction(() => window.ansicht && window.ansicht.nachher.size > 0);
   await anna.waitForTimeout(Number(wert('warten', 1)) * 1000);
+
+  // --waehlen <art>: eine Einheit dieser Art neben der Basis anlegen und
+  // anwaehlen. Ohne Auswahl ist die Leiste unten gar nicht da, und genau sie
+  // will man ansehen, wenn man an ihr baut (bedienung AC-35).
+  const waehlen = wert('waehlen', null);
+  // --zeitalter 1: Anna steht in der Feudalzeit. Dann hat ihr Baumenue alle
+  // neun Knoepfe - der breiteste Zustand der Leiste, an dem sich zeigt, ob
+  // etwas unter die Uebersichtskarte rutscht.
+  const stufe = Number(wert('zeitalter', 0));
+  if (stufe > 0) {
+    const welt = laufend.raeume.finden(code)?.welt;
+    welt.spieler.find((sp) => sp.name === 'Anna').zeitalter = stufe;
+  }
+  if (waehlen) {
+    const welt = laufend.raeume.finden(code)?.welt;
+    const spieler = welt.spieler.find((sp) => sp.name === 'Anna');
+    const belegt = new Set([...welt.einheiten.values()].map((e) => `${Math.round(e.x)},${Math.round(e.y)}`));
+    let angelegt = null;
+    for (let r = 3; r < 20 && !angelegt; r++) {
+      for (let dx = -r; dx <= r && !angelegt; dx++) {
+        const x = spieler.basis.x + dx;
+        const y = spieler.basis.y + r;
+        if (belegt.has(`${x},${y}`) || welt.karte.felder[y * welt.karte.groesse + x] !== 0 || welt.gebaeudeAn(x, y)) continue;
+        angelegt = welt.einheitAnlegen(spieler.id, x, y, waehlen);
+      }
+    }
+    if (!angelegt) throw new Error(`kein Platz fuer ${waehlen}`);
+    await anna.waitForFunction((id) => window.ansicht.nachher.has(id), angelegt.id);
+    await anna.evaluate((id) => {
+      const a = window.ansicht;
+      a.ausgewaehlt = new Set([id]);
+      a.gewaehltesGebaeude = null;
+      a.beiAuswahl();
+    }, angelegt.id);
+  }
 
   await anna.evaluate(({ zoom, ziel: art }) => {
     const a = window.ansicht;

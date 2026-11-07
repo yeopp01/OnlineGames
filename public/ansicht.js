@@ -54,6 +54,11 @@ export class Ansicht {
     this.gebaeude = new Map();
     this.werte = { einheiten: {}, gebaeude: {} };
     this.arten = {};
+    // Die Werte je Spieler, wie der Server sie rechnet - mit allen
+    // Verbesserungen (bedienung AC-35). Map Spieler -> { art -> Werte }. Der
+    // Browser rechnet sie nicht selbst nach: `welt.einheitenwert()` ist die
+    // eine Stelle.
+    this.einheitenwerte = new Map();
     this.gewaehltesGebaeude = null; // id; entweder Einheiten oder ein Gebaeude
     // Das Zeichen am Ziel eines Befehls (bedienung AC-34): rot auf Feindliches,
     // weiss auf freies Gelaende. { x, y, feindlich, seit }.
@@ -113,6 +118,7 @@ export class Ansicht {
     this.salz = Number.isInteger(nachricht.startwert) ? nachricht.startwert % 65521 : 0;
     this.ich = ichId;
     this.spieler = new Map(nachricht.spieler.map((s) => [s.id, s]));
+    this.einheitenwerte = new Map(nachricht.spieler.filter((s) => s.kw).map((s) => [s.id, s.kw]));
     // Tiere kommen einmal im Aufbau und danach nur bei Aenderung.
     this.tiere = new Map((nachricht.tiere || []).map((t) => [t.i, t]));
     // Gebaeude ebenso: einmal ganz, danach nur, was sich aendert.
@@ -158,6 +164,9 @@ export class Ansicht {
     this.vorher = this.nachher;
     this.nachher = new Map(nachricht.einheiten.map((e) => [e.i, e]));
     this.empfangen = performance.now();
+
+    // Geaenderte Werte eines Spielers kommen nur, wenn er etwas erforscht hat.
+    for (const s of nachricht.spieler) if (s.kw) this.einheitenwerte.set(s.id, s.kw);
 
     const meine = nachricht.spieler.find((s) => s.id === this.ich);
     if (meine) {
@@ -834,14 +843,25 @@ export class Ansicht {
     return false;
   }
 
+  /**
+   * Ein Wert einer Einheit, wie er fuer ihren Besitzer gilt - aus der Tafel,
+   * die der Server schickt (bedienung AC-35). Ohne Tafel der Grundwert aus
+   * den Daten.
+   *
+   * Vorher rechnete der Browser die Verbesserungen selbst zusammen, und zwar
+   * nur ueber den **Namen** der Art. Eine Verbesserung, die an einer
+   * **Klasse** haengt (Schmiedeangriff an `infanterie`), fiel damit unter den
+   * Tisch - unsichtbar, solange keine das Leben einer Klasse hebt.
+   */
+  einheitenwert(einheit, feld) {
+    const art = this.arten[einheit.k] || 'dorfbewohner';
+    const tafel = this.einheitenwerte.get(einheit.b);
+    return tafel?.[art]?.[feld] ?? this.werte.einheiten[art]?.[feld] ?? 0;
+  }
+
   /** Das volle Leben einer Einheit, mit den Verbesserungen ihres Besitzers (bauen AC-21). */
   lebenVoll(einheit) {
-    const art = this.arten[einheit.k] || 'dorfbewohner';
-    let voll = this.werte.einheiten[art]?.leben ?? 0;
-    if (einheit.b === this.ich) {
-      for (const v of this.verbesserungen) voll += this.werte.verbesserungen?.[v]?.wirkung?.[art]?.leben || 0;
-    }
-    return voll;
+    return this.einheitenwert(einheit, 'leben');
   }
 
   /**
