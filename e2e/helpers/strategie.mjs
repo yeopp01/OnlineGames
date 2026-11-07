@@ -1,5 +1,30 @@
 // Handgriffe fuer das Strategiespiel im Browser. Rueckschau nach Runde 20:
 // der Start einer Partie zu zweit stand kopiert in jeder Spielbild-Datei.
+//
+// ## Was `window.ansicht` fuehrt (Stand Rueckschau nach Runde 69)
+//
+// Der Server schickt kurze Namen, damit ein Zustand klein bleibt
+// (uebertragung AC-7) - das hat schon zweimal Zeit gekostet (Runden 67, 69).
+// Die Tafel steht deshalb hier und nicht in `welt.js`:
+//
+// **`ansicht.nachher`** (Map id -> Einheit), auch `ansicht.vorher`:
+//   `i` Id · `b` Besitzer · `k` Kuerzel der Art (`d` Dorfbewohner, `s`
+//   Spaeher, `m` Miliz, `p` Plaenkler, `b` Bogenschuetze, `k` Speerkaempfer -
+//   die Wahrheit steht als `kuerzel` in `daten.js`) · `x`/`y` · `l` Ladung ·
+//   `a` erster Buchstabe der Ladungsart · `h` Lebenspunkte, **absolut, und nur
+//   wenn welche fehlen** (voll wird gar nicht geschickt - der Anteil ist
+//   `h / ansicht.lebenVoll(e)`) · `w` arbeitet gerade · `s` gefallen.
+//
+// **`ansicht.gebaeude`** (Map id -> Gebaeude): `i` · `art` **ausgeschrieben**
+//   (nicht `a`!) · `b` Besitzer · `x`/`y` · `h` Leben · `u` Baufortschritt,
+//   **nur an Baustellen** - fehlt `u`, ist das Gebaeude fertig · `n` Nahrung
+//   einer Farm (voll: `ansicht.farmVoll(g)`) · `s` Warteschlange · `f`
+//   Fortschritt des **laufenden Auftrags** (nicht "fertig"!) · `p`
+//   Sammelpunkt · `w` wartet.
+//
+// Dazu `ansicht.ich`, `ansicht.spieler` (Map, mit `basis`), `ansicht.zeitalter`,
+// `ansicht.werte`, `ansicht.verbesserungen`, `ansicht.zuBild(x, y)`,
+// `ansicht.gebaeudeMitte(g)`, `ansicht.platzTaugt(x, y)`.
 import { ANMELDUNG, GRIFFHAFEN, expect, fehlerSammeln, zeitraffer } from './seite.mjs';
 
 /**

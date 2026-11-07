@@ -183,6 +183,9 @@ Zahlen, gegen die spätere Runden vergleichen. Mit Datum und Commit.
 | 2026-11-07 | Pruefstand mit Aufstieg: 20 Startwerte x 16 Spielminuten — Feudalzeit / Kampfeinheiten / Zeit je Takt | 11,1–11,9 min (Median 11,6) / 3–7 je Spieler / 0,013 ms, keine Widersprueche | Runde 69 |
 | 2026-11-07 | Laengste Untaetigkeit eines Dorfbewohners: 10 / 16 / 20 Spielminuten | 0,6 s / 290 s / 483 s — Soll: ≤ 20 s (ki AC-10, offen) | Runde 69 |
 | 2026-11-07 | Langsamster Browserfall: `ki AC-9` (zwoelf Spielminuten im Zeitraffer 20) | 45,5 s von 352 s der strategie-Dateien | Runde 69 |
+| 2026-11-07 | Erster Lauf des Waechters gegen Werte an `einheitenwert()` vorbei | 7 Stellen in `welt.js` (alle umgestellt) | Rueckschau 69 |
+| 2026-11-07 | Pruefstand vor/nach der Umstellung auf `einheitenwert()`, 20 Startwerte x 16 min | Zeile fuer Zeile identisch, 0,013 ms je Takt | Rueckschau 69 |
+| 2026-11-07 | Tests ohne Browser / im Browser; davon Waechter in `tests/waechter-*` | 393 / 148; 3 | Rueckschau 69 |
 
 ## Rückschauen
 
@@ -320,6 +323,43 @@ Gut gelaufen: Die Tonstufen-Messung alt gegen neu hat aus „wirkt gezeichneter"
 eine Zahl gemacht, und zweimal hat ein alter Test einen neuen Fehler gefunden
 (Klick auf Beeren traf ein Schaf; zwei Lager zu ähnlich). Browserlauf bei
 ruhigerer Maschine 141 s Testzeit, langsamster Fall weiter der Lagertest (28 s).
+
+### Nach Runde 69 (2026-11-07)
+
+Vier Runden (66 bis 69), alle gruen, B5 und B6 erreicht. Was wiederholt Zeit
+gekostet hat, war dreimal dieselbe Art von Fehler: **eine Regel stand im Text,
+aber nichts hat sie durchgesetzt.** Deshalb drei Verbesserungen, alle
+durchgesetzt statt aufgeschrieben.
+
+1. **Werte an `einheitenwert()` vorbei gelesen** — in Runde 68 war die Rüstung
+   aus dem Webstuhl seit `bauen AC-21` wirkungslos, weil die Schadensformel
+   `EINHEITEN[art].nahruestung` las. Der Fehler war unsichtbar: alle Tests
+   grün, die Zahl im Menü richtig, nur im Kampf passierte nichts.
+   → **`tests/waechter-werte.test.mjs`** sucht jeden Zugriff auf einen
+   verbesserbaren Wert (die Felder aus `VERBESSERUNGEN[...].wirkung`, dazu
+   `sicht`, `tempo`, `nachladen`) in der Simulation. Erster Lauf: **sieben
+   Stellen**, alle über `einheitenwert()` geführt — Sichtweite der Wache,
+   Nachladezeit, Lauftempo und viermal „kann kämpfen". Heute ändert sich dabei
+   nichts; sobald Stadtwache, Pferdezucht oder Ballistik dazukommen, wirken
+   sie ohne eine weitere Zeile. Damit das bezahlbar bleibt, merkt sich
+   `einheitenwert()` die Werte je Spieler und vergisst sie beim Erforschen:
+   das Tempo wird in **jedem Takt für jede Einheit** gefragt. Prüfstand Zeile
+   für Zeile identisch, `fahrplan AC-6` unverändert grün.
+2. **Eine Bildunterschrift aus Werten zusammengesetzt** (Runde 69) — der
+   Nachweis entsteht, der Browserlauf ist grün, und erst `npm run check`
+   danach sagt „hat keinen Erzeuger mehr". Kosten: ein Durchgang von 45 s.
+   → **`tests/waechter-nachweis.test.mjs`** findet `titel:` mit `${` in
+   Millisekunden, ohne Browser.
+3. **Die kurzen Namen aus der Übertragung** haben zweimal Zeit gekostet: `h`
+   sind Lebenspunkte und kein Anteil (Runde 67), und am Gebäude heißt die Art
+   `art` statt `a`, während `f` der Fortschritt des laufenden Auftrags ist und
+   nicht „fertig" (Runde 69). Beide Male erst nach dem Lauf gemerkt, beide
+   Male in `welt.js` nachgesucht. → Eine **Tafel aller Drahtfelder** steht
+   jetzt oben in `e2e/helpers/strategie.mjs`, dort wo Browsertests sie suchen.
+
+Nicht gemacht, bewusst: `ki AC-10` (der Dorfbewohner, der spät acht Minuten
+stillsteht) bleibt offen — eine Rückschau repariert Arbeitsweisen, nicht
+Produktfehler. Er steht als offener Faden mit Ursache und drei Hebeln.
 
 ### Nach Runde 65 (2026-11-07)
 
@@ -518,6 +558,16 @@ alle sieben Gebäude der Dunklen Zeit stehen. Was sich wiederholt hat:
 Neueste oben. Eine Zeile je Runde: Nummer, Datum, Kriterien, Ergebnis,
 wichtigste Erkenntnis.
 
+- **70** · 2026-11-07 · **Rückschau nach Runde 69**: drei Verbesserungen, alle
+  durchgesetzt statt aufgeschrieben — ein Wächter gegen Werte, die an
+  `welt.einheitenwert()` vorbei aus der Tabelle gelesen werden (sieben Stellen
+  beim ersten Lauf, alle umgestellt; der Prüfstand bleibt Zeile für Zeile
+  gleich), ein Wächter gegen Bildunterschriften, die erst beim Lauf entstehen,
+  und eine Tafel aller Drahtfelder oben in `e2e/helpers/strategie.mjs`.
+  Gelernt: **eine Regel, die nur im Text steht, wird gebrochen** — dreimal in
+  vier Runden. Und: wer einen Wert in jeden Takt hängt, braucht ein
+  Gedächtnis; `einheitenwert()` merkt sich jetzt je Spieler und vergisst beim
+  Erforschen.
 - **69** · 2026-11-07 · **ki AC-9 fertig — die KI steigt von selbst auf; damit
   steht B6.** Sobald 22 Dorfbewohner stehen, das Dorfzentrum frei ist, 500
   Nahrung da sind und zwei Gebäude der Dunklen Zeit, bestellt sie den Aufstieg;

@@ -105,6 +105,10 @@ Setze die gewählten Kriterien auf `in-arbeit`.
   Und als Beispiel für „gibt es nicht" ein erfundener Name, nie ein Gebäude
   späterer Stufen (Runden 31–34: fünfmal gebrochen). Browsertests fragen nach
   freien Plätzen `window.ansicht.platzTaugt`, nicht eine eigene Regel.
+  **Drei Wächter suchen das jetzt** (`tests/waechter-*.test.mjs`): Gleichheit
+  auf wachsenden Listen, verbesserbare Werte an `welt.einheitenwert()` vorbei,
+  und Bildunterschriften, die erst beim Lauf zusammengesetzt werden. Wer eine
+  neue Regel dieser Art aufstellt, legt einen Wächter dazu statt Fettdruck.
   **Das sucht jetzt ein Wächter:** `tests/waechter-gleichheit.test.mjs` liest
   `tests/` und `e2e/` und beanstandet Gleichheit auf einem ganzen `auftrag`,
   `bildetAus`, `baut` oder einem Eintrag aus `EINHEITEN`, `GEBAEUDE`,
@@ -115,6 +119,14 @@ Setze die gewählten Kriterien auf `in-arbeit`.
   `[1-9]` oder `> 0` in `tests/` und `e2e/` suchen. Ein Test, der nach der
   Änderung schon vor der Handlung grün ist, prüft nichts mehr (Runde 11:
   „Holz steigt" traf den Startvorrat).
+- **Werte einer Einheit nur über `welt.einheitenwert(besitzer, art, feld)`.**
+  Angriff, Leben, Rüstung, Reichweite, Sicht, Tempo, Nachladezeit stehen in der
+  Tabelle, aber Verbesserungen ändern sie. Wer `EINHEITEN[art].angriff` direkt
+  liest, sieht sie nicht — genau so war die Rüstung aus dem Webstuhl eine Stufe
+  lang wirkungslos (Runde 68). `tests/waechter-werte.test.mjs` sucht danach.
+- **Die kurzen Namen aus der Übertragung** (`h`, `u`, `k`, `art`, `f`) stehen
+  als Tafel oben in `e2e/helpers/strategie.mjs` — dort nachsehen statt in
+  `welt.js` suchen.
 - Ein Import darf nicht heißen wie ein Parameter der umgebenden Funktion
   (`starten(hafen, einstellungen)` hat einen Import `einstellungen`
   überdeckt, Runde 2) — der Fehler zeigt sich erst zur Laufzeit.
@@ -156,6 +168,10 @@ Setze die gewählten Kriterien auf `in-arbeit`.
   eigene Dateien (`strategie-*.spec.mjs`). Braucht der Test einen Zustand, der
   im Spiel Minuten dauert, dafür einen **Prüfgriff** in `e2e/server.mjs`, nie
   eine Abkürzung im Produktcode.
+- **Die Unterschrift steht als fester Text im Test**, nie aus Werten
+  zusammengesetzt: `npm run check` sucht sie wörtlich und findet sonst keinen
+  Erzeuger. Was sich von Lauf zu Lauf ändert, wird mit `expect()` gesichert und
+  in der Unterschrift nicht beziffert. (`tests/waechter-nachweis.test.mjs`.)
 - **Was die Bildunterschrift behauptet, sichert der Test vor `nachweis()`
   mit `toBeInViewport()`** — die Meldung, der Knopf, das Feld. Ein Screenshot
   zeigt nur den sichtbaren Ausschnitt; was darunter liegt, ist für das Bild

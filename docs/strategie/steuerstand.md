@@ -13,13 +13,17 @@ hier nichts eintraegt, verliert den Faden beim naechsten Autocompact.
 
 ## Zuletzt fortgeschrieben
 
-2026-11-07, nach Runde 69 (ki AC-9 fertig - **B6 steht, als Naechstes B7**).
+2026-11-07, nach Runde 70 (Rueckschau; **B6 steht, als Naechstes B7**).
 
 ## Wo ich stehe
 
 - **Branch:** `strategie`. Nie auf `main` arbeiten, **nie pushen, nie deployen.**
 - **Board:** 373 von 505 Kriterien fertig · 1 in Arbeit · 5 in QA · 4 geplant ·
-  114 offen · 8 zurueckgestellt. 391 Tests ohne Browser, 148 im Browser.
+  114 offen · 8 zurueckgestellt. 393 Tests ohne Browser, 148 im Browser.
+- **Drei Waechter in `tests/waechter-*.test.mjs`:** Gleichheit auf wachsenden
+  Listen, verbesserbare Werte an `welt.einheitenwert()` vorbei,
+  Bildunterschriften mit `${...}`. Wer eine neue Regel dieser Art aufstellt,
+  legt einen Waechter dazu.
 - **Stufe A ist erreicht** (fahrplan AC-3 bis AC-7).
 - **Stufe B:** Bauabfolge B1 bis B7 im [Fahrplan](fahrplan.md). **B1 bis B6
   sind fertig.** Als Naechstes **B7**: Gleichgewicht messen, Konterkreis im
@@ -29,7 +33,7 @@ hier nichts eintraegt, verliert den Faden beim naechsten Autocompact.
   bei 20 min). Aelter als Runde 69, nur nie gemessen, weil der Pruefstand bei
   zehn Minuten endete. Ursache und Hebel stehen in den Erkenntnissen unter
   **Offene Faeden**.
-- **Naechste Rueckschau: Runde 70.** Diese Zeile ist der Termin - nicht
+- **Naechste Rueckschau: Runde 75.** Diese Zeile ist der Termin - nicht
   nachzaehlen. Die Rueckschauen 55 und 60 sind ausgefallen, weil nach der
   Rueckschau zur Stufe A niemand mehr gezaehlt hat (Rueckschau nach Runde 65).
   Wer eine Rueckschau haelt, traegt hier die naechste Nummer ein.

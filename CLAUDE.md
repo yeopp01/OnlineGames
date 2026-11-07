@@ -107,7 +107,8 @@ qa/      bildnachweise/ Bilder je Kriterium (eingecheckt) · ohne-bild.json Begr
          report/ der erzeugte Bericht (nicht eingecheckt)
 scripts/ specs-lesen.mjs ist die eine Quelle; Board, Belege und Bericht hängen daran
          qa-nachweis.mjs legt Bildnachweise ab · qa-report.mjs prüft und schreibt den Bericht
-tests/   Anfrageweg: netz, schutz, konten, manager-netz · Rechenteile: regeln, manager, manager-spiel
+tests/   waechter-*: Regeln, die ein Test durchsetzt statt Fettdruck
+         Anfrageweg: netz, schutz, konten, manager-netz · Rechenteile: regeln, manager, manager-spiel
          manager-welt: sechs Saisons ohne Menschen, jedes Spiel auf Widersprüche geprüft
 e2e/     Playwright: tests/ im Browser; server.mjs startet den Server samt Prüfgriffen
          (eigener Hafen, nur im Test); anmeldung.setup.mjs meldet einmal je Lauf an
@@ -141,7 +142,7 @@ Umfang hinzufügt, dort nachsehen.
 
 ## Stand
 
-**373 von 505 Kriterien fertig.** 391 Tests ohne Browser, 148 im Browser. Die
+**373 von 505 Kriterien fertig.** 393 Tests ohne Browser, 148 im Browser. Die
 Übersicht ist der Bericht: `npm run qa:report`.
 
 Gebaut ist der Unterbau: Räume, Übertragung, Karte, Wegfindung, Sammeln,

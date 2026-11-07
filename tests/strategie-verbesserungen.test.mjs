@@ -147,7 +147,10 @@ test('bauen AC-26: mit der Doppelaxt ist eine Ladung Holz frueher voll', () => {
     const welt = new Welt(ZWEI, 7);
     const anna = welt.spielerVon('a');
     anna.zeitalter = 1;
-    if (mitAxt) anna.verbesserungen.push('doppelaxt');
+    // Ueber `erforschen`, nicht mit einem Push in die Liste: `einheitenwert`
+    // merkt sich Werte je Spieler und leert das Gedaechtnis genau dort
+    // (Rueckschau nach Runde 69).
+    if (mitAxt) welt.erforschen(anna, 'doppelaxt');
     const wald = welt.naechsterVorrat(anna.basis, karten.WALD);
     const bauer = [...welt.einheiten.values()].find((e) => e.besitzer === 'a' && e.art === 'dorfbewohner');
     welt.nachricht('a', { auftrag: 'befehl', einheiten: [bauer.id], ziel: wald });

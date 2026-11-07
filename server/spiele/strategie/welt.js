@@ -104,6 +104,9 @@ class Welt {
     this.naechsteId = 1;
     this.einheiten = new Map();
     this.gebaeude = new Map();
+    // Werte mit Verbesserungen, gemerkt je Spieler (`einheitenwert`). Geleert,
+    // sobald dieser Spieler etwas erforscht.
+    this.werteGemerkt = new Map();
     // Gebaeude gehen wie Tiere nur bei Aenderung ueber die Leitung.
     this.gebaeudeAenderungen = new Set();
     this.feldAenderungen = [];
@@ -184,16 +187,30 @@ class Welt {
 
   /**
    * Ein Wert einer Einheit mit allen Verbesserungen ihres Spielers - Leben,
-   * Angriff, Ruestung, Reichweite (bauen AC-21, AC-25). Eine Stelle fuer alle
-   * Werte: wer die Tabelle direkt liest, sieht die Verbesserungen nicht.
+   * Angriff, Ruestung, Reichweite, Sicht, Tempo, Nachladezeit (bauen AC-21,
+   * AC-25). Eine Stelle fuer alle Werte: wer die Tabelle direkt liest, sieht
+   * die Verbesserungen nicht. Darauf achtet `tests/waechter-werte.test.mjs`.
+   *
+   * `spieler.verbesserungen` aendert sich nur ueber `erforschen()` - dort wird
+   * das Gedaechtnis dieses Spielers geleert.
    */
   einheitenwert(besitzer, art, feld) {
     const spieler = this.spielerVon(besitzer);
+    if (!spieler?.verbesserungen?.length) return EINHEITEN[art][feld] || 0;
+    // Gemerkt je Spieler: `laufen()` fragt das Tempo in jedem Takt fuer jede
+    // Einheit, `wacheTakten()` zweimal je Sekunde die Sicht. Ohne Gedaechtnis
+    // liefe darunter je Aufruf eine Schleife ueber alle Verbesserungen mit
+    // (fahrplan AC-6: ein Takt mit 8 x 100 Einheiten unter 10 ms).
+    let gemerkt = this.werteGemerkt.get(besitzer);
+    if (!gemerkt) this.werteGemerkt.set(besitzer, gemerkt = new Map());
+    const schluessel = `${art}|${feld}`;
+    const da = gemerkt.get(schluessel);
+    if (da !== undefined) return da;
     let wert = EINHEITEN[art][feld] || 0;
-    if (!spieler?.verbesserungen?.length) return wert;
-    for (const schluessel of wirkungsschluessel(art)) {
-      for (const v of spieler.verbesserungen) wert += VERBESSERUNGEN[v].wirkung[schluessel]?.[feld] || 0;
+    for (const s of wirkungsschluessel(art)) {
+      for (const v of spieler.verbesserungen) wert += VERBESSERUNGEN[v].wirkung[s]?.[feld] || 0;
     }
+    gemerkt.set(schluessel, wert);
     return wert;
   }
 
@@ -603,6 +620,7 @@ class Welt {
   // spaeteren (bauen AC-21).
   erforschen(spieler, art) {
     spieler.verbesserungen.push(art);
+    this.werteGemerkt.delete(spieler.id);
     const wirkung = VERBESSERUNGEN[art].wirkung;
     for (const einheit of this.einheiten.values()) {
       if (einheit.besitzer !== spieler.id) continue;
@@ -858,7 +876,7 @@ class Welt {
       einheit.unerreichbar = null;
       // Jeder neue Befehl beendet einen laufenden Angriffslauf.
       einheit.angriffslauf = null;
-      if ((feind || feindBau) && EINHEITEN[einheit.art].angriff > 0) {
+      if ((feind || feindBau) && this.einheitenwert(einheit.besitzer, einheit.art, 'angriff') > 0) {
         const opfer = feind || feindBau;
         // Mehrere Angreifer stellen sich um das Ziel herum, statt uebereinander
         // zu stehen - dieselbe Aufstellung wie beim Gehen (einheiten AC-20).
@@ -895,7 +913,7 @@ class Welt {
         const feld = this.naechstesFreies(einheit, aufstellung) || { x: zx, y: zy };
         // Der Angriffslauf merkt sich das Marschziel: nach jedem Gefecht
         // unterwegs geht es dorthin weiter (kampf AC-4).
-        if (angriffslauf && EINHEITEN[einheit.art].angriff > 0) einheit.angriffslauf = feld;
+        if (angriffslauf && this.einheitenwert(einheit.besitzer, einheit.art, 'angriff') > 0) einheit.angriffslauf = feld;
         einheit.auftrag = { art: 'gehen', feld };
         einheit.weg = this.wegNach(einheit, feld);
       }
@@ -1308,7 +1326,7 @@ class Welt {
       // alle anderen nur im Stehen - ein Sammler soll seine Arbeit nicht
       // wegen eines Vorbeireitenden liegen lassen (kampf AC-2).
       if (einheit.angriffslauf) {
-        if (EINHEITEN[einheit.art].angriff > 0) wachen.push(einheit);
+        if (this.einheitenwert(einheit.besitzer, einheit.art, 'angriff') > 0) wachen.push(einheit);
         continue;
       }
       if (einheit.auftrag || einheit.weg.length) continue;
@@ -1319,7 +1337,7 @@ class Welt {
     const raster = this.einheitenRaster();
     const funde = [];
     for (const einheit of wachen) {
-      const feind = this.feindInSicht(einheit, raster, EINHEITEN[einheit.art].sicht);
+      const feind = this.feindInSicht(einheit, raster, this.einheitenwert(einheit.besitzer, einheit.art, 'sicht'));
       if (feind) funde.push({ einheit, feind });
     }
     if (!funde.length) return;
@@ -1426,7 +1444,8 @@ class Welt {
     // Der erste Schlag kommt sofort, danach zaehlt die Nachladezeit aus den
     // Daten (kampf AC-7). Der Takt dieses Schlages geht mit ab, damit zwischen
     // zwei Treffern genau die Zeit der Vorlage liegt und nicht ein Takt mehr.
-    einheit.nachladen = Math.round(EINHEITEN[einheit.art].nachladen * TAKTE_PRO_SEKUNDE) - 1;
+    const nachladen = this.einheitenwert(einheit.besitzer, einheit.art, 'nachladen');
+    einheit.nachladen = Math.round(nachladen * TAKTE_PRO_SEKUNDE) - 1;
     this.schlagen(einheit, ziel, auftrag.gebaeude);
   }
 
@@ -1485,7 +1504,7 @@ class Welt {
   wehren(einheit, angreifer) {
     if (einheit.tot || !angreifer || angreifer.tot) return;
     if (EINHEITEN[einheit.art].wacht) return;
-    if (einheit.auftrag?.art === 'angreifen' || !EINHEITEN[einheit.art].angriff) return;
+    if (einheit.auftrag?.art === 'angreifen' || !this.einheitenwert(einheit.besitzer, einheit.art, 'angriff')) return;
     const stand = nachbarfeld(this.karte, this.feldVon(angreifer), einheit);
     this.angriffBeginnen(einheit, angreifer, false, stand, this.feldVon(einheit));
   }
@@ -1593,7 +1612,7 @@ class Welt {
 
   // Tempo aus den Daten, in Feldern je Sekunde (einheiten AC-19).
   laufen(einheit) {
-    const tempo = EINHEITEN[einheit.art].tempo / TAKTE_PRO_SEKUNDE;
+    const tempo = this.einheitenwert(einheit.besitzer, einheit.art, 'tempo') / TAKTE_PRO_SEKUNDE;
     const naechstes = einheit.weg[0];
     const dx = naechstes.x - einheit.x;
     const dy = naechstes.y - einheit.y;
