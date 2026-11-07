@@ -13,21 +13,32 @@ hier nichts eintraegt, verliert den Faden beim naechsten Autocompact.
 
 ## Zuletzt fortgeschrieben
 
-2026-11-07, nach Runde 70 (Rueckschau; **B6 steht, als Naechstes B7**).
+2026-11-07, nach Runde 71 (**B7 bis auf fahrplan AC-8 fertig**; als
+Naechstes AC-8, der Pruefstein der Stufe B).
 
 ## Wo ich stehe
 
 - **Branch:** `strategie`. Nie auf `main` arbeiten, **nie pushen, nie deployen.**
-- **Board:** 373 von 505 Kriterien fertig · 1 in Arbeit · 5 in QA · 4 geplant ·
-  114 offen · 8 zurueckgestellt. 393 Tests ohne Browser, 148 im Browser.
+- **Board:** 375 von 505 Kriterien fertig · 1 in Arbeit · 5 in QA · 4 geplant ·
+  112 offen · 8 zurueckgestellt. 397 Tests ohne Browser, 148 im Browser.
 - **Drei Waechter in `tests/waechter-*.test.mjs`:** Gleichheit auf wachsenden
   Listen, verbesserbare Werte an `welt.einheitenwert()` vorbei,
   Bildunterschriften mit `${...}`. Wer eine neue Regel dieser Art aufstellt,
   legt einen Waechter dazu.
 - **Stufe A ist erreicht** (fahrplan AC-3 bis AC-7).
 - **Stufe B:** Bauabfolge B1 bis B7 im [Fahrplan](fahrplan.md). **B1 bis B6
-  sind fertig.** Als Naechstes **B7**: Gleichgewicht messen, Konterkreis im
-  Pruefstand (fahrplan AC-8 bis AC-10). Der Arbeitsbaum ist sauber.
+  sind fertig, aus B7 die Messungen** (fahrplan AC-9 Konterkreis, AC-10 kein
+  Schlachtenglueck). **Als Naechstes fahrplan AC-8** - der Pruefstein
+  "Feudalzeit spielbar", mit Bild aus dem Browser; damit ist Stufe B erreicht
+  und die Rueckschau zur Stufe faellig (Abschnitt 8 des Skills: Partie im
+  Browser ansehen, drei Luecken als `offen` in `bedienung.md`).
+- **Der Gefechtsstand** (neu in Runde 71) steht in
+  `server/spiele/strategie/pruefstand.js` als `gefechtSpielen`:
+  `npm run konterkreis:strategie` stellt zwei Heere gleicher Kosten auf freiem
+  Grund gegenueber und laesst sie aufeinander laufen. Wer an Angriff,
+  Ruestung, Bonus, Nachladezeit oder Tempo dreht, faehrt ihn danach - 0,2 s
+  fuer 160 Gefechte. Zu wissen: der Startwert verschiebt die Heere quer
+  (bis drei Felder), sonst waere auf freiem Grund jedes Gefecht dasselbe.
 - **Neu offen aus Runde 69: ki AC-10** - jenseits der zehnten Spielminute steht
   ein Dorfbewohner bis zu acht Minuten still (gemessen 290 s bei 16 min, 483 s
   bei 20 min). Aelter als Runde 69, nur nie gemessen, weil der Pruefstand bei

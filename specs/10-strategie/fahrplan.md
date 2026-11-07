@@ -2,7 +2,7 @@
 
 **Bereich:** Strategie
 **Kuerzel:** fahrplan
-**Stand:** 7/22 fertig · 15 offen
+**Stand:** 9/22 fertig · 13 offen
 
 ## Zweck
 
@@ -110,10 +110,10 @@ neuen Karte grün bleiben.
 - **AC-8** `offen` **Feudalzeit spielbar** — Zeitalterwechsel mit Voraussetzung und Dauer;
   Schießanlage, Stall, Schmiede; Speer, Bogen, Plänkler; Rüstung nah und fern,
   Bonusschaden.
-- **AC-9** `offen` **Der Konterkreis hält** — Im Prüfstand gewinnt bei gleichen Kosten der Konter
+- **AC-9** `fertig` **Der Konterkreis hält** — Im Prüfstand gewinnt bei gleichen Kosten der Konter
   in mindestens 80 % der Gefechte: Speer gegen Reiter, Plänkler gegen Bogen,
   Bogen gegen Speer, Reiter gegen Bogen.
-- **AC-10** `offen` **Kein Schlachtenglück** — Gleiche Lage, gleiches Ergebnis: dasselbe Gefecht
+- **AC-10** `fertig` **Kein Schlachtenglück** — Gleiche Lage, gleiches Ergebnis: dasselbe Gefecht
   zweimal gerechnet endet Takt für Takt gleich.
 
 ### Stufe C — Partieende und KI

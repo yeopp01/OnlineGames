@@ -142,7 +142,7 @@ Umfang hinzufügt, dort nachsehen.
 
 ## Stand
 
-**373 von 505 Kriterien fertig.** 393 Tests ohne Browser, 148 im Browser. Die
+**375 von 505 Kriterien fertig.** 397 Tests ohne Browser, 148 im Browser. Die
 Übersicht ist der Bericht: `npm run qa:report`.
 
 Gebaut ist der Unterbau: Räume, Übertragung, Karte, Wegfindung, Sammeln,
@@ -240,7 +240,15 @@ Dunklen Zeit, dann der Aufstieg, danach eine Schießanlage (oder ein Stall, je
 nach Gold) und ohne Pause Kampfeinheiten daraus. Welche, liest sie aus den
 Daten des Gebäudes. Im Prüfstand steht die Feudalzeit über zwanzig Startwerte
 nach 11,1 bis 11,9 Spielminuten; die Vorgabe von `npm run pruefstand:strategie`
-ist deshalb 16 Minuten.
+ist deshalb 16 Minuten. **Aus B7 stehen die Messungen**: der
+**Gefechtsstand** (`npm run konterkreis:strategie`) stellt zwei Heere gleicher
+Kosten gegenüber — 600 Rohstoffe, also zehn Speerkämpfer gegen sieben Reiter —
+und lässt sie aufeinander laufen. Der **Konterkreis hält in beiden
+Richtungen**: Speer gegen Reiter, Plänkler gegen Bogen, Bogen gegen Speer,
+Reiter gegen Bogen gewinnen je 20 von 20 Startwerten, umgekehrt 0 von 20.
+Dasselbe Gefecht zweimal gerechnet verläuft Takt für Takt gleich, ein anderer
+Startwert anders. 160 Gefechte kosten 0,2 s; wer an Angriff, Rüstung, Bonus
+oder Nachladezeit dreht, fährt ihn danach.
 
 1. **Stufe A** Dunkle Zeit mit Wirtschafts-KI und Prüfstand · **B** Feudalzeit
    · **C** Partieende und KI-Gegner · **D** Ritterzeit · **E** fünf Völker ·

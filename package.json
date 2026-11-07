@@ -27,7 +27,8 @@
     "einladung": "node scripts/einladung.mjs",
     "sicht": "node scripts/sicht.mjs",
     "tafel": "node scripts/tafel.mjs",
-    "pruefstand:strategie": "node scripts/pruefstand-strategie.mjs"
+    "pruefstand:strategie": "node scripts/pruefstand-strategie.mjs",
+    "konterkreis:strategie": "node scripts/konterkreis-strategie.mjs"
   },
   "dependencies": {
     "better-auth": "^1.7.2",

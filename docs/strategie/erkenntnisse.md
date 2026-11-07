@@ -179,6 +179,10 @@ Zahlen, gegen die spätere Runden vergleichen. Mit Datum und Commit.
 | 2026-11-07 | Pruefstand nach der Wache: 20 Startwerte x 10 Spielminuten — Dorfbewohner / Zeit je Takt | 22 (Median 22) / 0,008 ms, keine Widersprueche | Runde 64 |
 | 2026-11-07 | Treffer des neuen Wächters gegen Gleichheit auf wachsenden Daten, erster Lauf | 10 Stellen in 5 Dateien (alle repariert) | Runde 65 |
 | 2026-11-07 | Abstand zweier Angreifer im Bild zu kampf AC-1 (`figurenFrei`) | 0,27–0,39 Felder — Soll: ≥ 0,5 (einheiten AC-29, offen) | Runde 65 |
+| 2026-11-07 | Konterkreis, 20 Startwerte je Paarung, Budget 600 — Konter / gekontert | 20/20 = 100 % / 0/20 = 0 % in allen vier Paarungen, 0 ohne Ende | Runde 71 |
+| 2026-11-07 | Gefechtsdauer (Takte, Median): Speer–Reiter / Plaenkler–Bogen / Bogen–Speer / Reiter–Bogen | 80 / 125 / 190 / 346 | Runde 71 |
+| 2026-11-07 | Rechenzeit des Gefechtsstands: 160 Gefechte (8 Richtungen x 20 Startwerte) | 0,2 s | Runde 71 |
+| 2026-11-07 | Tests ohne Browser: nach Runde 71 | 397 (4 neue in `tests/strategie-konterkreis.test.mjs`), `npm run check` 18 s | Runde 71 |
 | 2026-11-07 | Tests ohne Browser / im Browser; Browserlauf | 391 / 148; 7,1 min — **nicht vergleichbar**: 26 fremde Browserprozesse (19 chrome, 7 msedge) | Runde 69 |
 | 2026-11-07 | Pruefstand mit Aufstieg: 20 Startwerte x 16 Spielminuten — Feudalzeit / Kampfeinheiten / Zeit je Takt | 11,1–11,9 min (Median 11,6) / 3–7 je Spieler / 0,013 ms, keine Widersprueche | Runde 69 |
 | 2026-11-07 | Laengste Untaetigkeit eines Dorfbewohners: 10 / 16 / 20 Spielminuten | 0,6 s / 290 s / 483 s — Soll: ≤ 20 s (ki AC-10, offen) | Runde 69 |
@@ -558,6 +562,23 @@ alle sieben Gebäude der Dunklen Zeit stehen. Was sich wiederholt hat:
 Neueste oben. Eine Zeile je Runde: Nummer, Datum, Kriterien, Ergebnis,
 wichtigste Erkenntnis.
 
+- **71** · 2026-11-07 · **fahrplan AC-9 und AC-10 fertig — der Konterkreis
+  hält, und zwar in beiden Richtungen.** Neu ist ein **Gefechtsstand** im
+  Prüfstand (`gefechtSpielen`, `npm run konterkreis:strategie`): zwei Heere
+  gleicher Kosten — 600 Rohstoffe, also 10 Speerkämpfer gegen 7 Reiter —
+  stehen sich mit Angriffslauf gegenüber, danach rechnet nur die Simulation.
+  Jeder Konter gewinnt 20 von 20 und verliert umgekehrt 0 von 20; 160 Gefechte
+  kosten 0,2 s. Gelernt, zweimal: **ein Messaufbau kann das Gegenteil von dem
+  zeigen, was er messen soll.** Erst standen ein bis drei Gefechte je Paarung
+  ohne Ende — nicht Gleichgewicht, sondern erstens `welt.untaetig()`, das die
+  Frage nur für Dorfbewohner beantwortet und für jede Kampfeinheit `false`
+  sagt (also setzte niemand nach), zweitens ein Waldstück genau zwischen den
+  Heeren. Dann waren alle zwanzig Startwerte **Takt für Takt identisch** — das
+  Gelände war die einzige Abwechslung gewesen, und auf freiem Grund ist jedes
+  Gefecht dasselbe. Jetzt stehen die Heere um bis zu drei Felder quer versetzt,
+  aus dem Startwert gezogen: zwanzig Startwerte sind zwanzig Gefechte (65 bis
+  133 Takte bei Speer gegen Reiter). Die Gegenprobe gehört dazu — ohne sie wäre
+  der Test auch grün, wenn immer die linke Seite gewinnt.
 - **70** · 2026-11-07 · **Rückschau nach Runde 69**: drei Verbesserungen, alle
   durchgesetzt statt aufgeschrieben — ein Wächter gegen Werte, die an
   `welt.einheitenwert()` vorbei aus der Tabelle gelesen werden (sieben Stellen

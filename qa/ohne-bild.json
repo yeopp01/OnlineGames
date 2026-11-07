@@ -72,6 +72,16 @@
       "begruendung": "Partien KI gegen KI ohne Menschen, jeder Takt geprueft - ein Lauf auf der Konsole, kein Bildschirm. Belegt durch zehn Spielminuten ueber mehrere Startwerte ohne Widerspruch."
     },
     {
+      "spec": "10-strategie/fahrplan.md",
+      "ac": "AC-9",
+      "begruendung": "Der Konterkreis ist eine Aussage ueber 160 Gefechte: bei gleichen Kosten gewinnt Speer gegen Reiter, Plaenkler gegen Bogen, Bogen gegen Speer, Reiter gegen Bogen. Gemessen wird im Gefechtsstand ohne Browser (npm run konterkreis:strategie). Ein Bildschirm zeigt eine Schlacht, nicht die Verteilung ueber zwanzig Startwerte - und ein einzelnes Bild waere der schwaechste Beleg, den es fuer ein Gleichgewicht gibt."
+    },
+    {
+      "spec": "10-strategie/fahrplan.md",
+      "ac": "AC-10",
+      "begruendung": "Dasselbe Gefecht zweimal gerechnet verlaeuft Takt fuer Takt gleich. Verglichen werden zwei Spuren aus Kennung, Leben und Ort aller Einheiten ueber hunderte Takte; das ist ein Vergleich zweier ganzer Laeufe. Ein Bild zeigt einen Augenblick und koennte Gleichheit nie belegen."
+    },
+    {
       "spec": "00-plattform/konten.md",
       "ac": "AC-3",
       "begruendung": "Wie das Kennwort in der Datenbank liegt. Ueber die Oberflaeche nicht beobachtbar - und waere es das, waere es der Fehler."
