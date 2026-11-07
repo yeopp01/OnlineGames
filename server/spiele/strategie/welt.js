@@ -188,6 +188,7 @@ class Welt {
       leben: werte.leben,
       weg: [],
       auftrag: null, // { art: 'gehen' | 'sammeln', feld }
+      angriffslauf: null, // Marschziel, solange ein Angriffslauf laeuft (kampf AC-4)
       ladung: 0,
       ladungsart: null,
       sammelt: false, // steht am Vorrat und arbeitet
@@ -473,7 +474,7 @@ class Welt {
       case 'sammelpunkt':
         return this.sammelpunktSetzen(spielerId, nachricht.gebaeude, nachricht.ziel);
       default:
-        return this.befehl(spielerId, nachricht.einheiten, nachricht.ziel);
+        return this.befehl(spielerId, nachricht.einheiten, nachricht.ziel, Boolean(nachricht.angriffslauf));
     }
   }
 
@@ -749,7 +750,17 @@ class Welt {
 
   // Ein Befehl kommt aus dem Browser und ist damit erst einmal unglaubwuerdig:
   // nur eigene Einheiten, nur Felder auf der Karte.
-  befehl(spielerId, einheitIds, ziel) {
+  /**
+   * Ein Rechtsklick: hingehen, sammeln, bauen, angreifen - was aus dem
+   * geklickten Feld zu lesen ist.
+   *
+   * @param {boolean} [angriffslauf] Der Angriffslauf (kampf AC-4): unterwegs
+   *   wird angegriffen, was im Weg steht, und danach der Marsch fortgesetzt.
+   *   Er ist der **einzige** Befehl, der nicht aus dem Feld folgt - deshalb
+   *   kommt er als Angabe mit. Sammeln, Bauen und Schafe sind dabei aus: wer
+   *   zum Gefecht laeuft, faengt unterwegs nicht an zu holzen.
+   */
+  befehl(spielerId, einheitIds, ziel, angriffslauf = false) {
     if (!Array.isArray(einheitIds) || !ziel) return;
     const g = this.karte.groesse;
     const zx = Math.round(Number(ziel.x));
@@ -757,8 +768,9 @@ class Welt {
     if (!Number.isInteger(zx) || !Number.isInteger(zy)) return;
     if (zx < 0 || zy < 0 || zx >= g || zy >= g) return;
 
-    // Holz, Beeren, Gold und Stein sind sammelbar (einheiten AC-15).
-    const sammeln = SAMMELN[this.karte.felder[zy * g + zx]];
+    // Holz, Beeren, Gold und Stein sind sammelbar (einheiten AC-15) - beim
+    // Angriffslauf nicht.
+    const sammeln = angriffslauf ? null : SAMMELN[this.karte.felder[zy * g + zx]];
     // Eine eigene Baustelle: wer bauen kann, baut mit (bauen AC-2).
     const baustelle = this.gebaeudeAn(zx, zy);
     // Etwas Fremdes unter dem Klick wird angegriffen (kampf AC-1) - kein
@@ -767,7 +779,7 @@ class Welt {
     const feindBau = !feind && baustelle && baustelle.besitzer !== spielerId ? baustelle : null;
     // Ein eigenes Schaf in der Naehe des Klicks (einheiten AC-17) - aber nur,
     // wenn auf dem Feld selbst nichts zu sammeln ist: neben Beeren weiden Schafe.
-    const schaf = sammeln ? null : this.tierAn(spielerId, Number(ziel.x), Number(ziel.y));
+    const schaf = sammeln || angriffslauf ? null : this.tierAn(spielerId, Number(ziel.x), Number(ziel.y));
     // Ein Befehl fuer viele (einheiten AC-20): wer geht, bekommt ein eigenes Feld
     // um das Ziel; wer sammelt, einen eigenen Vorrat derselben Art daneben.
     const gruppe = einheitIds.slice(0, 200).map((id) => this.einheiten.get(id)).filter((e) => e && e.besitzer === spielerId);
@@ -790,16 +802,18 @@ class Welt {
       einheit.sammelt = false;
       einheit.baut = false;
       einheit.unerreichbar = null;
+      // Jeder neue Befehl beendet einen laufenden Angriffslauf.
+      einheit.angriffslauf = null;
       if ((feind || feindBau) && EINHEITEN[einheit.art].angriff > 0) {
         const opfer = feind || feindBau;
         // Mehrere Angreifer stellen sich um das Ziel herum, statt uebereinander
         // zu stehen - dieselbe Aufstellung wie beim Gehen (einheiten AC-20).
         angriffsfelder ??= this.angriffsfelder(opfer, gruppe.length, Boolean(feindBau));
         this.angriffBeginnen(einheit, opfer, Boolean(feindBau), this.naechstesFreies(einheit, angriffsfelder));
-      } else if (baustelle && !baustelle.fertig && baustelle.besitzer === spielerId
+      } else if (!angriffslauf && baustelle && !baustelle.fertig && baustelle.besitzer === spielerId
         && (EINHEITEN[einheit.art].baut || []).includes(baustelle.art)) {
         this.bauenBeginnen(einheit, baustelle);
-      } else if (baustelle && baustelle.fertig && GEBAEUDE[baustelle.art].nahrung && baustelle.besitzer === spielerId
+      } else if (!angriffslauf && baustelle && baustelle.fertig && GEBAEUDE[baustelle.art].nahrung && baustelle.besitzer === spielerId
         && EINHEITEN[einheit.art].tragkraft > 0
         && (!baustelle.arbeiter || baustelle.arbeiter === einheit.id || !this.einheiten.has(baustelle.arbeiter))) {
         this.farmBeginnen(einheit, baustelle);
@@ -825,6 +839,9 @@ class Welt {
       } else {
         aufstellung ??= this.aufstellungUm({ x: zx, y: zy }, gruppe.length);
         const feld = this.naechstesFreies(einheit, aufstellung) || { x: zx, y: zy };
+        // Der Angriffslauf merkt sich das Marschziel: nach jedem Gefecht
+        // unterwegs geht es dorthin weiter (kampf AC-4).
+        if (angriffslauf && EINHEITEN[einheit.art].angriff > 0) einheit.angriffslauf = feld;
         einheit.auftrag = { art: 'gehen', feld };
         einheit.weg = this.wegNach(einheit, feld);
       }
@@ -1232,20 +1249,64 @@ class Welt {
   wacheTakten() {
     const wachen = [];
     for (const einheit of this.einheiten.values()) {
-      if (einheit.tot || einheit.auftrag || einheit.weg.length) continue;
+      if (einheit.tot || einheit.auftrag?.art === 'angreifen') continue;
+      // Wer im Angriffslauf ist, sieht sich auch **unterwegs** um (kampf AC-4);
+      // alle anderen nur im Stehen - ein Sammler soll seine Arbeit nicht
+      // wegen eines Vorbeireitenden liegen lassen (kampf AC-2).
+      if (einheit.angriffslauf) {
+        if (EINHEITEN[einheit.art].angriff > 0) wachen.push(einheit);
+        continue;
+      }
+      if (einheit.auftrag || einheit.weg.length) continue;
       if (!EINHEITEN[einheit.art].wacht) continue;
       wachen.push(einheit);
     }
     if (!wachen.length) return;
     const raster = this.einheitenRaster();
+    const funde = [];
     for (const einheit of wachen) {
       const feind = this.feindInSicht(einheit, raster, EINHEITEN[einheit.art].sicht);
-      if (!feind) continue;
+      if (feind) funde.push({ einheit, feind });
+    }
+    if (!funde.length) return;
+    // Mehrere Waechter desselben Ziels verteilen sich darum, statt uebereinander
+    // zu stehen: das Ziel wird einmal aufgestellt, jeder nimmt das naechste
+    // noch freie Feld. Ohne das standen zwei Milizen, die zusammen losgeschickt
+    // wurden, auf demselben Punkt (Runde 67) - `nachbarfeld` fragt die Karte,
+    // nicht die Einheiten.
+    const felderJeZiel = new Map();
+    for (const { feind } of funde) {
+      if (!felderJeZiel.has(feind.id)) felderJeZiel.set(feind.id, this.angriffsfelder(feind, 8, false));
+    }
+    for (const andere of this.einheiten.values()) {
+      const auftrag = andere.auftrag;
+      if (andere.tot || auftrag?.art !== 'angreifen' || auftrag.gebaeude || !auftrag.platz) continue;
+      const felder = felderJeZiel.get(auftrag.ziel);
+      const ziel = felder && this.einheiten.get(auftrag.ziel);
+      if (!ziel) continue;
+      const feld = this.feldVon(ziel);
+      for (const f of felder) {
+        if (f.x === feld.x + auftrag.platz.dx && f.y === feld.y + auftrag.platz.dy) f.frei = false;
+      }
+    }
+    for (const { einheit, feind } of funde) {
       const stand = EINHEITEN[einheit.art].reichweite
         ? null
-        : nachbarfeld(this.karte, this.feldVon(feind), einheit);
+        : this.naechstesFreies(einheit, felderJeZiel.get(feind.id))
+          || nachbarfeld(this.karte, this.feldVon(feind), einheit);
       this.angriffBeginnen(einheit, feind, false, stand, this.feldVon(einheit));
     }
+  }
+
+  /**
+   * Nach einem Gefecht unterwegs geht es weiter zum Marschziel (kampf AC-4).
+   * Ohne Angriffslauf tut das nichts - dann bleibt stehen, wer gekaempft hat.
+   */
+  marschFortsetzen(einheit) {
+    if (!einheit.angriffslauf) return;
+    const feld = einheit.angriffslauf;
+    einheit.auftrag = { art: 'gehen', feld };
+    einheit.weg = this.wegNach(einheit, feld);
   }
 
   // Ein Takt im Angriff: hinlaufen, bis das Ziel in Reichweite ist, dann
@@ -1260,6 +1321,7 @@ class Welt {
     if (!ziel || ziel.tot) {
       einheit.auftrag = null;
       einheit.weg = [];
+      this.marschFortsetzen(einheit);
       return;
     }
     // Eine Verfolgung, die niemand befohlen hat, endet fuenf Felder vom
@@ -1268,7 +1330,10 @@ class Welt {
     if (auftrag.heimat
       && Math.hypot(einheit.x - auftrag.heimat.x, einheit.y - auftrag.heimat.y) > VERFOLGUNG_FELDER) {
       einheit.auftrag = null;
-      einheit.weg = this.wegNach(einheit, auftrag.heimat);
+      // Im Angriffslauf geht es nicht zurueck, sondern weiter: das Marschziel
+      // ist der Sinn des Befehls, der Ausgangsplatz nur eine Zwischenstation.
+      if (einheit.angriffslauf) this.marschFortsetzen(einheit);
+      else einheit.weg = this.wegNach(einheit, auftrag.heimat);
       return;
     }
     const fern = EINHEITEN[einheit.art].reichweite;
@@ -1419,6 +1484,15 @@ class Welt {
       return;
     }
     if (!einheit.auftrag) return;
+
+    // Angekommen: der Gehauftrag ist erledigt. Er muss weg, sonst gilt die
+    // Einheit fuer die Wache ewig als beschaeftigt und wehrt sich nie mehr
+    // (kampf AC-2) - gefunden beim Bau des Angriffslaufs, Runde 67.
+    if (einheit.auftrag.art === 'gehen') {
+      einheit.auftrag = null;
+      einheit.angriffslauf = null;
+      return;
+    }
 
     if (einheit.auftrag.art === 'bauen') {
       const baustelle = this.gebaeude.get(einheit.auftrag.gebaeude);

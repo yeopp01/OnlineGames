@@ -95,7 +95,11 @@ etwas anderem gearbeitet.
   selbst bewegen (Runde 64). Ursache: `nachbarfeld` fragt die Karte, nicht die
   Einheiten; Fernkämpfer haben gar keine Verteilung auf ihrem Schussring.
   `figurenFrei` misst es, die Prüfung steht in `strategie-kampf.spec.mjs` bei
-  `kampf AC-1` auskommentiert bereit. **Nächster Kandidat nach B5.**
+  `kampf AC-1` auskommentiert bereit. Runde 67 hat **einen** Teil erledigt:
+  Wächter desselben Ziels verteilen sich jetzt wie befohlene Angreifer (vorher
+  standen zwei zusammen losgeschickte Milizen auf **0,00 Feldern**). Es bleiben
+  der Schussring der Fernkämpfer und die Enge während des Hinlaufens.
+  **Nächster Kandidat nach B5.**
 - Figuren liegen in `public/figuren.js` (Raster 24 hoch, Fußpunkt unten),
   Schautafel unter `/schautafel.html`. Jede neue Einheit bekommt dort zuerst
   eine Figur und einen Eintrag, dann kommt sie ins Spiel.
@@ -500,6 +504,20 @@ alle sieben Gebäude der Dunklen Zeit stehen. Was sich wiederholt hat:
 Neueste oben. Eine Zeile je Runde: Nummer, Datum, Kriterien, Ergebnis,
 wichtigste Erkenntnis.
 
+- **67** · 2026-11-07 · **kampf AC-4 fertig — der Angriffslauf, damit ist B5
+  erreicht**: `G` schaltet die Betriebsart ein (nicht `A` — WASD schiebt die
+  Karte), der nächste Rechtsklick schickt die Auswahl los und merkt sich das
+  Marschziel; unterwegs wird angegriffen, was in Sichtweite kommt, nach jedem
+  Gefecht geht der Marsch weiter. Serverseitig ist das **dieselbe Wache wie
+  kampf AC-2** — nur dass die Betriebsart sie auch im Gehen erlaubt. Zwei
+  Lehren: (1) Der Bau hat einen **alten Fehler** aufgedeckt: ein erledigter
+  `gehen`-Auftrag blieb an der Einheit hängen, und die Wache überspringt jede
+  Einheit mit Auftrag — wer einmal irgendwohin geschickt wurde, wehrte sich nie
+  wieder. Ein Test deckt es jetzt ab. (2) Im Browser ist `e.h` die
+  **Lebenspunkte**, kein Anteil; wer einen Balken prüft, teilt durch
+  `a.lebenVoll(e)`. Und `toBeInViewport`-ähnliche Prüfungen auf `zuBild` gelten
+  nur den **Beteiligten**, nicht allen Einheiten der Partie — die Dorfbewohner
+  an der eigenen Basis stehen weit außerhalb.
 - **66** · 2026-11-07 · **bedienung AC-34 fertig — der Befehl zeigt sich am
   Ziel**: ein Ring auf dem Boden, der zusammenläuft und in 0,8 s verblasst,
   weiß auf freiem Gelände, rot mit vier Haken nach innen auf Feindlichem. Er

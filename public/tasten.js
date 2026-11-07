@@ -20,7 +20,8 @@ export const BELEGUNG = [
   ['Q (Dorfzentrum gewählt)', 'Dorfbewohner ausbilden'],
   ['B (Dorfbewohner gewählt)', 'Bautasten an, dann Q W E R T Z U I O für das Gebäude'],
   ['.', 'nächster untätiger Dorfbewohner'],
-  ['Esc', 'Platzieren abbrechen, Auswahl aufheben'],
+  ['G, dann Rechtsklick', 'Angriffslauf: hingehen und unterwegs angreifen'],
+  ['Esc', 'Angriffslauf oder Platzieren abbrechen, Auswahl aufheben'],
   ['? oder F1', 'diese Übersicht'],
 ];
 
@@ -86,6 +87,14 @@ export class Tasten {
       if (e.key === 'Escape') return true;
     }
 
+    // G schaltet den Angriffslauf ein (kampf AC-4). Nicht A: das schiebt die
+    // Karte nach links (W A S D). G wie "gegen".
+    if (taste === 'g') {
+      if (!a.ausgewaehlt.size) return true;
+      if (a.platzieren) a.platzierenBeenden();
+      a.angriffslaufSetzen(!a.angriffslauf);
+      return true;
+    }
     if (taste === 'h') {
       const zentrum = [...a.gebaeude.values()].find((g) => g.b === a.ich && g.art === 'dorfzentrum' && g.u === undefined);
       if (!zentrum) return true;

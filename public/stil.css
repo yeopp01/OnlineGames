@@ -183,6 +183,12 @@ canvas {
   cursor: crosshair;
 }
 
+/* Angriffslauf eingeschaltet (kampf AC-4): der Zeiger sagt, dass der naechste
+   Rechtsklick etwas anderes tut als sonst. */
+canvas.angriffslauf {
+  cursor: cell;
+}
+
 .kopfzeile {
   position: fixed;
   top: 0;

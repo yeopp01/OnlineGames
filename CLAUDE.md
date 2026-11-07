@@ -141,7 +141,7 @@ Umfang hinzufügt, dort nachsehen.
 
 ## Stand
 
-**368 von 504 Kriterien fertig.** 373 Tests ohne Browser, 141 im Browser. Die
+**370 von 504 Kriterien fertig.** 379 Tests ohne Browser, 143 im Browser. Die
 Übersicht ist der Bericht: `npm run qa:report`.
 
 Gebaut ist der Unterbau: Räume, Übertragung, Karte, Wegfindung, Sammeln,
@@ -224,8 +224,10 @@ stehenden Einheit kommt, wird ohne Befehl angegriffen (wer wacht, steht als
 Wert in den Daten); ein Dorfbewohner arbeitet weiter, bis ihn ein Schlag
 trifft. Eine Verfolgung, die niemand befohlen hat, endet fünf Felder vom
 Ausgangsplatz, ein befohlener Angriff nicht. Fernkämpfer halten ihre vier
-Felder, Nahkämpfer gehen bis ans Ziel. Aus B5 fehlen nur noch der Angriffslauf
-und das rote Zeichen am Ziel.
+Felder, Nahkämpfer gehen bis ans Ziel. **B5 ist fertig**: dazu das rote
+Zeichen am Ziel und der **Angriffslauf** — `G` schaltet ihn ein, der nächste
+Rechtsklick schickt die Auswahl los und sie greift unterwegs an, was ihr in
+Sichtweite kommt, bis sie am Marschziel steht.
 
 1. **Stufe A** Dunkle Zeit mit Wirtschafts-KI und Prüfstand · **B** Feudalzeit
    · **C** Partieende und KI-Gegner · **D** Ritterzeit · **E** fünf Völker ·

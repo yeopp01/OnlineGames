@@ -93,7 +93,7 @@ mit etwas, das im Browser zu sehen ist.
 | B2 | Zeitalter: Aufstieg im Dorfzentrum mit Kosten, Dauer, Voraussetzung; Anzeige und Meldung | bauen AC-23, bedienung AC-33, spielziel AC-1 |
 | B3 | Die drei Gebäude der Feudalzeit: Schießanlage, Stall, Schmiede — gezeichnet und unterscheidbar | bauen AC-24, darstellung AC-14 (erweitert) |
 | B4 | Die neuen Einheiten: Speerkämpfer, Bogenschütze, Plänkler, Späherreiter aus dem Stall; Miliz wird Soldat — **fertig** | einheiten AC-23, AC-24 |
-| B5 | Kampf: Angreifen, sich wehren, Schaden mit Rüstung und Bonus, Tote, Lebensbalken — **nur noch der Angriffslauf (AC-4) fehlt** | kampf AC-1 bis AC-10, bedienung AC-34, einheiten AC-25 |
+| B5 | Kampf: Angreifen, sich wehren, Schaden mit Rüstung und Bonus, Tote, Lebensbalken, Angriffslauf — **fertig** | kampf AC-1 bis AC-10, bedienung AC-34, einheiten AC-25 |
 | B6 | Verbesserungen: Schmiede, Doppelaxt, Pferdekummet; die KI nutzt sie und steigt auf | bauen AC-25, AC-26, ki AC-9 (neu) |
 | B7 | Gleichgewicht messen: Konterkreis im Prüfstand, kein Schlachtenglück | fahrplan AC-8 bis AC-10 |
 

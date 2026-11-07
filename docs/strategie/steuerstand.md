@@ -13,22 +13,39 @@ hier nichts eintraegt, verliert den Faden beim naechsten Autocompact.
 
 ## Zuletzt fortgeschrieben
 
-2026-11-07, nach Runde 66 (bedienung AC-34 fertig - **von B5 fehlt nur noch der Angriffslauf, kampf AC-4**).
+2026-11-07, nach Runde 67 (kampf AC-4 fertig - **B5 ist erreicht, der Kampf steht ganz**).
 
 ## Wo ich stehe
 
 - **Branch:** `strategie`. Nie auf `main` arbeiten, **nie pushen, nie deployen.**
-- **Board:** 369 von 504 Kriterien fertig · 1 in Arbeit · 5 in QA · 4 geplant ·
-  117 offen · 8 zurueckgestellt. 373 Tests ohne Browser, 142 im Browser.
+- **Board:** 370 von 504 Kriterien fertig · 1 in Arbeit · 5 in QA · 4 geplant ·
+  116 offen · 8 zurueckgestellt. 379 Tests ohne Browser, 143 im Browser.
 - **Stufe A ist erreicht** (fahrplan AC-3 bis AC-7).
-- **Stufe B:** Bauabfolge B1 bis B7 im [Fahrplan](fahrplan.md). **B1 bis B4
-  sind fertig, aus B5 alles ausser dem Angriffslauf (kampf AC-4).** Der
-  Arbeitsbaum ist sauber.
+- **Stufe B:** Bauabfolge B1 bis B7 im [Fahrplan](fahrplan.md). **B1 bis B5
+  sind fertig.** Als Naechstes **B6** (bauen AC-25, AC-26, ki AC-9), dann
+  **B7** (fahrplan AC-8 bis AC-10). Der Arbeitsbaum ist sauber.
 - **Naechste Rueckschau: Runde 70.** Diese Zeile ist der Termin - nicht
   nachzaehlen. Die Rueckschauen 55 und 60 sind ausgefallen, weil nach der
   Rueckschau zur Stufe A niemand mehr gezaehlt hat (Rueckschau nach Runde 65).
   Wer eine Rueckschau haelt, traegt hier die naechste Nummer ein.
-- **Runde 67 baut** kampf AC-4, den Angriffslauf - danach ist B5 fertig.
+
+## Was B5 gebracht hat (zum Weiterbauen wissen)
+
+- **Der Angriffslauf (kampf AC-4):** `G` schaltet die Betriebsart ein
+  (`ansicht.angriffslauf`, Zeiger `cursor: cell` ueber `canvas.angriffslauf`),
+  der naechste Rechtsklick schickt `{ typ:'befehl', …, angriffslauf: true }`.
+  Der Server merkt das Marschziel in `einheit.angriffslauf` und laesst
+  `wacheTakten()` die Einheit **auch im Gehen** suchen; `marschFortsetzen()`
+  setzt den Marsch nach jedem Gefecht fort. Nur Einheiten mit `angriff > 0`
+  laufen an; Sammeln und Bauen sind im Angriffslauf abgeschaltet.
+- **`einheit.auftrag` wird am Ziel geleert.** Ein erledigter `gehen`-Auftrag
+  blieb bis Runde 67 haengen - und die Wache ueberspringt jede Einheit mit
+  Auftrag. Wer einmal irgendwohin geschickt wurde, wehrte sich nie wieder.
+  Der neue `'gehen'`-Zweig in `einheitTakten` raeumt beides auf.
+- **Waechter desselben Ziels verteilen sich** (`felderJeZiel` in
+  `wacheTakten`): `angriffsfelder` + `naechstesFreies` wie beim befohlenen
+  Angriff, und Plaetze, die laufende Angreifer schon halten (`auftrag.platz`),
+  gelten als belegt.
 
 ## Was B2 und B3 gebracht haben (zum Weiterbauen wissen)
 

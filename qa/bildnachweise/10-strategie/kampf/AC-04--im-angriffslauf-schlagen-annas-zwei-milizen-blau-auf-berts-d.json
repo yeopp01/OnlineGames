@@ -1,0 +1,10 @@
+{
+  "spec": "10-strategie/kampf.md",
+  "ac": "AC-4",
+  "titel": "Im Angriffslauf schlagen Annas zwei Milizen (blau) auf Berts Dorfbewohner (rot) ein, der im Weg steht — befohlen war nur der Marsch auf das leere Feld dahinter",
+  "datei": "e2e/tests/strategie-angriffslauf.spec.mjs",
+  "pfad": [
+    "Angriffslauf",
+    "kampf AC-4: G und ein Rechtsklick auf freies Gelaende - unterwegs wird angegriffen"
+  ]
+}

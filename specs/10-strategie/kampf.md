@@ -2,7 +2,7 @@
 
 **Bereich:** Strategie
 **Kuerzel:** kampf
-**Stand:** 8/14 fertig · 5 offen · 1 zurueckgestellt
+**Stand:** 9/14 fertig · 4 offen · 1 zurueckgestellt
 
 ## Zweck
 
@@ -67,8 +67,12 @@ aus [Spielziel](spielziel.md) AC-10, gemessen in
   Verfolgung, die **niemand befohlen** hat — AC-2 und die Gegenwehr; ein
   ausdrücklicher Angriffsbefehl wird zu Ende gegangen, sonst ließe sich ein
   Fliehender nie stellen.
-- **AC-4** `offen` **Angriffslauf** — Ein Befehl auf ein leeres Feld, bei dem unterwegs alles
-  angegriffen wird, was im Weg steht.
+- **AC-4** `fertig` **Angriffslauf** — Ein Befehl auf ein leeres Feld, bei dem unterwegs alles
+  angegriffen wird, was im Weg steht. Eingeschaltet mit `G`, ausgeführt vom
+  nächsten Rechtsklick; danach ist die Betriebsart wieder aus. Das Marschziel
+  bleibt gemerkt: nach jedem Gefecht geht der Marsch weiter, erst am Ziel ist
+  der Lauf zu Ende. Nur Einheiten mit Angriff laufen an — ein Dorfbewohner
+  geht einfach.
 - **AC-5** `fertig` **Dorfbewohner kämpfen schlecht** — Angriff 3, keine Boni, keine Rüstung:
   fünfzehn Schläge für einen Soldaten, während er nach fünf fällt. Ein
   früher Überfall auf die Basis geht nicht widerstandslos durch — wer sich
@@ -138,6 +142,17 @@ aus [Spielziel](spielziel.md) AC-10, gemessen in
   (AC-1); war er einmal in Reichweite, schlägt er zu, sobald er wieder nah
   genug ist. Sonst laufen zwei, die einander jagen, aneinander vorbei, ohne je
   zu schlagen.
+- **Im Angriffslauf werden nur Einheiten angegriffen, keine Gebäude** (AC-4
+  nutzt dieselbe Wache wie AC-2). Sonst bliebe ein Marsch an der ersten
+  fremden Mauer hängen, statt vorbeizugehen.
+- Ein Angriffslauf **sammelt nicht und baut nicht**: derselbe Rechtsklick, der
+  sonst einen Baum abholzt, ist im Angriffslauf ein Marsch dorthin.
+- Die **Verfolgungsgrenze von fünf Feldern** (AC-3) gilt auch im Angriffslauf;
+  am Ende der Verfolgung geht es aber nicht zum Ausgangsplatz zurück, sondern
+  weiter zum Marschziel.
+- Mehrere Wächter desselben Ziels **verteilen sich darum**, so wie beim
+  befohlenen Angriff. Ohne das standen zwei zusammen losgeschickte Milizen auf
+  demselben Punkt: die Platzsuche fragte die Karte, nicht die Einheiten.
 
 ## Hinweis zu AC-13
 

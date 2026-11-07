@@ -58,6 +58,9 @@ export class Ansicht {
     // Das Zeichen am Ziel eines Befehls (bedienung AC-34): rot auf Feindliches,
     // weiss auf freies Gelaende. { x, y, feindlich, seit }.
     this.zielzeichen = null;
+    // Der Angriffslauf (kampf AC-4) ist eine Betriebsart: G schaltet sie ein,
+    // der naechste Rechtsklick fuehrt sie aus und schaltet sie wieder aus.
+    this.angriffslauf = false;
     this.beiAuswahl = () => {};
     // Nach jedem Bild und bei geaenderten Feldern - fuer die Uebersichtskarte (bedienung AC-11).
     this.nachBild = () => {};
@@ -325,7 +328,8 @@ export class Ansicht {
       if (this.beiTaste(e)) return;
       // Esc hebt erst die Platzierung auf, dann die Auswahl (bedienung AC-15).
       if (e.key === 'Escape') {
-        if (this.platzieren) this.platzierenBeenden();
+        if (this.angriffslauf) this.angriffslaufSetzen(false);
+        else if (this.platzieren) this.platzierenBeenden();
         else {
           this.ausgewaehlt.clear();
           this.gewaehltesGebaeude = null;
@@ -511,11 +515,27 @@ export class Ansicht {
     // Ein Rechtsklick ohne Auswahl tut nichts - und zeigt deshalb auch nichts
     // (Grenzfall zu bedienung AC-34).
     if (!this.ausgewaehlt.size) return;
-    this.zielzeichenSetzen(ziel);
+    const lauf = this.angriffslauf;
+    this.angriffslaufSetzen(false);
+    // Ein Angriffslauf ist ein Angriffsbefehl, auch auf leeres Gras: das
+    // Zeichen am Ziel ist deshalb rot (bedienung AC-34).
+    this.zielzeichenSetzen(ziel, lauf);
     this.befehlSenden([...this.ausgewaehlt], {
       x: Math.round(ziel.x),
       y: Math.round(ziel.y),
-    });
+    }, lauf);
+  }
+
+  /**
+   * Die Betriebsart Angriffslauf an oder aus (kampf AC-4). Sie haelt nur bis
+   * zum naechsten Rechtsklick - eine Betriebsart, die haengen bleibt, ist in
+   * einem Echtzeitspiel eine Falle.
+   */
+  angriffslaufSetzen(an) {
+    if (this.angriffslauf === an) return;
+    this.angriffslauf = an;
+    this.leinwand.classList.toggle('angriffslauf', an);
+    if (an) this.melden('Angriffslauf: Ziel mit Rechtsklick wählen');
   }
 
   /**
@@ -525,12 +545,12 @@ export class Ansicht {
    * Deshalb entscheidet der Browser hier **dieselbe** Frage noch einmal, die
    * der Server beim Befehl entscheidet (`welt.js`: `feindAn`, `gebaeudeAn`).
    */
-  zielzeichenSetzen(ziel) {
+  zielzeichenSetzen(ziel, angriffslauf = false) {
     const feind = this.feindlichAn(ziel);
     this.zielzeichen = {
       x: feind ? feind.x : Math.round(ziel.x),
       y: feind ? feind.y : Math.round(ziel.y),
-      feindlich: Boolean(feind),
+      feindlich: Boolean(feind) || angriffslauf,
       seit: performance.now(),
     };
   }
