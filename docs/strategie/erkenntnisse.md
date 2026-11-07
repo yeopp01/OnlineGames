@@ -132,6 +132,7 @@ Zahlen, gegen die spätere Runden vergleichen. Mit Datum und Commit.
 | 2026-09-17 | Tests ohne Browser / im Browser; Browserlauf | 287 / 97; 2,8 min — davon rund 1,3 min strategie-bauen | Runde 23 |
 | 2026-09-17 | Tests ohne Browser / im Browser; Browserlauf (CPU 25 %) | 287 / 99; 2,1 min — strategie-* 82 s, langsamster Fall 22 s | Runde 25 |
 | 2026-09-17 | Tests ohne Browser / im Browser; Browserlauf (CPU 7 %, 13 fremde node-Prozesse im Leerlauf) | 275 / 91; 1,7 min — davon rund 20 s die neue Datei strategie-ausbilden | Runde 20 |
+| 2026-11-07 | Tests ohne Browser / im Browser; Browserlauf | 348 / 138; 5,3 min — **nicht vergleichbar**: 30 fremde Browserprozesse. Langsamster Fall 9,2 s | Runde 61 |
 
 ## Rückschauen
 
@@ -409,6 +410,25 @@ alle sieben Gebäude der Dunklen Zeit stehen. Was sich wiederholt hat:
 Neueste oben. Eine Zeile je Runde: Nummer, Datum, Kriterien, Ergebnis,
 wichtigste Erkenntnis.
 
+- **61** · 2026-11-07 · einheiten AC-24 **fertig** — **Schritt B4 ist ganz
+  durch**: die Kaserne erforscht ab der Feudalzeit die Stufe Soldat (100 N,
+  40 G, 40 s), jede Miliz wird dadurch zum Soldaten, und danach bildet die
+  Kaserne nur noch Soldaten aus. Gelernt: (1) **Eine Verbesserung, die eine
+  Einheit austauscht, ist etwas anderes als eine, die sie aufwertet.** Der
+  Webstuhl addiert Leben, `wandelt` ersetzt die Art — und dann muss man an
+  drei Stellen denken: die stehenden Einheiten, die **Warteschlangen** und
+  das Angebot des Gebäudes. (2) **Jede Verbesserung bekam bis heute das Bild
+  des Webstuhls**, fest verdrahtet, weil es nur eine gab. Die Soldatenstufe
+  zeigte einen Webrahmen. Jetzt zeigt eine Verbesserung mit `wandelt` die
+  Einheit, die dabei herauskommt. (3) **`bildetAus` auf Gleichheit geprüft
+  riss schon wieder** — dieselbe Falle wie in Runde 60, einen Tag alt. (4)
+  Beim Ansehen gefunden: die drei Milizen standen **hinter** der Kaserne und
+  waren nur Umrisse, während die Bildunterschrift „davor" behauptete; und die
+  Axt hing zuerst neben dem Stiel in der Luft. Eine Waffe in einem **eigenen,
+  gedrehten Rahmen** zu zeichnen (`translate` + `rotate`, dann Stiel und
+  Blatt senkrecht) ist viel sicherer als Punkte auf einer schrägen Linie zu
+  rechnen.
+  Nächste Runde: **B5, der Kampf** (kampf AC-1 bis AC-10).
 - **60** · 2026-11-07 · einheiten AC-23 **fertig** (Schritt B4, erster Teil):
   Speerkämpfer, Bogenschütze und Plänkler — Werte, Sperre bis zur Feudalzeit,
   drei neue Figuren, zwei Bildnachweise. Gelernt: (1) **Ein neues Feld in den

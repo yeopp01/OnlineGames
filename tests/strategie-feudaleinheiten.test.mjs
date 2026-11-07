@@ -7,7 +7,7 @@ import { createRequire } from 'node:module';
 
 const require = createRequire(import.meta.url);
 const { Welt, TAKTE_PRO_SEKUNDE } = require('../server/spiele/strategie/welt.js');
-const { GEBAEUDE, EINHEITEN } = require('../server/spiele/strategie/daten.js');
+const { GEBAEUDE, EINHEITEN, VERBESSERUNGEN } = require('../server/spiele/strategie/daten.js');
 
 const ZWEI = [{ id: 'a', name: 'Anna' }, { id: 'b', name: 'Bert' }];
 const NEU = ['speerkaempfer', 'bogenschuetze', 'plaenkler'];
@@ -112,7 +112,9 @@ test('einheiten AC-23: nach dem Aufstieg bildet die Kaserne den Speerkaempfer au
 test('einheiten AC-23: die Schiessanlage bildet Bogenschuetze und Plaenkler aus', () => {
   const { welt, anna } = bereit(1);
   assert.deepEqual(GEBAEUDE.schiessanlage.bildetAus, ['bogenschuetze', 'plaenkler']);
-  assert.deepEqual(GEBAEUDE.kaserne.bildetAus, ['miliz', 'speerkaempfer']);
+  // Keine Gleichheit: die Liste waechst mit den Stufen (seit AC-24 steht die
+  // Soldatenstufe mit darin).
+  for (const art of ['miliz', 'speerkaempfer']) assert.ok(GEBAEUDE.kaserne.bildetAus.includes(art), art);
   assert.deepEqual(GEBAEUDE.stall.bildetAus, ['spaeherreiter']);
   // Die Schmiede forscht nur - sie bildet nichts aus (das kommt mit B6).
   assert.deepEqual(GEBAEUDE.schmiede.bildetAus, []);
@@ -142,4 +144,117 @@ test('einheiten AC-23: ein Abbruch erstattet voll, auch beim Speerkaempfer', () 
   assert.deepEqual(welt.nachricht('a', { auftrag: 'abbrechen', gebaeude: kaserne.id, platz: 0 }), {});
   assert.equal(anna.nahrung, 2000, 'Nahrung zurueck');
   assert.equal(anna.holz, 2000, 'Holz zurueck');
+});
+
+// ---- Die Miliz wird zum Soldaten (einheiten AC-24) --------------------------
+
+/** Eine Welt in der Feudalzeit mit fertiger Kaserne. */
+function mitKaserne(zeitalter = 1) {
+  const { welt, anna } = bereit(zeitalter);
+  const ziel = platz(welt, anna);
+  const kaserne = welt.gebaeudeAnlegen('a', 'kaserne', ziel.x, ziel.y);
+  return { welt, anna, kaserne };
+}
+
+/** Den laufenden Auftrag der Kaserne fertig takten. */
+function fertigTakten(welt, sekunden) {
+  for (let t = 0; t < sekunden * TAKTE_PRO_SEKUNDE + 2; t++) welt.takten();
+}
+
+test('einheiten AC-24: der Soldat traegt die Werte der Vorlage, die Verbesserung die des Originals', () => {
+  const s = EINHEITEN.soldat;
+  assert.deepEqual([s.leben, s.angriff, `${s.nahruestung}/${s.fernruestung}`, s.tempo], [45, 6, '0/1', 0.9]);
+  // Dieselben Kosten wie die Miliz: er wird nicht neben ihr ausgebildet,
+  // sondern statt ihrer.
+  assert.deepEqual(s.kosten, EINHEITEN.miliz.kosten);
+  assert.equal(s.zeit, EINHEITEN.miliz.zeit);
+  assert.equal(s.stufeVon, 'miliz');
+  assert.equal(s.zeitalter, 1);
+  // Mehr Leben und mehr Angriff als die Miliz - sonst lohnte die Forschung nicht.
+  assert.ok(s.leben > EINHEITEN.miliz.leben && s.angriff > EINHEITEN.miliz.angriff);
+  assert.deepEqual(VERBESSERUNGEN.soldatenstufe.kosten, { nahrung: 100, gold: 40 });
+  assert.equal(VERBESSERUNGEN.soldatenstufe.zeit, 40);
+  assert.deepEqual(VERBESSERUNGEN.soldatenstufe.wandelt, { miliz: 'soldat' });
+});
+
+test('einheiten AC-24: in der Dunklen Zeit forscht die Kaserne die Soldatenstufe nicht', () => {
+  const { welt, kaserne, anna } = mitKaserne(0);
+  const absage = welt.nachricht('a', { auftrag: 'ausbilden', gebaeude: kaserne.id, einheit: 'soldatenstufe' }).fehler;
+  assert.match(absage, /erst in der Feudalzeit/, absage);
+  assert.equal(anna.nahrung, 2000, 'nichts bezahlt');
+  // Und den Soldaten gibt es ohne die Forschung ueberhaupt nicht.
+  const ohne = welt.nachricht('a', { auftrag: 'ausbilden', gebaeude: kaserne.id, einheit: 'soldat' }).fehler;
+  assert.match(ohne, /erst mit der Verbesserung/, ohne);
+});
+
+test('einheiten AC-24: die Forschung macht jede vorhandene Miliz zum Soldaten', () => {
+  const { welt, anna, kaserne } = mitKaserne();
+  // Drei Milizen aufstellen, eine davon verwundet.
+  const milizen = [0, 1, 2].map((i) => welt.einheitAnlegen('a', anna.basis.x + 2 + i, anna.basis.y + 2, 'miliz'));
+  milizen[2].leben = 12;
+  const ids = milizen.map((m) => m.id);
+  assert.equal(zaehlen(welt, 'miliz'), 3);
+
+  assert.deepEqual(welt.nachricht('a', { auftrag: 'ausbilden', gebaeude: kaserne.id, einheit: 'soldatenstufe' }), {});
+  assert.equal(anna.nahrung, 2000 - 100, '100 Nahrung');
+  assert.equal(anna.gold, 2000 - 40, '40 Gold');
+  fertigTakten(welt, 40);
+
+  assert.equal(zaehlen(welt, 'miliz'), 0, 'keine Miliz mehr');
+  assert.equal(zaehlen(welt, 'soldat'), 3, 'drei Soldaten');
+  // Dieselben Einheiten, nicht neue: die Nummern bleiben.
+  assert.deepEqual(ids.map((id) => welt.einheiten.get(id).art), ['soldat', 'soldat', 'soldat']);
+  assert.equal(welt.einheiten.get(ids[0]).leben, 45, 'unverletzt: volles Leben der neuen Stufe');
+  // Der Schaden bleibt stehen, das Leben waechst um die Differenz.
+  assert.equal(welt.einheiten.get(ids[2]).leben, 12 + (45 - 40), 'verletzt: Schaden bleibt');
+  // Der Gegner bekommt nichts geschenkt.
+  const bert = welt.einheitAnlegen('b', welt.spielerVon('b').basis.x + 2, welt.spielerVon('b').basis.y + 2, 'miliz');
+  assert.equal(bert.art, 'miliz');
+});
+
+test('einheiten AC-24: danach bildet die Kaserne Soldaten aus, nicht mehr Milizen', () => {
+  const { welt, anna, kaserne } = mitKaserne();
+  welt.nachricht('a', { auftrag: 'ausbilden', gebaeude: kaserne.id, einheit: 'soldatenstufe' });
+  fertigTakten(welt, 40);
+
+  // Der Browser schickt weiter "miliz"; der Server bildet den Soldaten aus.
+  assert.deepEqual(welt.nachricht('a', { auftrag: 'ausbilden', gebaeude: kaserne.id, einheit: 'miliz' }), {});
+  assert.deepEqual(kaserne.schlange, ['soldat']);
+  fertigTakten(welt, 21);
+  assert.equal(zaehlen(welt, 'soldat'), 1);
+  assert.equal(zaehlen(welt, 'miliz'), 0);
+  // Und ein zweites Mal forschen geht nicht.
+  const zweimal = welt.nachricht('a', { auftrag: 'ausbilden', gebaeude: kaserne.id, einheit: 'soldatenstufe' }).fehler;
+  assert.match(zweimal, /nur einmal/, zweimal);
+});
+
+test('einheiten AC-24: eine Miliz in der Warteschlange wird als Soldat fertig', () => {
+  const { welt, kaserne } = mitKaserne();
+  welt.nachricht('a', { auftrag: 'ausbilden', gebaeude: kaserne.id, einheit: 'miliz' });
+  welt.nachricht('a', { auftrag: 'ausbilden', gebaeude: kaserne.id, einheit: 'soldatenstufe' });
+  assert.deepEqual(kaserne.schlange, ['miliz', 'soldatenstufe']);
+  // Erst die Miliz (21 s), dann die Forschung (40 s).
+  fertigTakten(welt, 21 + 40);
+  assert.equal(zaehlen(welt, 'soldat'), 1, 'die fertige Miliz ist jetzt Soldat');
+
+  // Umgekehrt: steht die Miliz noch in der Schlange, wenn die Forschung
+  // durch ist, kommt ein Soldat heraus.
+  const { welt: w2, kaserne: k2 } = mitKaserne();
+  w2.nachricht('a', { auftrag: 'ausbilden', gebaeude: k2.id, einheit: 'soldatenstufe' });
+  w2.nachricht('a', { auftrag: 'ausbilden', gebaeude: k2.id, einheit: 'miliz' });
+  assert.deepEqual(k2.schlange, ['soldatenstufe', 'miliz']);
+  fertigTakten(w2, 40);
+  assert.deepEqual(k2.schlange, ['soldat'], 'aus der wartenden Miliz wird ein Soldat');
+});
+
+test('einheiten AC-24: der Soldat steht im Aufbau und auf der Schautafel', () => {
+  const { welt } = mitKaserne();
+  const { werte } = welt.aufbau();
+  assert.equal(werte.einheiten.soldat.leben, 45);
+  assert.equal(werte.einheiten.soldat.angriff, 6);
+  assert.equal(werte.einheiten.soldat.zeitalter, 1);
+  // Die Verbesserung geht mit ihrer Wandlung ueber die Leitung - ohne sie
+  // wuesste der Browser nicht, dass die Kaserne jetzt Soldaten ausbildet.
+  assert.deepEqual(werte.verbesserungen.soldatenstufe.wandelt, { miliz: 'soldat' });
+  assert.equal(werte.verbesserungen.soldatenstufe.zeitalter, 1);
 });

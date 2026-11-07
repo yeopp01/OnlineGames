@@ -1,0 +1,10 @@
+{
+  "spec": "10-strategie/einheiten-und-befehle.md",
+  "ac": "AC-24",
+  "titel": "Dieselben drei Einheiten nach der Forschung: Topfhelm, Kettenhemd und Streitaxt statt Schwert und Schild — die Leiste nennt sie Soldat",
+  "datei": "e2e/tests/strategie-feudaleinheiten.spec.mjs",
+  "pfad": [
+    "Einheiten der Feudalzeit",
+    "einheiten AC-24: nach der Forschung sind dieselben Milizen Soldaten"
+  ]
+}

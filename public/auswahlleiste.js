@@ -240,6 +240,14 @@ export class Auswahlleiste {
   }
 
   // Was ein Gebaeude ausbildet, mit den Kosten aus den Werten des Servers.
+  // Das Bild einer Verbesserung. Wer eine Einheit austauscht, zeigt die neue
+  // Einheit - der Webstuhl bleibt der Webstuhl (einheiten AC-24). Vorher
+  // bekam jede Verbesserung den Webstuhl, auch die Soldatenstufe.
+  verbesserungBildchen(art, mass, farbe) {
+    const wandelt = Object.values(this.ansicht.werte.verbesserungen?.[art]?.wandelt || {})[0];
+    return wandelt ? bildchen(wandelt, mass, farbe) : webstuhlBildchen(mass, farbe);
+  }
+
   angebot(gebaeude) {
     const werte = this.ansicht.werte;
     const aufstiege = werte.aufstiege || {};
@@ -252,7 +260,16 @@ export class Auswahlleiste {
       // Eine Einheit kann ein spaeteres Zeitalter verlangen als ihr Gebaeude
       // (einheiten AC-23): die Kaserne steht schon in der Dunklen Zeit, den
       // Speerkaempfer bildet sie erst ab der Feudalzeit aus.
-      .filter((art) => (werte.einheiten[art]?.zeitalter || 0) <= this.ansicht.zeitalter)
+      .filter((art) => ((werte.einheiten[art] || werte.verbesserungen?.[art])?.zeitalter || 0) <= this.ansicht.zeitalter)
+      // Die zweite Stufe ersetzt die erste: nach der Verbesserung bildet die
+      // Kaserne Soldaten aus, nicht mehr Milizen (einheiten AC-24).
+      .map((art) => {
+        for (const v of this.ansicht.verbesserungen) {
+          const nach = werte.verbesserungen?.[v]?.wandelt?.[art];
+          if (nach) return nach;
+        }
+        return art;
+      })
       .map((art) => ({
         art,
         name: aufstiege[art]?.name || werte.verbesserungen?.[art]?.name || FIGUREN[art]?.name || art,
@@ -431,7 +448,7 @@ export class Auswahlleiste {
       const preis = element('span', 'preis');
       for (const [r, m] of Object.entries(eintrag.kosten)) preis.append(element('span', `ware ware-${r[0]}`), element('span', null, String(m)));
       if (eintrag.aufstieg) knopf.append(aufstiegBildchen(58, farbe));
-      else if (eintrag.verbesserung) knopf.append(webstuhlBildchen(58, farbe));
+      else if (eintrag.verbesserung) knopf.append(this.verbesserungBildchen(eintrag.art, 58, farbe));
       else knopf.append(bildchen(eintrag.art, 58, farbe));
       knopf.append(preis);
       knopf.addEventListener('click', () => {
@@ -455,7 +472,7 @@ export class Auswahlleiste {
         eintrag.append(aufstiegBildchen(mass, farbe));
         eintrag.dataset.laufenderAufstieg = art;
       } else if (verbesserung) {
-        eintrag.append(webstuhlBildchen(mass, farbe));
+        eintrag.append(this.verbesserungBildchen(art, mass, farbe));
       } else {
         eintrag.append(bildchen(art, mass, farbe));
       }

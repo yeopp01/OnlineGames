@@ -141,7 +141,7 @@ Umfang hinzufügt, dort nachsehen.
 
 ## Stand
 
-**358 von 503 Kriterien fertig.** 342 Tests ohne Browser, 136 im Browser. Die
+**359 von 503 Kriterien fertig.** 348 Tests ohne Browser, 138 im Browser. Die
 Übersicht ist der Bericht: `npm run qa:report`.
 
 Gebaut ist der Unterbau: Räume, Übertragung, Karte, Wegfindung, Sammeln,
@@ -209,11 +209,11 @@ im Dorfzentrum — 500 Nahrung, 130 Sekunden, zwei fertige Gebäude der laufende
 Zeit außer Häusern —, das Zeitalter oben in der Leiste, der Wechsel einmal im
 Bild gemeldet); die **drei Gebäude der Feudalzeit**: Schießanlage mit
 Zielscheibe, Stall mit Koppel (bildet den Späherreiter aus), Schmiede mit
-Schornstein, alle erst ab der Feudalzeit im Baumenü; und aus **B4 die drei
-neuen Einheiten**: Speerkämpfer (Kaserne), Bogenschütze und Plänkler
-(Schießanlage), jede mit eigener Figur, Angriff, Rüstung und Bonus als Daten
-und gesperrt bis zum Aufstieg. Als Nächstes aus B4 der Rest: die Miliz wird
-zum Soldaten.
+Schornstein, alle erst ab der Feudalzeit im Baumenü; und **B4 ganz**: die drei neuen Einheiten
+— Speerkämpfer (Kaserne), Bogenschütze und Plänkler (Schießanlage), jede mit
+eigener Figur, Angriff, Rüstung und Bonus als Daten und gesperrt bis zum
+Aufstieg — und die Verbesserung **Soldat**, die jede Miliz austauscht statt
+sie aufzuwerten. Als Nächstes B5, der Kampf.
 
 1. **Stufe A** Dunkle Zeit mit Wirtschafts-KI und Prüfstand · **B** Feudalzeit
    · **C** Partieende und KI-Gegner · **D** Ritterzeit · **E** fünf Völker ·

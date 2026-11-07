@@ -176,18 +176,18 @@ function beineZeichnen(stift, schritt, farbe, fein) {
   }
 }
 
-function kopf(stift, y, { hut = null, helm = false, kappe = null, fein = true, haut = HAUT } = {}) {
+function kopf(stift, y, { hut = null, helm = false, kappe = null, topfhelm = false, fein = true, haut = HAUT } = {}) {
   // Um die Mitte des Gesichts verkleinert; der Kopf sitzt mit dem Kinn auf den
   // Schultern (RUMPF_HEBEN).
   stift.save();
   stift.translate(0.6, y + 3.3);
   stift.scale(KOPF_MASS, KOPF_MASS);
   stift.translate(-0.6, -y - 3.3);
-  kopfZeichnen(stift, y, { hut, helm, kappe, fein, haut });
+  kopfZeichnen(stift, y, { hut, helm, kappe, topfhelm, fein, haut });
   stift.restore();
 }
 
-function kopfZeichnen(stift, y, { hut, helm, kappe, fein, haut }) {
+function kopfZeichnen(stift, y, { hut, helm, kappe, topfhelm, fein, haut }) {
   const HAUT = haut;
   // Ohr hinten, dann das Gesicht mit Licht von links oben.
   ellipse(stift, -2.1, y + 0.2, 0.9, 1.2, toenen(HAUT, -0.15));
@@ -210,6 +210,10 @@ function kopfZeichnen(stift, y, { hut, helm, kappe, fein, haut }) {
       for (const nx of [-2.2, 0.2, 2.6]) ellipse(stift, nx, y - 1.1, 0.32, 0.32, '#5c636b', false);
       strich(stift, [[-1.4, y - 4], [0.6, y - 4.7]], 'rgba(255,255,255,0.6)', 0.6);
     }
+  } else if (topfhelm) {
+    // Nur die Kettenhaube um das Gesicht; der Helm kommt ganz zuletzt, weil
+    // er das Gesicht zudeckt (einheiten AC-24).
+    ellipse(stift, 0.3, y + 0.4, 4.3, 4.5, licht(stift, EISEN_DUNKEL, -4, y - 4, 4.6, y + 4.9, 0.2, -0.22), false);
   } else if (kappe) {
     // Eine schlichte Kappe ohne Krempe: anliegend, mit Stirnband - so sieht
     // man auf einen Blick, dass es kein Strohhut und kein Helm ist.
@@ -232,6 +236,21 @@ function kopfZeichnen(stift, y, { hut, helm, kappe, fein, haut }) {
     }
   } else {
     ellipse(stift, 0.2, y - 2.1, 3.1, 1.8, HAAR, false);
+  }
+  // Der Topfhelm deckt das Gesicht zu - dann gibt es auch kein Auge.
+  if (topfhelm) {
+    const form = [[-3.5, y - 5.4], [4.2, y - 5.4], [4, y + 2.4], [0.4, y + 3.4], [-3.2, y + 2.4]];
+    umriss(stift, () => vieleck(stift, form, 'rgba(0,0,0,0)', true));
+    vieleck(stift, form, licht(stift, EISEN, -3.5, y - 5.4, 4.2, y + 3.4, 0.3, -0.3), false);
+    // Sehschlitz, Mittelband und Luftloecher.
+    vieleck(stift, [[-3.3, y - 1.9], [4.1, y - 1.9], [4.1, y - 0.7], [-3.3, y - 0.7]], '#464d56', false);
+    vieleck(stift, [[1.2, y - 5.3], [2.3, y - 5.3], [2.25, y + 3], [1.15, y + 3]], toenen(EISEN, 0.12), false);
+    if (fein) {
+      for (const hy of [y + 0.7, y + 1.8]) for (const hx of [2.9, 3.5]) ellipse(stift, hx, hy, 0.25, 0.25, '#5c636b', false);
+      strich(stift, [[-3.1, y - 4.9], [3.8, y - 4.9]], 'rgba(255,255,255,0.5)', 0.6);
+      strich(stift, [[-2.8, y - 5.2], [-2.6, y + 2]], 'rgba(70,78,88,0.5)', 0.5);
+    }
+    return;
   }
   // Das Auge in Blickrichtung, mit Braue und Lichtpunkt.
   ellipse(stift, 2.55, y - 0.15, 0.62, 0.72, '#f4efe6', false);
@@ -393,6 +412,65 @@ function miliz(stift, farbe, { schritt = 0, fein = true, haut = HAUT }) {
   if (fein) {
     glanz(stift, -4, -12.3, 0.35, 0.3, 0.9);
     for (const [nx, ny] of [[-6, -14.6], [-1.2, -14.6], [-3.6, -7.8]]) ellipse(stift, nx, ny, 0.3, 0.3, '#5c636b', false);
+  }
+  stift.restore();
+}
+
+// Der Soldat: die zweite Stufe der Miliz (einheiten AC-24). Er muss sich von
+// ihr auf einem Drittel der Flaeche unterscheiden, deshalb drei Aenderungen
+// auf einmal statt einer Kleinigkeit: kein Schild, dafuer eine zweihaendige
+// Streitaxt quer vor dem Koerper, ein Kettenhemd ueber den ganzen Rumpf mit
+// nur noch kurzem Waffenrock in Spielerfarbe, und der Eisenhut statt des
+// anliegenden Helms.
+function soldat(stift, farbe, { schritt = 0, fein = true, haut = HAUT }) {
+  schatten(stift, 6);
+  beine(stift, schritt, HOSE, fein);
+  stift.save();
+  stift.translate(0, -RUMPF_HEBEN);
+  stift.scale(RUMPF_BREITE, 1);
+  // Die Axt in einem eigenen, gedrehten Rahmen: so sitzt das Blatt sicher am
+  // Stiel. Beim ersten Versuch stand es daneben in der Luft (Runde 61).
+  stift.save();
+  stift.translate(-5.5, -4.1);
+  stift.rotate(0.648); // dieselbe Neigung wie der Stiel vor dem Koerper
+  const stiel = [[-0.55, 0.9], [0.55, 0.9], [0.55, -20.6], [-0.55, -20.6]];
+  umriss(stift, () => vieleck(stift, stiel, 'rgba(0,0,0,0)', true));
+  vieleck(stift, stiel, licht(stift, LEDER, -0.6, -20, 0.6, 0, 0.25, -0.25), false);
+  const blatt = [[0.2, -15.8], [0.7, -20.2], [3.5, -21.1], [4.9, -18.4], [3.3, -14.6]];
+  umriss(stift, () => vieleck(stift, blatt, 'rgba(0,0,0,0)', true));
+  vieleck(stift, blatt, licht(stift, EISEN, 0.2, -21, 4.9, -14.6, 0.35, -0.3), false);
+  if (fein) {
+    strich(stift, [[3.6, -20.8], [4.7, -18.5]], 'rgba(255,255,255,0.65)', 0.7);
+    strich(stift, [[1.3, -16], [1.6, -19.6]], 'rgba(70,78,88,0.6)', 0.4);
+  }
+  // Spitze ueber dem Blatt.
+  vieleck(stift, [[-0.5, -20.3], [0.6, -20.5], [0.1, -23.4]], licht(stift, EISEN, 0, -23, 0.6, -20.3), false);
+  stift.restore();
+  // Kettenhemd ueber den ganzen Rumpf, bis auf die Schenkel.
+  const hemd = [[-5.1, -5.2], [5.3, -5.2], [4.1, -17.2], [0.2, -17.8], [-3.9, -17.2]];
+  umriss(stift, () => rund(stift, hemd, 'rgba(0,0,0,0)', true));
+  rund(stift, hemd, licht(stift, EISEN_DUNKEL, -4.4, -17, 5.3, -5, 0.25, -0.25), false);
+  if (fein) kette(stift, -4.6, 4.8, -16.4, -5.8);
+  // Kurzer Waffenrock: nur ein Band in Spielerfarbe, damit man die Seite
+  // trotz des Kettenhemds sofort sieht.
+  const rock = [[-4.6, -6.2], [4.8, -6.2], [4.2, -11.6], [-4, -11.6]];
+  vieleck(stift, rock, licht(stift, farbe, -4, -11.6, 4.8, -6.2), true);
+  if (fein) {
+    strich(stift, [[-4.4, -6.8], [4.6, -6.8]], toenen(farbe, 0.45), 0.6);
+    strich(stift, [[0.3, -10.9], [0.3, -7.6]], toenen(farbe, 0.4), 0.7);
+  }
+  // Breiter Guertel mit Schnalle.
+  vieleck(stift, [[-4.8, -12.8], [5, -12.8], [4.9, -11.2], [-4.7, -11.2]], licht(stift, LEDER, 0, -12.8, 0, -11.2), false);
+  ellipse(stift, -2.6, -12, 0.85, 0.85, '#c9a24a', false);
+  kopf(stift, -19.8, { topfhelm: true, fein, haut });
+  // Der Stiel noch einmal vor dem Koerper, zwischen den Haenden - sonst
+  // greifen sie ins Leere (Runde 61 beim Ansehen gefunden).
+  const vorn = [[-5.5, -4.1], [-4.6, -4.9], [3.4, -15.7], [2.5, -14.9]];
+  umriss(stift, () => vieleck(stift, vorn, 'rgba(0,0,0,0)', true));
+  vieleck(stift, vorn, licht(stift, LEDER, -5, -4, 3.4, -15.7, 0.3, -0.2), false);
+  // Beide Haende am Stiel - eine Zweihandwaffe haelt man nicht einarmig.
+  for (const [hx, hy] of [[-2.4, -8.1], [1.9, -13.9]]) {
+    ellipse(stift, hx, hy, 1.1, 1.15, licht(stift, haut, hx - 1, hy - 1.1, hx + 1, hy + 1.1, 0.15, -0.2));
   }
   stift.restore();
 }
@@ -685,6 +763,7 @@ export const FIGUREN = {
   spaeherreiter: { name: 'Spaeherreiter', zeichnen: spaeherreiter, breite: 1.6, oben: 1.15 },
   // Feudalzeit (einheiten AC-23). Speer und Wurfspiess ragen nach oben hinaus,
   // der Bogen nach vorn - daher `oben` und `breite`.
+  soldat: { name: 'Soldat', zeichnen: soldat, breite: 1.3, oben: 1.2 },
   speerkaempfer: { name: 'Speerkämpfer', zeichnen: speerkaempfer, breite: 1.1, oben: 1.2 },
   bogenschuetze: { name: 'Bogenschütze', zeichnen: bogenschuetze, breite: 1.3 },
   plaenkler: { name: 'Plänkler', zeichnen: plaenkler, breite: 1.3, oben: 1.05 },

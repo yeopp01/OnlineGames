@@ -2,7 +2,7 @@
 
 **Bereich:** Strategie
 **Kuerzel:** einheiten
-**Stand:** 17/21 fertig · 3 offen · 1 zurueckgestellt
+**Stand:** 18/21 fertig · 2 offen · 1 zurueckgestellt
 
 ## Zweck
 
@@ -114,9 +114,14 @@ Befehl bewirkt.
   [Kampf](kampf.md)**. Der Bonus zielt auf die Rüstungsklasse, nicht auf die
   Art: Speer schlägt Kavallerie, Bogen schlägt Speer, Plänkler schlägt
   Bogenschützen.
-- **AC-24** `offen` **Miliz wird Soldat** — Die Kaserne erforscht ab der Feudalzeit die
+- **AC-24** `fertig` **Miliz wird Soldat** — Die Kaserne erforscht ab der Feudalzeit die
   Stufe Soldat (Leben 45, Angriff 6); alle vorhandenen Milizen werden dadurch
-  zu Soldaten, ohne neu ausgebildet zu werden.
+  zu Soldaten, ohne neu ausgebildet zu werden. Die Verbesserung kostet
+  100 Nahrung und 40 Gold und dauert 40 Sekunden (die Vorlage lässt die
+  Kosten offen, genommen sind die des Originals). Sie **ersetzt** die Miliz:
+  danach bildet die Kaserne nur noch Soldaten aus, auch eine Miliz in der
+  Warteschlange wird als Soldat fertig, und der Schaden einer verwundeten
+  Miliz bleibt beim Wechsel stehen.
 - **AC-25** `offen` **Fernkämpfer halten Abstand** — Bogenschütze und Plänkler schießen aus
   vier Feldern und laufen nicht in den Nahkampf, solange ihr Ziel in
   Reichweite ist.

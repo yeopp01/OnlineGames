@@ -52,6 +52,15 @@ const EINHEITEN = {
     angriff: 2, nahruestung: 0, fernruestung: 3, reichweite: 4,
     klassen: ['bogenschuetze'], bonus: { bogenschuetze: 3 }, zeitalter: 1,
   },
+  // Die zweite Stufe der Miliz (einheiten AC-24). Sie wird nicht neben der
+  // Miliz ausgebildet, sondern **statt** ihrer: wer die Verbesserung
+  // `soldatenstufe` hat, bekommt in der Kaserne nur noch Soldaten, und seine
+  // Milizen sind schon welche. Deshalb kostet sie dasselbe wie die Miliz.
+  soldat: {
+    leben: 45, tempo: 0.9, sicht: 4, tragkraft: 0, kosten: { nahrung: 60, gold: 20 }, zeit: 21, kuerzel: 'o',
+    angriff: 6, nahruestung: 0, fernruestung: 1, reichweite: 0,
+    klassen: ['infanterie'], zeitalter: 1, stufeVon: 'miliz',
+  },
 };
 
 // Sammelraten je Sekunde, nach dem Vorrat, an dem gearbeitet wird
@@ -92,7 +101,7 @@ const GEBAEUDE = {
     groesse: 3, kosten: { holz: 60 }, bauzeit: 15, leben: 480, wohnraum: 0, annahme: [], bildetAus: [],
     begehbar: true, nahrung: 175, rate: 0.32,
   },
-  kaserne: { groesse: 3, kosten: { holz: 175 }, bauzeit: 50, leben: 1200, wohnraum: 0, annahme: [], bildetAus: ['miliz', 'speerkaempfer'] },
+  kaserne: { groesse: 3, kosten: { holz: 175 }, bauzeit: 50, leben: 1200, wohnraum: 0, annahme: [], bildetAus: ['miliz', 'speerkaempfer', 'soldatenstufe'] },
   // Gebaeude der Feudalzeit (bauen AC-24): `zeitalter: 1` sperrt sie, bis die
   // Feudalzeit erreicht ist. Die Schmiede bildet nichts aus - sie forscht, und
   // das kommt mit Schritt B6.
@@ -146,6 +155,14 @@ const VERBESSERUNGEN = {
   webstuhl: {
     name: 'Webstuhl', kosten: { gold: 50 }, zeit: 25,
     wirkung: { dorfbewohner: { leben: 15, nahruestung: 1, fernruestung: 2 } },
+  },
+  // Die erste Verbesserung, die eine Einheit **austauscht** statt sie
+  // aufzuwerten: `wandelt` macht aus jeder Miliz einen Soldaten, auch aus
+  // denen, die schon stehen oder gerade ausgebildet werden (einheiten AC-24).
+  // Die Vorlage laesst die Kosten offen; genommen sind die des Originals.
+  soldatenstufe: {
+    name: 'Soldat', kosten: { nahrung: 100, gold: 40 }, zeit: 40, zeitalter: 1,
+    wirkung: {}, wandelt: { miliz: 'soldat' },
   },
 };
 

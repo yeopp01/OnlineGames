@@ -46,7 +46,15 @@ const EINHEIT_NAMEN = {
   speerkaempfer: 'Den Speerkämpfer',
   bogenschuetze: 'Den Bogenschützen',
   plaenkler: 'Den Plänkler',
+  soldat: 'Den Soldaten',
 };
+
+// Welche Verbesserung eine Einheit zur naechsten Stufe macht - `wandelt`
+// einmal umgedreht, damit die Absage den Namen nennen kann (einheiten AC-24).
+const STUFE_DURCH = Object.fromEntries(
+  Object.entries(VERBESSERUNGEN).flatMap(([v, w]) =>
+    Object.values(w.wandelt || {}).map((nach) => [nach, v])),
+);
 
 function untaetigeListe(welt, spielerId) {
   const ids = welt.untaetigeVon(spielerId);
@@ -457,15 +465,30 @@ class Welt {
     const gebaeude = this.gebaeude.get(gebaeudeId);
     if (!gebaeude || gebaeude.besitzer !== spielerId) return { fehler: 'Das ist nicht dein Gebaeude.' };
     if (!gebaeude.fertig) return { fehler: 'Das Gebaeude ist noch nicht fertig.' };
-    if (!GEBAEUDE[gebaeude.art].bildetAus.includes(art)) return { fehler: 'Das bildet dieses Gebaeude nicht aus.' };
+    // Die zweite Stufe einer Einheit zaehlt als ihre Grundstufe: die Kaserne
+    // bildet die Miliz aus, nach der Verbesserung kommt daraus ein Soldat
+    // (einheiten AC-24).
+    const grundstufe = EINHEITEN[art]?.stufeVon || art;
+    if (!GEBAEUDE[gebaeude.art].bildetAus.includes(grundstufe)) return { fehler: 'Das bildet dieses Gebaeude nicht aus.' };
     if (gebaeude.schlange.length >= SCHLANGE_MAX) return { fehler: 'Die Warteschlange ist voll.' };
     const spieler = this.spielerVon(spielerId);
+    // Welche Stufe dieser Spieler ausbildet, haengt an seinen Verbesserungen:
+    // ohne sie gibt es den Soldaten nicht, mit ihr nur noch ihn.
+    const stufe = this.einheitenStufe(spieler, grundstufe);
+    if (art !== stufe && EINHEITEN[art]?.stufeVon) {
+      const noch = VERBESSERUNGEN[STUFE_DURCH[art]]?.name || art;
+      return { fehler: `${EINHEIT_NAMEN[art] || art} gibt es erst mit der Verbesserung „${noch}".` };
+    }
+    art = stufe;
     // Eine Einheit kann ein spaeteres Zeitalter verlangen als ihr Gebaeude:
     // die Kaserne steht in der Dunklen Zeit, der Speerkaempfer kommt erst mit
     // der Feudalzeit (einheiten AC-23).
-    const noetig = EINHEITEN[art]?.zeitalter || 0;
+    // Dasselbe gilt fuer eine Verbesserung: die Soldatenstufe gibt es erst in
+    // der Feudalzeit (einheiten AC-24).
+    const noetig = (EINHEITEN[art] || VERBESSERUNGEN[art])?.zeitalter || 0;
     if (noetig > spieler.zeitalter) {
-      return { fehler: `${EINHEIT_NAMEN[art] || art} gibt es erst in ${ZEITALTER[noetig].genitiv}.` };
+      const wer = EINHEIT_NAMEN[art] || VERBESSERUNGEN[art]?.name || art;
+      return { fehler: `${wer} gibt es erst in ${ZEITALTER[noetig].genitiv}.` };
     }
     // Der Aufstieg: nur der naechste, nur einmal, und nur mit genug Gebaeuden
     // des laufenden Zeitalters (bauen AC-23).
@@ -522,6 +545,32 @@ class Welt {
         if (einheit.besitzer === spieler.id && einheit.art === einheitArt) einheit.leben += wirkung.leben || 0;
       }
     }
+    // `wandelt` tauscht die Einheit aus, statt sie aufzuwerten: jede Miliz
+    // wird zum Soldaten, ohne neu ausgebildet zu werden - die stehenden, die
+    // in den Warteschlangen und alle spaeteren (einheiten AC-24).
+    for (const [von, nach] of Object.entries(VERBESSERUNGEN[art].wandelt || {})) {
+      const mehr = this.lebenMax(spieler.id, nach) - this.lebenMax(spieler.id, von);
+      for (const einheit of this.einheiten.values()) {
+        if (einheit.besitzer !== spieler.id || einheit.art !== von) continue;
+        einheit.art = nach;
+        // Das Leben waechst mit, der Schaden bleibt stehen.
+        einheit.leben += mehr;
+      }
+      for (const g of this.gebaeude.values()) {
+        if (g.besitzer !== spieler.id || !g.schlange.includes(von)) continue;
+        g.schlange = g.schlange.map((a) => (a === von ? nach : a));
+        this.gebaeudeGeaendert(g);
+      }
+    }
+  }
+
+  // Welche Stufe einer Einheit dieser Spieler ausbildet (einheiten AC-24).
+  einheitenStufe(spieler, art) {
+    for (const v of spieler?.verbesserungen || []) {
+      const nach = VERBESSERUNGEN[v].wandelt?.[art];
+      if (nach) return nach;
+    }
+    return art;
   }
 
   // Rechtsklick mit ausgewaehltem Gebaeude (bauen AC-13).

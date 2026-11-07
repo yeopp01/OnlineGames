@@ -1,0 +1,10 @@
+{
+  "spec": "10-strategie/einheiten-und-befehle.md",
+  "ac": "AC-24",
+  "titel": "Die Kaserne bietet in der Feudalzeit die Verbesserung „Soldat\" an — davor drei Milizen mit Schwert und Schild",
+  "datei": "e2e/tests/strategie-feudaleinheiten.spec.mjs",
+  "pfad": [
+    "Einheiten der Feudalzeit",
+    "einheiten AC-24: die Kaserne bietet die Soldatenstufe erst in der Feudalzeit an"
+  ]
+}

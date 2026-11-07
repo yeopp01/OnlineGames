@@ -13,17 +13,16 @@ hier nichts eintraegt, verliert den Faden beim naechsten Autocompact.
 
 ## Zuletzt fortgeschrieben
 
-2026-11-07, nach Runde 60 (einheiten AC-23 fertig, erster Teil von B4).
+2026-11-07, nach Runde 61 (einheiten AC-24 fertig, **Schritt B4 ist ganz durch**).
 
 ## Wo ich stehe
 
 - **Branch:** `strategie`. Nie auf `main` arbeiten, **nie pushen, nie deployen.**
-- **Board:** 358 von 503 Kriterien fertig · 1 in Arbeit · 5 in QA · 4 geplant ·
-  128 offen · 7 zurueckgestellt. 342 Tests ohne Browser, 136 im Browser.
+- **Board:** 359 von 503 Kriterien fertig · 1 in Arbeit · 5 in QA · 4 geplant ·
+  127 offen · 7 zurueckgestellt. 348 Tests ohne Browser, 138 im Browser.
 - **Stufe A ist erreicht** (fahrplan AC-3 bis AC-7).
-- **Stufe B:** Bauabfolge B1 bis B7 im [Fahrplan](fahrplan.md). **B1, B2, B3
-  und der erste Teil von B4 (einheiten AC-23) sind fertig.** Der Arbeitsbaum
-  ist sauber.
+- **Stufe B:** Bauabfolge B1 bis B7 im [Fahrplan](fahrplan.md). **B1 bis B4
+  sind fertig.** Der Arbeitsbaum ist sauber.
 
 ## Was B2 und B3 gebracht haben (zum Weiterbauen wissen)
 
@@ -72,15 +71,37 @@ hier nichts eintraegt, verliert den Faden beim naechsten Autocompact.
 - Gemessen: alle 21 Figurenpaare ueber 0,53 (Grenze ein Drittel), fast
   schwarz 0 / 1,4 / 0 %.
 
-## Was als Naechstes kommt: einheiten AC-24
+## Was B4 noch gebracht hat (einheiten AC-24)
 
-**Die Miliz wird zum Soldaten** (60 N, 20 G, 21 s Forschung in der Kaserne ab
-der Feudalzeit; der Soldat hat 45 Leben und 6 Angriff). Alle vorhandenen
-Milizen werden mit, ohne neu auszubilden - das ist die erste Verbesserung,
-die bestehende Einheiten aendert, also eine eigene Runde wert. Der Soldat
-braucht eine **eigene Figur**, die sich von der Miliz auf einem Drittel der
-Flaeche unterscheidet; gemessen mit
-`npm run tafel -- "t.unterschiede('figur')"` **vorher und nachher**.
+- **Zwei Arten von Verbesserung.** `wirkung` wertet eine Einheit auf (Webstuhl),
+  `wandelt` **tauscht sie aus** (`soldatenstufe`: `{ miliz: 'soldat' }`). Wer
+  eine Wandlung baut, denkt an drei Stellen: die stehenden Einheiten, die
+  **Warteschlangen der Gebaeude** und das Angebot im Browser.
+- `EINHEITEN.soldat` traegt `stufeVon: 'miliz'`. Daran haengt alles:
+  `welt.ausbilden()` nimmt die Grundstufe fuer `bildetAus`, fragt
+  `einheitenStufe(spieler, grund)` und bildet das Ergebnis aus - der Browser
+  darf weiter „miliz" schicken. `STUFE_DURCH` (aus `wandelt` umgedreht) gibt
+  der Absage den Namen der noetigen Verbesserung.
+- **Eine Verbesserung kann ein Zeitalter verlangen**: `zeitalter: 1` auf der
+  Verbesserung, geprueft in `ausbilden()` und gefiltert in
+  `auswahlleiste.angebot()`.
+- **Das Bild einer Verbesserung** kommt aus `verbesserungBildchen()`: wer
+  wandelt, zeigt die neue Einheit, sonst den Webstuhl. Vorher bekam **jede**
+  Verbesserung den Webrahmen.
+- Figur: `soldat` in `figuren.js` mit **Topfhelm** (neue Kopfoption
+  `topfhelm`, deckt das Gesicht zu und zeichnet deshalb kein Auge),
+  Kettenhemd, kurzem Waffenrock und zweihaendiger Streitaxt. Alle 28
+  Figurenpaare ueber 0,60.
+
+## Was als Naechstes kommt: Schritt B5, der Kampf
+
+**kampf AC-1 bis AC-10, bedienung AC-34, einheiten AC-25.** Die Werte stehen
+schon alle in `daten.js`: `angriff`, `nahruestung`, `fernruestung`,
+`reichweite`, `klassen`, `bonus` je Einheit. Zu bauen sind der Auftrag
+„angreifen", der Schlagtakt, der Schaden mit Bonus auf die Ruestungsklasse,
+Pfeile als Flugbahn, das Sterben, und dass Fernkaempfer Abstand halten
+(einheiten AC-25). **Vorher die Spec kampf.md lesen** - sie ist seit der
+Spec-Runde zu Stufe B geschrieben.
 
 Danach: **B5** Kampf (kampf AC-1 bis AC-10, bedienung AC-34, einheiten AC-25)
 · **B6** Verbesserungen (bauen AC-25, AC-26, ki AC-9) · **B7** Gleichgewicht
@@ -161,6 +182,13 @@ messen (fahrplan AC-8 bis AC-10).
   durchs Gesicht warf. Fuer das Hinsehen
   `npm run sicht -- --ausschnitt x,y,b,h --lupe 3` - 92 Bildpunkte je Figur
   auf der ganzen Schautafel reichen nicht.
+- **Was fuer genau eine Sache fest verdrahtet ist, faellt beim zweiten auf**
+  (Runde 61): jede Verbesserung bekam das Bild des Webstuhls, weil es nur
+  eine gab. Beim Hinzufuegen der zweiten erst im Bild gesehen.
+- **Eine schraege Waffe in einem eigenen, gedrehten Rahmen zeichnen**
+  (`stift.save(); translate(fuss); rotate(winkel);` dann Stiel und Blatt
+  senkrecht, `restore()`). Punkte auf einer schraegen Linie von Hand zu
+  rechnen ging in Runde 61 schief - das Axtblatt hing neben dem Stiel.
 - **Alte Bildschirmtexte des Strategiespiels haben keine Umlaute**
   („Bevoelkerung voll", „Das ist nicht dein Gebaeude."), obwohl CLAUDE.md sie
   verlangt. Neue Texte werden richtig geschrieben; die alten aufzuraeumen ist

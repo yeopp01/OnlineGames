@@ -19,6 +19,7 @@ const EINTRAEGE = [
   { art: 'dorfbewohner', titel: 'traegt Nahrung', lage: { ladung: 'n' } },
   { art: 'dorfbewohner', titel: 'traegt Gold', lage: { ladung: 'g' } },
   { art: 'miliz', titel: 'Miliz', lage: {} },
+  { art: 'soldat', titel: 'Soldat', lage: {} },
   { art: 'spaeherreiter', titel: 'Spaeherreiter', lage: {} },
   { art: 'speerkaempfer', titel: 'Speerkaempfer', lage: {} },
   { art: 'bogenschuetze', titel: 'Bogenschuetze', lage: {} },
