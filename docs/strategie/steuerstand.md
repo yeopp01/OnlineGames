@@ -13,21 +13,40 @@ hier nichts eintraegt, verliert den Faden beim naechsten Autocompact.
 
 ## Zuletzt fortgeschrieben
 
-2026-11-07, nach Runde 67 (kampf AC-4 fertig - **B5 ist erreicht, der Kampf steht ganz**).
+2026-11-07, nach Runde 68 (bauen AC-25, AC-26 fertig - **aus B6 fehlt nur noch ki AC-9**).
 
 ## Wo ich stehe
 
 - **Branch:** `strategie`. Nie auf `main` arbeiten, **nie pushen, nie deployen.**
-- **Board:** 370 von 504 Kriterien fertig · 1 in Arbeit · 5 in QA · 4 geplant ·
-  116 offen · 8 zurueckgestellt. 379 Tests ohne Browser, 143 im Browser.
+- **Board:** 372 von 504 Kriterien fertig · 1 in Arbeit · 5 in QA · 4 geplant ·
+  114 offen · 8 zurueckgestellt. 389 Tests ohne Browser, 147 im Browser.
 - **Stufe A ist erreicht** (fahrplan AC-3 bis AC-7).
 - **Stufe B:** Bauabfolge B1 bis B7 im [Fahrplan](fahrplan.md). **B1 bis B5
-  sind fertig.** Als Naechstes **B6** (bauen AC-25, AC-26, ki AC-9), dann
-  **B7** (fahrplan AC-8 bis AC-10). Der Arbeitsbaum ist sauber.
+  sind fertig, aus B6 die beiden Bau-Kriterien.** Als Naechstes **ki AC-9**
+  (die KI steigt auf und baut Militaer), dann **B7** (fahrplan AC-8 bis
+  AC-10). Der Arbeitsbaum ist sauber.
 - **Naechste Rueckschau: Runde 70.** Diese Zeile ist der Termin - nicht
   nachzaehlen. Die Rueckschauen 55 und 60 sind ausgefallen, weil nach der
   Rueckschau zur Stufe A niemand mehr gezaehlt hat (Rueckschau nach Runde 65).
   Wer eine Rueckschau haelt, traegt hier die naechste Nummer ein.
+
+## Was B6 gebracht hat (zum Weiterbauen wissen)
+
+- **Ein Schluessel in `VERBESSERUNGEN[x].wirkung` ist eine Einheitenart oder
+  eine ihrer `klassen`** (`dorf`, `infanterie`, `kavallerie`, `speer`,
+  `bogenschuetze`). `wirkungsschluessel(art)` in `welt.js` liefert beides,
+  **dedupliziert** - `bogenschuetze` ist Art und Klasse zugleich.
+- **`welt.einheitenwert(besitzer, art, feld)` ist die eine Stelle**, die einen
+  Wert einer Einheit mit allen Verbesserungen liest (Leben, Angriff,
+  Ruestung, Reichweite). Wer `EINHEITEN[art].angriff` direkt liest, uebersieht
+  die Verbesserungen - genau so war die Ruestung aus dem Webstuhl seit
+  bauen AC-21 wirkungslos.
+- Dazu `welt.sammelrate(besitzer, rohstoff, grundrate)` (Faktor, Doppelaxt)
+  und `welt.farmNahrung(besitzer)` (Zuschlag, Pferdekummet); im Browser
+  `ansicht.farmVoll(gebaeude)` fuer die Zeile "noch n Nahrung von m".
+- Die Bildchen der Verbesserungen kommen aus `ZEICHEN` in
+  `public/auswahlleiste.js`; welches, steht als `zeichen` in den Daten. Eine
+  neue Verbesserung ohne `zeichen` bekaeme wieder den Webstuhl.
 
 ## Was B5 gebracht hat (zum Weiterbauen wissen)
 

@@ -72,6 +72,19 @@ const STUFE_DURCH = Object.fromEntries(
     Object.values(w.wandelt || {}).map((nach) => [nach, v])),
 );
 
+/**
+ * Unter welchen Schluesseln eine Verbesserung eine Einheit trifft: ihre eigene
+ * Art und jede ihrer Klassen (bauen AC-25). So gilt "Nah +1 Angriff" der
+ * Infanterie und der Kavallerie, ohne dass die Simulation nach Einheitenarten
+ * fragt - und eine neue Einheit erbt die Verbesserungen ihrer Klasse von selbst.
+ *
+ * Doppelte sind herausgenommen: `bogenschuetze` ist zugleich Art und Klasse,
+ * und ohne das zaehlte eine Verbesserung bei ihm zweimal.
+ */
+function wirkungsschluessel(art) {
+  return [...new Set([art, ...(EINHEITEN[art]?.klassen || [])])];
+}
+
 function untaetigeListe(welt, spielerId) {
   const ids = welt.untaetigeVon(spielerId);
   return ids.length ? { u: ids } : {};
@@ -169,12 +182,43 @@ class Welt {
     return zahl;
   }
 
+  /**
+   * Ein Wert einer Einheit mit allen Verbesserungen ihres Spielers - Leben,
+   * Angriff, Ruestung, Reichweite (bauen AC-21, AC-25). Eine Stelle fuer alle
+   * Werte: wer die Tabelle direkt liest, sieht die Verbesserungen nicht.
+   */
+  einheitenwert(besitzer, art, feld) {
+    const spieler = this.spielerVon(besitzer);
+    let wert = EINHEITEN[art][feld] || 0;
+    if (!spieler?.verbesserungen?.length) return wert;
+    for (const schluessel of wirkungsschluessel(art)) {
+      for (const v of spieler.verbesserungen) wert += VERBESSERUNGEN[v].wirkung[schluessel]?.[feld] || 0;
+    }
+    return wert;
+  }
+
   // Leben einer Einheit mit allen Verbesserungen ihres Spielers (bauen AC-21).
   lebenMax(besitzer, art) {
-    const spieler = this.spielerVon(besitzer);
-    let leben = EINHEITEN[art].leben;
-    for (const v of spieler?.verbesserungen || []) leben += VERBESSERUNGEN[v].wirkung[art]?.leben || 0;
-    return leben;
+    return this.einheitenwert(besitzer, art, 'leben');
+  }
+
+  /**
+   * Die Sammelrate eines Spielers an einem Rohstoff (bauen AC-26). Die
+   * Doppelaxt ist ein Faktor, kein Zuschlag - "+20 % Holz" der Vorlage.
+   */
+  sammelrate(besitzer, rohstoff, grundrate) {
+    let faktor = 1;
+    for (const v of this.spielerVon(besitzer)?.verbesserungen || []) {
+      faktor *= VERBESSERUNGEN[v].sammeln?.[rohstoff] || 1;
+    }
+    return grundrate * faktor;
+  }
+
+  // Wie viel Nahrung eine neue Farm dieses Spielers traegt (bauen AC-26).
+  farmNahrung(besitzer) {
+    let nahrung = GEBAEUDE.farm.nahrung;
+    for (const v of this.spielerVon(besitzer)?.verbesserungen || []) nahrung += VERBESSERUNGEN[v].farm?.nahrung || 0;
+    return nahrung;
   }
 
   einheitAnlegen(besitzer, x, y, art = 'dorfbewohner') {
@@ -213,7 +257,7 @@ class Welt {
       bau: fertig ? 1 : 0, // Anteil der Bauarbeit
       leben: GEBAEUDE[art].leben,
       // Eine Farm traegt Nahrung, und nur einer arbeitet darauf (einheiten AC-18).
-      ...(GEBAEUDE[art].nahrung ? { nahrung: GEBAEUDE[art].nahrung, arbeiter: null } : {}),
+      ...(GEBAEUDE[art].nahrung ? { nahrung: this.farmNahrung(besitzer), arbeiter: null } : {}),
       schlange: [], // Arten der bezahlten Auftraege, der erste laeuft
       fortschritt: 0, // Takte am laufenden Auftrag
       wartet: false, // Bevoelkerung voll (bauen AC-15)
@@ -559,9 +603,19 @@ class Welt {
   // spaeteren (bauen AC-21).
   erforschen(spieler, art) {
     spieler.verbesserungen.push(art);
-    for (const [einheitArt, wirkung] of Object.entries(VERBESSERUNGEN[art].wirkung)) {
-      for (const einheit of this.einheiten.values()) {
-        if (einheit.besitzer === spieler.id && einheit.art === einheitArt) einheit.leben += wirkung.leben || 0;
+    const wirkung = VERBESSERUNGEN[art].wirkung;
+    for (const einheit of this.einheiten.values()) {
+      if (einheit.besitzer !== spieler.id) continue;
+      for (const schluessel of wirkungsschluessel(einheit.art)) einheit.leben += wirkung[schluessel]?.leben || 0;
+    }
+    // Pferdekummet legt auf jede Farm nach, auch auf die, die schon steht
+    // (bauen AC-26) - sonst lohnte es sich erst beim naechsten Feld.
+    const mehrNahrung = VERBESSERUNGEN[art].farm?.nahrung || 0;
+    if (mehrNahrung) {
+      for (const g of this.gebaeude.values()) {
+        if (g.besitzer !== spieler.id || g.nahrung === undefined) continue;
+        g.nahrung += mehrNahrung;
+        this.gebaeudeGeaendert(g);
       }
     }
     // `wandelt` tauscht die Einheit aus, statt sie aufzuwerten: jede Miliz
@@ -1290,7 +1344,7 @@ class Welt {
       }
     }
     for (const { einheit, feind } of funde) {
-      const stand = EINHEITEN[einheit.art].reichweite
+      const stand = this.einheitenwert(einheit.besitzer, einheit.art, 'reichweite')
         ? null
         : this.naechstesFreies(einheit, felderJeZiel.get(feind.id))
           || nachbarfeld(this.karte, this.feldVon(feind), einheit);
@@ -1336,7 +1390,7 @@ class Welt {
       else einheit.weg = this.wegNach(einheit, auftrag.heimat);
       return;
     }
-    const fern = EINHEITEN[einheit.art].reichweite;
+    const fern = this.einheitenwert(einheit.besitzer, einheit.art, 'reichweite');
     const reichweite = fern || 1;
     const abstand = auftrag.gebaeude
       ? this.abstandZu(einheit, ziel)
@@ -1385,10 +1439,15 @@ class Welt {
   schaden(angreifer, ziel, istGebaeude) {
     const a = EINHEITEN[angreifer.art];
     const werte = istGebaeude ? GEBAEUDE[ziel.art] : EINHEITEN[ziel.art];
-    const ruestung = (a.reichweite ? werte.fernruestung : werte.nahruestung) || 0;
+    const fern = this.einheitenwert(angreifer.besitzer, angreifer.art, 'reichweite');
+    // Auch die Ruestung des Ziels kennt seine Verbesserungen: der Webstuhl
+    // gibt dem Dorfbewohner +1/+2 (bauen AC-21). Bis Runde 68 las diese Zeile
+    // die Tabelle und die Ruestung aus dem Webstuhl war wirkungslos.
+    const feld = fern ? 'fernruestung' : 'nahruestung';
+    const ruestung = istGebaeude ? (werte[feld] || 0) : this.einheitenwert(ziel.besitzer, ziel.art, feld);
     let bonus = 0;
     for (const klasse of werte.klassen || []) bonus += a.bonus?.[klasse] || 0;
-    return Math.max(1, a.angriff - ruestung + bonus);
+    return Math.max(1, this.einheitenwert(angreifer.besitzer, angreifer.art, 'angriff') - ruestung + bonus);
   }
 
   // Ein Schlag wird vorgemerkt, nicht sofort verrechnet: abgerechnet wird am
@@ -1610,7 +1669,7 @@ class Welt {
       return;
     }
 
-    einheit.angefangen += sammeln.rate / TAKTE_PRO_SEKUNDE;
+    einheit.angefangen += this.sammelrate(einheit.besitzer, sammeln.rohstoff, sammeln.rate) / TAKTE_PRO_SEKUNDE;
     if (einheit.angefangen < 1) return;
     einheit.angefangen -= 1;
 

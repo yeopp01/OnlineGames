@@ -141,7 +141,7 @@ Umfang hinzufügt, dort nachsehen.
 
 ## Stand
 
-**370 von 504 Kriterien fertig.** 379 Tests ohne Browser, 143 im Browser. Die
+**372 von 504 Kriterien fertig.** 389 Tests ohne Browser, 147 im Browser. Die
 Übersicht ist der Bericht: `npm run qa:report`.
 
 Gebaut ist der Unterbau: Räume, Übertragung, Karte, Wegfindung, Sammeln,
@@ -227,7 +227,12 @@ Ausgangsplatz, ein befohlener Angriff nicht. Fernkämpfer halten ihre vier
 Felder, Nahkämpfer gehen bis ans Ziel. **B5 ist fertig**: dazu das rote
 Zeichen am Ziel und der **Angriffslauf** — `G` schaltet ihn ein, der nächste
 Rechtsklick schickt die Auswahl los und sie greift unterwegs an, was ihr in
-Sichtweite kommt, bis sie am Marschziel steht.
+Sichtweite kommt, bis sie am Marschziel steht. Aus **B6** stehen die vier
+**Verbesserungen der Feudalzeit**: Schmiedeangriff und Befiederte Pfeile in der
+Schmiede, Doppelaxt im Holzfällerlager, Pferdekummet in der Mühle — jede mit
+eigenem Bild im Menü. Getroffen wird über die **Klasse** einer Einheit, nicht
+über ihre Art; `welt.einheitenwert()` ist die eine Stelle, die Werte mit
+Verbesserungen liest.
 
 1. **Stufe A** Dunkle Zeit mit Wirtschafts-KI und Prüfstand · **B** Feudalzeit
    · **C** Partieende und KI-Gegner · **D** Ritterzeit · **E** fünf Völker ·

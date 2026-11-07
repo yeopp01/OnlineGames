@@ -1,0 +1,10 @@
+{
+  "spec": "10-strategie/bauen.md",
+  "ac": "AC-25",
+  "titel": "Die Schmiede gewählt: Schmiedeangriff (Amboss, 100 Nahrung) und Befiederte Pfeile (Pfeil, 100 Nahrung, 50 Gold) — jede Forschung mit eigenem Bild",
+  "datei": "e2e/tests/strategie-verbesserungen.spec.mjs",
+  "pfad": [
+    "Verbesserungen der Feudalzeit",
+    "bauen AC-25: die Schmiede bietet Schmiedeangriff und Befiederte Pfeile mit eigenem Bild"
+  ]
+}

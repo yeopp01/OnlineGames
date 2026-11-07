@@ -844,6 +844,22 @@ export class Ansicht {
     return voll;
   }
 
+  /**
+   * Wie viel Nahrung eine Farm voll traegt, mit den Verbesserungen ihres
+   * Besitzers (bauen AC-26). Ohne das stuende in der Leiste "noch 250 Nahrung
+   * von 175" - der Vorrat aus der Tabelle, nicht der dieses Spielers.
+   */
+  farmVoll(gebaeude) {
+    let voll = this.werte.gebaeude[gebaeude.art]?.nahrung || 0;
+    if (!voll) return 0;
+    // Was der Gegner erforscht hat, weiss niemand - fuer fremde Farmen bleibt
+    // es bei der Tabelle.
+    if (gebaeude.b === this.ich) {
+      for (const v of this.verbesserungen) voll += this.werte.verbesserungen?.[v]?.farm?.nahrung || 0;
+    }
+    return voll;
+  }
+
   // Ein Lebensbalken (darstellung AC-8): dunkler Grund, darauf der Anteil in
   // Gruen, unter einem Drittel in Rot - schmal, damit er nichts zudeckt.
   lebensbalkenZeichnen({ x, y, breite, anteil }) {

@@ -105,8 +105,8 @@ const GEBAEUDE = {
     annahme: ALLE, bildetAus: ['dorfbewohner', 'webstuhl', 'feudalzeit', 'ritterzeit', 'imperialzeit'],
   },
   haus: { groesse: 2, kosten: { holz: 25 }, bauzeit: 25, leben: 550, wohnraum: 5, annahme: [], bildetAus: [] },
-  muehle: { groesse: 2, kosten: { holz: 100 }, bauzeit: 35, leben: 1000, wohnraum: 0, annahme: ['nahrung'], bildetAus: [] },
-  holzfaellerlager: { groesse: 2, kosten: { holz: 100 }, bauzeit: 35, leben: 1000, wohnraum: 0, annahme: ['holz'], bildetAus: [] },
+  muehle: { groesse: 2, kosten: { holz: 100 }, bauzeit: 35, leben: 1000, wohnraum: 0, annahme: ['nahrung'], bildetAus: ['pferdekummet'] },
+  holzfaellerlager: { groesse: 2, kosten: { holz: 100 }, bauzeit: 35, leben: 1000, wohnraum: 0, annahme: ['holz'], bildetAus: ['doppelaxt'] },
   bergbaulager: { groesse: 2, kosten: { holz: 100 }, bauzeit: 35, leben: 1000, wohnraum: 0, annahme: ['gold', 'stein'], bildetAus: [] },
   // Eine Farm ist begehbar, traegt 175 Nahrung und wird mit 0,32 je Sekunde
   // bestellt - von hoechstens einem (einheiten AC-18).
@@ -116,8 +116,8 @@ const GEBAEUDE = {
   },
   kaserne: { groesse: 3, kosten: { holz: 175 }, bauzeit: 50, leben: 1200, wohnraum: 0, annahme: [], bildetAus: ['miliz', 'speerkaempfer', 'soldatenstufe'] },
   // Gebaeude der Feudalzeit (bauen AC-24): `zeitalter: 1` sperrt sie, bis die
-  // Feudalzeit erreicht ist. Die Schmiede bildet nichts aus - sie forscht, und
-  // das kommt mit Schritt B6.
+  // Feudalzeit erreicht ist. Die Schmiede bildet keine Einheiten aus - sie
+  // forscht (bauen AC-25).
   schiessanlage: {
     groesse: 3, kosten: { holz: 175 }, bauzeit: 50, leben: 1000, wohnraum: 0, annahme: [],
     bildetAus: ['bogenschuetze', 'plaenkler'], zeitalter: 1,
@@ -126,7 +126,8 @@ const GEBAEUDE = {
     groesse: 3, kosten: { holz: 175 }, bauzeit: 50, leben: 1000, wohnraum: 0, annahme: [], bildetAus: ['spaeherreiter'], zeitalter: 1,
   },
   schmiede: {
-    groesse: 3, kosten: { holz: 150 }, bauzeit: 40, leben: 1200, wohnraum: 0, annahme: [], bildetAus: [], zeitalter: 1,
+    groesse: 3, kosten: { holz: 150 }, bauzeit: 40, leben: 1200, wohnraum: 0, annahme: [],
+    bildetAus: ['schmiedeangriff', 'befiedertePfeile'], zeitalter: 1,
   },
 };
 
@@ -187,6 +188,37 @@ const VERBESSERUNGEN = {
   soldatenstufe: {
     name: 'Soldat', kosten: { nahrung: 100, gold: 40 }, zeit: 40, zeitalter: 1,
     wirkung: {}, wandelt: { miliz: 'soldat' },
+  },
+  // Die Verbesserungen der Feudalzeit (bauen AC-25, AC-26). Kosten und Wirkung
+  // stehen in der Vorlage; die Vorlage nennt keine Forschungsdauer, deshalb
+  // sind die Zeiten die des Originals.
+  //
+  // **Ein Schluessel in `wirkung` ist eine Einheitenart oder eine ihrer
+  // `klassen`.** Damit trifft "Nah +1 Angriff" genau Infanterie und
+  // Kavallerie - der Dorfbewohner hat die Klasse `dorf` und bleibt aussen vor,
+  // wie im Original. Ohne Klassen muesste jede neue Einheit hier nachgetragen
+  // werden.
+  schmiedeangriff: {
+    name: 'Schmiedeangriff', kosten: { nahrung: 100 }, zeit: 50, zeitalter: 1,
+    zeichen: 'amboss',
+    wirkung: { infanterie: { angriff: 1 }, kavallerie: { angriff: 1 } },
+  },
+  befiedertePfeile: {
+    name: 'Befiederte Pfeile', kosten: { nahrung: 100, gold: 50 }, zeit: 30, zeitalter: 1,
+    zeichen: 'pfeil',
+    wirkung: { bogenschuetze: { angriff: 1, reichweite: 1 } },
+  },
+  // Wirtschaft: kein Kampfwert, sondern ein Faktor auf die Sammelrate und ein
+  // Zuschlag auf jede Farm - auch auf die, die schon stehen.
+  doppelaxt: {
+    name: 'Doppelaxt', kosten: { nahrung: 100, holz: 50 }, zeit: 50, zeitalter: 1,
+    zeichen: 'axt',
+    wirkung: {}, sammeln: { holz: 1.2 },
+  },
+  pferdekummet: {
+    name: 'Pferdekummet', kosten: { nahrung: 75, holz: 75 }, zeit: 20, zeitalter: 1,
+    zeichen: 'kummet',
+    wirkung: {}, farm: { nahrung: 75 },
   },
 };
 

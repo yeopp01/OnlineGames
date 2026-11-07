@@ -2,7 +2,7 @@
 
 **Bereich:** Strategie
 **Kuerzel:** bauen
-**Stand:** 20/26 fertig · 6 offen
+**Stand:** 22/26 fertig · 4 offen
 
 ## Zweck
 
@@ -136,14 +136,20 @@ B ist der Kampf der drei Einheiten gegeneinander.
   den Späherreiter aus (80 Nahrung, 30 Sekunden); was Schießanlage und
   Schmiede anbieten, kommt mit den Einheiten und Verbesserungen (AC-25, AC-26,
   [Einheiten](einheiten-und-befehle.md) AC-23).
-- **AC-25** `offen` **Schmiede verbessert Angriff und Rüstung** — Die Schmiede erforscht
-  Schmiedeangriff (100 Nahrung, +1 Nahangriff) und Befiederte Pfeile
-  (100 Nahrung, 50 Gold, +1 Fernangriff und +1 Reichweite). Die Wirkung gilt
-  sofort für alle eigenen Einheiten der Art, auch für die schon gebauten.
-- **AC-26** `offen` **Verbesserungen der Wirtschaft** — Doppelaxt im Holzfällerlager
-  (100 Nahrung, 50 Holz, +20 % Holz) und Pferdekummet in der Mühle
-  (75 Nahrung, 75 Holz, +75 Nahrung je Farm) sind ab der Feudalzeit
-  erforschbar und wirken auf alle vorhandenen Sammler und Farmen.
+- **AC-25** `fertig` **Die Schmiede verbessert den Angriff** — Die Schmiede erforscht
+  Schmiedeangriff (100 Nahrung, 50 s, +1 Nahangriff) und Befiederte Pfeile
+  (100 Nahrung, 50 Gold, 30 s, +1 Fernangriff und +1 Reichweite). Die Wirkung
+  gilt sofort für alle eigenen Einheiten der Art, auch für die schon gebauten.
+  Getroffen wird über die **Klasse**, nicht über die Einheitenart: „Nah“ sind
+  Infanterie und Kavallerie, „Fern“ sind die Bogenschützen — der Dorfbewohner
+  trägt die Klasse `dorf` und bleibt wie im Original außen vor. Die Vorlage
+  nennt keine Forschungsdauer; die Zeiten sind die des Originals.
+- **AC-26** `fertig` **Verbesserungen der Wirtschaft** — Doppelaxt im Holzfällerlager
+  (100 Nahrung, 50 Holz, 50 s, +20 % Holz) und Pferdekummet in der Mühle
+  (75 Nahrung, 75 Holz, 20 s, +75 Nahrung je Farm) sind ab der Feudalzeit
+  erforschbar und wirken auf alle vorhandenen Sammler und Farmen — auch auf
+  die Farm, die schon steht. +20 % gilt der **Rate am Baum**, nicht dem Holz
+  je Minute: das Hin- und Herlaufen wird nicht schneller.
 
 ### Zerstörung
 
@@ -156,6 +162,12 @@ B ist der Kampf der drei Einheiten gegeneinander.
 
 ## Grenzfaelle
 
+- Eine Verbesserung gilt **einem Spieler**, nicht einem Gebäude: wer die
+  Schmiede verliert, behält den Schmiedeangriff. Und wer sie erforscht hat,
+  sieht den Knopf nicht mehr.
+- Das Pferdekummet legt auf **jede** Farm nach, auch auf eine fast abgeerntete.
+  Sie trägt danach mehr, als in der Tabelle steht — die Leiste nennt deshalb
+  den Vorrat dieses Spielers, nicht den der Tabelle.
 - Ein Dorfbewohner, der beim Bauen stirbt, hinterlässt eine Baustelle, an der
   ein anderer weiterbauen kann. Die Rohstoffe sind nicht verloren.
 - Zwei Spieler beanspruchen denselben Platz: wer zuerst den Baubeginn absetzt,

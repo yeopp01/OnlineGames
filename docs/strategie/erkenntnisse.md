@@ -504,6 +504,23 @@ alle sieben Gebäude der Dunklen Zeit stehen. Was sich wiederholt hat:
 Neueste oben. Eine Zeile je Runde: Nummer, Datum, Kriterien, Ergebnis,
 wichtigste Erkenntnis.
 
+- **68** · 2026-11-07 · **bauen AC-25 und AC-26 fertig — die vier
+  Verbesserungen der Feudalzeit**: Schmiedeangriff und Befiederte Pfeile in der
+  Schmiede, Doppelaxt im Holzfällerlager, Pferdekummet in der Mühle. Der
+  Kern ist eine Verallgemeinerung: **ein Schlüssel in `wirkung` ist eine
+  Einheitenart oder eine ihrer `klassen`**, und `welt.einheitenwert(besitzer,
+  art, feld)` ist die eine Stelle, die Werte mit Verbesserungen liest. Damit
+  trifft „Nah +1 Angriff“ genau Infanterie und Kavallerie, ohne dass die
+  Simulation nach Einheitenarten fragt. Drei Lehren: (1) `bogenschuetze` ist
+  **zugleich Art und Klasse** — ohne `new Set` zählte die Verbesserung bei ihm
+  doppelt. Wer Arten und Klassen in einen Schlüsselraum legt, dedupliziert.
+  (2) Dabei fiel auf: die Rüstung aus dem **Webstuhl war seit bauen AC-21
+  wirkungslos** — die Schadensformel las die Tabelle statt der Werte des
+  Spielers. Nur das Leben kam an. Jetzt geprüft. (3) „+20 % Holz“ heißt +20 %
+  **an der Rate**, nicht +20 % Holz je Minute: über vier Minuten kamen 180
+  gegen 170 heraus, weil das Hin- und Herlaufen gleich bleibt. Der erste Test
+  maß das Falsche; gemessen wird jetzt die Zeit bis zur vollen Ladung (325
+  gegen 368 Takte).
 - **67** · 2026-11-07 · **kampf AC-4 fertig — der Angriffslauf, damit ist B5
   erreicht**: `G` schaltet die Betriebsart ein (nicht `A` — WASD schiebt die
   Karte), der nächste Rechtsklick schickt die Auswahl los und merkt sich das

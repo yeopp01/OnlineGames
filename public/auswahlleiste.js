@@ -122,6 +122,158 @@ function webstuhlBildchen(groesse, farbe) {
   return leinwand;
 }
 
+/**
+ * Eine leere Leinwand in Knopfgroesse, mit dem Stift schon auf die
+ * Bildschirmdichte gestellt - jedes Bildchen faengt damit an.
+ */
+function knopfleinwand(groesse) {
+  const leinwand = document.createElement('canvas');
+  const dichte = window.devicePixelRatio || 1;
+  leinwand.width = groesse * dichte;
+  leinwand.height = groesse * dichte;
+  leinwand.style.width = `${groesse}px`;
+  leinwand.style.height = `${groesse}px`;
+  const stift = leinwand.getContext('2d');
+  stift.scale(dichte, dichte);
+  return { leinwand, stift };
+}
+
+/**
+ * Die Bildchen der Verbesserungen der Feudalzeit (bauen AC-25, AC-26). Jede
+ * braucht ein eigenes, sonst stehen vier gleiche Knoepfe nebeneinander
+ * (darstellung AC-14). Welches gezeichnet wird, steht als `zeichen` in den
+ * Daten - nicht als Verzweigung nach dem Namen der Verbesserung.
+ */
+const ZEICHEN = {
+  // Schmiedeangriff: ein Amboss, darauf ein Schwert, darueber Funken.
+  amboss(s, g, farbe) {
+    s.fillStyle = '#4a4440';
+    s.beginPath();
+    s.moveTo(0.16 * g, 0.56 * g);
+    s.lineTo(0.78 * g, 0.56 * g);
+    s.lineTo(0.86 * g, 0.64 * g);
+    s.lineTo(0.68 * g, 0.66 * g);
+    s.lineTo(0.62 * g, 0.74 * g);
+    s.lineTo(0.72 * g, 0.86 * g);
+    s.lineTo(0.26 * g, 0.86 * g);
+    s.lineTo(0.36 * g, 0.74 * g);
+    s.lineTo(0.3 * g, 0.66 * g);
+    s.lineTo(0.16 * g, 0.64 * g);
+    s.closePath();
+    s.fill();
+    s.fillStyle = 'rgba(255,255,255,0.18)';
+    s.fillRect(0.18 * g, 0.56 * g, 0.6 * g, 0.03 * g);
+    // Die Klinge auf dem Amboss, der Griff in der Volksfarbe.
+    s.strokeStyle = '#cfd6dd';
+    s.lineWidth = g * 0.09;
+    s.lineCap = 'butt';
+    s.beginPath();
+    s.moveTo(0.28 * g, 0.47 * g);
+    s.lineTo(0.66 * g, 0.34 * g);
+    s.stroke();
+    s.strokeStyle = farbe;
+    s.lineWidth = g * 0.11;
+    s.beginPath();
+    s.moveTo(0.68 * g, 0.33 * g);
+    s.lineTo(0.82 * g, 0.28 * g);
+    s.stroke();
+    s.strokeStyle = '#f6c667';
+    s.lineWidth = g * 0.045;
+    s.lineCap = 'round';
+    for (const [x, y, l] of [[0.4, 0.26, 0.09], [0.52, 0.18, 0.12], [0.63, 0.22, 0.07]]) {
+      s.beginPath();
+      s.moveTo(x * g, y * g);
+      s.lineTo((x + l * 0.4) * g, (y - l) * g);
+      s.stroke();
+    }
+  },
+  // Befiederte Pfeile: ein Pfeil nach oben rechts, mit Feder am Schaft.
+  pfeil(s, g, farbe) {
+    s.strokeStyle = '#8a6a44';
+    s.lineWidth = g * 0.075;
+    s.lineCap = 'round';
+    s.beginPath();
+    s.moveTo(0.18 * g, 0.84 * g);
+    s.lineTo(0.74 * g, 0.28 * g);
+    s.stroke();
+    s.fillStyle = '#cfd6dd';
+    s.beginPath();
+    s.moveTo(0.88 * g, 0.14 * g);
+    s.lineTo(0.84 * g, 0.44 * g);
+    s.lineTo(0.58 * g, 0.4 * g);
+    s.closePath();
+    s.fill();
+    // Drei Federn am hinteren Ende, in der Volksfarbe.
+    s.fillStyle = farbe;
+    for (let i = 0; i < 3; i++) {
+      const x = (0.2 + i * 0.1) * g;
+      const y = (0.82 - i * 0.1) * g;
+      s.beginPath();
+      s.moveTo(x, y);
+      s.lineTo(x - 0.14 * g, y - 0.04 * g);
+      s.lineTo(x - 0.04 * g, y - 0.16 * g);
+      s.closePath();
+      s.fill();
+    }
+  },
+  // Doppelaxt: ein Stiel mit zwei Blaettern, dazu ein Stueck Holz.
+  axt(s, g, farbe) {
+    s.strokeStyle = '#8a6a44';
+    s.lineWidth = g * 0.09;
+    s.lineCap = 'round';
+    s.beginPath();
+    s.moveTo(0.5 * g, 0.9 * g);
+    s.lineTo(0.5 * g, 0.16 * g);
+    s.stroke();
+    s.fillStyle = '#b9c2cb';
+    for (const seite of [-1, 1]) {
+      s.beginPath();
+      s.moveTo(0.5 * g, 0.2 * g);
+      s.quadraticCurveTo((0.5 + seite * 0.42) * g, 0.24 * g, (0.5 + seite * 0.34) * g, 0.52 * g);
+      s.quadraticCurveTo((0.5 + seite * 0.2) * g, 0.44 * g, 0.5 * g, 0.46 * g);
+      s.closePath();
+      s.fill();
+    }
+    s.fillStyle = farbe;
+    s.fillRect(0.44 * g, 0.2 * g, 0.12 * g, 0.26 * g);
+  },
+  // Pferdekummet: das Halsjoch des Zugpferdes, davor eine Aehre.
+  kummet(s, g, farbe) {
+    s.strokeStyle = '#7a4f2c';
+    s.lineWidth = g * 0.13;
+    s.beginPath();
+    s.ellipse(0.42 * g, 0.52 * g, 0.26 * g, 0.34 * g, 0, 0, Math.PI * 2);
+    s.stroke();
+    s.strokeStyle = farbe;
+    s.lineWidth = g * 0.05;
+    s.beginPath();
+    s.ellipse(0.42 * g, 0.52 * g, 0.26 * g, 0.34 * g, 0, 0, Math.PI * 2);
+    s.stroke();
+    s.strokeStyle = '#d8b25a';
+    s.lineWidth = g * 0.055;
+    s.lineCap = 'round';
+    s.beginPath();
+    s.moveTo(0.82 * g, 0.9 * g);
+    s.lineTo(0.82 * g, 0.3 * g);
+    s.stroke();
+    s.fillStyle = '#e8c972';
+    for (let i = 0; i < 4; i++) {
+      const y = (0.3 + i * 0.13) * g;
+      for (const seite of [-1, 1]) {
+        s.beginPath();
+        s.ellipse((0.82 + seite * 0.07) * g, y, 0.05 * g, 0.075 * g, seite * 0.5, 0, Math.PI * 2);
+        s.fill();
+      }
+    }
+  },
+};
+
+function zeichenBildchen(zeichen, groesse, farbe) {
+  const { leinwand, stift } = knopfleinwand(groesse);
+  ZEICHEN[zeichen](stift, groesse, farbe);
+  return leinwand;
+}
+
 function gebaeudeBildchen(art, groesse, farbe, n) {
   const leinwand = document.createElement('canvas');
   const dichte = window.devicePixelRatio || 1;
@@ -244,8 +396,13 @@ export class Auswahlleiste {
   // Einheit - der Webstuhl bleibt der Webstuhl (einheiten AC-24). Vorher
   // bekam jede Verbesserung den Webstuhl, auch die Soldatenstufe.
   verbesserungBildchen(art, mass, farbe) {
-    const wandelt = Object.values(this.ansicht.werte.verbesserungen?.[art]?.wandelt || {})[0];
-    return wandelt ? bildchen(wandelt, mass, farbe) : webstuhlBildchen(mass, farbe);
+    const w = this.ansicht.werte.verbesserungen?.[art] || {};
+    const wandelt = Object.values(w.wandelt || {})[0];
+    if (wandelt) return bildchen(wandelt, mass, farbe);
+    // Die Verbesserungen der Feudalzeit bringen ihr Zeichen als Wert mit
+    // (bauen AC-25, AC-26); der Webstuhl bleibt der Webstuhl.
+    if (w.zeichen && ZEICHEN[w.zeichen]) return zeichenBildchen(w.zeichen, mass, farbe);
+    return webstuhlBildchen(mass, farbe);
   }
 
   angebot(gebaeude) {
@@ -417,7 +574,7 @@ export class Auswahlleiste {
     const voll = this.ansicht.werte.gebaeude[gebaeude.art]?.leben ?? gebaeude.h;
     w.append(kopf(GEBAEUDE[gebaeude.art]?.name || gebaeude.art, gebaeude.h ?? voll, voll));
     // Eine Farm zeigt, wie viel Nahrung sie noch traegt (einheiten AC-18).
-    const vorrat = this.ansicht.werte.gebaeude[gebaeude.art]?.nahrung;
+    const vorrat = this.ansicht.farmVoll(gebaeude);
     if (vorrat && gebaeude.n !== undefined) {
       const zeile = element('div', 'ladung');
       zeile.id = 'farmvorrat';
@@ -443,7 +600,9 @@ export class Auswahlleiste {
           ? `Aufstieg in die ${eintrag.name} - zu wenig ${fehlt}`
           : `Aufstieg in die ${eintrag.name} (${kosten})`;
       } else {
-        knopf.title = fehlt ? `${eintrag.name} - zu wenig ${fehlt}` : `${eintrag.name} ausbilden (${kosten})`;
+        // Eine Verbesserung wird erforscht, keine Einheit ausgebildet.
+        const tun = eintrag.verbesserung ? 'erforschen' : 'ausbilden';
+        knopf.title = fehlt ? `${eintrag.name} - zu wenig ${fehlt}` : `${eintrag.name} ${tun} (${kosten})`;
       }
       const preis = element('span', 'preis');
       for (const [r, m] of Object.entries(eintrag.kosten)) preis.append(element('span', `ware ware-${r[0]}`), element('span', null, String(m)));

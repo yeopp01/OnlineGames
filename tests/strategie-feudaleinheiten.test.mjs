@@ -117,8 +117,8 @@ test('einheiten AC-23: die Schiessanlage bildet Bogenschuetze und Plaenkler aus'
   for (const art of ['bogenschuetze', 'plaenkler']) assert.ok(GEBAEUDE.schiessanlage.bildetAus.includes(art), art);
   for (const art of ['miliz', 'speerkaempfer']) assert.ok(GEBAEUDE.kaserne.bildetAus.includes(art), art);
   assert.ok(GEBAEUDE.stall.bildetAus.includes('spaeherreiter'));
-  // Die Schmiede forscht nur - sie bildet nichts aus (das kommt mit B6).
-  assert.equal(GEBAEUDE.schmiede.bildetAus.length, 0);
+  // Die Schmiede forscht nur - Einheiten bildet sie keine aus (bauen AC-25).
+  for (const art of GEBAEUDE.schmiede.bildetAus) assert.ok(!EINHEITEN[art], art + ' ist keine Einheit');
 
   const ziel = platz(welt, anna);
   const anlage = welt.gebaeudeAnlegen('a', 'schiessanlage', ziel.x, ziel.y);

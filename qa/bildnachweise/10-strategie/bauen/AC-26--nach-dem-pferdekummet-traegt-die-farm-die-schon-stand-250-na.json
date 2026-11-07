@@ -1,0 +1,10 @@
+{
+  "spec": "10-strategie/bauen.md",
+  "ac": "AC-26",
+  "titel": "Nach dem Pferdekummet trägt die Farm, die schon stand, 250 Nahrung statt 175 — unten in der Leiste „noch 250 Nahrung\"",
+  "datei": "e2e/tests/strategie-verbesserungen.spec.mjs",
+  "pfad": [
+    "Verbesserungen der Feudalzeit",
+    "bauen AC-26: die Mühle erforscht das Pferdekummet - jede Farm trägt danach 75 Nahrung mehr"
+  ]
+}
