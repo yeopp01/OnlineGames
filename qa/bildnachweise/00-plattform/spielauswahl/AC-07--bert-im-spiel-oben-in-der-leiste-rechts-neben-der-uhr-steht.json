@@ -1,7 +1,7 @@
 {
   "spec": "00-plattform/spielauswahl.md",
   "ac": "AC-7",
-  "titel": "Bert im Spiel: oben links neben den Vorraeten Karte 4711 - wiederholbar",
+  "titel": "Bert im Spiel: oben in der Leiste, rechts neben der Uhr, steht Karte 4711 - wiederholbar",
   "datei": "e2e/tests/strategie-spielbild.spec.mjs",
   "pfad": [
     "Das Spielbild",

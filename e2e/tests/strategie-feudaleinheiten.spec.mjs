@@ -73,7 +73,7 @@ test.describe('Einheiten der Feudalzeit', () => {
     await nachweis(anna, {
       spec: EINHEITEN,
       ac: 'AC-23',
-      titel: 'In der Feudalzeit bietet die Kaserne Miliz und Speerkämpfer — 35 Nahrung, 25 Holz, 22 Sekunden',
+      titel: 'In der Feudalzeit bietet die Kaserne einen Knopf mehr: neben der Miliz den Speerkämpfer, mit seinen Kosten auf dem Knopf',
       test: info,
     });
 
@@ -173,7 +173,7 @@ test.describe('Einheiten der Feudalzeit', () => {
     await nachweis(anna, {
       spec: EINHEITEN,
       ac: 'AC-24',
-      titel: 'Die Kaserne bietet in der Feudalzeit die Verbesserung „Soldat" an — davor drei Milizen mit Schwert und Schild',
+      titel: 'Die Kaserne in der Feudalzeit: ein dritter Knopf für die Verbesserung, daneben die Miliz — davor drei Milizen mit Schwert und Schild',
       test: info,
     });
   });
@@ -230,7 +230,7 @@ test.describe('Einheiten der Feudalzeit', () => {
     await nachweis(anna, {
       spec: EINHEITEN,
       ac: 'AC-24',
-      titel: 'Dieselben drei Einheiten nach der Forschung: Topfhelm, Kettenhemd und Streitaxt statt Schwert und Schild — die Leiste nennt sie Soldat',
+      titel: 'Dieselben drei Einheiten nach der Forschung: Topfhelm, Kettenhemd und Streitaxt statt Schwert und Schild',
       test: info,
     });
   });

@@ -114,6 +114,16 @@ Setze die gewählten Kriterien auf `in-arbeit`.
   `bildetAus`, `baut` oder einem Eintrag aus `EINHEITEN`, `GEBAEUDE`,
   `VERBESSERUNGEN`, `TIERE`, `ZEITALTER`, `AUFSTIEGE`. Wer eine neue wachsende
   Liste anlegt, trägt sie dort ein. Ein Blatt (`…miliz.kosten`) bleibt erlaubt.
+- **„Ausgebildet", „gebaut", „gesammelt" misst den Unterschied, nicht den
+  Bestand.** `einheitenJeArt(page)` zählt vorher, danach wird **mehr**
+  verlangt. Der Browsertest, der Stufe B beglaubigt, verlangte „mindestens
+  einen Späherreiter" — den hat jeder zum Start (Rückschau nach Runde 83):
+  drei Zusicherungen, alle drei schon vor der Handlung grün.
+- **Eine Liste von Namen im Testkopf ist derselbe Fehler wie eine
+  Gleichheitszusicherung.** Was geprüft wird, kommt aus den Daten
+  (`Object.keys(EINHEITEN)`), nicht aus dem Gedächtnis. Die Spielerfarbe wurde
+  eine Stufe lang an drei aufgezählten Einheiten gemessen; der Plänkler trug
+  3,9 % und niemand sah es (Rückschau nach Runde 83).
 - **Wer Werte ändert, sucht Tests, die an den alten hängen.** Startvorrat,
   Kartengröße, Mengen, Raten: vorher nach der alten Zahl und nach Mustern wie
   `[1-9]` oder `> 0` in `tests/` und `e2e/` suchen. Ein Test, der nach der
@@ -185,6 +195,15 @@ Setze die gewählten Kriterien auf `in-arbeit`.
   eigene Dateien (`strategie-*.spec.mjs`). Braucht der Test einen Zustand, der
   im Spiel Minuten dauert, dafür einen **Prüfgriff** in `e2e/server.mjs`, nie
   eine Abkürzung im Produktcode.
+- **Die Unterschrift beschreibt, was das Bild zeigt — nicht, was der Test
+  weiß.** Der Test kennt jede Zahl, jeden Namen, jede Dauer; das Bild kennt
+  nur seinen Ausschnitt. Deshalb gehört nichts in die Unterschrift, was ein
+  Standbild nicht tragen kann: keine Dauer („zwei Sekunden lang"), keine
+  Bewegung („und unterwegs"), keine Veränderung („der Vorrat steigt") und
+  kein Name, der bloß im `title` hängt (die Auswahlleiste zeigt bei einer
+  Gruppe **Bild und Anzahl**, den Namen nur als Tooltip). Für eine
+  Veränderung braucht es ein Paar aus Vorher und Nachher, wie bedienung AC-1.
+  In Runde 83 waren elf von 96 Unterschriften aus diesem Grund falsch.
 - **Die Unterschrift steht als fester Text im Test**, nie aus Werten
   zusammengesetzt: `npm run check` sucht sie wörtlich und findet sonst keinen
   Erzeuger. Was sich von Lauf zu Lauf ändert, wird mit `expect()` gesichert und

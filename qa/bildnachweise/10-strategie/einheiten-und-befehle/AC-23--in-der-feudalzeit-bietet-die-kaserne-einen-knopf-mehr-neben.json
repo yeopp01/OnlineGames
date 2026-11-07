@@ -1,7 +1,7 @@
 {
   "spec": "10-strategie/einheiten-und-befehle.md",
   "ac": "AC-23",
-  "titel": "In der Feudalzeit bietet die Kaserne Miliz und Speerkämpfer — 35 Nahrung, 25 Holz, 22 Sekunden",
+  "titel": "In der Feudalzeit bietet die Kaserne einen Knopf mehr: neben der Miliz den Speerkämpfer, mit seinen Kosten auf dem Knopf",
   "datei": "e2e/tests/strategie-feudaleinheiten.spec.mjs",
   "pfad": [
     "Einheiten der Feudalzeit",

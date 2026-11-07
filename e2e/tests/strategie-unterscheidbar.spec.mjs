@@ -68,20 +68,39 @@ test('darstellung AC-9 / fahrplan AC-7: die Schautafel zeigt jede Einheit und je
   await page.setViewportSize({ width: 1300, height: 1400 });
   await page.goto('/schautafel.html');
   await page.waitForFunction(() => window.schautafel?.unterschiede);
-  const tafel = await page.evaluate(() => {
+  const tafel = await page.evaluate((arten) => {
     const t = window.schautafel;
+    // Nicht nur, welche Farbe die Zelle **angibt**, sondern wieviel davon die
+    // Figur **traegt**. Rueckschau nach Runde 83: der Plaenkler stand ein
+    // Zeitalter lang in beiden Reihen gleich braun da - die Fellweste lag
+    // ueber dem ganzen Wams. Die Zusicherung "in zwei Farben" war trotzdem
+    // gruen, weil sie die Angabe las und nicht das Bild.
+    const anteil = (art, farbe) => {
+      const m = t.maske(art, farbe);
+      return Math.round((m.farbpixel / m.pixel) * 1000) / 1000;
+    };
     return {
       figuren: t.zellen.map((z) => ({ art: z.art, farbe: z.farbe, titel: z.titel })),
       gebaeude: t.gebaeudeZellen.map((z) => ({ art: z.art, farbe: z.farbe, titel: z.titel, bau: z.bau })),
       paare: [...t.unterschiede('figur'), ...t.unterschiede('gebaeude')],
+      getragen: Object.fromEntries(arten.map((art) => [art, [anteil(art, '#4a90d9'), anteil(art, '#d94a4a')]])),
     };
-  });
+  }, Object.keys(EINHEITEN));
   // Vollstaendig gegen die Werte des Servers: was es in der Stufe gibt, steht da -
   // eine neue Einheit ohne Eintrag auf der Tafel faellt hier auf.
   const farben = (liste, art) => new Set(liste.filter((z) => z.art === art).map((z) => z.farbe));
   for (const art of Object.keys(EINHEITEN)) {
     expect(farben(tafel.figuren, art).size, `${art} in zwei Farben`).toBe(2);
     expect(tafel.figuren.find((z) => z.art === art).titel, `${art} mit Namen`).toBeTruthy();
+    // Und die Farbe ist auch zu sehen: ein Zehntel der Figur, in beiden
+    // Reihen. Dieselbe Schwelle wie darstellung AC-6, aber ueber **alle**
+    // Einheiten aus den Daten - die Liste dort nennt drei und waechst nicht
+    // mit. Gemessen in Runde 83: Soldat 0,105 · Speerkaempfer 0,108 ·
+    // Plaenkler 0,119 · Bogenschuetze 0,144 · Spaeherreiter 0,171 ·
+    // Dorfbewohner 0,270 · Miliz 0,308.
+    for (const anteil of tafel.getragen[art]) {
+      expect(anteil, `${art} traegt Spielerfarbe: ${JSON.stringify(tafel.getragen)}`).toBeGreaterThan(0.1);
+    }
   }
   for (const art of Object.keys(GEBAEUDE)) {
     const fertige = tafel.gebaeude.filter((z) => z.bau === 1);

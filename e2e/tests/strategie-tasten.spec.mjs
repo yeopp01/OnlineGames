@@ -102,7 +102,7 @@ test.describe('Tasten', () => {
     await nachweis(anna, {
       spec: BEDIENUNG,
       ac: 'AC-22',
-      titel: 'Nach ? mitten im Bild die Tastenuebersicht: Maus, W A S D, H, Q, B mit Q W E R T Z, Punkt, Esc, F1',
+      titel: 'Nach ? mitten im Bild die Tastenuebersicht: Maus, W A S D, H, Q, B mit Q W E R T Z U I O, Punkt, G fuer den Angriffslauf, Esc, F1',
       test: info,
     });
     await anna.keyboard.press('F1');

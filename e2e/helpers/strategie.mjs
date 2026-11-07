@@ -208,6 +208,27 @@ export const eigeneImBild = (page) => page.evaluate(() => {
     .map((e) => ({ id: e.i, ...a.zuBild(e.x, e.y) }));
 });
 
+/**
+ * Die eigenen lebenden Einheiten, nach Kuerzel gezaehlt: `{ d: 3, s: 1 }`.
+ * Gefallene (`s`) zaehlen nicht mit, die liegen nur noch zwei Sekunden da.
+ *
+ * **Wofuer:** Ein Test, der "ausgebildet" nachweisen will, vergleicht damit
+ * den **Unterschied** und nicht den Bestand. Rueckschau nach Runde 83: der
+ * Browsertest, der Stufe B beglaubigt, verlangte `meine.has('s')` fuer den
+ * Spaeherreiter - den hat aber jeder Spieler schon zum Start (bauen AC-22).
+ * Die Zusicherung war erfuellt, bevor der Stall gebaut war. Wer vorher zaehlt
+ * und danach mehr verlangt, kann so nicht danebengreifen.
+ */
+export const einheitenJeArt = (page) => page.evaluate(() => {
+  const a = window.ansicht;
+  const je = {};
+  for (const e of a.nachher.values()) {
+    if (e.b !== a.ich || e.s) continue;
+    je[e.k] = (je[e.k] || 0) + 1;
+  }
+  return je;
+});
+
 /** Einen Rahmen um alle eigenen Einheiten ziehen; `offen` laesst die Taste gedrueckt. */
 export async function rahmenUmAlle(page, { offen = false } = {}) {
   const eigene = await eigeneImBild(page);

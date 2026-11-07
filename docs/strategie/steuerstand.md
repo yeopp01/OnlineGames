@@ -13,10 +13,16 @@ hier nichts eintraegt, verliert den Faden beim naechsten Autocompact.
 
 ## Zuletzt fortgeschrieben
 
-2026-11-07, nach Runde 82 (**spielziel AC-8 ist fertig**: das Abschlussbild
-mit Zahlen - je Spieler Zeitalter, gesammelte Rohstoffe, ausgebildete
-Einheiten, Verluste, darunter die Dauer. Davor Runde 81: spielziel AC-7, das
-Zuschauen. Als Naechstes aus **C3**: spielziel AC-9, die Revanche mit einem
+2026-11-07, nach Runde 83 (**Rueckschau**, kein neues Kriterium: alle 167
+Bildnachweise gelesen, 96 Paare Bild fuer Bild angesehen, **39 beanstandet**.
+Drei Verbesserungen gebaut - (1) `einheitenJeArt()` und der Stufe-B-Beweis
+verlangt **eine mehr** statt "mindestens eine", weil jeder Spieler mit einem
+Spaeherreiter startet; (2) die Spielerfarbe wird fuer **jede** Einheit aus
+`EINHEITEN` am Bild gemessen statt an drei aufgezaehlten Namen - der
+**Plaenkler** trug 3,9 %, jetzt 0,119; (3) elf Unterschriften auf das gekuerzt,
+was ihr Bild traegt. Der Rest steht als Rueckstand in den Erkenntnissen unter
+**Offene Faeden**. Davor Runde 82: spielziel AC-8, das Abschlussbild mit
+Zahlen. Als Naechstes aus **C3**: spielziel AC-9, die Revanche mit einem
 Klick - sie liegt am **Raum**, nicht an der Welt, ADR-0006 beachten. Damit
 waere C3 abgeschlossen, und es folgt C4, die kaempfende KI).
 
@@ -194,9 +200,10 @@ waere C3 abgeschlossen, und es folgt C4, die kaempfende KI).
   bei 20 min). Aelter als Runde 69, nur nie gemessen, weil der Pruefstand bei
   zehn Minuten endete. Ursache und Hebel stehen in den Erkenntnissen unter
   **Offene Faeden**.
-- **Naechste Rueckschau: Runde 83** - oder frueher, wenn Stufe C erreicht wird.
+- **Naechste Rueckschau: Runde 88** - oder frueher, wenn Stufe C erreicht wird.
   Diese Zeile ist der Termin, nicht nachzaehlen.
-- Frueherer Termin, erledigt: **Runde 78** (Bilderwerkzeug: `check:alles:neu`,
+- Frueherer Termin, erledigt: **Runde 83** (die Bildnachweise einmal ganz
+  angesehen), **Runde 78** (Bilderwerkzeug: `check:alles:neu`,
   `qa:abweichung`, der Pruefgriff dokumentiert statt geaendert) und **Runde 73**
   (die Rueckschau zur Stufe B) - nicht
   nachzaehlen. Die Rueckschauen 55 und 60 sind ausgefallen, weil nach der

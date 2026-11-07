@@ -470,7 +470,7 @@ test('darstellung AC-4 / bauen AC-20: jedes Gebaeude hat Koerper, die Spielerfar
   await nachweis(page, {
     spec: BAUEN,
     ac: 'AC-20',
-    titel: 'Alle sieben Gebaeude der Dunklen Zeit auf der Schautafel: Dorfzentrum, Haus, Muehle, zwei Lager, Kaserne, Farm',
+    titel: 'Die Gebaeudereihe der Schautafel: die sieben der Dunklen Zeit - Dorfzentrum, Haus, Muehle, zwei Lager, Kaserne, Farm - und rechts daneben die drei der Feudalzeit',
     test: info,
   });
 });

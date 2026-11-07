@@ -1,7 +1,7 @@
 {
   "spec": "10-strategie/bauen.md",
   "ac": "AC-20",
-  "titel": "Alle sieben Gebaeude der Dunklen Zeit auf der Schautafel: Dorfzentrum, Haus, Muehle, zwei Lager, Kaserne, Farm",
+  "titel": "Die Gebaeudereihe der Schautafel: die sieben der Dunklen Zeit - Dorfzentrum, Haus, Muehle, zwei Lager, Kaserne, Farm - und rechts daneben die drei der Feudalzeit",
   "datei": "e2e/tests/strategie-bauen.spec.mjs",
   "pfad": [
     "darstellung AC-4 / bauen AC-20: jedes Gebaeude hat Koerper, die Spielerfarbe steht nur an einer Stelle"

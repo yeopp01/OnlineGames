@@ -105,7 +105,7 @@ test.describe('Untaetige Dorfbewohner', () => {
       await nachweis(anna, {
         spec,
         ac,
-        titel: 'Alle drei in den Wald geschickt und unterwegs: unten links zeigt der Knopf 0 und ist abgeschaltet',
+        titel: 'Alle drei in den Wald geschickt: unten links zeigt der Knopf 0 und ist abgeschaltet',
         test: info,
       });
     }

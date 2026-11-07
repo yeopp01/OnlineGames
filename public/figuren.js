@@ -722,15 +722,19 @@ function plaenkler(stift, farbe, { schritt = 0, fein = true, haut = HAUT }) {
   const wams = [[-4.3, -6.4], [4.5, -6.4], [3.8, -17.1], [0.2, -17.8], [-3.5, -17.1]];
   umriss(stift, () => rund(stift, wams, 'rgba(0,0,0,0)', true));
   rund(stift, wams, licht(stift, farbe, -4.3, -17.1, 4.5, -6.4, 0.22, -0.26), false);
-  const weste = [[-4.1, -8.6], [-1.2, -9.2], [1.6, -9.2], [4.3, -8.6], [3.6, -16.8], [0.2, -17.5], [-3.4, -16.8]];
-  rund(stift, weste, licht(stift, FELL, -4.1, -17.5, 4.3, -8.6, 0.24, -0.28), true);
+  // Die Weste laesst links und rechts einen Streifen Wams frei. Vorher lag
+  // sie ueber dem ganzen Rumpf, und der Plaenkler trug als einzige Einheit
+  // keine sichtbare Spielerfarbe - 3,9 % der Figur gegen 10,5 bis 30,8 % bei
+  // allen anderen (Rueckschau nach Runde 83). Der Guertel endet mit ihr.
+  const weste = [[-2.5, -8.6], [-0.8, -9.2], [1.1, -9.2], [2.7, -8.6], [2.3, -16.8], [0.2, -17.5], [-2.1, -16.8]];
+  rund(stift, weste, licht(stift, FELL, -2.5, -17.5, 2.7, -8.6, 0.24, -0.28), true);
   if (fein) {
     for (const fy of [-10.4, -12.4, -14.4, -16]) {
-      strich(stift, [[-3.6, fy], [-1.4, fy + 0.5]], 'rgba(60,46,28,0.5)', 0.5);
-      strich(stift, [[1.4, fy + 0.3], [3.6, fy - 0.2]], 'rgba(60,46,28,0.5)', 0.5);
+      strich(stift, [[-2.1, fy], [-0.9, fy + 0.5]], 'rgba(60,46,28,0.5)', 0.5);
+      strich(stift, [[0.9, fy + 0.3], [2.1, fy - 0.2]], 'rgba(60,46,28,0.5)', 0.5);
     }
   }
-  vieleck(stift, [[-4.1, -9.6], [4.3, -9.6], [4.2, -8.4], [-4, -8.4]], licht(stift, LEDER, 0, -9.6, 0, -8.4), false);
+  vieleck(stift, [[-2.5, -9.6], [2.7, -9.6], [2.6, -8.4], [-2.4, -8.4]], licht(stift, LEDER, 0, -9.6, 0, -8.4), false);
   // Der Wurfarm geht von der Schulter nach hinten oben, nicht ueber das
   // Gesicht. Schmaler als ein Rumpf, sonst sieht er aus wie ein Balken.
   vieleck(stift, [[-1.6, -16.2], [-0.2, -16.6], [-2.4, -21.4], [-3.6, -21]],

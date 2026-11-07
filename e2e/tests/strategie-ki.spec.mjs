@@ -79,7 +79,10 @@ test.describe('Wirtschafts-KI', () => {
       // Ohne Zahlen in der Unterschrift: wie viele Farmen und Bogenschuetzen
       // genau dastehen, haengt am Zeitpunkt des Bildes. Was oben gezaehlt und
       // zugesichert ist, steht hier als "Farmen" und "Bogenschuetzen".
-      titel: 'Die Wirtschafts-KI nach rund zwölf Spielminuten: sie ist allein in die Feudalzeit aufgestiegen (oben in der Leiste), hat Farmen, eine Schießanlage und Bogenschützen gebaut — befohlen hat das niemand',
+      // Und ohne Spielminuten: die Uhr steht oben im Bild, und sie zeigt den
+      // Augenblick, in dem die Bedingungen zutrafen - nicht die zwoelf
+      // Minuten, nach denen der Test zu schauen beginnt (Runde 83: 13:44).
+      titel: 'Die Wirtschafts-KI, allein in die Feudalzeit aufgestiegen (oben in der Leiste, daneben die Uhr): sie hat Farmen, eine Schießanlage und Bogenschützen gebaut — befohlen hat das niemand',
       test: info,
     });
     await zeitraffer(anna, code, 1);

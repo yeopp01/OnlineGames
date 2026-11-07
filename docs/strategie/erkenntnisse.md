@@ -166,6 +166,35 @@ etwas anderem gearbeitet.
   parallel und verdoppeln den Browserlauf.
 - Bei Änderungen am Vorraum: `npm run qa:nachweis -- vorraum spielauswahl`,
   sonst zeigen die Bilder zu konten und raeume den alten Stand.
+- **`hinterGebaeude()` prüft ein Rechteck, nicht den Körper.**
+  `gebaeudeGetroffen()` (`public/gebaeude.js`) ist `|dx| <= trefferBreite` und
+  `-trefferOben <= dy <= trefferUnten` — ein Kasten. Wer frei **über** dem
+  Dach eines Dorfzentrums steht, liegt in diesem Kasten und wird deshalb als
+  verdeckte Einheit gezeichnet: ein flacher Umriss in Spielerfarbe, ohne
+  Ladung, ohne Werkzeug, ohne Gesicht (bedienung AC-30). In Runde 83 beim
+  Ansehen von **einheiten AC-15** gefunden: drei Sammler am Goldhaufen, alle
+  drei Scherenschnitte, während die Unterschrift von Goldbrocken in beiden
+  Händen spricht. Betroffen sind mindestens auch bauen AC-1, darstellung AC-5
+  und darstellung AC-10. Das ist ein eigenes Kriterium wert — die Treffläche
+  wird auch zum Anklicken benutzt, also nicht nebenbei ändern.
+- **Rückstand aus der Nachweisprüfung der Runde 83** (28 offen, je zwei bis
+  drei in eine spätere Runde). Nach Ursache sortiert, die schwersten zuerst:
+  - **Die Figur ist zu klein für das, was behauptet wird** (näher heranholen):
+    bedienung AC-12, AC-31, AC-34, AC-36 · einheiten AC-16, AC-17, AC-23 ·
+    karte AC-16 · bauen AC-9 · darstellung AC-14 · ki AC-9 (Bogenschützen).
+  - **Figuren stehen übereinander** — `figurenFrei()` prüft nur, wo es
+    aufgerufen wird: einheiten AC-23, AC-24 · kampf AC-1, AC-10 ·
+    darstellung AC-10 · fahrplan AC-3.
+  - **Etwas ist am Bildrand abgeschnitten** (höher aufnehmen oder scrollen):
+    auswahl AC-4, AC-5, AC-8 · bedienung AC-18, AC-31 · darstellung AC-1.
+  - **Ein Standbild kann keine Veränderung zeigen** — hier hilft nur ein Paar
+    aus Vorher und Nachher, wie es bedienung AC-1 und fahrplan AC-1 schon
+    haben: bedienung AC-7 (Karte verschoben), AC-8 (Punkt unter dem Zeiger
+    bleibt stehen), bauen AC-15 (dasselbe Bild wie bauen AC-12).
+  - **Das Gezeigte widerspricht der Unterschrift**: bauen AC-4 (die grüne
+    Vorschau liegt auf dem Dorfzentrum, dazu die Meldung „Zu wenig Holz."),
+    bauen AC-4 rot auf rotbraunem Dach, darstellung AC-8 (der Balken ist zu
+    einem Viertel **gefüllt**, die Unterschrift liest sich umgekehrt).
 
 ## Messwerte
 
@@ -240,6 +269,10 @@ Zahlen, gegen die spätere Runden vergleichen. Mit Datum und Commit.
 | 2026-11-07 | Tests ohne Browser / im Browser; `npm run check:alles:neu:kurz` | 419 / 159; 647 s | Runde 80 |
 | 2026-11-07 | Geaenderte Bildnachweise nach dem `:neu`-Lauf | 114: **12 ueber 1 %** (1 neu, 11 zwischen 1,2 % und 98 %), 102 darunter, alle unter 0,97 % | Runde 80 |
 | 2026-11-07 | Davon ein echter Rueckschritt beim Durchsehen | 1 von 12: der Bedienhinweis brach im 1000-px-Fenster auf fuenf Zeilen um, weil der Knopf „Aufgeben“ daneben kam | Runde 80 |
+| 2026-11-07 | Tests ohne Browser / im Browser; `npm run check:alles:neu:kurz` | 425 / 162; 689 s (Browserlauf allein 10,7 min) | Runde 83 |
+| 2026-11-07 | Bildnachweise gepruefte Paare / Beanstandungen | 96 angesehen von 167 gelesen; **39 beanstandet (41 %)**: 12 zu kleine Figuren, 6 Figuren uebereinander, 6 am Rand abgeschnitten, 11 falsche Unterschriften, 3 ohne moegliches Standbild, 1 doppeltes Bild | Runde 83 |
+| 2026-11-07 | Spielerfarbe je Einheit (Anteil der Figurenflaeche, Schautafel) | Plaenkler **0,039 → 0,119**; Soldat 0,105 · Speerkaempfer 0,108 · Bogenschuetze 0,144 · Spaeherreiter 0,171 · Dorfbewohner 0,270 · Miliz 0,308. Abstand Bogenschuetze/Plaenkler 0,589 → 0,584 | Runde 83 |
+| 2026-11-07 | Geaenderte Bildnachweise nach dem `:neu`-Lauf | 114: **28 ueber 1 %**, davon 20 die zwoelf absichtlichen Umbenennungen (je neu + geloescht); 8 wirklich angesehen, kein Rueckschritt, eines besser (bedienung AC-34). 86 darunter, alle unter 0,91 % | Runde 83 |
 
 ## Rückschauen
 
@@ -377,6 +410,73 @@ Gut gelaufen: Die Tonstufen-Messung alt gegen neu hat aus „wirkt gezeichneter"
 eine Zahl gemacht, und zweimal hat ein alter Test einen neuen Fehler gefunden
 (Klick auf Beeren traf ein Schaf; zwei Lager zu ähnlich). Browserlauf bei
 ruhigerer Maschine 141 s Testzeit, langsamster Fall weiter der Lagertest (28 s).
+
+### Nach Runde 83 — die Bildnachweise einmal ganz angesehen (2026-11-07)
+
+Vier Runden (79 bis 82): das Partieende, das Aufgeben mit Rückfrage, das
+Zuschauen nach dem Ausscheiden, das Abschlussbild mit Zahlen. **C2 steht, aus
+C3 zwei von drei.** Alle vier grün, keine mit einem Fehler im Produkt — und
+genau das ist der Befund dieser Rückschau. **Viermal hintereinander lag der
+Mangel im Beweis, nicht im Gebauten:** die Uhr stand auf 0:00, weil der Test
+sie nie laufen ließ; die Hinweistreppe fand erst `qa:abweichung`; „das
+weiterarbeitet" kann ein Standbild nicht zeigen; und zwei Unterschriften
+standen seit Runden falsch da.
+
+Deshalb diesmal keine Stichprobe: **alle 167 Bildnachweise des Projekts sind
+gelesen worden**, 96 Paare davon Bild für Bild angesehen (die übrigen gehören
+zum ruhenden Managerspiel). Ergebnis: **39 Beanstandungen, zwei von fünf.**
+Das ist keine Kleinigkeit — die Bilder sind die einzige Stelle, an der
+`fertig` etwas über das Aussehen behauptet.
+
+1. **Der Test, der Stufe B beglaubigt, bewies den Späherreiter nicht.**
+   `strategie-feudalzeit.spec.mjs` bestellt im Stall einen Reiter und wartet
+   dann darauf, dass einer **da ist** — aber jeder Spieler startet mit einem
+   (bauen AC-22). Die Zusicherung war erfüllt, bevor der Stall stand; dasselbe
+   galt für `stand.einheiten[s] >= 1` und den Eintrag in der Leiste. Drei
+   Zusicherungen, alle drei schon vor der Handlung grün. Neu ist
+   `einheitenJeArt(page)` in `e2e/helpers/strategie.mjs`: **vorher zählen,
+   danach mehr verlangen.** Wer „ausgebildet" nachweist, misst den
+   Unterschied, nicht den Bestand.
+
+2. **Die Spielerfarbe wurde an drei Einheiten gemessen — aufgezählt im Kopf.**
+   `strategie-figuren.spec.mjs` prüft seit Stufe A, dass Dorfbewohner, Miliz
+   und Späherreiter mindestens ein Zehntel ihrer Fläche in Spielerfarbe
+   tragen. Die Liste steht dort als drei Namen und ist nie mitgewachsen. Der
+   Test über **alle** Einheiten (darstellung AC-9 / fahrplan AC-7) fragte
+   dagegen nur, welche Farbe die Zelle **angibt**, nicht welche die Figur
+   **zeigt** — und war deshalb grün, obwohl der **Plänkler in beiden Reihen
+   gleich braun** dastand: die Fellweste lag über dem ganzen Wams, 3,9 % gegen
+   10,5 bis 30,8 % bei allen anderen. Jetzt misst dieser Test den Anteil für
+   jede Art aus `EINHEITEN`, in beiden Farben; die Weste ist schmaler, der
+   Plänkler steht bei 0,119, und der Abstand zum Bogenschützen bleibt bei
+   0,584. **Eine Liste im Testkopf, die mit den Stufen wachsen müsste, ist
+   derselbe Fehler wie eine Gleichheitszusicherung** — der Wächter kennt
+   bisher nur die zweite Form.
+
+3. **Elf Unterschriften behaupteten mehr, als ihr Bild trägt.** „Alle sieben
+   Gebäude der Dunklen Zeit" an einer Schautafel mit zehn; „Q W E R T Z", wo
+   im Bild „Q W E R T Z U I O" steht; „die Leiste nennt sie Soldat", wo der
+   Name nur im `title` hängt und kein Screenshot ihn zeigt; „zwei Sekunden
+   lang" an einem Standbild; „nach rund zwölf Spielminuten", während die Uhr
+   13:44 zeigt; „oben links neben den Vorräten", wo der Wert in der Mitte der
+   Leiste steht. Alle elf stehen jetzt auf dem, was zu sehen ist. **Die
+   wiederkehrende Form:** die Unterschrift beschreibt, was der Test **weiß**,
+   nicht was das Bild **zeigt**. Der Test weiß mehr als sein Bild — jede Zahl,
+   jeden Namen, jede Dauer. Das Bild weiß nur, was im Ausschnitt steht.
+
+Nicht erledigt, aber jetzt benannt (siehe **Offene Fäden**): die verbleibenden
+28 Beanstandungen, und der Fund dahinter — `hinterGebaeude()` prüft ein
+**Rechteck** um das Gebäude, nicht seinen Körper. Eine Figur, die frei über
+dem Dach steht, gilt als verdeckt und wird zum flachen Umriss. Das trifft
+mindestens vier Bilder, darunter einheiten AC-15, wo die Unterschrift von
+Goldbrocken in beiden Händen spricht und drei blaue Scherenschnitte zu sehen
+sind.
+
+Gut gelaufen: Die Prüfung der Bilder hat sich auf vier Leser verteilen lassen,
+ohne dass einer dem anderen in die Dateien geschrieben hätte — lesen
+parallelisiert, bauen nicht. Und `npm run check` hat jede der zwölf geänderten
+Unterschriften von selbst als „Nachweis ohne Erzeuger" beanstandet; die
+Verbindung zwischen Unterschrift und Test hält.
 
 ### Nach Runde 78 (2026-11-07)
 
@@ -725,6 +825,20 @@ alle sieben Gebäude der Dunklen Zeit stehen. Was sich wiederholt hat:
 Neueste oben. Eine Zeile je Runde: Nummer, Datum, Kriterien, Ergebnis,
 wichtigste Erkenntnis.
 
+- **83** · 2026-11-07 · **Rückschau**, kein neues Kriterium — alle 167
+  Bildnachweise gelesen, 96 Paare Bild für Bild angesehen, **39 beanstandet**.
+  Drei Verbesserungen: (1) `einheitenJeArt()` in der Hilfe, und der Beweis der
+  **Stufe B** verlangt jetzt je Art **eine mehr** statt „mindestens eine" — der
+  Späherreiter war seit dem Aufstieg nie bewiesen, weil jeder mit einem
+  startet. (2) Der Schautafel-Test misst die **Spielerfarbe am Bild**, für jede
+  Art aus `EINHEITEN` und in beiden Farben; vorher fragte er nur, welche Farbe
+  die Zelle angibt, und die Liste im zweiten Test nannte drei Namen aus dem
+  Kopf. Dabei gefunden: der **Plänkler** trug 3,9 % Spielerfarbe, weil die
+  Fellweste über dem ganzen Wams lag — Weste schmaler, jetzt 0,119, Abstand
+  zum Bogenschützen unverändert 0,584. (3) Elf Unterschriften auf das gekürzt,
+  was ihr Bild trägt. Gelernt: **die Unterschrift beschreibt, was das Bild
+  zeigt, nicht was der Test weiß** — und eine Liste von Namen im Testkopf ist
+  derselbe Fehler wie eine Gleichheitszusicherung auf einer wachsenden Liste.
 - **82** · 2026-11-07 · **spielziel AC-8** — das Abschlussbild mit Zahlen:
   je Spieler eine Zeile mit Zeitalter, gesammelten Rohstoffen, ausgebildeten
   Einheiten und Verlusten, darunter die Dauer der Partie. Gelernt: **die

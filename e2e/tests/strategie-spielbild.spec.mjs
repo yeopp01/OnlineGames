@@ -43,7 +43,7 @@ test.describe('Das Spielbild', () => {
     await nachweis(bert, {
       spec: AUSWAHL,
       ac: 'AC-7',
-      titel: 'Bert im Spiel: oben links neben den Vorraeten Karte 4711 - wiederholbar',
+      titel: 'Bert im Spiel: oben in der Leiste, rechts neben der Uhr, steht Karte 4711 - wiederholbar',
       test: info,
     });
   });
@@ -164,6 +164,20 @@ test.describe('Das Spielbild', () => {
       const a = window.ansicht;
       return [...a.nachher.values()].filter((e) => e.b === a.ich && e.l > 0 && e.a === 'h').length >= 2;
     }, null, { timeout: 20_000 });
+    // Der Blick auf den Traeger, nicht auf die Basis: herangeholt war das
+    // Bild zwar, aber die Sammler standen am linken Rand und das Holzbuendel
+    // war ein paar Bildpunkte gross (Rueckschau nach Runde 83). Und wer
+    // hinter einem Gebaeude steht, ist nur ein Umriss - dann traegt er
+    // sichtbar nichts, und die Unterschrift waere wieder falsch.
+    await anna.waitForFunction(() => {
+      const a = window.ansicht;
+      const e = [...a.nachher.values()].find((f) => f.b === a.ich && f.l > 0 && f.a === 'h'
+        && !(a.umrisse || []).includes(f.i));
+      if (!e) return false;
+      a.blickAuf(e.x, e.y);
+      return true;
+    }, null, { timeout: 20_000 });
+    await anna.waitForTimeout(200);
     await nachweis(anna, {
       spec: BEDIENUNG,
       ac: 'AC-16',
@@ -185,7 +199,7 @@ test.describe('Das Spielbild', () => {
     await nachweis(anna, {
       spec: FAHRPLAN,
       ac: 'AC-2',
-      titel: 'Das erste Spielbild im Browser: Holz ist abgeliefert, der Vorrat oben steigt',
+      titel: 'Das erste Spielbild im Browser: Holz ist abgeliefert, oben steht mehr als die 200 vom Start',
       test: info,
     });
     await bert.waitForFunction(() => {

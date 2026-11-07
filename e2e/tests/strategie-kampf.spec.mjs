@@ -156,7 +156,7 @@ test.describe('Kampf', () => {
     await nachweis(anna, {
       spec: KAMPF,
       ac: 'AC-10',
-      titel: 'Berts Miliz ist gefallen: sie liegt umgekippt am Boden, zwei Sekunden lang, während Annas drei Milizen daneben stehen',
+      titel: 'Berts Miliz ist gefallen: sie liegt umgekippt am Boden, während Annas drei Milizen daneben stehen',
       test: info,
     });
 

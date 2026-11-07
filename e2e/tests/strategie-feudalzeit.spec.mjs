@@ -15,8 +15,8 @@ import { einheitenAufstellen, expect, rohstoffe, test, zeitraffer } from '../hel
 import { BAUTASTEN } from '../../public/tasten.js';
 import { EINHEITEN, VERBESSERUNGEN } from '../../server/spiele/strategie/daten.js';
 import {
-  bedienteileFrei, dorfbewohnerAnklicken, figurenFrei, freieWiesen, gebaeudeInDerNaehe,
-  partieBeenden, partieZuZweit, platzImBild,
+  bedienteileFrei, dorfbewohnerAnklicken, einheitenJeArt, figurenFrei, freieWiesen,
+  gebaeudeInDerNaehe, partieBeenden, partieZuZweit, platzImBild,
 } from '../helpers/strategie.mjs';
 
 const FAHRPLAN = '10-strategie/fahrplan.md';
@@ -132,6 +132,11 @@ test.describe('Feudalzeit am Stueck', () => {
       return [...a.gebaeude.values()].find((g) => g.b === a.ich && g.art === 'kaserne').i;
     });
     const haeuser = { ...gebaut, kaserne };
+    // Der Bestand **vor** dem Bestellen. Danach wird je Art eine mehr
+    // verlangt, nicht "mindestens eine": den Spaeherreiter hat jeder schon
+    // zum Start (bauen AC-22), und "mindestens einer" war damit erfuellt,
+    // bevor der Stall stand - vier Runden lang (Rueckschau nach Runde 83).
+    const vorher = await einheitenJeArt(anna);
     const bestellt = new Set();
     for (const [art, id] of Object.entries(haeuser)) {
       // Was Stufe B neu bringt: Einheiten der Feudalzeit (Speerkaempfer aus
@@ -156,11 +161,12 @@ test.describe('Feudalzeit am Stueck', () => {
     }
     expect(bestellt.size, 'bestellte Arten der Feudalzeit').toBeGreaterThanOrEqual(4);
     await zeitraffer(anna, code, 20);
-    await anna.waitForFunction((kuerzel) => {
+    await anna.waitForFunction(([kuerzel, vorher]) => {
       const a = window.ansicht;
-      const meine = new Set([...a.nachher.values()].filter((e) => e.b === a.ich).map((e) => e.k));
-      return kuerzel.every((k) => meine.has(k));
-    }, [...bestellt], { timeout: 120_000 });
+      const je = {};
+      for (const e of a.nachher.values()) if (e.b === a.ich && !e.s) je[e.k] = (je[e.k] || 0) + 1;
+      return kuerzel.every((k) => (je[k] || 0) > (vorher[k] || 0));
+    }, [[...bestellt], vorher], { timeout: 120_000 });
 
     // ---- Die Schmiede forscht: Schmiedeangriff trifft Infanterie und Kavallerie. ----
     await gebaeudeWaehlen(anna, gebaut.schmiede);
@@ -324,7 +330,9 @@ test.describe('Feudalzeit am Stueck', () => {
     expect(stand.fehlen, 'alle Gebaeude der Feudalzeit stehen fertig').toEqual([]);
     expect(stand.zeitalter).toBe(1);
     expect(stand.verbesserungen).toContain('schmiedeangriff');
-    for (const [k, n] of Object.entries(stand.einheiten)) expect(n, `Einheiten ${k}`).toBeGreaterThanOrEqual(1);
+    for (const [k, n] of Object.entries(stand.einheiten)) {
+      expect(n, `Einheiten ${k} - vorher ${vorher[k] || 0}`).toBeGreaterThan(vorher[k] || 0);
+    }
     // Die Leiste nennt jede der vier Arten mit Bild und Anzahl: das belegt die
     // Unterschrift, nicht das Auge auf dem Spielfeld.
     await expect(anna.locator('.auswahlleiste .gruppe-eintrag')).toHaveCount(bestellt.size);
@@ -350,7 +358,7 @@ test.describe('Feudalzeit am Stueck', () => {
     await nachweis(anna, {
       spec: FAHRPLAN,
       ac: 'AC-8',
-      titel: 'Die Feudalzeit im Browser gespielt: der Aufstieg im Dorfzentrum bestellt, Schießanlage, Stall und Schmiede gebaut, der Schmiedeangriff erforscht — und davor Speerkämpfer, Bogenschütze, Plänkler und Späherreiter, unten in der Leiste mit Namen',
+      titel: 'Die Feudalzeit im Browser gespielt: oben das Zeitalter, Schießanlage, Stall und Schmiede gebaut, davor die vier Einheiten der Feudalzeit — unten zählt die Leiste sie als vier ausgewählte',
       test: info,
     });
   });

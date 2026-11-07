@@ -1,7 +1,7 @@
 {
   "spec": "10-strategie/fahrplan.md",
   "ac": "AC-2",
-  "titel": "Das erste Spielbild im Browser: Holz ist abgeliefert, der Vorrat oben steigt",
+  "titel": "Das erste Spielbild im Browser: Holz ist abgeliefert, oben steht mehr als die 200 vom Start",
   "datei": "e2e/tests/strategie-spielbild.spec.mjs",
   "pfad": [
     "Das Spielbild",
