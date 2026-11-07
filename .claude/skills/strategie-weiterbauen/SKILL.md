@@ -233,7 +233,11 @@ Setze die gewählten Kriterien auf `in-arbeit`.
 ## 6. Prüfen und festhalten
 
 1. Status auf `fertig`, `npm run specs:board`.
-2. Oberfläche angefasst → `npm run check:alles`, sonst `npm run check`.
+2. Oberfläche angefasst → `npm run check:alles:kurz`, sonst `npm run check:kurz`.
+   **In der Schleife immer die `:kurz`-Form**: sie zeigt die Zahlen und bei
+   einem Fehler die Fehlerstelle, und spart je Lauf rund 8.000 Token an „ok"
+   nach „ok" (Runde 60). Die ganze Ausgabe steht in `qa/letzter-lauf.log`,
+   wenn mehr gebraucht wird.
 3. Regeln oder Werte geändert und der Prüfstand existiert (fahrplan AC-4) →
    `npm run pruefstand:strategie`, Zahlen unter **Messwerte**.
 4. **Rot nur durch eine Zeitmessung** — `karriere AC-7` (Saison unter 1 s),

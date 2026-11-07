@@ -23,6 +23,8 @@ echte Umlaute** („Eröffnen", nicht „Eroeffnen").
 ```bash
 npm run check        # Specs, Belege, Nachweise, Bericht, Tests - ohne Browser, auch in der CI
 npm run check:alles  # erst der Browserlauf, dann npm run check - vor jedem Abschluss an der Oberfläche
+npm run check:kurz        # dasselbe leise: nur Zahlen und Fehler, alles in qa/letzter-lauf.log
+npm run check:alles:kurz  # dasselbe mit Browserlauf
 npm run qa:report    # die Übersicht als Seite: qa/report/index.html
 npm start            # http://localhost:4180/
 npm run dev          # dasselbe mit --watch
