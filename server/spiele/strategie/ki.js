@@ -44,6 +44,18 @@ const REICHWEITE = 30;
 const AN_SCHAFEN = 6;
 const AN_BEEREN = 6;
 
+// Nach dem Aufstieg (ki AC-9): ein Gebaeude der Feudalzeit, in dem
+// Kampfeinheiten entstehen. Mit Gold die Schiessanlage - Bogenschuetzen
+// kosten Gold und sind die staerkere Wahl -, sonst der Stall, dessen
+// Spaeherreiter nur Nahrung kostet, und die hat die KI immer.
+const MILITAER = ['schiessanlage', 'stall'];
+const MILITAER_GOLD = 200;
+// So viele Auftraege stehen hoechstens in der Schlange eines Militaergebaeudes:
+// mehr wuerde den Vorrat binden, den die naechste Stufe braucht.
+const MILITAER_SCHLANGE = 2;
+// Was ein Militaergebaeude an Holz kostet - dafuer wird es zurueckgehalten.
+const MILITAER_HOLZ = Math.max(...MILITAER.map((art) => GEBAEUDE[art].kosten.holz || 0));
+
 const FELD_FUER = { holz: [karten.WALD], nahrung: [karten.BEERE], gold: [karten.GOLD], stein: [karten.STEIN] };
 const LAGER_FUER = { holz: 'holzfaellerlager', nahrung: 'muehle', gold: 'bergbaulager', stein: 'bergbaulager' };
 
@@ -70,6 +82,9 @@ class Ki {
     this.versatz = nummer % ENTSCHEIDEN_ALLE;
     this.abgewiesen = 0;
     this.schafeGetrieben = false;
+    // In welchem Takt die Feudalzeit erreicht war - der Pruefstand misst daran
+    // (ki AC-9). `null` heisst: noch nicht.
+    this.feudalTakt = null;
   }
 
   get spieler() {
@@ -101,7 +116,10 @@ class Ki {
     const raum = welt.wohnraum(this.spieler);
     const hausImBau = gebaeude.some((g) => g.art === 'haus' && !g.fertig);
     const puffer = dorfbewohner.length < 12 ? 2 : 4;
-    if (raum < 200 && raum - eigene.length <= puffer && !hausImBau && dorfbewohner.length < ZIEL_DORFBEWOHNER) {
+    // Nach dem Aufstieg wird weitergebaut, auch wenn das Ziel an Dorfbewohnern
+    // steht: Kampfeinheiten brauchen denselben Wohnraum (ki AC-9).
+    const brauchtRaum = dorfbewohner.length < ZIEL_DORFBEWOHNER || this.spieler.zeitalter > 0;
+    if (raum < 200 && raum - eigene.length <= puffer && !hausImBau && brauchtRaum) {
       // Das erste Haus bauen zwei: allein brauchte es 25 s und der Weg dazu,
       // und das Dorfzentrum wartete bis zu 11 s auf Wohnraum (Runde 44).
       this.bauen('haus', this.platzBeiBasis('haus'), dorfbewohner, eigene.length <= 5 ? 2 : 1);
@@ -113,6 +131,11 @@ class Ki {
       && this.spieler.nahrung >= EINHEITEN.dorfbewohner.kosten.nahrung) {
       this.senden({ auftrag: 'ausbilden', gebaeude: zentrum.id, einheit: 'dorfbewohner' });
     }
+
+    // Die Feudalzeit, sobald sie bezahlt ist - und danach Militaer (ki AC-9).
+    if (this.feudalTakt === null && this.spieler.zeitalter > 0) this.feudalTakt = welt.takt;
+    this.feudalzeitPruefen(zentrum, dorfbewohner);
+    this.militaerPruefen(gebaeude, dorfbewohner);
 
     // Lager an die Vorraete, sobald dort mehrere arbeiten und es weit ist.
     const rollen = this.rollen(dorfbewohner);
@@ -134,6 +157,56 @@ class Ki {
         rollen[rohstoff] = (rollen[rohstoff] || 0) + 1;
       }
     }
+  }
+
+  /**
+   * Der Aufstieg in die Feudalzeit (ki AC-9). Erst wenn die Wirtschaft steht -
+   * ki AC-4 spart ab dem Ziel an Dorfbewohnern genau dafuer -, und erst wenn
+   * das Dorfzentrum frei ist: ein Aufstieg hinter einer Schlange stuende still.
+   * Die Voraussetzung prueft der Server noch einmal (bauen AC-23).
+   */
+  feudalzeitPruefen(zentrum, dorfbewohner) {
+    const spieler = this.spieler;
+    if (!zentrum || spieler.zeitalter > 0) return;
+    if (dorfbewohner.length < ZIEL_DORFBEWOHNER) return;
+    if (zentrum.schlange.length) return;
+    if (spieler.nahrung < FEUDALZEIT_NAHRUNG) return;
+    if (this.welt.gebaeudeDerZeit(spieler) < 2) return;
+    this.senden({ auftrag: 'ausbilden', gebaeude: zentrum.id, einheit: 'feudalzeit' });
+  }
+
+  /**
+   * Nach dem Aufstieg ein Militaergebaeude, dann ohne Pause Kampfeinheiten
+   * (ki AC-9). Welche, steht in den Daten des Gebaeudes - so bekommt die KI
+   * jede neue Einheit einer spaeteren Stufe von selbst.
+   */
+  militaerPruefen(gebaeude, dorfbewohner) {
+    if (this.spieler.zeitalter < 1) return;
+    const meine = gebaeude.filter((g) => MILITAER.includes(g.art));
+    if (!meine.length) {
+      if (this.spieler.holz < MILITAER_HOLZ) return;
+      const art = this.spieler.gold >= MILITAER_GOLD ? 'schiessanlage' : 'stall';
+      this.bauen(art, this.platzBeiBasis(art), dorfbewohner);
+      return;
+    }
+    for (const g of meine) {
+      if (!g.fertig || g.schlange.length >= MILITAER_SCHLANGE) continue;
+      const art = this.naechsteKampfeinheit(g);
+      if (art) this.senden({ auftrag: 'ausbilden', gebaeude: g.id, einheit: art });
+    }
+  }
+
+  // Die erste Einheit, die dieses Gebaeude jetzt ausbilden kann: im erreichten
+  // Zeitalter und bezahlt. Verbesserungen stehen in derselben Liste - die
+  // haben keine Werte in EINHEITEN und fallen heraus.
+  naechsteKampfeinheit(gebaeude) {
+    for (const art of GEBAEUDE[gebaeude.art].bildetAus) {
+      const werte = EINHEITEN[art];
+      if (!werte || (werte.zeitalter || 0) > this.spieler.zeitalter) continue;
+      if (Object.entries(werte.kosten).some(([r, menge]) => this.spieler[r] < menge)) continue;
+      return art;
+    }
+    return null;
   }
 
   untaetig(einheit) {
@@ -291,6 +364,11 @@ class Ki {
   }
 
   farmenPruefen(rollen, gebaeude, dorfbewohner) {
+    // Nach dem Aufstieg kommt das Militaergebaeude vor der naechsten Farm:
+    // beide kosten Holz, und beim Startwert 15 standen am Ende 640 Gold neben
+    // 150 Holz - fuer die Schiessanlage reichte es nie (ki AC-9, Runde 69).
+    const militaerFehlt = this.spieler.zeitalter > 0 && !gebaeude.some((g) => MILITAER.includes(g.art));
+    if (militaerFehlt && this.spieler.holz < MILITAER_HOLZ + GEBAEUDE.farm.kosten.holz) return;
     const schafeUebrig = [...this.welt.tiere.values()].some((t) => t.besitzer === this.spielerId && t.nahrung > 0);
     const beerenUebrig = Boolean(this.naechstesFeld(this.spieler.basis, FELD_FUER.nahrung));
     const farmen = gebaeude.filter((g) => g.art === 'farm');
@@ -353,5 +431,5 @@ class Ki {
 }
 
 module.exports = {
-  Ki, ENTSCHEIDEN_ALLE, ZIEL_DORFBEWOHNER, FEUDALZEIT_NAHRUNG, AN_SCHAFEN, AN_BEEREN, plan,
+  Ki, ENTSCHEIDEN_ALLE, ZIEL_DORFBEWOHNER, FEUDALZEIT_NAHRUNG, AN_SCHAFEN, AN_BEEREN, MILITAER, plan,
 };

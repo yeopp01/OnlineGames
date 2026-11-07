@@ -1,0 +1,10 @@
+{
+  "spec": "10-strategie/ki.md",
+  "ac": "AC-9",
+  "titel": "Die Wirtschafts-KI nach rund zwölf Spielminuten: sie ist allein in die Feudalzeit aufgestiegen (oben in der Leiste), hat Farmen, eine Schießanlage und Bogenschützen gebaut — befohlen hat das niemand",
+  "datei": "e2e/tests/strategie-ki.spec.mjs",
+  "pfad": [
+    "Wirtschafts-KI",
+    "ki AC-9: die KI steigt von selbst in die Feudalzeit auf und baut Militaer"
+  ]
+}

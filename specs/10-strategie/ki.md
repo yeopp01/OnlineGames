@@ -2,7 +2,7 @@
 
 **Bereich:** Strategie
 **Kuerzel:** ki
-**Stand:** 8/9 fertig · 1 offen
+**Stand:** 9/10 fertig · 1 offen
 
 ## Zweck
 
@@ -61,13 +61,26 @@ nicht die Regeln.
 
 ### Feudalzeit (Stufe B)
 
-- **AC-9** `offen` **Die KI steigt auf** — Sobald 500 Nahrung und zwei Gebäude der Dunklen
+- **AC-9** `fertig` **Die KI steigt auf** — Sobald 500 Nahrung und zwei Gebäude der Dunklen
   Zeit da sind, beginnt sie den Aufstieg, baut danach Schießanlage oder Stall
   und bildet Kampfeinheiten aus. Im Prüfstand erreicht sie die Feudalzeit über
   zwanzig Startwerte nach 11 bis 16 Spielminuten.
+- **AC-10** `offen` **Auch spät steht niemand herum** — Auch nach zwanzig
+  Spielminuten steht kein Dorfbewohner länger als 20 Sekunden still. Heute
+  stehen einzelne bis zu acht Minuten: Wald und Gold im Umkreis von 30 Feldern
+  um die Basis sind aufgebraucht, Farmen sind alle besetzt, und wer dann
+  untätig wird, findet kein Ziel mehr. AC-6 misst dasselbe nach zehn Minuten.
 
 ## Grenzfaelle
 
+- Der Aufstieg wird erst bestellt, wenn das Dorfzentrum frei ist: hinter einer
+  Schlange stünde er still, während die 500 Nahrung schon bezahlt sind.
+- Solange das Militärgebäude fehlt, hält die KI 175 Holz dafür zurück und baut
+  keine weitere Farm. Ohne diese Regel stand beim Startwert 15 am Ende 640 Gold
+  neben 150 Holz — für die Schießanlage reichte es nie (Runde 69).
+- Welche Einheit ein Militärgebäude ausbildet, liest die KI aus seinen Daten:
+  die erste, die ihr Zeitalter erreicht hat und bezahlt ist. Eine neue Einheit
+  einer späteren Stufe bildet sie damit ohne Änderung am Code aus.
 - Ab Stufe C sieht die KI nur, was ihre Einheiten sehen (Nebel). Bis dahin
   sieht sie die ganze Karte — wie jeder Mensch auch.
 - Bleibt eine KI-Partie hängen (niemand gewinnt, nichts passiert), endet sie

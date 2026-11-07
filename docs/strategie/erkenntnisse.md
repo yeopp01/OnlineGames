@@ -87,6 +87,16 @@ etwas anderem gearbeitet.
   schäbige Punkte, sondern etwas, das halbwegs wie ein Sammler aussieht."
   Jede Runde, die etwas Neues ins Spielbild bringt, zeichnet es als erkennbare
   Figur oder Form — nie als Platzhalterpunkt. Deshalb A1b vorgezogen.
+- **Ein Dorfbewohner steht spät bis zu acht Minuten still** (ki AC-10, offen,
+  Runde 69). Sichtbar erst jenseits der zehnten Spielminute, deshalb von
+  `ki AC-6` nicht gefunden. Ursache gemessen: `naechstesFeld` sucht nur im
+  Umkreis von `REICHWEITE = 30` um die Basis, und dort ist nach 16 Minuten
+  kein Wald und kein Gold mehr; die Farmen sind auf `plan(22).nahrung = 13`
+  gedeckelt und alle besetzt. Die Ersatzkette im Leerlauf ist
+  `rohstoff → holz → gold` — die Nahrung fehlt darin. Drei Hebel, der Reihe
+  nach zu prüfen: Nahrung in die Ersatzkette, eine Farm bauen, wenn gar nichts
+  frei ist, und die Reichweite mitwachsen lassen. Die Vorgabe des Prüfstands
+  steht auf 16 Minuten, der Fehler ist also in jedem Lauf zu sehen.
 - **Einheiten stapeln sich** (einheiten AC-29, offen). Dreimal gesehen, jetzt
   **gemessen**: Dorfbewohner auf demselben Waldfeld (Runde 9), zwei
   Bogenschützen aus derselben Richtung (Runde 64), und in der Rückschau nach
@@ -169,6 +179,10 @@ Zahlen, gegen die spätere Runden vergleichen. Mit Datum und Commit.
 | 2026-11-07 | Pruefstand nach der Wache: 20 Startwerte x 10 Spielminuten — Dorfbewohner / Zeit je Takt | 22 (Median 22) / 0,008 ms, keine Widersprueche | Runde 64 |
 | 2026-11-07 | Treffer des neuen Wächters gegen Gleichheit auf wachsenden Daten, erster Lauf | 10 Stellen in 5 Dateien (alle repariert) | Runde 65 |
 | 2026-11-07 | Abstand zweier Angreifer im Bild zu kampf AC-1 (`figurenFrei`) | 0,27–0,39 Felder — Soll: ≥ 0,5 (einheiten AC-29, offen) | Runde 65 |
+| 2026-11-07 | Tests ohne Browser / im Browser; Browserlauf | 391 / 148; 7,1 min — **nicht vergleichbar**: 26 fremde Browserprozesse (19 chrome, 7 msedge) | Runde 69 |
+| 2026-11-07 | Pruefstand mit Aufstieg: 20 Startwerte x 16 Spielminuten — Feudalzeit / Kampfeinheiten / Zeit je Takt | 11,1–11,9 min (Median 11,6) / 3–7 je Spieler / 0,013 ms, keine Widersprueche | Runde 69 |
+| 2026-11-07 | Laengste Untaetigkeit eines Dorfbewohners: 10 / 16 / 20 Spielminuten | 0,6 s / 290 s / 483 s — Soll: ≤ 20 s (ki AC-10, offen) | Runde 69 |
+| 2026-11-07 | Langsamster Browserfall: `ki AC-9` (zwoelf Spielminuten im Zeitraffer 20) | 45,5 s von 352 s der strategie-Dateien | Runde 69 |
 
 ## Rückschauen
 
@@ -504,6 +518,30 @@ alle sieben Gebäude der Dunklen Zeit stehen. Was sich wiederholt hat:
 Neueste oben. Eine Zeile je Runde: Nummer, Datum, Kriterien, Ergebnis,
 wichtigste Erkenntnis.
 
+- **69** · 2026-11-07 · **ki AC-9 fertig — die KI steigt von selbst auf; damit
+  steht B6.** Sobald 22 Dorfbewohner stehen, das Dorfzentrum frei ist, 500
+  Nahrung da sind und zwei Gebäude der Dunklen Zeit, bestellt sie den Aufstieg;
+  danach baut sie ein Militärgebäude und bildet darin ohne Pause aus.
+  **Welche Einheit, liest sie aus den Daten des Gebäudes** (`bildetAus`, erste
+  Art im erreichten Zeitalter, die bezahlt ist) — eine neue Einheit einer
+  späteren Stufe benutzt sie damit ohne Änderung am Code. Gemessen über zwanzig
+  Startwerte: Feudalzeit nach **11,1 bis 11,9 Spielminuten**, Median 11,6; jeder
+  hatte eine Schießanlage und 3 bis 7 Kampfeinheiten. Drei Lehren: (1) **Ein
+  Kriterium, das Vorrat misst, wird falsch, sobald jemand den Vorrat ausgibt**
+  — `fahrplan AC-5` („nach zehn Minuten genug Nahrung für die Feudalzeit") ging
+  rot, weil die KI die 500 Nahrung kurz vorher bezahlt. Der Wortlaut stimmt
+  weiter, der Test las ihn zu wörtlich: jetzt misst er den **höchsten** Vorrat
+  in den zehn Minuten, nicht den am Ende. (2) **Beim Startwert 15 standen am
+  Ende 640 Gold neben 150 Holz** — die Farmen hatten das Holz der Schießanlage
+  verbaut. Erst eine Regel „solange das Militärgebäude fehlt, 175 Holz
+  zurückhalten" brachte alle 40 Spieler auf ein Militärgebäude. Wer ein neues
+  Ziel in eine Wirtschaft einhängt, prüft, **wer ihm den Rohstoff wegnimmt**.
+  (3) Die Vorgabe des Prüfstands steht jetzt auf **16 statt 10 Minuten** — und
+  dabei kam ein alter Fehler ans Licht, den zehn Minuten nie zeigten:
+  **ein Dorfbewohner stand bis zu acht Minuten still** (neu als ki AC-10).
+  Wald und Gold im Umkreis von 30 Feldern sind dann aufgebraucht, Farmen
+  besetzt, und die Ersatzkette `holz → gold` kennt die Nahrung nicht. Der
+  Fehler ist älter als diese Runde (ohne die neue KI-Logik dieselben 471 s).
 - **68** · 2026-11-07 · **bauen AC-25 und AC-26 fertig — die vier
   Verbesserungen der Feudalzeit**: Schmiedeangriff und Befiederte Pfeile in der
   Schmiede, Doppelaxt im Holzfällerlager, Pferdekummet in der Mühle. Der

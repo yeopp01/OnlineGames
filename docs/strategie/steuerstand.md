@@ -13,24 +13,48 @@ hier nichts eintraegt, verliert den Faden beim naechsten Autocompact.
 
 ## Zuletzt fortgeschrieben
 
-2026-11-07, nach Runde 68 (bauen AC-25, AC-26 fertig - **aus B6 fehlt nur noch ki AC-9**).
+2026-11-07, nach Runde 69 (ki AC-9 fertig - **B6 steht, als Naechstes B7**).
 
 ## Wo ich stehe
 
 - **Branch:** `strategie`. Nie auf `main` arbeiten, **nie pushen, nie deployen.**
-- **Board:** 372 von 504 Kriterien fertig · 1 in Arbeit · 5 in QA · 4 geplant ·
-  114 offen · 8 zurueckgestellt. 389 Tests ohne Browser, 147 im Browser.
+- **Board:** 373 von 505 Kriterien fertig · 1 in Arbeit · 5 in QA · 4 geplant ·
+  114 offen · 8 zurueckgestellt. 391 Tests ohne Browser, 148 im Browser.
 - **Stufe A ist erreicht** (fahrplan AC-3 bis AC-7).
-- **Stufe B:** Bauabfolge B1 bis B7 im [Fahrplan](fahrplan.md). **B1 bis B5
-  sind fertig, aus B6 die beiden Bau-Kriterien.** Als Naechstes **ki AC-9**
-  (die KI steigt auf und baut Militaer), dann **B7** (fahrplan AC-8 bis
-  AC-10). Der Arbeitsbaum ist sauber.
+- **Stufe B:** Bauabfolge B1 bis B7 im [Fahrplan](fahrplan.md). **B1 bis B6
+  sind fertig.** Als Naechstes **B7**: Gleichgewicht messen, Konterkreis im
+  Pruefstand (fahrplan AC-8 bis AC-10). Der Arbeitsbaum ist sauber.
+- **Neu offen aus Runde 69: ki AC-10** - jenseits der zehnten Spielminute steht
+  ein Dorfbewohner bis zu acht Minuten still (gemessen 290 s bei 16 min, 483 s
+  bei 20 min). Aelter als Runde 69, nur nie gemessen, weil der Pruefstand bei
+  zehn Minuten endete. Ursache und Hebel stehen in den Erkenntnissen unter
+  **Offene Faeden**.
 - **Naechste Rueckschau: Runde 70.** Diese Zeile ist der Termin - nicht
   nachzaehlen. Die Rueckschauen 55 und 60 sind ausgefallen, weil nach der
   Rueckschau zur Stufe A niemand mehr gezaehlt hat (Rueckschau nach Runde 65).
   Wer eine Rueckschau haelt, traegt hier die naechste Nummer ein.
 
 ## Was B6 gebracht hat (zum Weiterbauen wissen)
+
+- **Die KI steigt selbst auf (ki AC-9).** `Ki.feudalzeitPruefen()` bestellt den
+  Aufstieg, sobald 22 Dorfbewohner stehen, das Dorfzentrum **frei** ist, 500
+  Nahrung da sind und `welt.gebaeudeDerZeit(spieler) >= 2`.
+  `Ki.militaerPruefen()` baut danach eines aus `MILITAER`
+  (`['schiessanlage','stall']`, Wahl nach Gold) und haelt bis dahin 175 Holz
+  zurueck - sonst verbauen die Farmen es.
+  `Ki.naechsteKampfeinheit(gebaeude)` liest aus `GEBAEUDE[art].bildetAus` die
+  erste Art, die ihr Zeitalter erreicht hat und bezahlt ist: **eine neue
+  Einheit spaeterer Stufen benutzt die KI ohne Code-Aenderung.**
+- `ki.feudalTakt` haelt fest, wann die Feudalzeit stand; `kennzahlen()` im
+  Pruefstand meldet `zeitalter`, `feudalMinute` und `kampf` (Einheiten ohne
+  die Klasse `dorf`). Die Vorgabe von `npm run pruefstand:strategie` ist
+  **16 Minuten**, damit der Aufstieg in jedem Lauf vorkommt.
+- **Die Hilfe `kiSpielt(page, code, name)`** (`e2e/helpers/strategie.mjs`)
+  laesst die KI einen Spieler im Browser uebernehmen - damit entsteht das Bild
+  zu ki AC-9 in `e2e/tests/strategie-ki.spec.mjs` (45 s, der langsamste Fall).
+- **Ein Kriterium, das Vorrat misst, wird falsch, sobald jemand ihn ausgibt.**
+  `fahrplan AC-5` misst seit Runde 69 den **hoechsten** Nahrungsvorrat in den
+  zehn Minuten, nicht den am Ende.
 
 - **Ein Schluessel in `VERBESSERUNGEN[x].wirkung` ist eine Einheitenart oder
   eine ihrer `klassen`** (`dorf`, `infanterie`, `kavallerie`, `speer`,

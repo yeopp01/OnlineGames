@@ -141,7 +141,7 @@ Umfang hinzufügt, dort nachsehen.
 
 ## Stand
 
-**372 von 504 Kriterien fertig.** 389 Tests ohne Browser, 147 im Browser. Die
+**373 von 505 Kriterien fertig.** 391 Tests ohne Browser, 148 im Browser. Die
 Übersicht ist der Bericht: `npm run qa:report`.
 
 Gebaut ist der Unterbau: Räume, Übertragung, Karte, Wegfindung, Sammeln,
@@ -160,8 +160,9 @@ Gemessen: **3,10 Tore je Spiel, 48 % Heimsiege, 21 % Unentschieden**
 (Bundesliga: 3,1 / 44 % / 24 %); der Favorit gewinnt 64 %. Über sechs Saisons
 ohne Menschen null Widersprüche in den Spielen, Kader, Stärke und Markt
 stabil. Eine Saison rechnet in rund 400 ms, ein Spielstand ist nach zwei
-Saisons unter 1 MB. Der Browserlauf dauert bei ruhiger Maschine rund 2,5
-Minuten (`npm run e2e:laufzeiten` zeigt, wo).
+Saisons unter 1 MB. Der Browserlauf dauert rund 6 bis 7
+Minuten (`npm run e2e:laufzeiten` zeigt, wo; der langsamste Fall ist `ki AC-9`
+mit 45 s, weil die KI zwoelf Spielminuten lang zusieht).
 
 **Stellschrauben des Managerspiels** stehen gesammelt in `WIRKUNG` in
 `server/spiele/manager/spieltag.js`. Wer daran dreht, misst danach: keine
@@ -232,7 +233,13 @@ Sichtweite kommt, bis sie am Marschziel steht. Aus **B6** stehen die vier
 Schmiede, Doppelaxt im Holzfällerlager, Pferdekummet in der Mühle — jede mit
 eigenem Bild im Menü. Getroffen wird über die **Klasse** einer Einheit, nicht
 über ihre Art; `welt.einheitenwert()` ist die eine Stelle, die Werte mit
-Verbesserungen liest.
+Verbesserungen liest. **B6 ist fertig**: die Wirtschafts-KI steigt von selbst
+auf — 22 Dorfbewohner, freies Dorfzentrum, 500 Nahrung und zwei Gebäude der
+Dunklen Zeit, dann der Aufstieg, danach eine Schießanlage (oder ein Stall, je
+nach Gold) und ohne Pause Kampfeinheiten daraus. Welche, liest sie aus den
+Daten des Gebäudes. Im Prüfstand steht die Feudalzeit über zwanzig Startwerte
+nach 11,1 bis 11,9 Spielminuten; die Vorgabe von `npm run pruefstand:strategie`
+ist deshalb 16 Minuten.
 
 1. **Stufe A** Dunkle Zeit mit Wirtschafts-KI und Prüfstand · **B** Feudalzeit
    · **C** Partieende und KI-Gegner · **D** Ritterzeit · **E** fünf Völker ·

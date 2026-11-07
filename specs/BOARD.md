@@ -7,9 +7,9 @@ Eine Zeile je Abnahmekriterium. Gepflegt wird der Status in der Spec selbst,
 hier steht er zusammengefasst. Erzeugt mit `npm run specs:board`; als Seite
 mit Bildnachweisen, Filter und Suche mit `npm run qa:report`.
 
-**Gesamt:** 372/504 fertig · 1 in Arbeit · 5 in QA · 4 geplant · 114 offen · 8 zurueckgestellt
+**Gesamt:** 373/505 fertig · 1 in Arbeit · 5 in QA · 4 geplant · 114 offen · 8 zurueckgestellt
 
-**Nachweise:** 148 Kriterien mit Bild · 228 ohne Bild, begruendet in `qa/ohne-bild.json`
+**Nachweise:** 149 Kriterien mit Bild · 228 ohne Bild, begruendet in `qa/ohne-bild.json`
 
 ## Nach Spezifikation
 
@@ -28,7 +28,7 @@ mit Bildnachweisen, Filter und Suche mit `npm run qa:report`.
 | [Fahrplan zum Klon](10-strategie/fahrplan.md)                  | -         | -     | -       | 15    | -               | 7      |
 | [Kampf](10-strategie/kampf.md)                                 | -         | -     | -       | 4     | 1               | 9      |
 | [Karte und Vorraete](10-strategie/karte-und-vorraete.md)       | -         | -     | -       | 2     | 3               | 12     |
-| [KI-Spieler](10-strategie/ki.md)                               | -         | -     | -       | 1     | -               | 8      |
+| [KI-Spieler](10-strategie/ki.md)                               | -         | -     | -       | 1     | -               | 9      |
 | [Spielziel und Partieverlauf](10-strategie/spielziel.md)       | 1         | -     | -       | 17    | -               | -      |
 | [Aufstellung, Taktik und Training](15-manager/aufstellung.md)  | -         | -     | -       | -     | 2               | 23     |
 | [Bedienung des Managerspiels](15-manager/bedienung.md)         | -         | -     | -       | -     | -               | 15     |
@@ -147,7 +147,7 @@ mit Bildnachweisen, Filter und Suche mit `npm run qa:report`.
 - **Angriff wird gemeldet** — [Kampf](10-strategie/kampf.md) AC-14
 - **Kein Spieler ist abgeschnitten** — [Karte und Vorraete](10-strategie/karte-und-vorraete.md) AC-7
 - **Vorraete sind endlich und knapp** — [Karte und Vorraete](10-strategie/karte-und-vorraete.md) AC-10
-- **Die KI steigt auf** — [KI-Spieler](10-strategie/ki.md) AC-9
+- **Auch spät steht niemand herum** — [KI-Spieler](10-strategie/ki.md) AC-10
 - **Partiedauer 25 bis 45 Minuten** — [Spielziel und Partieverlauf](10-strategie/spielziel.md) AC-2
 - **Kein Aus nach drei Minuten** — [Spielziel und Partieverlauf](10-strategie/spielziel.md) AC-3
 - **Aufholen ist möglich** — [Spielziel und Partieverlauf](10-strategie/spielziel.md) AC-4

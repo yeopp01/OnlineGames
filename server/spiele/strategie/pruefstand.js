@@ -7,7 +7,7 @@
 
 const karten = require('./karte');
 const { Welt, TAKTE_PRO_SEKUNDE, ROHSTOFFE } = require('./welt');
-const { BEVOELKERUNG_MAX } = require('./daten');
+const { BEVOELKERUNG_MAX, EINHEITEN } = require('./daten');
 const { Ki } = require('./ki');
 
 class Widerspruch extends Error {
@@ -79,7 +79,13 @@ function kennzahlen(welt, spieler, ki, untaetig) {
     name: spieler.name,
     dorfbewohner: eigene.filter((e) => e.art === 'dorfbewohner').length,
     einheiten: eigene.length,
+    // Alles, was kein Dorfbewohner ist: die Klasse `dorf` sagt es, nicht die
+    // Art - so zaehlt jede neue Kampfeinheit spaeterer Stufen mit (ki AC-9).
+    kampf: eigene.filter((e) => !(EINHEITEN[e.art].klassen || []).includes('dorf')).length,
     wohnraum: welt.wohnraum(spieler),
+    zeitalter: spieler.zeitalter,
+    // In welcher Spielminute die Feudalzeit stand, `null` wenn gar nicht.
+    feudalMinute: ki.feudalTakt === null ? null : ki.feudalTakt / (60 * TAKTE_PRO_SEKUNDE),
     gebaeude,
     ...Object.fromEntries(ROHSTOFFE.map((r) => [r, Math.floor(spieler[r])])),
     abgewiesen: ki.abgewiesen,

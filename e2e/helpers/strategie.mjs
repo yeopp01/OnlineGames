@@ -288,3 +288,15 @@ export async function gebaeudeInDerNaehe(page, code, name, art, um, { von = 4, b
   }
   throw new Error(`Nirgends Platz fuer ${art} um ${um.x}, ${um.y}`);
 }
+
+/**
+ * Die Wirtschafts-KI fuer einen Spieler im Raum uebernehmen lassen
+ * (Pruefgriff `ki`, e2e/server.mjs). Danach spielt sie ueber `welt.nachricht`,
+ * genau wie ein Mensch - der Browser sieht nur zu.
+ */
+export async function kiSpielt(page, code, name) {
+  const antwort = await page.request.post(`http://localhost:${GRIFFHAFEN}/griff`, {
+    data: { id: code, befehl: 'ki', werte: { name } },
+  });
+  expect(antwort.ok(), await antwort.text()).toBe(true);
+}

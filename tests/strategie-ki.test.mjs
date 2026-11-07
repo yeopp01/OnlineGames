@@ -10,7 +10,7 @@ const require = createRequire(import.meta.url);
 const karten = require('../server/spiele/strategie/karte.js');
 const { Welt } = require('../server/spiele/strategie/welt.js');
 const {
-  Ki, ENTSCHEIDEN_ALLE, ZIEL_DORFBEWOHNER, FEUDALZEIT_NAHRUNG, AN_SCHAFEN, AN_BEEREN, plan,
+  Ki, ENTSCHEIDEN_ALLE, ZIEL_DORFBEWOHNER, FEUDALZEIT_NAHRUNG, AN_SCHAFEN, AN_BEEREN, MILITAER, plan,
 } = require('../server/spiele/strategie/ki.js');
 const { TAKTE_PRO_SEKUNDE } = require('../server/spiele/strategie/welt.js');
 const { EINHEITEN, SAMMELN } = require('../server/spiele/strategie/daten.js');
@@ -278,10 +278,63 @@ test('ki AC-6: kein Dorfbewohner der KI steht laenger als 20 Sekunden herum', ()
 
 test('fahrplan AC-5: nach zehn Spielminuten 20 bis 30 Dorfbewohner und Nahrung fuer die Feudalzeit, ueber zwanzig Startwerte', () => {
   for (let startwert = 1; startwert <= 20; startwert++) {
-    const { spieler } = partieSpielen({ startwert, minuten: 10 });
-    for (const p of spieler) {
+    // Seit ki AC-9 gibt die KI die 500 Nahrung aus, sobald sie sie hat - der
+    // Aufstieg wird kurz vor der zehnten Minute bestellt, danach steht der
+    // Vorrat wieder bei 70. Der Vorrat am Ende belegt das Kriterium also nicht
+    // mehr; gemessen wird, dass sie in den zehn Minuten einmal genug hatte
+    // (Runde 69). "Genug Nahrung fuer die Feudalzeit" heisst das Kriterium,
+    // nicht "Nahrung uebrig".
+    const hoechste = [];
+    const { spieler } = partieSpielen({
+      startwert,
+      minuten: 10,
+      eingriff: (welt) => welt.spieler.forEach((p, i) => { hoechste[i] = Math.max(hoechste[i] || 0, p.nahrung); }),
+    });
+    spieler.forEach((p, i) => {
       assert.ok(p.dorfbewohner >= 20 && p.dorfbewohner <= 30, `${startwert} ${p.name}: ${p.dorfbewohner} Dorfbewohner`);
-      assert.ok(p.nahrung >= FEUDALZEIT_NAHRUNG, `${startwert} ${p.name}: ${p.nahrung} Nahrung`);
+      assert.ok(hoechste[i] >= FEUDALZEIT_NAHRUNG, `${startwert} ${p.name}: hoechstens ${hoechste[i]} Nahrung`);
+    });
+  }
+});
+
+// Gemessen in Runde 69 ueber die Startwerte 1 bis 20, je zwei KIs: die
+// Feudalzeit stand nach 11,1 bis 11,9 Spielminuten, im Mittel nach 11,6; jeder
+// hatte am Ende eine Schiessanlage und 3 bis 7 Kampfeinheiten (die eine davon
+// ist der Spaeher vom Anfang). Die Grenzen 11 und 16 kommen aus dem Kriterium,
+// nicht aus dieser Messung.
+test('ki AC-9: die KI steigt nach 11 bis 16 Spielminuten in die Feudalzeit auf und baut Militaer', () => {
+  for (let startwert = 1; startwert <= 20; startwert++) {
+    const { spieler } = partieSpielen({ startwert, minuten: 16 });
+    for (const p of spieler) {
+      assert.equal(p.zeitalter, 1, `${startwert} ${p.name}: Zeitalter`);
+      assert.ok(p.feudalMinute >= 11 && p.feudalMinute <= 16, `${startwert} ${p.name}: Feudalzeit ab ${p.feudalMinute} min`);
+      // Ein Gebaeude, in dem Kampfeinheiten entstehen - welches, waehlt sie
+      // nach ihrem Gold.
+      const militaer = MILITAER.filter((art) => p.gebaeude[art]);
+      assert.ok(militaer.length, `${startwert} ${p.name}: ${Object.keys(p.gebaeude).join(', ')}`);
+      // Und ausgebildet hat sie darin: mehr Kampfeinheiten als den Spaeher,
+      // mit dem jeder beginnt.
+      assert.ok(p.kampf >= 3, `${startwert} ${p.name}: ${p.kampf} Kampfeinheiten`);
     }
   }
+});
+
+test('ki AC-9: ohne 500 Nahrung oder ohne zwei Gebaeude der Dunklen Zeit steigt sie nicht auf', () => {
+  const welt = new Welt(ZWEI, 3);
+  const ki = new Ki(welt, 'a');
+  const spieler = welt.spielerVon('a');
+  const zentrum = [...welt.gebaeude.values()].find((g) => g.besitzer === 'a');
+  const dorfbewohner = Array.from({ length: ZIEL_DORFBEWOHNER }, (unbenutzt, i) => ({ id: i }));
+
+  // Nur das Dorfzentrum steht: die Voraussetzung des Aufstiegs fehlt.
+  spieler.nahrung = FEUDALZEIT_NAHRUNG * 2;
+  ki.feudalzeitPruefen(zentrum, dorfbewohner);
+  assert.deepEqual(zentrum.schlange, [], 'ein Gebaeude zu wenig - kein Aufstieg');
+  assert.equal(ki.abgewiesen, 0, 'und sie versucht es nicht einmal');
+
+  // Mit einem zweiten Gebaeude, aber ohne Nahrung: auch nicht.
+  welt.nachricht('a', { auftrag: 'bauen', art: 'haus', x: spieler.basis.x + 6, y: spieler.basis.y, einheiten: [] });
+  spieler.nahrung = FEUDALZEIT_NAHRUNG - 1;
+  ki.feudalzeitPruefen(zentrum, dorfbewohner);
+  assert.deepEqual(zentrum.schlange, [], 'zu wenig Nahrung - kein Aufstieg');
 });
