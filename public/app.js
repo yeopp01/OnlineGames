@@ -35,6 +35,9 @@ let ansicht = null;
 let auswahlleiste = null;
 // Wo eine Absage beim Eroeffnen hingehoert: an das Formular, aus dem es kam.
 let meldeort = null;
+// Bin ich der Gastgeber dieses Raums? Nur er startet - und nur er die
+// Revanche (spielziel AC-9).
+let binGastgeber = false;
 
 teile.name.value = localStorage.getItem('name') || '';
 
@@ -80,6 +83,11 @@ function empfangen(nachricht) {
       break;
 
     case 'raum':
+      // Wer Gastgeber ist, steht nur hier - und nur er startet (die Revanche
+      // auch, spielziel AC-9). Die Nachricht kommt vor dem Start und noch
+      // einmal, wenn jemand geht; im Spiel selbst kommt keine mehr, deshalb
+      // wird es gemerkt und nicht im Augenblick des Endes erfragt.
+      binGastgeber = nachricht.gastgeber === ich;
       spielerlisteZeichnen(nachricht.spieler);
       raumEinstellungenZeichnen(nachricht);
       break;
@@ -113,6 +121,9 @@ function empfangen(nachricht) {
       zeigen('spiel');
       teile.kartenwert.textContent = `· Karte ${nachricht.startwert}`;
       ansicht.aufbau(nachricht, ich);
+      // Ein Aufbau kann der zweite sein: die Revanche (spielziel AC-9). Dann
+      // muss weg, was von der alten Partie noch im Bild steht.
+      partieraumAufraeumen();
       aufgebenZeigen();
       zuschauerZeigen();
       break;
@@ -179,9 +190,40 @@ function partieendeZeigen(text) {
   document.getElementById('partieende').textContent = text;
   abschlusstafelFuellen();
   document.getElementById('abschluss').hidden = false;
+  revancheZeigen();
   aufgebenFrageSchliessen();
   aufgebenZeigen();
   zuschauerZeigen();
+}
+
+// ---- Revanche (spielziel AC-9) -------------------------------------------
+// Unter der Tafel steht der Knopf, der dieselbe Runde neu startet: dieselben
+// Leute, dieselben Einstellungen, niemand tippt einen Code. Geschickt wird
+// **dieselbe** Nachricht wie beim ersten Start - die Revanche ist fuer den
+// Server ein zweiter Start desselben Raums, und nur der Gastgeber darf ihn.
+// Wer nicht Gastgeber ist, bekommt deshalb keinen Knopf, sondern einen Satz:
+// ein Knopf, der mit einer Absage antwortet, waere schlimmer als keiner.
+function revancheZeigen() {
+  document.getElementById('revanche').hidden = !binGastgeber;
+  document.getElementById('revanchehinweis').hidden = binGastgeber;
+}
+
+document.getElementById('revanche').addEventListener('click', () => {
+  senden({ typ: 'start' });
+});
+
+// Was vom Abschlussbild der vorigen Partie noch steht, wenn die naechste
+// beginnt. Die Rohstoffleiste wird dabei zurueckgesetzt, nicht nur neu
+// beschriftet: sie zaehlt in einer halben Sekunde auf den neuen Wert, und
+// vom Stand der alten Partie herunterzuzaehlen waere eine Wirtschaft, die es
+// nie gab.
+function partieraumAufraeumen() {
+  document.getElementById('abschluss').hidden = true;
+  document.getElementById('partieende').textContent = '';
+  aufgebenFrageSchliessen();
+  leiste.ziel = {};
+  leiste.gezeigt = {};
+  leiste.von = {};
 }
 
 // Die Tafel darunter (spielziel AC-8): je Spieler eine Zeile mit dem, was er

@@ -424,3 +424,52 @@ test('spielziel AC-6 / spielziel AC-5: Aufgeben geht ueber die Leitung, das Ende
   anna.zu();
   bert.zu();
 });
+
+test('spielziel AC-9: die Revanche geht ueber dieselbe Leitung und denselben Raum - nur der Gastgeber startet sie', async () => {
+  const anna = gastgeber();
+  await anna.offen();
+  anna.senden({ typ: 'erstellen', name: 'Anna' });
+  const du = await anna.warteAuf(istTyp('du'));
+
+  const bert = kunde();
+  await bert.offen();
+  bert.senden({ typ: 'beitreten', code: du.code, name: 'Bert' });
+  const duBert = await bert.warteAuf(istTyp('du'));
+
+  anna.senden({ typ: 'start', startwert: 7 });
+  await bert.warteAuf(istTyp('aufbau'));
+
+  // Bert gibt auf, Anna gewinnt - das ist die Lage, aus der die Revanche
+  // gestartet wird.
+  bert.senden({ typ: 'befehl', auftrag: 'aufgeben' });
+  await anna.warteAuf((n) => n.typ === 'zustand' && n.ende);
+  await bert.warteAuf((n) => n.typ === 'zustand' && n.ende);
+
+  // Ein Gast startet sie nicht: wer verloren hat, soll nicht ungefragt eine
+  // neue Partie aufziehen koennen.
+  bert.senden({ typ: 'start', startwert: 11 });
+  const abgewiesen = await bert.warteAuf(istTyp('fehler'));
+  assert.match(abgewiesen.text, /Gastgeber/);
+
+  // Der Gastgeber schon. Beide bekommen einen zweiten Aufbau - ohne dass
+  // jemand einen Code getippt hat, es ist derselbe Raum und derselbe Platz.
+  anna.senden({ typ: 'start', startwert: 11 });
+  const neu = await bert.warteAuf((n) => n.typ === 'aufbau' && n.startwert === 11);
+  assert.equal(neu.ende, undefined, 'die neue Partie ist nicht entschieden');
+  assert.deepEqual(neu.spieler.map((s) => s.name), ['Anna', 'Bert']);
+  assert.ok(neu.spieler.some((s) => s.id === duBert.id), 'Bert behaelt seinen Platz');
+  assert.ok(neu.spieler.every((s) => s.aus === undefined), 'und ist nicht mehr ausgeschieden');
+
+  // Eine wirklich neue Welt: beide haben ihre Startaufstellung wieder, auch
+  // der, von dem eben nichts mehr auf der Karte stand.
+  const laeuft = await bert.warteAuf(istTyp('zustand'));
+  assert.equal(laeuft.einheiten.length, 2 * STARTAUFSTELLUNG.length);
+  assert.equal(laeuft.einheiten.filter((e) => e.b === duBert.id).length, STARTAUFSTELLUNG.length);
+
+  const raum = laufend.raeume.finden(du.code);
+  assert.ok(raum.uhr, 'die Uhr des Raums laeuft wieder');
+  assert.equal(raum.welt.vorbei, false);
+
+  anna.zu();
+  bert.zu();
+});

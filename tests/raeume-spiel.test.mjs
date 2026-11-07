@@ -113,3 +113,83 @@ test('raeume AC-16 / spielziel AC-5: sagt die Welt "vorbei", haelt der Raum sein
     raeume.halt();
   }
 });
+
+test('raeume AC-16 / spielziel AC-9: nach dem Ende startet derselbe Raum eine zweite Partie - vorher nicht', (t) => {
+  // Die Revanche ist ein **zweiter Start desselben Raums**, nichts
+  // Spielspezifisches: deshalb am erfundenen Spiel geprueft. Der Raum weiss
+  // nur, dass die Welt `vorbei` sagt (ADR-0006) - und dass er dann noch einmal
+  // erzeugen darf.
+  t.mock.timers.enable({ apis: ['setInterval'] });
+  const partien = [];
+  const puzzle = {
+    art: 'puzzle',
+    takte: 10,
+    erzeugen(spieler, einstellungen) {
+      const nummer = partien.length;
+      const partie = {
+        nummer,
+        namen: spieler.map((s) => s.name),
+        startwert: einstellungen.startwert,
+        takte: 0,
+        vorbei: false,
+        aufbau: () => ({ typ: 'aufbau', nummer }),
+        takten() { this.takte += 1; if (this.takte === 3) this.vorbei = true; },
+        zustand() { return { typ: 'zustand', nummer, takt: this.takte }; },
+      };
+      partien.push(partie);
+      return partie;
+    },
+  };
+  const raeume = new Raeume();
+  try {
+    const raum = raeume.anlegen(puzzle);
+    const anna = draht();
+    const bert = draht();
+    const cem = draht();
+    raum.beitreten('Anna', anna);
+    raum.beitreten('Bert', bert);
+    raum.beitreten('Cem', cem);
+    assert.deepEqual(raum.starten(7), {});
+    assert.equal(partien.length, 1);
+
+    // Solange die Partie laeuft, ist ein zweiter Start keine Revanche, sondern
+    // ein Weg, eine verlorene Stellung wegzuwerfen.
+    assert.match(raum.starten(8).fehler, /laeuft schon/);
+    assert.equal(partien.length, 1, 'und es wurde nichts erzeugt');
+
+    t.mock.timers.tick(300); // drei Takte, beim dritten ist sie aus
+    assert.equal(partien[0].vorbei, true);
+    assert.equal(raum.uhr, null, 'die Uhr steht');
+
+    // Cem hat in der Partie die Verbindung verloren. Sein Platz bleibt stehen,
+    // solange sie laeuft - zurueckkehren koennen gehoert zum Raum (raeume
+    // AC-12). Die Revanche spielt er nicht mit.
+    raum.verlassen(cem);
+    assert.equal(raum.spieler.length, 3, 'in der beendeten Partie steht sein Platz noch');
+
+    assert.deepEqual(raum.starten(8), {});
+    assert.equal(partien.length, 2, 'eine zweite Partie');
+    assert.deepEqual(partien[1].namen, ['Anna', 'Bert'], 'ohne den, der weg ist');
+    assert.equal(raum.spieler.length, 2);
+    assert.equal(partien[1].startwert, 8, 'mit dem neuen Startwert');
+    assert.deepEqual(anna.eingang.at(-1), { typ: 'aufbau', nummer: 1 }, 'alle bekommen den neuen Aufbau');
+    assert.deepEqual(bert.eingang.at(-1), { typ: 'aufbau', nummer: 1 });
+    assert.ok(raum.uhr, 'und die Uhr laeuft wieder');
+
+    t.mock.timers.tick(200);
+    assert.equal(partien[1].takte, 2, 'die neue Partie taktet');
+    assert.equal(partien[0].takte, 3, 'die alte nicht mehr');
+    assert.equal(anna.eingang.at(-1).nummer, 1, 'die Zustaende kommen aus der neuen Partie');
+
+    // Zu wenige fuer eine dritte: wer allein uebrig ist, bekommt dieselbe
+    // Absage wie beim ersten Start.
+    raum.verlassen(bert);
+    assert.match(raum.starten(9).fehler, /laeuft schon/, 'die zweite Partie laeuft noch');
+    t.mock.timers.tick(100); // der dritte Takt: auch sie ist aus
+    assert.equal(partien[1].vorbei, true);
+    assert.match(raum.starten(9).fehler, /Mitspieler/);
+    assert.equal(partien.length, 2);
+  } finally {
+    raeume.halt();
+  }
+});

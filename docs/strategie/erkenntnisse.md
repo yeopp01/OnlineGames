@@ -273,6 +273,8 @@ Zahlen, gegen die spätere Runden vergleichen. Mit Datum und Commit.
 | 2026-11-07 | Bildnachweise gepruefte Paare / Beanstandungen | 96 angesehen von 167 gelesen; **39 beanstandet (41 %)**: 12 zu kleine Figuren, 6 Figuren uebereinander, 6 am Rand abgeschnitten, 11 falsche Unterschriften, 3 ohne moegliches Standbild, 1 doppeltes Bild | Runde 83 |
 | 2026-11-07 | Spielerfarbe je Einheit (Anteil der Figurenflaeche, Schautafel) | Plaenkler **0,039 → 0,119**; Soldat 0,105 · Speerkaempfer 0,108 · Bogenschuetze 0,144 · Spaeherreiter 0,171 · Dorfbewohner 0,270 · Miliz 0,308. Abstand Bogenschuetze/Plaenkler 0,589 → 0,584 | Runde 83 |
 | 2026-11-07 | Geaenderte Bildnachweise nach dem `:neu`-Lauf | 114: **28 ueber 1 %**, davon 20 die zwoelf absichtlichen Umbenennungen (je neu + geloescht); 8 wirklich angesehen, kein Rueckschritt, eines besser (bedienung AC-34). 86 darunter, alle unter 0,91 % | Runde 83 |
+| 2026-11-07 | Tests ohne Browser / im Browser; `npm run check:alles:kurz` | 427 / 164; 583 s (Browserlauf allein 9,3 min) | Runde 84 |
+| 2026-11-07 | Geaenderte Bildnachweise nach einer Aenderung **nur** am Abschlussbild | 6: zwei neue (AC-9), eines zu 94 % (Kamera tiefer, AC-6), zwei zu 6,0 % (der neue Knopf, AC-5 und AC-8), eines zu 0,0 %. Kein `:neu`-Lauf noetig - das Bedienteil steht in genau einer Testdatei, und die wurde mit `QA_NACHWEIS=1` einzeln gefahren (36 s statt 11 min) | Runde 84 |
 
 ## Rückschauen
 
@@ -825,6 +827,23 @@ alle sieben Gebäude der Dunklen Zeit stehen. Was sich wiederholt hat:
 Neueste oben. Eine Zeile je Runde: Nummer, Datum, Kriterien, Ergebnis,
 wichtigste Erkenntnis.
 
+- **84** · 2026-11-07 · **spielziel AC-9** — die Revanche mit einem Klick: unter
+  der Tafel am Ende steht ein Knopf, der dieselbe Runde neu startet. Gebaut
+  **ohne eine einzige neue Nachricht**: der Knopf schickt `start`, und der Raum
+  erlaubt einen zweiten Start, sobald `welt.vorbei` es sagt — dieselben Leute,
+  dieselben Einstellungen, eine neue Partie. Damit ist **C3 abgeschlossen**.
+  Gelernt, dreierlei: (1) **Die billigste Funktion ist die, die einen
+  bestehenden Weg ein zweites Mal gehen darf.** Ein eigener Nachrichtentyp
+  `revanche` hätte die Gastgeberprüfung, die Startwertwahl und die Absage „Es
+  fehlen Mitspieler" alle noch einmal gebraucht. (2) **Wer eine zweite Partie
+  zulässt, muss jeden Zwischenspeicher der ersten suchen** — die Kacheln des
+  Bodens liegen nach Feldkoordinate im Speicher und hätten auf der neuen Karte
+  das alte Gelände gezeigt; dazu Auswahl, Zeitalter, Ende, Ausgeschieden und
+  die Übersichtskarte. Im Browser ist „neu anfangen" kein Zustand, sondern
+  eine Liste. (3) **Ein Kasten, der um eine Zeile wächst, verdeckt, was
+  darunter lag:** die neue Zeile im Abschlussbild schob dessen Rand genau auf
+  die Gefallenen im Bild von `spielziel AC-6`. Der Test zählt jetzt, wie viele
+  frei unter der Tafel liegen, statt die Kamera nur auf ihre Mitte zu setzen.
 - **83** · 2026-11-07 · **Rückschau**, kein neues Kriterium — alle 167
   Bildnachweise gelesen, 96 Paare Bild für Bild angesehen, **39 beanstandet**.
   Drei Verbesserungen: (1) `einheitenJeArt()` in der Hilfe, und der Beweis der

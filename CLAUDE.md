@@ -153,7 +153,7 @@ Umfang hinzufügt, dort nachsehen.
 
 ## Stand
 
-**384 von 516 Kriterien fertig.** 425 Tests ohne Browser, 162 im Browser. Die
+**385 von 516 Kriterien fertig.** 427 Tests ohne Browser, 164 im Browser. Die
 Übersicht ist der Bericht: `npm run qa:report`.
 
 Gebaut ist der Unterbau: Räume, Übertragung, Karte, Wegfindung, Sammeln,
@@ -276,15 +276,19 @@ nur `welt.vorbei` und hält daran seine Uhr an (ADR-0006). Im Bild steht eine
 Meldung, die stehen bleibt. **Aufgeben ist ein Knopf oben rechts** — dort, wo
 im Spiel nichts geklickt wird — und er fragt genau einmal zurück; Esc und
 „Weiterspielen" sind die zwei Auswege, der gefährliche Knopf ist nicht der
-größte. **Aus C3 stehen Zuschauen und Abschlussbild**: wer ausgeschieden ist, bekommt
+größte. **C3 ist fertig**: wer ausgeschieden ist, bekommt
 weiter jeden Zustand, über dem Bild steht, dass er draußen ist, und die Kamera
 springt zu einem, der noch spielt — sonst sähe er auf den leeren Platz, wo
 eben sein Dorf stand. Am Ende sehen alle **dieselbe Tafel**: je Spieler
 Zeitalter, gesammelte Rohstoffe, ausgebildete Einheiten und Verluste, darunter
 die Dauer der Partie. Gezählt wird während der Partie — beim Abladen, beim
 Fertigwerden eines Auftrags, beim Sterben —, damit die Zahlen auch für einen
-stimmen, von dem am Ende nichts mehr auf der Karte steht. Es folgt die
-Revanche, dann die **kämpfende KI** (ab acht Kampfeinheiten greift sie an, zwei bleiben
+stimmen, von dem am Ende nichts mehr auf der Karte steht. Unter der Tafel steht
+die **Revanche**: ein Klick des Gastgebers startet dieselbe Runde neu —
+dieselben Leute, dieselben Einstellungen, niemand tippt einen Code. Für den
+Server ist das ein **zweiter Start desselben Raums**, erlaubt, sobald
+`welt.vorbei` es sagt; wer die Verbindung verloren hat, spielt nicht mit. Es
+folgt die **kämpfende KI** (ab acht Kampfeinheiten greift sie an, zwei bleiben
 zur Wache), Mensch gegen KI — und **zuletzt der Nebel**, weil er die
 Zustandsnachricht umbaut.
 

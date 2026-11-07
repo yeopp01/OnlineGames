@@ -129,18 +129,35 @@ class Raum {
     return this.spieler.every((s) => !s.verbunden) || this.spieler.length === 0;
   }
 
+  // Ein **zweiter** Start desselben Raums ist die Revanche (→ spielziel AC-9):
+  // dieselben Leute, dieselben Einstellungen, eine neue Partie - und niemand
+  // tippt einen Code. Erlaubt ist er nur, wenn `welt.vorbei` es sagt; waehrend
+  // die Partie laeuft, waere er ein Weg, eine verlorene Stellung wegzuwerfen.
+  // **Was** eine Partie beendet, weiss weiterhin nur das Spiel (ADR-0006) -
+  // der Raum fragt bloss.
   starten(startwert) {
-    if (this.gestartet) return { fehler: 'Die Partie laeuft schon.' };
+    if (this.gestartet && !this.welt.vorbei) return { fehler: 'Die Partie laeuft schon.' };
+    // Wer die Verbindung verloren hat, spielt die Revanche nicht mit: sein
+    // Platz waere ein Gegner, der nichts tut. Waehrend einer laufenden Partie
+    // bleibt er stehen (damit er mit seinem Token zurueckkehren kann) - hier
+    // beginnt eine neue, und dafuer gilt dieselbe Regel wie fuer den ersten
+    // Start: es spielt, wer da ist.
+    if (this.gestartet) this.spieler = this.spieler.filter((s) => s.verbunden);
     if (this.spieler.length < MIN_SPIELER) {
       return { fehler: `Es fehlen Mitspieler - mindestens ${MIN_SPIELER}.` };
     }
     if (!this.spiel) return { fehler: 'Dieser Raum hat kein Spiel.' };
+    // Die Uhr der vorigen Partie steht schon (`beenden` lief mit dem Ende),
+    // aber zwei Uhren auf einem Raum waere der Fehler, den niemand mehr
+    // findet: lieber einmal zu oft abgeraeumt.
+    this.beenden();
     this.welt = this.spiel.erzeugen(
       this.spieler.map((s) => ({ id: s.id, name: s.name })),
       { ...this.einstellungen, startwert },
     );
     this.senden(this.welt.aufbau());
     this.uhr = setInterval(() => this.schlag(), 1000 / this.spiel.takte);
+    this.beruehrt = Date.now();
     return {};
   }
 

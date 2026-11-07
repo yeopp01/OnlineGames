@@ -1,0 +1,10 @@
+{
+  "spec": "10-strategie/spielziel.md",
+  "ac": "AC-9",
+  "titel": "Unter der Tafel am Ende steht der Knopf „Revanche\" — der Gastgeber braucht nur ihn, niemand tippt einen Raumcode neu",
+  "datei": "e2e/tests/strategie-partieende.spec.mjs",
+  "pfad": [
+    "Revanche",
+    "spielziel AC-9: der Gastgeber startet dieselbe Runde vom Abschlussbild neu"
+  ]
+}

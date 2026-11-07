@@ -1,0 +1,10 @@
+{
+  "spec": "10-strategie/spielziel.md",
+  "ac": "AC-9",
+  "titel": "Berts Sicht nach dem Klick des Gastgebers: er hat sein Dorfzentrum und seine Leute wieder, die Tafel ist weg — eben war er ausgeschieden",
+  "datei": "e2e/tests/strategie-partieende.spec.mjs",
+  "pfad": [
+    "Revanche",
+    "spielziel AC-9: nach dem Klick spielen beide wieder, im selben Raum"
+  ]
+}

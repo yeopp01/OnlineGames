@@ -119,6 +119,32 @@ export class Ansicht {
     const felder = new Uint8Array(roh.length);
     for (let i = 0; i < roh.length; i++) felder[i] = roh.charCodeAt(i);
 
+    // Ein Aufbau kann der zweite sein: die Revanche startet dieselbe Runde neu
+    // (spielziel AC-9), und dann kommt alles frisch. Was von der alten Partie
+    // stehenblieb, waere ein Gespenst - die **Kacheln des Bodens** allen voran:
+    // sie liegen nach Feldkoordinate im Zwischenspeicher, und auf einer neuen
+    // Karte zeigten sie das alte Gelaende.
+    this.kacheln = null;
+    this.vorher = new Map();
+    this.nachher = new Map();
+    this.empfangen = 0;
+    this.ausgewaehlt = new Set();
+    this.gewaehltesGebaeude = null;
+    this.zielzeichen = null;
+    this.angriffslauf = false;
+    this.platzieren = null;
+    this.untaetige = [];
+    this.letzterUntaetiger = null;
+    this.arbeiter = { holz: 0, nahrung: 0, gold: 0, stein: 0 };
+    this.verbesserungen = [];
+    this.blicke = new Map();
+    this.takt = 0;
+    // Null, nicht der alte Stand: sonst meldete der erste Zustand der neuen
+    // Partie einen Zeitalterwechsel zurueck in die Dunkle Zeit.
+    this.zeitalter = 0;
+    this.ende = null;
+    this.aus = false;
+
     this.karte = { groesse: nachricht.karte.groesse, felder };
     this.fuellung = new Map();
     this.taktdauer = 1000 / nachricht.takte;
@@ -143,6 +169,10 @@ export class Ansicht {
     // Wer nach dem Ende zurueckkommt, sieht es sofort (spielziel AC-5).
     if (nachricht.ende) this.endeMerken(nachricht.ende);
 
+    // Die Uebersichtskarte malt ihr Gelaende einmal und danach nur bei
+    // geaenderten Feldern - eine neue Karte ist die groesste Aenderung, die es
+    // gibt (spielziel AC-9).
+    this.beiFeldern();
     this.groesseAnpassen();
     if (!this.laeuft) {
       this.laeuft = true;

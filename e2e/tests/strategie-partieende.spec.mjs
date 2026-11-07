@@ -185,14 +185,30 @@ test.describe('Partieende', () => {
     // Naeher heran: bei Spielgroesse sind die Gefallenen rote Tupfer, und die
     // Unterschrift behauptet, man sehe sie liegen. Die Kamera geht auf ihre
     // Mitte, die Meldung steht fest am Fenster und bleibt stehen.
-    await bert.evaluate(() => {
+    //
+    // Sie gehoeren **unter** die Tafel, nicht hinter sie: die Tafel waechst
+    // mit dem, was darin steht (in Runde 84 kam die Zeile zur Revanche dazu),
+    // und ihr unterer Rand lag danach genau auf den Gefallenen. Deshalb wird
+    // nicht auf die Mitte geblickt, sondern darunter - und danach gezaehlt,
+    // wie viele frei liegen.
+    const freiliegend = await bert.evaluate(() => {
       const a = window.ansicht;
       const meine = [...a.nachher.values()].filter((e) => e.b === a.ich);
       const x = meine.reduce((summe, e) => summe + e.x, 0) / meine.length;
       const y = meine.reduce((summe, e) => summe + e.y, 0) / meine.length;
       a.kamera.zoom = 2;
       a.blickAuf(x, y);
+      // Die Kamera hoeher: dann rutschen die Gefallenen im Bild nach unten,
+      // unter die Tafel.
+      a.kamera.y -= 180 / a.kamera.zoom;
+      const tafel = document.getElementById('abschluss').getBoundingClientRect();
+      return meine.filter((e) => {
+        const p = a.zuBild(e.x, e.y);
+        return p.y > tafel.bottom + 10 && p.y < a.leinwand.clientHeight - 20
+          && p.x > 20 && p.x < a.leinwand.clientWidth - 20;
+      }).length;
     });
+    expect(freiliegend, 'die Gefallenen liegen frei unter der Tafel').toBeGreaterThanOrEqual(3);
 
     await nachweis(bert, {
       spec: SPIELZIEL,
@@ -281,6 +297,113 @@ test.describe('Das Abschlussbild', () => {
       spec: SPIELZIEL,
       ac: 'AC-8',
       titel: 'Die Tafel am Ende: je Spieler Zeitalter, gesammelte Rohstoffe, ausgebildete Einheiten und Verluste — Annas Zeile als Sieger, Berts gedämpft als ausgeschieden, darunter die Dauer der Partie',
+      test: info,
+    });
+  });
+});
+
+// Die Revanche (spielziel AC-9). Zu zweit, und beide Seiten werden angesehen:
+// der Gastgeber hat den Knopf, der Gast liest, worauf er wartet.
+test.describe('Revanche', () => {
+  test.describe.configure({ mode: 'serial' });
+  let partie;
+  // Wie viele Einheiten Bert zu Beginn der **ersten** Partie hatte. In der
+  // zweiten muss es wieder dieselbe Zahl sein - gezaehlt statt im Test
+  // behauptet (die Startaufstellung steht in daten.js, nicht hier).
+  let bertsStart = 0;
+
+  test.beforeAll(async ({ browser }, info) => {
+    partie = await partieZuZweit(browser, info);
+  });
+  test.afterAll(() => partieBeenden(partie));
+
+  test('spielziel AC-9: der Gastgeber startet dieselbe Runde vom Abschlussbild neu', async ({}, info) => {
+    const { anna, bert, code } = partie;
+    await expect(anna.locator('#revanche')).toBeHidden();
+    bertsStart = await bert.evaluate(() => {
+      const a = window.ansicht;
+      return [...a.nachher.values()].filter((e) => e.b === a.ich && !e.s).length;
+    });
+    expect(bertsStart, 'Bert faengt mit Leuten an').toBeGreaterThan(0);
+
+    // Erst eine halbe Spielminute spielen: eine Revanche aus einer Partie, die
+    // nie lief, waere kein Beweis - und die Tafel waere leer.
+    await zeitraffer(anna, code, 10);
+    await anna.waitForFunction(() => window.ansicht.takt >= 300, undefined, { timeout: 15_000 });
+    await zeitraffer(anna, code, 1);
+
+    await aufgebenLassen(anna, code, 'Bert');
+    for (const seite of [anna, bert]) {
+      await seite.waitForFunction(() => window.ansicht.ende !== null, undefined, { timeout: 15_000 });
+    }
+
+    // Der Gastgeber bekommt den Knopf, der Gast den Satz dazu - und keinen
+    // Knopf, der ihm eine Absage einbringen wuerde.
+    await expect(anna.locator('#revanche')).toBeInViewport();
+    await expect(anna.locator('#revanche')).toHaveText('Revanche');
+    await expect(anna.locator('#revanchehinweis')).toBeHidden();
+    await expect(bert.locator('#revanche')).toBeHidden();
+    await expect(bert.locator('#revanchehinweis')).toBeInViewport();
+    await expect(bert.locator('#revanchehinweis')).toContainText('Der Gastgeber');
+    expect(await bedienteileFrei(anna)).toEqual([]);
+
+    await nachweis(anna, {
+      spec: SPIELZIEL,
+      ac: 'AC-9',
+      titel: 'Unter der Tafel am Ende steht der Knopf „Revanche" — der Gastgeber braucht nur ihn, niemand tippt einen Raumcode neu',
+      test: info,
+    });
+  });
+
+  test('spielziel AC-9: nach dem Klick spielen beide wieder, im selben Raum', async ({}, info) => {
+    const { anna, bert } = partie;
+    await anna.locator('#revanche').click();
+
+    // Beide sind in einer neuen Partie: kein Ende mehr, die Tafel ist weg, die
+    // Uhr faengt vorn an. Gewartet wird auf **beide** - der Gast bekommt den
+    // Aufbau, ohne etwas geklickt zu haben.
+    for (const seite of [anna, bert]) {
+      await seite.waitForFunction(() => {
+        const a = window.ansicht;
+        return a.ende === null && !a.aus && a.nachher.size > 0 && a.gebaeude.size > 0;
+      }, undefined, { timeout: 20_000 });
+      await expect(seite.locator('#abschluss')).toBeHidden();
+      await expect(seite.locator('#brett')).toBeVisible();
+      // Niemand war zwischendurch im Warteraum oder im Vorraum: der Raum ist
+      // derselbe, es wurde kein Code getippt.
+      await expect(seite.locator('#warteraum')).toBeHidden();
+      await expect(seite.locator('#vorraum')).toBeHidden();
+    }
+
+    // Berts Leute stehen wieder - und zwar so viele wie zum Start, obwohl von
+    // ihm eben nichts mehr auf der Karte war.
+    const berts = await bert.evaluate(() => {
+      const a = window.ansicht;
+      return {
+        lebend: [...a.nachher.values()].filter((e) => e.b === a.ich && !e.s).length,
+        gefallen: [...a.nachher.values()].filter((e) => e.b === a.ich && e.s).length,
+        gebaeude: [...a.gebaeude.values()].filter((g) => g.b === a.ich).length,
+        takt: a.takt,
+        zeitalter: a.zeitalter,
+      };
+    });
+    expect(berts.gefallen, 'kein Gefallener aus der alten Partie').toBe(0);
+    expect(berts.gebaeude, 'sein Dorfzentrum steht wieder').toBeGreaterThanOrEqual(1);
+    expect(berts.zeitalter, 'und es geht in der Dunklen Zeit los').toBe(0);
+    expect(berts.takt, 'die Uhr faengt vorn an').toBeLessThan(100);
+    expect(berts.lebend, 'so viele Leute wie zu Beginn der ersten Partie').toBe(bertsStart);
+
+    // Und beide koennen wieder aufgeben - der Knopf ist zurueck, also laeuft
+    // fuer sie beide eine Partie.
+    await expect(anna.locator('#aufgeben')).toBeVisible();
+    await expect(bert.locator('#aufgeben')).toBeVisible();
+    await expect(bert.locator('#zuschauer')).toBeHidden();
+    expect(await bedienteileFrei(bert)).toEqual([]);
+
+    await nachweis(bert, {
+      spec: SPIELZIEL,
+      ac: 'AC-9',
+      titel: 'Berts Sicht nach dem Klick des Gastgebers: er hat sein Dorfzentrum und seine Leute wieder, die Tafel ist weg — eben war er ausgeschieden',
       test: info,
     });
   });

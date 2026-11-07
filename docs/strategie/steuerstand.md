@@ -13,24 +13,22 @@ hier nichts eintraegt, verliert den Faden beim naechsten Autocompact.
 
 ## Zuletzt fortgeschrieben
 
-2026-11-07, nach Runde 83 (**Rueckschau**, kein neues Kriterium: alle 167
-Bildnachweise gelesen, 96 Paare Bild fuer Bild angesehen, **39 beanstandet**.
-Drei Verbesserungen gebaut - (1) `einheitenJeArt()` und der Stufe-B-Beweis
-verlangt **eine mehr** statt "mindestens eine", weil jeder Spieler mit einem
-Spaeherreiter startet; (2) die Spielerfarbe wird fuer **jede** Einheit aus
-`EINHEITEN` am Bild gemessen statt an drei aufgezaehlten Namen - der
-**Plaenkler** trug 3,9 %, jetzt 0,119; (3) elf Unterschriften auf das gekuerzt,
-was ihr Bild traegt. Der Rest steht als Rueckstand in den Erkenntnissen unter
-**Offene Faeden**. Davor Runde 82: spielziel AC-8, das Abschlussbild mit
-Zahlen. Als Naechstes aus **C3**: spielziel AC-9, die Revanche mit einem
-Klick - sie liegt am **Raum**, nicht an der Welt, ADR-0006 beachten. Damit
-waere C3 abgeschlossen, und es folgt C4, die kaempfende KI).
+2026-11-07, nach Runde 84 (**spielziel AC-9**, die Revanche mit einem Klick -
+**damit ist C3 abgeschlossen**. Gebaut ohne neue Nachricht: der Knopf unter der
+Tafel schickt `start`, und `raum.starten()` erlaubt einen zweiten Start,
+sobald `welt.vorbei` es sagt. Davor Runde 83, die **Rueckschau** ueber alle
+167 Bildnachweise - ihr Rueckstand von 28 Beanstandungen steht in den
+Erkenntnissen unter **Offene Faeden**, je zwei bis drei fuer eine spaetere
+Runde. Als Naechstes **C4: die kaempfende KI** - ki AC-10 bis AC-12 und AC-14,
+dazu fahrplan AC-11. Der erste Schritt dort ist `ki AC-10` (ein Dorfbewohner
+steht spaet in der Partie bis zu acht Minuten still) oder gleich das Heer:
+ab acht Kampfeinheiten angreifen, zwei bleiben zur Wache).
 
 ## Wo ich stehe
 
 - **Branch:** `strategie`. Nie auf `main` arbeiten, **nie pushen, nie deployen.**
-- **Board:** 384 von 516 Kriterien fertig · 1 in Arbeit · 5 in QA · 4 geplant ·
-  114 offen · 8 zurueckgestellt. 425 Tests ohne Browser, 162 im Browser.
+- **Board:** 385 von 516 Kriterien fertig · 1 in Arbeit · 5 in QA · 4 geplant ·
+  113 offen · 8 zurueckgestellt. 427 Tests ohne Browser, 164 im Browser.
 - **Vier Waechter in `tests/waechter-*.test.mjs`:** Gleichheit auf wachsenden
   Listen, verbesserbare Werte an `welt.einheitenwert()` vorbei,
   Bildunterschriften mit `${...}`, und (neu in Runde 73) die **Kuerzeltafel**
@@ -185,9 +183,35 @@ waere C3 abgeschlossen, und es folgt C4, die kaempfende KI).
   `rahmenUmAlle`, `eigeneImBild` und `waldInDerNaehe` sind dafuer aus
   `strategie-spielbild.spec.mjs` in die Hilfe gezogen - der Test spielt erst
   eine Partie, weil eine Tafel voller Nullen nichts belegt.
-- **Als Naechstes aus C3:** `AC-9` (Revanche mit einem Klick; die liegt am
-  Raum, nicht an der Welt - ADR-0006 beachten). Danach ist C3 fertig und C4
-  beginnt: die kaempfende KI.
+- **`spielziel AC-9` ist fertig** (Runde 84), **damit steht C3**. **Wie es
+  gebaut ist:** die Revanche ist ein **zweiter Start desselben Raums** - kein
+  neuer Nachrichtentyp. `raum.starten()` weist einen zweiten Start nur noch ab,
+  solange `!welt.vorbei`; danach wirft es die Nicht-mehr-Verbundenen aus der
+  Liste (ein Platz ohne jemanden daran waere ein Gegner, der nichts tut),
+  raeumt die Uhr ab und erzeugt neu. Damit gelten Gastgeberpruefung,
+  Startwertwahl und die Absage "Es fehlen Mitspieler" unveraendert weiter.
+  **Der Startwert ist eine Einstellung wie jede andere**: steht er auf
+  "zufaellig", ist die Karte neu; steht eine Zahl (wie im Browserlauf: 4711),
+  spielen alle dieselbe Karte noch einmal. `beitreten` und `einstellen` bleiben
+  gesperrt - dieselben Leute, dieselben Einstellungen.
+  **Im Browser war die Arbeit groesser als auf dem Server:** `ansicht.aufbau()`
+  setzt jetzt alles zurueck, was einer Partie gehoert - allen voran den
+  **Kachel-Zwischenspeicher des Bodens** (`this.kacheln`, nach Feldkoordinate
+  abgelegt; auf einer neuen Karte haette er das alte Gelaende gezeigt), dazu
+  Auswahl, Zielzeichen, Angriffslauf, Untaetige, Verbesserungen, Takt,
+  **Zeitalter** (sonst meldet der erste Zustand einen Wechsel zurueck in die
+  Dunkle Zeit), `ende` und `aus`; und es ruft `beiFeldern()`, damit die
+  Uebersichtskarte ihr Gelaende neu malt. In `app.js` raeumt
+  `partieraumAufraeumen()` das Abschlussbild weg und setzt die Rohstoffleiste
+  zurueck (sonst zaehlt sie vom Stand der alten Partie herunter).
+  **`binGastgeber` wird aus der `raum`-Nachricht gemerkt** - im Spiel kommt
+  keine mehr. Der Gast bekommt keinen Knopf, sondern den Satz "Der Gastgeber
+  kann eine Revanche starten": ein Knopf, der mit einer Absage antwortet, waere
+  schlimmer als keiner.
+  **Gelernt, fuer jedes weitere Feld im Abschlussbild:** der Kasten waechst mit
+  jeder Zeile nach unten, und die neue Zeile lag genau auf den Gefallenen im
+  Bild von `spielziel AC-6`. Der Test setzt die Kamera jetzt tiefer und
+  **zaehlt**, wie viele Gefallene frei unter der Tafel liegen.
 - **Der Gefechtsstand** (neu in Runde 71) steht in
   `server/spiele/strategie/pruefstand.js` als `gefechtSpielen`:
   `npm run konterkreis:strategie` stellt zwei Heere gleicher Kosten auf freiem

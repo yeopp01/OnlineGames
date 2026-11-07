@@ -2,7 +2,7 @@
 
 **Bereich:** Strategie
 **Kuerzel:** spielziel
-**Stand:** 4/18 fertig · 1 in Arbeit · 13 offen
+**Stand:** 5/18 fertig · 1 in Arbeit · 12 offen
 
 ## Zweck
 
@@ -93,8 +93,15 @@ eigenen Technikbaum ([Vorlage](../../docs/strategie/vorlage-aoe2.md)).
   erreichtes Zeitalter, dazu Sieger und Dauer der Partie. Der Stoff, aus dem
   Revanchen entstehen. Die Zahlen zählt der Server über die ganze Partie mit,
   damit sie auch für einen stimmen, der früh ausgeschieden ist.
-- **AC-9** `offen` **Revanche mit einem Klick** — Vom Abschlussbild aus startet dieselbe Runde neu,
-  ohne dass jemand einen Code neu eintippen muss.
+- **AC-9** `fertig` **Revanche mit einem Klick** — Vom Abschlussbild aus startet dieselbe Runde neu,
+  ohne dass jemand einen Code neu eintippen muss. Die Revanche ist **ein
+  zweiter Start desselben Raums**: dieselben Leute, dieselben Einstellungen,
+  eine neue Welt. Sie liegt am **Raum**, nicht am Spiel — der Raum weiß nur,
+  dass die Welt `vorbei` sagt (ADR-0006). Der Startwert der Karte ist eine
+  Einstellung wie jede andere: steht er auf „zufällig", ist die Karte neu;
+  steht eine Zahl, spielen alle dieselbe Karte noch einmal. Wer in der letzten
+  Partie die Verbindung verloren hat, spielt nicht mit — ein Platz, an dem
+  niemand sitzt, wäre ein Gegner, der nichts tut.
 
 ### Gleichgewicht
 
