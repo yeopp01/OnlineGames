@@ -13,16 +13,16 @@ hier nichts eintraegt, verliert den Faden beim naechsten Autocompact.
 
 ## Zuletzt fortgeschrieben
 
-2026-11-07, nach Runde 79 (**spielziel AC-5 und AC-6 sind fertig**: das
-Partieende rechnet, Aufgeben geht, beide sehen dasselbe Ergebnis. Damit fehlt
-aus C2 nur noch `bedienung AC-38`, der Knopf mit Rueckfrage. Davor Runde 78:
-Rueckschau zum Bilderwerkzeug; Runde 77: **C1 ist fertig**).
+2026-11-07, nach Runde 80 (**bedienung AC-38 ist fertig, damit steht C2**:
+Aufgeben als Knopf oben rechts mit genau einer Rueckfrage. Davor Runde 79:
+spielziel AC-5 und AC-6, das Partieende rechnet. Als Naechstes **C3**:
+Abschlussbild, Zuschauen, Revanche - spielziel AC-7 bis AC-9).
 
 ## Wo ich stehe
 
 - **Branch:** `strategie`. Nie auf `main` arbeiten, **nie pushen, nie deployen.**
-- **Board:** 381 von 516 Kriterien fertig · 1 in Arbeit · 5 in QA · 4 geplant ·
-  117 offen · 8 zurueckgestellt. 419 Tests ohne Browser, 157 im Browser.
+- **Board:** 382 von 516 Kriterien fertig · 1 in Arbeit · 5 in QA · 4 geplant ·
+  116 offen · 8 zurueckgestellt. 419 Tests ohne Browser, 159 im Browser.
 - **Vier Waechter in `tests/waechter-*.test.mjs`:** Gleichheit auf wachsenden
   Listen, verbesserbare Werte an `welt.einheitenwert()` vorbei,
   Bildunterschriften mit `${...}`, und (neu in Runde 73) die **Kuerzeltafel**
@@ -126,8 +126,32 @@ Rueckschau zum Bilderwerkzeug; Runde 77: **C1 ist fertig**).
   um", `app.js` stellt es als `#partieende` ins Bild - eine Meldung, die
   **stehen bleibt**. Der Pruefgriff `aufgeben` in `e2e/server.mjs` schickt
   dieselbe Nachricht wie spaeter der Knopf.
-- **Als Naechstes: `bedienung AC-38`**, Aufgeben als Knopf mit genau einer
-  Rueckfrage. Danach C3 (Abschlussbild, Zuschauen, Revanche).
+- **`bedienung AC-38` ist fertig** (Runde 80), **damit steht C2**. Der Knopf
+  sitzt oben rechts in der Kopfzeile (`#aufgeben`), die Rueckfrage ist
+  `#aufgebenfrage` - ein Feld ueber dem Spielfeld bei 28 % der Hoehe, damit
+  die Basis darunter sichtbar bleibt. Erst der zweite Klick schickt
+  `{auftrag: 'aufgeben'}`. **Drei Dinge, die beim Hinsehen herauskamen und
+  fuer jede weitere Rueckfrage gelten:** die Klasse `haupt` traegt `flex: 1`,
+  der gefaehrliche Knopf waere also der groesste geworden (jetzt
+  `flex: 0 0 auto`, Ausweg zuerst); die Kopfzeile nimmt keine Klicks an
+  (`pointer-events: none`), ein Knopf darin braucht `pointer-events: auto`;
+  und Esc schliesst die Frage ueber einen Lauscher, der **nur offen**
+  angemeldet ist und `stopPropagation` ruft - sonst haette dieselbe Taste
+  zugleich die Auswahl aufgehoben (bedienung AC-15). Der Knopf verschwindet,
+  sobald `ansicht.aus` oder `ansicht.ende` steht; `aus` kommt als `aus: 1` am
+  Spieler im Zustand. **Das vierte Ding fand erst `qa:abweichung`:** ein neues
+  Teil in der Kopfzeile nimmt einem anderen den Platz. Im 1000-Punkt-Fenster
+  von `bedienung AC-36` brach der Bedienhinweis auf fuenf Zeilen um und stand
+  als Treppe im Spielfeld. `#hinweis` hat jetzt `white-space: nowrap` und
+  verschwindet unter 1340 Punkten (`#kartenwert` erst unter 560). Wer wieder
+  etwas in die Kopfzeile legt, rechnet nach: Rohstoffe, Zeitalter, Uhr, Karte
+  und Aufgeben brauchen zusammen rund 1260 Punkte. Nur zwei Dateien setzen ein
+  schmaleres Fenster - `strategie-unterscheidbar` (1300, 1000) und
+  `strategie-bauen` (1200); fuer die reicht danach
+  `npm run qa:nachweis -- strategie-unterscheidbar strategie-bauen`.
+- **Als Naechstes: C3** - `spielziel AC-7` (ausgeschieden und doch zusehen),
+  `AC-8` (Abschlussbild mit Zahlen: der Server muss dafuer ueber die ganze
+  Partie mitzaehlen) und `AC-9` (Revanche mit einem Klick).
 - **Der Gefechtsstand** (neu in Runde 71) steht in
   `server/spiele/strategie/pruefstand.js` als `gefechtSpielen`:
   `npm run konterkreis:strategie` stellt zwei Heere gleicher Kosten auf freiem

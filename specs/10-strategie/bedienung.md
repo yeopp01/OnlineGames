@@ -2,7 +2,7 @@
 
 **Bereich:** Strategie
 **Kuerzel:** bedienung
-**Stand:** 26/38 fertig · 12 offen
+**Stand:** 27/38 fertig · 11 offen
 
 ## Zweck
 
@@ -166,7 +166,7 @@ Reihenfolge:
 
 ### Aus Stufe C (Partieende)
 
-- **AC-38** `offen` **Aufgeben fragt einmal zurück** — Aufgeben ist im Spiel
+- **AC-38** `fertig` **Aufgeben fragt einmal zurück** — Aufgeben ist im Spiel
   erreichbar und fragt genau einmal zurück; ein Fehlklick beendet die Partie
   nicht. Danach sieht der Spieler das Abschlussbild und darf zusehen
   ([Spielziel](spielziel.md) AC-6, AC-7). Erreichbar heißt: ein Knopf, der nicht

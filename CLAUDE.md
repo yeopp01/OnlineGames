@@ -153,7 +153,7 @@ Umfang hinzufügt, dort nachsehen.
 
 ## Stand
 
-**381 von 516 Kriterien fertig.** 419 Tests ohne Browser, 157 im Browser. Die
+**382 von 516 Kriterien fertig.** 419 Tests ohne Browser, 159 im Browser. Die
 Übersicht ist der Bericht: `npm run qa:report`.
 
 Gebaut ist der Unterbau: Räume, Übertragung, Karte, Wegfindung, Sammeln,
@@ -267,13 +267,16 @@ oder Nachladezeit dreht, fährt ihn danach. Die **Rückschau zur Stufe B** hat
 drei Lücken angelegt, alle in der Lesbarkeit (bedienung AC-35 bis AC-37):
 Kampfwerte an der Auswahl, Militär bei Zoom 1 vom Dorfbewohner unterscheidbar,
 Spielzeit im Bild. **Stufe C ist spezifiziert** (Bauabfolge C1 bis C6), und
-**C1 ist fertig**: die drei Lücken stehen. **Aus C2 rechnet das Partieende**:
+**C1 und C2 sind fertig**. C1: die drei Lücken stehen. **C2 — das Partieende**:
 ausgeschieden ist, wer weder Einheit noch Gebäude außer Farmen hat; bleibt
 einer übrig, endet die Partie in demselben Takt, in dem der letzte Verlust
 abgerechnet wird; nach 90 Spielminuten endet sie unentschieden; Aufgeben ist
 der schnelle Weg dorthin. Entschieden wird in der **Welt**, der **Raum** fragt
 nur `welt.vorbei` und hält daran seine Uhr an (ADR-0006). Im Bild steht eine
-Meldung, die stehen bleibt. Es folgen der Aufgeben-Knopf, das Abschlussbild,
+Meldung, die stehen bleibt. **Aufgeben ist ein Knopf oben rechts** — dort, wo
+im Spiel nichts geklickt wird — und er fragt genau einmal zurück; Esc und
+„Weiterspielen" sind die zwei Auswege, der gefährliche Knopf ist nicht der
+größte. Es folgen das Abschlussbild,
 dann die **kämpfende KI** (ab acht Kampfeinheiten greift sie an, zwei bleiben
 zur Wache), Mensch gegen KI — und **zuletzt der Nebel**, weil er die
 Zustandsnachricht umbaut.

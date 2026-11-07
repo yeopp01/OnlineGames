@@ -106,6 +106,13 @@
       <p id="zeitalterwechsel" class="zeitalterwechsel" role="status" hidden></p>
       <p id="partieende" class="partieende" role="status" hidden></p>
       <div id="tastenuebersicht" class="tastenuebersicht" role="dialog" aria-label="Tastenübersicht" hidden></div>
+      <div id="aufgebenfrage" class="aufgebenfrage" role="dialog" aria-modal="true" aria-label="Partie aufgeben" hidden>
+        <p>Partie wirklich aufgeben? Alles, was dir gehört, fällt — das lässt sich nicht zurücknehmen.</p>
+        <div class="reihe">
+          <button id="aufgebenNein" class="leise-knopf" type="button">Weiterspielen</button>
+          <button id="aufgebenJa" class="haupt" type="button">Ja, aufgeben</button>
+        </div>
+      </div>
       <canvas id="uebersicht" class="uebersicht" title="Übersichtskarte - klicken springt hin" aria-label="Übersichtskarte"></canvas>
       <button id="untaetig" class="untaetig" type="button" title="Untätige Dorfbewohner (Taste .)" aria-label="Untätige Dorfbewohner: 0" disabled>
         <svg viewBox="0 0 20 20" aria-hidden="true"><circle cx="10" cy="5" r="3" fill="#e2b48c"/><path d="M5 18c0-6 2-8.5 5-8.5s5 2.5 5 8.5z" fill="#8a8f96"/><path d="M13 12l4 5" stroke="#6b4a2b" stroke-width="1.4"/></svg>
@@ -145,7 +152,10 @@
           </span>
           <span id="kartenwert" class="hinweis"></span>
         </span>
-        <span id="hinweis" class="hinweis">Ziehen waehlt aus · Rechtsklick befiehlt · WASD schiebt die Karte</span>
+        <span class="leiste">
+          <span id="hinweis" class="hinweis">Ziehen wählt aus · Rechtsklick befiehlt · WASD schiebt die Karte</span>
+          <button id="aufgeben" class="aufgeben" type="button" title="Die Partie aufgeben">Aufgeben</button>
+        </span>
       </div>
     </div>
 

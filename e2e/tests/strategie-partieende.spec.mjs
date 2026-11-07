@@ -8,9 +8,100 @@
 // bedienung AC-38. Der Griff schickt dieselbe Nachricht wie spaeter der Knopf.
 import { nachweis } from '../../scripts/qa-nachweis.mjs';
 import { aufgebenLassen, expect, test, zeitraffer } from '../helpers/seite.mjs';
-import { bedienteileFrei, partieBeenden, partieZuZweit } from '../helpers/strategie.mjs';
+import { bedienteileFrei, dorfbewohnerAnklicken, partieBeenden, partieZuZweit } from '../helpers/strategie.mjs';
 
 const SPIELZIEL = '10-strategie/spielziel.md';
+const BEDIENUNG = '10-strategie/bedienung.md';
+
+// Aufgeben ueber den Knopf, mit der einen Rueckfrage - eine eigene Partie,
+// weil sie dabei zu Ende geht. Hier wird nichts gegriffen: geklickt wird, was
+// auch ein Mensch klickt.
+test.describe('Aufgeben im Bild', () => {
+  test.describe.configure({ mode: 'serial' });
+  let partie;
+
+  test.beforeAll(async ({ browser }, info) => {
+    partie = await partieZuZweit(browser, info);
+  });
+  test.afterAll(() => partieBeenden(partie));
+
+  test('bedienung AC-38: der Knopf fragt einmal zurueck, ein Fehlklick beendet nichts', async ({}, info) => {
+    const { anna, code } = partie;
+    await expect(anna.locator('#aufgeben')).toBeInViewport();
+    await expect(anna.locator('#aufgebenfrage')).toBeHidden();
+
+    // Eine halbe Spielminute, damit im Bild eine Partie laeuft und nicht eine
+    // beginnt (gelernt in Runde 79).
+    await zeitraffer(anna, code, 10);
+    await anna.waitForFunction(() => window.ansicht.takt >= 300, undefined, { timeout: 15_000 });
+
+    // Mit ausgewaehltem Dorfbewohner: dann steht die Auswahlleiste mit dem
+    // Baumenue unten, also der breiteste Zustand - dort muss die Rueckfrage
+    // frei liegen.
+    const gewaehlt = await dorfbewohnerAnklicken(anna, { code });
+    await anna.keyboard.press('b');
+    await expect(anna.locator('#baumenue')).toBeVisible();
+
+    // Erster Klick: die Frage, sonst nichts. Das ist der Fehlklick.
+    await anna.locator('#aufgeben').click();
+    await expect(anna.locator('#aufgebenfrage')).toBeInViewport();
+    await expect(anna.locator('#aufgebenfrage')).toContainText('Partie wirklich aufgeben?');
+    expect(await anna.evaluate(() => window.ansicht.ende), 'der erste Klick entscheidet nichts').toBe(null);
+    expect(await bedienteileFrei(anna)).toEqual([]);
+
+    await nachweis(anna, {
+      spec: BEDIENUNG,
+      ac: 'AC-38',
+      titel: 'Der Knopf „Aufgeben" oben rechts ist geklickt: die Rückfrage steht über dem Spielfeld, entschieden ist noch nichts',
+      test: info,
+    });
+
+    // Esc ist der zweite Ausweg. Er schliesst nur die Frage: die Auswahl
+    // darunter bleibt stehen, obwohl dieselbe Taste sonst die Auswahl aufhebt
+    // (bedienung AC-15).
+    await anna.keyboard.press('Escape');
+    await expect(anna.locator('#aufgebenfrage')).toBeHidden();
+    expect(await anna.evaluate(() => [...window.ansicht.ausgewaehlt]), 'die Auswahl steht noch')
+      .toEqual([gewaehlt]);
+    await anna.locator('#aufgeben').click();
+    await expect(anna.locator('#aufgebenfrage')).toBeVisible();
+
+    // Weiterspielen: die Frage ist weg, die Partie laeuft wirklich weiter -
+    // der Takt steigt, und alles von Anna steht noch.
+    const vorher = await anna.evaluate(() => window.ansicht.takt);
+    await anna.locator('#aufgebenNein').click();
+    await expect(anna.locator('#aufgebenfrage')).toBeHidden();
+    await anna.waitForFunction((t) => window.ansicht.takt > t + 20, vorher, { timeout: 15_000 });
+    const nachAbbruch = await anna.evaluate(() => {
+      const a = window.ansicht;
+      return {
+        ende: a.ende,
+        lebend: [...a.nachher.values()].filter((e) => e.b === a.ich && !e.s).length,
+        gebaeude: [...a.gebaeude.values()].filter((g) => g.b === a.ich).length,
+      };
+    });
+    expect(nachAbbruch.ende, 'kein Ende nach dem Abbruch').toBe(null);
+    expect(nachAbbruch.lebend, 'die Dorfbewohner leben weiter').toBeGreaterThan(0);
+    expect(nachAbbruch.gebaeude, 'das Dorfzentrum steht weiter').toBeGreaterThan(0);
+    await expect(anna.locator('#aufgeben')).toBeVisible();
+  });
+
+  test('bedienung AC-38: erst der zweite Klick gibt auf', async () => {
+    const { anna } = partie;
+    await anna.locator('#aufgeben').click();
+    await anna.locator('#aufgebenJa').click();
+    await anna.waitForFunction(() => window.ansicht.ende !== null, undefined, { timeout: 15_000 });
+
+    const ende = await anna.evaluate(() => window.ansicht.ende);
+    expect(ende.grund).toBe('eroberung');
+    const sieger = await anna.evaluate((id) => window.ansicht.spieler.get(id)?.name, ende.sieger);
+    expect(sieger, 'der andere gewinnt').toBe('Bert');
+    await expect(anna.locator('#partieende')).toHaveText('Bert hat gewonnen');
+    await expect(anna.locator('#aufgebenfrage')).toBeHidden();
+    // Zweimal aufgeben kann niemand: der Knopf ist weg.
+    await expect(anna.locator('#aufgeben')).toBeHidden();
+  });
+});
 
 test.describe('Partieende', () => {
   test.describe.configure({ mode: 'serial' });

@@ -1,0 +1,10 @@
+{
+  "spec": "10-strategie/bedienung.md",
+  "ac": "AC-38",
+  "titel": "Der Knopf „Aufgeben\" oben rechts ist geklickt: die Rückfrage steht über dem Spielfeld, entschieden ist noch nichts",
+  "datei": "e2e/tests/strategie-partieende.spec.mjs",
+  "pfad": [
+    "Aufgeben im Bild",
+    "bedienung AC-38: der Knopf fragt einmal zurueck, ein Fehlklick beendet nichts"
+  ]
+}

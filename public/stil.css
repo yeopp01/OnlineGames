@@ -206,6 +206,10 @@ canvas.angriffslauf {
 .hinweis {
   color: var(--leise);
   font-size: 0.82rem;
+  /* Nie umbrechen: in einem schmalen Fenster stand der Hinweis sonst als
+     fuenfzeilige Treppe im Spielfeld (gesehen in Runde 80, als der Knopf
+     "Aufgeben" daneben kam). Zu eng heisst: weg, nicht gestapelt. */
+  white-space: nowrap;
 }
 
 .leiste {
@@ -255,6 +259,16 @@ canvas.angriffslauf {
   color: var(--leise);
 }
 
+/* Rohstoffe, Zeitalter, Uhr, Karte und der Knopf "Aufgeben" brauchen zusammen
+   rund 1260 Bildpunkte. Darunter geht der Hinweis: er ist eine Erinnerung, der
+   Knopf eine Handlung. */
+@media (max-width: 1340px) {
+  #hinweis {
+    display: none;
+  }
+}
+
+/* Noch schmaler: auch die Kartenzahl geht. */
 @media (max-width: 560px) {
   .hinweis {
     display: none;
@@ -679,6 +693,64 @@ canvas.angriffslauf {
   margin: 0.8rem 0 0;
   color: #9aa3ad;
   font-size: 0.85rem;
+}
+
+/* ---- Aufgeben (bedienung AC-38) -----------------------------------------
+   Der Knopf steht oben rechts, am weitesten weg von allem, was oft geklickt
+   wird: Auswahlleiste unten, untaetige Dorfbewohner unten links,
+   Uebersichtskarte unten rechts. Die Kopfzeile selbst nimmt keine Klicks an
+   (`pointer-events: none`), dieser Knopf schon. */
+
+.aufgeben {
+  padding: 0.3rem 0.8rem;
+  border-color: #ffffff24;
+  background: #161b22cc;
+  color: #d8b3ad;
+  font-size: 0.82rem;
+  pointer-events: auto;
+}
+
+.aufgeben:hover {
+  border-color: #b4473f;
+  color: #ffd2c9;
+}
+
+/* Die Rueckfrage: genau eine, und sie liegt ueber dem Spielfeld. */
+.aufgebenfrage {
+  position: fixed;
+  left: 50%;
+  top: 28%;
+  transform: translate(-50%, -50%);
+  min-width: 22rem;
+  max-width: calc(100vw - 2rem);
+  padding: 1.2rem 1.5rem;
+  border: 1px solid #ffffff30;
+  border-radius: 0.9rem;
+  background: #12161ef5;
+  color: #e6e9ee;
+  box-shadow: 0 10px 40px #000b;
+  z-index: 20;
+}
+
+.aufgebenfrage p {
+  margin: 0 0 1rem;
+}
+
+/* Der gefaehrliche Knopf wird nicht der groesste: `.haupt` waere sonst breit
+   und der sichere Ausweg klein. Beide gleich gross, der Ausweg zuerst. */
+.aufgebenfrage .reihe {
+  justify-content: flex-end;
+}
+
+.aufgebenfrage .haupt {
+  flex: 0 0 auto;
+  background: #b4473f;
+  border-color: #b4473f;
+  color: #fff2ee;
+}
+
+.aufgebenfrage .haupt:hover {
+  background: #c75850;
 }
 
 .bauname {

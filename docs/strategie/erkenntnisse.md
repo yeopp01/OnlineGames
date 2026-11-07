@@ -62,8 +62,15 @@ etwas anderem gearbeitet.
 
 ## Offene Fäden
 
-- **Eine Bildunterschrift, die nicht stimmt: `bedienung AC-16`** (gesehen in
-  Runde 79 beim Durchsehen der Abweichungen). Sie sagt „Nah herangeholt: ein
+- **Zwei Bildunterschriften, die nicht stimmen: `bedienung AC-16` und
+  `einheiten AC-15`.** Bei `einheiten AC-15` (gesehen in Runde 80) verspricht
+  die Unterschrift „ein Dorfbewohner trägt gelbe Goldbrocken in beiden
+  Händen"; im Bild stehen die drei hinter dem Goldvorkommen und werden
+  deshalb als blaue Umrisse gezeichnet (bedienung AC-30) — von Goldbrocken ist
+  nichts zu sehen. Das Verhalten ist richtig, das Bild zeigt nur nicht, was die
+  Unterschrift behauptet; im alten Bild war es genauso, also kein Rückschritt.
+  Abhilfe: die Kamera so stellen, dass einer der drei vor dem Vorkommen steht.
+  Bei `bedienung AC-16` (gesehen in Runde 79) sagt sie „Nah herangeholt: ein
   beladener Dorfbewohner am Waldrand", das Bild zeigt aber das ganze
   Dorfzentrum bei Spielgröße, und der Beladene steht klein am linken Rand.
   Entweder der Test holt für dieses eine Bild heran (wie es Runde 79 für
@@ -228,6 +235,9 @@ Zahlen, gegen die spätere Runden vergleichen. Mit Datum und Commit.
 | 2026-11-07 | Tests ohne Browser / im Browser; `npm run check:alles:neu:kurz` | 419 / 157; 572 s | Runde 79 |
 | 2026-11-07 | Pruefstand nach dem Partieende (20 Startwerte x 16 min) | unveraendert: Feudalzeit 11,1–11,9 min (Median 11,6), 22 Dorfbewohner, keine Widersprueche, 3,5 s | Runde 79 |
 | 2026-11-07 | Geaenderte Bildnachweise nach dem `:neu`-Lauf | 94: **12 ueber 1 %** (2 neu, 10 Kamerazittern zwischen 55 und 91 %), 82 darunter — wieder nichts zwischen 0,53 % und 55 % | Runde 79 |
+| 2026-11-07 | Tests ohne Browser / im Browser; `npm run check:alles:neu:kurz` | 419 / 159; 647 s | Runde 80 |
+| 2026-11-07 | Geaenderte Bildnachweise nach dem `:neu`-Lauf | 114: **12 ueber 1 %** (1 neu, 11 zwischen 1,2 % und 98 %), 102 darunter, alle unter 0,97 % | Runde 80 |
+| 2026-11-07 | Davon ein echter Rueckschritt beim Durchsehen | 1 von 12: der Bedienhinweis brach im 1000-px-Fenster auf fuenf Zeilen um, weil der Knopf „Aufgeben“ daneben kam | Runde 80 |
 
 ## Rückschauen
 
@@ -713,6 +723,25 @@ alle sieben Gebäude der Dunklen Zeit stehen. Was sich wiederholt hat:
 Neueste oben. Eine Zeile je Runde: Nummer, Datum, Kriterien, Ergebnis,
 wichtigste Erkenntnis.
 
+- **80** · 2026-11-07 · **bedienung AC-38** — Aufgeben ist ein Knopf oben
+  rechts, am weitesten weg von allem, was im Spiel oft geklickt wird
+  (Auswahlleiste unten, Untätige unten links, Übersichtskarte unten rechts),
+  und er fragt genau einmal zurück. **Damit ist C2 fertig.** Gelernt beim
+  Hinsehen: **der gefährliche Knopf darf nicht der größte sein.** Die Klasse
+  `haupt` trägt `flex: 1`, also war „Ja, aufgeben" dreimal so breit wie
+  „Weiterspielen" — genau verkehrt herum für eine Frage, deren sichere
+  Antwort die häufigere ist. Jetzt sind beide gleich groß, der Ausweg steht
+  zuerst. Zweitens: **die Rückfrage gehört über die Basis, nicht auf sie** —
+  bei 38 % der Höhe verdeckte sie das Dorfzentrum, bei 28 % steht die Partie
+  im Bild. Und: Esc schließt die Frage, **ohne** darunter die Auswahl
+  aufzuheben (`stopPropagation` in einem Lauscher, der nur offen angemeldet
+  ist) — der Test prüft genau das, sonst hätte dieselbe Taste zwei Dinge
+  getan. Drittens, erst beim Durchsehen der 114 geänderten Bilder gefunden:
+  **ein neues Ding in der Kopfzeile nimmt einem anderen den Platz.** Im
+  1000-Punkt-Fenster von `bedienung AC-36` brach der Bedienhinweis auf fünf
+  Zeilen um und stand als Treppe im Spielfeld. Jetzt bricht er nie
+  (`white-space: nowrap`) und verschwindet unter 1340 Punkten ganz — er ist
+  eine Erinnerung, der Knopf eine Handlung.
 - **79** · 2026-11-07 · **spielziel AC-5, AC-6** — das Partieende rechnet:
   wer keine Einheit und kein Gebäude außer Farmen mehr hat, ist ausgeschieden;
   bleibt einer übrig, endet die Partie im selben Takt, in dem der letzte

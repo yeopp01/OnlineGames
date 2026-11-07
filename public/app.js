@@ -113,6 +113,7 @@ function empfangen(nachricht) {
       zeigen('spiel');
       teile.kartenwert.textContent = `· Karte ${nachricht.startwert}`;
       ansicht.aufbau(nachricht, ich);
+      aufgebenZeigen();
       break;
 
     case 'zustand':
@@ -124,6 +125,7 @@ function empfangen(nachricht) {
       arbeiterZeigen(ansicht.arbeiter);
       zeitalterZeigen(ansicht.zeitalterName());
       spielzeitZeigen(ansicht.spielzeit());
+      aufgebenZeigen();
       break;
 
     case 'fehler':
@@ -175,7 +177,49 @@ function partieendeZeigen(text) {
   const ort = document.getElementById('partieende');
   ort.textContent = text;
   ort.hidden = false;
+  aufgebenFrageSchliessen();
+  aufgebenZeigen();
 }
+
+// ---- Aufgeben (bedienung AC-38) ------------------------------------------
+// Der Knopf steht oben rechts, weit weg von allem, was im Spiel oft geklickt
+// wird. Er fragt **genau einmal** zurueck: erst der zweite Klick, im
+// Rueckfragefeld, schickt den Auftrag. Ein Fehlklick auf "Aufgeben" kostet
+// nichts. Wer schon ausgeschieden ist oder dessen Partie vorbei ist, sieht
+// den Knopf nicht mehr - zweimal aufgeben kann niemand (spielziel AC-6).
+const aufgebenKnopf = document.getElementById('aufgeben');
+const aufgebenFrage = document.getElementById('aufgebenfrage');
+
+function aufgebenZeigen() {
+  aufgebenKnopf.hidden = !ansicht || ansicht.aus || ansicht.ende !== null;
+}
+
+function aufgebenFrageTaste(e) {
+  if (e.key !== 'Escape') return;
+  // Nicht weiter: sonst hebt dieselbe Taste darunter die Auswahl auf.
+  e.stopPropagation();
+  aufgebenFrageSchliessen();
+}
+
+function aufgebenFrageOeffnen() {
+  if (!ansicht || ansicht.ende) return;
+  aufgebenFrage.hidden = false;
+  window.addEventListener('keydown', aufgebenFrageTaste, true);
+  document.getElementById('aufgebenNein').focus();
+}
+
+function aufgebenFrageSchliessen() {
+  if (aufgebenFrage.hidden) return;
+  aufgebenFrage.hidden = true;
+  window.removeEventListener('keydown', aufgebenFrageTaste, true);
+}
+
+aufgebenKnopf.addEventListener('click', aufgebenFrageOeffnen);
+document.getElementById('aufgebenNein').addEventListener('click', aufgebenFrageSchliessen);
+document.getElementById('aufgebenJa').addEventListener('click', () => {
+  aufgebenFrageSchliessen();
+  senden({ typ: 'befehl', auftrag: 'aufgeben' });
+});
 
 function zeitalterwechselMelden(name) {
   const ort = document.getElementById('zeitalterwechsel');

@@ -96,6 +96,9 @@ export class Ansicht {
     // seine Uhr an, aber ein zurueckkehrender Spieler bekommt es im Aufbau.
     this.ende = null;
     this.beiEnde = () => {};
+    // Bin ich ausgeschieden? Der Server sagt es in jedem Zustand; der
+    // Aufgeben-Knopf haengt daran (bedienung AC-38).
+    this.aus = false;
     this.blicke = new Map(); // Einheit → -1 links, 1 rechts
     this.tiere = new Map();
     this.vorraete = { holz: 0, nahrung: 0, gold: 0, stein: 0, bev: 0, raum: 0 };
@@ -135,7 +138,10 @@ export class Ansicht {
     this.gebaeude = new Map((nachricht.gebaeude || []).map((g) => [g.i, g]));
 
     const meine = this.spieler.get(ichId);
-    if (meine) this.blickAuf(meine.basis.x, meine.basis.y);
+    if (meine) {
+      this.blickAuf(meine.basis.x, meine.basis.y);
+      this.aus = meine.aus === 1;
+    }
     // Wer nach dem Ende zurueckkommt, sieht es sofort (spielziel AC-5).
     if (nachricht.ende) this.endeMerken(nachricht.ende);
 
@@ -185,6 +191,7 @@ export class Ansicht {
 
     const meine = nachricht.spieler.find((s) => s.id === this.ich);
     if (meine) {
+      this.aus = meine.aus === 1;
       const { holz, nahrung, gold, stein, bev, raum } = meine;
       this.vorraete = { holz, nahrung, gold, stein, bev, raum };
       this.verbesserungen = meine.v || [];
