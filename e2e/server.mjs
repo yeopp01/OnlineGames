@@ -178,18 +178,6 @@ const griffe = http.createServer(async (anfrage, antwortGriff) => {
       antwortGriff.writeHead(200, { 'Content-Type': 'application/json', Connection: 'close' }).end(JSON.stringify({ ok: true }));
       return;
     }
-    // Den Nebel fuer einen Spieler aufheben (Runde 105): fuer Tests, die von
-    // etwas anderem handeln und dafuer die ganze Karte brauchen - Gelaende und
-    // fremde Punkte auf der Uebersichtskarte (bedienung AC-11). Den Nebel selbst
-    // prueft e2e/tests/strategie-nebel.spec.mjs.
-    if (befehl === 'aufdecken') {
-      const welt = laufend.raeume.finden(id)?.welt;
-      const spieler = welt?.spieler.find((s) => s.name === werte.name);
-      if (!spieler) throw new Error(`Spieler ${werte.name} gibt es in Raum ${id} nicht.`);
-      spieler.alles = true;
-      antwortGriff.writeHead(200, { 'Content-Type': 'application/json', Connection: 'close' }).end(JSON.stringify({ ok: true }));
-      return;
-    }
     if (befehl === 'zeitraffer') {
       const raum = laufend.raeume.finden(id);
       if (!raum) throw new Error(`Raum ${id} gibt es nicht.`);

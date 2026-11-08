@@ -3,7 +3,7 @@
 // Rahmen - und ein Klick springt hin. Die Uebersicht legt, was sie malt, in
 // `window.uebersicht` ab; das Gelaende prueft der Test an den Bildpunkten.
 import { nachweis } from '../../scripts/qa-nachweis.mjs';
-import { aufdecken, expect, test } from '../helpers/seite.mjs';
+import { expect, test } from '../helpers/seite.mjs';
 import { partieBeenden, partieZuZweit } from '../helpers/strategie.mjs';
 
 const BEDIENUNG = '10-strategie/bedienung.md';
@@ -22,12 +22,10 @@ function innen(punkt, ecken) {
 test.describe('Uebersichtskarte', () => {
   let partie;
   test.beforeAll(async ({ browser }, info) => {
-    partie = await partieZuZweit(browser, info);
-    // Ohne Nebel: hier geht es um Gelaende, Punkte beider Spieler und den
-    // Rahmen auf der ganzen Karte. Den Nebel auf der Uebersicht prueft
-    // darstellung AC-15 (strategie-nebel.spec.mjs).
-    await aufdecken(partie.anna, partie.code, 'Anna');
-    await partie.anna.waitForFunction(() => window.ansicht.allesSehen === true);
+    // Aufgedeckt (kampf AC-16): hier geht es um Gelaende, Punkte beider
+    // Spieler und den Rahmen auf der ganzen Karte. Den Nebel auf der
+    // Uebersicht prueft darstellung AC-15 (strategie-nebel.spec.mjs).
+    partie = await partieZuZweit(browser, info, { sicht: 'aufgedeckt' });
   });
   test.afterAll(() => partieBeenden(partie));
 

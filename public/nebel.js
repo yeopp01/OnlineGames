@@ -23,11 +23,16 @@ const NEU_ALLE_TAKTE = 5;
 const SCHWARZ = [15, 18, 22];
 
 export class Nebel {
-  constructor(groesse) {
+  /**
+   * @param {number} groesse Seitenlaenge der Karte in Feldern
+   * @param {boolean} erkundet die Karte ist von Anfang an bekannt (kampf AC-16)
+   */
+  constructor(groesse, erkundet = false) {
     this.groesse = groesse;
     this.sichtbar = new Uint8Array(groesse * groesse);
     this.gebaeude = new Uint8Array(groesse * groesse);
     this.erkundet = new Uint8Array(groesse * groesse);
+    if (erkundet) this.erkundet.fill(1);
     this.gebaeudeSchluessel = null;
     this.takt = -Infinity;
     // Ein Bildpunkt Rand rundum, immer "nie gesehen": sonst mischt die

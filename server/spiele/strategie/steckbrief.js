@@ -43,6 +43,16 @@ module.exports = {
       schluessel: 'kartengroesse', name: 'Kartengröße', art: 'wahl', vorgabe: 'normal',
       werte: [{ wert: 'klein', name: 'klein' }, { wert: 'normal', name: 'normal' }, { wert: 'gross', name: 'groß' }],
     },
+    // Wie viel man sieht (kampf AC-16): wie im Original Nebel, eine von Anfang
+    // an bekannte Karte, oder alles aufgedeckt.
+    {
+      schluessel: 'sicht', name: 'Sicht', art: 'wahl', vorgabe: 'nebel',
+      werte: [
+        { wert: 'nebel', name: 'Nebel' },
+        { wert: 'erkundet', name: 'Erkundet (Karte bekannt)' },
+        { wert: 'aufgedeckt', name: 'Aufgedeckt' },
+      ],
+    },
     {
       schluessel: 'vorrat', name: 'Startvorrat', art: 'wahl', vorgabe: 'wenig',
       werte: [

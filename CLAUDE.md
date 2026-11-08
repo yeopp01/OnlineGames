@@ -157,7 +157,7 @@ Umfang hinzufügt, dort nachsehen.
 
 ## Stand
 
-**407 von 530 Kriterien fertig.** 490 Tests ohne Browser, 172 im Browser. Die
+**408 von 530 Kriterien fertig.** 491 Tests ohne Browser, 173 im Browser. Die
 Übersicht ist der Bericht: `npm run qa:report`.
 
 Gebaut ist der Unterbau: Räume, Übertragung, Karte, Wegfindung, Sammeln,
@@ -329,8 +329,9 @@ AC-15), und das Bild zeigt sie in drei Stufen, auch auf der Übersichtskarte
 (kampf AC-11, AC-12, darstellung AC-15) — der Browser rechnet die eigene Sicht
 in `public/nebel.js`, fremde Gebäude im Nebel aus der Erinnerung. Es folgen
 C6c bis C6e: nur Sichtbares schicken, die KI mit eigener Sicht, Meldung bei
-Angriff. Tests, die nicht vom Nebel handeln, decken mit dem Prüfgriff
-`aufdecken` auf.
+Angriff. Die **Sicht ist eine Einstellung beim Eröffnen** (kampf AC-16):
+Nebel, Erkundet oder Aufgedeckt — Tests, die nicht vom Nebel handeln,
+eröffnen aufgedeckt (`partieZuZweit(…, { sicht: 'aufgedeckt' })`).
 
 1. **Stufe A** Dunkle Zeit mit Wirtschafts-KI und Prüfstand · **B** Feudalzeit
    · **C** Partieende und KI-Gegner · **D** Ritterzeit · **E** fünf Völker ·

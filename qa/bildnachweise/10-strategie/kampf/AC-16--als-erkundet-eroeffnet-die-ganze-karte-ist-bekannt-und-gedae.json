@@ -1,0 +1,10 @@
+{
+  "spec": "10-strategie/kampf.md",
+  "ac": "AC-16",
+  "titel": "Als „Erkundet“ eröffnet: die ganze Karte ist bekannt und gedämpft, hell nur um Annas Dorf — auch auf der Übersichtskarte",
+  "datei": "e2e/tests/strategie-nebel.spec.mjs",
+  "pfad": [
+    "Sicht erkundet",
+    "kampf AC-16: als Erkundet eroeffnet, ist die ganze Karte bekannt, hell nur um das eigene Dorf"
+  ]
+}

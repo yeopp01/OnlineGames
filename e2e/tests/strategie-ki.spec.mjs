@@ -6,7 +6,7 @@
 // (`tests/strategie-ki.test.mjs`). Hier geht es nur um das Bild: wie das
 // aussieht, was dort gemessen wird.
 import { nachweis } from '../../scripts/qa-nachweis.mjs';
-import { aufdecken, einheitenAufstellen, expect, test, zeitraffer } from '../helpers/seite.mjs';
+import { einheitenAufstellen, expect, test, zeitraffer } from '../helpers/seite.mjs';
 import { bedienteileFrei, figurenFrei, gebaeudeInDerNaehe, kiSpielt, partieBeenden, partieZuZweit } from '../helpers/strategie.mjs';
 
 const KI = '10-strategie/ki.md';
@@ -102,7 +102,9 @@ test.describe('Die KI greift an', () => {
   let partie;
 
   test.beforeAll(async ({ browser }, info) => {
-    partie = await partieZuZweit(browser, info);
+    // Aufgedeckt (kampf AC-16): gezeigt wird die KI, nicht der Nebel - aus
+    // Annas Sicht laege ihr Heer im Dunkeln (Runde 105).
+    partie = await partieZuZweit(browser, info, { sicht: 'aufgedeckt' });
   });
   test.afterAll(() => partieBeenden(partie));
 
@@ -110,9 +112,6 @@ test.describe('Die KI greift an', () => {
     test.setTimeout(180_000);
     const { anna, code } = partie;
     await kiSpielt(anna, code, 'Bert');
-    // Das Bild zeigt das Heer der KI unterwegs - aus Annas Sicht laege es im
-    // Nebel (Runde 105). Gezeigt wird die KI, nicht der Nebel.
-    await aufdecken(anna, code, 'Anna');
 
     // Annas Dorfzentrum und Berts Basis, aus dem Browser gelesen.
     const lage = await anna.evaluate(() => {
@@ -221,7 +220,9 @@ test.describe('Die KI verteidigt sich', () => {
   let partie;
 
   test.beforeAll(async ({ browser }, info) => {
-    partie = await partieZuZweit(browser, info);
+    // Aufgedeckt (kampf AC-16): gezeigt wird die KI, nicht der Nebel - aus
+    // Annas Sicht laege ihr Heer im Dunkeln (Runde 105).
+    partie = await partieZuZweit(browser, info, { sicht: 'aufgedeckt' });
   });
   test.afterAll(() => partieBeenden(partie));
 
@@ -236,8 +237,6 @@ test.describe('Die KI verteidigt sich', () => {
     test.setTimeout(240_000);
     const { anna, code } = partie;
     await kiSpielt(anna, code, 'Bert');
-    // Die Wache der KI im Bild, auch wo Annas Sicht nicht hinreicht (Runde 105).
-    await aufdecken(anna, code, 'Anna');
 
     const lage = await anna.evaluate(() => {
       const a = window.ansicht;

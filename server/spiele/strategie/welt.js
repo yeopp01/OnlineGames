@@ -26,6 +26,8 @@ const SCHLAGRAND_BAU = 0.2;
 const WACHE_TAKTE = 5;
 // Zweimal je Sekunde rechnet der Server, was jeder Spieler sieht (kampf AC-15).
 const SICHT_TAKTE = 5;
+// Die Werte der Einstellung "Sicht" (kampf AC-16, steckbrief.js).
+const SICHT_ARTEN = ['nebel', 'erkundet', 'aufgedeckt'];
 
 // Naeher als ein halbes Feld, und zwei Figuren sind im Bild eine mit zwei
 // Schwertern (einheiten AC-29; dieselbe Grenze misst `figurenFrei`).
@@ -197,11 +199,15 @@ class Welt {
     // werden, und acht Spieler auf der groessten Karte kosten keine 320.000
     // Schreibvorgaenge je halbe Sekunde. `erkundet` bleibt, was einmal gesehen war.
     const felder = this.karte.groesse * this.karte.groesse;
+    // Die Sicht als Einstellung der Partie (kampf AC-16): Nebel, eine von
+    // Anfang an erkundete Karte, oder alles aufgedeckt.
+    this.sichtArt = SICHT_ARTEN.includes(einstellungen.sicht) ? einstellungen.sicht : 'nebel';
     this.sichtStempel = 0;
     this.sichten = new Map(this.spieler.map((s) => [s.id, {
       sichtbar: new Uint32Array(felder), gebaeude: new Uint8Array(felder), erkundet: new Uint8Array(felder),
     }]));
     this.gebaeudeSichtNeu = true;
+    if (this.sichtArt !== 'nebel') for (const sicht of this.sichten.values()) sicht.erkundet.fill(1);
     this.sichtAktualisieren();
   }
 
@@ -271,6 +277,7 @@ class Welt {
     // Ausserhalb der Karte sieht niemand - sonst griffe x = -1 in die
     // Nachbarreihe (Durchsicht Runde 104).
     if (!this.aufKarte(x, y)) return false;
+    if (this.sichtArt === 'aufgedeckt') return true;
     const i = y * this.karte.groesse + x;
     return Boolean(sicht) && (sicht.sichtbar[i] === this.sichtStempel || sicht.gebaeude[i] === 1);
   }
@@ -2427,9 +2434,6 @@ class Welt {
         a: this.arbeiterVon(s.id),
         // Ausgeschieden, nur wenn es zutrifft (spielziel AC-5).
         ...(s.aus ? { aus: 1 } : {}),
-        // Sieht alles, ohne Nebel - nur ueber den Pruefgriff `aufdecken` im
-        // Browserlauf (e2e/server.mjs), fuer Tests, die nicht vom Nebel handeln.
-        ...(s.alles ? { alles: 1 } : {}),
       })),
       einheiten,
       felder,
@@ -2487,6 +2491,8 @@ class Welt {
       takte: TAKTE_PRO_SEKUNDE,
       // Sichtbar, damit eine gute Karte wieder gespielt werden kann (auswahl AC-7).
       startwert: this.startwert,
+      // Wie viel jeder sieht (kampf AC-16) - der Browser zeichnet danach.
+      sicht: this.sichtArt,
       karte: {
         groesse: this.karte.groesse,
         felder: Buffer.from(this.karte.felder).toString('base64'),

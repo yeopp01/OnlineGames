@@ -156,7 +156,10 @@ export class Ansicht {
 
     this.karte = { groesse: nachricht.karte.groesse, felder };
     // Der Nebel beginnt fuer jede Partie neu: nichts ist erkundet (kampf AC-12).
-    this.nebel = new Nebel(nachricht.karte.groesse);
+    // Die Sicht als Einstellung der Partie (kampf AC-16): bei "erkundet"
+    // ist die Karte von Anfang an bekannt, bei "aufgedeckt" gibt es keinen Nebel.
+    this.sichtArt = nachricht.sicht || 'nebel';
+    this.nebel = new Nebel(nachricht.karte.groesse, this.sichtArt === 'erkundet');
     // Fremde Gebaeude, wie man sie zuletzt gesehen hat (kampf AC-12).
     this.erinnert = new Map();
     this.fuellung = new Map();
@@ -245,8 +248,6 @@ export class Ansicht {
         if (stufe > vorher) this.beiZeitalter(stufe, this.zeitalterName(stufe));
       }
       this.untaetige = meine.u || [];
-      // Kein Nebel fuer diesen Spieler (Pruefgriff `aufdecken`, e2e/server.mjs).
-      this.allesSehen = meine.alles === 1;
       // Arbeiter je Rohstoff (bedienung AC-32), in der Reihenfolge des Servers.
       const [amHolz, anNahrung, amGold, amStein] = meine.a || [0, 0, 0, 0];
       this.arbeiter = { holz: amHolz, nahrung: anNahrung, gold: amGold, stein: amStein };
@@ -277,7 +278,7 @@ export class Ansicht {
    * (spielziel AC-7), und nicht nach dem Ende - dann sehen alle alles.
    */
   get nebelAn() {
-    return Boolean(this.nebel) && !this.aus && !this.ende && !this.allesSehen;
+    return Boolean(this.nebel) && !this.aus && !this.ende && this.sichtArt !== 'aufgedeckt';
   }
 
   /**

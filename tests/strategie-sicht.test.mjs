@@ -141,3 +141,25 @@ test('kampf AC-15: ausserhalb der Karte sieht niemand', () => {
   assert.equal(welt.sieht('a', g, 10), false);
   assert.equal(e.besitzer, 'a');
 });
+
+test('kampf AC-16: die Sicht ist eine Einstellung - Nebel, Erkundet oder Aufgedeckt', () => {
+  const lauf = (sicht) => {
+    const welt = new Welt(ZWEI, 4711, sicht ? { sicht } : {});
+    return { welt, p: abseits(welt) };
+  };
+  // Vorgabe: Nebel - weit draussen weder gesehen noch erkundet.
+  const nebel = lauf(undefined);
+  assert.equal(nebel.welt.sichtArt, 'nebel');
+  assert.equal(nebel.welt.erkundet('a', nebel.p.x, nebel.p.y), false);
+  assert.equal(nebel.welt.sieht('a', nebel.p.x, nebel.p.y), false);
+  // Erkundet: die Karte ist bekannt, gesehen wird nur, was in Sicht ist.
+  const erkundet = lauf('erkundet');
+  assert.equal(erkundet.welt.erkundet('a', erkundet.p.x, erkundet.p.y), true, 'erkundet von Anfang an');
+  assert.equal(erkundet.welt.sieht('a', erkundet.p.x, erkundet.p.y), false, 'aber nicht beobachtet');
+  // Aufgedeckt: alles gesehen - aber nur auf der Karte.
+  const offen = lauf('aufgedeckt');
+  assert.equal(offen.welt.sieht('a', offen.p.x, offen.p.y), true, 'aufgedeckt sieht alles');
+  assert.equal(offen.welt.sieht('a', -1, 0), false);
+  // Der Browser erfaehrt es mit dem Aufbau.
+  assert.equal(offen.welt.aufbau().sicht, 'aufgedeckt');
+});

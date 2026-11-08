@@ -172,3 +172,42 @@ test.describe('Nebel', () => {
     expect(ergebnis.wiederGesehen, 'wieder gesehen: vergessen').toBe(false);
   });
 });
+
+// Die Sicht als Einstellung (kampf AC-16): eroeffnet "Erkundet", ist die Karte
+// von Anfang an bekannt - gedaempft -, und nur um das eigene Dorf ist es hell.
+test.describe('Sicht erkundet', () => {
+  test.describe.configure({ mode: 'serial' });
+  let partie;
+
+  test.beforeAll(async ({ browser }, info) => {
+    partie = await partieZuZweit(browser, info, { sicht: 'erkundet' });
+  });
+  test.afterAll(() => partieBeenden(partie));
+
+  test('kampf AC-16: als Erkundet eroeffnet, ist die ganze Karte bekannt, hell nur um das eigene Dorf', async ({}, info) => {
+    const { anna } = partie;
+    await anna.waitForFunction(() => window.ansicht.nebel && window.ansicht.nebel.takt > -Infinity);
+    const lage = await anna.evaluate(() => {
+      const a = window.ansicht;
+      a.kamera.zoom = 0.7;
+      const b = a.spieler.get(a.ich).basis;
+      a.blickAuf(b.x + 6, b.y + 6);
+      const fremd = [...a.spieler.values()].find((s) => s.id !== a.ich).basis;
+      return { sicht: a.sichtArt, stufen: a.nebel.zaehlen(), fremdErkundet: a.nebel.hatErkundet(fremd.x, fremd.y), fremdGesehen: a.nebel.sieht(fremd.x, fremd.y) };
+    });
+    expect(lage.sicht).toBe('erkundet');
+    expect(lage.stufen.nie, 'nichts ist unbekannt').toBe(0);
+    expect(lage.stufen.beobachtet, 'hell um das Dorf').toBeGreaterThan(0);
+    expect(lage.stufen.erkundet, 'der Rest gedaempft').toBeGreaterThan(lage.stufen.beobachtet);
+    // Gegenprobe: Berts Dorf kennt Anna, sieht es aber nicht.
+    expect(lage.fremdErkundet && !lage.fremdGesehen, 'Berts Dorf bekannt, nicht beobachtet').toBe(true);
+    await anna.waitForTimeout(300);
+    expect(await bedienteileFrei(anna)).toEqual([]);
+    await nachweis(anna, {
+      spec: KAMPF,
+      ac: 'AC-16',
+      titel: 'Als „Erkundet“ eröffnet: die ganze Karte ist bekannt und gedämpft, hell nur um Annas Dorf — auch auf der Übersichtskarte',
+      test: info,
+    });
+  });
+});

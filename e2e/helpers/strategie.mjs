@@ -61,7 +61,9 @@ import { ANMELDUNG, GRIFFHAFEN, expect, fehlerSammeln, zeitraffer } from './seit
  *
  * @param {import('@playwright/test').Browser} browser
  * @param {import('@playwright/test').TestInfo} info
- * @param {{startwert?: number, breite?: number, hoehe?: number}} [wie]
+ * @param {{startwert?: number, breite?: number, hoehe?: number, sicht?: string}} [wie]
+ *   `sicht`: 'nebel' (Vorgabe), 'erkundet' oder 'aufgedeckt' (kampf AC-16) -
+ *   Tests, die nicht vom Nebel handeln, eroeffnen aufgedeckt.
  */
 export function partieZuZweit(browser, info, wie = {}) {
   return partieMit(browser, info, ['Bert'], wie);
@@ -91,7 +93,7 @@ export function partieZuDritt(browser, info, wie = {}) {
  * @param {string[]} gaeste die Namen der Beitretenden, in dieser Reihenfolge
  * @param {{startwert?: number, breite?: number, hoehe?: number}} [wie]
  */
-async function partieMit(browser, info, gaeste, { startwert = 4711, breite = 1400, hoehe = 950 } = {}) {
+async function partieMit(browser, info, gaeste, { startwert = 4711, breite = 1400, hoehe = 950, sicht = null } = {}) {
   const optionen = { baseURL: info.project.use.baseURL, viewport: { width: breite, height: hoehe }, locale: 'de-DE' };
   const anna = await (await browser.newContext({ ...optionen, storageState: ANMELDUNG })).newPage();
   const fehler = [fehlerSammeln(anna)];
@@ -99,6 +101,9 @@ async function partieMit(browser, info, gaeste, { startwert = 4711, breite = 140
   await anna.goto('/');
   await anna.locator('[data-oeffnen="strategie"]').click();
   await anna.locator('[data-einstellung="startwert"]').fill(String(startwert));
+  // Die Werte der Wahl stehen im Formular als JSON (app.js) - so wie die
+  // Vorgaben sie liefern.
+  if (sicht) await anna.locator('[data-einstellung="sicht"]').selectOption(JSON.stringify(sicht));
   await anna.locator('[data-eroeffnen="strategie"]').click();
   await expect(anna.locator('#raumcode')).toHaveText(/^[A-Z0-9]{3}-[A-Z0-9]{3}$/);
   const code = (await anna.locator('#raumcode').textContent()).trim();

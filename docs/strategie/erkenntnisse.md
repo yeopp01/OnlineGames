@@ -1034,6 +1034,15 @@ unter Last), seit dem dreifachen Klick nicht mehr.
 Neueste oben. Eine Zeile je Runde: Nummer, Datum, Kriterien, Ergebnis,
 wichtigste Erkenntnis.
 
+- **106** · 2026-11-08 · **kampf AC-16** — die Sicht ist eine Einstellung
+  beim Eröffnen, auf Wunsch des Benutzers: Nebel (Vorgabe), Erkundet (Karte
+  bekannt, fremde Einheiten nur in Sicht), Aufgedeckt. Der Server kennt sie
+  (`welt.sichtArt`), der Browser bekommt sie mit dem Aufbau. Damit fällt der
+  Prüfgriff `aufdecken` aus Runde 105 weg, samt dem Merkmal `alles` am
+  Spieler: Tests, die nicht vom Nebel handeln, eröffnen über `partieZuZweit(…,
+  { sicht: 'aufgedeckt' })` — derselbe Weg wie ein Mensch. **Gelernt: ein
+  Prüfgriff, der eine Spielregel umgeht, ist oft eine fehlende Einstellung** —
+  der Benutzer sah es nach einer Runde.
 - **105** · 2026-11-08 · **kampf AC-11, AC-12, darstellung AC-15** — der Nebel
   im Bild (C6b). Statt jedem Spieler seine Sicht zu schicken, rechnet der
   Browser sie aus den eigenen Einheiten und Gebäuden nach derselben Regel wie

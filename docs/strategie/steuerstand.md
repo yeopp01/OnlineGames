@@ -13,21 +13,17 @@ hier nichts eintraegt, verliert den Faden beim naechsten Autocompact.
 
 ## Zuletzt fortgeschrieben
 
-2026-11-08, nach Runde 105 (**kampf AC-11, AC-12, darstellung AC-15 - C6b**:
-der Nebel im Bild in drei Stufen, auch auf der Uebersichtskarte; der Browser
-rechnet die eigene Sicht (`public/nebel.js`), fremde Gebaeude im Nebel aus
-der Erinnerung. Pruefgriff `aufdecken` fuer Tests, die nicht vom Nebel
-handeln. **Wunsch des Benutzers danach:** Nebel als Einstellung beim
-Eroeffnen, Forschung & Co veraendern die Sicht - **als Naechstes C6c**
-(kampf AC-16: Nebel/Erkundet/Aufgedeckt, ersetzt `aufdecken`), dann C6d
-(AC-17 Stadtwache, AC-18 Aussenposten), danach erst das Filtern auf dem
-Server. **Naechste Rueckschau: Runde 108.**)
+2026-11-08, nach Runde 106 (**kampf AC-16**: Sicht als Einstellung - Nebel,
+Erkundet, Aufgedeckt; ersetzt den Pruefgriff `aufdecken`, Tests eroeffnen mit
+`partieZuZweit(..., { sicht: 'aufgedeckt' })`. **Als Naechstes C6d**: kampf
+AC-17 Stadtwache (Gebaeude +4 Sicht), AC-18 Aussenposten (Sicht 10).
+**Naechste Rueckschau: Runde 108.**)
 
 ## Wo ich stehe
 
 - **Branch:** `strategie`. Nie auf `main` arbeiten, **nie pushen, nie deployen.**
-- **Board:** 407 von 530 Kriterien fertig · 1 in Arbeit · 5 in QA · 4 geplant ·
-  105 offen · 8 zurueckgestellt. 490 Tests ohne Browser, 172 im Browser.
+- **Board:** 408 von 530 Kriterien fertig · 1 in Arbeit · 5 in QA · 4 geplant ·
+  104 offen · 8 zurueckgestellt. 491 Tests ohne Browser, 173 im Browser.
 - **Fuenf Waechter in `tests/waechter-*.test.mjs`** (der fuenfte seit Runde 87: Bildschirmtext mit echten Umlauten): Gleichheit auf wachsenden
   Listen, verbesserbare Werte an `welt.einheitenwert()` vorbei,
   Bildunterschriften mit `${...}`, und (neu in Runde 73) die **Kuerzeltafel**
