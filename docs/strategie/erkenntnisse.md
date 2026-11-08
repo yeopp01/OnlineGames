@@ -459,6 +459,42 @@ eine Zahl gemacht, und zweimal hat ein alter Test einen neuen Fehler gefunden
 (Klick auf Beeren traf ein Schaf; zwei Lager zu ähnlich). Browserlauf bei
 ruhigerer Maschine 141 s Testzeit, langsamster Fall weiter der Lagertest (28 s).
 
+### Nach Runde 93 (2026-11-08)
+
+Runden 89 bis 92: keine zwei Einheiten übereinander (einheiten AC-29, Sammler
+und Kämpfende geteilt in AC-30, AC-31), Nachschub (ki AC-12), auch spät
+steht niemand herum (ki AC-10), und fahrplan AC-11 gemessen, nicht erreicht —
+drei Kriterien `fertig` (392 von 520). Was sich wiederholt hat:
+
+1. **Vorher und nachher, jedes Mal von Hand.** `git stash`, Kopien des Ordners
+   im Temp-Verzeichnis, Wegwerfskripte — in jeder der vier Runden, einmal mit
+   einem Backslash, den die Shell verschluckte. → Werkzeug:
+   **`npm run pruefstand:vergleich`** stellt den Arbeitsstand neben einen
+   eingecheckten Stand (Vorgabe HEAD), dieselben Partien, Zeile neben Zeile.
+   Gegen den Stand vor Runde 89 zeigt es in drei Zeilen, was diese vier Runden
+   gebracht haben: Untätigkeit 286 s → 0,6 s, Kampfeinheiten im Median 8 → 12,
+   Angriffe 1 → 3.
+2. **Abhilfen, die nichts bewegen.** Sechs in vier Runden — drei für die
+   Beeren, eine größere Rücklage, zwei Hebel für fahrplan AC-11. Das Messen
+   hat sie alle gefunden, und alle sind zurückgenommen. → Anweisung,
+   Abschnitt 4: **was gemessen nichts bringt, bleibt nicht im Code.**
+3. **Grenzen geraten, obwohl die Anweisung es verbietet** — zweimal (Runde 90
+   „höchstens sechs", Runde 91 „drei Minuten"). → Anweisung, Abschnitt 4,
+   schärfer und mit den beiden Beispielen: **steht im Kommentar keine Messung
+   neben der Grenze, ist sie geraten.**
+
+Bestätigt, keine neue Regel: **die Durchsicht durch einen Prüfer** (neu seit
+der Rückschau nach Runde 88) hat in jeder Runde echte Dinge gefunden — 3, 4,
+1 und das alte Leistungsloch beim Weg zum Lager (47 ms je Takt bei 30
+Festsitzenden, seit Langem im Code). Und **der Prüfstand findet Fehler, die
+mit der Runde nichts zu tun haben**: die Waldecke beim Seitenschritt (Runde
+89) und die Ecke einer neuen Baustelle (Runde 92) — beide Male, weil ein
+Versuch länger lief als sonst.
+
+**Gemessen** (Maschine nicht ganz ruhig): `npm run check` 36 bis 37 s mit
+463 Tests; Browserlauf 167 Fälle 9,3 bis 9,6 min; Prüfstand 20 Partien zu 22
+Minuten rund 15 s, zu 30 Minuten rund 11 s im Messtest, zu 90 Minuten rund 40 s.
+
 ### Nach Runde 88 (2026-11-08)
 
 Runden 84 bis 87: die Revanche (C3 steht), die KI greift an und verteidigt

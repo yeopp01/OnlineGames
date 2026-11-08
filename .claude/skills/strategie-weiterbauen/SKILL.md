@@ -191,6 +191,19 @@ Setze die gewählten Kriterien auf `in-arbeit`.
   Kriterium oder dem Plan ableiten und die gemessenen Werte als Kommentar an
   den Test schreiben (Runde 44: „mindestens 5 im Holz" und „30 s Warten" waren
   geschätzt, das erste falsch, das zweite zu lasch).
+- **Was gemessen nichts bringt, bleibt nicht im Code.** Jede Abhilfe einzeln
+  messen (`npm run pruefstand:vergleich`), und zurücknehmen, was die Zahl
+  nicht bewegt — auch wenn sie „richtig" aussieht. In den Runden 89 bis 92
+  waren es sechs: drei Abhilfen für die Beeren, eine größere Rücklage und zwei
+  Hebel für fahrplan AC-11. Bleiben darf eine Regel ohne Wirkung auf die
+  Messung nur, wenn sie einen eigenen Fall mit eigenem Test hat.
+- **Grenzen und Fenster in Messtests: erst die Verteilung ausgeben, dann die
+  Grenze aus dem Kriterium begründen** — nie umgekehrt. Zweimal trotz dieser
+  Anweisung geraten: „höchstens sechs Ausnahmen" (es waren acht, und die
+  Regel war falsch herum; Runde 90) und „drei Minuten" (zu kurz; begründet
+  sind fünf, die Zeit, in der ein Dorfzentrum zwölf Dorfbewohner ersetzt;
+  Runde 91). Steht im Kommentar keine Messung neben der Grenze, ist sie
+  geraten.
 - **Nie** einen Test überspringen, eine Schwelle senken oder eine Zusicherung
   lockern, um grün zu werden. Ist eine Schwelle wirklich falsch, ändere das
   Kriterium in der Spec, mit Begründung im Commit und einer Zeile in den
@@ -356,7 +369,10 @@ Setze die gewählten Kriterien auf `in-arbeit`.
    nach „ok" (Runde 60). Die ganze Ausgabe steht in `qa/letzter-lauf.log`,
    wenn mehr gebraucht wird.
 3. Regeln oder Werte geändert und der Prüfstand existiert (fahrplan AC-4) →
-   `npm run pruefstand:strategie`, Zahlen unter **Messwerte**.
+   `npm run pruefstand:strategie`, Zahlen unter **Messwerte**. **Vorher und
+   nachher in einem Befehl:** `npm run pruefstand:vergleich` (Arbeitsstand
+   gegen HEAD; `--gegen HEAD~3 --minuten 30 --partien 20`). Nicht mehr mit
+   `git stash` und Kopien des Ordners von Hand (Rückschau nach Runde 92).
 4. **Rot nur durch eine Zeitmessung** — `karriere AC-7` (Saison unter 1 s),
    `einheiten AC-8` (Wegsuche unter 1 ms), `karte AC-15` (Wegsuche auf der
    größten Karte): das ist fast immer fremde Last oder der parallele Lauf

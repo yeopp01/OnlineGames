@@ -13,22 +13,23 @@ hier nichts eintraegt, verliert den Faden beim naechsten Autocompact.
 
 ## Zuletzt fortgeschrieben
 
-2026-11-08, nach Runde 92 (**fahrplan AC-11 gemessen, nicht erreicht**: KI
-gegen KI endet in 4 von 20 Partien vor Minute 60, in 17 vor Minute 90.
-Ganzes Heer losschicken und Nahkaempfer aus der Kaserne versucht, gemessen,
-zurueckgenommen - keine Variante nah am Kriterium. AC-11 bleibt `offen` und
-braucht eigene Kriterien (Partien zu Ende bringen), siehe Offene Faeden.
-Geliefert: `belegen()` sucht auch neu, wenn ein schraeger Schritt die Ecke
-einer neuen Baustelle schneidet (bauen AC-3, Test mit Gegenprobe). Davor
-Runde 91: **ki AC-10** fertig, Runde 90: **ki AC-12** fertig. **Runde 93 ist
-die Rueckschau** (Runden 89-92). Danach: die Kriterien fuer „Partien zu
-Ende bringen" schreiben (Spec-Arbeit in ki.md), dann bauen.)
+2026-11-08, nach Runde 93 (**Rueckschau** ueber 89-92: neues Werkzeug
+**`npm run pruefstand:vergleich`** - Arbeitsstand gegen HEAD (oder `--gegen`),
+dieselben Partien, Zeile neben Zeile; zwei Regeln in Abschnitt 4: was
+gemessen nichts bringt, bleibt nicht im Code; Grenzen erst nach der
+Verteilung. **Naechste Rueckschau: Runde 98.** Stand C4: ki AC-10, AC-11,
+AC-12, AC-14 fertig; **fahrplan AC-11 offen** - KI gegen KI endet in 4/20
+Partien vor Minute 60, 17/20 vor Minute 90. Als Naechstes: die Kriterien
+fuer „Partien zu Ende bringen" in ki.md schreiben (Ziele nach Wert,
+Nahkaempfer gegen Gebaeude, Ueberlegenheit erkennen), vorher messen, warum
+die drei Remis Remis sind (Startwerte 13, 14, 16). Die Figuren bei Zoom 1
+sind als Faden notiert: eine Runde nach C4, vor C5.)
 
 ## Wo ich stehe
 
 - **Branch:** `strategie`. Nie auf `main` arbeiten, **nie pushen, nie deployen.**
 - **Board:** 392 von 520 Kriterien fertig · 1 in Arbeit · 5 in QA · 4 geplant ·
-  110 offen · 8 zurueckgestellt. 462 Tests ohne Browser, 167 im Browser.
+  110 offen · 8 zurueckgestellt. 463 Tests ohne Browser, 167 im Browser.
 - **Fuenf Waechter in `tests/waechter-*.test.mjs`** (der fuenfte seit Runde 87: Bildschirmtext mit echten Umlauten): Gleichheit auf wachsenden
   Listen, verbesserbare Werte an `welt.einheitenwert()` vorbei,
   Bildunterschriften mit `${...}`, und (neu in Runde 73) die **Kuerzeltafel**
@@ -298,7 +299,7 @@ Ende bringen" schreiben (Spec-Arbeit in ki.md), dann bauen.)
   bei 20 min). Aelter als Runde 69, nur nie gemessen, weil der Pruefstand bei
   zehn Minuten endete. Ursache und Hebel stehen in den Erkenntnissen unter
   **Offene Faeden**.
-- **Naechste Rueckschau: Runde 93** - oder frueher, wenn Stufe C erreicht wird.
+- **Naechste Rueckschau: Runde 98** - oder frueher, wenn Stufe C erreicht wird.
   Diese Zeile ist der Termin, nicht nachzaehlen.
 - Frueherer Termin, erledigt: **Runde 83** (die Bildnachweise einmal ganz
   angesehen), **Runde 78** (Bilderwerkzeug: `check:alles:neu`,

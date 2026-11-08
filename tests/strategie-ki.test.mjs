@@ -1197,3 +1197,14 @@ test('ki AC-10: wer kein Lager erreicht, sucht nicht in jedem Takt - 30 Holzfael
   const mittel = (performance.now() - t0) / 300;
   assert.ok(mittel < 10, `${mittel.toFixed(2)} ms je Takt im Mittel`);
 });
+
+test('pruefstand:vergleich stellt den Arbeitsstand neben einen eingecheckten Stand', () => {
+  // Das Werkzeug der Rueckschau nach Runde 92. Eine Partie zu einer Minute
+  // reicht, um zu sehen, dass beide Staende laufen und berichten.
+  const skript = fileURLToPath(new URL('../scripts/pruefstand-vergleich.mjs', import.meta.url));
+  const ausgabe = execFileSync(process.execPath, [skript, '--partien', '1', '--minuten', '1'], { encoding: 'utf8' });
+  assert.match(ausgabe, /^HEAD /m, 'der eingecheckte Stand');
+  assert.match(ausgabe, /^Arbeitsstand /m, 'der Arbeitsstand');
+  assert.equal((ausgabe.match(/Feudalzeit Median/g) || []).length, 2, 'je Stand eine Auswertung');
+  assert.doesNotMatch(ausgabe, /WIDERSPRUCH/);
+});
