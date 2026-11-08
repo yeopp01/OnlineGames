@@ -915,6 +915,36 @@ alle sieben Gebäude der Dunklen Zeit stehen. Was sich wiederholt hat:
 Neueste oben. Eine Zeile je Runde: Nummer, Datum, Kriterien, Ergebnis,
 wichtigste Erkenntnis.
 
+- **91** · 2026-11-08 · **ki AC-10** — auch spät steht niemand herum: bis
+  Minute 30 steht über zwanzig Startwerte kein Dorfbewohner länger als 12,9
+  Sekunden still (Grenze 20). Die letzten zwei Fälle (39 und 53 s) waren
+  Holzfäller mit voller Ladung, drei davon auf einem Punkt: die KI hatte ein
+  Holzfällerlager in eine Waldlücke gestellt, und `wegZumLager` nahm das
+  nächste Randfeld des nächsten Lagers — zugewachsen, kein Weg, und der
+  nächste Takt versuchte dasselbe. Jetzt sucht er andere Randfelder und die
+  anderen Lager. Gelernt, zweierlei: (1) **Ein Test, der eine Rolle anders
+  zählt als die KI, misst die Zählung.** `ki AC-4` zählte Holzfäller mit eben
+  geleertem Baum als „undefined", `Ki.rolle()` fällt auf die Ladung zurück;
+  der Test zählt jetzt so wie sie. (2) **Eine Ausnahme braucht einen Grund,
+  der sich nachrechnen lässt.** Beim Startwert 6 hatte KI 2 bei Minute 30 zehn
+  Dorfbewohner, ohne Feind im Dorf — der Überfall war eine Minute vorher
+  abgewehrt, 27 Gefallene. Erst setzte ich drei Minuten als Fenster (zu kurz,
+  geraten), dann fünf: in fünf Minuten bildet ein Dorfzentrum zwölf
+  Dorfbewohner aus (25 s je Stück, aus den Daten). Überrannt heißt jetzt: der
+  Fehlbetrag erklärt sich durch Gefallene, die noch nicht ersetzt sein
+  können. Und eine größere Nahrungsrücklage für Dorfbewohner, die ich dafür
+  baute, änderte keinen einzigen Wert (Bogenschützen kosten keine Nahrung) —
+  zurückgenommen, statt sie ohne Wirkung im Code zu lassen. (3) **Die
+  Durchsicht fand ein altes Leistungsloch**: wer kein Lager erreicht, suchte
+  in jedem Takt einen Weg, und eine vergebliche Suche durchflutet das ganze
+  erreichbare Gebiet. 30 Holzfäller vor einem abgeschnittenen Lager kosteten
+  **47 ms je Takt — schon vor dieser Runde**; mein neuer Ausweg hätte es auf
+  bis zu 19 Suchen je Einheit und Takt gesteigert. Jetzt: nach einem
+  vergeblichen Durchgang fünf Sekunden Pause, nach der Nummer der Einheit
+  gestreut — 1,2 ms im Mittel, Spitze 6,9 ms (ungestreut 93 ms in einem Takt,
+  weil alle zugleich wieder suchten). **Mein erster Messaufbau hat das Loch
+  nicht gezeigt**: einzeln eingemauerte Holzfäller scheitern sofort, teuer ist
+  es nur, wenn der Holzfäller frei steht und das Lager abgeschnitten ist.
 - **90** · 2026-11-08 · **ki AC-12** — Nachschub: nach dem ersten Heer greift
   jede KI wieder an (4 bis 9 Angriffe in 30 Minuten, Median 8), und die
   Wirtschaft trägt weiter (21 bis 22 Dorfbewohner samt Ausbildung bei Minute

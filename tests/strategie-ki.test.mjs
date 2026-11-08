@@ -16,6 +16,7 @@ const {
 const { TAKTE_PRO_SEKUNDE } = require('../server/spiele/strategie/welt.js');
 const { EINHEITEN, SAMMELN } = require('../server/spiele/strategie/daten.js');
 const { partieSpielen, pruefen, Widerspruch } = require('../server/spiele/strategie/pruefstand.js');
+const { suchen } = require('../server/spiele/strategie/wege.js');
 
 const ZWEI = [{ id: 'a', name: 'Anna' }, { id: 'b', name: 'Bert' }];
 
@@ -231,8 +232,15 @@ test('ki AC-4: bildet ohne Pause aus, baut Haeuser rechtzeitig und verteilt nach
       const rollen = {};
       for (const e of welt.einheiten.values()) {
         if (e.besitzer !== spieler.id || e.art !== 'dorfbewohner') continue;
+        // Ist sein Feld eben leer geworden, zaehlt er nach seiner Ladung oder
+        // dem, was er zuletzt sammelte - so wie `Ki.rolle()` es tut. In Runde 91
+        // standen beim Startwert 4 vier Holzfaeller mit leerem Baum als
+        // "undefined" in der Liste, weil ihr Weg zum Lager laenger geworden war.
         const r = e.auftrag?.art === 'tier' || e.auftrag?.art === 'farm' ? 'nahrung'
-          : e.auftrag?.art === 'sammeln' ? SAMMELN[welt.karte.felder[e.auftrag.feld.y * welt.karte.groesse + e.auftrag.feld.x]]?.rohstoff : 'sonst';
+          : e.auftrag?.art === 'sammeln'
+            ? SAMMELN[welt.karte.felder[e.auftrag.feld.y * welt.karte.groesse + e.auftrag.feld.x]]?.rohstoff
+              || e.ladungsart || SAMMELN[e.zuletztGesammelt]?.rohstoff || 'sonst'
+            : 'sonst';
         rollen[r] = (rollen[r] || 0) + 1;
       }
       // Am Ende gegen den Plan: je Rohstoff hoechstens drei daneben - wer gerade
@@ -888,14 +896,33 @@ test('ki AC-9: nach dem Aufstieg kommt das Militaergebaeude vor dem naechsten La
 // verliert: dass Partien entschieden werden, ist der Sinn des Nachschubs
 // (fahrplan AC-11). Wer unter 20 liegt, muss deshalb gerade ueberrannt
 // werden und vorher die 20 gehabt haben. Rechenzeit rund 12 s.
-test('ki AC-12: ueber zwanzig Startwerte greift jede KI wieder an, und bei Minute 30 hat sie 20 Dorfbewohner', () => {
+// ki AC-10 haengt an denselben Partien: bis Minute 30 steht kein Dorfbewohner
+// laenger als 20 Sekunden still. Gemessen in Runde 91: hoechstens 12,9 s.
+// Vor Runde 90 bis 655 s (Untaetige an unerreichbaren Beeren), vor Runde 91
+// noch 39 und 53 s (Holzfaeller mit voller Ladung, deren naechstes Lager nur
+// ueber einen zugewachsenen Rand zu erreichen war).
+test('ki AC-12 und ki AC-10: ueber zwanzig Startwerte greift jede KI wieder an, bei Minute 30 hat sie 20 Dorfbewohner, und keiner steht laenger als 20 Sekunden', () => {
   let ueberrannt = 0;
   for (let startwert = 1; startwert <= 20; startwert++) {
     const hoechste = new Map();
+    // Wann welcher Dorfbewohner gefallen ist - je Spieler die Takte.
+    const gefallen = new Map();
     const { spieler } = partieSpielen({
       startwert,
       minuten: 30,
       eingriff: (welt) => {
+        if (!welt.gefallenGezaehlt) {
+          welt.gefallenGezaehlt = true;
+          const sterben = welt.einheitSterben.bind(welt);
+          welt.einheitSterben = (e) => {
+            if (e.art === 'dorfbewohner' && !e.tot) {
+              const name = welt.spielerVon(e.besitzer).name;
+              if (!gefallen.has(name)) gefallen.set(name, []);
+              gefallen.get(name).push(welt.takt);
+            }
+            sterben(e);
+          };
+        }
         if (welt.takt < 20 * 60 * TAKTE_PRO_SEKUNDE) return;
         for (const s of welt.spieler) {
           const n = [...welt.einheiten.values()].filter((e) => e.besitzer === s.id && e.art === 'dorfbewohner' && !e.tot).length;
@@ -906,14 +933,23 @@ test('ki AC-12: ueber zwanzig Startwerte greift jede KI wieder an, und bei Minut
     for (const p of spieler) {
       // Nachschub: nach dem ersten Heer noch eines.
       assert.ok(p.angriffe >= 2, `${startwert} ${p.name}: ${p.angriffe} Angriffe`);
+      // Auch spaet steht niemand herum (ki AC-10).
+      assert.ok(p.untaetigMax <= 20, `${startwert} ${p.name}: ${p.untaetigMax} s untaetig`);
       assert.ok(hoechste.get(p.name) >= 20, `${startwert} ${p.name}: nach Minute 20 hoechstens ${hoechste.get(p.name)} Dorfbewohner`);
       // Die Wirtschaft laeuft weiter. Wer bezahlt in der Ausbildung steht,
       // zaehlt mit: faellt der Messpunkt in einen Ueberfall, ersetzt das
       // Dorfzentrum die Gefallenen schon.
       const dorf = p.dorfbewohner + p.dorfbewohnerInAusbildung;
       if (dorf >= 20) continue;
-      assert.ok(p.feindeAmDorf > p.kampf,
-        `${startwert} ${p.name}: ${p.dorfbewohner} Dorfbewohner, ${p.dorfbewohnerInAusbildung} in Ausbildung - und nicht ueberrannt (${p.feindeAmDorf} Feinde, ${p.kampf} eigene Kampfeinheiten)`);
+      // Ueberrannt: gerade jetzt mehr Feinde am Dorf als eigene Kampfeinheiten,
+      // oder der Fehlbetrag erklaert sich durch Gefallene, die das Dorfzentrum
+      // noch nicht ersetzen konnte - in fuenf Minuten bildet es zwoelf aus (25 s
+      // je Dorfbewohner). Startwert 6, KI 2: 27 Gefallene zwischen Minute 24 und
+      // 28, bei Minute 30 der Angriff abgewehrt - die Wirtschaft war
+      // zerschlagen, nicht vernachlaessigt (Runde 91).
+      const zuletzt = (gefallen.get(p.name) || []).filter((t) => t >= 25 * 60 * TAKTE_PRO_SEKUNDE).length;
+      assert.ok(p.feindeAmDorf > p.kampf || zuletzt >= 20 - dorf,
+        `${startwert} ${p.name}: ${p.dorfbewohner} Dorfbewohner, ${p.dorfbewohnerInAusbildung} in Ausbildung - und nicht ueberrannt (${p.feindeAmDorf} Feinde, ${p.kampf} eigene Kampfeinheiten, ${zuletzt} Gefallene in fuenf Minuten)`);
       ueberrannt += 1;
     }
   }
@@ -1086,4 +1122,78 @@ test('ki AC-12: fehlt nach dem Aufstieg Nahrung und ist keine Farm frei, baut di
   assert.ok(!farmBestellt(0, 50), 'in der Dunklen Zeit keine Farm ueber den Plan hinaus');
   assert.ok(!farmBestellt(1, MANGEL + 100), 'mit genug Nahrung keine');
   assert.ok(farmBestellt(1, 50), 'nach dem Aufstieg, hungrig und ohne freie Farm: eine Farm');
+});
+
+test('ki AC-10: fuehrt kein Weg zum naechsten Rand des Lagers, liefert der Holzfaeller anderswo ab', () => {
+  // Runde 91: die KI stellte ein Holzfaellerlager in eine Waldluecke, und das
+  // Randfeld zum Holzfaeller hin war rundum zugewachsen. Drei Holzfaeller
+  // standen beim Startwert 17 mit voller Ladung 45 bis 53 Sekunden am Wald.
+  const welt = new Welt(ZWEI, 4711);
+  const g = welt.karte.groesse;
+  const ki = new Ki(welt, 'a');
+  const platz = ki.platzBeiBasis('holzfaellerlager');
+  const lager = welt.gebaeudeAnlegen('a', 'holzfaellerlager', platz.x, platz.y, true);
+  // Ein Randfeld nordwestlich des Lagers, rundum Wald ausser zum Lager hin.
+  const { x0, y0 } = welt.grundflaeche('holzfaellerlager', lager.x, lager.y);
+  const tasche = { x: Math.floor(x0) - 1, y: Math.floor(y0) - 1 };
+  for (let dy = -2; dy <= 1; dy++) {
+    for (let dx = -2; dx <= 1; dx++) {
+      const x = tasche.x + dx;
+      const y = tasche.y + dy;
+      if ((x === tasche.x && y === tasche.y) || welt.gebaeudeAn(x, y)) continue;
+      welt.karte.felder[y * g + x] = karten.WALD;
+    }
+  }
+  // Der Holzfaeller steht jenseits des Waldriegels, mit voller Ladung.
+  const faeller = welt.einheitAnlegen('a', tasche.x - 3, tasche.y - 3, 'dorfbewohner');
+  faeller.ladung = 10;
+  faeller.ladungsart = 'holz';
+  // Gegenprobe: das naechste Randfeld ist die Tasche, und zu ihr fuehrt kein Weg.
+  const naechstes = welt.randfeld(lager, faeller);
+  assert.deepEqual(naechstes, tasche, 'das naechste Randfeld ist die Tasche');
+  assert.equal(suchen(welt.karte, welt.feldVon(faeller), naechstes).length, 0, 'zu ihr fuehrt kein Weg');
+  welt.wegZumLager(faeller);
+  assert.ok(faeller.weg.length, 'er findet einen anderen Weg');
+  const ziel = faeller.weg[faeller.weg.length - 1];
+  const dorthin = welt.lagerFuer(faeller);
+  assert.ok(welt.abstandZu(ziel, dorthin) <= 1.2 || [...welt.gebaeude.values()].some((b) => b.besitzer === 'a' && welt.abstandZu(ziel, b) <= 1.2),
+    'und steht am Ende an einem Lager');
+});
+
+test('ki AC-10: wer kein Lager erreicht, sucht nicht in jedem Takt - 30 Holzfaeller vor abgeschnittenem Lager kosten im Mittel unter 10 ms je Takt', () => {
+  // Durchsicht Runde 91: eine vergebliche Wegsuche durchflutet das ganze
+  // erreichbare Gebiet, und wer festsitzt, suchte in jedem Takt neu. Gemessen:
+  // 47 ms je Takt im Mittel, schon vor Runde 91; mit gestreuter Pause von
+  // fuenf Sekunden 1,2 ms, Spitze 6,9 ms. Die Grenze ist das Budget eines
+  // Taktes aus fahrplan AC-6, nicht die Messung.
+  const welt = new Welt(ZWEI, 4711);
+  const g = welt.karte.groesse;
+  // Jedes Gebaeude von Anna hinter eine Mauer aus Wald, der Ring direkt am
+  // Gebaeude bleibt frei - so gibt es Randfelder, aber keinen Weg dorthin.
+  for (const geb of welt.gebaeude.values()) {
+    if (geb.besitzer !== 'a') continue;
+    const { x0, y0, x1, y1 } = welt.grundflaeche(geb.art, geb.x, geb.y);
+    for (let y = y0 - 3; y <= y1 + 3; y++) {
+      for (let x = x0 - 3; x <= x1 + 3; x++) {
+        if (x >= x0 - 1 && x <= x1 + 1 && y >= y0 - 1 && y <= y1 + 1) continue;
+        welt.karte.felder[y * g + x] = karten.WALD;
+      }
+    }
+  }
+  const b = welt.spielerVon('b').basis;
+  const faeller = [];
+  for (let i = 0; i < 30; i++) {
+    const e = welt.einheitAnlegen('a', b.x + 10 + (i % 6), b.y - 10 - Math.floor(i / 6), 'dorfbewohner');
+    e.ladung = 10;
+    e.ladungsart = 'holz';
+    e.auftrag = { art: 'sammeln', feld: { x: e.x + 1, y: e.y } };
+    faeller.push(e);
+  }
+  takten(welt, 20);
+  // Gegenprobe: sie erreichen wirklich kein Lager.
+  assert.ok(faeller.every((e) => !e.weg.length && e.ladung === 10), 'alle stehen mit voller Ladung');
+  const t0 = performance.now();
+  takten(welt, 300);
+  const mittel = (performance.now() - t0) / 300;
+  assert.ok(mittel < 10, `${mittel.toFixed(2)} ms je Takt im Mittel`);
 });

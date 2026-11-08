@@ -3,6 +3,11 @@
   "eintraege": [
     {
       "spec": "10-strategie/ki.md",
+      "ac": "AC-10",
+      "begruendung": "Dass auch nach zwanzig Spielminuten kein Dorfbewohner laenger als 20 Sekunden stillsteht, ist eine Messung ueber dreissig Spielminuten und zwanzig Startwerte im Pruefstand. Ein Standbild zeigt einen Augenblick, nicht, wie lange einer schon steht."
+    },
+    {
+      "spec": "10-strategie/ki.md",
       "ac": "AC-12",
       "begruendung": "Nachschub heisst: nach dem ersten Heer greift die KI wieder an, und ihre Wirtschaft traegt dabei weiter - gemessen ueber dreissig Spielminuten und zwanzig Startwerte im Pruefstand (Angriffe je KI, Dorfbewohner bei Minute 30). Das ist eine Eigenschaft ganzer Partien; ein Standbild zeigt einen Augenblick, in dem weder ein zweiter Angriff noch ein Ersatz fuer Gefallene zu sehen ist."
     },

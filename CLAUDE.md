@@ -155,7 +155,7 @@ Umfang hinzufügt, dort nachsehen.
 
 ## Stand
 
-**391 von 520 Kriterien fertig.** 459 Tests ohne Browser, 167 im Browser. Die
+**392 von 520 Kriterien fertig.** 461 Tests ohne Browser, 167 im Browser. Die
 Übersicht ist der Bericht: `npm run qa:report`.
 
 Gebaut ist der Unterbau: Räume, Übertragung, Karte, Wegfindung, Sammeln,
@@ -310,8 +310,9 @@ geht auf ein freies Nachbarfeld, auf dem er seine Arbeit behält — Sammler
 und Kämpfende noch nicht (AC-30 kostet die KI Zeit, AC-31 hängt am
 Konterkreis). **Nachschub** (ki AC-12): nach dem Aufstieg verteilt die KI
 ihre Sammler nach Überfluss und Mangel um, baut bis zu drei Militärgebäude
-und greift in dreißig Minuten vier- bis neunmal an. Es folgen
-Mensch gegen KI — und **zuletzt der Nebel**,
+und greift in dreißig Minuten vier- bis neunmal an. **Auch spät steht
+niemand herum** (ki AC-10): bis Minute 30 höchstens 12,9 Sekunden. Es folgen
+KI gegen KI mit Sieger (fahrplan AC-11), Mensch gegen KI — und **zuletzt der Nebel**,
 weil er die Zustandsnachricht umbaut.
 
 1. **Stufe A** Dunkle Zeit mit Wirtschafts-KI und Prüfstand · **B** Feudalzeit

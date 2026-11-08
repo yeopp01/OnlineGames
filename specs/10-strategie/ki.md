@@ -2,7 +2,7 @@
 
 **Bereich:** Strategie
 **Kuerzel:** ki
-**Stand:** 12/14 fertig · 2 offen
+**Stand:** 13/14 fertig · 1 offen
 
 ## Zweck
 
@@ -65,11 +65,15 @@ nicht die Regeln.
   Zeit da sind, beginnt sie den Aufstieg, baut danach Schießanlage oder Stall
   und bildet Kampfeinheiten aus. Im Prüfstand erreicht sie die Feudalzeit über
   zwanzig Startwerte nach 11 bis 16 Spielminuten.
-- **AC-10** `offen` **Auch spät steht niemand herum** — Auch nach zwanzig
-  Spielminuten steht kein Dorfbewohner länger als 20 Sekunden still. Heute
-  stehen einzelne bis zu acht Minuten: Wald und Gold im Umkreis von 30 Feldern
-  um die Basis sind aufgebraucht, Farmen sind alle besetzt, und wer dann
-  untätig wird, findet kein Ziel mehr. AC-6 misst dasselbe nach zehn Minuten.
+- **AC-10** `fertig` **Auch spät steht niemand herum** — Auch nach zwanzig
+  Spielminuten steht kein Dorfbewohner länger als 20 Sekunden still,
+  gemessen über zwanzig Startwerte bis Minute 30 (AC-6 misst dasselbe nach
+  zehn Minuten). Gemessen in Runde 91: höchstens 12,9 s. Zwei Ursachen lagen
+  darunter: Untätige wurden immer wieder an Beeren geschickt, zu denen kein
+  Weg führte (bis 655 s; behoben in Runde 90, AC-12), und Holzfäller mit
+  voller Ladung fanden keinen Weg zum nächsten Rand ihres Lagers — die KI
+  hatte es in eine Waldlücke gestellt. Jetzt sucht der Weg zum Lager andere
+  Randfelder und die anderen Lager.
 
 ### Kampf und Partieende (Stufe C)
 

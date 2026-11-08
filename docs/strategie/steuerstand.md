@@ -13,26 +13,23 @@ hier nichts eintraegt, verliert den Faden beim naechsten Autocompact.
 
 ## Zuletzt fortgeschrieben
 
-2026-11-08, nach Runde 90 (**ki AC-12**, Nachschub: die KI verteilt nach dem
-Aufstieg um (`umverteilen()`, ein Sammler je 10 s vom Ueberfluss ueber 600 zum
-Mangel unter 300), baut bis zu drei Militaergebaeude (`MILITAER_HOECHSTENS`),
-haelt Nahrung fuer einen Dorfbewohner zurueck, solange welche fehlen, und
-schlaegt Vorraete ohne Weg nicht wieder vor (`this.unerreichbar`). Gemessen
-ueber zwanzig Startwerte bei Minute 30: 4 bis 9 Angriffe je KI, 21 bis 22
-Dorfbewohner samt Ausbildung, laengste Untaetigkeit 53 s (vorher bis 655 s).
-Davor Runde 89: **einheiten AC-29**, Stehende treten auseinander; Sammler
-(AC-30) und Kaempfende (AC-31) offen. **Naechste Rueckschau: Runde 93.**
-Als Naechstes in C4: **ki AC-10** (spaet untaetige Dorfbewohner - jetzt
-noch 39 s und 53 s in zwei von vierzig KIs, Grenze 20 s) und **fahrplan
-AC-11** (KI gegen KI endet mit Sieger unter 60 Minuten - mit Nachschub zum
-ersten Mal denkbar). Die Figuren bei Zoom 1 sind als Faden notiert: eine
-eigene Runde nach C4, vor C5.)
+2026-11-08, nach Runde 91 (**ki AC-10**: auch spaet steht niemand herum -
+hoechstens 12,9 s bis Minute 30 ueber zwanzig Startwerte. `welt.wegZumLager`
+sucht, wenn zum naechsten Rand des naechsten Lagers kein Weg fuehrt, andere
+Randfelder und die anderen Lager (`welt.randfelder`). Davor Runde 90, **ki
+AC-12**: Nachschub (Umverteilen, bis zu drei Militaergebaeude, Farm bei
+Hunger, Vorraete ohne Weg zwei Minuten gesperrt); der Messtest prueft AC-10
+und AC-12 in denselben vierzig Partien. **Naechste Rueckschau: Runde 93.**
+Als Naechstes: **fahrplan AC-11** (KI gegen KI endet in zwanzig von zwanzig
+Partien mit einem Sieger unter 60 Minuten) - erst messen, wie Partien heute
+bis 60 Minuten ausgehen. Damit waere C4 fertig. Dann C5 (Mensch gegen KI) -
+und davor die Runde zu den Figuren bei Zoom 1.)
 
 ## Wo ich stehe
 
 - **Branch:** `strategie`. Nie auf `main` arbeiten, **nie pushen, nie deployen.**
-- **Board:** 391 von 520 Kriterien fertig · 1 in Arbeit · 5 in QA · 4 geplant ·
-  111 offen · 8 zurueckgestellt. 459 Tests ohne Browser, 167 im Browser.
+- **Board:** 392 von 520 Kriterien fertig · 1 in Arbeit · 5 in QA · 4 geplant ·
+  110 offen · 8 zurueckgestellt. 461 Tests ohne Browser, 167 im Browser.
 - **Fuenf Waechter in `tests/waechter-*.test.mjs`** (der fuenfte seit Runde 87: Bildschirmtext mit echten Umlauten): Gleichheit auf wachsenden
   Listen, verbesserbare Werte an `welt.einheitenwert()` vorbei,
   Bildunterschriften mit `${...}`, und (neu in Runde 73) die **Kuerzeltafel**

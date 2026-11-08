@@ -26,6 +26,11 @@ const WACHE_TAKTE = 5;
 // Naeher als ein halbes Feld, und zwei Figuren sind im Bild eine mit zwei
 // Schwertern (einheiten AC-29; dieselbe Grenze misst `figurenFrei`).
 const AUSWEICHEN_ABSTAND = 0.5;
+
+// Wie lange einer, der keinen Weg zu irgendeinem Lager fand, wartet, bevor
+// er wieder sucht - fuenf Sekunden (ki AC-10, Durchsicht Runde 91). Bis
+// dahin stand er ohnehin.
+const LAGER_SUCHE_PAUSE = 50;
 // So weit folgt eine Einheit einem Fluechtenden, gemessen von dem Platz, an
 // dem sie stand (kampf AC-3).
 const VERFOLGUNG_FELDER = 5;
@@ -1255,9 +1260,72 @@ class Welt {
   }
 
   wegZumLager(einheit) {
+    // Wer eben keinen Weg zu irgendeinem Lager fand, sucht erst nach einer
+    // Pause wieder - auch nicht den ersten Weg. Eine vergebliche Suche
+    // durchflutet das ganze erreichbare Gebiet, und wer festsitzt, kommt in
+    // jedem Takt hierher: 30 Holzfaeller vor einem abgeschnittenen Lager
+    // kosteten 47 ms je Takt, schon vor Runde 91 (Durchsicht Runde 91,
+    // gemessen).
+    if (this.takt < (einheit.lagerSucheAb || 0)) {
+      einheit.weg = [];
+      return;
+    }
     const lager = this.lagerFuer(einheit);
     const stand = lager && this.randfeld(lager, einheit);
     einheit.weg = stand ? suchen(this.karte, this.feldVon(einheit), stand) : [];
+    if (einheit.weg.length) return;
+    if (!lager) {
+      einheit.lagerSucheAb = this.takt + this.lagerPause(einheit);
+      return;
+    }
+    // Kein Weg zum naechsten Rand des naechsten Lagers: andere Randfelder,
+    // dann die anderen Lager, nach Abstand (ki AC-10). Die KI stellte ein
+    // Holzfaellerlager in eine Waldluecke, deren Rand zum Holzfaeller hin
+    // zugewachsen war; drei Holzfaeller standen beim Startwert 17 mit voller
+    // Ladung 45 bis 53 Sekunden am Wald (Runde 91, gemessen).
+    //
+    // Je Lager nur **ein** weiteres Randfeld - das naechste, das nicht schon
+    // versucht wurde; die Randfelder eines Lagers liegen fast immer im selben
+    // Gebiet. Bleibt alles vergeblich, die Pause (siehe oben).
+    const von = this.feldVon(einheit);
+    const lagerListe = [...this.gebaeude.values()]
+      .filter((g) => g.besitzer === einheit.besitzer && g.fertig && GEBAEUDE[g.art].annahme.includes(einheit.ladungsart))
+      .sort((a, b) => this.abstandZu(einheit, a) - this.abstandZu(einheit, b))
+      .slice(0, 3);
+    for (const l of lagerListe) {
+      const feld = this.randfelder(l, einheit).find((f) => l !== lager || f.x !== stand.x || f.y !== stand.y);
+      if (!feld) continue;
+      const weg = suchen(this.karte, von, feld);
+      if (weg.length) {
+        einheit.weg = weg;
+        return;
+      }
+    }
+    einheit.lagerSucheAb = this.takt + this.lagerPause(einheit);
+  }
+
+  // Die Pause nach einer vergeblichen Suche, nach der Nummer der Einheit
+  // gestreut: sonst suchen alle, die zugleich festsassen, im selben Takt wieder
+  // - 30 Holzfaeller vor einem abgeschnittenen Lager kosteten so 93 ms in einem
+  // Takt (Durchsicht Runde 91, gemessen). Deterministisch, ohne Zufall.
+  lagerPause(einheit) {
+    let streu = 0;
+    for (const zeichen of String(einheit.id)) streu = (streu * 31 + zeichen.charCodeAt(0)) % LAGER_SUCHE_PAUSE;
+    return LAGER_SUCHE_PAUSE + streu;
+  }
+
+  // Alle begehbaren Felder unmittelbar um die Grundflaeche, nach Abstand zu `von`.
+  randfelder(gebaeude, von) {
+    const { x0, y0, x1, y1 } = this.grundflaeche(gebaeude.art, gebaeude.x, gebaeude.y);
+    const felder = [];
+    for (let fy = Math.floor(y0) - 1; fy <= Math.ceil(y1) + 1; fy++) {
+      for (let fx = Math.floor(x0) - 1; fx <= Math.ceil(x1) + 1; fx++) {
+        if (fx > x0 - 1 && fx < x1 + 1 && fy > y0 - 1 && fy < y1 + 1) continue;
+        if (!karten.begehbar(this.karte, fx, fy) || this.gebaeudeAn(fx, fy)) continue;
+        felder.push({ x: fx, y: fy, d: Math.hypot(fx - von.x, fy - von.y) });
+      }
+    }
+    return felder.sort((a, b) => a.d - b.d).map(({ x, y }) => ({ x, y }));
   }
 
   // ---- Kampf (kampf AC-1, AC-6 bis AC-8, AC-10) ---------------------------
