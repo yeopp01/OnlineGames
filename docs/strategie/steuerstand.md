@@ -13,14 +13,16 @@ hier nichts eintraegt, verliert den Faden beim naechsten Autocompact.
 
 ## Zuletzt fortgeschrieben
 
-2026-11-08, nach Runde 110 (**kampf AC-13, fahrplan AC-13, C6e fertig**: der
+2026-11-08, nach Runde 111 (**kampf AC-13, fahrplan AC-13, C6e fertig**: der
 Server schickt jedem nur, was er sieht - `welt.zustandJeSpieler`,
 `welt.aufbauFuer`, im Raum `sendenJe`. Fremde Gebaeude und Felder, die sich im
 Nebel aendern, kommen beim naechsten Hinsehen; wer ausscheidet, bekommt einmal
-alles. **Als Naechstes einheiten AC-32** (Marschierende laufen nicht
-aufeinander): der Browsertest zu ki AC-11 faellt daran in zwei von vier
-Laeufen, auch mit HEAD - umschifft wurde es schon, also ist es die naechste
-Runde. Danach C6f: die KI sieht nur ihre Sicht und erkundet (ki AC-13).
+alles. Runde 111: **einheiten AC-32 versucht und offen gelassen** - drei
+Fassungen (warten, ohne Angreifer, schraeg vorbei) gemessen und
+zurueckgenommen; Abstand im Gehen zieht das Heer zur Schlange, KI gegen KI
+dauert 2-8 min laenger, fahrplan AC-11 reisst. Frage an den Benutzer:
+Formationen. Der Browsertest zu ki AC-11 bleibt wackelig (2 von 4). **Als
+Naechstes C6f**: die KI sieht nur ihre Sicht und erkundet (ki AC-13).
 **Naechste Rueckschau: Runde 113.**)
 
 ## Wo ich stehe

@@ -13,6 +13,18 @@ Kurz halten. Diese Datei wird in jeder Runde gelesen.
 Entscheidungen, die nicht die Schleife trifft. Solange eine offen ist, wird an
 etwas anderem gearbeitet.
 
+- **Formationen wie im Original?** (Runde 111) Marschierende Einheiten
+  laufen heute auf demselben Weg genau übereinander, im Angriffslauf der KI
+  im Median 53 Sekunden lang (einheiten AC-32); im Bild sieht ein Heer aus
+  wie halb so groß. Abstand halten im Gehen löst das, zieht das Heer aber zu
+  einer Reihe, die stückweise ankommt und verliert — KI gegen KI dauert dann
+  zwei bis acht Minuten länger und reißt fahrplan AC-11. Die Vorlage löst es
+  mit **Formationen**: eine Gruppe geht im Tempo der langsamsten auf
+  parallelen Bahnen (Linie, Kasten, gestaffelt, Flanke). Vorschlag: zunächst
+  nur die eine Grundformation, ohne Wahl in der Oberfläche — eine Gruppe
+  bleibt im Gehen beisammen und nebeneinander. Das ist neuer Umfang, deshalb
+  die Frage: **gewünscht, und wann — jetzt in Stufe C oder mit Stufe D?**
+
 - **Name des Spiels.** „Age of Empires" ist eine Marke und darf nicht
   erscheinen ([ADR-0012](../adr/0012-aoe2-als-vorlage.md)). Bis ein Name
   feststeht, heißt es in der Oberfläche „Strategie". Vorschlag des Benutzers
@@ -1076,6 +1088,16 @@ die Stadtwache).
 Neueste oben. Eine Zeile je Runde: Nummer, Datum, Kriterien, Ergebnis,
 wichtigste Erkenntnis.
 
+- **111** · 2026-11-08 · **einheiten AC-32 bleibt offen** — Marschierende
+  laufen aufeinander, gemessen im Median 53 s je Paar. Drei Fassungen gebaut,
+  gemessen und zurückgenommen: Warten hinter dem Vordermann (Überdeckung 1,2 s,
+  aber Partien 1,6 bis 8 Minuten länger, fahrplan AC-11 reißt), dasselbe ohne
+  Angreifer (noch länger), schräg vorbei (Überdeckung wieder lang, Einheiten
+  im Wald). Die Durchsicht fand an der ersten Fassung nichts — richtig gebaut
+  heißt nicht richtig gewählt; das zeigte erst der Prüfstand auf zwei Sätzen.
+  Gelernt: **Abstand im Gehen ist eine Frage der Gruppe, nicht des Paares** —
+  wer einzeln wartet, macht aus dem Heer eine Schlange. Frage an den Benutzer:
+  Formationen. Der Browsertest zu ki AC-11 bleibt wackelig (zwei von vier).
 - **110** · 2026-11-08 · **kampf AC-13, fahrplan AC-13** — der Server schickt
   jedem nur, was er sieht (C6e ist fertig). Die Welt rechnet den Zustand einmal
   und filtert je Spieler (`zustandJeSpieler`, `aufbauFuer`); der Raum fragt nur,

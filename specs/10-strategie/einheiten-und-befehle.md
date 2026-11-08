@@ -173,6 +173,22 @@ Befehl bewirkt.
   ebenso. **Messbar:** im Angriffslauf der KI (Prüfstand, zwanzig Startwerte)
   stehen keine zwei Gehenden länger als zwei Sekunden näher als ein halbes
   Feld. **Bedingung:** fahrplan AC-11 und der Konterkreis halten.
+  **Gemessen in Runde 111** (Angriffslauf, 30 Spielminuten, je Paar Gehender
+  desselben Spielers die längste Zeit am Stück unter einem halben Feld):
+  heute im Median 53 s, höchstens 98 s — gleiche Einheiten mit gleichem Tempo
+  auf demselben Weg decken sich ganz. Drei Fassungen versucht, keine bleibt:
+  (1) **Hinter dem Vordermann warten** (gleiche Richtung, Abstand 0,65): die
+  Überdeckung fällt auf Median 1,2 s, höchstens 3,1 s über 40 Startwerte —
+  aber das Heer zieht sich zur Reihe, kommt stückweise an und verliert; KI
+  gegen KI endet im Median 1,6 bzw. 3,2 Minuten später, Startwert 5 erst bei
+  60,8, und fahrplan AC-11 bricht. Rechenzeit +12 bis 20 %. (2) Dasselbe ohne
+  Angreifer: noch länger (Median 44,2 statt 36,4 und 39,4; 17 und 18 von 20
+  vor Minute 60). (3) **Schräg vorbei** statt warten: die Überdeckung wird
+  wieder lang (bis 15,7 s), und der Schritt neben den Weg führt in
+  Hindernisse — der Prüfstand fand Bogenschützen im Wald. **Der Weg ist
+  wohl die Formation** der Vorlage: eine Gruppe läuft im Tempo der
+  langsamsten auf parallelen Bahnen. Das ist neuer Umfang — Frage an den
+  Benutzer (Erkenntnisse).
 
 ## Grenzfaelle
 
