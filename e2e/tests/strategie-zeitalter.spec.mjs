@@ -88,10 +88,10 @@ test.describe('Zeitalterwechsel', () => {
     });
   });
 
-  test('bedienung AC-33: der Wechsel wird einmal gemeldet, danach steht die Feudalzeit oben', async ({}, info) => {
+  test('bedienung AC-33 und bedienung AC-41: der Wechsel wird einmal gemeldet, nicht auf der Mitte, danach steht die Feudalzeit oben', async ({}, info) => {
     const { anna, code } = partie;
     await zeitraffer(anna, code, 20);
-    // Die Ankuendigung steht gross in der Mitte, solange sie zu sehen ist.
+    // Die Ankuendigung steht gross oben, solange sie zu sehen ist.
     const ankuendigung = anna.locator('#zeitalterwechsel');
     await ankuendigung.waitFor({ state: 'visible', timeout: 40_000 });
     await zeitraffer(anna, code, 1);
@@ -99,12 +99,25 @@ test.describe('Zeitalterwechsel', () => {
     await expect(ankuendigung).toBeInViewport();
     await expect(anna.locator('#zeitalter b')).toHaveText('Feudalzeit');
     expect(await anna.evaluate(() => window.ansicht.zeitalter)).toBe(1);
-    await nachweis(anna, {
-      spec: BEDIENUNG,
-      ac: 'AC-33',
-      titel: 'Mitten im Bild „Feudalzeit erreicht", oben in der Leiste steht ab jetzt „Feudalzeit"',
-      test: info,
+    // Nicht auf der Mitte (bedienung AC-41): das Rechteck der Ansage beruehrt
+    // das mittlere Drittel des Fensters nicht - dort steht meist das Dorf.
+    const lage = await ankuendigung.evaluate((el) => {
+      const r = el.getBoundingClientRect();
+      const b = window.innerWidth;
+      const h = window.innerHeight;
+      const mitte = { links: b / 3, rechts: (2 * b) / 3, oben: h / 3, unten: (2 * h) / 3 };
+      return { ueberdeckt: r.left < mitte.rechts && r.right > mitte.links && r.top < mitte.unten && r.bottom > mitte.oben };
     });
+    expect(lage.ueberdeckt, 'die Ansage liegt nicht auf dem mittleren Drittel').toBe(false);
+    expect(await bedienteileFrei(anna)).toEqual([]);
+    for (const ac of ['AC-33', 'AC-41']) {
+      await nachweis(anna, {
+        spec: BEDIENUNG,
+        ac,
+        titel: 'Oben im Bild „Feudalzeit erreicht", die Mitte mit dem Dorf bleibt frei; in der Leiste steht ab jetzt „Feudalzeit"',
+        test: info,
+      });
+    }
 
     // Gemeldet wird einmal: nach vier Sekunden ist die Ankuendigung weg, oben
     // steht das Zeitalter weiter.

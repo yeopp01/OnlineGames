@@ -1194,6 +1194,16 @@ erstes Heer 17,0 min (Runde 113).
 Neueste oben. Eine Zeile je Runde: Nummer, Datum, Kriterien, Ergebnis,
 wichtigste Erkenntnis.
 
+- **118** · 2026-11-08 · **bedienung AC-39, AC-41** (D1 zu zwei Dritteln) —
+  wer kämpft, holt aus: der Server markiert eine Einheit mit Ziel in
+  Reichweite wie einen arbeitenden Dorfbewohner (`w`), und der Browser beugt
+  die Gestalt um die Füße vor und zurück (13°, ein Reiter 3°). Zwei
+  Augenblicke desselben Gefechts unterscheiden sich in 5,6 bis 9,9 % des
+  Ausschnitts, ohne das Ausholen in 0 — gemessen mit zwei verschachtelten
+  `npm run gegenprobe`. Die erste Fassung (9°) war im Bild kaum zu sehen;
+  erst das Ansehen zeigte es. Die Ansage zum Zeitalter steht jetzt oben
+  (10rem) statt bei 30 % der Höhe, der Test prüft das mittlere Drittel des
+  Fensters. AC-40 (Pfeile) ist die nächste Runde.
 - **117** · 2026-11-08 · **Spec-Runde Stufe D** — 20 Kriterien: bauen
   AC-27 bis AC-34 (Aufstieg, Kloster/Universität/Werkstatt, Türme schießen,
   Mauern ziehen, Tor, Burg, Markt, Verbesserungen der Ritterzeit), einheiten

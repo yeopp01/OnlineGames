@@ -802,6 +802,16 @@ export function figurZeichnen(stift, art, x, y, hoehe, farbe, lage = {}) {
   stift.lineWidth = Math.max(0.5, 0.9 / massstab);
   stift.lineJoin = 'round';
   stift.strokeStyle = KONTUR;
+  // Wer kaempft, holt aus (bedienung AC-39): die ganze Gestalt beugt sich um
+  // die Fuesse vor und zurueck, im Takt der Arbeit. Der Dorfbewohner hat dafuer
+  // seine eigene Bewegung mit der Axt (AC-31); ein Reiter wiegt nur wenig -
+  // sonst kippte das Pferd mit.
+  if (lage.arbeit && art !== 'dorfbewohner') {
+    const reiter = art === 'spaeherreiter';
+    const welle = Math.sin(lage.arbeit);
+    stift.rotate(welle * (reiter ? 0.06 : 0.23));
+    stift.translate(Math.max(0, welle) * (reiter ? 0.8 : 2.2), 0);
+  }
   // Unter rund 20 Bildpunkten Hoehe verschwimmen feine Striche zu Grau.
   figur.zeichnen(stift, farbe, { ...lage, fein: hoehe >= 20 });
   stift.restore();

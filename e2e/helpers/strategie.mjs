@@ -11,7 +11,7 @@
 //   `i` Id · `b` Besitzer · `k` Kuerzel der Art · `x`/`y` · `l` Ladung ·
 //   `a` erster Buchstabe der Ladungsart · `h` Lebenspunkte, **absolut, und nur
 //   wenn welche fehlen** (voll wird gar nicht geschickt - der Anteil ist
-//   `h / ansicht.lebenVoll(e)`) · `w` arbeitet gerade · `s` gefallen.
+//   `h / ansicht.lebenVoll(e)`) · `w` arbeitet oder kaempft gerade (bedienung AC-31, AC-39) · `s` gefallen.
 //
 // ### KUERZEL
 // Diese Liste prueft `tests/waechter-drahttafel.test.mjs` gegen `daten.js` -
@@ -350,7 +350,7 @@ export function platzImBild(page, { n = 2, um, abstand = 5, seitlich = false }) 
  */
 export function bedienteileFrei(page) {
   return page.evaluate(() => {
-    const teile = ['#kopfzeile', '#auswahlleiste', '#untaetig', '#uebersicht', '#spielmeldung', '#angriffsmeldung', '#abschluss', '#zuschauer']
+    const teile = ['#kopfzeile', '#auswahlleiste', '#untaetig', '#uebersicht', '#spielmeldung', '#angriffsmeldung', '#zeitalterwechsel', '#abschluss', '#zuschauer']
       .map((wahl) => ({ wahl, el: document.querySelector(wahl) }))
       .filter(({ el }) => el && !el.hidden && el.getClientRects().length)
       .map(({ wahl, el }) => ({ wahl, r: el.getBoundingClientRect() }));

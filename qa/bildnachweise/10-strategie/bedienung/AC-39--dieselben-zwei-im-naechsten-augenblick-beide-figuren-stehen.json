@@ -1,0 +1,10 @@
+{
+  "spec": "10-strategie/bedienung.md",
+  "ac": "AC-39",
+  "titel": "Dieselben zwei im nächsten Augenblick: beide Figuren stehen anders als im ersten Bild",
+  "datei": "e2e/tests/strategie-kampfbild.spec.mjs",
+  "pfad": [
+    "Kampf im Bild",
+    "bedienung AC-39: wer kaempft, holt aus - zwei Augenblicke desselben Gefechts sehen verschieden aus"
+  ]
+}

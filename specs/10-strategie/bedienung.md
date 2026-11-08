@@ -2,7 +2,7 @@
 
 **Bereich:** Strategie
 **Kuerzel:** bedienung
-**Stand:** 27/41 fertig · 14 offen
+**Stand:** 29/41 fertig · 12 offen
 
 ## Zweck
 
@@ -171,7 +171,7 @@ Reihenfolge:
   nicht. Danach sieht der Spieler das Abschlussbild und darf zusehen
   ([Spielziel](spielziel.md) AC-6, AC-7). Erreichbar heißt: ein Knopf, der nicht
   neben einem viel benutzten liegt — nicht nur eine Taste.
-- **AC-39** `offen` **Wer kämpft, holt aus** — Eine Einheit, die gerade
+- **AC-39** `fertig` **Wer kämpft, holt aus** — Eine Einheit, die gerade
   angreift, zeigt es: Nahkämpfer holen mit der Waffe aus und schlagen zu,
   Fernkämpfer spannen den Bogen — so, wie ein Dorfbewohner bei der Arbeit
   ausholt (AC-31). **Gefunden in der Rückschau zur Stufe C:** im Gefecht der
@@ -186,7 +186,7 @@ Reihenfolge:
   Pfeil ist Darstellung (ADR-0001). **Gefunden in der Rückschau zur Stufe
   C:** zwischen Bogenschützen und ihrem Ziel ist nichts zu sehen; wer auf
   wen schießt, liest man nicht ab.
-- **AC-41** `offen` **Ansagen verdecken die Mitte nicht** — Die Ansage eines
+- **AC-41** `fertig` **Ansagen verdecken die Mitte nicht** — Die Ansage eines
   Zeitalterwechsels und andere große Meldungen stehen nicht über der Mitte
   des Spielfelds, wo das eigene Dorf meist im Bild ist. **Gefunden in der
   Rückschau zur Stufe C:** „Feudalzeit erreicht" lag mitten auf dem

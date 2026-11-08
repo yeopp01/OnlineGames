@@ -1,0 +1,10 @@
+{
+  "spec": "10-strategie/bedienung.md",
+  "ac": "AC-39",
+  "titel": "Annas Miliz (blau) und Berts Miliz (rot) im Kampf, ein Augenblick",
+  "datei": "e2e/tests/strategie-kampfbild.spec.mjs",
+  "pfad": [
+    "Kampf im Bild",
+    "bedienung AC-39: wer kaempft, holt aus - zwei Augenblicke desselben Gefechts sehen verschieden aus"
+  ]
+}

@@ -2443,8 +2443,10 @@ class Welt {
         // und ein Zustand bleibt klein (uebertragung AC-7).
         ...(e.leben < this.lebenMax(e.besitzer, e.art) ? { h: e.leben } : {}),
         // Arbeitet gerade: sammelt, huetet, bestellt eine Farm oder baut
-        // (bedienung AC-31). Nur wenn es zutrifft - ein Zustand bleibt klein.
-        ...(e.sammelt || e.baut ? { w: 1 } : {}),
+        // (bedienung AC-31) - oder kaempft: hat ein Ziel und steht in
+        // Reichweite, ohne Weg (bedienung AC-39). Nur wenn es zutrifft - ein
+        // Zustand bleibt klein.
+        ...(e.sammelt || e.baut || (e.auftrag?.art === 'angreifen' && !e.weg.length && !e.tot) ? { w: 1 } : {}),
         // Gefallen: der Browser legt ihn hin, bis der Server ihn nimmt
         // (kampf AC-10).
         ...(e.tot ? { s: 1 } : {}),

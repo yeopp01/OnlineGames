@@ -1,0 +1,10 @@
+{
+  "spec": "10-strategie/bedienung.md",
+  "ac": "AC-33",
+  "titel": "Oben im Bild „Feudalzeit erreicht\", die Mitte mit dem Dorf bleibt frei; in der Leiste steht ab jetzt „Feudalzeit\"",
+  "datei": "e2e/tests/strategie-zeitalter.spec.mjs",
+  "pfad": [
+    "Zeitalterwechsel",
+    "bedienung AC-33 und bedienung AC-41: der Wechsel wird einmal gemeldet, nicht auf der Mitte, danach steht die Feudalzeit oben"
+  ]
+}

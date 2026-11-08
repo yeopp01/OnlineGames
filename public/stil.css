@@ -435,11 +435,14 @@ canvas.angriffslauf {
   text-align: right;
 }
 
-/* Der Wechsel, einmal gross in der Mitte - und von selbst wieder weg. */
+/* Der Wechsel, einmal gross - und von selbst wieder weg. Oben, unter Absage
+   und Angriffsmeldung, nicht in der Mitte: dort steht meist das eigene Dorf
+   (bedienung AC-41; in der Rueckschau zur Stufe C lag die Ansage auf dem
+   Dorfzentrum). */
 .zeitalterwechsel {
   position: fixed;
   left: 50%;
-  top: 30%;
+  top: 10rem;
   transform: translateX(-50%);
   margin: 0;
   padding: 0.8rem 2.2rem;
