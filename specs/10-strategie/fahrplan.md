@@ -2,7 +2,7 @@
 
 **Bereich:** Strategie
 **Kuerzel:** fahrplan
-**Stand:** 12/22 fertig · 10 offen
+**Stand:** 13/22 fertig · 9 offen
 
 ## Zweck
 
@@ -133,7 +133,7 @@ neuen Karte grün bleiben.
   die KI gewinnt gegen einen Spieler, der nicht baut, nach rund 22
   Spielminuten (21,1 bis 22,1 auf vier Startwerten); die Tafel nennt sie als
   Sieger. Zehnmal hintereinander grün.
-- **AC-13** `offen` **Nebel auf dem Server** — Ein Spieler erhält nur, was seine Einheiten und
+- **AC-13** `fertig` **Nebel auf dem Server** — Ein Spieler erhält nur, was seine Einheiten und
   Gebäude sehen oder gesehen haben (→ [Kampf](kampf.md) AC-13).
 
 **Bauabfolge Stufe C.** Jeder Schritt endet mit etwas im Browser Sichtbarem.
@@ -162,7 +162,7 @@ Zustandsnachricht umbaut und damit jeden Browsertest berührt: was dort heute
 | C6b | Der Nebel im Bild: die eigene Sicht im Browser rechnen, drei Stufen zeichnen, auch auf der Übersichtskarte — **fertig** (Runde 105) | kampf AC-11, AC-12, darstellung AC-15 |
 | C6c | Die Sicht als Einstellung beim Eröffnen: Nebel, Erkundet, Aufgedeckt — ersetzt den Prüfgriff `aufdecken` (Wunsch des Benutzers, vorgezogen) — **fertig** (Runde 106) | kampf AC-16 |
 | C6d | Die Sicht wächst: Stadtwache im Dorfzentrum, der Außenposten — **fertig** (Runden 107, 109) | kampf AC-17, AC-18 |
-| C6e | Nur Sichtbares schicken: eine Zustandsnachricht je Spieler, erinnerte Gebäude | kampf AC-13, fahrplan AC-13 |
+| C6e | Nur Sichtbares schicken: eine Zustandsnachricht je Spieler, erinnerte Gebäude — **fertig** (Runde 110) | kampf AC-13, fahrplan AC-13 |
 | C6f | Die KI sieht nur ihre Sicht und erkundet mit dem Späher | ki AC-13 |
 | C6g | Angriff wird gemeldet, ein Klick springt hin | kampf AC-14 |
 

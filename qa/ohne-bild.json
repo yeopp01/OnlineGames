@@ -3,6 +3,16 @@
   "eintraege": [
     {
       "spec": "10-strategie/kampf.md",
+      "ac": "AC-13",
+      "begruendung": "Was der Server einem Spieler schickt, ist der Inhalt einer Nachricht, nicht ihr Aussehen: das Bild im Nebel sieht genauso aus wie vorher, weil der Browser Fremdes ausserhalb der Sicht schon nicht zeichnete (kampf AC-11, mit Bild). Belegt ueber WebSocket gegen den laufenden Server (keine fremde Einheit, keine fremden Vorraete in Annas Nachrichten) und im Rechenteil fuer Gebaeude und Felder im Nebel."
+    },
+    {
+      "spec": "10-strategie/fahrplan.md",
+      "ac": "AC-13",
+      "begruendung": "Der Nebel auf dem Server aendert, was uebertragen wird, nicht was im Bild steht - das Bild des Nebels ist darstellung AC-15 und kampf AC-11. Belegt ueber WebSocket gegen den laufenden Server: Anna bekommt von Bert weder Einheiten ausserhalb ihrer Sicht noch seine Vorraete."
+    },
+    {
+      "spec": "10-strategie/kampf.md",
       "ac": "AC-15",
       "begruendung": "Welche Felder ein Spieler jetzt sieht und welche er je gesehen hat, ist eine Rechnung auf dem Server, die in dieser Runde noch nichts im Bild veraendert - gezeigt wird sie mit darstellung AC-15 (Nebel in drei Stufen), das dafuer ein eigenes Bild bekommt."
     },

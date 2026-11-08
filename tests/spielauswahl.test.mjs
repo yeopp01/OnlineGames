@@ -308,7 +308,9 @@ test('auswahl AC-11: ohne Konto eroeffnet niemand, auch nicht mit Spiel und Eins
 });
 
 test('auswahl AC-6: Kartengroesse und Startvorrat kommen in der Partie an', async () => {
-  const { gast, bert } = await raumMitBert({ kartengroesse: 'gross', vorrat: 'viel', startwert: 5 });
+  // Aufgedeckt: geprueft wird der Vorrat beider - im Nebel saehe Bert nur
+  // seinen eigenen (kampf AC-13).
+  const { gast, bert } = await raumMitBert({ kartengroesse: 'gross', vorrat: 'viel', startwert: 5, sicht: 'aufgedeckt' });
   gast.senden({ typ: 'start' });
   const aufbau = await bert.warteAuf(istTyp('aufbau'));
   assert.equal(aufbau.karte.groesse, 144, 'zwei Spieler, gross: 120 mal 1,2');
@@ -364,7 +366,9 @@ test('auswahl AC-19: allein mit einer KI startet die Partie, und die KI spielt',
   assert.match(absage.text, /mindestens 2/);
   ohne.gast.zu();
 
-  const { gast } = await eroeffnen({ art: 'strategie', einstellungen: { ki: 1 } });
+  // Aufgedeckt: gemessen wird die Nahrung der KI, und die sieht im Nebel
+  // niemand (kampf AC-13).
+  const { gast } = await eroeffnen({ art: 'strategie', einstellungen: { ki: 1, sicht: 'aufgedeckt' } });
   await gast.warteAuf(istTyp('raum'));
   gast.senden({ typ: 'start', startwert: 7 });
   const aufbau = await gast.warteAuf(istTyp('aufbau'));

@@ -73,10 +73,10 @@ test.describe('Nebel', () => {
 
     // Bert stellt einen Mann auf den Weg, den Annas Spaeher kennt.
     expect(await einheitenAufstellen(anna, code, 'Bert', 1, { x: lage.ziel.x, y: lage.ziel.y }), 'Berts Mann').toBe(1);
-    await anna.waitForFunction(() => {
-      const a = window.ansicht;
-      return [...a.nachher.values()].some((e) => e.b !== a.ich && Math.hypot(e.x - a.spieler.get(a.ich).basis.x, e.y - a.spieler.get(a.ich).basis.y) > 12);
-    });
+    // Bert sieht ihn - so wissen wir, dass er steht, auch wenn Anna nichts von
+    // ihm erfaehrt.
+    await partie.bert.waitForFunction((z) => [...window.ansicht.nachher.values()]
+      .some((e) => e.b === window.ansicht.ich && Math.hypot(e.x - z.x, e.y - z.y) < 2), lage.ziel);
 
     // Der Blick: das Dorf und der Weg, weit genug heraus, dass auch Schwarz zu sehen ist.
     const bild = await anna.evaluate((l) => {
@@ -115,8 +115,9 @@ test.describe('Nebel', () => {
     expect(nachher.nieImBild, 'und daneben nie Gesehenes').toBe(true);
     // Erinnert, aber unbeobachtet: Berts Mann steht dort und wird nicht gezeichnet (kampf AC-12).
     expect(nachher.zielErkundet && !nachher.zielGesehen, 'das Ziel ist erkundet, aber unbeobachtet').toBe(true);
-    expect(nachher.bertDa, 'Bert steht dort - der Server schickt ihn noch (bis kampf AC-13)').toBe(true);
-    expect(nachher.bertGezeichnet, 'Anna sieht ihn nicht').toBe(false);
+    // Seit kampf AC-13 schickt der Server ihn gar nicht erst (Runde 110).
+    expect(nachher.bertDa, 'Berts Mann kommt bei Anna nicht an').toBe(false);
+    expect(nachher.bertGezeichnet, 'Anna sieht ihn nicht').not.toBe(true);
     // Die Uebersichtskarte zeigt ihn auch nicht.
     const aufKarte = await anna.evaluate(() => window.uebersicht.punkte.filter((p) => p.art === 'einheit' && p.b !== window.ansicht.ich).length);
     expect(aufKarte, 'kein fremder Punkt auf der Uebersicht').toBe(0);

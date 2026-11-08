@@ -439,6 +439,9 @@ class Welt {
       wartet: false, // Bevoelkerung voll (bauen AC-15)
     };
     this.gebaeude.set(gebaeude.id, gebaeude);
+    // Wem es gehoert, bleibt bekannt, auch wenn es faellt - der Auszug je
+    // Spieler schickt das Verschwinden eigener Gebaeude immer (kampf AC-13).
+    (this.gebaeudeBesitzer ??= new Map()).set(gebaeude.id, besitzer);
     this.gebaeudeSichtNeu = true;
     this.belegen(gebaeude);
     this.gebaeudeGeaendert(gebaeude);
@@ -2463,6 +2466,151 @@ class Welt {
       this.tierAenderungen = [];
     }
     return zustand;
+  }
+
+  /**
+   * Jedem Spieler sein Auszug (kampf AC-13, fahrplan AC-13): der Zustand wird
+   * einmal gerechnet und dann je Spieler gefiltert. Sonst laese ein
+   * veraendertes Programm die ganze Karte mit - der Browser liess Fremdes nur
+   * beim Zeichnen weg (kampf AC-11).
+   *
+   * @param {string[]} ids die Spieler, die einen Zustand bekommen
+   * @returns {Map<string, object>}
+   */
+  zustandJeSpieler(ids) {
+    const voll = this.zustand();
+    return new Map(ids.map((id) => [id, this.auszug(voll, id)]));
+  }
+
+  // Gilt fuer diesen Spieler der Nebel? Nicht, wenn alles aufgedeckt ist, nicht
+  // nach dem Ende und nicht fuer den, der ausgeschieden ist und zusieht
+  // (spielziel AC-7) - wie im Browser (`ansicht.nebelAn`).
+  nebelGiltFuer(id) {
+    const spieler = this.spielerVon(id);
+    return Boolean(spieler) && !spieler.aus && !this.ende && this.sichtArt !== 'aufgedeckt';
+  }
+
+  // Sieht der Spieler ein Feld der Grundflaeche?
+  siehtGebaeude(id, g) {
+    const { x0, y0, x1, y1 } = this.grundflaeche(g.art, g.x, g.y);
+    for (let y = y0; y <= y1; y++) for (let x = x0; x <= x1; x++) if (this.sieht(id, x, y)) return true;
+    return false;
+  }
+
+  /**
+   * Was ein Spieler von fremden Gebaeuden weiss (kampf AC-12, AC-13): ein
+   * Gebaeude, sobald er es sieht, und jede Aenderung, solange er es sieht. Was
+   * im Nebel faellt, erfaehrt er erst, wenn er wieder hinsieht - bis dahin
+   * steht es in seinem Browser so da, wie er es zuletzt sah.
+   */
+  gebaeudeFuer(id, aenderungen) {
+    if (!this.bekannt) this.bekannt = new Map();
+    if (!this.bekannt.has(id)) this.bekannt.set(id, new Map());
+    const bekannt = this.bekannt.get(id);
+    const geaendert = new Set(aenderungen.map((g) => g.i));
+    const raus = [];
+    for (const g of aenderungen) {
+      // Eigene immer, auch das Verschwinden.
+      if (this.gebaeudeBesitzer.get(g.i) === id) raus.push(g);
+    }
+    for (const g of this.gebaeude.values()) {
+      if (g.besitzer === id) continue;
+      const alt = bekannt.get(g.id);
+      if (!this.siehtGebaeude(id, g)) {
+        // Im Nebel fertig geworden oder beschaedigt: beim naechsten Hinsehen
+        // nachschicken, sonst stuende die Baustelle fuer immer da (Durchsicht
+        // Runde 110).
+        if (alt && geaendert.has(g.id)) alt.veraltet = true;
+        continue;
+      }
+      if (!alt || alt.veraltet || geaendert.has(g.id)) raus.push(this.gebaeudeFuerDraht(g.id));
+      bekannt.set(g.id, { art: g.art, x: g.x, y: g.y });
+    }
+    for (const [gid, ort] of bekannt) {
+      if (this.gebaeude.has(gid) || !this.siehtGebaeude(id, ort)) continue;
+      raus.push({ i: gid, weg: true });
+      bekannt.delete(gid);
+    }
+    return raus;
+  }
+
+  /**
+   * Feldaenderungen in Sicht (kampf AC-13): ein gefaellter Baum, ein neuer
+   * Bauplatz im Nebel verriete, wo der Gegner arbeitet. Was im Nebel geschieht,
+   * wartet, bis der Spieler wieder hinsieht - dann gilt der letzte Stand.
+   */
+  felderFuer(id, aenderungen) {
+    if (!this.felderOffen) this.felderOffen = new Map();
+    if (!this.felderOffen.has(id)) this.felderOffen.set(id, new Map());
+    const offen = this.felderOffen.get(id);
+    const g = this.karte.groesse;
+    for (const f of aenderungen) offen.set(f.i, f);
+    const raus = [];
+    for (const [i, f] of offen) {
+      if (!this.sieht(id, i % g, Math.floor(i / g))) continue;
+      raus.push(f);
+      offen.delete(i);
+    }
+    return raus;
+  }
+
+  // Der Nebel faellt fuer diesen Spieler (ausgeschieden, Ende): er bekommt
+  // einmal alle Gebaeude und alles Aufgeschobene, denn sein Browser zeigt
+  // jetzt alles (Durchsicht Runde 110).
+  nebelAufheben(voll, id) {
+    const offen = this.felderOffen?.get(id);
+    // Was im Nebel fiel, steht in seinem Browser noch da.
+    const weg = [...this.bekannt.get(id).keys()].filter((gid) => !this.gebaeude.has(gid)).map((gid) => ({ i: gid, weg: true }));
+    this.bekannt.delete(id);
+    this.felderOffen?.delete(id);
+    const neu = new Set((voll.gebaeude || []).map((g) => g.i));
+    return {
+      ...voll,
+      felder: [...(offen ? offen.values() : []), ...voll.felder],
+      gebaeude: [
+        ...weg,
+        ...[...this.gebaeude.keys()].filter((gid) => !neu.has(gid)).map((gid) => this.gebaeudeFuerDraht(gid)),
+        ...(voll.gebaeude || []),
+      ],
+    };
+  }
+
+  auszug(voll, id) {
+    if (!this.nebelGiltFuer(id)) return this.bekannt?.has(id) ? this.nebelAufheben(voll, id) : voll;
+    const auszug = {
+      ...voll,
+      // Fremde Einheiten nur in Sicht.
+      einheiten: voll.einheiten.filter((e) => e.b === id || this.sieht(id, Math.round(e.x), Math.round(e.y))),
+      felder: this.felderFuer(id, voll.felder),
+      // Von den anderen nur, was jeder sieht: wer draussen ist, das Zeitalter
+      // und die Kampfwerte (die zeigt die Auswahl einer fremden Einheit) -
+      // nicht ihre Vorraete und ihre Untaetigen.
+      spieler: voll.spieler.map((s) => (s.id === id ? s : {
+        id: s.id, ...(s.aus ? { aus: 1 } : {}), ...(s.z ? { z: s.z } : {}), ...(s.kw ? { kw: s.kw } : {}),
+      })),
+    };
+    const gebaeude = this.gebaeudeFuer(id, voll.gebaeude || []);
+    if (gebaeude.length) auszug.gebaeude = gebaeude;
+    else delete auszug.gebaeude;
+    return auszug;
+  }
+
+  /**
+   * Der Aufbau je Spieler (kampf AC-13): fremde Gebaeude nur, wenn er sie
+   * sieht. Wer zurueckkehrt, faengt mit seinem Wissen neu an - was er im Nebel
+   * erinnerte, sieht er erst wieder, wenn er hinsieht.
+   */
+  aufbauFuer(id) {
+    const voll = this.aufbau();
+    if (!this.nebelGiltFuer(id)) return voll;
+    if (!this.bekannt) this.bekannt = new Map();
+    const bekannt = new Map();
+    this.bekannt.set(id, bekannt);
+    // Die Karte im Aufbau ist die heutige - Aufgeschobenes ist darin enthalten.
+    this.felderOffen?.delete(id);
+    const sichtbar = [...this.gebaeude.values()].filter((g) => g.besitzer === id || this.siehtGebaeude(id, g));
+    for (const g of sichtbar) if (g.besitzer !== id) bekannt.set(g.id, { art: g.art, x: g.x, y: g.y });
+    return { ...voll, gebaeude: sichtbar.map((g) => this.gebaeudeFuerDraht(g.id)) };
   }
 
   // Gebaeude mit Schlange und Fortschritt (bauen AC-10), fuer die

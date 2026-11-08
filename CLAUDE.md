@@ -157,7 +157,7 @@ Umfang hinzufügt, dort nachsehen.
 
 ## Stand
 
-**410 von 530 Kriterien fertig.** 493 Tests ohne Browser, 175 im Browser. Die
+**412 von 531 Kriterien fertig.** 497 Tests ohne Browser, 175 im Browser. Die
 Übersicht ist der Bericht: `npm run qa:report`.
 
 Gebaut ist der Unterbau: Räume, Übertragung, Karte, Wegfindung, Sammeln,
@@ -327,9 +327,10 @@ Der Raum erfährt vom Steckbrief nur `plaetze(einstellungen)`. **Der
 Nebel (C6) hat begonnen:** der Server rechnet die Sicht je Spieler (kampf
 AC-15), und das Bild zeigt sie in drei Stufen, auch auf der Übersichtskarte
 (kampf AC-11, AC-12, darstellung AC-15) — der Browser rechnet die eigene Sicht
-in `public/nebel.js`, fremde Gebäude im Nebel aus der Erinnerung. Es folgen
-C6c bis C6e: nur Sichtbares schicken, die KI mit eigener Sicht, Meldung bei
-Angriff. Die **Sicht ist eine Einstellung beim Eröffnen** (kampf AC-16):
+in `public/nebel.js`, fremde Gebäude im Nebel aus der Erinnerung. **Der
+Server schickt jedem nur, was er sieht** (kampf AC-13): `welt.zustandJeSpieler`
+und `welt.aufbauFuer`, der Raum fragt nur, ob es sie gibt. Es folgen die KI mit
+eigener Sicht und die Meldung bei Angriff. Die **Sicht ist eine Einstellung beim Eröffnen** (kampf AC-16):
 Nebel, Erkundet oder Aufgedeckt — Tests, die nicht vom Nebel handeln,
 eröffnen aufgedeckt (`partieZuZweit(…, { sicht: 'aufgedeckt' })`).
 

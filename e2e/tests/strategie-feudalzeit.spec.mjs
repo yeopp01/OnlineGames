@@ -42,7 +42,8 @@ test.describe('Feudalzeit am Stueck', () => {
   let wiesen;
 
   test.beforeAll(async ({ browser }, info) => {
-    partie = await partieZuZweit(browser, info);
+    // Handelt nicht vom Nebel: aufgedeckt, sonst kommt Bert gar nicht an (kampf AC-13).
+    partie = await partieZuZweit(browser, info, { sicht: 'aufgedeckt' });
     const { anna, code } = partie;
     basis = await anna.evaluate(() => window.ansicht.spieler.get(window.ansicht.ich).basis);
     // Die zwei Schlachtfelder **vor** dem Bauen suchen: `freieWiesen` verlangt

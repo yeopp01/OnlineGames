@@ -2,7 +2,7 @@
 
 **Bereich:** Strategie
 **Kuerzel:** einheiten
-**Stand:** 21/24 fertig · 2 offen · 1 zurueckgestellt
+**Stand:** 21/25 fertig · 3 offen · 1 zurueckgestellt
 
 ## Zweck
 
@@ -164,6 +164,15 @@ Befehl bewirkt.
   fand: im Bild zu kampf AC-10 steht neben der gefallenen eine zweite, aufrechte
   rote Miliz, die die Unterschrift nicht nennt; im Bild zu kampf AC-1 stehen
   alle drei blauen Milizen auf **einer** Seite — „umstellt" stimmt nicht.
+- **AC-32** `offen` **Marschierende laufen nicht aufeinander** — Wer mit
+  anderen denselben Weg geht, läuft nicht länger als einen Augenblick auf
+  demselben Punkt. **Gefunden in Runde 110:** im Browsertest zu ki AC-11 laufen
+  zwei Milizen der KI dreißig Augenblicke (zwölf Spielsekunden) lang 0,28 Felder
+  hintereinander auf derselben Linie; der Test sucht einen freien Augenblick
+  und findet keinen — in zwei von vier Läufen, mit dem eingecheckten Stand
+  ebenso. **Messbar:** im Angriffslauf der KI (Prüfstand, zwanzig Startwerte)
+  stehen keine zwei Gehenden länger als zwei Sekunden näher als ein halbes
+  Feld. **Bedingung:** fahrplan AC-11 und der Konterkreis halten.
 
 ## Grenzfaelle
 

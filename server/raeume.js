@@ -181,7 +181,9 @@ class Raum {
       this.spieler.map((s) => ({ id: s.id, name: s.name })),
       { ...this.einstellungen, startwert },
     );
-    this.senden(this.welt.aufbau());
+    // Je Spieler, wenn das Spiel das anbietet (kampf AC-13): jeder bekommt
+    // nur, was er sieht. Was das heisst, weiss nur das Spiel (ADR-0006).
+    this.sendenJe((id) => (this.welt.aufbauFuer ? this.welt.aufbauFuer(id) : this.welt.aufbau()));
     this.uhr = setInterval(() => this.schlag(), 1000 / this.spiel.takte);
     this.beruehrt = Date.now();
     return {};
@@ -191,7 +193,12 @@ class Raum {
     // Der Zeitraffer ist ein Pruefgriff: Tests setzen ihn, damit eine Minute
     // Spiel keine Minute Warten kostet. Im Betrieb bleibt er 1.
     for (let i = 0; i < this.zeitraffer; i++) this.welt.takten();
-    this.senden(this.welt.zustand());
+    if (this.welt.zustandJeSpieler) {
+      const je = this.welt.zustandJeSpieler(this.spieler.map((s) => s.id));
+      this.sendenJe((id) => je.get(id));
+    } else {
+      this.senden(this.welt.zustand());
+    }
     // `vorbei` gehoert zur Form dessen, was `erzeugen` liefert, nicht zu
     // einem einzelnen Spiel (ADR-0006): sagt es, die Partie sei entschieden,
     // haelt der Raum seine Uhr an. **Was** entscheidet, weiss nur das Spiel -
@@ -221,6 +228,13 @@ class Raum {
     const text = JSON.stringify(nachricht);
     for (const spieler of this.spieler) {
       if (spieler.draht && spieler.draht.readyState === 1) spieler.draht.send(text);
+    }
+  }
+
+  // Jedem seine eigene Nachricht (kampf AC-13).
+  sendenJe(nachrichtFuer) {
+    for (const spieler of this.spieler) {
+      if (spieler.draht && spieler.draht.readyState === 1) spieler.draht.send(JSON.stringify(nachrichtFuer(spieler.id)));
     }
   }
 }

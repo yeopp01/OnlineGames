@@ -23,7 +23,8 @@ test.describe('Kampf', () => {
   let fernwiese;
 
   test.beforeAll(async ({ browser }, info) => {
-    partie = await partieZuZweit(browser, info);
+    // Handelt nicht vom Nebel: aufgedeckt, sonst kommt Bert gar nicht an (kampf AC-13).
+    partie = await partieZuZweit(browser, info, { sicht: 'aufgedeckt' });
     const { anna, code } = partie;
     // Zwei freie Wiesen, weit genug auseinander: auf der zweiten steht der
     // Fernkampf, damit die Ueberlebenden des ersten Gefechts nicht hineinlaufen.

@@ -20,7 +20,8 @@ test.describe('Angriffslauf', () => {
   let marschziel;
 
   test.beforeAll(async ({ browser }, info) => {
-    partie = await partieZuZweit(browser, info);
+    // Handelt nicht vom Nebel: aufgedeckt, sonst kommt Bert gar nicht an (kampf AC-13).
+    partie = await partieZuZweit(browser, info, { sicht: 'aufgedeckt' });
     const { anna, code } = partie;
     const [wiese] = await freieWiesen(anna, 1);
     // Annas zwei Milizen links, Berts Dorfbewohner in der Mitte, das Marschziel

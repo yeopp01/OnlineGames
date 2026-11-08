@@ -10,7 +10,8 @@ const DARSTELLUNG = '10-strategie/darstellung.md';
 test.describe('Tempo im Browser', () => {
   let partie;
   test.beforeAll(async ({ browser }, info) => {
-    partie = await partieZuZweit(browser, info);
+    // Handelt nicht vom Nebel: aufgedeckt, sonst kommt Bert gar nicht an (kampf AC-13).
+    partie = await partieZuZweit(browser, info, { sicht: 'aufgedeckt' });
   });
   test.afterAll(() => partieBeenden(partie));
 

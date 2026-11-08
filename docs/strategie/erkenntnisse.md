@@ -70,6 +70,15 @@ etwas anderem gearbeitet.
 
 ## Offene Fäden
 
+- **Was der Nebel auf dem Server noch durchlässt** (Durchsicht Runde 110):
+  Schafe gehen ungefiltert (Lage und Schlachten fremder Schafe); der Aufbau
+  nennt die Startplätze aller (`basis`, der Browser blendet sie nur aus — die
+  Kamera eines Ausgeschiedenen braucht sie); und wer nach Abbruch zurückkehrt,
+  bekommt die Karte von heute samt fremder Bauplätze und gefällter Wälder und
+  vergisst, welche fremden Gebäude er im Nebel erinnerte. Sichtbare fremde
+  Einheiten tragen noch ihre Ladung. Keins davon kostet im Spiel viel; vor
+  Stufe G (Betrieb) angehen.
+
 - **Wunsch des Benutzers (2026-11-08, nach Runde 105): der Nebel ist eine
   Einstellung beim Eröffnen, und Forschung & Co verändern seine Fläche.** Als
   kampf AC-16 (Nebel / Erkundet / Aufgedeckt, ersetzt den Prüfgriff
@@ -1067,6 +1076,26 @@ die Stadtwache).
 Neueste oben. Eine Zeile je Runde: Nummer, Datum, Kriterien, Ergebnis,
 wichtigste Erkenntnis.
 
+- **110** · 2026-11-08 · **kampf AC-13, fahrplan AC-13** — der Server schickt
+  jedem nur, was er sieht (C6e ist fertig). Die Welt rechnet den Zustand einmal
+  und filtert je Spieler (`zustandJeSpieler`, `aufbauFuer`); der Raum fragt nur,
+  ob es das gibt (ADR-0006). Fremde Einheiten nur auf gesehenen Feldern, von
+  fremden Spielern nur Zeitalter, Kampfwerte und „draußen"; fremde Gebäude,
+  wenn man sie sieht, ihr Fall im Nebel erst beim Hinsehen. Die Durchsicht fand
+  zwei Fehler, die kein Test hatte: eine im Nebel fertig gewordene Baustelle
+  bliebe beim Wiedersehen Baustelle, und wer ausscheidet, sähe fremde Gebäude
+  nie — beide mit Test und Gegenprobe behoben. Und Feldänderungen verrieten,
+  wo der Gegner Holz schlägt; sie warten jetzt, bis man hinsieht. Gemessen:
+  zu viert +0,15 ms je Takt, Nachrichten 70 % kleiner — kein ADR nötig. Drei
+  Tests verließen sich darauf, fremde Vorräte zu lesen, und vier
+  Browsertests auf fremde Einheiten; sie eröffnen jetzt aufgedeckt. Der Test
+  zu auswahl AC-19 bleibt im Nebel und prüft jetzt, dass von der KI nichts
+  ankommt — mit „Aufgedeckt" hätte seine Unterschrift („der Rest im Nebel")
+  nicht mehr gestimmt. Der Browsertest zu ki AC-11 fiel in zwei von vier
+  Läufen, mit dem eingecheckten Stand ebenso: zwei marschierende Milizen
+  laufen zwölf Spielsekunden lang aufeinander, und der Test, der einen freien
+  Augenblick sucht, findet keinen. Angelegt als **einheiten AC-32**, die
+  nächste Runde.
 - **109** · 2026-11-08 · **kampf AC-18** — der Außenposten: ein Turm nur zum
   Sehen, 25 Holz, 25 Stein, 15 s, 500 Leben, Sicht 10 — weiter als jedes andere
   Gebäude (C6d ist fertig). Gezeichnet als hölzerner Wachturm auf einem Feld,

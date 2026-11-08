@@ -319,7 +319,9 @@ test.describe('Gegen die KI', () => {
     });
     expect(lage.spieler, 'zwei am Tisch: Anna und die KI').toHaveLength(2);
     expect(lage.spieler).toContain('KI 1');
-    expect(lage.fremde, 'die KI hat ihre Startaufstellung').toBeGreaterThan(0);
+    // Im Nebel kommt von der KI nichts an, bis man sie sieht (kampf AC-13,
+    // Runde 110) - dass sie spielt, zeigt fahrplan AC-12 bis zur Tafel.
+    expect(lage.fremde, 'von der KI nichts im Nebel').toBe(0);
     await expect(page.locator('#uebersicht')).toBeInViewport();
     await nachweis(page, {
       spec: AUSWAHL,

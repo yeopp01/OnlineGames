@@ -117,7 +117,9 @@ test('raeume AC-7: nur der Gastgeber startet', async () => {
 test('raeume AC-8 / uebertragung AC-5 / uebertragung AC-6 / uebertragung AC-7: Aufbau und laufende Zustaende', async () => {
   const anna = gastgeber();
   await anna.offen();
-  anna.senden({ typ: 'erstellen', name: 'Anna' });
+  // Aufgedeckt (kampf AC-16): hier geht es um die Uebertragung beider Doerfer,
+  // nicht um den Nebel - den prueft kampf AC-13 eigens.
+  anna.senden({ typ: 'erstellen', name: 'Anna', einstellungen: { sicht: 'aufgedeckt' } });
   const du = await anna.warteAuf(istTyp('du'));
 
   const bert = kunde();
@@ -245,7 +247,9 @@ test('uebertragung AC-1 / uebertragung AC-2 / einheiten AC-4: fremde Einheiten g
 test('bauen AC-8 / bauen AC-11: Ausbilden und Abbrechen gehen ueber die Leitung, Absagen kommen zurueck', async () => {
   const anna = gastgeber();
   await anna.offen();
-  anna.senden({ typ: 'erstellen', name: 'Anna' });
+  // Aufgedeckt (kampf AC-16): hier geht es um die Uebertragung beider Doerfer,
+  // nicht um den Nebel - den prueft kampf AC-13 eigens.
+  anna.senden({ typ: 'erstellen', name: 'Anna', einstellungen: { sicht: 'aufgedeckt' } });
   const du = await anna.warteAuf(istTyp('du'));
 
   const bert = kunde();
@@ -470,6 +474,42 @@ test('spielziel AC-9: die Revanche geht ueber dieselbe Leitung und denselben Rau
   assert.ok(raum.uhr, 'die Uhr des Raums laeuft wieder');
   assert.equal(raum.welt.vorbei, false);
 
+  anna.zu();
+  bert.zu();
+});
+
+// ---- Nur Sichtbares ueber die Leitung (kampf AC-13, Runde 110) -------------
+
+test('kampf AC-13 / fahrplan AC-13: im Nebel bekommt jeder nur seine Einheiten und was er sieht - nicht die Vorraete der anderen', async () => {
+  const anna = gastgeber();
+  await anna.offen();
+  anna.senden({ typ: 'erstellen', name: 'Anna' });
+  const du = await anna.warteAuf(istTyp('du'));
+  const bert = kunde();
+  await bert.offen();
+  bert.senden({ typ: 'beitreten', code: du.code, name: 'Bert' });
+  const duBert = await bert.warteAuf(istTyp('du'));
+  anna.senden({ typ: 'start', startwert: 7 });
+  const aufbau = await anna.warteAuf(istTyp('aufbau'));
+  // Im Aufbau nur das eigene Dorfzentrum - Berts steht weit weg im Nebel.
+  assert.ok(aufbau.gebaeude.some((g) => g.b === du.id), 'das eigene Dorfzentrum');
+  assert.ok(!aufbau.gebaeude.some((g) => g.b === duBert.id), 'Berts nicht');
+  const zustand = await anna.warteAuf(istTyp('zustand'));
+  assert.equal(zustand.einheiten.filter((e) => e.b === du.id).length, STARTAUFSTELLUNG.length, 'die eigenen');
+  assert.equal(zustand.einheiten.filter((e) => e.b === duBert.id).length, 0, 'keine von Bert');
+  const berts = zustand.spieler.find((s) => s.id === duBert.id);
+  assert.ok(berts, 'Bert steht in der Liste - dass es ihn gibt, ist kein Geheimnis');
+  assert.equal(berts.holz, undefined, 'aber nicht sein Vorrat');
+  assert.equal(zustand.spieler.find((s) => s.id === du.id).holz, 200, 'der eigene schon');
+
+  // Gegenprobe: ein Mann Berts neben Annas Dorf - jetzt sieht sie ihn.
+  const welt = laufend.raeume.finden(du.code).welt;
+  const basis = welt.spielerVon(du.id).basis;
+  const nah = welt.einheitAnlegen(duBert.id, basis.x + 3, basis.y + 3, 'miliz');
+  const gesehen = await anna.warteAuf((n) => n.typ === 'zustand' && n.einheiten.some((e) => e.i === nah.id), 3000);
+  assert.ok(gesehen, 'in Sicht: er kommt an');
+  // Und Bert sieht ihn als seinen - die Filter gelten je Spieler.
+  await bert.warteAuf((n) => n.typ === 'zustand' && n.einheiten.some((e) => e.i === nah.id), 3000);
   anna.zu();
   bert.zu();
 });

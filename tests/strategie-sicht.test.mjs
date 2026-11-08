@@ -216,3 +216,77 @@ test('kampf AC-18: ein Aussenposten sieht zehn Felder - weiter als jedes andere 
   assert.equal(welt.sieht('a', p.x + 10, p.y), true, 'zehn Felder weit');
   assert.equal(welt.sieht('a', p.x + 11, p.y), false, 'elf nicht');
 });
+
+test('kampf AC-13: ein fremdes Gebaeude kommt, wenn man es sieht - sein Verschwinden erst, wenn man wieder hinsieht', () => {
+  const welt = new Welt(ZWEI, 4711);
+  const p = abseits(welt);
+  const zustand = () => welt.zustandJeSpieler(['a']).get('a');
+  welt.aufbauFuer('a');
+  zustand();
+  // Bert baut abseits: Anna sieht es nicht, also bekommt sie es nicht.
+  const haus = welt.gebaeudeAnlegen('b', 'haus', p.x, p.y, true);
+  welt.sichtAktualisieren();
+  assert.ok(!(zustand().gebaeude || []).some((g) => g.i === haus.id), 'ungesehen: nicht geschickt');
+  // Annas Spaeher kommt hin: jetzt kommt es.
+  const spaeher = welt.einheitAnlegen('a', p.x + 3, p.y, 'spaeherreiter');
+  welt.sichtAktualisieren();
+  assert.ok((zustand().gebaeude || []).some((g) => g.i === haus.id && !g.weg), 'gesehen: geschickt');
+  // Er geht, und im Nebel faellt das Haus - Anna erfaehrt es nicht.
+  welt.einheiten.delete(spaeher.id);
+  welt.sichtAktualisieren();
+  welt.gebaeudeZerstoeren(haus);
+  welt.sichtAktualisieren();
+  assert.ok(!(zustand().gebaeude || []).some((g) => g.i === haus.id), 'im Nebel gefallen: kein Wort');
+  // Er kommt wieder: jetzt erfaehrt sie, dass es weg ist.
+  welt.einheitAnlegen('a', p.x + 3, p.y, 'spaeherreiter');
+  welt.sichtAktualisieren();
+  assert.ok((zustand().gebaeude || []).some((g) => g.i === haus.id && g.weg), 'wieder gesehen: es ist weg');
+  // Gegenprobe: aufgedeckt bekommt sie alles, wie es ist.
+  const offen = new Welt(ZWEI, 4711, { sicht: 'aufgedeckt' });
+  const zentrumBert = [...offen.gebaeude.values()].find((g) => g.besitzer === 'b');
+  assert.ok(offen.aufbauFuer('a').gebaeude.some((g) => g.i === zentrumBert.id), 'aufgedeckt: Berts Dorfzentrum im Aufbau');
+});
+
+test('kampf AC-13: was im Nebel fertig wird oder faellt, kommt beim naechsten Hinsehen - Felder ebenso', () => {
+  const welt = new Welt(ZWEI, 4711);
+  const p = abseits(welt);
+  const g = welt.karte.groesse;
+  const zustand = () => welt.zustandJeSpieler(['a']).get('a');
+  welt.aufbauFuer('a');
+  zustand();
+  // Anna sieht Berts Baustelle.
+  const haus = welt.gebaeudeAnlegen('b', 'haus', p.x, p.y, false);
+  const spaeher = welt.einheitAnlegen('a', p.x + 3, p.y, 'spaeherreiter');
+  welt.sichtAktualisieren();
+  assert.ok((zustand().gebaeude || []).some((x) => x.i === haus.id && x.u !== undefined), 'gesehen als Baustelle');
+  // Sie geht; im Nebel wird das Haus fertig, und ein Feld daneben aendert sich.
+  welt.einheiten.delete(spaeher.id);
+  welt.sichtAktualisieren();
+  haus.fertig = true;
+  haus.bau = 1;
+  welt.gebaeudeAenderungen.add(haus.id);
+  const feld = (p.y + 1) * g + p.x + 3;
+  welt.feldAenderungen.push({ i: feld, a: 0 });
+  const imNebel = zustand();
+  assert.ok(!(imNebel.gebaeude || []).some((x) => x.i === haus.id), 'im Nebel fertig: kein Wort');
+  assert.ok(!imNebel.felder.some((f) => f.i === feld), 'Feld im Nebel: kein Wort');
+  // Sie kommt wieder: das Haus kommt fertig, das Feld mit seinem Stand.
+  welt.einheitAnlegen('a', p.x + 3, p.y, 'spaeherreiter');
+  welt.sichtAktualisieren();
+  const wieder = zustand();
+  const gesehen = (wieder.gebaeude || []).find((x) => x.i === haus.id);
+  assert.ok(gesehen && gesehen.u === undefined, 'wieder gesehen: fertig');
+  assert.ok(wieder.felder.some((f) => f.i === feld), 'wieder gesehen: das Feld');
+});
+
+test('kampf AC-13: wer ausscheidet, bekommt einmal alle Gebaeude - sein Browser zeigt jetzt alles', () => {
+  const welt = new Welt(ZWEI, 4711);
+  const zustand = () => welt.zustandJeSpieler(['a']).get('a');
+  const zentrumBert = [...welt.gebaeude.values()].find((x) => x.besitzer === 'b');
+  assert.ok(!welt.aufbauFuer('a').gebaeude.some((x) => x.i === zentrumBert.id), 'im Nebel: nicht im Aufbau');
+  zustand();
+  welt.spielerVon('a').aus = true;
+  assert.ok((zustand().gebaeude || []).some((x) => x.i === zentrumBert.id), 'ausgeschieden: Berts Dorfzentrum kommt');
+  // Nur einmal - danach wieder nur Aenderungen.
+  assert.ok(!(zustand().gebaeude || []).some((x) => x.i === zentrumBert.id), 'danach nicht jedes Mal');
+});

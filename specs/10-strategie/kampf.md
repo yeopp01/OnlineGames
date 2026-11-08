@@ -2,7 +2,7 @@
 
 **Bereich:** Strategie
 **Kuerzel:** kampf
-**Stand:** 15/18 fertig · 2 offen · 1 zurueckgestellt
+**Stand:** 16/18 fertig · 1 offen · 1 zurueckgestellt
 
 ## Zweck
 
@@ -103,16 +103,21 @@ aus [Spielziel](spielziel.md) AC-10, gemessen in
   (vier bis sechs Felder), Gebäude acht. Was niemand sieht, wird nicht
   dargestellt. Seit Runde 105 rechnet der Browser die eigene Sicht nach
   derselben Regel wie der Server (AC-15) und lässt fremde Einheiten und Tiere
-  außerhalb davon weg, ebenso als Ziel eines Rechtsklicks. Der Server schickt
-  sie noch — das ändert AC-13.
+  außerhalb davon weg, ebenso als Ziel eines Rechtsklicks. Seit AC-13 schickt
+  der Server sie gar nicht erst.
 - **AC-12** `fertig` **Erkundetes bleibt erinnert** — Gelände bleibt sichtbar, fremde Einheiten
   nicht. Der klassische Nebel: man weiß, wo der Wald steht, aber nicht, wer
   gerade dort ist. Fremde Gebäude stehen im Nebel so da, wie man sie zuletzt
   gesehen hat — auch wenn sie inzwischen gefallen sind; im Nebel gebaute
   kennt man nicht (Runde 105).
-- **AC-13** `offen` **Kein Blick durch fremde Augen** — Der Server schickt einem Spieler nur, was
+- **AC-13** `fertig` **Kein Blick durch fremde Augen** — Der Server schickt einem Spieler nur, was
   seine Einheiten sehen. Sonst liest ein verändertes Programm die ganze Karte
-  mit — die Zustandsnachricht enthält heute alles.
+  mit. Je Spieler eine Zustandsnachricht: eigene Einheiten immer, fremde nur
+  auf gesehenen Feldern; von den anderen Spielern nur Zeitalter, Kampfwerte und
+  ob sie draußen sind, nicht ihre Vorräte; ein fremdes Gebäude, wenn man es
+  sieht, und was ihm im Nebel geschieht, erst beim nächsten Hinsehen; ebenso
+  Feldänderungen (ein gefällter Baum, ein neuer Bauplatz). Wer ausscheidet oder
+  wenn alles aufgedeckt ist, bekommt alles (Runde 110).
 - **AC-14** `offen` **Angriff wird gemeldet** — Wer angegriffen wird, bekommt einen Hinweis und
   kann per Klick dorthin springen.
 - **AC-15** `fertig` **Sicht je Spieler berechnet** — Der Server rechnet je
@@ -202,3 +207,12 @@ Spieler den vollständigen Zustand. Sichtbereiche bedeuten, dass der Server je
 Spieler filtert — mehr Rechenzeit je Takt und größere Nachrichten in Summe.
 Wenn das teuer wird, ist es eine Entscheidung für ein ADR, keine Kleinigkeit
 im Kampf.
+
+Gemessen in Runde 110 (Startwert 3, 25 Spielminuten, KI gegen KI): zu zweit
+0,050 → 0,079 ms je Takt für Zustand und Text, zu viert 0,121 → 0,272 ms — bei
+100 ms je Takt kein Posten. Die Nachrichten werden kleiner: zu zweit 7,1 → 3,9
+KB je Takt in Summe, zu viert 28,0 → 8,5 KB. Kein ADR nötig.
+
+Noch offen (Fäden in den Erkenntnissen): Schafe gehen ungefiltert; der Aufbau
+nennt die Startplätze aller und, bei der Rückkehr nach Abbruch, die Karte von
+heute.

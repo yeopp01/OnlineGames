@@ -206,7 +206,8 @@ async function starten(hafen = HAFEN, einstellungen = {}) {
           raum = gesucht;
           spieler = zurueck;
           draht.send(JSON.stringify({ typ: 'du', id: spieler.id, token: spieler.token, code: raum.code, anzeige: codeZeigen(raum.code) }));
-          if (raum.gestartet) draht.send(JSON.stringify(raum.welt.aufbau()));
+          // Wer zurueckkommt, bekommt seinen eigenen Aufbau (kampf AC-13).
+          if (raum.gestartet) draht.send(JSON.stringify(raum.welt.aufbauFuer ? raum.welt.aufbauFuer(spieler.id) : raum.welt.aufbau()));
           raum.senden(raum.vorraum());
           break;
         }
