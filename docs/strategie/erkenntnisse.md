@@ -1189,11 +1189,41 @@ Gemessen: `npm run check` 52 s, 503 Tests ohne Browser; der Browserlauf 12,9
 min für 176 Fälle (Runde 115); KI gegen KI: Feudalzeit Median 11,6 min,
 erstes Heer 17,0 min (Runde 113).
 
+
+### Nach Runde 121 (2026-11-08)
+
+Runden 117–120: Spec-Runde Stufe D (20 Kriterien), D1 ganz (Ausholen im
+Kampf, Pfeile, Ansagen oben) und eine Runde nur, um den Browserlauf grün zu
+bekommen. Was wiederholt Zeit kostete, und was sich ändert:
+
+1. **Ein liegengebliebener Testserver** hielt nach einem abgebrochenen Lauf
+   den Hafen — in Runde 110 und 119, beide Male von Hand gefunden und mit
+   PowerShell beendet. → Werkzeug: der Testserver beendet sich auf Zuruf an
+   seinen Prüfgriff (`beenden`), und `scripts/leise.mjs` ruft ihn vor jedem
+   Browserlauf. Ausprobiert: Server gestartet, gerufen, Hafen frei.
+2. **Ein neuer Kampftest war allein zehnmal grün und fiel im vollen Lauf**
+   (Runde 119): das Ziel lief heran. → Regel: die Szene hält still — ein
+   Gebäude als Ziel; die Wiederholung allein läuft ohne Last.
+3. **Ein bekannt wackeliger Fall lief zehn Runden mit**, bis er in jedem
+   Lauf fiel (ki AC-11, Runden 110–120). → Regel: zwei volle Läufe
+   hintereinander rot heißt roter `check`, Priorität eins.
+
+Nicht geändert: das Ansehen jedes neuen Bildes. Es fand in Runde 118 ein zu
+zaghaftes Ausholen und in Runde 119 einen zu kleinen Pfeil — beide Tests
+waren grün.
+
+Gemessen (ruhige Maschine): `npm run check` 53 s, 507 Tests ohne Browser;
+der Browserlauf 12,2 min für 178 Fälle (Runde 120).
+
 ## Runden
 
 Neueste oben. Eine Zeile je Runde: Nummer, Datum, Kriterien, Ergebnis,
 wichtigste Erkenntnis.
 
+- **121** · 2026-11-08 · **Rückschau** — der Testserver beendet sich auf
+  Zuruf, `leise.mjs` ruft ihn vor jedem Browserlauf; Kampftests mit einer
+  Szene, die stillhält; zwei rote volle Läufe hintereinander sind roter
+  `check`.
 - **120** · 2026-11-08 · **der Browserlauf wieder grün** — ki AC-11 fiel
   in jedem vollen Lauf. Ursache genauer als bisher: zwei Milizen starten auf
   Nachbarfeldern, ihre Wege laufen zusammen, und danach trennt sie nur der

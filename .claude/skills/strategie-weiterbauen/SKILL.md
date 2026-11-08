@@ -37,7 +37,11 @@ halb.** Die Regeln aus `CLAUDE.md` gelten ohne Abstrich — vor allem, was
 
 In dieser Reihenfolge, das Erste, was zutrifft:
 
-1. **`npm run check` ist rot** → das reparieren. Nichts anderes.
+1. **`npm run check` ist rot** → das reparieren. Nichts anderes. **Ebenso ein
+   Browserfall, der in zwei vollen Läufen hintereinander fällt** — auch wenn
+   er „bekannt wackelig" ist. ki AC-11 wackelte von Runde 110 bis 119 mit, bis
+   er in jedem Lauf fiel und Runde 120 ganz kostete (Rückschau nach Runde
+   121).
 2. Ein Kriterium steht auf **`in-arbeit`** → weiterführen.
 3. Ein Kriterium der aktuellen Stufe (oder eines, das sie voraussetzt) steht auf
    **`in-qa`** → fehlenden Beleg oder Nachweis liefern.
@@ -372,6 +376,11 @@ Setze die gewählten Kriterien auf `in-arbeit`.
   der Bildnachweis zu ki AC-14 dreimal einzeln grün und fiel dann im großen
   Lauf; mit `--repeat-each 6` fielen vier von sechs. Ein Lauf kostet so
   Sekunden statt der zehn Minuten eines roten Abschlusslaufs.
+  **Die Wiederholung allein sieht nicht alles:** sie läuft ohne die Last des
+  vollen Laufs. Ein Kampf, dessen Bild von einem Zeitfenster abhängt, braucht
+  eine Szene, die stillhält — ein Gebäude als Ziel statt einer Einheit, die
+  herankommt. Der Pfeiltest war allein zehnmal grün und fiel im vollen Lauf,
+  weil Berts Miliz heranstürmte und alle Schüsse zu kurz wurden (Runde 119).
 - **Nach einem Lauf, der alle Bilder neu schreibt, erst `npm run qa:abweichung`,
   dann `git add`.** Ein solcher Lauf ändert leicht 80 Bilder, die meisten nur
   um den zufälligen Raumcode oder die laufende Uhr. Die Ausgabe sortiert nach

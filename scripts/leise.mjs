@@ -65,6 +65,28 @@ if (!/^[a-z:]+$/.test(was)) {
   process.exit(2);
 }
 
+// Vor einem Browserlauf: ein Testserver, der von einem abgebrochenen Lauf
+// liegengeblieben ist, haelt sonst den Hafen, und Playwright bricht in der
+// ersten Sekunde ab ("is already used"). Er beendet sich auf Zuruf an seinen
+// Pruefgriff (e2e/server.mjs, Befehl `beenden`). Laeuft keiner, passiert
+// nichts. (Rueckschau nach Runde 121: in den Runden 110 und 119 je einmal.)
+if (was.startsWith('check:alles') || was.startsWith('test:e2e') || was.startsWith('qa:nachweis')) {
+  const griffhafen = (Number(process.env.E2E_HAFEN) || 4191) + 1;
+  try {
+    const antwort = await fetch(`http://localhost:${griffhafen}/griff`, {
+      method: 'POST',
+      body: JSON.stringify({ befehl: 'beenden' }),
+      signal: AbortSignal.timeout(1500),
+    });
+    if (antwort.ok) {
+      console.log('Ein liegengebliebener Testserver wurde beendet.');
+      await new Promise((r) => setTimeout(r, 800));
+    }
+  } catch {
+    // Keiner da - gut so.
+  }
+}
+
 const anfang = Date.now();
 const kind = spawn(`npm run ${was}`, { cwd: WURZEL, shell: true });
 

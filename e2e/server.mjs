@@ -76,6 +76,15 @@ const griffe = http.createServer(async (anfrage, antwortGriff) => {
   for await (const stueck of anfrage) roh += stueck;
   try {
     const { id, befehl, werte = {} } = JSON.parse(roh || '{}');
+    // Ein liegengebliebener Testserver beendet sich auf Zuruf (Rueckschau nach
+    // Runde 121): nach einem abgebrochenen Browserlauf hielt er den Hafen, und
+    // der naechste Lauf brach in der ersten Sekunde ab - in den Runden 110
+    // und 119 je einmal, beide Male erst von Hand gefunden.
+    if (befehl === 'beenden') {
+      antwortGriff.writeHead(200, { 'Content-Type': 'application/json', Connection: 'close' }).end('{"ok":true}');
+      setTimeout(() => process.exit(0), 50);
+      return;
+    }
     // Der Zeitraffer gilt einem Raum, nicht einem Spielstand: eine Minute
     // Sammeln soll im Browserlauf keine Minute kosten.
     // Rohstoffe eines Spielers setzen, fuer Zustaende wie "zu wenig Holz".

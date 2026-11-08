@@ -13,7 +13,7 @@ hier nichts eintraegt, verliert den Faden beim naechsten Autocompact.
 
 ## Zuletzt fortgeschrieben
 
-2026-11-08, nach Runde 120 (**kampf AC-13, fahrplan AC-13, C6e fertig**: der
+2026-11-08, nach Runde 121 (**kampf AC-13, fahrplan AC-13, C6e fertig**: der
 Server schickt jedem nur, was er sieht - `welt.zustandJeSpieler`,
 `welt.aufbauFuer`, im Raum `sendenJe`. Fremde Gebaeude und Felder, die sich im
 Nebel aendern, kommen beim naechsten Hinsehen; wer ausscheidet, bekommt einmal
@@ -43,9 +43,12 @@ gruen**: ki AC-11 faellt jetzt in jedem vollen Lauf (zwei Milizen der KI
 laufen aufeinander, einheiten AC-32 - wartet auf die Frage zu Formationen).
 Runde 120: **ki AC-11 im Browser auf
 Startwert 2024** (bewusstes Ausweichen vor AC-32, im Test vermerkt) - der
-Browserlauf ist wieder gruen. **Als Naechstes D2**: Aufstieg in die
-Ritterzeit, Kloster, Universitaet, Werkstatt (bauen AC-27, AC-28). ki AC-13 und einheiten
-AC-32 warten auf Antworten. **Naechste Rueckschau: Runde 121.**)
+Browserlauf ist wieder gruen. Runde 121: **Rueckschau**
+(Testserver beendet sich auf Zuruf, Szenen, die stillhalten, zwei rote
+Laeufe = roter check). **Als Naechstes D2**: Aufstieg in die Ritterzeit,
+Kloster, Universitaet, Werkstatt (bauen AC-27, AC-28). **Naechste
+Rueckschau: Runde 126.** ki AC-13 und einheiten
+AC-32 warten auf Antworten. (Rueckschau 121 erledigt.))
 
 ## Wo ich stehe
 
@@ -321,7 +324,7 @@ AC-32 warten auf Antworten. **Naechste Rueckschau: Runde 121.**)
   bei 20 min). Aelter als Runde 69, nur nie gemessen, weil der Pruefstand bei
   zehn Minuten endete. Ursache und Hebel stehen in den Erkenntnissen unter
   **Offene Faeden**.
-- **Naechste Rueckschau: Runde 121** - oder frueher, wenn Stufe D erreicht wird.
+- **Naechste Rueckschau: Runde 126** - oder frueher, wenn Stufe D erreicht wird.
   Diese Zeile ist der Termin, nicht nachzaehlen.
 - Frueherer Termin, erledigt: **Runde 83** (die Bildnachweise einmal ganz
   angesehen), **Runde 78** (Bilderwerkzeug: `check:alles:neu`,
