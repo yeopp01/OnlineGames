@@ -528,7 +528,7 @@ export class Auswahlleiste {
     abriss.dataset.abreissen = String(gebaeude.i);
     abriss.className = 'abriss';
     abriss.textContent = 'Abreissen';
-    abriss.title = 'Was noch nicht verbaut ist, kommt zurueck';
+    abriss.title = 'Was noch nicht verbaut ist, kommt zurück';
     abriss.addEventListener('click', () => this.senden({ auftrag: 'abreissen', gebaeude: gebaeude.i }));
     w.append(bild, kopfteil, abriss);
   }
@@ -675,7 +675,7 @@ export class Auswahlleiste {
       const eintrag = document.createElement('button');
       eintrag.type = 'button';
       eintrag.dataset.abbrechen = String(platz);
-      eintrag.title = 'Abbrechen - die Kosten kommen voll zurueck';
+      eintrag.title = 'Abbrechen - die Kosten kommen voll zurück';
       const mass = platz === 0 ? 50 : 38;
       const verbesserung = Boolean(this.ansicht.werte.verbesserungen?.[art]);
       const aufstieg = Boolean(this.ansicht.werte.aufstiege?.[art]);

@@ -25,9 +25,9 @@ etwas anderem gearbeitet.
   mündlich, das Spiel hält niemanden daran, und jede Abmachung verblasst beim
   ersten Angriff. Eine einfache Websuche fand kein Spiel dieses Namens (am
   nächsten: das Brettspiel „Fatal Alliances", 2016); ein Markenregister ist
-  nicht durchsucht. **Entschieden am 2026-11-08: „Fading Allies".** Der Name
-  kommt in die Oberfläche, wo heute „Strategie" steht (Runde 87); danach
-  wandert dieser Punkt aus den Fragen.
+  nicht durchsucht. **Entschieden am 2026-11-08: „Fading Allies"** — seit
+  Runde 87 in der Oberfläche (spielauswahl AC-20). Der Punkt bleibt hier, bis
+  der Benutzer ihn gesehen hat; dann wandert er aus den Fragen.
 - **Zeittest des Managerspiels unter Last (seit 2026-09-16, Runde 10).**
   `karriere AC-7` (Saison unter 1 s) reißt in `npm run check`, sobald fremde
   Rechenjobs laufen: 1,7–3,2 s. Nacheinander (`--test-concurrency=1`) sind
@@ -845,6 +845,26 @@ alle sieben Gebäude der Dunklen Zeit stehen. Was sich wiederholt hat:
 Neueste oben. Eine Zeile je Runde: Nummer, Datum, Kriterien, Ergebnis,
 wichtigste Erkenntnis.
 
+- **87** · 2026-11-08 · **auswahl AC-20, AC-21** — das Spiel heißt **Fading
+  Allies** (auf seiner Karte und im Titel der Schautafel), und was auf dem
+  Bildschirm steht, hat echte Umlaute. Gelernt, dreierlei: (1) **Eine Regel
+  als Fettdruck hält nicht.** „Texte, die auf dem Bildschirm stehen, bekommen
+  echte Umlaute (‚Eröffnen', nicht ‚Eroeffnen')" stand seit der ersten Runde
+  in CLAUDE.md — und der Knopf hieß bis heute „Eroeffnen", genau wie das
+  Gegenbeispiel. Dazu rund vierzig weitere Stellen in fünfzehn Dateien: alle
+  Absagen von Raum und Welt („Das ist nicht dein Gebaeude."), die Einstellungen
+  („Hoechstens Spieler", „Kartengroesse", „gross"), drei Gebäudenamen
+  („Holzfaellerlager", „Schiessanlage", „Muehle") und die Karte des Managers.
+  Jetzt setzt `tests/waechter-umlaute.test.mjs` die Regel durch, mit
+  Gegenprobe. (2) **Ein Wächter für Sprache braucht eine Ausnahmeliste, keine
+  schlaue Regel**: „Dauer", „bauen", „aktuellen" sind richtig geschrieben und
+  enthalten trotzdem ae/oe/ue; ß lässt sich gar nicht an Buchstaben erkennen
+  („Klasse" ist richtig, „gross" nicht). Deshalb Wortanfänge, die richtig
+  sind, und Wortstämme für ß — die Listen wachsen, wenn ein Wort sie braucht.
+  (3) **Bildunterschriften im QA-Bericht sind kein Bildschirmtext** und
+  bleiben, wie sie sind: an ihnen hängen Dateinamen und die Zuordnung zum
+  Test. Das ruhende Managerspiel liest der Wächter noch nicht — wer dort
+  wieder arbeitet, nimmt `manager.js` in seine Liste auf.
 - **86** · 2026-11-08 · **ki AC-14** — die KI verteidigt zu Hause: Verliert ein
   Gebäude oder ein Dorfbewohner Leben, zieht die Wache im Angriffslauf zum
   Angriffsort, und der getroffene Dorfbewohner läuft zum Dorfzentrum, statt

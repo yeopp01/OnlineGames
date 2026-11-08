@@ -37,9 +37,9 @@ test.describe('Einstieg am Stueck', () => {
   test('auswahl AC-11: ohne Anmeldung gibt es statt der Spiele die Anmeldemaske', async ({}, info) => {
     await anna.goto('/');
     const block = anna.locator('#eroeffnen-block');
-    await expect(block.locator('h2')).toHaveText('Spiel waehlen');
+    await expect(block.locator('h2')).toHaveText('Spiel wählen');
     await expect(anna.locator('#formAnmelden')).toBeInViewport();
-    await expect(block).toContainText('dafuer braucht es ein Konto');
+    await expect(block).toContainText('dafür braucht es ein Konto');
     await expect(anna.locator('[data-oeffnen]')).toHaveCount(0);
     await nachweis(anna, {
       spec: AUSWAHL,

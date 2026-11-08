@@ -13,30 +13,27 @@ hier nichts eintraegt, verliert den Faden beim naechsten Autocompact.
 
 ## Zuletzt fortgeschrieben
 
-2026-11-08, nach Runde 86 (**ki AC-14**, die KI verteidigt zu Hause: wird
-ein Gebaeude oder ein Dorfbewohner getroffen, zieht die Wache im Angriffslauf
-hin, der Dorfbewohner flieht zum Dorfzentrum. Gefunden im Browser, nicht in
-Node: das Marschziel lag neben dem Angreifer und wurde zum Angriff auf genau
-ihn - behoben mit `FEIND_FERN`. Nebenher `kampf AC-5` (wer sich wehrt,
-sammelt nicht) und ein flatternder Browsertest in der Dunklen Zeit
-(`auchVerdeckt`). **Ab Runde 86 laeuft die Schleife mit Opus 5.5**, Commits
-tragen `Co-Authored-By: Claude Opus 5.5`. **Der Name ist entschieden: „Fading Allies"**
-(Benutzer, 2026-11-08) - er kommt in Runde 87 in die Oberflaeche, wo heute
-„Strategie" steht.
-Als Naechstes: **einheiten AC-29** (keine zwei Einheiten uebereinander - in
-dieser Runde der Grund fuer vier Fassungen eines Bildes; eine eigene Runde),
-dann in C4 **ki AC-12** (Nachschub, bei Spielminute 30 noch 20
-Dorfbewohner), dann **ki AC-10** (spaet untaetige Dorfbewohner: im Pruefstand
-bis 471 s, Startwert 14 KI 2) und **fahrplan AC-11** (KI gegen KI endet mit
-Sieger unter 60 Minuten). **Runde 88 ist Rueckschau** - dabei die Figuren bei
-Zoom 1 gegen den Massstab ansehen, bevor C5 beginnt.)
+2026-11-08, nach Runde 87 (**auswahl AC-20, AC-21**: das Spiel heisst
+**„Fading Allies"** - so steht es auf seiner Karte und im Titel der
+Schautafel, `art: 'strategie'` bleibt der Bezeichner -, und Bildschirmtext hat
+echte Umlaute, durchgesetzt von `tests/waechter-umlaute.test.mjs`. Davor
+Runde 86, **ki AC-14**: die KI verteidigt zu Hause. **Ab Runde 86 laeuft die
+Schleife mit Opus 5.5**, Commits tragen `Co-Authored-By: Claude Opus 5.5`.
+Mechaniken zum Namen will der Benutzer „irgendwann" - Offene Faeden, nicht vor
+Stufe E, und erst `spielziel AC-14` neu fassen. **Runde 88 ist Rueckschau** -
+dabei die Figuren bei Zoom 1 gegen den Massstab ansehen, bevor C5 beginnt.
+Danach **einheiten AC-29** (keine zwei Einheiten uebereinander - in Runde 86
+der Grund fuer vier Fassungen eines Bildes), dann in C4 **ki AC-12**
+(Nachschub, bei Spielminute 30 noch 20 Dorfbewohner), **ki AC-10** (spaet
+untaetige Dorfbewohner: im Pruefstand bis 471 s) und **fahrplan AC-11** (KI
+gegen KI endet mit Sieger unter 60 Minuten).)
 
 ## Wo ich stehe
 
 - **Branch:** `strategie`. Nie auf `main` arbeiten, **nie pushen, nie deployen.**
-- **Board:** 387 von 516 Kriterien fertig · 0 in Arbeit · 5 in QA · 4 geplant ·
-  112 offen · 8 zurueckgestellt. 443 Tests ohne Browser, 166 im Browser.
-- **Vier Waechter in `tests/waechter-*.test.mjs`:** Gleichheit auf wachsenden
+- **Board:** 389 von 518 Kriterien fertig · 0 in Arbeit · 5 in QA · 4 geplant ·
+  112 offen · 8 zurueckgestellt. 445 Tests ohne Browser, 166 im Browser.
+- **Fuenf Waechter in `tests/waechter-*.test.mjs`** (der fuenfte seit Runde 87: Bildschirmtext mit echten Umlauten): Gleichheit auf wachsenden
   Listen, verbesserbare Werte an `welt.einheitenwert()` vorbei,
   Bildunterschriften mit `${...}`, und (neu in Runde 73) die **Kuerzeltafel**
   in `e2e/helpers/strategie.mjs` gegen `EINHEITEN`. Wer eine neue Regel dieser

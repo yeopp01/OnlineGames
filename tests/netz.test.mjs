@@ -281,7 +281,7 @@ test('bauen AC-8 / bauen AC-11: Ausbilden und Abbrechen gehen ueber die Leitung,
 
   anna.senden({ typ: 'befehl', auftrag: 'ausbilden', gebaeude: fremdes.i, einheit: 'dorfbewohner' });
   const absage = await anna.warteAuf(istTyp('fehler'));
-  assert.match(absage.text, /nicht dein Gebaeude/);
+  assert.match(absage.text, /nicht dein Gebäude/);
 
   anna.zu();
   bert.zu();

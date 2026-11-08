@@ -1,7 +1,7 @@
 # OnlineGames
 
-Spiele für mehrere über einen Raumcode. Erstes Spiel: ein Echtzeit-Strategiespiel
-nach den Regeln von Age of Empires II, gebaut in Stufen bis zu fünf Völkern auf
+Spiele für mehrere über einen Raumcode. Erstes Spiel: **Fading Allies**, ein
+Echtzeit-Strategiespiel nach den Regeln von Age of Empires II, gebaut in Stufen bis zu fünf Völkern auf
 einem eigenen Server ([ADR-0012](docs/adr/0012-aoe2-als-vorlage.md)). Zweites
 Spiel: ein Fußballmanager im Geist von Anstoss 3 — **die Arbeit daran ruht.**
 
@@ -16,7 +16,9 @@ Testnamen. `einheit`, `vorrat`, `wegZurBasis`, nicht `unit`, `resource`,
 `pathToBase`. In `.md`-Dateien sind Umlaute erwünscht, in Bezeichnern,
 Dateinamen und Testnamen werden sie umschrieben (`Raeume`, `zurueck`), damit
 nichts an Kodierungen hängt. **Texte, die auf dem Bildschirm stehen, bekommen
-echte Umlaute** („Eröffnen", nicht „Eroeffnen").
+echte Umlaute** („Eröffnen", nicht „Eroeffnen") — das setzt
+`tests/waechter-umlaute.test.mjs` durch (spielauswahl AC-21). Bildunterschriften
+der Bildnachweise zählen nicht dazu.
 
 ## Arbeitsweise
 
@@ -153,7 +155,7 @@ Umfang hinzufügt, dort nachsehen.
 
 ## Stand
 
-**387 von 516 Kriterien fertig.** 443 Tests ohne Browser, 166 im Browser. Die
+**389 von 518 Kriterien fertig.** 445 Tests ohne Browser, 166 im Browser. Die
 Übersicht ist der Bericht: `npm run qa:report`.
 
 Gebaut ist der Unterbau: Räume, Übertragung, Karte, Wegfindung, Sammeln,

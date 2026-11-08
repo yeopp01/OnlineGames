@@ -128,11 +128,11 @@ async function starten(hafen = HAFEN, einstellungen = {}) {
       if (draht.readyState !== 1) return;
       if (raum) return;
       if (!angemeldet) {
-        return fehler('Zum Eroeffnen einer Partie ist eine Anmeldung noetig.');
+        return fehler('Zum Eröffnen einer Partie ist eine Anmeldung nötig.');
       }
       // Ohne Angabe das Strategiespiel - so haben es aeltere Seiten geschickt.
       const spiel = verzeichnis.eroeffenbar(spielliste, nachricht.art === undefined ? 'strategie' : nachricht.art);
-      if (!spiel) return fehler('Dieses Spiel laesst sich nicht eroeffnen.');
+      if (!spiel) return fehler('Dieses Spiel lässt sich nicht eröffnen.');
       const geprueft = partieEinstellungen.pruefen(spiel.einstellungen, nachricht.einstellungen);
       if (geprueft.fehler) return fehler(geprueft.fehler);
 
@@ -173,7 +173,7 @@ async function starten(hafen = HAFEN, einstellungen = {}) {
       try {
         nachricht = JSON.parse(roh.toString());
       } catch {
-        return fehler('Unverstaendliche Nachricht.');
+        return fehler('Unverständliche Nachricht.');
       }
       if (!nachricht || typeof nachricht.typ !== 'string') return;
 

@@ -1,10 +1,10 @@
 {
   "spec": "00-plattform/spielauswahl.md",
   "ac": "AC-6",
-  "titel": "Vier Einstellungen des Strategiespiels: vier Spieler, Karte 4711, gross, viel Startvorrat",
+  "titel": "Vier Einstellungen des Strategiespiels: vier Spieler, Karte 4711, groß, viel Startvorrat",
   "datei": "e2e/tests/spielauswahl.spec.mjs",
   "pfad": [
     "Spiel waehlen",
-    "auswahl AC-6: Spielerzahl, Startwert, Kartengroesse und Startvorrat stellt man vor dem Eroeffnen ein"
+    "auswahl AC-6 und auswahl AC-21: Spielerzahl, Startwert, Kartengroesse und Startvorrat stellt man vor dem Eroeffnen ein"
   ]
 }

@@ -92,7 +92,7 @@ test('bauen AC-24: der Stall bildet den Spaeherreiter aus, die anderen beiden no
   // Die Schiessanlage bildet in dieser Stufe noch nichts aus (Einheiten: B4).
   const anlage = welt.gebaeudeAnlegen('a', 'schiessanlage', platz(welt, anna, 3).x, platz(welt, anna, 3).y);
   assert.equal(welt.nachricht('a', { auftrag: 'ausbilden', gebaeude: anlage.id, einheit: 'spaeherreiter' }).fehler,
-    'Das bildet dieses Gebaeude nicht aus.');
+    'Das bildet dieses Gebäude nicht aus.');
   // Und ein Stall gibt keinen Wohnraum und nimmt nichts an.
   assert.equal(GEBAEUDE.stall.wohnraum, 0);
   assert.deepEqual(GEBAEUDE.schmiede.annahme, []);

@@ -1132,9 +1132,9 @@ export const GEBAEUDE = {
     trefferUnten: 1.3,
   },
   haus: { name: 'Haus', zeichnen: haus, halbeBreite: 1.8, trefferBreite: 1.9, trefferOben: 3.2, trefferUnten: 1 },
-  muehle: { name: 'Muehle', zeichnen: muehle, halbeBreite: 1.8, trefferBreite: 1.9, trefferOben: 3.4, trefferUnten: 1 },
+  muehle: { name: 'Mühle', zeichnen: muehle, halbeBreite: 1.8, trefferBreite: 1.9, trefferOben: 3.4, trefferUnten: 1 },
   holzfaellerlager: {
-    name: 'Holzfaellerlager', zeichnen: holzfaellerlager, halbeBreite: 1.8, trefferBreite: 1.9, trefferOben: 2.4, trefferUnten: 1,
+    name: 'Holzfällerlager', zeichnen: holzfaellerlager, halbeBreite: 1.8, trefferBreite: 1.9, trefferOben: 2.4, trefferUnten: 1,
   },
   bergbaulager: {
     name: 'Bergbaulager', zeichnen: bergbaulager, halbeBreite: 1.8, trefferBreite: 1.9, trefferOben: 2.4, trefferUnten: 1,
@@ -1143,7 +1143,7 @@ export const GEBAEUDE = {
   farm: { name: 'Farm', zeichnen: farm, halbeBreite: 2.9, trefferBreite: 2.9, trefferOben: 1.6, trefferUnten: 1.4, flach: true },
   // Gebaeude der Feudalzeit (bauen AC-24).
   schiessanlage: {
-    name: 'Schiessanlage', zeichnen: schiessanlage, halbeBreite: 2.5, trefferBreite: 2.6, trefferOben: 2.2, trefferUnten: 1.3,
+    name: 'Schießanlage', zeichnen: schiessanlage, halbeBreite: 2.5, trefferBreite: 2.6, trefferOben: 2.2, trefferUnten: 1.3,
   },
   stall: { name: 'Stall', zeichnen: stall, halbeBreite: 2.2, trefferBreite: 2.4, trefferOben: 3.0, trefferUnten: 1.2 },
   schmiede: { name: 'Schmiede', zeichnen: schmiede, halbeBreite: 2.0, trefferBreite: 2.2, trefferOben: 3.6, trefferUnten: 1.2 },

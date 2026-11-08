@@ -158,15 +158,15 @@ test('auswahl AC-8: ungueltige Einstellungen weist der Server ab, bevor ein Raum
   // Raeume frueherer Tests schliessen nebenher - gezaehlt wird, was neu ist.
   const vorher = new Set(laufend.raeume.nachCode.keys());
   const faelle = [
-    [{ spieler: 9 }, /Hoechstens Spieler: erlaubt sind ganze Zahlen von 2 bis 6/],
-    [{ spieler: 2.5 }, /Hoechstens Spieler/],
-    [{ spieler: '4' }, /Hoechstens Spieler/],
+    [{ spieler: 9 }, /Höchstens Spieler: erlaubt sind ganze Zahlen von 2 bis 6/],
+    [{ spieler: 2.5 }, /Höchstens Spieler/],
+    [{ spieler: '4' }, /Höchstens Spieler/],
     [{ startwert: 'abc' }, /Startwert der Karte/],
     [{ startwert: -1 }, /Startwert der Karte/],
     [{ startwert: 1e12 }, /Startwert der Karte/],
     [{ geheim: true }, /Diese Einstellung gibt es nicht/],
-    [[1, 2], /unverstaendlich/],
-    ['spieler=2', /unverstaendlich/],
+    [[1, 2], /unverständlich/],
+    ['spieler=2', /unverständlich/],
   ];
   for (const [werte, meldung] of faelle) {
     const { gast, antwort } = await eroeffnen({ art: 'strategie', einstellungen: werte });
@@ -176,7 +176,7 @@ test('auswahl AC-8: ungueltige Einstellungen weist der Server ab, bevor ein Raum
   }
   for (const art of ['manager', 'hausbau', 42]) {
     const { gast, antwort } = await eroeffnen({ art });
-    assert.equal(antwort.text, 'Dieses Spiel laesst sich nicht eroeffnen.');
+    assert.equal(antwort.text, 'Dieses Spiel lässt sich nicht eröffnen.');
     gast.zu();
   }
   const neu = [...laufend.raeume.nachCode.keys()].filter((code) => !vorher.has(code));
@@ -223,7 +223,7 @@ const werteAus = (raum) => Object.fromEntries(raum.einstellungen.map((e) => [e.s
 test('auswahl AC-9: wer beitritt, sieht die Einstellungen mit Namen und Wert', async () => {
   const { gast, bert } = await raumMitBert({ spieler: 4, startwert: 4711 });
   const raum = await bert.warteAuf((n) => n.typ === 'raum' && n.spieler.length === 2);
-  assert.deepEqual(raum.einstellungen.map((e) => [e.name, e.wert]), [['Hoechstens Spieler', 4], ['Startwert der Karte', 4711], ['Kartengroesse', 'normal'], ['Startvorrat', 'wenig']]);
+  assert.deepEqual(raum.einstellungen.map((e) => [e.name, e.wert]), [['Höchstens Spieler', 4], ['Startwert der Karte', 4711], ['Kartengröße', 'normal'], ['Startvorrat', 'wenig']]);
   assert.equal(raum.gastgeber, raum.spieler[0].id);
   gast.zu();
   bert.zu();
@@ -242,7 +242,7 @@ test('auswahl AC-10: der Gastgeber aendert bis zum Start, alle sehen es', async 
   gast.senden({ typ: 'start' });
   await gast.warteAuf(istTyp('aufbau'));
   gast.senden({ typ: 'einstellen', einstellungen: { spieler: 4 } });
-  assert.equal((await gast.warteAuf((n) => n.typ === 'fehler')).text, 'Die Partie laeuft schon.');
+  assert.equal((await gast.warteAuf((n) => n.typ === 'fehler')).text, 'Die Partie läuft schon.');
   gast.zu();
   bert.zu();
 });
@@ -250,10 +250,10 @@ test('auswahl AC-10: der Gastgeber aendert bis zum Start, alle sehen es', async 
 test('auswahl AC-10: Mitspieler aendern nichts, und ungueltige Aenderungen gelten nicht', async () => {
   const { gast, bert, code } = await raumMitBert();
   bert.senden({ typ: 'einstellen', einstellungen: { spieler: 2 } });
-  assert.equal((await bert.warteAuf(istTyp('fehler'))).text, 'Nur der Gastgeber aendert die Einstellungen.');
+  assert.equal((await bert.warteAuf(istTyp('fehler'))).text, 'Nur der Gastgeber ändert die Einstellungen.');
 
   gast.senden({ typ: 'einstellen', einstellungen: { spieler: 7 } });
-  assert.match((await gast.warteAuf(istTyp('fehler'))).text, /Hoechstens Spieler/);
+  assert.match((await gast.warteAuf(istTyp('fehler'))).text, /Höchstens Spieler/);
   gast.eingang.length = 0;
 
   // Zwei sind schon da - weniger als zwei geht nicht, auch wenn die Grenze es erlaubt.
@@ -287,7 +287,7 @@ test('auswahl AC-11: ohne Konto eroeffnet niemand, auch nicht mit Spiel und Eins
   fremder.senden({ typ: 'erstellen', art: 'strategie', einstellungen: { spieler: 2, startwert: 1 } });
   const antwort = await fremder.warteAuf((n) => n.typ === 'du' || n.typ === 'fehler');
   assert.equal(antwort.typ, 'fehler');
-  assert.equal(antwort.text, 'Zum Eroeffnen einer Partie ist eine Anmeldung noetig.');
+  assert.equal(antwort.text, 'Zum Eröffnen einer Partie ist eine Anmeldung nötig.');
   assert.deepEqual([...laufend.raeume.nachCode.keys()].filter((c) => !vorher.has(c)), []);
   // Und die Liste der Spiele darf jeder sehen - sie verraet nichts.
   assert.equal((await fetch(`http://localhost:${HAFEN}/api/spiele`)).status, 200);

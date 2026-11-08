@@ -8,19 +8,26 @@ const AUSWAHL = '00-plattform/spielauswahl.md';
 test.describe('Spiel waehlen', () => {
   test.use({ storageState: ANMELDUNG });
 
-  test('auswahl AC-1: nach dem Anmelden stehen alle Spiele zur Wahl', async ({ page }, info) => {
+  test('auswahl AC-1 und auswahl AC-20: nach dem Anmelden stehen alle Spiele zur Wahl, das Strategiespiel als Fading Allies', async ({ page }, info) => {
     await page.goto('/');
     const karten = page.locator('#spiele .spielkarte');
     await expect(karten).toHaveCount(2);
-    await expect(karten.nth(0).locator('strong')).toHaveText('Strategie');
+    await expect(karten.nth(0).locator('strong')).toHaveText('Fading Allies');
+    await expect(karten.nth(0).locator('strong')).toBeInViewport();
     await expect(karten.nth(0).locator('.spielerzahl')).toHaveText('2 bis 6 Spieler');
-    await expect(karten.nth(1).locator('strong')).toHaveText('Fussballmanager');
+    await expect(karten.nth(1).locator('strong')).toHaveText('Fußballmanager');
     await expect(karten.nth(1).locator('.spielerzahl')).toHaveText('allein');
     for (const satz of await karten.locator('.spielsatz').allTextContents()) expect(satz.length).toBeGreaterThan(20);
     await nachweis(page, {
       spec: AUSWAHL,
       ac: 'AC-1',
       titel: 'Angemeldet: beide Spiele mit Namen, einem Satz und der Spielerzahl',
+      test: info,
+    });
+    await nachweis(page, {
+      spec: AUSWAHL,
+      ac: 'AC-20',
+      titel: 'Die Übersicht nach dem Anmelden: das Strategiespiel steht als „Fading Allies“ auf seiner Karte, daneben der Fußballmanager',
       test: info,
     });
   });
@@ -103,7 +110,7 @@ test.describe('Spiel waehlen', () => {
     await expect(strategie.locator('[data-einstellung]')).toHaveCount(4);
     await expect(strategie.locator('[data-einstellung="spieler"]')).toHaveValue('6');
     await expect(strategie.locator('[data-einstellung="spieler"]')).toHaveAttribute('max', '6');
-    await expect(strategie.locator('[data-einstellung="startwert"]')).toHaveAttribute('placeholder', 'zufaellig');
+    await expect(strategie.locator('[data-einstellung="startwert"]')).toHaveAttribute('placeholder', 'zufällig');
 
     await page.locator('[data-oeffnen="hausbau"]').click();
     const hausbau = page.locator('[data-einstellungen-fuer="hausbau"]');
@@ -133,20 +140,31 @@ test.describe('Spiel waehlen', () => {
     await expect(page.locator('#raumcode')).toHaveText(/^[A-Z0-9]{3}-[A-Z0-9]{3}$/);
   });
 
-  test('auswahl AC-6: Spielerzahl, Startwert, Kartengroesse und Startvorrat stellt man vor dem Eroeffnen ein', async ({ page }, info) => {
+  test('auswahl AC-6 und auswahl AC-21: Spielerzahl, Startwert, Kartengroesse und Startvorrat stellt man vor dem Eroeffnen ein', async ({ page }, info) => {
     await page.setViewportSize({ width: 1400, height: 1150 });
     await page.goto('/');
     await page.locator('[data-oeffnen="strategie"]').click();
     const form = page.locator('[data-einstellungen-fuer="strategie"]');
     await form.locator('[data-einstellung="spieler"]').fill('4');
     await form.locator('[data-einstellung="startwert"]').fill('4711');
-    await form.locator('[data-einstellung="kartengroesse"]').selectOption({ label: 'gross' });
+    await form.locator('[data-einstellung="kartengroesse"]').selectOption({ label: 'groß' });
     await form.locator('[data-einstellung="vorrat"]').selectOption({ label: 'viel (je 1000)' });
     await expect(form.locator('[data-eroeffnen="strategie"]')).toBeInViewport();
     await nachweis(page, {
       spec: AUSWAHL,
       ac: 'AC-6',
-      titel: 'Vier Einstellungen des Strategiespiels: vier Spieler, Karte 4711, gross, viel Startvorrat',
+      titel: 'Vier Einstellungen des Strategiespiels: vier Spieler, Karte 4711, groß, viel Startvorrat',
+      test: info,
+    });
+    // Was das zweite Bild behauptet, steht so im Formular - mit Umlauten.
+    await expect(form).toContainText('Höchstens Spieler');
+    await expect(form).toContainText('Kartengröße');
+    await expect(form.locator('[data-einstellung="kartengroesse"] option:checked')).toHaveText('groß');
+    await expect(form.locator('[data-eroeffnen="strategie"]')).toHaveText('Partie eröffnen');
+    await nachweis(page, {
+      spec: AUSWAHL,
+      ac: 'AC-21',
+      titel: 'Das Formular zum Eröffnen mit echten Umlauten: „Höchstens Spieler“, „Kartengröße“, „groß“ und der Knopf „Partie eröffnen“',
       test: info,
     });
     await form.locator('[data-eroeffnen="strategie"]').click();
@@ -222,7 +240,7 @@ test.describe('Im Warteraum', () => {
     await bert.locator('#code').fill(code);
     await bert.locator('#beitreten').click();
     await expect(bert.locator('#warteraum')).toBeVisible();
-    await expect(bert.locator('#raumEinstellungen dt')).toHaveText(['Hoechstens Spieler', 'Startwert der Karte', 'Kartengroesse', 'Startvorrat']);
+    await expect(bert.locator('#raumEinstellungen dt')).toHaveText(['Höchstens Spieler', 'Startwert der Karte', 'Kartengröße', 'Startvorrat']);
     await expect(bert.locator('[data-wert="spieler"]')).toHaveText('4');
     await expect(bert.locator('[data-wert="startwert"]')).toHaveText('4711');
     // Bert hat keine Felder, nur Werte.
@@ -241,7 +259,7 @@ test.describe('Im Warteraum', () => {
     await anna.locator('#raumEinstellungen [data-einstellung="startwert"]').fill('');
     await anna.locator('#raumEinstellungen [data-einstellung="startwert"]').press('Tab');
     await expect(bert.locator('[data-wert="spieler"]')).toHaveText('3');
-    await expect(bert.locator('[data-wert="startwert"]')).toHaveText('zufaellig');
+    await expect(bert.locator('[data-wert="startwert"]')).toHaveText('zufällig');
     await nachweis(anna, {
       spec: AUSWAHL,
       ac: 'AC-10',
@@ -258,7 +276,7 @@ test.describe('Im Warteraum', () => {
     // Unter die Zahl der Anwesenden geht es nicht - die Absage steht im Raum.
     await anna.locator('#raumEinstellungen [data-einstellung="spieler"]').fill('1');
     await anna.locator('#raumEinstellungen [data-einstellung="spieler"]').press('Tab');
-    await expect(anna.locator('#wartemeldung')).toContainText('Hoechstens Spieler');
+    await expect(anna.locator('#wartemeldung')).toContainText('Höchstens Spieler');
     await expect(bert.locator('[data-wert="spieler"]')).toHaveText('3');
   });
 });

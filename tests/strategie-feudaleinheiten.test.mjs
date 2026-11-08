@@ -128,7 +128,7 @@ test('einheiten AC-23: die Schiessanlage bildet Bogenschuetze und Plaenkler aus'
   // Die Kaserne bildet keinen Bogenschuetzen aus - jedes Gebaeude sein Handwerk.
   assert.equal(
     welt.nachricht('a', { auftrag: 'ausbilden', gebaeude: welt.gebaeudeAnlegen('a', 'kaserne', platz(welt, anna).x, platz(welt, anna).y).id, einheit: 'bogenschuetze' }).fehler,
-    'Das bildet dieses Gebaeude nicht aus.',
+    'Das bildet dieses Gebäude nicht aus.',
   );
   // Beide kommen nacheinander aus der Schlange: 35 s, dann 22 s.
   for (let t = 0; t < (35 + 22) * TAKTE_PRO_SEKUNDE + 4; t++) welt.takten();

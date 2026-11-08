@@ -154,7 +154,7 @@ test('raeume AC-16 / spielziel AC-9: nach dem Ende startet derselbe Raum eine zw
 
     // Solange die Partie laeuft, ist ein zweiter Start keine Revanche, sondern
     // ein Weg, eine verlorene Stellung wegzuwerfen.
-    assert.match(raum.starten(8).fehler, /laeuft schon/);
+    assert.match(raum.starten(8).fehler, /läuft schon/);
     assert.equal(partien.length, 1, 'und es wurde nichts erzeugt');
 
     t.mock.timers.tick(300); // drei Takte, beim dritten ist sie aus
@@ -184,7 +184,7 @@ test('raeume AC-16 / spielziel AC-9: nach dem Ende startet derselbe Raum eine zw
     // Zu wenige fuer eine dritte: wer allein uebrig ist, bekommt dieselbe
     // Absage wie beim ersten Start.
     raum.verlassen(bert);
-    assert.match(raum.starten(9).fehler, /laeuft schon/, 'die zweite Partie laeuft noch');
+    assert.match(raum.starten(9).fehler, /läuft schon/, 'die zweite Partie laeuft noch');
     t.mock.timers.tick(100); // der dritte Takt: auch sie ist aus
     assert.equal(partien[1].vorbei, true);
     assert.match(raum.starten(9).fehler, /Mitspieler/);

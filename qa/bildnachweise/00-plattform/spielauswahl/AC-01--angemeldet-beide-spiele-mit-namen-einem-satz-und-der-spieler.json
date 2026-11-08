@@ -5,6 +5,6 @@
   "datei": "e2e/tests/spielauswahl.spec.mjs",
   "pfad": [
     "Spiel waehlen",
-    "auswahl AC-1: nach dem Anmelden stehen alle Spiele zur Wahl"
+    "auswahl AC-1 und auswahl AC-20: nach dem Anmelden stehen alle Spiele zur Wahl, das Strategiespiel als Fading Allies"
   ]
 }

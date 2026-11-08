@@ -55,7 +55,7 @@ function einzeln(e, roh) {
   // startwert
   if (roh === null) return { wert: null };
   if (!Number.isInteger(roh) || roh < 0 || roh > STARTWERT_MAX) {
-    return { fehler: `${e.name}: eine ganze Zahl von 0 bis ${STARTWERT_MAX}, oder leer fuer zufaellig.` };
+    return { fehler: `${e.name}: eine ganze Zahl von 0 bis ${STARTWERT_MAX}, oder leer für zufällig.` };
   }
   return { wert: roh };
 }
@@ -64,7 +64,7 @@ function einzeln(e, roh) {
 // die Vorgabe (AC-5); was nicht passt oder unbekannt ist, wird abgewiesen (AC-8).
 function pruefen(liste = [], eingabe = {}) {
   if (eingabe === undefined || eingabe === null) eingabe = {};
-  if (typeof eingabe !== 'object' || Array.isArray(eingabe)) return { fehler: 'Die Einstellungen sind unverstaendlich.' };
+  if (typeof eingabe !== 'object' || Array.isArray(eingabe)) return { fehler: 'Die Einstellungen sind unverständlich.' };
   const bekannt = new Map(liste.map((e) => [e.schluessel, e]));
   for (const schluessel of Object.keys(eingabe)) {
     if (!bekannt.has(schluessel)) return { fehler: `Diese Einstellung gibt es nicht: ${String(schluessel).slice(0, 30)}.` };

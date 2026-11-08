@@ -67,7 +67,7 @@ function verbinden(dann) {
   draht.addEventListener('open', dann);
   draht.addEventListener('message', (e) => empfangen(JSON.parse(e.data)));
   draht.addEventListener('close', () => {
-    if (ansicht) melden('Verbindung weg. Seite neu laden, um zurueckzukehren.', teile.wartemeldung);
+    if (ansicht) melden('Verbindung weg. Seite neu laden, um zurückzukehren.', teile.wartemeldung);
   });
 }
 
@@ -416,7 +416,7 @@ function leisteZaehlen(jetzt) {
 let gastgeberFelder = null;
 
 function wertText(e) {
-  if (e.art === 'startwert') return e.wert === null ? 'zufaellig' : String(e.wert);
+  if (e.art === 'startwert') return e.wert === null ? 'zufällig' : String(e.wert);
   if (e.art === 'wahl') return (e.werte.find((w) => w.wert === e.wert) || {}).name || String(e.wert);
   return String(e.wert);
 }
@@ -428,7 +428,7 @@ function raumEinstellungenZeichnen(nachricht) {
 
   if (nachricht.gastgeber !== ich) {
     gastgeberFelder = null;
-    teile.einstellungsHinweis.textContent = 'Der Gastgeber kann sie bis zum Start aendern.';
+    teile.einstellungsHinweis.textContent = 'Der Gastgeber kann sie bis zum Start ändern.';
     const tafel = document.createElement('dl');
     tafel.className = 'werte';
     for (const e of liste) {
@@ -443,7 +443,7 @@ function raumEinstellungenZeichnen(nachricht) {
     return;
   }
 
-  teile.einstellungsHinweis.textContent = 'Aenderungen sehen alle sofort - bis zum Start.';
+  teile.einstellungsHinweis.textContent = 'Änderungen sehen alle sofort - bis zum Start.';
   if (!gastgeberFelder) {
     gastgeberFelder = document.createElement('form');
     gastgeberFelder.className = 'einstellungen im-raum';
@@ -533,7 +533,7 @@ function einstellungsfeld(e) {
       titel.textContent = `${e.name} (${e.von} bis ${e.bis})`;
     } else {
       eingabe.inputMode = 'numeric';
-      eingabe.placeholder = 'zufaellig';
+      eingabe.placeholder = 'zufällig';
     }
   }
   eingabe.dataset.einstellung = e.schluessel;
@@ -589,10 +589,10 @@ function spielkarte(spiel) {
     knopf.disabled = true;
     knopf.textContent = 'gesperrt';
   } else if (spiel.einstieg.art === 'seite') {
-    knopf.textContent = 'Oeffnen';
+    knopf.textContent = 'Öffnen';
     knopf.addEventListener('click', () => location.assign(spiel.einstieg.adresse));
   } else {
-    knopf.textContent = 'Eroeffnen';
+    knopf.textContent = 'Eröffnen';
   }
   fuss.append(zahl, knopf);
   karte.append(kopf, satz, fuss);
@@ -609,7 +609,7 @@ function spielkarte(spiel) {
     los.type = 'submit';
     los.className = 'haupt breit';
     los.dataset.eroeffnen = spiel.art;
-    los.textContent = 'Partie eroeffnen';
+    los.textContent = 'Partie eröffnen';
     const absage = document.createElement('p');
     absage.className = 'meldung';
     absage.hidden = true;

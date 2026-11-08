@@ -77,7 +77,7 @@ test('bauen AC-8: nur eigene Gebaeude, nur was sie ausbilden, nur mit genug Nahr
   const welt = mitPlatz();
   const zentrum = dorfzentrum(welt);
   assert.match(welt.ausbilden('b', zentrum.id, 'dorfbewohner').fehler, /nicht dein/);
-  assert.match(welt.ausbilden('a', zentrum.id, 'miliz').fehler, /bildet dieses Gebaeude nicht aus/);
+  assert.match(welt.ausbilden('a', zentrum.id, 'miliz').fehler, /bildet dieses Gebäude nicht aus/);
   assert.match(welt.ausbilden('a', 99999, 'dorfbewohner').fehler, /nicht dein/);
   welt.spielerVon('a').nahrung = 49;
   assert.equal(welt.ausbilden('a', zentrum.id, 'dorfbewohner').fehler, 'Zu wenig Nahrung.');
@@ -315,7 +315,7 @@ test('bauen AC-5: die Kosten gehen bei Baubeginn ab, ohne genug Holz entsteht ke
   assert.equal(anna.holz, 0, 'sofort bezahlt, nicht erst am Ende');
   assert.equal(welt.gebaeude.get(gebaeude).fertig, false);
 
-  assert.match(welt.bauen('a', [bauer.id], 'burg', freierPlatz(welt, 'haus')).fehler, /laesst sich nicht bauen/);
+  assert.match(welt.bauen('a', [bauer.id], 'burg', freierPlatz(welt, 'haus')).fehler, /lässt sich nicht bauen/);
   const reiter = eigene(welt).find((e) => e.art === 'spaeherreiter');
   assert.match(welt.bauen('a', [reiter.id], 'haus', freierPlatz(welt, 'haus')).fehler, /Niemand/);
   assert.match(welt.bauen('b', [bauer.id], 'haus', freierPlatz(welt, 'haus')).fehler, /Niemand/, 'fremde Dorfbewohner bauen nicht');
@@ -487,8 +487,8 @@ test('bauen AC-9: die Kaserne bildet Miliz fuer 60 Nahrung und 20 Gold in 21 Sek
   const platz = freierPlatz(welt, 'kaserne', 6);
   const kaserne = welt.gebaeudeAnlegen('a', 'kaserne', platz.x, platz.y, true);
 
-  assert.match(welt.ausbilden('a', kaserne.id, 'dorfbewohner').fehler, /bildet dieses Gebaeude nicht aus/);
-  assert.match(welt.ausbilden('a', dorfzentrum(welt).id, 'miliz').fehler, /bildet dieses Gebaeude nicht aus/);
+  assert.match(welt.ausbilden('a', kaserne.id, 'dorfbewohner').fehler, /bildet dieses Gebäude nicht aus/);
+  assert.match(welt.ausbilden('a', dorfzentrum(welt).id, 'miliz').fehler, /bildet dieses Gebäude nicht aus/);
   anna.gold = 19;
   assert.equal(welt.ausbilden('a', kaserne.id, 'miliz').fehler, 'Zu wenig Gold.');
   anna.gold = 1000;

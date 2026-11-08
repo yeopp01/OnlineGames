@@ -167,5 +167,5 @@ test('bauen AC-23: fremde Spieler steigen getrennt auf', () => {
   assert.equal(bert.zeitalter, 0, 'Bert bleibt in der Dunklen Zeit');
   // Und Bert kann das Dorfzentrum von Anna nicht beauftragen.
   assert.equal(welt.nachricht('b', { auftrag: 'ausbilden', gebaeude: zentrum.id, einheit: 'ritterzeit' }).fehler,
-    'Das ist nicht dein Gebaeude.');
+    'Das ist nicht dein Gebäude.');
 });

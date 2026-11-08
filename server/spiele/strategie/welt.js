@@ -450,7 +450,7 @@ class Welt {
   // Ein Bauauftrag: der Platz wird geprueft, die Kosten gehen sofort ab
   // (bauen AC-5), die Baustelle entsteht, die Dorfbewohner gehen hin (AC-1).
   bauen(spielerId, einheitIds, art, ziel) {
-    if (!Array.isArray(einheitIds) || !ziel || !GEBAEUDE[art]) return { fehler: 'Das laesst sich nicht bauen.' };
+    if (!Array.isArray(einheitIds) || !ziel || !GEBAEUDE[art]) return { fehler: 'Das lässt sich nicht bauen.' };
     const bauer = einheitIds.slice(0, 200)
       .map((id) => this.einheiten.get(id))
       .filter((e) => e && e.besitzer === spielerId && (EINHEITEN[e.art].baut || []).includes(art));
@@ -498,7 +498,7 @@ class Welt {
   // (bauen AC-6).
   abreissen(spielerId, gebaeudeId) {
     const gebaeude = this.gebaeude.get(gebaeudeId);
-    if (!gebaeude || gebaeude.besitzer !== spielerId) return { fehler: 'Das ist nicht dein Gebaeude.' };
+    if (!gebaeude || gebaeude.besitzer !== spielerId) return { fehler: 'Das ist nicht dein Gebäude.' };
     if (gebaeude.fertig) return { fehler: 'Nur Baustellen lassen sich abreissen.' };
     const spieler = this.spielerVon(spielerId);
     for (const [rohstoff, menge] of Object.entries(GEBAEUDE[gebaeude.art].kosten)) {
@@ -587,13 +587,13 @@ class Welt {
   // (bedienung AC-18).
   ausbilden(spielerId, gebaeudeId, art) {
     const gebaeude = this.gebaeude.get(gebaeudeId);
-    if (!gebaeude || gebaeude.besitzer !== spielerId) return { fehler: 'Das ist nicht dein Gebaeude.' };
-    if (!gebaeude.fertig) return { fehler: 'Das Gebaeude ist noch nicht fertig.' };
+    if (!gebaeude || gebaeude.besitzer !== spielerId) return { fehler: 'Das ist nicht dein Gebäude.' };
+    if (!gebaeude.fertig) return { fehler: 'Das Gebäude ist noch nicht fertig.' };
     // Die zweite Stufe einer Einheit zaehlt als ihre Grundstufe: die Kaserne
     // bildet die Miliz aus, nach der Verbesserung kommt daraus ein Soldat
     // (einheiten AC-24).
     const grundstufe = EINHEITEN[art]?.stufeVon || art;
-    if (!GEBAEUDE[gebaeude.art].bildetAus.includes(grundstufe)) return { fehler: 'Das bildet dieses Gebaeude nicht aus.' };
+    if (!GEBAEUDE[gebaeude.art].bildetAus.includes(grundstufe)) return { fehler: 'Das bildet dieses Gebäude nicht aus.' };
     if (gebaeude.schlange.length >= SCHLANGE_MAX) return { fehler: 'Die Warteschlange ist voll.' };
     const spieler = this.spielerVon(spielerId);
     // Welche Stufe dieser Spieler ausbildet, haengt an seinen Verbesserungen:
@@ -647,7 +647,7 @@ class Welt {
   // Jeder Auftrag, auch der laufende, erstattet die vollen Kosten (bauen AC-11).
   abbrechen(spielerId, gebaeudeId, platz) {
     const gebaeude = this.gebaeude.get(gebaeudeId);
-    if (!gebaeude || gebaeude.besitzer !== spielerId) return { fehler: 'Das ist nicht dein Gebaeude.' };
+    if (!gebaeude || gebaeude.besitzer !== spielerId) return { fehler: 'Das ist nicht dein Gebäude.' };
     if (!Number.isInteger(platz) || platz < 0 || platz >= gebaeude.schlange.length) return { fehler: 'Diesen Auftrag gibt es nicht.' };
     const [art] = gebaeude.schlange.splice(platz, 1);
     const spieler = this.spielerVon(spielerId);
@@ -712,7 +712,7 @@ class Welt {
   // Rechtsklick mit ausgewaehltem Gebaeude (bauen AC-13).
   sammelpunktSetzen(spielerId, gebaeudeId, ziel) {
     const gebaeude = this.gebaeude.get(gebaeudeId);
-    if (!gebaeude || gebaeude.besitzer !== spielerId) return { fehler: 'Das ist nicht dein Gebaeude.' };
+    if (!gebaeude || gebaeude.besitzer !== spielerId) return { fehler: 'Das ist nicht dein Gebäude.' };
     const g = this.karte.groesse;
     const x = Math.round(Number(ziel?.x));
     const y = Math.round(Number(ziel?.y));

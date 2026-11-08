@@ -1,0 +1,10 @@
+{
+  "spec": "00-plattform/spielauswahl.md",
+  "ac": "AC-20",
+  "titel": "Die Übersicht nach dem Anmelden: das Strategiespiel steht als „Fading Allies“ auf seiner Karte, daneben der Fußballmanager",
+  "datei": "e2e/tests/spielauswahl.spec.mjs",
+  "pfad": [
+    "Spiel waehlen",
+    "auswahl AC-1 und auswahl AC-20: nach dem Anmelden stehen alle Spiele zur Wahl, das Strategiespiel als Fading Allies"
+  ]
+}

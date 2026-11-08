@@ -145,13 +145,13 @@ DINGE.forEach((ding, i) => {
 const GEBAEUDE_REIHE = [
   { art: 'dorfzentrum', groesse: 4, titel: 'Dorfzentrum' },
   { art: 'haus', groesse: 2, titel: 'Haus' },
-  { art: 'muehle', groesse: 2, titel: 'Muehle' },
-  { art: 'holzfaellerlager', groesse: 2, titel: 'Holzfaellerlager' },
+  { art: 'muehle', groesse: 2, titel: 'Mühle' },
+  { art: 'holzfaellerlager', groesse: 2, titel: 'Holzfällerlager' },
   { art: 'bergbaulager', groesse: 2, titel: 'Bergbaulager' },
   { art: 'kaserne', groesse: 3, titel: 'Kaserne' },
   { art: 'farm', groesse: 3, titel: 'Farm' },
   // Feudalzeit (bauen AC-24).
-  { art: 'schiessanlage', groesse: 3, titel: 'Schiessanlage' },
+  { art: 'schiessanlage', groesse: 3, titel: 'Schießanlage' },
   { art: 'stall', groesse: 3, titel: 'Stall' },
   { art: 'schmiede', groesse: 3, titel: 'Schmiede' },
   { art: 'haus', groesse: 2, titel: 'Baustelle 20 %', bau: 0.2 },

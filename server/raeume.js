@@ -64,10 +64,10 @@ class Raum {
   // Nur der Gastgeber, nur vor dem Start (→ spielauswahl AC-10). Geaendert
   // wird, was mitkommt; der Rest bleibt, wie er war.
   einstellen(wer, aenderung) {
-    if (this.gestartet) return { fehler: 'Die Partie laeuft schon.' };
-    if (wer !== this.gastgeber) return { fehler: 'Nur der Gastgeber aendert die Einstellungen.' };
+    if (this.gestartet) return { fehler: 'Die Partie läuft schon.' };
+    if (wer !== this.gastgeber) return { fehler: 'Nur der Gastgeber ändert die Einstellungen.' };
     if (!aenderung || typeof aenderung !== 'object' || Array.isArray(aenderung)) {
-      return { fehler: 'Die Einstellungen sind unverstaendlich.' };
+      return { fehler: 'Die Einstellungen sind unverständlich.' };
     }
     const geprueft = partieEinstellungen.pruefen(this.einstellungsliste, { ...this.einstellungen, ...aenderung });
     if (geprueft.fehler) return geprueft;
@@ -88,7 +88,7 @@ class Raum {
   }
 
   beitreten(name, draht) {
-    if (this.gestartet) return { fehler: 'Die Partie laeuft schon.' };
+    if (this.gestartet) return { fehler: 'Die Partie läuft schon.' };
     if (this.spieler.length >= this.hoechstens) return { fehler: 'Der Raum ist voll.' };
     const spieler = {
       id: randomUUID().slice(0, 8),
@@ -136,7 +136,7 @@ class Raum {
   // **Was** eine Partie beendet, weiss weiterhin nur das Spiel (ADR-0006) -
   // der Raum fragt bloss.
   starten(startwert) {
-    if (this.gestartet && !this.welt.vorbei) return { fehler: 'Die Partie laeuft schon.' };
+    if (this.gestartet && !this.welt.vorbei) return { fehler: 'Die Partie läuft schon.' };
     // Wer die Verbindung verloren hat, spielt die Revanche nicht mit: sein
     // Platz waere ein Gegner, der nichts tut. Waehrend einer laufenden Partie
     // bleibt er stehen (damit er mit seinem Token zurueckkehren kann) - hier

@@ -2,7 +2,7 @@
 
 **Bereich:** Plattform
 **Kuerzel:** auswahl
-**Stand:** 12/19 fertig · 7 offen
+**Stand:** 14/21 fertig · 7 offen
 
 ## Zweck
 
@@ -79,6 +79,24 @@ Wer nur mitspielt, ueberspringt alles: Code eingeben, Namen eingeben, drin
   Untergrenze von zwei Spielern gilt fuer **Plaetze**, nicht fuer Menschen —
   sonst ist das Strategiespiel allein nicht spielbar, und genau das ist der
   haeufigste Fall beim Ausprobieren.
+
+### Name und Sprache
+
+- **AC-20** `fertig` **Das Strategiespiel heißt Fading Allies** — So steht es
+  auf seiner Karte in der Übersicht und im Titel der Schautafel; „Strategie"
+  bleibt nur der Bezeichner (`art: 'strategie'`, Ordner, Testnamen).
+  Entschieden vom Benutzer am 2026-11-08 — [ADR-0012](../../docs/adr/0012-aoe2-als-vorlage.md)
+  Punkt 4 verlangt einen eigenen Namen. Der Name erzählt die Regel aus
+  [Spielziel](../10-strategie/spielziel.md) AC-14: Bündnisse gibt es nur am
+  Tisch, und keins hält länger als bis zum ersten Angriff.
+- **AC-21** `fertig` **Echte Umlaute auf dem Bildschirm** — Was in Übersicht,
+  Vorraum, Warteraum und Spielbild steht — Knöpfe, Einstellungen, Absagen,
+  Namen von Gebäuden —, schreibt „Eröffnen", „Kartengröße", „Schießanlage",
+  nicht „Eroeffnen". Bezeichner, Schlüssel und Werte auf dem Draht bleiben
+  umschrieben (`kartengroesse`, `gross`). Die Regel stand von Anfang an in
+  CLAUDE.md; bis Runde 87 standen trotzdem rund vierzig Texte umschrieben im
+  Bild. Durchgesetzt von `tests/waechter-umlaute.test.mjs`; das ruhende
+  Managerspiel liest der Wächter erst, wenn dort wieder gearbeitet wird.
 
 ### Eigene Spielstaende
 

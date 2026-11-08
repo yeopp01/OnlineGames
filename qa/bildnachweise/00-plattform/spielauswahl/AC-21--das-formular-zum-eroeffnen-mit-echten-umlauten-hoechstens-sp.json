@@ -1,0 +1,10 @@
+{
+  "spec": "00-plattform/spielauswahl.md",
+  "ac": "AC-21",
+  "titel": "Das Formular zum Eröffnen mit echten Umlauten: „Höchstens Spieler“, „Kartengröße“, „groß“ und der Knopf „Partie eröffnen“",
+  "datei": "e2e/tests/spielauswahl.spec.mjs",
+  "pfad": [
+    "Spiel waehlen",
+    "auswahl AC-6 und auswahl AC-21: Spielerzahl, Startwert, Kartengroesse und Startvorrat stellt man vor dem Eroeffnen ein"
+  ]
+}
