@@ -13,7 +13,7 @@ hier nichts eintraegt, verliert den Faden beim naechsten Autocompact.
 
 ## Zuletzt fortgeschrieben
 
-2026-11-08, nach Runde 112 (**kampf AC-13, fahrplan AC-13, C6e fertig**: der
+2026-11-08, nach Runde 113 (**kampf AC-13, fahrplan AC-13, C6e fertig**: der
 Server schickt jedem nur, was er sieht - `welt.zustandJeSpieler`,
 `welt.aufbauFuer`, im Raum `sendenJe`. Fremde Gebaeude und Felder, die sich im
 Nebel aendern, kommen beim naechsten Hinsehen; wer ausscheidet, bekommt einmal
@@ -25,15 +25,17 @@ Formationen. Der Browsertest zu ki AC-11 bleibt wackelig (2 von 4).
 Runde 112: **ki AC-13 in-arbeit, auf dem lokalen Zweig
 `strategie-ki-sicht`** (`7c086ac`) - die KI mit eigener Sicht und Spaeher,
 belegt, aber KI gegen KI endet nur in 34 von 40 Partien vor Minute 60
-(fahrplan AC-11 reisst). **Naechste Runde ist die Rueckschau (113)**; danach
-ki AC-13 weiter: Zweig mergen, lange Startwerte mit pruefstand:verlauf
-ansehen.)
+(fahrplan AC-11 reisst). Runde 113 war die Rueckschau: `npm run
+gegenprobe`, Pruefstand gleich nach dem ersten Entwurf, Verbergen bricht
+Tests, rote Arbeit auf einen lokalen Zweig. **Als Naechstes ki AC-13
+weiter**: `git merge strategie-ki-sicht`, dann die langen Startwerte mit
+pruefstand:verlauf ansehen. **Naechste Rueckschau: Runde 118.**)
 
 ## Wo ich stehe
 
 - **Branch:** `strategie`. Nie auf `main` arbeiten, **nie pushen, nie deployen.**
-- **Board:** 412 von 531 Kriterien fertig · 1 in Arbeit · 5 in QA · 4 geplant ·
-  101 offen · 8 zurueckgestellt. 497 Tests ohne Browser, 175 im Browser.
+- **Board:** 412 von 532 Kriterien fertig · 2 in Arbeit · 5 in QA · 4 geplant ·
+  101 offen · 8 zurueckgestellt. 499 Tests ohne Browser, 175 im Browser.
 - **Fuenf Waechter in `tests/waechter-*.test.mjs`** (der fuenfte seit Runde 87: Bildschirmtext mit echten Umlauten): Gleichheit auf wachsenden
   Listen, verbesserbare Werte an `welt.einheitenwert()` vorbei,
   Bildunterschriften mit `${...}`, und (neu in Runde 73) die **Kuerzeltafel**
@@ -303,7 +305,7 @@ ansehen.)
   bei 20 min). Aelter als Runde 69, nur nie gemessen, weil der Pruefstand bei
   zehn Minuten endete. Ursache und Hebel stehen in den Erkenntnissen unter
   **Offene Faeden**.
-- **Naechste Rueckschau: Runde 113** - oder frueher, wenn Stufe C erreicht wird.
+- **Naechste Rueckschau: Runde 118** - oder frueher, wenn Stufe C erreicht wird.
   Diese Zeile ist der Termin, nicht nachzaehlen.
 - Frueherer Termin, erledigt: **Runde 83** (die Bildnachweise einmal ganz
   angesehen), **Runde 78** (Bilderwerkzeug: `check:alles:neu`,
@@ -636,6 +638,9 @@ npm run check                  # ohne Browser: Specs, Belege, Bericht, Tests
 npm run check:alles            # erst Browserlauf, dann check - bei Oberflaechenarbeit
 npm run specs:board            # Board neu rechnen
 npm run pruefstand:strategie   # KI gegen KI ohne Browser, jeder Takt geprueft
+npm run pruefstand:vergleich -- --minuten 90 --saetze 2   # Arbeitsstand neben HEAD - gleich nach dem ersten Entwurf
+npm run pruefstand:verlauf -- --startwert 11 --minuten 70 # eine Partie Minute fuer Minute
+npm run gegenprobe -- <datei> "<neu>" "<alt>" -- <befehl> # Gegenprobe, schreibt immer zurueck
 npm run sicht -- --spiel --zoom 2   # eine laufende Partie als Wegwerfbild
 npm run tafel -- "t.anmutung('gebaeude','haus')"   # auf der Schautafel messen
 npm run e2e:laufzeiten -- strategie                # langsamste Browserfaelle

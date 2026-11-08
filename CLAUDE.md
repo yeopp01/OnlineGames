@@ -39,6 +39,7 @@ npm run tafel -- "t.anmutung('gebaeude', 'haus')"  # auf der Schautafel messen, 
 npm run e2e:laufzeiten -- strategie   # Dauer des Browserlaufs je Datei, die langsamsten Faelle
 npm run pruefstand:vergleich          # KI gegen KI: Arbeitsstand neben HEAD, dieselben Partien (--saetze 2: 1-20 und 21-40)
 npm run pruefstand:verlauf -- --startwert 5  # eine Partie KI gegen KI Minute fuer Minute
+npm run gegenprobe -- <datei> "<neu>" "<alt>" -- <befehl>  # Gegenprobe gegen die alte Zeile, schreibt die Datei immer zurueck
 ```
 
 **Am Strategiespiel wird in Runden gearbeitet:** `/strategie-weiterbauen`
@@ -157,7 +158,7 @@ Umfang hinzufügt, dort nachsehen.
 
 ## Stand
 
-**412 von 531 Kriterien fertig.** 497 Tests ohne Browser, 175 im Browser. Die
+**412 von 532 Kriterien fertig.** 499 Tests ohne Browser, 175 im Browser. Die
 Übersicht ist der Bericht: `npm run qa:report`.
 
 Gebaut ist der Unterbau: Räume, Übertragung, Karte, Wegfindung, Sammeln,

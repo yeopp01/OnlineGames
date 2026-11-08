@@ -1093,11 +1093,51 @@ Sie fand in Runde 104 einen Randfall (`sieht(-1, y)`), in 105 bis 107 keinen
 Fehler — aber jedes Mal einen Hinweis, der als Faden weiterlebt (die KI und
 die Stadtwache).
 
+
+### Nach Runde 113 (2026-11-08)
+
+Runden 109–112: der Außenposten (kampf AC-18, C6d), der Server schickt nur
+Sichtbares (kampf AC-13, fahrplan AC-13, C6e) — und zwei Runden, die ihr
+Kriterium nicht schafften: einheiten AC-32 (Marschierende aufeinander, drei
+Fassungen verworfen, Frage an den Benutzer: Formationen) und ki AC-13 (die
+KI mit eigener Sicht, gebaut und belegt, aber KI gegen KI zu lang; auf dem
+Zweig `strategie-ki-sicht`).
+
+Was wiederholt Zeit kostete, und was sich ändert:
+
+1. **Der Prüfstand kam zuletzt** — in Runde 111 und 112 standen Regel,
+   Tests und Spec, als `pruefstand:vergleich` zeigte, dass KI gegen KI zu
+   lange dauert. → Regel: wer Bewegung, Kampf oder das Wissen der KI ändert,
+   vergleicht **gleich nach dem ersten Entwurf**, und sieht bei verschobenen
+   Enden erst mit `pruefstand:verlauf` nach, wo es fehlt, bevor er eine
+   Abhilfe baut.
+2. **Gegenproben von Hand** — acht Mal Kopie, `sed`, zurückkopieren; in Runde
+   112 blieb die KI-Datei verändert liegen, weil ein Zeitlimit den Befehl in
+   den Hintergrund schob. → Werkzeug: `npm run gegenprobe -- <datei> <alt>
+   <neu> -- <befehl>` schreibt immer zurück (mit Test). Dazu: Arbeit, die
+   nicht grün wird, kommt auf einen lokalen Zweig statt in `git stash`.
+3. **Verbergen brach Tests**, nicht nur Bilder — acht in Runde 110, sechs in
+   Runde 112, alle mit derselben Abhilfe. → Regel: vorher suchen, wer
+   Fremdes liest; wer nicht vom Nebel handelt, eröffnet aufgedeckt.
+
+Nicht geändert: die Durchsicht. Sie fand in Runde 110 zwei echte Fehler
+(Baustelle, die im Nebel fertig wird; Ausgeschiedene ohne fremde Gebäude) und
+drei Lecks, in Runde 111 keinen — dort war die Regel richtig gebaut, aber
+falsch gewählt, und das sieht nur der Prüfstand.
+
+Gemessen (ruhige Maschine, ein Node-Prozess): `npm run check` 50 s, 499 Tests
+ohne Browser; der Browserlauf 12,8 min für 173 Fälle (Runde 110); KI gegen KI
+mit HEAD 50 bis 56 ms je 1000 Takte, Feudalzeit Median 11,6 min, erstes Heer
+17,0 min, Enden Median 36,4 und 39,4 min, vor Minute 60: 20/20 und 19/20.
+
 ## Runden
 
 Neueste oben. Eine Zeile je Runde: Nummer, Datum, Kriterien, Ergebnis,
 wichtigste Erkenntnis.
 
+- **113** · 2026-11-08 · **Rückschau** — Prüfstand gleich nach dem ersten
+  Entwurf, `npm run gegenprobe` (schreibt immer zurück), Verbergen bricht
+  auch Tests; Arbeit, die nicht grün wird, auf einen lokalen Zweig.
 - **112** · 2026-11-08 · **ki AC-13 in Arbeit, nicht gruen** — die KI
   kennt fremde Gebäude erst, wenn sie sie gesehen hat, fremde Einheiten nur
   in Sicht, und ihr Späher reitet den Ring der Startplätze ab: alle 40 KIs

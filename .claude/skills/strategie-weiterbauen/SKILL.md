@@ -15,7 +15,8 @@ halb.** Die Regeln aus `CLAUDE.md` gelten ohne Abstrich — vor allem, was
 1. `git status` und `git branch --show-current`. Gearbeitet wird auf
    **`strategie`**. Ist der Baum nicht sauber, prüfe, ob das die Reste einer
    abgebrochenen Runde sind. Wenn ja: zu Ende bringen oder verwerfen, was
-   nicht grün wird (`git stash`, mit Vermerk in den Erkenntnissen). Fremde
+   nicht grün wird (auf einen lokalen Zweig, mit Vermerk in den
+   Erkenntnissen — siehe Abschnitt 6, Punkt 5). Fremde
    Änderungen, die du nicht einordnen kannst, fasst du nicht an — Frage
    aufschreiben, Runde beenden.
 2. Lies [`docs/strategie/erkenntnisse.md`](../../../docs/strategie/erkenntnisse.md):
@@ -207,6 +208,17 @@ Setze die gewählten Kriterien auf `in-arbeit`.
   Wirkung. In Runde 100 sah erst der zweite Satz, dass die Partien
   systematisch länger wurden — und dass fahrplan AC-11 auch mit HEAD nur 19
   von 20 schafft.
+  **Und zwar gleich nach dem ersten Entwurf — vor Tests, Spec und
+  Durchsicht**, wenn Bewegung, Kampf oder das **Wissen der KI** sich ändern.
+  Zweimal hintereinander kam der Vergleich zuletzt und warf die Runde um:
+  in Runde 111 zog Abstand im Gehen das Heer zur Schlange, in Runde 112
+  machte die eigene Sicht der KI die Partien sieben Minuten länger — beide
+  Male stand alles andere schon. Verschiebt der Vergleich die Enden, zuerst
+  mit `pruefstand:verlauf` zwei, drei der langen Startwerte ansehen, **wo**
+  es fehlt (Mittelspiel? Abräumen?), dann eine Abhilfe bauen. Teile einzeln
+  zurückzuschalten hilft wenig: die Partien sind chaotisch, jede Änderung
+  verschiebt jeden Verlauf, und in Runde 112 erklärte jeder Teil „einen
+  Teil".
   **Eine Gegenprobe an einem einzelnen Startwert einer ganzen Partie ist
   brüchig**: jede fremde Änderung verschiebt den Verlauf. Die Gegenprobe zu
   ki AC-19 hing an Startwert 5 und brach in Runde 100, ohne dass das Aufgeben
@@ -370,12 +382,20 @@ Setze die gewählten Kriterien auf `in-arbeit`.
   angesehen**, bevor irgendetwas eingecheckt wird. In der Rückschau nach
   Runde 78 stand dort ein Rückschritt, den sonst niemand gefunden hätte: zwei
   Milizen übereinander statt drei nebeneinander.
-  **Wer etwas verbirgt — Nebel, Verdeckung, ein Filter —, bricht Bilder, nicht
-  Tests.** Die Tests prüfen die Daten (`ansicht.nachher`), nicht, was
-  gezeichnet ist. Dann bei jedem Bild über der Grenze die eine Frage: Ist
-  alles, was die Unterschrift nennt, noch zu sehen? In Runde 105 waren es
-  sieben Bilder mit grünen Tests — das Heer der KI, der See, Berts Siedlung,
-  alle im Nebel. Gezeichnet ist, was in `ansicht.reihenfolge` steht.
+  **Wer etwas verbirgt — Nebel, Verdeckung, ein Filter —, bricht Bilder.**
+  Die Tests prüfen die Daten (`ansicht.nachher`), nicht, was gezeichnet ist.
+  Dann bei jedem Bild über der Grenze die eine Frage: Ist alles, was die
+  Unterschrift nennt, noch zu sehen? In Runde 105 waren es sieben Bilder mit
+  grünen Tests — das Heer der KI, der See, Berts Siedlung, alle im Nebel.
+  Gezeichnet ist, was in `ansicht.reihenfolge` steht. **Verbirgt es der
+  Server oder die KI, brechen auch Tests** — alle, die Fremdes lesen: in
+  Runde 110 acht (fremde Vorräte, Berts Einheiten), in Runde 112 sechs (die
+  KI sollte den Gegner kennen). Vorher in `tests/` und `e2e/` suchen, wer
+  fremde Daten liest; **wer nicht vom Nebel handelt, eröffnet aufgedeckt**
+  (`partieZuZweit(…, { sicht: 'aufgedeckt' })`, `new Welt(…, { sicht:
+  'aufgedeckt' })`). Wer vom Nebel handelt, prüft das Verbergen selbst — wie
+  der Test zu auswahl AC-19, der seit Runde 110 verlangt, dass von der KI
+  nichts ankommt.
 - Kein Bildschirm: Eintrag in `qa/ohne-bild.json`, der sagt, **was** das
   Kriterium ist und **warum** ein Bild es nicht zeigen kann.
 
@@ -389,9 +409,14 @@ Setze die gewählten Kriterien auf `in-arbeit`.
    die Dateien statt des Unterschieds. Dazu eine Beschreibung des **Verhaltens**, nicht deines
    Urteils — und sucht Fehler, Randfälle, Determinismus, was die KI nicht
    sehen dürfte. Seine Befunde prüfst du am Code nach, bevor du handelst; jeder
-   echte bekommt einen Test mit Gegenprobe — **gegen die alte Zeile**: nur
-   die Produktzeile zurücksetzen (Kopie der Datei, `sed`, zurückkopieren), den
-   Test laufen lassen, er muss fallen. Nicht `git stash`: das nimmt den neuen
+   echte bekommt einen Test mit Gegenprobe — **gegen die alte Zeile**:
+   `npm run gegenprobe -- <datei> "<neue Zeile>" "<alte Zeile>" -- node --test
+   <testdatei>` ersetzt genau eine Stelle, lässt laufen und schreibt die Datei
+   **immer** zurück, auch wenn der Befehl fällt oder abbricht; der Test muss
+   fallen. Mit `--datei <ersatz>` statt der zwei Texte tauscht sie die ganze
+   Datei (etwa gegen `git show HEAD:<datei>`). Nicht von Hand mit Kopie und
+   `sed`: in Runde 112 schob ein Zeitlimit den Befehl in den Hintergrund,
+   bevor das Zurückkopieren lief. Nicht `git stash`: das nimmt den neuen
    Test mit weg, und „grün" heißt dann nichts (Runde 97). Die Durchsicht traf
    in jeder der Runden 94 bis 97. In Runde 86 trafen zwei von fünf
    Befunden, einer davon ein Fehler, den die Runde eine Stunde vorher selbst
@@ -434,7 +459,12 @@ Setze die gewählten Kriterien auf `in-arbeit`.
    unverändert).
 5. Rot → beheben. Geht es nach ernsthaftem Versuch nicht: Kriterium zurück auf
    `in-arbeit` oder `in-qa`, die Ursache als offenen Faden aufschreiben,
-   **nicht** committen, was rot ist.
+   **nicht** auf `strategie` committen, was rot ist. Die Arbeit kommt auf
+   einen **lokalen Zweig** (`git checkout -b strategie-<thema>`, Commit dort
+   mit „Zwischenstand, nicht grün" im Betreff, zurück auf `strategie`), und
+   der Faden nennt Zweig und Commit — nicht `git stash`, das niemand
+   wiederfindet (Runde 112: `strategie-ki-sicht`). Die nächste Runde, die es
+   aufnimmt, holt den Zweig mit `git merge`.
 6. Grün → eine Zeile unter **Runden** in den Erkenntnissen, offene Fäden
    aktualisieren (erledigte streichen). Dann **ein Commit** auf `strategie`,
    deutscher Text, Betreff sagt, was jetzt geht. **Kein Push, kein Deploy.**
