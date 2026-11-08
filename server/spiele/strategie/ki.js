@@ -125,6 +125,19 @@ const WACHE_NAH = 3;
 // daraus wuerde ein Angriff auf genau ihn statt des Angriffslaufs.
 const FEIND_FERN = 1.5;
 
+// Wie lange sie eine fremde Kampfeinheit im Gedaechtnis behaelt, die sie
+// nicht mehr sieht (ki AC-13), in Takten: drei Minuten.
+const FEIND_VERGESSEN = 1800;
+
+// Punkte auf dem Ring der Startplaetze, die der Spaeher abreitet (ki AC-13).
+const ERKUNDUNG_PUNKTE = 16;
+
+// Kantenlaenge der Bloecke, in denen sie sich merkt, wann sie wo zuletzt
+// hingesehen hat (ki AC-13), und wie weit um den letzten Ort des Gegners sie
+// sucht, in Feldern.
+const SUCH_BLOCK = 8;
+const SUCH_UMKREIS = 28;
+
 // Wie weit ein zweites Ziel derselben Entscheidung von einem schon vergebenen
 // wegbleibt. Ein Befehl an mehrere stellt sie um sein Ziel herum auf
 // (einheiten AC-20) - zwei getrennte Befehle wissen voneinander nichts. Die
@@ -179,6 +192,20 @@ class Ki {
     this.umverteilt = 0;
     // Woran jede Einheit des Heeres zuletzt geschickt wurde, und wann (ki AC-16).
     this.heerZiel = new Map();
+    // Was sie vom Gegner weiss (ki AC-13): Gebaeude, sobald eine ihrer
+    // Einheiten sie gesehen hat - im Nebel so, wie sie sie zuletzt sah -, und
+    // fremde Kampfeinheiten mit dem Takt, an dem sie sie zuletzt sah.
+    this.gesehen = new Map();
+    this.feindeGesehen = new Map();
+    // Wohin der Spaeher gerade erkundet.
+    this.erkundung = null;
+    this.erkundungFertig = new Set();
+    // Wann sie zum ersten Mal ein fremdes Gebaeude sah (Pruefstand).
+    this.gegnerGesehenTakt = null;
+    // Wo sie von jedem Gegner zuletzt etwas sah - Gebaeude oder Einheit.
+    this.feindOrt = new Map();
+    // Je Block der Takt, an dem sie zuletzt hinsah.
+    this.blockGesehen = null;
     // Vorratsfelder, zu denen kein Weg fuehrte, mit dem Takt der Feststellung -
     // eine Weile nicht wieder vorschlagen (UNERREICHBAR_SEKUNDEN).
     this.unerreichbar = new Map();
@@ -244,6 +271,8 @@ class Ki {
     this.feudalzeitPruefen(zentrum, dorfbewohner);
     this.militaerPruefen(gebaeude, dorfbewohner);
     this.heerPruefen(eigene);
+    // Nach dem Heer: das hat eben wahrgenommen, was sie sieht.
+    this.erkunden(eigene);
     this.verteidigenPruefen(eigene, gebaeude, zentrum);
     this.umverteilen(dorfbewohner);
     this.baustellenWeiterbauen(gebaeude, dorfbewohner);
@@ -375,13 +404,151 @@ class Ki {
   }
 
   // Ueberlegen (ki AC-18): ein ganzes Heer und dreimal so viele wie der
-  // naechste Gegner. Gezaehlt wird, was auf der Karte steht - bis der Nebel
-  // kommt (ki AC-13), sieht die KI alles, so wie der Mensch.
+  // naechste Gegner. Gezaehlt wird beim Gegner, was sie in den letzten drei
+  // Minuten gesehen hat (ki AC-13) - so wie ein Mensch schaetzt.
   ueberlegen() {
+    this.wahrnehmen();
     const gegner = this.naechsterGegner();
     if (!gegner) return false;
     const meine = this.kampfeinheitenVon(this.spielerId);
-    return meine >= HEER && this.kampfeinheitenVon(gegner.id) * UEBERLEGEN <= meine;
+    return meine >= HEER && this.gesehenVon(gegner.id) * UEBERLEGEN <= meine;
+  }
+
+  // Fremde Kampfeinheiten eines Spielers, die sie zuletzt gesehen hat.
+  gesehenVon(id) {
+    let n = 0;
+    for (const f of this.feindeGesehen.values()) if (f.besitzer === id && this.welt.takt - f.takt < FEIND_VERGESSEN) n += 1;
+    return n;
+  }
+
+  /**
+   * Was die KI sieht (ki AC-13): ihre Sicht rechnet der Server wie fuer jeden
+   * Spieler (kampf AC-15). Ein fremdes Gebaeude merkt sie sich, sobald sie es
+   * sieht, und vergisst es erst, wenn sie hinsieht und es nicht mehr steht -
+   * wie der Browser (kampf AC-12). Fremde Kampfeinheiten merkt sie sich mit
+   * dem Takt des letzten Blicks.
+   */
+  wahrnehmen() {
+    const welt = this.welt;
+    const ich = this.spielerId;
+    for (const g of welt.gebaeude.values()) {
+      if (g.besitzer === ich || !welt.siehtGebaeude(ich, g)) continue;
+      this.gesehen.set(g.id, { id: g.id, art: g.art, x: g.x, y: g.y, besitzer: g.besitzer });
+      this.feindOrt.set(g.besitzer, { x: g.x, y: g.y });
+      if (this.gegnerGesehenTakt === null) this.gegnerGesehenTakt = welt.takt;
+    }
+    for (const [id, g] of this.gesehen) {
+      if (!welt.gebaeude.has(id) && welt.siehtGebaeude(ich, g)) this.gesehen.delete(id);
+    }
+    const sichtbar = this.sichtbareFeinde();
+    const jetzt = new Set(sichtbar.map((e) => e.id));
+    // Wen sie dort, wo sie ihn zuletzt sah, jetzt nicht mehr sieht, den
+    // streicht sie - gefallen oder fortgegangen. Sonst zaehlten Gefallene drei
+    // Minuten weiter, und sie hielte den Gegner fuer staerker, als er ist.
+    for (const [id, f] of this.feindeGesehen) {
+      if (!jetzt.has(id) && welt.sieht(this.spielerId, f.x, f.y)) this.feindeGesehen.delete(id);
+    }
+    for (const e of sichtbar) {
+      if (!(EINHEITEN[e.art].klassen || []).includes('dorf')) {
+        this.feindeGesehen.set(e.id, { besitzer: e.besitzer, takt: welt.takt, x: Math.round(e.x), y: Math.round(e.y) });
+      }
+      // Ein Dorfbewohner verraet, wo jemand wohnt; eine Kampfeinheit draussen
+      // nicht - ein fremder Spaeher vor dem eigenen Dorf hiesse sonst, der
+      // Gegner wohne hier.
+      if ((EINHEITEN[e.art].klassen || []).includes('dorf')) this.feindOrt.set(e.besitzer, { x: Math.round(e.x), y: Math.round(e.y) });
+    }
+    // Wann sie welchen Block zuletzt sah - fuer die Suche nach dem, was sie
+    // nicht mehr kennt.
+    const g = welt.karte.groesse;
+    const je = Math.ceil(g / SUCH_BLOCK);
+    if (!this.blockGesehen) this.blockGesehen = new Array(je * je).fill(-Infinity);
+    for (let by = 0; by < je; by++) {
+      for (let bx = 0; bx < je; bx++) {
+        const x = Math.min(g - 1, bx * SUCH_BLOCK + SUCH_BLOCK / 2);
+        const y = Math.min(g - 1, by * SUCH_BLOCK + SUCH_BLOCK / 2);
+        if (welt.sieht(this.spielerId, x, y)) this.blockGesehen[by * je + bx] = welt.takt;
+      }
+    }
+    // Wo eine eigene Einheit steht, war sie - auch wenn die Mitte des Blocks
+    // im Wald liegt und keiner sie sieht. Sonst suchte das Heer dort ewig.
+    for (const e of welt.einheiten.values()) {
+      if (e.besitzer !== this.spielerId || e.tot) continue;
+      const bx = Math.floor(Math.round(e.x) / SUCH_BLOCK);
+      const by = Math.floor(Math.round(e.y) / SUCH_BLOCK);
+      if (bx >= 0 && by >= 0 && bx < je && by < je) this.blockGesehen[by * je + bx] = welt.takt;
+    }
+    for (const [id, f] of this.feindeGesehen) if (welt.takt - f.takt >= FEIND_VERGESSEN) this.feindeGesehen.delete(id);
+  }
+
+  // Fremde Einheiten, die sie jetzt sieht (ki AC-13).
+  sichtbareFeinde() {
+    const ich = this.spielerId;
+    return [...this.welt.einheiten.values()].filter((e) => e.besitzer !== ich && !e.tot
+      && this.welt.sieht(ich, Math.round(e.x), Math.round(e.y)));
+  }
+
+  /**
+   * Erkunden (ki AC-13): solange sie keinen Gegner kennt, reitet der
+   * Spaeherreiter den Ring der Startplaetze ab - dort stehen die Doerfer, das
+   * weiss jeder, der die Karte kennt, nicht aber wo genau. Er nimmt den
+   * naechsten Punkt des Rings, den sie noch nie gesehen hat.
+   */
+  erkunden(eigene) {
+    const spaeher = eigene.find((e) => e.art === 'spaeherreiter' && !e.tot && !this.heer.has(e.id));
+    if (!spaeher) return;
+    if (this.alleGegnerBekannt()) {
+      // Gefunden: heim. Bliebe er stehen, griffe er an, was ihm in Sicht
+      // kommt (kampf AC-2) - im fremden Dorf dessen Dorfbewohner, und die
+      // liefen davon (ki AC-14). In Runde 112 kostete das beide KIs Nahrung
+      // und Wohnraum (ki AC-4).
+      if (this.erkundung) {
+        this.erkundung = null;
+        const heim = this.freiesFeldUm(this.spieler.basis, spaeher);
+        if (heim) this.senden({ auftrag: 'befehl', einheiten: [spaeher.id], ziel: heim });
+      }
+      return;
+    }
+    if (this.erkundung) {
+      // Noch unterwegs zu einem Punkt, den sie nicht kennt, und nicht kurz
+      // davor: weiterreiten. Kurz davor gibt es schon den naechsten Punkt -
+      // aus demselben Grund wie oben haelt er nirgends an.
+      const unterwegs = spaeher.weg.length > 2 || spaeher.auftrag?.art === 'angreifen';
+      if (unterwegs && !this.welt.erkundet(this.spielerId, this.erkundung.x, this.erkundung.y)) return;
+      // Angekommen, ob gesehen oder nicht (ein Punkt mitten im Wald): erledigt.
+      this.erkundungFertig.add(this.erkundung.y * this.welt.karte.groesse + this.erkundung.x);
+    }
+    const punkt = this.erkundungspunkt(spaeher);
+    if (!punkt) return;
+    const feld = this.freiesFeldUm(punkt, spaeher);
+    if (!feld) return;
+    this.erkundung = punkt;
+    this.senden({ auftrag: 'befehl', einheiten: [spaeher.id], ziel: feld });
+  }
+
+  // Kennt sie von jedem, der noch spielt, ein Gebaeude?
+  alleGegnerBekannt() {
+    const bekannt = new Set([...this.gesehen.values()].map((g) => g.besitzer));
+    return this.welt.spieler.every((s) => s.id === this.spielerId || s.aus || bekannt.has(s.id));
+  }
+
+  // Der naechste nie gesehene Punkt auf dem Ring der Startplaetze, vom Ort
+  // `von` aus. Der Ring hat den Halbmessser ihres eigenen Startplatzes um die
+  // Kartenmitte.
+  erkundungspunkt(von) {
+    const g = this.welt.karte.groesse;
+    const mitte = g / 2;
+    const { basis } = this.spieler;
+    const radius = Math.hypot(basis.x - mitte, basis.y - mitte);
+    let bester = null;
+    for (let i = 0; i < ERKUNDUNG_PUNKTE; i++) {
+      const winkel = (i / ERKUNDUNG_PUNKTE) * Math.PI * 2;
+      const x = Math.round(mitte + Math.cos(winkel) * radius);
+      const y = Math.round(mitte + Math.sin(winkel) * radius);
+      if (!this.welt.aufKarte(x, y) || this.welt.erkundet(this.spielerId, x, y) || this.erkundungFertig.has(y * g + x)) continue;
+      const d = Math.hypot(x - von.x, y - von.y);
+      if (!bester || d < bester.d) bester = { x, y, d };
+    }
+    return bester ? { x: bester.x, y: bester.y } : null;
   }
 
   /**
@@ -400,10 +567,13 @@ class Ki {
     // Wer gefallen ist, marschiert nicht mehr.
     for (const id of this.heer) if (!this.welt.einheiten.has(id)) this.heer.delete(id);
     const kampf = eigene.filter((e) => !e.tot && !(EINHEITEN[e.art].klassen || []).includes('dorf'));
+    this.wahrnehmen();
     if (!kampf.length) return;
     const gegner = this.naechsterGegner();
-    if (!gegner) return;
-    const ziel = this.gegnerZiel(gegner);
+    // Keinen Gegner gesehen (ki AC-13): das Heer erkundet selbst, im
+    // Angriffslauf zum naechsten nie gesehenen Punkt des Rings - sonst stuende
+    // es, wenn der Spaeher gefallen ist, fuer immer daheim.
+    const ziel = gegner ? this.gegnerZiel(gegner) : this.erkundungspunkt(this.spieler.basis);
     if (!ziel) return;
 
     // Nachsetzen: wer steht, geht auf das Ziel. Nicht `untaetig()` - das
@@ -416,8 +586,9 @@ class Ki {
     // Partien 56 bis 98 Kampfeinheiten neben 7 bis 28 Gebaeuden eines
     // Verlierers ohne Heer (Runde 95). Einheiten zuerst, dann Gebaeude.
     if (stehend.length) {
-      const seineEinheiten = [...this.welt.einheiten.values()].filter((e) => e.besitzer === gegner.id && !e.tot);
-      const seineGebaeude = [...this.welt.gebaeude.values()].filter((g) => g.besitzer === gegner.id && !GEBAEUDE[g.art].begehbar);
+      // Nur, was sie sieht oder gesehen hat (ki AC-13).
+      const seineEinheiten = gegner ? this.sichtbareFeinde().filter((e) => e.besitzer === gegner.id) : [];
+      const seineGebaeude = gegner ? [...this.gesehen.values()].filter((g) => g.besitzer === gegner.id && !GEBAEUDE[g.art].begehbar) : [];
       const naechstes = (e, liste) => liste.reduce((best, z) => {
         const d = Math.hypot(z.x - e.x, z.y - e.y);
         return !best || d < best.d ? { z, d } : best;
@@ -455,14 +626,17 @@ class Ki {
     if (this.angriffTakt === null) this.angriffTakt = this.welt.takt;
   }
 
-  // Der naechste Gegner, der noch mitspielt - gemessen von Basis zu Basis.
+  // Der naechste Gegner, der noch mitspielt und von dem sie etwas gesehen
+  // hat (ki AC-13) - gemessen von ihrer Basis zu dem Ort, an dem sie zuletzt
+  // etwas von ihm sah. Ohne Gesehenes keiner: dann wird erkundet.
   naechsterGegner() {
     const { basis } = this.spieler;
     let bester = Infinity;
     let gegner = null;
-    for (const s of this.welt.spieler) {
-      if (s.id === this.spielerId || s.aus) continue;
-      const d = Math.hypot(s.basis.x - basis.x, s.basis.y - basis.y);
+    for (const [id, ort] of this.feindOrt) {
+      const s = this.welt.spielerVon(id);
+      if (!s || s.aus) continue;
+      const d = Math.hypot(ort.x - basis.x, ort.y - basis.y);
       if (d < bester) {
         bester = d;
         gegner = s;
@@ -472,12 +646,42 @@ class Ki {
   }
 
   // Worauf das Heer zielt: das Dorfzentrum des Gegners, sonst irgendein
-  // Gebaeude von ihm, sonst seine Basis - dort stehen dann seine Einheiten.
+  // Gebaeude von ihm - beides, wie sie es zuletzt gesehen hat (ki AC-13).
+  // Kennt sie keins mehr, sucht sie dort, wo sie ihn zuletzt sah.
   gegnerZiel(gegner) {
-    const seine = [...this.welt.gebaeude.values()].filter((g) => g.besitzer === gegner.id);
+    const seine = [...this.gesehen.values()].filter((g) => g.besitzer === gegner.id);
     const zentrum = seine.find((g) => g.art === 'dorfzentrum');
     const gebaeude = zentrum || seine[0];
-    return gebaeude ? { x: gebaeude.x, y: gebaeude.y } : { x: gegner.basis.x, y: gegner.basis.y };
+    if (gebaeude) return { x: gebaeude.x, y: gebaeude.y };
+    const ort = this.feindOrt.get(gegner.id);
+    return ort ? this.suchziel(ort) : null;
+  }
+
+  /**
+   * Suchen wie ein Mensch (ki AC-13): um den Ort, an dem sie den Gegner
+   * zuletzt sah, der Block, auf den sie am laengsten nicht geschaut hat.
+   * "Erkundet" reicht dafuer nicht - ein Haus, das nach dem Vorbeiritt des
+   * Spaehers gebaut wurde, steht auf erkundetem Grund. Ohne diese Suche zog
+   * das Heer nach dem letzten bekannten Gebaeude zurueck an den Ring bei der
+   * eigenen Basis, und KI gegen KI dauerte im Median sieben Minuten laenger
+   * (Runde 112, gemessen).
+   */
+  suchziel(um) {
+    if (!this.blockGesehen) this.wahrnehmen();
+    const g = this.welt.karte.groesse;
+    const je = Math.ceil(g / SUCH_BLOCK);
+    let bester = null;
+    for (let by = 0; by < je; by++) {
+      for (let bx = 0; bx < je; bx++) {
+        const x = Math.min(g - 1, bx * SUCH_BLOCK + SUCH_BLOCK / 2);
+        const y = Math.min(g - 1, by * SUCH_BLOCK + SUCH_BLOCK / 2);
+        const d = Math.hypot(x - um.x, y - um.y);
+        if (d > SUCH_UMKREIS) continue;
+        const zuletzt = this.blockGesehen[by * je + bx];
+        if (!bester || zuletzt < bester.zuletzt || (zuletzt === bester.zuletzt && d < bester.d)) bester = { x, y, d, zuletzt };
+      }
+    }
+    return bester ? { x: bester.x, y: bester.y } : null;
   }
 
   // Ein freies Feld im Abstand vor dem Ziel, auf der Seite der eigenen Basis:
@@ -540,6 +744,8 @@ class Ki {
       // Ziel spraenge jede halbe Sekunde (gefunden in der Durchsicht der Runde
       // 86, eigener Test).
       if (ausser?.has(e.id)) continue;
+      // Fremde nur, wenn sie sie sieht (ki AC-13).
+      if (e.besitzer !== this.spielerId && !this.welt.sieht(this.spielerId, Math.round(e.x), Math.round(e.y))) continue;
       besetzt.add(`${Math.round(e.x)},${Math.round(e.y)}`);
       // Wohin die **eigenen** gerade laufen, ist auch belegt - sonst schickt die
       // naechste Entscheidung den naechsten Getroffenen auf dasselbe Feld
@@ -890,7 +1096,7 @@ class Ki {
       const daneben = baustellen.find((g) => this.welt.abstandZu(e, g) <= 1.2);
       if (daneben) this.senden({ auftrag: 'befehl', einheiten: [e.id], ziel: { x: daneben.x, y: daneben.y } });
     }
-    const feinde = [...this.welt.einheiten.values()].filter((e) => e.besitzer !== this.spielerId && !e.tot);
+    const feinde = this.sichtbareFeinde();
     const verlassen = gebaeude.find((g) => !g.fertig
       && !this.gesperrt(BAUSTELLE + g.id)
       && !dorfbewohner.some((e) => e.auftrag?.art === 'bauen' && e.auftrag.gebaeude === g.id)
