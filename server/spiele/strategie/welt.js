@@ -13,7 +13,10 @@ const TAKTE_PRO_SEKUNDE = 10;
 // `sicht` seit Runde 105: der Browser zeichnet den Nebel aus der Sicht der
 // eigenen Einheiten (kampf AC-11), mit Verbesserungen.
 const KAMPFFELDER = ['leben', 'angriff', 'nahruestung', 'fernruestung', 'reichweite', 'sicht'];
-const GEBAEUDEFELDER = ['leben', 'nahruestung', 'fernruestung', 'sicht'];
+const GEBAEUDEFELDER = ['leben', 'nahruestung', 'fernruestung', 'sicht', 'angriff', 'reichweite', 'nachladen'];
+// Die Gebaeude, die schiessen (bauen AC-29): wer in den Daten einen Angriff
+// hat. Einmal gezaehlt - `tuermeTakten()` laeuft in jedem Takt.
+const SCHIESSENDE = new Set(Object.keys(GEBAEUDE).filter((art) => GEBAEUDE[art].angriff > 0));
 const SUCHWEITE_ERSATZ = 12;
 // So lange liegt ein Toter noch im Bild, bevor er aus dem Zustand faellt
 // (kampf AC-10): lang genug, um zu sehen, was passiert ist.
@@ -86,6 +89,11 @@ const GEBAEUDE_NAMEN = {
   schiessanlage: 'Die Schießanlage',
   stall: 'Der Stall',
   schmiede: 'Die Schmiede',
+  aussenposten: 'Der Außenposten',
+  kloster: 'Das Kloster',
+  universitaet: 'Die Universität',
+  belagerungswerkstatt: 'Die Belagerungswerkstatt',
+  wachturm: 'Der Wachturm',
 };
 
 // Dasselbe für die Einheiten (einheiten AC-23).
@@ -1734,6 +1742,55 @@ class Welt {
   }
 
   /**
+   * Gebaeude, die schiessen (bauen AC-29, kampf AC-20): ein fertiger Turm
+   * nimmt die naechste fremde Einheit in Reichweite und schiesst, sooft die
+   * Nachladezeit es erlaubt - wie eine wachende Einheit (kampf AC-2), nur
+   * ohne Beine. Ein Ziel behaelt er, solange es lebt und in Reichweite ist;
+   * sonst verteilte er seine Pfeile auf alle, die gleich nah stehen. Gemessen
+   * wird vom Rand der Grundflaeche, damit die Reichweite fuer einen Turm auf
+   * einem Feld und eine Burg auf vier dasselbe heisst. Gebaeude beschiesst er
+   * nicht - in der Vorlage auch nicht.
+   */
+  tuermeTakten() {
+    if (!SCHIESSENDE.size) return;
+    for (const turm of this.gebaeude.values()) {
+      if (!SCHIESSENDE.has(turm.art) || !turm.fertig || turm.leben <= 0) continue;
+      if (turm.nachladen > 0) {
+        turm.nachladen--;
+        continue;
+      }
+      const reichweite = this.gebaeudewert(turm.besitzer, turm.art, 'reichweite');
+      // Die Grundflaeche einmal je Turm, nicht je Einheit: ein Turm ohne Ziel
+      // sieht in jedem Takt alle Einheiten durch (Durchsicht Runde 125).
+      const { x0, y0, x1, y1 } = this.grundflaeche(turm.art, turm.x, turm.y);
+      const abstandVon = (e) => Math.hypot(Math.max(x0 - e.x, 0, e.x - x1), Math.max(y0 - e.y, 0, e.y - y1));
+      let ziel = this.einheiten.get(turm.ziel);
+      if (!ziel || ziel.tot || abstandVon(ziel) > reichweite) {
+        ziel = null;
+        let bester = Infinity;
+        for (const einheit of this.einheiten.values()) {
+          if (einheit.tot || einheit.besitzer === turm.besitzer) continue;
+          // Erst das Rechteck, dann die Luftlinie.
+          if (einheit.x < x0 - reichweite || einheit.x > x1 + reichweite
+            || einheit.y < y0 - reichweite || einheit.y > y1 + reichweite) continue;
+          const abstand = abstandVon(einheit);
+          if (abstand <= reichweite && abstand < bester) {
+            bester = abstand;
+            ziel = einheit;
+          }
+        }
+      }
+      turm.ziel = ziel?.id ?? null;
+      if (!ziel) continue;
+      // Der erste Pfeil sofort, danach die Nachladezeit aus den Daten - der
+      // Takt des Schusses geht mit ab wie bei `angriffTakten()`.
+      const nachladen = this.gebaeudewert(turm.besitzer, turm.art, 'nachladen');
+      turm.nachladen = Math.round(nachladen * TAKTE_PRO_SEKUNDE) - 1;
+      this.schlagen(turm, ziel, false);
+    }
+  }
+
+  /**
    * Nach einem Gefecht unterwegs geht es weiter zum Marschziel (kampf AC-4).
    * Ohne Angriffslauf tut das nichts - dann bleibt stehen, wer gekaempft hat.
    */
@@ -1846,9 +1903,16 @@ class Welt {
    * fuer alle, ohne Zufall (kampf AC-8).
    */
   schaden(angreifer, ziel, istGebaeude) {
-    const a = EINHEITEN[angreifer.art];
+    // Auch ein Turm schiesst nach dieser Formel (kampf AC-20): seine Werte
+    // kommen aus `gebaeudewert()`, die einer Einheit aus `einheitenwert()`.
+    // Die Namen ueberschneiden sich nicht (bauen AC-34, Test).
+    const vonGebaeude = !EINHEITEN[angreifer.art];
+    const a = vonGebaeude ? GEBAEUDE[angreifer.art] : EINHEITEN[angreifer.art];
+    const wert = (feld) => (vonGebaeude
+      ? this.gebaeudewert(angreifer.besitzer, angreifer.art, feld)
+      : this.einheitenwert(angreifer.besitzer, angreifer.art, feld));
     const werte = istGebaeude ? GEBAEUDE[ziel.art] : EINHEITEN[ziel.art];
-    const fern = this.einheitenwert(angreifer.besitzer, angreifer.art, 'reichweite');
+    const fern = wert('reichweite');
     // Auch die Ruestung des Ziels kennt seine Verbesserungen: der Webstuhl
     // gibt dem Dorfbewohner +1/+2 (bauen AC-21). Bis Runde 68 las diese Zeile
     // die Tabelle und die Ruestung aus dem Webstuhl war wirkungslos.
@@ -1859,7 +1923,7 @@ class Welt {
       : this.einheitenwert(ziel.besitzer, ziel.art, feld);
     let bonus = 0;
     for (const klasse of werte.klassen || []) bonus += a.bonus?.[klasse] || 0;
-    return Math.max(1, this.einheitenwert(angreifer.besitzer, angreifer.art, 'angriff') - ruestung + bonus);
+    return Math.max(1, wert('angriff') - ruestung + bonus);
   }
 
   // Ein Schlag wird vorgemerkt, nicht sofort verrechnet: abgerechnet wird am
@@ -1872,13 +1936,19 @@ class Welt {
     // Ein Schuss eines Fernkaempfers geht als Pfeil in den naechsten Zustand
     // (bedienung AC-40): von wo nach wo. Gerechnet ist er schon - der Pfeil
     // ist Darstellung (ADR-0001).
-    if (EINHEITEN[angreifer.art] && this.einheitenwert(angreifer.besitzer, angreifer.art, 'reichweite') > 0) {
-      let nach = { x: ziel.x, y: ziel.y };
-      if (istGebaeude) {
-        const { x0, y0, x1, y1 } = this.grundflaeche(ziel.art, ziel.x, ziel.y);
-        nach = { x: (x0 + x1) / 2, y: (y0 + y1) / 2 };
-      }
-      (this.schuesse ??= []).push([angreifer.x, angreifer.y, nach.x, nach.y].map((w) => Math.round(w * 10) / 10));
+    // Ein Turm schiesst ebenso Pfeile, aus der Mitte seiner Grundflaeche.
+    const vonGebaeude = !EINHEITEN[angreifer.art];
+    const fern = vonGebaeude
+      ? this.gebaeudewert(angreifer.besitzer, angreifer.art, 'reichweite')
+      : this.einheitenwert(angreifer.besitzer, angreifer.art, 'reichweite');
+    if (fern > 0) {
+      const mitte = (g) => {
+        const { x0, y0, x1, y1 } = this.grundflaeche(g.art, g.x, g.y);
+        return { x: (x0 + x1) / 2, y: (y0 + y1) / 2 };
+      };
+      const von = vonGebaeude ? mitte(angreifer) : angreifer;
+      const nach = istGebaeude ? mitte(ziel) : ziel;
+      (this.schuesse ??= []).push([von.x, von.y, nach.x, nach.y].map((w) => Math.round(w * 10) / 10));
       // Ohne Zustand - im Pruefstand fragt keiner danach - wuechse die Liste
       // eine ganze Partie lang. Was weiter zurueckliegt als die letzten
       // SCHUESSE_HOECHSTENS, sieht ohnehin keiner mehr fliegen.
@@ -1934,6 +2004,10 @@ class Welt {
    */
   wehren(einheit, angreifer) {
     if (einheit.tot || !angreifer || angreifer.tot) return;
+    // Von einem Turm getroffen, schlaegt niemand von selbst zurueck: ein
+    // Dorfbewohner, der mit der Axt auf 1020 Leben Stein losgeht, stirbt nur
+    // schneller. Wer den Turm angreifen soll, braucht einen Befehl (bauen AC-29).
+    if (!EINHEITEN[angreifer.art]) return;
     if (EINHEITEN[einheit.art].wacht) return;
     if (einheit.auftrag?.art === 'angreifen' || !this.einheitenwert(einheit.besitzer, einheit.art, 'angriff')) return;
     const stand = nachbarfeld(this.karte, this.feldVon(angreifer), einheit);
@@ -2083,6 +2157,7 @@ class Welt {
     // Zweimal je Sekunde sehen sich stehende Kampfeinheiten um (kampf AC-2).
     if (this.takt % WACHE_TAKTE === 0) this.wacheTakten();
     for (const einheit of this.einheiten.values()) this.einheitTakten(einheit);
+    this.tuermeTakten();
     // Ebenso oft treten Stehende auseinander (einheiten AC-29).
     if (this.takt % WACHE_TAKTE === 0) this.ausweichen();
     this.schlaegeAbrechnen();
@@ -2809,6 +2884,9 @@ class Welt {
           zeitalter: w.zeitalter || 0,
           // Acht Felder ueber den Rand (kampf AC-11, AC-15).
           sicht: w.sicht,
+          // Ein Turm zeigt an der Auswahl, was er kann (bauen AC-29).
+          angriff: w.angriff || 0, reichweite: w.reichweite || 0,
+          nahruestung: w.nahruestung, fernruestung: w.fernruestung,
         }])),
         verbesserungen: VERBESSERUNGEN,
         // Die Namen der Klassen, fuer den Bonus an der Auswahl (bedienung AC-35).

@@ -27,7 +27,7 @@ const EINHEITEN = {
     // Spiel. Getroffen wird er trotzdem wehrhaft.
     wacht: false,
     baut: ['haus', 'muehle', 'holzfaellerlager', 'bergbaulager', 'farm', 'kaserne', 'schiessanlage', 'stall', 'schmiede', 'aussenposten',
-      'kloster', 'universitaet', 'belagerungswerkstatt'],
+      'kloster', 'universitaet', 'belagerungswerkstatt', 'wachturm'],
   },
   // Ausgebildet wird er im Stall, also ab der Feudalzeit; zu Beginn steht
   // einer in der Startaufstellung (bauen AC-22).
@@ -157,6 +157,18 @@ const GEBAEUDE = {
   kloster: { groesse: 3, kosten: { holz: 175 }, bauzeit: 40, leben: 2100, wohnraum: 0, annahme: [], bildetAus: [], zeitalter: 2 },
   universitaet: { groesse: 3, kosten: { holz: 200 }, bauzeit: 60, leben: 2100, wohnraum: 0, annahme: [], bildetAus: ['mauerwerk'], zeitalter: 2 },
   belagerungswerkstatt: { groesse: 3, kosten: { holz: 200 }, bauzeit: 40, leben: 2100, wohnraum: 0, annahme: [], bildetAus: [], zeitalter: 2 },
+  // Ein Gebaeude, das schiesst (bauen AC-29): `angriff`, `reichweite` und
+  // `nachladen` wie bei einer Einheit, Pfeile also Fernkampf. Werte aus der
+  // Vorlage - 5 Angriff, Reichweite 8, alle zwei Sekunden ein Pfeil, Ruestung
+  // 1/7. Im Original steht er ab der Feudalzeit, gebaut wird er mit den
+  // Befestigungen der Stufe D. Ein Gebaeude ohne `angriff` schiesst nicht.
+  // Sicht 9: ein Feld ueber die Reichweite, damit er sieht, worauf er
+  // schiesst - und weniger als der Aussenposten, der das Gebaeude zum Sehen
+  // ist (kampf AC-18).
+  wachturm: {
+    groesse: 1, kosten: { holz: 25, stein: 125 }, bauzeit: 80, leben: 1020, wohnraum: 0, annahme: [], bildetAus: [], zeitalter: 1,
+    angriff: 5, reichweite: 8, nachladen: 2, nahruestung: 1, fernruestung: 7, sicht: 9,
+  },
 };
 
 // Jedes Gebaeude ist auch ein Ziel (kampf AC-1), also braucht es Ruestung und

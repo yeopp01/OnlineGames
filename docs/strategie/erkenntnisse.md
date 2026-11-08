@@ -101,6 +101,16 @@ etwas anderem gearbeitet.
 
 ## Offene Fäden
 
+- **Zählt der Wachturm zum Aufstieg?** (Runde 125) Heute zählt jedes fertige
+  Gebäude des laufenden Zeitalters außer Häusern (bauen AC-23), also auch ein
+  Wachturm für 150 Rohstoffe. In der Vorlage zählen für die Ritterzeit nur
+  Schießanlage, Stall, Schmiede und Markt. Gehört zur Rückschau oder zu D7
+  (Markt): dann `zaehltZumAufstieg` als Wert in den Daten statt `art ===
+  'haus'`.
+- **Ein Turm hält seinen Besitzer im Spiel** (Runde 125): `bestand` ist nicht
+  `false` wie bei der Farm. In der Vorlage zählen Türme beim Sieg durch
+  Eroberung mit; so bleibt es, bis Mauern (D5) dieselbe Frage stellen.
+
 - **Bildrückstand aus der Durchsicht nach Runde 115** (alle schon in der
   eingecheckten Fassung so, keiner neu): kampf AC-01 = einheiten AC-31 — zwei
   rote Milizen im Bild, die Unterschrift nennt eine, und Figuren stehen
@@ -1220,6 +1230,30 @@ der Browserlauf 12,2 min für 178 Fälle (Runde 120).
 Neueste oben. Eine Zeile je Runde: Nummer, Datum, Kriterien, Ergebnis,
 wichtigste Erkenntnis.
 
+- **125** · 2026-11-08 · **bauen AC-29, kampf AC-20, D4 fertig** — der
+  Wachturm: 25 Holz, 125 Stein, 1020 Leben, 5 Angriff, Reichweite 8, ein
+  Pfeil alle zwei Sekunden, ab der Feudalzeit. `welt.tuermeTakten()` nimmt
+  die nächste fremde Einheit (Luftlinie vom Rand der Grundfläche) und bleibt
+  bei ihr; `schaden()` und `schlagen()` kennen ein Gebäude als Angreifer,
+  Werte über `gebaeudewert()`. Wer vom Turm getroffen wird, schlägt nicht
+  zurück (Gegenprobe: ohne die Zeile geht der Dorfbewohner auf den Turm
+  los). KI gegen KI auf beiden Sätzen Takt für Takt gleich mit HEAD — die KI
+  baut keine Türme. Im Bild grauer Haustein mit Zinnen, Kampfwerte an der
+  Auswahl, der Pfeil beginnt oben auf dem Wehrgang (`schussHoehe` in der
+  Zeichnung, nicht im Server). Gelernt: (1) Ein Wert aus dem Gedächtnis
+  („Sicht 10 wie im Original") brach einen fremden Test — kampf AC-18 sagt,
+  der Außenposten sieht am weitesten; jetzt Sicht 9, ein Feld über die
+  Reichweite, begründet statt erinnert. (2) Die Durchsicht fand eine
+  Grundfläche je Einheit und Takt; gemessen kosten zehn Türme bei 800
+  Einheiten jetzt 0,03–0,1 ms je Takt. (3) `GEBAEUDE_NAMEN` fehlten fünf
+  Gebäude seit A9/D2 — die Absage „kloster gibt es erst …" stand roh im Bild.
+  (4) Der volle Lauf fand zwei Folgen: das Baumenü der Ritterzeit hat 14
+  Einträge, `BAUTASTEN` hatte 13 (jetzt V dazu); und der Prüfstein der
+  Feudalzeit (fahrplan AC-8) baut „alles, was ab der Feudalzeit steht" aus den
+  Daten — also auch den Turm, dessen Pfeil (5 − 2 = 3) dann vor dem
+  Speerkämpfer im Reiter steckte. Gegen HEAD gegengeprüft, dann gefiltert auf
+  Gebäude ohne Angriff. Wer etwas baut, das von selbst handelt, sucht die
+  Tests, die „alles aus den Daten" aufstellen.
 - **124** · 2026-11-08 · **bauen AC-34, D3 fertig** — Eisenguss und
   Bodkinpfeil (Schmiede), Mauerwerk (Universität), Stadtpatrouille
   (Dorfzentrum). Neu: `vorstufe` an einer Verbesserung, geprüft im Server

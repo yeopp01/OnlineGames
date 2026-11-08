@@ -212,7 +212,10 @@ export class Ansicht {
     this.pfeile = this.pfeile.filter((p) => jetzt - p.start < p.dauer);
     for (const [x0, y0, x1, y1] of nachricht.p || []) {
       const weite = Math.hypot(x1 - x0, y1 - y0);
-      this.pfeile.push({ x0, y0, x1, y1, weite, start: jetzt, dauer: Math.max(150, (weite / 7) * 1000) });
+      // Ein Turm schiesst von oben (bauen AC-29): der Server schickt die Mitte
+      // seiner Grundflaeche, die Hoehe kennt nur die Zeichnung.
+      const oben = this.schussHoeheBei(x0, y0);
+      this.pfeile.push({ x0, y0, x1, y1, weite, oben, start: jetzt, dauer: Math.max(150, (weite / 7) * 1000) });
     }
     for (const aenderung of nachricht.felder || []) {
       if (this.karte.felder[aenderung.i] !== aenderung.a) {
@@ -1328,6 +1331,17 @@ export class Ansicht {
    * auf einem flachen Bogen von der Brust des Schuetzen zur Brust des Ziels.
    * Was angekommen ist, faellt heraus.
    */
+  /** Steht an diesem Punkt ein Gebaeude, das von oben schiesst? Seine Schusshoehe, sonst 0. */
+  schussHoeheBei(x, y) {
+    for (const g of this.gebaeude.values()) {
+      const hoehe = GEBAEUDE[g.art]?.schussHoehe;
+      if (!hoehe) continue;
+      const m = this.gebaeudeMitte(g);
+      if (Math.abs(m.x - x) < 0.3 && Math.abs(m.y - y) < 0.3) return hoehe;
+    }
+    return 0;
+  }
+
   pfeileZeichnen(stift) {
     if (!this.pfeile.length) return;
     const jetzt = performance.now();
@@ -1338,8 +1352,10 @@ export class Ansicht {
       const x = p.x0 + (p.x1 - p.x0) * t;
       const y = p.y0 + (p.y1 - p.y0) * t;
       const b = this.zuBild(x, y);
+      // Vom Turm faellt der Pfeil von seiner Hoehe bis auf Brusthoehe.
+      const turm = (1 - t) * Math.max(0, (p.oben || 0) * HALB_B * zoom - brust);
       // Der Bogen: in der Mitte ein Viertel der Weite hoeher als die Enden.
-      return { x: b.x, y: b.y - brust - Math.sin(Math.PI * t) * p.weite * 0.25 * HALB_H * zoom };
+      return { x: b.x, y: b.y - brust - turm - Math.sin(Math.PI * t) * p.weite * 0.25 * HALB_H * zoom };
     };
     stift.save();
     stift.lineCap = 'round';

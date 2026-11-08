@@ -1167,6 +1167,78 @@ function aussenposten(stift, e, farbe) {
   fahne(stift, spitze, e, farbe, 0.7);
 }
 
+// ---- Wachturm ----------------------------------------------------------------
+
+// Ein steinerner Turm auf einem Feld (bauen AC-29): ein gerader Schaft aus
+// grauem Haustein mit Schiessscharten und Tuer, oben ein Wehrgang, der ueber
+// den Schaft vorkragt, mit Zinnen - und darueber die Fahne. Neben dem
+// hoelzernen Aussenposten mit seinem Spitzdach steht er wie ein Klotz: Stein
+// statt Pfosten, Zinnen statt Dach (darstellung AC-14). Das Banner an der
+// rechten Wand traegt die Spielerfarbe auch von weitem.
+function wachturm(stift, e, farbe) {
+  const W = 0.72 * e;
+  vorbereiten(stift, e, W, W / 2);
+  const L = [-W, 0];
+  const B = [0, W / 2];
+  const R = [W, 0];
+  const links = '#958e80';
+  const rechts = '#b7b0a0';
+  const schaft = 3.5 * e;
+  // Der Schaft: zwei sichtbare Waende mit Mauerwerk.
+  flaeche(stift, [L, B, hoch(B, schaft), hoch(L, schaft)], verlauf(stift, links, hoch(L, schaft), B, 0.06, -0.26));
+  mauerwerk(stift, L, B, schaft, e, { reihen: 10, steine: 2, grund: links });
+  flaeche(stift, [B, R, hoch(R, schaft), hoch(B, schaft)], verlauf(stift, rechts, hoch(B, schaft), R, 0.12, -0.14));
+  mauerwerk(stift, B, R, schaft, e, { reihen: 10, steine: 2, grund: rechts });
+  // Die Tuer unten links, mit rundem Sturz.
+  const t0 = wandpunkt(L, B, schaft, 0.32, 0);
+  const t1 = wandpunkt(L, B, schaft, 0.68, 0);
+  const tuer = [t0, t1, hoch(t1, 0.62 * e), zwischen(hoch(t0, 0.8 * e), hoch(t1, 0.8 * e), 0.5), hoch(t0, 0.62 * e)];
+  flaeche(stift, tuer, '#3a2a1c');
+  // Je Wand zwei Schiessscharten - schmal und dunkel, uebereinander.
+  // Rechts ruecken sie neben das Banner.
+  for (const [a, b, u] of [[L, B, 0.5], [B, R, 0.74]]) {
+    for (const [v0, v1] of [[0.4, 0.52], [0.6, 0.72]]) {
+      flaeche(stift, [wandpunkt(a, b, schaft, u - 0.04, v0), wandpunkt(a, b, schaft, u + 0.04, v0),
+        wandpunkt(a, b, schaft, u + 0.04, v1), wandpunkt(a, b, schaft, u - 0.04, v1)], '#2a2420', false);
+    }
+  }
+  // Das Banner in Spielerfarbe an der rechten Wand, unter dem Wehrgang.
+  const b0 = wandpunkt(B, R, schaft, 0.2, 0.9);
+  const b1 = wandpunkt(B, R, schaft, 0.5, 0.9);
+  const banner = [b0, b1, hoch(b1, -0.95 * e), zwischen(hoch(b0, -1.1 * e), hoch(b1, -1.1 * e), 0.5), hoch(b0, -0.95 * e)];
+  flaeche(stift, banner, verlauf(stift, farbe, b0, hoch(b1, -1 * e), 0.1, -0.25));
+  // Der Wehrgang kragt vor: erst sein Schatten auf dem Schaft, dann der
+  // Boden von oben, die hinteren Zinnen, die vorderen Brustwehren.
+  const k = 1.3;
+  const fuss = schaft - 0.05 * e;
+  const [gl, gb, gr, gt] = [L, B, R, [0, -W / 2]].map((p) => hoch([p[0] * k, p[1] * k], fuss));
+  const brust = 0.42 * e;
+  flaeche(stift, [hoch(L, schaft - 0.32 * e), hoch(B, schaft - 0.32 * e), hoch(R, schaft - 0.32 * e), gr, gb, gl], 'rgba(30,26,22,0.45)', false);
+  flaeche(stift, [gl, gb, gr, gt].map((p) => hoch(p, brust * 0.15)), '#5b554c');
+  const zinne = 0.24 * e;
+  const zinnen = (a, b, grund, n) => {
+    for (let i = 0; i < n; i += 2) {
+      const u0 = i / n;
+      const u1 = (i + 1) / n;
+      const z = [wandpunkt(a, b, brust, u0, 1), wandpunkt(a, b, brust, u1, 1)];
+      flaeche(stift, [z[0], z[1], hoch(z[1], zinne), hoch(z[0], zinne)], grund);
+    }
+  };
+  // Hinten sieht man die Innenseite der Brustwehr, im Schatten, mit Zinnen.
+  for (const [a, b] of [[gl, gt], [gt, gr]]) {
+    flaeche(stift, [a, b, hoch(b, brust), hoch(a, brust)], '#7a7468');
+    zinnen(a, b, '#8a8376', 5);
+  }
+  flaeche(stift, [gl, gb, hoch(gb, brust), hoch(gl, brust)], verlauf(stift, links, hoch(gl, brust), gb, 0.08, -0.22));
+  mauerwerk(stift, gl, gb, brust, e, { reihen: 2, steine: 3, grund: links });
+  flaeche(stift, [gb, gr, hoch(gr, brust), hoch(gb, brust)], verlauf(stift, rechts, hoch(gb, brust), gr, 0.12, -0.12));
+  mauerwerk(stift, gb, gr, brust, e, { reihen: 2, steine: 3, grund: rechts });
+  zinnen(gl, gb, links, 5);
+  zinnen(gb, gr, rechts, 5);
+  // Die Fahne in der Mitte des Wehrgangs.
+  fahne(stift, hoch([0, 0], fuss + brust * 0.15), e, farbe, 1.3);
+}
+
 // ---- Kloster -----------------------------------------------------------------
 
 // Ein Schiff aus hellem Haustein mit steilem Schieferdach und Rundbogenfenstern,
@@ -1380,6 +1452,12 @@ export const GEBAEUDE = {
   universitaet: { name: 'Universität', zeichnen: universitaet, halbeBreite: 2.4, trefferBreite: 2.5, trefferOben: 3.6, trefferUnten: 1.3 },
   belagerungswerkstatt: {
     name: 'Belagerungswerkstatt', zeichnen: belagerungswerkstatt, halbeBreite: 2.3, trefferBreite: 2.4, trefferOben: 2.8, trefferUnten: 1.3,
+  },
+  // Ein Feld wie der Aussenposten, aus Stein und mit Zinnen (bauen AC-29).
+  // `schussHoehe`: dort oben, auf dem Wehrgang, beginnt ein Pfeil - in
+  // halben Rautenbreiten wie die Zeichnung (bedienung AC-40).
+  wachturm: {
+    name: 'Wachturm', zeichnen: wachturm, halbeBreite: 1.0, trefferBreite: 1.1, trefferOben: 5.2, trefferUnten: 0.8, schussHoehe: 3.6,
   },
 };
 

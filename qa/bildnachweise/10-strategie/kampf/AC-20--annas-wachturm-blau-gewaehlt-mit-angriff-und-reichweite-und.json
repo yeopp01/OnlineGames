@@ -1,0 +1,10 @@
+{
+  "spec": "10-strategie/kampf.md",
+  "ac": "AC-20",
+  "titel": "Annas Wachturm (blau) gewählt, mit Angriff und Reichweite, und ein Pfeil auf dem Weg zu Berts Miliz (rot)",
+  "datei": "e2e/tests/strategie-tuerme.spec.mjs",
+  "pfad": [
+    "Tuerme",
+    "bauen AC-29 und kampf AC-20: der Wachturm steht ab der Feudalzeit im Baumenue und schiesst von selbst auf Berts Miliz"
+  ]
+}

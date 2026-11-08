@@ -158,7 +158,7 @@ Umfang hinzufügt, dort nachsehen.
 
 ## Stand
 
-**421 von 555 Kriterien fertig.** 518 Tests ohne Browser, 181 im Browser. Die
+**423 von 555 Kriterien fertig.** 526 Tests ohne Browser, 182 im Browser. Die
 Übersicht ist der Bericht: `npm run qa:report`.
 
 Gebaut ist der Unterbau: Räume, Übertragung, Karte, Wegfindung, Sammeln,
@@ -342,7 +342,11 @@ Tore, Belagerung, Burg und Markt, Mönch, die KI in der Ritterzeit). **D1 bis
 D3 sind fertig**: Aufstieg in die Ritterzeit, Kloster, Universität und
 Werkstatt, Ritter und Armbrust, und die Verbesserungen der Ritterzeit — eine
 Verbesserung kann eine `vorstufe` verlangen, und Werte eines Gebäudes liest
-nur `welt.gebaeudewert()` (Mauerwerk: +10 % Leben, +1/+1 Rüstung). Die **Sicht ist eine Einstellung beim Eröffnen** (kampf AC-16):
+nur `welt.gebaeudewert()` (Mauerwerk: +10 % Leben, +1/+1 Rüstung). **D4 ist
+fertig: der Wachturm schießt** — 5 Angriff, Reichweite 8, alle zwei Sekunden
+ein Pfeil auf die nächste fremde Einheit, von selbst und nach derselben
+Formel wie eine Einheit (`welt.tuermeTakten()`); ein Gebäude ohne `angriff`
+in den Daten schießt nicht. Die **Sicht ist eine Einstellung beim Eröffnen** (kampf AC-16):
 Nebel, Erkundet oder Aufgedeckt — Tests, die nicht vom Nebel handeln,
 eröffnen aufgedeckt (`partieZuZweit(…, { sicht: 'aufgedeckt' })`).
 

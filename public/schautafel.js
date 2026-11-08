@@ -174,6 +174,8 @@ const GEBAEUDE_REIHE = [
   { art: 'kloster', groesse: 3, titel: 'Kloster' },
   { art: 'universitaet', groesse: 3, titel: 'Universität' },
   { art: 'belagerungswerkstatt', groesse: 3, titel: 'Werkstatt' },
+  // Schiesst (bauen AC-29).
+  { art: 'wachturm', groesse: 1, titel: 'Wachturm' },
   { art: 'haus', groesse: 2, titel: 'Baustelle 20 %', bau: 0.2 },
   { art: 'haus', groesse: 2, titel: 'Baustelle 70 %', bau: 0.7 },
 ];

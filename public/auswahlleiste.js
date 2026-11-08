@@ -773,14 +773,14 @@ export class Auswahlleiste {
    * (`welt.einheitenwert`), nicht aus den Grunddaten - sonst stuende hier 3
    * Angriff, wo der Schmiedeangriff 4 macht.
    */
-  kampfwerteZeile(einheit, art) {
+  kampfwerteZeile(einheit, art, lesen = (feld) => this.ansicht.einheitenwert(einheit, feld)) {
     const a = this.ansicht;
     const zeile = element('div', 'kampfwerte');
     zeile.id = 'kampfwerte';
-    const angriff = a.einheitenwert(einheit, 'angriff');
-    const nah = a.einheitenwert(einheit, 'nahruestung');
-    const fern = a.einheitenwert(einheit, 'fernruestung');
-    const reichweite = a.einheitenwert(einheit, 'reichweite');
+    const angriff = lesen('angriff');
+    const nah = lesen('nahruestung');
+    const fern = lesen('fernruestung');
+    const reichweite = lesen('reichweite');
     Object.assign(zeile.dataset, {
       angriff: String(angriff), nahruestung: String(nah), fernruestung: String(fern), reichweite: String(reichweite),
     });
@@ -817,6 +817,11 @@ export class Auswahlleiste {
     w.replaceChildren();
     const voll = this.ansicht.gebaeudeLebenVoll(gebaeude) ?? gebaeude.h;
     w.append(kopf(GEBAEUDE[gebaeude.art]?.name || gebaeude.art, gebaeude.h ?? voll, voll));
+    // Ein Gebaeude, das schiesst, zeigt seine Kampfwerte wie eine Einheit
+    // (bauen AC-29, bedienung AC-35) - aus der Tafel seines Besitzers.
+    const a = this.ansicht;
+    const gebaeudewert = (feld) => a.einheitenwerte.get(gebaeude.b)?.[gebaeude.art]?.[feld] ?? a.werte.gebaeude[gebaeude.art]?.[feld] ?? 0;
+    if (gebaeudewert('angriff') > 0) w.append(this.kampfwerteZeile(gebaeude, gebaeude.art, gebaeudewert));
     // Eine Farm zeigt, wie viel Nahrung sie noch traegt (einheiten AC-18).
     const vorrat = this.ansicht.farmVoll(gebaeude);
     if (vorrat && gebaeude.n !== undefined) {

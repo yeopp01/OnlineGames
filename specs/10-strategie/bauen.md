@@ -2,7 +2,7 @@
 
 **Bereich:** Strategie
 **Kuerzel:** bauen
-**Stand:** 25/34 fertig · 9 offen
+**Stand:** 26/34 fertig · 8 offen
 
 ## Zweck
 
@@ -191,10 +191,23 @@ Spezialeinheit der Burg (kommt mit den Völkern, Stufe E), Palisade.
   Ritterzeit mit den Werten aus der Tabelle, erst ab dem Aufstieg im
   Baumenü, jedes gezeichnet und von allen anderen unterscheidbar
   (darstellung AC-14).
-- **AC-29** `offen` **Türme schießen** — Wachturm und Burg greifen von selbst
+- **AC-29** `fertig` **Türme schießen** — Wachturm und Burg greifen von selbst
   an, was in ihre Reichweite kommt, wie eine wachende Einheit (kampf AC-2),
   mit Angriff, Reichweite und Nachladezeit aus den Daten. Ein Gebäude ohne
-  Angriff schießt nicht.
+  Angriff schießt nicht. Gebaut in Runde 125 für den Wachturm (Sicht 9, ein
+  Feld über die Reichweite; der Außenposten bleibt mit 10 das Gebäude zum
+  Sehen, kampf AC-18) (die Burg
+  bekommt ihre Werte mit D7): `angriff`, `reichweite`, `nachladen` in
+  `GEBAEUDE`, `welt.tuermeTakten()` schießt in jedem Takt, die Werte liest
+  `welt.gebaeudewert()`. Der Turm nimmt die nächste fremde Einheit, gemessen
+  vom Rand der Grundfläche als Luftlinie, und bleibt bei ihr, solange sie in
+  Reichweite lebt. Gebäude beschießt er nicht, wie in der Vorlage. Wer von
+  ihm getroffen wird, schlägt nicht von selbst zurück — ein Dorfbewohner mit
+  der Axt gegen 1020 Leben Stein stürbe nur schneller. **Abweichung:** die
+  Mindestreichweite der Vorlage (1 Feld, bis Mörderlöcher) fehlt; sie kommt,
+  wenn es Mörderlöcher gibt. Im Baumenü als letzter, gezeichnet aus grauem
+  Haustein mit Zinnen und Banner; an der Auswahl stehen seine Kampfwerte wie
+  bei einer Einheit, und sein Pfeil beginnt oben auf dem Wehrgang.
 - **AC-30** `offen` **Mauern ziehen** — Eine Steinmauer wird gezogen: Taste,
   dann Ziehen von Feld zu Feld legt eine Linie von Baustellen, bezahlt je Feld.
   Was nicht frei ist, wird übersprungen, und die Vorschau zeigt es rot.

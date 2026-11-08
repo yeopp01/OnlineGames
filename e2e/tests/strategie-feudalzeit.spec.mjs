@@ -94,7 +94,11 @@ test.describe('Feudalzeit am Stueck', () => {
     // in dieser Zeit steht. Eine Stufe weiter sind es mehr.
     const arten = await anna.evaluate(() => {
       const w = window.ansicht.werte;
-      return w.einheiten.dorfbewohner.baut.filter((art) => w.gebaeude[art]?.zeitalter === 1);
+      // Nur was ausbildet oder forscht: der Wachturm steht auch ab der
+      // Feudalzeit, schiesst aber - in Runde 125 traf er Berts Reiter vor dem
+      // Speerkaempfer, und die Messung von Ruestung und Bonus unten zaehlte
+      // seinen Pfeil. Seine Gebaeude belegt e2e/tests/strategie-tuerme.spec.mjs.
+      return w.einheiten.dorfbewohner.baut.filter((art) => w.gebaeude[art]?.zeitalter === 1 && !w.gebaeude[art].angriff);
     });
     expect(arten.length, 'die Gebaeude der Feudalzeit').toBeGreaterThanOrEqual(3);
     const gebaut = {};

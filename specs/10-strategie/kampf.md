@@ -2,7 +2,7 @@
 
 **Bereich:** Strategie
 **Kuerzel:** kampf
-**Stand:** 17/21 fertig · 3 offen · 1 zurueckgestellt
+**Stand:** 18/21 fertig · 2 offen · 1 zurueckgestellt
 
 ## Zweck
 
@@ -168,10 +168,14 @@ aus [Spielziel](spielziel.md) AC-10, gemessen in
   Einheiten im Umkreis eines Feldes um den Einschlag, auch eigene, mit
   vollem Schaden in der Mitte und weniger am Rand. Der Einschlag ist dort,
   wo das Ziel beim Abschuss stand — wer läuft, kann ausweichen.
-- **AC-20** `offen` **Gebäude schießen zurück** — Was ein Gebäude mit Angriff
+- **AC-20** `fertig` **Gebäude schießen zurück** — Was ein Gebäude mit Angriff
   angreift, bekommt Schaden nach derselben Formel wie von Einheiten
   (`max(1, Angriff − Rüstung + Bonus)`), mit Pfeilen als Fernkampf. Pfeile
-  treffen Mauerwerk kaum (Gebäude 0/7, AC-5).
+  treffen Mauerwerk kaum (Gebäude 0/7, AC-5). Gebaut in Runde 125:
+  `welt.schaden()` kennt ein Gebäude als Angreifer und liest dessen Werte
+  über `gebaeudewert()`; ein Turm trifft den Dorfbewohner mit 5, die Miliz
+  mit 4, den Plänkler mit 2, ein Gebäude mit 1. Der Pfeil geht wie der eines
+  Schützen in den Zustand (bedienung AC-40), von der Mitte des Turms aus.
 - **AC-21** `offen` **Mauern halten auf** — Wer zu einem Ziel hinter einer
   Mauer will, geht außen herum, wenn es einen Weg gibt; gibt es keinen,
   greift er die Mauer an. Eine Ramme bricht ein Feld Steinmauer in weniger
