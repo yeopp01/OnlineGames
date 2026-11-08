@@ -13,25 +13,29 @@ hier nichts eintraegt, verliert den Faden beim naechsten Autocompact.
 
 ## Zuletzt fortgeschrieben
 
-2026-11-07, nach Runde 85 (**ki AC-11**, die KI greift an - **C4 hat
-begonnen**. Ab zehn Kampfeinheiten marschieren acht im Angriffslauf zum
-naechsten Gegner, zwei bleiben als Wache; ueber zwanzig Startwerte bricht
-jede KI zwischen Spielminute 17,5 und 19,8 auf. Nebenher zwei echte Fehler im
-Kampf gefunden und behoben, beide unter `kampf AC-1` (Verteilung der
-Angriffsfelder nur innerhalb eines Befehls; `angekommen` vor der Wegpruefung).
-Davor Runde 84 mit der Revanche, **damit stand C3**, und Runde 83, die
-**Rueckschau** ueber alle 167 Bildnachweise - ihr Rueckstand von 28
-Beanstandungen steht in den Erkenntnissen unter **Offene Faeden**, je zwei bis
-drei fuer eine spaetere Runde. Als Naechstes in C4: **ki AC-14** (daheim
-verteidigen), **ki AC-12** (Nachschub, bei Spielminute 30 noch 20
-Dorfbewohner) und **ki AC-10** (spaet untaetige Dorfbewohner - der Pruefstand
-zeigt bei 22 Minuten bis zu 44,5 s Stillstand)).
+2026-11-08, nach Runde 86 (**ki AC-14**, die KI verteidigt zu Hause: wird
+ein Gebaeude oder ein Dorfbewohner getroffen, zieht die Wache im Angriffslauf
+hin, der Dorfbewohner flieht zum Dorfzentrum. Gefunden im Browser, nicht in
+Node: das Marschziel lag neben dem Angreifer und wurde zum Angriff auf genau
+ihn - behoben mit `FEIND_FERN`. Nebenher `kampf AC-5` (wer sich wehrt,
+sammelt nicht) und ein flatternder Browsertest in der Dunklen Zeit
+(`auchVerdeckt`). **Ab Runde 86 laeuft die Schleife mit Opus 5.5**, Commits
+tragen `Co-Authored-By: Claude Opus 5.5`. **Der Name ist entschieden: „Fading Allies"**
+(Benutzer, 2026-11-08) - er kommt in Runde 87 in die Oberflaeche, wo heute
+„Strategie" steht.
+Als Naechstes: **einheiten AC-29** (keine zwei Einheiten uebereinander - in
+dieser Runde der Grund fuer vier Fassungen eines Bildes; eine eigene Runde),
+dann in C4 **ki AC-12** (Nachschub, bei Spielminute 30 noch 20
+Dorfbewohner), dann **ki AC-10** (spaet untaetige Dorfbewohner: im Pruefstand
+bis 471 s, Startwert 14 KI 2) und **fahrplan AC-11** (KI gegen KI endet mit
+Sieger unter 60 Minuten). **Runde 88 ist Rueckschau** - dabei die Figuren bei
+Zoom 1 gegen den Massstab ansehen, bevor C5 beginnt.)
 
 ## Wo ich stehe
 
 - **Branch:** `strategie`. Nie auf `main` arbeiten, **nie pushen, nie deployen.**
-- **Board:** 386 von 516 Kriterien fertig · 1 in Arbeit · 5 in QA · 4 geplant ·
-  112 offen · 8 zurueckgestellt. 431 Tests ohne Browser, 165 im Browser.
+- **Board:** 387 von 516 Kriterien fertig · 0 in Arbeit · 5 in QA · 4 geplant ·
+  112 offen · 8 zurueckgestellt. 443 Tests ohne Browser, 166 im Browser.
 - **Vier Waechter in `tests/waechter-*.test.mjs`:** Gleichheit auf wachsenden
   Listen, verbesserbare Werte an `welt.einheitenwert()` vorbei,
   Bildunterschriften mit `${...}`, und (neu in Runde 73) die **Kuerzeltafel**
@@ -249,6 +253,46 @@ zeigt bei 22 Minuten bis zu 44,5 s Stillstand)).
   gezeichnet. Das Bild ist der **Marsch**, vierzig Felder vom eigenen Dorf.
   Und der Spaeherreiter laeuft doppelt so schnell wie eine Miliz: von einem
   geschlossenen Verband darf keine Unterschrift sprechen.
+- **`ki AC-14` ist fertig** (Runde 86). **Wie es gebaut ist:**
+  `Ki.verteidigenPruefen()` laeuft in jeder Entscheidung hinter
+  `heerPruefen()`. Die KI bekommt **keine Meldung** - sie haelt in `this.leben`
+  die Lebenswerte ihrer Einheiten und Gebaeude der letzten Entscheidung und
+  sieht beim naechsten Mal, was fehlt. Gezaehlt wird nur, was **Gebaeude** und
+  **Dorfbewohner** verlieren; ein Heer, das unterwegs Schlaege einsteckt, holt
+  die Wache nicht quer ueber die Karte (eigener Test). Angriffsort ist das
+  getroffene Ding, das der eigenen Basis am naechsten steht. Dorthin zieht
+  jede Kampfeinheit, die nicht im Heer ist, weiter als `WACHE_NAH` = 3 Felder
+  weg steht und nicht schon angreift - im **Angriffslauf**, nicht als Angriff.
+  Der getroffene Dorfbewohner bekommt einen Befehl zum Dorfzentrum: ohne ihn
+  bliebe er stehen und schluege zurueck (kampf AC-2), und mit Angriff 3 und
+  ohne Ruestung ist das ein toter Dorfbewohner (kampf AC-5).
+  **Die Falle, die vier gruene Node-Tests nicht gefunden haben:**
+  `freiesFeldUm()` waehlte das naechste freie Feld am Angriffsort - lag es
+  neben dem Angreifer, machte `welt.befehl` daraus einen Angriff auf genau
+  diese Einheit, denn `feindAn` zieht einen Feind im Umkreis von **1,01
+  Feldern** unter den Klick (kampf AC-1). Fiel sie unterwegs, blieb die Wache
+  stehen, wo sie war. In den Node-Tests kam die Wache von der anderen Seite
+  des Dorfzentrums, im Browser aus derselben Richtung wie der Angreifer.
+  Das Marschziel haelt jetzt `FEIND_FERN` = 1,5 Felder Abstand von jedem
+  Feind. **`freiesFeldUm(um, von, {feindFern, vergeben, rundumFrei, ausser})`**
+  kennt seitdem vier Regeln, jede mit eigenem Test samt Gegenprobe: Abstand von
+  Feinden; Abstand `VERGEBEN_ABSTAND` = 2 von Zielen derselben Entscheidung;
+  fuer eine Gruppe freie Nachbarfelder (mit Rueckfall ohne, wenn das Dorf voll
+  steht); und eigene Laufziele gelten als belegt - **ausser** denen, die gerade
+  neu beauftragt werden, sonst springt das Ziel einer laufenden Wache bei jedem
+  Treffer. Im Server bekommt ein Angreifer um ein **Gebaeude** kein Feld, auf
+  dem jemand stillsteht (`angriffsfelderOhneBesetzte`; nur bei Gebaeuden, der
+  Konterkreis haengt an Gefechten zwischen Einheiten). `angriffBeginnen` gibt
+  jetzt auch die Farm frei.
+  **Fuer den Bildnachweis:** festgehalten wird der **Weg**, nicht sein Ende,
+  und angegriffen wird ein **Haus abseits**, zwanzig Felder oestlich des
+  Dorfzentrums (Pruefgriff `gebaeude`), nicht das Dorfzentrum selbst: dort
+  stand im Gedraenge aus Schlachtern, Abladenden und Geflohenen in jedem
+  dritten Lauf eine Figur auf einer anderen (einheiten AC-29 ist offen). Das
+  Bild steht, wenn die Wache noch 4 bis 14 Felder vom Haus entfernt allein auf
+  der Wiese steht; zehn Laeufe hintereinander gruen. Annas Trupp sind
+  **vier** Milizen: eine einzelne faellt, und dann zeigt das Bild einen
+  Angriff ohne Angreifer.
 - **Der Gefechtsstand** (neu in Runde 71) steht in
   `server/spiele/strategie/pruefstand.js` als `gefechtSpielen`:
   `npm run konterkreis:strategie` stellt zwei Heere gleicher Kosten auf freiem

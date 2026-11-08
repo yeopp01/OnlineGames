@@ -143,17 +143,22 @@ export async function partieBeenden({ anna, bert, seiten, fehler }) {
  *   Im Zeitraffer steht fast nie einer still, also wird neu gemessen und noch
  *   einmal geklickt, bis einer sitzt.
  */
-export async function dorfbewohnerAnklicken(page, { ohne = [], code = null, raffer = 1 } = {}) {
+export async function dorfbewohnerAnklicken(page, { ohne = [], code = null, raffer = 1, auchVerdeckt = false } = {}) {
   // Mit `code` haelt die Hilfe die Zeit an, waehrend sie zielt: im Zeitraffer
   // laeuft das Ziel zwischen Messen und Klicken mehrere Felder weit.
   if (code) await zeitraffer(page, code, 1);
-  const messen = () => page.evaluate((nicht) => {
+  const messen = () => page.evaluate(([nicht, verdeckteAuch]) => {
     const a = window.ansicht;
     const h = a.figurenHoehe();
     const alle = [...a.nachher.values()].map((e) => ({ e, p: a.zuBild(e.x, e.y) }));
     const tiere = [...a.tiere.values()].map((t) => a.zuBild(t.x, t.y));
-    // Verdeckte sind nur ein Umriss hinter dem Gebaeude - ein Klick trifft das Gebaeude.
-    const verdeckt = new Set(a.umrisse || []);
+    // Verdeckte sind nur ein Umriss hinter dem Gebaeude. **Treffen** laesst sich
+    // so einer trotzdem: ein Klick sucht zuerst die naechste eigene Einheit und
+    // erst danach ein Gebaeude (`auswaehlenBei`). Wer ein Bild von der Auswahl
+    // macht, will ihn nicht - wer nur einen Dorfbewohner braucht, schon
+    // (`auchVerdeckt`, Runde 86: im Baulauf der Dunklen Zeit standen in jedem
+    // dritten Lauf **alle** verfuegbaren hinter den eben gebauten Haeusern).
+    const verdeckt = verdeckteAuch ? new Set() : new Set(a.umrisse || []);
     const kandidaten = alle.filter(({ e, p }) => e.b === a.ich && e.k === 'd' && !nicht.includes(e.i)
       && !verdeckt.has(e.i)
       && p.x > 20 && p.y > h + 60 && p.x < a.leinwand.clientWidth - 20 && p.y < a.leinwand.clientHeight - 160);
@@ -169,7 +174,7 @@ export async function dorfbewohnerAnklicken(page, { ohne = [], code = null, raff
     const weit = alle.find(({ e }) => e.b === a.ich && e.k === 'd' && !nicht.includes(e.i) && !verdeckt.has(e.i));
     if (weit) a.blickAuf(weit.e.x, weit.e.y);
     return null;
-  }, ohne);
+  }, [ohne, auchVerdeckt]);
 
   const gewaehlt = (id) => page.evaluate((i) => {
     const gleich = [...window.ansicht.ausgewaehlt];
@@ -177,10 +182,21 @@ export async function dorfbewohnerAnklicken(page, { ohne = [], code = null, raff
   }, id);
 
   let letzte = null;
-  for (let versuch = 0; versuch < 12; versuch++) {
+  // Steht gerade keiner frei, wird **gewartet**, nicht aufgegeben: wer hinter
+  // einem Gebaeude steht, steht dort nicht lange (Runde 86 - der Fall fiel in
+  // etwa jedem dritten Lauf aus, weil alle drei verfuegbaren Dorfbewohner
+  // hinter den eben gebauten Haeusern sammelten). Mit `code` laeuft die Welt
+  // beim Warten schneller, sonst dauerte das Warten im Spiel kaum etwas.
+  for (let versuch = 0; versuch < 25; versuch++) {
     const ziel = await messen();
     if (!ziel) {
-      await page.waitForTimeout(200);
+      if (code) {
+        await zeitraffer(page, code, 6);
+        await page.waitForTimeout(250);
+        await zeitraffer(page, code, 1);
+      } else {
+        await page.waitForTimeout(250);
+      }
       continue;
     }
     letzte = ziel;
@@ -194,7 +210,28 @@ export async function dorfbewohnerAnklicken(page, { ohne = [], code = null, raff
       await page.waitForTimeout(100);
     }
   }
-  expect(letzte, 'ein freistehender, unverdeckter Dorfbewohner').not.toBeNull();
+  if (!letzte) {
+    // Zwoelfmal nichts gefunden - dann sagt die Meldung, woran es lag, statt
+    // nur "keiner da" (Runde 86: der Fall flattert, und ohne diese Zahlen
+    // faengt die Suche jedes Mal von vorn an).
+    const lage = await page.evaluate((nicht) => {
+      const a = window.ansicht;
+      const h = a.figurenHoehe();
+      const verdeckt = new Set(a.umrisse || []);
+      const meine = [...a.nachher.values()].filter((e) => e.b === a.ich && e.k === 'd');
+      const imRahmen = (p2) => p2.x > 20 && p2.y > h + 60
+        && p2.x < a.leinwand.clientWidth - 20 && p2.y < a.leinwand.clientHeight - 160;
+      return {
+        eigene: meine.length,
+        ausgenommen: meine.filter((e) => nicht.includes(e.i)).length,
+        verdeckt: meine.filter((e) => verdeckt.has(e.i)).length,
+        ausserhalb: meine.filter((e) => !imRahmen(a.zuBild(e.x, e.y))).length,
+      };
+    }, ohne);
+    expect(letzte, `ein freistehender, unverdeckter Dorfbewohner - ${lage.eigene} eigene,`
+      + ` davon ${lage.ausgenommen} ausgenommen, ${lage.verdeckt} hinter einem Gebaeude,`
+      + ` ${lage.ausserhalb} ausserhalb des Rahmens`).not.toBeNull();
+  }
   // Zwoelfmal danebengeklickt: die Zusicherung sagt, was zuletzt zu sehen war.
   await expect.poll(() => page.evaluate(() => [...window.ansicht.ausgewaehlt])).toEqual([letzte.i]);
   return letzte.i;
@@ -407,7 +444,10 @@ export function figurenFrei(page, { abstand = 0.5, nur = null } = {}) {
       for (let j = i + 1; j < figuren.length; j++) {
         const weit = Math.hypot(figuren[i].x - figuren[j].x, figuren[i].y - figuren[j].y);
         if (weit >= abstand) continue;
-        beanstandet.push(`${figuren[i].k} ${figuren[i].i} und ${figuren[j].k} ${figuren[j].i}`
+        // Mit Besitzer und Feld: "d 24 und m 27" allein sagt nicht, ob da zwei
+        // Feinde aufeinander stehen oder zwei Freunde (Runde 86).
+        const wer = (f) => `${f.k} ${f.i} (${f.b === a.ich ? 'eigen' : 'fremd'}, ${f.x.toFixed(1)}/${f.y.toFixed(1)})`;
+        beanstandet.push(`${wer(figuren[i])} und ${wer(figuren[j])}`
           + ` stehen ${weit.toFixed(2)} Felder auseinander`);
       }
     }

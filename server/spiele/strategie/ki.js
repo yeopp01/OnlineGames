@@ -69,6 +69,25 @@ const WACHE = 2;
 // so steht das Heer am Ende in Reichweite, bevor es einzeln nachsetzt.
 const HEER_ABSTAND = 4;
 
+// Die Verteidigung (ki AC-14): So nah am Angriffsort gilt die Wache als
+// angekommen. Drei Felder, weil eine stehende Kampfeinheit von dort den
+// Angreifer selbst sieht und ohne weiteren Befehl zuschlaegt (kampf AC-2) -
+// ein neuer Befehl in jeder Entscheidung wuerde ihr nur den Weg neu rechnen.
+const WACHE_NAH = 3;
+
+// Wie weit das Marschziel der Wache von jedem Feind wegbleibt. `feindAn` im
+// Server zieht einen Feind im Umkreis von 1,01 Feldern unter den Klick, und
+// daraus wuerde ein Angriff auf genau ihn statt des Angriffslaufs.
+const FEIND_FERN = 1.5;
+
+// Wie weit ein zweites Ziel derselben Entscheidung von einem schon vergebenen
+// wegbleibt. Ein Befehl an mehrere stellt sie um sein Ziel herum auf
+// (einheiten AC-20) - zwei getrennte Befehle wissen voneinander nichts. Die
+// Wache und der fliehende Dorfbewohner bekamen in Runde 86 dasselbe "naechste
+// freie Feld" am Dorfzentrum und standen danach aufeinander. Zwei Felder, weil
+// die Aufstellung einer kleinen Gruppe ein Feld um ihr Ziel herum belegt.
+const VERGEBEN_ABSTAND = 2;
+
 const FELD_FUER = { holz: [karten.WALD], nahrung: [karten.BEERE], gold: [karten.GOLD], stein: [karten.STEIN] };
 const LAGER_FUER = { holz: 'holzfaellerlager', nahrung: 'muehle', gold: 'bergbaulager', stein: 'bergbaulager' };
 
@@ -103,6 +122,13 @@ class Ki {
     this.heer = new Set();
     this.angriffe = 0;
     this.angriffTakt = null;
+    // Wie viel Leben das Eigene bei der letzten Entscheidung hatte. Daran
+    // sieht die KI, dass sie angegriffen wird (ki AC-14) - sie bekommt keine
+    // Meldung, sie sieht nur die Welt, so wie ein Mensch das Bild sieht.
+    this.leben = new Map();
+    // Wie oft die Wache zu einem Angriffsort gezogen ist - der Pruefstand
+    // misst daran.
+    this.verteidigungen = 0;
   }
 
   get spieler() {
@@ -155,6 +181,7 @@ class Ki {
     this.feudalzeitPruefen(zentrum, dorfbewohner);
     this.militaerPruefen(gebaeude, dorfbewohner);
     this.heerPruefen(eigene);
+    this.verteidigenPruefen(eigene, gebaeude, zentrum);
 
     // Lager an die Vorraete, sobald dort mehrere arbeiten und es weit ist.
     const rollen = this.rollen(dorfbewohner);
@@ -315,6 +342,170 @@ class Ki {
       }
     }
     return bestes;
+  }
+
+  /**
+   * Das naechste freie Feld um einen Punkt, von innen nach aussen gesucht und
+   * innerhalb eines Ringes das, welches `von` am naechsten liegt. Fuer Ziele,
+   * die selbst kein Feld sind, auf das man gehen kann: ein eigenes Gebaeude
+   * belegt mehrere Felder, ein Angriffsort ist vielleicht Wald.
+   *
+   * **Frei heisst auch: niemand steht darauf** - und fuer ein Marschziel
+   * ausserdem: kein Feind daneben (`feindFern`). Der Server liest einen
+   * Angriffsbefehl aus dem Feld unter dem Klick und greift dabei einen Feind
+   * im Umkreis von einem Feld mit (`feindAn`, kampf AC-1). Lag das Marschziel
+   * der Wache neben dem Angreifer, wurde aus dem Angriffslauf ein Angriff auf
+   * genau diese eine Einheit - fiel sie unterwegs, blieb die Wache stehen, wo
+   * sie war, zwoelf Felder vom Dorf. So gesehen in Runde 86 im Browser,
+   * waehrend die Node-Tests gruen waren: dort kam die Wache von der anderen
+   * Seite, und das naechste freie Feld lag nicht beim Angreifer. Mit Abstand
+   * bleibt der Angriffslauf stehen, und der greift den Angreifer an, sobald
+   * er in Sicht kommt (kampf AC-8) - und marschiert weiter, wenn er faellt.
+   *
+   * @param {object} [wie]
+   * @param {number} [wie.feindFern] Abstand von jedem Feind (`FEIND_FERN`).
+   * @param {{x:number,y:number}[]} [wie.vergeben] Ziele derselben
+   *   Entscheidung, von denen es `VERGEBEN_ABSTAND` wegbleibt.
+   * @param {boolean} [wie.rundumFrei] fuer eine Gruppe: Nachbarfelder frei.
+   * @param {Set<string>} [wie.ausser] wer gerade neu beauftragt wird.
+   */
+  freiesFeldUm(um, von = this.spieler.basis, {
+    feindFern = 0, vergeben = [], rundumFrei = false, ausser = null,
+  } = {}) {
+    const besetzt = new Set();
+    const feinde = [];
+    for (const e of this.welt.einheiten.values()) {
+      if (e.tot) continue;
+      // Wer jetzt neu losgeschickt wird, belegt nichts - weder wo er steht noch
+      // wohin er eben lief. Sonst sperrte eine Wache, die schon unterwegs ist,
+      // bei jedem weiteren Treffer ihr eigenes Ziel und bekaeme ein neues: ihr
+      // Ziel spraenge jede halbe Sekunde (gefunden in der Durchsicht der Runde
+      // 86, eigener Test).
+      if (ausser?.has(e.id)) continue;
+      besetzt.add(`${Math.round(e.x)},${Math.round(e.y)}`);
+      // Wohin die **eigenen** gerade laufen, ist auch belegt - sonst schickt die
+      // naechste Entscheidung den naechsten Getroffenen auf dasselbe Feld
+      // (Runde 86: zwei Dorfbewohner auf 63/107, eine halbe Sekunde
+      // nacheinander losgeschickt). Fremde Wege kennt ein Mensch nicht, also
+      // auch die KI nicht.
+      if (e.besitzer === this.spielerId && e.weg.length) {
+        const ende = e.weg[e.weg.length - 1];
+        besetzt.add(`${Math.round(ende.x)},${Math.round(ende.y)}`);
+      }
+      if (feindFern > 0 && e.besitzer !== this.spielerId) feinde.push(e);
+    }
+    for (let r = 1; r <= 8; r++) {
+      let bestes = null;
+      let bester = Infinity;
+      for (let dy = -r; dy <= r; dy++) {
+        for (let dx = -r; dx <= r; dx++) {
+          if (Math.max(Math.abs(dx), Math.abs(dy)) !== r) continue;
+          const x = Math.round(um.x) + dx;
+          const y = Math.round(um.y) + dy;
+          if (!karten.begehbar(this.welt.karte, x, y) || this.welt.gebaeudeAn(x, y)) continue;
+          if (besetzt.has(`${x},${y}`)) continue;
+          if (feinde.some((f) => Math.hypot(f.x - x, f.y - y) <= feindFern)) continue;
+          if (vergeben.some((v) => Math.hypot(v.x - x, v.y - y) <= VERGEBEN_ABSTAND)) continue;
+          if (rundumFrei && !this.rundumFrei(x, y, besetzt)) continue;
+          const d = Math.hypot(x - von.x, y - von.y);
+          if (d < bester) {
+            bester = d;
+            bestes = { x, y };
+          }
+        }
+      }
+      if (bestes) return bestes;
+    }
+    return null;
+  }
+
+  /**
+   * Fuer das Ziel einer **Gruppe**: auch die acht Nachbarfelder sind frei. Der
+   * Server stellt mehrere um ihr Ziel herum auf (einheiten AC-20), einen Ring
+   * weit - stand dort einer still, stand danach die Wache auf ihm (Runde 86:
+   * Berts Miliz auf dem Dorfbewohner, der am Dorfzentrum ein Schaf schlachtet).
+   */
+  rundumFrei(x, y, besetzt) {
+    for (let dy = -1; dy <= 1; dy++) {
+      for (let dx = -1; dx <= 1; dx++) {
+        if ((dx || dy) && besetzt.has(`${x + dx},${y + dy}`)) return false;
+      }
+    }
+    return true;
+  }
+
+  /**
+   * Die Verteidigung zu Hause (ki AC-14). Die KI bekommt keine Meldung, dass
+   * sie angegriffen wird - sie **sieht** es: was seit der letzten Entscheidung
+   * Leben verloren hat, ist getroffen worden. Gezaehlt werden nur Gebaeude und
+   * Dorfbewohner; ein Heer, das unterwegs Schlaege einsteckt, soll die Wache
+   * nicht quer ueber die Karte holen.
+   *
+   * Dann zweierlei, beides wie bei einem Menschen ueber `welt.nachricht`:
+   * die Wache zieht im Angriffslauf zum Angriffsort, und ein getroffener
+   * Dorfbewohner laesst die Arbeit liegen und laeuft zum Dorfzentrum. Das
+   * zweite ist ein Befehl **gegen** die Gegenwehr aus kampf AC-2: ohne ihn
+   * bliebe er stehen und schluege zurueck - mit Angriff 3 und ohne Ruestung
+   * (kampf AC-5) ist das ein toter Dorfbewohner und kein gewonnener Kampf.
+   */
+  verteidigenPruefen(eigene, gebaeude, zentrum) {
+    const jetzt = new Map();
+    const getroffeneDorf = [];
+    const getroffeneBauten = [];
+    for (const e of eigene) {
+      if (e.tot) continue;
+      jetzt.set(e.id, e.leben);
+      const vorher = this.leben.get(e.id);
+      if (vorher !== undefined && e.leben < vorher && (EINHEITEN[e.art].klassen || []).includes('dorf')) {
+        getroffeneDorf.push(e);
+      }
+    }
+    for (const g of gebaeude) {
+      jetzt.set(g.id, g.leben);
+      const vorher = this.leben.get(g.id);
+      // Eine Baustelle gewinnt Leben, waehrend sie waechst - nur der Verlust zaehlt.
+      if (vorher !== undefined && g.leben < vorher) getroffeneBauten.push(g);
+    }
+    this.leben = jetzt;
+    const getroffen = [...getroffeneBauten, ...getroffeneDorf];
+    if (!getroffen.length) return;
+
+    // Der Angriffsort: von allem, was getroffen wurde, das dem eigenen Dorf
+    // naechste. Wird an zwei Stellen zugleich geschlagen, zaehlt die, die dem
+    // Dorf weh tut.
+    const { basis } = this.spieler;
+    const ort = getroffen
+      .map((d) => ({ x: d.x, y: d.y, d: Math.hypot(d.x - basis.x, d.y - basis.y) }))
+      .sort((a, b) => a.d - b.d)[0];
+
+    const wache = eigene.filter((e) => !e.tot && !this.heer.has(e.id)
+      && !(EINHEITEN[e.art].klassen || []).includes('dorf'));
+    const ziehen = wache.filter((e) => Math.hypot(e.x - ort.x, e.y - ort.y) > WACHE_NAH
+      && e.auftrag?.art !== 'angreifen');
+    const vergeben = [];
+    if (ziehen.length) {
+      const von = { x: ziehen[0].x, y: ziehen[0].y };
+      const ausser = new Set(ziehen.map((e) => e.id));
+      // Fuer eine Gruppe erst mit freien Nachbarfeldern - findet sich so keins,
+      // weil das Dorf voll steht, dann ohne: lieber ein enges Ziel als gar
+      // keine Wache.
+      const feld = (ziehen.length > 1
+        && this.freiesFeldUm(ort, von, { feindFern: FEIND_FERN, rundumFrei: true, ausser }))
+        || this.freiesFeldUm(ort, von, { feindFern: FEIND_FERN, ausser });
+      if (feld) {
+        vergeben.push(feld);
+        this.senden({ auftrag: 'befehl', einheiten: ziehen.map((e) => e.id), ziel: feld, angriffslauf: true });
+        this.verteidigungen += 1;
+      }
+    }
+
+    if (!getroffeneDorf.length) return;
+    // Auch der Fluchtpunkt haelt Abstand: wer vor dem Angreifer flieht, laeuft
+    // nicht zwischen seine Leute, und nicht auf das Feld, zu dem eben die Wache
+    // geschickt wurde.
+    const heim = this.freiesFeldUm(zentrum || basis, { x: getroffeneDorf[0].x, y: getroffeneDorf[0].y },
+      { feindFern: FEIND_FERN, vergeben, ausser: new Set(getroffeneDorf.map((e) => e.id)) });
+    if (heim) this.senden({ auftrag: 'befehl', einheiten: getroffeneDorf.map((e) => e.id), ziel: heim });
   }
 
   untaetig(einheit) {
@@ -539,5 +730,6 @@ class Ki {
 }
 
 module.exports = {
-  Ki, ENTSCHEIDEN_ALLE, ZIEL_DORFBEWOHNER, FEUDALZEIT_NAHRUNG, AN_SCHAFEN, AN_BEEREN, MILITAER, HEER, WACHE, HEER_ABSTAND, plan,
+  Ki, ENTSCHEIDEN_ALLE, ZIEL_DORFBEWOHNER, FEUDALZEIT_NAHRUNG, AN_SCHAFEN, AN_BEEREN, MILITAER,
+  HEER, WACHE, HEER_ABSTAND, WACHE_NAH, FEIND_FERN, VERGEBEN_ABSTAND, plan,
 };

@@ -2,7 +2,7 @@
 
 **Bereich:** Strategie
 **Kuerzel:** ki
-**Stand:** 10/14 fertig · 4 offen
+**Stand:** 11/14 fertig · 3 offen
 
 ## Zweck
 
@@ -80,8 +80,9 @@ nicht die Regeln.
   eigenen Dorf am nächsten stehen, bleiben als Wache zu Hause. Acht, weil zehn
   Speerkämpfer im Gefechtsstand gegen sieben Reiter gewinnen
   ([Fahrplan](fahrplan.md) AC-9) — ein kleineres Heer verliert gegen jede
-  Wache. Im Prüfstand greift sie über zwanzig Startwerte in jeder Partie
-  mindestens einmal an.
+  Wache. Im Prüfstand greift über zwanzig Startwerte in jeder Partie
+  mindestens eine KI an, und wer nicht angreift, verteidigt (AC-14): wer
+  selbst unter Angriff steht, kommt mitunter nie auf zehn Kampfeinheiten.
 - **AC-12** `offen` **Nachschub statt alles auf einmal** — Ist das Heer
   gefallen, bildet sie weiter aus und greift wieder an. Die Wirtschaft läuft
   dabei weiter: bei Spielminute 30 hat sie noch mindestens 20 Dorfbewohner.
@@ -91,11 +92,16 @@ nicht die Regeln.
   Basis des Gegners erst, wenn eine ihrer Einheiten sie gesehen hat, und
   schickt dafür ihren Späherreiter los. Belegt dadurch, dass sie dieselbe
   Zustandsnachricht bekommt wie ein Browser — nicht die Welt.
-- **AC-14** `offen` **Die KI verteidigt zu Hause** — Wird eines ihrer Gebäude
-  oder ein Dorfbewohner angegriffen, zieht die Wache zum Angriffsort, und ein
-  getroffener Dorfbewohner lässt die Arbeit und läuft zum Dorfzentrum
-  ([Kampf](kampf.md) AC-5 gilt weiter: er wehrt sich nicht von selbst). Ohne
-  das ist eine Partie gegen die KI ein Spaziergang.
+- **AC-14** `fertig` **Die KI verteidigt zu Hause** — Verliert eines ihrer
+  Gebäude oder einer ihrer Dorfbewohner Leben, zieht die Wache im Angriffslauf
+  zum Angriffsort, und der getroffene Dorfbewohner lässt die Arbeit liegen und
+  läuft zum Dorfzentrum, statt stehenzubleiben und zurückzuschlagen
+  ([Kampf](kampf.md) AC-2 gäbe ihm die Gegenwehr; mit Angriff 3 und ohne
+  Rüstung ist sie nach [Kampf](kampf.md) AC-5 ein toter Dorfbewohner und kein
+  gewonnener Kampf). Was ihr Heer unterwegs einsteckt, zählt nicht — sonst
+  holte ein Scharmützel am anderen Ende der Karte die Wache vom Dorf weg. Die
+  KI bekommt dafür keine Meldung: sie sieht nur, dass Leben fehlt. Ohne das
+  ist eine Partie gegen die KI ein Spaziergang.
 
 ## Grenzfaelle
 
@@ -109,5 +115,10 @@ nicht die Regeln.
   einer späteren Stufe bildet sie damit ohne Änderung am Code aus.
 - Ab Stufe C sieht die KI nur, was ihre Einheiten sehen (Nebel). Bis dahin
   sieht sie die ganze Karte — wie jeder Mensch auch.
+- Das **Marschziel der Wache hält Abstand von jedem Feind**. Der Server liest
+  den Angriff aus dem Feld unter dem Klick und zieht einen Feind im Umkreis
+  von einem Feld mit hinein ([Kampf](kampf.md) AC-1) — lag das Ziel neben dem
+  Angreifer, wurde aus dem Angriffslauf ein Angriff auf genau ihn, und fiel er
+  unterwegs, blieb die Wache auf halbem Weg stehen (Runde 86).
 - Bleibt eine KI-Partie hängen (niemand gewinnt, nichts passiert), endet sie
   nach 90 Spielminuten als „unentschieden" und wird im Prüfstand gezählt.

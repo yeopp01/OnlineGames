@@ -7,7 +7,7 @@
 // aussieht, was dort gemessen wird.
 import { nachweis } from '../../scripts/qa-nachweis.mjs';
 import { einheitenAufstellen, expect, test, zeitraffer } from '../helpers/seite.mjs';
-import { bedienteileFrei, figurenFrei, kiSpielt, partieBeenden, partieZuZweit } from '../helpers/strategie.mjs';
+import { bedienteileFrei, figurenFrei, gebaeudeInDerNaehe, kiSpielt, partieBeenden, partieZuZweit } from '../helpers/strategie.mjs';
 
 const KI = '10-strategie/ki.md';
 
@@ -207,6 +207,161 @@ test.describe('Die KI greift an', () => {
       spec: KI,
       ac: 'AC-11',
       titel: 'Das Heer der KI auf dem Weg zum Gegner: acht Kampfeinheiten ziehen über die offene Karte, vierzig Felder von ihrem eigenen Dorf entfernt — sieben Milizen im Verband, der schnellere Späherreiter voraus. Befohlen hat das kein Mensch',
+      test: info,
+    });
+    await zeitraffer(anna, code, 1);
+  });
+});
+
+test.describe('Die KI verteidigt sich', () => {
+  test.describe.configure({ mode: 'serial' });
+  let partie;
+
+  test.beforeAll(async ({ browser }, info) => {
+    partie = await partieZuZweit(browser, info);
+  });
+  test.afterAll(() => partieBeenden(partie));
+
+  // Angegriffen wird ein **Haus abseits des Dorfes**, nicht das Dorfzentrum.
+  // Am Dorfzentrum treibt die KI ihre Schafe zusammen, schlachtet dort und laedt
+  // dort ab - und solange Einheiten aufeinander stehen duerfen (einheiten
+  // AC-29 ist offen), stand in jedem dritten Lauf irgendwo im Gedraenge eine
+  // Figur auf einer anderen (Runde 86, vier Fassungen). Auf freier Wiese ist
+  // niemand ausser Angreifer und Wache, und die Aussage ist dieselbe: die KI
+  // verteidigt **jedes** ihrer Gebaeude.
+  test('ki AC-14: Anna schlaegt auf ein Haus der KI ein, ihre Wache kommt', async ({}, info) => {
+    test.setTimeout(240_000);
+    const { anna, code } = partie;
+    await kiSpielt(anna, code, 'Bert');
+
+    const lage = await anna.evaluate(() => {
+      const a = window.ansicht;
+      const [gegnerId] = [...a.spieler.keys()].filter((id) => id !== a.ich);
+      const zentrum = [...a.gebaeude.values()].find((g) => g.b === gegnerId && g.art === 'dorfzentrum');
+      return { gegnerId, zentrum: { x: zentrum.x, y: zentrum.y } };
+    });
+    // Zwanzig Felder oestlich des Dorfzentrums ist auf Karte 4711 freie Wiese.
+    const hausId = await gebaeudeInDerNaehe(anna, code, 'Bert', 'haus',
+      { x: lage.zentrum.x + 20, y: lage.zentrum.y + 1 }, { von: 0, bis: 6 });
+    await anna.waitForFunction((id) => window.ansicht.gebaeude.has(id), hausId, { timeout: 30_000 });
+    const haus = await anna.evaluate((id) => {
+      const g = window.ansicht.gebaeude.get(id);
+      return { id, x: g.x, y: g.y };
+    }, hausId);
+    lage.haus = haus;
+
+    // Berts Wache steht achtzehn Felder suedoestlich - so ist zu sehen, dass
+    // sie **hinzieht**. Annas Trupp steht am Haus: vier, denn eine einzelne
+    // Miliz faellt, sobald die Wache da ist, und dann zeigte das Bild einen
+    // Angriff ohne Angreifer.
+    expect(await einheitenAufstellen(anna, code, 'Bert', 2, { art: 'miliz', x: haus.x + 15, y: haus.y + 11 }),
+      'zwei Wachen bei Bert').toBe(2);
+    expect(await einheitenAufstellen(anna, code, 'Anna', 4, { art: 'miliz', x: haus.x - 2, y: haus.y - 2 }),
+      'vier Milizen bei Anna').toBe(4);
+
+    await anna.evaluate(({ x, y }) => {
+      window.ansicht.kamera.zoom = 2;
+      window.ansicht.blickAuf(x, y);
+    }, haus);
+    // Erst wenn der naechste Zustand da ist, stehen die neuen Milizen im Bild.
+    await anna.waitForFunction((gegnerId) => {
+      const a = window.ansicht;
+      const alle = [...a.nachher.values()];
+      return alle.filter((e) => e.b === a.ich && e.k === 'm').length >= 4
+        && alle.filter((e) => e.b === gegnerId && e.k === 'm').length >= 2;
+    }, lage.gegnerId, { timeout: 30_000 });
+
+    // Der Rechtsklick eines Menschen auf ein fremdes Gebaeude ist der Angriff
+    // (kampf AC-1) - gezielt wird auf das **Feld** des Hauses, nicht auf seine
+    // gezeichnete Mitte: die liegt hoeher und gehoert zu einem Feld dahinter.
+    const aufHaus = await anna.evaluate((id) => {
+      const a = window.ansicht;
+      a.gewaehltesGebaeude = null;
+      a.ausgewaehlt = new Set([...a.nachher.values()].filter((e) => e.b === a.ich && e.k === 'm').map((e) => e.i));
+      a.beiAuswahl();
+      const g = a.gebaeude.get(id);
+      return a.zuBild(g.x, g.y);
+    }, haus.id);
+    await anna.mouse.click(aufHaus.x, aufHaus.y, { button: 'right' });
+
+    // Das Haus nimmt Schaden - daran sieht die KI den Angriff.
+    await anna.waitForFunction((id) => {
+      const a = window.ansicht;
+      const g = a.gebaeude.get(id);
+      return g && g.h < a.werte.gebaeude[g.art].leben;
+    }, haus.id, { timeout: 60_000 });
+
+    // Und ihre Wache zieht hin. Festgehalten wird der **Weg**, nicht sein
+    // Ende: zwei rote Milizen im freien Feld zwischen ihrem Posten und dem
+    // angegriffenen Haus sind auf einem Standbild zu sehen. Der Lebensbalken
+    // taugt dafuer nicht: in diesen Sekunden verliert das Haus wenig, und
+    // wenig sind ein paar Bildpunkte.
+    await zeitraffer(anna, code, 8);
+    await anna.waitForFunction(({ gegnerId, haus: h }) => {
+      const a = window.ansicht;
+      return [...a.nachher.values()]
+        .filter((e) => e.b === gegnerId && e.k === 'm' && !e.s
+          && Math.hypot(e.x - h.x, e.y - h.y) < 14).length >= 2;
+    }, lage, { timeout: 120_000 });
+    await zeitraffer(anna, code, 0);
+
+    // Die Kamera zwischen Haus und Wache, naeher am Haus.
+    await anna.evaluate(({ gegnerId, haus: h }) => {
+      const a = window.ansicht;
+      const wache = [...a.nachher.values()].filter((e) => e.b === gegnerId && e.k === 'm' && !e.s);
+      const mx = wache.reduce((summe, e) => summe + e.x, 0) / wache.length;
+      const my = wache.reduce((summe, e) => summe + e.y, 0) / wache.length;
+      a.kamera.zoom = 1.6;
+      a.blickAuf(h.x * 0.6 + mx * 0.4, h.y * 0.6 + my * 0.4);
+    }, lage);
+
+    // Keine zwei Figuren uebereinander - sonst zaehlt das Auge falsch. Nur ein
+    // kurzer Schubs, falls zwei Angreifer gerade dasselbe Feld kreuzen: die
+    // Wache darf dabei nicht ankommen.
+    let beanstandet = await figurenFrei(anna);
+    for (let versuch = 0; versuch < 8 && beanstandet.length; versuch++) {
+      await zeitraffer(anna, code, 1);
+      await anna.waitForTimeout(200);
+      await zeitraffer(anna, code, 0);
+      beanstandet = await figurenFrei(anna);
+    }
+    expect(beanstandet, 'keine zwei Figuren uebereinander').toEqual([]);
+
+    // Was die Unterschrift behauptet, erst zaehlen.
+    const bild = await anna.evaluate(({ gegnerId, haus: h }) => {
+      const a = window.ansicht;
+      const imBild = (e) => {
+        const p = a.zuBild(e.x, e.y);
+        return p.x > 0 && p.x < a.leinwand.clientWidth && p.y > 0 && p.y < a.leinwand.clientHeight;
+      };
+      const lebend = [...a.nachher.values()].filter((e) => !e.s);
+      const abstand = (e) => Math.hypot(e.x - h.x, e.y - h.y);
+      const wache = lebend.filter((e) => e.b === gegnerId && e.k === 'm' && imBild(e));
+      return {
+        wacheImBild: wache.length,
+        wacheFern: Math.min(...wache.map(abstand)),
+        wacheNah: Math.max(...wache.map(abstand)),
+        // Niemand sonst von Bert steht bei der Wache - sonst waere im Bild
+        // nicht zu sehen, welche zwei da im freien Feld stehen.
+        andereBeiDerWache: lebend.filter((e) => e.b === gegnerId && !wache.includes(e)
+          && wache.some((w) => Math.hypot(w.x - e.x, w.y - e.y) < 4)).length,
+        meineAmHaus: lebend.filter((e) => e.b === a.ich && e.k === 'm' && imBild(e) && abstand(e) < 4).length,
+        hausImBild: imBild({ x: h.x, y: h.y }),
+      };
+    }, lage);
+    expect(bild.wacheImBild, 'zwei Milizen der KI im Bild').toBe(2);
+    expect(bild.wacheFern, 'sie sind noch nicht da').toBeGreaterThan(4);
+    expect(bild.wacheNah, 'aber schon im Anmarsch').toBeLessThan(14);
+    expect(bild.andereBeiDerWache, 'niemand sonst steht bei ihnen im freien Feld').toBe(0);
+    expect(bild.meineAmHaus, 'Annas Milizen stehen am Haus').toBeGreaterThanOrEqual(2);
+    expect(bild.hausImBild, 'das Haus steht im Bild').toBe(true);
+    expect(await bedienteileFrei(anna)).toEqual([]);
+    await anna.waitForTimeout(300);
+
+    await nachweis(anna, {
+      spec: KI,
+      ac: 'AC-14',
+      titel: 'Zwei rote Milizen der KI stehen im freien Feld vor einem Haus von Bert, an dem Annas Milizen (blau) stehen: die Wache auf halbem Weg zwischen ihrem Posten und dem angegriffenen Haus. Befohlen hat das kein Mensch',
       test: info,
     });
     await zeitraffer(anna, code, 1);

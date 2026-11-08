@@ -35,7 +35,8 @@ const kurz = (p) => {
   const gebaeude = Object.entries(p.gebaeude).map(([art, n]) => `${n} ${art}`).join(', ');
   const feudal = p.feudalMinute === null ? 'Dunkle Zeit' : `Feudalzeit ab ${p.feudalMinute.toFixed(1)} min`;
   const angriff = p.angriffMinute === null ? 'kein Angriff' : `${p.angriffe} Angriffe ab ${p.angriffMinute.toFixed(1)} min`;
-  return `${p.name}: ${p.dorfbewohner} Dorfbewohner, ${p.kampf} Kampf (${p.einheiten}/${p.wohnraum}), ${feudal}, ${angriff}, Holz ${p.holz}, Nahrung ${p.nahrung}, Gold ${p.gold}, Stein ${p.stein}; ${gebaeude}; abgewiesen ${p.abgewiesen}, laengste Untaetigkeit ${p.untaetigMax} s`;
+  const wehr = `${p.verteidigungen}x verteidigt`;
+  return `${p.name}: ${p.dorfbewohner} Dorfbewohner, ${p.kampf} Kampf (${p.einheiten}/${p.wohnraum}), ${feudal}, ${angriff}, ${wehr}, Holz ${p.holz}, Nahrung ${p.nahrung}, Gold ${p.gold}, Stein ${p.stein}; ${gebaeude}; abgewiesen ${p.abgewiesen}, laengste Untaetigkeit ${p.untaetigMax} s`;
 };
 
 console.log(`Pruefstand: ${partien} Partien, ${spieler} KI-Spieler, je ${minuten} Spielminuten, Startwerte ab ${erster}`);

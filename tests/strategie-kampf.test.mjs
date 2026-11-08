@@ -6,6 +6,7 @@ import assert from 'node:assert/strict';
 import { createRequire } from 'node:module';
 
 const require = createRequire(import.meta.url);
+const karten = require('../server/spiele/strategie/karte.js');
 const { Welt, TAKTE_PRO_SEKUNDE, VERFOLGUNG_FELDER } = require('../server/spiele/strategie/welt.js');
 const { EINHEITEN, GEBAEUDE } = require('../server/spiele/strategie/daten.js');
 
@@ -424,6 +425,48 @@ test('kampf AC-5: vier Dorfbewohner erschlagen einen Soldaten - einer nie', () =
   assert.ok(wundester <= 16, `einer hat mehr als ein Drittel verloren: ${wundester} von 25`);
 });
 
+// Runde 86: `befehl()` raeumte `sammelt` weg, die Gegenwehr aus `wehren()`
+// nicht. Ein getroffener Dorfbewohner schlug zurueck und trug dabei weiter
+// das Zeichen "arbeitet gerade" (auf dem Draht `w`, bedienung AC-31).
+// Gefunden beim Bauen von ki AC-14, wo die KI ihn wegschickt.
+test('kampf AC-5: wer sich wehrt, sammelt nicht mehr', () => {
+  const welt = new Welt(ZWEI, 7);
+  const basis = welt.spielerVon('a').basis;
+  const { groesse, felder } = welt.karte;
+
+  // Das naechste Waldfeld an der Basis - dort arbeitet er.
+  let wald = null;
+  for (let r = 1; !wald && r < 30; r++) {
+    for (let dy = -r; dy <= r && !wald; dy++) {
+      for (let dx = -r; dx <= r && !wald; dx++) {
+        if (Math.max(Math.abs(dx), Math.abs(dy)) !== r) continue;
+        const x = basis.x + dx;
+        const y = basis.y + dy;
+        if (felder[y * groesse + x] === karten.WALD) wald = { x, y };
+      }
+    }
+  }
+  assert.ok(wald, 'Wald in der Naehe der Basis');
+
+  const bauer = [...welt.einheiten.values()].find((e) => e.besitzer === 'a' && e.art === 'dorfbewohner');
+  rechtsklick(welt, 'a', [bauer], wald);
+  taktenBis(welt, () => bauer.sammelt, 600);
+  assert.equal(bauer.auftrag.art, 'sammeln');
+
+  // Ein freies Nachbarfeld fuer den Angreifer.
+  const neben = [[1, 0], [-1, 0], [0, 1], [0, -1]]
+    .map(([dx, dy]) => ({ x: Math.round(bauer.x) + dx, y: Math.round(bauer.y) + dy }))
+    .find((f) => karten.begehbar(welt.karte, f.x, f.y) && !welt.gebaeudeAn(f.x, f.y));
+  assert.ok(neben, 'Platz fuer den Angreifer');
+  const angreifer = welt.einheitAnlegen('b', neben.x, neben.y, 'miliz');
+  rechtsklick(welt, 'b', [angreifer], bauer);
+
+  taktenBis(welt, () => bauer.leben < EINHEITEN.dorfbewohner.leben, 600);
+  assert.equal(bauer.auftrag.art, 'angreifen', 'er wehrt sich (kampf AC-2)');
+  assert.equal(bauer.sammelt, false, 'und sammelt dabei nicht mehr');
+  assert.equal(bauer.baut, false);
+});
+
 // ---- Fernkaempfer (einheiten AC-25) ----------------------------------------
 
 /**
@@ -489,4 +532,63 @@ test('kampf AC-1: auch nacheinander gegebene Befehle stellen die Angreifer neben
     }
   }
   assert.ok(zentrum.leben < 100000, 'und geschlagen wird auch');
+});
+
+// Runde 86, im Bild zu ki AC-14 gefunden: Die KI treibt ihre Schafe ans
+// Dorfzentrum, und der Dorfbewohner, der dort schlachtet, steht still, bis das
+// Schaf leer ist. Annas Angreifer bekam genau sein Feld und stand auf ihm.
+// Gemessen auf Karte 4711: ohne den Stehenden bekommt der erste von drei
+// Angreifern 62/104, mit ihm bekommt es keiner.
+test('kampf AC-1: um ein Gebaeude bekommt kein Angreifer das Feld, auf dem jemand stillsteht', () => {
+  const ziel = (e) => (e.weg.length ? e.weg[e.weg.length - 1] : { x: Math.round(e.x), y: Math.round(e.y) });
+  const angreifen = (steher) => {
+    const welt = new Welt(ZWEI, 4711);
+    const zentrum = [...welt.gebaeude.values()].find((g) => g.besitzer === 'b' && g.art === 'dorfzentrum');
+    const da = steher ? welt.einheitAnlegen('b', steher.x, steher.y, 'dorfbewohner') : null;
+    const angreifer = [0, 1, 2].map((i) => welt.einheitAnlegen('a', zentrum.x + 4 + i, zentrum.y + 4, 'miliz'));
+    welt.nachricht('a', { auftrag: 'befehl', einheiten: angreifer.map((e) => e.id), ziel: { x: zentrum.x, y: zentrum.y } });
+    return { felder: angreifer.map(ziel), da };
+  };
+  // Gegenprobe zuerst: ohne den Stehenden wird das Feld vergeben.
+  const frei = angreifen(null);
+  const feld = frei.felder[0];
+  const { felder, da } = angreifen(feld);
+  assert.equal(da.weg.length, 0, 'der Dorfbewohner steht still');
+  assert.ok(felder.every((f) => f.x !== feld.x || f.y !== feld.y),
+    `niemand bekommt ${feld.x}/${feld.y}: ${JSON.stringify(felder)}`);
+  assert.equal(new Set(felder.map((f) => `${f.x},${f.y}`)).size, 3, 'und die drei stehen weiter nebeneinander');
+});
+
+// Gefunden in der Durchsicht der Runde 86: die Gegenwehr setzte `sammelt`
+// zurueck, gab aber die Farm nicht frei - sie blieb fuer jeden anderen
+// gesperrt, solange der Bauer lebte.
+test('kampf AC-5: ein Bauer, der sich wehrt, gibt seine Farm frei', () => {
+  const welt = new Welt(ZWEI, 4711);
+  const b = welt.spielerVon('b');
+  // Eine fertige Farm auf freier Wiese, zwanzig Felder oestlich von Berts Dorf.
+  let farm = null;
+  for (let r = 0; r < 8 && !farm; r++) {
+    for (const [dx, dy] of [[r, 0], [0, r], [r, r], [-r, r]]) {
+      const x = b.basis.x + 20 + dx;
+      const y = b.basis.y + dy;
+      if (welt.platzPruefen('farm', x, y)) {
+        farm = welt.gebaeudeAnlegen('b', 'farm', x, y, true);
+        break;
+      }
+    }
+  }
+  assert.ok(farm, 'eine Farm steht');
+  const bauer = welt.einheitAnlegen('b', farm.x - 1, farm.y - 1, 'dorfbewohner');
+  welt.nachricht('b', { auftrag: 'befehl', einheiten: [bauer.id], ziel: { x: farm.x, y: farm.y } });
+  for (let t = 0; t < 20 * TAKTE_PRO_SEKUNDE && farm.arbeiter !== bauer.id; t++) welt.takten();
+  // Gegenprobe zuerst: er bewirtschaftet sie.
+  assert.equal(farm.arbeiter, bauer.id, 'der Bauer steht auf seiner Farm');
+
+  const voll = bauer.leben;
+  const angreifer = welt.einheitAnlegen('a', farm.x + 3, farm.y + 3, 'miliz');
+  welt.nachricht('a', { auftrag: 'befehl', einheiten: [angreifer.id], ziel: { x: bauer.x, y: bauer.y } });
+  for (let t = 0; t < 30 * TAKTE_PRO_SEKUNDE && bauer.leben === voll; t++) welt.takten();
+  assert.ok(bauer.leben < voll, 'der Bauer ist getroffen');
+  assert.equal(bauer.auftrag?.art, 'angreifen', 'und wehrt sich');
+  assert.notEqual(farm.arbeiter, bauer.id, 'seine Farm ist frei');
 });

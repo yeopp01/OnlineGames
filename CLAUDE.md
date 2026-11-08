@@ -153,7 +153,7 @@ Umfang hinzufügt, dort nachsehen.
 
 ## Stand
 
-**386 von 516 Kriterien fertig.** 431 Tests ohne Browser, 165 im Browser. Die
+**387 von 516 Kriterien fertig.** 443 Tests ohne Browser, 166 im Browser. Die
 Übersicht ist der Bericht: `npm run qa:report`.
 
 Gebaut ist der Unterbau: Räume, Übertragung, Karte, Wegfindung, Sammeln,
@@ -295,8 +295,15 @@ Gebäude wäre ein Angriff auf genau dieses Gebäude und kein Angriffslauf —, 
 am Ziel setzt sie auf das Dorfzentrum nach. Die zwei, die dem eigenen Dorf am
 nächsten stehen, bleiben als Wache. Über zwanzig Startwerte bricht jede KI auf,
 die erste zwischen Spielminute 17,5 und 19,8; die Vorgabe von
-`npm run pruefstand:strategie` steht deshalb auf 22 Minuten. Es folgen
-Verteidigung daheim, Nachschub, Mensch gegen KI — und **zuletzt der Nebel**,
+`npm run pruefstand:strategie` steht deshalb auf 22 Minuten. **Die KI
+verteidigt daheim** (ki AC-14): verliert ein Gebäude oder ein Dorfbewohner
+Leben, zieht die Wache im Angriffslauf hin, und der Getroffene flieht zum
+Dorfzentrum. Eine Meldung bekommt sie nicht — sie sieht nur fehlendes Leben.
+Ihre Ziele wählt `Ki.freiesFeldUm()` mit Abstand von Feinden und von allem,
+was sie selbst eben vergeben hat; über zwanzig Startwerte greifen jetzt alle
+vierzig KIs an. Was bleibt, ist `einheiten AC-29`: wer später auf ein
+besetztes Feld läuft, steht dort auf einem anderen. Es folgen Nachschub,
+Mensch gegen KI — und **zuletzt der Nebel**,
 weil er die Zustandsnachricht umbaut.
 
 1. **Stufe A** Dunkle Zeit mit Wirtschafts-KI und Prüfstand · **B** Feudalzeit

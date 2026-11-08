@@ -1306,6 +1306,20 @@ class Welt {
       const platz = andere.weg.length ? andere.weg[andere.weg.length - 1] : this.feldVon(andere);
       for (const f of felder) if (f.x === platz.x && f.y === platz.y) f.frei = false;
     }
+    // Um ein **Gebaeude** auch die Felder, auf denen jemand stillsteht - wer
+    // auch immer. Am Dorfzentrum schlachtet die KI ihre Schafe, und der
+    // Dorfbewohner steht dort, bis das Schaf leer ist; Annas Miliz bekam genau
+    // sein Feld und stand auf ihm (Runde 86, sieben von acht Laeufen). Nur bei
+    // Gebaeuden: um ein Gebaeude ist Platz genug, und ein Gefecht zwischen
+    // Einheiten soll sich nicht aendern - der Konterkreis haengt daran
+    // (Runde 85: eine weite Fassung kippte ihn).
+    if (istGebaeude) {
+      for (const andere of this.einheiten.values()) {
+        if (andere.tot || neu.has(andere.id) || andere.weg.length) continue;
+        const platz = this.feldVon(andere);
+        for (const f of felder) if (f.x === platz.x && f.y === platz.y) f.frei = false;
+      }
+    }
     return felder;
   }
 
@@ -1321,6 +1335,11 @@ class Welt {
       const feld = this.feldVon(ziel);
       platz = { dx: stand.x - feld.x, dy: stand.y - feld.y };
     }
+    // Ein Bauer, der sich wehrt, gibt seine Farm frei - vor dem neuen Auftrag,
+    // denn `farmVerlassen` erkennt ihn am alten. `befehl()` tut das schon
+    // immer; die Gegenwehr aus `wehren()` ging daran vorbei, und die Farm blieb
+    // fuer jeden anderen gesperrt, solange er lebte (Durchsicht Runde 86).
+    this.farmVerlassen(einheit);
     einheit.auftrag = {
       art: 'angreifen',
       ziel: ziel.id,
@@ -1328,6 +1347,14 @@ class Welt {
       ...(platz ? { platz } : {}),
       ...(heimat ? { heimat } : {}),
     };
+    // Wer kaempft, sammelt nicht und baut nicht - das ist der Preis der
+    // Gegenwehr (kampf AC-5). `befehl()` raeumt das beim Angriffsbefehl selbst
+    // weg (samt Farm, siehe oben); die Gegenwehr aus `wehren()` ging bis Runde
+    // 86 daran vorbei, und
+    // ein getroffener Dorfbewohner trug auf dem Draht weiter `w` ("arbeitet
+    // gerade", bedienung AC-31), waehrend er zurueckschlug.
+    einheit.sammelt = false;
+    einheit.baut = false;
     einheit.nachladen = 0;
     einheit.weg = stand ? this.wegNach(einheit, stand) : [];
   }

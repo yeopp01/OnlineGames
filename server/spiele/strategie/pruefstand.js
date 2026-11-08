@@ -90,6 +90,8 @@ function kennzahlen(welt, spieler, ki, untaetig) {
     // (ki AC-11). `null` heisst: diese KI hat nie angegriffen.
     angriffe: ki.angriffe,
     angriffMinute: ki.angriffTakt === null ? null : ki.angriffTakt / (60 * TAKTE_PRO_SEKUNDE),
+    // Wie oft die Wache zu einem Angriffsort gezogen ist (ki AC-14).
+    verteidigungen: ki.verteidigungen,
     gebaeude,
     ...Object.fromEntries(ROHSTOFFE.map((r) => [r, Math.floor(spieler[r])])),
     abgewiesen: ki.abgewiesen,

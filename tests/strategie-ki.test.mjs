@@ -10,7 +10,8 @@ const require = createRequire(import.meta.url);
 const karten = require('../server/spiele/strategie/karte.js');
 const { Welt } = require('../server/spiele/strategie/welt.js');
 const {
-  Ki, ENTSCHEIDEN_ALLE, ZIEL_DORFBEWOHNER, FEUDALZEIT_NAHRUNG, AN_SCHAFEN, AN_BEEREN, MILITAER, HEER, WACHE, HEER_ABSTAND, plan,
+  Ki, ENTSCHEIDEN_ALLE, ZIEL_DORFBEWOHNER, FEUDALZEIT_NAHRUNG, AN_SCHAFEN, AN_BEEREN, MILITAER,
+  HEER, WACHE, HEER_ABSTAND, WACHE_NAH, FEIND_FERN, VERGEBEN_ABSTAND, plan,
 } = require('../server/spiele/strategie/ki.js');
 const { TAKTE_PRO_SEKUNDE } = require('../server/spiele/strategie/welt.js');
 const { EINHEITEN, SAMMELN } = require('../server/spiele/strategie/daten.js');
@@ -446,14 +447,396 @@ test('ki AC-11: am Marschziel greift das Heer das Dorfzentrum an', () => {
 // letzte nach 19,8 Spielminuten - zehn Kampfeinheiten stehen rund sechs
 // Minuten nach dem Aufstieg bereit (ki AC-9: Feudalzeit nach 11 bis 12). Die
 // 22 Minuten kommen daher: 19,8 plus Spielraum. Rechenzeit 17 s.
-test('ki AC-11: ueber zwanzig Startwerte bricht jede KI mindestens einmal zum Gegner auf', () => {
+//
+// Seit die KI sich wehrt (ki AC-14, Runde 86) kann eine KI, die selbst unter
+// Angriff steht, nie auf zehn Kampfeinheiten kommen - im ersten Stand der
+// Runde war es Startwert 13, KI 2: kein Angriff, 40 Verteidigungen, weil ihre
+// Wache jede halbe Sekunde ein neues Ziel bekam und nie ankam. Seit das Ziel
+// haelt, sind es wieder 40 von 40 (Startwert 13, KI 2: 9 Verteidigungen,
+// Angriff ab 20,3 min). Trotzdem steht hier keine Quote, sondern der Grund:
+// **wer nicht angreift, verteidigt**, und in jeder Partie greift jemand an.
+test('ki AC-11: ueber zwanzig Startwerte greift in jeder Partie eine KI an - und wer nicht angreift, verteidigt (ki AC-14)', () => {
   for (let startwert = 1; startwert <= 20; startwert++) {
     const { spieler } = partieSpielen({ startwert, minuten: 22 });
+    assert.ok(spieler.some((p) => p.angriffe >= 1), `${startwert}: niemand greift an`);
     for (const p of spieler) {
-      assert.ok(p.angriffe >= 1, `${startwert} ${p.name}: ${p.angriffe} Angriffe`);
+      assert.ok(p.angriffe >= 1 || p.verteidigungen >= 1,
+        `${startwert} ${p.name}: ${p.angriffe} Angriffe, ${p.verteidigungen} Verteidigungen`);
+      if (p.angriffe < 1) continue;
       // Nicht vor der Feudalzeit - vorher hat sie keine zehn Kampfeinheiten.
       assert.ok(p.angriffMinute > p.feudalMinute, `${startwert} ${p.name}: Angriff ab ${p.angriffMinute} min, Feudalzeit ab ${p.feudalMinute} min`);
       assert.ok(p.angriffMinute <= 22, `${startwert} ${p.name}: Angriff ab ${p.angriffMinute} min`);
     }
   }
+});
+
+// ---- Die Verteidigung zu Hause (ki AC-14) ----------------------------------
+
+const gebaeudeVon = (welt, spielerId) => [...welt.gebaeude.values()].filter((g) => g.besitzer === spielerId);
+const zentrumVon = (welt, spielerId) => gebaeudeVon(welt, spielerId).find((g) => g.art === 'dorfzentrum');
+
+/** Der Rechtsklick eines Menschen: auf das Feld, nicht auf die Nummer. */
+const rechtsklick = (welt, spielerId, einheiten, auf) => welt.nachricht(spielerId, {
+  auftrag: 'befehl', einheiten: einheiten.map((e) => e.id), ziel: { x: auf.x, y: auf.y },
+});
+
+const takten = (welt, takte) => { for (let t = 0; t < takte; t++) welt.takten(); };
+
+const taktenBis = (welt, bedingung, grenze) => {
+  for (let t = 0; t < grenze; t++) {
+    welt.takten();
+    if (bedingung()) return t + 1;
+  }
+  throw new Error('nicht eingetreten in ' + grenze + ' Takten');
+};
+
+test('ki AC-14: wird ein Gebaeude angegriffen, zieht die Wache hin und schlaegt den Angreifer', () => {
+  const welt = new Welt(ZWEI, 13);
+  const ki = new Ki(welt, 'b');
+  const b = welt.spielerVon('b');
+  const zentrum = zentrumVon(welt, 'b');
+  const vollLeben = zentrum.leben;
+
+  // Zwei Wachen, zwanzig Felder vom Dorfzentrum weg - stuenden sie daneben,
+  // zeigte der Test nicht, dass sie **hinziehen**.
+  const wache = kampfeinheitenAnlegen(welt, 'b', { x: b.basis.x, y: b.basis.y - 20 }, 2);
+  for (const e of wache) {
+    const d = Math.hypot(e.x - zentrum.x, e.y - zentrum.y);
+    assert.ok(d > WACHE_NAH + 10, `die Wache steht weit weg: ${d.toFixed(1)} Felder`);
+  }
+
+  // Gegenprobe zuerst: ohne Angriff schickt die KI niemanden. Sonst zeigte der
+  // Test nur, dass sie ueberhaupt Befehle gibt.
+  const eigene = () => eigeneVon(welt, 'b');
+  ki.verteidigenPruefen(eigene(), gebaeudeVon(welt, 'b'), zentrum);
+  ki.verteidigenPruefen(eigene(), gebaeudeVon(welt, 'b'), zentrum);
+  assert.equal(ki.verteidigungen, 0, 'ohne Angriff zieht niemand');
+  assert.ok(wache.every((e) => !e.weg.length), 'und niemand laeuft');
+
+  // Annas Miliz schlaegt auf das Dorfzentrum ein.
+  const angreifer = welt.einheitAnlegen('a', zentrum.x + 3, zentrum.y + 3, 'miliz');
+  rechtsklick(welt, 'a', [angreifer], zentrum);
+  taktenBis(welt, () => zentrum.leben < vollLeben, 600);
+
+  ki.verteidigenPruefen(eigene(), gebaeudeVon(welt, 'b'), zentrum);
+  assert.equal(ki.verteidigungen, 1, 'die Wache ist losgeschickt');
+  for (const e of wache) {
+    assert.ok(e.angriffslauf, 'sie zieht im Angriffslauf');
+    assert.ok(e.weg.length, 'und ist unterwegs');
+  }
+
+  // Und sie kommt an. Zwei Milizen gegen eine: der Angreifer faellt.
+  taktenBis(welt, () => angreifer.tot, 120 * TAKTE_PRO_SEKUNDE);
+  for (const e of wache) {
+    const d = Math.hypot(e.x - zentrum.x, e.y - zentrum.y);
+    assert.ok(d < 12, `die Wache steht beim Dorfzentrum: ${d.toFixed(1)} Felder`);
+  }
+});
+
+// Runde 86, im Browser gefunden, waehrend die drei Tests darueber gruen waren:
+// Dort kam die Wache aus **derselben Richtung** wie der Angreifer, und das
+// naechste freie Feld am Angriffsort war das Feld neben ihm. `feindAn` zieht
+// einen Feind im Umkreis von 1,01 Feldern unter den Klick (kampf AC-1) - aus
+// dem Angriffslauf wurde ein Angriff auf genau diese Einheit. Sie fiel
+// unterwegs, der Auftrag war erfuellt, und die Wache stand zwoelf Felder vom
+// Dorf still, waehrend der Gegner weiter auf das Dorfzentrum einschlug.
+test('ki AC-14: das Marschziel der Wache haelt Abstand von jedem Feind', () => {
+  const welt = new Welt(ZWEI, 4711);
+  const ki = new Ki(welt, 'b');
+  const zentrum = zentrumVon(welt, 'b');
+  const eigene = () => eigeneVon(welt, 'b');
+
+  // Wache und Angreifer auf **derselben** Seite des Dorfzentrums: nur so faellt
+  // die Wahl des Marschziels ueberhaupt auf das Feld beim Angreifer.
+  const wache = [];
+  for (const dx of [0, 1]) {
+    const x = zentrum.x + 16 + dx;
+    const y = zentrum.y + 16;
+    assert.ok(karten.begehbar(welt.karte, x, y), `${x},${y} ist begehbar`);
+    wache.push(welt.einheitAnlegen('b', x, y, 'miliz'));
+  }
+  const angreifer = welt.einheitAnlegen('a', zentrum.x + 3, zentrum.y + 3, 'miliz');
+  assert.ok(Math.hypot(angreifer.x - wache[0].x, angreifer.y - wache[0].y) > 15,
+    'der Angreifer steht weit von der Wache, aber in ihrer Richtung');
+
+  const voll = zentrum.leben;
+  ki.verteidigenPruefen(eigene(), gebaeudeVon(welt, 'b'), zentrum);
+  rechtsklick(welt, 'a', [angreifer], zentrum);
+  taktenBis(welt, () => zentrum.leben < voll, 600);
+  // Wo der Angreifer **im Augenblick des Befehls** steht: danach laeuft er
+  // weiter, und ein spaeter gemessener Abstand sagt nichts ueber die Wahl.
+  const stand = { x: angreifer.x, y: angreifer.y };
+  // Die Wahl selbst, ohne die Gruppenaufstellung, und ihre Gegenprobe - beide
+  // im Augenblick der Entscheidung: danach laeuft die Wache, und ihr eigenes
+  // Ziel zaehlt als belegt. `e.angriffslauf` ist das Feld, das die Aufstellung
+  // dieser **einen** Einheit um das Marschziel herum zuteilt (einheiten AC-20)
+  // - das darf neben dem Angreifer liegen. Was Abstand halten muss, ist das
+  // Marschziel der KI.
+  const gewaehlt = ki.freiesFeldUm(zentrum, wache[0], { feindFern: FEIND_FERN });
+  const ohne = ki.freiesFeldUm(zentrum, wache[0]);
+  ki.verteidigenPruefen(eigene(), gebaeudeVon(welt, 'b'), zentrum);
+
+  assert.equal(ki.verteidigungen, 1, 'die Wache ist losgeschickt');
+  for (const e of wache) {
+    // Ein Marsch, kein Angriff auf eine einzelne Einheit. Genau hier stand
+    // vorher `angreifen` und `angriffslauf: false`.
+    assert.equal(e.auftrag?.art, 'gehen', 'sie marschiert');
+    assert.ok(e.angriffslauf, 'und zwar im Angriffslauf');
+  }
+  const abstand = Math.hypot(gewaehlt.x - stand.x, gewaehlt.y - stand.y);
+  assert.ok(abstand > FEIND_FERN, `das Marschziel liegt nicht am Angreifer: ${abstand.toFixed(2)} Felder`);
+  // Gegenprobe: ohne die Regel waehlt dieselbe Suche ein Nachbarfeld des
+  // Angreifers - gerade oder schraeg daneben. Gemessen: 1,00 Felder, seit
+  // Annas Miliz am Dorfzentrum keinem Schlachter mehr auf dem Feld steht
+  // (Runde 86) 1,41.
+  const ohneAbstand = Math.hypot(ohne.x - stand.x, ohne.y - stand.y);
+  assert.ok(ohneAbstand <= FEIND_FERN,
+    `ohne Abstandsregel liegt das Feld am Angreifer (${ohneAbstand.toFixed(2)} Felder) - sonst zeigt der Test nichts`);
+
+  // Und sie kommt an, auch nachdem der Angreifer gefallen ist: der
+  // Angriffslauf greift ihn unterwegs selbst an (kampf AC-8) und geht danach
+  // weiter. Gemessen: 22,6 Felder vom Dorfzentrum beim Aufbruch, nach 30 s
+  // 3,2 - und mit einem Angriffsbefehl statt des Laufs blieb sie bei 12,9
+  // stehen, sobald der Angreifer fiel.
+  taktenBis(welt, () => angreifer.tot, 120 * TAKTE_PRO_SEKUNDE);
+  takten(welt, 20 * TAKTE_PRO_SEKUNDE);
+  for (const e of wache) {
+    const d = Math.hypot(e.x - zentrum.x, e.y - zentrum.y);
+    assert.ok(d < 8, `die Wache steht beim Dorfzentrum: ${d.toFixed(1)} Felder`);
+  }
+});
+
+test('ki AC-14: ein getroffener Dorfbewohner laeuft zum Dorfzentrum, statt zurueckzuschlagen', () => {
+  const welt = new Welt(ZWEI, 17);
+  const ki = new Ki(welt, 'b');
+  const zentrum = zentrumVon(welt, 'b');
+  const eigene = () => eigeneVon(welt, 'b');
+
+  // Einer von Berts Dorfbewohnern arbeitet weit draussen im Holz - weit, damit
+  // die Flucht eine Strecke ist und nicht zwei Schritte.
+  const opfer = eigene().find((e) => e.art === 'dorfbewohner');
+  const { groesse, felder } = welt.karte;
+  let wald = null;
+  for (let r = 12; !wald && r < 30; r++) {
+    for (let dy = -r; dy <= r && !wald; dy++) {
+      for (let dx = -r; dx <= r && !wald; dx++) {
+        if (Math.max(Math.abs(dx), Math.abs(dy)) !== r) continue;
+        const x = Math.round(zentrum.x) + dx;
+        const y = Math.round(zentrum.y) + dy;
+        if (felder[y * groesse + x] === karten.WALD) wald = { x, y };
+      }
+    }
+  }
+  assert.ok(wald, 'Wald mindestens zwoelf Felder vom Dorfzentrum');
+  rechtsklick(welt, 'b', [opfer], wald);
+  taktenBis(welt, () => opfer.sammelt, 240 * TAKTE_PRO_SEKUNDE);
+  const beiDerArbeit = Math.hypot(opfer.x - zentrum.x, opfer.y - zentrum.y);
+  assert.ok(beiDerArbeit > 10, `er arbeitet weit vom Dorfzentrum: ${beiDerArbeit.toFixed(1)} Felder`);
+  ki.verteidigenPruefen(eigene(), gebaeudeVon(welt, 'b'), zentrum);
+
+  // Annas Miliz schlaegt zu. Die Welt gibt ihm dafuer die Gegenwehr
+  // (kampf AC-2) - genau die soll die KI ihm wieder abnehmen.
+  const angreifer = welt.einheitAnlegen('a', Math.round(opfer.x) + 1, Math.round(opfer.y), 'miliz');
+  rechtsklick(welt, 'a', [angreifer], opfer);
+  taktenBis(welt, () => opfer.auftrag?.art === 'angreifen', 60 * TAKTE_PRO_SEKUNDE);
+  assert.equal(opfer.sammelt, false, 'gesammelt wird dabei nicht mehr');
+
+  // Damit die Flucht gemessen werden kann und nicht der Tod: der Angreifer
+  // laesst von ihm ab - wie ein Mensch, der weiterzieht.
+  rechtsklick(welt, 'a', [angreifer], { x: angreifer.x + 10, y: angreifer.y });
+
+  ki.verteidigenPruefen(eigene(), gebaeudeVon(welt, 'b'), zentrum);
+  assert.notEqual(opfer.auftrag?.art, 'angreifen', 'die KI nimmt ihm die Gegenwehr');
+  assert.ok(opfer.weg.length, 'und schickt ihn weg');
+  const vorher = Math.hypot(opfer.x - zentrum.x, opfer.y - zentrum.y);
+  takten(welt, 30 * TAKTE_PRO_SEKUNDE);
+  const nachher = Math.hypot(opfer.x - zentrum.x, opfer.y - zentrum.y);
+  assert.ok(!opfer.tot, 'er lebt noch');
+  // Naeher als an das Feld neben dem Dorfzentrum kommt er nicht: das Gebaeude
+  // belegt die Mitte. Gemessen: von 11,2 auf 2,8 Felder in 30 Sekunden.
+  assert.ok(nachher < vorher - 5, `er laeuft heim: ${vorher.toFixed(1)} auf ${nachher.toFixed(1)} Felder`);
+  assert.ok(nachher < 5, `und steht am Dorfzentrum: ${nachher.toFixed(1)} Felder`);
+});
+
+test('ki AC-14: Schlaege gegen das marschierende Heer holen die Wache nicht nach Hause', () => {
+  const welt = new Welt(ZWEI, 19);
+  const ki = new Ki(welt, 'a');
+  const a = welt.spielerVon('a');
+  const zentrum = zentrumVon(welt, 'a');
+  const eigene = () => eigeneVon(welt, 'a');
+
+  kampfeinheitenAnlegen(welt, 'a', a.basis, HEER + WACHE - kampfVon(welt, 'a').length);
+  ki.heerPruefen(eigene());
+  assert.equal(ki.heer.size, HEER, 'das Heer ist unterwegs');
+  ki.verteidigenPruefen(eigene(), gebaeudeVon(welt, 'a'), zentrum);
+
+  // Einem Marschierenden wird Leben abgezogen, als haette ihn jemand
+  // getroffen: die KI liest nur den Zustand, ein Schlag sieht fuer sie genau
+  // so aus. Das Heer steht in diesem Augenblick weit vom Dorf.
+  const marschierend = welt.einheiten.get([...ki.heer][0]);
+  marschierend.leben -= 5;
+  const wache = kampfVon(welt, 'a').filter((e) => !ki.heer.has(e.id));
+  assert.equal(wache.length, WACHE, 'zwei sind zu Hause geblieben');
+  const standen = wache.map((e) => ({ x: e.x, y: e.y }));
+
+  ki.verteidigenPruefen(eigene(), gebaeudeVon(welt, 'a'), zentrum);
+  assert.equal(ki.verteidigungen, 0, 'das ist kein Angriff auf das Dorf');
+  for (const [i, e] of wache.entries()) {
+    assert.deepEqual({ x: e.x, y: e.y }, standen[i], 'die Wache steht, wo sie stand');
+    assert.ok(!e.angriffslauf, 'und niemand laeuft los');
+  }
+});
+
+// ---- Wohin die Getroffenen laufen (ki AC-14, Runde 86) ---------------------
+//
+// Alle drei folgenden Faelle hat das Bild zu ki AC-14 gefunden: `figurenFrei`
+// meldete Figuren von Bert auf **0,00 Feldern** - ein Geflohener auf einem
+// anderen Geflohenen, ein Geflohener auf der Wache, die Wache auf einem
+// Schlachter. Jede Entscheidung waehlte "das naechste freie Feld", ohne zu
+// wissen, was sie selbst eben vergeben hatte.
+
+const zielVon = (e) => (e.weg.length ? e.weg[e.weg.length - 1] : null);
+
+test('ki AC-14: zwei nacheinander Getroffene fliehen auf verschiedene Felder', () => {
+  const welt = new Welt(ZWEI, 4711);
+  const ki = new Ki(welt, 'b');
+  const zentrum = zentrumVon(welt, 'b');
+  const eigene = () => eigeneVon(welt, 'b');
+  const erster = welt.einheitAnlegen('b', zentrum.x + 10, zentrum.y + 6, 'dorfbewohner');
+  const zweiter = welt.einheitAnlegen('b', zentrum.x + 11, zentrum.y + 6, 'dorfbewohner');
+  ki.verteidigenPruefen(eigene(), gebaeudeVon(welt, 'b'), zentrum);
+
+  // Der erste wird getroffen und flieht. Die KI sieht nur fehlendes Leben -
+  // woher es fehlt, ist fuer sie gleich, deshalb hier ohne Angreifer.
+  erster.leben -= 2;
+  ki.verteidigenPruefen(eigene(), gebaeudeVon(welt, 'b'), zentrum);
+  const fluchtErster = zielVon(erster);
+  assert.ok(fluchtErster, 'der erste flieht');
+
+  // Eine halbe Sekunde spaeter der zweite. Gegenprobe vorher: ohne den Weg des
+  // ersten waere sein Feld wieder "frei". Gemessen: beide 62/104.
+  welt.takten();
+  zweiter.leben -= 2;
+  const weg = erster.weg;
+  erster.weg = [];
+  const ohne = ki.freiesFeldUm(zentrum, { x: zweiter.x, y: zweiter.y }, { feindFern: FEIND_FERN });
+  erster.weg = weg;
+  assert.deepEqual(ohne, fluchtErster, 'ohne die Regel bekaeme der zweite dasselbe Feld - sonst zeigt der Test nichts');
+
+  ki.verteidigenPruefen(eigene(), gebaeudeVon(welt, 'b'), zentrum);
+  const fluchtZweiter = zielVon(zweiter);
+  assert.ok(fluchtZweiter, 'der zweite flieht auch');
+  assert.notDeepEqual(fluchtZweiter, fluchtErster, 'aber auf ein anderes Feld');
+});
+
+test('ki AC-14: das Ziel einer Gruppe hat freie Nachbarfelder', () => {
+  const welt = new Welt(ZWEI, 4711);
+  const ki = new Ki(welt, 'b');
+  const zentrum = zentrumVon(welt, 'b');
+  const von = { x: zentrum.x + 16, y: zentrum.y + 16 };
+  // Ein Dorfbewohner steht neben dem Feld, das eine einzelne Wache bekaeme.
+  const allein = ki.freiesFeldUm(zentrum, von, { feindFern: FEIND_FERN });
+  welt.einheitAnlegen('b', allein.x + 1, allein.y, 'dorfbewohner');
+  const ohne = ki.freiesFeldUm(zentrum, von, { feindFern: FEIND_FERN });
+  const nachbar = (f) => [...welt.einheiten.values()]
+    .some((e) => Math.max(Math.abs(Math.round(e.x) - f.x), Math.abs(Math.round(e.y) - f.y)) === 1);
+  // Gegenprobe: fuer einen allein ist das Feld neben dem Stehenden recht.
+  assert.ok(nachbar(ohne), 'ohne die Regel liegt das Ziel neben dem Stehenden - sonst zeigt der Test nichts');
+  // Fuer eine Gruppe nicht: der Server stellt sie einen Ring um ihr Ziel auf
+  // (einheiten AC-20), und einer stuende danach auf dem Dorfbewohner.
+  const gruppe = ki.freiesFeldUm(zentrum, von, { feindFern: FEIND_FERN, rundumFrei: true });
+  assert.ok(!nachbar(gruppe), `das Gruppenziel ${gruppe.x}/${gruppe.y} hat freie Nachbarfelder`);
+});
+
+test('ki AC-14: Wache und Gefluechtete derselben Entscheidung bekommen getrennte Ziele', () => {
+  const welt = new Welt(ZWEI, 4711);
+  const ki = new Ki(welt, 'b');
+  const zentrum = zentrumVon(welt, 'b');
+  const eigene = () => eigeneVon(welt, 'b');
+  // Der Spaeherreiter der Startaufstellung steht am Dorfzentrum und zoege mit;
+  // dann waere die Wache eine Gruppe mit anderem Ziel. Hier geht es um genau
+  // eine Wache und einen Dorfbewohner.
+  for (const e of eigene()) if (e.art === 'spaeherreiter') welt.einheiten.delete(e.id);
+  const wache = welt.einheitAnlegen('b', zentrum.x + 16, zentrum.y + 16, 'miliz');
+  const dorf = welt.einheitAnlegen('b', zentrum.x + 4, zentrum.y + 3, 'dorfbewohner');
+  ki.verteidigenPruefen(eigene(), gebaeudeVon(welt, 'b'), zentrum);
+
+  // Dorfzentrum und Dorfbewohner verlieren in derselben halben Sekunde Leben.
+  zentrum.leben -= 5;
+  dorf.leben -= 2;
+  // Gegenprobe vorher, gemessen: beide suchten 62/104.
+  const fuerWache = ki.freiesFeldUm(zentrum, wache, { feindFern: FEIND_FERN });
+  const fuerDorf = ki.freiesFeldUm(zentrum, dorf, { feindFern: FEIND_FERN });
+  assert.ok(Math.hypot(fuerWache.x - fuerDorf.x, fuerWache.y - fuerDorf.y) <= VERGEBEN_ABSTAND,
+    'ohne die Regel laegen beide Ziele beieinander - sonst zeigt der Test nichts');
+
+  ki.verteidigenPruefen(eigene(), gebaeudeVon(welt, 'b'), zentrum);
+  const w = zielVon(wache);
+  const d = zielVon(dorf);
+  assert.ok(w && d, 'beide sind unterwegs');
+  const abstand = Math.hypot(w.x - d.x, w.y - d.y);
+  assert.ok(abstand > VERGEBEN_ABSTAND, `die Ziele liegen ${abstand.toFixed(2)} Felder auseinander`);
+});
+
+// Gefunden in der Durchsicht der Runde 86 (ein Pruefer ohne Kenntnis meiner
+// Schluesse): seit die Ziele eigener Laeufer als belegt gelten, sperrte eine
+// Wache, die schon unterwegs ist, beim naechsten Treffer ihr eigenes Ziel.
+test('ki AC-14: bei jedem weiteren Treffer behaelt die Wache ihr Ziel', () => {
+  const welt = new Welt(ZWEI, 4711);
+  const ki = new Ki(welt, 'b');
+  const zentrum = zentrumVon(welt, 'b');
+  const eigene = () => eigeneVon(welt, 'b');
+  // Ohne den Spaeherreiter der Startaufstellung: er stuende als Erster der
+  // Gruppe am Dorfzentrum, und die Suche ginge von ihm aus statt von der Wache.
+  for (const e of eigene()) if (e.art === 'spaeherreiter') welt.einheiten.delete(e.id);
+  const wache = [0, 1].map((dx) => welt.einheitAnlegen('b', zentrum.x + 16 + dx, zentrum.y + 16, 'miliz'));
+  ki.verteidigenPruefen(eigene(), gebaeudeVon(welt, 'b'), zentrum);
+
+  zentrum.leben -= 5;
+  ki.verteidigenPruefen(eigene(), gebaeudeVon(welt, 'b'), zentrum);
+  const ziele = () => wache.map((e) => JSON.stringify(e.angriffslauf));
+  const erstes = ziele();
+  assert.ok(wache.every((e) => e.angriffslauf), 'die Wache ist unterwegs');
+
+  // Gegenprobe: zaehlte ihr eigener Weg als belegt, suchte die KI jetzt ein
+  // anderes Feld.
+  takten(welt, ENTSCHEIDEN_ALLE);
+  const mitEigenem = ki.freiesFeldUm(zentrum, wache[0], { feindFern: FEIND_FERN, rundumFrei: true });
+  const ohneEigenen = ki.freiesFeldUm(zentrum, wache[0],
+    { feindFern: FEIND_FERN, rundumFrei: true, ausser: new Set(wache.map((e) => e.id)) });
+  assert.notDeepEqual(mitEigenem, ohneEigenen, 'ohne die Regel spraenge das Ziel - sonst zeigt der Test nichts');
+
+  // Noch zwei Treffer, je eine halbe Sekunde auseinander.
+  for (let n = 0; n < 2; n++) {
+    zentrum.leben -= 5;
+    ki.verteidigenPruefen(eigene(), gebaeudeVon(welt, 'b'), zentrum);
+    assert.deepEqual(ziele(), erstes, `nach dem ${n + 2}. Treffer dasselbe Ziel`);
+    takten(welt, ENTSCHEIDEN_ALLE);
+  }
+});
+
+test('ki AC-14: steht das Dorf voll, zieht die Wache trotzdem', () => {
+  const welt = new Welt(ZWEI, 4711);
+  const ki = new Ki(welt, 'b');
+  const zentrum = zentrumVon(welt, 'b');
+  const eigene = () => eigeneVon(welt, 'b');
+  // Jedes zweite Feld um das Dorfzentrum ist besetzt: dann hat kein freies
+  // Feld acht freie Nachbarn, und die Suche fuer eine Gruppe findet nichts.
+  for (let dy = -9; dy <= 9; dy++) {
+    for (let dx = -9; dx <= 9; dx++) {
+      const x = zentrum.x + dx;
+      const y = zentrum.y + dy;
+      if ((x + y) % 2 || !karten.begehbar(welt.karte, x, y) || welt.gebaeudeAn(x, y)) continue;
+      welt.einheitAnlegen('b', x, y, 'dorfbewohner');
+    }
+  }
+  const wache = [0, 1].map((dx) => welt.einheitAnlegen('b', zentrum.x + 20 + dx, zentrum.y + 14, 'miliz'));
+  assert.equal(ki.freiesFeldUm(zentrum, wache[0], { feindFern: FEIND_FERN, rundumFrei: true }), null,
+    'mit freien Nachbarfeldern findet sich nichts - sonst zeigt der Test nichts');
+
+  ki.verteidigenPruefen(eigene(), gebaeudeVon(welt, 'b'), zentrum);
+  zentrum.leben -= 5;
+  ki.verteidigenPruefen(eigene(), gebaeudeVon(welt, 'b'), zentrum);
+  assert.equal(ki.verteidigungen, 1, 'die Wache ist trotzdem losgeschickt');
+  assert.ok(wache.every((e) => e.angriffslauf && e.weg.length), 'und unterwegs');
 });

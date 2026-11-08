@@ -18,8 +18,16 @@ etwas anderem gearbeitet.
   feststeht, heißt es in der Oberfläche „Strategie". Vorschlag des Benutzers
   (2026-09-17): **Rise to Hegemony** („Enough diplomacy. Rise to Hegemony.").
   Gegenvorschlag der Schleife: „Vormacht" (deutsch, dasselbe Wort). Nicht
-  geprüft: Markenregister; es gibt eine Strategiereihe „Hegemony". Wartet auf
-  die endgültige Wahl.
+  geprüft: Markenregister; es gibt eine Strategiereihe „Hegemony". **Neuer
+  Vorschlag des Benutzers (2026-11-08): „Fading Allies".** Empfehlung der
+  Schleife: dafür — der Name erzählt `spielziel AC-14` („Bündnisse sind nicht
+  vorgesehen … Absprachen finden am Tisch statt"): zu fünft verbündet man sich
+  mündlich, das Spiel hält niemanden daran, und jede Abmachung verblasst beim
+  ersten Angriff. Eine einfache Websuche fand kein Spiel dieses Namens (am
+  nächsten: das Brettspiel „Fatal Alliances", 2016); ein Markenregister ist
+  nicht durchsucht. **Entschieden am 2026-11-08: „Fading Allies".** Der Name
+  kommt in die Oberfläche, wo heute „Strategie" steht (Runde 87); danach
+  wandert dieser Punkt aus den Fragen.
 - **Zeittest des Managerspiels unter Last (seit 2026-09-16, Runde 10).**
   `karriere AC-7` (Saison unter 1 s) reißt in `npm run check`, sobald fremde
   Rechenjobs laufen: 1,7–3,2 s. Nacheinander (`--test-concurrency=1`) sind
@@ -62,6 +70,14 @@ etwas anderem gearbeitet.
 
 ## Offene Fäden
 
+- **Mechaniken zum Namen „Fading Allies" — „irgendwann", nicht jetzt**
+  (Benutzer, 2026-11-08). Der Name trägt heute schon, weil Absprachen nur am
+  Tisch stattfinden (`spielziel AC-14`: „Bündnisse sind nicht vorgesehen").
+  Wer später Mechaniken dafür baut, muss **zuerst** `spielziel AC-14` neu
+  fassen und in der Tabelle „Wird nicht gebaut" von
+  [ADR-0012](../adr/0012-aoe2-als-vorlage.md) nachsehen. Nicht vor Stufe E
+  (fünf Völker) vorschlagen — vorher gibt es nicht genug Spieler in einer
+  Partie, an denen ein Bündnis etwas ändert.
 - **Zwei Bildunterschriften, die nicht stimmen: `bedienung AC-16` und
   `einheiten AC-15`.** Bei `einheiten AC-15` (gesehen in Runde 80) verspricht
   die Unterschrift „ein Dorfbewohner trägt gelbe Goldbrocken in beiden
@@ -829,6 +845,82 @@ alle sieben Gebäude der Dunklen Zeit stehen. Was sich wiederholt hat:
 Neueste oben. Eine Zeile je Runde: Nummer, Datum, Kriterien, Ergebnis,
 wichtigste Erkenntnis.
 
+- **86** · 2026-11-08 · **ki AC-14** — die KI verteidigt zu Hause: Verliert ein
+  Gebäude oder ein Dorfbewohner Leben, zieht die Wache im Angriffslauf zum
+  Angriffsort, und der getroffene Dorfbewohner läuft zum Dorfzentrum, statt
+  stehenzubleiben und zurückzuschlagen. Die KI bekommt dafür **keine Meldung**:
+  sie vergleicht bei jeder Entscheidung die Lebenswerte mit denen der letzten
+  und sieht, was fehlt. Was ihr Heer unterwegs einsteckt, zählt nicht.
+  Gelernt, viererlei: (1) **Vier grüne Tests und trotzdem falsch — weil alle
+  aus derselben Richtung kamen.** Im Node-Test stand die Wache **nördlich** des
+  Dorfzentrums und der Angreifer südlich; da war das nächste freie Feld am
+  Angriffsort nie das Feld des Angreifers. Im Browser kam sie aus **derselben**
+  Richtung, und dann wurde aus dem Angriffslauf ein Angriff auf genau diese
+  eine Einheit: `feindAn` zieht im Server einen Feind im Umkreis von 1,01
+  Feldern unter den Klick (kampf AC-1). Sie fiel unterwegs, der Auftrag war
+  erfüllt, und die Wache stand zwölf Felder vom Dorf still, während der Gegner
+  weiter einschlug. Das Marschziel hält jetzt 1,5 Felder Abstand von jedem
+  Feind; der Angriffslauf greift den Angreifer ohnehin an, sobald er in Sicht
+  kommt, und marschiert weiter, wenn er fällt. **Wo eine Regel von der
+  Geometrie abhängt, prüft ein Aufbau genau eine Geometrie** — der neue Test
+  stellt Wache und Angreifer auf dieselbe Seite und hat eine Gegenprobe ohne
+  die Abstandsregel. (2) **Das Ende des Marsches ist kein Bild.** Angekommen
+  steht die Wache zwischen Dorfbewohnern, und der Lebensbalken des
+  Dorfzentrums verliert in diesen Sekunden keine fünf Prozent von 2400 — fünf
+  Prozent sind fünf Bildpunkte. Was die Sache zeigt, ist der **Weg**: zwei rote
+  Milizen allein auf offener Wiese, und darüber das angegriffene Gebäude mit
+  Annas Milizen daran. **Und angegriffen wird ein Haus abseits, nicht das
+  Dorfzentrum** — dort treibt die KI ihre Schafe zusammen, schlachtet und lädt
+  ab, und im Gedränge stand in jedem dritten Lauf eine Figur auf einer anderen
+  (siehe 7). (3) **Ein Angreifer allein stirbt,
+  bevor das Bild steht**: Berts Späherreiter wehrt sich (kampf AC-2), und
+  Annas einzelne Miliz lag nach zwanzig Spielsekunden am Boden — das Bild hätte
+  einen Angriff ohne Angreifer gezeigt. Jetzt sind es vier. (4) **Ein
+  Kriterium, das eine Quote behauptet, kann an der neuen Funktion scheitern,
+  ohne falsch zu sein.** `ki AC-11` verlangte, dass über zwanzig Startwerte
+  jede KI angreift. Seit sie sich wehrt, kommt beim Startwert 13 die zweite KI
+  nie auf zehn Kampfeinheiten, weil die erste ab Minute 17,5 bei ihr steht. Das
+  Kriterium sagt jetzt den Grund statt der Quote: **in jeder Partie greift
+  jemand an, und wer nicht angreift, verteidigt.** (5) Nebenbei gefunden und
+  unter `kampf AC-5` belegt: Wer sich **wehrt**, hörte nicht auf zu sammeln —
+  `befehl()` räumt `sammelt` und `baut` beim Angriffsbefehl weg, die Gegenwehr
+  aus `wehren()` ging daran vorbei. Ein getroffener Dorfbewohner trug auf dem
+  Draht weiter „arbeitet gerade" (bedienung AC-31), während er zurückschlug.
+  (6) **Ein flatternder Browsertest, unabhängig von der Runde**: `fahrplan
+  AC-3` (die Dunkle Zeit am Stück) fiel in etwa jedem dritten Lauf mit „ein
+  freistehender, unverdeckter Dorfbewohner". Die Hilfe sagte nicht, warum; jetzt
+  sagt sie es — „4 eigene, davon 1 ausgenommen, 3 hinter einem Gebäude". Später
+  im Baulauf sammeln alle hinter den eben gebauten Häusern, und Warten half
+  nicht (25 Versuche im Zeitraffer, weiter alle verdeckt). Der Ausschluss war
+  aber unnötig: ein Klick sucht **zuerst die nächste eigene Einheit** und erst
+  dann ein Gebäude, ein Umriss ist also anklickbar. `dorfbewohnerAnklicken`
+  kennt jetzt `auchVerdeckt` für Fälle, die kein Bild von der Auswahl machen;
+  der Baulauf nutzt es und braucht 35 s statt 55 s. (7) **Das Gedränge am
+  Dorfzentrum hat vier echte Fehler gezeigt**, gemessen mit `figurenFrei`, das
+  jetzt Besitzer und Feld nennt: die KI gab Wache und Geflohenen in **einer**
+  Entscheidung dasselbe „nächste freie Feld" (`vergeben`), in **zwei**
+  Entscheidungen zwei Geflohenen dasselbe (eigene Laufziele gelten jetzt als
+  belegt), eine Gruppe landete einen Ring weit auf einem Stehenden
+  (`rundumFrei`, mit Rückfall, wenn das Dorf voll steht) — und der **Server**
+  gab einem Angreifer um ein Gebäude das Feld, auf dem ein Schlachter
+  stillstand (`angriffsfelderOhneBesetzte`, nur bei Gebäuden, Konterkreis
+  unverändert). Jeder hat einen eigenen Test mit Gegenprobe. Was bleibt, ist
+  `einheiten AC-29`: wer **später** auf ein besetztes Feld läuft, steht dort.
+  Das ist eine eigene Runde, keine Fußnote eines anderen Kriteriums. (8) **Eine
+  Durchsicht ohne meine Schlüsse hat zwei Fehler gefunden, die meine Tests
+  nicht sahen** (ein Sonnet-Prüfer, nur lesend): seit eigene Laufziele als
+  belegt gelten, sperrte eine laufende Wache bei jedem weiteren Treffer ihr
+  eigenes Ziel und bekam jede halbe Sekunde ein neues — **den Fehler hatte ich
+  eine Stunde vorher selbst eingebaut** (jetzt `ausser`); und ein Bauer, der
+  sich wehrt, gab seine Farm nicht frei. Beide mit Test. Von fünf Befunden
+  trafen zwei, einer war ein billiger Randfall, zwei sind Notizen (Baustellen,
+  die zugleich wachsen und getroffen werden; `FEIND_FERN` muss mit dem Nebel
+  nach Sicht filtern, ki AC-13). **Gemessen** nach der Runde
+  (`npm run pruefstand:strategie`, 22 Minuten, Startwerte 1–20): **40 von 40**
+  KIs greifen an, die erste zwischen Spielminute 17,5 und 20,3 (Median 18,1).
+  Im ersten Stand der Runde waren es 39: beim Startwert 13 verteidigte KI 2
+  vierzigmal und griff nie an — weil ihre Wache mit dem springenden Ziel nie
+  ankam. Mit festem Ziel sind es 9 Verteidigungen und ein Angriff ab 20,3.
 - **85** · 2026-11-07 · **ki AC-11** — die KI greift an: sobald zehn
   Kampfeinheiten bereitstehen, schickt sie acht davon im Angriffslauf zum
   nächsten Gegner und setzt am Ziel auf dessen Dorfzentrum nach; die zwei, die

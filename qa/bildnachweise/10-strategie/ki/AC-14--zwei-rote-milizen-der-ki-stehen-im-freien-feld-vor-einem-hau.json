@@ -1,0 +1,10 @@
+{
+  "spec": "10-strategie/ki.md",
+  "ac": "AC-14",
+  "titel": "Zwei rote Milizen der KI stehen im freien Feld vor einem Haus von Bert, an dem Annas Milizen (blau) stehen: die Wache auf halbem Weg zwischen ihrem Posten und dem angegriffenen Haus. Befohlen hat das kein Mensch",
+  "datei": "e2e/tests/strategie-ki.spec.mjs",
+  "pfad": [
+    "Die KI verteidigt sich",
+    "ki AC-14: Anna schlaegt auf ein Haus der KI ein, ihre Wache kommt"
+  ]
+}

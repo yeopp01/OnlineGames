@@ -104,7 +104,9 @@ test.describe('Dunkle Zeit am Stueck', () => {
     for (const [nummerBau, art] of arten.entries()) {
       await aufBasis();
       // Zum Zielen haelt die Hilfe die Zeit an und laesst sie danach weiterlaufen.
-      await dorfbewohnerAnklicken(anna, { ohne: [hirte], code, raffer: 20 });
+      // Hier zaehlt nur, **dass** einer baut: wer hinter einem Gebaeude steht,
+      // ist trotzdem anklickbar, und spaeter im Lauf stehen alle dort.
+      await dorfbewohnerAnklicken(anna, { ohne: [hirte], code, raffer: 20, auchVerdeckt: true });
       const menue = await anna.locator('#baumenue [data-bauen]').evaluateAll((k) => k.map((x) => x.dataset.bauen));
       const nummer = menue.indexOf(art);
       expect(nummer, `${art} im Baumenue`).toBeGreaterThanOrEqual(0);
