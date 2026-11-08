@@ -144,6 +144,14 @@ export async function gebaeudeAufstellen(page, code, name, art, x, y) {
  *
  * @returns {Promise<number>} wie viele aufgestellt wurden
  */
+/** Den Nebel fuer einen Spieler aufheben (Pruefgriff, e2e/server.mjs, Runde 105). */
+export async function aufdecken(page, code, name) {
+  const antwort = await page.request.post(`http://localhost:${GRIFFHAFEN}/griff`, {
+    data: { id: code, befehl: 'aufdecken', werte: { name } },
+  });
+  expect(antwort.ok(), await antwort.text()).toBe(true);
+}
+
 export async function einheitenAufstellen(page, code, name, anzahl, werte = {}) {
   const antwort = await page.request.post(`http://localhost:${GRIFFHAFEN}/griff`, {
     data: { id: code, befehl: 'einheiten', werte: { name, anzahl, ...werte } },

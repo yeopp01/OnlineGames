@@ -8,7 +8,7 @@
 // `window.ansicht` (public/app.js); befohlen wird nur ueber Maus und Tastatur,
 // so wie ein Mensch es tut.
 import { nachweis } from '../../scripts/qa-nachweis.mjs';
-import { expect, test, zeitraffer } from '../helpers/seite.mjs';
+import { aufdecken, expect, test, zeitraffer } from '../helpers/seite.mjs';
 import { eigeneImBild, partieBeenden, partieZuZweit, rahmenUmAlle, waldInDerNaehe } from '../helpers/strategie.mjs';
 
 const BEDIENUNG = '10-strategie/bedienung.md';
@@ -33,6 +33,13 @@ test.describe('Das Spielbild', () => {
   test.beforeAll(async ({ browser }, info) => {
     partie = await partieZuZweit(browser, info, { startwert: STARTWERT });
     ({ anna, bert, code } = partie);
+    // Ohne Nebel: diese Bilder zeigen Gelaende, Vorraete und Bedienung -
+    // den See, den Stein, Berts ganze Siedlung. Im Nebel lagen sie im Dunkeln
+    // (Runde 105, Durchsicht der Bilder). Den Nebel zeigt strategie-nebel.spec.mjs.
+    for (const [seite, name] of [[anna, 'Anna'], [bert, 'Bert']]) {
+      await aufdecken(seite, code, name);
+      await seite.waitForFunction(() => window.ansicht.allesSehen === true);
+    }
   });
 
   test.afterAll(() => partieBeenden(partie));

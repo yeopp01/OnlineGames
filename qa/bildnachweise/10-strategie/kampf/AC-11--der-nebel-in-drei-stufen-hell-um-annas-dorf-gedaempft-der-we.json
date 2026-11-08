@@ -1,0 +1,10 @@
+{
+  "spec": "10-strategie/kampf.md",
+  "ac": "AC-11",
+  "titel": "Der Nebel in drei Stufen: hell um Annas Dorf, gedämpft der Weg, den ihr Späher geritten ist, schwarz der Rest — ebenso auf der Übersichtskarte",
+  "datei": "e2e/tests/strategie-nebel.spec.mjs",
+  "pfad": [
+    "Nebel",
+    "kampf AC-11, kampf AC-12 und darstellung AC-15: der Nebel in drei Stufen, fremde Einheiten nur in Sicht"
+  ]
+}

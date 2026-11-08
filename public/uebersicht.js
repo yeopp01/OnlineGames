@@ -139,11 +139,22 @@ export class Uebersicht {
     s.closePath();
     s.clip();
     s.drawImage(this.gelaende, 0, 0, this.breite, this.hoehe);
+    // Derselbe Nebel wie im Spielbild (darstellung AC-15), mit der Abbildung
+    // von feldZuPunkt gestreckt.
+    if (ansicht.nebelAn) {
+      const g = ansicht.karte.groesse;
+      s.save();
+      s.transform(this.breite / (2 * g), this.hoehe / (2 * g), -this.breite / (2 * g), this.hoehe / (2 * g), this.breite / 2, this.hoehe / (2 * g));
+      s.imageSmoothingEnabled = true;
+      s.drawImage(ansicht.nebel.bild, -1.5, -1.5, g + 2, g + 2);
+      s.restore();
+    }
     s.restore();
 
     const punkte = [];
     const farbe = (id) => ansicht.spieler.get(id)?.farbe || '#888888';
-    for (const geb of ansicht.gebaeude.values()) {
+    // Fremde Gebaeude nur, wie man sie sieht oder erinnert (kampf AC-12).
+    for (const geb of ansicht.gezeigteGebaeude()) {
       const mitte = ansicht.gebaeudeMitte(geb);
       const p = this.feldZuPunkt(mitte.x, mitte.y);
       const groesse = Math.max(3, mitte.groesse * 1.2);
@@ -155,6 +166,7 @@ export class Uebersicht {
       punkte.push({ art: 'gebaeude', i: geb.i, b: geb.b, x: p.x, y: p.y });
     }
     for (const e of ansicht.nachher.values()) {
+      if (!ansicht.zuSehen(e.b, e.x, e.y)) continue;
       const p = this.feldZuPunkt(e.x, e.y);
       s.fillStyle = farbe(e.b);
       s.fillRect(p.x - 1.5, p.y - 1.5, 3, 3);

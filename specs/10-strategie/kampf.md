@@ -2,7 +2,7 @@
 
 **Bereich:** Strategie
 **Kuerzel:** kampf
-**Stand:** 10/15 fertig · 4 offen · 1 zurueckgestellt
+**Stand:** 12/15 fertig · 2 offen · 1 zurueckgestellt
 
 ## Zweck
 
@@ -99,12 +99,17 @@ aus [Spielziel](spielziel.md) AC-10, gemessen in
 
 ### Sicht
 
-- **AC-11** `offen` **Sichtweite aus den Daten** — `sicht` je Einheit
+- **AC-11** `fertig` **Sichtweite aus den Daten** — `sicht` je Einheit
   (vier bis sechs Felder), Gebäude acht. Was niemand sieht, wird nicht
-  dargestellt.
-- **AC-12** `offen` **Erkundetes bleibt erinnert** — Gelände bleibt sichtbar, fremde Einheiten
+  dargestellt. Seit Runde 105 rechnet der Browser die eigene Sicht nach
+  derselben Regel wie der Server (AC-15) und lässt fremde Einheiten und Tiere
+  außerhalb davon weg, ebenso als Ziel eines Rechtsklicks. Der Server schickt
+  sie noch — das ändert AC-13.
+- **AC-12** `fertig` **Erkundetes bleibt erinnert** — Gelände bleibt sichtbar, fremde Einheiten
   nicht. Der klassische Nebel: man weiß, wo der Wald steht, aber nicht, wer
-  gerade dort ist.
+  gerade dort ist. Fremde Gebäude stehen im Nebel so da, wie man sie zuletzt
+  gesehen hat — auch wenn sie inzwischen gefallen sind; im Nebel gebaute
+  kennt man nicht (Runde 105).
 - **AC-13** `offen` **Kein Blick durch fremde Augen** — Der Server schickt einem Spieler nur, was
   seine Einheiten sehen. Sonst liest ein verändertes Programm die ganze Karte
   mit — die Zustandsnachricht enthält heute alles.

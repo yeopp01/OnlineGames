@@ -8,6 +8,7 @@
 import { FIGUREN, figurBildZeichnen } from './figuren.js';
 import { GEBAEUDE, gebaeudeBildZeichnen, gebaeudeGetroffen } from './gebaeude.js';
 import { KACHEL, kachelMassstab, kachelZeichnen } from './boden.js';
+import { Nebel } from './nebel.js';
 import {
   DINGE, GRAS, WALD, WASSER, dingBildZeichnen, grasBeginnen, grasSammeln, grasZeichnen, raute, wellenZeichnen,
 } from './gelaende.js';
@@ -154,6 +155,10 @@ export class Ansicht {
     this.aus = false;
 
     this.karte = { groesse: nachricht.karte.groesse, felder };
+    // Der Nebel beginnt fuer jede Partie neu: nichts ist erkundet (kampf AC-12).
+    this.nebel = new Nebel(nachricht.karte.groesse);
+    // Fremde Gebaeude, wie man sie zuletzt gesehen hat (kampf AC-12).
+    this.erinnert = new Map();
     this.fuellung = new Map();
     this.taktdauer = 1000 / nachricht.takte;
     this.takteProSekunde = nachricht.takte;
@@ -240,6 +245,8 @@ export class Ansicht {
         if (stufe > vorher) this.beiZeitalter(stufe, this.zeitalterName(stufe));
       }
       this.untaetige = meine.u || [];
+      // Kein Nebel fuer diesen Spieler (Pruefgriff `aufdecken`, e2e/server.mjs).
+      this.allesSehen = meine.alles === 1;
       // Arbeiter je Rohstoff (bedienung AC-32), in der Reihenfolge des Servers.
       const [amHolz, anNahrung, amGold, amStein] = meine.a || [0, 0, 0, 0];
       this.arbeiter = { holz: amHolz, nahrung: anNahrung, gold: amGold, stein: amStein };
@@ -256,9 +263,79 @@ export class Ansicht {
     }
     if (this.gewaehltesGebaeude && !this.gebaeude.has(this.gewaehltesGebaeude)) this.gewaehltesGebaeude = null;
 
+    // Die eigene Sicht zweimal je Sekunde neu, beim ersten Zustand sofort
+    // (kampf AC-11): vorher gab es keine eigenen Einheiten.
+    if (this.nebel && this.nebel.rechnen(this, this.nebel.takt === -Infinity)) this.erinnern();
+
     // Zuletzt, damit die Meldung auf dem letzten Stand sitzt: das Ende kommt
     // im selben Zustand wie der letzte Verlust (spielziel AC-5).
     if (nachricht.ende) this.endeMerken(nachricht.ende);
+  }
+
+  /**
+   * Gilt der Nebel? Nicht fuer den, der ausgeschieden ist und zusieht
+   * (spielziel AC-7), und nicht nach dem Ende - dann sehen alle alles.
+   */
+  get nebelAn() {
+    return Boolean(this.nebel) && !this.aus && !this.ende && !this.allesSehen;
+  }
+
+  /**
+   * Was man von fremden Gebaeuden weiss (kampf AC-12): was man gerade sieht,
+   * so wie es ist; was im Nebel liegt, so wie man es zuletzt gesehen hat -
+   * auch wenn es inzwischen gefallen ist. Ein Gebaeude, das im Nebel neu
+   * entstand, kennt man nicht. Wird ein erinnertes Gebaeude wieder gesehen und
+   * steht dort nicht mehr, ist es vergessen.
+   */
+  erinnern() {
+    for (const b of this.gebaeude.values()) {
+      if (b.b === this.ich) continue;
+      const mitte = this.gebaeudeMitte(b);
+      if (this.nebel.sieht(mitte.x, mitte.y)) this.erinnert.set(b.i, { ...b });
+    }
+    for (const [id, b] of this.erinnert) {
+      const mitte = this.gebaeudeMitte(b);
+      if (!this.gebaeude.has(id) && this.nebel.sieht(mitte.x, mitte.y)) this.erinnert.delete(id);
+    }
+  }
+
+  /**
+   * Die Gebaeude, die gezeichnet werden: die eigenen, und von den fremden,
+   * was man sieht oder erinnert. Ohne Nebel alle, wie sie sind.
+   */
+  gezeigteGebaeude() {
+    if (!this.nebelAn) return [...this.gebaeude.values()];
+    const liste = [];
+    for (const b of this.gebaeude.values()) {
+      if (b.b === this.ich) liste.push(b);
+      else if (this.nebel.sieht(this.gebaeudeMitte(b).x, this.gebaeudeMitte(b).y)) liste.push(b);
+    }
+    for (const [id, b] of this.erinnert) {
+      const jetzt = this.gebaeude.get(id);
+      if (jetzt && this.nebel.sieht(this.gebaeudeMitte(jetzt).x, this.gebaeudeMitte(jetzt).y)) continue;
+      liste.push(b);
+    }
+    return liste;
+  }
+
+  // Ist eine fremde Einheit an dieser Stelle zu sehen? Eigene immer.
+  zuSehen(besitzer, x, y) {
+    return besitzer === this.ich || !this.nebelAn || this.nebel.sieht(x, y);
+  }
+
+  /**
+   * Der Nebel ueber dem Bild (darstellung AC-15): ein Bildpunkt je Feld, mit
+   * derselben Abbildung wie `zuBild` gestreckt - x' = (wx - wy) * HALB_B,
+   * y' = (wx + wy) * HALB_H, beides mal Zoom und um die Kamera verschoben.
+   */
+  nebelZeichnen(stift) {
+    const z = this.kamera.zoom;
+    stift.save();
+    stift.transform(HALB_B * z, HALB_H * z, -HALB_B * z, HALB_H * z, -this.kamera.x * z, -this.kamera.y * z);
+    stift.imageSmoothingEnabled = true;
+    // Das Bild hat einen Rand von einem Feld (nebel.js).
+    stift.drawImage(this.nebel.bild, -1.5, -1.5, this.karte.groesse + 2, this.karte.groesse + 2);
+    stift.restore();
   }
 
   /**
@@ -744,6 +821,8 @@ export class Ansicht {
     let besterAbstand = 1.01;
     for (const einheit of this.nachher.values()) {
       if (einheit.b === this.ich || einheit.s) continue;
+      // Wer im Nebel steht, ist kein Ziel - man sieht ihn nicht (kampf AC-11).
+      if (!this.zuSehen(einheit.b, einheit.x, einheit.y)) continue;
       const abstand = Math.hypot(einheit.x - ziel.x, einheit.y - ziel.y);
       if (abstand < besterAbstand) {
         besterAbstand = abstand;
@@ -852,7 +931,9 @@ export class Ansicht {
     }
 
     // Flache Gebaeude (Farmen) gehoeren zum Boden: unter Figuren und Baeume.
-    for (const gebaeude of this.gebaeude.values()) {
+    // Fremde nur, wie man sie sieht oder erinnert (kampf AC-12).
+    const gezeigt = this.gezeigteGebaeude();
+    for (const gebaeude of gezeigt) {
       if (!this.werte.gebaeude[gebaeude.art]?.begehbar) continue;
       const mitte = this.gebaeudeMitte(gebaeude);
       this.gebaeudeBild(gebaeude, this.zuBild(mitte.x, mitte.y), HALB_B * zoom);
@@ -865,10 +946,13 @@ export class Ansicht {
       for (let x = vonX; x <= bisX; x++) {
         const index = y * g + x;
         const art = this.karte.felder[index];
+        // Nie Gesehenes wird gar nicht erst gezeichnet: ein Baum am Kartenrand
+        // ragt mit seiner Krone ueber die Flaeche, die der Nebel deckt (Runde 105).
+        if (this.nebelAn && !this.nebel.hatErkundet(x, y)) continue;
         if (DINGE.includes(art)) stehend.push({ tiefe: x + y, x, y, art: 'vorrat', feld: art, index });
       }
     }
-    for (const gebaeude of this.gebaeude.values()) {
+    for (const gebaeude of gezeigt) {
       // Farmen liegen flach am Boden und sind schon gezeichnet.
       if (this.werte.gebaeude[gebaeude.art]?.begehbar) continue;
       const mitte = this.gebaeudeMitte(gebaeude);
@@ -878,6 +962,9 @@ export class Ansicht {
       const t = tier.seit === undefined ? 1 : Math.min(1, (jetzt - tier.seit) / this.taktdauer);
       const x = tier.vx === undefined ? tier.x : tier.vx + (tier.x - tier.vx) * t;
       const y = tier.vy === undefined ? tier.y : tier.vy + (tier.y - tier.vy) * t;
+      // Tiere im Nebel bleiben verborgen, auch die eigenen Schafe nicht -
+      // erst wer hinsieht, findet sie (kampf AC-12).
+      if (this.nebelAn && tier.b !== this.ich && !this.nebel.sieht(x, y)) continue;
       stehend.push({ tiefe: x + y, x, y, art: 'tier', tier });
     }
     const anteil = this.anteil(jetzt);
@@ -885,6 +972,8 @@ export class Ansicht {
       const alt = this.vorher.get(einheit.i);
       const x = alt ? alt.x + (einheit.x - alt.x) * anteil : einheit.x;
       const y = alt ? alt.y + (einheit.y - alt.y) * anteil : einheit.y;
+      // Fremde Einheiten zeigt nur, wer sie gerade sieht (kampf AC-11, AC-12).
+      if (!this.zuSehen(einheit.b, x, y)) continue;
       stehend.push({ tiefe: x + y, x, y, art: 'einheit', einheit, alt });
     }
     // Gleiche Tiefe: der Vorrat zuerst, sonst verschwindet ein Sammler im Baum,
@@ -940,10 +1029,17 @@ export class Ansicht {
         arbeit: einheit.w && !laeuft ? jetztPhase(einheit.i) : 0,
       }, true);
     }
+    // Der Nebel liegt ueber allem, was steht, und unter den Hilfen der
+    // Bedienung - Lebensbalken, Zielzeichen und Rahmen bleiben lesbar.
+    if (this.nebelAn) this.nebelZeichnen(stift);
     for (const balken of this.lebensbalken) this.lebensbalkenZeichnen(balken);
     this.zielzeichenZeichnen(e, jetzt);
 
-    for (const spieler of this.spieler.values()) this.namenZeichnen(spieler);
+    for (const spieler of this.spieler.values()) {
+      // Ein fremder Name steht erst dort, wo man schon war.
+      if (this.nebelAn && spieler.id !== this.ich && !this.nebel.hatErkundet(spieler.basis.x, spieler.basis.y)) continue;
+      this.namenZeichnen(spieler);
+    }
     if (this.platzieren) this.platzVorschau(e);
     this.sammelpunktZeichnen(e);
     if (this.zug) this.rahmenZeichnen();

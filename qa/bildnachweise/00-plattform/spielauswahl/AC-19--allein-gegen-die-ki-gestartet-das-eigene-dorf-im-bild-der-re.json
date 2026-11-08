@@ -1,7 +1,7 @@
 {
   "spec": "00-plattform/spielauswahl.md",
   "ac": "AC-19",
-  "titel": "Allein gegen die KI gestartet: das eigene Dorf im Bild, unten rechts auf der Übersichtskarte ein zweites Dorf in fremder Farbe",
+  "titel": "Allein gegen die KI gestartet: das eigene Dorf im Bild, der Rest der Karte noch im Nebel — auch auf der Übersichtskarte unten rechts",
   "datei": "e2e/tests/spielauswahl.spec.mjs",
   "pfad": [
     "Gegen die KI",

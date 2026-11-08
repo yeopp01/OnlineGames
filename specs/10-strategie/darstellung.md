@@ -2,7 +2,7 @@
 
 **Bereich:** Strategie
 **Kuerzel:** darstellung
-**Stand:** 14/16 fertig · 2 offen
+**Stand:** 15/16 fertig · 1 offen
 
 ## Zweck
 
@@ -54,7 +54,7 @@ der Spieler. Keine Bilddateien aus fremder Quelle.
 
 ### Nebel (Stufe C)
 
-- **AC-15** `offen` **Nebel in drei Stufen** — Das Bild unterscheidet drei
+- **AC-15** `fertig` **Nebel in drei Stufen** — Das Bild unterscheidet drei
   Zustände: **nie gesehen** (schwarz, nichts darin), **gesehen, aber jetzt
   unbeobachtet** (gedämpft, mit erinnertem Gelände und erinnerten Gebäuden,
   ohne fremde Einheiten) und **beobachtet** (voll). Die Übersichtskarte zeigt

@@ -10,7 +10,9 @@ const {
 const TAKTE_PRO_SEKUNDE = 10;
 // Welche Werte die Auswahlleiste je Einheit zeigt (bedienung AC-35). Leben
 // steht dabei, weil der Lebensbalken denselben Weg nimmt.
-const KAMPFFELDER = ['leben', 'angriff', 'nahruestung', 'fernruestung', 'reichweite'];
+// `sicht` seit Runde 105: der Browser zeichnet den Nebel aus der Sicht der
+// eigenen Einheiten (kampf AC-11), mit Verbesserungen.
+const KAMPFFELDER = ['leben', 'angriff', 'nahruestung', 'fernruestung', 'reichweite', 'sicht'];
 const SUCHWEITE_ERSATZ = 12;
 // So lange liegt ein Toter noch im Bild, bevor er aus dem Zustand faellt
 // (kampf AC-10): lang genug, um zu sehen, was passiert ist.
@@ -2425,6 +2427,9 @@ class Welt {
         a: this.arbeiterVon(s.id),
         // Ausgeschieden, nur wenn es zutrifft (spielziel AC-5).
         ...(s.aus ? { aus: 1 } : {}),
+        // Sieht alles, ohne Nebel - nur ueber den Pruefgriff `aufdecken` im
+        // Browserlauf (e2e/server.mjs), fuer Tests, die nicht vom Nebel handeln.
+        ...(s.alles ? { alles: 1 } : {}),
       })),
       einheiten,
       felder,
@@ -2515,6 +2520,7 @@ class Welt {
           // seiner Tafel `kw` (bedienung AC-35).
           angriff: w.angriff || 0, nahruestung: w.nahruestung || 0, fernruestung: w.fernruestung || 0,
           reichweite: w.reichweite || 0,
+          sicht: w.sicht || 0,
           // Klassen und Bonus, damit die Leiste "+15 gegen Kavallerie"
           // schreiben kann (bedienung AC-35). Der Browser rechnet damit
           // keinen Schaden - das tut der Server (kampf AC-3).
@@ -2525,6 +2531,8 @@ class Welt {
           leben: w.leben, bildetAus: w.bildetAus, groesse: w.groesse, kosten: w.kosten, bauzeit: w.bauzeit,
           wohnraum: w.wohnraum, annahme: w.annahme, begehbar: Boolean(w.begehbar), nahrung: w.nahrung || null,
           zeitalter: w.zeitalter || 0,
+          // Acht Felder ueber den Rand (kampf AC-11, AC-15).
+          sicht: w.sicht,
         }])),
         verbesserungen: VERBESSERUNGEN,
         // Die Namen der Klassen, fuer den Bonus an der Auswahl (bedienung AC-35).

@@ -324,7 +324,7 @@ test.describe('Gegen die KI', () => {
     await nachweis(page, {
       spec: AUSWAHL,
       ac: 'AC-19',
-      titel: 'Allein gegen die KI gestartet: das eigene Dorf im Bild, unten rechts auf der Übersichtskarte ein zweites Dorf in fremder Farbe',
+      titel: 'Allein gegen die KI gestartet: das eigene Dorf im Bild, der Rest der Karte noch im Nebel — auch auf der Übersichtskarte unten rechts',
       test: info,
     });
     expect(fehler).toEqual([]);

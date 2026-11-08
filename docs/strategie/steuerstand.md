@@ -13,18 +13,18 @@ hier nichts eintraegt, verliert den Faden beim naechsten Autocompact.
 
 ## Zuletzt fortgeschrieben
 
-2026-11-08, nach Runde 104 (**kampf AC-15, C6a**: die Sicht je Spieler wird
-auf dem Server gerechnet - `welt.sieht()`, `welt.erkundet()`, zweimal je
-Sekunde, Gebaeude nur bei Aenderung. Bauabfolge C6a-C6e im Fahrplan. **Als
-Naechstes C6b**: jedem Spieler seine Sicht schicken und den Nebel in drei
-Stufen zeichnen (kampf AC-11, AC-12, darstellung AC-15); Hinweise aus der
-Durchsicht stehen bei den offenen Faeden. **Naechste Rueckschau: Runde 108.**)
+2026-11-08, nach Runde 105 (**kampf AC-11, AC-12, darstellung AC-15 - C6b**:
+der Nebel im Bild in drei Stufen, auch auf der Uebersichtskarte; der Browser
+rechnet die eigene Sicht (`public/nebel.js`), fremde Gebaeude im Nebel aus
+der Erinnerung. Pruefgriff `aufdecken` fuer Tests, die nicht vom Nebel
+handeln. **Als Naechstes C6c**: der Server schickt nur Sichtbares (kampf
+AC-13, fahrplan AC-13). **Naechste Rueckschau: Runde 108.**)
 
 ## Wo ich stehe
 
 - **Branch:** `strategie`. Nie auf `main` arbeiten, **nie pushen, nie deployen.**
-- **Board:** 404 von 527 Kriterien fertig · 1 in Arbeit · 5 in QA · 4 geplant ·
-  105 offen · 8 zurueckgestellt. 490 Tests ohne Browser, 170 im Browser.
+- **Board:** 407 von 527 Kriterien fertig · 1 in Arbeit · 5 in QA · 4 geplant ·
+  102 offen · 8 zurueckgestellt. 490 Tests ohne Browser, 172 im Browser.
 - **Fuenf Waechter in `tests/waechter-*.test.mjs`** (der fuenfte seit Runde 87: Bildschirmtext mit echten Umlauten): Gleichheit auf wachsenden
   Listen, verbesserbare Werte an `welt.einheitenwert()` vorbei,
   Bildunterschriften mit `${...}`, und (neu in Runde 73) die **Kuerzeltafel**

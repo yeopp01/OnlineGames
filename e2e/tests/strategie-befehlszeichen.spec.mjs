@@ -20,10 +20,12 @@ test.describe('Befehlszeichen', () => {
     partie = await partieZuZweit(browser, info);
     const { anna, code } = partie;
     const [wiese] = await freieWiesen(anna, 1);
-    // Zwei Milizen Annas, eine Berts vier Felder weiter - nah genug, dass
-    // beide Ziele in ein Bild passen, weit genug fuer zwei getrennte Klicks.
-    expect(await einheitenAufstellen(anna, code, 'Anna', 2, { art: 'miliz', x: wiese.x - 2, y: wiese.y - 2 })).toBe(2);
-    expect(await einheitenAufstellen(anna, code, 'Bert', 1, { art: 'miliz', x: wiese.x + 2, y: wiese.y + 2 })).toBe(1);
+    // Zwei Milizen Annas, eine Berts drei Felder weiter - nah genug, dass
+    // beide Ziele in ein Bild passen und Anna sie sieht (Sicht 4, kampf
+    // AC-11), weit genug fuer zwei getrennte Klicks. Bis Runde 105 stand sie
+    // vier weiter; mit dem Nebel war sie dort unsichtbar und kein Ziel.
+    expect(await einheitenAufstellen(anna, code, 'Anna', 2, { art: 'miliz', x: wiese.x - 1, y: wiese.y - 1 })).toBe(2);
+    expect(await einheitenAufstellen(anna, code, 'Bert', 1, { art: 'miliz', x: wiese.x + 1, y: wiese.y + 1 })).toBe(1);
     await anna.waitForFunction(() => [...window.ansicht.nachher.values()].filter((e) => e.k === 'm').length >= 3);
     const alle = await anna.evaluate(() => {
       const a = window.ansicht;
@@ -33,6 +35,7 @@ test.describe('Befehlszeichen', () => {
     meine = alle.filter((e) => e.eigen);
     [feind] = alle.filter((e) => !e.eigen);
     expect(meine.length).toBe(2);
+    await anna.waitForFunction((f) => window.ansicht.nebel.sieht(f.x, f.y), feind, { timeout: 5_000 });
   });
   test.afterAll(() => partieBeenden(partie));
 

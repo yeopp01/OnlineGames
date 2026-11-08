@@ -1027,6 +1027,27 @@ unter Last), seit dem dreifachen Klick nicht mehr.
 Neueste oben. Eine Zeile je Runde: Nummer, Datum, Kriterien, Ergebnis,
 wichtigste Erkenntnis.
 
+- **105** · 2026-11-08 · **kampf AC-11, AC-12, darstellung AC-15** — der Nebel
+  im Bild (C6b). Statt jedem Spieler seine Sicht zu schicken, rechnet der
+  Browser sie aus den eigenen Einheiten und Gebäuden nach derselben Regel wie
+  der Server — keine Übertragung je Takt. Ein Bild mit einem Bildpunkt je Feld,
+  mit derselben Abbildung wie die Karte gestreckt, gibt mit der Glättung weiche
+  Ränder; eine Zeichnung für das ganze Spielbild, eine für die
+  Übersichtskarte. Zweimal hingesehen und nachgebessert: ein Rand von einem
+  Bildpunkt gegen eine Linie Gelände am Kartenrand, und nie Gesehenes wird gar
+  nicht gezeichnet, weil Baumkronen über den Rand ragten. Fremde Gebäude im
+  Nebel zeigt der Browser so, wie er sie zuletzt sah. **Nur zwei von 101
+  Browserfällen fielen** — beide zu Recht: Berts Miliz stand außer Sicht (jetzt
+  drei Felder statt vier), und die Übersichtskarte prüft Gelände und Punkte
+  der ganzen Karte (dafür der Prüfgriff `aufdecken`, als Merkmal am Spieler auf
+  dem Server). Der Server schickt weiterhin alles; das schließt C6c. **Die
+  Durchsicht der 84 geänderten Bilder durch drei Subagenten fand sieben, deren
+  Tests grün waren, deren Bild aber nicht mehr stimmte**: das Heer der KI, die
+  Wache der KI, der See, der Stein, Berts Siedlung — alles im Nebel — und die
+  Übersicht „allein gegen die KI", die zu Recht kein zweites Dorf mehr zeigt.
+  Die Tests prüfen die Daten, nicht das Gezeichnete. Jetzt decken sie auf
+  (Gelände, KI) oder sagen, was zu sehen ist (AC-19). **Gelernt: eine Änderung,
+  die verbirgt, bricht Bilder, nicht Tests** — dort hilft nur das Ansehen.
 - **104** · 2026-11-08 · **kampf AC-15** — C6 beginnt: die Sicht je Spieler
   wird auf dem Server gerechnet (jetzt gesehen, je gesehen), zweimal je
   Sekunde. Der Nebel ist zu groß für eine Runde; die Bauabfolge C6a bis C6e
