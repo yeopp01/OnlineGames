@@ -7,9 +7,9 @@ Eine Zeile je Abnahmekriterium. Gepflegt wird der Status in der Spec selbst,
 hier steht er zusammengefasst. Erzeugt mit `npm run specs:board`; als Seite
 mit Bildnachweisen, Filter und Suche mit `npm run qa:report`.
 
-**Gesamt:** 392/520 fertig · 1 in Arbeit · 5 in QA · 4 geplant · 110 offen · 8 zurueckgestellt
+**Gesamt:** 393/521 fertig · 1 in Arbeit · 5 in QA · 4 geplant · 110 offen · 8 zurueckgestellt
 
-**Nachweise:** 164 Kriterien mit Bild · 232 ohne Bild, begruendet in `qa/ohne-bild.json`
+**Nachweise:** 164 Kriterien mit Bild · 233 ohne Bild, begruendet in `qa/ohne-bild.json`
 
 ## Nach Spezifikation
 
@@ -28,7 +28,7 @@ mit Bildnachweisen, Filter und Suche mit `npm run qa:report`.
 | [Fahrplan zum Klon](10-strategie/fahrplan.md)                  | -         | -     | -       | 12    | -               | 10     |
 | [Kampf](10-strategie/kampf.md)                                 | -         | -     | -       | 4     | 1               | 9      |
 | [Karte und Vorraete](10-strategie/karte-und-vorraete.md)       | -         | -     | -       | 2     | 3               | 12     |
-| [KI-Spieler](10-strategie/ki.md)                               | -         | -     | -       | 1     | -               | 13     |
+| [KI-Spieler](10-strategie/ki.md)                               | -         | -     | -       | 1     | -               | 14     |
 | [Spielziel und Partieverlauf](10-strategie/spielziel.md)       | 1         | -     | -       | 12    | -               | 5      |
 | [Aufstellung, Taktik und Training](15-manager/aufstellung.md)  | -         | -     | -       | -     | 2               | 23     |
 | [Bedienung des Managerspiels](15-manager/bedienung.md)         | -         | -     | -       | -     | -               | 15     |

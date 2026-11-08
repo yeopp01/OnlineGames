@@ -2,7 +2,7 @@
 
 **Bereich:** Strategie
 **Kuerzel:** ki
-**Stand:** 13/14 fertig · 1 offen
+**Stand:** 14/15 fertig · 1 offen
 
 ## Zweck
 
@@ -94,6 +94,9 @@ nicht die Regeln.
   diesem Augenblick überrannt wird** (mehr Feinde in zwölf Feldern um das
   Dorfzentrum als eigene Kampfeinheiten), zählt nicht, muss aber nach Minute
   20 die 20 gehabt haben; höchstens ein Viertel darf so ausgenommen sein. Die
+  Dieselbe Ausnahme gilt für den zweiten Angriff: wer belagert wird, greift
+  nicht wieder an, sondern verteidigt (wie AC-11) — Startwert 6, KI 2, ab
+  Minute 20 bei jedem Messpunkt Feinde im Dorf, 128-mal die Wache gerufen. Die
   Klausel prüft, dass die KI ihre Wirtschaft nicht für das Heer opfert, nicht,
   dass keine KI einen Krieg verliert — dass Partien entschieden werden, ist der
   Sinn des Nachschubs (→ [Fahrplan](fahrplan.md) AC-11). Gemessen in Runde 90
@@ -122,6 +125,18 @@ nicht die Regeln.
   holte ein Scharmützel am anderen Ende der Karte die Wache vom Dorf weg. Die
   KI bekommt dafür keine Meldung: sie sieht nur, dass Leben fehlt. Ohne das
   ist eine Partie gegen die KI ein Spaziergang.
+- **AC-15** `fertig` **Liegengebliebenes wird weitergebaut** — Eine eigene
+  Baustelle, an der niemand mehr baut — ihr Bauer ist gefallen oder geflohen
+  (AC-14) —, bekommt einen Bauer zurück, eine je Entscheidung. Gefunden in
+  Runde 94 bei der Frage, warum Partien unentschieden enden: eine
+  Hausbaustelle aus der Frühphase lag liegen, und weil die KI kein zweites
+  Haus beginnt, solange eines im Bau ist, blieb ihre Bevölkerung beim
+  Startwert 13 ab Minute 55 bei 40 von 40 — das Heer bei 18, neben 4000
+  Nahrung. Danach: 23 Häuser und 112 Einwohner bei Minute 70; über zwanzig
+  Partien bis Minute 90 enden 19 statt 17 mit einem Sieger, im Median nach 66
+  statt 71 Minuten. Übersprungen wird eine Baustelle, an der Feinde stehen
+  (ein Ersatz liefe hinein), und eine, zu der kein Weg führt — zwei Minuten
+  lang, wie ein unerreichbarer Vorrat (AC-12).
 
 ## Grenzfaelle
 

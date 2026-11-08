@@ -3,6 +3,11 @@
   "eintraege": [
     {
       "spec": "10-strategie/ki.md",
+      "ac": "AC-15",
+      "begruendung": "Dass die KI eine verlassene Baustelle wieder besetzt, ist eine Entscheidung ueber die Zeit: erst liegt sie, dann kommt ein Bauer. Belegt im Rechenteil und ueber ganze Partien im Pruefstand; ein Standbild zeigt eine Baustelle mit einem Dorfbewohner, nicht, dass sie vorher verlassen war."
+    },
+    {
+      "spec": "10-strategie/ki.md",
       "ac": "AC-10",
       "begruendung": "Dass auch nach zwanzig Spielminuten kein Dorfbewohner laenger als 20 Sekunden stillsteht, ist eine Messung ueber dreissig Spielminuten und zwanzig Startwerte im Pruefstand. Ein Standbild zeigt einen Augenblick, nicht, wie lange einer schon steht."
     },

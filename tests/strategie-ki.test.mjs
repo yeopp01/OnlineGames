@@ -931,23 +931,33 @@ test('ki AC-12 und ki AC-10: ueber zwanzig Startwerte greift jede KI wieder an, 
       },
     });
     for (const p of spieler) {
-      // Nachschub: nach dem ersten Heer noch eines.
-      assert.ok(p.angriffe >= 2, `${startwert} ${p.name}: ${p.angriffe} Angriffe`);
+      // Ueberrannt: gerade jetzt mehr Feinde am Dorf als eigene Kampfeinheiten,
+      // oder in den letzten fuenf Minuten so viele Dorfbewohner gefallen, wie
+      // ein Dorfzentrum in der Zeit ersetzt (zwoelf, 25 s je Stueck) - oder
+      // wenigstens fuenf. Startwert 6, KI 2 (Runde 94): ab Minute 20 bei jedem
+      // Messpunkt Feinde im Dorf, 24 Gefallene, 128-mal die Wache gerufen.
+      const zuletzt = (gefallen.get(p.name) || []).filter((t) => t >= 25 * 60 * TAKTE_PRO_SEKUNDE).length;
+      const dorf = p.dorfbewohner + p.dorfbewohnerInAusbildung;
+      const belagert = p.feindeAmDorf > p.kampf || zuletzt >= Math.max(5, 20 - dorf);
+      // Nachschub: nach dem ersten Heer noch eines - ausser sie wird gerade
+      // ueberrannt: wer nicht angreift, verteidigt (wie ki AC-11).
+      if (p.angriffe < 2) {
+        assert.ok(belagert, `${startwert} ${p.name}: ${p.angriffe} Angriffe und nicht belagert (${p.feindeAmDorf} Feinde, ${p.kampf} eigene, ${zuletzt} Gefallene in fuenf Minuten)`);
+        ueberrannt += 1;
+        continue;
+      }
       // Auch spaet steht niemand herum (ki AC-10).
       assert.ok(p.untaetigMax <= 20, `${startwert} ${p.name}: ${p.untaetigMax} s untaetig`);
       assert.ok(hoechste.get(p.name) >= 20, `${startwert} ${p.name}: nach Minute 20 hoechstens ${hoechste.get(p.name)} Dorfbewohner`);
       // Die Wirtschaft laeuft weiter. Wer bezahlt in der Ausbildung steht,
       // zaehlt mit: faellt der Messpunkt in einen Ueberfall, ersetzt das
       // Dorfzentrum die Gefallenen schon.
-      const dorf = p.dorfbewohner + p.dorfbewohnerInAusbildung;
       if (dorf >= 20) continue;
-      // Ueberrannt: gerade jetzt mehr Feinde am Dorf als eigene Kampfeinheiten,
-      // oder der Fehlbetrag erklaert sich durch Gefallene, die das Dorfzentrum
-      // noch nicht ersetzen konnte - in fuenf Minuten bildet es zwoelf aus (25 s
-      // je Dorfbewohner). Startwert 6, KI 2: 27 Gefallene zwischen Minute 24 und
-      // 28, bei Minute 30 der Angriff abgewehrt - die Wirtschaft war
-      // zerschlagen, nicht vernachlaessigt (Runde 91).
-      const zuletzt = (gefallen.get(p.name) || []).filter((t) => t >= 25 * 60 * TAKTE_PRO_SEKUNDE).length;
+      // Der Fehlbetrag muss sich durch die Belagerung erklaeren: Feinde im Dorf,
+      // oder Gefallene, die das Dorfzentrum noch nicht ersetzen konnte. Startwert
+      // 6, KI 2 (Runde 91): 27 Gefallene zwischen Minute 24 und 28, bei Minute
+      // 30 der Angriff abgewehrt - die Wirtschaft war zerschlagen, nicht
+      // vernachlaessigt.
       assert.ok(p.feindeAmDorf > p.kampf || zuletzt >= 20 - dorf,
         `${startwert} ${p.name}: ${p.dorfbewohner} Dorfbewohner, ${p.dorfbewohnerInAusbildung} in Ausbildung - und nicht ueberrannt (${p.feindeAmDorf} Feinde, ${p.kampf} eigene Kampfeinheiten, ${zuletzt} Gefallene in fuenf Minuten)`);
       ueberrannt += 1;
@@ -1207,4 +1217,58 @@ test('pruefstand:vergleich stellt den Arbeitsstand neben einen eingecheckten Sta
   assert.match(ausgabe, /^Arbeitsstand /m, 'der Arbeitsstand');
   assert.equal((ausgabe.match(/Feudalzeit Median/g) || []).length, 2, 'je Stand eine Auswertung');
   assert.doesNotMatch(ausgabe, /WIDERSPRUCH/);
+});
+
+test('ki AC-15: eine Baustelle, an der niemand mehr baut, bekommt einen Bauer zurueck', () => {
+  // Runde 94: eine Hausbaustelle aus der Fruehphase blieb liegen - ihr Bauer
+  // war geflohen (ki AC-14) -, und `hausImBau` sperrte von da an jedes weitere
+  // Haus. Beim Startwert 13 blieb die Bevoelkerung ab Minute 55 bei 40 von 40.
+  const welt = new Welt(ZWEI, 4711);
+  const ki = new Ki(welt, 'a');
+  const platz = ki.platzBeiBasis('haus');
+  const haus = welt.gebaeudeAnlegen('a', 'haus', platz.x, platz.y, false);
+  const dorf = () => dorfVon(welt, 'a');
+  const bauleute = () => dorf().filter((e) => e.auftrag?.art === 'bauen' && e.auftrag.gebaeude === haus.id);
+  assert.equal(bauleute().length, 0, 'niemand baut daran');
+  ki.baustellenWeiterbauen([...welt.gebaeude.values()].filter((g) => g.besitzer === 'a'), dorf());
+  assert.equal(bauleute().length, 1, 'einer baut weiter');
+  // Gegenprobe: baut schon einer, kommt kein zweiter dazu.
+  ki.baustellenWeiterbauen([...welt.gebaeude.values()].filter((g) => g.besitzer === 'a'), dorf());
+  assert.equal(bauleute().length, 1, 'nicht noch einer');
+  // Und das Haus wird fertig.
+  takten(welt, 60 * TAKTE_PRO_SEKUNDE);
+  assert.ok(haus.fertig, 'das Haus steht');
+});
+
+test('ki AC-15: eine Baustelle mit Feinden daneben oder ohne Weg bleibt liegen, statt Arbeiter zu verbrauchen', () => {
+  // Durchsicht Runde 94: ohne Weg risse eine verlassene Baustelle jede halbe
+  // Sekunde einen Arbeiter aus der Arbeit, und ein Ersatz an einer umkaempften
+  // Baustelle liefe in den Feind.
+  const welt = new Welt(ZWEI, 4711);
+  const ki = new Ki(welt, 'a');
+  const g = welt.karte.groesse;
+  const platz = ki.platzBeiBasis('haus');
+  const haus = welt.gebaeudeAnlegen('a', 'haus', platz.x, platz.y, false);
+  const gebaeude = () => [...welt.gebaeude.values()].filter((b) => b.besitzer === 'a');
+  const bauleute = () => dorfVon(welt, 'a').filter((e) => e.auftrag?.art === 'bauen' && e.auftrag.gebaeude === haus.id);
+  // Ein Feind daneben: niemand geht hin.
+  const feind = welt.einheitAnlegen('b', haus.x + 2, haus.y + 2, 'miliz');
+  ki.baustellenWeiterbauen(gebaeude(), dorfVon(welt, 'a'));
+  assert.equal(bauleute().length, 0, 'mit einem Feind daneben bleibt sie liegen');
+  welt.einheiten.delete(feind.id);
+  // Ohne Weg: rundum Wald. Einer versucht es, dann ist sie zwei Minuten gesperrt.
+  const { x0, y0, x1, y1 } = welt.grundflaeche('haus', haus.x, haus.y);
+  for (let y = y0 - 2; y <= y1 + 2; y++) {
+    for (let x = x0 - 2; x <= x1 + 2; x++) {
+      if (x >= x0 && x <= x1 && y >= y0 && y <= y1) continue;
+      welt.karte.felder[y * g + x] = karten.WALD;
+    }
+  }
+  ki.baustellenWeiterbauen(gebaeude(), dorfVon(welt, 'a'));
+  assert.ok(ki.gesperrt('baustelle:' + haus.id), 'die Baustelle ohne Weg ist gesperrt');
+  let neu = 0;
+  const senden = ki.senden.bind(ki);
+  ki.senden = (n) => { neu += 1; return senden(n); };
+  for (let i = 0; i < 4; i++) ki.baustellenWeiterbauen(gebaeude(), dorfVon(welt, 'a'));
+  assert.equal(neu, 0, 'und zieht keinen weiteren Arbeiter ab');
 });

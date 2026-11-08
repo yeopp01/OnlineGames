@@ -56,6 +56,12 @@ const UMVERTEILEN_SEKUNDEN = 10;
 // So lange schlaegt die KI einen Vorrat nicht wieder vor, zu dem kein Weg
 // fuehrte - danach versucht sie es noch einmal.
 const UNERREICHBAR_SEKUNDEN = 120;
+// Baustellen teilen sich das Verzeichnis der Unerreichbaren mit den
+// Vorratsfeldern - mit diesem Vorsatz, damit sich die Nummern nicht kreuzen.
+const BAUSTELLE = 'baustelle:';
+// So weit muessen Feinde von einer verlassenen Baustelle weg sein, bevor ein
+// Ersatz hingeht (Durchsicht Runde 94).
+const BAUSTELLE_FEIND_FERN = 6;
 
 // Nach dem Aufstieg (ki AC-9): ein Gebaeude der Feudalzeit, in dem
 // Kampfeinheiten entstehen. Mit Gold die Schiessanlage - Bogenschuetzen
@@ -175,7 +181,10 @@ class Ki {
   entscheiden() {
     const welt = this.welt;
     const eigene = [...welt.einheiten.values()].filter((e) => e.besitzer === this.spielerId);
-    const dorfbewohner = eigene.filter((e) => e.art === 'dorfbewohner');
+    // Ohne Gefallene: ein Toter liegt zwei Sekunden in der Welt, hat keinen
+    // Auftrag und galt so als untaetig - `bauer()` konnte ihn waehlen
+    // (Durchsicht Runde 94).
+    const dorfbewohner = eigene.filter((e) => e.art === 'dorfbewohner' && !e.tot);
     const gebaeude = [...welt.gebaeude.values()].filter((g) => g.besitzer === this.spielerId);
     const zentrum = gebaeude.find((g) => g.art === 'dorfzentrum' && g.fertig);
 
@@ -208,6 +217,7 @@ class Ki {
     this.heerPruefen(eigene);
     this.verteidigenPruefen(eigene, gebaeude, zentrum);
     this.umverteilen(dorfbewohner);
+    this.baustellenWeiterbauen(gebaeude, dorfbewohner);
 
     // Lager an die Vorraete, sobald dort mehrere arbeiten und es weit ist.
     const rollen = this.rollen(dorfbewohner);
@@ -735,6 +745,41 @@ class Ki {
       }
     }
     return bestes;
+  }
+
+  /**
+   * Eine Baustelle, an der niemand mehr baut, bekommt einen Bauer zurueck -
+   * eine je Entscheidung. Ihr Bauer kann gefallen oder geflohen sein (ki AC-14),
+   * und eine liegengebliebene Hausbaustelle sperrte jedes weitere Haus
+   * (`hausImBau`): beim Startwert 13 blieb die Bevoelkerung ab Minute 55 bei
+   * 40 von 40, das Heer bei 18, und die Partie endete nach 90 Minuten
+   * unentschieden neben 4000 Nahrung (Runde 94, gemessen).
+   *
+   * Uebersprungen wird (Durchsicht Runde 94): eine Baustelle, an der eben kein
+   * Weg zu finden war - zwei Minuten lang, wie ein unerreichbarer Vorrat;
+   * sonst risse sie jede halbe Sekunde einen Arbeiter aus der Arbeit -, und
+   * eine, an der Feinde stehen: der Ersatz liefe hinein.
+   */
+  baustellenWeiterbauen(gebaeude, dorfbewohner) {
+    const feinde = [...this.welt.einheiten.values()].filter((e) => e.besitzer !== this.spielerId && !e.tot);
+    const verlassen = gebaeude.find((g) => !g.fertig
+      && !this.gesperrt(BAUSTELLE + g.id)
+      && !dorfbewohner.some((e) => e.auftrag?.art === 'bauen' && e.auftrag.gebaeude === g.id)
+      && !feinde.some((f) => Math.hypot(f.x - g.x, f.y - g.y) < BAUSTELLE_FEIND_FERN));
+    if (!verlassen) return;
+    const bauer = this.bauer(dorfbewohner);
+    if (!bauer) return;
+    // Kein begehbares Feld unmittelbar am Rand: niemand kann dort bauen. Der
+    // Befehl fuehrte trotzdem zu einem Weg - `randfeld` sucht bis drei Felder
+    // weit -, und der Bauer gaebe erst bei der Ankunft auf.
+    if (!this.welt.randfelder(verlassen, bauer).length) {
+      this.unerreichbar.set(BAUSTELLE + verlassen.id, this.welt.takt);
+      return;
+    }
+    this.senden({ auftrag: 'befehl', einheiten: [bauer.id], ziel: { x: verlassen.x, y: verlassen.y } });
+    if (!(bauer.auftrag?.art === 'bauen' && (bauer.weg.length || bauer.baut))) {
+      this.unerreichbar.set(BAUSTELLE + verlassen.id, this.welt.takt);
+    }
   }
 
   // Wer baut: ein Holzfaeller ohne Ladung, sonst irgendeiner ohne Ladung.

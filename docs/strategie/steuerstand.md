@@ -13,23 +13,21 @@ hier nichts eintraegt, verliert den Faden beim naechsten Autocompact.
 
 ## Zuletzt fortgeschrieben
 
-2026-11-08, nach Runde 93 (**Rueckschau** ueber 89-92: neues Werkzeug
-**`npm run pruefstand:vergleich`** - Arbeitsstand gegen HEAD (oder `--gegen`),
-dieselben Partien, Zeile neben Zeile; zwei Regeln in Abschnitt 4: was
-gemessen nichts bringt, bleibt nicht im Code; Grenzen erst nach der
-Verteilung. **Naechste Rueckschau: Runde 98.** Stand C4: ki AC-10, AC-11,
-AC-12, AC-14 fertig; **fahrplan AC-11 offen** - KI gegen KI endet in 4/20
-Partien vor Minute 60, 17/20 vor Minute 90. Als Naechstes: die Kriterien
-fuer „Partien zu Ende bringen" in ki.md schreiben (Ziele nach Wert,
-Nahkaempfer gegen Gebaeude, Ueberlegenheit erkennen), vorher messen, warum
-die drei Remis Remis sind (Startwerte 13, 14, 16). Die Figuren bei Zoom 1
-sind als Faden notiert: eine Runde nach C4, vor C5.)
+2026-11-08, nach Runde 94 (**ki AC-15**: liegengebliebene Baustellen werden
+weitergebaut - eine verlassene Hausbaustelle sperrte jedes weitere Haus, die
+Bevoelkerung blieb bei 40. KI gegen KI bis Minute 90: 18/20 mit Sieger (Median
+66 min), 5/20 vor Minute 60. Davor Runde 93, Rueckschau: Werkzeug `npm run
+pruefstand:vergleich`. **Naechste Rueckschau: Runde 98.** Als Naechstes fuer
+fahrplan AC-11: warum der Sieger die letzten Gebaeude nicht schleift
+(Startwert 14: 85 Plaenkler beim Verlierer ohne Einheit, elf Gebaeude halten
+15 Minuten) - messen, dann bauen. Die Figuren bei Zoom 1 sind als Faden
+notiert: eine Runde nach C4, vor C5.)
 
 ## Wo ich stehe
 
 - **Branch:** `strategie`. Nie auf `main` arbeiten, **nie pushen, nie deployen.**
-- **Board:** 392 von 520 Kriterien fertig · 1 in Arbeit · 5 in QA · 4 geplant ·
-  110 offen · 8 zurueckgestellt. 463 Tests ohne Browser, 167 im Browser.
+- **Board:** 393 von 521 Kriterien fertig · 1 in Arbeit · 5 in QA · 4 geplant ·
+  110 offen · 8 zurueckgestellt. 465 Tests ohne Browser, 167 im Browser.
 - **Fuenf Waechter in `tests/waechter-*.test.mjs`** (der fuenfte seit Runde 87: Bildschirmtext mit echten Umlauten): Gleichheit auf wachsenden
   Listen, verbesserbare Werte an `welt.einheitenwert()` vorbei,
   Bildunterschriften mit `${...}`, und (neu in Runde 73) die **Kuerzeltafel**

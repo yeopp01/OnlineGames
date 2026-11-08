@@ -960,6 +960,32 @@ alle sieben Gebäude der Dunklen Zeit stehen. Was sich wiederholt hat:
 Neueste oben. Eine Zeile je Runde: Nummer, Datum, Kriterien, Ergebnis,
 wichtigste Erkenntnis.
 
+- **94** · 2026-11-08 · **ki AC-15** — liegengebliebene Baustellen werden
+  weitergebaut. Gefunden mit der Frage aus Runde 92, **warum** drei Partien
+  nach 90 Minuten unentschieden enden: beim Startwert 13 und 16 hörte der
+  überlegene Spieler ab Minute 55 auf zu wachsen — Bevölkerung 40 von 40,
+  Heer 18, daneben 4000 Nahrung. Null Versuche, ein Haus zu bauen. Die
+  Ursache: eine Hausbaustelle aus der Frühphase, deren Bauer geflohen war;
+  und `hausImBau` sperrte jedes weitere Haus. Danach beim Startwert 13: 23
+  Häuser, 112 Einwohner bei Minute 70. Über zwanzig Partien bis Minute 90
+  (`npm run pruefstand:vergleich -- --minuten 90`, zum ersten Mal benutzt):
+  19 statt 17 mit Sieger, Ende im Median nach 66 statt 71 Minuten, im Median
+  49 statt 18 Kampfeinheiten; vor Minute 60 enden 5 statt 4. **Die
+  Durchsicht fand drei Dinge**, alle mit Test: eine Baustelle ohne Weg riss
+  jede halbe Sekunde einen Arbeiter heraus (jetzt zwei Minuten gesperrt, und
+  ohne begehbares Randfeld gar kein Versuch); ein Gefallener galt zwei
+  Sekunden als untätig und konnte Bauer werden (die Liste der Dorfbewohner
+  lässt Tote jetzt aus, für alle Regeln); und ein Ersatz lief in den Feind
+  (Baustellen mit Feinden daneben bleiben liegen). Danach musste der
+  Messtest zu ki AC-12 die Belagerung auch für den zweiten Angriff kennen:
+  Startwert 6, KI 2 wurde ab Minute 20 belagert, 128-mal die Wache gerufen —
+  wer nicht angreift, verteidigt, wie in AC-11. Gelernt: **erst
+  fragen, warum es nicht endet — dann bauen.** In Runde 92 habe ich zwei Hebel
+  geraten (größeres Heer, Nahkämpfer), beide wirkungslos; die Messung der
+  drei Remis fand in einer Viertelstunde einen echten Fehler. Der dritte Remis
+  (Startwert 14) hat eine andere Ursache: 85 Plänkler stehen beim Verlierer
+  ohne Einheit und Dorfzentrum, und seine elf Gebäude halten — das ist der
+  nächste Faden für fahrplan AC-11.
 - **92** · 2026-11-08 · **fahrplan AC-11 gemessen, nicht erreicht; bauen
   AC-3 nachgebessert** — Ziel war: KI gegen KI endet in zwanzig von zwanzig
   Partien mit einem Sieger, unter 60 Minuten. **Heute: 4 von 20 unter 60
