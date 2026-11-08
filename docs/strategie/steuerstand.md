@@ -13,20 +13,19 @@ hier nichts eintraegt, verliert den Faden beim naechsten Autocompact.
 
 ## Zuletzt fortgeschrieben
 
-2026-11-08, nach Runde 87 (**auswahl AC-20, AC-21**: das Spiel heisst
-**„Fading Allies"** - so steht es auf seiner Karte und im Titel der
-Schautafel, `art: 'strategie'` bleibt der Bezeichner -, und Bildschirmtext hat
-echte Umlaute, durchgesetzt von `tests/waechter-umlaute.test.mjs`. Davor
-Runde 86, **ki AC-14**: die KI verteidigt zu Hause. **Ab Runde 86 laeuft die
-Schleife mit Opus 5.5**, Commits tragen `Co-Authored-By: Claude Opus 5.5`.
-Mechaniken zum Namen will der Benutzer „irgendwann" - Offene Faeden, nicht vor
-Stufe E, und erst `spielziel AC-14` neu fassen. **Runde 88 ist Rueckschau** -
-dabei die Figuren bei Zoom 1 gegen den Massstab ansehen, bevor C5 beginnt.
-Danach **einheiten AC-29** (keine zwei Einheiten uebereinander - in Runde 86
-der Grund fuer vier Fassungen eines Bildes), dann in C4 **ki AC-12**
-(Nachschub, bei Spielminute 30 noch 20 Dorfbewohner), **ki AC-10** (spaet
-untaetige Dorfbewohner: im Pruefstand bis 471 s) und **fahrplan AC-11** (KI
-gegen KI endet mit Sieger unter 60 Minuten).)
+2026-11-08, nach Runde 88 (**Rueckschau** ueber die Runden 84 bis 87. Drei
+Regeln in der Anweisung: einen offenen Produktfehler umschifft man hoechstens
+einmal; ein neuer Browserfall mit KI, Kampf oder Zeitraffer laeuft vor dem
+Abschlusslauf zehnmal (`--repeat-each 10`); und Abschnitt 6, Schritt 0, eine
+**Durchsicht durch einen Subagenten** (Sonnet, nur lesend), wenn Simulation,
+KI oder Kampf geaendert wurden. Davor Runde 87: das Spiel heisst **„Fading
+Allies"**, Bildschirmtext hat echte Umlaute (Waechter). Runde 86: die KI
+verteidigt zu Hause. **Ab Runde 86 laeuft die Schleife mit Opus 5.5**.
+**Runde 89 ist einheiten AC-29** (keine zwei Einheiten uebereinander) - nach
+der neuen Regel, denn es wurde siebenmal umschifft. Dann in C4 **ki AC-12**
+(Nachschub), **ki AC-10** (spaet untaetige Dorfbewohner, bis 471 s) und
+**fahrplan AC-11** (KI gegen KI mit Sieger unter 60 Minuten). Die Figuren bei
+Zoom 1 sind als Faden notiert: eine eigene Runde nach C4, vor C5.)
 
 ## Wo ich stehe
 
@@ -302,7 +301,7 @@ gegen KI endet mit Sieger unter 60 Minuten).)
   bei 20 min). Aelter als Runde 69, nur nie gemessen, weil der Pruefstand bei
   zehn Minuten endete. Ursache und Hebel stehen in den Erkenntnissen unter
   **Offene Faeden**.
-- **Naechste Rueckschau: Runde 88** - oder frueher, wenn Stufe C erreicht wird.
+- **Naechste Rueckschau: Runde 93** - oder frueher, wenn Stufe C erreicht wird.
   Diese Zeile ist der Termin, nicht nachzaehlen.
 - Frueherer Termin, erledigt: **Runde 83** (die Bildnachweise einmal ganz
   angesehen), **Runde 78** (Bilderwerkzeug: `check:alles:neu`,

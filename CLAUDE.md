@@ -174,9 +174,10 @@ Gemessen: **3,10 Tore je Spiel, 48 % Heimsiege, 21 % Unentschieden**
 (Bundesliga: 3,1 / 44 % / 24 %); der Favorit gewinnt 64 %. Über sechs Saisons
 ohne Menschen null Widersprüche in den Spielen, Kader, Stärke und Markt
 stabil. Eine Saison rechnet in rund 400 ms, ein Spielstand ist nach zwei
-Saisons unter 1 MB. Der Browserlauf dauert rund 6 bis 7
-Minuten (`npm run e2e:laufzeiten` zeigt, wo; der langsamste Fall ist `ki AC-9`
-mit 45 s, weil die KI zwoelf Spielminuten lang zusieht).
+Saisons unter 1 MB. Der Browserlauf dauert rund 8 bis 11
+Minuten für 166 Fälle (`npm run e2e:laufzeiten` zeigt, wo; die langsamsten
+Fälle sind `fahrplan AC-8` mit 78 s, die Feudalzeit am Stück, und `ki AC-9`
+mit 45 s, weil die KI zwölf Spielminuten lang zusieht).
 
 **Stellschrauben des Managerspiels** stehen gesammelt in `WIRKUNG` in
 `server/spiele/manager/spieltag.js`. Wer daran dreht, misst danach: keine

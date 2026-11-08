@@ -47,6 +47,14 @@ In dieser Reihenfolge, das Erste, was zutrifft:
    Ungebautes voraussetzt. Bei Wahl: das, welches am frühesten etwas im
    Browser Spielbares ergibt.
 
+**Einen offenen Produktfehler umschiffst du höchstens einmal.** Scheitert ein
+Bild oder Test an einem Fehler, der schon als `offen`-Kriterium dasteht, darf
+diese Runde einmal ausweichen (andere Szene, andere Aufstellung) — beim
+zweiten Mal wird der Fehler die **nächste** Runde, vor allem anderen außer
+rotem `check`. `einheiten AC-29` (Einheiten stehen übereinander) wurde in den
+Runden 56, 61, 63, 64, 78, 85 und 86 je einzeln umschifft; in Runde 86 kostete
+das vier Fassungen eines Bildes (Rückschau nach Runde 88).
+
 **Zuschnitt:** Eine Runde ist ein Kriterium, oder zwei bis drei, die nur
 zusammen Sinn ergeben. Merkst du beim Bauen, dass es größer ist: Kriterium
 teilen (neue Nummern), das erste Stück fertigmachen.
@@ -303,6 +311,13 @@ Setze die gewählten Kriterien auf `in-arbeit`.
   | ein einzelner Test                     | `npm run qa:nachweis -- <datei ohne .spec.mjs>` |
   | nur das Strategiespiel                 | `npm run qa:nachweis -- strategie`          |
   | nur das Managerspiel                   | `npm run qa:nachweis -- manager`            |
+- **Ein neuer Browserfall mit KI, Kampf oder Zeitraffer läuft vor dem
+  Abschlusslauf zehnmal:** `npx playwright test --config
+  e2e/playwright.config.mjs <datei> --grep "<kuerzel> AC-n" --repeat-each 10`.
+  Was dort von der Zeit abhängt, fällt nicht in jedem Lauf. In Runde 86 war
+  der Bildnachweis zu ki AC-14 dreimal einzeln grün und fiel dann im großen
+  Lauf; mit `--repeat-each 6` fielen vier von sechs. Ein Lauf kostet so
+  Sekunden statt der zehn Minuten eines roten Abschlusslaufs.
 - **Nach einem Lauf, der alle Bilder neu schreibt, erst `npm run qa:abweichung`,
   dann `git add`.** Ein solcher Lauf ändert leicht 80 Bilder, die meisten nur
   um den zufälligen Raumcode oder die laufende Uhr. Die Ausgabe sortiert nach
@@ -318,6 +333,18 @@ Setze die gewählten Kriterien auf `in-arbeit`.
 
 ## 6. Prüfen und festhalten
 
+0. **Eine Durchsicht ohne deine Schlüsse**, bevor der Abschlusslauf beginnt,
+   wenn die Runde Simulation, KI oder Kampf geändert hat: ein Subagent
+   (`feature-dev:code-reviewer`, `model: sonnet`, nur lesend) bekommt `git diff`
+   der Produktdateien und eine Beschreibung des **Verhaltens**, nicht deines
+   Urteils — und sucht Fehler, Randfälle, Determinismus, was die KI nicht
+   sehen dürfte. Seine Befunde prüfst du am Code nach, bevor du handelst; jeder
+   echte bekommt einen Test mit Gegenprobe. In Runde 86 trafen zwei von fünf
+   Befunden, einer davon ein Fehler, den die Runde eine Stunde vorher selbst
+   eingebaut hatte — kein Test hatte ihn gesehen. Kosten: rund 90 Sekunden.
+   Ebenso kann ein Subagent die Bilder über 1 % aus `qa:abweichung` gegen ihre
+   Unterschriften lesen (Runde 87: dreizehn Bilder in 73 Sekunden); was er
+   beanstandet, siehst du selbst an.
 1. Status auf `fertig`, `npm run specs:board`.
 2. Oberfläche angefasst → `npm run check:alles:kurz`, sonst `npm run check:kurz`.
    **Hat sich das Aussehen geändert** (Figuren, Gebäude, Gelände, Leiste,

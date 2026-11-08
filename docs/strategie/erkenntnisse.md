@@ -70,6 +70,19 @@ etwas anderem gearbeitet.
 
 ## Offene Fäden
 
+- **Figuren bei Zoom 1 sind die schwächste Stelle des Bildes** (Rückschau
+  nach Runde 88, Frage des Benutzers nach besseren Figuren). Schmal, knapp 29
+  Bildpunkte hoch, wenig Kontrast zum Boden; das Dorfzentrum wirkt wie ein
+  großes Haus. Messbar machen, bevor gezeichnet wird: Kontrast Figur gegen
+  Boden und Anteil der Spielerfarbe bei Zoom 1 (darstellung AC-13 verlangt
+  zugleich, dass ein Dorfbewohner höchstens halb so hoch ist wie ein Haus —
+  größer ist also nicht die Antwort). Kandidat für eine eigene Runde nach C4,
+  vor C5.
+- **Zwei Notizen aus der Durchsicht der Runde 86**, keine Fehler von heute:
+  (1) eine Baustelle, die in derselben halben Sekunde wächst und getroffen
+  wird, kann netto Leben gewinnen — dann sieht die KI den Angriff nicht
+  (ki AC-14); (2) `FEIND_FERN` liest die Lage aller fremden Einheiten — mit
+  dem Nebel (C6, ki AC-13) muss das nach Sicht filtern.
 - **Mechaniken zum Namen „Fading Allies" — „irgendwann", nicht jetzt**
   (Benutzer, 2026-11-08). Der Name trägt heute schon, weil Absprachen nur am
   Tisch stattfinden (`spielziel AC-14`: „Bündnisse sind nicht vorgesehen").
@@ -430,6 +443,57 @@ Gut gelaufen: Die Tonstufen-Messung alt gegen neu hat aus „wirkt gezeichneter"
 eine Zahl gemacht, und zweimal hat ein alter Test einen neuen Fehler gefunden
 (Klick auf Beeren traf ein Schaf; zwei Lager zu ähnlich). Browserlauf bei
 ruhigerer Maschine 141 s Testzeit, langsamster Fall weiter der Lagertest (28 s).
+
+### Nach Runde 88 (2026-11-08)
+
+Runden 84 bis 87: die Revanche (C3 steht), die KI greift an und verteidigt
+zu Hause (C4 läuft), das Spiel heißt Fading Allies und der Bildschirm hat
+echte Umlaute — fünf Kriterien `fertig` (389 von 518). Ab Runde 86 mit Opus
+5.5 und zum ersten Mal mit Subagenten. Was sich wiederholt hat:
+
+1. **Einheiten stehen übereinander, und jede Runde schifft drumherum.** Runde
+   85: drei Milizen auf einem Punkt (zwei Fehler im Kampf, behoben). Runde 86:
+   vier Fassungen des Bildes zu ki AC-14, bis die Szene vom Dorfzentrum auf ein
+   Haus abseits umzog. Davor die Runden 56, 61, 63, 64 und 78. Das Kriterium
+   (`einheiten AC-29`) steht seit Runde 65 offen. → Anweisung, Abschnitt 1:
+   **einen offenen Produktfehler umschiffst du höchstens einmal**, beim
+   zweiten Mal ist er die nächste Runde. **Runde 89 ist einheiten AC-29.**
+2. **Ein Browserfall war einzeln grün und fiel im großen Lauf.** ki AC-14
+   dreimal grün, dann rot; mit `--repeat-each 6` vier von sechs rot. Auch der
+   Baulauf der Dunklen Zeit flatterte in jedem dritten Lauf, unbemerkt seit
+   Wochen. → Anweisung, Abschnitt 5: ein neuer Browserfall mit KI, Kampf oder
+   Zeitraffer läuft vor dem Abschlusslauf **zehnmal**.
+3. **Eine Durchsicht ohne meine Schlüsse fand, was die Tests nicht sahen.**
+   Ein Sonnet-Prüfer las den Diff der Runde 86: zwei von fünf Befunden echte
+   Fehler, einer davon von der Runde selbst eine Stunde vorher eingebaut. In
+   Runde 87 las ein zweiter dreizehn Bilder in 73 Sekunden gegen ihre
+   Unterschriften; seine drei Beanstandungen standen alle schon im Rückstand
+   der Runde 83 — er fand also nichts Falsches und nichts übersehen. →
+   Anweisung, Abschnitt 6, Schritt 0: **Durchsicht durch einen Subagenten**,
+   wenn Simulation, KI oder Kampf geändert wurden; Befunde am Code
+   nachprüfen, jeder echte bekommt einen Test.
+
+Nebenbei, nicht als Regel: **Fettdruck hält nicht, ein Wächter schon** —
+Runde 87 fand rund vierzig umschriebene Bildschirmtexte, obwohl die Regel seit
+Runde 1 in CLAUDE.md stand. Das ist schon Grundsatz des Projekts
+(`tests/waechter-*`); der fünfte Wächter ist der für Umlaute.
+
+**Die Figuren bei Zoom 1, angesehen auf Wunsch des Benutzers** (bedienung
+AC-36, darstellung AC-13): Gelände, Bäume, Vorräte, Wasser und Gebäude
+tragen. **Die Figuren sind die schwächste Stelle** — schmal, knapp 29
+Bildpunkte hoch, und sie heben sich wenig vom olivbraunen Boden ab; man
+erkennt sie, muss aber hinsehen. Das Dorfzentrum liest sich wie ein großes
+Haus, nicht wie die Mitte eines Dorfes. Keine Kriterien angelegt (keine
+Stufe endet), aber als Faden notiert: der Kandidat für eine Runde
+„Figuren", sobald C4 steht und bevor ein Mensch in C5 allein gegen die KI
+spielt.
+
+**Gemessen**, Maschine nicht ganz ruhig (elf Chrome-Prozesse eines anderen
+Fensters): `npm run check` 33 bis 48 s mit 445 Tests; der Browserlauf mit 166
+Fällen 8,4 bis 10,9 min, mit Neuschreiben aller Bilder 11,5 min — CLAUDE.md
+sagte noch „6 bis 7 Minuten" und nannte `ki AC-9` (45 s) als langsamsten Fall;
+es ist `fahrplan AC-8` mit 78 s, die Feudalzeit am Stück. Nachgezogen. Der Prüfstand (20 Partien,
+22 Spielminuten) rechnet in 14,5 s.
 
 ### Nach Runde 83 — die Bildnachweise einmal ganz angesehen (2026-11-07)
 
