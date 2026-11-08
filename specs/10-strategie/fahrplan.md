@@ -140,7 +140,7 @@ neuen Karte grün bleiben.
 | C2 | Partieende rechnet: ausgeschieden, Sieger, Aufgeben, unentschieden nach 90 Spielminuten; der Prüfstand zählt Sieger statt Takte | spielziel AC-5, AC-6, bedienung AC-38 |
 | C3 | Abschlussbild mit Zahlen, Zuschauen nach dem Ausscheiden, Revanche aus dem Abschlussbild | spielziel AC-7 bis AC-9 |
 | C4 | Die KI kämpft: Heer sammeln, angreifen, zu Hause verteidigen, Nachschub — und auch spät steht niemand herum | ki AC-10 bis AC-12, AC-14, fahrplan AC-11 |
-| C5 | Mensch gegen KI: KI-Gegner einstellen, allein eröffnen, eine Partie bis zum Abschlussbild spielen | spielauswahl AC-18, AC-19, fahrplan AC-12 |
+| C5 | Mensch gegen KI: KI-Gegner einstellen, allein eröffnen, eine Partie bis zum Abschlussbild spielen — AC-18 und AC-19 **fertig** (Runde 101) | spielauswahl AC-18, AC-19, fahrplan AC-12 |
 | C6 | Nebel: Sichtweite aus den Daten, Erkundetes bleibt erinnert, der Server schickt nur Sichtbares, Meldung bei Angriff, drei Zustände im Bild, die KI sieht nur ihre Sicht | kampf AC-11 bis AC-14, darstellung AC-15, ki AC-13, fahrplan AC-13 |
 
 **Reihenfolge begründet:** C2 und C3 vor der kämpfenden KI, weil eine Partie

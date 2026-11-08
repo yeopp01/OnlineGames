@@ -4,7 +4,7 @@ const http = require('node:http');
 const fs = require('node:fs');
 const path = require('node:path');
 const { WebSocketServer } = require('ws');
-const { Raeume, MAX_SPIELER, codeZeigen } = require('./raeume');
+const { Raeume, MAX_SPIELER, codeZeigen, plaetzePruefen } = require('./raeume');
 const { Schutz, adresseVon } = require('./schutz');
 const { konten } = require('./konten');
 const { manager } = require('./spiele/manager/netz');
@@ -135,6 +135,8 @@ async function starten(hafen = HAFEN, einstellungen = {}) {
       if (!spiel) return fehler('Dieses Spiel lässt sich nicht eröffnen.');
       const geprueft = partieEinstellungen.pruefen(spiel.einstellungen, nachricht.einstellungen);
       if (geprueft.fehler) return fehler(geprueft.fehler);
+      const platz = plaetzePruefen(spiel, geprueft.werte);
+      if (platz) return fehler(platz.fehler);
 
       const erlaubt = schutz.raumErlaubt(adresse);
       if (!erlaubt.ok) return fehler(erlaubt.grund);

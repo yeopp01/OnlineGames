@@ -1,0 +1,10 @@
+{
+  "spec": "00-plattform/spielauswahl.md",
+  "ac": "AC-19",
+  "titel": "Allein gegen die KI gestartet: das eigene Dorf im Bild, unten rechts auf der Übersichtskarte ein zweites Dorf in fremder Farbe",
+  "datei": "e2e/tests/spielauswahl.spec.mjs",
+  "pfad": [
+    "Gegen die KI",
+    "auswahl AC-18 und auswahl AC-19: mit einem KI-Gegner eroeffnet, steht er im Warteraum, und allein gestartet spielt die Partie"
+  ]
+}

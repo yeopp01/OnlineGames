@@ -29,7 +29,8 @@ const ORDNER = ['tests', 'e2e'];
 const TABELLEN = 'EINHEITEN|GEBAEUDE|VERBESSERUNGEN|TIERE|ZEITALTER|AUFSTIEGE|KLASSEN';
 // Felder, die mit den Stufen mehr werden: ein Auftrag bekommt Angaben, ein
 // Gebaeude bildet mehr aus, ein Dorfbewohner baut mehr.
-const FELDER = 'auftrag|bildetAus|baut';
+// `einstellungen` seit Runde 101: die Liste eines Spiels bekam `ki` dazu.
+const FELDER = 'auftrag|bildetAus|baut|einstellungen';
 // Dasselbe ueber die Leitung: `aufbau().werte` reicht die Tabellen an den
 // Browser weiter und waechst mit ihnen. In Runde 75 kamen `klassen` und
 // `bonus` dazu und rissen eine Gleichheit auf `werte.einheiten.dorfbewohner`.

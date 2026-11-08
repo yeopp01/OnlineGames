@@ -32,6 +32,31 @@ function codeLesen(eingabe) {
   return String(eingabe || '').toUpperCase().replace(/[^A-Z0-9]/g, '');
 }
 
+// Plaetze, die das Spiel selbst besetzt - Computergegner (→ specs/00-plattform/
+// spielauswahl.md AC-18, AC-19). Der Raum weiss nicht, was dort sitzt; er
+// zaehlt nur mit. Die Untergrenze von zwei gilt fuer Plaetze, nicht fuer
+// Menschen.
+function vomSpielBesetzt(spiel, einstellungen) {
+  if (!spiel || typeof spiel.plaetze !== 'function') return 0;
+  // Was keine ganze Zahl ab 0 ist, zaehlt als keiner: ein fehlerhafter
+  // Steckbrief darf weder jeden Raum sperren (NaN) noch mehr Menschen
+  // hereinlassen, als Plaetze da sind (negativ). Durchsicht Runde 101.
+  const besetzt = spiel.plaetze(einstellungen);
+  return Number.isInteger(besetzt) && besetzt >= 0 ? besetzt : 0;
+}
+
+// Passen Menschen und vom Spiel besetzte Plaetze unter die Hoechstzahl?
+function plaetzePruefen(spiel, einstellungen, menschen = 1) {
+  const gesamt = Math.min(MAX_SPIELER, einstellungen.spieler || MAX_SPIELER);
+  const besetzt = vomSpielBesetzt(spiel, einstellungen);
+  if (menschen + besetzt <= gesamt) return null;
+  return {
+    fehler: besetzt
+      ? `Höchstens ${gesamt} Spieler: ${besetzt} Computergegner und ${menschen} ${menschen === 1 ? 'Mensch' : 'Menschen'} passen nicht hinein.`
+      : `Es sind schon ${menschen} Spieler im Raum.`,
+  };
+}
+
 function namePruefen(name) {
   const sauber = String(name || '').replace(/\s+/g, ' ').trim().slice(0, NAME_MAX);
   return sauber || 'Namenlos';
@@ -71,16 +96,17 @@ class Raum {
     }
     const geprueft = partieEinstellungen.pruefen(this.einstellungsliste, { ...this.einstellungen, ...aenderung });
     if (geprueft.fehler) return geprueft;
-    if (Number.isInteger(geprueft.werte.spieler) && geprueft.werte.spieler < this.spieler.length) {
-      return { fehler: `Es sind schon ${this.spieler.length} Spieler im Raum.` };
-    }
+    const platz = plaetzePruefen(this.spiel, geprueft.werte, this.spieler.length);
+    if (platz) return platz;
     this.einstellungen = geprueft.werte;
     this.beruehrt = Date.now();
     return {};
   }
 
+  // Wie viele Menschen beitreten koennen: die Plaetze, abzueglich derer, die
+  // das Spiel selbst besetzt.
   get hoechstens() {
-    return Math.min(MAX_SPIELER, this.einstellungen.spieler || MAX_SPIELER);
+    return Math.min(MAX_SPIELER, this.einstellungen.spieler || MAX_SPIELER) - vomSpielBesetzt(this.spiel, this.einstellungen);
   }
 
   get gestartet() {
@@ -143,7 +169,7 @@ class Raum {
     // beginnt eine neue, und dafuer gilt dieselbe Regel wie fuer den ersten
     // Start: es spielt, wer da ist.
     if (this.gestartet) this.spieler = this.spieler.filter((s) => s.verbunden);
-    if (this.spieler.length < MIN_SPIELER) {
+    if (this.spieler.length + vomSpielBesetzt(this.spiel, this.einstellungen) < MIN_SPIELER) {
       return { fehler: `Es fehlen Mitspieler - mindestens ${MIN_SPIELER}.` };
     }
     if (!this.spiel) return { fehler: 'Dieser Raum hat kein Spiel.' };
@@ -246,5 +272,5 @@ class Raeume {
 
 module.exports = {
   Raeume, Raum, codeErzeugen, codeZeigen, codeLesen, namePruefen,
-  MAX_SPIELER, MIN_SPIELER, CODE_LAENGE, ZEICHEN,
+  MAX_SPIELER, MIN_SPIELER, CODE_LAENGE, ZEICHEN, plaetzePruefen,
 };

@@ -1,9 +1,13 @@
 // Die Uebersicht der Spiele nach dem Anmelden, im Browser gesehen
 // (→ specs/00-plattform/spielauswahl.md).
+import { createRequire } from 'node:module';
 import { nachweis } from '../../scripts/qa-nachweis.mjs';
 import { ANMELDUNG, expect, fehlerSammeln, test } from '../helpers/seite.mjs';
 
 const AUSWAHL = '00-plattform/spielauswahl.md';
+// Die Einstellungen aus dem Steckbrief gelesen, nicht aufgezaehlt: die Liste
+// waechst (Runde 101 kam `ki` dazu).
+const { einstellungen: STRATEGIE } = createRequire(import.meta.url)('../../server/spiele/strategie/steckbrief.js');
 
 test.describe('Spiel waehlen', () => {
   test.use({ storageState: ANMELDUNG });
@@ -107,7 +111,7 @@ test.describe('Spiel waehlen', () => {
     await page.goto('/');
     await page.locator('[data-oeffnen="strategie"]').click();
     const strategie = page.locator('[data-einstellungen-fuer="strategie"]');
-    await expect(strategie.locator('[data-einstellung]')).toHaveCount(4);
+    await expect(strategie.locator('[data-einstellung]')).toHaveCount(STRATEGIE.length);
     await expect(strategie.locator('[data-einstellung="spieler"]')).toHaveValue('6');
     await expect(strategie.locator('[data-einstellung="spieler"]')).toHaveAttribute('max', '6');
     await expect(strategie.locator('[data-einstellung="startwert"]')).toHaveAttribute('placeholder', 'zufällig');
@@ -153,7 +157,7 @@ test.describe('Spiel waehlen', () => {
     await nachweis(page, {
       spec: AUSWAHL,
       ac: 'AC-6',
-      titel: 'Vier Einstellungen des Strategiespiels: vier Spieler, Karte 4711, groß, viel Startvorrat',
+      titel: 'Die Einstellungen des Strategiespiels gesetzt: vier Spieler, Karte 4711, groß, viel Startvorrat',
       test: info,
     });
     // Was das zweite Bild behauptet, steht so im Formular - mit Umlauten.
@@ -240,7 +244,7 @@ test.describe('Im Warteraum', () => {
     await bert.locator('#code').fill(code);
     await bert.locator('#beitreten').click();
     await expect(bert.locator('#warteraum')).toBeVisible();
-    await expect(bert.locator('#raumEinstellungen dt')).toHaveText(['Höchstens Spieler', 'Startwert der Karte', 'Kartengröße', 'Startvorrat']);
+    await expect(bert.locator('#raumEinstellungen dt')).toHaveText(STRATEGIE.map((e) => e.name));
     await expect(bert.locator('[data-wert="spieler"]')).toHaveText('4');
     await expect(bert.locator('[data-wert="startwert"]')).toHaveText('4711');
     // Bert hat keine Felder, nur Werte.
@@ -278,5 +282,51 @@ test.describe('Im Warteraum', () => {
     await anna.locator('#raumEinstellungen [data-einstellung="spieler"]').press('Tab');
     await expect(anna.locator('#wartemeldung')).toContainText('Höchstens Spieler');
     await expect(bert.locator('[data-wert="spieler"]')).toHaveText('3');
+  });
+});
+
+// Allein gegen die KI (spielauswahl AC-18, AC-19, Runde 101): eroeffnet mit
+// einem KI-Gegner, im Warteraum steht er, und gestartet wird ohne Mitspieler.
+test.describe('Gegen die KI', () => {
+  test.use({ storageState: ANMELDUNG });
+
+  test('auswahl AC-18 und auswahl AC-19: mit einem KI-Gegner eroeffnet, steht er im Warteraum, und allein gestartet spielt die Partie', async ({ page }, info) => {
+    const fehler = fehlerSammeln(page);
+    await page.goto('/');
+    await page.locator('[data-oeffnen="strategie"]').click();
+    const form = page.locator('[data-einstellungen-fuer="strategie"]');
+    await form.locator('[data-einstellung="ki"]').fill('1');
+    await page.locator('[data-eroeffnen="strategie"]').click();
+    await expect(page.locator('#warteraum')).toBeVisible();
+    // Was die Unterschrift behauptet: der Wert im Warteraum, und Anna allein.
+    await expect(page.locator('#raumEinstellungen [data-einstellung="ki"]')).toHaveValue('1');
+    await expect(page.locator('#raumEinstellungen [data-einstellung="ki"]')).toBeInViewport();
+    await expect(page.locator('#starten')).toBeInViewport();
+    await nachweis(page, {
+      spec: AUSWAHL,
+      ac: 'AC-18',
+      titel: 'Im Warteraum steht „KI-Gegner: 1“ unter den Einstellungen, Anna ist allein und kann starten',
+      test: info,
+    });
+
+    // Allein gestartet - die Untergrenze von zwei gilt fuer Plaetze.
+    await page.locator('#starten').click();
+    await expect(page.locator('#brett')).toBeVisible();
+    await page.waitForFunction(() => window.ansicht && window.ansicht.nachher.size > 0);
+    const lage = await page.evaluate(() => {
+      const a = window.ansicht;
+      return { spieler: [...a.spieler.values()].map((s) => s.name), fremde: [...a.nachher.values()].filter((e) => e.b !== a.ich).length };
+    });
+    expect(lage.spieler, 'zwei am Tisch: Anna und die KI').toHaveLength(2);
+    expect(lage.spieler).toContain('KI 1');
+    expect(lage.fremde, 'die KI hat ihre Startaufstellung').toBeGreaterThan(0);
+    await expect(page.locator('#uebersicht')).toBeInViewport();
+    await nachweis(page, {
+      spec: AUSWAHL,
+      ac: 'AC-19',
+      titel: 'Allein gegen die KI gestartet: das eigene Dorf im Bild, unten rechts auf der Übersichtskarte ein zweites Dorf in fremder Farbe',
+      test: info,
+    });
+    expect(fehler).toEqual([]);
   });
 });

@@ -986,6 +986,19 @@ nächste Runde.
 Neueste oben. Eine Zeile je Runde: Nummer, Datum, Kriterien, Ergebnis,
 wichtigste Erkenntnis.
 
+- **101** · 2026-11-08 · **spielauswahl AC-18, AC-19** — allein gegen die KI.
+  Eine Einstellung „KI-Gegner" (0 bis 5) im Steckbrief; `erzeugen` setzt die
+  KIs als Spieler `ki1`, `ki2` … in die Welt und lässt sie vor jedem Takt
+  entscheiden, wie im Prüfstand. Der Raum bleibt spielneutral (ADR-0006): er
+  erfährt vom Steckbrief nur `plaetze(einstellungen)`, zählt sie zur
+  Untergrenze von zwei und zieht sie von den Plätzen für Menschen ab. Zwei
+  Stolpersteine: das Verzeichnis reicht nur bekannte Felder des Steckbriefs
+  weiter — `plaetze` kam nicht an, und der Start allein scheiterte trotz
+  Einstellung; und drei Tests verglichen die Liste der Einstellungen auf
+  Gleichheit (vier Einträge, aufgezählt), dazu eine Bildunterschrift „Vier
+  Einstellungen". Der Wächter kennt `einstellungen` jetzt als wachsendes
+  Feld. **Gelernt: auch die Liste der Einstellungen wächst** — die Regel
+  „enthält statt ist gleich" gilt nicht nur für die Daten der Einheiten.
 - **100** · 2026-11-08 · **einheiten AC-31** — Kämpfende stehen nebeneinander.
   Wer an seinem Ziel angekommen ist, tritt wie jeder Stehende beiseite, aber
   nur auf ein Feld in Schlagweite; der Schritt ist am Auftrag vermerkt, sonst

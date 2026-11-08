@@ -13,18 +13,17 @@ hier nichts eintraegt, verliert den Faden beim naechsten Autocompact.
 
 ## Zuletzt fortgeschrieben
 
-2026-11-08, nach Runde 100 (**einheiten AC-31**: Kaempfende treten beiseite,
-nur auf ein Feld in Schlagweite, die Nachladezeit laeuft dabei weiter. KI
-gegen KI: Startwerte 1-20 alle vor Minute 60, Median 36,4. Neuer Faden: auf
-Startwerten 21-40 nur 19/20 (auch HEAD) und einmal 900 s Untaetigkeit.
-**Als Naechstes C5: Mensch gegen KI** (spielauswahl AC-18, AC-19, fahrplan
-AC-12). **Naechste Rueckschau: Runde 103.**)
+2026-11-08, nach Runde 101 (**spielauswahl AC-18, AC-19**: Einstellung
+"KI-Gegner", allein gegen die KI eroeffnen und starten; der Raum kennt nur
+`plaetze` aus dem Steckbrief. **Als Naechstes fahrplan AC-12**: eine Partie
+allein gegen die KI im Browser bis zum Abschlussbild. Offen: Startwerte 21-40
+19/20 und 900 s Untaetigkeit. **Naechste Rueckschau: Runde 103.**)
 
 ## Wo ich stehe
 
 - **Branch:** `strategie`. Nie auf `main` arbeiten, **nie pushen, nie deployen.**
-- **Board:** 400 von 526 Kriterien fertig · 1 in Arbeit · 5 in QA · 4 geplant ·
-  108 offen · 8 zurueckgestellt. 479 Tests ohne Browser, 168 im Browser.
+- **Board:** 402 von 526 Kriterien fertig · 1 in Arbeit · 5 in QA · 4 geplant ·
+  106 offen · 8 zurueckgestellt. 482 Tests ohne Browser, 169 im Browser.
 - **Fuenf Waechter in `tests/waechter-*.test.mjs`** (der fuenfte seit Runde 87: Bildschirmtext mit echten Umlauten): Gleichheit auf wachsenden
   Listen, verbesserbare Werte an `welt.einheitenwert()` vorbei,
   Bildunterschriften mit `${...}`, und (neu in Runde 73) die **Kuerzeltafel**

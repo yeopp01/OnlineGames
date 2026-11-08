@@ -106,8 +106,12 @@ async function eroeffnen(nachricht) {
 test('auswahl AC-4: das Spiel liefert seine Einstellungen als Liste mit Name, Art, Vorgabe und Grenzen', async () => {
   const { spiele } = await (await fetch(`http://localhost:${HAFEN}/api/spiele`)).json();
   const strategie = spiele.find((s) => s.art === 'strategie');
-  assert.deepEqual(strategie.einstellungen.map((e) => [e.schluessel, e.art]), [['spieler', 'zahl'], ['startwert', 'startwert'], ['kartengroesse', 'wahl'], ['vorrat', 'wahl']]);
-  const zahl = strategie.einstellungen[0];
+  // Enthaelt, nicht "ist gleich": die Liste waechst (Runde 101 kam `ki` dazu).
+  const arten = new Map(strategie.einstellungen.map((e) => [e.schluessel, e.art]));
+  for (const [schluessel, art] of [['spieler', 'zahl'], ['startwert', 'startwert'], ['kartengroesse', 'wahl'], ['vorrat', 'wahl']]) {
+    assert.equal(arten.get(schluessel), art, schluessel);
+  }
+  const zahl = strategie.einstellungen.find((e) => e.schluessel === 'spieler');
   assert.equal(typeof zahl.name, 'string');
   assert.deepEqual([zahl.von, zahl.bis, zahl.vorgabe], [2, 6, 6]);
 
@@ -122,7 +126,11 @@ test('auswahl AC-5: wer nichts einstellt, eroeffnet mit den Vorgaben und kann sp
   const { gast, antwort } = await eroeffnen({ art: 'strategie' });
   assert.equal(antwort.typ, 'du');
   const raum = await gast.warteAuf(istTyp('raum'));
-  assert.deepEqual(Object.fromEntries(raum.einstellungen.map((e) => [e.schluessel, e.wert])), { spieler: 6, startwert: null, kartengroesse: 'normal', vorrat: 'wenig' });
+  // Jede Einstellung hat ihre Vorgabe - aus dem Steckbrief gelesen, nicht
+  // aufgezaehlt: die Liste waechst (Runde 101 kam `ki` dazu).
+  const { einstellungen: liste } = require('../server/spiele/strategie/steckbrief.js');
+  assert.deepEqual(Object.fromEntries(raum.einstellungen.map((e) => [e.schluessel, e.wert])),
+    Object.fromEntries(liste.map((e) => [e.schluessel, e.vorgabe])));
   assert.equal(raum.art, 'strategie');
 
   const bert = kunde(HAFEN);
@@ -223,7 +231,11 @@ const werteAus = (raum) => Object.fromEntries(raum.einstellungen.map((e) => [e.s
 test('auswahl AC-9: wer beitritt, sieht die Einstellungen mit Namen und Wert', async () => {
   const { gast, bert } = await raumMitBert({ spieler: 4, startwert: 4711 });
   const raum = await bert.warteAuf((n) => n.typ === 'raum' && n.spieler.length === 2);
-  assert.deepEqual(raum.einstellungen.map((e) => [e.name, e.wert]), [['Höchstens Spieler', 4], ['Startwert der Karte', 4711], ['Kartengröße', 'normal'], ['Startvorrat', 'wenig']]);
+  // Enthaelt, nicht "ist gleich": die Liste waechst (Runde 101 kam `ki` dazu).
+  const namen = new Map(raum.einstellungen.map((e) => [e.name, e.wert]));
+  for (const [name, wert] of [['Höchstens Spieler', 4], ['Startwert der Karte', 4711], ['Kartengröße', 'normal'], ['Startvorrat', 'wenig']]) {
+    assert.equal(namen.get(name), wert, name);
+  }
   assert.equal(raum.gastgeber, raum.spieler[0].id);
   gast.zu();
   bert.zu();
@@ -306,4 +318,62 @@ test('auswahl AC-6: Kartengroesse und Startvorrat kommen in der Partie an', asyn
   );
   gast.zu();
   bert.zu();
+});
+
+// ---- KI-Gegner (spielauswahl AC-18, AC-19, Runde 101) ----------------------
+
+test('auswahl AC-18: die Zahl der KI-Gegner ist eine Einstellung und steht im Warteraum', async () => {
+  const { gast, antwort } = await eroeffnen({ art: 'strategie', einstellungen: { ki: 2 } });
+  assert.equal(antwort.typ, 'du');
+  const raum = await gast.warteAuf(istTyp('raum'));
+  const ki = raum.einstellungen.find((e) => e.schluessel === 'ki');
+  assert.equal(ki.name, 'KI-Gegner');
+  assert.equal(ki.wert, 2, 'wer beitritt, sieht, dass zwei Plaetze besetzt sind');
+  gast.zu();
+});
+
+test('auswahl AC-18: KI-Gegner belegen Plaetze - bei drei Plaetzen und zwei KIs ist der Raum mit einem Menschen voll', async () => {
+  const lauf = async (ki) => {
+    const { gast, antwort } = await eroeffnen({ art: 'strategie', einstellungen: { spieler: 3, ki } });
+    const bert = kunde(HAFEN);
+    await bert.offen();
+    bert.senden({ typ: 'beitreten', code: antwort.code, name: 'Bert' });
+    const fuerBert = await bert.warteAuf((n) => n.typ === 'du' || n.typ === 'fehler');
+    gast.zu();
+    bert.zu();
+    return fuerBert;
+  };
+  // Gegenprobe: mit einer KI ist noch ein Platz frei.
+  assert.equal((await lauf(1)).typ, 'du', 'eine KI: Bert passt hinein');
+  const voll = await lauf(2);
+  assert.equal(voll.typ, 'fehler');
+  assert.match(voll.text, /voll/);
+  // Und wer mehr KIs bestellt, als Plaetze da sind, eroeffnet gar nicht erst.
+  const { gast, antwort } = await eroeffnen({ art: 'strategie', einstellungen: { spieler: 2, ki: 2 } });
+  assert.equal(antwort.typ, 'fehler');
+  assert.match(antwort.text, /Computergegner/);
+  gast.zu();
+});
+
+test('auswahl AC-19: allein mit einer KI startet die Partie, und die KI spielt', async () => {
+  // Gegenprobe: allein ohne KI fehlen Mitspieler.
+  const ohne = await eroeffnen({ art: 'strategie' });
+  ohne.gast.senden({ typ: 'start' });
+  const absage = await ohne.gast.warteAuf((n) => n.typ === 'fehler');
+  assert.match(absage.text, /mindestens 2/);
+  ohne.gast.zu();
+
+  const { gast } = await eroeffnen({ art: 'strategie', einstellungen: { ki: 1 } });
+  await gast.warteAuf(istTyp('raum'));
+  gast.senden({ typ: 'start', startwert: 7 });
+  const aufbau = await gast.warteAuf(istTyp('aufbau'));
+  assert.equal(aufbau.spieler.length, 2, 'zwei Plaetze: Anna und die KI');
+  const ki = aufbau.spieler.find((s) => s.name === 'KI 1');
+  assert.ok(ki, 'die KI sitzt mit Namen am Tisch');
+  // Die KI spielt: sie bestellt Dorfbewohner, also sinkt ihre Nahrung, ohne
+  // dass ein Mensch fuer sie etwas schickt.
+  const erster = await gast.warteAuf(istTyp('zustand'));
+  const start = erster.spieler.find((s) => s.id === ki.id).nahrung;
+  await gast.warteAuf((n) => n.typ === 'zustand' && n.spieler.find((s) => s.id === ki.id).nahrung < start, 10_000);
+  gast.zu();
 });

@@ -37,6 +37,11 @@ function pruefen(steckbrief, ordner) {
       throw new Error(`${wo}: takte muss eine ganze Zahl von 1 bis 60 sein.`);
     }
   }
+  // Wie viele Plaetze das Spiel selbst besetzt, etwa mit Computergegnern
+  // (→ specs/00-plattform/spielauswahl.md AC-19). Freiwillig.
+  if (steckbrief.plaetze !== undefined && typeof steckbrief.plaetze !== 'function') {
+    throw new Error(`${wo}: plaetze muss eine Funktion (einstellungen) => Zahl sein.`);
+  }
   einstellungen.listePruefen(steckbrief.einstellungen, wo);
 }
 
@@ -59,6 +64,7 @@ function lesen(wurzel = __dirname) {
       // Fuer den Raum; beim Ausliefern an den Browser faellt die Funktion weg.
       erzeugen: steckbrief.erzeugen,
       takte: steckbrief.takte,
+      ...(steckbrief.plaetze ? { plaetze: steckbrief.plaetze } : {}),
       reihenfolge: Number.isInteger(steckbrief.reihenfolge) ? steckbrief.reihenfolge : 100,
     });
   }

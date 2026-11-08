@@ -1,7 +1,7 @@
 {
   "spec": "00-plattform/spielauswahl.md",
   "ac": "AC-6",
-  "titel": "Vier Einstellungen des Strategiespiels: vier Spieler, Karte 4711, groß, viel Startvorrat",
+  "titel": "Die Einstellungen des Strategiespiels gesetzt: vier Spieler, Karte 4711, groß, viel Startvorrat",
   "datei": "e2e/tests/spielauswahl.spec.mjs",
   "pfad": [
     "Spiel waehlen",

@@ -1,0 +1,10 @@
+{
+  "spec": "00-plattform/spielauswahl.md",
+  "ac": "AC-18",
+  "titel": "Im Warteraum steht „KI-Gegner: 1“ unter den Einstellungen, Anna ist allein und kann starten",
+  "datei": "e2e/tests/spielauswahl.spec.mjs",
+  "pfad": [
+    "Gegen die KI",
+    "auswahl AC-18 und auswahl AC-19: mit einem KI-Gegner eroeffnet, steht er im Warteraum, und allein gestartet spielt die Partie"
+  ]
+}
