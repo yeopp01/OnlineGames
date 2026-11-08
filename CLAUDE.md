@@ -155,7 +155,7 @@ Umfang hinzufügt, dort nachsehen.
 
 ## Stand
 
-**390 von 520 Kriterien fertig.** 452 Tests ohne Browser, 167 im Browser. Die
+**391 von 520 Kriterien fertig.** 459 Tests ohne Browser, 167 im Browser. Die
 Übersicht ist der Bericht: `npm run qa:report`.
 
 Gebaut ist der Unterbau: Räume, Übertragung, Karte, Wegfindung, Sammeln,
@@ -308,7 +308,9 @@ vierzig KIs an. **Stehende treten auseinander** (einheiten AC-29,
 `welt.ausweichen()`): wer näher als ein halbes Feld bei einem anderen steht,
 geht auf ein freies Nachbarfeld, auf dem er seine Arbeit behält — Sammler
 und Kämpfende noch nicht (AC-30 kostet die KI Zeit, AC-31 hängt am
-Konterkreis). Es folgen Nachschub,
+Konterkreis). **Nachschub** (ki AC-12): nach dem Aufstieg verteilt die KI
+ihre Sammler nach Überfluss und Mangel um, baut bis zu drei Militärgebäude
+und greift in dreißig Minuten vier- bis neunmal an. Es folgen
 Mensch gegen KI — und **zuletzt der Nebel**,
 weil er die Zustandsnachricht umbaut.
 

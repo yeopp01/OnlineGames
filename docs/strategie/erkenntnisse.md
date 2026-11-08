@@ -70,6 +70,12 @@ etwas anderem gearbeitet.
 
 ## Offene Fäden
 
+- **Der Plan für Untätige kennt keinen Überfluss** (Durchsicht Runde 90):
+  `umverteilen` zieht einen Bauern von der Nahrung ab, und der nächste Untätige
+  geht nach dem festen Plan wieder zur Nahrung, obwohl dort 600 liegen. Kein
+  Pendeln (die Schwellen 300/600 und die Sperre verhindern es), aber ein
+  teilweises Gegensteuern. Kandidat, wenn ki AC-10 oder fahrplan AC-11 daran
+  hängen.
 - **Figuren bei Zoom 1 sind die schwächste Stelle des Bildes** (Rückschau
   nach Runde 88, Frage des Benutzers nach besseren Figuren). Schmal, knapp 29
   Bildpunkte hoch, wenig Kontrast zum Boden; das Dorfzentrum wirkt wie ein
@@ -909,6 +915,47 @@ alle sieben Gebäude der Dunklen Zeit stehen. Was sich wiederholt hat:
 Neueste oben. Eine Zeile je Runde: Nummer, Datum, Kriterien, Ergebnis,
 wichtigste Erkenntnis.
 
+- **90** · 2026-11-08 · **ki AC-12** — Nachschub: nach dem ersten Heer greift
+  jede KI wieder an (4 bis 9 Angriffe in 30 Minuten, Median 8), und die
+  Wirtschaft trägt weiter (21 bis 22 Dorfbewohner samt Ausbildung bei Minute
+  30; im Median 13 Kampfeinheiten statt 6). Gelernt, viererlei: (1) **Jeder
+  behobene Engpass zeigt den nächsten — also nach jedem Schritt messen,
+  nicht raten.** Erst fehlte Holz (2300 Nahrung neben 20 Holz) → Umverteilen
+  nach dem Aufstieg; dann stapelte sich alles, und das Heer blieb klein → der
+  Engpass war der **Durchsatz** eines einzigen Militärgebäudes → bis zu drei;
+  dann fehlte einer KI die Nahrung → Rücklage für Dorfbewohner vor dem
+  Militär — die half **nicht**, die Nahrung blieb bei 10. Erst das Zählen der
+  Rollen zeigte: sieben fertige Farmen, keine bewirtschaftet. (2) **Ein alter
+  Fehler, der wie Spätwirtschaft aussah**: `schicken(nahrung)` versuchte die
+  Beeren vor der Farm, das nächste Beerenfeld lag knapp in Reichweite, aber
+  ohne Weg — der Dorfbewohner blieb stehen, und die nächste Entscheidung
+  schickte ihn wieder hin. Jetzt gilt ein Versuch nur, wenn er losgeht, und ein
+  Feld ohne Weg wird nicht wieder vorgeschlagen. Nebenwirkung: die längste
+  Untätigkeit bis Minute 30 fiel von bis zu 655 s auf 53 s — `ki AC-10` ist
+  damit fast erreicht. (3) **Ein Messpunkt kann in einen Überfall fallen**: bei
+  Minute 30 hatte eine KI 19 Dorfbewohner, drei waren eben gefallen und zwei
+  standen bezahlt in der Schlange. Das Kriterium zählt jetzt mit, wer in der
+  Ausbildung steht — begründet in der Spec, nicht um grün zu werden: die
+  Absicht war „die Wirtschaft läuft weiter", nicht „kein Verlust in dieser
+  Sekunde". (4) Die Rücklage für Dorfbewohner bleibt trotzdem: sie hat den
+  gemessenen Fall nicht gelöst, ist aber richtig (ein Dorfzentrum ohne Nahrung
+  ersetzt niemanden) und hat einen eigenen Test. (5) **Die Durchsicht durch
+  einen Prüfer fand vier Dinge**, alle behoben mit Test: ein gescheiterter
+  Umverteilungsversuch riss einen Sammler aus der Arbeit und setzte keine
+  Sperre; `unterwegs()` galt für Schaf und Farm immer; ein Feld ohne Weg blieb
+  für immer gesperrt (jetzt zwei Minuten); und `umverteilen` übergab eine
+  leere Liste, sodass die Obergrenzen an Schafen und Beeren nicht griffen.
+  **Die vierte Korrektur machte die Zahlen erst schlechter**: mit den
+  Obergrenzen fand die Umverteilung zu Nahrung keinen Platz mehr, und eine
+  KI hungerte neben 640 Gold — der feste Plan wollte keine weitere Farm. Jetzt
+  baut die KI nach dem Aufstieg eine Farm, wenn Nahrung fehlt und keine frei
+  ist. (6) **Seit es Nachschub gibt, werden Partien entschieden** — und der
+  Messpunkt „20 Dorfbewohner bei Minute 30" traf drei KIs, deren Dorf gerade
+  überrannt wurde (9 bis 23 Feinde gegen zwei bis drei eigene). Die Klausel
+  prüft jetzt richtig herum: wer unter 20 liegt, muss überrannt werden und
+  vorher die 20 gehabt haben; höchstens ein Viertel. Meine erste Fassung nahm
+  jede angegriffene KI aus (acht) und hatte eine geschätzte Grenze von sechs —
+  beides falsch, die Anweisung sagt: erst messen.
 - **89** · 2026-11-08 · **einheiten AC-29** — keine zwei Einheiten
   übereinander: alle fünf Takte treten Stehende auseinander, die näher als ein
   halbes Feld beieinander stehen — die höhere Nummer zuerst, auf ein freies

@@ -78,7 +78,21 @@ function kennzahlen(welt, spieler, ki, untaetig) {
   return {
     name: spieler.name,
     dorfbewohner: eigene.filter((e) => e.art === 'dorfbewohner').length,
+    // Wer schon bezahlt in der Ausbildung steht (ki AC-12): nach einem
+    // Ueberfall ersetzt das Dorfzentrum Gefallene, und ein Messpunkt mitten
+    // darin soll das nicht als Zusammenbruch zaehlen.
+    dorfbewohnerInAusbildung: [...welt.gebaeude.values()]
+      .filter((g) => g.besitzer === spieler.id)
+      .reduce((summe, g) => summe + g.schlange.filter((art) => art === 'dorfbewohner').length, 0),
     einheiten: eigene.length,
+    // Lebende Feinde in zwoelf Feldern um das eigene Dorfzentrum (ki AC-12):
+    // sind es mehr als eigene Kampfeinheiten, wird das Dorf gerade ueberrannt.
+    feindeAmDorf: (() => {
+      const zentrum = [...welt.gebaeude.values()].find((g) => g.besitzer === spieler.id && g.art === 'dorfzentrum');
+      if (!zentrum) return 0;
+      return [...welt.einheiten.values()].filter((e) => e.besitzer !== spieler.id && !e.tot
+        && Math.hypot(e.x - zentrum.x, e.y - zentrum.y) < 12).length;
+    })(),
     // Alles, was kein Dorfbewohner ist: die Klasse `dorf` sagt es, nicht die
     // Art - so zaehlt jede neue Kampfeinheit spaeterer Stufen mit (ki AC-9).
     kampf: eigene.filter((e) => !(EINHEITEN[e.art].klassen || []).includes('dorf')).length,
@@ -92,6 +106,8 @@ function kennzahlen(welt, spieler, ki, untaetig) {
     angriffMinute: ki.angriffTakt === null ? null : ki.angriffTakt / (60 * TAKTE_PRO_SEKUNDE),
     // Wie oft die Wache zu einem Angriffsort gezogen ist (ki AC-14).
     verteidigungen: ki.verteidigungen,
+    // Wie oft ein Sammler den Rohstoff gewechselt hat (ki AC-12).
+    umverteilt: ki.umverteilt,
     gebaeude,
     ...Object.fromEntries(ROHSTOFFE.map((r) => [r, Math.floor(spieler[r])])),
     abgewiesen: ki.abgewiesen,

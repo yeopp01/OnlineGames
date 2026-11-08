@@ -44,12 +44,31 @@ const REICHWEITE = 30;
 const AN_SCHAFEN = 6;
 const AN_BEEREN = 6;
 
+// Nach dem Aufstieg verteilt die KI um (ki AC-12): liegt von einem Rohstoff
+// mehr als UEBERSCHUSS und von einem anderen weniger als MANGEL, geht alle
+// UMVERTEILEN_SEKUNDEN ein Sammler vom einen zum anderen. Der feste Plan der
+// Dunklen Zeit legt 14 von 22 auf Nahrung; in der Feudalzeit lagen beim
+// Startwert 4 bei Minute 30 2300 Nahrung neben 20 Holz, das Heer fehlte, und
+// ein Ueberfall nahm elf Dorfbewohner (Runde 90, gemessen).
+const UEBERSCHUSS = 600;
+const MANGEL = 300;
+const UMVERTEILEN_SEKUNDEN = 10;
+// So lange schlaegt die KI einen Vorrat nicht wieder vor, zu dem kein Weg
+// fuehrte - danach versucht sie es noch einmal.
+const UNERREICHBAR_SEKUNDEN = 120;
+
 // Nach dem Aufstieg (ki AC-9): ein Gebaeude der Feudalzeit, in dem
 // Kampfeinheiten entstehen. Mit Gold die Schiessanlage - Bogenschuetzen
 // kosten Gold und sind die staerkere Wahl -, sonst der Stall, dessen
 // Spaeherreiter nur Nahrung kostet, und die hat die KI immer.
 const MILITAER = ['schiessanlage', 'stall'];
 const MILITAER_GOLD = 200;
+// So viele Militaergebaeude hoechstens - ein weiteres, sobald alle Schlangen
+// voll sind und Holz fuer eines mit Reserve da ist (ki AC-12). Mit einem
+// einzigen stapelten sich beim Startwert 4 bei Minute 30 2280 Holz und 930
+// Gold, und das Heer stand bei einer bis sechs Einheiten (Runde 90).
+const MILITAER_HOECHSTENS = 3;
+const MILITAER_RESERVE = 200;
 // So viele Auftraege stehen hoechstens in der Schlange eines Militaergebaeudes:
 // mehr wuerde den Vorrat binden, den die naechste Stufe braucht.
 const MILITAER_SCHLANGE = 2;
@@ -129,6 +148,12 @@ class Ki {
     // Wie oft die Wache zu einem Angriffsort gezogen ist - der Pruefstand
     // misst daran.
     this.verteidigungen = 0;
+    // Wann zuletzt ein Sammler den Rohstoff gewechselt hat, und wie oft (ki AC-12).
+    this.zuletztUmverteilt = -Infinity;
+    this.umverteilt = 0;
+    // Vorratsfelder, zu denen kein Weg fuehrte, mit dem Takt der Feststellung -
+    // eine Weile nicht wieder vorschlagen (UNERREICHBAR_SEKUNDEN).
+    this.unerreichbar = new Map();
   }
 
   get spieler() {
@@ -182,6 +207,7 @@ class Ki {
     this.militaerPruefen(gebaeude, dorfbewohner);
     this.heerPruefen(eigene);
     this.verteidigenPruefen(eigene, gebaeude, zentrum);
+    this.umverteilen(dorfbewohner);
 
     // Lager an die Vorraete, sobald dort mehrere arbeiten und es weit ist.
     const rollen = this.rollen(dorfbewohner);
@@ -235,21 +261,33 @@ class Ki {
       this.bauen(art, this.platzBeiBasis(art), dorfbewohner);
       return;
     }
+    // Fehlen Dorfbewohner, gehen sie vor: das Militaer gibt Nahrung nur aus,
+    // wenn danach noch einer bezahlt ist. Beim Startwert 14 stand die Nahrung
+    // ab Minute 24 bei 10 - drei Militaergebaeude nahmen jede Ladung, und das
+    // Dorfzentrum ersetzte keinen Gefallenen mehr (Runde 90).
+    const ruecklage = dorfbewohner.length < ZIEL_DORFBEWOHNER ? EINHEITEN.dorfbewohner.kosten : {};
     for (const g of meine) {
       if (!g.fertig || g.schlange.length >= MILITAER_SCHLANGE) continue;
-      const art = this.naechsteKampfeinheit(g);
+      const art = this.naechsteKampfeinheit(g, ruecklage);
       if (art) this.senden({ auftrag: 'ausbilden', gebaeude: g.id, einheit: art });
+    }
+    // Nachschub braucht Durchsatz: sind alle voll beschaeftigt und ist Holz
+    // uebrig, ein weiteres.
+    const alleVoll = meine.every((g) => g.fertig && g.schlange.length >= MILITAER_SCHLANGE);
+    if (alleVoll && meine.length < MILITAER_HOECHSTENS && this.spieler.holz >= MILITAER_HOLZ + MILITAER_RESERVE) {
+      const art = this.spieler.gold >= MILITAER_GOLD ? 'schiessanlage' : 'stall';
+      this.bauen(art, this.platzBeiBasis(art), dorfbewohner);
     }
   }
 
   // Die erste Einheit, die dieses Gebaeude jetzt ausbilden kann: im erreichten
   // Zeitalter und bezahlt. Verbesserungen stehen in derselben Liste - die
   // haben keine Werte in EINHEITEN und fallen heraus.
-  naechsteKampfeinheit(gebaeude) {
+  naechsteKampfeinheit(gebaeude, ruecklage = {}) {
     for (const art of GEBAEUDE[gebaeude.art].bildetAus) {
       const werte = EINHEITEN[art];
       if (!werte || (werte.zeitalter || 0) > this.spieler.zeitalter) continue;
-      if (Object.entries(werte.kosten).some(([r, menge]) => this.spieler[r] < menge)) continue;
+      if (Object.entries(werte.kosten).some(([r, menge]) => this.spieler[r] - (ruecklage[r] || 0) < menge)) continue;
       return art;
     }
     return null;
@@ -508,6 +546,36 @@ class Ki {
     if (heim) this.senden({ auftrag: 'befehl', einheiten: getroffeneDorf.map((e) => e.id), ziel: heim });
   }
 
+  /**
+   * Nach dem Aufstieg: ein Sammler vom Rohstoff, der sich stapelt, zu dem, der
+   * fehlt (ki AC-12). Hoechstens einer alle UMVERTEILEN_SEKUNDEN, damit nicht
+   * in einer halben Sekunde alle umziehen und die Lage umkippt. Wer an einem
+   * Vorrat oder Tier arbeitet, geht vor dem Bauern: eine Farm traegt auch
+   * spaeter noch.
+   */
+  umverteilen(dorfbewohner) {
+    if (this.spieler.zeitalter < 1) return;
+    if (this.welt.takt - this.zuletztUmverteilt < UMVERTEILEN_SEKUNDEN * TAKTE_PRO_SEKUNDE) return;
+    const vorrat = (r) => this.spieler[r];
+    const fehlt = ['holz', 'gold', 'nahrung'].filter((r) => vorrat(r) < MANGEL)
+      .sort((a, b) => vorrat(a) - vorrat(b))[0];
+    if (!fehlt) return;
+    const satt = ['nahrung', 'holz', 'gold'].filter((r) => r !== fehlt && vorrat(r) > UEBERSCHUSS)
+      .sort((a, b) => vorrat(b) - vorrat(a))[0];
+    if (!satt) return;
+    const kandidaten = dorfbewohner.filter((e) => !e.weg.length && this.rolle(e) === satt);
+    const wer = kandidaten.find((e) => e.auftrag?.art !== 'farm') || kandidaten[0];
+    if (!wer) return;
+    // Die Sperre gilt fuer jeden **Versuch**, nicht nur fuer einen gelungenen:
+    // ein Befehl nimmt dem Sammler seine Arbeit, auch wenn kein Weg zum neuen
+    // Vorrat fuehrt - ohne Sperre risse die naechste halbe Sekunde den
+    // naechsten heraus (Durchsicht Runde 90).
+    this.zuletztUmverteilt = this.welt.takt;
+    // Mit der ganzen Liste, sonst greifen die Obergrenzen an Schafen und
+    // Beeren nicht (Durchsicht Runde 90).
+    if (this.schicken(wer, fehlt, dorfbewohner)) this.umverteilt += 1;
+  }
+
   untaetig(einheit) {
     return !einheit.auftrag && !einheit.weg.length && !einheit.sammelt && !einheit.baut;
   }
@@ -556,15 +624,59 @@ class Ki {
       const schaf = this.naechstesSchaf(einheit);
       const beere = this.naechstesFeld(einheit, FELD_FUER.nahrung);
       const farm = this.freieFarm();
-      if (schaf && an('tier') < AN_SCHAFEN) return this.zumSchaf(einheit, schaf);
-      if (beere && anBeeren < AN_BEEREN) return this.befehl(einheit, beere);
-      if (farm) return this.befehl(einheit, { x: farm.x, y: farm.y });
-      if (schaf) return this.zumSchaf(einheit, schaf);
-      if (beere) return this.befehl(einheit, beere);
-      return false;
+      const versuche = [];
+      if (schaf && an('tier') < AN_SCHAFEN) versuche.push(() => this.zumSchaf(einheit, schaf));
+      if (beere && anBeeren < AN_BEEREN) versuche.push(() => this.zumFeld(einheit, beere));
+      if (farm) versuche.push(() => this.befehl(einheit, { x: farm.x, y: farm.y }));
+      if (schaf) versuche.push(() => this.zumSchaf(einheit, schaf));
+      if (beere) versuche.push(() => this.zumFeld(einheit, beere));
+      // Erst wenn er wirklich losgeht, gilt er als geschickt - sonst die
+      // naechste Moeglichkeit (siehe zumFeld).
+      return versuche.some((versuch) => versuch() && this.unterwegs(einheit));
     }
     const feld = this.naechstesFeld(einheit, FELD_FUER[rohstoff]);
-    return feld ? this.befehl(einheit, feld) : false;
+    return feld ? this.zumFeld(einheit, feld) && this.unterwegs(einheit) : false;
+  }
+
+  /**
+   * Zu einem Vorrat schicken - und ein Feld, zu dem kein Weg fuehrt, nicht
+   * wieder vorschlagen (ki AC-10, ki AC-12). Beim Startwert 14 schickte die KI
+   * ab Minute 20 jeden Untaetigen an einen Beerenbusch 29 Felder vom Dorf, zu
+   * dem kein Weg fuehrte; er blieb stehen, und die naechste Entscheidung
+   * schickte ihn wieder hin. Die freie Farm daneben kam nie an die Reihe, und
+   * die Nahrung stand sechs Minuten bei 10 (Runde 90, gemessen).
+   */
+  zumFeld(einheit, feld) {
+    if (!this.befehl(einheit, feld)) return false;
+    if (!this.unterwegs(einheit)) this.unerreichbar.set(feld.y * this.welt.karte.groesse + feld.x, this.welt.takt);
+    return true;
+  }
+
+  // Ist ein Feld als unerreichbar gemerkt? Die Sperre laeuft ab: ein Weg kann
+  // kurz zugestellt sein - von einer Baustelle, einem Feind, der den Befehl zum
+  // Angriff macht - und fuer immer gesperrt schrumpfte der Vorrat an Gold und
+  // Holz eine lange Partie hindurch (Durchsicht Runde 90).
+  gesperrt(index) {
+    const seit = this.unerreichbar.get(index);
+    return seit !== undefined && this.welt.takt - seit < UNERREICHBAR_SEKUNDEN * TAKTE_PRO_SEKUNDE;
+  }
+
+  // Hat er einen Weg, oder steht er schon dort, wo er arbeiten soll? Fuer das
+  // Schaf und die Farm ebenso nach dem Abstand - vorher galt beides immer als
+  // unterwegs, auch ohne Weg (Durchsicht Runde 90).
+  unterwegs(einheit) {
+    if (einheit.weg.length) return true;
+    const a = einheit.auftrag;
+    if (a?.art === 'sammeln') return Math.hypot(einheit.x - a.feld.x, einheit.y - a.feld.y) <= 1.9;
+    if (a?.art === 'tier') {
+      const tier = this.welt.tiere.get(a.tier);
+      return Boolean(tier) && Math.hypot(einheit.x - tier.x, einheit.y - tier.y) <= 1.5;
+    }
+    if (a?.art === 'farm') {
+      const farm = this.welt.gebaeude.get(a.gebaeude);
+      return Boolean(farm) && this.welt.abstandZu(einheit, farm) <= 1.2;
+    }
+    return false;
   }
 
   freieFarm() {
@@ -612,7 +724,7 @@ class Ki {
     let bestes = null;
     let besterAbstand = Infinity;
     for (const index of karte.vorrat.keys()) {
-      if (!arten.includes(karte.felder[index])) continue;
+      if (!arten.includes(karte.felder[index]) || this.gesperrt(index)) continue;
       const x = index % karte.groesse;
       const y = (index / karte.groesse) | 0;
       if (Math.hypot(x - basis.x, y - basis.y) > REICHWEITE) continue;
@@ -684,7 +796,12 @@ class Ki {
     // Beeren Platz findet (ki AC-5: Farmen, sobald beides zur Neige geht).
     const soll = plan(dorfbewohner.length).nahrung;
     const tragen = soll - (schafeUebrig ? AN_SCHAFEN : 0) - (beerenUebrig ? AN_BEEREN : 0);
-    if (farmen.length >= tragen) return;
+    // Nach dem Aufstieg zaehlt nicht nur der Plan: fehlt Nahrung und ist keine
+    // Farm frei, kommt eine dazu (ki AC-12). Sonst fand die Umverteilung keinen
+    // Platz - Schafe und Beeren voll, alle Farmen besetzt -, und beim
+    // Startwert 11 hungerte KI 1 ab Minute 22 neben 640 Gold (Runde 90).
+    const hunger = this.spieler.zeitalter > 0 && this.spieler.nahrung < MANGEL && !this.freieFarm();
+    if (farmen.length >= tragen && !hunger) return;
     const zentrum = gebaeude.find((g) => g.art === 'dorfzentrum');
     const muehle = gebaeude.find((g) => g.art === 'muehle' && g.fertig);
     const um = farmen.length % 2 && muehle ? muehle : zentrum;
@@ -739,5 +856,5 @@ class Ki {
 
 module.exports = {
   Ki, ENTSCHEIDEN_ALLE, ZIEL_DORFBEWOHNER, FEUDALZEIT_NAHRUNG, AN_SCHAFEN, AN_BEEREN, MILITAER,
-  HEER, WACHE, HEER_ABSTAND, WACHE_NAH, FEIND_FERN, VERGEBEN_ABSTAND, MILITAER_HOLZ, plan,
+  HEER, WACHE, HEER_ABSTAND, WACHE_NAH, FEIND_FERN, VERGEBEN_ABSTAND, MILITAER_HOLZ, UEBERSCHUSS, MANGEL, UMVERTEILEN_SEKUNDEN, UNERREICHBAR_SEKUNDEN, MILITAER_HOECHSTENS, plan,
 };

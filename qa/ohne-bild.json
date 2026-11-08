@@ -3,6 +3,11 @@
   "eintraege": [
     {
       "spec": "10-strategie/ki.md",
+      "ac": "AC-12",
+      "begruendung": "Nachschub heisst: nach dem ersten Heer greift die KI wieder an, und ihre Wirtschaft traegt dabei weiter - gemessen ueber dreissig Spielminuten und zwanzig Startwerte im Pruefstand (Angriffe je KI, Dorfbewohner bei Minute 30). Das ist eine Eigenschaft ganzer Partien; ein Standbild zeigt einen Augenblick, in dem weder ein zweiter Angriff noch ein Ersatz fuer Gefallene zu sehen ist."
+    },
+    {
+      "spec": "10-strategie/ki.md",
       "ac": "AC-1",
       "begruendung": "Dass die KI die Welt nur ueber Nachrichten aendert und dieselben Absagen bekommt wie ein Mensch, ist eine Eigenschaft des Codes. Ein Bild zeigt, was sie tut, nicht auf welchem Weg."
     },

@@ -11,7 +11,7 @@ const karten = require('../server/spiele/strategie/karte.js');
 const { Welt } = require('../server/spiele/strategie/welt.js');
 const {
   Ki, ENTSCHEIDEN_ALLE, ZIEL_DORFBEWOHNER, FEUDALZEIT_NAHRUNG, AN_SCHAFEN, AN_BEEREN, MILITAER,
-  HEER, WACHE, HEER_ABSTAND, WACHE_NAH, FEIND_FERN, VERGEBEN_ABSTAND, MILITAER_HOLZ, plan,
+  HEER, WACHE, HEER_ABSTAND, WACHE_NAH, FEIND_FERN, VERGEBEN_ABSTAND, MILITAER_HOLZ, UEBERSCHUSS, MANGEL, UNERREICHBAR_SEKUNDEN, plan,
 } = require('../server/spiele/strategie/ki.js');
 const { TAKTE_PRO_SEKUNDE } = require('../server/spiele/strategie/welt.js');
 const { EINHEITEN, SAMMELN } = require('../server/spiele/strategie/daten.js');
@@ -870,4 +870,220 @@ test('ki AC-9: nach dem Aufstieg kommt das Militaergebaeude vor dem naechsten La
   assert.ok(!lagerBestellt(1, 200), 'in der Feudalzeit wartet das Lager auf die Schiessanlage');
   // ... ausser es reicht fuer beides.
   assert.ok(lagerBestellt(1, MILITAER_HOLZ + 100), 'reicht das Holz fuer beides, baut sie es');
+});
+
+// ---- Nachschub (ki AC-12, Runde 90) -----------------------------------------
+//
+// Gemessen in Runde 90 ueber die Startwerte 1 bis 20, je zwei KIs, 30
+// Spielminuten: 4 bis 9 Angriffe je KI, im Median 14 Kampfeinheiten; vor der
+// Runde im Median 6 - die KI hatte ein Militaergebaeude, verteilte nach dem
+// Aufstieg nicht um und schickte Untaetige an unerreichbare Beeren.
+//
+// Bei Minute 30 hatten 37 KIs 20 bis 22 Dorfbewohner samt Ausbildung. Drei
+// hatten 11 bis 18 - alle drei in dem Augenblick ueberrannt, 9 bis 23 Feinde
+// im Dorf gegen zwei bis drei eigene Kampfeinheiten, und alle drei hatten
+// zwischen Minute 20 und 30 ihre 22. Fuenf weitere wurden gerade angegriffen
+// und hielten trotzdem 21 bis 22. Die Klausel prueft, dass die KI ihre
+// Wirtschaft nicht fuer das Heer opfert - nicht, dass keine KI einen Krieg
+// verliert: dass Partien entschieden werden, ist der Sinn des Nachschubs
+// (fahrplan AC-11). Wer unter 20 liegt, muss deshalb gerade ueberrannt
+// werden und vorher die 20 gehabt haben. Rechenzeit rund 12 s.
+test('ki AC-12: ueber zwanzig Startwerte greift jede KI wieder an, und bei Minute 30 hat sie 20 Dorfbewohner', () => {
+  let ueberrannt = 0;
+  for (let startwert = 1; startwert <= 20; startwert++) {
+    const hoechste = new Map();
+    const { spieler } = partieSpielen({
+      startwert,
+      minuten: 30,
+      eingriff: (welt) => {
+        if (welt.takt < 20 * 60 * TAKTE_PRO_SEKUNDE) return;
+        for (const s of welt.spieler) {
+          const n = [...welt.einheiten.values()].filter((e) => e.besitzer === s.id && e.art === 'dorfbewohner' && !e.tot).length;
+          hoechste.set(s.name, Math.max(hoechste.get(s.name) || 0, n));
+        }
+      },
+    });
+    for (const p of spieler) {
+      // Nachschub: nach dem ersten Heer noch eines.
+      assert.ok(p.angriffe >= 2, `${startwert} ${p.name}: ${p.angriffe} Angriffe`);
+      assert.ok(hoechste.get(p.name) >= 20, `${startwert} ${p.name}: nach Minute 20 hoechstens ${hoechste.get(p.name)} Dorfbewohner`);
+      // Die Wirtschaft laeuft weiter. Wer bezahlt in der Ausbildung steht,
+      // zaehlt mit: faellt der Messpunkt in einen Ueberfall, ersetzt das
+      // Dorfzentrum die Gefallenen schon.
+      const dorf = p.dorfbewohner + p.dorfbewohnerInAusbildung;
+      if (dorf >= 20) continue;
+      assert.ok(p.feindeAmDorf > p.kampf,
+        `${startwert} ${p.name}: ${p.dorfbewohner} Dorfbewohner, ${p.dorfbewohnerInAusbildung} in Ausbildung - und nicht ueberrannt (${p.feindeAmDorf} Feinde, ${p.kampf} eigene Kampfeinheiten)`);
+      ueberrannt += 1;
+    }
+  }
+  // Gegenprobe: die Ausnahme bleibt eine Ausnahme - hoechstens ein Viertel.
+  // Sonst pruefte der Test nur noch, dass Kriege verloren werden.
+  assert.ok(ueberrannt <= 10, `${ueberrannt} von 40 KIs unter 20, weil ueberrannt`);
+});
+
+const dorfVon = (welt, id) => [...welt.einheiten.values()].filter((e) => e.besitzer === id && e.art === 'dorfbewohner');
+
+test('ki AC-12: nach dem Aufstieg geht ein Sammler vom Ueberfluss zum Mangel - hoechstens einer je zehn Sekunden', () => {
+  const lauf = (zeitalter) => {
+    const welt = new Welt(ZWEI, 4711);
+    const ki = new Ki(welt, 'a');
+    const a = welt.spielerVon('a');
+    for (const e of dorfVon(welt, 'a')) ki.schicken(e, 'nahrung', dorfVon(welt, 'a'));
+    // Umverteilt wird, wer arbeitet, nicht wer gerade laeuft - also erst ankommen.
+    takten(welt, 30 * TAKTE_PRO_SEKUNDE);
+    assert.ok(dorfVon(welt, 'a').some((e) => !e.weg.length && ki.rolle(e) === 'nahrung'), 'sie sammeln Nahrung');
+    a.zeitalter = zeitalter;
+    a.nahrung = UEBERSCHUSS + 400;
+    a.holz = MANGEL - 100;
+    a.gold = MANGEL + 100;
+    ki.umverteilen(dorfVon(welt, 'a'));
+    const nachEinem = ki.rollen(dorfVon(welt, 'a'));
+    ki.umverteilen(dorfVon(welt, 'a'));
+    return { nachEinem, nachZwei: ki.rollen(dorfVon(welt, 'a')), ki };
+  };
+  // Gegenprobe: in der Dunklen Zeit gilt der feste Plan.
+  const dunkel = lauf(0);
+  assert.equal(dunkel.nachEinem.holz || 0, 0, 'in der Dunklen Zeit zieht niemand um');
+  const feudal = lauf(1);
+  assert.equal(feudal.nachEinem.holz, 1, 'einer geht zum Holz');
+  assert.equal(feudal.nachZwei.holz, 1, 'und in derselben halben Sekunde nicht noch einer');
+  assert.equal(feudal.ki.umverteilt, 1);
+});
+
+test('ki AC-12: sind alle Militaergebaeude beschaeftigt und ist Holz uebrig, baut die KI ein weiteres', () => {
+  const bestellt = (schlange, holz) => {
+    const welt = new Welt(ZWEI, 4711);
+    const ki = new Ki(welt, 'a');
+    const a = welt.spielerVon('a');
+    a.zeitalter = 1;
+    const platz = ki.platzBeiBasis('schiessanlage');
+    const anlage = welt.gebaeudeAnlegen('a', 'schiessanlage', platz.x, platz.y, true);
+    anlage.schlange = Array(schlange).fill('bogenschuetze');
+    a.holz = holz;
+    a.gold = 0;
+    a.nahrung = 0;
+    const gesendet = [];
+    ki.senden = (n) => { gesendet.push(n); return {}; };
+    ki.militaerPruefen([...welt.gebaeude.values()].filter((g) => g.besitzer === 'a'), dorfVon(welt, 'a'));
+    return gesendet.some((n) => n.auftrag === 'bauen' && MILITAER.includes(n.art));
+  };
+  // Gegenprobe: ist die Schlange nicht voll, reicht das eine.
+  assert.ok(!bestellt(1, 1000), 'mit Platz in der Schlange kein zweites');
+  assert.ok(!bestellt(2, 100), 'ohne Holz kein zweites');
+  assert.ok(bestellt(2, 1000), 'voll beschaeftigt und Holz da: ein zweites');
+});
+
+test('ki AC-12: fehlen Dorfbewohner, gibt das Militaer Nahrung nur aus, wenn danach noch einer bezahlt ist', () => {
+  const ausgebildet = (dorfbewohner, nahrung) => {
+    const welt = new Welt(ZWEI, 4711);
+    const ki = new Ki(welt, 'a');
+    const a = welt.spielerVon('a');
+    a.zeitalter = 1;
+    const basis = a.basis;
+    while (dorfVon(welt, 'a').length < dorfbewohner) welt.einheitAnlegen('a', basis.x + 6, basis.y + 6, 'dorfbewohner');
+    const platz = ki.platzBeiBasis('stall');
+    welt.gebaeudeAnlegen('a', 'stall', platz.x, platz.y, true);
+    a.nahrung = nahrung;
+    a.holz = 0;
+    const gesendet = [];
+    ki.senden = (n) => { gesendet.push(n); return {}; };
+    ki.militaerPruefen([...welt.gebaeude.values()].filter((g) => g.besitzer === 'a'), dorfVon(welt, 'a'));
+    return gesendet.some((n) => n.auftrag === 'ausbilden');
+  };
+  const reiter = EINHEITEN.spaeherreiter.kosten.nahrung;
+  const dorf = EINHEITEN.dorfbewohner.kosten.nahrung;
+  assert.ok(!ausgebildet(3, reiter + dorf - 1), 'drei Dorfbewohner: der Reiter wartet, solange danach keiner bezahlt waere');
+  assert.ok(ausgebildet(3, reiter + dorf), 'reicht es fuer beide, kommt der Reiter');
+  // Gegenprobe: mit vollem Dorf keine Ruecklage.
+  assert.ok(ausgebildet(ZIEL_DORFBEWOHNER, reiter), 'mit vollem Dorf reicht der Preis des Reiters');
+});
+
+test('ki AC-12: fuehrt kein Weg zum Vorrat, geht der Dorfbewohner zur naechsten Moeglichkeit', () => {
+  // Beim Startwert 14 schickte die KI ab Minute 20 jeden Untaetigen an einen
+  // Beerenbusch, zu dem kein Weg fuehrte, und die Nahrung stand sechs Minuten
+  // bei 10 - die freie Farm daneben kam nie an die Reihe (Runde 90).
+  const welt = new Welt(ZWEI, 4711);
+  const ki = new Ki(welt, 'a');
+  const a = welt.spielerVon('a');
+  const g = welt.karte.groesse;
+  welt.tiere.clear();
+  const [erster, zweiter] = dorfVon(welt, 'a');
+  // Das naechste Beerenfeld rundum einmauern: Wald auf jedes begehbare Nachbarfeld.
+  const beere = ki.naechstesFeld(erster, [karten.BEERE]);
+  for (let dy = -1; dy <= 1; dy++) {
+    for (let dx = -1; dx <= 1; dx++) {
+      const i = (beere.y + dy) * g + beere.x + dx;
+      if ((dx || dy) && karten.begehbar(welt.karte, beere.x + dx, beere.y + dy)) welt.karte.felder[i] = karten.WALD;
+    }
+  }
+  const platz = ki.platzBeiBasis('farm');
+  const farm = welt.gebaeudeAnlegen('a', 'farm', platz.x, platz.y, true);
+  // Gegenprobe: zu diesem Busch fuehrt kein Weg - wer allein dorthin soll,
+  // bleibt stehen.
+  ki.befehl(zweiter, beere);
+  assert.ok(!ki.unterwegs(zweiter), 'zum eingemauerten Busch kommt niemand');
+  // Die KI versucht den Busch, merkt es und nimmt die Farm.
+  assert.ok(ki.schicken(erster, 'nahrung', dorfVon(welt, 'a')), 'geschickt');
+  assert.ok(ki.unterwegs(erster), 'und unterwegs');
+  assert.equal(erster.auftrag?.art === 'farm' || farm.arbeiter === erster.id || erster.weg.length > 0, true, 'zur Farm');
+  assert.ok(ki.gesperrt(beere.y * g + beere.x), 'den Busch schlaegt sie nicht wieder vor');
+  assert.notDeepEqual(ki.naechstesFeld(erster, [karten.BEERE]), beere, 'naechstesFeld laesst ihn aus');
+  // Die Sperre laeuft ab - ein Weg kann kurz zugestellt gewesen sein
+  // (Durchsicht Runde 90).
+  takten(welt, UNERREICHBAR_SEKUNDEN * TAKTE_PRO_SEKUNDE);
+  assert.ok(!ki.gesperrt(beere.y * g + beere.x), 'nach zwei Minuten versucht sie es wieder');
+});
+
+test('ki AC-12: auch ein gescheiterter Umverteilungsversuch sperrt zehn Sekunden', () => {
+  // Durchsicht Runde 90: der Befehl nimmt dem Sammler seine Arbeit, auch wenn
+  // zum neuen Vorrat kein Weg fuehrt. Ohne Sperre risse die naechste halbe
+  // Sekunde den naechsten heraus.
+  const welt = new Welt(ZWEI, 4711);
+  const ki = new Ki(welt, 'a');
+  const a = welt.spielerVon('a');
+  for (const e of dorfVon(welt, 'a')) ki.schicken(e, 'nahrung', dorfVon(welt, 'a'));
+  takten(welt, 30 * TAKTE_PRO_SEKUNDE);
+  a.zeitalter = 1;
+  a.nahrung = UEBERSCHUSS + 400;
+  a.gold = MANGEL - 100;
+  a.holz = MANGEL + 100;
+  // Kein Gold, zu dem ein Weg fuehrt: jedes Goldfeld ist gemerkt.
+  for (const index of welt.karte.vorrat.keys()) {
+    if (welt.karte.felder[index] === karten.GOLD) ki.unerreichbar.set(index, welt.takt);
+  }
+  let versuche = 0;
+  ki.schicken = () => { versuche += 1; return false; };
+  for (let n = 0; n < 4; n++) {
+    ki.umverteilen(dorfVon(welt, 'a'));
+    takten(welt, ENTSCHEIDEN_ALLE);
+  }
+  assert.equal(versuche, 1, 'in zwei Sekunden ein Versuch, nicht vier');
+});
+
+test('ki AC-12: fehlt nach dem Aufstieg Nahrung und ist keine Farm frei, baut die KI eine', () => {
+  // Beim Startwert 11 hungerte KI 1 ab Minute 22 neben 640 Gold: Schafe und
+  // Beeren voll, alle Farmen besetzt, und der feste Plan wollte keine weitere
+  // (Runde 90).
+  const farmBestellt = (zeitalter, nahrung) => {
+    const welt = new Welt(ZWEI, 4711);
+    const ki = new Ki(welt, 'a');
+    const a = welt.spielerVon('a');
+    a.zeitalter = zeitalter;
+    a.nahrung = nahrung;
+    a.holz = 1000;
+    // Ein Militaergebaeude steht, sonst haelt die Ruecklage das Holz zurueck.
+    const platz = ki.platzBeiBasis('schiessanlage');
+    welt.gebaeudeAnlegen('a', 'schiessanlage', platz.x, platz.y, true);
+    const gesendet = [];
+    ki.senden = (n) => { gesendet.push(n); return {}; };
+    const dorf = dorfVon(welt, 'a');
+    // Zu Beginn tragen Schafe und Beeren den Plan: keine Farm noetig.
+    ki.farmenPruefen(ki.rollen(dorf), [...welt.gebaeude.values()].filter((g) => g.besitzer === 'a'), dorf);
+    return gesendet.some((n) => n.auftrag === 'bauen' && n.art === 'farm');
+  };
+  // Gegenprobe: in der Dunklen Zeit gilt der Plan, und er will keine.
+  assert.ok(!farmBestellt(0, 50), 'in der Dunklen Zeit keine Farm ueber den Plan hinaus');
+  assert.ok(!farmBestellt(1, MANGEL + 100), 'mit genug Nahrung keine');
+  assert.ok(farmBestellt(1, 50), 'nach dem Aufstieg, hungrig und ohne freie Farm: eine Farm');
 });

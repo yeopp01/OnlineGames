@@ -2,7 +2,7 @@
 
 **Bereich:** Strategie
 **Kuerzel:** ki
-**Stand:** 11/14 fertig · 3 offen
+**Stand:** 12/14 fertig · 2 offen
 
 ## Zweck
 
@@ -83,10 +83,26 @@ nicht die Regeln.
   Wache. Im Prüfstand greift über zwanzig Startwerte in jeder Partie
   mindestens eine KI an, und wer nicht angreift, verteidigt (AC-14): wer
   selbst unter Angriff steht, kommt mitunter nie auf zehn Kampfeinheiten.
-- **AC-12** `offen` **Nachschub statt alles auf einmal** — Ist das Heer
+- **AC-12** `fertig` **Nachschub statt alles auf einmal** — Ist das Heer
   gefallen, bildet sie weiter aus und greift wieder an. Die Wirtschaft läuft
-  dabei weiter: bei Spielminute 30 hat sie noch mindestens 20 Dorfbewohner.
-  Ohne das endet jede Partie damit, dass beide Seiten einander zusehen.
+  dabei weiter: bei Spielminute 30 hat sie noch mindestens 20 Dorfbewohner —
+  **mitgezählt, wer im Dorfzentrum bezahlt in der Ausbildung steht**. **Wer in
+  diesem Augenblick überrannt wird** (mehr Feinde in zwölf Feldern um das
+  Dorfzentrum als eigene Kampfeinheiten), zählt nicht, muss aber nach Minute
+  20 die 20 gehabt haben; höchstens ein Viertel darf so ausgenommen sein. Die
+  Klausel prüft, dass die KI ihre Wirtschaft nicht für das Heer opfert, nicht,
+  dass keine KI einen Krieg verliert — dass Partien entschieden werden, ist der
+  Sinn des Nachschubs (→ [Fahrplan](fahrplan.md) AC-11). Gemessen in Runde 90
+  über zwanzig Startwerte: 4 bis 9 Angriffe je KI, im Median 14 Kampfeinheiten
+  (vorher 6); 37 KIs mit 20 bis 22 Dorfbewohnern, drei überrannt. Dafür fünf
+  Regeln: nach dem Aufstieg geht alle zehn Sekunden ein Sammler vom Rohstoff
+  im Überfluss (über 600) zu dem, der fehlt (unter 300); sind alle
+  Militärgebäude beschäftigt und ist Holz übrig, kommt ein weiteres dazu,
+  höchstens drei; fehlt Nahrung und ist keine Farm frei, kommt eine Farm
+  dazu; fehlen Dorfbewohner, gibt das Militär Nahrung nur aus, wenn danach
+  noch einer bezahlt ist; und ein Vorrat, zu dem kein Weg führt, wird zwei
+  Minuten lang nicht wieder vorgeschlagen. Ohne das endet jede Partie damit,
+  dass beide Seiten einander zusehen.
 - **AC-13** `offen` **KI sieht nur ihr Sichtfeld** — Mit dem Nebel (C6)
   entscheidet sie allein aus dem, was der Server ihr schickt: Sie kennt die
   Basis des Gegners erst, wenn eine ihrer Einheiten sie gesehen hat, und

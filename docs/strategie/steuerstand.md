@@ -13,27 +13,26 @@ hier nichts eintraegt, verliert den Faden beim naechsten Autocompact.
 
 ## Zuletzt fortgeschrieben
 
-2026-11-08, nach Runde 89 (**einheiten AC-29**: Stehende treten auseinander -
-`welt.ausweichen()` alle fuenf Takte hinter dem Taktschritt der Einheiten;
-die hoehere Nummer weicht, sonst die andere; nur auf ein Feld, auf dem die
-Arbeit bleibt (Bauleute an der Baustelle), schraeg nur mit freien Ecken.
-**Noch nicht** Sammler (`einheiten AC-30`: kostet die KI 0,4 min bis 500
-Nahrung, Bedingung fahrplan AC-5) und Kaempfende (`einheiten AC-31`:
-Bedingung Konterkreis). Nebenher in ki.js: die Holzruecklage fuer das
-Militaergebaeude gilt jetzt vor jedem Lager, nicht nur vor Farmen. Davor
-Runde 88, Rueckschau: drei neue Regeln (offenen Fehler hoechstens einmal
-umschiffen; neuer Browserfall `--repeat-each 10`; Durchsicht durch einen
-Subagenten in Abschnitt 6, Schritt 0). **Naechste Rueckschau: Runde 93.**
-Als Naechstes in C4: **ki AC-12** (Nachschub, bei Spielminute 30 noch 20
-Dorfbewohner), **ki AC-10** (spaet untaetige Dorfbewohner, bis 655 s) und
-**fahrplan AC-11** (KI gegen KI mit Sieger unter 60 Minuten). Die Figuren
-bei Zoom 1 sind als Faden notiert: eine eigene Runde nach C4, vor C5.)
+2026-11-08, nach Runde 90 (**ki AC-12**, Nachschub: die KI verteilt nach dem
+Aufstieg um (`umverteilen()`, ein Sammler je 10 s vom Ueberfluss ueber 600 zum
+Mangel unter 300), baut bis zu drei Militaergebaeude (`MILITAER_HOECHSTENS`),
+haelt Nahrung fuer einen Dorfbewohner zurueck, solange welche fehlen, und
+schlaegt Vorraete ohne Weg nicht wieder vor (`this.unerreichbar`). Gemessen
+ueber zwanzig Startwerte bei Minute 30: 4 bis 9 Angriffe je KI, 21 bis 22
+Dorfbewohner samt Ausbildung, laengste Untaetigkeit 53 s (vorher bis 655 s).
+Davor Runde 89: **einheiten AC-29**, Stehende treten auseinander; Sammler
+(AC-30) und Kaempfende (AC-31) offen. **Naechste Rueckschau: Runde 93.**
+Als Naechstes in C4: **ki AC-10** (spaet untaetige Dorfbewohner - jetzt
+noch 39 s und 53 s in zwei von vierzig KIs, Grenze 20 s) und **fahrplan
+AC-11** (KI gegen KI endet mit Sieger unter 60 Minuten - mit Nachschub zum
+ersten Mal denkbar). Die Figuren bei Zoom 1 sind als Faden notiert: eine
+eigene Runde nach C4, vor C5.)
 
 ## Wo ich stehe
 
 - **Branch:** `strategie`. Nie auf `main` arbeiten, **nie pushen, nie deployen.**
-- **Board:** 390 von 520 Kriterien fertig · 1 in Arbeit · 5 in QA · 4 geplant ·
-  112 offen · 8 zurueckgestellt. 452 Tests ohne Browser, 167 im Browser.
+- **Board:** 391 von 520 Kriterien fertig · 1 in Arbeit · 5 in QA · 4 geplant ·
+  111 offen · 8 zurueckgestellt. 459 Tests ohne Browser, 167 im Browser.
 - **Fuenf Waechter in `tests/waechter-*.test.mjs`** (der fuenfte seit Runde 87: Bildschirmtext mit echten Umlauten): Gleichheit auf wachsenden
   Listen, verbesserbare Werte an `welt.einheitenwert()` vorbei,
   Bildunterschriften mit `${...}`, und (neu in Runde 73) die **Kuerzeltafel**
