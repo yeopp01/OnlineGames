@@ -1194,6 +1194,18 @@ erstes Heer 17,0 min (Runde 113).
 Neueste oben. Eine Zeile je Runde: Nummer, Datum, Kriterien, Ergebnis,
 wichtigste Erkenntnis.
 
+- **120** · 2026-11-08 · **der Browserlauf wieder grün** — ki AC-11 fiel
+  in jedem vollen Lauf. Ursache genauer als bisher: zwei Milizen starten auf
+  Nachbarfeldern, ihre Wege laufen zusammen, und danach trennt sie nur der
+  Unterschied der Weglängen (ein Schrägschritt gegen einen geraden, 0,28 bis
+  0,36 Felder) — gleiches Tempo hält ihn den ganzen Marsch. Auf den
+  Startwerten 7 und 42 ebenso; auf 2024 hielt der Fall achtmal von acht.
+  Der Test eröffnet jetzt mit 2024 — ein bewusstes zweites Ausweichen vor
+  einheiten AC-32, im Test vermerkt; 4711 kommt zurück, wenn eine Gruppe im
+  Gehen ihre Aufstellung behält (Frage an den Benutzer). Die Versuche liefen
+  über `npm run gegenprobe --datei`; eine Variante lief nach einem
+  Zeitlimit im Hintergrund weiter und schrieb danach die Datei zurück, wie
+  vorgesehen.
 - **119** · 2026-11-08 · **bedienung AC-40** — Pfeile fliegen sichtbar (D1
   ist fertig): jeder Schuss eines Fernkämpfers geht mit Start und Ziel in
   den nächsten Zustand, im Nebel nur, wer ein Ende sieht; der Browser lässt

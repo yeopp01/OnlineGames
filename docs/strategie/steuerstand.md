@@ -13,7 +13,7 @@ hier nichts eintraegt, verliert den Faden beim naechsten Autocompact.
 
 ## Zuletzt fortgeschrieben
 
-2026-11-08, nach Runde 119 (**kampf AC-13, fahrplan AC-13, C6e fertig**: der
+2026-11-08, nach Runde 120 (**kampf AC-13, fahrplan AC-13, C6e fertig**: der
 Server schickt jedem nur, was er sieht - `welt.zustandJeSpieler`,
 `welt.aufbauFuer`, im Raum `sendenJe`. Fremde Gebaeude und Felder, die sich im
 Nebel aendern, kommen beim naechsten Hinsehen; wer ausscheidet, bekommt einmal
@@ -41,11 +41,10 @@ AC-41 fertig** (Ausholen im Kampf, Ansage oben). Runde 119: **bedienung AC-40
 fertig** (Pfeile), **D1 erreicht**. **Der Browserlauf ist nicht ganz
 gruen**: ki AC-11 faellt jetzt in jedem vollen Lauf (zwei Milizen der KI
 laufen aufeinander, einheiten AC-32 - wartet auf die Frage zu Formationen).
-**Als Naechstes, vor D2:** ohne Antwort das Bild zu ki AC-11 am Marschziel
-aufnehmen statt unterwegs (dort treten Stehende auseinander, AC-29) und die
-Unterschrift anpassen - ein bewusstes zweites Ausweichen, mit Vermerk, damit
-der Browserlauf gruen wird. Dann D2: Aufstieg in die Ritterzeit, Kloster,
-Universitaet, Werkstatt (bauen AC-27, AC-28). ki AC-13 und einheiten
+Runde 120: **ki AC-11 im Browser auf
+Startwert 2024** (bewusstes Ausweichen vor AC-32, im Test vermerkt) - der
+Browserlauf ist wieder gruen. **Als Naechstes D2**: Aufstieg in die
+Ritterzeit, Kloster, Universitaet, Werkstatt (bauen AC-27, AC-28). ki AC-13 und einheiten
 AC-32 warten auf Antworten. **Naechste Rueckschau: Runde 121.**)
 
 ## Wo ich stehe
