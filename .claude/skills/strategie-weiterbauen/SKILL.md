@@ -147,6 +147,21 @@ Setze die gewählten Kriterien auf `in-arbeit`.
   Tabelle, aber Verbesserungen ändern sie. Wer `EINHEITEN[art].angriff` direkt
   liest, sieht sie nicht — genau so war die Rüstung aus dem Webstuhl eine Stufe
   lang wirkungslos (Runde 68). `tests/waechter-werte.test.mjs` sucht danach.
+- **Ein neuer Eintrag in `daten.js` (Gebäude, Einheit, Verbesserung) fährt
+  `npm run e2e:daten` vor dem vollen Lauf** — viereinhalb Minuten für die
+  Browserfälle, die „alles, was die Daten für dieses Zeitalter sagen"
+  aufstellen. In den Runden 122 bis 125 fand dreimal erst der volle Lauf am
+  Ende, dass so ein Fall am Neuen bricht (der Ritter in der Feudalzeit am
+  Stück, der Wachturm, der den Reiter vor dem Speer traf, 13 Bautasten für 14
+  Gebäude) — jedes Mal 13 Minuten und ein zweiter Lauf. **Handelt das Neue von
+  selbst** (ein Turm schießt, ein Gebäude heilt), filtern diese Fälle es aus
+  ihrer Aufstellung, sonst stört es ihre Messung. Namen, Zeichnung und Taste
+  je Art prüft `tests/waechter-namen.test.mjs`, die Dateiliste von
+  `e2e:daten` ebenso.
+- **Ein Wert, der nicht in der Vorlage steht, wird nicht erinnert, sondern
+  begründet** — und vorher nach Tests gesucht, die einen Wert über alle Arten
+  vergleichen („sieht am weitesten", „das schnellste"): `grep -rn "sicht" tests/`.
+  Die Sicht 10 des Wachturms „wie im Original" brach kampf AC-18 (Runde 125).
 - **Die kurzen Namen aus der Übertragung** (`h`, `u`, `k`, `art`, `f`) stehen
   als Tafel oben in `e2e/helpers/strategie.mjs` — dort nachsehen statt in
   `welt.js` suchen.

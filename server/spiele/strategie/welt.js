@@ -105,6 +105,8 @@ const EINHEIT_NAMEN = {
   bogenschuetze: 'Den Bogenschützen',
   plaenkler: 'Den Plänkler',
   soldat: 'Den Soldaten',
+  ritter: 'Den Ritter',
+  armbrustschuetze: 'Den Armbrustschützen',
 };
 
 // Welche Verbesserung eine Einheit zur naechsten Stufe macht - `wandelt`
@@ -2901,5 +2903,5 @@ class Welt {
 
 module.exports = {
   Welt, TAKTE_PRO_SEKUNDE, STARTVORRAT, ROHSTOFFE, VERFOLGUNG_FELDER, WACHE_TAKTE,
-  PARTIE_MINUTEN,
+  PARTIE_MINUTEN, GEBAEUDE_NAMEN, EINHEIT_NAMEN,
 };

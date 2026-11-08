@@ -13,7 +13,7 @@ hier nichts eintraegt, verliert den Faden beim naechsten Autocompact.
 
 ## Zuletzt fortgeschrieben
 
-2026-11-08, nach Runde 125 (**kampf AC-13, fahrplan AC-13, C6e fertig**: der
+2026-11-08, nach Runde 126 (**kampf AC-13, fahrplan AC-13, C6e fertig**: der
 Server schickt jedem nur, was er sieht - `welt.zustandJeSpieler`,
 `welt.aufbauFuer`, im Raum `sendenJe`. Fremde Gebaeude und Felder, die sich im
 Nebel aendern, kommen beim naechsten Hinsehen; wer ausscheidet, bekommt einmal
@@ -56,15 +56,19 @@ hat geantwortet: **Stufe G wird nicht vorgezogen, der Fahrplan wird der Reihe
 nach gebaut.** Runde 125: **D4 fertig** (bauen AC-29, kampf AC-20: der
 Wachturm schiesst von selbst, `welt.tuermeTakten()`, `schaden()` kennt ein
 Gebaeude als Angreifer, Sicht 9 wegen kampf AC-18; der Pfeil beginnt oben,
-`schussHoehe` in `public/gebaeude.js`). **Runde 126 ist die Rueckschau**,
-danach D5: Mauern und Tor (bauen AC-30, AC-31, kampf AC-21). ki AC-13 und einheiten
-AC-32 warten auf Antworten. (Rueckschau 121 erledigt.))
+`schussHoehe` in `public/gebaeude.js`). Runde 126: **Rueckschau** -
+`tests/waechter-namen.test.mjs` (Name, Zeichnung, Taste je Art; dabei fehlten
+Ritter und Armbrust in `EINHEIT_NAMEN`), `npm run e2e:daten` fuer die
+Browserfaelle, die aus den Daten aufstellen, zwei Regeln in der Anweisung.
+**Naechste Runde: D5**, Mauern und Tor (bauen AC-30, AC-31, kampf AC-21) -
+vor dem vollen Lauf `npm run e2e:daten`. ki AC-13 und einheiten AC-32 warten
+auf Antworten.)
 
 ## Wo ich stehe
 
 - **Branch:** `strategie`. Nie auf `main` arbeiten, **nie pushen, nie deployen.**
 - **Board:** 423 von 555 Kriterien fertig · 1 in Arbeit · 5 in QA · 4 geplant ·
-  114 offen · 8 zurueckgestellt. 526 Tests ohne Browser, 182 im Browser.
+  114 offen · 8 zurueckgestellt. 531 Tests ohne Browser, 182 im Browser.
 - **Fuenf Waechter in `tests/waechter-*.test.mjs`** (der fuenfte seit Runde 87: Bildschirmtext mit echten Umlauten): Gleichheit auf wachsenden
   Listen, verbesserbare Werte an `welt.einheitenwert()` vorbei,
   Bildunterschriften mit `${...}`, und (neu in Runde 73) die **Kuerzeltafel**
@@ -334,7 +338,7 @@ AC-32 warten auf Antworten. (Rueckschau 121 erledigt.))
   bei 20 min). Aelter als Runde 69, nur nie gemessen, weil der Pruefstand bei
   zehn Minuten endete. Ursache und Hebel stehen in den Erkenntnissen unter
   **Offene Faeden**.
-- **Naechste Rueckschau: Runde 126** - oder frueher, wenn Stufe D erreicht wird.
+- **Naechste Rueckschau: Runde 131** - oder frueher, wenn Stufe D erreicht wird.
   Diese Zeile ist der Termin, nicht nachzaehlen.
 - Frueherer Termin, erledigt: **Runde 83** (die Bildnachweise einmal ganz
   angesehen), **Runde 78** (Bilderwerkzeug: `check:alles:neu`,

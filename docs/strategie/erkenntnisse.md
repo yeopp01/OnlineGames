@@ -402,6 +402,7 @@ Zahlen, gegen die spätere Runden vergleichen. Mit Datum und Commit.
 | 2026-11-08 | Rechenzeit einer Partie KI gegen KI (`pruefstand:vergleich`, 6 Partien, 40 min) | vor der Sicht 44, mit Sicht 50 ms je 1000 Takte (+14 %); gleiche Arbeit gegen sich selbst 52/54 (Rauschen ~4 %) | Rueckschau 108 |
 | 2026-11-08 | `npm run check` (Maschine ruhig) | 52 s, 492 Tests ohne Browser | Rueckschau 108 |
 | 2026-11-08 | Browserlauf gesamt mit allen Bildern neu (`check:alles:neu`) | 174 Faelle, 13,3 min | Runde 107 |
+| 2026-11-08 | `npm run e2e:daten` (sechs Dateien aus den Daten, ein Arbeiter) | 257 s; längster Fall fahrplan AC-8 78 s | Rückschau 126 |
 
 ## Rückschauen
 
@@ -1225,11 +1226,49 @@ waren grün.
 Gemessen (ruhige Maschine): `npm run check` 53 s, 507 Tests ohne Browser;
 der Browserlauf 12,2 min für 178 Fälle (Runde 120).
 
+### Nach Runde 126 (2026-11-08)
+
+Runden 122–125: D2, D3 und D4 ganz — Ritterzeit mit drei Gebäuden, Ritter
+und Armbrust, vier Verbesserungen, der Wachturm. Sieben Kriterien `fertig`,
+keine Runde gescheitert. Was wiederholt Zeit kostete, und was sich ändert:
+
+1. **Tabellen neben den Daten wuchsen nicht mit** — `GEBAEUDE_NAMEN` fehlten
+   fünf Gebäude, `BAUTASTEN` eine Taste (Runde 125), und beim Nachsehen für
+   diese Rückschau fehlten `EINHEIT_NAMEN` Ritter und Armbrustschütze seit
+   Runde 123: eine Absage hätte „ritter gibt es erst …" gezeigt. → Werkzeug:
+   `tests/waechter-namen.test.mjs` prüft je Art Name, Zeichnung (`GEBAEUDE`
+   in `public/gebaeude.js`, `FIGUREN`) und Taste. Gegenprobe: ohne die zwei
+   neuen Namen rot.
+2. **Dreimal fand erst der volle Lauf am Ende einen Bruch am Neuen** (Runden
+   123 und 125 zweimal): Fälle, die „alles, was die Daten für dieses
+   Zeitalter sagen" aufstellen, nahmen den Ritter in die Feudalzeit und den
+   Wachturm in eine Messung, in die er hineinschoss. → Werkzeug: `npm run
+   e2e:daten` fährt genau diese sechs Dateien (gemessen 257 s, alle grün),
+   ein Wächter hält die Liste vollständig. Regel: nach jedem neuen Eintrag in
+   `daten.js` zuerst dieser Lauf; was von selbst handelt, filtern die Fälle aus.
+3. **Ein Wert aus dem Gedächtnis brach einen fremden Test** (Sicht 10 des
+   Turms gegen kampf AC-18). → Regel: was nicht in der Vorlage steht, wird
+   begründet, und vorher wird nach Tests gesucht, die über alle Arten
+   vergleichen.
+
+Nicht geändert: das Ansehen jedes Bildes (Runde 123 fand die Lanze hinter
+der Hauswand, Runde 125 den Pfeil am Turmfuß — die Tests waren grün). Die
+Frage „Zählt der Wachturm zum Aufstieg?" bleibt bis D7, wenn der Markt
+kommt: dann wird `zaehltZumAufstieg` Daten für alle Gebäude auf einmal.
+
+Gemessen (ruhige Maschine, nur ein ruhender Playwright-Testserver der
+Erweiterung): `npm run check` 55 s, 531 Tests ohne Browser; `npm run
+e2e:daten` 257 s für sechs Dateien; der volle Browserlauf mit 182 Fällen rund 13
+min (Runde 125).
+
 ## Runden
 
 Neueste oben. Eine Zeile je Runde: Nummer, Datum, Kriterien, Ergebnis,
 wichtigste Erkenntnis.
 
+- **126** · 2026-11-08 · **Rückschau** — `tests/waechter-namen.test.mjs`
+  (Name, Zeichnung, Taste je Art; fand Ritter und Armbrust ohne Namen),
+  `npm run e2e:daten` vor dem vollen Lauf, Werte begründen statt erinnern.
 - **125** · 2026-11-08 · **bauen AC-29, kampf AC-20, D4 fertig** — der
   Wachturm: 25 Holz, 125 Stein, 1020 Leben, 5 Angriff, Reichweite 8, ein
   Pfeil alle zwei Sekunden, ab der Feudalzeit. `welt.tuermeTakten()` nimmt
