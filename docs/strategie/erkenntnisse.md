@@ -70,6 +70,13 @@ etwas anderem gearbeitet.
 
 ## Offene Fäden
 
+- **Wunsch des Benutzers (2026-11-08, nach Runde 105): der Nebel ist eine
+  Einstellung beim Eröffnen, und Forschung & Co verändern seine Fläche.** Als
+  kampf AC-16 (Nebel / Erkundet / Aufgedeckt, ersetzt den Prüfgriff
+  `aufdecken`), AC-17 (Stadtwache, Gebäude +4 Sicht) und AC-18 (Außenposten,
+  Sicht 10) angelegt und in der Bauabfolge vor das Filtern auf dem Server
+  gezogen (C6c, C6d). Die Stadtpatrouille kommt mit Stufe D.
+
 - **Der Plan für Untätige kennt keinen Überfluss** (Durchsicht Runde 90):
   `umverteilen` zieht einen Bauern von der Nahrung ab, und der nächste Untätige
   geht nach dem festen Plan wieder zur Nahrung, obwohl dort 600 liegen. Kein

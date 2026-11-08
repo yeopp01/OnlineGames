@@ -135,6 +135,8 @@ Ramme ──schlägt──▶ Gebäude           Reiter ──schlägt──▶ 
 | Doppelaxt | Holzfällerlager | Feudal | 100 N, 50 H | Holz +20 % |
 | Pferdekummet | Mühle | Feudal | 75 N, 75 H | Farmen +75 Nahrung |
 | Radkarren | Dorfzentrum | Feudal | 175 N, 50 H | Dorfbewohner +10 % Tempo, +25 % Tragkraft |
+| Stadtwache | Dorfzentrum | Feudal | 75 N | Gebäude +4 Sicht |
+| Stadtpatrouille | Dorfzentrum | Ritter | 300 N, 100 G | Gebäude +4 Sicht |
 | Schmiedeangriff Stufe 1 | Schmiede | Feudal | 100 N | Nah +1 Angriff |
 | Befiederte Pfeile | Schmiede | Feudal | 100 N, 50 G | Fern +1 Angriff, +1 Reichweite |
 | Belagerung (Soldat → Wache) | Kaserne | Feudal/Ritter | … | Einheitenstufen |

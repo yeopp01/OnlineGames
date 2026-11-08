@@ -2,7 +2,7 @@
 
 **Bereich:** Strategie
 **Kuerzel:** kampf
-**Stand:** 12/15 fertig · 2 offen · 1 zurueckgestellt
+**Stand:** 12/18 fertig · 5 offen · 1 zurueckgestellt
 
 ## Zweck
 
@@ -125,6 +125,22 @@ aus [Spielziel](spielziel.md) AC-10, gemessen in
   kosten je Rechnung unter 1 ms; eine ganze Partie rechnet damit rund 16 %
   länger — die Sicht der Gebäude wird nur neu gerechnet, wenn eines entsteht
   oder fällt (sonst 55 %). Außerhalb der Karte sieht niemand.
+- **AC-16** `offen` **Sicht beim Eröffnen einstellen** — Wunsch des Benutzers
+  (2026-11-08). Eine Einstellung der Partie mit drei Werten: **Nebel**
+  (Vorgabe — nur Gesehenes, wie AC-11 bis AC-13), **Erkundet** (die Karte ist
+  von Anfang an bekannt, fremde Einheiten nur in Sicht) und **Aufgedeckt**
+  (alles sichtbar). Sie steht im Warteraum wie jede Einstellung. Damit ersetzt
+  sie den Prüfgriff `aufdecken`: Browsertests, die nicht vom Nebel handeln,
+  eröffnen „Aufgedeckt".
+- **AC-17** `offen` **Stadtwache weitet die Sicht** — Wunsch des Benutzers:
+  Forschung verändert die Fläche des Nebels. Die Verbesserung Stadtwache im
+  Dorfzentrum ab der Feudalzeit, 75 Nahrung, gibt allen eigenen Gebäuden +4
+  Sicht (Vorlage). Als Wert in den Daten wie jede Verbesserung; Server und
+  Browser rechnen die Sicht mit ihr. Die Stadtpatrouille (+4, Ritterzeit)
+  folgt mit Stufe D.
+- **AC-18** `offen` **Außenposten sieht weit** — Ein Gebäude der Dunklen
+  Zeit nur zum Sehen: 25 Holz, 25 Stein, 15 s, 500 Leben (Vorlage), Sicht 10.
+  Gezeichnet und unterscheidbar wie jedes Gebäude (darstellung AC-14).
 
 ## Grenzfaelle
 

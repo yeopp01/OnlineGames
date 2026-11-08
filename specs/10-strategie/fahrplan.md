@@ -160,9 +160,11 @@ Zustandsnachricht umbaut und damit jeden Browsertest berührt: was dort heute
 | --- | --- | --- |
 | C6a | Die Sicht je Spieler auf dem Server rechnen: jetzt gesehen, je gesehen — **fertig** | kampf AC-15 |
 | C6b | Der Nebel im Bild: die eigene Sicht im Browser rechnen, drei Stufen zeichnen, auch auf der Übersichtskarte — **fertig** (Runde 105) | kampf AC-11, AC-12, darstellung AC-15 |
-| C6c | Nur Sichtbares schicken: eine Zustandsnachricht je Spieler, erinnerte Gebäude; ein Prüfgriff deckt für Browsertests auf | kampf AC-13, fahrplan AC-13 |
-| C6d | Die KI sieht nur ihre Sicht und erkundet mit dem Späher | ki AC-13 |
-| C6e | Angriff wird gemeldet, ein Klick springt hin | kampf AC-14 |
+| C6c | Die Sicht als Einstellung beim Eröffnen: Nebel, Erkundet, Aufgedeckt — ersetzt den Prüfgriff `aufdecken` (Wunsch des Benutzers, vorgezogen) | kampf AC-16 |
+| C6d | Die Sicht wächst: Stadtwache im Dorfzentrum, der Außenposten | kampf AC-17, AC-18 |
+| C6e | Nur Sichtbares schicken: eine Zustandsnachricht je Spieler, erinnerte Gebäude | kampf AC-13, fahrplan AC-13 |
+| C6f | Die KI sieht nur ihre Sicht und erkundet mit dem Späher | ki AC-13 |
+| C6g | Angriff wird gemeldet, ein Klick springt hin | kampf AC-14 |
 
 ### Stufe D — Ritterzeit
 
