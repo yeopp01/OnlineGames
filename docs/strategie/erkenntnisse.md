@@ -1220,6 +1220,21 @@ der Browserlauf 12,2 min für 178 Fälle (Runde 120).
 Neueste oben. Eine Zeile je Runde: Nummer, Datum, Kriterien, Ergebnis,
 wichtigste Erkenntnis.
 
+- **123** · 2026-11-08 · **einheiten AC-33, AC-34** (D3 zu zwei Dritteln) —
+  der Ritter im Stall (100 Leben, 10 Angriff, 2/2, ab Ritterzeit; der Speer
+  schlägt ihn mit 16) und die Armbrust, die jeden Bogenschützen tauscht wie
+  Soldat die Miliz — beides nur Daten, die Stufen-Mechanik trug. Gezeichnet:
+  Ritter mit Pferdedecke in Spielerfarbe, Topfhelm, Lanze mit Wimpel;
+  Armbrustschütze mit Eisenhut und waagerechter Armbrust. Die erste Fassung
+  des Ritters hatte einen eigenen kastigen Helm — „wie ein Schornstein" —,
+  jetzt der Topfhelm des Soldaten. Die Schautafel bricht auch die Einheiten
+  nach zehn um. Das Bild brauchte drei Aufstellungen: erst verdeckte die
+  Hauswand die Lanze, dann stand der Ritter hinter dem Haus (Norden liegt im
+  Bild hinten) — jetzt sucht der Test im Süden. Im vollen Lauf fiel die
+  Feudalzeit am Stück: sie nahm aus dem Stall jede Einheit, auch den Ritter
+  — wieder eine wachsende Liste; jetzt bis zur Feudalzeit gefiltert. Die
+  Schautafel ist länger geworden, ihr Gesamtbild ist jetzt die ganze Seite.
+  Die Verbesserungen der Ritterzeit (bauen AC-34) sind die nächste Runde.
 - **122** · 2026-11-08 · **bauen AC-27, AC-28** (D2 ist fertig) — der
   Aufstieg in die Ritterzeit stand schon in den Daten und lief über dieselbe
   Regel wie der in die Feudalzeit; belegt mit eigenem Test (800 Nahrung, 200

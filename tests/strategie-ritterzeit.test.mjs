@@ -7,7 +7,7 @@ import { createRequire } from 'node:module';
 
 const require = createRequire(import.meta.url);
 const { Welt, TAKTE_PRO_SEKUNDE } = require('../server/spiele/strategie/welt.js');
-const { AUFSTIEGE, GEBAEUDE, EINHEITEN } = require('../server/spiele/strategie/daten.js');
+const { AUFSTIEGE, GEBAEUDE, EINHEITEN, VERBESSERUNGEN } = require('../server/spiele/strategie/daten.js');
 
 const ZWEI = [{ id: 'a', name: 'Anna' }, { id: 'b', name: 'Bert' }];
 const RITTER = ['kloster', 'universitaet', 'belagerungswerkstatt'];
@@ -93,4 +93,66 @@ test('bauen AC-28: Kloster, Universitaet und Werkstatt mit den Werten der Vorlag
     assert.equal(antwort.fehler, undefined, `${art} in der Ritterzeit`);
     assert.equal(welt.gebaeude.get(antwort.gebaeude)?.art, art, `${art}: die Baustelle steht`);
   }
+});
+
+// ---- Ritter und Armbrust (einheiten AC-33, AC-34) ---------------------------
+
+/** Anna mit einem fertigen Gebaeude `art` im Zeitalter `zeitalter`, satt. */
+function mitGebaeude(art, zeitalter = 2) {
+  const welt = new Welt(ZWEI, 7);
+  const anna = welt.spielerVon('a');
+  anna.zeitalter = zeitalter;
+  Object.assign(anna, { nahrung: 2000, holz: 2000, gold: 2000, stein: 500 });
+  let ort = null;
+  for (let r = 6; r < 30 && !ort; r++) {
+    for (const [dx, dy] of [[r, 0], [0, r], [-r, 0], [0, -r], [r, r], [-r, r]]) {
+      if (welt.platzPruefen(art, anna.basis.x + dx, anna.basis.y + dy)) { ort = { x: anna.basis.x + dx, y: anna.basis.y + dy }; break; }
+    }
+  }
+  const gebaeude = welt.gebaeudeAnlegen('a', art, ort.x, ort.y);
+  return { welt, anna, gebaeude };
+}
+const zaehlenArt = (welt, art) => [...welt.einheiten.values()].filter((e) => e.besitzer === 'a' && e.art === art && !e.tot).length;
+
+test('einheiten AC-33: der Ritter mit den Werten der Vorlage, im Stall erst ab der Ritterzeit', () => {
+  const r = EINHEITEN.ritter;
+  assert.deepEqual([r.leben, r.angriff, `${r.nahruestung}/${r.fernruestung}`, r.tempo], [100, 10, '2/2', 1.35]);
+  assert.deepEqual(r.kosten, { nahrung: 60, gold: 75 });
+  assert.equal(r.zeit, 30);
+  assert.ok(r.klassen.includes('kavallerie'), 'Kavallerie - der Speer hat Bonus gegen ihn');
+  assert.ok(GEBAEUDE.stall.bildetAus.includes('ritter'));
+  // In der Feudalzeit abgewiesen.
+  const feudal = mitGebaeude('stall', 1);
+  assert.match(feudal.welt.nachricht('a', { auftrag: 'ausbilden', gebaeude: feudal.gebaeude.id, einheit: 'ritter' }).fehler, /Ritterzeit/);
+  // In der Ritterzeit ausgebildet: nach 30 Sekunden steht er da.
+  const { welt, gebaeude } = mitGebaeude('stall', 2);
+  assert.deepEqual(welt.nachricht('a', { auftrag: 'ausbilden', gebaeude: gebaeude.id, einheit: 'ritter' }), {});
+  sekunden(welt, 30);
+  assert.equal(zaehlenArt(welt, 'ritter'), 1, 'ein Ritter');
+  // Der Speer schlaegt ihn hart: 3 Angriff - 2 Ruestung + 15 Bonus.
+  const ritter = [...welt.einheiten.values()].find((e) => e.art === 'ritter');
+  const speer = welt.einheitAnlegen('b', ritter.x + 1, ritter.y, 'speerkaempfer');
+  assert.equal(welt.schaden(speer, ritter, false), 16);
+});
+
+test('einheiten AC-34: die Armbrust macht jeden Bogenschuetzen zum Armbrustschuetzen, und die Schiessanlage bildet danach nur noch sie aus', () => {
+  const a = EINHEITEN.armbrustschuetze;
+  assert.deepEqual([a.leben, a.angriff, a.reichweite], [35, 5, 5]);
+  assert.deepEqual(a.kosten, EINHEITEN.bogenschuetze.kosten, 'kostet dasselbe wie der Bogenschuetze');
+  assert.equal(a.stufeVon, 'bogenschuetze');
+  assert.deepEqual(VERBESSERUNGEN.armbrust.kosten, { nahrung: 125, gold: 75 });
+  assert.deepEqual(VERBESSERUNGEN.armbrust.wandelt, { bogenschuetze: 'armbrustschuetze' });
+  // In der Feudalzeit gibt es die Forschung nicht.
+  const feudal = mitGebaeude('schiessanlage', 1);
+  assert.match(feudal.welt.nachricht('a', { auftrag: 'ausbilden', gebaeude: feudal.gebaeude.id, einheit: 'armbrust' }).fehler, /Ritterzeit/);
+  // In der Ritterzeit: zwei Bogenschuetzen, dann die Forschung.
+  const { welt, anna, gebaeude } = mitGebaeude('schiessanlage', 2);
+  const boegen = [0, 1].map((i) => welt.einheitAnlegen('a', anna.basis.x + 2 + i, anna.basis.y + 2, 'bogenschuetze'));
+  assert.deepEqual(welt.nachricht('a', { auftrag: 'ausbilden', gebaeude: gebaeude.id, einheit: 'armbrust' }), {});
+  sekunden(welt, VERBESSERUNGEN.armbrust.zeit);
+  assert.equal(zaehlenArt(welt, 'bogenschuetze'), 0, 'kein Bogenschuetze mehr');
+  assert.deepEqual(boegen.map((b) => welt.einheiten.get(b.id).art), ['armbrustschuetze', 'armbrustschuetze'], 'dieselben Einheiten');
+  // Der Browser schickt weiter "bogenschuetze", der Server bildet die Armbrust aus.
+  assert.deepEqual(welt.nachricht('a', { auftrag: 'ausbilden', gebaeude: gebaeude.id, einheit: 'bogenschuetze' }), {});
+  assert.deepEqual(gebaeude.schlange, ['armbrustschuetze']);
 });

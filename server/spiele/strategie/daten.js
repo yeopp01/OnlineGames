@@ -67,6 +67,19 @@ const EINHEITEN = {
     angriff: 6, nahruestung: 0, fernruestung: 1, reichweite: 0, nachladen: 2,
     klassen: ['infanterie'], zeitalter: 1, stufeVon: 'miliz',
   },
+  // Die Einheiten der Ritterzeit (einheiten AC-33, AC-34), Werte aus der
+  // Vorlage. Der Ritter ist eine neue Einheit im Stall; der Armbrustschuetze
+  // ist die zweite Stufe des Bogenschuetzen, wie der Soldat die der Miliz -
+  // er kostet dasselbe und ersetzt ihn mit der Verbesserung `armbrust`.
+  ritter: {
+    leben: 100, tempo: 1.35, sicht: 4, tragkraft: 0, kosten: { nahrung: 60, gold: 75 }, zeit: 30, kuerzel: 'r',
+    angriff: 10, nahruestung: 2, fernruestung: 2, reichweite: 0, nachladen: 1.8, klassen: ['kavallerie'], zeitalter: 2,
+  },
+  armbrustschuetze: {
+    leben: 35, tempo: 0.96, sicht: 7, tragkraft: 0, kosten: { holz: 25, gold: 45 }, zeit: 27, kuerzel: 'a',
+    angriff: 5, nahruestung: 0, fernruestung: 0, reichweite: 5, nachladen: 2,
+    klassen: ['bogenschuetze'], bonus: { speer: 3 }, zeitalter: 2, stufeVon: 'bogenschuetze',
+  },
 };
 
 // Wer von selbst wacht, greift an, was in seine Sichtweite kommt, ohne Befehl
@@ -129,10 +142,10 @@ const GEBAEUDE = {
   // forscht (bauen AC-25).
   schiessanlage: {
     groesse: 3, kosten: { holz: 175 }, bauzeit: 50, leben: 1000, wohnraum: 0, annahme: [],
-    bildetAus: ['bogenschuetze', 'plaenkler'], zeitalter: 1,
+    bildetAus: ['bogenschuetze', 'plaenkler', 'armbrust'], zeitalter: 1,
   },
   stall: {
-    groesse: 3, kosten: { holz: 175 }, bauzeit: 50, leben: 1000, wohnraum: 0, annahme: [], bildetAus: ['spaeherreiter'], zeitalter: 1,
+    groesse: 3, kosten: { holz: 175 }, bauzeit: 50, leben: 1000, wohnraum: 0, annahme: [], bildetAus: ['spaeherreiter', 'ritter'], zeitalter: 1,
   },
   schmiede: {
     groesse: 3, kosten: { holz: 150 }, bauzeit: 40, leben: 1200, wohnraum: 0, annahme: [],
@@ -205,6 +218,12 @@ const VERBESSERUNGEN = {
   soldatenstufe: {
     name: 'Soldat', kosten: { nahrung: 100, gold: 40 }, zeit: 40, zeitalter: 1,
     wirkung: {}, wandelt: { miliz: 'soldat' },
+  },
+  // Die Armbrust (einheiten AC-34): jeder Bogenschuetze wird Armbrustschuetze,
+  // wie Soldat die Miliz. Kosten aus dem Original, die Dauer ebenso.
+  armbrust: {
+    name: 'Armbrust', kosten: { nahrung: 125, gold: 75 }, zeit: 35, zeitalter: 2,
+    wirkung: {}, wandelt: { bogenschuetze: 'armbrustschuetze' },
   },
   // Die Verbesserungen der Feudalzeit (bauen AC-25, AC-26). Kosten und Wirkung
   // stehen in der Vorlage; die Vorlage nennt keine Forschungsdauer, deshalb

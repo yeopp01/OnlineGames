@@ -2,7 +2,7 @@
 
 **Bereich:** Strategie
 **Kuerzel:** einheiten
-**Stand:** 21/31 fertig · 9 offen · 1 zurueckgestellt
+**Stand:** 23/31 fertig · 7 offen · 1 zurueckgestellt
 
 ## Zweck
 
@@ -195,10 +195,10 @@ Befehl bewirkt.
 Werte aus der [Vorlage](../../docs/strategie/vorlage-aoe2.md), als Daten in
 `daten.js`; Angriff, Rüstung, Bonus und Nachladezeit wie in Stufe B.
 
-- **AC-33** `offen` **Ritter** — Im Stall ab der Ritterzeit: 60 Nahrung, 75
+- **AC-33** `fertig` **Ritter** — Im Stall ab der Ritterzeit: 60 Nahrung, 75
   Gold, 30 s, 100 Leben, 10 Angriff, 2/2 Rüstung, Tempo 1,35. Eigene Figur,
   bei Zoom 1 vom Späherreiter unterscheidbar.
-- **AC-34** `offen` **Armbrustschütze** — Die Verbesserung Armbrust in der
+- **AC-34** `fertig` **Armbrustschütze** — Die Verbesserung Armbrust in der
   Schießanlage (125 Nahrung, 75 Gold) tauscht jeden Bogenschützen aus, wie
   Soldat die Miliz (AC-24): 35 Leben, 5 Angriff, Reichweite 5. Eigene Figur.
 - **AC-35** `offen` **Ramme** — In der Belagerungswerkstatt: 160 Holz, 75

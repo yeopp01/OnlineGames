@@ -20,6 +20,9 @@ const EINTRAEGE = [
   { art: 'dorfbewohner', titel: 'trägt Gold', lage: { ladung: 'g' } },
   { art: 'miliz', titel: 'Miliz', lage: {} },
   { art: 'soldat', titel: 'Soldat', lage: {} },
+  // Ritterzeit (einheiten AC-33, AC-34).
+  { art: 'ritter', titel: 'Ritter', lage: {} },
+  { art: 'armbrustschuetze', titel: 'Armbrust', lage: {} },
   { art: 'spaeherreiter', titel: 'Späherreiter', lage: {} },
   { art: 'speerkaempfer', titel: 'Speerkämpfer', lage: {} },
   { art: 'bogenschuetze', titel: 'Bogenschütze', lage: {} },
@@ -37,7 +40,13 @@ const BREITE = 1100;
 // Gebaeude. Mit siebzehn in einer Reihe liefen die Beschriftungen ineinander
 // (Runde 122).
 const GEBAEUDE_SPALTEN = 10;
-const HOEHE = 790 + 6 + 2 * 2 * 190 + 4;
+// Die Einheiten ebenso: hoechstens zehn je Reihe (Runde 123: mit vierzehn
+// liefen die Namen ineinander). Jede weitere Reihe je Farbe schiebt Gelaende
+// und Gebaeude um 250 nach unten.
+const EINHEIT_SPALTEN = 10;
+const EINHEIT_REIHEN = Math.ceil(EINTRAEGE.length / EINHEIT_SPALTEN);
+const VERSATZ = (EINHEIT_REIHEN - 1) * 2 * 250;
+const HOEHE = 790 + VERSATZ + 6 + 2 * 2 * 190 + 4;
 leinwand.width = BREITE * dichte;
 leinwand.height = HOEHE * dichte;
 stift.scale(dichte, dichte);
@@ -45,17 +54,17 @@ stift.scale(dichte, dichte);
 stift.fillStyle = '#1d222a';
 stift.fillRect(0, 0, BREITE, HOEHE);
 
-const spalte = BREITE / EINTRAEGE.length;
+const spalte = BREITE / EINHEIT_SPALTEN;
 const zellen = [];
 
 FARBEN.forEach((farbe, reihe) => {
-  const oben = 20 + reihe * 250;
   EINTRAEGE.forEach((eintrag, i) => {
-    const x = i * spalte;
+    const oben = 20 + (reihe * EINHEIT_REIHEN + Math.floor(i / EINHEIT_SPALTEN)) * 250;
+    const x = (i % EINHEIT_SPALTEN) * spalte;
     stift.fillStyle = GRAS;
     stift.fillRect(x + 8, oben, spalte - 16, 200);
     // Gross ...
-    const fussX = x + spalte / 2 - (eintrag.art === 'spaeherreiter' ? 10 : 0);
+    const fussX = x + spalte / 2 - (eintrag.art === 'spaeherreiter' || eintrag.art === 'ritter' ? 12 : 0);
     figurZeichnen(stift, eintrag.art, fussX, oben + 150, 120, farbe, { blick: 1, ...eintrag.lage });
     // ... und in Spielgroesse daneben, wie bei Zoom 1.
     figurZeichnen(stift, eintrag.art, x + spalte - 34, oben + 185, 24, farbe, { blick: 1, ...eintrag.lage });
@@ -123,7 +132,7 @@ function flecken(mitteX, mitteY, e, art, fuellung) {
   }
 }
 
-const gelaendeOben = 520;
+const gelaendeOben = 520 + VERSATZ;
 stift.fillStyle = '#e6e9ee';
 stift.font = '600 15px system-ui, sans-serif';
 stift.textAlign = 'left';
@@ -168,7 +177,7 @@ const GEBAEUDE_REIHE = [
   { art: 'haus', groesse: 2, titel: 'Baustelle 20 %', bau: 0.2 },
   { art: 'haus', groesse: 2, titel: 'Baustelle 70 %', bau: 0.7 },
 ];
-const gebaeudeOben = 790;
+const gebaeudeOben = 790 + VERSATZ;
 stift.fillStyle = '#e6e9ee';
 stift.font = '600 15px system-ui, sans-serif';
 stift.textAlign = 'left';

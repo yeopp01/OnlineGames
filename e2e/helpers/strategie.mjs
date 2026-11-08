@@ -25,6 +25,8 @@
 //   `p` = speerkaempfer
 //   `b` = bogenschuetze
 //   `k` = plaenkler
+//   `r` = ritter
+//   `a` = armbrustschuetze
 // ### ENDE KUERZEL
 //
 // **`ansicht.gebaeude`** (Map id -> Gebaeude): `i` · `art` **ausgeschrieben**

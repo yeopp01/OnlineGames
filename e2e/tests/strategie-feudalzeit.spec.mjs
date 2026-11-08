@@ -147,8 +147,11 @@ test.describe('Feudalzeit am Stueck', () => {
       const neue = await anna.evaluate((art) => {
         const w = window.ansicht.werte;
         const ausDieserZeit = w.gebaeude[art].zeitalter === 1;
+        // Nur bis zur Feudalzeit: der Stall bildet seit Runde 123 auch den
+        // Ritter aus - den gibt es erst in der Ritterzeit.
         return (w.gebaeude[art].bildetAus || [])
-          .filter((x) => w.einheiten[x] && (ausDieserZeit || (w.einheiten[x].zeitalter || 0) === 1));
+          .filter((x) => w.einheiten[x] && (w.einheiten[x].zeitalter || 0) <= 1
+            && (ausDieserZeit || (w.einheiten[x].zeitalter || 0) === 1));
       }, art);
       if (!neue.length) continue;
       await gebaeudeWaehlen(anna, id);

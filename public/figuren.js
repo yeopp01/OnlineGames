@@ -540,6 +540,106 @@ function spaeherreiter(stift, farbe, { schritt = 0, fein = true, haut = HAUT }) 
   kopf(stift, -25.7, { helm: true, fein, haut });
 }
 
+// ---- Der Ritter (einheiten AC-33) -------------------------------------------
+// Ein schweres Schlachtross unter einer langen Decke in Spielerfarbe, die bis
+// ueber die Beine faellt, darauf ein Reiter in Ruestung mit Topfhelm und
+// Wappenschild, die Lanze mit Wimpel schraeg nach vorn. Decke und Lanze geben
+// ihm einen anderen Umriss als dem Spaeherreiter (darstellung AC-14).
+function ritter(stift, farbe, { schritt = 0, fein = true, haut = HAUT }) {
+  schatten(stift, 11);
+  const PFERD = '#b9b2a6';
+  const aus = Math.sin(schritt) * 1.6;
+  // Hinter den Beinen: nur die Hufe und Fesseln schauen unter der Decke vor.
+  for (const [x, phase] of [[-5.4, -aus], [5.8, aus]]) {
+    vieleck(stift, [[x - 1 + phase, 0], [x + 0.9 + phase, 0], [x + 1.1, -4.6], [x - 1.1, -4.6]], licht(stift, toenen(PFERD, -0.35), x - 1, -4.6, x + 1, 0));
+    vieleck(stift, [[x - 1.1 + phase, 0], [x + 1 + phase, 0], [x + 0.9 + phase, -1.1], [x - 1 + phase, -1.1]], '#4a3e34', false);
+  }
+  for (const [x, phase] of [[-7.2, aus], [7.6, -aus]]) {
+    vieleck(stift, [[x - 1 + phase, 0], [x + 1 + phase, 0], [x + 1.2, -4.8], [x - 1.2, -4.8]], licht(stift, toenen(PFERD, -0.12), x - 1, -4.8, x + 1, 0));
+    vieleck(stift, [[x - 1.1 + phase, 0], [x + 1.1 + phase, 0], [x + 1 + phase, -1.2], [x - 1 + phase, -1.2]], '#4e4238', false);
+  }
+  // Die Decke: vom Hals bis zum Schweif, unten gezackt, mit hellem Saum.
+  const decke = [[-10.2, -10.6], [-8.4, -14.8], [5.2, -15.4], [9.8, -13.2], [10.4, -6.2],
+    [8.2, -4.4], [5.6, -5.6], [3, -4.2], [0.4, -5.6], [-2.2, -4.2], [-4.8, -5.6], [-7.4, -4.2], [-10, -5.4]];
+  umriss(stift, () => rund(stift, decke, 'rgba(0,0,0,0)', true));
+  rund(stift, decke, licht(stift, farbe, 0, -15, 2, -4.5, 0.18, -0.3), false);
+  if (fein) {
+    strich(stift, [[-9.8, -5.6], [-7.4, -4.6], [-4.8, -5.9], [-2.2, -4.6], [0.4, -5.9], [3, -4.6], [5.6, -5.9], [8.2, -4.8], [10.2, -6.4]], toenen(farbe, 0.55), 0.7);
+    // Ein Kreuz als Wappen auf der Flanke.
+    strich(stift, [[-1.6, -12.6], [-1.6, -7.2]], toenen(farbe, 0.5), 0.9);
+    strich(stift, [[-4, -10.4], [0.8, -10.4]], toenen(farbe, 0.5), 0.9);
+  }
+  // Hals und Kopf mit Rossstirn aus Eisen.
+  rund(stift, [[5, -13.4], [8, -20.6], [12, -20.6], [11, -11.2]], licht(stift, farbe, 6, -21, 11, -11, 0.2, -0.28));
+  rund(stift, [[8.4, -22], [16, -19.2], [15.8, -16], [10.2, -16.2]], licht(stift, PFERD, 9, -22, 15, -16, 0.22, -0.2));
+  vieleck(stift, [[9.6, -21.8], [14.2, -19.6], [13.8, -17.6], [10, -18.6]], licht(stift, EISEN, 9.6, -21.8, 14, -17.6, 0.3, -0.25));
+  ellipse(stift, 12.8, -19.4, 0.5, 0.55, AUGE, false);
+  ellipse(stift, 15.2, -16.9, 0.45, 0.35, '#4a3426', false);
+  // Der Reiter: Ruestung, Bein in Eisen, Topfhelm.
+  vieleck(stift, [[-0.6, -15.2], [2.2, -15.2], [2.8, -9.2], [0.8, -9.2]], licht(stift, EISEN_DUNKEL, -0.6, -15, 2.8, -9));
+  rund(stift, [[0.6, -10], [3.4, -10], [3.4, -8], [0.4, -8.2]], EISEN_DUNKEL);
+  const rumpfReiter = [[-2.8, -15.2], [3, -15.2], [2.4, -23.4], [-2.1, -23.4]];
+  vieleck(stift, rumpfReiter, licht(stift, EISEN, -2.8, -23.4, 3, -15.2, 0.3, -0.25), true);
+  // Waffenrock in Spielerfarbe ueber der Ruestung.
+  vieleck(stift, [[-2.2, -15.6], [2.4, -15.6], [2, -21.8], [-1.7, -21.8]], licht(stift, farbe, -2.2, -21.8, 2.4, -15.6), false);
+  // Der Kopf im Topfhelm, wie beim Soldaten - nicht ein eigener Kasten:
+  // der sah in Runde 123 wie ein Schornstein auf dem Rumpf aus.
+  kopf(stift, -26.4, { topfhelm: true, fein, haut });
+  // Die Lanze schraeg nach vorn oben, mit Wimpel in Spielerfarbe.
+  strich(stift, [[-3.5, -16.5], [16, -31]], '#6e5236', 1.1);
+  vieleck(stift, [[15.4, -30.4], [17.6, -32.4], [16.6, -29.4]], EISEN, false);
+  vieleck(stift, [[13.4, -29], [10.6, -30.4], [12.4, -27.4]], licht(stift, farbe, 10.6, -30.4, 13.4, -27.4), false);
+  // Wappenschild an der linken Seite.
+  const schild = [[-5.8, -21.6], [-1.6, -21.6], [-1.8, -17.4], [-3.7, -14.8], [-5.6, -17.4]];
+  vieleck(stift, schild, licht(stift, toenen(farbe, 0.08), -5.8, -21.6, -1.6, -15, 0.22, -0.28), true);
+  if (fein) strich(stift, [[-3.7, -21], [-3.7, -15.6]], toenen(farbe, 0.55), 0.6);
+  ellipse(stift, 3.2, -19.4, 1.1, 1.2, licht(stift, EISEN, 2, -21, 4.5, -18, 0.25, -0.2));
+}
+
+// ---- Der Armbrustschuetze (einheiten AC-34) -----------------------------------
+// Eisenhut und gepolsterter Rock in Spielerfarbe, die Armbrust waagerecht vor
+// der Brust - kein Bogen, der sich nach vorn woelbt -, der Bolzenkoecher an der
+// Huefte statt auf dem Ruecken (darstellung AC-14).
+function armbrustschuetze(stift, farbe, { schritt = 0, fein = true, haut = HAUT }) {
+  schatten(stift, 6);
+  beine(stift, schritt, '#4a4336', fein);
+  stift.save();
+  stift.translate(0, -RUMPF_HEBEN);
+  stift.scale(RUMPF_BREITE, 1);
+  // Bolzenkoecher an der Huefte, hinten.
+  vieleck(stift, [[-6, -6.2], [-3.6, -6.8], [-3.4, -12], [-5.8, -11.6]], licht(stift, LEDER, -6, -12, -3.4, -6.2, 0.22, -0.26), true);
+  for (const px of [-5.3, -4.4]) strich(stift, [[px, -11.8], [px + 0.2, -13.6]], '#b59a6a', 0.6);
+  // Gepolsterter Rock mit Steppnaehten.
+  const rock = [[-4.4, -6.2], [4.6, -6.2], [3.8, -17.2], [0.2, -17.9], [-3.6, -17.2]];
+  umriss(stift, () => rund(stift, rock, 'rgba(0,0,0,0)', true));
+  rund(stift, rock, licht(stift, farbe, -4.4, -17.2, 4.6, -6.2, 0.2, -0.28), false);
+  if (fein) {
+    for (const y of [-15, -12.6, -10.2, -7.8]) strich(stift, [[-3.6, y], [3.8, y]], toenen(farbe, -0.3), 0.4);
+  }
+  vieleck(stift, [[-3.9, -10], [4.1, -10], [4, -8.8], [-3.8, -8.8]], licht(stift, LEDER, 0, -10, 0, -8.8), false);
+  kopf(stift, -19.8, { fein, haut });
+  // Eisenhut mit breiter Krempe.
+  vieleck(stift, [[-4.6, -21.4], [4.8, -21.4], [3.6, -22.4], [-3.4, -22.4]], licht(stift, EISEN, -4.6, -22.4, 4.8, -21.4, 0.3, -0.2), true);
+  rund(stift, [[-2.8, -22.2], [3, -22.2], [2.2, -25.2], [-2, -25.2]], licht(stift, EISEN, -2.8, -25.2, 3, -22.2, 0.32, -0.25), true);
+  // Die Armbrust: Schaft waagerecht nach vorn, vorn der kurze Bogen quer.
+  stift.save();
+  stift.lineCap = 'round';
+  strich(stift, [[0.2, -13.2], [11.6, -13.2]], '#6e5236', 1.6);
+  stift.strokeStyle = licht(stift, '#4f4a44', 10, -17, 12, -9, 0.3, -0.3);
+  stift.lineWidth = 1.2;
+  stift.beginPath();
+  stift.moveTo(10.2, -17.4);
+  stift.quadraticCurveTo(12.6, -13.2, 10.2, -9);
+  stift.stroke();
+  stift.restore();
+  strich(stift, [[10.2, -17.4], [6.6, -13.2], [10.2, -9]], 'rgba(246,242,228,0.9)', 0.25);
+  // Haende am Schaft.
+  vieleck(stift, [[3.2, -15.6], [4.2, -15.9], [7.8, -13.8], [6.8, -13]], licht(stift, haut, 3.2, -15.9, 7.8, -13, 0.16, -0.2), false);
+  ellipse(stift, 7.2, -13.2, 0.85, 0.95, licht(stift, haut, 6.4, -14.2, 8, -12.3, 0.15, -0.2));
+  ellipse(stift, 2.4, -13.1, 0.8, 0.9, licht(stift, haut, 1.6, -14, 3.2, -12.2, 0.15, -0.2));
+  stift.restore();
+}
+
 // Wolle aus vielen Kringeln, oben im Licht, unten im Schatten.
 function wolle(stift, buckel, fein) {
   for (const [x, y, r] of buckel) {
@@ -779,6 +879,9 @@ export const FIGUREN = {
   speerkaempfer: { name: 'Speerkämpfer', zeichnen: speerkaempfer, breite: 1.1, oben: 1.2 },
   bogenschuetze: { name: 'Bogenschütze', zeichnen: bogenschuetze, breite: 1.3 },
   plaenkler: { name: 'Plänkler', zeichnen: plaenkler, breite: 1.3, oben: 1.05 },
+  // Ritterzeit (einheiten AC-33, AC-34). Die Lanze ragt weit nach oben vorn.
+  ritter: { name: 'Ritter', zeichnen: ritter, breite: 1.7, oben: 1.35 },
+  armbrustschuetze: { name: 'Armbrustschütze', zeichnen: armbrustschuetze, breite: 1.3 },
 };
 
 export { WAREN };

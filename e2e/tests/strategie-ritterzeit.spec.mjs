@@ -2,13 +2,14 @@
 // bauen.md AC-27, AC-28): vorher fehlen Kloster, Universitaet und Werkstatt im
 // Baumenue, nach dem Aufstieg stehen sie darin und lassen sich bauen.
 import { nachweis } from '../../scripts/qa-nachweis.mjs';
-import { expect, rohstoffe, test, zeitraffer } from '../helpers/seite.mjs';
+import { einheitenAufstellen, expect, rohstoffe, test, zeitraffer } from '../helpers/seite.mjs';
 import {
-  bedienteileFrei, dorfbewohnerAnklicken, gebaeudeInDerNaehe, partieBeenden, partieZuZweit, platzImBild,
+  bedienteileFrei, dorfbewohnerAnklicken, figurenFrei, gebaeudeInDerNaehe, partieBeenden, partieZuZweit, platzImBild,
 } from '../helpers/strategie.mjs';
 import { BAUTASTEN } from '../../public/tasten.js';
 
 const BAUEN = '10-strategie/bauen.md';
+const EINHEITEN = '10-strategie/einheiten-und-befehle.md';
 
 test.describe('Ritterzeit', () => {
   test.describe.configure({ mode: 'serial' });
@@ -103,6 +104,105 @@ test.describe('Ritterzeit', () => {
         spec: BAUEN,
         ac,
         titel: 'In der Ritterzeit (oben in der Leiste): Kloster mit Glockenturm, Universität mit Kuppel und Belagerungswerkstatt mit Rad',
+        test: info,
+      });
+    }
+  });
+
+  // Haengt am Test davor: Anna ist in der Ritterzeit und hat Stall und
+  // Schiessanlage.
+  test('einheiten AC-33 und einheiten AC-34: der Stall bildet den Ritter aus, die Armbrust macht den Bogenschuetzen zum Armbrustschuetzen', async ({}, info) => {
+    test.setTimeout(180_000);
+    const { anna, code } = partie;
+    await rohstoffe(anna, code, 'Anna', { holz: 2000, nahrung: 2000, gold: 2000 });
+    const basis = await anna.evaluate(() => window.ansicht.spieler.get(window.ansicht.ich).basis);
+    const kuerzel = await anna.evaluate(() => {
+      const e = window.ansicht.werte.einheiten;
+      return { ritter: e.ritter.kuerzel, armbrust: e.armbrustschuetze.kuerzel, bogen: e.bogenschuetze.kuerzel };
+    });
+    // Wohnraum fuer den Ritter: mit dem Bogenschuetzen ist sie sonst voll
+    // (4 von 5), und der Ritter wartete in der Schlange.
+    await gebaeudeInDerNaehe(anna, code, 'Anna', 'haus', basis, { von: 6, bis: 16 });
+    await gebaeudeInDerNaehe(anna, code, 'Anna', 'haus', basis, { von: 6, bis: 16 });
+    expect(await einheitenAufstellen(anna, code, 'Anna', 1, { x: basis.x + 2, y: basis.y - 6, art: 'bogenschuetze' })).toBe(1);
+    const zahl = (k) => anna.evaluate((k) => [...window.ansicht.nachher.values()]
+      .filter((e) => e.b === window.ansicht.ich && e.k === k && !e.s).length, k);
+    const ritterVorher = await zahl(kuerzel.ritter);
+    const waehlen = (art) => anna.evaluate((art) => {
+      const a = window.ansicht;
+      const g = [...a.gebaeude.values()].find((x) => x.b === a.ich && x.art === art);
+      a.gewaehltesGebaeude = g.i;
+      a.ausgewaehlt.clear();
+      a.beiAuswahl();
+    }, art);
+    // Der Ritter aus dem Stall.
+    await waehlen('stall');
+    await anna.locator('[data-ausbilden="ritter"]').click();
+    // Die Armbrust in der Schiessanlage.
+    await waehlen('schiessanlage');
+    await anna.locator('[data-ausbilden="armbrust"]').click();
+    await zeitraffer(anna, code, 20);
+    await anna.waitForFunction(() => window.ansicht.verbesserungen.includes('armbrust'), null, { timeout: 90_000 });
+    await expect.poll(() => zahl(kuerzel.ritter), { timeout: 60_000 }).toBeGreaterThan(ritterVorher);
+    await zeitraffer(anna, code, 1);
+    expect(await zahl(kuerzel.bogen), 'kein Bogenschuetze mehr').toBe(0);
+    expect(await zahl(kuerzel.armbrust), 'ein Armbrustschuetze').toBeGreaterThanOrEqual(1);
+
+    // Beide nebeneinander auf freies Gras, dann das Bild.
+    const ziel = await anna.evaluate((b) => {
+      const a = window.ansicht;
+      for (let r = 8; r < 35; r++) {
+        // Im Sueden zuerst: dort steht im Bild nichts davor - im Norden
+        // verdeckte das Haus den Ritter (Runde 123).
+        for (const [dx, dy] of [[0, r], [r, r], [-r, r], [r, 0], [-r, 0]]) {
+          const x = b.x + dx;
+          const y = b.y + dy;
+          // Ein freier Umkreis, damit kein Gebaeude hinter der Lanze steht
+          // (Runde 123: sie verschwand vor einer Hauswand).
+          let frei = true;
+          for (let oy = -3; oy <= 6 && frei; oy++) for (let ox = -3; ox <= 7 && frei; ox++) if (!a.platzTaugt(x + ox, y + oy)) frei = false;
+          if (frei) return { x, y };
+        }
+      }
+      return null;
+    }, basis);
+    expect(ziel, 'freies Gras').not.toBeNull();
+    await anna.evaluate(({ k, z }) => {
+      const a = window.ansicht;
+      const meine = [...a.nachher.values()].filter((e) => e.b === a.ich && !e.s);
+      const ritter = meine.find((e) => e.k === k.ritter);
+      const armbrust = meine.find((e) => e.k === k.armbrust);
+      a.befehlSenden([ritter.i], z, false);
+      a.befehlSenden([armbrust.i], { x: z.x + 2, y: z.y }, false);
+    }, { k: kuerzel, z: ziel });
+    await zeitraffer(anna, code, 8);
+    await anna.waitForFunction(({ k, z }) => {
+      const a = window.ansicht;
+      const meine = [...a.nachher.values()].filter((e) => e.b === a.ich && !e.s);
+      // Angekommen heisst: nahe am Ziel und still. Der Server stellt eine
+      // Einheit auch auf ein freies Nachbarfeld (Runde 123: der Ritter stand
+      // auf 61/12 statt 60/11).
+      const da = (kz) => meine.some((e) => {
+        const alt = a.vorher.get(e.i);
+        return e.k === kz && Math.hypot(e.x - z.x - 1, e.y - z.y) < 2.5 && alt && alt.x === e.x && alt.y === e.y;
+      });
+      return da(k.ritter) && da(k.armbrust);
+    }, { k: kuerzel, z: ziel }, { timeout: 60_000 });
+    await zeitraffer(anna, code, 1);
+    await anna.keyboard.press('Escape');
+    await anna.evaluate((z) => {
+      const a = window.ansicht;
+      a.kamera.zoom = 2.4;
+      a.blickAuf(z.x + 1, z.y);
+    }, ziel);
+    await anna.waitForTimeout(300);
+    expect(await figurenFrei(anna)).toEqual([]);
+    expect(await bedienteileFrei(anna)).toEqual([]);
+    for (const ac of ['AC-33', 'AC-34']) {
+      await nachweis(anna, {
+        spec: EINHEITEN,
+        ac,
+        titel: 'Links ein Ritter aus dem Stall – Pferdedecke in Spielerfarbe, Topfhelm, Lanze –, rechts ein Armbrustschütze, der Bogenschütze nach der Verbesserung Armbrust',
         test: info,
       });
     }
