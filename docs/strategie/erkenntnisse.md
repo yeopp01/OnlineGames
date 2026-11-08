@@ -1156,11 +1156,49 @@ ohne Browser; der Browserlauf 12,8 min für 173 Fälle (Runde 110); KI gegen KI
 mit HEAD 50 bis 56 ms je 1000 Takte, Feudalzeit Median 11,6 min, erstes Heer
 17,0 min, Enden Median 36,4 und 39,4 min, vor Minute 60: 20/20 und 19/20.
 
+
+### Zur Stufe C (Runde 116, 2026-11-08)
+
+Die Kriterien der Stufe C im Fahrplan stehen seit Runde 110 alle auf
+`fertig` (fahrplan AC-11 bis AC-13); aus der Bauabfolge ruht C6f (ki AC-13,
+die KI mit eigener Sicht) bis zur Antwort auf die Frage an den Benutzer. Die
+Rückschau zur Stufe holt nach, was die gewöhnliche in Runde 113 nicht tat:
+eine Partie ansehen. KI gegen KI aus Annas Sicht im Nebel, Zeitraffer 20,
+Bilder bei Minute 12 (das Dorf), 18 (das erste Gefecht) und weit
+herausgezoomt.
+
+Was ein Spieler des Originals vermissen würde — die drei größten Lücken,
+angelegt als bedienung AC-39 bis AC-41:
+
+1. **Im Gefecht steht alles still.** Rote und blaue Kämpfer stehen reglos
+   nebeneinander; wer gerade kämpft, sieht man nicht. Ausholen gibt es nur
+   für Dorfbewohner bei der Arbeit (AC-39).
+2. **Pfeile sind unsichtbar.** Zwischen Bogenschützen und Ziel ist nichts;
+   wer auf wen schießt, liest man nicht ab (AC-40).
+3. **Die Ansage „Feudalzeit erreicht" lag mitten auf dem Dorfzentrum**
+   (AC-41).
+
+Gut getragen hat: das Dorf bei Zoom 1 ist gegliedert und lesbar (Felder,
+Lager, Häuser, die Gebäude der Feudalzeit unterscheidbar), der Nebel liegt
+erdig und nicht schwarz über dem Erkundeten, die Übersichtskarte zeigt das
+eigene Gebiet und das Heer des Gegners, die Angriffsmeldung erschien beim
+ersten Gefecht von selbst. Weit herausgezoomt sind die verdeckten Einheiten
+als blaue Umrisse sehr laut — eine Beobachtung, keine Lücke.
+
+Gemessen: `npm run check` 52 s, 503 Tests ohne Browser; der Browserlauf 12,9
+min für 176 Fälle (Runde 115); KI gegen KI: Feudalzeit Median 11,6 min,
+erstes Heer 17,0 min (Runde 113).
+
 ## Runden
 
 Neueste oben. Eine Zeile je Runde: Nummer, Datum, Kriterien, Ergebnis,
 wichtigste Erkenntnis.
 
+- **116** · 2026-11-08 · **Rückschau zur Stufe C** — eine Partie KI gegen
+  KI im Browser angesehen; drei Lücken angelegt: im Gefecht steht alles
+  still (bedienung AC-39), Pfeile unsichtbar (AC-40), die Ansage zum
+  Zeitalter auf dem Dorfzentrum (AC-41). Nächste Runde: Spec-Runde Stufe D,
+  mit den drei Lücken als erstem Schritt.
 - **115** · 2026-11-08 · **kampf AC-14** — Angriff wird gemeldet (C6g ist
   fertig): jeder Treffer meldet dem Besitzer den Ort im eigenen
   Spielereintrag (im Nebel sieht ihn niemand sonst), einmal je Gefecht — 15

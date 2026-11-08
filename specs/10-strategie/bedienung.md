@@ -2,7 +2,7 @@
 
 **Bereich:** Strategie
 **Kuerzel:** bedienung
-**Stand:** 27/38 fertig · 11 offen
+**Stand:** 27/41 fertig · 14 offen
 
 ## Zweck
 
@@ -171,6 +171,27 @@ Reihenfolge:
   nicht. Danach sieht der Spieler das Abschlussbild und darf zusehen
   ([Spielziel](spielziel.md) AC-6, AC-7). Erreichbar heißt: ein Knopf, der nicht
   neben einem viel benutzten liegt — nicht nur eine Taste.
+- **AC-39** `offen` **Wer kämpft, holt aus** — Eine Einheit, die gerade
+  angreift, zeigt es: Nahkämpfer holen mit der Waffe aus und schlagen zu,
+  Fernkämpfer spannen den Bogen — so, wie ein Dorfbewohner bei der Arbeit
+  ausholt (AC-31). **Gefunden in der Rückschau zur Stufe C:** im Gefecht der
+  KI stehen rote und blaue Kämpfer reglos nebeneinander, und wer gerade
+  kämpft, ist nicht zu erkennen. **Messbar:** in zwei Bildern derselben
+  angreifenden Einheit im Abstand ihrer Nachladezeit unterscheiden sich die
+  Bildpunkte der Figur.
+- **AC-40** `offen` **Pfeile fliegen sichtbar** — Ein Schuss eines
+  Fernkämpfers ist als Pfeil zu sehen, der vom Schützen zum Ziel fliegt und
+  dort verschwindet; ein Gebäude trifft er ebenso. Gezeichnet im Browser aus
+  den Schlägen, die der Server meldet — gerechnet wird weiter sofort, der
+  Pfeil ist Darstellung (ADR-0001). **Gefunden in der Rückschau zur Stufe
+  C:** zwischen Bogenschützen und ihrem Ziel ist nichts zu sehen; wer auf
+  wen schießt, liest man nicht ab.
+- **AC-41** `offen` **Ansagen verdecken die Mitte nicht** — Die Ansage eines
+  Zeitalterwechsels und andere große Meldungen stehen nicht über der Mitte
+  des Spielfelds, wo das eigene Dorf meist im Bild ist. **Gefunden in der
+  Rückschau zur Stufe C:** „Feudalzeit erreicht" lag mitten auf dem
+  Dorfzentrum. **Messbar:** das Rechteck der Ansage überdeckt nicht das
+  mittlere Drittel des Fensters.
 
 Aus den offenen Kriterien oben gehören zu Stufe A: AC-6 (Auswahl
 aufgelistet), AC-11 (Übersichtskarte — auf 120 × 120 unverzichtbar), AC-15

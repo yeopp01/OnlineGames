@@ -158,7 +158,7 @@ Umfang hinzufügt, dort nachsehen.
 
 ## Stand
 
-**413 von 532 Kriterien fertig.** 503 Tests ohne Browser, 176 im Browser. Die
+**413 von 535 Kriterien fertig.** 503 Tests ohne Browser, 176 im Browser. Die
 Übersicht ist der Bericht: `npm run qa:report`.
 
 Gebaut ist der Unterbau: Räume, Übertragung, Karte, Wegfindung, Sammeln,
@@ -333,7 +333,10 @@ Server schickt jedem nur, was er sieht** (kampf AC-13): `welt.zustandJeSpieler`
 und `welt.aufbauFuer`, der Raum fragt nur, ob es sie gibt. **Ein Angriff wird
 gemeldet** (kampf AC-14): roter Knopf oben, ein Klick springt hin. Offen ist
 die KI mit eigener Sicht (ki AC-13, auf dem Zweig `strategie-ki-sicht`,
-wartet auf eine Frage an den Benutzer). Die **Sicht ist eine Einstellung beim Eröffnen** (kampf AC-16):
+wartet auf eine Frage an den Benutzer). **Stufe C ist erreicht** (fahrplan
+AC-11 bis AC-13); die Rückschau dazu hat drei Lücken angelegt (bedienung
+AC-39 bis AC-41: Ausholen im Kampf, sichtbare Pfeile, Ansagen nicht auf der
+Mitte). Als Nächstes die Spec-Runde für Stufe D. Die **Sicht ist eine Einstellung beim Eröffnen** (kampf AC-16):
 Nebel, Erkundet oder Aufgedeckt — Tests, die nicht vom Nebel handeln,
 eröffnen aufgedeckt (`partieZuZweit(…, { sicht: 'aufgedeckt' })`).
 
