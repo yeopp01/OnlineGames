@@ -116,7 +116,7 @@ const ALLE = ['holz', 'nahrung', 'gold', 'stein'];
 const GEBAEUDE = {
   dorfzentrum: {
     groesse: 4, kosten: { holz: 275, stein: 100 }, bauzeit: 150, leben: 2400, wohnraum: 5,
-    annahme: ALLE, bildetAus: ['dorfbewohner', 'webstuhl', 'stadtwache', 'feudalzeit', 'ritterzeit', 'imperialzeit'],
+    annahme: ALLE, bildetAus: ['dorfbewohner', 'webstuhl', 'stadtwache', 'stadtpatrouille', 'feudalzeit', 'ritterzeit', 'imperialzeit'],
   },
   haus: { groesse: 2, kosten: { holz: 25 }, bauzeit: 25, leben: 550, wohnraum: 5, annahme: [], bildetAus: [] },
   // Ein Turm nur zum Sehen (kampf AC-18, Wunsch des Benutzers: Gebaeude und
@@ -149,13 +149,13 @@ const GEBAEUDE = {
   },
   schmiede: {
     groesse: 3, kosten: { holz: 150 }, bauzeit: 40, leben: 1200, wohnraum: 0, annahme: [],
-    bildetAus: ['schmiedeangriff', 'befiedertePfeile'], zeitalter: 1,
+    bildetAus: ['schmiedeangriff', 'befiedertePfeile', 'eisenguss', 'bodkinpfeil'], zeitalter: 1,
   },
   // Gebaeude der Ritterzeit (bauen AC-28), Werte aus der Vorlage. Was sie
   // ausbilden und erforschen, kommt mit ihren Schritten: der Moench (D8),
-  // Mauerwerk (D3), Ramme und Mangonel (D6) - bis dahin bieten sie nichts an.
+  // Ramme und Mangonel (D6). Die Universitaet forscht Mauerwerk (bauen AC-34).
   kloster: { groesse: 3, kosten: { holz: 175 }, bauzeit: 40, leben: 2100, wohnraum: 0, annahme: [], bildetAus: [], zeitalter: 2 },
-  universitaet: { groesse: 3, kosten: { holz: 200 }, bauzeit: 60, leben: 2100, wohnraum: 0, annahme: [], bildetAus: [], zeitalter: 2 },
+  universitaet: { groesse: 3, kosten: { holz: 200 }, bauzeit: 60, leben: 2100, wohnraum: 0, annahme: [], bildetAus: ['mauerwerk'], zeitalter: 2 },
   belagerungswerkstatt: { groesse: 3, kosten: { holz: 200 }, bauzeit: 40, leben: 2100, wohnraum: 0, annahme: [], bildetAus: [], zeitalter: 2 },
 };
 
@@ -263,6 +263,34 @@ const VERBESSERUNGEN = {
   stadtwache: {
     name: 'Stadtwache', kosten: { nahrung: 75 }, zeit: 25, zeitalter: 1,
     zeichen: 'laterne',
+    wirkung: {}, gebaeude: { sicht: 4 },
+  },
+  // Die Verbesserungen der Ritterzeit (bauen AC-34). Kosten und Wirkung aus
+  // der Spec, die Dauer die des Originals. `vorstufe` ist die Verbesserung,
+  // die vorher erforscht sein muss: Eisenguss setzt den Schmiedeangriff
+  // voraus, wie im Original - ohne sie steht der Knopf nicht im Menue, und
+  // der Server sagt ab.
+  eisenguss: {
+    name: 'Eisenguss', kosten: { nahrung: 220, gold: 120 }, zeit: 75, zeitalter: 2,
+    vorstufe: 'schmiedeangriff', zeichen: 'giesskelle',
+    wirkung: { infanterie: { angriff: 1 }, kavallerie: { angriff: 1 } },
+  },
+  bodkinpfeil: {
+    name: 'Bodkinpfeil', kosten: { nahrung: 200, gold: 100 }, zeit: 35, zeitalter: 2,
+    vorstufe: 'befiedertePfeile', zeichen: 'bodkin',
+    wirkung: { bogenschuetze: { angriff: 1, reichweite: 1 } },
+  },
+  // Mauerwerk wirkt auf Gebaeude statt Einheiten, deshalb unter `gebaeude`
+  // wie die Sicht der Stadtwache. `lebenAnteil` ist ein Anteil des
+  // Grundwerts - "+10 % Leben" -, die Ruestung ein Zuschlag.
+  mauerwerk: {
+    name: 'Mauerwerk', kosten: { holz: 175, stein: 150 }, zeit: 50, zeitalter: 2,
+    zeichen: 'kelle',
+    wirkung: {}, gebaeude: { lebenAnteil: 0.1, nahruestung: 1, fernruestung: 1 },
+  },
+  stadtpatrouille: {
+    name: 'Stadtpatrouille', kosten: { nahrung: 300, gold: 100 }, zeit: 50, zeitalter: 2,
+    vorstufe: 'stadtwache', zeichen: 'horn',
     wirkung: {}, gebaeude: { sicht: 4 },
   },
 };

@@ -207,4 +207,90 @@ test.describe('Ritterzeit', () => {
       });
     }
   });
+  // Haengt an den Tests davor: Anna ist in der Ritterzeit und hat eine
+  // Universitaet.
+  test('bauen AC-34: Eisenguss und Bodkinpfeil erst nach ihrer Vorstufe, Mauerwerk und Stadtpatrouille - jede mit eigenem Bild', async ({}, info) => {
+    test.setTimeout(180_000);
+    const { anna, code } = partie;
+    await rohstoffe(anna, code, 'Anna', { holz: 3000, nahrung: 3000, gold: 2000, stein: 500 });
+    const basis = await anna.evaluate(() => window.ansicht.spieler.get(window.ansicht.ich).basis);
+    const schmiede = await gebaeudeInDerNaehe(anna, code, 'Anna', 'schmiede', basis, { von: 6, bis: 16 });
+    // Erst warten, bis das Gebaeude beim Browser ist - der Pruefgriff legt es
+    // an, der naechste Zustand bringt es.
+    const waehlen = async (id, zoom = 1.8) => {
+      await anna.waitForFunction((g) => window.ansicht.gebaeude.has(g), id);
+      await waehlenSofort(id, zoom);
+    };
+    const waehlenSofort = (id, zoom) => anna.evaluate(([g, z]) => {
+      const a = window.ansicht;
+      a.kamera.zoom = z;
+      a.gewaehltesGebaeude = g;
+      a.ausgewaehlt.clear();
+      const m = a.gebaeudeMitte(a.gebaeude.get(g));
+      a.blickAuf(m.x, m.y);
+      a.beiAuswahl();
+    }, [id, zoom]);
+    const meins = (art) => anna.evaluate((art) => {
+      const a = window.ansicht;
+      return [...a.gebaeude.values()].find((g) => g.b === a.ich && g.art === art).i;
+    }, art);
+    const knopf = (art) => anna.locator(`[data-ausbilden="${art}"]`);
+    const forschen = async (arten) => {
+      for (const art of arten) await knopf(art).click();
+      await zeitraffer(anna, code, 20);
+      await anna.waitForFunction((xs) => xs.every((x) => window.ansicht.verbesserungen.includes(x)), arten, { timeout: 90_000 });
+      await zeitraffer(anna, code, 1);
+    };
+
+    // Vor der Vorstufe: in der Schmiede nur die beiden der Feudalzeit.
+    await waehlen(schmiede);
+    await expect(knopf('schmiedeangriff')).toHaveCount(1);
+    await expect(knopf('befiedertePfeile')).toHaveCount(1);
+    await expect(knopf('eisenguss')).toHaveCount(0);
+    await expect(knopf('bodkinpfeil')).toHaveCount(0);
+    await forschen(['schmiedeangriff', 'befiedertePfeile']);
+    // Danach stehen die beiden der Ritterzeit an ihrer Stelle.
+    await waehlen(schmiede);
+    await expect(knopf('eisenguss')).toHaveAttribute('title', 'Eisenguss erforschen (220 Nahrung, 120 Gold)');
+    await expect(knopf('bodkinpfeil')).toHaveAttribute('title', 'Bodkinpfeil erforschen (200 Nahrung, 100 Gold)');
+    await expect(knopf('eisenguss')).toBeInViewport();
+    await expect(knopf('bodkinpfeil')).toBeInViewport();
+    const bild = (art) => anna.evaluate((art) => document.querySelector(`[data-ausbilden="${art}"] canvas`).toDataURL(), art);
+    const bilder = { eisenguss: await bild('eisenguss'), bodkinpfeil: await bild('bodkinpfeil') };
+    expect(bilder.eisenguss, 'Giesskelle und Bodkin sind verschiedene Bilder').not.toBe(bilder.bodkinpfeil);
+    expect(await bedienteileFrei(anna)).toEqual([]);
+    await anna.waitForTimeout(300);
+    await nachweis(anna, {
+      spec: BAUEN,
+      ac: 'AC-34',
+      titel: 'Die Schmiede in der Ritterzeit nach Schmiedeangriff und Befiederten Pfeilen: Eisenguss (Gießkelle, 220 Nahrung, 120 Gold) und Bodkinpfeil (gekreuzte Pfeile, 200 Nahrung, 100 Gold)',
+      test: info,
+    });
+
+    // Mauerwerk in der Universitaet: das volle Leben eines Hauses steigt um 10 %.
+    const haus = await gebaeudeInDerNaehe(anna, code, 'Anna', 'haus', basis, { von: 6, bis: 16 });
+    await anna.waitForFunction((g) => window.ansicht.gebaeude.has(g), haus);
+    const hausWerte = () => anna.evaluate((h) => {
+      const a = window.ansicht;
+      const g = a.gebaeude.get(h);
+      return { h: g.h, voll: a.gebaeudeLebenVoll(g) };
+    }, haus);
+    const vorher = await hausWerte();
+    await waehlen(await meins('universitaet'));
+    await expect(knopf('mauerwerk')).toHaveAttribute('title', 'Mauerwerk erforschen (175 Holz, 150 Stein)');
+    bilder.mauerwerk = await bild('mauerwerk');
+    await forschen(['mauerwerk']);
+    await expect.poll(hausWerte).toEqual({ h: Math.round(vorher.voll * 1.1), voll: Math.round(vorher.voll * 1.1) });
+
+    // Stadtpatrouille im Dorfzentrum: erst nach der Stadtwache.
+    const zentrum = await meins('dorfzentrum');
+    await waehlen(zentrum);
+    await expect(knopf('stadtpatrouille')).toHaveCount(0);
+    await forschen(['stadtwache']);
+    await waehlen(zentrum);
+    await expect(knopf('stadtpatrouille')).toHaveAttribute('title', 'Stadtpatrouille erforschen (300 Nahrung, 100 Gold)');
+    bilder.stadtpatrouille = await bild('stadtpatrouille');
+    // Vier Verbesserungen, vier Bilder.
+    expect(new Set(Object.values(bilder)).size, 'vier verschiedene Bilder').toBe(4);
+  });
 });

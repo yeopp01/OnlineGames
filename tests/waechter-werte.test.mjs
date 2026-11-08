@@ -64,3 +64,31 @@ test('waechter: kein verbesserbarer Wert wird an welt.einheitenwert vorbei aus E
     '', ...treffer,
   ].join('\n'));
 });
+
+// Dasselbe fuer Gebaeude (bauen AC-34): Mauerwerk gibt Leben und Ruestung,
+// Stadtwache und Stadtpatrouille Sicht. Die eine Stelle, die die Tabelle
+// lesen darf, ist `welt.gebaeudewert()`. Wer `GEBAEUDE[art].leben` liest,
+// legt ein Haus ohne das Mauerwerk an.
+const GEBAEUDEAUSNAHME = /^\s*const grund = GEBAEUDE\[art\]\[feld\]/;
+
+test('waechter: kein verbesserbarer Gebaeudewert wird an welt.gebaeudewert vorbei aus GEBAEUDE gelesen', () => {
+  const felder = new Set(['sicht', 'leben']);
+  for (const v of Object.values(VERBESSERUNGEN)) {
+    for (const feld of Object.keys(v.gebaeude || {})) if (feld !== 'lebenAnteil') felder.add(feld);
+  }
+  assert.ok(felder.has('fernruestung'), `Werte: ${[...felder].join(', ')}`);
+  const muster = new RegExp(`GEBAEUDE\\[[^\\]]+\\]\\s*(\\?\\.|\\.)\\s*(${[...felder].join('|')})\\b`);
+  const treffer = [];
+  for (const datei of readdirSync(ORDNER).filter((d) => d.endsWith('.js') && d !== 'daten.js')) {
+    const zeilen = readFileSync(ORDNER + datei, 'utf8').split('\n');
+    zeilen.forEach((zeile, i) => {
+      if (GEBAEUDEAUSNAHME.test(zeile) || /^\s*(\/\/|\*)/.test(zeile)) return;
+      if (muster.test(zeile)) treffer.push(`${datei}:${i + 1}: ${zeile.trim()}`);
+    });
+  }
+  assert.deepEqual(treffer, [], [
+    'Diese Stellen lesen einen verbesserbaren Gebaeudewert aus der Tabelle. Statt',
+    'GEBAEUDE[art].<wert>: this.gebaeudewert(besitzer, art, \'<wert>\')',
+    '', ...treffer,
+  ].join('\n'));
+});

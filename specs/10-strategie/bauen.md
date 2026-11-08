@@ -2,7 +2,7 @@
 
 **Bereich:** Strategie
 **Kuerzel:** bauen
-**Stand:** 24/34 fertig · 10 offen
+**Stand:** 25/34 fertig · 9 offen
 
 ## Zweck
 
@@ -208,13 +208,21 @@ Spezialeinheit der Burg (kommt mit den Völkern, Stufe E), Palisade.
   Rohstoff teurer, jeder Verkauf billiger; zwischen Kauf- und Verkaufspreis
   liegt eine Gebühr von 30 %. Werte aus der Vorlage, als Daten. Ein Markt
   je Spieler genügt; Handel zwischen Märkten ist ausgeschlossen (ADR-0012).
-- **AC-34** `offen` **Verbesserungen der Ritterzeit** — Eisenguss (Schmiede,
+- **AC-34** `fertig` **Verbesserungen der Ritterzeit** — Eisenguss (Schmiede,
   220 Nahrung, 120 Gold: Nahkämpfer +1 Angriff), Bodkinpfeil (Schmiede, 200
   Nahrung, 100 Gold: Fernkämpfer +1 Angriff, +1 Reichweite), Mauerwerk
   (Universität, 175 Holz, 150 Stein: Gebäude +10 % Leben, +1/+1 Rüstung),
   Stadtpatrouille (Dorfzentrum, 300 Nahrung, 100 Gold: Gebäude +4 Sicht) —
   jede erst nach ihrer Vorstufe, wo es eine gibt, und mit eigenem Bild im
-  Menü.
+  Menü. Gebaut in Runde 124: `vorstufe` als Wert der Verbesserung (Eisenguss
+  nach Schmiedeangriff, Bodkinpfeil nach Befiederten Pfeilen,
+  Stadtpatrouille nach Stadtwache) - erforscht muss sie sein, eingereiht
+  reicht nicht; im Menü erscheint der Knopf erst danach. Mauerwerk wirkt
+  über `gebaeude` wie die Sicht der Stadtwache, `welt.gebaeudewert()` ist
+  die eine Stelle für Leben, Rüstung und Sicht eines Gebäudes, und das volle
+  Leben reist in der Tafel `kw` zum Browser (für den Lebensbalken). Die
+  Forschungsdauern nennt die Spec nicht; genommen sind die des Originals
+  (75, 35, 50, 50 s).
 
 ## Grenzfaelle
 

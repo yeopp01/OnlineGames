@@ -1220,6 +1220,23 @@ der Browserlauf 12,2 min für 178 Fälle (Runde 120).
 Neueste oben. Eine Zeile je Runde: Nummer, Datum, Kriterien, Ergebnis,
 wichtigste Erkenntnis.
 
+- **124** · 2026-11-08 · **bauen AC-34, D3 fertig** — Eisenguss und
+  Bodkinpfeil (Schmiede), Mauerwerk (Universität), Stadtpatrouille
+  (Dorfzentrum). Neu: `vorstufe` an einer Verbesserung, geprüft im Server
+  (erforscht, nicht bloß eingereiht) und im Menü (Knopf erst danach); und
+  `welt.gebaeudewert()` als Gegenstück zu `einheitenwert()` für Leben,
+  Rüstung und Sicht eines Gebäudes — Mauerwerk legt auch auf stehende
+  Gebäude 10 % nach, der Schaden bleibt. Das volle Leben reist in `kw` mit
+  (Gebäude- und Einheitennamen überschneiden sich nicht; ein Test hält das),
+  der Wächter für Werte kennt jetzt auch `GEBAEUDE[art].leben` und Rüstung.
+  Vier neue Zeichen: Gießkelle, gekreuzte Bodkinpfeile, Mauer mit Kelle,
+  Horn. Gelernt: **ein Heredoc im Bash-Werkzeug halbiert Backslashes auch
+  mit `'EOF'`** — die Regel „kein Heredoc mit Quelltext" gilt ohne Ausnahme,
+  der neue Wächter hatte danach einen kaputten regulären Ausdruck. Und: ein
+  Gebäude aus dem Prüfgriff ist erst nach dem nächsten Zustand im Browser —
+  wer es gleich anwählt, wartet auf `ansicht.gebaeude.has(id)`. Kein
+  Prüfstandvergleich: die KI erforscht nichts davon, und ohne Mauerwerk ist
+  jeder Gebäudewert wie vorher.
 - **123** · 2026-11-08 · **einheiten AC-33, AC-34** (D3 zu zwei Dritteln) —
   der Ritter im Stall (100 Leben, 10 Angriff, 2/2, ab Ritterzeit; der Speer
   schlägt ihn mit 16) und die Armbrust, die jeden Bogenschützen tauscht wie

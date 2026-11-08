@@ -1,0 +1,10 @@
+{
+  "spec": "10-strategie/bauen.md",
+  "ac": "AC-34",
+  "titel": "Die Schmiede in der Ritterzeit nach Schmiedeangriff und Befiederten Pfeilen: Eisenguss (Gießkelle, 220 Nahrung, 120 Gold) und Bodkinpfeil (gekreuzte Pfeile, 200 Nahrung, 100 Gold)",
+  "datei": "e2e/tests/strategie-ritterzeit.spec.mjs",
+  "pfad": [
+    "Ritterzeit",
+    "bauen AC-34: Eisenguss und Bodkinpfeil erst nach ihrer Vorstufe, Mauerwerk und Stadtpatrouille - jede mit eigenem Bild"
+  ]
+}

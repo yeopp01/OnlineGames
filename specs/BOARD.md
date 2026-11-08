@@ -7,9 +7,9 @@ Eine Zeile je Abnahmekriterium. Gepflegt wird der Status in der Spec selbst,
 hier steht er zusammengefasst. Erzeugt mit `npm run specs:board`; als Seite
 mit Bildnachweisen, Filter und Suche mit `npm run qa:report`.
 
-**Gesamt:** 420/555 fertig · 1 in Arbeit · 5 in QA · 4 geplant · 117 offen · 8 zurueckgestellt
+**Gesamt:** 421/555 fertig · 1 in Arbeit · 5 in QA · 4 geplant · 116 offen · 8 zurueckgestellt
 
-**Nachweise:** 183 Kriterien mit Bild · 241 ohne Bild, begruendet in `qa/ohne-bild.json`
+**Nachweise:** 184 Kriterien mit Bild · 241 ohne Bild, begruendet in `qa/ohne-bild.json`
 
 ## Nach Spezifikation
 
@@ -21,7 +21,7 @@ mit Bildnachweisen, Filter und Suche mit `npm run qa:report`.
 | [Anhalten und Fortsetzen](00-plattform/speichern.md)           | -         | -     | -       | 26    | -               | -      |
 | [Spielauswahl und Einstellungen](00-plattform/spielauswahl.md) | -         | -     | -       | 5     | -               | 16     |
 | [Uebertragung](00-plattform/uebertragung.md)                   | -         | -     | 2       | 1     | -               | 7      |
-| [Bauen und Ausbilden](10-strategie/bauen.md)                   | -         | -     | -       | 10    | -               | 24     |
+| [Bauen und Ausbilden](10-strategie/bauen.md)                   | -         | -     | -       | 9     | -               | 25     |
 | [Bedienung](10-strategie/bedienung.md)                         | -         | -     | -       | 11    | -               | 30     |
 | [Darstellung](10-strategie/darstellung.md)                     | -         | -     | -       | 1     | -               | 15     |
 | [Einheiten und Befehle](10-strategie/einheiten-und-befehle.md) | -         | -     | -       | 7     | 1               | 23     |
@@ -64,7 +64,7 @@ mit Bildnachweisen, Filter und Suche mit `npm run qa:report`.
 - **Abbruch ist sichtbar** — [Uebertragung](00-plattform/uebertragung.md) AC-9
 - **Automatischer Wiederaufbau** — [Uebertragung](00-plattform/uebertragung.md) AC-10
 
-## Offen (117)
+## Offen (116)
 
 - **Anmeldung ueber Google/GitHub** — [Konten und Anmeldung](00-plattform/konten.md) AC-6
 - **Bilanz je Konto** — [Konten und Anmeldung](00-plattform/konten.md) AC-14
@@ -117,7 +117,6 @@ mit Bildnachweisen, Filter und Suche mit `npm run qa:report`.
 - **Tor lässt Eigene durch** — [Bauen und Ausbilden](10-strategie/bauen.md) AC-31
 - **Burg** — [Bauen und Ausbilden](10-strategie/bauen.md) AC-32
 - **Markt tauscht** — [Bauen und Ausbilden](10-strategie/bauen.md) AC-33
-- **Verbesserungen der Ritterzeit** — [Bauen und Ausbilden](10-strategie/bauen.md) AC-34
 - **Umschalt erweitert** — [Bedienung](10-strategie/bedienung.md) AC-3
 - **Doppelklick wählt den Typ** — [Bedienung](10-strategie/bedienung.md) AC-4
 - **Auswahl merken** — [Bedienung](10-strategie/bedienung.md) AC-5

@@ -13,7 +13,7 @@ hier nichts eintraegt, verliert den Faden beim naechsten Autocompact.
 
 ## Zuletzt fortgeschrieben
 
-2026-11-08, nach Runde 123 (**kampf AC-13, fahrplan AC-13, C6e fertig**: der
+2026-11-08, nach Runde 124 (**kampf AC-13, fahrplan AC-13, C6e fertig**: der
 Server schickt jedem nur, was er sieht - `welt.zustandJeSpieler`,
 `welt.aufbauFuer`, im Raum `sendenJe`. Fremde Gebaeude und Felder, die sich im
 Nebel aendern, kommen beim naechsten Hinsehen; wer ausscheidet, bekommt einmal
@@ -48,17 +48,21 @@ Browserlauf ist wieder gruen. Runde 121: **Rueckschau**
 Laeufe = roter check). Runde 122: **D2 fertig** (bauen AC-27,
 AC-28: Aufstieg in die Ritterzeit, Kloster, Universitaet, Werkstatt, Tasten
 Y X C). Runde 123: **Ritter und Armbrust
-fertig** (einheiten AC-33, AC-34). **Als Naechstes der Rest von D3**: die
-Verbesserungen der Ritterzeit (bauen AC-34: Eisenguss, Bodkinpfeil,
-Mauerwerk, Stadtpatrouille). **Naechste Rueckschau:
+fertig** (einheiten AC-33, AC-34). Runde 124: **D3 fertig** (bauen AC-34:
+Eisenguss, Bodkinpfeil, Mauerwerk, Stadtpatrouille; `vorstufe` an der
+Verbesserung, `welt.gebaeudewert()` fuer Leben, Ruestung und Sicht der
+Gebaeude, das volle Gebaeudeleben in `kw`, ein Waechter dazu). Der Benutzer
+hat geantwortet: **Stufe G wird nicht vorgezogen, der Fahrplan wird der Reihe
+nach gebaut.** **Als Naechstes D4**: Wachturm und schiessende Gebaeude
+(bauen AC-29, kampf AC-20). **Naechste Rueckschau:
 Runde 126.** ki AC-13 und einheiten
 AC-32 warten auf Antworten. (Rueckschau 121 erledigt.))
 
 ## Wo ich stehe
 
 - **Branch:** `strategie`. Nie auf `main` arbeiten, **nie pushen, nie deployen.**
-- **Board:** 420 von 555 Kriterien fertig · 1 in Arbeit · 5 in QA · 4 geplant ·
-  117 offen · 8 zurueckgestellt. 512 Tests ohne Browser, 180 im Browser.
+- **Board:** 421 von 555 Kriterien fertig · 1 in Arbeit · 5 in QA · 4 geplant ·
+  116 offen · 8 zurueckgestellt. 518 Tests ohne Browser, 181 im Browser.
 - **Fuenf Waechter in `tests/waechter-*.test.mjs`** (der fuenfte seit Runde 87: Bildschirmtext mit echten Umlauten): Gleichheit auf wachsenden
   Listen, verbesserbare Werte an `welt.einheitenwert()` vorbei,
   Bildunterschriften mit `${...}`, und (neu in Runde 73) die **Kuerzeltafel**

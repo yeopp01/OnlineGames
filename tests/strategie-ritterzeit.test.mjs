@@ -156,3 +156,107 @@ test('einheiten AC-34: die Armbrust macht jeden Bogenschuetzen zum Armbrustschue
   assert.deepEqual(welt.nachricht('a', { auftrag: 'ausbilden', gebaeude: gebaeude.id, einheit: 'bogenschuetze' }), {});
   assert.deepEqual(gebaeude.schlange, ['armbrustschuetze']);
 });
+
+// ---- Verbesserungen der Ritterzeit (bauen AC-34) -----------------------------
+
+const forschen = (welt, gebaeude, art) => welt.nachricht('a', { auftrag: 'ausbilden', gebaeude: gebaeude.id, einheit: art });
+
+test('bauen AC-34: Eisenguss und Bodkinpfeil in der Schmiede mit den Werten der Vorlage - jede erst nach ihrer Vorstufe', () => {
+  assert.deepEqual(VERBESSERUNGEN.eisenguss.kosten, { nahrung: 220, gold: 120 });
+  assert.deepEqual(VERBESSERUNGEN.bodkinpfeil.kosten, { nahrung: 200, gold: 100 });
+  assert.equal(VERBESSERUNGEN.eisenguss.vorstufe, 'schmiedeangriff');
+  assert.equal(VERBESSERUNGEN.bodkinpfeil.vorstufe, 'befiedertePfeile');
+  for (const art of ['eisenguss', 'bodkinpfeil']) {
+    assert.ok(GEBAEUDE.schmiede.bildetAus.includes(art), `${art} in der Schmiede`);
+    assert.equal(VERBESSERUNGEN[art].zeitalter, 2, `${art}: Ritterzeit`);
+  }
+  // In der Feudalzeit abgewiesen - wegen des Zeitalters.
+  const feudal = mitGebaeude('schmiede', 1);
+  assert.match(forschen(feudal.welt, feudal.gebaeude, 'eisenguss').fehler, /Ritterzeit/);
+
+  const { welt, anna, gebaeude } = mitGebaeude('schmiede', 2);
+  // Ohne die Vorstufe: Absage mit ihrem Namen, und sie kostet nichts.
+  assert.match(forschen(welt, gebaeude, 'eisenguss').fehler, /Schmiedeangriff/);
+  assert.match(forschen(welt, gebaeude, 'bodkinpfeil').fehler, /Befiederte Pfeile/);
+  assert.equal(anna.gold, 2000, 'eine Absage kostet nichts');
+  // Eingereiht reicht nicht: die Vorstufe muss erforscht sein.
+  assert.deepEqual(forschen(welt, gebaeude, 'schmiedeangriff'), {});
+  assert.match(forschen(welt, gebaeude, 'eisenguss').fehler, /Schmiedeangriff/, 'nur eingereiht');
+  assert.deepEqual(forschen(welt, gebaeude, 'befiedertePfeile'), {});
+  sekunden(welt, VERBESSERUNGEN.schmiedeangriff.zeit + VERBESSERUNGEN.befiedertePfeile.zeit + 1);
+  assert.ok(anna.verbesserungen.includes('befiedertePfeile'));
+
+  const angriff = (art) => welt.einheitenwert('a', art, 'angriff');
+  const reichweite = (art) => welt.einheitenwert('a', art, 'reichweite');
+  const vorher = { ritter: angriff('ritter'), miliz: angriff('miliz'), bogen: angriff('armbrustschuetze'), weit: reichweite('armbrustschuetze') };
+  assert.deepEqual(forschen(welt, gebaeude, 'eisenguss'), {});
+  assert.deepEqual(forschen(welt, gebaeude, 'bodkinpfeil'), {});
+  sekunden(welt, VERBESSERUNGEN.eisenguss.zeit + VERBESSERUNGEN.bodkinpfeil.zeit + 1);
+  assert.ok(anna.verbesserungen.includes('eisenguss') && anna.verbesserungen.includes('bodkinpfeil'));
+  // Nahkaempfer +1 Angriff, Fernkaempfer +1 Angriff und +1 Reichweite.
+  assert.equal(angriff('ritter'), vorher.ritter + 1, 'Kavallerie');
+  assert.equal(angriff('miliz'), vorher.miliz + 1, 'Infanterie');
+  assert.equal(angriff('armbrustschuetze'), vorher.bogen + 1, 'Fernkaempfer Angriff');
+  assert.equal(reichweite('armbrustschuetze'), vorher.weit + 1, 'Fernkaempfer Reichweite');
+  // Der Dorfbewohner bleibt aussen vor wie beim Schmiedeangriff.
+  assert.equal(angriff('dorfbewohner'), EINHEITEN.dorfbewohner.angriff);
+});
+
+test('bauen AC-34: Mauerwerk gibt jedem Gebaeude 10 Prozent Leben und +1/+1 Ruestung, auch dem, das schon steht', () => {
+  assert.deepEqual(VERBESSERUNGEN.mauerwerk.kosten, { holz: 175, stein: 150 });
+  assert.ok(GEBAEUDE.universitaet.bildetAus.includes('mauerwerk'));
+  const { welt, anna, gebaeude: uni } = mitGebaeude('universitaet', 2);
+  const haus = welt.gebaeudeAnlegen('a', 'haus', anna.basis.x - 9, anna.basis.y - 9);
+  haus.leben -= 100; // beschaedigt: der Schaden bleibt stehen
+  const miliz = welt.einheitAnlegen('b', haus.x + 2, haus.y, 'miliz');
+  const bogen = welt.einheitAnlegen('b', haus.x + 3, haus.y, 'bogenschuetze');
+  const schlagVorher = [welt.schaden(miliz, haus, true), welt.schaden(bogen, haus, true)];
+  assert.deepEqual(forschen(welt, uni, 'mauerwerk'), {});
+  assert.equal(anna.stein, 500 - 150, 'Stein beim Einreihen bezahlt');
+  sekunden(welt, VERBESSERUNGEN.mauerwerk.zeit + 1);
+  assert.ok(anna.verbesserungen.includes('mauerwerk'));
+  // 550 -> 605 Leben; das Haus, das 100 verloren hatte, steht auf 505.
+  assert.equal(welt.gebaeudewert('a', 'haus', 'leben'), Math.round(GEBAEUDE.haus.leben * 1.1));
+  assert.equal(haus.leben, Math.round(GEBAEUDE.haus.leben * 1.1) - 100);
+  // Das Universitaetsgebaeude selbst, unbeschaedigt, steht auf vollem neuem Wert.
+  assert.equal(uni.leben, Math.round(GEBAEUDE.universitaet.leben * 1.1));
+  // Ein neues Gebaeude kommt gleich mit dem hoeheren Wert.
+  const neu = welt.gebaeudeAnlegen('a', 'haus', anna.basis.x + 9, anna.basis.y - 9);
+  assert.equal(neu.leben, Math.round(GEBAEUDE.haus.leben * 1.1));
+  // Ruestung +1/+1: jeder Schlag eins weniger (die Miliz trifft mit max(1, ...)).
+  const schlagNachher = [welt.schaden(miliz, haus, true), welt.schaden(bogen, haus, true)];
+  assert.equal(schlagNachher[0], Math.max(1, schlagVorher[0] - 1), 'nah');
+  assert.equal(schlagNachher[1], Math.max(1, schlagVorher[1] - 1), 'fern');
+  // Der Browser bekommt das volle Leben in der Tafel `kw` (fuer den Balken).
+  const kw = welt.aufbau('a').spieler.find((s) => s.id === 'a').kw;
+  assert.equal(kw.haus.leben, Math.round(GEBAEUDE.haus.leben * 1.1));
+  assert.equal(kw.haus.fernruestung, GEBAEUDE.haus.fernruestung + 1);
+  // Bert hat es nicht.
+  assert.equal(welt.gebaeudewert('b', 'haus', 'leben'), GEBAEUDE.haus.leben);
+});
+
+test('bauen AC-34: Stadtpatrouille im Dorfzentrum gibt den Gebaeuden noch einmal 4 Sicht - erst nach der Stadtwache', () => {
+  assert.deepEqual(VERBESSERUNGEN.stadtpatrouille.kosten, { nahrung: 300, gold: 100 });
+  assert.ok(GEBAEUDE.dorfzentrum.bildetAus.includes('stadtpatrouille'));
+  const { welt, anna } = mitGebaeude('haus', 2);
+  const zentrum = [...welt.gebaeude.values()].find((g) => g.besitzer === 'a' && g.art === 'dorfzentrum');
+  assert.match(forschen(welt, zentrum, 'stadtpatrouille').fehler, /Stadtwache/);
+  welt.erforschen(anna, 'stadtwache');
+  const mitWache = welt.gebaeudeSicht('a', 'dorfzentrum');
+  assert.deepEqual(forschen(welt, zentrum, 'stadtpatrouille'), {});
+  sekunden(welt, VERBESSERUNGEN.stadtpatrouille.zeit + 1);
+  assert.ok(anna.verbesserungen.includes('stadtpatrouille'));
+  assert.equal(welt.gebaeudeSicht('a', 'dorfzentrum'), mitWache + 4);
+  assert.equal(welt.gebaeudeSicht('a', 'dorfzentrum'), GEBAEUDE.dorfzentrum.sicht + 8);
+});
+
+test('bauen AC-34: Einheiten und Gebaeude teilen sich keinen Namen - sie stehen in derselben Tafel kw', () => {
+  const doppelt = Object.keys(EINHEITEN).filter((art) => GEBAEUDE[art]);
+  assert.deepEqual(doppelt, []);
+});
+
+test('bauen AC-34: jede Verbesserung bringt ihr eigenes Zeichen mit, keine zwei gleich', () => {
+  const zeichen = Object.values(VERBESSERUNGEN).map((v) => v.zeichen).filter(Boolean);
+  assert.equal(new Set(zeichen).size, zeichen.length);
+  for (const art of ['eisenguss', 'bodkinpfeil', 'mauerwerk', 'stadtpatrouille']) assert.ok(VERBESSERUNGEN[art].zeichen, art);
+});

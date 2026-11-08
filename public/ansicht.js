@@ -1145,6 +1145,13 @@ export class Ansicht {
   }
 
   /** Das volle Leben einer Einheit, mit den Verbesserungen ihres Besitzers (bauen AC-21). */
+  // Das volle Leben eines Gebaeudes, wie es fuer seinen Besitzer gilt - nach
+  // dem Mauerwerk 10 % mehr (bauen AC-34). Aus der Tafel des Servers, sonst
+  // der Grundwert.
+  gebaeudeLebenVoll(gebaeude) {
+    return this.einheitenwerte.get(gebaeude.b)?.[gebaeude.art]?.leben ?? this.werte.gebaeude[gebaeude.art]?.leben;
+  }
+
   lebenVoll(einheit) {
     return this.einheitenwert(einheit, 'leben');
   }
@@ -1277,7 +1284,7 @@ export class Ansicht {
     const { groesse } = this.gebaeudeMitte(gebaeude);
     // Balken, wenn ausgewaehlt oder beschaedigt - eine Baustelle hat ihren
     // Fortschritt in der Auswahlleiste und zaehlt hier nicht als beschaedigt.
-    const lebenVoll = this.werte.gebaeude[gebaeude.art]?.leben;
+    const lebenVoll = this.gebaeudeLebenVoll(gebaeude);
     const fertig = (gebaeude.u ?? 1) >= 1;
     const beschaedigt = fertig && lebenVoll && gebaeude.h < lebenVoll;
     if (lebenVoll && (this.gewaehltesGebaeude === gebaeude.i || beschaedigt)) {

@@ -13,6 +13,7 @@ const TAKTE_PRO_SEKUNDE = 10;
 // `sicht` seit Runde 105: der Browser zeichnet den Nebel aus der Sicht der
 // eigenen Einheiten (kampf AC-11), mit Verbesserungen.
 const KAMPFFELDER = ['leben', 'angriff', 'nahruestung', 'fernruestung', 'reichweite', 'sicht'];
+const GEBAEUDEFELDER = ['leben', 'nahruestung', 'fernruestung', 'sicht'];
 const SUCHWEITE_ERSATZ = 12;
 // So lange liegt ein Toter noch im Bild, bevor er aus dem Zustand faellt
 // (kampf AC-10): lang genug, um zu sehen, was passiert ist.
@@ -284,10 +285,27 @@ class Welt {
   // Wie weit ein Gebaeude sieht: der Wert aus den Daten und was die
   // Verbesserungen seines Besitzers dazugeben (kampf AC-17, Stadtwache).
   gebaeudeSicht(besitzer, art) {
-    const spieler = this.spielerVon(besitzer);
-    let sicht = GEBAEUDE[art].sicht;
-    for (const v of spieler?.verbesserungen || []) sicht += VERBESSERUNGEN[v].gebaeude?.sicht || 0;
-    return sicht;
+    return this.gebaeudewert(besitzer, art, 'sicht');
+  }
+
+  /**
+   * Ein Wert eines Gebaeudes mit den Verbesserungen seines Besitzers - Leben,
+   * Ruestung, Sicht (kampf AC-17, bauen AC-34). Das Gegenstueck zu
+   * `einheitenwert()`: wer `GEBAEUDE[art].leben` direkt liest, sieht das
+   * Mauerwerk nicht. Leben waechst um einen Anteil des Grundwerts
+   * (`lebenAnteil`), alles andere um einen Zuschlag.
+   */
+  gebaeudewert(besitzer, art, feld) {
+    const grund = GEBAEUDE[art][feld] || 0;
+    const verbesserungen = this.spielerVon(besitzer)?.verbesserungen || [];
+    if (feld === 'leben') {
+      let anteil = 0;
+      for (const v of verbesserungen) anteil += VERBESSERUNGEN[v].gebaeude?.lebenAnteil || 0;
+      return Math.round(grund * (1 + anteil));
+    }
+    let wert = grund;
+    for (const v of verbesserungen) wert += VERBESSERUNGEN[v].gebaeude?.[feld] || 0;
+    return wert;
   }
 
   // Sieht dieser Spieler das Feld jetzt? Und hat er es je gesehen? (kampf AC-15)
@@ -385,6 +403,13 @@ class Welt {
       tafel[art] = {};
       for (const feld of KAMPFFELDER) tafel[art][feld] = this.einheitenwert(besitzer, art, feld);
     }
+    // Die Gebaeude in derselben Tafel (bauen AC-34): der Lebensbalken braucht
+    // das volle Leben nach dem Mauerwerk. Die Namen von Einheiten und
+    // Gebaeuden ueberschneiden sich nicht - darauf achtet ein Test.
+    for (const art of Object.keys(GEBAEUDE)) {
+      tafel[art] = {};
+      for (const feld of GEBAEUDEFELDER) tafel[art][feld] = this.gebaeudewert(besitzer, art, feld);
+    }
     return tafel;
   }
 
@@ -441,7 +466,7 @@ class Welt {
       y,
       fertig,
       bau: fertig ? 1 : 0, // Anteil der Bauarbeit
-      leben: GEBAEUDE[art].leben,
+      leben: this.gebaeudewert(besitzer, art, 'leben'),
       // Eine Farm traegt Nahrung, und nur einer arbeitet darauf (einheiten AC-18).
       ...(GEBAEUDE[art].nahrung ? { nahrung: this.farmNahrung(besitzer), arbeiter: null } : {}),
       schlange: [], // Arten der bezahlten Auftraege, der erste laeuft
@@ -773,6 +798,13 @@ class Welt {
         return { fehler: `Erst ${aufstieg.voraussetzung} fertige Gebäude ${ZEITALTER[spieler.zeitalter].genitiv} außer Häusern — vorhanden: ${haben}.` };
       }
     }
+    // Eine Verbesserung kann eine andere voraussetzen: Eisenguss erst nach dem
+    // Schmiedeangriff (bauen AC-34). Erforscht muss sie sein, eingereiht
+    // reicht nicht - sonst liefe die zweite vor der ersten.
+    const vorstufe = VERBESSERUNGEN[art]?.vorstufe;
+    if (vorstufe && !spieler.verbesserungen.includes(vorstufe)) {
+      return { fehler: `${VERBESSERUNGEN[art].name} gibt es erst nach „${VERBESSERUNGEN[vorstufe].name}".` };
+    }
     // Eine Verbesserung gibt es einmal: erforscht oder schon irgendwo eingereiht.
     if (VERBESSERUNGEN[art]) {
       const eingereiht = [...this.gebaeude.values()].some((g) => g.besitzer === spielerId && g.schlange.includes(art));
@@ -807,7 +839,20 @@ class Welt {
   // Eine Verbesserung wirkt sofort auf alle, die es schon gibt, und auf alle
   // spaeteren (bauen AC-21).
   erforschen(spieler, art) {
+    // Mauerwerk legt auf jedes eigene Gebaeude Leben nach, auch auf die, die
+    // schon stehen - der Schaden bleibt stehen (bauen AC-34).
+    const lebenVorher = new Map();
+    if (VERBESSERUNGEN[art].gebaeude?.lebenAnteil) {
+      for (const g of this.gebaeude.values()) {
+        if (g.besitzer === spieler.id && !lebenVorher.has(g.art)) lebenVorher.set(g.art, this.gebaeudewert(spieler.id, g.art, 'leben'));
+      }
+    }
     spieler.verbesserungen.push(art);
+    for (const g of this.gebaeude.values()) {
+      if (g.besitzer !== spieler.id || !lebenVorher.has(g.art)) continue;
+      g.leben += this.gebaeudewert(spieler.id, g.art, 'leben') - lebenVorher.get(g.art);
+      this.gebaeudeGeaendert(g);
+    }
     // Eine Verbesserung kann die Sicht der Gebaeude aendern (kampf AC-17).
     if (VERBESSERUNGEN[art].gebaeude) this.gebaeudeSichtNeu = true;
     this.werteGemerkt.delete(spieler.id);
@@ -1808,7 +1853,10 @@ class Welt {
     // gibt dem Dorfbewohner +1/+2 (bauen AC-21). Bis Runde 68 las diese Zeile
     // die Tabelle und die Ruestung aus dem Webstuhl war wirkungslos.
     const feld = fern ? 'fernruestung' : 'nahruestung';
-    const ruestung = istGebaeude ? (werte[feld] || 0) : this.einheitenwert(ziel.besitzer, ziel.art, feld);
+    // Ein Gebaeude ebenso: Mauerwerk gibt +1/+1 (bauen AC-34).
+    const ruestung = istGebaeude
+      ? this.gebaeudewert(ziel.besitzer, ziel.art, feld)
+      : this.einheitenwert(ziel.besitzer, ziel.art, feld);
     let bonus = 0;
     for (const klasse of werte.klassen || []) bonus += a.bonus?.[klasse] || 0;
     return Math.max(1, this.einheitenwert(angreifer.besitzer, angreifer.art, 'angriff') - ruestung + bonus);

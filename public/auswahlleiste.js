@@ -278,6 +278,144 @@ const ZEICHEN = {
     s.fillStyle = '#3a3430';
     s.fillRect(0.31 * g, 0.74 * g, 0.38 * g, 0.07 * g);
   },
+  // Eisenguss: eine Giesskelle, aus der gluehendes Eisen in eine Form laeuft.
+  giesskelle(s, g, farbe) {
+    // Die Form unten, dunkles Eisen, darin der gluehende Guss.
+    s.fillStyle = '#4a4440';
+    s.fillRect(0.14 * g, 0.7 * g, 0.62 * g, 0.18 * g);
+    s.fillStyle = '#ff8a2a';
+    s.fillRect(0.2 * g, 0.72 * g, 0.5 * g, 0.07 * g);
+    // Der Strahl aus der Kelle.
+    s.strokeStyle = '#ffb347';
+    s.lineWidth = g * 0.07;
+    s.lineCap = 'round';
+    s.beginPath();
+    s.moveTo(0.42 * g, 0.44 * g);
+    s.quadraticCurveTo(0.38 * g, 0.58 * g, 0.4 * g, 0.72 * g);
+    s.stroke();
+    // Die Kelle, schraeg gekippt: Schale und Stiel in der Volksfarbe.
+    s.fillStyle = '#6b625a';
+    s.beginPath();
+    s.ellipse(0.5 * g, 0.36 * g, 0.17 * g, 0.11 * g, -0.5, 0, Math.PI * 2);
+    s.fill();
+    s.fillStyle = '#ffcf6b';
+    s.beginPath();
+    s.ellipse(0.5 * g, 0.33 * g, 0.12 * g, 0.05 * g, -0.5, 0, Math.PI * 2);
+    s.fill();
+    s.strokeStyle = farbe;
+    s.lineWidth = g * 0.09;
+    s.beginPath();
+    s.moveTo(0.64 * g, 0.28 * g);
+    s.lineTo(0.9 * g, 0.12 * g);
+    s.stroke();
+  },
+  // Bodkinpfeil: zwei Pfeile mit langer, schmaler Spitze, die Ruestung
+  // durchschlaegt - gekreuzt, damit sie nicht wie die Befiederten Pfeile
+  // aussehen.
+  bodkin(s, g, farbe) {
+    for (const [x0, y0, x1, y1] of [[0.14, 0.86, 0.8, 0.2], [0.86, 0.86, 0.2, 0.2]]) {
+      s.strokeStyle = '#8a6a44';
+      s.lineWidth = g * 0.065;
+      s.lineCap = 'round';
+      s.beginPath();
+      s.moveTo(x0 * g, y0 * g);
+      s.lineTo(x1 * g, y1 * g);
+      s.stroke();
+      // Die lange Nadelspitze.
+      const dx = x1 - x0;
+      const dy = y1 - y0;
+      const l = Math.hypot(dx, dy);
+      const ux = dx / l;
+      const uy = dy / l;
+      s.strokeStyle = '#dfe5ea';
+      s.lineWidth = g * 0.05;
+      s.beginPath();
+      s.moveTo(x1 * g, y1 * g);
+      s.lineTo((x1 + ux * 0.14) * g, (y1 + uy * 0.14) * g);
+      s.stroke();
+      // Federn am Ende, in der Volksfarbe.
+      s.strokeStyle = farbe;
+      s.lineWidth = g * 0.11;
+      s.lineCap = 'butt';
+      s.beginPath();
+      s.moveTo(x0 * g, y0 * g);
+      s.lineTo((x0 + ux * 0.16) * g, (y0 + uy * 0.16) * g);
+      s.stroke();
+    }
+  },
+  // Mauerwerk: eine Ziegelmauer, davor die Maurerkelle.
+  kelle(s, g, farbe) {
+    const reihen = 4;
+    const h = 0.13;
+    for (let r = 0; r < reihen; r++) {
+      const y = (0.36 + r * h) * g;
+      const versatz = r % 2 ? 0.1 : 0;
+      for (let i = -1; i < 4; i++) {
+        const x0 = Math.max(0.12, 0.12 + versatz + i * 0.2);
+        const x1 = Math.min(0.88, 0.12 + versatz + i * 0.2 + 0.18);
+        if (x1 <= x0) continue;
+        s.fillStyle = (r + i) % 2 ? '#a9704e' : '#b98260';
+        s.fillRect(x0 * g, y, (x1 - x0) * g, (h - 0.025) * g);
+      }
+    }
+    // Die Kelle schraeg darueber: Blatt silbern, Griff in der Volksfarbe.
+    s.fillStyle = '#cfd6dd';
+    s.beginPath();
+    s.moveTo(0.3 * g, 0.34 * g);
+    s.lineTo(0.62 * g, 0.12 * g);
+    s.lineTo(0.66 * g, 0.3 * g);
+    s.closePath();
+    s.fill();
+    s.strokeStyle = '#6b625a';
+    s.lineWidth = g * 0.04;
+    s.beginPath();
+    s.moveTo(0.64 * g, 0.2 * g);
+    s.lineTo(0.74 * g, 0.12 * g);
+    s.stroke();
+    s.strokeStyle = farbe;
+    s.lineWidth = g * 0.09;
+    s.lineCap = 'round';
+    s.beginPath();
+    s.moveTo(0.74 * g, 0.12 * g);
+    s.lineTo(0.88 * g, 0.04 * g);
+    s.stroke();
+  },
+  // Stadtpatrouille: das Horn der Wache, mit Schall - die Stadtwache hat die
+  // Laterne, die Patrouille ruft.
+  horn(s, g, farbe) {
+    // Der Schall: drei Boegen vor der Oeffnung.
+    s.strokeStyle = '#f6c667';
+    s.lineWidth = g * 0.045;
+    s.lineCap = 'round';
+    for (const r of [0.12, 0.2, 0.28]) {
+      s.beginPath();
+      s.arc(0.66 * g, 0.36 * g, r * g, -1.1, 0.3);
+      s.stroke();
+    }
+    // Das Horn: gebogen, von schmal unten links zur weiten Oeffnung.
+    s.fillStyle = '#c9a46a';
+    s.beginPath();
+    s.moveTo(0.12 * g, 0.82 * g);
+    s.quadraticCurveTo(0.28 * g, 0.5 * g, 0.58 * g, 0.3 * g);
+    s.lineTo(0.72 * g, 0.48 * g);
+    s.quadraticCurveTo(0.4 * g, 0.62 * g, 0.2 * g, 0.88 * g);
+    s.closePath();
+    s.fill();
+    s.fillStyle = '#e8d3a8';
+    s.beginPath();
+    s.ellipse(0.65 * g, 0.39 * g, 0.06 * g, 0.12 * g, -0.65, 0, Math.PI * 2);
+    s.fill();
+    // Zwei Baender in der Volksfarbe.
+    s.strokeStyle = farbe;
+    s.lineWidth = g * 0.06;
+    s.lineCap = 'butt';
+    for (const [x0, y0, x1, y1] of [[0.25, 0.58, 0.36, 0.7], [0.4, 0.44, 0.52, 0.56]]) {
+      s.beginPath();
+      s.moveTo(x0 * g, y0 * g);
+      s.lineTo(x1 * g, y1 * g);
+      s.stroke();
+    }
+  },
   // Pferdekummet: das Halsjoch des Zugpferdes, davor eine Aehre.
   kummet(s, g, farbe) {
     s.strokeStyle = '#7a4f2c';
@@ -466,6 +604,12 @@ export class Auswahlleiste {
       // (einheiten AC-23): die Kaserne steht schon in der Dunklen Zeit, den
       // Speerkaempfer bildet sie erst ab der Feudalzeit aus.
       .filter((art) => ((werte.einheiten[art] || werte.verbesserungen?.[art])?.zeitalter || 0) <= this.ansicht.zeitalter)
+      // Eine Verbesserung mit Vorstufe erscheint erst, wenn die Vorstufe
+      // erforscht ist (bauen AC-34) - Eisenguss nach dem Schmiedeangriff.
+      .filter((art) => {
+        const vorstufe = werte.verbesserungen?.[art]?.vorstufe;
+        return !vorstufe || this.ansicht.verbesserungen.includes(vorstufe);
+      })
       // Die zweite Stufe ersetzt die erste: nach der Verbesserung bildet die
       // Kaserne Soldaten aus, nicht mehr Milizen (einheiten AC-24).
       .map((art) => {
@@ -671,7 +815,7 @@ export class Auswahlleiste {
   gebaeudeBauen(gebaeude, angebot, farbe) {
     const w = this.wurzel;
     w.replaceChildren();
-    const voll = this.ansicht.werte.gebaeude[gebaeude.art]?.leben ?? gebaeude.h;
+    const voll = this.ansicht.gebaeudeLebenVoll(gebaeude) ?? gebaeude.h;
     w.append(kopf(GEBAEUDE[gebaeude.art]?.name || gebaeude.art, gebaeude.h ?? voll, voll));
     // Eine Farm zeigt, wie viel Nahrung sie noch traegt (einheiten AC-18).
     const vorrat = this.ansicht.farmVoll(gebaeude);
