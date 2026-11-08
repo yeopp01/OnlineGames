@@ -237,6 +237,47 @@ const ZEICHEN = {
     s.fillStyle = farbe;
     s.fillRect(0.44 * g, 0.2 * g, 0.12 * g, 0.26 * g);
   },
+  // Stadtwache: die Laterne des Nachtwaechters, an einem Haken, mit Schein.
+  laterne(s, g, farbe) {
+    // Der Schein hinter der Laterne.
+    const schein = s.createRadialGradient(0.5 * g, 0.58 * g, 0.05 * g, 0.5 * g, 0.58 * g, 0.46 * g);
+    schein.addColorStop(0, 'rgba(255,214,120,0.75)');
+    schein.addColorStop(1, 'rgba(255,214,120,0)');
+    s.fillStyle = schein;
+    s.fillRect(0, 0.1 * g, g, 0.9 * g);
+    // Haken und Ring.
+    s.strokeStyle = '#4a4440';
+    s.lineWidth = g * 0.06;
+    s.lineCap = 'round';
+    s.beginPath();
+    s.moveTo(0.5 * g, 0.06 * g);
+    s.lineTo(0.5 * g, 0.2 * g);
+    s.stroke();
+    s.beginPath();
+    s.arc(0.5 * g, 0.24 * g, 0.06 * g, 0, Math.PI * 2);
+    s.stroke();
+    // Dach in der Volksfarbe.
+    s.fillStyle = farbe;
+    s.beginPath();
+    s.moveTo(0.3 * g, 0.38 * g);
+    s.lineTo(0.5 * g, 0.28 * g);
+    s.lineTo(0.7 * g, 0.38 * g);
+    s.closePath();
+    s.fill();
+    // Das Glas mit dem Licht, gerahmt.
+    s.fillStyle = '#ffd36a';
+    s.fillRect(0.35 * g, 0.38 * g, 0.3 * g, 0.36 * g);
+    s.strokeStyle = '#3a3430';
+    s.lineWidth = g * 0.05;
+    s.strokeRect(0.35 * g, 0.38 * g, 0.3 * g, 0.36 * g);
+    s.beginPath();
+    s.moveTo(0.5 * g, 0.38 * g);
+    s.lineTo(0.5 * g, 0.74 * g);
+    s.stroke();
+    // Der Fuss.
+    s.fillStyle = '#3a3430';
+    s.fillRect(0.31 * g, 0.74 * g, 0.38 * g, 0.07 * g);
+  },
   // Pferdekummet: das Halsjoch des Zugpferdes, davor eine Aehre.
   kummet(s, g, farbe) {
     s.strokeStyle = '#7a4f2c';

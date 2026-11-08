@@ -1,0 +1,10 @@
+{
+  "spec": "10-strategie/kampf.md",
+  "ac": "AC-17",
+  "titel": "Nachher: die Stadtwache ist erforscht, der helle Kreis um das Dorf reicht vier Felder weiter",
+  "datei": "e2e/tests/strategie-verbesserungen.spec.mjs",
+  "pfad": [
+    "Verbesserungen der Feudalzeit",
+    "kampf AC-17: die Stadtwache im Dorfzentrum weitet die Sicht aller Gebaeude um vier Felder"
+  ]
+}

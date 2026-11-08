@@ -13,17 +13,16 @@ hier nichts eintraegt, verliert den Faden beim naechsten Autocompact.
 
 ## Zuletzt fortgeschrieben
 
-2026-11-08, nach Runde 106 (**kampf AC-16**: Sicht als Einstellung - Nebel,
-Erkundet, Aufgedeckt; ersetzt den Pruefgriff `aufdecken`, Tests eroeffnen mit
-`partieZuZweit(..., { sicht: 'aufgedeckt' })`. **Als Naechstes C6d**: kampf
-AC-17 Stadtwache (Gebaeude +4 Sicht), AC-18 Aussenposten (Sicht 10).
-**Naechste Rueckschau: Runde 108.**)
+2026-11-08, nach Runde 107 (**kampf AC-17**: die Stadtwache im Dorfzentrum
+gibt allen eigenen Gebaeuden +4 Sicht - Schluessel `gebaeude` in den Daten
+der Verbesserung, `welt.gebaeudeSicht()`. **Runde 108 ist die Rueckschau**,
+danach kampf AC-18 (Aussenposten, Sicht 10, eigene Zeichnung).)
 
 ## Wo ich stehe
 
 - **Branch:** `strategie`. Nie auf `main` arbeiten, **nie pushen, nie deployen.**
-- **Board:** 408 von 530 Kriterien fertig · 1 in Arbeit · 5 in QA · 4 geplant ·
-  104 offen · 8 zurueckgestellt. 491 Tests ohne Browser, 173 im Browser.
+- **Board:** 409 von 530 Kriterien fertig · 1 in Arbeit · 5 in QA · 4 geplant ·
+  103 offen · 8 zurueckgestellt. 492 Tests ohne Browser, 174 im Browser.
 - **Fuenf Waechter in `tests/waechter-*.test.mjs`** (der fuenfte seit Runde 87: Bildschirmtext mit echten Umlauten): Gleichheit auf wachsenden
   Listen, verbesserbare Werte an `welt.einheitenwert()` vorbei,
   Bildunterschriften mit `${...}`, und (neu in Runde 73) die **Kuerzeltafel**

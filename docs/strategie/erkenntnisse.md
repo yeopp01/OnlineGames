@@ -1034,6 +1034,17 @@ unter Last), seit dem dreifachen Klick nicht mehr.
 Neueste oben. Eine Zeile je Runde: Nummer, Datum, Kriterien, Ergebnis,
 wichtigste Erkenntnis.
 
+- **107** · 2026-11-08 · **kampf AC-17** — die Stadtwache, die erste
+  Forschung, die den Nebel verändert (Wunsch des Benutzers): im Dorfzentrum ab
+  der Feudalzeit, 75 Nahrung, 25 s, alle eigenen Gebäude +4 Sicht. Werte als
+  Daten mit einem neuen Schlüssel `gebaeude` (wie `farm`); Server
+  (`welt.gebaeudeSicht`) und Browser (`nebel.js`) rechnen ihn gleich ein. Der
+  Zwischenspeicher der Gebäudesicht musste nach dem Erforschen verworfen
+  werden — Test mit Gegenprobe gegen die alte Zeile. Im Bild ein Paar: vorher
+  die Laterne im Menü und ein kleiner heller Kreis, nachher der größere. Der
+  Außenposten (AC-18) braucht eine eigene Zeichnung und ist die nächste Runde.
+  Aus der Durchsicht: die KI erforscht die Stadtwache nicht — harmlos, solange
+  sie alles sieht; mit C6f (die KI sieht nur ihre Sicht) wird es eine Frage.
 - **106** · 2026-11-08 · **kampf AC-16** — die Sicht ist eine Einstellung
   beim Eröffnen, auf Wunsch des Benutzers: Nebel (Vorgabe), Erkundet (Karte
   bekannt, fremde Einheiten nur in Sicht), Aufgedeckt. Der Server kennt sie

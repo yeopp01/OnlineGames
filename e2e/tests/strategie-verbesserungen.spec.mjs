@@ -7,6 +7,7 @@ import { einheitenAufstellen, expect, gebaeudeAufstellen, rohstoffe, test, zeitr
 import { bedienteileFrei, freieWiesen, gebaeudeInDerNaehe, partieBeenden, partieZuZweit, platzImBild } from '../helpers/strategie.mjs';
 
 const BAUEN = '10-strategie/bauen.md';
+const KAMPF = '10-strategie/kampf.md';
 const BEDIENUNG = '10-strategie/bedienung.md';
 
 /** Ein Gebaeude anwaehlen und die Kamera darauf richten. */
@@ -215,6 +216,51 @@ test.describe('Verbesserungen der Feudalzeit', () => {
       spec: BEDIENUNG,
       ac: 'AC-35',
       titel: 'Ein Speerkämpfer gewählt: unten Angriff 4 (3 plus Schmiedeangriff), Rüstung 0 / 0, Nahkampf und „+15 gegen Kavallerie"',
+      test: info,
+    });
+  });
+
+  // Forschung veraendert die Flaeche des Nebels (kampf AC-17, Wunsch des
+  // Benutzers). Annas Partie laeuft mit Nebel, der Vorgabe.
+  test('kampf AC-17: die Stadtwache im Dorfzentrum weitet die Sicht aller Gebaeude um vier Felder', async ({}, info) => {
+    const { anna, code } = partie;
+    const zentrum = await anna.evaluate(() => {
+      const a = window.ansicht;
+      return [...a.gebaeude.values()].find((g) => g.b === a.ich && g.art === 'dorfzentrum').i;
+    });
+    await gebaeudeWaehlen(anna, zentrum, 0.8);
+    const knopf = anna.locator('[data-ausbilden="stadtwache"]');
+    await expect(knopf).toHaveCount(1);
+    await expect(knopf).toHaveAttribute('title', 'Stadtwache erforschen (75 Nahrung)');
+    await expect(knopf).toBeInViewport();
+    // Ein eigenes Bild: nicht dasselbe wie der Webstuhl daneben (darstellung AC-14).
+    const gleich = await anna.evaluate(() => {
+      const [a, b] = ['stadtwache', 'webstuhl'].map((art) => document.querySelector(`[data-ausbilden="${art}"] canvas`)?.toDataURL());
+      return Boolean(a) && a === b;
+    });
+    expect(gleich, 'Laterne und Webstuhl sehen verschieden aus').toBe(false);
+    await anna.waitForFunction(() => window.ansicht.nebel.takt > -Infinity);
+    const vorher = await anna.evaluate(() => window.ansicht.nebel.zaehlen().beobachtet);
+    expect(await bedienteileFrei(anna)).toEqual([]);
+    await nachweis(anna, {
+      spec: KAMPF,
+      ac: 'AC-17',
+      titel: 'Vorher: das Dorfzentrum gewählt, im Menü die Stadtwache mit der Laterne — hell ist es, so weit die Gebäude sehen',
+      test: info,
+    });
+
+    await erforschen(anna, code, 'stadtwache');
+    // Eine halbe Sekunde, bis die Sicht neu gerechnet ist.
+    await anna.waitForFunction((v) => window.ansicht.nebel.zaehlen().beobachtet > v, vorher, { timeout: 5_000 });
+    const nachher = await anna.evaluate(() => window.ansicht.nebel.zaehlen().beobachtet);
+    // Vier Felder mehr um jedes Gebaeude: deutlich mehr Helles, nicht ein paar Felder.
+    expect(nachher, `${vorher} -> ${nachher} beobachtete Felder`).toBeGreaterThan(vorher * 1.3);
+    await gebaeudeWaehlen(anna, zentrum, 0.8);
+    await anna.waitForTimeout(300);
+    await nachweis(anna, {
+      spec: KAMPF,
+      ac: 'AC-17',
+      titel: 'Nachher: die Stadtwache ist erforscht, der helle Kreis um das Dorf reicht vier Felder weiter',
       test: info,
     });
   });

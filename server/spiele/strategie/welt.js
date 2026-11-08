@@ -261,7 +261,7 @@ class Welt {
         const sicht = this.sichten.get(b.besitzer);
         if (!sicht) continue;
         const { x0, y0, x1, y1 } = this.grundflaeche(b.art, b.x, b.y);
-        markieren(sicht.gebaeude, 1, sicht.erkundet, x0, y0, x1, y1, GEBAEUDE[b.art].sicht);
+        markieren(sicht.gebaeude, 1, sicht.erkundet, x0, y0, x1, y1, this.gebaeudeSicht(b.besitzer, b.art));
       }
     }
   }
@@ -269,6 +269,15 @@ class Welt {
   aufKarte(x, y) {
     const g = this.karte.groesse;
     return Number.isInteger(x) && Number.isInteger(y) && x >= 0 && y >= 0 && x < g && y < g;
+  }
+
+  // Wie weit ein Gebaeude sieht: der Wert aus den Daten und was die
+  // Verbesserungen seines Besitzers dazugeben (kampf AC-17, Stadtwache).
+  gebaeudeSicht(besitzer, art) {
+    const spieler = this.spielerVon(besitzer);
+    let sicht = GEBAEUDE[art].sicht;
+    for (const v of spieler?.verbesserungen || []) sicht += VERBESSERUNGEN[v].gebaeude?.sicht || 0;
+    return sicht;
   }
 
   // Sieht dieser Spieler das Feld jetzt? Und hat er es je gesehen? (kampf AC-15)
@@ -786,6 +795,8 @@ class Welt {
   // spaeteren (bauen AC-21).
   erforschen(spieler, art) {
     spieler.verbesserungen.push(art);
+    // Eine Verbesserung kann die Sicht der Gebaeude aendern (kampf AC-17).
+    if (VERBESSERUNGEN[art].gebaeude) this.gebaeudeSichtNeu = true;
     this.werteGemerkt.delete(spieler.id);
     this.werteAenderungen.add(spieler.id);
     const wirkung = VERBESSERUNGEN[art].wirkung;

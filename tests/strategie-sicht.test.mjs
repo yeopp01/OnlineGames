@@ -163,3 +163,29 @@ test('kampf AC-16: die Sicht ist eine Einstellung - Nebel, Erkundet oder Aufgede
   // Der Browser erfaehrt es mit dem Aufbau.
   assert.equal(offen.welt.aufbau().sicht, 'aufgedeckt');
 });
+
+test('kampf AC-17: die Stadtwache gibt jedem eigenen Gebaeude vier Felder mehr Sicht', () => {
+  const { VERBESSERUNGEN } = require('../server/spiele/strategie/daten.js');
+  const welt = new Welt(ZWEI, 4711);
+  const a = welt.spielerVon('a');
+  const p = abseits(welt);
+  const haus = welt.gebaeudeAnlegen('a', 'haus', p.x, p.y, true);
+  const zentrum = [...welt.gebaeude.values()].find((g) => g.besitzer === 'a' && g.art === 'dorfzentrum');
+  welt.sichtAktualisieren();
+  const { x1, y0 } = welt.grundflaeche('haus', haus.x, haus.y);
+  const weiter = GEBAEUDE.haus.sicht + VERBESSERUNGEN.stadtwache.gebaeude.sicht;
+  assert.equal(weiter, 12, 'acht und vier');
+  assert.equal(welt.sieht('a', x1 + weiter, y0), false, 'vorher sieht das Haus zwoelf Felder nicht');
+  // Gegenprobe zur Regel: in der Dunklen Zeit gibt es sie nicht.
+  a.nahrung = 1000;
+  assert.ok(welt.nachricht('a', { auftrag: 'ausbilden', gebaeude: zentrum.id, einheit: 'stadtwache' }).fehler, 'Dunkle Zeit: abgewiesen');
+  a.zeitalter = 1;
+  assert.equal(welt.nachricht('a', { auftrag: 'ausbilden', gebaeude: zentrum.id, einheit: 'stadtwache' }).fehler, undefined, 'Feudalzeit: bestellt');
+  assert.equal(a.nahrung, 1000 - VERBESSERUNGEN.stadtwache.kosten.nahrung, 'bezahlt');
+  for (let t = 0; t < (VERBESSERUNGEN.stadtwache.zeit + 1) * TAKTE_PRO_SEKUNDE; t++) welt.takten();
+  assert.ok(a.verbesserungen.includes('stadtwache'), 'erforscht');
+  assert.equal(welt.sieht('a', x1 + weiter, y0), true, 'jetzt sieht das Haus zwoelf Felder');
+  assert.equal(welt.sieht('a', x1 + weiter + 2, y0), false, 'aber nicht vierzehn');
+  // Und Bert hat nichts davon.
+  assert.equal(welt.gebaeudeSicht('b', 'haus'), GEBAEUDE.haus.sicht);
+});

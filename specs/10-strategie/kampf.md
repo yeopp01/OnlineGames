@@ -2,7 +2,7 @@
 
 **Bereich:** Strategie
 **Kuerzel:** kampf
-**Stand:** 13/18 fertig · 4 offen · 1 zurueckgestellt
+**Stand:** 14/18 fertig · 3 offen · 1 zurueckgestellt
 
 ## Zweck
 
@@ -134,12 +134,15 @@ aus [Spielziel](spielziel.md) AC-10, gemessen in
   eröffnen „Aufgedeckt". Gebaut in Runde 106: der Server kennt die Einstellung
   (`welt.sichtArt`, bei „Erkundet" ist alles erkundet, bei „Aufgedeckt" sieht
   jeder alles) und schickt sie mit dem Aufbau; der Browser zeichnet danach.
-- **AC-17** `offen` **Stadtwache weitet die Sicht** — Wunsch des Benutzers:
+- **AC-17** `fertig` **Stadtwache weitet die Sicht** — Wunsch des Benutzers:
   Forschung verändert die Fläche des Nebels. Die Verbesserung Stadtwache im
   Dorfzentrum ab der Feudalzeit, 75 Nahrung, gibt allen eigenen Gebäuden +4
   Sicht (Vorlage). Als Wert in den Daten wie jede Verbesserung; Server und
   Browser rechnen die Sicht mit ihr. Die Stadtpatrouille (+4, Ritterzeit)
-  folgt mit Stufe D.
+  folgt mit Stufe D. Gebaut in Runde 107: ein neuer Schlüssel `gebaeude` in
+  den Daten einer Verbesserung (wie `farm`), `welt.gebaeudeSicht()` rechnet
+  ihn ein, und nach dem Erforschen wird die Sicht der Gebäude neu gerechnet.
+  Im Menü ein eigenes Bild, die Laterne des Nachtwächters.
 - **AC-18** `offen` **Außenposten sieht weit** — Ein Gebäude der Dunklen
   Zeit nur zum Sehen: 25 Holz, 25 Stein, 15 s, 500 Leben (Vorlage), Sicht 10.
   Gezeichnet und unterscheidbar wie jedes Gebäude (darstellung AC-14).

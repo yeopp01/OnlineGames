@@ -102,7 +102,7 @@ const ALLE = ['holz', 'nahrung', 'gold', 'stein'];
 const GEBAEUDE = {
   dorfzentrum: {
     groesse: 4, kosten: { holz: 275, stein: 100 }, bauzeit: 150, leben: 2400, wohnraum: 5,
-    annahme: ALLE, bildetAus: ['dorfbewohner', 'webstuhl', 'feudalzeit', 'ritterzeit', 'imperialzeit'],
+    annahme: ALLE, bildetAus: ['dorfbewohner', 'webstuhl', 'stadtwache', 'feudalzeit', 'ritterzeit', 'imperialzeit'],
   },
   haus: { groesse: 2, kosten: { holz: 25 }, bauzeit: 25, leben: 550, wohnraum: 5, annahme: [], bildetAus: [] },
   muehle: { groesse: 2, kosten: { holz: 100 }, bauzeit: 35, leben: 1000, wohnraum: 0, annahme: ['nahrung'], bildetAus: ['pferdekummet'] },
@@ -225,6 +225,15 @@ const VERBESSERUNGEN = {
     name: 'Pferdekummet', kosten: { nahrung: 75, holz: 75 }, zeit: 20, zeitalter: 1,
     zeichen: 'kummet',
     wirkung: {}, farm: { nahrung: 75 },
+  },
+  // Sicht fuer Gebaeude (kampf AC-17, Wunsch des Benutzers: Forschung
+  // veraendert die Flaeche des Nebels). Kosten und Wirkung aus der Vorlage,
+  // die Dauer die des Originals. `gebaeude` trifft jedes eigene Gebaeude, wie
+  // `farm` jede Farm.
+  stadtwache: {
+    name: 'Stadtwache', kosten: { nahrung: 75 }, zeit: 25, zeitalter: 1,
+    zeichen: 'laterne',
+    wirkung: {}, gebaeude: { sicht: 4 },
   },
 };
 
