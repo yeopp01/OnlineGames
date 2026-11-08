@@ -32,6 +32,7 @@
     "tafel": "node scripts/tafel.mjs",
     "pruefstand:strategie": "node scripts/pruefstand-strategie.mjs",
     "pruefstand:vergleich": "node scripts/pruefstand-vergleich.mjs",
+    "pruefstand:verlauf": "node scripts/pruefstand-verlauf.mjs",
     "konterkreis:strategie": "node scripts/konterkreis-strategie.mjs"
   },
   "dependencies": {

@@ -1246,6 +1246,17 @@ test('pruefstand:vergleich stellt den Arbeitsstand neben einen eingecheckten Sta
   assert.doesNotMatch(ausgabe, /WIDERSPRUCH/);
 });
 
+test('pruefstand:verlauf zeigt eine Partie Minute fuer Minute', () => {
+  // Das Werkzeug der Rueckschau nach Runde 98. Zwei Minuten reichen fuer zwei
+  // Zeilen und den Schluss; jede Zeile nennt beide Spieler.
+  const skript = fileURLToPath(new URL('../scripts/pruefstand-verlauf.mjs', import.meta.url));
+  const ausgabe = execFileSync(process.execPath, [skript, '--startwert', '1', '--minuten', '2'], { encoding: 'utf8' });
+  const minuten = ausgabe.split('\n').filter((z) => /^\s+[12]\s/.test(z));
+  assert.equal(minuten.length, 2, 'eine Zeile je Minute');
+  for (const z of minuten) assert.match(z, /ki1 .* \| {2}ki2 /, 'beide Spieler');
+  assert.match(ausgabe, /^Ende: nach 2 min nicht entschieden/m);
+});
+
 test('ki AC-15: eine Baustelle, an der niemand mehr baut, bekommt einen Bauer zurueck', () => {
   // Runde 94: eine Hausbaustelle aus der Fruehphase blieb liegen - ihr Bauer
   // war geflohen (ki AC-14) -, und `hausImBau` sperrte von da an jedes weitere

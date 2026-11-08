@@ -191,6 +191,16 @@ Setze die gewählten Kriterien auf `in-arbeit`.
   Kriterium oder dem Plan ableiten und die gemessenen Werte als Kommentar an
   den Test schreiben (Runde 44: „mindestens 5 im Holz" und „30 s Warten" waren
   geschätzt, das erste falsch, das zweite zu lasch).
+  **Warum eine Partie so lange dauert, zeigt `npm run pruefstand:verlauf --
+  --startwert n`** (je Minute Dorfbewohner, Heer daheim und draußen, worauf es
+  einschlägt, Gebäude mit Leben, Vorrat); welche Startwerte die langen sind,
+  sagt `pruefstand:vergleich` in der Zeile „Enden" (`62.0@5`). In den Runden 94
+  bis 97 schrieb jede Runde dafür ein eigenes Wegwerfskript.
+  **Ein Messtest über viele ganze Partien bekommt eine eigene Datei**
+  (`tests/strategie-partien.test.mjs`): `node --test` rechnet Dateien
+  nebeneinander, Tests einer Datei nacheinander. Hinter den Messungen in
+  `strategie-ki.test.mjs` verlängerte zwanzig Partien `npm run check` von 48
+  auf 88 Sekunden (Runde 97).
 - **Was gemessen nichts bringt, bleibt nicht im Code.** Jede Abhilfe einzeln
   messen (`npm run pruefstand:vergleich`), und zurücknehmen, was die Zahl
   nicht bewegt — auch wenn sie „richtig" aussieht. In den Runden 89 bis 92
@@ -349,10 +359,16 @@ Setze die gewählten Kriterien auf `in-arbeit`.
 0. **Eine Durchsicht ohne deine Schlüsse**, bevor der Abschlusslauf beginnt,
    wenn die Runde Simulation, KI oder Kampf geändert hat: ein Subagent
    (`feature-dev:code-reviewer`, `model: sonnet`, nur lesend) bekommt `git diff`
-   der Produktdateien und eine Beschreibung des **Verhaltens**, nicht deines
+   der Produktdateien **als Datei**: `git diff -- <dateien> > <scratchpad>/durchsicht.diff`
+   und der Pfad in den Auftrag — der Prüfer hat keine Shell und las in Runde 97
+   die Dateien statt des Unterschieds. Dazu eine Beschreibung des **Verhaltens**, nicht deines
    Urteils — und sucht Fehler, Randfälle, Determinismus, was die KI nicht
    sehen dürfte. Seine Befunde prüfst du am Code nach, bevor du handelst; jeder
-   echte bekommt einen Test mit Gegenprobe. In Runde 86 trafen zwei von fünf
+   echte bekommt einen Test mit Gegenprobe — **gegen die alte Zeile**: nur
+   die Produktzeile zurücksetzen (Kopie der Datei, `sed`, zurückkopieren), den
+   Test laufen lassen, er muss fallen. Nicht `git stash`: das nimmt den neuen
+   Test mit weg, und „grün" heißt dann nichts (Runde 97). Die Durchsicht traf
+   in jeder der Runden 94 bis 97. In Runde 86 trafen zwei von fünf
    Befunden, einer davon ein Fehler, den die Runde eine Stunde vorher selbst
    eingebaut hatte — kein Test hatte ihn gesehen. Kosten: rund 90 Sekunden.
    Ebenso kann ein Subagent die Bilder über 1 % aus `qa:abweichung` gegen ihre

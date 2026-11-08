@@ -13,18 +13,20 @@ hier nichts eintraegt, verliert den Faden beim naechsten Autocompact.
 
 ## Zuletzt fortgeschrieben
 
-2026-11-08, nach Runde 97 (**fahrplan AC-11 ist fertig**: KI gegen KI endet
-ueber zwanzig Startwerte mit Sieger, jede Partie vor Minute 60, Median 33,8.
-Dazu **ki AC-19**: wer nie wieder etwas tun kann, gibt auf. **C4 ist damit
-fertig**; als Naechstes C5 (Mensch gegen KI: spielauswahl AC-18, AC-19,
-fahrplan AC-12) - vorher die Figuren bei Zoom 1 (Faden, eine Runde vor C5).
-**Naechste Rueckschau: Runde 98** - also die naechste Runde.)
+2026-11-08, nach Runde 98 (**Rueckschau**: neues Werkzeug
+`npm run pruefstand:verlauf -- --startwert n` - eine Partie Minute fuer Minute;
+`pruefstand:vergleich` nennt die Enden mit Startwert. Zwei Regeln in der
+Anweisung: der Durchsicht den Unterschied als Datei geben, Gegenprobe gegen die
+alte Zeile statt `git stash`; Messtests ueber viele Partien in eine eigene
+Datei. **C4 ist fertig** (fahrplan AC-11). **Als Naechstes die Figuren bei
+Zoom 1** (Faden, eine Runde vor C5), dann C5: Mensch gegen KI (spielauswahl
+AC-18, AC-19, fahrplan AC-12). **Naechste Rueckschau: Runde 103.**)
 
 ## Wo ich stehe
 
 - **Branch:** `strategie`. Nie auf `main` arbeiten, **nie pushen, nie deployen.**
 - **Board:** 398 von 525 Kriterien fertig · 1 in Arbeit · 5 in QA · 4 geplant ·
-  109 offen · 8 zurueckgestellt. 476 Tests ohne Browser, 167 im Browser.
+  109 offen · 8 zurueckgestellt. 477 Tests ohne Browser, 167 im Browser.
 - **Fuenf Waechter in `tests/waechter-*.test.mjs`** (der fuenfte seit Runde 87: Bildschirmtext mit echten Umlauten): Gleichheit auf wachsenden
   Listen, verbesserbare Werte an `welt.einheitenwert()` vorbei,
   Bildunterschriften mit `${...}`, und (neu in Runde 73) die **Kuerzeltafel**
@@ -294,7 +296,7 @@ fahrplan AC-12) - vorher die Figuren bei Zoom 1 (Faden, eine Runde vor C5).
   bei 20 min). Aelter als Runde 69, nur nie gemessen, weil der Pruefstand bei
   zehn Minuten endete. Ursache und Hebel stehen in den Erkenntnissen unter
   **Offene Faeden**.
-- **Naechste Rueckschau: Runde 98** - oder frueher, wenn Stufe C erreicht wird.
+- **Naechste Rueckschau: Runde 103** - oder frueher, wenn Stufe C erreicht wird.
   Diese Zeile ist der Termin, nicht nachzaehlen.
 - Frueherer Termin, erledigt: **Runde 83** (die Bildnachweise einmal ganz
   angesehen), **Runde 78** (Bilderwerkzeug: `check:alles:neu`,

@@ -58,7 +58,7 @@ const zahl = (x, stellen = 1) => (x === null ? '-' : x.toFixed(stellen));
 
 for (const stand of staende) {
   const t0 = performance.now();
-  const werte = { feudal: [], angriff: [], dorf: [], kampf: [], angriffe: [], untaetig: [], sieger: 0, ende: [] };
+  const werte = { feudal: [], angriff: [], dorf: [], kampf: [], angriffe: [], untaetig: [], sieger: 0, ende: [], je: [] };
   let widerspruch = null;
   for (let startwert = erster; startwert < erster + partien; startwert++) {
     try {
@@ -66,6 +66,7 @@ for (const stand of staende) {
       if (r.ende?.sieger) {
         werte.sieger += 1;
         werte.ende.push(r.ende.takt / 600);
+        werte.je.push({ startwert, ende: r.ende.takt / 600 });
       }
       for (const p of r.spieler) {
         werte.feudal.push(p.feudalMinute);
@@ -92,7 +93,9 @@ for (const stand of staende) {
     + `; mit Sieger ${werte.sieger}/${partien}${werte.ende.length ? `, Ende Median ${zahl(median(werte.ende))} min` : ''}`
     // fahrplan AC-11 fragt nach dieser Zahl: entschieden vor Spielminute 60.
     + `, vor Minute 60: ${werte.ende.filter((m) => m < 60).length}/${partien}`
-    + (werte.ende.length ? `
-  Enden ${[...werte.ende].sort((a, b) => a - b).map((m) => m.toFixed(1)).join(' ')}` : ''));
+    // Die Enden mit ihrem Startwert (Ende@Startwert), damit die langen gleich
+    // mit pruefstand:verlauf angesehen werden koennen.
+    + (werte.je.length ? `
+  Enden ${[...werte.je].sort((a, b) => a.ende - b.ende).map((p) => `${p.ende.toFixed(1)}@${p.startwert}`).join(' ')}` : ''));
 }
 rmSync(ziel, { recursive: true, force: true });

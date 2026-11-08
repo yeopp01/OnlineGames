@@ -312,6 +312,9 @@ Zahlen, gegen die spätere Runden vergleichen. Mit Datum und Commit.
 | 2026-11-07 | Erstes Heer der KI ueber zwanzig Startwerte (Pruefstand, 22 min) | Spielminute **17,5 bis 19,8**, Median 18,1; ohne Angriff 0 von 20. Rechenzeit 0,84 s je Partie | Runde 85 |
 | 2026-11-07 | Konterkreis nach dem engen `angekommen`-Fix (`npm run konterkreis:strategie`) | 20/20 in allen vier Richtungen, 0/20 umgekehrt. Die **weite** Fassung: Spaeherreiter gegen Bogenschuetze 14/20, umgekehrt 10/20 | Runde 85 |
 | 2026-11-07 | Geaenderte Bildnachweise nach einer Aenderung **nur** am Abschlussbild | 6: zwei neue (AC-9), eines zu 94 % (Kamera tiefer, AC-6), zwei zu 6,0 % (der neue Knopf, AC-5 und AC-8), eines zu 0,0 %. Kein `:neu`-Lauf noetig - das Bedienteil steht in genau einer Testdatei, und die wurde mit `QA_NACHWEIS=1` einzeln gefahren (36 s statt 11 min) | Runde 84 |
+| 2026-11-08 | KI gegen KI, zwanzig Startwerte bis Minute 90 (`pruefstand:vergleich`) | alle 20 mit Sieger, Ende **24,8 bis 53,3 min**, Median 33,8; Runde 92: 4 von 20 vor Minute 60, Median 72,6 | Runde 97 |
+| 2026-11-08 | `npm run check` (Maschine ruhig, ein fremder node) | 48 s, 477 Tests ohne Browser; mit dem Messtest ueber zwanzig Partien in `strategie-ki.test.mjs` waren es 88 s | Rueckschau 98 |
+| 2026-11-08 | Browserlauf gesamt | 167 Faelle, 9,6 min (Runde 95, zuletzt ganz gefahren) | Runde 95 |
 
 ## Rückschauen
 
@@ -945,6 +948,38 @@ alle sieben Gebäude der Dunklen Zeit stehen. Was sich wiederholt hat:
    (Runden 26, 30, 34), allein jedes Mal grün. Nicht gelockert: der Ablauf aus
    Runde 30 hat jedes Mal gegriffen. Die Frage an den Benutzer (Zeitmessungen
    seriell) betrifft diesen Test genauso; dort vermerkt.
+
+### Nach Runde 98 (2026-11-08)
+
+Runden 94–97: **C4 ist fertig**: KI gegen KI endet in zwanzig von zwanzig
+Partien mit einem Sieger vor Minute 60 (fahrplan AC-11; Runde 92 waren es 4).
+Fünf Kriterien `fertig` (ki AC-15 bis AC-19). Jede Runde begann mit der Frage
+aus Runde 92, **warum** eine Partie nicht endet, und jedes Mal fand sich eine
+andere Antwort: eine Baustelle ohne Bauer, Ziele ohne Weg, ein Sieger, der je
+acht schickt, ein Verlierer ohne Einheit. Sieben Hebel gemessen und
+verworfen, darunter zweimal das Schleifen mit Nahkämpfern.
+
+Was wiederholt Zeit kostete, und was sich ändert:
+
+1. **Vier Wegwerfskripte für dieselbe Frage** (Enden je Startwert, eine
+   Partie Minute für Minute). → Werkzeug: `npm run pruefstand:verlauf --
+   --startwert n` (je Minute Dorfbewohner, Heer daheim und draußen, worauf es
+   einschlägt, Gebäude mit Leben, Vorrat), und `pruefstand:vergleich` nennt die
+   Enden mit Startwert (`62.0@5`). Mit Rauchtest.
+2. **Die Durchsicht traf in jeder Runde** (94: drei, 95: vier, 96: einzeln
+   losziehende Einheiten, 97: der Aufstieg in der Schlange) — aber der Prüfer
+   hat keine Shell und las in Runde 97 die ganzen Dateien statt des
+   Unterschieds, und meine Gegenprobe mit `git stash` nahm den neuen Test mit
+   weg. → Anweisung: der Unterschied als Datei in den Auftrag; Gegenprobe gegen
+   die alte Zeile, nicht mit `git stash`.
+3. **Ein Messtest über zwanzig Partien verdoppelte `npm run check`** (48 →
+   88 s), weil er hinter den anderen Messungen derselben Datei lief. →
+   Anweisung: Messtests über viele Partien in eine eigene Datei.
+
+Nicht geändert: das einzelne Messen jedes Hebels mit `pruefstand:vergleich`
+hat getragen — von den Runden 94 bis 97 blieb kein Code ohne gemessene
+Wirkung. Die Figuren bei Zoom 1 sind als Faden vor C5 vorgemerkt; das ist die
+nächste Runde.
 
 ## Runden
 
