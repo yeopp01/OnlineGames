@@ -124,7 +124,9 @@ neuen Karte grün bleiben.
   Median 33,8 (Runde 92: 4 von 20 vor Minute 60). Getragen von
   [KI](ki.md) AC-16 bis AC-19; die letzte Partie über 60 Minuten war ein
   Verlierer ohne jede Einheit, dessen Gebäude achteinhalb Minuten lang
-  geschleift wurden — jetzt gibt er auf.
+  geschleift wurden — jetzt gibt er auf. Nach einheiten AC-31 (Runde 100):
+  25,7 bis 53,1 Minuten, Median 36,4. **Auf den Startwerten 21 bis 40 sind es
+  19 von 20** — vorher wie nachher; die Auswahl der ersten zwanzig trägt mit.
 - **AC-12** `offen` **Mensch gegen KI spielbar** — Eine Partie allein gegen die KI lässt sich
   eröffnen, spielen und mit Abschlussbild beenden.
 - **AC-13** `offen` **Nebel auf dem Server** — Ein Spieler erhält nur, was seine Einheiten und

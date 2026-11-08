@@ -96,6 +96,13 @@ etwas anderem gearbeitet.
   [ADR-0012](../adr/0012-aoe2-als-vorlage.md) nachsehen. Nicht vor Stufe E
   (fünf Völker) vorschlagen — vorher gibt es nicht genug Spieler in einer
   Partie, an denen ein Bündnis etwas ändert.
+- **fahrplan AC-11 hängt an der Auswahl der Startwerte** (Runde 100). Auf
+  den Startwerten 21 bis 40 enden 19 von 20 vor Minute 60 — mit HEAD wie mit
+  dem Arbeitsstand (Startwert 29 bzw. 24 nach 74 Minuten). Und dort steht
+  einmal ein Dorfbewohner **über 900 Sekunden** untätig (HEAD 921 s), während
+  ki AC-10 auf 1 bis 20 höchstens 12,9 s bis Minute 30 misst. Beides
+  ansehen: `npm run pruefstand:vergleich -- --startwert 21 --minuten 90`,
+  dann `pruefstand:verlauf` auf den langen.
 - **Eine Bildunterschrift stimmt nicht: `einheiten AC-15`** (gesehen in
   Runde 80, `bedienung AC-16` ist seit Runde 83 behoben). Sie verspricht „ein
   Dorfbewohner trägt gelbe Goldbrocken in beiden Händen"; im Bild stehen die
@@ -979,6 +986,32 @@ nächste Runde.
 Neueste oben. Eine Zeile je Runde: Nummer, Datum, Kriterien, Ergebnis,
 wichtigste Erkenntnis.
 
+- **100** · 2026-11-08 · **einheiten AC-31** — Kämpfende stehen nebeneinander.
+  Wer an seinem Ziel angekommen ist, tritt wie jeder Stehende beiseite, aber
+  nur auf ein Feld in Schlagweite; der Schritt ist am Auftrag vermerkt, sonst
+  löschte `angriffTakten` ihn im selben Takt. Gegenprobe gegen die alte Regel:
+  0,00 Felder auseinander. Im Browser prüfen kampf AC-1 und AC-10 jetzt
+  `figurenFrei` (die Prüfung stand dort seit der Rückschau nach Runde 65
+  auskommentiert); drei blaue Milizen sind drei Figuren. **Zuerst wurden die
+  Partien länger** — Median 38,1 statt 33,8 auf Startwerten 1–20, 44,8 statt
+  38,2 auf 21–40, eine Partie nach 75 Minuten —, weil während des Schritts
+  die Nachladezeit stand und jeder Schritt einen Schlag kostete. Mit
+  weiterlaufender Nachladezeit: 36,4 und 39,4, alle zwanzig vor Minute 60.
+  Die Durchsicht fand keinen Fehler, aber einen Kostenfall, den der alte
+  Leistungstest nicht sah (sein Ziel gab es nicht): 800 angekommene Angreifer
+  an einem echten Ziel 0,74 ms je Durchgang, mit Merken, wer keinen Platz
+  fand, 0,48, mit Zahlen statt `"x,y"` als Feldschlüssel 0,28 (im
+  parallelen `npm run check` waren 0,48 schon 1,006 ms) — jetzt ein eigener
+  Test. Im großen Browserlauf fiel wie in Runde 99 die Feudalzeit am Stück
+  beim Warten auf den ersten Treffer, allein grün: unter Last trifft der
+  Rechtsklick nicht immer das Ziel; der Test klickt jetzt bis zu dreimal
+  (gemessen wird dort der Schaden, nicht der Klick). Unter Last ungeprüft,
+  bis der nächste große Lauf es zeigt. Die Gegenprobe zu ki AC-19 hing an
+  Startwert 5, der jetzt auch ohne Aufgeben vor Minute 60 endet; sie misst
+  jetzt Startwert 13 (35,8 statt 45,8). **Gelernt: eine Änderung an der
+  Bewegung im Kampf verschiebt jede Partie** — vergleichen auf zwei Sätzen
+  Startwerte, sonst hält man Zufall für Wirkung; und auf dem zweiten Satz
+  zeigte sich, dass fahrplan AC-11 auch mit HEAD nur 19 von 20 schafft.
 - **99** · 2026-11-08 · **darstellung AC-16** — die Partie beginnt in
   Spielgröße. Der Faden „Figuren bei Zoom 1" hieß: zeichnen. Gemessen zeigte
   sich, dass nicht die Zeichnung zu klein war, sondern der Maßstab: ein Feld

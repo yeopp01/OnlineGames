@@ -1,0 +1,10 @@
+{
+  "spec": "10-strategie/kampf.md",
+  "ac": "AC-1",
+  "titel": "Berts Miliz (rot, gewählt) wird von drei Milizen Annas (blau) geschlagen, die als drei getrennte Figuren dicht bei ihr stehen — ihr Lebensbalken ist weniger als halb voll",
+  "datei": "e2e/tests/strategie-kampf.spec.mjs",
+  "pfad": [
+    "Kampf",
+    "kampf AC-1 und einheiten AC-31: ein Rechtsklick auf eine fremde Einheit laesst die eigenen hinlaufen und zuschlagen"
+  ]
+}

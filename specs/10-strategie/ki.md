@@ -176,7 +176,9 @@ nicht die Regeln.
   wer noch einen Dorfbewohner hat oder 50 Nahrung neben dem Dorfzentrum,
   spielt weiter. Beim Startwert 5 stand die KI ab Minute 53,5 mit 28 Nahrung
   und ohne Einheit da, der Sieger schliff ihre Gebäude bis Minute 62 (Runde
-  97). Damit enden alle zwanzig Partien vor Minute 60 (fahrplan AC-11).
+  97). Damit enden alle zwanzig Partien vor Minute 60 (fahrplan AC-11). Seit
+  Runde 100 (einheiten AC-31) enden sie auch ohne Aufgeben vor Minute 60;
+  das Aufgeben verkürzt jede um 0,4 bis 10 Minuten.
   **Gemessen und verworfen:** stattdessen gegen einen Gegner ohne
   Kampfeinheit nur Nahkämpfer auszubilden — die längste Partie endete nach
   61,9 statt 62,0 Minuten, weil das Heer beim Schleifen schon steht.

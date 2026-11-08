@@ -1628,6 +1628,7 @@ class Welt {
     // Bogen fiel von 20/20 auf 14/20 (fahrplan AC-9, gemessen in Runde 85).
     if (nahGenug && (fern || !auftrag.gebaeude || !einheit.weg.length)) auftrag.angekommen = true;
     if (!nahGenug || (einheit.weg.length && !fern && !auftrag.angekommen)) {
+      auftrag.tritt = false;
       if (einheit.weg.length) {
         this.laufen(einheit);
         return;
@@ -1640,6 +1641,19 @@ class Welt {
       einheit.weg = stand ? this.wegNach(einheit, stand) : [];
       if (!einheit.weg.length) einheit.auftrag = null;
       return;
+    }
+    // Der eine Schritt beiseite (einheiten AC-31): wer auf einem anderen
+    // Kaempfer stand, geht auf ein freies Nachbarfeld, das sein Ziel in
+    // Schlagweite behaelt - und schlaegt danach von dort. Ohne diese Ausnahme
+    // loeschte die naechste Zeile den Schritt, bevor er begann.
+    if (auftrag.tritt) {
+      if (einheit.weg.length) {
+        // Die Nachladezeit laeuft weiter: der Schritt kostet keinen Schlag.
+        if (einheit.nachladen > 0) einheit.nachladen--;
+        this.laufen(einheit);
+        return;
+      }
+      auftrag.tritt = false;
     }
     einheit.weg = [];
     if (einheit.nachladen > 0) {
@@ -1878,7 +1892,11 @@ class Welt {
   ausweichen() {
     const stehend = [];
     const raster = new Map();
-    const schluessel = (x, y) => `${x},${y}`;
+    // Zahlen statt Zeichenketten als Schluessel: mit Kaempfern, die
+    // ausweichen duerfen, fragt jeder Stehende acht Nachbarfelder ab, und
+    // `${x},${y}` kostete dabei die Haelfte der Zeit (Runde 100, gemessen).
+    const g = this.karte.groesse;
+    const schluessel = (x, y) => y * g + x;
     for (const e of this.einheiten.values()) {
       if (e.tot || e.weg.length) continue;
       stehend.push(e);
@@ -1925,6 +1943,10 @@ class Welt {
       return belegt;
     };
     const gezogen = new Set();
+    // Wer in diesem Durchgang keinen Platz fand, wird nicht noch einmal
+    // gefragt: 800 angekommene Angreifer an einem Ziel fragten sonst jeden
+    // Nachbarn neu (0,74 ms je Durchgang statt 0,09; Durchsicht Runde 100).
+    const ohnePlatz = new Set();
     for (const e of stehend) {
       if (gezogen.has(e.id)) continue;
       const o = ersterNaher(e);
@@ -1934,10 +1956,14 @@ class Welt {
       // der andere; sonst blieben beide aufeinander, obwohl einer Platz haette
       // (Durchsicht Runde 89).
       for (const wer of o.id > e.id ? [o, e] : [e, o]) {
-        if (!this.darfAusweichen(wer)) continue;
+        if (ohnePlatz.has(wer.id) || !this.darfAusweichen(wer)) continue;
         const feld = this.ausweichfeld(wer, belegung());
-        if (!feld) continue;
+        if (!feld) {
+          ohnePlatz.add(wer.id);
+          continue;
+        }
         wer.weg = [feld];
+        if (wer.auftrag?.art === 'angreifen') wer.auftrag.tritt = true;
         belegung().add(schluessel(feld.x, feld.y));
         gezogen.add(wer.id);
         break;
@@ -1945,16 +1971,24 @@ class Welt {
     }
   }
 
-  // Wer ausweichen darf: nicht, wer kaempft (seinen Platz verteilt kampf AC-1),
-  // nicht der Bauer auf seiner Farm (eine Farm hat einen Arbeiter) - und noch
-  // nicht, wer am Vorrat oder am Tier arbeitet. Sammler, die sich nicht
+  // Wer ausweichen darf: wer kaempft, erst wenn er an seinem Ziel angekommen
+  // ist und es noch steht - dann auf ein Feld in Schlagweite (einheiten AC-31,
+  // Runde 100); nicht der Bauer auf seiner Farm (eine Farm hat einen
+  // Arbeiter) - und noch nicht, wer am Vorrat oder am Tier arbeitet. Sammler, die sich nicht
   // stapeln, kosten die Wirtschafts-KI im Median 0,4 Minuten bis zu den
   // ersten 500 Nahrung, und neun von vierzig KIs verfehlen damit die zehn
   // Minuten aus fahrplan AC-5 (Runde 89, gemessen). Das ist einheiten AC-30,
   // eine eigene Runde.
   darfAusweichen(einheit) {
     const art = einheit.auftrag?.art;
-    return art !== 'angreifen' && art !== 'farm' && art !== 'sammeln' && art !== 'tier';
+    if (art === 'angreifen') return Boolean(einheit.auftrag.angekommen && this.angriffsziel(einheit.auftrag));
+    return art !== 'farm' && art !== 'sammeln' && art !== 'tier';
+  }
+
+  // Das Ziel eines Angriffs, solange es steht.
+  angriffsziel(auftrag) {
+    const ziel = auftrag.gebaeude ? this.gebaeude.get(auftrag.ziel) : this.einheiten.get(auftrag.ziel);
+    return ziel && !ziel.tot ? ziel : null;
   }
 
   /**
@@ -1972,6 +2006,13 @@ class Welt {
     if (auftrag?.art === 'bauen') {
       const baustelle = this.gebaeude.get(auftrag.gebaeude);
       passt = (x, y) => !baustelle || this.abstandZu({ x, y }, baustelle) <= 1.2;
+    } else if (auftrag?.art === 'angreifen') {
+      // Dieselbe Schlagweite wie in angriffTakten - wer dort steht, schlaegt.
+      const ziel = this.angriffsziel(auftrag);
+      const reichweite = this.einheitenwert(einheit.besitzer, einheit.art, 'reichweite') || 1;
+      passt = (x, y) => Boolean(ziel) && (auftrag.gebaeude
+        ? this.abstandZu({ x, y }, ziel) <= reichweite + SCHLAGRAND_BAU
+        : Math.hypot(ziel.x - x, ziel.y - y) <= reichweite + SCHLAGRAND);
     }
     let bestes = null;
     let bester = Infinity;
@@ -1980,7 +2021,7 @@ class Welt {
         if (!dx && !dy) continue;
         const x = fx + dx;
         const y = fy + dy;
-        if (belegt.has(`${x},${y}`)) continue;
+        if (belegt.has(y * this.karte.groesse + x)) continue;
         if (!karten.begehbar(this.karte, x, y) || this.gebaeudeAn(x, y) || !passt(x, y)) continue;
         // Schraeg nur, wenn beide Ecken frei sind: auf halbem Weg rundet die
         // Lage auf eines der beiden geraden Nachbarfelder - war das Wald,

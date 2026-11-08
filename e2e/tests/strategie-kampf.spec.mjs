@@ -38,7 +38,7 @@ test.describe('Kampf', () => {
   });
   test.afterAll(() => partieBeenden(partie));
 
-  test('kampf AC-1: ein Rechtsklick auf eine fremde Einheit laesst die eigenen hinlaufen und zuschlagen', async ({}, info) => {
+  test('kampf AC-1 und einheiten AC-31: ein Rechtsklick auf eine fremde Einheit laesst die eigenen hinlaufen und zuschlagen', async ({}, info) => {
     const { anna, bert, code } = partie;
     const alle = await milizen(anna);
     const meine = alle.filter((e) => e.eigen);
@@ -101,19 +101,19 @@ test.describe('Kampf', () => {
       expect(p.y).toBeLessThan(lage.feld.h - 220);
     }
     expect(await bedienteileFrei(bert)).toEqual([]);
-    // Hier fehlt `figurenFrei` mit Absicht: es schlaegt heute fehl, und zwar zu
-    // Recht. Gemessen in der Rueckschau nach Runde 65 stehen zwei von Annas
-    // drei Angreifern 0,27 bis 0,39 Felder auseinander - die Verteilung um das
-    // Ziel (Runde 63) haelt nicht mehr, seit sich Verteidiger von selbst
-    // bewegen (Runde 64), und Einheiten blockieren einander nicht. Das ist
-    // `einheiten AC-29`; die Runde, die es baut, setzt die Pruefung hier ein.
+    // Keine zwei aufeinander (einheiten AC-31, Runde 100). Bis dahin fehlte
+    // diese Pruefung mit Absicht: zwei von Annas drei Angreifern standen 0,27
+    // bis 0,39 Felder auseinander (Rueckschau nach Runde 65).
+    expect(await figurenFrei(bert)).toEqual([]);
     await bert.waitForTimeout(300);
-    await nachweis(bert, {
-      spec: KAMPF,
-      ac: 'AC-1',
-      titel: 'Berts Miliz (rot) wird von drei Milizen Annas (blau) umstellt und geschlagen — ihr Lebensbalken ist weniger als halb voll',
-      test: info,
-    });
+    for (const [spec, ac] of [[KAMPF, 'AC-1'], ['10-strategie/einheiten-und-befehle.md', 'AC-31']]) {
+      await nachweis(bert, {
+        spec,
+        ac,
+        titel: 'Berts Miliz (rot, gewählt) wird von drei Milizen Annas (blau) geschlagen, die als drei getrennte Figuren dicht bei ihr stehen — ihr Lebensbalken ist weniger als halb voll',
+        test: info,
+      });
+    }
   });
 
   test('kampf AC-10: wer fallt, liegt zwei Sekunden am Boden', async ({}, info) => {
@@ -152,6 +152,8 @@ test.describe('Kampf', () => {
     expect(lage.punkt.x).toBeLessThan(lage.feld.b - 40);
     expect(lage.punkt.y).toBeGreaterThan(60);
     expect(lage.punkt.y).toBeLessThan(lage.feld.h - 220);
+    // Drei stehen - als drei, nicht als zwei (einheiten AC-31).
+    expect(await figurenFrei(anna)).toEqual([]);
     await anna.waitForTimeout(300);
     await nachweis(anna, {
       spec: KAMPF,

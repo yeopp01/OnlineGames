@@ -223,25 +223,36 @@ test.describe('Feudalzeit am Stueck', () => {
     expect(erwartung.speerAufReiter, 'Bonus gegen Kavallerie').toBeGreaterThan(erwartung.bogenAufReiter * 3);
 
     const treffer = async (kuerzel, feld) => {
-      const bild = await anna.evaluate(([k, f, zielK]) => {
-        const a = window.ansicht;
-        const meine = [...a.nachher.entries()].filter(([, e]) => e.b === a.ich && e.k === k);
-        const [zielId, ziel] = [...a.nachher.entries()]
-          .filter(([, e]) => e.b !== a.ich && e.k === zielK && !e.s)
-          .sort(([, p], [, q]) => Math.hypot(p.x - f.x, p.y - f.y) - Math.hypot(q.x - f.x, q.y - f.y))[0];
-        // Nur einer schlaegt zu: sonst ist der Verlust die Summe mehrerer.
-        a.gewaehltesGebaeude = null;
-        a.ausgewaehlt = new Set([meine[0][0]]);
-        a.beiAuswahl();
-        a.kamera.zoom = 1.8;
-        a.blickAuf((meine[0][1].x + ziel.x) / 2, (meine[0][1].y + ziel.y) / 2);
-        return { punkt: a.zuBild(ziel.x, ziel.y), zielId };
-      }, [kuerzel, feld, erwartung.kuerzel.spaeherreiter]);
-      await anna.mouse.click(bild.punkt.x, bild.punkt.y, { button: 'right' });
+      // Bis zu drei Rechtsklicks: im grossen Browserlauf traf der erste zweimal
+      // nicht (Runden 99 und 100) - unter Last verschiebt sich die Lage
+      // zwischen Messen und Klicken, und aus dem Angriff wird ein Laufbefehl.
+      // Gemessen wird hier der Schaden, nicht die Treffsicherheit des Klicks
+      // (die belegt kampf AC-1).
+      let bild = null;
+      for (let versuch = 0; versuch < 3; versuch++) {
+        bild = await anna.evaluate(([k, f, zielK]) => {
+          const a = window.ansicht;
+          const meine = [...a.nachher.entries()].filter(([, e]) => e.b === a.ich && e.k === k);
+          const [zielId, ziel] = [...a.nachher.entries()]
+            .filter(([, e]) => e.b !== a.ich && e.k === zielK && !e.s)
+            .sort(([, p], [, q]) => Math.hypot(p.x - f.x, p.y - f.y) - Math.hypot(q.x - f.x, q.y - f.y))[0];
+          // Nur einer schlaegt zu: sonst ist der Verlust die Summe mehrerer.
+          a.gewaehltesGebaeude = null;
+          a.ausgewaehlt = new Set([meine[0][0]]);
+          a.beiAuswahl();
+          a.kamera.zoom = 1.8;
+          a.blickAuf((meine[0][1].x + ziel.x) / 2, (meine[0][1].y + ziel.y) / 2);
+          return { punkt: a.zuBild(ziel.x, ziel.y), zielId };
+        }, [kuerzel, feld, erwartung.kuerzel.spaeherreiter]);
+        await anna.mouse.click(bild.punkt.x, bild.punkt.y, { button: 'right' });
+        const getroffen = await anna.waitForFunction((id) => window.ansicht.nachher.get(id)?.h !== undefined, bild.zielId, { timeout: 25_000 })
+          .then(() => true, () => false);
+        if (getroffen) break;
+      }
       // `h` steht nur an beschaedigten Einheiten: der erste Wert ist der erste
       // Treffer. Die Nachladezeit ist mindestens zwei Sekunden, die Ansicht
       // bekommt jeden Takt - der zweite Schlag kommt also nicht dazwischen.
-      await anna.waitForFunction((id) => window.ansicht.nachher.get(id)?.h !== undefined, bild.zielId, { timeout: 90_000 });
+      await anna.waitForFunction((id) => window.ansicht.nachher.get(id)?.h !== undefined, bild.zielId, { timeout: 1_000 });
       return anna.evaluate((id) => window.ansicht.nachher.get(id).h, bild.zielId);
     };
 

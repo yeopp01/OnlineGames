@@ -13,19 +13,18 @@ hier nichts eintraegt, verliert den Faden beim naechsten Autocompact.
 
 ## Zuletzt fortgeschrieben
 
-2026-11-08, nach Runde 99 (**darstellung AC-16**: die Partie beginnt bei
-Zoom 1,5 statt 1 - ein Dorfbewohner 42,9 statt 28,6 Bildpunkte, nah am
-Original. Zoom 1 bleibt der Massstab der Unterscheidbarkeitskriterien. Alle
-Bilder neu geschrieben. **Als Naechstes einheiten AC-31** (Kaempfende stehen
-uebereinander - in zwei Kampfbildern erneut gesehen, oft genug umschifft),
-dann C5: Mensch gegen KI (spielauswahl AC-18, AC-19, fahrplan AC-12).
-**Naechste Rueckschau: Runde 103.**)
+2026-11-08, nach Runde 100 (**einheiten AC-31**: Kaempfende treten beiseite,
+nur auf ein Feld in Schlagweite, die Nachladezeit laeuft dabei weiter. KI
+gegen KI: Startwerte 1-20 alle vor Minute 60, Median 36,4. Neuer Faden: auf
+Startwerten 21-40 nur 19/20 (auch HEAD) und einmal 900 s Untaetigkeit.
+**Als Naechstes C5: Mensch gegen KI** (spielauswahl AC-18, AC-19, fahrplan
+AC-12). **Naechste Rueckschau: Runde 103.**)
 
 ## Wo ich stehe
 
 - **Branch:** `strategie`. Nie auf `main` arbeiten, **nie pushen, nie deployen.**
-- **Board:** 399 von 526 Kriterien fertig · 1 in Arbeit · 5 in QA · 4 geplant ·
-  109 offen · 8 zurueckgestellt. 477 Tests ohne Browser, 168 im Browser.
+- **Board:** 400 von 526 Kriterien fertig · 1 in Arbeit · 5 in QA · 4 geplant ·
+  108 offen · 8 zurueckgestellt. 479 Tests ohne Browser, 168 im Browser.
 - **Fuenf Waechter in `tests/waechter-*.test.mjs`** (der fuenfte seit Runde 87: Bildschirmtext mit echten Umlauten): Gleichheit auf wachsenden
   Listen, verbesserbare Werte an `welt.einheitenwert()` vorbei,
   Bildunterschriften mit `${...}`, und (neu in Runde 73) die **Kuerzeltafel**

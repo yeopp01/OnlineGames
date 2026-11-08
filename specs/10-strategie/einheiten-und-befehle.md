@@ -2,7 +2,7 @@
 
 **Bereich:** Strategie
 **Kuerzel:** einheiten
-**Stand:** 20/24 fertig · 3 offen · 1 zurueckgestellt
+**Stand:** 21/24 fertig · 2 offen · 1 zurueckgestellt
 
 ## Zweck
 
@@ -133,8 +133,8 @@ Befehl bewirkt.
   Baustelle). Schräg nur, wenn beide Ecken frei sind. **Messbar: keine zwei
   stehenden Einheiten im Bild näher als ein halbes Feld** (`figurenFrei`), auch
   wenn sie mit getrennten Befehlen auf dasselbe Feld geschickt wurden.
-  **Noch nicht** für Sammler am Vorrat und am Tier (AC-30) und nicht für
-  Kämpfende (AC-31). Gesehen in Runde 64; danach siebenmal an der Stelle
+  **Noch nicht** für Sammler am Vorrat und am Tier (AC-30); Kämpfende seit
+  Runde 100 (AC-31). Gesehen in Runde 64; danach siebenmal an der Stelle
   umschifft, die ein Ziel vergibt (Runden 56 bis 86), bis die Rückschau nach
   Runde 88 die Regel aufstellte, einen offenen Fehler nur einmal zu umschiffen.
 - **AC-30** `offen` **Sammler teilen keinen Platz** — Auch wer am Vorrat oder
@@ -146,8 +146,15 @@ Befehl bewirkt.
   nächsten liegt. Nicht geholfen haben: das freie Feld nach dem Lager wählen,
   auf ein anderes Buschfeld wechseln, weniger Sammler an die Beeren. Die
   Antwort liegt vermutlich in der Lage der Mühle.
-- **AC-31** `offen` **Kämpfende stehen nebeneinander** — Nahkämpfer um ihr
-  Ziel und Fernkämpfer auf ihrem Schussring stehen nicht aufeinander. Im Bild
+- **AC-31** `fertig` **Kämpfende stehen nebeneinander** — Nahkämpfer um ihr
+  Ziel und Fernkämpfer auf ihrem Schussring stehen nicht aufeinander. **Gebaut
+  in Runde 100:** wer am Ziel angekommen ist, darf wie jeder Stehende (AC-29)
+  beiseitetreten — aber nur auf ein Feld, von dem aus er sein Ziel weiter
+  trifft; während des Schritts läuft seine Nachladezeit weiter. Ohne das
+  Letzte kostete jeder Schritt einen Schlag, und KI gegen KI dauerte im Median
+  vier bis sechs Minuten länger (Startwerte 1–20: 38,1 statt 33,8; 21–40: 44,8
+  statt 38,2); mit ihm 36,4 und 39,4. Der Konterkreis hält in allen vier
+  Richtungen. Im Bild
   zu [Kampf](kampf.md) AC-1 und AC-10 stehen zwei angreifende Milizen fast
   aufeinander (Rückstand der Runde 83). **Bedingung:** der Konterkreis hält
   (fahrplan AC-9) — die Angriffslogik ist auf ihn abgestimmt (Runden 63, 64,

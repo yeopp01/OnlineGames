@@ -156,3 +156,71 @@ test('einheiten AC-29: 800 Angreifer auf drei Feldern kosten unter 1 ms je Durch
   }
   assert.ok(bestes < 1, `${bestes.toFixed(3)} ms je Durchgang`);
 });
+
+test('einheiten AC-31: zwei Angreifer auf einem Punkt treten auseinander und schlagen beide weiter', () => {
+  const lauf = (ausweichen, art) => {
+    const welt = new Welt(ZWEI, 4711);
+    if (!ausweichen) welt.ausweichen = () => {};
+    const ziel = freiesFeld(welt, 3);
+    // Ein zaehes Ziel, das nicht wegrennt: Berts Miliz mit viel Leben.
+    const opfer = welt.einheitAnlegen('b', ziel.x, ziel.y, 'miliz');
+    opfer.leben = 10_000;
+    // Beide genau auf demselben Punkt, in Schlagweite - so, wie zwei
+    // getrennte Befehle sie hinstellen koennen.
+    const abstand = art === 'bogenschuetze' ? 3 : 1;
+    const angreifer = [0, 1].map(() => welt.einheitAnlegen('a', ziel.x - abstand, ziel.y, art));
+    for (const e of angreifer) welt.nachricht('a', { auftrag: 'befehl', einheiten: [e.id], ziel: { x: opfer.x, y: opfer.y } });
+    const schlaege = new Map();
+    const schlagen = welt.schlagen.bind(welt);
+    welt.schlagen = (wer, wen, gebaeude) => {
+      schlaege.set(wer.id, (schlaege.get(wer.id) || 0) + 1);
+      return schlagen(wer, wen, gebaeude);
+    };
+    takten(welt, 10 * TAKTE_PRO_SEKUNDE);
+    return { angreifer, opfer, schlaege };
+  };
+  for (const art of ['miliz', 'bogenschuetze']) {
+    // Gegenprobe: ohne Ausweichen bleiben sie aufeinander.
+    const ohne = lauf(false, art);
+    assert.ok(abstand(ohne.angreifer[0], ohne.angreifer[1]) < 0.5, `${art} ohne: ${abstand(ohne.angreifer[0], ohne.angreifer[1]).toFixed(2)}`);
+    const mit = lauf(true, art);
+    const d = abstand(mit.angreifer[0], mit.angreifer[1]);
+    assert.ok(d >= 0.9, `${art}: ${d.toFixed(2)} Felder auseinander`);
+    for (const e of mit.angreifer) {
+      // Zehn Sekunden, Nachladezeit zwei: wer weiter schlaegt, trifft
+      // mindestens dreimal (der Schritt kostet hoechstens einen Schlag).
+      assert.ok((mit.schlaege.get(e.id) || 0) >= 3, `${art} ${e.id}: ${mit.schlaege.get(e.id) || 0} Schlaege`);
+    }
+  }
+});
+
+test('einheiten AC-31: 800 angekommene Angreifer an einem Ziel kosten unter 1 ms je Durchgang', () => {
+  // Durchsicht Runde 100: der Fall oben hat ein Ziel, das es nicht gibt - dort
+  // darf niemand ausweichen, und es kostet nichts. Mit einem echten Ziel fragt
+  // jeder Stehende nach einem Feld in Schlagweite: gemessen 0,74 ms, mit dem
+  // Merken, wer keinen Platz fand, 0,48 ms - im parallelen `npm run check`
+  // aber 1,006. Mit Zahlen statt Zeichenketten als Feldschluessel 0,28 ms
+  // allein. Die Grenze kommt aus dem Budget
+  // eines Taktes (einheiten AC-21), nicht aus der Messung.
+  const welt = new Welt(ZWEI, 4711);
+  const ziel = freiesFeld(welt);
+  const opfer = welt.einheitAnlegen('b', ziel.x, ziel.y, 'miliz');
+  for (let i = 0; i < 800; i++) {
+    const e = welt.einheitAnlegen('a', ziel.x + (i % 3) - 1, ziel.y + 1, 'miliz');
+    e.auftrag = { art: 'angreifen', ziel: opfer.id, gebaeude: false, angekommen: true };
+  }
+  // Die Schritte nicht ausfuehren: so bleibt der Haufen fuer jeden Durchgang
+  // gleich dicht.
+  const durchgang = () => {
+    welt.ausweichen();
+    for (const e of welt.einheiten.values()) e.weg = [];
+  };
+  for (let n = 0; n < 5; n++) durchgang();
+  let bestes = Infinity;
+  for (let d = 0; d < 5; d++) {
+    const t0 = performance.now();
+    for (let n = 0; n < 20; n++) durchgang();
+    bestes = Math.min(bestes, (performance.now() - t0) / 20);
+  }
+  assert.ok(bestes < 1, `${bestes.toFixed(3)} ms je Durchgang`);
+});

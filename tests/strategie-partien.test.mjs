@@ -28,15 +28,22 @@ test('fahrplan AC-11: KI gegen KI endet ueber zwanzig Startwerte mit einem Siege
   assert.equal(sieger.size, 2, 'mal gewinnt die eine KI, mal die andere');
 });
 
-test('fahrplan AC-11 und ki AC-19: ohne Aufgeben dauert Startwert 5 ueber 60 Minuten', () => {
-  // Gegenprobe zur Ursache: dass Startwert 5 vor Minute 60 endet, liegt am
-  // Aufgeben - ohne schleift der Sieger noch achteinhalb Minuten (Runde 97).
+test('fahrplan AC-11 und ki AC-19: ohne Aufgeben dauert Startwert 13 fast zehn Minuten laenger', () => {
+  // Gegenprobe zur Ursache: das Aufgeben verkuerzt die Partien, und nicht
+  // irgendetwas anderes. Gemessen in Runde 100 ueber die Startwerte 1 bis 20:
+  // ohne Aufgeben jede Partie laenger, um 0,4 bis 10,0 Minuten; Startwert 13
+  // endet nach 35,8 statt 45,8. (In Runde 97 war es Startwert 5 mit 53,3
+  // statt ueber 60 - seit einheiten AC-31 verlaufen die Kaempfe anders.)
+  const mit = partieSpielen({ startwert: 13, minuten: 60 }).ende;
   const echt = Ki.prototype.aussichtslos;
   Ki.prototype.aussichtslos = () => false;
+  let ohne;
   try {
-    const r = partieSpielen({ startwert: 5, minuten: 60 });
-    assert.equal(r.ende, null, 'bis Minute 60 nicht entschieden');
+    ohne = partieSpielen({ startwert: 13, minuten: 90 }).ende;
   } finally {
     Ki.prototype.aussichtslos = echt;
   }
+  assert.ok(mit, 'mit Aufgeben entschieden');
+  const minuten = (ende) => (ende ? ende.takt / 600 : 90);
+  assert.ok(minuten(ohne) - minuten(mit) >= 5, `mit ${minuten(mit).toFixed(1)}, ohne ${minuten(ohne).toFixed(1)} Minuten`);
 });
