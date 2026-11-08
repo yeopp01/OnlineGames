@@ -2,7 +2,7 @@
 
 **Bereich:** Strategie
 **Kuerzel:** ki
-**Stand:** 18/19 fertig · 1 offen
+**Stand:** 18/20 fertig · 1 in Arbeit · 1 offen
 
 ## Zweck
 
@@ -107,11 +107,17 @@ nicht die Regeln.
   Nahrung nur aus, wenn danach noch einer bezahlt ist; und ein Vorrat, zu dem
   kein Weg führt, wird zwei Minuten lang nicht wieder vorgeschlagen. Ohne das
   endet jede Partie damit, dass beide Seiten einander zusehen.
-- **AC-13** `offen` **KI sieht nur ihr Sichtfeld** — Mit dem Nebel (C6)
-  entscheidet sie allein aus dem, was der Server ihr schickt: Sie kennt die
-  Basis des Gegners erst, wenn eine ihrer Einheiten sie gesehen hat, und
-  schickt dafür ihren Späherreiter los. Belegt dadurch, dass sie dieselbe
-  Zustandsnachricht bekommt wie ein Browser — nicht die Welt.
+- **AC-13** `in-arbeit` **KI sieht nur ihr Sichtfeld** — Mit dem Nebel (C6)
+  kennt sie ein fremdes Gebäude erst, wenn eine ihrer Einheiten es gesehen
+  hat, und behält es, bis sie hinsieht und es fehlt (wie kampf AC-12); fremde
+  Einheiten nur, solange sie sie sieht. Ziel, Überlegenheit (AC-18) und freie
+  Felder rechnet sie nur daraus. Kennt sie keinen Gegner, reitet ihr
+  Späherreiter den Ring der Startplätze ab — dass dort die Dörfer liegen,
+  weiß jeder, der die Karte kennt, wo genau nicht —, ohne anzuhalten, und
+  kehrt heim, sobald sie alle kennt; ohne Späher erkundet das Heer. Gemessen
+  in Runde 112: alle 40 KIs auf zwanzig Startwerten finden ihren Gegner nach
+  1,9 bis 2,4 Minuten. Dass sie dafür dieselbe Nachricht liest wie ein
+  Browser, ist AC-20.
 - **AC-14** `fertig` **Die KI verteidigt zu Hause** — Verliert eines ihrer
   Gebäude oder einer ihrer Dorfbewohner Leben, zieht die Wache im Angriffslauf
   zum Angriffsort, und der getroffene Dorfbewohner lässt die Arbeit liegen und
@@ -182,6 +188,12 @@ nicht die Regeln.
   **Gemessen und verworfen:** stattdessen gegen einen Gegner ohne
   Kampfeinheit nur Nahkämpfer auszubilden — die längste Partie endete nach
   61,9 statt 62,0 Minuten, weil das Heer beim Schleifen schon steht.
+- **AC-20** `offen` **KI liest die Zustandsnachricht** — Sie entscheidet aus
+  derselben Nachricht, die ein Browser bekommt (kampf AC-13), nicht aus der
+  Welt. Erst dann ist AC-13 bewiesen statt befolgt: heute fragt sie die Welt
+  und hält sich an die Sicht, und ein neuer Zugriff auf fremde Einheiten
+  fiele keinem Test auf. Abgeteilt in Runde 112 — die KI liest an rund
+  dreißig Stellen aus der Welt, auch Karte und Wegsuche.
 
 ## Grenzfaelle
 

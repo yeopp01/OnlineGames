@@ -163,7 +163,7 @@ Zustandsnachricht umbaut und damit jeden Browsertest berührt: was dort heute
 | C6c | Die Sicht als Einstellung beim Eröffnen: Nebel, Erkundet, Aufgedeckt — ersetzt den Prüfgriff `aufdecken` (Wunsch des Benutzers, vorgezogen) — **fertig** (Runde 106) | kampf AC-16 |
 | C6d | Die Sicht wächst: Stadtwache im Dorfzentrum, der Außenposten — **fertig** (Runden 107, 109) | kampf AC-17, AC-18 |
 | C6e | Nur Sichtbares schicken: eine Zustandsnachricht je Spieler, erinnerte Gebäude — **fertig** (Runde 110) | kampf AC-13, fahrplan AC-13 |
-| C6f | Die KI sieht nur ihre Sicht und erkundet mit dem Späher | ki AC-13 |
+| C6f | Die KI sieht nur ihre Sicht und erkundet mit dem Späher — **fertig** (Runde 112); die Nachricht statt der Welt ist ki AC-20 | ki AC-13 |
 | C6g | Angriff wird gemeldet, ein Klick springt hin | kampf AC-14 |
 
 ### Stufe D — Ritterzeit
