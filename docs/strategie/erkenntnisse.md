@@ -82,6 +82,16 @@ etwas anderem gearbeitet.
 
 ## Offene Fäden
 
+- **ki AC-13 liegt auf dem Zweig `strategie-ki-sicht`** (Runde 112): die
+  KI mit eigener Sicht, gebaut und belegt, aber KI gegen KI endet nur in 34
+  von 40 Partien vor Minute 60. Nächster Schritt: `git merge
+  strategie-ki-sicht` in `strategie`, dann mit `npm run pruefstand:verlauf`
+  die langen Startwerte (1–20: 11, 9, 16; 21–40: 28, 27, 24) ansehen —
+  liegt es am Mittelspiel (keiner greift an) oder am Abräumen? Erst dann
+  eine Abhilfe. Gemessen ohne Wirkung: die Suche um den letzten Ort des
+  Gegners (`suchziel`) änderte keine Partie — bleibt sie, braucht sie einen
+  eigenen Test, sonst raus.
+
 - **Was der Nebel auf dem Server noch durchlässt** (Durchsicht Runde 110):
   Schafe gehen ungefiltert (Lage und Schlachten fremder Schafe); der Aufbau
   nennt die Startplätze aller (`basis`, der Browser blendet sie nur aus — die
@@ -1088,6 +1098,21 @@ die Stadtwache).
 Neueste oben. Eine Zeile je Runde: Nummer, Datum, Kriterien, Ergebnis,
 wichtigste Erkenntnis.
 
+- **112** · 2026-11-08 · **ki AC-13 in Arbeit, nicht gruen** — die KI
+  kennt fremde Gebäude erst, wenn sie sie gesehen hat, fremde Einheiten nur
+  in Sicht, und ihr Späher reitet den Ring der Startplätze ab: alle 40 KIs
+  finden den Gegner nach 1,9 bis 2,4 Minuten. Tests mit Gegenproben stehen.
+  Aber KI gegen KI dauert länger (Median 43,6 statt 36,4 und 45,0 statt
+  39,4 Minuten), nur 34 von 40 Partien vor Minute 60 statt 39 — fahrplan
+  AC-11 reißt. Gesucht: Überlegenheit aus Gesehenem und Ziele nur aus
+  Gesehenem erklären je einen Teil (zurückgesetzt je 18 und 19 von 20); ein
+  echter Fehler gefunden und behoben (Gefallene zählten drei Minuten weiter);
+  die Suche um den letzten Ort des Gegners änderte keine Partie. Die Arbeit
+  liegt auf dem lokalen Zweig `strategie-ki-sicht` (`7c086ac`), auf
+  `strategie` nur die Spec. Gelernt: **wer der KI Wissen nimmt, misst vor
+  dem Bauen der Abhilfen, wo es ihr fehlt** — `pruefstand:verlauf` auf den
+  langen Startwerten, nicht Teile einzeln zurückschalten; die Partien sind
+  chaotisch, jede Änderung verschiebt jeden Verlauf.
 - **111** · 2026-11-08 · **einheiten AC-32 bleibt offen** — Marschierende
   laufen aufeinander, gemessen im Median 53 s je Paar. Drei Fassungen gebaut,
   gemessen und zurückgenommen: Warten hinter dem Vordermann (Überdeckung 1,2 s,
