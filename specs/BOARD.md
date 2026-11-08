@@ -7,7 +7,7 @@ Eine Zeile je Abnahmekriterium. Gepflegt wird der Status in der Spec selbst,
 hier steht er zusammengefasst. Erzeugt mit `npm run specs:board`; als Seite
 mit Bildnachweisen, Filter und Suche mit `npm run qa:report`.
 
-**Gesamt:** 413/535 fertig · 1 in Arbeit · 5 in QA · 4 geplant · 104 offen · 8 zurueckgestellt
+**Gesamt:** 413/555 fertig · 1 in Arbeit · 5 in QA · 4 geplant · 124 offen · 8 zurueckgestellt
 
 **Nachweise:** 176 Kriterien mit Bild · 241 ohne Bild, begruendet in `qa/ohne-bild.json`
 
@@ -21,14 +21,14 @@ mit Bildnachweisen, Filter und Suche mit `npm run qa:report`.
 | [Anhalten und Fortsetzen](00-plattform/speichern.md)           | -         | -     | -       | 26    | -               | -      |
 | [Spielauswahl und Einstellungen](00-plattform/spielauswahl.md) | -         | -     | -       | 5     | -               | 16     |
 | [Uebertragung](00-plattform/uebertragung.md)                   | -         | -     | 2       | 1     | -               | 7      |
-| [Bauen und Ausbilden](10-strategie/bauen.md)                   | -         | -     | -       | 4     | -               | 22     |
+| [Bauen und Ausbilden](10-strategie/bauen.md)                   | -         | -     | -       | 12    | -               | 22     |
 | [Bedienung](10-strategie/bedienung.md)                         | -         | -     | -       | 14    | -               | 27     |
 | [Darstellung](10-strategie/darstellung.md)                     | -         | -     | -       | 1     | -               | 15     |
-| [Einheiten und Befehle](10-strategie/einheiten-und-befehle.md) | -         | -     | -       | 3     | 1               | 21     |
-| [Fahrplan zum Klon](10-strategie/fahrplan.md)                  | -         | -     | -       | 9     | -               | 13     |
-| [Kampf](10-strategie/kampf.md)                                 | -         | -     | -       | -     | 1               | 17     |
+| [Einheiten und Befehle](10-strategie/einheiten-und-befehle.md) | -         | -     | -       | 9     | 1               | 21     |
+| [Fahrplan zum Klon](10-strategie/fahrplan.md)                  | -         | -     | -       | 10    | -               | 13     |
+| [Kampf](10-strategie/kampf.md)                                 | -         | -     | -       | 3     | 1               | 17     |
 | [Karte und Vorraete](10-strategie/karte-und-vorraete.md)       | -         | -     | -       | 2     | 3               | 12     |
-| [KI-Spieler](10-strategie/ki.md)                               | -         | -     | -       | 2     | -               | 18     |
+| [KI-Spieler](10-strategie/ki.md)                               | -         | -     | -       | 4     | -               | 18     |
 | [Spielziel und Partieverlauf](10-strategie/spielziel.md)       | 1         | -     | -       | 12    | -               | 5      |
 | [Aufstellung, Taktik und Training](15-manager/aufstellung.md)  | -         | -     | -       | -     | 2               | 23     |
 | [Bedienung des Managerspiels](15-manager/bedienung.md)         | -         | -     | -       | -     | -               | 15     |
@@ -64,7 +64,7 @@ mit Bildnachweisen, Filter und Suche mit `npm run qa:report`.
 - **Abbruch ist sichtbar** — [Uebertragung](00-plattform/uebertragung.md) AC-9
 - **Automatischer Wiederaufbau** — [Uebertragung](00-plattform/uebertragung.md) AC-10
 
-## Offen (104)
+## Offen (124)
 
 - **Anmeldung ueber Google/GitHub** — [Konten und Anmeldung](00-plattform/konten.md) AC-6
 - **Bilanz je Konto** — [Konten und Anmeldung](00-plattform/konten.md) AC-14
@@ -112,6 +112,14 @@ mit Bildnachweisen, Filter und Suche mit `npm run qa:report`.
 - **Gebäude haben Leben** — [Bauen und Ausbilden](10-strategie/bauen.md) AC-17
 - **Zerstörte Gebäude nehmen Plätze mit** — [Bauen und Ausbilden](10-strategie/bauen.md) AC-18
 - **Eroberung entscheidet** — [Bauen und Ausbilden](10-strategie/bauen.md) AC-19
+- **Aufstieg in die Ritterzeit** — [Bauen und Ausbilden](10-strategie/bauen.md) AC-27
+- **Kloster, Universität, Werkstatt** — [Bauen und Ausbilden](10-strategie/bauen.md) AC-28
+- **Türme schießen** — [Bauen und Ausbilden](10-strategie/bauen.md) AC-29
+- **Mauern ziehen** — [Bauen und Ausbilden](10-strategie/bauen.md) AC-30
+- **Tor lässt Eigene durch** — [Bauen und Ausbilden](10-strategie/bauen.md) AC-31
+- **Burg** — [Bauen und Ausbilden](10-strategie/bauen.md) AC-32
+- **Markt tauscht** — [Bauen und Ausbilden](10-strategie/bauen.md) AC-33
+- **Verbesserungen der Ritterzeit** — [Bauen und Ausbilden](10-strategie/bauen.md) AC-34
 - **Umschalt erweitert** — [Bedienung](10-strategie/bedienung.md) AC-3
 - **Doppelklick wählt den Typ** — [Bedienung](10-strategie/bedienung.md) AC-4
 - **Auswahl merken** — [Bedienung](10-strategie/bedienung.md) AC-5
@@ -130,8 +138,15 @@ mit Bildnachweisen, Filter und Suche mit `npm run qa:report`.
 - **Einheiten blockieren sich nicht** — [Einheiten und Befehle](10-strategie/einheiten-und-befehle.md) AC-10
 - **Sammler teilen keinen Platz** — [Einheiten und Befehle](10-strategie/einheiten-und-befehle.md) AC-30
 - **Marschierende laufen nicht aufeinander** — [Einheiten und Befehle](10-strategie/einheiten-und-befehle.md) AC-32
+- **Ritter** — [Einheiten und Befehle](10-strategie/einheiten-und-befehle.md) AC-33
+- **Armbrustschütze** — [Einheiten und Befehle](10-strategie/einheiten-und-befehle.md) AC-34
+- **Ramme** — [Einheiten und Befehle](10-strategie/einheiten-und-befehle.md) AC-35
+- **Mangonel** — [Einheiten und Befehle](10-strategie/einheiten-und-befehle.md) AC-36
+- **Mönch heilt** — [Einheiten und Befehle](10-strategie/einheiten-und-befehle.md) AC-37
+- **Mönch bekehrt** — [Einheiten und Befehle](10-strategie/einheiten-und-befehle.md) AC-38
 - **Ritterzeit spielbar** — [Fahrplan zum Klon](10-strategie/fahrplan.md) AC-14
 - **Befestigung hält auf** — [Fahrplan zum Klon](10-strategie/fahrplan.md) AC-15
+- **Der Konterkreis der Ritterzeit** — [Fahrplan zum Klon](10-strategie/fahrplan.md) AC-23
 - **Fünf Völker wählbar** — [Fahrplan zum Klon](10-strategie/fahrplan.md) AC-16
 - **Ein Volk ist ein Eintrag** — [Fahrplan zum Klon](10-strategie/fahrplan.md) AC-17
 - **Kein Volk vorn** — [Fahrplan zum Klon](10-strategie/fahrplan.md) AC-18
@@ -139,10 +154,15 @@ mit Bildnachweisen, Filter und Suche mit `npm run qa:report`.
 - **Große Partie bleibt flüssig** — [Fahrplan zum Klon](10-strategie/fahrplan.md) AC-20
 - **Läuft auf dem VPS** — [Fahrplan zum Klon](10-strategie/fahrplan.md) AC-21
 - **Aktualisieren ist ein Befehl** — [Fahrplan zum Klon](10-strategie/fahrplan.md) AC-22
+- **Flächenschaden** — [Kampf](10-strategie/kampf.md) AC-19
+- **Gebäude schießen zurück** — [Kampf](10-strategie/kampf.md) AC-20
+- **Mauern halten auf** — [Kampf](10-strategie/kampf.md) AC-21
 - **Kein Spieler ist abgeschnitten** — [Karte und Vorraete](10-strategie/karte-und-vorraete.md) AC-7
 - **Vorraete sind endlich und knapp** — [Karte und Vorraete](10-strategie/karte-und-vorraete.md) AC-10
 - **KI sieht nur ihr Sichtfeld** — [KI-Spieler](10-strategie/ki.md) AC-13
 - **KI liest die Zustandsnachricht** — [KI-Spieler](10-strategie/ki.md) AC-20
+- **KI steigt zur Ritterzeit auf** — [KI-Spieler](10-strategie/ki.md) AC-21
+- **Die KI nutzt die Ritterzeit** — [KI-Spieler](10-strategie/ki.md) AC-22
 - **Partiedauer 25 bis 45 Minuten** — [Spielziel und Partieverlauf](10-strategie/spielziel.md) AC-2
 - **Kein Aus nach drei Minuten** — [Spielziel und Partieverlauf](10-strategie/spielziel.md) AC-3
 - **Aufholen ist möglich** — [Spielziel und Partieverlauf](10-strategie/spielziel.md) AC-4

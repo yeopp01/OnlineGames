@@ -13,7 +13,7 @@ hier nichts eintraegt, verliert den Faden beim naechsten Autocompact.
 
 ## Zuletzt fortgeschrieben
 
-2026-11-08, nach Runde 116 (**kampf AC-13, fahrplan AC-13, C6e fertig**: der
+2026-11-08, nach Runde 117 (**kampf AC-13, fahrplan AC-13, C6e fertig**: der
 Server schickt jedem nur, was er sieht - `welt.zustandJeSpieler`,
 `welt.aufbauFuer`, im Raum `sendenJe`. Fremde Gebaeude und Felder, die sich im
 Nebel aendern, kommen beim naechsten Hinsehen; wer ausscheidet, bekommt einmal
@@ -35,15 +35,16 @@ fahrplan AC-11 halten oder neu fassen). Bis zur Antwort ruht ki AC-13. Runde
 hin) - C6g erreicht. Stufe C fehlt damit nur noch ki AC-13 (C6f) und was
 daran haengt. Runde 116: **Rueckschau zur Stufe C** - Partie angesehen,
 drei Luecken als bedienung AC-39 bis AC-41 (Ausholen im Kampf, Pfeile,
-Ansage nicht auf der Mitte). **Als Naechstes: Spec-Runde Stufe D**
-(Ritterzeit, Bauabfolge D1 = die drei Luecken). ki AC-13 und einheiten
+Ansage nicht auf der Mitte). Runde 117: **Spec-Runde Stufe D** - 20
+Kriterien, Bauabfolge D1 bis D9 im Fahrplan. **Als Naechstes D1**: bedienung
+AC-39 bis AC-41 (Ausholen im Kampf, Pfeile, Ansagen nicht auf der Mitte). ki AC-13 und einheiten
 AC-32 warten auf Antworten. **Naechste Rueckschau: Runde 121.**)
 
 ## Wo ich stehe
 
 - **Branch:** `strategie`. Nie auf `main` arbeiten, **nie pushen, nie deployen.**
-- **Board:** 413 von 535 Kriterien fertig · 1 in Arbeit · 5 in QA · 4 geplant ·
-  104 offen · 8 zurueckgestellt. 503 Tests ohne Browser, 176 im Browser.
+- **Board:** 413 von 555 Kriterien fertig · 1 in Arbeit · 5 in QA · 4 geplant ·
+  124 offen · 8 zurueckgestellt. 503 Tests ohne Browser, 176 im Browser.
 - **Fuenf Waechter in `tests/waechter-*.test.mjs`** (der fuenfte seit Runde 87: Bildschirmtext mit echten Umlauten): Gleichheit auf wachsenden
   Listen, verbesserbare Werte an `welt.einheitenwert()` vorbei,
   Bildunterschriften mit `${...}`, und (neu in Runde 73) die **Kuerzeltafel**

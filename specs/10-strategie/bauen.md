@@ -2,7 +2,7 @@
 
 **Bereich:** Strategie
 **Kuerzel:** bauen
-**Stand:** 22/26 fertig · 4 offen
+**Stand:** 22/34 fertig · 12 offen
 
 ## Zweck
 
@@ -60,6 +60,27 @@ Stufe B im Stall.
 Markt, Wachturm, Mauer und Tor stehen in der Vorlage ebenfalls in der
 Feudalzeit; sie kommen mit Stufe D (Befestigung, Handel) und nicht hier — Stufe
 B ist der Kampf der drei Einheiten gegeneinander.
+
+## Die Gebäude der Ritterzeit (Stufe D)
+
+Werte aus der [Vorlage](../../docs/strategie/vorlage-aoe2.md). Wachturm,
+Steinmauer, Tor und Markt stehen im Original schon in der Feudalzeit; gebaut
+werden sie mit den anderen Befestigungen in Stufe D, verfügbar ab der
+Feudalzeit wie dort.
+
+| Gebäude | Zeitalter | Kosten | Bauzeit | Leben | Leistet |
+| --- | --- | --- | --- | --- | --- |
+| Wachturm | Feudal | 25 Holz, 125 Stein | 80 s | 1020 | schießt (5 Angriff, Reichweite 8) |
+| Steinmauer | Feudal | 5 Stein je Feld | 8 s | 1800 | Sperre |
+| Tor | Feudal | 30 Stein | 70 s | 2750 | Sperre, lässt Eigene durch |
+| Markt | Feudal | 175 Holz | 60 s | 1300 | Tausch der Rohstoffe gegen Gold |
+| Kloster | Ritter | 175 Holz | 40 s | 2100 | Mönch |
+| Universität | Ritter | 200 Holz | 60 s | 2100 | Mauerwerk |
+| Belagerungswerkstatt | Ritter | 200 Holz | 40 s | 2100 | Ramme, Mangonel |
+| Burg | Ritter | 650 Stein | 200 s | 4800 | schießt (11 Angriff, Reichweite 8), +20 Bevölkerung |
+
+**Nicht in Stufe D:** Unterschlupf (Einheiten in Gebäuden bergen), die
+Spezialeinheit der Burg (kommt mit den Völkern, Stufe E), Palisade.
 
 ## Abnahmekriterien
 
@@ -159,6 +180,41 @@ B ist der Kampf der drei Einheiten gegeneinander.
   _(Stufe B.)_
 - **AC-19** `offen` **Eroberung entscheidet** — Die Siegbedingung steht in
   [Spielziel](spielziel.md) AC-5. _(Stufe C.)_
+
+### Stufe D — Ritterzeit
+
+- **AC-27** `offen` **Aufstieg in die Ritterzeit** — Im Dorfzentrum, wie der
+  in die Feudalzeit (AC-23): 800 Nahrung und 200 Gold, 160 Sekunden, und zwei
+  fertige Gebäude der Feudalzeit außer Häusern. Danach stehen die Gebäude und
+  Einheiten der Ritterzeit im Menü.
+- **AC-28** `offen` **Kloster, Universität, Werkstatt** — Die drei Gebäude der
+  Ritterzeit mit den Werten aus der Tabelle, erst ab dem Aufstieg im
+  Baumenü, jedes gezeichnet und von allen anderen unterscheidbar
+  (darstellung AC-14).
+- **AC-29** `offen` **Türme schießen** — Wachturm und Burg greifen von selbst
+  an, was in ihre Reichweite kommt, wie eine wachende Einheit (kampf AC-2),
+  mit Angriff, Reichweite und Nachladezeit aus den Daten. Ein Gebäude ohne
+  Angriff schießt nicht.
+- **AC-30** `offen` **Mauern ziehen** — Eine Steinmauer wird gezogen: Taste,
+  dann Ziehen von Feld zu Feld legt eine Linie von Baustellen, bezahlt je Feld.
+  Was nicht frei ist, wird übersprungen, und die Vorschau zeigt es rot.
+- **AC-31** `offen` **Tor lässt Eigene durch** — Ein Tor in einer Mauer ist
+  für die eigenen Einheiten begehbar, für fremde eine Sperre. Die Wegsuche
+  kennt den Unterschied.
+- **AC-32** `offen` **Burg** — 650 Stein, 200 Sekunden, 4800 Leben, +20
+  Bevölkerung; schießt (AC-29). Erst ab der Ritterzeit.
+- **AC-33** `offen` **Markt tauscht** — Am Markt kauft man 100 Holz, Nahrung
+  oder Stein für Gold und verkauft sie gegen Gold. Jeder Kauf macht diesen
+  Rohstoff teurer, jeder Verkauf billiger; zwischen Kauf- und Verkaufspreis
+  liegt eine Gebühr von 30 %. Werte aus der Vorlage, als Daten. Ein Markt
+  je Spieler genügt; Handel zwischen Märkten ist ausgeschlossen (ADR-0012).
+- **AC-34** `offen` **Verbesserungen der Ritterzeit** — Eisenguss (Schmiede,
+  220 Nahrung, 120 Gold: Nahkämpfer +1 Angriff), Bodkinpfeil (Schmiede, 200
+  Nahrung, 100 Gold: Fernkämpfer +1 Angriff, +1 Reichweite), Mauerwerk
+  (Universität, 175 Holz, 150 Stein: Gebäude +10 % Leben, +1/+1 Rüstung),
+  Stadtpatrouille (Dorfzentrum, 300 Nahrung, 100 Gold: Gebäude +4 Sicht) —
+  jede erst nach ihrer Vorstufe, wo es eine gibt, und mit eigenem Bild im
+  Menü.
 
 ## Grenzfaelle
 

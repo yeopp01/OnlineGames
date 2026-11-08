@@ -2,7 +2,7 @@
 
 **Bereich:** Strategie
 **Kuerzel:** ki
-**Stand:** 18/20 fertig · 2 offen
+**Stand:** 18/22 fertig · 4 offen
 
 ## Zweck
 
@@ -199,6 +199,17 @@ nicht die Regeln.
   und hält sich an die Sicht, und ein neuer Zugriff auf fremde Einheiten
   fiele keinem Test auf. Abgeteilt in Runde 112 — die KI liest an rund
   dreißig Stellen aus der Welt, auch Karte und Wegsuche.
+
+### Stufe D — Ritterzeit
+
+- **AC-21** `offen` **KI steigt zur Ritterzeit auf** — Sobald sie 800
+  Nahrung und 200 Gold hat und zwei Gebäude der Feudalzeit stehen, bestellt
+  sie den Aufstieg; im Prüfstand über zwanzig Startwerte jede vor
+  Spielminute 30 (Vorlage: 16 bis 20 Minuten im guten Spiel).
+- **AC-22** `offen` **Die KI nutzt die Ritterzeit** — Danach bildet sie Ritter
+  aus und baut eine Belagerungswerkstatt; steht beim Gegner ein Turm oder
+  eine Burg, nimmt ihr Angriff Rammen mit. KI gegen KI endet weiter (fahrplan
+  AC-11).
 
 ## Grenzfaelle
 

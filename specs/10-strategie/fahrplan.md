@@ -2,7 +2,7 @@
 
 **Bereich:** Strategie
 **Kuerzel:** fahrplan
-**Stand:** 13/22 fertig · 9 offen
+**Stand:** 13/23 fertig · 10 offen
 
 ## Zweck
 
@@ -170,8 +170,32 @@ Zustandsnachricht umbaut und damit jeden Browsertest berührt: was dort heute
 
 - **AC-14** `offen` **Ritterzeit spielbar** — Burg, Kloster, Universität, Belagerungswerkstatt;
   Ritter, Armbrust, Mönch, Ramme, Mangonel; Wachturm, Mauern, Tore, Markt.
+  Belegt wie die Feudalzeit (AC-8): ein Browsertest spielt den Aufstieg, baut
+  jedes neue Gebäude, bildet jede neue Einheit aus und misst einen Schlag.
 - **AC-15** `offen` **Befestigung hält auf** — Im Prüfstand verzögert eine Steinmauer mit Tor
   einen Angriff aus Nahkämpfern messbar. Rammen brechen sie auf.
+- **AC-23** `offen` **Der Konterkreis der Ritterzeit** — Im Gefechtsstand bei
+  gleichen Kosten, je zwanzig Startwerte, in beiden Richtungen: Speer gegen
+  Ritter, Mangonel gegen einen Haufen Bogenschützen, Ritter gegen Mangonel
+  gewinnen in mindestens 80 %, umgekehrt so gut wie nie (wie AC-9).
+
+**Bauabfolge Stufe D.** Jeder Schritt endet mit etwas im Browser Sichtbarem.
+
+| Schritt | Was | Kriterien |
+| --- | --- | --- |
+| D1 | **Lücken aus der Rückschau zu Stufe C**: wer kämpft, holt aus; Pfeile fliegen sichtbar; Ansagen nicht auf der Mitte | bedienung AC-39 bis AC-41 |
+| D2 | Aufstieg in die Ritterzeit; Kloster, Universität, Werkstatt gezeichnet und im Menü | bauen AC-27, AC-28 |
+| D3 | Ritter und Armbrust; die Verbesserungen der Ritterzeit | einheiten AC-33, AC-34, bauen AC-34 |
+| D4 | Wachturm und schießende Gebäude | bauen AC-29, kampf AC-20 |
+| D5 | Steinmauer ziehen, Tor für Eigene; Mauern halten auf | bauen AC-30, AC-31, kampf AC-21 |
+| D6 | Belagerung: Ramme gegen Gebäude, Mangonel mit Flächenschaden | einheiten AC-35, AC-36, kampf AC-19 |
+| D7 | Burg und Markt | bauen AC-32, AC-33 |
+| D8 | Mönch: heilen, bekehren | einheiten AC-37, AC-38 |
+| D9 | Die KI in der Ritterzeit; Konterkreis und Befestigung im Prüfstand; die Ritterzeit am Stück im Browser | ki AC-21, AC-22, fahrplan AC-14, AC-15, AC-23 |
+
+Offen aus Stufe C und gebaut auf dem Zweig `strategie-ki-sicht`: die KI mit
+eigener Sicht (ki AC-13) — wartet auf die Antwort zu fahrplan AC-11. Wird sie
+eingebunden, misst jeder Schritt ab D9 KI gegen KI mit ihr.
 
 ### Stufe E — Völker
 

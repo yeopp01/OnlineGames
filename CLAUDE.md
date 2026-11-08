@@ -158,7 +158,7 @@ Umfang hinzufügt, dort nachsehen.
 
 ## Stand
 
-**413 von 535 Kriterien fertig.** 503 Tests ohne Browser, 176 im Browser. Die
+**413 von 555 Kriterien fertig.** 503 Tests ohne Browser, 176 im Browser. Die
 Übersicht ist der Bericht: `npm run qa:report`.
 
 Gebaut ist der Unterbau: Räume, Übertragung, Karte, Wegfindung, Sammeln,
@@ -336,7 +336,9 @@ die KI mit eigener Sicht (ki AC-13, auf dem Zweig `strategie-ki-sicht`,
 wartet auf eine Frage an den Benutzer). **Stufe C ist erreicht** (fahrplan
 AC-11 bis AC-13); die Rückschau dazu hat drei Lücken angelegt (bedienung
 AC-39 bis AC-41: Ausholen im Kampf, sichtbare Pfeile, Ansagen nicht auf der
-Mitte). Als Nächstes die Spec-Runde für Stufe D. Die **Sicht ist eine Einstellung beim Eröffnen** (kampf AC-16):
+Mitte). **Stufe D ist spezifiziert** (Bauabfolge D1 bis D9: die drei Lücken,
+Aufstieg und Gebäude der Ritterzeit, Ritter und Armbrust, Türme, Mauern und
+Tore, Belagerung, Burg und Markt, Mönch, die KI in der Ritterzeit). Die **Sicht ist eine Einstellung beim Eröffnen** (kampf AC-16):
 Nebel, Erkundet oder Aufgedeckt — Tests, die nicht vom Nebel handeln,
 eröffnen aufgedeckt (`partieZuZweit(…, { sicht: 'aufgedeckt' })`).
 

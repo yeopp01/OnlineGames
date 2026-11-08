@@ -2,7 +2,7 @@
 
 **Bereich:** Strategie
 **Kuerzel:** einheiten
-**Stand:** 21/25 fertig · 3 offen · 1 zurueckgestellt
+**Stand:** 21/31 fertig · 9 offen · 1 zurueckgestellt
 
 ## Zweck
 
@@ -189,6 +189,32 @@ Befehl bewirkt.
   wohl die Formation** der Vorlage: eine Gruppe läuft im Tempo der
   langsamsten auf parallelen Bahnen. Das ist neuer Umfang — Frage an den
   Benutzer (Erkenntnisse).
+
+### Stufe D — Ritterzeit
+
+Werte aus der [Vorlage](../../docs/strategie/vorlage-aoe2.md), als Daten in
+`daten.js`; Angriff, Rüstung, Bonus und Nachladezeit wie in Stufe B.
+
+- **AC-33** `offen` **Ritter** — Im Stall ab der Ritterzeit: 60 Nahrung, 75
+  Gold, 30 s, 100 Leben, 10 Angriff, 2/2 Rüstung, Tempo 1,35. Eigene Figur,
+  bei Zoom 1 vom Späherreiter unterscheidbar.
+- **AC-34** `offen` **Armbrustschütze** — Die Verbesserung Armbrust in der
+  Schießanlage (125 Nahrung, 75 Gold) tauscht jeden Bogenschützen aus, wie
+  Soldat die Miliz (AC-24): 35 Leben, 5 Angriff, Reichweite 5. Eigene Figur.
+- **AC-35** `offen` **Ramme** — In der Belagerungswerkstatt: 160 Holz, 75
+  Gold, 36 s, 175 Leben, 0/180 Rüstung, Tempo 0,5, 2 Angriff mit +125 gegen
+  Gebäude. Sie greift nur Gebäude an; ein Befehl auf eine Einheit ist ein
+  Gang dorthin.
+- **AC-36** `offen` **Mangonel** — In der Belagerungswerkstatt: 160 Holz, 135
+  Gold, 46 s, 50 Leben, 0/6 Rüstung, Tempo 0,6, 40 Angriff, Reichweite 7 und
+  eine Mindestreichweite von 3; trifft eine Fläche (kampf AC-19).
+- **AC-37** `offen` **Mönch heilt** — Im Kloster: 100 Gold, 51 s, 30 Leben,
+  Tempo 0,7. Er heilt eigene verletzte Einheiten in seiner Nähe, die nicht
+  kämpfen, um einen Punkt je Sekunde; Gebäude und Belagerung nicht.
+- **AC-38** `offen` **Mönch bekehrt** — Ein Befehl auf eine fremde Einheit in
+  Reichweite 9: nach einer Dauer, deren Zufall aus dem Startwert der Partie
+  kommt (deterministisch), gehört sie dem Spieler des Mönchs. Danach ruht
+  der Mönch eine Weile. Gebäude, Belagerung und Mönche bekehrt er nicht.
 
 ## Grenzfaelle
 

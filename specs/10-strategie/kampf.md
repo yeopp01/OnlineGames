@@ -2,7 +2,7 @@
 
 **Bereich:** Strategie
 **Kuerzel:** kampf
-**Stand:** 17/18 fertig · 1 zurueckgestellt
+**Stand:** 17/21 fertig · 3 offen · 1 zurueckgestellt
 
 ## Zweck
 
@@ -161,6 +161,21 @@ aus [Spielziel](spielziel.md) AC-10, gemessen in
   mit Streben, Plattform mit Licht, spitzes Dach, Wimpel in Spielerfarbe —,
   im Baumenü als letzter; seine Taste folgt wie bei jedem Gebäude der Stelle
   im Menü (Dunkle Zeit U, Feudalzeit P).
+
+### Stufe D — Ritterzeit
+
+- **AC-19** `offen` **Flächenschaden** — Ein Schuss des Mangonels trifft alle
+  Einheiten im Umkreis eines Feldes um den Einschlag, auch eigene, mit
+  vollem Schaden in der Mitte und weniger am Rand. Der Einschlag ist dort,
+  wo das Ziel beim Abschuss stand — wer läuft, kann ausweichen.
+- **AC-20** `offen` **Gebäude schießen zurück** — Was ein Gebäude mit Angriff
+  angreift, bekommt Schaden nach derselben Formel wie von Einheiten
+  (`max(1, Angriff − Rüstung + Bonus)`), mit Pfeilen als Fernkampf. Pfeile
+  treffen Mauerwerk kaum (Gebäude 0/7, AC-5).
+- **AC-21** `offen` **Mauern halten auf** — Wer zu einem Ziel hinter einer
+  Mauer will, geht außen herum, wenn es einen Weg gibt; gibt es keinen,
+  greift er die Mauer an. Eine Ramme bricht ein Feld Steinmauer in weniger
+  als einer halben Minute.
 
 ## Grenzfaelle
 

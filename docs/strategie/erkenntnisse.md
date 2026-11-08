@@ -1194,6 +1194,16 @@ erstes Heer 17,0 min (Runde 113).
 Neueste oben. Eine Zeile je Runde: Nummer, Datum, Kriterien, Ergebnis,
 wichtigste Erkenntnis.
 
+- **117** · 2026-11-08 · **Spec-Runde Stufe D** — 20 Kriterien: bauen
+  AC-27 bis AC-34 (Aufstieg, Kloster/Universität/Werkstatt, Türme schießen,
+  Mauern ziehen, Tor, Burg, Markt, Verbesserungen der Ritterzeit), einheiten
+  AC-33 bis AC-38 (Ritter, Armbrust, Ramme, Mangonel, Mönch heilt und
+  bekehrt), kampf AC-19 bis AC-21 (Flächenschaden, Gebäude schießen, Mauern
+  halten auf), ki AC-21 und AC-22, fahrplan AC-23 (Konterkreis der
+  Ritterzeit); Bauabfolge D1 bis D9, D1 sind die Lücken der Rückschau.
+  Bewusst nicht in D: Unterschlupf, die Spezialeinheit der Burg (Stufe E),
+  Palisade. Wachturm, Mauer, Tor und Markt sind wie im Original ab der
+  Feudalzeit verfügbar, gebaut werden sie mit den Befestigungen.
 - **116** · 2026-11-08 · **Rückschau zur Stufe C** — eine Partie KI gegen
   KI im Browser angesehen; drei Lücken angelegt: im Gefecht steht alles
   still (bedienung AC-39), Pfeile unsichtbar (AC-40), die Ansage zum
