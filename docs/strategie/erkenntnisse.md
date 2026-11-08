@@ -1194,6 +1194,23 @@ erstes Heer 17,0 min (Runde 113).
 Neueste oben. Eine Zeile je Runde: Nummer, Datum, Kriterien, Ergebnis,
 wichtigste Erkenntnis.
 
+- **119** · 2026-11-08 · **bedienung AC-40** — Pfeile fliegen sichtbar (D1
+  ist fertig): jeder Schuss eines Fernkämpfers geht mit Start und Ziel in
+  den nächsten Zustand, im Nebel nur, wer ein Ende sieht; der Browser lässt
+  ihn auf flachem Bogen fliegen (10 Felder je Sekunde, mindestens 0,15 s).
+  Ein leerer Pfeil-Eintrag ging erst mit `p: []` über den Draht — der Test
+  für einen Dritten im Nebel fand es. Die Durchsicht bestätigte zwei
+  Speicherlecks, die ich parallel selbst sah: ohne Zustand (Prüfstand)
+  wuchs die Liste eine ganze Partie lang (jetzt höchstens 400, Gegenprobe
+  1429), und im Hintergrund-Tab wuchs die im Browser. Das Bild eines Pfeils,
+  der nur Zehntelsekunden fliegt: der Test merkt sich einen, fotografiert
+  und prüft, dass er danach noch flog — sonst löscht er das Bild und
+  versucht es neu. Ein Pfeil aus dem Nebel verrät, wo der Schütze steht —
+  wie im Original, bleibt so. Im vollen Lauf fiel der Test zuerst: Berts
+  Miliz stürmte heran, und alle Schüsse wurden zu kurz — jetzt ist das Ziel
+  ein Haus. **ki AC-11 fällt jetzt in jedem vollen Lauf** (einheiten AC-32,
+  wartet auf die Frage zu Formationen); committet mit diesem einen roten
+  Fall, die nächste Runde macht ihn grün.
 - **118** · 2026-11-08 · **bedienung AC-39, AC-41** (D1 zu zwei Dritteln) —
   wer kämpft, holt aus: der Server markiert eine Einheit mit Ziel in
   Reichweite wie einen arbeitenden Dorfbewohner (`w`), und der Browser beugt

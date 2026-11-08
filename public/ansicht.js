@@ -62,6 +62,8 @@ export class Ansicht {
 
     this.vorher = new Map();
     this.nachher = new Map();
+    // Pfeile im Flug (bedienung AC-40).
+    this.pfeile = [];
     this.empfangen = 0;
     this.ausgewaehlt = new Set();
     this.gebaeude = new Map();
@@ -149,6 +151,7 @@ export class Ansicht {
     this.arbeiter = { holz: 0, nahrung: 0, gold: 0, stein: 0 };
     this.verbesserungen = [];
     this.blicke = new Map();
+    this.pfeile = [];
     this.takt = 0;
     // Null, nicht der alte Stand: sonst meldete der erste Zustand der neuen
     // Partie einen Zeitalterwechsel zurueck in die Dunkle Zeit.
@@ -199,6 +202,16 @@ export class Ansicht {
   }
 
   zustand(nachricht) {
+    // Pfeile (bedienung AC-40): jeder fliegt vom Schuetzen zum Ziel, so lange,
+    // wie er bei zehn Feldern je Sekunde braucht - mindestens 0,15 Sekunden.
+    const jetzt = performance.now();
+    // Angekommene fallen auch hier heraus, nicht nur beim Zeichnen: in einem
+    // Tab im Hintergrund wird nicht gezeichnet, und die Liste wuechse.
+    this.pfeile = this.pfeile.filter((p) => jetzt - p.start < p.dauer);
+    for (const [x0, y0, x1, y1] of nachricht.p || []) {
+      const weite = Math.hypot(x1 - x0, y1 - y0);
+      this.pfeile.push({ x0, y0, x1, y1, weite, start: jetzt, dauer: Math.max(150, weite * 100) });
+    }
     for (const aenderung of nachricht.felder || []) {
       if (this.karte.felder[aenderung.i] !== aenderung.a) {
         this.kachelnVerwerfen(aenderung.i);
@@ -1036,6 +1049,7 @@ export class Ansicht {
     }
     // Der Nebel liegt ueber allem, was steht, und unter den Hilfen der
     // Bedienung - Lebensbalken, Zielzeichen und Rahmen bleiben lesbar.
+    this.pfeileZeichnen(stift);
     if (this.nebelAn) this.nebelZeichnen(stift);
     for (const balken of this.lebensbalken) this.lebensbalkenZeichnen(balken);
     this.zielzeichenZeichnen(e, jetzt);
@@ -1298,6 +1312,58 @@ export class Ansicht {
     stift.strokeText(spieler.name, p.x, oben);
     stift.fillStyle = '#e6e9ee';
     stift.fillText(spieler.name, p.x, oben);
+  }
+
+  /**
+   * Pfeile im Flug (bedienung AC-40): ein dunkler Schaft mit heller Fiederung,
+   * auf einem flachen Bogen von der Brust des Schuetzen zur Brust des Ziels.
+   * Was angekommen ist, faellt heraus.
+   */
+  pfeileZeichnen(stift) {
+    if (!this.pfeile.length) return;
+    const jetzt = performance.now();
+    this.pfeile = this.pfeile.filter((p) => jetzt - p.start < p.dauer);
+    const zoom = this.kamera.zoom;
+    const brust = this.figurenHoehe() * 0.55;
+    const ort = (p, t) => {
+      const x = p.x0 + (p.x1 - p.x0) * t;
+      const y = p.y0 + (p.y1 - p.y0) * t;
+      const b = this.zuBild(x, y);
+      // Der Bogen: in der Mitte ein Viertel der Weite hoeher als die Enden.
+      return { x: b.x, y: b.y - brust - Math.sin(Math.PI * t) * p.weite * 0.25 * HALB_H * zoom };
+    };
+    stift.save();
+    stift.lineCap = 'round';
+    for (const p of this.pfeile) {
+      const t = Math.min(1, (jetzt - p.start) / p.dauer);
+      const kopf = ort(p, t);
+      const hinter = ort(p, Math.max(0, t - 0.06));
+      const dx = kopf.x - hinter.x;
+      const dy = kopf.y - hinter.y;
+      const laenge = Math.hypot(dx, dy) || 1;
+      const schaft = Math.max(9, 0.6 * HALB_B * zoom);
+      const ux = dx / laenge;
+      const uy = dy / laenge;
+      const ende = { x: kopf.x - ux * schaft, y: kopf.y - uy * schaft };
+      stift.strokeStyle = '#3b2a18';
+      stift.lineWidth = Math.max(1.4, 0.09 * HALB_B * zoom);
+      stift.beginPath();
+      stift.moveTo(ende.x, ende.y);
+      stift.lineTo(kopf.x, kopf.y);
+      stift.stroke();
+      // Fiederung hinten, hell.
+      stift.strokeStyle = '#e8e0cc';
+      stift.lineWidth = Math.max(1, 0.05 * HALB_B * zoom);
+      const quer = { x: -uy, y: ux };
+      const f = schaft * 0.18;
+      for (const s of [1, -1]) {
+        stift.beginPath();
+        stift.moveTo(ende.x + ux * f, ende.y + uy * f);
+        stift.lineTo(ende.x - ux * f * 0.2 + quer.x * f * s, ende.y - uy * f * 0.2 + quer.y * f * s);
+        stift.stroke();
+      }
+    }
+    stift.restore();
   }
 
   einheitZeichnen(einheit, alt, punkt) {

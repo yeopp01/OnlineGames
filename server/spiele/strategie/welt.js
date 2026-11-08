@@ -37,6 +37,10 @@ const AUSWEICHEN_ABSTAND = 0.5;
 // sich einmal, solange es ohne Pause von zwanzig Sekunden weitergeht; ein
 // Angriff fuenfzehn Felder weiter ist ein neuer.
 const MELDUNG_PAUSE = 200;
+
+// Hoechstens so viele Pfeile warten auf den naechsten Zustand (bedienung
+// AC-40) - genug fuer zwanzig Takte Zeitraffer mit grossen Heeren.
+const SCHUESSE_HOECHSTENS = 400;
 const MELDUNG_ABSTAND = 15;
 
 // Wie lange einer, der keinen Weg zu irgendeinem Lager fand, wartet, bevor
@@ -1817,6 +1821,21 @@ class Welt {
     this.schlaege.push({
       angreifer, ziel, schaden: this.schaden(angreifer, ziel, istGebaeude), gebaeude: istGebaeude,
     });
+    // Ein Schuss eines Fernkaempfers geht als Pfeil in den naechsten Zustand
+    // (bedienung AC-40): von wo nach wo. Gerechnet ist er schon - der Pfeil
+    // ist Darstellung (ADR-0001).
+    if (EINHEITEN[angreifer.art] && this.einheitenwert(angreifer.besitzer, angreifer.art, 'reichweite') > 0) {
+      let nach = { x: ziel.x, y: ziel.y };
+      if (istGebaeude) {
+        const { x0, y0, x1, y1 } = this.grundflaeche(ziel.art, ziel.x, ziel.y);
+        nach = { x: (x0 + x1) / 2, y: (y0 + y1) / 2 };
+      }
+      (this.schuesse ??= []).push([angreifer.x, angreifer.y, nach.x, nach.y].map((w) => Math.round(w * 10) / 10));
+      // Ohne Zustand - im Pruefstand fragt keiner danach - wuechse die Liste
+      // eine ganze Partie lang. Was weiter zurueckliegt als die letzten
+      // SCHUESSE_HOECHSTENS, sieht ohnehin keiner mehr fliegen.
+      if (this.schuesse.length > SCHUESSE_HOECHSTENS) this.schuesse.splice(0, this.schuesse.length - SCHUESSE_HOECHSTENS);
+    }
   }
 
   schlaegeAbrechnen() {
@@ -2454,6 +2473,9 @@ class Welt {
     }
     const felder = this.feldAenderungen;
     this.feldAenderungen = [];
+    // Pfeile seit dem letzten Zustand (bedienung AC-40), je [x0, y0, x1, y1].
+    const schuesse = this.schuesse || [];
+    this.schuesse = [];
     const zustand = {
       typ: 'zustand',
       t: this.takt,
@@ -2484,6 +2506,7 @@ class Welt {
       })),
       einheiten,
       felder,
+      ...(schuesse.length ? { p: schuesse } : {}),
       // Das Ende, sobald es feststeht - danach schickt der Raum keinen
       // Zustand mehr (spielziel AC-5).
       ...(this.ende ? { ende: this.ende } : {}),
@@ -2623,6 +2646,12 @@ class Welt {
         id: s.id, ...(s.aus ? { aus: 1 } : {}), ...(s.z ? { z: s.z } : {}), ...(s.kw ? { kw: s.kw } : {}),
       })),
     };
+    // Pfeile nur, wenn er Schuetzen oder Ziel sieht (kampf AC-13) - und gar
+    // nicht, wenn keiner bleibt.
+    const pfeile = (voll.p || []).filter(([x0, y0, x1, y1]) => this.sieht(id, Math.round(x0), Math.round(y0))
+      || this.sieht(id, Math.round(x1), Math.round(y1)));
+    if (pfeile.length) auszug.p = pfeile;
+    else delete auszug.p;
     const gebaeude = this.gebaeudeFuer(id, voll.gebaeude || []);
     if (gebaeude.length) auszug.gebaeude = gebaeude;
     else delete auszug.gebaeude;

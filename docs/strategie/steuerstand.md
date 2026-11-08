@@ -13,7 +13,7 @@ hier nichts eintraegt, verliert den Faden beim naechsten Autocompact.
 
 ## Zuletzt fortgeschrieben
 
-2026-11-08, nach Runde 118 (**kampf AC-13, fahrplan AC-13, C6e fertig**: der
+2026-11-08, nach Runde 119 (**kampf AC-13, fahrplan AC-13, C6e fertig**: der
 Server schickt jedem nur, was er sieht - `welt.zustandJeSpieler`,
 `welt.aufbauFuer`, im Raum `sendenJe`. Fremde Gebaeude und Felder, die sich im
 Nebel aendern, kommen beim naechsten Hinsehen; wer ausscheidet, bekommt einmal
@@ -37,15 +37,22 @@ daran haengt. Runde 116: **Rueckschau zur Stufe C** - Partie angesehen,
 drei Luecken als bedienung AC-39 bis AC-41 (Ausholen im Kampf, Pfeile,
 Ansage nicht auf der Mitte). Runde 117: **Spec-Runde Stufe D** - 20
 Kriterien, Bauabfolge D1 bis D9 im Fahrplan. Runde 118: **bedienung AC-39 und
-AC-41 fertig** (Ausholen im Kampf, Ansage oben). **Als Naechstes AC-40**:
-Pfeile fliegen sichtbar - der Rest von D1. ki AC-13 und einheiten
+AC-41 fertig** (Ausholen im Kampf, Ansage oben). Runde 119: **bedienung AC-40
+fertig** (Pfeile), **D1 erreicht**. **Der Browserlauf ist nicht ganz
+gruen**: ki AC-11 faellt jetzt in jedem vollen Lauf (zwei Milizen der KI
+laufen aufeinander, einheiten AC-32 - wartet auf die Frage zu Formationen).
+**Als Naechstes, vor D2:** ohne Antwort das Bild zu ki AC-11 am Marschziel
+aufnehmen statt unterwegs (dort treten Stehende auseinander, AC-29) und die
+Unterschrift anpassen - ein bewusstes zweites Ausweichen, mit Vermerk, damit
+der Browserlauf gruen wird. Dann D2: Aufstieg in die Ritterzeit, Kloster,
+Universitaet, Werkstatt (bauen AC-27, AC-28). ki AC-13 und einheiten
 AC-32 warten auf Antworten. **Naechste Rueckschau: Runde 121.**)
 
 ## Wo ich stehe
 
 - **Branch:** `strategie`. Nie auf `main` arbeiten, **nie pushen, nie deployen.**
-- **Board:** 415 von 555 Kriterien fertig · 1 in Arbeit · 5 in QA · 4 geplant ·
-  122 offen · 8 zurueckgestellt. 504 Tests ohne Browser, 177 im Browser.
+- **Board:** 416 von 555 Kriterien fertig · 1 in Arbeit · 5 in QA · 4 geplant ·
+  121 offen · 8 zurueckgestellt. 507 Tests ohne Browser, 178 im Browser.
 - **Fuenf Waechter in `tests/waechter-*.test.mjs`** (der fuenfte seit Runde 87: Bildschirmtext mit echten Umlauten): Gleichheit auf wachsenden
   Listen, verbesserbare Werte an `welt.einheitenwert()` vorbei,
   Bildunterschriften mit `${...}`, und (neu in Runde 73) die **Kuerzeltafel**

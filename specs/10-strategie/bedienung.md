@@ -2,7 +2,7 @@
 
 **Bereich:** Strategie
 **Kuerzel:** bedienung
-**Stand:** 29/41 fertig · 12 offen
+**Stand:** 30/41 fertig · 11 offen
 
 ## Zweck
 
@@ -179,7 +179,7 @@ Reihenfolge:
   kämpft, ist nicht zu erkennen. **Messbar:** in zwei Bildern derselben
   angreifenden Einheit im Abstand ihrer Nachladezeit unterscheiden sich die
   Bildpunkte der Figur.
-- **AC-40** `offen` **Pfeile fliegen sichtbar** — Ein Schuss eines
+- **AC-40** `fertig` **Pfeile fliegen sichtbar** — Ein Schuss eines
   Fernkämpfers ist als Pfeil zu sehen, der vom Schützen zum Ziel fliegt und
   dort verschwindet; ein Gebäude trifft er ebenso. Gezeichnet im Browser aus
   den Schlägen, die der Server meldet — gerechnet wird weiter sofort, der

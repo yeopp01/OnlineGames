@@ -1,0 +1,10 @@
+{
+  "spec": "10-strategie/bedienung.md",
+  "ac": "AC-40",
+  "titel": "Ein Pfeil im Flug zwischen Annas Bogenschützen (blau) und Berts Haus",
+  "datei": "e2e/tests/strategie-pfeile.spec.mjs",
+  "pfad": [
+    "Pfeile",
+    "bedienung AC-40: ein Schuss fliegt als Pfeil vom Bogenschuetzen zum Ziel"
+  ]
+}
