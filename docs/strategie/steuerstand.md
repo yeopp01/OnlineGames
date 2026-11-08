@@ -13,7 +13,7 @@ hier nichts eintraegt, verliert den Faden beim naechsten Autocompact.
 
 ## Zuletzt fortgeschrieben
 
-2026-11-08, nach Runde 114 (**kampf AC-13, fahrplan AC-13, C6e fertig**: der
+2026-11-08, nach Runde 115 (**kampf AC-13, fahrplan AC-13, C6e fertig**: der
 Server schickt jedem nur, was er sieht - `welt.zustandJeSpieler`,
 `welt.aufbauFuer`, im Raum `sendenJe`. Fremde Gebaeude und Felder, die sich im
 Nebel aendern, kommen beim naechsten Hinsehen; wer ausscheidet, bekommt einmal
@@ -30,15 +30,18 @@ gegenprobe`, Pruefstand gleich nach dem ersten Entwurf, Verbergen bricht
 Tests, rote Arbeit auf einen lokalen Zweig. Runde 114: ki AC-13 zweiter
 Anlauf, wieder auf den Zweig gelegt (`strategie-ki-sicht`, `8817c60`), 35 von
 40 vor Minute 60; **Frage an den Benutzer** (Patts mit leerer Wirtschaft -
-fahrplan AC-11 halten oder neu fassen). Bis zur Antwort ruht ki AC-13; **als
-Naechstes C6g** (kampf AC-14, Angriff wird gemeldet). **Naechste Rueckschau:
-Runde 118.**)
+fahrplan AC-11 halten oder neu fassen). Bis zur Antwort ruht ki AC-13. Runde
+115: **kampf AC-14 fertig** (Angriffsmeldung, roter Knopf, Klick springt
+hin) - C6g erreicht. Stufe C fehlt damit nur noch ki AC-13 (C6f) und was
+daran haengt. **Als Naechstes:** das naechste offene Kriterium der Stufe C,
+das nicht an der Frage haengt, sonst einheiten AC-32 oder ki AC-20 nur nach
+Antwort. **Naechste Rueckschau: Runde 118.**)
 
 ## Wo ich stehe
 
 - **Branch:** `strategie`. Nie auf `main` arbeiten, **nie pushen, nie deployen.**
-- **Board:** 412 von 532 Kriterien fertig · 1 in Arbeit · 5 in QA · 4 geplant ·
-  102 offen · 8 zurueckgestellt. 499 Tests ohne Browser, 175 im Browser.
+- **Board:** 413 von 532 Kriterien fertig · 1 in Arbeit · 5 in QA · 4 geplant ·
+  101 offen · 8 zurueckgestellt. 503 Tests ohne Browser, 176 im Browser.
 - **Fuenf Waechter in `tests/waechter-*.test.mjs`** (der fuenfte seit Runde 87: Bildschirmtext mit echten Umlauten): Gleichheit auf wachsenden
   Listen, verbesserbare Werte an `welt.einheitenwert()` vorbei,
   Bildunterschriften mit `${...}`, und (neu in Runde 73) die **Kuerzeltafel**

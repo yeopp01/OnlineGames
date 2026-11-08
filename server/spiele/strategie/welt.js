@@ -33,6 +33,12 @@ const SICHT_ARTEN = ['nebel', 'erkundet', 'aufgedeckt'];
 // Schwertern (einheiten AC-29; dieselbe Grenze misst `figurenFrei`).
 const AUSWEICHEN_ABSTAND = 0.5;
 
+// Die Meldung "Angriff" (kampf AC-14): ein Gefecht an derselben Stelle meldet
+// sich einmal, solange es ohne Pause von zwanzig Sekunden weitergeht; ein
+// Angriff fuenfzehn Felder weiter ist ein neuer.
+const MELDUNG_PAUSE = 200;
+const MELDUNG_ABSTAND = 15;
+
 // Wie lange einer, der keinen Weg zu irgendeinem Lager fand, wartet, bevor
 // er wieder sucht - fuenf Sekunden (ki AC-10, Durchsicht Runde 91). Bis
 // dahin stand er ohnehin.
@@ -1817,6 +1823,7 @@ class Welt {
     if (!this.schlaege.length) return;
     for (const schlag of this.schlaege) schlag.ziel.leben -= schlag.schaden;
     for (const { angreifer, ziel, gebaeude } of this.schlaege) {
+      this.angriffMelden(ziel, gebaeude, angreifer);
       if (gebaeude) {
         if (!this.gebaeude.has(ziel.id)) continue;
         this.gebaeudeGeaendert(ziel);
@@ -1828,6 +1835,28 @@ class Welt {
       }
     }
     this.schlaege = [];
+  }
+
+  /**
+   * Wer getroffen wird, erfaehrt es (kampf AC-14): der Besitzer des Ziels
+   * bekommt mit dem naechsten Zustand den Ort. Nur seiner - im Nebel sehen
+   * die anderen den eigenen Spielereintrag nicht (kampf AC-13).
+   */
+  angriffMelden(ziel, gebaeude, angreifer) {
+    const spieler = this.spielerVon(ziel.besitzer);
+    if (!spieler || spieler.aus || angreifer?.besitzer === ziel.besitzer) return;
+    let ort = { x: ziel.x, y: ziel.y };
+    if (gebaeude) {
+      const { x0, y0, x1, y1 } = this.grundflaeche(ziel.art, ziel.x, ziel.y);
+      ort = { x: (x0 + x1) / 2, y: (y0 + y1) / 2 };
+    }
+    const alt = spieler.angriff;
+    if (alt && this.takt - alt.takt < MELDUNG_PAUSE && Math.hypot(alt.x - ort.x, alt.y - ort.y) < MELDUNG_ABSTAND) {
+      // Dasselbe Gefecht: nicht noch einmal melden, aber die Pause beginnt neu.
+      alt.takt = this.takt;
+      return;
+    }
+    spieler.angriff = { x: ort.x, y: ort.y, takt: this.takt, neu: true };
   }
 
   /**
@@ -2448,6 +2477,8 @@ class Welt {
         a: this.arbeiterVon(s.id),
         // Ausgeschieden, nur wenn es zutrifft (spielziel AC-5).
         ...(s.aus ? { aus: 1 } : {}),
+        // Ein neuer Angriff auf ihn, mit Ort (kampf AC-14) - einmal.
+        ...(s.angriff?.neu ? { m: [Math.round(s.angriff.x), Math.round(s.angriff.y)] } : {}),
       })),
       einheiten,
       felder,
@@ -2456,6 +2487,7 @@ class Welt {
       ...(this.ende ? { ende: this.ende } : {}),
     };
     this.werteAenderungen.clear();
+    for (const s of this.spieler) if (s.angriff) s.angriff.neu = false;
     if (this.gebaeudeAenderungen.size) {
       zustand.gebaeude = [...this.gebaeudeAenderungen].map((id) => this.gebaeudeFuerDraht(id));
       this.gebaeudeAenderungen.clear();

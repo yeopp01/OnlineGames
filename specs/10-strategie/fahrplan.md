@@ -164,7 +164,7 @@ Zustandsnachricht umbaut und damit jeden Browsertest berührt: was dort heute
 | C6d | Die Sicht wächst: Stadtwache im Dorfzentrum, der Außenposten — **fertig** (Runden 107, 109) | kampf AC-17, AC-18 |
 | C6e | Nur Sichtbares schicken: eine Zustandsnachricht je Spieler, erinnerte Gebäude — **fertig** (Runde 110) | kampf AC-13, fahrplan AC-13 |
 | C6f | Die KI sieht nur ihre Sicht und erkundet mit dem Späher — ruht: gebaut auf dem Zweig `strategie-ki-sicht`, KI gegen KI zu lang, Frage an den Benutzer (Runden 112, 114) | ki AC-13 |
-| C6g | Angriff wird gemeldet, ein Klick springt hin | kampf AC-14 |
+| C6g | Angriff wird gemeldet, ein Klick springt hin — **fertig** (Runde 115) | kampf AC-14 |
 
 ### Stufe D — Ritterzeit
 

@@ -100,6 +100,8 @@ export class Ansicht {
     this.melden = () => {};
     // Der Aufstieg ist vollzogen: app.js kuendigt ihn im Bild an (bedienung AC-33).
     this.beiZeitalter = () => {};
+    // Ein Angriff auf den eigenen Spieler (kampf AC-14), mit Ort.
+    this.beiAngriff = () => {};
     // Das Ende der Partie, wie der Server es schickt (spielziel AC-5), und
     // die Meldung dazu. `beiEnde` laeuft genau einmal - der Raum haelt danach
     // seine Uhr an, aber ein zurueckkehrender Spieler bekommt es im Aufbau.
@@ -248,6 +250,8 @@ export class Ansicht {
         if (stufe > vorher) this.beiZeitalter(stufe, this.zeitalterName(stufe));
       }
       this.untaetige = meine.u || [];
+      // Ein Angriff (kampf AC-14): app.js zeigt den Knopf, der hinspringt.
+      if (meine.m) this.beiAngriff({ x: meine.m[0], y: meine.m[1] });
       // Arbeiter je Rohstoff (bedienung AC-32), in der Reihenfolge des Servers.
       const [amHolz, anNahrung, amGold, amStein] = meine.a || [0, 0, 0, 0];
       this.arbeiter = { holz: amHolz, nahrung: anNahrung, gold: amGold, stein: amStein };

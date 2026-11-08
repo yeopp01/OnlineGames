@@ -1,0 +1,10 @@
+{
+  "spec": "10-strategie/kampf.md",
+  "ac": "AC-14",
+  "titel": "Die Kamera steht in der Mitte der Karte, das Dorf liegt woanders (Übersichtskarte); oben in der Mitte der rote Knopf „Du wirst angegriffen — hinsehen“",
+  "datei": "e2e/tests/strategie-angriffsmeldung.spec.mjs",
+  "pfad": [
+    "Angriffsmeldung",
+    "kampf AC-14: wer angegriffen wird, bekommt einen Knopf, und ein Klick springt hin"
+  ]
+}

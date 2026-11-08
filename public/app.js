@@ -112,6 +112,7 @@ function empfangen(nachricht) {
         ansicht.beiTaste = (e) => tasten.taste(e);
         ansicht.melden = spielMelden;
         ansicht.beiZeitalter = (stufe, name) => zeitalterwechselMelden(name);
+        ansicht.beiAngriff = (ort) => angriffZeigen(ort);
         ansicht.beiEnde = (ende, text) => partieendeZeigen(text);
         ansicht.sammelpunktSenden = (gebaeude, ziel) =>
           senden({ typ: 'befehl', auftrag: 'sammelpunkt', gebaeude, ziel });
@@ -164,6 +165,37 @@ function spielMelden(text) {
   spielMeldungUhr = setTimeout(() => { ort.hidden = true; }, 3000);
 }
 
+// ---- Angriff wird gemeldet (kampf AC-14) ---------------------------------
+// Ein Knopf oben in der Mitte: wer angegriffen wird, sieht es, auch wenn die
+// Kamera woanders steht, und ein Klick setzt sie dorthin. Er geht nach zehn
+// Sekunden von selbst - ein neuer Angriff anderswo bringt ihn wieder.
+let angriffUhr = null;
+
+function angriffZeigen(ort) {
+  const knopf = document.getElementById('angriffsmeldung');
+  knopf.dataset.x = String(ort.x);
+  knopf.dataset.y = String(ort.y);
+  knopf.hidden = false;
+  knopf.classList.remove('neu');
+  void knopf.offsetWidth; // die Einblendung von vorn beginnen
+  knopf.classList.add('neu');
+  clearTimeout(angriffUhr);
+  angriffUhr = setTimeout(() => { knopf.hidden = true; }, 10_000);
+}
+
+// Am Ende der Partie und bei der Revanche: was zur alten Partie gehoerte, geht.
+function angriffVerbergen() {
+  document.getElementById('angriffsmeldung').hidden = true;
+  clearTimeout(angriffUhr);
+}
+
+document.getElementById('angriffsmeldung').addEventListener('click', (ereignis) => {
+  const knopf = ereignis.currentTarget;
+  if (ansicht) ansicht.blickAuf(Number(knopf.dataset.x), Number(knopf.dataset.y));
+  knopf.hidden = true;
+  clearTimeout(angriffUhr);
+});
+
 // ---- Zeitalter (bedienung AC-33) -----------------------------------------
 // Oben in der Leiste steht, in welchem Zeitalter man ist; der Wechsel wird
 // einmal gross in der Mitte angekuendigt und verschwindet von selbst.
@@ -189,6 +221,7 @@ function spielzeitZeigen(text) {
 function partieendeZeigen(text) {
   document.getElementById('partieende').textContent = text;
   abschlusstafelFuellen();
+  angriffVerbergen();
   document.getElementById('abschluss').hidden = false;
   revancheZeigen();
   aufgebenFrageSchliessen();
@@ -221,6 +254,7 @@ function partieraumAufraeumen() {
   document.getElementById('abschluss').hidden = true;
   document.getElementById('partieende').textContent = '';
   aufgebenFrageSchliessen();
+  angriffVerbergen();
   leiste.ziel = {};
   leiste.gezeigt = {};
   leiste.von = {};

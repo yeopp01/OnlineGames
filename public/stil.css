@@ -366,6 +366,41 @@ canvas.angriffslauf {
   to { opacity: 1; transform: translate(-50%, 0); }
 }
 
+/* ---- Angriff wird gemeldet (kampf AC-14) --------------------------------- */
+/* Unter der Absage, damit beide zugleich stehen koennen; rot statt bernstein,
+   denn das ist keine Antwort auf einen Klick, sondern Gefahr. */
+.angriffsmeldung {
+  position: fixed;
+  left: 50%;
+  top: 7rem;
+  transform: translateX(-50%);
+  margin: 0;
+  padding: 0.5rem 1.2rem;
+  border: 1px solid #e0655588;
+  border-radius: 999px;
+  background: #3a1410f0;
+  color: #ffcdc4;
+  font: inherit;
+  font-weight: 700;
+  box-shadow: 0 4px 16px #000a;
+  cursor: pointer;
+}
+
+.angriffsmeldung:hover,
+.angriffsmeldung:focus-visible {
+  background: #52190f;
+  outline: 2px solid #ff9a85;
+  outline-offset: 2px;
+}
+
+.angriffsmeldung[hidden] {
+  display: none;
+}
+
+.angriffsmeldung.neu {
+  animation: einblenden 0.2s ease-out;
+}
+
 /* ---- Zeitalter (bedienung AC-33) ----------------------------------------- */
 
 /* Oben in der Leiste: in welchem Zeitalter man ist. */

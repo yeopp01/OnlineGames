@@ -101,6 +101,15 @@ etwas anderem gearbeitet.
 
 ## Offene Fäden
 
+- **Bildrückstand aus der Durchsicht nach Runde 115** (alle schon in der
+  eingecheckten Fassung so, keiner neu): kampf AC-01 = einheiten AC-31 — zwei
+  rote Milizen im Bild, die Unterschrift nennt eine, und Figuren stehen
+  halb übereinander; kampf AC-04 — Berts Dorfbewohner halb unter den
+  Auswahlringen; bedienung AC-34 — die rote Miliz fast ganz hinter dem
+  Zielzeichen; fahrplan AC-03 — „fünf Dorfbewohner und eine Miliz" ist im
+  weiten Bild nicht zählbar. Wer eines dieser Bilder anfasst, stellt es neu
+  auf (`figurenFrei`, näher heran).
+
 - **ki AC-13 liegt auf dem Zweig `strategie-ki-sicht`** (`8817c60`, Runden
   112 und 114): die KI mit eigener Sicht, Späher, Suche über die ganze Karte,
   überlegen nur mit frischem Blick. KI gegen KI: 35 von 40 Partien vor
@@ -1152,6 +1161,16 @@ mit HEAD 50 bis 56 ms je 1000 Takte, Feudalzeit Median 11,6 min, erstes Heer
 Neueste oben. Eine Zeile je Runde: Nummer, Datum, Kriterien, Ergebnis,
 wichtigste Erkenntnis.
 
+- **115** · 2026-11-08 · **kampf AC-14** — Angriff wird gemeldet (C6g ist
+  fertig): jeder Treffer meldet dem Besitzer den Ort im eigenen
+  Spielereintrag (im Nebel sieht ihn niemand sonst), einmal je Gefecht — 15
+  Felder, 20 Sekunden Pause, jeder Treffer beginnt sie neu. Im Bild ein roter
+  Knopf oben in der Mitte, ein Klick setzt die Kamera hin. Drei Gegenproben
+  mit `npm run gegenprobe`, das erste Mal mit dem neuen Werkzeug — und eine
+  davon zeigte, dass der Test zur Pause sie gar nicht prüfte (auch ohne die
+  Zeile grün); geschärft. Das erste Bild stand im schwarzen Nebel außerhalb
+  der Karte und zeigte nicht, dass die Kamera „woanders" ist — jetzt mit der
+  Sicht „Erkundet" in der Kartenmitte. Durchsicht: nichts Bestätigtes.
 - **114** · 2026-11-08 · **ki AC-13, zweiter Anlauf, nicht grün** — Zweig
   hereingeholt, gemessen, wieder hinausgelegt. Diesmal zuerst nachgesehen,
   wo es fehlt (Regel aus Runde 113), und das trug: Startwert 10 stand eine

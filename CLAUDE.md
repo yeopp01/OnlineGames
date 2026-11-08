@@ -158,7 +158,7 @@ Umfang hinzufügt, dort nachsehen.
 
 ## Stand
 
-**412 von 532 Kriterien fertig.** 499 Tests ohne Browser, 175 im Browser. Die
+**413 von 532 Kriterien fertig.** 503 Tests ohne Browser, 176 im Browser. Die
 Übersicht ist der Bericht: `npm run qa:report`.
 
 Gebaut ist der Unterbau: Räume, Übertragung, Karte, Wegfindung, Sammeln,
@@ -330,8 +330,10 @@ AC-15), und das Bild zeigt sie in drei Stufen, auch auf der Übersichtskarte
 (kampf AC-11, AC-12, darstellung AC-15) — der Browser rechnet die eigene Sicht
 in `public/nebel.js`, fremde Gebäude im Nebel aus der Erinnerung. **Der
 Server schickt jedem nur, was er sieht** (kampf AC-13): `welt.zustandJeSpieler`
-und `welt.aufbauFuer`, der Raum fragt nur, ob es sie gibt. Es folgen die KI mit
-eigener Sicht und die Meldung bei Angriff. Die **Sicht ist eine Einstellung beim Eröffnen** (kampf AC-16):
+und `welt.aufbauFuer`, der Raum fragt nur, ob es sie gibt. **Ein Angriff wird
+gemeldet** (kampf AC-14): roter Knopf oben, ein Klick springt hin. Offen ist
+die KI mit eigener Sicht (ki AC-13, auf dem Zweig `strategie-ki-sicht`,
+wartet auf eine Frage an den Benutzer). Die **Sicht ist eine Einstellung beim Eröffnen** (kampf AC-16):
 Nebel, Erkundet oder Aufgedeckt — Tests, die nicht vom Nebel handeln,
 eröffnen aufgedeckt (`partieZuZweit(…, { sicht: 'aufgedeckt' })`).
 

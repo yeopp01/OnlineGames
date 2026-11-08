@@ -2,7 +2,7 @@
 
 **Bereich:** Strategie
 **Kuerzel:** kampf
-**Stand:** 16/18 fertig · 1 offen · 1 zurueckgestellt
+**Stand:** 17/18 fertig · 1 zurueckgestellt
 
 ## Zweck
 
@@ -118,8 +118,14 @@ aus [Spielziel](spielziel.md) AC-10, gemessen in
   sieht, und was ihm im Nebel geschieht, erst beim nächsten Hinsehen; ebenso
   Feldänderungen (ein gefällter Baum, ein neuer Bauplatz). Wer ausscheidet oder
   wenn alles aufgedeckt ist, bekommt alles (Runde 110).
-- **AC-14** `offen` **Angriff wird gemeldet** — Wer angegriffen wird, bekommt einen Hinweis und
-  kann per Klick dorthin springen.
+- **AC-14** `fertig` **Angriff wird gemeldet** — Wer angegriffen wird, bekommt einen Hinweis und
+  kann per Klick dorthin springen. Gebaut in Runde 115: jeder Treffer auf
+  eine eigene Einheit oder ein eigenes Gebäude meldet dem Besitzer den Ort
+  im nächsten Zustand, in seinem eigenen Spielereintrag — im Nebel sieht ihn
+  sonst niemand (AC-13). Ein Gefecht an derselben Stelle (unter 15 Feldern)
+  meldet sich einmal, solange keine 20 Sekunden ohne Treffer vergehen; jeder
+  Treffer beginnt die Pause neu. Im Bild ein roter Knopf oben in der Mitte,
+  zehn Sekunden lang; ein Klick setzt die Kamera auf den Ort.
 - **AC-15** `fertig` **Sicht je Spieler berechnet** — Der Server rechnet je
   Spieler zweimal je Sekunde, welche Felder er **jetzt sieht** und welche er
   **je gesehen hat**. Eine Einheit sieht ihre Sichtweite aus den Daten, mit
