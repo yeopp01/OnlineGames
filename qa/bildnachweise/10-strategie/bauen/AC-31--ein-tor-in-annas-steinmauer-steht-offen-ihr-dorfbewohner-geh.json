@@ -1,0 +1,10 @@
+{
+  "spec": "10-strategie/bauen.md",
+  "ac": "AC-31",
+  "titel": "Ein Tor in Annas Steinmauer steht offen, ihr Dorfbewohner geht mitten hindurch",
+  "datei": "e2e/tests/strategie-mauern.spec.mjs",
+  "pfad": [
+    "Mauern",
+    "bauen AC-31: ein Tor ersetzt ein Feld der eigenen Mauer, und Annas Dorfbewohner geht hindurch"
+  ]
+}

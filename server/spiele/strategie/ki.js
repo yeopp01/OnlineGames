@@ -919,7 +919,7 @@ class Ki {
       // Die vier naechsten Randfelder genuegen: eine vergebliche Suche
       // durchflutet das ganze erreichbare Gebiet (Durchsicht Runde 91).
       return this.welt.randfelder(verlassen, e).slice(0, 4)
-        .some((f) => (f.x === von.x && f.y === von.y) || suchen(this.welt.karte, von, f).length);
+        .some((f) => (f.x === von.x && f.y === von.y) || suchen(this.welt.karte, von, f, this.welt.toreVon(e.besitzer)).length);
     });
     if (!bauer) {
       this.unerreichbar.set(BAUSTELLE + verlassen.id, this.welt.takt);

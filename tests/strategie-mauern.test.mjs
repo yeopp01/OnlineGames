@@ -182,3 +182,119 @@ test('bauen AC-30: faellt das Feld, an dem gebaut wird, geht der Bauer zum naech
   sekunden(welt, 70);
   assert.deepEqual(rest.map((id) => welt.gebaeude.get(id)?.fertig), [true, true, true, true]);
 });
+
+// ---- Tore (bauen AC-31) ---------------------------------------------------------
+
+/**
+ * Ein geschlossener Ring aus fertiger Mauer um die Mitte des freien Platzes:
+ * von x0 + 2 bis x0 + 8, ebenso in y. Innen ist (x0 + 5, y0 + 5), aussen
+ * (x0 + 5, y0). Das Tor kommt auf das Feld oben in der Mitte.
+ */
+function mauerring(welt, besitzer, x0, y0) {
+  for (let i = 2; i <= 8; i++) {
+    for (const [x, y] of [[x0 + i, y0 + 2], [x0 + i, y0 + 8], [x0 + 2, y0 + i], [x0 + 8, y0 + i]]) {
+      if (!welt.gebaeudeAn(x, y)) welt.gebaeudeAnlegen(besitzer, 'steinmauer', x, y, true);
+    }
+  }
+  return { innen: { x: x0 + 5, y: y0 + 5 }, aussen: { x: x0 + 5, y: y0 }, torfeld: { x: x0 + 5, y: y0 + 2 } };
+}
+
+test('bauen AC-31: das Tor mit den Werten der Vorlage - ab der Feudalzeit, ein Feld', () => {
+  const t = GEBAEUDE.tor;
+  assert.deepEqual(t.kosten, { stein: 30 });
+  assert.equal(t.bauzeit, 70);
+  assert.equal(t.leben, 2750);
+  assert.equal(t.zeitalter, 1);
+  assert.equal(t.groesse, 1, 'ein Feld statt vier - begruendet in den Daten');
+  assert.equal(t.tor, true);
+  assert.equal(t.ersetzt, 'steinmauer');
+  assert.ok(EINHEITEN.dorfbewohner.baut.includes('tor'));
+  assert.equal(t.bestand, false);
+  assert.equal(t.zumAufstieg, false);
+});
+
+test('bauen AC-31: ein Tor im Mauerring laesst Annas Dorfbewohner hinaus und Berts nicht hinein', () => {
+  const { welt, spieler, x0, y0, bauer } = feudalMitPlatz();
+  const { innen, aussen, torfeld } = mauerring(welt, 'a', x0, y0);
+  const anna = welt.einheitAnlegen('a', innen.x, innen.y, 'dorfbewohner');
+  const bert = welt.einheitAnlegen('b', x0, y0 + 1, 'dorfbewohner');
+
+  // Gegenprobe: ohne Tor ist der Ring zu - auch fuer Anna.
+  welt.befehl('a', [anna.id], aussen);
+  assert.deepEqual(anna.weg, [], 'ohne Tor kein Weg hinaus');
+
+  // Das Tor auf das Mauerfeld: es ersetzt die Mauer dort, ohne Erstattung.
+  const mauer = welt.gebaeudeAn(torfeld.x, torfeld.y);
+  assert.equal(mauer.art, 'steinmauer');
+  const steinVorher = spieler.stein;
+  const antwort = welt.nachricht('a', { auftrag: 'bauen', einheiten: [bauer.id], art: 'tor', ziel: torfeld });
+  assert.equal(antwort.fehler, undefined);
+  assert.equal(welt.gebaeude.has(mauer.id), false, 'das Mauerfeld ist ersetzt');
+  assert.equal(welt.gebaeudeAn(torfeld.x, torfeld.y).art, 'tor');
+  assert.equal(spieler.stein, steinVorher - 30);
+  // Siebzig Sekunden fuer einen Bauer, dazu der Weg: er geht durch die eigene
+  // Torbaustelle und baut von innen, gemessen 17 Felder, rund 21 Sekunden.
+  sekunden(welt, 100);
+  assert.equal(welt.gebaeude.get(antwort.gebaeude).fertig, true, 'ein Bauer braucht 70 Sekunden und den Weg');
+
+  // Anna geht durch das Tor hinaus.
+  welt.befehl('a', [anna.id], aussen);
+  assert.ok(anna.weg.some((f) => f.x === torfeld.x && f.y === torfeld.y), 'der Weg fuehrt durch das Tor');
+  sekunden(welt, 15);
+  assert.deepEqual(welt.feldVon(anna), aussen, 'Anna steht draussen');
+
+  // Bert kommt nicht hinein: fuer ihn ist das Tor eine Mauer.
+  welt.befehl('b', [bert.id], innen);
+  assert.deepEqual(bert.weg, [], 'fuer Bert kein Weg in den Ring');
+  sekunden(welt, 10);
+  const feld = welt.feldVon(bert);
+  assert.ok(feld.x < x0 + 2 || feld.y < y0 + 2, 'Bert steht weiter draussen');
+});
+
+test('bauen AC-31: ein Tor geht in eine Luecke oder auf die eigene Mauer - nicht auf fremde, nicht vor der Feudalzeit', () => {
+  const { welt, spieler, x0, y0, bauer } = feudalMitPlatz();
+  welt.gebaeudeAnlegen('b', 'steinmauer', x0 + 3, y0 + 3, true);
+  const fremd = welt.nachricht('a', { auftrag: 'bauen', einheiten: [bauer.id], art: 'tor', ziel: { x: x0 + 3, y: y0 + 3 } });
+  assert.equal(fremd.fehler, 'Hier ist kein Platz.', 'Berts Mauer bleibt Berts');
+  // Ein Haus ist keine Mauer: auch das eigene wird nicht ersetzt.
+  welt.gebaeudeAnlegen('a', 'haus', x0 + 7, y0 + 7, true);
+  assert.equal(welt.nachricht('a', { auftrag: 'bauen', einheiten: [bauer.id], art: 'tor', ziel: { x: x0 + 7, y: y0 + 7 } }).fehler, 'Hier ist kein Platz.');
+  // In eine Luecke auf Gras geht es.
+  assert.equal(welt.nachricht('a', { auftrag: 'bauen', einheiten: [bauer.id], art: 'tor', ziel: { x: x0 + 1, y: y0 + 1 } }).fehler, undefined);
+  // Und vor der Feudalzeit gar nicht.
+  spieler.zeitalter = 0;
+  assert.match(welt.nachricht('a', { auftrag: 'bauen', einheiten: [bauer.id], art: 'tor', ziel: { x: x0 + 9, y: y0 + 9 } }).fehler, /erst in der Feudalzeit/);
+});
+
+test('bauen AC-31: faellt das Tor, ist die Luecke fuer alle offen', () => {
+  const { welt, x0, y0 } = feudalMitPlatz();
+  const { innen, torfeld } = mauerring(welt, 'a', x0, y0);
+  welt.gebaeudeZerstoeren(welt.gebaeudeAn(torfeld.x, torfeld.y));
+  const tor = welt.gebaeudeAnlegen('a', 'tor', torfeld.x, torfeld.y, true);
+  assert.ok(welt.toreVon('a').has(torfeld.y * welt.karte.groesse + torfeld.x));
+  const bert = welt.einheitAnlegen('b', x0, y0 + 1, 'dorfbewohner');
+  welt.befehl('b', [bert.id], innen);
+  assert.deepEqual(bert.weg, [], 'solange das Tor steht, kein Weg');
+  welt.gebaeudeZerstoeren(tor);
+  assert.equal(welt.toreVon('a'), null, 'kein Tor mehr in der Liste');
+  welt.befehl('b', [bert.id], innen);
+  assert.ok(bert.weg.length > 0, 'durch die Luecke hinein');
+});
+
+test('bauen AC-31: liegt das naechste Randfeld hinter der Mauer, baut der Bauer von der Seite, die er erreicht', () => {
+  // Runde 128: wer das letzte Feld eines Rings setzt, findet das naechste
+  // Randfeld innen - ohne Weg dorthin gab er auf, und der Ring blieb offen.
+  const { welt, x0, y0, bauer } = feudalMitPlatz();
+  const { torfeld } = mauerring(welt, 'a', x0, y0);
+  // Das Feld oben in der Mitte ist nur eine Baustelle - der Ring ist zu.
+  welt.gebaeudeZerstoeren(welt.gebaeudeAn(torfeld.x, torfeld.y));
+  const luecke = welt.gebaeudeAnlegen('a', 'steinmauer', torfeld.x, torfeld.y, false);
+  const vorBauer = welt.randfeld(luecke, bauer);
+  assert.ok(vorBauer.y > torfeld.y, 'das naechste Randfeld liegt innen');
+  welt.befehl('a', [bauer.id], torfeld);
+  assert.equal(bauer.auftrag?.art, 'bauen');
+  assert.ok(bauer.weg.length > 0, 'ein Weg an die Aussenseite');
+  assert.ok(bauer.weg.at(-1).y < torfeld.y, 'er endet draussen');
+  sekunden(welt, 40);
+  assert.equal(welt.gebaeude.get(luecke.id).fertig, true, 'der Ring ist geschlossen');
+});

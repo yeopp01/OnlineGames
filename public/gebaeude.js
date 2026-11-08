@@ -1276,6 +1276,69 @@ function steinmauer(stift, e, farbe) {
   }
 }
 
+// ---- Tor ---------------------------------------------------------------------
+
+// Ein Torhaus auf einem Feld (bauen AC-31): hoeher als die Mauer, auf beiden
+// sichtbaren Seiten ein Bogen - so passt es in eine Mauer jeder Richtung, auch
+// schraeg. Zu fuellen den Bogen zwei Fluegel aus Bohlen mit Beschlaegen; offen
+// ist er dunkel, und die Fluegel stehen schmal an den Leibungen. Offen zeichnet
+// die Ansicht es, solange eine Einheit seines Besitzers davor steht.
+function torhaus(stift, e, farbe, { offen = false } = {}) {
+  const W = 0.98 * e;
+  vorbereiten(stift, e, W, W / 2);
+  const L = [-W, 0];
+  const B = [0, W / 2];
+  const R = [W, 0];
+  const T = [0, -W / 2];
+  const links = '#958e80';
+  const rechts = '#b7b0a0';
+  const hoehe = 1.6 * e;
+  flaeche(stift, [L, B, hoch(B, hoehe), hoch(L, hoehe)], verlauf(stift, links, hoch(L, hoehe), B, 0.06, -0.26));
+  mauerwerk(stift, L, B, hoehe, e, { reihen: 5, steine: 3, grund: links });
+  flaeche(stift, [B, R, hoch(R, hoehe), hoch(B, hoehe)], verlauf(stift, rechts, hoch(B, hoehe), R, 0.12, -0.14));
+  mauerwerk(stift, B, R, hoehe, e, { reihen: 5, steine: 3, grund: rechts });
+  const strich = Math.max(0.6, e * 0.035);
+  for (const [a, b] of [[L, B], [B, R]]) {
+    const p = (u, v) => wandpunkt(a, b, hoehe, u, v);
+    // Der Bogen: senkrechte Leibungen, oben rund.
+    const scheitel = (t) => 0.5 + 0.14 * Math.sin(Math.PI * t);
+    const bogen = [p(0.24, 0)];
+    for (let i = 0; i <= 10; i++) bogen.push(p(0.24 + 0.52 * (i / 10), scheitel(i / 10)));
+    bogen.push(p(0.76, 0));
+    // Ein Rahmen aus hellerem Haustein um den Bogen.
+    const rahmen = [p(0.19, 0)];
+    for (let i = 0; i <= 10; i++) rahmen.push(p(0.19 + 0.62 * (i / 10), scheitel(i / 10) + 0.07));
+    rahmen.push(p(0.81, 0));
+    flaeche(stift, rahmen, '#c9c2b2', false);
+    if (offen) {
+      flaeche(stift, bogen, '#2a2520');
+      // Die Fluegel, aufgeschlagen: schmale Streifen an den Leibungen.
+      flaeche(stift, [p(0.24, 0), p(0.31, 0), p(0.31, 0.5), p(0.24, 0.5)], '#6b4a2b');
+      flaeche(stift, [p(0.69, 0), p(0.76, 0), p(0.76, 0.5), p(0.69, 0.5)], '#5d4026');
+    } else {
+      flaeche(stift, bogen, verlauf(stift, '#7a5533', p(0.24, 0.6), p(0.76, 0), 0.1, -0.22));
+      // Bohlen, die Fuge zwischen den Fluegeln, zwei Beschlaege.
+      for (const u of [0.37, 0.63]) linie(stift, p(u, 0), p(u, scheitel((u - 0.24) / 0.52)), 'rgba(0,0,0,0.35)', strich);
+      linie(stift, p(0.5, 0), p(0.5, 0.64), '#3a2616', strich * 1.6);
+      for (const v of [0.12, 0.38]) linie(stift, p(0.25, v), p(0.75, v), '#2f2a26', strich * 1.4);
+    }
+  }
+  // Das Band in Spielerfarbe, knapp unter der Krone - wie an der Mauer.
+  for (const [a, b] of [[L, B], [B, R]]) {
+    flaeche(stift, [wandpunkt(a, b, hoehe, 0, 0.84), wandpunkt(a, b, hoehe, 1, 0.84),
+      wandpunkt(a, b, hoehe, 1, 0.92), wandpunkt(a, b, hoehe, 0, 0.92)], verlauf(stift, farbe, hoch(a, hoehe), b, 0.1, -0.2), false);
+  }
+  flaeche(stift, [L, B, R, T].map((p) => hoch(p, hoehe)), '#6d675d');
+  const zinne = 0.26 * e;
+  for (const [a, b, grund] of [[L, B, links], [B, R, rechts]]) {
+    for (let i = 0; i < 5; i += 2) {
+      const z0 = hoch(zwischen(a, b, i / 5), hoehe);
+      const z1 = hoch(zwischen(a, b, (i + 1) / 5), hoehe);
+      flaeche(stift, [z0, z1, hoch(z1, zinne), hoch(z0, zinne)], grund);
+    }
+  }
+}
+
 // ---- Kloster -----------------------------------------------------------------
 
 // Ein Schiff aus hellem Haustein mit steilem Schieferdach und Rundbogenfenstern,
@@ -1498,6 +1561,8 @@ export const GEBAEUDE = {
   },
   // Ein Feld, so breit wie die Raute, damit Nachbarn zur Wand werden (bauen AC-30).
   steinmauer: { name: 'Steinmauer', zeichnen: steinmauer, halbeBreite: 1.0, trefferBreite: 1.0, trefferOben: 2.0, trefferUnten: 0.6 },
+  // Ein Feld wie die Mauer, etwas hoeher (bauen AC-31).
+  tor: { name: 'Tor', zeichnen: torhaus, halbeBreite: 1.0, trefferBreite: 1.0, trefferOben: 2.4, trefferUnten: 0.6 },
 };
 
 /**
@@ -1511,14 +1576,15 @@ export const GEBAEUDE = {
  * @param {number} [bau] Baufortschritt 0 bis 1; darunter eine Baustelle
  * @param {number} [rest] bei einer Farm: Anteil der Nahrung, die noch da ist
  */
-export function gebaeudeZeichnen(stift, art, x, y, e, farbe, groesse, bau = 1, rest = 1) {
+// `offen`: ein Tor, durch das gerade Eigene gehen (bauen AC-31).
+export function gebaeudeZeichnen(stift, art, x, y, e, farbe, groesse, bau = 1, rest = 1, offen = false) {
   const gebaeude = GEBAEUDE[art];
   if (!gebaeude) return;
   const m = e * massstab(gebaeude, groesse);
   stift.save();
   stift.translate(x, y);
   if (bau < 1) baustelle(stift, m, gebaeude.halbeBreite * m, bau);
-  else gebaeude.zeichnen(stift, m, farbe, { rest });
+  else gebaeude.zeichnen(stift, m, farbe, { rest, offen });
   stift.restore();
 }
 
@@ -1528,10 +1594,10 @@ export function gebaeudeZeichnen(stift, art, x, y, e, farbe, groesse, bau = 1, r
 const ZWISCHENSPEICHER = new Map();
 const SPEICHER_MAX = 64;
 
-export function gebaeudeBildZeichnen(stift, art, x, y, e, farbe, groesse, bau = 1, rest = 1) {
+export function gebaeudeBildZeichnen(stift, art, x, y, e, farbe, groesse, bau = 1, rest = 1, offen = false) {
   const gebaeude = GEBAEUDE[art];
   if (!gebaeude || typeof document === 'undefined') {
-    gebaeudeZeichnen(stift, art, x, y, e, farbe, groesse, bau, rest);
+    gebaeudeZeichnen(stift, art, x, y, e, farbe, groesse, bau, rest, offen);
     return;
   }
   const restStufe = Math.ceil(Math.max(0, Math.min(1, rest)) * 10) / 10;
@@ -1540,7 +1606,7 @@ export function gebaeudeBildZeichnen(stift, art, x, y, e, farbe, groesse, bau = 
   // Baufortschritt in Zwanzigsteln: die Baustelle waechst sichtbar, der
   // Speicher bleibt klein.
   const stufe = bau < 1 ? Math.floor(bau * 20) / 20 : 1;
-  const schluessel = `${art}|${farbe}|${m.toFixed(2)}|${stufe}|${restStufe}|${dichte}`;
+  const schluessel = `${art}|${farbe}|${m.toFixed(2)}|${stufe}|${restStufe}|${dichte}|${offen ? 'offen' : ''}`;
   let bild = ZWISCHENSPEICHER.get(schluessel);
   // Breit genug fuer den Schlagschatten nach rechts.
   const breite = 10 * m;
@@ -1552,7 +1618,7 @@ export function gebaeudeBildZeichnen(stift, art, x, y, e, farbe, groesse, bau = 
     bild.height = Math.ceil((oben + unten) * dichte);
     const s = bild.getContext('2d');
     s.scale(dichte, dichte);
-    gebaeudeZeichnen(s, art, breite / 2, oben, e, farbe, groesse, stufe, restStufe);
+    gebaeudeZeichnen(s, art, breite / 2, oben, e, farbe, groesse, stufe, restStufe, offen);
     ZWISCHENSPEICHER.set(schluessel, bild);
     if (ZWISCHENSPEICHER.size > SPEICHER_MAX) ZWISCHENSPEICHER.delete(ZWISCHENSPEICHER.keys().next().value);
   } else {

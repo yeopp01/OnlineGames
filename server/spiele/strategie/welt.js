@@ -95,6 +95,7 @@ const GEBAEUDE_NAMEN = {
   belagerungswerkstatt: 'Die Belagerungswerkstatt',
   wachturm: 'Der Wachturm',
   steinmauer: 'Die Steinmauer',
+  tor: 'Das Tor',
 };
 
 // Dasselbe für die Einheiten (einheiten AC-23).
@@ -504,11 +505,15 @@ class Welt {
 
   // Taugt der Platz? Alle Felder auf der Karte, Gras, kein Tier darauf
   // (bauen AC-3). Einheiten stehen nicht im Weg - sie gehen beiseite.
-  platzPruefen(art, x, y) {
+  // `ausser`: ein Gebaeude, das der Neubau ersetzt (ein Tor auf der Mauer,
+  // bauen AC-31) - sein Platz zaehlt als frei.
+  platzPruefen(art, x, y, ausser = null) {
     if (!GEBAEUDE[art] || !Number.isInteger(x) || !Number.isInteger(y)) return false;
     const { x0, y0, x1, y1 } = this.grundflaeche(art, x, y);
+    const alt = ausser ? this.grundflaeche(ausser.art, ausser.x, ausser.y) : null;
     for (let fy = y0; fy <= y1; fy++) {
       for (let fx = x0; fx <= x1; fx++) {
+        if (alt && fx >= alt.x0 && fx <= alt.x1 && fy >= alt.y0 && fy <= alt.y1) continue;
         if (!karten.begehbar(this.karte, fx, fy)) return false;
       }
     }
@@ -520,10 +525,31 @@ class Welt {
     // Begehbare Gebaeude (Farmen) belegen kein Feld der Karte - sie werden hier
     // eigens ausgeschlossen, damit niemand ueber sie baut.
     for (const gebaeude of this.gebaeude.values()) {
+      if (gebaeude === ausser) continue;
       const g = this.grundflaeche(gebaeude.art, gebaeude.x, gebaeude.y);
       if (g.x0 <= x1 && g.x1 >= x0 && g.y0 <= y1 && g.y1 >= y0) return false;
     }
     return true;
+  }
+
+  /**
+   * Das eigene Gebaeude, das ein Neubau an dieser Stelle ersetzt - ein Tor auf
+   * einem Feld der eigenen Mauer (bauen AC-31). Nur genau deckungsgleich:
+   * gleicher Anker, gleiche Groesse. Sonst null.
+   */
+  ersetzbar(spielerId, art, x, y) {
+    const ersetzt = GEBAEUDE[art]?.ersetzt;
+    if (!ersetzt) return null;
+    const alt = this.gebaeudeAn(x, y);
+    if (!alt || alt.besitzer !== spielerId || alt.art !== ersetzt) return null;
+    if (alt.x !== x || alt.y !== y || GEBAEUDE[alt.art].groesse !== GEBAEUDE[art].groesse) return null;
+    return alt;
+  }
+
+  /** Die Tore eines Spielers als Feldnummern - fuer ihn begehbar (bauen AC-31). */
+  toreVon(besitzer) {
+    const tore = this.tore?.get(besitzer);
+    return tore && tore.size ? tore : null;
   }
 
   // Die Grundflaeche wird unbegehbar; wer darauf steht, geht zum naechsten
@@ -538,6 +564,13 @@ class Welt {
         this.karte.felder[i] = karten.BEBAUT;
         this.karte.vorrat.delete(i);
         this.feldAenderungen.push({ i, a: karten.BEBAUT });
+        // Fuer den Besitzer bleibt ein Tor begehbar (bauen AC-31) - auf der
+        // Karte ist es bebaut, die Wegsuche bekommt es eigens.
+        if (GEBAEUDE[gebaeude.art].tor) {
+          this.tore ??= new Map();
+          if (!this.tore.has(gebaeude.besitzer)) this.tore.set(gebaeude.besitzer, new Set());
+          this.tore.get(gebaeude.besitzer).add(i);
+        }
       }
     }
     for (const einheit of this.einheiten.values()) {
@@ -566,7 +599,7 @@ class Welt {
       for (let i = 1; i < schritte.length && !betroffen; i++) betroffen = ecke(schritte[i - 1], schritte[i]);
       if (!betroffen) continue;
       const ziel = einheit.weg[einheit.weg.length - 1];
-      einheit.weg = suchen(this.karte, this.feldVon(einheit), ziel);
+      einheit.weg = suchen(this.karte, this.feldVon(einheit), ziel, this.toreVon(einheit.besitzer));
     }
   }
 
@@ -579,6 +612,7 @@ class Welt {
         const i = fy * g + fx;
         this.karte.felder[i] = karten.GRAS;
         this.feldAenderungen.push({ i, a: karten.GRAS });
+        if (GEBAEUDE[gebaeude.art].tor) this.tore?.get(gebaeude.besitzer)?.delete(i);
       }
     }
   }
@@ -643,12 +677,17 @@ class Welt {
     }
     const x = Math.round(Number(ziel.x));
     const y = Math.round(Number(ziel.y));
-    if (!this.platzPruefen(art, x, y)) return { fehler: 'Hier ist kein Platz.' };
+    // Ein Tor auf der eigenen Mauer ersetzt dieses Feld (bauen AC-31).
+    const alt = this.ersetzbar(spielerId, art, x, y);
+    if (!this.platzPruefen(art, x, y, alt)) return { fehler: 'Hier ist kein Platz.' };
     const kosten = GEBAEUDE[art].kosten;
     for (const [rohstoff, menge] of Object.entries(kosten)) {
       if (spieler[rohstoff] < menge) return { fehler: `Zu wenig ${ROHSTOFF_NAMEN[rohstoff]}.` };
     }
     for (const [rohstoff, menge] of Object.entries(kosten)) spieler[rohstoff] -= menge;
+    // Das Mauerfeld verschwindet ohne Erstattung, wie in der Vorlage; wer daran
+    // baute, geht zum naechsten Feld seiner Mauer (welt.bauenWeiter).
+    if (alt) this.gebaeudeZerstoeren(alt);
     const baustelle = this.gebaeudeAnlegen(spielerId, art, x, y, false);
     for (const einheit of bauer) this.bauenBeginnen(einheit, baustelle);
     return { gebaeude: baustelle.id };
@@ -726,8 +765,29 @@ class Welt {
     einheit.baut = false;
     // `folge`: die naechsten Baustellen einer gezogenen Mauer (bauen AC-30).
     einheit.auftrag = { art: 'bauen', gebaeude: baustelle.id, ...(folge.length ? { folge } : {}) };
+    einheit.weg = this.wegZurBaustelle(einheit, baustelle);
+  }
+
+  /**
+   * Der Weg an den Rand einer Baustelle. Das naechste Randfeld genuegt nicht:
+   * an einer Mauer liegt es oft auf der anderen Seite, ohne Weg dorthin - ein
+   * Tor in einem Mauerring baute so niemand (Runde 128). Ist das naechste
+   * nicht erreichbar, kommen die naechsten vier Randfelder dran, wie bei der
+   * KI (eine vergebliche Suche durchflutet das ganze erreichbare Gebiet).
+   * Leer heisst: kein Weg, oder schon am Platz.
+   */
+  wegZurBaustelle(einheit, baustelle) {
+    const von = this.feldVon(einheit);
     const stand = this.randfeld(baustelle, einheit);
-    einheit.weg = stand ? this.wegNach(einheit, stand) : [];
+    if (!stand) return [];
+    const weg = this.wegNach(einheit, stand);
+    if (weg.length || (von.x === stand.x && von.y === stand.y)) return weg;
+    for (const feld of this.randfelder(baustelle, einheit).slice(0, 4)) {
+      if (feld.x === stand.x && feld.y === stand.y) continue;
+      const anders = this.wegNach(einheit, feld);
+      if (anders.length || (von.x === feld.x && von.y === feld.y)) return anders;
+    }
+    return [];
   }
 
   // Ein Weg zu einem Feld. Steht die Einheit schon auf dem Feld, aber nicht in
@@ -738,7 +798,7 @@ class Welt {
     if (feld.x === ziel.x && feld.y === ziel.y) {
       return einheit.x === ziel.x && einheit.y === ziel.y ? [] : [{ x: ziel.x, y: ziel.y }];
     }
-    return suchen(this.karte, feld, ziel);
+    return suchen(this.karte, feld, ziel, this.toreVon(einheit.besitzer));
   }
 
   // Eine Baustelle abreissen: erstattet wird, was noch nicht verbaut ist
@@ -1186,7 +1246,7 @@ class Welt {
       const tier = this.tiere.get(id);
       if (tier) {
         if (tier.besitzer !== spielerId || tier.geschlachtet) continue;
-        tier.weg = suchen(this.karte, { x: Math.round(tier.x), y: Math.round(tier.y) }, { x: zx, y: zy });
+        tier.weg = suchen(this.karte, { x: Math.round(tier.x), y: Math.round(tier.y) }, { x: zx, y: zy }, this.toreVon(tier.besitzer));
         continue;
       }
       const einheit = this.einheiten.get(id);
@@ -1329,7 +1389,7 @@ class Welt {
       einheit.weg = [];
       return;
     }
-    einheit.weg = suchen(this.karte, this.feldVon(einheit), ziel);
+    einheit.weg = suchen(this.karte, this.feldVon(einheit), ziel, this.toreVon(einheit.besitzer));
   }
 
   farmTakten(einheit) {
@@ -1387,7 +1447,7 @@ class Welt {
   wegZumTier(einheit, tier) {
     const feld = { x: Math.round(tier.x), y: Math.round(tier.y) };
     const stand = nachbarfeld(this.karte, feld, einheit);
-    einheit.weg = stand ? suchen(this.karte, this.feldVon(einheit), stand) : [];
+    einheit.weg = stand ? suchen(this.karte, this.feldVon(einheit), stand, this.toreVon(einheit.besitzer)) : [];
   }
 
   // Am Tier: beim ersten Mal schlachten, dann Nahrung nehmen wie an einem
@@ -1504,7 +1564,7 @@ class Welt {
 
   wegZumVorrat(einheit) {
     const stand = nachbarfeld(this.karte, einheit.auftrag.feld, einheit);
-    einheit.weg = stand ? suchen(this.karte, this.feldVon(einheit), stand) : [];
+    einheit.weg = stand ? suchen(this.karte, this.feldVon(einheit), stand, this.toreVon(einheit.besitzer)) : [];
   }
 
   // Abgegeben wird am naechsten fertigen eigenen Gebaeude, das den Rohstoff
@@ -1537,7 +1597,7 @@ class Welt {
     }
     const lager = this.lagerFuer(einheit);
     const stand = lager && this.randfeld(lager, einheit);
-    einheit.weg = stand ? suchen(this.karte, this.feldVon(einheit), stand) : [];
+    einheit.weg = stand ? suchen(this.karte, this.feldVon(einheit), stand, this.toreVon(einheit.besitzer)) : [];
     if (einheit.weg.length) return;
     if (!lager) {
       einheit.lagerSucheAb = this.takt + this.lagerPause(einheit);
@@ -1560,7 +1620,7 @@ class Welt {
     for (const l of lagerListe) {
       const feld = this.randfelder(l, einheit).find((f) => l !== lager || f.x !== stand.x || f.y !== stand.y);
       if (!feld) continue;
-      const weg = suchen(this.karte, von, feld);
+      const weg = suchen(this.karte, von, feld, this.toreVon(einheit.besitzer));
       if (weg.length) {
         einheit.weg = weg;
         return;
@@ -2434,8 +2494,7 @@ class Welt {
       } else if (!einheit.baut) {
         // Nicht angekommen und kein Weg mehr: noch einmal suchen, sonst das
         // naechste Feld einer Mauer, sonst aufgeben.
-        const stand = this.randfeld(baustelle, einheit);
-        einheit.weg = stand ? this.wegNach(einheit, stand) : [];
+        einheit.weg = this.wegZurBaustelle(einheit, baustelle);
         if (!einheit.weg.length) this.bauenWeiter(einheit);
       }
       return;
@@ -2950,6 +3009,8 @@ class Welt {
         gebaeude: Object.fromEntries(Object.entries(GEBAEUDE).map(([art, w]) => [art, {
           leben: w.leben, bildetAus: w.bildetAus, groesse: w.groesse, kosten: w.kosten, bauzeit: w.bauzeit,
           wohnraum: w.wohnraum, annahme: w.annahme, begehbar: Boolean(w.begehbar), nahrung: w.nahrung || null,
+          // Ein Tor laesst Eigene durch und darf auf die eigene Mauer (bauen AC-31).
+          tor: Boolean(w.tor), ersetzt: w.ersetzt || null,
           zeitalter: w.zeitalter || 0,
           // Acht Felder ueber den Rand (kampf AC-11, AC-15).
           sicht: w.sicht,

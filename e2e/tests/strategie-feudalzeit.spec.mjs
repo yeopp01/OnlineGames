@@ -94,16 +94,16 @@ test.describe('Feudalzeit am Stueck', () => {
     // in dieser Zeit steht. Eine Stufe weiter sind es mehr.
     const arten = await anna.evaluate(() => {
       const w = window.ansicht.werte;
-      // Nur was ausbildet oder forscht: der Wachturm steht auch ab der
-      // Feudalzeit, schiesst aber - in Runde 125 traf er Berts Reiter vor dem
-      // Speerkaempfer, und die Messung von Ruestung und Bonus unten zaehlte
-      // seinen Pfeil. Seine Gebaeude belegt e2e/tests/strategie-tuerme.spec.mjs.
-      // Ebenso ohne die gezogenen (die Steinmauer): sie bildet nichts aus, und
-      // in Runde 127 stand ihr Bauer danach nahe der ersten Wiese - Berts
-      // Reiter griff ihn an, er schlug zurueck (3), bevor der Speerkaempfer
-      // kam. Die Mauer belegt e2e/tests/strategie-mauern.spec.mjs.
+      // Nur was ausbildet oder forscht (`bildetAus` traegt beides). Die
+      // anderen stoerten diesen Fall je einmal: der Wachturm schiesst - in
+      // Runde 125 traf er Berts Reiter vor dem Speerkaempfer, und die Messung
+      // von Ruestung und Bonus unten zaehlte seinen Pfeil; der Bauer der
+      // Steinmauer stand in Runde 127 nahe der ersten Wiese, Berts Reiter
+      // griff ihn an, er schlug zurueck (3); und das Tor kostet Stein, den
+      // Anna hier nicht hat (Runde 128). Sie belegen strategie-tuerme und
+      // strategie-mauern.
       return w.einheiten.dorfbewohner.baut.filter((art) => w.gebaeude[art]?.zeitalter === 1
-        && !w.gebaeude[art].angriff && !w.gebaeude[art].gezogen);
+        && w.gebaeude[art].bildetAus.length > 0);
     });
     expect(arten.length, 'die Gebaeude der Feudalzeit').toBeGreaterThanOrEqual(3);
     const gebaut = {};
@@ -122,7 +122,8 @@ test.describe('Feudalzeit am Stueck', () => {
       const vorher = await anna.evaluate(() => window.ansicht.gebaeude.size);
       await anna.mouse.move(platz.bild.x, platz.bild.y, { steps: 3 });
       await anna.mouse.click(platz.bild.x, platz.bild.y);
-      await anna.waitForFunction((v) => window.ansicht.gebaeude.size > v, vorher, { timeout: 15_000 });
+      await expect.poll(() => anna.evaluate(() => window.ansicht.gebaeude.size), { message: `${art} als Baustelle`, timeout: 15_000 })
+        .toBeGreaterThan(vorher);
       // `u` ist der Baufortschritt und steht nur an Baustellen: fehlt er, steht es.
       gebaut[art] = await anna.evaluate(async (art) => {
         const a = window.ansicht;
@@ -253,8 +254,12 @@ test.describe('Feudalzeit am Stueck', () => {
           a.gewaehltesGebaeude = null;
           a.ausgewaehlt = new Set([meine[0][0]]);
           a.beiAuswahl();
+          // Der Blick aufs Ziel, nicht auf die Mitte zwischen beiden: der
+          // Bogenschuetze stand in Runde 128 dreissig Felder weit weg (die
+          // Schiessanlage stand anders, weil das Baumenue hoeher wurde), und
+          // der Klick auf die Mitte lag ausserhalb der Leinwand.
           a.kamera.zoom = 1.8;
-          a.blickAuf((meine[0][1].x + ziel.x) / 2, (meine[0][1].y + ziel.y) / 2);
+          a.blickAuf(ziel.x, ziel.y);
           return { punkt: a.zuBild(ziel.x, ziel.y), zielId };
         }, [kuerzel, feld, erwartung.kuerzel.spaeherreiter]);
         await anna.mouse.click(bild.punkt.x, bild.punkt.y, { button: 'right' });

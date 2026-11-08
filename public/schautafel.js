@@ -177,6 +177,9 @@ const GEBAEUDE_REIHE = [
   // Schiesst (bauen AC-29).
   { art: 'wachturm', groesse: 1, titel: 'Wachturm' },
   { art: 'steinmauer', groesse: 1, titel: 'Steinmauer' },
+  // Zu und offen (bauen AC-31).
+  { art: 'tor', groesse: 1, titel: 'Tor' },
+  { art: 'tor', groesse: 1, titel: 'Tor, offen', offen: true },
   { art: 'haus', groesse: 2, titel: 'Baustelle 20 %', bau: 0.2 },
   { art: 'haus', groesse: 2, titel: 'Baustelle 70 %', bau: 0.7 },
 ];
@@ -197,7 +200,7 @@ FARBEN.forEach((farbe, reihe) => {
     stift.fillRect(x + 6, oben, gebaeudeSpalte - 12, 170);
     // In Spielgroesse (e = 22 wie bei Zoom 1); das Dorfzentrum halb so gross, sonst passt es nicht.
     const e = eintrag.groesse === 4 ? 11 : eintrag.groesse === 3 ? 15 : 22;
-    gebaeudeZeichnen(stift, eintrag.art, x + gebaeudeSpalte / 2 - 8, oben + 120, e, farbe, eintrag.groesse, eintrag.bau ?? 1);
+    gebaeudeZeichnen(stift, eintrag.art, x + gebaeudeSpalte / 2 - 8, oben + 120, e, farbe, eintrag.groesse, eintrag.bau ?? 1, 1, Boolean(eintrag.offen));
     if (reihe === 1) {
       stift.fillStyle = '#e6e9ee';
       stift.font = '600 13px system-ui, sans-serif';
@@ -222,7 +225,7 @@ function gebaeudeMaske(art, farbe, bau = 1) {
   // Alle in derselben Groesse wie zwei Felder - nur, wer kleiner ist, in
   // seiner eigenen: der Aussenposten steht auf einem Feld und ist hoch; als
   // zwei Felder gezeichnet ragten Dach und Wimpel aus dem Blatt (Runde 109).
-  const felder = Math.min(2, GEBAEUDE_REIHE.find((g) => g.art === art && !g.bau)?.groesse || 2);
+  const felder = Math.min(2, GEBAEUDE_REIHE.find((g) => g.art === art && !g.bau && !g.offen)?.groesse || 2);
   gebaeudeZeichnen(s, art, groesse / 2, groesse * 0.72, 20, farbe, felder, bau);
   const { data } = s.getImageData(0, 0, groesse, groesse);
   const r = parseInt(farbe.slice(1, 3), 16);

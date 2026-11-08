@@ -43,13 +43,16 @@ function schaetzung(x1, y1, x2, y2) {
 
 // Gibt eine Liste von Feldern zurueck, ohne das Startfeld. Leer heisst:
 // kein Weg gefunden.
-function suchen(karte, start, ziel) {
+//
+// `frei`: Feldnummern, die nur fuer diesen Sucher begehbar sind - die Tore
+// seines Besitzers (bauen AC-31). Fuer jeden anderen bleiben sie bebaut.
+function suchen(karte, start, ziel, frei = null) {
   const g = karte.groesse;
   const felder = karte.felder;
   const startIndex = start.y * g + start.x;
   const zielIndex = ziel.y * g + ziel.x;
   if (startIndex === zielIndex) return [];
-  if (!begehbar(karte, ziel.x, ziel.y)) return [];
+  if (!begehbar(karte, ziel.x, ziel.y) && !(frei && frei.has(zielIndex))) return [];
 
   puffer(g);
   suche += 1;
@@ -118,9 +121,14 @@ function suchen(karte, start, ziel) {
       const ny = y + DY[r];
       if (nx < 0 || ny < 0 || nx >= g || ny >= g) continue;
       const nachbar = ny * g + nx;
-      if (felder[nachbar] !== GRAS) continue;
+      if (felder[nachbar] !== GRAS && !(frei && frei.has(nachbar))) continue;
       // Diagonal nur, wenn beide Nachbarfelder frei sind.
-      if (r >= 4 && (felder[y * g + nx] !== GRAS || felder[ny * g + x] !== GRAS)) continue;
+      if (r >= 4) {
+        const seite = y * g + nx;
+        const andere = ny * g + x;
+        if (felder[seite] !== GRAS && !(frei && frei.has(seite))) continue;
+        if (felder[andere] !== GRAS && !(frei && frei.has(andere))) continue;
+      }
       const neu = hier + PREIS[r];
       if (besucht[nachbar] === suche && neu >= kosten[nachbar]) continue;
       besucht[nachbar] = suche;

@@ -1271,6 +1271,25 @@ min (Runde 125).
 Neueste oben. Eine Zeile je Runde: Nummer, Datum, Kriterien, Ergebnis,
 wichtigste Erkenntnis.
 
+- **128** · 2026-11-09 · **bauen AC-31 fertig** — das Tor: ein Feld,
+  30 Stein, 70 Sekunden, für Eigene begehbar, für alle anderen eine Mauer.
+  Die Karte bleibt eine für alle; die Wegsuche bekommt die Tore des
+  Besitzers als Felder, die nur für ihn frei sind (`suchen(…, frei)`). Auf
+  die eigene Mauer gesetzt, ersetzt es das Feld ohne Erstattung. Im Test
+  gefunden, nicht gesucht: an einer Mauer liegt das nächste Randfeld einer
+  Baustelle oft auf der anderen Seite, ohne Weg — ein Tor in einem Ring
+  baute so niemand. `welt.wegZurBaustelle` nimmt dann die nächsten vier
+  Randfelder, wie es die KI schon tat. KI gegen KI wie HEAD (20/20 und
+  19/20 vor Minute 60, Median 36,4 und 39,9 min; die KI baut keine Tore).
+  `e2e:daten` fand wieder vor dem vollen Lauf einen Bruch, und wieder in
+  einer Annahme der Tests: das Tor gab dem Baumenü eine dritte Zeile, und
+  `platzImBild` hielt nur feste 260 Punkte Abstand vom unteren Rand — der
+  Klick auf den Bauplatz traf den Knopf der Mühle. Jetzt misst die Hilfe die
+  Oberkante der Leiste. Danach stand die Schießanlage anders, und der
+  Feudalzeit-Fall klickte auf die Mitte zwischen Schütze und Ziel, dreißig
+  Felder auseinander, außerhalb der Leinwand: der Blick geht jetzt aufs Ziel.
+  Der Filter dort liest jetzt „bildet aus oder forscht" (`bildetAus`)
+  statt Ausnahmen je Art aufzuzählen.
 - **127** · 2026-11-08 · **bauen AC-30 fertig** — die Steinmauer, gezogen
   statt geklickt: je freies Feld eine Baustelle zu 5 Stein, belegte Felder
   übersprungen, Schluss beim letzten bezahlbaren; die Bauer gehen die Folge

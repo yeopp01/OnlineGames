@@ -334,8 +334,15 @@ export function platzImBild(page, { n = 2, um, abstand = 5, seitlich = false }) 
         const y0 = y - Math.floor(n / 2);
         if (!frei(x0, y0)) continue;
         const p = a.zuBild(x0 + (n - 1) / 2, y0 + (n - 1) / 2);
-        // Im Bild und nicht unter der Leiste unten.
-        if (p.x < 120 || p.x > a.leinwand.clientWidth - 120 || p.y < 120 || p.y > a.leinwand.clientHeight - 260) continue;
+        // Im Bild und nicht unter der Leiste unten. Die Leiste waechst mit dem
+        // Baumenue: mit dem Tor bekam sie eine dritte Zeile, und der Klick auf
+        // einen Platz 260 Punkte ueber dem Rand traf den Knopf der Muehle
+        // (Runde 128). Deshalb ihre Oberkante, wo sie steht, mit Abstand.
+        const leiste = document.querySelector('#auswahlleiste');
+        const leinwand = a.leinwand.getBoundingClientRect();
+        const unten = Math.min(a.leinwand.clientHeight - 260,
+          leiste && !leiste.hidden && leiste.getClientRects().length ? leiste.getBoundingClientRect().top - leinwand.top - 60 : Infinity);
+        if (p.x < 120 || p.x > a.leinwand.clientWidth - 120 || p.y < 120 || p.y > unten) continue;
         return { x, y, bild: p };
       }
     }

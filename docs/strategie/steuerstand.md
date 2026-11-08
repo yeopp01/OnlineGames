@@ -13,7 +13,7 @@ hier nichts eintraegt, verliert den Faden beim naechsten Autocompact.
 
 ## Zuletzt fortgeschrieben
 
-2026-11-08, nach Runde 127 (**kampf AC-13, fahrplan AC-13, C6e fertig**: der
+2026-11-09, nach Runde 128 (**kampf AC-13, fahrplan AC-13, C6e fertig**: der
 Server schickt jedem nur, was er sieht - `welt.zustandJeSpieler`,
 `welt.aufbauFuer`, im Raum `sendenJe`. Fremde Gebaeude und Felder, die sich im
 Nebel aendern, kommen beim naechsten Hinsehen; wer ausscheidet, bekommt einmal
@@ -69,15 +69,23 @@ abgerissen oder nicht erreichbar ist). `mauerLinie()` und `MAUER_MAX = 60`
 stehen in welt.js und gelten fuer Browser und Server gleich. `zumAufstieg:
 false` in den Daten statt `art === 'haus'`. `e2e:daten` fand zwei Brueche
 (Hoehe auf einem Feld, der Mauerbauer neben der Wiese) - beide Annahmen der
-Tests. **Naechste Runde: D5 Rest** - das Tor (bauen AC-31), dann Mauern
-halten auf (kampf AC-21). ki AC-13 und einheiten AC-32 warten auf
-Antworten.)
+Tests. Runde 128: **bauen AC-31 fertig** - das Tor (30 Stein, 70 s, 2750
+Leben, ein Feld statt vier, Taste C). Auf der Karte bebaut; die Wegsuche
+bekommt `welt.toreVon(besitzer)` als Felder, die nur fuer ihn frei sind
+(`suchen(karte, start, ziel, frei)`) - **jeder neue Aufruf von `suchen` fuer
+eine Einheit uebergibt sie**. Auf die eigene Mauer gesetzt ersetzt es das
+Feld (`ersetzt: 'steinmauer'`, `welt.ersetzbar`, `platzPruefen(…, ausser)`).
+Offen gezeichnet, wenn eine eigene Einheit hoechstens 1,5 Felder davor
+steht (`ansicht.torOffen`). Neu `welt.wegZurBaustelle`: ist das naechste
+Randfeld nicht erreichbar, die naechsten vier. **Naechste Runde: kampf
+AC-21** (Mauern halten auf) - braucht die Ramme aus D6, also vermutlich
+erst D6. ki AC-13 und einheiten AC-32 warten auf Antworten.)
 
 ## Wo ich stehe
 
 - **Branch:** `strategie`. Nie auf `main` arbeiten, **nie pushen, nie deployen.**
-- **Board:** 423 von 555 Kriterien fertig · 1 in Arbeit · 5 in QA · 4 geplant ·
-  114 offen · 8 zurueckgestellt. 531 Tests ohne Browser, 182 im Browser.
+- **Board:** 425 von 555 Kriterien fertig · 1 in Arbeit · 5 in QA · 4 geplant ·
+  112 offen · 8 zurueckgestellt. 545 Tests ohne Browser, 184 im Browser.
 - **Fuenf Waechter in `tests/waechter-*.test.mjs`** (der fuenfte seit Runde 87: Bildschirmtext mit echten Umlauten): Gleichheit auf wachsenden
   Listen, verbesserbare Werte an `welt.einheitenwert()` vorbei,
   Bildunterschriften mit `${...}`, und (neu in Runde 73) die **Kuerzeltafel**

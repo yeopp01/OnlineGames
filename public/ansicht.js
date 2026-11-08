@@ -782,17 +782,47 @@ export class Ansicht {
     this.platzierenBeenden();
   }
 
+  /**
+   * Ein Tor steht offen, solange eine Einheit seines Besitzers hoechstens
+   * anderthalb Felder davor steht (bauen AC-31) - wie im Original oeffnet es
+   * sich fuer die eigenen Leute. Das rechnet nur das Bild; begehbar ist es fuer
+   * sie immer.
+   */
+  torOffen(tor) {
+    for (const einheit of this.nachher.values()) {
+      if (einheit.b === tor.b && !einheit.s && Math.hypot(einheit.x - tor.x, einheit.y - tor.y) <= 1.5) return true;
+    }
+    return false;
+  }
+
+  /**
+   * Das eigene Gebaeude, das ein Neubau an dieser Stelle ersetzt - ein Tor auf
+   * der eigenen Mauer (bauen AC-31), wie `welt.ersetzbar` auf dem Server.
+   */
+  ersetzbar(art, x, y) {
+    const ersetzt = this.werte.gebaeude[art]?.ersetzt;
+    if (!ersetzt) return null;
+    for (const gebaeude of this.gebaeude.values()) {
+      if (gebaeude.b === this.ich && gebaeude.art === ersetzt && gebaeude.x === x && gebaeude.y === y) return gebaeude;
+    }
+    return null;
+  }
+
   // Taugt der Platz fuer ein Gebaeude? Dieselbe Regel wie auf dem Server
   // (bauen AC-3). Auch die Browsertests fragen hier - so kann ihr Helfer nicht
   // von der Vorschau abweichen (Rueckschau Runde 35).
+  // Ein ersetzbares Gebaeude (ein Tor auf der eigenen Mauer, bauen AC-31)
+  // zaehlt als frei - nur ohne Rand, der Rand gilt dem Platz drumherum.
   platzTaugt(art, x, y, rand = 0) {
     const n = this.werte.gebaeude[art]?.groesse || 1;
     const x0 = x - Math.floor(n / 2) - rand;
     const y0 = y - Math.floor(n / 2) - rand;
     const m = n + 2 * rand;
     const g = this.karte.groesse;
+    const alt = rand === 0 ? this.ersetzbar(art, x, y) : null;
     for (let fy = y0; fy < y0 + m; fy++) {
       for (let fx = x0; fx < x0 + m; fx++) {
+        if (alt && fx === alt.x && fy === alt.y) continue;
         if (fx < 0 || fy < 0 || fx >= g || fy >= g || this.karte.felder[fy * g + fx] !== GRAS) return false;
       }
     }
@@ -803,6 +833,7 @@ export class Ansicht {
     }
     // Farmen liegen auf Gras, belegen ihren Platz aber trotzdem.
     for (const gebaeude of this.gebaeude.values()) {
+      if (gebaeude === alt) continue;
       const k = this.werte.gebaeude[gebaeude.art]?.groesse || 1;
       const gx0 = gebaeude.x - Math.floor(k / 2);
       const gy0 = gebaeude.y - Math.floor(k / 2);
@@ -1388,7 +1419,8 @@ export class Ansicht {
       stift.stroke();
     }
     const voll = this.werte.gebaeude[gebaeude.art]?.nahrung;
-    gebaeudeBildZeichnen(stift, gebaeude.art, p.x, p.y, e, spieler ? spieler.farbe : '#888888', groesse, gebaeude.u ?? 1, voll ? (gebaeude.n ?? voll) / voll : 1);
+    const offen = Boolean(this.werte.gebaeude[gebaeude.art]?.tor) && this.torOffen(gebaeude);
+    gebaeudeBildZeichnen(stift, gebaeude.art, p.x, p.y, e, spieler ? spieler.farbe : '#888888', groesse, gebaeude.u ?? 1, voll ? (gebaeude.n ?? voll) / voll : 1, offen);
   }
 
   namenZeichnen(spieler) {

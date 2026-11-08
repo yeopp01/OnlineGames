@@ -27,7 +27,7 @@ const EINHEITEN = {
     // Spiel. Getroffen wird er trotzdem wehrhaft.
     wacht: false,
     baut: ['haus', 'muehle', 'holzfaellerlager', 'bergbaulager', 'farm', 'kaserne', 'schiessanlage', 'stall', 'schmiede', 'aussenposten',
-      'kloster', 'universitaet', 'belagerungswerkstatt', 'wachturm', 'steinmauer'],
+      'kloster', 'universitaet', 'belagerungswerkstatt', 'wachturm', 'steinmauer', 'tor'],
   },
   // Ausgebildet wird er im Stall, also ab der Feudalzeit; zu Beginn steht
   // einer in der Startaufstellung (bauen AC-22).
@@ -179,6 +179,14 @@ const GEBAEUDE = {
   // Vorlage) und zaehlt nicht zum Aufstieg. Sicht 2 statt der 8 eines
   // Gebaeudes: eine lange Mauer waere sonst ein Band aus Aussenposten und
   // deckte den Nebel auf (kampf AC-18 bleibt beim Aussenposten).
+  // Ein Tor (bauen AC-31): fuer die eigenen Einheiten begehbar, fuer alle
+  // anderen eine Sperre wie die Mauer. Werte aus der Vorlage. Abweichung: ein
+  // Feld statt vier in einer Reihe - Gebaeude sind hier quadratisch, und ein
+  // Feld passt in eine Mauer jeder Richtung, auch schraeg. Gesetzt wird es in
+  // eine Luecke oder auf ein Feld der eigenen Mauer, das es ersetzt
+  // (`ersetzt`), wie in der Vorlage.
+  tor: { groesse: 1, kosten: { stein: 30 }, bauzeit: 70, leben: 2750, wohnraum: 0, annahme: [], bildetAus: [], zeitalter: 1,
+    tor: true, ersetzt: 'steinmauer', bestand: false, zumAufstieg: false, sicht: 2 },
   steinmauer: {
     groesse: 1, kosten: { stein: 5 }, bauzeit: 8, leben: 1800, wohnraum: 0, annahme: [], bildetAus: [], zeitalter: 1,
     gezogen: true, bestand: false, zumAufstieg: false, sicht: 2,

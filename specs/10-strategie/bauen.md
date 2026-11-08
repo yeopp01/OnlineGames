@@ -2,7 +2,7 @@
 
 **Bereich:** Strategie
 **Kuerzel:** bauen
-**Stand:** 27/34 fertig · 7 offen
+**Stand:** 28/34 fertig · 6 offen
 
 ## Zweck
 
@@ -222,9 +222,21 @@ Spezialeinheit der Burg (kommt mit den Völkern, Stufe E), Palisade.
   eine lange Mauer wäre sonst ein Band aus Außenposten. Gezeichnet als Block
   aus Haustein über die ganze Raute, mit Zinnen und einem Band in
   Spielerfarbe; gerade Nachbarn werden zur Wand.
-- **AC-31** `offen` **Tor lässt Eigene durch** — Ein Tor in einer Mauer ist
+- **AC-31** `fertig` **Tor lässt Eigene durch** — Ein Tor in einer Mauer ist
   für die eigenen Einheiten begehbar, für fremde eine Sperre. Die Wegsuche
   kennt den Unterschied.
+  Gebaut in Runde 128: Werte aus der Vorlage (30 Stein, 70 Sekunden, 2750
+  Leben, ab der Feudalzeit). Abweichung: **ein Feld statt vier** — Gebäude
+  sind hier quadratisch, und ein Feld passt in eine Mauer jeder Richtung,
+  auch schräg. Auf der Karte ist das Tor bebaut wie jedes Gebäude; die
+  Wegsuche bekommt die Tore des Besitzers als Felder, die nur für ihn frei
+  sind (`suchen(…, frei)`, `welt.toreVon`). Gesetzt wird es in eine Lücke
+  oder auf ein Feld der eigenen Mauer, das es ohne Erstattung ersetzt
+  (`ersetzt: 'steinmauer'`), wie in der Vorlage. Im Bild steht es offen,
+  solange eine eigene Einheit davor oder darin ist. Dabei gefunden: das
+  nächste Randfeld einer Baustelle liegt an einer Mauer oft auf der
+  falschen Seite, ohne Weg — `welt.wegZurBaustelle` versucht dann die
+  nächsten vier.
 - **AC-32** `offen` **Burg** — 650 Stein, 200 Sekunden, 4800 Leben, +20
   Bevölkerung; schießt (AC-29). Erst ab der Ritterzeit.
 - **AC-33** `offen` **Markt tauscht** — Am Markt kauft man 100 Holz, Nahrung
