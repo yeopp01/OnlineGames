@@ -133,10 +133,17 @@ const FEIND_VERGESSEN = 1800;
 const ERKUNDUNG_PUNKTE = 16;
 
 // Kantenlaenge der Bloecke, in denen sie sich merkt, wann sie wo zuletzt
-// hingesehen hat (ki AC-13), und wie weit um den letzten Ort des Gegners sie
-// sucht, in Feldern.
+// hingesehen hat (ki AC-13), in Feldern.
 const SUCH_BLOCK = 8;
-const SUCH_UMKREIS = 28;
+// Bei der Suche wiegt ein Feld Entfernung vom letzten bekannten Ort so viel
+// wie zehn Takte, die der Block laenger nicht gesehen wurde. Nie gesehene
+// Bloecke gelten als zehn Minuten alt.
+const SUCH_TAKTE_JE_FELD = 10;
+const SUCH_NIE_GESEHEN = 6000;
+
+// Wie frisch ihr Blick auf das Dorf des Gegners sein muss, damit sie sich fuer
+// ueberlegen haelt (ki AC-18 mit ki AC-13), in Takten: eine Minute.
+const UEBERLEGEN_FRISCH = 600;
 
 // Wie weit ein zweites Ziel derselben Entscheidung von einem schon vergebenen
 // wegbleibt. Ein Befehl an mehrere stellt sie um sein Ziel herum auf
@@ -411,7 +418,23 @@ class Ki {
     const gegner = this.naechsterGegner();
     if (!gegner) return false;
     const meine = this.kampfeinheitenVon(this.spielerId);
-    return meine >= HEER && this.gesehenVon(gegner.id) * UEBERLEGEN <= meine;
+    if (meine < HEER || this.gesehenVon(gegner.id) * UEBERLEGEN > meine) return false;
+    // Sicher ist sie nur, wenn sie eben erst hingesehen hat: ohne frischen
+    // Blick auf sein Dorf hielt sie sich fuer ueberlegen, weil sie sein Heer
+    // im Nebel nicht sah, und schickte immer wieder zwei, drei los, die
+    // einzeln fielen - KI gegen KI griff bis zu achtzigmal an und stand eine
+    // Stunde im Patt (Runde 114, gemessen).
+    const ziel = this.gegnerZiel(gegner);
+    return Boolean(ziel) && this.welt.takt - this.blockZuletzt(ziel) < UEBERLEGEN_FRISCH;
+  }
+
+  // Wann sie den Block um diesen Ort zuletzt sah.
+  blockZuletzt(ort) {
+    if (!this.blockGesehen) return -Infinity;
+    const je = Math.ceil(this.welt.karte.groesse / SUCH_BLOCK);
+    const bx = Math.floor(Math.round(ort.x) / SUCH_BLOCK);
+    const by = Math.floor(Math.round(ort.y) / SUCH_BLOCK);
+    return this.blockGesehen[by * je + bx] ?? -Infinity;
   }
 
   // Fremde Kampfeinheiten eines Spielers, die sie zuletzt gesehen hat.
@@ -658,8 +681,9 @@ class Ki {
   }
 
   /**
-   * Suchen wie ein Mensch (ki AC-13): um den Ort, an dem sie den Gegner
-   * zuletzt sah, der Block, auf den sie am laengsten nicht geschaut hat.
+   * Suchen wie ein Mensch (ki AC-13): der Block, auf den sie am laengsten
+   * nicht geschaut hat - nahe dem Ort, an dem sie den Gegner zuletzt sah,
+   * zuerst.
    * "Erkundet" reicht dafuer nicht - ein Haus, das nach dem Vorbeiritt des
    * Spaehers gebaut wurde, steht auf erkundetem Grund. Ohne diese Suche zog
    * das Heer nach dem letzten bekannten Gebaeude zurueck an den Ring bei der
@@ -670,15 +694,22 @@ class Ki {
     if (!this.blockGesehen) this.wahrnehmen();
     const g = this.welt.karte.groesse;
     const je = Math.ceil(g / SUCH_BLOCK);
+    const jetzt = this.welt.takt;
     let bester = null;
     for (let by = 0; by < je; by++) {
       for (let bx = 0; bx < je; bx++) {
         const x = Math.min(g - 1, bx * SUCH_BLOCK + SUCH_BLOCK / 2);
         const y = Math.min(g - 1, by * SUCH_BLOCK + SUCH_BLOCK / 2);
-        const d = Math.hypot(x - um.x, y - um.y);
-        if (d > SUCH_UMKREIS) continue;
+        // Mitten im See oder im Wald steht kein Gebaeude und keiner kommt hin.
+        if (!karten.begehbar(this.welt.karte, x, y)) continue;
         const zuletzt = this.blockGesehen[by * je + bx];
-        if (!bester || zuletzt < bester.zuletzt || (zuletzt === bester.zuletzt && d < bester.d)) bester = { x, y, d, zuletzt };
+        const alter = zuletzt === -Infinity ? jetzt + SUCH_NIE_GESEHEN : jetzt - zuletzt;
+        // Ueber die ganze Karte, aber nah am letzten Ort zuerst: wer nur im
+        // Umkreis suchte, pendelte zwischen eben gesehenen Bloecken - in
+        // Runde 114 stand ein Heer von 175 eine Stunde lang neben dem Dorf,
+        // dessen letztes Gebaeude weiter draussen stand.
+        const wert = alter - Math.hypot(x - um.x, y - um.y) * SUCH_TAKTE_JE_FELD;
+        if (!bester || wert > bester.wert) bester = { x, y, wert };
       }
     }
     return bester ? { x: bester.x, y: bester.y } : null;

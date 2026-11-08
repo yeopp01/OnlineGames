@@ -18,7 +18,7 @@
 // Zurueckkopieren lief, und die KI-Datei blieb veraendert liegen.
 import { spawnSync } from 'node:child_process';
 import { readFileSync, writeFileSync } from 'node:fs';
-import { join, dirname } from 'node:path';
+import { join, dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const WURZEL = join(dirname(fileURLToPath(import.meta.url)), '..');
@@ -31,12 +31,13 @@ if (trenner < 2 || trenner === argumente.length - 1) {
 }
 const [datei, ...aenderung] = argumente.slice(0, trenner);
 const befehl = argumente.slice(trenner + 1);
-const pfad = join(WURZEL, datei);
+// Relativ zur Wurzel oder absolut (etwa eine Kopie im Temp-Ordner).
+const pfad = resolve(WURZEL, datei);
 const vorher = readFileSync(pfad, 'utf8');
 
 let nachher;
 if (aenderung[0] === '--datei') {
-  nachher = readFileSync(join(WURZEL, aenderung[1]), 'utf8');
+  nachher = readFileSync(resolve(WURZEL, aenderung[1]), 'utf8');
 } else {
   const [alt, neu = ''] = aenderung;
   const anzahl = vorher.split(alt).length - 1;
