@@ -13,21 +13,18 @@ hier nichts eintraegt, verliert den Faden beim naechsten Autocompact.
 
 ## Zuletzt fortgeschrieben
 
-2026-11-08, nach Runde 96 (**ki AC-18** ueberlegen zieht alles los: hat die
-KI dreimal so viele Kampfeinheiten wie der Gegner, gehen alle bis auf die
-Wache, nie einer allein. KI gegen KI: alle 20 mit Sieger, 19 vor Minute 60,
-die laengste nach 62,0 Minuten, im Median nach 38. **fahrplan AC-11 bleibt
-offen** (eine Partie 2 Minuten zu lang): die langen Partien sind ein Patt
-(je rund zehn Kampfeinheiten von Minute 20 bis 60).
-Kandidaten in den Erkenntnissen unter "Offene Faeden". **Naechste
-Rueckschau: Runde 98.** Die Figuren bei Zoom 1 sind als Faden notiert: eine
-Runde nach C4, vor C5.)
+2026-11-08, nach Runde 97 (**fahrplan AC-11 ist fertig**: KI gegen KI endet
+ueber zwanzig Startwerte mit Sieger, jede Partie vor Minute 60, Median 33,8.
+Dazu **ki AC-19**: wer nie wieder etwas tun kann, gibt auf. **C4 ist damit
+fertig**; als Naechstes C5 (Mensch gegen KI: spielauswahl AC-18, AC-19,
+fahrplan AC-12) - vorher die Figuren bei Zoom 1 (Faden, eine Runde vor C5).
+**Naechste Rueckschau: Runde 98** - also die naechste Runde.)
 
 ## Wo ich stehe
 
 - **Branch:** `strategie`. Nie auf `main` arbeiten, **nie pushen, nie deployen.**
-- **Board:** 396 von 524 Kriterien fertig · 1 in Arbeit · 5 in QA · 4 geplant ·
-  110 offen · 8 zurueckgestellt. 473 Tests ohne Browser, 167 im Browser.
+- **Board:** 398 von 525 Kriterien fertig · 1 in Arbeit · 5 in QA · 4 geplant ·
+  109 offen · 8 zurueckgestellt. 476 Tests ohne Browser, 167 im Browser.
 - **Fuenf Waechter in `tests/waechter-*.test.mjs`** (der fuenfte seit Runde 87: Bildschirmtext mit echten Umlauten): Gleichheit auf wachsenden
   Listen, verbesserbare Werte an `welt.einheitenwert()` vorbei,
   Bildunterschriften mit `${...}`, und (neu in Runde 73) die **Kuerzeltafel**

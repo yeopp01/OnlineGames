@@ -2,7 +2,7 @@
 
 **Bereich:** Strategie
 **Kuerzel:** ki
-**Stand:** 17/18 fertig · 1 offen
+**Stand:** 18/19 fertig · 1 offen
 
 ## Zweck
 
@@ -167,6 +167,19 @@ nicht die Regeln.
   Fernkämpfer), machte es schlechter — 16 von 20 vor Minute 60, Median 47
   Minuten —, weil die Überlegenheit auch mitten im Patt kurz eintritt und die
   KI dann die falschen Einheiten baut.
+- **AC-19** `fertig` **Aussichtslos gibt sie auf** — Kann die KI nie wieder
+  etwas tun — keine Einheit lebt, in keiner Schlange steht etwas (auch kein
+  bezahlter Aufstieg), und
+  kein fertiges Gebäude kann eine ausbilden, die jetzt bezahlt wäre —, gibt
+  sie auf ([Spielziel](spielziel.md) AC-6), wie der Computergegner im
+  Original. Eine Einschätzung „wird wohl verlieren" ist das bewusst nicht:
+  wer noch einen Dorfbewohner hat oder 50 Nahrung neben dem Dorfzentrum,
+  spielt weiter. Beim Startwert 5 stand die KI ab Minute 53,5 mit 28 Nahrung
+  und ohne Einheit da, der Sieger schliff ihre Gebäude bis Minute 62 (Runde
+  97). Damit enden alle zwanzig Partien vor Minute 60 (fahrplan AC-11).
+  **Gemessen und verworfen:** stattdessen gegen einen Gegner ohne
+  Kampfeinheit nur Nahkämpfer auszubilden — die längste Partie endete nach
+  61,9 statt 62,0 Minuten, weil das Heer beim Schleifen schon steht.
 
 ## Grenzfaelle
 

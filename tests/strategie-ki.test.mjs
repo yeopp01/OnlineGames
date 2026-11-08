@@ -1453,3 +1453,38 @@ test('ki AC-18: auch ueberlegen zieht keiner allein los', () => {
   assert.equal(lauf(WACHE + MARSCH_MINDESTENS - 1), undefined, 'mit einem ueber der Wache bleibt er');
   assert.equal(lauf(WACHE + MARSCH_MINDESTENS)?.einheiten.length, MARSCH_MINDESTENS, 'zu zweit gehen sie');
 });
+
+// ---- Aufgeben, wenn nichts mehr geht (ki AC-19, Runde 97) -------------------
+
+test('ki AC-19: die KI gibt auf, wenn nie wieder etwas geschehen kann - und nur dann', () => {
+  const welt = new Welt(ZWEI, 4711);
+  const ki = new Ki(welt, 'b');
+  const b = welt.spielerVon('b');
+  for (const e of [...welt.einheiten.values()]) if (e.besitzer === 'b') welt.einheiten.delete(e.id);
+  for (const r of ['nahrung', 'holz', 'gold', 'stein']) b[r] = 0;
+  const preis = EINHEITEN.dorfbewohner.kosten.nahrung;
+  const zentrum = [...welt.gebaeude.values()].find((g) => g.besitzer === 'b' && g.art === 'dorfzentrum');
+  const lage = () => ki.aussichtslos(
+    [...welt.einheiten.values()].filter((e) => e.besitzer === 'b'),
+    [...welt.gebaeude.values()].filter((g) => g.besitzer === 'b'),
+  );
+  // Gegenproben: jedes Mal fehlt genau eine Bedingung.
+  b.nahrung = preis;
+  assert.equal(lage(), false, 'mit Nahrung fuer einen Dorfbewohner geht es weiter');
+  b.nahrung = preis - 1;
+  zentrum.schlange = ['dorfbewohner'];
+  assert.equal(lage(), false, 'mit einem in der Schlange geht es weiter');
+  // Durchsicht Runde 97: auch ein bezahlter Aufstieg ist etwas, das noch kommt.
+  zentrum.schlange = ['feudalzeit'];
+  assert.equal(lage(), false, 'mit dem Aufstieg in der Schlange geht es weiter');
+  zentrum.schlange = [];
+  const letzter = welt.einheitAnlegen('b', b.basis.x + 5, b.basis.y + 5, 'dorfbewohner');
+  assert.equal(lage(), false, 'mit einem Dorfbewohner geht es weiter');
+  letzter.tot = true;
+  assert.equal(lage(), true, 'ein Gefallener zaehlt nicht');
+  welt.einheiten.delete(letzter.id);
+  // Und dann gibt sie auf: die Partie hat einen Sieger.
+  ki.entscheiden();
+  assert.equal(b.aus, true, 'ausgeschieden');
+  assert.equal(welt.ende?.sieger, 'a', 'Anna gewinnt');
+});

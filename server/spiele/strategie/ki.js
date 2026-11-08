@@ -210,6 +210,13 @@ class Ki {
     const gebaeude = [...welt.gebaeude.values()].filter((g) => g.besitzer === this.spielerId);
     const zentrum = gebaeude.find((g) => g.art === 'dorfzentrum' && g.fertig);
 
+    // Nichts geht mehr (ki AC-19): dann gibt sie auf, wie der Computergegner
+    // im Original - statt dass der Sieger noch Minuten lang Haeuser schleift.
+    if (!this.spieler.aus && !welt.ende && this.aussichtslos(eigene, gebaeude)) {
+      this.senden({ auftrag: 'aufgeben' });
+      return;
+    }
+
     if (!this.schafeGetrieben) this.schafeTreiben();
 
     // Wohnraum: ein Haus, bevor er voll ist - frueher, je schneller es waechst.
@@ -330,6 +337,32 @@ class Ki {
       return art;
     }
     return null;
+  }
+
+  /**
+   * Aussichtslos (ki AC-19) heisst: es kann nie wieder etwas geschehen. Keine
+   * Einheit lebt - also sammelt niemand, und kein Vorrat waechst mehr -, in
+   * keiner Schlange steht etwas, und kein fertiges Gebaeude kann eine
+   * ausbilden, die jetzt bezahlt waere. Gefallen ist dann nur noch, was der
+   * Sieger schleifen muesste: beim Startwert 5 achteinhalb Minuten lang, mit
+   * 28 Nahrung im Vorrat und einem Dorfzentrum ohne Dorfbewohner (Runde 97).
+   * Eine Einschaetzung "wird wohl verlieren" ist das bewusst nicht.
+   */
+  aussichtslos(eigene, gebaeude) {
+    if (eigene.some((e) => !e.tot)) return false;
+    for (const g of gebaeude) {
+      // Jeder Eintrag zaehlt, nicht nur Einheiten: ein bezahlter Aufstieg
+      // oder eine Verbesserung wird fertig und kann ein Gebaeude freischalten
+      // (Durchsicht Runde 97).
+      if (g.schlange.length) return false;
+      if (!g.fertig) continue;
+      for (const art of GEBAEUDE[g.art].bildetAus) {
+        const werte = EINHEITEN[art];
+        if (!werte || (werte.zeitalter || 0) > this.spieler.zeitalter) continue;
+        if (Object.entries(werte.kosten).every(([r, menge]) => this.spieler[r] >= menge)) return false;
+      }
+    }
+    return true;
   }
 
   // Kampfeinheiten eines Spielers, die noch stehen.

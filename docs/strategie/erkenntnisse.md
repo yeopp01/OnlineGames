@@ -76,26 +76,6 @@ etwas anderem gearbeitet.
   Pendeln (die Schwellen 300/600 und die Sperre verhindern es), aber ein
   teilweises Gegensteuern. Kandidat, wenn ki AC-10 oder fahrplan AC-11 daran
   hängen.
-- **fahrplan AC-11: 19 von 20 vor Minute 60, alle 20 mit Sieger** (Runde
-  96); die längste endet nach 62,0 Minuten. Die langen Partien sind ein
-  **Patt** (Startwert 5 in der Messung davor): von Minute 20 bis 60 stehen
-  auf beiden Seiten rund zehn Kampfeinheiten, beide Wirtschaften bei 22
-  Dorfbewohnern und fast leerem Vorrat, jeder Angriff zu acht reibt sich an
-  der Wache auf. Kein Aufräumproblem mehr, sondern eines der Entscheidung im
-  Gleichgewicht.
-  Kandidaten, je erst zu messen: mehr Dorfbewohner nach dem Aufstieg (im
-  Original 25 bis 30 in der Feudalzeit), angreifen erst, wenn das eigene Heer
-  das daheim stehende des Gegners übertrifft. Ehrlich bleibt auch: zwei
-  gleiche KIs im Gleichgewicht sind ein Patt, und die Ritterzeit (Stufe D)
-  bringt die Ramme. Vorgeschichte (Runde 92): 4 von 20 Partien endeten vor
-  Minute 60, 17 vor Minute 90. Der
-  Sieger steht oft mit 80 Kampfeinheiten neben elf Gebäuden des Verlierers
-  und schleift sie mit Plänklern zu einem Punkt je Schuss. Versucht und
-  verworfen: das ganze Heer losschicken, Nahkämpfer aus der Kaserne (je für
-  sich und zusammen, Zahlen in Runde 92). Vor dem nächsten Versuch die
-  Kriterien schreiben: Ziele nach Wert wählen, Nahkämpfer gegen Gebäude,
-  Überlegenheit erkennen und nachsetzen — und erst messen, warum die drei
-  Remis Remis sind (Startwerte 13, 14, 16).
 - **Figuren bei Zoom 1 sind die schwächste Stelle des Bildes** (Rückschau
   nach Runde 88, Frage des Benutzers nach besseren Figuren). Schmal, knapp 29
   Bildpunkte hoch, wenig Kontrast zum Boden; das Dorfzentrum wirkt wie ein
@@ -971,6 +951,25 @@ alle sieben Gebäude der Dunklen Zeit stehen. Was sich wiederholt hat:
 Neueste oben. Eine Zeile je Runde: Nummer, Datum, Kriterien, Ergebnis,
 wichtigste Erkenntnis.
 
+- **97** · 2026-11-08 · **ki AC-19, fahrplan AC-11** — **KI gegen KI endet:
+  zwanzig von zwanzig Partien mit Sieger, jede vor Minute 60** (24,8 bis 53,3,
+  Median 33,8; Runde 92 waren es 4 von 20). Die letzte lange Partie
+  (Startwert 5, 62,0 min) angesehen: kein Patt mehr, sondern ab Minute 53,5
+  ein Verlierer ohne jede Einheit mit 28 Nahrung, dessen 28 Gebäude achteinhalb
+  Minuten lang geschleift wurden. Zuerst nochmals das Schleifen mit
+  Nahkämpfern versucht, jetzt nur gegen einen Gegner ganz ohne Kampfeinheit:
+  61,9 statt 62,0 — wirkungslos, das Heer steht beim Schleifen schon,
+  zurückgenommen. Dann: **die KI gibt auf, wenn nie wieder etwas geschehen
+  kann** (keine Einheit, nichts in einer Schlange, nichts bezahlbar), wie der
+  Computergegner im Original; bewusst keine Einschätzung „wird verlieren". Die
+  Durchsicht fand, dass ein bezahlter Aufstieg in der Schlange nicht zählte
+  (behoben, Test mit Gegenprobe gegen die alte Zeile) und dass fehlender
+  Wohnraum das Aufgeben verhindert (harmlos: dann bleibt es wie vorher). Der
+  Messtest über zwanzig Partien hat eine eigene Datei, sonst verdoppelte er
+  `npm run check` (88 statt 48 s). **Gelernt: wer fragt, warum es nicht
+  endet, findet manchmal, dass es längst entschieden ist** — die letzten
+  achteinhalb Minuten waren keine Frage der Stärke mehr, sondern eine, die
+  im Original der Verlierer selbst beantwortet.
 - **96** · 2026-11-08 · **ki AC-18** — überlegen zieht alles los. Die zwei
   langen Partien angesehen: Startwert 4 war ab Minute 48 entschieden, der
   Sieger schickte aber je acht, während daheim bis zu 85 warteten, und brauchte

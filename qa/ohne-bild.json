@@ -3,6 +3,16 @@
   "eintraege": [
     {
       "spec": "10-strategie/ki.md",
+      "ac": "AC-19",
+      "begruendung": "Wann die KI aufgibt, ist eine Pruefung ihres eigenen Zustands in ihrer Entscheidung, belegt im Rechenteil mit Gegenproben fuer jede Bedingung. Was danach im Bild steht, ist dasselbe wie beim Aufgeben eines Menschen und dort nachgewiesen (bedienung AC-38, spielziel AC-6)."
+    },
+    {
+      "spec": "10-strategie/fahrplan.md",
+      "ac": "AC-11",
+      "begruendung": "Wie zwanzig ganze Partien KI gegen KI ausgehen und wann - eine Messung ueber Startwerte im Pruefstand ohne Browser. Ein Bild zeigt einen Augenblick einer Partie, nicht wie zwanzig enden."
+    },
+    {
+      "spec": "10-strategie/ki.md",
       "ac": "AC-18",
       "begruendung": "Ob die KI ueberlegen ist und deshalb alle bis auf die Wache losschickt, ist ein Vergleich zweier Zahlen in ihrer Entscheidung, belegt im Rechenteil und ueber ganze Partien (wie viele vor Minute 60 enden). Ein Standbild zeigt marschierende Einheiten, nicht, warum gerade so viele losgingen."
     },

@@ -156,7 +156,7 @@ Umfang hinzufügt, dort nachsehen.
 
 ## Stand
 
-**396 von 524 Kriterien fertig.** 473 Tests ohne Browser, 167 im Browser. Die
+**398 von 525 Kriterien fertig.** 476 Tests ohne Browser, 167 im Browser. Die
 Übersicht ist der Bericht: `npm run qa:report`.
 
 Gebaut ist der Unterbau: Räume, Übertragung, Karte, Wegfindung, Sammeln,
@@ -312,9 +312,15 @@ und Kämpfende noch nicht (AC-30 kostet die KI Zeit, AC-31 hängt am
 Konterkreis). **Nachschub** (ki AC-12): nach dem Aufstieg verteilt die KI
 ihre Sammler nach Überfluss und Mangel um, baut bis zu drei Militärgebäude
 und greift in dreißig Minuten vier- bis neunmal an. **Auch spät steht
-niemand herum** (ki AC-10): bis Minute 30 höchstens 12,9 Sekunden. Es folgen
-KI gegen KI mit Sieger (fahrplan AC-11), Mensch gegen KI — und **zuletzt der Nebel**,
-weil er die Zustandsnachricht umbaut.
+niemand herum** (ki AC-10): bis Minute 30 höchstens 12,9 Sekunden. **C4 ist
+fertig: KI gegen KI endet** (fahrplan AC-11) über zwanzig Startwerte mit einem
+Sieger, jede Partie vor Minute 60 (24,8 bis 53,3, Median 33,8). Dazu nimmt am
+Ziel jeder sein nächstes Ziel (ki AC-16), die Kaserne bildet Nahkämpfer aus
+(ki AC-17), überlegen zieht alles bis auf die Wache los (ki AC-18), und wer
+nie wieder etwas tun kann — keine Einheit, nichts in der Schlange, nichts
+bezahlbar —, **gibt auf** wie der Computergegner im Original (ki AC-19). Es
+folgen Mensch gegen KI (C5) — und **zuletzt der Nebel**, weil er die
+Zustandsnachricht umbaut.
 
 1. **Stufe A** Dunkle Zeit mit Wirtschafts-KI und Prüfstand · **B** Feudalzeit
    · **C** Partieende und KI-Gegner · **D** Ritterzeit · **E** fünf Völker ·

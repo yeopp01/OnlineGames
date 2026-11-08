@@ -2,7 +2,7 @@
 
 **Bereich:** Strategie
 **Kuerzel:** fahrplan
-**Stand:** 10/22 fertig · 12 offen
+**Stand:** 11/22 fertig · 11 offen
 
 ## Zweck
 
@@ -118,8 +118,13 @@ neuen Karte grün bleiben.
 
 ### Stufe C — Partieende und KI
 
-- **AC-11** `offen` **KI spielt ganze Partien** — KI gegen KI endet in zwanzig von zwanzig
-  Partien mit einem Sieger, in unter 60 Spielminuten.
+- **AC-11** `fertig` **KI spielt ganze Partien** — KI gegen KI endet in zwanzig von zwanzig
+  Partien mit einem Sieger, in unter 60 Spielminuten. Gemessen in Runde 97
+  über die Startwerte 1 bis 20: alle mit Sieger, nach 24,8 bis 53,3 Minuten,
+  Median 33,8 (Runde 92: 4 von 20 vor Minute 60). Getragen von
+  [KI](ki.md) AC-16 bis AC-19; die letzte Partie über 60 Minuten war ein
+  Verlierer ohne jede Einheit, dessen Gebäude achteinhalb Minuten lang
+  geschleift wurden — jetzt gibt er auf.
 - **AC-12** `offen` **Mensch gegen KI spielbar** — Eine Partie allein gegen die KI lässt sich
   eröffnen, spielen und mit Abschlussbild beenden.
 - **AC-13** `offen` **Nebel auf dem Server** — Ein Spieler erhält nur, was seine Einheiten und
