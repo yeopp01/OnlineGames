@@ -11,7 +11,7 @@ const karten = require('../server/spiele/strategie/karte.js');
 const { Welt } = require('../server/spiele/strategie/welt.js');
 const {
   Ki, ENTSCHEIDEN_ALLE, ZIEL_DORFBEWOHNER, FEUDALZEIT_NAHRUNG, AN_SCHAFEN, AN_BEEREN, MILITAER,
-  HEER, WACHE, HEER_ABSTAND, WACHE_NAH, FEIND_FERN, VERGEBEN_ABSTAND, plan,
+  HEER, WACHE, HEER_ABSTAND, WACHE_NAH, FEIND_FERN, VERGEBEN_ABSTAND, MILITAER_HOLZ, plan,
 } = require('../server/spiele/strategie/ki.js');
 const { TAKTE_PRO_SEKUNDE } = require('../server/spiele/strategie/welt.js');
 const { EINHEITEN, SAMMELN } = require('../server/spiele/strategie/daten.js');
@@ -839,4 +839,35 @@ test('ki AC-14: steht das Dorf voll, zieht die Wache trotzdem', () => {
   ki.verteidigenPruefen(eigene(), gebaeudeVon(welt, 'b'), zentrum);
   assert.equal(ki.verteidigungen, 1, 'die Wache ist trotzdem losgeschickt');
   assert.ok(wache.every((e) => e.angriffslauf && e.weg.length), 'und unterwegs');
+});
+
+// Runde 89: dieselbe Ruecklage wie vor der Farm (Runde 69) gilt vor jedem
+// Lager. Beim Startwert 4 baute die KI in der Feudalzeit erst ein
+// Holzfaellerlager und eine Muehle, und die Schiessanlage kam 2,3 Minuten
+// spaeter.
+test('ki AC-9: nach dem Aufstieg kommt das Militaergebaeude vor dem naechsten Lager', () => {
+  const lagerBestellt = (zeitalter, holz) => {
+    const welt = new Welt(ZWEI, 4);
+    const ki = new Ki(welt, 'a');
+    const a = welt.spielerVon('a');
+    // Vier Holzfaeller an einem Wald, weit weg von jedem Lager.
+    const wald = ki.naechstesFeld({ x: a.basis.x + 14, y: a.basis.y + 14 }, [karten.WALD]);
+    assert.ok(Math.hypot(wald.x - a.basis.x, wald.y - a.basis.y) > 8, 'der Wald liegt weit weg');
+    const faeller = [0, 1, 2, 3].map(() => welt.einheitAnlegen('a', wald.x, wald.y + 1, 'dorfbewohner'));
+    for (const e of faeller) welt.nachricht('a', { auftrag: 'befehl', einheiten: [e.id], ziel: wald });
+    a.zeitalter = zeitalter;
+    a.holz = holz;
+    const gesendet = [];
+    ki.senden = (n) => { gesendet.push(n); return {}; };
+    const gebaeude = [...welt.gebaeude.values()].filter((g) => g.besitzer === 'a');
+    const dorf = [...welt.einheiten.values()].filter((e) => e.besitzer === 'a' && e.art === 'dorfbewohner');
+    ki.lagerPruefen('holz', { holz: faeller.length }, gebaeude, dorf);
+    return gesendet.some((n) => n.auftrag === 'bauen' && n.art === 'holzfaellerlager');
+  };
+  // Gegenprobe zuerst: in der Dunklen Zeit baut sie das Lager.
+  assert.ok(lagerBestellt(0, 200), 'in der Dunklen Zeit baut sie das Lager');
+  // In der Feudalzeit ohne Militaergebaeude haelt sie das Holz zurueck ...
+  assert.ok(!lagerBestellt(1, 200), 'in der Feudalzeit wartet das Lager auf die Schiessanlage');
+  // ... ausser es reicht fuer beides.
+  assert.ok(lagerBestellt(1, MILITAER_HOLZ + 100), 'reicht das Holz fuer beides, baut sie es');
 });

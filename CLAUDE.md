@@ -155,7 +155,7 @@ Umfang hinzufügt, dort nachsehen.
 
 ## Stand
 
-**389 von 518 Kriterien fertig.** 445 Tests ohne Browser, 166 im Browser. Die
+**390 von 520 Kriterien fertig.** 452 Tests ohne Browser, 167 im Browser. Die
 Übersicht ist der Bericht: `npm run qa:report`.
 
 Gebaut ist der Unterbau: Räume, Übertragung, Karte, Wegfindung, Sammeln,
@@ -304,8 +304,11 @@ Leben, zieht die Wache im Angriffslauf hin, und der Getroffene flieht zum
 Dorfzentrum. Eine Meldung bekommt sie nicht — sie sieht nur fehlendes Leben.
 Ihre Ziele wählt `Ki.freiesFeldUm()` mit Abstand von Feinden und von allem,
 was sie selbst eben vergeben hat; über zwanzig Startwerte greifen jetzt alle
-vierzig KIs an. Was bleibt, ist `einheiten AC-29`: wer später auf ein
-besetztes Feld läuft, steht dort auf einem anderen. Es folgen Nachschub,
+vierzig KIs an. **Stehende treten auseinander** (einheiten AC-29,
+`welt.ausweichen()`): wer näher als ein halbes Feld bei einem anderen steht,
+geht auf ein freies Nachbarfeld, auf dem er seine Arbeit behält — Sammler
+und Kämpfende noch nicht (AC-30 kostet die KI Zeit, AC-31 hängt am
+Konterkreis). Es folgen Nachschub,
 Mensch gegen KI — und **zuletzt der Nebel**,
 weil er die Zustandsnachricht umbaut.
 

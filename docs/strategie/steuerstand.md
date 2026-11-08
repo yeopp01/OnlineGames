@@ -13,25 +13,27 @@ hier nichts eintraegt, verliert den Faden beim naechsten Autocompact.
 
 ## Zuletzt fortgeschrieben
 
-2026-11-08, nach Runde 88 (**Rueckschau** ueber die Runden 84 bis 87. Drei
-Regeln in der Anweisung: einen offenen Produktfehler umschifft man hoechstens
-einmal; ein neuer Browserfall mit KI, Kampf oder Zeitraffer laeuft vor dem
-Abschlusslauf zehnmal (`--repeat-each 10`); und Abschnitt 6, Schritt 0, eine
-**Durchsicht durch einen Subagenten** (Sonnet, nur lesend), wenn Simulation,
-KI oder Kampf geaendert wurden. Davor Runde 87: das Spiel heisst **„Fading
-Allies"**, Bildschirmtext hat echte Umlaute (Waechter). Runde 86: die KI
-verteidigt zu Hause. **Ab Runde 86 laeuft die Schleife mit Opus 5.5**.
-**Runde 89 ist einheiten AC-29** (keine zwei Einheiten uebereinander) - nach
-der neuen Regel, denn es wurde siebenmal umschifft. Dann in C4 **ki AC-12**
-(Nachschub), **ki AC-10** (spaet untaetige Dorfbewohner, bis 471 s) und
-**fahrplan AC-11** (KI gegen KI mit Sieger unter 60 Minuten). Die Figuren bei
-Zoom 1 sind als Faden notiert: eine eigene Runde nach C4, vor C5.)
+2026-11-08, nach Runde 89 (**einheiten AC-29**: Stehende treten auseinander -
+`welt.ausweichen()` alle fuenf Takte hinter dem Taktschritt der Einheiten;
+die hoehere Nummer weicht, sonst die andere; nur auf ein Feld, auf dem die
+Arbeit bleibt (Bauleute an der Baustelle), schraeg nur mit freien Ecken.
+**Noch nicht** Sammler (`einheiten AC-30`: kostet die KI 0,4 min bis 500
+Nahrung, Bedingung fahrplan AC-5) und Kaempfende (`einheiten AC-31`:
+Bedingung Konterkreis). Nebenher in ki.js: die Holzruecklage fuer das
+Militaergebaeude gilt jetzt vor jedem Lager, nicht nur vor Farmen. Davor
+Runde 88, Rueckschau: drei neue Regeln (offenen Fehler hoechstens einmal
+umschiffen; neuer Browserfall `--repeat-each 10`; Durchsicht durch einen
+Subagenten in Abschnitt 6, Schritt 0). **Naechste Rueckschau: Runde 93.**
+Als Naechstes in C4: **ki AC-12** (Nachschub, bei Spielminute 30 noch 20
+Dorfbewohner), **ki AC-10** (spaet untaetige Dorfbewohner, bis 655 s) und
+**fahrplan AC-11** (KI gegen KI mit Sieger unter 60 Minuten). Die Figuren
+bei Zoom 1 sind als Faden notiert: eine eigene Runde nach C4, vor C5.)
 
 ## Wo ich stehe
 
 - **Branch:** `strategie`. Nie auf `main` arbeiten, **nie pushen, nie deployen.**
-- **Board:** 389 von 518 Kriterien fertig · 0 in Arbeit · 5 in QA · 4 geplant ·
-  112 offen · 8 zurueckgestellt. 445 Tests ohne Browser, 166 im Browser.
+- **Board:** 390 von 520 Kriterien fertig · 1 in Arbeit · 5 in QA · 4 geplant ·
+  112 offen · 8 zurueckgestellt. 452 Tests ohne Browser, 167 im Browser.
 - **Fuenf Waechter in `tests/waechter-*.test.mjs`** (der fuenfte seit Runde 87: Bildschirmtext mit echten Umlauten): Gleichheit auf wachsenden
   Listen, verbesserbare Werte an `welt.einheitenwert()` vorbei,
   Bildunterschriften mit `${...}`, und (neu in Runde 73) die **Kuerzeltafel**

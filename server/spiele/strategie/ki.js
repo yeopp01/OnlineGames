@@ -651,6 +651,14 @@ class Ki {
     const art = LAGER_FUER[rohstoff];
     const mindestens = LAGER_ARBEITER[rohstoff];
     if ((rollen[rohstoff] || 0) < mindestens) return;
+    // Dieselbe Ruecklage wie vor der Farm: nach dem Aufstieg kommt das
+    // Militaergebaeude vor dem naechsten Lager. Beim Startwert 4 baute die KI
+    // in der Feudalzeit erst ein Holzfaellerlager und eine Muehle, und die
+    // Schiessanlage stand 2,3 Minuten spaeter - bei Minute 16 hatte sie zwei
+    // Kampfeinheiten statt sechs (Runde 89; aufgefallen, als einheiten AC-29
+    // die Sammler um ein Feld verschob und die KI anders entschied).
+    const militaerFehlt = this.spieler.zeitalter > 0 && !gebaeude.some((g) => MILITAER.includes(g.art));
+    if (militaerFehlt && this.spieler.holz < MILITAER_HOLZ + (GEBAEUDE[art].kosten.holz || 0)) return;
     if (gebaeude.some((g) => g.art === art && !g.fertig)) return;
     // Wo die meisten dieses Rohstoffs arbeiten: dort der Mittelpunkt.
     const arbeiter = dorfbewohner.filter((e) => this.rolle(e) === rohstoff && e.auftrag?.art === 'sammeln');
@@ -731,5 +739,5 @@ class Ki {
 
 module.exports = {
   Ki, ENTSCHEIDEN_ALLE, ZIEL_DORFBEWOHNER, FEUDALZEIT_NAHRUNG, AN_SCHAFEN, AN_BEEREN, MILITAER,
-  HEER, WACHE, HEER_ABSTAND, WACHE_NAH, FEIND_FERN, VERGEBEN_ABSTAND, plan,
+  HEER, WACHE, HEER_ABSTAND, WACHE_NAH, FEIND_FERN, VERGEBEN_ABSTAND, MILITAER_HOLZ, plan,
 };

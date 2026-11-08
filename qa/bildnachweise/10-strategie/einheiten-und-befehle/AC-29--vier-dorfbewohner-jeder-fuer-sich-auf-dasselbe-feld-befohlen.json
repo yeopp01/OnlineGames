@@ -1,0 +1,10 @@
+{
+  "spec": "10-strategie/einheiten-und-befehle.md",
+  "ac": "AC-29",
+  "titel": "Vier Dorfbewohner, jeder für sich auf dasselbe Feld befohlen, stehen dort nebeneinander — keine zwei aufeinander",
+  "datei": "e2e/tests/strategie-ausweichen.spec.mjs",
+  "pfad": [
+    "Ausweichen",
+    "einheiten AC-29: vier einzeln auf dasselbe Feld geschickt, stehen sie nebeneinander"
+  ]
+}

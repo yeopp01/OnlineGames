@@ -2,7 +2,7 @@
 
 **Bereich:** Strategie
 **Kuerzel:** einheiten
-**Stand:** 19/22 fertig · 2 offen · 1 zurueckgestellt
+**Stand:** 20/24 fertig · 3 offen · 1 zurueckgestellt
 
 ## Zweck
 
@@ -126,19 +126,37 @@ Befehl bewirkt.
   vier Feldern und laufen nicht in den Nahkampf, solange ihr Ziel in
   Reichweite ist. Ein Nahkämpfer mit demselben Befehl geht dagegen bis ans
   Ziel — derselbe Rechtsklick, zwei Abstände.
-- **AC-29** `offen` **Keine zwei Einheiten übereinander** — Zwei Einheiten, die
-  auf dasselbe Ziel geschickt werden, halten heute am selben Punkt und sind im
-  Bild eine Figur mit zwei Bögen oder zwei Schwertern. **Messbar: keine zwei
-  lebenden Einheiten im Bild näher als ein halbes Feld** (`figurenFrei` aus
-  `e2e/helpers/strategie.mjs`). Fernkämpfer brauchen dazu eine Aufstellung auf
-  ihrem Schussring, wie Nahkämpfer sie um das Ziel haben (AC-20,
-  [Kampf](kampf.md) AC-1); und ein Platz am Ziel wird nur vergeben, wenn dort
-  niemand steht — heute fragt `nachbarfeld` nur die Karte, nicht die Einheiten.
-  Gesehen in Runde 64 am Bild; in der Rückschau nach Runde 65 **gemessen**:
-  zwei von drei Angreifern standen 0,27 bis 0,39 Felder auseinander, obwohl die
-  Verteilung aus Runde 63 greift — sie hält nicht mehr, seit Verteidiger sich
-  von selbst bewegen (Runde 64). Die Prüfung steht auskommentiert in
-  `e2e/tests/strategie-kampf.spec.mjs` bei `kampf AC-1` bereit.
+- **AC-29** `fertig` **Keine zwei Einheiten übereinander** — Stehen zwei
+  Einheiten näher als ein halbes Feld beieinander, tritt eine auf ein freies
+  Nachbarfeld — gezogen wird die mit der höheren Nummer, deterministisch, und
+  nur auf ein Feld, auf dem sie ihre Arbeit behält (wer baut, bleibt an der
+  Baustelle). Schräg nur, wenn beide Ecken frei sind. **Messbar: keine zwei
+  stehenden Einheiten im Bild näher als ein halbes Feld** (`figurenFrei`), auch
+  wenn sie mit getrennten Befehlen auf dasselbe Feld geschickt wurden.
+  **Noch nicht** für Sammler am Vorrat und am Tier (AC-30) und nicht für
+  Kämpfende (AC-31). Gesehen in Runde 64; danach siebenmal an der Stelle
+  umschifft, die ein Ziel vergibt (Runden 56 bis 86), bis die Rückschau nach
+  Runde 88 die Regel aufstellte, einen offenen Fehler nur einmal zu umschiffen.
+- **AC-30** `offen` **Sammler teilen keinen Platz** — Auch wer am Vorrat oder
+  am Tier arbeitet, steht nicht auf einem anderen. **Bedingung:** fahrplan
+  AC-5 hält weiter — gemessen in Runde 89 kostet das die Wirtschafts-KI im
+  Median 0,4 Minuten bis zu den ersten 500 Nahrung (9,38 → 9,80), und neun von
+  vierzig KIs verfehlen die zehn Minuten. Am Beerenbusch gehen 13 bis 16 %
+  verloren: gestapelt standen alle auf dem einen Feld, das der Mühle am
+  nächsten liegt. Nicht geholfen haben: das freie Feld nach dem Lager wählen,
+  auf ein anderes Buschfeld wechseln, weniger Sammler an die Beeren. Die
+  Antwort liegt vermutlich in der Lage der Mühle.
+- **AC-31** `offen` **Kämpfende stehen nebeneinander** — Nahkämpfer um ihr
+  Ziel und Fernkämpfer auf ihrem Schussring stehen nicht aufeinander. Im Bild
+  zu [Kampf](kampf.md) AC-1 und AC-10 stehen zwei angreifende Milizen fast
+  aufeinander (Rückstand der Runde 83). **Bedingung:** der Konterkreis hält
+  (fahrplan AC-9) — die Angriffslogik ist auf ihn abgestimmt (Runden 63, 64,
+  85). Die Prüfung steht auskommentiert in
+  `e2e/tests/strategie-kampf.spec.mjs` bei `kampf AC-1` bereit. Wer diese
+  Bilder neu aufstellt, prüft auch, was ein Prüfer in den Runden 87 und 89
+  fand: im Bild zu kampf AC-10 steht neben der gefallenen eine zweite, aufrechte
+  rote Miliz, die die Unterschrift nicht nennt; im Bild zu kampf AC-1 stehen
+  alle drei blauen Milizen auf **einer** Seite — „umstellt" stimmt nicht.
 
 ## Grenzfaelle
 

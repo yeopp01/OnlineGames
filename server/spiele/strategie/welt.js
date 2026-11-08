@@ -22,6 +22,10 @@ const SCHLAGRAND_BAU = 0.2;
 // So oft sieht sich eine stehende Kampfeinheit um (kampf AC-2): zweimal je
 // Sekunde. Jeder Takt waere fuenfmal so teuer und im Spiel nicht zu merken.
 const WACHE_TAKTE = 5;
+
+// Naeher als ein halbes Feld, und zwei Figuren sind im Bild eine mit zwei
+// Schwertern (einheiten AC-29; dieselbe Grenze misst `figurenFrei`).
+const AUSWEICHEN_ABSTAND = 0.5;
 // So weit folgt eine Einheit einem Fluechtenden, gemessen von dem Platz, an
 // dem sie stand (kampf AC-3).
 const VERFOLGUNG_FELDER = 5;
@@ -1767,8 +1771,145 @@ class Welt {
     // Zweimal je Sekunde sehen sich stehende Kampfeinheiten um (kampf AC-2).
     if (this.takt % WACHE_TAKTE === 0) this.wacheTakten();
     for (const einheit of this.einheiten.values()) this.einheitTakten(einheit);
+    // Ebenso oft treten Stehende auseinander (einheiten AC-29).
+    if (this.takt % WACHE_TAKTE === 0) this.ausweichen();
     this.schlaegeAbrechnen();
     this.endePruefen();
+  }
+
+  /**
+   * Keine zwei Einheiten uebereinander (einheiten AC-29). Stehen zwei naeher
+   * als `AUSWEICHEN_ABSTAND` beieinander, tritt eine auf ein freies
+   * Nachbarfeld - eines, auf dem sie ihre Arbeit weitertun kann. Gezogen wird,
+   * wer die hoehere Nummer hat und ausweichen darf, sonst der andere; duerfen
+   * beide nicht, bleibt es, wie es ist.
+   *
+   * Warum allgemein und nicht an jeder Stelle, die ein Ziel vergibt: das
+   * wurde siebenmal versucht (Runden 56, 61, 63, 64, 67, 85, 86), und jede
+   * Runde fand einen neuen Weg, auf dem zwei auf demselben Feld ankamen - ein
+   * zweiter Befehl auf dasselbe Ziel, ein Schlachter am Dorfzentrum, ein
+   * Geflohener auf der Wache. Hier zaehlt nur, wo sie **stehen**.
+   */
+  ausweichen() {
+    const stehend = [];
+    const raster = new Map();
+    const schluessel = (x, y) => `${x},${y}`;
+    for (const e of this.einheiten.values()) {
+      if (e.tot || e.weg.length) continue;
+      stehend.push(e);
+      const k = schluessel(Math.round(e.x), Math.round(e.y));
+      if (!raster.has(k)) raster.set(k, []);
+      raster.get(k).push(e);
+    }
+    // Der **erste** Nahe, nicht alle: 800 Stehende auf drei Feldern kosteten
+    // sonst 7,6 ms je Durchgang (Durchsicht Runde 89, gemessen) - jedes Paar
+    // wird trotzdem gesehen, von einer der beiden Seiten.
+    // Die eigene Zelle zuerst: dort stehen fast immer die Paare. Anders herum
+    // lief die Suche bei drei dichten Feldern nebeneinander an je 267
+    // Einheiten der Nachbarzelle vorbei, die ein ganzes Feld weg stehen
+    // (2,0 ms je Durchgang, gemessen).
+    const NACHBARN = [[0, 0], [-1, -1], [0, -1], [1, -1], [-1, 0], [1, 0], [-1, 1], [0, 1], [1, 1]];
+    const ersterNaher = (e) => {
+      const fx = Math.round(e.x);
+      const fy = Math.round(e.y);
+      for (const [dx, dy] of NACHBARN) {
+        for (const o of raster.get(schluessel(fx + dx, fy + dy)) || []) {
+          if (o !== e && !gezogen.has(o.id) && Math.hypot(o.x - e.x, o.y - e.y) < AUSWEICHEN_ABSTAND) return o;
+        }
+      }
+      return null;
+    };
+    // Belegt ist, wo jemand steht oder geht, und wohin jemand unterwegs ist -
+    // einmal je Durchgang gesammelt, nicht je Kandidatenfeld: sonst kostet ein
+    // Haufen von 800 Einheiten quadratisch (einheiten AC-21: ein Takt unter
+    // 1 ms).
+    // Erst gebaut, wenn jemand ausweichen darf - stehen nur Angreifer
+    // aufeinander, braucht es keiner.
+    let belegt = null;
+    const belegung = () => {
+      if (belegt) return belegt;
+      belegt = new Set();
+      for (const o of this.einheiten.values()) {
+        if (o.tot) continue;
+        belegt.add(schluessel(Math.round(o.x), Math.round(o.y)));
+        if (o.weg.length) {
+          const ziel = o.weg[o.weg.length - 1];
+          belegt.add(schluessel(ziel.x, ziel.y));
+        }
+      }
+      return belegt;
+    };
+    const gezogen = new Set();
+    for (const e of stehend) {
+      if (gezogen.has(e.id)) continue;
+      const o = ersterNaher(e);
+      if (!o) continue;
+      // Die hoehere Nummer weicht - deterministisch, ohne Zufall. Findet sie
+      // keinen Platz (ein Bauer an einer voll besetzten Baustelle), versucht es
+      // der andere; sonst blieben beide aufeinander, obwohl einer Platz haette
+      // (Durchsicht Runde 89).
+      for (const wer of o.id > e.id ? [o, e] : [e, o]) {
+        if (!this.darfAusweichen(wer)) continue;
+        const feld = this.ausweichfeld(wer, belegung());
+        if (!feld) continue;
+        wer.weg = [feld];
+        belegung().add(schluessel(feld.x, feld.y));
+        gezogen.add(wer.id);
+        break;
+      }
+    }
+  }
+
+  // Wer ausweichen darf: nicht, wer kaempft (seinen Platz verteilt kampf AC-1),
+  // nicht der Bauer auf seiner Farm (eine Farm hat einen Arbeiter) - und noch
+  // nicht, wer am Vorrat oder am Tier arbeitet. Sammler, die sich nicht
+  // stapeln, kosten die Wirtschafts-KI im Median 0,4 Minuten bis zu den
+  // ersten 500 Nahrung, und neun von vierzig KIs verfehlen damit die zehn
+  // Minuten aus fahrplan AC-5 (Runde 89, gemessen). Das ist einheiten AC-30,
+  // eine eigene Runde.
+  darfAusweichen(einheit) {
+    const art = einheit.auftrag?.art;
+    return art !== 'angreifen' && art !== 'farm' && art !== 'sammeln' && art !== 'tier';
+  }
+
+  /**
+   * Das naechste freie Nachbarfeld, auf dem die Einheit ihre Arbeit behaelt:
+   * wer baut, bleibt an der Baustelle (1,2 Felder, wie der Bauauftrag).
+   * Sammler und Schlachter weichen noch nicht aus (einheiten AC-30). Frei
+   * heisst: begehbar, kein Gebaeude, niemand steht dort oder ist dorthin
+   * unterwegs.
+   */
+  ausweichfeld(einheit, belegt) {
+    const fx = Math.round(einheit.x);
+    const fy = Math.round(einheit.y);
+    const auftrag = einheit.auftrag;
+    let passt = () => true;
+    if (auftrag?.art === 'bauen') {
+      const baustelle = this.gebaeude.get(auftrag.gebaeude);
+      passt = (x, y) => !baustelle || this.abstandZu({ x, y }, baustelle) <= 1.2;
+    }
+    let bestes = null;
+    let bester = Infinity;
+    for (let dy = -1; dy <= 1; dy++) {
+      for (let dx = -1; dx <= 1; dx++) {
+        if (!dx && !dy) continue;
+        const x = fx + dx;
+        const y = fy + dy;
+        if (belegt.has(`${x},${y}`)) continue;
+        if (!karten.begehbar(this.karte, x, y) || this.gebaeudeAn(x, y) || !passt(x, y)) continue;
+        // Schraeg nur, wenn beide Ecken frei sind: auf halbem Weg rundet die
+        // Lage auf eines der beiden geraden Nachbarfelder - war das Wald,
+        // stand die Einheit im Hindernis (Gefechtsstand, Startwert 8, Takt 109).
+        if (dx && dy && (!karten.begehbar(this.karte, x, fy) || !karten.begehbar(this.karte, fx, y)
+          || this.gebaeudeAn(x, fy) || this.gebaeudeAn(fx, y))) continue;
+        const d = Math.hypot(x - einheit.x, y - einheit.y);
+        if (d < bester) {
+          bester = d;
+          bestes = { x, y };
+        }
+      }
+    }
+    return bestes;
   }
 
   einheitTakten(einheit) {

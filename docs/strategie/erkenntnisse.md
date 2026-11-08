@@ -151,7 +151,7 @@ etwas anderem gearbeitet.
   nach zu prüfen: Nahrung in die Ersatzkette, eine Farm bauen, wenn gar nichts
   frei ist, und die Reichweite mitwachsen lassen. Die Vorgabe des Prüfstands
   steht auf 16 Minuten, der Fehler ist also in jedem Lauf zu sehen.
-- **Einheiten stapeln sich** (einheiten AC-29, offen). Dreimal gesehen, jetzt
+- **Einheiten stapeln sich** — seit Runde 89 für Stehende behoben (einheiten AC-29); offen bleiben Sammler (AC-30, mit Bedingung fahrplan AC-5) und Kämpfende (AC-31, mit Bedingung Konterkreis). Vorgeschichte: Dreimal gesehen, jetzt
   **gemessen**: Dorfbewohner auf demselben Waldfeld (Runde 9), zwei
   Bogenschützen aus derselben Richtung (Runde 64), und in der Rückschau nach
   Runde 65 zwei von drei Angreifern **0,27 bis 0,39 Felder** auseinander — die
@@ -909,6 +909,41 @@ alle sieben Gebäude der Dunklen Zeit stehen. Was sich wiederholt hat:
 Neueste oben. Eine Zeile je Runde: Nummer, Datum, Kriterien, Ergebnis,
 wichtigste Erkenntnis.
 
+- **89** · 2026-11-08 · **einheiten AC-29** — keine zwei Einheiten
+  übereinander: alle fünf Takte treten Stehende auseinander, die näher als ein
+  halbes Feld beieinander stehen — die höhere Nummer zuerst, auf ein freies
+  Nachbarfeld, auf dem sie ihre Arbeit behält. **Geteilt**: Sammler am Vorrat
+  und am Tier (neu `einheiten AC-30`) und Kämpfende (neu `einheiten AC-31`)
+  weichen noch nicht. Gelernt, fünferlei: (1) **Der Stapelfehler war ein
+  Wirtschaftsvorteil.** Gestapelt standen alle Sammler am Beerenbusch auf dem
+  einen Feld, das der Mühle am nächsten liegt. Ohne Stapeln hat die KI ihre
+  500 Nahrung im Median 0,4 Minuten später (9,38 → 9,80), und neun von
+  vierzig KIs verfehlen die zehn Minuten aus fahrplan AC-5. Drei Abhilfen
+  gemessen, keine hat getragen: das freie Feld nach dem Lager wählen (9,88),
+  auf ein anderes Buschfeld wechseln (9,85), andere Verteilung Beeren/Schafe
+  (4/6: 9,88; 6/8: 10,30). Die Schwelle zu senken wäre „senken, um grün zu
+  werden" gewesen — also das Kriterium geteilt, die Sammler in AC-30 mit der
+  Bedingung, dass fahrplan AC-5 hält. (2) **Ein Gefechtsstand findet auch
+  Fehler, die mit Kampf nichts zu tun haben**: ein schräger Seitenschritt schnitt
+  eine Waldecke, auf halbem Weg rundete die Lage in den Wald, und der
+  Prüfstand meldete „Einheit 42 steht in einem Hindernis". (3) **Ein
+  Nebeneffekt deckte eine alte Lücke der KI auf**: mit verschobenen Sammlern
+  entschied sie beim Startwert 4 anders und baute in der Feudalzeit erst ein
+  Holzfällerlager und eine Mühle — die Schießanlage kam 2,3 Minuten später,
+  bei Minute 16 zwei statt sechs Kampfeinheiten. Die Holzrücklage für das
+  Militärgebäude galt seit Runde 69 nur vor Farmen; jetzt vor jedem Lager
+  (eigener Test unter ki AC-9). (4) **Die Durchsicht durch einen Prüfer (neu
+  seit der Rückschau nach Runde 88) fand drei echte Dinge**: nur der mit der
+  höheren Nummer wurde versucht, toter Code für Sammler, und der schlimmste
+  Fall kostete 7,6 ms je Durchgang — 800 Angreifer auf drei Feldern. Die
+  Suche lief zuerst durch die Nachbarzelle, an 267 Einheiten vorbei, die ein
+  ganzes Feld weg standen; mit der eigenen Zelle zuerst sind es 0,09 ms.
+  **Gemessen, nicht vermutet**: die erste Korrektur (nur der erste Nahe) brachte
+  7,6 → 2,0 ms, die zweite (Belegung erst bei Bedarf) gar nichts — erst der
+  Blick auf die Reihenfolge der Zellen traf. (5) Der neue Browserfall lief vor
+  dem Abschlusslauf zehnmal (Regel aus der Rückschau): zehn von zehn grün.
+  Prüfstand: Feudalzeit nach 11,1 bis 12,0 min, erstes Heer nach 17,4 bis
+  19,3, keine Widersprüche, Konterkreis 20/20 gegen 0/20 in allen Richtungen.
 - **87** · 2026-11-08 · **auswahl AC-20, AC-21** — das Spiel heißt **Fading
   Allies** (auf seiner Karte und im Titel der Schautafel), und was auf dem
   Bildschirm steht, hat echte Umlaute. Gelernt, dreierlei: (1) **Eine Regel
