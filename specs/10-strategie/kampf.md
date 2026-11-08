@@ -2,7 +2,7 @@
 
 **Bereich:** Strategie
 **Kuerzel:** kampf
-**Stand:** 14/18 fertig · 3 offen · 1 zurueckgestellt
+**Stand:** 15/18 fertig · 2 offen · 1 zurueckgestellt
 
 ## Zweck
 
@@ -143,9 +143,13 @@ aus [Spielziel](spielziel.md) AC-10, gemessen in
   den Daten einer Verbesserung (wie `farm`), `welt.gebaeudeSicht()` rechnet
   ihn ein, und nach dem Erforschen wird die Sicht der Gebäude neu gerechnet.
   Im Menü ein eigenes Bild, die Laterne des Nachtwächters.
-- **AC-18** `offen` **Außenposten sieht weit** — Ein Gebäude der Dunklen
+- **AC-18** `fertig` **Außenposten sieht weit** — Ein Gebäude der Dunklen
   Zeit nur zum Sehen: 25 Holz, 25 Stein, 15 s, 500 Leben (Vorlage), Sicht 10.
   Gezeichnet und unterscheidbar wie jedes Gebäude (darstellung AC-14).
+  Gebaut in Runde 109: ein hölzerner Wachturm auf einem Feld — vier Pfosten
+  mit Streben, Plattform mit Licht, spitzes Dach, Wimpel in Spielerfarbe —,
+  im Baumenü als letzter; seine Taste folgt wie bei jedem Gebäude der Stelle
+  im Menü (Dunkle Zeit U, Feudalzeit P).
 
 ## Grenzfaelle
 

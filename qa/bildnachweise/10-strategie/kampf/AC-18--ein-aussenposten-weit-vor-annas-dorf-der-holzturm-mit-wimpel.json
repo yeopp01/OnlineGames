@@ -1,0 +1,10 @@
+{
+  "spec": "10-strategie/kampf.md",
+  "ac": "AC-18",
+  "titel": "Ein Außenposten weit vor Annas Dorf: der Holzturm mit Wimpel, um ihn ein eigener heller Kreis, dazwischen Nebel",
+  "datei": "e2e/tests/strategie-nebel.spec.mjs",
+  "pfad": [
+    "Aussenposten",
+    "kampf AC-18: ein Aussenposten vor dem Dorf, und um ihn ein heller Kreis von zehn Feldern im Nebel"
+  ]
+}

@@ -1067,6 +1067,21 @@ die Stadtwache).
 Neueste oben. Eine Zeile je Runde: Nummer, Datum, Kriterien, Ergebnis,
 wichtigste Erkenntnis.
 
+- **109** · 2026-11-08 · **kampf AC-18** — der Außenposten: ein Turm nur zum
+  Sehen, 25 Holz, 25 Stein, 15 s, 500 Leben, Sicht 10 — weiter als jedes andere
+  Gebäude (C6d ist fertig). Gezeichnet als hölzerner Wachturm auf einem Feld,
+  hoch und schmal; die Schautafel bekam ihn dazu, ihre Gebäudereihe ist eine
+  feste Liste. Im Baumenü ans Ende gehängt, damit keine bestehende Taste
+  wandert (die Feudalzeit am Stück baut mit Tasten). Drei Dinge brachen, alle
+  an seiner Form oder an Zählungen: die Prüfung der Spielerfarbe zeichnete ihn
+  wie zwei Felder groß, und Dach samt Wimpel lagen außerhalb; das Menübild
+  zeigte nur seine Beine (jetzt passt ein hohes Gebäude nach der Höhe); und
+  zwei Tests und zwei Bildunterschriften zählten die Gebäude („sechs",
+  „neun") — jetzt aus den Daten bzw. ohne Zahl. Das
+  erste Bild zeigte ihn elf Felder vor dem Dorf, und die beiden hellen Kreise
+  verschmolzen — „weiter als um das Dorf" war nicht zu sehen. Bei zwanzig
+  Feldern hat er seinen eigenen Kreis; der Test sichert jetzt, dass zwischen
+  beiden Nebel liegt.
 - **107** · 2026-11-08 · **kampf AC-17** — die Stadtwache, die erste
   Forschung, die den Nebel verändert (Wunsch des Benutzers): im Dorfzentrum ab
   der Feudalzeit, 75 Nahrung, 25 s, alle eigenen Gebäude +4 Sicht. Werte als

@@ -189,3 +189,30 @@ test('kampf AC-17: die Stadtwache gibt jedem eigenen Gebaeude vier Felder mehr S
   // Und Bert hat nichts davon.
   assert.equal(welt.gebaeudeSicht('b', 'haus'), GEBAEUDE.haus.sicht);
 });
+
+test('kampf AC-18: ein Aussenposten sieht zehn Felder - weiter als jedes andere Gebaeude', () => {
+  const welt = new Welt(ZWEI, 4711);
+  const a = welt.spielerVon('a');
+  const p = abseits(welt);
+  // Gegenprobe zur Zahl: alle anderen Gebaeude sehen weniger weit.
+  for (const [art, w] of Object.entries(GEBAEUDE)) {
+    if (art !== 'aussenposten') assert.ok(w.sicht < GEBAEUDE.aussenposten.sicht, `${art} sieht weniger weit`);
+  }
+  assert.deepEqual(
+    [GEBAEUDE.aussenposten.groesse, GEBAEUDE.aussenposten.kosten.holz, GEBAEUDE.aussenposten.kosten.stein, GEBAEUDE.aussenposten.leben],
+    [1, 25, 25, 500], 'Vorlage: ein Feld, 25 Holz, 25 Stein, 500 Leben',
+  );
+  // Gebaut wie jedes Gebaeude - ein Dorfbewohner baut ihn, Holz und Stein gehen ab.
+  a.holz = 100;
+  a.stein = 100;
+  const bauer = welt.einheitAnlegen('a', p.x + 1, p.y, 'dorfbewohner');
+  assert.equal(welt.nachricht('a', { auftrag: 'bauen', art: 'aussenposten', ziel: { x: p.x, y: p.y }, einheiten: [bauer.id] }).fehler, undefined);
+  assert.deepEqual([a.holz, a.stein], [75, 75]);
+  for (let t = 0; t < (GEBAEUDE.aussenposten.bauzeit + 5) * TAKTE_PRO_SEKUNDE; t++) welt.takten();
+  const posten = [...welt.gebaeude.values()].find((g) => g.besitzer === 'a' && g.art === 'aussenposten');
+  assert.ok(posten?.fertig, 'fertig gebaut');
+  welt.einheiten.delete(bauer.id);
+  welt.sichtAktualisieren();
+  assert.equal(welt.sieht('a', p.x + 10, p.y), true, 'zehn Felder weit');
+  assert.equal(welt.sieht('a', p.x + 11, p.y), false, 'elf nicht');
+});

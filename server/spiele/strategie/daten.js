@@ -26,7 +26,7 @@ const EINHEITEN = {
     // Spaeher entgegenlaeuft, hoert auf zu arbeiten, und die Wirtschaft ist das
     // Spiel. Getroffen wird er trotzdem wehrhaft.
     wacht: false,
-    baut: ['haus', 'muehle', 'holzfaellerlager', 'bergbaulager', 'farm', 'kaserne', 'schiessanlage', 'stall', 'schmiede'],
+    baut: ['haus', 'muehle', 'holzfaellerlager', 'bergbaulager', 'farm', 'kaserne', 'schiessanlage', 'stall', 'schmiede', 'aussenposten'],
   },
   // Ausgebildet wird er im Stall, also ab der Feudalzeit; zu Beginn steht
   // einer in der Startaufstellung (bauen AC-22).
@@ -105,6 +105,10 @@ const GEBAEUDE = {
     annahme: ALLE, bildetAus: ['dorfbewohner', 'webstuhl', 'stadtwache', 'feudalzeit', 'ritterzeit', 'imperialzeit'],
   },
   haus: { groesse: 2, kosten: { holz: 25 }, bauzeit: 25, leben: 550, wohnraum: 5, annahme: [], bildetAus: [] },
+  // Ein Turm nur zum Sehen (kampf AC-18, Wunsch des Benutzers: Gebaeude und
+  // Forschung veraendern die Flaeche des Nebels). Werte aus der Vorlage, die
+  // Sicht von zehn Feldern wie im Original.
+  aussenposten: { groesse: 1, kosten: { holz: 25, stein: 25 }, bauzeit: 15, leben: 500, wohnraum: 0, annahme: [], bildetAus: [], sicht: 10 },
   muehle: { groesse: 2, kosten: { holz: 100 }, bauzeit: 35, leben: 1000, wohnraum: 0, annahme: ['nahrung'], bildetAus: ['pferdekummet'] },
   holzfaellerlager: { groesse: 2, kosten: { holz: 100 }, bauzeit: 35, leben: 1000, wohnraum: 0, annahme: ['holz'], bildetAus: ['doppelaxt'] },
   bergbaulager: { groesse: 2, kosten: { holz: 100 }, bauzeit: 35, leben: 1000, wohnraum: 0, annahme: ['gold', 'stein'], bildetAus: [] },

@@ -1,7 +1,7 @@
 {
   "spec": "10-strategie/bauen.md",
   "ac": "AC-24",
-  "titel": "In der Feudalzeit: das Baumenü mit neun Gebäuden, daneben die fertige Schießanlage mit Zielscheibe",
+  "titel": "In der Feudalzeit: das Baumenü mit den drei neuen Gebäuden, daneben die fertige Schießanlage mit Zielscheibe",
   "datei": "e2e/tests/strategie-feudalbauten.spec.mjs",
   "pfad": [
     "Gebaeude der Feudalzeit",

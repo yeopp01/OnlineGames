@@ -1119,6 +1119,54 @@ function schmiede(stift, e, farbe) {
   fahne(stift, hoch([0, H * 0.2], traufe + 0.5 * e), e, farbe, 0.75);
 }
 
+// ---- Aussenposten ------------------------------------------------------------
+
+// Ein hoelzerner Wachturm auf einem Feld (kampf AC-18): vier Pfosten mit
+// Streben, oben eine Plattform mit Bretterwand und Licht, darueber ein spitzes
+// Dach mit Wimpel in Spielerfarbe. Hoch und schmal - kein anderes Gebaeude hat
+// diese Silhouette (darstellung AC-14).
+function aussenposten(stift, e, farbe) {
+  const W = 0.9 * e;
+  vorbereiten(stift, e, W, W / 2);
+  const L = [-W, 0];
+  const B = [0, W / 2];
+  const R = [W, 0];
+  const T = [0, -W / 2];
+  const holz = '#6b4f33';
+  const dunkel = '#4e3a26';
+  const dicke = Math.max(1, e * 0.11);
+  const plattform = 3.0 * e;
+  // Oben ruecken die Pfosten etwas zusammen - der Turm verjuengt sich.
+  const oben = (p) => hoch([p[0] * 0.82, p[1] * 0.82], plattform);
+  // Erst die hinteren Pfosten, dann die vorderen.
+  for (const p of [T, L, R]) linie(stift, p, oben(p), dunkel, dicke);
+  // Kreuzstreben auf den beiden sichtbaren Seiten.
+  for (const [a, b] of [[L, B], [B, R]]) {
+    linie(stift, hoch(a, 0.3 * e), oben(b), dunkel, dicke * 0.6);
+    linie(stift, hoch(b, 0.3 * e), oben(a), dunkel, dicke * 0.6);
+  }
+  linie(stift, B, oben(B), holz, dicke);
+  // Die Plattform: Boden und zwei sichtbare Bretterwaende.
+  const hoeheWand = 0.6 * e;
+  const [pl, pb, pr, pt] = [L, B, R, T].map((p) => hoch([p[0] * 1.02, p[1] * 1.02], plattform));
+  flaeche(stift, [pl, pb, pr, pt], '#5a4430');
+  flaeche(stift, [pl, pb, hoch(pb, hoeheWand), hoch(pl, hoeheWand)], verlauf(stift, '#8a6a44', hoch(pl, hoeheWand), pb, 0.1, -0.2));
+  bretter(stift, pl, pb, hoeheWand, e, 3, '#8a6a44');
+  flaeche(stift, [pb, pr, hoch(pr, hoeheWand), hoch(pb, hoeheWand)], verlauf(stift, '#9c7a4e', hoch(pb, hoeheWand), pr, 0.14, -0.12));
+  bretter(stift, pb, pr, hoeheWand, e, 3, '#9c7a4e');
+  // Ein Licht in der rechten Wand - der Waechter wacht.
+  const licht = [zwischen(pb, pr, 0.38), zwischen(pb, pr, 0.62)];
+  flaeche(stift, [hoch(licht[0], 0.18 * e), hoch(licht[1], 0.18 * e), hoch(licht[1], 0.44 * e), hoch(licht[0], 0.44 * e)], '#ffd36a', false);
+  // Das Dach: eine flache Pyramide mit Ueberstand, die Spitze hoch.
+  const traufe = plattform + hoeheWand + 0.1 * e;
+  const [dl, db, dr] = [L, B, R].map((p) => hoch([p[0] * 1.25, p[1] * 1.25], traufe));
+  const spitze = hoch([0, 0], traufe + 1.1 * e);
+  flaeche(stift, [dl, db, spitze], verlauf(stift, '#6a5236', spitze, db, 0.08, -0.22));
+  flaeche(stift, [db, dr, spitze], verlauf(stift, '#7e6440', spitze, dr, 0.14, -0.1));
+  linie(stift, db, spitze, ton('#6a5236', -0.3), Math.max(0.8, e * 0.06));
+  fahne(stift, spitze, e, farbe, 0.7);
+}
+
 export const GEBAEUDE = {
   dorfzentrum: {
     name: 'Dorfzentrum',
@@ -1147,6 +1195,8 @@ export const GEBAEUDE = {
   },
   stall: { name: 'Stall', zeichnen: stall, halbeBreite: 2.2, trefferBreite: 2.4, trefferOben: 3.0, trefferUnten: 1.2 },
   schmiede: { name: 'Schmiede', zeichnen: schmiede, halbeBreite: 2.0, trefferBreite: 2.2, trefferOben: 3.6, trefferUnten: 1.2 },
+  // Ein Feld, aber hoch: der Turm (kampf AC-18).
+  aussenposten: { name: 'Außenposten', zeichnen: aussenposten, halbeBreite: 1.0, trefferBreite: 1.1, trefferOben: 5.0, trefferUnten: 0.8 },
 };
 
 /**

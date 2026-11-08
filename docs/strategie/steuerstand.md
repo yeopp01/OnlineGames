@@ -13,18 +13,16 @@ hier nichts eintraegt, verliert den Faden beim naechsten Autocompact.
 
 ## Zuletzt fortgeschrieben
 
-2026-11-08, nach Runde 108 (**Rueckschau**: `pruefstand:vergleich` misst
-vergleichbare Rechenzeit (ms je 1000 Takte, aufgewaermt, abwechselnd; Rauschen
-~4 %); zwei Regeln: Pruefgriff vs. Einstellung, und wer etwas verbirgt, prueft
-bei jedem Bild, ob das Genannte noch zu sehen ist. **Als Naechstes kampf AC-18**
-(Aussenposten, Sicht 10, eigene Zeichnung), dann C6e (nur Sichtbares
-schicken). **Naechste Rueckschau: Runde 113.**)
+2026-11-08, nach Runde 109 (**kampf AC-18, C6d fertig**: der Aussenposten,
+Sicht 10, als Holzturm gezeichnet, Taste P. **Als Naechstes C6e**: der Server
+schickt jedem nur, was er sieht (kampf AC-13, fahrplan AC-13). **Naechste
+Rueckschau: Runde 113.**)
 
 ## Wo ich stehe
 
 - **Branch:** `strategie`. Nie auf `main` arbeiten, **nie pushen, nie deployen.**
-- **Board:** 409 von 530 Kriterien fertig · 1 in Arbeit · 5 in QA · 4 geplant ·
-  103 offen · 8 zurueckgestellt. 492 Tests ohne Browser, 174 im Browser.
+- **Board:** 410 von 530 Kriterien fertig · 1 in Arbeit · 5 in QA · 4 geplant ·
+  102 offen · 8 zurueckgestellt. 493 Tests ohne Browser, 175 im Browser.
 - **Fuenf Waechter in `tests/waechter-*.test.mjs`** (der fuenfte seit Runde 87: Bildschirmtext mit echten Umlauten): Gleichheit auf wachsenden
   Listen, verbesserbare Werte an `welt.einheitenwert()` vorbei,
   Bildunterschriften mit `${...}`, und (neu in Runde 73) die **Kuerzeltafel**

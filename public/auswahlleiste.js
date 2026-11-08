@@ -324,8 +324,15 @@ function gebaeudeBildchen(art, groesse, farbe, n) {
   leinwand.style.height = `${groesse}px`;
   const stift = leinwand.getContext('2d');
   stift.scale(dichte, dichte);
-  // Jedes Gebaeude gleich breit im Knopf, egal wie gross es im Spiel ist.
-  gebaeudeZeichnen(stift, art, groesse / 2, groesse * 0.74, groesse / (2.3 * n), farbe, n);
+  // Jedes Gebaeude gleich breit im Knopf, egal wie gross es im Spiel ist -
+  // ausser es ist hoch und schmal: der Aussenposten ragte gleich breit
+  // gezeichnet oben aus dem Knopf, man sah nur seine Beine (Runde 109). Dann
+  // passt es nach der Hoehe. Die Grenze von einem Zehntel laesst Dachspitzen
+  // der anderen Gebaeude, die knapp an den Rand reichen, wie sie sind.
+  const breit = groesse / (2.3 * n);
+  const g = GEBAEUDE[art];
+  const hoch = g ? (groesse * 0.74) / (g.trefferOben * ((n * 0.95) / g.halbeBreite)) : breit;
+  gebaeudeZeichnen(stift, art, groesse / 2, groesse * 0.74, hoch < breit * 0.9 ? hoch : breit, farbe, n);
   return leinwand;
 }
 

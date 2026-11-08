@@ -7,7 +7,8 @@
 // Berts - Anna sieht sie nicht, obwohl sie das Gelaende dort kennt.
 import { nachweis } from '../../scripts/qa-nachweis.mjs';
 import { einheitenAufstellen, expect, test, zeitraffer } from '../helpers/seite.mjs';
-import { bedienteileFrei, partieBeenden, partieZuZweit } from '../helpers/strategie.mjs';
+import { BAUTASTEN } from '../../public/tasten.js';
+import { bedienteileFrei, dorfbewohnerAnklicken, partieBeenden, partieZuZweit, platzImBild } from '../helpers/strategie.mjs';
 
 const KAMPF = '10-strategie/kampf.md';
 const DARSTELLUNG = '10-strategie/darstellung.md';
@@ -207,6 +208,78 @@ test.describe('Sicht erkundet', () => {
       spec: KAMPF,
       ac: 'AC-16',
       titel: 'Als „Erkundet“ eröffnet: die ganze Karte ist bekannt und gedämpft, hell nur um Annas Dorf — auch auf der Übersichtskarte',
+      test: info,
+    });
+  });
+});
+
+// Der Aussenposten (kampf AC-18): ein Turm nur zum Sehen. Gebaut wie jedes
+// Gebaeude - Dorfbewohner gewaehlt, B, seine Taste, ein Klick.
+test.describe('Aussenposten', () => {
+  test.describe.configure({ mode: 'serial' });
+  let partie;
+
+  test.beforeAll(async ({ browser }, info) => {
+    partie = await partieZuZweit(browser, info);
+  });
+  test.afterAll(() => partieBeenden(partie));
+
+  test('kampf AC-18: ein Aussenposten vor dem Dorf, und um ihn ein heller Kreis von zehn Feldern im Nebel', async ({}, info) => {
+    const { anna, code } = partie;
+    const basis = await anna.evaluate(() => window.ansicht.spieler.get(window.ansicht.ich).basis);
+    await anna.waitForFunction(() => window.ansicht.nebel.takt > -Infinity);
+    const vorher = await anna.evaluate(() => window.ansicht.nebel.zaehlen().beobachtet);
+
+    await dorfbewohnerAnklicken(anna, { code, raffer: 20 });
+    const menue = await anna.locator('#baumenue [data-bauen]').evaluateAll((k) => k.map((x) => x.dataset.bauen));
+    const nummer = menue.indexOf('aussenposten');
+    expect(nummer, 'der Aussenposten im Baumenue der Dunklen Zeit').toBeGreaterThanOrEqual(0);
+    await anna.keyboard.press('b');
+    await anna.keyboard.press(BAUTASTEN[nummer]);
+    await expect.poll(() => anna.evaluate(() => window.ansicht.platzieren?.art)).toBe('aussenposten');
+    // Weit vor dem Dorf, dort, wo es noch dunkel ist - so weit, dass der Turm
+    // seinen eigenen hellen Kreis bekommt (bei elf Feldern verschmolzen beide).
+    // Dafuer die Kamera heraus, sonst liegt der Platz ausser Bild.
+    await anna.evaluate((b) => {
+      const a = window.ansicht;
+      a.kamera.zoom = 0.6;
+      a.blickAuf(b.x + 10, b.y + 10);
+    }, basis);
+    const platz = await platzImBild(anna, { n: 1, um: basis, abstand: 20 });
+    expect(platz, 'ein Platz vor dem Dorf').not.toBeNull();
+    await anna.mouse.move(platz.bild.x, platz.bild.y, { steps: 3 });
+    await anna.mouse.click(platz.bild.x, platz.bild.y);
+    await anna.waitForFunction(() => [...window.ansicht.gebaeude.values()]
+      .some((g) => g.b === window.ansicht.ich && g.art === 'aussenposten' && g.u === undefined), null, { timeout: 90_000 });
+    await anna.keyboard.press('Escape');
+    await zeitraffer(anna, code, 1);
+    const posten = await anna.evaluate(() => {
+      const a = window.ansicht;
+      const g = [...a.gebaeude.values()].find((x) => x.b === a.ich && x.art === 'aussenposten');
+      return { x: g.x, y: g.y };
+    });
+    // Zehn Felder weit sieht er - die Sicht kommt mit der naechsten Rechnung.
+    await anna.waitForFunction((p) => window.ansicht.nebel.sieht(p.x + 10, p.y) || window.ansicht.nebel.sieht(p.x - 10, p.y), posten, { timeout: 5_000 });
+    const nachher = await anna.evaluate((p) => {
+      const a = window.ansicht;
+      a.ausgewaehlt = new Set();
+      a.gewaehltesGebaeude = null;
+      a.beiAuswahl();
+      const b = a.spieler.get(a.ich).basis;
+      a.kamera.zoom = 0.6;
+      a.blickAuf((p.x + b.x) / 2, (p.y + b.y) / 2);
+      // Zwischen Dorf und Turm liegt Nebel: die beiden hellen Flaechen sind getrennt.
+      const mitte = { x: Math.round((p.x + b.x) / 2), y: Math.round((p.y + b.y) / 2) };
+      return { beobachtet: a.nebel.zaehlen().beobachtet, getrennt: !a.nebel.sieht(mitte.x, mitte.y) };
+    }, posten);
+    expect(nachher.beobachtet, `${vorher} -> ${nachher.beobachtet} beobachtete Felder`).toBeGreaterThan(vorher);
+    expect(nachher.getrennt, 'zwischen Dorf und Turm ist Nebel').toBe(true);
+    await anna.waitForTimeout(300);
+    expect(await bedienteileFrei(anna)).toEqual([]);
+    await nachweis(anna, {
+      spec: KAMPF,
+      ac: 'AC-18',
+      titel: 'Ein Außenposten weit vor Annas Dorf: der Holzturm mit Wimpel, um ihn ein eigener heller Kreis, dazwischen Nebel',
       test: info,
     });
   });

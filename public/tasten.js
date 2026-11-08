@@ -7,7 +7,7 @@
 // Uebersicht; sie entsteht aus derselben Liste, die hier die Tasten belegt.
 
 // Die Reihe, in der die Gebaeude des Baumenues ihre Tasten bekommen.
-export const BAUTASTEN = ['q', 'w', 'e', 'r', 't', 'z', 'u', 'i', 'o'];
+export const BAUTASTEN = ['q', 'w', 'e', 'r', 't', 'z', 'u', 'i', 'o', 'p'];
 
 // Texte auf dem Bildschirm mit echten Umlauten (Entscheidung vom 2026-09-17).
 export const BELEGUNG = [

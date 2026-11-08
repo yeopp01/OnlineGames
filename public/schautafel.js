@@ -154,6 +154,8 @@ const GEBAEUDE_REIHE = [
   { art: 'schiessanlage', groesse: 3, titel: 'Schießanlage' },
   { art: 'stall', groesse: 3, titel: 'Stall' },
   { art: 'schmiede', groesse: 3, titel: 'Schmiede' },
+  // Die Sicht waechst (kampf AC-18).
+  { art: 'aussenposten', groesse: 1, titel: 'Außenposten' },
   { art: 'haus', groesse: 2, titel: 'Baustelle 20 %', bau: 0.2 },
   { art: 'haus', groesse: 2, titel: 'Baustelle 70 %', bau: 0.7 },
 ];
@@ -194,7 +196,11 @@ function gebaeudeMaske(art, farbe, bau = 1) {
   blatt.width = groesse;
   blatt.height = groesse;
   const s = blatt.getContext('2d');
-  gebaeudeZeichnen(s, art, groesse / 2, groesse * 0.72, 20, farbe, 2, bau);
+  // Alle in derselben Groesse wie zwei Felder - nur, wer kleiner ist, in
+  // seiner eigenen: der Aussenposten steht auf einem Feld und ist hoch; als
+  // zwei Felder gezeichnet ragten Dach und Wimpel aus dem Blatt (Runde 109).
+  const felder = Math.min(2, GEBAEUDE_REIHE.find((g) => g.art === art && !g.bau)?.groesse || 2);
+  gebaeudeZeichnen(s, art, groesse / 2, groesse * 0.72, 20, farbe, felder, bau);
   const { data } = s.getImageData(0, 0, groesse, groesse);
   const r = parseInt(farbe.slice(1, 3), 16);
   const g = parseInt(farbe.slice(3, 5), 16);

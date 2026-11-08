@@ -32,9 +32,14 @@ test.describe('Gebaeude der Feudalzeit', () => {
     await dorfbewohnerAnklicken(anna);
     await anna.keyboard.press('b');
     const menue = await baumenue(anna);
-    expect(menue, 'die Dunkle Zeit kennt sechs Gebaeude').toEqual(
-      ['haus', 'muehle', 'holzfaellerlager', 'bergbaulager', 'farm', 'kaserne'],
-    );
+    // Aus den Daten, nicht aufgezaehlt: die Liste waechst (Runde 109 kam der
+    // Aussenposten dazu, und "sechs Gebaeude" brach).
+    const dunkel = await anna.evaluate(() => {
+      const w = window.ansicht.werte;
+      return w.einheiten.dorfbewohner.baut.filter((art) => (w.gebaeude[art]?.zeitalter || 0) === 0);
+    });
+    expect(dunkel.length, 'die Dunkle Zeit kennt Gebaeude').toBeGreaterThan(0);
+    expect(menue, 'genau die der Dunklen Zeit').toEqual(dunkel);
     for (const art of FEUDAL) expect(menue, art).not.toContain(art);
     await anna.keyboard.press('Escape');
   });
@@ -50,12 +55,18 @@ test.describe('Gebaeude der Feudalzeit', () => {
     await anna.waitForFunction(() => window.ansicht.zeitalter === 1, null, { timeout: 60_000 });
     await zeitraffer(anna, code, 1);
 
-    // Jetzt kennt das Baumenue neun Gebaeude.
+    // Jetzt kennt das Baumenue alle Gebaeude bis zur Feudalzeit - aus den
+    // Daten gezaehlt, nicht als feste Zahl (Runde 109: "neun" brach mit dem
+    // Aussenposten).
     await dorfbewohnerAnklicken(anna);
     await anna.keyboard.press('b');
     const menue = await baumenue(anna);
     for (const art of FEUDAL) expect(menue, art).toContain(art);
-    expect(menue.length, 'sechs aus der Dunklen Zeit und drei neue').toBe(9);
+    const bisFeudal = await anna.evaluate(() => {
+      const w = window.ansicht.werte;
+      return w.einheiten.dorfbewohner.baut.filter((art) => (w.gebaeude[art]?.zeitalter || 0) <= 1).length;
+    });
+    expect(menue.length, 'die der Dunklen Zeit und die drei neuen').toBe(bisFeudal);
     expect(BAUTASTEN.length, 'fuer jedes Gebaeude eine Taste').toBeGreaterThanOrEqual(menue.length);
 
     // Eine Schiessanlage bauen: Taste, Platz, Rechtsklick - wie jedes andere Gebaeude.
@@ -96,7 +107,7 @@ test.describe('Gebaeude der Feudalzeit', () => {
     await nachweis(anna, {
       spec: BAUEN,
       ac: 'AC-24',
-      titel: 'In der Feudalzeit: das Baumenü mit neun Gebäuden, daneben die fertige Schießanlage mit Zielscheibe',
+      titel: 'In der Feudalzeit: das Baumenü mit den drei neuen Gebäuden, daneben die fertige Schießanlage mit Zielscheibe',
       test: info,
     });
   });
