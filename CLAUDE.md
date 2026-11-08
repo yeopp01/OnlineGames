@@ -157,7 +157,7 @@ Umfang hinzufügt, dort nachsehen.
 
 ## Stand
 
-**402 von 526 Kriterien fertig.** 482 Tests ohne Browser, 169 im Browser. Die
+**403 von 526 Kriterien fertig.** 482 Tests ohne Browser, 170 im Browser. Die
 Übersicht ist der Bericht: `npm run qa:report`.
 
 Gebaut ist der Unterbau: Räume, Übertragung, Karte, Wegfindung, Sammeln,
@@ -319,9 +319,12 @@ Sieger, jede Partie vor Minute 60 (24,8 bis 53,3, Median 33,8). Dazu nimmt am
 Ziel jeder sein nächstes Ziel (ki AC-16), die Kaserne bildet Nahkämpfer aus
 (ki AC-17), überlegen zieht alles bis auf die Wache los (ki AC-18), und wer
 nie wieder etwas tun kann — keine Einheit, nichts in der Schlange, nichts
-bezahlbar —, **gibt auf** wie der Computergegner im Original (ki AC-19). Es
-folgen Mensch gegen KI (C5) — und **zuletzt der Nebel**, weil er die
-Zustandsnachricht umbaut.
+bezahlbar —, **gibt auf** wie der Computergegner im Original (ki AC-19). **C5
+ist fertig: allein gegen die KI** — beim Eröffnen die Zahl der KI-Gegner
+einstellen (spielauswahl AC-18), allein starten (AC-19), und eine ganze
+Partie läuft im Browser bis zur Tafel „KI 1 hat gewonnen" (fahrplan AC-12).
+Der Raum erfährt vom Steckbrief nur `plaetze(einstellungen)`. Es folgt
+**zuletzt der Nebel** (C6), weil er die Zustandsnachricht umbaut.
 
 1. **Stufe A** Dunkle Zeit mit Wirtschafts-KI und Prüfstand · **B** Feudalzeit
    · **C** Partieende und KI-Gegner · **D** Ritterzeit · **E** fünf Völker ·

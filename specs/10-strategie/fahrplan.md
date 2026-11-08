@@ -2,7 +2,7 @@
 
 **Bereich:** Strategie
 **Kuerzel:** fahrplan
-**Stand:** 11/22 fertig · 11 offen
+**Stand:** 12/22 fertig · 10 offen
 
 ## Zweck
 
@@ -127,8 +127,12 @@ neuen Karte grün bleiben.
   geschleift wurden — jetzt gibt er auf. Nach einheiten AC-31 (Runde 100):
   25,7 bis 53,1 Minuten, Median 36,4. **Auf den Startwerten 21 bis 40 sind es
   19 von 20** — vorher wie nachher; die Auswahl der ersten zwanzig trägt mit.
-- **AC-12** `offen` **Mensch gegen KI spielbar** — Eine Partie allein gegen die KI lässt sich
-  eröffnen, spielen und mit Abschlussbild beenden.
+- **AC-12** `fertig` **Mensch gegen KI spielbar** — Eine Partie allein gegen die KI lässt sich
+  eröffnen, spielen und mit Abschlussbild beenden. Im Browser gespielt (Runde
+  102): mit einem KI-Gegner eröffnet, allein gestartet, Holz gesammelt, und
+  die KI gewinnt gegen einen Spieler, der nicht baut, nach rund 22
+  Spielminuten (21,1 bis 22,1 auf vier Startwerten); die Tafel nennt sie als
+  Sieger. Zehnmal hintereinander grün.
 - **AC-13** `offen` **Nebel auf dem Server** — Ein Spieler erhält nur, was seine Einheiten und
   Gebäude sehen oder gesehen haben (→ [Kampf](kampf.md) AC-13).
 
@@ -140,7 +144,7 @@ neuen Karte grün bleiben.
 | C2 | Partieende rechnet: ausgeschieden, Sieger, Aufgeben, unentschieden nach 90 Spielminuten; der Prüfstand zählt Sieger statt Takte | spielziel AC-5, AC-6, bedienung AC-38 |
 | C3 | Abschlussbild mit Zahlen, Zuschauen nach dem Ausscheiden, Revanche aus dem Abschlussbild | spielziel AC-7 bis AC-9 |
 | C4 | Die KI kämpft: Heer sammeln, angreifen, zu Hause verteidigen, Nachschub — und auch spät steht niemand herum | ki AC-10 bis AC-12, AC-14, fahrplan AC-11 |
-| C5 | Mensch gegen KI: KI-Gegner einstellen, allein eröffnen, eine Partie bis zum Abschlussbild spielen — AC-18 und AC-19 **fertig** (Runde 101) | spielauswahl AC-18, AC-19, fahrplan AC-12 |
+| C5 | Mensch gegen KI: KI-Gegner einstellen, allein eröffnen, eine Partie bis zum Abschlussbild spielen — **fertig** (Runden 101, 102) | spielauswahl AC-18, AC-19, fahrplan AC-12 |
 | C6 | Nebel: Sichtweite aus den Daten, Erkundetes bleibt erinnert, der Server schickt nur Sichtbares, Meldung bei Angriff, drei Zustände im Bild, die KI sieht nur ihre Sicht | kampf AC-11 bis AC-14, darstellung AC-15, ki AC-13, fahrplan AC-13 |
 
 **Reihenfolge begründet:** C2 und C3 vor der kämpfenden KI, weil eine Partie

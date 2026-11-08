@@ -1,0 +1,10 @@
+{
+  "spec": "10-strategie/fahrplan.md",
+  "ac": "AC-12",
+  "titel": "Allein gegen die KI bis zum Ende gespielt: die Tafel nennt KI 1 als Sieger, Annas Zeile gedämpft, darunter die Dauer der Partie",
+  "datei": "e2e/tests/strategie-gegen-ki.spec.mjs",
+  "pfad": [
+    "Allein gegen die KI",
+    "fahrplan AC-12: eine Partie allein gegen die KI eroeffnet, gespielt und mit der Tafel am Ende beendet"
+  ]
+}

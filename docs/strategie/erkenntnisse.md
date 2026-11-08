@@ -986,6 +986,17 @@ nächste Runde.
 Neueste oben. Eine Zeile je Runde: Nummer, Datum, Kriterien, Ergebnis,
 wichtigste Erkenntnis.
 
+- **102** · 2026-11-08 · **fahrplan AC-12** — **C5 ist fertig**: eine ganze
+  Partie allein gegen die KI im Browser. Erst gemessen, wie lange die KI gegen
+  einen Spieler braucht, der nur sammelt: 21,1 bis 22,1 Spielminuten auf vier
+  Startwerten — mit Zeitraffer 20 gut eine Minute im Browser. Der Test eröffnet
+  mit einem KI-Gegner über das Formular, startet allein, schickt die drei
+  Dorfbewohner in den Wald, wartet auf das erste Holz und dann auf das Ende.
+  Die Tafel sagt „KI 1 hat gewonnen", Anna in der Dunklen Zeit mit 770 Holz,
+  die KI in der Feudalzeit mit 47 ausgebildeten Einheiten. Zehnmal
+  hintereinander grün (Regel für Browserfälle mit KI und Zeitraffer). Ein
+  Lauf ohne Schwierigkeiten: alles, was er braucht, haben die Runden davor
+  gebaut und belegt.
 - **101** · 2026-11-08 · **spielauswahl AC-18, AC-19** — allein gegen die KI.
   Eine Einstellung „KI-Gegner" (0 bis 5) im Steckbrief; `erzeugen` setzt die
   KIs als Spieler `ki1`, `ki2` … in die Welt und lässt sie vor jedem Takt
