@@ -2,7 +2,7 @@
 
 **Bereich:** Strategie
 **Kuerzel:** darstellung
-**Stand:** 13/15 fertig · 2 offen
+**Stand:** 14/16 fertig · 2 offen
 
 ## Zweck
 
@@ -101,6 +101,15 @@ der Spieler. Keine Bilddateien aus fremder Quelle.
   Auswahl erkennt (Flügel, Stapel, Karre, Zinnen, Acker, Stroh, Fahne; ab der
   Feudalzeit Zielscheibe, Koppel, Schornstein). Gilt für jede Stufe neu: ein
   neues Gebäude wird gegen alle vorhandenen gemessen.
+- **AC-16** `fertig` **Spielgröße wie im Original** — Zum Start der Partie
+  ist ein Dorfbewohner mindestens 40 Bildpunkte hoch; im Original sind es
+  rund 45 bei 1080 Zeilen, ein Feld ist dort 96 Bildpunkte breit. Bis Runde 99
+  begann jede Partie bei Zoom 1 — ein Feld 44 breit, ein Dorfbewohner 28,6 hoch,
+  das ganze Bild kaum halb so groß, die Figuren Striche (Rückschau nach Runde
+  88). Jetzt beginnt sie bei Zoom 1,5 (42,9 Bildpunkte). Zoom 1 bleibt der
+  feste Maßstab, an dem AC-13, AC-14 und [Bedienung](bedienung.md) AC-36
+  gemessen werden — wer dort besteht, besteht beim Start erst recht. Das Rad
+  holt weiter bis 0,4 heraus.
 
 ## Grenzfaelle
 

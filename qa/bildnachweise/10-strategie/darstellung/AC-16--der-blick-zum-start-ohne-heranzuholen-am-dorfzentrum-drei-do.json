@@ -1,0 +1,10 @@
+{
+  "spec": "10-strategie/darstellung.md",
+  "ac": "AC-16",
+  "titel": "Der Blick zum Start, ohne heranzuholen: am Dorfzentrum drei Dorfbewohner und der Späher zu Pferd, jeder als Figur zu erkennen",
+  "datei": "e2e/tests/strategie-startblick.spec.mjs",
+  "pfad": [
+    "Startblick",
+    "darstellung AC-16: zum Start ist ein Dorfbewohner mindestens 40 Bildpunkte hoch"
+  ]
+}

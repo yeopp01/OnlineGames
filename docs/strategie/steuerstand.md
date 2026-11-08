@@ -13,20 +13,19 @@ hier nichts eintraegt, verliert den Faden beim naechsten Autocompact.
 
 ## Zuletzt fortgeschrieben
 
-2026-11-08, nach Runde 98 (**Rueckschau**: neues Werkzeug
-`npm run pruefstand:verlauf -- --startwert n` - eine Partie Minute fuer Minute;
-`pruefstand:vergleich` nennt die Enden mit Startwert. Zwei Regeln in der
-Anweisung: der Durchsicht den Unterschied als Datei geben, Gegenprobe gegen die
-alte Zeile statt `git stash`; Messtests ueber viele Partien in eine eigene
-Datei. **C4 ist fertig** (fahrplan AC-11). **Als Naechstes die Figuren bei
-Zoom 1** (Faden, eine Runde vor C5), dann C5: Mensch gegen KI (spielauswahl
-AC-18, AC-19, fahrplan AC-12). **Naechste Rueckschau: Runde 103.**)
+2026-11-08, nach Runde 99 (**darstellung AC-16**: die Partie beginnt bei
+Zoom 1,5 statt 1 - ein Dorfbewohner 42,9 statt 28,6 Bildpunkte, nah am
+Original. Zoom 1 bleibt der Massstab der Unterscheidbarkeitskriterien. Alle
+Bilder neu geschrieben. **Als Naechstes einheiten AC-31** (Kaempfende stehen
+uebereinander - in zwei Kampfbildern erneut gesehen, oft genug umschifft),
+dann C5: Mensch gegen KI (spielauswahl AC-18, AC-19, fahrplan AC-12).
+**Naechste Rueckschau: Runde 103.**)
 
 ## Wo ich stehe
 
 - **Branch:** `strategie`. Nie auf `main` arbeiten, **nie pushen, nie deployen.**
-- **Board:** 398 von 525 Kriterien fertig · 1 in Arbeit · 5 in QA · 4 geplant ·
-  109 offen · 8 zurueckgestellt. 477 Tests ohne Browser, 167 im Browser.
+- **Board:** 399 von 526 Kriterien fertig · 1 in Arbeit · 5 in QA · 4 geplant ·
+  109 offen · 8 zurueckgestellt. 477 Tests ohne Browser, 168 im Browser.
 - **Fuenf Waechter in `tests/waechter-*.test.mjs`** (der fuenfte seit Runde 87: Bildschirmtext mit echten Umlauten): Gleichheit auf wachsenden
   Listen, verbesserbare Werte an `welt.einheitenwert()` vorbei,
   Bildunterschriften mit `${...}`, und (neu in Runde 73) die **Kuerzeltafel**

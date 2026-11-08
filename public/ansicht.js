@@ -17,6 +17,14 @@ const HALB_H = 11; // halbe Rautenhoehe
 // Eine Figur ist etwas hoeher als eine Raute breit ist; ihr Koerper liegt ueber
 // dem Fusspunkt, deshalb zielt ein Klick auf die Mitte des Koerpers.
 const FIGUR_HOEHE = 1.3; // in halben Rautenbreiten * 2
+// Der Blick zum Start (darstellung AC-16): ein Dorfbewohner mindestens 40
+// Bildpunkte hoch, wie im Original (dort rund 45 bei 1080 Zeilen, ein Feld 96
+// Bildpunkte breit). Bei Zoom 1 waren es 28,6 und ein Feld 44 breit - das
+// ganze Bild hatte kaum die halbe Groesse, und die Figuren waren Striche
+// (Rueckschau nach Runde 88). Zoom 1 bleibt der feste Massstab, an dem die
+// Kriterien zur Unterscheidbarkeit gemessen werden; das Rad holt weiter bis
+// 0,4 heraus.
+export const STARTZOOM = 1.5;
 const KOERPER_MITTE = 0.6; // Anteil der Figurenhoehe ueber dem Fusspunkt, auf den ein Klick zielt
 const KLICK_WEITE = 16; // Bildpunkte bei Vergroesserung 1
 // Wie lange das Zeichen am Ziel steht (bedienung AC-34). Kurz genug, dass es
@@ -106,7 +114,7 @@ export class Ansicht {
     // Browserlauf (darstellung AC-7).
     this.reihenfolge = [];
 
-    this.kamera = { x: 0, y: 0, zoom: 1 };
+    this.kamera = { x: 0, y: 0, zoom: STARTZOOM };
     this.tasten = new Set();
     this.zug = null; // laufender Auswahlrahmen
     this.laeuft = false;

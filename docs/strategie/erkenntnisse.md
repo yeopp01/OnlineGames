@@ -76,14 +76,13 @@ etwas anderem gearbeitet.
   Pendeln (die Schwellen 300/600 und die Sperre verhindern es), aber ein
   teilweises Gegensteuern. Kandidat, wenn ki AC-10 oder fahrplan AC-11 daran
   hängen.
-- **Figuren bei Zoom 1 sind die schwächste Stelle des Bildes** (Rückschau
-  nach Runde 88, Frage des Benutzers nach besseren Figuren). Schmal, knapp 29
-  Bildpunkte hoch, wenig Kontrast zum Boden; das Dorfzentrum wirkt wie ein
-  großes Haus. Messbar machen, bevor gezeichnet wird: Kontrast Figur gegen
-  Boden und Anteil der Spielerfarbe bei Zoom 1 (darstellung AC-13 verlangt
-  zugleich, dass ein Dorfbewohner höchstens halb so hoch ist wie ein Haus —
-  größer ist also nicht die Antwort). Kandidat für eine eigene Runde nach C4,
-  vor C5.
+- **Figuren: der Maßstab ist behoben, die Zeichnung noch nicht** (Rückschau
+  nach Runde 88, Runde 99). Die Partie beginnt jetzt bei Zoom 1,5 — ein
+  Dorfbewohner 42,9 statt 28,6 Bildpunkte, nah am Original (darstellung
+  AC-16). Offen bleiben: wenig Kontrast der Figuren zum Boden, und das
+  Dorfzentrum wirkt wie ein großes Haus. Messbar machen, bevor gezeichnet
+  wird (Kontrast Figur gegen Boden, Anteil der Spielerfarbe); kein Muss vor
+  C5.
 - **Zwei Notizen aus der Durchsicht der Runde 86**, keine Fehler von heute:
   (1) eine Baustelle, die in derselben halben Sekunde wächst und getroffen
   wird, kann netto Leben gewinnen — dann sieht die KI den Angriff nicht
@@ -97,22 +96,16 @@ etwas anderem gearbeitet.
   [ADR-0012](../adr/0012-aoe2-als-vorlage.md) nachsehen. Nicht vor Stufe E
   (fünf Völker) vorschlagen — vorher gibt es nicht genug Spieler in einer
   Partie, an denen ein Bündnis etwas ändert.
-- **Zwei Bildunterschriften, die nicht stimmen: `bedienung AC-16` und
-  `einheiten AC-15`.** Bei `einheiten AC-15` (gesehen in Runde 80) verspricht
-  die Unterschrift „ein Dorfbewohner trägt gelbe Goldbrocken in beiden
-  Händen"; im Bild stehen die drei hinter dem Goldvorkommen und werden
-  deshalb als blaue Umrisse gezeichnet (bedienung AC-30) — von Goldbrocken ist
-  nichts zu sehen. Das Verhalten ist richtig, das Bild zeigt nur nicht, was die
-  Unterschrift behauptet; im alten Bild war es genauso, also kein Rückschritt.
-  Abhilfe: die Kamera so stellen, dass einer der drei vor dem Vorkommen steht.
-  Bei `bedienung AC-16` (gesehen in Runde 79) sagt sie „Nah herangeholt: ein
-  beladener Dorfbewohner am Waldrand", das Bild zeigt aber das ganze
-  Dorfzentrum bei Spielgröße, und der Beladene steht klein am linken Rand.
-  Entweder der Test holt für dieses eine Bild heran (wie es Runde 79 für
-  `spielziel AC-6` getan hat), oder die Unterschrift sagt, was zu sehen ist.
-  Eine halbe Runde Arbeit, gehört in die nächste Rückschau — das ist **Runde 83**.
-  Beide Bilder sind in Runde 82 erneut angesehen worden und beide stehen
-  unverändert falsch da.
+- **Eine Bildunterschrift stimmt nicht: `einheiten AC-15`** (gesehen in
+  Runde 80, `bedienung AC-16` ist seit Runde 83 behoben). Sie verspricht „ein
+  Dorfbewohner trägt gelbe Goldbrocken in beiden Händen"; im Bild stehen die
+  Sammler als blaue Umrisse hinter dem Dorfzentrum (bedienung AC-30). **Runde
+  99 hat die Ursache gefunden:** auf Karte 4711 liegt das Gold unmittelbar
+  hinter dem Dorfzentrum, die Träger sammeln und laden dort ab und kommen nie
+  nach vorn — auf einen Träger ohne Umriss zu warten, fand in 30 Sekunden
+  keinen. Abhilfe braucht eine andere Szene: ein Bergbaulager vor das Gold,
+  oder ein Vorkommen, dessen Weg zum Lager nicht hinter einem Gebäude liegt.
+  Eine halbe Runde; das Verhalten ist richtig, nur das Bild zeigt es nicht.
 
 - **Umlaute auf dem Bildschirm (entschieden 2026-09-17).** Texte, die im
   Browser stehen, bekommen echte Umlaute („Eröffnen", „zufällig");
@@ -986,6 +979,25 @@ nächste Runde.
 Neueste oben. Eine Zeile je Runde: Nummer, Datum, Kriterien, Ergebnis,
 wichtigste Erkenntnis.
 
+- **99** · 2026-11-08 · **darstellung AC-16** — die Partie beginnt in
+  Spielgröße. Der Faden „Figuren bei Zoom 1" hieß: zeichnen. Gemessen zeigte
+  sich, dass nicht die Zeichnung zu klein war, sondern der Maßstab: ein Feld
+  bei Zoom 1 ist 44 Bildpunkte breit, im Original 96; ein Dorfbewohner 28,6
+  hoch, im Original rund 45. Bei Zoom 2 sahen dieselben Figuren schon gut
+  aus. Jetzt beginnt jede Partie bei Zoom 1,5 (42,9 Bildpunkte, ein Feld 66
+  breit) — eine Zeile, aber jedes Bild vom Start ist neu. Zoom 1 bleibt der
+  feste Maßstab der Kriterien zur Unterscheidbarkeit. Ein Browsertest ging
+  von Zoom 1 aus (fünf Rasten heran und zurück); von 1,5 aus stößt das
+  Heranholen an die Grenze 2,5, und zurück landet man darunter — jetzt führt
+  er ausdrücklich zum Startblick zurück. Die Durchsicht der 28 geänderten Bilder durch einen
+  Subagenten beanstandete vier; selbst angesehen: zwei Kampfbilder mit zwei
+  blauen Milizen übereinander (einheiten AC-31, im alten Bild genauso — damit
+  ist der Fehler oft genug umschifft, **er ist die nächste Runde**), das
+  Goldbild (alter Faden, Ursache jetzt bekannt) und ein Bild am Waldrand, das
+  trägt. Im großen Lauf fiel einmal die Feudalzeit am Stück (Warten auf den
+  ersten Treffer); allein und dreimal wiederholt grün — Last, kein Fehler. **Gelernt: erst messen, wie groß das
+  Problem in Bildpunkten ist, und gegen das Original halten** — sonst hätte
+  die Runde Figuren umgezeichnet, die bei richtigem Maßstab schon tragen.
 - **97** · 2026-11-08 · **ki AC-19, fahrplan AC-11** — **KI gegen KI endet:
   zwanzig von zwanzig Partien mit Sieger, jede vor Minute 60** (24,8 bis 53,3,
   Median 33,8; Runde 92 waren es 4 von 20). Die letzte lange Partie

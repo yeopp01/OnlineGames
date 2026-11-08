@@ -167,6 +167,7 @@ test.describe('Das Spielbild', () => {
       const b = a.spieler.get(a.ich).basis;
       return a.zuBild(b.x + 2, b.y);
     });
+    const startzoom = await anna.evaluate(() => window.ansicht.kamera.zoom);
     await anna.mouse.move(mitte.x, mitte.y);
     for (let i = 0; i < 5; i++) await anna.mouse.wheel(0, -100);
     await anna.waitForFunction(() => window.ansicht.kamera.zoom > 1.9);
@@ -194,8 +195,17 @@ test.describe('Das Spielbild', () => {
       titel: 'Nah herangeholt: ein beladener Dorfbewohner am Waldrand traegt ein Holzbuendel auf dem Ruecken',
       test: info,
     });
-    for (let i = 0; i < 5; i++) await anna.mouse.wheel(0, 100);
-    await anna.waitForFunction(() => window.ansicht.kamera.zoom < 1.01);
+    // Zurueck zum Blick vom Start (darstellung AC-16). Nicht fuenfmal zurueck
+    // am Rad: von 1,5 aus stoesst das Heranholen an die Grenze 2,5, und fuenf
+    // Rasten zurueck enden dann unter dem Start.
+    await anna.evaluate(({ zoom, punkt }) => {
+      const a = window.ansicht;
+      a.kamera.zoom = zoom;
+      a.blickAuf(punkt.x, punkt.y);
+    }, { zoom: startzoom, punkt: await anna.evaluate(() => {
+      const b = window.ansicht.spieler.get(window.ansicht.ich).basis;
+      return { x: b.x + 2, y: b.y };
+    }) });
 
     // Und das Holz kommt an - bei Anna im Vorrat, bei Bert sichtbar als Bewegung.
     // Gewartet wird, bis der Vorrat ueber dem Startwert steht - ein Muster wie
