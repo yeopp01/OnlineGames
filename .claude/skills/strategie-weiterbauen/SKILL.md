@@ -239,6 +239,12 @@ Setze die gewählten Kriterien auf `in-arbeit`.
   eigene Dateien (`strategie-*.spec.mjs`). Braucht der Test einen Zustand, der
   im Spiel Minuten dauert, dafür einen **Prüfgriff** in `e2e/server.mjs`, nie
   eine Abkürzung im Produktcode.
+  **Ein Prüfgriff, der eine Spielregel abschaltet, ist oft eine fehlende
+  Einstellung.** Vor einem neuen Griff fragen: Würde ein Spieler das beim
+  Eröffnen wählen wollen, wie im Original? Dann ist es eine Einstellung im
+  Steckbrief, und der Test eröffnet damit — derselbe Weg wie ein Mensch. In
+  Runde 105 hob der Griff `aufdecken` den Nebel auf; der Benutzer sah nach
+  einer Runde, dass es die Einstellung „Sicht" sein muss (Runde 106).
 - **Die Unterschrift beschreibt, was das Bild zeigt — nicht, was der Test
   weiß.** Der Test kennt jede Zahl, jeden Namen, jede Dauer; das Bild kennt
   nur seinen Ausschnitt. Deshalb gehört nichts in die Unterschrift, was ein
@@ -364,6 +370,12 @@ Setze die gewählten Kriterien auf `in-arbeit`.
   angesehen**, bevor irgendetwas eingecheckt wird. In der Rückschau nach
   Runde 78 stand dort ein Rückschritt, den sonst niemand gefunden hätte: zwei
   Milizen übereinander statt drei nebeneinander.
+  **Wer etwas verbirgt — Nebel, Verdeckung, ein Filter —, bricht Bilder, nicht
+  Tests.** Die Tests prüfen die Daten (`ansicht.nachher`), nicht, was
+  gezeichnet ist. Dann bei jedem Bild über der Grenze die eine Frage: Ist
+  alles, was die Unterschrift nennt, noch zu sehen? In Runde 105 waren es
+  sieben Bilder mit grünen Tests — das Heer der KI, der See, Berts Siedlung,
+  alle im Nebel. Gezeichnet ist, was in `ansicht.reihenfolge` steht.
 - Kein Bildschirm: Eintrag in `qa/ohne-bild.json`, der sagt, **was** das
   Kriterium ist und **warum** ein Bild es nicht zeigen kann.
 
@@ -402,6 +414,11 @@ Setze die gewählten Kriterien auf `in-arbeit`.
    nachher in einem Befehl:** `npm run pruefstand:vergleich` (Arbeitsstand
    gegen HEAD; `--gegen HEAD~3 --minuten 30 --partien 20`). Nicht mehr mit
    `git stash` und Kopien des Ordners von Hand (Rückschau nach Runde 92).
+   **Wer der Simulation je Takt Arbeit hinzufügt, liest dort die Zeile
+   „ms je 1000 Takte"** — seit der Rückschau nach Runde 108 vergleichbar
+   (aufgewärmt, abwechselnd gerechnet; Rauschen rund 4 %). Die Sicht machte
+   eine Partie in ihrer ersten Fassung um 55 % langsamer, und erst ein
+   Wegwerfskript zeigte es (Runde 104).
 4. **Rot nur durch eine Zeitmessung** — `karriere AC-7` (Saison unter 1 s),
    `einheiten AC-8` (Wegsuche unter 1 ms), `karte AC-15` (Wegsuche auf der
    größten Karte): das ist fast immer fremde Last oder der parallele Lauf

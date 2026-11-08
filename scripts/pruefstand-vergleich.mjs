@@ -63,16 +63,32 @@ const median = (a) => {
 };
 const zahl = (x, stellen = 1) => (x === null ? '-' : x.toFixed(stellen));
 
+// Aufwaermen, bevor gemessen wird (Rueckschau nach Runde 108): sonst bezahlt
+// der erste Stand das Uebersetzen von V8, und die Rechenzeiten waren "nur
+// innerhalb eines Standes vergleichbar". In Runde 104 machte die Sicht eine
+// Partie um 55 % langsamer, und erst ein Wegwerfskript zeigte es.
+for (const stand of staende) stand.pruefstand.partieSpielen({ startwert: erster, minuten: Math.min(minuten, 5) });
+
 for (let satz = 0; satz < saetze; satz++) {
   const von = erster + satz * partien;
   if (saetze > 1) console.log(`== Startwerte ${von} bis ${von + partien - 1}`);
-  for (const stand of staende) {
-    const t0 = performance.now();
-    const werte = { feudal: [], angriff: [], dorf: [], kampf: [], angriffe: [], untaetig: [], sieger: 0, ende: [], je: [] };
-    let widerspruch = null;
-    for (let startwert = von; startwert < von + partien; startwert++) {
+  const leer = () => ({ feudal: [], angriff: [], dorf: [], kampf: [], angriffe: [], untaetig: [], sieger: 0, ende: [], je: [], ms: 0, takte: 0, widerspruch: null });
+  const werteJe = staende.map(leer);
+  // Abwechselnd: jede Partie erst mit dem einen, dann mit dem anderen Stand,
+  // und die Reihenfolge wechselt von Partie zu Partie. Erst alle des einen,
+  // dann alle des anderen liess den zuerst gemessenen um 8 % langsamer
+  // aussehen, bei gleicher Arbeit (Rueckschau nach Runde 108).
+  for (let startwert = von; startwert < von + partien; startwert++) {
+    const reihe = startwert % 2 ? [0, 1] : [1, 0];
+    for (const k of reihe) {
+      const werte = werteJe[k];
+      if (werte.widerspruch) continue;
       try {
-        const r = stand.pruefstand.partieSpielen({ startwert, minuten });
+        const r = staende[k].pruefstand.partieSpielen({ startwert, minuten });
+        // Rechenzeit je Takt: Partien sind verschieden lang, die Summe allein
+        // vergliche Laengen statt Kosten.
+        werte.ms += r.dauerMs;
+        werte.takte += r.gespielt;
         if (r.ende?.sieger) {
           werte.sieger += 1;
           werte.ende.push(r.ende.takt / 600);
@@ -87,26 +103,32 @@ for (let satz = 0; satz < saetze; satz++) {
           werte.untaetig.push(p.untaetigMax);
         }
       } catch (fehler) {
-        widerspruch = fehler.message;
-        break;
+        werte.widerspruch = fehler.message;
       }
     }
-    // Die Rechenzeit ist zwischen den Staenden nicht vergleichbar: der erste Lauf
-    // waermt V8 auf (gemessen: 6,8 s gegen 1,9 s fuer dieselbe Arbeit).
-    const sek = ((performance.now() - t0) / 1000).toFixed(1);
-    console.log(`${stand.name.padEnd(13)} ${partien} Partien, ${minuten} min, ${sek} s Rechenzeit (nur innerhalb eines Standes vergleichbar)`
-      + (widerspruch ? `\n  WIDERSPRUCH: ${widerspruch}` : '')
-      + `\n  Feudalzeit Median ${zahl(median(werte.feudal))} min, erstes Heer Median ${zahl(median(werte.angriff))} min`
-      + `\n  Dorfbewohner am Ende ${Math.min(...werte.dorf)} bis ${Math.max(...werte.dorf)}, Median ${median(werte.dorf)}`
+  }
+  staende.forEach((stand, k) => {
+    const werte = werteJe[k];
+    // Nach dem Aufwaermen und abwechselnd gemessen vergleichbar: die
+    // Rechenzeit je tausend Takte.
+    const jeTausend = werte.takte ? (werte.ms / werte.takte) * 1000 : null;
+    console.log(`${stand.name.padEnd(13)} ${partien} Partien, ${minuten} min, ${zahl(werte.ms / 1000)} s, ${zahl(jeTausend, 0)} ms je 1000 Takte`
+      + (werte.widerspruch ? `
+  WIDERSPRUCH: ${werte.widerspruch}` : '')
+      + `
+  Feudalzeit Median ${zahl(median(werte.feudal))} min, erstes Heer Median ${zahl(median(werte.angriff))} min`
+      + `
+  Dorfbewohner am Ende ${Math.min(...werte.dorf)} bis ${Math.max(...werte.dorf)}, Median ${median(werte.dorf)}`
       + `; Kampfeinheiten Median ${median(werte.kampf)}; Angriffe Median ${median(werte.angriffe)}`
-      + `\n  laengste Untaetigkeit ${zahl(Math.max(...werte.untaetig))} s`
+      + `
+  laengste Untaetigkeit ${zahl(Math.max(...werte.untaetig))} s`
       + `; mit Sieger ${werte.sieger}/${partien}${werte.ende.length ? `, Ende Median ${zahl(median(werte.ende))} min` : ''}`
       // fahrplan AC-11 fragt nach dieser Zahl: entschieden vor Spielminute 60.
       + `, vor Minute 60: ${werte.ende.filter((m) => m < 60).length}/${partien}`
       // Die Enden mit ihrem Startwert (Ende@Startwert), damit die langen gleich
       // mit pruefstand:verlauf angesehen werden koennen.
       + (werte.je.length ? `
-    Enden ${[...werte.je].sort((a, b) => a.ende - b.ende).map((p) => `${p.ende.toFixed(1)}@${p.startwert}`).join(' ')}` : ''));
-  }
+  Enden ${[...werte.je].sort((a, b) => a.ende - b.ende).map((q) => `${q.ende.toFixed(1)}@${q.startwert}`).join(' ')}` : ''));
+  });
 }
 rmSync(ziel, { recursive: true, force: true });

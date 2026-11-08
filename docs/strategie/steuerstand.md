@@ -13,10 +13,12 @@ hier nichts eintraegt, verliert den Faden beim naechsten Autocompact.
 
 ## Zuletzt fortgeschrieben
 
-2026-11-08, nach Runde 107 (**kampf AC-17**: die Stadtwache im Dorfzentrum
-gibt allen eigenen Gebaeuden +4 Sicht - Schluessel `gebaeude` in den Daten
-der Verbesserung, `welt.gebaeudeSicht()`. **Runde 108 ist die Rueckschau**,
-danach kampf AC-18 (Aussenposten, Sicht 10, eigene Zeichnung).)
+2026-11-08, nach Runde 108 (**Rueckschau**: `pruefstand:vergleich` misst
+vergleichbare Rechenzeit (ms je 1000 Takte, aufgewaermt, abwechselnd; Rauschen
+~4 %); zwei Regeln: Pruefgriff vs. Einstellung, und wer etwas verbirgt, prueft
+bei jedem Bild, ob das Genannte noch zu sehen ist. **Als Naechstes kampf AC-18**
+(Aussenposten, Sicht 10, eigene Zeichnung), dann C6e (nur Sichtbares
+schicken). **Naechste Rueckschau: Runde 113.**)
 
 ## Wo ich stehe
 
@@ -292,7 +294,7 @@ danach kampf AC-18 (Aussenposten, Sicht 10, eigene Zeichnung).)
   bei 20 min). Aelter als Runde 69, nur nie gemessen, weil der Pruefstand bei
   zehn Minuten endete. Ursache und Hebel stehen in den Erkenntnissen unter
   **Offene Faeden**.
-- **Naechste Rueckschau: Runde 108** - oder frueher, wenn Stufe C erreicht wird.
+- **Naechste Rueckschau: Runde 113** - oder frueher, wenn Stufe C erreicht wird.
   Diese Zeile ist der Termin, nicht nachzaehlen.
 - Frueherer Termin, erledigt: **Runde 83** (die Bildnachweise einmal ganz
   angesehen), **Runde 78** (Bilderwerkzeug: `check:alles:neu`,

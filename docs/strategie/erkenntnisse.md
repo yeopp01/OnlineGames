@@ -332,6 +332,9 @@ Zahlen, gegen die spätere Runden vergleichen. Mit Datum und Commit.
 | 2026-11-08 | `npm run check` (Maschine ruhig) | 44 s, 483 Tests ohne Browser | Rueckschau 103 |
 | 2026-11-08 | Browserlauf gesamt mit allen Bildern neu (`check:alles:neu`) | 169 Faelle, 11,4 min; der neue Fall allein gegen die KI 1,2 min | Runde 101/102 |
 | 2026-11-08 | KI gegen KI, Startwerte 1-20 / 21-40 bis Minute 90 | 20/20 und 19/20 vor Minute 60, Median 36,4 / 39,4 min | Runde 100 |
+| 2026-11-08 | Rechenzeit einer Partie KI gegen KI (`pruefstand:vergleich`, 6 Partien, 40 min) | vor der Sicht 44, mit Sicht 50 ms je 1000 Takte (+14 %); gleiche Arbeit gegen sich selbst 52/54 (Rauschen ~4 %) | Rueckschau 108 |
+| 2026-11-08 | `npm run check` (Maschine ruhig) | 52 s, 492 Tests ohne Browser | Rueckschau 108 |
+| 2026-11-08 | Browserlauf gesamt mit allen Bildern neu (`check:alles:neu`) | 174 Faelle, 13,3 min | Runde 107 |
 
 ## Rückschauen
 
@@ -1028,6 +1031,36 @@ der Bilder über 1 % durch einen Subagenten haben getragen — in Runde 99 fand
 sie zwei Kampfbilder mit übereinanderstehenden Milizen, die zur nächsten
 Runde wurden. Die Feudalzeit am Stück fiel zweimal im großen Lauf (Rechtsklick
 unter Last), seit dem dreifachen Klick nicht mehr.
+
+### Nach Runde 108 (2026-11-08)
+
+Runden 104–107: **der Nebel ist da** — gerechnet auf dem Server (kampf AC-15),
+gezeichnet in drei Stufen (kampf AC-11, AC-12, darstellung AC-15), auf
+Wunsch des Benutzers als Einstellung beim Eröffnen (AC-16) und mit Forschung,
+die ihn verändert (AC-17, Stadtwache). Dreimal lief der volle Lauf, der alle
+Bilder neu schreibt — jede Runde hat das Aussehen geändert.
+
+Was wiederholt Zeit kostete, und was sich ändert:
+
+1. **Die Kosten einer Änderung an der Simulation fand ein Wegwerfskript**
+   (Runde 104: die Sicht machte eine Partie um 55 % langsamer).
+   `pruefstand:vergleich` gab eine Rechenzeit aus, aber „nur innerhalb eines
+   Standes vergleichbar". → Werkzeug: aufgewärmt, abwechselnd gerechnet, die
+   Rechenzeit je 1000 Takte — gegen sich selbst ±4 %, und die Sicht zeigt sich
+   dort als +14 %. Regel: wer der Simulation Arbeit hinzufügt, liest die Zeile.
+2. **Ein Prüfgriff, der eine Spielregel abschaltet, war eine fehlende
+   Einstellung** (`aufdecken`, Runde 105 → „Sicht" in Runde 106, erkannt vom
+   Benutzer). → Regel: vor einem solchen Griff fragen, ob ein Spieler es beim
+   Eröffnen wählen würde.
+3. **Sieben Bilder stimmten nicht mehr, ihre Tests waren grün** (Runde 105) —
+   der Nebel verbarg, was die Unterschrift nennt. → Regel: wer etwas verbirgt,
+   fragt bei jedem Bild über 1 %, ob das Genannte noch zu sehen ist; die
+   Durchsicht durch drei Subagenten fand alle sieben.
+
+Nicht geändert: die Durchsicht durch einen Subagenten vor dem Abschlusslauf.
+Sie fand in Runde 104 einen Randfall (`sieht(-1, y)`), in 105 bis 107 keinen
+Fehler — aber jedes Mal einen Hinweis, der als Faden weiterlebt (die KI und
+die Stadtwache).
 
 ## Runden
 
