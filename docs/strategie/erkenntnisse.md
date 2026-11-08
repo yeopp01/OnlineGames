@@ -76,6 +76,15 @@ etwas anderem gearbeitet.
   Pendeln (die Schwellen 300/600 und die Sperre verhindern es), aber ein
   teilweises Gegensteuern. Kandidat, wenn ki AC-10 oder fahrplan AC-11 daran
   hängen.
+- **fahrplan AC-11 braucht eine KI, die Partien zu Ende bringt** (Runde 92,
+  gemessen): 4 von 20 Partien enden vor Minute 60, 17 vor Minute 90. Der
+  Sieger steht oft mit 80 Kampfeinheiten neben elf Gebäuden des Verlierers
+  und schleift sie mit Plänklern zu einem Punkt je Schuss. Versucht und
+  verworfen: das ganze Heer losschicken, Nahkämpfer aus der Kaserne (je für
+  sich und zusammen, Zahlen in Runde 92). Vor dem nächsten Versuch die
+  Kriterien schreiben: Ziele nach Wert wählen, Nahkämpfer gegen Gebäude,
+  Überlegenheit erkennen und nachsetzen — und erst messen, warum die drei
+  Remis Remis sind (Startwerte 13, 14, 16).
 - **Figuren bei Zoom 1 sind die schwächste Stelle des Bildes** (Rückschau
   nach Runde 88, Frage des Benutzers nach besseren Figuren). Schmal, knapp 29
   Bildpunkte hoch, wenig Kontrast zum Boden; das Dorfzentrum wirkt wie ein
@@ -915,6 +924,28 @@ alle sieben Gebäude der Dunklen Zeit stehen. Was sich wiederholt hat:
 Neueste oben. Eine Zeile je Runde: Nummer, Datum, Kriterien, Ergebnis,
 wichtigste Erkenntnis.
 
+- **92** · 2026-11-08 · **fahrplan AC-11 gemessen, nicht erreicht; bauen
+  AC-3 nachgebessert** — Ziel war: KI gegen KI endet in zwanzig von zwanzig
+  Partien mit einem Sieger, unter 60 Minuten. **Heute: 4 von 20 unter 60
+  Minuten, 17 von 20 mit Sieger bis Minute 90 (Median 72,6 min), drei
+  unentschieden.** Zwei Hebel versucht und gemessen, beide zurückgenommen:
+  (a) **das Heer zieht bis auf die Wache ganz los** statt je acht — bei Minute
+  60 standen beim Startwert 2 achtzig Kampfeinheiten daheim; (b) **auch die
+  Kaserne bildet aus**, denn Fernkämpfer nehmen einem Gebäude nur einen
+  Punkt je Schuss (Fernrüstung 7), eine Miliz vier. Ergebnis über zwanzig
+  Startwerte bis Minute 90: nur (a) 3 unter 60 / 15 mit Sieger; nur (b) 6 /
+  12; beides 6 / 13 — mehr frühe Entscheidungen, aber auch mehr Remis, weil
+  sich gleich starke Heere in der Mitte aufreiben. Keine Variante kommt dem
+  Kriterium nahe; ohne nachgewiesenen Nutzen bleibt kein Code. **Gelernt:
+  fahrplan AC-11 ist mehr als eine Runde** — es braucht eine KI, die Partien zu
+  Ende bringt (Ziele wählen, Gebäude mit Nahkämpfern schleifen, nachsetzen)
+  und die Lage liest (überlegen oder nicht). Das wird spezifiziert, bevor
+  gebaut wird. **Was die Runde liefert:** der Prüfstand fand bei den Versuchen
+  einen alten Fehler — ein Plänkler ging schräg an der Ecke eines eben
+  begonnenen Stalls vorbei, auf halbem Weg rundete seine Lage in den Stall
+  (Startwert 3, Takt 52113). `belegen()` suchte nur neu, wenn ein
+  **Wegpunkt** in der neuen Grundfläche lag; jetzt auch, wenn ein schräger
+  Schritt ihre Ecke schneidet. Test mit Gegenprobe (ohne die Korrektur rot).
 - **91** · 2026-11-08 · **ki AC-10** — auch spät steht niemand herum: bis
   Minute 30 steht über zwanzig Startwerte kein Dorfbewohner länger als 12,9
   Sekunden still (Grenze 20). Die letzten zwei Fälle (39 und 53 s) waren

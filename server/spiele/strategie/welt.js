@@ -392,8 +392,20 @@ class Welt {
     // Wer unterwegs ist und dessen Weg ueber die neue Grundflaeche fuehrt, sucht
     // neu - sonst lief er durch das Gebaeude (bauen AC-3, vom Pruefstand
     // gefunden: Startwert 1, Takt 1015).
+    //
+    // Auch wer **schraeg an einer Ecke** vorbeigeht, sucht neu: auf halbem Weg
+    // rundet seine Lage auf eines der beiden geraden Nachbarfelder, und liegt
+    // das jetzt in der Grundflaeche, steht er im Gebaeude. Als der Weg
+    // berechnet wurde, war die Ecke frei (Pruefstand, Startwert 3, Takt 52113:
+    // ein Plaenkler im eben begonnenen Stall des Gegners - Runde 92).
+    const drin = (p) => p.x >= x0 && p.x <= x1 && p.y >= y0 && p.y <= y1;
+    const ecke = (a, b) => a.x !== b.x && a.y !== b.y && (drin({ x: a.x, y: b.y }) || drin({ x: b.x, y: a.y }));
     for (const einheit of this.einheiten.values()) {
-      if (!einheit.weg.some((p) => p.x >= x0 && p.x <= x1 && p.y >= y0 && p.y <= y1)) continue;
+      if (!einheit.weg.length) continue;
+      const schritte = [{ x: Math.round(einheit.x), y: Math.round(einheit.y) }, ...einheit.weg];
+      let betroffen = einheit.weg.some(drin);
+      for (let i = 1; i < schritte.length && !betroffen; i++) betroffen = ecke(schritte[i - 1], schritte[i]);
+      if (!betroffen) continue;
       const ziel = einheit.weg[einheit.weg.length - 1];
       einheit.weg = suchen(this.karte, this.feldVon(einheit), ziel);
     }

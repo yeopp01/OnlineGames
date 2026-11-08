@@ -654,3 +654,48 @@ test('bauen AC-1: ein Bauer, der auf seinem Standfeld nur nicht in der Mitte ste
   assert.equal(bauer.auftrag?.art, 'bauen', 'er gibt nicht auf');
   assert.ok(bauer.baut, 'er baut');
 });
+
+test('bauen AC-3: wer schraeg an einer Ecke vorbeigeht, die eben bebaut wird, sucht einen neuen Weg', () => {
+  // Vom Pruefstand gefunden (Startwert 3, Takt 52113, Runde 92): ein Plaenkler
+  // ging schraeg an der Ecke eines eben begonnenen Stalls vorbei. Kein
+  // Wegpunkt lag in der Grundflaeche, aber auf halbem Weg rundete seine Lage
+  // auf das Eckfeld - und er stand im Stall.
+  const welt = new Welt(ZWEI, 7);
+  const basis = welt.spielerVon('a').basis;
+  const laeufer = eigene(welt).find((e) => e.art === 'dorfbewohner');
+  let start = null;
+  for (let r = 6; r < 30 && !start; r++) {
+    for (const [dx, dy] of [[r, 0], [0, r], [-r, 0], [0, -r]]) {
+      const x = basis.x + dx;
+      const y = basis.y + dy;
+      let frei = true;
+      for (let i = -4; i <= 4; i++) for (let j = -4; j <= 4; j++) if (!karten.begehbar(welt.karte, x + i, y + j) || welt.gebaeudeAn(x + i, y + j)) frei = false;
+      if (frei) { start = { x, y }; break; }
+    }
+  }
+  assert.ok(start, 'ein freies Stueck Gras');
+  laeufer.x = start.x;
+  laeufer.y = start.y;
+  laeufer.auftrag = { art: 'gehen', feld: { x: start.x + 1, y: start.y + 1 } };
+  laeufer.weg = [{ x: start.x + 1, y: start.y + 1 }];
+  // Ein Haus, dessen Grundflaeche das Eckfeld (x+1, y) traegt, aber weder
+  // Start noch Ziel des schraegen Schritts.
+  const ecke = { x: start.x + 1, y: start.y };
+  let haus = null;
+  for (let hx = ecke.x - 2; hx <= ecke.x + 2 && !haus; hx++) {
+    for (let hy = ecke.y - 2; hy <= ecke.y + 2 && !haus; hy++) {
+      const { x0, y0, x1, y1 } = welt.grundflaeche('haus', hx, hy);
+      const drin = (p) => p.x >= x0 && p.x <= x1 && p.y >= y0 && p.y <= y1;
+      if (drin(ecke) && !drin(start) && !drin(laeufer.weg[0])) haus = welt.gebaeudeAnlegen('b', 'haus', hx, hy, false);
+    }
+  }
+  assert.ok(haus, 'ein Haus auf der Ecke');
+  // Gegenprobe: der alte Schritt haette die Ecke geschnitten.
+  assert.notDeepEqual(laeufer.weg, [{ x: start.x + 1, y: start.y + 1 }], 'der schraege Schritt wurde neu gesucht');
+  const g = welt.karte.groesse;
+  for (let t = 0; t < 100 && laeufer.weg.length; t++) {
+    welt.takten();
+    const feld = welt.karte.felder[Math.round(laeufer.y) * g + Math.round(laeufer.x)];
+    assert.notEqual(feld, karten.BEBAUT, `Takt ${t}: der Laeufer steht nicht im Haus (${laeufer.x.toFixed(2)}, ${laeufer.y.toFixed(2)})`);
+  }
+});

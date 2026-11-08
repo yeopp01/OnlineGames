@@ -13,23 +13,22 @@ hier nichts eintraegt, verliert den Faden beim naechsten Autocompact.
 
 ## Zuletzt fortgeschrieben
 
-2026-11-08, nach Runde 91 (**ki AC-10**: auch spaet steht niemand herum -
-hoechstens 12,9 s bis Minute 30 ueber zwanzig Startwerte. `welt.wegZumLager`
-sucht, wenn zum naechsten Rand des naechsten Lagers kein Weg fuehrt, andere
-Randfelder und die anderen Lager (`welt.randfelder`). Davor Runde 90, **ki
-AC-12**: Nachschub (Umverteilen, bis zu drei Militaergebaeude, Farm bei
-Hunger, Vorraete ohne Weg zwei Minuten gesperrt); der Messtest prueft AC-10
-und AC-12 in denselben vierzig Partien. **Naechste Rueckschau: Runde 93.**
-Als Naechstes: **fahrplan AC-11** (KI gegen KI endet in zwanzig von zwanzig
-Partien mit einem Sieger unter 60 Minuten) - erst messen, wie Partien heute
-bis 60 Minuten ausgehen. Damit waere C4 fertig. Dann C5 (Mensch gegen KI) -
-und davor die Runde zu den Figuren bei Zoom 1.)
+2026-11-08, nach Runde 92 (**fahrplan AC-11 gemessen, nicht erreicht**: KI
+gegen KI endet in 4 von 20 Partien vor Minute 60, in 17 vor Minute 90.
+Ganzes Heer losschicken und Nahkaempfer aus der Kaserne versucht, gemessen,
+zurueckgenommen - keine Variante nah am Kriterium. AC-11 bleibt `offen` und
+braucht eigene Kriterien (Partien zu Ende bringen), siehe Offene Faeden.
+Geliefert: `belegen()` sucht auch neu, wenn ein schraeger Schritt die Ecke
+einer neuen Baustelle schneidet (bauen AC-3, Test mit Gegenprobe). Davor
+Runde 91: **ki AC-10** fertig, Runde 90: **ki AC-12** fertig. **Runde 93 ist
+die Rueckschau** (Runden 89-92). Danach: die Kriterien fuer „Partien zu
+Ende bringen" schreiben (Spec-Arbeit in ki.md), dann bauen.)
 
 ## Wo ich stehe
 
 - **Branch:** `strategie`. Nie auf `main` arbeiten, **nie pushen, nie deployen.**
 - **Board:** 392 von 520 Kriterien fertig · 1 in Arbeit · 5 in QA · 4 geplant ·
-  110 offen · 8 zurueckgestellt. 461 Tests ohne Browser, 167 im Browser.
+  110 offen · 8 zurueckgestellt. 462 Tests ohne Browser, 167 im Browser.
 - **Fuenf Waechter in `tests/waechter-*.test.mjs`** (der fuenfte seit Runde 87: Bildschirmtext mit echten Umlauten): Gleichheit auf wachsenden
   Listen, verbesserbare Werte an `welt.einheitenwert()` vorbei,
   Bildunterschriften mit `${...}`, und (neu in Runde 73) die **Kuerzeltafel**
