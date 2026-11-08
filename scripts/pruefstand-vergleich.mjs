@@ -5,6 +5,12 @@
 //
 //   npm run pruefstand:vergleich                          Arbeitsstand gegen HEAD, 20 Partien, 22 min
 //   npm run pruefstand:vergleich -- --gegen HEAD~3 --minuten 30 --partien 20
+//   npm run pruefstand:vergleich -- --minuten 90 --saetze 2      Startwerte 1-20 und 21-40
+//
+// Zwei Saetze, wenn die Aenderung jede Partie verschiebt (Bewegung, Kampf):
+// in Runde 100 zeigte erst der zweite Satz, dass die Partien systematisch
+// laenger wurden und dass fahrplan AC-11 auch mit HEAD nur 19 von 20 schafft
+// (Rueckschau nach Runde 103).
 //
 // Warum es das gibt: in den Runden 89 bis 92 wurde jede Wirkung von Hand
 // verglichen - mit `git stash`, mit Kopien des Ordners im Temp-Verzeichnis, mit
@@ -34,6 +40,7 @@ const gegen = wert('gegen', 'HEAD');
 const minuten = Number(wert('minuten', 22));
 const partien = Number(wert('partien', 20));
 const erster = Number(wert('startwert', 1));
+const saetze = Number(wert('saetze', 1));
 
 // Den Stand `gegen` in einen Temp-Ordner schreiben.
 const git = (...a) => execFileSync('git', a, { cwd: WURZEL, encoding: 'utf8', maxBuffer: 64 * 1024 * 1024 });
@@ -56,46 +63,50 @@ const median = (a) => {
 };
 const zahl = (x, stellen = 1) => (x === null ? '-' : x.toFixed(stellen));
 
-for (const stand of staende) {
-  const t0 = performance.now();
-  const werte = { feudal: [], angriff: [], dorf: [], kampf: [], angriffe: [], untaetig: [], sieger: 0, ende: [], je: [] };
-  let widerspruch = null;
-  for (let startwert = erster; startwert < erster + partien; startwert++) {
-    try {
-      const r = stand.pruefstand.partieSpielen({ startwert, minuten });
-      if (r.ende?.sieger) {
-        werte.sieger += 1;
-        werte.ende.push(r.ende.takt / 600);
-        werte.je.push({ startwert, ende: r.ende.takt / 600 });
+for (let satz = 0; satz < saetze; satz++) {
+  const von = erster + satz * partien;
+  if (saetze > 1) console.log(`== Startwerte ${von} bis ${von + partien - 1}`);
+  for (const stand of staende) {
+    const t0 = performance.now();
+    const werte = { feudal: [], angriff: [], dorf: [], kampf: [], angriffe: [], untaetig: [], sieger: 0, ende: [], je: [] };
+    let widerspruch = null;
+    for (let startwert = von; startwert < von + partien; startwert++) {
+      try {
+        const r = stand.pruefstand.partieSpielen({ startwert, minuten });
+        if (r.ende?.sieger) {
+          werte.sieger += 1;
+          werte.ende.push(r.ende.takt / 600);
+          werte.je.push({ startwert, ende: r.ende.takt / 600 });
+        }
+        for (const p of r.spieler) {
+          werte.feudal.push(p.feudalMinute);
+          werte.angriff.push(p.angriffMinute);
+          werte.dorf.push(p.dorfbewohner);
+          werte.kampf.push(p.kampf);
+          werte.angriffe.push(p.angriffe);
+          werte.untaetig.push(p.untaetigMax);
+        }
+      } catch (fehler) {
+        widerspruch = fehler.message;
+        break;
       }
-      for (const p of r.spieler) {
-        werte.feudal.push(p.feudalMinute);
-        werte.angriff.push(p.angriffMinute);
-        werte.dorf.push(p.dorfbewohner);
-        werte.kampf.push(p.kampf);
-        werte.angriffe.push(p.angriffe);
-        werte.untaetig.push(p.untaetigMax);
-      }
-    } catch (fehler) {
-      widerspruch = fehler.message;
-      break;
     }
+    // Die Rechenzeit ist zwischen den Staenden nicht vergleichbar: der erste Lauf
+    // waermt V8 auf (gemessen: 6,8 s gegen 1,9 s fuer dieselbe Arbeit).
+    const sek = ((performance.now() - t0) / 1000).toFixed(1);
+    console.log(`${stand.name.padEnd(13)} ${partien} Partien, ${minuten} min, ${sek} s Rechenzeit (nur innerhalb eines Standes vergleichbar)`
+      + (widerspruch ? `\n  WIDERSPRUCH: ${widerspruch}` : '')
+      + `\n  Feudalzeit Median ${zahl(median(werte.feudal))} min, erstes Heer Median ${zahl(median(werte.angriff))} min`
+      + `\n  Dorfbewohner am Ende ${Math.min(...werte.dorf)} bis ${Math.max(...werte.dorf)}, Median ${median(werte.dorf)}`
+      + `; Kampfeinheiten Median ${median(werte.kampf)}; Angriffe Median ${median(werte.angriffe)}`
+      + `\n  laengste Untaetigkeit ${zahl(Math.max(...werte.untaetig))} s`
+      + `; mit Sieger ${werte.sieger}/${partien}${werte.ende.length ? `, Ende Median ${zahl(median(werte.ende))} min` : ''}`
+      // fahrplan AC-11 fragt nach dieser Zahl: entschieden vor Spielminute 60.
+      + `, vor Minute 60: ${werte.ende.filter((m) => m < 60).length}/${partien}`
+      // Die Enden mit ihrem Startwert (Ende@Startwert), damit die langen gleich
+      // mit pruefstand:verlauf angesehen werden koennen.
+      + (werte.je.length ? `
+    Enden ${[...werte.je].sort((a, b) => a.ende - b.ende).map((p) => `${p.ende.toFixed(1)}@${p.startwert}`).join(' ')}` : ''));
   }
-  // Die Rechenzeit ist zwischen den Staenden nicht vergleichbar: der erste Lauf
-  // waermt V8 auf (gemessen: 6,8 s gegen 1,9 s fuer dieselbe Arbeit).
-  const sek = ((performance.now() - t0) / 1000).toFixed(1);
-  console.log(`${stand.name.padEnd(13)} ${partien} Partien, ${minuten} min, ${sek} s Rechenzeit (nur innerhalb eines Standes vergleichbar)`
-    + (widerspruch ? `\n  WIDERSPRUCH: ${widerspruch}` : '')
-    + `\n  Feudalzeit Median ${zahl(median(werte.feudal))} min, erstes Heer Median ${zahl(median(werte.angriff))} min`
-    + `\n  Dorfbewohner am Ende ${Math.min(...werte.dorf)} bis ${Math.max(...werte.dorf)}, Median ${median(werte.dorf)}`
-    + `; Kampfeinheiten Median ${median(werte.kampf)}; Angriffe Median ${median(werte.angriffe)}`
-    + `\n  laengste Untaetigkeit ${zahl(Math.max(...werte.untaetig))} s`
-    + `; mit Sieger ${werte.sieger}/${partien}${werte.ende.length ? `, Ende Median ${zahl(median(werte.ende))} min` : ''}`
-    // fahrplan AC-11 fragt nach dieser Zahl: entschieden vor Spielminute 60.
-    + `, vor Minute 60: ${werte.ende.filter((m) => m < 60).length}/${partien}`
-    // Die Enden mit ihrem Startwert (Ende@Startwert), damit die langen gleich
-    // mit pruefstand:verlauf angesehen werden koennen.
-    + (werte.je.length ? `
-  Enden ${[...werte.je].sort((a, b) => a.ende - b.ende).map((p) => `${p.ende.toFixed(1)}@${p.startwert}`).join(' ')}` : ''));
 }
 rmSync(ziel, { recursive: true, force: true });

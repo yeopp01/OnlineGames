@@ -129,6 +129,7 @@ test('auswahl AC-5: wer nichts einstellt, eroeffnet mit den Vorgaben und kann sp
   // Jede Einstellung hat ihre Vorgabe - aus dem Steckbrief gelesen, nicht
   // aufgezaehlt: die Liste waechst (Runde 101 kam `ki` dazu).
   const { einstellungen: liste } = require('../server/spiele/strategie/steckbrief.js');
+  // gleichheit-ok: verglichen wird mit dem Steckbrief selbst, nicht mit einer Aufzaehlung.
   assert.deepEqual(Object.fromEntries(raum.einstellungen.map((e) => [e.schluessel, e.wert])),
     Object.fromEntries(liste.map((e) => [e.schluessel, e.vorgabe])));
   assert.equal(raum.art, 'strategie');

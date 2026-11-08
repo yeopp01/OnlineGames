@@ -315,6 +315,9 @@ Zahlen, gegen die spätere Runden vergleichen. Mit Datum und Commit.
 | 2026-11-08 | KI gegen KI, zwanzig Startwerte bis Minute 90 (`pruefstand:vergleich`) | alle 20 mit Sieger, Ende **24,8 bis 53,3 min**, Median 33,8; Runde 92: 4 von 20 vor Minute 60, Median 72,6 | Runde 97 |
 | 2026-11-08 | `npm run check` (Maschine ruhig, ein fremder node) | 48 s, 477 Tests ohne Browser; mit dem Messtest ueber zwanzig Partien in `strategie-ki.test.mjs` waren es 88 s | Rueckschau 98 |
 | 2026-11-08 | Browserlauf gesamt | 167 Faelle, 9,6 min (Runde 95, zuletzt ganz gefahren) | Runde 95 |
+| 2026-11-08 | `npm run check` (Maschine ruhig) | 44 s, 483 Tests ohne Browser | Rueckschau 103 |
+| 2026-11-08 | Browserlauf gesamt mit allen Bildern neu (`check:alles:neu`) | 169 Faelle, 11,4 min; der neue Fall allein gegen die KI 1,2 min | Runde 101/102 |
+| 2026-11-08 | KI gegen KI, Startwerte 1-20 / 21-40 bis Minute 90 | 20/20 und 19/20 vor Minute 60, Median 36,4 / 39,4 min | Runde 100 |
 
 ## Rückschauen
 
@@ -980,6 +983,37 @@ Nicht geändert: das einzelne Messen jedes Hebels mit `pruefstand:vergleich`
 hat getragen — von den Runden 94 bis 97 blieb kein Code ohne gemessene
 Wirkung. Die Figuren bei Zoom 1 sind als Faden vor C5 vorgemerkt; das ist die
 nächste Runde.
+
+### Nach Runde 103 (2026-11-08)
+
+Runden 99–102: **C4 und C5 sind fertig**. Die Partie beginnt in Spielgröße
+(darstellung AC-16), Kämpfende stehen nebeneinander (einheiten AC-31), man
+eröffnet allein gegen die KI (spielauswahl AC-18, AC-19) und spielt eine
+ganze Partie bis zur Tafel „KI 1 hat gewonnen" (fahrplan AC-12). Von Stufe C
+fehlt nur der Nebel (C6).
+
+Was wiederholt Zeit kostete, und was sich ändert:
+
+1. **Gleichheit auf einer wachsenden Liste, zum fünften Mal** — diesmal die
+   Einstellungen (Runde 101), verglichen über `.einstellungen.map(...)`; der
+   Wächter kannte nur Ausdrücke, die auf das Feld enden. → Der Wächter
+   erkennt jetzt auch abgeleitete Listen (`.map`, `.filter` über ein
+   wachsendes Feld), mit Selbsttest und Gegenprobe; dabei fand er einen
+   Vergleich, der richtig ist (gegen den Steckbrief selbst) — vermerkt.
+2. **Ein zweiter Satz Startwerte zeigte zweimal, was der erste verbarg**
+   (Runde 100) — von Hand gemessen mit `--startwert 21`. → `pruefstand:vergleich
+   -- --saetze 2`, und die Regel: wer Bewegung oder Kampf ändert, vergleicht
+   auf zwei Sätzen.
+3. **Eine Gegenprobe an einem Startwert einer ganzen Partie brach** (ki
+   AC-19 an Startwert 5, Runde 100), ohne dass sich das Geprüfte geändert
+   hatte. → Regel: lieber eine gebaute Lage; sonst mit Abstand und der
+   Messung über alle Startwerte im Kommentar.
+
+Nicht geändert: der Lauf, der alle Bilder neu schreibt, und die Durchsicht
+der Bilder über 1 % durch einen Subagenten haben getragen — in Runde 99 fand
+sie zwei Kampfbilder mit übereinanderstehenden Milizen, die zur nächsten
+Runde wurden. Die Feudalzeit am Stück fiel zweimal im großen Lauf (Rechtsklick
+unter Last), seit dem dreifachen Klick nicht mehr.
 
 ## Runden
 

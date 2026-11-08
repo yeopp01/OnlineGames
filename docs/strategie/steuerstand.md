@@ -13,18 +13,19 @@ hier nichts eintraegt, verliert den Faden beim naechsten Autocompact.
 
 ## Zuletzt fortgeschrieben
 
-2026-11-08, nach Runde 102 (**fahrplan AC-12, C5 ist fertig**: eine ganze
-Partie allein gegen die KI im Browser bis zur Tafel "KI 1 hat gewonnen".
-Stufe C hat noch **C6, den Nebel** (kampf AC-11 bis AC-14, darstellung AC-15,
-ki AC-13, fahrplan AC-13). Offen daneben: Startwerte 21-40 19/20 und 900 s
-Untaetigkeit; das Goldbild (einheiten AC-15). **Naechste Runde 103 ist die
-Rueckschau.**)
+2026-11-08, nach Runde 103 (**Rueckschau**: der Waechter erkennt abgeleitete
+Listen (`.einstellungen.map(...)`), `pruefstand:vergleich -- --saetze 2`, und
+zwei Regeln: Bewegung/Kampf auf zwei Saetzen vergleichen, Gegenproben an
+einzelnen Startwerten ganzer Partien meiden. **C4 und C5 sind fertig.** Als
+Naechstes **C6, der Nebel** - erst die Bauabfolge im Fahrplan ansehen
+(kampf AC-11 bis AC-14, darstellung AC-15, ki AC-13, fahrplan AC-13).
+**Naechste Rueckschau: Runde 108.**)
 
 ## Wo ich stehe
 
 - **Branch:** `strategie`. Nie auf `main` arbeiten, **nie pushen, nie deployen.**
 - **Board:** 403 von 526 Kriterien fertig · 1 in Arbeit · 5 in QA · 4 geplant ·
-  105 offen · 8 zurueckgestellt. 482 Tests ohne Browser, 170 im Browser.
+  105 offen · 8 zurueckgestellt. 483 Tests ohne Browser, 170 im Browser.
 - **Fuenf Waechter in `tests/waechter-*.test.mjs`** (der fuenfte seit Runde 87: Bildschirmtext mit echten Umlauten): Gleichheit auf wachsenden
   Listen, verbesserbare Werte an `welt.einheitenwert()` vorbei,
   Bildunterschriften mit `${...}`, und (neu in Runde 73) die **Kuerzeltafel**
@@ -294,7 +295,7 @@ Rueckschau.**)
   bei 20 min). Aelter als Runde 69, nur nie gemessen, weil der Pruefstand bei
   zehn Minuten endete. Ursache und Hebel stehen in den Erkenntnissen unter
   **Offene Faeden**.
-- **Naechste Rueckschau: Runde 103** - oder frueher, wenn Stufe C erreicht wird.
+- **Naechste Rueckschau: Runde 108** - oder frueher, wenn Stufe C erreicht wird.
   Diese Zeile ist der Termin, nicht nachzaehlen.
 - Frueherer Termin, erledigt: **Runde 83** (die Bildnachweise einmal ganz
   angesehen), **Runde 78** (Bilderwerkzeug: `check:alles:neu`,

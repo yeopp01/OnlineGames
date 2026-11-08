@@ -84,34 +84,61 @@ function kern(ausdruck) {
   return (spreizung ? spreizung[1] : text).trim();
 }
 
+// Abgeleitet aus einer wachsenden Liste: `raum.einstellungen.map(...)` waechst
+// mit ihr. In Runde 101 verglichen drei Tests die Einstellungen so auf
+// Gleichheit, und der Waechter sah es nicht - er kannte nur Ausdruecke, die auf
+// das Feld **enden** (Rueckschau nach Runde 103).
+const ABGELEITET = new RegExp(`\\.(${FELDER})\\.(map|filter)\\(`);
+
+/** Die Fundstellen in einer Quelle: [Zeilennummer, Ausdruck]. */
+function gleichheitAufWachsendem(quelle) {
+  const zeilen = quelle.split('\n');
+  // `const { baut, ...rest } = werte.einheiten.dorfbewohner` macht aus
+  // wachsenden Daten einen harmlos aussehenden Namen - und genau so ist
+  // der Test in Runde 75 durchgerutscht. Solche Namen gelten hier als
+  // wachsend wie ihre Quelle.
+  const uebernommen = new Set();
+  for (const [, name, quellAusdruck] of quelle.matchAll(/\{[^{}]*\.\.\.(\w+)\s*\}\s*=\s*([^;\n]+)/g)) {
+    if (WAECHST.test(kern(quellAusdruck.replace(/[;,]\s*$/, '')))) uebernommen.add(name);
+  }
+  const treffer = [];
+  const muster = /(?:assert\.deepEqual|deepStrictEqual|\.toEqual)\s*\(/g;
+  let gefunden;
+  while ((gefunden = muster.exec(quelle)) !== null) {
+    const klammer = muster.lastIndex - 1;
+    const argument = erstesArgument(quelle, klammer);
+    if (argument === null) continue;
+    if (!WAECHST.test(kern(argument)) && !uebernommen.has(kern(argument)) && !ABGELEITET.test(argument)) continue;
+    const nummer = quelle.slice(0, klammer).split('\n').length;
+    const umgebung = `${zeilen[nummer - 2] || ''}\n${zeilen[nummer - 1]}`;
+    if (umgebung.includes('gleichheit-ok')) continue;
+    treffer.push([nummer, kern(argument)]);
+  }
+  return treffer;
+}
+
 test('waechter: kein Test prueft wachsende Daten auf Gleichheit', () => {
   const treffer = [];
   for (const ordner of ORDNER) {
     for (const pfad of dateien(join(WURZEL, ordner))) {
-      const quelle = readFileSync(pfad, 'utf8');
-      const zeilen = quelle.split('\n');
-      // `const { baut, ...rest } = werte.einheiten.dorfbewohner` macht aus
-      // wachsenden Daten einen harmlos aussehenden Namen - und genau so ist
-      // der Test in Runde 75 durchgerutscht. Solche Namen gelten hier als
-      // wachsend wie ihre Quelle.
-      const uebernommen = new Set();
-      for (const [, name, quellAusdruck] of quelle.matchAll(/\{[^{}]*\.\.\.(\w+)\s*\}\s*=\s*([^;\n]+)/g)) {
-        if (WAECHST.test(kern(quellAusdruck.replace(/[;,]\s*$/, '')))) uebernommen.add(name);
-      }
-      const muster = /(?:assert\.deepEqual|deepStrictEqual|\.toEqual)\s*\(/g;
-      let gefunden;
-      while ((gefunden = muster.exec(quelle)) !== null) {
-        const klammer = muster.lastIndex - 1;
-        const argument = erstesArgument(quelle, klammer);
-        if (argument === null) continue;
-        if (!WAECHST.test(kern(argument)) && !uebernommen.has(kern(argument))) continue;
-        const nummer = quelle.slice(0, klammer).split('\n').length;
-        const umgebung = `${zeilen[nummer - 2] || ''}\n${zeilen[nummer - 1]}`;
-        if (umgebung.includes('gleichheit-ok')) continue;
-        treffer.push(`${ordner}/${pfad.slice(join(WURZEL, ordner).length + 1)}:${nummer}: ${kern(argument)}`);
+      for (const [nummer, ausdruck] of gleichheitAufWachsendem(readFileSync(pfad, 'utf8'))) {
+        treffer.push(`${ordner}/${pfad.slice(join(WURZEL, ordner).length + 1)}:${nummer}: ${ausdruck}`);
       }
     }
   }
   assert.deepEqual(treffer, [], `Gleichheit auf wachsenden Daten - "enthaelt" statt "ist gleich" pruefen,
 oder "gleichheit-ok: <Grund>" an die Zeile schreiben:\n  ${treffer.join('\n  ')}\n`);
+});
+
+test('waechter: auch eine aus der Liste abgeleitete Liste waechst', () => {
+  // Die Form aus Runde 101 - so standen die drei Tests da.
+  // gleichheit-ok: Beispiel fuer den Waechter selbst.
+  const vorher = "assert.deepEqual(raum.einstellungen.map((e) => [e.name, e.wert]), [['Spieler', 4]]);";
+  assert.equal(gleichheitAufWachsendem(vorher).length, 1, 'die abgeleitete Liste wird gefunden');
+  // gleichheit-ok: Beispiel fuer den Waechter selbst.
+  assert.equal(gleichheitAufWachsendem("assert.deepEqual(g.bildetAus.filter((a) => a), ['miliz']);").length, 1, 'auch mit filter');
+  // Gegenprobe: ein einzelner Eintrag waechst nicht, und ein Vergleich der
+  // Laenge mit den Daten selbst ist richtig.
+  assert.equal(gleichheitAufWachsendem("assert.deepEqual(raum.einstellungen.find((e) => e.schluessel === 'ki').wert, 2);").length, 0);
+  assert.equal(gleichheitAufWachsendem('assert.equal(raum.einstellungen.length, liste.length);').length, 0);
 });

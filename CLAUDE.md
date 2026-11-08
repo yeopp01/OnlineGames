@@ -37,7 +37,7 @@ npm run sicht -- --spiel --zoom 2 --ziel wald  # dasselbe fuer eine laufende Par
 npm run sicht -- --spiel --waehlen speerkaempfer --zeitalter 1  # die Auswahlleiste im breitesten Zustand
 npm run tafel -- "t.anmutung('gebaeude', 'haus')"  # auf der Schautafel messen, Ergebnis als JSON
 npm run e2e:laufzeiten -- strategie   # Dauer des Browserlaufs je Datei, die langsamsten Faelle
-npm run pruefstand:vergleich          # KI gegen KI: Arbeitsstand neben HEAD, dieselben Partien
+npm run pruefstand:vergleich          # KI gegen KI: Arbeitsstand neben HEAD, dieselben Partien (--saetze 2: 1-20 und 21-40)
 npm run pruefstand:verlauf -- --startwert 5  # eine Partie KI gegen KI Minute fuer Minute
 ```
 
@@ -157,7 +157,7 @@ Umfang hinzufügt, dort nachsehen.
 
 ## Stand
 
-**403 von 526 Kriterien fertig.** 482 Tests ohne Browser, 170 im Browser. Die
+**403 von 526 Kriterien fertig.** 483 Tests ohne Browser, 170 im Browser. Die
 Übersicht ist der Bericht: `npm run qa:report`.
 
 Gebaut ist der Unterbau: Räume, Übertragung, Karte, Wegfindung, Sammeln,

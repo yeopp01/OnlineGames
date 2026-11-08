@@ -201,6 +201,19 @@ Setze die gewählten Kriterien auf `in-arbeit`.
   nebeneinander, Tests einer Datei nacheinander. Hinter den Messungen in
   `strategie-ki.test.mjs` verlängerte zwanzig Partien `npm run check` von 48
   auf 88 Sekunden (Runde 97).
+  **Wer Bewegung oder Kampf ändert, vergleicht auf zwei Sätzen Startwerte**
+  (`npm run pruefstand:vergleich -- --minuten 90 --saetze 2`): eine solche
+  Änderung verschiebt jede Partie, und ein Satz allein zeigt Zufall als
+  Wirkung. In Runde 100 sah erst der zweite Satz, dass die Partien
+  systematisch länger wurden — und dass fahrplan AC-11 auch mit HEAD nur 19
+  von 20 schafft.
+  **Eine Gegenprobe an einem einzelnen Startwert einer ganzen Partie ist
+  brüchig**: jede fremde Änderung verschiebt den Verlauf. Die Gegenprobe zu
+  ki AC-19 hing an Startwert 5 und brach in Runde 100, ohne dass das Aufgeben
+  sich geändert hatte. Lieber eine gebaute Lage (`new Welt`, Einheiten
+  setzen, eine Regel aufrufen); muss es eine ganze Partie sein, dann mit
+  Abstand (die Wirkung mindestens fünf Minuten, nicht knapp über der Grenze)
+  und mit der Messung über alle Startwerte im Kommentar.
 - **Was gemessen nichts bringt, bleibt nicht im Code.** Jede Abhilfe einzeln
   messen (`npm run pruefstand:vergleich`), und zurücknehmen, was die Zahl
   nicht bewegt — auch wenn sie „richtig" aussieht. In den Runden 89 bis 92

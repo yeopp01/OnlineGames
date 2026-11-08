@@ -1239,10 +1239,13 @@ test('pruefstand:vergleich stellt den Arbeitsstand neben einen eingecheckten Sta
   // Das Werkzeug der Rueckschau nach Runde 92. Eine Partie zu einer Minute
   // reicht, um zu sehen, dass beide Staende laufen und berichten.
   const skript = fileURLToPath(new URL('../scripts/pruefstand-vergleich.mjs', import.meta.url));
-  const ausgabe = execFileSync(process.execPath, [skript, '--partien', '1', '--minuten', '1'], { encoding: 'utf8' });
+  // Zwei Saetze (Rueckschau nach Runde 103): je Satz eine Zeile je Stand.
+  const ausgabe = execFileSync(process.execPath, [skript, '--partien', '1', '--minuten', '1', '--saetze', '2'], { encoding: 'utf8' });
+  assert.match(ausgabe, /^== Startwerte 1 bis 1$/m, 'der erste Satz');
+  assert.match(ausgabe, /^== Startwerte 2 bis 2$/m, 'der zweite Satz schliesst an');
   assert.match(ausgabe, /^HEAD /m, 'der eingecheckte Stand');
   assert.match(ausgabe, /^Arbeitsstand /m, 'der Arbeitsstand');
-  assert.equal((ausgabe.match(/Feudalzeit Median/g) || []).length, 2, 'je Stand eine Auswertung');
+  assert.equal((ausgabe.match(/Feudalzeit Median/g) || []).length, 4, 'je Stand und Satz eine Auswertung');
   assert.doesNotMatch(ausgabe, /WIDERSPRUCH/);
 });
 
