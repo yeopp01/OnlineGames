@@ -32,7 +32,12 @@ const leinwand = document.getElementById('tafel');
 const stift = leinwand.getContext('2d');
 const dichte = window.devicePixelRatio || 1;
 const BREITE = 1100;
-const HOEHE = 1180;
+// Die Gebaeude stehen in Reihen von hoechstens GEBAEUDE_SPALTEN, je
+// Spielerfarbe; die Hoehe reicht fuer zwei Reihen je Farbe, also zwanzig
+// Gebaeude. Mit siebzehn in einer Reihe liefen die Beschriftungen ineinander
+// (Runde 122).
+const GEBAEUDE_SPALTEN = 10;
+const HOEHE = 790 + 6 + 2 * 2 * 190 + 4;
 leinwand.width = BREITE * dichte;
 leinwand.height = HOEHE * dichte;
 stift.scale(dichte, dichte);
@@ -156,6 +161,10 @@ const GEBAEUDE_REIHE = [
   { art: 'schmiede', groesse: 3, titel: 'Schmiede' },
   // Die Sicht waechst (kampf AC-18).
   { art: 'aussenposten', groesse: 1, titel: 'Außenposten' },
+  // Ritterzeit (bauen AC-28).
+  { art: 'kloster', groesse: 3, titel: 'Kloster' },
+  { art: 'universitaet', groesse: 3, titel: 'Universität' },
+  { art: 'belagerungswerkstatt', groesse: 3, titel: 'Werkstatt' },
   { art: 'haus', groesse: 2, titel: 'Baustelle 20 %', bau: 0.2 },
   { art: 'haus', groesse: 2, titel: 'Baustelle 70 %', bau: 0.7 },
 ];
@@ -164,12 +173,14 @@ stift.fillStyle = '#e6e9ee';
 stift.font = '600 15px system-ui, sans-serif';
 stift.textAlign = 'left';
 stift.fillText('Gebaeude und Baustellen - in Spielgroesse (Zoom 1), das Dorfzentrum halb so gross, in zwei Spielerfarben', 12, gebaeudeOben - 6);
-const gebaeudeSpalte = BREITE / GEBAEUDE_REIHE.length;
+const gebaeudeSpalte = BREITE / GEBAEUDE_SPALTEN;
+const gebaeudeReihen = Math.ceil(GEBAEUDE_REIHE.length / GEBAEUDE_SPALTEN);
+if (gebaeudeReihen > 2) throw new Error('Schautafel: mehr als zwanzig Gebaeude - HOEHE anheben.');
 const gebaeudeZellen = [];
 FARBEN.forEach((farbe, reihe) => {
-  const oben = gebaeudeOben + 6 + reihe * 190;
   GEBAEUDE_REIHE.forEach((eintrag, i) => {
-    const x = i * gebaeudeSpalte;
+    const oben = gebaeudeOben + 6 + (reihe * gebaeudeReihen + Math.floor(i / GEBAEUDE_SPALTEN)) * 190;
+    const x = (i % GEBAEUDE_SPALTEN) * gebaeudeSpalte;
     stift.fillStyle = GRAS;
     stift.fillRect(x + 6, oben, gebaeudeSpalte - 12, 170);
     // In Spielgroesse (e = 22 wie bei Zoom 1); das Dorfzentrum halb so gross, sonst passt es nicht.

@@ -470,7 +470,7 @@ test('darstellung AC-4 / bauen AC-20: jedes Gebaeude hat Koerper, die Spielerfar
   await nachweis(page, {
     spec: BAUEN,
     ac: 'AC-20',
-    titel: 'Die Gebäudereihe der Schautafel: Dorfzentrum, Haus, Mühle, zwei Lager, Kaserne, Farm, die drei der Feudalzeit und der Außenposten als schmaler Turm — keine zwei gleich',
+    titel: 'Die Gebäudereihe der Schautafel: Dorfzentrum, Haus, Mühle, zwei Lager, Kaserne, Farm, die drei der Feudalzeit, der Außenposten als schmaler Turm und die drei der Ritterzeit — keine zwei gleich',
     test: info,
   });
 });

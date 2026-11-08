@@ -2,7 +2,7 @@
 
 **Bereich:** Strategie
 **Kuerzel:** bauen
-**Stand:** 22/34 fertig · 12 offen
+**Stand:** 24/34 fertig · 10 offen
 
 ## Zweck
 
@@ -183,11 +183,11 @@ Spezialeinheit der Burg (kommt mit den Völkern, Stufe E), Palisade.
 
 ### Stufe D — Ritterzeit
 
-- **AC-27** `offen` **Aufstieg in die Ritterzeit** — Im Dorfzentrum, wie der
+- **AC-27** `fertig` **Aufstieg in die Ritterzeit** — Im Dorfzentrum, wie der
   in die Feudalzeit (AC-23): 800 Nahrung und 200 Gold, 160 Sekunden, und zwei
   fertige Gebäude der Feudalzeit außer Häusern. Danach stehen die Gebäude und
   Einheiten der Ritterzeit im Menü.
-- **AC-28** `offen` **Kloster, Universität, Werkstatt** — Die drei Gebäude der
+- **AC-28** `fertig` **Kloster, Universität, Werkstatt** — Die drei Gebäude der
   Ritterzeit mit den Werten aus der Tabelle, erst ab dem Aufstieg im
   Baumenü, jedes gezeichnet und von allen anderen unterscheidbar
   (darstellung AC-14).

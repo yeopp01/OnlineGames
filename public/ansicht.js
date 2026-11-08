@@ -203,14 +203,16 @@ export class Ansicht {
 
   zustand(nachricht) {
     // Pfeile (bedienung AC-40): jeder fliegt vom Schuetzen zum Ziel, so lange,
-    // wie er bei zehn Feldern je Sekunde braucht - mindestens 0,15 Sekunden.
+    // wie er bei sieben Feldern je Sekunde braucht - mindestens 0,15 Sekunden.
+    // Mit zehn war ein Schuss ueber vier Felder 0,4 s unterwegs, kaum zu
+    // sehen und im vollen Browserlauf nicht zu fotografieren (Runde 122).
     const jetzt = performance.now();
     // Angekommene fallen auch hier heraus, nicht nur beim Zeichnen: in einem
     // Tab im Hintergrund wird nicht gezeichnet, und die Liste wuechse.
     this.pfeile = this.pfeile.filter((p) => jetzt - p.start < p.dauer);
     for (const [x0, y0, x1, y1] of nachricht.p || []) {
       const weite = Math.hypot(x1 - x0, y1 - y0);
-      this.pfeile.push({ x0, y0, x1, y1, weite, start: jetzt, dauer: Math.max(150, weite * 100) });
+      this.pfeile.push({ x0, y0, x1, y1, weite, start: jetzt, dauer: Math.max(150, (weite / 7) * 1000) });
     }
     for (const aenderung of nachricht.felder || []) {
       if (this.karte.felder[aenderung.i] !== aenderung.a) {

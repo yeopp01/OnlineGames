@@ -1167,6 +1167,184 @@ function aussenposten(stift, e, farbe) {
   fahne(stift, spitze, e, farbe, 0.7);
 }
 
+// ---- Kloster -----------------------------------------------------------------
+
+// Ein Schiff aus hellem Haustein mit steilem Schieferdach und Rundbogenfenstern,
+// dahinter links ein hoher Glockenturm mit Pyramidendach - der Turm ueberragt
+// alles im Dorf und gibt dem Kloster seine Silhouette (bauen AC-28,
+// darstellung AC-14).
+function kloster(stift, e, farbe) {
+  const W = 2.1 * e;
+  const H = W / 2;
+  vorbereiten(stift, e, W, H);
+  // Der Turm zuerst: er steht hinten, das Schiff davor.
+  const tx = -0.5 * W;
+  const ty = -0.3 * H;
+  const tb = 0.42 * e;
+  const th = 3.0 * e;
+  const turmL = [[tx - tb, ty], [tx, ty + tb / 2], [tx, ty + tb / 2 - th], [tx - tb, ty - th]];
+  const turmR = [[tx, ty + tb / 2], [tx + tb, ty], [tx + tb, ty - th], [tx, ty + tb / 2 - th]];
+  flaeche(stift, turmL, verlauf(stift, '#bba57c', turmL[3], turmL[1], 0.08, -0.24));
+  flaeche(stift, turmR, verlauf(stift, '#d6c39b', turmR[3], turmR[1], 0.14, -0.12));
+  mauerwerk(stift, turmL[0], turmL[1], th, e, { reihen: 9, steine: 2, grund: '#bba57c' });
+  mauerwerk(stift, turmR[0], turmR[1], th, e, { reihen: 9, steine: 2, grund: '#d6c39b' });
+  // Die Schalloeffnung oben, dunkel, mit der Glocke darin.
+  const so = [wandpunkt(turmR[0], turmR[1], th, 0.25, 0.72), wandpunkt(turmR[0], turmR[1], th, 0.75, 0.72),
+    wandpunkt(turmR[0], turmR[1], th, 0.75, 0.9), wandpunkt(turmR[0], turmR[1], th, 0.25, 0.9)];
+  flaeche(stift, so, '#2e261e');
+  const glocke = zwischen(so[0], so[2], 0.5);
+  kreis(stift, glocke[0], glocke[1] + 0.04 * e, 0.09 * e, '#c9a24a', false);
+  // Pyramidendach aus Schiefer.
+  const spitze = [tx, ty - th - 1.2 * e];
+  const dl = [tx - tb * 1.15, ty - th + 0.02 * e];
+  const db = [tx, ty + tb * 0.6 - th];
+  const dr = [tx + tb * 1.15, ty - th + 0.02 * e];
+  flaeche(stift, [dl, db, spitze], verlauf(stift, '#4a4f58', spitze, db, 0.1, -0.22));
+  flaeche(stift, [db, dr, spitze], verlauf(stift, '#5d636e', spitze, dr, 0.16, -0.12));
+  linie(stift, spitze, [spitze[0], spitze[1] - 0.35 * e], '#3a2c1f', Math.max(0.8, e * 0.05));
+  linie(stift, [spitze[0] - 0.12 * e, spitze[1] - 0.25 * e], [spitze[0] + 0.12 * e, spitze[1] - 0.25 * e], '#3a2c1f', Math.max(0.8, e * 0.05));
+  // Das Schiff.
+  const wand = 0.92 * e;
+  const { L1, B1, R1, traufe } = kasten(stift, W, 0.26 * e, wand, e, {
+    sockelL: '#6a6256', sockelR: '#7d7466', wandL: '#c3ad84', wandR: '#d9c69f', wandMuster: 'stein',
+  });
+  // Rundbogenfenster: schmal und hoch, oben ein Bogen.
+  const bogenfenster = (a, b, u) => {
+    const unten = [wandpunkt(a, b, wand, u - 0.045, 0.3), wandpunkt(a, b, wand, u + 0.045, 0.3)];
+    const oben = [wandpunkt(a, b, wand, u + 0.045, 0.72), wandpunkt(a, b, wand, u - 0.045, 0.72)];
+    const scheitel = wandpunkt(a, b, wand, u, 0.82);
+    stift.beginPath();
+    stift.moveTo(unten[0][0], unten[0][1]);
+    stift.lineTo(unten[1][0], unten[1][1]);
+    stift.lineTo(oben[0][0], oben[0][1]);
+    stift.quadraticCurveTo(scheitel[0] + 0.02 * e, scheitel[1] - 0.04 * e, oben[1][0], oben[1][1]);
+    stift.closePath();
+    stift.fillStyle = '#3b3328';
+    stift.fill();
+    stift.stroke();
+  };
+  for (const u of [0.18, 0.82]) bogenfenster(B1, R1, u);
+  for (const u of [0.3, 0.7]) bogenfenster(L1, B1, u);
+  tuerZeichnen(stift, B1, R1, wand, 0.5, e, '#6b4a2b', 0.16, 0.62);
+  // Steiles Schieferdach - steiler als jedes Wohnhaus.
+  walmdach(stift, W, traufe, 1.5 * e, e, { hinten: '#454a53', links: '#50565f', rechts: '#626873', seite: '#4b5059' }, 'schindel');
+  fahne(stift, hoch([0.24 * W, 0], traufe + 1.45 * e), e, farbe, 0.75);
+}
+
+// ---- Universitaet ---------------------------------------------------------------
+
+// Ein breiter Bau aus hellem Putz mit einer Saeulenreihe an der Front und einer
+// gruenen Kupferkuppel - kein anderes Gebaeude traegt eine Kuppel (bauen AC-28).
+function universitaet(stift, e, farbe) {
+  const W = 2.2 * e;
+  const H = W / 2;
+  vorbereiten(stift, e, W, H);
+  const wand = 0.95 * e;
+  const { L1, B1, R1, traufe } = kasten(stift, W, 0.3 * e, wand, e, {
+    sockelL: '#7a7264', sockelR: '#8c8474', wandL: '#d3c9b6', wandR: '#e6ddcb', wandMuster: 'putz',
+  });
+  // Saeulen an der Front, mit Schattenseite; dazwischen die Tuer.
+  for (const u of [0.1, 0.26, 0.74, 0.9]) {
+    linie(stift, wandpunkt(B1, R1, wand, u + 0.018, 0.02), wandpunkt(B1, R1, wand, u + 0.018, 0.94), 'rgba(90,80,60,0.45)', Math.max(0.8, e * 0.07));
+    linie(stift, wandpunkt(B1, R1, wand, u, 0.02), wandpunkt(B1, R1, wand, u, 0.94), '#f6f1e6', Math.max(0.9, e * 0.09));
+  }
+  tuerZeichnen(stift, B1, R1, wand, 0.5, e, '#5e4630', 0.2, 0.66);
+  for (const u of [0.28, 0.72]) fenster(stift, L1, B1, wand, u, 0.55, e, 0.12, 0.3);
+  // Gesims und flaches Dach.
+  const dach = [hoch([-W * 1.06, 0], traufe), hoch([0, -H * 1.06], traufe), hoch([W * 1.06, 0], traufe), hoch([0, H * 1.06], traufe)];
+  flaeche(stift, dach, verlauf(stift, '#a49a88', dach[1], dach[3], 0.12, -0.18));
+  flaeche(stift, [dach[0], dach[3], hoch(dach[3], 0.14 * e), hoch(dach[0], 0.14 * e)], '#cfc5b1');
+  flaeche(stift, [dach[3], dach[2], hoch(dach[2], 0.14 * e), hoch(dach[3], 0.14 * e)], '#ece4d2');
+  // Tambour und Kuppel.
+  const mitte = hoch([0, 0], traufe + 0.14 * e);
+  const r = 0.78 * e;
+  const tambour = 0.36 * e;
+  const ring = [[mitte[0] - r, mitte[1]], [mitte[0] + r, mitte[1]], [mitte[0] + r, mitte[1] - tambour], [mitte[0] - r, mitte[1] - tambour]];
+  flaeche(stift, ring, verlauf(stift, '#ddd3bf', ring[3], ring[1], 0.16, -0.22));
+  for (const t of [0.2, 0.4, 0.6, 0.8]) {
+    const x = mitte[0] - r + 2 * r * t;
+    linie(stift, [x, mitte[1] - 0.05 * e], [x, mitte[1] - tambour + 0.05 * e], 'rgba(80,70,50,0.35)', Math.max(0.5, e * 0.04));
+  }
+  const fuss = mitte[1] - tambour;
+  const kuppel = stift.createLinearGradient(mitte[0] - r, fuss - r, mitte[0] + r, fuss);
+  kuppel.addColorStop(0, '#8fbfae');
+  kuppel.addColorStop(0.55, '#5f8f7e');
+  kuppel.addColorStop(1, '#3f6457');
+  stift.beginPath();
+  stift.moveTo(mitte[0] - r, fuss);
+  stift.bezierCurveTo(mitte[0] - r, fuss - r * 1.15, mitte[0] + r, fuss - r * 1.15, mitte[0] + r, fuss);
+  stift.closePath();
+  stift.fillStyle = kuppel;
+  stift.fill();
+  stift.stroke();
+  for (const t of [-0.5, 0, 0.5]) {
+    linie(stift, [mitte[0] + t * r, fuss], [mitte[0] + t * 0.3 * r, fuss - r * 0.82], 'rgba(30,60,50,0.35)', Math.max(0.5, e * 0.04));
+  }
+  // Laterne oben, mit Wimpel.
+  const laterne = [mitte[0], fuss - r * 0.86];
+  flaeche(stift, [[laterne[0] - 0.12 * e, laterne[1]], [laterne[0] + 0.12 * e, laterne[1]],
+    [laterne[0] + 0.12 * e, laterne[1] - 0.24 * e], [laterne[0] - 0.12 * e, laterne[1] - 0.24 * e]], '#e6ddcb');
+  fahne(stift, [laterne[0], laterne[1] - 0.24 * e], e, farbe, 0.7);
+}
+
+// ---- Belagerungswerkstatt ------------------------------------------------------
+
+// Eine offene Halle aus Balken mit Schindeldach, davor auf gestampftem Boden ein
+// grosses Holzrad und ein Rammbalken auf Boecken - hier wird gebaut, nicht
+// gewohnt (bauen AC-28).
+function belagerungswerkstatt(stift, e, farbe) {
+  const W = 2.2 * e;
+  const H = W / 2;
+  vorbereiten(stift, e, W, H);
+  const L = [-W, 0];
+  const B = [0, H];
+  const R = [W, 0];
+  const T = [0, -H];
+  flaeche(stift, [L, B, R, T], verlauf(stift, '#7a6448', T, B, 0.08, -0.16));
+  // Die Halle hinten: Pfosten und ein Satteldach.
+  const pfosten = (p, h) => {
+    linie(stift, p, hoch(p, h), '#5e4632', Math.max(1.4, e * 0.15));
+    linie(stift, [p[0] - e * 0.03, p[1]], [p[0] - e * 0.03, p[1] - h], 'rgba(255,220,170,0.3)', Math.max(0.4, e * 0.04));
+  };
+  stift.save();
+  stift.translate(0, -0.32 * H);
+  satteldach(stift, e, W * 0.82, H * 0.82, pfosten, { oben: '#6f5638', kante: '#3d2c1c', kanteHell: '#8f7048' });
+  stift.restore();
+  // Vorn links der Rammbalken auf zwei Boecken, mit eisernem Kopf.
+  const bock = (p) => {
+    linie(stift, [p[0] - 0.16 * e, p[1]], [p[0], p[1] - 0.42 * e], '#5a4028', Math.max(1, e * 0.08));
+    linie(stift, [p[0] + 0.16 * e, p[1]], [p[0], p[1] - 0.42 * e], '#5a4028', Math.max(1, e * 0.08));
+  };
+  const b1 = zwischen(L, B, 0.35);
+  const b2 = zwischen(L, B, 0.75);
+  bock(b1);
+  bock(b2);
+  const hinten = [b1[0] - 0.3 * e, b1[1] - 0.48 * e];
+  const vorn = [b2[0] + 0.32 * e, b2[1] - 0.36 * e];
+  linie(stift, hinten, vorn, '#3d2c1c', Math.max(2.6, e * 0.26));
+  linie(stift, hinten, vorn, '#7a5a38', Math.max(2, e * 0.2));
+  kreis(stift, vorn[0], vorn[1], Math.max(1.4, e * 0.15), '#4c5157');
+  // Vorn rechts ein grosses Rad, aufrecht, mit Speichen und Nabe.
+  const rad = hoch(zwischen(B, R, 0.42), 0.52 * e);
+  const rr = 0.48 * e;
+  stift.save();
+  stift.strokeStyle = '#3d2c1c';
+  stift.lineWidth = Math.max(2, e * 0.13);
+  stift.beginPath();
+  stift.ellipse(rad[0], rad[1], rr * 0.8, rr, 0, 0, Math.PI * 2);
+  stift.stroke();
+  stift.strokeStyle = '#8a6a44';
+  stift.lineWidth = Math.max(1.2, e * 0.08);
+  stift.stroke();
+  for (let i = 0; i < 6; i++) {
+    const w = (i / 6) * Math.PI;
+    linie(stift, [rad[0] - Math.cos(w) * rr * 0.8, rad[1] - Math.sin(w) * rr], [rad[0] + Math.cos(w) * rr * 0.8, rad[1] + Math.sin(w) * rr], '#6e5236', Math.max(0.7, e * 0.05));
+  }
+  stift.restore();
+  kreis(stift, rad[0], rad[1], Math.max(1, e * 0.09), '#4c5157');
+  fahne(stift, hoch([0, -0.32 * H + H * 0.82], SATTEL_FIRST * e), e, farbe, 0.7);
+}
+
 export const GEBAEUDE = {
   dorfzentrum: {
     name: 'Dorfzentrum',
@@ -1197,6 +1375,12 @@ export const GEBAEUDE = {
   schmiede: { name: 'Schmiede', zeichnen: schmiede, halbeBreite: 2.0, trefferBreite: 2.2, trefferOben: 3.6, trefferUnten: 1.2 },
   // Ein Feld, aber hoch: der Turm (kampf AC-18).
   aussenposten: { name: 'Außenposten', zeichnen: aussenposten, halbeBreite: 1.0, trefferBreite: 1.1, trefferOben: 5.0, trefferUnten: 0.8 },
+  // Gebaeude der Ritterzeit (bauen AC-28).
+  kloster: { name: 'Kloster', zeichnen: kloster, halbeBreite: 2.2, trefferBreite: 2.3, trefferOben: 4.8, trefferUnten: 1.2 },
+  universitaet: { name: 'Universität', zeichnen: universitaet, halbeBreite: 2.4, trefferBreite: 2.5, trefferOben: 3.6, trefferUnten: 1.3 },
+  belagerungswerkstatt: {
+    name: 'Belagerungswerkstatt', zeichnen: belagerungswerkstatt, halbeBreite: 2.3, trefferBreite: 2.4, trefferOben: 2.8, trefferUnten: 1.3,
+  },
 };
 
 /**

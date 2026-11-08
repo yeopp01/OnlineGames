@@ -55,10 +55,12 @@ test.describe('Pfeile', () => {
 
     // Ein Pfeil auf halbem Weg: merken, fotografieren, nachsehen.
     let getroffen = false;
-    for (let versuch = 0; versuch < 20 && !getroffen; versuch++) {
+    for (let versuch = 0; versuch < 30 && !getroffen; versuch++) {
       const pfeil = await anna.waitForFunction(() => {
         const jetzt = performance.now();
-        const p = window.ansicht.pfeile.find((q) => (jetzt - q.start) / q.dauer < 0.35 && q.dauer >= 250);
+        // Frisch abgeschossen und lang unterwegs: im vollen Browserlauf dauert
+        // das Bild selbst Zehntelsekunden (Runde 122).
+        const p = window.ansicht.pfeile.find((q) => (jetzt - q.start) / q.dauer < 0.2 && q.dauer >= 400);
         return p ? { start: p.start, dauer: p.dauer, weite: p.weite } : null;
       }, null, { timeout: 20_000, polling: 10 });
       const gemerkt = await pfeil.jsonValue();

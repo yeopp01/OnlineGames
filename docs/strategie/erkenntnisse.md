@@ -1220,6 +1220,23 @@ der Browserlauf 12,2 min für 178 Fälle (Runde 120).
 Neueste oben. Eine Zeile je Runde: Nummer, Datum, Kriterien, Ergebnis,
 wichtigste Erkenntnis.
 
+- **122** · 2026-11-08 · **bauen AC-27, AC-28** (D2 ist fertig) — der
+  Aufstieg in die Ritterzeit stand schon in den Daten und lief über dieselbe
+  Regel wie der in die Feudalzeit; belegt mit eigenem Test (800 Nahrung, 200
+  Gold, 160 s, zwei Gebäude der Feudalzeit — die der Dunklen Zeit zählen
+  nicht mehr). Kloster (Glockenturm, Schieferdach), Universität (Kuppel,
+  Säulen) und Belagerungswerkstatt (offene Halle, Rad, Rammbalken)
+  gezeichnet, ab der Ritterzeit im Baumenü, Tasten Y X C — die
+  Tastenübersicht nennt die Tasten jetzt aus der Liste (sie nannte das P
+  nie). Ein Test war erst aus dem falschen Grund grün: die Absage in der
+  Feudalzeit kam von einer falsch gebauten Nachricht (`x`, `y` statt
+  `ziel`) — jetzt prüft er, dass die Absage die Ritterzeit nennt. Das erste
+  Bild zeigte die Werkstatt vor der halben Universität; mit Abstand neu.
+  Die Schautafel trug siebzehn Gebäude in einer Reihe, die Beschriftungen
+  liefen ineinander — jetzt bricht sie nach zehn um (und wirft einen Fehler
+  ab zwanzig, statt still zu überlaufen). Im vollen Lauf fiel der Pfeiltest:
+  das Bildschießen dauerte länger als der Flug — Pfeile fliegen jetzt mit
+  sieben statt zehn Feldern je Sekunde, und der Test nimmt nur frische.
 - **121** · 2026-11-08 · **Rückschau** — der Testserver beendet sich auf
   Zuruf, `leise.mjs` ruft ihn vor jedem Browserlauf; Kampftests mit einer
   Szene, die stillhält; zwei rote volle Läufe hintereinander sind roter
@@ -1239,7 +1256,7 @@ wichtigste Erkenntnis.
 - **119** · 2026-11-08 · **bedienung AC-40** — Pfeile fliegen sichtbar (D1
   ist fertig): jeder Schuss eines Fernkämpfers geht mit Start und Ziel in
   den nächsten Zustand, im Nebel nur, wer ein Ende sieht; der Browser lässt
-  ihn auf flachem Bogen fliegen (10 Felder je Sekunde, mindestens 0,15 s).
+  ihn auf flachem Bogen fliegen (10 Felder je Sekunde, seit Runde 122 sieben, mindestens 0,15 s).
   Ein leerer Pfeil-Eintrag ging erst mit `p: []` über den Draht — der Test
   für einen Dritten im Nebel fand es. Die Durchsicht bestätigte zwei
   Speicherlecks, die ich parallel selbst sah: ohne Zustand (Prüfstand)

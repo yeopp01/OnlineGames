@@ -26,7 +26,8 @@ const EINHEITEN = {
     // Spaeher entgegenlaeuft, hoert auf zu arbeiten, und die Wirtschaft ist das
     // Spiel. Getroffen wird er trotzdem wehrhaft.
     wacht: false,
-    baut: ['haus', 'muehle', 'holzfaellerlager', 'bergbaulager', 'farm', 'kaserne', 'schiessanlage', 'stall', 'schmiede', 'aussenposten'],
+    baut: ['haus', 'muehle', 'holzfaellerlager', 'bergbaulager', 'farm', 'kaserne', 'schiessanlage', 'stall', 'schmiede', 'aussenposten',
+      'kloster', 'universitaet', 'belagerungswerkstatt'],
   },
   // Ausgebildet wird er im Stall, also ab der Feudalzeit; zu Beginn steht
   // einer in der Startaufstellung (bauen AC-22).
@@ -137,6 +138,12 @@ const GEBAEUDE = {
     groesse: 3, kosten: { holz: 150 }, bauzeit: 40, leben: 1200, wohnraum: 0, annahme: [],
     bildetAus: ['schmiedeangriff', 'befiedertePfeile'], zeitalter: 1,
   },
+  // Gebaeude der Ritterzeit (bauen AC-28), Werte aus der Vorlage. Was sie
+  // ausbilden und erforschen, kommt mit ihren Schritten: der Moench (D8),
+  // Mauerwerk (D3), Ramme und Mangonel (D6) - bis dahin bieten sie nichts an.
+  kloster: { groesse: 3, kosten: { holz: 175 }, bauzeit: 40, leben: 2100, wohnraum: 0, annahme: [], bildetAus: [], zeitalter: 2 },
+  universitaet: { groesse: 3, kosten: { holz: 200 }, bauzeit: 60, leben: 2100, wohnraum: 0, annahme: [], bildetAus: [], zeitalter: 2 },
+  belagerungswerkstatt: { groesse: 3, kosten: { holz: 200 }, bauzeit: 40, leben: 2100, wohnraum: 0, annahme: [], bildetAus: [], zeitalter: 2 },
 };
 
 // Jedes Gebaeude ist auch ein Ziel (kampf AC-1), also braucht es Ruestung und

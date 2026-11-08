@@ -13,7 +13,7 @@ hier nichts eintraegt, verliert den Faden beim naechsten Autocompact.
 
 ## Zuletzt fortgeschrieben
 
-2026-11-08, nach Runde 121 (**kampf AC-13, fahrplan AC-13, C6e fertig**: der
+2026-11-08, nach Runde 122 (**kampf AC-13, fahrplan AC-13, C6e fertig**: der
 Server schickt jedem nur, was er sieht - `welt.zustandJeSpieler`,
 `welt.aufbauFuer`, im Raum `sendenJe`. Fremde Gebaeude und Felder, die sich im
 Nebel aendern, kommen beim naechsten Hinsehen; wer ausscheidet, bekommt einmal
@@ -45,16 +45,18 @@ Runde 120: **ki AC-11 im Browser auf
 Startwert 2024** (bewusstes Ausweichen vor AC-32, im Test vermerkt) - der
 Browserlauf ist wieder gruen. Runde 121: **Rueckschau**
 (Testserver beendet sich auf Zuruf, Szenen, die stillhalten, zwei rote
-Laeufe = roter check). **Als Naechstes D2**: Aufstieg in die Ritterzeit,
-Kloster, Universitaet, Werkstatt (bauen AC-27, AC-28). **Naechste
-Rueckschau: Runde 126.** ki AC-13 und einheiten
+Laeufe = roter check). Runde 122: **D2 fertig** (bauen AC-27,
+AC-28: Aufstieg in die Ritterzeit, Kloster, Universitaet, Werkstatt, Tasten
+Y X C). **Als Naechstes D3**: Ritter und Armbrust, die Verbesserungen der
+Ritterzeit (einheiten AC-33, AC-34, bauen AC-34). **Naechste Rueckschau:
+Runde 126.** ki AC-13 und einheiten
 AC-32 warten auf Antworten. (Rueckschau 121 erledigt.))
 
 ## Wo ich stehe
 
 - **Branch:** `strategie`. Nie auf `main` arbeiten, **nie pushen, nie deployen.**
-- **Board:** 416 von 555 Kriterien fertig · 1 in Arbeit · 5 in QA · 4 geplant ·
-  121 offen · 8 zurueckgestellt. 507 Tests ohne Browser, 178 im Browser.
+- **Board:** 418 von 555 Kriterien fertig · 1 in Arbeit · 5 in QA · 4 geplant ·
+  119 offen · 8 zurueckgestellt. 510 Tests ohne Browser, 179 im Browser.
 - **Fuenf Waechter in `tests/waechter-*.test.mjs`** (der fuenfte seit Runde 87: Bildschirmtext mit echten Umlauten): Gleichheit auf wachsenden
   Listen, verbesserbare Werte an `welt.einheitenwert()` vorbei,
   Bildunterschriften mit `${...}`, und (neu in Runde 73) die **Kuerzeltafel**

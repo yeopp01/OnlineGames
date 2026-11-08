@@ -114,7 +114,7 @@ test('darstellung AC-9 / fahrplan AC-7: die Schautafel zeigt jede Einheit und je
     await nachweis(page, {
       spec,
       ac,
-      titel: 'Die Schautafel: Dorfbewohner, Miliz, Soldat, Späherreiter, Speerkämpfer, Bogenschütze, Plänkler, Schaf, Gelände und alle zehn Gebäude in Blau und Rot, mit Namen',
+      titel: 'Die Schautafel: Dorfbewohner, Miliz, Soldat, Späherreiter, Speerkämpfer, Bogenschütze, Plänkler, Schaf, Gelände und alle Gebäude in Blau und Rot, mit Namen',
       test: info,
     });
   }

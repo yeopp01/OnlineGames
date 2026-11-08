@@ -1,0 +1,10 @@
+{
+  "spec": "10-strategie/bauen.md",
+  "ac": "AC-28",
+  "titel": "In der Ritterzeit (oben in der Leiste): Kloster mit Glockenturm, Universität mit Kuppel und Belagerungswerkstatt mit Rad",
+  "datei": "e2e/tests/strategie-ritterzeit.spec.mjs",
+  "pfad": [
+    "Ritterzeit",
+    "bauen AC-27 und bauen AC-28: nach dem Aufstieg in die Ritterzeit stehen Kloster, Universitaet und Werkstatt im Menue und lassen sich bauen"
+  ]
+}

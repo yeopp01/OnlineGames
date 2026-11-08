@@ -184,7 +184,7 @@ Zustandsnachricht umbaut und damit jeden Browsertest berührt: was dort heute
 | Schritt | Was | Kriterien |
 | --- | --- | --- |
 | D1 | **Lücken aus der Rückschau zu Stufe C**: wer kämpft, holt aus; Pfeile fliegen sichtbar; Ansagen nicht auf der Mitte — **fertig** (Runden 118, 119) | bedienung AC-39 bis AC-41 |
-| D2 | Aufstieg in die Ritterzeit; Kloster, Universität, Werkstatt gezeichnet und im Menü | bauen AC-27, AC-28 |
+| D2 | Aufstieg in die Ritterzeit; Kloster, Universität, Werkstatt gezeichnet und im Menü — **fertig** (Runde 122) | bauen AC-27, AC-28 |
 | D3 | Ritter und Armbrust; die Verbesserungen der Ritterzeit | einheiten AC-33, AC-34, bauen AC-34 |
 | D4 | Wachturm und schießende Gebäude | bauen AC-29, kampf AC-20 |
 | D5 | Steinmauer ziehen, Tor für Eigene; Mauern halten auf | bauen AC-30, AC-31, kampf AC-21 |

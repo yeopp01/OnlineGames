@@ -1,7 +1,7 @@
 {
   "spec": "10-strategie/bauen.md",
   "ac": "AC-20",
-  "titel": "Die Gebäudereihe der Schautafel: Dorfzentrum, Haus, Mühle, zwei Lager, Kaserne, Farm, die drei der Feudalzeit und der Außenposten als schmaler Turm — keine zwei gleich",
+  "titel": "Die Gebäudereihe der Schautafel: Dorfzentrum, Haus, Mühle, zwei Lager, Kaserne, Farm, die drei der Feudalzeit, der Außenposten als schmaler Turm und die drei der Ritterzeit — keine zwei gleich",
   "datei": "e2e/tests/strategie-bauen.spec.mjs",
   "pfad": [
     "darstellung AC-4 / bauen AC-20: jedes Gebaeude hat Koerper, die Spielerfarbe steht nur an einer Stelle"
