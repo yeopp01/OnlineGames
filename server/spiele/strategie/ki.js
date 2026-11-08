@@ -15,6 +15,7 @@
 // erreicht, wird fuer die Feudalzeit gespart (fahrplan AC-5).
 
 const karten = require('./karte');
+const { suchen } = require('./wege');
 const { TAKTE_PRO_SEKUNDE } = require('./welt');
 const { EINHEITEN, GEBAEUDE, SAMMELN } = require('./daten');
 
@@ -44,13 +45,15 @@ const REICHWEITE = 30;
 const AN_SCHAFEN = 6;
 const AN_BEEREN = 6;
 
-// Nach dem Aufstieg verteilt die KI um (ki AC-12): liegt von einem Rohstoff
-// mehr als UEBERSCHUSS und von einem anderen weniger als MANGEL, geht alle
-// UMVERTEILEN_SEKUNDEN ein Sammler vom einen zum anderen. Der feste Plan der
+// Nach dem Aufstieg verteilt die KI um (ki AC-12): liegt ein Rohstoff unter
+// MANGEL und ein anderer mindestens UEBERSCHUSS darueber, geht alle
+// UMVERTEILEN_SEKUNDEN ein Sammler vom einen zum anderen (bis Runde 94 eine
+// feste Grenze von 600; nach Abstand enden 18 statt 14 von 20 Partien vor
+// Minute 60, Runde 95). Der feste Plan der
 // Dunklen Zeit legt 14 von 22 auf Nahrung; in der Feudalzeit lagen beim
 // Startwert 4 bei Minute 30 2300 Nahrung neben 20 Holz, das Heer fehlte, und
 // ein Ueberfall nahm elf Dorfbewohner (Runde 90, gemessen).
-const UEBERSCHUSS = 600;
+const UEBERSCHUSS = 300;
 const MANGEL = 300;
 const UMVERTEILEN_SEKUNDEN = 10;
 // So lange schlaegt die KI einen Vorrat nicht wieder vor, zu dem kein Weg
@@ -59,6 +62,10 @@ const UNERREICHBAR_SEKUNDEN = 120;
 // Baustellen teilen sich das Verzeichnis der Unerreichbaren mit den
 // Vorratsfeldern - mit diesem Vorsatz, damit sich die Nummern nicht kreuzen.
 const BAUSTELLE = 'baustelle:';
+// Dasselbe fuer Ziele des Heeres (ki AC-16): steht einer nach weniger als
+// zwei Sekunden wieder, fuehrte kein Weg dorthin.
+const ZIEL = 'ziel:';
+const ZIEL_GESCHEITERT_TAKTE = 2 * TAKTE_PRO_SEKUNDE;
 // So weit muessen Feinde von einer verlassenen Baustelle weg sein, bevor ein
 // Ersatz hingeht (Durchsicht Runde 94).
 const BAUSTELLE_FEIND_FERN = 6;
@@ -157,6 +164,8 @@ class Ki {
     // Wann zuletzt ein Sammler den Rohstoff gewechselt hat, und wie oft (ki AC-12).
     this.zuletztUmverteilt = -Infinity;
     this.umverteilt = 0;
+    // Woran jede Einheit des Heeres zuletzt geschickt wurde, und wann (ki AC-16).
+    this.heerZiel = new Map();
     // Vorratsfelder, zu denen kein Weg fuehrte, mit dem Takt der Feststellung -
     // eine Weile nicht wieder vorschlagen (UNERREICHBAR_SEKUNDEN).
     this.unerreichbar = new Map();
@@ -264,8 +273,7 @@ class Ki {
    */
   militaerPruefen(gebaeude, dorfbewohner) {
     if (this.spieler.zeitalter < 1) return;
-    const meine = gebaeude.filter((g) => MILITAER.includes(g.art));
-    if (!meine.length) {
+    if (!gebaeude.some((g) => MILITAER.includes(g.art))) {
       if (this.spieler.holz < MILITAER_HOLZ) return;
       const art = this.spieler.gold >= MILITAER_GOLD ? 'schiessanlage' : 'stall';
       this.bauen(art, this.platzBeiBasis(art), dorfbewohner);
@@ -276,6 +284,13 @@ class Ki {
     // ab Minute 24 bei 10 - drei Militaergebaeude nahmen jede Ladung, und das
     // Dorfzentrum ersetzte keinen Gefallenen mehr (Runde 90).
     const ruecklage = dorfbewohner.length < ZIEL_DORFBEWOHNER ? EINHEITEN.dorfbewohner.kosten : {};
+    // Ausgebildet wird auch in der Kaserne (ki AC-17): Fernkaempfer nehmen
+    // einem Gebaeude einen Punkt je Schuss (Fernruestung 7), eine Miliz vier je
+    // Schlag. Allein brachte das nichts (Runde 92: mehr Entscheidungen, aber
+    // mehr Remis); zusammen damit, dass jeder Untaetige sein naechstes Ziel
+    // nimmt (ki AC-16), enden 18 von 20 Partien vor Minute 60 statt 10
+    // (Runde 95, gemessen).
+    const meine = gebaeude.filter((g) => MILITAER.includes(g.art) || g.art === 'kaserne');
     for (const g of meine) {
       if (!g.fertig || g.schlange.length >= MILITAER_SCHLANGE) continue;
       const art = this.naechsteKampfeinheit(g, ruecklage);
@@ -285,7 +300,8 @@ class Ki {
     // uebrig, ein weiteres.
     const alleVoll = meine.every((g) => g.fertig && g.schlange.length >= MILITAER_SCHLANGE);
     if (alleVoll && meine.length < MILITAER_HOECHSTENS && this.spieler.holz >= MILITAER_HOLZ + MILITAER_RESERVE) {
-      const art = this.spieler.gold >= MILITAER_GOLD ? 'schiessanlage' : 'stall';
+      const art = !meine.some((g) => g.art === 'kaserne') ? 'kaserne'
+        : this.spieler.gold >= MILITAER_GOLD ? 'schiessanlage' : 'stall';
       this.bauen(art, this.platzBeiBasis(art), dorfbewohner);
     }
   }
@@ -328,7 +344,34 @@ class Ki {
     // Nachsetzen: wer steht, geht auf das Ziel. Nicht `untaetig()` - das
     // beantwortet die Frage nur fuer Dorfbewohner (ki AC-6).
     const stehend = kampf.filter((e) => this.heer.has(e.id) && !e.auftrag && !e.weg.length && !e.angriffslauf);
-    if (stehend.length) this.senden({ auftrag: 'befehl', einheiten: stehend.map((e) => e.id), ziel });
+    // Jeder auf das, was **ihm** am naechsten steht - nicht alle auf ein
+    // gemeinsames Ziel (ki AC-16). Vor einem Gebaeude schiessen nur die
+    // in Reichweite, ein Fernkaempfer nimmt ihm einen Punkt je Schuss, und der
+    // Rest wartete dahinter: bei Minute 60 standen in zwoelf von zwanzig
+    // Partien 56 bis 98 Kampfeinheiten neben 7 bis 28 Gebaeuden eines
+    // Verlierers ohne Heer (Runde 95). Einheiten zuerst, dann Gebaeude.
+    if (stehend.length) {
+      const seineEinheiten = [...this.welt.einheiten.values()].filter((e) => e.besitzer === gegner.id && !e.tot);
+      const seineGebaeude = [...this.welt.gebaeude.values()].filter((g) => g.besitzer === gegner.id && !GEBAEUDE[g.art].begehbar);
+      const naechstes = (e, liste) => liste.reduce((best, z) => {
+        const d = Math.hypot(z.x - e.x, z.y - e.y);
+        return !best || d < best.d ? { z, d } : best;
+      }, null);
+      for (const e of stehend) {
+        // Steht er schon wieder, kaum dass er losgeschickt war, fuehrte kein
+        // Weg zu seinem Ziel (angriffTakten endet dann): dieses Ziel zwei
+        // Minuten lang auslassen - sonst schickte ihn jede halbe Sekunde dorthin,
+        // etwa zu einem Sammler in einer Tasche (Durchsicht Runde 95).
+        const zuletzt = this.heerZiel.get(e.id);
+        if (zuletzt && this.welt.takt - zuletzt.takt < ZIEL_GESCHEITERT_TAKTE) this.unerreichbar.set(ZIEL + zuletzt.id, this.welt.takt);
+        const frei = (z) => !this.gesperrt(ZIEL + z.id);
+        const einheit = naechstes(e, seineEinheiten.filter(frei));
+        const bau = naechstes(e, seineGebaeude.filter(frei));
+        const treffer = einheit && (!bau || einheit.d <= bau.d + 6) ? einheit.z : bau?.z;
+        this.senden({ auftrag: 'befehl', einheiten: [e.id], ziel: treffer ? { x: Math.round(treffer.x), y: Math.round(treffer.y) } : ziel });
+        if (treffer) this.heerZiel.set(e.id, { id: treffer.id, takt: this.welt.takt });
+      }
+    }
 
     // Der Aufbruch. Die beiden, die der Basis am naechsten stehen, bleiben:
     // so wacht die Wache dort, wo das Dorf ist.
@@ -570,7 +613,11 @@ class Ki {
     const fehlt = ['holz', 'gold', 'nahrung'].filter((r) => vorrat(r) < MANGEL)
       .sort((a, b) => vorrat(a) - vorrat(b))[0];
     if (!fehlt) return;
-    const satt = ['nahrung', 'holz', 'gold'].filter((r) => r !== fehlt && vorrat(r) > UEBERSCHUSS)
+    // Ueberfluss heisst: mindestens UEBERSCHUSS mehr als beim fehlenden. Bis
+    // Runde 94 eine feste Grenze von 600 - beim Startwert 20 lag die Nahrung ab
+    // Minute 20 bei 0 bis 40, das Holz bei 580, und niemand zog um; das
+    // Dorfzentrum ersetzte keinen der zehn Gefallenen (Runde 95).
+    const satt = ['nahrung', 'holz', 'gold'].filter((r) => r !== fehlt && vorrat(r) - vorrat(fehlt) >= UEBERSCHUSS)
       .sort((a, b) => vorrat(b) - vorrat(a))[0];
     if (!satt) return;
     const kandidaten = dorfbewohner.filter((e) => !e.weg.length && this.rolle(e) === satt);
@@ -761,18 +808,53 @@ class Ki {
    * eine, an der Feinde stehen: der Ersatz liefe hinein.
    */
   baustellenWeiterbauen(gebaeude, dorfbewohner) {
+    // Wer mit voller Ladung festsitzt - kein Weg, nicht am Lager - und an
+    // einer eigenen Baustelle steht, baut mit. Beim Startwert 18 schloss eine
+    // Muehle im Bau einen Beerensammler in eine Tasche aus zwei Feldern ein; er
+    // wartete 22 Sekunden, bis andere sie fertig hatten, und lieferte dann
+    // neben sich ab (ki AC-10, Runde 95).
+    const baustellen = gebaeude.filter((g) => !g.fertig);
+    for (const e of dorfbewohner) {
+      // Festsitzend heisst: volle Ladung, sammelt nicht, kein Weg - nicht jeder,
+      // der gerade etwas traegt (Durchsicht Runde 95).
+      if (e.ladung < EINHEITEN[e.art].tragkraft || e.sammelt || e.weg.length || e.auftrag?.art !== 'sammeln') continue;
+      const lager = this.welt.lagerFuer(e);
+      if (lager && this.welt.abstandZu(e, lager) <= 1.2) continue;
+      const daneben = baustellen.find((g) => this.welt.abstandZu(e, g) <= 1.2);
+      if (daneben) this.senden({ auftrag: 'befehl', einheiten: [e.id], ziel: { x: daneben.x, y: daneben.y } });
+    }
     const feinde = [...this.welt.einheiten.values()].filter((e) => e.besitzer !== this.spielerId && !e.tot);
     const verlassen = gebaeude.find((g) => !g.fertig
       && !this.gesperrt(BAUSTELLE + g.id)
       && !dorfbewohner.some((e) => e.auftrag?.art === 'bauen' && e.auftrag.gebaeude === g.id)
       && !feinde.some((f) => Math.hypot(f.x - g.x, f.y - g.y) < BAUSTELLE_FEIND_FERN));
     if (!verlassen) return;
-    const bauer = this.bauer(dorfbewohner);
-    if (!bauer) return;
     // Kein begehbares Feld unmittelbar am Rand: niemand kann dort bauen. Der
     // Befehl fuehrte trotzdem zu einem Weg - `randfeld` sucht bis drei Felder
     // weit -, und der Bauer gaebe erst bei der Ankunft auf.
-    if (!this.welt.randfelder(verlassen, bauer).length) {
+    const rand = this.welt.randfelder(verlassen, verlassen);
+    if (!rand.length) {
+      this.unerreichbar.set(BAUSTELLE + verlassen.id, this.welt.takt);
+      return;
+    }
+    // Wer baut: unter den drei Naechsten der erste, der an einen Rand kommt -
+    // auch mit Ladung. Beim Startwert 18 schloss eine liegengebliebene Muehle
+    // einen Beerensammler in eine Tasche aus zwei Feldern ein; er stand an
+    // ihrem Rand, haette sie fertigbauen und dann dort abliefern koennen, aber
+    // gewaehlt wurde ein Untaetiger am Dorfzentrum, der nicht hinkam (Runde 95).
+    // Wer schon baut, wird nicht abgezogen - sonst nahmen sich zwei
+    // Baustellen den einzigen Bauer abwechselnd weg (Durchsicht Runde 95).
+    const naechste = dorfbewohner.filter((e) => e.auftrag?.art !== 'bauen')
+      .sort((a, b) => Math.hypot(a.x - verlassen.x, a.y - verlassen.y) - Math.hypot(b.x - verlassen.x, b.y - verlassen.y))
+      .slice(0, 3);
+    const bauer = naechste.find((e) => {
+      const von = this.welt.feldVon(e);
+      // Die vier naechsten Randfelder genuegen: eine vergebliche Suche
+      // durchflutet das ganze erreichbare Gebiet (Durchsicht Runde 91).
+      return this.welt.randfelder(verlassen, e).slice(0, 4)
+        .some((f) => (f.x === von.x && f.y === von.y) || suchen(this.welt.karte, von, f).length);
+    });
+    if (!bauer) {
       this.unerreichbar.set(BAUSTELLE + verlassen.id, this.welt.takt);
       return;
     }

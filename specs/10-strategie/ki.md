@@ -2,7 +2,7 @@
 
 **Bereich:** Strategie
 **Kuerzel:** ki
-**Stand:** 14/15 fertig · 1 offen
+**Stand:** 16/17 fertig · 1 offen
 
 ## Zweck
 
@@ -80,7 +80,8 @@ nicht die Regeln.
 - **AC-11** `fertig` **Die KI greift an** — Sobald **zehn** Kampfeinheiten
   bereitstehen, schickt sie **acht** davon zum nächsten Gegner: unterwegs
   greifen sie an, was ihnen in Sichtweite kommt (Angriffslauf,
-  [Kampf](kampf.md) AC-8), am Ziel das Dorfzentrum. Die **zwei**, die dem
+  [Kampf](kampf.md) AC-8), am Ziel jeder, was ihm am nächsten steht (seit Runde
+  95, AC-16; bis dahin das Dorfzentrum). Die **zwei**, die dem
   eigenen Dorf am nächsten stehen, bleiben als Wache zu Hause. Acht, weil zehn
   Speerkämpfer im Gefechtsstand gegen sieben Reiter gewinnen
   ([Fahrplan](fahrplan.md) AC-9) — ein kleineres Heer verliert gegen jede
@@ -88,28 +89,24 @@ nicht die Regeln.
   mindestens eine KI an, und wer nicht angreift, verteidigt (AC-14): wer
   selbst unter Angriff steht, kommt mitunter nie auf zehn Kampfeinheiten.
 - **AC-12** `fertig` **Nachschub statt alles auf einmal** — Ist das Heer
-  gefallen, bildet sie weiter aus und greift wieder an. Die Wirtschaft läuft
-  dabei weiter: bei Spielminute 30 hat sie noch mindestens 20 Dorfbewohner —
-  **mitgezählt, wer im Dorfzentrum bezahlt in der Ausbildung steht**. **Wer in
-  diesem Augenblick überrannt wird** (mehr Feinde in zwölf Feldern um das
-  Dorfzentrum als eigene Kampfeinheiten), zählt nicht, muss aber nach Minute
-  20 die 20 gehabt haben; höchstens ein Viertel darf so ausgenommen sein. Die
-  Dieselbe Ausnahme gilt für den zweiten Angriff: wer belagert wird, greift
-  nicht wieder an, sondern verteidigt (wie AC-11) — Startwert 6, KI 2, ab
-  Minute 20 bei jedem Messpunkt Feinde im Dorf, 128-mal die Wache gerufen. Die
-  Klausel prüft, dass die KI ihre Wirtschaft nicht für das Heer opfert, nicht,
-  dass keine KI einen Krieg verliert — dass Partien entschieden werden, ist der
-  Sinn des Nachschubs (→ [Fahrplan](fahrplan.md) AC-11). Gemessen in Runde 90
-  über zwanzig Startwerte: 4 bis 9 Angriffe je KI, im Median 14 Kampfeinheiten
-  (vorher 6); 37 KIs mit 20 bis 22 Dorfbewohnern, drei überrannt. Dafür fünf
-  Regeln: nach dem Aufstieg geht alle zehn Sekunden ein Sammler vom Rohstoff
-  im Überfluss (über 600) zu dem, der fehlt (unter 300); sind alle
-  Militärgebäude beschäftigt und ist Holz übrig, kommt ein weiteres dazu,
-  höchstens drei; fehlt Nahrung und ist keine Farm frei, kommt eine Farm
-  dazu; fehlen Dorfbewohner, gibt das Militär Nahrung nur aus, wenn danach
-  noch einer bezahlt ist; und ein Vorrat, zu dem kein Weg führt, wird zwei
-  Minuten lang nicht wieder vorgeschlagen. Ohne das endet jede Partie damit,
-  dass beide Seiten einander zusehen.
+  gefallen, bildet sie weiter aus und greift wieder an — außer sie wird gerade
+  überrannt: wer nicht angreift, verteidigt (wie AC-11). Die Wirtschaft läuft
+  dabei weiter: **fehlen ihr Dorfbewohner und hat sie Nahrung für einen und
+  Platz im Haus, steht ihr Dorfzentrum keine Sekunde still** — gemessen in
+  jedem Takt, über zwanzig Startwerte bis Minute 30; und in jeder Partie hält
+  bei Minute 30 mindestens eine KI ihre 20 Dorfbewohner. Bis Runde 94 hieß die
+  Klausel „bei Minute 30 mindestens 20 Dorfbewohner"; seit Partien um Minute
+  35 bis 45 entschieden werden (AC-16, AC-17), maß das den Kriegsverlauf — 14
+  von 40 KIs lagen darunter, fast alle Verlierer. Gemessen in Runde 95: das
+  Dorfzentrum stand höchstens 0,5 s still (eine Entscheidung, AC-3); 1 bis 11
+  Angriffe je KI. Dafür fünf Regeln: nach dem Aufstieg geht alle zehn
+  Sekunden ein Sammler zu dem Rohstoff, der fehlt (unter 300), von dem, der
+  mindestens 300 mehr hat; sind alle Militärgebäude beschäftigt und ist Holz
+  übrig, kommt ein weiteres dazu, höchstens drei; fehlt Nahrung und ist keine
+  Farm frei, kommt eine Farm dazu; fehlen Dorfbewohner, gibt das Militär
+  Nahrung nur aus, wenn danach noch einer bezahlt ist; und ein Vorrat, zu dem
+  kein Weg führt, wird zwei Minuten lang nicht wieder vorgeschlagen. Ohne das
+  endet jede Partie damit, dass beide Seiten einander zusehen.
 - **AC-13** `offen` **KI sieht nur ihr Sichtfeld** — Mit dem Nebel (C6)
   entscheidet sie allein aus dem, was der Server ihr schickt: Sie kennt die
   Basis des Gegners erst, wenn eine ihrer Einheiten sie gesehen hat, und
@@ -136,7 +133,25 @@ nicht die Regeln.
   Partien bis Minute 90 enden 19 statt 17 mit einem Sieger, im Median nach 66
   statt 71 Minuten. Übersprungen wird eine Baustelle, an der Feinde stehen
   (ein Ersatz liefe hinein), und eine, zu der kein Weg führt — zwei Minuten
-  lang, wie ein unerreichbarer Vorrat (AC-12).
+  lang, wie ein unerreichbarer Vorrat (AC-12). Gebaut wird von dem unter den
+  drei Nächsten, der einen Rand erreicht, auch mit Ladung; und wer mit voller
+  Ladung festsitzt und an einer eigenen Baustelle steht, baut mit (Startwert
+  18: eine Mühle im Bau schloss einen Beerensammler in eine Tasche aus zwei
+  Feldern ein).
+- **AC-16** `fertig` **Jeder nimmt sein nächstes Ziel** — Steht ein Teil des
+  Heeres am Marschziel ohne Auftrag, greift jeder an, was **ihm** am nächsten
+  steht — eine Einheit des Gegners vor einem Gebäude, solange sie höchstens
+  sechs Felder weiter weg ist —, statt dass alle auf ein gemeinsames Ziel
+  gehen. Vor einem Gebäude schießen nur die in Reichweite; bei Minute 60
+  standen in zwölf von zwanzig Partien 56 bis 98 Kampfeinheiten neben 7 bis
+  28 Gebäuden eines Verlierers ohne Heer (Runde 95). Allein: 10 statt 5 von
+  20 Partien enden vor Minute 60.
+- **AC-17** `fertig` **Nahkämpfer aus der Kaserne** — Auch die Kaserne bildet
+  aus, und als zweites Militärgebäude baut die KI eine Kaserne. Fernkämpfer
+  nehmen einem Gebäude einen Punkt je Schuss (Fernrüstung 7), eine Miliz vier
+  je Schlag. Allein brachte das nichts (Runde 92: mehr Entscheidungen, aber
+  mehr Remis); mit AC-16 enden 18 von 20 Partien vor Minute 60, alle 20 mit
+  einem Sieger, im Median nach 42 Minuten (Runde 95).
 
 ## Grenzfaelle
 

@@ -14,7 +14,7 @@ const {
   HEER, WACHE, HEER_ABSTAND, WACHE_NAH, FEIND_FERN, VERGEBEN_ABSTAND, MILITAER_HOLZ, UEBERSCHUSS, MANGEL, UNERREICHBAR_SEKUNDEN, plan,
 } = require('../server/spiele/strategie/ki.js');
 const { TAKTE_PRO_SEKUNDE } = require('../server/spiele/strategie/welt.js');
-const { EINHEITEN, SAMMELN } = require('../server/spiele/strategie/daten.js');
+const { EINHEITEN, GEBAEUDE, SAMMELN } = require('../server/spiele/strategie/daten.js');
 const { partieSpielen, pruefen, Widerspruch } = require('../server/spiele/strategie/pruefstand.js');
 const { suchen } = require('../server/spiele/strategie/wege.js');
 
@@ -420,7 +420,10 @@ test('ki AC-11: acht brechen auf, zwei bleiben als Wache - und unter zehn Kampfe
   assert.ok(weiteste <= naechste, `die Wache steht naeher an der Basis (${weiteste.toFixed(1)} <= ${naechste.toFixed(1)})`);
 });
 
-test('ki AC-11: am Marschziel greift das Heer das Dorfzentrum an', () => {
+// Seit Runde 95 setzt die KI nicht mehr alle auf das Dorfzentrum, sondern
+// jeden auf das, was ihm am naechsten steht (ki AC-16) - Einheiten vor
+// Gebaeuden, solange sie nicht mehr als sechs Felder weiter weg sind.
+test('ki AC-11 und ki AC-16: am Marschziel greift jeder an, was ihm am naechsten steht', () => {
   const welt = new Welt(ZWEI, 5);
   const ki = new Ki(welt, 'a');
   const b = welt.spielerVon('b');
@@ -431,22 +434,30 @@ test('ki AC-11: am Marschziel greift das Heer das Dorfzentrum an', () => {
   ki.heerPruefen(eigeneVon(welt, 'a'));
   assert.equal(ki.angriffe, 1);
   // Jetzt sind sie da und stehen: der Angriffslauf sieht nur Einheiten
-  // (welt.wacheTakten), das Dorfzentrum muesste er stehen lassen. Die KI setzt
-  // nach - wie ein Mensch, der noch einmal darauf klickt.
+  // (welt.wacheTakten), Gebaeude muesste er stehen lassen. Die KI setzt nach -
+  // wie ein Mensch, der noch einmal klickt.
   for (const e of heer) {
     e.angriffslauf = null;
     e.auftrag = null;
     e.weg = [];
   }
+  const seine = () => [
+    ...[...welt.einheiten.values()].filter((e) => e.besitzer === 'b' && !e.tot),
+    ...[...welt.gebaeude.values()].filter((g) => g.besitzer === 'b'),
+  ];
+  const lebenVorher = new Map(seine().map((z) => [z.id, z.leben]));
   ki.heerPruefen(eigeneVon(welt, 'a'));
-  const angreifend = [...ki.heer].map((id) => welt.einheiten.get(id))
-    .filter((e) => e.auftrag?.art === 'angreifen' && e.auftrag.gebaeude && e.auftrag.ziel === zentrumB.id);
-  assert.equal(angreifend.length, HEER, 'alle acht gehen auf das Dorfzentrum');
+  const angreifend = [...ki.heer].map((id) => welt.einheiten.get(id)).filter((e) => e.auftrag?.art === 'angreifen');
+  assert.equal(angreifend.length, HEER, 'alle acht greifen an');
+  // Jeder sein eigenes naechstes Ziel, nicht ein gemeinsames: bei acht, die
+  // nebeneinander stehen, und Dorfbewohnern um das Dorfzentrum sind es mehrere.
+  const ziele = new Set(angreifend.map((e) => e.auftrag.ziel));
+  assert.ok(ziele.size > 1, `${ziele.size} verschiedene Ziele`);
 
-  // Und sie schlagen es wirklich: nach einer halben Spielminute hat es Schaden.
-  const vorher = zentrumB.leben;
+  // Und sie treffen: nach einer halben Spielminute hat Bert etwas verloren.
   for (let t = 0; t < 30 * TAKTE_PRO_SEKUNDE; t++) welt.takten();
-  assert.ok(zentrumB.leben < vorher, `Dorfzentrum ${zentrumB.leben} statt ${vorher} Leben`);
+  const getroffen = seine().some((z) => z.leben < (lebenVorher.get(z.id) ?? Infinity)) || seine().length < lebenVorher.size;
+  assert.ok(getroffen, 'Bert hat Leben oder Einheiten verloren');
   assert.ok(!b.aus, 'ausgeschieden ist er davon noch nicht');
 });
 
@@ -897,75 +908,82 @@ test('ki AC-9: nach dem Aufstieg kommt das Militaergebaeude vor dem naechsten La
 // (fahrplan AC-11). Wer unter 20 liegt, muss deshalb gerade ueberrannt
 // werden und vorher die 20 gehabt haben. Rechenzeit rund 12 s.
 // ki AC-10 haengt an denselben Partien: bis Minute 30 steht kein Dorfbewohner
-// laenger als 20 Sekunden still. Gemessen in Runde 91: hoechstens 12,9 s.
-// Vor Runde 90 bis 655 s (Untaetige an unerreichbaren Beeren), vor Runde 91
-// noch 39 und 53 s (Holzfaeller mit voller Ladung, deren naechstes Lager nur
-// ueber einen zugewachsenen Rand zu erreichen war).
-test('ki AC-12 und ki AC-10: ueber zwanzig Startwerte greift jede KI wieder an, bei Minute 30 hat sie 20 Dorfbewohner, und keiner steht laenger als 20 Sekunden', () => {
-  let ueberrannt = 0;
+// laenger als 20 Sekunden still. Gemessen in Runde 95: hoechstens 0,7 s.
+// Vor Runde 90 bis 655 s (Untaetige an unerreichbaren Beeren), in Runde 91
+// noch 39 und 53 s (Holzfaeller vor zugewachsenem Lager), in Runde 95 22 s
+// (ein Sammler, den eine Muehle im Bau einschloss; ein Kaempfender, der als
+// untaetig zaehlte).
+//
+// Die Wirtschaft (ki AC-12) wird **in jedem Takt** gemessen: fehlen
+// Dorfbewohner und sind Nahrung und Platz da, steht das Dorfzentrum nicht
+// still. Bis Runde 94 hiess die Klausel "bei Minute 30 mindestens 20
+// Dorfbewohner" - seit Partien um Minute 35 bis 45 entschieden werden (ki
+// AC-16, AC-17), mass das den Kriegsverlauf: 14 von 40 KIs lagen bei Minute 30
+// darunter, fast alle Verlierer, und jede Ausnahme machte den Test
+// verwickelter. Gemessen in Runde 95: das Dorfzentrum stand hoechstens 0,5 s
+// still - eine Entscheidung der KI (ki AC-3). Die Grenze 1 s kommt aus diesem
+// Takt, nicht aus der Messung. Rechenzeit rund 12 s.
+test('ki AC-12 und ki AC-10: ueber zwanzig Startwerte greift jede KI wieder an, ihr Dorfzentrum bildet nach, und keiner steht laenger als 20 Sekunden', () => {
   for (let startwert = 1; startwert <= 20; startwert++) {
-    const hoechste = new Map();
-    // Wann welcher Dorfbewohner gefallen ist - je Spieler die Takte.
     const gefallen = new Map();
     const { spieler } = partieSpielen({
       startwert,
       minuten: 30,
       eingriff: (welt) => {
-        if (!welt.gefallenGezaehlt) {
-          welt.gefallenGezaehlt = true;
-          const sterben = welt.einheitSterben.bind(welt);
-          welt.einheitSterben = (e) => {
-            if (e.art === 'dorfbewohner' && !e.tot) {
-              const name = welt.spielerVon(e.besitzer).name;
-              if (!gefallen.has(name)) gefallen.set(name, []);
-              gefallen.get(name).push(welt.takt);
-            }
-            sterben(e);
-          };
-        }
-        if (welt.takt < 20 * 60 * TAKTE_PRO_SEKUNDE) return;
-        for (const s of welt.spieler) {
-          const n = [...welt.einheiten.values()].filter((e) => e.besitzer === s.id && e.art === 'dorfbewohner' && !e.tot).length;
-          hoechste.set(s.name, Math.max(hoechste.get(s.name) || 0, n));
-        }
+        if (welt.gefallenGezaehlt) return;
+        welt.gefallenGezaehlt = true;
+        const sterben = welt.einheitSterben.bind(welt);
+        welt.einheitSterben = (e) => {
+          if (e.art === 'dorfbewohner' && !e.tot) {
+            const name = welt.spielerVon(e.besitzer).name;
+            if (!gefallen.has(name)) gefallen.set(name, []);
+            gefallen.get(name).push(welt.takt);
+          }
+          sterben(e);
+        };
       },
     });
     for (const p of spieler) {
-      // Ueberrannt: gerade jetzt mehr Feinde am Dorf als eigene Kampfeinheiten,
-      // oder in den letzten fuenf Minuten so viele Dorfbewohner gefallen, wie
-      // ein Dorfzentrum in der Zeit ersetzt (zwoelf, 25 s je Stueck) - oder
-      // wenigstens fuenf. Startwert 6, KI 2 (Runde 94): ab Minute 20 bei jedem
-      // Messpunkt Feinde im Dorf, 24 Gefallene, 128-mal die Wache gerufen.
-      const zuletzt = (gefallen.get(p.name) || []).filter((t) => t >= 25 * 60 * TAKTE_PRO_SEKUNDE).length;
-      const dorf = p.dorfbewohner + p.dorfbewohnerInAusbildung;
-      const belagert = p.feindeAmDorf > p.kampf || zuletzt >= Math.max(5, 20 - dorf);
-      // Nachschub: nach dem ersten Heer noch eines - ausser sie wird gerade
-      // ueberrannt: wer nicht angreift, verteidigt (wie ki AC-11).
-      if (p.angriffe < 2) {
-        assert.ok(belagert, `${startwert} ${p.name}: ${p.angriffe} Angriffe und nicht belagert (${p.feindeAmDorf} Feinde, ${p.kampf} eigene, ${zuletzt} Gefallene in fuenf Minuten)`);
-        ueberrannt += 1;
-        continue;
-      }
+      // Die Wirtschaft laeuft weiter.
+      assert.ok(p.zentrumStillMax <= 1, `${startwert} ${p.name}: Dorfzentrum ${p.zentrumStillMax} s still, obwohl Dorfbewohner fehlten`);
       // Auch spaet steht niemand herum (ki AC-10).
       assert.ok(p.untaetigMax <= 20, `${startwert} ${p.name}: ${p.untaetigMax} s untaetig`);
-      assert.ok(hoechste.get(p.name) >= 20, `${startwert} ${p.name}: nach Minute 20 hoechstens ${hoechste.get(p.name)} Dorfbewohner`);
-      // Die Wirtschaft laeuft weiter. Wer bezahlt in der Ausbildung steht,
-      // zaehlt mit: faellt der Messpunkt in einen Ueberfall, ersetzt das
-      // Dorfzentrum die Gefallenen schon.
-      if (dorf >= 20) continue;
-      // Der Fehlbetrag muss sich durch die Belagerung erklaeren: Feinde im Dorf,
-      // oder Gefallene, die das Dorfzentrum noch nicht ersetzen konnte. Startwert
-      // 6, KI 2 (Runde 91): 27 Gefallene zwischen Minute 24 und 28, bei Minute
-      // 30 der Angriff abgewehrt - die Wirtschaft war zerschlagen, nicht
-      // vernachlaessigt.
-      assert.ok(p.feindeAmDorf > p.kampf || zuletzt >= 20 - dorf,
-        `${startwert} ${p.name}: ${p.dorfbewohner} Dorfbewohner, ${p.dorfbewohnerInAusbildung} in Ausbildung - und nicht ueberrannt (${p.feindeAmDorf} Feinde, ${p.kampf} eigene Kampfeinheiten, ${zuletzt} Gefallene in fuenf Minuten)`);
-      ueberrannt += 1;
+      // Nachschub: nach dem ersten Heer noch eines - ausser sie wird gerade
+      // ueberrannt: wer nicht angreift, verteidigt (wie ki AC-11). Ueberrannt
+      // heisst: mehr Feinde am Dorf als eigene Kampfeinheiten, in den letzten
+      // fuenf Minuten mindestens fuenf Dorfbewohner verloren, oder kein
+      // Dorfzentrum mehr. Startwert 6, KI 2 (Runde 94): ab Minute 20 bei jedem
+      // Messpunkt Feinde im Dorf, 128-mal die Wache gerufen.
+      if (p.angriffe < 2) {
+        const zuletzt = (gefallen.get(p.name) || []).filter((t) => t >= 25 * 60 * TAKTE_PRO_SEKUNDE).length;
+        const belagert = p.feindeAmDorf > p.kampf || zuletzt >= 5 || !p.gebaeude.dorfzentrum;
+        assert.ok(belagert, `${startwert} ${p.name}: ${p.angriffe} Angriffe und nicht belagert (${p.feindeAmDorf} Feinde, ${p.kampf} eigene, ${zuletzt} Gefallene in fuenf Minuten)`);
+      }
     }
+    // Und in jeder Partie haelt mindestens eine KI ihre 20 Dorfbewohner - die,
+    // die gewinnt (samt denen in der Ausbildung).
+    const beste = Math.max(...spieler.map((p) => p.dorfbewohner + p.dorfbewohnerInAusbildung));
+    assert.ok(beste >= 20, `${startwert}: keine KI haelt ihre Wirtschaft (hoechstens ${beste})`);
   }
-  // Gegenprobe: die Ausnahme bleibt eine Ausnahme - hoechstens ein Viertel.
-  // Sonst pruefte der Test nur noch, dass Kriege verloren werden.
-  assert.ok(ueberrannt <= 10, `${ueberrannt} von 40 KIs unter 20, weil ueberrannt`);
+});
+
+// Gegenprobe zur Messung: darf das Dorfzentrum nie ausbilden, faellt es auf.
+test('ki AC-12: ein Dorfzentrum, das trotz Bedarf stillsteht, faellt im Pruefstand auf', () => {
+  // KI 1 darf keinen Dorfbewohner bestellen - alles andere bleibt. Die
+  // Schlange von aussen zu leeren taugt nicht: die Nahrung ist dann schon
+  // bezahlt, und ohne Nahrung gilt das Dorfzentrum nicht als still.
+  const senden = Ki.prototype.senden;
+  Ki.prototype.senden = function (n) {
+    if (this.spielerId === 'ki1' && n.auftrag === 'ausbilden' && n.einheit === 'dorfbewohner') return {};
+    return senden.call(this, n);
+  };
+  try {
+    const { spieler } = partieSpielen({ startwert: 1, minuten: 2 });
+    assert.ok(spieler[0].zentrumStillMax > 60, `${spieler[0].zentrumStillMax} s still - die Messung sieht es`);
+    assert.ok(spieler[1].zentrumStillMax <= 1, 'der andere bildet aus');
+  } finally {
+    Ki.prototype.senden = senden;
+  }
 });
 
 const dorfVon = (welt, id) => [...welt.einheiten.values()].filter((e) => e.besitzer === id && e.art === 'dorfbewohner');
@@ -1012,7 +1030,9 @@ test('ki AC-12: sind alle Militaergebaeude beschaeftigt und ist Holz uebrig, bau
     const gesendet = [];
     ki.senden = (n) => { gesendet.push(n); return {}; };
     ki.militaerPruefen([...welt.gebaeude.values()].filter((g) => g.besitzer === 'a'), dorfVon(welt, 'a'));
-    return gesendet.some((n) => n.auftrag === 'bauen' && MILITAER.includes(n.art));
+    // Das weitere ist zuerst eine Kaserne (ki AC-17), danach Schiessanlage
+    // oder Stall.
+    return gesendet.some((n) => n.auftrag === 'bauen' && (MILITAER.includes(n.art) || n.art === 'kaserne'));
   };
   // Gegenprobe: ist die Schlange nicht voll, reicht das eine.
   assert.ok(!bestellt(1, 1000), 'mit Platz in der Schlange kein zweites');
@@ -1271,4 +1291,94 @@ test('ki AC-15: eine Baustelle mit Feinden daneben oder ohne Weg bleibt liegen, 
   ki.senden = (n) => { neu += 1; return senden(n); };
   for (let i = 0; i < 4; i++) ki.baustellenWeiterbauen(gebaeude(), dorfVon(welt, 'a'));
   assert.equal(neu, 0, 'und zieht keinen weiteren Arbeiter ab');
+});
+
+test('ki AC-17: das zweite Militaergebaeude ist eine Kaserne, und sie bildet aus', () => {
+  const welt = new Welt(ZWEI, 4711);
+  const ki = new Ki(welt, 'a');
+  const a = welt.spielerVon('a');
+  a.zeitalter = 1;
+  const platz = ki.platzBeiBasis('schiessanlage');
+  const anlage = welt.gebaeudeAnlegen('a', 'schiessanlage', platz.x, platz.y, true);
+  anlage.schlange = ['bogenschuetze', 'bogenschuetze'];
+  a.holz = 1000;
+  a.gold = 1000;
+  a.nahrung = 1000;
+  const gesendet = [];
+  const senden = ki.senden.bind(ki);
+  ki.senden = (n) => { gesendet.push(n); return senden(n); };
+  // 22 Dorfbewohner, damit keine Ruecklage greift.
+  while (dorfVon(welt, 'a').length < ZIEL_DORFBEWOHNER) welt.einheitAnlegen('a', a.basis.x + 6, a.basis.y + 6, 'dorfbewohner');
+  const eigeneGebaeude = () => [...welt.gebaeude.values()].filter((g) => g.besitzer === 'a');
+  ki.militaerPruefen(eigeneGebaeude(), dorfVon(welt, 'a'));
+  const bau = gesendet.find((n) => n.auftrag === 'bauen');
+  // Gegenprobe zur Art: mit Gold waere es ohne die Regel wieder eine
+  // Schiessanlage gewesen.
+  assert.equal(bau?.art, 'kaserne', 'das zweite ist eine Kaserne, obwohl Gold da ist');
+  // Steht sie, bildet sie aus - Nahkaempfer gegen Gebaeude.
+  const kaserne = [...welt.gebaeude.values()].find((g) => g.besitzer === 'a' && g.art === 'kaserne');
+  kaserne.fertig = true;
+  gesendet.length = 0;
+  ki.militaerPruefen(eigeneGebaeude(), dorfVon(welt, 'a'));
+  const ausbilden = gesendet.find((n) => n.auftrag === 'ausbilden' && n.gebaeude === kaserne.id);
+  assert.ok(ausbilden, 'die Kaserne bildet aus');
+  assert.ok(GEBAEUDE.kaserne.bildetAus.includes(ausbilden.einheit), `und zwar ${ausbilden.einheit}`);
+});
+
+test('ki AC-15: nur wer mit voller Ladung festsitzt, baut mit - und wer schon baut, wird nicht abgezogen', () => {
+  // Durchsicht Runde 95: die Regel zog jeden mit angefangener Ladung von der
+  // Arbeit, und zwei Baustellen konnten sich einen Bauer abwechselnd nehmen.
+  const welt = new Welt(ZWEI, 4711);
+  const ki = new Ki(welt, 'a');
+  const platz = ki.platzBeiBasis('haus');
+  const haus = welt.gebaeudeAnlegen('a', 'haus', platz.x, platz.y, false);
+  const rand = welt.randfelder(haus, haus)[0];
+  const [halb, voll] = dorfVon(welt, 'a');
+  for (const e of [halb, voll]) {
+    e.x = rand.x;
+    e.y = rand.y;
+    e.weg = [];
+    e.auftrag = { art: 'sammeln', feld: { x: rand.x + 5, y: rand.y } };
+    e.ladungsart = 'holz';
+  }
+  halb.ladung = 4;
+  halb.sammelt = true;
+  voll.ladung = EINHEITEN.dorfbewohner.tragkraft;
+  voll.sammelt = false;
+  // Damit nicht AC-15 selbst einen dritten schickt: einer baut schon.
+  const dritter = dorfVon(welt, 'a')[2];
+  welt.nachricht('a', { auftrag: 'befehl', einheiten: [dritter.id], ziel: { x: haus.x, y: haus.y } });
+  ki.baustellenWeiterbauen([...welt.gebaeude.values()].filter((g) => g.besitzer === 'a'), dorfVon(welt, 'a'));
+  assert.equal(halb.auftrag.art, 'sammeln', 'wer gerade sammelt, bleibt dabei');
+  assert.equal(voll.auftrag.art, 'bauen', 'wer voll festsitzt, baut mit');
+  // Eine zweite, verlassene Baustelle nimmt keinen, der schon baut.
+  const platz2 = ki.platzBeiBasis('haus');
+  welt.gebaeudeAnlegen('a', 'haus', platz2.x, platz2.y, false);
+  const bauendeVorher = dorfVon(welt, 'a').filter((e) => e.auftrag?.art === 'bauen' && e.auftrag.gebaeude === haus.id).map((e) => e.id);
+  ki.baustellenWeiterbauen([...welt.gebaeude.values()].filter((g) => g.besitzer === 'a'), dorfVon(welt, 'a'));
+  for (const id of bauendeVorher) {
+    assert.equal(welt.einheiten.get(id).auftrag?.gebaeude, haus.id, 'wer am ersten Haus baut, bleibt dort');
+  }
+});
+
+test('ki AC-16: ein Ziel, zu dem kein Weg fuehrt, wird zwei Minuten ausgelassen', () => {
+  // Durchsicht Runde 95: endete ein Angriff gleich wieder, weil kein Weg
+  // fuehrte, schickte die KI den Angreifer jede halbe Sekunde erneut dorthin.
+  const welt = new Welt(ZWEI, 5);
+  const ki = new Ki(welt, 'a');
+  const zentrumB = [...welt.gebaeude.values()].find((g) => g.besitzer === 'b' && g.art === 'dorfzentrum');
+  const [krieger] = kampfeinheitenAnlegen(welt, 'a', { x: zentrumB.x + HEER_ABSTAND, y: zentrumB.y }, 1);
+  ki.heer.add(krieger.id);
+  krieger.auftrag = null;
+  krieger.weg = [];
+  ki.heerPruefen(eigeneVon(welt, 'a'));
+  const erstes = ki.heerZiel.get(krieger.id);
+  assert.ok(erstes, 'er bekommt ein Ziel');
+  // Er steht gleich wieder (kein Weg) - die naechste Entscheidung sperrt es.
+  krieger.auftrag = null;
+  krieger.weg = [];
+  welt.takten();
+  ki.heerPruefen(eigeneVon(welt, 'a'));
+  assert.ok(ki.gesperrt('ziel:' + erstes.id), 'das Ziel ist gesperrt');
+  assert.notEqual(ki.heerZiel.get(krieger.id).id, erstes.id, 'und er bekommt ein anderes');
 });

@@ -8,7 +8,7 @@
 const karten = require('./karte');
 const { Welt, TAKTE_PRO_SEKUNDE, ROHSTOFFE } = require('./welt');
 const { BEVOELKERUNG_MAX, EINHEITEN } = require('./daten');
-const { Ki } = require('./ki');
+const { Ki, ZIEL_DORFBEWOHNER } = require('./ki');
 
 class Widerspruch extends Error {
   constructor(startwert, takt, befunde) {
@@ -118,6 +118,35 @@ function kennzahlen(welt, spieler, ki, untaetig) {
 }
 
 /**
+ * Steht ein Dorfzentrum still, obwohl Dorfbewohner fehlen (ki AC-12)? Gezaehlt
+ * wird je Spieler die laengste Strecke von Takten, in denen sein Dorfzentrum
+ * fertig ist und nichts ausbildet, er weniger Dorfbewohner hat als das Ziel
+ * der KI, Nahrung fuer einen hat und Platz im Haus. Das misst, ob die KI ihre
+ * Wirtschaft fuehrt - unabhaengig davon, ob sie gerade einen Krieg verliert.
+ */
+function zentrumStillZaehlen(welt, still, ziel) {
+  const dorf = new Map();
+  const bewohner = new Map();
+  for (const e of welt.einheiten.values()) {
+    if (e.tot) continue;
+    bewohner.set(e.besitzer, (bewohner.get(e.besitzer) || 0) + 1);
+    if (e.art === 'dorfbewohner') dorf.set(e.besitzer, (dorf.get(e.besitzer) || 0) + 1);
+  }
+  for (const s of welt.spieler) {
+    const zentrum = [...welt.gebaeude.values()].find((g) => g.besitzer === s.id && g.art === 'dorfzentrum' && g.fertig);
+    const bedarf = zentrum && !zentrum.schlange.length && (dorf.get(s.id) || 0) < ziel
+      && s.nahrung >= EINHEITEN.dorfbewohner.kosten.nahrung && (bewohner.get(s.id) || 0) < welt.wohnraum(s);
+    if (!bedarf) {
+      still.seit.delete(s.id);
+      continue;
+    }
+    const n = (still.seit.get(s.id) || 0) + 1;
+    still.seit.set(s.id, n);
+    if (n > (still.laengste.get(s.id) || 0)) still.laengste.set(s.id, n);
+  }
+}
+
+/**
  * Eine Partie KI gegen KI.
  * @param {{startwert: number, spieler?: number, minuten?: number, einstellungen?: object,
  *   eingriff?: (welt: Welt, takt: number) => void}} optionen
@@ -130,6 +159,7 @@ function partieSpielen({ startwert, spieler = 2, minuten = 10, einstellungen = {
   const kis = welt.spieler.map((s) => new Ki(welt, s.id));
   const takte = Math.round(minuten * 60 * TAKTE_PRO_SEKUNDE);
   const untaetig = { seit: new Map(), laengste: new Map() };
+  const still = { seit: new Map(), laengste: new Map() };
   // Eine entschiedene Partie wird nicht weitergerechnet (spielziel AC-5):
   // gezaehlt wird, wer gewonnen hat, nicht wie viele Takte noch passen.
   for (let t = 0; t < takte && !welt.ende; t++) {
@@ -139,6 +169,7 @@ function partieSpielen({ startwert, spieler = 2, minuten = 10, einstellungen = {
     const befunde = pruefen(welt);
     if (befunde.length) throw new Widerspruch(startwert, welt.takt, befunde);
     untaetigkeitZaehlen(welt, untaetig);
+    zentrumStillZaehlen(welt, still, ZIEL_DORFBEWOHNER);
   }
   return {
     startwert,
@@ -149,7 +180,12 @@ function partieSpielen({ startwert, spieler = 2, minuten = 10, einstellungen = {
     ende: welt.ende,
     sieger: welt.ende?.sieger ? welt.spieler.find((s) => s.id === welt.ende.sieger)?.name || null : null,
     dauerMs: Number(process.hrtime.bigint() - beginn) / 1e6,
-    spieler: welt.spieler.map((s, i) => kennzahlen(welt, s, kis[i], untaetig)),
+    spieler: welt.spieler.map((s, i) => ({
+      ...kennzahlen(welt, s, kis[i], untaetig),
+      // Laengste Zeit, die das Dorfzentrum stillstand, obwohl Dorfbewohner
+      // fehlten und Nahrung und Platz da waren, in Sekunden (ki AC-12).
+      zentrumStillMax: (still.laengste.get(s.id) || 0) / TAKTE_PRO_SEKUNDE,
+    })),
     welt,
   };
 }

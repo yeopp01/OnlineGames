@@ -845,6 +845,11 @@ class Welt {
   // Pruefstand (ki AC-6) - eine Stelle, nicht zwei.
   untaetig(einheit) {
     if (einheit.tot) return false;
+    // Wer kaempft, steht nicht herum - auch wenn er weder sammelt noch baut
+    // noch laeuft (Runde 95: ein Dorfbewohner, der sich wehrte, zaehlte im
+    // Pruefstand 22 Sekunden als untaetig, und der Knopf fuer Untaetige haette
+    // ihn mitten aus dem Kampf geholt; bedienung AC-28, ki AC-10).
+    if (einheit.auftrag?.art === 'angreifen') return false;
     return einheit.art === 'dorfbewohner' && !einheit.weg.length && !einheit.sammelt && !einheit.baut;
   }
 

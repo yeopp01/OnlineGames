@@ -13,21 +13,22 @@ hier nichts eintraegt, verliert den Faden beim naechsten Autocompact.
 
 ## Zuletzt fortgeschrieben
 
-2026-11-08, nach Runde 94 (**ki AC-15**: liegengebliebene Baustellen werden
-weitergebaut - eine verlassene Hausbaustelle sperrte jedes weitere Haus, die
-Bevoelkerung blieb bei 40. KI gegen KI bis Minute 90: 18/20 mit Sieger (Median
-66 min), 5/20 vor Minute 60. Davor Runde 93, Rueckschau: Werkzeug `npm run
-pruefstand:vergleich`. **Naechste Rueckschau: Runde 98.** Als Naechstes fuer
-fahrplan AC-11: warum der Sieger die letzten Gebaeude nicht schleift
-(Startwert 14: 85 Plaenkler beim Verlierer ohne Einheit, elf Gebaeude halten
-15 Minuten) - messen, dann bauen. Die Figuren bei Zoom 1 sind als Faden
-notiert: eine Runde nach C4, vor C5.)
+2026-11-08, nach Runde 95 (**ki AC-16** jeder im Heer nimmt sein naechstes
+Ziel, **ki AC-17** Nahkaempfer aus der Kaserne: KI gegen KI endet in 18 von 20
+Partien vor Minute 60, alle 20 mit Sieger, im Median nach 42 Minuten. **ki AC-12**
+misst die Wirtschaft jetzt direkt in jedem Takt (`zentrumStillMax` im
+Pruefstand: das Dorfzentrum steht nie laenger als 0,5 s still, wenn
+Dorfbewohner fehlen). `welt.untaetig` zaehlt Kaempfende nicht mehr.
+**fahrplan AC-11 bleibt offen** (18/20 vor Minute 60): als Naechstes die zwei
+uebrigen Partien ansehen (65 und 78 Minuten). **Naechste
+Rueckschau: Runde 98.** Die Figuren bei Zoom 1 sind als Faden notiert: eine
+Runde nach C4, vor C5.)
 
 ## Wo ich stehe
 
 - **Branch:** `strategie`. Nie auf `main` arbeiten, **nie pushen, nie deployen.**
-- **Board:** 393 von 521 Kriterien fertig · 1 in Arbeit · 5 in QA · 4 geplant ·
-  110 offen · 8 zurueckgestellt. 465 Tests ohne Browser, 167 im Browser.
+- **Board:** 395 von 523 Kriterien fertig · 1 in Arbeit · 5 in QA · 4 geplant ·
+  110 offen · 8 zurueckgestellt. 470 Tests ohne Browser, 167 im Browser.
 - **Fuenf Waechter in `tests/waechter-*.test.mjs`** (der fuenfte seit Runde 87: Bildschirmtext mit echten Umlauten): Gleichheit auf wachsenden
   Listen, verbesserbare Werte an `welt.einheitenwert()` vorbei,
   Bildunterschriften mit `${...}`, und (neu in Runde 73) die **Kuerzeltafel**

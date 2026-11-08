@@ -3,6 +3,16 @@
   "eintraege": [
     {
       "spec": "10-strategie/ki.md",
+      "ac": "AC-16",
+      "begruendung": "Dass jeder im Heer sein naechstes Ziel nimmt statt eines gemeinsamen, ist eine Entscheidung der KI, belegt im Rechenteil und ueber ganze Partien (wie viele vor Minute 60 enden). Ein Standbild zeigt Kaempfende, nicht, nach welcher Regel sie ihr Ziel gewaehlt haben."
+    },
+    {
+      "spec": "10-strategie/ki.md",
+      "ac": "AC-17",
+      "begruendung": "Dass die KI auch in der Kaserne ausbildet und als zweites Militaergebaeude eine Kaserne baut, ist eine Entscheidung ueber die Zeit, gemessen im Pruefstand ueber zwanzig Partien. Eine Kaserne im Bild zeigt nicht, wer sie warum gebaut hat."
+    },
+    {
+      "spec": "10-strategie/ki.md",
       "ac": "AC-15",
       "begruendung": "Dass die KI eine verlassene Baustelle wieder besetzt, ist eine Entscheidung ueber die Zeit: erst liegt sie, dann kommt ein Bauer. Belegt im Rechenteil und ueber ganze Partien im Pruefstand; ein Standbild zeigt eine Baustelle mit einem Dorfbewohner, nicht, dass sie vorher verlassen war."
     },

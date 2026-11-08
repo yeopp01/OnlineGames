@@ -592,3 +592,23 @@ test('kampf AC-5: ein Bauer, der sich wehrt, gibt seine Farm frei', () => {
   assert.equal(bauer.auftrag?.art, 'angreifen', 'und wehrt sich');
   assert.notEqual(farm.arbeiter, bauer.id, 'seine Farm ist frei');
 });
+
+test('kampf AC-10: ein Dorfbewohner, der sich wehrt, zaehlt nicht als untaetig', () => {
+  // Runde 95: der Pruefstand zaehlte einen Dorfbewohner, der sich wehrte, 22
+  // Sekunden als untaetig (ki AC-10), und der Knopf fuer Untaetige haette ihn
+  // aus dem Kampf geholt (bedienung AC-28).
+  const welt = new Welt(ZWEI, 4711);
+  const dorf = [...welt.einheiten.values()].filter((e) => e.besitzer === 'a' && e.art === 'dorfbewohner');
+  const [steht, kaempft] = dorf;
+  for (const e of [steht, kaempft]) {
+    e.auftrag = null;
+    e.weg = [];
+    e.sammelt = false;
+    e.baut = false;
+  }
+  // Gegenprobe: wer nichts tut, ist untaetig.
+  assert.ok(welt.untaetig(steht), 'wer steht, ist untaetig');
+  kaempft.auftrag = { art: 'angreifen', ziel: 'irgendwer', gebaeude: false };
+  assert.ok(!welt.untaetig(kaempft), 'wer kaempft, nicht');
+  assert.ok(!welt.untaetigeVon('a').includes(kaempft.id), 'und der Knopf fuer Untaetige findet ihn nicht');
+});

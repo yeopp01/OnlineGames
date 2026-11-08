@@ -76,8 +76,10 @@ etwas anderem gearbeitet.
   Pendeln (die Schwellen 300/600 und die Sperre verhindern es), aber ein
   teilweises Gegensteuern. Kandidat, wenn ki AC-10 oder fahrplan AC-11 daran
   hängen.
-- **fahrplan AC-11 braucht eine KI, die Partien zu Ende bringt** (Runde 92,
-  gemessen): 4 von 20 Partien enden vor Minute 60, 17 vor Minute 90. Der
+- **fahrplan AC-11: 18 von 20 vor Minute 60** (Runde 95), alle 20 mit
+  Sieger. Offen: zwei Partien enden nach 65 und 78 Minuten — als Nächstes
+  ansehen, welche und warum. Vorgeschichte (Runde 92): 4 von 20 Partien endeten vor
+  Minute 60, 17 vor Minute 90. Der
   Sieger steht oft mit 80 Kampfeinheiten neben elf Gebäuden des Verlierers
   und schleift sie mit Plänklern zu einem Punkt je Schuss. Versucht und
   verworfen: das ganze Heer losschicken, Nahkämpfer aus der Kaserne (je für
@@ -960,6 +962,44 @@ alle sieben Gebäude der Dunklen Zeit stehen. Was sich wiederholt hat:
 Neueste oben. Eine Zeile je Runde: Nummer, Datum, Kriterien, Ergebnis,
 wichtigste Erkenntnis.
 
+- **95** · 2026-11-08 · **ki AC-16, AC-17**; ki AC-12 neu gemessen — Partien
+  werden zu Ende gebracht. **KI gegen KI über zwanzig Startwerte: 18 von 20
+  enden vor Minute 60 (vorher 5), alle 20 mit Sieger, im Median nach 42 statt
+  66 Minuten.** fahrplan AC-11 (20 von 20 vor Minute 60) ist damit nah, aber
+  nicht erreicht. Gelernt, fünferlei: (1) **Zwei Hebel, die einzeln nichts
+  taugen, können zusammen tragen.** Jeder im Heer sein nächstes Ziel (AC-16)
+  brachte allein 10 von 20 vor Minute 60; Nahkämpfer aus der Kaserne (AC-17)
+  hatten in Runde 92 allein nichts gebracht — zusammen 18. Erst wenn sich das
+  Heer auf viele Gebäude verteilt, kommen die Nahkämpfer an sie heran.
+  Gemessen je Variante in Kopien des Ordners, nicht geraten. (2) **Das Maß
+  einer Klausel kann von einer anderen Verbesserung überholt werden.** „Bei
+  Minute 30 mindestens 20 Dorfbewohner" sollte prüfen, dass die KI ihre
+  Wirtschaft nicht dem Heer opfert. Seit Partien um Minute 35 bis 45
+  entschieden werden, maß es den Kriegsverlauf: 14 von 40 KIs lagen darunter,
+  fast alle Verlierer, und jede neue Ausnahme (überrannt, ohne Dorfzentrum,
+  Gefallene der letzten fünf Minuten, ab welcher Minute man zählt) machte den
+  Test verwickelter. Jetzt misst der Prüfstand die Absicht direkt, in jedem
+  Takt: fehlen Dorfbewohner und sind Nahrung und Platz da, steht das
+  Dorfzentrum nie länger als 0,5 s still. Mit Gegenprobe (eine KI, die keinen
+  Dorfbewohner bestellen darf, fällt auf). (3) **Wer kämpft, steht nicht
+  herum** — `welt.untaetig` zählte einen Dorfbewohner, der sich wehrte, als
+  untätig (22 s im Prüfstand), und der Knopf für Untätige hätte ihn aus dem
+  Kampf geholt. (4) **Eine Baustelle kann einen Sammler einschließen**: eine
+  Mühle im Bau machte aus dem Platz eines Beerensammlers eine Tasche aus zwei
+  Feldern. Wer mit Ladung festsitzt und an einer eigenen Baustelle steht, baut
+  jetzt mit; und eine verlassene Baustelle baut der unter den drei Nächsten
+  weiter, der hinkommt. (5) **Die größere Nahrungsrücklage ein zweites Mal
+  gemessen — wieder ohne Wirkung, wieder zurückgenommen.** Die Umverteilung
+  nach **Abstand** (300 mehr als der fehlende Rohstoff statt fester 600) bleibt:
+  18 statt 14 vor Minute 60. **Die Durchsicht fand vier Dinge**: das Mitbauen
+  zog jeden mit angefangener Ladung ab (jetzt nur volle Ladung, die nicht
+  sammelt); zwei Baustellen nahmen sich den einzigen Bauer abwechselnd weg
+  (wer baut, wird nicht abgezogen); ein Ziel ohne Weg zog den Angreifer jede
+  halbe Sekunde neu an (jetzt zwei Minuten ausgelassen); und eine Ladung geht
+  verloren, wenn ein Untätiger zu einem anderen Rohstoff geschickt wird. Den
+  vierten habe ich **nicht** behoben: die Abhilfe (zuerst zum eigenen Rohstoff)
+  verschob die Wirtschaft der Dunklen Zeit — 16 statt 13 an der Nahrung, 3 statt
+  7 im Holz —, und im Original geht die Ladung beim Wechsel ebenso verloren.
 - **94** · 2026-11-08 · **ki AC-15** — liegengebliebene Baustellen werden
   weitergebaut. Gefunden mit der Frage aus Runde 92, **warum** drei Partien
   nach 90 Minuten unentschieden enden: beim Startwert 13 und 16 hörte der
