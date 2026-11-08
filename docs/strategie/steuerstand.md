@@ -13,7 +13,7 @@ hier nichts eintraegt, verliert den Faden beim naechsten Autocompact.
 
 ## Zuletzt fortgeschrieben
 
-2026-11-08, nach Runde 113 (**kampf AC-13, fahrplan AC-13, C6e fertig**: der
+2026-11-08, nach Runde 114 (**kampf AC-13, fahrplan AC-13, C6e fertig**: der
 Server schickt jedem nur, was er sieht - `welt.zustandJeSpieler`,
 `welt.aufbauFuer`, im Raum `sendenJe`. Fremde Gebaeude und Felder, die sich im
 Nebel aendern, kommen beim naechsten Hinsehen; wer ausscheidet, bekommt einmal
@@ -27,15 +27,18 @@ Runde 112: **ki AC-13 in-arbeit, auf dem lokalen Zweig
 belegt, aber KI gegen KI endet nur in 34 von 40 Partien vor Minute 60
 (fahrplan AC-11 reisst). Runde 113 war die Rueckschau: `npm run
 gegenprobe`, Pruefstand gleich nach dem ersten Entwurf, Verbergen bricht
-Tests, rote Arbeit auf einen lokalen Zweig. **Als Naechstes ki AC-13
-weiter**: `git merge strategie-ki-sicht`, dann die langen Startwerte mit
-pruefstand:verlauf ansehen. **Naechste Rueckschau: Runde 118.**)
+Tests, rote Arbeit auf einen lokalen Zweig. Runde 114: ki AC-13 zweiter
+Anlauf, wieder auf den Zweig gelegt (`strategie-ki-sicht`, `8817c60`), 35 von
+40 vor Minute 60; **Frage an den Benutzer** (Patts mit leerer Wirtschaft -
+fahrplan AC-11 halten oder neu fassen). Bis zur Antwort ruht ki AC-13; **als
+Naechstes C6g** (kampf AC-14, Angriff wird gemeldet). **Naechste Rueckschau:
+Runde 118.**)
 
 ## Wo ich stehe
 
 - **Branch:** `strategie`. Nie auf `main` arbeiten, **nie pushen, nie deployen.**
-- **Board:** 412 von 532 Kriterien fertig · 2 in Arbeit · 5 in QA · 4 geplant ·
-  101 offen · 8 zurueckgestellt. 499 Tests ohne Browser, 175 im Browser.
+- **Board:** 412 von 532 Kriterien fertig · 1 in Arbeit · 5 in QA · 4 geplant ·
+  102 offen · 8 zurueckgestellt. 499 Tests ohne Browser, 175 im Browser.
 - **Fuenf Waechter in `tests/waechter-*.test.mjs`** (der fuenfte seit Runde 87: Bildschirmtext mit echten Umlauten): Gleichheit auf wachsenden
   Listen, verbesserbare Werte an `welt.einheitenwert()` vorbei,
   Bildunterschriften mit `${...}`, und (neu in Runde 73) die **Kuerzeltafel**

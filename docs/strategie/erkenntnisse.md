@@ -13,6 +13,25 @@ Kurz halten. Diese Datei wird in jeder Runde gelesen.
 Entscheidungen, die nicht die Schleife trifft. Solange eine offen ist, wird an
 etwas anderem gearbeitet.
 
+- **Die KI mit eigener Sicht macht KI gegen KI länger — wie weiter?**
+  (Runde 114, zweiter Anlauf an ki AC-13) Die KI sieht nur noch, was ihre
+  Einheiten sehen, und erkundet mit dem Späher (alle 40 finden den Gegner
+  nach rund zwei Minuten). Zwei echte Fehler sind gefunden und behoben: die
+  Suche pendelte im Umkreis, und sie hielt sich ohne frischen Blick für
+  überlegen und schickte bis zu achtzigmal zwei, drei Mann los. Übrig: 35
+  von 40 Partien enden vor Minute 60 (alter Stand 39). Was bleibt, sind
+  **Patts im Mittelspiel** — beide mit 5 bis 17 Kampfeinheiten, Gold und
+  Holz bei null, keiner bricht durch; das kennt auch der alte Stand
+  (Startwert 24: 74 Minuten), der Nebel verschiebt nur, wen es trifft.
+  **Empfehlung:** fahrplan AC-11 nicht senken, sondern das Patt als eigenes
+  Kriterium der KI angehen (ihre Wirtschaft geht im Mittelspiel aus — sie
+  zieht nicht zu neuen Vorräten um), dann ki AC-13 auf diesem Boden
+  einbinden. Bis dahin liegt ki AC-13 auf dem Zweig `strategie-ki-sicht`
+  (`8817c60`). **Alternative:** fahrplan AC-11 für Partien im Nebel neu
+  fassen (etwa: alle mit Sieger vor Minute 90, Median unter 45) — das wäre
+  ehrlich, weil Partien im Nebel länger dauern, aber es ist eine
+  Entscheidung über das Spiel, keine der Schleife.
+
 - **Formationen wie im Original?** (Runde 111) Marschierende Einheiten
   laufen heute auf demselben Weg genau übereinander, im Angriffslauf der KI
   im Median 53 Sekunden lang (einheiten AC-32); im Bild sieht ein Heer aus
@@ -82,15 +101,13 @@ etwas anderem gearbeitet.
 
 ## Offene Fäden
 
-- **ki AC-13 liegt auf dem Zweig `strategie-ki-sicht`** (Runde 112): die
-  KI mit eigener Sicht, gebaut und belegt, aber KI gegen KI endet nur in 34
-  von 40 Partien vor Minute 60. Nächster Schritt: `git merge
-  strategie-ki-sicht` in `strategie`, dann mit `npm run pruefstand:verlauf`
-  die langen Startwerte (1–20: 11, 9, 16; 21–40: 28, 27, 24) ansehen —
-  liegt es am Mittelspiel (keiner greift an) oder am Abräumen? Erst dann
-  eine Abhilfe. Gemessen ohne Wirkung: die Suche um den letzten Ort des
-  Gegners (`suchziel`) änderte keine Partie — bleibt sie, braucht sie einen
-  eigenen Test, sonst raus.
+- **ki AC-13 liegt auf dem Zweig `strategie-ki-sicht`** (`8817c60`, Runden
+  112 und 114): die KI mit eigener Sicht, Späher, Suche über die ganze Karte,
+  überlegen nur mit frischem Blick. KI gegen KI: 35 von 40 Partien vor
+  Minute 60 (alter Stand 39); übrig sind Patts mit leerer Wirtschaft
+  (Startwerte 9, 15, 33; 21 und 16 knapp darüber). Wartet auf die Frage an
+  den Benutzer. Die Suche (`suchziel`) braucht noch einen eigenen Test, die
+  Überlegenheit mit frischem Blick ebenso.
 
 - **Was der Nebel auf dem Server noch durchlässt** (Durchsicht Runde 110):
   Schafe gehen ungefiltert (Lage und Schlachten fremder Schafe); der Aufbau
@@ -1135,6 +1152,20 @@ mit HEAD 50 bis 56 ms je 1000 Takte, Feudalzeit Median 11,6 min, erstes Heer
 Neueste oben. Eine Zeile je Runde: Nummer, Datum, Kriterien, Ergebnis,
 wichtigste Erkenntnis.
 
+- **114** · 2026-11-08 · **ki AC-13, zweiter Anlauf, nicht grün** — Zweig
+  hereingeholt, gemessen, wieder hinausgelegt. Diesmal zuerst nachgesehen,
+  wo es fehlt (Regel aus Runde 113), und das trug: Startwert 10 stand eine
+  Stunde mit 175 Mann neben einem Dorf, dessen letztes Gebäude außerhalb des
+  Suchumkreises lag (→ Suche über die ganze Karte, nah zuerst); die drei
+  Ausreißer 3, 5, 20 griffen 69- bis 80-mal an, weil die KI sich ohne Blick
+  auf das gegnerische Heer für überlegen hielt (→ überlegen nur mit frischem
+  Blick, Ausreißer jetzt 41 bis 46 Minuten). Was danach bleibt, sind Patts
+  mit leerer Wirtschaft (9, 33 ohne Sieger), die auch der alte Stand kennt.
+  35 von 40 vor Minute 60 statt 39. Frage an den Benutzer. Werkzeug:
+  `npm run gegenprobe` nimmt jetzt absolute Pfade (die alte Datei im
+  Temp-Ordner). Gelernt: **die Phasen messen statt die Enden** — bis das
+  erste Dorfzentrum fällt und danach; der Median beider Phasen war mit der
+  alten KI gleich, die Verlängerung saß nur in Ausreißern.
 - **113** · 2026-11-08 · **Rückschau** — Prüfstand gleich nach dem ersten
   Entwurf, `npm run gegenprobe` (schreibt immer zurück), Verbergen bricht
   auch Tests; Arbeit, die nicht grün wird, auf einen lokalen Zweig.

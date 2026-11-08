@@ -2,7 +2,7 @@
 
 **Bereich:** Strategie
 **Kuerzel:** ki
-**Stand:** 18/20 fertig · 1 in Arbeit · 1 offen
+**Stand:** 18/20 fertig · 2 offen
 
 ## Zweck
 
@@ -107,7 +107,7 @@ nicht die Regeln.
   Nahrung nur aus, wenn danach noch einer bezahlt ist; und ein Vorrat, zu dem
   kein Weg führt, wird zwei Minuten lang nicht wieder vorgeschlagen. Ohne das
   endet jede Partie damit, dass beide Seiten einander zusehen.
-- **AC-13** `in-arbeit` **KI sieht nur ihr Sichtfeld** — Mit dem Nebel (C6)
+- **AC-13** `offen` **KI sieht nur ihr Sichtfeld** — Mit dem Nebel (C6)
   kennt sie ein fremdes Gebäude erst, wenn eine ihrer Einheiten es gesehen
   hat, und behält es, bis sie hinsieht und es fehlt (wie kampf AC-12); fremde
   Einheiten nur, solange sie sie sieht. Ziel, Überlegenheit (AC-18) und freie
@@ -120,7 +120,9 @@ nicht die Regeln.
   Browser, ist AC-20. **Stand Runde 112:** gebaut und belegt auf dem
   lokalen Zweig `strategie-ki-sicht`, aber nicht gruen — KI gegen KI dauert
   länger, 34 von 40 Partien enden vor Minute 60 statt 39 (fahrplan AC-11).
-  **Bedingung:** fahrplan AC-11 hält.
+  **Bedingung:** fahrplan AC-11 hält. **Stand Runde 114:** zwei Fehler
+  behoben (Suche, Überlegenheit ohne frischen Blick), 35 von 40 vor Minute
+  60; Frage an den Benutzer (Erkenntnisse).
 - **AC-14** `fertig` **Die KI verteidigt zu Hause** — Verliert eines ihrer
   Gebäude oder einer ihrer Dorfbewohner Leben, zieht die Wache im Angriffslauf
   zum Angriffsort, und der getroffene Dorfbewohner lässt die Arbeit liegen und
