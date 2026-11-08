@@ -3,6 +3,11 @@
   "eintraege": [
     {
       "spec": "10-strategie/ki.md",
+      "ac": "AC-18",
+      "begruendung": "Ob die KI ueberlegen ist und deshalb alle bis auf die Wache losschickt, ist ein Vergleich zweier Zahlen in ihrer Entscheidung, belegt im Rechenteil und ueber ganze Partien (wie viele vor Minute 60 enden). Ein Standbild zeigt marschierende Einheiten, nicht, warum gerade so viele losgingen."
+    },
+    {
+      "spec": "10-strategie/ki.md",
       "ac": "AC-16",
       "begruendung": "Dass jeder im Heer sein naechstes Ziel nimmt statt eines gemeinsamen, ist eine Entscheidung der KI, belegt im Rechenteil und ueber ganze Partien (wie viele vor Minute 60 enden). Ein Standbild zeigt Kaempfende, nicht, nach welcher Regel sie ihr Ziel gewaehlt haben."
     },

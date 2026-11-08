@@ -89,6 +89,10 @@ for (const stand of staende) {
     + `\n  Dorfbewohner am Ende ${Math.min(...werte.dorf)} bis ${Math.max(...werte.dorf)}, Median ${median(werte.dorf)}`
     + `; Kampfeinheiten Median ${median(werte.kampf)}; Angriffe Median ${median(werte.angriffe)}`
     + `\n  laengste Untaetigkeit ${zahl(Math.max(...werte.untaetig))} s`
-    + `; mit Sieger ${werte.sieger}/${partien}${werte.ende.length ? `, Ende Median ${zahl(median(werte.ende))} min` : ''}`);
+    + `; mit Sieger ${werte.sieger}/${partien}${werte.ende.length ? `, Ende Median ${zahl(median(werte.ende))} min` : ''}`
+    // fahrplan AC-11 fragt nach dieser Zahl: entschieden vor Spielminute 60.
+    + `, vor Minute 60: ${werte.ende.filter((m) => m < 60).length}/${partien}`
+    + (werte.ende.length ? `
+  Enden ${[...werte.ende].sort((a, b) => a - b).map((m) => m.toFixed(1)).join(' ')}` : ''));
 }
 rmSync(ziel, { recursive: true, force: true });

@@ -11,7 +11,7 @@ const karten = require('../server/spiele/strategie/karte.js');
 const { Welt } = require('../server/spiele/strategie/welt.js');
 const {
   Ki, ENTSCHEIDEN_ALLE, ZIEL_DORFBEWOHNER, FEUDALZEIT_NAHRUNG, AN_SCHAFEN, AN_BEEREN, MILITAER,
-  HEER, WACHE, HEER_ABSTAND, WACHE_NAH, FEIND_FERN, VERGEBEN_ABSTAND, MILITAER_HOLZ, UEBERSCHUSS, MANGEL, UNERREICHBAR_SEKUNDEN, plan,
+  HEER, WACHE, UEBERLEGEN, MARSCH_MINDESTENS, HEER_ABSTAND, WACHE_NAH, FEIND_FERN, VERGEBEN_ABSTAND, MILITAER_HOLZ, UEBERSCHUSS, MANGEL, UNERREICHBAR_SEKUNDEN, plan,
 } = require('../server/spiele/strategie/ki.js');
 const { TAKTE_PRO_SEKUNDE } = require('../server/spiele/strategie/welt.js');
 const { EINHEITEN, GEBAEUDE, SAMMELN } = require('../server/spiele/strategie/daten.js');
@@ -378,6 +378,9 @@ test('ki AC-11: acht brechen auf, zwei bleiben als Wache - und unter zehn Kampfe
   const ki = new Ki(welt, 'a');
   const a = welt.spielerVon('a');
   const zentrumB = [...welt.gebaeude.values()].find((g) => g.besitzer === 'b' && g.art === 'dorfzentrum');
+  // Bert hat selbst ein Heer: geprueft wird der gewoehnliche Aufbruch. Gegen
+  // fast nichts zieht die KI anders los (ki AC-18).
+  kampfeinheitenAnlegen(welt, 'b', welt.spielerVon('b').basis, HEER);
 
   // Einer steht schon da: der Spaeherreiter aus der Startaufstellung.
   const schon = kampfVon(welt, 'a').length;
@@ -388,6 +391,7 @@ test('ki AC-11: acht brechen auf, zwei bleiben als Wache - und unter zehn Kampfe
   // Zahlen, die das Kriterium nennt).
   kampfeinheitenAnlegen(welt, 'a', a.basis, HEER + WACHE - 1 - schon);
   assert.equal(kampfVon(welt, 'a').length, HEER + WACHE - 1);
+  assert.equal(ki.ueberlegen(), false, 'im Gleichgewicht');
   ki.heerPruefen(eigeneVon(welt, 'a'));
   assert.equal(ki.angriffe, 0, 'eine zu wenig - kein Aufbruch');
   assert.equal(ki.heer.size, 0);
@@ -448,7 +452,10 @@ test('ki AC-11 und ki AC-16: am Marschziel greift jeder an, was ihm am naechsten
   const lebenVorher = new Map(seine().map((z) => [z.id, z.leben]));
   ki.heerPruefen(eigeneVon(welt, 'a'));
   const angreifend = [...ki.heer].map((id) => welt.einheiten.get(id)).filter((e) => e.auftrag?.art === 'angreifen');
-  assert.equal(angreifend.length, HEER, 'alle acht greifen an');
+  // Bert hat nur seinen Spaeher - die KI ist ueberlegen und schickt alle bis
+  // auf die Wache (ki AC-18), also mindestens ein Heer.
+  assert.ok(ki.heer.size >= HEER, `${ki.heer.size} im Heer`);
+  assert.equal(angreifend.length, ki.heer.size, 'alle im Heer greifen an');
   // Jeder sein eigenes naechstes Ziel, nicht ein gemeinsames: bei acht, die
   // nebeneinander stehen, und Dorfbewohnern um das Dorfzentrum sind es mehrere.
   const ziele = new Set(angreifend.map((e) => e.auftrag.ziel));
@@ -1381,4 +1388,68 @@ test('ki AC-16: ein Ziel, zu dem kein Weg fuehrt, wird zwei Minuten ausgelassen'
   ki.heerPruefen(eigeneVon(welt, 'a'));
   assert.ok(ki.gesperrt('ziel:' + erstes.id), 'das Ziel ist gesperrt');
   assert.notEqual(ki.heerZiel.get(krieger.id).id, erstes.id, 'und er bekommt ein anderes');
+});
+
+// ---- Die Lage lesen (ki AC-18, Runde 96) ------------------------------------
+
+const milizen = (welt, id, n) => {
+  const s = welt.spielerVon(id);
+  for (let i = 0; i < n; i++) welt.einheitAnlegen(id, s.basis.x + 5 + (i % 4), s.basis.y + 5 + Math.floor(i / 4), 'miliz');
+};
+
+test('ki AC-18: ueberlegen ist, wer ein Heer hat und dreimal so viele Kampfeinheiten wie der Gegner', () => {
+  const welt = new Welt(ZWEI, 4711);
+  const ki = new Ki(welt, 'a');
+  const bert = kampfVon(welt, 'b').length;
+  // Mit einem Heer weniger einer: zu klein, auch wenn der Gegner fast nichts hat.
+  milizen(welt, 'a', HEER - 1 - kampfVon(welt, 'a').length);
+  assert.equal(kampfVon(welt, 'a').length, HEER - 1);
+  assert.ok(bert * UEBERLEGEN <= HEER - 1, 'Bert hat wenig');
+  assert.equal(ki.ueberlegen(), false, 'weniger als ein Heer ist nie ueberlegen');
+  milizen(welt, 'a', 1);
+  assert.equal(ki.ueberlegen(), true, 'ein Heer gegen fast nichts');
+  // Gegenprobe: hat Bert mehr als ein Drittel, nicht mehr.
+  milizen(welt, 'b', Math.floor(HEER / UEBERLEGEN) + 1 - bert);
+  assert.ok(kampfVon(welt, 'b').length * UEBERLEGEN > HEER);
+  assert.equal(ki.ueberlegen(), false, 'gegen mehr als ein Drittel nicht');
+});
+
+test('ki AC-18: ueberlegen zieht los, wer daheim ist - bis auf die Wache', () => {
+  const lauf = (bertMehr) => {
+    const welt = new Welt(ZWEI, 4711);
+    const ki = new Ki(welt, 'a');
+    // Einer weniger, als der gewoehnliche Aufbruch braucht.
+    milizen(welt, 'a', HEER + WACHE - 1 - kampfVon(welt, 'a').length);
+    milizen(welt, 'b', bertMehr);
+    const gesendet = [];
+    ki.senden = (n) => { gesendet.push(n); return {}; };
+    ki.heerPruefen([...welt.einheiten.values()].filter((e) => e.besitzer === 'a'));
+    return { marsch: gesendet.find((n) => n.angriffslauf), ki };
+  };
+  // Gegenprobe: im Gleichgewicht warten neun auf den zehnten.
+  const gleich = lauf(HEER);
+  assert.equal(gleich.ki.ueberlegen(), false);
+  assert.equal(gleich.marsch, undefined, 'im Gleichgewicht kein Aufbruch mit neun');
+  const vorn = lauf(0);
+  assert.equal(vorn.ki.ueberlegen(), true);
+  assert.equal(vorn.marsch?.einheiten.length, HEER + WACHE - 1 - WACHE, 'alle bis auf die Wache ziehen los');
+});
+
+test('ki AC-18: auch ueberlegen zieht keiner allein los', () => {
+  // Durchsicht Runde 96: sonst ging jede fertige Einheit einzeln.
+  const lauf = (daheim) => {
+    const welt = new Welt(ZWEI, 4711);
+    const ki = new Ki(welt, 'a');
+    // Ueberlegen mit einem Heer, das schon unterwegs ist.
+    milizen(welt, 'a', HEER + daheim - kampfVon(welt, 'a').length);
+    const imHeer = kampfVon(welt, 'a').slice(0, HEER);
+    for (const e of imHeer) ki.heer.add(e.id);
+    assert.equal(ki.ueberlegen(), true);
+    const gesendet = [];
+    ki.senden = (n) => { gesendet.push(n); return {}; };
+    ki.heerPruefen([...welt.einheiten.values()].filter((e) => e.besitzer === 'a'));
+    return gesendet.find((n) => n.angriffslauf);
+  };
+  assert.equal(lauf(WACHE + MARSCH_MINDESTENS - 1), undefined, 'mit einem ueber der Wache bleibt er');
+  assert.equal(lauf(WACHE + MARSCH_MINDESTENS)?.einheiten.length, MARSCH_MINDESTENS, 'zu zweit gehen sie');
 });

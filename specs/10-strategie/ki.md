@@ -2,7 +2,7 @@
 
 **Bereich:** Strategie
 **Kuerzel:** ki
-**Stand:** 16/17 fertig · 1 offen
+**Stand:** 17/18 fertig · 1 offen
 
 ## Zweck
 
@@ -152,6 +152,21 @@ nicht die Regeln.
   je Schlag. Allein brachte das nichts (Runde 92: mehr Entscheidungen, aber
   mehr Remis); mit AC-16 enden 18 von 20 Partien vor Minute 60, alle 20 mit
   einem Sieger, im Median nach 42 Minuten (Runde 95).
+- **AC-18** `fertig` **Überlegen zieht alles los** — Hat die KI mindestens
+  ein Heer (8) und dreimal so viele Kampfeinheiten wie ihr nächster Gegner,
+  wartet sie nicht auf zehn daheim: es zieht los, wer da ist, bis auf die
+  zwei an der Basis — aber nie einer allein, mindestens zwei. Im
+  Gleichgewicht gilt weiter AC-11. Vorher stand beim Startwert 4 der Sieger
+  ab Minute 48 vor einem Dorf ohne Heer und schickte je acht, während daheim
+  bis zu 85 warteten. Über zwanzig Startwerte enden jetzt alle 20 Partien mit
+  einem Sieger, 19 vor Minute 60 (vorher 18), die längste nach 62 statt 78
+  Minuten, im Median nach 38 statt 42 (Runde 96). Jeder Aufbruch zählt als
+  Angriff, auch einer zu zweit. Gezählt wird, was auf der Karte steht — bis zum Nebel
+  (AC-13) sieht die KI alles, wie der Mensch. **Gemessen und verworfen:**
+  überlegen nur noch auszubilden, was Gebäuden schadet (Nahkämpfer statt
+  Fernkämpfer), machte es schlechter — 16 von 20 vor Minute 60, Median 47
+  Minuten —, weil die Überlegenheit auch mitten im Patt kurz eintritt und die
+  KI dann die falschen Einheiten baut.
 
 ## Grenzfaelle
 

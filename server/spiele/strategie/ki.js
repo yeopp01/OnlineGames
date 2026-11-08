@@ -94,6 +94,19 @@ const MILITAER_HOLZ = Math.max(...MILITAER.map((art) => GEBAEUDE[art].kosten.hol
 // braucht also zehn Kampfeinheiten: acht fuer den Marsch, zwei fuer daheim.
 const HEER = 8;
 const WACHE = 2;
+
+// Die Lage lesen (ki AC-18): ueberlegen ist, wer mindestens ein Heer hat und
+// dreimal so viele Kampfeinheiten wie der Gegner. Dann wartet niemand mehr auf
+// zehn daheim - es zieht los, wer da ist, bis auf die Wache. Vorher stand der
+// Sieger beim Startwert 4 ab Minute 48 vor einem Dorf ohne Heer und schickte
+// je acht, waehrend daheim bis zu 85 warteten; die Partie endete nach 65,5
+// Minuten (Runde 96).
+const UEBERLEGEN = 3;
+// Auch dann nie einer allein (Durchsicht Runde 96): jede fertige Einheit zog
+// sonst einzeln los. Gemessen ueber zwanzig Startwerte, 90 Minuten: einzeln
+// 19 mit Sieger, die letzte Partie unentschieden; zu zweit alle 20, die
+// laengste nach 62 Minuten; zu viert alle 20, die laengste nach 78.
+const MARSCH_MINDESTENS = 2;
 // So weit vor dem fremden Dorfzentrum endet der Marsch. Nicht auf ihm: ein
 // Befehl auf ein fremdes Gebaeude ist ein Angriff auf genau dieses Gebaeude
 // und **kein** Angriffslauf (welt.befehl) - unterwegs wuerde dann niemand
@@ -319,6 +332,25 @@ class Ki {
     return null;
   }
 
+  // Kampfeinheiten eines Spielers, die noch stehen.
+  kampfeinheitenVon(id) {
+    let n = 0;
+    for (const e of this.welt.einheiten.values()) {
+      if (e.besitzer === id && !e.tot && !(EINHEITEN[e.art].klassen || []).includes('dorf')) n += 1;
+    }
+    return n;
+  }
+
+  // Ueberlegen (ki AC-18): ein ganzes Heer und dreimal so viele wie der
+  // naechste Gegner. Gezaehlt wird, was auf der Karte steht - bis der Nebel
+  // kommt (ki AC-13), sieht die KI alles, so wie der Mensch.
+  ueberlegen() {
+    const gegner = this.naechsterGegner();
+    if (!gegner) return false;
+    const meine = this.kampfeinheitenVon(this.spielerId);
+    return meine >= HEER && this.kampfeinheitenVon(gegner.id) * UEBERLEGEN <= meine;
+  }
+
   /**
    * Das Heer (ki AC-11). Sind acht Kampfeinheiten marschbereit - also zehn da,
    * denn zwei bleiben als Wache -, brechen die acht gesammelt zum naechsten
@@ -376,10 +408,12 @@ class Ki {
     // Der Aufbruch. Die beiden, die der Basis am naechsten stehen, bleiben:
     // so wacht die Wache dort, wo das Dorf ist.
     const daheim = kampf.filter((e) => !this.heer.has(e.id));
-    if (daheim.length < HEER + WACHE) return;
+    // Ueberlegen (ki AC-18), zieht los, wer daheim ist - bis auf die Wache.
+    const alle = this.ueberlegen();
+    if (daheim.length < (alle ? WACHE + MARSCH_MINDESTENS : HEER + WACHE)) return;
     const { basis } = this.spieler;
     const nachAbstand = [...daheim].sort((a, b) => Math.hypot(a.x - basis.x, a.y - basis.y) - Math.hypot(b.x - basis.x, b.y - basis.y));
-    const marsch = nachAbstand.slice(WACHE, WACHE + HEER);
+    const marsch = alle ? nachAbstand.slice(WACHE) : nachAbstand.slice(WACHE, WACHE + HEER);
     const feld = this.marschziel(ziel);
     if (!feld) return;
     this.senden({ auftrag: 'befehl', einheiten: marsch.map((e) => e.id), ziel: feld, angriffslauf: true });
@@ -983,5 +1017,5 @@ class Ki {
 
 module.exports = {
   Ki, ENTSCHEIDEN_ALLE, ZIEL_DORFBEWOHNER, FEUDALZEIT_NAHRUNG, AN_SCHAFEN, AN_BEEREN, MILITAER,
-  HEER, WACHE, HEER_ABSTAND, WACHE_NAH, FEIND_FERN, VERGEBEN_ABSTAND, MILITAER_HOLZ, UEBERSCHUSS, MANGEL, UMVERTEILEN_SEKUNDEN, UNERREICHBAR_SEKUNDEN, MILITAER_HOECHSTENS, plan,
+  HEER, WACHE, UEBERLEGEN, MARSCH_MINDESTENS, HEER_ABSTAND, WACHE_NAH, FEIND_FERN, VERGEBEN_ABSTAND, MILITAER_HOLZ, UEBERSCHUSS, MANGEL, UMVERTEILEN_SEKUNDEN, UNERREICHBAR_SEKUNDEN, MILITAER_HOECHSTENS, plan,
 };

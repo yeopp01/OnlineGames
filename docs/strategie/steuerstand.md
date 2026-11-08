@@ -13,22 +13,21 @@ hier nichts eintraegt, verliert den Faden beim naechsten Autocompact.
 
 ## Zuletzt fortgeschrieben
 
-2026-11-08, nach Runde 95 (**ki AC-16** jeder im Heer nimmt sein naechstes
-Ziel, **ki AC-17** Nahkaempfer aus der Kaserne: KI gegen KI endet in 18 von 20
-Partien vor Minute 60, alle 20 mit Sieger, im Median nach 42 Minuten. **ki AC-12**
-misst die Wirtschaft jetzt direkt in jedem Takt (`zentrumStillMax` im
-Pruefstand: das Dorfzentrum steht nie laenger als 0,5 s still, wenn
-Dorfbewohner fehlen). `welt.untaetig` zaehlt Kaempfende nicht mehr.
-**fahrplan AC-11 bleibt offen** (18/20 vor Minute 60): als Naechstes die zwei
-uebrigen Partien ansehen (65 und 78 Minuten). **Naechste
+2026-11-08, nach Runde 96 (**ki AC-18** ueberlegen zieht alles los: hat die
+KI dreimal so viele Kampfeinheiten wie der Gegner, gehen alle bis auf die
+Wache, nie einer allein. KI gegen KI: alle 20 mit Sieger, 19 vor Minute 60,
+die laengste nach 62,0 Minuten, im Median nach 38. **fahrplan AC-11 bleibt
+offen** (eine Partie 2 Minuten zu lang): die langen Partien sind ein Patt
+(je rund zehn Kampfeinheiten von Minute 20 bis 60).
+Kandidaten in den Erkenntnissen unter "Offene Faeden". **Naechste
 Rueckschau: Runde 98.** Die Figuren bei Zoom 1 sind als Faden notiert: eine
 Runde nach C4, vor C5.)
 
 ## Wo ich stehe
 
 - **Branch:** `strategie`. Nie auf `main` arbeiten, **nie pushen, nie deployen.**
-- **Board:** 395 von 523 Kriterien fertig · 1 in Arbeit · 5 in QA · 4 geplant ·
-  110 offen · 8 zurueckgestellt. 470 Tests ohne Browser, 167 im Browser.
+- **Board:** 396 von 524 Kriterien fertig · 1 in Arbeit · 5 in QA · 4 geplant ·
+  110 offen · 8 zurueckgestellt. 473 Tests ohne Browser, 167 im Browser.
 - **Fuenf Waechter in `tests/waechter-*.test.mjs`** (der fuenfte seit Runde 87: Bildschirmtext mit echten Umlauten): Gleichheit auf wachsenden
   Listen, verbesserbare Werte an `welt.einheitenwert()` vorbei,
   Bildunterschriften mit `${...}`, und (neu in Runde 73) die **Kuerzeltafel**
