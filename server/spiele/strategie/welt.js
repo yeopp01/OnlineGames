@@ -22,6 +22,8 @@ const SCHLAGRAND_BAU = 0.2;
 // So oft sieht sich eine stehende Kampfeinheit um (kampf AC-2): zweimal je
 // Sekunde. Jeder Takt waere fuenfmal so teuer und im Spiel nicht zu merken.
 const WACHE_TAKTE = 5;
+// Zweimal je Sekunde rechnet der Server, was jeder Spieler sieht (kampf AC-15).
+const SICHT_TAKTE = 5;
 
 // Naeher als ein halbes Feld, und zwei Figuren sind im Bild eine mit zwei
 // Schwertern (einheiten AC-29; dieselbe Grenze misst `figurenFrei`).
@@ -187,6 +189,94 @@ class Welt {
         this.einheitAnlegen(spieler.id, spieler.basis.x + dx, spieler.basis.y + dy, art);
       });
     }
+
+    // Was jeder Spieler sieht (kampf AC-15): `sichtbar` traegt den Stempel der
+    // letzten Rechnung, in der das Feld gesehen wurde - so muss nichts geleert
+    // werden, und acht Spieler auf der groessten Karte kosten keine 320.000
+    // Schreibvorgaenge je halbe Sekunde. `erkundet` bleibt, was einmal gesehen war.
+    const felder = this.karte.groesse * this.karte.groesse;
+    this.sichtStempel = 0;
+    this.sichten = new Map(this.spieler.map((s) => [s.id, {
+      sichtbar: new Uint32Array(felder), gebaeude: new Uint8Array(felder), erkundet: new Uint8Array(felder),
+    }]));
+    this.gebaeudeSichtNeu = true;
+    this.sichtAktualisieren();
+  }
+
+  /**
+   * Die Sicht aller Spieler neu (kampf AC-15). Jede lebende Einheit sieht ihre
+   * Sichtweite aus den Daten, mit Verbesserungen (`einheitenwert`); jedes
+   * Gebaeude acht Felder ueber seinen Rand (daten.js). Ein Feld zaehlt, wenn
+   * seine Mitte hoechstens so weit entfernt ist.
+   */
+  sichtAktualisieren() {
+    const g = this.karte.groesse;
+    const stempel = ++this.sichtStempel;
+    // Alles, was hoechstens r vom Rechteck (ax..bx, ay..by) entfernt ist - fuer
+    // eine Einheit ist das Rechteck ein Punkt, fuer ein Gebaeude seine
+    // Grundflaeche: "acht Felder ueber den Rand", in jeder Reihe gleich.
+    const markieren = (ziel, wert, erkundet, ax, ay, bx, by, r) => {
+      const x0 = Math.max(0, Math.floor(ax - r));
+      const x1 = Math.min(g - 1, Math.ceil(bx + r));
+      const y0 = Math.max(0, Math.floor(ay - r));
+      const y1 = Math.min(g - 1, Math.ceil(by + r));
+      const rr = r * r;
+      for (let y = y0; y <= y1; y++) {
+        const dy = y < ay ? ay - y : y > by ? y - by : 0;
+        for (let x = x0; x <= x1; x++) {
+          const dx = x < ax ? ax - x : x > bx ? x - bx : 0;
+          if (dx * dx + dy * dy > rr) continue;
+          const i = y * g + x;
+          ziel[i] = wert;
+          erkundet[i] = 1;
+        }
+      }
+    };
+    // Die Sichtweite je Besitzer und Art einmal je Rechnung - nicht je Einheit.
+    const weite = new Map();
+    for (const e of this.einheiten.values()) {
+      if (e.tot) continue;
+      const sicht = this.sichten.get(e.besitzer);
+      if (!sicht) continue;
+      const schluessel = `${e.besitzer}|${e.art}`;
+      if (!weite.has(schluessel)) weite.set(schluessel, this.einheitenwert(e.besitzer, e.art, 'sicht'));
+      markieren(sicht.sichtbar, stempel, sicht.erkundet, e.x, e.y, e.x, e.y, weite.get(schluessel));
+    }
+    // Gebaeude stehen still: ihre Sicht wird nur neu gerechnet, wenn eines
+    // entsteht oder faellt. Jedes deckt mit acht Feldern Rand gut 400 Felder
+    // ab, und so kostete die Sicht eine ganze Partie die Haelfte mehr
+    // Rechenzeit (Runde 104, gemessen: 7,8 statt 5,0 s fuer fuenf Partien).
+    if (this.gebaeudeSichtNeu) {
+      this.gebaeudeSichtNeu = false;
+      for (const sicht of this.sichten.values()) sicht.gebaeude.fill(0);
+      for (const b of this.gebaeude.values()) {
+        const sicht = this.sichten.get(b.besitzer);
+        if (!sicht) continue;
+        const { x0, y0, x1, y1 } = this.grundflaeche(b.art, b.x, b.y);
+        markieren(sicht.gebaeude, 1, sicht.erkundet, x0, y0, x1, y1, GEBAEUDE[b.art].sicht);
+      }
+    }
+  }
+
+  aufKarte(x, y) {
+    const g = this.karte.groesse;
+    return Number.isInteger(x) && Number.isInteger(y) && x >= 0 && y >= 0 && x < g && y < g;
+  }
+
+  // Sieht dieser Spieler das Feld jetzt? Und hat er es je gesehen? (kampf AC-15)
+  sieht(spielerId, x, y) {
+    const sicht = this.sichten.get(spielerId);
+    // Ausserhalb der Karte sieht niemand - sonst griffe x = -1 in die
+    // Nachbarreihe (Durchsicht Runde 104).
+    if (!this.aufKarte(x, y)) return false;
+    const i = y * this.karte.groesse + x;
+    return Boolean(sicht) && (sicht.sichtbar[i] === this.sichtStempel || sicht.gebaeude[i] === 1);
+  }
+
+  erkundet(spielerId, x, y) {
+    const sicht = this.sichten.get(spielerId);
+    if (!this.aufKarte(x, y)) return false;
+    return Boolean(sicht) && sicht.erkundet[y * this.karte.groesse + x] === 1;
   }
 
   // Werte eines Auftrags in der Schlange: Einheit, Verbesserung oder Aufstieg.
@@ -331,6 +421,7 @@ class Welt {
       wartet: false, // Bevoelkerung voll (bauen AC-15)
     };
     this.gebaeude.set(gebaeude.id, gebaeude);
+    this.gebaeudeSichtNeu = true;
     this.belegen(gebaeude);
     this.gebaeudeGeaendert(gebaeude);
     return gebaeude;
@@ -527,6 +618,7 @@ class Welt {
     }
     this.freigeben(gebaeude);
     this.gebaeude.delete(gebaeude.id);
+    this.gebaeudeSichtNeu = true;
     this.gebaeudeGeaendert(gebaeude);
     for (const einheit of this.einheiten.values()) {
       if (einheit.auftrag?.art === 'bauen' && einheit.auftrag.gebaeude === gebaeude.id) {
@@ -1114,6 +1206,7 @@ class Welt {
     // Leer: die Farm ist weg, wie im Original muss eine neue her.
     if (farm.nahrung <= 0) {
       this.gebaeude.delete(farm.id);
+      this.gebaeudeSichtNeu = true;
       einheit.sammelt = false;
       einheit.auftrag = null;
       if (einheit.ladung > 0) einheit.auftrag = { art: 'farm', gebaeude: farm.id, leer: true };
@@ -1752,6 +1845,7 @@ class Welt {
   // Truemmer gibt es nicht - die waeren eine Entscheidung fuer Stufe C.
   gebaeudeZerstoeren(gebaeude) {
     this.gebaeude.delete(gebaeude.id);
+    this.gebaeudeSichtNeu = true;
     this.freigeben(gebaeude);
     this.gebaeudeGeaendert(gebaeude);
     this.bestandPruefen = true;
@@ -1873,6 +1967,7 @@ class Welt {
     // Ebenso oft treten Stehende auseinander (einheiten AC-29).
     if (this.takt % WACHE_TAKTE === 0) this.ausweichen();
     this.schlaegeAbrechnen();
+    if (this.takt % SICHT_TAKTE === 0) this.sichtAktualisieren();
     this.endePruefen();
   }
 

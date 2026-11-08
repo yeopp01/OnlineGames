@@ -7,9 +7,9 @@ Eine Zeile je Abnahmekriterium. Gepflegt wird der Status in der Spec selbst,
 hier steht er zusammengefasst. Erzeugt mit `npm run specs:board`; als Seite
 mit Bildnachweisen, Filter und Suche mit `npm run qa:report`.
 
-**Gesamt:** 403/526 fertig · 1 in Arbeit · 5 in QA · 4 geplant · 105 offen · 8 zurueckgestellt
+**Gesamt:** 404/527 fertig · 1 in Arbeit · 5 in QA · 4 geplant · 105 offen · 8 zurueckgestellt
 
-**Nachweise:** 169 Kriterien mit Bild · 238 ohne Bild, begruendet in `qa/ohne-bild.json`
+**Nachweise:** 169 Kriterien mit Bild · 239 ohne Bild, begruendet in `qa/ohne-bild.json`
 
 ## Nach Spezifikation
 
@@ -26,7 +26,7 @@ mit Bildnachweisen, Filter und Suche mit `npm run qa:report`.
 | [Darstellung](10-strategie/darstellung.md)                     | -         | -     | -       | 2     | -               | 14     |
 | [Einheiten und Befehle](10-strategie/einheiten-und-befehle.md) | -         | -     | -       | 2     | 1               | 21     |
 | [Fahrplan zum Klon](10-strategie/fahrplan.md)                  | -         | -     | -       | 10    | -               | 12     |
-| [Kampf](10-strategie/kampf.md)                                 | -         | -     | -       | 4     | 1               | 9      |
+| [Kampf](10-strategie/kampf.md)                                 | -         | -     | -       | 4     | 1               | 10     |
 | [Karte und Vorraete](10-strategie/karte-und-vorraete.md)       | -         | -     | -       | 2     | 3               | 12     |
 | [KI-Spieler](10-strategie/ki.md)                               | -         | -     | -       | 1     | -               | 18     |
 | [Spielziel und Partieverlauf](10-strategie/spielziel.md)       | 1         | -     | -       | 12    | -               | 5      |

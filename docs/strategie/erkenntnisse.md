@@ -96,6 +96,13 @@ etwas anderem gearbeitet.
   [ADR-0012](../adr/0012-aoe2-als-vorlage.md) nachsehen. Nicht vor Stufe E
   (fünf Völker) vorschlagen — vorher gibt es nicht genug Spieler in einer
   Partie, an denen ein Bündnis etwas ändert.
+- **Für den Nebel im Bild (C6b), aus der Durchsicht der Runde 104:** (1)
+  nach dem Ende einer Partie und nach dem Aufgeben läuft keine Sichtrechnung
+  mehr — die Sicht eines Ausgeschiedenen bleibt auf dem letzten Stand; die
+  Zeichnung muss `aus` und `ende` selbst beachten. (2) Eine Baustelle sieht
+  sofort ihre vollen acht Felder; im Original sieht ein Fundament weniger —
+  prüfen, ob das stört. (3) Ein neues Gebäude sieht bis zu einer halben
+  Sekunde nichts.
 - **fahrplan AC-11 hängt an der Auswahl der Startwerte** (Runde 100). Auf
   den Startwerten 21 bis 40 enden 19 von 20 vor Minute 60 — mit HEAD wie mit
   dem Arbeitsstand (Startwert 29 bzw. 24 nach 74 Minuten). Und dort steht
@@ -1020,6 +1027,19 @@ unter Last), seit dem dreifachen Klick nicht mehr.
 Neueste oben. Eine Zeile je Runde: Nummer, Datum, Kriterien, Ergebnis,
 wichtigste Erkenntnis.
 
+- **104** · 2026-11-08 · **kampf AC-15** — C6 beginnt: die Sicht je Spieler
+  wird auf dem Server gerechnet (jetzt gesehen, je gesehen), zweimal je
+  Sekunde. Der Nebel ist zu groß für eine Runde; die Bauabfolge C6a bis C6e
+  steht im Fahrplan, dies ist C6a. **Gemessen, bevor es zu spät war:** die
+  erste Fassung rechnete jede halbe Sekunde auch die Gebäude neu und machte
+  eine ganze Partie um 55 % langsamer (7,8 statt 5,0 s für fünf Partien) —
+  jedes deckt mit acht Feldern Rand gut 400 Felder ab, und sie stehen still.
+  Jetzt nur, wenn eines entsteht oder fällt: 16 %. Ein Stempel statt eines
+  Flags erspart das Leeren der Felder. Die Durchsicht fand keinen Fehler,
+  aber einen Rand: `sieht(-1, y)` griff in die Nachbarreihe — mit Test und
+  echter Gegenprobe (meine erste verglich einen Wert mit sich selbst). Ein
+  Haus sieht „acht über den Rand" erst richtig, seit vom Rechteck gemessen
+  wird statt vom Mittelpunkt mit Zuschlag.
 - **102** · 2026-11-08 · **fahrplan AC-12** — **C5 ist fertig**: eine ganze
   Partie allein gegen die KI im Browser. Erst gemessen, wie lange die KI gegen
   einen Spieler braucht, der nur sammelt: 21,1 bis 22,1 Spielminuten auf vier

@@ -2,6 +2,11 @@
   "hinweis": "Ausnahmeliste zu den Bildnachweisen (docs/adr/0011-bildnachweise.md). Ein Abnahmekriterium steht hier, wenn es kein Aussehen hat oder ein Bildschirm es nicht zeigen kann - dann verlangt der Bericht kein Bild. Die Begruendung sagt, was das Kriterium ist und warum kein Bild. Ein Eintrag auf eine Spec oder ein Kriterium, das es nicht mehr gibt, laesst npm run check scheitern. Liegt trotz Eintrag ein Bild vor, wird es angezeigt.",
   "eintraege": [
     {
+      "spec": "10-strategie/kampf.md",
+      "ac": "AC-15",
+      "begruendung": "Welche Felder ein Spieler jetzt sieht und welche er je gesehen hat, ist eine Rechnung auf dem Server, die in dieser Runde noch nichts im Bild veraendert - gezeigt wird sie mit darstellung AC-15 (Nebel in drei Stufen), das dafuer ein eigenes Bild bekommt."
+    },
+    {
       "spec": "10-strategie/ki.md",
       "ac": "AC-19",
       "begruendung": "Wann die KI aufgibt, ist eine Pruefung ihres eigenen Zustands in ihrer Entscheidung, belegt im Rechenteil mit Gegenproben fuer jede Bedingung. Was danach im Bild steht, ist dasselbe wie beim Aufgeben eines Menschen und dort nachgewiesen (bedienung AC-38, spielziel AC-6)."

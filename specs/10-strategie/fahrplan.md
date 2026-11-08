@@ -154,6 +154,16 @@ angreift, nichts zu tun hat. **C6 (Nebel) zuletzt**, weil er die
 Zustandsnachricht umbaut und damit jeden Browsertest berührt: was dort heute
 „alles" ist, wird dann „was ich sehe".
 
+**Bauabfolge C6 (Runde 104).** Der Nebel ist mehr als ein Schritt:
+
+| Schritt | Was | Kriterien |
+| --- | --- | --- |
+| C6a | Die Sicht je Spieler auf dem Server rechnen: jetzt gesehen, je gesehen — **fertig** | kampf AC-15 |
+| C6b | Der Nebel im Bild: jedem Spieler seine Sicht schicken, drei Stufen zeichnen, auch auf der Übersichtskarte | kampf AC-11, AC-12, darstellung AC-15 |
+| C6c | Nur Sichtbares schicken: eine Zustandsnachricht je Spieler, erinnerte Gebäude; ein Prüfgriff deckt für Browsertests auf | kampf AC-13, fahrplan AC-13 |
+| C6d | Die KI sieht nur ihre Sicht und erkundet mit dem Späher | ki AC-13 |
+| C6e | Angriff wird gemeldet, ein Klick springt hin | kampf AC-14 |
+
 ### Stufe D — Ritterzeit
 
 - **AC-14** `offen` **Ritterzeit spielbar** — Burg, Kloster, Universität, Belagerungswerkstatt;

@@ -2,7 +2,7 @@
 
 **Bereich:** Strategie
 **Kuerzel:** kampf
-**Stand:** 9/14 fertig · 4 offen · 1 zurueckgestellt
+**Stand:** 10/15 fertig · 4 offen · 1 zurueckgestellt
 
 ## Zweck
 
@@ -110,6 +110,16 @@ aus [Spielziel](spielziel.md) AC-10, gemessen in
   mit — die Zustandsnachricht enthält heute alles.
 - **AC-14** `offen` **Angriff wird gemeldet** — Wer angegriffen wird, bekommt einen Hinweis und
   kann per Klick dorthin springen.
+- **AC-15** `fertig` **Sicht je Spieler berechnet** — Der Server rechnet je
+  Spieler zweimal je Sekunde, welche Felder er **jetzt sieht** und welche er
+  **je gesehen hat**. Eine Einheit sieht ihre Sichtweite aus den Daten, mit
+  Verbesserungen (Dorfbewohner, Miliz, Speerkämpfer, Späher 4, Bogen und
+  Plänkler 6); ein Gebäude acht Felder über den Rand seiner Grundfläche.
+  Grundlage für AC-11 bis AC-13 und darstellung AC-15 — abgeteilt in Runde
+  104, weil der Nebel mehr als eine Runde ist. Acht Spieler mit 800 Einheiten
+  kosten je Rechnung unter 1 ms; eine ganze Partie rechnet damit rund 16 %
+  länger — die Sicht der Gebäude wird nur neu gerechnet, wenn eines entsteht
+  oder fällt (sonst 55 %). Außerhalb der Karte sieht niemand.
 
 ## Grenzfaelle
 

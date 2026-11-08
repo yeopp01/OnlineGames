@@ -144,6 +144,8 @@ for (const gebaeude of Object.values(GEBAEUDE)) {
   gebaeude.nahruestung ??= 0;
   gebaeude.fernruestung ??= 7;
   gebaeude.klassen ??= ['gebaeude'];
+  // Ein Gebaeude sieht acht Felder ueber seinen Rand hinaus (kampf AC-11, AC-15).
+  gebaeude.sicht ??= 8;
 }
 
 // Auftraege je Gebaeude (bauen AC-10).
