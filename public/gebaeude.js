@@ -1239,6 +1239,43 @@ function wachturm(stift, e, farbe) {
   fahne(stift, hoch([0, 0], fuss + brust * 0.15), e, farbe, 1.3);
 }
 
+// ---- Steinmauer ---------------------------------------------------------------
+
+// Ein Feld Mauer (bauen AC-30): ein Block aus Haustein ueber die ganze Raute,
+// damit gerade Nachbarn eine durchgehende Wand bilden, oben ein Wehrgang mit
+// Zinnen. Ein schmales Band in Spielerfarbe unter den Zinnen sagt, wessen
+// Mauer es ist - mehr Farbe traegt eine Mauer im Original auch nicht.
+function steinmauer(stift, e, farbe) {
+  const W = 0.98 * e;
+  vorbereiten(stift, e, W, W / 2);
+  const L = [-W, 0];
+  const B = [0, W / 2];
+  const R = [W, 0];
+  const T = [0, -W / 2];
+  const links = '#958e80';
+  const rechts = '#b7b0a0';
+  const hoehe = 1.25 * e;
+  flaeche(stift, [L, B, hoch(B, hoehe), hoch(L, hoehe)], verlauf(stift, links, hoch(L, hoehe), B, 0.06, -0.26));
+  mauerwerk(stift, L, B, hoehe, e, { reihen: 4, steine: 3, grund: links });
+  flaeche(stift, [B, R, hoch(R, hoehe), hoch(B, hoehe)], verlauf(stift, rechts, hoch(B, hoehe), R, 0.12, -0.14));
+  mauerwerk(stift, B, R, hoehe, e, { reihen: 4, steine: 3, grund: rechts });
+  // Das Band in Spielerfarbe, knapp unter der Krone.
+  for (const [a, b] of [[L, B], [B, R]]) {
+    flaeche(stift, [wandpunkt(a, b, hoehe, 0, 0.8), wandpunkt(a, b, hoehe, 1, 0.8),
+      wandpunkt(a, b, hoehe, 1, 0.9), wandpunkt(a, b, hoehe, 0, 0.9)], verlauf(stift, farbe, hoch(a, hoehe), b, 0.1, -0.2), false);
+  }
+  // Die Krone von oben, dann die Zinnen an den beiden vorderen Kanten.
+  flaeche(stift, [L, B, R, T].map((p) => hoch(p, hoehe)), '#6d675d');
+  const zinne = 0.26 * e;
+  for (const [a, b, grund] of [[L, B, links], [B, R, rechts]]) {
+    for (let i = 0; i < 5; i += 2) {
+      const z0 = hoch(zwischen(a, b, i / 5), hoehe);
+      const z1 = hoch(zwischen(a, b, (i + 1) / 5), hoehe);
+      flaeche(stift, [z0, z1, hoch(z1, zinne), hoch(z0, zinne)], grund);
+    }
+  }
+}
+
 // ---- Kloster -----------------------------------------------------------------
 
 // Ein Schiff aus hellem Haustein mit steilem Schieferdach und Rundbogenfenstern,
@@ -1459,6 +1496,8 @@ export const GEBAEUDE = {
   wachturm: {
     name: 'Wachturm', zeichnen: wachturm, halbeBreite: 1.0, trefferBreite: 1.1, trefferOben: 5.2, trefferUnten: 0.8, schussHoehe: 3.6,
   },
+  // Ein Feld, so breit wie die Raute, damit Nachbarn zur Wand werden (bauen AC-30).
+  steinmauer: { name: 'Steinmauer', zeichnen: steinmauer, halbeBreite: 1.0, trefferBreite: 1.0, trefferOben: 2.0, trefferUnten: 0.6 },
 };
 
 /**

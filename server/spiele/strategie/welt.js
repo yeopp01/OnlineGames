@@ -94,6 +94,7 @@ const GEBAEUDE_NAMEN = {
   universitaet: 'Die Universität',
   belagerungswerkstatt: 'Die Belagerungswerkstatt',
   wachturm: 'Der Wachturm',
+  steinmauer: 'Die Steinmauer',
 };
 
 // Dasselbe für die Einheiten (einheiten AC-23).
@@ -354,14 +355,15 @@ class Welt {
   }
 
   /**
-   * Fertige eigene Gebaeude des laufenden Zeitalters, ausser Haeusern - die
-   * Voraussetzung des Aufstiegs (bauen AC-23). Das Dorfzentrum zaehlt mit,
-   * also fehlt noch ein gebautes.
+   * Fertige eigene Gebaeude des laufenden Zeitalters, ausser denen mit
+   * `zumAufstieg: false` (Haeuser, Tuerme, Mauern) - die Voraussetzung des
+   * Aufstiegs (bauen AC-23). Das Dorfzentrum zaehlt mit, also fehlt noch ein
+   * gebautes.
    */
   gebaeudeDerZeit(spieler) {
     let zahl = 0;
     for (const g of this.gebaeude.values()) {
-      if (g.besitzer !== spieler.id || !g.fertig || g.art === 'haus') continue;
+      if (g.besitzer !== spieler.id || !g.fertig || GEBAEUDE[g.art].zumAufstieg === false) continue;
       if (this.gebaeudeZeitalter(g.art) === spieler.zeitalter) zahl += 1;
     }
     return zahl;
@@ -652,11 +654,78 @@ class Welt {
     return { gebaeude: baustelle.id };
   }
 
-  bauenBeginnen(einheit, baustelle) {
+  /**
+   * Eine Mauer ziehen (bauen AC-30): von `von` nach `bis` eine Linie aus
+   * Baustellen, ein Feld je Baustelle, bezahlt je Feld. Was nicht frei ist,
+   * wird uebersprungen; reicht der Vorrat nicht, endet die Linie dort. Die
+   * Bauleute gehen in der Reihenfolge der Linie von Feld zu Feld.
+   */
+  mauerZiehen(spielerId, einheitIds, art, von, bis) {
+    if (!Array.isArray(einheitIds) || !von || !bis || !GEBAEUDE[art]?.gezogen) return { fehler: 'Das lässt sich nicht ziehen.' };
+    const bauer = einheitIds.slice(0, 200)
+      .map((id) => this.einheiten.get(id))
+      .filter((e) => e && e.besitzer === spielerId && (EINHEITEN[e.art].baut || []).includes(art));
+    if (!bauer.length) return { fehler: 'Niemand in der Auswahl kann das bauen.' };
+    const spieler = this.spielerVon(spielerId);
+    const noetig = this.gebaeudeZeitalter(art);
+    if (noetig > spieler.zeitalter) {
+      return { fehler: `${GEBAEUDE_NAMEN[art] || art} gibt es erst in ${ZEITALTER[noetig].genitiv}.` };
+    }
+    const felder = mauerLinie(von, bis);
+    if (!felder) return { fehler: 'Das lässt sich nicht ziehen.' };
+    const kosten = GEBAEUDE[art].kosten;
+    const bezahlbar = () => Object.entries(kosten).every(([rohstoff, menge]) => spieler[rohstoff] >= menge);
+    const baustellen = [];
+    let uebersprungen = 0;
+    let zuWenig = false;
+    for (const feld of felder) {
+      if (!this.platzPruefen(art, feld.x, feld.y)) {
+        uebersprungen += 1;
+        continue;
+      }
+      if (!bezahlbar()) {
+        zuWenig = true;
+        break;
+      }
+      for (const [rohstoff, menge] of Object.entries(kosten)) spieler[rohstoff] -= menge;
+      baustellen.push(this.gebaeudeAnlegen(spielerId, art, feld.x, feld.y, false));
+    }
+    if (!baustellen.length) {
+      const rohstoff = Object.keys(kosten).find((r) => spieler[r] < kosten[r]);
+      return { fehler: zuWenig ? `Zu wenig ${ROHSTOFF_NAMEN[rohstoff]}.` : 'Hier ist kein Platz.' };
+    }
+    const folge = baustellen.map((b) => b.id);
+    for (const einheit of bauer) this.bauenBeginnen(einheit, baustellen[0], folge.slice(1));
+    return { gebaeude: folge, uebersprungen, zuWenig };
+  }
+
+  /**
+   * Eine gezogene Mauer weiterbauen (bauen AC-30): zum naechsten Feld der
+   * Folge, das noch steht, nicht fertig ist und dem Bauer gehoert. Gilt, wenn
+   * das laufende Feld fertig wird, abgerissen oder zerstoert ist oder nicht zu
+   * erreichen - sonst blieben die uebrigen bezahlten Felder liegen
+   * (Durchsicht in Runde 127). Ohne Folge endet der Auftrag; zurueck kommt,
+   * ob es weitergeht.
+   */
+  bauenWeiter(einheit) {
+    const folge = einheit.auftrag?.folge || [];
+    einheit.baut = false;
+    einheit.auftrag = null;
+    const weiter = folge.findIndex((id) => {
+      const naechste = this.gebaeude.get(id);
+      return naechste && !naechste.fertig && naechste.besitzer === einheit.besitzer;
+    });
+    if (weiter < 0) return false;
+    this.bauenBeginnen(einheit, this.gebaeude.get(folge[weiter]), folge.slice(weiter + 1));
+    return true;
+  }
+
+  bauenBeginnen(einheit, baustelle, folge = []) {
     this.farmVerlassen(einheit);
     einheit.sammelt = false;
     einheit.baut = false;
-    einheit.auftrag = { art: 'bauen', gebaeude: baustelle.id };
+    // `folge`: die naechsten Baustellen einer gezogenen Mauer (bauen AC-30).
+    einheit.auftrag = { art: 'bauen', gebaeude: baustelle.id, ...(folge.length ? { folge } : {}) };
     const stand = this.randfeld(baustelle, einheit);
     einheit.weg = stand ? this.wegNach(einheit, stand) : [];
   }
@@ -687,10 +756,7 @@ class Welt {
     this.gebaeudeSichtNeu = true;
     this.gebaeudeGeaendert(gebaeude);
     for (const einheit of this.einheiten.values()) {
-      if (einheit.auftrag?.art === 'bauen' && einheit.auftrag.gebaeude === gebaeude.id) {
-        einheit.auftrag = null;
-        einheit.baut = false;
-      }
+      if (einheit.auftrag?.art === 'bauen' && einheit.auftrag.gebaeude === gebaeude.id) this.bauenWeiter(einheit);
     }
     return {};
   }
@@ -722,8 +788,7 @@ class Welt {
       .map(([art]) => Number(art)));
     for (const einheit of this.einheiten.values()) {
       if (einheit.auftrag?.art !== 'bauen' || einheit.auftrag.gebaeude !== gebaeude.id) continue;
-      einheit.baut = false;
-      einheit.auftrag = null;
+      if (this.bauenWeiter(einheit)) continue;
       // Nach einer Farm bestellt der erste Bauer sie gleich (bauen AC-1).
       if (GEBAEUDE[gebaeude.art].nahrung && !gebaeude.arbeiter) {
         this.farmBeginnen(einheit, gebaeude);
@@ -751,6 +816,8 @@ class Welt {
         return this.abbrechen(spielerId, nachricht.gebaeude, nachricht.platz);
       case 'bauen':
         return this.bauen(spielerId, nachricht.einheiten, nachricht.art, nachricht.ziel);
+      case 'mauer':
+        return this.mauerZiehen(spielerId, nachricht.einheiten, nachricht.art, nachricht.von, nachricht.bis);
       case 'abreissen':
         return this.abreissen(spielerId, nachricht.gebaeude);
       case 'sammelpunkt':
@@ -2361,15 +2428,15 @@ class Welt {
     if (einheit.auftrag.art === 'bauen') {
       const baustelle = this.gebaeude.get(einheit.auftrag.gebaeude);
       if (!baustelle || baustelle.fertig) {
-        einheit.auftrag = null;
-        einheit.baut = false;
+        this.bauenWeiter(einheit);
       } else if (this.abstandZu(einheit, baustelle) <= 1.2) {
         einheit.baut = true;
       } else if (!einheit.baut) {
-        // Nicht angekommen und kein Weg mehr: noch einmal suchen, sonst aufgeben.
+        // Nicht angekommen und kein Weg mehr: noch einmal suchen, sonst das
+        // naechste Feld einer Mauer, sonst aufgeben.
         const stand = this.randfeld(baustelle, einheit);
         einheit.weg = stand ? this.wegNach(einheit, stand) : [];
-        if (!einheit.weg.length) einheit.auftrag = null;
+        if (!einheit.weg.length) this.bauenWeiter(einheit);
       }
       return;
     }
@@ -2889,10 +2956,14 @@ class Welt {
           // Ein Turm zeigt an der Auswahl, was er kann (bauen AC-29).
           angriff: w.angriff || 0, reichweite: w.reichweite || 0,
           nahruestung: w.nahruestung, fernruestung: w.fernruestung,
+          // Gezogen statt gesetzt, von Feld zu Feld (bauen AC-30).
+          gezogen: Boolean(w.gezogen),
         }])),
         verbesserungen: VERBESSERUNGEN,
         // Die Namen der Klassen, fuer den Bonus an der Auswahl (bedienung AC-35).
         klassen: KLASSEN,
+        // Wie lang eine gezogene Mauer hoechstens ist (bauen AC-30).
+        mauerMax: MAUER_MAX,
         // Die Zeitalter und was ein Aufstieg kostet (bauen AC-23, bedienung AC-33).
         zeitalter: ZEITALTER,
         aufstiege: AUFSTIEGE,
@@ -2901,7 +2972,32 @@ class Welt {
   }
 }
 
+/**
+ * Die Felder einer gezogenen Mauer von `von` nach `bis` (bauen AC-30), in
+ * dieser Reihenfolge: eine Linie, in der jeder Schritt ein Nachbarfeld ist,
+ * gerade oder schraeg. Schraeg genuegt als Sperre, weil die Wegsuche keine
+ * Ecke schneidet (wege.js). Hoechstens `MAUER_MAX` Felder; die Ansicht
+ * (`public/ansicht.js`) rechnet dieselbe Linie fuer die Vorschau.
+ */
+const MAUER_MAX = 60;
+function mauerLinie(von, bis) {
+  const x0 = Math.round(Number(von.x));
+  const y0 = Math.round(Number(von.y));
+  const x1 = Math.round(Number(bis.x));
+  const y1 = Math.round(Number(bis.y));
+  if (![x0, y0, x1, y1].every(Number.isInteger)) return null;
+  const schritte = Math.max(Math.abs(x1 - x0), Math.abs(y1 - y0));
+  if (schritte + 1 > MAUER_MAX) return null;
+  const felder = [];
+  for (let i = 0; i <= schritte; i++) {
+    const t = schritte ? i / schritte : 0;
+    felder.push({ x: Math.round(x0 + (x1 - x0) * t), y: Math.round(y0 + (y1 - y0) * t) });
+  }
+  return felder;
+}
+
 module.exports = {
+  mauerLinie, MAUER_MAX,
   Welt, TAKTE_PRO_SEKUNDE, STARTVORRAT, ROHSTOFFE, VERFOLGUNG_FELDER, WACHE_TAKTE,
   PARTIE_MINUTEN, GEBAEUDE_NAMEN, EINHEIT_NAMEN,
 };

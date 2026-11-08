@@ -176,6 +176,7 @@ const GEBAEUDE_REIHE = [
   { art: 'belagerungswerkstatt', groesse: 3, titel: 'Werkstatt' },
   // Schiesst (bauen AC-29).
   { art: 'wachturm', groesse: 1, titel: 'Wachturm' },
+  { art: 'steinmauer', groesse: 1, titel: 'Steinmauer' },
   { art: 'haus', groesse: 2, titel: 'Baustelle 20 %', bau: 0.2 },
   { art: 'haus', groesse: 2, titel: 'Baustelle 70 %', bau: 0.7 },
 ];
@@ -238,7 +239,9 @@ function gebaeudeMaske(art, farbe, bau = 1) {
     if (voll) hoechster = Math.min(hoechster, Math.floor(i / 4 / groesse));
     if (voll && Math.abs(data[i] - r) < 30 && Math.abs(data[i + 1] - g) < 30 && Math.abs(data[i + 2] - b) < 30) farbpixel += 1;
   }
-  return { belegt, farben, pixel: belegt.reduce((a, v) => a + v, 0), farbpixel, oben: hoechster };
+  // `grundOben`: die obere Ecke der Grundflaeche - die Raute reicht bei
+  // e = 20 je Feld zehn Bildpunkte ueber und unter die Mitte.
+  return { belegt, farben, pixel: belegt.reduce((a, v) => a + v, 0), farbpixel, oben: hoechster, grundOben: Math.floor(groesse * 0.72 - 10 * felder) };
 }
 
 /**

@@ -101,15 +101,20 @@ etwas anderem gearbeitet.
 
 ## Offene Fäden
 
-- **Zählt der Wachturm zum Aufstieg?** (Runde 125) Heute zählt jedes fertige
-  Gebäude des laufenden Zeitalters außer Häusern (bauen AC-23), also auch ein
-  Wachturm für 150 Rohstoffe. In der Vorlage zählen für die Ritterzeit nur
-  Schießanlage, Stall, Schmiede und Markt. Gehört zur Rückschau oder zu D7
-  (Markt): dann `zaehltZumAufstieg` als Wert in den Daten statt `art ===
-  'haus'`.
+- **Was eine lange Mauer kostet, ist nicht gemessen** (Runde 127): eine
+  Nachricht `mauer` prüft bis zu 60 Felder mit `platzPruefen`, und
+  `baustelleTakten` läuft je Baustelle über alle Einheiten — sechzig
+  Mauerbaustellen sind sechzigmal die Schleife. Der Takt mit 800 Einheiten
+  (unter 1 ms) ist ohne Mauern gemessen. Wer die KI Mauern bauen lässt (D9)
+  oder den Takt anfasst, misst einmal mit drei langen Mauern mit.
+
 - **Ein Turm hält seinen Besitzer im Spiel** (Runde 125): `bestand` ist nicht
   `false` wie bei der Farm. In der Vorlage zählen Türme beim Sieg durch
-  Eroberung mit; so bleibt es, bis Mauern (D5) dieselbe Frage stellen.
+  Eroberung mit. Die Mauer (Runde 127) hält niemanden (`bestand: false`, wie
+  in der Vorlage); der Turm bleibt, wie er ist.
+  Erledigt in Runde 127: **zählt der Wachturm zum Aufstieg?** Nein —
+  `zumAufstieg: false` in den Daten für Haus, Außenposten, Wachturm und
+  Mauer. Schießanlage, Stall, Schmiede (und später der Markt) zählen.
 
 - **Bildrückstand aus der Durchsicht nach Runde 115** (alle schon in der
   eingecheckten Fassung so, keiner neu): kampf AC-01 = einheiten AC-31 — zwei
@@ -1266,6 +1271,16 @@ min (Runde 125).
 Neueste oben. Eine Zeile je Runde: Nummer, Datum, Kriterien, Ergebnis,
 wichtigste Erkenntnis.
 
+- **127** · 2026-11-08 · **bauen AC-30 fertig** — die Steinmauer, gezogen
+  statt geklickt: je freies Feld eine Baustelle zu 5 Stein, belegte Felder
+  übersprungen, Schluss beim letzten bezahlbaren; die Bauer gehen die Folge
+  ab, auch wenn ein Feld abgerissen wird oder nicht zu erreichen ist (zwei
+  Befunde der Durchsicht, `welt.bauenWeiter()`). `zumAufstieg` steht jetzt in
+  den Daten. KI gegen KI Takt für Takt wie HEAD (40 Partien). `e2e:daten`
+  fand vor dem vollen Lauf zwei Brüche, beide in den Annahmen der Tests: die
+  Höhe „über 60" setzte zwei Felder voraus, und der Mauerbauer stand neben
+  der Wiese, auf der der Schlag gemessen wird — die neue Regel aus Runde 126
+  hat damit den ersten vollen Lauf gespart.
 - **126** · 2026-11-08 · **Rückschau** — `tests/waechter-namen.test.mjs`
   (Name, Zeichnung, Taste je Art; fand Ritter und Armbrust ohne Namen),
   `npm run e2e:daten` vor dem vollen Lauf, Werte begründen statt erinnern.

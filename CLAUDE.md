@@ -159,7 +159,7 @@ Umfang hinzufügt, dort nachsehen.
 
 ## Stand
 
-**423 von 555 Kriterien fertig.** 531 Tests ohne Browser, 182 im Browser. Die
+**424 von 555 Kriterien fertig.** 540 Tests ohne Browser, 183 im Browser. Die
 Übersicht ist der Bericht: `npm run qa:report`.
 
 Gebaut ist der Unterbau: Räume, Übertragung, Karte, Wegfindung, Sammeln,
@@ -347,7 +347,10 @@ nur `welt.gebaeudewert()` (Mauerwerk: +10 % Leben, +1/+1 Rüstung). **D4 ist
 fertig: der Wachturm schießt** — 5 Angriff, Reichweite 8, alle zwei Sekunden
 ein Pfeil auf die nächste fremde Einheit, von selbst und nach derselben
 Formel wie eine Einheit (`welt.tuermeTakten()`); ein Gebäude ohne `angriff`
-in den Daten schießt nicht. Die **Sicht ist eine Einstellung beim Eröffnen** (kampf AC-16):
+in den Daten schießt nicht. **Aus D5 steht die Steinmauer**: gezogen statt
+geklickt (`gezogen: true` in den Daten, `welt.mauerZiehen()`), je freies Feld
+eine Baustelle, belegte übersprungen, und die Bauer gehen die Felder der
+Reihe nach ab. Die **Sicht ist eine Einstellung beim Eröffnen** (kampf AC-16):
 Nebel, Erkundet oder Aufgedeckt — Tests, die nicht vom Nebel handeln,
 eröffnen aufgedeckt (`partieZuZweit(…, { sicht: 'aufgedeckt' })`).
 

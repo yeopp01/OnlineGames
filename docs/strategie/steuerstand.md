@@ -13,7 +13,7 @@ hier nichts eintraegt, verliert den Faden beim naechsten Autocompact.
 
 ## Zuletzt fortgeschrieben
 
-2026-11-08, nach Runde 126 (**kampf AC-13, fahrplan AC-13, C6e fertig**: der
+2026-11-08, nach Runde 127 (**kampf AC-13, fahrplan AC-13, C6e fertig**: der
 Server schickt jedem nur, was er sieht - `welt.zustandJeSpieler`,
 `welt.aufbauFuer`, im Raum `sendenJe`. Fremde Gebaeude und Felder, die sich im
 Nebel aendern, kommen beim naechsten Hinsehen; wer ausscheidet, bekommt einmal
@@ -60,9 +60,18 @@ Gebaeude als Angreifer, Sicht 9 wegen kampf AC-18; der Pfeil beginnt oben,
 `tests/waechter-namen.test.mjs` (Name, Zeichnung, Taste je Art; dabei fehlten
 Ritter und Armbrust in `EINHEIT_NAMEN`), `npm run e2e:daten` fuer die
 Browserfaelle, die aus den Daten aufstellen, zwei Regeln in der Anweisung.
-**Naechste Runde: D5**, Mauern und Tor (bauen AC-30, AC-31, kampf AC-21) -
-vor dem vollen Lauf `npm run e2e:daten`. ki AC-13 und einheiten AC-32 warten
-auf Antworten.)
+Runde 127: **bauen AC-30 fertig** - die Steinmauer (5 Stein je Feld, 8 s,
+1800 Leben, Feudalzeit, Taste X), gezogen statt geklickt: `gezogen: true` in
+den Daten, `welt.mauerZiehen()` legt je freies Feld eine Baustelle an
+(belegte uebersprungen, Ende beim letzten bezahlbaren), die Bauer gehen die
+Folge ab (`auftrag.folge`, `welt.bauenWeiter()` - auch wenn ein Feld
+abgerissen oder nicht erreichbar ist). `mauerLinie()` und `MAUER_MAX = 60`
+stehen in welt.js und gelten fuer Browser und Server gleich. `zumAufstieg:
+false` in den Daten statt `art === 'haus'`. `e2e:daten` fand zwei Brueche
+(Hoehe auf einem Feld, der Mauerbauer neben der Wiese) - beide Annahmen der
+Tests. **Naechste Runde: D5 Rest** - das Tor (bauen AC-31), dann Mauern
+halten auf (kampf AC-21). ki AC-13 und einheiten AC-32 warten auf
+Antworten.)
 
 ## Wo ich stehe
 

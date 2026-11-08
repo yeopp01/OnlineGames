@@ -94,6 +94,7 @@ export class Ansicht {
     this.platzieren = null;
     this.zeiger = null;
     this.bauenSenden = () => {};
+    this.mauerSenden = () => {};
     this.sammelpunktSenden = () => {};
     this.verbesserungen = [];
     // Das eigene Zeitalter als Stufe, 0 ist die Dunkle Zeit (bedienung AC-33).
@@ -563,8 +564,14 @@ export class Ansicht {
     this.leinwand.addEventListener('pointerdown', (e) => {
       this.zeiger = { x: e.offsetX, y: e.offsetY };
       if (this.platzieren) {
-        // Links setzt die Baustelle, rechts bricht ab.
-        if (e.button === 0) this.platzierenKlick();
+        // Links setzt die Baustelle, rechts bricht ab. Eine Mauer wird
+        // gezogen: hier beginnt die Linie, beim Loslassen ist sie fertig
+        // (bauen AC-30).
+        if (e.button === 0 && this.werte.gebaeude[this.platzieren.art]?.gezogen) {
+          const lage = this.platzLage();
+          if (lage) this.platzieren.von = { x: lage.x, y: lage.y };
+          this.leinwand.setPointerCapture(e.pointerId);
+        } else if (e.button === 0) this.platzierenKlick();
         else if (e.button === 2) this.platzierenBeenden();
         return;
       }
@@ -583,7 +590,12 @@ export class Ansicht {
       this.zug.bisY = e.offsetY;
     });
 
-    this.leinwand.addEventListener('pointerup', () => {
+    this.leinwand.addEventListener('pointerup', (e) => {
+      if (this.platzieren?.von) {
+        this.zeiger = { x: e.offsetX, y: e.offsetY };
+        this.mauerKlick();
+        return;
+      }
       if (!this.zug) return;
       this.auswaehlen(this.zug);
       this.zug = null;
@@ -720,7 +732,54 @@ export class Ansicht {
     const y = Math.round(welt.y + versatz);
     const x0 = x - Math.floor(n / 2);
     const y0 = y - Math.floor(n / 2);
-    return { art, x, y, groesse: n, mitte: { x: x0 + (n - 1) / 2, y: y0 + (n - 1) / 2 }, taugt: this.platzTaugt(art, x, y) };
+    const lage = { art, x, y, groesse: n, mitte: { x: x0 + (n - 1) / 2, y: y0 + (n - 1) / 2 }, taugt: this.platzTaugt(art, x, y) };
+    if (!this.werte.gebaeude[art]?.gezogen) return lage;
+    return { ...lage, ...this.mauerLage(art, this.platzieren.von || { x, y }, { x, y }) };
+  }
+
+  /**
+   * Die Felder einer gezogenen Mauer (bauen AC-30): dieselbe Linie wie
+   * `mauerLinie` auf dem Server, je Feld, ob es taugt. Was nicht frei ist,
+   * ist rot - der Server ueberspringt es; was der Stein nicht mehr bezahlt,
+   * ebenso, denn dort endet die Linie. Zu lang gezogen, wird sie auf
+   * `MAUER_MAX` Felder gekuerzt, und `bis` ist das letzte davon.
+   */
+  mauerLage(art, von, bis) {
+    let schritte = Math.max(Math.abs(bis.x - von.x), Math.abs(bis.y - von.y));
+    const max = this.werte.mauerMax || 1;
+    if (schritte + 1 > max) {
+      const anteil = (max - 1) / schritte;
+      bis = { x: Math.round(von.x + (bis.x - von.x) * anteil), y: Math.round(von.y + (bis.y - von.y) * anteil) };
+      schritte = Math.max(Math.abs(bis.x - von.x), Math.abs(bis.y - von.y));
+    }
+    const kosten = this.werte.gebaeude[art]?.kosten || {};
+    const rest = { ...this.vorraete };
+    let bezahlt = true;
+    const felder = [];
+    for (let i = 0; i <= schritte; i++) {
+      const t = schritte ? i / schritte : 0;
+      const x = Math.round(von.x + (bis.x - von.x) * t);
+      const y = Math.round(von.y + (bis.y - von.y) * t);
+      const frei = this.platzTaugt(art, x, y);
+      if (frei && bezahlt) {
+        bezahlt = Object.entries(kosten).every(([rohstoff, menge]) => (rest[rohstoff] || 0) >= menge);
+        if (bezahlt) for (const [rohstoff, menge] of Object.entries(kosten)) rest[rohstoff] -= menge;
+      }
+      felder.push({ x, y, taugt: frei && bezahlt });
+    }
+    return { gezogen: true, von, bis, felder, taugt: felder.some((f) => f.taugt) };
+  }
+
+  mauerKlick() {
+    const lage = this.platzLage();
+    if (!lage) return;
+    if (!lage.taugt) {
+      this.melden('Hier ist kein Platz.');
+      this.platzieren.von = null;
+      return;
+    }
+    this.mauerSenden([...this.ausgewaehlt], lage.art, lage.von, lage.bis);
+    this.platzierenBeenden();
   }
 
   // Taugt der Platz fuer ein Gebaeude? Dieselbe Regel wie auf dem Server
@@ -768,6 +827,27 @@ export class Ansicht {
     const lage = this.platzLage();
     if (!lage) return;
     const stift = this.stift;
+    if (lage.gezogen) {
+      // Je Feld eine Raute, gruen oder rot, und die Mauer als Schatten darauf.
+      const spieler = this.spieler.get(this.ich);
+      for (const feld of lage.felder) {
+        const p = this.zuBild(feld.x, feld.y);
+        raute(stift, p.x, p.y, e, e / 2);
+        stift.fillStyle = feld.taugt ? 'rgba(80, 220, 110, 0.35)' : 'rgba(235, 70, 60, 0.4)';
+        stift.fill();
+        stift.strokeStyle = feld.taugt ? '#5fe07a' : '#ff5a4a';
+        stift.lineWidth = 2;
+        stift.stroke();
+      }
+      stift.globalAlpha = 0.55;
+      for (const feld of lage.felder) {
+        if (!feld.taugt) continue;
+        const p = this.zuBild(feld.x, feld.y);
+        gebaeudeBildZeichnen(stift, lage.art, p.x, p.y, e, spieler ? spieler.farbe : '#888888', 1);
+      }
+      stift.globalAlpha = 1;
+      return;
+    }
     const p = this.zuBild(lage.mitte.x, lage.mitte.y);
     const spieler = this.spieler.get(this.ich);
     raute(stift, p.x, p.y, e * lage.groesse, (e * lage.groesse) / 2);

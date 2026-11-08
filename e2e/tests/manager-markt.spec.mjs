@@ -172,6 +172,9 @@ test.describe('Transfermarkt', () => {
     await karriereBeginnen(page);
     await aufBlatt(page, 'transfer');
     // Die Filter stehen nebeneinander, nicht ineinander verschachtelt untereinander.
+    // Erst warten, bis das Blatt steht: im vollen Lauf nach Runde 127 zaehlte
+    // `evaluateAll` die Filter, bevor sie gezeichnet waren, und fand null.
+    await expect(page.locator('.marktfilter > *'), 'jeder Filter ist ein eigenes Feld').toHaveCount(6);
     const oben = await page.locator('.marktfilter > *').evaluateAll((felder) => felder.map((f) => Math.round(f.getBoundingClientRect().bottom)));
     expect(oben.length, 'jeder Filter ist ein eigenes Feld').toBe(6);
     expect(new Set(oben).size, `Filter auf verschiedenen Hoehen: ${oben.join(', ')}`).toBe(1);

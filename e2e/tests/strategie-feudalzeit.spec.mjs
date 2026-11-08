@@ -98,7 +98,12 @@ test.describe('Feudalzeit am Stueck', () => {
       // Feudalzeit, schiesst aber - in Runde 125 traf er Berts Reiter vor dem
       // Speerkaempfer, und die Messung von Ruestung und Bonus unten zaehlte
       // seinen Pfeil. Seine Gebaeude belegt e2e/tests/strategie-tuerme.spec.mjs.
-      return w.einheiten.dorfbewohner.baut.filter((art) => w.gebaeude[art]?.zeitalter === 1 && !w.gebaeude[art].angriff);
+      // Ebenso ohne die gezogenen (die Steinmauer): sie bildet nichts aus, und
+      // in Runde 127 stand ihr Bauer danach nahe der ersten Wiese - Berts
+      // Reiter griff ihn an, er schlug zurueck (3), bevor der Speerkaempfer
+      // kam. Die Mauer belegt e2e/tests/strategie-mauern.spec.mjs.
+      return w.einheiten.dorfbewohner.baut.filter((art) => w.gebaeude[art]?.zeitalter === 1
+        && !w.gebaeude[art].angriff && !w.gebaeude[art].gezogen);
     });
     expect(arten.length, 'die Gebaeude der Feudalzeit').toBeGreaterThanOrEqual(3);
     const gebaut = {};

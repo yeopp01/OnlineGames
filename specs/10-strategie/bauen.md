@@ -2,7 +2,7 @@
 
 **Bereich:** Strategie
 **Kuerzel:** bauen
-**Stand:** 26/34 fertig · 8 offen
+**Stand:** 27/34 fertig · 7 offen
 
 ## Zweck
 
@@ -208,9 +208,20 @@ Spezialeinheit der Burg (kommt mit den Völkern, Stufe E), Palisade.
   wenn es Mörderlöcher gibt. Im Baumenü als letzter, gezeichnet aus grauem
   Haustein mit Zinnen und Banner; an der Auswahl stehen seine Kampfwerte wie
   bei einer Einheit, und sein Pfeil beginnt oben auf dem Wehrgang.
-- **AC-30** `offen` **Mauern ziehen** — Eine Steinmauer wird gezogen: Taste,
+- **AC-30** `fertig` **Mauern ziehen** — Eine Steinmauer wird gezogen: Taste,
   dann Ziehen von Feld zu Feld legt eine Linie von Baustellen, bezahlt je Feld.
   Was nicht frei ist, wird übersprungen, und die Vorschau zeigt es rot.
+  Gebaut in Runde 127: Werte aus der Vorlage (5 Stein je Feld, 8 Sekunden,
+  1800 Leben, ab der Feudalzeit), `gezogen` in den Daten. Die Linie
+  (`mauerLinie`, höchstens 60 Felder) geht von Feld zu Nachbarfeld, auch
+  schräg — schräg sperrt sie, weil die Wegsuche keine Ecke schneidet. Reicht
+  der Stein nicht, endet die Linie dort, und die Vorschau zeigt auch diese
+  Felder rot. Die Bauleute gehen von Feld zu Feld (`auftrag.folge`). Eine
+  Mauer hält niemanden im Spiel und zählt nicht zum Aufstieg — wie Häuser,
+  Außenposten und Türme (`zumAufstieg: false`, Vorlage). Sicht 2 statt 8:
+  eine lange Mauer wäre sonst ein Band aus Außenposten. Gezeichnet als Block
+  aus Haustein über die ganze Raute, mit Zinnen und einem Band in
+  Spielerfarbe; gerade Nachbarn werden zur Wand.
 - **AC-31** `offen` **Tor lässt Eigene durch** — Ein Tor in einer Mauer ist
   für die eigenen Einheiten begehbar, für fremde eine Sperre. Die Wegsuche
   kennt den Unterschied.

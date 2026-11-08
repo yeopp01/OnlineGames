@@ -118,6 +118,8 @@ function empfangen(nachricht) {
           senden({ typ: 'befehl', auftrag: 'sammelpunkt', gebaeude, ziel });
         ansicht.bauenSenden = (einheiten, art, ziel) =>
           senden({ typ: 'befehl', auftrag: 'bauen', einheiten, art, ziel });
+        ansicht.mauerSenden = (einheiten, art, von, bis) =>
+          senden({ typ: 'befehl', auftrag: 'mauer', einheiten, art, von, bis });
       }
       zeigen('spiel');
       teile.kartenwert.textContent = `· Karte ${nachricht.startwert}`;

@@ -1,0 +1,10 @@
+{
+  "spec": "10-strategie/bauen.md",
+  "ac": "AC-30",
+  "titel": "Die fertige Steinmauer: sieben Felder links und rechts des Hauses, mit Zinnen und einem blauen Band für Anna",
+  "datei": "e2e/tests/strategie-mauern.spec.mjs",
+  "pfad": [
+    "Mauern",
+    "bauen AC-30: eine Steinmauer gezogen - die Vorschau zeigt freie Felder gruen und belegte rot, gebaut wird je freies Feld"
+  ]
+}

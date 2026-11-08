@@ -8,8 +8,9 @@
 
 // Die Reihe, in der die Gebaeude des Baumenues ihre Tasten bekommen.
 // Nach der oberen Reihe die untere: A S D schieben die Karte (bauen AC-28),
-// B schaltet die Bautasten, V kam mit dem Wachturm (bauen AC-29).
-export const BAUTASTEN = ['q', 'w', 'e', 'r', 't', 'z', 'u', 'i', 'o', 'p', 'y', 'x', 'c', 'v'];
+// B schaltet die Bautasten, V kam mit dem Wachturm (bauen AC-29), N mit der
+// Mauer (bauen AC-30) - B selbst bleibt der Schalter.
+export const BAUTASTEN = ['q', 'w', 'e', 'r', 't', 'z', 'u', 'i', 'o', 'p', 'y', 'x', 'c', 'v', 'n'];
 
 // Texte auf dem Bildschirm mit echten Umlauten (Entscheidung vom 2026-09-17).
 export const BELEGUNG = [

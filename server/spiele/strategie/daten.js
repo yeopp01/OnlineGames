@@ -27,7 +27,7 @@ const EINHEITEN = {
     // Spiel. Getroffen wird er trotzdem wehrhaft.
     wacht: false,
     baut: ['haus', 'muehle', 'holzfaellerlager', 'bergbaulager', 'farm', 'kaserne', 'schiessanlage', 'stall', 'schmiede', 'aussenposten',
-      'kloster', 'universitaet', 'belagerungswerkstatt', 'wachturm'],
+      'kloster', 'universitaet', 'belagerungswerkstatt', 'wachturm', 'steinmauer'],
   },
   // Ausgebildet wird er im Stall, also ab der Feudalzeit; zu Beginn steht
   // einer in der Startaufstellung (bauen AC-22).
@@ -118,11 +118,15 @@ const GEBAEUDE = {
     groesse: 4, kosten: { holz: 275, stein: 100 }, bauzeit: 150, leben: 2400, wohnraum: 5,
     annahme: ALLE, bildetAus: ['dorfbewohner', 'webstuhl', 'stadtwache', 'stadtpatrouille', 'feudalzeit', 'ritterzeit', 'imperialzeit'],
   },
-  haus: { groesse: 2, kosten: { holz: 25 }, bauzeit: 25, leben: 550, wohnraum: 5, annahme: [], bildetAus: [] },
+  // `zumAufstieg: false`: zaehlt nicht zu den zwei Gebaeuden, die ein Aufstieg
+  // verlangt (bauen AC-23) - Haeuser, Aussenposten, Tuerme und Mauern nicht,
+  // wie in der Vorlage. Sonst hiesse die Ritterzeit zwei Mauerfelder fuer
+  // zehn Stein.
+  haus: { groesse: 2, kosten: { holz: 25 }, bauzeit: 25, leben: 550, wohnraum: 5, annahme: [], bildetAus: [], zumAufstieg: false },
   // Ein Turm nur zum Sehen (kampf AC-18, Wunsch des Benutzers: Gebaeude und
   // Forschung veraendern die Flaeche des Nebels). Werte aus der Vorlage, die
   // Sicht von zehn Feldern wie im Original.
-  aussenposten: { groesse: 1, kosten: { holz: 25, stein: 25 }, bauzeit: 15, leben: 500, wohnraum: 0, annahme: [], bildetAus: [], sicht: 10 },
+  aussenposten: { groesse: 1, kosten: { holz: 25, stein: 25 }, bauzeit: 15, leben: 500, wohnraum: 0, annahme: [], bildetAus: [], sicht: 10, zumAufstieg: false },
   muehle: { groesse: 2, kosten: { holz: 100 }, bauzeit: 35, leben: 1000, wohnraum: 0, annahme: ['nahrung'], bildetAus: ['pferdekummet'] },
   holzfaellerlager: { groesse: 2, kosten: { holz: 100 }, bauzeit: 35, leben: 1000, wohnraum: 0, annahme: ['holz'], bildetAus: ['doppelaxt'] },
   bergbaulager: { groesse: 2, kosten: { holz: 100 }, bauzeit: 35, leben: 1000, wohnraum: 0, annahme: ['gold', 'stein'], bildetAus: [] },
@@ -167,7 +171,17 @@ const GEBAEUDE = {
   // ist (kampf AC-18).
   wachturm: {
     groesse: 1, kosten: { holz: 25, stein: 125 }, bauzeit: 80, leben: 1020, wohnraum: 0, annahme: [], bildetAus: [], zeitalter: 1,
-    angriff: 5, reichweite: 8, nachladen: 2, nahruestung: 1, fernruestung: 7, sicht: 9,
+    angriff: 5, reichweite: 8, nachladen: 2, nahruestung: 1, fernruestung: 7, sicht: 9, zumAufstieg: false,
+  },
+  // Die Steinmauer (bauen AC-30): ein Feld je Baustelle, gezogen statt
+  // gesetzt (`gezogen`), Werte aus der Vorlage - 5 Stein, 8 Sekunden, 1800
+  // Leben. Sie haelt niemanden im Spiel (`bestand: false`, wie in der
+  // Vorlage) und zaehlt nicht zum Aufstieg. Sicht 2 statt der 8 eines
+  // Gebaeudes: eine lange Mauer waere sonst ein Band aus Aussenposten und
+  // deckte den Nebel auf (kampf AC-18 bleibt beim Aussenposten).
+  steinmauer: {
+    groesse: 1, kosten: { stein: 5 }, bauzeit: 8, leben: 1800, wohnraum: 0, annahme: [], bildetAus: [], zeitalter: 1,
+    gezogen: true, bestand: false, zumAufstieg: false, sicht: 2,
   },
 };
 

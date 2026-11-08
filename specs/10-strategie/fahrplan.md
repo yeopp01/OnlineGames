@@ -187,7 +187,7 @@ Zustandsnachricht umbaut und damit jeden Browsertest berührt: was dort heute
 | D2 | Aufstieg in die Ritterzeit; Kloster, Universität, Werkstatt gezeichnet und im Menü — **fertig** (Runde 122) | bauen AC-27, AC-28 |
 | D3 | Ritter und Armbrust; die Verbesserungen der Ritterzeit — **fertig** (Runden 123, 124) | einheiten AC-33, AC-34, bauen AC-34 |
 | D4 | Wachturm und schießende Gebäude — **fertig** (Runde 125) | bauen AC-29, kampf AC-20 |
-| D5 | Steinmauer ziehen, Tor für Eigene; Mauern halten auf | bauen AC-30, AC-31, kampf AC-21 |
+| D5 | Steinmauer ziehen (**fertig**, Runde 127), Tor für Eigene; Mauern halten auf | bauen AC-30, AC-31, kampf AC-21 |
 | D6 | Belagerung: Ramme gegen Gebäude, Mangonel mit Flächenschaden | einheiten AC-35, AC-36, kampf AC-19 |
 | D7 | Burg und Markt | bauen AC-32, AC-33 |
 | D8 | Mönch: heilen, bekehren | einheiten AC-37, AC-38 |

@@ -416,7 +416,7 @@ test('darstellung AC-4 / bauen AC-20: jedes Gebaeude hat Koerper, die Spielerfar
       const rot = t.gebaeudeMaske(art, '#d94a4a');
       // Was sich unterscheidet, zaehlt die Maske selbst - ueber die Leitung waeren
       // die Farblisten zu gross.
-      return { art, pixel: blau.pixel, farbeBlau: blau.farbpixel, farbeRot: rot.farbpixel, oben: blau.oben };
+      return { art, pixel: blau.pixel, farbeBlau: blau.farbpixel, farbeRot: rot.farbpixel, oben: blau.oben, grundOben: blau.grundOben };
     });
   });
   // Unterscheidbar heisst: Umriss oder Farbe weichen auf einem spuerbaren Teil
@@ -451,9 +451,14 @@ test('darstellung AC-4 / bauen AC-20: jedes Gebaeude hat Koerper, die Spielerfar
     expect(m.farbeBlau, `${m.art} traegt Blau`).toBeGreaterThan(8);
     expect(m.farbeRot, `${m.art} traegt Rot`).toBeGreaterThan(8);
     expect(m.farbeBlau / m.pixel, `${m.art}: Farbe nur an einer Stelle`).toBeLessThan(0.1);
-    // Koerper: das Gebaeude ragt ueber seine Grundflaeche hinaus nach oben -
-    // ausser der Farm, die ist ein Acker und begehbar, wie in der Vorlage.
-    if (m.art !== 'farm') expect(m.oben, `${m.art} hat Hoehe`).toBeLessThan(60);
+    // Koerper: das Gebaeude ragt mindestens ein Feld (e = 20) ueber die obere
+    // Ecke seiner Grundflaeche hinaus - ausser der Farm, die ist ein Acker und
+    // begehbar, wie in der Vorlage. Bis Runde 127 stand hier `oben < 60`, und
+    // das setzte zwei Felder voraus (Ecke bei 80): die Steinmauer steht auf
+    // einem, ihre Ecke liegt bei 90, und mit 68 ragt sie 22 Bildpunkte darueber.
+    // Falsch war die Annahme, nicht das Bild.
+    expect(m.grundOben, `${m.art}: Grundflaeche gemessen`).toBeGreaterThan(0);
+    if (m.art !== 'farm') expect(m.oben, `${m.art} hat Hoehe`).toBeLessThan(m.grundOben - 20);
   }
   // Mindestens ein Viertel der Flaeche anders: das sieht man ohne Hinschauen.
   for (const { paar, anteil } of unterschiede) expect(anteil, paar).toBeGreaterThan(0.25);

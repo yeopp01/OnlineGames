@@ -38,7 +38,7 @@ const DATEIEN = [
 // "Dauer"). Die Liste waechst, wenn ein neues Wort sie braucht - das ist
 // billiger als eine schlauere Regel.
 const RICHTIG = ['dauer', 'bau', 'mauer', 'neue', 'feuer', 'aktuell', 'quelle', 'steuer', 'abenteuer',
-  'treue', 'sauer', 'trauer', 'schaue'];
+  'treue', 'sauer', 'trauer', 'schaue', 'steinmauer'];
 const richtig = (wort) => RICHTIG.some((stamm) => wort.toLowerCase().startsWith(stamm));
 
 // Umschriebenes ß laesst sich nicht an Buchstaben erkennen ("Klasse" ist
