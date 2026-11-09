@@ -513,3 +513,50 @@ test('kampf AC-13 / fahrplan AC-13: im Nebel bekommt jeder nur seine Einheiten u
   anna.zu();
   bert.zu();
 });
+
+test('spielziel AC-19: im Nebel bekommt Anna ueber die Leitung, was ihr Verbuendeter Cem sieht - Bert nicht', async () => {
+  const anna = gastgeber();
+  await anna.offen();
+  anna.senden({ typ: 'erstellen', name: 'Anna' });
+  const du = await anna.warteAuf(istTyp('du'));
+  const gaeste = [];
+  for (const name of ['Bert', 'Cem']) {
+    const k = kunde();
+    await k.offen();
+    k.senden({ typ: 'beitreten', code: du.code, name });
+    gaeste.push([k, await k.warteAuf(istTyp('du'))]);
+  }
+  const [[bert, duBert], [cem, duCem]] = gaeste;
+  // Anna und Cem in Team 1, Bert in Team 2 - der Gastgeber setzt alle
+  // (auswahl AC-22).
+  for (const [platz, team] of [[du.id, 1], [duBert.id, 2], [duCem.id, 1]]) {
+    anna.senden({ typ: 'platz', platz, wahl: { team } });
+  }
+  await anna.warteAuf((n) => n.typ === 'raum' && n.plaetze?.every((p) => p.wahl.team === (p.platz === duBert.id ? 2 : 1)));
+  anna.senden({ typ: 'start', startwert: 7 });
+
+  // Im Aufbau: Annas und Cems Dorfzentrum, nicht Berts - die Doerfer stehen
+  // weit auseinander, und keiner sieht zu Beginn ein anderes.
+  const aufbau = await anna.warteAuf(istTyp('aufbau'));
+  assert.ok(aufbau.gebaeude.some((g) => g.b === du.id && g.art === 'dorfzentrum'), 'das eigene');
+  assert.ok(aufbau.gebaeude.some((g) => g.b === duCem.id && g.art === 'dorfzentrum'), 'Cems');
+  assert.ok(!aufbau.gebaeude.some((g) => g.b === duBert.id), 'Berts nicht');
+  const zustand = await anna.warteAuf(istTyp('zustand'));
+  assert.equal(zustand.einheiten.filter((e) => e.b === duCem.id).length, STARTAUFSTELLUNG.length, 'Cems Einheiten');
+  assert.equal(zustand.einheiten.filter((e) => e.b === duBert.id).length, 0, 'keine von Bert');
+  // Bert bekommt keine von beiden.
+  const beiBert = await bert.warteAuf(istTyp('zustand'));
+  assert.equal(beiBert.einheiten.filter((e) => e.b !== duBert.id).length, 0, 'Bert sieht nur seine');
+
+  // Ein Mann Berts neben Cems Dorf: Anna bekommt ihn, obwohl er weit von ihr steht.
+  const welt = laufend.raeume.finden(du.code).welt;
+  const basis = welt.spielerVon(duCem.id).basis;
+  const nah = welt.einheitAnlegen(duBert.id, basis.x + 3, basis.y + 3, 'miliz');
+  const annasBasis = welt.spielerVon(du.id).basis;
+  assert.ok(Math.hypot(basis.x - annasBasis.x, basis.y - annasBasis.y) > 20, 'weit weg von Annas Dorf');
+  assert.ok(await anna.warteAuf((n) => n.typ === 'zustand' && n.einheiten.some((e) => e.i === nah.id), 3000), 'bei Anna');
+  assert.ok(await cem.warteAuf((n) => n.typ === 'zustand' && n.einheiten.some((e) => e.i === nah.id), 3000), 'bei Cem');
+  anna.zu();
+  bert.zu();
+  cem.zu();
+});

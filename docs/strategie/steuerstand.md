@@ -13,7 +13,7 @@ hier nichts eintraegt, verliert den Faden beim naechsten Autocompact.
 
 ## Zuletzt fortgeschrieben
 
-2026-11-09, nach Runde 148 (**spielauswahl AC-22 und spielziel AC-14 fertig**: Teams je Platz im Warteraum - `jePlatz` und `platzname` im Steckbrief, `raum.waehlen`, Nachricht `platz`, Plaetze des Spiels heissen im Raum `platz1` ...; Bild: weisses Zeichen auf dem Verbuendeten; siehe "Naechste Runde 149"; davor Runde 147: **Rueckschau**: `pruefstand:vergleich --probe`, `tests/quelltext.mjs`, Laufzeit des Browserlaufs in CLAUDE.md; siehe "Naechste Runde 148"; davor Runde 146: **spielziel AC-14 gebaut, in-qa**: `welt.feindlich`, Teams als Einstellung, Waechter `waechter-feindlich`; Vergleich Takt fuer Takt gleich; siehe "Naechste Runde 147"; davor Runde 145: **ADR-0013 geschrieben**, Bündnisse/Karren/Dauer, Bauabfolge D10-D14; siehe "Naechste Runde 146"; davor Runde 144: **ki AC-13 dritter Anlauf, geparkt** auf `strategie-ki-sicht` `d0314d4`: 36 von 40 vor Minute 60, Frage an den Benutzer - fahrplan AC-11 im Nebel neu fassen; siehe "Naechste Runde 145"; davor Runde 143: **ki AC-24 fertig, ki AC-21/22 aus `strategie-ki-ritterzeit` eingebunden**: Dorfbewohner je Zeitalter 22/32/42/50, Militaergebaeude ab der Ritterzeit 5/6, Aufstieg vor dem Ersatz; KI gegen KI 40 von 40 vor Minute 60, siehe "Naechste Runde 144" unten; davor Runde 142 Rueckschau zur Stufe D; davor **kampf AC-13, fahrplan AC-13, C6e fertig**: der
+2026-11-09, nach Runde 149 (**spielziel AC-19 fertig, D10 fertig**: ein Sichtobjekt je Team in `welt.sichten`, Verbuendete immer ueber die Leitung, `nebel.js` zaehlt alles Nicht-Feindliche mit, Gebaeudesicht aus `kw` des Besitzers; siehe "Naechste Runde 150"; davor Runde 148 (**spielauswahl AC-22 und spielziel AC-14 fertig**: Teams je Platz im Warteraum - `jePlatz` und `platzname` im Steckbrief, `raum.waehlen`, Nachricht `platz`, Plaetze des Spiels heissen im Raum `platz1` ...; Bild: weisses Zeichen auf dem Verbuendeten; siehe "Naechste Runde 149"; davor Runde 147: **Rueckschau**: `pruefstand:vergleich --probe`, `tests/quelltext.mjs`, Laufzeit des Browserlaufs in CLAUDE.md; siehe "Naechste Runde 148"; davor Runde 146: **spielziel AC-14 gebaut, in-qa**: `welt.feindlich`, Teams als Einstellung, Waechter `waechter-feindlich`; Vergleich Takt fuer Takt gleich; siehe "Naechste Runde 147"; davor Runde 145: **ADR-0013 geschrieben**, Bündnisse/Karren/Dauer, Bauabfolge D10-D14; siehe "Naechste Runde 146"; davor Runde 144: **ki AC-13 dritter Anlauf, geparkt** auf `strategie-ki-sicht` `d0314d4`: 36 von 40 vor Minute 60, Frage an den Benutzer - fahrplan AC-11 im Nebel neu fassen; siehe "Naechste Runde 145"; davor Runde 143: **ki AC-24 fertig, ki AC-21/22 aus `strategie-ki-ritterzeit` eingebunden**: Dorfbewohner je Zeitalter 22/32/42/50, Militaergebaeude ab der Ritterzeit 5/6, Aufstieg vor dem Ersatz; KI gegen KI 40 von 40 vor Minute 60, siehe "Naechste Runde 144" unten; davor Runde 142 Rueckschau zur Stufe D; davor **kampf AC-13, fahrplan AC-13, C6e fertig**: der
 Server schickt jedem nur, was er sieht - `welt.zustandJeSpieler`,
 `welt.aufbauFuer`, im Raum `sendenJe`. Fremde Gebaeude und Felder, die sich im
 Nebel aendern, kommen beim naechsten Hinsehen; wer ausscheidet, bekommt einmal
@@ -172,7 +172,19 @@ Zeitgrenze als Einstellung, **Marktkarren schon in der Ritterzeit** - ein
 ADR fuer alles vier (holt Handelskarren aus "Wird nicht gebaut").
 **Reihenfolge:** Runde 143 KI-Wirtschaft, dann das ADR, dann Buendnisse
 bauen, dann Voelker-ADR und Spec-Runde E.
-**Naechste Runde 149: spielziel AC-19, gemeinsame Sicht** (Runde 148 hat
+**Naechste Runde 150: spielziel AC-20, ein Team gewinnt** (D11; Runde 149
+hat AC-19 fertig gemacht, D10 ist durch). Heute endet die Partie, wenn ein
+Spieler uebrig ist (spielziel AC-5, `welt.vorbei`, `ende.sieger`); kuenftig,
+wenn alle Uebrigen nicht `feindlich` zueinander sind. Gewonnen haben alle
+des Teams, auch Ausgeschiedene; die Tafel (AC-8) nennt Team und Spieler -
+im Browser `ansicht.endeText` (heute "Du hast gewonnen" / "<Name> hat
+gewonnen"). Zuerst `grep -n "sieger" server/ public/ tests/ e2e/` - an
+`ende.sieger` haengen Raum (Revanche), KI-Aufgeben (ki AC-19) und Tests.
+Bild: Tafel "Team 1 hat gewonnen - Anna, Cem". Danach ki AC-25 und
+fahrplan AC-24 (2 gegen 2 im Pruefstand). **Fuer AC-21 (Buendnis loesen)
+vormerken:** die gemeinsame Sicht ist ein geteiltes Objekt - beim Loesen
+bekommt der Kuendigende ein eigenes, mit einer Kopie von `erkundet`.
+Erledigt in Runde 149 (frueher: "Naechste Runde 149: spielziel AC-19, gemeinsame Sicht"; Runde 148 hat
 AC-22 und spielziel AC-14 fertig gemacht). Was einer sieht, sehen alle
 seines Teams - auf dem Server in `sichtAktualisieren`, `siehtGebaeude`,
 `aufbauFuer` und `zustandJeSpieler` (kampf AC-13: der Server schickt nur,

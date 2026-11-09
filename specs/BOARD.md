@@ -7,9 +7,9 @@ Eine Zeile je Abnahmekriterium. Gepflegt wird der Status in der Spec selbst,
 hier steht er zusammengefasst. Erzeugt mit `npm run specs:board`; als Seite
 mit Bildnachweisen, Filter und Suche mit `npm run qa:report`.
 
-**Gesamt:** 441/571 fertig · 1 in Arbeit · 5 in QA · 4 geplant · 112 offen · 8 zurueckgestellt
+**Gesamt:** 442/571 fertig · 1 in Arbeit · 5 in QA · 4 geplant · 111 offen · 8 zurueckgestellt
 
-**Nachweise:** 198 Kriterien mit Bild · 247 ohne Bild, begruendet in `qa/ohne-bild.json`
+**Nachweise:** 199 Kriterien mit Bild · 247 ohne Bild, begruendet in `qa/ohne-bild.json`
 
 ## Nach Spezifikation
 
@@ -29,7 +29,7 @@ mit Bildnachweisen, Filter und Suche mit `npm run qa:report`.
 | [Kampf](10-strategie/kampf.md)                                 | -         | -     | -       | -     | 1               | 20     |
 | [Karte und Vorraete](10-strategie/karte-und-vorraete.md)       | -         | -     | -       | 2     | 3               | 12     |
 | [KI-Spieler](10-strategie/ki.md)                               | -         | -     | -       | 5     | -               | 21     |
-| [Spielziel und Partieverlauf](10-strategie/spielziel.md)       | 1         | -     | -       | 16    | -               | 6      |
+| [Spielziel und Partieverlauf](10-strategie/spielziel.md)       | 1         | -     | -       | 15    | -               | 7      |
 | [Aufstellung, Taktik und Training](15-manager/aufstellung.md)  | -         | -     | -       | -     | 2               | 23     |
 | [Bedienung des Managerspiels](15-manager/bedienung.md)         | -         | -     | -       | -     | -               | 15     |
 | [Finanzen](15-manager/finanzen.md)                             | -         | -     | -       | -     | -               | 16     |
@@ -64,7 +64,7 @@ mit Bildnachweisen, Filter und Suche mit `npm run qa:report`.
 - **Abbruch ist sichtbar** — [Uebertragung](00-plattform/uebertragung.md) AC-9
 - **Automatischer Wiederaufbau** — [Uebertragung](00-plattform/uebertragung.md) AC-10
 
-## Offen (112)
+## Offen (111)
 
 - **Anmeldung ueber Google/GitHub** — [Konten und Anmeldung](00-plattform/konten.md) AC-6
 - **Bilanz je Konto** — [Konten und Anmeldung](00-plattform/konten.md) AC-14
@@ -158,7 +158,6 @@ mit Bildnachweisen, Filter und Suche mit `npm run qa:report`.
 - **Ein Volk ist Daten** — [Spielziel und Partieverlauf](10-strategie/spielziel.md) AC-17
 - **Kein Volk gewinnt gegen alle** — [Spielziel und Partieverlauf](10-strategie/spielziel.md) AC-18
 - **Ein Aussteiger blockiert nicht** — [Spielziel und Partieverlauf](10-strategie/spielziel.md) AC-15
-- **Verbündete sehen gemeinsam** — [Spielziel und Partieverlauf](10-strategie/spielziel.md) AC-19
 - **Ein Team gewinnt** — [Spielziel und Partieverlauf](10-strategie/spielziel.md) AC-20
 - **Bündnis lösen mit Frist** — [Spielziel und Partieverlauf](10-strategie/spielziel.md) AC-21
 - **Zeitgrenze ist eine Einstellung** — [Spielziel und Partieverlauf](10-strategie/spielziel.md) AC-22

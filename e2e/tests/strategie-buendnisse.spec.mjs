@@ -8,7 +8,7 @@
 import { nachweis } from '../../scripts/qa-nachweis.mjs';
 import { ANMELDUNG, einheitenAufstellen, expect, fehlerSammeln, test } from '../helpers/seite.mjs';
 import {
-  freieWiesen, partieBeenden, partieZuDritt, teamZeigt,
+  bedienteileFrei, freieWiesen, partieBeenden, partieZuDritt, teamZeigt,
 } from '../helpers/strategie.mjs';
 
 const AUSWAHL = '00-plattform/spielauswahl.md';
@@ -167,5 +167,88 @@ test.describe('Verbündete', () => {
     const aufBert = await aufSeite(anna, bert);
     await anna.mouse.click(aufBert.x, aufBert.y, { button: 'right' });
     expect(await anna.evaluate(() => window.ansicht.zielzeichen.feindlich), 'ein Gegner ist ein Ziel').toBe(true);
+  });
+});
+
+// Gemeinsame Sicht (spielziel AC-19): im Nebel sieht Anna, was Cem sieht -
+// sein Dorf liegt weit weg von ihrem und ist trotzdem hell, und ein Mann
+// Berts darin steht in ihrem Bild. Die Regel selbst pruefen
+// tests/strategie-buendnisse.test.mjs und tests/netz.test.mjs.
+test.describe('Gemeinsame Sicht', () => {
+  test.describe.configure({ mode: 'serial' });
+  let partie;
+
+  test.beforeAll(async ({ browser }, info) => {
+    partie = await partieZuDritt(browser, info, { teams: [1, 2, 1] });
+  });
+  test.afterAll(() => partieBeenden(partie));
+
+  test('spielziel AC-19: Anna sieht im Nebel, was ihr Verbündeter Cem sieht - Bert nicht', async ({}, info) => {
+    const { anna, bert, code } = partie;
+    await anna.waitForFunction(() => window.ansicht.nebelAn && window.ansicht.nebel.takt > -Infinity);
+    const orte = await anna.evaluate(() => {
+      const a = window.ansicht;
+      const von = (name) => [...a.spieler.values()].find((s) => s.name === name);
+      return { cem: von('Cem').basis, bert: von('Bert').basis, anna: von('Anna').basis, bertId: von('Bert').id };
+    });
+
+    // Ein Dorfbewohner Berts am Rand von Cems Dorf - auf der Seite, die von
+    // Annas Dorf wegzeigt. Ein Dorfbewohner wacht nicht: keiner beginnt ein
+    // Gefecht, waehrend das Bild entsteht.
+    const weg = (w) => Math.sign(orte.cem[w] - orte.anna[w]) || 1;
+    const ziel = { x: orte.cem.x + 5 * weg('x'), y: orte.cem.y + 5 * weg('y') };
+    await einheitenAufstellen(anna, code, 'Bert', 1, { art: 'dorfbewohner', ...ziel });
+    const lage = await anna.waitForFunction(([z, bertId]) => {
+      const a = window.ansicht;
+      const fremder = [...a.nachher.values()].find((e) => e.b === bertId && Math.hypot(e.x - z.x, e.y - z.y) < 4);
+      return fremder && { i: fremder.i, x: fremder.x, y: fremder.y };
+    }, [ziel, orte.bertId], { timeout: 10_000 }).then((h) => h.jsonValue());
+
+    const sicht = await anna.evaluate(([o, f]) => {
+      const a = window.ansicht;
+      a.nebel.rechnen(a, true);
+      const cemsGebaeude = [...a.gebaeude.values()].filter((b) => b.b !== a.ich && !a.feindlich(b.b));
+      const gezeigt = new Set(a.gezeigteGebaeude().map((b) => b.i));
+      return {
+        weit: Math.hypot(o.cem.x - o.anna.x, o.cem.y - o.anna.y),
+        cemsDorfHell: a.nebel.sieht(o.cem.x, o.cem.y),
+        bertsDorfBekannt: a.nebel.hatErkundet(o.bert.x, o.bert.y),
+        fremderZuSehen: a.zuSehen(o.bertId, f.x, f.y),
+        cemsGebaeude: cemsGebaeude.length,
+        alleGezeigt: cemsGebaeude.every((b) => gezeigt.has(b.i)),
+      };
+    }, [orte, lage]);
+    expect(sicht.weit, 'Cems Dorf ist weit weg von Annas').toBeGreaterThan(20);
+    expect(sicht.cemsDorfHell, 'Cems Dorf ist hell').toBe(true);
+    expect(sicht.cemsGebaeude, 'Cems Gebaeude kommen an').toBeGreaterThan(0);
+    expect(sicht.alleGezeigt, 'und stehen im Bild').toBe(true);
+    expect(sicht.fremderZuSehen, 'Berts Mann in Cems Sicht steht in Annas Bild').toBe(true);
+    expect(sicht.bertsDorfBekannt, 'Berts Dorf kennt Anna nicht').toBe(false);
+
+    // Gegenprobe: Bert sieht weder Annas noch Cems Dorf.
+    const beiBert = await bert.evaluate((o) => {
+      const a = window.ansicht;
+      a.nebel.rechnen(a, true);
+      return { anna: a.nebel.hatErkundet(o.anna.x, o.anna.y), cem: a.nebel.hatErkundet(o.cem.x, o.cem.y) };
+    }, orte);
+    expect(beiBert, 'Bert kennt keines der beiden Doerfer').toEqual({ anna: false, cem: false });
+
+    // Das Bild: Cems Dorf aus Annas Sicht, Berts Mann am Rand; die
+    // Uebersichtskarte zeigt beide hellen Doerfer des Teams.
+    await anna.evaluate(([o, f]) => {
+      const a = window.ansicht;
+      a.ausgewaehlt = new Set();
+      a.beiAuswahl();
+      a.kamera.zoom = 1.1;
+      a.blickAuf((o.cem.x + f.x) / 2, (o.cem.y + f.y) / 2);
+    }, [orte, lage]);
+    await anna.waitForTimeout(300);
+    expect(await bedienteileFrei(anna)).toEqual([]);
+    await nachweis(anna, {
+      spec: SPIELZIEL,
+      ac: 'AC-19',
+      titel: 'Annas Bild im Nebel: das Dorf ihres Verbündeten Cem (grün) ist hell, obwohl es weit von ihrem liegt, und ein Dorfbewohner Berts (rot) an seinem Rand steht darin — auf der Übersichtskarte sind beide Dörfer des Teams aufgedeckt',
+      test: info,
+    });
   });
 });

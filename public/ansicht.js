@@ -322,7 +322,8 @@ export class Ansicht {
    */
   erinnern() {
     for (const b of this.gebaeude.values()) {
-      if (b.b === this.ich) continue;
+      // Verbuendete erinnert man nicht: man sieht sie (spielziel AC-19).
+      if (!this.feindlich(b.b)) continue;
       const mitte = this.gebaeudeMitte(b);
       if (this.nebel.sieht(mitte.x, mitte.y)) this.erinnert.set(b.i, { ...b });
     }
@@ -340,7 +341,7 @@ export class Ansicht {
     if (!this.nebelAn) return [...this.gebaeude.values()];
     const liste = [];
     for (const b of this.gebaeude.values()) {
-      if (b.b === this.ich) liste.push(b);
+      if (!this.feindlich(b.b)) liste.push(b);
       else if (this.nebel.sieht(this.gebaeudeMitte(b).x, this.gebaeudeMitte(b).y)) liste.push(b);
     }
     for (const [id, b] of this.erinnert) {
@@ -351,9 +352,10 @@ export class Ansicht {
     return liste;
   }
 
-  // Ist eine fremde Einheit an dieser Stelle zu sehen? Eigene immer.
+  // Ist eine fremde Einheit an dieser Stelle zu sehen? Eigene und die der
+  // Verbuendeten immer (spielziel AC-19).
   zuSehen(besitzer, x, y) {
-    return besitzer === this.ich || !this.nebelAn || this.nebel.sieht(x, y);
+    return !this.feindlich(besitzer) || !this.nebelAn || this.nebel.sieht(x, y);
   }
 
   /**
@@ -1163,7 +1165,7 @@ export class Ansicht {
       const y = tier.vy === undefined ? tier.y : tier.vy + (tier.y - tier.vy) * t;
       // Tiere im Nebel bleiben verborgen, auch die eigenen Schafe nicht -
       // erst wer hinsieht, findet sie (kampf AC-12).
-      if (this.nebelAn && tier.b !== this.ich && !this.nebel.sieht(x, y)) continue;
+      if (this.nebelAn && this.feindlich(tier.b) && !this.nebel.sieht(x, y)) continue;
       stehend.push({ tiefe: x + y, x, y, art: 'tier', tier });
     }
     const anteil = this.anteil(jetzt);

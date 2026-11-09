@@ -161,7 +161,7 @@ Umfang hinzufügt, dort nachsehen.
 
 ## Stand
 
-**441 von 571 Kriterien fertig.** 635 Tests ohne Browser, 193 im Browser. Die
+**442 von 571 Kriterien fertig.** 639 Tests ohne Browser, 194 im Browser. Die
 Übersicht ist der Bericht: `npm run qa:report`.
 
 Gebaut ist der Unterbau: Räume, Übertragung, Karte, Wegfindung, Sammeln,
@@ -387,8 +387,11 @@ schießen nicht auf sie, ihre Tore öffnen sich (spielziel AC-14). **Teams
 im Warteraum** (auswahl AC-22): jeder Platz hat ein Team, die KIs
 eingeschlossen; der Steckbrief beschreibt die Wahl unter `jePlatz`, der
 Raum prüft und reicht sie durch, ohne „Team" zu kennen; Browsertests
-setzen sie mit `partieZuDritt(…, { teams: [1, 2, 1] })`.
-`tests/waechter-feindlich.test.mjs` verbietet in den
+setzen sie mit `partieZuDritt(…, { teams: [1, 2, 1] })`. **Verbündete
+sehen gemeinsam** (spielziel AC-19): ein Team hat auf dem Server einen
+Satz Sichtfelder (`welt.sichten` zeigt für jedes Mitglied auf dasselbe
+Objekt), im Browser zählt `public/nebel.js` alles mit, was nicht
+`ansicht.feindlich` ist. `tests/waechter-feindlich.test.mjs` verbietet in den
 Kampfregeln jeden Vergleich mit dem Besitzer.
 
 1. **Stufe A** Dunkle Zeit mit Wirtschafts-KI und Prüfstand · **B** Feudalzeit

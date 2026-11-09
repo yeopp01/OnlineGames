@@ -2,7 +2,7 @@
 
 **Bereich:** Strategie
 **Kuerzel:** spielziel
-**Stand:** 6/23 fertig · 1 in Arbeit · 16 offen
+**Stand:** 7/23 fertig · 1 in Arbeit · 15 offen
 
 ## Zweck
 
@@ -144,10 +144,17 @@ eigenen Technikbaum ([Vorlage](../../docs/strategie/vorlage-aoe2.md)).
   spielt aber meist zwei gegen zwei ([ADR-0013](../../docs/adr/0013-buendnisse-karren-dauer.md)).
 - **AC-15** `offen` **Ein Aussteiger blockiert nicht** — Verlässt jemand die Partie endgültig,
   verfallen seine Gebäude nach zwei Minuten, damit die Runde ein Ende findet.
-- **AC-19** `offen` **Verbündete sehen gemeinsam** — Was einer sieht, sehen
+- **AC-19** `fertig` **Verbündete sehen gemeinsam** — Was einer sieht, sehen
   alle seines Teams: im Bild, auf der Übersichtskarte und in dem, was der
   Server schickt (kampf AC-13). Das gilt ohne Forschung; in der Vorlage
   kostete es die Forschung „Kartographie".
+  **Runde 149:** ein Team hat auf dem Server **einen** Satz Sichtfelder
+  (`welt.sichten` zeigt für jedes Mitglied auf dasselbe Objekt), deshalb
+  gilt jede Frage nach der Sicht von selbst fürs Team, und die Rechnung
+  kostet nicht mehr (KI gegen KI Takt für Takt gleich, 83 statt 84 ms je
+  1000 Takte). Einheiten und Gebäude der Verbündeten gehen immer über die
+  Leitung, auch ihr Verschwinden. Der Browser zählt sie in `public/nebel.js`
+  mit, mit der Sicht aus den Werten ihres Besitzers.
 - **AC-20** `offen` **Ein Team gewinnt** — Die Partie endet, sobald nur noch
   Verbündete übrig sind. Gewonnen haben alle Spieler dieses Teams, auch die
   schon ausgeschiedenen. Die Tafel (AC-8) nennt das Team und seine Spieler.

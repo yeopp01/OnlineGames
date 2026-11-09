@@ -24,8 +24,8 @@ const sekunden = (welt, s) => { for (let t = 0; t < s * TAKTE_PRO_SEKUNDE; t++) 
  * in der Kartenmitte, weit weg von allen Doerfern. Anna in der Ritterzeit,
  * damit jede Art zur Hand ist. Frei heisst, was `platzPruefen` sagt.
  */
-function mitPlatz(teams = TEAMS) {
-  const welt = new Welt(DREI, 7, { sicht: 'aufgedeckt', teams });
+function mitPlatz(teams = TEAMS, sicht = 'aufgedeckt') {
+  const welt = new Welt(DREI, 7, { sicht, teams });
   const anna = welt.spielerVon('a');
   anna.zeitalter = 2;
   const mitte = Math.floor(welt.karte.groesse / 2);
@@ -184,4 +184,82 @@ test('spielziel AC-14: ein Stein trifft Verbuendete wie eigene, und getroffen sc
   assert.ok(carla.leben < 1000, 'Carla ist getroffen - der Stein fragt nicht, wem sie gehoert');
   assert.notEqual(carla.auftrag?.art, 'angreifen', 'sie wehrt sich nicht gegen Anna');
   assert.equal(welt.spielerVon('c').angriff, undefined, 'und Carla bekommt keine Angriffsmeldung');
+});
+
+// ---- Gemeinsame Sicht (spielziel AC-19, Runde 149) --------------------------
+
+test('spielziel AC-19: was Carla sieht, sieht Anna - Bert nicht, und ohne Teams auch Anna nicht', () => {
+  for (const [teams, annaSieht] of [[TEAMS, true], [{}, false]]) {
+    const { welt, x0, y0 } = mitPlatz(teams, 'nebel');
+    // Ein Spaeher Carlas mitten auf dem freien Platz, weit weg von allen
+    // Doerfern: dort sieht ihn sonst niemand.
+    const ort = { x: x0 + 5, y: y0 + 5 };
+    for (const id of ['a', 'b', 'c']) assert.equal(welt.sieht(id, ort.x, ort.y), false, `${id} sieht den Platz vorher nicht`);
+    const spaeher = stellen(welt, 'c', 'spaeherreiter', ort.x, ort.y);
+    welt.sichtAktualisieren();
+    assert.equal(welt.sieht('c', ort.x, ort.y), true, 'Carla sieht ihren Platz');
+    assert.equal(welt.sieht('a', ort.x, ort.y), annaSieht, annaSieht ? 'Anna, ihre Verbuendete, ebenso' : 'ohne Teams sieht Anna nichts');
+    assert.equal(welt.sieht('b', ort.x, ort.y), false, 'Bert, ihr Gegner, nicht');
+    // Erkundet bleibt es fuer das ganze Team, auch wenn der Spaeher geht.
+    spaeher.x = x0 + 30;
+    welt.sichtAktualisieren();
+    assert.equal(welt.sieht('a', ort.x, ort.y), false, 'gesehen nur, solange jemand dort ist');
+    assert.equal(welt.erkundet('a', ort.x, ort.y), annaSieht, 'erkundet bleibt es');
+    assert.equal(welt.erkundet('b', ort.x, ort.y), false);
+  }
+});
+
+test('spielziel AC-19: der Server schickt Anna, was Carla sieht - Einheiten, Gebaeude und Felder (kampf AC-13)', () => {
+  const { welt, x0, y0 } = mitPlatz(TEAMS, 'nebel');
+  // Bert hat auf dem freien Platz einen Mann und ein Haus stehen.
+  const fremder = stellen(welt, 'b', 'miliz', x0 + 6, y0 + 5);
+  const haus = welt.gebaeudeAnlegen('b', 'haus', x0 + 8, y0 + 8);
+  welt.sichtAktualisieren();
+  const bekommt = (id) => {
+    const z = welt.zustandJeSpieler([id]).get(id);
+    return { einheiten: new Set(z.einheiten.map((e) => e.i)), gebaeude: new Set((z.gebaeude || []).map((g) => g.i)) };
+  };
+  for (const id of ['a', 'b', 'c']) welt.aufbauFuer(id);
+  assert.equal(bekommt('a').einheiten.has(fremder.id), false, 'vorher sieht ihn Anna nicht');
+  assert.ok(!welt.aufbauFuer('a').gebaeude.some((g) => g.i === haus.id), 'und das Haus nicht');
+
+  // Carlas Spaeher kommt dazu: jetzt bekommt Anna, was er sieht.
+  const spaeher = stellen(welt, 'c', 'spaeherreiter', x0 + 4, y0 + 5);
+  welt.sichtAktualisieren();
+  const anna = bekommt('a');
+  assert.ok(anna.einheiten.has(fremder.id), 'Berts Mann kommt bei Anna an');
+  assert.ok(anna.einheiten.has(spaeher.id), 'und Carlas Spaeher');
+  assert.ok(anna.gebaeude.has(haus.id), 'Berts Haus auch');
+  assert.ok(welt.aufbauFuer('a').gebaeude.some((g) => g.i === haus.id), 'ebenso im Aufbau nach einer Rueckkehr');
+  // Ein Baum, den Carlas Spaeher fallen sieht - wie im eigenen Dorf.
+  const i = (y0 + 4) * welt.karte.groesse + x0 + 4;
+  const feld = { i, a: 'gras' };
+  assert.deepEqual(welt.felderFuer('a', [feld]), [feld], 'eine Feldaenderung in Carlas Sicht kommt sofort');
+
+  // Carlas Dorf steht weit weg von Annas - sie bekommt es trotzdem, samt
+  // seinen Einheiten: wer verbuendet ist, steht immer im Bild.
+  const carlasZentrum = [...welt.gebaeude.values()].find((g) => g.besitzer === 'c' && g.art === 'dorfzentrum');
+  assert.ok(welt.aufbauFuer('a').gebaeude.some((g) => g.i === carlasZentrum.id), 'Carlas Dorfzentrum im Aufbau');
+  const carlas = [...welt.einheiten.values()].filter((e) => e.besitzer === 'c').map((e) => e.id);
+  for (const id of carlas) assert.ok(bekommt('a').einheiten.has(id), 'jede Einheit Carlas');
+  // Bert bekommt davon nichts: er sieht weder Carlas Dorf noch ihren Spaeher.
+  assert.ok(!welt.aufbauFuer('b').gebaeude.some((g) => g.i === carlasZentrum.id), 'Bert nicht');
+});
+
+test('spielziel AC-19: faellt ein Gebaeude der Verbuendeten, erfaehrt Anna es sofort - nicht erst beim Hinsehen', () => {
+  const { welt, x0, y0 } = mitPlatz(TEAMS, 'nebel');
+  const haus = welt.gebaeudeAnlegen('c', 'haus', x0 + 5, y0 + 5);
+  welt.sichtAktualisieren();
+  welt.aufbauFuer('a');
+  welt.zustandJeSpieler(['a']);
+  assert.ok(welt.aufbauFuer('a').gebaeude.some((g) => g.i === haus.id), 'Anna kennt Carlas Haus');
+  welt.zustandJeSpieler(['a']);
+  // Das Haus faellt; danach sieht niemand des Teams mehr hin. Bei einem
+  // Gegner bliebe es in Annas Erinnerung stehen (kampf AC-12) - bei Carla
+  // kommt das Verschwinden mit dem naechsten Zustand.
+  welt.gebaeudeZerstoeren(haus);
+  welt.sichtAktualisieren();
+  assert.equal(welt.sieht('a', x0 + 5, y0 + 5), false, 'den Platz sieht jetzt keiner');
+  const z = welt.zustandJeSpieler(['a']).get('a');
+  assert.ok((z.gebaeude || []).some((g) => g.i === haus.id && g.weg), 'das Verschwinden kommt an');
 });

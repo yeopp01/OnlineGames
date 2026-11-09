@@ -1,0 +1,10 @@
+{
+  "spec": "10-strategie/spielziel.md",
+  "ac": "AC-19",
+  "titel": "Annas Bild im Nebel: das Dorf ihres Verbündeten Cem (grün) ist hell, obwohl es weit von ihrem liegt, und ein Dorfbewohner Berts (rot) an seinem Rand steht darin — auf der Übersichtskarte sind beide Dörfer des Teams aufgedeckt",
+  "datei": "e2e/tests/strategie-buendnisse.spec.mjs",
+  "pfad": [
+    "Gemeinsame Sicht",
+    "spielziel AC-19: Anna sieht im Nebel, was ihr Verbündeter Cem sieht - Bert nicht"
+  ]
+}

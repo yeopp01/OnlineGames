@@ -1584,6 +1584,19 @@ ihn, mit Gegenprobe an beiden Formen. Fünf Bilder neu, alle angesehen.
 Neueste oben. Eine Zeile je Runde: Nummer, Datum, Kriterien, Ergebnis,
 wichtigste Erkenntnis.
 
+- **149** · 2026-11-09 · **spielziel AC-19 fertig** — Verbündete sehen
+  gemeinsam. Auf dem Server bekommt jedes Team **ein** Sichtobjekt, auf das
+  alle Mitglieder in `welt.sichten` zeigen; damit gelten `sieht`,
+  `erkundet` und der Auszug je Spieler ohne weitere Änderung fürs Team, und
+  die Rechnung wird nicht teurer (KI gegen KI Takt für Takt gleich, 83
+  statt 84 ms je 1000 Takte). Einheiten und Gebäude der Verbündeten gehen
+  immer über die Leitung, auch ihr Verschwinden — sonst bliebe ein
+  gefallenes Haus Cems in Annas Erinnerung stehen wie eines im Nebel.
+  Erkenntnis: der Browser rechnete die Gebäudesicht aus den **eigenen**
+  Verbesserungen (Stadtwache); für einen Verbündeten wäre das falsch. Die
+  Sicht kommt jetzt aus den Werten des Besitzers (`kw`), die der Server
+  ohnehin für jeden schickt. Nebenbei: `cat > datei` ohne Eingabe hält die
+  Shell zwei Minuten fest — Skripte nur mit Write anlegen.
 - **148** · 2026-11-09 · **spielauswahl AC-22 und spielziel AC-14
   fertig** — Teams im Warteraum: der Steckbrief beschreibt mit `jePlatz`,
   was je Platz gewählt wird, und mit `platzname`, wie seine eigenen Plätze

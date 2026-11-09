@@ -78,23 +78,25 @@ export class Nebel {
   rechnen(ansicht, sofort = false) {
     if (!sofort && ansicht.takt - this.takt < NEU_ALLE_TAKTE) return false;
     this.takt = ansicht.takt;
-    const ich = ansicht.ich;
-    const werte = ansicht.einheitenwerte.get(ich) || {};
+    // Die eigenen und die der Verbuendeten (spielziel AC-19): wer im Team ist,
+    // sieht, was das Team sieht - mit den Werten des Besitzers, denn dessen
+    // Verbesserungen geben seinen Einheiten die Sicht.
+    const freund = (b) => !ansicht.feindlich(b);
     this.sichtbar.fill(0);
     for (const e of ansicht.nachher.values()) {
-      if (e.b !== ich || e.s) continue;
+      if (e.s || !freund(e.b)) continue;
       const art = ansicht.arten[e.k];
-      const r = werte[art]?.sicht ?? ansicht.werte.einheiten[art]?.sicht ?? 0;
+      const r = ansicht.einheitenwerte.get(e.b)?.[art]?.sicht ?? ansicht.werte.einheiten[art]?.sicht ?? 0;
       this.markieren(this.sichtbar, e.x, e.y, e.x, e.y, r);
     }
     // Gebaeude stehen still: neu nur, wenn eines dazukam oder fiel - wie auf
     // dem Server (Runde 104).
-    const meine = [...ansicht.gebaeude.values()].filter((b) => b.b === ich);
-    // Was die eigenen Verbesserungen den Gebaeuden an Sicht geben (kampf
-    // AC-17, Stadtwache) - wie auf dem Server (`welt.gebaeudeSicht`).
-    let zusatz = 0;
-    for (const v of ansicht.verbesserungen || []) zusatz += ansicht.werte.verbesserungen?.[v]?.gebaeude?.sicht || 0;
-    const schluessel = `${zusatz}|${meine.map((b) => b.i).join(',')}`;
+    const meine = [...ansicht.gebaeude.values()].filter((b) => freund(b.b));
+    // Die Sicht eines Gebaeudes mit den Verbesserungen seines Besitzers
+    // (kampf AC-17, Stadtwache) - der Server rechnet sie in die Werte je
+    // Spieler (`welt.kampfwerte`), wie `welt.gebaeudeSicht`.
+    const weite = (b) => ansicht.einheitenwerte.get(b.b)?.[b.art]?.sicht ?? ansicht.werte.gebaeude[b.art]?.sicht ?? 8;
+    const schluessel = meine.map((b) => `${b.i}:${weite(b)}`).join(',');
     if (schluessel !== this.gebaeudeSchluessel) {
       this.gebaeudeSchluessel = schluessel;
       this.gebaeude.fill(0);
@@ -102,7 +104,7 @@ export class Nebel {
         const groesse = ansicht.werte.gebaeude[b.art]?.groesse || 1;
         const x0 = b.x - Math.floor(groesse / 2);
         const y0 = b.y - Math.floor(groesse / 2);
-        this.markieren(this.gebaeude, x0, y0, x0 + groesse - 1, y0 + groesse - 1, (ansicht.werte.gebaeude[b.art]?.sicht ?? 8) + zusatz);
+        this.markieren(this.gebaeude, x0, y0, x0 + groesse - 1, y0 + groesse - 1, weite(b));
       }
     }
     const daten = this.punkte.data;

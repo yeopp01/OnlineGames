@@ -260,9 +260,20 @@ class Welt {
     // Anfang an erkundete Karte, oder alles aufgedeckt.
     this.sichtArt = SICHT_ARTEN.includes(einstellungen.sicht) ? einstellungen.sicht : 'nebel';
     this.sichtStempel = 0;
-    this.sichten = new Map(this.spieler.map((s) => [s.id, {
+    // Verbuendete sehen gemeinsam (spielziel AC-19): wer in einem Team ist,
+    // teilt mit ihm dieselbe Sicht - ein Satz Felder je Team, nicht je
+    // Spieler. So gilt jede Frage nach der Sicht (`sieht`, `erkundet`, was der
+    // Server schickt) von selbst fuer das ganze Team, und die Rechnung wird
+    // nicht teurer: jede Einheit markiert weiter genau einmal.
+    const neueSicht = () => ({
       sichtbar: new Uint32Array(felder), gebaeude: new Uint8Array(felder), erkundet: new Uint8Array(felder),
-    }]));
+    });
+    const jeTeam = new Map();
+    this.sichten = new Map(this.spieler.map((s) => {
+      if (!s.team) return [s.id, neueSicht()];
+      if (!jeTeam.has(s.team)) jeTeam.set(s.team, neueSicht());
+      return [s.id, jeTeam.get(s.team)];
+    }));
     this.gebaeudeSichtNeu = true;
     if (this.sichtArt !== 'nebel') for (const sicht of this.sichten.values()) sicht.erkundet.fill(1);
     this.sichtAktualisieren();
@@ -313,7 +324,7 @@ class Welt {
     // Rechenzeit (Runde 104, gemessen: 7,8 statt 5,0 s fuer fuenf Partien).
     if (this.gebaeudeSichtNeu) {
       this.gebaeudeSichtNeu = false;
-      for (const sicht of this.sichten.values()) sicht.gebaeude.fill(0);
+      for (const sicht of new Set(this.sichten.values())) sicht.gebaeude.fill(0);
       for (const b of this.gebaeude.values()) {
         const sicht = this.sichten.get(b.besitzer);
         if (!sicht) continue;
@@ -3322,11 +3333,12 @@ class Welt {
     const geaendert = new Set(aenderungen.map((g) => g.i));
     const raus = [];
     for (const g of aenderungen) {
-      // Eigene immer, auch das Verschwinden.
-      if (this.gebaeudeBesitzer.get(g.i) === id) raus.push(g);
+      // Eigene immer, auch das Verschwinden - und die der Verbuendeten
+      // (spielziel AC-19): ihr Dorf faellt nicht im Nebel, man sieht es.
+      if (!this.feindlich(id, this.gebaeudeBesitzer.get(g.i))) raus.push(g);
     }
     for (const g of this.gebaeude.values()) {
-      if (g.besitzer === id) continue;
+      if (!this.feindlich(id, g.besitzer)) continue;
       const alt = bekannt.get(g.id);
       if (!this.siehtGebaeude(id, g)) {
         // Im Nebel fertig geworden oder beschaedigt: beim naechsten Hinsehen
@@ -3391,8 +3403,9 @@ class Welt {
     if (!this.nebelGiltFuer(id)) return this.bekannt?.has(id) ? this.nebelAufheben(voll, id) : voll;
     const auszug = {
       ...voll,
-      // Fremde Einheiten nur in Sicht.
-      einheiten: voll.einheiten.filter((e) => e.b === id || this.sieht(id, Math.round(e.x), Math.round(e.y))),
+      // Fremde Einheiten nur in Sicht; die eigenen und die der Verbuendeten
+      // immer (spielziel AC-19).
+      einheiten: voll.einheiten.filter((e) => !this.feindlich(id, e.b) || this.sieht(id, Math.round(e.x), Math.round(e.y))),
       felder: this.felderFuer(id, voll.felder),
       // Von den anderen nur, was jeder sieht: wer draussen ist, das Zeitalter
       // und die Kampfwerte (die zeigt die Auswahl einer fremden Einheit) -
@@ -3426,8 +3439,8 @@ class Welt {
     this.bekannt.set(id, bekannt);
     // Die Karte im Aufbau ist die heutige - Aufgeschobenes ist darin enthalten.
     this.felderOffen?.delete(id);
-    const sichtbar = [...this.gebaeude.values()].filter((g) => g.besitzer === id || this.siehtGebaeude(id, g));
-    for (const g of sichtbar) if (g.besitzer !== id) bekannt.set(g.id, { art: g.art, x: g.x, y: g.y });
+    const sichtbar = [...this.gebaeude.values()].filter((g) => !this.feindlich(id, g.besitzer) || this.siehtGebaeude(id, g));
+    for (const g of sichtbar) if (this.feindlich(id, g.besitzer)) bekannt.set(g.id, { art: g.art, x: g.x, y: g.y });
     // Fremde Marktpreise verrieten, was der andere getauscht hat - wie seine
     // Vorraete bleiben sie bei ihm (bauen AC-33).
     const spieler = voll.spieler.map((s) => {
