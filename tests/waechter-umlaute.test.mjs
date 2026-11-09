@@ -50,6 +50,11 @@ const JS_MUSTER = [
   /\.(?:textContent|placeholder|title|innerText)\s*=\s*(['`])((?:(?!\1).)*)\1/g,
   /\bmelden\(\s*(['`])((?:(?!\1).)*)\1/g,
   /\b(?:name|beschreibung|titel|text|hinweis)\s*:\s*(['`])((?:(?!\1).)*)\1/g,
+  // Der dritte Wert von `element(tag, klasse, text)` - so baut die
+  // Auswahlleiste ihre Zeilen. Bis zur Rueckschau zur Stufe D las der Waechter
+  // ihn nicht, und "Bevoelkerung voll" und "traegt nichts" standen seit Stufe A
+  // im Bild.
+  /\belement\(\s*'[^']*'\s*,\s*(?:null|'[^']*'|`[^`]*`)\s*,\s*(['`])((?:(?!\1).)*)\1/g,
 ];
 
 function umschrieben(text) {
@@ -108,6 +113,9 @@ test('auswahl AC-21: der Waechter erkennt Umschriebenes und laesst Richtiges ste
   assert.deepEqual(umschrieben('Dauer ${ansicht.abschlussdauer()}'), []);
   assert.deepEqual(umschrieben('Niemand in der Auswahl kann das bauen.'), []);
   assert.deepEqual(umschrieben('Die Klasse der Schützen'), []);
+  // Und er liest den Text aus element(), auch hinter einer Klasse mit ${...}.
+  assert.deepEqual(texteAusJs("x.append(element('p', 'wartegrund', 'Bevoelkerung voll'));"), ['Bevoelkerung voll']);
+  assert.deepEqual(texteAusJs("element('span', `ware ware-${a}`, `traegt ${l}`)"), ['traegt ${l}']);
   assert.deepEqual(texteAusJs("    if (x) return { fehler: 'Das ist nicht dein Gebaeude.' };"), ['Das ist nicht dein Gebaeude.']);
   assert.deepEqual(texteAusHtml('<h2>Spiel waehlen</h2><svg><text>x</text></svg>'), ['Spiel waehlen']);
 });

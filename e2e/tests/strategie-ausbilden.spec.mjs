@@ -124,7 +124,7 @@ test.describe('Ausbilden', () => {
 
     // Jetzt 5/5: der verbliebene Auftrag wartet und die Leiste sagt warum.
     await expect(anna.locator('[data-rohstoff="bev"]')).toHaveText(/^\s*5\s*\/\s*5\s*$/);
-    await expect(anna.locator('#wartegrund')).toHaveText('Bevoelkerung voll - Haus bauen');
+    await expect(anna.locator('#wartegrund')).toHaveText('Bevölkerung voll — Haus bauen');
     await expect(anna.locator('#wartegrund')).toBeInViewport();
     await expect(anna.locator('[data-abbrechen]')).toHaveCount(1);
     await nachweis(anna, {
@@ -159,7 +159,7 @@ test.describe('Ausbilden', () => {
     const leiste = anna.locator('#auswahlleiste');
     await expect(leiste).toContainText('Dorfbewohner');
     await expect(leiste.locator('.leben')).toHaveAttribute('data-leben', '25/25');
-    await expect(leiste.locator('#ladung')).toHaveText('traegt nichts');
+    await expect(leiste.locator('#ladung')).toHaveText('trägt nichts');
 
     // Rechtsklick auf den naechsten Beerenstrauch, dann sammelt er.
     const beere = await anna.evaluate(() => {
@@ -182,8 +182,8 @@ test.describe('Ausbilden', () => {
     // Die Leiste zeigt, was er in diesem Augenblick traegt - genau die Zahl der Ansicht.
     const traegt = await anna.evaluate((id) => window.ansicht.nachher.get(id).l, ziel.i);
     await expect(leiste.locator('#ladung')).toHaveAttribute('data-ware', 'n');
-    await expect(leiste.locator('#ladung')).toContainText(/traegt \d+ Nahrung von 10/);
-    const gezeigt = Number((await leiste.locator('#ladung').textContent()).match(/traegt (\d+)/)[1]);
+    await expect(leiste.locator('#ladung')).toContainText(/trägt \d+ Nahrung von 10/);
+    const gezeigt = Number((await leiste.locator('#ladung').textContent()).match(/trägt (\d+)/)[1]);
     expect(gezeigt).toBeGreaterThanOrEqual(traegt);
     expect(gezeigt).toBeGreaterThanOrEqual(4);
     await expect(leiste).toBeInViewport();

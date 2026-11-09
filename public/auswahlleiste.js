@@ -811,10 +811,10 @@ export class Auswahlleiste {
       ladung.id = 'ladung';
       if (einheit.l > 0) {
         ladung.dataset.ware = einheit.a;
-        ladung.append(element('span', `ware ware-${einheit.a}`), element('span', null, `traegt ${einheit.l} ${WAREN[einheit.a]?.name || ''}`));
+        ladung.append(element('span', `ware ware-${einheit.a}`), element('span', null, `trägt ${einheit.l} ${WAREN[einheit.a]?.name || ''}`));
         ladung.append(element('span', 'leise', ` von ${tragkraft}`));
       } else {
-        ladung.append(element('span', 'leise', 'traegt nichts'));
+        ladung.append(element('span', 'leise', 'trägt nichts'));
       }
       w.append(ladung);
     }
@@ -982,7 +982,7 @@ export class Auswahlleiste {
 
     // Warum nichts vorangeht (bauen AC-15).
     if (gebaeude.w) {
-      const hinweis = element('p', 'wartegrund', 'Bevoelkerung voll - Haus bauen');
+      const hinweis = element('p', 'wartegrund', 'Bevölkerung voll — Haus bauen');
       hinweis.id = 'wartegrund';
       w.append(hinweis);
     }

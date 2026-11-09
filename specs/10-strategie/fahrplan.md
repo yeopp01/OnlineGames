@@ -208,6 +208,11 @@ Zustandsnachricht umbaut und damit jeden Browsertest berührt: was dort heute
 | D8 | Mönch: heilen (**fertig**, Runde 134), bekehren (**fertig**, Runde 135) | einheiten AC-37, AC-38 |
 | D9 | Die KI in der Ritterzeit; Konterkreis (**fertig**, Runde 138) und Befestigung (**fertig**, Runde 139) im Prüfstand; die Ritterzeit am Stück im Browser (**fertig**, Runde 140) | ki AC-21, AC-22, fahrplan AC-14, AC-15, AC-23 |
 
+**Die Rückschau zur Stufe D** (Runde 142) hat drei Lücken angelegt, die
+die Bauabfolge der Stufe E als ersten Schritt aufnimmt: das Zeitalter am
+Dorf, voller Wohnraum oben, Spuren eines Gefechts ([Bedienung](bedienung.md)
+AC-42 bis AC-44).
+
 Offen aus Stufe C und gebaut auf dem Zweig `strategie-ki-sicht`: die KI mit
 eigener Sicht (ki AC-13) — wartet auf die Antwort zu fahrplan AC-11. Wird sie
 eingebunden, misst jeder Schritt ab D9 KI gegen KI mit ihr.
@@ -225,7 +230,9 @@ eingebunden, misst jeder Schritt ab D9 KI gegen KI mit ihr.
 ### Stufe F — Imperialzeit
 
 - **AC-19** `offen` **Imperialzeit spielbar** — Trebuchet, Wunder mit Siegbedingung, die
-  Einheitenstufen und Verbesserungen der Vorlage.
+  Einheitenstufen und Verbesserungen der Vorlage. **Das Trebuchet ist eine
+  Einstellung beim Eröffnen und lässt sich abschalten** — der Benutzer will
+  ohne es spielen können (2026-11-09).
 - **AC-20** `offen` **Große Partie bleibt flüssig** — Acht Spieler mit je 200 Einheiten: ein Takt
   unter 30 ms im Mittel, je Spieler unter 50 KB Übertragung je Sekunde.
 
@@ -245,7 +252,45 @@ spielbar ist. Keine davon wird vorher gebaut.
 
 - **Steigender Anspruch:** Mit jedem Zeitalter fassen Häuser weniger Leute,
   weil der Standard steigt. Folge: späte Wirtschaft braucht mehr Holz, und
-  wer früh viele Häuser baut, verliert Platz beim Aufstieg.
+  wer früh viele Häuser baut, verliert Platz beim Aufstieg. **Ergänzt
+  (Benutzer, 2026-11-09):** ein Haus lässt sich ausbauen und fasst danach
+  wieder mehr — der Ausbau ist ein Auftrag am Haus, sofort bezahlt.
+
+Vom Benutzer am 2026-11-09 eingebracht, alle noch offen:
+
+- **Eigene Völker und Zeitalter statt der Vorlage — entschieden, Umriss.**
+  Fünf Startvölker der Antike (etwa Römer, Ägypter, Germanen, Griechen,
+  ein asiatisches Volk), die sich mit den Zeitaltern zu **echten
+  Nachfolgevölkern** weiterentwickeln. Die Nachfolger eines Volkes sind eng
+  verwandt: Unterschiede vor allem über **Boni**, nur **ganz wenige
+  Spezialeinheiten**; ein Nachfolger kann in der Imperialzeit anderes bauen
+  oder eine Einheit einmal öfter verbessern. Stärkere Startboni. Die
+  Zeitalter heißen eigen, etwa Antike, Blütezeit, Kriegszeit,
+  Herrschaftszeit. Ersetzt die fünf Völker der Vorlage in AC-16 — kommt mit
+  einem neuen ADR und der Spec-Runde zu Stufe E.
+- **Bauen ohne Bauer zu wählen:** ein Gebäude setzen (oder einen Ausbau
+  bestellen) und bezahlen; der nächste freie Dorfbewohner in der Nähe kommt
+  und baut. Selbst Bauer schicken geht weiter.
+- **Eine Übersicht der Wirtschaft:** wer wo sammelt, wer frei ist, wer baut.
+- **Die Bevölkerungsgrenze beweglich statt starr 200:** getrennter Wohnraum
+  für Dorfbewohner und Soldaten (etwa ein Haus mit drei Plätzen für
+  Bewohner und zwei für Soldaten, ein anderes nur für Soldaten); oder eine
+  Grenze, die alle zehn Minuten sinkt und sich mit Gold wieder anheben lässt.
+  **Favorit des Benutzers (2026-11-09): Sold in Nahrung** — jede
+  Kampfeinheit kostet laufend Nahrung, die Wirtschaft begrenzt das Heer.
+  Vorschlag der Schleife zum leeren Vorrat: nur Kampfeinheiten zahlen,
+  Dorfbewohner nie (sonst verhungert die Wirtschaft, die das Essen
+  liefert, und wer zurückliegt, kommt nie wieder hoch — spielziel AC-4);
+  ist die Nahrung bei null, **hungert das Heer**: jede Kampfeinheit
+  verliert langsam Leben, heilt nicht, und oben steht es rot; sobald
+  wieder Nahrung da ist, hört es auf. Die Höhe des Solds wird gemessen,
+  nicht geschätzt (wie viele Soldaten trägt ein Bauer?).
+- **Bündnisse, die sich lösen lassen — entschieden, Umriss (2026-11-09).**
+  Gespielt wird meist 2 gegen 2; Teams beim Eröffnen, fest oder lösbar.
+  Löst spielziel AC-14 ab. Dazu **Spielgeschwindigkeit und Zeitgrenze als
+  Einstellung** (eine Partie darf anderthalb Stunden dauern) und
+  **Marktkarren ab der Ritterzeit** — beides mit einem eigenen ADR, das
+  die Zeile „Handelskarren" aus „Wird nicht gebaut" holt.
 
 ## Der Prüfstein
 

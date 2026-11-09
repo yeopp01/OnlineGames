@@ -13,7 +13,7 @@ hier nichts eintraegt, verliert den Faden beim naechsten Autocompact.
 
 ## Zuletzt fortgeschrieben
 
-2026-11-09, nach Runde 141 (**kampf AC-13, fahrplan AC-13, C6e fertig**: der
+2026-11-09, nach Runde 142 (Rueckschau zur Stufe D, siehe "Naechste Runde 143" unten; davor **kampf AC-13, fahrplan AC-13, C6e fertig**: der
 Server schickt jedem nur, was er sieht - `welt.zustandJeSpieler`,
 `welt.aufbauFuer`, im Raum `sendenJe`. Fremde Gebaeude und Felder, die sich im
 Nebel aendern, kommen beim naechsten Hinsehen; wer ausscheidet, bekommt einmal
@@ -152,10 +152,32 @@ fertig** (die Ritterzeit am Stueck im Browser,
 Stufe D ist nur noch ki AC-21/22/23 offen - und die warten auf die Antwort
 zum Patt. Runde 141: **Rueckschau** (Hilfe `ersterTreffer`,
 `e2e:laufzeiten` liest `e2e/.ergebnisse/bericht.json`, zwei Regeln).
-**Naechste Runde 142:** Stufe D ist bis auf ki AC-21/22/23 fertig, und die
-haengen am Patt (Frage an den Benutzer). Ohne Antwort: Stufe E
-spezifizieren (fuenf Voelker, Spec-Runde) - oder vorher pruefen, ob ein
-Kriterium aus Stufe D ohne die KI noch offen ist. ki AC-21/22 und
+Runde 142: **Rueckschau zur Stufe D** (KI gegen KI bis in die Ritterzeit
+auf dem geparkten Zweig in einem `git worktree` unter `e2e/.ergebnisse/`
+angesehen, danach entfernt; drei Luecken bedienung AC-42 bis AC-44; der
+Umlaut-Waechter liest jetzt auch `element(tag, klasse, text)`, drei Texte
+berichtigt). **Antworten des Benutzers vom 2026-11-09** (alle in den Erkenntnissen
+unter "Fragen an den Benutzer"): (1) **Patt: die Wirtschaft der KI
+reparieren**, fahrplan AC-11 bleibt; Ziel: die KI geht im letzten
+Zeitalter Richtung 40-50 Dorfbewohner (Stufen: schwer 40-50, mittel 25,
+leicht 15 Dorfbewohner insgesamt; erst schwer bauen) und greift strukturiert an. (2) **Voelker:**
+fuenf eigene Startvoelker der Antike, echte Nachfolgevoelker je
+Zeitalter, eng verwandt, Unterschiede vor allem ueber Boni, ganz wenige
+Spezialeinheiten, eigene Namen der Zeitalter - neues ADR, dann Spec-Runde
+E. (3) **Trebuchet abschaltbar** (fahrplan AC-19). (4) **Pushen etwa alle
+fuenf Runden, aber nur, wenn der Benutzer da ist** - die Freigabe haelt die
+Schleife sonst an; nie `main`, nie Deploy. (5) **Buendnisse ja, loesbar**
+(meist 2 gegen 2), Partien duerfen 1,5 h dauern, Geschwindigkeit und
+Zeitgrenze als Einstellung, **Marktkarren schon in der Ritterzeit** - ein
+ADR fuer alles vier (holt Handelskarren aus "Wird nicht gebaut").
+**Reihenfolge:** Runde 143 KI-Wirtschaft, dann das ADR, dann Buendnisse
+bauen, dann Voelker-ADR und Spec-Runde E.
+**Naechste Runde 143: die Wirtschaft der KI im Mittelspiel** - neues
+Kriterium in `ki.md` (Dorfbewohner nach dem Aufstieg weiter ausbilden bis
+Richtung 40-50, Umzug zu neuen Vorraeten), zuerst mit
+`pruefstand:verlauf` an den Patt-Startwerten (24, 15) messen, wo es
+fehlt; danach die Zweige `strategie-ki-ritterzeit` und `strategie-ki-sicht`
+auf diesem Boden einbinden. Stufe E (Voelker-ADR, Spec-Runde) danach. ki AC-21/22 und
 AC-13 warten auf die Antwort zum Patt. Erledigt in Runde 136 war auch das Bild zu einheiten
 AC-15: die Goldtraeger stehen hinter dem Dorfzentrum und sind nur Umriss,
 die Goldbrocken der Unterschrift sieht man nicht (schon im eingecheckten
@@ -163,7 +185,7 @@ Bild so, gefunden in Runde 134 mit qa:abweichung).)
 
 ## Wo ich stehe
 
-- **Branch:** `strategie`. Nie auf `main` arbeiten, **nie pushen, nie deployen.**
+- **Branch:** `strategie`. Nie auf `main` arbeiten, **nie deployen. Pushen nur, wenn der Benutzer da ist** (etwa alle fuenf Runden, `strategie` und geparkte Zweige).
 - **Board:** 426 von 555 Kriterien fertig · 1 in Arbeit · 5 in QA · 4 geplant ·
   111 offen · 8 zurueckgestellt. 549 Tests ohne Browser, 185 im Browser.
 - **Fuenf Waechter in `tests/waechter-*.test.mjs`** (der fuenfte seit Runde 87: Bildschirmtext mit echten Umlauten): Gleichheit auf wachsenden
@@ -435,7 +457,7 @@ Bild so, gefunden in Runde 134 mit qa:abweichung).)
   bei 20 min). Aelter als Runde 69, nur nie gemessen, weil der Pruefstand bei
   zehn Minuten endete. Ursache und Hebel stehen in den Erkenntnissen unter
   **Offene Faeden**.
-- **Naechste Rueckschau: Runde 146** - oder frueher, wenn Stufe D erreicht wird.
+- **Naechste Rueckschau: Runde 147** - oder frueher, wenn Stufe E erreicht wird.
   Diese Zeile ist der Termin, nicht nachzaehlen.
 - Frueherer Termin, erledigt: **Runde 83** (die Bildnachweise einmal ganz
   angesehen), **Runde 78** (Bilderwerkzeug: `check:alles:neu`,

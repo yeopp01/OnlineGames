@@ -40,6 +40,60 @@ etwas anderem gearbeitet.
   fassen (etwa: alle mit Sieger vor Minute 90, Median unter 45) — das wäre
   ehrlich, weil Partien im Nebel länger dauern, aber es ist eine
   Entscheidung über das Spiel, keine der Schleife.
+  **Beantwortet am 2026-11-09: die Wirtschaft der KI reparieren**, fahrplan
+  AC-11 bleibt. Der Benutzer zur Vorlage: gute Gegner hatten um die 50
+  Dorfbewohner, mittelgute um 15, schlechte blieben bei 5; die guten
+  griffen durchweg an, aber strukturiert, mit Belagerung. **Ziel: die KI
+  geht im letzten Zeitalter Richtung 40 bis 50 Dorfbewohner.**
+  **Schwierigkeitsstufen (Benutzer, 2026-11-09), Dorfbewohner insgesamt:
+  schwer 40 bis 50, mittel 25, leicht 15.** Gebaut wird zuerst die
+  schwere; mittel und leicht entstehen daraus als Bremswerte in den Daten.
+  **Trebuchets will der Benutzer nicht — oder abschaltbar**, so dass man
+  ohne sie spielen kann (fahrplan AC-19, Stufe F).
+
+- **Völker: Startvolk und Nachfolger (beantwortet am 2026-11-09).** Fünf
+  eigene Startvölker der Antike; mit den Zeitaltern entwickeln sie sich zu
+  **echten Nachfolgevölkern**, wo es geht (nicht nur „Ost/West"). Die
+  Nachfolger eines Volkes sind **eng verwandt**: die Unterschiede liegen
+  vor allem in **Boni**, es gibt nur **ganz wenige Spezialeinheiten**;
+  ein Nachfolger kann etwa in der Imperialzeit anderes bauen oder den
+  Ritter zweimal statt einmal verbessern. Eigene Namen der Zeitalter.
+  Braucht ein neues ADR (verlässt die Völker der Vorlage) und eine
+  Spec-Runde zu Stufe E auf dieser Grundlage. Die übrigen Ideen dieses
+  Tages (Ausbau der Häuser, Bauen ohne Bauer zu wählen, Übersicht der
+  Wirtschaft, bewegliche Bevölkerungsgrenze) stehen im Fahrplan unter
+  „Sonderregeln — Ideen"; bei der Grenze empfiehlt die Schleife, erst zu
+  spielen (heute erreicht niemand 200) und eher Sold als eine sinkende
+  Grenze.
+
+- **Pushen (beantwortet am 2026-11-09):** etwa alle fünf Runden, **aber nur,
+  wenn der Benutzer da ist** — die Freigabe zum Pushen hält die Schleife
+  sonst an. Den Zweig `strategie` (und geparkte Zweige), nie `main`, nie
+  Deploy.
+
+- **Bündnisse, Dauer, Handel (beantwortet am 2026-11-09).** **Bündnisse
+  braucht es** — gespielt wird meist 2 gegen 2 —, aber sie müssen sich
+  sinnvoll lösen lassen. Das löst spielziel AC-14 ab („nur am Tisch"),
+  ebenso den Text zum Namen in spielauswahl AC-20; der Mannschaftsbonus der
+  Völker (spielziel AC-16) bleibt. Vorschlag der Schleife, noch nicht
+  bestätigt: Teams beim Eröffnen, „fest" oder „lösbar"; Lösen wird allen
+  angekündigt, 60 Sekunden Frist mit sichtbarer Uhr, die gemeinsame Sicht
+  endet sofort, Kampf erst danach; gemeinsamer Sieg, wenn nur Verbündete
+  übrig sind; die KI löst nie selbst. **Bauen früh** (nach der
+  Wirtschaftsrunde, vor den Völkern), weil heute jede Regel nur „mir oder
+  nicht mir" fragt. **Dauer:** eine Partie darf anderthalb Stunden
+  dauern; die Spielgeschwindigkeit wird trotzdem eine Einstellung
+  (Vorgabe 1,0 wie heute), und die Zeitgrenze von 90 Spielminuten (C2)
+  ebenso — sonst bricht sie eine 2-gegen-2-Partie mittendrin ab
+  (Vorschlag: keine / 90 min / 2 h, Vorgabe keine). Der Benutzer dazu:
+  wann eine Partie endet, darf die Schleife festlegen (Prüfstand, Tests,
+  KI gegen KI behalten ihre Grenze) — **mit echten Leuten darf es länger
+  dauern**. **Marktkarren**
+  gegen den Goldmangel, **schon im dritten Zeitalter** (der Ritterzeit) —
+  holt eine Zeile aus „Wird nicht gebaut" in ADR-0012 und braucht deshalb
+  ein ADR; mit Bündnissen hat der Karren zwischen eigenem und verbündetem
+  Markt seinen Sinn. Ein ADR für Bündnisse, Karren, Geschwindigkeit und
+  Zeitgrenze zusammen.
 
 - **Formationen wie im Original?** (Runde 111) Marschierende Einheiten
   laufen heute auf demselben Weg genau übereinander, im Angriffslauf der KI
@@ -1387,10 +1441,58 @@ Testlauf): `npm run check` 53 s ohne Last, 599 Tests ohne Browser; der
 volle Browserlauf mit 191 Fällen 16,6 min (Runde 140; Runde 135: 17,0 min
 für 190). Die Ritterzeit am Stück braucht 1,7 min.
 
+### Zur Stufe D (Runde 142, 2026-11-09)
+
+Die Kriterien der Stufe D im Fahrplan stehen seit Runde 140 auf `fertig`
+(AC-14, AC-15, AC-23); offen sind nur ki AC-21/22, geparkt am Patt. Die
+gewöhnliche Rückschau in Runde 141 hat das Ansehen einer Partie
+ausgelassen — es kommt hier nach, wie zur Stufe C in Runde 116. Weil die
+KI auf `strategie` nicht in die Ritterzeit aufsteigt, lief die Partie auf
+dem geparkten Zweig `strategie-ki-ritterzeit` in einem eigenen
+Arbeitsverzeichnis (`git worktree` unter `e2e/.ergebnisse/`, danach
+entfernt): KI gegen KI im Nebel aus Annas Sicht, Zeitraffer 20, Bilder bei
+der Feudalzeit (11:32), der Ritterzeit (23:52), dreimal im Gefecht und bei
+29:42. Gebäude der Ritterzeit baute die KI keine — ihre Wirtschaft stand
+bei null Holz (das Patt aus der Frage an den Benutzer); für Burg, Mauer
+und Belagerung blieb das Bild aus Runde 140 (fahrplan AC-14).
+
+Was ein Spieler des Originals vermissen würde — die drei größten Lücken,
+angelegt als bedienung AC-42 bis AC-44:
+
+1. **Das Zeitalter steht nicht am Dorf.** Nach dem Aufstieg sieht das
+   Dorf aus wie davor; den Gegner liest man nicht ab (AC-42).
+2. **Voller Wohnraum fällt nicht auf.** Bei 65 / 65 sieht die Anzeige oben
+   aus wie immer; den Grund nennt nur die Leiste des wartenden Gebäudes
+   (AC-43).
+3. **Ein Gefecht hinterlässt nichts.** Auf drei Bildern eines Gefechts lag
+   kein Gefallener, zerstörte Häuser sind spurlos weg (AC-44).
+
+Gut getragen hat: die Gebäude der Ritterzeit sind im Bild aus Runde 140
+alle unterscheidbar, die Burg beherrscht das Dorf; Ansage „Ritterzeit
+erreicht" und Angriffsmeldung stehen übereinander im oberen Drittel und
+verdecken das Dorf nicht; aus der Ferne (Zoom 0,5) bleibt das eigene Dorf
+gegliedert. Beobachtung, keine Lücke: im Gefecht zwischen den Häusern des
+Gegners standen fast alle Kämpfer hinter Gebäuden und waren nur Umriss —
+so macht es die Vorlage auch.
+
+**Beim Hinsehen gefunden, gleich behoben:** drei Bildschirmtexte ohne
+Umlaut seit Stufe A — „traegt nichts", „traegt 4 Nahrung" und
+„Bevoelkerung voll - Haus bauen" (bauen AC-15 verlangt „Bevölkerung voll —
+Haus bauen"). Der Umlaut-Wächter las den Text aus `element(tag, klasse,
+text)` nicht, mit dem die Auswahlleiste ihre Zeilen baut; jetzt liest er
+ihn, mit Gegenprobe an beiden Formen. Fünf Bilder neu, alle angesehen.
+
 ## Runden
 
 Neueste oben. Eine Zeile je Runde: Nummer, Datum, Kriterien, Ergebnis,
 wichtigste Erkenntnis.
+
+- **142** · 2026-11-09 · **Rückschau zur Stufe D** — KI gegen KI bis in die
+  Ritterzeit angesehen (auf dem geparkten Zweig, in einem Arbeitsverzeichnis
+  daneben); drei Lücken angelegt: das Zeitalter am Dorf (bedienung AC-42),
+  voller Wohnraum oben (AC-43), Spuren eines Gefechts (AC-44). Dazu der
+  Umlaut-Wächter um `element()` erweitert und drei Texte berichtigt.
+  Nächste Runde: Spec-Runde Stufe E, mit den drei Lücken als erstem Schritt.
 
 - **141** · 2026-11-09 · **Rückschau** — Hilfe `ersterTreffer` (Feudalzeit
   und Ritterzeit am Stück nehmen sie), `e2e:laufzeiten` liest den Bericht

@@ -70,7 +70,7 @@ test.describe('Schafe', () => {
     }, { hirte, schaf: schaf.i });
     expect(lage.nahrung).toBeLessThan(100);
     expect(lage.nahrung).toBeGreaterThan(80);
-    await expect(anna.locator('#ladung')).toContainText(/traegt \d+ Nahrung/);
+    await expect(anna.locator('#ladung')).toContainText(/trägt \d+ Nahrung/);
 
     // Nah heran: Kadaver und Hirte.
     await anna.evaluate((s) => {

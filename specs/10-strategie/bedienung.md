@@ -2,7 +2,7 @@
 
 **Bereich:** Strategie
 **Kuerzel:** bedienung
-**Stand:** 30/41 fertig · 11 offen
+**Stand:** 30/44 fertig · 14 offen
 
 ## Zweck
 
@@ -192,6 +192,36 @@ Reihenfolge:
   Rückschau zur Stufe C:** „Feudalzeit erreicht" lag mitten auf dem
   Dorfzentrum. **Messbar:** das Rechteck der Ansage überdeckt nicht das
   mittlere Drittel des Fensters.
+- **AC-42** `offen` **Das Zeitalter steht am Dorf** — Dorfzentrum und Haus
+  sehen in jedem Zeitalter anders aus, mit jedem Aufstieg steinerner und
+  größer; das heutige Bild bleibt die Dunkle Zeit, Feudal- und Ritterzeit
+  bekommen je eine eigene Fassung (die Imperialzeit kommt mit Stufe F). So
+  liest man das Zeitalter eines Gegners an seinem Dorf ab, wie in der
+  Vorlage. **Gefunden in der Rückschau zur Stufe D:** das Dorf der KI sah
+  nach dem Aufstieg in die Ritterzeit aus wie in der Feudalzeit —
+  Dorfzentrum und Häuser unverändert, nur die Leiste oben sagte es.
+  **Messbar:** auf der Schautafel stehen die drei Fassungen nebeneinander;
+  der Anteil verschiedener Bildpunkte zwischen je zweien wird gemessen,
+  bevor eine Schwelle dasteht (Anweisung, Abschnitt 4).
+- **AC-43** `offen` **Voller Wohnraum fällt auf** — Wartet ein Auftrag, weil
+  die Bevölkerung voll ist, zeigt das die Bevölkerungsanzeige oben, auch
+  wenn das wartende Gebäude nicht gewählt ist. Heute steht der Grund nur in
+  der Auswahlleiste dieses Gebäudes (bauen AC-15). **Gefunden in der
+  Rückschau zur Stufe D:** bei 65 / 65 sah die Anzeige oben aus wie bei
+  jeder anderen Zahl — ob irgendwo eine Schlange stillsteht, verrät sie
+  nicht. **Messbar:** die Anzeige trägt eine Kennzeichnung, solange ein
+  eigenes Gebäude wartet, und verliert sie, sobald keines mehr wartet.
+- **AC-44** `offen` **Ein Gefecht hinterlässt Spuren** — Gefallene liegen
+  länger als heute zwei Sekunden und verblassen dabei; ein zerstörtes
+  Gebäude hinterlässt Trümmer auf seinem Platz, die nichts sperren und nach
+  einer Weile vergehen. So sieht man nach einem Gefecht, wo es war und wer
+  verloren hat. Gezeichnet im Browser aus dem, was er gesehen hat — der
+  Server rechnet weiter nur Lebende (ADR-0001). Die Dauern stehen nicht in
+  der Vorlage; sie werden beim Bauen begründet. **Gefunden in der Rückschau
+  zur Stufe D:** auf drei Bildern eines Gefechts im Dorf des Gegners lag
+  kein Gefallener, obwohl dort gekämpft wurde; zerstörte Häuser sind
+  spurlos weg. (Die Bilder entstanden im Zeitraffer, in dem zwei Sekunden
+  ein Augenblick sind — aber auch ohne ihn reicht das nicht zum Hinsehen.)
 
 Aus den offenen Kriterien oben gehören zu Stufe A: AC-6 (Auswahl
 aufgelistet), AC-11 (Übersichtskarte — auf 120 × 120 unverzichtbar), AC-15
