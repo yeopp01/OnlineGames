@@ -1,0 +1,10 @@
+{
+  "spec": "10-strategie/spielziel.md",
+  "ac": "AC-20",
+  "titel": "Cems Bild am Ende: „Ihr habt gewonnen — Team 1: Anna und Cem\" — er war schon ausgeschieden und hat trotzdem mitgewonnen; in der Tafel stehen Annas und seine Zeile als Gewinner, Berts gedämpft",
+  "datei": "e2e/tests/strategie-buendnisse.spec.mjs",
+  "pfad": [
+    "Ein Team gewinnt",
+    "spielziel AC-20: gibt der letzte Gegner auf, hat Team 1 gewonnen - Anna und der schon ausgeschiedene Cem"
+  ]
+}

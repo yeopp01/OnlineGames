@@ -6,7 +6,9 @@
 // selbst prüfen tests/strategie-buendnisse.test.mjs und
 // tests/spielauswahl.test.mjs über den Server.
 import { nachweis } from '../../scripts/qa-nachweis.mjs';
-import { ANMELDUNG, einheitenAufstellen, expect, fehlerSammeln, test } from '../helpers/seite.mjs';
+import {
+  ANMELDUNG, aufgebenLassen, einheitenAufstellen, expect, fehlerSammeln, test,
+} from '../helpers/seite.mjs';
 import {
   bedienteileFrei, freieWiesen, partieBeenden, partieZuDritt, teamZeigt,
 } from '../helpers/strategie.mjs';
@@ -248,6 +250,52 @@ test.describe('Gemeinsame Sicht', () => {
       spec: SPIELZIEL,
       ac: 'AC-19',
       titel: 'Annas Bild im Nebel: das Dorf ihres Verbündeten Cem (grün) ist hell, obwohl es weit von ihrem liegt, und ein Dorfbewohner Berts (rot) an seinem Rand steht darin — auf der Übersichtskarte sind beide Dörfer des Teams aufgedeckt',
+      test: info,
+    });
+  });
+});
+
+// Ein Team gewinnt (spielziel AC-20): Cem gibt zuerst auf, die Partie laeuft
+// weiter - Anna gegen Bert. Gibt Bert auf, ist nur noch Team 1 uebrig, und
+// gewonnen haben Anna und Cem, auch wenn Cem schon draussen war.
+test.describe('Ein Team gewinnt', () => {
+  test.describe.configure({ mode: 'serial' });
+  let partie;
+
+  test.beforeAll(async ({ browser }, info) => {
+    partie = await partieZuDritt(browser, info, { sicht: 'aufgedeckt', teams: [1, 2, 1] });
+  });
+  test.afterAll(() => partieBeenden(partie));
+
+  test('spielziel AC-20: gibt der letzte Gegner auf, hat Team 1 gewonnen - Anna und der schon ausgeschiedene Cem', async ({}, info) => {
+    const { anna, bert, cem, code } = partie;
+    await aufgebenLassen(anna, code, 'Cem');
+    await cem.waitForFunction(() => window.ansicht.aus === true, undefined, { timeout: 15_000 });
+    // Anna und Bert sind Gegner: es geht weiter.
+    await anna.waitForTimeout(1000);
+    expect(await anna.evaluate(() => window.ansicht.ende), 'nach Cems Aufgabe nicht entschieden').toBeNull();
+
+    await aufgebenLassen(anna, code, 'Bert');
+    for (const seite of [anna, bert, cem]) {
+      await seite.waitForFunction(() => window.ansicht.ende !== null, undefined, { timeout: 15_000 });
+    }
+    // Jeder liest, wer gewonnen hat - die Gewinner aus ihrer Sicht.
+    await expect(anna.locator('#partieende')).toHaveText('Ihr habt gewonnen — Team 1: Anna und Cem');
+    await expect(cem.locator('#partieende')).toHaveText('Ihr habt gewonnen — Team 1: Anna und Cem');
+    await expect(bert.locator('#partieende')).toHaveText('Team 1 hat gewonnen — Anna und Cem');
+
+    // Die Tafel: Annas und Cems Zeile als Gewinner, Berts gedaempft.
+    await expect(cem.locator('#abschlusstafel tr.sieger')).toHaveCount(2);
+    await expect(cem.locator('#abschlusstafel tr.sieger').nth(0)).toContainText('Anna');
+    await expect(cem.locator('#abschlusstafel tr.sieger').nth(1)).toContainText('Cem');
+    await expect(cem.locator('#abschlusstafel tr.draussen')).toContainText('Bert');
+    await expect(cem.locator('#partieende')).toBeInViewport();
+    await expect(cem.locator('#abschluss')).toBeInViewport();
+    expect(await bedienteileFrei(cem)).toEqual([]);
+    await nachweis(cem, {
+      spec: SPIELZIEL,
+      ac: 'AC-20',
+      titel: 'Cems Bild am Ende: „Ihr habt gewonnen — Team 1: Anna und Cem" — er war schon ausgeschieden und hat trotzdem mitgewonnen; in der Tafel stehen Annas und seine Zeile als Gewinner, Berts gedämpft',
       test: info,
     });
   });

@@ -415,10 +415,16 @@ export class Ansicht {
    */
   endeText() {
     if (!this.ende) return '';
-    const { sieger, grund } = this.ende;
-    if (!sieger) return grund === 'zeit' ? 'Unentschieden — 90 Minuten sind um' : 'Unentschieden';
-    if (sieger === this.ich) return 'Du hast gewonnen';
-    return `${this.spieler.get(sieger)?.name || 'Ein Mitspieler'} hat gewonnen`;
+    const { gewinner = [], grund, team } = this.ende;
+    if (!gewinner.length) return grund === 'zeit' ? 'Unentschieden — 90 Minuten sind um' : 'Unentschieden';
+    const name = (id) => this.spieler.get(id)?.name || 'Ein Mitspieler';
+    if (gewinner.length === 1) return gewinner[0] === this.ich ? 'Du hast gewonnen' : `${name(gewinner[0])} hat gewonnen`;
+    // Ein Team (spielziel AC-20): sein Name und alle seine Spieler, auch die
+    // ausgeschiedenen - sie haben mitgewonnen.
+    const namen = gewinner.map(name);
+    const liste = `${namen.slice(0, -1).join(', ')} und ${namen.at(-1)}`;
+    if (gewinner.includes(this.ich)) return `Ihr habt gewonnen — Team ${team}: ${liste}`;
+    return `Team ${team} hat gewonnen — ${liste}`;
   }
 
   /**
@@ -442,7 +448,7 @@ export class Ansicht {
         id: zeile.id,
         name: spieler?.name || 'Unbekannt',
         farbe: spieler?.farbe || '#888888',
-        sieger: zeile.id === this.ende.sieger,
+        sieger: (this.ende.gewinner || []).includes(zeile.id),
         aus: zeile.aus === 1,
         zeitalter: this.zeitalterName(zeile.zeitalter || 0),
         gesammelt: zeile.gesammelt,

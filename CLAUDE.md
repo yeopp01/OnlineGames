@@ -161,7 +161,7 @@ Umfang hinzufügt, dort nachsehen.
 
 ## Stand
 
-**442 von 571 Kriterien fertig.** 639 Tests ohne Browser, 194 im Browser. Die
+**443 von 571 Kriterien fertig.** 645 Tests ohne Browser, 195 im Browser. Die
 Übersicht ist der Bericht: `npm run qa:report`.
 
 Gebaut ist der Unterbau: Räume, Übertragung, Karte, Wegfindung, Sammeln,
@@ -391,7 +391,9 @@ setzen sie mit `partieZuDritt(…, { teams: [1, 2, 1] })`. **Verbündete
 sehen gemeinsam** (spielziel AC-19): ein Team hat auf dem Server einen
 Satz Sichtfelder (`welt.sichten` zeigt für jedes Mitglied auf dasselbe
 Objekt), im Browser zählt `public/nebel.js` alles mit, was nicht
-`ansicht.feindlich` ist. `tests/waechter-feindlich.test.mjs` verbietet in den
+`ansicht.feindlich` ist. **Ein Team gewinnt** (spielziel AC-20): das Ende
+trägt `gewinner` (alle des Teams, auch Ausgeschiedene) und `team`; `sieger`
+steht nur bei genau einem Gewinner. `tests/waechter-feindlich.test.mjs` verbietet in den
 Kampfregeln jeden Vergleich mit dem Besitzer.
 
 1. **Stufe A** Dunkle Zeit mit Wirtschafts-KI und Prüfstand · **B** Feudalzeit

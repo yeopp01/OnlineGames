@@ -180,7 +180,10 @@ function partieSpielen({ startwert, spieler = 2, minuten = 10, einstellungen = {
     // niemand gewonnen hat - dann war die Vorgabe `minuten` zuerst am Ende.
     gespielt: welt.takt,
     ende: welt.ende,
-    sieger: welt.ende?.sieger ? welt.spieler.find((s) => s.id === welt.ende.sieger)?.name || null : null,
+    // Ein Team gewinnt mit allen Namen (spielziel AC-20): "KI 1 + KI 3".
+    sieger: welt.ende?.gewinner?.length
+      ? welt.ende.gewinner.map((id) => welt.spieler.find((s) => s.id === id)?.name).join(' + ')
+      : null,
     dauerMs: Number(process.hrtime.bigint() - beginn) / 1e6,
     spieler: welt.spieler.map((s, i) => ({
       ...kennzahlen(welt, s, kis[i], untaetig),

@@ -263,3 +263,84 @@ test('spielziel AC-19: faellt ein Gebaeude der Verbuendeten, erfaehrt Anna es so
   const z = welt.zustandJeSpieler(['a']).get('a');
   assert.ok((z.gebaeude || []).some((g) => g.i === haus.id && g.weg), 'das Verschwinden kommt an');
 });
+
+// ---- Ein Team gewinnt (spielziel AC-20, Runde 150) --------------------------
+
+/** Alles wegnehmen, was diesem Spieler gehoert - wie ein verlorener Kampf. */
+function allesVerlieren(welt, id) {
+  for (const e of welt.einheiten.values()) if (e.besitzer === id && !e.tot) welt.einheitSterben(e);
+  for (const g of [...welt.gebaeude.values()]) if (g.besitzer === id) welt.gebaeudeZerstoeren(g);
+  welt.takten();
+}
+
+test('spielziel AC-20: bleiben nur Verbuendete, gewinnt ihr Team - auch wer daraus schon ausgeschieden ist', () => {
+  const welt = new Welt(DREI, 7, { sicht: 'aufgedeckt', teams: TEAMS });
+  // Carla faellt zuerst: Anna und Bert sind noch Gegner, es geht weiter.
+  allesVerlieren(welt, 'c');
+  assert.equal(welt.spielerVon('c').aus, true);
+  assert.equal(welt.ende, null, 'Anna gegen Bert - nicht entschieden');
+  // Bert faellt: uebrig ist nur noch Team 1.
+  allesVerlieren(welt, 'b');
+  assert.ok(welt.ende, 'entschieden');
+  assert.equal(welt.ende.grund, 'eroberung');
+  assert.equal(welt.ende.team, 1);
+  assert.deepEqual([...welt.ende.gewinner].sort(), ['a', 'c'], 'Anna und Carla - Carla war schon draussen');
+  assert.equal(welt.ende.sieger, null, 'nicht einer allein');
+  // Die Tafel nennt jeden, auch den ausgeschiedenen Gewinner als draussen.
+  assert.equal(welt.ende.tafel.find((z) => z.id === 'c').aus, 1);
+});
+
+test('spielziel AC-20: faellt der einzige Gegner, ist entschieden, waehrend beide Verbuendete noch stehen', () => {
+  // Der Fall, den "einer bleibt uebrig" nicht kennt: Anna und Carla haben
+  // beide noch ihr Dorf.
+  const welt = new Welt(DREI, 7, { sicht: 'aufgedeckt', teams: TEAMS });
+  allesVerlieren(welt, 'b');
+  assert.equal(welt.spieler.filter((s) => !s.aus).length, 2, 'zwei stehen noch');
+  assert.ok(welt.ende, 'und trotzdem entschieden - im selben Takt');
+  assert.deepEqual([...welt.ende.gewinner].sort(), ['a', 'c']);
+  assert.equal(welt.ende.team, 1);
+});
+
+test('spielziel AC-20: ohne Teams gewinnt nur, wer allein uebrig ist - wie bis Runde 149', () => {
+  const welt = new Welt(DREI, 7, { sicht: 'aufgedeckt' });
+  allesVerlieren(welt, 'c');
+  assert.equal(welt.ende, null);
+  allesVerlieren(welt, 'b');
+  assert.deepEqual({ gewinner: welt.ende.gewinner, sieger: welt.ende.sieger, team: welt.ende.team },
+    { gewinner: ['a'], sieger: 'a', team: undefined });
+});
+
+test('spielziel AC-20: zwei Uebrige aus verschiedenen Teams - oder einer ohne Team - spielen weiter', () => {
+  // Anna und Carla in Team 1, Bert ohne Team. Faellt Carla, stehen Anna und
+  // Bert gegeneinander: wer kein Team hat, ist jedem Gegner.
+  const welt = new Welt(DREI, 7, { sicht: 'aufgedeckt', teams: { a: 1, c: 1 } });
+  allesVerlieren(welt, 'c');
+  assert.equal(welt.ende, null, 'Anna gegen Bert ohne Team - nicht entschieden');
+  // Faellt Anna, gewinnt Bert allein - ohne Team, und Carla hat verloren.
+  allesVerlieren(welt, 'a');
+  assert.deepEqual(welt.ende.gewinner, ['b']);
+  assert.equal(welt.ende.sieger, 'b');
+  assert.equal(welt.ende.team, undefined);
+});
+
+test('spielziel AC-20: solange ein Gegner steht, ist nichts entschieden', () => {
+  // Eine Partie, in der niemand Gegner ist, waere ohne Spiel entschieden.
+  // Mit zwei Teams und einem Gegner bleibt sie offen, solange er steht.
+  const welt = new Welt(DREI, 7, { sicht: 'aufgedeckt', teams: { a: 1, b: 2, c: 1 } });
+  for (let i = 0; i < 20; i++) welt.takten();
+  assert.equal(welt.ende, null, 'Bert steht noch');
+});
+
+test('spielziel AC-20: stehen alle in einem Team, entscheidet keine Eroberung - nur die Zeit', () => {
+  // Im Warteraum laesst sich jeder Platz auf Team 1 stellen (auswahl AC-22).
+  // Ohne Gegner gibt es nichts zu gewinnen: die Partie endet nicht im ersten
+  // Takt mit "Ihr habt gewonnen", sondern laeuft, bis die Zeit um ist.
+  const welt = new Welt(DREI, 7, { sicht: 'aufgedeckt', teams: { a: 1, b: 1, c: 1 } });
+  for (let i = 0; i < 20; i++) welt.takten();
+  assert.equal(welt.ende, null, 'nicht im ersten Takt entschieden');
+  allesVerlieren(welt, 'b');
+  assert.equal(welt.ende, null, 'auch nicht, wenn einer faellt');
+  welt.takt = 90 * 60 * TAKTE_PRO_SEKUNDE;
+  welt.takten();
+  assert.deepEqual({ gewinner: welt.ende.gewinner, grund: welt.ende.grund }, { gewinner: [], grund: 'zeit' });
+});

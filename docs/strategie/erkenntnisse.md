@@ -1584,6 +1584,19 @@ ihn, mit Gegenprobe an beiden Formen. Fünf Bilder neu, alle angesehen.
 Neueste oben. Eine Zeile je Runde: Nummer, Datum, Kriterien, Ergebnis,
 wichtigste Erkenntnis.
 
+- **150** · 2026-11-09 · **spielziel AC-20 fertig** — ein Team gewinnt:
+  `welt.endePruefen` fragt `feindlich` statt „einer bleibt übrig", das Ende
+  trägt `gewinner` und `team`, `sieger` nur bei genau einem. Tafel und
+  Ansage nennen Team und Spieler, auch den schon Ausgeschiedenen.
+  Erkenntnis: (1) die erste Gegenprobe gegen „einer bleibt übrig" blieb
+  grün — der Test ließ am Ende nur Anna stehen, also galt auch die alte
+  Regel. Erst der Fall „der einzige Gegner fällt, beide Verbündete stehen"
+  trennt beide. Eine Gegenprobe gegen die **alte** Regel braucht einen
+  Fall, in dem alt und neu verschieden antworten. (2) Die Durchsicht fand,
+  was ich auch gesehen und nur vermerken wollte: alle in einem Team ⇒ Sieg
+  im ersten Takt. Jetzt behoben (`welt.mitGegnern`), statt als Faden
+  liegen zu lassen — ein Fehler, den der Warteraum mit drei Klicks
+  erreicht, ist kein Faden.
 - **149** · 2026-11-09 · **spielziel AC-19 fertig** — Verbündete sehen
   gemeinsam. Auf dem Server bekommt jedes Team **ein** Sichtobjekt, auf das
   alle Mitglieder in `welt.sichten` zeigen; damit gelten `sieht`,

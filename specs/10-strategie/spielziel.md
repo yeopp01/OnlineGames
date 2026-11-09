@@ -2,7 +2,7 @@
 
 **Bereich:** Strategie
 **Kuerzel:** spielziel
-**Stand:** 7/23 fertig · 1 in Arbeit · 15 offen
+**Stand:** 8/23 fertig · 1 in Arbeit · 14 offen
 
 ## Zweck
 
@@ -155,10 +155,17 @@ eigenen Technikbaum ([Vorlage](../../docs/strategie/vorlage-aoe2.md)).
   1000 Takte). Einheiten und Gebäude der Verbündeten gehen immer über die
   Leitung, auch ihr Verschwinden. Der Browser zählt sie in `public/nebel.js`
   mit, mit der Sicht aus den Werten ihres Besitzers.
-- **AC-20** `offen` **Ein Team gewinnt** — Die Partie endet, sobald nur noch
+- **AC-20** `fertig` **Ein Team gewinnt** — Die Partie endet, sobald nur noch
   Verbündete übrig sind. Gewonnen haben alle Spieler dieses Teams, auch die
   schon ausgeschiedenen. Die Tafel (AC-8) nennt das Team und seine Spieler.
   Wer sein Bündnis gelöst hat (AC-21), gehört keinem Team mehr an.
+  **Runde 150:** `welt.endePruefen` fragt `feindlich` statt „einer bleibt
+  übrig"; das Ende trägt `gewinner` (alle des Teams), `team` und — nur bei
+  genau einem Gewinner — `sieger` wie bisher. Über dem Bild steht für das
+  Team „Ihr habt gewonnen — Team 1: Anna und Cem", für die anderen „Team 1
+  hat gewonnen — Anna und Cem"; die Tafel hebt jede Zeile der Gewinner
+  hervor. Stehen alle in einem Team, entscheidet keine Eroberung — sonst
+  endete die Partie im ersten Takt (`welt.mitGegnern`).
 - **AC-21** `offen` **Bündnis lösen mit Frist** — Nur bei „lösbar"
   (spielauswahl AC-22): ein Spieler kündigt einem Verbündeten das Bündnis.
   **Alle** sehen die Ansage mit einer Uhr über 60 Sekunden. Die gemeinsame

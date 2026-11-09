@@ -188,8 +188,10 @@ class Welt {
     // Sie schlagen ein, wenn `takte` abgelaufen ist, dort, wo das Ziel beim
     // Abwurf stand.
     this.einschlaege = [];
-    // Das Ende der Partie, sobald es feststeht (spielziel AC-5):
-    // `{ sieger, grund, takt }` mit `grund` "eroberung" oder "zeit".
+    // Das Ende der Partie, sobald es feststeht (spielziel AC-5, AC-20):
+    // `{ gewinner, sieger, team, grund, takt }` mit `grund` "eroberung" oder
+    // "zeit". `gewinner` sind alle, die gewonnen haben - ein Team samt
+    // seinen Ausgeschiedenen; `sieger` steht nur, wenn es genau einer ist.
     this.ende = null;
     // Gezaehlt wird der Bestand nur, wenn etwas verloren ging - sonst liefe
     // die Suche ueber alle Einheiten und Gebaeude in jedem Takt mit.
@@ -221,6 +223,11 @@ class Welt {
     // statt `spielerVon` (das sucht in der Liste).
     this.teamVon = new Map(this.spieler.map((s) => [s.id, s.team]));
     this.mitTeams = this.spieler.some((s) => s.team);
+    // Gibt es ueberhaupt zwei Gegner? Stehen alle in einem Team, entscheidet
+    // keine Eroberung - sonst endete die Partie im ersten Takt mit "Ihr habt
+    // gewonnen" (spielziel AC-20, Durchsicht Runde 150). Dann endet sie
+    // erst mit der Zeit oder wenn niemand mehr steht.
+    this.mitGegnern = this.spieler.some((a) => this.spieler.some((b) => this.feindlich(a.id, b.id)));
 
     // Tiere gehoeren einem Spieler, stehen aber nicht in den Einheiten: sie
     // stehen still, bis jemand sie nutzt, und gehen deshalb nicht zehnmal je
@@ -2563,8 +2570,8 @@ class Welt {
   }
 
   /**
-   * Wer nichts mehr hat, scheidet aus; bleibt einer uebrig, ist die Partie
-   * entschieden. Gerechnet **auf dem Server und in dem Takt**, in dem der
+   * Wer nichts mehr hat, scheidet aus; bleiben nur Verbuendete uebrig - oder
+   * einer allein -, ist die Partie entschieden (spielziel AC-20). Gerechnet **auf dem Server und in dem Takt**, in dem der
    * letzte Verlust abgerechnet wurde - deshalb steht der Aufruf am Ende von
    * `takten()`, hinter `schlaegeAbrechnen()`.
    *
@@ -2582,12 +2589,22 @@ class Welt {
       }
     }
     const uebrig = this.spieler.filter((s) => !s.aus);
-    if (uebrig.length <= 1) {
-      this.endeSetzen(uebrig[0]?.id || null, 'eroberung');
+    if (!uebrig.length) {
+      this.endeSetzen([], 'eroberung');
+      return;
+    }
+    // Keine zwei Uebrigen sind Gegner: dann gewinnt ihr Team, und zwar ganz,
+    // auch wer daraus schon ausgeschieden ist. Wer kein Team hat, ist jedem
+    // Gegner - er gewinnt nur allein. Gefragt wird `feindlich`, die eine
+    // Stelle fuer "Gegner oder nicht" (spielziel AC-14).
+    if (this.mitGegnern && uebrig.every((s) => !this.feindlich(uebrig[0].id, s.id))) {
+      const team = uebrig[0].team || null;
+      const gewinner = team ? this.spieler.filter((s) => s.team === team).map((s) => s.id) : [uebrig[0].id];
+      this.endeSetzen(gewinner, 'eroberung', team);
       return;
     }
     if (this.takt >= PARTIE_MINUTEN * 60 * TAKTE_PRO_SEKUNDE) {
-      this.endeSetzen(null, 'zeit');
+      this.endeSetzen([], 'zeit');
     }
   }
 
@@ -2600,9 +2617,12 @@ class Welt {
    * Die Reihenfolge ist die der Spieler, nicht die des Ergebnisses - wer die
    * Tafel zeigt, sortiert sie, und bei allen steht dasselbe.
    */
-  endeSetzen(sieger, grund) {
+  endeSetzen(gewinner, grund, team = null) {
     this.ende = {
-      sieger,
+      gewinner,
+      // Gewinnt genau einer, steht er auch hier - wie bis Runde 149.
+      sieger: gewinner.length === 1 ? gewinner[0] : null,
+      ...(team ? { team } : {}),
       grund,
       takt: this.takt,
       tafel: this.spieler.map((s) => ({
