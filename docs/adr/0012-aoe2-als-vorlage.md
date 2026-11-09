@@ -1,6 +1,6 @@
 # ADR-0012: Age of Empires II ist die Vorlage, gebaut wird in Stufen
 
-**Status:** entschieden
+**Status:** entschieden; die Zeile „Handelskarren" in „Wird nicht gebaut" ist abgelöst durch [ADR-0013](0013-buendnisse-karren-dauer.md)
 **Datum:** 2026-09-16
 **Löst ab:** die Tabelle „Was es ausdrücklich **nicht** wird" in
 [`specs/10-strategie/spielziel.md`](../../specs/10-strategie/spielziel.md)

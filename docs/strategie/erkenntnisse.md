@@ -117,7 +117,12 @@ etwas anderem gearbeitet.
   holt eine Zeile aus „Wird nicht gebaut" in ADR-0012 und braucht deshalb
   ein ADR; mit Bündnissen hat der Karren zwischen eigenem und verbündetem
   Markt seinen Sinn. Ein ADR für Bündnisse, Karren, Geschwindigkeit und
-  Zeitgrenze zusammen.
+  Zeitgrenze zusammen. **Geschrieben in Runde 145:
+  [ADR-0013](../adr/0013-buendnisse-karren-dauer.md)**, Bauabfolge D10 bis
+  D14. Darin stehen die Vorschläge der Schleife oben als Entscheidung:
+  lösbar als Vorgabe, Frist 60 Sekunden, Kündigen in beide Richtungen, Karren
+  auch zum zweiten eigenen Markt, Zeitgrenze „keine". Sagt der Benutzer
+  anders, wird der Text geändert, bevor D10 gebaut wird.
 
 - **Formationen wie im Original?** (Runde 111) Marschierende Einheiten
   laufen heute auf demselben Weg genau übereinander, im Angriffslauf der KI
@@ -1524,6 +1529,16 @@ ihn, mit Gegenprobe an beiden Formen. Fünf Bilder neu, alle angesehen.
 Neueste oben. Eine Zeile je Runde: Nummer, Datum, Kriterien, Ergebnis,
 wichtigste Erkenntnis.
 
+- **145** · 2026-11-09 · **Spec-Runde: ADR-0013** (Bündnisse, die sich lösen
+  lassen, Marktkarren ab der Ritterzeit, Zeitgrenze und Spielgeschwindigkeit
+  als Einstellung). Es holt „Handelskarren" aus „Wird nicht gebaut" und
+  schreibt spielziel AC-14 neu. Neu sind spielziel AC-19 bis AC-23,
+  spielauswahl AC-22, einheiten AC-39 und AC-40, ki AC-25 und AC-26 sowie
+  fahrplan AC-24, dazu die Bauabfolge D10 bis D14 noch in Stufe D. Der
+  Handelskarren steht in der Vorlage. **Nicht geprüft:** seine Formel (nur
+  aus der Gemeinschaft nachgemessen) und ob die Vorlage zwei eigene Märkte
+  erlaubt. Deshalb nennt das Kriterium ein Ziel, kein Ergebnis der Formel
+  („wie ein Dorfbewohner am Gold, auf halber Kartenbreite").
 - **144** · 2026-11-09 · **ki AC-13 dritter Anlauf, wieder geparkt**: der
   Zweig `strategie-ki-sicht` auf dem Stand von Runde 143. KI gegen KI 36 von
   40 vor Minute 60 (`strategie` 40), Median +3,6 bis +4 Minuten, ein Takt

@@ -2,7 +2,7 @@
 
 **Bereich:** Strategie
 **Kuerzel:** fahrplan
-**Stand:** 16/23 fertig · 7 offen
+**Stand:** 16/24 fertig · 8 offen
 
 ## Zweck
 
@@ -193,6 +193,13 @@ Zustandsnachricht umbaut und damit jeden Browsertest berührt: was dort heute
   gegen acht Bogenschützen kein Haufen sind. Der Haufen zählt: ein Stein
   trifft im Mittel mehr als einen Gegner — sonst gewönne der Mangonel nur
   über seine Fernrüstung.
+- **AC-24** `offen` **Zwei gegen zwei zu Ende** — Im Browser: ein
+  Mensch und eine KI gegen zwei KIs, eröffnet mit Teams, gespielt bis zur
+  Tafel, die das siegreiche Team nennt (wie AC-12). Im Prüfstand endet KI
+  gegen KI zu zweit gegen zwei über zwanzig Startwerte mit einem Sieger,
+  jede Partie vor Minute 90. Das ist die Dauer, die der Benutzer für eine
+  Partie nennt; die Grenze für Tests legt die Schleife fest
+  ([ADR-0013](../../docs/adr/0013-buendnisse-karren-dauer.md)).
 
 **Bauabfolge Stufe D.** Jeder Schritt endet mit etwas im Browser Sichtbarem.
 
@@ -207,6 +214,24 @@ Zustandsnachricht umbaut und damit jeden Browsertest berührt: was dort heute
 | D7 | Burg (**fertig**, Runde 132) und Markt (**fertig**, Runde 133) | bauen AC-32, AC-33 |
 | D8 | Mönch: heilen (**fertig**, Runde 134), bekehren (**fertig**, Runde 135) | einheiten AC-37, AC-38 |
 | D9 | Die KI in der Ritterzeit; Konterkreis (**fertig**, Runde 138) und Befestigung (**fertig**, Runde 139) im Prüfstand; die Ritterzeit am Stück im Browser (**fertig**, Runde 140) | ki AC-21, AC-22, fahrplan AC-14, AC-15, AC-23 |
+
+**Bündnisse, Karren, Dauer** ([ADR-0013](../../docs/adr/0013-buendnisse-karren-dauer.md),
+Runde 145) kommen noch in Stufe D. Sie stehen vor den Völkern, weil jede
+Regel danach schon „Gegner oder nicht" fragen soll statt „mir oder nicht
+mir":
+
+| Schritt | Was | Kriterien |
+| --- | --- | --- |
+| D10 | Teams im Warteraum, Verbündete kämpfen nicht, gemeinsame Sicht | spielauswahl AC-22, spielziel AC-14, AC-19 |
+| D11 | Ein Team gewinnt; die KI im Team; zwei gegen zwei im Prüfstand und im Browser | spielziel AC-20, ki AC-25, fahrplan AC-24 |
+| D12 | Bündnis lösen, öffentlich und mit Frist | spielziel AC-21 |
+| D13 | Zeitgrenze und Spielgeschwindigkeit als Einstellung | spielziel AC-22, AC-23 |
+| D14 | Der Marktkarren und sein Handel; die KI handelt | einheiten AC-39, AC-40, ki AC-26 |
+
+**Was ADR-0013 ablöst.** spielziel AC-5 (der Satz über die 90
+Spielminuten, mit D13) und spielauswahl AC-20 (die Begründung des Namens
+mit „Bündnisse nur am Tisch", mit D10). Beide bleiben `fertig`; die Runde,
+die den Nachfolger baut, passt Text, Test und Bild an.
 
 **Die Rückschau zur Stufe D** (Runde 142) hat drei Lücken angelegt, die
 die Bauabfolge der Stufe E als ersten Schritt aufnimmt: das Zeitalter am
@@ -285,12 +310,10 @@ Vom Benutzer am 2026-11-09 eingebracht, alle noch offen:
   verliert langsam Leben, heilt nicht, und oben steht es rot; sobald
   wieder Nahrung da ist, hört es auf. Die Höhe des Solds wird gemessen,
   nicht geschätzt (wie viele Soldaten trägt ein Bauer?).
-- **Bündnisse, die sich lösen lassen — entschieden, Umriss (2026-11-09).**
-  Gespielt wird meist 2 gegen 2; Teams beim Eröffnen, fest oder lösbar.
-  Löst spielziel AC-14 ab. Dazu **Spielgeschwindigkeit und Zeitgrenze als
-  Einstellung** (eine Partie darf anderthalb Stunden dauern) und
-  **Marktkarren ab der Ritterzeit** — beides mit einem eigenen ADR, das
-  die Zeile „Handelskarren" aus „Wird nicht gebaut" holt.
+- **Bündnisse, die sich lösen lassen — entschieden in
+  [ADR-0013](../../docs/adr/0013-buendnisse-karren-dauer.md) (Runde 145).**
+  Dazu Marktkarren ab der Ritterzeit, Zeitgrenze und Spielgeschwindigkeit
+  als Einstellung. Bauabfolge D10 bis D14 oben in Stufe D.
 
 ## Der Prüfstein
 

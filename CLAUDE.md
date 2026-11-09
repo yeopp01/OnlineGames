@@ -146,7 +146,8 @@ e2e/     Playwright: tests/ im Browser; server.mjs startet den Server samt Prüf
 | [ADR-0009](docs/adr/0009-oberflaeche-im-browser.md) | **Die Oberfläche wird in einem echten Browser geprüft.** Jedes Spiel bringt sein eigenes Stylesheet mit — keine geteilte Kaskade. |
 | [ADR-0010](docs/adr/0010-playwright.md) | **Playwright** statt eigener Fernsteuerung: warten auf Zustände statt nach der Uhr. **Nur örtlich**, nicht in der CI. |
 | [ADR-0011](docs/adr/0011-bildnachweise.md) | **Bildnachweise gehören an das Abnahmekriterium.** `fertig` = Testname **und** (Bild **oder** Begründung). Bilder eingecheckt, Bericht erzeugt. |
-| [ADR-0012](docs/adr/0012-aoe2-als-vorlage.md) | **AoE II ist die Vorlage, gebaut wird in Stufen A–G.** Keine Schiffe, kein Karrenhandel, keine Kampagnen, kein Material aus dem Original, kein „Age of Empires" im Spiel. Völker sind Daten. |
+| [ADR-0012](docs/adr/0012-aoe2-als-vorlage.md) | **AoE II ist die Vorlage, gebaut wird in Stufen A–G.** Keine Schiffe, kein Handel über Wasser, keine Kampagnen, kein Material aus dem Original, kein „Age of Empires" im Spiel. Völker sind Daten. |
+| [ADR-0013](docs/adr/0013-buendnisse-karren-dauer.md) | **Bündnisse, die sich lösen lassen**: Teams im Warteraum, fest oder lösbar; Lösen öffentlich mit 60 Sekunden Frist; ein Team gewinnt. **Marktkarren ab der Ritterzeit**, auch zum zweiten eigenen Markt. **Zeitgrenze und Spielgeschwindigkeit sind Einstellungen** (Vorgabe: keine Grenze, 1,0). |
 
 **Eröffnen verlangt ein Konto, Mitspielen nicht.** Wer eine Partie eröffnet,
 belegt Rechenzeit — dort leistet ein Konto etwas. Wer mitspielt, tippt Code
@@ -159,7 +160,7 @@ Umfang hinzufügt, dort nachsehen.
 
 ## Stand
 
-**439 von 560 Kriterien fertig.** 607 Tests ohne Browser, 191 im Browser. Die
+**439 von 571 Kriterien fertig.** 607 Tests ohne Browser, 191 im Browser. Die
 Übersicht ist der Bericht: `npm run qa:report`.
 
 Gebaut ist der Unterbau: Räume, Übertragung, Karte, Wegfindung, Sammeln,

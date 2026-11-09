@@ -92,6 +92,15 @@ er nach 4000 verkauftem Holz oder Nahrung und nach 5500 Stein. Daraus
 folgen 2 Gold je Tausch und ein Tiefstpreis von 20 — gerechnet, nicht im
 Original abgelesen.
 
+Der **Handelskarren** (in der Vorlage ab der Feudalzeit, am Markt): 100 Holz,
+50 Gold, 70 Leben, Rüstung 0/0, Tempo 1,0. Er pendelt zu einem fremden
+Markt und bringt bei jeder Rückkehr Gold, nachgemessen von Spielern
+`0,46 · d · (d / S + 0,3)` je Fahrt (`d` Abstand der Märkte in Feldern, `S`
+Kantenlänge der Karte). Quelle für die Werte ist das Fan-Wiki zur Einheit,
+für die Formel ein Beitrag aus der Gemeinschaft. Beides ist **nicht
+geprüft**. Hier kommt er erst mit der Ritterzeit und darf auch zum zweiten
+eigenen Markt fahren ([ADR-0013](../adr/0013-buendnisse-karren-dauer.md)).
+
 ## Zeitalter
 
 | Wechsel | Kosten | Dauer | Voraussetzung |

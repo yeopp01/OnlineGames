@@ -13,7 +13,7 @@ hier nichts eintraegt, verliert den Faden beim naechsten Autocompact.
 
 ## Zuletzt fortgeschrieben
 
-2026-11-09, nach Runde 144 (**ki AC-13 dritter Anlauf, geparkt** auf `strategie-ki-sicht` `d0314d4`: 36 von 40 vor Minute 60, Frage an den Benutzer - fahrplan AC-11 im Nebel neu fassen; siehe "Naechste Runde 145"; davor Runde 143: **ki AC-24 fertig, ki AC-21/22 aus `strategie-ki-ritterzeit` eingebunden**: Dorfbewohner je Zeitalter 22/32/42/50, Militaergebaeude ab der Ritterzeit 5/6, Aufstieg vor dem Ersatz; KI gegen KI 40 von 40 vor Minute 60, siehe "Naechste Runde 144" unten; davor Runde 142 Rueckschau zur Stufe D; davor **kampf AC-13, fahrplan AC-13, C6e fertig**: der
+2026-11-09, nach Runde 145 (**ADR-0013 geschrieben**, Bündnisse/Karren/Dauer, Bauabfolge D10-D14; siehe "Naechste Runde 146"; davor Runde 144: **ki AC-13 dritter Anlauf, geparkt** auf `strategie-ki-sicht` `d0314d4`: 36 von 40 vor Minute 60, Frage an den Benutzer - fahrplan AC-11 im Nebel neu fassen; siehe "Naechste Runde 145"; davor Runde 143: **ki AC-24 fertig, ki AC-21/22 aus `strategie-ki-ritterzeit` eingebunden**: Dorfbewohner je Zeitalter 22/32/42/50, Militaergebaeude ab der Ritterzeit 5/6, Aufstieg vor dem Ersatz; KI gegen KI 40 von 40 vor Minute 60, siehe "Naechste Runde 144" unten; davor Runde 142 Rueckschau zur Stufe D; davor **kampf AC-13, fahrplan AC-13, C6e fertig**: der
 Server schickt jedem nur, was er sieht - `welt.zustandJeSpieler`,
 `welt.aufbauFuer`, im Raum `sendenJe`. Fremde Gebaeude und Felder, die sich im
 Nebel aendern, kommen beim naechsten Hinsehen; wer ausscheidet, bekommt einmal
@@ -172,7 +172,20 @@ Zeitgrenze als Einstellung, **Marktkarren schon in der Ritterzeit** - ein
 ADR fuer alles vier (holt Handelskarren aus "Wird nicht gebaut").
 **Reihenfolge:** Runde 143 KI-Wirtschaft, dann das ADR, dann Buendnisse
 bauen, dann Voelker-ADR und Spec-Runde E.
-**Naechste Runde 145: das ADR fuer Buendnisse, Marktkarren,
+**Naechste Runde 146: D10 beginnen** - zuerst `welt.feindlich(a, b)` als
+die eine Stelle, die "Gegner oder nicht" beantwortet: Teams aus den
+Einstellungen (`einstellungen.teams` je Platz), dann jede Stelle, die heute
+`besitzer !== ich` fragt (Wache, Tuerme, Befehl/Rechtsklick, Tore, Sicht,
+Partieende), auf `feindlich` umstellen - vorher mit `grep -n "besitzer !=="
+server/spiele/strategie/welt.js` zaehlen. Ein Waechter, der neue
+`besitzer !==` in Kampfregeln beanstandet, waere die Regel statt Fettdruck.
+Erster Zuschnitt: spielziel AC-14 (Verbuendete kaempfen nicht) im
+Rechenteil, ohne Warteraum - Teams als Einstellung im Test. Danach
+spielauswahl AC-22 (Warteraum), dann AC-19 (Sicht). Kampf oder Wissen der
+KI aendert sich nicht, solange niemand verbuendet ist: der Vergleich muss
+Takt fuer Takt gleich bleiben (`pruefstand:vergleich`, Enden identisch).
+ki AC-13 wartet weiter auf die Frage in den Erkenntnissen.
+Erledigt in Runde 145 (frueher: "Naechste Runde 145: das ADR fuer Buendnisse, Marktkarren,
 Geschwindigkeit und Zeitgrenze** (Antwort (5) in den Erkenntnissen). Ein
 neues ADR, das Handelskarren aus "Wird nicht gebaut" in ADR-0012 holt
 (entschieden vom Benutzer: Karren ab der Ritterzeit) und spielziel AC-14

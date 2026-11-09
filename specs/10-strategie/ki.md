@@ -2,7 +2,7 @@
 
 **Bereich:** Strategie
 **Kuerzel:** ki
-**Stand:** 21/24 fertig · 3 offen
+**Stand:** 21/26 fertig · 5 offen
 
 ## Zweck
 
@@ -234,6 +234,16 @@ nicht die Regeln.
   letzten Zeitalter; mittel (25) und leicht (15) folgen als eigene Reihen.
   Die Zahlen der Feudal- und Ritterzeit liegen zwischen 22 und 50, wie im
   Original ein gutes Spiel wächst; sie sind Werte, kein Gesetz.
+- **AC-25** `offen` **Die KI im Team** — Sie greift nur Gegner an, nie
+  Verbündete, und wählt ihr Ziel unter den Gegnern. Selbst löst sie nie ein
+  Bündnis. Kündigt ihr ein Mensch, ist er nach der Frist ihr Gegner wie
+  jeder andere ([Spielziel](spielziel.md) AC-21). Belegt im Prüfstand: zwei
+  gegen zwei, über zwanzig Startwerte kein Schaden zwischen Verbündeten.
+- **AC-26** `offen` **Die KI handelt mit Karren** — Fehlt ihr in der
+  Ritterzeit das Gold, baut sie einen zweiten Markt weit vom ersten oder
+  fährt zu einem verbündeten, und bildet Karren aus. Gemessen im Prüfstand:
+  das Patt mit leerem Gold (Erkenntnisse, Runden 114, 137 und 144) wird
+  seltener. Die Zahl dazu legt die Messung beim Bauen fest.
 
 ## Grenzfaelle
 

@@ -2,7 +2,7 @@
 
 **Bereich:** Strategie
 **Kuerzel:** spielziel
-**Stand:** 5/18 fertig · 1 in Arbeit · 12 offen
+**Stand:** 5/23 fertig · 1 in Arbeit · 17 offen
 
 ## Zweck
 
@@ -125,10 +125,48 @@ eigenen Technikbaum ([Vorlage](../../docs/strategie/vorlage-aoe2.md)).
   wird das fünfte Volk teurer als das erste statt billiger.
 - **AC-18** `offen` **Kein Volk gewinnt gegen alle** — Über zwanzig Partien liegt keines dauerhaft
   vorn. Belegt durch Partien, nicht durch Behauptung.
-- **AC-14** `offen` **Bündnisse sind nicht vorgesehen** — Jeder gegen jeden. Absprachen finden am
-  Tisch statt, nicht im Spiel — das spart eine ganze Mechanik.
+- **AC-14** `offen` **Verbündete kämpfen nicht** — Spieler desselben Teams
+  ([Spielauswahl](../00-plattform/spielauswahl.md) AC-22) sind Verbündete.
+  Ein Rechtsklick auf einen Verbündeten ist ein Gang dorthin. Wachende
+  Einheiten und schießende Gebäude lassen ihn in Ruhe, Tore öffnen sich für
+  ihn. Flächenschaden trifft ihn wie die eigenen Einheiten ([Kampf](kampf.md) AC-19).
+  Gefragt wird an **einer** Stelle der Welt (`welt.feindlich(a, b)`), nicht
+  in jeder Regel einzeln; heute fragt jede Regel nur „mir oder nicht mir".
+  Bis Runde 144 hieß AC-14 „Bündnisse sind nicht vorgesehen". Der Benutzer
+  spielt aber meist zwei gegen zwei ([ADR-0013](../../docs/adr/0013-buendnisse-karren-dauer.md)).
 - **AC-15** `offen` **Ein Aussteiger blockiert nicht** — Verlässt jemand die Partie endgültig,
   verfallen seine Gebäude nach zwei Minuten, damit die Runde ein Ende findet.
+- **AC-19** `offen` **Verbündete sehen gemeinsam** — Was einer sieht, sehen
+  alle seines Teams: im Bild, auf der Übersichtskarte und in dem, was der
+  Server schickt (kampf AC-13). Das gilt ohne Forschung; in der Vorlage
+  kostete es die Forschung „Kartographie".
+- **AC-20** `offen` **Ein Team gewinnt** — Die Partie endet, sobald nur noch
+  Verbündete übrig sind. Gewonnen haben alle Spieler dieses Teams, auch die
+  schon ausgeschiedenen. Die Tafel (AC-8) nennt das Team und seine Spieler.
+  Wer sein Bündnis gelöst hat (AC-21), gehört keinem Team mehr an.
+- **AC-21** `offen` **Bündnis lösen mit Frist** — Nur bei „lösbar"
+  (spielauswahl AC-22): ein Spieler kündigt einem Verbündeten das Bündnis.
+  **Alle** sehen die Ansage mit einer Uhr über 60 Sekunden. Die gemeinsame
+  Sicht endet sofort, gekämpft werden darf erst nach Ablauf der Frist.
+  Gekündigt wird in beide Richtungen, zurücknehmen lässt es sich nicht. Bei
+  „fest" fehlt der Knopf, und der Server weist die Nachricht ab. Die Frist
+  gibt es, damit das Lösen kein Überfall aus dem Hinterhalt wird.
+
+### Dauer
+
+- **AC-22** `offen` **Zeitgrenze ist eine Einstellung** — Beim Eröffnen:
+  keine, 90 oder 120 Spielminuten, Vorgabe **keine**. Fällt nach Ablauf der
+  Grenze keine Entscheidung, endet die Partie unentschieden, wie heute nach
+  90 Minuten (AC-5). Prüfstand, Tests und KI gegen KI geben ihre Grenze
+  ausdrücklich mit. Der Benutzer: „wenn ich mit echten spiele, dann soll das
+  auch länger dauern dürfen" ([ADR-0013](../../docs/adr/0013-buendnisse-karren-dauer.md)).
+- **AC-23** `offen` **Spielgeschwindigkeit ist eine Einstellung** — 1,0, 1,5
+  oder 2,0, Vorgabe 1,0. Eine Spielsekunde bleibt zehn Takte; schneller
+  heißt, der Raum rechnet mehr Takte je echte Sekunde. Die Zahl erfährt er
+  vom Steckbrief (`takte(einstellungen)`), nicht aus einer Verzweigung
+  (ADR-0006). Prüfbar: bei 1,5 vergehen in zehn echten Sekunden fünfzehn
+  Spielsekunden, höchstens einen Takt daneben. Die Uhr im Bild zeigt
+  Spielzeit (bedienung AC-37).
 
 ## Der Prüfstein
 

@@ -2,7 +2,7 @@
 
 **Bereich:** Plattform
 **Kuerzel:** auswahl
-**Stand:** 16/21 fertig · 5 offen
+**Stand:** 16/22 fertig · 6 offen
 
 ## Zweck
 
@@ -82,6 +82,17 @@ Wer nur mitspielt, ueberspringt alles: Code eingeben, Namen eingeben, drin
   Untergrenze von zwei Spielern gilt fuer **Plaetze**, nicht fuer Menschen —
   sonst ist das Strategiespiel allein nicht spielbar, und genau das ist der
   haeufigste Fall beim Ausprobieren.
+
+- **AC-22** `offen` **Teams im Warteraum** — Jeder Platz im Warteraum hat ein
+  Team (1 bis 4) oder keins, die KIs eingeschlossen. Ein Mensch wählt sein
+  eigenes Team, der Gastgeber das der KIs, und er darf jedes ändern, bis zum
+  Start (wie AC-10). Dazu die Einstellung „Bündnisse: lösbar / fest",
+  Vorgabe lösbar. Alle sehen die Teams vor dem Start (AC-9). Das Team ist
+  eine Sache des Spiels: der Raum trägt die Wahl je Platz weiter, ohne sie
+  zu deuten (AC-4, ADR-0006). Grund ist
+  [ADR-0013](../../docs/adr/0013-buendnisse-karren-dauer.md); was Verbündete
+  im Spiel bedeutet, steht in [Spielziel](../10-strategie/spielziel.md)
+  AC-14 und AC-19 bis AC-21.
 
 ### Name und Sprache
 
