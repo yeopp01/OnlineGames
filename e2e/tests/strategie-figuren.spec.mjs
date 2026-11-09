@@ -107,6 +107,17 @@ test('darstellung AC-3: Baum, Beerenstrauch, Gold und Stein an der Farbe erkennb
   for (const name of ['WALD', 'BEERE', 'GOLD', 'STEIN']) {
     expect(m[name].leer.pixel, name).toBeLessThan(m[name].voll.pixel * 0.7);
   }
+  // Das Bild zeigt die Reihe mit Gelaende und Vorraeten, nicht den Kopf der
+  // Tafel: seit die Einheiten zwei Reihen haben (Runde 123), lag sie unter
+  // dem Ausschnitt, und das Bild zeigte nur Figuren (Rueckschau nach Runde
+  // 130). Die Reihe ist 240 hoch, dazu ihre Ueberschrift.
+  const band = await page.evaluate(() => {
+    const oben = () => document.querySelector('#tafel').getBoundingClientRect().top + window.schautafel.gelaendeOben;
+    window.scrollBy(0, oben() - 60);
+    return { oben: oben(), hoehe: window.innerHeight };
+  });
+  expect(band.oben - 30, 'die Ueberschrift der Reihe im Bild').toBeGreaterThanOrEqual(0);
+  expect(band.oben + 240, 'die ganze Reihe im Bild').toBeLessThanOrEqual(band.hoehe);
   await expect(page.locator('#tafel')).toBeInViewport();
   await nachweis(page, {
     spec: DARSTELLUNG,

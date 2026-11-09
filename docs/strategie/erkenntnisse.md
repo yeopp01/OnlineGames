@@ -1266,11 +1266,58 @@ Erweiterung): `npm run check` 55 s, 531 Tests ohne Browser; `npm run
 e2e:daten` 257 s für sechs Dateien; der volle Browserlauf mit 182 Fällen rund 13
 min (Runde 125).
 
+### Nach Runde 130 (2026-11-09)
+
+Runden 127–130: D5 und D6 ganz — Steinmauer, Tor, Ramme, Mangonel mit
+Flächenschaden. Fünf Kriterien `fertig`, keine Runde gescheitert, KI gegen KI
+in jeder Runde Takt für Takt wie HEAD (die KI baut weder Mauern noch
+Werkstatt). `e2e:daten` hat in den Runden 127 und 128 dreimal einen vollen
+Lauf gespart. Was wiederholt Zeit kostete, und was sich ändert:
+
+1. **`e2e:daten` sah die Spielerfarbe nicht** — in Runde 130 fand
+   `strategie-unterscheidbar` den Mangonel mit 9,8 % statt über 10 %, aber
+   nur, weil ich die Datei aus dem Gedächtnis mitlaufen ließ. Sie stellt
+   über `Object.keys(EINHEITEN)` auf, und das Muster des Wächters kannte nur
+   `w.einheiten.` und Verwandte. → Werkzeug: der Wächter erkennt jetzt
+   `Object.keys/entries/values` der Tabellen, `e2e:daten` fährt sieben
+   Dateien. Gegenprobe: mit der alten Liste rot.
+2. **Breite Figuren ragten aus ihrer Zelle der Schautafel** — die Spitze
+   der Ramme (Runde 129), der Wurfarm des Mangonels (Runde 130), beide Male
+   erst am Bild gefunden und von Hand mit `gross` und Versatz gerichtet.
+   → Werkzeug: `schautafel.ueberstand()` zeichnet jede Figur allein und
+   zählt, wie weit sie in das Gras der Nachbarzelle reicht; darstellung AC-9
+   verlangt null. Die erste Messung fand zwei, die niemand gesehen hatte:
+   Ritter 9 Punkte rechts, Späherreiter 9 links über den Rand der Tafel —
+   beide jetzt kleiner (`gross: 104`).
+3. **Ein Kampfbild begann vor dem Befehl** — der Mangonel nahm sich wachend
+   den Nächsten, bevor der Rechtsklick ankam; dazu `h`, das bei vollem
+   Leben fehlt, und Lebensbalken nur an der Auswahl. → Regel in der
+   Anweisung (Abschnitt 5): Angreifer außer Sicht aufstellen, Getroffene
+   beim Besitzer wählen, Ausgangswert aus `lebenVoll`.
+
+Beim Ansehen der geänderten Schautafel-Bilder gefunden, nicht gesucht: das
+Bild zu darstellung AC-3 („Schautafel unten: Wald, Beerenstrauch, Gold,
+Stein") zeigte seit Runde 123 nur den Kopf der Tafel — die zweite Reihe
+Einheiten hatte das Gelände unter den Ausschnitt geschoben. Der Test
+blättert jetzt zur Reihe und sichert, dass sie ganz im Bild steht. Die
+Abweichung lag in jeder Runde bei 3 bis 9 %: angesehen wurde das Bild nie,
+weil „die Schautafel" immer als bekannt galt. Wer ein Bild über 1 %
+ansieht, liest dabei die Unterschrift.
+
+Gemessen (ruhige Maschine; 18 Chrome-Vorgänge des Benutzers, kein fremder
+Testlauf): `npm run check` 56 s, 553 Tests ohne Browser; der volle
+Browserlauf mit 186 Fällen 15,0 min einschließlich Prüfung (Runde 130);
+`e2e:daten` 4,6 min für sechs Dateien, dazu rund 11 s für die siebte.
+
 ## Runden
 
 Neueste oben. Eine Zeile je Runde: Nummer, Datum, Kriterien, Ergebnis,
 wichtigste Erkenntnis.
 
+- **131** · 2026-11-09 · **Rückschau** — `e2e:daten` mit der Spielerfarbe
+  (Wächter erkennt `Object.keys(EINHEITEN)`), `schautafel.ueberstand()`
+  (fand Ritter und Späherreiter zu breit), Regel für Kampfbilder; das Bild
+  zu darstellung AC-3 zeigt wieder das Gelände.
 - **130** · 2026-11-09 · **einheiten AC-36 und kampf AC-19 fertig, D6
   erreicht** — der Mangonel: 40 Angriff, Reichweite 7, Mindestreichweite 3,
   und sein Stein ist ein **Geschoss auf dem Server** mit Flugzeit (sieben

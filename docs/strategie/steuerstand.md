@@ -13,7 +13,7 @@ hier nichts eintraegt, verliert den Faden beim naechsten Autocompact.
 
 ## Zuletzt fortgeschrieben
 
-2026-11-09, nach Runde 130 (**kampf AC-13, fahrplan AC-13, C6e fertig**: der
+2026-11-09, nach Runde 131 (**kampf AC-13, fahrplan AC-13, C6e fertig**: der
 Server schickt jedem nur, was er sieht - `welt.zustandJeSpieler`,
 `welt.aufbauFuer`, im Raum `sendenJe`. Fremde Gebaeude und Felder, die sich im
 Nebel aendern, kommen beim naechsten Hinsehen; wer ausscheidet, bekommt einmal
@@ -103,7 +103,13 @@ zeichnet daraus einen Stein (`p.stein`). `wehren` schlaegt nie gegen den
 eigenen Besitzer zurueck. Im Browserfall: eine wachende Einheit mit grosser
 Sicht nimmt sich ihr Ziel selbst, bevor der Rechtsklick ankommt - ausser
 Sicht aufstellen. **Naechste Runde 131: Rueckschau.** Danach D7 (Burg und
-Markt) oder kampf AC-21 mit geklaertem Widerspruch.)
+Markt) oder kampf AC-21 mit geklaertem Widerspruch. Runde 131 war die
+Rueckschau: `e2e:daten` faehrt jetzt auch `strategie-unterscheidbar`
+(Spielerfarbe je Einheit), `schautafel.ueberstand()` haelt jede Figur in
+ihrer Zelle (neue breite Figuren: erst `npm run tafel -- "t.ueberstand()"`,
+dann `gross` und `FUSS_VERSATZ` in schautafel.js), und eine Regel fuer
+Kampfbilder in der Anweisung. **Naechste Runde 132: D7 (Burg und Markt,
+bauen AC-32, AC-33)** oder kampf AC-21 - vorher den Widerspruch klaeren.)
 
 ## Wo ich stehe
 
@@ -379,7 +385,7 @@ Markt) oder kampf AC-21 mit geklaertem Widerspruch.)
   bei 20 min). Aelter als Runde 69, nur nie gemessen, weil der Pruefstand bei
   zehn Minuten endete. Ursache und Hebel stehen in den Erkenntnissen unter
   **Offene Faeden**.
-- **Naechste Rueckschau: Runde 131** - oder frueher, wenn Stufe D erreicht wird.
+- **Naechste Rueckschau: Runde 136** - oder frueher, wenn Stufe D erreicht wird.
   Diese Zeile ist der Termin, nicht nachzaehlen.
 - Frueherer Termin, erledigt: **Runde 83** (die Bildnachweise einmal ganz
   angesehen), **Runde 78** (Bilderwerkzeug: `check:alles:neu`,

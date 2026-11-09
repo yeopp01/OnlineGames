@@ -84,11 +84,18 @@ test('darstellung AC-9 / fahrplan AC-7: die Schautafel zeigt jede Einheit und je
       gebaeude: t.gebaeudeZellen.map((z) => ({ art: z.art, farbe: z.farbe, titel: z.titel, bau: z.bau })),
       paare: [...t.unterschiede('figur'), ...t.unterschiede('gebaeude')],
       getragen: Object.fromEntries(arten.map((art) => [art, [anteil(art, '#4a90d9'), anteil(art, '#d94a4a')]])),
+      ragen: t.ueberstand().filter((u) => u.links || u.rechts),
     };
   }, Object.keys(EINHEITEN));
   // Vollstaendig gegen die Werte des Servers: was es in der Stufe gibt, steht da -
   // eine neue Einheit ohne Eintrag auf der Tafel faellt hier auf.
   const farben = (liste, art) => new Set(liste.filter((z) => z.art === art).map((z) => z.farbe));
+  // Und jede steht ganz in ihrer Zelle: keine reicht in das Gras daneben,
+  // wo die Nachbarzelle sie uebermalt (Ramme, Runde 129) oder selbst
+  // verdeckt wird (Mangonel, Runde 130). Gemessen vor der Rueckschau nach
+  // Runde 130: Ritter 9 Punkte rechts, Spaeherreiter 9 links ueber den
+  // Rand der Tafel und 4 rechts - beide jetzt kleiner gezeichnet.
+  expect(tafel.ragen, 'Figuren, die aus ihrer Zelle ragen').toEqual([]);
   for (const art of Object.keys(EINHEITEN)) {
     expect(farben(tafel.figuren, art).size, `${art} in zwei Farben`).toBe(2);
     expect(tafel.figuren.find((z) => z.art === art).titel, `${art} mit Namen`).toBeTruthy();

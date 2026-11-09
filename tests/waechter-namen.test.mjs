@@ -65,8 +65,12 @@ test('waechter: fuer jeden Eintrag im Baumenue gibt es eine Taste', () => {
 // der Feudalzeit am Stueck (Runde 123), der Wachturm, der vor dem Speerkaempfer
 // in den Reiter schoss (Runde 125). `npm run e2e:daten` faehrt genau diese
 // Dateien - in viereinhalb Minuten statt dreizehn. Wer einen Eintrag in
-// `daten.js` anlegt, faehrt es vor dem vollen Lauf.
-const AUS_DEN_DATEN = /w\.gebaeude\[|w\.einheiten\.|\.baut\b|bildetAus|gebaeudeArten|einheitenArten/;
+// `daten.js` anlegt, faehrt es vor dem vollen Lauf. Dazu, wer ueber die
+// Tabellen selbst geht (`Object.keys(EINHEITEN)`): die Spielerfarbe je
+// Einheit in strategie-unterscheidbar fehlte hier, und in Runde 130 fand sie
+// den Mangonel mit 9,8 % erst ausserhalb von e2e:daten (Rueckschau nach
+// Runde 130).
+const AUS_DEN_DATEN = /w\.gebaeude\[|w\.einheiten\.|\.baut\b|bildetAus|gebaeudeArten|einheitenArten|Object\.(keys|entries|values)\((EINHEITEN|GEBAEUDE|VERBESSERUNGEN)\)/;
 
 test('waechter: npm run e2e:daten nennt jeden Browserfall, der aus den Daten aufstellt', () => {
   const ordner = new URL('../e2e/tests/', import.meta.url);

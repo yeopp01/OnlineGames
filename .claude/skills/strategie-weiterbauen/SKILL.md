@@ -148,9 +148,12 @@ Setze die gewählten Kriterien auf `in-arbeit`.
   liest, sieht sie nicht — genau so war die Rüstung aus dem Webstuhl eine Stufe
   lang wirkungslos (Runde 68). `tests/waechter-werte.test.mjs` sucht danach.
 - **Ein neuer Eintrag in `daten.js` (Gebäude, Einheit, Verbesserung) fährt
-  `npm run e2e:daten` vor dem vollen Lauf** — viereinhalb Minuten für die
+  `npm run e2e:daten` vor dem vollen Lauf** — knapp fünf Minuten für die
   Browserfälle, die „alles, was die Daten für dieses Zeitalter sagen"
-  aufstellen. In den Runden 122 bis 125 fand dreimal erst der volle Lauf am
+  aufstellen, seit der Rückschau nach Runde 130 auch die Spielerfarbe je
+  Einheit und ob jede Figur in ihre Zelle der Schautafel passt
+  (`strategie-unterscheidbar`). Eine neue breite Figur richtet man vorher
+  mit `npm run tafel -- "t.ueberstand()"`. In den Runden 122 bis 125 fand dreimal erst der volle Lauf am
   Ende, dass so ein Fall am Neuen bricht (der Ritter in der Feudalzeit am
   Stück, der Wachturm, der den Reiter vor dem Speer traf, 13 Bautasten für 14
   Gebäude) — jedes Mal 13 Minuten und ein zweiter Lauf. **Handelt das Neue von
@@ -312,6 +315,14 @@ Setze die gewählten Kriterien auf `in-arbeit`.
   oder „zwei Bögen" (Runden 56, 61, 63, 64) — jedes Mal hat es erst das Auge am
   fertigen Bild gefunden. Gefallene sind ausgenommen, Gebäude vor Figuren prüft
   es nicht.
+- **Ein Kampfbild, das mit einem Befehl beginnt, stellt den Angreifer
+  außer Sicht auf** und lässt ihn auf Befehl herankommen. Wer wacht, nimmt
+  sich den Nächsten in Sicht von selbst: der Mangonel (Sicht 9) warf in
+  Runde 130 auf den linken Speerkämpfer, bevor der Rechtsklick auf den
+  mittleren ankam. Und **Lebensbalken stehen bei Einheiten nur an der
+  Auswahl** — ein Bild von Treffern wählt die Getroffenen auf der Seite
+  ihres Besitzers. `h` fehlt bei vollem Leben (Drahttafel oben in
+  `e2e/helpers/strategie.mjs`): den Ausgangswert liest `lebenVoll(e)`.
 - **Behauptet die Unterschrift einen Zustand, wartet der Test darauf** —
   „angekommen", „im Wald", „mit Namen": erst `waitForFunction` auf genau
   diesen Zustand, dann `nachweis()` (Runde 46: zweimal zu früh). Nennt ein Test

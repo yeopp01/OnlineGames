@@ -21,12 +21,12 @@ const EINTRAEGE = [
   { art: 'miliz', titel: 'Miliz', lage: {} },
   { art: 'soldat', titel: 'Soldat', lage: {} },
   // Ritterzeit (einheiten AC-33, AC-34).
-  { art: 'ritter', titel: 'Ritter', lage: {} },
+  { art: 'ritter', titel: 'Ritter', lage: {}, gross: 104 },
   { art: 'armbrustschuetze', titel: 'Armbrust', lage: {} },
   // Belagerung (einheiten AC-35).
   { art: 'ramme', titel: 'Ramme', lage: {}, gross: 78 },
   { art: 'mangonel', titel: 'Mangonel', lage: {}, gross: 78 },
-  { art: 'spaeherreiter', titel: 'Späherreiter', lage: {} },
+  { art: 'spaeherreiter', titel: 'Späherreiter', lage: {}, gross: 104 },
   { art: 'speerkaempfer', titel: 'Speerkämpfer', lage: {} },
   { art: 'bogenschuetze', titel: 'Bogenschütze', lage: {} },
   { art: 'plaenkler', titel: 'Plänkler', lage: {} },
@@ -59,6 +59,12 @@ stift.fillRect(0, 0, BREITE, HOEHE);
 
 const spalte = BREITE / EINHEIT_SPALTEN;
 const zellen = [];
+// Breite Figuren stehen nicht mittig: der Reiter hat den Kopf des Pferdes
+// vorn, die Ramme ihren Stossbalken, der Mangonel den Wurfarm hinten. Ob sie
+// in ihre Zelle passen, misst `ueberstand()` (darstellung AC-9); die Reiter
+// sind deshalb seit der Rueckschau nach Runde 130 etwas kleiner (`gross`).
+const FUSS_VERSATZ = { spaeherreiter: 9, ritter: 15, ramme: 24, mangonel: -8 };
+const fussX = (x, art) => x + spalte / 2 - (FUSS_VERSATZ[art] ?? 0);
 
 FARBEN.forEach((farbe, reihe) => {
   EINTRAEGE.forEach((eintrag, i) => {
@@ -69,8 +75,7 @@ FARBEN.forEach((farbe, reihe) => {
     // Gross ...
     // Die Ramme ist fast doppelt so breit wie hoch: kleiner gezeichnet, sonst
     // uebermalt die naechste Zelle ihre Spitze.
-    const fussX = x + spalte / 2 - ({ spaeherreiter: 12, ritter: 12, ramme: 24, mangonel: -8 }[eintrag.art] ?? 0);
-    figurZeichnen(stift, eintrag.art, fussX, oben + 150, eintrag.gross ?? 120, farbe, { blick: 1, ...eintrag.lage });
+    figurZeichnen(stift, eintrag.art, fussX(x, eintrag.art), oben + 150, eintrag.gross ?? 120, farbe, { blick: 1, ...eintrag.lage });
     // ... und in Spielgroesse daneben, wie bei Zoom 1.
     figurZeichnen(stift, eintrag.art, x + spalte - 34, oben + 185, 24, farbe, { blick: 1, ...eintrag.lage });
     stift.fillStyle = '#e6e9ee';
@@ -479,6 +484,44 @@ function groessen() {
 }
 
 /**
+ * Fuer den Browserlauf (darstellung AC-9): wie viele Bildpunkte die grosse
+ * Figur jeder Einheit links und rechts in das Gras der Nachbarzelle reicht.
+ * Rechts malt die Nachbarzelle ihr Gras darueber, links liegt die Figur auf
+ * fremdem Gras - die Spitze der Ramme war in Runde 129 abgeschnitten, der
+ * Wurfarm des Mangonels ragte in Runde 130 hinaus, und beide Male fand es
+ * erst das Auge (Rueckschau nach Runde 130). Der dunkle Spalt zwischen zwei
+ * Zellen (je acht Punkte) darf sie fuellen; was ueber dem Gras steht (eine
+ * Lanze), auch. Gezeichnet wird jede allein auf ein leeres Blatt, gezaehlt,
+ * was deckt - der weiche Schatten nicht.
+ */
+function ueberstand() {
+  const b = spalte * 3;
+  const h = 260;
+  return EINTRAEGE.map((eintrag) => {
+    const blatt = document.createElement('canvas');
+    blatt.width = b;
+    blatt.height = h;
+    const s = blatt.getContext('2d');
+    figurZeichnen(s, eintrag.art, fussX(spalte, eintrag.art), 200, eintrag.gross ?? 120, '#4a90d9', { blick: 1, ...eintrag.lage });
+    const { data } = s.getImageData(0, 0, b, h);
+    let links = b;
+    let rechts = -1;
+    // Der Fuss steht 150 unter der Oberkante des Grases, also bei 200 auf
+    // 50; das Gras ist 200 hoch.
+    for (let y = 50; y < h; y++) {
+      for (let x = 0; x < b; x++) {
+        if (data[(y * b + x) * 4 + 3] <= 128) continue;
+        if (x < links) links = x;
+        if (x > rechts) rechts = x;
+      }
+    }
+    // Das Gras der Zelle reicht von spalte + 8 bis 2 * spalte - 8, das der
+    // Nachbarn bis spalte - 8 und ab 2 * spalte + 8.
+    return { art: eintrag.art, links: Math.max(0, spalte - 8 - links), rechts: Math.max(0, rechts - (2 * spalte + 7)) };
+  });
+}
+
+/**
  * Fuer den Browserlauf (darstellung AC-13, kein Rautenraster): eine Bodenkachel
  * aus lauter Gras, wie im Spiel. Verglichen wird der Farbsprung zwischen zwei
  * benachbarten Bildpunkten, die auf verschiedenen Feldern liegen, mit dem
@@ -607,6 +650,6 @@ function umrissUnterschied(eine, andere, hoehe = figurHoeheBei(1)) {
 
 window.schautafel = {
   zellen, maske, dingMaske, bodenProbe, arten: Object.keys(FIGUREN), dinge: { WALD, BEERE, GOLD, STEIN },
-  gebaeudeZellen, gebaeudeMaske, gebaeudeArten: Object.keys(GEBAEUDE), tonstufen, anmutung, proportionen, groessen, bodenRaster, schlagschatten, unterschiede,
-  umrissUnterschied, spielhoehe: figurHoeheBei(1),
+  gebaeudeZellen, gebaeudeMaske, gebaeudeArten: Object.keys(GEBAEUDE), tonstufen, anmutung, proportionen, groessen, ueberstand, bodenRaster, schlagschatten, unterschiede,
+  umrissUnterschied, spielhoehe: figurHoeheBei(1), gelaendeOben,
 };
