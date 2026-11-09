@@ -7,7 +7,7 @@ Eine Zeile je Abnahmekriterium. Gepflegt wird der Status in der Spec selbst,
 hier steht er zusammengefasst. Erzeugt mit `npm run specs:board`; als Seite
 mit Bildnachweisen, Filter und Suche mit `npm run qa:report`.
 
-**Gesamt:** 439/571 fertig · 1 in Arbeit · 5 in QA · 4 geplant · 114 offen · 8 zurueckgestellt
+**Gesamt:** 439/571 fertig · 1 in Arbeit · 6 in QA · 4 geplant · 113 offen · 8 zurueckgestellt
 
 **Nachweise:** 196 Kriterien mit Bild · 247 ohne Bild, begruendet in `qa/ohne-bild.json`
 
@@ -29,7 +29,7 @@ mit Bildnachweisen, Filter und Suche mit `npm run qa:report`.
 | [Kampf](10-strategie/kampf.md)                                 | -         | -     | -       | -     | 1               | 20     |
 | [Karte und Vorraete](10-strategie/karte-und-vorraete.md)       | -         | -     | -       | 2     | 3               | 12     |
 | [KI-Spieler](10-strategie/ki.md)                               | -         | -     | -       | 5     | -               | 21     |
-| [Spielziel und Partieverlauf](10-strategie/spielziel.md)       | 1         | -     | -       | 17    | -               | 5      |
+| [Spielziel und Partieverlauf](10-strategie/spielziel.md)       | 1         | 1     | -       | 16    | -               | 5      |
 | [Aufstellung, Taktik und Training](15-manager/aufstellung.md)  | -         | -     | -       | -     | 2               | 23     |
 | [Bedienung des Managerspiels](15-manager/bedienung.md)         | -         | -     | -       | -     | -               | 15     |
 | [Finanzen](15-manager/finanzen.md)                             | -         | -     | -       | -     | -               | 16     |
@@ -49,12 +49,13 @@ mit Bildnachweisen, Filter und Suche mit `npm run qa:report`.
 
 - **Zeitalter gliedern die Partie** — [Spielziel und Partieverlauf](10-strategie/spielziel.md) AC-1
 
-## In QA (5)
+## In QA (6)
 
 - **Einladungscodes erzeugen und zuruecknehmen** — [Konten und Anmeldung](00-plattform/konten.md) AC-20
 - **Verwaister Raum wird geschlossen** — [Raeume und Partien](00-plattform/raeume.md) AC-12
 - **Leerlauf endet nach 30 Minuten** — [Raeume und Partien](00-plattform/raeume.md) AC-13
 - **Nachrichtenflut trennt die Verbindung** — [Schutz vor Fremdnutzung](00-plattform/schutz.md) AC-7
+- **Verbündete kämpfen nicht** — [Spielziel und Partieverlauf](10-strategie/spielziel.md) AC-14
 - **Alle Namen sind erfunden** — [Kader und Spieler](15-manager/kader.md) AC-7
 
 ## Geplant (4)
@@ -64,7 +65,7 @@ mit Bildnachweisen, Filter und Suche mit `npm run qa:report`.
 - **Abbruch ist sichtbar** — [Uebertragung](00-plattform/uebertragung.md) AC-9
 - **Automatischer Wiederaufbau** — [Uebertragung](00-plattform/uebertragung.md) AC-10
 
-## Offen (114)
+## Offen (113)
 
 - **Anmeldung ueber Google/GitHub** — [Konten und Anmeldung](00-plattform/konten.md) AC-6
 - **Bilanz je Konto** — [Konten und Anmeldung](00-plattform/konten.md) AC-14
@@ -158,7 +159,6 @@ mit Bildnachweisen, Filter und Suche mit `npm run qa:report`.
 - **Fünf Völker mit Profil** — [Spielziel und Partieverlauf](10-strategie/spielziel.md) AC-16
 - **Ein Volk ist Daten** — [Spielziel und Partieverlauf](10-strategie/spielziel.md) AC-17
 - **Kein Volk gewinnt gegen alle** — [Spielziel und Partieverlauf](10-strategie/spielziel.md) AC-18
-- **Verbündete kämpfen nicht** — [Spielziel und Partieverlauf](10-strategie/spielziel.md) AC-14
 - **Ein Aussteiger blockiert nicht** — [Spielziel und Partieverlauf](10-strategie/spielziel.md) AC-15
 - **Verbündete sehen gemeinsam** — [Spielziel und Partieverlauf](10-strategie/spielziel.md) AC-19
 - **Ein Team gewinnt** — [Spielziel und Partieverlauf](10-strategie/spielziel.md) AC-20

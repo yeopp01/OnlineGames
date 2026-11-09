@@ -136,6 +136,16 @@ function wirkungsschluessel(art) {
   return [...new Set([art, ...(EINHEITEN[art]?.klassen || [])])];
 }
 
+/**
+ * Das Team eines Spielers aus den Einstellungen (spielziel AC-14):
+ * `einstellungen.teams` ist `{ <spielerId>: 1..4 }`. Alles andere - kein
+ * Eintrag, 0, eine Zahl ausserhalb, ein Text - heisst: kein Team.
+ */
+function teamAus(teams, id) {
+  const team = teams && Object.hasOwn(teams, id) ? teams[id] : null;
+  return Number.isInteger(team) && team >= 1 && team <= 4 ? team : null;
+}
+
 function untaetigeListe(welt, spielerId) {
   const ids = welt.untaetigeVon(spielerId);
   return ids.length ? { u: ids } : {};
@@ -203,7 +213,14 @@ class Welt {
       gesammelt: { holz: 0, nahrung: 0, gold: 0, stein: 0 },
       ausgebildet: 0, // Einheiten, die er aus einem Gebaeude bekommen hat
       verloren: 0, // eigene Einheiten, die gefallen sind
+      // Das Team (spielziel AC-14): 1 bis 4 oder keins. Wer keins hat,
+      // spielt gegen alle.
+      team: teamAus(einstellungen.teams, eintrag.id),
     }));
+    // Wer mit wem verbuendet ist, fragt jede Kampfregel - deshalb eine Map
+    // statt `spielerVon` (das sucht in der Liste).
+    this.teamVon = new Map(this.spieler.map((s) => [s.id, s.team]));
+    this.mitTeams = this.spieler.some((s) => s.team);
 
     // Tiere gehoeren einem Spieler, stehen aber nicht in den Einheiten: sie
     // stehen still, bis jemand sie nutzt, und gehen deshalb nicht zehnmal je
@@ -563,10 +580,33 @@ class Welt {
     return alt;
   }
 
-  /** Die Tore eines Spielers als Feldnummern - fuer ihn begehbar (bauen AC-31). */
+  /**
+   * Die Tore, durch die ein Spieler gehen darf, als Feldnummern (bauen AC-31):
+   * seine eigenen und die seiner Verbuendeten (spielziel AC-14).
+   */
   toreVon(besitzer) {
-    const tore = this.tore?.get(besitzer);
-    return tore && tore.size ? tore : null;
+    if (!this.tore) return null;
+    if (!this.mitTeams) {
+      const tore = this.tore.get(besitzer);
+      return tore && tore.size ? tore : null;
+    }
+    // Ein Satz allein geht unveraendert zurueck; erst ein zweiter braucht
+    // einen neuen, sonst stuenden fremde Tore in der eigenen Liste.
+    let offen = null;
+    let neu = false;
+    for (const [wer, tore] of this.tore) {
+      if (!tore.size || this.feindlich(besitzer, wer)) continue;
+      if (!offen) {
+        offen = tore;
+        continue;
+      }
+      if (!neu) {
+        offen = new Set(offen);
+        neu = true;
+      }
+      for (const f of tore) offen.add(f);
+    }
+    return offen;
   }
 
   // Die Grundflaeche wird unbegehbar; wer darauf steht, geht zum naechsten
@@ -1258,6 +1298,21 @@ class Welt {
     return this.spieler.find((s) => s.id === id) || null;
   }
 
+  /**
+   * Gegner oder nicht (spielziel AC-14) - die eine Stelle, an der jede
+   * Kampfregel fragt: wen eine Wache angreift, worauf ein Turm schiesst, was
+   * ein Rechtsklick tut, wessen Tor sich oeffnet. Niemand ist sein eigener
+   * Gegner; ohne Teams ist jeder andere einer, wie bis Runde 145; mit Teams
+   * ist es jeder, der nicht im selben Team ist. Wer kein Team hat, ist
+   * allen Gegner.
+   */
+  feindlich(a, b) {
+    if (a === b) return false;
+    if (!this.mitTeams) return true;
+    const team = this.teamVon.get(a);
+    return !team || team !== this.teamVon.get(b);
+  }
+
   feldVon(einheit) {
     return { x: Math.round(einheit.x), y: Math.round(einheit.y) };
   }
@@ -1290,7 +1345,7 @@ class Welt {
     // Etwas Fremdes unter dem Klick wird angegriffen (kampf AC-1) - kein
     // eigener Knopf, keine eigene Betriebsart: der Server liest es aus dem Feld.
     const feind = this.feindAn(spielerId, Number(ziel.x), Number(ziel.y));
-    const feindBau = !feind && baustelle && baustelle.besitzer !== spielerId ? baustelle : null;
+    const feindBau = !feind && baustelle && this.feindlich(spielerId, baustelle.besitzer) ? baustelle : null;
     // Ein eigenes Schaf in der Naehe des Klicks (einheiten AC-17) - aber nur,
     // wenn auf dem Feld selbst nichts zu sammeln ist: neben Beeren weiden Schafe.
     const schaf = sammeln || angriffslauf ? null : this.tierAn(spielerId, Number(ziel.x), Number(ziel.y));
@@ -1735,7 +1790,7 @@ class Welt {
     let bestes = null;
     let besterAbstand = 1.01;
     for (const einheit of this.einheiten.values()) {
-      if (einheit.besitzer === spielerId || einheit.tot) continue;
+      if (einheit.tot || !this.feindlich(spielerId, einheit.besitzer)) continue;
       const abstand = Math.hypot(einheit.x - x, einheit.y - y);
       if (abstand < besterAbstand) {
         besterAbstand = abstand;
@@ -1905,7 +1960,7 @@ class Welt {
         const zelle = raster.get(`${zx + dx},${zy + dy}`);
         if (!zelle) continue;
         for (const anderer of zelle) {
-          if (anderer.besitzer === einheit.besitzer) continue;
+          if (!this.feindlich(einheit.besitzer, anderer.besitzer)) continue;
           const abstand = Math.hypot(anderer.x - einheit.x, anderer.y - einheit.y);
           if (abstand < mindest) continue;
           if (abstand <= besterAbstand) {
@@ -2006,7 +2061,7 @@ class Welt {
         ziel = null;
         let bester = Infinity;
         for (const einheit of this.einheiten.values()) {
-          if (einheit.tot || einheit.besitzer === turm.besitzer) continue;
+          if (einheit.tot || !this.feindlich(turm.besitzer, einheit.besitzer)) continue;
           // Erst das Rechteck, dann die Luftlinie.
           if (einheit.x < x0 - reichweite || einheit.x > x1 + reichweite
             || einheit.y < y0 - reichweite || einheit.y > y1 + reichweite) continue;
@@ -2221,7 +2276,7 @@ class Welt {
   mauerImWeg(einheit, stand) {
     if (!stand) return null;
     const g = this.karte.groesse;
-    const sperre = (b) => b.besitzer !== einheit.besitzer && (GEBAEUDE[b.art].gezogen || GEBAEUDE[b.art].tor);
+    const sperre = (b) => this.feindlich(einheit.besitzer, b.besitzer) && (GEBAEUDE[b.art].gezogen || GEBAEUDE[b.art].tor);
     const frei = new Set(this.toreVon(einheit.besitzer) || []);
     let mauern = 0;
     for (const b of this.gebaeude.values()) {
@@ -2405,7 +2460,7 @@ class Welt {
    */
   angriffMelden(ziel, gebaeude, angreifer) {
     const spieler = this.spielerVon(ziel.besitzer);
-    if (!spieler || spieler.aus || angreifer?.besitzer === ziel.besitzer) return;
+    if (!spieler || spieler.aus || (angreifer && !this.feindlich(angreifer.besitzer, ziel.besitzer))) return;
     let ort = { x: ziel.x, y: ziel.y };
     if (gebaeude) {
       const { x0, y0, x1, y1 } = this.grundflaeche(ziel.art, ziel.x, ziel.y);
@@ -2432,8 +2487,9 @@ class Welt {
     // Dorfbewohner, der mit der Axt auf 1020 Leben Stein losgeht, stirbt nur
     // schneller. Wer den Turm angreifen soll, braucht einen Befehl (bauen AC-29).
     if (!EINHEITEN[angreifer.art]) return;
-    // Vom eigenen Stein getroffen (kampf AC-19), schlaegt niemand zurueck.
-    if (angreifer.besitzer === einheit.besitzer) return;
+    // Vom eigenen Stein getroffen (kampf AC-19), oder von dem eines
+    // Verbuendeten (spielziel AC-14), schlaegt niemand zurueck.
+    if (!this.feindlich(einheit.besitzer, angreifer.besitzer)) return;
     if (EINHEITEN[einheit.art].wacht) return;
     // Eine Ramme schlaegt nicht zurueck: sie trifft nur Gebaeude (einheiten AC-35).
     if (EINHEITEN[einheit.art].nurGebaeude) return;
@@ -2606,7 +2662,7 @@ class Welt {
   kannBekehren(einheit, ziel) {
     const bekehren = EINHEITEN[einheit.art].bekehren;
     if (!bekehren || einheit.ruhtBis > this.takt) return false;
-    if (!ziel || ziel.tot || ziel.besitzer === einheit.besitzer) return false;
+    if (!ziel || ziel.tot || !this.feindlich(einheit.besitzer, ziel.besitzer)) return false;
     return !EINHEITEN[ziel.art].klassen.some((k) => bekehren.nicht.includes(k));
   }
 
@@ -2637,7 +2693,7 @@ class Welt {
     const auftrag = moench.auftrag;
     const bekehren = EINHEITEN[moench.art].bekehren;
     const ziel = this.einheiten.get(auftrag.ziel);
-    if (!ziel || ziel.tot || ziel.besitzer === moench.besitzer) {
+    if (!ziel || ziel.tot || !this.feindlich(moench.besitzer, ziel.besitzer)) {
       moench.auftrag = null;
       moench.weg = [];
       moench.bekehrt = false;
@@ -2685,18 +2741,19 @@ class Welt {
     einheit.baut = false;
     einheit.leben = Math.min(einheit.leben, this.einheitenwert(neuerBesitzer, einheit.art, 'leben'));
     // Wer sie angriff, laesst ab - im Angriffslauf geht es weiter zum
-    // Marschziel, wie wenn das Ziel gefallen waere.
+    // Marschziel, wie wenn das Ziel gefallen waere. Das gilt auch fuer die
+    // Verbuendeten des neuen Besitzers (spielziel AC-14).
     for (const andere of this.einheiten.values()) {
       const a = andere.auftrag;
-      if (andere.besitzer === neuerBesitzer && a?.art === 'angreifen' && !a.gebaeude && a.ziel === einheit.id) {
+      if (!this.feindlich(andere.besitzer, neuerBesitzer) && a?.art === 'angreifen' && !a.gebaeude && a.ziel === einheit.id) {
         andere.auftrag = null;
         andere.weg = [];
         this.marschFortsetzen(andere);
       }
     }
     // Ein Schlag aus diesem Takt, der noch nicht abgerechnet ist, trifft
-    // keinen mehr, der jetzt dem Schlagenden gehoert.
-    this.schlaege = this.schlaege.filter((s) => s.gebaeude || s.ziel !== einheit || s.angreifer.besitzer !== neuerBesitzer);
+    // keinen mehr, der jetzt dem Schlagenden oder seinem Verbuendeten gehoert.
+    this.schlaege = this.schlaege.filter((s) => s.gebaeude || s.ziel !== einheit || this.feindlich(s.angreifer.besitzer, neuerBesitzer));
     this.bestandPruefen = true;
   }
 
@@ -3435,6 +3492,9 @@ class Welt {
         kw: this.kampfwerte(s.id),
         // Die Marktpreise, wie sie fuer ihn gelten (bauen AC-33).
         hp: this.handelspreise(s.id),
+        // Das Team (spielziel AC-14): der Browser fragt damit, ob ein
+        // Rechtsklick angreift oder hingeht - dieselbe Frage wie `feindlich`.
+        ...(s.team ? { team: s.team } : {}),
         ...(s.aus ? { aus: 1 } : {}),
       })),
       // Wer nach dem Ende zurueckkommt, sieht das Ende und nicht eine

@@ -44,7 +44,8 @@
 //   nahrung: [...], stein: [...] }` in Gold je 100, im Aufbau und danach nur
 //   nach einem Handel; im Browser `ansicht.handelspreise` (nur die eigenen).
 //
-// Dazu `ansicht.ich`, `ansicht.spieler` (Map, mit `basis`), `ansicht.zeitalter`,
+// Dazu `ansicht.ich`, `ansicht.spieler` (Map, mit `basis`, und `team` 1..4, nur
+// wenn eins gesetzt ist; spielziel AC-14), `ansicht.feindlich(besitzer)`, `ansicht.zeitalter`,
 // `ansicht.werte`, `ansicht.verbesserungen`, `ansicht.zuBild(x, y)`,
 // `ansicht.gebaeudeMitte(g)`, `ansicht.platzTaugt(x, y)`.
 //

@@ -160,7 +160,7 @@ Umfang hinzufügt, dort nachsehen.
 
 ## Stand
 
-**439 von 571 Kriterien fertig.** 607 Tests ohne Browser, 191 im Browser. Die
+**439 von 571 Kriterien fertig.** 628 Tests ohne Browser, 191 im Browser. Die
 Übersicht ist der Bericht: `npm run qa:report`.
 
 Gebaut ist der Unterbau: Räume, Übertragung, Karte, Wegfindung, Sammeln,
@@ -378,6 +378,12 @@ neun Feldern, nach vier bis zehn Sekunden gehört sie ihm, danach ruht er
 aus `welt.zufall`, einem eigenen Zufall aus dem Startwert. **Die KI wächst mit den Zeitaltern** (ki AC-24): 22, 32, 42 und 50 Dorfbewohner, ab der Ritterzeit bis zu fünf Militärgebäude; sie steigt in die Ritterzeit auf und bildet Ritter aus (ki AC-21, AC-22). KI gegen KI endet über vierzig Startwerte jedes Mal vor Minute 60, am Ende mit im Median 42 Dorfbewohnern — das ist die schwere Stufe; mittel (25) und leicht (15) folgen. Die **Sicht ist eine Einstellung beim Eröffnen** (kampf AC-16):
 Nebel, Erkundet oder Aufgedeckt — Tests, die nicht vom Nebel handeln,
 eröffnen aufgedeckt (`partieZuZweit(…, { sicht: 'aufgedeckt' })`).
+**Bündnisse (D10, ADR-0013) haben begonnen:** `welt.feindlich(a, b)` ist die
+eine Stelle für „Gegner oder nicht", Teams kommen als Einstellung
+(`teams: { <spielerId>: 1..4 }`); Verbündete greifen sich nicht an, Türme
+schießen nicht auf sie, ihre Tore öffnen sich (spielziel AC-14, noch ohne
+Warteraum). `tests/waechter-feindlich.test.mjs` verbietet in den
+Kampfregeln jeden Vergleich mit dem Besitzer.
 
 1. **Stufe A** Dunkle Zeit mit Wirtschafts-KI und Prüfstand · **B** Feudalzeit
    · **C** Partieende und KI-Gegner · **D** Ritterzeit · **E** fünf Völker ·

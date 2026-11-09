@@ -17,7 +17,9 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 
-const WELT = readFileSync(new URL('../server/spiele/strategie/welt.js', import.meta.url), 'utf8');
+// Ohne Wagenruecklauf: unter Windows checkt git mit CRLF aus, und der Rumpf
+// endete sonst erst am Dateiende.
+const WELT = readFileSync(new URL('../server/spiele/strategie/welt.js', import.meta.url), 'utf8').replace(/\r\n/g, '\n');
 
 /** Die Merker aus der Zeile, die `w: 1` schickt - ohne Auftrag, Weg und Tod. */
 function merkerVonW() {

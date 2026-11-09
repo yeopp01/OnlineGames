@@ -1529,6 +1529,29 @@ ihn, mit Gegenprobe an beiden Formen. Fünf Bilder neu, alle angesehen.
 Neueste oben. Eine Zeile je Runde: Nummer, Datum, Kriterien, Ergebnis,
 wichtigste Erkenntnis.
 
+- **146** · 2026-11-09 · **spielziel AC-14 gebaut, `in-qa`** (D10 begonnen).
+  `welt.feindlich(a, b)` ist die eine Stelle für „Gegner oder nicht"; Teams
+  kommen als `einstellungen.teams = { <id>: 1..4 }`. Umgestellt sind
+  Rechtsklick (Einheit und Gebäude), Wache, Turm, Tore (auch die der
+  Verbündeten, `toreVon`), fremde Mauer im Weg, Angriffsmeldung,
+  Gegenwehr, Bekehren und die Übergabe nach dem Bekehren; im Browser
+  `ansicht.feindlich` mit dem Team aus dem Aufbau. Neun Tests, jeder mit
+  dem Gegner in derselben Lage als Gegenstück, und jede umgestellte Zeile
+  einzeln mit `npm run gegenprobe` zurückgeschaltet: jede bringt ihren Test
+  zu Fall. **Der Vergleich ist Takt für Takt gleich**, über 40 Partien
+  (Enden identisch, 73–74 ms je 1000 Takte wie vorher). Neu ist
+  `tests/waechter-feindlich.test.mjs`: Er liest die Rümpfe der Kampfregeln
+  und verbietet darin jeden Vergleich mit einem Besitzer. Dabei fiel auf,
+  dass `waechter-merker` unter Windows nie den Rumpf allein las: git
+  checkt mit CRLF aus, und `'\n  }\n'` fand erst das Dateiende. Der
+  Wächter war damit zu lasch; beide lesen jetzt ohne Wagenrücklauf.
+  **Erkenntnis:** Ein Wächter, der Text schneidet, braucht eine Gegenprobe
+  *auf der Maschine, auf der er läuft*: erst ein Fall, der ohne Fehler
+  grün sein muss, zeigt einen zu großen Ausschnitt. Offen bleibt
+  das Bild zu AC-14, bis der Warteraum Teams kennt (spielauswahl AC-22).
+  Nicht umgestellt sind Sicht (AC-19), Partieende (AC-20), die Schafe (wer
+  sie zuerst sieht) und das Heilen (nur eigene). Ob Mönche in der Vorlage
+  Verbündete heilen, ist nicht geprüft.
 - **145** · 2026-11-09 · **Spec-Runde: ADR-0013** (Bündnisse, die sich lösen
   lassen, Marktkarren ab der Ritterzeit, Zeitgrenze und Spielgeschwindigkeit
   als Einstellung). Es holt „Handelskarren" aus „Wird nicht gebaut" und

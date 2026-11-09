@@ -989,7 +989,7 @@ export class Ansicht {
     let bestes = null;
     let besterAbstand = 1.01;
     for (const einheit of this.nachher.values()) {
-      if (einheit.b === this.ich || einheit.s) continue;
+      if (!this.feindlich(einheit.b) || einheit.s) continue;
       if (!this.zuSehen(einheit.b, einheit.x, einheit.y)) continue;
       const abstand = Math.hypot(einheit.x - ziel.x, einheit.y - ziel.y);
       if (abstand < besterAbstand) {
@@ -1002,11 +1002,22 @@ export class Ansicht {
     return klassen.some((k) => nicht.includes(k)) ? null : { x: bestes.x, y: bestes.y };
   }
 
+  /**
+   * Gegner oder nicht (spielziel AC-14) - dieselbe Frage wie
+   * `welt.feindlich`, mit dem Team aus dem Aufbau. Ohne Team ist jeder
+   * andere ein Gegner.
+   */
+  feindlich(besitzer) {
+    if (besitzer === this.ich) return false;
+    const team = this.spieler.get(this.ich)?.team;
+    return !team || team !== this.spieler.get(besitzer)?.team;
+  }
+
   feindlichAn(ziel, nurGebaeude = false) {
     let bestes = null;
     let besterAbstand = 1.01;
     for (const einheit of this.nachher.values()) {
-      if (einheit.b === this.ich || einheit.s) continue;
+      if (!this.feindlich(einheit.b) || einheit.s) continue;
       // Wer im Nebel steht, ist kein Ziel - man sieht ihn nicht (kampf AC-11).
       if (!this.zuSehen(einheit.b, einheit.x, einheit.y)) continue;
       const abstand = Math.hypot(einheit.x - ziel.x, einheit.y - ziel.y);
@@ -1021,7 +1032,7 @@ export class Ansicht {
     const zx = Math.round(ziel.x);
     const zy = Math.round(ziel.y);
     for (const gebaeude of this.gebaeude.values()) {
-      if (gebaeude.b === this.ich) continue;
+      if (!this.feindlich(gebaeude.b)) continue;
       const mitte = this.gebaeudeMitte(gebaeude);
       const halb = (mitte.groesse - 1) / 2;
       if (zx >= mitte.x - halb && zx <= mitte.x + halb && zy >= mitte.y - halb && zy <= mitte.y + halb) {

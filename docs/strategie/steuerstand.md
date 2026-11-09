@@ -13,7 +13,7 @@ hier nichts eintraegt, verliert den Faden beim naechsten Autocompact.
 
 ## Zuletzt fortgeschrieben
 
-2026-11-09, nach Runde 145 (**ADR-0013 geschrieben**, Bündnisse/Karren/Dauer, Bauabfolge D10-D14; siehe "Naechste Runde 146"; davor Runde 144: **ki AC-13 dritter Anlauf, geparkt** auf `strategie-ki-sicht` `d0314d4`: 36 von 40 vor Minute 60, Frage an den Benutzer - fahrplan AC-11 im Nebel neu fassen; siehe "Naechste Runde 145"; davor Runde 143: **ki AC-24 fertig, ki AC-21/22 aus `strategie-ki-ritterzeit` eingebunden**: Dorfbewohner je Zeitalter 22/32/42/50, Militaergebaeude ab der Ritterzeit 5/6, Aufstieg vor dem Ersatz; KI gegen KI 40 von 40 vor Minute 60, siehe "Naechste Runde 144" unten; davor Runde 142 Rueckschau zur Stufe D; davor **kampf AC-13, fahrplan AC-13, C6e fertig**: der
+2026-11-09, nach Runde 146 (**spielziel AC-14 gebaut, in-qa**: `welt.feindlich`, Teams als Einstellung, Waechter `waechter-feindlich`; Vergleich Takt fuer Takt gleich; siehe "Naechste Runde 147"; davor Runde 145: **ADR-0013 geschrieben**, Bündnisse/Karren/Dauer, Bauabfolge D10-D14; siehe "Naechste Runde 146"; davor Runde 144: **ki AC-13 dritter Anlauf, geparkt** auf `strategie-ki-sicht` `d0314d4`: 36 von 40 vor Minute 60, Frage an den Benutzer - fahrplan AC-11 im Nebel neu fassen; siehe "Naechste Runde 145"; davor Runde 143: **ki AC-24 fertig, ki AC-21/22 aus `strategie-ki-ritterzeit` eingebunden**: Dorfbewohner je Zeitalter 22/32/42/50, Militaergebaeude ab der Ritterzeit 5/6, Aufstieg vor dem Ersatz; KI gegen KI 40 von 40 vor Minute 60, siehe "Naechste Runde 144" unten; davor Runde 142 Rueckschau zur Stufe D; davor **kampf AC-13, fahrplan AC-13, C6e fertig**: der
 Server schickt jedem nur, was er sieht - `welt.zustandJeSpieler`,
 `welt.aufbauFuer`, im Raum `sendenJe`. Fremde Gebaeude und Felder, die sich im
 Nebel aendern, kommen beim naechsten Hinsehen; wer ausscheidet, bekommt einmal
@@ -172,7 +172,16 @@ Zeitgrenze als Einstellung, **Marktkarren schon in der Ritterzeit** - ein
 ADR fuer alles vier (holt Handelskarren aus "Wird nicht gebaut").
 **Reihenfolge:** Runde 143 KI-Wirtschaft, dann das ADR, dann Buendnisse
 bauen, dann Voelker-ADR und Spec-Runde E.
-**Naechste Runde 146: D10 beginnen** - zuerst `welt.feindlich(a, b)` als
+**Naechste Runde 147: Rueckschau** (steht unter "Wo ich stehe"). Danach
+**spielauswahl AC-22, Teams im Warteraum**: der Raum traegt je Platz eine
+Wahl weiter, ohne sie zu deuten (ADR-0006) - also im Steckbrief eine
+Einstellung je Platz, die der Raum nur durchreicht; der Gastgeber setzt die
+der KIs (`ki1`, `ki2` ...). Die Welt liest `einstellungen.teams = { <id>:
+1..4 }` (Runde 146). Mit dem Warteraum bekommt spielziel AC-14 sein Bild:
+eine eigene Einheit neben der eines Verbuendeten, weisses Zielzeichen statt
+rotem (`ansicht.feindlich`). Danach AC-19 (gemeinsame Sicht: `sichten`
+je Team, `zuSehen` im Browser fragt noch `besitzer === this.ich`).
+Erledigt in Runde 146 (frueher: "Naechste Runde 146: D10 beginnen") - zuerst `welt.feindlich(a, b)` als
 die eine Stelle, die "Gegner oder nicht" beantwortet: Teams aus den
 Einstellungen (`einstellungen.teams` je Platz), dann jede Stelle, die heute
 `besitzer !== ich` fragt (Wache, Tuerme, Befehl/Rechtsklick, Tore, Sicht,

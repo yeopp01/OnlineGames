@@ -2,7 +2,7 @@
 
 **Bereich:** Strategie
 **Kuerzel:** spielziel
-**Stand:** 5/23 fertig · 1 in Arbeit · 17 offen
+**Stand:** 5/23 fertig · 1 in Arbeit · 1 in QA · 16 offen
 
 ## Zweck
 
@@ -125,13 +125,19 @@ eigenen Technikbaum ([Vorlage](../../docs/strategie/vorlage-aoe2.md)).
   wird das fünfte Volk teurer als das erste statt billiger.
 - **AC-18** `offen` **Kein Volk gewinnt gegen alle** — Über zwanzig Partien liegt keines dauerhaft
   vorn. Belegt durch Partien, nicht durch Behauptung.
-- **AC-14** `offen` **Verbündete kämpfen nicht** — Spieler desselben Teams
+- **AC-14** `in-qa` **Verbündete kämpfen nicht** — Spieler desselben Teams
   ([Spielauswahl](../00-plattform/spielauswahl.md) AC-22) sind Verbündete.
   Ein Rechtsklick auf einen Verbündeten ist ein Gang dorthin. Wachende
   Einheiten und schießende Gebäude lassen ihn in Ruhe, Tore öffnen sich für
   ihn. Flächenschaden trifft ihn wie die eigenen Einheiten ([Kampf](kampf.md) AC-19).
   Gefragt wird an **einer** Stelle der Welt (`welt.feindlich(a, b)`), nicht
   in jeder Regel einzeln; heute fragt jede Regel nur „mir oder nicht mir".
+  **Stand Runde 146:** gebaut in der Welt, belegt im Rechenteil
+  (`tests/strategie-buendnisse.test.mjs`, Teams als Einstellung
+  `teams: { <spielerId>: 1..4 }`); der Browser fragt dieselbe Frage mit
+  dem Team aus dem Aufbau. Das Bild fehlt, bis der Warteraum Teams kennt
+  (spielauswahl AC-22). Ein Wächter (`tests/waechter-feindlich.test.mjs`)
+  verbietet in den Kampfregeln jeden Vergleich mit dem Besitzer.
   Bis Runde 144 hieß AC-14 „Bündnisse sind nicht vorgesehen". Der Benutzer
   spielt aber meist zwei gegen zwei ([ADR-0013](../../docs/adr/0013-buendnisse-karren-dauer.md)).
 - **AC-15** `offen` **Ein Aussteiger blockiert nicht** — Verlässt jemand die Partie endgültig,
