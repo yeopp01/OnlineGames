@@ -1,0 +1,10 @@
+{
+  "spec": "10-strategie/einheiten-und-befehle.md",
+  "ac": "AC-38",
+  "titel": "Vorher: Annas gewählter Mönch (blau) hebt den Stab gegen Berts Dorfbewohner (rot), auf dem das rote Zeichen des Rechtsklicks liegt",
+  "datei": "e2e/tests/strategie-moench.spec.mjs",
+  "pfad": [
+    "Moench",
+    "einheiten AC-38: ein Rechtsklick des Moenchs auf Berts Dorfbewohner ist rot, und nach ein paar Sekunden gehoert der Dorfbewohner Anna"
+  ]
+}

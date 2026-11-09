@@ -110,10 +110,18 @@ const EINHEITEN = {
   // Tabelle der Vorlage und deshalb gesetzt: Heilreichweite 4 wie im
   // Original, Sicht 11 - die Reichweite des Bekehrens (9, einheiten AC-38)
   // plus zwei wie bei Bogen und Armbrust.
+  // `bekehren` (einheiten AC-38): ein Befehl auf eine fremde Einheit in
+  // `reichweite` Feldern. Die Vorlage nennt nur die Reichweite; der Rest ist
+  // gesetzt wie im Original: vor `frueh` Sekunden nie, danach je Sekunde mit
+  // `chance`, nach `spaet` Sekunden sicher - gezogen aus dem Startwert der
+  // Partie. Danach ruht der Moench `ruhe` Sekunden. Klassen in `nicht`
+  // bekehrt er nicht, Gebaeude ohnehin nicht.
   moench: {
     leben: 30, tempo: 0.7, sicht: 11, tragkraft: 0, kosten: { gold: 100 }, zeit: 51, kuerzel: 'g',
     angriff: 0, nahruestung: 0, fernruestung: 0, reichweite: 0, nachladen: 0,
-    klassen: ['moench'], heilen: { reichweite: 4, je: 1 }, zeitalter: 2,
+    klassen: ['moench'], heilen: { reichweite: 4, je: 1 },
+    bekehren: { reichweite: 9, frueh: 4, spaet: 10, chance: 0.28, ruhe: 62, nicht: ['belagerung', 'moench'] },
+    zeitalter: 2,
   },
 };
 

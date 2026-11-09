@@ -150,6 +150,9 @@ class Welt {
   constructor(spielerListe, startwert, einstellungen = {}) {
     this.startwert = startwert;
     this.karte = karten.erzeugen(startwert, spielerListe.length, einstellungen);
+    // Zufall der Partie (einheiten AC-38: wie lange ein Bekehren dauert) -
+    // aus dem Startwert, aber nicht dieselbe Folge wie die der Karte.
+    this.zufall = karten.zufallAus((startwert ^ 0x5bd1e995) >>> 0);
     const start = STARTVORRAT[einstellungen.vorrat] || STARTVORRAT.wenig;
     this.takt = 0;
     this.naechsteId = 1;
@@ -1309,9 +1312,17 @@ class Welt {
       this.farmVerlassen(einheit);
       einheit.sammelt = false;
       einheit.baut = false;
+      // Ein Moench, der eben noch bekehrte, tut es nicht mehr (einheiten AC-38).
+      einheit.bekehrt = false;
       einheit.unerreichbar = null;
       // Jeder neue Befehl beendet einen laufenden Angriffslauf.
       einheit.angriffslauf = null;
+      // Ein Moench bekehrt, wer sich bekehren laesst (einheiten AC-38) - wenn
+      // er nicht ruht; sonst geht er nur hin.
+      if (!angriffslauf && feind && this.kannBekehren(einheit, feind)) {
+        this.bekehrenBeginnen(einheit, feind);
+        continue;
+      }
       // Wer nur Gebaeude angreift (die Ramme, einheiten AC-35), geht zu einer
       // Einheit nur hin.
       if ((feindBau || (feind && !EINHEITEN[einheit.art].nurGebaeude))
@@ -2347,6 +2358,7 @@ class Welt {
     einheit.weg = [];
     einheit.sammelt = false;
     einheit.baut = false;
+    einheit.bekehrt = false;
     this.bestandPruefen = true;
   }
 
@@ -2482,6 +2494,108 @@ class Welt {
     this.schlaegeAbrechnen();
     if (this.takt % SICHT_TAKTE === 0) this.sichtAktualisieren();
     this.endePruefen();
+  }
+
+  /**
+   * Ob diese Einheit dieses Ziel bekehren kann (einheiten AC-38): sie hat
+   * `bekehren` in den Daten und ruht nicht, das Ziel ist eine fremde,
+   * lebende Einheit, und keine seiner Klassen steht in `nicht`.
+   */
+  kannBekehren(einheit, ziel) {
+    const bekehren = EINHEITEN[einheit.art].bekehren;
+    if (!bekehren || einheit.ruhtBis > this.takt) return false;
+    if (!ziel || ziel.tot || ziel.besitzer === einheit.besitzer) return false;
+    return !EINHEITEN[ziel.art].klassen.some((k) => bekehren.nicht.includes(k));
+  }
+
+  /**
+   * Wie viele Takte ein Bekehren dauert: vor `frueh` Sekunden nie, danach je
+   * Sekunde mit `chance`, nach `spaet` sicher. Gezogen beim Befehl, aus dem
+   * Zufall der Partie - dieselbe Partie, dieselbe Dauer.
+   */
+  bekehrDauer(bekehren) {
+    let sekunden = bekehren.frueh;
+    while (sekunden < bekehren.spaet && this.zufall() >= bekehren.chance) sekunden++;
+    return sekunden * TAKTE_PRO_SEKUNDE;
+  }
+
+  bekehrenBeginnen(einheit, ziel) {
+    einheit.auftrag = { art: 'bekehren', ziel: ziel.id, dauer: this.bekehrDauer(EINHEITEN[einheit.art].bekehren), fortschritt: 0 };
+    einheit.weg = [];
+    einheit.bekehrt = false;
+  }
+
+  /**
+   * Ein Takt des Bekehrens: ausser Reichweite hingehen (der Weg wird
+   * einmal je Sekunde neu gesucht, das Ziel laeuft), in Reichweite stehen
+   * und zaehlen. Die Zeit laeuft nur in Reichweite. Ist die Dauer um,
+   * gehoert das Ziel dem Spieler des Moenchs, und der Moench ruht.
+   */
+  bekehrenTakten(moench) {
+    const auftrag = moench.auftrag;
+    const bekehren = EINHEITEN[moench.art].bekehren;
+    const ziel = this.einheiten.get(auftrag.ziel);
+    if (!ziel || ziel.tot || ziel.besitzer === moench.besitzer) {
+      moench.auftrag = null;
+      moench.weg = [];
+      moench.bekehrt = false;
+      return;
+    }
+    if (Math.hypot(ziel.x - moench.x, ziel.y - moench.y) > bekehren.reichweite) {
+      moench.bekehrt = false;
+      if (!moench.weg.length || this.takt % TAKTE_PRO_SEKUNDE === 0) {
+        moench.weg = this.wegNach(moench, this.feldVon(ziel));
+        // Kein Weg dorthin (hinter einer Mauer): er gibt auf, statt fuer
+        // immer zu warten - und heilt wieder.
+        if (!moench.weg.length) {
+          moench.auftrag = null;
+          return;
+        }
+      }
+      this.laufen(moench);
+      return;
+    }
+    moench.weg = [];
+    moench.bekehrt = true;
+    auftrag.fortschritt++;
+    if (auftrag.fortschritt < auftrag.dauer) return;
+    this.bekehrt(ziel, moench.besitzer);
+    moench.auftrag = null;
+    moench.bekehrt = false;
+    moench.ruhtBis = this.takt + bekehren.ruhe * TAKTE_PRO_SEKUNDE;
+  }
+
+  /**
+   * Eine Einheit wechselt den Besitzer (einheiten AC-38). Fuer den alten
+   * Spieler ist sie verloren (Tafel, spielziel AC-8); was sie tat, endet; wer
+   * vom neuen Besitzer sie angriff, laesst ab. Ihr Leben bleibt, nur nie ueber
+   * dem vollen Wert des neuen Besitzers.
+   */
+  bekehrt(einheit, neuerBesitzer) {
+    const alter = this.spielerVon(einheit.besitzer);
+    if (alter) alter.verloren++;
+    this.farmVerlassen(einheit);
+    einheit.besitzer = neuerBesitzer;
+    einheit.auftrag = null;
+    einheit.angriffslauf = null;
+    einheit.weg = [];
+    einheit.sammelt = false;
+    einheit.baut = false;
+    einheit.leben = Math.min(einheit.leben, this.einheitenwert(neuerBesitzer, einheit.art, 'leben'));
+    // Wer sie angriff, laesst ab - im Angriffslauf geht es weiter zum
+    // Marschziel, wie wenn das Ziel gefallen waere.
+    for (const andere of this.einheiten.values()) {
+      const a = andere.auftrag;
+      if (andere.besitzer === neuerBesitzer && a?.art === 'angreifen' && !a.gebaeude && a.ziel === einheit.id) {
+        andere.auftrag = null;
+        andere.weg = [];
+        this.marschFortsetzen(andere);
+      }
+    }
+    // Ein Schlag aus diesem Takt, der noch nicht abgerechnet ist, trifft
+    // keinen mehr, der jetzt dem Schlagenden gehoert.
+    this.schlaege = this.schlaege.filter((s) => s.gebaeude || s.ziel !== einheit || s.angreifer.besitzer !== neuerBesitzer);
+    this.bestandPruefen = true;
   }
 
   /**
@@ -2687,6 +2801,10 @@ class Welt {
     // seinen Weg zu Ende zu gehen (kampf AC-1).
     if (einheit.auftrag?.art === 'angreifen') {
       this.angriffTakten(einheit);
+      return;
+    }
+    if (einheit.auftrag?.art === 'bekehren') {
+      this.bekehrenTakten(einheit);
       return;
     }
     if (einheit.weg.length) {
@@ -2938,7 +3056,9 @@ class Welt {
         // Reichweite, ohne Weg (bedienung AC-39). Nur wenn es zutrifft - ein
         // Zustand bleibt klein.
         // Ein Moench, der heilt, arbeitet auch (einheiten AC-37).
-        ...(e.sammelt || e.baut || e.heilt || (e.auftrag?.art === 'angreifen' && !e.weg.length && !e.tot) ? { w: 1 } : {}),
+        ...(e.sammelt || e.baut || e.heilt || e.bekehrt || (e.auftrag?.art === 'angreifen' && !e.weg.length && !e.tot) ? { w: 1 } : {}),
+        // Ein Moench, der nach dem Bekehren ruht (einheiten AC-38).
+        ...(e.ruhtBis > this.takt ? { r: 1 } : {}),
         // Gefallen: der Browser legt ihn hin, bis der Server ihn nimmt
         // (kampf AC-10).
         ...(e.tot ? { s: 1 } : {}),
@@ -3244,6 +3364,9 @@ class Welt {
           nurGebaeude: Boolean(w.nurGebaeude),
           // Wer heilt, wie weit und wie viel (einheiten AC-37) - fuer die Leiste.
           heilen: w.heilen || null,
+          // Wer bekehrt, wie weit und wen nicht (einheiten AC-38) - fuer das
+          // Zeichen am Ziel und die Leiste.
+          bekehren: w.bekehren ? { reichweite: w.bekehren.reichweite, nicht: w.bekehren.nicht } : null,
         }])),
         gebaeude: Object.fromEntries(Object.entries(GEBAEUDE).map(([art, w]) => [art, {
           leben: w.leben, bildetAus: w.bildetAus, groesse: w.groesse, kosten: w.kosten, bauzeit: w.bauzeit,

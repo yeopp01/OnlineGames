@@ -159,7 +159,7 @@ Umfang hinzufügt, dort nachsehen.
 
 ## Stand
 
-**431 von 555 Kriterien fertig.** 572 Tests ohne Browser, 189 im Browser. Die
+**432 von 555 Kriterien fertig.** 584 Tests ohne Browser, 190 im Browser. Die
 Übersicht ist der Bericht: `npm run qa:report`.
 
 Gebaut ist der Unterbau: Räume, Übertragung, Karte, Wegfindung, Sammeln,
@@ -370,7 +370,11 @@ Verkauf billiger, 30 % Gebühr; die Preise gehören dem Spieler und stehen als
 `HANDEL` in den Daten, gerechnet nur auf dem Server. **Aus D8 heilt der
 Mönch** (einheiten AC-37): wer steht, gibt dem nächsten eigenen Verletzten
 in vier Feldern ein Leben je Sekunde — nicht wer kämpft, keine Belagerung,
-keine Gebäude; er selbst greift nie an. Die **Sicht ist eine Einstellung beim Eröffnen** (kampf AC-16):
+keine Gebäude; er selbst greift nie an. **D8 ist fertig: der Mönch
+bekehrt** (einheiten AC-38) — ein Rechtsklick auf eine fremde Einheit in
+neun Feldern, nach vier bis zehn Sekunden gehört sie ihm, danach ruht er
+62 Sekunden; keine Gebäude, keine Belagerung, keine Mönche. Die Dauer kommt
+aus `welt.zufall`, einem eigenen Zufall aus dem Startwert. Die **Sicht ist eine Einstellung beim Eröffnen** (kampf AC-16):
 Nebel, Erkundet oder Aufgedeckt — Tests, die nicht vom Nebel handeln,
 eröffnen aufgedeckt (`partieZuZweit(…, { sicht: 'aufgedeckt' })`).
 

@@ -118,4 +118,105 @@ test.describe('Moench', () => {
     });
     await zeitraffer(anna, code, 1);
   });
+
+  // Ein Feld der Karte als Punkt auf der Seite.
+  const aufSeite = (page, feld) => page.evaluate((f) => {
+    const a = window.ansicht;
+    const p = a.zuBild(f.x, f.y);
+    const r = a.leinwand.getBoundingClientRect();
+    return { x: r.left + p.x, y: r.top + p.y };
+  }, feld);
+
+  test('einheiten AC-38: ein Rechtsklick des Moenchs auf Berts Dorfbewohner ist rot, und nach ein paar Sekunden gehoert der Dorfbewohner Anna', async ({}, info) => {
+    const { anna, code } = partie;
+    // Die zweite Wiese: auf der ersten stehen Moench und Miliz aus AC-37, und
+    // die Miliz wacht - sie griffe Berts Dorfbewohner an.
+    const [, wiese] = await freieWiesen(anna, 2);
+    const kuerzel = await anna.evaluate(() => window.ansicht.werte.einheiten.moench.kuerzel);
+
+    // Annas Moench links, Berts Dorfbewohner fuenf Felder rechts davon - in
+    // Reichweite, er muss nicht erst hingehen. Der Dorfbewohner wacht nicht
+    // und laeuft nicht weg; Bert spielt nicht.
+    await einheitenAufstellen(anna, code, 'Anna', 1, { art: 'moench', x: wiese.x - 2, y: wiese.y + 1 });
+    await einheitenAufstellen(anna, code, 'Bert', 1, { art: 'dorfbewohner', x: wiese.x + 2, y: wiese.y + 1 });
+    const { moench, bauer } = await anna.waitForFunction(([k, w]) => {
+      const a = window.ansicht;
+      const nahe = (e) => Math.hypot(e.x - w.x, e.y - (w.y + 1)) < 4.5;
+      const moench = [...a.nachher.values()].find((e) => e.k === k && e.b === a.ich && nahe(e) && !e.r);
+      const bauer = [...a.nachher.values()].find((e) => e.k === 'd' && e.b !== a.ich && nahe(e));
+      return moench && bauer && { moench: { i: moench.i }, bauer: { i: bauer.i, x: bauer.x, y: bauer.y } };
+    }, [kuerzel, wiese]).then((h) => h.jsonValue());
+
+    await anna.evaluate(([id, w]) => {
+      const a = window.ansicht;
+      a.gewaehltesGebaeude = null;
+      a.ausgewaehlt = new Set([id]);
+      a.beiAuswahl();
+      a.kamera.zoom = 2.5;
+      a.blickAuf(w.x, w.y + 1.6);
+    }, [moench.i, wiese]);
+
+    // Die Leiste nennt die Reichweite des Bekehrens.
+    await expect(anna.locator('#kampfwerte')).toBeInViewport();
+    await expect(anna.locator('#kampfwerte')).toContainText('Bekehrt');
+    await expect(anna.locator('#kampfwerte')).toHaveAttribute('data-bekehren', '9');
+
+    // Rechtsklick auf Berts Dorfbewohner: fuer den Moench ein Ziel, das
+    // Zeichen ist rot - anders als auf Berts Dorfzentrum (einheiten AC-37).
+    const aufBauer = await aufSeite(anna, bauer);
+    await anna.mouse.click(aufBauer.x, aufBauer.y, { button: 'right' });
+    expect(await anna.evaluate(() => window.ansicht.zielzeichen?.feindlich), 'der Dorfbewohner ist ein Ziel').toBe(true);
+
+    // Der Moench beginnt, ohne zu gehen: er arbeitet. Dann die Welt anhalten
+    // und das Zeichen stehen lassen - fruehestens nach vier Sekunden waere
+    // der Dorfbewohner schon bekehrt.
+    await expect.poll(() => anna.evaluate((id) => window.ansicht.nachher.get(id)?.w, moench.i), { timeout: 3_000 }).toBe(1);
+    await zeitraffer(anna, code, 0);
+    await anna.evaluate(() => { window.ansicht.zielzeichen.seit = performance.now() + 60_000; });
+    expect(await anna.evaluate((id) => window.ansicht.nachher.get(id).b !== window.ansicht.ich, bauer.i), 'noch Berts').toBe(true);
+
+    const imBild = async () => {
+      const lage = await anna.evaluate(([m, z]) => {
+        const a = window.ansicht;
+        const p = (id) => { const e = a.nachher.get(id); return a.zuBild(e.x, e.y); };
+        return { m: p(m), z: p(z), b: a.leinwand.clientWidth, h: a.leinwand.clientHeight };
+      }, [moench.i, bauer.i]);
+      for (const p of [lage.m, lage.z]) {
+        expect(p.x).toBeGreaterThan(80);
+        expect(p.x).toBeLessThan(lage.b - 80);
+        expect(p.y).toBeGreaterThan(160);
+        expect(p.y).toBeLessThan(lage.h - 240);
+      }
+      expect(await bedienteileFrei(anna)).toEqual([]);
+      expect(await figurenFrei(anna)).toEqual([]);
+      await anna.waitForTimeout(150);
+    };
+    await imBild();
+    await nachweis(anna, {
+      spec: EINHEITEN,
+      ac: 'AC-38',
+      titel: 'Vorher: Annas gewählter Mönch (blau) hebt den Stab gegen Berts Dorfbewohner (rot), auf dem das rote Zeichen des Rechtsklicks liegt',
+      test: info,
+    });
+
+    // Weiterlaufen lassen, bis der Dorfbewohner Anna gehoert.
+    await anna.evaluate(() => { window.ansicht.zielzeichen = null; });
+    await zeitraffer(anna, code, 1);
+    await expect.poll(() => anna.evaluate((id) => window.ansicht.nachher.get(id)?.b === window.ansicht.ich, bauer.i), { timeout: 15_000 })
+      .toBe(true);
+    await zeitraffer(anna, code, 0);
+    // Danach ruht der Moench: ein zweiter Rechtsklick auf einen Fremden waere
+    // kein Ziel - der Browser fragt dafuer `r`.
+    expect(await anna.evaluate((id) => window.ansicht.nachher.get(id).r, moench.i), 'er ruht').toBe(1);
+    expect(await anna.evaluate((id) => window.ansicht.nachher.get(id).w, moench.i), 'er arbeitet nicht mehr').toBeFalsy();
+
+    await imBild();
+    await nachweis(anna, {
+      spec: EINHEITEN,
+      ac: 'AC-38',
+      titel: 'Nachher: derselbe Dorfbewohner trägt jetzt Annas Blau und steht neben ihrem Mönch, der den Stab gesenkt hat',
+      test: info,
+    });
+    await zeitraffer(anna, code, 1);
+  });
 });

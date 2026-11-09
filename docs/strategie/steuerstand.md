@@ -13,7 +13,7 @@ hier nichts eintraegt, verliert den Faden beim naechsten Autocompact.
 
 ## Zuletzt fortgeschrieben
 
-2026-11-09, nach Runde 134 (**kampf AC-13, fahrplan AC-13, C6e fertig**: der
+2026-11-09, nach Runde 135 (**kampf AC-13, fahrplan AC-13, C6e fertig**: der
 Server schickt jedem nur, was er sieht - `welt.zustandJeSpieler`,
 `welt.aufbauFuer`, im Raum `sendenJe`. Fremde Gebaeude und Felder, die sich im
 Nebel aendern, kommen beim naechsten Hinsehen; wer ausscheidet, bekommt einmal
@@ -129,9 +129,14 @@ Daten, `welt.heilenTakten()` einmal je Sekunde, `heilt` setzt `w`; die
 Figur hebt den Stab mit Schein, `segnet` in FIGUREN statt Vorbeugen; ohne
 Angriff: Zielzeichen weiss, Leiste "Greift nicht an" / "Heilt 1 Leben/s",
 `heilen` in `werte.einheiten`). Die KI bildet keine Moenche aus.
-**Naechste Runde 135: einheiten AC-38 - der Moench bekehrt** (Reichweite
-9, Dauer aus dem Startwert, danach Ruhe; nicht Gebaeude, Belagerung,
-Moenche). Rueckschau bleibt Runde 136 - dort auch das Bild zu einheiten
+Runde 135: **einheiten AC-38 fertig - der Moench bekehrt, D8 ist fertig**
+(`bekehren: { reichweite 9, frueh 4, spaet 10, chance 0.28, ruhe 62, nicht
+[belagerung, moench] }` in den Daten; `welt.zufall` aus dem Startwert,
+`kannBekehren`, `bekehrDauer`, `bekehrenTakten`, `bekehrt`; im Draht `r`
+fuer ruhend, `bekehren` in `werte.einheiten`; im Browser `bekehrbarAn` fuer
+das rote Zeichen, Leiste "Bekehrt 9 Felder"). Die KI bildet keine Moenche
+aus. **Naechste Runde 136: Rueckschau** - danach D9 (die KI in der
+Ritterzeit). In der Rueckschau auch das Bild zu einheiten
 AC-15: die Goldtraeger stehen hinter dem Dorfzentrum und sind nur Umriss,
 die Goldbrocken der Unterschrift sieht man nicht (schon im eingecheckten
 Bild so, gefunden in Runde 134 mit qa:abweichung).)

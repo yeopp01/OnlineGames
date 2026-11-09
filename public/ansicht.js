@@ -954,7 +954,13 @@ export class Ansicht {
       const einheit = this.nachher.get(id);
       return einheit && !this.werte.einheiten[this.arten[einheit.k]]?.angriff;
     });
-    const feind = friedlich ? null : this.feindlichAn(ziel, nurGebaeude);
+    // Lauter Moenche, die nicht ruhen: eine fremde Einheit, die sie bekehren
+    // koennen, ist ein Ziel (einheiten AC-38) - ein Gebaeude nicht.
+    const bekehrer = friedlich && [...this.ausgewaehlt].every((id) => {
+      const einheit = this.nachher.get(id);
+      return this.werte.einheiten[this.arten[einheit.k]]?.bekehren && !einheit.r;
+    });
+    const feind = !friedlich ? this.feindlichAn(ziel, nurGebaeude) : bekehrer ? this.bekehrbarAn(ziel) : null;
     this.zielzeichen = {
       x: feind ? feind.x : Math.round(ziel.x),
       y: feind ? feind.y : Math.round(ziel.y),
@@ -970,6 +976,32 @@ export class Ansicht {
    *
    * @returns {{x: number, y: number}|null} die Mitte des Ziels
    */
+  /**
+   * Was ein Moench unter dem Klick bekehren wuerde (einheiten AC-38): die
+   * naechste fremde lebende Einheit naeher als ein Feld, deren Klassen nicht
+   * in `nicht` stehen - dieselbe Frage wie `welt.kannBekehren`.
+   *
+   * @returns {{x: number, y: number}|null}
+   */
+  bekehrbarAn(ziel) {
+    const erster = this.nachher.get([...this.ausgewaehlt][0]);
+    const nicht = this.werte.einheiten[this.arten[erster.k]].bekehren.nicht;
+    let bestes = null;
+    let besterAbstand = 1.01;
+    for (const einheit of this.nachher.values()) {
+      if (einheit.b === this.ich || einheit.s) continue;
+      if (!this.zuSehen(einheit.b, einheit.x, einheit.y)) continue;
+      const abstand = Math.hypot(einheit.x - ziel.x, einheit.y - ziel.y);
+      if (abstand < besterAbstand) {
+        besterAbstand = abstand;
+        bestes = einheit;
+      }
+    }
+    if (!bestes) return null;
+    const klassen = this.werte.einheiten[this.arten[bestes.k]]?.klassen || [];
+    return klassen.some((k) => nicht.includes(k)) ? null : { x: bestes.x, y: bestes.y };
+  }
+
   feindlichAn(ziel, nurGebaeude = false) {
     let bestes = null;
     let besterAbstand = 1.01;

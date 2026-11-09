@@ -1314,6 +1314,22 @@ Browserlauf mit 186 Fällen 15,0 min einschließlich Prüfung (Runde 130);
 Neueste oben. Eine Zeile je Runde: Nummer, Datum, Kriterien, Ergebnis,
 wichtigste Erkenntnis.
 
+- **135** · 2026-11-09 · **einheiten AC-38 fertig, D8 fertig** — der Mönch
+  bekehrt: ein Rechtsklick auf eine fremde Einheit in neun Feldern, nach
+  vier bis zehn Sekunden gehört sie ihm, dann ruht er 62 Sekunden. Die
+  Dauer kommt aus einem eigenen Zufall der Welt (`welt.zufall`), gezogen
+  beim Befehl — über zwanzig Startwerte zu je drei Zügen sieben
+  verschiedene Dauern, dieselbe Partie zweimal gleich. Gelernt: die
+  Durchsicht durch einen zweiten Blick fand vier echte Fehler an den
+  Rändern, die kein Test der Hauptsache berührte — ein `bekehrt`, das nach
+  einem Gang als „arbeitet" stehen blieb, ein Angreifer im Angriffslauf,
+  der nach dem Bekehren seines Ziels stehen blieb statt weiterzuziehen,
+  ein Schlag desselben Takts auf den eben Bekehrten, und ein Mönch, der
+  vor einer Mauer ewig wartete. Jeder hat jetzt einen Test mit Gegenprobe.
+  Und: `freieWiesen` sieht keine Einheiten — ein zweiter Fall in derselben
+  Partie nimmt die zweite Wiese, sonst greift die wachende Miliz des
+  ersten Falls ein. Der Prüfgriff `einheiten` stellt in den Ring um das
+  Ziel, also bis √2 Felder daneben.
 - **134** · 2026-11-09 · **einheiten AC-37 fertig** — der Mönch heilt:
   im Kloster ab der Ritterzeit, 100 Gold, 51 s; wer steht, gibt dem
   nächsten eigenen Verletzten in vier Feldern ein Leben je Sekunde

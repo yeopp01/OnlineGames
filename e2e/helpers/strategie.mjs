@@ -11,7 +11,8 @@
 //   `i` Id · `b` Besitzer · `k` Kuerzel der Art · `x`/`y` · `l` Ladung ·
 //   `a` erster Buchstabe der Ladungsart · `h` Lebenspunkte, **absolut, und nur
 //   wenn welche fehlen** (voll wird gar nicht geschickt - der Anteil ist
-//   `h / ansicht.lebenVoll(e)`) · `w` arbeitet oder kaempft gerade (bedienung AC-31, AC-39) · `s` gefallen.
+//   `h / ansicht.lebenVoll(e)`) · `w` arbeitet oder kaempft gerade (bedienung AC-31, AC-39) · `s` gefallen ·
+//   `r` ruht nach dem Bekehren (einheiten AC-38).
 //
 // ### KUERZEL
 // Diese Liste prueft `tests/waechter-drahttafel.test.mjs` gegen `daten.js` -
@@ -50,7 +51,8 @@
 // **Werte im Browser** (Runde 75): `ansicht.werte.einheiten[art]` fuehrt
 // Kuerzel, Leben, Tragkraft, Kosten, Zeit, `baut`, Zeitalter, Angriff,
 // Ruestung nah und fern, Reichweite - und seit Runde 75 auch `klassen` und
-// `bonus`, seit Runde 134 `heilen` ({ reichweite, je } oder null);
+// `bonus`, seit Runde 134 `heilen` ({ reichweite, je } oder null), seit
+// Runde 135 `bekehren` ({ reichweite, nicht } oder null);
 // `ansicht.werte.klassen` nennt den Anzeigenamen je Klasse. Das sind
 // die **rohen** Werte ohne Verbesserungen.
 //

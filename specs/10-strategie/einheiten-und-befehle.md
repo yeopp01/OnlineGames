@@ -2,7 +2,7 @@
 
 **Bereich:** Strategie
 **Kuerzel:** einheiten
-**Stand:** 26/31 fertig · 4 offen · 1 zurueckgestellt
+**Stand:** 27/31 fertig · 3 offen · 1 zurueckgestellt
 
 ## Zweck
 
@@ -235,10 +235,21 @@ Werte aus der [Vorlage](../../docs/strategie/vorlage-aoe2.md), als Daten in
   1 Leben/s" statt „Angriff 0, Nahkampf". Gezeichnet in brauner Kutte mit
   Kapuze, Strick und Stab, die Spielerfarbe als Schulterkragen und
   Skapulier; wer heilt, hebt den Stab, und an der Spitze glimmt ein Schein.
-- **AC-38** `offen` **Mönch bekehrt** — Ein Befehl auf eine fremde Einheit in
+- **AC-38** `fertig` **Mönch bekehrt** — Ein Befehl auf eine fremde Einheit in
   Reichweite 9: nach einer Dauer, deren Zufall aus dem Startwert der Partie
   kommt (deterministisch), gehört sie dem Spieler des Mönchs. Danach ruht
   der Mönch eine Weile. Gebäude, Belagerung und Mönche bekehrt er nicht.
+  Gebaut in Runde 135. Die Vorlage nennt nur die Reichweite; der Rest ist
+  gesetzt wie im Original und steht als `bekehren` in den Daten: vor vier
+  Sekunden nie, danach je Sekunde mit 28 %, nach zehn sicher — gezogen beim
+  Befehl aus einem eigenen Zufall der Partie (`welt.zufall`, aus dem
+  Startwert, nicht die Folge der Karte). Die Zeit läuft nur in Reichweite;
+  weiter weg geht er erst hin, und kommt er nicht hin, gibt er auf. Danach
+  ruht er 62 Sekunden: ein Befehl auf einen Fremden ist dann ein Gang. Für
+  den alten Besitzer ist die Einheit verloren (Tafel), was sie tat, endet,
+  und wer vom neuen Besitzer sie angriff, lässt ab — im Angriffslauf geht
+  er weiter. Im Bild: das Zeichen am Ziel ist rot, der Mönch hebt den Stab
+  wie beim Heilen, die Leiste nennt „Bekehrt 9 Felder".
 
 ## Grenzfaelle
 

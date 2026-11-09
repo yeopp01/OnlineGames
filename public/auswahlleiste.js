@@ -866,6 +866,12 @@ export class Auswahlleiste {
         wert('Rüstung', `${nah} / ${fern}`, 'Rüstung gegen Nahkampf / gegen Fernkampf'),
       );
     }
+    const bekehren = a.werte.einheiten[art]?.bekehren;
+    if (bekehren) {
+      const e = wert('Bekehrt', `${bekehren.reichweite} Felder`, 'Rechtsklick auf eine fremde Einheit: nach ein paar Sekunden gehört sie dir – keine Gebäude, keine Belagerung, keine Mönche. Danach ruht er eine Weile.');
+      zeile.dataset.bekehren = String(bekehren.reichweite);
+      zeile.append(e);
+    }
     if (heilen) {
       const e = wert('Heilt', `${heilen.je} Leben/s`, `Eigene Verletzte bis ${heilen.reichweite} Felder, einen nach dem anderen – nicht wer kämpft, keine Belagerung, keine Gebäude`);
       e.classList.add('heilt');
