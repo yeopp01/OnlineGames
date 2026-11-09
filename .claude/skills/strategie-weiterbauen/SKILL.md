@@ -165,6 +165,15 @@ Setze die gewählten Kriterien auf `in-arbeit`.
   begründet** — und vorher nach Tests gesucht, die einen Wert über alle Arten
   vergleichen („sieht am weitesten", „das schnellste"): `grep -rn "sicht" tests/`.
   Die Sicht 10 des Wachturms „wie im Original" brach kampf AC-18 (Runde 125).
+- **Wer ändert, was ein Rechtsklick tut, ändert drei Stellen zusammen**:
+  `welt.befehl` (was der Server daraus macht), `ansicht.zielzeichenSetzen`
+  (dieselbe Frage im Browser — rot oder weiß) und `kampfwerteZeile` in
+  `public/auswahlleiste.js` (was die Leiste über die Einheit sagt). Ramme,
+  Mönch und Bekehren haben je alle drei gebraucht; in Runde 134 fanden das
+  rote Zeichen und „Angriff 0, Nahkampf" erst das Ansehen des Bildes. Und
+  **ein neuer Merker, der `w` speist** (`sammelt`, `heilt`, `bekehrt`),
+  wird in `befehl()` und `einheitSterben()` zurückgesetzt —
+  `tests/waechter-merker.test.mjs` sucht danach (Rückschau nach Runde 135).
 - **Die kurzen Namen aus der Übertragung** (`h`, `u`, `k`, `art`, `f`) stehen
   als Tafel oben in `e2e/helpers/strategie.mjs` — dort nachsehen statt in
   `welt.js` suchen.

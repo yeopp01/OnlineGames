@@ -1,0 +1,10 @@
+{
+  "spec": "10-strategie/ki.md",
+  "ac": "AC-11",
+  "titel": "Das Heer der KI (rot) auf offener Karte, kein Dorf im Bild: sieben Milizen und ein Späherreiter, und Anna hat nichts gewählt",
+  "datei": "e2e/tests/strategie-ki.spec.mjs",
+  "pfad": [
+    "Die KI greift an",
+    "ki AC-11: acht Kampfeinheiten ziehen gesammelt zum Gegner, zwei bleiben als Wache"
+  ]
+}

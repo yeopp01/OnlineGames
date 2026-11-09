@@ -1312,8 +1312,10 @@ class Welt {
       this.farmVerlassen(einheit);
       einheit.sammelt = false;
       einheit.baut = false;
-      // Ein Moench, der eben noch bekehrte, tut es nicht mehr (einheiten AC-38).
+      // Ein Moench, der eben noch bekehrte oder heilte, tut es nicht mehr
+      // (einheiten AC-37, AC-38; tests/waechter-merker.test.mjs).
       einheit.bekehrt = false;
+      einheit.heilt = null;
       einheit.unerreichbar = null;
       // Jeder neue Befehl beendet einen laufenden Angriffslauf.
       einheit.angriffslauf = null;
@@ -2359,6 +2361,7 @@ class Welt {
     einheit.sammelt = false;
     einheit.baut = false;
     einheit.bekehrt = false;
+    einheit.heilt = null;
     this.bestandPruefen = true;
   }
 

@@ -211,13 +211,25 @@ test.describe('Die KI greift an', () => {
     expect(bild.reiterImBild, 'und der Spaeherreiter voraus').toBe(1);
     expect(bild.weitVonDaheim, 'weit weg von zu Hause').toBeGreaterThan(30);
     expect(bild.meineAuswahl, 'Anna hat nichts ausgewaehlt und nichts befohlen').toBe(0);
+    // Die Unterschrift sagt "kein Dorf im Bild" - also kein Gebaeude im
+    // Ausschnitt. Wie weit es bis daheim ist und wer befohlen hat, traegt ein
+    // Standbild nicht; das sichern die Zusicherungen oben (Rueckschau nach
+    // Runde 135, gefunden in Runde 132).
+    const gebaeudeImBild = await anna.evaluate(() => {
+      const a = window.ansicht;
+      return [...a.gebaeude.values()].filter((g) => {
+        const p = a.zuBild(a.gebaeudeMitte(g).x, a.gebaeudeMitte(g).y);
+        return p.x > -60 && p.x < a.leinwand.clientWidth + 60 && p.y > -60 && p.y < a.leinwand.clientHeight + 60;
+      }).length;
+    });
+    expect(gebaeudeImBild, 'kein Gebaeude im Bild').toBe(0);
     expect(await bedienteileFrei(anna)).toEqual([]);
     await anna.waitForTimeout(300);
 
     await nachweis(anna, {
       spec: KI,
       ac: 'AC-11',
-      titel: 'Das Heer der KI auf dem Weg zum Gegner: acht Kampfeinheiten ziehen über die offene Karte, vierzig Felder von ihrem eigenen Dorf entfernt — sieben Milizen im Verband, der schnellere Späherreiter voraus. Befohlen hat das kein Mensch',
+      titel: 'Das Heer der KI (rot) auf offener Karte, kein Dorf im Bild: sieben Milizen und ein Späherreiter, und Anna hat nichts gewählt',
       test: info,
     });
     await zeitraffer(anna, code, 1);

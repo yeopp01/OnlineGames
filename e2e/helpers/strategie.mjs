@@ -399,6 +399,12 @@ export function bedienteileFrei(page) {
  * Gefechte in einer Partie aufstellt, braucht sie weit genug auseinander, weil
  * eine stehende Kampfeinheit von selbst angreift, was sie sieht (kampf AC-2).
  *
+ * **Einheiten sieht sie nicht**: ein zweiter Aufruf in derselben Partie gibt
+ * dieselbe erste Wiese zurueck, auf der noch steht, was der erste Fall
+ * aufgestellt hat. Ein zweiter Fall nimmt deshalb die zweite:
+ * `const [, wiese] = await freieWiesen(page, 2)` (Runde 135: die wachende
+ * Miliz aus einem Fall griff den Dorfbewohner des naechsten an).
+ *
  * @param {import('@playwright/test').Page} page
  * @param {number} [anzahl]
  * @returns {Promise<{x: number, y: number}[]>}

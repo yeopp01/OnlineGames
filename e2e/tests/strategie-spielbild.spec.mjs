@@ -450,6 +450,15 @@ test.describe('Das Spielbild', () => {
         const abstand = Math.hypot(x - basis.x, y - basis.y);
         if (!bestes || abstand < bestes.abstand) bestes = { x, y, abstand };
       }
+      // Vom selben Vorkommen das Feld, das im Bild am weitesten oben liegt
+      // (kleinstes x + y): das naechste liegt oft gleich hinter dem
+      // Dorfzentrum, und wer dort sammelt, ist nur Umriss (bedienung AC-30).
+      for (let i = 0; i < a.karte.felder.length; i++) {
+        if (a.karte.felder[i] !== 4) continue;
+        const x = i % g;
+        const y = (i / g) | 0;
+        if (Math.hypot(x - bestes.x, y - bestes.y) <= 4 && x + y < bestes.x + bestes.y) bestes = { x, y, abstand: bestes.abstand };
+      }
       a.ausgewaehlt.clear();
       for (const e of a.nachher.values()) if (e.b === a.ich) a.ausgewaehlt.add(e.i);
       a.kamera.zoom = 1;
@@ -460,27 +469,40 @@ test.describe('Das Spielbild', () => {
     await anna.mouse.click(gold.x, gold.y, { button: 'right' });
     await zeitraffer(anna, code, 5);
 
-    // Einer hat schon einiges Gold in der Hand.
+    // Einer hat schon einiges Gold in der Hand - und steht nicht hinter dem
+    // Dorfzentrum. Das Gold liegt oft gleich hinter dem Dorfzentrum, und wer
+    // dort steht, ist nur Umriss (bedienung AC-30): die Goldbrocken der
+    // Unterschrift saehe man nicht (Rueckschau nach Runde 135). Dann die Welt
+    // anhalten, damit er im Bild bleibt, wo er gesucht wurde.
     const traeger = await anna.waitForFunction(() => {
       const a = window.ansicht;
-      const e = [...a.nachher.values()].find((f) => f.b === a.ich && f.a === 'g' && f.l >= 4);
+      const e = [...a.nachher.values()].find((f) => f.b === a.ich && f.a === 'g' && f.l >= 4 && !a.umrisse.includes(f.i));
       return e ? e.i : false;
     }, null, { timeout: 30_000 });
     const id = await traeger.jsonValue();
-    await zeitraffer(anna, code, 1);
+    await zeitraffer(anna, code, 0);
     await anna.evaluate((eid) => {
       const a = window.ansicht;
       a.ausgewaehlt.clear();
       const e = a.nachher.get(eid);
-      a.kamera.zoom = 3;
+      a.kamera.zoom = 2.5;
       a.blickAuf(e.x, e.y);
     }, id);
     await anna.waitForTimeout(200);
+    const imBild = await anna.evaluate((eid) => {
+      const a = window.ansicht;
+      const e = a.nachher.get(eid);
+      return { umriss: a.umrisse.includes(eid), ladung: e.l, art: e.a };
+    }, id);
+    expect(imBild.umriss, 'der Traeger ist ganz zu sehen, nicht nur Umriss').toBe(false);
+    expect(imBild.art).toBe('g');
+    expect(imBild.ladung).toBeGreaterThanOrEqual(4);
     await nachweis(anna, {
       spec: '10-strategie/einheiten-und-befehle.md',
       ac: 'AC-15',
-      titel: 'Am Goldvorkommen: ein Dorfbewohner traegt gelbe Goldbrocken in beiden Haenden - Gold in der Leiste erst mit bedienung AC-24',
+      titel: 'Am Goldvorkommen: ein Dorfbewohner trägt gelbe Goldbrocken in beiden Händen',
       test: info,
     });
+    await zeitraffer(anna, code, 1);
   });
 });

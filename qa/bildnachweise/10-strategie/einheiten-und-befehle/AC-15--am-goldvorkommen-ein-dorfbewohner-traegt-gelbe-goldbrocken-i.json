@@ -1,7 +1,7 @@
 {
   "spec": "10-strategie/einheiten-und-befehle.md",
   "ac": "AC-15",
-  "titel": "Am Goldvorkommen: ein Dorfbewohner traegt gelbe Goldbrocken in beiden Haenden - Gold in der Leiste erst mit bedienung AC-24",
+  "titel": "Am Goldvorkommen: ein Dorfbewohner trägt gelbe Goldbrocken in beiden Händen",
   "datei": "e2e/tests/strategie-spielbild.spec.mjs",
   "pfad": [
     "Das Spielbild",

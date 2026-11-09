@@ -1309,11 +1309,45 @@ Testlauf): `npm run check` 56 s, 553 Tests ohne Browser; der volle
 Browserlauf mit 186 Fällen 15,0 min einschließlich Prüfung (Runde 130);
 `e2e:daten` 4,6 min für sechs Dateien, dazu rund 11 s für die siebte.
 
+### Nach Runde 135 (2026-11-09)
+
+Runden 132–135: Burg, Markt, Mönch heilt, Mönch bekehrt — D7 und D8
+fertig, vier Kriterien, keine Runde gescheitert. Was sich wiederholt hat:
+
+1. **Ein Merker, den nur seine eigene Arbeit löscht** — `bekehrt` blieb
+   nach einem Gang als „arbeitet" stehen (Runde 135, erst die Durchsicht
+   fand es); `heilt` ebenso, nur kürzer. → **Wächter**
+   `tests/waechter-merker.test.mjs`: jeder Merker aus der Zeile, die `w`
+   schickt, wird in `befehl()` und `einheitSterben()` zurückgesetzt. Er fand
+   beim ersten Lauf `heilt` an beiden Stellen; Gegenprobe fällt.
+2. **Was ein Rechtsklick tut, an drei Stellen** — Ramme (Runde 129), Mönch
+   (Runde 134) und Bekehren (Runde 135) brauchten je Server, Zielzeichen und
+   Leiste; in Runde 134 fand das Bild zwei der drei. → Regel in der
+   Anweisung (Abschnitt 3), dazu der Satz über `freieWiesen` an der Hilfe:
+   sie sieht keine Einheiten, ein zweiter Fall nimmt die zweite Wiese.
+3. **Bilder, die ihre Unterschrift nicht tragen** — für diese Rückschau
+   aufgehoben: einheiten AC-15 zeigte die Goldträger nur als Umriss hinter
+   dem Dorfzentrum (das nächste Gold liegt dort); jetzt geht der
+   Rechtsklick auf das Feld des Vorkommens, das im Bild am weitesten oben
+   liegt, der Test wartet auf einen Träger, der nicht in `ansicht.umrisse`
+   steht, und hält die Welt für das Bild an. ki AC-11 nannte „vierzig
+   Felder von ihrem eigenen Dorf" und „befohlen hat das kein Mensch" —
+   beides trägt kein Standbild; jetzt „kein Dorf im Bild", mit Zusicherung,
+   dass kein Gebäude im Ausschnitt steht.
+
+Gemessen (18 Chrome-Vorgänge des Benutzers wie in Runde 130, kein fremder
+Testlauf): `npm run check` 55 s, 587 Tests ohne Browser; der volle
+Browserlauf mit 190 Fällen und neuen Bildern 17,0 min einschließlich
+Prüfung (Runde 135; Runde 130: 15,0 min für 186). `e2e:daten` 4,9 min.
+
 ## Runden
 
 Neueste oben. Eine Zeile je Runde: Nummer, Datum, Kriterien, Ergebnis,
 wichtigste Erkenntnis.
 
+- **136** · 2026-11-09 · **Rückschau** — Wächter für Merker hinter `w`
+  (fand `heilt`), Regel „Rechtsklick an drei Stellen", die Bilder zu
+  einheiten AC-15 und ki AC-11 zeigen wieder, was ihre Unterschrift sagt.
 - **135** · 2026-11-09 · **einheiten AC-38 fertig, D8 fertig** — der Mönch
   bekehrt: ein Rechtsklick auf eine fremde Einheit in neun Feldern, nach
   vier bis zehn Sekunden gehört sie ihm, dann ruht er 62 Sekunden. Die
