@@ -153,6 +153,9 @@ const SUCH_BLOCK = 8;
 // Bloecke gelten als zehn Minuten alt.
 const SUCH_TAKTE_JE_FELD = 10;
 const SUCH_NIE_GESEHEN = 6000;
+// So viele suchen zusammen einen Block ab (ki AC-13): zu viert verliert
+// keiner allein gegen einen, der sich verteidigt.
+const SUCH_GRUPPE = 4;
 
 // Wie frisch ihr Blick auf das Dorf des Gegners sein muss, damit sie sich fuer
 // ueberlegen haelt (ki AC-18 mit ki AC-13), in Takten: eine Minute.
@@ -518,7 +521,7 @@ class Ki {
   // Fremde Kampfeinheiten eines Spielers, die sie zuletzt gesehen hat.
   gesehenVon(id) {
     let n = 0;
-    for (const f of this.feindeGesehen.values()) if (f.besitzer === id && this.welt.takt - f.takt < FEIND_VERGESSEN) n += 1;
+    for (const f of this.feindeGesehen.values()) if (f.besitzer === id && !f.dorf && this.welt.takt - f.takt < FEIND_VERGESSEN) n += 1;
     return n;
   }
 
@@ -532,6 +535,9 @@ class Ki {
   wahrnehmen() {
     const welt = this.welt;
     const ich = this.spielerId;
+    // Einmal je Takt: das Heer und die Ueberlegenheit fragen beide.
+    if (this.wahrgenommen === welt.takt) return;
+    this.wahrgenommen = welt.takt;
     for (const g of welt.gebaeude.values()) {
       if (g.besitzer === ich || !welt.siehtGebaeude(ich, g)) continue;
       this.gesehen.set(g.id, { id: g.id, art: g.art, x: g.x, y: g.y, besitzer: g.besitzer });
@@ -550,13 +556,15 @@ class Ki {
       if (!jetzt.has(id) && welt.sieht(this.spielerId, f.x, f.y)) this.feindeGesehen.delete(id);
     }
     for (const e of sichtbar) {
-      if (!(EINHEITEN[e.art].klassen || []).includes('dorf')) {
-        this.feindeGesehen.set(e.id, { besitzer: e.besitzer, takt: welt.takt, x: Math.round(e.x), y: Math.round(e.y) });
-      }
+      // Auch Dorfbewohner: wo die Holzfaeller des Gegners standen, weiss
+      // sie, wie ein Mensch es weiss - das Heer sucht sie dort (heerPruefen).
+      // Fuer die Ueberlegenheit zaehlen sie nicht (gesehenVon).
+      const dorf = (EINHEITEN[e.art].klassen || []).includes('dorf');
+      this.feindeGesehen.set(e.id, { id: e.id, besitzer: e.besitzer, dorf, takt: welt.takt, x: Math.round(e.x), y: Math.round(e.y) });
       // Ein Dorfbewohner verraet, wo jemand wohnt; eine Kampfeinheit draussen
       // nicht - ein fremder Spaeher vor dem eigenen Dorf hiesse sonst, der
       // Gegner wohne hier.
-      if ((EINHEITEN[e.art].klassen || []).includes('dorf')) this.feindOrt.set(e.besitzer, { x: Math.round(e.x), y: Math.round(e.y) });
+      if (dorf) this.feindOrt.set(e.besitzer, { x: Math.round(e.x), y: Math.round(e.y) });
     }
     // Wann sie welchen Block zuletzt sah - fuer die Suche nach dem, was sie
     // nicht mehr kennt.
@@ -687,9 +695,33 @@ class Ki {
     // Partien 56 bis 98 Kampfeinheiten neben 7 bis 28 Gebaeuden eines
     // Verlierers ohne Heer (Runde 95). Einheiten zuerst, dann Gebaeude.
     if (stehend.length) {
-      // Nur, was sie sieht oder gesehen hat (ki AC-13).
-      const seineEinheiten = gegner ? this.sichtbareFeinde().filter((e) => e.besitzer === gegner.id) : [];
+      // Nur, was sie sieht oder gesehen hat (ki AC-13) - Einheiten dort, wo
+      // sie sie zuletzt sah; wer dort nicht mehr steht, faellt beim Hinsehen
+      // aus dem Gedaechtnis (wahrnehmen). Nur die eben sichtbaren, und das
+      // Heer stand vor einem Dorf, dessen Holzfaeller am Waldrand weiter
+      // arbeiteten: KI gegen KI endete 36 statt 40 von 40 vor Minute 60
+      // (Runde 144, gemessen; mit allen Einheiten der Welt 39).
+      const seineEinheiten = gegner ? [...this.feindeGesehen.values()].filter((f) => f.besitzer === gegner.id) : [];
       const seineGebaeude = gegner ? [...this.gesehen.values()].filter((g) => g.besitzer === gegner.id && !GEBAEUDE[g.art].begehbar) : [];
+      // Kennt sie kein Gebaeude mehr von ihm, sucht sie - und zwar in
+      // Gruppen zu je SUCH_GRUPPE, jede in einem anderen Block, wie ein
+      // Mensch sein Heer zum Suchen aufteilt. Alle auf denselben Block, und
+      // achtzig Mann suchten fuenf Minuten lang die letzten fuenf Gebaeude
+      // und eine einzelne Einheit (Runde 144, Startwert 18).
+      const ort = gegner && !seineGebaeude.length ? this.feindOrt.get(gegner.id) : null;
+      const vergeben = new Set();
+      let gruppe = null;
+      let inGruppe = 0;
+      const suchen = () => {
+        if (!ort) return ziel;
+        if (!gruppe || inGruppe >= SUCH_GRUPPE) {
+          gruppe = this.suchziel(ort, vergeben) || ziel;
+          if (gruppe.block !== undefined) vergeben.add(gruppe.block);
+          inGruppe = 0;
+        }
+        inGruppe += 1;
+        return gruppe;
+      };
       const naechstes = (e, liste) => liste.reduce((best, z) => {
         const d = Math.hypot(z.x - e.x, z.y - e.y);
         return !best || d < best.d ? { z, d } : best;
@@ -705,7 +737,8 @@ class Ki {
         const einheit = naechstes(e, seineEinheiten.filter(frei));
         const bau = naechstes(e, seineGebaeude.filter(frei));
         const treffer = einheit && (!bau || einheit.d <= bau.d + 6) ? einheit.z : bau?.z;
-        this.senden({ auftrag: 'befehl', einheiten: [e.id], ziel: treffer ? { x: Math.round(treffer.x), y: Math.round(treffer.y) } : ziel });
+        const weiter = treffer ? null : suchen();
+        this.senden({ auftrag: 'befehl', einheiten: [e.id], ziel: treffer ? { x: Math.round(treffer.x), y: Math.round(treffer.y) } : { x: weiter.x, y: weiter.y } });
         if (treffer) this.heerZiel.set(e.id, { id: treffer.id, takt: this.welt.takt });
       }
     }
@@ -768,7 +801,7 @@ class Ki {
    * eigenen Basis, und KI gegen KI dauerte im Median sieben Minuten laenger
    * (Runde 112, gemessen).
    */
-  suchziel(um) {
+  suchziel(um, ausser = null) {
     if (!this.blockGesehen) this.wahrnehmen();
     const g = this.welt.karte.groesse;
     const je = Math.ceil(g / SUCH_BLOCK);
@@ -780,6 +813,7 @@ class Ki {
         const y = Math.min(g - 1, by * SUCH_BLOCK + SUCH_BLOCK / 2);
         // Mitten im See oder im Wald steht kein Gebaeude und keiner kommt hin.
         if (!karten.begehbar(this.welt.karte, x, y)) continue;
+        if (ausser?.has(by * je + bx)) continue;
         const zuletzt = this.blockGesehen[by * je + bx];
         const alter = zuletzt === -Infinity ? jetzt + SUCH_NIE_GESEHEN : jetzt - zuletzt;
         // Ueber die ganze Karte, aber nah am letzten Ort zuerst: wer nur im
@@ -787,10 +821,10 @@ class Ki {
         // Runde 114 stand ein Heer von 175 eine Stunde lang neben dem Dorf,
         // dessen letztes Gebaeude weiter draussen stand.
         const wert = alter - Math.hypot(x - um.x, y - um.y) * SUCH_TAKTE_JE_FELD;
-        if (!bester || wert > bester.wert) bester = { x, y, wert };
+        if (!bester || wert > bester.wert) bester = { x, y, wert, block: by * je + bx };
       }
     }
-    return bester ? { x: bester.x, y: bester.y } : null;
+    return bester ? { x: bester.x, y: bester.y, block: bester.block } : null;
   }
 
   // Ein freies Feld im Abstand vor dem Ziel, auf der Seite der eigenen Basis:
