@@ -1,7 +1,8 @@
 // Das Gleichgewicht der Feudalzeit (→ specs/10-strategie/fahrplan.md AC-9,
-// AC-10). Geprueft wird im Gefechtsstand: zwei Heere gleicher Kosten stehen
-// sich gegenueber, laufen mit Angriffslauf aufeinander zu, und danach rechnet
-// nur noch die Simulation. Kein Server, kein Browser.
+// AC-10) und der Ritterzeit (AC-23). Geprueft wird im Gefechtsstand: zwei
+// Heere gleicher Kosten stehen sich gegenueber, laufen mit Angriffslauf
+// aufeinander zu, und danach rechnet nur noch die Simulation. Kein Server,
+// kein Browser.
 //
 // Zum Nachsehen von Hand: `npm run konterkreis:strategie` gibt dieselben
 // Paarungen in beiden Richtungen aus, mit Dauer und Ueberlebenden.
@@ -11,6 +12,8 @@ import { createRequire } from 'node:module';
 
 const require = createRequire(import.meta.url);
 const { gefechtSpielen, kostenSumme } = require('../server/spiele/strategie/pruefstand.js');
+const { Welt } = require('../server/spiele/strategie/welt.js');
+const { EINHEITEN } = require('../server/spiele/strategie/daten.js');
 
 // Links schlaegt rechts - der Konterkreis der Feudalzeit aus der Vorlage
 // (docs/strategie/vorlage-aoe2.md).
@@ -99,4 +102,97 @@ test('fahrplan AC-10: ein anderer Startwert ergibt ein anderes Gefecht', () => {
     spuren.add(spur.join(','));
   }
   assert.ok(spuren.size >= 4, `fuenf Startwerte ergaben nur ${spuren.size} verschiedene Verlaeufe`);
+});
+
+// Der Konterkreis der Ritterzeit (fahrplan AC-23): Speer gegen Ritter,
+// Mangonel gegen einen Haufen Bogenschuetzen, Ritter gegen Mangonel.
+const KREIS_RITTERZEIT = [
+  ['speerkaempfer', 'ritter'],
+  ['mangonel', 'bogenschuetze'],
+  ['ritter', 'mangonel'],
+];
+// 1200 statt 600: der Mangonel kostet 295, fuer 600 gaebe es zwei - und
+// zwei Steine gegen acht Bogenschuetzen sind kein Haufen. Bei 1200 stehen
+// vier Mangonels gegen siebzehn Bogenschuetzen (1180 gegen 1190), zwanzig
+// Speerkaempfer gegen acht Ritter. Gemessen in Runde 138 bei 600, 900 und
+// 1200: jeder Konter 20 von 20, umgekehrt 0 von 20.
+const BUDGET_RITTERZEIT = 1200;
+
+function siegeLinks(links, rechts) {
+  let siege = 0;
+  let ohneEnde = 0;
+  for (let startwert = 1; startwert <= STARTWERTE; startwert++) {
+    const ergebnis = gefechtSpielen({ links, rechts, startwert, budget: BUDGET_RITTERZEIT, minuten: 10 });
+    if (ergebnis.sieger === 'links') siege += 1;
+    if (!ergebnis.sieger) ohneEnde += 1;
+  }
+  return { siege, ohneEnde };
+}
+
+test('fahrplan AC-23: in der Ritterzeit gewinnt der Konter bei gleichen Kosten in mindestens 80 %', () => {
+  // Schwelle aus dem Kriterium wie bei AC-9. Gemessen in Runde 138: 20 von
+  // 20 in allen drei Paarungen, Gefechte von 76 bis 224 Takten.
+  const schwelle = Math.ceil(STARTWERTE * 0.8);
+  for (const [konter, ziel] of KREIS_RITTERZEIT) {
+    const { siege, ohneEnde } = siegeLinks(konter, ziel);
+    assert.ok(siege >= schwelle, `${konter} soll ${ziel} kontern, gewinnt aber nur ${siege} von ${STARTWERTE}`);
+    assert.equal(ohneEnde, 0, `${konter} gegen ${ziel}: ${ohneEnde} Gefechte ohne Ende`);
+  }
+});
+
+test('fahrplan AC-23: umgekehrt gewinnt der Gekonterte in der Ritterzeit so gut wie nie', () => {
+  // Die Gegenprobe gegen "links gewinnt immer". Gemessen in Runde 138: 0 von
+  // 20 in allen drei Paarungen.
+  for (const [konter, ziel] of KREIS_RITTERZEIT) {
+    const { siege } = siegeLinks(ziel, konter);
+    assert.ok(
+      siege <= STARTWERTE - Math.ceil(STARTWERTE * 0.8),
+      `${ziel} wird von ${konter} gekontert, gewinnt als linke Seite aber ${siege} von ${STARTWERTE}`,
+    );
+  }
+});
+
+/** Wie viele Gegner ein Stein des Mangonels im Mittel trifft, ueber alle Startwerte. */
+function trefferJeStein() {
+  const urform = Welt.prototype.einschlaegeTakten;
+  let steine = 0;
+  let treffer = 0;
+  Welt.prototype.einschlaegeTakten = function zaehlen() {
+    const vorher = this.schlaege.length;
+    steine += this.einschlaege.filter((stein) => stein.takte === 1).length;
+    urform.call(this);
+    treffer += this.schlaege.slice(vorher).filter((s) => !s.gebaeude && s.ziel.besitzer !== s.angreifer.besitzer).length;
+  };
+  try {
+    const { siege } = siegeLinks('mangonel', 'bogenschuetze');
+    return { siege, steine, mittel: treffer / steine };
+  } finally {
+    Welt.prototype.einschlaegeTakten = urform;
+  }
+}
+
+test('fahrplan AC-23: der Mangonel schlaegt den Haufen mit der Flaeche - ein Stein trifft im Mittel mehr als einen', () => {
+  // Gewaenne der Mangonel nur wegen seiner Fernruestung (6 gegen den
+  // Bogenangriff 4: ein Punkt je Pfeil), waeren die Tests oben auch gruen,
+  // und "gegen einen Haufen" stuende umsonst im Kriterium. Gemessen in Runde
+  // 138: ohne Flaeche gewinnt er ebenso 20 von 20 - der Sieg allein belegt
+  // die Flaeche also nicht. Deshalb hier, was nur die Flaeche kann: mehr als
+  // ein Getroffener je Stein. Gemessen 1,66 (je Startwert 1,40 bis 2,81),
+  // mit Flaeche 0,05 statt 1 nur 0,65, und das Gefecht dauert doppelt so
+  // lange (Median 225 statt 95 Takte). Die Grenze "mehr als einer" ist,
+  // was ein Stein ohne Flaeche hoechstens schafft.
+  const mit = trefferJeStein();
+  assert.ok(mit.steine >= 40, `nur ${mit.steine} Steine in zwanzig Gefechten`);
+  assert.ok(mit.mittel > 1, `ein Stein trifft im Mittel nur ${mit.mittel.toFixed(2)} Gegner`);
+
+  // Gegenprobe: dieselbe Zaehlung ohne Flaeche liegt unter eins - sonst
+  // zaehlte sie etwas anderes als die Flaeche.
+  const urflaeche = EINHEITEN.mangonel.flaeche;
+  EINHEITEN.mangonel.flaeche = 0.05;
+  try {
+    const ohne = trefferJeStein();
+    assert.ok(ohne.mittel <= 1, `ohne Flaeche trifft ein Stein im Mittel ${ohne.mittel.toFixed(2)} Gegner`);
+  } finally {
+    EINHEITEN.mangonel.flaeche = urflaeche;
+  }
 });

@@ -133,6 +133,11 @@
     },
     {
       "spec": "10-strategie/fahrplan.md",
+      "ac": "AC-23",
+      "begruendung": "Der Konterkreis der Ritterzeit ist wie AC-9 eine Verteilung ueber 120 Gefechte im Gefechtsstand ohne Browser: Speer gegen Ritter, Mangonel gegen Bogenschuetzen, Ritter gegen Mangonel, je zwanzig Startwerte in beiden Richtungen, dazu wie viele Gegner ein Stein im Mittel trifft. Ein Bild zeigt ein Gefecht und keinen Anteil, und den Flaechenschaden im Bild belegt schon kampf AC-19."
+    },
+    {
+      "spec": "10-strategie/fahrplan.md",
       "ac": "AC-10",
       "begruendung": "Dasselbe Gefecht zweimal gerechnet verlaeuft Takt fuer Takt gleich. Verglichen werden zwei Spuren aus Kennung, Leben und Ort aller Einheiten ueber hunderte Takte; das ist ein Vergleich zweier ganzer Laeufe. Ein Bild zeigt einen Augenblick und koennte Gleichheit nie belegen."
     },

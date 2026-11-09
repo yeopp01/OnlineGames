@@ -2,7 +2,7 @@
 
 **Bereich:** Strategie
 **Kuerzel:** fahrplan
-**Stand:** 13/23 fertig · 10 offen
+**Stand:** 14/23 fertig · 9 offen
 
 ## Zweck
 
@@ -174,10 +174,14 @@ Zustandsnachricht umbaut und damit jeden Browsertest berührt: was dort heute
   jedes neue Gebäude, bildet jede neue Einheit aus und misst einen Schlag.
 - **AC-15** `offen` **Befestigung hält auf** — Im Prüfstand verzögert eine Steinmauer mit Tor
   einen Angriff aus Nahkämpfern messbar. Rammen brechen sie auf.
-- **AC-23** `offen` **Der Konterkreis der Ritterzeit** — Im Gefechtsstand bei
+- **AC-23** `fertig` **Der Konterkreis der Ritterzeit** — Im Gefechtsstand bei
   gleichen Kosten, je zwanzig Startwerte, in beiden Richtungen: Speer gegen
   Ritter, Mangonel gegen einen Haufen Bogenschützen, Ritter gegen Mangonel
-  gewinnen in mindestens 80 %, umgekehrt so gut wie nie (wie AC-9).
+  gewinnen in mindestens 80 %, umgekehrt so gut wie nie (wie AC-9). Das
+  Budget ist 1200 statt 600, weil der Mangonel 295 kostet und zwei Steine
+  gegen acht Bogenschützen kein Haufen sind. Der Haufen zählt: ein Stein
+  trifft im Mittel mehr als einen Gegner — sonst gewönne der Mangonel nur
+  über seine Fernrüstung.
 
 **Bauabfolge Stufe D.** Jeder Schritt endet mit etwas im Browser Sichtbarem.
 
@@ -191,7 +195,7 @@ Zustandsnachricht umbaut und damit jeden Browsertest berührt: was dort heute
 | D6 | Belagerung: Ramme gegen Gebäude (**fertig**, Runde 129), Mangonel mit Flächenschaden (**fertig**, Runde 130) | einheiten AC-35, AC-36, kampf AC-19 |
 | D7 | Burg (**fertig**, Runde 132) und Markt (**fertig**, Runde 133) | bauen AC-32, AC-33 |
 | D8 | Mönch: heilen (**fertig**, Runde 134), bekehren (**fertig**, Runde 135) | einheiten AC-37, AC-38 |
-| D9 | Die KI in der Ritterzeit; Konterkreis und Befestigung im Prüfstand; die Ritterzeit am Stück im Browser | ki AC-21, AC-22, fahrplan AC-14, AC-15, AC-23 |
+| D9 | Die KI in der Ritterzeit; Konterkreis (**fertig**, Runde 138) und Befestigung im Prüfstand; die Ritterzeit am Stück im Browser | ki AC-21, AC-22, fahrplan AC-14, AC-15, AC-23 |
 
 Offen aus Stufe C und gebaut auf dem Zweig `strategie-ki-sicht`: die KI mit
 eigener Sicht (ki AC-13) — wartet auf die Antwort zu fahrplan AC-11. Wird sie

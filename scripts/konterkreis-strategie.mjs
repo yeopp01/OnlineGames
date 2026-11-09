@@ -1,10 +1,11 @@
 #!/usr/bin/env node
 // Der Gefechtsstand des Strategiespiels (→ specs/10-strategie/fahrplan.md
-// AC-9, AC-10): zwei Heere gleicher Kosten laufen aufeinander zu, der Rest
+// AC-9, AC-10, AC-23): zwei Heere gleicher Kosten laufen aufeinander zu, der Rest
 // ist die Simulation. Ohne Server, ohne Browser, jeder Takt geprueft.
 //
 //   npm run konterkreis:strategie
 //   npm run konterkreis:strategie -- --startwerte 50 --budget 900 --minuten 8
+//   npm run konterkreis:strategie -- --budget-ritterzeit 600
 //
 // Je Paarung eine Zeile mit beiden Richtungen: wie oft der Konter gewinnt,
 // wie lange das Gefecht dauert, wie viele uebrig bleiben. Ein Widerspruch in
@@ -27,6 +28,9 @@ const zahl = (name, vorgabe) => {
 const startwerte = zahl('startwerte', 20);
 const budget = zahl('budget', 600);
 const minuten = zahl('minuten', 10);
+// Die Ritterzeit mit doppeltem Budget: der Mangonel kostet 295, und zwei
+// Steine gegen acht Bogenschuetzen sind kein Haufen (fahrplan AC-23).
+const budgetRitterzeit = zahl('budget-ritterzeit', 1200);
 
 // Der Konterkreis aus der Vorlage: links schlaegt rechts.
 const KREIS = [
@@ -35,10 +39,15 @@ const KREIS = [
   ['bogenschuetze', 'speerkaempfer'],
   ['spaeherreiter', 'bogenschuetze'],
 ];
+const KREIS_RITTERZEIT = [
+  ['speerkaempfer', 'ritter'],
+  ['mangonel', 'bogenschuetze'],
+  ['ritter', 'mangonel'],
+];
 
 const mittelwert = (zahlen) => zahlen.reduce((a, b) => a + b, 0) / zahlen.length;
 
-function reihe(links, rechts) {
+function reihe(links, rechts, budget) {
   const dauer = [];
   let siege = 0;
   let ohneEnde = 0;
@@ -54,18 +63,21 @@ function reihe(links, rechts) {
   return { siege, ohneEnde, dauer, uebrig };
 }
 
-console.log(`Gefechtsstand: ${startwerte} Startwerte je Paarung, Budget ${budget}, bis zu ${minuten} Spielminuten`);
-for (const art of new Set(KREIS.flat())) console.log(`  ${art}: ${kostenSumme(art)} Rohstoffe, also ${Math.floor(budget / kostenSumme(art))} Stueck`);
+console.log(`Gefechtsstand: ${startwerte} Startwerte je Paarung, bis zu ${minuten} Spielminuten`);
 const beginn = Date.now();
 let gebrochen = 0;
 try {
-  for (const [konter, ziel] of KREIS) {
-    for (const [links, rechts] of [[konter, ziel], [ziel, konter]]) {
-      const { siege, ohneEnde, dauer, uebrig } = reihe(links, rechts);
-      const anteil = Math.round((siege / startwerte) * 100);
-      const rolle = links === konter ? 'Konter' : 'gekontert';
-      if (links === konter && anteil < 80) gebrochen += 1;
-      console.log(`${links.padEnd(14)} gegen ${rechts.padEnd(14)} (${rolle.padEnd(9)}) ${String(siege).padStart(2)}/${startwerte} = ${String(anteil).padStart(3)} %, ohne Ende ${ohneEnde}, Takte ${dauer[0]} bis ${dauer[dauer.length - 1]} (Median ${dauer[dauer.length >> 1]}), uebrig ${mittelwert(uebrig).toFixed(1)}`);
+  for (const [titel, kreis, geld] of [['Feudalzeit', KREIS, budget], ['Ritterzeit', KREIS_RITTERZEIT, budgetRitterzeit]]) {
+    console.log(`${titel}, Budget ${geld}:`);
+    for (const art of new Set(kreis.flat())) console.log(`  ${art}: ${kostenSumme(art)} Rohstoffe, also ${Math.floor(geld / kostenSumme(art))} Stueck`);
+    for (const [konter, ziel] of kreis) {
+      for (const [links, rechts] of [[konter, ziel], [ziel, konter]]) {
+        const { siege, ohneEnde, dauer, uebrig } = reihe(links, rechts, geld);
+        const anteil = Math.round((siege / startwerte) * 100);
+        const rolle = links === konter ? 'Konter' : 'gekontert';
+        if (links === konter && anteil < 80) gebrochen += 1;
+        console.log(`${links.padEnd(14)} gegen ${rechts.padEnd(14)} (${rolle.padEnd(9)}) ${String(siege).padStart(2)}/${startwerte} = ${String(anteil).padStart(3)} %, ohne Ende ${ohneEnde}, Takte ${dauer[0]} bis ${dauer[dauer.length - 1]} (Median ${dauer[dauer.length >> 1]}), uebrig ${mittelwert(uebrig).toFixed(1)}`);
+      }
     }
   }
 } catch (fehler) {

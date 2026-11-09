@@ -1354,6 +1354,20 @@ Prüfung (Runde 135; Runde 130: 15,0 min für 186). `e2e:daten` 4,9 min.
 Neueste oben. Eine Zeile je Runde: Nummer, Datum, Kriterien, Ergebnis,
 wichtigste Erkenntnis.
 
+- **138** · 2026-11-09 · **fahrplan AC-23 fertig**: der Konterkreis der
+  Ritterzeit hielt ohne eine Zeile Spielcode — Speer gegen Ritter, Mangonel
+  gegen Bogen, Ritter gegen Mangonel je 20 von 20, umgekehrt 0 von 20, bei
+  600, 900 und 1200 Rohstoffen. Gemessen wird bei 1200 (vier Mangonels
+  gegen siebzehn Bogenschützen statt zwei gegen acht). **Die Gegenprobe
+  fand eine Lücke im Kriterium:** ohne Flächenschaden gewinnt der Mangonel
+  ebenso 20 von 20 — er siegt über die Fernrüstung (6 gegen Bogenangriff
+  4, ein Punkt je Pfeil), nicht über den Haufen. Deshalb eine dritte
+  Zusicherung, die nur die Fläche erfüllt: ein Stein trifft im Mittel 1,66
+  Gegner (ohne Fläche 0,65, das Gefecht dann doppelt so lang). Gegenproben
+  an den Daten: ohne Speerbonus fällt Speer gegen Ritter, ohne
+  Mindestreichweite gewinnt der Mangonel 7 von 20 gegen Ritter. Lehre:
+  **ein Sieg im Gefechtsstand belegt nicht, warum** — für jede Paarung
+  fragen, welcher Wert sie trägt, und ihn einzeln abschalten.
 - **137** · 2026-11-09 · **ki AC-21/22 gebaut, geparkt** auf
   `strategie-ki-ritterzeit` (`074d1f0`): die KI spart ab dem ersten Angriff
   für die Ritterzeit (Militär und Umverteilung ziehen die Rücklage ab;
