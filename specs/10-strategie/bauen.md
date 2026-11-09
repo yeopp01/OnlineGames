@@ -2,7 +2,7 @@
 
 **Bereich:** Strategie
 **Kuerzel:** bauen
-**Stand:** 29/34 fertig · 5 offen
+**Stand:** 30/34 fertig · 4 offen
 
 ## Zweck
 
@@ -248,11 +248,21 @@ Spezialeinheit der Burg (kommt mit den Völkern, Stufe E), Palisade.
   Bergfried, Banner und Fahne in Spielerfarbe, das Tor vorn rechts; im
   Baumenü die Taste F. Spezialeinheit und Unterschlupf kommen später (Stufe
   E, nicht gebaut).
-- **AC-33** `offen` **Markt tauscht** — Am Markt kauft man 100 Holz, Nahrung
+- **AC-33** `fertig` **Markt tauscht** — Am Markt kauft man 100 Holz, Nahrung
   oder Stein für Gold und verkauft sie gegen Gold. Jeder Kauf macht diesen
   Rohstoff teurer, jeder Verkauf billiger; zwischen Kauf- und Verkaufspreis
   liegt eine Gebühr von 30 %. Werte aus der Vorlage, als Daten. Ein Markt
   je Spieler genügt; Handel zwischen Märkten ist ausgeschlossen (ADR-0012).
+  Gebaut in Runde 133: vier mal vier Felder, ab der Feudalzeit, Taste J.
+  Grundpreis 100, Stein 130; gekauft wird zum Grundpreis plus 30 %,
+  verkauft zum Grundpreis minus 30 % (am Anfang 130 und 70, Stein 169 und
+  91). Jeder Tausch verschiebt den Grundpreis um 2, nie unter 20 — die
+  Vorlage nennt beides nicht als Zahl, aber dass man 4000 Holz oder Nahrung
+  und 5500 Stein verkauft, bis der Preis unten ist, und nur 2 und 20
+  erfüllen beides (`HANDEL` in den Daten). Die Preise gehören dem Spieler,
+  nicht dem Markt: ein zweiter Markt tauscht zu denselben Preisen, und
+  fremde Preise bekommt niemand übertragen. Gezeichnet als gepflasterter
+  Platz mit Markthalle und drei Ständen unter gestreiften Planen.
 - **AC-34** `fertig` **Verbesserungen der Ritterzeit** — Eisenguss (Schmiede,
   220 Nahrung, 120 Gold: Nahkämpfer +1 Angriff), Bodkinpfeil (Schmiede, 200
   Nahrung, 100 Gold: Fernkämpfer +1 Angriff, +1 Reichweite), Mauerwerk

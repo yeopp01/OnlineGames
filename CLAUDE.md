@@ -159,7 +159,7 @@ Umfang hinzufügt, dort nachsehen.
 
 ## Stand
 
-**429 von 555 Kriterien fertig.** 559 Tests ohne Browser, 187 im Browser. Die
+**430 von 555 Kriterien fertig.** 566 Tests ohne Browser, 188 im Browser. Die
 Übersicht ist der Bericht: `npm run qa:report`.
 
 Gebaut ist der Unterbau: Räume, Übertragung, Karte, Wegfindung, Sammeln,
@@ -364,7 +364,10 @@ der Mitte voll, am Rand die Hälfte — wer läuft, weicht aus. Näher als drei
 Felder wirft er nicht. **Aus D7 steht die Burg** (bauen AC-32): vier mal vier
 Felder, 650 Stein, +20 Wohnraum, schießt nach der Regel des Wachturms mit 11
 auf acht Felder vom Rand — ein Eintrag in den Daten, kein neuer Code in der
-Welt. Die **Sicht ist eine Einstellung beim Eröffnen** (kampf AC-16):
+Welt. **D7 ist fertig: der Markt** (bauen AC-33) tauscht je 100 Holz,
+Nahrung oder Stein gegen Gold, jeder Kauf macht die Ware teurer, jeder
+Verkauf billiger, 30 % Gebühr; die Preise gehören dem Spieler und stehen als
+`HANDEL` in den Daten, gerechnet nur auf dem Server. Die **Sicht ist eine Einstellung beim Eröffnen** (kampf AC-16):
 Nebel, Erkundet oder Aufgedeckt — Tests, die nicht vom Nebel handeln,
 eröffnen aufgedeckt (`partieZuZweit(…, { sicht: 'aufgedeckt' })`).
 

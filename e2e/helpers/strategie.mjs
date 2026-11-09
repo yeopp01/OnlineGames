@@ -38,6 +38,10 @@
 //   Fortschritt des **laufenden Auftrags** (nicht "fertig"!) · `p`
 //   Sammelpunkt · `w` wartet.
 //
+// **Marktpreise** (bauen AC-33): `hp` je Spieler, `{ holz: [kauf, verkauf],
+//   nahrung: [...], stein: [...] }` in Gold je 100, im Aufbau und danach nur
+//   nach einem Handel; im Browser `ansicht.handelspreise` (nur die eigenen).
+//
 // Dazu `ansicht.ich`, `ansicht.spieler` (Map, mit `basis`), `ansicht.zeitalter`,
 // `ansicht.werte`, `ansicht.verbesserungen`, `ansicht.zuBild(x, y)`,
 // `ansicht.gebaeudeMitte(g)`, `ansicht.platzTaugt(x, y)`.

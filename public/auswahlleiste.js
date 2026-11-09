@@ -524,7 +524,10 @@ export class Auswahlleiste {
       // Neu gebaut wird nur, wenn sich etwas Sichtbares aendert - sonst nur
       // der Balken. So flackert nichts unter dem Zeiger.
       const bezahlbar = angebot.map((e) => this.fehlt(e.kosten)).join('|');
-      const schluessel = `g${gebaeude.i}:${gebaeude.h}:${gebaeude.n}:${gebaeude.s.join(',')}:${gebaeude.w}:${bezahlbar}:${a.verbesserungen.join(',')}:${a.zeitalter}`;
+      // Am Markt aendern ein Handel die Preise und jeder Vorrat, ob er geht.
+      const handel = a.werte.gebaeude[gebaeude.art]?.handel
+        ? `${JSON.stringify(a.handelspreise)}:${this.handelGesperrt().join(',')}` : '';
+      const schluessel = `g${gebaeude.i}:${gebaeude.h}:${gebaeude.n}:${gebaeude.s.join(',')}:${gebaeude.w}:${bezahlbar}:${a.verbesserungen.join(',')}:${a.zeitalter}:${handel}`;
       if (schluessel !== this.gezeigt) {
         this.gebaeudeBauen(gebaeude, angebot, farbe);
         this.gezeigt = schluessel;
@@ -725,6 +728,61 @@ export class Auswahlleiste {
     w.append(bild, kopfteil, abriss);
   }
 
+  // Welche Handelsknoepfe gerade nicht gehen, als "kaufen:holz" - fuer den
+  // Schluessel der Leiste und fuer die Knoepfe selbst.
+  handelGesperrt() {
+    const a = this.ansicht;
+    const menge = a.werte.handel?.menge || 100;
+    const gesperrt = [];
+    for (const ware of a.werte.handel?.waren || []) {
+      const [kauf] = a.handelspreise?.[ware] || [];
+      if (!(a.vorraete.gold >= kauf)) gesperrt.push(`kaufen:${ware}`);
+      if (!(a.vorraete[ware] >= menge)) gesperrt.push(`verkaufen:${ware}`);
+    }
+    return gesperrt;
+  }
+
+  // Der Markt (bauen AC-33): je Ware eine Spalte mit Kaufen und Verkaufen,
+  // auf jedem Knopf der Preis in Gold, wie ihn der Server rechnet.
+  handelBauen(gebaeude) {
+    const a = this.ansicht;
+    const menge = a.werte.handel?.menge || 100;
+    const gesperrt = new Set(this.handelGesperrt());
+    const handel = element('div', 'handel');
+    handel.id = 'handel';
+    for (const ware of a.werte.handel?.waren || []) {
+      const [kauf, verkauf] = a.handelspreise?.[ware] || [];
+      const spalte = element('div', 'handel-ware');
+      spalte.dataset.ware = ware;
+      const kopfzeile = element('div', 'handel-kopf');
+      kopfzeile.append(element('span', `ware ware-${ware[0]}`), element('span', null, `${menge} ${ROHSTOFF_NAMEN[ware]}`));
+      spalte.append(kopfzeile);
+      for (const [richtung, gold, wort] of [['kaufen', kauf, 'Kaufen'], ['verkaufen', verkauf, 'Verkaufen']]) {
+        const knopf = document.createElement('button');
+        knopf.type = 'button';
+        knopf.dataset.handel = richtung;
+        knopf.dataset.ware = ware;
+        knopf.dataset.gold = String(gold);
+        const zu = gesperrt.has(`${richtung}:${ware}`);
+        knopf.setAttribute('aria-disabled', zu ? 'true' : 'false');
+        const grund = richtung === 'kaufen' ? 'Gold' : ROHSTOFF_NAMEN[ware];
+        knopf.title = zu
+          ? `${wort} - zu wenig ${grund}`
+          : `${menge} ${ROHSTOFF_NAMEN[ware]} ${richtung} für ${gold} Gold`;
+        const preis = element('span', 'preis');
+        preis.append(element('span', 'ware ware-g'), element('span', null, String(gold)));
+        knopf.append(element('span', 'handel-wort', wort), preis);
+        knopf.addEventListener('click', () => {
+          if (zu) this.ansicht.melden(`Zu wenig ${grund}.`);
+          else this.senden({ auftrag: 'handeln', gebaeude: gebaeude.i, ware, richtung });
+        });
+        spalte.append(knopf);
+      }
+      handel.append(spalte);
+    }
+    return handel;
+  }
+
   fehlt(kosten) {
     const vorraete = this.ansicht.vorraete;
     return Object.entries(kosten)
@@ -830,6 +888,9 @@ export class Auswahlleiste {
       zeile.append(element('span', 'ware ware-n'), element('span', null, `noch ${gebaeude.n} Nahrung`), element('span', 'leise', ` von ${vorrat}`));
       w.append(zeile);
     }
+
+    // Am Markt wird getauscht (bauen AC-33).
+    if (a.werte.gebaeude[gebaeude.art]?.handel) w.append(this.handelBauen(gebaeude));
 
     // Was nichts ausbildet, zeigt weder Knoepfe noch eine leere Schlange.
     if (!angebot.length && !gebaeude.s.length) return;

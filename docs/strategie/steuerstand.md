@@ -13,7 +13,7 @@ hier nichts eintraegt, verliert den Faden beim naechsten Autocompact.
 
 ## Zuletzt fortgeschrieben
 
-2026-11-09, nach Runde 132 (**kampf AC-13, fahrplan AC-13, C6e fertig**: der
+2026-11-09, nach Runde 133 (**kampf AC-13, fahrplan AC-13, C6e fertig**: der
 Server schickt jedem nur, was er sieht - `welt.zustandJeSpieler`,
 `welt.aufbauFuer`, im Raum `sendenJe`. Fremde Gebaeude und Felder, die sich im
 Nebel aendern, kommen beim naechsten Hinsehen; wer ausscheidet, bekommt einmal
@@ -117,7 +117,15 @@ Ecktuermen und Bergfried; die Schautafel waechst mit der Zahl der Gebaeude).
 Der Ritterzeit-Test baut und fotografiert nur noch die drei aus bauen AC-28,
 das Menue prueft weiter alle aus den Daten. **Naechste Runde 133: bauen
 AC-33 (Markt)** - Werte des Handels aus der Vorlage holen; oder kampf AC-21
-mit geklaertem Widerspruch.)
+mit geklaertem Widerspruch. Runde 133: **bauen AC-33 fertig - der Markt, D7
+ist fertig** (4x4, 175 Holz, Feudalzeit, Taste J; je Ware Kaufen und
+Verkaufen, Preis in Gold auf dem Knopf; `HANDEL` in daten.js: Grundpreis
+100, Stein 130, Gebuehr 30 %, Schritt 2, Tiefst 20 - Schritt und Tiefst aus
+"4000 bzw. 5500 bis ganz unten" der Vorlage gerechnet; Preise je Spieler,
+`welt.handelspreise`, im Draht `hp`, fremde nie). Die KI handelt nicht.
+**Naechste Runde 134: D8 - der Moench (einheiten AC-37 heilen, AC-38
+bekehren)**, Werte aus der Vorlage; oder kampf AC-21 mit geklaertem
+Widerspruch. Rueckschau bleibt Runde 136.)
 
 ## Wo ich stehe
 

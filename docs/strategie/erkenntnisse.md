@@ -1314,6 +1314,15 @@ Browserlauf mit 186 Fällen 15,0 min einschließlich Prüfung (Runde 130);
 Neueste oben. Eine Zeile je Runde: Nummer, Datum, Kriterien, Ergebnis,
 wichtigste Erkenntnis.
 
+- **133** · 2026-11-09 · **bauen AC-33 fertig, D7 fertig** — der Markt:
+  vier mal vier Felder, 175 Holz, ab der Feudalzeit, Taste J; je Ware
+  Kaufen und Verkaufen mit dem Preis in Gold auf dem Knopf, gerechnet nur
+  auf dem Server (`welt.handelspreise`, im Draht `hp`, fremde nie). Schritt
+  und Tiefstpreis standen nicht als Zahl in der Vorlage — aber wie viel man
+  verkaufen muss, bis der Preis unten ist, und nur 2 und 20 erfüllen beide
+  Angaben; ein Test misst genau das am Markt. Gegenproben: ohne
+  Tiefstpreis fällt der Test dazu, mit fremden Preisen im Aufbau der zum
+  Draht.
 - **132** · 2026-11-09 · **bauen AC-32 fertig** — die Burg: vier mal vier
   Felder, 650 Stein, 4800 Leben, +20 Wohnraum, schießt mit 11 auf acht
   Felder vom Rand (Regel des Wachturms, kein neuer Code), Sicht 9 wegen

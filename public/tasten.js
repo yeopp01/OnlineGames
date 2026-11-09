@@ -11,8 +11,8 @@
 // B schaltet die Bautasten, V kam mit dem Wachturm (bauen AC-29), N mit der
 // Mauer (bauen AC-30) - B selbst bleibt der Schalter. Danach die mittlere
 // Reihe hinter A S D: F kam mit der Burg (bauen AC-32); G bleibt der
-// Angriffslauf, H das Dorfzentrum.
-export const BAUTASTEN = ['q', 'w', 'e', 'r', 't', 'z', 'u', 'i', 'o', 'p', 'y', 'x', 'c', 'v', 'n', 'm', 'f'];
+// Angriffslauf, H das Dorfzentrum. J kam mit dem Markt (bauen AC-33).
+export const BAUTASTEN = ['q', 'w', 'e', 'r', 't', 'z', 'u', 'i', 'o', 'p', 'y', 'x', 'c', 'v', 'n', 'm', 'f', 'j'];
 
 // Texte auf dem Bildschirm mit echten Umlauten (Entscheidung vom 2026-09-17).
 export const BELEGUNG = [

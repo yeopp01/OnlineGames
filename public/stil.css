@@ -944,6 +944,42 @@ canvas.angriffslauf {
   color: #ffb4a8 !important;
 }
 
+/* Der Markt (bauen AC-33): je Ware eine Spalte, darin Kaufen und Verkaufen
+   mit dem Preis in Gold. */
+.handel {
+  display: flex;
+  gap: 0.6rem;
+  padding-left: 1rem;
+  border-left: 1px solid #ffffff1f;
+}
+
+.handel-ware {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 0.25rem;
+}
+
+.handel-kopf {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.3rem;
+  font-size: 0.8rem;
+  white-space: nowrap;
+}
+
+.handel button {
+  flex-direction: row;
+  justify-content: space-between;
+  gap: 0.5rem;
+  padding: 0.25rem 0.5rem;
+}
+
+.handel-wort {
+  font-size: 0.75rem;
+}
+
 .ausbilden .kosten {
   font-size: 0.85rem;
   font-weight: 600;

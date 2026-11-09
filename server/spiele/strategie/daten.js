@@ -27,7 +27,7 @@ const EINHEITEN = {
     // Spiel. Getroffen wird er trotzdem wehrhaft.
     wacht: false,
     baut: ['haus', 'muehle', 'holzfaellerlager', 'bergbaulager', 'farm', 'kaserne', 'schiessanlage', 'stall', 'schmiede', 'aussenposten',
-      'kloster', 'universitaet', 'belagerungswerkstatt', 'wachturm', 'steinmauer', 'tor', 'burg'],
+      'kloster', 'universitaet', 'belagerungswerkstatt', 'wachturm', 'steinmauer', 'tor', 'burg', 'markt'],
   },
   // Ausgebildet wird er im Stall, also ab der Feudalzeit; zu Beginn steht
   // einer in der Startaufstellung (bauen AC-22).
@@ -225,6 +225,14 @@ const GEBAEUDE = {
     groesse: 4, kosten: { stein: 650 }, bauzeit: 200, leben: 4800, wohnraum: 20, annahme: [], bildetAus: [], zeitalter: 2,
     angriff: 11, reichweite: 8, nachladen: 2, nahruestung: 8, fernruestung: 11, sicht: 9,
   },
+  // Der Markt (bauen AC-33): Kosten, Bauzeit und Leben aus der Vorlage, ab der
+  // Feudalzeit wie dort. Vier mal vier Felder wie im Original. `handel` sagt,
+  // dass an ihm getauscht wird - die Preise stehen unten in HANDEL. Karren und
+  // Handel zwischen Maerkten gibt es nicht (ADR-0012).
+  markt: {
+    groesse: 4, kosten: { holz: 175 }, bauzeit: 60, leben: 1300, wohnraum: 0, annahme: [], bildetAus: [], zeitalter: 1,
+    handel: true,
+  },
 };
 
 // Jedes Gebaeude ist auch ein Ziel (kampf AC-1), also braucht es Ruestung und
@@ -380,7 +388,28 @@ const KLASSEN = {
   gebaeude: { name: 'Gebäude' },
 };
 
+// Der Handel am Markt (bauen AC-33). Getauscht werden immer `menge` Einheiten
+// gegen Gold. Jede Ware hat einen Grundpreis in Gold je `menge`; gekauft wird
+// zum Grundpreis plus `gebuehr`, verkauft zum Grundpreis minus `gebuehr`.
+// Jeder Kauf hebt den Grundpreis dieser Ware um `schritt`, jeder Verkauf senkt
+// ihn um `schritt`, nie unter `tiefst`. Die Preise gelten je Spieler.
+//
+// Aus der Vorlage: Grundpreis 100, Stein 130, Gebuehr 30 %. Schritt und
+// Tiefstpreis sind dort nicht als Zahl genannt, wohl aber, wie viel man
+// verkaufen muss, bis der Preis ganz unten ist - 4000 Nahrung oder Holz,
+// 5500 Stein. Das sind 40 und 55 Verkaeufe zu je 100; nur Schritt 2 und
+// Tiefstpreis 20 erfuellen beides: (100 - 20) / 2 = 40, (130 - 20) / 2 = 55.
+// Nach oben ist der Preis offen - wer kauft, bezahlt mit Gold, und das ist
+// endlich.
+const HANDEL = {
+  menge: 100,
+  waren: { holz: 100, nahrung: 100, stein: 130 },
+  gebuehr: 0.3,
+  schritt: 2,
+  tiefst: 20,
+};
+
 module.exports = {
-  EINHEITEN, SAMMELN, TIERE, GEBAEUDE, VERBESSERUNGEN, ZEITALTER, AUFSTIEGE, KLASSEN,
+  EINHEITEN, SAMMELN, TIERE, GEBAEUDE, VERBESSERUNGEN, ZEITALTER, AUFSTIEGE, KLASSEN, HANDEL,
   BEVOELKERUNG_MAX, SCHLANGE_MAX, STARTAUFSTELLUNG,
 };

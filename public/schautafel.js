@@ -69,6 +69,7 @@ const GEBAEUDE_REIHE = [
   { art: 'tor', groesse: 1, titel: 'Tor, offen', offen: true },
   // Schiesst und gibt Wohnraum (bauen AC-32).
   { art: 'burg', groesse: 4, titel: 'Burg' },
+  { art: 'markt', groesse: 4, titel: 'Markt' },
   { art: 'haus', groesse: 2, titel: 'Baustelle 20 %', bau: 0.2 },
   { art: 'haus', groesse: 2, titel: 'Baustelle 70 %', bau: 0.7 },
 ];

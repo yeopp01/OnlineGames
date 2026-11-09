@@ -3,7 +3,7 @@
 const karten = require('./karte');
 const { suchen, nachbarfeld } = require('./wege');
 const {
-  EINHEITEN, SAMMELN, TIERE, GEBAEUDE, VERBESSERUNGEN, ZEITALTER, AUFSTIEGE, KLASSEN,
+  EINHEITEN, SAMMELN, TIERE, GEBAEUDE, VERBESSERUNGEN, ZEITALTER, AUFSTIEGE, KLASSEN, HANDEL,
   BEVOELKERUNG_MAX, SCHLANGE_MAX, STARTAUFSTELLUNG,
 } = require('./daten');
 
@@ -97,6 +97,7 @@ const GEBAEUDE_NAMEN = {
   steinmauer: 'Die Steinmauer',
   tor: 'Das Tor',
   burg: 'Die Burg',
+  markt: 'Der Markt',
 };
 
 // Dasselbe für die Einheiten (einheiten AC-23).
@@ -163,6 +164,9 @@ class Welt {
     // mitfahren, oder der Browser muesste die Verbesserungen selbst
     // zusammenrechnen - und damit stuende die Regel zweimal im Haus.
     this.werteAenderungen = new Set();
+    // Wessen Marktpreise sich geaendert haben (bauen AC-33) - wie die
+    // Kampfwerte nur dann im Zustand.
+    this.preisAenderungen = new Set();
     this.feldAenderungen = [];
     // Die Schlaege dieses Taktes, abgerechnet an seinem Ende (kampf AC-10).
     this.schlaege = [];
@@ -184,6 +188,8 @@ class Welt {
       ...start,
       basis: this.karte.basen[i],
       verbesserungen: [], // erforscht, in der Reihenfolge des Abschlusses
+      // Grundpreise am Markt, je Spieler (bauen AC-33).
+      preise: { ...HANDEL.waren },
       zeitalter: 0, // jede Partie beginnt in der Dunklen Zeit (spielziel AC-1)
       aus: false, // ausgeschieden oder aufgegeben (spielziel AC-5, AC-6)
       // Fuer die Tafel am Ende (spielziel AC-8). Gezaehlt wird waehrend der
@@ -889,6 +895,8 @@ class Welt {
         return this.abreissen(spielerId, nachricht.gebaeude);
       case 'sammelpunkt':
         return this.sammelpunktSetzen(spielerId, nachricht.gebaeude, nachricht.ziel);
+      case 'handeln':
+        return this.handeln(spielerId, nachricht.gebaeude, nachricht.ware, nachricht.richtung);
       case 'aufgeben':
         return this.aufgeben(spielerId);
       default:
@@ -977,6 +985,45 @@ class Welt {
       gebaeude.wartet = false;
     }
     this.gebaeudeGeaendert(gebaeude);
+    return {};
+  }
+
+  /**
+   * Kauf- und Verkaufspreis je Ware fuer diesen Spieler (bauen AC-33), in Gold
+   * je `HANDEL.menge`: `{ holz: [kauf, verkauf], ... }`. Gerundet wird hier und
+   * nur hier - was die Leiste zeigt, ist, was der Handel bucht.
+   */
+  handelspreise(spielerId) {
+    const spieler = this.spielerVon(spielerId);
+    return Object.fromEntries(Object.keys(HANDEL.waren).map((ware) => {
+      const grund = spieler.preise[ware];
+      return [ware, [Math.round(grund * (1 + HANDEL.gebuehr)), Math.round(grund * (1 - HANDEL.gebuehr))]];
+    }));
+  }
+
+  // Am Markt 100 einer Ware gegen Gold tauschen (bauen AC-33). Jeder Kauf
+  // macht die Ware teurer, jeder Verkauf billiger - fuer diesen Spieler.
+  handeln(spielerId, gebaeudeId, ware, richtung) {
+    const gebaeude = this.gebaeude.get(gebaeudeId);
+    if (!gebaeude || gebaeude.besitzer !== spielerId) return { fehler: 'Das ist nicht dein Gebäude.' };
+    if (!GEBAEUDE[gebaeude.art].handel) return { fehler: 'An diesem Gebäude wird nicht gehandelt.' };
+    if (!gebaeude.fertig) return { fehler: 'Das Gebäude ist noch nicht fertig.' };
+    if (!Object.hasOwn(HANDEL.waren, ware)) return { fehler: 'Diese Ware gibt es am Markt nicht.' };
+    if (richtung !== 'kaufen' && richtung !== 'verkaufen') return { fehler: 'Kaufen oder verkaufen?' };
+    const spieler = this.spielerVon(spielerId);
+    const [kauf, verkauf] = this.handelspreise(spielerId)[ware];
+    if (richtung === 'kaufen') {
+      if (spieler.gold < kauf) return { fehler: 'Zu wenig Gold.' };
+      spieler.gold -= kauf;
+      spieler[ware] += HANDEL.menge;
+      spieler.preise[ware] += HANDEL.schritt;
+    } else {
+      if (spieler[ware] < HANDEL.menge) return { fehler: `Zu wenig ${ROHSTOFF_NAMEN[ware]}.` };
+      spieler[ware] -= HANDEL.menge;
+      spieler.gold += verkauf;
+      spieler.preise[ware] = Math.max(HANDEL.tiefst, spieler.preise[ware] - HANDEL.schritt);
+    }
+    this.preisAenderungen.add(spielerId);
     return {};
   }
 
@@ -2882,6 +2929,8 @@ class Welt {
         // Die Kampfwerte dieses Spielers, nur wenn sich etwas geaendert hat
         // (bedienung AC-35) - wie Gebaeude und Tiere.
         ...(this.werteAenderungen.has(s.id) ? { kw: this.kampfwerte(s.id) } : {}),
+        // Die Marktpreise, nur nach einem Handel (bauen AC-33).
+        ...(this.preisAenderungen.has(s.id) ? { hp: this.handelspreise(s.id) } : {}),
         // Zeitalter als Stufe, nur wenn es nicht die Dunkle Zeit ist
         // (bedienung AC-33) - ein Zustand bleibt klein.
         ...(s.zeitalter ? { z: s.zeitalter } : {}),
@@ -2903,6 +2952,7 @@ class Welt {
       ...(this.ende ? { ende: this.ende } : {}),
     };
     this.werteAenderungen.clear();
+    this.preisAenderungen.clear();
     for (const s of this.spieler) if (s.angriff) s.angriff.neu = false;
     if (this.gebaeudeAenderungen.size) {
       zustand.gebaeude = [...this.gebaeudeAenderungen].map((id) => this.gebaeudeFuerDraht(id));
@@ -3064,7 +3114,14 @@ class Welt {
     this.felderOffen?.delete(id);
     const sichtbar = [...this.gebaeude.values()].filter((g) => g.besitzer === id || this.siehtGebaeude(id, g));
     for (const g of sichtbar) if (g.besitzer !== id) bekannt.set(g.id, { art: g.art, x: g.x, y: g.y });
-    return { ...voll, gebaeude: sichtbar.map((g) => this.gebaeudeFuerDraht(g.id)) };
+    // Fremde Marktpreise verrieten, was der andere getauscht hat - wie seine
+    // Vorraete bleiben sie bei ihm (bauen AC-33).
+    const spieler = voll.spieler.map((s) => {
+      if (s.id === id) return s;
+      const { hp, ...rest } = s;
+      return rest;
+    });
+    return { ...voll, spieler, gebaeude: sichtbar.map((g) => this.gebaeudeFuerDraht(g.id)) };
   }
 
   // Gebaeude mit Schlange und Fortschritt (bauen AC-10), fuer die
@@ -3119,6 +3176,8 @@ class Welt {
         // jeden, damit auch einer, der nach einem Abbruch zurueckkehrt, die
         // schon erforschten Verbesserungen sieht (raeume AC-12).
         kw: this.kampfwerte(s.id),
+        // Die Marktpreise, wie sie fuer ihn gelten (bauen AC-33).
+        hp: this.handelspreise(s.id),
         ...(s.aus ? { aus: 1 } : {}),
       })),
       // Wer nach dem Ende zurueckkommt, sieht das Ende und nicht eine
@@ -3162,7 +3221,12 @@ class Welt {
           nahruestung: w.nahruestung, fernruestung: w.fernruestung,
           // Gezogen statt gesetzt, von Feld zu Feld (bauen AC-30).
           gezogen: Boolean(w.gezogen),
+          // An ihm wird getauscht (bauen AC-33).
+          handel: Boolean(w.handel),
         }])),
+        // Wie viel ein Handel tauscht und welche Waren (bauen AC-33). Die
+        // Preise rechnet der Server (`hp` je Spieler).
+        handel: { menge: HANDEL.menge, waren: Object.keys(HANDEL.waren) },
         verbesserungen: VERBESSERUNGEN,
         // Die Namen der Klassen, fuer den Bonus an der Auswahl (bedienung AC-35).
         klassen: KLASSEN,

@@ -85,6 +85,13 @@ Rüstung 1/7, Sicht 9; die **Burg** 11 Angriff, Reichweite 8, ein Pfeil alle
 2 s, Rüstung 8/11, Sicht 11, vier mal vier Felder. Mit Besatzung schießen
 beide mehr Pfeile — der Unterschlupf ist hier nicht gebaut.
 
+Der **Markt** tauscht je 100 Holz, Nahrung oder Stein gegen Gold. Grundpreis
+100, Stein 130; Kauf zum Grundpreis plus 30 %, Verkauf minus 30 %. Jeder
+Kauf hebt den Preis dieser Ware, jeder Verkauf senkt ihn; ganz unten ist
+er nach 4000 verkauftem Holz oder Nahrung und nach 5500 Stein. Daraus
+folgen 2 Gold je Tausch und ein Tiefstpreis von 20 — gerechnet, nicht im
+Original abgelesen.
+
 ## Zeitalter
 
 | Wechsel | Kosten | Dauer | Voraussetzung |

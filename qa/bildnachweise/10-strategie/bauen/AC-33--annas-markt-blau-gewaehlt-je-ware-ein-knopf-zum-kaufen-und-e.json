@@ -1,0 +1,10 @@
+{
+  "spec": "10-strategie/bauen.md",
+  "ac": "AC-33",
+  "titel": "Annas Markt (blau) gewählt: je Ware ein Knopf zum Kaufen und einer zum Verkaufen, darauf der Preis in Gold – Holz kostet mehr als Nahrung",
+  "datei": "e2e/tests/strategie-markt.spec.mjs",
+  "pfad": [
+    "Markt",
+    "bauen AC-33: der Markt steht ab der Feudalzeit im Baumenue und tauscht 100 Holz, Nahrung oder Stein gegen Gold"
+  ]
+}

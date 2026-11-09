@@ -1629,6 +1629,200 @@ function burg(stift, e, farbe) {
     verlauf(stift, farbe, t0, hoch(t1, -0.8 * e), 0.12, -0.25));
 }
 
+// ---- Markt ------------------------------------------------------------------
+
+// Der Markt (bauen AC-33): ein gepflasterter Platz, vier mal vier Felder wie
+// die Burg. Hinten die Markthalle aus Fachwerk unter Ziegeln, davor drei
+// Staende mit gestreiften Planen und Waren - Aepfel, Korn, Holz, Stein, die
+// Dinge, die hier getauscht werden -, in der Mitte Faesser und Saecke. Die
+// Planen sind erdig gefaerbt; die Spielerfarbe steht wie ueberall an Fahne
+// und Wimpeln.
+function markt(stift, e, farbe) {
+  const W = 2.4 * e;
+  vorbereiten(stift, e, W, W / 2);
+  const P = (u, v, z = 0) => [(u - v) * W, ((u + v - 1) * W) / 2 - z];
+  const strich = Math.max(0.7, e * 0.035);
+
+  // Das Pflaster: Grund, dann Steine in versetzten Reihen.
+  const platz = [P(0.03, 0.97), P(0.97, 0.97), P(0.97, 0.03), P(0.03, 0.03)];
+  flaeche(stift, platz, verlauf(stift, '#9a8e78', platz[3], platz[1], 0.08, -0.14), false);
+  innerhalb(stift, platz, () => {
+    const n = 14;
+    for (let i = 0; i < n; i++) {
+      for (let j = 0; j < n; j++) {
+        const u = (i + (j % 2 ? 0.5 : 0)) / n + 0.5 / n;
+        const v = j / n + 0.5 / n;
+        const r = 0.42 / n;
+        const stein = [P(u - r, v), P(u, v + r), P(u + r, v), P(u, v - r)];
+        flaeche(stift, stein, ton('#a89a82', (zufall(i * 31 + j * 7) - 0.5) * 0.22), false);
+      }
+    }
+  });
+  stift.strokeStyle = KONTUR;
+  stift.lineWidth = strich;
+
+  // Ein Holzkasten mit Brettern: der Tresen eines Standes.
+  const tresen = (u0, v0, u1, v1, h, grund = '#7d5f40') => {
+    const L = P(u0, v1);
+    const B = P(u1, v1);
+    const R = P(u1, v0);
+    const T = P(u0, v0);
+    flaeche(stift, [L, B, hoch(B, h), hoch(L, h)], ton(grund, -0.18));
+    bretter(stift, L, B, h, e, 4, ton(grund, -0.18));
+    flaeche(stift, [B, R, hoch(R, h), hoch(B, h)], grund);
+    bretter(stift, B, R, h, e, 2, grund);
+    const deckel = [L, B, R, T].map((p) => hoch(p, h));
+    flaeche(stift, deckel, ton(grund, 0.16));
+    return deckel;
+  };
+  const pfosten = (p, h) => {
+    linie(stift, p, hoch(p, h), '#5e4632', Math.max(1.2, e * 0.1));
+    linie(stift, [p[0] - e * 0.025, p[1]], [p[0] - e * 0.025, p[1] - h], 'rgba(255,220,170,0.28)', Math.max(0.4, e * 0.03));
+  };
+  // Waren auf einem Tresen: kleine Haufen in ihrer Farbe.
+  const waren = (deckel, farben) => {
+    const [l, b, r, t] = deckel;
+    farben.forEach((f, i) => {
+      const s = (i + 0.5) / farben.length;
+      const mitte = zwischen(zwischen(l, t, 0.5), zwischen(b, r, 0.5), s);
+      for (let k = 0; k < 5; k++) {
+        const x = mitte[0] + (zufall(i * 9 + k) - 0.5) * 0.3 * e;
+        const y = mitte[1] + (zufall(i * 5 + k * 3) - 0.5) * 0.1 * e - (k > 2 ? 0.1 * e : 0);
+        const r0 = Math.max(0.6, 0.09 * e);
+        kreis(stift, x, y, r0, verlauf(stift, f, [x - r0, y - r0], [x + r0, y + r0], 0.2, -0.25), false);
+      }
+    });
+  };
+  // Ein Stand: vier Pfosten, ein Tresen vorn, darueber eine Plane, die zur
+  // Bildseite faellt, in Bahnen gestreift und vorn mit Zacken.
+  const stand = (u0, v0, u1, v1, plane, ware) => {
+    const hinten = 1.55 * e;
+    const vorn = 1.15 * e;
+    const z = (s, t) => hinten + ((vorn - hinten) * (s + t)) / 2;
+    const ecke = (s, t, unter = 0) => P(u0 + (u1 - u0) * s, v0 + (v1 - v0) * t, z(s, t) + 0.06 * e - unter);
+    pfosten(P(u0, v0), hinten);
+    pfosten(P(u1, v0), z(1, 0));
+    pfosten(P(u0, v1), z(0, 1));
+    const deckel = tresen(u0 + 0.03, v1 - 0.12, u1 - 0.03, v1 - 0.02, 0.5 * e);
+    waren(deckel, ware);
+    pfosten(P(u1, v1), vorn);
+    const bahnen = 6;
+    for (let i = 0; i < bahnen; i++) {
+      const s0 = i / bahnen;
+      const s1 = (i + 1) / bahnen;
+      flaeche(stift, [ecke(s0, 0), ecke(s1, 0), ecke(s1, 1), ecke(s0, 1)], ton(i % 2 ? plane : '#ddd0b0', -0.03 * i), false);
+    }
+    // Zacken an den beiden vorderen Kanten, etwas dunkler: die Unterseite.
+    const kanten = [[(s) => ecke(s, 1), (s) => ecke(s, 1, 0.22 * e)], [(t) => ecke(1, t), (t) => ecke(1, t, 0.22 * e)]];
+    for (const [an, unter] of kanten) {
+      const zacken = 5;
+      for (let k = 0; k < zacken; k++) {
+        flaeche(stift, [an(k / zacken), an((k + 1) / zacken), unter((k + 0.5) / zacken)], ton(k % 2 ? plane : '#ddd0b0', -0.2), false);
+      }
+    }
+    pfad(stift, [ecke(0, 0), ecke(1, 0), ecke(1, 1), ecke(0, 1)]);
+    stift.stroke();
+    // Ein Wimpel in Spielerfarbe ueber dem vorderen Pfosten.
+    fahne(stift, hoch(P(u1, v1), vorn + 0.06 * e), e, farbe, 0.55);
+  };
+
+  // Die Markthalle: Fachwerk mit Putz, vorn offene Boegen, Walmdach aus
+  // Ziegeln, die Fahne am First.
+  {
+    const u0 = 0.1;
+    const v0 = 0.1;
+    const u1 = 0.62;
+    const v1 = 0.4;
+    const wand = 1.5 * e;
+    const L = P(u0, v1);
+    const B = P(u1, v1);
+    const R = P(u1, v0);
+    flaeche(stift, [L, B, hoch(B, wand), hoch(L, wand)], verlauf(stift, '#b49b78', hoch(L, wand), B, 0.04, -0.24));
+    putz(stift, L, B, wand, e);
+    flaeche(stift, [B, R, hoch(R, wand), hoch(B, wand)], verlauf(stift, '#d2bc96', hoch(B, wand), R, 0.1, -0.12));
+    putz(stift, B, R, wand, e);
+    // Boegen in der langen Seite: hier wird unter Dach gehandelt.
+    for (let i = 0; i < 4; i++) {
+      const m = (i + 0.5) / 4;
+      const bogen = [wandpunkt(L, B, wand, m - 0.08, 0)];
+      for (let k = 0; k <= 8; k++) bogen.push(wandpunkt(L, B, wand, m - 0.08 + 0.16 * (k / 8), 0.36 + 0.1 * Math.sin(Math.PI * (k / 8))));
+      bogen.push(wandpunkt(L, B, wand, m + 0.08, 0));
+      flaeche(stift, bogen, '#3a2a1d', false);
+    }
+    // Fachwerk: Schwelle, Rahmen und Riegel aus dunklem Holz.
+    for (const [a, b, n] of [[L, B, 4], [B, R, 2]]) {
+      linie(stift, hoch(a, wand), hoch(b, wand), '#4b3524', Math.max(1, e * 0.08));
+      linie(stift, hoch(a, wand * 0.62), hoch(b, wand * 0.62), '#4b3524', Math.max(0.8, e * 0.06));
+      for (let i = 0; i <= n; i++) linie(stift, wandpunkt(a, b, wand, i / n, 0), wandpunkt(a, b, wand, i / n, 1), '#4b3524', Math.max(0.8, e * 0.07));
+    }
+    fenster(stift, B, R, wand, 0.5, 0.66, e, 0.2, 0.2);
+    // Walmdach: der First laeuft entlang der langen Seite.
+    const ueber = 0.05;
+    const tl = P(u0 - ueber, v1 + ueber, wand);
+    const tb = P(u1 + ueber, v1 + ueber, wand);
+    const tr = P(u1 + ueber, v0 - ueber, wand);
+    const tt = P(u0 - ueber, v0 - ueber, wand);
+    const vm = (v0 + v1) / 2;
+    const first = wand + 1.15 * e;
+    const f0 = P(u0 + 0.12, vm, first);
+    const f1 = P(u1 - 0.12, vm, first);
+    const dach = '#9a5236';
+    flaeche(stift, [tt, tr, f1, f0], ton(dach, -0.28));
+    flaeche(stift, [tl, tt, f0], ton(dach, -0.32));
+    const vorne = [tl, tb, f1, f0];
+    flaeche(stift, vorne, verlauf(stift, ton(dach, -0.12), f0, tl, 0.1, -0.22), false);
+    deckung(stift, vorne, tl, tb, f0, f1, e, 'ziegel');
+    pfad(stift, vorne);
+    stift.stroke();
+    const seite = [tb, tr, f1];
+    flaeche(stift, seite, verlauf(stift, dach, f1, tr, 0.18, -0.16), false);
+    deckung(stift, seite, tb, tr, f1, f1, e, 'ziegel');
+    pfad(stift, seite);
+    stift.stroke();
+    linie(stift, f0, f1, '#5a2e1e', Math.max(1, e * 0.1));
+    fahne(stift, f1, e, farbe, 1.0);
+  }
+
+  // Rechts hinten ein Stand mit Holz und Stein.
+  stand(0.7, 0.12, 0.92, 0.4, '#5f7d8a', ['#8a5a32', '#9aa0a6', '#7a4a2a']);
+  // In der Mitte Faesser und Saecke.
+  const fass = (u, v) => {
+    const p = P(u, v);
+    const r = 0.2 * e;
+    const h = 0.45 * e;
+    flaeche(stift, [[p[0] - r, p[1]], [p[0] + r, p[1]], [p[0] + r, p[1] - h], [p[0] - r, p[1] - h]],
+      verlauf(stift, '#7a5534', [p[0] - r, p[1]], [p[0] + r, p[1]], 0.12, -0.25), false);
+    for (const t of [0.2, 0.8]) linie(stift, [p[0] - r, p[1] - h * t], [p[0] + r, p[1] - h * t], '#3a3530', Math.max(0.6, e * 0.05));
+    stift.save();
+    stift.translate(p[0], p[1] - h);
+    stift.scale(1, 0.5);
+    kreis(stift, 0, 0, r, '#9a7550');
+    stift.restore();
+    stift.strokeStyle = KONTUR;
+    stift.lineWidth = strich;
+  };
+  const sack = (u, v) => {
+    const p = P(u, v);
+    stift.beginPath();
+    stift.moveTo(p[0] - 0.2 * e, p[1]);
+    stift.quadraticCurveTo(p[0] - 0.26 * e, p[1] - 0.36 * e, p[0] - 0.06 * e, p[1] - 0.5 * e);
+    stift.lineTo(p[0] + 0.06 * e, p[1] - 0.5 * e);
+    stift.quadraticCurveTo(p[0] + 0.26 * e, p[1] - 0.36 * e, p[0] + 0.2 * e, p[1]);
+    stift.closePath();
+    stift.fillStyle = verlauf(stift, '#c9b58a', [p[0] - 0.2 * e, p[1] - 0.5 * e], [p[0] + 0.2 * e, p[1]], 0.12, -0.25);
+    stift.fill();
+    stift.stroke();
+  };
+  fass(0.46, 0.5);
+  fass(0.53, 0.46);
+  sack(0.57, 0.55);
+  sack(0.5, 0.58);
+  fass(0.44, 0.61);
+  // Links ein Stand mit Aepfeln und Korn, vorn einer mit Korn, Holz und Aepfeln.
+  stand(0.1, 0.56, 0.36, 0.86, '#8a3a2c', ['#b8322a', '#d0b060', '#9a3a2a']);
+  stand(0.58, 0.62, 0.86, 0.9, '#6b7a3a', ['#d0b060', '#8a5a32', '#b8322a']);
+}
+
 export const GEBAEUDE = {
   dorfzentrum: {
     name: 'Dorfzentrum',
@@ -1678,6 +1872,8 @@ export const GEBAEUDE = {
   // Vier mal vier Felder wie das Dorfzentrum, aber hoeher (bauen AC-32); der
   // Pfeil beginnt oben am Bergfried.
   burg: { name: 'Burg', zeichnen: burg, halbeBreite: 2.4, trefferBreite: 2.5, trefferOben: 4.4, trefferUnten: 1.3, schussHoehe: 3.2 },
+  // Vier mal vier Felder, flach bis auf die Halle hinten (bauen AC-33).
+  markt: { name: 'Markt', zeichnen: markt, halbeBreite: 2.4, trefferBreite: 2.5, trefferOben: 3.8, trefferUnten: 1.3 },
 };
 
 /**

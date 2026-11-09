@@ -180,6 +180,8 @@ export class Ansicht {
     this.ich = ichId;
     this.spieler = new Map(nachricht.spieler.map((s) => [s.id, s]));
     this.einheitenwerte = new Map(nachricht.spieler.filter((s) => s.kw).map((s) => [s.id, s.kw]));
+    // Die eigenen Marktpreise (bauen AC-33): `{ ware: [kauf, verkauf] }`.
+    this.handelspreise = nachricht.spieler.find((s) => s.id === this.ich)?.hp || null;
     // Tiere kommen einmal im Aufbau und danach nur bei Aenderung.
     this.tiere = new Map((nachricht.tiere || []).map((t) => [t.i, t]));
     // Gebaeude ebenso: einmal ganz, danach nur, was sich aendert.
@@ -265,6 +267,8 @@ export class Ansicht {
       const { holz, nahrung, gold, stein, bev, raum } = meine;
       this.vorraete = { holz, nahrung, gold, stein, bev, raum };
       this.verbesserungen = meine.v || [];
+      // Nach einem Handel die neuen Preise (bauen AC-33).
+      if (meine.hp) this.handelspreise = meine.hp;
       // Ein Aufstieg wird einmal gemeldet - erkannt an der Stufe, die der
       // Server schickt (bedienung AC-33).
       const stufe = meine.z || 0;
