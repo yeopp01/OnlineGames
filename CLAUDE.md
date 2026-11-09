@@ -159,7 +159,7 @@ Umfang hinzufügt, dort nachsehen.
 
 ## Stand
 
-**432 von 555 Kriterien fertig.** 587 Tests ohne Browser, 190 im Browser. Die
+**439 von 560 Kriterien fertig.** 607 Tests ohne Browser, 191 im Browser. Die
 Übersicht ist der Bericht: `npm run qa:report`.
 
 Gebaut ist der Unterbau: Räume, Übertragung, Karte, Wegfindung, Sammeln,
@@ -374,7 +374,7 @@ keine Gebäude; er selbst greift nie an. **D8 ist fertig: der Mönch
 bekehrt** (einheiten AC-38) — ein Rechtsklick auf eine fremde Einheit in
 neun Feldern, nach vier bis zehn Sekunden gehört sie ihm, danach ruht er
 62 Sekunden; keine Gebäude, keine Belagerung, keine Mönche. Die Dauer kommt
-aus `welt.zufall`, einem eigenen Zufall aus dem Startwert. Die **Sicht ist eine Einstellung beim Eröffnen** (kampf AC-16):
+aus `welt.zufall`, einem eigenen Zufall aus dem Startwert. **Die KI wächst mit den Zeitaltern** (ki AC-24): 22, 32, 42 und 50 Dorfbewohner, ab der Ritterzeit bis zu fünf Militärgebäude; sie steigt in die Ritterzeit auf und bildet Ritter aus (ki AC-21, AC-22). KI gegen KI endet über vierzig Startwerte jedes Mal vor Minute 60, am Ende mit im Median 42 Dorfbewohnern — das ist die schwere Stufe; mittel (25) und leicht (15) folgen. Die **Sicht ist eine Einstellung beim Eröffnen** (kampf AC-16):
 Nebel, Erkundet oder Aufgedeckt — Tests, die nicht vom Nebel handeln,
 eröffnen aufgedeckt (`partieZuZweit(…, { sicht: 'aufgedeckt' })`).
 

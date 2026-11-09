@@ -13,7 +13,7 @@ hier nichts eintraegt, verliert den Faden beim naechsten Autocompact.
 
 ## Zuletzt fortgeschrieben
 
-2026-11-09, nach Runde 142 (Rueckschau zur Stufe D, siehe "Naechste Runde 143" unten; davor **kampf AC-13, fahrplan AC-13, C6e fertig**: der
+2026-11-09, nach Runde 143 (**ki AC-24 fertig, ki AC-21/22 aus `strategie-ki-ritterzeit` eingebunden**: Dorfbewohner je Zeitalter 22/32/42/50, Militaergebaeude ab der Ritterzeit 5/6, Aufstieg vor dem Ersatz; KI gegen KI 40 von 40 vor Minute 60, siehe "Naechste Runde 144" unten; davor Runde 142 Rueckschau zur Stufe D; davor **kampf AC-13, fahrplan AC-13, C6e fertig**: der
 Server schickt jedem nur, was er sieht - `welt.zustandJeSpieler`,
 `welt.aufbauFuer`, im Raum `sendenJe`. Fremde Gebaeude und Felder, die sich im
 Nebel aendern, kommen beim naechsten Hinsehen; wer ausscheidet, bekommt einmal
@@ -172,7 +172,14 @@ Zeitgrenze als Einstellung, **Marktkarren schon in der Ritterzeit** - ein
 ADR fuer alles vier (holt Handelskarren aus "Wird nicht gebaut").
 **Reihenfolge:** Runde 143 KI-Wirtschaft, dann das ADR, dann Buendnisse
 bauen, dann Voelker-ADR und Spec-Runde E.
-**Naechste Runde 143: die Wirtschaft der KI im Mittelspiel** - neues
+**Naechste Runde 144: ki AC-13 einbinden** - den Zweig `strategie-ki-sicht`
+mit `git merge` holen (die KI mit eigener Sicht und Spaeher), dann
+`pruefstand:vergleich -- --gegen strategie --minuten 90 --saetze 2`;
+fahrplan AC-11 muss halten. Danach das ADR fuer Buendnisse, Marktkarren,
+Geschwindigkeit und Zeitgrenze (Antwort (5)), dann Buendnisse bauen, dann
+Voelker-ADR und Spec-Runde E. Rammen gegen Befestigung (ki AC-23) bleibt
+offen. Erledigt in Runde 143 (frueher: "Naechste Runde 143: die Wirtschaft
+der KI im Mittelspiel") - neues
 Kriterium in `ki.md` (Dorfbewohner nach dem Aufstieg weiter ausbilden bis
 Richtung 40-50, Umzug zu neuen Vorraeten), zuerst mit
 `pruefstand:verlauf` an den Patt-Startwerten (24, 15) messen, wo es

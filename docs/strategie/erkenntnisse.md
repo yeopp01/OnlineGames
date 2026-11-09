@@ -194,7 +194,20 @@ etwas anderem gearbeitet.
   Minute 60 (alter Stand 39); übrig sind Patts mit leerer Wirtschaft
   (Startwerte 9, 15, 33; 21 und 16 knapp darüber). Wartet auf die Frage an
   den Benutzer. Die Suche (`suchziel`) braucht noch einen eigenen Test, die
-  Überlegenheit mit frischem Blick ebenso.
+  Überlegenheit mit frischem Blick ebenso. **Seit Runde 143 ist der Boden
+  dafür da** (die Wirtschaft wächst, KI gegen KI 40 von 40): die nächste
+  Runde holt den Zweig mit `git merge` und misst neu.
+
+- **Ein Dorfbewohner steht spät bis zu 20 Minuten herum** (Runde 143,
+  `pruefstand:vergleich`, Startwerte 21 bis 40: „längste Untätigkeit 1184
+  s", auf `strategie` vorher schon 902 s). ki AC-10 misst nur bis Minute 30.
+  Nicht angesehen, welcher Startwert und warum — vermutlich ein Verlierer,
+  dessen Vorräte erschöpft sind.
+
+- **Die schwere KI ist gebaut, mittel und leicht noch nicht** (Runde 143):
+  `DORFBEWOHNER_JE_ZEITALTER` und `MILITAER_JE_ZEITALTER` in `ki.js` sind
+  die Werte der schweren. Mittel (25) und leicht (15) brauchen eigene
+  Reihen und eine Einstellung beim Eröffnen.
 
 - **Was der Nebel auf dem Server noch durchlässt** (Durchsicht Runde 110):
   Schafe gehen ungefiltert (Lage und Schlachten fremder Schafe); der Aufbau
@@ -1486,6 +1499,22 @@ ihn, mit Gegenprobe an beiden Formen. Fünf Bilder neu, alle angesehen.
 
 Neueste oben. Eine Zeile je Runde: Nummer, Datum, Kriterien, Ergebnis,
 wichtigste Erkenntnis.
+
+- **143** · 2026-11-09 · **ki AC-24 fertig, ki AC-21 und AC-22 eingebunden**:
+  die Wirtschaft der KI wächst nach jedem Aufstieg weiter (22, 32, 42, 50
+  Dorfbewohner), ab der Ritterzeit bis zu fünf Militärgebäude statt drei,
+  und der Zweig `strategie-ki-ritterzeit` ist auf diesem Boden eingebunden.
+  KI gegen KI: **40 von 40 vor Minute 60** über zwei Sätze (vorher 39),
+  längste 53,8, Dorfbewohner am Ende Median 42. Gelernt: **mehr
+  Dorfbewohner allein lösten das Patt nicht** (36 von 40) — beide Heere
+  verloren so schnell, wie sie nachkamen; erst die Ritterzeit bricht
+  durch, und mit 42 Dorfbewohnern stapelte sich das Geld (Startwert 13:
+  1500 Nahrung, 1400 Gold, Heer 10 bis 19), bis mehr Gebäude es ausgaben.
+  Die Durchsicht fand, dass ein Dorfzentrum, das laufend Gefallene
+  ersetzt, nie frei für den Aufstieg wurde — jetzt läuft die Schlange
+  leer, sobald die Ritterzeit bezahlt ist (36 statt 35 von 40 steigen
+  auf). Die Grenze „hält sein Dorf" in ki AC-21 ist aus der neuen Messung
+  hergeleitet (Hälfte des Ziels der Feudalzeit), nicht gesenkt.
 
 - **142** · 2026-11-09 · **Rückschau zur Stufe D** — KI gegen KI bis in die
   Ritterzeit angesehen (auf dem geparkten Zweig, in einem Arbeitsverzeichnis
