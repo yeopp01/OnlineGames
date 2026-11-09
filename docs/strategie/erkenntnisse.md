@@ -1354,6 +1354,17 @@ Prüfung (Runde 135; Runde 130: 15,0 min für 186). `e2e:daten` 4,9 min.
 Neueste oben. Eine Zeile je Runde: Nummer, Datum, Kriterien, Ergebnis,
 wichtigste Erkenntnis.
 
+- **140** · 2026-11-09 · **fahrplan AC-14 fertig**: die Ritterzeit am Stück
+  im Browser (`strategie-ritterzeit-am-stueck.spec.mjs`, rund 1,7 Minuten).
+  Was gebaut und ausgebildet wird, kommt aus den Daten; Wachturm, Mauer,
+  Tor und Markt stehen dort auf der Feudalzeit (wie in der Vorlage), kamen
+  aber mit Stufe D — der Filter nimmt deshalb aus der Feudalzeit, was nicht
+  ausbildet, also genau das, was fahrplan AC-8 auslässt. Zwei Läufe
+  kostete der Schlag: die Wiese, vor dem Bauen gesucht, war danach
+  bebaut (Haus per Ringsuche um sie herum), und die Ramme geht bei
+  normaler Zeit eine halbe Minute um das Haus zu ihrem Randfeld (Tempo
+  0,5) — gemessen wird jetzt bei vierfacher Zeit, der erste Abfall in
+  derselben Abfrage gelesen, in der er gesehen wird.
 - **139** · 2026-11-09 · **kampf AC-21 und fahrplan AC-15 fertig**: wer zu
   einem Ziel hinter einer fremden Mauer will und keinen Weg findet, greift
   das erste Mauerfeld auf dem Weg an und danach das Ziel

@@ -2,7 +2,7 @@
 
 **Bereich:** Strategie
 **Kuerzel:** fahrplan
-**Stand:** 15/23 fertig · 8 offen
+**Stand:** 16/23 fertig · 7 offen
 
 ## Zweck
 
@@ -168,10 +168,16 @@ Zustandsnachricht umbaut und damit jeden Browsertest berührt: was dort heute
 
 ### Stufe D — Ritterzeit
 
-- **AC-14** `offen` **Ritterzeit spielbar** — Burg, Kloster, Universität, Belagerungswerkstatt;
+- **AC-14** `fertig` **Ritterzeit spielbar** — Burg, Kloster, Universität, Belagerungswerkstatt;
   Ritter, Armbrust, Mönch, Ramme, Mangonel; Wachturm, Mauern, Tore, Markt.
   Belegt wie die Feudalzeit (AC-8): ein Browsertest spielt den Aufstieg, baut
   jedes neue Gebäude, bildet jede neue Einheit aus und misst einen Schlag.
+  Gebaut in Runde 140 (`e2e/tests/strategie-ritterzeit-am-stueck.spec.mjs`):
+  Gebäude und Einheiten kommen aus den Daten — jedes Gebäude der Ritterzeit
+  und aus der Feudalzeit, was AC-8 auslässt, weil es nicht ausbildet; jede
+  Einheit auf Zeitalter 2, der Armbrustschütze über die Verbesserung, die
+  ihn eintauscht. Die Mauer wird gezogen, das Tor auf sie gesetzt. Der
+  Schlag: eine Ramme auf ein fremdes Haus, 127 Leben.
 - **AC-15** `fertig` **Befestigung hält auf** — Im Prüfstand verzögert eine Steinmauer mit Tor
   einen Angriff aus Nahkämpfern messbar. Rammen brechen sie auf. Gemessen
   in der Belagerung (`belagerungSpielen`, Runde 139): zehn Soldaten nehmen
@@ -200,7 +206,7 @@ Zustandsnachricht umbaut und damit jeden Browsertest berührt: was dort heute
 | D6 | Belagerung: Ramme gegen Gebäude (**fertig**, Runde 129), Mangonel mit Flächenschaden (**fertig**, Runde 130) | einheiten AC-35, AC-36, kampf AC-19 |
 | D7 | Burg (**fertig**, Runde 132) und Markt (**fertig**, Runde 133) | bauen AC-32, AC-33 |
 | D8 | Mönch: heilen (**fertig**, Runde 134), bekehren (**fertig**, Runde 135) | einheiten AC-37, AC-38 |
-| D9 | Die KI in der Ritterzeit; Konterkreis (**fertig**, Runde 138) und Befestigung (**fertig**, Runde 139) im Prüfstand; die Ritterzeit am Stück im Browser | ki AC-21, AC-22, fahrplan AC-14, AC-15, AC-23 |
+| D9 | Die KI in der Ritterzeit; Konterkreis (**fertig**, Runde 138) und Befestigung (**fertig**, Runde 139) im Prüfstand; die Ritterzeit am Stück im Browser (**fertig**, Runde 140) | ki AC-21, AC-22, fahrplan AC-14, AC-15, AC-23 |
 
 Offen aus Stufe C und gebaut auf dem Zweig `strategie-ki-sicht`: die KI mit
 eigener Sicht (ki AC-13) — wartet auf die Antwort zu fahrplan AC-11. Wird sie

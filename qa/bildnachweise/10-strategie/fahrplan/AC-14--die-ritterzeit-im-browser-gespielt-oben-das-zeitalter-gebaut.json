@@ -1,0 +1,10 @@
+{
+  "spec": "10-strategie/fahrplan.md",
+  "ac": "AC-14",
+  "titel": "Die Ritterzeit im Browser gespielt: oben das Zeitalter, gebaut Burg, Universität, Kloster, Belagerungswerkstatt, Wachturm, Markt und eine Steinmauer mit Tor, davor die fünf Einheiten der Ritterzeit — unten zählt die Leiste sie als fünf ausgewählte",
+  "datei": "e2e/tests/strategie-ritterzeit-am-stueck.spec.mjs",
+  "pfad": [
+    "Ritterzeit am Stueck",
+    "fahrplan AC-14: Aufstieg, jedes neue Gebaeude, jede neue Einheit und ein Schlag der Ramme - im Browser gespielt"
+  ]
+}

@@ -13,7 +13,7 @@ hier nichts eintraegt, verliert den Faden beim naechsten Autocompact.
 
 ## Zuletzt fortgeschrieben
 
-2026-11-09, nach Runde 139 (**kampf AC-13, fahrplan AC-13, C6e fertig**: der
+2026-11-09, nach Runde 140 (**kampf AC-13, fahrplan AC-13, C6e fertig**: der
 Server schickt jedem nur, was er sieht - `welt.zustandJeSpieler`,
 `welt.aufbauFuer`, im Raum `sendenJe`. Fremde Gebaeude und Felder, die sich im
 Nebel aendern, kommen beim naechsten Hinsehen; wer ausscheidet, bekommt einmal
@@ -146,10 +146,11 @@ Konterkreis der Ritterzeit im Gefechtsstand, Budget 1200, dazu Treffer je
 Stein des Mangonels > 1 mit Gegenprobe ohne Flaeche). Runde 139: **kampf
 AC-21 und fahrplan AC-15 fertig** (Mauern brechen statt stehenbleiben,
 `welt.mauerImWeg`; Belagerung im Pruefstand `belagerungSpielen`, Test in
-`tests/strategie-befestigung.test.mjs`). **Naechste Runde 140: fahrplan
-AC-14** (die Ritterzeit am Stueck im Browser, wie fahrplan AC-8 fuer die
-Feudalzeit: Aufstieg, jedes neue Gebaeude, jede neue Einheit, ein Schlag
-gemessen). Danach ist von Stufe D nur noch ki AC-21/22/23 offen. ki AC-21/22 und
+`tests/strategie-befestigung.test.mjs`). Runde 140: **fahrplan AC-14
+fertig** (die Ritterzeit am Stueck im Browser,
+`e2e/tests/strategie-ritterzeit-am-stueck.spec.mjs`, in `e2e:daten`). Von
+Stufe D ist nur noch ki AC-21/22/23 offen - und die warten auf die Antwort
+zum Patt. **Naechste Runde 141: Rueckschau.** ki AC-21/22 und
 AC-13 warten auf die Antwort zum Patt. Erledigt in Runde 136 war auch das Bild zu einheiten
 AC-15: die Goldtraeger stehen hinter dem Dorfzentrum und sind nur Umriss,
 die Goldbrocken der Unterschrift sieht man nicht (schon im eingecheckten
