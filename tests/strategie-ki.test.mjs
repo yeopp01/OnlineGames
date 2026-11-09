@@ -375,7 +375,7 @@ const kampfVon = (welt, spielerId) => eigeneVon(welt, spielerId)
   .filter((e) => !(EINHEITEN[e.art].klassen || []).includes('dorf'));
 
 test('ki AC-11: acht brechen auf, zwei bleiben als Wache - und unter zehn Kampfeinheiten niemand', () => {
-  const welt = new Welt(ZWEI, 5);
+  const welt = new Welt(ZWEI, 5, { sicht: 'aufgedeckt' });
   const ki = new Ki(welt, 'a');
   const a = welt.spielerVon('a');
   const zentrumB = [...welt.gebaeude.values()].find((g) => g.besitzer === 'b' && g.art === 'dorfzentrum');
@@ -429,7 +429,7 @@ test('ki AC-11: acht brechen auf, zwei bleiben als Wache - und unter zehn Kampfe
 // jeden auf das, was ihm am naechsten steht (ki AC-16) - Einheiten vor
 // Gebaeuden, solange sie nicht mehr als sechs Felder weiter weg sind.
 test('ki AC-11 und ki AC-16: am Marschziel greift jeder an, was ihm am naechsten steht', () => {
-  const welt = new Welt(ZWEI, 5);
+  const welt = new Welt(ZWEI, 5, { sicht: 'aufgedeckt' });
   const ki = new Ki(welt, 'a');
   const b = welt.spielerVon('b');
   const zentrumB = [...welt.gebaeude.values()].find((g) => g.besitzer === 'b' && g.art === 'dorfzentrum');
@@ -1388,7 +1388,7 @@ test('ki AC-15: nur wer mit voller Ladung festsitzt, baut mit - und wer schon ba
 test('ki AC-16: ein Ziel, zu dem kein Weg fuehrt, wird zwei Minuten ausgelassen', () => {
   // Durchsicht Runde 95: endete ein Angriff gleich wieder, weil kein Weg
   // fuehrte, schickte die KI den Angreifer jede halbe Sekunde erneut dorthin.
-  const welt = new Welt(ZWEI, 5);
+  const welt = new Welt(ZWEI, 5, { sicht: 'aufgedeckt' });
   const ki = new Ki(welt, 'a');
   const zentrumB = [...welt.gebaeude.values()].find((g) => g.besitzer === 'b' && g.art === 'dorfzentrum');
   const [krieger] = kampfeinheitenAnlegen(welt, 'a', { x: zentrumB.x + HEER_ABSTAND, y: zentrumB.y }, 1);
@@ -1415,7 +1415,7 @@ const milizen = (welt, id, n) => {
 };
 
 test('ki AC-18: ueberlegen ist, wer ein Heer hat und dreimal so viele Kampfeinheiten wie der Gegner', () => {
-  const welt = new Welt(ZWEI, 4711);
+  const welt = new Welt(ZWEI, 4711, { sicht: 'aufgedeckt' });
   const ki = new Ki(welt, 'a');
   const bert = kampfVon(welt, 'b').length;
   // Mit einem Heer weniger einer: zu klein, auch wenn der Gegner fast nichts hat.
@@ -1433,7 +1433,7 @@ test('ki AC-18: ueberlegen ist, wer ein Heer hat und dreimal so viele Kampfeinhe
 
 test('ki AC-18: ueberlegen zieht los, wer daheim ist - bis auf die Wache', () => {
   const lauf = (bertMehr) => {
-    const welt = new Welt(ZWEI, 4711);
+    const welt = new Welt(ZWEI, 4711, { sicht: 'aufgedeckt' });
     const ki = new Ki(welt, 'a');
     // Einer weniger, als der gewoehnliche Aufbruch braucht.
     milizen(welt, 'a', HEER + WACHE - 1 - kampfVon(welt, 'a').length);
@@ -1455,7 +1455,7 @@ test('ki AC-18: ueberlegen zieht los, wer daheim ist - bis auf die Wache', () =>
 test('ki AC-18: auch ueberlegen zieht keiner allein los', () => {
   // Durchsicht Runde 96: sonst ging jede fertige Einheit einzeln.
   const lauf = (daheim) => {
-    const welt = new Welt(ZWEI, 4711);
+    const welt = new Welt(ZWEI, 4711, { sicht: 'aufgedeckt' });
     const ki = new Ki(welt, 'a');
     // Ueberlegen mit einem Heer, das schon unterwegs ist.
     milizen(welt, 'a', HEER + daheim - kampfVon(welt, 'a').length);

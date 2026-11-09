@@ -102,6 +102,8 @@ function kennzahlen(welt, spieler, ki, untaetig) {
     feudalMinute: ki.feudalTakt === null ? null : ki.feudalTakt / (60 * TAKTE_PRO_SEKUNDE),
     // Ebenso die Ritterzeit (ki AC-21).
     ritterMinute: ki.ritterTakt === null ? null : ki.ritterTakt / (60 * TAKTE_PRO_SEKUNDE),
+    // Wann sie zum ersten Mal ein Gebaeude eines Gegners sah (ki AC-13).
+    gegnerMinute: ki.gegnerGesehenTakt === null ? null : ki.gegnerGesehenTakt / (60 * TAKTE_PRO_SEKUNDE),
     // Wie oft ein Heer aufgebrochen ist und in welcher Spielminute das erste
     // (ki AC-11). `null` heisst: diese KI hat nie angegriffen.
     angriffe: ki.angriffe,
