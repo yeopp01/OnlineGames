@@ -12,8 +12,14 @@
 // Der Server wird HIER gestartet, nicht vorausgesetzt: es ist derselbe
 // `starten()`-Aufruf, den auch die Tests unter tests/ nehmen, mit Konten im
 // Arbeitsspeicher (e2e/server.mjs).
+import { dirname, join } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { defineConfig, devices } from '@playwright/test';
 import { ANMELDUNG } from './helpers/seite.mjs';
+
+// Jeder Lauf legt seine Dauern hier ab; `npm run e2e:laufzeiten` liest sie,
+// statt selbst einen ganzen Lauf zu fahren (Rueckschau nach Runde 140).
+export const BERICHT = join(dirname(fileURLToPath(import.meta.url)), '.ergebnisse', 'bericht.json');
 
 export const HAFEN = Number(process.env.E2E_HAFEN) || 4191;
 
@@ -33,7 +39,7 @@ export default defineConfig({
   // Nacheinander: alle Tests teilen ein Konto, und ein Konto hat hoechstens
   // fuenf Spielstaende.
   workers: 1,
-  reporter: [['list']],
+  reporter: [['list'], ['json', { outputFile: BERICHT }]],
 
   use: {
     baseURL: `http://localhost:${HAFEN}`,

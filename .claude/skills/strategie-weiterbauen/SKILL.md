@@ -82,7 +82,12 @@ Setze die gewählten Kriterien auf `in-arbeit`.
 - Neue Kriterien bekommen die nächste freie Nummer. Kurztitel höchstens fünf
   Wörter. Ein Kriterium ist **prüfbar**: eine Zahl, ein Verhalten, ein Bild.
 - Zahlen aus der Vorlage übernehmen. Abweichen nur mit einem Satz Begründung
-  im Kriterium.
+  im Kriterium. **Eine Zahl im Kriterium, die aus anderen folgt (eine Dauer,
+  eine Zahl von Treffern), wird aus den Werten gerechnet, bevor sie
+  dasteht** — und spätestens beim Bauen nachgerechnet. „Eine Ramme bricht
+  ein Feld Steinmauer in unter einer halben Minute" stand seit der
+  Spec-Runde da; mit den Werten der Vorlage sind es 1800 / 127 = 15 Stöße
+  zu fünf Sekunden, 70 Sekunden (Runde 139).
 - `npm run specs:board`, `npm run check`, Commit `Spec: Stufe X - …`.
 
 ## 3. Bauen
@@ -210,6 +215,13 @@ Setze die gewählten Kriterien auf `in-arbeit`.
   ohne die umgekehrte Richtung hätte der Konterkreis auch gehalten, wenn
   schlicht immer links gewinnt.) Beides als eigene Zusicherung schreiben, nicht
   nur prüfen und wegwerfen.
+  **Und ein Sieg belegt nicht, warum.** Für jede Paarung fragen, welcher
+  Wert sie tragen soll, ihn einzeln abschalten (`npm run gegenprobe` auf
+  die Zeile in `daten.js`) und sehen, ob sie dann fällt. In Runde 138 gewann
+  der Mangonel gegen Bogenschützen auch ohne Flächenschaden 20 von 20 — über
+  seine Fernrüstung, nicht über den Haufen; erst eine dritte Zusicherung
+  (Treffer je Stein) belegte die Fläche. In Runde 139 hielt die Gegenprobe
+  mit Rammen ohne Gebäudebonus den Vergleich fest.
 - **Was im Browser steht, wird im Browser gelesen — nicht aus dem Kopf.**
   Kürzel, Zeitalter, Werte: `window.ansicht.werte` fragen oder `daten.js` in
   Node importieren. In Runde 72 kosteten drei Annahmen je einen Lauf (`p` ist
@@ -352,7 +364,14 @@ Setze die gewählten Kriterien auf `in-arbeit`.
   Uhr: wer länger als fünf Sekunden auf etwas wartet, das im Spiel dauert, dreht
   ihn hoch — und rechnet Abstandsgrenzen mit ein, denn ein Zustand fasst dann
   mehrere Takte. `npm run e2e:laufzeiten -- strategie` zeigt die Dauer je Datei
-  und die langsamsten Fälle; nach einer Runde mit neuen Browsertests ansehen.
+  und die langsamsten Fälle **aus dem letzten Browserlauf** (jeder Lauf legt
+  `e2e/.ergebnisse/bericht.json` ab; bis Runde 140 fuhr das Skript selbst
+  einen ganzen Lauf); nach einer Runde mit neuen Browsertests ansehen.
+  **Einen Treffer misst `ersterTreffer(page, code, { einheit, ziel })`**
+  aus derselben Hilfe — rotes Zeichen als Beleg für den Klick, vierfache
+  Zeit, der erste Abfall gelesen, wenn er kommt. Die Feudalzeit und die
+  Ritterzeit am Stück hatten das je selbst geschrieben, beide kostete es
+  Läufe (Runden 99, 100, 140).
 - **Beim Zeichnen zuerst ansehen, dann testen:** `npm run sicht --
   schautafel.html` (Seite ohne führenden Schrägstrich) schreibt ein Wegwerfbild
   in den Temp-Ordner und nennt den Pfad. **Und immer auch im Spielbild:**

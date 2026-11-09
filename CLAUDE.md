@@ -36,7 +36,7 @@ npm run sicht -- schautafel.html  # eine Seite als Wegwerfbild ansehen, ohne Tes
 npm run sicht -- --spiel --zoom 2 --ziel wald  # dasselbe fuer eine laufende Partie
 npm run sicht -- --spiel --waehlen speerkaempfer --zeitalter 1  # die Auswahlleiste im breitesten Zustand
 npm run tafel -- "t.anmutung('gebaeude', 'haus')"  # auf der Schautafel messen, Ergebnis als JSON
-npm run e2e:laufzeiten -- strategie   # Dauer des Browserlaufs je Datei, die langsamsten Faelle
+npm run e2e:laufzeiten -- strategie   # Dauer je Datei aus dem letzten Browserlauf, die langsamsten Faelle (--neu faehrt erst einen)
 npm run e2e:daten     # nur die Browserfaelle, die "alles aus den Daten" aufstellen - nach jedem neuen Eintrag in daten.js
 npm run pruefstand:vergleich          # KI gegen KI: Arbeitsstand neben HEAD, dieselben Partien (--saetze 2: 1-20 und 21-40)
 npm run pruefstand:verlauf -- --startwert 5  # eine Partie KI gegen KI Minute fuer Minute

@@ -509,6 +509,74 @@ export async function gebaeudeInDerNaehe(page, code, name, art, um, { von = 4, b
 }
 
 /**
+ * Den ersten Treffer einer Einheit auf ein Ziel messen - eine Einheit oder
+ * ein Gebaeude - und den Verlust an Leben zurueckgeben.
+ *
+ * Rueckschau nach Runde 140: die Feudalzeit und die Ritterzeit am Stueck
+ * (fahrplan AC-8, AC-14) schrieben das je selbst, und beide kostete es
+ * Laeufe. Der Rechtsklick wurde unter Last ein Laufbefehl (Runden 99, 100),
+ * und im Zeitraffer 20 kommen zwei Stoesse zwischen zwei Blicke (Runde 140:
+ * fuenf Sekunden Nachladezeit sind dort eine Viertelsekunde). Deshalb:
+ * - **getroffen ist, wenn das Zielzeichen rot steht** (bedienung AC-34),
+ *   hoechstens drei Rechtsklicks, die Lage jedes Mal neu gemessen;
+ * - **gewartet wird im Zeitraffer `raffer`** (Vorgabe 4: zwei Sekunden
+ *   Nachladezeit sind dann eine halbe echte), und der erste Abfall wird in
+ *   derselben Abfrage gelesen, in der er gesehen wird; danach steht die Zeit
+ *   wieder auf 1.
+ * Was sonst auf das Ziel schlaegt (ein Turm, eine zweite Einheit), zaehlt
+ * mit - das schliesst die Aufstellung aus, nicht diese Hilfe.
+ *
+ * @param {import('@playwright/test').Page} page
+ * @param {string} code
+ * @param {{einheit: number, ziel: number, gebaeude?: boolean, zoom?: number, raffer?: number, warten?: number}} wie
+ * @returns {Promise<number>} wie viel Leben das Ziel mit dem ersten Treffer verlor
+ */
+export async function ersterTreffer(page, code, { einheit, ziel, gebaeude = false, zoom = 1.8, raffer = 4, warten = 60_000 }) {
+  const lesen = ([z, istGebaeude]) => {
+    const a = window.ansicht;
+    const ding = istGebaeude ? a.gebaeude.get(z) : a.nachher.get(z);
+    if (!ding) return null;
+    const voll = istGebaeude ? a.gebaeudeLebenVoll(ding) : a.lebenVoll(ding);
+    return ding.h ?? voll;
+  };
+  const vorher = await page.evaluate(lesen, [ziel, gebaeude]);
+  expect(vorher, 'das Ziel gibt es').not.toBeNull();
+  let getroffen = false;
+  for (let versuch = 0; versuch < 3 && !getroffen; versuch++) {
+    const punkt = await page.evaluate(([e, z, istGebaeude, zoomStufe]) => {
+      const a = window.ansicht;
+      a.gewaehltesGebaeude = null;
+      a.ausgewaehlt = new Set([e]);
+      a.beiAuswahl();
+      const ding = istGebaeude ? a.gebaeude.get(z) : a.nachher.get(z);
+      const m = istGebaeude ? a.gebaeudeMitte(ding) : { x: ding.x, y: ding.y };
+      // Der Blick aufs Ziel, nicht auf die Mitte zwischen beiden: in Runde 128
+      // stand der Schuetze dreissig Felder weit weg, und der Klick lag
+      // ausserhalb der Leinwand.
+      a.kamera.zoom = zoomStufe;
+      a.blickAuf(m.x, m.y);
+      a.zielzeichen = null;
+      const r = a.leinwand.getBoundingClientRect();
+      const p = a.zuBild(m.x, m.y);
+      return { x: r.left + p.x, y: r.top + p.y };
+    }, [einheit, ziel, gebaeude, zoom]);
+    await page.mouse.click(punkt.x, punkt.y, { button: 'right' });
+    getroffen = await page.evaluate(() => window.ansicht.zielzeichen?.feindlich === true);
+  }
+  expect(getroffen, 'der Rechtsklick traf das Ziel (rotes Zeichen)').toBe(true);
+  await zeitraffer(page, code, raffer);
+  const nachher = await page.waitForFunction(([z, istGebaeude, alt]) => {
+    const a = window.ansicht;
+    const ding = istGebaeude ? a.gebaeude.get(z) : a.nachher.get(z);
+    if (!ding) return null;
+    const h = ding.h ?? (istGebaeude ? a.gebaeudeLebenVoll(ding) : a.lebenVoll(ding));
+    return h < alt ? h : null;
+  }, [ziel, gebaeude, vorher], { timeout: warten }).then((h) => h.jsonValue());
+  await zeitraffer(page, code, 1);
+  return vorher - nachher;
+}
+
+/**
  * Die Wirtschafts-KI fuer einen Spieler im Raum uebernehmen lassen
  * (Pruefgriff `ki`, e2e/server.mjs). Danach spielt sie ueber `welt.nachricht`,
  * genau wie ein Mensch - der Browser sieht nur zu.

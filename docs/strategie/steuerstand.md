@@ -13,7 +13,7 @@ hier nichts eintraegt, verliert den Faden beim naechsten Autocompact.
 
 ## Zuletzt fortgeschrieben
 
-2026-11-09, nach Runde 140 (**kampf AC-13, fahrplan AC-13, C6e fertig**: der
+2026-11-09, nach Runde 141 (**kampf AC-13, fahrplan AC-13, C6e fertig**: der
 Server schickt jedem nur, was er sieht - `welt.zustandJeSpieler`,
 `welt.aufbauFuer`, im Raum `sendenJe`. Fremde Gebaeude und Felder, die sich im
 Nebel aendern, kommen beim naechsten Hinsehen; wer ausscheidet, bekommt einmal
@@ -150,7 +150,12 @@ AC-21 und fahrplan AC-15 fertig** (Mauern brechen statt stehenbleiben,
 fertig** (die Ritterzeit am Stueck im Browser,
 `e2e/tests/strategie-ritterzeit-am-stueck.spec.mjs`, in `e2e:daten`). Von
 Stufe D ist nur noch ki AC-21/22/23 offen - und die warten auf die Antwort
-zum Patt. **Naechste Runde 141: Rueckschau.** ki AC-21/22 und
+zum Patt. Runde 141: **Rueckschau** (Hilfe `ersterTreffer`,
+`e2e:laufzeiten` liest `e2e/.ergebnisse/bericht.json`, zwei Regeln).
+**Naechste Runde 142:** Stufe D ist bis auf ki AC-21/22/23 fertig, und die
+haengen am Patt (Frage an den Benutzer). Ohne Antwort: Stufe E
+spezifizieren (fuenf Voelker, Spec-Runde) - oder vorher pruefen, ob ein
+Kriterium aus Stufe D ohne die KI noch offen ist. ki AC-21/22 und
 AC-13 warten auf die Antwort zum Patt. Erledigt in Runde 136 war auch das Bild zu einheiten
 AC-15: die Goldtraeger stehen hinter dem Dorfzentrum und sind nur Umriss,
 die Goldbrocken der Unterschrift sieht man nicht (schon im eingecheckten
@@ -430,7 +435,7 @@ Bild so, gefunden in Runde 134 mit qa:abweichung).)
   bei 20 min). Aelter als Runde 69, nur nie gemessen, weil der Pruefstand bei
   zehn Minuten endete. Ursache und Hebel stehen in den Erkenntnissen unter
   **Offene Faeden**.
-- **Naechste Rueckschau: Runde 141** - oder frueher, wenn Stufe D erreicht wird.
+- **Naechste Rueckschau: Runde 146** - oder frueher, wenn Stufe D erreicht wird.
   Diese Zeile ist der Termin, nicht nachzaehlen.
 - Frueherer Termin, erledigt: **Runde 83** (die Bildnachweise einmal ganz
   angesehen), **Runde 78** (Bilderwerkzeug: `check:alles:neu`,

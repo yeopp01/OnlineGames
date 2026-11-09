@@ -15,7 +15,7 @@ import { einheitenAufstellen, expect, rohstoffe, test, zeitraffer } from '../hel
 import { BAUTASTEN } from '../../public/tasten.js';
 import { EINHEITEN, VERBESSERUNGEN } from '../../server/spiele/strategie/daten.js';
 import {
-  bedienteileFrei, dorfbewohnerAnklicken, einheitenJeArt, figurenFrei, freieWiesen,
+  bedienteileFrei, dorfbewohnerAnklicken, einheitenJeArt, ersterTreffer, figurenFrei, freieWiesen,
   gebaeudeInDerNaehe, partieBeenden, partieZuZweit, platzImBild,
 } from '../helpers/strategie.mjs';
 
@@ -229,55 +229,32 @@ test.describe('Feudalzeit am Stueck', () => {
       // Schmiedeangriff: der trifft Infanterie und Kavallerie, nicht
       // Bogenschuetzen - die Verbesserung geht ueber die Klasse, nicht die Art.
       bogenAufReiter: schaden('bogenschuetze', 'spaeherreiter', gelernt),
-      reiterVoll: EINHEITEN.spaeherreiter.leben,
     };
 
     // Der Bonus muss sich zeigen: ohne ihn waere der Speerkaempfer schwaecher
     // als der Bogenschuetze, mit ihm ein Mehrfaches davon.
     expect(erwartung.speerAufReiter, 'Bonus gegen Kavallerie').toBeGreaterThan(erwartung.bogenAufReiter * 3);
 
-    const treffer = async (kuerzel, feld) => {
-      // Bis zu drei Rechtsklicks: im grossen Browserlauf traf der erste zweimal
-      // nicht (Runden 99 und 100) - unter Last verschiebt sich die Lage
-      // zwischen Messen und Klicken, und aus dem Angriff wird ein Laufbefehl.
-      // Gemessen wird hier der Schaden, nicht die Treffsicherheit des Klicks
-      // (die belegt kampf AC-1).
-      let bild = null;
-      for (let versuch = 0; versuch < 3; versuch++) {
-        bild = await anna.evaluate(([k, f, zielK]) => {
-          const a = window.ansicht;
-          const meine = [...a.nachher.entries()].filter(([, e]) => e.b === a.ich && e.k === k);
-          const [zielId, ziel] = [...a.nachher.entries()]
-            .filter(([, e]) => e.b !== a.ich && e.k === zielK && !e.s)
-            .sort(([, p], [, q]) => Math.hypot(p.x - f.x, p.y - f.y) - Math.hypot(q.x - f.x, q.y - f.y))[0];
-          // Nur einer schlaegt zu: sonst ist der Verlust die Summe mehrerer.
-          a.gewaehltesGebaeude = null;
-          a.ausgewaehlt = new Set([meine[0][0]]);
-          a.beiAuswahl();
-          // Der Blick aufs Ziel, nicht auf die Mitte zwischen beiden: der
-          // Bogenschuetze stand in Runde 128 dreissig Felder weit weg (die
-          // Schiessanlage stand anders, weil das Baumenue hoeher wurde), und
-          // der Klick auf die Mitte lag ausserhalb der Leinwand.
-          a.kamera.zoom = 1.8;
-          a.blickAuf(ziel.x, ziel.y);
-          return { punkt: a.zuBild(ziel.x, ziel.y), zielId };
-        }, [kuerzel, feld, erwartung.kuerzel.spaeherreiter]);
-        await anna.mouse.click(bild.punkt.x, bild.punkt.y, { button: 'right' });
-        const getroffen = await anna.waitForFunction((id) => window.ansicht.nachher.get(id)?.h !== undefined, bild.zielId, { timeout: 25_000 })
-          .then(() => true, () => false);
-        if (getroffen) break;
-      }
-      // `h` steht nur an beschaedigten Einheiten: der erste Wert ist der erste
-      // Treffer. Die Nachladezeit ist mindestens zwei Sekunden, die Ansicht
-      // bekommt jeden Takt - der zweite Schlag kommt also nicht dazwischen.
-      await anna.waitForFunction((id) => window.ansicht.nachher.get(id)?.h !== undefined, bild.zielId, { timeout: 1_000 });
-      return anna.evaluate((id) => window.ansicht.nachher.get(id).h, bild.zielId);
-    };
+    // Je ein Schlag, gemessen mit `ersterTreffer` (Rueckschau nach Runde 140):
+    // bis zu drei Rechtsklicks, bis das Zeichen rot steht - im grossen
+    // Browserlauf wurde aus dem ersten Klick zweimal ein Laufbefehl (Runden
+    // 99 und 100) -, und der erste Abfall wird gelesen, wenn er kommt.
+    // Gemessen wird hier der Schaden, nicht die Treffsicherheit des Klicks
+    // (die belegt kampf AC-1). Nur einer schlaegt zu: sonst ist der Verlust
+    // die Summe mehrerer.
+    const paar = (kuerzel, feld) => anna.evaluate(([k, f, zielK]) => {
+      const a = window.ansicht;
+      const [einheit] = [...a.nachher.entries()].find(([, e]) => e.b === a.ich && e.k === k && !e.s);
+      const [ziel] = [...a.nachher.entries()]
+        .filter(([, e]) => e.b !== a.ich && e.k === zielK && !e.s)
+        .sort(([, p], [, q]) => Math.hypot(p.x - f.x, p.y - f.y) - Math.hypot(q.x - f.x, q.y - f.y))[0];
+      return { einheit, ziel };
+    }, [kuerzel, feld, erwartung.kuerzel.spaeherreiter]);
 
-    const nachSpeer = await treffer(erwartung.kuerzel.speerkaempfer, wiese);
-    expect(erwartung.reiterVoll - nachSpeer, 'Speerkaempfer gegen Reiter: Angriff mit Schmiedeangriff plus Bonus').toBe(erwartung.speerAufReiter);
-    const nachBogen = await treffer(erwartung.kuerzel.bogenschuetze, zweite);
-    expect(erwartung.reiterVoll - nachBogen, 'Bogenschuetze gegen Reiter: Angriff minus Fernruestung, ohne Schmiedeangriff').toBe(erwartung.bogenAufReiter);
+    const speer = await ersterTreffer(anna, code, await paar(erwartung.kuerzel.speerkaempfer, wiese));
+    expect(speer, 'Speerkaempfer gegen Reiter: Angriff mit Schmiedeangriff plus Bonus').toBe(erwartung.speerAufReiter);
+    const bogen = await ersterTreffer(anna, code, await paar(erwartung.kuerzel.bogenschuetze, zweite));
+    expect(bogen, 'Bogenschuetze gegen Reiter: Angriff minus Fernruestung, ohne Schmiedeangriff').toBe(erwartung.bogenAufReiter);
 
     // ---- Das Bild: das Dorf der Feudalzeit. ----
     // Das erste Bild dieser Runde zeigte die drei Gebaeude - und die vier

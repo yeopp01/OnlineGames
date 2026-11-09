@@ -1349,11 +1349,53 @@ Testlauf): `npm run check` 55 s, 587 Tests ohne Browser; der volle
 Browserlauf mit 190 Fällen und neuen Bildern 17,0 min einschließlich
 Prüfung (Runde 135; Runde 130: 15,0 min für 186). `e2e:daten` 4,9 min.
 
+### Nach Runde 140 (2026-11-09)
+
+Runden 137–140: ki AC-21/22 gebaut und geparkt (fahrplan AC-11 reißt am
+Patt), Konterkreis der Ritterzeit, Mauern halten auf, Befestigung im
+Prüfstand, die Ritterzeit am Stück — vier Kriterien `fertig`, eine Runde
+geparkt. Was sich wiederholt hat:
+
+1. **Einen Treffer im Browser messen kostete Läufe** — Runden 99 und 100
+   (der Klick wurde ein Laufbefehl), Runde 140 (zwei Stöße zwischen zwei
+   Blicken im Zeitraffer 20, eine halbe Minute Weg bei normaler Zeit).
+   Die Feudalzeit und die Ritterzeit am Stück hatten es je selbst
+   geschrieben. → **Hilfe `ersterTreffer(page, code, { einheit, ziel,
+   gebaeude })`** in `e2e/helpers/strategie.mjs`: Rechtsklick, bis das
+   Zeichen rot steht, vierfache Zeit, der erste Abfall in derselben
+   Abfrage gelesen. Beide Tests nehmen sie jetzt.
+2. **Zahlen, die ein Sieg oder ein Kriterium behauptet, ohne zu sagen
+   warum** — der Mangonel gewann auch ohne Fläche (Runde 138), „eine Ramme
+   in unter einer halben Minute" passte nicht zu den Werten der Vorlage
+   (Runde 139). → **zwei Regeln in der Anweisung**: je Paarung den
+   tragenden Wert einzeln abschalten; eine abgeleitete Zahl im Kriterium
+   aus den Werten rechnen, bevor sie dasteht.
+3. **`npm run e2e:laufzeiten` fuhr selbst einen ganzen Browserlauf** — in
+   dieser Rückschau gestartet, um die Dauer nach Runde 140 abzulesen; er
+   lief mitten in Änderungen an zwei Tests weiter, und Beenden durfte ich
+   ihn nicht. Sechzehn Minuten für Zahlen, die der Abschlusslauf eben
+   gemessen hatte. → **Jeder Browserlauf legt `e2e/.ergebnisse/bericht.json`
+   ab** (zweiter Reporter in der Playwright-Config), das Skript liest ihn
+   und nennt Zeitpunkt und Zahl der Fälle; `--neu` fährt erst einen Lauf.
+
+Nicht geändert: `ls` vor dem Anlegen einer Testdatei (Runde 137 fast,
+Runde 139 gegriffen) — `Write` weigert sich inzwischen selbst, eine
+ungelesene Datei zu überschreiben.
+
+Gemessen (18 Chrome-Vorgänge des Benutzers wie in Runde 135, kein fremder
+Testlauf): `npm run check` 53 s ohne Last, 599 Tests ohne Browser; der
+volle Browserlauf mit 191 Fällen 16,6 min (Runde 140; Runde 135: 17,0 min
+für 190). Die Ritterzeit am Stück braucht 1,7 min.
+
 ## Runden
 
 Neueste oben. Eine Zeile je Runde: Nummer, Datum, Kriterien, Ergebnis,
 wichtigste Erkenntnis.
 
+- **141** · 2026-11-09 · **Rückschau** — Hilfe `ersterTreffer` (Feudalzeit
+  und Ritterzeit am Stück nehmen sie), `e2e:laufzeiten` liest den Bericht
+  des letzten Laufs statt selbst zu fahren, zwei Regeln: tragenden Wert je
+  Paarung abschalten, abgeleitete Zahlen im Kriterium rechnen.
 - **140** · 2026-11-09 · **fahrplan AC-14 fertig**: die Ritterzeit am Stück
   im Browser (`strategie-ritterzeit-am-stueck.spec.mjs`, rund 1,7 Minuten).
   Was gebaut und ausgebildet wird, kommt aus den Daten; Wachturm, Mauer,

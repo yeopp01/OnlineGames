@@ -15,7 +15,7 @@ import { expect, rohstoffe, test, zeitraffer } from '../helpers/seite.mjs';
 import { BAUTASTEN } from '../../public/tasten.js';
 import { EINHEITEN, GEBAEUDE } from '../../server/spiele/strategie/daten.js';
 import {
-  bedienteileFrei, dorfbewohnerAnklicken, einheitenJeArt, figurenFrei, freieWiesen,
+  bedienteileFrei, dorfbewohnerAnklicken, einheitenJeArt, ersterTreffer, figurenFrei, freieWiesen,
   gebaeudeInDerNaehe, partieBeenden, partieZuZweit, platzImBild,
 } from '../helpers/strategie.mjs';
 
@@ -266,9 +266,10 @@ test.describe('Ritterzeit am Stueck', () => {
     const hausId = await gebaeudeInDerNaehe(anna, code, 'Bert', 'haus', wiese, { von: 0, bis: 14 });
     await anna.waitForFunction((g) => window.ansicht.gebaeude.has(g), hausId);
     const haus = await anna.evaluate((g) => window.ansicht.gebaeudeMitte(window.ansicht.gebaeude.get(g)), hausId);
-    // Erst hinlaufen, dann angreifen, langsamer: im zwanzigfachen Zeitraffer
-    // kaemen zwei Stoesse zwischen zwei Blicke (fuenf Sekunden Nachladezeit
-    // sind dort eine Viertelsekunde).
+    // Erst hinlaufen, im Zeitraffer; gemessen wird danach mit `ersterTreffer`
+    // (vierfach - bei zwanzigfacher Zeit kaemen zwei Stoesse zwischen zwei
+    // Blicke, und bei normaler geht die Ramme eine halbe Minute um das Haus
+    // zu ihrem Randfeld, Runde 140).
     const ramme = await anna.evaluate(([k, w]) => {
       const a = window.ansicht;
       const e = [...a.nachher.values()].find((x) => x.b === a.ich && x.k === k && !x.s);
@@ -284,45 +285,13 @@ test.describe('Ritterzeit am Stueck', () => {
       return e && alt && alt.x === e.x && alt.y === e.y && Math.hypot(e.x - w.x, e.y - w.y) < 5;
     }, [ramme, haus], { timeout: 90_000 });
     await zeitraffer(anna, code, 1);
-    const ziel = await anna.evaluate(([i, g]) => {
-      const a = window.ansicht;
-      a.gewaehltesGebaeude = null;
-      a.ausgewaehlt = new Set([i]);
-      a.beiAuswahl();
-      const haus = a.gebaeude.get(g);
-      const m = a.gebaeudeMitte(haus);
-      a.kamera.zoom = 1.6;
-      a.blickAuf(m.x, m.y);
-      return { punkt: a.zuBild(m.x, m.y), voll: a.gebaeudeLebenVoll(haus), jetzt: haus.h ?? a.gebaeudeLebenVoll(haus) };
-    }, [ramme, hausId]);
-    expect(ziel.jetzt, 'das Haus ist unversehrt').toBe(ziel.voll);
-    const leinwand = await anna.evaluate(() => {
-      const r = window.ansicht.leinwand.getBoundingClientRect();
-      return { x: r.left, y: r.top };
-    });
-    // Bis zu drei Rechtsklicks, wie in fahrplan AC-8: gemessen wird der
-    // Schaden, nicht die Treffsicherheit des Klicks (die belegt kampf AC-1).
-    // Getroffen ist, wenn das Zeichen am Ziel rot steht (bedienung AC-34).
-    let getroffen = false;
-    for (let versuch = 0; versuch < 3 && !getroffen; versuch++) {
-      await anna.mouse.click(leinwand.x + ziel.punkt.x, leinwand.y + ziel.punkt.y, { button: 'right' });
-      getroffen = await anna.evaluate(() => window.ansicht.zielzeichen?.feindlich === true);
-    }
-    expect(getroffen, `Rechtsklick auf das Haus: ${JSON.stringify(await anna.evaluate(([i, g]) => {
-      const a = window.ansicht;
-      return { ramme: a.nachher.get(i), haus: a.gebaeude.get(g), zeichen: a.zielzeichen, auswahl: [...a.ausgewaehlt] };
-    }, [ramme, hausId]))}`).toBe(true);
-    // Die Ramme geht noch um das Haus herum zu ihrem Randfeld - bei normaler
-    // Zeit eine halbe Minute (Tempo 0,5). Vierfach: fuenf Sekunden
-    // Nachladezeit sind dann noch anderthalb echte, und der erste Abfall wird
-    // in derselben Abfrage gelesen, in der er gesehen wird.
-    await zeitraffer(anna, code, 4);
-    const nachStoss = await anna.waitForFunction(([g, voll]) => {
-      const h = window.ansicht.gebaeude.get(g)?.h ?? voll;
-      return h < voll ? h : null;
-    }, [hausId, ziel.voll], { timeout: 60_000 }).then((h) => h.jsonValue());
-    await zeitraffer(anna, code, 1);
-    expect(ziel.voll - nachStoss, 'Ramme gegen Haus: Angriff plus Bonus gegen Gebaeude').toBe(erwartet);
+    expect(await anna.evaluate((g) => {
+      const h = window.ansicht.gebaeude.get(g);
+      return h.h ?? window.ansicht.gebaeudeLebenVoll(h);
+    }, hausId), 'das Haus ist unversehrt')
+      .toBe(GEBAEUDE.haus.leben);
+    const stoss = await ersterTreffer(anna, code, { einheit: ramme, ziel: hausId, gebaeude: true, zoom: 1.6 });
+    expect(stoss, 'Ramme gegen Haus: Angriff plus Bonus gegen Gebaeude').toBe(erwartet);
 
     // ---- Das Bild: das Dorf der Ritterzeit. ----
     // Die fuenf neuen Einheiten vor den Gebaeuden gesammelt und ausgewaehlt:
