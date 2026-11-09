@@ -3611,6 +3611,9 @@ class Welt {
       startwert: this.startwert,
       // Wie viel jeder sieht (kampf AC-16) - der Browser zeichnet danach.
       sicht: this.sichtArt,
+      // Ob ein Buendnis geloest werden kann (spielziel AC-24): bei "fest"
+      // zeigt der Browser den Knopf nicht.
+      buendnisse: this.buendnisse,
       karte: {
         groesse: this.karte.groesse,
         felder: Buffer.from(this.karte.felder).toString('base64'),

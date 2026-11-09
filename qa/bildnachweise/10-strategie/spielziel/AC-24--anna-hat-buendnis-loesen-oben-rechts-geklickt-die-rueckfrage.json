@@ -1,0 +1,10 @@
+{
+  "spec": "10-strategie/spielziel.md",
+  "ac": "AC-24",
+  "titel": "Anna hat „Bündnis lösen\" oben rechts geklickt: die Rückfrage sagt, dass keiner mehr sieht, was der andere sieht, und dass sie in 60 Sekunden Gegner sind — „Verbündet bleiben\" steht vorn",
+  "datei": "e2e/tests/strategie-buendnis-loesen.spec.mjs",
+  "pfad": [
+    "Bündnis lösen",
+    "spielziel AC-24: der Knopf fragt einmal zurück, alle sehen die Ansage mit der Uhr, nach der Frist ist der Rechtsklick rot"
+  ]
+}

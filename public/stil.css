@@ -238,6 +238,21 @@ canvas.angriffslauf {
      fuenfzeilige Treppe im Spielfeld (gesehen in Runde 80, als der Knopf
      "Aufgeben" daneben kam). Zu eng heisst: weg, nicht gestapelt. */
   white-space: nowrap;
+  /* Und dazwischen gekuerzt: steht "Bündnis lösen" neben "Aufgeben"
+     (spielziel AC-24), schob der Hinweis den Knopf aus dem Fenster. */
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Die rechte Haelfte der Kopfzeile darf schmaler werden als ihr Inhalt -
+   gekuerzt wird der Hinweis, nicht die Knoepfe. */
+.kopfzeile > .leiste:last-child {
+  min-width: 0;
+}
+
+.kopfzeile .aufgeben {
+  flex: 0 0 auto;
 }
 
 .leiste {
@@ -886,12 +901,57 @@ canvas.angriffslauf {
   background: #161b22cc;
   color: #d8b3ad;
   font-size: 0.82rem;
+  white-space: nowrap;
   pointer-events: auto;
 }
 
 .aufgeben:hover {
   border-color: #b4473f;
   color: #ffd2c9;
+}
+
+/* Bündnis lösen (spielziel AC-24) teilt sich Aussehen und Rueckfrage mit
+   Aufgeben - beides ist ein Schritt, der sich nicht zuruecknehmen laesst. */
+.aufgeben[hidden] {
+  display: none;
+}
+
+/* Die Ansage einer Kuendigung (spielziel AC-24): oben rechts unter dem
+   Knopf, der sie ausloest - nicht in der Mitte, wo Absage, Angriff und
+   Zeitalter stehen (bedienung AC-41). Sie bleibt, solange die Frist laeuft;
+   die Uhr in gleich breiten Ziffern, damit nichts wackelt. */
+.buendnisansage {
+  position: fixed;
+  right: 1rem;
+  top: 4.2rem;
+  max-width: 24rem;
+  margin: 0;
+  padding: 0.55rem 1rem;
+  border: 1px solid #e0a05588;
+  border-radius: 0.6rem;
+  background: #2a1a10f0;
+  color: #ffd9a8;
+  font-weight: 600;
+  line-height: 1.35;
+  box-shadow: 0 4px 16px #000a;
+  pointer-events: none;
+}
+
+.buendnisansage[hidden] {
+  display: none;
+}
+
+.buendnisansage span {
+  display: block;
+}
+
+.buendnisansage b {
+  font-variant-numeric: tabular-nums;
+  color: #fff0d8;
+}
+
+.buendnisansage .gegner {
+  color: #ffb2a4;
 }
 
 /* Die Rueckfrage: genau eine, und sie liegt ueber dem Spielfeld. */

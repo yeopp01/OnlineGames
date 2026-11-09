@@ -162,7 +162,7 @@ Umfang hinzufügt, dort nachsehen.
 
 ## Stand
 
-**446 von 572 Kriterien fertig.** 667 Tests ohne Browser, 196 im Browser. Die
+**447 von 572 Kriterien fertig.** 667 Tests ohne Browser, 198 im Browser. Die
 Übersicht ist der Bericht: `npm run qa:report`.
 
 Gebaut ist der Unterbau: Räume, Übertragung, Karte, Wegfindung, Sammeln,
@@ -409,8 +409,11 @@ nach 60 Sekunden (`KUENDIGUNG_SEKUNDEN`, als Takte), bei „fest" weist der
 Server ab. **„Feindlich" und „sieht gemeinsam" sind zwei Fragen**: was der
 Server einem schickt, fragt `welt.teiltSicht`, die Kampfregeln
 `welt.feindlich`. Solange eine Frist läuft, endet die Partie nicht als
-Teamsieg. Jeder Zustand trägt die Kündigungen als `bu`; das Bild dazu
-(Knopf, Uhr, Meldung) ist spielziel AC-24.
+Teamsieg. Jeder Zustand trägt die Kündigungen als `bu`. **D12 ist fertig:
+im Bild** (spielziel AC-24) „Bündnis lösen" neben Aufgeben mit einer
+Rückfrage, bei „fest" ohne Knopf, und oben rechts für alle die Ansage mit
+der Uhr der Frist; der Browser stellt dieselben zwei Fragen
+(`ansicht.feindlich`, `ansicht.teiltSicht`).
 
 1. **Stufe A** Dunkle Zeit mit Wirtschafts-KI und Prüfstand · **B** Feudalzeit
    · **C** Partieende und KI-Gegner · **D** Ritterzeit · **E** fünf Völker ·

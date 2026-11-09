@@ -106,8 +106,10 @@ test.describe('Spiel waehlen', () => {
       });
       await route.fulfill({ response: antwort, json: { spiele } });
     });
-    // Hoch genug, dass beide Formulare ganz im Bild stehen.
-    await page.setViewportSize({ width: 1400, height: 1500 });
+    // Hoch genug, dass beide Formulare ganz im Bild stehen - mit jeder neuen
+    // Einstellung des Strategiespiels waechst es (Runde 155: seit
+    // "Bündnisse" stand das zweite unter dem Rand, und kein Test sagte es).
+    await page.setViewportSize({ width: 1400, height: 1900 });
     await page.goto('/');
     await page.locator('[data-oeffnen="strategie"]').click();
     const strategie = page.locator('[data-einstellungen-fuer="strategie"]');
@@ -120,6 +122,8 @@ test.describe('Spiel waehlen', () => {
     const hausbau = page.locator('[data-einstellungen-fuer="hausbau"]');
     await expect(hausbau.locator('select[data-einstellung="grundstueck"] option')).toHaveText(['klein', 'mittel', 'gross']);
     await expect(hausbau.locator('select[data-einstellung="grundstueck"]')).toHaveValue('"mittel"');
+    await expect(hausbau.locator('[data-einstellung="stockwerke"]')).toBeInViewport({ ratio: 1 });
+    await expect(page.locator('[data-eroeffnen="hausbau"]')).toBeInViewport({ ratio: 1 });
     await nachweis(page, {
       spec: AUSWAHL,
       ac: 'AC-4',

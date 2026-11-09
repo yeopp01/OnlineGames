@@ -1632,6 +1632,26 @@ ihn, mit Gegenprobe an beiden Formen. Fünf Bilder neu, alle angesehen.
 Neueste oben. Eine Zeile je Runde: Nummer, Datum, Kriterien, Ergebnis,
 wichtigste Erkenntnis.
 
+- **155** · 2026-11-09 · **spielziel AC-24 fertig, D12 fertig** — die
+  Kündigung im Bild: „Bündnis lösen" neben Aufgeben, fragt einmal zurück,
+  steht nur, wenn der Server ja sagen würde (`ansicht.kannKuendigen`, bei
+  „fest" nie — die Einstellung kommt jetzt im Aufbau mit). Oben rechts eine
+  Ansage für alle mit der Uhr der Frist aus `bu` und den Takten, danach
+  „jetzt Gegner". Im Browser dieselbe Trennung wie auf dem Server:
+  `ansicht.teamVon` (null nach der Frist) für `feindlich`, `ansicht.teiltSicht`
+  für Nebel, gezeigte Gebäude, Einheiten und Tiere; bei der Kündigung gehen
+  die Gebäude der anderen Seite in die Erinnerung. Erkenntnis: **ein zweiter
+  Knopf in der Kopfzeile schob „Aufgeben" aus dem Fenster**, und
+  `bedienteileFrei` sah es nicht — es misst die Kopfzeile als Ganzes, die
+  immer fensterbreit ist. Jetzt kürzt sich der Hinweis mit „…", und der Test
+  verlangt beide Knöpfe ganz im Fenster. Gegenprobe: mit `feindlich` statt
+  `teiltSicht` im Nebel fällt der Fall; zehnmal hintereinander grün.
+  Die Bilddurchsicht nach dem vollen Lauf fand zwei ältere Fehler aus
+  Runde 148: seit „Bündnisse" standen das Hausbau-Formular (auswahl AC-4)
+  und die Wartemeldung (raeume AC-6) unter dem Bildrand. Beide Tests
+  verlangen jetzt `toBeInViewport({ ratio: 1 })` für das, was ihr Bild
+  behauptet — **ein Formular, das mit den Einstellungen wächst, schiebt
+  Bildnachweise still aus dem Fenster**.
 - **154** · 2026-11-09 · **spielziel AC-21 fertig (Server), AC-24 neu** —
   ein Bündnis lösen: Nachricht `kuendigen`, 60 Sekunden Frist in Takten,
   danach gehört der Kündigende keinem Team mehr an. Die Spec sagte „einem

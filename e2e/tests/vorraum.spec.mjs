@@ -115,6 +115,9 @@ test.describe('Anna eroeffnet, Bert tritt bei', () => {
     // In einem zweiten Fenster derselben Anmeldung - Annas eigentlicher Raum
     // soll ohne Absage im Bild bleiben, wenn Bert gleich beitritt.
     const allein = await anna.context().newPage();
+    // Hoch genug fuer alle Einstellungen und die Absage darunter (Runde 155:
+    // seit "Bündnisse" stand sie unter dem Rand).
+    await allein.setViewportSize({ width: 1400, height: 1150 });
     fehler.push(fehlerSammeln(allein));
     await allein.goto('/');
     await allein.locator('[data-oeffnen="strategie"]').click();
@@ -124,6 +127,7 @@ test.describe('Anna eroeffnet, Bert tritt bei', () => {
     await allein.locator('#starten').click();
     await expect(allein.locator('#wartemeldung')).toBeVisible();
     await expect(allein.locator('#wartemeldung')).not.toBeEmpty();
+    await expect(allein.locator('#wartemeldung')).toBeInViewport({ ratio: 1 });
     await expect(allein.locator('#spiel')).toBeHidden();
     await nachweis(allein, {
       spec: RAEUME,

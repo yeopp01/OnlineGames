@@ -159,6 +159,11 @@ export class Ansicht {
     this.zeitalter = 0;
     this.ende = null;
     this.aus = false;
+    // Geloeste Buendnisse (spielziel AC-21, AC-24): wer -> Takt des
+    // Fristendes. Ob ein Buendnis ueberhaupt geloest werden kann, sagt die
+    // Einstellung der Partie.
+    this.kuendigungen = new Map();
+    this.buendnisse = nachricht.buendnisse === 'fest' ? 'fest' : 'loesbar';
 
     this.karte = { groesse: nachricht.karte.groesse, felder };
     // Der Nebel beginnt fuer jede Partie neu: nichts ist erkundet (kampf AC-12).
@@ -192,6 +197,8 @@ export class Ansicht {
     this.ausMerken(nachricht.spieler);
     // Wer nach dem Ende zurueckkommt, sieht es sofort (spielziel AC-5).
     if (nachricht.ende) this.endeMerken(nachricht.ende);
+    if (Number.isInteger(nachricht.t)) this.takt = nachricht.t;
+    this.kuendigungenMerken(nachricht.bu);
 
     // Die Uebersichtskarte malt ihr Gelaende einmal und danach nur bei
     // geaenderten Feldern - eine neue Karte ist die groesste Aenderung, die es
@@ -260,6 +267,7 @@ export class Ansicht {
 
     // Geaenderte Werte eines Spielers kommen nur, wenn er etwas erforscht hat.
     for (const s of nachricht.spieler) if (s.kw) this.einheitenwerte.set(s.id, s.kw);
+    this.kuendigungenMerken(nachricht.bu);
 
     this.ausMerken(nachricht.spieler);
     const meine = nachricht.spieler.find((s) => s.id === this.ich);
@@ -322,8 +330,9 @@ export class Ansicht {
    */
   erinnern() {
     for (const b of this.gebaeude.values()) {
-      // Verbuendete erinnert man nicht: man sieht sie (spielziel AC-19).
-      if (!this.feindlich(b.b)) continue;
+      // Verbuendete erinnert man nicht: man sieht sie (spielziel AC-19) -
+      // ausser waehrend der Frist einer Kuendigung (AC-24).
+      if (this.teiltSicht(b.b)) continue;
       const mitte = this.gebaeudeMitte(b);
       if (this.nebel.sieht(mitte.x, mitte.y)) this.erinnert.set(b.i, { ...b });
     }
@@ -341,7 +350,7 @@ export class Ansicht {
     if (!this.nebelAn) return [...this.gebaeude.values()];
     const liste = [];
     for (const b of this.gebaeude.values()) {
-      if (!this.feindlich(b.b)) liste.push(b);
+      if (this.teiltSicht(b.b)) liste.push(b);
       else if (this.nebel.sieht(this.gebaeudeMitte(b).x, this.gebaeudeMitte(b).y)) liste.push(b);
     }
     for (const [id, b] of this.erinnert) {
@@ -353,9 +362,10 @@ export class Ansicht {
   }
 
   // Ist eine fremde Einheit an dieser Stelle zu sehen? Eigene und die der
-  // Verbuendeten immer (spielziel AC-19).
+  // Verbuendeten immer (spielziel AC-19), ausser waehrend der Frist einer
+  // Kuendigung (AC-24).
   zuSehen(besitzer, x, y) {
-    return !this.feindlich(besitzer) || !this.nebelAn || this.nebel.sieht(x, y);
+    return this.teiltSicht(besitzer) || !this.nebelAn || this.nebel.sieht(x, y);
   }
 
   /**
@@ -1017,8 +1027,77 @@ export class Ansicht {
    */
   feindlich(besitzer) {
     if (besitzer === this.ich) return false;
-    const team = this.spieler.get(this.ich)?.team;
-    return !team || team !== this.spieler.get(besitzer)?.team;
+    const team = this.teamVon(this.ich);
+    return !team || team !== this.teamVon(besitzer);
+  }
+
+  /**
+   * Das Team eines Spielers, wie es jetzt gilt: nach Ablauf seiner Frist
+   * gehoert, wer gekuendigt hat, keinem Team mehr an (spielziel AC-21) -
+   * dieselbe Rechnung wie `welt.fristenTakten`, aus `bu` und dem Takt.
+   */
+  teamVon(id) {
+    const bis = this.kuendigungen.get(id);
+    if (bis !== undefined && this.takt >= bis) return null;
+    return this.spieler.get(id)?.team || null;
+  }
+
+  /**
+   * Sieht man durch die Augen dieses Besitzers (spielziel AC-19, AC-24)?
+   * Fast immer dasselbe wie "nicht feindlich" - ausser waehrend der Frist
+   * einer Kuendigung: dann sind sie noch keine Gegner, sehen aber schon
+   * jeder fuer sich. Wie `welt.teiltSicht`. Fragen des Nebels und dessen,
+   * was gezeigt wird, stellen deshalb diese Frage, Fragen des Kampfs
+   * (Zielzeichen) `feindlich`.
+   */
+  teiltSicht(besitzer) {
+    if (besitzer === this.ich) return true;
+    if (this.feindlich(besitzer)) return false;
+    return !this.kuendigungen.has(this.ich) && !this.kuendigungen.has(besitzer);
+  }
+
+  /**
+   * Kann ich mein Buendnis loesen (spielziel AC-24)? Dieselben Gruende wie
+   * die Absagen in `welt.kuendigen` - der Knopf steht nur, wenn der Server
+   * ja sagen wuerde.
+   */
+  kannKuendigen() {
+    if (this.buendnisse === 'fest' || this.aus || this.ende !== null) return false;
+    if (this.kuendigungen.has(this.ich)) return false;
+    return [...this.spieler.values()].some((s) => s.id !== this.ich && !s.aus
+      && !this.feindlich(s.id) && !this.kuendigungen.has(s.id));
+  }
+
+  /**
+   * Die Kuendigungen aus Zustand oder Aufbau uebernehmen. Kommt eine neue,
+   * trennt sich die Sicht sofort - und was man von den Gebaeuden der anderen
+   * Seite wusste, bleibt als Erinnerung im Nebel stehen, wie auf dem Server
+   * (`welt.sichtTrennen`), statt auf einen Schlag zu verschwinden.
+   */
+  kuendigungenMerken(bu) {
+    if (!bu || bu.length === this.kuendigungen.size) return;
+    const vorher = new Set([...this.spieler.keys()].filter((id) => this.teiltSicht(id)));
+    for (const [wer, bis] of bu) this.kuendigungen.set(wer, bis);
+    for (const b of this.gebaeude.values()) {
+      if (vorher.has(b.b) && !this.teiltSicht(b.b)) this.erinnert.set(b.i, { ...b });
+    }
+    this.nebel?.rechnen(this, true);
+  }
+
+  /**
+   * Was die Ansage oben sagt (spielziel AC-24): je Kuendigung, solange die
+   * Frist laeuft und noch zehn Spielsekunden danach. Die Restzeit in ganzen
+   * Sekunden, gerechnet aus den Takten des Servers - im Zeitraffer laeuft
+   * sie so schnell wie das Spiel.
+   */
+  buendnisAnsagen() {
+    const liste = [];
+    for (const [wer, bis] of this.kuendigungen) {
+      const rest = Math.ceil((bis - this.takt) / this.takteProSekunde);
+      if (rest < -10) continue;
+      liste.push({ wer, name: wer === this.ich ? null : this.spieler.get(wer)?.name || '?', rest: Math.max(0, rest) });
+    }
+    return liste;
   }
 
   feindlichAn(ziel, nurGebaeude = false) {
@@ -1171,7 +1250,7 @@ export class Ansicht {
       const y = tier.vy === undefined ? tier.y : tier.vy + (tier.y - tier.vy) * t;
       // Tiere im Nebel bleiben verborgen, auch die eigenen Schafe nicht -
       // erst wer hinsieht, findet sie (kampf AC-12).
-      if (this.nebelAn && this.feindlich(tier.b) && !this.nebel.sieht(x, y)) continue;
+      if (this.nebelAn && !this.teiltSicht(tier.b) && !this.nebel.sieht(x, y)) continue;
       stehend.push({ tiefe: x + y, x, y, art: 'tier', tier });
     }
     const anteil = this.anteil(jetzt);

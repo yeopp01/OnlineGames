@@ -1,0 +1,10 @@
+{
+  "spec": "10-strategie/spielziel.md",
+  "ac": "AC-24",
+  "titel": "Nach der Frist: oben rechts „Anna hat das Bündnis gelöst — jetzt Gegner\", und Cems Rechtsklick auf Annas Dorfbewohner setzt ein rotes Zeichen — ein Angriff",
+  "datei": "e2e/tests/strategie-buendnis-loesen.spec.mjs",
+  "pfad": [
+    "Bündnis lösen",
+    "spielziel AC-24: der Knopf fragt einmal zurück, alle sehen die Ansage mit der Uhr, nach der Frist ist der Rechtsklick rot"
+  ]
+}

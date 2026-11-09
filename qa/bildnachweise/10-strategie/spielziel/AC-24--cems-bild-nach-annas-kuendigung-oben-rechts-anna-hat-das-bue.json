@@ -1,0 +1,10 @@
+{
+  "spec": "10-strategie/spielziel.md",
+  "ac": "AC-24",
+  "titel": "Cems Bild nach Annas Kündigung: oben rechts „Anna hat das Bündnis gelöst — Gegner in … s\" mit der Uhr der Frist; Annas Dorf, das er eben noch durch ihre Augen sah, liegt grau im Nebel — die Gebäude stehen, wie er sie zuletzt sah",
+  "datei": "e2e/tests/strategie-buendnis-loesen.spec.mjs",
+  "pfad": [
+    "Bündnis lösen",
+    "spielziel AC-24: der Knopf fragt einmal zurück, alle sehen die Ansage mit der Uhr, nach der Frist ist der Rechtsklick rot"
+  ]
+}

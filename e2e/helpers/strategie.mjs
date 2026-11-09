@@ -51,8 +51,12 @@
 //
 // **Geloeste Buendnisse** (spielziel AC-21): `bu` im Zustand und im Aufbau,
 //   je `[wer, Takt des Fristendes]`, an alle - solange es Kuendigungen gibt.
-//   Liegt `t` darueber, gehoert `wer` keinem Team mehr an. Der Browser liest
-//   es erst mit spielziel AC-24 (Knopf, Ansage mit Uhr).
+//   Liegt `t` darueber, gehoert `wer` keinem Team mehr an. Im Browser
+//   `ansicht.kuendigungen` (Map wer -> Takt des Fristendes), `ansicht.teamVon(id)`
+//   (null nach der Frist), `ansicht.teiltSicht(besitzer)` (sieht man durch
+//   seine Augen? - waehrend der Frist schon nicht mehr), `ansicht.buendnisse`
+//   ('loesbar' oder 'fest', aus dem Aufbau) und `ansicht.kannKuendigen()`
+//   (spielziel AC-24).
 //
 // **Werte im Browser** (Runde 75): `ansicht.werte.einheiten[art]` fuehrt
 // Kuerzel, Leben, Tragkraft, Kosten, Zeit, `baut`, Zeitalter, Angriff,
@@ -109,10 +113,10 @@ export function partieZuDritt(browser, info, wie = {}) {
  * @param {import('@playwright/test').Browser} browser
  * @param {import('@playwright/test').TestInfo} info
  * @param {string[]} gaeste die Namen der Beitretenden, in dieser Reihenfolge
- * @param {{startwert?: number, breite?: number, hoehe?: number, sicht?: string, teams?: number[]}} [wie]
+ * @param {{startwert?: number, breite?: number, hoehe?: number, sicht?: string, teams?: number[], buendnisse?: string}} [wie]
  *   `teams`: je Seite ein Team 1..4 oder 0 (keins), im Warteraum gesetzt (auswahl AC-22).
  */
-async function partieMit(browser, info, gaeste, { startwert = 4711, breite = 1400, hoehe = 950, sicht = null, teams = null } = {}) {
+async function partieMit(browser, info, gaeste, { startwert = 4711, breite = 1400, hoehe = 950, sicht = null, teams = null, buendnisse = null } = {}) {
   const optionen = { baseURL: info.project.use.baseURL, viewport: { width: breite, height: hoehe }, locale: 'de-DE' };
   const anna = await (await browser.newContext({ ...optionen, storageState: ANMELDUNG })).newPage();
   const fehler = [fehlerSammeln(anna)];
@@ -123,6 +127,7 @@ async function partieMit(browser, info, gaeste, { startwert = 4711, breite = 140
   // Die Werte der Wahl stehen im Formular als JSON (app.js) - so wie die
   // Vorgaben sie liefern.
   if (sicht) await anna.locator('[data-einstellung="sicht"]').selectOption(JSON.stringify(sicht));
+  if (buendnisse) await anna.locator('[data-einstellung="buendnisse"]').selectOption(JSON.stringify(buendnisse));
   await anna.locator('[data-eroeffnen="strategie"]').click();
   await expect(anna.locator('#raumcode')).toHaveText(/^[A-Z0-9]{3}-[A-Z0-9]{3}$/);
   const code = (await anna.locator('#raumcode').textContent()).trim();
@@ -398,7 +403,7 @@ export function platzImBild(page, { n = 2, um, abstand = 5, seitlich = false }) 
  */
 export function bedienteileFrei(page) {
   return page.evaluate(() => {
-    const teile = ['#kopfzeile', '#auswahlleiste', '#untaetig', '#uebersicht', '#spielmeldung', '#angriffsmeldung', '#zeitalterwechsel', '#abschluss', '#zuschauer']
+    const teile = ['#kopfzeile', '#auswahlleiste', '#untaetig', '#uebersicht', '#spielmeldung', '#angriffsmeldung', '#zeitalterwechsel', '#abschluss', '#zuschauer', '#buendnisansage']
       .map((wahl) => ({ wahl, el: document.querySelector(wahl) }))
       .filter(({ el }) => el && !el.hidden && el.getClientRects().length)
       .map(({ wahl, el }) => ({ wahl, r: el.getBoundingClientRect() }));

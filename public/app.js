@@ -128,6 +128,7 @@ function empfangen(nachricht) {
       // muss weg, was von der alten Partie noch im Bild steht.
       partieraumAufraeumen();
       aufgebenZeigen();
+      buendnisZeigen();
       zuschauerZeigen();
       break;
 
@@ -141,6 +142,7 @@ function empfangen(nachricht) {
       zeitalterZeigen(ansicht.zeitalterName());
       spielzeitZeigen(ansicht.spielzeit());
       aufgebenZeigen();
+      buendnisZeigen();
       zuschauerZeigen();
       break;
 
@@ -228,6 +230,8 @@ function partieendeZeigen(text) {
   revancheZeigen();
   aufgebenFrageSchliessen();
   aufgebenZeigen();
+  buendnisFrageSchliessen();
+  buendnisZeigen();
   zuschauerZeigen();
 }
 
@@ -256,6 +260,7 @@ function partieraumAufraeumen() {
   document.getElementById('abschluss').hidden = true;
   document.getElementById('partieende').textContent = '';
   aufgebenFrageSchliessen();
+  buendnisFrageSchliessen();
   angriffVerbergen();
   leiste.ziel = {};
   leiste.gezeigt = {};
@@ -360,6 +365,70 @@ document.getElementById('aufgebenNein').addEventListener('click', aufgebenFrageS
 document.getElementById('aufgebenJa').addEventListener('click', () => {
   aufgebenFrageSchliessen();
   senden({ typ: 'befehl', auftrag: 'aufgeben' });
+});
+
+// ---- Buendnis loesen (spielziel AC-24) ------------------------------------
+// Ein Knopf neben Aufgeben, der genau einmal zurueckfragt - wie Aufgeben,
+// denn auch das laesst sich nicht zuruecknehmen. Er steht nur, wenn der
+// Server ja sagen wuerde (`ansicht.kannKuendigen`): bei "fest", ohne
+// Verbuendeten und nach der eigenen Kuendigung fehlt er. Die Ansage darunter
+// sehen alle, mit der Uhr der Frist und danach kurz "jetzt Gegner".
+const buendnisKnopf = document.getElementById('buendnisloesen');
+const buendnisFrage = document.getElementById('buendnisfrage');
+const buendnisAnsage = document.getElementById('buendnisansage');
+let buendnisAnsageText = '';
+
+function buendnisZeigen() {
+  buendnisKnopf.hidden = !ansicht || !ansicht.kannKuendigen();
+  if (buendnisKnopf.hidden) buendnisFrageSchliessen();
+  const ansagen = ansicht && ansicht.ende === null ? ansicht.buendnisAnsagen() : [];
+  // Nur neu schreiben, was sich geaendert hat - die Uhr schlaegt je Sekunde,
+  // ein Zustand kommt zehnmal so oft.
+  const html = ansagen.map(({ name, rest }) => {
+    const wer = name === null ? 'Du hast dein Bündnis gelöst' : `${textSicher(name)} hat das Bündnis gelöst`;
+    return rest > 0
+      ? `<span>${wer} — Gegner in <b>${rest} s</b></span>`
+      : `<span class="gegner">${wer} — jetzt Gegner</span>`;
+  }).join('');
+  if (html !== buendnisAnsageText) {
+    buendnisAnsageText = html;
+    buendnisAnsage.innerHTML = html;
+  }
+  buendnisAnsage.hidden = ansagen.length === 0;
+}
+
+// Namen kommen von Mitspielern: nie als HTML.
+function textSicher(text) {
+  const el = document.createElement('i');
+  el.textContent = text;
+  return el.innerHTML;
+}
+
+function buendnisFrageTaste(e) {
+  if (e.key !== 'Escape') return;
+  e.stopPropagation();
+  buendnisFrageSchliessen();
+}
+
+function buendnisFrageOeffnen() {
+  if (!ansicht || !ansicht.kannKuendigen()) return;
+  aufgebenFrageSchliessen();
+  buendnisFrage.hidden = false;
+  window.addEventListener('keydown', buendnisFrageTaste, true);
+  document.getElementById('buendnisNein').focus();
+}
+
+function buendnisFrageSchliessen() {
+  if (buendnisFrage.hidden) return;
+  buendnisFrage.hidden = true;
+  window.removeEventListener('keydown', buendnisFrageTaste, true);
+}
+
+buendnisKnopf.addEventListener('click', buendnisFrageOeffnen);
+document.getElementById('buendnisNein').addEventListener('click', buendnisFrageSchliessen);
+document.getElementById('buendnisJa').addEventListener('click', () => {
+  buendnisFrageSchliessen();
+  senden({ typ: 'befehl', auftrag: 'kuendigen' });
 });
 
 function zeitalterwechselMelden(name) {

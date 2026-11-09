@@ -80,8 +80,10 @@ export class Nebel {
     this.takt = ansicht.takt;
     // Die eigenen und die der Verbuendeten (spielziel AC-19): wer im Team ist,
     // sieht, was das Team sieht - mit den Werten des Besitzers, denn dessen
-    // Verbesserungen geben seinen Einheiten die Sicht.
-    const freund = (b) => !ansicht.feindlich(b);
+    // Verbesserungen geben seinen Einheiten die Sicht. Wer gekuendigt hat,
+    // zaehlt ab der Kuendigung nicht mehr mit, nicht erst nach der Frist
+    // (spielziel AC-24).
+    const freund = (b) => ansicht.teiltSicht(b);
     this.sichtbar.fill(0);
     for (const e of ansicht.nachher.values()) {
       if (e.s || !freund(e.b)) continue;

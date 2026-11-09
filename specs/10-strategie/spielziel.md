@@ -2,7 +2,7 @@
 
 **Bereich:** Strategie
 **Kuerzel:** spielziel
-**Stand:** 9/24 fertig · 1 in Arbeit · 14 offen
+**Stand:** 10/24 fertig · 1 in Arbeit · 13 offen
 
 ## Zweck
 
@@ -198,7 +198,7 @@ eigenen Technikbaum ([Vorlage](../../docs/strategie/vorlage-aoe2.md)).
 
 ### Bündnisse im Bild
 
-- **AC-24** `offen` **Kündigung im Bild** — Bei „lösbar" steht im Spiel ein
+- **AC-24** `fertig` **Kündigung im Bild** — Bei „lösbar" steht im Spiel ein
   Knopf „Bündnis lösen", der einmal zurückfragt (wie Aufgeben, bedienung
   AC-38); bei „fest" und ohne Team fehlt er. Nach der Kündigung sehen
   **alle** oben eine Ansage, wer sein Bündnis gelöst hat, mit einer Uhr, die

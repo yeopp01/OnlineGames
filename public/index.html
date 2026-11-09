@@ -105,6 +105,7 @@
       <p id="spielmeldung" class="spielmeldung" role="status" hidden></p>
       <button id="angriffsmeldung" class="angriffsmeldung" type="button" role="alert" hidden><span aria-hidden="true">⚔</span> Du wirst angegriffen — hinsehen</button>
       <p id="zeitalterwechsel" class="zeitalterwechsel" role="status" hidden></p>
+      <p id="buendnisansage" class="buendnisansage" role="status" hidden></p>
       <p id="zuschauer" class="zuschauer" role="status" hidden>Du bist ausgeschieden — die Partie läuft weiter, du siehst zu</p>
       <div id="abschluss" class="abschluss" hidden>
         <p id="partieende" class="partieende" role="status"></p>
@@ -121,6 +122,13 @@
         <div class="reihe">
           <button id="aufgebenNein" class="leise-knopf" type="button">Weiterspielen</button>
           <button id="aufgebenJa" class="haupt" type="button">Ja, aufgeben</button>
+        </div>
+      </div>
+      <div id="buendnisfrage" class="aufgebenfrage" role="dialog" aria-modal="true" aria-label="Bündnis lösen" hidden>
+        <p>Bündnis wirklich lösen? Ab sofort sieht keiner mehr, was der andere sieht, und in 60 Sekunden seid ihr Gegner — das lässt sich nicht zurücknehmen.</p>
+        <div class="reihe">
+          <button id="buendnisNein" class="leise-knopf" type="button">Verbündet bleiben</button>
+          <button id="buendnisJa" class="haupt" type="button">Ja, lösen</button>
         </div>
       </div>
       <canvas id="uebersicht" class="uebersicht" title="Übersichtskarte - klicken springt hin" aria-label="Übersichtskarte"></canvas>
@@ -164,6 +172,7 @@
         </span>
         <span class="leiste">
           <span id="hinweis" class="hinweis">Ziehen wählt aus · Rechtsklick befiehlt · WASD schiebt die Karte</span>
+          <button id="buendnisloesen" class="aufgeben" type="button" title="Das Bündnis lösen - nach 60 Sekunden seid ihr Gegner" hidden>Bündnis lösen</button>
           <button id="aufgeben" class="aufgeben" type="button" title="Die Partie aufgeben">Aufgeben</button>
         </span>
       </div>
