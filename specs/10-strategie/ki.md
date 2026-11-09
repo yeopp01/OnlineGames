@@ -2,7 +2,7 @@
 
 **Bereich:** Strategie
 **Kuerzel:** ki
-**Stand:** 21/26 fertig · 5 offen
+**Stand:** 22/26 fertig · 4 offen
 
 ## Zweck
 
@@ -234,11 +234,23 @@ nicht die Regeln.
   letzten Zeitalter; mittel (25) und leicht (15) folgen als eigene Reihen.
   Die Zahlen der Feudal- und Ritterzeit liegen zwischen 22 und 50, wie im
   Original ein gutes Spiel wächst; sie sind Werte, kein Gesetz.
-- **AC-25** `offen` **Die KI im Team** — Sie greift nur Gegner an, nie
+- **AC-25** `fertig` **Die KI im Team** — Sie greift nur Gegner an, nie
   Verbündete, und wählt ihr Ziel unter den Gegnern. Selbst löst sie nie ein
   Bündnis. Kündigt ihr ein Mensch, ist er nach der Frist ihr Gegner wie
   jeder andere ([Spielziel](spielziel.md) AC-21). Belegt im Prüfstand: zwei
   gegen zwei, über zwanzig Startwerte kein Schaden zwischen Verbündeten.
+  Gebaut in Runde 151: die KI fragt an drei Stellen `welt.feindlich` —
+  welcher Gegner der nächste ist (`naechsterGegner`, daraus Heer,
+  Nachsetzen und „überlegen"), von wem ein Marschziel Abstand hält
+  (`freiesFeldUm`) und neben wem eine Baustelle liegen bleibt. Gemessen mit
+  Verbündeten als **Nachbarn** (KI 1 und 2 gegen 3 und 4; über Eck wäre der
+  nächste Nachbar ohnehin ein Gegner): null Schläge und null Angriffsläufe
+  zwischen Verbündeten, 48 bis 136 Angriffsläufe zu Gegnern je Partie; die
+  KI von Runde 150 zog 255 bis 314 Mal zum verbündeten Nachbarn und spielte
+  90 Minuten unentschieden. Ein Bündnis lösen kann bis spielziel AC-21
+  niemand; die KI sendet dafür keine Nachricht, und weil sie bei jeder
+  Entscheidung `feindlich` fragt, ist ein Gekündigter danach ihr Gegner,
+  ohne dass sie davon wissen muss — der Test dazu gehört zu AC-21.
 - **AC-26** `offen` **Die KI handelt mit Karren** — Fehlt ihr in der
   Ritterzeit das Gold, baut sie einen zweiten Markt weit vom ersten oder
   fährt zu einem verbündeten, und bildet Karren aus. Gemessen im Prüfstand:

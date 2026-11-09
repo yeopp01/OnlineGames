@@ -3,6 +3,11 @@
   "eintraege": [
     {
       "spec": "10-strategie/ki.md",
+      "ac": "AC-25",
+      "begruendung": "Wen die KI als Gegner waehlt, ist eine Frage in ihrer Entscheidung (welt.feindlich), belegt im Rechenteil an gebauten Lagen mit Gegenprobe fuer jede der drei Stellen und ueber zwanzig ganze Partien zwei gegen zwei im Pruefstand. Ein Standbild zeigt ein Heer unterwegs, aber nicht, dass es nie zu einem Verbuendeten zieht; dass Verbuendete einander nicht schaden, zeigt das Bild zu spielziel AC-14."
+    },
+    {
+      "spec": "10-strategie/ki.md",
       "ac": "AC-21",
       "begruendung": "Wann die KI den Aufstieg in die Ritterzeit bestellt und wofuer sie spart, ist eine Rechnung in ihrer Entscheidung, belegt im Rechenteil mit Gegenproben fuer jede Bedingung und ueber zwanzig ganze Partien im Pruefstand. Was der Aufstieg im Bild zeigt - das Zeitalter oben in der Leiste, die Meldung -, ist derselbe Weg wie bei einem Menschen und dort nachgewiesen (bauen AC-27, bedienung AC-33)."
     },

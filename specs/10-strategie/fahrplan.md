@@ -2,7 +2,7 @@
 
 **Bereich:** Strategie
 **Kuerzel:** fahrplan
-**Stand:** 16/24 fertig · 8 offen
+**Stand:** 16/24 fertig · 1 in Arbeit · 7 offen
 
 ## Zweck
 
@@ -193,13 +193,16 @@ Zustandsnachricht umbaut und damit jeden Browsertest berührt: was dort heute
   gegen acht Bogenschützen kein Haufen sind. Der Haufen zählt: ein Stein
   trifft im Mittel mehr als einen Gegner — sonst gewönne der Mangonel nur
   über seine Fernrüstung.
-- **AC-24** `offen` **Zwei gegen zwei zu Ende** — Im Browser: ein
+- **AC-24** `in-arbeit` **Zwei gegen zwei zu Ende** — Im Browser: ein
   Mensch und eine KI gegen zwei KIs, eröffnet mit Teams, gespielt bis zur
   Tafel, die das siegreiche Team nennt (wie AC-12). Im Prüfstand endet KI
   gegen KI zu zweit gegen zwei über zwanzig Startwerte mit einem Sieger,
   jede Partie vor Minute 90. Das ist die Dauer, die der Benutzer für eine
   Partie nennt; die Grenze für Tests legt die Schleife fest
   ([ADR-0013](../../docs/adr/0013-buendnisse-karren-dauer.md)).
+  Der Prüfstand steht seit Runde 151 (`tests/strategie-team-*.test.mjs`):
+  20 von 20 entschieden, Minute 35,4 bis 52,4, Median 39,6, beide Teams
+  gewinnen. Offen ist der Browserfall.
 
 **Bauabfolge Stufe D.** Jeder Schritt endet mit etwas im Browser Sichtbarem.
 

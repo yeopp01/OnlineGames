@@ -161,7 +161,7 @@ Umfang hinzufügt, dort nachsehen.
 
 ## Stand
 
-**443 von 571 Kriterien fertig.** 645 Tests ohne Browser, 195 im Browser. Die
+**444 von 571 Kriterien fertig.** 656 Tests ohne Browser, 195 im Browser. Die
 Übersicht ist der Bericht: `npm run qa:report`.
 
 Gebaut ist der Unterbau: Räume, Übertragung, Karte, Wegfindung, Sammeln,
@@ -393,8 +393,11 @@ Satz Sichtfelder (`welt.sichten` zeigt für jedes Mitglied auf dasselbe
 Objekt), im Browser zählt `public/nebel.js` alles mit, was nicht
 `ansicht.feindlich` ist. **Ein Team gewinnt** (spielziel AC-20): das Ende
 trägt `gewinner` (alle des Teams, auch Ausgeschiedene) und `team`; `sieger`
-steht nur bei genau einem Gewinner. `tests/waechter-feindlich.test.mjs` verbietet in den
-Kampfregeln jeden Vergleich mit dem Besitzer.
+steht nur bei genau einem Gewinner. `tests/waechter-feindlich.test.mjs` verbietet in den
+Kampfregeln jeden Vergleich mit dem Besitzer. **Die KI im Team** (ki AC-25): sie fragt `welt.feindlich`,
+wen sie angreift; zwei gegen zwei endet im Prüfstand über zwanzig
+Startwerte jedes Mal vor Minute 90 mit einem Team als Sieger
+(`tests/zwei-gegen-zwei.mjs`, Verbündete als Nachbarn).
 
 1. **Stufe A** Dunkle Zeit mit Wirtschafts-KI und Prüfstand · **B** Feudalzeit
    · **C** Partieende und KI-Gegner · **D** Ritterzeit · **E** fünf Völker ·

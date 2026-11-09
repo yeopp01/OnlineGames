@@ -1584,6 +1584,20 @@ ihn, mit Gegenprobe an beiden Formen. Fünf Bilder neu, alle angesehen.
 Neueste oben. Eine Zeile je Runde: Nummer, Datum, Kriterien, Ergebnis,
 wichtigste Erkenntnis.
 
+- **151** · 2026-11-09 · **ki AC-25 fertig, fahrplan AC-24 halb** — die KI
+  im Team: drei Stellen in `ki.js` fragen `welt.feindlich`. Erkenntnis: **eine
+  Messung zu viert muss die Verbündeten zu Nachbarn machen.** Zu viert liegen
+  die Dörfer im Quadrat; mit den Teams über Eck (KI 1 + KI 3) war der
+  nächste Nachbar jeder KI schon ein Gegner, und die alte KI lieferte Takt
+  für Takt dieselben Partien — die Messung wäre auch ohne Änderung grün
+  gewesen. Mit Nachbarn als Verbündeten zog die alte KI je Partie rund 300
+  Mal zum Verbündeten und spielte 90 Minuten unentschieden; die neue
+  entscheidet 20 von 20 zwischen Minute 35 und 52. Und: **null Schaden
+  zwischen Verbündeten belegt die Welt, nicht die KI** — auch die alte schlug
+  nie zu (spielziel AC-14 verhindert es). Was die KI belegt, sind die
+  Angriffsläufe. Zwanzig Partien zu viert rechnen eine Minute je fünf; geteilt
+  auf vier Dateien (`tests/zwei-gegen-zwei.mjs`), damit `check` nicht um zwei
+  Minuten wächst. Eins gegen eins über 40 Startwerte Takt für Takt wie HEAD.
 - **150** · 2026-11-09 · **spielziel AC-20 fertig** — ein Team gewinnt:
   `welt.endePruefen` fragt `feindlich` statt „einer bleibt übrig", das Ende
   trägt `gewinner` und `team`, `sieger` nur bei genau einem. Tafel und

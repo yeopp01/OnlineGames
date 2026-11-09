@@ -12,6 +12,7 @@ import { createRequire } from 'node:module';
 const require = createRequire(import.meta.url);
 const { Welt, TAKTE_PRO_SEKUNDE } = require('../server/spiele/strategie/welt.js');
 const { EINHEITEN } = require('../server/spiele/strategie/daten.js');
+const { Ki, FEIND_FERN } = require('../server/spiele/strategie/ki.js');
 
 const DREI = [{ id: 'a', name: 'Anna' }, { id: 'b', name: 'Bert' }, { id: 'c', name: 'Carla' }];
 // Anna und Carla gegen Bert.
@@ -343,4 +344,69 @@ test('spielziel AC-20: stehen alle in einem Team, entscheidet keine Eroberung - 
   welt.takt = 90 * 60 * TAKTE_PRO_SEKUNDE;
   welt.takten();
   assert.deepEqual({ gewinner: welt.ende.gewinner, grund: welt.ende.grund }, { gewinner: [], grund: 'zeit' });
+});
+
+// ---- Die KI im Team (ki AC-25, Runde 151) ------------------------------------
+
+test('ki AC-25: die KI zielt auf den naechsten Gegner - sind die Nachbarn verbuendet, auf den uebers Eck', () => {
+  // Zu viert liegen die Doerfer im Quadrat: zwei Nachbarn, einer uebers Eck.
+  // Die Nachbarn kommen in Annas Team, der uebers Eck ist der Gegner.
+  const VIER = ['a', 'b', 'c', 'd'].map((id) => ({ id, name: id }));
+  const ohne = new Welt(VIER, 7);
+  const basis = (welt, id) => welt.spielerVon(id).basis;
+  const weit = (id) => Math.hypot(basis(ohne, id).x - basis(ohne, 'a').x, basis(ohne, id).y - basis(ohne, 'a').y);
+  const [nah, , fern] = ['b', 'c', 'd'].sort((x, y) => weit(x) - weit(y));
+  const nachbarn = ['b', 'c', 'd'].filter((id) => id !== fern);
+  assert.ok(weit(fern) > weit(nah) + 20, `uebers Eck liegt deutlich weiter: ${weit(nah).toFixed(1)} gegen ${weit(fern).toFixed(1)}`);
+  // Gegenprobe ohne Teams: der naechste Nachbar ist das Ziel.
+  assert.equal(new Ki(ohne, 'a').naechsterGegner().id, nah);
+
+  const teams = { a: 1, [fern]: 2 };
+  for (const id of nachbarn) teams[id] = 1;
+  const welt = new Welt(VIER, 7, { teams });
+  assert.deepEqual(basis(welt, nah), basis(ohne, nah), 'Teams verschieben keine Doerfer');
+  const ki = new Ki(welt, 'a');
+  assert.equal(ki.naechsterGegner().id, fern, 'mit beiden Nachbarn im Team: der uebers Eck');
+  // Das Ziel des Heers ist sein Dorfzentrum, nicht eines der Verbuendeten.
+  const ziel = ki.gegnerZiel(ki.naechsterGegner());
+  assert.equal(welt.gebaeudeAn(ziel.x, ziel.y)?.besitzer, fern, 'das Ziel ist ein Gebaeude des Gegners');
+  // Und "ueberlegen" misst sich am Gegner: ein Heer beim Verbuendeten zaehlt nicht.
+  for (let i = 0; i < 30; i++) welt.einheitAnlegen(nah, basis(welt, nah).x + 3, basis(welt, nah).y + 3, 'miliz');
+  for (let i = 0; i < 12; i++) welt.einheitAnlegen('a', basis(welt, 'a').x + 3, basis(welt, 'a').y + 3, 'miliz');
+  assert.equal(ki.ueberlegen(), true, 'zwoelf gegen nichts - die dreissig beim Verbuendeten zaehlen nicht');
+  // Gegenprobe ohne Teams: dieselben dreissig beim Nachbarn sind ein Gegner.
+  const allein = new Ki(ohne, 'a');
+  for (let i = 0; i < 30; i++) ohne.einheitAnlegen(nah, basis(ohne, nah).x + 3, basis(ohne, nah).y + 3, 'miliz');
+  for (let i = 0; i < 12; i++) ohne.einheitAnlegen('a', basis(ohne, 'a').x + 3, basis(ohne, 'a').y + 3, 'miliz');
+  assert.equal(allein.ueberlegen(), false, 'ohne Teams: zwoelf gegen dreissig');
+});
+
+test('ki AC-25: ein Verbuendeter am Marschziel ist kein Feind, dem die KI ausweicht', () => {
+  // `freiesFeldUm` haelt Abstand von Feinden (ki AC-14) - von Verbuendeten
+  // nicht: neben ihnen darf die Wache stehen.
+  for (const [wer, feind] of [['c', false], ['b', true]]) {
+    const { welt, x0, y0 } = mitPlatz();
+    const ki = new Ki(welt, 'a');
+    const um = { x: x0 + 5, y: y0 + 5 };
+    const fremder = stellen(welt, wer, 'miliz', um.x + 1, um.y);
+    // Von rechts kommend liegt das naechste freie Feld neben dem Fremden.
+    const feld = ki.freiesFeldUm(um, { x: um.x + 4, y: um.y }, { feindFern: FEIND_FERN });
+    const abstand = Math.hypot(feld.x - fremder.x, feld.y - fremder.y);
+    if (feind) assert.ok(abstand > FEIND_FERN, `von Bert haelt sie Abstand: ${abstand.toFixed(2)}`);
+    else assert.ok(abstand <= FEIND_FERN, `neben Carla darf sie stehen: ${abstand.toFixed(2)}`);
+  }
+});
+
+test('ki AC-25: eine Baustelle neben einem Verbuendeten wird weitergebaut, neben einem Gegner nicht', () => {
+  for (const [wer, gebaut] of [['c', true], ['b', false]]) {
+    const welt = new Welt(DREI, 7, { teams: TEAMS });
+    const ki = new Ki(welt, 'a');
+    const platz = ki.platzBeiBasis('haus');
+    const haus = welt.gebaeudeAnlegen('a', 'haus', platz.x, platz.y, false);
+    welt.einheitAnlegen(wer, haus.x + 2, haus.y + 2, 'miliz');
+    const dorf = [...welt.einheiten.values()].filter((e) => e.besitzer === 'a' && e.art === 'dorfbewohner');
+    ki.baustellenWeiterbauen([...welt.gebaeude.values()].filter((g) => g.besitzer === 'a'), dorf);
+    const bauleute = dorf.filter((e) => e.auftrag?.art === 'bauen' && e.auftrag.gebaeude === haus.id);
+    assert.equal(bauleute.length, gebaut ? 1 : 0, gebaut ? 'neben Carla baut einer weiter' : 'neben Bert bleibt sie liegen');
+  }
 });

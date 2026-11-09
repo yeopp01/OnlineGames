@@ -534,12 +534,14 @@ class Ki {
   }
 
   // Der naechste Gegner, der noch mitspielt - gemessen von Basis zu Basis.
+  // Ein Verbuendeter ist keiner (ki AC-25): gefragt wird `welt.feindlich`,
+  // die eine Stelle fuer "Gegner oder nicht" (spielziel AC-14).
   naechsterGegner() {
     const { basis } = this.spieler;
     let bester = Infinity;
     let gegner = null;
     for (const s of this.welt.spieler) {
-      if (s.id === this.spielerId || s.aus) continue;
+      if (s.aus || !this.welt.feindlich(this.spielerId, s.id)) continue;
       const d = Math.hypot(s.basis.x - basis.x, s.basis.y - basis.y);
       if (d < bester) {
         bester = d;
@@ -628,7 +630,7 @@ class Ki {
         const ende = e.weg[e.weg.length - 1];
         besetzt.add(`${Math.round(ende.x)},${Math.round(ende.y)}`);
       }
-      if (feindFern > 0 && e.besitzer !== this.spielerId) feinde.push(e);
+      if (feindFern > 0 && this.welt.feindlich(this.spielerId, e.besitzer)) feinde.push(e);
     }
     for (let r = 1; r <= 8; r++) {
       let bestes = null;
@@ -970,7 +972,7 @@ class Ki {
       const daneben = baustellen.find((g) => this.welt.abstandZu(e, g) <= 1.2);
       if (daneben) this.senden({ auftrag: 'befehl', einheiten: [e.id], ziel: { x: daneben.x, y: daneben.y } });
     }
-    const feinde = [...this.welt.einheiten.values()].filter((e) => e.besitzer !== this.spielerId && !e.tot);
+    const feinde = [...this.welt.einheiten.values()].filter((e) => this.welt.feindlich(this.spielerId, e.besitzer) && !e.tot);
     const verlassen = gebaeude.find((g) => !g.fertig
       && !this.gesperrt(BAUSTELLE + g.id)
       && !dorfbewohner.some((e) => e.auftrag?.art === 'bauen' && e.auftrag.gebaeude === g.id)
