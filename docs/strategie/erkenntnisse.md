@@ -1354,6 +1354,27 @@ Prüfung (Runde 135; Runde 130: 15,0 min für 186). `e2e:daten` 4,9 min.
 Neueste oben. Eine Zeile je Runde: Nummer, Datum, Kriterien, Ergebnis,
 wichtigste Erkenntnis.
 
+- **139** · 2026-11-09 · **kampf AC-21 und fahrplan AC-15 fertig**: wer zu
+  einem Ziel hinter einer fremden Mauer will und keinen Weg findet, greift
+  das erste Mauerfeld auf dem Weg an und danach das Ziel
+  (`welt.mauerImWeg`). Die Belagerung im Prüfstand (`belagerungSpielen`)
+  fand **zwei Fehler, die kein gebauter Fall zeigte**: fällt die Ecke
+  eines Rings, führt der Weg schräg durch die Lücke ohne Mauerfeld — das
+  Heer stand ohne Auftrag davor; und wer an einem anderen Feld schlug,
+  schlug Minuten weiter, obwohl die Lücke offen war. Beides behoben,
+  danach fällt das Dorfzentrum hinter dem Ring nach 178 bis 263 statt 88
+  bis 98 Sekunden, mit Rammen vor gleich teuren Soldaten. Die erste
+  Fassung der Belagerung war in allen zwanzig Startwerten gleich (das
+  Gelände um das Dorfzentrum ist geräumt) — wie Runde 71. Das Kriterium
+  „eine Ramme in unter einer halben Minute" passte nicht zur Vorlage (70
+  Sekunden), neu gefasst. `tests/strategie-belagerung.test.mjs` gab es
+  schon — `ls` vor dem Anlegen hat diesmal gegriffen. **Die Durchsicht traf
+  dreimal:** die Belagerung baute nie ein Tor (Vergleich zweier Objekte mit
+  `===`), wer an der Mauer schlug, brach sie weiter ab, wenn das Ziel
+  dahinter schon gefallen war, und Wachen ohne Befehl hätten jeden fremden
+  Ring aufgebrochen, hinter dem sie einen Feind sehen — jetzt bricht nur ein
+  Befehl durch. Je ein Test mit Gegenprobe; KI gegen KI blieb Partie für
+  Partie gleich (die KI baut keine Mauern).
 - **138** · 2026-11-09 · **fahrplan AC-23 fertig**: der Konterkreis der
   Ritterzeit hielt ohne eine Zeile Spielcode — Speer gegen Ritter, Mangonel
   gegen Bogen, Ritter gegen Mangonel je 20 von 20, umgekehrt 0 von 20, bei

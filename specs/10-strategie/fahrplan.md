@@ -2,7 +2,7 @@
 
 **Bereich:** Strategie
 **Kuerzel:** fahrplan
-**Stand:** 14/23 fertig · 9 offen
+**Stand:** 15/23 fertig · 8 offen
 
 ## Zweck
 
@@ -172,8 +172,13 @@ Zustandsnachricht umbaut und damit jeden Browsertest berührt: was dort heute
   Ritter, Armbrust, Mönch, Ramme, Mangonel; Wachturm, Mauern, Tore, Markt.
   Belegt wie die Feudalzeit (AC-8): ein Browsertest spielt den Aufstieg, baut
   jedes neue Gebäude, bildet jede neue Einheit aus und misst einen Schlag.
-- **AC-15** `offen` **Befestigung hält auf** — Im Prüfstand verzögert eine Steinmauer mit Tor
-  einen Angriff aus Nahkämpfern messbar. Rammen brechen sie auf.
+- **AC-15** `fertig` **Befestigung hält auf** — Im Prüfstand verzögert eine Steinmauer mit Tor
+  einen Angriff aus Nahkämpfern messbar. Rammen brechen sie auf. Gemessen
+  in der Belagerung (`belagerungSpielen`, Runde 139): zehn Soldaten nehmen
+  ein freies Dorfzentrum in 88 bis 98 Sekunden, hinter einem Ring zwei
+  Felder vor dem Rand erst in 178 bis 263 — verlangt ist je Startwert
+  mindestens eine Minute. Zehn Soldaten mit zwei Rammen schaffen es in
+  jedem Startwert vor sechzehn Soldaten, die dasselbe kosten.
 - **AC-23** `fertig` **Der Konterkreis der Ritterzeit** — Im Gefechtsstand bei
   gleichen Kosten, je zwanzig Startwerte, in beiden Richtungen: Speer gegen
   Ritter, Mangonel gegen einen Haufen Bogenschützen, Ritter gegen Mangonel
@@ -191,11 +196,11 @@ Zustandsnachricht umbaut und damit jeden Browsertest berührt: was dort heute
 | D2 | Aufstieg in die Ritterzeit; Kloster, Universität, Werkstatt gezeichnet und im Menü — **fertig** (Runde 122) | bauen AC-27, AC-28 |
 | D3 | Ritter und Armbrust; die Verbesserungen der Ritterzeit — **fertig** (Runden 123, 124) | einheiten AC-33, AC-34, bauen AC-34 |
 | D4 | Wachturm und schießende Gebäude — **fertig** (Runde 125) | bauen AC-29, kampf AC-20 |
-| D5 | Steinmauer ziehen (**fertig**, Runde 127), Tor für Eigene (**fertig**, Runde 128); Mauern halten auf | bauen AC-30, AC-31, kampf AC-21 |
+| D5 | Steinmauer ziehen (**fertig**, Runde 127), Tor für Eigene (**fertig**, Runde 128); Mauern halten auf (**fertig**, Runde 139) | bauen AC-30, AC-31, kampf AC-21 |
 | D6 | Belagerung: Ramme gegen Gebäude (**fertig**, Runde 129), Mangonel mit Flächenschaden (**fertig**, Runde 130) | einheiten AC-35, AC-36, kampf AC-19 |
 | D7 | Burg (**fertig**, Runde 132) und Markt (**fertig**, Runde 133) | bauen AC-32, AC-33 |
 | D8 | Mönch: heilen (**fertig**, Runde 134), bekehren (**fertig**, Runde 135) | einheiten AC-37, AC-38 |
-| D9 | Die KI in der Ritterzeit; Konterkreis (**fertig**, Runde 138) und Befestigung im Prüfstand; die Ritterzeit am Stück im Browser | ki AC-21, AC-22, fahrplan AC-14, AC-15, AC-23 |
+| D9 | Die KI in der Ritterzeit; Konterkreis (**fertig**, Runde 138) und Befestigung (**fertig**, Runde 139) im Prüfstand; die Ritterzeit am Stück im Browser | ki AC-21, AC-22, fahrplan AC-14, AC-15, AC-23 |
 
 Offen aus Stufe C und gebaut auf dem Zweig `strategie-ki-sicht`: die KI mit
 eigener Sicht (ki AC-13) — wartet auf die Antwort zu fahrplan AC-11. Wird sie

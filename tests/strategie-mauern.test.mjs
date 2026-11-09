@@ -298,3 +298,145 @@ test('bauen AC-31: liegt das naechste Randfeld hinter der Mauer, baut der Bauer 
   sekunden(welt, 40);
   assert.equal(welt.gebaeude.get(luecke.id).fertig, true, 'der Ring ist geschlossen');
 });
+
+// Mauern halten auf (kampf AC-21): Berts Haus in Berts Mauerring, Annas
+// Angreifer davor. `luecke` laesst ein Mauerfeld frei, als Versatz zu x0, y0.
+function hausImRing(luecke = null) {
+  const { welt, x0, y0 } = feudalMitPlatz();
+  for (let i = 2; i <= 8; i++) {
+    for (const [x, y] of [[x0 + i, y0 + 2], [x0 + i, y0 + 8], [x0 + 2, y0 + i], [x0 + 8, y0 + i]]) {
+      if (luecke && x0 + luecke.dx === x && y0 + luecke.dy === y) continue;
+      if (!welt.gebaeudeAn(x, y)) welt.gebaeudeAnlegen('b', 'steinmauer', x, y, true);
+    }
+  }
+  const haus = welt.gebaeudeAnlegen('b', 'haus', x0 + 5, y0 + 5, true);
+  const mauern = [...welt.gebaeude.values()].filter((g) => g.art === 'steinmauer');
+  return { welt, x0, y0, haus, mauern };
+}
+
+test('kampf AC-21: gibt es einen Weg aussen herum, geht der Angreifer ihn - die Mauer bleibt heil', () => {
+  // Die Luecke liegt auf der abgewandten Seite: der Weg dorthin ist laenger
+  // als jeder Weg durch die Mauer, und trotzdem wird er gegangen.
+  const { welt, x0, y0, haus, mauern } = hausImRing({ dx: 5, dy: 8 });
+  const miliz = welt.einheitAnlegen('a', x0 + 5, y0, 'miliz');
+  welt.befehl('a', [miliz.id], { x: haus.x, y: haus.y });
+  assert.equal(miliz.auftrag?.ziel, haus.id);
+  assert.ok(miliz.weg.length > 0, 'ein Weg durch die Luecke');
+  const ziele = new Set();
+  for (let t = 0; t < 40 * TAKTE_PRO_SEKUNDE; t++) {
+    welt.takten();
+    if (miliz.auftrag) ziele.add(miliz.auftrag.ziel);
+  }
+  assert.deepEqual([...ziele], [haus.id], 'nie eine Mauer als Ziel');
+  assert.ok(haus.leben < GEBAEUDE.haus.leben, 'das Haus wird getroffen');
+  assert.ok(mauern.every((m) => m.leben === GEBAEUDE.steinmauer.leben), 'keine Mauer beschaedigt');
+});
+
+test('kampf AC-21: ist der Ring zu, greift der Angreifer die Mauer an - und nach ihrem Fall das Haus dahinter', () => {
+  // Eine Miliz braucht fuer 1800 Leben eine Viertelstunde (4 je zwei
+  // Sekunden). Geprueft wird hier das Verhalten, nicht die Dauer: die
+  // Mauern bekommen 20 Leben, das sind fuenf Schlaege.
+  const { welt, x0, y0, haus, mauern } = hausImRing();
+  for (const m of mauern) m.leben = 20;
+  const miliz = welt.einheitAnlegen('a', x0 + 5, y0, 'miliz');
+  welt.befehl('a', [miliz.id], { x: haus.x, y: haus.y });
+  sekunden(welt, 1);
+  const mauer = welt.gebaeude.get(miliz.auftrag?.ziel);
+  assert.equal(mauer?.art, 'steinmauer', 'das Ziel ist jetzt ein Mauerfeld');
+  assert.equal(mauer.besitzer, 'b');
+  assert.equal(miliz.auftrag.danach.ziel, haus.id, 'das Haus bleibt gemerkt');
+  // Das Feld zwischen ihm und dem Haus: auf der Seite, von der er kommt.
+  assert.equal(mauer.y, y0 + 2, 'die Mauer auf seiner Seite');
+  sekunden(welt, 20);
+  assert.equal(welt.gebaeude.has(mauer.id), false, 'das Mauerfeld ist gefallen');
+  assert.equal(miliz.auftrag?.ziel, haus.id, 'danach wieder das Haus');
+  sekunden(welt, 20);
+  assert.ok(haus.leben < GEBAEUDE.haus.leben, 'und das Haus wird getroffen');
+  const stehen = [...welt.gebaeude.values()].filter((g) => g.art === 'steinmauer').length;
+  assert.equal(stehen, mauern.length - 1, 'nur dieses eine Mauerfeld ist gefallen');
+});
+
+test('kampf AC-21: eigene Mauern bricht niemand - wer im eigenen Ring nicht hinauskommt, bleibt stehen', () => {
+  // Gegenprobe zur Auswahl der Mauer: nur fremde Mauern und Tore zaehlen.
+  const { welt, x0, y0, mauern } = hausImRing();
+  const bert = welt.einheitAnlegen('b', x0 + 4, y0 + 4, 'miliz');
+  const ziel = welt.einheitAnlegen('a', x0 + 5, y0, 'dorfbewohner');
+  welt.befehl('b', [bert.id], { x: ziel.x, y: ziel.y });
+  sekunden(welt, 5);
+  assert.equal(bert.auftrag, null, 'der Auftrag endet');
+  assert.ok(mauern.every((m) => m.leben === GEBAEUDE.steinmauer.leben), 'keine eigene Mauer beschaedigt');
+});
+
+test('kampf AC-21: eine Ramme bricht ein Feld Steinmauer mit fuenfzehn Stoessen, drei Rammen in unter einer halben Minute', () => {
+  // Die Werte der Vorlage: 1800 Leben, 2 Angriff + 125 gegen Gebaeude, keine
+  // Nahruestung der Mauer, alle fuenf Sekunden ein Stoss. 1800 / 127 heisst
+  // fuenfzehn Stoesse, also 70 Sekunden fuer eine. Drei teilen sich die
+  // fuenfzehn: fuenf je Ramme, 20 Sekunden nach dem ersten Stoss - gemessen
+  // in Runde 139 22,2, weil die drei nacheinander ankommen.
+  for (const anzahl of [1, 3]) {
+    const { welt, x0, y0, haus } = hausImRing();
+    const rammen = [];
+    for (let i = 0; i < anzahl; i++) rammen.push(welt.einheitAnlegen('a', x0 + 4 + i, y0 + 1, 'ramme'));
+    welt.befehl('a', rammen.map((r) => r.id), { x: haus.x, y: haus.y });
+    welt.takten();
+    const mauer = welt.gebaeude.get(rammen[0].auftrag.ziel);
+    assert.equal(mauer.leben, GEBAEUDE.steinmauer.leben, 'noch kein Stoss');
+    assert.equal(mauer?.art, 'steinmauer');
+    // Alle auf dasselbe Feld: der Befehl geht auf die Mauer selbst.
+    welt.befehl('a', rammen.map((r) => r.id), { x: mauer.x, y: mauer.y });
+    let stoesse = 0;
+    let ersterTreffer = null;
+    let gefallen = null;
+    for (let t = 0; t < 120 * TAKTE_PRO_SEKUNDE && gefallen === null; t++) {
+      const vorher = mauer.leben;
+      welt.takten();
+      // Der letzte Stoss nimmt das Feld weg - dann zaehlt er ohne neues Leben.
+      if (mauer.leben < vorher || !welt.gebaeude.has(mauer.id)) {
+        stoesse += 1;
+        ersterTreffer ??= t;
+      }
+      if (!welt.gebaeude.has(mauer.id)) gefallen = t;
+    }
+    assert.notEqual(gefallen, null, `${anzahl} Rammen: die Mauer faellt in zwei Minuten`);
+    const sekundenBisFall = (gefallen - ersterTreffer) / TAKTE_PRO_SEKUNDE;
+    if (anzahl === 1) {
+      assert.equal(stoesse, 15, 'fuenfzehn Takte mit einem Stoss');
+      assert.ok(Math.abs(sekundenBisFall - 70) <= 1, `vom ersten Stoss bis zum Fall ${sekundenBisFall} s`);
+    } else {
+      assert.ok(sekundenBisFall < 30, `drei Rammen brauchen ${sekundenBisFall} s`);
+    }
+  }
+});
+
+test('kampf AC-21: faellt das Ziel hinter der Mauer, waehrend er an ihr schlaegt, laesst er die Mauer stehen', () => {
+  // Gefunden von der Durchsicht in Runde 139: ohne diese Regel brach er die
+  // Mauer weiter ab, obwohl dahinter nichts mehr war.
+  const { welt, x0, y0, mauern } = hausImRing();
+  const bert = welt.einheitAnlegen('b', x0 + 5, y0 + 3, 'dorfbewohner');
+  const miliz = welt.einheitAnlegen('a', x0 + 5, y0, 'miliz');
+  welt.befehl('a', [miliz.id], { x: bert.x, y: bert.y });
+  sekunden(welt, 3);
+  const mauer = welt.gebaeude.get(miliz.auftrag?.ziel);
+  assert.equal(mauer?.art, 'steinmauer', 'er schlaegt auf die Mauer');
+  assert.ok(mauer.leben < GEBAEUDE.steinmauer.leben);
+  welt.einheitSterben(bert);
+  sekunden(welt, 1);
+  assert.equal(miliz.auftrag, null, 'der Auftrag endet mit dem Ziel');
+  const leben = mauer.leben;
+  sekunden(welt, 10);
+  assert.equal(mauer.leben, leben, 'die Mauer bleibt, wie sie ist');
+  assert.ok(mauern.every((m) => welt.gebaeude.has(m.id)));
+});
+
+test('kampf AC-21: wer sich von selbst wehrt, bricht keine Mauer, um an einen Feind dahinter zu kommen', () => {
+  // Nur ein Befehl bricht durch. Eine Wache, die Bert hinter seinem Ring
+  // sieht, bleibt stehen - sonst stuende jede Wache vor jedem fremden Ring
+  // und schluege los (Durchsicht Runde 139).
+  const { welt, x0, y0, mauern } = hausImRing();
+  welt.einheitAnlegen('b', x0 + 5, y0 + 3, 'dorfbewohner');
+  const wache = welt.einheitAnlegen('a', x0 + 5, y0, 'miliz');
+  assert.ok(EINHEITEN.miliz.wacht);
+  sekunden(welt, 15);
+  assert.ok(mauern.every((m) => m.leben === GEBAEUDE.steinmauer.leben), 'keine Mauer beschaedigt');
+  assert.ok(Math.hypot(wache.x - (x0 + 5), wache.y - y0) < 1.5, 'die Wache steht noch an ihrem Platz');
+});

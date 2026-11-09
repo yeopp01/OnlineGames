@@ -3,6 +3,16 @@
   "eintraege": [
     {
       "spec": "10-strategie/kampf.md",
+      "ac": "AC-21",
+      "begruendung": "Mauern halten auf ist eine Entscheidung der Wegsuche: ob ein Weg aussen herum besteht, welches Mauerfeld als erstes im Weg liegt, dass nach dem Fall das Ziel dahinter wieder dran ist, und wie viele Stoesse eine Ramme braucht. Ein Standbild zeigt eine Miliz neben einer Mauer und kann nicht zeigen, warum sie dort steht - ob befohlen, aus Mangel an Weg oder auf dem Weg aussen herum. Dass eine Einheit sichtbar auf ein Gebaeude einschlaegt, zeigen schon die Bilder zu bedienung AC-39 und einheiten AC-35."
+    },
+    {
+      "spec": "10-strategie/fahrplan.md",
+      "ac": "AC-15",
+      "begruendung": "Befestigung haelt auf ist eine Messung ueber zwanzig Belagerungen im Pruefstand ohne Browser: wie viel spaeter ein Dorfzentrum hinter Steinmauer und Tor faellt, und dass Rammen schneller durchbrechen als dasselbe Geld in Soldaten. Ein Bild zeigt einen Augenblick einer Belagerung, keine Dauer und keinen Vergleich."
+    },
+    {
+      "spec": "10-strategie/kampf.md",
       "ac": "AC-13",
       "begruendung": "Was der Server einem Spieler schickt, ist der Inhalt einer Nachricht, nicht ihr Aussehen: das Bild im Nebel sieht genauso aus wie vorher, weil der Browser Fremdes ausserhalb der Sicht schon nicht zeichnete (kampf AC-11, mit Bild). Belegt ueber WebSocket gegen den laufenden Server (keine fremde Einheit, keine fremden Vorraete in Annas Nachrichten) und im Rechenteil fuer Gebaeude und Felder im Nebel."
     },

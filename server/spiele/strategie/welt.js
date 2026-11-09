@@ -632,6 +632,9 @@ class Welt {
         if (GEBAEUDE[gebaeude.art].tor) this.tore?.get(gebaeude.besitzer)?.delete(i);
       }
     }
+    // Wer eine Mauer angreift, prueft danach, ob sein Ziel jetzt offen liegt
+    // (kampf AC-21) - nur wenn wirklich eine Mauer oder ein Tor fiel.
+    if (GEBAEUDE[gebaeude.art].gezogen || GEBAEUDE[gebaeude.art].tor) this.mauernGefallen = (this.mauernGefallen || 0) + 1;
   }
 
   aufGrundflaeche(einheit, gebaeude) {
@@ -2045,10 +2048,48 @@ class Welt {
     // Das Ziel ist gefallen, waehrend der Angreifer noch hinlief: stehenbleiben,
     // nicht auf das leere Feld weiterlaufen.
     if (!ziel || ziel.tot) {
+      // Die Mauer ist gebrochen (kampf AC-21): weiter zum Ziel dahinter.
+      const danach = auftrag.danach;
+      const dahinter = danach && (danach.gebaeude ? this.gebaeude.get(danach.ziel) : this.einheiten.get(danach.ziel));
+      if (dahinter && !dahinter.tot) {
+        this.angriffBeginnen(einheit, dahinter, danach.gebaeude, null, auftrag.heimat);
+        return;
+      }
       einheit.auftrag = null;
       einheit.weg = [];
       this.marschFortsetzen(einheit);
       return;
+    }
+    // Ist anderswo eine Mauer gefallen, liegt das Ziel dahinter vielleicht
+    // offen (kampf AC-21): dann dorthin, statt weiter auf diese Mauer zu
+    // schlagen. In der Belagerung des Pruefstands schlugen sonst zwei
+    // Soldaten noch Minuten auf ihr eigenes Feld ein, waehrend die anderen
+    // laengst durch die Luecke waren (Runde 139).
+    // Und ist das Ziel dahinter inzwischen gefallen, ist die Mauer kein Ziel
+    // mehr: stehenbleiben wie bei jedem gefallenen Ziel (Durchsicht Runde 139).
+    if (auftrag.danach) {
+      const danach = auftrag.danach;
+      const dahinter = danach.gebaeude ? this.gebaeude.get(danach.ziel) : this.einheiten.get(danach.ziel);
+      if (!dahinter || dahinter.tot) {
+        einheit.auftrag = null;
+        einheit.weg = [];
+        this.marschFortsetzen(einheit);
+        return;
+      }
+    }
+    if (auftrag.danach && auftrag.mauernStand !== (this.mauernGefallen || 0)) {
+      auftrag.mauernStand = this.mauernGefallen || 0;
+      const danach = auftrag.danach;
+      const dahinter = danach.gebaeude ? this.gebaeude.get(danach.ziel) : this.einheiten.get(danach.ziel);
+      if (dahinter && !dahinter.tot) {
+        const stand = danach.gebaeude ? this.randfeld(dahinter, einheit) : this.angriffsplatz(einheit, dahinter, null);
+        const weg = stand ? this.wegNach(einheit, stand) : [];
+        if (weg.length) {
+          this.angriffBeginnen(einheit, dahinter, danach.gebaeude, null, auftrag.heimat);
+          einheit.weg = weg;
+          return;
+        }
+      }
     }
     // Eine Verfolgung, die niemand befohlen hat, endet fuenf Felder vom
     // Ausgangsplatz (kampf AC-3) - sonst zieht ein einzelner Reiter ein ganzes
@@ -2121,7 +2162,25 @@ class Welt {
         ? this.randfeld(ziel, einheit)
         : this.angriffsplatz(einheit, ziel, auftrag.platz);
       einheit.weg = stand ? this.wegNach(einheit, stand) : [];
-      if (!einheit.weg.length) einheit.auftrag = null;
+      if (!einheit.weg.length) {
+        // Versperrt eine fremde Mauer den Weg, wird sie angegriffen (kampf
+        // AC-21) - aber nur einmal: wer schon eine Mauer angreift und sie
+        // nicht erreicht, gibt auf, statt in jedem Takt neu zu suchen. Und
+        // nur auf Befehl: wer sich von selbst wehrt (`heimat`, kampf AC-3),
+        // bricht keine Mauer, um an einen Feind dahinter zu kommen - sonst
+        // stuende eine Wache vor jedem fremden Ring und schluege los, und
+        // jede, die einen Feind hinter Wasser sieht, suchte in jedem Takt
+        // ein drittes Mal (Durchsicht Runde 139).
+        const mauer = auftrag.danach || auftrag.heimat ? null : this.mauerImWeg(einheit, stand);
+        if (mauer) {
+          const danach = { ziel: auftrag.ziel, gebaeude: auftrag.gebaeude };
+          this.angriffBeginnen(einheit, mauer, true, null, auftrag.heimat);
+          einheit.auftrag.danach = danach;
+          einheit.auftrag.mauernStand = this.mauernGefallen || 0;
+        } else {
+          einheit.auftrag = null;
+        }
+      }
       return;
     }
     // Der eine Schritt beiseite (einheiten AC-31): wer auf einem anderen
@@ -2148,6 +2207,46 @@ class Welt {
     const nachladen = this.einheitenwert(einheit.besitzer, einheit.art, 'nachladen');
     einheit.nachladen = Math.round(nachladen * TAKTE_PRO_SEKUNDE) - 1;
     this.schlagen(einheit, ziel, auftrag.gebaeude);
+  }
+
+  /**
+   * Die fremde Mauer, die einer Einheit den Weg zu `stand` versperrt (kampf
+   * AC-21). Gefragt wird erst, wenn die gewoehnliche Suche keinen Weg fand -
+   * gibt es einen aussen herum, geht die Einheit ihn, und hierher kommt sie
+   * nie. Gesucht wird noch einmal, diesmal mit fremden Mauern und Toren als
+   * begehbar; das erste davon auf dem Weg ist die Stelle, an der gebrochen
+   * wird. Andere Gebaeude bleiben Hindernis: wer hinter Haeusern steht, ist
+   * weiter unerreichbar (Grenzfall in kampf.md). Null: keine Mauer im Weg.
+   */
+  mauerImWeg(einheit, stand) {
+    if (!stand) return null;
+    const g = this.karte.groesse;
+    const sperre = (b) => b.besitzer !== einheit.besitzer && (GEBAEUDE[b.art].gezogen || GEBAEUDE[b.art].tor);
+    const frei = new Set(this.toreVon(einheit.besitzer) || []);
+    let mauern = 0;
+    for (const b of this.gebaeude.values()) {
+      if (!sperre(b)) continue;
+      const { x0, y0, x1, y1 } = this.grundflaeche(b.art, b.x, b.y);
+      for (let y = y0; y <= y1; y++) for (let x = x0; x <= x1; x++) frei.add(y * g + x);
+      mauern += 1;
+    }
+    if (!mauern) return null;
+    // Auch ein schraeger Schritt an einer Mauer vorbei zaehlt: schraeg geht
+    // es nur, wenn beide Seitenfelder frei sind (wege.js). Faellt die Ecke
+    // eines Rings, fuehrt der Weg schraeg durch die Luecke, ohne ein
+    // Mauerfeld zu betreten - und ohne diese Pruefung stand das ganze Heer
+    // vor der offenen Ecke ohne Auftrag (Runde 139).
+    let vorher = this.feldVon(einheit);
+    for (const feld of suchen(this.karte, vorher, stand, frei)) {
+      const kandidaten = [feld];
+      if (feld.x !== vorher.x && feld.y !== vorher.y) kandidaten.push({ x: feld.x, y: vorher.y }, { x: vorher.x, y: feld.y });
+      for (const k of kandidaten) {
+        const b = this.gebaeudeAn(k.x, k.y);
+        if (b && sperre(b)) return b;
+      }
+      vorher = feld;
+    }
+    return null;
   }
 
   /**

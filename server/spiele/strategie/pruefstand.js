@@ -384,4 +384,100 @@ function gefechtSpielen({ links, rechts, startwert, budget = 600, minuten = 5, a
   };
 }
 
-module.exports = { partieSpielen, gefechtSpielen, kostenSumme, pruefen, Widerspruch };
+/**
+ * Eine Belagerung (fahrplan AC-15): ein Heer greift das Dorfzentrum von
+ * `rechts` an - einmal frei, einmal hinter einer Steinmauer mit Tor.
+ *
+ * Der Ring liegt zwei Felder vor dem Rand des Dorfzentrums, auf jedem freien
+ * Feld ein Mauerfeld; wo ein Baum oder Gold steht, sperrt schon das Gelaende.
+ * Das Tor steht in der Mitte der Seite, die vom Angreifer abgewandt ist - fuer
+ * ihn ist es eine Mauer wie jede andere (bauen AC-31). Das Heer steht zehn bis
+ * vierzehn Felder vor dem Dorfzentrum, ungefaehr in Richtung der Basis von
+ * `links` (Richtung und Abstand aus dem Startwert), und bekommt
+ * den Befehl, das Dorfzentrum anzugreifen; wer ohne Auftrag dasteht, bekommt
+ * ihn alle fuenf Sekunden neu, wie im Gefechtsstand (`nachsetzen`).
+ *
+ * Zurueck kommt, nach wie vielen Takten das erste Feld des Rings fiel
+ * (`durchbruch`, null ohne Ring) und das Dorfzentrum (`ende`, null, wenn es
+ * nach `minuten` noch steht).
+ *
+ * @param {{startwert: number, mauer?: boolean, heer?: Record<string, number>,
+ *   minuten?: number}} optionen
+ */
+function belagerungSpielen({ startwert, mauer = true, heer = { soldat: 10 }, minuten = 15 }) {
+  const welt = new Welt([{ id: 'links', name: 'Links' }, { id: 'rechts', name: 'Rechts' }], startwert, { sicht: 'aufgedeckt' });
+  welt.einheiten.clear();
+  welt.tiere.clear();
+  const zentrum = [...welt.gebaeude.values()].find((g) => g.besitzer === 'rechts' && g.art === 'dorfzentrum');
+  const von = welt.spielerVon('links').basis;
+  const mitte = { x: zentrum.x, y: zentrum.y };
+  // Um das Dorfzentrum ist das Gelaende in jedem Startwert gleich geraeumt -
+  // ohne Abwechslung waeren zwanzig Belagerungen eine (gemessen in Runde 139:
+  // Takt fuer Takt gleich). Deshalb kommt der Angreifer aus einer Richtung
+  // bis zu 45 Grad neben der Linie zur eigenen Basis und aus 10 bis 14
+  // Feldern, gezogen aus dem Startwert (ki AC-2: Zufall nur daraus).
+  const zufall = karten.zufallAus((startwert * 7919 + 17) >>> 0);
+  const winkel = Math.atan2(von.y - mitte.y, von.x - mitte.x) + (zufall() - 0.5) * (Math.PI / 2);
+  const weite = 10 + Math.round(zufall() * 4);
+  const richtung = { x: Math.cos(winkel), y: Math.sin(winkel) };
+
+  const ring = [];
+  if (mauer) {
+    const { x0, y0, x1, y1 } = welt.grundflaeche(zentrum.art, zentrum.x, zentrum.y);
+    const a = 2;
+    // Das Tor: das Ringfeld, das am weitesten vom Angreifer weg liegt.
+    let torfeld = null;
+    let weiteste = -Infinity;
+    const felder = [];
+    for (let y = y0 - a; y <= y1 + a; y++) {
+      for (let x = x0 - a; x <= x1 + a; x++) {
+        if (x > x0 - a && x < x1 + a && y > y0 - a && y < y1 + a) continue;
+        if (!karten.begehbar(welt.karte, x, y) || welt.gebaeudeAn(x, y)) continue;
+        const feld = { x, y };
+        felder.push(feld);
+        const weg = -((x - mitte.x) * richtung.x + (y - mitte.y) * richtung.y);
+        if (weg > weiteste) {
+          weiteste = weg;
+          // Dasselbe Objekt wie in `felder` - der Vergleich unten ist einer
+          // auf Gleichheit des Objekts (die erste Fassung baute so nie ein Tor,
+          // gefunden von der Durchsicht in Runde 139).
+          torfeld = feld;
+        }
+      }
+    }
+    for (const f of felder) {
+      const art = f === torfeld ? 'tor' : 'steinmauer';
+      ring.push(welt.gebaeudeAnlegen('rechts', art, f.x, f.y, true));
+    }
+  }
+
+  const um = { x: mitte.x + richtung.x * weite, y: mitte.y + richtung.y * weite };
+  const belegt = new Set();
+  const ids = [];
+  for (const [art, anzahl] of Object.entries(heer)) {
+    const felder = freieFelder(welt, um, anzahl, belegt);
+    if (felder.length < anzahl) throw new Error(`Startwert ${startwert}: zu wenig Platz fuer ${anzahl} ${art}`);
+    for (const f of felder) ids.push(welt.einheitAnlegen('links', f.x, f.y, art).id);
+  }
+  const angreifen = (welche) => welt.nachricht('links', { auftrag: 'befehl', einheiten: welche, ziel: mitte });
+  angreifen(ids);
+
+  const takte = Math.round(minuten * 60 * TAKTE_PRO_SEKUNDE);
+  let durchbruch = null;
+  let ende = null;
+  for (let t = 1; t <= takte && ende === null; t++) {
+    if (t % (5 * TAKTE_PRO_SEKUNDE) === 0) {
+      const stehen = ids.map((id) => welt.einheiten.get(id)).filter((e) => e && !e.tot && !e.auftrag && !e.weg.length);
+      if (stehen.length) angreifen(stehen.map((e) => e.id));
+    }
+    welt.takten();
+    const befunde = pruefen(welt);
+    if (befunde.length) throw new Widerspruch(startwert, welt.takt, befunde);
+    if (durchbruch === null && ring.some((g) => !welt.gebaeude.has(g.id))) durchbruch = t;
+    if (!welt.gebaeude.has(zentrum.id)) ende = t;
+  }
+  const tore = ring.filter((g) => g.art === 'tor').length;
+  return { startwert, ring: ring.length, tore, durchbruch, ende, welt };
+}
+
+module.exports = { partieSpielen, gefechtSpielen, belagerungSpielen, kostenSumme, pruefen, Widerspruch };

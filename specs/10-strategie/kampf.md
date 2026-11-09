@@ -2,7 +2,7 @@
 
 **Bereich:** Strategie
 **Kuerzel:** kampf
-**Stand:** 19/21 fertig · 1 offen · 1 zurueckgestellt
+**Stand:** 20/21 fertig · 1 zurueckgestellt
 
 ## Zweck
 
@@ -183,10 +183,17 @@ aus [Spielziel](spielziel.md) AC-10, gemessen in
   über `gebaeudewert()`; ein Turm trifft den Dorfbewohner mit 5, die Miliz
   mit 4, den Plänkler mit 2, ein Gebäude mit 1. Der Pfeil geht wie der eines
   Schützen in den Zustand (bedienung AC-40), von der Mitte des Turms aus.
-- **AC-21** `offen` **Mauern halten auf** — Wer zu einem Ziel hinter einer
+- **AC-21** `fertig` **Mauern halten auf** — Wer zu einem Ziel hinter einer
   Mauer will, geht außen herum, wenn es einen Weg gibt; gibt es keinen,
-  greift er die Mauer an. Eine Ramme bricht ein Feld Steinmauer in weniger
-  als einer halben Minute.
+  greift er die erste fremde Mauer oder das erste fremde Tor auf seinem Weg
+  an und nach ihrem Fall das Ziel dahinter. Fällt anderswo ein Mauerfeld
+  und liegt das Ziel damit offen, geht er dorthin. Eigene Mauern bricht
+  niemand. Eine Ramme bricht ein Feld Steinmauer mit fünfzehn Stößen (1800
+  Leben, 127 je Stoß alle fünf Sekunden, Werte der Vorlage — 70 Sekunden),
+  drei Rammen in unter einer halben Minute. Bis Runde 139 stand hier „eine
+  Ramme in unter einer halben Minute"; das passt nicht zu den Werten der
+  Vorlage. Gebaut in Runde 139: `welt.mauerImWeg()` sucht ein zweites Mal
+  mit fremden Mauern als begehbar, auch schräg an einer Ecke vorbei.
 
 ## Grenzfaelle
 
@@ -196,9 +203,11 @@ aus [Spielziel](spielziel.md) AC-10, gemessen in
   fertig — Bauen ist kein Kampf.
 - Stirbt das Ziel, während der Angreifer noch hinläuft, bleibt er stehen und
   sucht sich nach AC-2 ein neues — er läuft nicht auf das leere Feld.
-- Ein Ziel, das die Einheit nicht erreichen kann (eingemauert, auf der
-  anderen Seite eines Gebäudes), lässt sie nach erfolgloser Wegsuche stehen;
-  der Auftrag endet, statt endlos zu rechnen.
+- Ein Ziel, das die Einheit nicht erreichen kann (auf der anderen Seite
+  eines Gebäudes, das keine Mauer ist), lässt sie nach erfolgloser Wegsuche
+  stehen; der Auftrag endet, statt endlos zu rechnen. Hinter einer fremden
+  Mauer gilt AC-21. Ein **Angriffslauf** auf ein Feld hinter einer Mauer
+  bricht nicht durch — er gilt einem Ort, nicht einem Ziel.
 - Ein Gebäude ohne Leben verschwindet samt seinem Platz auf der Karte — über
   die Fläche lässt sich danach laufen und bauen. Trümmer gibt es nicht; die
   wären eine Entscheidung für Stufe C.
