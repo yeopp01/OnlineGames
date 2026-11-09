@@ -948,7 +948,13 @@ export class Ansicht {
       const einheit = this.nachher.get(id);
       return einheit && this.werte.einheiten[this.arten[einheit.k]]?.nurGebaeude;
     });
-    const feind = this.feindlichAn(ziel, nurGebaeude);
+    // Wer gar nicht angreift (der Moench, einheiten AC-37), geht ueberall nur
+    // hin - wie im Server, der ohne Angriff keinen Angriff beginnt.
+    const friedlich = this.ausgewaehlt.size > 0 && [...this.ausgewaehlt].every((id) => {
+      const einheit = this.nachher.get(id);
+      return einheit && !this.werte.einheiten[this.arten[einheit.k]]?.angriff;
+    });
+    const feind = friedlich ? null : this.feindlichAn(ziel, nurGebaeude);
     this.zielzeichen = {
       x: feind ? feind.x : Math.round(ziel.x),
       y: feind ? feind.y : Math.round(ziel.y),

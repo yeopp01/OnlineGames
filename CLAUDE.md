@@ -159,7 +159,7 @@ Umfang hinzufügt, dort nachsehen.
 
 ## Stand
 
-**430 von 555 Kriterien fertig.** 566 Tests ohne Browser, 188 im Browser. Die
+**431 von 555 Kriterien fertig.** 572 Tests ohne Browser, 189 im Browser. Die
 Übersicht ist der Bericht: `npm run qa:report`.
 
 Gebaut ist der Unterbau: Räume, Übertragung, Karte, Wegfindung, Sammeln,
@@ -367,7 +367,10 @@ auf acht Felder vom Rand — ein Eintrag in den Daten, kein neuer Code in der
 Welt. **D7 ist fertig: der Markt** (bauen AC-33) tauscht je 100 Holz,
 Nahrung oder Stein gegen Gold, jeder Kauf macht die Ware teurer, jeder
 Verkauf billiger, 30 % Gebühr; die Preise gehören dem Spieler und stehen als
-`HANDEL` in den Daten, gerechnet nur auf dem Server. Die **Sicht ist eine Einstellung beim Eröffnen** (kampf AC-16):
+`HANDEL` in den Daten, gerechnet nur auf dem Server. **Aus D8 heilt der
+Mönch** (einheiten AC-37): wer steht, gibt dem nächsten eigenen Verletzten
+in vier Feldern ein Leben je Sekunde — nicht wer kämpft, keine Belagerung,
+keine Gebäude; er selbst greift nie an. Die **Sicht ist eine Einstellung beim Eröffnen** (kampf AC-16):
 Nebel, Erkundet oder Aufgedeckt — Tests, die nicht vom Nebel handeln,
 eröffnen aufgedeckt (`partieZuZweit(…, { sicht: 'aufgedeckt' })`).
 

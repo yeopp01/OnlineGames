@@ -57,7 +57,10 @@ test('bedienung AC-36: jede Kampfeinheit unterscheidet sich bei Spielgroesse im 
   // Soldat 0,321, Speerkaempfer 0,310, Bogenschuetze 0,318, Plaenkler 0,304 -
   // nur der Spaeherreiter kam mit 0,705 ueber die Schwelle. Danach gemessen:
   // 0,401 · 0,352 · 0,371 · 0,356 · 0,348 · 0,705. Das Drittel ist dieselbe
-  // Schwelle wie in darstellung AC-14, nur haerter gemessen.
+  // Schwelle wie in darstellung AC-14, nur haerter gemessen. Der Moench
+  // (Runde 134) kaempft nicht, faellt aber zu Recht darunter - auch ihn muss
+  // man vom Dorfbewohner unterscheiden: mit gerader Kutte 0,308, mit einer
+  // Kutte, die unten weit wird wie eine Glocke, 0,359.
   for (const [art, anteil] of Object.entries(gemessen)) {
     expect(anteil, `${art} gegen Dorfbewohner: ${JSON.stringify(gemessen)}`).toBeGreaterThanOrEqual(1 / 3);
   }

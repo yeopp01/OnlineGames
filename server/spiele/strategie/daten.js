@@ -102,6 +102,19 @@ const EINHEITEN = {
     angriff: 40, nahruestung: 0, fernruestung: 6, reichweite: 7, mindestreichweite: 3, nachladen: 6,
     flaeche: 1, geschoss: 7, klassen: ['belagerung'], zeitalter: 2,
   },
+  // Der Moench (einheiten AC-37), Werte aus der Vorlage: 100 Gold, 51 s, 30
+  // Leben, Tempo 0,7, keine Ruestung. Er greift nicht an - ohne `angriff`
+  // wacht er nicht, und ein Befehl auf einen Gegner ist ein Gang dorthin.
+  // `heilen`: wer steht, heilt eigene verletzte Einheiten in `reichweite`
+  // Feldern um `je` Leben je Sekunde, eine nach der anderen. Nicht in der
+  // Tabelle der Vorlage und deshalb gesetzt: Heilreichweite 4 wie im
+  // Original, Sicht 11 - die Reichweite des Bekehrens (9, einheiten AC-38)
+  // plus zwei wie bei Bogen und Armbrust.
+  moench: {
+    leben: 30, tempo: 0.7, sicht: 11, tragkraft: 0, kosten: { gold: 100 }, zeit: 51, kuerzel: 'g',
+    angriff: 0, nahruestung: 0, fernruestung: 0, reichweite: 0, nachladen: 0,
+    klassen: ['moench'], heilen: { reichweite: 4, je: 1 }, zeitalter: 2,
+  },
 };
 
 // Wer von selbst wacht, greift an, was in seine Sichtweite kommt, ohne Befehl
@@ -180,7 +193,7 @@ const GEBAEUDE = {
   // Gebaeude der Ritterzeit (bauen AC-28), Werte aus der Vorlage. Was sie
   // ausbilden und erforschen, kommt mit ihren Schritten: der Moench (D8),
   // Ramme und Mangonel (D6). Die Universitaet forscht Mauerwerk (bauen AC-34).
-  kloster: { groesse: 3, kosten: { holz: 175 }, bauzeit: 40, leben: 2100, wohnraum: 0, annahme: [], bildetAus: [], zeitalter: 2 },
+  kloster: { groesse: 3, kosten: { holz: 175 }, bauzeit: 40, leben: 2100, wohnraum: 0, annahme: [], bildetAus: ['moench'], zeitalter: 2 },
   universitaet: { groesse: 3, kosten: { holz: 200 }, bauzeit: 60, leben: 2100, wohnraum: 0, annahme: [], bildetAus: ['mauerwerk'], zeitalter: 2 },
   belagerungswerkstatt: { groesse: 3, kosten: { holz: 200 }, bauzeit: 40, leben: 2100, wohnraum: 0, annahme: [], bildetAus: ['ramme', 'mangonel'], zeitalter: 2 },
   // Ein Gebaeude, das schiesst (bauen AC-29): `angriff`, `reichweite` und
@@ -385,6 +398,8 @@ const KLASSEN = {
   // Belagerung (einheiten AC-35). `gebaeude` traegt jedes Gebaeude von selbst
   // (oben) - die Ramme hat ihren Bonus dagegen.
   belagerung: { name: 'Belagerung' },
+  // Der Moench (einheiten AC-37) - bekehrt keine Moenche (AC-38).
+  moench: { name: 'Mönche' },
   gebaeude: { name: 'Gebäude' },
 };
 

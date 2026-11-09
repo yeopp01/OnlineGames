@@ -2,7 +2,7 @@
 
 **Bereich:** Strategie
 **Kuerzel:** einheiten
-**Stand:** 25/31 fertig · 5 offen · 1 zurueckgestellt
+**Stand:** 26/31 fertig · 4 offen · 1 zurueckgestellt
 
 ## Zweck
 
@@ -223,9 +223,18 @@ Werte aus der [Vorlage](../../docs/strategie/vorlage-aoe2.md), als Daten in
   wie Bogen und Armbrust. Im Bild ein offenes Gestell auf vier Rädern mit
   Wurfarm, Seilbündel und Seitenbohle in Spielerfarbe; der Stein fliegt in
   einem doppelt so hohen Bogen wie ein Pfeil._
-- **AC-37** `offen` **Mönch heilt** — Im Kloster: 100 Gold, 51 s, 30 Leben,
+- **AC-37** `fertig` **Mönch heilt** — Im Kloster: 100 Gold, 51 s, 30 Leben,
   Tempo 0,7. Er heilt eigene verletzte Einheiten in seiner Nähe, die nicht
   kämpfen, um einen Punkt je Sekunde; Gebäude und Belagerung nicht.
+  Gebaut in Runde 134: ab der Ritterzeit, Taste G. „In seiner Nähe" sind
+  vier Felder (die Vorlage nennt keine Zahl, gesetzt wie im Original); er
+  heilt nur, solange er steht, und immer den nächsten Verletzten, einen
+  nach dem anderen — nicht sich selbst. Er greift nicht an: ohne `angriff`
+  wacht er nicht, ein Rechtsklick auf einen Gegner ist ein Gang (das
+  Zeichen bleibt weiß), und die Leiste sagt „Greift nicht an" und „Heilt
+  1 Leben/s" statt „Angriff 0, Nahkampf". Gezeichnet in brauner Kutte mit
+  Kapuze, Strick und Stab, die Spielerfarbe als Schulterkragen und
+  Skapulier; wer heilt, hebt den Stab, und an der Spitze glimmt ein Schein.
 - **AC-38** `offen` **Mönch bekehrt** — Ein Befehl auf eine fremde Einheit in
   Reichweite 9: nach einer Dauer, deren Zufall aus dem Startwert der Partie
   kommt (deterministisch), gehört sie dem Spieler des Mönchs. Danach ruht

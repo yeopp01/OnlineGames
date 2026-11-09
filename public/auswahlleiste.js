@@ -849,13 +849,29 @@ export class Auswahlleiste {
       e.title = titel;
       return e;
     };
-    zeile.append(
-      wert('Angriff', String(angriff), 'Schaden je Schlag, bevor die Rüstung des Ziels abgeht'),
-      wert('Rüstung', `${nah} / ${fern}`, 'Rüstung gegen Nahkampf / gegen Fernkampf'),
-      reichweite > 0
-        ? wert('Reichweite', `${reichweite}`, 'Schussweite in Feldern')
-        : wert(null, 'Nahkampf', 'Trifft nur, wer daneben steht'),
-    );
+    // Wer nicht angreift (der Moench, einheiten AC-37), bekommt keinen
+    // "Angriff 0 - Nahkampf", sondern das, was er stattdessen tut.
+    const heilen = a.werte.einheiten[art]?.heilen;
+    if (angriff > 0) {
+      zeile.append(
+        wert('Angriff', String(angriff), 'Schaden je Schlag, bevor die Rüstung des Ziels abgeht'),
+        wert('Rüstung', `${nah} / ${fern}`, 'Rüstung gegen Nahkampf / gegen Fernkampf'),
+        reichweite > 0
+          ? wert('Reichweite', `${reichweite}`, 'Schussweite in Feldern')
+          : wert(null, 'Nahkampf', 'Trifft nur, wer daneben steht'),
+      );
+    } else {
+      zeile.append(
+        wert(null, 'Greift nicht an', 'Ein Rechtsklick auf einen Gegner ist nur ein Gang dorthin'),
+        wert('Rüstung', `${nah} / ${fern}`, 'Rüstung gegen Nahkampf / gegen Fernkampf'),
+      );
+    }
+    if (heilen) {
+      const e = wert('Heilt', `${heilen.je} Leben/s`, `Eigene Verletzte bis ${heilen.reichweite} Felder, einen nach dem anderen – nicht wer kämpft, keine Belagerung, keine Gebäude`);
+      e.classList.add('heilt');
+      zeile.dataset.heilen = String(heilen.je);
+      zeile.append(e);
+    }
     // Der Bonus steht in einer eigenen Zeile - er ist der Grund, warum eine
     // Einheit gegen eine andere taugt.
     const bonus = a.werte.einheiten[art]?.bonus;

@@ -1314,6 +1314,20 @@ Browserlauf mit 186 Fällen 15,0 min einschließlich Prüfung (Runde 130);
 Neueste oben. Eine Zeile je Runde: Nummer, Datum, Kriterien, Ergebnis,
 wichtigste Erkenntnis.
 
+- **134** · 2026-11-09 · **einheiten AC-37 fertig** — der Mönch heilt:
+  im Kloster ab der Ritterzeit, 100 Gold, 51 s; wer steht, gibt dem
+  nächsten eigenen Verletzten in vier Feldern ein Leben je Sekunde
+  (`welt.heilenTakten`, `heilen` in den Daten), nicht wer kämpft, keine
+  Belagerung, keine Gebäude, nicht sich selbst. Gelernt: eine Einheit ohne
+  Angriff braucht an zwei Stellen im Browser eine eigene Antwort — das
+  Zielzeichen (es wurde rot, obwohl der Server nur hingeht) und die
+  Kampfwerte („Angriff 0, Nahkampf"). Beides fand erst das Ansehen des
+  Bildes, nicht ein Test. Und: Lebensbalken stehen nur über Gewählten —
+  wer im Bild ein verletztes Leben zeigen will, wählt den Verletzten. Der
+  Schein am Stab war im ersten Bild ein Pünktchen; Größe am Spielbild
+  messen, nicht an der Schautafel. Gegenproben: ohne den Ausschluss der
+  Kämpfenden und ohne den der Belagerung fällt der Rechentest, ohne
+  `friedlich` im Zielzeichen der Browsertest.
 - **133** · 2026-11-09 · **bauen AC-33 fertig, D7 fertig** — der Markt:
   vier mal vier Felder, 175 Holz, ab der Feudalzeit, Taste J; je Ware
   Kaufen und Verkaufen mit dem Preis in Gold auf dem Knopf, gerechnet nur

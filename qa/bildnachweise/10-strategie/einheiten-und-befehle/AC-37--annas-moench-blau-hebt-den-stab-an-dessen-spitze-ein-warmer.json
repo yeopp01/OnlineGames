@@ -1,0 +1,10 @@
+{
+  "spec": "10-strategie/einheiten-und-befehle.md",
+  "ac": "AC-37",
+  "titel": "Annas Mönch (blau) hebt den Stab, an dessen Spitze ein warmer Schein glimmt: er heilt ihre gewählte Miliz daneben – deren Lebensbalken ist noch nicht voll",
+  "datei": "e2e/tests/strategie-moench.spec.mjs",
+  "pfad": [
+    "Moench",
+    "einheiten AC-37: der Moench heilt eine verletzte Miliz neben ihm - ihr Leben steigt, und er hebt dabei den Stab"
+  ]
+}

@@ -26,6 +26,9 @@ const EINTRAEGE = [
   // Belagerung (einheiten AC-35).
   { art: 'ramme', titel: 'Ramme', lage: {}, gross: 78 },
   { art: 'mangonel', titel: 'Mangonel', lage: {}, gross: 78 },
+  // Der Moench, stehend und beim Heilen (einheiten AC-37).
+  { art: 'moench', titel: 'Mönch', lage: {} },
+  { art: 'moench', titel: 'Mönch heilt', lage: { arbeit: 1.2 } },
   { art: 'spaeherreiter', titel: 'Späherreiter', lage: {}, gross: 104 },
   { art: 'speerkaempfer', titel: 'Speerkämpfer', lage: {} },
   { art: 'bogenschuetze', titel: 'Bogenschütze', lage: {} },

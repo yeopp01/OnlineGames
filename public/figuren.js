@@ -998,6 +998,85 @@ function mangonel(stift, farbe, { schritt = 0, arbeit = 0, fein = true }) {
   }
 }
 
+// Der Moench (einheiten AC-37): eine lange braune Kutte bis auf die
+// Sandalen, die Kapuze hinter dem Kopf, ein Strick um die Mitte und ein
+// Stab in der vorderen Hand. Die Spielerfarbe traegt er als Schulterkragen
+// und als Skapulier vorn ueber der Kutte - eine Kutte ganz in Spielerfarbe
+// saehe aus wie ein Bogenschuetze ohne Bogen (darstellung AC-14). Wer heilt
+// (`arbeit`), hebt den Stab, und an dessen Spitze glimmt ein warmer Schein.
+const KUTTE = '#6e5a42';
+function moench(stift, farbe, { schritt = 0, fein = true, haut = HAUT, arbeit = 0 }) {
+  schatten(stift, 6);
+  // Unter der Kutte nur die Fuesse in Sandalen, im Schritt vor und zurueck.
+  const aus = Math.sin(schritt) * 1.8;
+  for (const [x, dunkel] of [[1.6 - aus, -0.25], [-1.4 + aus, 0]]) {
+    rund(stift, [[x - 1.7, 0.3], [x + 2, 0.3], [x + 1.8, -1.2], [x - 1.5, -1.3]], toenen(haut, -0.18 + dunkel));
+    if (fein) strich(stift, [[x - 1.2, -0.9], [x + 1.5, -0.9]], toenen(LEDER, dunkel), 0.55);
+  }
+  stift.save();
+  stift.translate(0, -RUMPF_HEBEN);
+  stift.scale(RUMPF_BREITE, 1);
+  const schwung = Math.sin(schritt) * 0.6;
+  // Die Kutte: von den Schultern bis knapp ueber den Boden, unten weiter.
+  // Unten weit wie eine Glocke - so unterscheidet ihn bei Zoom 1 schon der
+  // Umriss vom Dorfbewohner mit seinen zwei Beinen (bedienung AC-36).
+  const kutte = [[-6.4 + schwung, 1.1], [6.6 + schwung, 1.1], [3.9, -16.8], [0.3, -17.8], [-3.7, -16.8]];
+  umriss(stift, () => rund(stift, kutte, 'rgba(0,0,0,0)', true));
+  rund(stift, kutte, licht(stift, KUTTE, -4.9, -17.8, 5.2, 1.1, 0.2, -0.28), false);
+  if (fein) {
+    // Falten, die vom Strick nach unten fallen.
+    for (const [x0, x1] of [[-2.4, -3.2], [0.2, 0.4], [2.6, 3.4]]) strich(stift, [[x0, -8.4], [x1 + schwung, 0.4]], 'rgba(30,22,14,0.35)', 0.5);
+  }
+  // Der hintere Aermel haengt an der Seite.
+  rund(stift, [[-3.6, -16], [-1.6, -16.2], [-1.8, -9.8], [-4.4, -9.6]], licht(stift, toenen(KUTTE, -0.12), -4.4, -16.2, -1.6, -9.6, 0.15, -0.25), true);
+  // Skapulier in Spielerfarbe: ein breiter Streifen vorn bis fast zum Saum.
+  const skapulier = [[0.4, -15.6], [3.6, -15.6], [3.9, -0.6], [0.2, -0.6]];
+  rund(stift, skapulier, licht(stift, farbe, 0.2, -15.6, 3.9, -0.6, 0.22, -0.26), true);
+  if (fein) strich(stift, [[2, -9], [2.1, -1.4]], toenen(farbe, -0.3), 0.45);
+  // Der Strick um die Mitte, das Ende mit Knoten haengt vorn herab.
+  vieleck(stift, [[-4.2, -9.6], [4.4, -9.6], [4.3, -8.7], [-4.1, -8.7]], licht(stift, '#cdb88c', 0, -9.6, 0, -8.7, 0.2, -0.25), false);
+  strich(stift, [[3.2, -9], [3.6, -5.2]], '#bfa978', 0.7);
+  ellipse(stift, 3.6, -5, 0.55, 0.55, '#b39c6a', false);
+  // Die Kapuze liegt im Nacken, der Schulterkragen in Spielerfarbe darueber.
+  rund(stift, [[-4.4, -15.4], [-4.1, -19.2], [-1.8, -21.2], [1.4, -20.6], [1, -18.4], [-1.4, -16.6]],
+    licht(stift, toenen(KUTTE, -0.08), -4.4, -21.2, 1.4, -15.4, 0.2, -0.28), true);
+  kopf(stift, -19.8, { fein, haut });
+  const kragen = [[-4.7, -13.4], [-4.4, -16.6], [-1.6, -17.6], [1.8, -17.4], [4.3, -16.2], [4.6, -13.6], [0.4, -12.4]];
+  umriss(stift, () => rund(stift, kragen, 'rgba(0,0,0,0)', true));
+  rund(stift, kragen, licht(stift, farbe, -4.7, -17.6, 4.6, -12.4, 0.24, -0.26), false);
+  if (fein) strich(stift, [[-3.6, -14.2], [3.6, -14.4]], toenen(farbe, -0.3), 0.45);
+  // Der Stab: beim Gehen am Boden, beim Heilen erhoben und vorgestreckt.
+  const hebt = arbeit ? 0.75 + Math.sin(arbeit) * 0.25 : 0;
+  const hand = [5.6 + hebt * 0.9, -11.4 - hebt * 4.6];
+  const fuss = [5.4 + hebt * 1.6, 1 - hebt * 4.4];
+  const spitze = [5.8 + hebt * 0.4, -24.4 - hebt * 3.8];
+  strich(stift, [fuss, spitze], licht(stift, HOLZ, 5, spitze[1], 6, fuss[1], 0.3, -0.3), 1.1);
+  if (fein) strich(stift, [[spitze[0] - 0.6, spitze[1] + 0.6], [spitze[0] + 0.6, spitze[1] + 0.6]], toenen(HOLZ, -0.2), 0.7);
+  // Der vordere Aermel weit, die Hand am Stab.
+  rund(stift, [[2.4, -16.2], [4.6, -16], [hand[0] + 0.9, hand[1] + 0.2], [hand[0] - 1.2, hand[1] + 1.3]],
+    licht(stift, KUTTE, 2.4, -16.2, hand[0] + 1, hand[1] + 1, 0.2, -0.26), true);
+  ellipse(stift, hand[0], hand[1], 0.85, 0.95, licht(stift, haut, hand[0] - 0.8, hand[1] - 1, hand[0] + 0.8, hand[1] + 1, 0.15, -0.2));
+  stift.restore();
+  if (!arbeit) return;
+  // Der Schein an der Spitze, ausserhalb der Rumpfstauchung, damit er rund
+  // bleibt: innen fast weiss, aussen Gold, das ins Leere verlaeuft.
+  const sx = spitze[0] * RUMPF_BREITE;
+  const sy = spitze[1] - RUMPF_HEBEN;
+  // Gross genug, dass er bei Zoom 1 noch mehr ist als ein Punkt.
+  const gross = 5 + Math.sin(arbeit * 2) * 0.6;
+  const schein = stift.createRadialGradient(sx, sy, 0, sx, sy, gross);
+  schein.addColorStop(0, 'rgba(255, 252, 230, 1)');
+  schein.addColorStop(0.22, 'rgba(255, 226, 140, 0.85)');
+  schein.addColorStop(0.55, 'rgba(255, 200, 90, 0.35)');
+  schein.addColorStop(1, 'rgba(255, 190, 80, 0)');
+  stift.save();
+  stift.fillStyle = schein;
+  stift.beginPath();
+  stift.arc(sx, sy, gross, 0, Math.PI * 2);
+  stift.fill();
+  stift.restore();
+}
+
 export const FIGUREN = {
   dorfbewohner: { name: 'Dorfbewohner', zeichnen: dorfbewohner, breite: 1 },
   schaf: { name: 'Schaf', zeichnen: schaf, breite: 1.1 },
@@ -1018,6 +1097,9 @@ export const FIGUREN = {
   ramme: { name: 'Ramme', zeichnen: ramme, breite: 1.7, stoesst: true },
   // Der Mangonel wirft mit dem Arm, nicht mit dem ganzen Gestell.
   mangonel: { name: 'Mangonel', zeichnen: mangonel, breite: 1.7, stoesst: true },
+  // Der Moench (einheiten AC-37): der Stab ragt ueber den Kopf. `segnet`:
+  // wer heilt, hebt den Stab, statt sich wie im Kampf vorzubeugen.
+  moench: { name: 'Mönch', zeichnen: moench, breite: 1.2, oben: 1.15, segnet: true },
 };
 
 export { WAREN };
@@ -1045,7 +1127,7 @@ export function figurZeichnen(stift, art, x, y, hoehe, farbe, lage = {}) {
   // die Fuesse vor und zurueck, im Takt der Arbeit. Der Dorfbewohner hat dafuer
   // seine eigene Bewegung mit der Axt (AC-31); ein Reiter wiegt nur wenig -
   // sonst kippte das Pferd mit.
-  if (lage.arbeit && art !== 'dorfbewohner' && !figur.stoesst) {
+  if (lage.arbeit && art !== 'dorfbewohner' && !figur.stoesst && !figur.segnet) {
     const reiter = art === 'spaeherreiter';
     const welle = Math.sin(lage.arbeit);
     stift.rotate(welle * (reiter ? 0.06 : 0.23));

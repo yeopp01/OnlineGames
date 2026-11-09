@@ -113,6 +113,7 @@ const EINHEIT_NAMEN = {
   armbrustschuetze: 'Den Armbrustschützen',
   ramme: 'Die Ramme',
   mangonel: 'Den Mangonel',
+  moench: 'Den Mönch',
 };
 
 // Welche Verbesserung eine Einheit zur naechsten Stufe macht - `wandelt`
@@ -2473,12 +2474,45 @@ class Welt {
     if (this.takt % WACHE_TAKTE === 0) this.wacheTakten();
     for (const einheit of this.einheiten.values()) this.einheitTakten(einheit);
     this.tuermeTakten();
+    // Einmal je Sekunde heilen Moenche (einheiten AC-37).
+    if (this.takt % TAKTE_PRO_SEKUNDE === 0) this.heilenTakten();
     // Ebenso oft treten Stehende auseinander (einheiten AC-29).
     if (this.takt % WACHE_TAKTE === 0) this.ausweichen();
     this.einschlaegeTakten();
     this.schlaegeAbrechnen();
     if (this.takt % SICHT_TAKTE === 0) this.sichtAktualisieren();
     this.endePruefen();
+  }
+
+  /**
+   * Moenche heilen (einheiten AC-37): wer steht und `heilen` in den Daten hat,
+   * gibt der naechsten eigenen verletzten Einheit in Reichweite `je` Leben -
+   * einer je Sekunde, nicht allen auf einmal. Nicht geheilt werden: wer
+   * kaempft, wer Belagerung ist, Gebaeude und der Moench selbst. Steht der
+   * Heiler nicht mehr oder ist niemand verletzt, hoert er auf (`heilt`).
+   */
+  heilenTakten() {
+    for (const moench of this.einheiten.values()) {
+      const heilen = EINHEITEN[moench.art].heilen;
+      if (!heilen) continue;
+      moench.heilt = null;
+      if (moench.tot || moench.auftrag || moench.weg.length) continue;
+      let bester = null;
+      let abstand = Infinity;
+      for (const e of this.einheiten.values()) {
+        if (e === moench || e.tot || e.besitzer !== moench.besitzer) continue;
+        if (e.auftrag?.art === 'angreifen' || EINHEITEN[e.art].klassen.includes('belagerung')) continue;
+        if (e.leben >= this.einheitenwert(e.besitzer, e.art, 'leben')) continue;
+        const d = Math.hypot(e.x - moench.x, e.y - moench.y);
+        if (d <= heilen.reichweite && d < abstand) {
+          bester = e;
+          abstand = d;
+        }
+      }
+      if (!bester) continue;
+      bester.leben = Math.min(this.einheitenwert(bester.besitzer, bester.art, 'leben'), bester.leben + heilen.je);
+      moench.heilt = bester.id;
+    }
   }
 
   /**
@@ -2903,7 +2937,8 @@ class Welt {
         // (bedienung AC-31) - oder kaempft: hat ein Ziel und steht in
         // Reichweite, ohne Weg (bedienung AC-39). Nur wenn es zutrifft - ein
         // Zustand bleibt klein.
-        ...(e.sammelt || e.baut || (e.auftrag?.art === 'angreifen' && !e.weg.length && !e.tot) ? { w: 1 } : {}),
+        // Ein Moench, der heilt, arbeitet auch (einheiten AC-37).
+        ...(e.sammelt || e.baut || e.heilt || (e.auftrag?.art === 'angreifen' && !e.weg.length && !e.tot) ? { w: 1 } : {}),
         // Gefallen: der Browser legt ihn hin, bis der Server ihn nimmt
         // (kampf AC-10).
         ...(e.tot ? { s: 1 } : {}),
@@ -3207,6 +3242,8 @@ class Welt {
           // Greift nur Gebaeude an (einheiten AC-35): das Zeichen am Ziel
           // bleibt dann bei einer Einheit gruen.
           nurGebaeude: Boolean(w.nurGebaeude),
+          // Wer heilt, wie weit und wie viel (einheiten AC-37) - fuer die Leiste.
+          heilen: w.heilen || null,
         }])),
         gebaeude: Object.fromEntries(Object.entries(GEBAEUDE).map(([art, w]) => [art, {
           leben: w.leben, bildetAus: w.bildetAus, groesse: w.groesse, kosten: w.kosten, bauzeit: w.bauzeit,

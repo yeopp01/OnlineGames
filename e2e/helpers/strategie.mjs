@@ -29,6 +29,7 @@
 //   `a` = armbrustschuetze
 //   `w` = ramme
 //   `n` = mangonel
+//   `g` = moench
 // ### ENDE KUERZEL
 //
 // **`ansicht.gebaeude`** (Map id -> Gebaeude): `i` · `art` **ausgeschrieben**
@@ -49,7 +50,8 @@
 // **Werte im Browser** (Runde 75): `ansicht.werte.einheiten[art]` fuehrt
 // Kuerzel, Leben, Tragkraft, Kosten, Zeit, `baut`, Zeitalter, Angriff,
 // Ruestung nah und fern, Reichweite - und seit Runde 75 auch `klassen` und
-// `bonus`; `ansicht.werte.klassen` nennt den Anzeigenamen je Klasse. Das sind
+// `bonus`, seit Runde 134 `heilen` ({ reichweite, je } oder null);
+// `ansicht.werte.klassen` nennt den Anzeigenamen je Klasse. Das sind
 // die **rohen** Werte ohne Verbesserungen.
 //
 // **Mit Verbesserungen** steht die Tafel je Spieler in
