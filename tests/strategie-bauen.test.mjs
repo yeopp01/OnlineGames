@@ -315,7 +315,8 @@ test('bauen AC-5: die Kosten gehen bei Baubeginn ab, ohne genug Holz entsteht ke
   assert.equal(anna.holz, 0, 'sofort bezahlt, nicht erst am Ende');
   assert.equal(welt.gebaeude.get(gebaeude).fertig, false);
 
-  assert.match(welt.bauen('a', [bauer.id], 'burg', freierPlatz(welt, 'haus')).fehler, /lässt sich nicht bauen/);
+  // Ein erfundener Name: die Burg stand hier, bis sie in Runde 132 gebaut wurde.
+  assert.match(welt.bauen('a', [bauer.id], 'luftschloss', freierPlatz(welt, 'haus')).fehler, /lässt sich nicht bauen/);
   const reiter = eigene(welt).find((e) => e.art === 'spaeherreiter');
   assert.match(welt.bauen('a', [reiter.id], 'haus', freierPlatz(welt, 'haus')).fehler, /Niemand/);
   assert.match(welt.bauen('b', [bauer.id], 'haus', freierPlatz(welt, 'haus')).fehler, /Niemand/, 'fremde Dorfbewohner bauen nicht');

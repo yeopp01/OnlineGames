@@ -74,13 +74,18 @@ test.describe('Ritterzeit', () => {
       const g = [...window.ansicht.gebaeude.values()].find((x) => x.art === 'kloster');
       return { x: g.x, y: g.y };
     });
-    // Die beiden anderen daneben, per Pruefgriff.
+    // Die beiden anderen daneben, per Pruefgriff. Gebaut und fotografiert
+    // werden die drei, von denen bauen AC-28 handelt - im Menue stehen alle
+    // aus den Daten (oben), dort seit Runde 132 auch die Burg (bauen AC-32,
+    // eigener Test in strategie-burg.spec.mjs).
+    const drei = ['kloster', 'universitaet', 'belagerungswerkstatt'];
+    for (const art of drei) expect(neu, art).toContain(art);
     // Mit Abstand: dicht daneben verdeckte die Werkstatt die Universitaet halb.
     await gebaeudeInDerNaehe(anna, code, 'Anna', 'universitaet', kloster, { von: 6, bis: 10 });
     await gebaeudeInDerNaehe(anna, code, 'Anna', 'belagerungswerkstatt', kloster, { von: 6, bis: 10 });
     await zeitraffer(anna, code, 20);
     await anna.waitForFunction((arten) => arten.every((art) => [...window.ansicht.gebaeude.values()]
-      .some((g) => g.art === art && g.u === undefined)), neu, { timeout: 60_000 });
+      .some((g) => g.art === art && g.u === undefined)), drei, { timeout: 60_000 });
     await zeitraffer(anna, code, 1);
     await anna.keyboard.press('Escape');
 
@@ -95,8 +100,8 @@ test.describe('Ritterzeit', () => {
         const p = a.zuBild(m.x, m.y);
         return p.x > 60 && p.x < a.leinwand.clientWidth - 60 && p.y > 120 && p.y < a.leinwand.clientHeight - 200;
       });
-    }, neu);
-    expect(lage, 'alle drei im Bild').toEqual(neu.map(() => true));
+    }, drei);
+    expect(lage, 'alle drei im Bild').toEqual(drei.map(() => true));
     expect(await bedienteileFrei(anna)).toEqual([]);
     await anna.waitForTimeout(300);
     for (const ac of ['AC-27', 'AC-28']) {

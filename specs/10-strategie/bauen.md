@@ -2,7 +2,7 @@
 
 **Bereich:** Strategie
 **Kuerzel:** bauen
-**Stand:** 28/34 fertig · 6 offen
+**Stand:** 29/34 fertig · 5 offen
 
 ## Zweck
 
@@ -237,8 +237,17 @@ Spezialeinheit der Burg (kommt mit den Völkern, Stufe E), Palisade.
   nächste Randfeld einer Baustelle liegt an einer Mauer oft auf der
   falschen Seite, ohne Weg — `welt.wegZurBaustelle` versucht dann die
   nächsten vier.
-- **AC-32** `offen` **Burg** — 650 Stein, 200 Sekunden, 4800 Leben, +20
+- **AC-32** `fertig` **Burg** — 650 Stein, 200 Sekunden, 4800 Leben, +20
   Bevölkerung; schießt (AC-29). Erst ab der Ritterzeit.
+  Gebaut in Runde 132: vier mal vier Felder, 11 Angriff, Reichweite 8 vom
+  Rand der Grundfläche, ein Pfeil alle zwei Sekunden, Rüstung 8/11 (die
+  Kampfwerte stehen jetzt als Zeile unter der Gebäudetafel der Vorlage). Sicht
+  9 statt der 11 des Originals: ein Feld über die Reichweite wie beim
+  Wachturm, und der Außenposten bleibt das Gebäude, das am weitesten sieht
+  (kampf AC-18). Gezeichnet als Ringmauer mit vier Ecktürmen und hohem
+  Bergfried, Banner und Fahne in Spielerfarbe, das Tor vorn rechts; im
+  Baumenü die Taste F. Spezialeinheit und Unterschlupf kommen später (Stufe
+  E, nicht gebaut).
 - **AC-33** `offen` **Markt tauscht** — Am Markt kauft man 100 Holz, Nahrung
   oder Stein für Gold und verkauft sie gegen Gold. Jeder Kauf macht diesen
   Rohstoff teurer, jeder Verkauf billiger; zwischen Kauf- und Verkaufspreis

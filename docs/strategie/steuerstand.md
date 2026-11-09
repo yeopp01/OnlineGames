@@ -13,7 +13,7 @@ hier nichts eintraegt, verliert den Faden beim naechsten Autocompact.
 
 ## Zuletzt fortgeschrieben
 
-2026-11-09, nach Runde 131 (**kampf AC-13, fahrplan AC-13, C6e fertig**: der
+2026-11-09, nach Runde 132 (**kampf AC-13, fahrplan AC-13, C6e fertig**: der
 Server schickt jedem nur, was er sieht - `welt.zustandJeSpieler`,
 `welt.aufbauFuer`, im Raum `sendenJe`. Fremde Gebaeude und Felder, die sich im
 Nebel aendern, kommen beim naechsten Hinsehen; wer ausscheidet, bekommt einmal
@@ -109,7 +109,15 @@ Rueckschau: `e2e:daten` faehrt jetzt auch `strategie-unterscheidbar`
 ihrer Zelle (neue breite Figuren: erst `npm run tafel -- "t.ueberstand()"`,
 dann `gross` und `FUSS_VERSATZ` in schautafel.js), und eine Regel fuer
 Kampfbilder in der Anweisung. **Naechste Runde 132: D7 (Burg und Markt,
-bauen AC-32, AC-33)** oder kampf AC-21 - vorher den Widerspruch klaeren.)
+bauen AC-32, AC-33)** oder kampf AC-21 - vorher den Widerspruch klaeren.
+Runde 132: **bauen AC-32 fertig - die Burg** (4x4, 650 Stein, 4800 Leben,
++20 Wohnraum, schiesst 11 auf 8 Felder vom Rand nach der Regel des
+Wachturms, Sicht 9 wegen kampf AC-18, Taste F, Zeichnung Ringmauer mit
+Ecktuermen und Bergfried; die Schautafel waechst mit der Zahl der Gebaeude).
+Der Ritterzeit-Test baut und fotografiert nur noch die drei aus bauen AC-28,
+das Menue prueft weiter alle aus den Daten. **Naechste Runde 133: bauen
+AC-33 (Markt)** - Werte des Handels aus der Vorlage holen; oder kampf AC-21
+mit geklaertem Widerspruch.)
 
 ## Wo ich stehe
 

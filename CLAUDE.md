@@ -159,7 +159,7 @@ Umfang hinzufügt, dort nachsehen.
 
 ## Stand
 
-**428 von 555 Kriterien fertig.** 553 Tests ohne Browser, 186 im Browser. Die
+**429 von 555 Kriterien fertig.** 559 Tests ohne Browser, 187 im Browser. Die
 Übersicht ist der Bericht: `npm run qa:report`.
 
 Gebaut ist der Unterbau: Räume, Übertragung, Karte, Wegfindung, Sammeln,
@@ -361,7 +361,10 @@ schlägt nicht zurück und lässt im Angriffslauf jede Einheit stehen. Der
 Geschoss auf dem Server fliegt (`welt.einschlaege`) und dort einschlägt, wo
 das Ziel beim Abwurf stand: alles im Umkreis eines Feldes, eigene auch, in
 der Mitte voll, am Rand die Hälfte — wer läuft, weicht aus. Näher als drei
-Felder wirft er nicht. Die **Sicht ist eine Einstellung beim Eröffnen** (kampf AC-16):
+Felder wirft er nicht. **Aus D7 steht die Burg** (bauen AC-32): vier mal vier
+Felder, 650 Stein, +20 Wohnraum, schießt nach der Regel des Wachturms mit 11
+auf acht Felder vom Rand — ein Eintrag in den Daten, kein neuer Code in der
+Welt. Die **Sicht ist eine Einstellung beim Eröffnen** (kampf AC-16):
 Nebel, Erkundet oder Aufgedeckt — Tests, die nicht vom Nebel handeln,
 eröffnen aufgedeckt (`partieZuZweit(…, { sicht: 'aufgedeckt' })`).
 

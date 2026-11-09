@@ -96,6 +96,7 @@ const GEBAEUDE_NAMEN = {
   wachturm: 'Der Wachturm',
   steinmauer: 'Die Steinmauer',
   tor: 'Das Tor',
+  burg: 'Die Burg',
 };
 
 // Dasselbe für die Einheiten (einheiten AC-23).

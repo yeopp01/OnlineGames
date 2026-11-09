@@ -80,6 +80,11 @@ aber nicht linear: n Dorfbewohner brauchen etwa `3·t / (n + 2)`.
 | Belagerungswerkstatt | Ritter | 200 Holz | 40 s | 2100 | Ramme, Mangonel, Skorpion |
 | Wunder | Imperial | je 1000 Holz, Nahrung, Gold, Stein | 3500 s | 4800 | Sieg nach Zeit |
 
+Was schießt: der **Wachturm** 5 Angriff, Reichweite 8, ein Pfeil alle 2 s,
+Rüstung 1/7, Sicht 9; die **Burg** 11 Angriff, Reichweite 8, ein Pfeil alle
+2 s, Rüstung 8/11, Sicht 11, vier mal vier Felder. Mit Besatzung schießen
+beide mehr Pfeile — der Unterschlupf ist hier nicht gebaut.
+
 ## Zeitalter
 
 | Wechsel | Kosten | Dauer | Voraussetzung |

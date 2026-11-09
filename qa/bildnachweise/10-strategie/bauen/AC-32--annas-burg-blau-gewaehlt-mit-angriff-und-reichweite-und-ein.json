@@ -1,0 +1,10 @@
+{
+  "spec": "10-strategie/bauen.md",
+  "ac": "AC-32",
+  "titel": "Annas Burg (blau) gewählt, mit Angriff und Reichweite, und ein Pfeil auf dem Weg zu Berts Miliz (rot); oben in der Leiste Wohnraum für 25",
+  "datei": "e2e/tests/strategie-burg.spec.mjs",
+  "pfad": [
+    "Burg",
+    "bauen AC-32: die Burg steht erst in der Ritterzeit im Baumenue, gibt zwanzig Plaetze Wohnraum und schiesst von selbst auf Berts Miliz"
+  ]
+}

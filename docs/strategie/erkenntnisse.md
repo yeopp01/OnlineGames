@@ -1314,6 +1314,21 @@ Browserlauf mit 186 Fällen 15,0 min einschließlich Prüfung (Runde 130);
 Neueste oben. Eine Zeile je Runde: Nummer, Datum, Kriterien, Ergebnis,
 wichtigste Erkenntnis.
 
+- **132** · 2026-11-09 · **bauen AC-32 fertig** — die Burg: vier mal vier
+  Felder, 650 Stein, 4800 Leben, +20 Wohnraum, schießt mit 11 auf acht
+  Felder vom Rand (Regel des Wachturms, kein neuer Code), Sicht 9 wegen
+  kampf AC-18; gezeichnet als Ringmauer mit Ecktürmen und Bergfried, Taste
+  F, die Schautafel wächst jetzt mit der Zahl der Gebäude. `e2e:daten` fand
+  wieder vor dem vollen Lauf, was am Neuen bricht: der Ritterzeit-Test wartete
+  auf jedes Gebäude der Ritterzeit aus den Daten, auch auf die Burg, die er
+  nie baute — im Menü bleibt „alle aus den Daten", gebaut und fotografiert
+  werden die drei, von denen bauen AC-28 handelt. Zwei Tests nahmen „burg"
+  als Gebäude, das es nicht gibt; jetzt „luftschloss". Das Pfeilbild hält den
+  Pfeil auf halbem Weg fest wie den Stein in Runde 130 — die Schleife aus
+  „merken, fotografieren, nachsehen" zeigte ihn am Bergfried klebend.
+  Beim Lesen der Bilder über 1 % gefunden, älter als diese Runde: die
+  Unterschrift zu ki AC-11 nennt „vierzig Felder von ihrem eigenen Dorf" —
+  das trägt kein Standbild; für die Rückschau in Runde 136.
 - **131** · 2026-11-09 · **Rückschau** — `e2e:daten` mit der Spielerfarbe
   (Wächter erkennt `Object.keys(EINHEITEN)`), `schautafel.ueberstand()`
   (fand Ritter und Späherreiter zu breit), Regel für Kampfbilder; das Bild

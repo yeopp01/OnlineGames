@@ -189,7 +189,7 @@ Zustandsnachricht umbaut und damit jeden Browsertest berührt: was dort heute
 | D4 | Wachturm und schießende Gebäude — **fertig** (Runde 125) | bauen AC-29, kampf AC-20 |
 | D5 | Steinmauer ziehen (**fertig**, Runde 127), Tor für Eigene (**fertig**, Runde 128); Mauern halten auf | bauen AC-30, AC-31, kampf AC-21 |
 | D6 | Belagerung: Ramme gegen Gebäude (**fertig**, Runde 129), Mangonel mit Flächenschaden (**fertig**, Runde 130) | einheiten AC-35, AC-36, kampf AC-19 |
-| D7 | Burg und Markt | bauen AC-32, AC-33 |
+| D7 | Burg (**fertig**, Runde 132) und Markt | bauen AC-32, AC-33 |
 | D8 | Mönch: heilen, bekehren | einheiten AC-37, AC-38 |
 | D9 | Die KI in der Ritterzeit; Konterkreis und Befestigung im Prüfstand; die Ritterzeit am Stück im Browser | ki AC-21, AC-22, fahrplan AC-14, AC-15, AC-23 |
 

@@ -62,8 +62,9 @@ test('ki AC-1: was einem Menschen abgewiesen wird, wird der KI genauso abgewiese
     { auftrag: 'bauen', einheiten: [bauer.id], art: 'haus', ziel: { x: zentrum.x, y: zentrum.y } },
     // Im fremden Dorfzentrum ausbilden.
     { auftrag: 'ausbilden', gebaeude: fremdes.id, einheit: 'dorfbewohner' },
-    // Eine Burg, die es nicht gibt.
-    { auftrag: 'bauen', einheiten: [bauer.id], art: 'burg', ziel: { x: 1, y: 1 } },
+    // Ein Gebaeude, das es nicht gibt - erfunden: hier stand die Burg, bis
+    // sie in Runde 132 gebaut wurde.
+    { auftrag: 'bauen', einheiten: [bauer.id], art: 'luftschloss', ziel: { x: 1, y: 1 } },
   ];
   for (const befehl of befehle) {
     const mensch = new Welt(ZWEI, 7).nachricht('a', befehl);

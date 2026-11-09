@@ -27,7 +27,7 @@ const EINHEITEN = {
     // Spiel. Getroffen wird er trotzdem wehrhaft.
     wacht: false,
     baut: ['haus', 'muehle', 'holzfaellerlager', 'bergbaulager', 'farm', 'kaserne', 'schiessanlage', 'stall', 'schmiede', 'aussenposten',
-      'kloster', 'universitaet', 'belagerungswerkstatt', 'wachturm', 'steinmauer', 'tor'],
+      'kloster', 'universitaet', 'belagerungswerkstatt', 'wachturm', 'steinmauer', 'tor', 'burg'],
   },
   // Ausgebildet wird er im Stall, also ab der Feudalzeit; zu Beginn steht
   // einer in der Startaufstellung (bauen AC-22).
@@ -212,6 +212,18 @@ const GEBAEUDE = {
   steinmauer: {
     groesse: 1, kosten: { stein: 5 }, bauzeit: 8, leben: 1800, wohnraum: 0, annahme: [], bildetAus: [], zeitalter: 1,
     gezogen: true, bestand: false, zumAufstieg: false, sicht: 2,
+  },
+  // Die Burg (bauen AC-32): Kosten, Bauzeit, Leben und Wohnraum aus der
+  // Vorlage, die Kampfwerte aus derselben Zeile darunter - 11 Angriff,
+  // Reichweite 8, alle zwei Sekunden ein Pfeil, Ruestung 8/11. Sie schiesst
+  // nach derselben Regel wie der Wachturm (`welt.tuermeTakten()` misst vom
+  // Rand der Grundflaeche). Sicht 9 statt der 11 des Originals: ein Feld ueber
+  // die Reichweite wie beim Wachturm, und der Aussenposten bleibt das Gebaeude,
+  // das am weitesten sieht (kampf AC-18). Die Spezialeinheit kommt mit den
+  // Voelkern (Stufe E), der Unterschlupf ist nicht gebaut.
+  burg: {
+    groesse: 4, kosten: { stein: 650 }, bauzeit: 200, leben: 4800, wohnraum: 20, annahme: [], bildetAus: [], zeitalter: 2,
+    angriff: 11, reichweite: 8, nachladen: 2, nahruestung: 8, fernruestung: 11, sicht: 9,
   },
 };
 

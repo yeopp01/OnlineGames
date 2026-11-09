@@ -39,17 +39,47 @@ const stift = leinwand.getContext('2d');
 const dichte = window.devicePixelRatio || 1;
 const BREITE = 1100;
 // Die Gebaeude stehen in Reihen von hoechstens GEBAEUDE_SPALTEN, je
-// Spielerfarbe; die Hoehe reicht fuer zwei Reihen je Farbe, also zwanzig
-// Gebaeude. Mit siebzehn in einer Reihe liefen die Beschriftungen ineinander
-// (Runde 122).
+// Spielerfarbe; die Hoehe waechst mit den Reihen (seit der Burg, Runde 132:
+// das einundzwanzigste Gebaeude). Mit siebzehn in einer Reihe liefen die
+// Beschriftungen ineinander (Runde 122).
 const GEBAEUDE_SPALTEN = 10;
+const GEBAEUDE_REIHE = [
+  { art: 'dorfzentrum', groesse: 4, titel: 'Dorfzentrum' },
+  { art: 'haus', groesse: 2, titel: 'Haus' },
+  { art: 'muehle', groesse: 2, titel: 'Mühle' },
+  { art: 'holzfaellerlager', groesse: 2, titel: 'Holzfällerlager' },
+  { art: 'bergbaulager', groesse: 2, titel: 'Bergbaulager' },
+  { art: 'kaserne', groesse: 3, titel: 'Kaserne' },
+  { art: 'farm', groesse: 3, titel: 'Farm' },
+  // Feudalzeit (bauen AC-24).
+  { art: 'schiessanlage', groesse: 3, titel: 'Schießanlage' },
+  { art: 'stall', groesse: 3, titel: 'Stall' },
+  { art: 'schmiede', groesse: 3, titel: 'Schmiede' },
+  // Die Sicht waechst (kampf AC-18).
+  { art: 'aussenposten', groesse: 1, titel: 'Außenposten' },
+  // Ritterzeit (bauen AC-28).
+  { art: 'kloster', groesse: 3, titel: 'Kloster' },
+  { art: 'universitaet', groesse: 3, titel: 'Universität' },
+  { art: 'belagerungswerkstatt', groesse: 3, titel: 'Werkstatt' },
+  // Schiesst (bauen AC-29).
+  { art: 'wachturm', groesse: 1, titel: 'Wachturm' },
+  { art: 'steinmauer', groesse: 1, titel: 'Steinmauer' },
+  // Zu und offen (bauen AC-31).
+  { art: 'tor', groesse: 1, titel: 'Tor' },
+  { art: 'tor', groesse: 1, titel: 'Tor, offen', offen: true },
+  // Schiesst und gibt Wohnraum (bauen AC-32).
+  { art: 'burg', groesse: 4, titel: 'Burg' },
+  { art: 'haus', groesse: 2, titel: 'Baustelle 20 %', bau: 0.2 },
+  { art: 'haus', groesse: 2, titel: 'Baustelle 70 %', bau: 0.7 },
+];
+const GEBAEUDE_REIHEN = Math.ceil(GEBAEUDE_REIHE.length / GEBAEUDE_SPALTEN);
 // Die Einheiten ebenso: hoechstens zehn je Reihe (Runde 123: mit vierzehn
 // liefen die Namen ineinander). Jede weitere Reihe je Farbe schiebt Gelaende
 // und Gebaeude um 250 nach unten.
 const EINHEIT_SPALTEN = 10;
 const EINHEIT_REIHEN = Math.ceil(EINTRAEGE.length / EINHEIT_SPALTEN);
 const VERSATZ = (EINHEIT_REIHEN - 1) * 2 * 250;
-const HOEHE = 790 + VERSATZ + 6 + 2 * 2 * 190 + 4;
+const HOEHE = 790 + VERSATZ + 6 + 2 * GEBAEUDE_REIHEN * 190 + 4;
 leinwand.width = BREITE * dichte;
 leinwand.height = HOEHE * dichte;
 stift.scale(dichte, dichte);
@@ -166,41 +196,13 @@ DINGE.forEach((ding, i) => {
 // Jedes Gebaeude der Stufe gross in beiden Spielerfarben, dazu die Baustelle
 // in drei Staenden und alles noch einmal in Spielgroesse (Zoom 1).
 
-const GEBAEUDE_REIHE = [
-  { art: 'dorfzentrum', groesse: 4, titel: 'Dorfzentrum' },
-  { art: 'haus', groesse: 2, titel: 'Haus' },
-  { art: 'muehle', groesse: 2, titel: 'Mühle' },
-  { art: 'holzfaellerlager', groesse: 2, titel: 'Holzfällerlager' },
-  { art: 'bergbaulager', groesse: 2, titel: 'Bergbaulager' },
-  { art: 'kaserne', groesse: 3, titel: 'Kaserne' },
-  { art: 'farm', groesse: 3, titel: 'Farm' },
-  // Feudalzeit (bauen AC-24).
-  { art: 'schiessanlage', groesse: 3, titel: 'Schießanlage' },
-  { art: 'stall', groesse: 3, titel: 'Stall' },
-  { art: 'schmiede', groesse: 3, titel: 'Schmiede' },
-  // Die Sicht waechst (kampf AC-18).
-  { art: 'aussenposten', groesse: 1, titel: 'Außenposten' },
-  // Ritterzeit (bauen AC-28).
-  { art: 'kloster', groesse: 3, titel: 'Kloster' },
-  { art: 'universitaet', groesse: 3, titel: 'Universität' },
-  { art: 'belagerungswerkstatt', groesse: 3, titel: 'Werkstatt' },
-  // Schiesst (bauen AC-29).
-  { art: 'wachturm', groesse: 1, titel: 'Wachturm' },
-  { art: 'steinmauer', groesse: 1, titel: 'Steinmauer' },
-  // Zu und offen (bauen AC-31).
-  { art: 'tor', groesse: 1, titel: 'Tor' },
-  { art: 'tor', groesse: 1, titel: 'Tor, offen', offen: true },
-  { art: 'haus', groesse: 2, titel: 'Baustelle 20 %', bau: 0.2 },
-  { art: 'haus', groesse: 2, titel: 'Baustelle 70 %', bau: 0.7 },
-];
 const gebaeudeOben = 790 + VERSATZ;
 stift.fillStyle = '#e6e9ee';
 stift.font = '600 15px system-ui, sans-serif';
 stift.textAlign = 'left';
 stift.fillText('Gebaeude und Baustellen - in Spielgroesse (Zoom 1), das Dorfzentrum halb so gross, in zwei Spielerfarben', 12, gebaeudeOben - 6);
 const gebaeudeSpalte = BREITE / GEBAEUDE_SPALTEN;
-const gebaeudeReihen = Math.ceil(GEBAEUDE_REIHE.length / GEBAEUDE_SPALTEN);
-if (gebaeudeReihen > 2) throw new Error('Schautafel: mehr als zwanzig Gebaeude - HOEHE anheben.');
+const gebaeudeReihen = GEBAEUDE_REIHEN;
 const gebaeudeZellen = [];
 FARBEN.forEach((farbe, reihe) => {
   GEBAEUDE_REIHE.forEach((eintrag, i) => {

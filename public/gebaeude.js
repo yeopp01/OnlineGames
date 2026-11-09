@@ -1517,6 +1517,118 @@ function belagerungswerkstatt(stift, e, farbe) {
   fahne(stift, hoch([0, -0.32 * H + H * 0.82], SATTEL_FIRST * e), e, farbe, 0.7);
 }
 
+// ---- Burg --------------------------------------------------------------------
+
+// Die Burg (bauen AC-32) auf vier mal vier Feldern: eine Ringmauer mit Zinnen,
+// an jeder Ecke ein Turm, in der Mitte ein hoher Bergfried - die Silhouette
+// eines Gevierts mit Spitze, groesser als alles andere im Dorf und anders als
+// der einzelne Wachturm. Vorn rechts das Tor, am Bergfried Banner und oben
+// die Fahne in Spielerfarbe. Gezeichnet in den Koordinaten der Grundflaeche
+// (u nach rechts unten, v nach links unten, beide 0 bis 1), damit Mauern und
+// Tuerme dieselben Kanten teilen.
+function burg(stift, e, farbe) {
+  const W = 2.4 * e;
+  vorbereiten(stift, e, W, W / 2);
+  const P = (u, v, z = 0) => [(u - v) * W, ((u + v - 1) * W) / 2 - z];
+  const links = '#958e80';
+  const rechts = '#b7b0a0';
+  const krone = '#6d675d';
+  const zinne = 0.24 * e;
+  const zinnen = (a, b, grund, n) => {
+    for (let i = 0; i < n; i += 2) {
+      const z0 = zwischen(a, b, i / n);
+      const z1 = zwischen(a, b, (i + 1) / n);
+      flaeche(stift, [z0, z1, hoch(z1, zinne), hoch(z0, zinne)], grund);
+    }
+  };
+  // Ein Quader aus Haustein: die zwei Seiten zum Betrachter, die Krone, und
+  // auf Wunsch Zinnen - hinten die Innenseite im Schatten, vorn im Licht.
+  const quader = (u0, v0, u1, v1, z1, { reihen = 3, steine = 3, n = 0, z0 = 0 } = {}) => {
+    const L = P(u0, v1, z0);
+    const B = P(u1, v1, z0);
+    const R = P(u1, v0, z0);
+    const T = P(u0, v0, z0);
+    const h = z1 - z0;
+    flaeche(stift, [L, B, hoch(B, h), hoch(L, h)], verlauf(stift, links, hoch(L, h), B, 0.06, -0.26));
+    mauerwerk(stift, L, B, h, e, { reihen, steine, grund: links });
+    flaeche(stift, [B, R, hoch(R, h), hoch(B, h)], verlauf(stift, rechts, hoch(B, h), R, 0.12, -0.14));
+    mauerwerk(stift, B, R, h, e, { reihen, steine, grund: rechts });
+    const [l, b, r, t] = [L, B, R, T].map((p) => hoch(p, h));
+    flaeche(stift, [l, b, r, t], krone);
+    if (n) {
+      zinnen(l, t, '#7a7468', n);
+      zinnen(t, r, '#857e72', n);
+      zinnen(l, b, links, n);
+      zinnen(b, r, rechts, n);
+    }
+    return { L, B, R, T, h };
+  };
+
+  // Der Hof: gestampfter Boden zwischen den Mauern.
+  const a = 0.12;
+  const z = 0.88;
+  const d = 0.07;
+  flaeche(stift, [P(a, z), P(z, z), P(z, a), P(a, a)], '#8d8068', false);
+  const mauer = 1.05 * e;
+  const turm = 1.75 * e;
+  const ecke = 0.12;
+  const eckturm = (u, v) => quader(u - ecke, v - ecke, u + ecke, v + ecke, turm, { reihen: 5, steine: 2, n: 3 });
+
+  // Hinten: der Turm an der oberen Ecke, dann die beiden hinteren Mauern.
+  eckturm(a, a);
+  quader(a, a, z, a + d, mauer, { reihen: 3, steine: 8, n: 11 });
+  quader(a, a, a + d, z, mauer, { reihen: 3, steine: 8, n: 11 });
+
+  // Der Bergfried: hoch, mit Zinnen, an beiden sichtbaren Seiten ein Banner
+  // in Spielerfarbe und oben die Fahne.
+  const k0 = 0.36;
+  const k1 = 0.64;
+  const hoehe = 3.1 * e;
+  const fried = quader(k0, k0, k1, k1, hoehe, { reihen: 9, steine: 3, n: 5 });
+  for (const [p, q, u] of [[fried.L, fried.B, 0.5], [fried.B, fried.R, 0.5]]) {
+    const b0 = wandpunkt(p, q, hoehe, u - 0.16, 0.86);
+    const b1 = wandpunkt(p, q, hoehe, u + 0.16, 0.86);
+    const tuch = [b0, b1, hoch(b1, -1.05 * e), zwischen(hoch(b0, -1.25 * e), hoch(b1, -1.25 * e), 0.5), hoch(b0, -1.05 * e)];
+    flaeche(stift, tuch, verlauf(stift, farbe, b0, hoch(b1, -1.1 * e), 0.12, -0.25));
+  }
+  // Schiessscharten am Bergfried, ueber den Bannern frei.
+  for (const [p, q] of [[fried.L, fried.B], [fried.B, fried.R]]) {
+    for (const u of [0.2, 0.8]) {
+      flaeche(stift, [wandpunkt(p, q, hoehe, u - 0.035, 0.5), wandpunkt(p, q, hoehe, u + 0.035, 0.5),
+        wandpunkt(p, q, hoehe, u + 0.035, 0.64), wandpunkt(p, q, hoehe, u - 0.035, 0.64)], '#2a2420', false);
+    }
+  }
+  fahne(stift, P(0.5, 0.5, hoehe), e, farbe, 1.3);
+
+  // Die Tuerme links und rechts, dann die vorderen Mauern.
+  eckturm(a, z);
+  eckturm(z, a);
+  quader(a, z - d, z, z, mauer, { reihen: 3, steine: 8, n: 11 });
+  const vorn = quader(z - d, a, z, z, mauer, { reihen: 3, steine: 8, n: 11 });
+  // Das Tor in der rechten vorderen Mauer: Bogen aus hellem Stein, darin
+  // Bohlen mit Beschlaegen.
+  const p = (u, v) => wandpunkt(vorn.B, vorn.R, mauer, u, v);
+  const scheitel = (t) => 0.62 + 0.16 * Math.sin(Math.PI * t);
+  const rahmen = [p(0.38, 0)];
+  for (let i = 0; i <= 10; i++) rahmen.push(p(0.38 + 0.24 * (i / 10), scheitel(i / 10) + 0.1));
+  rahmen.push(p(0.62, 0));
+  flaeche(stift, rahmen, '#c9c2b2', false);
+  const bogen = [p(0.41, 0)];
+  for (let i = 0; i <= 10; i++) bogen.push(p(0.41 + 0.18 * (i / 10), scheitel(i / 10)));
+  bogen.push(p(0.59, 0));
+  flaeche(stift, bogen, verlauf(stift, '#7a5533', p(0.41, 0.7), p(0.59, 0), 0.1, -0.22));
+  const strich = Math.max(0.6, e * 0.035);
+  linie(stift, p(0.5, 0), p(0.5, 0.76), '#3a2616', strich * 1.6);
+  for (const v of [0.15, 0.45]) linie(stift, p(0.42, v), p(0.58, v), '#2f2a26', strich * 1.4);
+
+  // Vorn der Turm an der unteren Ecke, mit einem Banner zur Bildseite.
+  const vorderturm = eckturm(z, z);
+  const t0 = wandpunkt(vorderturm.L, vorderturm.B, turm, 0.25, 0.9);
+  const t1 = wandpunkt(vorderturm.L, vorderturm.B, turm, 0.75, 0.9);
+  flaeche(stift, [t0, t1, hoch(t1, -0.75 * e), zwischen(hoch(t0, -0.9 * e), hoch(t1, -0.9 * e), 0.5), hoch(t0, -0.75 * e)],
+    verlauf(stift, farbe, t0, hoch(t1, -0.8 * e), 0.12, -0.25));
+}
+
 export const GEBAEUDE = {
   dorfzentrum: {
     name: 'Dorfzentrum',
@@ -1563,6 +1675,9 @@ export const GEBAEUDE = {
   steinmauer: { name: 'Steinmauer', zeichnen: steinmauer, halbeBreite: 1.0, trefferBreite: 1.0, trefferOben: 2.0, trefferUnten: 0.6 },
   // Ein Feld wie die Mauer, etwas hoeher (bauen AC-31).
   tor: { name: 'Tor', zeichnen: torhaus, halbeBreite: 1.0, trefferBreite: 1.0, trefferOben: 2.4, trefferUnten: 0.6 },
+  // Vier mal vier Felder wie das Dorfzentrum, aber hoeher (bauen AC-32); der
+  // Pfeil beginnt oben am Bergfried.
+  burg: { name: 'Burg', zeichnen: burg, halbeBreite: 2.4, trefferBreite: 2.5, trefferOben: 4.4, trefferUnten: 1.3, schussHoehe: 3.2 },
 };
 
 /**
