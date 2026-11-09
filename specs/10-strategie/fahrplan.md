@@ -250,6 +250,23 @@ Offen aus Stufe C und gebaut auf dem Zweig `strategie-ki-sicht`: die KI mit
 eigener Sicht (ki AC-13) — wartet auf die Antwort zu fahrplan AC-11. Wird sie
 eingebunden, misst jeder Schritt ab D9 KI gegen KI mit ihr.
 
+**Der Bildumbau (Wunsch des Benutzers, 2026-11-09,
+[ADR-0014](../../docs/adr/0014-gerenderte-bilder.md)).** Keine Stufe, sondern
+ein Umbau quer dazu: gerenderte Bilder aus eigenen 3D-Modellen statt
+gezeichnetem Code. Er steht **vor Stufe E**, weil Völker eigene Gebäude
+brauchen und das mit Modellen ein Tausch von Dach und Wand ist. Die Schritte
+heißen R, damit sie niemand mit Stufe G verwechselt. **Nach R1 entscheidet
+der Benutzer am Bild, ob es weitergeht** — bis dahin wird R2 nicht begonnen.
+
+| Schritt | Was am Ende im Browser steht | Kriterien |
+| --- | --- | --- |
+| R1 | Die Probe: Dorfbewohner, Haus und Baum gerendert, auf der Schautafel neben den gezeichneten | darstellung AC-17 |
+| R2 | Die Kette ist prüfbar: Verzeichnis, Quellen, `npm run bilder` | darstellung AC-18 |
+| R3 | Gelände und Vorräte | darstellung AC-23 |
+| R4 | Gebäude samt Baustellen | darstellung AC-22 |
+| R5 | Der Dorfbewohner ganz: acht Richtungen, alle Abläufe, Spielerfarbe als Maske | darstellung AC-19, AC-20, AC-21 |
+| R6 | Alle übrigen Einheiten und Tiere; die gezeichneten Fassungen entfallen | darstellung AC-24 |
+
 ### Stufe E — Völker
 
 - **AC-16** `offen` **Fünf Völker wählbar** — Franken, Briten, Teutonen, Mongolen, Byzantiner,

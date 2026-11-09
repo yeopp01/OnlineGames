@@ -7,7 +7,7 @@ Eine Zeile je Abnahmekriterium. Gepflegt wird der Status in der Spec selbst,
 hier steht er zusammengefasst. Erzeugt mit `npm run specs:board`; als Seite
 mit Bildnachweisen, Filter und Suche mit `npm run qa:report`.
 
-**Gesamt:** 449/573 fertig · 1 in Arbeit · 5 in QA · 4 geplant · 106 offen · 8 zurueckgestellt
+**Gesamt:** 449/581 fertig · 1 in Arbeit · 5 in QA · 4 geplant · 114 offen · 8 zurueckgestellt
 
 **Nachweise:** 204 Kriterien mit Bild · 249 ohne Bild, begruendet in `qa/ohne-bild.json`
 
@@ -23,7 +23,7 @@ mit Bildnachweisen, Filter und Suche mit `npm run qa:report`.
 | [Uebertragung](00-plattform/uebertragung.md)                   | -         | -     | 2       | 1     | -               | 7      |
 | [Bauen und Ausbilden](10-strategie/bauen.md)                   | -         | -     | -       | 4     | -               | 30     |
 | [Bedienung](10-strategie/bedienung.md)                         | -         | -     | -       | 14    | -               | 30     |
-| [Darstellung](10-strategie/darstellung.md)                     | -         | -     | -       | 1     | -               | 15     |
+| [Darstellung](10-strategie/darstellung.md)                     | -         | -     | -       | 9     | -               | 15     |
 | [Einheiten und Befehle](10-strategie/einheiten-und-befehle.md) | -         | -     | -       | 5     | 1               | 27     |
 | [Fahrplan zum Klon](10-strategie/fahrplan.md)                  | -         | -     | -       | 7     | -               | 17     |
 | [Kampf](10-strategie/kampf.md)                                 | -         | -     | -       | -     | 1               | 20     |
@@ -64,7 +64,7 @@ mit Bildnachweisen, Filter und Suche mit `npm run qa:report`.
 - **Abbruch ist sichtbar** — [Uebertragung](00-plattform/uebertragung.md) AC-9
 - **Automatischer Wiederaufbau** — [Uebertragung](00-plattform/uebertragung.md) AC-10
 
-## Offen (106)
+## Offen (114)
 
 - **Anmeldung ueber Google/GitHub** — [Konten und Anmeldung](00-plattform/konten.md) AC-6
 - **Bilanz je Konto** — [Konten und Anmeldung](00-plattform/konten.md) AC-14
@@ -127,6 +127,14 @@ mit Bildnachweisen, Filter und Suche mit `npm run qa:report`.
 - **Voller Wohnraum fällt auf** — [Bedienung](10-strategie/bedienung.md) AC-43
 - **Ein Gefecht hinterlässt Spuren** — [Bedienung](10-strategie/bedienung.md) AC-44
 - **Nur eigenes Material** — [Darstellung](10-strategie/darstellung.md) AC-11
+- **Probe: drei gerenderte Stücke** — [Darstellung](10-strategie/darstellung.md) AC-17
+- **Bilder aus eigenen Skripten** — [Darstellung](10-strategie/darstellung.md) AC-18
+- **Acht Blickrichtungen** — [Darstellung](10-strategie/darstellung.md) AC-19
+- **Bewegung statt Verschieben** — [Darstellung](10-strategie/darstellung.md) AC-20
+- **Spielerfarbe als Akzent** — [Darstellung](10-strategie/darstellung.md) AC-21
+- **Gebäude gerendert** — [Darstellung](10-strategie/darstellung.md) AC-22
+- **Gelände und Vorräte gerendert** — [Darstellung](10-strategie/darstellung.md) AC-23
+- **Alle Einheiten gerendert** — [Darstellung](10-strategie/darstellung.md) AC-24
 - **Einheiten blockieren sich nicht** — [Einheiten und Befehle](10-strategie/einheiten-und-befehle.md) AC-10
 - **Sammler teilen keinen Platz** — [Einheiten und Befehle](10-strategie/einheiten-und-befehle.md) AC-30
 - **Marschierende laufen nicht aufeinander** — [Einheiten und Befehle](10-strategie/einheiten-und-befehle.md) AC-32

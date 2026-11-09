@@ -150,6 +150,7 @@ e2e/     Playwright: tests/ im Browser; server.mjs startet den Server samt Prüf
 | [ADR-0011](docs/adr/0011-bildnachweise.md) | **Bildnachweise gehören an das Abnahmekriterium.** `fertig` = Testname **und** (Bild **oder** Begründung). Bilder eingecheckt, Bericht erzeugt. |
 | [ADR-0012](docs/adr/0012-aoe2-als-vorlage.md) | **AoE II ist die Vorlage, gebaut wird in Stufen A–G.** Keine Schiffe, kein Handel über Wasser, keine Kampagnen, kein Material aus dem Original, kein „Age of Empires" im Spiel. Völker sind Daten. |
 | [ADR-0013](docs/adr/0013-buendnisse-karren-dauer.md) | **Bündnisse, die sich lösen lassen**: Teams im Warteraum, fest oder lösbar; Lösen öffentlich mit 60 Sekunden Frist; ein Team gewinnt. **Marktkarren ab der Ritterzeit**, auch zum zweiten eigenen Markt. **Zeitgrenze und Spielgeschwindigkeit sind Einstellungen** (Vorgabe: keine Grenze, 1,0). |
+| [ADR-0014](docs/adr/0014-gerenderte-bilder.md) | **Bilder werden gerendert, nicht gezeichnet**: eigene 3D-Modelle als Blender-Skripte unter `grafik/`, vor dem Spiel zu Bildern unter `public/bilder/` gerendert und eingecheckt. Blender nur örtlich, nicht in der CI. Fremdes nur CC0, keine Bildgeneratoren. Umbau R1 bis R6, **nach der Probe R1 entscheidet der Benutzer**. |
 
 **Eröffnen verlangt ein Konto, Mitspielen nicht.** Wer eine Partie eröffnet,
 belegt Rechenzeit — dort leistet ein Konto etwas. Wer mitspielt, tippt Code

@@ -2,7 +2,7 @@
 
 **Bereich:** Strategie
 **Kuerzel:** darstellung
-**Stand:** 15/16 fertig · 1 offen
+**Stand:** 15/24 fertig · 9 offen
 
 ## Zweck
 
@@ -11,8 +11,12 @@ Empires II kennt, sofort weiß, was er vor sich hat — **ohne** Grafik, Klänge
 oder Oberfläche des Originals zu verwenden
 ([ADR-0012](../../docs/adr/0012-aoe2-als-vorlage.md), Punkt 4).
 
-Alles wird in Code gezeichnet: Formen, Verläufe, Schattierung, in den Farben
-der Spieler. Keine Bilddateien aus fremder Quelle.
+Bis Runde 158 wurde alles in Code gezeichnet: Formen, Verläufe, Schattierung.
+Seit [ADR-0014](../../docs/adr/0014-gerenderte-bilder.md) entstehen Einheiten,
+Gebäude, Vorräte und Bäume als **eigene 3D-Modelle**, die vor dem Spiel zu
+Bildern gerendert werden — Art für Art, hinter derselben Stelle im Code; was
+noch kein gerendertes Bild hat, wird weiter gezeichnet. Keine Bilddateien aus
+fremder Quelle.
 
 ## Abgrenzung
 
@@ -110,6 +114,64 @@ der Spieler. Keine Bilddateien aus fremder Quelle.
   feste Maßstab, an dem AC-13, AC-14 und [Bedienung](bedienung.md) AC-36
   gemessen werden — wer dort besteht, besteht beim Start erst recht. Das Rad
   holt weiter bis 0,4 heraus.
+
+### Gerenderte Bilder (Bildumbau, ADR-0014)
+
+Wunsch des Benutzers vom 2026-11-09: „viel detaillierter, bildlicher … und
+nicht so kindlich gemalt". Die Bauabfolge R1 bis R6 steht im
+[Fahrplan](fahrplan.md).
+
+- **AC-17** `offen` **Probe: drei gerenderte Stücke** — Ein Dorfbewohner, ein
+  Haus und ein Laubbaum laufen einmal durch die ganze Kette: Modell als
+  Skript unter `grafik/`, mit Blender ohne Oberfläche gerendert, als Bild
+  unter `public/bilder/`, im Browser gezeichnet. Die Schautafel zeigt jedes
+  der drei **neben seinem gezeichneten Vorgänger**, groß und in Spielgröße,
+  in zwei Spielerfarben; der Dorfbewohner steht in acht Blickrichtungen und
+  geht. Das Bild ist die Vorlage für die Entscheidung des Benutzers, ob der
+  Umbau weitergeht — mehr belegt es nicht. Gemessen wird dabei die Größe der
+  Bilddateien.
+- **AC-18** `offen` **Bilder aus eigenen Skripten** — Zu jeder Rastergrafik
+  unter `public/bilder/` steht im Verzeichnis der Kette, welches Skript sie
+  erzeugt; `npm run bilder` schreibt sie neu. `npm run check` läuft ohne
+  Blender und beanstandet ein Bild ohne Eintrag ebenso wie einen Eintrag ohne
+  Bild. Fremdes Material steht mit Herkunft und Lizenz (nur CC0) in
+  `grafik/QUELLEN.md`. Löst den prüfbaren Teil von AC-11 ein.
+- **AC-19** `offen` **Acht Blickrichtungen** — Eine Einheit schaut dorthin,
+  wohin sie geht oder schlägt, in acht Richtungen statt zwei. Wer steht,
+  behält die letzte. Geprüft: acht Marschziele rund um eine Einheit ergeben
+  acht verschiedene Bilder.
+- **AC-20** `offen` **Bewegung statt Verschieben** — Gehen, Arbeiten
+  (Hacken, Bauen, Sammeln), Angreifen und Sterben sind Abläufe aus mindestens
+  acht Bildern je Richtung; ein Dorfbewohner trägt sichtbar, was er geladen
+  hat. Der Ablauf hängt an dem, was die Einheit tut, nicht an der Uhr allein:
+  der Schlag fällt im Bild, wenn der Server ihn rechnet (→
+  [Bedienung](bedienung.md) AC-39).
+- **AC-21** `offen` **Spielerfarbe als Akzent** — Die Farbe des Spielers steht
+  an festen Stücken (Wappenrock, Schild, Fahne, Dachkante), als Maske über
+  einem Bild für alle Farben. Sie bedeckt bei keiner Einheit mehr als ein
+  Drittel der Figur und bei keiner weniger, als man bei Zoom 1 erkennt — die
+  untere Grenze misst die Runde, bevor sie dasteht ([Bedienung](bedienung.md)
+  AC-36 gilt weiter).
+- **AC-22** `offen` **Gebäude gerendert** — Jedes Gebäude der Daten samt
+  Baustelle in ihren Stufen kommt aus der Kette, mit Material (Holz, Putz,
+  Stein, Stroh, Ziegel) und einem Schattenwurf aus derselben Sonne. Jedes
+  behält sein Merkmal aus AC-14.
+- **AC-23** `offen` **Gelände und Vorräte gerendert** — Boden, Bäume in
+  mindestens vier Arten, Beeren, Gold, Stein und das Ufer. Vorräte sind nicht
+  greller als ihre Umgebung: ein Beerenstrauch ist höchstens doppelt so hoch
+  wie ein Schaf, Gold glänzt, ohne gelb zu leuchten. Leert sich ein
+  Vorrat, wird er sichtbar kleiner (AC-3 gilt weiter).
+- **AC-24** `offen` **Alle Einheiten gerendert** — Jede Einheit und jedes Tier
+  der Daten kommt aus der Kette, nach AC-19 bis AC-21. Die gezeichneten
+  Fassungen sind entfernt. Mit 100 Einheiten und 30 Gebäuden bleibt das Bild
+  bei mindestens 50 Bildern je Sekunde (AC-10), und die Partie zeichnet erst,
+  wenn ihre Bilder geladen sind.
+
+**Was der Bildumbau ablöst.** AC-12 („gezeichnet statt flach") und die
+Messungen 1 und 3 aus AC-13 beschreiben eine Zeichnung. Sie bleiben `fertig`,
+bis AC-22 bis AC-24 gebaut sind; die Runde, die den Nachfolger baut, passt
+Text, Test und Bild an. AC-14 (unterscheidbar) und AC-16 (Spielgröße) gelten
+für gerenderte Bilder unverändert.
 
 ## Grenzfaelle
 
