@@ -7,6 +7,7 @@
 // Raute. Die Kamera liegt in Bildpunkten der Raute bei Vergroesserung 1.
 import { FIGUREN, figurBildZeichnen } from './figuren.js';
 import { GEBAEUDE, gebaeudeBildZeichnen, gebaeudeGetroffen } from './gebaeude.js';
+import { richtungAus } from './bilder.js';
 import { KACHEL, kachelMassstab, kachelZeichnen } from './boden.js';
 import { Nebel } from './nebel.js';
 import {
@@ -114,6 +115,7 @@ export class Ansicht {
     // Aufgeben-Knopf haengt daran (bedienung AC-38).
     this.aus = false;
     this.blicke = new Map(); // Einheit → -1 links, 1 rechts
+    this.richtungen = new Map(); // Einheit → 0 bis 7, fuer gerenderte Figuren (ADR-0014)
     this.tiere = new Map();
     this.vorraete = { holz: 0, nahrung: 0, gold: 0, stein: 0, bev: 0, raum: 0 };
     // Was im letzten Bild in welcher Reihenfolge gezeichnet wurde - fuer den
@@ -152,6 +154,7 @@ export class Ansicht {
     this.arbeiter = { holz: 0, nahrung: 0, gold: 0, stein: 0 };
     this.verbesserungen = [];
     this.blicke = new Map();
+    this.richtungen = new Map();
     this.pfeile = [];
     this.takt = 0;
     // Null, nicht der alte Stand: sonst meldete der erste Zustand der neuen
@@ -1312,6 +1315,7 @@ export class Ansicht {
       const spieler = this.spieler.get(einheit.b);
       figurBildZeichnen(stift, this.arten[einheit.k] || 'dorfbewohner', punkt.x, punkt.y, hoehe, spieler ? spieler.farbe : '#888888', {
         blick: this.blicke.get(einheit.i) || 1,
+        richtung: this.richtungen.get(einheit.i),
         ladung: einheit.l > 0 ? einheit.a : null,
         schritt: laeuft ? jetztPhase(einheit.i) : 0,
         arbeit: einheit.w && !laeuft ? jetztPhase(einheit.i) : 0,
@@ -1685,6 +1689,8 @@ export class Ansicht {
     const dx = alt ? (einheit.x - alt.x) - (einheit.y - alt.y) : 0;
     const laeuft = alt && Math.hypot(einheit.x - alt.x, einheit.y - alt.y) > 0.001;
     if (Math.abs(dx) > 0.001) this.blicke.set(einheit.i, dx < 0 ? -1 : 1);
+    // Gerenderte Figuren kennen acht Richtungen statt zwei (darstellung AC-17).
+    if (laeuft) this.richtungen.set(einheit.i, richtungAus(dx, ((einheit.x - alt.x) + (einheit.y - alt.y)) / 2));
 
     // Gefallen (kampf AC-10): liegt zwei Sekunden am Boden, blass und ohne
     // Ring - so sieht man, wer den Kampf verloren hat, bevor er verschwindet.
@@ -1697,6 +1703,7 @@ export class Ansicht {
       stift.rotate(-1.45);
       figurBildZeichnen(stift, this.arten[einheit.k] || 'dorfbewohner', 0, 0, hoehe, spieler ? spieler.farbe : '#888888', {
         blick: this.blicke.get(einheit.i) || 1,
+        richtung: this.richtungen.get(einheit.i),
       });
       stift.restore();
       return;
@@ -1722,6 +1729,7 @@ export class Ansicht {
     // Beerenkorb auf dem Ruecken (bedienung AC-16, darstellung AC-6).
     figurBildZeichnen(stift, this.arten[einheit.k] || 'dorfbewohner', punkt.x, punkt.y, hoehe, spieler ? spieler.farbe : '#888888', {
       blick: this.blicke.get(einheit.i) || 1,
+      richtung: this.richtungen.get(einheit.i),
       ladung: einheit.l > 0 ? einheit.a : null,
       schritt: laeuft ? jetztPhase(einheit.i) : 0,
       // Wer arbeitet, bewegt sich dabei (bedienung AC-31).

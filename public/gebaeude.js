@@ -13,6 +13,8 @@
 // sondern eine duenne, halb durchsichtige dunkelbraune Kante, und gedaempfte,
 // erdige Farben fuer Daecher und Holz.
 
+import { gerendert, zelleZeichnen, zellenRand } from './bilder.js';
+
 const KONTUR = 'rgba(48, 34, 22, 0.5)';
 
 // ---- Werkzeug -------------------------------------------------------------------
@@ -1917,19 +1919,25 @@ export function gebaeudeBildZeichnen(stift, art, x, y, e, farbe, groesse, bau = 
   // Baufortschritt in Zwanzigsteln: die Baustelle waechst sichtbar, der
   // Speicher bleibt klein.
   const stufe = bau < 1 ? Math.floor(bau * 20) / 20 : 1;
-  const schluessel = `${art}|${farbe}|${m.toFixed(2)}|${stufe}|${restStufe}|${dichte}|${offen ? 'offen' : ''}`;
+  // Gibt es das Gebaeude gerendert (ADR-0014), kommt das fertige aus der
+  // Tafel; die Baustelle wird weiter gezeichnet.
+  const tafel = stufe >= 1 ? gerendert(art) : null;
+  const tafelMass = tafel ? (2 * e) / tafel.feldbreite : 0;
+  const rand = tafel ? zellenRand(tafel, tafelMass) : null;
+  const schluessel = `${art}|${farbe}|${m.toFixed(2)}|${stufe}|${restStufe}|${dichte}|${offen ? 'offen' : ''}${tafel ? '|r' : ''}`;
   let bild = ZWISCHENSPEICHER.get(schluessel);
   // Breit genug fuer den Schlagschatten nach rechts.
-  const breite = 10 * m;
-  const oben = 6.4 * m;
-  const unten = 2.6 * m;
+  const breite = rand ? rand.halb * 2 : 10 * m;
+  const oben = rand ? rand.oben : 6.4 * m;
+  const unten = rand ? rand.unten : 2.6 * m;
   if (!bild) {
     bild = document.createElement('canvas');
     bild.width = Math.ceil(breite * dichte);
     bild.height = Math.ceil((oben + unten) * dichte);
     const s = bild.getContext('2d');
     s.scale(dichte, dichte);
-    gebaeudeZeichnen(s, art, breite / 2, oben, e, farbe, groesse, stufe, restStufe, offen);
+    if (tafel) zelleZeichnen(s, tafel, 0, 0, breite / 2, oben, tafelMass, farbe);
+    else gebaeudeZeichnen(s, art, breite / 2, oben, e, farbe, groesse, stufe, restStufe, offen);
     ZWISCHENSPEICHER.set(schluessel, bild);
     if (ZWISCHENSPEICHER.size > SPEICHER_MAX) ZWISCHENSPEICHER.delete(ZWISCHENSPEICHER.keys().next().value);
   } else {

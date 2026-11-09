@@ -1,0 +1,28 @@
+{
+  "bild": "dorfbewohner.png",
+  "maske": "dorfbewohner-maske.png",
+  "zelle": [
+    144,
+    128
+  ],
+  "fuss": [
+    56,
+    102
+  ],
+  "feldbreite": 132,
+  "zeilen": 8,
+  "spalten": 9,
+  "art": "figur",
+  "richtungen": 8,
+  "hoehe": 86,
+  "ablaeufe": {
+    "stehen": {
+      "spalte": 0,
+      "bilder": 1
+    },
+    "gehen": {
+      "spalte": 1,
+      "bilder": 8
+    }
+  }
+}

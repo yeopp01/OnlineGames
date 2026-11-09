@@ -31,6 +31,7 @@
     "einladung": "node scripts/einladung.mjs",
     "sicht": "node scripts/sicht.mjs",
     "tafel": "node scripts/tafel.mjs",
+    "bilder": "node scripts/bilder.mjs",
     "pruefstand:strategie": "node scripts/pruefstand-strategie.mjs",
     "gegenprobe": "node scripts/gegenprobe.mjs",
     "pruefstand:vergleich": "node scripts/pruefstand-vergleich.mjs",

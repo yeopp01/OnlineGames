@@ -1,0 +1,9 @@
+{
+  "spec": "10-strategie/darstellung.md",
+  "ac": "AC-17",
+  "titel": "Die Bildprobe: Dorfbewohner, Haus und Laubbaum links gezeichnet und rechts gerendert, unten beides als Szene in Spielgroesse",
+  "datei": "e2e/tests/strategie-bildprobe.spec.mjs",
+  "pfad": [
+    "darstellung AC-17: die Bildprobe zeigt Dorfbewohner, Haus und Baum gerendert neben gezeichnet"
+  ]
+}

@@ -1,0 +1,17 @@
+{
+  "bild": "baum.png",
+  "maske": null,
+  "zelle": [
+    300,
+    240
+  ],
+  "fuss": [
+    95,
+    206
+  ],
+  "feldbreite": 132,
+  "zeilen": 1,
+  "spalten": 4,
+  "art": "ding",
+  "gestalten": 4
+}

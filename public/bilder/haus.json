@@ -1,0 +1,17 @@
+{
+  "bild": "haus.png",
+  "maske": "haus-maske.png",
+  "zelle": [
+    400,
+    330
+  ],
+  "fuss": [
+    170,
+    215
+  ],
+  "feldbreite": 132,
+  "zeilen": 1,
+  "spalten": 1,
+  "art": "gebaeude",
+  "felder": 2
+}

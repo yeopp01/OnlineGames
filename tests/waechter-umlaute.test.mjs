@@ -28,6 +28,7 @@ const DATEIEN = [
   'public/index.html', 'public/schautafel.html',
   'public/app.js', 'public/ansicht.js', 'public/auswahlleiste.js', 'public/tasten.js', 'public/uebersicht.js',
   'public/figuren.js', 'public/gebaeude.js', 'public/schautafel.js',
+  'public/bildprobe.html', 'public/bildprobe.js',
   'server/raeume.js', 'server/index.js', 'server/schutz.js', 'server/konten.js',
   'server/spiele/verzeichnis.js', 'server/spiele/einstellungen.js',
   'server/spiele/strategie/steckbrief.js', 'server/spiele/manager/steckbrief.js',

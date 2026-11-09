@@ -18,6 +18,8 @@
 // Kante, und nichts Dunkles mehr fast schwarz - Stiefel, Hufe, Schafskoepfe
 // sind dunkles Braun.
 
+import { figurZelle, gerendert, zelleZeichnen, zellenRand } from './bilder.js';
+
 const HAUT = '#e2b48c';
 const HAAR = '#5b3a24';
 const LEDER = '#6b4a2e';
@@ -1159,11 +1161,16 @@ export function figurBildZeichnen(stift, art, x, y, hoehe, farbe, lage = {}, umr
   const rest = lage.rest === undefined ? 1 : Math.round(lage.rest * 10) / 10;
   const arbeitStufe = lage.arbeit ? Math.round(((lage.arbeit % (Math.PI * 2)) + Math.PI * 2) % (Math.PI * 2) / (Math.PI * 2) * SCHRITT_STUFEN) % SCHRITT_STUFEN : -1;
   const arbeit = arbeitStufe < 0 ? 0 : ((arbeitStufe || SCHRITT_STUFEN) / SCHRITT_STUFEN) * Math.PI * 2;
-  const schluessel = `${art}|${farbe}|${h}|${lage.blick === -1 ? -1 : 1}|${lage.ladung || ''}|${stufe}|${arbeitStufe}|${lage.liegt ? 1 : 0}|${rest}|${umriss ? 'u' : ''}|${dichte}`;
+  // Gibt es die Figur gerendert (ADR-0014), kommt ihr Bild aus der Tafel:
+  // eine Zeile je Blickrichtung, eine Spalte je Bild des Ablaufs.
+  const tafel = lage.liegt ? null : gerendert(art);
+  const richtung = lage.richtung ?? (lage.blick === -1 ? 7 : 1);
+  const schluessel = `${art}|${farbe}|${h}|${lage.blick === -1 ? -1 : 1}|${lage.ladung || ''}|${stufe}|${arbeitStufe}|${lage.liegt ? 1 : 0}|${rest}|${umriss ? 'u' : ''}|${dichte}${tafel ? `|r${richtung}` : ''}`;
+  const rand = tafel ? zellenRand(tafel, h / tafel.hoehe) : null;
   // Platz fuer Reiter, Ladung auf dem Ruecken und Schatten.
-  const breite = h * 2.2 * (figur.breite || 1);
-  const oben = h * 1.3;
-  const unten = h * 0.35;
+  const breite = rand ? rand.halb * 2 : h * 2.2 * (figur.breite || 1);
+  const oben = rand ? rand.oben : h * 1.3;
+  const unten = rand ? rand.unten : h * 0.35;
   let bild = ZWISCHENSPEICHER.get(schluessel);
   if (!bild) {
     bild = document.createElement('canvas');
@@ -1171,7 +1178,12 @@ export function figurBildZeichnen(stift, art, x, y, hoehe, farbe, lage = {}, umr
     bild.height = Math.ceil((oben + unten) * dichte);
     const s = bild.getContext('2d');
     s.scale(dichte, dichte);
-    figurZeichnen(s, art, breite / 2, oben, h, farbe, { ...lage, schritt, arbeit, rest });
+    if (tafel) {
+      const zelle = figurZelle(tafel, richtung, stufe, SCHRITT_STUFEN);
+      zelleZeichnen(s, tafel, zelle.zeile, zelle.spalte, breite / 2, oben, h / tafel.hoehe, farbe);
+    } else {
+      figurZeichnen(s, art, breite / 2, oben, h, farbe, { ...lage, schritt, arbeit, rest });
+    }
     if (umriss) {
       // Der Umriss (bedienung AC-30): dieselbe Gestalt, ganz in Spielerfarbe -
       // so sieht man durch ein Gebaeude hindurch, wer dahinter steht.

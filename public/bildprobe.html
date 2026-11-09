@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="de">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Bildprobe - Fading Allies</title>
+    <link rel="stylesheet" href="stil.css" />
+    <style>
+      body { display: block; overflow: auto; padding: 1.5rem; }
+      .bildprobe { max-width: 1160px; margin: 0 auto; }
+      .bildprobe h1 { margin-bottom: 0.2rem; }
+      .bildprobe h2 { margin: 1.6rem 0 0.4rem; font-size: 1.05rem; }
+      .bildprobe canvas { display: block; width: 100%; height: auto; cursor: default; border-radius: 12px; }
+    </style>
+  </head>
+  <body>
+    <main class="bildprobe">
+      <h1>Bildprobe</h1>
+      <p class="unterzeile">Gerendert neben gezeichnet: ein Dorfbewohner, ein Haus und ein Laubbaum aus eigenen 3D-Modellen, links jeweils die bisherige Zeichnung.</p>
+      <h2>Dorfbewohner</h2>
+      <canvas id="probe-figur" width="1160" height="330"></canvas>
+      <h2>Haus</h2>
+      <canvas id="probe-haus" width="1160" height="400"></canvas>
+      <h2>Laubbaum</h2>
+      <canvas id="probe-baum" width="1160" height="300"></canvas>
+      <h2>Zusammen in Spielgröße</h2>
+      <canvas id="probe-szene" width="1160" height="420"></canvas>
+    </main>
+    <script type="module" src="bildprobe.js"></script>
+  </body>
+</html>

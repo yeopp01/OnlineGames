@@ -2,7 +2,7 @@
 
 **Bereich:** Strategie
 **Kuerzel:** darstellung
-**Stand:** 15/24 fertig · 9 offen
+**Stand:** 16/24 fertig · 8 offen
 
 ## Zweck
 
@@ -121,15 +121,19 @@ Wunsch des Benutzers vom 2026-11-09: „viel detaillierter, bildlicher … und
 nicht so kindlich gemalt". Die Bauabfolge R1 bis R6 steht im
 [Fahrplan](fahrplan.md).
 
-- **AC-17** `offen` **Probe: drei gerenderte Stücke** — Ein Dorfbewohner, ein
+- **AC-17** `fertig` **Probe: drei gerenderte Stücke** — Ein Dorfbewohner, ein
   Haus und ein Laubbaum laufen einmal durch die ganze Kette: Modell als
   Skript unter `grafik/`, mit Blender ohne Oberfläche gerendert, als Bild
-  unter `public/bilder/`, im Browser gezeichnet. Die Schautafel zeigt jedes
-  der drei **neben seinem gezeichneten Vorgänger**, groß und in Spielgröße,
-  in zwei Spielerfarben; der Dorfbewohner steht in acht Blickrichtungen und
-  geht. Das Bild ist die Vorlage für die Entscheidung des Benutzers, ob der
-  Umbau weitergeht — mehr belegt es nicht. Gemessen wird dabei die Größe der
-  Bilddateien.
+  unter `public/bilder/`, im Browser gezeichnet. Die Seite `/bildprobe.html`
+  zeigt jedes der drei **neben seinem gezeichneten Vorgänger**, groß und in
+  Spielgröße, in zwei Spielerfarben, dazu beides als kleine Szene; der
+  Dorfbewohner steht in acht Blickrichtungen und geht. (Eine eigene Seite
+  statt der Schautafel: an deren Aufteilung hängen die Messungen zu AC-12
+  bis AC-14.) Im Spielbild sind die gerenderten Stücke abgeschaltet, bis der
+  Benutzer entschieden hat; `?bilder=1` in der Adresse schaltet sie ein. Das
+  Bild ist die Vorlage für diese Entscheidung — mehr belegt es nicht.
+  Gemessen wird dabei die Größe der Bilddateien
+  ([Stand des Umbaus](../../docs/strategie/bildumbau.md)).
 - **AC-18** `offen` **Bilder aus eigenen Skripten** — Zu jeder Rastergrafik
   unter `public/bilder/` steht im Verzeichnis der Kette, welches Skript sie
   erzeugt; `npm run bilder` schreibt sie neu. `npm run check` läuft ohne

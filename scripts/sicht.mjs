@@ -74,7 +74,8 @@ async function spielbild() {
   beobachten(anna);
   beobachten(bert);
 
-  await anna.goto(base);
+  // --bilder: mit den gerenderten Bildern der Probe (ADR-0014).
+  await anna.goto(argumente.includes('--bilder') ? `${base}/?bilder=1` : base);
   await anna.locator('[data-oeffnen="strategie"]').click();
   await anna.locator('[data-einstellung="startwert"]').fill(String(wert('startwert', '4711')));
   await anna.locator('[data-eroeffnen="strategie"]').click();

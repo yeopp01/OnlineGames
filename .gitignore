@@ -20,3 +20,6 @@ qa/report/
 e2e/.ergebnisse/
 test-results/
 playwright-report/
+
+# Zwischendateien von Python (Renderkette unter grafik/).
+__pycache__/
