@@ -9,6 +9,7 @@ import { createRequire } from 'node:module';
 const require = createRequire(import.meta.url);
 const { partieSpielen } = require('../server/spiele/strategie/pruefstand.js');
 const { TAKTE_PRO_SEKUNDE } = require('../server/spiele/strategie/welt.js');
+const { DORFBEWOHNER_JE_ZEITALTER } = require('../server/spiele/strategie/ki.js');
 
 const MINUTE = 60 * TAKTE_PRO_SEKUNDE;
 
@@ -20,7 +21,14 @@ test('ki AC-21: ueber zwanzig Startwerte steigt jede KI vor Spielminute 30 in di
   // Aufgestiegenen fiel keine vor dem Aufstieg unter 14, bis auf eine, deren
   // Aufstieg schon lief. Zwoelf liegt zwischen beiden: wer darunter faellt,
   // wird gerade ueberrannt.
-  const HAELT = 12;
+  // Neu gemessen in Runde 143, als das Dorf in der Feudalzeit auf 32 wuchs
+  // (ki AC-24): 35 von 40 aufgestiegen, nach 21,9 bis 26,2 Minuten; keine
+  // Aufgestiegene fiel ab Minute 18 unter 26, die fuenf ohne Aufstieg fielen
+  // auf 0, 1, 3, 10 und 13. Zwoelf trennt nicht mehr; die Grenze ist jetzt
+  // die Haelfte des Ziels der Feudalzeit - 16, mitten in der Luecke. Mit dem
+  // Aufstieg vor dem Ersatz (Durchsicht Runde 143) steigt auch die mit 13
+  // auf (Startwert 10, KI 1: Minute 27,5, ihr Dorf fiel bis 12): 36 von 40.
+  const HAELT = Math.floor(DORFBEWOHNER_JE_ZEITALTER[1] / 2);
   let gehalten = 0;
   const minuten = [];
   for (let startwert = 1; startwert <= 20; startwert++) {

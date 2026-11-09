@@ -2,7 +2,7 @@
 
 **Bereich:** Strategie
 **Kuerzel:** ki
-**Stand:** 20/24 fertig · 1 in Arbeit · 3 offen
+**Stand:** 21/24 fertig · 3 offen
 
 ## Zweck
 
@@ -223,7 +223,7 @@ nicht die Regeln.
   Ritterzeit eine Belagerungswerkstatt; steht beim Gegner ein Turm oder eine
   Burg, nimmt ihr Angriff Rammen mit. KI gegen KI endet weiter (fahrplan
   AC-11).
-- **AC-24** `in-arbeit` **Das Dorf wächst weiter** — Nach jedem Aufstieg bildet
+- **AC-24** `fertig` **Das Dorf wächst weiter** — Nach jedem Aufstieg bildet
   das Dorfzentrum weiter Dorfbewohner aus: bis 32 in der Feudalzeit, 42 in
   der Ritterzeit, 50 in der Imperialzeit (`DORFBEWOHNER_JE_ZEITALTER` in
   `ki.js`). Bis Runde 142 blieb es in jedem Zeitalter bei 22, und ab dem

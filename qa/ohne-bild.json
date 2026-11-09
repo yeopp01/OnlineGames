@@ -8,6 +8,11 @@
     },
     {
       "spec": "10-strategie/ki.md",
+      "ac": "AC-24",
+      "begruendung": "Wie viele Dorfbewohner die KI je Zeitalter ausbildet, ist eine Zahl in ihrer Entscheidung, belegt im Rechenteil an einer gebauten Lage mit Gegenprobe in der Dunklen Zeit und ueber vierzig ganze Partien im Pruefstand. Ein Standbild zeigt ein Dorf mit vielen Leuten, aber keine Zahl je Zeitalter und nicht, dass das Dorfzentrum nach dem Aufstieg weiter ausbildet."
+    },
+    {
+      "spec": "10-strategie/ki.md",
       "ac": "AC-22",
       "begruendung": "Welche Einheit die KI in einem Gebaeude bestellt, ist eine Auswahl aus den Daten in ihrer Entscheidung, belegt im Rechenteil. Der Ritter selbst hat sein Bild (einheiten AC-33); ein Standbild zeigt einen Ritter, nicht, warum die KI ihn statt des Spaeherreiters gewaehlt hat."
     },

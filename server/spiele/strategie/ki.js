@@ -249,8 +249,11 @@ class Ki {
 
     // Ohne Pause ausbilden, bis das Ziel steht; dann sparen.
     const imZentrum = zentrum ? zentrum.schlange.length : 0;
+    // Ist die Ritterzeit bezahlt, laeuft die Schlange leer, damit der Aufstieg
+    // drankommt (Durchsicht Runde 143): wer laufend Gefallene ersetzte, stand
+    // nie mit freiem Dorfzentrum da und stieg nie auf.
     if (zentrum && imZentrum < 2 && dorfbewohner.length + imZentrum < ziel
-      && this.spieler.nahrung >= EINHEITEN.dorfbewohner.kosten.nahrung) {
+      && this.spieler.nahrung >= EINHEITEN.dorfbewohner.kosten.nahrung && !this.ritterzeitBereit()) {
       this.senden({ auftrag: 'ausbilden', gebaeude: zentrum.id, einheit: 'dorfbewohner' });
     }
 
@@ -337,9 +340,16 @@ class Ki {
       return;
     }
     if (zentrum.schlange.length) return;
-    if (Object.entries(AUFSTIEGE.ritterzeit.kosten).some(([r, menge]) => spieler[r] < menge)) return;
-    if (this.welt.gebaeudeDerZeit(spieler) < AUFSTIEGE.ritterzeit.voraussetzung) return;
+    if (!this.ritterzeitBereit()) return;
     this.senden({ auftrag: 'ausbilden', gebaeude: zentrum.id, einheit: 'ritterzeit' });
+  }
+
+  /** Alles fuer die Ritterzeit da: nach dem ersten Angriff, bezahlt, zwei fertige Gebaeude der Feudalzeit. */
+  ritterzeitBereit() {
+    const spieler = this.spieler;
+    if (spieler.zeitalter !== 1 || this.angriffTakt === null) return false;
+    if (Object.entries(AUFSTIEGE.ritterzeit.kosten).some(([r, menge]) => spieler[r] < menge)) return false;
+    return this.welt.gebaeudeDerZeit(spieler) >= AUFSTIEGE.ritterzeit.voraussetzung;
   }
 
   /**

@@ -1667,3 +1667,26 @@ test('ki AC-22: in der Ritterzeit bildet sie zuerst die Einheit der Ritterzeit a
   Object.assign(a, { nahrung: 1000, gold: EINHEITEN.ritter.kosten.gold - 1 });
   assert.equal(ki.naechsteKampfeinheit(stall), 'spaeherreiter');
 });
+
+test('ki AC-21: fehlen Dorfbewohner, kommt trotzdem der Aufstieg zuerst, sobald die Ritterzeit bezahlt ist', () => {
+  // Durchsicht Runde 143: das Dorfzentrum ersetzte Gefallene in jedem
+  // Entscheidungstakt, bevor der Aufstieg gefragt wurde, und war nie frei.
+  // Beim Startwert 10 hielt KI 1 von Minute 21 bis 29 zwischen 13 und 22
+  // Dorfbewohnern und stieg nie auf.
+  const entschieden = (gold) => {
+    const { welt, ki, a, anlegen } = feudalNachAngriff();
+    anlegen('schiessanlage');
+    anlegen('schmiede');
+    for (let i = 0; i < 10; i++) anlegen('haus');
+    while (dorfVon(welt, 'a').length < 25) welt.einheitAnlegen('a', a.basis.x + 6, a.basis.y + 6, 'dorfbewohner');
+    Object.assign(a, { nahrung: 1000, gold, holz: 0 });
+    const gesendet = [];
+    const senden = ki.senden.bind(ki);
+    ki.senden = (n) => { gesendet.push(n); return senden(n); };
+    ki.entscheiden();
+    return gesendet.filter((n) => n.auftrag === 'ausbilden' && ['dorfbewohner', 'ritterzeit'].includes(n.einheit)).map((n) => n.einheit);
+  };
+  assert.deepEqual(entschieden(1000), ['ritterzeit'], 'bezahlt: der Aufstieg, kein Dorfbewohner davor');
+  // Gegenprobe: fehlt Gold, bildet sie weiter Dorfbewohner aus.
+  assert.ok(entschieden(199).includes('dorfbewohner'), 'ohne das Gold der Ritterzeit wird weiter ausgebildet');
+});
