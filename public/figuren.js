@@ -867,6 +867,65 @@ function plaenkler(stift, farbe, { schritt = 0, fein = true, haut = HAUT }) {
   stift.restore();
 }
 
+// ---- Die Ramme (einheiten AC-35) -------------------------------------------
+// Ein Gehaeuse aus Bohlen auf vier Raedern, darueber ein Satteldach aus
+// Haeuten in Spielerfarbe, vorn ragt der Rammbock mit eiserner Kappe heraus.
+// Keine Figur, kein Pferd: der einzige Umriss im Spiel, der breiter als hoch
+// ist und Raeder hat (darstellung AC-14). Wer rammt, stoesst den Bock vor
+// (`arbeit`); die Raeder drehen sich im Schritt.
+function ramme(stift, farbe, { schritt = 0, arbeit = 0, fein = true }) {
+  schatten(stift, 13);
+  const BOHLE = '#7a5533';
+  const RAD = '#5e4630';
+  const stoss = Math.max(0, Math.sin(arbeit)) * 2.4;
+  // Die hinteren Raeder, halb verdeckt.
+  for (const x of [-6.2, 8.2]) {
+    ellipse(stift, x, -3.4, 2.5, 2.7, licht(stift, toenen(RAD, -0.3), x - 2.5, -6, x + 2.5, -0.7));
+  }
+  // Der Rammbock: hinten ragt das Ende des Stamms heraus, vorn (nach dem
+  // Gehaeuse gezeichnet) ein gutes Stueck mit der eisernen Kappe - das
+  // Merkmal, an dem man sie vom Wagen unterscheidet.
+  const bock = (x0, x1) => vieleck(stift, [[x0, -9.6], [x1, -9.6], [x1, -7.2], [x0, -7.2]],
+    licht(stift, HOLZ, x0, -9.6, x0, -7.2, 0.25, -0.3));
+  bock(-12 + stoss, 0);
+  // Das Gehaeuse: Wand aus Bohlen ueber dem Fahrgestell.
+  vieleck(stift, [[-10.4, -5.2], [11.4, -5.2], [11.4, -3.6], [-10.4, -3.6]], licht(stift, '#5a3f26', -10, -5.2, -10, -3.6));
+  const wand = [[-9.8, -5], [10.8, -5], [10.2, -11.4], [-9.2, -11.4]];
+  vieleck(stift, wand, licht(stift, BOHLE, -9.8, -11.4, 10.8, -5, 0.18, -0.26));
+  if (fein) {
+    for (const x of [-5.6, -1.4, 2.8, 7]) strich(stift, [[x, -5.2], [x + 0.1, -11.2]], '#4a321e', 0.45);
+  }
+  // Das Dach aus Haeuten in Spielerfarbe, vorn und hinten ueberstehend.
+  const dach = [[-11.4, -10.6], [-1.6, -19.6], [1.8, -19.6], [12.4, -10.6]];
+  umriss(stift, () => vieleck(stift, dach, 'rgba(0,0,0,0)', true));
+  vieleck(stift, dach, licht(stift, farbe, -1, -19.6, 3, -10.6, 0.2, -0.3), false);
+  // Die Giebelseite vorn im Schatten.
+  vieleck(stift, [[1.8, -19.6], [12.4, -10.6], [10.2, -11.4]], toenen(farbe, -0.42), false);
+  if (fein) {
+    // Naehte zwischen den Haeuten und der First.
+    for (const [x0, x1] of [[-7.6, -1.1], [-3.8, 0.1], [3.6, 1.3], [7.4, 1.6]]) {
+      strich(stift, [[x0, -10.9 - (x0 < 0 ? (x0 + 11.4) * 0.05 : 0)], [x1, -19.2]], toenen(farbe, -0.35), 0.45);
+    }
+    strich(stift, [[-1.6, -19.6], [1.8, -19.6]], toenen(farbe, 0.45), 0.7);
+  }
+  bock(10.4 + stoss, 15.8 + stoss);
+  vieleck(stift, [[15.4 + stoss, -10.4], [18.2 + stoss, -9.6], [19 + stoss, -8.4], [18.2 + stoss, -7.2], [15.4 + stoss, -6.4]],
+    licht(stift, EISEN, 15.4, -10.4, 19, -6.4, 0.35, -0.3));
+  if (fein) strich(stift, [[13.4 + stoss, -9.6], [13.4 + stoss, -7.2]], '#3f2c1a', 0.5);
+  // Die vorderen Raeder mit Speichen und Nabe.
+  for (const x of [-7.4, 7.2]) {
+    ellipse(stift, x, -2.9, 2.9, 3, licht(stift, RAD, x - 2.9, -5.9, x + 2.9, 0.1, 0.2, -0.25));
+    if (fein) {
+      const winkel = schritt * 0.8;
+      for (let i = 0; i < 3; i++) {
+        const w = winkel + (i * Math.PI) / 3;
+        strich(stift, [[x - Math.cos(w) * 2.4, -2.9 - Math.sin(w) * 2.5], [x + Math.cos(w) * 2.4, -2.9 + Math.sin(w) * 2.5]], '#3e2c1c', 0.5);
+      }
+    }
+    ellipse(stift, x, -2.9, 0.8, 0.85, EISEN_DUNKEL, false);
+  }
+}
+
 export const FIGUREN = {
   dorfbewohner: { name: 'Dorfbewohner', zeichnen: dorfbewohner, breite: 1 },
   schaf: { name: 'Schaf', zeichnen: schaf, breite: 1.1 },
@@ -882,6 +941,9 @@ export const FIGUREN = {
   // Ritterzeit (einheiten AC-33, AC-34). Die Lanze ragt weit nach oben vorn.
   ritter: { name: 'Ritter', zeichnen: ritter, breite: 1.7, oben: 1.35 },
   armbrustschuetze: { name: 'Armbrustschütze', zeichnen: armbrustschuetze, breite: 1.3 },
+  // Belagerung (einheiten AC-35): breit statt hoch. `stoesst`: wer rammt,
+  // stoesst den Bock vor, statt sich als Ganzes vorzubeugen.
+  ramme: { name: 'Ramme', zeichnen: ramme, breite: 1.7, stoesst: true },
 };
 
 export { WAREN };
@@ -909,7 +971,7 @@ export function figurZeichnen(stift, art, x, y, hoehe, farbe, lage = {}) {
   // die Fuesse vor und zurueck, im Takt der Arbeit. Der Dorfbewohner hat dafuer
   // seine eigene Bewegung mit der Axt (AC-31); ein Reiter wiegt nur wenig -
   // sonst kippte das Pferd mit.
-  if (lage.arbeit && art !== 'dorfbewohner') {
+  if (lage.arbeit && art !== 'dorfbewohner' && !figur.stoesst) {
     const reiter = art === 'spaeherreiter';
     const welle = Math.sin(lage.arbeit);
     stift.rotate(welle * (reiter ? 0.06 : 0.23));

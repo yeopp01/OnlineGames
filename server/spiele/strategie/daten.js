@@ -80,6 +80,16 @@ const EINHEITEN = {
     angriff: 5, nahruestung: 0, fernruestung: 0, reichweite: 5, nachladen: 2,
     klassen: ['bogenschuetze'], bonus: { speer: 3 }, zeitalter: 2, stufeVon: 'bogenschuetze',
   },
+  // Die Ramme (einheiten AC-35), Werte aus der Vorlage. `nurGebaeude`: sie
+  // greift nur Gebaeude an - ein Befehl auf eine Einheit ist ein Gang dorthin,
+  // und sie wacht nicht und wehrt sich nicht. Der Bonus gilt der Klasse
+  // `gebaeude`, die jedes Gebaeude von selbst traegt (unten). Nachladezeit 5 s
+  // wie im Original - sie steht nicht in der Tabelle der Vorlage. Sicht 3.
+  ramme: {
+    leben: 175, tempo: 0.5, sicht: 3, tragkraft: 0, kosten: { holz: 160, gold: 75 }, zeit: 36, kuerzel: 'w',
+    angriff: 2, nahruestung: 0, fernruestung: 180, reichweite: 0, nachladen: 5,
+    klassen: ['belagerung'], bonus: { gebaeude: 125 }, nurGebaeude: true, wacht: false, zeitalter: 2,
+  },
 };
 
 // Wer von selbst wacht, greift an, was in seine Sichtweite kommt, ohne Befehl
@@ -160,7 +170,7 @@ const GEBAEUDE = {
   // Ramme und Mangonel (D6). Die Universitaet forscht Mauerwerk (bauen AC-34).
   kloster: { groesse: 3, kosten: { holz: 175 }, bauzeit: 40, leben: 2100, wohnraum: 0, annahme: [], bildetAus: [], zeitalter: 2 },
   universitaet: { groesse: 3, kosten: { holz: 200 }, bauzeit: 60, leben: 2100, wohnraum: 0, annahme: [], bildetAus: ['mauerwerk'], zeitalter: 2 },
-  belagerungswerkstatt: { groesse: 3, kosten: { holz: 200 }, bauzeit: 40, leben: 2100, wohnraum: 0, annahme: [], bildetAus: [], zeitalter: 2 },
+  belagerungswerkstatt: { groesse: 3, kosten: { holz: 200 }, bauzeit: 40, leben: 2100, wohnraum: 0, annahme: [], bildetAus: ['ramme'], zeitalter: 2 },
   // Ein Gebaeude, das schiesst (bauen AC-29): `angriff`, `reichweite` und
   // `nachladen` wie bei einer Einheit, Pfeile also Fernkampf. Werte aus der
   // Vorlage - 5 Angriff, Reichweite 8, alle zwei Sekunden ein Pfeil, Ruestung
@@ -340,6 +350,10 @@ const KLASSEN = {
   speer: { name: 'Speerkämpfer' },
   bogenschuetze: { name: 'Bogenschützen' },
   kavallerie: { name: 'Kavallerie' },
+  // Belagerung (einheiten AC-35). `gebaeude` traegt jedes Gebaeude von selbst
+  // (oben) - die Ramme hat ihren Bonus dagegen.
+  belagerung: { name: 'Belagerung' },
+  gebaeude: { name: 'Gebäude' },
 };
 
 module.exports = {

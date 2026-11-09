@@ -934,7 +934,12 @@ export class Ansicht {
    * der Server beim Befehl entscheidet (`welt.js`: `feindAn`, `gebaeudeAn`).
    */
   zielzeichenSetzen(ziel, angriffslauf = false) {
-    const feind = this.feindlichAn(ziel);
+    // Lauter Rammen greifen keine Einheit an, nur Gebaeude (einheiten AC-35).
+    const nurGebaeude = this.ausgewaehlt.size > 0 && [...this.ausgewaehlt].every((id) => {
+      const einheit = this.nachher.get(id);
+      return einheit && this.werte.einheiten[this.arten[einheit.k]]?.nurGebaeude;
+    });
+    const feind = this.feindlichAn(ziel, nurGebaeude);
     this.zielzeichen = {
       x: feind ? feind.x : Math.round(ziel.x),
       y: feind ? feind.y : Math.round(ziel.y),
@@ -950,7 +955,7 @@ export class Ansicht {
    *
    * @returns {{x: number, y: number}|null} die Mitte des Ziels
    */
-  feindlichAn(ziel) {
+  feindlichAn(ziel, nurGebaeude = false) {
     let bestes = null;
     let besterAbstand = 1.01;
     for (const einheit of this.nachher.values()) {
@@ -963,7 +968,9 @@ export class Ansicht {
         bestes = einheit;
       }
     }
-    if (bestes) return { x: bestes.x, y: bestes.y };
+    // Wie im Server: liegt eine Einheit unter dem Klick, zaehlt das Gebaeude
+    // dahinter nicht - wer nur Gebaeude angreift, geht dann hin.
+    if (bestes) return nurGebaeude ? null : { x: bestes.x, y: bestes.y };
     const zx = Math.round(ziel.x);
     const zy = Math.round(ziel.y);
     for (const gebaeude of this.gebaeude.values()) {

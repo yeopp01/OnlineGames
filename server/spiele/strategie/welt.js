@@ -109,6 +109,7 @@ const EINHEIT_NAMEN = {
   soldat: 'Den Soldaten',
   ritter: 'Den Ritter',
   armbrustschuetze: 'Den Armbrustschützen',
+  ramme: 'Die Ramme',
 };
 
 // Welche Verbesserung eine Einheit zur naechsten Stufe macht - `wandelt`
@@ -1257,7 +1258,10 @@ class Welt {
       einheit.unerreichbar = null;
       // Jeder neue Befehl beendet einen laufenden Angriffslauf.
       einheit.angriffslauf = null;
-      if ((feind || feindBau) && this.einheitenwert(einheit.besitzer, einheit.art, 'angriff') > 0) {
+      // Wer nur Gebaeude angreift (die Ramme, einheiten AC-35), geht zu einer
+      // Einheit nur hin.
+      if ((feindBau || (feind && !EINHEITEN[einheit.art].nurGebaeude))
+        && this.einheitenwert(einheit.besitzer, einheit.art, 'angriff') > 0) {
         const opfer = feind || feindBau;
         // Mehrere Angreifer stellen sich um das Ziel herum, statt uebereinander
         // zu stehen - dieselbe Aufstellung wie beim Gehen (einheiten AC-20).
@@ -1826,7 +1830,9 @@ class Welt {
       // alle anderen nur im Stehen - ein Sammler soll seine Arbeit nicht
       // wegen eines Vorbeireitenden liegen lassen (kampf AC-2).
       if (einheit.angriffslauf) {
-        if (this.einheitenwert(einheit.besitzer, einheit.art, 'angriff') > 0) wachen.push(einheit);
+        // Die Wache sucht Einheiten - eine Ramme greift keine an und faehrt
+        // im Angriffslauf nur bis ans Ziel (einheiten AC-35).
+        if (this.einheitenwert(einheit.besitzer, einheit.art, 'angriff') > 0 && !EINHEITEN[einheit.art].nurGebaeude) wachen.push(einheit);
         continue;
       }
       if (einheit.auftrag || einheit.weg.length) continue;
@@ -2138,6 +2144,8 @@ class Welt {
     // schneller. Wer den Turm angreifen soll, braucht einen Befehl (bauen AC-29).
     if (!EINHEITEN[angreifer.art]) return;
     if (EINHEITEN[einheit.art].wacht) return;
+    // Eine Ramme schlaegt nicht zurueck: sie trifft nur Gebaeude (einheiten AC-35).
+    if (EINHEITEN[einheit.art].nurGebaeude) return;
     if (einheit.auftrag?.art === 'angreifen' || !this.einheitenwert(einheit.besitzer, einheit.art, 'angriff')) return;
     const stand = nachbarfeld(this.karte, this.feldVon(angreifer), einheit);
     this.angriffBeginnen(einheit, angreifer, false, stand, this.feldVon(einheit));
@@ -3005,6 +3013,9 @@ class Welt {
           // keinen Schaden - das tut der Server (kampf AC-3).
           klassen: w.klassen || [],
           bonus: w.bonus || null,
+          // Greift nur Gebaeude an (einheiten AC-35): das Zeichen am Ziel
+          // bleibt dann bei einer Einheit gruen.
+          nurGebaeude: Boolean(w.nurGebaeude),
         }])),
         gebaeude: Object.fromEntries(Object.entries(GEBAEUDE).map(([art, w]) => [art, {
           leben: w.leben, bildetAus: w.bildetAus, groesse: w.groesse, kosten: w.kosten, bauzeit: w.bauzeit,

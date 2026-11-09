@@ -13,7 +13,7 @@ hier nichts eintraegt, verliert den Faden beim naechsten Autocompact.
 
 ## Zuletzt fortgeschrieben
 
-2026-11-09, nach Runde 128 (**kampf AC-13, fahrplan AC-13, C6e fertig**: der
+2026-11-09, nach Runde 129 (**kampf AC-13, fahrplan AC-13, C6e fertig**: der
 Server schickt jedem nur, was er sieht - `welt.zustandJeSpieler`,
 `welt.aufbauFuer`, im Raum `sendenJe`. Fremde Gebaeude und Felder, die sich im
 Nebel aendern, kommen beim naechsten Hinsehen; wer ausscheidet, bekommt einmal
@@ -77,15 +77,28 @@ eine Einheit uebergibt sie**. Auf die eigene Mauer gesetzt ersetzt es das
 Feld (`ersetzt: 'steinmauer'`, `welt.ersetzbar`, `platzPruefen(…, ausser)`).
 Offen gezeichnet, wenn eine eigene Einheit hoechstens 1,5 Felder davor
 steht (`ansicht.torOffen`). Neu `welt.wegZurBaustelle`: ist das naechste
-Randfeld nicht erreichbar, die naechsten vier. **Naechste Runde: kampf
-AC-21** (Mauern halten auf) - braucht die Ramme aus D6, also vermutlich
-erst D6. ki AC-13 und einheiten AC-32 warten auf Antworten.)
+Randfeld nicht erreichbar, die naechsten vier. Runde 129: **einheiten AC-35 fertig** - die Ramme (`ramme`, Kuerzel `w`,
+Belagerungswerkstatt, Ritterzeit). `nurGebaeude: true` und `wacht: false` in
+den Daten; `befehl`, `wacheTakten` (Angriffslauf) und `wehren` fragen
+`EINHEITEN[art].nurGebaeude` - **wer eine vierte Stelle baut, die einen
+Angriff beginnt, fragt es auch**. Der Bonus +125 gilt der Klasse
+`gebaeude`, die jedes Gebaeude von selbst traegt; nicht in `schaden` noch
+einmal hinzufuegen. Neue Klassen brauchen einen Namen in `KLASSEN`. Im
+Browser: `zielzeichenSetzen` zeigt fuer lauter Rammen auf einer Einheit
+kein rotes Zeichen (`feindlichAn(ziel, nurGebaeude)`). Figur
+`ramme()` in figuren.js mit `stoesst: true` (kein Ausholen des ganzen
+Koerpers), auf der Schautafel mit `gross: 78`. **Naechste Runde: einheiten
+AC-36 (Mangonel) mit kampf AC-19 (Flaechenschaden)** - oder kampf AC-21,
+aber dort steht ein Widerspruch: eine Ramme braucht fuer ein Feld
+Steinmauer 15 Stoesse, rund 71 s, das Kriterium sagt unter 30 s. Vorher in
+der Vorlage nachsehen und das Kriterium mit Begruendung fassen. ki AC-13
+und einheiten AC-32 warten auf Antworten.)
 
 ## Wo ich stehe
 
 - **Branch:** `strategie`. Nie auf `main` arbeiten, **nie pushen, nie deployen.**
-- **Board:** 425 von 555 Kriterien fertig · 1 in Arbeit · 5 in QA · 4 geplant ·
-  112 offen · 8 zurueckgestellt. 545 Tests ohne Browser, 184 im Browser.
+- **Board:** 426 von 555 Kriterien fertig · 1 in Arbeit · 5 in QA · 4 geplant ·
+  111 offen · 8 zurueckgestellt. 549 Tests ohne Browser, 185 im Browser.
 - **Fuenf Waechter in `tests/waechter-*.test.mjs`** (der fuenfte seit Runde 87: Bildschirmtext mit echten Umlauten): Gleichheit auf wachsenden
   Listen, verbesserbare Werte an `welt.einheitenwert()` vorbei,
   Bildunterschriften mit `${...}`, und (neu in Runde 73) die **Kuerzeltafel**

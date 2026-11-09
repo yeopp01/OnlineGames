@@ -1271,6 +1271,26 @@ min (Runde 125).
 Neueste oben. Eine Zeile je Runde: Nummer, Datum, Kriterien, Ergebnis,
 wichtigste Erkenntnis.
 
+- **129** · 2026-11-09 · **einheiten AC-35 fertig** — die Ramme aus der
+  Belagerungswerkstatt (Ritterzeit): 175 Leben, 0/180, 2 Angriff +125 gegen
+  Gebäude, also 127 je Stoß alle fünf Sekunden. Eine Eigenschaft in den
+  Daten, `nurGebaeude`, an genau den drei Stellen, die einen Angriff
+  beginnen (`befehl`, `wacheTakten`, `wehren`) — jede mit eigener
+  Gegenprobe, alle drei fallen. Der Bonus geht über die Klasse `gebaeude`,
+  die jedes Gebäude schon trug; der erste Entwurf fügte sie in `schaden`
+  noch einmal hinzu und zählte doppelt (252 statt 127) — der Test mit der
+  festen Zahl fand es sofort. Eine neue Klasse braucht einen Anzeigenamen
+  (`KLASSEN`), sonst bricht bedienung AC-35. Die Figur ist der erste
+  Umriss, der breiter als hoch ist: auf der Schautafel übermalte die
+  Nachbarzelle ihre Spitze, gezeichnet wird sie dort kleiner
+  (`gross`). Die Durchsicht fand einen falschen Kommentar: das Haus im Test
+  fiel beim fünften Stoß, gezählt wurde an einem Toten — jetzt eine
+  Kaserne. KI gegen KI unberührt (die KI baut keine Werkstatt, jede Änderung
+  hängt an `nurGebaeude`). `e2e:daten` diesmal ohne Bruch, 22 von 22.
+  **Offen für kampf AC-21:** eine Ramme braucht für ein Feld Steinmauer
+  (1800 Leben) fünfzehn Stöße, rund 71 s — das Kriterium sagt „unter einer
+  halben Minute". Entweder die Zahl im Kriterium ist falsch (mit
+  Begründung aus der Vorlage ändern) oder es meint mehrere Rammen.
 - **128** · 2026-11-09 · **bauen AC-31 fertig** — das Tor: ein Feld,
   30 Stein, 70 Sekunden, für Eigene begehbar, für alle anderen eine Mauer.
   Die Karte bleibt eine für alle; die Wegsuche bekommt die Tore des

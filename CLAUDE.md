@@ -159,7 +159,7 @@ Umfang hinzufügt, dort nachsehen.
 
 ## Stand
 
-**425 von 555 Kriterien fertig.** 545 Tests ohne Browser, 184 im Browser. Die
+**426 von 555 Kriterien fertig.** 549 Tests ohne Browser, 185 im Browser. Die
 Übersicht ist der Bericht: `npm run qa:report`.
 
 Gebaut ist der Unterbau: Räume, Übertragung, Karte, Wegfindung, Sammeln,
@@ -353,7 +353,10 @@ eine Baustelle, belegte übersprungen, und die Bauer gehen die Felder der
 Reihe nach ab. **Das Tor** lässt die eigenen Einheiten durch und sperrt
 alle anderen: die Wegsuche bekommt die Tore des Besitzers als Felder, die
 nur für ihn frei sind (`welt.toreVon`); auf die eigene Mauer gesetzt,
-ersetzt es dieses Feld. Die **Sicht ist eine Einstellung beim Eröffnen** (kampf AC-16):
+ersetzt es dieses Feld. **Aus D6 steht die Ramme** (einheiten AC-35): 127 je
+Stoß gegen jedes Gebäude, Pfeile ritzen sie mit 1; `nurGebaeude` in den
+Daten — ein Befehl auf eine Einheit ist ein Gang dorthin, sie wacht nicht,
+schlägt nicht zurück und lässt im Angriffslauf jede Einheit stehen. Die **Sicht ist eine Einstellung beim Eröffnen** (kampf AC-16):
 Nebel, Erkundet oder Aufgedeckt — Tests, die nicht vom Nebel handeln,
 eröffnen aufgedeckt (`partieZuZweit(…, { sicht: 'aufgedeckt' })`).
 

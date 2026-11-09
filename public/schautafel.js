@@ -23,6 +23,8 @@ const EINTRAEGE = [
   // Ritterzeit (einheiten AC-33, AC-34).
   { art: 'ritter', titel: 'Ritter', lage: {} },
   { art: 'armbrustschuetze', titel: 'Armbrust', lage: {} },
+  // Belagerung (einheiten AC-35).
+  { art: 'ramme', titel: 'Ramme', lage: {}, gross: 78 },
   { art: 'spaeherreiter', titel: 'Späherreiter', lage: {} },
   { art: 'speerkaempfer', titel: 'Speerkämpfer', lage: {} },
   { art: 'bogenschuetze', titel: 'Bogenschütze', lage: {} },
@@ -64,8 +66,10 @@ FARBEN.forEach((farbe, reihe) => {
     stift.fillStyle = GRAS;
     stift.fillRect(x + 8, oben, spalte - 16, 200);
     // Gross ...
-    const fussX = x + spalte / 2 - (eintrag.art === 'spaeherreiter' || eintrag.art === 'ritter' ? 12 : 0);
-    figurZeichnen(stift, eintrag.art, fussX, oben + 150, 120, farbe, { blick: 1, ...eintrag.lage });
+    // Die Ramme ist fast doppelt so breit wie hoch: kleiner gezeichnet, sonst
+    // uebermalt die naechste Zelle ihre Spitze.
+    const fussX = x + spalte / 2 - ({ spaeherreiter: 12, ritter: 12, ramme: 24 }[eintrag.art] ?? 0);
+    figurZeichnen(stift, eintrag.art, fussX, oben + 150, eintrag.gross ?? 120, farbe, { blick: 1, ...eintrag.lage });
     // ... und in Spielgroesse daneben, wie bei Zoom 1.
     figurZeichnen(stift, eintrag.art, x + spalte - 34, oben + 185, 24, farbe, { blick: 1, ...eintrag.lage });
     stift.fillStyle = '#e6e9ee';

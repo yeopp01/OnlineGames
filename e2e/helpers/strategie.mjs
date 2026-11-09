@@ -27,6 +27,7 @@
 //   `k` = plaenkler
 //   `r` = ritter
 //   `a` = armbrustschuetze
+//   `w` = ramme
 // ### ENDE KUERZEL
 //
 // **`ansicht.gebaeude`** (Map id -> Gebaeude): `i` · `art` **ausgeschrieben**

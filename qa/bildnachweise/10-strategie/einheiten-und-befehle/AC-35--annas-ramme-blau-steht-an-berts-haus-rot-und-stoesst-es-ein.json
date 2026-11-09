@@ -1,0 +1,10 @@
+{
+  "spec": "10-strategie/einheiten-und-befehle.md",
+  "ac": "AC-35",
+  "titel": "Annas Ramme (blau) steht an Berts Haus (rot) und stößt es ein — sein Lebensbalken ist schon kürzer; Berts Dorfbewohner daneben lässt sie stehen",
+  "datei": "e2e/tests/strategie-belagerung.spec.mjs",
+  "pfad": [
+    "Belagerung",
+    "einheiten AC-35: die Ramme geht zu einer fremden Einheit nur hin und stoesst ein fremdes Haus ein"
+  ]
+}

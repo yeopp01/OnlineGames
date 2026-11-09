@@ -2,7 +2,7 @@
 
 **Bereich:** Strategie
 **Kuerzel:** einheiten
-**Stand:** 23/31 fertig · 7 offen · 1 zurueckgestellt
+**Stand:** 24/31 fertig · 6 offen · 1 zurueckgestellt
 
 ## Zweck
 
@@ -201,10 +201,16 @@ Werte aus der [Vorlage](../../docs/strategie/vorlage-aoe2.md), als Daten in
 - **AC-34** `fertig` **Armbrustschütze** — Die Verbesserung Armbrust in der
   Schießanlage (125 Nahrung, 75 Gold) tauscht jeden Bogenschützen aus, wie
   Soldat die Miliz (AC-24): 35 Leben, 5 Angriff, Reichweite 5. Eigene Figur.
-- **AC-35** `offen` **Ramme** — In der Belagerungswerkstatt: 160 Holz, 75
+- **AC-35** `fertig` **Ramme** — In der Belagerungswerkstatt: 160 Holz, 75
   Gold, 36 s, 175 Leben, 0/180 Rüstung, Tempo 0,5, 2 Angriff mit +125 gegen
   Gebäude. Sie greift nur Gebäude an; ein Befehl auf eine Einheit ist ein
   Gang dorthin.
+  _Gebaut als `nurGebaeude` in den Daten: sie wacht nicht, schlägt
+  getroffen nicht zurück und greift im Angriffslauf keine Einheit an. Der
+  Bonus gilt der Klasse `gebaeude`, die jedes Gebäude trägt. Nicht in der
+  Tabelle der Vorlage und deshalb gesetzt: Nachladezeit 5 s wie im Original,
+  Sicht 3 — kürzer als jede andere Einheit, damit sie ohne Begleitung blind
+  ist._
 - **AC-36** `offen` **Mangonel** — In der Belagerungswerkstatt: 160 Holz, 135
   Gold, 46 s, 50 Leben, 0/6 Rüstung, Tempo 0,6, 40 Angriff, Reichweite 7 und
   eine Mindestreichweite von 3; trifft eine Fläche (kampf AC-19).
