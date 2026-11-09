@@ -108,8 +108,9 @@ test.describe('Spiel waehlen', () => {
     });
     // Hoch genug, dass beide Formulare ganz im Bild stehen - mit jeder neuen
     // Einstellung des Strategiespiels waechst es (Runde 155: seit
-    // "Bündnisse" stand das zweite unter dem Rand, und kein Test sagte es).
-    await page.setViewportSize({ width: 1400, height: 1900 });
+    // "Bündnisse" stand das zweite unter dem Rand, und kein Test sagte es;
+    // seit dem Vorraum fuer den PC, AC-23, stehen die Felder in Spalten).
+    await page.setViewportSize({ width: 1400, height: 1200 });
     await page.goto('/');
     await page.locator('[data-oeffnen="strategie"]').click();
     const strategie = page.locator('[data-einstellungen-fuer="strategie"]');
@@ -336,5 +337,103 @@ test.describe('Gegen die KI', () => {
       test: info,
     });
     expect(fehler).toEqual([]);
+  });
+});
+
+// Gespielt wird am PC (spielauswahl AC-23): 1366 x 768 ist der kleinste
+// uebliche Bildschirm, und dort steht alles ohne Rollen im Fenster.
+test.describe('Am PC', () => {
+  const PC = { width: 1366, height: 768 };
+
+  // Rollt die Seite? Dann steht etwas unter dem Rand, egal was.
+  const rollt = (page) => page.evaluate(() => document.scrollingElement.scrollHeight > window.innerHeight + 1);
+
+  // Zwei Kaesten nebeneinander: der linke endet, bevor der rechte beginnt,
+  // und beide beginnen auf derselben Hoehe.
+  async function nebeneinander(links, rechts) {
+    const a = await links.boundingBox();
+    const b = await rechts.boundingBox();
+    expect(a.x + a.width, 'links endet vor rechts').toBeLessThanOrEqual(b.x);
+    expect(Math.abs(a.y - b.y), 'gleiche Hoehe').toBeLessThan(4);
+  }
+
+  test('auswahl AC-23: abgemeldet stehen Mitspielen und Anmelden nebeneinander, alles ohne Rollen im Fenster', async ({ page }, info) => {
+    await page.setViewportSize(PC);
+    await page.goto('/');
+    await expect(page.locator('#formAnmelden')).toBeVisible();
+    await nebeneinander(page.locator('.mitspielen'), page.locator('#eroeffnen-block'));
+    for (const teil of ['#vorraum h1', '#name', '#code', '#beitreten', '#anEmail', '#anKennwort', '#formAnmelden button[type="submit"]']) {
+      await expect(page.locator(teil), teil).toBeInViewport({ ratio: 1 });
+    }
+    expect(await rollt(page), 'die Seite rollt nicht').toBe(false);
+    await nachweis(page, {
+      spec: AUSWAHL,
+      ac: 'AC-23',
+      titel: 'Abgemeldet auf 1366 x 768: Mitspielen links, Anmelden rechts, alles im Fenster',
+      test: info,
+    });
+
+    // Die laengste Maske: Registrieren mit vier Feldern.
+    await page.locator('#reiterRegistrieren').click();
+    for (const teil of ['#regEinladung', '#regName', '#regEmail', '#regKennwort', '#formRegistrieren button[type="submit"]']) {
+      await expect(page.locator(teil), teil).toBeInViewport({ ratio: 1 });
+    }
+    expect(await rollt(page), 'auch Registrieren rollt nicht').toBe(false);
+  });
+
+  test.describe('angemeldet', () => {
+    test.use({ storageState: ANMELDUNG });
+
+    test('auswahl AC-23: angemeldet stehen die Einstellungen von Fading Allies in Spalten, samt Knopf im Fenster', async ({ page }, info) => {
+      await page.setViewportSize(PC);
+      await page.goto('/');
+      await expect(page.locator('#angemeldet')).toBeVisible();
+      await nebeneinander(page.locator('.mitspielen'), page.locator('#eroeffnen-block'));
+      // Zugeklappt stehen alle Karten nebeneinander im Fenster. Aufgeklappt
+      // bekommt Fading Allies die ganze Breite, und die anderen Karten
+      // duerfen darunter rutschen - wer aufklappt, hat gewaehlt.
+      for (const knopf of await page.locator('[data-oeffnen]').all()) await expect(knopf).toBeInViewport({ ratio: 1 });
+      expect(await rollt(page), 'zugeklappt rollt die Seite nicht').toBe(false);
+      await page.locator('[data-oeffnen="strategie"]').click();
+      const form = page.locator('[data-einstellungen-fuer="strategie"]');
+      // Jede Einstellung, die der Steckbrief nennt - die Liste waechst.
+      const felder = form.locator('[data-einstellung]');
+      await expect(felder).toHaveCount(STRATEGIE.length);
+      for (let i = 0; i < STRATEGIE.length; i += 1) await expect(felder.nth(i)).toBeInViewport({ ratio: 1 });
+      await expect(page.locator('[data-eroeffnen="strategie"]')).toBeInViewport({ ratio: 1 });
+      const spalten = new Set(await felder.evaluateAll((liste) => liste.map((f) => Math.round(f.getBoundingClientRect().left))));
+      expect(spalten.size, 'mindestens drei Spalten').toBeGreaterThanOrEqual(3);
+      await nachweis(page, {
+        spec: AUSWAHL,
+        ac: 'AC-23',
+        titel: 'Angemeldet auf 1366 x 768: die Einstellungen von Fading Allies in drei Spalten, „Partie eröffnen“ im Fenster',
+        test: info,
+      });
+    });
+  });
+
+  test('auswahl AC-23: Enter im Code tritt bei', async ({ browser }, info) => {
+    const optionen = { baseURL: info.project.use.baseURL, viewport: PC, locale: 'de-DE' };
+    const anna = await (await browser.newContext({ ...optionen, storageState: ANMELDUNG })).newPage();
+    const bert = await (await browser.newContext(optionen)).newPage();
+    const fehler = [fehlerSammeln(anna), fehlerSammeln(bert)];
+    try {
+      await anna.goto('/');
+      await anna.locator('[data-oeffnen="strategie"]').click();
+      await anna.locator('[data-eroeffnen="strategie"]').click();
+      await expect(anna.locator('#raumcode')).toHaveText(/^[A-Z0-9]{3}-[A-Z0-9]{3}$/);
+      const code = (await anna.locator('#raumcode').textContent()).trim();
+
+      await bert.goto('/');
+      await bert.locator('#name').fill('Bert');
+      await bert.locator('#code').fill(code);
+      await bert.locator('#code').press('Enter');
+      await expect(bert.locator('#warteraum')).toBeVisible();
+      await expect(anna.locator('#spielerliste')).toContainText('Bert');
+      expect(fehler.flat(), 'keine Fehler auf den Seiten').toEqual([]);
+    } finally {
+      await anna.context().close();
+      await bert.context().close();
+    }
   });
 });

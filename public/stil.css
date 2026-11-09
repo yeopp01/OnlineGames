@@ -1147,6 +1147,132 @@ canvas.angriffslauf {
   text-transform: uppercase;
 }
 
+/* ---- Vorraum fuer den PC (spielauswahl AC-23) --------------------------
+   Gespielt wird am PC. Deshalb steht der Vorraum nebeneinander statt
+   untereinander: Mitspielen links, Konto oder Spielauswahl rechts - und
+   passt auf 1366 x 768 ohne Rollen. Ohne Anmeldung zwei gleiche Spalten;
+   angemeldet bekommt die Spielauswahl den Platz, den die Einstellungen
+   brauchen. Unter 900 Bildpunkten Breite wieder untereinander. */
+.tafel.vorraum {
+  width: min(960px, calc(100vw - 4rem));
+  padding: 2.25rem 2.75rem;
+}
+
+.tafel.vorraum:has(#angemeldet:not([hidden])) {
+  width: min(1240px, calc(100vw - 4rem));
+}
+
+.vorraumkopf {
+  margin-bottom: 1.75rem;
+  padding-bottom: 1.25rem;
+  border-bottom: 1px solid var(--rand);
+}
+
+.vorraumkopf h1 {
+  font-size: 1.9rem;
+}
+
+.vorraumkopf .unterzeile {
+  margin-bottom: 0;
+  font-size: 0.95rem;
+}
+
+.vorraumspalten {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2.75rem;
+  align-items: start;
+}
+
+.vorraum:has(#angemeldet:not([hidden])) .vorraumspalten {
+  grid-template-columns: 21rem 1fr;
+}
+
+.vorraumspalten > .block {
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.vorraumspalten > .mitspielen {
+  padding-right: 2.75rem;
+  border-right: 1px solid var(--rand);
+  align-self: stretch;
+}
+
+/* Die Spielkarten nebeneinander; wer eine aufklappt, bekommt die ganze
+   Breite, und ihre Einstellungen stehen in Spalten statt in einer langen
+   Reihe. */
+.vorraum .spiele {
+  grid-template-columns: repeat(auto-fill, minmax(15rem, 1fr));
+}
+
+.vorraum .spielkarte {
+  display: flex;
+  flex-direction: column;
+}
+
+.vorraum .spielkarte .spielsatz {
+  flex: 1;
+}
+
+/* Ist eine aufgeklappt, stehen alle untereinander - sonst stuende die
+   naechste Karte schmal und allein in ihrer Zeile. */
+.vorraum .spiele:has(.einstellungen:not([hidden])) {
+  grid-template-columns: 1fr;
+}
+
+.vorraum .einstellungen:not([hidden]) {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(12.5rem, 1fr));
+  gap: 0 1.1rem;
+}
+
+.vorraum .einstellungen .feld {
+  margin-bottom: 0.85rem;
+}
+
+/* Eine Absage steht unter dem Knopf, damit der Knopf seinen Platz neben
+   der letzten Einstellung behaelt. */
+.vorraum .einstellungen .meldung {
+  grid-column: 1 / -1;
+  order: 1;
+  margin: 0;
+}
+
+/* Der Knopf nimmt die letzte Spalte der naechsten freien Zeile - neben
+   der letzten Einstellung, statt eine eigene Zeile zu kosten. */
+.vorraum .einstellungen button.haupt {
+  grid-column-end: -1;
+  align-self: end;
+  margin-bottom: 0.85rem;
+}
+
+/* Registrieren ist die laengste Maske: Einladungscode und Anzeigename
+   teilen sich eine Zeile, damit sie auf 1366 x 768 ohne Rollen passt. */
+.vorraum #formRegistrieren:not([hidden]) {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  column-gap: 1rem;
+}
+
+.vorraum #formRegistrieren > :nth-child(n + 3) {
+  grid-column: 1 / -1;
+}
+
+@media (max-width: 900px) {
+  .vorraumspalten,
+  .vorraum:has(#angemeldet:not([hidden])) .vorraumspalten {
+    grid-template-columns: 1fr;
+  }
+
+  .vorraumspalten > .mitspielen {
+    padding: 0 0 1.75rem;
+    border-right: 0;
+    border-bottom: 1px solid var(--rand);
+  }
+}
+
 .wer {
   display: flex;
   align-items: baseline;

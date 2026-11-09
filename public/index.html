@@ -7,12 +7,19 @@
     <link rel="stylesheet" href="stil.css" />
   </head>
   <body>
-    <main id="vorraum" class="tafel">
-      <h1>OnlineGames</h1>
-      <p class="unterzeile">Ein Raumcode, kein Konto — außer du eröffnest.</p>
+    <main id="vorraum" class="tafel vorraum">
+      <header class="vorraumkopf">
+        <h1>OnlineGames</h1>
+        <p class="unterzeile">Ein Raumcode, kein Konto — außer du eröffnest.</p>
+      </header>
 
-      <section class="block">
+      <div class="vorraumspalten">
+      <section class="block mitspielen">
         <h2>Mitspielen</h2>
+        <p class="unterzeile">
+          Den Code nennt dir, wer die Partie eröffnet hat. Name eintragen,
+          Code eintippen, Enter — ein Konto brauchst du dafür nicht.
+        </p>
         <label class="feld">
           <span>Dein Name</span>
           <input id="name" maxlength="20" autocomplete="off" placeholder="Daniel" />
@@ -21,6 +28,7 @@
           <input id="code" maxlength="7" autocomplete="off" placeholder="ABC-DEF" class="code" />
           <button id="beitreten">Beitreten</button>
         </div>
+        <p id="beitretmeldung" class="meldung" hidden></p>
       </section>
 
       <section class="block" id="eroeffnen-block">
@@ -76,9 +84,9 @@
             <button type="submit" class="haupt breit">Konto anlegen</button>
           </form>
         </div>
+        <p id="meldung" class="meldung" hidden></p>
       </section>
-
-      <p id="meldung" class="meldung" hidden></p>
+      </div>
     </main>
 
     <main id="warteraum" class="tafel" hidden>

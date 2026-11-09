@@ -2,7 +2,7 @@
 
 **Bereich:** Plattform
 **Kuerzel:** auswahl
-**Stand:** 17/22 fertig · 5 offen
+**Stand:** 18/23 fertig · 5 offen
 
 ## Zweck
 
@@ -41,6 +41,16 @@ Wer nur mitspielt, ueberspringt alles: Code eingeben, Namen eingeben, drin
   steht mit Kennzeichen in der Uebersicht, statt zu fehlen, und laesst sich
   schon eroeffnen. Ein Spiel, das noch gar nicht spielbar ist, steht dort
   sichtbar gesperrt.
+- **AC-23** `fertig` **Vorraum für den PC** — Gespielt wird am PC, nicht
+  auf dem Telefon. Deshalb steht der Vorraum ab 900 Bildpunkten Breite
+  nebeneinander statt in einer schmalen Spalte: Mitspielen links,
+  Anmelden oder Spielauswahl rechts. Auf 1366 × 768, dem kleinsten
+  üblichen PC-Bildschirm, steht ohne Rollen alles im Fenster — abgemeldet
+  beide Masken samt Knopf (auch „Registrieren" mit vier Feldern),
+  angemeldet alle Spielkarten nebeneinander und, aufgeklappt, die
+  Einstellungen von Fading Allies in mindestens drei Spalten samt „Partie
+  eröffnen" (die anderen Karten dürfen dann darunter rutschen). Enter im Namen oder im
+  Code tritt bei, ohne zur Maus zu greifen.
 
 ### Einstellungen
 

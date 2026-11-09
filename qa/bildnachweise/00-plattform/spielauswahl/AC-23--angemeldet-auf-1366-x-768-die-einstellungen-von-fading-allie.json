@@ -1,0 +1,11 @@
+{
+  "spec": "00-plattform/spielauswahl.md",
+  "ac": "AC-23",
+  "titel": "Angemeldet auf 1366 x 768: die Einstellungen von Fading Allies in drei Spalten, „Partie eröffnen“ im Fenster",
+  "datei": "e2e/tests/spielauswahl.spec.mjs",
+  "pfad": [
+    "Am PC",
+    "angemeldet",
+    "auswahl AC-23: angemeldet stehen die Einstellungen von Fading Allies in Spalten, samt Knopf im Fenster"
+  ]
+}

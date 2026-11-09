@@ -1,0 +1,10 @@
+{
+  "spec": "00-plattform/spielauswahl.md",
+  "ac": "AC-23",
+  "titel": "Abgemeldet auf 1366 x 768: Mitspielen links, Anmelden rechts, alles im Fenster",
+  "datei": "e2e/tests/spielauswahl.spec.mjs",
+  "pfad": [
+    "Am PC",
+    "auswahl AC-23: abgemeldet stehen Mitspielen und Anmelden nebeneinander, alles ohne Rollen im Fenster"
+  ]
+}

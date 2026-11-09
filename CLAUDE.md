@@ -162,7 +162,7 @@ Umfang hinzufügt, dort nachsehen.
 
 ## Stand
 
-**447 von 572 Kriterien fertig.** 667 Tests ohne Browser, 198 im Browser. Die
+**448 von 573 Kriterien fertig.** 667 Tests ohne Browser, 201 im Browser. Die
 Übersicht ist der Bericht: `npm run qa:report`.
 
 Gebaut ist der Unterbau: Räume, Übertragung, Karte, Wegfindung, Sammeln,
@@ -195,6 +195,9 @@ AC-25).
 **Node 24 ist Pflicht** (`node:sqlite`). `fnm` schaltet über `.node-version`
 automatisch um. `npm test` braucht in Node 24 ein Muster statt eines Ordners.
 Den Browser für Playwright holt einmal `npm run e2e:browser`.
+
+**Gespielt wird am PC** (spielauswahl AC-23): der Vorraum steht ab 900
+Bildpunkten nebeneinander und passt auf 1366 × 768 ohne Rollen.
 
 **Im Browser gesehen** sind die Manager-Oberfläche, der Vorraum mit
 Spielauswahl und Einstellungen und das **Strategiespiel bis Schritt A6b**:

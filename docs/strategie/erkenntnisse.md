@@ -1632,6 +1632,21 @@ ihn, mit Gegenprobe an beiden Formen. Fünf Bilder neu, alle angesehen.
 Neueste oben. Eine Zeile je Runde: Nummer, Datum, Kriterien, Ergebnis,
 wichtigste Erkenntnis.
 
+- **156** · 2026-11-09 · **spielauswahl AC-23 fertig: der Vorraum für den
+  PC** — auf Wunsch des Benutzers („Man wird das Spiel am PC spielen") statt
+  spielziel AC-22. Der Vorraum war eine Spalte von 420 Bildpunkten, auch auf
+  1920 × 1080; jetzt nebeneinander: Mitspielen links, Anmelden oder
+  Spielauswahl rechts, die Spielkarten nebeneinander, die aufgeklappten
+  Einstellungen in drei Spalten mit dem Knopf neben der letzten. Auf
+  1366 × 768 rollt nichts (abgemeldet, auch Registrieren; angemeldet
+  zugeklappt), Enter im Code tritt bei. Alles in CSS mit `:has()` — die
+  Seite fragt nicht, ob jemand angemeldet ist, sie sieht es am Block.
+  Gegenproben: ohne den Enter-Griff fällt der Fall, eine Spalte statt zwei
+  ebenso. Die Bilddurchsicht fand drei Ungereimtheiten, die kein Test sah:
+  eine schmale Karte allein in ihrer Zeile, eine Absage, die den Knopf in
+  eine eigene Zeile schob, und „Diesen Raumcode gibt es nicht." unter der
+  Anmeldung statt unter dem Code (jetzt `#beitretmeldung`). Der Warteraum
+  ist noch die alte schmale Spalte.
 - **155** · 2026-11-09 · **spielziel AC-24 fertig, D12 fertig** — die
   Kündigung im Bild: „Bündnis lösen" neben Aufgeben, fragt einmal zurück,
   steht nur, wenn der Server ja sagen würde (`ansicht.kannKuendigen`, bei

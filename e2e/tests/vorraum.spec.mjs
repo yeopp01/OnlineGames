@@ -144,7 +144,7 @@ test.describe('Anna eroeffnet, Bert tritt bei', () => {
     // Mit Vokalen - diesen Code kann es nicht geben.
     await bert.locator('#code').fill('AAA-EEE');
     await bert.locator('#beitreten').click();
-    await expect(bert.locator('#meldung')).toHaveText('Diesen Raumcode gibt es nicht.');
+    await expect(bert.locator('#beitretmeldung')).toHaveText('Diesen Raumcode gibt es nicht.');
     await expect(bert.locator('#warteraum')).toBeHidden();
     await nachweis(bert, {
       spec: RAEUME,

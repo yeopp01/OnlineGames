@@ -784,16 +784,30 @@ async function spieleLaden() {
 }
 
 document.getElementById('beitreten').addEventListener('click', () => {
-  meldeort = null;
+  // Was beim Beitreten schiefgeht, steht unter dem Code, nicht in der
+  // Spalte der Anmeldung (spielauswahl AC-23).
+  const hier = document.getElementById('beitretmeldung');
+  meldeort = hier;
   const name = teile.name.value.trim();
   // Bindestriche und Leerzeichen fallen weg - vorgelesen wird ABC-DEF.
   const code = teile.code.value.toUpperCase().replace(/[^A-Z0-9]/g, '');
-  if (!name) return melden('Bitte einen Namen eintragen.');
-  if (code.length !== 6) return melden('Der Raumcode hat sechs Zeichen.');
+  if (!name) return melden('Bitte einen Namen eintragen.', hier);
+  if (code.length !== 6) return melden('Der Raumcode hat sechs Zeichen.', hier);
   localStorage.setItem('name', name);
   melden('');
+  melden('', hier);
   verbinden(() => senden({ typ: 'beitreten', code, name }));
 });
+
+// Am PC drueckt man Enter, statt zur Maus zu greifen (spielauswahl AC-23):
+// im Namen und im Code ist das Beitreten.
+for (const feld of [teile.name, teile.code]) {
+  feld.addEventListener('keydown', (ereignis) => {
+    if (ereignis.key !== 'Enter') return;
+    ereignis.preventDefault();
+    document.getElementById('beitreten').click();
+  });
+}
 
 document.getElementById('starten').addEventListener('click', () => {
   melden('', teile.wartemeldung);
