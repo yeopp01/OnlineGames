@@ -530,6 +530,7 @@ Zahlen, gegen die spätere Runden vergleichen. Mit Datum und Commit.
 | 2026-11-09 | KI gegen KI, Startwerte 1-20 / 21-40 bis Minute 90 | 20/20 und 20/20 vor Minute 60, Median 41,9 / 38,3 min, 73–74 ms je 1000 Takte | Runde 146 |
 | 2026-11-09 | Zwei gegen zwei, Verbündete als Nachbarn, Startwerte 1-20 bis Minute 90 | 20/20 mit einem Team als Sieger, Minute 35,4–52,4, Median 39,6; HEAD von Runde 150: 0/20, 173–434 Angriffsläufe zu Verbündeten je Partie | Runde 151 |
 | 2026-11-09 | `npm run check` (zwei Abschnitte, `tests/partien/` danach) | 651 + 8 Tests, 170 und 165 s, zweimal grün; vorher 151–193 s mit einheiten AC-31 einmal von zweien rot | Rückschau 152 |
+| 2026-11-09 | Browserlauf; Tests ohne Browser | 203 Fälle in 18,9 und 19,6 min (Lauf ohne und mit neuen Bildern; Maschine nicht vorher geprüft, bei der Rückschau ruhig); 664 + 8 Tests; langsamste fahrplan AC-24 108 s, AC-14 90 s, AC-12 84 s | Rückschau 158 |
 
 ## Rückschauen
 
@@ -1500,6 +1501,45 @@ Testlauf): `npm run check` 53 s ohne Last, 599 Tests ohne Browser; der
 volle Browserlauf mit 191 Fällen 16,6 min (Runde 140; Runde 135: 17,0 min
 für 190). Die Ritterzeit am Stück braucht 1,7 min.
 
+### Nach Runde 158 (2026-11-09)
+
+Fünf Runden: 153 zwei gegen zwei im Browser (fahrplan AC-24, D11), 154
+und 155 ein Bündnis lösen (spielziel AC-21, AC-24, D12), 156 der Vorraum
+für den PC (auswahl AC-23, Wunsch des Benutzers), 157 die Zeitgrenze als
+Einstellung (spielziel AC-22). Was Zeit gekostet hat:
+
+1. **Ein Formular, das wächst, schiebt Bilder unter den Rand — dreimal
+   hintereinander.** Runde 155: das Hausbau-Formular (auswahl AC-4) und die
+   Wartemeldung (raeume AC-6) standen seit „Bündnisse" unter dem Bildrand,
+   gefunden von der Bilddurchsicht. Runde 156: dasselbe Formular, gefunden
+   von einem Test. Runde 157: „Partie starten" im Warteraum, gefunden erst
+   vom vollen Lauf — 19 Minuten und ein zweiter Lauf. Die nächste Runde
+   bringt die nächste Einstellung (Spielgeschwindigkeit). → **Ein
+   Browserfall unter auswahl AC-23** prüft den Warteraum auf 1366 × 768 für
+   jede Einstellung, die der Steckbrief nennt — Gastgeberin (Felder in drei
+   Spalten, „Partie starten") und Gast (Werte, Knopf), ohne Rollen. Wie der
+   Vorraum es seit Runde 156 schon tut. Gegenprobe: mit der alten Breite
+   von 420 Bildpunkten fällt er. Dazu eine Regel in der Anweisung
+   (Abschnitt 3): eine neue Einstellung fährt `spielauswahl` und
+   `strategie-einstieg` vor dem vollen Lauf, eine halbe Minute.
+2. **Grüne Tests, schlechtes Bild — in jeder Runde an der Oberfläche.**
+   Die Bilddurchsicht durch einen Subagenten fand in 155, 156 und 157 je
+   zwei bis drei Fehler, die kein Test sah (Inhalt unter dem Rand, eine
+   Karte allein in ihrer Zeile, eine Absage am falschen Ort, ein
+   abgeschnittener Startvorrat, Werte vor dem falschen Namen). Bisher stand
+   sie in der Anweisung als „kann". → **Pflicht, wenn Stylesheet oder
+   Seitenaufbau sich geändert haben**, mit der Frage „sieht etwas kaputt
+   aus?", nicht nur „stimmt die Unterschrift?" (Abschnitt 6, Punkt 0).
+3. **Die Zahlen in CLAUDE.md waren veraltet**: der Browserlauf dauert nicht
+   mehr 16 bis 17 Minuten für 191 Fälle, sondern 18,9 bis 19,6 für 203;
+   der langsamste Fall ist jetzt fahrplan AC-24 (zwei gegen zwei bis zur
+   Tafel, 108 s). Nachgezogen. Kein neues Werkzeug — `e2e:laufzeiten`
+   liest nur den letzten Bericht, und jeder Einzellauf überschreibt ihn;
+   die Zahlen kamen deshalb aus `qa/letzter-lauf.log`.
+
+Nicht geändert: der Zuschnitt hat getragen, jede Runde endete mit einem
+Commit. Gepusht ist seit Runde 155 nichts, der Benutzer war nicht da.
+
 ### Nach Runde 152 (2026-11-09)
 
 Vier Runden: 148 Teams im Warteraum (auswahl AC-22, spielziel AC-14), 149
@@ -1632,6 +1672,12 @@ ihn, mit Gegenprobe an beiden Formen. Fünf Bilder neu, alle angesehen.
 Neueste oben. Eine Zeile je Runde: Nummer, Datum, Kriterien, Ergebnis,
 wichtigste Erkenntnis.
 
+- **158** · 2026-11-09 · **Rückschau** — ein Browserfall prüft den
+  Warteraum auf 1366 × 768 für jede Einstellung des Steckbriefs (auswahl
+  AC-23, Gegenprobe mit der alten Breite fällt), die Bilddurchsicht ist
+  Pflicht nach Änderungen an Stylesheet oder Seitenaufbau, eine neue
+  Einstellung fährt `spielauswahl` und `strategie-einstieg` vorab;
+  Laufzeiten in CLAUDE.md nachgezogen.
 - **157** · 2026-11-09 · **spielziel AC-22 fertig: die Zeitgrenze ist eine
   Einstellung** (D13, erste Hälfte) — beim Eröffnen keine, 90 oder 120
   Spielminuten, Vorgabe keine. `PARTIE_MINUTEN` ist weg; die Welt nimmt nur,

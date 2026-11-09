@@ -412,6 +412,50 @@ test.describe('Am PC', () => {
     });
   });
 
+  // Jede neue Einstellung verlaengert auch den Warteraum. In Runde 157 stand
+  // mit der siebten "Partie starten" unter dem Bildrand, und erst der volle
+  // Lauf fand es - zwei Bildnachweise, deren Test den Knopf sehen will
+  // (Rueckschau nach Runde 158). Hier steht es in Sekunden fest, fuer jede
+  // Einstellung, die der Steckbrief nennt.
+  test('auswahl AC-23: im Warteraum stehen alle Einstellungen und „Partie starten“ auf 1366 x 768 im Fenster', async ({ browser }, info) => {
+    const optionen = { baseURL: info.project.use.baseURL, viewport: PC, locale: 'de-DE' };
+    const anna = await (await browser.newContext({ ...optionen, storageState: ANMELDUNG })).newPage();
+    const bert = await (await browser.newContext(optionen)).newPage();
+    const fehler = [fehlerSammeln(anna), fehlerSammeln(bert)];
+    try {
+      await anna.goto('/');
+      await anna.locator('[data-oeffnen="strategie"]').click();
+      await anna.locator('[data-eroeffnen="strategie"]').click();
+      await expect(anna.locator('#raumcode')).toHaveText(/^[A-Z0-9]{3}-[A-Z0-9]{3}$/);
+      const code = (await anna.locator('#raumcode').textContent()).trim();
+      await bert.goto('/');
+      await bert.locator('#name').fill('Bert');
+      await bert.locator('#code').fill(code);
+      await bert.locator('#beitreten').click();
+      await expect(anna.locator('#spielerliste')).toContainText('Bert');
+
+      // Die Gastgeberin: jedes Feld und der Knopf ganz im Fenster.
+      const felder = anna.locator('#einstellungsliste [data-einstellung]');
+      await expect(felder).toHaveCount(STRATEGIE.length);
+      for (let i = 0; i < STRATEGIE.length; i += 1) await expect(felder.nth(i)).toBeInViewport({ ratio: 1 });
+      await expect(anna.locator('#starten')).toBeInViewport({ ratio: 1 });
+      const spalten = new Set(await felder.evaluateAll((liste) => liste.map((f) => Math.round(f.getBoundingClientRect().left))));
+      expect(spalten.size, 'mindestens drei Spalten').toBeGreaterThanOrEqual(3);
+      expect(await rollt(anna), 'der Warteraum der Gastgeberin rollt nicht').toBe(false);
+
+      // Der Gast liest die Werte - jeder steht im Fenster, und der Knopf auch.
+      const werte = bert.locator('#einstellungsliste dd[data-wert]');
+      await expect(werte).toHaveCount(STRATEGIE.length);
+      for (let i = 0; i < STRATEGIE.length; i += 1) await expect(werte.nth(i)).toBeInViewport({ ratio: 1 });
+      await expect(bert.locator('#starten')).toBeInViewport({ ratio: 1 });
+      expect(await rollt(bert), 'der Warteraum des Gastes rollt nicht').toBe(false);
+      expect(fehler.flat(), 'keine Fehler auf den Seiten').toEqual([]);
+    } finally {
+      await anna.context().close();
+      await bert.context().close();
+    }
+  });
+
   test('auswahl AC-23: Enter im Code tritt bei', async ({ browser }, info) => {
     const optionen = { baseURL: info.project.use.baseURL, viewport: PC, locale: 'de-DE' };
     const anna = await (await browser.newContext({ ...optionen, storageState: ANMELDUNG })).newPage();

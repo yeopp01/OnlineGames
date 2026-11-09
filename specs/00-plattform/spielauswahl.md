@@ -50,7 +50,10 @@ Wer nur mitspielt, ueberspringt alles: Code eingeben, Namen eingeben, drin
   angemeldet alle Spielkarten nebeneinander und, aufgeklappt, die
   Einstellungen von Fading Allies in mindestens drei Spalten samt „Partie
   eröffnen" (die anderen Karten dürfen dann darunter rutschen). Enter im Namen oder im
-  Code tritt bei, ohne zur Maus zu greifen.
+  Code tritt bei, ohne zur Maus zu greifen. Ebenso der **Warteraum** (seit
+  Runde 157): auf 1366 × 768 stehen beim Gastgeber alle Einstellungen in
+  mindestens drei Spalten samt „Partie starten" im Fenster, beim Gast alle
+  Werte samt Knopf — für jede Einstellung, die der Steckbrief nennt.
 
 ### Einstellungen
 

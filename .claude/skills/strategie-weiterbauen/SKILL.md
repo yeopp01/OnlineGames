@@ -166,6 +166,17 @@ Setze die gewählten Kriterien auf `in-arbeit`.
   ihrer Aufstellung, sonst stört es ihre Messung. Namen, Zeichnung und Taste
   je Art prüft `tests/waechter-namen.test.mjs`, die Dateiliste von
   `e2e:daten` ebenso.
+- **Eine neue Einstellung im Steckbrief fährt vor dem vollen Lauf
+  `npx playwright test -c e2e/playwright.config.mjs spielauswahl
+  strategie-einstieg`** (eine halbe Minute). Jede Einstellung verlängert
+  zwei Formulare, den Vorraum und den Warteraum, und schiebt, was Tests
+  sehen wollen, unter den Bildrand. Dreimal hintereinander fand das erst
+  der volle Lauf oder die Bilddurchsicht danach: in Runde 155 das
+  Hausbau-Formular und die Wartemeldung, in Runde 156 das Formular zu
+  auswahl AC-4, in Runde 157 „Partie starten" im Warteraum — dort kostete
+  es einen ganzen Lauf. Seit der Rückschau nach Runde 158 prüft
+  auswahl AC-23 beide Formulare auf 1366 × 768 für **jede** Einstellung des
+  Steckbriefs.
 - **Ein Wert, der nicht in der Vorlage steht, wird nicht erinnert, sondern
   begründet** — und vorher nach Tests gesucht, die einen Wert über alle Arten
   vergleichen („sieht am weitesten", „das schnellste"): `grep -rn "sicht" tests/`.
@@ -512,7 +523,16 @@ Setze die gewählten Kriterien auf `in-arbeit`.
    eingebaut hatte — kein Test hatte ihn gesehen. Kosten: rund 90 Sekunden.
    Ebenso kann ein Subagent die Bilder über 1 % aus `qa:abweichung` gegen ihre
    Unterschriften lesen (Runde 87: dreizehn Bilder in 73 Sekunden); was er
-   beanstandet, siehst du selbst an.
+   beanstandet, siehst du selbst an. **Hat die Runde Stylesheet oder
+   Seitenaufbau geändert, ist diese Bilddurchsicht Pflicht**, nicht Wahl —
+   und zwar mit der Frage „sieht etwas kaputt aus?" (abgeschnitten,
+   überdeckt, schlecht verteilt), nicht nur „stimmt die Unterschrift?".
+   In den Runden 155, 156 und 157 fand sie jedes Mal Fehler bei grünen
+   Tests: zwei Bilder mit Inhalt unter dem Rand, eine schmale Karte allein
+   in ihrer Zeile, eine Absage am falschen Ort, einen abgeschnittenen
+   Startvorrat und Werte, die vor dem falschen Namen standen. Den
+   Unterschied zur alten Fassung holt der Subagent mit `git show
+   HEAD:<pfad>`.
 1. Status auf `fertig`, `npm run specs:board`.
 2. Oberfläche angefasst → `npm run check:alles:kurz`, sonst `npm run check:kurz`.
    **Hat sich das Aussehen geändert** (Figuren, Gebäude, Gelände, Leiste,
