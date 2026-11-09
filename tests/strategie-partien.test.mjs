@@ -10,6 +10,14 @@ const require = createRequire(import.meta.url);
 const { Ki } = require('../server/spiele/strategie/ki.js');
 const { partieSpielen } = require('../server/spiele/strategie/pruefstand.js');
 
+// Eine Partie je Startwert, einmal gerechnet: der Test zum Aufgeben braucht
+// dieselben zehn Partien wie fahrplan AC-11 noch einmal.
+const gespielt = new Map();
+const partie = (startwert) => {
+  if (!gespielt.has(startwert)) gespielt.set(startwert, partieSpielen({ startwert, minuten: 60 }));
+  return gespielt.get(startwert);
+};
+
 test('fahrplan AC-11: KI gegen KI endet ueber zwanzig Startwerte mit einem Sieger, jede Partie vor Minute 60', () => {
   // Gemessen in Runde 97, Startwerte 1 bis 20: alle mit Sieger, Ende nach
   // 24,8 bis 53,3 Minuten, Median 33,8. Vorher (Runde 92) 4 von 20 vor Minute
@@ -17,7 +25,7 @@ test('fahrplan AC-11: KI gegen KI endet ueber zwanzig Startwerte mit einem Siege
   const enden = [];
   const sieger = new Set();
   for (let startwert = 1; startwert <= 20; startwert++) {
-    const r = partieSpielen({ startwert, minuten: 60 });
+    const r = partie(startwert);
     assert.ok(r.ende?.sieger, `Startwert ${startwert}: kein Sieger bis Minute 60`);
     enden.push(r.ende.takt);
     sieger.add(r.ende.sieger);
@@ -28,22 +36,31 @@ test('fahrplan AC-11: KI gegen KI endet ueber zwanzig Startwerte mit einem Siege
   assert.equal(sieger.size, 2, 'mal gewinnt die eine KI, mal die andere');
 });
 
-test('fahrplan AC-11 und ki AC-19: ohne Aufgeben dauert Startwert 13 fast zehn Minuten laenger', () => {
+test('fahrplan AC-11 und ki AC-19: ohne Aufgeben dauert ueber zehn Startwerte keine Partie kuerzer, im Mittel zwei Minuten laenger', () => {
   // Gegenprobe zur Ursache: das Aufgeben verkuerzt die Partien, und nicht
-  // irgendetwas anderes. Gemessen in Runde 100 ueber die Startwerte 1 bis 20:
-  // ohne Aufgeben jede Partie laenger, um 0,4 bis 10,0 Minuten; Startwert 13
-  // endet nach 35,8 statt 45,8. (In Runde 97 war es Startwert 5 mit 53,3
-  // statt ueber 60 - seit einheiten AC-31 verlaufen die Kaempfe anders.)
-  const mit = partieSpielen({ startwert: 13, minuten: 60 }).ende;
-  const echt = Ki.prototype.aussichtslos;
-  Ki.prototype.aussichtslos = () => false;
-  let ohne;
-  try {
-    ohne = partieSpielen({ startwert: 13, minuten: 90 }).ende;
-  } finally {
-    Ki.prototype.aussichtslos = echt;
-  }
-  assert.ok(mit, 'mit Aufgeben entschieden');
+  // irgendetwas anderes. Bis Runde 136 an einem Startwert (13, zuvor 5) -
+  // in Runde 137 brach das, weil die Ritterzeit jede Partie verschob: mit
+  // 42,3, ohne 44,5 Minuten. Gemessen in Runde 137 ueber die Startwerte 1
+  // bis 20: ohne Aufgeben keine kuerzer, laenger um 0,0 bis 12,8 Minuten,
+  // im Mittel 5,7; ueber 1 bis 10 im Mittel 5,0. Zwei Minuten sind weniger
+  // als die Haelfte davon und fallen, wenn das Aufgeben nie greift (dann
+  // ist jeder Unterschied null).
   const minuten = (ende) => (ende ? ende.takt / 600 : 90);
-  assert.ok(minuten(ohne) - minuten(mit) >= 5, `mit ${minuten(mit).toFixed(1)}, ohne ${minuten(ohne).toFixed(1)} Minuten`);
+  const echt = Ki.prototype.aussichtslos;
+  let summe = 0;
+  for (let startwert = 1; startwert <= 10; startwert++) {
+    const mit = partie(startwert).ende;
+    assert.ok(mit, `Startwert ${startwert}: mit Aufgeben entschieden`);
+    Ki.prototype.aussichtslos = () => false;
+    let ohne;
+    try {
+      ohne = partieSpielen({ startwert, minuten: 90 }).ende;
+    } finally {
+      Ki.prototype.aussichtslos = echt;
+    }
+    const laenger = minuten(ohne) - minuten(mit);
+    assert.ok(laenger >= 0, `Startwert ${startwert}: mit ${minuten(mit).toFixed(1)}, ohne ${minuten(ohne).toFixed(1)} Minuten`);
+    summe += laenger;
+  }
+  assert.ok(summe / 10 >= 2, `im Mittel ${(summe / 10).toFixed(1)} Minuten laenger`);
 });
