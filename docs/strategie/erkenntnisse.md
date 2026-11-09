@@ -27,7 +27,16 @@ etwas anderem gearbeitet.
   Kriterium der KI angehen (ihre Wirtschaft geht im Mittelspiel aus — sie
   zieht nicht zu neuen Vorräten um), dann ki AC-13 auf diesem Boden
   einbinden. Bis dahin liegt ki AC-13 auf dem Zweig `strategie-ki-sicht`
-  (`8817c60`). **Alternative:** fahrplan AC-11 für Partien im Nebel neu
+  (`8817c60`). **Nachtrag Runde 137: dasselbe Patt hält jetzt auch die
+  Ritterzeit auf.** Die KI steigt auf (ki AC-21, 35 von 40 nach 22 bis 28
+  Minuten) und bildet danach Ritter aus (ki AC-22) — aber Startwert 15
+  steht von Minute 26 bis 52 im Patt, beide bei 22 Dorfbewohnern und
+  Vorräten nahe null, und KI gegen KI endet nur 19 von 20 vor Minute 60.
+  Rammen zum Abräumen machten es schlechter (18/20). Geparkt auf dem Zweig
+  `strategie-ki-ritterzeit` (`074d1f0`). Damit hängen zwei Kriterien an
+  derselben Ursache; die Empfehlung oben gilt verstärkt: **erst die
+  Wirtschaft im Mittelspiel** (mehr Dorfbewohner nach dem Aufstieg, Umzug
+  zu neuen Vorräten), dann beide Zweige auf diesem Boden. **Alternative:** fahrplan AC-11 für Partien im Nebel neu
   fassen (etwa: alle mit Sieger vor Minute 90, Median unter 45) — das wäre
   ehrlich, weil Partien im Nebel länger dauern, aber es ist eine
   Entscheidung über das Spiel, keine der Schleife.
@@ -1345,6 +1354,25 @@ Prüfung (Runde 135; Runde 130: 15,0 min für 186). `e2e:daten` 4,9 min.
 Neueste oben. Eine Zeile je Runde: Nummer, Datum, Kriterien, Ergebnis,
 wichtigste Erkenntnis.
 
+- **137** · 2026-11-09 · **ki AC-21/22 gebaut, geparkt** auf
+  `strategie-ki-ritterzeit` (`074d1f0`): die KI spart ab dem ersten Angriff
+  für die Ritterzeit (Militär und Umverteilung ziehen die Rücklage ab;
+  läuft der Aufstieg, ist nichts mehr zurückzulegen — das fand die
+  Durchsicht: 160 Sekunden ohne Nachschub), baut eine Schmiede, wenn das
+  zweite Gebäude der Feudalzeit fehlt, und nimmt danach die Einheit des
+  neuesten Zeitalters (Ritter vor Späher). 35 von 40 steigen nach 22,1 bis
+  27,6 Minuten auf; die fünf ohne Aufstieg waren überrannt (0 bis 2
+  Dorfbewohner). **fahrplan AC-11 reißt in jeder Fassung**: Aufstieg
+  allein 19/20 (Startwert 11: 71 Minuten), mit Rittern 20/20, mit dem
+  Fehler aus der Durchsicht behoben wieder 19/20 (Startwert 15: 64,8),
+  mit Rammen 18/20. Der Verlauf zeigt jedes Mal das Patt aus Runde 114 —
+  Frage dort ergänzt. Mitgenommen auf `strategie`: der Test zu ki AC-19
+  misst über zehn Startwerte statt an Startwert 13 (der brach mit jeder
+  Verschiebung; jetzt keine Partie kürzer, im Mittel mindestens zwei
+  Minuten länger, gemessen 4,5). **Fast passiert:** `Write` auf einen
+  Testnamen, der schon existierte (`tests/strategie-ritterzeit.test.mjs`,
+  bauen AC-27 ff.) — vor dem Anlegen mit `ls` nachsehen; mit
+  `git checkout` zurückgeholt.
 - **136** · 2026-11-09 · **Rückschau** — Wächter für Merker hinter `w`
   (fand `heilt`), Regel „Rechtsklick an drei Stellen", die Bilder zu
   einheiten AC-15 und ki AC-11 zeigen wieder, was ihre Unterschrift sagt.

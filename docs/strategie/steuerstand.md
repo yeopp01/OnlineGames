@@ -13,7 +13,7 @@ hier nichts eintraegt, verliert den Faden beim naechsten Autocompact.
 
 ## Zuletzt fortgeschrieben
 
-2026-11-09, nach Runde 136 (**kampf AC-13, fahrplan AC-13, C6e fertig**: der
+2026-11-09, nach Runde 137 (**kampf AC-13, fahrplan AC-13, C6e fertig**: der
 Server schickt jedem nur, was er sieht - `welt.zustandJeSpieler`,
 `welt.aufbauFuer`, im Raum `sendenJe`. Fremde Gebaeude und Felder, die sich im
 Nebel aendern, kommen beim naechsten Hinsehen; wer ausscheidet, bekommt einmal
@@ -137,8 +137,14 @@ fuer ruhend, `bekehren` in `werte.einheiten`; im Browser `bekehrbarAn` fuer
 das rote Zeichen, Leiste "Bekehrt 9 Felder"). Die KI bildet keine Moenche
 aus. Runde 136 war die Rueckschau (Waechter `waechter-merker`, Regel
 "Rechtsklick an drei Stellen", Bilder zu einheiten AC-15 und ki AC-11
-erneuert). **Naechste Runde 137: D9 - die KI in der Ritterzeit.** Erledigt
-in Runde 136 war auch das Bild zu einheiten
+erneuert). Runde 137: **ki AC-21/22 gebaut und geparkt** auf dem lokalen
+Zweig `strategie-ki-ritterzeit` (`074d1f0`) - fahrplan AC-11 reisst in jeder
+Fassung (19/20, Patt im Mittelspiel wie in Runde 114; Frage an den Benutzer
+ergaenzt). Auf `strategie` nur der robustere Test zu ki AC-19 (zehn
+Startwerte statt Startwert 13). **Naechste Runde 138: fahrplan AC-23** (der
+Konterkreis der Ritterzeit im Gefechtsstand - haengt nicht an der KI), dann
+fahrplan AC-15 (Befestigung). ki AC-21/22 und AC-13 warten auf die Antwort
+zum Patt. Erledigt in Runde 136 war auch das Bild zu einheiten
 AC-15: die Goldtraeger stehen hinter dem Dorfzentrum und sind nur Umriss,
 die Goldbrocken der Unterschrift sieht man nicht (schon im eingecheckten
 Bild so, gefunden in Runde 134 mit qa:abweichung).)
