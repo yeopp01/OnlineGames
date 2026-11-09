@@ -10,7 +10,7 @@ import assert from 'node:assert/strict';
 import { createRequire } from 'node:module';
 
 const require = createRequire(import.meta.url);
-const { Welt, TAKTE_PRO_SEKUNDE } = require('../server/spiele/strategie/welt.js');
+const { Welt, TAKTE_PRO_SEKUNDE, KUENDIGUNG_SEKUNDEN } = require('../server/spiele/strategie/welt.js');
 const { EINHEITEN } = require('../server/spiele/strategie/daten.js');
 const { Ki, FEIND_FERN } = require('../server/spiele/strategie/ki.js');
 
@@ -409,4 +409,141 @@ test('ki AC-25: eine Baustelle neben einem Verbuendeten wird weitergebaut, neben
     const bauleute = dorf.filter((e) => e.auftrag?.art === 'bauen' && e.auftrag.gebaeude === haus.id);
     assert.equal(bauleute.length, gebaut ? 1 : 0, gebaut ? 'neben Carla baut einer weiter' : 'neben Bert bleibt sie liegen');
   }
+});
+
+// Ein Buendnis loesen (spielziel AC-21): Anna kuendigt, Carla war ihre
+// Verbuendete. 60 Sekunden lang sind sie noch keine Gegner, sehen aber
+// schon jeder fuer sich; danach gehoert Anna keinem Team mehr an.
+const kuendigen = (welt, id) => welt.nachricht(id, { auftrag: 'kuendigen' });
+
+test('spielziel AC-21: wer kuendigt, ist 60 Sekunden lang noch Verbuendeter - danach Gegner ohne Team, und die Wachen greifen an', () => {
+  const { welt, x0, y0 } = mitPlatz();
+  const wache = stellen(welt, 'a', 'miliz', x0 + 2, y0 + 5);
+  const carla = stellen(welt, 'c', 'miliz', x0 + 5, y0 + 5);
+  assert.deepEqual(kuendigen(welt, 'a'), {});
+  assert.equal(welt.kuendigungen[0].bis, welt.takt + KUENDIGUNG_SEKUNDEN * TAKTE_PRO_SEKUNDE);
+  assert.equal(KUENDIGUNG_SEKUNDEN, 60, 'die Frist aus ADR-0013');
+  sekunden(welt, KUENDIGUNG_SEKUNDEN - 1);
+  assert.equal(welt.feindlich('a', 'c'), false, 'kurz vor Ablauf noch verbuendet');
+  assert.equal(welt.feindlich('c', 'a'), false);
+  assert.equal(wache.auftrag, null, 'keiner greift waehrend der Frist an');
+  assert.equal(carla.leben, EINHEITEN.miliz.leben);
+  assert.equal(welt.spielerVon('a').team, 1);
+
+  sekunden(welt, 2);
+  assert.equal(welt.feindlich('a', 'c'), true, 'nach der Frist Gegner - in beide Richtungen');
+  assert.equal(welt.feindlich('c', 'a'), true);
+  assert.equal(welt.feindlich('a', 'b'), true, 'und Bert bleibt Annas Gegner');
+  assert.equal(welt.spielerVon('a').team, null, 'Anna gehoert keinem Team mehr an (ADR-0013, Punkt 4)');
+  assert.equal(welt.spielerVon('c').team, 1, 'Carla bleibt in ihrem Team');
+  assert.ok(wache.auftrag?.art === 'angreifen' || carla.auftrag?.art === 'angreifen', 'die Wachen gehen aufeinander los');
+});
+
+test('spielziel AC-21: die gemeinsame Sicht endet sofort - in beide Richtungen, was erkundet war, bleibt', () => {
+  const { welt, x0, y0 } = mitPlatz(TEAMS, 'nebel');
+  // Carlas Spaeher auf der einen Seite des freien Platzes, Annas auf der
+  // anderen - weit weg von allen Doerfern.
+  const carlas = { x: x0, y: y0 + 5 };
+  const annas = { x: x0 + 10, y: y0 + 5 };
+  stellen(welt, 'c', 'spaeherreiter', carlas.x, carlas.y);
+  stellen(welt, 'a', 'spaeherreiter', annas.x, annas.y);
+  welt.sichtAktualisieren();
+  assert.equal(welt.sieht('a', carlas.x, carlas.y), true, 'vorher sieht Anna, was Carla sieht');
+  assert.equal(welt.sieht('c', annas.x, annas.y), true, 'und Carla, was Anna sieht');
+
+  assert.deepEqual(kuendigen(welt, 'a'), {});
+  // Kein Takt dazwischen: sofort heisst sofort.
+  assert.equal(welt.sieht('a', carlas.x, carlas.y), false, 'Anna sieht Carlas Platz nicht mehr');
+  assert.equal(welt.sieht('c', annas.x, annas.y), false, 'Carla Annas nicht mehr');
+  assert.equal(welt.sieht('a', annas.x, annas.y), true, 'jede sieht weiter, was sie selbst sieht');
+  assert.equal(welt.sieht('c', carlas.x, carlas.y), true);
+  assert.equal(welt.erkundet('a', carlas.x, carlas.y), true, 'erkundet bleibt erkundet');
+  assert.equal(welt.feindlich('a', 'c'), false, 'Gegner sind sie noch nicht');
+  sekunden(welt, 5);
+  assert.equal(welt.sieht('a', carlas.x, carlas.y), false, 'und es bleibt getrennt');
+});
+
+test('spielziel AC-21: waehrend der Frist schickt der Server Anna Carlas Einheiten nur noch in Sicht - und jedem die Kuendigung', () => {
+  const { welt } = mitPlatz(TEAMS, 'nebel');
+  for (const id of ['a', 'b', 'c']) welt.aufbauFuer(id);
+  const carlas = [...welt.einheiten.values()].filter((e) => e.besitzer === 'c').map((e) => e.id);
+  const bekommt = (id) => welt.zustandJeSpieler([id]).get(id);
+  assert.ok(carlas.every((i) => bekommt('a').einheiten.some((e) => e.i === i)), 'vorher jede Einheit Carlas');
+  assert.equal(bekommt('a').bu, undefined, 'keine Kuendigung, kein Eintrag');
+
+  kuendigen(welt, 'a');
+  const bis = welt.kuendigungen[0].bis;
+  const anna = bekommt('a');
+  assert.ok(carlas.every((i) => !anna.einheiten.some((e) => e.i === i)), 'Carlas Dorf liegt weit weg: nichts davon kommt an');
+  // Oeffentlich: jeder bekommt sie, auch Bert, der Gegner beider.
+  for (const id of ['a', 'b', 'c']) assert.deepEqual(bekommt(id).bu, [['a', bis]], `${id} bekommt die Kuendigung`);
+  assert.deepEqual(welt.aufbauFuer('b').bu, [['a', bis]], 'auch im Aufbau nach einer Rueckkehr');
+});
+
+test('spielziel AC-21: bei "fest" weist der Server die Kuendigung ab - ebenso eine zweite, eine ohne Verbuendeten und eine ohne Team', () => {
+  const fest = new Welt(DREI, 7, { teams: TEAMS, buendnisse: 'fest' });
+  assert.match(kuendigen(fest, 'a').fehler, /fest/);
+  assert.deepEqual(fest.kuendigungen, []);
+  assert.equal(fest.teiltSicht('a', 'c'), true, 'die Sicht bleibt gemeinsam');
+
+  const loesbar = new Welt(DREI, 7, { teams: TEAMS });
+  assert.equal(loesbar.buendnisse, 'loesbar', 'die Vorgabe');
+  assert.match(kuendigen(loesbar, 'b').fehler, /keinen Verbündeten/, 'Bert ist allein in Team 2');
+  assert.deepEqual(kuendigen(loesbar, 'a'), {});
+  assert.match(kuendigen(loesbar, 'a').fehler, /schon gelöst/, 'zweimal geht nicht - zuruecknehmen auch nicht');
+  assert.equal(loesbar.kuendigungen.length, 1);
+
+  const ohneTeams = new Welt(DREI, 7, {});
+  assert.match(kuendigen(ohneTeams, 'a').fehler, /keinen Verbündeten/);
+});
+
+test('spielziel AC-21: nach der Frist gewinnt das Team ohne den, der gekuendigt hat - er kaempft allein weiter', () => {
+  const welt = new Welt(DREI, 7, { teams: TEAMS, sicht: 'aufgedeckt' });
+  kuendigen(welt, 'a');
+  sekunden(welt, KUENDIGUNG_SEKUNDEN + 1);
+  welt.aufgeben('b');
+  assert.equal(welt.ende, null, 'Bert ist raus, aber Anna und Carla sind jetzt Gegner: es geht weiter');
+  welt.aufgeben('c');
+  assert.deepEqual(welt.ende.gewinner, ['a'], 'Anna gewinnt allein');
+  assert.equal(welt.ende.team, undefined, 'ohne Team');
+});
+
+test('spielziel AC-21: faellt nach der Kuendigung ein Haus Carlas, wo Anna nicht hinsieht, erfaehrt sie es beim naechsten Hinsehen', () => {
+  const { welt, x0, y0 } = mitPlatz(TEAMS, 'nebel');
+  const haus = welt.gebaeudeAnlegen('c', 'haus', x0 + 5, y0 + 5);
+  for (const id of ['a', 'b', 'c']) welt.aufbauFuer(id);
+  const bekommt = (id) => welt.zustandJeSpieler([id]).get(id).gebaeude || [];
+  kuendigen(welt, 'a');
+  // Carla reisst ab, und niemand von Anna steht dort.
+  welt.gebaeudeZerstoeren(haus);
+  welt.sichtAktualisieren();
+  assert.equal(welt.sieht('a', x0 + 5, y0 + 5), false, 'Anna sieht den Platz nicht');
+  assert.ok(!bekommt('a').some((g) => g.i === haus.id), 'im Nebel erfaehrt sie es nicht - wie bei jedem fremden Haus');
+  // Ein Spaeher Annas kommt hin: jetzt steht es nicht mehr.
+  stellen(welt, 'a', 'spaeherreiter', x0 + 5, y0 + 3);
+  welt.sichtAktualisieren();
+  assert.ok(bekommt('a').some((g) => g.i === haus.id && g.weg), 'beim Hinsehen: das Haus ist weg');
+});
+
+test('spielziel AC-21: faellt der letzte Gegner waehrend der Frist, ist nichts entschieden - nach der Frist kaempfen die frueheren Verbuendeten', () => {
+  const welt = new Welt(DREI, 7, { teams: TEAMS, sicht: 'aufgedeckt' });
+  kuendigen(welt, 'a');
+  sekunden(welt, 5);
+  welt.aufgeben('b');
+  // Nach der alten Regel endete die Partie hier als Sieg von Team 1 - samt
+  // Anna, die das Team eben verlassen hat.
+  assert.equal(welt.ende, null, 'Bert ist raus, aber Annas Frist laeuft: nichts entschieden');
+  sekunden(welt, KUENDIGUNG_SEKUNDEN);
+  assert.equal(welt.ende, null, 'nach der Frist sind Anna und Carla Gegner');
+  assert.equal(welt.feindlich('a', 'c'), true);
+  welt.aufgeben('a');
+  assert.deepEqual(welt.ende.gewinner, ['c'], 'Carla gewinnt - ohne Anna');
+});
+
+test('spielziel AC-21: wem nur noch einer bleibt, der selbst schon gekuendigt hat, hat keinen Verbuendeten mehr', () => {
+  const welt = new Welt(DREI, 7, { teams: TEAMS });
+  assert.deepEqual(kuendigen(welt, 'a'), {});
+  // Carlas einzige Verbuendete geht schon: ihre Kuendigung aenderte nichts.
+  assert.match(kuendigen(welt, 'c').fehler, /keinen Verbündeten/);
+  assert.equal(welt.kuendigungen.length, 1);
 });

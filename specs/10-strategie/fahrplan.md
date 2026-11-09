@@ -232,7 +232,7 @@ mir":
 | --- | --- | --- |
 | D10 | Teams im Warteraum, Verbündete kämpfen nicht, gemeinsame Sicht — **fertig** (Runde 149) | spielauswahl AC-22, spielziel AC-14, AC-19 |
 | D11 | Ein Team gewinnt; die KI im Team; zwei gegen zwei im Prüfstand und im Browser — **fertig** (Runde 153) | spielziel AC-20, ki AC-25, fahrplan AC-24 |
-| D12 | Bündnis lösen, öffentlich und mit Frist | spielziel AC-21 |
+| D12 | Bündnis lösen, öffentlich und mit Frist; im Bild mit Knopf und Uhr | spielziel AC-21, AC-24 |
 | D13 | Zeitgrenze und Spielgeschwindigkeit als Einstellung | spielziel AC-22, AC-23 |
 | D14 | Der Marktkarren und sein Handel; die KI handelt | einheiten AC-39, AC-40, ki AC-26 |
 

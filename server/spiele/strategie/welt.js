@@ -59,6 +59,10 @@ const VERFOLGUNG_FELDER = 5;
 // aus der Vorlage; sie ist eine Grenze, keine erwartete Dauer - gespielt
 // werden 25 bis 45 Minuten (AC-2).
 const PARTIE_MINUTEN = 90;
+// So lange laeuft die Frist, wenn einer sein Buendnis kuendigt (spielziel
+// AC-21, ADR-0013): erst danach sind die frueheren Verbuendeten Gegner. Die
+// Zahl steht im ADR - genug, um Truppen aus dem fremden Dorf zu holen.
+const KUENDIGUNG_SEKUNDEN = 60;
 // Zellengroesse des Suchrasters fuer die Wache. Groesser als jede Sichtweite,
 // damit die eigene Zelle und ihre acht Nachbarn alles Sichtbare enthalten.
 const RASTER_FELDER = 8;
@@ -228,6 +232,14 @@ class Welt {
     // gewonnen" (spielziel AC-20, Durchsicht Runde 150). Dann endet sie
     // erst mit der Zeit oder wenn niemand mehr steht.
     this.mitGegnern = this.spieler.some((a) => this.spieler.some((b) => this.feindlich(a.id, b.id)));
+    // Ob ein Buendnis waehrend der Partie geloest werden kann (spielziel
+    // AC-21, Einstellung "Bündnisse"). Alles ausser "fest" heisst lösbar -
+    // die Vorgabe des Steckbriefs.
+    this.buendnisse = einstellungen.buendnisse === 'fest' ? 'fest' : 'loesbar';
+    // Gekuendigte Buendnisse, je `{ wer, bis }` mit `bis` als Takt, an dem
+    // die Frist ablaeuft, und `vorbei`, sobald sie abgelaufen ist. Die Liste
+    // geht mit jedem Zustand an alle: eine Kuendigung ist oeffentlich.
+    this.kuendigungen = [];
 
     // Tiere gehoeren einem Spieler, stehen aber nicht in den Einheiten: sie
     // stehen still, bis jemand sie nutzt, und gehen deshalb nicht zehnmal je
@@ -964,6 +976,8 @@ class Welt {
         return this.handeln(spielerId, nachricht.gebaeude, nachricht.ware, nachricht.richtung);
       case 'aufgeben':
         return this.aufgeben(spielerId);
+      case 'kuendigen':
+        return this.kuendigen(spielerId);
       default:
         return this.befehl(spielerId, nachricht.einheiten, nachricht.ziel, Boolean(nachricht.angriffslauf));
     }
@@ -1329,6 +1343,17 @@ class Welt {
     if (!this.mitTeams) return true;
     const team = this.teamVon.get(a);
     return !team || team !== this.teamVon.get(b);
+  }
+
+  /**
+   * Sehen die beiden gemeinsam (spielziel AC-19, AC-21)? Fast immer
+   * dasselbe wie "nicht feindlich" - ausser waehrend der Frist einer
+   * Kuendigung: dann sind sie noch keine Gegner, sehen aber schon jeder
+   * fuer sich. Fragen, was einer sieht und was der Server ihm schickt,
+   * stellen deshalb diese Frage, Kampfregeln `feindlich`.
+   */
+  teiltSicht(a, b) {
+    return this.sichten.get(a) === this.sichten.get(b);
   }
 
   feldVon(einheit) {
@@ -2597,7 +2622,12 @@ class Welt {
     // auch wer daraus schon ausgeschieden ist. Wer kein Team hat, ist jedem
     // Gegner - er gewinnt nur allein. Gefragt wird `feindlich`, die eine
     // Stelle fuer "Gegner oder nicht" (spielziel AC-14).
-    if (this.mitGegnern && uebrig.every((s) => !this.feindlich(uebrig[0].id, s.id))) {
+    // Laeuft die Frist einer Kuendigung unter den Uebrigen, ist nichts
+    // entschieden: in hoechstens 60 Sekunden sind sie Gegner, und wer
+    // gekuendigt hat, gewaenne sonst mit dem Team, das er eben verlassen hat
+    // (spielziel AC-21, Durchsicht Runde 154).
+    const fristLaeuft = this.kuendigungen.some((k) => !k.vorbei && uebrig.some((s) => s.id === k.wer));
+    if (this.mitGegnern && !fristLaeuft && uebrig.every((s) => !this.feindlich(uebrig[0].id, s.id))) {
       const team = uebrig[0].team || null;
       const gewinner = team ? this.spieler.filter((s) => s.team === team).map((s) => s.id) : [uebrig[0].id];
       this.endeSetzen(gewinner, 'eroberung', team);
@@ -2662,6 +2692,69 @@ class Welt {
     return {};
   }
 
+  /**
+   * Ein Buendnis loesen (spielziel AC-21, ADR-0013 Punkt 3 und 4): wer
+   * kuendigt, tritt aus seinem Team aus - gegenueber allen Verbuendeten
+   * zugleich, also in beide Richtungen. Die gemeinsame Sicht endet sofort,
+   * Gegner sind sie erst nach der Frist (`fristenTakten`). Zuruecknehmen
+   * geht nicht: eine zweite Kuendigung gibt es nicht, und eine Nachricht,
+   * die eine aufhebt, auch nicht.
+   */
+  kuendigen(spielerId) {
+    const spieler = this.spielerVon(spielerId);
+    if (!spieler) return { fehler: 'Diesen Spieler gibt es hier nicht.' };
+    if (this.ende) return { fehler: 'Die Partie ist schon zu Ende.' };
+    if (spieler.aus) return { fehler: 'Du bist schon ausgeschieden.' };
+    if (this.buendnisse === 'fest') return { fehler: 'Die Bündnisse dieser Partie sind fest.' };
+    if (this.kuendigungen.some((k) => k.wer === spielerId)) return { fehler: 'Du hast dein Bündnis schon gelöst.' };
+    // Wer selbst schon gekuendigt hat, zaehlt nicht: ihm zu kuendigen
+    // aenderte nichts (Durchsicht Runde 154).
+    const verbuendete = this.spieler.filter((s) => s.id !== spielerId && !s.aus && !this.feindlich(spielerId, s.id)
+      && !this.kuendigungen.some((k) => k.wer === s.id));
+    if (!verbuendete.length) return { fehler: 'Du hast keinen Verbündeten.' };
+    this.kuendigungen.push({ wer: spielerId, bis: this.takt + KUENDIGUNG_SEKUNDEN * TAKTE_PRO_SEKUNDE });
+    this.sichtTrennen(spielerId);
+    return {};
+  }
+
+  /**
+   * Die Sicht eines Spielers von der seines Teams trennen (spielziel
+   * AC-21): er nimmt mit, was er bis jetzt sah und erkundet hatte - eine
+   * Abschrift -, und von da an rechnet jede Seite fuer sich. Was er von den
+   * Gebaeuden der anderen wusste, bleibt beiden als Erinnerung im Nebel
+   * (kampf AC-12): sonst erfuehre keiner je, wenn eines davon faellt, wo er
+   * nicht hinsieht.
+   */
+  sichtTrennen(id) {
+    const alt = this.sichten.get(id);
+    const bisher = this.spieler.filter((s) => s.id !== id && this.sichten.get(s.id) === alt).map((s) => s.id);
+    if (!bisher.length) return;
+    this.sichten.set(id, { sichtbar: alt.sichtbar.slice(), gebaeude: alt.gebaeude.slice(), erkundet: alt.erkundet.slice() });
+    if (this.bekannt) {
+      for (const [wer, von] of [...bisher.map((b) => [id, b]), ...bisher.map((b) => [b, id])]) {
+        const bekannt = this.bekannt.get(wer);
+        if (!bekannt) continue;
+        for (const g of this.gebaeude.values()) if (g.besitzer === von) bekannt.set(g.id, { art: g.art, x: g.x, y: g.y });
+      }
+    }
+    // Sofort neu gerechnet: bis zur naechsten Rechnung saehe sonst das Team
+    // noch, was seine Einheiten sehen.
+    this.gebaeudeSichtNeu = true;
+    this.sichtAktualisieren();
+  }
+
+  // Laeuft eine Frist ab, gehoert der Kuendigende keinem Team mehr an
+  // (spielziel AC-21): von da an ist er jedem Gegner.
+  fristenTakten() {
+    for (const k of this.kuendigungen) {
+      if (k.vorbei || this.takt < k.bis) continue;
+      k.vorbei = true;
+      this.spielerVon(k.wer).team = null;
+      this.teamVon.set(k.wer, null);
+      this.mitGegnern = this.spieler.some((a) => this.spieler.some((b) => this.feindlich(a.id, b.id)));
+    }
+  }
+
   takten() {
     // Eine entschiedene Partie rechnet nicht weiter. Der Raum haelt seine Uhr
     // an (`vorbei`); dies ist die zweite Sperre, fuer den Pruefstand und fuer
@@ -2682,6 +2775,7 @@ class Welt {
     this.einschlaegeTakten();
     this.schlaegeAbrechnen();
     if (this.takt % SICHT_TAKTE === 0) this.sichtAktualisieren();
+    if (this.kuendigungen.length) this.fristenTakten();
     this.endePruefen();
   }
 
@@ -3292,6 +3386,10 @@ class Welt {
       einheiten,
       felder,
       ...(schuesse.length ? { p: schuesse } : {}),
+      // Geloeste Buendnisse (spielziel AC-21), je [wer, Takt des
+      // Fristendes] - an alle, denn eine Kuendigung ist oeffentlich. Ist
+      // `t` ueber dem Fristende, gehoert `wer` keinem Team mehr an.
+      ...(this.kuendigungen.length ? { bu: this.kuendigungen.map((k) => [k.wer, k.bis]) } : {}),
       // Das Ende, sobald es feststeht - danach schickt der Raum keinen
       // Zustand mehr (spielziel AC-5).
       ...(this.ende ? { ende: this.ende } : {}),
@@ -3355,10 +3453,10 @@ class Welt {
     for (const g of aenderungen) {
       // Eigene immer, auch das Verschwinden - und die der Verbuendeten
       // (spielziel AC-19): ihr Dorf faellt nicht im Nebel, man sieht es.
-      if (!this.feindlich(id, this.gebaeudeBesitzer.get(g.i))) raus.push(g);
+      if (this.teiltSicht(id, this.gebaeudeBesitzer.get(g.i))) raus.push(g);
     }
     for (const g of this.gebaeude.values()) {
-      if (!this.feindlich(id, g.besitzer)) continue;
+      if (this.teiltSicht(id, g.besitzer)) continue;
       const alt = bekannt.get(g.id);
       if (!this.siehtGebaeude(id, g)) {
         // Im Nebel fertig geworden oder beschaedigt: beim naechsten Hinsehen
@@ -3425,7 +3523,10 @@ class Welt {
       ...voll,
       // Fremde Einheiten nur in Sicht; die eigenen und die der Verbuendeten
       // immer (spielziel AC-19).
-      einheiten: voll.einheiten.filter((e) => !this.feindlich(id, e.b) || this.sieht(id, Math.round(e.x), Math.round(e.y))),
+      // Gefragt wird die Sicht, nicht das Team: waehrend der Frist einer
+      // Kuendigung sind sie noch Verbuendete, sehen aber nicht mehr
+      // gemeinsam (spielziel AC-21).
+      einheiten: voll.einheiten.filter((e) => this.teiltSicht(id, e.b) || this.sieht(id, Math.round(e.x), Math.round(e.y))),
       felder: this.felderFuer(id, voll.felder),
       // Von den anderen nur, was jeder sieht: wer draussen ist, das Zeitalter
       // und die Kampfwerte (die zeigt die Auswahl einer fremden Einheit) -
@@ -3459,8 +3560,8 @@ class Welt {
     this.bekannt.set(id, bekannt);
     // Die Karte im Aufbau ist die heutige - Aufgeschobenes ist darin enthalten.
     this.felderOffen?.delete(id);
-    const sichtbar = [...this.gebaeude.values()].filter((g) => !this.feindlich(id, g.besitzer) || this.siehtGebaeude(id, g));
-    for (const g of sichtbar) if (this.feindlich(id, g.besitzer)) bekannt.set(g.id, { art: g.art, x: g.x, y: g.y });
+    const sichtbar = [...this.gebaeude.values()].filter((g) => this.teiltSicht(id, g.besitzer) || this.siehtGebaeude(id, g));
+    for (const g of sichtbar) if (!this.teiltSicht(id, g.besitzer)) bekannt.set(g.id, { art: g.art, x: g.x, y: g.y });
     // Fremde Marktpreise verrieten, was der andere getauscht hat - wie seine
     // Vorraete bleiben sie bei ihm (bauen AC-33).
     const spieler = voll.spieler.map((s) => {
@@ -3533,6 +3634,9 @@ class Welt {
       // Wer nach dem Ende zurueckkommt, sieht das Ende und nicht eine
       // Partie, die nicht mehr laeuft (spielziel AC-5).
       ...(this.ende ? { ende: this.ende } : {}),
+      // Geloeste Buendnisse wie im Zustand (spielziel AC-21) - auch fuer
+      // den, der nach einem Abbruch zurueckkommt.
+      ...(this.kuendigungen.length ? { bu: this.kuendigungen.map((k) => [k.wer, k.bis]) } : {}),
       tiere: [...this.tiere.keys()].map((id) => this.tierFuerDraht(id)),
       gebaeude: [...this.gebaeude.keys()].map((id) => this.gebaeudeFuerDraht(id)),
       // Die Werte der Arten, einmal: der Browser zeigt Leben, Tragkraft und
@@ -3622,5 +3726,5 @@ function mauerLinie(von, bis) {
 module.exports = {
   mauerLinie, MAUER_MAX,
   Welt, TAKTE_PRO_SEKUNDE, STARTVORRAT, ROHSTOFFE, VERFOLGUNG_FELDER, WACHE_TAKTE,
-  PARTIE_MINUTEN, GEBAEUDE_NAMEN, EINHEIT_NAMEN,
+  PARTIE_MINUTEN, KUENDIGUNG_SEKUNDEN, GEBAEUDE_NAMEN, EINHEIT_NAMEN,
 };

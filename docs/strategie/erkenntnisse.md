@@ -1632,6 +1632,23 @@ ihn, mit Gegenprobe an beiden Formen. Fünf Bilder neu, alle angesehen.
 Neueste oben. Eine Zeile je Runde: Nummer, Datum, Kriterien, Ergebnis,
 wichtigste Erkenntnis.
 
+- **154** · 2026-11-09 · **spielziel AC-21 fertig (Server), AC-24 neu** —
+  ein Bündnis lösen: Nachricht `kuendigen`, 60 Sekunden Frist in Takten,
+  danach gehört der Kündigende keinem Team mehr an. Die Spec sagte „einem
+  Verbündeten kündigen", ADR-0013 Punkt 4 „gehört danach keinem Team mehr
+  an" — das zweite gilt, also kündigt man allen Verbündeten zugleich; das
+  Bild (Knopf, Uhr, Meldung) ist als AC-24 abgeteilt. Erkenntnis: **„nicht
+  feindlich" und „sieht gemeinsam" sind ab jetzt zwei Fragen.** Während der
+  Frist sind die beiden noch keine Gegner, sehen aber schon jeder für sich;
+  alles, was der Server einem schickt, fragt deshalb `welt.teiltSicht`, die
+  Kampfregeln weiter `welt.feindlich`. Wer die Sicht trennt, muss die
+  Gebäude der anderen Seite als Erinnerung mitgeben, sonst erfährt keiner
+  je, dass eines im Nebel fällt. Die Durchsicht fand zwei Fälle, die die
+  ersten sieben Tests nicht hatten: fällt der letzte Gegner während der
+  Frist, endete die Partie als Sieg des Teams **samt dem Kündigenden** —
+  jetzt ist nichts entschieden, solange eine Frist unter den Übrigen läuft;
+  und wer nur noch einen gehenden Verbündeten hat, konnte wirkungslos
+  kündigen. Neun Tests, neun Gegenproben gegen die alte Zeile, alle fallen.
 - **153** · 2026-11-09 · **fahrplan AC-24 fertig, D11 fertig** — zwei gegen
   zwei im Browser: Anna eröffnet mit drei KIs, setzt im Warteraum sich und
   KI 1 in Team 1, KI 2 und KI 3 in Team 2, schickt ihre Dorfbewohner ins

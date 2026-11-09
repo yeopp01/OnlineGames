@@ -162,7 +162,7 @@ Umfang hinzufügt, dort nachsehen.
 
 ## Stand
 
-**445 von 571 Kriterien fertig.** 659 Tests ohne Browser, 196 im Browser. Die
+**446 von 572 Kriterien fertig.** 667 Tests ohne Browser, 196 im Browser. Die
 Übersicht ist der Bericht: `npm run qa:report`.
 
 Gebaut ist der Unterbau: Räume, Übertragung, Karte, Wegfindung, Sammeln,
@@ -394,7 +394,7 @@ Satz Sichtfelder (`welt.sichten` zeigt für jedes Mitglied auf dasselbe
 Objekt), im Browser zählt `public/nebel.js` alles mit, was nicht
 `ansicht.feindlich` ist. **Ein Team gewinnt** (spielziel AC-20): das Ende
 trägt `gewinner` (alle des Teams, auch Ausgeschiedene) und `team`; `sieger`
-steht nur bei genau einem Gewinner. `tests/waechter-feindlich.test.mjs` verbietet in den
+steht nur bei genau einem Gewinner. `tests/waechter-feindlich.test.mjs` verbietet in den
 Kampfregeln jeden Vergleich mit dem Besitzer. **Die KI im Team** (ki AC-25): sie fragt `welt.feindlich`,
 wen sie angreift; zwei gegen zwei endet im Prüfstand über zwanzig
 Startwerte jedes Mal vor Minute 90 mit einem Team als Sieger
@@ -402,7 +402,15 @@ Startwerte jedes Mal vor Minute 90 mit einem Team als Sieger
 fertig: zwei gegen zwei im Browser** (fahrplan AC-24) — Anna und KI 1
 gegen KI 2 und KI 3, Teams im Warteraum gesetzt, bis zur Tafel „Team 2 hat
 gewonnen — KI 2 und KI 3"; mit der KI von vor ki AC-25 endete dieselbe
-Partie nicht vor Minute 90.
+Partie nicht vor Minute 90. **Ein Bündnis lösen** (spielziel AC-21, D12):
+die Nachricht `kuendigen` tritt aus dem Team aus, gegenüber allen
+Verbündeten zugleich; die gemeinsame Sicht endet sofort, Gegner sind sie
+nach 60 Sekunden (`KUENDIGUNG_SEKUNDEN`, als Takte), bei „fest" weist der
+Server ab. **„Feindlich" und „sieht gemeinsam" sind zwei Fragen**: was der
+Server einem schickt, fragt `welt.teiltSicht`, die Kampfregeln
+`welt.feindlich`. Solange eine Frist läuft, endet die Partie nicht als
+Teamsieg. Jeder Zustand trägt die Kündigungen als `bu`; das Bild dazu
+(Knopf, Uhr, Meldung) ist spielziel AC-24.
 
 1. **Stufe A** Dunkle Zeit mit Wirtschafts-KI und Prüfstand · **B** Feudalzeit
    · **C** Partieende und KI-Gegner · **D** Ritterzeit · **E** fünf Völker ·

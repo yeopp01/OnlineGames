@@ -2,7 +2,7 @@
 
 **Bereich:** Strategie
 **Kuerzel:** spielziel
-**Stand:** 8/23 fertig · 1 in Arbeit · 14 offen
+**Stand:** 9/24 fertig · 1 in Arbeit · 14 offen
 
 ## Zweck
 
@@ -166,13 +166,19 @@ eigenen Technikbaum ([Vorlage](../../docs/strategie/vorlage-aoe2.md)).
   hat gewonnen — Anna und Cem"; die Tafel hebt jede Zeile der Gewinner
   hervor. Stehen alle in einem Team, entscheidet keine Eroberung — sonst
   endete die Partie im ersten Takt (`welt.mitGegnern`).
-- **AC-21** `offen` **Bündnis lösen mit Frist** — Nur bei „lösbar"
-  (spielauswahl AC-22): ein Spieler kündigt einem Verbündeten das Bündnis.
-  **Alle** sehen die Ansage mit einer Uhr über 60 Sekunden. Die gemeinsame
-  Sicht endet sofort, gekämpft werden darf erst nach Ablauf der Frist.
-  Gekündigt wird in beide Richtungen, zurücknehmen lässt es sich nicht. Bei
-  „fest" fehlt der Knopf, und der Server weist die Nachricht ab. Die Frist
-  gibt es, damit das Lösen kein Überfall aus dem Hinterhalt wird.
+- **AC-21** `fertig` **Bündnis lösen mit Frist** — Nur bei „lösbar"
+  (spielauswahl AC-22): ein Spieler kündigt sein Bündnis. Er tritt damit
+  aus seinem Team aus — gegenüber allen Verbündeten zugleich, denn „wer sein
+  Bündnis gelöst hat, gehört danach keinem Team mehr an" (ADR-0013, Punkt
+  4); zu zweit im Team ist das dasselbe wie einem Verbündeten zu kündigen.
+  Die gemeinsame Sicht endet sofort, gekämpft werden darf erst nach Ablauf
+  der Frist von 60 Sekunden. Gekündigt wird in beide Richtungen,
+  zurücknehmen lässt es sich nicht. Die Kündigung ist öffentlich: jeder
+  Spieler bekommt sie mit ihrem Ende. Solange eine Frist läuft, endet die
+  Partie nicht als Sieg eines Teams — sonst gewänne, wer gekündigt hat, mit
+  dem Team, das er verlassen hat. Bei „fest" weist der Server die
+  Nachricht ab. Die Frist gibt es, damit das Lösen kein Überfall aus dem
+  Hinterhalt wird. Das Bild dazu ist AC-24 (Runde 154 geteilt).
 
 ### Dauer
 
@@ -189,6 +195,17 @@ eigenen Technikbaum ([Vorlage](../../docs/strategie/vorlage-aoe2.md)).
   (ADR-0006). Prüfbar: bei 1,5 vergehen in zehn echten Sekunden fünfzehn
   Spielsekunden, höchstens einen Takt daneben. Die Uhr im Bild zeigt
   Spielzeit (bedienung AC-37).
+
+### Bündnisse im Bild
+
+- **AC-24** `offen` **Kündigung im Bild** — Bei „lösbar" steht im Spiel ein
+  Knopf „Bündnis lösen", der einmal zurückfragt (wie Aufgeben, bedienung
+  AC-38); bei „fest" und ohne Team fehlt er. Nach der Kündigung sehen
+  **alle** oben eine Ansage, wer sein Bündnis gelöst hat, mit einer Uhr, die
+  die 60 Sekunden herunterzählt; danach eine Meldung, dass sie jetzt Gegner
+  sind. Ein Rechtsklick auf den früheren Verbündeten ist ab dann ein
+  Angriff (rotes Zeichen), und der Nebel zeigt seine Einheiten nur noch in
+  Sicht. Aus AC-21 geteilt (Runde 154): der Server kündigt, das Bild sagt es.
 
 ## Der Prüfstein
 

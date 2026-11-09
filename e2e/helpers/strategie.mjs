@@ -49,6 +49,11 @@
 // `ansicht.werte`, `ansicht.verbesserungen`, `ansicht.zuBild(x, y)`,
 // `ansicht.gebaeudeMitte(g)`, `ansicht.platzTaugt(x, y)`.
 //
+// **Geloeste Buendnisse** (spielziel AC-21): `bu` im Zustand und im Aufbau,
+//   je `[wer, Takt des Fristendes]`, an alle - solange es Kuendigungen gibt.
+//   Liegt `t` darueber, gehoert `wer` keinem Team mehr an. Der Browser liest
+//   es erst mit spielziel AC-24 (Knopf, Ansage mit Uhr).
+//
 // **Werte im Browser** (Runde 75): `ansicht.werte.einheiten[art]` fuehrt
 // Kuerzel, Leben, Tragkraft, Kosten, Zeit, `baut`, Zeitalter, Angriff,
 // Ruestung nah und fern, Reichweite - und seit Runde 75 auch `klassen` und
