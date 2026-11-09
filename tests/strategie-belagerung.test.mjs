@@ -1,4 +1,4 @@
-// Belagerung (einheiten AC-35, Stufe D6) - Rechenteile, direkt geprueft
+// Belagerung (einheiten AC-35, AC-36, kampf AC-19, Stufe D6) - Rechenteile, direkt geprueft
 // (→ docs/adr/0004-teststrategie.md). Die Oberflaeche dazu:
 // e2e/tests/strategie-belagerung.spec.mjs.
 import { test } from 'node:test';
@@ -125,4 +125,115 @@ test('einheiten AC-35: im Angriffslauf greift die Ramme keine Einheit an, die ih
     assert.notEqual(ramme.auftrag?.art, 'angreifen', `Takt ${t}: kein Angriff auf den Dorfbewohner`);
   }
   assert.deepEqual(welt.feldVon(ramme), { x: x0 + 10, y: y0 + 5 }, 'sie faehrt bis ans Ziel');
+});
+
+// ---- Mangonel (einheiten AC-36) und Flaechenschaden (kampf AC-19) ----------
+
+/** Eine Einheit auf einen Punkt zwischen den Feldern stellen, mit viel Leben. */
+function stellen(welt, besitzer, art, x, y, leben = 1000) {
+  const e = welt.einheitAnlegen(besitzer, Math.round(x), Math.round(y), art);
+  e.x = x;
+  e.y = y;
+  e.leben = leben;
+  return e;
+}
+
+test('einheiten AC-36: der Mangonel mit den Werten der Vorlage, in der Belagerungswerkstatt erst ab der Ritterzeit', () => {
+  const m = EINHEITEN.mangonel;
+  assert.deepEqual([m.leben, m.angriff, `${m.nahruestung}/${m.fernruestung}`, m.tempo], [50, 40, '0/6', 0.6]);
+  assert.deepEqual([m.reichweite, m.mindestreichweite], [7, 3]);
+  assert.deepEqual(m.kosten, { holz: 160, gold: 135 });
+  assert.equal(m.zeit, 46);
+  assert.equal(m.flaeche, 1, 'trifft im Umkreis eines Feldes');
+  assert.ok(GEBAEUDE.belagerungswerkstatt.bildetAus.includes('mangonel'));
+
+  const { welt, anna, x0, y0 } = ritterzeitMitPlatz();
+  const werkstatt = welt.gebaeudeAnlegen('a', 'belagerungswerkstatt', x0 + 5, y0 + 5);
+  anna.zeitalter = 1;
+  assert.match(welt.nachricht('a', { auftrag: 'ausbilden', gebaeude: werkstatt.id, einheit: 'mangonel' }).fehler, /Ritterzeit/);
+  anna.zeitalter = 2;
+  const gold = anna.gold;
+  assert.deepEqual(welt.nachricht('a', { auftrag: 'ausbilden', gebaeude: werkstatt.id, einheit: 'mangonel' }), {});
+  assert.equal(anna.gold, gold - 135);
+  sekunden(welt, 45);
+  assert.equal([...welt.einheiten.values()].filter((e) => e.art === 'mangonel').length, 0, 'nach 45 Sekunden noch nicht');
+  sekunden(welt, 2);
+  assert.equal([...welt.einheiten.values()].filter((e) => e.art === 'mangonel').length, 1, 'nach 46 Sekunden steht er da');
+});
+
+test('kampf AC-19: der Stein trifft nach seinem Flug alle im Umkreis eines Feldes, auch eigene - in der Mitte voll, am Rand halb', () => {
+  const { welt, x0, y0 } = ritterzeitMitPlatz();
+  const mangonel = stellen(welt, 'a', 'mangonel', x0 + 1, y0 + 5, EINHEITEN.mangonel.leben);
+  // Dorfbewohner wachen nicht und laufen nicht von selbst: sie stehen still,
+  // bis der Stein kommt. Abstaende zum Ziel 0, 0,6, 1 (Anna) und 1,3.
+  const ziel = stellen(welt, 'b', 'dorfbewohner', x0 + 7, y0 + 5);
+  const nah = stellen(welt, 'b', 'dorfbewohner', x0 + 7.6, y0 + 5);
+  const eigener = stellen(welt, 'a', 'dorfbewohner', x0 + 7, y0 + 6);
+  const draussen = stellen(welt, 'b', 'dorfbewohner', x0 + 7, y0 + 3.7);
+  const voll = welt.schaden(mangonel, ziel, false);
+  assert.equal(voll, 40 - EINHEITEN.dorfbewohner.fernruestung);
+
+  welt.befehl('a', [mangonel.id], { x: ziel.x, y: ziel.y });
+  assert.equal(mangonel.auftrag?.art, 'angreifen');
+  welt.takten();
+  assert.equal(welt.einschlaege.length, 1, 'der Stein fliegt');
+  // Sechs Felder bei sieben je Sekunde: neun Takte unterwegs, der Abwurf
+  // eingerechnet.
+  for (let t = 0; t < 7; t++) welt.takten();
+  assert.equal(ziel.leben, 1000, 'unterwegs trifft er noch nicht');
+  welt.takten();
+  assert.equal(welt.einschlaege.length, 0, 'eingeschlagen');
+  assert.equal(1000 - ziel.leben, voll, 'in der Mitte voll');
+  assert.equal(1000 - nah.leben, Math.round(voll * 0.7), '0,6 Felder daneben 70 %');
+  assert.equal(1000 - eigener.leben, Math.round(voll * 0.5), 'am Rand die Haelfte - auch Annas eigener');
+  assert.equal(draussen.leben, 1000, 'jenseits eines Feldes nichts');
+  // Vom eigenen Stein getroffen, wehrt sich niemand gegen den eigenen Werfer.
+  assert.notEqual(eigener.auftrag?.art, 'angreifen');
+});
+
+test('kampf AC-19: wer nach dem Abwurf weglaeuft, weicht aus - der Stein schlaegt dort ein, wo er stand', () => {
+  const { welt, x0, y0 } = ritterzeitMitPlatz();
+  const mangonel = stellen(welt, 'a', 'mangonel', x0 + 1, y0 + 5, EINHEITEN.mangonel.leben);
+  // Ein Ritter am Rand der Reichweite: elf Takte Flug. Er wacht, sieht den
+  // Mangonel aber nicht (Sicht 4). Daneben ein Dorfbewohner als Zeuge.
+  const ritter = stellen(welt, 'b', 'ritter', x0 + 8.4, y0 + 5, EINHEITEN.ritter.leben);
+  const zeuge = stellen(welt, 'b', 'dorfbewohner', x0 + 8.4, y0 + 5.7);
+
+  welt.befehl('a', [mangonel.id], { x: ritter.x, y: ritter.y });
+  welt.takten();
+  assert.equal(welt.einschlaege.length, 1, 'der Stein fliegt');
+  // Bert zieht den Ritter quer weg, sobald der Stein fliegt.
+  welt.befehl('b', [ritter.id], { x: x0 + 8, y: y0 + 1 });
+  for (let t = 0; t < 12; t++) welt.takten();
+  assert.equal(welt.einschlaege.length, 0, 'eingeschlagen');
+  assert.ok(zeuge.leben < 1000, 'an der alten Stelle schlug er ein');
+  assert.equal(ritter.leben, EINHEITEN.ritter.leben, 'der Ritter ist ausgewichen');
+});
+
+test('einheiten AC-36: naeher als drei Felder wirft der Mangonel nicht - von selbst nimmt er so einen nicht, befohlen faehrt er erst zurueck', () => {
+  const { welt, x0, y0 } = ritterzeitMitPlatz();
+  const mangonel = stellen(welt, 'a', 'mangonel', x0 + 5, y0 + 5, EINHEITEN.mangonel.leben);
+  const nah = stellen(welt, 'b', 'dorfbewohner', x0 + 7, y0 + 5);
+  // Von selbst: der Nahe ist kein Ziel ...
+  sekunden(welt, 2);
+  assert.ok(!mangonel.auftrag, 'zwei Felder - kein Ziel');
+  assert.equal(welt.einschlaege.length, 0);
+  // ... einer in fuenf Feldern schon.
+  const weit = stellen(welt, 'b', 'dorfbewohner', x0 + 5, y0 + 10);
+  sekunden(welt, 1);
+  assert.equal(mangonel.auftrag?.ziel, weit.id, 'den in fuenf Feldern nimmt er');
+
+  // Befohlen auf den Nahen: der erste Stein fliegt erst aus drei Feldern.
+  welt.befehl('a', [mangonel.id], { x: nah.x, y: nah.y });
+  assert.equal(mangonel.auftrag?.ziel, nah.id);
+  // Mitgeschrieben wird der Abstand beim ersten Wurf auf den Nahen.
+  let abwurf = null;
+  const werfen = welt.steinWerfen.bind(welt);
+  welt.steinWerfen = (werfer, ziel, ...rest) => {
+    if (ziel === nah && abwurf === null) abwurf = Math.hypot(nah.x - werfer.x, nah.y - werfer.y);
+    return werfen(werfer, ziel, ...rest);
+  };
+  for (let t = 0; t < 15 * TAKTE_PRO_SEKUNDE && abwurf === null; t++) welt.takten();
+  assert.ok(abwurf !== null, 'er wirft');
+  assert.ok(abwurf >= EINHEITEN.mangonel.mindestreichweite, `aus ${abwurf.toFixed(2)} Feldern`);
 });

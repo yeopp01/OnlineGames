@@ -13,7 +13,7 @@ hier nichts eintraegt, verliert den Faden beim naechsten Autocompact.
 
 ## Zuletzt fortgeschrieben
 
-2026-11-09, nach Runde 129 (**kampf AC-13, fahrplan AC-13, C6e fertig**: der
+2026-11-09, nach Runde 130 (**kampf AC-13, fahrplan AC-13, C6e fertig**: der
 Server schickt jedem nur, was er sieht - `welt.zustandJeSpieler`,
 `welt.aufbauFuer`, im Raum `sendenJe`. Fremde Gebaeude und Felder, die sich im
 Nebel aendern, kommen beim naechsten Hinsehen; wer ausscheidet, bekommt einmal
@@ -92,7 +92,18 @@ AC-36 (Mangonel) mit kampf AC-19 (Flaechenschaden)** - oder kampf AC-21,
 aber dort steht ein Widerspruch: eine Ramme braucht fuer ein Feld
 Steinmauer 15 Stoesse, rund 71 s, das Kriterium sagt unter 30 s. Vorher in
 der Vorlage nachsehen und das Kriterium mit Begruendung fassen. ki AC-13
-und einheiten AC-32 warten auf Antworten.)
+und einheiten AC-32 warten auf Antworten. Runde 130: **einheiten AC-36 und
+kampf AC-19 fertig, D6 fertig** - der Mangonel (`mangonel`, Kuerzel `n`).
+Neu in den Daten: `mindestreichweite`, `geschoss` (Felder je Sekunde),
+`flaeche`. Hat eine Einheit `geschoss`, geht `schlagen` an
+`welt.steinWerfen`: ein Eintrag in `welt.einschlaege`, der nach seiner
+Flugzeit in `einschlaegeTakten` alles im Umkreis trifft (vor
+`schlaegeAbrechnen`). Im Zustand als Pfeil mit fuenftem Wert 1, der Browser
+zeichnet daraus einen Stein (`p.stein`). `wehren` schlaegt nie gegen den
+eigenen Besitzer zurueck. Im Browserfall: eine wachende Einheit mit grosser
+Sicht nimmt sich ihr Ziel selbst, bevor der Rechtsklick ankommt - ausser
+Sicht aufstellen. **Naechste Runde 131: Rueckschau.** Danach D7 (Burg und
+Markt) oder kampf AC-21 mit geklaertem Widerspruch.)
 
 ## Wo ich stehe
 

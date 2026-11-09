@@ -1271,6 +1271,22 @@ min (Runde 125).
 Neueste oben. Eine Zeile je Runde: Nummer, Datum, Kriterien, Ergebnis,
 wichtigste Erkenntnis.
 
+- **130** · 2026-11-09 · **einheiten AC-36 und kampf AC-19 fertig, D6
+  erreicht** — der Mangonel: 40 Angriff, Reichweite 7, Mindestreichweite 3,
+  und sein Stein ist ein **Geschoss auf dem Server** mit Flugzeit (sieben
+  Felder je Sekunde). Er schlägt dort ein, wo das Ziel beim Abwurf stand;
+  alles im Umkreis eines Feldes verliert Leben, in der Mitte voll, am Rand
+  die Hälfte, eigene eingeschlossen. Ausweichen ist damit eine Folge der
+  Regel, kein eigener Fall. Abgerechnet wird über `this.schlaege`, also im
+  selben Takt wie alles andere. Sechs Gegenproben, alle sechs fallen. KI
+  gegen KI auf zwei Sätzen Takt für Takt wie HEAD (die KI baut keine
+  Werkstatt). Im Browserfall nahm sich der Mangonel den nächsten
+  Speerkämpfer **von selbst**, bevor der Rechtsklick ankam — er wacht mit
+  Sicht 9; jetzt steht er zehn Felder weg und fährt auf Befehl heran. Und
+  `h` kommt erst, wenn Leben fehlt: wer den Ausgangswert aus `nachher`
+  liest, bekommt `undefined` (`h ?? lebenVoll(e)`). Lebensbalken von
+  Einheiten stehen nur an der Auswahl — das Bild der Treffer ist deshalb
+  aus Berts Sicht, mit seinen drei gewählt.
 - **129** · 2026-11-09 · **einheiten AC-35 fertig** — die Ramme aus der
   Belagerungswerkstatt (Ritterzeit): 175 Leben, 0/180, 2 Angriff +125 gegen
   Gebäude, also 127 je Stoß alle fünf Sekunden. Eine Eigenschaft in den

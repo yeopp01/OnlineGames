@@ -926,6 +926,78 @@ function ramme(stift, farbe, { schritt = 0, arbeit = 0, fein = true }) {
   }
 }
 
+// ---- Der Mangonel (einheiten AC-36) ------------------------------------------
+// Ein offener Rahmen aus Balken auf vier Raedern, hinten das Seilbuendel, das
+// den Wurfarm spannt, vorn ein Bock mit Polster als Anschlag. Bereit liegt der
+// Arm flach nach hinten, in der Schale ein Stein; wer wirft (`arbeit`),
+// schlaegt den Arm hoch an das Polster. Seilbuendel, Polster und die bemalte
+// Seitenbohle tragen die Spielerfarbe. Anders als die Ramme kein Dach: ein
+// Gestell, durch das man hindurchsieht (darstellung AC-14).
+function mangonel(stift, farbe, { schritt = 0, arbeit = 0, fein = true }) {
+  schatten(stift, 13);
+  const BALKEN = '#7a5533';
+  const RAD = '#5e4630';
+  const STEIN = '#8f8a82';
+  // 0: gespannt, flach nach hinten; 1: oben am Anschlag.
+  const wurf = Math.max(0, Math.sin(arbeit));
+  // Die hinteren Raeder, halb verdeckt.
+  for (const x of [-6.6, 6.2]) {
+    ellipse(stift, x, -3.2, 2.3, 2.5, licht(stift, toenen(RAD, -0.3), x - 2.3, -5.7, x + 2.3, -0.7));
+  }
+  // Der hintere Laengsbalken und die Querstuecke.
+  vieleck(stift, [[-11, -6.4], [10.4, -6.4], [10.4, -5.2], [-11, -5.2]], licht(stift, toenen(BALKEN, -0.25), -11, -6.4, -11, -5.2));
+  // Der Bock vorn: zwei Pfosten und das Polster in Spielerfarbe.
+  for (const x of [4.6, 6.4]) {
+    vieleck(stift, [[x - 0.6, -5.4], [x + 0.6, -5.4], [x + 0.3, -15.2], [x - 0.3, -15.2]], licht(stift, BALKEN, x - 0.6, -15, x + 0.6, -5.4));
+  }
+  vieleck(stift, [[3.6, -16.6], [7.4, -16.6], [7.4, -14.4], [3.6, -14.4]], licht(stift, BALKEN, 3.6, -16.6, 7.4, -14.4));
+  rund(stift, [[3.2, -17.8], [7.8, -17.8], [8.2, -16.2], [2.8, -16.2]], licht(stift, farbe, 3, -17.8, 8, -16.2, 0.25, -0.25));
+  // Die Strebe vom Bock schraeg nach hinten.
+  vieleck(stift, [[5.2, -14.4], [6, -14], [-1.4, -6], [-2.4, -6]], licht(stift, toenen(BALKEN, -0.1), -2, -14, 6, -6));
+  // Der Wurfarm: am Drehpunkt hinten im Seilbuendel, das Ende mit der Schale.
+  const dreh = [-5, -7.6];
+  const winkel = Math.PI + 0.12 + wurf * (Math.PI - 0.82);
+  const laenge = 11;
+  const ende = [dreh[0] + Math.cos(winkel) * laenge, dreh[1] + Math.sin(winkel) * laenge];
+  const quer = [-Math.sin(winkel) * 0.6, Math.cos(winkel) * 0.6];
+  vieleck(stift, [
+    [dreh[0] + quer[0], dreh[1] + quer[1]], [ende[0] + quer[0] * 0.7, ende[1] + quer[1] * 0.7],
+    [ende[0] - quer[0] * 0.7, ende[1] - quer[1] * 0.7], [dreh[0] - quer[0], dreh[1] - quer[1]],
+  ], licht(stift, HOLZ, dreh[0], dreh[1] - 1, ende[0], ende[1] + 1, 0.25, -0.25));
+  // Die Schale am Ende, darin der Stein, solange er nicht geworfen ist.
+  ellipse(stift, ende[0], ende[1] - 0.4, 1.9, 1.2, licht(stift, toenen(BALKEN, -0.2), ende[0] - 2, ende[1] - 1.6, ende[0] + 2, ende[1] + 0.8));
+  if (wurf < 0.5) {
+    ellipse(stift, ende[0], ende[1] - 1.5, 1.5, 1.3, licht(stift, STEIN, ende[0] - 1.5, ende[1] - 2.8, ende[0] + 1.5, ende[1] - 0.2, 0.3, -0.3));
+  }
+  // Das Seilbuendel in Spielerfarbe um den Drehpunkt.
+  ellipse(stift, dreh[0], dreh[1], 2.3, 2.5, licht(stift, farbe, dreh[0] - 2.3, dreh[1] - 2.5, dreh[0] + 2.3, dreh[1] + 2.5, 0.25, -0.3));
+  if (fein) {
+    for (const d of [-1.3, -0.4, 0.5, 1.4]) {
+      strich(stift, [[dreh[0] + d, dreh[1] - 2.2 + Math.abs(d) * 0.4], [dreh[0] + d - 0.3, dreh[1] + 2.2 - Math.abs(d) * 0.4]], toenen(farbe, -0.38), 0.4);
+    }
+  }
+  ellipse(stift, dreh[0], dreh[1], 0.7, 0.7, EISEN_DUNKEL, false);
+  // Die vordere Seitenbohle, bemalt in Spielerfarbe, mit Eisenbeschlag.
+  // So hoch, dass die Spielerfarbe ein Zehntel der Figur traegt
+  // (darstellung AC-9) - schmaler waren es 9,8 %.
+  vieleck(stift, [[-11.4, -6.4], [10.8, -6.4], [10.8, -3.4], [-11.4, -3.4]], licht(stift, toenen(farbe, -0.2), -11, -6.4, -11, -3.4, 0.15, -0.3));
+  if (fein) {
+    for (const x of [-9.6, 9]) vieleck(stift, [[x - 0.5, -6.4], [x + 0.5, -6.4], [x + 0.5, -3.4], [x - 0.5, -3.4]], EISEN_DUNKEL, false);
+  }
+  // Die vorderen Raeder mit Speichen und Nabe.
+  for (const x of [-7.8, 5]) {
+    ellipse(stift, x, -2.7, 2.7, 2.8, licht(stift, RAD, x - 2.7, -5.5, x + 2.7, 0.1, 0.2, -0.25));
+    if (fein) {
+      const w0 = schritt * 0.8;
+      for (let i = 0; i < 3; i++) {
+        const w = w0 + (i * Math.PI) / 3;
+        strich(stift, [[x - Math.cos(w) * 2.2, -2.7 - Math.sin(w) * 2.3], [x + Math.cos(w) * 2.2, -2.7 + Math.sin(w) * 2.3]], '#3e2c1c', 0.5);
+      }
+    }
+    ellipse(stift, x, -2.7, 0.75, 0.8, EISEN_DUNKEL, false);
+  }
+}
+
 export const FIGUREN = {
   dorfbewohner: { name: 'Dorfbewohner', zeichnen: dorfbewohner, breite: 1 },
   schaf: { name: 'Schaf', zeichnen: schaf, breite: 1.1 },
@@ -944,6 +1016,8 @@ export const FIGUREN = {
   // Belagerung (einheiten AC-35): breit statt hoch. `stoesst`: wer rammt,
   // stoesst den Bock vor, statt sich als Ganzes vorzubeugen.
   ramme: { name: 'Ramme', zeichnen: ramme, breite: 1.7, stoesst: true },
+  // Der Mangonel wirft mit dem Arm, nicht mit dem ganzen Gestell.
+  mangonel: { name: 'Mangonel', zeichnen: mangonel, breite: 1.7, stoesst: true },
 };
 
 export { WAREN };

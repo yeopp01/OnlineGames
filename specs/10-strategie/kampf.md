@@ -2,7 +2,7 @@
 
 **Bereich:** Strategie
 **Kuerzel:** kampf
-**Stand:** 18/21 fertig · 2 offen · 1 zurueckgestellt
+**Stand:** 19/21 fertig · 1 offen · 1 zurueckgestellt
 
 ## Zweck
 
@@ -164,10 +164,17 @@ aus [Spielziel](spielziel.md) AC-10, gemessen in
 
 ### Stufe D — Ritterzeit
 
-- **AC-19** `offen` **Flächenschaden** — Ein Schuss des Mangonels trifft alle
+- **AC-19** `fertig` **Flächenschaden** — Ein Schuss des Mangonels trifft alle
   Einheiten im Umkreis eines Feldes um den Einschlag, auch eigene, mit
   vollem Schaden in der Mitte und weniger am Rand. Der Einschlag ist dort,
   wo das Ziel beim Abschuss stand — wer läuft, kann ausweichen.
+  _Gebaut in Runde 130: Der Stein ist ein Geschoss auf dem Server
+  (`welt.steinWerfen`, `welt.einschlaegeTakten`), sieben Felder je Sekunde —
+  so schnell, wie der Browser einen Pfeil zeichnet. Er trifft gleichmäßig
+  abnehmend: in der Mitte voll, am Rand des Feldes die Hälfte. Ein Gebäude
+  als Ziel bekommt den vollen Schaden. Wer vom eigenen Stein getroffen wird,
+  wehrt sich nicht gegen den eigenen Werfer. Abgerechnet wird mit allen
+  Schlägen des Taktes (AC-10)._
 - **AC-20** `fertig` **Gebäude schießen zurück** — Was ein Gebäude mit Angriff
   angreift, bekommt Schaden nach derselben Formel wie von Einheiten
   (`max(1, Angriff − Rüstung + Bonus)`), mit Pfeilen als Fernkampf. Pfeile

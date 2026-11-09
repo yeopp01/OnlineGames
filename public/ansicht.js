@@ -211,12 +211,17 @@ export class Ansicht {
     // Angekommene fallen auch hier heraus, nicht nur beim Zeichnen: in einem
     // Tab im Hintergrund wird nicht gezeichnet, und die Liste wuechse.
     this.pfeile = this.pfeile.filter((p) => jetzt - p.start < p.dauer);
-    for (const [x0, y0, x1, y1] of nachricht.p || []) {
+    // Ein fuenfter Wert 1 ist ein Stein des Mangonels (kampf AC-19). Er fliegt
+    // ebenso sieben Felder je Sekunde - so lange, wie der Server ihn rechnet
+    // (`geschoss` in den Daten) -, nur in hoeherem Bogen.
+    for (const [x0, y0, x1, y1, stein] of nachricht.p || []) {
       const weite = Math.hypot(x1 - x0, y1 - y0);
       // Ein Turm schiesst von oben (bauen AC-29): der Server schickt die Mitte
       // seiner Grundflaeche, die Hoehe kennt nur die Zeichnung.
       const oben = this.schussHoeheBei(x0, y0);
-      this.pfeile.push({ x0, y0, x1, y1, weite, oben, start: jetzt, dauer: Math.max(150, (weite / 7) * 1000) });
+      this.pfeile.push({
+        x0, y0, x1, y1, weite, oben, stein: stein === 1, start: jetzt, dauer: Math.max(150, (weite / 7) * 1000),
+      });
     }
     for (const aenderung of nachricht.felder || []) {
       if (this.karte.felder[aenderung.i] !== aenderung.a) {
@@ -1473,13 +1478,31 @@ export class Ansicht {
       const b = this.zuBild(x, y);
       // Vom Turm faellt der Pfeil von seiner Hoehe bis auf Brusthoehe.
       const turm = (1 - t) * Math.max(0, (p.oben || 0) * HALB_B * zoom - brust);
-      // Der Bogen: in der Mitte ein Viertel der Weite hoeher als die Enden.
-      return { x: b.x, y: b.y - brust - turm - Math.sin(Math.PI * t) * p.weite * 0.25 * HALB_H * zoom };
+      // Der Bogen: in der Mitte ein Viertel der Weite hoeher als die Enden,
+      // ein Stein doppelt so hoch.
+      const bogen = p.stein ? 0.5 : 0.25;
+      return { x: b.x, y: b.y - brust - turm - Math.sin(Math.PI * t) * p.weite * bogen * HALB_H * zoom };
     };
     stift.save();
     stift.lineCap = 'round';
     for (const p of this.pfeile) {
       const t = Math.min(1, (jetzt - p.start) / p.dauer);
+      if (p.stein) {
+        // Ein grauer Brocken, oben links im Licht.
+        const mitte = ort(p, t);
+        const r = Math.max(2.6, 0.2 * HALB_B * zoom);
+        const verlauf = stift.createRadialGradient(mitte.x - r * 0.35, mitte.y - r * 0.35, r * 0.1, mitte.x, mitte.y, r);
+        verlauf.addColorStop(0, '#c9c4bb');
+        verlauf.addColorStop(1, '#5f5a53');
+        stift.fillStyle = verlauf;
+        stift.strokeStyle = '#3a3631';
+        stift.lineWidth = Math.max(0.8, r * 0.18);
+        stift.beginPath();
+        stift.arc(mitte.x, mitte.y, r, 0, Math.PI * 2);
+        stift.fill();
+        stift.stroke();
+        continue;
+      }
       const kopf = ort(p, t);
       const hinter = ort(p, Math.max(0, t - 0.06));
       const dx = kopf.x - hinter.x;

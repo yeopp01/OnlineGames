@@ -1,0 +1,10 @@
+{
+  "spec": "10-strategie/einheiten-und-befehle.md",
+  "ac": "AC-36",
+  "titel": "Annas Mangonel (blau) hat geworfen: sein Stein fliegt im Bogen auf Berts drei Speerkämpfer (rot), die in einer Reihe stehen",
+  "datei": "e2e/tests/strategie-belagerung.spec.mjs",
+  "pfad": [
+    "Belagerung",
+    "einheiten AC-36, kampf AC-19: der Mangonel wirft einen Stein, der drei nebeneinander trifft - den in der Mitte am meisten"
+  ]
+}

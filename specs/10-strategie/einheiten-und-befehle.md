@@ -2,7 +2,7 @@
 
 **Bereich:** Strategie
 **Kuerzel:** einheiten
-**Stand:** 24/31 fertig · 6 offen · 1 zurueckgestellt
+**Stand:** 25/31 fertig · 5 offen · 1 zurueckgestellt
 
 ## Zweck
 
@@ -211,9 +211,18 @@ Werte aus der [Vorlage](../../docs/strategie/vorlage-aoe2.md), als Daten in
   Tabelle der Vorlage und deshalb gesetzt: Nachladezeit 5 s wie im Original,
   Sicht 3 — kürzer als jede andere Einheit, damit sie ohne Begleitung blind
   ist._
-- **AC-36** `offen` **Mangonel** — In der Belagerungswerkstatt: 160 Holz, 135
+- **AC-36** `fertig` **Mangonel** — In der Belagerungswerkstatt: 160 Holz, 135
   Gold, 46 s, 50 Leben, 0/6 Rüstung, Tempo 0,6, 40 Angriff, Reichweite 7 und
   eine Mindestreichweite von 3; trifft eine Fläche (kampf AC-19).
+  _Gebaut in Runde 130: `mindestreichweite` in den Daten. Von selbst nimmt
+  er niemanden, der näher steht; befohlen fährt er erst so weit zurück, dass
+  das Ziel weit genug weg ist (`welt.abstandsplatz`), und wirft dann. Er
+  schießt, also gilt die Fernrüstung des Ziels: den Dorfbewohner trifft er
+  mit 40, den Ritter mit 38. Nicht in der Tabelle der Vorlage und deshalb
+  gesetzt: Nachladezeit 6 s wie im Original, Sicht 9 — Reichweite plus zwei
+  wie Bogen und Armbrust. Im Bild ein offenes Gestell auf vier Rädern mit
+  Wurfarm, Seilbündel und Seitenbohle in Spielerfarbe; der Stein fliegt in
+  einem doppelt so hohen Bogen wie ein Pfeil._
 - **AC-37** `offen` **Mönch heilt** — Im Kloster: 100 Gold, 51 s, 30 Leben,
   Tempo 0,7. Er heilt eigene verletzte Einheiten in seiner Nähe, die nicht
   kämpfen, um einen Punkt je Sekunde; Gebäude und Belagerung nicht.

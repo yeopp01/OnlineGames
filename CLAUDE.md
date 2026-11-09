@@ -159,7 +159,7 @@ Umfang hinzufügt, dort nachsehen.
 
 ## Stand
 
-**426 von 555 Kriterien fertig.** 549 Tests ohne Browser, 185 im Browser. Die
+**428 von 555 Kriterien fertig.** 553 Tests ohne Browser, 186 im Browser. Die
 Übersicht ist der Bericht: `npm run qa:report`.
 
 Gebaut ist der Unterbau: Räume, Übertragung, Karte, Wegfindung, Sammeln,
@@ -353,10 +353,15 @@ eine Baustelle, belegte übersprungen, und die Bauer gehen die Felder der
 Reihe nach ab. **Das Tor** lässt die eigenen Einheiten durch und sperrt
 alle anderen: die Wegsuche bekommt die Tore des Besitzers als Felder, die
 nur für ihn frei sind (`welt.toreVon`); auf die eigene Mauer gesetzt,
-ersetzt es dieses Feld. **Aus D6 steht die Ramme** (einheiten AC-35): 127 je
+ersetzt es dieses Feld. **D6 ist fertig.** Die Ramme (einheiten AC-35): 127 je
 Stoß gegen jedes Gebäude, Pfeile ritzen sie mit 1; `nurGebaeude` in den
 Daten — ein Befehl auf eine Einheit ist ein Gang dorthin, sie wacht nicht,
-schlägt nicht zurück und lässt im Angriffslauf jede Einheit stehen. Die **Sicht ist eine Einstellung beim Eröffnen** (kampf AC-16):
+schlägt nicht zurück und lässt im Angriffslauf jede Einheit stehen. Der
+**Mangonel** (einheiten AC-36, kampf AC-19) wirft einen Stein, der als
+Geschoss auf dem Server fliegt (`welt.einschlaege`) und dort einschlägt, wo
+das Ziel beim Abwurf stand: alles im Umkreis eines Feldes, eigene auch, in
+der Mitte voll, am Rand die Hälfte — wer läuft, weicht aus. Näher als drei
+Felder wirft er nicht. Die **Sicht ist eine Einstellung beim Eröffnen** (kampf AC-16):
 Nebel, Erkundet oder Aufgedeckt — Tests, die nicht vom Nebel handeln,
 eröffnen aufgedeckt (`partieZuZweit(…, { sicht: 'aufgedeckt' })`).
 

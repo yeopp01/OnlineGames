@@ -1,0 +1,10 @@
+{
+  "spec": "10-strategie/kampf.md",
+  "ac": "AC-19",
+  "titel": "Ein Stein von Annas Mangonel (blau) hat Berts drei Speerkämpfer getroffen: der mittlere, auf den er zielte, hat am meisten Leben verloren, die beiden daneben weniger",
+  "datei": "e2e/tests/strategie-belagerung.spec.mjs",
+  "pfad": [
+    "Belagerung",
+    "einheiten AC-36, kampf AC-19: der Mangonel wirft einen Stein, der drei nebeneinander trifft - den in der Mitte am meisten"
+  ]
+}

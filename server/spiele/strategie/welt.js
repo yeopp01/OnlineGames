@@ -110,6 +110,7 @@ const EINHEIT_NAMEN = {
   ritter: 'Den Ritter',
   armbrustschuetze: 'Den Armbrustschützen',
   ramme: 'Die Ramme',
+  mangonel: 'Den Mangonel',
 };
 
 // Welche Verbesserung eine Einheit zur naechsten Stufe macht - `wandelt`
@@ -164,6 +165,10 @@ class Welt {
     this.feldAenderungen = [];
     // Die Schlaege dieses Taktes, abgerechnet an seinem Ende (kampf AC-10).
     this.schlaege = [];
+    // Steine im Flug (kampf AC-19): `{ x, y, takte, angreifer, gebaeude }`.
+    // Sie schlagen ein, wenn `takte` abgelaufen ist, dort, wo das Ziel beim
+    // Abwurf stand.
+    this.einschlaege = [];
     // Das Ende der Partie, sobald es feststeht (spielziel AC-5):
     // `{ sieger, grund, takt }` mit `grund` "eroberung" oder "zeit".
     this.ende = null;
@@ -1761,6 +1766,32 @@ class Welt {
   }
 
   /**
+   * Ein Feld, von dem aus ein Ziel mindestens `mindest` Felder weit weg ist
+   * (einheiten AC-36): vom Ziel weg in der Richtung, aus der die Einheit kommt,
+   * zwei Felder ueber die Grenze hinaus; ist dort nichts frei, ein wenig
+   * gedreht. Gemessen wird wie im Angriff - bei einem Gebaeude vom Rand.
+   */
+  abstandsplatz(einheit, ziel, istGebaeude, mindest) {
+    let mitte = ziel;
+    let rand = 0;
+    if (istGebaeude) {
+      const { x0, y0, x1, y1 } = this.grundflaeche(ziel.art, ziel.x, ziel.y);
+      mitte = { x: (x0 + x1) / 2, y: (y0 + y1) / 2 };
+      rand = (x1 - x0) / 2;
+    }
+    let richtung = Math.atan2(einheit.y - mitte.y, einheit.x - mitte.x);
+    if (einheit.x === mitte.x && einheit.y === mitte.y) richtung = 0;
+    for (const weite of [mindest + rand + 2, mindest + rand + 3]) {
+      for (const drehung of [0, 0.5, -0.5, 1, -1, 1.6, -1.6]) {
+        const x = Math.round(mitte.x + Math.cos(richtung + drehung) * weite);
+        const y = Math.round(mitte.y + Math.sin(richtung + drehung) * weite);
+        if (karten.begehbar(this.karte, x, y) && !this.gebaeudeAn(x, y)) return { x, y };
+      }
+    }
+    return null;
+  }
+
+  /**
    * Wohin ein Nahkaempfer laeuft, der sein Ziel neu suchen muss: auf die Seite,
    * die ihm beim Befehl zugewiesen wurde (`platz`), gemessen am jetzigen Feld
    * des Ziels. Nur die acht Felder rundum taugen - wer weiter aussen aufgestellt
@@ -1793,8 +1824,13 @@ class Welt {
     return raster;
   }
 
-  /** Die naechste fremde, lebende Einheit in Sichtweite - gesucht im Raster. */
+  /**
+   * Die naechste fremde, lebende Einheit in Sichtweite - gesucht im Raster.
+   * Wer eine Mindestreichweite hat (der Mangonel, einheiten AC-36), nimmt
+   * niemanden, der naeher steht: auf den koennte er nicht werfen.
+   */
   feindInSicht(einheit, raster, sicht) {
+    const mindest = EINHEITEN[einheit.art]?.mindestreichweite || 0;
     const zx = Math.floor(einheit.x / RASTER_FELDER);
     const zy = Math.floor(einheit.y / RASTER_FELDER);
     let bestes = null;
@@ -1806,6 +1842,7 @@ class Welt {
         for (const anderer of zelle) {
           if (anderer.besitzer === einheit.besitzer) continue;
           const abstand = Math.hypot(anderer.x - einheit.x, anderer.y - einheit.y);
+          if (abstand < mindest) continue;
           if (abstand <= besterAbstand) {
             besterAbstand = abstand;
             bestes = anderer;
@@ -1968,6 +2005,26 @@ class Welt {
     const abstand = auftrag.gebaeude
       ? this.abstandZu(einheit, ziel)
       : Math.hypot(ziel.x - einheit.x, ziel.y - einheit.y);
+    // Zu nah fuer den Mangonel (einheiten AC-36): er faehrt zurueck, bis das
+    // Ziel wieder weit genug weg ist, und wirft erst dann.
+    const mindest = EINHEITEN[einheit.art].mindestreichweite || 0;
+    if (mindest && abstand < mindest) {
+      if (!auftrag.zurueck || !einheit.weg.length) {
+        const stand = this.abstandsplatz(einheit, ziel, auftrag.gebaeude, mindest);
+        einheit.weg = stand ? this.wegNach(einheit, stand) : [];
+        auftrag.zurueck = true;
+        if (!einheit.weg.length) {
+          einheit.auftrag = null;
+          return;
+        }
+      }
+      // Nachgeladen wird auch unterwegs - sonst kostete das Zurueckfahren
+      // einen ganzen Wurf.
+      if (einheit.nachladen > 0) einheit.nachladen--;
+      this.laufen(einheit);
+      return;
+    }
+    auftrag.zurueck = false;
     const nahGenug = abstand <= reichweite + (auftrag.gebaeude ? SCHLAGRAND_BAU : SCHLAGRAND);
     // Ein Fernkaempfer bleibt stehen, sobald das Ziel in Reichweite ist. Ein
     // Nahkaempfer geht beim **ersten** Hinlaufen den Platz zu Ende, der ihm
@@ -2065,6 +2122,13 @@ class Welt {
   // Ende des Taktes. So toeten zwei Einheiten, die einander den letzten Schlag
   // versetzen, sich beide - kein Vorrang fuer den, der zuerst dran war.
   schlagen(angreifer, ziel, istGebaeude) {
+    // Ein Stein trifft nicht sofort, sondern nach seinem Flug, und nicht das
+    // Ziel, sondern die Stelle, an der es beim Abwurf stand (kampf AC-19).
+    const geschoss = EINHEITEN[angreifer.art]?.geschoss;
+    if (geschoss) {
+      this.steinWerfen(angreifer, ziel, istGebaeude, geschoss);
+      return;
+    }
     this.schlaege.push({
       angreifer, ziel, schaden: this.schaden(angreifer, ziel, istGebaeude), gebaeude: istGebaeude,
     });
@@ -2089,6 +2153,70 @@ class Welt {
       // SCHUESSE_HOECHSTENS, sieht ohnehin keiner mehr fliegen.
       if (this.schuesse.length > SCHUESSE_HOECHSTENS) this.schuesse.splice(0, this.schuesse.length - SCHUESSE_HOECHSTENS);
     }
+  }
+
+  /**
+   * Ein Stein fliegt los (kampf AC-19). Er ist so lange unterwegs, wie er mit
+   * `geschoss` Feldern je Sekunde braucht, und geht wie ein Pfeil in den
+   * Zustand - als fuenfter Wert eine 1, damit der Browser einen Stein zeichnet.
+   */
+  steinWerfen(angreifer, ziel, istGebaeude, geschoss) {
+    let nach = { x: ziel.x, y: ziel.y };
+    if (istGebaeude) {
+      const { x0, y0, x1, y1 } = this.grundflaeche(ziel.art, ziel.x, ziel.y);
+      nach = { x: (x0 + x1) / 2, y: (y0 + y1) / 2 };
+    }
+    const weite = Math.hypot(nach.x - angreifer.x, nach.y - angreifer.y);
+    this.einschlaege.push({
+      x: nach.x,
+      y: nach.y,
+      takte: Math.max(1, Math.round((weite / geschoss) * TAKTE_PRO_SEKUNDE)),
+      angreifer,
+      gebaeude: istGebaeude ? ziel : null,
+    });
+    (this.schuesse ??= []).push([...[angreifer.x, angreifer.y, nach.x, nach.y].map((w) => Math.round(w * 10) / 10), 1]);
+    if (this.schuesse.length > SCHUESSE_HOECHSTENS) this.schuesse.splice(0, this.schuesse.length - SCHUESSE_HOECHSTENS);
+  }
+
+  /**
+   * Steine, die in diesem Takt ankommen (kampf AC-19): jede lebende Einheit im
+   * Umkreis von `flaeche` Feldern um die Stelle des Einschlags wird getroffen,
+   * auch eine eigene - in der Mitte mit vollem Schaden, am Rand mit der Haelfte,
+   * dazwischen gleichmaessig. Ein Gebaeude als Ziel bekommt den vollen
+   * Schaden. Abgerechnet wird mit den Schlaegen des Taktes, also gleichzeitig
+   * mit allem anderen (kampf AC-10); auch ein Werfer, der inzwischen fiel,
+   * trifft noch.
+   */
+  einschlaegeTakten() {
+    if (!this.einschlaege.length) return;
+    const bleiben = [];
+    for (const stein of this.einschlaege) {
+      stein.takte--;
+      if (stein.takte > 0) {
+        bleiben.push(stein);
+        continue;
+      }
+      const { angreifer } = stein;
+      const flaeche = EINHEITEN[angreifer.art].flaeche;
+      if (stein.gebaeude && this.gebaeude.has(stein.gebaeude.id)) {
+        this.schlaege.push({
+          angreifer, ziel: stein.gebaeude, schaden: this.schaden(angreifer, stein.gebaeude, true), gebaeude: true,
+        });
+      }
+      for (const einheit of this.einheiten.values()) {
+        if (einheit.tot) continue;
+        const abstand = Math.hypot(einheit.x - stein.x, einheit.y - stein.y);
+        if (abstand > flaeche) continue;
+        const anteil = 1 - 0.5 * (abstand / flaeche);
+        this.schlaege.push({
+          angreifer,
+          ziel: einheit,
+          schaden: Math.max(1, Math.round(this.schaden(angreifer, einheit, false) * anteil)),
+          gebaeude: false,
+        });
+      }
+    }
+    this.einschlaege = bleiben;
   }
 
   schlaegeAbrechnen() {
@@ -2143,6 +2271,8 @@ class Welt {
     // Dorfbewohner, der mit der Axt auf 1020 Leben Stein losgeht, stirbt nur
     // schneller. Wer den Turm angreifen soll, braucht einen Befehl (bauen AC-29).
     if (!EINHEITEN[angreifer.art]) return;
+    // Vom eigenen Stein getroffen (kampf AC-19), schlaegt niemand zurueck.
+    if (angreifer.besitzer === einheit.besitzer) return;
     if (EINHEITEN[einheit.art].wacht) return;
     // Eine Ramme schlaegt nicht zurueck: sie trifft nur Gebaeude (einheiten AC-35).
     if (EINHEITEN[einheit.art].nurGebaeude) return;
@@ -2297,6 +2427,7 @@ class Welt {
     this.tuermeTakten();
     // Ebenso oft treten Stehende auseinander (einheiten AC-29).
     if (this.takt % WACHE_TAKTE === 0) this.ausweichen();
+    this.einschlaegeTakten();
     this.schlaegeAbrechnen();
     if (this.takt % SICHT_TAKTE === 0) this.sichtAktualisieren();
     this.endePruefen();

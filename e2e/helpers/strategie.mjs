@@ -28,6 +28,7 @@
 //   `r` = ritter
 //   `a` = armbrustschuetze
 //   `w` = ramme
+//   `n` = mangonel
 // ### ENDE KUERZEL
 //
 // **`ansicht.gebaeude`** (Map id -> Gebaeude): `i` · `art` **ausgeschrieben**

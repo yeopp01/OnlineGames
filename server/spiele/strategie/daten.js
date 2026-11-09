@@ -90,6 +90,18 @@ const EINHEITEN = {
     angriff: 2, nahruestung: 0, fernruestung: 180, reichweite: 0, nachladen: 5,
     klassen: ['belagerung'], bonus: { gebaeude: 125 }, nurGebaeude: true, wacht: false, zeitalter: 2,
   },
+  // Der Mangonel (einheiten AC-36, kampf AC-19), Werte aus der Vorlage. Er
+  // wirft einen Stein, der fliegt (`geschoss`, Felder je Sekunde - so schnell
+  // wie ein gezeichneter Pfeil, bedienung AC-40) und dort einschlaegt, wo das
+  // Ziel beim Abwurf stand: alle Einheiten im Umkreis von `flaeche` Feldern,
+  // auch eigene. Naeher als `mindestreichweite` wirft er nicht. Nicht in der
+  // Tabelle der Vorlage und deshalb gesetzt: Nachladezeit 6 s wie im
+  // Original, Sicht 9 - Reichweite plus zwei wie Bogen und Armbrust.
+  mangonel: {
+    leben: 50, tempo: 0.6, sicht: 9, tragkraft: 0, kosten: { holz: 160, gold: 135 }, zeit: 46, kuerzel: 'n',
+    angriff: 40, nahruestung: 0, fernruestung: 6, reichweite: 7, mindestreichweite: 3, nachladen: 6,
+    flaeche: 1, geschoss: 7, klassen: ['belagerung'], zeitalter: 2,
+  },
 };
 
 // Wer von selbst wacht, greift an, was in seine Sichtweite kommt, ohne Befehl
@@ -170,7 +182,7 @@ const GEBAEUDE = {
   // Ramme und Mangonel (D6). Die Universitaet forscht Mauerwerk (bauen AC-34).
   kloster: { groesse: 3, kosten: { holz: 175 }, bauzeit: 40, leben: 2100, wohnraum: 0, annahme: [], bildetAus: [], zeitalter: 2 },
   universitaet: { groesse: 3, kosten: { holz: 200 }, bauzeit: 60, leben: 2100, wohnraum: 0, annahme: [], bildetAus: ['mauerwerk'], zeitalter: 2 },
-  belagerungswerkstatt: { groesse: 3, kosten: { holz: 200 }, bauzeit: 40, leben: 2100, wohnraum: 0, annahme: [], bildetAus: ['ramme'], zeitalter: 2 },
+  belagerungswerkstatt: { groesse: 3, kosten: { holz: 200 }, bauzeit: 40, leben: 2100, wohnraum: 0, annahme: [], bildetAus: ['ramme', 'mangonel'], zeitalter: 2 },
   // Ein Gebaeude, das schiesst (bauen AC-29): `angriff`, `reichweite` und
   // `nachladen` wie bei einer Einheit, Pfeile also Fernkampf. Werte aus der
   // Vorlage - 5 Angriff, Reichweite 8, alle zwei Sekunden ein Pfeil, Ruestung
