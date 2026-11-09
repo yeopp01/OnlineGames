@@ -1632,6 +1632,18 @@ ihn, mit Gegenprobe an beiden Formen. Fünf Bilder neu, alle angesehen.
 Neueste oben. Eine Zeile je Runde: Nummer, Datum, Kriterien, Ergebnis,
 wichtigste Erkenntnis.
 
+- **153** · 2026-11-09 · **fahrplan AC-24 fertig, D11 fertig** — zwei gegen
+  zwei im Browser: Anna eröffnet mit drei KIs, setzt im Warteraum sich und
+  KI 1 in Team 1, KI 2 und KI 3 in Team 2, schickt ihre Dorfbewohner ins
+  Holz und sieht mit Zeitraffer 20 nach 1,8 Minuten die Tafel „Team 2 hat
+  gewonnen — KI 2 und KI 3". Kein Produktcode. Erst ohne Browser gemessen
+  (ein untätiger Mensch auf Platz 1, neun Startwerte: jedes Mal Team 2,
+  28,6 bis 33,9 Spielminuten), dann nach der neuen Regel dieselbe Messung
+  mit `ki.js` aus Runde 150 (`npm run gegenprobe -- … --datei`): keine
+  Partie endet vor Minute 90, Anna scheidet nie aus. Im Browser sechsmal
+  hintereinander grün, drei Arbeiter zugleich. Der Fall hält am Ende fest,
+  dass Team 2 gewinnt — gewänne einmal Team 1, stimmte die Unterschrift
+  nicht mehr, und der Test sagt es, statt ein falsches Bild abzulegen.
 - **152** · 2026-11-09 · **Rückschau** — `pruefstand:vergleich --teams`,
   die Spur ohne Bildschirmfotos, `tests/partien/` als zweiter Abschnitt
   von `npm test`, die Regel „dieselbe Messung einmal gegen den alten Stand"

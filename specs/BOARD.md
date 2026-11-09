@@ -7,9 +7,9 @@ Eine Zeile je Abnahmekriterium. Gepflegt wird der Status in der Spec selbst,
 hier steht er zusammengefasst. Erzeugt mit `npm run specs:board`; als Seite
 mit Bildnachweisen, Filter und Suche mit `npm run qa:report`.
 
-**Gesamt:** 444/571 fertig · 2 in Arbeit · 5 in QA · 4 geplant · 108 offen · 8 zurueckgestellt
+**Gesamt:** 445/571 fertig · 1 in Arbeit · 5 in QA · 4 geplant · 108 offen · 8 zurueckgestellt
 
-**Nachweise:** 200 Kriterien mit Bild · 248 ohne Bild, begruendet in `qa/ohne-bild.json`
+**Nachweise:** 201 Kriterien mit Bild · 248 ohne Bild, begruendet in `qa/ohne-bild.json`
 
 ## Nach Spezifikation
 
@@ -25,7 +25,7 @@ mit Bildnachweisen, Filter und Suche mit `npm run qa:report`.
 | [Bedienung](10-strategie/bedienung.md)                         | -         | -     | -       | 14    | -               | 30     |
 | [Darstellung](10-strategie/darstellung.md)                     | -         | -     | -       | 1     | -               | 15     |
 | [Einheiten und Befehle](10-strategie/einheiten-und-befehle.md) | -         | -     | -       | 5     | 1               | 27     |
-| [Fahrplan zum Klon](10-strategie/fahrplan.md)                  | 1         | -     | -       | 7     | -               | 16     |
+| [Fahrplan zum Klon](10-strategie/fahrplan.md)                  | -         | -     | -       | 7     | -               | 17     |
 | [Kampf](10-strategie/kampf.md)                                 | -         | -     | -       | -     | 1               | 20     |
 | [Karte und Vorraete](10-strategie/karte-und-vorraete.md)       | -         | -     | -       | 2     | 3               | 12     |
 | [KI-Spieler](10-strategie/ki.md)                               | -         | -     | -       | 4     | -               | 22     |
@@ -45,9 +45,8 @@ mit Bildnachweisen, Filter und Suche mit `npm run qa:report`.
 | [Vorstand](15-manager/vorstand.md)                             | -         | -     | -       | -     | -               | 10     |
 | [Betrieb](20-betrieb/betrieb.md)                               | -         | -     | -       | 12    | -               | -      |
 
-## In Arbeit (2)
+## In Arbeit (1)
 
-- **Zwei gegen zwei zu Ende** — [Fahrplan zum Klon](10-strategie/fahrplan.md) AC-24
 - **Zeitalter gliedern die Partie** — [Spielziel und Partieverlauf](10-strategie/spielziel.md) AC-1
 
 ## In QA (5)

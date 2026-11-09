@@ -162,7 +162,7 @@ Umfang hinzufügt, dort nachsehen.
 
 ## Stand
 
-**444 von 571 Kriterien fertig.** 659 Tests ohne Browser, 195 im Browser. Die
+**445 von 571 Kriterien fertig.** 659 Tests ohne Browser, 196 im Browser. Die
 Übersicht ist der Bericht: `npm run qa:report`.
 
 Gebaut ist der Unterbau: Räume, Übertragung, Karte, Wegfindung, Sammeln,
@@ -398,7 +398,11 @@ steht nur bei genau einem Gewinner. `tests/waechter-feindlich.test.mjs` verbiete
 Kampfregeln jeden Vergleich mit dem Besitzer. **Die KI im Team** (ki AC-25): sie fragt `welt.feindlich`,
 wen sie angreift; zwei gegen zwei endet im Prüfstand über zwanzig
 Startwerte jedes Mal vor Minute 90 mit einem Team als Sieger
-(`tests/partien/zwei-gegen-zwei.mjs`, Verbündete als Nachbarn).
+(`tests/partien/zwei-gegen-zwei.mjs`, Verbündete als Nachbarn). **D11 ist
+fertig: zwei gegen zwei im Browser** (fahrplan AC-24) — Anna und KI 1
+gegen KI 2 und KI 3, Teams im Warteraum gesetzt, bis zur Tafel „Team 2 hat
+gewonnen — KI 2 und KI 3"; mit der KI von vor ki AC-25 endete dieselbe
+Partie nicht vor Minute 90.
 
 1. **Stufe A** Dunkle Zeit mit Wirtschafts-KI und Prüfstand · **B** Feudalzeit
    · **C** Partieende und KI-Gegner · **D** Ritterzeit · **E** fünf Völker ·

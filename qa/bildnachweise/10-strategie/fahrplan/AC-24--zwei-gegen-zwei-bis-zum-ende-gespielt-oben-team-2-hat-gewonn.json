@@ -1,0 +1,10 @@
+{
+  "spec": "10-strategie/fahrplan.md",
+  "ac": "AC-24",
+  "titel": "Zwei gegen zwei bis zum Ende gespielt: oben „Team 2 hat gewonnen — KI 2 und KI 3\", in der Tafel ihre beiden Zeilen hervorgehoben, Annas und die ihrer Verbündeten KI 1 gedämpft, darunter die Dauer der Partie",
+  "datei": "e2e/tests/strategie-team-gegen-ki.spec.mjs",
+  "pfad": [
+    "Zwei gegen zwei",
+    "fahrplan AC-24: Anna und KI 1 gegen KI 2 und KI 3 eroeffnet, gespielt und mit der Tafel des siegreichen Teams beendet"
+  ]
+}
