@@ -13,7 +13,7 @@ hier nichts eintraegt, verliert den Faden beim naechsten Autocompact.
 
 ## Zuletzt fortgeschrieben
 
-2026-11-09, nach Runde 143 (**ki AC-24 fertig, ki AC-21/22 aus `strategie-ki-ritterzeit` eingebunden**: Dorfbewohner je Zeitalter 22/32/42/50, Militaergebaeude ab der Ritterzeit 5/6, Aufstieg vor dem Ersatz; KI gegen KI 40 von 40 vor Minute 60, siehe "Naechste Runde 144" unten; davor Runde 142 Rueckschau zur Stufe D; davor **kampf AC-13, fahrplan AC-13, C6e fertig**: der
+2026-11-09, nach Runde 144 (**ki AC-13 dritter Anlauf, geparkt** auf `strategie-ki-sicht` `d0314d4`: 36 von 40 vor Minute 60, Frage an den Benutzer - fahrplan AC-11 im Nebel neu fassen; siehe "Naechste Runde 145"; davor Runde 143: **ki AC-24 fertig, ki AC-21/22 aus `strategie-ki-ritterzeit` eingebunden**: Dorfbewohner je Zeitalter 22/32/42/50, Militaergebaeude ab der Ritterzeit 5/6, Aufstieg vor dem Ersatz; KI gegen KI 40 von 40 vor Minute 60, siehe "Naechste Runde 144" unten; davor Runde 142 Rueckschau zur Stufe D; davor **kampf AC-13, fahrplan AC-13, C6e fertig**: der
 Server schickt jedem nur, was er sieht - `welt.zustandJeSpieler`,
 `welt.aufbauFuer`, im Raum `sendenJe`. Fremde Gebaeude und Felder, die sich im
 Nebel aendern, kommen beim naechsten Hinsehen; wer ausscheidet, bekommt einmal
@@ -172,7 +172,16 @@ Zeitgrenze als Einstellung, **Marktkarren schon in der Ritterzeit** - ein
 ADR fuer alles vier (holt Handelskarren aus "Wird nicht gebaut").
 **Reihenfolge:** Runde 143 KI-Wirtschaft, dann das ADR, dann Buendnisse
 bauen, dann Voelker-ADR und Spec-Runde E.
-**Naechste Runde 144: ki AC-13 einbinden** - den Zweig `strategie-ki-sicht`
+**Naechste Runde 145: das ADR fuer Buendnisse, Marktkarren,
+Geschwindigkeit und Zeitgrenze** (Antwort (5) in den Erkenntnissen). Ein
+neues ADR, das Handelskarren aus "Wird nicht gebaut" in ADR-0012 holt
+(entschieden vom Benutzer: Karren ab der Ritterzeit) und spielziel AC-14
+ersetzt. Dazu Kriterien in den Specs und Bauabfolge im Fahrplan, kein Code.
+Danach Buendnisse bauen. ki AC-13 wartet auf die Frage ganz oben in den
+Erkenntnissen (Runde 144: 36 von 40). Wird sie mit "neu fassen" beantwortet,
+dann `git merge strategie-ki-sicht`, die Grenze in fahrplan AC-11 und im Test
+neu, `suchziel` und die Suche in Gruppen bekommen eigene Tests.
+Erledigt in Runde 144 (frueher: "Naechste Runde 144: ki AC-13 einbinden") - den Zweig `strategie-ki-sicht`
 mit `git merge` holen (die KI mit eigener Sicht und Spaeher), dann
 `pruefstand:vergleich -- --gegen strategie --minuten 90 --saetze 2`;
 fahrplan AC-11 muss halten. Danach das ADR fuer Buendnisse, Marktkarren,

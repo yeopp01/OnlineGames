@@ -122,7 +122,9 @@ nicht die Regeln.
   länger, 34 von 40 Partien enden vor Minute 60 statt 39 (fahrplan AC-11).
   **Bedingung:** fahrplan AC-11 hält. **Stand Runde 114:** zwei Fehler
   behoben (Suche, Überlegenheit ohne frischen Blick), 35 von 40 vor Minute
-  60; Frage an den Benutzer (Erkenntnisse).
+  60; Frage an den Benutzer (Erkenntnisse). **Stand Runde 144:** auf dem
+  Boden der wachsenden Wirtschaft (AC-24) 36 von 40 (ohne eigene Sicht 40);
+  Zweig `strategie-ki-sicht` (`d0314d4`), Frage erneuert.
 - **AC-14** `fertig` **Die KI verteidigt zu Hause** — Verliert eines ihrer
   Gebäude oder einer ihrer Dorfbewohner Leben, zieht die Wache im Angriffslauf
   zum Angriffsort, und der getroffene Dorfbewohner lässt die Arbeit liegen und

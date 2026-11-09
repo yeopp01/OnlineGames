@@ -13,6 +13,30 @@ Kurz halten. Diese Datei wird in jeder Runde gelesen.
 Entscheidungen, die nicht die Schleife trifft. Solange eine offen ist, wird an
 etwas anderem gearbeitet.
 
+- **Die KI mit eigener Sicht kostet KI gegen KI vier Partien von 40 — Grenze neu fassen?**
+  (Runde 144, dritter Anlauf an ki AC-13, nach Runde 112 und 114.) Auf dem
+  Boden von Runde 143 (die Wirtschaft wächst, ohne Nebel 40 von 40 vor
+  Minute 60) endet KI gegen KI mit eigener Sicht **36 von 40** vor Minute
+  60, im Median 3,6 bis 4 Minuten später (45,9 und 41,9 statt 41,9 und
+  38,3). Die längste dauert 77,5 Minuten. Gemessen, woran es liegt: mit
+  allwissender Überlegenheit 37 von 40, also nicht die Ursache. Weiß das Heer
+  von **jeder** fremden Einheit, wo sie steht, sind es auf 60 Startwerten
+  57 statt 55, und der Median sinkt um 2 bis 4,6 Minuten: Ohne Sicht findet
+  das Heer die Holzfäller am fremden Waldrand nicht. Das ist kein Fehler,
+  sondern der Preis der Ehrlichkeit. Zwei Abhilfen sind gebaut, aber kaum
+  messbar: das Gedächtnis für gesehene Dorfbewohner und die Suche in Gruppen
+  zu viert (Startwert 18 von 80,3 auf 77,5 Minuten). Übrig sind Patts im
+  Mittelspiel, die es auch ohne Nebel gibt (dort längstens 53,8 Minuten).
+  **Empfehlung:** fahrplan AC-11 für die KI mit eigener Sicht neu fassen.
+  Alle Partien enden mit Sieger vor Minute 90 — das ist die Dauer, die
+  der Benutzer für eine Partie nennt. Dazu ein Median unter 45 Minuten und
+  mindestens 35 von 40 vor Minute 60, damit ein Patt weiter auffällt. Die
+  Schleife darf das Ende für Tests festlegen (Benutzer, 2026-11-09), aber
+  diese Grenze wurde dreimal verfehlt; sie zu senken, entscheidet der
+  Benutzer. **Alternative:** ki AC-13 bleibt geparkt, und die Schleife
+  baut weiter ohne Nebel für die KI. Der Zweig ist `strategie-ki-sicht`
+  (`d0314d4`), lokal und ungepusht.
+
 - **Die KI mit eigener Sicht macht KI gegen KI länger — wie weiter?**
   (Runde 114, zweiter Anlauf an ki AC-13) Die KI sieht nur noch, was ihre
   Einheiten sehen, und erkundet mit dem Späher (alle 40 finden den Gegner
@@ -188,8 +212,8 @@ etwas anderem gearbeitet.
   weiten Bild nicht zählbar. Wer eines dieser Bilder anfasst, stellt es neu
   auf (`figurenFrei`, näher heran).
 
-- **ki AC-13 liegt auf dem Zweig `strategie-ki-sicht`** (`8817c60`, Runden
-  112 und 114): die KI mit eigener Sicht, Späher, Suche über die ganze Karte,
+- **ki AC-13 liegt auf dem Zweig `strategie-ki-sicht`** (`d0314d4`, Runden
+  112, 114 und 144; die Frage ganz oben): die KI mit eigener Sicht, Späher, Suche über die ganze Karte,
   überlegen nur mit frischem Blick. KI gegen KI: 35 von 40 Partien vor
   Minute 60 (alter Stand 39); übrig sind Patts mit leerer Wirtschaft
   (Startwerte 9, 15, 33; 21 und 16 knapp darüber). Wartet auf die Frage an
@@ -1500,6 +1524,19 @@ ihn, mit Gegenprobe an beiden Formen. Fünf Bilder neu, alle angesehen.
 Neueste oben. Eine Zeile je Runde: Nummer, Datum, Kriterien, Ergebnis,
 wichtigste Erkenntnis.
 
+- **144** · 2026-11-09 · **ki AC-13 dritter Anlauf, wieder geparkt**: der
+  Zweig `strategie-ki-sicht` auf dem Stand von Runde 143. KI gegen KI 36 von
+  40 vor Minute 60 (`strategie` 40), Median +3,6 bis +4 Minuten, ein Takt
+  rund 18 % teurer. Mit Austauschproben in einem Wegwerfskript
+  (`Ki.prototype` überschrieben) gemessen, woran es liegt. Die Überlegenheit
+  ist es nicht (37). Fremde Einheiten außer Sicht kosten auf 60 Startwerten
+  zwei Partien und 2 bis 4,6 Minuten Median. Gebaut, aber auf dem Zweig:
+  Gedächtnis für gesehene Dorfbewohner, Suche in Gruppen zu viert, und
+  `wahrnehmen()` nur noch einmal je Takt (Takt 97–106 → 91–96 ms je 1000).
+  **Gelernt:** eine Variante gegen eine andere auf 20 Startwerten streut um
+  ±2 Partien. Zwischen fünf Varianten lag 36 bis 39, und erst 60 Startwerte
+  trennten die Jagd von der Streuung. Frage an den Benutzer: fahrplan AC-11
+  für Partien im Nebel neu fassen.
 - **143** · 2026-11-09 · **ki AC-24 fertig, ki AC-21 und AC-22 eingebunden**:
   die Wirtschaft der KI wächst nach jedem Aufstieg weiter (22, 32, 42, 50
   Dorfbewohner), ab der Ritterzeit bis zu fünf Militärgebäude statt drei,
