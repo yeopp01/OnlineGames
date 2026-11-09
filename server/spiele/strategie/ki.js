@@ -33,6 +33,15 @@ const PLAN = [
 const PLAN_WEITER = ['nahrung', 'holz', 'gold', 'nahrung'];
 // So viele Dorfbewohner, dann wird fuer die Feudalzeit gespart.
 const ZIEL_DORFBEWOHNER = 22;
+// So viele je Zeitalter (ki AC-24): nach jedem Aufstieg bildet das
+// Dorfzentrum weiter aus. Bis Runde 142 blieb es fuer immer bei 22, und ab
+// Minute 22 standen beide KIs mit Vorraeten nahe null im Patt (Startwert 24:
+// 74 Minuten). Die Vorgabe des Benutzers fuer die schwere KI: 40 bis 50 im
+// letzten Zeitalter.
+const DORFBEWOHNER_JE_ZEITALTER = [ZIEL_DORFBEWOHNER, 32, 42, 50];
+function zielDorfbewohner(zeitalter) {
+  return DORFBEWOHNER_JE_ZEITALTER[Math.min(zeitalter, DORFBEWOHNER_JE_ZEITALTER.length - 1)];
+}
 const FEUDALZEIT_NAHRUNG = 500;
 // Ab dieser Entfernung zum naechsten Lager lohnt ein eigenes - und ab so
 // vielen, die dort arbeiten. Gold wird von wenigen geholt, liegt aber weit.
@@ -225,7 +234,8 @@ class Ki {
     const puffer = dorfbewohner.length < 12 ? 2 : 4;
     // Nach dem Aufstieg wird weitergebaut, auch wenn das Ziel an Dorfbewohnern
     // steht: Kampfeinheiten brauchen denselben Wohnraum (ki AC-9).
-    const brauchtRaum = dorfbewohner.length < ZIEL_DORFBEWOHNER || this.spieler.zeitalter > 0;
+    const ziel = zielDorfbewohner(this.spieler.zeitalter);
+    const brauchtRaum = dorfbewohner.length < ziel || this.spieler.zeitalter > 0;
     if (raum < 200 && raum - eigene.length <= puffer && !hausImBau && brauchtRaum) {
       // Das erste Haus bauen zwei: allein brauchte es 25 s und der Weg dazu,
       // und das Dorfzentrum wartete bis zu 11 s auf Wohnraum (Runde 44).
@@ -234,7 +244,7 @@ class Ki {
 
     // Ohne Pause ausbilden, bis das Ziel steht; dann sparen.
     const imZentrum = zentrum ? zentrum.schlange.length : 0;
-    if (zentrum && imZentrum < 2 && dorfbewohner.length + imZentrum < ZIEL_DORFBEWOHNER
+    if (zentrum && imZentrum < 2 && dorfbewohner.length + imZentrum < ziel
       && this.spieler.nahrung >= EINHEITEN.dorfbewohner.kosten.nahrung) {
       this.senden({ auftrag: 'ausbilden', gebaeude: zentrum.id, einheit: 'dorfbewohner' });
     }
@@ -303,7 +313,7 @@ class Ki {
     // wenn danach noch einer bezahlt ist. Beim Startwert 14 stand die Nahrung
     // ab Minute 24 bei 10 - drei Militaergebaeude nahmen jede Ladung, und das
     // Dorfzentrum ersetzte keinen Gefallenen mehr (Runde 90).
-    const ruecklage = dorfbewohner.length < ZIEL_DORFBEWOHNER ? EINHEITEN.dorfbewohner.kosten : {};
+    const ruecklage = dorfbewohner.length < zielDorfbewohner(this.spieler.zeitalter) ? EINHEITEN.dorfbewohner.kosten : {};
     // Ausgebildet wird auch in der Kaserne (ki AC-17): Fernkaempfer nehmen
     // einem Gebaeude einen Punkt je Schuss (Fernruestung 7), eine Miliz vier je
     // Schlag. Allein brachte das nichts (Runde 92: mehr Entscheidungen, aber
@@ -1049,6 +1059,6 @@ class Ki {
 }
 
 module.exports = {
-  Ki, ENTSCHEIDEN_ALLE, ZIEL_DORFBEWOHNER, FEUDALZEIT_NAHRUNG, AN_SCHAFEN, AN_BEEREN, MILITAER,
+  Ki, ENTSCHEIDEN_ALLE, ZIEL_DORFBEWOHNER, DORFBEWOHNER_JE_ZEITALTER, zielDorfbewohner, FEUDALZEIT_NAHRUNG, AN_SCHAFEN, AN_BEEREN, MILITAER,
   HEER, WACHE, UEBERLEGEN, MARSCH_MINDESTENS, HEER_ABSTAND, WACHE_NAH, FEIND_FERN, VERGEBEN_ABSTAND, MILITAER_HOLZ, UEBERSCHUSS, MANGEL, UMVERTEILEN_SEKUNDEN, UNERREICHBAR_SEKUNDEN, MILITAER_HOECHSTENS, plan,
 };

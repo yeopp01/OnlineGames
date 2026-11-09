@@ -10,7 +10,7 @@ const require = createRequire(import.meta.url);
 const karten = require('../server/spiele/strategie/karte.js');
 const { Welt } = require('../server/spiele/strategie/welt.js');
 const {
-  Ki, ENTSCHEIDEN_ALLE, ZIEL_DORFBEWOHNER, FEUDALZEIT_NAHRUNG, AN_SCHAFEN, AN_BEEREN, MILITAER,
+  Ki, ENTSCHEIDEN_ALLE, ZIEL_DORFBEWOHNER, DORFBEWOHNER_JE_ZEITALTER, FEUDALZEIT_NAHRUNG, AN_SCHAFEN, AN_BEEREN, MILITAER,
   HEER, WACHE, UEBERLEGEN, MARSCH_MINDESTENS, HEER_ABSTAND, WACHE_NAH, FEIND_FERN, VERGEBEN_ABSTAND, MILITAER_HOLZ, UEBERSCHUSS, MANGEL, UNERREICHBAR_SEKUNDEN, plan,
 } = require('../server/spiele/strategie/ki.js');
 const { TAKTE_PRO_SEKUNDE } = require('../server/spiele/strategie/welt.js');
@@ -1069,8 +1069,10 @@ test('ki AC-12: fehlen Dorfbewohner, gibt das Militaer Nahrung nur aus, wenn dan
   const dorf = EINHEITEN.dorfbewohner.kosten.nahrung;
   assert.ok(!ausgebildet(3, reiter + dorf - 1), 'drei Dorfbewohner: der Reiter wartet, solange danach keiner bezahlt waere');
   assert.ok(ausgebildet(3, reiter + dorf), 'reicht es fuer beide, kommt der Reiter');
-  // Gegenprobe: mit vollem Dorf keine Ruecklage.
-  assert.ok(ausgebildet(ZIEL_DORFBEWOHNER, reiter), 'mit vollem Dorf reicht der Preis des Reiters');
+  // Gegenprobe: mit vollem Dorf keine Ruecklage. Voll heisst das Ziel der
+  // Feudalzeit (ki AC-24), seit Runde 143 nicht mehr 22.
+  assert.ok(ausgebildet(DORFBEWOHNER_JE_ZEITALTER[1], reiter), 'mit vollem Dorf reicht der Preis des Reiters');
+  assert.ok(!ausgebildet(DORFBEWOHNER_JE_ZEITALTER[1] - 1, reiter), 'einer darunter haelt sie die Ruecklage noch');
 });
 
 test('ki AC-12: fuehrt kein Weg zum Vorrat, geht der Dorfbewohner zur naechsten Moeglichkeit', () => {
@@ -1502,4 +1504,39 @@ test('ki AC-19: die KI gibt auf, wenn nie wieder etwas geschehen kann - und nur 
   ki.entscheiden();
   assert.equal(b.aus, true, 'ausgeschieden');
   assert.equal(welt.ende?.sieger, 'a', 'Anna gewinnt');
+});
+
+test('ki AC-24: nach dem Aufstieg bildet das Dorfzentrum weiter aus - bis zum Ziel des Zeitalters', () => {
+  // Gebaute Lage statt ganzer Partie: dieselben 22 Dorfbewohner, viel Nahrung
+  // und Wohnraum; nur das Zeitalter wechselt. Gegenprobe in der Dunklen Zeit:
+  // dort wird ab 22 fuer den Aufstieg gespart, wie vor Runde 143 in jedem
+  // Zeitalter.
+  const reihe = DORFBEWOHNER_JE_ZEITALTER;
+  assert.ok(reihe.every((n, i) => i === 0 || n > reihe[i - 1]), `die Reihe steigt: ${reihe}`);
+  assert.ok(reihe.at(-1) >= 40 && reihe.at(-1) <= 50, 'im letzten Zeitalter 40 bis 50 (Vorgabe des Benutzers)');
+  const bildetAus = (zeitalter, anzahl) => {
+    const welt = new Welt(ZWEI, 4711, { sicht: 'aufgedeckt' });
+    const ki = new Ki(welt, 'a');
+    const a = welt.spielerVon('a');
+    a.zeitalter = zeitalter;
+    a.nahrung = 5000;
+    a.holz = 0; // nichts anderes soll Nahrung binden
+    a.gold = 0;
+    for (let i = 0; i < 12; i++) {
+      const platz = ki.platzBeiBasis('haus');
+      welt.gebaeudeAnlegen('a', 'haus', platz.x, platz.y, true);
+    }
+    while (dorfVon(welt, 'a').length < anzahl) welt.einheitAnlegen('a', a.basis.x + 6, a.basis.y + 6, 'dorfbewohner');
+    const gesendet = [];
+    const senden = ki.senden.bind(ki);
+    ki.senden = (n) => { gesendet.push(n); return senden(n); };
+    ki.entscheiden();
+    return gesendet.some((n) => n.auftrag === 'ausbilden' && n.einheit === 'dorfbewohner');
+  };
+  assert.equal(bildetAus(0, ZIEL_DORFBEWOHNER), false, 'Gegenprobe: in der Dunklen Zeit spart sie ab 22');
+  for (let zeitalter = 1; zeitalter < reihe.length; zeitalter++) {
+    assert.equal(bildetAus(zeitalter, ZIEL_DORFBEWOHNER), true, `Zeitalter ${zeitalter}: mit 22 bildet sie weiter aus`);
+    assert.equal(bildetAus(zeitalter, reihe[zeitalter] - 1), true, `Zeitalter ${zeitalter}: einer unter dem Ziel noch`);
+    assert.equal(bildetAus(zeitalter, reihe[zeitalter]), false, `Zeitalter ${zeitalter}: am Ziel (${reihe[zeitalter]}) nicht mehr`);
+  }
 });

@@ -210,6 +210,15 @@ nicht die Regeln.
   aus und baut eine Belagerungswerkstatt; steht beim Gegner ein Turm oder
   eine Burg, nimmt ihr Angriff Rammen mit. KI gegen KI endet weiter (fahrplan
   AC-11).
+- **AC-24** `in-arbeit` **Das Dorf wächst weiter** — Nach jedem Aufstieg bildet
+  das Dorfzentrum weiter Dorfbewohner aus: bis 32 in der Feudalzeit, 42 in
+  der Ritterzeit, 50 in der Imperialzeit (`DORFBEWOHNER_JE_ZEITALTER` in
+  `ki.js`). Bis Runde 142 blieb es in jedem Zeitalter bei 22, und ab dem
+  Mittelspiel standen beide KIs mit leeren Vorräten im Patt (Startwert 24:
+  74 Minuten). Vorgabe des Benutzers für die schwere KI: 40 bis 50 im
+  letzten Zeitalter; mittel (25) und leicht (15) folgen als eigene Reihen.
+  Die Zahlen der Feudal- und Ritterzeit liegen zwischen 22 und 50, wie im
+  Original ein gutes Spiel wächst; sie sind Werte, kein Gesetz.
 
 ## Grenzfaelle
 

@@ -8,7 +8,7 @@
 const karten = require('./karte');
 const { Welt, TAKTE_PRO_SEKUNDE, ROHSTOFFE } = require('./welt');
 const { BEVOELKERUNG_MAX, EINHEITEN } = require('./daten');
-const { Ki, ZIEL_DORFBEWOHNER } = require('./ki');
+const { Ki, zielDorfbewohner } = require('./ki');
 
 class Widerspruch extends Error {
   constructor(startwert, takt, befunde) {
@@ -134,7 +134,7 @@ function zentrumStillZaehlen(welt, still, ziel) {
   }
   for (const s of welt.spieler) {
     const zentrum = [...welt.gebaeude.values()].find((g) => g.besitzer === s.id && g.art === 'dorfzentrum' && g.fertig);
-    const bedarf = zentrum && !zentrum.schlange.length && (dorf.get(s.id) || 0) < ziel
+    const bedarf = zentrum && !zentrum.schlange.length && (dorf.get(s.id) || 0) < ziel(s.zeitalter)
       && s.nahrung >= EINHEITEN.dorfbewohner.kosten.nahrung && (bewohner.get(s.id) || 0) < welt.wohnraum(s);
     if (!bedarf) {
       still.seit.delete(s.id);
@@ -169,7 +169,7 @@ function partieSpielen({ startwert, spieler = 2, minuten = 10, einstellungen = {
     const befunde = pruefen(welt);
     if (befunde.length) throw new Widerspruch(startwert, welt.takt, befunde);
     untaetigkeitZaehlen(welt, untaetig);
-    zentrumStillZaehlen(welt, still, ZIEL_DORFBEWOHNER);
+    zentrumStillZaehlen(welt, still, zielDorfbewohner);
   }
   return {
     startwert,
