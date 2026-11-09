@@ -1540,3 +1540,130 @@ test('ki AC-24: nach dem Aufstieg bildet das Dorfzentrum weiter aus - bis zum Zi
     assert.equal(bildetAus(zeitalter, reihe[zeitalter]), false, `Zeitalter ${zeitalter}: am Ziel (${reihe[zeitalter]}) nicht mehr`);
   }
 });
+
+// ---- Die Ritterzeit (ki AC-21, AC-22) ---------------------------------------
+
+/** Anna in der Feudalzeit, ihr erstes Heer ist schon aufgebrochen. */
+function feudalNachAngriff(startwert = 4711) {
+  const welt = new Welt(ZWEI, startwert);
+  const ki = new Ki(welt, 'a');
+  const a = welt.spielerVon('a');
+  a.zeitalter = 1;
+  ki.angriffTakt = 0;
+  const zentrum = [...welt.gebaeude.values()].find((g) => g.besitzer === 'a' && g.art === 'dorfzentrum');
+  const eigeneGebaeude = () => [...welt.gebaeude.values()].filter((g) => g.besitzer === 'a');
+  const anlegen = (art) => {
+    const platz = ki.platzBeiBasis(art);
+    return welt.gebaeudeAnlegen('a', art, platz.x, platz.y, true);
+  };
+  return { welt, ki, a, zentrum, eigeneGebaeude, anlegen };
+}
+
+test('ki AC-21: erst mit 800 Nahrung, 200 Gold und zwei Gebaeuden der Feudalzeit bestellt sie die Ritterzeit', () => {
+  const { welt, ki, a, zentrum, eigeneGebaeude, anlegen } = feudalNachAngriff();
+  anlegen('schiessanlage');
+  anlegen('schmiede');
+  const pruefen = () => ki.ritterzeitPruefen(zentrum, eigeneGebaeude(), dorfVon(welt, 'a'));
+  // Je eines fehlt: kein Aufstieg, und kein vergeblicher Versuch.
+  for (const [nahrung, gold] of [[799, 200], [800, 199]]) {
+    Object.assign(a, { nahrung, gold, holz: 0 });
+    pruefen();
+    assert.deepEqual(zentrum.schlange, [], `${nahrung} Nahrung, ${gold} Gold: kein Aufstieg`);
+  }
+  // Vor dem ersten Angriff spart sie nicht und steigt nicht auf (ki AC-11).
+  ki.angriffTakt = null;
+  Object.assign(a, { nahrung: 800, gold: 200 });
+  pruefen();
+  assert.deepEqual(zentrum.schlange, [], 'vor dem ersten Heer kein Aufstieg');
+  // Mit allem: der Aufstieg, ueber dieselbe Nachricht wie ein Mensch.
+  ki.angriffTakt = 0;
+  pruefen();
+  assert.ok(zentrum.schlange.includes('ritterzeit'), 'bestellt');
+  assert.equal(ki.abgewiesen, 0, 'und der Server nimmt es an');
+});
+
+test('ki AC-21: fehlt das zweite Gebaeude der Feudalzeit, baut sie eine Schmiede', () => {
+  const { welt, ki, a, zentrum, eigeneGebaeude, anlegen } = feudalNachAngriff();
+  anlegen('schiessanlage');
+  // Die Kaserne ist aus der Dunklen Zeit, sie zaehlt nicht (bauen AC-27).
+  anlegen('kaserne');
+  Object.assign(a, { nahrung: 800, gold: 200, holz: GEBAEUDE.schmiede.kosten.holz });
+  const gesendet = [];
+  ki.senden = (n) => { gesendet.push(n); return {}; };
+  ki.ritterzeitPruefen(zentrum, eigeneGebaeude(), dorfVon(welt, 'a'));
+  assert.ok(gesendet.some((n) => n.auftrag === 'bauen' && n.art === 'schmiede'), JSON.stringify(gesendet));
+  assert.ok(!gesendet.some((n) => n.einheit === 'ritterzeit'), 'mit einem Gebaeude kein Aufstieg');
+  // Gegenprobe: mit zweien baut sie nichts mehr dafuer.
+  anlegen('stall');
+  gesendet.length = 0;
+  ki.ritterzeitPruefen(zentrum, eigeneGebaeude(), dorfVon(welt, 'a'));
+  assert.ok(!gesendet.some((n) => n.auftrag === 'bauen'), JSON.stringify(gesendet));
+  assert.ok(gesendet.some((n) => n.einheit === 'ritterzeit'), 'jetzt der Aufstieg');
+});
+
+test('ki AC-21: nach dem ersten Angriff gibt das Militaer nur aus, was ueber dem Preis der Ritterzeit liegt', () => {
+  const ausgebildet = (angriff, nahrung, gold, aufstiegLaeuft = false) => {
+    const { welt, ki, a, zentrum, eigeneGebaeude, anlegen } = feudalNachAngriff();
+    if (!angriff) ki.angriffTakt = null;
+    if (aufstiegLaeuft) zentrum.schlange = ['ritterzeit'];
+    // Volles Dorf der Feudalzeit (ki AC-24), damit nur die Ruecklage fuer die
+    // Ritterzeit wirkt.
+    while (dorfVon(welt, 'a').length < DORFBEWOHNER_JE_ZEITALTER[1]) welt.einheitAnlegen('a', a.basis.x + 6, a.basis.y + 6, 'dorfbewohner');
+    anlegen('stall');
+    Object.assign(a, { nahrung, gold, holz: 0 });
+    const gesendet = [];
+    ki.senden = (n) => { gesendet.push(n); return {}; };
+    ki.militaerPruefen(eigeneGebaeude(), dorfVon(welt, 'a'));
+    return gesendet.some((n) => n.auftrag === 'ausbilden');
+  };
+  const reiter = EINHEITEN.spaeherreiter.kosten.nahrung;
+  assert.ok(!ausgebildet(true, 800 + reiter - 1, 200), 'ein Reiter griffe die Ruecklage an');
+  // Ist der Aufstieg bestellt, ist er bezahlt: keine Ruecklage mehr, bis das
+  // Zeitalter umspringt (Durchsicht Runde 137).
+  assert.ok(ausgebildet(true, reiter, 0, true), 'waehrend des Aufstiegs reicht der Preis des Reiters');
+  assert.ok(ausgebildet(true, 800 + reiter, 200), 'was darueber liegt, geht ins Militaer');
+  // Gegenprobe: vor dem ersten Angriff keine Ruecklage.
+  assert.ok(ausgebildet(false, reiter, 0), 'vorher reicht der Preis des Reiters');
+});
+
+test('ki AC-21: was fuer die Ritterzeit zurueckliegt, haelt die Umverteilung nicht fuer Ueberfluss', () => {
+  const umverteilt = (angriff) => {
+    const { welt, ki, a } = feudalNachAngriff();
+    if (!angriff) ki.angriffTakt = null;
+    // 700 Nahrung, 100 Holz: ohne Ruecklage zieht ein Sammler vom Essen ins
+    // Holz. Mit Ruecklage fehlen der Nahrung noch 100 - kein Ueberfluss.
+    Object.assign(a, { nahrung: 700, holz: 100, gold: 400 });
+    const sammler = welt.einheitAnlegen('a', a.basis.x + 6, a.basis.y + 6, 'dorfbewohner');
+    sammler.auftrag = { art: 'farm', gebaeude: -1 };
+    ki.schicken = () => true;
+    ki.umverteilen([sammler]);
+    return ki.umverteilt;
+  };
+  assert.equal(umverteilt(false), 1, 'ohne Ruecklage: Nahrung ist Ueberfluss');
+  assert.equal(umverteilt(true), 0, 'mit Ruecklage: die Nahrung ist verplant');
+});
+
+test('ki AC-22: in der Ritterzeit bildet sie zuerst die Einheit der Ritterzeit aus - im Stall den Ritter', () => {
+  const bestellt = (zeitalter) => {
+    const welt = new Welt(ZWEI, 4711);
+    const ki = new Ki(welt, 'a');
+    const a = welt.spielerVon('a');
+    a.zeitalter = zeitalter;
+    const platz = ki.platzBeiBasis('stall');
+    const stall = welt.gebaeudeAnlegen('a', 'stall', platz.x, platz.y, true);
+    Object.assign(a, { nahrung: 1000, gold: 1000, holz: 0 });
+    return ki.naechsteKampfeinheit(stall);
+  };
+  assert.equal(bestellt(2), 'ritter');
+  // Gegenprobe: in der Feudalzeit gibt es ihn nicht, dort der Spaeherreiter.
+  assert.equal(bestellt(1), 'spaeherreiter');
+  // Und ohne Gold fuer den Ritter auch in der Ritterzeit der Spaeherreiter.
+  const welt = new Welt(ZWEI, 4711);
+  const ki = new Ki(welt, 'a');
+  const a = welt.spielerVon('a');
+  a.zeitalter = 2;
+  const platz = ki.platzBeiBasis('stall');
+  const stall = welt.gebaeudeAnlegen('a', 'stall', platz.x, platz.y, true);
+  Object.assign(a, { nahrung: 1000, gold: EINHEITEN.ritter.kosten.gold - 1 });
+  assert.equal(ki.naechsteKampfeinheit(stall), 'spaeherreiter');
+});

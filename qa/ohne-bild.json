@@ -2,6 +2,16 @@
   "hinweis": "Ausnahmeliste zu den Bildnachweisen (docs/adr/0011-bildnachweise.md). Ein Abnahmekriterium steht hier, wenn es kein Aussehen hat oder ein Bildschirm es nicht zeigen kann - dann verlangt der Bericht kein Bild. Die Begruendung sagt, was das Kriterium ist und warum kein Bild. Ein Eintrag auf eine Spec oder ein Kriterium, das es nicht mehr gibt, laesst npm run check scheitern. Liegt trotz Eintrag ein Bild vor, wird es angezeigt.",
   "eintraege": [
     {
+      "spec": "10-strategie/ki.md",
+      "ac": "AC-21",
+      "begruendung": "Wann die KI den Aufstieg in die Ritterzeit bestellt und wofuer sie spart, ist eine Rechnung in ihrer Entscheidung, belegt im Rechenteil mit Gegenproben fuer jede Bedingung und ueber zwanzig ganze Partien im Pruefstand. Was der Aufstieg im Bild zeigt - das Zeitalter oben in der Leiste, die Meldung -, ist derselbe Weg wie bei einem Menschen und dort nachgewiesen (bauen AC-27, bedienung AC-33)."
+    },
+    {
+      "spec": "10-strategie/ki.md",
+      "ac": "AC-22",
+      "begruendung": "Welche Einheit die KI in einem Gebaeude bestellt, ist eine Auswahl aus den Daten in ihrer Entscheidung, belegt im Rechenteil. Der Ritter selbst hat sein Bild (einheiten AC-33); ein Standbild zeigt einen Ritter, nicht, warum die KI ihn statt des Spaeherreiters gewaehlt hat."
+    },
+    {
       "spec": "10-strategie/kampf.md",
       "ac": "AC-21",
       "begruendung": "Mauern halten auf ist eine Entscheidung der Wegsuche: ob ein Weg aussen herum besteht, welches Mauerfeld als erstes im Weg liegt, dass nach dem Fall das Ziel dahinter wieder dran ist, und wie viele Stoesse eine Ramme braucht. Ein Standbild zeigt eine Miliz neben einer Mauer und kann nicht zeigen, warum sie dort steht - ob befohlen, aus Mangel an Weg oder auf dem Weg aussen herum. Dass eine Einheit sichtbar auf ein Gebaeude einschlaegt, zeigen schon die Bilder zu bedienung AC-39 und einheiten AC-35."

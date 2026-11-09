@@ -2,7 +2,7 @@
 
 **Bereich:** Strategie
 **Kuerzel:** ki
-**Stand:** 18/22 fertig · 4 offen
+**Stand:** 20/24 fertig · 1 in Arbeit · 3 offen
 
 ## Zweck
 
@@ -202,13 +202,26 @@ nicht die Regeln.
 
 ### Stufe D — Ritterzeit
 
-- **AC-21** `offen` **KI steigt zur Ritterzeit auf** — Sobald sie 800
+- **AC-21** `fertig` **KI steigt zur Ritterzeit auf** — Sobald sie 800
   Nahrung und 200 Gold hat und zwei Gebäude der Feudalzeit stehen, bestellt
-  sie den Aufstieg; im Prüfstand über zwanzig Startwerte jede vor
-  Spielminute 30 (Vorlage: 16 bis 20 Minuten im guten Spiel).
-- **AC-22** `offen` **Die KI nutzt die Ritterzeit** — Danach bildet sie Ritter
-  aus und baut eine Belagerungswerkstatt; steht beim Gegner ein Turm oder
-  eine Burg, nimmt ihr Angriff Rammen mit. KI gegen KI endet weiter (fahrplan
+  sie den Aufstieg; fehlt das zweite, baut sie eine Schmiede. Gespart wird
+  ab dem ersten Angriff: das Militär gibt nur aus, was über dem Preis liegt,
+  und die Umverteilung hält das Zurückgelegte nicht für Überfluss. Im
+  Prüfstand über zwanzig Startwerte steigt jede KI vor Spielminute 30 auf,
+  die ab Minute 18 nie unter zwölf Dorfbewohner fällt (Vorlage: 16 bis 20
+  Minuten im guten Spiel). Abweichung: „jede“ galt für alle; wer überrannt
+  wird, steckt jede Nahrung in den Ersatz (AC-12) — gemessen fielen die fünf
+  ohne Aufstieg auf 0 bis 10 Dorfbewohner, und vor dem ersten Angriff zu
+  sparen schöbe ihn hinter Minute 22 (AC-11). Gemessen 22,1 bis 27,2
+  Minuten, 35 von 40 (Runde 137).
+- **AC-22** `fertig` **Die KI bildet Ritter aus** — In der Ritterzeit bildet
+  jedes Gebäude zuerst die Einheit des neuesten Zeitalters aus, die bezahlt
+  ist: im Stall den Ritter, in der Kaserne den Speerkämpfer. KI gegen KI
+  endet weiter (fahrplan AC-11). Geteilt in Runde 137: der Aufstieg allein
+  kostete und brachte nichts, Startwert 11 dauerte 71 Minuten.
+- **AC-23** `offen` **Rammen gegen Befestigung** — Die KI baut in der
+  Ritterzeit eine Belagerungswerkstatt; steht beim Gegner ein Turm oder eine
+  Burg, nimmt ihr Angriff Rammen mit. KI gegen KI endet weiter (fahrplan
   AC-11).
 - **AC-24** `in-arbeit` **Das Dorf wächst weiter** — Nach jedem Aufstieg bildet
   das Dorfzentrum weiter Dorfbewohner aus: bis 32 in der Feudalzeit, 42 in

@@ -17,7 +17,7 @@
 const karten = require('./karte');
 const { suchen } = require('./wege');
 const { TAKTE_PRO_SEKUNDE } = require('./welt');
-const { EINHEITEN, GEBAEUDE, SAMMELN } = require('./daten');
+const { EINHEITEN, GEBAEUDE, SAMMELN, AUFSTIEGE } = require('./daten');
 
 const ENTSCHEIDEN_ALLE = TAKTE_PRO_SEKUNDE / 2;
 
@@ -90,6 +90,10 @@ const MILITAER_GOLD = 200;
 // einzigen stapelten sich beim Startwert 4 bei Minute 30 2280 Holz und 930
 // Gold, und das Heer stand bei einer bis sechs Einheiten (Runde 90).
 const MILITAER_HOECHSTENS = 3;
+// Ab der Ritterzeit mehr (ki AC-24): mit 42 Dorfbewohnern lagen beim
+// Startwert 13 ab Minute 40 1500 Nahrung und 1400 Gold, und das Heer stand
+// bei 10 bis 19 - drei Gebaeude mit je zwei Auftraegen gaben es nicht aus.
+const MILITAER_JE_ZEITALTER = [MILITAER_HOECHSTENS, MILITAER_HOECHSTENS, 5, 6];
 const MILITAER_RESERVE = 200;
 // So viele Auftraege stehen hoechstens in der Schlange eines Militaergebaeudes:
 // mehr wuerde den Vorrat binden, den die naechste Stufe braucht.
@@ -171,6 +175,7 @@ class Ki {
     // In welchem Takt die Feudalzeit erreicht war - der Pruefstand misst daran
     // (ki AC-9). `null` heisst: noch nicht.
     this.feudalTakt = null;
+    this.ritterTakt = null;
     // Wer marschiert (ki AC-11), wie oft ein Heer aufgebrochen ist und in
     // welchem Takt das erste - daran misst der Pruefstand.
     this.heer = new Set();
@@ -252,6 +257,8 @@ class Ki {
     // Die Feudalzeit, sobald sie bezahlt ist - und danach Militaer (ki AC-9).
     if (this.feudalTakt === null && this.spieler.zeitalter > 0) this.feudalTakt = welt.takt;
     this.feudalzeitPruefen(zentrum, dorfbewohner);
+    if (this.ritterTakt === null && this.spieler.zeitalter > 1) this.ritterTakt = welt.takt;
+    this.ritterzeitPruefen(zentrum, gebaeude, dorfbewohner);
     this.militaerPruefen(gebaeude, dorfbewohner);
     this.heerPruefen(eigene);
     this.verteidigenPruefen(eigene, gebaeude, zentrum);
@@ -297,6 +304,45 @@ class Ki {
   }
 
   /**
+   * Gespart wird fuer die Ritterzeit (ki AC-21), sobald das erste Heer
+   * aufgebrochen ist: vorher geht jede Ladung ins Militaer, und ein Aufstieg
+   * davor haette den ersten Angriff hinter Minute 22 geschoben (ki AC-11).
+   * Was zurueckgelegt ist, gibt das Militaer nicht aus und haelt die
+   * Umverteilung nicht fuer Ueberfluss.
+   */
+  ruecklageRitterzeit() {
+    if (this.spieler.zeitalter !== 1 || this.angriffTakt === null) return {};
+    // Bestellt ist bezahlt (bauen AC-23): waehrend der 160 Sekunden bis zum
+    // neuen Zeitalter ist nichts mehr zurueckzulegen - sonst stuende das
+    // Militaer still und die Umverteilung saehe Mangel (Durchsicht Runde 137).
+    for (const g of this.welt.gebaeude.values()) {
+      if (g.besitzer === this.spielerId && g.schlange.includes('ritterzeit')) return {};
+    }
+    return AUFSTIEGE.ritterzeit.kosten;
+  }
+
+  /**
+   * Der Aufstieg in die Ritterzeit (ki AC-21): zwei fertige Gebaeude der
+   * Feudalzeit, das Dorfzentrum frei, 800 Nahrung und 200 Gold. Fehlt das
+   * zweite Gebaeude, baut sie eine Schmiede - oder das Militaergebaeude, das
+   * ihr noch fehlt.
+   */
+  ritterzeitPruefen(zentrum, gebaeude, dorfbewohner) {
+    const spieler = this.spieler;
+    if (!zentrum || spieler.zeitalter !== 1 || this.angriffTakt === null) return;
+    const derZeit = gebaeude.filter((g) => this.welt.gebaeudeZeitalter(g.art) === 1 && GEBAEUDE[g.art].zumAufstieg !== false);
+    if (derZeit.length < AUFSTIEGE.ritterzeit.voraussetzung) {
+      const art = ['schmiede', ...MILITAER].find((a) => !derZeit.some((g) => g.art === a));
+      if (art) this.bauen(art, this.platzBeiBasis(art), dorfbewohner);
+      return;
+    }
+    if (zentrum.schlange.length) return;
+    if (Object.entries(AUFSTIEGE.ritterzeit.kosten).some(([r, menge]) => spieler[r] < menge)) return;
+    if (this.welt.gebaeudeDerZeit(spieler) < AUFSTIEGE.ritterzeit.voraussetzung) return;
+    this.senden({ auftrag: 'ausbilden', gebaeude: zentrum.id, einheit: 'ritterzeit' });
+  }
+
+  /**
    * Nach dem Aufstieg ein Militaergebaeude, dann ohne Pause Kampfeinheiten
    * (ki AC-9). Welche, steht in den Daten des Gebaeudes - so bekommt die KI
    * jede neue Einheit einer spaeteren Stufe von selbst.
@@ -313,7 +359,10 @@ class Ki {
     // wenn danach noch einer bezahlt ist. Beim Startwert 14 stand die Nahrung
     // ab Minute 24 bei 10 - drei Militaergebaeude nahmen jede Ladung, und das
     // Dorfzentrum ersetzte keinen Gefallenen mehr (Runde 90).
-    const ruecklage = dorfbewohner.length < zielDorfbewohner(this.spieler.zeitalter) ? EINHEITEN.dorfbewohner.kosten : {};
+    const ruecklage = { ...this.ruecklageRitterzeit() };
+    if (dorfbewohner.length < zielDorfbewohner(this.spieler.zeitalter)) {
+      for (const [r, menge] of Object.entries(EINHEITEN.dorfbewohner.kosten)) ruecklage[r] = (ruecklage[r] || 0) + menge;
+    }
     // Ausgebildet wird auch in der Kaserne (ki AC-17): Fernkaempfer nehmen
     // einem Gebaeude einen Punkt je Schuss (Fernruestung 7), eine Miliz vier je
     // Schlag. Allein brachte das nichts (Runde 92: mehr Entscheidungen, aber
@@ -329,7 +378,7 @@ class Ki {
     // Nachschub braucht Durchsatz: sind alle voll beschaeftigt und ist Holz
     // uebrig, ein weiteres.
     const alleVoll = meine.every((g) => g.fertig && g.schlange.length >= MILITAER_SCHLANGE);
-    if (alleVoll && meine.length < MILITAER_HOECHSTENS && this.spieler.holz >= MILITAER_HOLZ + MILITAER_RESERVE) {
+    if (alleVoll && meine.length < MILITAER_JE_ZEITALTER[Math.min(this.spieler.zeitalter, MILITAER_JE_ZEITALTER.length - 1)] && this.spieler.holz >= MILITAER_HOLZ + MILITAER_RESERVE) {
       const art = !meine.some((g) => g.art === 'kaserne') ? 'kaserne'
         : this.spieler.gold >= MILITAER_GOLD ? 'schiessanlage' : 'stall';
       this.bauen(art, this.platzBeiBasis(art), dorfbewohner);
@@ -339,8 +388,17 @@ class Ki {
   // Die erste Einheit, die dieses Gebaeude jetzt ausbilden kann: im erreichten
   // Zeitalter und bezahlt. Verbesserungen stehen in derselben Liste - die
   // haben keine Werte in EINHEITEN und fallen heraus.
+  //
+  // Ab der Ritterzeit zuerst die Einheit des neuesten Zeitalters (ki AC-22):
+  // im Stall der Ritter vor dem Spaeherreiter, in der Kaserne der
+  // Speerkaempfer vor der Miliz. Ohne das kostete der Aufstieg 1000
+  // Rohstoffe und brachte nichts - Startwert 11 dauerte 71 statt 46 Minuten
+  // (Runde 137). In der Feudalzeit bleibt die Reihenfolge der Daten.
   naechsteKampfeinheit(gebaeude, ruecklage = {}) {
-    for (const art of GEBAEUDE[gebaeude.art].bildetAus) {
+    const liste = GEBAEUDE[gebaeude.art].bildetAus;
+    const ritter = this.spieler.zeitalter >= 2
+      ? [...liste].sort((a, b) => (EINHEITEN[b]?.zeitalter || 0) - (EINHEITEN[a]?.zeitalter || 0)) : liste;
+    for (const art of ritter) {
       const werte = EINHEITEN[art];
       if (!werte || (werte.zeitalter || 0) > this.spieler.zeitalter) continue;
       if (Object.entries(werte.kosten).some(([r, menge]) => this.spieler[r] - (ruecklage[r] || 0) < menge)) continue;
@@ -686,7 +744,9 @@ class Ki {
   umverteilen(dorfbewohner) {
     if (this.spieler.zeitalter < 1) return;
     if (this.welt.takt - this.zuletztUmverteilt < UMVERTEILEN_SEKUNDEN * TAKTE_PRO_SEKUNDE) return;
-    const vorrat = (r) => this.spieler[r];
+    // Was fuer die Ritterzeit zurueckliegt, ist kein Ueberfluss (ki AC-21).
+    const ruecklage = this.ruecklageRitterzeit();
+    const vorrat = (r) => this.spieler[r] - (ruecklage[r] || 0);
     const fehlt = ['holz', 'gold', 'nahrung'].filter((r) => vorrat(r) < MANGEL)
       .sort((a, b) => vorrat(a) - vorrat(b))[0];
     if (!fehlt) return;
@@ -1060,5 +1120,5 @@ class Ki {
 
 module.exports = {
   Ki, ENTSCHEIDEN_ALLE, ZIEL_DORFBEWOHNER, DORFBEWOHNER_JE_ZEITALTER, zielDorfbewohner, FEUDALZEIT_NAHRUNG, AN_SCHAFEN, AN_BEEREN, MILITAER,
-  HEER, WACHE, UEBERLEGEN, MARSCH_MINDESTENS, HEER_ABSTAND, WACHE_NAH, FEIND_FERN, VERGEBEN_ABSTAND, MILITAER_HOLZ, UEBERSCHUSS, MANGEL, UMVERTEILEN_SEKUNDEN, UNERREICHBAR_SEKUNDEN, MILITAER_HOECHSTENS, plan,
+  HEER, WACHE, UEBERLEGEN, MARSCH_MINDESTENS, HEER_ABSTAND, WACHE_NAH, FEIND_FERN, VERGEBEN_ABSTAND, MILITAER_HOLZ, UEBERSCHUSS, MANGEL, UMVERTEILEN_SEKUNDEN, UNERREICHBAR_SEKUNDEN, MILITAER_HOECHSTENS, MILITAER_JE_ZEITALTER, plan,
 };
