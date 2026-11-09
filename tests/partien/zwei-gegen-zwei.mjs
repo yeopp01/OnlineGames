@@ -4,6 +4,15 @@
 // rechnen rund zwei Minuten, in einer Datei verlaengerten sie `npm run check`
 // um ebenso viel (Runde 151, gemessen; vgl. Runde 97).
 //
+// **Ein eigener Ordner, ein eigener Abschnitt von `npm test`** (Rueckschau
+// nach Runde 152): neben diesen vier Prozessen riss einheiten AC-31 (800
+// Angreifer unter 1 ms) - 1,389 und 1,156 ms im Lauf, 0,28 ms allein. Ein
+// niedrigerer Vorrang half nicht (einer von zwei Laeufen rot): die Maschine
+// hat acht logische Kerne, und zwei Prozesse auf einem Kern teilen sich
+// Rechenwerk und Zwischenspeicher, gleich wer Vorrang hat. Deshalb laeuft
+// `tests/partien/` nach allen anderen Tests, untereinander nebeneinander.
+// Die Grenzen bleiben. Hier keine Zeitmessung hinlegen.
+//
 // Die Teams sind **Nachbarn**: KI 1 und KI 2 gegen KI 3 und KI 4. Zu viert
 // liegen die Doerfer im Quadrat, KI 1 und KI 3 uebers Eck. Waeren die
 // Verbuendeten uebers Eck, laege der naechste Nachbar jeder KI ohnehin im
@@ -15,8 +24,8 @@ import assert from 'node:assert/strict';
 import { createRequire } from 'node:module';
 
 const require = createRequire(import.meta.url);
-const { partieSpielen } = require('../server/spiele/strategie/pruefstand.js');
-const { TAKTE_PRO_SEKUNDE } = require('../server/spiele/strategie/welt.js');
+const { partieSpielen } = require('../../server/spiele/strategie/pruefstand.js');
+const { TAKTE_PRO_SEKUNDE } = require('../../server/spiele/strategie/welt.js');
 
 export const TEAMS = { ki1: 1, ki2: 1, ki3: 2, ki4: 2 };
 export const MINUTEN = 90;

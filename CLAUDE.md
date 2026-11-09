@@ -126,6 +126,7 @@ qa/      bildnachweise/ Bilder je Kriterium (eingecheckt) · ohne-bild.json Begr
 scripts/ specs-lesen.mjs ist die eine Quelle; Board, Belege und Bericht hängen daran
          qa-nachweis.mjs legt Bildnachweise ab · qa-report.mjs prüft und schreibt den Bericht
 tests/   waechter-*: Regeln, die ein Test durchsetzt statt Fettdruck
+         partien/: ganze Partien zu viert, als zweiter Abschnitt von npm test
          Anfrageweg: netz, schutz, konten, manager-netz · Rechenteile: regeln, manager, manager-spiel
          manager-welt: sechs Saisons ohne Menschen, jedes Spiel auf Widersprüche geprüft
 e2e/     Playwright: tests/ im Browser; server.mjs startet den Server samt Prüfgriffen
@@ -161,7 +162,7 @@ Umfang hinzufügt, dort nachsehen.
 
 ## Stand
 
-**444 von 571 Kriterien fertig.** 656 Tests ohne Browser, 195 im Browser. Die
+**444 von 571 Kriterien fertig.** 659 Tests ohne Browser, 195 im Browser. Die
 Übersicht ist der Bericht: `npm run qa:report`.
 
 Gebaut ist der Unterbau: Räume, Übertragung, Karte, Wegfindung, Sammeln,
@@ -397,7 +398,7 @@ steht nur bei genau einem Gewinner. `tests/waechter-feindlich.test.mjs` verbiete
 Kampfregeln jeden Vergleich mit dem Besitzer. **Die KI im Team** (ki AC-25): sie fragt `welt.feindlich`,
 wen sie angreift; zwei gegen zwei endet im Prüfstand über zwanzig
 Startwerte jedes Mal vor Minute 90 mit einem Team als Sieger
-(`tests/zwei-gegen-zwei.mjs`, Verbündete als Nachbarn).
+(`tests/partien/zwei-gegen-zwei.mjs`, Verbündete als Nachbarn).
 
 1. **Stufe A** Dunkle Zeit mit Wirtschafts-KI und Prüfstand · **B** Feudalzeit
    · **C** Partieende und KI-Gegner · **D** Ritterzeit · **E** fünf Völker ·

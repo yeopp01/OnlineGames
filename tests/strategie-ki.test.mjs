@@ -1252,6 +1252,19 @@ test('pruefstand:vergleich stellt den Arbeitsstand neben einen eingecheckten Sta
   assert.doesNotMatch(ausgabe, /WIDERSPRUCH/);
 });
 
+test('pruefstand:vergleich spielt mit --teams zu viert, zwei gegen zwei', () => {
+  // Rueckschau nach Runde 152: die Messung zu ki AC-25 brauchte ein
+  // Wegwerfskript und eine Kopie von HEAD von Hand. Eine Minute zu viert
+  // reicht, um zu sehen, dass die Teams ankommen und keiner widerspricht.
+  const skript = fileURLToPath(new URL('../scripts/pruefstand-vergleich.mjs', import.meta.url));
+  const ausgabe = execFileSync(process.execPath, [skript, '--partien', '1', '--minuten', '1', '--teams', '1,1,2,2'], { encoding: 'utf8' });
+  assert.match(ausgabe, /^4 Spieler, Teams 1,1,2,2$/m);
+  assert.match(ausgabe, /^Arbeitsstand /m);
+  assert.doesNotMatch(ausgabe, /WIDERSPRUCH/);
+  // Ein falscher Wert bricht ab, statt still zu zweit zu spielen.
+  assert.throws(() => execFileSync(process.execPath, [skript, '--teams', '1,x'], { encoding: 'utf8', stdio: 'pipe' }), /--teams braucht/);
+});
+
 test('pruefstand:verlauf zeigt eine Partie Minute fuer Minute', () => {
   // Das Werkzeug der Rueckschau nach Runde 98. Zwei Minuten reichen fuer zwei
   // Zeilen und den Schluss; jede Zeile nennt beide Spieler.

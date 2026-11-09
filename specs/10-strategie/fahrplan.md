@@ -200,7 +200,7 @@ Zustandsnachricht umbaut und damit jeden Browsertest berührt: was dort heute
   jede Partie vor Minute 90. Das ist die Dauer, die der Benutzer für eine
   Partie nennt; die Grenze für Tests legt die Schleife fest
   ([ADR-0013](../../docs/adr/0013-buendnisse-karren-dauer.md)).
-  Der Prüfstand steht seit Runde 151 (`tests/strategie-team-*.test.mjs`):
+  Der Prüfstand steht seit Runde 151 (`tests/partien/strategie-team-*.test.mjs`):
   20 von 20 entschieden, Minute 35,4 bis 52,4, Median 39,6, beide Teams
   gewinnen. Offen ist der Browserfall.
 

@@ -47,9 +47,16 @@ export default defineConfig({
     timezoneId: 'Europe/Berlin',
     // Bilder gibt es ueber nachweis() am Abnahmekriterium (ADR-0011), nicht
     // als namenlose Anhaenge eines Laufs. Eine Spur bleibt nur bei Fehlschlag.
-    screenshot: 'off',
+    //
+    // Die Spur ohne Bildschirmfotos (Rueckschau nach Runde 152): das Spielbild
+    // ist eine Leinwand, die jedes Bild neu malt, und die Spur nahm jedes
+    // davon auf - ein Fall, der 60 s wartete, hinterliess 634 Fotos und
+    // 51 MB. In Runde 148 lag eine solche Spur 39 Minuten vor dem Ende des
+    // Laufs. Was die Leinwand beim Fehlschlag zeigte, sagt das eine Bild von
+    // `screenshot: 'only-on-failure'`; Schritte und DOM bleiben in der Spur.
+    screenshot: 'only-on-failure',
     video: 'off',
-    trace: 'retain-on-failure',
+    trace: { mode: 'retain-on-failure', screenshots: false },
   },
 
   projects: [

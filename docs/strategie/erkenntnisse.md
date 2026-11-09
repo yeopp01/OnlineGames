@@ -200,8 +200,10 @@ etwas anderem gearbeitet.
   dauerte 59,8 — die Aufzeichnung (`trace: 'retain-on-failure'`, 15 MB
   nach 90 s Warten mit `polling: 50`) war erst 39 Minuten später
   geschrieben. Der zweite Lauf war grün (17,7 min). Fällt der Fall noch
-  einmal, ist er nach Abschnitt 1 die nächste Runde; die Dauer gehört in
-  die Rückschau 152 (Aufzeichnung kleiner, oder ohne Bildschirmfotos).
+  einmal, ist er nach Abschnitt 1 die nächste Runde. Rückschau 152: die
+  Spur hat keine Bildschirmfotos mehr (51 MB → 2,2 MB); ob das die 39
+  Minuten waren, ist nicht belegt — beim nächsten gefallenen Fall die
+  Dauer des Laufs gegen die Summe der Fälle halten.
 
 - **Was eine lange Mauer kostet, ist nicht gemessen** (Runde 127): eine
   Nachricht `mauer` prüft bis zu 60 Felder mit `platzPruefen`, und
@@ -526,6 +528,8 @@ Zahlen, gegen die spätere Runden vergleichen. Mit Datum und Commit.
 | 2026-11-09 | Browserlauf gesamt (`check:alles`, Last nicht geprüft) | 191 Fälle, 17,1 min einschließlich Prüfung; längste fahrplan AC-14 94 s, fahrplan AC-12 84 s, ki AC-9 48 s | Rückschau 147 |
 | 2026-11-09 | Tests ohne Browser | 629 in 100 Dateien (Runde 142: 607) | Rückschau 147 |
 | 2026-11-09 | KI gegen KI, Startwerte 1-20 / 21-40 bis Minute 90 | 20/20 und 20/20 vor Minute 60, Median 41,9 / 38,3 min, 73–74 ms je 1000 Takte | Runde 146 |
+| 2026-11-09 | Zwei gegen zwei, Verbündete als Nachbarn, Startwerte 1-20 bis Minute 90 | 20/20 mit einem Team als Sieger, Minute 35,4–52,4, Median 39,6; HEAD von Runde 150: 0/20, 173–434 Angriffsläufe zu Verbündeten je Partie | Runde 151 |
+| 2026-11-09 | `npm run check` (zwei Abschnitte, `tests/partien/` danach) | 651 + 8 Tests, 170 und 165 s, zweimal grün; vorher 151–193 s mit einheiten AC-31 einmal von zweien rot | Rückschau 152 |
 
 ## Rückschauen
 
@@ -1496,6 +1500,50 @@ Testlauf): `npm run check` 53 s ohne Last, 599 Tests ohne Browser; der
 volle Browserlauf mit 191 Fällen 16,6 min (Runde 140; Runde 135: 17,0 min
 für 190). Die Ritterzeit am Stück braucht 1,7 min.
 
+### Nach Runde 152 (2026-11-09)
+
+Vier Runden: 148 Teams im Warteraum (auswahl AC-22, spielziel AC-14), 149
+gemeinsame Sicht (spielziel AC-19), 150 ein Team gewinnt (AC-20), 151 die
+KI im Team (ki AC-25, fahrplan AC-24 halb). Was Zeit gekostet hat:
+
+1. **Zweimal ein Beleg, der auch mit dem alten Stand grün war** (Runden 150,
+   151). In Runde 150 ließ der Test am Ende nur Anna stehen; „einer bleibt
+   übrig" galt auch nach der alten Regel. In Runde 151 standen die
+   Verbündeten über Eck, der nächste Nachbar war ohnehin ein Gegner, und
+   die alte KI rechnete Takt für Takt dieselben Partien. Beide Male hat es
+   erst ein Lauf gegen den alten Stand gezeigt, in Runde 151 mit einem
+   Wegwerfskript und einer Kopie von HEAD von Hand. → **`npm run
+   pruefstand:vergleich -- --teams 1,1,2,2`**: die Zahl der Spieler folgt
+   aus den Teams, gezählt wird ein Sieg nach `ende.gewinner` (vorher nur
+   `sieger`, das bei einem Team leer ist: jede Partie zu zweit gegen zwei
+   wäre „ohne Sieger" gewesen). Eigener Test. Am echten Fall gegen HEAD~1:
+   0 von 3 gegen 3 von 3 entschieden. Und eine Regel in der Anweisung
+   (Abschnitt 4): **dieselbe Messung einmal gegen den alten Stand, bevor
+   ihre Zahl gilt**, und zu viert die Verbündeten als Nachbarn.
+2. **Die Spur eines gefallenen Browserfalls** (Runde 148: der Lauf dauerte
+   59,8 statt 18 Minuten). Nachgestellt mit einem Wegwerffall, der 60 s mit
+   `polling: 50` vergeblich wartet: die Spur hatte 51 MB, davon 634
+   Bildschirmfotos der Leinwand zu je 90 KB. → **`trace: { mode:
+   'retain-on-failure', screenshots: false }`** und `screenshot:
+   'only-on-failure'` (ein Bild je Seite beim Fehlschlag): 2,2 MB statt
+   51 MB. **Nicht belegt** ist, dass das die 39 Minuten waren — einzeln
+   dauerte der Fall mit und ohne Fotos 73 und 69 s. Der offene Faden bleibt
+   mit diesem Vermerk stehen, bis ein voller Lauf wieder einen Fall verliert.
+3. **`npm run check` wurde in Runde 151 länger und wackelig** (151 bis
+   193 s statt rund 90, und einheiten AC-31 — 800 Angreifer unter 1 ms —
+   riss zweimal: 1,389 und 1,156 ms, allein 0,28). Die vier Dateien zwei
+   gegen zwei rechnen je rund eine Minute auf je einem Kern, neben den
+   Zeitmessungen. Ein niedrigerer Vorrang half nicht (einer von zwei Läufen
+   rot): acht logische Kerne, und zwei Prozesse auf einem Kern teilen sich
+   das Rechenwerk, gleich wer Vorrang hat. → **`tests/partien/` ist der
+   zweite Abschnitt von `npm test`**, nach allen anderen Dateien; dort
+   untereinander nebeneinander. `tests/waechter-testordner.test.mjs`
+   verlangt, dass jede Testdatei in einem der beiden Ordner liegt (die
+   Belege suchen rekursiv und fänden auch einen Test, den nie jemand fährt)
+   und dass in `tests/partien/` niemand Zeit misst. Danach zwei Läufe
+   hintereinander grün, 170 und 165 s. Die Regel steht in der Anweisung
+   (Abschnitt 4, ganze Partien).
+
 ### Nach Runde 147 (2026-11-09)
 
 Vier Runden seit der Rückschau zur Stufe D: 143 die Wirtschaft der KI
@@ -1584,6 +1632,10 @@ ihn, mit Gegenprobe an beiden Formen. Fünf Bilder neu, alle angesehen.
 Neueste oben. Eine Zeile je Runde: Nummer, Datum, Kriterien, Ergebnis,
 wichtigste Erkenntnis.
 
+- **152** · 2026-11-09 · **Rückschau** — `pruefstand:vergleich --teams`,
+  die Spur ohne Bildschirmfotos, `tests/partien/` als zweiter Abschnitt
+  von `npm test`, die Regel „dieselbe Messung einmal gegen den alten Stand"
+  (siehe Rückschauen).
 - **151** · 2026-11-09 · **ki AC-25 fertig, fahrplan AC-24 halb** — die KI
   im Team: drei Stellen in `ki.js` fragen `welt.feindlich`. Erkenntnis: **eine
   Messung zu viert muss die Verbündeten zu Nachbarn machen.** Zu viert liegen

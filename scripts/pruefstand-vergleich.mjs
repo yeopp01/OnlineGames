@@ -7,6 +7,17 @@
 //   npm run pruefstand:vergleich -- --gegen HEAD~3 --minuten 30 --partien 20
 //   npm run pruefstand:vergleich -- --minuten 90 --saetze 2      Startwerte 1-20 und 21-40
 //   npm run pruefstand:vergleich -- --probe <datei.cjs> --saetze 3   eine Austauschprobe auf 60 Startwerten
+//   npm run pruefstand:vergleich -- --teams 1,1,2,2 --minuten 90     zwei gegen zwei, KI 1 und 2 gegen 3 und 4
+//
+// **Teams** (Rueckschau nach Runde 152): `--teams` nennt je Spieler sein
+// Team, die Zahl der Spieler folgt daraus (sonst `--spieler`, Vorgabe 2).
+// Zu viert liegen die Doerfer im Quadrat - KI 1 und 2 sind Nachbarn, KI 1
+// und 3 uebers Eck. Wer eine Regel fuer Verbuendete misst, macht sie zu
+// Nachbarn: mit Verbuendeten uebers Eck ist der naechste Nachbar ohnehin ein
+// Gegner, und HEAD rechnete in Runde 151 Takt fuer Takt dieselben Partien.
+// In jener Runde entstanden dafuer ein Wegwerfskript und eine Kopie von HEAD
+// von Hand. Gewonnen hat eine Partie, wenn `ende.gewinner` jemanden nennt -
+// ein Team sind zwei.
 //
 // **Austauschprobe** (Rueckschau nach Runde 147): `--probe` laedt eine
 // CommonJS-Datei, die eine Funktion ausfuehrt, bevor gerechnet wird. Sie
@@ -60,6 +71,15 @@ const partien = Number(wert('partien', 20));
 const erster = Number(wert('startwert', 1));
 const saetze = Number(wert('saetze', 1));
 const probe = wert('probe', null);
+const teamListe = wert('teams', null)?.split(',').map(Number) || null;
+if (teamListe && !teamListe.every((t) => Number.isInteger(t) && t >= 1 && t <= 4)) {
+  console.error('--teams braucht Zahlen von 1 bis 4, durch Kommas getrennt: --teams 1,1,2,2');
+  process.exit(2);
+}
+const spieler = teamListe ? teamListe.length : Number(wert('spieler', 2));
+const einstellungen = teamListe ? { teams: Object.fromEntries(teamListe.map((t, i) => [`ki${i + 1}`, t])) } : {};
+const partie = (stand, startwert, m) => stand.pruefstand.partieSpielen({ startwert, minuten: m, spieler, einstellungen });
+if (spieler !== 2 || teamListe) console.log(`${spieler} Spieler${teamListe ? `, Teams ${teamListe.join(',')}` : ''}`);
 
 // Den Stand `gegen` in einen Temp-Ordner schreiben.
 const git = (...a) => execFileSync('git', a, { cwd: WURZEL, encoding: 'utf8', maxBuffer: 64 * 1024 * 1024 });
@@ -92,7 +112,7 @@ const zahl = (x, stellen = 1) => (x === null ? '-' : x.toFixed(stellen));
 // der erste Stand das Uebersetzen von V8, und die Rechenzeiten waren "nur
 // innerhalb eines Standes vergleichbar". In Runde 104 machte die Sicht eine
 // Partie um 55 % langsamer, und erst ein Wegwerfskript zeigte es.
-for (const stand of staende) stand.pruefstand.partieSpielen({ startwert: erster, minuten: Math.min(minuten, 5) });
+for (const stand of staende) partie(stand, erster, Math.min(minuten, 5));
 
 for (let satz = 0; satz < saetze; satz++) {
   const von = erster + satz * partien;
@@ -109,12 +129,14 @@ for (let satz = 0; satz < saetze; satz++) {
       const werte = werteJe[k];
       if (werte.widerspruch) continue;
       try {
-        const r = staende[k].pruefstand.partieSpielen({ startwert, minuten });
+        const r = partie(staende[k], startwert, minuten);
         // Rechenzeit je Takt: Partien sind verschieden lang, die Summe allein
         // vergliche Laengen statt Kosten.
         werte.ms += r.dauerMs;
         werte.takte += r.gespielt;
-        if (r.ende?.sieger) {
+        // `gewinner` seit spielziel AC-20 (Runde 150); ein aelterer Stand
+        // kennt nur `sieger`.
+        if (r.ende?.gewinner?.length || r.ende?.sieger) {
           werte.sieger += 1;
           werte.ende.push(r.ende.takt / 600);
           werte.je.push({ startwert, ende: r.ende.takt / 600 });

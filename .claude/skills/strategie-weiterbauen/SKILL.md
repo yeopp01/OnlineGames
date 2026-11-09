@@ -215,6 +215,18 @@ Setze die gewählten Kriterien auf `in-arbeit`.
   ohne die umgekehrte Richtung hätte der Konterkreis auch gehalten, wenn
   schlicht immer links gewinnt.) Beides als eigene Zusicherung schreiben, nicht
   nur prüfen und wegwerfen.
+  **Und dieselbe Messung einmal gegen den alten Stand, bevor ihre Zahl
+  gilt** — `npm run pruefstand:vergleich -- --gegen HEAD` mit derselben
+  Aufstellung (`--teams 1,1,2,2`, `--spieler`), beim Rechenteil
+  `npm run gegenprobe`. Zeigt der alte Stand dieselbe Zahl, misst sie nicht
+  die Änderung. Zweimal hintereinander wäre es sonst durchgerutscht: in
+  Runde 150 ließ der Test am Ende nur Anna stehen, und „einer bleibt übrig"
+  galt auch nach der alten Regel; in Runde 151 standen die Verbündeten über
+  Eck, der nächste Nachbar war ohnehin ein Gegner, und die alte KI rechnete
+  Takt für Takt dieselben Partien. Erst der Fall, in dem alt und neu
+  **verschieden antworten** (der einzige Gegner fällt, die Verbündeten sind
+  Nachbarn), belegt etwas. Zu viert liegen die Dörfer im Quadrat: KI 1 und 2
+  sind Nachbarn, KI 1 und 3 über Eck (Rückschau nach Runde 152).
   **Und ein Sieg belegt nicht, warum.** Für jede Paarung fragen, welcher
   Wert sie tragen soll, ihn einzeln abschalten (`npm run gegenprobe` auf
   die Zeile in `daten.js`) und sehen, ob sie dann fällt. In Runde 138 gewann
@@ -244,7 +256,12 @@ Setze die gewählten Kriterien auf `in-arbeit`.
   (`tests/strategie-partien.test.mjs`): `node --test` rechnet Dateien
   nebeneinander, Tests einer Datei nacheinander. Hinter den Messungen in
   `strategie-ki.test.mjs` verlängerte zwanzig Partien `npm run check` von 48
-  auf 88 Sekunden (Runde 97).
+  auf 88 Sekunden (Runde 97). **Rechnet sie zu viert oder über eine Minute je
+  Datei, kommt sie nach `tests/partien/`**: dieser Ordner läuft als zweiter
+  Abschnitt von `npm test`, nach allen Zeitmessungen. Neben den vier Dateien
+  zwei gegen zwei riss einheiten AC-31 (800 Angreifer unter 1 ms), und ein
+  niedrigerer Vorrang half nicht (Rückschau nach Runde 152).
+  `tests/waechter-testordner.test.mjs` hält beides fest.
   **Wer Bewegung oder Kampf ändert, vergleicht auf zwei Sätzen Startwerte**
   (`npm run pruefstand:vergleich -- --minuten 90 --saetze 2`): eine solche
   Änderung verschiebt jede Partie, und ein Satz allein zeigt Zufall als
