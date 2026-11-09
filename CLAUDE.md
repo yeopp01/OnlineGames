@@ -162,7 +162,7 @@ Umfang hinzufügt, dort nachsehen.
 
 ## Stand
 
-**448 von 573 Kriterien fertig.** 667 Tests ohne Browser, 201 im Browser. Die
+**449 von 573 Kriterien fertig.** 672 Tests ohne Browser, 203 im Browser. Die
 Übersicht ist der Bericht: `npm run qa:report`.
 
 Gebaut ist der Unterbau: Räume, Übertragung, Karte, Wegfindung, Sammeln,
@@ -197,7 +197,8 @@ automatisch um. `npm test` braucht in Node 24 ein Muster statt eines Ordners.
 Den Browser für Playwright holt einmal `npm run e2e:browser`.
 
 **Gespielt wird am PC** (spielauswahl AC-23): der Vorraum steht ab 900
-Bildpunkten nebeneinander und passt auf 1366 × 768 ohne Rollen.
+Bildpunkten nebeneinander und passt auf 1366 × 768 ohne Rollen; im
+Warteraum stehen die Einstellungen in drei Spalten.
 
 **Im Browser gesehen** sind die Manager-Oberfläche, der Vorraum mit
 Spielauswahl und Einstellungen und das **Strategiespiel bis Schritt A6b**:
@@ -416,7 +417,11 @@ Teamsieg. Jeder Zustand trägt die Kündigungen als `bu`. **D12 ist fertig:
 im Bild** (spielziel AC-24) „Bündnis lösen" neben Aufgeben mit einer
 Rückfrage, bei „fest" ohne Knopf, und oben rechts für alle die Ansage mit
 der Uhr der Frist; der Browser stellt dieselben zwei Fragen
-(`ansicht.feindlich`, `ansicht.teiltSicht`).
+(`ansicht.feindlich`, `ansicht.teiltSicht`). **Die Zeitgrenze ist eine
+Einstellung** (spielziel AC-22, D13): keine, 90 oder 120 Spielminuten,
+Vorgabe keine; steht sie, zeigt die Uhr sie dahinter („89:45 / 90:00").
+Wer im Test das Unentschieden nach Ablauf braucht, gibt `zeitgrenze: 90`
+mit; im Browser stellt der Prüfgriff `uhrStellen` die Uhr vor.
 
 1. **Stufe A** Dunkle Zeit mit Wirtschafts-KI und Prüfstand · **B** Feudalzeit
    · **C** Partieende und KI-Gegner · **D** Ritterzeit · **E** fünf Völker ·

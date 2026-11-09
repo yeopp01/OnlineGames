@@ -336,7 +336,7 @@ test('spielziel AC-20: stehen alle in einem Team, entscheidet keine Eroberung - 
   // Im Warteraum laesst sich jeder Platz auf Team 1 stellen (auswahl AC-22).
   // Ohne Gegner gibt es nichts zu gewinnen: die Partie endet nicht im ersten
   // Takt mit "Ihr habt gewonnen", sondern laeuft, bis die Zeit um ist.
-  const welt = new Welt(DREI, 7, { sicht: 'aufgedeckt', teams: { a: 1, b: 1, c: 1 } });
+  const welt = new Welt(DREI, 7, { sicht: 'aufgedeckt', teams: { a: 1, b: 1, c: 1 }, zeitgrenze: 90 });
   for (let i = 0; i < 20; i++) welt.takten();
   assert.equal(welt.ende, null, 'nicht im ersten Takt entschieden');
   allesVerlieren(welt, 'b');

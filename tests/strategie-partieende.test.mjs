@@ -10,12 +10,20 @@ import { createRequire } from 'node:module';
 import { test } from 'node:test';
 
 const require = createRequire(import.meta.url);
-const { Welt, TAKTE_PRO_SEKUNDE, PARTIE_MINUTEN } = require('../server/spiele/strategie/welt.js');
+const { Welt, TAKTE_PRO_SEKUNDE, ZEITGRENZEN } = require('../server/spiele/strategie/welt.js');
+const STECKBRIEF = require('../server/spiele/strategie/steckbrief.js');
 
 const ZWEI = [{ id: 'a1', name: 'Anna' }, { id: 'b1', name: 'Bert' }];
 
-function welt(startwert = 4711, liste = ZWEI) {
-  return new Welt(liste, startwert, {});
+function welt(startwert = 4711, liste = ZWEI, einstellungen = {}) {
+  return new Welt(liste, startwert, einstellungen);
+}
+
+/** Die Uhr auf eine Spielminute stellen und das Ende pruefen. */
+function bei(w, minuten) {
+  w.takt = Math.round(minuten * 60 * TAKTE_PRO_SEKUNDE);
+  w.endePruefen();
+  return w.ende;
 }
 
 /** Alles wegnehmen, was diesem Spieler gehoert - wie ein verlorener Kampf. */
@@ -85,13 +93,15 @@ test('spielziel AC-5: eine entschiedene Partie rechnet nicht weiter', () => {
 });
 
 test('spielziel AC-5: nach 90 Spielminuten endet die Partie unentschieden', () => {
-  const w = welt();
+  // Die 90 Minuten sind seit spielziel AC-22 eine Einstellung - hier
+  // ausdruecklich mitgegeben.
+  const w = welt(4711, ZWEI, { zeitgrenze: 90 });
   // Nicht 54.000 Takte rechnen, sondern die Uhr vorstellen: geprueft wird die
   // Grenze, nicht der Weg dorthin. Eine Sekunde davor steht sie noch.
-  w.takt = (PARTIE_MINUTEN * 60 - 1) * TAKTE_PRO_SEKUNDE;
+  w.takt = (90 * 60 - 1) * TAKTE_PRO_SEKUNDE;
   w.endePruefen();
   assert.equal(w.ende, null, 'eine Sekunde vor der Grenze laeuft sie noch');
-  w.takt = PARTIE_MINUTEN * 60 * TAKTE_PRO_SEKUNDE;
+  w.takt = 90 * 60 * TAKTE_PRO_SEKUNDE;
   w.endePruefen();
   assert.deepEqual({ sieger: w.ende.sieger, grund: w.ende.grund }, { sieger: null, grund: 'zeit' });
   assert.equal(w.spielerVon('a1').aus, false, 'unentschieden heisst: keiner ist ausgeschieden');
@@ -262,4 +272,47 @@ test('spielziel AC-8: die Tafel kommt im Zustand und im Aufbau mit', () => {
   assert.equal(w.aufbau().ende.tafel.length, 2, 'auch fuer einen, der zurueckkommt');
   // Die Dauer steht als Takt daran - der Browser macht daraus die Spielzeit.
   assert.equal(Number.isInteger(w.ende.takt), true);
+});
+
+// ---- Die Zeitgrenze als Einstellung (spielziel AC-22, Runde 157) --------------
+
+test('spielziel AC-22: beim Eroeffnen keine, 90 oder 120 Spielminuten, Vorgabe keine', () => {
+  const e = STECKBRIEF.einstellungen.find((x) => x.schluessel === 'zeitgrenze');
+  assert.ok(e, 'die Einstellung steht im Steckbrief');
+  assert.equal(e.art, 'wahl');
+  assert.equal(e.vorgabe, 0, 'Vorgabe: keine Grenze');
+  // Was die Welt kennt, steht zur Wahl - und umgekehrt.
+  assert.deepEqual(e.werte.map((w) => w.wert).filter((w) => w > 0), ZEITGRENZEN);
+  assert.equal(e.werte.find((w) => w.wert === e.vorgabe).name, 'keine');
+});
+
+test('spielziel AC-22: ohne Grenze laeuft die Partie auch nach 200 Minuten weiter', () => {
+  // Die Vorgabe des Steckbriefs (0) und gar keine Angabe heissen dasselbe.
+  for (const einstellungen of [{}, { zeitgrenze: 0 }]) {
+    const w = welt(4711, ZWEI, einstellungen);
+    assert.equal(w.zeitgrenze, null);
+    assert.equal(bei(w, 90), null, '90 Minuten sind keine Grenze mehr');
+    assert.equal(bei(w, 200), null, 'auch 200 nicht');
+  }
+});
+
+test('spielziel AC-22: mit 120 Minuten endet sie nach 120 unentschieden, nicht nach 90', () => {
+  const w = welt(4711, ZWEI, { zeitgrenze: 120 });
+  assert.equal(bei(w, 90), null, 'nach 90 laeuft sie noch');
+  assert.equal(bei(w, 120 - 1 / 60), null, 'eine Sekunde vor 120 auch');
+  const ende = bei(w, 120);
+  assert.deepEqual({ sieger: ende.sieger, grund: ende.grund }, { sieger: null, grund: 'zeit' });
+});
+
+test('spielziel AC-22: eine Grenze, die es nicht zur Wahl gibt, heisst keine', () => {
+  // Der Raum prueft die Wahl gegen den Steckbrief (spielauswahl AC-8); die
+  // Welt verlaesst sich nicht darauf und erfindet keine Grenze.
+  for (const zeitgrenze of [1, 45, '90', -90, null]) {
+    assert.equal(welt(4711, ZWEI, { zeitgrenze }).zeitgrenze, null, String(zeitgrenze));
+  }
+});
+
+test('spielziel AC-22: die Grenze geht mit dem Aufbau an den Browser', () => {
+  assert.equal(welt(4711, ZWEI, { zeitgrenze: 90 }).aufbau('a1').zeitgrenze, 90);
+  assert.equal(welt(4711, ZWEI, {}).aufbau('a1').zeitgrenze, null);
 });

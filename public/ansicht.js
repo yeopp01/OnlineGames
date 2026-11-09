@@ -170,6 +170,8 @@ export class Ansicht {
     // Die Sicht als Einstellung der Partie (kampf AC-16): bei "erkundet"
     // ist die Karte von Anfang an bekannt, bei "aufgedeckt" gibt es keinen Nebel.
     this.sichtArt = nachricht.sicht || 'nebel';
+    // Die Zeitgrenze in Spielminuten oder null (spielziel AC-22).
+    this.zeitgrenze = Number.isInteger(nachricht.zeitgrenze) && nachricht.zeitgrenze > 0 ? nachricht.zeitgrenze : null;
     this.nebel = new Nebel(nachricht.karte.groesse, this.sichtArt === 'erkundet');
     // Fremde Gebaeude, wie man sie zuletzt gesehen hat (kampf AC-12).
     this.erinnert = new Map();
@@ -426,7 +428,7 @@ export class Ansicht {
   endeText() {
     if (!this.ende) return '';
     const { gewinner = [], grund, team } = this.ende;
-    if (!gewinner.length) return grund === 'zeit' ? 'Unentschieden — 90 Minuten sind um' : 'Unentschieden';
+    if (!gewinner.length) return grund === 'zeit' ? `Unentschieden — ${this.zeitgrenze} Minuten sind um` : 'Unentschieden';
     const name = (id) => this.spieler.get(id)?.name || 'Ein Mitspieler';
     if (gewinner.length === 1) return gewinner[0] === this.ich ? 'Du hast gewonnen' : `${name(gewinner[0])} hat gewonnen`;
     // Ein Team (spielziel AC-20): sein Name und alle seine Spieler, auch die

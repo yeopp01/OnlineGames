@@ -124,6 +124,7 @@ function empfangen(nachricht) {
       zeigen('spiel');
       teile.kartenwert.textContent = `· Karte ${nachricht.startwert}`;
       ansicht.aufbau(nachricht, ich);
+      zeitgrenzeZeigen(ansicht.zeitgrenze);
       // Ein Aufbau kann der zweite sein: die Revanche (spielziel AC-9). Dann
       // muss weg, was von der alten Partie noch im Bild steht.
       partieraumAufraeumen();
@@ -216,6 +217,19 @@ function zeitalterZeigen(name) {
 function spielzeitZeigen(text) {
   const feld = document.querySelector('#spielzeit b');
   if (feld && feld.textContent !== text) feld.textContent = text;
+}
+
+// Hat die Partie eine Zeitgrenze (spielziel AC-22), steht sie hinter der
+// Uhr: "12:34 / 90:00" beantwortet "wie lange noch" ohne Rechnen. Ohne
+// Grenze steht nichts dahinter.
+function zeitgrenzeZeigen(minuten) {
+  const feld = document.querySelector('#spielzeit .zeitgrenze');
+  if (!feld) return;
+  feld.hidden = !minuten;
+  feld.textContent = minuten ? ` / ${minuten}:00` : '';
+  document.getElementById('spielzeit').title = minuten
+    ? `Spielzeit - nach ${minuten} Minuten endet die Partie unentschieden`
+    : 'Spielzeit';
 }
 
 // ---- Das Ende der Partie (spielziel AC-5) --------------------------------
@@ -683,6 +697,11 @@ function einstellungsfeld(e) {
   }
   eingabe.dataset.einstellung = e.schluessel;
   eingabe.dataset.art = e.art;
+  // Eine Wahl mit langen Namen ("wenig (200 Holz, 200 Nahrung, ...)") nimmt
+  // im Raster zwei Spalten, sonst ist die Haelfte abgeschnitten. Gefragt wird
+  // die Laenge, nicht der Schluessel - welche Einstellung das ist, weiss
+  // nur der Steckbrief.
+  if (e.art === 'wahl' && Math.max(...e.werte.map((w) => w.name.length)) > 24) feld.classList.add('breit');
   feld.append(titel, eingabe);
   return feld;
 }

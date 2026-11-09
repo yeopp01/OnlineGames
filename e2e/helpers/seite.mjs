@@ -114,6 +114,14 @@ export async function zeitraffer(page, code, faktor) {
   expect(antwort.ok(), await antwort.text()).toBe(true);
 }
 
+/** Die Uhr einer Partie auf eine Spielminute vorstellen (Pruefgriff, e2e/server.mjs). */
+export async function uhrStellen(page, code, minuten) {
+  const antwort = await page.request.post(`http://localhost:${GRIFFHAFEN}/griff`, {
+    data: { id: code, befehl: 'uhr', werte: { minuten } },
+  });
+  expect(antwort.ok(), await antwort.text()).toBe(true);
+}
+
 /** Rohstoffe eines Spielers im Raum setzen (Pruefgriff, e2e/server.mjs). */
 export async function rohstoffe(page, code, name, werte) {
   const antwort = await page.request.post(`http://localhost:${GRIFFHAFEN}/griff`, {

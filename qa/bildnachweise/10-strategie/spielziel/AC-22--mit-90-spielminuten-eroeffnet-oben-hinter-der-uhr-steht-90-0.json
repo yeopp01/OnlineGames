@@ -1,0 +1,10 @@
+{
+  "spec": "10-strategie/spielziel.md",
+  "ac": "AC-22",
+  "titel": "Mit 90 Spielminuten eröffnet: oben hinter der Uhr steht „/ 90:00“, die Uhr kurz davor",
+  "datei": "e2e/tests/strategie-zeitgrenze.spec.mjs",
+  "pfad": [
+    "Zeitgrenze 90 Minuten",
+    "spielziel AC-22: beim Eröffnen gewählt, steht die Grenze bei beiden hinter der Uhr, und nach 90 Minuten endet die Partie unentschieden"
+  ]
+}

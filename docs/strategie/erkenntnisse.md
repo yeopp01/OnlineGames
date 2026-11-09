@@ -1632,6 +1632,32 @@ ihn, mit Gegenprobe an beiden Formen. Fünf Bilder neu, alle angesehen.
 Neueste oben. Eine Zeile je Runde: Nummer, Datum, Kriterien, Ergebnis,
 wichtigste Erkenntnis.
 
+- **157** · 2026-11-09 · **spielziel AC-22 fertig: die Zeitgrenze ist eine
+  Einstellung** (D13, erste Hälfte) — beim Eröffnen keine, 90 oder 120
+  Spielminuten, Vorgabe keine. `PARTIE_MINUTEN` ist weg; die Welt nimmt nur,
+  was in `ZEITGRENZEN` steht, alles andere heißt keine Grenze, auch `'90'`
+  als Text. Oben steht die Grenze hinter der Uhr („89:45 / 90:00"), am Ende
+  „Unentschieden — 90 Minuten sind um" mit der gewählten Zahl. Wer an den
+  90 Minuten hing: zwei Rechenteil-Tests (AC-5, AC-20), die sie jetzt
+  ausdrücklich mitgeben — der Prüfstand nicht, er bricht seit jeher an
+  seiner eigenen Vorgabe `minuten` ab, und kein Partien-Test fragt nach
+  `grund: 'zeit'`. Für den Browser ein neuer Prüfgriff `uhr`, der die
+  Uhr vorstellt: 90 Spielminuten wären auch mit Zeitraffer 20 viereinhalb
+  echte Minuten. Gegenproben: mit der alten festen Zeile fallen zwei
+  Rechenteil-Tests, ohne den Aufruf der Anzeige fällt der Browserfall;
+  fünfmal hintereinander grün. **Der volle Lauf fand, was die eigenen
+  Fälle nicht sahen:** mit der siebten Einstellung stand „Partie starten"
+  im schmalen Warteraum unter dem Bildrand (fahrplan AC-1, auswahl AC-18).
+  Der Warteraum ist jetzt 860 Bildpunkte breit, die Einstellungen des
+  Gastgebers stehen in drei Spalten, die Werte der Gäste in zwei Paaren je
+  Zeile — damit ist auch die offene Frage nach dem Warteraum am PC
+  vorweggenommen. **Eine neue Einstellung verlängert zwei Formulare**, den
+  Vorraum und den Warteraum; wer eine hinzufügt, fährt `e2e/tests/
+  strategie-einstieg.spec.mjs` und `spielauswahl.spec.mjs` vor dem vollen
+  Lauf. Die Bilddurchsicht fand danach zwei Fehler der neuen Spalten: der
+  Startvorrat war noch stärker abgeschnitten (eine Wahl mit Namen über 24
+  Zeichen nimmt jetzt zwei Spalten, gefragt wird die Länge, nicht der
+  Schlüssel), und bei den Gästen stand jeder Wert vor dem nächsten Namen.
 - **156** · 2026-11-09 · **spielauswahl AC-23 fertig: der Vorraum für den
   PC** — auf Wunsch des Benutzers („Man wird das Spiel am PC spielen") statt
   spielziel AC-22. Der Vorraum war eine Spalte von 420 Bildpunkten, auch auf

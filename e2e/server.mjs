@@ -10,6 +10,7 @@ import { KONTO } from './helpers/konto.mjs';
 const require = createRequire(import.meta.url);
 const { starten } = require('../server/index.js');
 const { Ki } = require('../server/spiele/strategie/ki.js');
+const { TAKTE_PRO_SEKUNDE } = require('../server/spiele/strategie/welt.js');
 
 const hafen = Number(process.env.E2E_HAFEN) || 4191;
 
@@ -185,6 +186,19 @@ const griffe = http.createServer(async (anfrage, antwortGriff) => {
       const ergebnis = raum.welt.nachricht(spieler.id, { auftrag: 'aufgeben' });
       if (ergebnis?.fehler) throw new Error(ergebnis.fehler);
       antwortGriff.writeHead(200, { 'Content-Type': 'application/json', Connection: 'close' }).end(JSON.stringify({ ok: true }));
+      return;
+    }
+    // Die Uhr einer Partie vorstellen (spielziel AC-22): eine Zeitgrenze von
+    // 90 Spielminuten waeren im groessten Zeitraffer noch viereinhalb echte
+    // Minuten. Die Welt rechnet von dort weiter, als waere die Zeit vergangen;
+    // was in der Zwischenzeit geschehen waere, geschieht nicht.
+    if (befehl === 'uhr') {
+      const raum = laufend.raeume.finden(id);
+      if (!raum?.welt) throw new Error(`Raum ${id} hat keine laufende Partie.`);
+      const minuten = Number(werte.minuten);
+      if (!Number.isFinite(minuten) || minuten < 0) throw new Error('minuten fehlt.');
+      raum.welt.takt = Math.max(raum.welt.takt, Math.round(minuten * 60 * TAKTE_PRO_SEKUNDE));
+      antwortGriff.writeHead(200, { 'Content-Type': 'application/json', Connection: 'close' }).end(JSON.stringify({ ok: true, takt: raum.welt.takt }));
       return;
     }
     if (befehl === 'zeitraffer') {

@@ -58,6 +58,11 @@
 //   ('loesbar' oder 'fest', aus dem Aufbau) und `ansicht.kannKuendigen()`
 //   (spielziel AC-24).
 //
+// **Zeitgrenze** (spielziel AC-22): `zeitgrenze` im Aufbau, Spielminuten
+//   oder null (Vorgabe: keine). Im Browser `ansicht.zeitgrenze`; die Leiste
+//   zeigt sie hinter der Uhr (`#spielzeit .zeitgrenze`, " / 90:00").
+//   `partieMit(…, { zeitgrenze: 90 })` waehlt sie beim Eroeffnen.
+//
 // **Werte im Browser** (Runde 75): `ansicht.werte.einheiten[art]` fuehrt
 // Kuerzel, Leben, Tragkraft, Kosten, Zeit, `baut`, Zeitalter, Angriff,
 // Ruestung nah und fern, Reichweite - und seit Runde 75 auch `klassen` und
@@ -113,10 +118,10 @@ export function partieZuDritt(browser, info, wie = {}) {
  * @param {import('@playwright/test').Browser} browser
  * @param {import('@playwright/test').TestInfo} info
  * @param {string[]} gaeste die Namen der Beitretenden, in dieser Reihenfolge
- * @param {{startwert?: number, breite?: number, hoehe?: number, sicht?: string, teams?: number[], buendnisse?: string}} [wie]
+ * @param {{startwert?: number, breite?: number, hoehe?: number, sicht?: string, teams?: number[], buendnisse?: string, zeitgrenze?: number}} [wie]
  *   `teams`: je Seite ein Team 1..4 oder 0 (keins), im Warteraum gesetzt (auswahl AC-22).
  */
-async function partieMit(browser, info, gaeste, { startwert = 4711, breite = 1400, hoehe = 950, sicht = null, teams = null, buendnisse = null } = {}) {
+async function partieMit(browser, info, gaeste, { startwert = 4711, breite = 1400, hoehe = 950, sicht = null, teams = null, buendnisse = null, zeitgrenze = null } = {}) {
   const optionen = { baseURL: info.project.use.baseURL, viewport: { width: breite, height: hoehe }, locale: 'de-DE' };
   const anna = await (await browser.newContext({ ...optionen, storageState: ANMELDUNG })).newPage();
   const fehler = [fehlerSammeln(anna)];
@@ -128,6 +133,7 @@ async function partieMit(browser, info, gaeste, { startwert = 4711, breite = 140
   // Vorgaben sie liefern.
   if (sicht) await anna.locator('[data-einstellung="sicht"]').selectOption(JSON.stringify(sicht));
   if (buendnisse) await anna.locator('[data-einstellung="buendnisse"]').selectOption(JSON.stringify(buendnisse));
+  if (zeitgrenze) await anna.locator('[data-einstellung="zeitgrenze"]').selectOption(JSON.stringify(zeitgrenze));
   await anna.locator('[data-eroeffnen="strategie"]').click();
   await expect(anna.locator('#raumcode')).toHaveText(/^[A-Z0-9]{3}-[A-Z0-9]{3}$/);
   const code = (await anna.locator('#raumcode').textContent()).trim();

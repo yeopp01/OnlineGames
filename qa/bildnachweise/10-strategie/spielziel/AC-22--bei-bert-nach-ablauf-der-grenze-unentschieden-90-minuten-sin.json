@@ -1,0 +1,10 @@
+{
+  "spec": "10-strategie/spielziel.md",
+  "ac": "AC-22",
+  "titel": "Bei Bert nach Ablauf der Grenze: „Unentschieden — 90 Minuten sind um“ über der Tafel",
+  "datei": "e2e/tests/strategie-zeitgrenze.spec.mjs",
+  "pfad": [
+    "Zeitgrenze 90 Minuten",
+    "spielziel AC-22: beim Eröffnen gewählt, steht die Grenze bei beiden hinter der Uhr, und nach 90 Minuten endet die Partie unentschieden"
+  ]
+}

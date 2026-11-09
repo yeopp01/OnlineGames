@@ -54,11 +54,11 @@ const LAGER_SUCHE_PAUSE = 50;
 // So weit folgt eine Einheit einem Fluechtenden, gemessen von dem Platz, an
 // dem sie stand (kampf AC-3).
 const VERFOLGUNG_FELDER = 5;
-// So lange dauert eine Partie hoechstens (spielziel AC-5): steht nach 90
-// Spielminuten keine Entscheidung, endet sie unentschieden. Die Zahl kommt
-// aus der Vorlage; sie ist eine Grenze, keine erwartete Dauer - gespielt
-// werden 25 bis 45 Minuten (AC-2).
-const PARTIE_MINUTEN = 90;
+// Wie lange eine Partie hoechstens dauern darf, ist eine Einstellung
+// (spielziel AC-22, ADR-0013): keine, 90 oder 120 Spielminuten, Vorgabe
+// keine. Steht nach Ablauf keine Entscheidung, endet sie unentschieden
+// (AC-5). Was diese Liste nicht kennt, heisst "keine Grenze".
+const ZEITGRENZEN = [90, 120];
 // So lange laeuft die Frist, wenn einer sein Buendnis kuendigt (spielziel
 // AC-21, ADR-0013): erst danach sind die frueheren Verbuendeten Gegner. Die
 // Zahl steht im ADR - genug, um Truppen aus dem fremden Dorf zu holen.
@@ -236,6 +236,8 @@ class Welt {
     // AC-21, Einstellung "Bündnisse"). Alles ausser "fest" heisst lösbar -
     // die Vorgabe des Steckbriefs.
     this.buendnisse = einstellungen.buendnisse === 'fest' ? 'fest' : 'loesbar';
+    // Die Zeitgrenze in Spielminuten oder null (spielziel AC-22).
+    this.zeitgrenze = ZEITGRENZEN.includes(einstellungen.zeitgrenze) ? einstellungen.zeitgrenze : null;
     // Gekuendigte Buendnisse, je `{ wer, bis }` mit `bis` als Takt, an dem
     // die Frist ablaeuft, und `vorbei`, sobald sie abgelaufen ist. Die Liste
     // geht mit jedem Zustand an alle: eine Kuendigung ist oeffentlich.
@@ -2633,7 +2635,7 @@ class Welt {
       this.endeSetzen(gewinner, 'eroberung', team);
       return;
     }
-    if (this.takt >= PARTIE_MINUTEN * 60 * TAKTE_PRO_SEKUNDE) {
+    if (this.zeitgrenze && this.takt >= this.zeitgrenze * 60 * TAKTE_PRO_SEKUNDE) {
       this.endeSetzen([], 'zeit');
     }
   }
@@ -3614,6 +3616,9 @@ class Welt {
       // Ob ein Buendnis geloest werden kann (spielziel AC-24): bei "fest"
       // zeigt der Browser den Knopf nicht.
       buendnisse: this.buendnisse,
+      // Die Zeitgrenze in Spielminuten oder null (spielziel AC-22): der
+      // Browser zeigt sie neben der Uhr.
+      zeitgrenze: this.zeitgrenze,
       karte: {
         groesse: this.karte.groesse,
         felder: Buffer.from(this.karte.felder).toString('base64'),
@@ -3729,5 +3734,5 @@ function mauerLinie(von, bis) {
 module.exports = {
   mauerLinie, MAUER_MAX,
   Welt, TAKTE_PRO_SEKUNDE, STARTVORRAT, ROHSTOFFE, VERFOLGUNG_FELDER, WACHE_TAKTE,
-  PARTIE_MINUTEN, KUENDIGUNG_SEKUNDEN, GEBAEUDE_NAMEN, EINHEIT_NAMEN,
+  ZEITGRENZEN, KUENDIGUNG_SEKUNDEN, GEBAEUDE_NAMEN, EINHEIT_NAMEN,
 };

@@ -2,7 +2,7 @@
 
 **Bereich:** Strategie
 **Kuerzel:** spielziel
-**Stand:** 10/24 fertig · 1 in Arbeit · 13 offen
+**Stand:** 11/24 fertig · 1 in Arbeit · 12 offen
 
 ## Zweck
 
@@ -182,12 +182,21 @@ eigenen Technikbaum ([Vorlage](../../docs/strategie/vorlage-aoe2.md)).
 
 ### Dauer
 
-- **AC-22** `offen` **Zeitgrenze ist eine Einstellung** — Beim Eröffnen:
+- **AC-22** `fertig` **Zeitgrenze ist eine Einstellung** — Beim Eröffnen:
   keine, 90 oder 120 Spielminuten, Vorgabe **keine**. Fällt nach Ablauf der
   Grenze keine Entscheidung, endet die Partie unentschieden, wie heute nach
   90 Minuten (AC-5). Prüfstand, Tests und KI gegen KI geben ihre Grenze
   ausdrücklich mit. Der Benutzer: „wenn ich mit echten spiele, dann soll das
   auch länger dauern dürfen" ([ADR-0013](../../docs/adr/0013-buendnisse-karren-dauer.md)).
+  **Stand Runde 157:** die Einstellung `zeitgrenze` im Steckbrief, in der
+  Welt `welt.zeitgrenze` (nur 90 oder 120, alles andere heißt keine;
+  `ZEITGRENZEN` in `welt.js`). Mit dem Aufbau geht sie an den Browser; oben
+  steht sie hinter der Uhr („89:45 / 90:00"), am Ende „Unentschieden — 90
+  Minuten sind um". Der Prüfstand hatte seine Grenze schon immer als
+  `minuten` und bricht dort selbst ab; die Tests zu AC-5 und AC-20 geben
+  `zeitgrenze: 90` mit. Belegt in `tests/strategie-partieende.test.mjs`, im
+  Bild `e2e/tests/strategie-zeitgrenze.spec.mjs` (die Uhr stellt der
+  Prüfgriff `uhr` vor).
 - **AC-23** `offen` **Spielgeschwindigkeit ist eine Einstellung** — 1,0, 1,5
   oder 2,0, Vorgabe 1,0. Eine Spielsekunde bleibt zehn Takte; schneller
   heißt, der Raum rechnet mehr Takte je echte Sekunde. Die Zahl erfährt er

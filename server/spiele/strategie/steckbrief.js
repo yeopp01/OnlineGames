@@ -87,6 +87,17 @@ module.exports = {
       schluessel: 'buendnisse', name: 'Bündnisse', art: 'wahl', vorgabe: 'loesbar',
       werte: [{ wert: 'loesbar', name: 'lösbar' }, { wert: 'fest', name: 'fest' }],
     },
+    // Wie lange eine Partie hoechstens dauert (spielziel AC-22, ADR-0013):
+    // "wenn ich mit echten spiele, dann soll das auch länger dauern dürfen".
+    // Danach unentschieden. 0 heisst keine Grenze.
+    {
+      schluessel: 'zeitgrenze', name: 'Zeitgrenze', art: 'wahl', vorgabe: 0,
+      werte: [
+        { wert: 0, name: 'keine' },
+        { wert: 90, name: '90 Spielminuten' },
+        { wert: 120, name: '120 Spielminuten' },
+      ],
+    },
   ],
   // Je Platz ein Team oder keins (spielauswahl AC-22). Wer im selben Team
   // ist, ist verbuendet (spielziel AC-14).
