@@ -193,6 +193,16 @@ etwas anderem gearbeitet.
 
 ## Offene Fäden
 
+- **Ein gefallener Browserfall kann den Lauf um 40 Minuten verlängern**
+  (Runde 148): einheiten AC-16 (Holzfällerlager) fiel zum ersten Mal
+  (Zeitüberschreitung beim Warten auf einen Träger vor dem Lager, einzeln
+  grün in 42 s). Die Fälle summierten sich auf 18,7 Minuten, der Lauf
+  dauerte 59,8 — die Aufzeichnung (`trace: 'retain-on-failure'`, 15 MB
+  nach 90 s Warten mit `polling: 50`) war erst 39 Minuten später
+  geschrieben. Der zweite Lauf war grün (17,7 min). Fällt der Fall noch
+  einmal, ist er nach Abschnitt 1 die nächste Runde; die Dauer gehört in
+  die Rückschau 152 (Aufzeichnung kleiner, oder ohne Bildschirmfotos).
+
 - **Was eine lange Mauer kostet, ist nicht gemessen** (Runde 127): eine
   Nachricht `mauer` prüft bis zu 60 Felder mit `platzPruefen`, und
   `baustelleTakten` läuft je Baustelle über alle Einheiten — sechzig
@@ -1574,6 +1584,16 @@ ihn, mit Gegenprobe an beiden Formen. Fünf Bilder neu, alle angesehen.
 Neueste oben. Eine Zeile je Runde: Nummer, Datum, Kriterien, Ergebnis,
 wichtigste Erkenntnis.
 
+- **148** · 2026-11-09 · **spielauswahl AC-22 und spielziel AC-14
+  fertig** — Teams im Warteraum: der Steckbrief beschreibt mit `jePlatz`,
+  was je Platz gewählt wird, und mit `platzname`, wie seine eigenen Plätze
+  heißen; der Raum prüft die Wahl wie eine Einstellung und reicht sie als
+  `jePlatz` durch, erst `steckbrief.mitKi` macht `teams` daraus. Die Plätze
+  des Spiels heißen im Raum `platz1` …, weil der Raum die Ids der KIs nicht
+  kennen darf (ADR-0006). Erkenntnis: das erste Bild zum Verbündeten zeigte
+  die Miliz **auf** Cems Dorfbewohner — ein Gang zu einer Einheit endet auf
+  ihrem Feld. Das Bild entsteht jetzt im Anlauf, zwei Felder davor; dass
+  Stehende auseinandertreten, gilt für Sammler noch nicht (einheiten AC-30).
 - **147** · 2026-11-09 · **Rückschau** — `pruefstand:vergleich --probe`
   für Austauschproben, `tests/quelltext.mjs` für die Wächter, die
   Laufzeit des Browserlaufs in CLAUDE.md berichtigt (siehe Rückschauen).

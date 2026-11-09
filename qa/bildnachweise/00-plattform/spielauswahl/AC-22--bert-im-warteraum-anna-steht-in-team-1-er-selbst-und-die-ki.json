@@ -1,0 +1,9 @@
+{
+  "spec": "00-plattform/spielauswahl.md",
+  "ac": "AC-22",
+  "titel": "Bert im Warteraum: Anna steht in Team 1, er selbst und die KI in Team 2 — sein eigenes Team wählt er, das der anderen liest er; darunter „Bündnisse: lösbar\"",
+  "datei": "e2e/tests/strategie-buendnisse.spec.mjs",
+  "pfad": [
+    "auswahl AC-22: Teams im Warteraum - jeder wählt seins, der Gastgeber auch das der KI"
+  ]
+}

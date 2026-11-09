@@ -43,6 +43,13 @@ function pruefen(steckbrief, ordner) {
     throw new Error(`${wo}: plaetze muss eine Funktion (einstellungen) => Zahl sein.`);
   }
   einstellungen.listePruefen(steckbrief.einstellungen, wo);
+  // Was je Platz gewaehlt wird (spielauswahl AC-22) - dieselben Arten wie die
+  // Einstellungen. Freiwillig, ebenso der Name der Plaetze, die das Spiel
+  // besetzt.
+  einstellungen.listePruefen(steckbrief.jePlatz, `${wo}, jePlatz`);
+  if (steckbrief.platzname !== undefined && typeof steckbrief.platzname !== 'function') {
+    throw new Error(`${wo}: platzname muss eine Funktion (nummer) => Text sein.`);
+  }
 }
 
 function lesen(wurzel = __dirname) {
@@ -65,6 +72,8 @@ function lesen(wurzel = __dirname) {
       erzeugen: steckbrief.erzeugen,
       takte: steckbrief.takte,
       ...(steckbrief.plaetze ? { plaetze: steckbrief.plaetze } : {}),
+      ...(steckbrief.jePlatz ? { jePlatz: steckbrief.jePlatz } : {}),
+      ...(steckbrief.platzname ? { platzname: steckbrief.platzname } : {}),
       reihenfolge: Number.isInteger(steckbrief.reihenfolge) ? steckbrief.reihenfolge : 100,
     });
   }

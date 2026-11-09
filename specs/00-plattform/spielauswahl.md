@@ -2,7 +2,7 @@
 
 **Bereich:** Plattform
 **Kuerzel:** auswahl
-**Stand:** 16/22 fertig · 6 offen
+**Stand:** 17/22 fertig · 5 offen
 
 ## Zweck
 
@@ -83,7 +83,7 @@ Wer nur mitspielt, ueberspringt alles: Code eingeben, Namen eingeben, drin
   sonst ist das Strategiespiel allein nicht spielbar, und genau das ist der
   haeufigste Fall beim Ausprobieren.
 
-- **AC-22** `offen` **Teams im Warteraum** — Jeder Platz im Warteraum hat ein
+- **AC-22** `fertig` **Teams im Warteraum** — Jeder Platz im Warteraum hat ein
   Team (1 bis 4) oder keins, die KIs eingeschlossen. Ein Mensch wählt sein
   eigenes Team, der Gastgeber das der KIs, und er darf jedes ändern, bis zum
   Start (wie AC-10). Dazu die Einstellung „Bündnisse: lösbar / fest",
@@ -93,6 +93,13 @@ Wer nur mitspielt, ueberspringt alles: Code eingeben, Namen eingeben, drin
   [ADR-0013](../../docs/adr/0013-buendnisse-karren-dauer.md); was Verbündete
   im Spiel bedeutet, steht in [Spielziel](../10-strategie/spielziel.md)
   AC-14 und AC-19 bis AC-21.
+  **Gebaut in Runde 148:** der Steckbrief beschreibt unter `jePlatz`, was je
+  Platz gewählt wird (dieselben Arten wie die Einstellungen), und benennt mit
+  `platzname` die Plätze, die er selbst besetzt. Der Raum führt die Plätze
+  als Menschen-Id oder `platz1` …, prüft jede Wahl mit
+  `server/spiele/einstellungen.js` und reicht sie beim Start als
+  `jePlatz` durch; erst der Steckbrief macht daraus `teams`. In `raeume.js`
+  steht kein Wort vom Team (ein Test prüft das).
 
 ### Name und Sprache
 

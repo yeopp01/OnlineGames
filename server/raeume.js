@@ -57,6 +57,14 @@ function plaetzePruefen(spiel, einstellungen, menschen = 1) {
   };
 }
 
+// Die Plaetze, die das Spiel besetzt, heissen im Raum `platz1`, `platz2` ...
+// - Menschen tragen ihre Id. Mit diesem Schluessel kommt die Wahl je Platz
+// beim Start zum Spiel (spielauswahl AC-22); was dort sitzt, weiss nur das
+// Spiel.
+function spielplatz(nummer) {
+  return `platz${nummer}`;
+}
+
 function namePruefen(name) {
   const sauber = String(name || '').replace(/\s+/g, ' ').trim().slice(0, NAME_MAX);
   return sauber || 'Namenlos';
@@ -80,6 +88,47 @@ class Raum {
     // Die Beschreibung aus dem Steckbrief - fuer die Anzeige im Warteraum und
     // zum Pruefen spaeterer Aenderungen.
     this.einstellungsliste = [];
+    // Die Wahl je Platz (spielauswahl AC-22): { <platz>: { <schluessel>: wert } }.
+    // Was die Schluessel bedeuten - beim Strategiespiel das Team -, weiss nur
+    // das Spiel; der Raum prueft sie wie Einstellungen und reicht sie durch.
+    this.platzwahl = {};
+  }
+
+  // Was je Platz gewaehlt wird, aus dem Steckbrief (`jePlatz`). Leer: nichts.
+  get platzliste() {
+    return (this.spiel && this.spiel.jePlatz) || [];
+  }
+
+  // Alle Plaetze, die Menschen zuerst, dann die des Spiels.
+  get plaetze() {
+    const besetzt = vomSpielBesetzt(this.spiel, this.einstellungen);
+    const name = (nummer) => (this.spiel && typeof this.spiel.platzname === 'function' ? this.spiel.platzname(nummer) : `Platz ${nummer}`);
+    return [
+      ...this.spieler.map((s) => ({ platz: s.id, name: s.name, mensch: true })),
+      ...Array.from({ length: besetzt }, (_, i) => ({ platz: spielplatz(i + 1), name: name(i + 1), mensch: false })),
+    ];
+  }
+
+  // Die Wahl eines Platzes; was nie gewaehlt wurde, hat die Vorgaben.
+  wahlVon(platz) {
+    return this.platzwahl[platz] || partieEinstellungen.pruefen(this.platzliste, {}).werte;
+  }
+
+  // Ein Mensch waehlt fuer seinen eigenen Platz, der Gastgeber fuer jeden -
+  // auch fuer die des Spiels. Bis zum Start, wie die Einstellungen (AC-10).
+  waehlen(wer, platz, aenderung) {
+    if (this.gestartet) return { fehler: 'Die Partie läuft schon.' };
+    if (!this.platzliste.length) return { fehler: 'In diesem Spiel gibt es je Platz nichts zu wählen.' };
+    if (!this.plaetze.some((p) => p.platz === platz)) return { fehler: 'Diesen Platz gibt es nicht.' };
+    if (wer !== this.gastgeber && wer.id !== platz) return { fehler: 'Für andere Plätze wählt nur der Gastgeber.' };
+    if (!aenderung || typeof aenderung !== 'object' || Array.isArray(aenderung)) {
+      return { fehler: 'Die Wahl ist unverständlich.' };
+    }
+    const geprueft = partieEinstellungen.pruefen(this.platzliste, { ...this.wahlVon(platz), ...aenderung });
+    if (geprueft.fehler) return geprueft;
+    this.platzwahl[platz] = geprueft.werte;
+    this.beruehrt = Date.now();
+    return {};
   }
 
   get gastgeber() {
@@ -146,8 +195,12 @@ class Raum {
     if (!spieler) return;
     spieler.verbunden = false;
     spieler.draht = null;
-    // Vor dem Start gibt es nichts zu bewahren - der Platz wird sofort frei.
-    if (!this.gestartet) this.spieler = this.spieler.filter((s) => s !== spieler);
+    // Vor dem Start gibt es nichts zu bewahren - der Platz wird sofort frei,
+    // samt seiner Wahl.
+    if (!this.gestartet) {
+      this.spieler = this.spieler.filter((s) => s !== spieler);
+      delete this.platzwahl[spieler.id];
+    }
     this.beruehrt = Date.now();
   }
 
@@ -177,9 +230,14 @@ class Raum {
     // aber zwei Uhren auf einem Raum waere der Fehler, den niemand mehr
     // findet: lieber einmal zu oft abgeraeumt.
     this.beenden();
+    // Die Wahl je Platz geht mit, nur fuer Plaetze, die es gibt - ein
+    // Gegner, den der Gastgeber wieder abbestellt hat, hat kein Team mehr.
+    const jePlatz = this.platzliste.length
+      ? { jePlatz: Object.fromEntries(this.plaetze.map((p) => [p.platz, this.wahlVon(p.platz)])) }
+      : {};
     this.welt = this.spiel.erzeugen(
       this.spieler.map((s) => ({ id: s.id, name: s.name })),
-      { ...this.einstellungen, startwert },
+      { ...this.einstellungen, startwert, ...jePlatz },
     );
     // Je Spieler, wenn das Spiel das anbietet (kampf AC-13): jeder bekommt
     // nur, was er sieht. Was das heisst, weiss nur das Spiel (ADR-0006).
@@ -221,6 +279,9 @@ class Raum {
       gastgeber: this.gastgeber ? this.gastgeber.id : null,
       einstellungen: this.einstellungsliste.map((e) => ({ ...e, wert: this.einstellungen[e.schluessel] })),
       spieler: this.spieler.map((s) => ({ id: s.id, name: s.name, verbunden: s.verbunden })),
+      // Je Platz, was gewaehlt ist (spielauswahl AC-22) - alle sehen es.
+      jePlatz: this.platzliste,
+      plaetze: this.plaetze.map((p) => ({ ...p, wahl: this.wahlVon(p.platz) })),
     };
   }
 
@@ -285,6 +346,6 @@ class Raeume {
 }
 
 module.exports = {
-  Raeume, Raum, codeErzeugen, codeZeigen, codeLesen, namePruefen,
+  Raeume, Raum, codeErzeugen, codeZeigen, codeLesen, namePruefen, spielplatz,
   MAX_SPIELER, MIN_SPIELER, CODE_LAENGE, ZEICHEN, plaetzePruefen,
 };

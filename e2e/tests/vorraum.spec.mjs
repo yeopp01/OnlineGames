@@ -102,7 +102,7 @@ test.describe('Anna eroeffnet, Bert tritt bei', () => {
     raumcode = (await anna.locator('#raumcode').textContent()).trim();
     // Vorlesbar: keine Vokale, keine 0 und keine 1.
     expect(raumcode).not.toMatch(/[AEIOU01]/);
-    await expect(anna.locator('#spielerliste li')).toHaveText([`${KONTO.name} (du)`]);
+    await expect(anna.locator('#spielerliste li .name')).toHaveText([`${KONTO.name} (du)`]);
     await nachweis(anna, {
       spec: RAEUME,
       ac: 'AC-1',
@@ -167,7 +167,7 @@ test.describe('Anna eroeffnet, Bert tritt bei', () => {
   });
 
   test('konten AC-1: beitreten geht ohne Konto', async ({}, info) => {
-    await expect(bert.locator('#spielerliste li')).toHaveText([KONTO.name, 'Bert (du)']);
+    await expect(bert.locator('#spielerliste li .name')).toHaveText([KONTO.name, 'Bert (du)']);
     // Kein Konto, keine Sitzung - und trotzdem im Raum.
     const sitzung = await bert.evaluate(async () => (await fetch('/api/auth/get-session')).json());
     expect(sitzung).toBeNull();
@@ -180,8 +180,8 @@ test.describe('Anna eroeffnet, Bert tritt bei', () => {
   });
 
   test('raeume AC-2: beide sehen dieselbe Spielerliste', async ({}, info) => {
-    await expect(anna.locator('#spielerliste li')).toHaveText([`${KONTO.name} (du)`, 'Bert']);
-    await expect(bert.locator('#spielerliste li')).toHaveText([KONTO.name, 'Bert (du)']);
+    await expect(anna.locator('#spielerliste li .name')).toHaveText([`${KONTO.name} (du)`, 'Bert']);
+    await expect(bert.locator('#spielerliste li .name')).toHaveText([KONTO.name, 'Bert (du)']);
     await nachweis(anna, {
       spec: RAEUME,
       ac: 'AC-2',

@@ -382,3 +382,110 @@ test('auswahl AC-19: allein mit einer KI startet die Partie, und die KI spielt',
   await gast.warteAuf((n) => n.typ === 'zustand' && n.spieler.find((s) => s.id === ki.id).nahrung < start, 10_000);
   gast.zu();
 });
+
+// ---- Teams im Warteraum (spielauswahl AC-22, Runde 148) --------------------
+
+// Ein Platz nach Namen. Gewartet wird auch auf fruehere Nachrichten, in
+// denen er noch fehlt - dann eine leere Wahl statt eines Absturzes.
+const platzVon = (raum, name) => raum.plaetze?.find((p) => p.name === name) || { wahl: {} };
+
+test('auswahl AC-22: jeder Platz hat ein Team oder keins, die KIs eingeschlossen, und alle sehen es', async () => {
+  const { gast, bert } = await raumMitBert({ ki: 1 });
+  const raum = await bert.warteAuf((n) => n.typ === 'raum' && n.spieler.length === 2);
+  // Drei Plaetze: zwei Menschen, dann die KI - mit dem Namen, den sie in der
+  // Partie traegt.
+  assert.deepEqual(raum.plaetze.map((p) => [p.name, p.mensch]), [['Anna', true], ['Bert', true], ['KI 1', false]]);
+  // Die Wahl steht im Steckbrief, nicht im Raum: Team 1 bis 4 oder keins.
+  const team = raum.jePlatz.find((e) => e.schluessel === 'team');
+  assert.deepEqual(team.werte.map((w) => w.wert), [0, 1, 2, 3, 4]);
+  for (const p of raum.plaetze) assert.equal(p.wahl.team, 0, `${p.name} hat zu Beginn kein Team`);
+  // Und die Einstellung dazu, Vorgabe "loesbar" (ADR-0013).
+  const buendnisse = raum.einstellungen.find((e) => e.schluessel === 'buendnisse');
+  assert.equal(buendnisse.name, 'Bündnisse');
+  assert.equal(buendnisse.wert, 'loesbar');
+  assert.deepEqual(buendnisse.werte.map((w) => w.wert), ['loesbar', 'fest']);
+  gast.zu();
+  bert.zu();
+});
+
+test('auswahl AC-22: Bert waehlt sein Team, der Gastgeber jedes - bis zum Start', async () => {
+  const { gast, bert } = await raumMitBert({ ki: 1 });
+  const vorher = await bert.warteAuf((n) => n.typ === 'raum' && n.spieler.length === 2);
+  const [anna, berta, ki] = ['Anna', 'Bert', 'KI 1'].map((name) => platzVon(vorher, name).platz);
+  assert.match(berta, /^[0-9a-f]{8}$/, 'ein Mensch sitzt unter seiner Id');
+  assert.equal(ki, 'platz1', 'ein Platz des Spiels unter seiner Nummer');
+
+  // Den eigenen Platz waehlt jeder selbst; alle sehen es.
+  bert.senden({ typ: 'platz', platz: berta, wahl: { team: 2 } });
+  await gast.warteAuf((n) => n.typ === 'raum' && platzVon(n, 'Bert').wahl.team === 2);
+
+  // Fuer andere nicht - weder fuer Anna noch fuer die KI.
+  const zaehlen = () => bert.eingang.filter((n) => n.typ === 'fehler').length;
+  for (const platz of [anna, ki]) {
+    const bisher = zaehlen();
+    bert.senden({ typ: 'platz', platz, wahl: { team: 3 } });
+    const absage = await bert.warteAuf((n) => n.typ === 'fehler' && zaehlen() > bisher);
+    assert.equal(absage.text, 'Für andere Plätze wählt nur der Gastgeber.');
+  }
+
+  // Der Gastgeber setzt die KI und aendert Berts Wahl.
+  gast.senden({ typ: 'platz', platz: ki, wahl: { team: 2 } });
+  gast.senden({ typ: 'platz', platz: berta, wahl: { team: 1 } });
+  gast.senden({ typ: 'platz', platz: anna, wahl: { team: 1 } });
+  const danach = await bert.warteAuf((n) => n.typ === 'raum'
+    && platzVon(n, 'KI 1').wahl.team === 2 && platzVon(n, 'Bert').wahl.team === 1 && platzVon(n, 'Anna').wahl.team === 1);
+  assert.ok(danach);
+
+  // Geprueft wird wie eine Einstellung: kein Team 5, kein unbekannter Platz.
+  gast.senden({ typ: 'platz', platz: anna, wahl: { team: 5 } });
+  assert.match((await gast.warteAuf((n) => n.typ === 'fehler')).text, /^Team: erlaubt ist/);
+  gast.senden({ typ: 'platz', platz: 'platz2', wahl: { team: 1 } });
+  await gast.warteAuf((n) => n.typ === 'fehler' && n.text === 'Diesen Platz gibt es nicht.');
+
+  // Nach dem Start nicht mehr (wie AC-10).
+  gast.senden({ typ: 'start', startwert: 7 });
+  await gast.warteAuf(istTyp('aufbau'));
+  bert.senden({ typ: 'platz', platz: berta, wahl: { team: 4 } });
+  await bert.warteAuf((n) => n.typ === 'fehler' && n.text === 'Die Partie läuft schon.');
+  gast.zu();
+  bert.zu();
+});
+
+test('auswahl AC-22: die Teams kommen in der Partie an, auch das der KI', async () => {
+  const { gast, bert } = await raumMitBert({ ki: 2, sicht: 'aufgedeckt' });
+  const raum = await gast.warteAuf((n) => n.typ === 'raum' && n.plaetze?.length === 4);
+  const berta = platzVon(raum, 'Bert').platz;
+  bert.senden({ typ: 'platz', platz: berta, wahl: { team: 3 } });
+  gast.senden({ typ: 'platz', platz: 'platz1', wahl: { team: 3 } });
+  gast.senden({ typ: 'platz', platz: 'platz2', wahl: { team: 4 } });
+  await gast.warteAuf((n) => n.typ === 'raum' && platzVon(n, 'Bert').wahl.team === 3
+    && platzVon(n, 'KI 1').wahl.team === 3 && platzVon(n, 'KI 2')?.wahl.team === 4);
+  // Die zweite KI wird wieder abbestellt: ihr Team darf nicht mitkommen.
+  gast.senden({ typ: 'einstellen', einstellungen: { ki: 1 } });
+  await gast.warteAuf((n) => n.typ === 'raum' && n.plaetze.length === 3);
+
+  gast.senden({ typ: 'start', startwert: 7 });
+  const aufbau = await bert.warteAuf(istTyp('aufbau'));
+  const teams = Object.fromEntries(aufbau.spieler.map((s) => [s.name, s.team ?? null]));
+  // Anna hat keins gewaehlt; Bert und die KI sind verbuendet.
+  assert.deepEqual(teams, { Anna: null, Bert: 3, 'KI 1': 3 });
+  gast.zu();
+  bert.zu();
+});
+
+test('auswahl AC-22: wer vor dem Start geht, nimmt seine Wahl mit', async () => {
+  const { gast, bert, code } = await raumMitBert();
+  const raum = await bert.warteAuf((n) => n.typ === 'raum' && n.spieler.length === 2);
+  bert.senden({ typ: 'platz', platz: platzVon(raum, 'Bert').platz, wahl: { team: 2 } });
+  await gast.warteAuf((n) => n.typ === 'raum' && platzVon(n, 'Bert')?.wahl.team === 2);
+  bert.zu();
+  await gast.warteAuf((n) => n.typ === 'raum' && n.plaetze.length === 1);
+  // Wer neu kommt, beginnt ohne Team, auch unter demselben Namen.
+  const wieder = kunde(HAFEN);
+  await wieder.offen();
+  wieder.senden({ typ: 'beitreten', code, name: 'Bert' });
+  const neu = await wieder.warteAuf((n) => n.typ === 'raum' && n.plaetze.length === 2);
+  assert.equal(platzVon(neu, 'Bert').wahl.team, 0);
+  gast.zu();
+  wieder.zu();
+});

@@ -13,7 +13,7 @@ hier nichts eintraegt, verliert den Faden beim naechsten Autocompact.
 
 ## Zuletzt fortgeschrieben
 
-2026-11-09, nach Runde 147 (**Rueckschau**: `pruefstand:vergleich --probe`, `tests/quelltext.mjs`, Laufzeit des Browserlaufs in CLAUDE.md; siehe "Naechste Runde 148"; davor Runde 146: **spielziel AC-14 gebaut, in-qa**: `welt.feindlich`, Teams als Einstellung, Waechter `waechter-feindlich`; Vergleich Takt fuer Takt gleich; siehe "Naechste Runde 147"; davor Runde 145: **ADR-0013 geschrieben**, Bündnisse/Karren/Dauer, Bauabfolge D10-D14; siehe "Naechste Runde 146"; davor Runde 144: **ki AC-13 dritter Anlauf, geparkt** auf `strategie-ki-sicht` `d0314d4`: 36 von 40 vor Minute 60, Frage an den Benutzer - fahrplan AC-11 im Nebel neu fassen; siehe "Naechste Runde 145"; davor Runde 143: **ki AC-24 fertig, ki AC-21/22 aus `strategie-ki-ritterzeit` eingebunden**: Dorfbewohner je Zeitalter 22/32/42/50, Militaergebaeude ab der Ritterzeit 5/6, Aufstieg vor dem Ersatz; KI gegen KI 40 von 40 vor Minute 60, siehe "Naechste Runde 144" unten; davor Runde 142 Rueckschau zur Stufe D; davor **kampf AC-13, fahrplan AC-13, C6e fertig**: der
+2026-11-09, nach Runde 148 (**spielauswahl AC-22 und spielziel AC-14 fertig**: Teams je Platz im Warteraum - `jePlatz` und `platzname` im Steckbrief, `raum.waehlen`, Nachricht `platz`, Plaetze des Spiels heissen im Raum `platz1` ...; Bild: weisses Zeichen auf dem Verbuendeten; siehe "Naechste Runde 149"; davor Runde 147: **Rueckschau**: `pruefstand:vergleich --probe`, `tests/quelltext.mjs`, Laufzeit des Browserlaufs in CLAUDE.md; siehe "Naechste Runde 148"; davor Runde 146: **spielziel AC-14 gebaut, in-qa**: `welt.feindlich`, Teams als Einstellung, Waechter `waechter-feindlich`; Vergleich Takt fuer Takt gleich; siehe "Naechste Runde 147"; davor Runde 145: **ADR-0013 geschrieben**, Bündnisse/Karren/Dauer, Bauabfolge D10-D14; siehe "Naechste Runde 146"; davor Runde 144: **ki AC-13 dritter Anlauf, geparkt** auf `strategie-ki-sicht` `d0314d4`: 36 von 40 vor Minute 60, Frage an den Benutzer - fahrplan AC-11 im Nebel neu fassen; siehe "Naechste Runde 145"; davor Runde 143: **ki AC-24 fertig, ki AC-21/22 aus `strategie-ki-ritterzeit` eingebunden**: Dorfbewohner je Zeitalter 22/32/42/50, Militaergebaeude ab der Ritterzeit 5/6, Aufstieg vor dem Ersatz; KI gegen KI 40 von 40 vor Minute 60, siehe "Naechste Runde 144" unten; davor Runde 142 Rueckschau zur Stufe D; davor **kampf AC-13, fahrplan AC-13, C6e fertig**: der
 Server schickt jedem nur, was er sieht - `welt.zustandJeSpieler`,
 `welt.aufbauFuer`, im Raum `sendenJe`. Fremde Gebaeude und Felder, die sich im
 Nebel aendern, kommen beim naechsten Hinsehen; wer ausscheidet, bekommt einmal
@@ -172,8 +172,17 @@ Zeitgrenze als Einstellung, **Marktkarren schon in der Ritterzeit** - ein
 ADR fuer alles vier (holt Handelskarren aus "Wird nicht gebaut").
 **Reihenfolge:** Runde 143 KI-Wirtschaft, dann das ADR, dann Buendnisse
 bauen, dann Voelker-ADR und Spec-Runde E.
-**Naechste Runde 148: spielauswahl AC-22, Teams im Warteraum** (Runde 147
-war die Rueckschau): der Raum traegt je Platz eine
+**Naechste Runde 149: spielziel AC-19, gemeinsame Sicht** (Runde 148 hat
+AC-22 und spielziel AC-14 fertig gemacht). Was einer sieht, sehen alle
+seines Teams - auf dem Server in `sichtAktualisieren`, `siehtGebaeude`,
+`aufbauFuer` und `zustandJeSpieler` (kampf AC-13: der Server schickt nur,
+was das Team sieht), im Browser `public/nebel.js` und `ansicht.zuSehen`
+(fragt noch `besitzer === this.ich`). Zuerst messen, ob die Sicht je Team
+statt je Spieler den Takt verteuert (heute 73-74 ms je 1000 Takte, KI gegen
+KI). Bild: Anna sieht im Nebel, was Cems Einheit sieht. Teams im Browser
+setzt `partieZuDritt(..., { teams: [1, 2, 1] })`.
+Erledigt in Runde 148 (frueher: "Naechste Runde 148: spielauswahl AC-22,
+Teams im Warteraum"): der Raum traegt je Platz eine
 Wahl weiter, ohne sie zu deuten (ADR-0006) - also im Steckbrief eine
 Einstellung je Platz, die der Raum nur durchreicht; der Gastgeber setzt die
 der KIs (`ki1`, `ki2` ...). Die Welt liest `einstellungen.teams = { <id>:

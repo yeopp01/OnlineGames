@@ -193,3 +193,59 @@ test('raeume AC-16 / spielziel AC-9: nach dem Ende startet derselbe Raum eine zw
     raeume.halt();
   }
 });
+
+test('auswahl AC-22: der Raum traegt die Wahl je Platz weiter, ohne sie zu deuten', () => {
+  // Ein erfundenes Spiel mit einer Farbe je Platz statt eines Teams: der Raum
+  // prueft sie wie eine Einstellung und reicht sie beim Start durch - er weiss
+  // nicht, was "Farbe" ist, und nicht, was "Team" ist (ADR-0006).
+  const aufrufe = { einstellungen: null };
+  const puzzle = {
+    art: 'puzzle',
+    takte: 20,
+    plaetze: () => 1,
+    platzname: (n) => `Roboter ${n}`,
+    jePlatz: [{
+      schluessel: 'farbe', name: 'Farbe', art: 'wahl', vorgabe: 'rot',
+      werte: [{ wert: 'rot', name: 'rot' }, { wert: 'gelb', name: 'gelb' }],
+    }],
+    erzeugen(spieler, einstellungen) {
+      aufrufe.einstellungen = einstellungen;
+      return { aufbau: () => ({ typ: 'aufbau' }), takten() {}, zustand: () => ({ typ: 'zustand' }) };
+    },
+  };
+  const raeume = new Raeume();
+  try {
+    const raum = raeume.anlegen(puzzle);
+    const { spieler: anna } = raum.beitreten('Anna', draht());
+    const { spieler: bert } = raum.beitreten('Bert', draht());
+    assert.deepEqual(raum.vorraum().plaetze.map((p) => [p.name, p.platz]),
+      [['Anna', anna.id], ['Bert', bert.id], ['Roboter 1', 'platz1']]);
+    assert.deepEqual(raum.waehlen(bert, bert.id, { farbe: 'gelb' }), {});
+    assert.deepEqual(raum.waehlen(anna, 'platz1', { farbe: 'gelb' }), {});
+    assert.match(raum.waehlen(anna, anna.id, { farbe: 'blau' }).fehler, /^Farbe: erlaubt ist rot, gelb/);
+    assert.match(raum.waehlen(anna, anna.id, { team: 1 }).fehler, /gibt es nicht: team/);
+    assert.deepEqual(raum.starten(7), {});
+    raum.beenden();
+    assert.deepEqual(aufrufe.einstellungen.jePlatz, {
+      [anna.id]: { farbe: 'rot' }, [bert.id]: { farbe: 'gelb' }, platz1: { farbe: 'gelb' },
+    });
+  } finally {
+    raeume.halt();
+  }
+  // Und im Raum steht kein Wort vom Team.
+  const quelle = readFileSync(join(import.meta.dirname, '..', 'server', 'raeume.js'), 'utf8')
+    .replace(/\/\/.*$/gm, '');
+  assert.doesNotMatch(quelle, /team/i);
+});
+
+test('auswahl AC-22: ein Spiel ohne Wahl je Platz bekommt keine', () => {
+  const raeume = new Raeume();
+  try {
+    const raum = raeume.anlegen({ art: 'puzzle', takte: 20, erzeugen: () => ({}) });
+    const { spieler: anna } = raum.beitreten('Anna', draht());
+    assert.deepEqual(raum.vorraum().jePlatz, []);
+    assert.match(raum.waehlen(anna, anna.id, { farbe: 'rot' }).fehler, /nichts zu wählen/);
+  } finally {
+    raeume.halt();
+  }
+});

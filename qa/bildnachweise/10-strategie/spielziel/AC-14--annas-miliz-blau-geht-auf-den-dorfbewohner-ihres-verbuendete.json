@@ -1,0 +1,10 @@
+{
+  "spec": "10-strategie/spielziel.md",
+  "ac": "AC-14",
+  "titel": "Annas Miliz (blau) geht auf den Dorfbewohner ihres Verbündeten Cem (grün) zu — der Rechtsklick auf ihn hat ein weißes Zeichen gesetzt, kein rotes: ein Gang, kein Angriff",
+  "datei": "e2e/tests/strategie-buendnisse.spec.mjs",
+  "pfad": [
+    "Verbündete",
+    "spielziel AC-14: ein Rechtsklick auf den Verbündeten ist ein Gang, auf den Gegner ein Angriff"
+  ]
+}

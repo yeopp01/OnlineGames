@@ -69,7 +69,7 @@ test.describe('Einstieg am Stueck', () => {
     await bert.locator('#name').fill('Bert');
     await bert.locator('#code').fill(weitergegeben);
     await bert.locator('#beitreten').click();
-    await expect(anna.locator('#spielerliste li')).toHaveText([`${KONTO.name} (du)`, 'Bert']);
+    await expect(anna.locator('#spielerliste li .name')).toHaveText([`${KONTO.name} (du)`, 'Bert']);
     await expect(bert.locator('[data-wert="spieler"]')).toHaveText('2');
     await expect(anna.locator('#starten')).toBeInViewport();
     await nachweis(anna, {

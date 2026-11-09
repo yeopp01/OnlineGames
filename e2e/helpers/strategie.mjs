@@ -104,9 +104,10 @@ export function partieZuDritt(browser, info, wie = {}) {
  * @param {import('@playwright/test').Browser} browser
  * @param {import('@playwright/test').TestInfo} info
  * @param {string[]} gaeste die Namen der Beitretenden, in dieser Reihenfolge
- * @param {{startwert?: number, breite?: number, hoehe?: number}} [wie]
+ * @param {{startwert?: number, breite?: number, hoehe?: number, sicht?: string, teams?: number[]}} [wie]
+ *   `teams`: je Seite ein Team 1..4 oder 0 (keins), im Warteraum gesetzt (auswahl AC-22).
  */
-async function partieMit(browser, info, gaeste, { startwert = 4711, breite = 1400, hoehe = 950, sicht = null } = {}) {
+async function partieMit(browser, info, gaeste, { startwert = 4711, breite = 1400, hoehe = 950, sicht = null, teams = null } = {}) {
   const optionen = { baseURL: info.project.use.baseURL, viewport: { width: breite, height: hoehe }, locale: 'de-DE' };
   const anna = await (await browser.newContext({ ...optionen, storageState: ANMELDUNG })).newPage();
   const fehler = [fehlerSammeln(anna)];
@@ -132,7 +133,18 @@ async function partieMit(browser, info, gaeste, { startwert = 4711, breite = 140
     await gast.locator('#beitreten').click();
     // Erst weiter, wenn der Gastgeber ihn sieht: zwei Beitritte zugleich
     // haetten sonst eine unbestimmte Reihenfolge im Raum.
-    await expect(anna.locator('#spielerliste li')).toHaveCount(seiten.length);
+    await expect(anna.locator('#spielerliste li:not(.vom-spiel)')).toHaveCount(seiten.length);
+  }
+
+  // Teams (auswahl AC-22): der Gastgeber setzt jedes, so wie er es im
+  // Warteraum darf - je Seite in der Reihenfolge von `seiten`.
+  if (teams) {
+    const zeilen = anna.locator('#spielerliste li:not(.vom-spiel)');
+    for (const [i, team] of teams.entries()) {
+      await zeilen.nth(i).locator('[data-wahl="team"]').selectOption(JSON.stringify(team));
+    }
+    // Erst weiter, wenn es der Letzte, der beitrat, auch so sieht.
+    for (const [i, team] of teams.entries()) await teamZeigt(seiten.at(-1), i, team);
   }
 
   await anna.locator('#starten').click();
@@ -141,6 +153,17 @@ async function partieMit(browser, info, gaeste, { startwert = 4711, breite = 140
     await seite.waitForFunction(() => window.ansicht && window.ansicht.nachher.size > 0 && window.ansicht.gebaeude.size > 0);
   }
   return { anna, bert: seiten[1], cem: seiten[2], seiten, code, fehler };
+}
+
+/**
+ * Zeigt die Seite in der i-ten Zeile des Warteraums (nur Menschen) dieses
+ * Team? Auf dem eigenen Platz - und beim Gastgeber auf jedem - steht eine
+ * Auswahl, sonst eine Marke (auswahl AC-22).
+ */
+export async function teamZeigt(seite, i, team) {
+  const feld = seite.locator('#spielerliste li:not(.vom-spiel)').nth(i).locator('[data-wahl="team"]');
+  if (await feld.evaluate((f) => f.tagName === 'SELECT')) await expect(feld).toHaveValue(JSON.stringify(team));
+  else await expect(feld).toHaveText(team ? `Team ${team}` : 'ohne Team');
 }
 
 /** Alle Seiten schliessen; vorher duerfen sie keine Fehler gemeldet haben. */

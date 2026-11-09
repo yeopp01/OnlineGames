@@ -9,7 +9,7 @@ const { Ki } = require('./ki');
 // dieselbe.
 function mitKi(spieler, einstellungen) {
   const kis = Array.from({ length: einstellungen.ki || 0 }, (_, i) => ({ id: `ki${i + 1}`, name: `KI ${i + 1}` }));
-  const welt = new Welt([...spieler, ...kis], einstellungen.startwert, einstellungen);
+  const welt = new Welt([...spieler, ...kis], einstellungen.startwert, { ...einstellungen, teams: teamsAus(einstellungen, spieler, kis) });
   if (!kis.length) return welt;
   const lenker = kis.map((k) => new Ki(welt, k.id));
   const takten = welt.takten.bind(welt);
@@ -20,6 +20,26 @@ function mitKi(spieler, einstellungen) {
   };
   return welt;
 }
+
+// Die Teams aus der Wahl je Platz (spielauswahl AC-22): der Raum reicht sie
+// unter `jePlatz` durch, Menschen unter ihrer Id, die KIs als `platz1` ...
+// (raeume.js `spielplatz`) - hier wird daraus `ki1` ... Die Welt liest
+// `teams = { <id>: 1..4 }`, alles andere ist kein Team (spielziel AC-14).
+// Kommen die Teams schon fertig (Tests, Pruefstand), gelten die.
+function teamsAus(einstellungen, spieler, kis) {
+  if (einstellungen.teams) return einstellungen.teams;
+  const je = einstellungen.jePlatz;
+  if (!je) return undefined;
+  const teams = {};
+  for (const s of spieler) if (je[s.id]?.team) teams[s.id] = je[s.id].team;
+  kis.forEach((k, i) => {
+    const team = je[`platz${i + 1}`]?.team;
+    if (team) teams[k.id] = team;
+  });
+  return teams;
+}
+
+const TEAMWAHL = [{ wert: 0, name: 'ohne Team' }, ...[1, 2, 3, 4].map((n) => ({ wert: n, name: `Team ${n}` }))];
 
 // Wie das Strategiespiel in der Uebersicht steht (→ server/spiele/verzeichnis.js).
 // Der Name ist entschieden (Benutzer, 2026-11-08; spielauswahl AC-20).
@@ -61,7 +81,19 @@ module.exports = {
         { wert: 'viel', name: 'viel (je 1000)' },
       ],
     },
+    // Ob ein Buendnis waehrend der Partie geloest werden kann (ADR-0013,
+    // spielauswahl AC-22). Gelesen wird es erst mit dem Loesen (spielziel AC-21).
+    {
+      schluessel: 'buendnisse', name: 'Bündnisse', art: 'wahl', vorgabe: 'loesbar',
+      werte: [{ wert: 'loesbar', name: 'lösbar' }, { wert: 'fest', name: 'fest' }],
+    },
   ],
+  // Je Platz ein Team oder keins (spielauswahl AC-22). Wer im selben Team
+  // ist, ist verbuendet (spielziel AC-14).
+  jePlatz: [{ schluessel: 'team', name: 'Team', art: 'wahl', vorgabe: 0, werte: TEAMWAHL }],
+  // Wie die Plaetze heissen, die das Spiel besetzt - dieselben Namen wie in
+  // der Partie (mitKi).
+  platzname: (nummer) => `KI ${nummer}`,
   // Was der Raum von diesem Spiel braucht (→ specs/00-plattform/raeume.md AC-16).
   takte: TAKTE_PRO_SEKUNDE,
   // Wie viele Plaetze das Spiel selbst besetzt (raeume.js, spielauswahl AC-19).

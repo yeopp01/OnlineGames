@@ -88,7 +88,7 @@ function empfangen(nachricht) {
       // einmal, wenn jemand geht; im Spiel selbst kommt keine mehr, deshalb
       // wird es gemerkt und nicht im Augenblick des Endes erfragt.
       binGastgeber = nachricht.gastgeber === ich;
-      spielerlisteZeichnen(nachricht.spieler);
+      spielerlisteZeichnen(nachricht);
       raumEinstellungenZeichnen(nachricht);
       break;
 
@@ -510,16 +510,56 @@ teile.codeKopieren.addEventListener('click', async () => {
   }
 });
 
-function spielerlisteZeichnen(spieler) {
+// Jeder Platz eine Zeile, die des Spiels (KIs) eingeschlossen - und daneben,
+// was je Platz gewaehlt wird (spielauswahl AC-22: das Team). Den eigenen
+// Platz waehlt jeder selbst, der Gastgeber jeden; die anderen lesen mit.
+// Was die Wahl bedeutet, steht im Steckbrief, nicht hier.
+function spielerlisteZeichnen(nachricht) {
+  const verbunden = new Map((nachricht.spieler || []).map((s) => [s.id, s.verbunden]));
+  const plaetze = nachricht.plaetze
+    || (nachricht.spieler || []).map((s) => ({ platz: s.id, name: s.name, mensch: true, wahl: {} }));
+  const jePlatz = nachricht.gestartet ? [] : nachricht.jePlatz || [];
   teile.spielerliste.innerHTML = '';
-  for (const eintrag of spieler) {
+  for (const eintrag of plaetze) {
     const zeile = document.createElement('li');
-    if (!eintrag.verbunden) zeile.className = 'weg';
+    zeile.dataset.platz = eintrag.platz;
+    if (!eintrag.mensch) zeile.classList.add('vom-spiel');
+    else if (verbunden.get(eintrag.platz) === false) zeile.classList.add('weg');
     const punkt = document.createElement('span');
     punkt.className = 'punkt';
-    zeile.append(punkt, `${eintrag.name}${eintrag.id === ich ? ' (du)' : ''}`);
+    const name = document.createElement('span');
+    name.className = 'name';
+    name.textContent = `${eintrag.name}${eintrag.platz === ich ? ' (du)' : ''}`;
+    zeile.append(punkt, name);
+    const darf = eintrag.platz === ich || nachricht.gastgeber === ich;
+    for (const e of jePlatz) zeile.append(platzwahlFeld(e, eintrag, darf));
     teile.spielerliste.append(zeile);
   }
+}
+
+function platzwahlFeld(e, eintrag, darf) {
+  const wert = eintrag.wahl ? eintrag.wahl[e.schluessel] : e.vorgabe;
+  if (!darf) {
+    const marke = document.createElement('span');
+    marke.className = 'platzwahl';
+    marke.dataset.wahl = e.schluessel;
+    marke.textContent = wertText({ ...e, wert });
+    return marke;
+  }
+  const feld = einstellungsfeld({ ...e, vorgabe: wert });
+  feld.classList.add('platzwahl-feld');
+  const eingabe = feld.querySelector('[data-einstellung]');
+  // Kein Teil der Einstellungen. Der Name steht fuer den Vorleser am Feld,
+  // sichtbar ist nur die Wahl - die Zeile sagt schon, wessen Platz es ist.
+  delete eingabe.dataset.einstellung;
+  eingabe.dataset.wahl = e.schluessel;
+  eingabe.setAttribute('aria-label', `${e.name}: ${eintrag.name}`);
+  feld.querySelector('span').remove();
+  eingabe.addEventListener('change', () => {
+    melden('', teile.wartemeldung);
+    senden({ typ: 'platz', platz: eintrag.platz, wahl: { [e.schluessel]: JSON.parse(eingabe.value) } });
+  });
+  return feld;
 }
 
 // ---- Spiele ------------------------------------------------------------

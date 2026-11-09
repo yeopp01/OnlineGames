@@ -232,6 +232,15 @@ async function starten(hafen = HAFEN, einstellungen = {}) {
           raum.senden(raum.vorraum());
           break;
         }
+        case 'platz': {
+          // Die Wahl je Platz (spielauswahl AC-22) - was sie bedeutet, weiss
+          // nur das Spiel.
+          if (!raum || !spieler) return;
+          const ergebnis = raum.waehlen(spieler, nachricht.platz, nachricht.wahl);
+          if (ergebnis.fehler) return fehler(ergebnis.fehler);
+          raum.senden(raum.vorraum());
+          break;
+        }
         case 'befehl': {
           if (!raum || !spieler || !raum.gestartet) return;
           // Was der Befehl bedeutet, weiss nur das Spiel (ADR-0006).

@@ -171,6 +171,34 @@ button.haupt:hover {
   color: var(--leise);
 }
 
+/* Plaetze, die das Spiel besetzt (KIs): ein Viereck statt des Punkts. */
+.spieler li.vom-spiel .punkt {
+  border-radius: 2px;
+  background: #c9a45c;
+}
+
+/* Die Wahl je Platz (spielauswahl AC-22) steht rechts in der Zeile. */
+.spieler .name {
+  flex: 1;
+}
+
+.spieler .platzwahl {
+  padding: 0.15rem 0.6rem;
+  border: 1px solid var(--rand);
+  border-radius: 999px;
+  color: var(--leise);
+  font-size: 0.88rem;
+}
+
+.spieler .platzwahl-feld {
+  margin: 0;
+}
+
+.spieler .platzwahl-feld select {
+  width: auto;
+  padding: 0.25rem 0.5rem;
+}
+
 #spiel {
   position: fixed;
   inset: 0;

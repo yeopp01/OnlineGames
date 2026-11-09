@@ -145,7 +145,9 @@ test.describe('Spiel waehlen', () => {
   });
 
   test('auswahl AC-6 und auswahl AC-21: Spielerzahl, Startwert, Kartengroesse und Startvorrat stellt man vor dem Eroeffnen ein', async ({ page }, info) => {
-    await page.setViewportSize({ width: 1400, height: 1150 });
+    // Hoch genug fuer das ganze Formular samt Knopf: es waechst mit jeder
+    // Einstellung (Runde 148 kam "Buendnisse" dazu, auswahl AC-22).
+    await page.setViewportSize({ width: 1400, height: 1250 });
     await page.goto('/');
     await page.locator('[data-oeffnen="strategie"]').click();
     const form = page.locator('[data-einstellungen-fuer="strategie"]');
