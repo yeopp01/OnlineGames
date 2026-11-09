@@ -513,6 +513,9 @@ Zahlen, gegen die spätere Runden vergleichen. Mit Datum und Commit.
 | 2026-11-08 | `npm run check` (Maschine ruhig) | 52 s, 492 Tests ohne Browser | Rueckschau 108 |
 | 2026-11-08 | Browserlauf gesamt mit allen Bildern neu (`check:alles:neu`) | 174 Faelle, 13,3 min | Runde 107 |
 | 2026-11-08 | `npm run e2e:daten` (sechs Dateien aus den Daten, ein Arbeiter) | 257 s; längster Fall fahrplan AC-8 78 s | Rückschau 126 |
+| 2026-11-09 | Browserlauf gesamt (`check:alles`, Last nicht geprüft) | 191 Fälle, 17,1 min einschließlich Prüfung; längste fahrplan AC-14 94 s, fahrplan AC-12 84 s, ki AC-9 48 s | Rückschau 147 |
+| 2026-11-09 | Tests ohne Browser | 629 in 100 Dateien (Runde 142: 607) | Rückschau 147 |
+| 2026-11-09 | KI gegen KI, Startwerte 1-20 / 21-40 bis Minute 90 | 20/20 und 20/20 vor Minute 60, Median 41,9 / 38,3 min, 73–74 ms je 1000 Takte | Runde 146 |
 
 ## Rückschauen
 
@@ -1483,6 +1486,48 @@ Testlauf): `npm run check` 53 s ohne Last, 599 Tests ohne Browser; der
 volle Browserlauf mit 191 Fällen 16,6 min (Runde 140; Runde 135: 17,0 min
 für 190). Die Ritterzeit am Stück braucht 1,7 min.
 
+### Nach Runde 147 (2026-11-09)
+
+Vier Runden seit der Rückschau zur Stufe D: 143 die Wirtschaft der KI
+(ki AC-24, ki AC-21/22 eingebunden), 144 der dritte Anlauf an ki AC-13
+(wieder geparkt), 145 die Spec-Runde zu ADR-0013, 146 `welt.feindlich`
+(spielziel AC-14, `in-qa`).
+
+Was Zeit gekostet hat:
+
+1. **Austauschproben als Wegwerfskripte** (Runde 144). Um zu fragen „liegt
+   es an der Überlegenheit, an den Einheiten außer Sicht, an der Jagd?",
+   entstanden drei Skripte im Scratchpad. Jedes ersetzte eine Methode von
+   `Ki.prototype`, hatte eine eigene Schleife über die Startwerte und eine
+   eigene Ausgabe. Und jede Variante auf 20 Startwerten streute um ±2
+   Partien; erst 60 trennten die Wirkung vom Zufall. → **`npm run
+   pruefstand:vergleich -- --probe <datei.cjs>`**: die Datei bekommt
+   `laden(datei)` und ersetzt etwas nur im Arbeitsstand. Der andere Stand
+   hat eigene Module. Mit `--saetze 3` sind es 60 Startwerte. Von Hand
+   geprüft: eine Probe, in der die KI nichts tut, zeigt im Arbeitsstand 3
+   Dorfbewohner, im anderen Stand 12. Einen Test dafür gibt es nicht. Die
+   Regel dazu steht in der Anweisung (Abschnitt 4).
+2. **Ein Wächter war unter Windows zu lasch** (Runde 146).
+   `waechter-merker` suchte das Ende einer Methode mit `'\n  }\n'`. Git
+   checkt mit CRLF aus, und so las er seit Runde 135 bis zum Dateiende. Dem
+   neuen `waechter-feindlich` ging es genauso, er fiel aber gleich elfmal.
+   → **`tests/quelltext.mjs`**: `quelltext(pfad)` liest ohne
+   Wagenrücklauf, `methodenRumpf(text, name)` schneidet. Beide Wächter
+   nutzen es, und ein Fall prüft, dass der Ausschnitt an der eigenen
+   Methode endet. Gegenprobe: ohne das Entfernen des Wagenrücklaufs fällt
+   genau dieser Fall.
+3. **Eine veraltete Zahl in CLAUDE.md** (Runde 146). Dort stand für den
+   Browserlauf „rund 8 bis 11 Minuten für 166 Fälle". Den Lauf von Runde
+   146 mit 17,1 Minuten hielt ich deshalb für auffällig langsam. Er ist es
+   nicht: Runde 135 brauchte 17,0, Runde 140 16,6 Minuten. → CLAUDE.md
+   nennt jetzt 191 Fälle in 16 bis 17 Minuten und die langsamsten Fälle aus
+   `e2e:laufzeiten`.
+
+Zweimal vorgekommen und nicht neu geregelt: das Ändern von Text mitten in
+einer Zeile mit Python (Runde 145) und Escapes in `sed` (Runde 146). Beides
+deckt die Anweisung schon ab („Kein Heredoc mit Quelltext", Skript als
+Datei); ich hatte sie für Kleinigkeiten nicht befolgt.
+
 ### Zur Stufe D (Runde 142, 2026-11-09)
 
 Die Kriterien der Stufe D im Fahrplan stehen seit Runde 140 auf `fertig`
@@ -1529,6 +1574,9 @@ ihn, mit Gegenprobe an beiden Formen. Fünf Bilder neu, alle angesehen.
 Neueste oben. Eine Zeile je Runde: Nummer, Datum, Kriterien, Ergebnis,
 wichtigste Erkenntnis.
 
+- **147** · 2026-11-09 · **Rückschau** — `pruefstand:vergleich --probe`
+  für Austauschproben, `tests/quelltext.mjs` für die Wächter, die
+  Laufzeit des Browserlaufs in CLAUDE.md berichtigt (siehe Rückschauen).
 - **146** · 2026-11-09 · **spielziel AC-14 gebaut, `in-qa`** (D10 begonnen).
   `welt.feindlich(a, b)` ist die eine Stelle für „Gegner oder nicht"; Teams
   kommen als `einstellungen.teams = { <id>: 1..4 }`. Umgestellt sind

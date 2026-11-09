@@ -262,6 +262,15 @@ Setze die gewählten Kriterien auf `in-arbeit`.
   zurückzuschalten hilft wenig: die Partien sind chaotisch, jede Änderung
   verschiebt jeden Verlauf, und in Runde 112 erklärte jeder Teil „einen
   Teil".
+  **Eine Frage der Art „liegt es an dieser Methode?" ist eine
+  Austauschprobe**, kein Wegwerfskript: eine kleine CommonJS-Datei, die
+  über `laden('ki.js')` eine Methode ersetzt, und `npm run
+  pruefstand:vergleich -- --gegen HEAD --probe <datei> --saetze 3`. Die
+  Probe greift nur im Arbeitsstand. **Zwei Varianten gegeneinander
+  brauchen 60 Startwerte** (`--saetze 3`): auf 20 streut die Zahl der
+  Partien vor Minute 60 um ±2. In Runde 144 lagen fünf Varianten zwischen
+  36 und 39, und erst 60 Startwerte trennten eine davon (Rückschau nach
+  Runde 147).
   **Eine Gegenprobe an einem einzelnen Startwert einer ganzen Partie ist
   brüchig**: jede fremde Änderung verschiebt den Verlauf. Die Gegenprobe zu
   ki AC-19 hing an Startwert 5 und brach in Runde 100, ohne dass das Aufgeben

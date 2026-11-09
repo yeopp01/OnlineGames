@@ -15,11 +15,9 @@
 // Merker dazunimmt, bekommt hier die Stelle genannt, die er vergessen hat.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { readFileSync } from 'node:fs';
+import { quelltext, methodenRumpf } from './quelltext.mjs';
 
-// Ohne Wagenruecklauf: unter Windows checkt git mit CRLF aus, und der Rumpf
-// endete sonst erst am Dateiende.
-const WELT = readFileSync(new URL('../server/spiele/strategie/welt.js', import.meta.url), 'utf8').replace(/\r\n/g, '\n');
+const WELT = quelltext('server/spiele/strategie/welt.js');
 
 /** Die Merker aus der Zeile, die `w: 1` schickt - ohne Auftrag, Weg und Tod. */
 function merkerVonW() {
@@ -32,10 +30,9 @@ function merkerVonW() {
 
 /** Der Rumpf einer Methode der Welt, von ihrem Kopf bis zur schliessenden Klammer auf Einrueckung zwei. */
 function rumpf(name) {
-  const anfang = WELT.search(new RegExp(`\\n  ${name}\\(`));
-  assert.ok(anfang >= 0, `${name}() gibt es`);
-  const ende = WELT.indexOf('\n  }\n', anfang);
-  return WELT.slice(anfang, ende);
+  const text = methodenRumpf(WELT, name);
+  assert.ok(text, `${name}() gibt es`);
+  return text;
 }
 
 test('bedienung AC-31: die Merker hinter `w` sind gefunden - sammelt, baut, heilt, bekehrt', () => {

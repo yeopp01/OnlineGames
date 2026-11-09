@@ -6,6 +6,24 @@
 //   npm run pruefstand:vergleich                          Arbeitsstand gegen HEAD, 20 Partien, 22 min
 //   npm run pruefstand:vergleich -- --gegen HEAD~3 --minuten 30 --partien 20
 //   npm run pruefstand:vergleich -- --minuten 90 --saetze 2      Startwerte 1-20 und 21-40
+//   npm run pruefstand:vergleich -- --probe <datei.cjs> --saetze 3   eine Austauschprobe auf 60 Startwerten
+//
+// **Austauschprobe** (Rueckschau nach Runde 147): `--probe` laedt eine
+// CommonJS-Datei, die eine Funktion ausfuehrt, bevor gerechnet wird. Sie
+// bekommt `laden(datei)` und ersetzt damit etwas **nur im Arbeitsstand** -
+// der andere Stand hat eigene Module. So fragt man "liegt es an dieser
+// Methode?", ohne den Code zu aendern:
+//
+//   module.exports = (laden) => {
+//     const { Ki } = laden('ki.js');
+//     const alt = Ki.prototype.ueberlegen;
+//     Ki.prototype.ueberlegen = function () { /* Variante */ return alt.call(this); };
+//   };
+//
+// In Runde 144 entstanden dafuer drei Wegwerfskripte, jedes mit eigener
+// Ausgabe und eigener Schleife ueber die Startwerte. Und: eine Variante
+// gegen eine andere streut auf 20 Startwerten um +-2 Partien - erst
+// `--saetze 3` (60 Startwerte) trennte dort Wirkung von Zufall.
 //
 // Zwei Saetze, wenn die Aenderung jede Partie verschiebt (Bewegung, Kampf):
 // in Runde 100 zeigte erst der zweite Satz, dass die Partien systematisch
@@ -25,7 +43,7 @@ import { createRequire } from 'node:module';
 import { execFileSync } from 'node:child_process';
 import { mkdtempSync, mkdirSync, writeFileSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
-import { join } from 'node:path';
+import { join, resolve } from 'node:path';
 import { pathToFileURL, fileURLToPath } from 'node:url';
 
 const WURZEL = fileURLToPath(new URL('../', import.meta.url));
@@ -41,6 +59,7 @@ const minuten = Number(wert('minuten', 22));
 const partien = Number(wert('partien', 20));
 const erster = Number(wert('startwert', 1));
 const saetze = Number(wert('saetze', 1));
+const probe = wert('probe', null);
 
 // Den Stand `gegen` in einen Temp-Ordner schreiben.
 const git = (...a) => execFileSync('git', a, { cwd: WURZEL, encoding: 'utf8', maxBuffer: 64 * 1024 * 1024 });
@@ -56,6 +75,12 @@ const staende = [
   { name: gegen, pruefstand: laden(ziel) },
   { name: 'Arbeitsstand', pruefstand: laden(WURZEL) },
 ];
+if (probe) {
+  const ausArbeitsstand = createRequire(pathToFileURL(join(WURZEL, 'x.mjs')).href);
+  const anwenden = createRequire(import.meta.url)(resolve(probe));
+  anwenden((datei) => ausArbeitsstand(`./${ORDNER}/${datei}`));
+  staende[1].name = 'mit Probe';
+}
 
 const median = (a) => {
   const z = a.filter((x) => x !== null && Number.isFinite(x)).sort((x, y) => x - y);

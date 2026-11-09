@@ -39,6 +39,7 @@ npm run tafel -- "t.anmutung('gebaeude', 'haus')"  # auf der Schautafel messen, 
 npm run e2e:laufzeiten -- strategie   # Dauer je Datei aus dem letzten Browserlauf, die langsamsten Faelle (--neu faehrt erst einen)
 npm run e2e:daten     # nur die Browserfaelle, die "alles aus den Daten" aufstellen - nach jedem neuen Eintrag in daten.js
 npm run pruefstand:vergleich          # KI gegen KI: Arbeitsstand neben HEAD, dieselben Partien (--saetze 2: 1-20 und 21-40)
+npm run pruefstand:vergleich -- --probe probe.cjs --saetze 3  # Austauschprobe: eine Methode nur im Arbeitsstand ersetzt, 60 Startwerte
 npm run pruefstand:verlauf -- --startwert 5  # eine Partie KI gegen KI Minute fuer Minute
 npm run gegenprobe -- <datei> "<neu>" "<alt>" -- <befehl>  # Gegenprobe gegen die alte Zeile, schreibt die Datei immer zurueck
 ```
@@ -160,7 +161,7 @@ Umfang hinzufügt, dort nachsehen.
 
 ## Stand
 
-**439 von 571 Kriterien fertig.** 628 Tests ohne Browser, 191 im Browser. Die
+**439 von 571 Kriterien fertig.** 629 Tests ohne Browser, 191 im Browser. Die
 Übersicht ist der Bericht: `npm run qa:report`.
 
 Gebaut ist der Unterbau: Räume, Übertragung, Karte, Wegfindung, Sammeln,
@@ -179,10 +180,11 @@ Gemessen: **3,10 Tore je Spiel, 48 % Heimsiege, 21 % Unentschieden**
 (Bundesliga: 3,1 / 44 % / 24 %); der Favorit gewinnt 64 %. Über sechs Saisons
 ohne Menschen null Widersprüche in den Spielen, Kader, Stärke und Markt
 stabil. Eine Saison rechnet in rund 400 ms, ein Spielstand ist nach zwei
-Saisons unter 1 MB. Der Browserlauf dauert rund 8 bis 11
-Minuten für 166 Fälle (`npm run e2e:laufzeiten` zeigt, wo; die langsamsten
-Fälle sind `fahrplan AC-8` mit 78 s, die Feudalzeit am Stück, und `ki AC-9`
-mit 45 s, weil die KI zwölf Spielminuten lang zusieht).
+Saisons unter 1 MB. Der Browserlauf dauert rund 16 bis 17
+Minuten für 191 Fälle (`npm run e2e:laufzeiten` zeigt, wo; die langsamsten
+Fälle sind `fahrplan AC-14` mit 94 s, die Ritterzeit am Stück, `fahrplan
+AC-12` mit 84 s, eine ganze Partie gegen die KI, und `ki AC-9` mit 48 s,
+weil die KI zwölf Spielminuten lang zusieht).
 
 **Stellschrauben des Managerspiels** stehen gesammelt in `WIRKUNG` in
 `server/spiele/manager/spieltag.js`. Wer daran dreht, misst danach: keine

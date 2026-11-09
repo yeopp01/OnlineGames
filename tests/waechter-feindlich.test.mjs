@@ -12,11 +12,9 @@
 // Bestand), gehoert nicht hierher.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { readFileSync } from 'node:fs';
+import { quelltext, methodenRumpf } from './quelltext.mjs';
 
-// Ohne Wagenruecklauf: unter Windows checkt git mit CRLF aus, und der Rumpf
-// endete sonst erst am Dateiende.
-const WELT = readFileSync(new URL('../server/spiele/strategie/welt.js', import.meta.url), 'utf8').replace(/\r\n/g, '\n');
+const WELT = quelltext('server/spiele/strategie/welt.js');
 
 const KAMPFREGELN = [
   'toreVon', 'feindAn', 'feindInSicht', 'wacheTakten', 'tuermeTakten', 'mauerImWeg',
@@ -25,10 +23,9 @@ const KAMPFREGELN = [
 
 /** Der Rumpf einer Methode der Welt, von ihrem Kopf bis zur schliessenden Klammer auf Einrueckung zwei. */
 function rumpf(name) {
-  const anfang = WELT.search(new RegExp(`\\n  ${name}\\(`));
-  assert.ok(anfang >= 0, `${name}() gibt es`);
-  const ende = WELT.indexOf('\n  }\n', anfang);
-  return WELT.slice(anfang, ende);
+  const text = methodenRumpf(WELT, name);
+  assert.ok(text, `${name}() gibt es`);
+  return text;
 }
 
 // `x.besitzer === y`, `x.besitzer !== y`, `y === x.besitzer` - ohne Kommentare.
@@ -40,6 +37,14 @@ test('spielziel AC-14: der Waechter erkennt einen Vergleich mit dem Besitzer', (
   assert.ok(VERGLEICH.test('const feindBau = baustelle.besitzer !== spielerId;'));
   assert.ok(VERGLEICH.test('if (spielerId === g.besitzer) return;'));
   assert.ok(!VERGLEICH.test('if (!this.feindlich(einheit.besitzer, anderer.besitzer)) continue;'));
+});
+
+test('spielziel AC-14: der Ausschnitt endet an der eigenen Methode, nicht am Dateiende', () => {
+  // Gegenprobe zu Runde 146: mit CRLF lief der Rumpf bis zum Ende der Datei,
+  // und jeder Waechter fand dann Zeilen aus fremden Methoden.
+  const text = rumpf('spielerVon');
+  assert.ok(text.split('\n').length <= 4, text.slice(0, 200));
+  assert.ok(!text.includes('feindlich('), 'die naechste Methode gehoert nicht dazu');
 });
 
 for (const name of KAMPFREGELN) {
