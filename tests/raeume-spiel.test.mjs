@@ -28,7 +28,7 @@ test('raeume AC-16: raeume.js laedt kein Spiel', () => {
 test('raeume AC-16: ein erfundenes Spiel laeuft durch den Raum, nur ueber seinen Steckbrief', (t) => {
   // Die Uhr laeuft von Hand: echte Zeitgeber schwanken unter Windows um
   // 15 ms und mehr, gezaehlt werden soll die Taktzahl des Steckbriefs.
-  t.mock.timers.enable({ apis: ['setInterval'] });
+  t.mock.timers.enable({ apis: ['setInterval', 'Date'] });
   const aufrufe = { erzeugt: null, takte: 0 };
   const puzzle = {
     art: 'puzzle',
@@ -69,7 +69,7 @@ test('raeume AC-16: ein Raum-Spiel ohne erzeugen oder takte faellt beim Start de
   const wurzel = join(import.meta.dirname, '..', 'server', 'spiele');
   const strategie = verzeichnis.lesen(wurzel).find((s) => s.art === 'strategie');
   assert.equal(typeof strategie.erzeugen, 'function');
-  assert.equal(strategie.takte, 10);
+  assert.equal(strategie.takte({}), 10, 'ohne Einstellungen zehn Takte je Sekunde');
   // Beim Ausliefern an den Browser bleibt die Funktion auf dem Server.
   assert.equal(JSON.parse(JSON.stringify(strategie)).erzeugen, undefined);
 });
@@ -78,7 +78,7 @@ test('raeume AC-16 / spielziel AC-5: sagt die Welt "vorbei", haelt der Raum sein
   // Geprueft am erfundenen Spiel, nicht am Strategiespiel: dass eine Partie
   // enden kann, gehoert zur Form einer Welt - was sie beendet, weiss nur das
   // Spiel (ADR-0006). Der letzte Zustand geht noch raus, danach keiner mehr.
-  t.mock.timers.enable({ apis: ['setInterval'] });
+  t.mock.timers.enable({ apis: ['setInterval', 'Date'] });
   const stand = { takte: 0, vorbei: false };
   const puzzle = {
     art: 'puzzle',
@@ -119,7 +119,7 @@ test('raeume AC-16 / spielziel AC-9: nach dem Ende startet derselbe Raum eine zw
   // Spielspezifisches: deshalb am erfundenen Spiel geprueft. Der Raum weiss
   // nur, dass die Welt `vorbei` sagt (ADR-0006) - und dass er dann noch einmal
   // erzeugen darf.
-  t.mock.timers.enable({ apis: ['setInterval'] });
+  t.mock.timers.enable({ apis: ['setInterval', 'Date'] });
   const partien = [];
   const puzzle = {
     art: 'puzzle',
@@ -248,4 +248,84 @@ test('auswahl AC-22: ein Spiel ohne Wahl je Platz bekommt keine', () => {
   } finally {
     raeume.halt();
   }
+});
+
+// ---- Die Spielgeschwindigkeit (spielziel AC-23, Runde 159) -----------------
+//
+// Der Raum erfaehrt die Zahl der Takte je echte Sekunde vom Steckbrief -
+// als Zahl oder als Funktion der Einstellungen. Geprueft am erfundenen
+// Spiel: was "schneller" heisst, weiss nur das Spiel (ADR-0006).
+
+function tempoSpiel(stand) {
+  return {
+    art: 'puzzle',
+    takte: (einstellungen) => (einstellungen.schnell ? 15 : 10),
+    erzeugen() {
+      return {
+        aufbau: () => ({ typ: 'aufbau' }),
+        takten: () => { stand.takte += 1; },
+        zustand: () => ({ typ: 'zustand', takt: stand.takte }),
+      };
+    },
+  };
+}
+
+test('spielziel AC-23: bei 15 Takten je Sekunde rechnet der Raum in zehn Sekunden 150 Takte', (t) => {
+  t.mock.timers.enable({ apis: ['setInterval', 'Date'] });
+  for (const [einstellungen, erwartet] of [[{ schnell: true }, 150], [{}, 100]]) {
+    const stand = { takte: 0 };
+    const raeume = new Raeume();
+    try {
+      const raum = raeume.anlegen(tempoSpiel(stand));
+      raum.einstellungen = einstellungen;
+      raum.beitreten('Anna', draht());
+      raum.beitreten('Bert', draht());
+      assert.deepEqual(raum.starten(7), {});
+      // In Schritten von 10 ms, wie eine Uhr, die ab und zu nachsieht:
+      // 66,7 ms je Schlag gehen nicht in ganzen Millisekunden auf.
+      for (let ms = 0; ms < 10_000; ms += 10) t.mock.timers.tick(10);
+      assert.ok(Math.abs(stand.takte - erwartet) <= 1, `${stand.takte} Takte statt ${erwartet}`);
+    } finally {
+      raeume.halt();
+    }
+  }
+});
+
+test('spielziel AC-23: kommt ein Schlag zu spaet, holt der naechste nach - hoechstens eine Sekunde', (t) => {
+  // `setInterval` kommt in Wirklichkeit nie puenktlich. Hier wird die Uhr
+  // vorgestellt, ohne dass ein Schlag faellt (`setTime`): der naechste
+  // rechnet, was bis dahin faellig war. Gegenprobe: ein Raum, der je
+  // Schlag einen Takt rechnet, faellt hier zurueck (Runde 159).
+  t.mock.timers.enable({ apis: ['setInterval', 'Date'], now: 0 });
+  const stand = { takte: 0 };
+  const raeume = new Raeume();
+  try {
+    const raum = raeume.anlegen(tempoSpiel(stand));
+    raum.einstellungen = { schnell: true };
+    raum.beitreten('Anna', draht());
+    raum.beitreten('Bert', draht());
+    assert.deepEqual(raum.starten(7), {});
+    t.mock.timers.tick(1000);
+    assert.equal(stand.takte, 15, 'eine Sekunde: fuenfzehn Takte');
+    // 400 ms gestockt, dann ein Schlag: sechs Takte zu den fuenfzehn.
+    t.mock.timers.setTime(Date.now() + 400);
+    t.mock.timers.tick(67);
+    assert.equal(stand.takte, Math.floor(((1000 + 400 + 67) * 15) / 1000), 'nachgeholt');
+    // Zehn Sekunden gestockt: nachgeholt wird eine Sekunde, nicht zehn -
+    // sonst rennt die Welt danach davon.
+    const vorher = stand.takte;
+    t.mock.timers.setTime(Date.now() + 10_000);
+    t.mock.timers.tick(67);
+    assert.ok(stand.takte - vorher <= 16, `${stand.takte - vorher} Takte auf einmal`);
+    assert.ok(stand.takte - vorher >= 15, 'aber die eine Sekunde schon');
+  } finally {
+    raeume.halt();
+  }
+});
+
+test('spielziel AC-23: der Raum kennt keine Spielgeschwindigkeit, nur takte des Steckbriefs', () => {
+  const quelle = readFileSync(join(import.meta.dirname, '..', 'server', 'raeume.js'), 'utf8')
+    .replace(/\/\/.*$/gm, '');
+  assert.doesNotMatch(quelle, /tempo|geschwindigkeit/i);
+  assert.match(quelle, /spiel\.takte\(einstellungen\)/);
 });

@@ -59,6 +59,12 @@ const VERFOLGUNG_FELDER = 5;
 // keine. Steht nach Ablauf keine Entscheidung, endet sie unentschieden
 // (AC-5). Was diese Liste nicht kennt, heisst "keine Grenze".
 const ZEITGRENZEN = [90, 120];
+// Wie schnell die Partie laeuft (spielziel AC-23, ADR-0013): eine
+// Spielsekunde bleibt TAKTE_PRO_SEKUNDE Takte, schneller heisst, der Raum
+// rechnet mehr Takte je echte Sekunde (`takte(einstellungen)` im
+// Steckbrief). Die Welt rechnet nichts anders - sie sagt es nur dem Browser,
+// damit er die Bewegung zwischen zwei Zustaenden passend streckt.
+const GESCHWINDIGKEITEN = [1, 1.5, 2];
 // So lange laeuft die Frist, wenn einer sein Buendnis kuendigt (spielziel
 // AC-21, ADR-0013): erst danach sind die frueheren Verbuendeten Gegner. Die
 // Zahl steht im ADR - genug, um Truppen aus dem fremden Dorf zu holen.
@@ -238,6 +244,8 @@ class Welt {
     this.buendnisse = einstellungen.buendnisse === 'fest' ? 'fest' : 'loesbar';
     // Die Zeitgrenze in Spielminuten oder null (spielziel AC-22).
     this.zeitgrenze = ZEITGRENZEN.includes(einstellungen.zeitgrenze) ? einstellungen.zeitgrenze : null;
+    // Die Spielgeschwindigkeit (spielziel AC-23); was die Liste nicht kennt, ist 1.
+    this.tempo = GESCHWINDIGKEITEN.includes(einstellungen.tempo) ? einstellungen.tempo : 1;
     // Gekuendigte Buendnisse, je `{ wer, bis }` mit `bis` als Takt, an dem
     // die Frist ablaeuft, und `vorbei`, sobald sie abgelaufen ist. Die Liste
     // geht mit jedem Zustand an alle: eine Kuendigung ist oeffentlich.
@@ -3619,6 +3627,10 @@ class Welt {
       // Die Zeitgrenze in Spielminuten oder null (spielziel AC-22): der
       // Browser zeigt sie neben der Uhr.
       zeitgrenze: this.zeitgrenze,
+      // Die Spielgeschwindigkeit (spielziel AC-23): `takte` bleibt die Zahl
+      // je Spielsekunde (die Uhr im Bild), in echter Zeit kommen
+      // `takte * tempo` Takte je Sekunde.
+      tempo: this.tempo,
       karte: {
         groesse: this.karte.groesse,
         felder: Buffer.from(this.karte.felder).toString('base64'),
@@ -3734,5 +3746,5 @@ function mauerLinie(von, bis) {
 module.exports = {
   mauerLinie, MAUER_MAX,
   Welt, TAKTE_PRO_SEKUNDE, STARTVORRAT, ROHSTOFFE, VERFOLGUNG_FELDER, WACHE_TAKTE,
-  ZEITGRENZEN, KUENDIGUNG_SEKUNDEN, GEBAEUDE_NAMEN, EINHEIT_NAMEN,
+  ZEITGRENZEN, GESCHWINDIGKEITEN, KUENDIGUNG_SEKUNDEN, GEBAEUDE_NAMEN, EINHEIT_NAMEN,
 };

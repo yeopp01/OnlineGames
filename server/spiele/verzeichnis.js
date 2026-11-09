@@ -33,8 +33,12 @@ function pruefen(steckbrief, ordner) {
   // (→ specs/00-plattform/raeume.md AC-16). Gesperrte duerfen es noch nicht koennen.
   if (einstieg.art === 'raum' && stand !== 'gesperrt') {
     if (typeof steckbrief.erzeugen !== 'function') throw new Error(`${wo}: erzeugen(spieler, einstellungen) fehlt.`);
-    if (!Number.isInteger(steckbrief.takte) || steckbrief.takte < 1 || steckbrief.takte > 60) {
-      throw new Error(`${wo}: takte muss eine ganze Zahl von 1 bis 60 sein.`);
+    // Eine Zahl, oder eine Funktion der Einstellungen (spielziel AC-23:
+    // die Spielgeschwindigkeit). Geprueft wird die Funktion an den Vorgaben.
+    const vorgaben = Object.fromEntries((steckbrief.einstellungen || []).map((e) => [e.schluessel, e.vorgabe]));
+    const takte = typeof steckbrief.takte === 'function' ? steckbrief.takte(vorgaben) : steckbrief.takte;
+    if (!Number.isInteger(takte) || takte < 1 || takte > 60) {
+      throw new Error(`${wo}: takte muss eine ganze Zahl von 1 bis 60 sein (oder eine Funktion, die eine liefert).`);
     }
   }
   // Wie viele Plaetze das Spiel selbst besetzt, etwa mit Computergegnern

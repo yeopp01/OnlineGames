@@ -1672,6 +1672,21 @@ ihn, mit Gegenprobe an beiden Formen. Fünf Bilder neu, alle angesehen.
 Neueste oben. Eine Zeile je Runde: Nummer, Datum, Kriterien, Ergebnis,
 wichtigste Erkenntnis.
 
+- **159** · 2026-11-09 · **spielziel AC-23 fertig: die Spielgeschwindigkeit
+  ist eine Einstellung** (D13 fertig) — 1,0, 1,5 oder 2,0. Der Steckbrief
+  sagt dem Raum `takte(einstellungen)`, 10, 15 oder 20; die Welt rechnet
+  nichts anders und schickt nur `tempo` für die Bewegung im Bild. **Gelernt:**
+  ein Raum, der je Schlag einen Takt rechnet, misst nicht die Zeit, sondern
+  die Pünktlichkeit von `setInterval` — jetzt zählt die Wanduhr, nachgeholt
+  wird höchstens eine Sekunde. Und: `t.mock.timers.tick(500)` feuert ein
+  Intervall nur **einmal**; die alten Raumtests mit „zehn Takte in einer
+  halben Sekunde" sind erst mit gemockter `Date` und Nachholen wieder grün.
+  Beinahe-Fehler: `tests/strategie-tempo.test.mjs` gab es schon (fahrplan
+  AC-6) — Write überschrieb ihn still; vor einer neuen Testdatei `ls`.
+  Bilddurchsicht: 33 Bilder über 1 %, kein Mangel; in spielauswahl AC-08
+  (Formular mit Fehlermeldung, 1400 × 950) ist der Rahmen jetzt 10 px unten
+  abgeschnitten, die Seite rollt dort — erlaubt nach auswahl AC-23, sieben
+  Einstellungen plus Fehlermeldung sind die Grenze.
 - **158** · 2026-11-09 · **Rückschau** — ein Browserfall prüft den
   Warteraum auf 1366 × 768 für jede Einstellung des Steckbriefs (auswahl
   AC-23, Gegenprobe mit der alten Breite fällt), die Bilddurchsicht ist

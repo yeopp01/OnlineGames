@@ -2,7 +2,7 @@
 
 **Bereich:** Strategie
 **Kuerzel:** spielziel
-**Stand:** 11/24 fertig · 1 in Arbeit · 12 offen
+**Stand:** 12/24 fertig · 1 in Arbeit · 11 offen
 
 ## Zweck
 
@@ -197,13 +197,22 @@ eigenen Technikbaum ([Vorlage](../../docs/strategie/vorlage-aoe2.md)).
   `zeitgrenze: 90` mit. Belegt in `tests/strategie-partieende.test.mjs`, im
   Bild `e2e/tests/strategie-zeitgrenze.spec.mjs` (die Uhr stellt der
   Prüfgriff `uhr` vor).
-- **AC-23** `offen` **Spielgeschwindigkeit ist eine Einstellung** — 1,0, 1,5
+- **AC-23** `fertig` **Spielgeschwindigkeit ist eine Einstellung** — 1,0, 1,5
   oder 2,0, Vorgabe 1,0. Eine Spielsekunde bleibt zehn Takte; schneller
   heißt, der Raum rechnet mehr Takte je echte Sekunde. Die Zahl erfährt er
   vom Steckbrief (`takte(einstellungen)`), nicht aus einer Verzweigung
   (ADR-0006). Prüfbar: bei 1,5 vergehen in zehn echten Sekunden fünfzehn
   Spielsekunden, höchstens einen Takt daneben. Die Uhr im Bild zeigt
   Spielzeit (bedienung AC-37).
+  **Gebaut in Runde 159:** `takte` im Steckbrief darf eine Funktion der
+  Einstellungen sein (geprüft beim Start des Servers an den Vorgaben), beim
+  Strategiespiel 10, 15 oder 20. Der Raum rechnet nach der Wanduhr statt
+  nach der Zahl der Schläge — `setInterval` mit 66,7 ms kommt jedes Mal
+  etwas spät — und holt nach einem Stocken höchstens eine Sekunde nach. Die
+  Welt rechnet bei jeder Geschwindigkeit Takt für Takt dasselbe; sie schickt
+  `tempo` im Aufbau, damit der Browser die Bewegung zwischen zwei Zuständen
+  auf `1000 / (takte × tempo)` ms streckt. Über das Netz gemessen: 73 bis 74
+  Takte, wo 72,3 bis 73,4 erwartet waren.
 
 ### Bündnisse im Bild
 

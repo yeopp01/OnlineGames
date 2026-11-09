@@ -176,7 +176,13 @@ export class Ansicht {
     // Fremde Gebaeude, wie man sie zuletzt gesehen hat (kampf AC-12).
     this.erinnert = new Map();
     this.fuellung = new Map();
-    this.taktdauer = 1000 / nachricht.takte;
+    // Ein Takt dauert in echter Zeit 1000 / (takte * tempo) ms: bei
+    // schnellerem Spiel kommen die Zustaende oefter, und die Bewegung
+    // dazwischen wird kuerzer gestreckt (spielziel AC-23). Die Uhr im Bild
+    // zaehlt weiter Spielzeit - dafuer bleibt `takteProSekunde` die Zahl je
+    // Spielsekunde.
+    this.tempo = Number.isFinite(nachricht.tempo) && nachricht.tempo > 0 ? nachricht.tempo : 1;
+    this.taktdauer = 1000 / (nachricht.takte * this.tempo);
     this.takteProSekunde = nachricht.takte;
     // Das Muster des Bodens haengt am Startwert: jede Karte ihr eigenes.
     // Die Werte der Arten kommen einmal mit dem Aufbau (bedienung AC-29); die

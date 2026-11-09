@@ -162,7 +162,7 @@ Umfang hinzufügt, dort nachsehen.
 
 ## Stand
 
-**449 von 573 Kriterien fertig.** 672 Tests ohne Browser, 204 im Browser. Die
+**450 von 573 Kriterien fertig.** 680 Tests ohne Browser, 205 im Browser. Die
 Übersicht ist der Bericht: `npm run qa:report`.
 
 Gebaut ist der Unterbau: Räume, Übertragung, Karte, Wegfindung, Sammeln,
@@ -421,7 +421,14 @@ der Uhr der Frist; der Browser stellt dieselben zwei Fragen
 Einstellung** (spielziel AC-22, D13): keine, 90 oder 120 Spielminuten,
 Vorgabe keine; steht sie, zeigt die Uhr sie dahinter („89:45 / 90:00").
 Wer im Test das Unentschieden nach Ablauf braucht, gibt `zeitgrenze: 90`
-mit; im Browser stellt der Prüfgriff `uhrStellen` die Uhr vor.
+mit; im Browser stellt der Prüfgriff `uhrStellen` die Uhr vor. **D13 ist
+fertig: die Spielgeschwindigkeit** (spielziel AC-23) — 1,0, 1,5 oder 2,0.
+Eine Spielsekunde bleibt zehn Takte; der Steckbrief sagt dem Raum
+`takte(einstellungen)` (10, 15, 20), und der Raum rechnet nach der
+Wanduhr, nicht nach der Zahl der Schläge — nach einem Stocken holt er
+höchstens eine Sekunde nach. Der Zeitraffer der Tests multipliziert
+darauf. Im Browser streckt `ansicht.taktdauer` die Bewegung, die Uhr
+zählt Spielzeit.
 
 1. **Stufe A** Dunkle Zeit mit Wirtschafts-KI und Prüfstand · **B** Feudalzeit
    · **C** Partieende und KI-Gegner · **D** Ritterzeit · **E** fünf Völker ·

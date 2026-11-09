@@ -1,6 +1,6 @@
 'use strict';
 
-const { Welt, TAKTE_PRO_SEKUNDE } = require('./welt');
+const { Welt, TAKTE_PRO_SEKUNDE, GESCHWINDIGKEITEN } = require('./welt');
 const { Ki } = require('./ki');
 
 // Computergegner (spielauswahl AC-18, AC-19): sie sitzen auf eigenen Plaetzen
@@ -98,6 +98,13 @@ module.exports = {
         { wert: 120, name: '120 Spielminuten' },
       ],
     },
+    // Wie schnell die Partie laeuft (spielziel AC-23, ADR-0013). Die Werte
+    // kommen aus GESCHWINDIGKEITEN in der Welt, damit beide dieselbe Liste
+    // kennen.
+    {
+      schluessel: 'tempo', name: 'Spielgeschwindigkeit', art: 'wahl', vorgabe: 1,
+      werte: GESCHWINDIGKEITEN.map((wert) => ({ wert, name: wert.toFixed(1).replace('.', ',') + (wert === 1 ? ' (normal)' : '') })),
+    },
   ],
   // Je Platz ein Team oder keins (spielauswahl AC-22). Wer im selben Team
   // ist, ist verbuendet (spielziel AC-14).
@@ -105,8 +112,13 @@ module.exports = {
   // Wie die Plaetze heissen, die das Spiel besetzt - dieselben Namen wie in
   // der Partie (mitKi).
   platzname: (nummer) => `KI ${nummer}`,
-  // Was der Raum von diesem Spiel braucht (→ specs/00-plattform/raeume.md AC-16).
-  takte: TAKTE_PRO_SEKUNDE,
+  // Was der Raum von diesem Spiel braucht (→ specs/00-plattform/raeume.md AC-16):
+  // Takte je echte Sekunde. Eine Spielsekunde bleibt TAKTE_PRO_SEKUNDE
+  // Takte; die Spielgeschwindigkeit rechnet mehr davon in derselben Zeit
+  // (spielziel AC-23) - 10, 15 oder 20.
+  takte: (einstellungen = {}) => Math.round(
+    TAKTE_PRO_SEKUNDE * (GESCHWINDIGKEITEN.includes(einstellungen.tempo) ? einstellungen.tempo : 1),
+  ),
   // Wie viele Plaetze das Spiel selbst besetzt (raeume.js, spielauswahl AC-19).
   plaetze: (einstellungen) => einstellungen.ki || 0,
   erzeugen: mitKi,
