@@ -2,7 +2,7 @@
 
 **Bereich:** Strategie
 **Kuerzel:** bedienung
-**Stand:** 30/44 fertig · 14 offen
+**Stand:** 30/46 fertig · 16 offen
 
 ## Zweck
 
@@ -226,6 +226,26 @@ Reihenfolge:
 Aus den offenen Kriterien oben gehören zu Stufe A: AC-6 (Auswahl
 aufgelistet), AC-11 (Übersichtskarte — auf 120 × 120 unverzichtbar), AC-15
 (Esc), AC-17 (Zahlen zählen hoch), AC-18 (Absagen sagen warum).
+
+### Stufe E — Häuser
+
+- **AC-45** `offen` **Stufen heißen nach Rang** — Am Bildschirm heißen
+  die vier Zeitalter **Landsitz, Lehen, Fürstentum und Krone**
+  ([ADR-0014](../../docs/adr/0014-haeuser-statt-voelker.md) Punkt 9):
+  oben in der Leiste, am Auftrag zum Aufstieg, in Absagen, in der Ansage
+  des Wechsels und auf der Tafel am Ende. Die gebeugten Formen („des
+  Lehens", „im Fürstentum") stehen mit dem Namen in den Daten, nicht im
+  Browser zusammengesetzt. Dorfbewohner bleiben Dorfbewohner; Bezeichner
+  (`feudalzeit`), Dateinamen und die Arbeitsnamen der Stufen in den Specs
+  bleiben. **Messbar:** ein Wächter findet die alten Namen (Dunkle Zeit,
+  Feudalzeit, Ritterzeit, Imperialzeit) in keinem Text, den `public/` oder
+  die Daten auf den Bildschirm bringen.
+- **AC-46** `offen` **Das Wappen zeigt das Haus** — Im Warteraum neben dem Namen
+  und am Banner über dem eigenen Dorfzentrum steht das Wappen des Hauses
+  (Esche, Hengst, Turm, Waage, drei Disteln). Es ist ein Zeichen, keine
+  Farbe: zwei Spieler desselben Hauses unterscheidet die Farbe ihres
+  Platzes. Bei Zoom 1 sind die fünf Wappen voneinander unterscheidbar.
+  Die Wappen kommen aus der Blender-Sitzung.
 
 ## Grenzfaelle
 

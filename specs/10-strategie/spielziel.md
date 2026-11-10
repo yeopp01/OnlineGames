@@ -2,7 +2,7 @@
 
 **Bereich:** Strategie
 **Kuerzel:** spielziel
-**Stand:** 12/24 fertig · 1 in Arbeit · 11 offen
+**Stand:** 12/26 fertig · 1 in Arbeit · 13 offen
 
 ## Zweck
 
@@ -14,7 +14,7 @@ ist. Diese Spec ist die Klammer über [Bauen](bauen.md), [Kampf](kampf.md),
 
 Zwei bis acht Leute spielen eine Partie nach den Regeln von Age of Empires II:
 Dorfbewohner sammeln vier Rohstoffe, die Siedlung steigt durch die Zeitalter
-auf, jedes Volk hat seine Stärken. Wer die anderen erobert, gewinnt. Gebaut
+auf, jedes Haus hat seine Stärken. Wer die anderen erobert, gewinnt. Gebaut
 wird in Stufen ([Fahrplan](fahrplan.md)), jede endet mit einer spielbaren
 Partie.
 
@@ -30,26 +30,50 @@ Der Reiz eines Strategiespiels steckt weiterhin in der Entscheidung „noch ein
 Dorfbewohner oder schon Soldaten?" — nicht in der Anzahl der Einheitentypen.
 Jede Stufe wird daran gemessen, ob sie neue Entscheidungen bringt.
 
-## Zu den Völkern
+## Zu den Häusern
 
-Namen wie Teutonen, Franken oder Byzantiner sind historisch und frei
-verwendbar. Was ein Volk kostet, hängt allein daran, wie viel **eigenes**
-daran hängt:
+Statt historischer Völker streiten fünf Häuser einer eigenen Welt um die
+Krone ([ADR-0014](../../docs/adr/0014-haeuser-statt-voelker.md)). Was ein Haus kostet,
+hängt allein daran, wie viel **eigenes** daran hängt:
 
-| Ein Volk als …                                | Kostet        |
+| Ein Haus als …                                | Kostet        |
 | --------------------------------------------- | ------------- |
-| Name, Farbe und Boni als Zahlen               | einen Nachmittag |
-| dazu eine Spezialeinheit aus vorhandenen Fähigkeiten | einen Tag |
+| Name, Wappen, Wahlspruch und Boni als Zahlen  | einen Nachmittag |
+| dazu eine Spezialeinheit aus vorhandenen Fähigkeiten | einen Tag und eine Figur |
 | eigener Technikbaum und eigene Mechaniken     | Wochen        |
 
-Deshalb bekommen die fünf Völker Boni und eine Spezialeinheit, aber keinen
-eigenen Technikbaum ([Vorlage](../../docs/strategie/vorlage-aoe2.md)).
+Deshalb bekommen die fünf Häuser Boni und eine Spezialeinheit, aber keinen
+eigenen Technikbaum. Jedes Haus kann alles bauen, was es gibt; nur ein paar
+Einheiten bildet nicht jedes Haus aus ([Einheiten](einheiten-und-befehle.md)
+AC-42 bis AC-44).
+
+| Haus | Sitz | Wappen | Wahlspruch |
+| --- | --- | --- | --- |
+| **Eschenbruch** | Waldland | Esche | „Weit sehen, weit treffen." |
+| **Rappenstein** | Grasland | Hengst | „Zuerst am Ziel." |
+| **Wehrstein** | Gebirge | Turm | „Stein vergisst nicht." |
+| **Silberfurt** | Flussstadt | Waage | „Alles hat seinen Preis." |
+| **Distelhag** | Heide | drei Disteln | „Wer uns greift, blutet." |
+
+| Haus | Schwerpunkt | Boni | Spezialeinheit (Burg) | Mannschaftsbonus |
+| --- | --- | --- | --- | --- |
+| Eschenbruch | Fernkampf, Holz | Holz +15 %; Schützen +1 Reichweite | Kriegswölfe | Schießanlagen der Verbündeten bilden 20 % schneller aus |
+| Rappenstein | Reiterei, Tempo | Reiter +15 Leben; Reiter sehen 2 Felder weiter | Reiterschütze | Reiter der Verbündeten sehen 2 Felder weiter |
+| Wehrstein | Befestigung, Stein | Stein +15 %; Gebäude +10 % Leben; Turm und Burg +1 Reichweite | Riese | Gebäude der Verbündeten sehen 2 Felder weiter |
+| Silberfurt | Handel, Gold | Marktgebühr 15 % statt 30 %; Karren +20 % Gold | Meuchler | Karren zwischen Verbündeten bringen 20 % mehr |
+| Distelhag | Infanterie | Infanterie +1 Rüstung gegen Hieb und Pfeil; Farmen +45 Nahrung | Wiedergänger | Kasernen der Verbündeten bilden 20 % schneller aus |
+
+Alle Zahlen sind **Startwerte** (ADR-0014) und werden im Prüfstand
+eingestellt wie der Faktor des Marktkarrens. Das Wappen ist ein Zeichen,
+keine Farbe: die Farbe gehört dem Platz, und zwei Spieler dürfen dasselbe
+Haus wählen. Kein Haus für den Glauben — fünf waren gewollt, und den Mönch
+spielt die KI am schlechtesten.
 
 ## Abnahmekriterien
 
 ### Partieverlauf
 
-- **AC-1** `in-arbeit` **Zeitalter gliedern die Partie** — Dunkle Zeit, Feudal-, Ritter- und
+- **AC-1** `in-arbeit` **Zeitalter gliedern die Partie** — (Im Spiel: Landsitz, Lehen, Fürstentum, Krone.) Dunkle Zeit, Feudal-, Ritter- und
   Imperialzeit. Jeder Aufstieg kostet und dauert, und er öffnet neue Gebäude und
   Einheiten. Wann man aufsteigt, ist eine Entscheidung, keine Pflicht.
   **Stand:** die vier Zeitalter und alle drei Aufstiege rechnen und sind im Bild
@@ -117,14 +141,37 @@ eigenen Technikbaum ([Vorlage](../../docs/strategie/vorlage-aoe2.md)).
 - **AC-13** `offen` **Zwei bis acht Spieler** — Die Partie funktioniert mit jeder Zahl zwischen
   zwei und acht, ohne dass Werte von Hand angepasst werden; die Karte wächst
   mit.
-- **AC-16** `offen` **Fünf Völker mit Profil** — Jedes mit zwei bis drei Boni, einer
-  Spezialeinheit und einem Mannschaftsbonus, die einen eigenen Weg zum Sieg
-  nahelegen (→ [Fahrplan](fahrplan.md) AC-16).
-- **AC-17** `offen` **Ein Volk ist Daten** — Ein neues Volk entsteht durch einen Eintrag
-  in einer Tabelle, nicht durch eine Verzweigung in der Simulation. Sonst
-  wird das fünfte Volk teurer als das erste statt billiger.
-- **AC-18** `offen` **Kein Volk gewinnt gegen alle** — Über zwanzig Partien liegt keines dauerhaft
-  vorn. Belegt durch Partien, nicht durch Behauptung.
+- **AC-16** `offen` **Fünf Häuser mit Profil** — Jedes mit den Boni, der
+  Spezialeinheit und dem Mannschaftsbonus aus „Zu den Häusern", die einen
+  eigenen Weg zum Sieg nahelegen (→ [Fahrplan](fahrplan.md) AC-16). Die
+  Boni bleiben klein, 10 bis 20 %, damit nicht die Hauswahl die Partie
+  entscheidet (ADR-0014 Punkt 8).
+- **AC-17** `offen` **Ein Haus ist Daten** — Ein neues Haus entsteht durch einen Eintrag
+  in einer Tabelle, nicht durch eine Verzweigung in der Simulation. Ein
+  Bonus hat die Form, die eine Verbesserung schon hat (`wirkung` je Klasse,
+  `sammeln` als Faktor, `gebaeude`), und gilt von Beginn an; gelesen wird er
+  dort, wo die Verbesserungen gelesen werden (`welt.einheitenwert`,
+  `welt.gebaeudewert`). Sonst wird das fünfte Haus teurer als das erste
+  statt billiger.
+- **AC-18** `offen` **Kein Haus gewinnt gegen alle** — Über zwanzig Partien je Paarung liegt
+  keines dauerhaft vorn (→ Fahrplan AC-18). Belegt durch Partien, nicht
+  durch Behauptung.
+- **AC-25** `offen` **Mannschaftsbonus nur im Bündnis** — Der Mannschaftsbonus
+  eines Hauses gilt für es selbst und für alle, mit denen es die Sicht
+  teilt (`welt.teiltSicht`) — zwei Verbündete desselben Hauses bekommen ihn
+  einmal, nicht doppelt. Wer kündigt, verliert mit der gemeinsamen Sicht im
+  selben Takt den Bonus seiner Verbündeten, und sie den seinen: in der
+  Frist ist man kein Gegner, aber auch kein Verbündeter mehr (ADR-0014
+  Punkt 6). Belegt an einer Schießanlage, die nach der Kündigung im
+  nächsten Auftrag wieder langsamer ausbildet.
+- **AC-26** `offen` **Jeder Bonus wirkt** — Für jeden Bonus jedes Hauses gibt es
+  eine Messung gegen ein Haus ohne ihn: dieselbe Lage, ein Wert verschieden
+  (Holz je Minute, Reichweite, Leben, Sicht, Ausbildungszeit, Gebühr, Gold
+  je Fahrt, Nahrung je Farm). Der Test liest die Boni aus den Daten, keine
+  Liste im Testkopf. Eine neue Lesestelle brauchen Ausbildungszeit,
+  Marktgebühr, Ertrag des Karrens und die Reichweite nur für Turm und Burg
+  (ADR-0014 Punkt 4); ob `gebaeudewert` einen Bonus je Gebäudeart trägt,
+  ist dabei zu prüfen.
 - **AC-14** `fertig` **Verbündete kämpfen nicht** — Spieler desselben Teams
   ([Spielauswahl](../00-plattform/spielauswahl.md) AC-22) sind Verbündete.
   Ein Rechtsklick auf einen Verbündeten ist ein Gang dorthin. Wachende

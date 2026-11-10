@@ -1,7 +1,7 @@
 # OnlineGames
 
 Spiele für mehrere über einen Raumcode. Erstes Spiel: **Fading Allies**, ein
-Echtzeit-Strategiespiel nach den Regeln von Age of Empires II, gebaut in Stufen bis zu fünf Völkern auf
+Echtzeit-Strategiespiel nach den Regeln von Age of Empires II, gebaut in Stufen bis zu fünf Häusern einer eigenen Welt auf
 einem eigenen Server ([ADR-0012](docs/adr/0012-aoe2-als-vorlage.md)). Zweites
 Spiel: ein Fußballmanager im Geist von Anstoss 3 — **die Arbeit daran ruht.**
 
@@ -151,6 +151,8 @@ e2e/     Playwright: tests/ im Browser; server.mjs startet den Server samt Prüf
 | [ADR-0011](docs/adr/0011-bildnachweise.md) | **Bildnachweise gehören an das Abnahmekriterium.** `fertig` = Testname **und** (Bild **oder** Begründung). Bilder eingecheckt, Bericht erzeugt. |
 | [ADR-0012](docs/adr/0012-aoe2-als-vorlage.md) | **AoE II ist die Vorlage, gebaut wird in Stufen A–G.** Keine Schiffe, kein Handel über Wasser, keine Kampagnen, kein Material aus dem Original, kein „Age of Empires" im Spiel. Völker sind Daten. |
 | [ADR-0013](docs/adr/0013-buendnisse-karren-dauer.md) | **Bündnisse, die sich lösen lassen**: Teams im Warteraum, fest oder lösbar; Lösen öffentlich mit 60 Sekunden Frist; ein Team gewinnt. **Marktkarren ab der Ritterzeit**, auch zum zweiten eigenen Markt. **Zeitgrenze und Spielgeschwindigkeit sind Einstellungen** (Vorgabe: keine Grenze, 1,0). |
+| [ADR-0014](docs/adr/0014-haeuser-statt-voelker.md) | **Fünf Häuser einer eigenen Welt statt historischer Völker**: Eschenbruch, Rappenstein, Wehrstein, Silberfurt, Distelhag; die Stufen heißen im Spiel Landsitz, Lehen, Fürstentum, Krone. **Der Drache statt des Trebuchets**, abschaltbar. Abrüsten: 40 Nahrung, 20 s. Alle Zahlen Startwerte. |
+| [ADR-0015](docs/adr/0015-statthalter.md) | **Der Statthalter**: Teile des eigenen Reichs der KI übergeben, mit Knöpfen statt Sprachmodell, nach Stufe E; Übernahme bei Verbindungsabbruch nach zehn Sekunden. |
 
 **Eröffnen verlangt ein Konto, Mitspielen nicht.** Wer eine Partie eröffnet,
 belegt Rechenzeit — dort leistet ein Konto etwas. Wer mitspielt, tippt Code
@@ -163,7 +165,7 @@ Umfang hinzufügt, dort nachsehen.
 
 ## Stand
 
-**453 von 574 Kriterien fertig.** 703 Tests ohne Browser, 207 im Browser. Die
+**453 von 598 Kriterien fertig.** 703 Tests ohne Browser, 207 im Browser. Die
 Übersicht ist der Bericht: `npm run qa:report`.
 
 Gebaut ist der Unterbau: Räume, Übertragung, Karte, Wegfindung, Sammeln,
@@ -450,7 +452,7 @@ seltener machen sollte, gibt es auf diesem Zweig nicht — gemessen wird
 deshalb mit geleertem Gold (`tests/strategie-ki-handel.test.mjs`).
 
 1. **Stufe A** Dunkle Zeit mit Wirtschafts-KI und Prüfstand · **B** Feudalzeit
-   · **C** Partieende und KI-Gegner · **D** Ritterzeit · **E** fünf Völker ·
+   · **C** Partieende und KI-Gegner · **D** Ritterzeit · **E** fünf Häuser ·
    **F** Imperialzeit · **G** Betrieb auf dem Hetzner-VPS.
 
 Außerhalb der Reihe, aber nicht vergessen: Mailversand (konten AC-4, AC-5) und

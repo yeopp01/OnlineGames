@@ -2,7 +2,7 @@
 
 **Bereich:** Strategie
 **Kuerzel:** ki
-**Stand:** 23/26 fertig · 3 offen
+**Stand:** 23/29 fertig · 6 offen
 
 ## Zweck
 
@@ -273,6 +273,34 @@ nicht die Regeln.
   Kampfeinheit: Angriff 0, er zieht nicht mit dem Heer. Gemessen, Startwerte
   1 bis 10: mit Handel 720, 562, 270, 10, 125, 93, 350, 706 und 0 Gold in
   14 Minuten (bei 4 und 10 wird die KI überrannt), ohne Handel 0 bis 30.
+
+### Stufe E — Häuser
+
+- **AC-27** `offen` **KI neigt zum Haus** — Die KI spielt das Haus,
+  das ihr Platz im Warteraum trägt (spielauswahl AC-24), und neigt zu
+  seinem Schwerpunkt: Eschenbruch zur Schießanlage, Rappenstein zum Stall,
+  Distelhag zur Kaserne, Silberfurt früher zum Handel, Wehrstein zu Türmen.
+  Welche Einheiten sie ausbildet, liest sie aus den Daten des Gebäudes
+  (ki AC-17), welches Gebäude zuerst, aus den Daten des Hauses — keine
+  Verzweigung nach dem Namen. **Messbar:** über zwanzig Startwerte bildet
+  jedes Haus mehr Einheiten seines Schwerpunkts aus als der Durchschnitt
+  der anderen, und KI gegen KI endet weiter wie in fahrplan AC-11.
+- **AC-28** `offen` **KI bildet Spezialeinheit aus** — In der Ritterzeit
+  baut die KI eine Burg und bildet dort die Spezialeinheit ihres Hauses
+  aus, als Teil ihres Heeres. Dafür braucht sie 650 Stein — **die KI
+  sammelt bis heute keinen Stein**; das gehört zu diesem Kriterium. Über
+  zwanzig Startwerte hat jede KI, die die Ritterzeit erreicht und zehn
+  Minuten darin bleibt, eine Burg und mindestens eine Spezialeinheit
+  ausgebildet. Ohne das misst fahrplan AC-18 nichts.
+
+### Stufe F — der Drache (aus ADR-0014)
+
+- **AC-29** `offen` **Die KI ruft den Drachen** — Die KI holt Eier, bewacht ihr
+  Kloster und ruft den Drachen, wenn sie Ei, Kloster und fünf Mönche hat.
+  Sieht sie die Ansage eines fremden Rituals oder einen fremden Drachen,
+  stellt sie Schützen dagegen und schickt ihr Heer zum fremden Kloster.
+  KI gegen KI: wer zuerst ruft, gewinnt nicht öfter als 60 %
+  ([Einheiten](einheiten-und-befehle.md) AC-52).
 
 ## Grenzfaelle
 

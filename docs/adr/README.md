@@ -18,7 +18,7 @@ Nachfolgerin.
 | 0009 | [Die Oberflaeche wird in einem echten Browser geprueft](0009-oberflaeche-im-browser.md) | teilweise abgeloest (Werkzeug → 0010) |
 | 0010 | [Playwright statt eigener Fernsteuerung](0010-playwright.md) | entschieden |
 | 0011 | [Bildnachweise gehoeren an das Abnahmekriterium](0011-bildnachweise.md) | entschieden |
-| 0012 | [Age of Empires II ist die Vorlage, gebaut wird in Stufen](0012-aoe2-als-vorlage.md) | teilweise abgeloest (Handelskarren → 0013) |
+| 0012 | [Age of Empires II ist die Vorlage, gebaut wird in Stufen](0012-aoe2-als-vorlage.md) | teilweise abgeloest (Handelskarren → 0013, Voelker → 0014) |
 | 0013 | [Buendnisse, die sich loesen lassen, Marktkarren, Dauer als Einstellung](0013-buendnisse-karren-dauer.md) | entschieden |
 | 0014 | [Eine eigene Welt aus Haeusern statt historischer Voelker](0014-haeuser-statt-voelker.md) | entschieden |
 | 0015 | [Der Statthalter: Teile des eigenen Reichs der KI uebergeben, mit Knoepfen](0015-statthalter.md) | entschieden |

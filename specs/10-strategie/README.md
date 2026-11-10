@@ -1,6 +1,7 @@
 # Strategie
 
-Ein spielbarer Klon von Age of Empires II mit fünf Völkern, gebaut in Stufen
+Ein spielbarer Klon von Age of Empires II mit fünf Häusern einer eigenen Welt
+([ADR-0014](../../docs/adr/0014-haeuser-statt-voelker.md)), gebaut in Stufen
 ([ADR-0012](../../docs/adr/0012-aoe2-als-vorlage.md)). Der [Fahrplan](fahrplan.md)
 sagt, was als Nächstes kommt; [Spielziel](spielziel.md) sagt, was für ein
 Spiel es wird.

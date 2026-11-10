@@ -2,7 +2,7 @@
 
 **Bereich:** Strategie
 **Kuerzel:** einheiten
-**Stand:** 29/34 fertig · 4 offen · 1 zurueckgestellt
+**Stand:** 29/47 fertig · 17 offen · 1 zurueckgestellt
 
 ## Zweck
 
@@ -296,6 +296,128 @@ Werte aus der [Vorlage](../../docs/strategie/vorlage-aoe2.md), als Daten in
   Hinweg nicht. Abgetrennt von AC-40 in Runde 161: das ist eine Änderung an
   der Figur, und die Figuren baut seit 2026-11-10 eine eigene Sitzung mit
   Blender neu. Der Server schickt die Ladung schon (`l`, `a` am Karren).
+
+### Stufe E — Häuser
+
+Keine dieser Einheiten steht in der Vorlage; ihre Werte sind
+**Startwerte** ([ADR-0014](../../docs/adr/0014-haeuser-statt-voelker.md)), eingestellt im
+Gefechtsstand (`npm run konterkreis:strategie`, gleiche Kosten). Prüfbar
+ist an jeder die **Entscheidung, die sie bringt**: wogegen sie gewinnt und
+wogegen sie verliert — mindestens 80 % in beiden Richtungen, wie der
+Konterkreis (fahrplan AC-9, AC-23). Jede braucht eine eigene Figur; die
+kommen aus der Blender-Sitzung (Bauabfolge E6 bis E8).
+
+- **AC-42** `offen` **Langbogenschütze nur für Eschenbruch** — Häuser schalten
+  Einheiten frei (ADR-0014 Punkt 11): eine Einheit trägt in den Daten
+  `haeuser: [...]`, gelesen überall dort, wo heute `zeitalter` gelesen wird
+  (Menü des Gebäudes, Ausbildung auf dem Server, Absage, KI). Wer sie nicht
+  ausbilden darf, sieht sie nicht im Menü, und der Server weist den Auftrag
+  ab. Der erste Fall: der **Langbogenschütze** in der Schießanlage ab der
+  Ritterzeit, nur Haus Eschenbruch. Startwerte: 35 Holz, 40 Gold, 35 Leben,
+  Angriff 6, Reichweite 6, Rüstung 0/0, Tempo 0,96, Nachladezeit 2 s.
+  **Entscheidung:** er schießt weiter als der Armbrustschütze (5) und
+  gewinnt gegen ihn bei gleichen Kosten; gegen Ritter verliert er.
+- **AC-43** `offen` **Pavesenschütze nur für Wehrstein** — Schießanlage ab der
+  Ritterzeit, nur Haus Wehrstein: ein Schütze hinter einem großen Schild.
+  Startwerte: 30 Holz, 45 Gold, 45 Leben, Angriff 4, Reichweite 4, Rüstung
+  1/4, Tempo 0,85. **Entscheidung:** gegen Armbrustschützen gleicher Kosten
+  gewinnt er, gegen Ritter und gegen Mangonels verliert er.
+- **AC-44** `offen` **Söldner für Gold** — Kaserne ab der Ritterzeit, jedes Haus;
+  kostet **nur Gold** und ist schnell da. Startwerte: 80 Gold (Silberfurt:
+  64), 18 s, 55 Leben, Angriff 9, Rüstung 1/1, Tempo 1,0. **Entscheidung:**
+  er verwandelt Gold in Truppen, ohne Nahrung und Holz, und ist dabei nicht
+  besser als der Soldat — bei gleichen Kosten gewinnt keiner von beiden
+  mehr als 60 %. Der Preis für Silberfurt ist ein Bonus des Hauses in den
+  Daten, keine Verzweigung.
+- **AC-45** `offen` **Kriegswölfe aus der Burg** — Spezialeinheit von Haus
+  Eschenbruch. Schnell wie ein Reiter, aber **kein Reiter**: Klasse `tier`,
+  der Speer hat keinen Bonus gegen sie. Startwerte: 60 Nahrung, 30 Gold,
+  20 s, 55 Leben, Angriff 7, Rüstung 0/1, Tempo 1,35, Nachladezeit 1,5 s.
+  **Entscheidung:** gegen Speerkämpfer gleicher Kosten gewinnen sie (der
+  Ritter dort 0 von 20), gegen Soldaten verlieren sie.
+- **AC-46** `offen` **Reiterschütze aus der Burg** — Spezialeinheit von Haus
+  Rappenstein: schießt vom Pferd und wird **als Reiter und als Schütze**
+  getroffen (Klassen `kavallerie` und `bogenschuetze`: der Speer und der
+  Plänkler haben beide ihren Bonus). Startwerte: 40 Holz, 70 Gold, 34 s,
+  60 Leben, Angriff 5, Reichweite 4, Rüstung 0/0, Tempo 1,4.
+  **Entscheidung:** gegen Armbrustschützen gleicher Kosten gewinnt er —
+  er holt sie ein und hält Abstand —, gegen Plänkler und Speerkämpfer
+  verliert er.
+- **AC-47** `offen` **Riese aus der Burg** — Spezialeinheit von Haus Wehrstein:
+  viel Leben, langsam, ein großer Bonus gegen Gebäude — der Bonus der Ramme
+  auf zwei Beinen, aber er schlägt auch Einheiten und wehrt sich.
+  Startwerte: 120 Nahrung, 100 Gold, 40 s, 250 Leben, Angriff 10, Bonus
+  +40 gegen Gebäude, Rüstung 2/1, Tempo 0,6, Nachladezeit 3 s. Gegen ein
+  Gebäude (0 Rüstung gegen Hieb) sind das 50 je Schlag, 16,7 je Sekunde —
+  zwei Drittel einer Ramme (127 alle 5 s, 25,4 je Sekunde).
+  **Entscheidung:** er bricht Gebäude und hält dabei Nahkämpfer auf; gegen
+  Armbrustschützen gleicher Kosten verliert er, denn er holt sie nie ein.
+- **AC-48** `offen` **Meuchler aus der Burg** — Spezialeinheit von Haus
+  Silberfurt: **getarnt** (kampf AC-22), wenig Leben, ein hoher Bonus gegen
+  Dorfbewohner und Mönche. Startwerte: 40 Nahrung, 60 Gold, 25 s, 35
+  Leben, Angriff 6, Bonus +10 gegen Dorfbewohner und Mönche, Rüstung 0/0,
+  Tempo 1,1, Nachladezeit 1,5 s. Ein Dorfbewohner (25 Leben) fällt nach
+  zwei Stichen, 1,5 Sekunden. **Entscheidung:** er trifft die Wirtschaft
+  ungesehen; gegen Soldaten gleicher Kosten verliert er, und ein Turm oder
+  eine Wache, die ihn auf zwei Felder sieht, stellt ihn.
+- **AC-49** `offen` **Wiedergänger aus Gefallenen** — Spezialeinheit von Haus
+  Distelhag, ein Untoter. Jede eigene Einheit, die stirbt, zählt für das
+  Haus als ein **Gefallener** (gezählt wird beim Sterben schon heute, für
+  die Tafel); ein Wiedergänger kostet 30 Gold **und einen Gefallenen**,
+  bezahlt über denselben Weg wie Holz (`kosten`), und steht nach 10 s an
+  der Burg — nicht dort, wo jemand fiel. Ein gefallener Wiedergänger zählt
+  nicht noch einmal. Klassen `infanterie` und `untot`: er bekommt
+  Schmiede und Hausbonus, kein Mönch bekehrt oder heilt ihn (die Liste
+  `nicht` am Bekehren — ob das Heilen sie liest, ist zu prüfen), und er
+  kostet keine Nahrung. Startwerte aus ADR-0014: 60 Leben, Angriff 6,
+  Rüstung 1/0, Tempo 0,7, Nachladezeit 2 s. Gerechnet: gegen einen Soldaten
+  (45 Leben, Rüstung 0) braucht er acht Schläge und behält 20 Leben, ein
+  Drittel; vier Wiedergänger (je 4 an einem Ritter) fällen einen Ritter in
+  sieben Runden, bevor der den ersten (sieben Schläge zu 1,8 s) fällt.
+  **Entscheidung:** er bringt nach einer verlorenen Schlacht etwas zurück
+  (spielziel AC-4), nie mehr, als verloren wurde; seine Antwort sind
+  Schützen — gegen Bogenschützen gleicher Kosten verliert er.
+
+### Stufe F — der Drache (aus ADR-0014)
+
+Geschrieben in der Spec-Runde zur Stufe E, gebaut in Stufe F (fahrplan
+AC-19). Werte und Dauern sind Startwerte aus ADR-0014.
+
+- **AC-50** `offen` **Abrüsten** — Jede Einheit der Klassen Infanterie,
+  Schützen und Reiter kann auf Befehl die Waffen ablegen und
+  **Dorfbewohner** werden, nie umgekehrt; Untote, Belagerung, Mönch und
+  Karren nicht. Das kostet 40 Nahrung und 20 Sekunden **Lehrzeit**, in
+  denen die Einheit steht und nicht arbeitet; erstattet wird nichts
+  (Benutzer, 2026-11-10). Hebt ein Soldat ein Ei auf (AC-51), rüstet er
+  dafür ab. **Zu messen, bevor es `fertig` heißt:** eine KI, die ihre
+  Dorfbewohner über Kasernen holt, gewinnt gegen die heutige nicht mehr als
+  60 % (`npm run pruefstand:vergleich -- --probe`); sonst steigt der Preis.
+- **AC-51** `offen` **Das Ei liegt, wird getragen** — Auf der Karte liegen
+  Dracheneier, eines je zwei Spieler (abgerundet, mindestens eines), fern
+  von jedem Start. Ein Dorfbewohner trägt ein Ei als Ladung wie Holz und
+  bringt es in ein eigenes Kloster; stirbt er, liegt es dort. Ein Ei ist
+  immer an genau einem Ort: am Boden, bei einem Träger oder in einem
+  Kloster; fällt das Kloster, liegt es am Boden. Das Ei ist keine
+  Siegbedingung.
+- **AC-52** `offen` **Der Drache fliegt und brennt** — Höchstens einer je Spieler.
+  Er fliegt ohne Wegsuche über Mauern, Wald und Wasser, und sein Feuer ist
+  Flächenschaden wie der Stein des Mangonels (`flaeche`,
+  `welt.einschlaege`). Startwerte: 500 Leben, Tempo 1,5, Rüstung 2 gegen
+  Pfeile, Feuer mit Reichweite 3 alle 3 Sekunden auf ein Feld Umkreis, 15
+  Schaden an Einheiten, +200 gegen Gebäude. **Drei Ziele im Gefechtsstand**
+  (ADR-0014): eine Burg allein verliert gegen ihn, eine Burg mit fünf
+  Armbrustschützen gewinnt; zehn Armbrustschützen töten ihn und verlieren
+  dabei höchstens die Hälfte; KI gegen KI gewinnt, wer zuerst ruft, nicht
+  öfter als 60 %. Eine Einstellung beim Eröffnen schaltet ihn ab.
+- **AC-53** `offen` **Wo er fällt, liegt Ei** — Stirbt der Drache, liegt an
+  der Stelle sein Ei; alle sehen die Ansage, und die Übersichtskarte zeigt
+  die Stelle. Wer es heimträgt — auch der alte Besitzer —, kann neu rufen
+  und bezahlt neu. Ein eigenes Wiederbeleben gibt es nicht.
+- **AC-54** `offen` **Der Drache frisst** — Er kostet laufend Nahrung, so viel wie
+  fünf Bauern ernten (5 × 0,32 je Sekunde, rund 96 je Minute). Ist die
+  Nahrung bei null, hungert er und verliert Leben, bis er fällt — wo er
+  gerade ist (dann AC-53). Das ist die Bremse statt einer Sperre durch das
+  Zeitalter: früh ist er ein großer Teil der Wirtschaft, spät ein kleiner.
 
 ## Grenzfaelle
 

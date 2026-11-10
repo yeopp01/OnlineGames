@@ -7,7 +7,7 @@
 ## Zweck
 
 Die Stufen von hier bis zu einem spielbaren Klon von Age of Empires II mit fünf
-Völkern auf einem eigenen Server ([ADR-0012](../../docs/adr/0012-aoe2-als-vorlage.md)).
+Häusern ([ADR-0014](../../docs/adr/0014-haeuser-statt-voelker.md)) auf einem eigenen Server ([ADR-0012](../../docs/adr/0012-aoe2-als-vorlage.md)).
 Jede Stufe endet mit einer Partie, die sich von vorn bis hinten spielen lässt.
 
 Die Kriterien hier sind **Prüfsteine der Stufen**. Die einzelnen Regeln stehen
@@ -26,7 +26,7 @@ der Stufe aus der [Vorlage](../../docs/strategie/vorlage-aoe2.md) geschrieben.
 ## Reihenfolge
 
 ```
-Einstieg → Spielbild → A Dunkel → B Feudal → C Partieende + KI → D Ritter → E Völker → F Imperial → G Server
+Einstieg → Spielbild → A Dunkel → B Feudal → C Partieende + KI → D Ritter → E Häuser → F Imperial → G Server
 ```
 
 Eine Stufe beginnt erst, wenn die vorige erreicht ist. Die Ausnahme ist
@@ -250,22 +250,85 @@ Offen aus Stufe C und gebaut auf dem Zweig `strategie-ki-sicht`: die KI mit
 eigener Sicht (ki AC-13) — wartet auf die Antwort zu fahrplan AC-11. Wird sie
 eingebunden, misst jeder Schritt ab D9 KI gegen KI mit ihr.
 
-### Stufe E — Völker
+### Stufe E — Häuser
 
-- **AC-16** `offen` **Fünf Völker wählbar** — Franken, Briten, Teutonen, Mongolen, Byzantiner,
-  je mit Boni, Spezialeinheit und Mannschaftsbonus, gewählt in den
-  Einstellungen.
-- **AC-17** `offen` **Ein Volk ist ein Eintrag** — Ein sechstes Volk entsteht im Test allein aus
+Die Völker der Vorlage sind ersetzt durch fünf Häuser einer eigenen Welt
+([ADR-0014](../../docs/adr/0014-haeuser-statt-voelker.md)): Eschenbruch, Rappenstein,
+Wehrstein, Silberfurt, Distelhag. Die Technik bleibt die des Mittelalters.
+Die vier Stufen heißen im Spiel **Landsitz, Lehen, Fürstentum und Krone**;
+in den Specs behalten sie ihre Arbeitsnamen (Dunkle Zeit, Feudal-, Ritter-,
+Imperialzeit), Bezeichner und Dateinamen bleiben. Boni, Spezialeinheiten
+und Mannschaftsboni stehen in [Spielziel](spielziel.md), „Zu den Häusern".
+
+- **AC-16** `offen` **Fünf Häuser wählbar** — Eschenbruch, Rappenstein,
+  Wehrstein, Silberfurt und Distelhag, je mit Boni, einer Spezialeinheit
+  aus der Burg und einem Mannschaftsbonus ([Spielziel](spielziel.md)
+  AC-16), gewählt im Warteraum je Platz
+  ([Spielauswahl](../00-plattform/spielauswahl.md) AC-24). Belegt wie AC-8
+  und AC-14: ein Browsertest wählt ein Haus, spielt bis zur Burg, bildet
+  dort die Spezialeinheit dieses Hauses aus und zeigt einen Bonus im Bild
+  (etwa die Reichweite an der Auswahl).
+- **AC-17** `offen` **Ein Haus ist ein Eintrag** — Ein sechstes Haus entsteht im Test allein aus
   Daten und ist spielbar, ohne dass die Simulation eine Zeile dazubekommt.
-- **AC-18** `offen` **Kein Volk vorn** — KI gegen KI, jede Paarung zwanzigmal: kein Volk
-  gewinnt insgesamt mehr als 60 %.
+- **AC-18** `offen` **Kein Haus vorn** — KI gegen KI, jede Paarung zwanzigmal: kein Haus
+  gewinnt gegen ein anderes mehr als 60 % — **je Paarung**, nicht nur im
+  Mittel, denn die Schwerpunkte sitzen auf den Ecken des Konterkreises
+  (Schützen schlagen Infanterie, Reiter schlagen Schützen; ADR-0014
+  Punkt 8). Die KI spielt dabei ihr Haus ([KI](ki.md) AC-27, AC-28). Fünf
+  Häuser sind zehn Paarungen, also 200 Partien.
+
+**Bauabfolge.** Zuerst, was ohne neue Figur geht. Die Figuren der
+Spezialeinheiten und der hauseigenen Einheiten, die Wappen und die Spuren
+eines Gefechts kommen aus der Blender-Sitzung (seit 2026-11-10); bis sie
+eingebunden ist, bleibt `public/figuren.js` unberührt, und eine Einheit ohne
+Figur bricht den Wächter „jede Einheit hat eine Zeichnung"
+(`tests/waechter-namen.test.mjs`). E6 bis E9 warten deshalb auf die
+Figuren, nicht auf die Regeln.
+
+| Schritt | Was | Kriterien |
+| --- | --- | --- |
+| E1 | Die Stufen heißen nach dem Rang: Landsitz, Lehen, Fürstentum, Krone — alle Texte am Bildschirm, dazu die Tests und Bilder, die sie lesen (`npm run check:alles:neu`) | bedienung AC-45 |
+| E2 | Ein Haus ist Daten: `HAEUSER` mit Boni in der Form der Verbesserungen, gelesen in `einheitenwert`, beim Sammeln und in `gebaeudewert`; die Wahl im Warteraum (Name und Wahlspruch, noch ohne Wappen) | fahrplan AC-17, spielziel AC-17, spielauswahl AC-24 |
+| E3 | Die Boni, die eine neue Lesestelle brauchen (Ausbildungszeit, Marktgebühr, Ertrag des Karrens, Reichweite nur für Turm und Burg); jeder Bonus gemessen; der Mannschaftsbonus endet mit dem Bündnis | spielziel AC-16, AC-25, AC-26 |
+| E4 | Voller Wohnraum fällt auf (Lücke aus der Rückschau zur Stufe D) | bedienung AC-43 |
+| E5 | Die KI neigt zu ihrem Haus | ki AC-27 |
+| E6 | Häuser schalten Einheiten frei: Langbogenschütze, Pavesenschütze, Söldner — wartet auf die Figuren | einheiten AC-42 bis AC-44 |
+| E7 | Spezialeinheiten aus vorhandenen Fähigkeiten: Kriegswölfe, Reiterschütze, Riese — wartet auf die Figuren | einheiten AC-45 bis AC-47 |
+| E8 | Der Meuchler mit Tarnung, der Wiedergänger aus Gefallenen — wartet auf die Figuren | einheiten AC-48, AC-49, kampf AC-22 |
+| E9 | Wappen, Zeitalter am Dorf, Spuren eines Gefechts — wartet auf die Figuren | bedienung AC-42, AC-44, AC-46 |
+| E10 | Die KI bildet ihre Spezialeinheit aus; kein Haus vorn im Prüfstand; die Häuser am Stück im Browser | ki AC-28, fahrplan AC-16, AC-18 |
+
+**Was Stufe E ablöst.** spielauswahl AC-6 (der Satz „das Volk je Spieler
+mit Stufe E" als Einstellung) — das Haus kommt je Platz in den Warteraum,
+nicht in die Einstellungen; Nachfolger ist spielauswahl AC-24. Fertige
+Kriterien und Bildunterschriften, die einen alten Namen der Stufen als
+Text am Bildschirm zitieren, zieht die Runde zu E1 nach. Alle bleiben
+`fertig`, bis ihr Nachfolger gebaut ist.
 
 ### Stufe F — Imperialzeit
 
-- **AC-19** `offen` **Imperialzeit spielbar** — Trebuchet, Wunder mit Siegbedingung, die
-  Einheitenstufen und Verbesserungen der Vorlage. **Das Trebuchet ist eine
-  Einstellung beim Eröffnen und lässt sich abschalten** — der Benutzer will
-  ohne es spielen können (2026-11-09).
+- **AC-19** `offen` **Imperialzeit spielbar** — Die Krone (Imperialzeit) mit Wunder und
+  Siegbedingung, den Einheitenstufen und Verbesserungen der Vorlage und
+  den Elitestufen der fünf Spezialeinheiten (ADR-0014 Punkt 12: eine
+  Verbesserung mit `wandelt` in der Burg, wie Soldat die Miliz). **Statt
+  des Trebuchets kommt der Drache** (ADR-0014 Punkt 10): er bricht
+  Befestigungen aus der Luft und ist eine Einstellung beim Eröffnen, die
+  sich abschalten lässt — der Benutzer will ohne Trebuchet spielen können
+  (2026-11-09).
+
+**Die Kriterien des Drachen stehen schon** (aus ADR-0014, Spec-Runde zur
+Stufe E); jeder Schritt ist für sich spielbar, die Reihenfolge ist die des
+ADR. Die Spec-Runde zur Stufe F ordnet sie in ihre Bauabfolge ein.
+
+| Schritt | Was | Kriterien |
+| --- | --- | --- |
+| Abrüsten | Infanterie, Schützen und Reiter werden Dorfbewohner (Sonderregel, entschieden) | einheiten AC-50 |
+| Das Ei | liegt, wird getragen, fällt | einheiten AC-51 |
+| Das Ritual | „Drachen rufen" am Kloster, mit Ansage für alle | bauen AC-35 |
+| Der Drache | fliegt und brennt; wer ihn treffen kann | einheiten AC-52, kampf AC-23 |
+| Tod und Ei | wo er fällt, liegt sein Ei | einheiten AC-53 |
+| Fressen | er kostet laufend Nahrung | einheiten AC-54 |
+| Die KI | holt Eier, schützt ihr Kloster, ruft, stellt Schützen dagegen | ki AC-29 |
 - **AC-20** `offen` **Große Partie bleibt flüssig** — Acht Spieler mit je 200 Einheiten: ein Takt
   unter 30 ms im Mittel, je Spieler unter 50 KB Übertragung je Sekunde.
 
@@ -291,16 +354,11 @@ spielbar ist. Keine davon wird vorher gebaut.
 
 Vom Benutzer am 2026-11-09 eingebracht, alle noch offen:
 
-- **Eigene Völker und Zeitalter statt der Vorlage — entschieden, Umriss.**
-  Fünf Startvölker der Antike (etwa Römer, Ägypter, Germanen, Griechen,
-  ein asiatisches Volk), die sich mit den Zeitaltern zu **echten
-  Nachfolgevölkern** weiterentwickeln. Die Nachfolger eines Volkes sind eng
-  verwandt: Unterschiede vor allem über **Boni**, nur **ganz wenige
-  Spezialeinheiten**; ein Nachfolger kann in der Imperialzeit anderes bauen
-  oder eine Einheit einmal öfter verbessern. Stärkere Startboni. Die
-  Zeitalter heißen eigen, etwa Antike, Blütezeit, Kriegszeit,
-  Herrschaftszeit. Ersetzt die fünf Völker der Vorlage in AC-16 — kommt mit
-  einem neuen ADR und der Spec-Runde zu Stufe E.
+- **Eigene Völker und Zeitalter statt der Vorlage** — der Umriss vom
+  2026-11-09 (fünf Startvölker der Antike mit Nachfolgevölkern) ist
+  **abgelöst durch [ADR-0014](../../docs/adr/0014-haeuser-statt-voelker.md)**: fünf Häuser
+  einer eigenen Welt, die Stufen heißen Landsitz, Lehen, Fürstentum und
+  Krone (Stufe E oben, Spec-Runde in Runde 164).
 - **Bauen ohne Bauer zu wählen:** ein Gebäude setzen (oder einen Ausbau
   bestellen) und bezahlen; der nächste freie Dorfbewohner in der Nähe kommt
   und baut. Selbst Bauer schicken geht weiter.
@@ -322,10 +380,18 @@ Vom Benutzer am 2026-11-09 eingebracht, alle noch offen:
   [ADR-0013](../../docs/adr/0013-buendnisse-karren-dauer.md) (Runde 145).**
   Dazu Marktkarren ab der Ritterzeit, Zeitgrenze und Spielgeschwindigkeit
   als Einstellung. Bauabfolge D10 bis D14 oben in Stufe D.
+- **Abrüsten — entschieden** (ADR-0014, Benutzer 2026-11-10): jede Einheit
+  aus Infanterie, Schützen und Reitern kann Dorfbewohner werden, nie
+  umgekehrt — für 40 Nahrung und 20 Sekunden Lehrzeit, erstattet wird
+  nichts. Kriterium: [Einheiten](einheiten-und-befehle.md) AC-50, gebaut
+  mit dem Ei in Stufe F.
+- **Der Winter — Einfall** (ADR-0014): Farmen bringen mit der Spielzeit
+  weniger, das drängt zur Entscheidung. Nicht entschieden: er trifft die
+  Wirtschaft der KI, und KI gegen KI muss weiter vor Minute 60 enden.
 
 ## Der Prüfstein
 
 Erreicht ist der Fahrplan, wenn **fünf Leute an einem Abend auf dem eigenen
-Server zwei Partien mit verschiedenen Völkern spielen und danach eine dritte
+Server zwei Partien mit verschiedenen Häusern spielen und danach eine dritte
 wollen.** Das lässt sich nicht testen, nur an einem echten Abend feststellen —
 deshalb hat es keine Nummer.

@@ -202,6 +202,15 @@ etwas anderem gearbeitet.
 
 ## Offene Fäden
 
+- **Was die Stufe E von der Blender-Sitzung braucht** (Runde 164): Figuren
+  für Langbogenschütze, Pavesenschütze, Söldner und die fünf
+  Spezialeinheiten (Kriegswölfe, Reiterschütze, Riese, Meuchler,
+  Wiedergänger), die fünf Wappen (Esche, Hengst, Turm, Waage, drei
+  Disteln), dazu für Stufe F Ei und Drache, und die Ladung des Karrens
+  (einheiten AC-41). Ohne Figur bricht `tests/waechter-namen.test.mjs`
+  („jede Einheit hat eine Zeichnung"); deshalb warten E6 bis E9 im
+  Fahrplan auf sie. E1 bis E5 gehen ohne.
+
 - **Ein gefallener Browserfall kann den Lauf um 40 Minuten verlängern**
   (Runde 148): einheiten AC-16 (Holzfällerlager) fiel zum ersten Mal
   (Zeitüberschreitung beim Warten auf einen Träger vor dem Lager, einzeln
@@ -1736,6 +1745,23 @@ ihn, mit Gegenprobe an beiden Formen. Fünf Bilder neu, alle angesehen.
 Neueste oben. Eine Zeile je Runde: Nummer, Datum, Kriterien, Ergebnis,
 wichtigste Erkenntnis.
 
+- **164** · 2026-11-10 · **Spec-Runde Stufe E: Häuser nach ADR-0014.**
+  Fahrplan AC-16 bis AC-18 neu gefasst (gleiche Nummern), Bauabfolge E1
+  bis E10; spielziel AC-16 bis AC-18 neu, AC-25 (Mannschaftsbonus nur im
+  Bündnis) und AC-26 (jeder Bonus gemessen); spielauswahl AC-24 (Haus je
+  Platz); bedienung AC-45 (Stufen heißen nach dem Rang) und AC-46
+  (Wappen); einheiten AC-42 bis AC-49 (drei hauseigene, fünf
+  Spezialeinheiten) und — schon jetzt aus dem ADR — AC-50 bis AC-54 für
+  Abrüsten, Ei und Drache, kampf AC-22 (Tarnung) und AC-23, bauen AC-35
+  (Ritual), ki AC-27 bis AC-29. 598 Kriterien statt 574. **Gelernt:** die
+  Bauabfolge muss die Blender-Abhängigkeit sichtbar machen — sechs der
+  zehn Schritte brauchen keine Figur, vier warten; ohne die Trennung wäre
+  der nächste Bauschritt an einem Wächter gescheitert. Und: die KI sammelt
+  keinen Stein — ohne das misst „kein Haus vorn" nichts, weil keine KI
+  je ihre Burg baut (jetzt Teil von ki AC-28). Gerechnet statt geschätzt:
+  Riese 16,7 Schaden je Sekunde gegen Gebäude (Ramme 25,4), vier
+  Wiedergänger fällen einen Ritter, der Drache frisst rund 96 Nahrung je
+  Minute.
 - **163** · 2026-11-10 · **Rückschau** — `npm run durchsicht` legt den
   Unterschied samt neuer Dateien für den Prüfer ab (seit Runde 151 hatte er
   keinen bekommen); ein Kriterium, das einen Mangel beheben soll, misst ihn
