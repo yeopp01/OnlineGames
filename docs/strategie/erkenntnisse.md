@@ -36,6 +36,15 @@ etwas anderem gearbeitet.
   Benutzer. **Alternative:** ki AC-13 bleibt geparkt, und die Schleife
   baut weiter ohne Nebel für die KI. Der Zweig ist `strategie-ki-sicht`
   (`d0314d4`), lokal und ungepusht.
+  **Beantwortet am 2026-11-10: Ersatzgrenze im Nebel.** Der Zweig wird
+  zusammengeführt, nicht neu geschrieben (Benutzer: „wieso neu entwickeln,
+  wenn schon ein Teil auf nem Zweig liegt?") — 5 Commits, 425 Zeilen,
+  Konflikt nur in `ki.js` gegen 24 Commits auf `strategie`. Danach KI gegen
+  KI über 40 Startwerte auf dem heutigen Stand. Werden es nicht 40 von 40
+  vor Minute 60, gilt für Partien, in denen die KI im Nebel spielt: **alle
+  mit Sieger vor Minute 90, Median unter 45 Minuten, mindestens 35 von 40
+  vor Minute 60** — fahrplan AC-11 bekommt diesen Satz unter derselben
+  Nummer, und ki AC-13 wird eingebunden.
 
 - **Die KI mit eigener Sicht macht KI gegen KI länger — wie weiter?**
   (Runde 114, zweiter Anlauf an ki AC-13) Die KI sieht nur noch, was ihre
