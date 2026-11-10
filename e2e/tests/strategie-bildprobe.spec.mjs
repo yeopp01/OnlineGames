@@ -95,7 +95,7 @@ test('darstellung AC-17: die Bildprobe zeigt Dorfbewohner, Haus und Baum gerende
   await nachweis(page, {
     spec: DARSTELLUNG,
     ac: 'AC-17',
-    titel: 'Die Bildprobe: Dorfbewohner, Haus und Laubbaum links gezeichnet und rechts gerendert, unten beides als Szene in Spielgroesse',
+    titel: 'Die Bildprobe: Dorfbewohner, Haus und Laubbaum links gezeichnet und rechts gerendert, darunter beides als Szene in Spielgroesse und der Marktkarren in acht Blickrichtungen',
     test: info,
     ganzeSeite: true,
   });

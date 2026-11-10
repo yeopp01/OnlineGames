@@ -13,7 +13,7 @@ import time
 HIER = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HIER)
 
-MODELLE = ['haus', 'baum', 'dorfbewohner']
+MODELLE = ['haus', 'baum', 'dorfbewohner', 'marktkarren']
 
 
 def main():

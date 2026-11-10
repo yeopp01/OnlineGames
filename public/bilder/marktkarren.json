@@ -1,0 +1,27 @@
+{
+  "bild": "marktkarren.png",
+  "maske": "marktkarren-maske.png",
+  "zelle": [
+    384,
+    252
+  ],
+  "fuss": [
+    160,
+    162
+  ],
+  "feldbreite": 132,
+  "zeilen": 8,
+  "spalten": 9,
+  "art": "figur",
+  "richtungen": 8,
+  "ablaeufe": {
+    "stehen": {
+      "spalte": 0,
+      "bilder": 1
+    },
+    "gehen": {
+      "spalte": 1,
+      "bilder": 8
+    }
+  }
+}

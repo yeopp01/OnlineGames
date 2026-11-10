@@ -3,9 +3,10 @@
 # Laeuft in Blender, ohne Oberflaeche:
 #   blender -b -P grafik/bilder.py -- haus baum dorfbewohner
 #
-# Ein Modell baut seine Koerper in die leere Szene, die Kette rendert je Bild
-# zwei Fassungen - das Bild selbst und die Maske der Spielerfarbe - und setzt
-# die Einzelbilder zu einer Tafel zusammen. Neben der Tafel liegt eine
+# Ein Modell baut seine Koerper in die leere Szene, die Kette rendert jedes
+# Bild einmal und liest daraus drei Dinge - das Bild selbst, die Deckung (wo
+# ein Koerper steht) und die Maske der Spielerfarbe - und setzt die
+# Einzelbilder zu einer Tafel zusammen. Neben der Tafel liegt eine
 # JSON-Datei, die dem Browser sagt, wo welches Bild steht.
 
 import json
@@ -15,6 +16,7 @@ import tempfile
 
 import bpy
 import numpy as np
+import OpenImageIO as oiio
 from mathutils import Vector
 
 # Bildpunkte je Feldbreite (die Raute von Ecke zu Ecke). Im Spiel sind es 44
@@ -35,6 +37,13 @@ SONNE_HOEHE = math.radians(50)
 
 PROBEN = 96
 
+# Zwei Nebenkanaele, die jeder Stoff beim Rendern mitschreibt: `deckung` ist 1,
+# wo ein Koerper steht, `spieler` ist 1, wo er Spielerfarbe traegt. Beide
+# entstehen im selben Durchgang wie das Bild und sind an den Kanten ebenso
+# geglaettet.
+KANAL_DECKUNG = 'deckung'
+KANAL_SPIELER = 'spieler'
+
 
 def szene_leeren():
     """Eine leere Szene mit Himmel, Sonne, Schattenfaenger und Kamera."""
@@ -48,10 +57,14 @@ def szene_leeren():
     szene.cycles.max_bounces = 4
     r.film_transparent = True
     r.resolution_percentage = 100
-    r.image_settings.file_format = 'PNG'
+    r.image_settings.media_type = 'MULTI_LAYER_IMAGE'
+    r.image_settings.file_format = 'OPEN_EXR_MULTILAYER'
     r.image_settings.color_mode = 'RGBA'
-    r.image_settings.color_depth = '8'
-    r.image_settings.compression = 60
+    r.image_settings.color_depth = '32'
+    for name in (KANAL_DECKUNG, KANAL_SPIELER):
+        kanal = szene.view_layers[0].aovs.add()
+        kanal.name = name
+        kanal.type = 'VALUE'
     szene.view_settings.view_transform = 'Standard'
     szene.view_settings.look = 'None'
     r.use_persistent_data = True
@@ -120,72 +133,92 @@ def kamera_setzen(breite, hoehe, fuss):
     kamera.location = rechts * dx + oben * dy - vor * 60
 
 
-def _maske_stoffe():
-    weiss = bpy.data.materials.get('maske-weiss')
-    if weiss is None:
-        weiss = bpy.data.materials.new('maske-weiss')
-        weiss.use_nodes = True
-        k = weiss.node_tree
-        k.nodes.clear()
-        leuchten = k.nodes.new('ShaderNodeEmission')
-        leuchten.inputs[0].default_value = (1, 1, 1, 1)
-        aus = k.nodes.new('ShaderNodeOutputMaterial')
-        k.links.new(leuchten.outputs[0], aus.inputs[0])
-    loch = bpy.data.materials.get('maske-loch')
-    if loch is None:
-        loch = bpy.data.materials.new('maske-loch')
-        loch.use_nodes = True
-        k = loch.node_tree
-        k.nodes.clear()
-        aussparung = k.nodes.new('ShaderNodeHoldout')
-        aus = k.nodes.new('ShaderNodeOutputMaterial')
-        k.links.new(aussparung.outputs[0], aus.inputs[0])
-    return weiss, loch
-
-
 def _koerper():
     return [o for o in bpy.context.scene.objects
             if o.type in ('MESH', 'CURVE') and not o.get('kulisse')]
 
 
-def _durchgang(pfad, stoff_fuer):
-    """Ein Hilfsbild ohne Licht und ohne Boden: jeder Koerper bekommt den
-    Stoff, den `stoff_fuer` zu seinem eigenen nennt."""
-    szene = bpy.context.scene
-    vorher = []
+def _kennzeichnen():
+    """Jeder Stoff eines Koerpers schreibt die zwei Nebenkanaele mit.
+
+    Frueher wurden dafuer die Stoffe getauscht und das Bild dreimal gerendert.
+    Das war dreimal so langsam - und beim Marktkarren standen danach in jedem
+    dritten Bild ganze Stoffe schwarz: der Renderer behaelt die Szene zwischen
+    zwei Bildern und bekam den Ruecktausch nicht immer mit.
+    """
     for o in _koerper():
-        plaetze = o.data.materials
-        if len(plaetze) == 0:
-            plaetze.append(None)
-        vorher.append((o, [m for m in plaetze]))
-        for i, m in enumerate(plaetze):
-            plaetze[i] = stoff_fuer(m)
-    boden = bpy.data.objects['boden']
-    boden.hide_render = True
-    proben = szene.cycles.samples
-    szene.cycles.samples = 24
+        if len(o.data.materials) == 0 or any(m is None for m in o.data.materials):
+            raise SystemExit(f'{o.name} hat keinen Stoff - die Deckung liesse ihn aus')
+        for m in o.data.materials:
+            if m.get('kanaele'):
+                continue
+            for name, wert in ((KANAL_DECKUNG, 1.0), (KANAL_SPIELER, 1.0 if m.get('spielerfarbe') else 0.0)):
+                knoten = m.node_tree.nodes.new('ShaderNodeOutputAOV')
+                knoten.aov_name = name
+                knoten.inputs['Value'].default_value = wert
+            m['kanaele'] = True
+
+
+def _ansicht(linear):
+    """Vom gerechneten Bild (linear, Farbe mal Deckung) zu dem, was eine
+    Bilddatei haelt: Farbe fuer sich, in sRGB."""
+    a = np.clip(linear[:, :, 3:4], 0, 1)
+    farbe = np.clip(np.where(a > 1e-6, linear[:, :, :3] / np.maximum(a, 1e-6), 0), 0, 1)
+    farbe = np.where(farbe <= 0.0031308, farbe * 12.92, 1.055 * np.power(farbe, 1 / 2.4) - 0.055)
+    return np.concatenate([farbe, a], axis=2).astype(np.float32)
+
+
+def _kanaele_lesen(pfad):
+    """Liest alle Kanaele der gerenderten Datei. Blender legt das Bild und
+    jeden Nebenkanal in einen eigenen Teil der Datei."""
+    ein = oiio.ImageInput.open(pfad)
+    if ein is None:
+        raise SystemExit(f'{pfad} laesst sich nicht lesen: {oiio.geterror()}')
+    kanaele = {}
+    teil = 0
+    while ein.seek_subimage(teil, 0):
+        angaben = ein.spec()
+        feld = np.asarray(ein.read_image(teil, 0, 0, angaben.nchannels, 'float'))
+        feld = feld.reshape(angaben.height, angaben.width, angaben.nchannels)
+        for i, name in enumerate(angaben.channelnames):
+            kanaele[tuple(name.split('.')[-2:])] = feld[:, :, i]
+        teil += 1
+    ein.close()
+    fehlt = [k for k in [('Combined', e) for e in 'RGBA'] + [(KANAL_DECKUNG, 'X'), (KANAL_SPIELER, 'X')]
+             if k not in kanaele]
+    if fehlt:
+        raise SystemExit(f'In {pfad} fehlen {fehlt} - da sind {sorted(kanaele)}')
+    bild = np.stack([kanaele[('Combined', e)] for e in 'RGBA'], axis=2)
+    return (_ansicht(bild), np.clip(kanaele[(KANAL_DECKUNG, 'X')], 0, 1),
+            np.clip(kanaele[(KANAL_SPIELER, 'X')], 0, 1))
+
+
+def rendern(pfad):
+    """Rendert ein Bild und gibt es dreifach zurueck: das Bild, die Deckung
+    (wo ein Koerper steht - der Rest des Bildes ist Schatten) und die Maske
+    der Spielerfarbe."""
+    _kennzeichnen()
+    szene = bpy.context.scene
     szene.render.filepath = pfad
     bpy.ops.render.render(write_still=True)
-    szene.cycles.samples = proben
-    boden.hide_render = False
-    for o, stoffe in vorher:
-        for i, m in enumerate(stoffe):
-            o.data.materials[i] = m
+    return _kanaele_lesen(pfad)
 
 
-def rendern(stamm, maske=True):
-    """Ein Bild in bis zu drei Fassungen: das Bild selbst, die Deckung (wo
-    ein Koerper steht - der Rest des Bildes ist Schatten) und die Maske der
-    Spielerfarbe."""
-    szene = bpy.context.scene
-    szene.render.filepath = stamm + '.png'
-    bpy.ops.render.render(write_still=True)
-    weiss, loch = _maske_stoffe()
-    _durchgang(stamm + '-deckung.png', lambda m: weiss)
-    if maske:
-        # Was Spielerfarbe traegt, leuchtet weiss, alles andere ist ein Loch
-        # - es verdeckt, ohne selbst im Bild zu stehen.
-        _durchgang(stamm + '-maske.png', lambda m: weiss if (m is not None and m.get('spielerfarbe')) else loch)
+# Ein Koerper, der im Bild rein schwarz steht, ist kein tiefer Schatten,
+# sondern ein Stoff, den der Renderer verloren hat: mit drei Durchgaengen und
+# getauschten Stoffen stand so in 27 von 72 Bildern des Marktkarrens ein Loch,
+# und gesehen hat es erst, wer die Tafel vergroessert ansah. Gemessen an den
+# vier Tafeln von heute: kein Bild ueber 0,5 %.
+SCHWARZ_GRENZE = 0.02
+
+
+def _schwarz_anteil(bild, deckung):
+    """Anteil des Koerpers, der im Bild rein schwarz ist."""
+    koerper = deckung > 0.99
+    if not koerper.any():
+        return 0.0
+    schwarz = koerper & (bild[:, :, :3].sum(axis=2) < 12 / 255)
+    return float(schwarz.sum() / koerper.sum())
 
 
 # Wie dunkel der Schlagschatten im Bild steht. Voll gerendert ist er fast
@@ -201,7 +234,7 @@ def _schatten_daempfen(bild, deckung):
     Schattenfaenger nimmt auch das Himmelslicht mit und legte sonst einen
     Schleier ueber die ganze Zelle.
     """
-    o = deckung[:, :, 3]
+    o = deckung
     a = bild[:, :, 3]
     s = np.clip((a - o) / np.maximum(1 - o, 1e-4), 0, 1)
     s = s * np.clip((s - 0.05) / 0.12, 0, 1) * SCHATTEN
@@ -245,14 +278,16 @@ class Tafel:
         self.fuss = fuss
         self.ziel = ziel
         self.ordner = tempfile.mkdtemp(prefix=f'bilder-{name}-')
-        self.bilder = {}   # (zeile, spalte) -> Pfad ohne Endung
+        self.bilder = {}   # (zeile, spalte) -> (Bild, Maske oder None)
         self.maske = False
         kamera_setzen(zelle[0], zelle[1], fuss)
 
     def bild(self, zeile, spalte, maske=True):
-        stamm = os.path.join(self.ordner, f'{zeile:02d}-{spalte:02d}')
-        rendern(stamm, maske)
-        self.bilder[(zeile, spalte)] = stamm
+        bild, deckung, spieler = rendern(os.path.join(self.ordner, 'bild.exr'))
+        anteil = _schwarz_anteil(bild, deckung)
+        if anteil > SCHWARZ_GRENZE:
+            raise SystemExit(f'{self.name}, Zeile {zeile}, Spalte {spalte}: {anteil:.0%} des Koerpers sind schwarz - ein Stoff ist beim Rendern verloren gegangen')
+        self.bilder[(zeile, spalte)] = (_schatten_daempfen(bild, deckung), spieler if maske else None)
         self.maske = self.maske or maske
 
     def schreiben(self, beschreibung):
@@ -260,20 +295,18 @@ class Tafel:
         spalten = 1 + max(s for _, s in self.bilder)
         b, h = self.zelle
         os.makedirs(self.ziel, exist_ok=True)
-        dateien = [('', f'{self.name}.png')]
+        feld = np.zeros((zeilen * h, spalten * b, 4), dtype=np.float32)
+        maske = np.zeros((zeilen * h, spalten * b, 4), dtype=np.float32)
+        for (z, s), (zelle, spieler) in self.bilder.items():
+            feld[z * h:(z + 1) * h, s * b:(s + 1) * b] = zelle
+            if spieler is not None:
+                # Weiss, so weit die Spielerfarbe deckt - der Browser nimmt
+                # nur die Deckung.
+                maske[z * h:(z + 1) * h, s * b:(s + 1) * b] = np.where(spieler[:, :, None] >= 1 / 255, 1.0, 0.0)
+                maske[z * h:(z + 1) * h, s * b:(s + 1) * b, 3] = np.where(spieler >= 1 / 255, spieler, 0.0)
+        _schreiben(os.path.join(self.ziel, f'{self.name}.png'), feld)
         if self.maske:
-            dateien.append(('-maske', f'{self.name}-maske.png'))
-        for endung, datei in dateien:
-            feld = np.zeros((zeilen * h, spalten * b, 4), dtype=np.float32)
-            for (z, s), stamm in self.bilder.items():
-                pfad = stamm + endung + '.png'
-                if not os.path.exists(pfad):
-                    continue
-                zelle = _lesen(pfad)
-                if endung == '':
-                    zelle = _schatten_daempfen(zelle, _lesen(stamm + '-deckung.png'))
-                feld[z * h:(z + 1) * h, s * b:(s + 1) * b] = zelle
-            _schreiben(os.path.join(self.ziel, datei), feld)
+            _schreiben(os.path.join(self.ziel, f'{self.name}-maske.png'), maske)
         angaben = {
             'bild': f'{self.name}.png',
             'maske': f'{self.name}-maske.png' if self.maske else None,

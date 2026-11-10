@@ -71,11 +71,19 @@ function gerenderterBaum(stift, x, y, zoom, gestalt) {
   if (tafel) zelleZeichnen(stift, tafel, 0, gestalt % tafel.gestalten, x, y, (2 * HALB_B * zoom) / tafel.feldbreite, null);
 }
 
+function gerenderterKarren(stift, x, y, zoom, farbe, richtung, schritt) {
+  const tafel = gerendert('marktkarren');
+  if (!tafel) return;
+  const zelle = figurZelle(tafel, richtung, schritt, 8);
+  zelleZeichnen(stift, tafel, zelle.zeile, zelle.spalte, x, y, (2 * HALB_B * zoom) / tafel.feldbreite, farbe);
+}
+
 const blaetter = {
   figur: blatt('probe-figur'),
   haus: blatt('probe-haus'),
   baum: blatt('probe-baum'),
   szene: blatt('probe-szene'),
+  karren: blatt('probe-karren'),
 };
 
 function figurMalen(b) {
@@ -167,11 +175,31 @@ function szeneMalen(b) {
   trennung(b, 580);
 }
 
+// Der Marktkarren: acht Blickrichtungen im Gehen, gross und in Spielgroesse;
+// ein Dorfbewohner steht daneben, damit man das Verhaeltnis sieht.
+function karrenMalen(b) {
+  const s = b.stift;
+  grund(b);
+  schrift(s, 'gerendert (neu) – acht Blickrichtungen, im Gehen', 16, 24);
+  schrift(s, 'Zoom 2,5', 16, 48, 0.6);
+  schrift(s, 'Spielgröße beim Start', 16, 498, 0.6);
+  const p = phase();
+  for (let richtung = 0; richtung < 8; richtung += 1) {
+    const farbe = richtung < 5 ? BLAU : ROT;
+    gerenderterKarren(s, 150 + (richtung % 4) * 285, richtung < 4 ? 185 : 385, 2.5, farbe, richtung, stufe(p));
+    gerenderterKarren(s, 100 + richtung * 132, 585, STARTZOOM, farbe, richtung, stufe(p));
+  }
+  // Ein Dorfbewohner daneben als Massstab - neben dem letzten Karren, nicht davor.
+  gerenderteFigur(s, 1118, 600, STARTZOOM, BLAU, 1, -1);
+  gerenderteFigur(s, 1095, 305, 2.5, BLAU, 1, -1);
+}
+
 function malen() {
   figurMalen(blaetter.figur);
   hausMalen(blaetter.haus);
   baumMalen(blaetter.baum);
   szeneMalen(blaetter.szene);
+  karrenMalen(blaetter.karren);
   if (!STILL) requestAnimationFrame(malen);
 }
 
