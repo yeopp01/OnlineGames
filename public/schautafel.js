@@ -29,6 +29,8 @@ const EINTRAEGE = [
   // Der Moench, stehend und beim Heilen (einheiten AC-37).
   { art: 'moench', titel: 'Mönch', lage: {} },
   { art: 'moench', titel: 'Mönch heilt', lage: { arbeit: 1.2 } },
+  // Der Marktkarren (einheiten AC-39).
+  { art: 'marktkarren', titel: 'Marktkarren', lage: {}, gross: 66 },
   { art: 'spaeherreiter', titel: 'Späherreiter', lage: {}, gross: 104 },
   { art: 'speerkaempfer', titel: 'Speerkämpfer', lage: {} },
   { art: 'bogenschuetze', titel: 'Bogenschütze', lage: {} },
@@ -97,7 +99,7 @@ const zellen = [];
 // vorn, die Ramme ihren Stossbalken, der Mangonel den Wurfarm hinten. Ob sie
 // in ihre Zelle passen, misst `ueberstand()` (darstellung AC-9); die Reiter
 // sind deshalb seit der Rueckschau nach Runde 130 etwas kleiner (`gross`).
-const FUSS_VERSATZ = { spaeherreiter: 9, ritter: 15, ramme: 24, mangonel: -8 };
+const FUSS_VERSATZ = { spaeherreiter: 9, ritter: 15, ramme: 24, mangonel: -8, marktkarren: 3 };
 const fussX = (x, art) => x + spalte / 2 - (FUSS_VERSATZ[art] ?? 0);
 
 FARBEN.forEach((farbe, reihe) => {

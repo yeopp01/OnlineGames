@@ -123,6 +123,18 @@ const EINHEITEN = {
     bekehren: { reichweite: 9, frueh: 4, spaet: 10, chance: 0.28, ruhe: 62, nicht: ['belagerung', 'moench'] },
     zeitalter: 2,
   },
+  // Der Marktkarren (einheiten AC-39), Werte aus der Vorlage: 100 Holz, 50
+  // Gold, 70 Leben, keine Ruestung, Tempo 1,0. Er greift nie an - ohne
+  // `angriff` wacht er nicht, und ein Befehl auf einen Fremden ist ein Gang.
+  // Am Markt erst ab der Ritterzeit (ADR-0013: in der Feudalzeit reicht das
+  // Gold auf der Karte noch). Nicht in der Tabelle der Vorlage und deshalb
+  // gesetzt, nach dem Fan-Wiki und **nicht geprueft**: 51 s Ausbildung, Sicht 7.
+  // Was er handelt, kommt mit AC-40.
+  marktkarren: {
+    leben: 70, tempo: 1.0, sicht: 7, tragkraft: 0, kosten: { holz: 100, gold: 50 }, zeit: 51, kuerzel: 'c',
+    angriff: 0, nahruestung: 0, fernruestung: 0, reichweite: 0, nachladen: 0,
+    klassen: ['karren'], zeitalter: 2,
+  },
 };
 
 // Wer von selbst wacht, greift an, was in seine Sichtweite kommt, ohne Befehl
@@ -250,8 +262,10 @@ const GEBAEUDE = {
   // Feudalzeit wie dort. Vier mal vier Felder wie im Original. `handel` sagt,
   // dass an ihm getauscht wird - die Preise stehen unten in HANDEL. Karren und
   // Handel zwischen Maerkten gibt es nicht (ADR-0012).
+  // Der Markt bildet ab der Ritterzeit den Marktkarren aus (einheiten AC-39) -
+  // das Zeitalter steht an der Einheit, gebaut wird er schon in der Feudalzeit.
   markt: {
-    groesse: 4, kosten: { holz: 175 }, bauzeit: 60, leben: 1300, wohnraum: 0, annahme: [], bildetAus: [], zeitalter: 1,
+    groesse: 4, kosten: { holz: 175 }, bauzeit: 60, leben: 1300, wohnraum: 0, annahme: [], bildetAus: ['marktkarren'], zeitalter: 1,
     handel: true,
   },
 };
@@ -408,6 +422,8 @@ const KLASSEN = {
   belagerung: { name: 'Belagerung' },
   // Der Moench (einheiten AC-37) - bekehrt keine Moenche (AC-38).
   moench: { name: 'Mönche' },
+  // Der Marktkarren (einheiten AC-39) - noch greift kein Bonus auf ihn.
+  karren: { name: 'Karren' },
   gebaeude: { name: 'Gebäude' },
 };
 

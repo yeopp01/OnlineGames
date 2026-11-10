@@ -1,0 +1,10 @@
+{
+  "spec": "10-strategie/einheiten-und-befehle.md",
+  "ac": "AC-39",
+  "titel": "Annas Marktkarren (blau) gewählt, eben am Markt ausgebildet: ein Pony vor dem Planwagen mit blauer Plane, die Leiste sagt „Greift nicht an“",
+  "datei": "e2e/tests/strategie-marktkarren.spec.mjs",
+  "pfad": [
+    "Marktkarren",
+    "einheiten AC-39: der Markt bildet ab der Ritterzeit den Marktkarren aus - eigene Figur, greift nicht an, ein Rechtsklick auf Fremde ist ein Gang"
+  ]
+}

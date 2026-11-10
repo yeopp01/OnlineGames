@@ -1100,6 +1100,9 @@ export const FIGUREN = {
   // Der Moench (einheiten AC-37): der Stab ragt ueber den Kopf. `segnet`:
   // wer heilt, hebt den Stab, statt sich wie im Kampf vorzubeugen.
   moench: { name: 'Mönch', zeichnen: moench, breite: 1.2, oben: 1.15, segnet: true },
+  // Der Marktkarren (einheiten AC-39): lang statt hoch, wie die Belagerung.
+  // `stoesst`: er kaempft nie, beugt sich also auch nie vor.
+  marktkarren: { name: 'Marktkarren', zeichnen: marktkarren, breite: 1.9, stoesst: true },
 };
 
 export { WAREN };
@@ -1142,6 +1145,83 @@ export function figurZeichnen(stift, art, x, y, hoehe, farbe, lage = {}) {
 // Spielbild auf 24 Bilder je Sekunde (darstellung AC-10, Runde 52). Im Spielbild
 // wird deshalb jede Gestalt einmal in ein kleines Bild gezeichnet und danach
 // kopiert - wie Gebaeude und Vorraete. Der Schritt geht dafuer in acht Stufen.
+// ---- Der Marktkarren (einheiten AC-39) -------------------------------------
+// Ein Pony vorn an der Deichsel, dahinter ein zweiraedriger Karren mit
+// Faessern und Saecken unter einer gewoelbten Plane in Spielerfarbe; vorn
+// auf dem Brett sitzt der Fuhrmann. Anders als Ramme und Mangonel ein Tier
+// davor und kein Kriegsgeraet: man soll ihn bei Zoom 1 nicht fuer Belagerung
+// halten (darstellung AC-14).
+const PONY = '#a07a50';
+const PONY_MAEHNE = '#5a4330';
+function marktkarren(stift, farbe, { schritt = 0, fein = true, haut = HAUT }) {
+  schatten(stift, 16);
+  const RAD = '#5e4630';
+  const BRETT = '#7a5533';
+  const aus = Math.sin(schritt) * 1.4;
+  // ---- Das Pony, vorn rechts, kleiner als ein Reitpferd.
+  stift.save();
+  stift.translate(6.5, 0);
+  stift.scale(0.8, 0.8);
+  for (const [x, phase] of [[-5.2, -aus], [5.6, aus]]) {
+    vieleck(stift, [[x - 1 + phase, 0], [x + 0.9 + phase, 0], [x + 1.2, -7], [x - 1.2, -7]], licht(stift, toenen(PONY, -0.35), x - 1, -7, x + 1, 0));
+    vieleck(stift, [[x - 1.1 + phase, 0], [x + 1 + phase, 0], [x + 0.9 + phase, -1.1], [x - 1 + phase, -1.1]], '#4a3e34', false);
+  }
+  const rumpf = [[-9.2, -10.2], [-7.8, -13.6], [4.6, -14.2], [8.8, -12.4], [9.2, -8.4], [6.4, -6.4], [-7, -6.6]];
+  umriss(stift, () => rund(stift, rumpf, 'rgba(0,0,0,0)', true));
+  rund(stift, rumpf, licht(stift, PONY, 0, -14, 2, -6, 0.22, -0.3), false);
+  if (fein) glanz(stift, -1, -12.9, 4.2, 0.55, 0.22);
+  for (const [x, phase] of [[-7, aus], [7.4, -aus]]) {
+    vieleck(stift, [[x - 1 + phase, 0], [x + 1 + phase, 0], [x + 1.2, -7.4], [x - 1.2, -7.4]], licht(stift, toenen(PONY, -0.12), x - 1, -7, x + 1, 0));
+    vieleck(stift, [[x - 1.1 + phase, 0], [x + 1.1 + phase, 0], [x + 1 + phase, -1.2], [x - 1 + phase, -1.2]], '#4e4238', false);
+  }
+  // Hals und Kopf, tiefer getragen als beim Reitpferd: es zieht.
+  rund(stift, [[4.4, -12.6], [7.4, -20.6], [10.6, -20.4], [9.8, -10.8]], licht(stift, PONY, 5, -21, 10, -11, 0.2, -0.25));
+  rund(stift, [[7.6, -22], [13.8, -18.6], [13.4, -15.6], [8.6, -16.6]], licht(stift, PONY, 8, -22, 14, -16, 0.22, -0.2));
+  vieleck(stift, [[8.2, -21.6], [8.8, -24.2], [10.2, -21.6]], toenen(PONY, -0.2));
+  rund(stift, [[4.2, -13], [7, -21.4], [8.6, -21.4], [6, -12.4]], licht(stift, PONY_MAEHNE, 4, -21, 9, -12, 0.2, -0.2), false);
+  ellipse(stift, 11.4, -19.4, 0.55, 0.6, AUGE, false);
+  // Das Kummet um den Hals, in Spielerfarbe - daran haengen die Straenge.
+  rund(stift, [[4.8, -16], [7.6, -18.4], [9.4, -12.6], [6.8, -10.8]], licht(stift, farbe, 5, -18, 9, -11, 0.25, -0.3));
+  stift.restore();
+  // ---- Die Deichsel vom Karren zum Kummet.
+  strich(stift, [[-1.2, -7.6], [11.6, -10.4]], '#4a321e', 1.1);
+  if (fein) strich(stift, [[-1.2, -7.9], [11.6, -10.7]], 'rgba(255,230,190,0.25)', 0.35);
+  // ---- Der Karren: Bodenbrett, Seitenwand, Ladung unter der Plane.
+  vieleck(stift, [[-17, -7.4], [-0.4, -7.4], [-0.4, -5.8], [-17, -5.8]], licht(stift, '#5a3f26', -17, -7.4, -17, -5.8));
+  vieleck(stift, [[-16.6, -7.2], [-1, -7.2], [-1.2, -11.2], [-16.4, -11.2]], licht(stift, BRETT, -16.6, -11.2, -1, -7.2, 0.18, -0.26));
+  if (fein) {
+    for (const x of [-12.6, -8.6, -4.8]) strich(stift, [[x, -7.4], [x + 0.1, -11]], '#4a321e', 0.45);
+  }
+  // Ein Fass und ein Sack ragen vorn unter der Plane hervor.
+  ellipse(stift, -2.6, -12.6, 1.9, 2.2, licht(stift, '#8a6238', -4.4, -14.8, -0.8, -10.4, 0.25, -0.3));
+  if (fein) strich(stift, [[-4.3, -12.6], [-0.9, -12.6]], EISEN_DUNKEL, 0.5);
+  rund(stift, [[-6.6, -11.2], [-6, -14.6], [-4.4, -15.4], [-3.8, -11.2]], licht(stift, LEINEN, -6.6, -15.4, -3.8, -11.2, 0.25, -0.25));
+  // Die Plane: ein Bogen ueber dem hinteren Teil, mit Reifen darunter.
+  const plane = [[-16.8, -11], [-16.2, -17.4], [-12.6, -20.6], [-8.4, -20.6], [-6.4, -17.2], [-6.4, -11]];
+  umriss(stift, () => rund(stift, plane, 'rgba(0,0,0,0)', true));
+  rund(stift, plane, licht(stift, farbe, -14, -20.6, -8, -11, 0.24, -0.3), false);
+  if (fein) {
+    for (const x of [-13.4, -9.8]) strich(stift, [[x, -11.2], [x - 0.2, -19.8]], toenen(farbe, -0.32), 0.5);
+    strich(stift, [[-16, -12], [-7, -12]], toenen(farbe, 0.4), 0.6);
+  }
+  // ---- Der Fuhrmann auf dem Vorderbrett, mit Hut.
+  vieleck(stift, [[-1.6, -11.4], [1.8, -11.4], [1.4, -17.4], [-1.2, -17.4]], licht(stift, LEDER, -1.6, -17.4, 1.8, -11.4));
+  ellipse(stift, 2, -14.6, 0.9, 1, licht(stift, haut, 1, -15.6, 3, -13.6, 0.15, -0.2));
+  kopf(stift, -20.2, { hut: STROH, fein, haut });
+  // ---- Das Rad, gross, mit Speichen, die sich drehen.
+  const rx = -9.4;
+  ellipse(stift, rx, -4.4, 4.2, 4.4, licht(stift, RAD, rx - 4.2, -8.8, rx + 4.2, 0, 0.2, -0.25));
+  ellipse(stift, rx, -4.4, 3.1, 3.3, licht(stift, toenen(RAD, -0.25), rx - 3, -7.6, rx + 3, -1.2), false);
+  if (fein) {
+    const winkel = schritt * 0.6;
+    for (let i = 0; i < 4; i++) {
+      const w = winkel + (i * Math.PI) / 4;
+      strich(stift, [[rx - Math.cos(w) * 3.4, -4.4 - Math.sin(w) * 3.6], [rx + Math.cos(w) * 3.4, -4.4 + Math.sin(w) * 3.6]], '#3e2c1c', 0.55);
+    }
+  }
+  ellipse(stift, rx, -4.4, 0.9, 0.95, EISEN_DUNKEL, false);
+}
+
 const SCHRITT_STUFEN = 8;
 const ZWISCHENSPEICHER = new Map();
 const SPEICHER_MAX = 400;

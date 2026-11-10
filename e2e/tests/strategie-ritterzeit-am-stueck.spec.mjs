@@ -115,9 +115,14 @@ test.describe('Ritterzeit am Stueck', () => {
     const arten = await anna.evaluate(() => {
       const w = window.ansicht.werte;
       const spaet = (art) => (w.gebaeude[art].gezogen ? 1 : 0) + (w.gebaeude[art].tor ? 2 : 0);
+      // Was schon in der Feudalzeit ausbildet oder forscht, baut fahrplan
+      // AC-8 (`bildetAus` traegt beides; eine Verbesserung zaehlt hier wie
+      // eine Einheit der Feudalzeit). Der Markt bildet erst in der Ritterzeit
+      // aus (einheiten AC-39) und gehoert deshalb auch hierher.
+      const feudal = (art) => w.gebaeude[art].bildetAus.some((e) => !w.einheiten[e] || w.einheiten[e].zeitalter <= 1);
       return w.einheiten.dorfbewohner.baut
         .filter((art) => w.gebaeude[art]?.zeitalter === 2
-          || (w.gebaeude[art]?.zeitalter === 1 && !w.gebaeude[art].bildetAus.length))
+          || (w.gebaeude[art]?.zeitalter === 1 && !feudal(art)))
         .sort((p, q) => spaet(p) - spaet(q));
     });
     // Was fahrplan AC-14 aufzaehlt, muss darunter sein - die Daten duerfen mehr

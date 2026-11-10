@@ -162,7 +162,7 @@ Umfang hinzufügt, dort nachsehen.
 
 ## Stand
 
-**450 von 573 Kriterien fertig.** 680 Tests ohne Browser, 205 im Browser. Die
+**451 von 573 Kriterien fertig.** 684 Tests ohne Browser, 206 im Browser. Die
 Übersicht ist der Bericht: `npm run qa:report`.
 
 Gebaut ist der Unterbau: Räume, Übertragung, Karte, Wegfindung, Sammeln,
@@ -428,7 +428,12 @@ Eine Spielsekunde bleibt zehn Takte; der Steckbrief sagt dem Raum
 Wanduhr, nicht nach der Zahl der Schläge — nach einem Stocken holt er
 höchstens eine Sekunde nach. Der Zeitraffer der Tests multipliziert
 darauf. Im Browser streckt `ansicht.taktdauer` die Bewegung, die Uhr
-zählt Spielzeit.
+zählt Spielzeit. **Aus D14 steht der Marktkarren** (einheiten AC-39): am
+Markt ab der Ritterzeit, 100 Holz und 50 Gold, 70 Leben, eigene Figur
+(Pony vor dem Planwagen); Ausbildungszeit 51 s und Sicht 7 gesetzt, nicht
+geprüft. Er ist reine Daten — `angriff: 0` ergibt Gang statt Angriff,
+keine Wache, weißes Zeichen und „Greift nicht an". Der Handel (AC-40)
+folgt.
 
 1. **Stufe A** Dunkle Zeit mit Wirtschafts-KI und Prüfstand · **B** Feudalzeit
    · **C** Partieende und KI-Gegner · **D** Ritterzeit · **E** fünf Völker ·

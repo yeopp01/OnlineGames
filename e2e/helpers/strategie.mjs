@@ -31,6 +31,7 @@
 //   `w` = ramme
 //   `n` = mangonel
 //   `g` = moench
+//   `c` = marktkarren
 // ### ENDE KUERZEL
 //
 // **`ansicht.gebaeude`** (Map id -> Gebaeude): `i` · `art` **ausgeschrieben**

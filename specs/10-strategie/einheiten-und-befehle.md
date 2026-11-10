@@ -2,7 +2,7 @@
 
 **Bereich:** Strategie
 **Kuerzel:** einheiten
-**Stand:** 27/33 fertig · 5 offen · 1 zurueckgestellt
+**Stand:** 28/33 fertig · 4 offen · 1 zurueckgestellt
 
 ## Zweck
 
@@ -250,7 +250,7 @@ Werte aus der [Vorlage](../../docs/strategie/vorlage-aoe2.md), als Daten in
   und wer vom neuen Besitzer sie angriff, lässt ab — im Angriffslauf geht
   er weiter. Im Bild: das Zeichen am Ziel ist rot, der Mönch hebt den Stab
   wie beim Heilen, die Leiste nennt „Bekehrt 9 Felder".
-- **AC-39** `offen` **Der Marktkarren** — Ausgebildet am Markt ab der
+- **AC-39** `fertig` **Der Marktkarren** — Ausgebildet am Markt ab der
   Ritterzeit: 100 Holz und 50 Gold, 70 Leben, Rüstung 0/0, Tempo 1,0, ein
   Wohnplatz, eine eigene Figur. Die Ausbildungszeit kommt aus der Vorlage
   und wird beim Bauen nachgesehen. Er greift nie an und wacht nicht; ein
@@ -258,6 +258,14 @@ Werte aus der [Vorlage](../../docs/strategie/vorlage-aoe2.md), als Daten in
   gibt es ihn ab der Feudalzeit. Entschieden hat der Benutzer, denn in der
   Feudalzeit reicht das Gold auf der Karte noch
   ([ADR-0013](../../docs/adr/0013-buendnisse-karren-dauer.md)).
+  **Gebaut in Runde 160:** die Ausbildungszeit steht nicht in der Tabelle
+  der Vorlage; gesetzt sind 51 Sekunden und Sicht 7 nach dem Fan-Wiki,
+  **nicht geprüft**. Er ist ein Eintrag in `daten.js` mit `angriff: 0` und
+  der Klasse `karren` — Wache, Gang statt Angriff, weißes Zeichen am Ziel
+  und „Greift nicht an" in der Leiste ergeben sich aus den Regeln, die
+  schon für den Mönch galten, ohne neuen Code. Die Figur: ein Pony an der
+  Deichsel vor einem zweirädrigen Planwagen, die Plane und das Kummet in
+  der Spielerfarbe, vorn der Fuhrmann mit Strohhut.
 - **AC-40** `offen` **Der Karren handelt** — Ein Rechtsklick auf einen
   **anderen** Markt schickt ihn auf die Strecke: einen Markt eines
   Verbündeten oder einen zweiten eigenen. Er pendelt zwischen seinem

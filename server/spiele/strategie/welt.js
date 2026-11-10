@@ -124,6 +124,7 @@ const EINHEIT_NAMEN = {
   ramme: 'Die Ramme',
   mangonel: 'Den Mangonel',
   moench: 'Den Mönch',
+  marktkarren: 'Den Marktkarren',
 };
 
 // Welche Verbesserung eine Einheit zur naechsten Stufe macht - `wandelt`

@@ -100,6 +100,10 @@ Kantenlänge der Karte). Quelle für die Werte ist das Fan-Wiki zur Einheit,
 für die Formel ein Beitrag aus der Gemeinschaft. Beides ist **nicht
 geprüft**. Hier kommt er erst mit der Ritterzeit und darf auch zum zweiten
 eigenen Markt fahren ([ADR-0013](../adr/0013-buendnisse-karren-dauer.md)).
+Ausbildungszeit und Sicht stehen in keiner Quelle, die hier vorlag; gesetzt
+sind **51 Sekunden** und **Sicht 7** (Runde 160, aus dem Gedächtnis des
+Fan-Wikis, **nicht geprüft** — eine Studie von 2003 nennt rund 29 Sekunden
+nach einer Verbesserung).
 
 ## Zeitalter
 

@@ -1672,6 +1672,17 @@ ihn, mit Gegenprobe an beiden Formen. Fünf Bilder neu, alle angesehen.
 Neueste oben. Eine Zeile je Runde: Nummer, Datum, Kriterien, Ergebnis,
 wichtigste Erkenntnis.
 
+- **160** · 2026-11-09 · **einheiten AC-39 fertig: der Marktkarren** (D14,
+  erster Schritt) — am Markt ab der Ritterzeit, 100 Holz und 50 Gold, 70
+  Leben, 0/0, Tempo 1,0. Ausbildungszeit (51 s) und Sicht (7) sind gesetzt,
+  nicht geprüft. **Gelernt:** eine Einheit, die nicht kämpft, ist seit Mönch
+  und Ramme reine Daten — `angriff: 0` reicht für Wache, Gang, weißes
+  Zeichen und Leiste; gebaut wurden nur Eintrag, Klasse, Name und Figur.
+  Die breite Figur: `t.ueberstand()` meldete 11/25 px über die Zelle bei
+  `gross: 104`; mit 66 und einem Fußversatz passt sie. Das erste Bild auf
+  der Schautafel zeigte ein Pony mit waagerechtem Hals — der Kopf verschwand
+  hinter dem Kummet und unter der Nachbarzelle; aufgerichtet liest es sich
+  als Zugtier. Gegenprobe: mit `angriff: 3` fallen drei der vier Tests.
 - **159** · 2026-11-09 · **spielziel AC-23 fertig: die Spielgeschwindigkeit
   ist eine Einstellung** (D13 fertig) — 1,0, 1,5 oder 2,0. Der Steckbrief
   sagt dem Raum `takte(einstellungen)`, 10, 15 oder 20; die Welt rechnet
