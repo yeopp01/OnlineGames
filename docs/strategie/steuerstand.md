@@ -185,6 +185,7 @@ die Blender-Figuren eingebunden sind. **Blender:** eine Parallelsitzung baut sei
 eingebunden ist: `public/figuren.js`, `public/gebaeude.js`,
 `public/schautafel.js` nicht anfassen, keine neue Figur zeichnen - braucht
 eine Runde eine, Aussehen als offen vermerken und fragen.
+**Fremd im Baum (seit Runde 161):** `docs/adr/0014-haeuser-statt-voelker.md` (Entwurf, eigene Welt aus Haeusern statt Voelkern, Drache statt Trebuchet) und eine Zeile in `docs/adr/README.md` - aus einer anderen Sitzung des Benutzers. Nicht anfassen, nicht mitcommitten; fuer die Spec-Runde E massgeblich, sobald entschieden.
 **Naechste Rueckschau: Runde 163.** Gepusht bis 160 (3a37741); weiter nur
 pushen, wenn der Benutzer da ist. Offen fuer spaeter: im Vorraum auf
 1366 x 768 rutscht bei aufgeklapptem Formular die Karte des
