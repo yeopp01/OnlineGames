@@ -7,9 +7,9 @@ Eine Zeile je Abnahmekriterium. Gepflegt wird der Status in der Spec selbst,
 hier steht er zusammengefasst. Erzeugt mit `npm run specs:board`; als Seite
 mit Bildnachweisen, Filter und Suche mit `npm run qa:report`.
 
-**Gesamt:** 452/574 fertig · 1 in Arbeit · 5 in QA · 4 geplant · 104 offen · 8 zurueckgestellt
+**Gesamt:** 453/574 fertig · 1 in Arbeit · 5 in QA · 4 geplant · 103 offen · 8 zurueckgestellt
 
-**Nachweise:** 207 Kriterien mit Bild · 249 ohne Bild, begruendet in `qa/ohne-bild.json`
+**Nachweise:** 207 Kriterien mit Bild · 250 ohne Bild, begruendet in `qa/ohne-bild.json`
 
 ## Nach Spezifikation
 
@@ -28,7 +28,7 @@ mit Bildnachweisen, Filter und Suche mit `npm run qa:report`.
 | [Fahrplan zum Klon](10-strategie/fahrplan.md)                  | -         | -     | -       | 7     | -               | 17     |
 | [Kampf](10-strategie/kampf.md)                                 | -         | -     | -       | -     | 1               | 20     |
 | [Karte und Vorraete](10-strategie/karte-und-vorraete.md)       | -         | -     | -       | 2     | 3               | 12     |
-| [KI-Spieler](10-strategie/ki.md)                               | -         | -     | -       | 4     | -               | 22     |
+| [KI-Spieler](10-strategie/ki.md)                               | -         | -     | -       | 3     | -               | 23     |
 | [Spielziel und Partieverlauf](10-strategie/spielziel.md)       | 1         | -     | -       | 11    | -               | 12     |
 | [Aufstellung, Taktik und Training](15-manager/aufstellung.md)  | -         | -     | -       | -     | 2               | 23     |
 | [Bedienung des Managerspiels](15-manager/bedienung.md)         | -         | -     | -       | -     | -               | 15     |
@@ -64,7 +64,7 @@ mit Bildnachweisen, Filter und Suche mit `npm run qa:report`.
 - **Abbruch ist sichtbar** — [Uebertragung](00-plattform/uebertragung.md) AC-9
 - **Automatischer Wiederaufbau** — [Uebertragung](00-plattform/uebertragung.md) AC-10
 
-## Offen (104)
+## Offen (103)
 
 - **Anmeldung ueber Google/GitHub** — [Konten und Anmeldung](00-plattform/konten.md) AC-6
 - **Bilanz je Konto** — [Konten und Anmeldung](00-plattform/konten.md) AC-14
@@ -143,7 +143,6 @@ mit Bildnachweisen, Filter und Suche mit `npm run qa:report`.
 - **KI sieht nur ihr Sichtfeld** — [KI-Spieler](10-strategie/ki.md) AC-13
 - **KI liest die Zustandsnachricht** — [KI-Spieler](10-strategie/ki.md) AC-20
 - **Rammen gegen Befestigung** — [KI-Spieler](10-strategie/ki.md) AC-23
-- **Die KI handelt mit Karren** — [KI-Spieler](10-strategie/ki.md) AC-26
 - **Partiedauer 25 bis 45 Minuten** — [Spielziel und Partieverlauf](10-strategie/spielziel.md) AC-2
 - **Kein Aus nach drei Minuten** — [Spielziel und Partieverlauf](10-strategie/spielziel.md) AC-3
 - **Aufholen ist möglich** — [Spielziel und Partieverlauf](10-strategie/spielziel.md) AC-4

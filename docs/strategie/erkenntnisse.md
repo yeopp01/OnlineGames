@@ -1672,6 +1672,37 @@ ihn, mit Gegenprobe an beiden Formen. Fünf Bilder neu, alle angesehen.
 Neueste oben. Eine Zeile je Runde: Nummer, Datum, Kriterien, Ergebnis,
 wichtigste Erkenntnis.
 
+- **162** · 2026-11-10 · **ki AC-26 fertig: die KI handelt mit Karren** (D14).
+  Liegt in Reichweite weniger als ein Goldfeld (800), baut sie einen Markt
+  am Dorf und einen zweiten 50 Felder davon in der Richtung, die am
+  weitesten vom Gegner liegt, bildet bis zu acht Karren aus und schickt
+  jeden, der steht, per `befehl` auf den fernsten Markt, der keinem Gegner
+  gehört. **Gelernt:** zuerst messen, ob es das Problem gibt — das Patt
+  mit leerem Gold, das AC-26 seltener machen sollte, gibt es auf diesem
+  Zweig nicht (40 von 40 vor Minute 60; das Gold in Reichweite geht in 88
+  KIs viermal aus, alle nach Minute 45). Das Kriterium ist neu gefasst und
+  misst den Fall selbst: Gold beim Aufstieg leeren, mit und ohne Handel.
+  Drei Dinge fand erst der gestellte Fall: (1) ohne Rücklage lag nach dem
+  Ende des Goldes acht Minuten lang nie 175 Holz für den Markt da; (2) mit
+  0 Gold gibt es keinen Karren (50 Gold) — sie verkauft jetzt den Stein,
+  den sie nie ausgibt; (3) **jeder Nicht-Dorfbewohner galt als
+  Kampfeinheit** — Karren wären mit dem Heer marschiert; `ki.kaempft()`
+  fragt jetzt den Angriff, und ohne das fällt auch die Messung über ganze
+  Partien. Ein zweiter Markt zum Gegner hin fällt dort ebenfalls (Gegenprobe
+  auf die Sortierung). Der Vorrang für den Markt eines Verbündeten flog
+  wieder raus: kein Test belegte ihn, und der fernste Markt bringt mehr.
+  `goldInReichweite` über alle Vorräte kostete 5 bis 9 % je Takt; mit den
+  Goldfeldern einmal gesucht bleibt rund 3 %, davon ein Punkt `kaempft`
+  (`einheitenwert` statt der Klasse), der Rest im Rauschen des Vergleichs.
+  Die Durchsicht fand drei Fallen, alle behoben und belegt: zwei Märkte zu
+  nah beieinander ohne Ziel (gefragt wird jetzt nach dem Ziel, nicht nach
+  der Zahl), eine Rücklage für einen Markt ohne Platz (jetzt nur, wenn das
+  Holz fehlt; der Platz wird erst gesucht, wenn er bezahlt ist), und ein
+  Karren ohne Weg bekam jede halbe Sekunde einen neuen Befehl (jetzt
+  höchstens alle 30 s). Offen und vermerkt: `aussichtslos` zählt einen
+  bezahlbaren Karren als Möglichkeit, obwohl ohne zweiten Markt keiner
+  bestellt würde — ein Grenzfall, eine KI ohne Einheiten mit Markt und
+  150 Rohstoffen gibt dann nicht auf.
 - **161** · 2026-11-10 · **einheiten AC-40 fertig: der Karren handelt** (D14).
   Rechtsklick auf einen anderen nicht feindlichen Markt: Auftrag `handel`,
   Gold je Fahrt `faktor * d * (d / S + sockel)` aus `HANDEL.karren`,

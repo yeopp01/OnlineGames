@@ -2,6 +2,11 @@
   "hinweis": "Ausnahmeliste zu den Bildnachweisen (docs/adr/0011-bildnachweise.md). Ein Abnahmekriterium steht hier, wenn es kein Aussehen hat oder ein Bildschirm es nicht zeigen kann - dann verlangt der Bericht kein Bild. Die Begruendung sagt, was das Kriterium ist und warum kein Bild. Ein Eintrag auf eine Spec oder ein Kriterium, das es nicht mehr gibt, laesst npm run check scheitern. Liegt trotz Eintrag ein Bild vor, wird es angezeigt.",
   "eintraege": [
     {
+      "spec": "10-strategie/ki.md",
+      "ac": "AC-26",
+      "begruendung": "Wann und wohin die KI handelt, ist eine Entscheidung in ihrem Kopf: Gold in Reichweite knapp, ein Markt am Dorf, ein zweiter weit davon und vom Gegner weg (oder der fernste Markt eines Verbuendeten), Karren ausbilden, Stein verkaufen, wenn ihr Gold fehlt, Holz fuer den Markt zuruecklegen. Belegt im Rechenteil an gebauten Lagen mit Gegenprobe fuer jede tragende Zeile und ueber acht ganze Partien mit geleertem Gold gegen dieselben Partien ohne Handel. Wie ein Karren handelt und was die Leiste dabei sagt, zeigt das Bild zu einheiten AC-40; ein Standbild der KI zeigte einen Karren unterwegs, nicht warum er faehrt."
+    },
+    {
       "spec": "10-strategie/spielziel.md",
       "ac": "AC-21",
       "begruendung": "Die Regel des Loesens auf dem Server: wer kuendigt, tritt aus dem Team aus, die gemeinsame Sicht endet sofort, Gegner sind sie erst nach 600 Takten, bei fest weist der Server ab, und jeder bekommt die Kuendigung im Zustand. Belegt im Rechenteil an gebauten Lagen mit Gegenprobe fuer jede neue Zeile. Was davon ein Bildschirm zeigen kann - der Knopf, die Ansage mit der Uhr bei allen, das rote Zeichen nach der Frist - ist ein eigenes Kriterium, spielziel AC-24, aus diesem in Runde 154 geteilt; ein Standbild zeigt keine Frist und keine Sicht, die ein anderer nicht mehr hat."

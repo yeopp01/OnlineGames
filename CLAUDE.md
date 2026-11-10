@@ -162,7 +162,7 @@ Umfang hinzufügt, dort nachsehen.
 
 ## Stand
 
-**452 von 574 Kriterien fertig.** 690 Tests ohne Browser, 207 im Browser. Die
+**453 von 574 Kriterien fertig.** 701 Tests ohne Browser, 207 im Browser. Die
 Übersicht ist der Bericht: `npm run qa:report`.
 
 Gebaut ist der Unterbau: Räume, Übertragung, Karte, Wegfindung, Sammeln,
@@ -440,7 +440,13 @@ gemessen (0,77 statt 0,46 der Vorlage): auf halber Kartenbreite bringt ein
 Karren 18 Gold je Minute, etwas weniger als ein Dorfbewohner am Gold (20). Fällt ein Markt oder
 wird das Ziel feindlich, steht er im selben Takt. Die Leiste nennt die
 Strecke (`hd` am Karren). Die sichtbare Ladung (AC-41) wartet auf die neuen
-Figuren; danach die KI mit Karren (ki AC-26).
+Figuren. **Die KI handelt** (ki AC-26): wird das Gold in Reichweite knapp
+(unter 800), baut sie einen Markt am Dorf und einen zweiten weit davon und
+vom Gegner weg, bildet bis zu acht Karren aus und verkauft Stein, wenn ihr
+das Gold für einen fehlt. Ein Karren ist für sie keine Kampfeinheit
+(`ki.kaempft()` fragt den Angriff). Das Patt mit leerem Gold, das es
+seltener machen sollte, gibt es auf diesem Zweig nicht — gemessen wird
+deshalb mit geleertem Gold (`tests/strategie-ki-handel.test.mjs`).
 
 1. **Stufe A** Dunkle Zeit mit Wirtschafts-KI und Prüfstand · **B** Feudalzeit
    · **C** Partieende und KI-Gegner · **D** Ritterzeit · **E** fünf Völker ·

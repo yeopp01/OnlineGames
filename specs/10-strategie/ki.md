@@ -2,7 +2,7 @@
 
 **Bereich:** Strategie
 **Kuerzel:** ki
-**Stand:** 22/26 fertig · 4 offen
+**Stand:** 23/26 fertig · 3 offen
 
 ## Zweck
 
@@ -251,11 +251,28 @@ nicht die Regeln.
   niemand; die KI sendet dafür keine Nachricht, und weil sie bei jeder
   Entscheidung `feindlich` fragt, ist ein Gekündigter danach ihr Gegner,
   ohne dass sie davon wissen muss — der Test dazu gehört zu AC-21.
-- **AC-26** `offen` **Die KI handelt mit Karren** — Fehlt ihr in der
+- **AC-26** `fertig` **Die KI handelt mit Karren** — Fehlt ihr in der
   Ritterzeit das Gold, baut sie einen zweiten Markt weit vom ersten oder
-  fährt zu einem verbündeten, und bildet Karren aus. Gemessen im Prüfstand:
-  das Patt mit leerem Gold (Erkenntnisse, Runden 114, 137 und 144) wird
-  seltener. Die Zahl dazu legt die Messung beim Bauen fest.
+  fährt zu einem verbündeten, und bildet Karren aus. Gemessen über ganze
+  Partien, in denen das Gold um ihr Dorf beim Aufstieg in die Ritterzeit
+  geleert wird: ohne Handel kommt danach kein Gold mehr herein, mit Handel
+  in fast jeder Partie (alle bis auf zwei) mindestens 90 Gold in 14
+  Minuten. **Neu gefasst in Runde 162:** zuvor sollte das Patt mit leerem
+  Gold (Erkenntnisse, Runden 114, 137 und 144) seltener werden. Das gibt es
+  auf diesem Zweig nicht — der Prüfstand endet 40 von 40 vor Minute 60,
+  und das Gold in Reichweite geht in 88 KIs nur viermal aus, alle nach
+  Minute 45; jene Patts kamen von der KI mit eigener Sicht (ki AC-13).
+  **Gebaut in Runde 162:** knapp heißt weniger als 800 Gold (ein Goldfeld)
+  in den 30 Feldern, in denen sie sammelt. Der erste Markt steht am Dorf,
+  der zweite 50 Felder davon (sonst 42, 34, 26) in der Richtung, die am
+  weitesten von jedem gegnerischen Dorf liegt; Ziel ist der fernste
+  fertige Markt, der keinem Gegner gehört, mindestens 25 Felder weit.
+  Höchstens acht Karren. Fehlt ihr das Gold für einen, verkauft sie am
+  Markt, was über 300 liegt — Stein ganz, den sie nie ausgibt. Solange
+  ein Markt fehlt, legt sie sein Holz zurück. Ein Karren ist keine
+  Kampfeinheit: Angriff 0, er zieht nicht mit dem Heer. Gemessen, Startwerte
+  1 bis 10: mit Handel 720, 562, 270, 10, 125, 93, 350, 706 und 0 Gold in
+  14 Minuten (bei 4 und 10 wird die KI überrannt), ohne Handel 0 bis 30.
 
 ## Grenzfaelle
 
