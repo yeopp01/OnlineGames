@@ -87,7 +87,7 @@ test.describe('Feudalzeit am Stueck', () => {
     expect(await anna.evaluate(() => window.ansicht.zeitalter), 'noch Dunkle Zeit').toBe(0);
     await zeitraffer(anna, code, 20);
     await anna.waitForFunction(() => window.ansicht.zeitalter === 1, null, { timeout: 90_000 });
-    await expect(anna.locator('#zeitalter')).toContainText('Feudalzeit');
+    await expect(anna.locator('#zeitalter')).toContainText('Lehen');
 
     // ---- Die Gebaeude der Feudalzeit, mit B und einem Buchstaben gebaut. ----
     // Aus den Daten gelesen, nicht aufgezaehlt: was ein Dorfbewohner baut und
@@ -345,7 +345,7 @@ test.describe('Feudalzeit am Stueck', () => {
     for (const name of ['Speerkämpfer', 'Bogenschütze', 'Plänkler', 'Späherreiter']) {
       await expect(anna.locator(`.gruppe-eintrag[title$="${name}"]`), name).toHaveCount(1);
     }
-    await expect(anna.locator('#zeitalter')).toContainText('Feudalzeit');
+    await expect(anna.locator('#zeitalter')).toContainText('Lehen');
     await expect(anna.locator('#zeitalter')).toBeInViewport();
     // Die drei neuen Gebaeude sollen auch im Bild stehen, nicht nur in der Welt.
     const sichtbar = await anna.evaluate((arten) => {

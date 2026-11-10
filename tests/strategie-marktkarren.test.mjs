@@ -58,7 +58,7 @@ test('einheiten AC-39: am Markt erst in der Ritterzeit ausgebildet - bezahlt bei
   const markt = welt.gebaeudeAnlegen('a', 'markt', x0 + 4, y0 + 4);
   const bestellen = () => welt.nachricht('a', { auftrag: 'ausbilden', gebaeude: markt.id, einheit: 'marktkarren' });
   anna.zeitalter = 1;
-  assert.match(bestellen().fehler, /Ritterzeit/, 'in der Feudalzeit noch nicht');
+  assert.match(bestellen().fehler, /ab dem Fürstentum/, 'in der Feudalzeit noch nicht');
   anna.zeitalter = 2;
   const vorher = { holz: anna.holz, gold: anna.gold };
   const belegt = welt.bevoelkerung().get('a');

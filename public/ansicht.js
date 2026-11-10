@@ -505,7 +505,7 @@ export class Ansicht {
 
   // Name eines Zeitalters, wie der Server ihn mit dem Aufbau geschickt hat.
   zeitalterName(stufe = this.zeitalter) {
-    return this.werte?.zeitalter?.[stufe]?.name || 'Dunkle Zeit';
+    return this.werte?.zeitalter?.[stufe]?.name || 'Landsitz';
   }
 
   // Die Mitte der Grundflaeche: der Server nennt das Ankerfeld, die Flaeche

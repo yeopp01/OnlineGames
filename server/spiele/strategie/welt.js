@@ -88,6 +88,10 @@ const ROHSTOFFE = ['holz', 'nahrung', 'gold', 'stein'];
 const ROHSTOFF_NAMEN = { holz: 'Holz', nahrung: 'Nahrung', gold: 'Gold', stein: 'Stein' };
 
 // Namen der Gebaeude fuer Meldungen auf dem Bildschirm - mit echten Umlauten.
+// Ein Satz beginnt gross, auch wenn er mit einer Form aus den Daten beginnt
+// („Das Lehen ist schon erreicht.").
+const grossAnfang = (text) => text.charAt(0).toUpperCase() + text.slice(1);
+
 const GEBAEUDE_NAMEN = {
   dorfzentrum: 'Das Dorfzentrum',
   haus: 'Das Haus',
@@ -774,7 +778,7 @@ class Welt {
     // Erst das Zeitalter, dann der Platz (bauen AC-24).
     const noetig = this.gebaeudeZeitalter(art);
     if (noetig > spieler.zeitalter) {
-      return { fehler: `${GEBAEUDE_NAMEN[art] || art} gibt es erst in ${ZEITALTER[noetig].genitiv}.` };
+      return { fehler: `${GEBAEUDE_NAMEN[art] || art} gibt es erst ${ZEITALTER[noetig].ab}.` };
     }
     const x = Math.round(Number(ziel.x));
     const y = Math.round(Number(ziel.y));
@@ -809,7 +813,7 @@ class Welt {
     const spieler = this.spielerVon(spielerId);
     const noetig = this.gebaeudeZeitalter(art);
     if (noetig > spieler.zeitalter) {
-      return { fehler: `${GEBAEUDE_NAMEN[art] || art} gibt es erst in ${ZEITALTER[noetig].genitiv}.` };
+      return { fehler: `${GEBAEUDE_NAMEN[art] || art} gibt es erst ${ZEITALTER[noetig].ab}.` };
     }
     const felder = mauerLinie(von, bis);
     if (!felder) return { fehler: 'Das lässt sich nicht ziehen.' };
@@ -1023,18 +1027,20 @@ class Welt {
     const noetig = (EINHEITEN[art] || VERBESSERUNGEN[art])?.zeitalter || 0;
     if (noetig > spieler.zeitalter) {
       const wer = EINHEIT_NAMEN[art] || VERBESSERUNGEN[art]?.name || art;
-      return { fehler: `${wer} gibt es erst in ${ZEITALTER[noetig].genitiv}.` };
+      return { fehler: `${wer} gibt es erst ${ZEITALTER[noetig].ab}.` };
     }
     // Der Aufstieg: nur der naechste, nur einmal, und nur mit genug Gebaeuden
     // des laufenden Zeitalters (bauen AC-23).
     if (AUFSTIEGE[art]) {
       const aufstieg = AUFSTIEGE[art];
-      if (aufstieg.stufe <= spieler.zeitalter) return { fehler: `Die ${aufstieg.name} ist schon erreicht.` };
+      // Die Formen mit Artikel stehen in den Daten (bedienung AC-45).
+      const ziel = ZEITALTER[aufstieg.stufe];
+      if (aufstieg.stufe <= spieler.zeitalter) return { fehler: `${grossAnfang(ziel.artikel)} ist schon erreicht.` };
       if (aufstieg.stufe > spieler.zeitalter + 1) {
-        return { fehler: `Erst die ${ZEITALTER[spieler.zeitalter + 1].name}, dann die ${aufstieg.name}.` };
+        return { fehler: `Erst ${ZEITALTER[spieler.zeitalter + 1].artikel}, dann ${ziel.artikel}.` };
       }
       const laeuft = [...this.gebaeude.values()].some((g) => g.besitzer === spielerId && g.schlange.includes(art));
-      if (laeuft) return { fehler: `Der Aufstieg in die ${aufstieg.name} läuft schon.` };
+      if (laeuft) return { fehler: `Der ${aufstieg.titel} läuft schon.` };
       const haben = this.gebaeudeDerZeit(spieler);
       if (haben < aufstieg.voraussetzung) {
         return { fehler: `Erst ${aufstieg.voraussetzung} fertige Gebäude ${ZEITALTER[spieler.zeitalter].genitiv} außer Häusern — vorhanden: ${haben}.` };

@@ -628,6 +628,8 @@ export class Auswahlleiste {
         kosten: werte.einheiten[art]?.kosten || werte.verbesserungen?.[art]?.kosten || aufstiege[art]?.kosten || {},
         verbesserung: Boolean(werte.verbesserungen?.[art]),
         aufstieg: Boolean(aufstiege[art]),
+        // „Aufstieg zum Lehen" - die Form steht in den Daten (bedienung AC-45).
+        titel: aufstiege[art]?.titel,
       }));
   }
 
@@ -955,8 +957,8 @@ export class Auswahlleiste {
       if (eintrag.aufstieg) {
         knopf.dataset.aufstieg = eintrag.art;
         knopf.title = fehlt
-          ? `Aufstieg in die ${eintrag.name} - zu wenig ${fehlt}`
-          : `Aufstieg in die ${eintrag.name} (${kosten})`;
+          ? `${eintrag.titel} - zu wenig ${fehlt}`
+          : `${eintrag.titel} (${kosten})`;
       } else {
         // Eine Verbesserung wird erforscht, keine Einheit ausgebildet.
         const tun = eintrag.verbesserung ? 'erforschen' : 'ausbilden';

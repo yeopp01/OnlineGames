@@ -103,7 +103,7 @@ test.describe('Ritterzeit am Stueck', () => {
     expect(await anna.evaluate(() => window.ansicht.zeitalter), 'noch Feudalzeit').toBe(1);
     await zeitraffer(anna, code, 20);
     await anna.waitForFunction(() => window.ansicht.zeitalter === 2, null, { timeout: 90_000 });
-    await expect(anna.locator('#zeitalter')).toContainText('Ritterzeit');
+    await expect(anna.locator('#zeitalter')).toContainText('Fürstentum');
 
     // ---- Jedes Gebaeude, das Stufe D gebracht hat. ----
     // Aus den Daten gelesen: was ein Dorfbewohner baut und in der Ritterzeit
@@ -381,7 +381,7 @@ test.describe('Ritterzeit am Stueck', () => {
     }, [arten, stand.mitte]);
     expect(sichtbar.sort(), 'alle neuen Gebaeude im Bild').toEqual([...arten].sort());
     await expect(anna.locator('.auswahlleiste .gruppe-eintrag')).toHaveCount(bestellt.length);
-    await expect(anna.locator('#zeitalter')).toContainText('Ritterzeit');
+    await expect(anna.locator('#zeitalter')).toContainText('Fürstentum');
     await expect(anna.locator('#zeitalter')).toBeInViewport();
     expect(await figurenFrei(anna, { nur: truppe.ids }), 'keine zwei Figuren uebereinander').toEqual([]);
     expect(await bedienteileFrei(anna)).toEqual([]);

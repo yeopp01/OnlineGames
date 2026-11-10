@@ -2,7 +2,7 @@
 
 **Bereich:** Strategie
 **Kuerzel:** bedienung
-**Stand:** 30/46 fertig · 16 offen
+**Stand:** 31/46 fertig · 15 offen
 
 ## Zweck
 
@@ -229,7 +229,7 @@ aufgelistet), AC-11 (Übersichtskarte — auf 120 × 120 unverzichtbar), AC-15
 
 ### Stufe E — Häuser
 
-- **AC-45** `offen` **Stufen heißen nach Rang** — Am Bildschirm heißen
+- **AC-45** `fertig` **Stufen heißen nach Rang** — Am Bildschirm heißen
   die vier Zeitalter **Landsitz, Lehen, Fürstentum und Krone**
   ([ADR-0014](../../docs/adr/0014-haeuser-statt-voelker.md) Punkt 9):
   oben in der Leiste, am Auftrag zum Aufstieg, in Absagen, in der Ansage
@@ -240,6 +240,11 @@ aufgelistet), AC-11 (Übersichtskarte — auf 120 × 120 unverzichtbar), AC-15
   bleiben. **Messbar:** ein Wächter findet die alten Namen (Dunkle Zeit,
   Feudalzeit, Ritterzeit, Imperialzeit) in keinem Text, den `public/` oder
   die Daten auf den Bildschirm bringen.
+  **Fertig in Runde 166:** die Formen stehen in `ZEITALTER` (`artikel`,
+  `genitiv`, `ab`, `zum` — „das Lehen", „des Lehens", „ab dem Lehen",
+  „zur Krone"); Name und Knopftitel der Aufstiege kommen von dort. Der
+  Wächter ist `tests/waechter-zeitalter.test.mjs`: jede Zeichenkette außerhalb
+  von Kommentaren in `public/` und in Welt, Daten und Steckbrief.
 - **AC-46** `offen` **Das Wappen zeigt das Haus** — Im Warteraum neben dem Namen
   und am Banner über dem eigenen Dorfzentrum steht das Wappen des Hauses
   (Esche, Hengst, Turm, Waage, drei Disteln). Es ist ein Zeichen, keine

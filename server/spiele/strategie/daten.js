@@ -296,14 +296,18 @@ const STARTAUFSTELLUNG = ['dorfbewohner', 'dorfbewohner', 'dorfbewohner', 'spaeh
 const BEVOELKERUNG_MAX = 200;
 
 // Die vier Zeitalter (spielziel AC-1). `stufe` ist der Index: 0 ist die
-// Dunkle Zeit, in der jede Partie beginnt.
-// `genitiv` steht in Meldungen („Gebäude der Dunklen Zeit"), deshalb gebeugt
-// und mit echten Umlauten - es ist ein Text für den Bildschirm.
+// Dunkle Zeit, in der jede Partie beginnt. Am Bildschirm heissen sie nach dem
+// Rang des Hauses (bedienung AC-45, ADR-0014 Punkt 9): Landsitz, Lehen,
+// Fuerstentum, Krone - in Bezeichnern und Specs bleiben die alten Namen als
+// Arbeitsnamen. Die gebeugten Formen stehen hier, nicht in den Meldungen
+// zusammengesetzt, denn sie folgen keiner Regel (das Lehen, aber die Krone):
+// `artikel` am Satzanfang klein, `genitiv` („Gebäude des Lehens"), `ab`
+// („gibt es erst ab dem Lehen") und `zum` („Aufstieg zum Lehen").
 const ZEITALTER = [
-  { id: 'dunkel', name: 'Dunkle Zeit', genitiv: 'der Dunklen Zeit' },
-  { id: 'feudal', name: 'Feudalzeit', genitiv: 'der Feudalzeit' },
-  { id: 'ritter', name: 'Ritterzeit', genitiv: 'der Ritterzeit' },
-  { id: 'imperial', name: 'Imperialzeit', genitiv: 'der Imperialzeit' },
+  { id: 'dunkel', name: 'Landsitz', artikel: 'der Landsitz', genitiv: 'des Landsitzes', ab: 'ab dem Landsitz', zum: 'zum Landsitz' },
+  { id: 'feudal', name: 'Lehen', artikel: 'das Lehen', genitiv: 'des Lehens', ab: 'ab dem Lehen', zum: 'zum Lehen' },
+  { id: 'ritter', name: 'Fürstentum', artikel: 'das Fürstentum', genitiv: 'des Fürstentums', ab: 'ab dem Fürstentum', zum: 'zum Fürstentum' },
+  { id: 'imperial', name: 'Krone', artikel: 'die Krone', genitiv: 'der Krone', ab: 'ab der Krone', zum: 'zur Krone' },
 ];
 
 // Der Aufstieg ist ein Auftrag im Dorfzentrum wie eine Verbesserung: bezahlt
@@ -311,10 +315,13 @@ const ZEITALTER = [
 // AC-23). `voraussetzung` ist die Zahl fertiger eigener Gebaeude des
 // **laufenden** Zeitalters ausser Haeusern - das Dorfzentrum zaehlt mit.
 // Werte aus der Vorlage (docs/strategie/vorlage-aoe2.md).
+// Name und Titel des Knopfes kommen aus `ZEITALTER`, damit es nur eine Stelle
+// gibt, an der ein Zeitalter heisst.
+const aufstieg = (stufe, werte) => ({ name: ZEITALTER[stufe].name, titel: `Aufstieg ${ZEITALTER[stufe].zum}`, stufe, ...werte });
 const AUFSTIEGE = {
-  feudalzeit: { name: 'Feudalzeit', stufe: 1, kosten: { nahrung: 500 }, zeit: 130, voraussetzung: 2 },
-  ritterzeit: { name: 'Ritterzeit', stufe: 2, kosten: { nahrung: 800, gold: 200 }, zeit: 160, voraussetzung: 2 },
-  imperialzeit: { name: 'Imperialzeit', stufe: 3, kosten: { nahrung: 1000, gold: 800 }, zeit: 190, voraussetzung: 2 },
+  feudalzeit: aufstieg(1, { kosten: { nahrung: 500 }, zeit: 130, voraussetzung: 2 }),
+  ritterzeit: aufstieg(2, { kosten: { nahrung: 800, gold: 200 }, zeit: 160, voraussetzung: 2 }),
+  imperialzeit: aufstieg(3, { kosten: { nahrung: 1000, gold: 800 }, zeit: 190, voraussetzung: 2 }),
 };
 
 // Verbesserungen: einmal je Partie, im Gebaeude wie eine Einheit eingereiht.

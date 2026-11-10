@@ -48,7 +48,7 @@ test('bauen AC-27: Voraussetzung sind zwei fertige Gebaeude der Feudalzeit - die
   welt.gebaeudeAnlegen('a', 'muehle', anna.basis.x + 6, anna.basis.y + 6);
   welt.gebaeudeAnlegen('a', 'kaserne', anna.basis.x - 7, anna.basis.y + 6);
   const absage = aufsteigen(welt, zentrum).fehler;
-  assert.match(absage, /2 fertige Gebäude der Feudalzeit außer Häusern/);
+  assert.match(absage, /2 fertige Gebäude des Lehens außer Häusern/);
   assert.match(absage, /vorhanden: 0/);
   assert.equal(anna.gold, 500, 'eine Absage kostet nichts');
   welt.gebaeudeAnlegen('a', 'schmiede', anna.basis.x + 6, anna.basis.y - 8);
@@ -74,7 +74,7 @@ test('bauen AC-28: Kloster, Universitaet und Werkstatt mit den Werten der Vorlag
   const bauer = [...welt.einheiten.values()].find((e) => e.besitzer === 'a' && e.art === 'dorfbewohner');
   const bauen = (art, dx) => welt.nachricht('a', { auftrag: 'bauen', einheiten: [bauer.id], art, ziel: { x: anna.basis.x + dx, y: anna.basis.y + 9 } });
   // Abgewiesen wegen des Zeitalters, nicht aus einem anderen Grund.
-  for (const [i, art] of RITTER.entries()) assert.match(bauen(art, -6 + i * 5).fehler || '', /Ritterzeit/, `${art} in der Feudalzeit abgewiesen`);
+  for (const [i, art] of RITTER.entries()) assert.match(bauen(art, -6 + i * 5).fehler || '', /ab dem Fürstentum/, `${art} in der Feudalzeit abgewiesen`);
   anna.zeitalter = 2;
   // Ein freier Platz um die Basis, je Gebaeude - feste Abstaende trafen Baeume.
   const frei = (art) => {
@@ -123,7 +123,7 @@ test('einheiten AC-33: der Ritter mit den Werten der Vorlage, im Stall erst ab d
   assert.ok(GEBAEUDE.stall.bildetAus.includes('ritter'));
   // In der Feudalzeit abgewiesen.
   const feudal = mitGebaeude('stall', 1);
-  assert.match(feudal.welt.nachricht('a', { auftrag: 'ausbilden', gebaeude: feudal.gebaeude.id, einheit: 'ritter' }).fehler, /Ritterzeit/);
+  assert.match(feudal.welt.nachricht('a', { auftrag: 'ausbilden', gebaeude: feudal.gebaeude.id, einheit: 'ritter' }).fehler, /ab dem Fürstentum/);
   // In der Ritterzeit ausgebildet: nach 30 Sekunden steht er da.
   const { welt, gebaeude } = mitGebaeude('stall', 2);
   assert.deepEqual(welt.nachricht('a', { auftrag: 'ausbilden', gebaeude: gebaeude.id, einheit: 'ritter' }), {});
@@ -144,7 +144,7 @@ test('einheiten AC-34: die Armbrust macht jeden Bogenschuetzen zum Armbrustschue
   assert.deepEqual(VERBESSERUNGEN.armbrust.wandelt, { bogenschuetze: 'armbrustschuetze' });
   // In der Feudalzeit gibt es die Forschung nicht.
   const feudal = mitGebaeude('schiessanlage', 1);
-  assert.match(feudal.welt.nachricht('a', { auftrag: 'ausbilden', gebaeude: feudal.gebaeude.id, einheit: 'armbrust' }).fehler, /Ritterzeit/);
+  assert.match(feudal.welt.nachricht('a', { auftrag: 'ausbilden', gebaeude: feudal.gebaeude.id, einheit: 'armbrust' }).fehler, /ab dem Fürstentum/);
   // In der Ritterzeit: zwei Bogenschuetzen, dann die Forschung.
   const { welt, anna, gebaeude } = mitGebaeude('schiessanlage', 2);
   const boegen = [0, 1].map((i) => welt.einheitAnlegen('a', anna.basis.x + 2 + i, anna.basis.y + 2, 'bogenschuetze'));
@@ -172,7 +172,7 @@ test('bauen AC-34: Eisenguss und Bodkinpfeil in der Schmiede mit den Werten der 
   }
   // In der Feudalzeit abgewiesen - wegen des Zeitalters.
   const feudal = mitGebaeude('schmiede', 1);
-  assert.match(forschen(feudal.welt, feudal.gebaeude, 'eisenguss').fehler, /Ritterzeit/);
+  assert.match(forschen(feudal.welt, feudal.gebaeude, 'eisenguss').fehler, /ab dem Fürstentum/);
 
   const { welt, anna, gebaeude } = mitGebaeude('schmiede', 2);
   // Ohne die Vorstufe: Absage mit ihrem Namen, und sie kostet nichts.

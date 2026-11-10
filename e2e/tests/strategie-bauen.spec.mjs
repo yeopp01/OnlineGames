@@ -87,6 +87,10 @@ test.describe('Bauen', () => {
     expect(frei, 'ein freier Platz im Bild').not.toBeNull();
     await anna.mouse.move(frei.bild.x, frei.bild.y, { steps: 4 });
     await expect.poll(() => anna.evaluate(() => window.ansicht.platzLage())).toMatchObject({ x: frei.x, y: frei.y, taugt: true });
+    // Die Absage "Zu wenig Holz." aus dem Klick auf die gesperrte Muehle im
+    // Fall davor steht drei Sekunden; ein schneller Lauf haette sie sonst im
+    // Bild (Runde 166).
+    await expect(anna.locator('#spielmeldung')).toBeHidden({ timeout: 8000 });
     await nachweis(anna, {
       spec: BAUEN,
       ac: 'AC-4',

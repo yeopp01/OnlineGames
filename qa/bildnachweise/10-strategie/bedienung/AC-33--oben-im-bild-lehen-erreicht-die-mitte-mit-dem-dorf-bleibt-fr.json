@@ -1,7 +1,7 @@
 {
   "spec": "10-strategie/bedienung.md",
   "ac": "AC-33",
-  "titel": "Oben im Bild „Feudalzeit erreicht\", die Mitte mit dem Dorf bleibt frei; in der Leiste steht ab jetzt „Feudalzeit\"",
+  "titel": "Oben im Bild „Lehen erreicht\", die Mitte mit dem Dorf bleibt frei; in der Leiste steht ab jetzt „Lehen\"",
   "datei": "e2e/tests/strategie-zeitalter.spec.mjs",
   "pfad": [
     "Zeitalterwechsel",

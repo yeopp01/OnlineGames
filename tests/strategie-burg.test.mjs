@@ -70,7 +70,7 @@ test('bauen AC-32: in der Feudalzeit abgewiesen, in der Ritterzeit gebaut - der 
   assert.ok(ort, 'ein Platz fuer die Burg');
   const bauen = () => welt.nachricht('a', { auftrag: 'bauen', einheiten: [bauer.id], art: 'burg', ziel: ort });
   // Abgewiesen wegen des Zeitalters, nicht aus einem anderen Grund.
-  assert.match(bauen().fehler || '', /Ritterzeit/);
+  assert.match(bauen().fehler || '', /ab dem Fürstentum/);
   assert.equal(anna.stein, 700, 'eine Absage kostet nichts');
   anna.zeitalter = 2;
   const antwort = bauen();

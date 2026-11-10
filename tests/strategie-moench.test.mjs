@@ -56,7 +56,7 @@ test('einheiten AC-37: der Moench mit den Werten der Vorlage, im Kloster erst ab
   const { welt, anna, x0, y0 } = ritterzeitMitPlatz();
   const kloster = welt.gebaeudeAnlegen('a', 'kloster', x0 + 5, y0 + 5);
   anna.zeitalter = 1;
-  assert.match(welt.nachricht('a', { auftrag: 'ausbilden', gebaeude: kloster.id, einheit: 'moench' }).fehler, /Ritterzeit/);
+  assert.match(welt.nachricht('a', { auftrag: 'ausbilden', gebaeude: kloster.id, einheit: 'moench' }).fehler, /ab dem Fürstentum/);
   anna.zeitalter = 2;
   const gold = anna.gold;
   assert.deepEqual(welt.nachricht('a', { auftrag: 'ausbilden', gebaeude: kloster.id, einheit: 'moench' }), {});

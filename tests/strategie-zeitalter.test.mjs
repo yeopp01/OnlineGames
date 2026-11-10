@@ -43,14 +43,14 @@ test('bauen AC-23: der Aufstieg kostet 500 Nahrung und dauert 130 Sekunden', () 
   sekunden(welt, 1);
   assert.equal(anna.zeitalter, 1, 'nach 130 Sekunden Feudalzeit');
   assert.deepEqual(zentrum.schlange, [], 'der Auftrag ist weg');
-  assert.equal(ZEITALTER[anna.zeitalter].name, 'Feudalzeit');
+  assert.equal(ZEITALTER[anna.zeitalter].name, 'Lehen');
 });
 
 test('bauen AC-23: Voraussetzung sind zwei fertige Gebaeude der Dunklen Zeit ausser Haeusern', () => {
   const { welt, anna, zentrum } = bereit({ muehle: false });
   // Nur das Dorfzentrum: eines fehlt.
   const absage = aufsteigen(welt, zentrum).fehler;
-  assert.match(absage, /2 fertige Gebäude der Dunklen Zeit außer Häusern/);
+  assert.match(absage, /2 fertige Gebäude des Landsitzes außer Häusern/);
   assert.match(absage, /vorhanden: 1/);
   assert.equal(anna.nahrung, 600, 'eine Absage kostet nichts');
 
@@ -78,15 +78,15 @@ test('bauen AC-23: zu wenig Nahrung, zweimal einreihen und das falsche Zeitalter
 
   // Die Ritterzeit ist noch nicht an der Reihe.
   const spaeter = welt.nachricht('a', { auftrag: 'ausbilden', gebaeude: zentrum.id, einheit: 'ritterzeit' });
-  assert.equal(spaeter.fehler, 'Erst die Feudalzeit, dann die Ritterzeit.');
+  assert.equal(spaeter.fehler, 'Erst das Lehen, dann das Fürstentum.');
 
   // Und nach dem Aufstieg gibt es die Feudalzeit nicht noch einmal.
   sekunden(welt, 130);
   assert.equal(anna.zeitalter, 1);
-  assert.equal(aufsteigen(welt, zentrum).fehler, 'Die Feudalzeit ist schon erreicht.');
+  assert.equal(aufsteigen(welt, zentrum).fehler, 'Das Lehen ist schon erreicht.');
   // Jetzt zaehlen die Gebaeude der Feudalzeit - davon gibt es noch keines.
   const ritter = welt.nachricht('a', { auftrag: 'ausbilden', gebaeude: zentrum.id, einheit: 'ritterzeit' });
-  assert.match(ritter.fehler, /Gebäude der Feudalzeit/, 'die Voraussetzung waechst mit');
+  assert.match(ritter.fehler, /Gebäude des Lehens/, 'die Voraussetzung waechst mit');
 });
 
 test('bauen AC-23: waehrend des Aufstiegs bildet das Dorfzentrum nichts anderes aus', () => {
@@ -153,7 +153,7 @@ test('bedienung AC-33: das Zeitalter steht im Zustand, der Fortschritt am Dorfze
 
   // Der Browser bekommt die Namen und die Kosten mit dem Aufbau.
   const aufbau = welt.aufbau();
-  assert.deepEqual(aufbau.werte.zeitalter.map((z) => z.name), ['Dunkle Zeit', 'Feudalzeit', 'Ritterzeit', 'Imperialzeit']);
+  assert.deepEqual(aufbau.werte.zeitalter.map((z) => z.name), ['Landsitz', 'Lehen', 'Fürstentum', 'Krone']);
   assert.equal(aufbau.werte.aufstiege.feudalzeit.zeit, 130);
   assert.ok(aufbau.werte.gebaeude.dorfzentrum.bildetAus.includes('feudalzeit'));
 });

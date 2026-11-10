@@ -1,7 +1,7 @@
 {
   "spec": "10-strategie/ki.md",
   "ac": "AC-9",
-  "titel": "Die Wirtschafts-KI, allein in die Feudalzeit aufgestiegen (oben in der Leiste, daneben die Uhr): sie hat Farmen, eine Schießanlage und Bogenschützen gebaut — befohlen hat das niemand",
+  "titel": "Die Wirtschafts-KI, allein ins Lehen aufgestiegen (oben in der Leiste, daneben die Uhr): sie hat Farmen, eine Schießanlage und Bogenschützen gebaut — befohlen hat das niemand",
   "datei": "e2e/tests/strategie-ki.spec.mjs",
   "pfad": [
     "Wirtschafts-KI",

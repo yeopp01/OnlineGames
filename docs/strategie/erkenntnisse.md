@@ -249,6 +249,13 @@ etwas anderem gearbeitet.
   Zielzeichen; fahrplan AC-03 — „fünf Dorfbewohner und eine Miliz" ist im
   weiten Bild nicht zählbar. Wer eines dieser Bilder anfasst, stellt es neu
   auf (`figurenFrei`, näher heran).
+  Dazu aus der Durchsicht nach Runde 166 (ebenfalls schon im eingecheckten
+  Bild so): einheiten AC-40 — die Unterschrift nennt „die Strecke und das
+  Gold" und den Heimweg, im Bild steht nur „bringt 13 Gold heim" und der
+  Karren am Markt, dessen Fahne über „Karte 4711" ragt; kampf AC-10 — neben
+  der gefallenen Miliz steht eine zweite rote; einheiten AC-23 — drei Knöpfe,
+  die Unterschrift sagt „einen Knopf mehr"; bauen AC-23 — die Absage nennt
+  die Zahl der Gebäude, nicht welche.
 
 - **Der Späher kann ins Heer geraten** (Durchsicht Runde 165, nicht
   behoben): `heerPruefen` nimmt jede Kampfeinheit, auch den Späherreiter,
@@ -1759,6 +1766,25 @@ ihn, mit Gegenprobe an beiden Formen. Fünf Bilder neu, alle angesehen.
 Neueste oben. Eine Zeile je Runde: Nummer, Datum, Kriterien, Ergebnis,
 wichtigste Erkenntnis.
 
+- **166** · 2026-11-10 · **bedienung AC-45 fertig (E1): die Stufen heißen
+  Landsitz, Lehen, Fürstentum, Krone.** Die Formen stehen in `ZEITALTER`
+  (`artikel`, `genitiv`, `ab`, `zum`), weil sie keiner Regel folgen — „ab
+  dem Lehen", aber „ab der Krone". Absagen, Knopftitel („Aufstieg zum
+  Lehen"), Leiste, Ansage und Tafel lesen von dort; ein Wächter
+  (`tests/waechter-zeitalter.test.mjs`) sucht die alten Namen in jeder
+  Zeichenkette außerhalb von Kommentaren. Von 324 Fundstellen waren nur 6
+  im Produkt Bildschirmtext; 34 Testzeilen und 7 Bildunterschriften
+  zitierten ihn. Bild: oben „Lehen", darunter die Absage mit „Gebäude des
+  Lehens". 208 Browserfälle in 24,1 min, 705 + 9 Tests. **Gelernt:** ein
+  Lauf mit neuen Unterschriften lässt die alten Bilddateien als Waisen
+  liegen, und `specs:board` bricht dann ab — sie gehören vor dem Lauf
+  gelöscht, nicht danach. Und: Runde 165 hatte die KI-Bilder nicht neu
+  geschrieben (kein Lauf mit `:neu`); erst dieser Lauf zeigte die KI im
+  Nebel im Bild (ki AC-11 97 %, fahrplan AC-12 87 % geändert) — alle
+  angesehen, alle stimmen. Ein Bild war neu falsch: bauen AC-04 zeigte
+  „Zu wenig Holz." aus dem Fall davor (die Absage steht drei Sekunden, der
+  Lauf war schneller) — der Fall wartet jetzt, bis sie weg ist. Vier
+  ältere Abweichungen stehen unter „Bildrückstand".
 - **165** · 2026-11-10 · **ki AC-13 fertig: die KI sieht nur ihr
   Sichtfeld** — der Zweig `strategie-ki-sicht` zusammengeführt (Benutzer),
   Konflikt nur in `ki.js`. Nachgezogen, was seit Runde 144 dazukam: Teams

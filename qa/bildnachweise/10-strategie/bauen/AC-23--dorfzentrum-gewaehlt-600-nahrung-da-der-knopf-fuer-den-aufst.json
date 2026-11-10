@@ -1,7 +1,7 @@
 {
   "spec": "10-strategie/bauen.md",
   "ac": "AC-23",
-  "titel": "Dorfzentrum gewählt, 600 Nahrung da: der Knopf für die Feudalzeit neben Dorfbewohner und Webstuhl — die Absage nennt die fehlenden Gebäude",
+  "titel": "Dorfzentrum gewählt, 600 Nahrung da: der Knopf für den Aufstieg zum Lehen neben Dorfbewohner und Webstuhl — die Absage nennt die fehlenden Gebäude",
   "datei": "e2e/tests/strategie-zeitalter.spec.mjs",
   "pfad": [
     "Zeitalterwechsel",

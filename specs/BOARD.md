@@ -7,9 +7,9 @@ Eine Zeile je Abnahmekriterium. Gepflegt wird der Status in der Spec selbst,
 hier steht er zusammengefasst. Erzeugt mit `npm run specs:board`; als Seite
 mit Bildnachweisen, Filter und Suche mit `npm run qa:report`.
 
-**Gesamt:** 454/598 fertig · 1 in Arbeit · 5 in QA · 4 geplant · 126 offen · 8 zurueckgestellt
+**Gesamt:** 455/598 fertig · 1 in Arbeit · 5 in QA · 4 geplant · 125 offen · 8 zurueckgestellt
 
-**Nachweise:** 207 Kriterien mit Bild · 251 ohne Bild, begruendet in `qa/ohne-bild.json`
+**Nachweise:** 208 Kriterien mit Bild · 251 ohne Bild, begruendet in `qa/ohne-bild.json`
 
 ## Nach Spezifikation
 
@@ -22,7 +22,7 @@ mit Bildnachweisen, Filter und Suche mit `npm run qa:report`.
 | [Spielauswahl und Einstellungen](00-plattform/spielauswahl.md) | -         | -     | -       | 6     | -               | 18     |
 | [Uebertragung](00-plattform/uebertragung.md)                   | -         | -     | 2       | 1     | -               | 7      |
 | [Bauen und Ausbilden](10-strategie/bauen.md)                   | -         | -     | -       | 5     | -               | 30     |
-| [Bedienung](10-strategie/bedienung.md)                         | -         | -     | -       | 16    | -               | 30     |
+| [Bedienung](10-strategie/bedienung.md)                         | -         | -     | -       | 15    | -               | 31     |
 | [Darstellung](10-strategie/darstellung.md)                     | -         | -     | -       | 1     | -               | 15     |
 | [Einheiten und Befehle](10-strategie/einheiten-und-befehle.md) | -         | -     | -       | 17    | 1               | 29     |
 | [Fahrplan zum Klon](10-strategie/fahrplan.md)                  | -         | -     | -       | 7     | -               | 17     |
@@ -64,7 +64,7 @@ mit Bildnachweisen, Filter und Suche mit `npm run qa:report`.
 - **Abbruch ist sichtbar** — [Uebertragung](00-plattform/uebertragung.md) AC-9
 - **Automatischer Wiederaufbau** — [Uebertragung](00-plattform/uebertragung.md) AC-10
 
-## Offen (126)
+## Offen (125)
 
 - **Anmeldung ueber Google/GitHub** — [Konten und Anmeldung](00-plattform/konten.md) AC-6
 - **Bilanz je Konto** — [Konten und Anmeldung](00-plattform/konten.md) AC-14
@@ -128,7 +128,6 @@ mit Bildnachweisen, Filter und Suche mit `npm run qa:report`.
 - **Das Zeitalter steht am Dorf** — [Bedienung](10-strategie/bedienung.md) AC-42
 - **Voller Wohnraum fällt auf** — [Bedienung](10-strategie/bedienung.md) AC-43
 - **Ein Gefecht hinterlässt Spuren** — [Bedienung](10-strategie/bedienung.md) AC-44
-- **Stufen heißen nach Rang** — [Bedienung](10-strategie/bedienung.md) AC-45
 - **Das Wappen zeigt das Haus** — [Bedienung](10-strategie/bedienung.md) AC-46
 - **Nur eigenes Material** — [Darstellung](10-strategie/darstellung.md) AC-11
 - **Einheiten blockieren sich nicht** — [Einheiten und Befehle](10-strategie/einheiten-und-befehle.md) AC-10

@@ -96,7 +96,7 @@ test.describe('Spielzeit', () => {
     await nachweis(anna, {
       spec: BEDIENUNG,
       ac: 'AC-37',
-      titel: 'Oben in der Leiste, rechts neben „Dunkle Zeit": die verstrichene Spielzeit als m:ss mit Zifferblatt',
+      titel: 'Oben in der Leiste, rechts neben „Landsitz": die verstrichene Spielzeit als m:ss mit Zifferblatt',
       test: info,
     });
   });

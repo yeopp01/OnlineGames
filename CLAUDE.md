@@ -165,7 +165,7 @@ Umfang hinzufügt, dort nachsehen.
 
 ## Stand
 
-**454 von 598 Kriterien fertig.** 711 Tests ohne Browser, 207 im Browser. Die
+**455 von 598 Kriterien fertig.** 714 Tests ohne Browser, 208 im Browser. Die
 Übersicht ist der Bericht: `npm run qa:report`.
 
 Gebaut ist der Unterbau: Räume, Übertragung, Karte, Wegfindung, Sammeln,
@@ -455,6 +455,12 @@ das Gold für einen fehlt. Ein Karren ist für sie keine Kampfeinheit
 (`ki.kaempft()` fragt den Angriff). Das Patt mit leerem Gold, das es
 seltener machen sollte, gibt es auf diesem Zweig nicht — gemessen wird
 deshalb mit geleertem Gold (`tests/strategie-ki-handel.test.mjs`).
+**Stufe E hat begonnen** (Häuser, ADR-0014): **am Bildschirm heißen die
+Zeitalter Landsitz, Lehen, Fürstentum, Krone** (bedienung AC-45). Die
+gebeugten Formen stehen in `ZEITALTER` (`artikel`, `genitiv`, `ab`, `zum`),
+nie zusammengesetzt; `tests/waechter-zeitalter.test.mjs` findet die alten
+Namen in jedem Bildschirmtext. In Bezeichnern, Specs, Testnamen und
+Bildunterschriften bleiben die alten Namen die Arbeitsnamen der Stufen.
 
 1. **Stufe A** Dunkle Zeit mit Wirtschafts-KI und Prüfstand · **B** Feudalzeit
    · **C** Partieende und KI-Gegner · **D** Ritterzeit · **E** fünf Häuser ·

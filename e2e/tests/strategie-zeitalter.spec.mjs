@@ -32,19 +32,19 @@ test.describe('Zeitalterwechsel', () => {
     // Mit 600 Nahrung ist der Knopf frei - die Voraussetzung prueft der Server.
     await rohstoffe(anna, code, 'Anna', { nahrung: 600 });
     await expect(knopf).toHaveAttribute('aria-disabled', 'false');
-    await expect(knopf).toHaveAttribute('title', 'Aufstieg in die Feudalzeit (500 Nahrung)');
+    await expect(knopf).toHaveAttribute('title', 'Aufstieg zum Lehen (500 Nahrung)');
 
     // Nur das Dorfzentrum steht: der Server sagt, was fehlt (bedienung AC-18).
     await knopf.click();
     const meldung = anna.locator('#spielmeldung');
-    await expect(meldung).toContainText('2 fertige Gebäude der Dunklen Zeit außer Häusern');
+    await expect(meldung).toContainText('2 fertige Gebäude des Landsitzes außer Häusern');
     await expect(meldung).toBeInViewport();
     expect(await bedienteileFrei(anna)).toEqual([]);
     await anna.waitForTimeout(300);
     await nachweis(anna, {
       spec: BAUEN,
       ac: 'AC-23',
-      titel: 'Dorfzentrum gewählt, 600 Nahrung da: der Knopf für die Feudalzeit neben Dorfbewohner und Webstuhl — die Absage nennt die fehlenden Gebäude',
+      titel: 'Dorfzentrum gewählt, 600 Nahrung da: der Knopf für den Aufstieg zum Lehen neben Dorfbewohner und Webstuhl — die Absage nennt die fehlenden Gebäude',
       test: info,
     });
   });
@@ -68,7 +68,7 @@ test.describe('Zeitalterwechsel', () => {
     const laufend = anna.locator('[data-laufender-aufstieg="feudalzeit"]');
     await expect(laufend).toHaveCount(1);
     await expect(laufend).toHaveClass(/laufend/);
-    await expect(anna.locator('#zeitalter b')).toHaveText('Dunkle Zeit');
+    await expect(anna.locator('#zeitalter b')).toHaveText('Landsitz');
     // Die Nahrung ist bezahlt: 600 - 500.
     await expect(anna.locator('[data-rohstoff="nahrung"] b')).toHaveText('100');
 
@@ -83,7 +83,7 @@ test.describe('Zeitalterwechsel', () => {
     await nachweis(anna, {
       spec: BAUEN,
       ac: 'AC-23',
-      titel: 'Der Aufstieg läuft: in der Schlange des Dorfzentrums das Tor mit dem Fortschrittsbalken, oben noch „Dunkle Zeit" und 100 Nahrung',
+      titel: 'Der Aufstieg läuft: in der Schlange des Dorfzentrums das Tor mit dem Fortschrittsbalken, oben noch „Landsitz" und 100 Nahrung',
       test: info,
     });
   });
@@ -95,9 +95,9 @@ test.describe('Zeitalterwechsel', () => {
     const ankuendigung = anna.locator('#zeitalterwechsel');
     await ankuendigung.waitFor({ state: 'visible', timeout: 40_000 });
     await zeitraffer(anna, code, 1);
-    await expect(ankuendigung).toHaveText('Feudalzeit erreicht');
+    await expect(ankuendigung).toHaveText('Lehen erreicht');
     await expect(ankuendigung).toBeInViewport();
-    await expect(anna.locator('#zeitalter b')).toHaveText('Feudalzeit');
+    await expect(anna.locator('#zeitalter b')).toHaveText('Lehen');
     expect(await anna.evaluate(() => window.ansicht.zeitalter)).toBe(1);
     // Nicht auf der Mitte (bedienung AC-41): das Rechteck der Ansage beruehrt
     // das mittlere Drittel des Fensters nicht - dort steht meist das Dorf.
@@ -114,7 +114,7 @@ test.describe('Zeitalterwechsel', () => {
       await nachweis(anna, {
         spec: BEDIENUNG,
         ac,
-        titel: 'Oben im Bild „Feudalzeit erreicht", die Mitte mit dem Dorf bleibt frei; in der Leiste steht ab jetzt „Feudalzeit"',
+        titel: 'Oben im Bild „Lehen erreicht", die Mitte mit dem Dorf bleibt frei; in der Leiste steht ab jetzt „Lehen"',
         test: info,
       });
     }
@@ -122,13 +122,39 @@ test.describe('Zeitalterwechsel', () => {
     // Gemeldet wird einmal: nach vier Sekunden ist die Ankuendigung weg, oben
     // steht das Zeitalter weiter.
     await expect(ankuendigung).toBeHidden({ timeout: 8000 });
-    await expect(anna.locator('#zeitalter b')).toHaveText('Feudalzeit');
+    await expect(anna.locator('#zeitalter b')).toHaveText('Lehen');
 
     // Und das Dorfzentrum bietet den Aufstieg nicht noch einmal an.
     await anna.keyboard.press('h');
     await expect(anna.locator('[data-aufstieg="feudalzeit"]')).toHaveCount(0);
     await expect(anna.locator('[data-aufstieg="ritterzeit"]')).toHaveCount(1);
     // Bert ist noch in der Dunklen Zeit - das Zeitalter gilt je Spieler.
-    await expect(partie.bert.locator('#zeitalter b')).toHaveText('Dunkle Zeit');
+    await expect(partie.bert.locator('#zeitalter b')).toHaveText('Landsitz');
+  });
+
+  test('bedienung AC-45: die Stufen heissen nach dem Rang - oben das Lehen, der Knopf zum Fuerstentum, die Absage nennt die Gebaeude des Lehens', async ({}, info) => {
+    const { anna, code } = partie;
+    // Anna ist seit dem Fall davor im Lehen; Nahrung und Gold fuer den
+    // naechsten Aufstieg, damit der Knopf frei ist und der Server antwortet.
+    await rohstoffe(anna, code, 'Anna', { nahrung: 900, gold: 300 });
+    await anna.keyboard.press('Escape');
+    await anna.keyboard.press('h');
+    const knopf = anna.locator('[data-aufstieg="ritterzeit"]');
+    await expect(knopf).toHaveAttribute('aria-disabled', 'false');
+    await expect(knopf).toHaveAttribute('title', 'Aufstieg zum Fürstentum (800 Nahrung, 200 Gold)');
+    await knopf.click();
+    const meldung = anna.locator('#spielmeldung');
+    await expect(meldung).toContainText('2 fertige Gebäude des Lehens außer Häusern');
+    await expect(meldung).toBeInViewport();
+    const zeitalter = anna.locator('#zeitalter b');
+    await expect(zeitalter).toHaveText('Lehen');
+    await expect(zeitalter).toBeInViewport();
+    expect(await bedienteileFrei(anna)).toEqual([]);
+    await nachweis(anna, {
+      spec: BEDIENUNG,
+      ac: 'AC-45',
+      titel: 'Oben in der Leiste „Lehen"; das Dorfzentrum gewählt, die Absage zum nächsten Aufstieg verlangt „Gebäude des Lehens"',
+      test: info,
+    });
   });
 });
