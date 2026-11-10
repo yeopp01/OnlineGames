@@ -1434,20 +1434,16 @@ export class Ansicht {
    * Wie viel Nahrung eine Farm voll traegt, mit den Verbesserungen ihres
    * Besitzers (bauen AC-26). Ohne das stuende in der Leiste "noch 250 Nahrung
    * von 175" - der Vorrat aus der Tabelle, nicht der dieses Spielers.
+   *
+   * Gelesen aus der Tafel des Servers (`kw`), die Haus und Verbesserungen
+   * kennt (spielziel AC-17). Bis Runde 167 rechnete der Browser die
+   * Verbesserungen hier selbst zusammen und kannte das Haus nicht;
+   * `tests/waechter-wirkungen.test.mjs` haelt das fern.
    */
   farmVoll(gebaeude) {
-    let voll = this.werte.gebaeude[gebaeude.art]?.nahrung || 0;
-    if (!voll) return 0;
-    // Die Tafel des Servers kennt Haus und Verbesserungen (spielziel AC-17);
-    // gerechnet wird hier nur, wenn sie fehlt.
-    const ausTafel = this.einheitenwerte.get(gebaeude.b)?.[gebaeude.art]?.nahrung;
-    if (ausTafel) return ausTafel;
-    // Was der Gegner erforscht hat, weiss niemand - fuer fremde Farmen bleibt
-    // es bei der Tabelle.
-    if (gebaeude.b === this.ich) {
-      for (const v of this.verbesserungen) voll += this.werte.verbesserungen?.[v]?.farm?.nahrung || 0;
-    }
-    return voll;
+    const grund = this.werte.gebaeude[gebaeude.art]?.nahrung || 0;
+    if (!grund) return 0;
+    return this.einheitenwerte.get(gebaeude.b)?.[gebaeude.art]?.nahrung || grund;
   }
 
   // Ein Lebensbalken (darstellung AC-8): dunkler Grund, darauf der Anteil in

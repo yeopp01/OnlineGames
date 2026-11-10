@@ -169,6 +169,12 @@ Setze die gewählten Kriterien auf `in-arbeit`.
   Tabelle, aber Verbesserungen ändern sie. Wer `EINHEITEN[art].angriff` direkt
   liest, sieht sie nicht — genau so war die Rüstung aus dem Webstuhl eine Stufe
   lang wirkungslos (Runde 68). `tests/waechter-werte.test.mjs` sucht danach.
+  **Seit den Häusern (Runde 167) laufen alle Wirkungen über
+  `welt.wirkungen()`** — Haus zuerst, dann die Verbesserungen —, und der
+  Browser rechnet keine selbst zusammen: was er braucht, nimmt
+  `kampfwerte()` in die Tafel `kw` auf. `tests/waechter-wirkungen.test.mjs`
+  sucht im Browser nach `verbesserungen[…].wirkung/sammeln/farm/gebaeude`
+  (Rückschau nach Runde 168: `farmVoll` kannte das Haus nicht).
 - **Ein neuer Eintrag in `daten.js` (Gebäude, Einheit, Verbesserung) fährt
   `npm run e2e:daten` vor dem vollen Lauf** — knapp fünf Minuten für die
   Browserfälle, die „alles, was die Daten für dieses Zeitalter sagen"
@@ -560,6 +566,15 @@ Setze die gewählten Kriterien auf `in-arbeit`.
    Stylesheet), dann `npm run check:alles:neu:kurz`: derselbe Lauf, aber er
    schreibt jedes Bild neu. Ein Lauf statt zwei — danach
    `npm run qa:abweichung` und die Bilder über 1 % ansehen.
+   **Das gilt auch, wenn sich nur das Verhalten geändert hat, das ein Bild
+   zeigt** — die KI, die Wegsuche, der Kampf: die Bilder aus
+   `strategie-ki`, `strategie-team-gegen-ki` und alle, die eine Partie
+   laufen lassen, zeigen sonst den alten Verlauf, und die Tests sind grün.
+   Runde 165 machte die KI blind für alles außerhalb ihrer Sicht und fuhr
+   `check:alles`; erst Runde 166 schrieb die Bilder neu (ki AC-11 97 %,
+   fahrplan AC-12 87 % geändert). Waisen nach geänderten Unterschriften
+   räumt `qa:nachweis` vor dem Lauf selbst weg (`npm run qa:waisen` zeigt
+   sie; Rückschau nach Runde 168).
    **In der Schleife immer die `:kurz`-Form**: sie zeigt die Zahlen und bei
    einem Fehler die Fehlerstelle, und spart je Lauf rund 8.000 Token an „ok"
    nach „ok" (Runde 60). Die ganze Ausgabe steht in `qa/letzter-lauf.log`,

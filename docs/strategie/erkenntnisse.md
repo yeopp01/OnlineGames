@@ -261,7 +261,8 @@ etwas anderem gearbeitet.
   167, Zeitüberschreitung beim Warten auf den Besitzerwechsel, 15 s bei
   Zeitraffer 1 für 4 bis 10 Spielsekunden; allein viermal grün, in Runde 166
   grün). Fällt er im nächsten vollen Lauf wieder, ist er nach Abschnitt 1 die
-  nächste Arbeit — dann im Wartefenster den Zeitraffer hochdrehen.
+  nächste Arbeit — dann im Wartefenster den Zeitraffer hochdrehen. Im vollen
+  Lauf der Rückschau 168 grün.
 
 - **Der Späher kann ins Heer geraten** (Durchsicht Runde 165, nicht
   behoben): `heerPruefen` nimmt jede Kampfeinheit, auch den Späherreiter,
@@ -577,6 +578,7 @@ Zahlen, gegen die spätere Runden vergleichen. Mit Datum und Commit.
 | 2026-11-09 | Browserlauf; Tests ohne Browser | 203 Fälle in 18,9 und 19,6 min (Lauf ohne und mit neuen Bildern; Maschine nicht vorher geprüft, bei der Rückschau ruhig); 664 + 8 Tests; langsamste fahrplan AC-24 108 s, AC-14 90 s, AC-12 84 s | Rückschau 158 |
 | 2026-11-10 | Browserlauf; Tests ohne Browser | 207 Fälle in 21,4 min (Runde 161, Maschine nicht vorher geprüft); 695 + 8 Tests, `npm run check:kurz` 277 s | Rückschau 163 |
 | 2026-11-10 | KI gegen KI **im Nebel** (ki AC-13), Startwerte 1-20 / 21-40 bis Minute 90 | 18/20 und 19/20 vor Minute 60, Median 46,0 / 41,9 (gesamt 44,6), längste 77,9 @18; HEAD 41,9 / 38,3; 117–173 ms je 1000 Takte gegen 110–136 (verrauscht, rund ein Viertel mehr); `npm run check:kurz` 702 + 9 Tests in 231 s | Runde 165 |
+| 2026-11-11 | Browserlauf; Tests ohne Browser | 208 Fälle in 22,4 min, mit Prüfung 1347 s (22 Chrome-Prozesse des Benutzers, ein fremder Node); 713 + 9 Tests, `npm run check:kurz` 401 s | Rückschau 168 |
 
 ## Rückschauen
 
@@ -1547,6 +1549,68 @@ Testlauf): `npm run check` 53 s ohne Last, 599 Tests ohne Browser; der
 volle Browserlauf mit 191 Fällen 16,6 min (Runde 140; Runde 135: 17,0 min
 für 190). Die Ritterzeit am Stück braucht 1,7 min.
 
+### Nach Runde 168 (2026-11-11)
+
+Vier Runden: 164 die Spec-Runde zur Stufe E, 165 die KI mit eigener Sicht
+(ki AC-13, Zweig zusammengeführt, Ersatzgrenze im Nebel), 166 die Stufen
+heißen Landsitz, Lehen, Fürstentum, Krone (bedienung AC-45), 167 ein Haus
+ist Daten (spielziel AC-17, fahrplan AC-17). Was Zeit gekostet hat:
+
+1. **Bilder ohne Erzeuger musste man von Hand suchen.** Ändert ein Test
+   seine Unterschrift, schreibt der Lauf das Bild unter dem neuen Namen, das
+   alte bleibt liegen, und `npm run specs:board` bricht mit
+   „Beanstandungen" ab. In Runde 166 waren es sieben Paare, jedes einzeln
+   aus der Fehlermeldung herausgesucht und gelöscht. → **`npm run
+   qa:waisen`** zeigt sie (`-- --loeschen` räumt sie weg), und
+   `npm run qa:nachweis` — damit auch `check:alles:neu` — räumt sie vor dem
+   Lauf von selbst. Gesucht wird mit derselben Prüfung, die der Bericht
+   macht (`waisenSuchen()` in `scripts/specs-lesen.mjs`). Ein Test an einem
+   Wegwerf-Ordner: ein Bild mit Erzeuger bleibt, eines mit alter
+   Unterschrift und eines ohne Testdatei verschwinden.
+2. **Der Browser rechnete eine Wirkung selbst.** `farmVoll` zählte die
+   `farm.nahrung` der Verbesserungen zusammen; mit den Häusern kam eine
+   zweite Quelle dazu, die der Browser nicht kennt. Gefunden hat es erst die
+   Durchsicht in Runde 167. → Die Rechnung im Browser ist ganz weg, er nimmt
+   den Wert aus `kw`, und **`tests/waechter-wirkungen.test.mjs`** findet
+   jede Zeile unter `public/`, die aus einem Eintrag der Verbesserungen
+   `wirkung`, `sammeln`, `farm` oder `gebaeude` liest. Gegenprobe: mit der
+   alten Zeile fällt er. In der Anweisung (Abschnitt 3) neben dem Wächter
+   der Werte.
+3. **Ein `:neu`-Lauf fehlte, obwohl sich nur Verhalten geändert hatte.**
+   Runde 165 änderte, was die KI sieht, und damit, was die Bilder der
+   KI-Fälle zeigen — gefahren wurde `check:alles`, nicht `:neu`. Runde 166
+   fand danach Bilder, die nicht mehr zum Spiel passten. → **Regel in
+   Abschnitt 6.2**: `:neu` auch, wenn sich das Verhalten ändert, das ein
+   Bild zeigt (KI, Wegsuche, Kampf), nicht nur das Aussehen.
+
+**Dazu fiel im vollen Lauf dieser Rückschau ein Fall:** bedienung AC-39
+(wer kämpft, holt aus) maß zwischen zwei Augenblicken 0 % geänderte
+Bildpunkte; allein fiel er einmal in fünf Läufen. Das Ausholen schwingt mit
+2π · 110 ms ≈ 691 ms, der Test wartete 345 ms, eine halbe Schwingung —
+aber zwischen den beiden Ausschnitten liegt der erste Bildnachweis, und der
+dauert selbst ein paar hundert Millisekunden. Kam der Abstand auf eine ganze
+Schwingung, standen beide Figuren wieder gleich. Jetzt wartet der Test auf
+die Uhr des Browsers: die nächste halbe Schwingung nach dem ersten
+Ausschnitt. Danach zehn von zehn grün. Gelernt: **zwischen zwei Messungen, deren Abstand zählt, steht nichts, was
+selbst Zeit braucht** — oder der Abstand wird an der Uhr gemessen, nicht
+gewartet.
+
+Einheiten AC-38 (der Mönch bekehrt), in Runde 167 einmal gefallen, war
+diesmal grün; der Faden bleibt stehen.
+
+Gemessen: der volle Browserlauf dauerte 22,4 Minuten für 208 Fälle, mit
+Prüfung 1347 s (Maschine vorher: 22 Chrome-Prozesse des Benutzers, ein
+fremder Node). `npm run check:kurz` danach 401 s, 713 + 9 Tests.
+
+**Kein Rundgang im Browser.** Stufe E hat zwei Kriterien gebaut, beide
+ohne neues Bild außer den Namen der Stufen; was man sehen kann, kommt mit
+der Wahl im Warteraum und dem Aussehen der Blender-Sitzung. Die Rückschau
+zur Stufe E macht den Rundgang.
+
+Nicht geändert: der Zuschnitt hat getragen, jede Runde endete mit einem
+Commit. Die nächste Runde ist **spielauswahl AC-24**, das Haus je Platz im
+Warteraum.
+
 ### Nach Runde 163 (2026-11-10)
 
 Vier Runden: 159 die Spielgeschwindigkeit (spielziel AC-23, D13 fertig),
@@ -1772,6 +1836,14 @@ ihn, mit Gegenprobe an beiden Formen. Fünf Bilder neu, alle angesehen.
 Neueste oben. Eine Zeile je Runde: Nummer, Datum, Kriterien, Ergebnis,
 wichtigste Erkenntnis.
 
+- **168** · 2026-11-11 · **Rückschau.** `npm run qa:waisen` räumt Bilder
+  ohne Erzeuger (und `qa:nachweis` tut es vor jedem Lauf), der Wächter
+  `waechter-wirkungen` verbietet dem Browser, Wirkungen selbst
+  zusammenzurechnen, und `:neu` gilt auch, wenn sich nur das gezeigte
+  Verhalten ändert. Bedienung AC-39 fiel im vollen Lauf: der Bildnachweis
+  zwischen zwei Ausschnitten machte aus einer halben Schwingung manchmal
+  eine ganze — jetzt wird an der Uhr des Browsers gewartet, zehn von zehn
+  grün.
 - **167** · 2026-11-10 · **spielziel AC-17 und fahrplan AC-17 fertig (E2,
   erster Teil): ein Haus ist Daten.** `HAEUSER` mit Name, Sitz, Wahlspruch
   und Boni in der Form der Verbesserungen; `welt.wirkungen()` stellt die

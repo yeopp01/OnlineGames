@@ -47,8 +47,9 @@ test.describe('Kampf im Bild', () => {
     await anna.waitForTimeout(300);
     expect(await figurenFrei(anna)).toEqual([]);
 
-    // Die Bildpunkte um die beiden, jetzt und eine Drittelsekunde spaeter -
-    // eine halbe Schwingung des Ausholens (`jetztPhase`, 110 ms je Bogenmass).
+    // Die Bildpunkte um die beiden, jetzt und eine halbe Schwingung des
+    // Ausholens spaeter (`jetztPhase`: 110 ms je Bogenmass, eine Schwingung
+    // also 691 ms).
     const ausschnitt = () => anna.evaluate((o) => {
       const a = window.ansicht;
       const p = a.zuBild(o.x, o.y);
@@ -59,17 +60,29 @@ test.describe('Kampf im Bild', () => {
       // Ein kleiner Fingerabdruck: Helligkeit je Bildpunkt.
       const hell = new Uint8Array(breite * hoehe);
       for (let i = 0; i < hell.length; i++) hell[i] = (daten[i * 4] + daten[i * 4 + 1] + daten[i * 4 + 2]) / 3;
-      return Array.from(hell);
+      return { t: performance.now(), hell: Array.from(hell) };
     }, mitte);
-    const erstes = await ausschnitt();
+    const erst = await ausschnitt();
+    const erstes = erst.hell;
     await nachweis(anna, {
       spec: BEDIENUNG,
       ac: 'AC-39',
       titel: 'Annas Miliz (blau) und Berts Miliz (rot) im Kampf, ein Augenblick',
       test: info,
     });
-    await anna.waitForTimeout(345);
-    const zweites = await ausschnitt();
+    // Gewartet wird auf die Uhr des Browsers, nicht 345 ms ab hier: der
+    // Bildnachweis dazwischen dauert selbst ein paar hundert Millisekunden,
+    // und kam der Abstand so auf eine ganze Schwingung, standen beide wieder
+    // gleich - 0 % geaendert, in einem von fuenf Laeufen (Rueckschau nach
+    // Runde 168). Deshalb: die naechste halbe Schwingung nach dem ersten
+    // Ausschnitt, die noch vor uns liegt.
+    await anna.evaluate(async (t) => {
+      const schwingung = 2 * Math.PI * 110;
+      let ziel = t + schwingung / 2;
+      while (ziel < performance.now() + 30) ziel += schwingung;
+      await new Promise((fertig) => setTimeout(fertig, ziel - performance.now()));
+    }, erst.t);
+    const zweites = (await ausschnitt()).hell;
     await nachweis(anna, {
       spec: BEDIENUNG,
       ac: 'AC-39',

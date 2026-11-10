@@ -310,6 +310,35 @@ export async function bestandLesen() {
 }
 
 /**
+ * Bildnachweise ohne Erzeuger - "Waisen": ihre Unterschrift, ihr Testname
+ * oder ihre Testdatei steht in keinem Test mehr. Sie entstehen, sobald ein
+ * Test seine Unterschrift aendert: der naechste Lauf schreibt das Bild unter
+ * dem neuen Namen, das alte bleibt liegen, und `specs:board` bricht ab. In
+ * Runde 166 waren es sieben Paare, von Hand nach dem Lauf geloescht
+ * (Rueckschau nach Runde 168). `npm run qa:waisen` zeigt sie, mit
+ * `--loeschen` raeumt es sie weg; `qa:nachweis` tut das vor jedem Lauf.
+ *
+ * Nur die fehlende Herkunft macht eine Waise. Ein Bild auf ein Kriterium,
+ * das es nicht gibt, ist ein Fehler in der Spec und bleibt stehen.
+ */
+export async function waisenSuchen(ordner = BILDER) {
+  const waisen = [];
+  const quelltexte = new Map();
+  for (const bezugsdatei of await dateien(ordner, '.json')) {
+    let bezug;
+    try {
+      bezug = JSON.parse(await readFile(bezugsdatei, 'utf8'));
+    } catch {
+      continue;
+    }
+    const rel = pfadNetz(relative(WURZEL, bezugsdatei));
+    const grund = await herkunftPruefen(bezug, rel, quelltexte);
+    if (grund) waisen.push({ json: bezugsdatei, png: bezugsdatei.replace(/\.json$/, '.png'), grund });
+  }
+  return waisen;
+}
+
+/**
  * Hat der Nachweis noch einen Erzeuger? Die Testdatei muss es geben, und
  * Beschreibung, Testname und Bildtitel muessen darin noch als ganze
  * Zeichenkette stehen. Sonst zeigt das Bild eine Oberflaeche, die kein Lauf
