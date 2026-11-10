@@ -1250,6 +1250,11 @@
       "spec": "10-strategie/kampf.md",
       "ac": "AC-5",
       "begruendung": "Zahlen aus den Daten und ihr Ausgang im Zweikampf: Angriff 3, keine Boni, keine Ruestung, fuenfzehn Schlaege fuer einen Soldaten gegen dessen fuenf. Zu sehen ist davon nichts, was kampf AC-1 nicht schon zeigt - ein Dorfbewohner, der zuschlaegt, sieht aus wie jede andere Einheit, die zuschlaegt. Der Test rechnet beide Richtungen der Schadensformel nach und spielt Zweikampf und Ueberzahl durch."
+    },
+    {
+      "spec": "10-strategie/ki.md",
+      "ac": "AC-13",
+      "begruendung": "Was die KI weiss - welche fremden Gebaeude und Einheiten sie kennt und woraus sie Ziel und Ueberlegenheit rechnet - steht in ihrem Gedaechtnis auf dem Server, nicht auf einem Bildschirm. Ein Bild zeigt, was ein Mensch sieht; ob die KI dasselbe nicht weiss, zeigt es nicht."
     }
   ]
 }

@@ -165,7 +165,7 @@ Umfang hinzufügt, dort nachsehen.
 
 ## Stand
 
-**453 von 598 Kriterien fertig.** 703 Tests ohne Browser, 207 im Browser. Die
+**454 von 598 Kriterien fertig.** 711 Tests ohne Browser, 207 im Browser. Die
 Übersicht ist der Bericht: `npm run qa:report`.
 
 Gebaut ist der Unterbau: Räume, Übertragung, Karte, Wegfindung, Sammeln,
@@ -343,9 +343,14 @@ AC-15), und das Bild zeigt sie in drei Stufen, auch auf der Übersichtskarte
 in `public/nebel.js`, fremde Gebäude im Nebel aus der Erinnerung. **Der
 Server schickt jedem nur, was er sieht** (kampf AC-13): `welt.zustandJeSpieler`
 und `welt.aufbauFuer`, der Raum fragt nur, ob es sie gibt. **Ein Angriff wird
-gemeldet** (kampf AC-14): roter Knopf oben, ein Klick springt hin. Offen ist
-die KI mit eigener Sicht (ki AC-13, auf dem Zweig `strategie-ki-sicht`,
-wartet auf eine Frage an den Benutzer). **Stufe C ist erreicht** (fahrplan
+gemeldet** (kampf AC-14): roter Knopf oben, ein Klick springt hin. **Die KI
+sieht nur ihr Sichtfeld** (ki AC-13, Runde 165): fremde Gebäude, sobald sie
+sie gesehen hat, fremde Einheiten, solange sie sie sieht, gesucht wird mit
+dem Späher (`ki.wahrnehmen()`, `feindOrt`, `gesehen`). Im Nebel gilt für KI
+gegen KI die **Ersatzgrenze** (Benutzer, 2026-11-10): alle mit Sieger vor
+Minute 90, Median unter 45, mindestens 35 von 40 vor Minute 60 —
+gemessen 37 von 40, Median 44,6 (`tests/partien/ki-im-nebel.test.mjs`).
+**Stufe C ist erreicht** (fahrplan
 AC-11 bis AC-13); die Rückschau dazu hat drei Lücken angelegt (bedienung
 AC-39 bis AC-41: Ausholen im Kampf, sichtbare Pfeile, Ansagen nicht auf der
 Mitte). **Stufe D ist spezifiziert** (Bauabfolge D1 bis D9: die drei Lücken,

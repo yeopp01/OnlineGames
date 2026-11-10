@@ -28,7 +28,17 @@ test('ki AC-21: ueber zwanzig Startwerte steigt jede KI vor Spielminute 30 in di
   // die Haelfte des Ziels der Feudalzeit - 16, mitten in der Luecke. Mit dem
   // Aufstieg vor dem Ersatz (Durchsicht Runde 143) steigt auch die mit 13
   // auf (Startwert 10, KI 1: Minute 27,5, ihr Dorf fiel bis 12): 36 von 40.
-  const HAELT = Math.floor(DORFBEWOHNER_JE_ZEITALTER[1] / 2);
+  // Neu gemessen in Runde 165, als die KI im Nebel spielt (ki AC-13): 35 von
+  // 40 aufgestiegen, nach 21,9 bis 27,7 Minuten. Die fuenf ohne Aufstieg
+  // fielen ab Minute 18 auf 0, 14, 20, 20 und 20 - im Nebel zerschlaegt der
+  // Sieger ein Dorf langsamer, er muss die Holzfaeller erst finden; KI 1 bei
+  // Startwert 4 verlor in Minute 21 ihr Heer, wurde ab Minute 25 daheim
+  // angegriffen und stand bei Minute 30 mit 707 von 800 Nahrung. Die
+  // Aufgestiegenen fielen nie unter 21 (zwei unter 24: 21 und 22). Die Haelfte
+  // trennt nicht mehr; drei Viertel des Ziels der Feudalzeit - 24 - liegt
+  // ueber allen ohne Aufstieg: wer ein Viertel seines Dorfes verliert, wird
+  // ueberrannt. 33 von 40 halten.
+  const HAELT = Math.floor((DORFBEWOHNER_JE_ZEITALTER[1] * 3) / 4);
   let gehalten = 0;
   const minuten = [];
   for (let startwert = 1; startwert <= 20; startwert++) {

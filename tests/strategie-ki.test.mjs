@@ -375,7 +375,7 @@ const kampfVon = (welt, spielerId) => eigeneVon(welt, spielerId)
   .filter((e) => !(EINHEITEN[e.art].klassen || []).includes('dorf'));
 
 test('ki AC-11: acht brechen auf, zwei bleiben als Wache - und unter zehn Kampfeinheiten niemand', () => {
-  const welt = new Welt(ZWEI, 5);
+  const welt = new Welt(ZWEI, 5, { sicht: 'aufgedeckt' });
   const ki = new Ki(welt, 'a');
   const a = welt.spielerVon('a');
   const zentrumB = [...welt.gebaeude.values()].find((g) => g.besitzer === 'b' && g.art === 'dorfzentrum');
@@ -429,7 +429,7 @@ test('ki AC-11: acht brechen auf, zwei bleiben als Wache - und unter zehn Kampfe
 // jeden auf das, was ihm am naechsten steht (ki AC-16) - Einheiten vor
 // Gebaeuden, solange sie nicht mehr als sechs Felder weiter weg sind.
 test('ki AC-11 und ki AC-16: am Marschziel greift jeder an, was ihm am naechsten steht', () => {
-  const welt = new Welt(ZWEI, 5);
+  const welt = new Welt(ZWEI, 5, { sicht: 'aufgedeckt' });
   const ki = new Ki(welt, 'a');
   const b = welt.spielerVon('b');
   const zentrumB = [...welt.gebaeude.values()].find((g) => g.besitzer === 'b' && g.art === 'dorfzentrum');
@@ -942,7 +942,14 @@ test('ki AC-12 und ki AC-10: ueber zwanzig Startwerte greift jede KI wieder an, 
         welt.gefallenGezaehlt = true;
         const sterben = welt.einheitSterben.bind(welt);
         welt.einheitSterben = (e) => {
-          if (e.art === 'dorfbewohner' && !e.tot) {
+          // Ein Dorfbewohner zaehlt, wo er auch faellt; jede andere eigene
+          // Einheit, wenn sie in zwoelf Feldern um das eigene Dorfzentrum
+          // faellt - wie `feindeAmDorf`. Wer daheim seine Schuetzen verliert,
+          // verteidigt (ki AC-13, Runde 165: Startwert 13, KI 1 verlor ab
+          // Minute 25 acht Bogenschuetzen am Dorf, KI 2 dort 21 Angreifer).
+          const zentrum = [...welt.gebaeude.values()].find((g) => g.besitzer === e.besitzer && g.art === 'dorfzentrum');
+          const daheim = zentrum && Math.hypot(e.x - zentrum.x, e.y - zentrum.y) < 12;
+          if ((e.art === 'dorfbewohner' || daheim) && !e.tot) {
             const name = welt.spielerVon(e.besitzer).name;
             if (!gefallen.has(name)) gefallen.set(name, []);
             gefallen.get(name).push(welt.takt);
@@ -959,8 +966,8 @@ test('ki AC-12 und ki AC-10: ueber zwanzig Startwerte greift jede KI wieder an, 
       // Nachschub: nach dem ersten Heer noch eines - ausser sie wird gerade
       // ueberrannt: wer nicht angreift, verteidigt (wie ki AC-11). Ueberrannt
       // heisst: mehr Feinde am Dorf als eigene Kampfeinheiten, in den letzten
-      // fuenf Minuten mindestens fuenf Dorfbewohner verloren, oder kein
-      // Dorfzentrum mehr. Startwert 6, KI 2 (Runde 94): ab Minute 20 bei jedem
+      // fuenf Minuten mindestens fuenf Dorfbewohner oder Einheiten am Dorf
+      // verloren, oder kein Dorfzentrum mehr. Startwert 6, KI 2 (Runde 94): ab Minute 20 bei jedem
       // Messpunkt Feinde im Dorf, 128-mal die Wache gerufen.
       if (p.angriffe < 2) {
         const zuletzt = (gefallen.get(p.name) || []).filter((t) => t >= 25 * 60 * TAKTE_PRO_SEKUNDE).length;
@@ -1401,7 +1408,7 @@ test('ki AC-15: nur wer mit voller Ladung festsitzt, baut mit - und wer schon ba
 test('ki AC-16: ein Ziel, zu dem kein Weg fuehrt, wird zwei Minuten ausgelassen', () => {
   // Durchsicht Runde 95: endete ein Angriff gleich wieder, weil kein Weg
   // fuehrte, schickte die KI den Angreifer jede halbe Sekunde erneut dorthin.
-  const welt = new Welt(ZWEI, 5);
+  const welt = new Welt(ZWEI, 5, { sicht: 'aufgedeckt' });
   const ki = new Ki(welt, 'a');
   const zentrumB = [...welt.gebaeude.values()].find((g) => g.besitzer === 'b' && g.art === 'dorfzentrum');
   const [krieger] = kampfeinheitenAnlegen(welt, 'a', { x: zentrumB.x + HEER_ABSTAND, y: zentrumB.y }, 1);
@@ -1428,7 +1435,7 @@ const milizen = (welt, id, n) => {
 };
 
 test('ki AC-18: ueberlegen ist, wer ein Heer hat und dreimal so viele Kampfeinheiten wie der Gegner', () => {
-  const welt = new Welt(ZWEI, 4711);
+  const welt = new Welt(ZWEI, 4711, { sicht: 'aufgedeckt' });
   const ki = new Ki(welt, 'a');
   const bert = kampfVon(welt, 'b').length;
   // Mit einem Heer weniger einer: zu klein, auch wenn der Gegner fast nichts hat.
@@ -1440,13 +1447,16 @@ test('ki AC-18: ueberlegen ist, wer ein Heer hat und dreimal so viele Kampfeinhe
   assert.equal(ki.ueberlegen(), true, 'ein Heer gegen fast nichts');
   // Gegenprobe: hat Bert mehr als ein Drittel, nicht mehr.
   milizen(welt, 'b', Math.floor(HEER / UEBERLEGEN) + 1 - bert);
+  // Sie nimmt einmal je Takt wahr (ki AC-13): Berts neue Milizen sieht sie
+  // im naechsten.
+  welt.takt += 1;
   assert.ok(kampfVon(welt, 'b').length * UEBERLEGEN > HEER);
   assert.equal(ki.ueberlegen(), false, 'gegen mehr als ein Drittel nicht');
 });
 
 test('ki AC-18: ueberlegen zieht los, wer daheim ist - bis auf die Wache', () => {
   const lauf = (bertMehr) => {
-    const welt = new Welt(ZWEI, 4711);
+    const welt = new Welt(ZWEI, 4711, { sicht: 'aufgedeckt' });
     const ki = new Ki(welt, 'a');
     // Einer weniger, als der gewoehnliche Aufbruch braucht.
     milizen(welt, 'a', HEER + WACHE - 1 - kampfVon(welt, 'a').length);
@@ -1468,7 +1478,7 @@ test('ki AC-18: ueberlegen zieht los, wer daheim ist - bis auf die Wache', () =>
 test('ki AC-18: auch ueberlegen zieht keiner allein los', () => {
   // Durchsicht Runde 96: sonst ging jede fertige Einheit einzeln.
   const lauf = (daheim) => {
-    const welt = new Welt(ZWEI, 4711);
+    const welt = new Welt(ZWEI, 4711, { sicht: 'aufgedeckt' });
     const ki = new Ki(welt, 'a');
     // Ueberlegen mit einem Heer, das schon unterwegs ist.
     milizen(welt, 'a', HEER + daheim - kampfVon(welt, 'a').length);

@@ -352,7 +352,7 @@ test('ki AC-25: die KI zielt auf den naechsten Gegner - sind die Nachbarn verbue
   // Zu viert liegen die Doerfer im Quadrat: zwei Nachbarn, einer uebers Eck.
   // Die Nachbarn kommen in Annas Team, der uebers Eck ist der Gegner.
   const VIER = ['a', 'b', 'c', 'd'].map((id) => ({ id, name: id }));
-  const ohne = new Welt(VIER, 7);
+  const ohne = new Welt(VIER, 7, { sicht: 'aufgedeckt' });
   const basis = (welt, id) => welt.spielerVon(id).basis;
   const weit = (id) => Math.hypot(basis(ohne, id).x - basis(ohne, 'a').x, basis(ohne, id).y - basis(ohne, 'a').y);
   const [nah, , fern] = ['b', 'c', 'd'].sort((x, y) => weit(x) - weit(y));
@@ -363,7 +363,7 @@ test('ki AC-25: die KI zielt auf den naechsten Gegner - sind die Nachbarn verbue
 
   const teams = { a: 1, [fern]: 2 };
   for (const id of nachbarn) teams[id] = 1;
-  const welt = new Welt(VIER, 7, { teams });
+  const welt = new Welt(VIER, 7, { sicht: 'aufgedeckt', teams });
   assert.deepEqual(basis(welt, nah), basis(ohne, nah), 'Teams verschieben keine Doerfer');
   const ki = new Ki(welt, 'a');
   assert.equal(ki.naechsterGegner().id, fern, 'mit beiden Nachbarn im Team: der uebers Eck');

@@ -127,6 +127,13 @@ neuen Karte grün bleiben.
   geschleift wurden — jetzt gibt er auf. Nach einheiten AC-31 (Runde 100):
   25,7 bis 53,1 Minuten, Median 36,4. **Auf den Startwerten 21 bis 40 sind es
   19 von 20** — vorher wie nachher; die Auswahl der ersten zwanzig trägt mit.
+  **Im Nebel gilt die Ersatzgrenze** (Benutzer, 2026-11-10): spielt die KI
+  mit eigener Sicht ([KI](ki.md) AC-13), endet KI gegen KI über die
+  Startwerte 1 bis 40 jedes Mal mit Sieger vor Minute 90, im Median vor
+  Minute 45, und mindestens 35 von 40 vor Minute 60. Der Nebel kostet sie
+  Zeit, weil das Heer suchen muss, was es nicht sieht — das ist der Preis
+  der Ehrlichkeit, kein Fehler. Gemessen in Runde 165: 37 von 40, Median
+  44,6, die längste 77,9 Minuten.
 - **AC-12** `fertig` **Mensch gegen KI spielbar** — Eine Partie allein gegen die KI lässt sich
   eröffnen, spielen und mit Abschlussbild beenden. Im Browser gespielt (Runde
   102): mit einem KI-Gegner eröffnet, allein gestartet, Holz gesammelt, und
@@ -163,7 +170,7 @@ Zustandsnachricht umbaut und damit jeden Browsertest berührt: was dort heute
 | C6c | Die Sicht als Einstellung beim Eröffnen: Nebel, Erkundet, Aufgedeckt — ersetzt den Prüfgriff `aufdecken` (Wunsch des Benutzers, vorgezogen) — **fertig** (Runde 106) | kampf AC-16 |
 | C6d | Die Sicht wächst: Stadtwache im Dorfzentrum, der Außenposten — **fertig** (Runden 107, 109) | kampf AC-17, AC-18 |
 | C6e | Nur Sichtbares schicken: eine Zustandsnachricht je Spieler, erinnerte Gebäude — **fertig** (Runde 110) | kampf AC-13, fahrplan AC-13 |
-| C6f | Die KI sieht nur ihre Sicht und erkundet mit dem Späher — ruht: gebaut auf dem Zweig `strategie-ki-sicht`, KI gegen KI zu lang, Frage an den Benutzer (Runden 112, 114, 144) | ki AC-13 |
+| C6f | Die KI sieht nur ihre Sicht und erkundet mit dem Späher — fertig in Runde 165: der Zweig `strategie-ki-sicht` zusammengeführt, im Nebel gilt die Ersatzgrenze von fahrplan AC-11 | ki AC-13 |
 | C6g | Angriff wird gemeldet, ein Klick springt hin — **fertig** (Runde 115) | kampf AC-14 |
 
 ### Stufe D — Ritterzeit
@@ -246,9 +253,9 @@ die Bauabfolge der Stufe E als ersten Schritt aufnimmt: das Zeitalter am
 Dorf, voller Wohnraum oben, Spuren eines Gefechts ([Bedienung](bedienung.md)
 AC-42 bis AC-44).
 
-Offen aus Stufe C und gebaut auf dem Zweig `strategie-ki-sicht`: die KI mit
-eigener Sicht (ki AC-13) — wartet auf die Antwort zu fahrplan AC-11. Wird sie
-eingebunden, misst jeder Schritt ab D9 KI gegen KI mit ihr.
+Aus Stufe C nachgeholt in Runde 165: die KI mit eigener Sicht (ki AC-13).
+Seitdem misst jeder Schritt KI gegen KI mit ihr, im Nebel mit der
+Ersatzgrenze von fahrplan AC-11.
 
 ### Stufe E — Häuser
 

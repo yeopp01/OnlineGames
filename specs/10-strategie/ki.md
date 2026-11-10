@@ -2,7 +2,7 @@
 
 **Bereich:** Strategie
 **Kuerzel:** ki
-**Stand:** 23/29 fertig · 6 offen
+**Stand:** 24/29 fertig · 5 offen
 
 ## Zweck
 
@@ -107,7 +107,7 @@ nicht die Regeln.
   Nahrung nur aus, wenn danach noch einer bezahlt ist; und ein Vorrat, zu dem
   kein Weg führt, wird zwei Minuten lang nicht wieder vorgeschlagen. Ohne das
   endet jede Partie damit, dass beide Seiten einander zusehen.
-- **AC-13** `offen` **KI sieht nur ihr Sichtfeld** — Mit dem Nebel (C6)
+- **AC-13** `fertig` **KI sieht nur ihr Sichtfeld** — Mit dem Nebel (C6)
   kennt sie ein fremdes Gebäude erst, wenn eine ihrer Einheiten es gesehen
   hat, und behält es, bis sie hinsieht und es fehlt (wie kampf AC-12); fremde
   Einheiten nur, solange sie sie sieht. Ziel, Überlegenheit (AC-18) und freie
@@ -124,7 +124,15 @@ nicht die Regeln.
   behoben (Suche, Überlegenheit ohne frischen Blick), 35 von 40 vor Minute
   60; Frage an den Benutzer (Erkenntnisse). **Stand Runde 144:** auf dem
   Boden der wachsenden Wirtschaft (AC-24) 36 von 40 (ohne eigene Sicht 40);
-  Zweig `strategie-ki-sicht` (`d0314d4`), Frage erneuert.
+  Zweig `strategie-ki-sicht` (`d0314d4`), Frage erneuert. **Fertig in Runde
+  165:** der Zweig zusammengeführt (Benutzer, 2026-11-10: die Ersatzgrenze im
+  Nebel, fahrplan AC-11). Gegner ist, wen `welt.feindlich` nennt — ein
+  Verbündeter wird weder gemerkt noch gesucht; was sie sieht, ist die Sicht
+  ihres Teams. Auch der Platz des zweiten Markts (AC-26) richtet sich nach
+  dem Ort, an dem sie den Gegner zuletzt sah, nicht nach seinem Startplatz.
+  KI gegen KI über 40 Startwerte: alle mit Sieger, 37 vor Minute 60, Median
+  44,6 Minuten (ohne eigene Sicht 40, Median 41,9 und 38,3). Eine Partie
+  rechnet rund ein Viertel länger (173 statt 136 ms je 1000 Takte).
 - **AC-14** `fertig` **Die KI verteidigt zu Hause** — Verliert eines ihrer
   Gebäude oder einer ihrer Dorfbewohner Leben, zieht die Wache im Angriffslauf
   zum Angriffsort, und der getroffene Dorfbewohner lässt die Arbeit liegen und
@@ -210,7 +218,10 @@ nicht die Regeln.
   ab dem ersten Angriff: das Militär gibt nur aus, was über dem Preis liegt,
   und die Umverteilung hält das Zurückgelegte nicht für Überfluss. Im
   Prüfstand über zwanzig Startwerte steigt jede KI vor Spielminute 30 auf,
-  die ab Minute 18 nie unter zwölf Dorfbewohner fällt (Vorlage: 16 bis 20
+  die ab Minute 18 nie unter drei Viertel ihres Ziels der Feudalzeit fällt
+  (AC-24: 24 von 32; in Runde 143 die Hälfte, seit der KI im Nebel, AC-13,
+  drei Viertel — im Nebel fallen Verlierer auf 14 bis 20 statt 0 bis 13,
+  Runde 165) (Vorlage: 16 bis 20
   Minuten im guten Spiel). Abweichung: „jede“ galt für alle; wer überrannt
   wird, steckt jede Nahrung in den Ersatz (AC-12) — gemessen fielen die fünf
   ohne Aufstieg auf 0 bis 10 Dorfbewohner, und vor dem ersten Angriff zu

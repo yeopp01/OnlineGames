@@ -45,6 +45,9 @@ etwas anderem gearbeitet.
   mit Sieger vor Minute 90, Median unter 45 Minuten, mindestens 35 von 40
   vor Minute 60** — fahrplan AC-11 bekommt diesen Satz unter derselben
   Nummer, und ki AC-13 wird eingebunden.
+  **Erledigt in Runde 165:** zusammengeführt, 37 von 40 vor Minute 60,
+  Median 44,6, alle mit Sieger (längste 77,9) — die Ersatzgrenze hält,
+  knapp beim Median.
 
 - **Die KI mit eigener Sicht macht KI gegen KI länger — wie weiter?**
   (Runde 114, zweiter Anlauf an ki AC-13) Die KI sieht nur noch, was ihre
@@ -247,7 +250,17 @@ etwas anderem gearbeitet.
   weiten Bild nicht zählbar. Wer eines dieser Bilder anfasst, stellt es neu
   auf (`figurenFrei`, näher heran).
 
-- **ki AC-13 liegt auf dem Zweig `strategie-ki-sicht`** (`d0314d4`, Runden
+- **Der Späher kann ins Heer geraten** (Durchsicht Runde 165, nicht
+  behoben): `heerPruefen` nimmt jede Kampfeinheit, auch den Späherreiter,
+  der gerade erkundet; dann bricht `erkunden` ab, und gesucht wird nur noch
+  mit dem Heer. Und **das Heer als Sucher kennt kein „Punkt unerreichbar"**:
+  liegt `suchziel` hinter Wasser oder Wald, läuft es, bis die Wegsuche
+  aufgibt, und nimmt erst dann das nächste. Beides kostet Minuten in den
+  langen Partien (Startwerte 10, 18); wer an der Dauer KI gegen KI im Nebel
+  arbeitet, fängt hier an. Und: `s.aus` (wer ausgeschieden ist) liest die
+  KI aus der Welt, nicht aus ihrer Sicht — wie ein Mensch die Ansage.
+
+- Erledigt in Runde 165: **ki AC-13 lag auf dem Zweig `strategie-ki-sicht`** (`d0314d4`, Runden
   112, 114 und 144; die Frage ganz oben): die KI mit eigener Sicht, Späher, Suche über die ganze Karte,
   überlegen nur mit frischem Blick. KI gegen KI: 35 von 40 Partien vor
   Minute 60 (alter Stand 39); übrig sind Patts mit leerer Wirtschaft
@@ -550,6 +563,7 @@ Zahlen, gegen die spätere Runden vergleichen. Mit Datum und Commit.
 | 2026-11-09 | `npm run check` (zwei Abschnitte, `tests/partien/` danach) | 651 + 8 Tests, 170 und 165 s, zweimal grün; vorher 151–193 s mit einheiten AC-31 einmal von zweien rot | Rückschau 152 |
 | 2026-11-09 | Browserlauf; Tests ohne Browser | 203 Fälle in 18,9 und 19,6 min (Lauf ohne und mit neuen Bildern; Maschine nicht vorher geprüft, bei der Rückschau ruhig); 664 + 8 Tests; langsamste fahrplan AC-24 108 s, AC-14 90 s, AC-12 84 s | Rückschau 158 |
 | 2026-11-10 | Browserlauf; Tests ohne Browser | 207 Fälle in 21,4 min (Runde 161, Maschine nicht vorher geprüft); 695 + 8 Tests, `npm run check:kurz` 277 s | Rückschau 163 |
+| 2026-11-10 | KI gegen KI **im Nebel** (ki AC-13), Startwerte 1-20 / 21-40 bis Minute 90 | 18/20 und 19/20 vor Minute 60, Median 46,0 / 41,9 (gesamt 44,6), längste 77,9 @18; HEAD 41,9 / 38,3; 117–173 ms je 1000 Takte gegen 110–136 (verrauscht, rund ein Viertel mehr); `npm run check:kurz` 702 + 9 Tests in 231 s | Runde 165 |
 
 ## Rückschauen
 
@@ -1745,6 +1759,25 @@ ihn, mit Gegenprobe an beiden Formen. Fünf Bilder neu, alle angesehen.
 Neueste oben. Eine Zeile je Runde: Nummer, Datum, Kriterien, Ergebnis,
 wichtigste Erkenntnis.
 
+- **165** · 2026-11-10 · **ki AC-13 fertig: die KI sieht nur ihr
+  Sichtfeld** — der Zweig `strategie-ki-sicht` zusammengeführt (Benutzer),
+  Konflikt nur in `ki.js`. Nachgezogen, was seit Runde 144 dazukam: Teams
+  (`welt.feindlich` statt „nicht meins" beim Wahrnehmen, sonst hielt sie
+  den Verbündeten für den Gegner), Handel (`fernerMarktplatz` weg vom Ort,
+  an dem sie den Feind sah), Karren und Mönche zählen nicht als Gegner
+  (`kaempft`). Zwei Fehler aus dem Zweig: der Merker „einmal je Takt"
+  übersah eine neue Sicht im selben Takt (jetzt mit `welt.sichtStempel`),
+  und `feindOrt` = das zuletzt Gesehene schickte das Heer über Eck zum
+  Falschen (jetzt geht ein bekanntes Dorfzentrum vor). KI gegen KI im
+  Nebel: 37 von 40 vor Minute 60, Median 44,6 (HEAD 40 von 40, 41,9 und
+  38,3), Ersatzgrenze in `tests/partien/ki-im-nebel.test.mjs` (40 Partien
+  in vier Fäden, rund 60 s). Drei alte Tests hingen am Allwissen: ki AC-21
+  (Schwelle 16 trennte nicht mehr, jetzt drei Viertel = 24), ki AC-12
+  („überrannt" zählt jetzt jeden, der daheim fällt), ki AC-25 und
+  Bündnistests eröffnen aufgedeckt. **Gelernt:** ein Zweig, der 24 Commits
+  alt ist, braucht nach dem Zusammenführen dieselbe Durchsicht wie neuer
+  Code — die Funde zu Teams, Handel und Karren lagen an Stellen, die der
+  Zweig nie gesehen hatte; der Merge war konfliktfrei, wo sie standen.
 - **164** · 2026-11-10 · **Spec-Runde Stufe E: Häuser nach ADR-0014.**
   Fahrplan AC-16 bis AC-18 neu gefasst (gleiche Nummern), Bauabfolge E1
   bis E10; spielziel AC-16 bis AC-18 neu, AC-25 (Mannschaftsbonus nur im

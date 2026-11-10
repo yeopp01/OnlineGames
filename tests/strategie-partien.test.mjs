@@ -1,7 +1,9 @@
 // Ganze Partien KI gegen KI (→ specs/10-strategie/fahrplan.md AC-11) - im
 // Pruefstand ohne Browser (→ docs/adr/0004-teststrategie.md). Eine eigene
-// Datei, weil zwanzig Partien rund 25 s rechnen: so laufen sie neben den
-// anderen Dateien statt hinter den Messungen in strategie-ki.test.mjs.
+// Datei, weil die Partien rechnen: so laufen sie neben den anderen Dateien
+// statt hinter den Messungen in strategie-ki.test.mjs. Die Messung von
+// fahrplan AC-11 selbst steht seit Runde 165 in tests/partien/ki-im-nebel
+// (vierzig Partien im Nebel bis Minute 90).
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { createRequire } from 'node:module';
@@ -10,31 +12,8 @@ const require = createRequire(import.meta.url);
 const { Ki } = require('../server/spiele/strategie/ki.js');
 const { partieSpielen } = require('../server/spiele/strategie/pruefstand.js');
 
-// Eine Partie je Startwert, einmal gerechnet: der Test zum Aufgeben braucht
-// dieselben zehn Partien wie fahrplan AC-11 noch einmal.
-const gespielt = new Map();
-const partie = (startwert) => {
-  if (!gespielt.has(startwert)) gespielt.set(startwert, partieSpielen({ startwert, minuten: 60 }));
-  return gespielt.get(startwert);
-};
-
-test('fahrplan AC-11: KI gegen KI endet ueber zwanzig Startwerte mit einem Sieger, jede Partie vor Minute 60', () => {
-  // Gemessen in Runde 97, Startwerte 1 bis 20: alle mit Sieger, Ende nach
-  // 24,8 bis 53,3 Minuten, Median 33,8. Vorher (Runde 92) 4 von 20 vor Minute
-  // 60, (Runde 95) 18, (Runde 96) 19 - die letzte war Startwert 5 mit 62,0.
-  const enden = [];
-  const sieger = new Set();
-  for (let startwert = 1; startwert <= 20; startwert++) {
-    const r = partie(startwert);
-    assert.ok(r.ende?.sieger, `Startwert ${startwert}: kein Sieger bis Minute 60`);
-    enden.push(r.ende.takt);
-    sieger.add(r.ende.sieger);
-  }
-  // Gegenprobe zum Messaufbau: zwanzig verschiedene Partien, und nicht immer
-  // dieselbe Seite vorn.
-  assert.ok(new Set(enden).size >= 15, `${new Set(enden).size} verschiedene Enden`);
-  assert.equal(sieger.size, 2, 'mal gewinnt die eine KI, mal die andere');
-});
+// Bis Minute 90: im Nebel endet Startwert 10 nach 68 Minuten (Runde 165).
+const partie = (startwert) => partieSpielen({ startwert, minuten: 90 });
 
 test('fahrplan AC-11 und ki AC-19: ohne Aufgeben dauert ueber zehn Startwerte keine Partie kuerzer, im Mittel zwei Minuten laenger', () => {
   // Gegenprobe zur Ursache: das Aufgeben verkuerzt die Partien, und nicht
@@ -52,6 +31,7 @@ test('fahrplan AC-11 und ki AC-19: ohne Aufgeben dauert ueber zehn Startwerte ke
   for (let startwert = 1; startwert <= 10; startwert++) {
     const mit = partie(startwert).ende;
     assert.ok(mit, `Startwert ${startwert}: mit Aufgeben entschieden`);
+    // Ohne Aufgeben bis Minute 90; endet sie dann nicht, zaehlt sie als 90.
     Ki.prototype.aussichtslos = () => false;
     let ohne;
     try {
