@@ -178,10 +178,12 @@ ihn auf die Strecke; Gold je Rueckkehr nach `0,46 * d * (d / S + 0,3)` aus der
 Vorlage (nicht geprueft) - als Daten. Drei Stellen fuer den Rechtsklick
 zusammen (`welt.befehl`, `ansicht.zielzeichenSetzen`, `kampfwerteZeile`), ein
 neuer Merker fuer `w` in `befehl()` und `einheitSterben()` zuruecksetzen.
-Danach ki AC-26 (die KI handelt). Frage des Benutzers aus Runde 160: Figuren
-mit Blender? Versuch liegt im Scratchpad, Empfehlung: nur als Entscheidung fuer
-alle Figuren (ADR), nicht fuer eine - Antwort abwarten, nichts umbauen.
-**Naechste Rueckschau: Runde 163.** Noch nicht gepusht: 156-160 (nur
+Danach ki AC-26 (die KI handelt). **Blender:** eine Parallelsitzung baut seit
+2026-11-10 alle Figuren und Gebaeude mit Blender neu (Benutzer). Bis sie
+eingebunden ist: `public/figuren.js`, `public/gebaeude.js`,
+`public/schautafel.js` nicht anfassen, keine neue Figur zeichnen - braucht
+eine Runde eine, Aussehen als offen vermerken und fragen.
+**Naechste Rueckschau: Runde 163.** Gepusht bis 160 (3a37741); weiter nur
 pushen, wenn der Benutzer da ist). Offen fuer spaeter: im Vorraum auf
 1366 x 768 rutscht bei aufgeklapptem Formular die Karte des
 Fussballmanagers an den Rand (erlaubt nach auswahl AC-23).
