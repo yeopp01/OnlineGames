@@ -19,6 +19,10 @@ test('darstellung AC-17: die Bildprobe zeigt Dorfbewohner, Haus und Baum gerende
   expect(tafeln.map((t) => t.name)).toEqual(['dorfbewohner', 'haus', 'baum']);
   const figur = tafeln.find((t) => t.name === 'dorfbewohner');
   expect(figur.zeilen).toBe(8);
+  // Die Tafeln sind WebP (darstellung AC-18) - und der Server nennt sie auch so,
+  // statt sie als unbekannte Datei zu schicken.
+  const tafel = await page.request.get('/bilder/dorfbewohner.webp');
+  expect(tafel.headers()['content-type']).toBe('image/webp');
 
   // Acht Blickrichtungen sind acht verschiedene Bilder - und Blau faerbt
   // etwas, aber nicht alles. Gemessen an der stehenden Figur je Zeile.

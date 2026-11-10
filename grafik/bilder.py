@@ -3,9 +3,11 @@
 #   blender -b -P grafik/bilder.py -- haus baum dorfbewohner
 #   npm run bilder -- haus
 #
-# Ohne Namen rendert sie alles. Die Bilder landen in public/bilder/.
+# Ohne Namen rendert sie alles, was in grafik/verzeichnis.json steht. Die
+# Bilder landen in public/bilder/.
 
 import importlib
+import json
 import os
 import sys
 import time
@@ -13,7 +15,10 @@ import time
 HIER = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HIER)
 
-MODELLE = ['haus', 'baum', 'dorfbewohner', 'marktkarren']
+# Welche Modelle es gibt, steht im Verzeichnis der Kette (darstellung AC-18) -
+# dieselbe Datei, an der `npm run check` die Bilder prueft.
+with open(os.path.join(HIER, 'verzeichnis.json'), encoding='utf-8') as datei:
+    MODELLE = [m['name'] for m in json.load(datei)['modelle']]
 
 
 def main():

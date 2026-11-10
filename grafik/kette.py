@@ -258,14 +258,29 @@ def _lesen(pfad):
     return feld.reshape(h, b, 4)[::-1]
 
 
+# Die Tafeln liegen als WebP mit Guete 90 vor (darstellung AC-18, gemessen
+# 2026-11-10): ein Drittel der Groesse von PNG, die Deckung bleibt genau, die
+# Farbe weicht im Mittel um weniger als 1 von 255 ab - sechsfach vergroessert
+# neben PNG nicht zu unterscheiden; bei Guete 60 verliert die Figur ihr Gesicht.
+GUETE = 90
+# Mehr fasst eine WebP-Datei je Seite nicht.
+WEBP_SEITE = 16383
+
+
 def _schreiben(pfad, feld):
     h, b, _ = feld.shape
+    webp = pfad.endswith('.webp')
+    if webp and max(b, h) > WEBP_SEITE:
+        raise SystemExit(f'{os.path.basename(pfad)}: {b} x {h} Bildpunkte - eine WebP-Datei fasst hoechstens {WEBP_SEITE} je Seite; die Tafel teilen')
     bild = bpy.data.images.new('tafel', b, h, alpha=True)
     bild.alpha_mode = 'STRAIGHT'
     bild.pixels.foreach_set(np.ascontiguousarray(feld[::-1]).ravel())
     bild.filepath_raw = pfad
-    bild.file_format = 'PNG'
-    bild.save()
+    bild.file_format = 'WEBP' if webp else 'PNG'
+    if webp:
+        bild.save(quality=GUETE)
+    else:
+        bild.save()
     bpy.data.images.remove(bild)
 
 
@@ -304,12 +319,12 @@ class Tafel:
                 # nur die Deckung.
                 maske[z * h:(z + 1) * h, s * b:(s + 1) * b] = np.where(spieler[:, :, None] >= 1 / 255, 1.0, 0.0)
                 maske[z * h:(z + 1) * h, s * b:(s + 1) * b, 3] = np.where(spieler >= 1 / 255, spieler, 0.0)
-        _schreiben(os.path.join(self.ziel, f'{self.name}.png'), feld)
+        _schreiben(os.path.join(self.ziel, f'{self.name}.webp'), feld)
         if self.maske:
-            _schreiben(os.path.join(self.ziel, f'{self.name}-maske.png'), maske)
+            _schreiben(os.path.join(self.ziel, f'{self.name}-maske.webp'), maske)
         angaben = {
-            'bild': f'{self.name}.png',
-            'maske': f'{self.name}-maske.png' if self.maske else None,
+            'bild': f'{self.name}.webp',
+            'maske': f'{self.name}-maske.webp' if self.maske else None,
             'zelle': list(self.zelle),
             'fuss': list(self.fuss),
             'feldbreite': FELD_BREITE,
@@ -326,8 +341,8 @@ class Tafel:
 def vorschau(ziel, name, spielerfarbe=(0.29, 0.565, 0.85), gras=(0.33, 0.40, 0.22)):
     """Ein Wegwerfbild zum Ansehen: die Tafel auf Gras, die Maske eingefaerbt,
     daneben dasselbe in halber Groesse - so gross wie beim Start einer Partie."""
-    bild = _lesen(os.path.join(ziel, f'{name}.png'))
-    pfad_maske = os.path.join(ziel, f'{name}-maske.png')
+    bild = _lesen(os.path.join(ziel, f'{name}.webp'))
+    pfad_maske = os.path.join(ziel, f'{name}-maske.webp')
     farbe = bild[:, :, :3].copy()
     if os.path.exists(pfad_maske):
         m = _lesen(pfad_maske)[:, :, 3:4]

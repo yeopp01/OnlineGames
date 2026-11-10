@@ -1,6 +1,6 @@
 {
-  "bild": "haus.png",
-  "maske": "haus-maske.png",
+  "bild": "haus.webp",
+  "maske": "haus-maske.webp",
   "zelle": [
     400,
     330

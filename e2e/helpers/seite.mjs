@@ -18,7 +18,11 @@ export const GRIFFHAFEN = (Number(process.env.E2E_HAFEN) || 4191) + 1;
  */
 export function fehlerSammeln(page) {
   const fehler = [];
-  page.on('pageerror', (e) => fehler.push(`Ausnahme: ${e.message}`));
+  // Mit der Stelle, an der sie flog: eine Ausnahme, die in einem von 206
+  // Faellen einmal auftritt, laesst sich sonst nicht wiederfinden (R2 des
+  // Bildumbaus: "drawImage ... width or height of 0", ohne Ort).
+  const stelle = (e) => (e.stack || '').split('\n').slice(1, 4).map((zeile) => zeile.trim()).filter(Boolean).join(' < ');
+  page.on('pageerror', (e) => fehler.push(`Ausnahme: ${e.message}${stelle(e) ? ` (${stelle(e)})` : ''}`));
   page.on('console', (meldung) => {
     if (meldung.type() === 'error' && !meldung.text().startsWith('Failed to load resource')) {
       fehler.push(`console.error: ${meldung.text()}`);

@@ -2,7 +2,7 @@
 
 **Bereich:** Strategie
 **Kuerzel:** darstellung
-**Stand:** 16/24 fertig · 8 offen
+**Stand:** 17/24 fertig · 7 offen
 
 ## Zweck
 
@@ -134,12 +134,16 @@ nicht so kindlich gemalt". Die Bauabfolge R1 bis R6 steht im
   Bild ist die Vorlage für diese Entscheidung — mehr belegt es nicht.
   Gemessen wird dabei die Größe der Bilddateien
   ([Stand des Umbaus](../../docs/strategie/bildumbau.md)).
-- **AC-18** `offen` **Bilder aus eigenen Skripten** — Zu jeder Rastergrafik
-  unter `public/bilder/` steht im Verzeichnis der Kette, welches Skript sie
-  erzeugt; `npm run bilder` schreibt sie neu. `npm run check` läuft ohne
-  Blender und beanstandet ein Bild ohne Eintrag ebenso wie einen Eintrag ohne
-  Bild. Fremdes Material steht mit Herkunft und Lizenz (nur CC0) in
-  `grafik/QUELLEN.md`. Löst den prüfbaren Teil von AC-11 ein.
+- **AC-18** `fertig` **Bilder aus eigenen Skripten** — Zu jeder Rastergrafik
+  unter `public/bilder/` steht im Verzeichnis der Kette
+  (`grafik/verzeichnis.json`), welches Skript sie erzeugt; `npm run bilder`
+  schreibt sie neu und rendert genau das, was dort steht. `npm run check`
+  läuft ohne Blender und beanstandet ein Bild ohne Eintrag ebenso wie einen
+  Eintrag ohne Bild. Fremdes Material steht mit Herkunft und Lizenz (nur CC0)
+  in `grafik/QUELLEN.md`; eine Datei unter `grafik/`, die kein eigenes Skript
+  ist und dort fehlt, wird beanstandet. Die Tafeln liegen als WebP vor
+  (gemessen: ein Drittel der Größe von PNG, am Bild nicht zu unterscheiden).
+  Löst den prüfbaren Teil von AC-11 ein.
 - **AC-19** `offen` **Acht Blickrichtungen** — Eine Einheit schaut dorthin,
   wohin sie geht oder schlägt, in acht Richtungen statt zwei. Wer steht,
   behält die letzte. Geprüft: acht Marschziele rund um eine Einheit ergeben

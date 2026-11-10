@@ -1,0 +1,9 @@
+{
+  "hinweis": "Das Verzeichnis der Renderkette (ADR-0014, darstellung AC-18): zu jeder Rastergrafik unter public/bilder/ das Skript, das sie erzeugt. `npm run bilder` rendert, was hier steht; `npm run check` beanstandet ein Bild ohne Eintrag ebenso wie einen Eintrag ohne Bild. Ein neues Modell: Skript mit bauen() und tafel(ziel) anlegen, hier eintragen, `npm run bilder -- <name>`.",
+  "modelle": [
+    { "name": "haus", "skript": "haus.py", "bilder": ["haus.webp", "haus-maske.webp"] },
+    { "name": "baum", "skript": "baum.py", "bilder": ["baum.webp"] },
+    { "name": "dorfbewohner", "skript": "dorfbewohner.py", "bilder": ["dorfbewohner.webp", "dorfbewohner-maske.webp"] },
+    { "name": "marktkarren", "skript": "marktkarren.py", "bilder": ["marktkarren.webp", "marktkarren-maske.webp"] }
+  ]
+}

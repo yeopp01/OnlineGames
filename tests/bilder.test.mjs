@@ -1,4 +1,5 @@
-// Die gerenderten Bilder (→ specs/10-strategie/darstellung.md AC-17, ADR-0014).
+// Die gerenderten Bilder (→ specs/10-strategie/darstellung.md AC-17 und AC-18,
+// ADR-0014).
 //
 // Ohne Blender und ohne Browser pruefbar ist, ob das, was eingecheckt ist,
 // zusammenpasst: jede Tafel so gross, wie ihre Beschreibung sagt, die Maske
@@ -6,16 +7,13 @@
 import assert from 'node:assert/strict';
 import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { test } from 'node:test';
+import { bestandLesen, bildmasse, modelleWaehlen, quellenPruefen, quellenZeilen, verzeichnisPruefen } from '../scripts/bilder-verzeichnis.mjs';
 
 const ordner = new URL('../public/bilder/', import.meta.url);
 const grafik = new URL('../grafik/', import.meta.url);
 
-/** Breite und Hoehe aus dem Kopf einer PNG-Datei. */
-function masse(datei) {
-  const kopf = readFileSync(new URL(datei, ordner));
-  assert.equal(kopf.toString('latin1', 1, 4), 'PNG', `${datei} ist keine PNG-Datei`);
-  return { breite: kopf.readUInt32BE(16), hoehe: kopf.readUInt32BE(20), farbart: kopf[25] };
-}
+/** Breite, Hoehe und Durchsicht aus dem Kopf einer Tafel. */
+const masse = (datei) => bildmasse(readFileSync(new URL(datei, ordner)));
 
 const beschreibungen = readdirSync(ordner).filter((n) => n.endsWith('.json'))
   .map((n) => ({ name: n.replace(/\.json$/, ''), ...JSON.parse(readFileSync(new URL(n, ordner), 'utf8')) }));
@@ -30,8 +28,8 @@ test('darstellung AC-17: jede Tafel ist so gross, wie ihre Beschreibung sagt, un
     const bild = masse(b.bild);
     assert.equal(bild.breite, b.zelle[0] * b.spalten, `${b.bild}: Breite`);
     assert.equal(bild.hoehe, b.zelle[1] * b.zeilen, `${b.bild}: Hoehe`);
-    // Farbart 6 ist RGB mit Durchsicht - ohne sie staende jedes Stueck in einem Kasten.
-    assert.equal(bild.farbart, 6, `${b.bild}: keine Durchsicht`);
+    // Ohne Durchsicht staende jedes Stueck in einem Kasten.
+    assert.ok(bild.durchsicht, `${b.bild}: keine Durchsicht`);
     assert.ok(b.fuss[0] > 0 && b.fuss[0] < b.zelle[0] && b.fuss[1] > 0 && b.fuss[1] <= b.zelle[1], `${b.name}: Fusspunkt ausserhalb der Zelle`);
     if (b.maske) {
       const maske = masse(b.maske);
@@ -51,14 +49,145 @@ test('darstellung AC-17: der Dorfbewohner steht und geht in acht Blickrichtungen
 });
 
 test('darstellung AC-17: zu jedem Bild gibt es das Modell als Skript', () => {
+  for (const b of beschreibungen) assert.ok(existsSync(new URL(`${b.name}.py`, grafik)), `grafik/${b.name}.py fehlt`);
+});
+
+// ---------------------------------------------------------------------------
+// Das Verzeichnis der Kette (darstellung AC-18): welches Skript erzeugt welches
+// Bild. Geprueft wird der Bestand auf der Platte - und an gestellten
+// Bestaenden, dass die Pruefung jeden der Faelle auch wirklich beanstandet.
+// ---------------------------------------------------------------------------
+
+const bestand = bestandLesen();
+// Ein Bestand zum Verstellen: tief kopiert, damit kein Fall den naechsten faerbt.
+const gestellt = (aendern) => {
+  const kopie = structuredClone(bestand);
+  aendern(kopie);
+  return kopie;
+};
+
+test('darstellung AC-18: jede Rastergrafik unter public/bilder/ steht mit ihrem Skript im Verzeichnis', () => {
+  assert.deepEqual(verzeichnisPruefen(bestand), []);
+  // Nicht leer gruen: die Stuecke der Probe und der Marktkarren stehen darin.
+  const namen = bestand.verzeichnis.modelle.map((m) => m.name);
+  for (const name of ['dorfbewohner', 'haus', 'baum', 'marktkarren']) assert.ok(namen.includes(name), `${name} fehlt im Verzeichnis`);
+  assert.ok(bestand.bilddateien.filter((d) => !d.endsWith('.json')).length >= 7, 'unter public/bilder/ liegen die Tafeln und ihre Masken');
+});
+
+test('darstellung AC-18: ein Bild ohne Eintrag wird beanstandet', () => {
+  const funde = verzeichnisPruefen(gestellt((b) => b.bilddateien.push('ritter.webp')));
+  assert.equal(funde.length, 1);
+  assert.match(funde[0], /ritter\.webp: Bild ohne Eintrag/);
+  // Auch eine Maske, die niemand nennt, ist ein Bild ohne Eintrag.
+  const ohneMaske = verzeichnisPruefen(gestellt((b) => {
+    b.verzeichnis.modelle.find((m) => m.name === 'haus').bilder = ['haus.webp'];
+  }));
+  assert.ok(ohneMaske.some((f) => /haus-maske\.webp: Bild ohne Eintrag/.test(f)), ohneMaske.join('\n'));
+});
+
+test('darstellung AC-18: ein Eintrag ohne Bild wird beanstandet', () => {
+  const funde = verzeichnisPruefen(gestellt((b) => {
+    b.verzeichnis.modelle.push({ name: 'ritter', skript: 'haus.py', bilder: ['ritter.webp'] });
+  }));
+  assert.ok(funde.some((f) => /ritter: Eintrag ohne Bild/.test(f)), funde.join('\n'));
+  // Ein Bild, das von der Platte verschwindet, faellt genauso auf.
+  const geloescht = verzeichnisPruefen(gestellt((b) => {
+    b.bilddateien = b.bilddateien.filter((d) => d !== 'baum.webp');
+  }));
+  assert.ok(geloescht.some((f) => /baum: Eintrag ohne Bild/.test(f)), geloescht.join('\n'));
+});
+
+test('darstellung AC-18: ein Eintrag ohne Skript und ein Bild mit zwei Skripten werden beanstandet', () => {
+  const ohneSkript = verzeichnisPruefen(gestellt((b) => {
+    b.grafikdateien = b.grafikdateien.filter((d) => d !== 'baum.py');
+  }));
+  assert.deepEqual(ohneSkript, ['baum: das Skript grafik/baum.py fehlt']);
+  const doppelt = verzeichnisPruefen(gestellt((b) => {
+    b.verzeichnis.modelle.find((m) => m.name === 'baum').bilder.push('haus.webp');
+  }));
+  assert.ok(doppelt.some((f) => /haus\.webp steht bei haus und bei baum/.test(f)), doppelt.join('\n'));
+});
+
+test('darstellung AC-18: die Tafeln liegen als WebP vor, und der Kopf wird in jeder Fassung richtig gelesen', () => {
+  // Gemessen am 2026-11-10: WebP mit Guete 90 ist ein Drittel so gross wie PNG
+  // (docs/strategie/bildumbau.md). Ein PNG unter public/bilder/ waere ein
+  // Rueckfall - oder ein Wegwerfbild, das nicht hierher gehoert.
+  for (const datei of bestand.bilddateien.filter((d) => !d.endsWith('.json'))) {
+    assert.match(datei, /\.webp$/, `public/bilder/${datei} ist kein WebP`);
+    assert.equal(masse(datei).art, 'webp', `public/bilder/${datei} heisst nur so`);
+  }
+  // Der Kopfleser an gestellten Koepfen - die eingecheckten Tafeln sind alle
+  // von einer Fassung, die anderen zwei kaemen sonst nie dran.
+  const kopf = (teil, fuellen) => {
+    const k = Buffer.alloc(32);
+    k.write('RIFF', 0, 'latin1');
+    k.write('WEBP', 8, 'latin1');
+    k.write(teil, 12, 'latin1');
+    fuellen(k);
+    return k;
+  };
+  const erweitert = kopf('VP8X', (k) => {
+    k[20] = 0x10;
+    k.writeUIntLE(1296 - 1, 24, 3);
+    k.writeUIntLE(1024 - 1, 27, 3);
+  });
+  assert.deepEqual(bildmasse(erweitert), { art: 'webp', breite: 1296, hoehe: 1024, durchsicht: true });
+  const verlustfrei = kopf('VP8L', (k) => {
+    k[20] = 0x2f;
+    k.writeUInt32LE(((400 - 1) | ((330 - 1) << 14) | (1 << 28)) >>> 0, 21);
+  });
+  assert.deepEqual(bildmasse(verlustfrei), { art: 'webp', breite: 400, hoehe: 330, durchsicht: true });
+  const einfach = kopf('VP8 ', (k) => {
+    k.writeUInt16LE(300, 26);
+    k.writeUInt16LE(240, 28);
+  });
+  assert.deepEqual(bildmasse(einfach), { art: 'webp', breite: 300, hoehe: 240, durchsicht: false });
+  assert.throws(() => bildmasse(Buffer.from('GIF89a..........................')), /weder WebP noch PNG/);
+});
+
+test('darstellung AC-18: npm run bilder rendert, was im Verzeichnis steht - und nichts anderes', () => {
+  const alle = bestand.verzeichnis.modelle.map((m) => m.name);
+  assert.deepEqual(modelleWaehlen(bestand.verzeichnis), alle);
+  assert.deepEqual(modelleWaehlen(bestand.verzeichnis, ['baum']), ['baum']);
+  assert.throws(() => modelleWaehlen(bestand.verzeichnis, ['drache']), /Kein Modell "drache"/);
+  // Die Kette in Blender liest dieselbe Datei und fuehrt keine zweite Liste.
   const kette = readFileSync(new URL('bilder.py', grafik), 'utf8');
-  for (const b of beschreibungen) {
-    assert.ok(existsSync(new URL(`${b.name}.py`, grafik)), `grafik/${b.name}.py fehlt`);
-    assert.ok(kette.includes(`'${b.name}'`), `grafik/bilder.py kennt ${b.name} nicht`);
-  }
-  // Und umgekehrt keine Rastergrafik ohne Beschreibung.
-  const bekannt = new Set(beschreibungen.flatMap((b) => [b.bild, b.maske].filter(Boolean)));
-  for (const datei of readdirSync(ordner).filter((n) => n.endsWith('.png'))) {
-    assert.ok(bekannt.has(datei), `public/bilder/${datei} hat keine Beschreibung`);
-  }
+  assert.match(kette, /verzeichnis\.json/);
+  for (const name of alle) assert.ok(!kette.includes(`'${name}'`), `grafik/bilder.py nennt ${name} noch selbst`);
+});
+
+test('darstellung AC-18: der Browser laedt nur Tafeln, die im Verzeichnis stehen', () => {
+  const quelle = readFileSync(new URL('../public/bilder.js', import.meta.url), 'utf8');
+  const liste = /const NAMEN = \[([^\]]*)\]/.exec(quelle);
+  assert.ok(liste, 'public/bilder.js: die Liste NAMEN nicht gefunden');
+  const geladen = [...liste[1].matchAll(/'([^']+)'/g)].map((m) => m[1]);
+  assert.ok(geladen.length >= 3);
+  const alle = bestand.verzeichnis.modelle.map((m) => m.name);
+  for (const name of geladen) assert.ok(alle.includes(name), `public/bilder.js laedt ${name}, das Verzeichnis kennt es nicht`);
+});
+
+test('darstellung AC-18: fremdes Material steht mit Herkunft in QUELLEN.md, und nur unter CC0', () => {
+  assert.deepEqual(quellenPruefen(bestand), []);
+  const kopf = '| Was | Woher | Lizenz |\n| --- | --- | --- |\n';
+  // Eine Datei unter grafik/, die kein Skript ist und nirgends steht.
+  const fremd = quellenPruefen(gestellt((b) => b.grafikdateien.push('stoffe/eiche.jpg')));
+  assert.deepEqual(fremd, ['grafik/stoffe/eiche.jpg ist kein eigenes Skript und steht nicht in grafik/QUELLEN.md']);
+  // Eingetragen unter CC0: in Ordnung.
+  const eingetragen = gestellt((b) => {
+    b.grafikdateien.push('stoffe/eiche.jpg');
+    b.quellen = `${kopf}| stoffe/eiche.jpg | ambientcg.com, Wood 051 | CC0 1.0 |\n`;
+  });
+  assert.deepEqual(quellenPruefen(eingetragen), []);
+  assert.deepEqual(quellenZeilen(eingetragen.quellen), [{ was: 'stoffe/eiche.jpg', woher: 'ambientcg.com, Wood 051', lizenz: 'CC0 1.0' }]);
+  // Eingetragen unter einer anderen Lizenz oder ohne Herkunft: nicht.
+  const andere = quellenPruefen(gestellt((b) => {
+    b.grafikdateien.push('stoffe/eiche.jpg');
+    b.quellen = `${kopf}| stoffe/eiche.jpg | irgendwo | CC BY 4.0 |\n`;
+  }));
+  assert.equal(andere.length, 1);
+  assert.match(andere[0], /erlaubt ist nur CC0/);
+  const ohneHerkunft = quellenPruefen(gestellt((b) => {
+    b.quellen = `${kopf}| ein Gesicht | – | CC0 |\n`;
+  }));
+  assert.deepEqual(ohneHerkunft, ['grafik/QUELLEN.md: ein Gesicht ohne Herkunft']);
 });

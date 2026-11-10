@@ -40,8 +40,16 @@ die Zeilen unter „Für die Erkenntnisse" dorthin und erzeugt das Board neu
 - **Die Kette rendert seit 2026-11-10 in einem Durchgang** — Anlass waren
   schwarze Stoffe in der ersten Tafel des Marktkarrens, siehe unten. Alle
   vier Tafeln sind damit neu geschrieben.
-- **Als Nächstes:** R2 — zuerst die Messungen (Größe, Speicher, Bildrate),
-  dann der Rest der Kette.
+- **R2 (2026-11-10): die Kette ist prüfbar** (darstellung AC-18 fertig).
+  `grafik/verzeichnis.json` ist die eine Liste der Modelle — `npm run bilder`
+  rendert daraus, `npm run check` prüft daran. Davor die drei Messungen, die
+  seit der Probe offen waren (Größe, Speicher, Bildrate), siehe „R2: gemessen
+  und entschieden". Daraus: die Tafeln sind jetzt **WebP**, gefärbt wird
+  **je Zelle**.
+- **Als Nächstes:** R3 — Gelände und Vorräte (darstellung AC-23).
+- **Beim Einbinden zu lösen:** auf `strategie` ist die Nummer ADR-0014
+  inzwischen vergeben (Häuser statt Völker), ADR-0015 auch. Dieser Zweig
+  nennt den Bildumbau deshalb **ADR-0016** (umbenannt am 2026-11-10).
 - **Blender 5.2.3** liegt unter
   `C:\Program Files\Blender Foundation\Blender 5.2\blender.exe` (per winget,
   nicht im PATH). `npm run bilder` findet es dort.
@@ -57,9 +65,12 @@ grafik/baum.py
 grafik/dorfbewohner.py
 grafik/marktkarren.py
 grafik/bilder.py        Einstieg: blender -b -P grafik/bilder.py -- haus
-scripts/bilder.mjs      npm run bilder [-- haus baum]
-public/bilder/          <name>.png, <name>-maske.png, <name>.json (eingecheckt)
-public/bilder.js        lädt die Tafeln, färbt die Maske ein, zeichnet eine Zelle
+grafik/verzeichnis.json welches Skript erzeugt welche Bilder (AC-18)
+grafik/QUELLEN.md       fremdes Material mit Herkunft, nur CC0 — bisher keines
+scripts/bilder.mjs      npm run bilder [-- haus baum], prüft danach das Verzeichnis
+scripts/bilder-verzeichnis.mjs  die Prüfung ohne Blender, auch für npm run check
+public/bilder/          <name>.webp, <name>-maske.webp, <name>.json (eingecheckt)
+public/bilder.js        lädt die Tafeln, färbt eine Zelle ein, zeichnet sie
 public/bildprobe.html   die Probe: gerendert neben gezeichnet
 ```
 
@@ -111,19 +122,19 @@ public/bildprobe.html   die Probe: gerendert neben gezeichnet
 
 ## Gemessen
 
-| Tafel | Zellen | Zelle | Tafel | Maske | Rechenzeit allein | drei Durchgänge (R1) |
+| Tafel | Zellen | Zelle | Tafel (WebP) | Maske | Rechenzeit allein | als PNG (bis R1) |
 | --- | --- | --- | --- | --- | --- | --- |
-| haus | 1 | 400 × 330 | 126 KB | 4 KB | 6,4 s | 12 s |
-| baum | 4 Gestalten | 300 × 240 | 230 KB | – | 17 s | 21 s |
-| dorfbewohner | 8 Richtungen × 9 Bilder | 144 × 128 | 703 KB | 79 KB | 55 s | 81 s |
-| marktkarren | 8 Richtungen × 9 Bilder | 384 × 252 | 2637 KB | 211 KB | nicht allein gemessen | – |
+| haus | 1 | 400 × 330 | 27 KB | 1 KB | 9,5 s | 126 + 4 KB |
+| baum | 4 Gestalten | 300 × 240 | 73 KB | – | 19,5 s | 230 KB |
+| dorfbewohner | 8 Richtungen × 9 Bilder | 144 × 128 | 245 KB | 28 KB | 73 s | 703 + 79 KB |
+| marktkarren | 8 Richtungen × 9 Bilder | 384 × 252 | 942 KB | 46 KB | 383 s | 2637 + 211 KB |
 
-Zusammen 4,0 MB für vier Stücke, PNG ohne Nachverdichtung; der Marktkarren
-allein ist 2,8 MB, weil seine Zelle fünfmal so groß ist wie die des
-Dorfbewohners. Die Masken sind mit dem Nebenkanal auf ein Viertel und
-weniger geschrumpft (vermutlich, weil kein Rauschen mehr darin steht).
-Rechenzeit auf diesem Rechner mit
-der CPU, 96 Proben je Bild.
+Zusammen 1,36 MB für vier Stücke (als PNG waren es 4,0 MB); der Marktkarren
+allein ist 1,0 MB, weil seine Zelle fünfmal so groß ist wie die des
+Dorfbewohners. Rechenzeit auf diesem Rechner mit der CPU, 96 Proben je Bild,
+gemessen im Lauf vom 2026-11-10 abends, ohne Browserlauf daneben. Frühere
+Messungen allein: Haus 6,4 s, Baum 17 s, Dorfbewohner 55 s — die Zeiten
+schwanken auch ohne erkennbare Last um ein Drittel.
 
 **Die Rechenzeit schwankt stark, wenn nebenher gerechnet wird.** Der Lauf,
 der die eingecheckten Tafeln geschrieben hat, brauchte 21 min 48 s (Haus
@@ -136,8 +147,9 @@ vergleicht, misst allein und zweimal.
 **Hochgerechnet, nicht gemessen:** eine Einheit mit fünf Abläufen zu acht
 Bildern hat rund 41 Bilder je Richtung statt 9 — etwa 3,5 MB und vier
 Minuten je Fußeinheit in dieser Form, ein Gespann ein Mehrfaches. Zwanzig
-Einheiten wären 70 MB und mehr; so bleibt es nicht (siehe „Offen":
-zuschneiden, WebP, weniger Rauschen).
+Einheiten wären 70 MB und mehr (als PNG gerechnet; als WebP ein Drittel
+davon). Schwerer wiegt der Speicher nach dem Entpacken — siehe „R2: gemessen
+und entschieden".
 
 Im Browser (darstellung AC-17, `strategie-bildprobe`): das ähnlichste Paar
 zweier Blickrichtungen unterscheidet sich in 19 % der Figur; die
@@ -174,14 +186,103 @@ Spielerfarbe bedeckt 27 % der stehenden Figur.
   einem gestellten Feld (0 / 0,3 / 0 für sauber, drei Zeilen schwarz,
   schwarz nur im Schatten), nicht am echten Fehler.
 - **Was dem Karren fehlt** (ehrlich): das Pferd ist ein Gliedertier — Hals
-  und Kopf wirken in manchen Richtungen steif, Muskeln hat es keine. Die
-  Spielerfarbe wird auf der Schattenseite mit Rot fast schwarz: ein dunkles
-  Grau mal Rot. Das trifft auch die Gugel und ist eine Eigenschaft des
-  Verfahrens — in R2 ansehen (Maske aufhellen oder `multiply` mit Boden).
+  und Kopf wirken in manchen Richtungen steif, Muskeln hat es keine.
+- **Berichtigt in R2:** hier stand, die Spielerfarbe werde auf der
+  Schattenseite mit Rot fast schwarz. **Nachgemessen stimmt das nicht** —
+  siehe „R2: gemessen und entschieden". Der Eindruck stammte vermutlich aus
+  der ersten, fehlerhaften Tafel, in der die Decke zu den schwarzen Stoffen
+  gehörte.
+
+## R2: gemessen und entschieden (2026-11-10)
+
+Die drei Fragen, die seit der Probe offen waren. Gemessen an den vier Tafeln
+des Zweigs; Wegwerfskripte, nicht eingecheckt.
+
+**Größe — die Tafeln sind jetzt WebP mit Güte 90.**
+
+| alle vier Tafeln samt Masken | Größe |
+| --- | --- |
+| PNG, wie Blender es schrieb | 3990 KB |
+| PNG, nachverdichtet | 3194 KB |
+| WebP verlustfrei | 2320 KB |
+| **WebP 90** | **1361 KB** |
+| WebP 80 | 1183 KB |
+
+- Am Bild, sechsfach vergrößert neben dem PNG: 90 ist nicht zu
+  unterscheiden (mittlere Abweichung je Kanal 0,25 bis 0,83 von 255), 80
+  etwas weicher, bei 60 verliert die Figur ihr Gesicht. Die **Deckung bleibt
+  exakt** — der Rand der Figur wandert nicht.
+- Blender schreibt WebP selbst (`bild.file_format = 'WEBP'`,
+  `save(quality=90)`), es braucht kein zweites Werkzeug.
+- **WebP fasst höchstens 16383 Bildpunkte je Seite.** `kette.py` bricht
+  vorher ab. Ein Gespann mit 41 Spalten zu 384 wäre 15744 breit — knapp
+  darunter.
+- Der Server kannte `.webp` nicht und hätte die Tafeln als
+  `application/octet-stream` geschickt; der Typ steht jetzt in
+  `server/index.js`, die Bildprobe prüft ihn.
+
+**Speicher — gefärbt wird je Zelle, nicht je Tafel.**
+
+- Bis R1 legte `inFarbe` je Spielerfarbe eine Kopie der ganzen Tafel an:
+  zwei Farben Dorfbewohner und ein Haus waren **11,1 MB** an eigenen
+  Leinwänden — für drei Zellen, die gebraucht wurden. Jetzt färbt
+  `zelleInFarbe` die eine Zelle auf einer Werkbank (Maske, Farbe, Bild mal
+  Farbe) und der Zwischenspeicher der Figuren hebt sie auf: **0,53 MB**.
+  Gerechnet aus den Leinwandgrößen (`leinwandSpeicher()`), **nicht im
+  Prozess gemessen**.
+- Entpackt belegen die vier Tafeln samt Masken 68,6 MB (4 Byte je
+  Bildpunkt, gerechnet). Der Marktkarren allein 55,8 MB.
+- **Hochgerechnet für R5:** eine Fußeinheit mit 41 Spalten wäre 5904 × 1024,
+  also 24 MB je Tafel und noch einmal so viel für die Maske; zwanzig
+  Einheiten rund 1 GB, wenn alles zugleich entpackt ist. **So bleibt es
+  nicht.** Für R5: eine Tafel je Ablauf statt je Einheit, nur laden, was die
+  Partie braucht, die Maske als ein Kanal statt als zweites Bild.
+- Zuschneiden bringt weniger als gedacht: mit Schatten belegt eine Zelle
+  78 % (Baum), 69 % (Dorfbewohner), 91 % (Haus), 45 % (Marktkarren) ihrer
+  Fläche, wenn jede einzeln zugeschnitten würde. Nicht gebaut.
+
+**Bildrate — nicht in Gefahr.** `strategie-tempo` hat jetzt einen zweiten
+Fall: dieselbe Szene (100 Einheiten, 29 Häuser und Dorfzentren, Zoom 1) aus
+den Tafeln.
+
+| | Bilder je Sekunde | Rechenzeit je Bild |
+| --- | --- | --- |
+| gezeichnet, stehend | 60,2 bis 60,3 | 1,2 bis 2,0 ms |
+| gerendert, stehend | 60,1 bis 60,4 | 1,3 bis 2,1 ms |
+| gezeichnet, gehend | 60,2 bis 60,3 | 1,6 bis 2,1 ms |
+| gerendert, gehend | 60,3 bis 60,4 | 1,7 bis 2,2 ms |
+
+Die Spannen sind vier Läufe an einem Abend; innerhalb eines Laufs liegen
+gerendert und gezeichnet nie mehr als 0,2 ms auseinander. Die 60 sind der
+Takt des Bildschirms, nicht die Grenze des Zeichnens — die steht in der
+rechten Spalte: rund 2 ms von 16,7. Im Gehen kamen 67 verschiedene Zellen
+aus der Tafel.
+
+**Spielerfarbe im Schatten — kein Mangel.** Mit Rot und Blau gefärbt haben
+höchstens 0,1 % der Bildpunkte in Spielerfarbe einen hellsten Kanal unter 50
+(schlimmste Zelle 1 %). Das Einfärben bleibt, wie es ist.
+
+**Rechenzeit, allein gemessen:** Haus 9,5 s, Baum 19,5 s,
+Dorfbewohner 73 s, Marktkarren 383 s — alle vier in 8 min 15 s. Der
+Marktkarren ist damit zum ersten Mal allein gemessen: 5,3 s je Bild, fünfmal
+so lang wie der Dorfbewohner bei fünffacher Zelle.
+
+**Was die Prüfung fängt** (`scripts/bilder-verzeichnis.mjs`, belegt in
+`tests/bilder.test.mjs` am echten und an gestelltem Bestand): Bild ohne
+Eintrag, Eintrag ohne Bild, Eintrag ohne Skript, ein Bild bei zwei
+Skripten, Beschreibung und Verzeichnis nennen verschiedene Bilder, eine
+Tafel, die kein WebP ist, ein Name in `public/bilder.js`, den das
+Verzeichnis nicht kennt, fremde Datei unter `grafik/` ohne Zeile in
+`QUELLEN.md`, eine Lizenz, die nicht CC0 ist. **Was sie nicht fängt:** ob
+ein Bild zu seinem Skript noch passt — wer das Skript ändert und nicht
+rendert, hat ein altes Bild, und kein Test merkt es. Das ginge nur mit
+einem Fingerabdruck des Skripts in der Beschreibung; nicht gebaut, weil
+jede Änderung an `kette.py` dann alle Bilder für veraltet erklärte.
 
 ## Nach der Probe gefragt (2026-11-09)
 
-- **Ist die Bildrate in Gefahr?** Nicht erwartet, aber **nicht gemessen**:
+- **Ist die Bildrate in Gefahr?** (Stand der Antwort vom 2026-11-09; in R2
+  gemessen, siehe oben.) Nicht erwartet, aber **nicht gemessen**:
   eine Zelle aus der Tafel landet in demselben Zwischenspeicher wie bisher
   die Zeichnung, je Bild ist es dasselbe `drawImage`. Die Gefahr liegt bei
   **Ladegröße und Speicher**. Gemessen mit Pillow, `method=6`:
@@ -208,23 +309,32 @@ Spielerfarbe bedeckt 27 % der stehenden Figur.
   Figur und Bewegung die schwere. Prüfbar an einem Stück: ein Gebäude bauen
   lassen und auf der Bildprobe daneben stellen.
 
-## Offen, wenn es weitergeht (R2 und danach)
+## Offen, wenn es weitergeht (R3 und danach)
 
-- **Größe der Tafeln.** PNG ohne Nachverdichtung. Rauschen in den Schatten
-  und im Laub verdichtet schlecht. Hebel: weniger Proben mit Entrauschen,
-  WebP, Zellen auf den belegten Ausschnitt zuschneiden.
-- **Eine Tafel je Farbe im Speicher.** `inFarbe` färbt die ganze Tafel einmal
-  je Spielerfarbe ein (Dorfbewohner: 1296 × 1024 × 4 Byte, rund 5 MB je
-  Farbe). Bei acht Farben und zwanzig Einheiten zu viel — dann je Zelle
-  einfärben, beim Füllen des Zwischenspeichers.
+- **Speicher bei vielen Einheiten** — siehe die Hochrechnung in R2. Vor R5
+  entscheiden: eine Tafel je Ablauf, Laden nach Bedarf.
+- **Der Server schickt keinen Cache-Kopf.** Jeder Seitenaufruf lädt die
+  Tafeln neu. Heute 1,4 MB, mit allen Einheiten ein Vielfaches. Gehört zu
+  Stufe G (Betrieb), braucht dann einen Dateinamen oder eine Marke, die sich
+  mit dem Inhalt ändert.
 - **Laden vor der Partie** (AC-24): heute zeichnet das Spiel, bis die Tafeln
   da sind, die alten Figuren.
-- **Bildrate** mit 100 gerenderten Einheiten ist nicht gemessen
-  (`strategie-tempo`).
 - **Der Gefallene** wird wie bisher als gedrehtes Bild gezeichnet — mit
   gerenderter Figur dreht sich der Schatten mit.
 - **Wer arbeitet oder trägt,** zeigt mit `?bilder=1` nur Stehen und Gehen.
 - **Baustelle, Farm, Tor:** nur das fertige Haus kommt aus der Tafel.
+- **Ein altes Bild zu einem geänderten Skript** fällt nicht auf (siehe R2).
+- **Eine Ausnahme im Spielbild, einmal gesehen, nicht erklärt** (2026-11-10,
+  ganzer Browserlauf zu R2: 205 von 206 grün, 22 min): `einheiten AC-29`
+  (`strategie-ausweichen`) meldete „drawImage … canvas element with a width
+  or height of 0". Derselbe Fall viermal einzeln danach: viermal grün. Der
+  Fall schaltet die gerenderten Bilder nicht ein — von den Änderungen aus R2
+  läuft in seinem Zeichenweg keine Zeile. **Ursache nicht gefunden**; die
+  Aufzeichnung hat der Wiederholungslauf überschrieben. Wo eine Leinwand
+  ohne Fläche entstehen kann: `uebersicht.js` (Größe aus `clientWidth`),
+  der Zwischenspeicher in `figuren.js` (ein `NaN` als Breite wird 0).
+  Seitdem nennt `fehlerSammeln` in `e2e/helpers/seite.mjs` zur Ausnahme die
+  Stelle — beim nächsten Mal steht da, wo.
 
 ## Für die Erkenntnisse (beim Einbinden übertragen)
 
@@ -247,6 +357,16 @@ Spielerfarbe bedeckt 27 % der stehenden Figur.
   als Messung in die Kette (schwarzer Anteil je Bild), nicht ins Ansehen.
   Und: Zustand zwischen Durchgängen umzuschalten ist die Fehlerquelle, nicht
   das Rendern — ein Durchgang mit Nebenkanälen hat nichts umzuschalten.
+- **R2, die Kette prüfbar** (2026-11-10, darstellung AC-18 fertig): siehe
+  „R2: gemessen und entschieden". **Erkenntnis:** zwei Befürchtungen aus der
+  Probe waren am Bild entstanden und hielten der Messung nicht stand — die
+  Bildrate war nie in Gefahr, und die „fast schwarze" Spielerfarbe im
+  Schatten gab es nur in einer fehlerhaften Tafel. Die dritte, über die
+  niemand gesprochen hatte, war echt: eine Kopie der ganzen Tafel je Farbe.
+  Was nach einem Blick als Mangel im Stand steht, wird gemessen, bevor
+  jemand daran baut. Und: eine Liste, aus der gerendert **und** geprüft
+  wird, kann nicht neben dem Bestand herlaufen — vorher stand dieselbe
+  Liste in `bilder.py` und in `bilder.js`.
 - **Zwei Sitzungen in einem Arbeitsbaum** (2026-11-09): während der
   Spec-Runde arbeitete die Schleife an spielziel AC-23 im selben Verzeichnis.
   Bemerkt erst an `git status`. Seitdem: Arbeit neben der Schleife bekommt

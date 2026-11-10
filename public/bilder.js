@@ -30,7 +30,7 @@ export function bilderLaden() {
       const angaben = await (await fetch(`/bilder/${name}.json`)).json();
       const tafel = await bildLaden(`/bilder/${angaben.bild}`);
       const maske = angaben.maske ? await bildLaden(`/bilder/${angaben.maske}`) : null;
-      tafeln.set(name, { ...angaben, name, tafel, maskenbild: maske, gefaerbt: new Map() });
+      tafeln.set(name, { ...angaben, name, tafel, maskenbild: maske, gezeichnet: 0 });
     })).then(() => true);
   }
   return laden;
@@ -46,34 +46,40 @@ export function gerendert(name) {
   return an ? tafeln.get(name) || null : null;
 }
 
-// Die Tafel in einer Spielerfarbe: wo die Maske deckt, wird das helle,
+// Eine Zelle in einer Spielerfarbe: wo die Maske deckt, wird das helle,
 // unbunte Tuch mit der Farbe malgenommen - Falten und Schatten bleiben.
-// Einmal je Farbe, danach wird nur kopiert.
-function inFarbe(tafel, farbe) {
-  if (!tafel.maskenbild || !farbe) return tafel.tafel;
-  let fertig = tafel.gefaerbt.get(farbe);
-  if (!fertig) {
-    const breite = tafel.tafel.width;
-    const hoehe = tafel.tafel.height;
-    const schicht = document.createElement('canvas');
-    schicht.width = breite;
-    schicht.height = hoehe;
-    const s = schicht.getContext('2d');
-    s.drawImage(tafel.tafel, 0, 0);
-    s.globalCompositeOperation = 'multiply';
-    s.fillStyle = farbe;
-    s.fillRect(0, 0, breite, hoehe);
-    s.globalCompositeOperation = 'destination-in';
-    s.drawImage(tafel.maskenbild, 0, 0);
-    fertig = document.createElement('canvas');
-    fertig.width = breite;
-    fertig.height = hoehe;
-    const f = fertig.getContext('2d');
-    f.drawImage(tafel.tafel, 0, 0);
-    f.drawImage(schicht, 0, 0);
-    tafel.gefaerbt.set(farbe, fertig);
+//
+// Gefaerbt wird die eine Zelle, die gebraucht wird, auf einer Werkbank, die so
+// gross ist wie die groesste Zelle bisher. Bis R1 wurde die ganze Tafel je
+// Farbe einmal kopiert: fuer den Dorfbewohner 5,3 MB je Farbe, fuer den
+// Marktkarren 27,9 - gemessen 11,1 MB bei zwei Farben, von denen drei Zellen
+// gebraucht wurden. Wer oft dieselbe Zelle braucht, haelt sie selbst vor,
+// wie figurBildZeichnen es tut.
+let werkbank = null;
+
+function zelleInFarbe(tafel, sx, sy, breite, hoehe, farbe) {
+  if (!werkbank) werkbank = document.createElement('canvas');
+  if (werkbank.width < breite || werkbank.height < hoehe) {
+    werkbank.width = Math.max(werkbank.width, breite);
+    werkbank.height = Math.max(werkbank.height, hoehe);
   }
-  return fertig;
+  const s = werkbank.getContext('2d');
+  // Die Maske, dann die Farbe hinein: Farbe, so weit das Tuch reicht.
+  s.globalCompositeOperation = 'copy';
+  s.drawImage(tafel.maskenbild, sx, sy, breite, hoehe, 0, 0, breite, hoehe);
+  s.globalCompositeOperation = 'source-in';
+  s.fillStyle = farbe;
+  s.fillRect(0, 0, breite, hoehe);
+  // Das Bild malgenommen darueber: auf der Farbe wird es gefaerbt, daneben
+  // bleibt es, wie es ist.
+  s.globalCompositeOperation = 'multiply';
+  s.drawImage(tafel.tafel, sx, sy, breite, hoehe, 0, 0, breite, hoehe);
+  return werkbank;
+}
+
+/** Wie viele Byte die eigenen Leinwaende dieses Moduls belegen (vier je Bildpunkt). */
+export function leinwandSpeicher() {
+  return werkbank ? werkbank.width * werkbank.height * 4 : 0;
 }
 
 /** Wie viel Platz eine Zelle um ihren Fusspunkt braucht, im Massstab. */
@@ -93,8 +99,11 @@ export function zelleZeichnen(stift, tafel, zeile, spalte, x, y, massstab, farbe
   const [fx, fy] = tafel.fuss;
   stift.imageSmoothingEnabled = true;
   stift.imageSmoothingQuality = 'high';
+  tafel.gezeichnet += 1;
+  const gefaerbt = tafel.maskenbild && farbe;
+  const quelle = gefaerbt ? zelleInFarbe(tafel, spalte * breite, zeile * hoehe, breite, hoehe, farbe) : tafel.tafel;
   stift.drawImage(
-    inFarbe(tafel, farbe), spalte * breite, zeile * hoehe, breite, hoehe,
+    quelle, gefaerbt ? 0 : spalte * breite, gefaerbt ? 0 : zeile * hoehe, breite, hoehe,
     x - fx * massstab, y - fy * massstab, breite * massstab, hoehe * massstab,
   );
 }
