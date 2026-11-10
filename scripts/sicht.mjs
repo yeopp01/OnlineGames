@@ -54,6 +54,8 @@ const beobachten = (blatt) => {
 //   --zoom 2           Vergroesserung
 //   --ziel basis|wald|gold|stein|beere|wasser   wohin die Kamera schaut
 //   --warten 5         Sekunden, die das Spiel vorher laeuft
+//   --aufgedeckt       ohne Nebel
+//   --bilder           mit den gerenderten Bildern (ADR-0016)
 async function spielbild() {
   const base = `http://localhost:${HAFEN}`;
   // Ein Konto wie in tests/hilfe.mjs: Einladungscode, Registrieren, Keks behalten.
@@ -78,6 +80,8 @@ async function spielbild() {
   await anna.goto(argumente.includes('--bilder') ? `${base}/?bilder=1` : base);
   await anna.locator('[data-oeffnen="strategie"]').click();
   await anna.locator('[data-einstellung="startwert"]').fill(String(wert('startwert', '4711')));
+  // --aufgedeckt: ohne Nebel - wer Gelaende ansehen will, will es ganz sehen.
+  if (argumente.includes('--aufgedeckt')) await anna.locator('[data-einstellung="sicht"]').selectOption(JSON.stringify('aufgedeckt'));
   await anna.locator('[data-eroeffnen="strategie"]').click();
   await anna.locator('#raumcode').filter({ hasText: /^[A-Z0-9]{3}-[A-Z0-9]{3}$/ }).waitFor();
   const code = (await anna.locator('#raumcode').textContent()).trim();

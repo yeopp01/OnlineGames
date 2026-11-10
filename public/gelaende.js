@@ -12,6 +12,7 @@
 // kleines Bild gezeichnet und danach kopiert (dingBildZeichnen).
 
 import { gerendert, zelleZeichnen, zellenRand } from './bilder.js';
+import { rauschen } from './boden.js';
 
 export const GRAS = 0;
 export const WALD = 1;
@@ -429,11 +430,35 @@ const VARIANTE = (index) => Math.floor(streuung(index, 77) * VARIANTEN) * 131 + 
 const ZWISCHENSPEICHER = new Map();
 const SPEICHER_MAX = 400;
 
+// Welche Tafel einen Vorrat zeigt (ADR-0016, darstellung AC-23).
+const TAFEL = { [WALD]: 'baum', [BEERE]: 'beere', [GOLD]: 'gold', [STEIN]: 'stein' };
+
+/**
+ * Welche Baumart auf einem Feld steht (darstellung AC-23): Zeile der Tafel.
+ *
+ * Nicht gewuerfelt je Baum - das gaebe einen Mischwald ohne Gesicht -, sondern
+ * aus einem glatten Rauschen ueber die Karte: hier steht Laubwald, dort
+ * Nadelwald, am Uebergang mischen sie sich. Im Laubwald ist jeder dritte Baum
+ * eine Birke, im Nadelwald jeder dritte eine Kiefer. Der Server kennt keine
+ * Arten; ein Baum ist dort ein Baum.
+ */
+export function baumart(tafel, index, feld = null, salz = 0) {
+  const arten = tafel.arten || [];
+  const zeile = (name, sonst) => (arten.includes(name) ? arten.indexOf(name) : sonst);
+  const lage = feld ? rauschen(feld.x / 7, feld.y / 7, salz + 131) : streuung(index, 78);
+  const nadel = lage + (streuung(index, 79) - 0.5) * 0.24 > 0.5;
+  const zweite = streuung(index, 80) < 0.32;
+  if (nadel) return zweite ? zeile('kiefer', 0) : zeile('fichte', 0);
+  return zweite ? zeile('birke', 0) : zeile('eiche', 0);
+}
+
 /**
  * Wie dingZeichnen, aber ueber einen Zwischenspeicher: jede Gestalt wird je
  * Zoomstufe und Fuellung (in Vierteln) einmal gezeichnet und dann kopiert.
+ * `feld` ist der Ort auf der Karte ({ x, y }) - daran und am Salz der Karte
+ * haengt die Baumart.
  */
-export function dingBildZeichnen(stift, art, x, y, e, index, fuellung = 1) {
+export function dingBildZeichnen(stift, art, x, y, e, index, fuellung = 1, feld = null, salz = 0) {
   if (e < 12 || typeof document === 'undefined') {
     dingZeichnen(stift, art, x, y, e, index, fuellung);
     return;
@@ -442,11 +467,15 @@ export function dingBildZeichnen(stift, art, x, y, e, index, fuellung = 1) {
   const viertel = Math.max(1, Math.round(fuellung * 4)) / 4;
   const variante = Math.floor(streuung(index, 77) * VARIANTEN);
   // Gibt es den Vorrat gerendert (ADR-0016), kommt eine seiner Gestalten aus
-  // der Tafel; ein Baum, der geschlagen wird, schrumpft wie der gezeichnete.
-  const tafel = art === WALD ? gerendert('baum') : null;
-  const tafelMass = tafel ? ((2 * e) / tafel.feldbreite) * (0.6 + 0.4 * viertel) : 0;
+  // der Tafel. Beere, Gold und Stein haben ihre Fuellstufen als Zeilen - der
+  // halbleere Haufen ist derselbe Haufen, abgetragen. Ein Baum hat seine Art
+  // als Zeile und schrumpft, wenn er geschlagen wird, wie der gezeichnete.
+  const tafel = gerendert(TAFEL[art]);
+  const stufen = tafel && tafel.stufen;
+  const zeile = !tafel ? 0 : stufen ? Math.min(stufen - 1, Math.round((1 - viertel) * stufen)) : baumart(tafel, index, feld, salz);
+  const tafelMass = tafel ? ((2 * e) / tafel.feldbreite) * (stufen ? 1 : 0.6 + 0.4 * viertel) : 0;
   const rand = tafel ? zellenRand(tafel, tafelMass) : null;
-  const schluessel = `${art}|${variante}|${e.toFixed(2)}|${viertel}|${dichte}${tafel ? '|r' : ''}`;
+  const schluessel = `${art}|${variante}|${e.toFixed(2)}|${viertel}|${dichte}${tafel ? `|r${zeile}` : ''}`;
   // Breit genug fuer den Schlagschatten nach rechts.
   const breite = rand ? rand.halb * 2 : 5.2 * e;
   const oben = rand ? rand.oben : 3 * e;
@@ -458,7 +487,7 @@ export function dingBildZeichnen(stift, art, x, y, e, index, fuellung = 1) {
     bild.height = Math.ceil((oben + unten) * dichte);
     const s = bild.getContext('2d');
     s.scale(dichte, dichte);
-    if (tafel) zelleZeichnen(s, tafel, 0, variante % tafel.gestalten, breite / 2, oben, tafelMass, null);
+    if (tafel) zelleZeichnen(s, tafel, zeile, variante % tafel.gestalten, breite / 2, oben, tafelMass, null);
     else dingZeichnen(s, art, breite / 2, oben, e, index, viertel);
     ZWISCHENSPEICHER.set(schluessel, bild);
     if (ZWISCHENSPEICHER.size > SPEICHER_MAX) ZWISCHENSPEICHER.delete(ZWISCHENSPEICHER.keys().next().value);

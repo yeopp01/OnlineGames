@@ -402,6 +402,90 @@ test.describe('Das Spielbild', () => {
     });
   });
 
+  // Dieselbe Partie mit den gerenderten Bildern (ADR-0016): Boden, Ufer, Wald
+  // und Vorraete kommen aus der Kette. Der Fall schaltet sie ein, sieht hin
+  // und schaltet sie wieder aus - die Faelle danach belegen das gezeichnete Bild.
+  test('darstellung AC-23: im Spiel liegen Boden, Ufer, Wald und Vorraete gerendert vor', async ({}, info) => {
+    await anna.evaluate(async () => (await import('/bilder.js')).bilderEin());
+    // Eine Stelle am Ufer, von der aus Wald und ein Vorrat nah sind.
+    const stelle = await anna.evaluate(() => {
+      const a = window.ansicht;
+      const g = a.karte.groesse;
+      const f = a.karte.felder;
+      const naechstes = (x, y, arten) => {
+        let bester = null;
+        for (let dy = -9; dy <= 9; dy++) {
+          for (let dx = -9; dx <= 9; dx++) {
+            const [nx, ny] = [x + dx, y + dy];
+            if (nx < 0 || ny < 0 || nx >= g || ny >= g || !arten.includes(f[ny * g + nx])) continue;
+            const d = Math.hypot(dx, dy);
+            if (!bester || d < bester.d) bester = { x: nx, y: ny, d };
+          }
+        }
+        return bester;
+      };
+      let beste = null;
+      for (let y = 2; y < g - 2; y++) {
+        for (let x = 2; x < g - 2; x++) {
+          if (f[y * g + x] !== 3 || (f[y * g + x + 1] === 3 && f[(y + 1) * g + x] === 3)) continue;
+          const wald = naechstes(x, y, [1]);
+          const vorrat = naechstes(x, y, [4, 5]);
+          if (!wald || !vorrat) continue;
+          const weit = wald.d + vorrat.d;
+          if (!beste || weit < beste.weit) beste = { x: (x * 2 + wald.x + vorrat.x) / 4, y: (y * 2 + wald.y + vorrat.y) / 4, weit };
+        }
+      }
+      if (!beste) return null;
+      a.gewaehltesGebaeude = null;
+      a.ausgewaehlt.clear();
+      a.kamera.zoom = 1.5;
+      a.blickAuf(Math.round(beste.x), Math.round(beste.y));
+      return beste;
+    });
+    expect(stelle, 'kein Ufer mit Wald und Vorrat in der Naehe').not.toBeNull();
+    await anna.waitForTimeout(300);
+    const gezeichnet = await anna.evaluate(async () => {
+      const { gerendert } = await import('/bilder.js');
+      const { texturSpeicher } = await import('/boden.js');
+      const a = window.ansicht;
+      const g = a.karte.groesse;
+      // Was steht im Bild?
+      const imBild = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 };
+      for (let y = 0; y < g; y++) {
+        for (let x = 0; x < g; x++) {
+          const p = a.zuBild(x, y);
+          if (p.x < 0 || p.y < 60 || p.x > a.leinwand.clientWidth || p.y > a.leinwand.clientHeight) continue;
+          const art = a.karte.felder[y * g + x];
+          if (imBild[art] !== undefined) imBild[art] += 1;
+        }
+      }
+      return {
+        imBild,
+        zellen: Object.fromEntries(['baum', 'beere', 'gold', 'stein'].map((name) => [name, gerendert(name)?.gezeichnet ?? 0])),
+        kachelnAusTexturen: a.kachelnMitBildern === true && a.kacheln.size > 0,
+        texturenMB: texturSpeicher() / 1e6,
+      };
+    });
+    info.annotations.push({ type: 'messung', description: JSON.stringify(gezeichnet) });
+    console.log(`darstellung AC-23 im Spiel: ${JSON.stringify(gezeichnet)}`);
+    expect(gezeichnet.imBild[1], 'Wald im Bild').toBeGreaterThan(5);
+    expect(gezeichnet.imBild[3], 'Wasser im Bild').toBeGreaterThan(5);
+    expect(gezeichnet.imBild[4] + gezeichnet.imBild[5], 'Gold oder Stein im Bild').toBeGreaterThan(0);
+    // Der Boden kommt aus den Texturen, die Baeume aus ihrer Tafel - und der
+    // Vorrat, der im Bild liegt, aus seiner.
+    expect(gezeichnet.kachelnAusTexturen).toBe(true);
+    expect(gezeichnet.zellen.baum).toBeGreaterThan(0);
+    if (gezeichnet.imBild[4]) expect(gezeichnet.zellen.gold).toBeGreaterThan(0);
+    if (gezeichnet.imBild[5]) expect(gezeichnet.zellen.stein).toBeGreaterThan(0);
+    await nachweis(anna, {
+      spec: DARSTELLUNG,
+      ac: 'AC-23',
+      titel: 'Im Spiel mit gerenderten Bildern: Gras, Waldboden und Sand als Textur, das Ufer mit flachem Wasser, Baeume in vier Arten und ein Vorrat',
+      test: info,
+    });
+    await anna.evaluate(async () => (await import('/bilder.js')).bilderEin(false));
+  });
+
   test('darstellung AC-13: das Spielbild bei Zoom 1 - erdig, ohne Umrisse und Raster, mit Schatten', async ({}, info) => {
     await anna.evaluate(() => {
       const a = window.ansicht;

@@ -9,7 +9,7 @@
 // werden sie mit `?bilder=1` in der Adresse oder mit bilderEin(). Was dann
 // noch kein gerendertes Bild hat, wird weiter gezeichnet.
 
-const NAMEN = ['dorfbewohner', 'haus', 'baum', 'marktkarren'];
+const NAMEN = ['dorfbewohner', 'haus', 'baum', 'marktkarren', 'beere', 'gold', 'stein', 'boden'];
 const tafeln = new Map();
 let an = false;
 let laden = null;

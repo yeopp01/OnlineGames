@@ -4,6 +4,10 @@
     { "name": "haus", "skript": "haus.py", "bilder": ["haus.webp", "haus-maske.webp"] },
     { "name": "baum", "skript": "baum.py", "bilder": ["baum.webp"] },
     { "name": "dorfbewohner", "skript": "dorfbewohner.py", "bilder": ["dorfbewohner.webp", "dorfbewohner-maske.webp"] },
-    { "name": "marktkarren", "skript": "marktkarren.py", "bilder": ["marktkarren.webp", "marktkarren-maske.webp"] }
+    { "name": "marktkarren", "skript": "marktkarren.py", "bilder": ["marktkarren.webp", "marktkarren-maske.webp"] },
+    { "name": "beere", "skript": "beere.py", "bilder": ["beere.webp"] },
+    { "name": "gold", "skript": "gold.py", "bilder": ["gold.webp"] },
+    { "name": "stein", "skript": "stein.py", "bilder": ["stein.webp"] },
+    { "name": "boden", "skript": "boden.py", "bilder": ["boden.webp"] }
   ]
 }

@@ -1,5 +1,5 @@
-// Die gerenderten Bilder (→ specs/10-strategie/darstellung.md AC-17 und AC-18,
-// ADR-0016).
+// Die gerenderten Bilder (→ specs/10-strategie/darstellung.md AC-17, AC-18 und
+// AC-23, ADR-0016).
 //
 // Ohne Blender und ohne Browser pruefbar ist, ob das, was eingecheckt ist,
 // zusammenpasst: jede Tafel so gross, wie ihre Beschreibung sagt, die Maske
@@ -28,8 +28,9 @@ test('darstellung AC-17: jede Tafel ist so gross, wie ihre Beschreibung sagt, un
     const bild = masse(b.bild);
     assert.equal(bild.breite, b.zelle[0] * b.spalten, `${b.bild}: Breite`);
     assert.equal(bild.hoehe, b.zelle[1] * b.zeilen, `${b.bild}: Hoehe`);
-    // Ohne Durchsicht staende jedes Stueck in einem Kasten.
-    assert.ok(bild.durchsicht, `${b.bild}: keine Durchsicht`);
+    // Ohne Durchsicht staende jedes Stueck in einem Kasten. Nur der Boden
+    // deckt seine Kachel mit Absicht ganz (darstellung AC-23).
+    if (b.art !== 'boden') assert.ok(bild.durchsicht, `${b.bild}: keine Durchsicht`);
     assert.ok(b.fuss[0] > 0 && b.fuss[0] < b.zelle[0] && b.fuss[1] > 0 && b.fuss[1] <= b.zelle[1], `${b.name}: Fusspunkt ausserhalb der Zelle`);
     if (b.maske) {
       const maske = masse(b.maske);
@@ -190,4 +191,74 @@ test('darstellung AC-18: fremdes Material steht mit Herkunft in QUELLEN.md, und 
     b.quellen = `${kopf}| ein Gesicht | – | CC0 |\n`;
   }));
   assert.deepEqual(ohneHerkunft, ['grafik/QUELLEN.md: ein Gesicht ohne Herkunft']);
+});
+
+// ---------------------------------------------------------------------------
+// Gelaende und Vorraete (darstellung AC-23). Ohne Browser pruefbar ist der
+// Aufbau der Tafeln; was auf den Bildern zu sehen ist - Flaechen, Hoehen,
+// Farben, die Naht - und wie der Wald aus den vier Arten gemischt wird, misst
+// der Browserlauf (e2e/tests/strategie-bildprobe.spec.mjs).
+// ---------------------------------------------------------------------------
+
+const von = (name) => beschreibungen.find((b) => b.name === name);
+
+test('darstellung AC-23: Baeume in vier Arten, Beeren, Gold und Stein in vier Fuellstufen', () => {
+  const baum = von('baum');
+  assert.ok(baum.arten.length >= 4, 'mindestens vier Baumarten');
+  assert.equal(new Set(baum.arten).size, baum.arten.length, 'keine Art doppelt');
+  assert.equal(baum.zeilen, baum.arten.length, 'eine Zeile je Art');
+  assert.ok(baum.gestalten >= 3, 'je Art mehrere Gestalten');
+  assert.equal(baum.spalten, baum.gestalten);
+  for (const name of ['beere', 'gold', 'stein']) {
+    const vorrat = von(name);
+    assert.ok(vorrat, `${name} fehlt unter public/bilder/`);
+    assert.equal(vorrat.stufen, 4, `${name}: der Server kennt vier Viertel, die Tafel hat sie als Zeilen`);
+    assert.equal(vorrat.zeilen, vorrat.stufen);
+    assert.ok(vorrat.gestalten >= 3, `${name}: mehrere Gestalten`);
+    assert.equal(vorrat.spalten, vorrat.gestalten);
+    assert.equal(vorrat.maske, null, `${name} traegt keine Spielerfarbe`);
+  }
+});
+
+test('darstellung AC-23: der Boden liegt in fuenf Texturen vor, die sich in jedem Massstab ohne Rest wiederholen', () => {
+  const boden = von('boden');
+  assert.ok(boden, 'boden fehlt unter public/bilder/');
+  assert.deepEqual(boden.arten, ['gras', 'erde', 'waldboden', 'sand', 'wasser']);
+  assert.equal(boden.zeilen, boden.arten.length);
+  // Die Zelle traegt oben und unten einen Saum aus der eigenen Wiederholung,
+  // damit die Bildkodierung nicht die Nachbarkachel hineinzieht.
+  const [breite, hoehe] = boden.kachel;
+  assert.deepEqual(boden.zelle, [breite + 2 * boden.saum[0], hoehe + 2 * boden.saum[1]]);
+  assert.ok(boden.zeilen === 1 || boden.saum[1] >= 16, 'Kacheln untereinander brauchen einen Saum');
+  // Eine Kachel ist eine ganze Zahl von Feldern breit und halb so hoch - so
+  // sieht die Kamera ein Quadrat am Boden.
+  assert.equal(breite % boden.feldbreite, 0);
+  assert.equal(breite, hoehe * 2);
+  // Der Browser verkleinert sie fuer seine drei Kachelmassstaebe (0,5 / 1 / 2
+  // bei 44 Bildpunkten je Feld): die Kanten muessen dabei ganze Bildpunkte
+  // bleiben, sonst wiederholt sich das Muster mit einer Naht.
+  for (const massstab of [0.5, 1, 2]) {
+    const faktor = (massstab * 44) / boden.feldbreite;
+    assert.ok(Number.isInteger(breite * faktor) && Number.isInteger(hoehe * faktor), `Massstab ${massstab}: ${breite * faktor} x ${hoehe * faktor}`);
+  }
+  // Was die Kette beim Rendern selbst gemessen hat: Rand gegen Rand, im
+  // Verhaeltnis zu zwei Nachbarn mitten in der Kachel. 1 heisst keine Naht.
+  for (const art of boden.arten) {
+    assert.ok(boden.naht[art] < 1.5, `${art}: Naht ${boden.naht[art]}`);
+    assert.equal(boden.mittel[art].length, 3);
+  }
+  // Erdig statt bunt (darstellung AC-13 gilt weiter): das Gras ist oliv - mehr
+  // Gruen als Rot, mehr Rot als Blau - und nicht hell.
+  const [r, g, b] = boden.mittel.gras;
+  assert.ok(g > r && r > b, `Gras im Mittel ${boden.mittel.gras}`);
+  assert.ok(g < 130, `Gras im Mittel ${boden.mittel.gras}: zu hell`);
+});
+
+test('darstellung AC-23: der Browser nimmt Baum, Beere, Gold, Stein und Boden aus den Tafeln', () => {
+  const laden = readFileSync(new URL('../public/bilder.js', import.meta.url), 'utf8');
+  const geladen = [...(/const NAMEN = \[([^\]]*)\]/.exec(laden)?.[1] || '').matchAll(/'([^']+)'/g)].map((m) => m[1]);
+  for (const name of ['baum', 'beere', 'gold', 'stein', 'boden']) assert.ok(geladen.includes(name), `public/bilder.js laedt ${name} nicht`);
+  const gelaende = readFileSync(new URL('../public/gelaende.js', import.meta.url), 'utf8');
+  assert.match(gelaende, /\[WALD\]: 'baum', \[BEERE\]: 'beere', \[GOLD\]: 'gold', \[STEIN\]: 'stein'/);
+  assert.match(readFileSync(new URL('../public/boden.js', import.meta.url), 'utf8'), /gerendert\('boden'\)/);
 });

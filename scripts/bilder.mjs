@@ -49,7 +49,7 @@ if (lauf.error) {
   process.exit(1);
 }
 const zeilen = `${lauf.stdout}\n${lauf.stderr}`.split(/\r?\n/);
-const wichtig = zeilen.filter((z) => /^BILD |Traceback|Error|^\s+File "|SystemExit|Kein Modell|schwarz/.test(z));
+const wichtig = zeilen.filter((z) => /^BILD |^RAND |^TON |Traceback|Error|^\s+File "|SystemExit|Kein Modell|schwarz/.test(z));
 console.log(wichtig.join('\n'));
 if (lauf.status !== 0 || !wichtig.some((z) => z.startsWith('BILD '))) {
   console.error('Rendern fehlgeschlagen - die ganze Ausgabe:');

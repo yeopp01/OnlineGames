@@ -1,0 +1,18 @@
+{
+  "bild": "gold.webp",
+  "maske": null,
+  "zelle": [
+    220,
+    170
+  ],
+  "fuss": [
+    86,
+    118
+  ],
+  "feldbreite": 132,
+  "zeilen": 4,
+  "spalten": 3,
+  "art": "vorrat",
+  "gestalten": 3,
+  "stufen": 4
+}

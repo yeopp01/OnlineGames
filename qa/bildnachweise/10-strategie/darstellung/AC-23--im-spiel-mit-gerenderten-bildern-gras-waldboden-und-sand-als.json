@@ -1,0 +1,10 @@
+{
+  "spec": "10-strategie/darstellung.md",
+  "ac": "AC-23",
+  "titel": "Im Spiel mit gerenderten Bildern: Gras, Waldboden und Sand als Textur, das Ufer mit flachem Wasser, Baeume in vier Arten und ein Vorrat",
+  "datei": "e2e/tests/strategie-spielbild.spec.mjs",
+  "pfad": [
+    "Das Spielbild",
+    "darstellung AC-23: im Spiel liegen Boden, Ufer, Wald und Vorraete gerendert vor"
+  ]
+}

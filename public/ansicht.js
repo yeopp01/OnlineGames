@@ -7,7 +7,7 @@
 // Raute. Die Kamera liegt in Bildpunkten der Raute bei Vergroesserung 1.
 import { FIGUREN, figurBildZeichnen } from './figuren.js';
 import { GEBAEUDE, gebaeudeBildZeichnen, gebaeudeGetroffen } from './gebaeude.js';
-import { richtungAus } from './bilder.js';
+import { gerendert, richtungAus } from './bilder.js';
 import { KACHEL, kachelMassstab, kachelZeichnen } from './boden.js';
 import { Nebel } from './nebel.js';
 import {
@@ -531,6 +531,13 @@ export class Ansicht {
 
   bodenZeichnen(stift, zoom) {
     if (!this.kacheln) this.kacheln = new Map();
+    // Kommen die gerenderten Texturen an (oder gehen sie), sind die Kacheln
+    // von eben die falschen.
+    const mitBildern = Boolean(gerendert('boden'));
+    if (this.kachelnMitBildern !== mitBildern) {
+      this.kacheln.clear();
+      this.kachelnMitBildern = mitBildern;
+    }
     const massstab = kachelMassstab(zoom);
     const breite = this.leinwand.clientWidth / zoom;
     const hoehe = this.leinwand.clientHeight / zoom;
@@ -1199,7 +1206,8 @@ export class Ansicht {
     // Ufer sie ueberdeckt, und nur auf freiem Gras.
     const felder = this.karte.felder;
     // Erst ab rund Zoom 1,2: kleiner wirken Halme und Blumen wie Rauschen.
-    if (HALB_B * zoom >= 26) {
+    // Mit gerendertem Boden (ADR-0016) stehen die Halme schon in der Textur.
+    if (HALB_B * zoom >= 26 && !gerendert('boden')) {
       const gras = grasBeginnen();
       for (let y = vonY; y <= bisY; y++) {
         for (let x = vonX; x <= bisX; x++) {
@@ -1212,8 +1220,9 @@ export class Ansicht {
       grasZeichnen(stift, gras, HALB_B * zoom);
     }
     // Das Wasser liegt mit seinem Ufer in der Bodentextur (boden.js); darauf
-    // nur ein leises Glitzern.
-    for (let y = vonY; y <= bisY; y++) {
+    // nur ein leises Glitzern - das gerenderte Wasser hat seine Wellen selbst,
+    // gezeichnete Striche laegen darauf wie Kreide.
+    for (let y = vonY; y <= bisY && !gerendert('boden'); y++) {
       for (let x = vonX; x <= bisX; x++) {
         if (felder[y * g + x] !== WASSER) continue;
         const p = this.zuBild(x, y);
@@ -1283,7 +1292,7 @@ export class Ansicht {
       const p = this.zuBild(ding.x, ding.y);
       if (ding.art === 'vorrat') {
         // Aus dem Zwischenspeicher: direkt gezeichnet kostete es bei Zoom 1 doppelt so viel (Runde 29).
-        dingBildZeichnen(stift, ding.feld, p.x, p.y, e, ding.index, (this.fuellung.get(ding.index) || 4) / 4);
+        dingBildZeichnen(stift, ding.feld, p.x, p.y, e, ding.index, (this.fuellung.get(ding.index) || 4) / 4, ding, this.salz);
       } else if (ding.art === 'gebaeude') {
         this.gebaeudeBild(ding.gebaeude, p, e);
       } else if (ding.art === 'tier') {

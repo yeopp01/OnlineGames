@@ -1,0 +1,9 @@
+{
+  "spec": "10-strategie/darstellung.md",
+  "ac": "AC-23",
+  "titel": "Die Bildprobe: fuenf Bodentexturen ohne Naht, Eiche, Birke, Fichte und Kiefer in je vier Gestalten, Beeren, Gold und Stein von voll bis fast leer, daneben ein Schaf",
+  "datei": "e2e/tests/strategie-bildprobe.spec.mjs",
+  "pfad": [
+    "darstellung AC-23: Baeume in vier Arten, Vorraete in vier Fuellstufen, der Boden ohne Naht"
+  ]
+}

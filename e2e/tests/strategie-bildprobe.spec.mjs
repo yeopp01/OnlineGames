@@ -104,3 +104,245 @@ test('darstellung AC-17: die Bildprobe zeigt Dorfbewohner, Haus und Baum gerende
     ganzeSeite: true,
   });
 });
+
+// Gelaende und Vorraete (darstellung AC-23). Gemessen wird an den Tafeln, wie
+// sie im Browser ankommen - entschluesselt und gezeichnet, nicht an einer Zahl,
+// die die Kette ueber sich selbst sagt.
+test('darstellung AC-23: Baeume in vier Arten, Vorraete in vier Fuellstufen, der Boden ohne Naht', async ({ page }, info) => {
+  await page.setViewportSize({ width: 1240, height: 1750 });
+  await page.goto('/bildprobe.html?still=1');
+  await page.waitForFunction(() => window.bildprobe?.fertig);
+
+  const messung = await page.evaluate(async () => {
+    const { gerendert, zelleZeichnen } = await import('/bilder.js');
+    const { figurZeichnen } = await import('/figuren.js');
+    const lesen = (tafel, zeile, spalte) => {
+      const [breite, hoehe] = tafel.zelle;
+      const leinwand = document.createElement('canvas');
+      leinwand.width = breite;
+      leinwand.height = hoehe;
+      const stift = leinwand.getContext('2d', { willReadFrequently: true });
+      zelleZeichnen(stift, tafel, zeile, spalte, tafel.fuss[0], tafel.fuss[1], 1, null);
+      return { daten: stift.getImageData(0, 0, breite, hoehe).data, breite, hoehe };
+    };
+    // Der Koerper ist, was fast ganz deckt - der Schatten daneben nicht.
+    const koerper = ({ daten, breite, hoehe }) => {
+      let flaeche = 0;
+      let oben = hoehe;
+      let unten = -1;
+      const summe = [0, 0, 0];
+      let bunt = 0;
+      let grell = 0;
+      let warm = 0;
+      let hellstes = 0;
+      for (let y = 0; y < hoehe; y += 1) {
+        for (let x = 0; x < breite; x += 1) {
+          const o = (y * breite + x) * 4;
+          if (daten[o + 3] < 200) continue;
+          flaeche += 1;
+          oben = Math.min(oben, y);
+          unten = Math.max(unten, y);
+          const [r, g, b] = [daten[o], daten[o + 1], daten[o + 2]];
+          summe[0] += r;
+          summe[1] += g;
+          summe[2] += b;
+          bunt += Math.max(r, g, b) - Math.min(r, g, b);
+          // Leuchtendes Gelb: hell, satt und ohne Blau - die Farbe eines Warnschilds.
+          if (r > 215 && g > 170 && b < 110) grell += 1;
+          // Gold, wie es im Licht steht: warm und deutlich heller als das Gestein.
+          if (r > 140 && r - b > 70 && r >= g) warm += 1;
+          hellstes = Math.max(hellstes, (r + g + b) / 3);
+        }
+      }
+      return {
+        flaeche, hoehe: unten - oben + 1, farbe: summe.map((w) => w / Math.max(1, flaeche)),
+        bunt: bunt / Math.max(1, flaeche), grell: grell / Math.max(1, flaeche), warm: warm / Math.max(1, flaeche), hellstes,
+      };
+    };
+
+    // Baeume: je Art die erste Gestalt, und wie verschieden zwei Arten sind.
+    const baum = gerendert('baum');
+    const baeume = baum.arten.map((_, zeile) => lesen(baum, zeile, 0));
+    let aehnlichstes = 1;
+    for (let a = 0; a < baeume.length; a += 1) {
+      for (let b = a + 1; b < baeume.length; b += 1) {
+        let belegt = 0;
+        let anders = 0;
+        const [da, db] = [baeume[a].daten, baeume[b].daten];
+        for (let i = 0; i < da.length; i += 4) {
+          if (da[i + 3] < 200 && db[i + 3] < 200) continue;
+          belegt += 1;
+          const d = Math.abs(da[i] - db[i]) + Math.abs(da[i + 1] - db[i + 1]) + Math.abs(da[i + 2] - db[i + 2]);
+          if (d > 60 || (da[i + 3] < 200) !== (db[i + 3] < 200)) anders += 1;
+        }
+        aehnlichstes = Math.min(aehnlichstes, anders / belegt);
+      }
+    }
+
+    // Vorraete: Flaeche und Hoehe des Koerpers je Fuellstufe und Gestalt.
+    const vorraete = {};
+    for (const name of ['beere', 'gold', 'stein']) {
+      const tafel = gerendert(name);
+      vorraete[name] = { stufen: tafel.stufen, gestalten: tafel.gestalten, feldbreite: tafel.feldbreite, zellen: [] };
+      for (let gestalt = 0; gestalt < tafel.gestalten; gestalt += 1) {
+        vorraete[name].zellen.push(Array.from({ length: tafel.stufen }, (_, zeile) => koerper(lesen(tafel, zeile, gestalt))));
+      }
+    }
+
+    // Das Schaf, wie es im Spiel bei Zoom 3 steht - so gross sind die Tafeln gerendert.
+    const HALB_B = 22;
+    const leinwand = document.createElement('canvas');
+    leinwand.width = 300;
+    leinwand.height = 300;
+    const stift = leinwand.getContext('2d', { willReadFrequently: true });
+    figurZeichnen(stift, 'schaf', 150, 240, Math.max(9, HALB_B * 0.9 * 3), '#888888', {});
+    const schaf = koerper({ daten: stift.getImageData(0, 0, 300, 300).data, breite: 300, hoehe: 300 });
+
+    // Boden: der rechte Rand gegen den linken, der untere gegen den oberen -
+    // gemessen am Unterschied zweier Nachbarn mitten in der Kachel.
+    const boden = gerendert('boden');
+    const naht = {};
+    const bodenfarbe = {};
+    boden.arten.forEach((art, zeile) => {
+      // Aus der Zelle nur die Kachel - ohne den Saum, den die Kette ansetzt.
+      const zelle = lesen(boden, zeile, 0);
+      const [breite, hoehe] = boden.kachel || boden.zelle;
+      const [saumX, saumY] = boden.saum || [0, 0];
+      const daten = new Uint8ClampedArray(breite * hoehe * 4);
+      for (let y = 0; y < hoehe; y += 1) {
+        const von = ((y + saumY) * zelle.breite + saumX) * 4;
+        daten.set(zelle.daten.subarray(von, von + breite * 4), y * breite * 4);
+      }
+      const unterschied = (ax, ay, bx, by) => {
+        const a = (ay * breite + ax) * 4;
+        const b = (by * breite + bx) * 4;
+        return Math.abs(daten[a] - daten[b]) + Math.abs(daten[a + 1] - daten[b + 1]) + Math.abs(daten[a + 2] - daten[b + 2]);
+      };
+      let rand = 0;
+      let innen = 0;
+      // Innen an zwanzig Stellen gemittelt - eine einzelne Spalte schwankt.
+      // Die Stellen liegen im Abstand 37 und 23, nicht im Takt der Bloecke
+      // der Bildkodierung (16): mitten im Block sind zwei Nachbarn sich
+      // aehnlicher als an seiner Grenze.
+      const STELLEN = 20;
+      for (let y = 0; y < hoehe; y += 1) {
+        rand += unterschied(0, y, breite - 1, y);
+        for (let i = 1; i <= STELLEN; i += 1) {
+          const x = 100 + i * 37;
+          innen += unterschied(x, y, x + 1, y) / STELLEN;
+        }
+      }
+      let randHoch = 0;
+      let innenHoch = 0;
+      for (let x = 0; x < breite; x += 1) {
+        randHoch += unterschied(x, 0, x, hoehe - 1);
+        for (let i = 1; i <= STELLEN; i += 1) {
+          const y = 30 + i * 23;
+          innenHoch += unterschied(x, y, x, y + 1) / STELLEN;
+        }
+      }
+      naht[art] = Math.max(rand / innen, randHoch / innenHoch);
+      const k = koerper({ daten, breite, hoehe });
+      bodenfarbe[art] = { farbe: k.farbe, bunt: k.bunt, deckt: k.flaeche / (breite * hoehe) };
+    });
+    return { arten: baum.arten, gestalten: baum.gestalten, aehnlichstes, baumfarben: baeume.map((b) => koerper(b).farbe), vorraete, schaf, bodenArten: boden.arten, naht, bodenfarbe };
+  });
+  info.annotations.push({ type: 'messung', description: JSON.stringify(messung) });
+  const rund = (w) => Math.round(w * 100) / 100;
+  console.log(`darstellung AC-23: Baumarten ${messung.arten.join(', ')}, aehnlichstes Paar ${rund(messung.aehnlichstes)}; Schaf ${messung.schaf.hoehe} px; `
+    + Object.entries(messung.vorraete).map(([name, v]) => `${name} Hoehe ${v.zellen.map((z) => z[0].hoehe).join('/')} Flaeche ${v.zellen[0].map((z) => z.flaeche).join('>')} bunt ${rund(v.zellen[0][0].bunt)} grell ${rund(v.zellen[0][0].grell)} warm ${rund(v.zellen[0][0].warm)} hellstes ${Math.round(v.zellen[0][0].hellstes)}`).join('; ')
+    + `; Naht ${Object.entries(messung.naht).map(([a, n]) => `${a} ${rund(n)}`).join(', ')}; Boden bunt ${Object.entries(messung.bodenfarbe).map(([a, f]) => `${a} ${rund(f.bunt)}`).join(', ')}`);
+
+  // Mindestens vier Arten, und keine zwei sehen sich aehnlich: dasselbe Bild
+  // zweimal waere 0. Gemessen 2026-11-10: das aehnlichste Paar unterscheidet
+  // sich in 85 % der Flaeche.
+  expect(messung.arten.length).toBeGreaterThanOrEqual(4);
+  expect(messung.gestalten).toBeGreaterThanOrEqual(3);
+  expect(messung.aehnlichstes).toBeGreaterThan(0.4);
+  // Die Birke ist der helle Baum, die Fichte der dunkle - daran haelt man sie
+  // bei Zoom 1 auseinander (darstellung AC-14).
+  const hell = (farbe) => farbe[0] + farbe[1] + farbe[2];
+  const farbeVon = (art) => messung.baumfarben[messung.arten.indexOf(art)];
+  expect(hell(farbeVon('birke'))).toBeGreaterThan(hell(farbeVon('fichte')) * 1.3);
+
+  for (const [name, vorrat] of Object.entries(messung.vorraete)) {
+    expect(vorrat.stufen, `${name}: vier Fuellstufen`).toBe(4);
+    for (const stufen of vorrat.zellen) {
+      // Leert sich ein Vorrat, wird er sichtbar kleiner: jede Stufe hat
+      // weniger Flaeche als die davor, die letzte hoechstens zwei Drittel der ersten.
+      for (let i = 1; i < stufen.length; i += 1) expect(stufen[i].flaeche, `${name}, Stufe ${i + 1}`).toBeLessThan(stufen[i - 1].flaeche);
+      expect(stufen.at(-1).flaeche / stufen[0].flaeche, `${name}: fast leer gegen voll`).toBeLessThan(2 / 3);
+    }
+  }
+  // Ein Beerenstrauch ist hoechstens doppelt so hoch wie ein Schaf - beide in
+  // der Groesse von Zoom 3. Gemessen: 58 bis 63 Bildpunkte gegen 34 (der erste
+  // Wurf war 68 bis 76 hoch und fiel hier durch).
+  for (const stufen of messung.vorraete.beere.zellen) expect(stufen[0].hoehe / messung.schaf.hoehe).toBeLessThanOrEqual(2);
+  // Vorraete sind nicht greller als ihre Umgebung: im Mittel nicht bunter als
+  // das Gras, auf dem sie stehen.
+  for (const [name, vorrat] of Object.entries(messung.vorraete)) {
+    for (const stufen of vorrat.zellen) expect(stufen[0].bunt, `${name}: bunter als das Gras`).toBeLessThanOrEqual(messung.bodenfarbe.gras.bunt * 1.25);
+  }
+  // Gold glaenzt, ohne gelb zu leuchten: es gibt warmes, helles Metall - mehr
+  // als am Stein -, aber so gut wie kein Warnschild-Gelb.
+  for (const [i, stufen] of messung.vorraete.gold.zellen.entries()) {
+    expect(stufen[0].warm, 'am Gold ist Gold zu sehen').toBeGreaterThan(0.02);
+    expect(stufen[0].warm).toBeGreaterThan(messung.vorraete.stein.zellen[i][0].warm + 0.02);
+    expect(stufen[0].grell, 'Gold leuchtet gelb').toBeLessThan(0.02);
+  }
+
+  // Der Boden: fuenf Texturen, jede deckt ihre Kachel ganz und hat keine Naht.
+  // Gemessen: Rand gegen Rand ist 1,11- bis 1,33-mal so verschieden wie zwei
+  // Nachbarn im Inneren - weniger als zwei Bildpunkte im Abstand 2 (1,3 bis
+  // 1,6). Ohne den Saum in der Tafel (grafik/boden.py) waren es bis 1,76.
+  expect(messung.bodenArten).toEqual(['gras', 'erde', 'waldboden', 'sand', 'wasser']);
+  for (const art of messung.bodenArten) {
+    expect(messung.bodenfarbe[art].deckt, `${art}: die Kachel hat Loecher`).toBe(1);
+    expect(messung.naht[art], `${art}: Naht am Rand der Kachel`).toBeLessThan(1.5);
+  }
+
+  await nachweis(page.locator('#probe-gelaende'), {
+    spec: DARSTELLUNG,
+    ac: 'AC-23',
+    titel: 'Die Bildprobe: fuenf Bodentexturen ohne Naht, Eiche, Birke, Fichte und Kiefer in je vier Gestalten, Beeren, Gold und Stein von voll bis fast leer, daneben ein Schaf',
+    test: info,
+  });
+});
+
+// Welche Art auf welchem Feld steht, entscheidet der Browser (der Server kennt
+// nur "Baum"): gemessen an einer Karte von 60 mal 60 Feldern.
+test('darstellung AC-23: Laubwald und Nadelwald stehen in Gruppen, und alle vier Arten kommen vor', async ({ page }) => {
+  await page.goto('/bildprobe.html?still=1');
+  await page.waitForFunction(() => window.bildprobe?.fertig);
+  const wald = await page.evaluate(async () => {
+    const { baumart } = await import('/gelaende.js');
+    const tafel = { arten: ['eiche', 'birke', 'fichte', 'kiefer'] };
+    const g = 60;
+    const gezaehlt = [0, 0, 0, 0];
+    let gleich = 0;
+    let paare = 0;
+    const art = (x, y) => baumart(tafel, y * g + x, { x, y }, 4711);
+    for (let y = 0; y < g; y += 1) {
+      for (let x = 0; x < g; x += 1) {
+        gezaehlt[art(x, y)] += 1;
+        if (x + 1 < g) {
+          paare += 1;
+          if ((art(x, y) >= 2) === (art(x + 1, y) >= 2)) gleich += 1;
+        }
+      }
+    }
+    return {
+      anteile: gezaehlt.map((n) => n / (g * g)),
+      nachbarnGleich: gleich / paare,
+      zweimal: art(17, 1) === art(17, 1),
+      eineArt: baumart({ arten: ['eiche'] }, 77, { x: 17, y: 1 }, 4711),
+    };
+  });
+  console.log(`darstellung AC-23, Wald: Anteile ${wald.anteile.map((a) => a.toFixed(2)).join(' / ')}, Nachbarn gleicher Sorte ${(wald.nachbarnGleich * 100).toFixed(0)} %`);
+  for (const anteil of wald.anteile) expect(anteil).toBeGreaterThan(0.05);
+  // Gewuerfelt waeren es 50 %: Nachbarn sind fast immer beide Laub oder beide Nadel.
+  expect(wald.nachbarnGleich).toBeGreaterThan(0.8);
+  expect(wald.zweimal).toBe(true);
+  // Eine Tafel mit nur einer Art hat nur Zeile 0.
+  expect(wald.eineArt).toBe(0);
+});

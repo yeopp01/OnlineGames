@@ -5,6 +5,8 @@
 # ist hell und unbunt und bekommt das Kennzeichen `spielerfarbe` - die Kette
 # rendert daraus die Maske, der Browser faerbt ein.
 
+import math
+
 import bpy
 
 
@@ -141,6 +143,188 @@ def aus_merkmal(name, merkmal='farbe', rau=0.6, durchschein=0.0):
     lesen.attribute_name = merkmal
     netz.links.new(lesen.outputs[0], flaeche.inputs['Base Color'])
     flaeche.inputs['Roughness'].default_value = rau
+    return stoff
+
+
+def erz(name, gestein, metall_farbe, anteil=0.4, groesse=5.0, rau_metall=0.3, relief=0.9, fugen=0.5):
+    """Gestein mit Adern aus Metall: wo das zweite Rauschen ueber der Schwelle
+    liegt, ist die Flaeche Metall - sie spiegelt Himmel und Sonne, statt in
+    ihrer Farbe zu leuchten."""
+    stoff, netz, flaeche = _grund(name)
+    k = netz.nodes
+    ort = k.new('ShaderNodeTexCoord')
+    rauschen = k.new('ShaderNodeTexNoise')
+    rauschen.inputs['Scale'].default_value = groesse * 1.8
+    rauschen.inputs['Detail'].default_value = 6
+    netz.links.new(ort.outputs['Object'], rauschen.inputs['Vector'])
+    verlauf = k.new('ShaderNodeValToRGB')
+    stufen = verlauf.color_ramp.elements
+    stufen[0].position = 0.3
+    stufen[0].color = farbe(gestein[0])
+    stufen[1].position = 0.7
+    stufen[1].color = farbe(gestein[-1])
+    if len(gestein) == 3:
+        stufen.new(0.5).color = farbe(gestein[1])
+    netz.links.new(rauschen.outputs[0], verlauf.inputs[0])
+
+    adern = k.new('ShaderNodeTexNoise')
+    adern.inputs['Scale'].default_value = groesse
+    adern.inputs['Detail'].default_value = 3
+    adern.inputs['Distortion'].default_value = 1.2
+    netz.links.new(ort.outputs['Object'], adern.inputs['Vector'])
+    schwelle = k.new('ShaderNodeValToRGB')
+    schwelle.color_ramp.elements[0].position = 1 - anteil - 0.03
+    schwelle.color_ramp.elements[0].color = (0, 0, 0, 1)
+    schwelle.color_ramp.elements[1].position = 1 - anteil + 0.03
+    schwelle.color_ramp.elements[1].color = (1, 1, 1, 1)
+    netz.links.new(adern.outputs[0], schwelle.inputs[0])
+
+    ton = verlauf.outputs[0]
+    if fugen > 0:
+        enge = k.new('ShaderNodeAmbientOcclusion')
+        enge.inputs['Distance'].default_value = 0.1
+        enge.samples = 8
+        ton = _mischen(netz, fugen, ton, enge.outputs[0], 'MULTIPLY')
+    netz.links.new(_mischen(netz, schwelle.outputs[0], ton, farbe(metall_farbe)), flaeche.inputs['Base Color'])
+    netz.links.new(schwelle.outputs[0], flaeche.inputs['Metallic'])
+    rau = k.new('ShaderNodeMapRange')
+    rau.inputs['To Min'].default_value = 0.9
+    rau.inputs['To Max'].default_value = rau_metall
+    netz.links.new(schwelle.outputs[0], rau.inputs['Value'])
+    netz.links.new(rau.outputs[0], flaeche.inputs['Roughness'])
+    hoehe = k.new('ShaderNodeBump')
+    hoehe.inputs['Strength'].default_value = relief
+    hoehe.inputs['Distance'].default_value = 0.02
+    netz.links.new(rauschen.outputs[0], hoehe.inputs['Height'])
+    netz.links.new(hoehe.outputs[0], flaeche.inputs['Normal'])
+    return stoff
+
+
+def _ring(netz, periode):
+    """Ein Ort, der sich nach `periode` wiederholt - laengs der zwei Achsen
+    des Bildes am Boden (nach rechts und nach hinten).
+
+    Rauschen an diesem Ort hat keine Naht: jede Achse laeuft einen Kreis ab,
+    zwei Kreise brauchen vier Werte, also Rauschen in vier Richtungen. Der
+    Halbmesser ist so gewaehlt, dass ein Schritt am Boden ein gleich langer
+    Schritt auf dem Kreis ist - `groesse` bedeutet dasselbe wie sonst.
+    """
+    k = netz.nodes
+    ort = k.new('ShaderNodeNewGeometry')
+    halbmesser = periode / (2 * math.pi)
+    werte = []
+    for achse in ((1, 1, 0), (-1, 1, 0)):
+        entlang = k.new('ShaderNodeVectorMath')
+        entlang.operation = 'DOT_PRODUCT'
+        netz.links.new(ort.outputs['Position'], entlang.inputs[0])
+        entlang.inputs[1].default_value = tuple(c / math.sqrt(2) for c in achse)
+        winkel = k.new('ShaderNodeMath')
+        winkel.operation = 'MULTIPLY'
+        winkel.inputs[1].default_value = 1 / halbmesser
+        netz.links.new(entlang.outputs['Value'], winkel.inputs[0])
+        for art in ('COSINE', 'SINE'):
+            kreis = k.new('ShaderNodeMath')
+            kreis.operation = art
+            netz.links.new(winkel.outputs[0], kreis.inputs[0])
+            weit = k.new('ShaderNodeMath')
+            weit.operation = 'MULTIPLY'
+            weit.inputs[1].default_value = halbmesser
+            netz.links.new(kreis.outputs[0], weit.inputs[0])
+            werte.append(weit.outputs[0])
+    return werte
+
+
+def _ringrauschen(netz, ring, groesse, detail, saat, verzerrt=0.0):
+    k = netz.nodes
+    vektor = k.new('ShaderNodeCombineXYZ')
+    for i in range(3):
+        versetzt = k.new('ShaderNodeMath')
+        versetzt.operation = 'ADD'
+        versetzt.inputs[1].default_value = saat * 17.3 + i * 5.1
+        netz.links.new(ring[i], versetzt.inputs[0])
+        netz.links.new(versetzt.outputs[0], vektor.inputs[i])
+    rauschen = k.new('ShaderNodeTexNoise')
+    rauschen.noise_dimensions = '4D'
+    rauschen.inputs['Scale'].default_value = groesse
+    rauschen.inputs['Detail'].default_value = detail
+    rauschen.inputs['Distortion'].default_value = verzerrt
+    netz.links.new(vektor.outputs[0], rauschen.inputs['Vector'])
+    netz.links.new(ring[3], rauschen.inputs['W'])
+    return rauschen.outputs[0]
+
+
+def gekachelt(name, farben, periode, groesse=0.6, fein=7.0, koernung=0.22, rau=0.95, relief=0.5,
+              kontrast=(0.3, 0.7), saat=0):
+    """Ein Boden ohne Naht: grosse Flecken zwischen den Farben, darueber eine
+    feine Koernung, die heller und dunkler macht und das Relief gibt."""
+    stoff, netz, flaeche = _grund(name)
+    k = netz.nodes
+    ring = _ring(netz, periode)
+    flecken = _ringrauschen(netz, ring, groesse, 5.0, saat, verzerrt=0.6)
+    korn = _ringrauschen(netz, ring, fein, 4.0, saat + 1)
+
+    verlauf = k.new('ShaderNodeValToRGB')
+    stufen = verlauf.color_ramp.elements
+    stufen[0].position = kontrast[0]
+    stufen[0].color = farbe(farben[0])
+    stufen[1].position = kontrast[1]
+    stufen[1].color = farbe(farben[-1])
+    innen = farben[1:-1]
+    for i, ton in enumerate(innen):
+        stufen.new(kontrast[0] + (kontrast[1] - kontrast[0]) * (i + 1) / (len(innen) + 1)).color = farbe(ton)
+    netz.links.new(flecken, verlauf.inputs[0])
+
+    hell = k.new('ShaderNodeMapRange')
+    hell.inputs['From Min'].default_value = 0.3
+    hell.inputs['From Max'].default_value = 0.7
+    hell.inputs['To Min'].default_value = 1 - koernung
+    hell.inputs['To Max'].default_value = 1 + koernung
+    netz.links.new(korn, hell.inputs['Value'])
+    mal = k.new('ShaderNodeVectorMath')
+    mal.operation = 'SCALE'
+    netz.links.new(verlauf.outputs[0], mal.inputs[0])
+    netz.links.new(hell.outputs[0], mal.inputs['Scale'])
+    netz.links.new(mal.outputs[0], flaeche.inputs['Base Color'])
+    flaeche.inputs['Roughness'].default_value = rau
+    # Boden glaenzt kaum: sonst legt der Himmel einen grauen Schleier ueber
+    # alles Dunkle (Waldboden, Probe R3).
+    flaeche.inputs['Specular IOR Level'].default_value = 0.2
+    if relief > 0:
+        hoehe = k.new('ShaderNodeBump')
+        hoehe.inputs['Strength'].default_value = relief
+        hoehe.inputs['Distance'].default_value = 0.03
+        netz.links.new(korn, hoehe.inputs['Height'])
+        netz.links.new(hoehe.outputs[0], flaeche.inputs['Normal'])
+    return stoff
+
+
+def wasser(name, periode, grund='#1c3b40', saat=0):
+    """Stehendes Wasser ohne Naht: eine dunkle, glatte Flaeche, die den Himmel
+    spiegelt; zwei Lagen flacher Wellen brechen die Spiegelung."""
+    stoff, netz, flaeche = _grund(name)
+    k = netz.nodes
+    ring = _ring(netz, periode)
+    gross = _ringrauschen(netz, ring, 2.2, 2.0, saat, verzerrt=0.4)
+    klein = _ringrauschen(netz, ring, 9.0, 3.0, saat + 1, verzerrt=0.8)
+    summe = k.new('ShaderNodeMath')
+    summe.operation = 'MULTIPLY_ADD'
+    summe.inputs[1].default_value = 0.45
+    netz.links.new(klein, summe.inputs[0])
+    netz.links.new(gross, summe.inputs[2])
+    # Tiefer und flacher: dasselbe grosse Rauschen toent den Grund.
+    verlauf = k.new('ShaderNodeValToRGB')
+    verlauf.color_ramp.elements[0].position = 0.3
+    verlauf.color_ramp.elements[0].color = tuple(c * 0.75 for c in farbe(grund)[:3]) + (1.0,)
+    verlauf.color_ramp.elements[1].position = 0.7
+    verlauf.color_ramp.elements[1].color = tuple(min(1.0, c * 1.3) for c in farbe(grund)[:3]) + (1.0,)
+    netz.links.new(gross, verlauf.inputs[0])
+    netz.links.new(verlauf.outputs[0], flaeche.inputs['Base Color'])
+    flaeche.inputs['Roughness'].default_value = 0.1
+    hoehe = k.new('ShaderNodeBump')
+    hoehe.inputs['Strength'].default_value = 1.0
+    hoehe.inputs['Distance'].default_value = 0.12
+    netz.links.new(summe.outputs[0], hoehe.inputs['Height'])
+    netz.links.new(hoehe.outputs[0], flaeche.inputs['Normal'])
     return stoff
 
 

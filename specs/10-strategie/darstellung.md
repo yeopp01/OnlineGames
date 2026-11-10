@@ -2,7 +2,7 @@
 
 **Bereich:** Strategie
 **Kuerzel:** darstellung
-**Stand:** 17/24 fertig · 7 offen
+**Stand:** 18/24 fertig · 6 offen
 
 ## Zweck
 
@@ -164,7 +164,7 @@ nicht so kindlich gemalt". Die Bauabfolge R1 bis R6 steht im
   Baustelle in ihren Stufen kommt aus der Kette, mit Material (Holz, Putz,
   Stein, Stroh, Ziegel) und einem Schattenwurf aus derselben Sonne. Jedes
   behält sein Merkmal aus AC-14.
-- **AC-23** `offen` **Gelände und Vorräte gerendert** — Boden, Bäume in
+- **AC-23** `fertig` **Gelände und Vorräte gerendert** — Boden, Bäume in
   mindestens vier Arten, Beeren, Gold, Stein und das Ufer. Vorräte sind nicht
   greller als ihre Umgebung: ein Beerenstrauch ist höchstens doppelt so hoch
   wie ein Schaf, Gold glänzt, ohne gelb zu leuchten. Leert sich ein

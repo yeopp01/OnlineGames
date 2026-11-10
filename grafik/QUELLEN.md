@@ -10,9 +10,10 @@ Original, keine Bilder aus Bildgeneratoren.
 | – | – | – |
 
 **Stand 2026-11-10: kein fremdes Material.** Modelle, Oberflächen und
-Bewegungen aller vier Stücke (Dorfbewohner, Haus, Laubbaum, Marktkarren) sind
-vollständig in den Skripten beschrieben; die Oberflächen sind Rauschen aus
-Blenders eigenen Knoten, keine Bilddateien.
+Bewegungen aller Stücke (Dorfbewohner, Haus, Marktkarren, vier Baumarten,
+Beere, Gold, Stein, fünf Bodentexturen) sind vollständig in den Skripten
+beschrieben; die Oberflächen sind Rauschen aus Blenders eigenen Knoten, keine
+Bilddateien.
 
 Die Tabelle wird geprüft (darstellung AC-18, `npm run check`): jede Datei
 unter `grafik/`, die kein eigenes Skript ist, muss hier stehen — mit Herkunft

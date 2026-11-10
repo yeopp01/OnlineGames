@@ -287,11 +287,20 @@ def _schreiben(pfad, feld):
 class Tafel:
     """Sammelt Einzelbilder gleicher Groesse und schreibt sie als Raster."""
 
-    def __init__(self, name, zelle, fuss, ziel):
+    def __init__(self, name, zelle, fuss, ziel, randlos=False, saum=(0, 0)):
         self.name = name
         self.zelle = zelle
         self.fuss = fuss
         self.ziel = ziel
+        # randlos: das Bild fuellt die Zelle mit Absicht (eine Bodenkachel).
+        self.randlos = randlos
+        # saum: so viele Bildpunkte ihrer eigenen Wiederholung bekommt jede
+        # Zelle links/rechts und oben/unten angesetzt. Eine Kachel braucht das
+        # dort, wo in der Tafel eine andere an ihr liegt: WebP glaettet ueber
+        # die Grenze, und die erste Zeile Gras truege einen Hauch Erde - im
+        # Spiel eine Linie alle acht Felder (gemessen 2026-11-10: Rand gegen
+        # Rand bis 1,95-mal so verschieden wie zwei Nachbarn, mit Saum 1,1).
+        self.saum = saum
         self.ordner = tempfile.mkdtemp(prefix=f'bilder-{name}-')
         self.bilder = {}   # (zeile, spalte) -> (Bild, Maske oder None)
         self.maske = False
@@ -302,17 +311,34 @@ class Tafel:
         anteil = _schwarz_anteil(bild, deckung)
         if anteil > SCHWARZ_GRENZE:
             raise SystemExit(f'{self.name}, Zeile {zeile}, Spalte {spalte}: {anteil:.0%} des Koerpers sind schwarz - ein Stoff ist beim Rendern verloren gegangen')
-        self.bilder[(zeile, spalte)] = (_schatten_daempfen(bild, deckung), spieler if maske else None)
+        fertig = _schatten_daempfen(bild, deckung)
+        # Was am Rand der Zelle steht, ist abgeschnitten: ein Koerper bricht
+        # den Lauf ab, ein Schatten wird gemeldet - im Spiel endete er sonst
+        # an einer geraden Kante. (Der Marktkarren musste zweimal wachsen,
+        # bemerkt jeweils erst am Bild.)
+        rand_koerper = max(float(r.max()) for r in (deckung[0], deckung[-1], deckung[:, 0], deckung[:, -1]))
+        if rand_koerper > 0.5 and not self.randlos:
+            raise SystemExit(f'{self.name}, Zeile {zeile}, Spalte {spalte}: der Koerper stoesst an den Rand der Zelle - sie ist zu klein oder der Fuss sitzt falsch')
+        a = fertig[:, :, 3]
+        rand_schatten = max(float(r.max()) for r in (a[0], a[-1], a[:, 0], a[:, -1]))
+        if rand_schatten > 0.15 and not self.randlos:
+            print(f'RAND {self.name}, Zeile {zeile}, Spalte {spalte}: der Schatten ist am Zellenrand abgeschnitten (Deckung {rand_schatten:.2f})')
+        self.bilder[(zeile, spalte)] = (fertig, spieler if maske else None)
         self.maske = self.maske or maske
 
     def schreiben(self, beschreibung):
         zeilen = 1 + max(z for z, _ in self.bilder)
         spalten = 1 + max(s for _, s in self.bilder)
-        b, h = self.zelle
+        sb, sh = self.saum
+        b, h = self.zelle[0] + 2 * sb, self.zelle[1] + 2 * sh
         os.makedirs(self.ziel, exist_ok=True)
         feld = np.zeros((zeilen * h, spalten * b, 4), dtype=np.float32)
         maske = np.zeros((zeilen * h, spalten * b, 4), dtype=np.float32)
         for (z, s), (zelle, spieler) in self.bilder.items():
+            if sb or sh:
+                zelle = np.pad(zelle, ((sh, sh), (sb, sb), (0, 0)), mode='wrap')
+                if spieler is not None:
+                    spieler = np.pad(spieler, ((sh, sh), (sb, sb)), mode='wrap')
             feld[z * h:(z + 1) * h, s * b:(s + 1) * b] = zelle
             if spieler is not None:
                 # Weiss, so weit die Spielerfarbe deckt - der Browser nimmt
@@ -325,12 +351,16 @@ class Tafel:
         angaben = {
             'bild': f'{self.name}.webp',
             'maske': f'{self.name}-maske.webp' if self.maske else None,
-            'zelle': list(self.zelle),
-            'fuss': list(self.fuss),
+            'zelle': [b, h],
+            'fuss': [self.fuss[0] + sb, self.fuss[1] + sh],
             'feldbreite': FELD_BREITE,
             'zeilen': zeilen,
             'spalten': spalten,
         }
+        if sb or sh:
+            # Was sich wiederholt, ist die Kachel - die Zelle ist um den Saum groesser.
+            angaben['kachel'] = list(self.zelle)
+            angaben['saum'] = [sb, sh]
         angaben.update(beschreibung)
         with open(os.path.join(self.ziel, f'{self.name}.json'), 'w', encoding='utf-8') as f:
             json.dump(angaben, f, indent=2, ensure_ascii=False)

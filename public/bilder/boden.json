@@ -1,0 +1,65 @@
+{
+  "bild": "boden.webp",
+  "maske": null,
+  "zelle": [
+    1056,
+    560
+  ],
+  "fuss": [
+    528,
+    280
+  ],
+  "feldbreite": 132,
+  "zeilen": 5,
+  "spalten": 1,
+  "kachel": [
+    1056,
+    528
+  ],
+  "saum": [
+    0,
+    16
+  ],
+  "art": "boden",
+  "arten": [
+    "gras",
+    "erde",
+    "waldboden",
+    "sand",
+    "wasser"
+  ],
+  "mittel": {
+    "gras": [
+      75,
+      90,
+      42
+    ],
+    "erde": [
+      134,
+      105,
+      71
+    ],
+    "waldboden": [
+      58,
+      55,
+      44
+    ],
+    "sand": [
+      177,
+      161,
+      120
+    ],
+    "wasser": [
+      73,
+      96,
+      106
+    ]
+  },
+  "naht": {
+    "gras": 1.06,
+    "erde": 0.87,
+    "waldboden": 1.11,
+    "sand": 1.02,
+    "wasser": 1.01
+  }
+}

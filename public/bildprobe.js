@@ -1,6 +1,6 @@
-// Die Bildprobe (→ specs/10-strategie/darstellung.md AC-17, ADR-0016): drei
-// gerenderte Stuecke neben ihren gezeichneten Vorgaengern. An diesem Bild
-// entscheidet der Benutzer, ob der Umbau weitergeht.
+// Die Bildprobe (→ specs/10-strategie/darstellung.md AC-17, AC-23, ADR-0016):
+// gerenderte Stuecke neben ihren gezeichneten Vorgaengern, dazu Gelaende und
+// Vorraete. An diesem Bild entscheidet der Benutzer, ob der Umbau weitergeht.
 //
 // Die Seite bewegt sich: die Figuren gehen. Mit `?still=1` steht die Zeit -
 // so nimmt der Browserlauf ein Bild auf, das sich nicht von Lauf zu Lauf
@@ -84,6 +84,7 @@ const blaetter = {
   baum: blatt('probe-baum'),
   szene: blatt('probe-szene'),
   karren: blatt('probe-karren'),
+  gelaende: blatt('probe-gelaende'),
 };
 
 function figurMalen(b) {
@@ -194,12 +195,69 @@ function karrenMalen(b) {
   gerenderteFigur(s, 1095, 305, 2.5, BLAU, 1, -1);
 }
 
+// Gelaende und Vorraete (darstellung AC-23): oben die fuenf Bodentexturen,
+// jede zweimal nebeneinander - an der Mitte laege die Naht -, darunter die
+// vier Baumarten in ihren Gestalten und die Vorraete von voll bis fast leer.
+const BODEN_NAMEN = { gras: 'Gras', erde: 'Erde', waldboden: 'Waldboden', sand: 'Sand', wasser: 'Wasser' };
+const BAUM_NAMEN = { eiche: 'Eiche', birke: 'Birke', fichte: 'Fichte', kiefer: 'Kiefer' };
+
+function gelaendeMalen(b) {
+  const s = b.stift;
+  grund(b);
+  const boden = gerendert('boden');
+  if (boden) {
+    const [breite] = boden.kachel || boden.zelle;
+    const hoehe = boden.zelle[1];
+    const [saumX, saumY] = boden.saum || [0, 0];
+    // Bei Zoom 2: zwei Drittel der gerenderten Groesse.
+    const mass = (2 * HALB_B * 2) / boden.feldbreite;
+    const stueck = 108;
+    boden.arten.forEach((art, zeile) => {
+      const x = 16 + zeile * 229;
+      for (const seite of [0, 1]) {
+        // Links das rechte Ende der Kachel, rechts ihr linkes: so stoesst in
+        // der Mitte des Feldes Rand an Rand.
+        const sx = saumX + (seite ? 0 : breite - stueck / mass);
+        s.drawImage(boden.tafel, sx, zeile * hoehe + saumY + 120, stueck / mass, 150 / mass, x + seite * stueck, 40, stueck, 150);
+      }
+      schrift(s, BODEN_NAMEN[art] || art, x + 8, 60);
+    });
+    schrift(s, 'Boden bei Zoom 2 – in der Mitte jedes Feldes stößt der rechte Rand der Kachel an den linken', 16, 24);
+  }
+  const baeume = gerendert('baum');
+  if (baeume) {
+    schrift(s, 'Bäume in vier Arten, je vier Gestalten – Zoom 1,5', 16, 226);
+    (baeume.arten || []).forEach((art, zeile) => {
+      for (let gestalt = 0; gestalt < baeume.gestalten; gestalt += 1) {
+        const x = 50 + zeile * 284 + gestalt * 62;
+        zelleZeichnen(s, baeume, zeile, gestalt, x, 420, (2 * HALB_B * 1.5) / baeume.feldbreite, null);
+      }
+      schrift(s, BAUM_NAMEN[art] || art, 30 + zeile * 284, 448, 0.6);
+    });
+  }
+  schrift(s, 'Vorräte in vier Füllstufen, je drei Gestalten – Zoom 2', 16, 486);
+  [['beere', 'Beeren'], ['gold', 'Gold'], ['stein', 'Stein']].forEach(([name, titel], spalte) => {
+    const tafel = gerendert(name);
+    if (!tafel) return;
+    const x0 = 16 + spalte * 384;
+    schrift(s, titel, x0, 510, 0.6);
+    for (let gestalt = 0; gestalt < tafel.gestalten; gestalt += 1) {
+      for (let zeile = 0; zeile < tafel.stufen; zeile += 1) {
+        zelleZeichnen(s, tafel, zeile, gestalt, x0 + 42 + zeile * 84, 580 + gestalt * 76, (2 * HALB_B * 2) / tafel.feldbreite, null);
+      }
+    }
+  });
+  // Das Schaf als Massstab, so gross wie im Spiel bei Zoom 2.
+  figurZeichnen(s, 'schaf', 362, 584, Math.max(9, HALB_B * 0.9 * 2), '#888888', {});
+}
+
 function malen() {
   figurMalen(blaetter.figur);
   hausMalen(blaetter.haus);
   baumMalen(blaetter.baum);
   szeneMalen(blaetter.szene);
   karrenMalen(blaetter.karren);
+  gelaendeMalen(blaetter.gelaende);
   if (!STILL) requestAnimationFrame(malen);
 }
 

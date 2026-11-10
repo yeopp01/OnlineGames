@@ -46,7 +46,10 @@ die Zeilen unter „Für die Erkenntnisse" dorthin und erzeugt das Board neu
   seit der Probe offen waren (Größe, Speicher, Bildrate), siehe „R2: gemessen
   und entschieden". Daraus: die Tafeln sind jetzt **WebP**, gefärbt wird
   **je Zelle**.
-- **Als Nächstes:** R3 — Gelände und Vorräte (darstellung AC-23).
+- **R3 (2026-11-10): Gelände und Vorräte** (darstellung AC-23 fertig) —
+  Boden in fünf Texturen, Ufer, vier Baumarten, Beeren, Gold und Stein in
+  vier Füllstufen. Siehe „R3: Gelände und Vorräte".
+- **Als Nächstes:** R4 — Gebäude samt Baustellen (darstellung AC-22).
 - **Der ADR heißt jetzt 0016** (umbenannt am 2026-11-10, vorher 0014): auf
   `strategie` sind die Nummern 0014 (Häuser statt Völker) und 0015
   (Statthalter) inzwischen vergeben. Beim Einbinden bleibt nur
@@ -62,7 +65,9 @@ grafik/kette.py         Szene, Kamera, Sonne, die Nebenkanäle, die Tafel
 grafik/stoffe.py        Oberflächen als Knotennetze (Rauschen, Relief, Fugen)
 grafik/formen.py        Quader, Drehkörper, Glied, Kugel, Prisma, Netz, Strang
 grafik/haus.py          ein Modell = ein Skript mit bauen() und tafel(ziel)
-grafik/baum.py
+grafik/baum.py          vier Arten, je vier Gestalten
+grafik/beere.py · gold.py · stein.py   Vorräte in vier Füllstufen (fels.py: die Brocken)
+grafik/boden.py         fünf Bodentexturen, die sich ohne Naht wiederholen
 grafik/dorfbewohner.py
 grafik/marktkarren.py
 grafik/bilder.py        Einstieg: blender -b -P grafik/bilder.py -- haus
@@ -280,6 +285,141 @@ rendert, hat ein altes Bild, und kein Test merkt es. Das ginge nur mit
 einem Fingerabdruck des Skripts in der Beschreibung; nicht gebaut, weil
 jede Änderung an `kette.py` dann alle Bilder für veraltet erklärte.
 
+## R3: Gelände und Vorräte (2026-11-10)
+
+darstellung AC-23 ist fertig. Im Spiel mit `?bilder=1` kommen Boden, Ufer,
+Wald und alle drei Vorräte aus der Kette; gezeichnet bleiben bis R4 bis R6
+die Gebäude außer dem Haus, die Figuren außer dem Dorfbewohner und die
+Schafe.
+
+**Die Modelle**
+
+- **Vier Baumarten** (`baum.py`): Eiche, Birke, Fichte, Kiefer, je vier
+  Gestalten — eine Zeile je Art. Welche Art auf einem Feld steht, entscheidet
+  der Browser (der Server kennt nur „Baum"): `baumart()` in `gelaende.js`
+  liest ein Rauschen über sieben Felder, so steht Laub bei Laub und Nadel bei
+  Nadel. Gemessen auf 60 × 60 Feldern: 31 % Eiche, 14 % Birke, 36 % Fichte,
+  19 % Kiefer; 86 % der Nachbarn sind beide Laub oder beide Nadel (gewürfelt
+  wären es 50 %).
+- **Beere, Gold, Stein** (`beere.py`, `gold.py`, `stein.py`, die Brocken aus
+  `fels.py`): je drei Gestalten in **vier Füllstufen als Zeilen** — der
+  Server kennt Viertel, die Tafel hat sie. Der halbleere Busch ist derselbe
+  wie der volle, nur abgeerntet; vom Gestein fehlen Brocken.
+- **Der Boden** (`boden.py`): fünf Texturen, die sich ohne Naht wiederholen —
+  Gras, Erde, Waldboden, Sand, Wasser. Eine Kachel ist 1056 × 528 Bildpunkte,
+  acht Felder. Halme, Kiesel und Laubstreu sind Geometrie, die am Rand
+  wiederholt wird; das Rauschen der Stoffe läuft über einen Torus (vier
+  Koordinaten aus Kosinus und Sinus der beiden Achsen), sonst hätte es am
+  Rand einen Sprung.
+
+**Im Browser** (`boden.js`, `kachelAusTexturen`): eine Bodenkachel entsteht
+in Schichten. Jede Textur liegt als Muster fest an der Karte und wird mit
+einer Maske aus der Karte beschnitten: Gras, darauf Waldboden, Erde, am Ufer
+Sand, ein dunkler nasser Saum, flaches Wasser, das den Grund durchlässt,
+tiefes, das ihn verdeckt. Hell und dunkel, saftig und trocken legt weiter
+das Rauschen über die ganze Karte darüber — es nimmt das Gras mal.
+
+**Gemessen**
+
+| Tafel | Zellen | Zelle | Tafel (WebP) | Rechenzeit |
+| --- | --- | --- | --- | --- |
+| baum | 4 Arten × 4 Gestalten | 350 × 292 | 270 KB | 74 s |
+| beere | 4 Stufen × 3 Gestalten | 220 × 150 | 49 KB | 18 s |
+| gold | 4 Stufen × 3 Gestalten | 220 × 170 | 42 KB | 18 s |
+| stein | 4 Stufen × 3 Gestalten | 220 × 170 | 38 KB | 20 s |
+| boden | 5 Kacheln | 1056 × 528 und 16 Saum | 677 KB | 125 bis 242 s |
+
+Alle Bilder zusammen 2366 KB (nach R2: 1361 KB).
+
+| Was das Kriterium verlangt | gemessen (`strategie-bildprobe`) |
+| --- | --- |
+| mindestens vier Baumarten, die man auseinanderhält | das ähnlichste Paar unterscheidet sich in 85 % der Fläche; die Birke ist mehr als 1,3-mal so hell wie die Fichte |
+| Beerenstrauch höchstens doppelt so hoch wie ein Schaf | 58 bis 63 Bildpunkte gegen 34 (Zoom 3) |
+| Vorräte nicht greller als ihre Umgebung | Buntheit Beere 35, Gold 27, Stein 6 — das Gras hat 48 |
+| Gold glänzt, ohne gelb zu leuchten | 4 % der Fläche sind warmes, helles Metall (Stein 0 %), kein Bildpunkt in Warnschild-Gelb |
+| leert sich ein Vorrat, wird er kleiner | Fläche je Stufe: Beere 3252 > 2864 > 2456 > 2098, Gold 4286 > 3856 > 2927 > 2009, Stein 4740 > 4221 > 3240 > 2256 |
+| der Boden ohne Naht | Rand gegen Rand 1,11- bis 1,33-mal so verschieden wie zwei Nachbarn — zwei Bildpunkte im Abstand 2 sind es 1,3- bis 1,6-mal |
+
+**Eine Bodenkachel kostet mehr als gezeichnet** (Median über 24 Kacheln
+einer dichten Probekarte, zweimal gemessen, Chromium ohne Fenster):
+
+| Maßstab der Kachel | gezeichnet | aus Texturen, erster Wurf | aus Texturen, jetzt |
+| --- | --- | --- | --- |
+| 0,5 (Zoom unter 0,7) | 10 ms | 12 ms | 6 ms |
+| 1 | 13 ms | 38 ms | 15 ms |
+| 2 (Zoom über 1,45) | 22 bis 24 ms | 135 ms | 46 ms |
+
+Drei Dinge haben es gebracht: Schichten, die in der Kachel nirgends liegen,
+werden nicht gezeichnet; die Masken werden mit einfacher Glättung
+vergrößert; und das Gras braucht mitten auf der Karte keine Maske. Im
+größten Maßstab bleibt es doppelt so teuer wie gezeichnet — beim Wechsel
+über Zoom 1,45 entstehen vier bis sechs Kacheln auf einmal. **Nicht
+gemessen** ist dasselbe in einem Browser mit Fenster und Grafikkarte.
+
+Die Bildrate ist davon unberührt (`strategie-tempo`, eine Messung):
+60,1 Bilder je Sekunde bei 1,8 ms je Bild stehend, 59,5 bei 2,3 ms im Gehen.
+
+Speicher, gerechnet aus den Leinwandgrößen: die entpackte Bodentafel
+11,8 MB, die verkleinerten Texturen für alle drei Maßstäbe 6,5 MB
+(`texturSpeicher()`).
+
+**Fehler, die erst am Bild oder an der Messung auffielen**
+
+- **Die Naht kam aus der Bildkodierung, nicht aus dem Render.** Die Kette maß
+  vor dem Schreiben 0,87 bis 1,11; im Browser waren es bis 1,76. WebP glättet
+  über die Grenze zur Nachbarkachel in der Tafel — die erste Zeile Sand trug
+  einen Hauch Waldboden. Jede Kachel bekommt deshalb oben und unten einen
+  Saum von 16 Bildpunkten aus ihrer eigenen Wiederholung (`Tafel(saum=…)`,
+  in der Beschreibung `kachel` und `saum`). Links und rechts **bringt ein
+  Saum nichts** — probiert, quer 1,10 bis 1,35 mit wie ohne. Der Rest steckt
+  im Render: zwei Nachbarn teilen sich Proben des Bildfilters, das Paar über
+  den Rand nicht.
+- **`hard-light` nimmt nicht mal.** Der Ton des Grases lag erst als
+  `hard-light` über allem: Erde wurde rosa, Waldboden violett, trockenes
+  Gras grauviolett. Über 1 legt `hard-light` Licht dazu, unabhängig vom
+  Grund. Jetzt liegt die Grastextur einmal aufgehellt vor (`color-dodge` mit
+  s = 1 − 1/k ist mal k), und jede Kachel dunkelt mit `multiply` herunter —
+  eine echte Malnahme je Kanal. Der Ton gilt dem Gras allein.
+- **Der Waldboden zeichnete die Treppe der Felder nach.** Er wird jetzt
+  gemittelt wie das Ufer und vom Rauschen verschoben.
+- **Gezeichnete Wellenstriche auf gerendertem Wasser** sahen aus wie Kreide —
+  mit Bodentextur entfallen sie.
+- **Der Beerenstrauch war zu hoch** (68 bis 76 Bildpunkte gegen 34 beim
+  Schaf); der Test, der vor dem ersten Lauf geschrieben war, fiel durch. Der
+  volle Busch steht jetzt bei 85 %.
+- **Der Stein war heller als alles um ihn** (hellster Bildpunkt 214, jetzt
+  181) — nicht gemessen als Fehler, am Bild gesehen.
+- **Die Zelle des Baums musste wachsen** (350 × 292): der Schatten der
+  Fichte war am Rand abgeschnitten, die Kette hat es gemeldet (`RAND`).
+- **`public/*.js` lädt Node in diesem Projekt nicht** (`"type": "commonjs"`
+  im Paket): der Fall zur Baumart läuft deshalb im Browser, nicht in
+  `tests/bilder.test.mjs`.
+
+**Offen aus R3**
+
+- **Die Kachelzeit im größten Maßstab** (46 ms) — siehe oben. Weiter ginge
+  es mit einer Maske je Kachel statt je Schicht; nicht gebaut.
+- **Wiederholung der Textur:** bei Zoom 0,6, 1 und 2 am Bild nicht zu sehen
+  (Karte 4711, vier Stellen). Die Textur wiederholt sich alle acht Felder;
+  auf einer großen, leeren Grasfläche ist es **nicht geprüft**.
+- **Schafe, Dorfzentrum und alle übrigen Gebäude** stehen gezeichnet auf
+  gerendertem Boden — das sieht man. R4 und R6.
+- **Die Übersichtskarte** rechnet ihre Farben weiter aus `bodenAn`; sie ist
+  etwas heller als der gerenderte Boden.
+- **Das Gras ist dunkler als das gezeichnete** (Mittel der Textur 75/90/42,
+  die gezeichnete Mitte 89/107/49). Gewollt gelassen, weil es zu den Bäumen
+  passt; ob Gebäude und Figuren darauf richtig stehen, zeigt R4.
+- **Ein Fall im ganzen Browserlauf gefallen, nicht erklärt** (208 von 209
+  grün, 24 min): `bedienung AC-39` (`strategie-kampfbild`) — zwei
+  Augenblicke desselben Gefechts waren Bildpunkt für Bildpunkt gleich, das
+  Bild stand also eine Drittelsekunde still. Einzeln danach: erst 2 von 4
+  gefallen (je 3,7 s statt 2,3 s), dann 4 von 4 und 10 von 10 grün; auf dem
+  Stand von R2 dazwischen 6 von 6 grün. Der Fall schaltet die gerenderten
+  Bilder nicht ein, und im gezeichneten Bild ändert R3 keine Zeile, die
+  läuft. **Vermutet, nicht belegt:** Last auf dem Rechner (die Schleife auf
+  `strategie` fährt ihre Browserläufe nebenher) — der Fall wartet 345 ms
+  nach der Uhr und vergleicht dann. Fällt er wieder, zuerst dort nachsehen.
+
 ## Nach der Probe gefragt (2026-11-09)
 
 - **Ist die Bildrate in Gefahr?** (Stand der Antwort vom 2026-11-09; in R2
@@ -310,12 +450,12 @@ jede Änderung an `kette.py` dann alle Bilder für veraltet erklärte.
   Figur und Bewegung die schwere. Prüfbar an einem Stück: ein Gebäude bauen
   lassen und auf der Bildprobe daneben stellen.
 
-## Offen, wenn es weitergeht (R3 und danach)
+## Offen, wenn es weitergeht (R4 und danach)
 
 - **Speicher bei vielen Einheiten** — siehe die Hochrechnung in R2. Vor R5
   entscheiden: eine Tafel je Ablauf, Laden nach Bedarf.
 - **Der Server schickt keinen Cache-Kopf.** Jeder Seitenaufruf lädt die
-  Tafeln neu. Heute 1,4 MB, mit allen Einheiten ein Vielfaches. Gehört zu
+  Tafeln neu. Heute 2,4 MB, mit allen Einheiten ein Vielfaches. Gehört zu
   Stufe G (Betrieb), braucht dann einen Dateinamen oder eine Marke, die sich
   mit dem Inhalt ändert.
 - **Laden vor der Partie** (AC-24): heute zeichnet das Spiel, bis die Tafeln
@@ -368,6 +508,15 @@ jede Änderung an `kette.py` dann alle Bilder für veraltet erklärte.
   jemand daran baut. Und: eine Liste, aus der gerendert **und** geprüft
   wird, kann nicht neben dem Bestand herlaufen — vorher stand dieselbe
   Liste in `bilder.py` und in `bilder.js`.
+- **R3, Gelände und Vorräte** (2026-11-10, darstellung AC-23 fertig): siehe
+  „R3: Gelände und Vorräte". **Erkenntnis:** gemessen wird am Bild, wie es
+  im Browser ankommt, nicht an dem, was die Kette vor dem Schreiben über sich
+  sagt — die Naht der Bodenkacheln entstand erst in der Bildkodierung, und
+  die Kette hielt sie für sauber. Und: ein Test, der vor dem ersten Lauf
+  geschrieben war, hat zwei Dinge gefangen, die am Bild niemand beanstandet
+  hätte (Strauch zu hoch, Naht) — die Fehler, die er nicht fangen konnte
+  (Rosa, Violett, Kreidestriche), fielen erst im Spielbild auf, nicht auf
+  der Bildprobe. Beides ansehen, bevor etwas fertig heißt.
 - **Zwei Sitzungen in einem Arbeitsbaum** (2026-11-09): während der
   Spec-Runde arbeitete die Schleife an spielziel AC-23 im selben Verzeichnis.
   Bemerkt erst an `git status`. Seitdem: Arbeit neben der Schleife bekommt

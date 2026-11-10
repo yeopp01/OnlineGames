@@ -2,16 +2,22 @@
   "bild": "baum.webp",
   "maske": null,
   "zelle": [
-    300,
-    240
+    350,
+    292
   ],
   "fuss": [
     95,
-    206
+    246
   ],
   "feldbreite": 132,
-  "zeilen": 1,
+  "zeilen": 4,
   "spalten": 4,
   "art": "ding",
+  "arten": [
+    "eiche",
+    "birke",
+    "fichte",
+    "kiefer"
+  ],
   "gestalten": 4
 }
