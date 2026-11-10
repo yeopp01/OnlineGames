@@ -20,3 +20,4 @@ Nachfolgerin.
 | 0011 | [Bildnachweise gehoeren an das Abnahmekriterium](0011-bildnachweise.md) | entschieden |
 | 0012 | [Age of Empires II ist die Vorlage, gebaut wird in Stufen](0012-aoe2-als-vorlage.md) | teilweise abgeloest (Handelskarren → 0013) |
 | 0013 | [Buendnisse, die sich loesen lassen, Marktkarren, Dauer als Einstellung](0013-buendnisse-karren-dauer.md) | entschieden |
+| 0014 | [Eine eigene Welt aus Haeusern statt historischer Voelker](0014-haeuser-statt-voelker.md) | entschieden |
