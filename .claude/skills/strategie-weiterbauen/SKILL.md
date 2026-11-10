@@ -64,6 +64,18 @@ das vier Fassungen eines Bildes (Rückschau nach Runde 88).
 zusammen Sinn ergeben. Merkst du beim Bauen, dass es größer ist: Kriterium
 teilen (neue Nummern), das erste Stück fertigmachen.
 
+**Ein Kriterium, das einen Mangel beheben soll, misst ihn zuerst — auf dem
+Stand von heute.** Steht in seiner Begründung eine Beobachtung („die KI
+sitzt ohne Gold fest", „der Karren bringt zu wenig"), ist sie oft viele
+Runden alt. Bevor gebaut wird, dieselbe Messung noch einmal; gibt es den
+Mangel nicht mehr, wird das Kriterium neu gefasst, bevor der erste Entwurf
+steht. ki AC-26 kam aus einem Patt mit leerem Gold (Runden 114, 137, 144);
+in Runde 162 lief das Gold über 88 KIs viermal aus, alle nach Minute 45 —
+gemessen wurde dann an geleertem Gold. In Runde 161 ergab der Faktor der
+Vorlage 10,7 Gold je Minute gegen 20 des Dorfbewohners; erst die Messung
+zeigte, dass „wie im Original" hier „halb so viel" heißt (Rückschau nach
+Runde 163).
+
 Setze die gewählten Kriterien auf `in-arbeit`.
 
 ## 2. Spec-Runde (wenn eine Stufe beginnt)
@@ -117,6 +129,11 @@ Setze die gewählten Kriterien auf `in-arbeit`.
   verändert den Inhalt still (Runden 4, 11, 22, 25). Viele Änderungen auf
   einmal: das Skript mit Write in den Temp-Ordner legen und dann mit
   `python "$(cygpath -w …)"` ausführen; anzuhängender Testtext ebenso als Datei.
+  **Vor einer neuen Datei `ls` auf den Namen**: Write überschreibt eine Datei,
+  die früher in der Sitzung gelesen wurde, ohne Rückfrage — in Runde 159
+  beinahe `tests/strategie-tempo.test.mjs` (fahrplan AC-6). Und kein `cat`
+  ohne Datei in einer Kette: es wartet auf die Eingabe, der Befehl rutscht
+  nach zwei Minuten in den Hintergrund (Runde 162).
 - **Listen, die mit den Stufen wachsen, prüft ein Test nie auf Gleichheit.**
   Was ein Dorfbewohner baut, was ein Gebäude anbietet, wie viele Knöpfe ein
   Menü hat: „enthält" oder aus den Werten zählen (`werte.einheiten…baut.length`).
@@ -503,10 +520,14 @@ Setze die gewählten Kriterien auf `in-arbeit`.
 
 0. **Eine Durchsicht ohne deine Schlüsse**, bevor der Abschlusslauf beginnt,
    wenn die Runde Simulation, KI oder Kampf geändert hat: ein Subagent
-   (`feature-dev:code-reviewer`, `model: sonnet`, nur lesend) bekommt `git diff`
-   der Produktdateien **als Datei**: `git diff -- <dateien> > <scratchpad>/durchsicht.diff`
-   und der Pfad in den Auftrag — der Prüfer hat keine Shell und las in Runde 97
-   die Dateien statt des Unterschieds. Dazu eine Beschreibung des **Verhaltens**, nicht deines
+   (`feature-dev:code-reviewer`, `model: sonnet`, nur lesend) bekommt den
+   Unterschied der Produktdateien **als Datei**: `npm run durchsicht` schreibt
+   alles Geänderte und Neue außer Dokumenten hinein (mit Pfaden nur diese)
+   und nennt den Pfad — der gehört in den Auftrag. Der Prüfer hat keine Shell
+   und las in Runde 97 die Dateien statt des Unterschieds; in den Runden 151
+   bis 162 hieß der Auftrag trotz dieser Regel „führe `git diff` aus", und
+   der neue Test der Runde stand ohnehin in keinem `git diff` (Rückschau nach
+   Runde 163). Dazu eine Beschreibung des **Verhaltens**, nicht deines
    Urteils — und sucht Fehler, Randfälle, Determinismus, was die KI nicht
    sehen dürfte. Seine Befunde prüfst du am Code nach, bevor du handelst; jeder
    echte bekommt einen Test mit Gegenprobe — **gegen die alte Zeile**:

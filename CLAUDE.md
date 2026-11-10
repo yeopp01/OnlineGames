@@ -42,6 +42,7 @@ npm run pruefstand:vergleich          # KI gegen KI: Arbeitsstand neben HEAD, di
 npm run pruefstand:vergleich -- --probe probe.cjs --saetze 3  # Austauschprobe: eine Methode nur im Arbeitsstand ersetzt, 60 Startwerte
 npm run pruefstand:verlauf -- --startwert 5  # eine Partie KI gegen KI Minute fuer Minute
 npm run gegenprobe -- <datei> "<neu>" "<alt>" -- <befehl>  # Gegenprobe gegen die alte Zeile, schreibt die Datei immer zurueck
+npm run durchsicht   # Geaendertes und Neues als eine Datei fuer den Pruefer, der keine Shell hat - nennt den Pfad
 ```
 
 **Am Strategiespiel wird in Runden gearbeitet:** `/strategie-weiterbauen`
@@ -162,7 +163,7 @@ Umfang hinzufügt, dort nachsehen.
 
 ## Stand
 
-**453 von 574 Kriterien fertig.** 701 Tests ohne Browser, 207 im Browser. Die
+**453 von 574 Kriterien fertig.** 703 Tests ohne Browser, 207 im Browser. Die
 Übersicht ist der Bericht: `npm run qa:report`.
 
 Gebaut ist der Unterbau: Räume, Übertragung, Karte, Wegfindung, Sammeln,
@@ -181,8 +182,8 @@ Gemessen: **3,10 Tore je Spiel, 48 % Heimsiege, 21 % Unentschieden**
 (Bundesliga: 3,1 / 44 % / 24 %); der Favorit gewinnt 64 %. Über sechs Saisons
 ohne Menschen null Widersprüche in den Spielen, Kader, Stärke und Markt
 stabil. Eine Saison rechnet in rund 400 ms, ein Spielstand ist nach zwei
-Saisons unter 1 MB. Der Browserlauf dauert rund 19 bis 20
-Minuten für 204 Fälle (`npm run e2e:laufzeiten` zeigt, wo; die langsamsten
+Saisons unter 1 MB. Der Browserlauf dauert rund 19 bis 21
+Minuten für 207 Fälle (`npm run e2e:laufzeiten` zeigt, wo; die langsamsten
 Fälle sind `fahrplan AC-24` mit 108 s, zwei gegen zwei bis zur Tafel,
 `fahrplan AC-14` mit 90 s, die Ritterzeit am Stück, und `fahrplan AC-12`
 mit 84 s, eine ganze Partie gegen die KI).

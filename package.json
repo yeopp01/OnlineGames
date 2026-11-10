@@ -33,6 +33,7 @@
     "tafel": "node scripts/tafel.mjs",
     "pruefstand:strategie": "node scripts/pruefstand-strategie.mjs",
     "gegenprobe": "node scripts/gegenprobe.mjs",
+    "durchsicht": "node scripts/durchsicht.mjs",
     "pruefstand:vergleich": "node scripts/pruefstand-vergleich.mjs",
     "pruefstand:verlauf": "node scripts/pruefstand-verlauf.mjs",
     "konterkreis:strategie": "node scripts/konterkreis-strategie.mjs"

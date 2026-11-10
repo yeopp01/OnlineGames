@@ -531,6 +531,7 @@ Zahlen, gegen die spätere Runden vergleichen. Mit Datum und Commit.
 | 2026-11-09 | Zwei gegen zwei, Verbündete als Nachbarn, Startwerte 1-20 bis Minute 90 | 20/20 mit einem Team als Sieger, Minute 35,4–52,4, Median 39,6; HEAD von Runde 150: 0/20, 173–434 Angriffsläufe zu Verbündeten je Partie | Runde 151 |
 | 2026-11-09 | `npm run check` (zwei Abschnitte, `tests/partien/` danach) | 651 + 8 Tests, 170 und 165 s, zweimal grün; vorher 151–193 s mit einheiten AC-31 einmal von zweien rot | Rückschau 152 |
 | 2026-11-09 | Browserlauf; Tests ohne Browser | 203 Fälle in 18,9 und 19,6 min (Lauf ohne und mit neuen Bildern; Maschine nicht vorher geprüft, bei der Rückschau ruhig); 664 + 8 Tests; langsamste fahrplan AC-24 108 s, AC-14 90 s, AC-12 84 s | Rückschau 158 |
+| 2026-11-10 | Browserlauf; Tests ohne Browser | 207 Fälle in 21,4 min (Runde 161, Maschine nicht vorher geprüft); 695 + 8 Tests, `npm run check:kurz` 277 s | Rückschau 163 |
 
 ## Rückschauen
 
@@ -1501,6 +1502,60 @@ Testlauf): `npm run check` 53 s ohne Last, 599 Tests ohne Browser; der
 volle Browserlauf mit 191 Fällen 16,6 min (Runde 140; Runde 135: 17,0 min
 für 190). Die Ritterzeit am Stück braucht 1,7 min.
 
+### Nach Runde 163 (2026-11-10)
+
+Vier Runden: 159 die Spielgeschwindigkeit (spielziel AC-23, D13 fertig),
+160 der Marktkarren (einheiten AC-39), 161 der Karren handelt (einheiten
+AC-40), 162 die KI handelt (ki AC-26). Stufe D ist damit bis auf einheiten
+AC-41 (die sichtbare Ladung, wartet auf die Blender-Figuren) gebaut; ihre
+vier Kriterien im Fahrplan (AC-14, AC-15, AC-23, AC-24) sind `fertig`, die
+aktuelle Stufe ist E. Was Zeit gekostet hat:
+
+1. **Die Durchsicht bekam keinen Unterschied.** Die Anweisung verlangt seit
+   Runde 97 `git diff` als Datei, weil der Prüfer keine Shell hat. Die
+   letzte solche Datei im Temp-Ordner ist aus Runde 150; in den Runden 161
+   und 162 hieß der Auftrag „führe `git diff` aus und lies die neue
+   Testdatei". Gefunden hat er trotzdem drei Fallen — aus den ganzen
+   Dateien, nicht aus dem Unterschied, und den neuen Test kannte `git diff`
+   ohnehin nicht. Eine Regel, die zwölf Runden lang nicht befolgt wird, ist
+   keine. → **`npm run durchsicht`** schreibt alles Geänderte und Neue
+   außer Dokumenten in eine Datei und nennt den Pfad, mit Pfaden nur diese
+   (`scripts/durchsicht.mjs`, zwei Tests an einem Wegwerf-Lager, Gegenproben:
+   ohne die neuen Dateien und ohne den Filter auf Dokumente fallen sie). In
+   der Anweisung (Abschnitt 6, Punkt 0) und in CLAUDE.md.
+2. **Zweimal hintereinander stimmte die Annahme hinter dem Kriterium
+   nicht.** Runde 161: „wie im Original" ergab einen Karren mit halb so
+   viel Gold wie ein Dorfbewohner. Runde 162: das Patt mit leerem Gold, aus
+   dem ki AC-26 stammte (Runden 114, 137, 144), gibt es auf `strategie`
+   nicht mehr — über 88 KIs lief das Gold viermal aus, alle nach Minute 45.
+   Beide Male fing die Runde das nur, weil der Steuerstand „zuerst messen"
+   sagte. → **Regel in Abschnitt 1:** ein Kriterium, das einen Mangel
+   beheben soll, misst ihn zuerst auf dem Stand von heute; gibt es ihn
+   nicht mehr, wird es neu gefasst, bevor der erste Entwurf steht.
+3. **Zwei Beinahe-Unfälle mit dem Werkzeug**: Write überschrieb in Runde
+   159 still `tests/strategie-tempo.test.mjs`, und in Runde 162 wartete ein
+   `cat` ohne Datei in einer Kette auf die Eingabe, bis der Befehl in den
+   Hintergrund rutschte. → Zwei Sätze unter „Werkzeug" (Abschnitt 3): vor
+   einer neuen Datei `ls`, kein `cat` ohne Datei.
+
+Gemessen: der volle Browserlauf der Runde 161 dauerte 21,4 Minuten für 207
+Fälle (Maschine nicht vorher geprüft; vor dieser Rückschau 21 Chrome-
+Fenster des Benutzers und zwei Node-Prozesse, keine fremden Tests). CLAUDE.md
+sagt jetzt 19 bis 21 Minuten.
+
+**Kein Rundgang im Browser und keine neuen Lücken.** Die Rückschau zur
+Stufe D war Runde 142; ihre drei Lücken (bedienung AC-42 bis AC-44) sind
+offen und der erste Schritt der Stufe E. Was danach kam (D10 bis D14), ist
+Regelwerk und zwei Knöpfe, und das Aussehen baut die Blender-Sitzung neu —
+Lücken im Aussehen von heute wären Lücken in Zeichnungen, die gerade
+ersetzt werden. Der Rundgang kommt mit der Rückschau zur Stufe E.
+
+Nicht geändert: der Zuschnitt hat getragen, jede Runde endete mit einem
+Commit. Die nächste Runde ist die **Spec-Runde zur Stufe E** nach ADR-0014
+(fünf Häuser, Landsitz, Lehen, Fürstentum, Krone; der Abschnitt „Was die
+Spec-Runde zur Stufe E daraus macht"). ADR-0015 (der Statthalter) kommt
+nach Stufe E.
+
 ### Nach Runde 158 (2026-11-09)
 
 Fünf Runden: 153 zwei gegen zwei im Browser (fahrplan AC-24, D11), 154
@@ -1672,6 +1727,12 @@ ihn, mit Gegenprobe an beiden Formen. Fünf Bilder neu, alle angesehen.
 Neueste oben. Eine Zeile je Runde: Nummer, Datum, Kriterien, Ergebnis,
 wichtigste Erkenntnis.
 
+- **163** · 2026-11-10 · **Rückschau** — `npm run durchsicht` legt den
+  Unterschied samt neuer Dateien für den Prüfer ab (seit Runde 151 hatte er
+  keinen bekommen); ein Kriterium, das einen Mangel beheben soll, misst ihn
+  zuerst neu; vor einer neuen Datei `ls`, kein `cat` ohne Datei. Stufe D
+  gilt bis auf einheiten AC-41 (Blender) als gebaut, die nächste Runde ist
+  die Spec-Runde zur Stufe E.
 - **162** · 2026-11-10 · **ki AC-26 fertig: die KI handelt mit Karren** (D14).
   Liegt in Reichweite weniger als ein Goldfeld (800), baut sie einen Markt
   am Dorf und einen zweiten 50 Felder davon in der Richtung, die am
