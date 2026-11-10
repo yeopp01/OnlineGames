@@ -2,7 +2,7 @@
 
 **Bereich:** Strategie
 **Kuerzel:** spielziel
-**Stand:** 12/26 fertig · 1 in Arbeit · 13 offen
+**Stand:** 13/26 fertig · 1 in Arbeit · 12 offen
 
 ## Zweck
 
@@ -146,13 +146,20 @@ spielt die KI am schlechtesten.
   eigenen Weg zum Sieg nahelegen (→ [Fahrplan](fahrplan.md) AC-16). Die
   Boni bleiben klein, 10 bis 20 %, damit nicht die Hauswahl die Partie
   entscheidet (ADR-0014 Punkt 8).
-- **AC-17** `offen` **Ein Haus ist Daten** — Ein neues Haus entsteht durch einen Eintrag
+- **AC-17** `fertig` **Ein Haus ist Daten** — Ein neues Haus entsteht durch einen Eintrag
   in einer Tabelle, nicht durch eine Verzweigung in der Simulation. Ein
   Bonus hat die Form, die eine Verbesserung schon hat (`wirkung` je Klasse,
   `sammeln` als Faktor, `gebaeude`), und gilt von Beginn an; gelesen wird er
   dort, wo die Verbesserungen gelesen werden (`welt.einheitenwert`,
   `welt.gebaeudewert`). Sonst wird das fünfte Haus teurer als das erste
   statt billiger.
+  **Fertig in Runde 167:** `HAEUSER` in `daten.js`, das Haus je Spieler als
+  Einstellung `haeuser: { <spielerId>: <haus> }` (wie `teams`), und eine
+  Stelle `welt.wirkungen()`, die die Boni des Hauses vor die erforschten
+  Verbesserungen stellt; `einheitenwert`, `gebaeudewert`, `sammelrate` und
+  `farmNahrung` lesen nur noch sie. Silberfurt hat bis E3 keinen Bonus —
+  seine beiden brauchen eine neue Lesestelle (AC-26). Belegt in
+  `tests/strategie-haeuser.test.mjs`, der jeden Bonus aus den Daten liest.
 - **AC-18** `offen` **Kein Haus gewinnt gegen alle** — Über zwanzig Partien je Paarung liegt
   keines dauerhaft vorn (→ Fahrplan AC-18). Belegt durch Partien, nicht
   durch Behauptung.

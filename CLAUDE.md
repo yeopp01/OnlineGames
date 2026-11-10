@@ -165,7 +165,7 @@ Umfang hinzufügt, dort nachsehen.
 
 ## Stand
 
-**455 von 598 Kriterien fertig.** 714 Tests ohne Browser, 208 im Browser. Die
+**457 von 598 Kriterien fertig.** 719 Tests ohne Browser, 208 im Browser. Die
 Übersicht ist der Bericht: `npm run qa:report`.
 
 Gebaut ist der Unterbau: Räume, Übertragung, Karte, Wegfindung, Sammeln,
@@ -461,6 +461,10 @@ gebeugten Formen stehen in `ZEITALTER` (`artikel`, `genitiv`, `ab`, `zum`),
 nie zusammengesetzt; `tests/waechter-zeitalter.test.mjs` findet die alten
 Namen in jedem Bildschirmtext. In Bezeichnern, Specs, Testnamen und
 Bildunterschriften bleiben die alten Namen die Arbeitsnamen der Stufen.
+**Ein Haus ist Daten** (spielziel AC-17, fahrplan AC-17): `HAEUSER` in
+`daten.js`, Boni in der Form der Verbesserungen, gelesen nur über
+`welt.wirkungen()`; das Haus je Spieler ist die Einstellung
+`haeuser: { <spielerId>: <haus> }`. Gewählt wird es noch nicht im Warteraum.
 
 1. **Stufe A** Dunkle Zeit mit Wirtschafts-KI und Prüfstand · **B** Feudalzeit
    · **C** Partieende und KI-Gegner · **D** Ritterzeit · **E** fünf Häuser ·

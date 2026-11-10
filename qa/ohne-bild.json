@@ -2,6 +2,16 @@
   "hinweis": "Ausnahmeliste zu den Bildnachweisen (docs/adr/0011-bildnachweise.md). Ein Abnahmekriterium steht hier, wenn es kein Aussehen hat oder ein Bildschirm es nicht zeigen kann - dann verlangt der Bericht kein Bild. Die Begruendung sagt, was das Kriterium ist und warum kein Bild. Ein Eintrag auf eine Spec oder ein Kriterium, das es nicht mehr gibt, laesst npm run check scheitern. Liegt trotz Eintrag ein Bild vor, wird es angezeigt.",
   "eintraege": [
     {
+      "spec": "10-strategie/spielziel.md",
+      "ac": "AC-17",
+      "begruendung": "Dass ein Haus Daten ist, ist eine Eigenschaft des Aufbaus: seine Boni stehen in HAEUSER in der Form einer Verbesserung und werden an derselben Stelle gelesen (welt.wirkungen), und Welt, KI und Pruefstand nennen kein einzelnes Haus. Belegt im Rechenteil fuer jeden Bonus jedes Hauses gegen einen Spieler ohne Haus. Gewaehlt wird ein Haus erst mit spielauswahl AC-24 im Warteraum; ein Bild der Wahl und eines Bonus im Spiel kommt dort und mit fahrplan AC-16 - eine Zahl in der Wertetafel zeigt nicht, woher sie kommt."
+    },
+    {
+      "spec": "10-strategie/fahrplan.md",
+      "ac": "AC-17",
+      "begruendung": "Ein sechstes Haus allein aus Daten: der Test legt einen Eintrag an und laesst damit zwanzig Minuten KI gegen KI spielen, jeder Takt vom Pruefstand auf Widersprueche geprueft, ohne eine Zeile in der Simulation. Was belegt wird, ist das Fehlen einer Aenderung im Code - das zeigt kein Bildschirm."
+    },
+    {
       "spec": "10-strategie/ki.md",
       "ac": "AC-26",
       "begruendung": "Wann und wohin die KI handelt, ist eine Entscheidung in ihrem Kopf: Gold in Reichweite knapp, ein Markt am Dorf, ein zweiter weit davon und vom Gegner weg (oder der fernste Markt eines Verbuendeten), Karren ausbilden, Stein verkaufen, wenn ihr Gold fehlt, Holz fuer den Markt zuruecklegen. Belegt im Rechenteil an gebauten Lagen mit Gegenprobe fuer jede tragende Zeile und ueber acht ganze Partien mit geleertem Gold gegen dieselben Partien ohne Handel. Wie ein Karren handelt und was die Leiste dabei sagt, zeigt das Bild zu einheiten AC-40; ein Standbild der KI zeigte einen Karren unterwegs, nicht warum er faehrt."

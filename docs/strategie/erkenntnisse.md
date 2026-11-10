@@ -257,6 +257,12 @@ etwas anderem gearbeitet.
   die Unterschrift sagt „einen Knopf mehr"; bauen AC-23 — die Absage nennt
   die Zahl der Gebäude, nicht welche.
 
+- **einheiten AC-38 (Mönch bekehrt) fiel einmal im vollen Lauf** (Runde
+  167, Zeitüberschreitung beim Warten auf den Besitzerwechsel, 15 s bei
+  Zeitraffer 1 für 4 bis 10 Spielsekunden; allein viermal grün, in Runde 166
+  grün). Fällt er im nächsten vollen Lauf wieder, ist er nach Abschnitt 1 die
+  nächste Arbeit — dann im Wartefenster den Zeitraffer hochdrehen.
+
 - **Der Späher kann ins Heer geraten** (Durchsicht Runde 165, nicht
   behoben): `heerPruefen` nimmt jede Kampfeinheit, auch den Späherreiter,
   der gerade erkundet; dann bricht `erkunden` ab, und gesucht wird nur noch
@@ -1766,6 +1772,21 @@ ihn, mit Gegenprobe an beiden Formen. Fünf Bilder neu, alle angesehen.
 Neueste oben. Eine Zeile je Runde: Nummer, Datum, Kriterien, Ergebnis,
 wichtigste Erkenntnis.
 
+- **167** · 2026-11-10 · **spielziel AC-17 und fahrplan AC-17 fertig (E2,
+  erster Teil): ein Haus ist Daten.** `HAEUSER` mit Name, Sitz, Wahlspruch
+  und Boni in der Form der Verbesserungen; `welt.wirkungen()` stellt die
+  Boni des Hauses vor die erforschten Verbesserungen, und die vier
+  Lesestellen fragen nur noch sie. Das Haus kommt wie das Team als
+  Einstellung (`haeuser`). Ein sechstes Haus „Probe" spielt im Test zwanzig
+  Minuten ohne eine Zeile Code. Gegenprobe: `sammelrate` mit der alten
+  Schleife lässt beide Tests fallen. **Gelernt:** Silberfurt hat in dieser
+  Form keinen einzigen Bonus — beide (Gebühr, Karren) brauchen eine neue
+  Lesestelle; bis E3 ist es ein Haus ohne Boni. Die Wahl im Warteraum
+  (spielauswahl AC-24) ist die nächste Bau-Runde nach der Rückschau.
+  Die Durchsicht fand eine Stelle im Browser, die selbst rechnete:
+  `farmVoll` kannte nur die Verbesserungen — die Tafel `kw` trägt jetzt
+  die Nahrung je Farm mit (Gegenprobe gegen die Zeile). Vergleich gegen
+  HEAD: dieselben 20 Partien, 166 gegen 167 ms je 1000 Takte.
 - **166** · 2026-11-10 · **bedienung AC-45 fertig (E1): die Stufen heißen
   Landsitz, Lehen, Fürstentum, Krone.** Die Formen stehen in `ZEITALTER`
   (`artikel`, `genitiv`, `ab`, `zum`), weil sie keiner Regel folgen — „ab

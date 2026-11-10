@@ -1438,6 +1438,10 @@ export class Ansicht {
   farmVoll(gebaeude) {
     let voll = this.werte.gebaeude[gebaeude.art]?.nahrung || 0;
     if (!voll) return 0;
+    // Die Tafel des Servers kennt Haus und Verbesserungen (spielziel AC-17);
+    // gerechnet wird hier nur, wenn sie fehlt.
+    const ausTafel = this.einheitenwerte.get(gebaeude.b)?.[gebaeude.art]?.nahrung;
+    if (ausTafel) return ausTafel;
     // Was der Gegner erforscht hat, weiss niemand - fuer fremde Farmen bleibt
     // es bei der Tabelle.
     if (gebaeude.b === this.ich) {

@@ -2,7 +2,7 @@
 
 **Bereich:** Strategie
 **Kuerzel:** fahrplan
-**Stand:** 17/24 fertig · 7 offen
+**Stand:** 18/24 fertig · 6 offen
 
 ## Zweck
 
@@ -275,8 +275,12 @@ und Mannschaftsboni stehen in [Spielziel](spielziel.md), „Zu den Häusern".
   und AC-14: ein Browsertest wählt ein Haus, spielt bis zur Burg, bildet
   dort die Spezialeinheit dieses Hauses aus und zeigt einen Bonus im Bild
   (etwa die Reichweite an der Auswahl).
-- **AC-17** `offen` **Ein Haus ist ein Eintrag** — Ein sechstes Haus entsteht im Test allein aus
+- **AC-17** `fertig` **Ein Haus ist ein Eintrag** — Ein sechstes Haus entsteht im Test allein aus
   Daten und ist spielbar, ohne dass die Simulation eine Zeile dazubekommt.
+  **Fertig in Runde 167:** der Test legt ein Haus „Probe" mit jeder
+  Bonusform in `HAEUSER` an und lässt KI 1 es zwanzig Minuten gegen KI 2
+  spielen, jeder Takt vom Prüfstand geprüft; Leben, Farmen und Holz zeigen
+  den Bonus, und dieselbe Partie ohne Haus verläuft anders.
 - **AC-18** `offen` **Kein Haus vorn** — KI gegen KI, jede Paarung zwanzigmal: kein Haus
   gewinnt gegen ein anderes mehr als 60 % — **je Paarung**, nicht nur im
   Mittel, denn die Schwerpunkte sitzen auf den Ecken des Konterkreises
@@ -295,7 +299,7 @@ Figuren, nicht auf die Regeln.
 | Schritt | Was | Kriterien |
 | --- | --- | --- |
 | E1 | Die Stufen heißen nach dem Rang: Landsitz, Lehen, Fürstentum, Krone — alle Texte am Bildschirm, dazu die Tests und Bilder, die sie lesen (`npm run check:alles:neu`) — fertig in Runde 166 | bedienung AC-45 |
-| E2 | Ein Haus ist Daten: `HAEUSER` mit Boni in der Form der Verbesserungen, gelesen in `einheitenwert`, beim Sammeln und in `gebaeudewert`; die Wahl im Warteraum (Name und Wahlspruch, noch ohne Wappen) | fahrplan AC-17, spielziel AC-17, spielauswahl AC-24 |
+| E2 | Ein Haus ist Daten: `HAEUSER` mit Boni in der Form der Verbesserungen, gelesen in `einheitenwert`, beim Sammeln und in `gebaeudewert`; die Wahl im Warteraum (Name und Wahlspruch, noch ohne Wappen) — Daten fertig in Runde 167, die Wahl im Warteraum offen | fahrplan AC-17, spielziel AC-17, spielauswahl AC-24 |
 | E3 | Die Boni, die eine neue Lesestelle brauchen (Ausbildungszeit, Marktgebühr, Ertrag des Karrens, Reichweite nur für Turm und Burg); jeder Bonus gemessen; der Mannschaftsbonus endet mit dem Bündnis | spielziel AC-16, AC-25, AC-26 |
 | E4 | Voller Wohnraum fällt auf (Lücke aus der Rückschau zur Stufe D) | bedienung AC-43 |
 | E5 | Die KI neigt zu ihrem Haus | ki AC-27 |

@@ -464,7 +464,42 @@ const HANDEL = {
   karren: { faktor: 0.77, sockel: 0.3 },
 };
 
+// Die fuenf Haeuser (ADR-0014, spielziel AC-16, AC-17). Ein Haus ist ein
+// Eintrag: Name, Sitz, Wahlspruch und `boni`. Die Boni haben die Form einer
+// Verbesserung - `wirkung` je Einheitenart oder Klasse, `sammeln` als Faktor,
+// `farm`, `gebaeude` - und gelten von Beginn an. Gelesen werden sie dort, wo
+// die Verbesserungen gelesen werden (`welt.wirkungen()`); die Simulation
+// kennt kein einzelnes Haus.
+//
+// Hier steht, was sich in dieser Form schreiben laesst. Die Boni, die eine
+// neue Lesestelle brauchen, kommen mit E3 (spielziel AC-26): Wehrsteins
+// Reichweite nur fuer Turm und Burg, Silberfurts Marktgebuehr und Gold je
+// Fahrt, dazu jeder Mannschaftsbonus (AC-25). Silberfurt hat deshalb bis
+// dahin keinen Bonus. Alle Zahlen sind Startwerte (ADR-0014).
+const HAEUSER = {
+  eschenbruch: {
+    name: 'Eschenbruch', sitz: 'Waldland', wahlspruch: 'Weit sehen, weit treffen.',
+    boni: { sammeln: { holz: 1.15 }, wirkung: { bogenschuetze: { reichweite: 1 } } },
+  },
+  rappenstein: {
+    name: 'Rappenstein', sitz: 'Grasland', wahlspruch: 'Zuerst am Ziel.',
+    boni: { wirkung: { kavallerie: { leben: 15, sicht: 2 } } },
+  },
+  wehrstein: {
+    name: 'Wehrstein', sitz: 'Gebirge', wahlspruch: 'Stein vergisst nicht.',
+    boni: { sammeln: { stein: 1.15 }, gebaeude: { lebenAnteil: 0.1 } },
+  },
+  silberfurt: {
+    name: 'Silberfurt', sitz: 'Flussstadt', wahlspruch: 'Alles hat seinen Preis.',
+    boni: {},
+  },
+  distelhag: {
+    name: 'Distelhag', sitz: 'Heide', wahlspruch: 'Wer uns greift, blutet.',
+    boni: { wirkung: { infanterie: { nahruestung: 1, fernruestung: 1 } }, farm: { nahrung: 45 } },
+  },
+};
+
 module.exports = {
-  EINHEITEN, SAMMELN, TIERE, GEBAEUDE, VERBESSERUNGEN, ZEITALTER, AUFSTIEGE, KLASSEN, HANDEL,
+  EINHEITEN, SAMMELN, TIERE, GEBAEUDE, VERBESSERUNGEN, ZEITALTER, AUFSTIEGE, KLASSEN, HANDEL, HAEUSER,
   BEVOELKERUNG_MAX, SCHLANGE_MAX, STARTAUFSTELLUNG,
 };

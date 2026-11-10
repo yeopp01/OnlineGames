@@ -3,7 +3,7 @@
 const karten = require('./karte');
 const { suchen, nachbarfeld } = require('./wege');
 const {
-  EINHEITEN, SAMMELN, TIERE, GEBAEUDE, VERBESSERUNGEN, ZEITALTER, AUFSTIEGE, KLASSEN, HANDEL,
+  EINHEITEN, SAMMELN, TIERE, GEBAEUDE, VERBESSERUNGEN, ZEITALTER, AUFSTIEGE, KLASSEN, HANDEL, HAEUSER,
   BEVOELKERUNG_MAX, SCHLANGE_MAX, STARTAUFSTELLUNG,
 } = require('./daten');
 
@@ -161,6 +161,17 @@ function teamAus(teams, id) {
   return Number.isInteger(team) && team >= 1 && team <= 4 ? team : null;
 }
 
+/**
+ * Das Haus eines Spielers aus den Einstellungen (spielziel AC-17):
+ * `einstellungen.haeuser` ist `{ <spielerId>: <haus> }` mit einem Schluessel
+ * aus `HAEUSER`. Alles andere heisst: kein Haus, keine Boni - so spielen
+ * alle Partien, die keins waehlen, wie bis Stufe D.
+ */
+function hausAus(haeuser, id) {
+  const haus = haeuser && Object.hasOwn(haeuser, id) ? haeuser[id] : null;
+  return typeof haus === 'string' && Object.hasOwn(HAEUSER, haus) ? haus : null;
+}
+
 function untaetigeListe(welt, spielerId) {
   const ids = welt.untaetigeVon(spielerId);
   return ids.length ? { u: ids } : {};
@@ -233,7 +244,13 @@ class Welt {
       // Das Team (spielziel AC-14): 1 bis 4 oder keins. Wer keins hat,
       // spielt gegen alle.
       team: teamAus(einstellungen.teams, eintrag.id),
+      // Das Haus (spielziel AC-17): ein Schluessel aus `HAEUSER` oder keins.
+      // Seine Boni liest `wirkungen()`, nie eine Regel selbst.
+      haus: hausAus(einstellungen.haeuser, eintrag.id),
     }));
+    // Die Wirkungen je Spieler (`wirkungen()`), gemerkt mit der Zahl der
+    // Verbesserungen, auf der sie beruhen.
+    this.wirkungenGemerkt = new Map();
     // Wer mit wem verbuendet ist, fragt jede Kampfregel - deshalb eine Map
     // statt `spielerVon` (das sucht in der Liste).
     this.teamVon = new Map(this.spieler.map((s) => [s.id, s.team]));
@@ -388,15 +405,37 @@ class Welt {
    */
   gebaeudewert(besitzer, art, feld) {
     const grund = GEBAEUDE[art][feld] || 0;
-    const verbesserungen = this.spielerVon(besitzer)?.verbesserungen || [];
+    const wirkungen = this.wirkungen(besitzer);
     if (feld === 'leben') {
       let anteil = 0;
-      for (const v of verbesserungen) anteil += VERBESSERUNGEN[v].gebaeude?.lebenAnteil || 0;
+      for (const w of wirkungen) anteil += w.gebaeude?.lebenAnteil || 0;
       return Math.round(grund * (1 + anteil));
     }
     let wert = grund;
-    for (const v of verbesserungen) wert += VERBESSERUNGEN[v].gebaeude?.[feld] || 0;
+    for (const w of wirkungen) wert += w.gebaeude?.[feld] || 0;
     return wert;
+  }
+
+  /**
+   * Alles, was die Werte eines Spielers veraendert, in einer Form: zuerst die
+   * Boni seines Hauses (von Beginn an), dann jede erforschte Verbesserung
+   * (spielziel AC-17). Jede Lesestelle - `einheitenwert`, `gebaeudewert`,
+   * `sammelrate`, `farmNahrung` - laeuft ueber diese Liste; ein Haus ist
+   * deshalb ein Eintrag in `HAEUSER` und keine Verzweigung.
+   *
+   * Gemerkt je Spieler, solange die Zahl seiner Verbesserungen gleich bleibt:
+   * `sammelrate` fragt in jedem Takt fuer jeden Sammler.
+   */
+  wirkungen(besitzer) {
+    const spieler = this.spielerVon(besitzer);
+    if (!spieler) return [];
+    const n = spieler.verbesserungen.length;
+    const da = this.wirkungenGemerkt.get(besitzer);
+    if (da && da.n === n) return da.liste;
+    const liste = spieler.verbesserungen.map((v) => VERBESSERUNGEN[v]);
+    if (spieler.haus) liste.unshift(HAEUSER[spieler.haus].boni);
+    this.wirkungenGemerkt.set(besitzer, { n, liste });
+    return liste;
   }
 
   // Sieht dieser Spieler das Feld jetzt? Und hat er es je gesehen? (kampf AC-15)
@@ -460,7 +499,7 @@ class Welt {
    */
   einheitenwert(besitzer, art, feld) {
     const spieler = this.spielerVon(besitzer);
-    if (!spieler?.verbesserungen?.length) return EINHEITEN[art][feld] || 0;
+    if (!spieler || (!spieler.verbesserungen.length && !spieler.haus)) return EINHEITEN[art][feld] || 0;
     // Gemerkt je Spieler: `laufen()` fragt das Tempo in jedem Takt fuer jede
     // Einheit, `wacheTakten()` zweimal je Sekunde die Sicht. Ohne Gedaechtnis
     // liefe darunter je Aufruf eine Schleife ueber alle Verbesserungen mit
@@ -471,8 +510,9 @@ class Welt {
     const da = gemerkt.get(schluessel);
     if (da !== undefined) return da;
     let wert = EINHEITEN[art][feld] || 0;
+    const wirkungen = this.wirkungen(besitzer);
     for (const s of wirkungsschluessel(art)) {
-      for (const v of spieler.verbesserungen) wert += VERBESSERUNGEN[v].wirkung[s]?.[feld] || 0;
+      for (const w of wirkungen) wert += w.wirkung?.[s]?.[feld] || 0;
     }
     gemerkt.set(schluessel, wert);
     return wert;
@@ -501,6 +541,10 @@ class Welt {
     for (const art of Object.keys(GEBAEUDE)) {
       tafel[art] = {};
       for (const feld of GEBAEUDEFELDER) tafel[art][feld] = this.gebaeudewert(besitzer, art, feld);
+      // Was eine neue Farm traegt, mit Haus und Verbesserungen (bauen AC-26,
+      // spielziel AC-17) - sonst rechnete der Browser es selbst und kennte
+      // das Haus nicht (Durchsicht Runde 167).
+      if (GEBAEUDE[art].nahrung) tafel[art].nahrung = this.farmNahrung(besitzer);
     }
     return tafel;
   }
@@ -511,16 +555,14 @@ class Welt {
    */
   sammelrate(besitzer, rohstoff, grundrate) {
     let faktor = 1;
-    for (const v of this.spielerVon(besitzer)?.verbesserungen || []) {
-      faktor *= VERBESSERUNGEN[v].sammeln?.[rohstoff] || 1;
-    }
+    for (const w of this.wirkungen(besitzer)) faktor *= w.sammeln?.[rohstoff] || 1;
     return grundrate * faktor;
   }
 
   // Wie viel Nahrung eine neue Farm dieses Spielers traegt (bauen AC-26).
   farmNahrung(besitzer) {
     let nahrung = GEBAEUDE.farm.nahrung;
-    for (const v of this.spielerVon(besitzer)?.verbesserungen || []) nahrung += VERBESSERUNGEN[v].farm?.nahrung || 0;
+    for (const w of this.wirkungen(besitzer)) nahrung += w.farm?.nahrung || 0;
     return nahrung;
   }
 
