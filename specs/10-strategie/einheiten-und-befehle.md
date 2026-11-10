@@ -2,7 +2,7 @@
 
 **Bereich:** Strategie
 **Kuerzel:** einheiten
-**Stand:** 28/33 fertig · 4 offen · 1 zurueckgestellt
+**Stand:** 29/34 fertig · 4 offen · 1 zurueckgestellt
 
 ## Zweck
 
@@ -266,17 +266,36 @@ Werte aus der [Vorlage](../../docs/strategie/vorlage-aoe2.md), als Daten in
   schon für den Mönch galten, ohne neuen Code. Die Figur: ein Pony an der
   Deichsel vor einem zweirädrigen Planwagen, die Plane und das Kummet in
   der Spielerfarbe, vorn der Fuhrmann mit Strohhut.
-- **AC-40** `offen` **Der Karren handelt** — Ein Rechtsklick auf einen
+- **AC-40** `fertig` **Der Karren handelt** — Ein Rechtsklick auf einen
   **anderen** Markt schickt ihn auf die Strecke: einen Markt eines
   Verbündeten oder einen zweiten eigenen. Er pendelt zwischen seinem
   Heimatmarkt und diesem Ziel und bringt bei jeder Rückkehr Gold. Die Menge
   wächst mit dem Abstand der Märkte schneller als dieser. Auf einen Markt
   eines Gegners ist der Klick ein Gang, kein Handel. Fällt einer der Märkte,
   bleibt er stehen. **Ziel, gemessen im Prüfstand:** auf halber
-  Kartenbreite bringt ein Karren je Minute etwa so viel Gold wie ein
-  Dorfbewohner am Goldvorkommen. Die Werte stehen in `HANDEL`, denn die
-  Formel der Vorlage ist nur nachgemessen und nicht geprüft. Im Bild trägt
-  der Karren auf dem Heimweg sichtbar Ladung, und die Leiste nennt die Strecke.
+  Kartenbreite bringt ein Karren je Minute etwas weniger Gold als ein
+  Dorfbewohner am Goldvorkommen (Benutzer, Runde 161: „ein kleines bisschen
+  weniger"; zuvor „etwa so viel"). Die Werte stehen in `HANDEL`, denn die
+  Formel der Vorlage ist nur nachgemessen und nicht geprüft. Die Leiste
+  nennt die Strecke. (Die sichtbare Ladung steht seit Runde 161 als AC-41.)
+  **Gebaut in Runde 161:** der Auftrag `handel` mit Heimat- und Zielmarkt;
+  Heimat ist der nächste eigene fertige Markt außer dem Ziel. Geladen wird
+  am Ziel, dem Spieler gehört das Gold erst daheim, und die Tafel zählt es
+  als gesammelt. Ein Ziel, das einem Gegner gehört — auch nach dem Ende
+  einer Kündigung —, beendet die Strecke wie ein gefallener Markt, und zwar
+  im selben Takt, nicht erst am Ende des Weges. Gemessen: ein Dorfbewohner
+  am Gold mit dem Lager zwei Felder daneben bringt 20,0 Gold je Minute; ein
+  Karren auf halber Kantenlänge (60 Felder) braucht 123 Sekunden für die
+  Rundfahrt. Mit dem Faktor der Vorlage (0,46) brächte er 22 Gold je Fahrt,
+  also 10,7 je Minute — die Hälfte. Gesetzt ist deshalb **`faktor: 0.77`**
+  bei gleicher Form: 37 Gold je Fahrt, 18,0 je Minute, 90 % des
+  Dorfbewohners (mit 0,86 wären es genau 20,0). Je Minute lohnt die lange
+  Strecke mehr als die kurze.
+- **AC-41** `offen` **Ladung des Karrens sichtbar** — Auf dem Heimweg trägt
+  der Karren sichtbar Gold (Säcke oder Truhen auf der Ladefläche), auf dem
+  Hinweg nicht. Abgetrennt von AC-40 in Runde 161: das ist eine Änderung an
+  der Figur, und die Figuren baut seit 2026-11-10 eine eigene Sitzung mit
+  Blender neu. Der Server schickt die Ladung schon (`l`, `a` am Karren).
 
 ## Grenzfaelle
 

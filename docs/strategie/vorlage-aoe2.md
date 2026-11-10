@@ -103,7 +103,10 @@ eigenen Markt fahren ([ADR-0013](../adr/0013-buendnisse-karren-dauer.md)).
 Ausbildungszeit und Sicht stehen in keiner Quelle, die hier vorlag; gesetzt
 sind **51 Sekunden** und **Sicht 7** (Runde 160, aus dem Gedächtnis des
 Fan-Wikis, **nicht geprüft** — eine Studie von 2003 nennt rund 29 Sekunden
-nach einer Verbesserung).
+nach einer Verbesserung). **Abweichung (Runde 161):** der Faktor ist hier
+0,77 statt 0,46. Mit 0,46 brächte ein Karren auf halber Kartenbreite
+10,7 Gold je Minute, ein Dorfbewohner am Gold bringt hier 20,0; die Spec
+verlangt „etwas weniger" (einheiten AC-40) — mit 0,77 sind es 18,0. Die Form der Formel bleibt.
 
 ## Zeitalter
 

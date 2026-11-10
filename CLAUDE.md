@@ -162,7 +162,7 @@ Umfang hinzufügt, dort nachsehen.
 
 ## Stand
 
-**451 von 573 Kriterien fertig.** 684 Tests ohne Browser, 206 im Browser. Die
+**452 von 574 Kriterien fertig.** 690 Tests ohne Browser, 207 im Browser. Die
 Übersicht ist der Bericht: `npm run qa:report`.
 
 Gebaut ist der Unterbau: Räume, Übertragung, Karte, Wegfindung, Sammeln,
@@ -432,8 +432,15 @@ zählt Spielzeit. **Aus D14 steht der Marktkarren** (einheiten AC-39): am
 Markt ab der Ritterzeit, 100 Holz und 50 Gold, 70 Leben, eigene Figur
 (Pony vor dem Planwagen); Ausbildungszeit 51 s und Sicht 7 gesetzt, nicht
 geprüft. Er ist reine Daten — `angriff: 0` ergibt Gang statt Angriff,
-keine Wache, weißes Zeichen und „Greift nicht an". Der Handel (AC-40)
-folgt.
+keine Wache, weißes Zeichen und „Greift nicht an". **Er handelt**
+(AC-40): ein Rechtsklick auf einen anderen Markt, der keinem Gegner gehört,
+ist der Auftrag `handel` — geladen am Ziel, gutgeschrieben daheim, Gold je
+Fahrt `faktor · d · (d / S + sockel)` aus `HANDEL.karren`. Der Faktor ist
+gemessen (0,77 statt 0,46 der Vorlage): auf halber Kartenbreite bringt ein
+Karren 18 Gold je Minute, etwas weniger als ein Dorfbewohner am Gold (20). Fällt ein Markt oder
+wird das Ziel feindlich, steht er im selben Takt. Die Leiste nennt die
+Strecke (`hd` am Karren). Die sichtbare Ladung (AC-41) wartet auf die neuen
+Figuren; danach die KI mit Karren (ki AC-26).
 
 1. **Stufe A** Dunkle Zeit mit Wirtschafts-KI und Prüfstand · **B** Feudalzeit
    · **C** Partieende und KI-Gegner · **D** Ritterzeit · **E** fünf Völker ·

@@ -1,0 +1,10 @@
+{
+  "spec": "10-strategie/einheiten-und-befehle.md",
+  "ac": "AC-40",
+  "titel": "Annas Marktkarren auf dem Heimweg vom zweiten eigenen Markt: die Leiste nennt die Strecke und das Gold, das er heimbringt",
+  "datei": "e2e/tests/strategie-marktkarren.spec.mjs",
+  "pfad": [
+    "Marktkarren",
+    "einheiten AC-40: ein Rechtsklick auf einen zweiten eigenen Markt schickt den Karren auf die Strecke - die Leiste nennt sie, er bringt das Gold heim"
+  ]
+}

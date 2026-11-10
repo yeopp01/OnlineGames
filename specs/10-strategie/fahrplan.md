@@ -234,7 +234,7 @@ mir":
 | D11 | Ein Team gewinnt; die KI im Team; zwei gegen zwei im Prüfstand und im Browser — **fertig** (Runde 153) | spielziel AC-20, ki AC-25, fahrplan AC-24 |
 | D12 | Bündnis lösen, öffentlich und mit Frist; im Bild mit Knopf und Uhr | spielziel AC-21, AC-24 |
 | D13 | Zeitgrenze und Spielgeschwindigkeit als Einstellung — **fertig** (Runde 159) | spielziel AC-22, AC-23 |
-| D14 | Der Marktkarren und sein Handel; die KI handelt — der Karren steht (Runde 160) | einheiten AC-39, AC-40, ki AC-26 |
+| D14 | Der Marktkarren und sein Handel; die KI handelt — der Karren steht (Runde 160), er handelt (Runde 161); die sichtbare Ladung wartet auf die neuen Figuren | einheiten AC-39, AC-40, AC-41, ki AC-26 |
 
 **Was ADR-0013 ablöst.** spielziel AC-5 (der Satz über die 90
 Spielminuten, mit D13) und spielauswahl AC-20 (die Begründung des Namens

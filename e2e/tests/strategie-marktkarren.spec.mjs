@@ -4,6 +4,11 @@
 // Spielerfarbe. Gewaehlt sagt die Leiste "Greift nicht an", und ein
 // Rechtsklick auf Fremde ist ein Gang (weisses Zeichen). Die Regeln selbst
 // (Werte, Zeit, Wohnplatz, keine Wache) prueft tests/strategie-marktkarren.test.mjs.
+//
+// Der Handel (AC-40): ein Rechtsklick auf einen zweiten eigenen Markt schickt
+// ihn auf die Strecke, die Leiste nennt sie, und daheim kommt Gold an. Die
+// Regeln - Gold je Fahrt, Verbuendete und Gegner, fallende Maerkte, die
+// Messung gegen den Dorfbewohner - prueft derselbe Test ohne Browser.
 import { nachweis } from '../../scripts/qa-nachweis.mjs';
 import { expect, rohstoffe, test, zeitraffer } from '../helpers/seite.mjs';
 import {
@@ -15,6 +20,8 @@ const EINHEITEN = '10-strategie/einheiten-und-befehle.md';
 test.describe('Marktkarren', () => {
   test.describe.configure({ mode: 'serial' });
   let partie;
+  let karren;
+  let erster;
 
   test.beforeAll(async ({ browser }, info) => {
     // Handelt nicht vom Nebel.
@@ -51,6 +58,7 @@ test.describe('Marktkarren', () => {
     await gebaeudeInDerNaehe(anna, code, 'Anna', 'muehle', basis);
     await aufsteigen(anna, code, 'feudalzeit', 1);
     const marktId = await gebaeudeInDerNaehe(anna, code, 'Anna', 'markt', basis, { von: 8, bis: 16 });
+    erster = marktId;
     await anna.waitForFunction((g) => window.ansicht.gebaeude.has(g), marktId);
     await marktWaehlen(anna, marktId);
     await expect(anna.locator('#handel')).toBeInViewport();
@@ -73,7 +81,7 @@ test.describe('Marktkarren', () => {
     await zeitraffer(anna, code, 10);
     await expect.poll(async () => (await einheitenJeArt(anna))[k] || 0, { timeout: 30_000 }).toBe(vorher + 1);
     await zeitraffer(anna, code, 0);
-    const karren = await anna.evaluate((kz) => {
+    karren = await anna.evaluate((kz) => {
       const a = window.ansicht;
       const e = [...a.nachher.values()].find((x) => x.k === kz && x.b === a.ich);
       return { i: e.i, x: e.x, y: e.y };
@@ -114,6 +122,75 @@ test.describe('Marktkarren', () => {
       titel: 'Annas Marktkarren (blau) gewählt, eben am Markt ausgebildet: ein Pony vor dem Planwagen mit blauer Plane, die Leiste sagt „Greift nicht an“',
       test: info,
     });
+    await zeitraffer(anna, code, 1);
+  });
+
+  const karrenWaehlen = (page, id) => page.evaluate((e) => {
+    const a = window.ansicht;
+    const k = a.nachher.get(e);
+    a.gewaehltesGebaeude = null;
+    a.ausgewaehlt = new Set([e]);
+    a.beiAuswahl();
+    a.kamera.zoom = 2.5;
+    a.blickAuf(k.x - 0.6, k.y - 0.4);
+  }, id);
+
+  test('einheiten AC-40: ein Rechtsklick auf einen zweiten eigenen Markt schickt den Karren auf die Strecke - die Leiste nennt sie, er bringt das Gold heim', async ({}, info) => {
+    test.setTimeout(150_000);
+    const { anna, code } = partie;
+    // Weit genug vom ersten, dass sich die Fahrt lohnt - nah beieinander
+    // bringt sie fast nichts (im ersten Entwurf 5 Gold).
+    const um = await anna.evaluate((g) => { const m = window.ansicht.gebaeude.get(g); return { x: m.x, y: m.y }; }, erster);
+    const zweiter = await gebaeudeInDerNaehe(anna, code, 'Anna', 'markt', um, { von: 30, bis: 40 });
+    await anna.waitForFunction((g) => window.ansicht.gebaeude.has(g), zweiter);
+
+    // Ohne Strecke sagt die Leiste, wie man eine bekommt.
+    await karrenWaehlen(anna, karren.i);
+    const strecke = anna.locator('#strecke');
+    await expect(strecke).toBeInViewport();
+    await expect(strecke).toContainText('Rechtsklick auf einen anderen Markt');
+
+    // Der Rechtsklick mit der Maus, auf die Mitte des zweiten Marktes.
+    const punkt = await anna.evaluate((g) => {
+      const a = window.ansicht;
+      const m = a.gebaeudeMitte(a.gebaeude.get(g));
+      a.kamera.zoom = 1.5;
+      a.blickAuf(m.x, m.y);
+      const r = a.leinwand.getBoundingClientRect();
+      const p = a.zuBild(m.x, m.y);
+      return { x: r.left + p.x, y: r.top + p.y };
+    }, zweiter);
+    await anna.mouse.click(punkt.x, punkt.y, { button: 'right' });
+    expect(await anna.evaluate(() => window.ansicht.zielzeichen?.feindlich), 'Handel ist kein Angriff').toBe(false);
+    await expect(strecke).toContainText('Handelt zwischen zwei eigenen Märkten');
+    await expect(strecke).toContainText('Gold je Fahrt');
+    const [heimat, ziel, gold] = await anna.evaluate((e) => window.ansicht.nachher.get(e).hd, karren.i);
+    expect(ziel).toBe(zweiter);
+    expect(heimat).not.toBe(zweiter);
+    expect(gold, 'eine Strecke von dreissig Feldern und mehr').toBeGreaterThan(10);
+
+    // Am Ziel geladen: auf dem Heimweg sagt die Leiste, was er bringt.
+    const vorher = await anna.evaluate(() => window.ansicht.vorraete.gold);
+    await zeitraffer(anna, code, 10);
+    await anna.waitForFunction((e) => window.ansicht.nachher.get(e)?.l > 0, karren.i, { timeout: 60_000 });
+    await zeitraffer(anna, code, 1);
+    await karrenWaehlen(anna, karren.i);
+    await expect(strecke).toContainText(`bringt ${gold} Gold heim`);
+    expect(await anna.evaluate(() => window.ansicht.vorraete.gold), 'unterwegs ist es noch nicht ihres').toBe(vorher);
+
+    expect(await bedienteileFrei(anna)).toEqual([]);
+    expect(await figurenFrei(anna)).toEqual([]);
+    await anna.waitForTimeout(150);
+    await nachweis(anna, {
+      spec: EINHEITEN,
+      ac: 'AC-40',
+      titel: 'Annas Marktkarren auf dem Heimweg vom zweiten eigenen Markt: die Leiste nennt die Strecke und das Gold, das er heimbringt',
+      test: info,
+    });
+
+    // Daheim gehoert es ihr.
+    await zeitraffer(anna, code, 10);
+    await anna.waitForFunction(([v, g]) => window.ansicht.vorraete.gold >= v + g, [vorher, gold], { timeout: 60_000 });
     await zeitraffer(anna, code, 1);
   });
 });

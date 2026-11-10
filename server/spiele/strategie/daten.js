@@ -134,6 +134,9 @@ const EINHEITEN = {
     leben: 70, tempo: 1.0, sicht: 7, tragkraft: 0, kosten: { holz: 100, gold: 50 }, zeit: 51, kuerzel: 'c',
     angriff: 0, nahruestung: 0, fernruestung: 0, reichweite: 0, nachladen: 0,
     klassen: ['karren'], zeitalter: 2,
+    // Pendelt zwischen zwei Maerkten und bringt Gold (einheiten AC-40) - wie
+    // viel, steht unter `HANDEL.karren`.
+    handelt: true,
   },
 };
 
@@ -446,6 +449,12 @@ const HANDEL = {
   gebuehr: 0.3,
   schritt: 2,
   tiefst: 20,
+  // Der Karren (einheiten AC-40): je Fahrt `faktor * d * (d / S + sockel)`
+  // Gold, `d` der Abstand der Maerkte von Mitte zu Mitte in Feldern, `S` die
+  // Kantenlaenge der Karte. Die Form ist die der Vorlage - die Menge waechst
+  // mit dem Abstand schneller als dieser, also lohnt die lange Strecke auch
+  // je Minute. Der Faktor ist gemessen, nicht uebernommen: siehe Runde 161.
+  karren: { faktor: 0.77, sockel: 0.3 },
 };
 
 module.exports = {

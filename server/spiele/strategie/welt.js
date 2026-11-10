@@ -1400,6 +1400,11 @@ class Welt {
     // eigener Knopf, keine eigene Betriebsart: der Server liest es aus dem Feld.
     const feind = this.feindAn(spielerId, Number(ziel.x), Number(ziel.y));
     const feindBau = !feind && baustelle && this.feindlich(spielerId, baustelle.besitzer) ? baustelle : null;
+    // Ein fertiger Markt, der nicht einem Gegner gehoert, ist fuer den
+    // Karren ein Handelsziel (einheiten AC-40) - der eines Verbuendeten oder
+    // ein zweiter eigener (ADR-0013).
+    const handelsziel = !angriffslauf && !feind && baustelle?.fertig && GEBAEUDE[baustelle.art].handel
+      && !this.feindlich(spielerId, baustelle.besitzer) ? baustelle : null;
     // Ein eigenes Schaf in der Naehe des Klicks (einheiten AC-17) - aber nur,
     // wenn auf dem Feld selbst nichts zu sammeln ist: neben Beeren weiden Schafe.
     const schaf = sammeln || angriffslauf ? null : this.tierAn(spielerId, Number(ziel.x), Number(ziel.y));
@@ -1431,6 +1436,9 @@ class Welt {
       einheit.unerreichbar = null;
       // Jeder neue Befehl beendet einen laufenden Angriffslauf.
       einheit.angriffslauf = null;
+      // Ein Karren auf einen anderen Markt faehrt die Strecke (einheiten
+      // AC-40); ohne eigenen zweiten Markt bleibt es ein Gang.
+      if (handelsziel && EINHEITEN[einheit.art].handelt && this.handelBeginnen(einheit, handelsziel)) continue;
       // Ein Moench bekehrt, wer sich bekehren laesst (einheiten AC-38) - wenn
       // er nicht ruht; sonst geht er nur hin.
       if (!angriffslauf && feind && this.kannBekehren(einheit, feind)) {
@@ -1538,6 +1546,99 @@ class Welt {
     felder.sort((a, b) => a.d - b.d || a.y - b.y || a.x - b.x);
     const auswahl = felder.slice(0, Math.max(1, n)).map(({ x, y }) => ({ x, y }));
     return auswahl.length ? auswahl : [ziel];
+  }
+
+  // ---- Handel mit dem Karren (einheiten AC-40) -----------------------------
+
+  /**
+   * Schickt einen Karren auf die Strecke zwischen seinem Heimatmarkt und
+   * `ziel`. Heimat ist der eigene fertige Markt, der ihm am naechsten steht -
+   * nicht `ziel` selbst. Gibt es keinen, ist es keine Strecke (false).
+   */
+  handelBeginnen(einheit, ziel) {
+    let heimat = null;
+    let besterAbstand = Infinity;
+    for (const g of this.gebaeude.values()) {
+      if (g === ziel || g.besitzer !== einheit.besitzer || !g.fertig || !GEBAEUDE[g.art].handel) continue;
+      const abstand = this.abstandZu(einheit, g);
+      if (abstand < besterAbstand) {
+        besterAbstand = abstand;
+        heimat = g;
+      }
+    }
+    if (!heimat) return false;
+    // Gold aus einer frueheren Strecke wird zuerst heimgebracht - zum neuen
+    // Heimatmarkt; anderes traegt ein Karren nicht.
+    if (einheit.ladungsart !== 'gold') {
+      einheit.ladung = 0;
+      einheit.ladungsart = null;
+    }
+    einheit.auftrag = { art: 'handel', heimat: heimat.id, ziel: ziel.id };
+    einheit.weg = [];
+    return true;
+  }
+
+  /**
+   * Die beiden Maerkte der Strecke, solange sie gilt: beide stehen, die
+   * Heimat gehoert ihm, das Ziel keinem Gegner - nach einer Kuendigung
+   * (spielziel AC-21) wird der Verbuendete einer, und die Strecke endet.
+   */
+  strecke(einheit) {
+    const heimat = this.gebaeude.get(einheit.auftrag.heimat);
+    const ziel = this.gebaeude.get(einheit.auftrag.ziel);
+    if (!heimat || !ziel || heimat.besitzer !== einheit.besitzer) return null;
+    if (this.feindlich(einheit.besitzer, ziel.besitzer)) return null;
+    return { heimat, ziel };
+  }
+
+  /** Gold je Fahrt zwischen zwei Maerkten, nach `HANDEL.karren`. */
+  handelsgewinn(heimat, ziel) {
+    const mitte = (g) => {
+      const { x0, y0, x1, y1 } = this.grundflaeche(g.art, g.x, g.y);
+      return { x: (x0 + x1) / 2, y: (y0 + y1) / 2 };
+    };
+    const a = mitte(heimat);
+    const b = mitte(ziel);
+    const d = Math.hypot(a.x - b.x, a.y - b.y);
+    const { faktor, sockel } = HANDEL.karren;
+    return Math.round(faktor * d * (d / this.karte.groesse + sockel));
+  }
+
+  // Leer zum Ziel, dort laedt er das Gold der Fahrt, beladen heim, dort
+  // gehoert es dem Spieler - und wieder los.
+  handelTakten(einheit) {
+    const s = this.strecke(einheit);
+    if (!s) {
+      einheit.auftrag = null;
+      return;
+    }
+    const { heimat, ziel } = s;
+    const beladen = einheit.ladung > 0;
+    const markt = beladen ? heimat : ziel;
+    // Angekommen ist, wer am Rand steht. Der Weg endet auf einem Randfeld,
+    // das bis zu drei Felder draussen liegen kann, wenn naeher alles belegt
+    // ist (`randfeld`).
+    if (this.abstandZu(einheit, markt) > 3.5) {
+      const stand = this.randfeld(markt, einheit);
+      einheit.weg = stand ? this.wegNach(einheit, stand) : [];
+      // Kein Weg dorthin: er bleibt stehen, statt in jedem Takt zu suchen.
+      if (!einheit.weg.length) einheit.auftrag = null;
+      return;
+    }
+    if (!beladen) {
+      einheit.ladung = this.handelsgewinn(heimat, ziel);
+      einheit.ladungsart = 'gold';
+      // Ein Weg von null Gold - zwei Maerkte nebeneinander - waere ein
+      // Pendeln ohne Ende ohne Ertrag.
+      if (!einheit.ladung) einheit.auftrag = null;
+      return;
+    }
+    const spieler = this.spielerVon(einheit.besitzer);
+    spieler.gold += einheit.ladung;
+    // Fuer die Tafel (spielziel AC-8): Gold aus dem Handel ist gesammeltes.
+    spieler.gesammelt.gold += einheit.ladung;
+    einheit.ladung = 0;
+    einheit.ladungsart = null;
   }
 
   // ---- Farm (einheiten AC-18) ----------------------------------------------
@@ -3102,6 +3203,13 @@ class Welt {
       this.bekehrenTakten(einheit);
       return;
     }
+    // Faellt ein Markt der Strecke, bleibt der Karren stehen - sofort, nicht
+    // erst am Ende des Weges (einheiten AC-40).
+    if (einheit.auftrag?.art === 'handel' && !this.strecke(einheit)) {
+      einheit.auftrag = null;
+      einheit.weg = [];
+      return;
+    }
     if (einheit.weg.length) {
       einheit.sammelt = false;
       einheit.baut = false;
@@ -3135,6 +3243,10 @@ class Welt {
     }
     if (einheit.auftrag.art === 'tier') {
       this.tierTakten(einheit);
+      return;
+    }
+    if (einheit.auftrag.art === 'handel') {
+      this.handelTakten(einheit);
       return;
     }
     if (einheit.auftrag.art === 'farm') {
@@ -3354,6 +3466,9 @@ class Welt {
         ...(e.sammelt || e.baut || e.heilt || e.bekehrt || (e.auftrag?.art === 'angreifen' && !e.weg.length && !e.tot) ? { w: 1 } : {}),
         // Ein Moench, der nach dem Bekehren ruht (einheiten AC-38).
         ...(e.ruhtBis > this.takt ? { r: 1 } : {}),
+        // Ein Karren auf der Strecke (einheiten AC-40): Heimat, Ziel und das
+        // Gold je Fahrt - die Leiste nennt sie.
+        ...(e.auftrag?.art === 'handel' ? { hd: this.streckeFuerDraht(e) } : {}),
         // Gefallen: der Browser legt ihn hin, bis der Server ihn nimmt
         // (kampf AC-10).
         ...(e.tot ? { s: 1 } : {}),
@@ -3429,6 +3544,11 @@ class Welt {
    * @param {string[]} ids die Spieler, die einen Zustand bekommen
    * @returns {Map<string, object>}
    */
+  streckeFuerDraht(einheit) {
+    const s = this.strecke(einheit);
+    return s ? [s.heimat.id, s.ziel.id, this.handelsgewinn(s.heimat, s.ziel)] : undefined;
+  }
+
   zustandJeSpieler(ids) {
     const voll = this.zustand();
     return new Map(ids.map((id) => [id, this.auszug(voll, id)]));
@@ -3687,6 +3807,8 @@ class Welt {
           // Wer bekehrt, wie weit und wen nicht (einheiten AC-38) - fuer das
           // Zeichen am Ziel und die Leiste.
           bekehren: w.bekehren ? { reichweite: w.bekehren.reichweite, nicht: w.bekehren.nicht } : null,
+          // Wer handelt (einheiten AC-40): die Leiste nennt seine Strecke.
+          handelt: Boolean(w.handelt),
         }])),
         gebaeude: Object.fromEntries(Object.entries(GEBAEUDE).map(([art, w]) => [art, {
           leben: w.leben, bildetAus: w.bildetAus, groesse: w.groesse, kosten: w.kosten, bauzeit: w.bauzeit,

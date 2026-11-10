@@ -12,7 +12,8 @@
 //   `a` erster Buchstabe der Ladungsart · `h` Lebenspunkte, **absolut, und nur
 //   wenn welche fehlen** (voll wird gar nicht geschickt - der Anteil ist
 //   `h / ansicht.lebenVoll(e)`) · `w` arbeitet oder kaempft gerade (bedienung AC-31, AC-39) · `s` gefallen ·
-//   `r` ruht nach dem Bekehren (einheiten AC-38).
+//   `r` ruht nach dem Bekehren (einheiten AC-38) · `hd` die Strecke eines Karrens,
+//   `[heimatmarkt, zielmarkt, Gold je Fahrt]`, nur solange er handelt (einheiten AC-40).
 //
 // ### KUERZEL
 // Diese Liste prueft `tests/waechter-drahttafel.test.mjs` gegen `daten.js` -

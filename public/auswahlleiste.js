@@ -563,7 +563,7 @@ export class Auswahlleiste {
       const bezahlbar = bauplan.map((e) => this.fehlt(e.kosten)).join('|');
       const einzeln = auswahl.length === 1 ? auswahl[0] : null;
       const schluessel = einzeln
-        ? `e${einzeln.i}:${einzeln.h}:${einzeln.l}:${einzeln.a}:${bezahlbar}:${a.platzieren?.art}:${a.verbesserungen.length}`
+        ? `e${einzeln.i}:${einzeln.h}:${einzeln.l}:${einzeln.a}:${einzeln.hd}:${bezahlbar}:${a.platzieren?.art}:${a.verbesserungen.length}`
         : `m${auswahl.map((e) => e.i).join(',')}:${bezahlbar}:${a.platzieren?.art}`;
       if (schluessel !== this.gezeigt) {
         this.wurzel.replaceChildren();
@@ -818,6 +818,32 @@ export class Auswahlleiste {
       }
       w.append(ladung);
     }
+    // Wer handelt, zeigt seine Strecke (einheiten AC-40).
+    if (werte[art]?.handelt) w.append(this.streckeZeile(einheit));
+  }
+
+  /**
+   * Die Strecke eines Karrens (einheiten AC-40): mit wessen Markt er handelt,
+   * wie viel Gold eine Fahrt bringt und ob er es gerade heimbringt. Ohne
+   * Strecke sagt sie, wie man eine bekommt - der Handel hat keinen Knopf.
+   */
+  streckeZeile(einheit) {
+    const a = this.ansicht;
+    const zeile = element('div', 'ladung');
+    zeile.id = 'strecke';
+    if (!einheit.hd) {
+      zeile.append(element('span', 'leise', 'Handelt nicht – Rechtsklick auf einen anderen Markt'));
+      return zeile;
+    }
+    const [, zielId, gold] = einheit.hd;
+    const ziel = a.gebaeude.get(zielId);
+    const wohin = !ziel || ziel.b === einheit.b
+      ? 'Handelt zwischen zwei eigenen Märkten'
+      : `Handelt mit dem Markt von ${a.spieler.get(ziel.b)?.name || 'einem Verbündeten'}`;
+    zeile.dataset.gold = String(gold);
+    zeile.append(element('span', `ware ware-g`), element('span', null, wohin));
+    zeile.append(element('span', 'leise', einheit.l > 0 ? ` · bringt ${einheit.l} Gold heim` : ` · ${gold} Gold je Fahrt`));
+    return zeile;
   }
 
   /**

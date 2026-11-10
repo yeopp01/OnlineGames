@@ -1672,6 +1672,23 @@ ihn, mit Gegenprobe an beiden Formen. Fünf Bilder neu, alle angesehen.
 Neueste oben. Eine Zeile je Runde: Nummer, Datum, Kriterien, Ergebnis,
 wichtigste Erkenntnis.
 
+- **161** · 2026-11-10 · **einheiten AC-40 fertig: der Karren handelt** (D14).
+  Rechtsklick auf einen anderen nicht feindlichen Markt: Auftrag `handel`,
+  Gold je Fahrt `faktor * d * (d / S + sockel)` aus `HANDEL.karren`,
+  geladen am Ziel, gutgeschrieben daheim. Die sichtbare Ladung ist als
+  AC-41 abgetrennt (Figur, wartet auf die Blender-Sitzung). **Gelernt:**
+  erst messen, dann eichen — der Faktor der Vorlage ergab 10,7 Gold je
+  Minute gegen 20,0 des Dorfbewohners; erst 0,86 (gleich viel), dann auf
+  Wunsch des Benutzers 0,77 („ein kleines bisschen weniger": 18,0). Die Rundfahrt auf 60
+  Feldern dauert 123 s, nicht 112: der Weg führt um die Ränder der Märkte.
+  „Je Minute lohnt die lange Strecke" hält, aber knapp (14,9 auf 25,
+  17,6 auf 50 Felder, mit 0,86) — die erste Schwelle (+20 %) war geschätzt und fiel.
+  Ein Prüfgriff stellt Gebäude „in der Nähe" auf: wer zwei Märkte vom Dorf
+  aus sucht, bekommt zwei nebeneinander (5 Gold je Fahrt im ersten Bild).
+  Und ein Bildnachweis wird nur neu geschrieben mit `QA_NACHWEIS=1` — das
+  erste Bild blieb nach der Korrektur stehen. Gegenproben: ohne `handelt`
+  fallen sechs Tests, linear statt quadratisch einer, ohne den Blick auf
+  Gegner einer, ohne den sofortigen Halt einer.
 - **160** · 2026-11-09 · **einheiten AC-39 fertig: der Marktkarren** (D14,
   erster Schritt) — am Markt ab der Ritterzeit, 100 Holz und 50 Gold, 70
   Leben, 0/0, Tempo 1,0. Ausbildungszeit (51 s) und Sicht (7) sind gesetzt,
