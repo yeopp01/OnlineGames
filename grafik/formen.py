@@ -1,7 +1,7 @@
 # Formen: die wenigen Grundkoerper, aus denen jedes Modell gebaut ist.
 #
 # Ein Modell ist ein Skript. Es ruft diese Funktionen und speichert nichts
-# von Hand - wer das Skript hat, hat das Modell (ADR-0014, Punkt 2).
+# von Hand - wer das Skript hat, hat das Modell (ADR-0016, Punkt 2).
 
 import math
 

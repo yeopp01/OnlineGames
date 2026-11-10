@@ -1161,7 +1161,7 @@ export function figurBildZeichnen(stift, art, x, y, hoehe, farbe, lage = {}, umr
   const rest = lage.rest === undefined ? 1 : Math.round(lage.rest * 10) / 10;
   const arbeitStufe = lage.arbeit ? Math.round(((lage.arbeit % (Math.PI * 2)) + Math.PI * 2) % (Math.PI * 2) / (Math.PI * 2) * SCHRITT_STUFEN) % SCHRITT_STUFEN : -1;
   const arbeit = arbeitStufe < 0 ? 0 : ((arbeitStufe || SCHRITT_STUFEN) / SCHRITT_STUFEN) * Math.PI * 2;
-  // Gibt es die Figur gerendert (ADR-0014), kommt ihr Bild aus der Tafel:
+  // Gibt es die Figur gerendert (ADR-0016), kommt ihr Bild aus der Tafel:
   // eine Zeile je Blickrichtung, eine Spalte je Bild des Ablaufs.
   const tafel = lage.liegt ? null : gerendert(art);
   const richtung = lage.richtung ?? (lage.blick === -1 ? 7 : 1);

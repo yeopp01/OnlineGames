@@ -251,7 +251,7 @@ eigener Sicht (ki AC-13) — wartet auf die Antwort zu fahrplan AC-11. Wird sie
 eingebunden, misst jeder Schritt ab D9 KI gegen KI mit ihr.
 
 **Der Bildumbau (Wunsch des Benutzers, 2026-11-09,
-[ADR-0014](../../docs/adr/0014-gerenderte-bilder.md)).** Keine Stufe, sondern
+[ADR-0016](../../docs/adr/0016-gerenderte-bilder.md)).** Keine Stufe, sondern
 ein Umbau quer dazu: gerenderte Bilder aus eigenen 3D-Modellen statt
 gezeichnetem Code. Er steht **vor Stufe E**, weil Völker eigene Gebäude
 brauchen und das mit Modellen ein Tausch von Dach und Wand ist. Die Schritte

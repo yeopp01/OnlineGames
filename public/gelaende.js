@@ -441,7 +441,7 @@ export function dingBildZeichnen(stift, art, x, y, e, index, fuellung = 1) {
   const dichte = window.devicePixelRatio || 1;
   const viertel = Math.max(1, Math.round(fuellung * 4)) / 4;
   const variante = Math.floor(streuung(index, 77) * VARIANTEN);
-  // Gibt es den Vorrat gerendert (ADR-0014), kommt eine seiner Gestalten aus
+  // Gibt es den Vorrat gerendert (ADR-0016), kommt eine seiner Gestalten aus
   // der Tafel; ein Baum, der geschlagen wird, schrumpft wie der gezeichnete.
   const tafel = art === WALD ? gerendert('baum') : null;
   const tafelMass = tafel ? ((2 * e) / tafel.feldbreite) * (0.6 + 0.4 * viertel) : 0;

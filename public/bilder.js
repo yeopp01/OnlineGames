@@ -1,4 +1,4 @@
-// Gerenderte Bilder (ADR-0014, darstellung AC-17).
+// Gerenderte Bilder (ADR-0016, darstellung AC-17).
 //
 // Die Bilder entstehen vor dem Spiel aus eigenen 3D-Modellen (grafik/*.py,
 // `npm run bilder`) und liegen als Tafeln unter /bilder/: ein Raster gleich

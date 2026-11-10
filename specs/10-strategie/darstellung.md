@@ -12,7 +12,7 @@ oder Oberfläche des Originals zu verwenden
 ([ADR-0012](../../docs/adr/0012-aoe2-als-vorlage.md), Punkt 4).
 
 Bis Runde 158 wurde alles in Code gezeichnet: Formen, Verläufe, Schattierung.
-Seit [ADR-0014](../../docs/adr/0014-gerenderte-bilder.md) entstehen Einheiten,
+Seit [ADR-0016](../../docs/adr/0016-gerenderte-bilder.md) entstehen Einheiten,
 Gebäude, Vorräte und Bäume als **eigene 3D-Modelle**, die vor dem Spiel zu
 Bildern gerendert werden — Art für Art, hinter derselben Stelle im Code; was
 noch kein gerendertes Bild hat, wird weiter gezeichnet. Keine Bilddateien aus
@@ -115,7 +115,7 @@ fremder Quelle.
   gemessen werden — wer dort besteht, besteht beim Start erst recht. Das Rad
   holt weiter bis 0,4 heraus.
 
-### Gerenderte Bilder (Bildumbau, ADR-0014)
+### Gerenderte Bilder (Bildumbau, ADR-0016)
 
 Wunsch des Benutzers vom 2026-11-09: „viel detaillierter, bildlicher … und
 nicht so kindlich gemalt". Die Bauabfolge R1 bis R6 steht im

@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// Die Bilder des Spiels neu rendern (ADR-0014, darstellung AC-18).
+// Die Bilder des Spiels neu rendern (ADR-0016, darstellung AC-18).
 //
 //   npm run bilder                 alle Modelle aus grafik/verzeichnis.json
 //   npm run bilder -- haus baum    nur diese

@@ -1919,7 +1919,7 @@ export function gebaeudeBildZeichnen(stift, art, x, y, e, farbe, groesse, bau = 
   // Baufortschritt in Zwanzigsteln: die Baustelle waechst sichtbar, der
   // Speicher bleibt klein.
   const stufe = bau < 1 ? Math.floor(bau * 20) / 20 : 1;
-  // Gibt es das Gebaeude gerendert (ADR-0014), kommt das fertige aus der
+  // Gibt es das Gebaeude gerendert (ADR-0016), kommt das fertige aus der
   // Tafel; die Baustelle wird weiter gezeichnet.
   const tafel = stufe >= 1 ? gerendert(art) : null;
   const tafelMass = tafel ? (2 * e) / tafel.feldbreite : 0;

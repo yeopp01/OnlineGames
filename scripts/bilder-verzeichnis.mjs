@@ -1,4 +1,4 @@
-// Das Verzeichnis der Renderkette (darstellung AC-18, ADR-0014).
+// Das Verzeichnis der Renderkette (darstellung AC-18, ADR-0016).
 //
 // grafik/verzeichnis.json sagt zu jeder Rastergrafik unter public/bilder/,
 // welches Skript sie erzeugt. Hier steht, wie es gelesen und gegen die Ordner

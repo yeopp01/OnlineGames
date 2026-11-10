@@ -1,4 +1,4 @@
-# Die Renderkette (ADR-0014): eine Szene, eine Kamera, ein Licht fuer alles.
+# Die Renderkette (ADR-0016): eine Szene, eine Kamera, ein Licht fuer alles.
 #
 # Laeuft in Blender, ohne Oberflaeche:
 #   blender -b -P grafik/bilder.py -- haus baum dorfbewohner

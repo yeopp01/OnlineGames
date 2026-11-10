@@ -1,4 +1,4 @@
-# Einstieg der Renderkette (ADR-0014).
+# Einstieg der Renderkette (ADR-0016).
 #
 #   blender -b -P grafik/bilder.py -- haus baum dorfbewohner
 #   npm run bilder -- haus

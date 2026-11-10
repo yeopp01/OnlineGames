@@ -2,7 +2,7 @@
 
 Was unter `grafik/` und `public/bilder/` nicht aus eigenen Skripten stammt,
 steht hier mit Herkunft und Lizenz. Erlaubt ist nur **CC0**
-([ADR-0014](../docs/adr/0014-gerenderte-bilder.md), Punkt 3). Nichts aus dem
+([ADR-0016](../docs/adr/0016-gerenderte-bilder.md), Punkt 3). Nichts aus dem
 Original, keine Bilder aus Bildgeneratoren.
 
 | Was | Woher | Lizenz |

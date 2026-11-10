@@ -1,7 +1,7 @@
 # Bildumbau — Stand
 
 Der Arbeitsstand zum Umbau auf gerenderte Bilder
-([ADR-0014](../adr/0014-gerenderte-bilder.md), Schritte R1 bis R6 im
+([ADR-0016](../adr/0016-gerenderte-bilder.md), Schritte R1 bis R6 im
 [Fahrplan](../../specs/10-strategie/fahrplan.md)).
 
 **Warum eine eigene Datei:** der Umbau läuft auf dem Zweig
@@ -14,7 +14,7 @@ die Zeilen unter „Für die Erkenntnisse" dorthin und erzeugt das Board neu
 
 ## Wo es steht
 
-- **R0 (2026-11-09):** ADR-0014 geschrieben, darstellung AC-17 bis AC-24
+- **R0 (2026-11-09):** ADR-0016 geschrieben, darstellung AC-17 bis AC-24
   angelegt, Bauabfolge R1 bis R6 im Fahrplan vor Stufe E. Der Benutzer hat
   zugestimmt: „Blender installieren und mit dem Plan starten."
 - **R1 (2026-11-09): die Probe steht** (darstellung AC-17). Dorfbewohner,
@@ -47,9 +47,10 @@ die Zeilen unter „Für die Erkenntnisse" dorthin und erzeugt das Board neu
   und entschieden". Daraus: die Tafeln sind jetzt **WebP**, gefärbt wird
   **je Zelle**.
 - **Als Nächstes:** R3 — Gelände und Vorräte (darstellung AC-23).
-- **Beim Einbinden zu lösen:** auf `strategie` ist die Nummer ADR-0014
-  inzwischen vergeben (Häuser statt Völker), ADR-0015 auch. Dieser Zweig
-  nennt den Bildumbau deshalb **ADR-0016** (umbenannt am 2026-11-10).
+- **Der ADR heißt jetzt 0016** (umbenannt am 2026-11-10, vorher 0014): auf
+  `strategie` sind die Nummern 0014 (Häuser statt Völker) und 0015
+  (Statthalter) inzwischen vergeben. Beim Einbinden bleibt nur
+  `docs/adr/README.md` von Hand zusammenzuführen.
 - **Blender 5.2.3** liegt unter
   `C:\Program Files\Blender Foundation\Blender 5.2\blender.exe` (per winget,
   nicht im PATH). `npm run bilder` findet es dort.
@@ -249,10 +250,10 @@ den Tafeln.
 | --- | --- | --- |
 | gezeichnet, stehend | 60,2 bis 60,3 | 1,2 bis 2,0 ms |
 | gerendert, stehend | 60,1 bis 60,4 | 1,3 bis 2,1 ms |
-| gezeichnet, gehend | 60,2 bis 60,3 | 1,6 bis 2,1 ms |
-| gerendert, gehend | 60,3 bis 60,4 | 1,7 bis 2,2 ms |
+| gezeichnet, gehend | 60,2 bis 60,3 | 1,6 bis 2,2 ms |
+| gerendert, gehend | 60,3 bis 60,5 | 1,7 bis 2,4 ms |
 
-Die Spannen sind vier Läufe an einem Abend; innerhalb eines Laufs liegen
+Die Spannen sind fünf Läufe an einem Abend; innerhalb eines Laufs liegen
 gerendert und gezeichnet nie mehr als 0,2 ms auseinander. Die 60 sind der
 Takt des Bildschirms, nicht die Grenze des Zeichnens — die steht in der
 rechten Spalte: rund 2 ms von 16,7. Im Gehen kamen 67 verschiedene Zellen
@@ -338,7 +339,7 @@ jede Änderung an `kette.py` dann alle Bilder für veraltet erklärte.
 
 ## Für die Erkenntnisse (beim Einbinden übertragen)
 
-- **Spec-Runde Bildumbau, ADR-0014** (2026-11-09, Wunsch des Benutzers: „viel
+- **Spec-Runde Bildumbau, ADR-0016** (2026-11-09, Wunsch des Benutzers: „viel
   detaillierter, bildlicher … nicht so kindlich gemalt" — zum dritten Mal
   nach Runde 26 und 35). **Erkenntnis:** zweimal im selben Verfahren
   nachzubessern hat die Beanstandung nicht beendet — beim dritten Mal ist die

@@ -100,7 +100,7 @@ Setze die gewählten Kriterien auf `in-arbeit`.
   dem Startwert der Partie. Das ist die Voraussetzung für den Prüfstand.
 - Deutsche Bezeichner, Umlaute umschrieben. Stil wie im umliegenden Code.
 - Die Darstellung ist isometrisch. **Neue Bilder werden gerendert, nicht
-  gezeichnet** (ADR-0014): Modell als Skript unter `grafik/`, Bild unter
+  gezeichnet** (ADR-0016): Modell als Skript unter `grafik/`, Bild unter
   `public/bilder/`; was noch kein gerendertes Bild hat, bleibt gezeichnet.
   Fremdes nur unter CC0 und in `grafik/QUELLEN.md`, keine Bildgeneratoren.
   **Kein** Material aus dem Original, auch nicht vorübergehend. Kein „Age of

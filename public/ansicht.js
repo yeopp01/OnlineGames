@@ -115,7 +115,7 @@ export class Ansicht {
     // Aufgeben-Knopf haengt daran (bedienung AC-38).
     this.aus = false;
     this.blicke = new Map(); // Einheit → -1 links, 1 rechts
-    this.richtungen = new Map(); // Einheit → 0 bis 7, fuer gerenderte Figuren (ADR-0014)
+    this.richtungen = new Map(); // Einheit → 0 bis 7, fuer gerenderte Figuren (ADR-0016)
     this.tiere = new Map();
     this.vorraete = { holz: 0, nahrung: 0, gold: 0, stein: 0, bev: 0, raum: 0 };
     // Was im letzten Bild in welcher Reihenfolge gezeichnet wurde - fuer den

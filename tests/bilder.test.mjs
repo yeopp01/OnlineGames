@@ -1,5 +1,5 @@
 // Die gerenderten Bilder (→ specs/10-strategie/darstellung.md AC-17 und AC-18,
-// ADR-0014).
+// ADR-0016).
 //
 // Ohne Blender und ohne Browser pruefbar ist, ob das, was eingecheckt ist,
 // zusammenpasst: jede Tafel so gross, wie ihre Beschreibung sagt, die Maske

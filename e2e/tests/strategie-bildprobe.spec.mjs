@@ -1,4 +1,4 @@
-// Die Bildprobe (→ specs/10-strategie/darstellung.md AC-17, ADR-0014): drei
+// Die Bildprobe (→ specs/10-strategie/darstellung.md AC-17, ADR-0016): drei
 // gerenderte Stuecke neben ihren gezeichneten Vorgaengern.
 //
 // Ob die gerenderten Bilder ueberzeugen, entscheidet der Benutzer am Bild.

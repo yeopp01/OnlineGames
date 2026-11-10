@@ -125,7 +125,7 @@ test.describe('Tempo im Browser', () => {
     aufgestellt = true;
   });
 
-  // Dieselbe Szene mit den gerenderten Bildern (ADR-0014): Dorfbewohner,
+  // Dieselbe Szene mit den gerenderten Bildern (ADR-0016): Dorfbewohner,
   // Haeuser und Baeume kommen aus den Tafeln statt aus der Zeichnung. Die
   // Grenze ist dieselbe. Ein eigenes Bild gibt es nicht - was die gerenderten
   // Stuecke zeigen, weist darstellung AC-17 nach; hier zaehlt die Zahl.
