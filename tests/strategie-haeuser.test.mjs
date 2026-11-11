@@ -26,6 +26,15 @@ const FORMEN = ['wirkung', 'sammeln', 'farm', 'gebaeude', 'handel'];
 // Gebaeudewerte, die nur ein Gebaeude traegt, das schiesst.
 const SCHIESSEND = Object.keys(GEBAEUDE).find((art) => GEBAEUDE[art].angriff > 0);
 
+// Was der Mannschaftsbonus eines Hauses an derselben Stelle dazugibt: er gilt
+// auch dem Haus selbst (spielziel AC-25), ein Vergleich mit und ohne Haus
+// misst deshalb beides zusammen.
+function mannschaftDazu(eintrag, form, ...weg) {
+  let wert = eintrag.mannschaft?.[form];
+  for (const schritt of weg) wert = wert?.[schritt];
+  return typeof wert === 'number' ? wert : 0;
+}
+
 // Eine Einheitenart, auf die ein Schluessel aus `wirkung` greift: die Art
 // selbst oder die erste mit dieser Klasse.
 function artFuer(schluessel) {
@@ -45,7 +54,8 @@ test('spielziel AC-17: jeder Bonus jedes Hauses wirkt von Beginn an, gelesen wie
       const art = artFuer(schluessel);
       assert.ok(art, `${haus}: "${schluessel}" trifft keine Einheit`);
       for (const [feld, zuschlag] of Object.entries(felder)) {
-        assert.equal(welt.einheitenwert('a', art, feld) - welt.einheitenwert('b', art, feld), zuschlag, `${haus}: ${art}.${feld}`);
+        const erwartet = zuschlag + mannschaftDazu(eintrag, 'wirkung', schluessel, feld);
+        assert.equal(welt.einheitenwert('a', art, feld) - welt.einheitenwert('b', art, feld), erwartet, `${haus}: ${art}.${feld}`);
         geprueft += 1;
       }
     }

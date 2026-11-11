@@ -251,8 +251,10 @@ class Welt {
       haus: hausAus(einstellungen.haeuser, eintrag.id),
     }));
     // Die Wirkungen je Spieler (`wirkungen()`), gemerkt mit der Zahl der
-    // Verbesserungen, auf der sie beruhen.
+    // Verbesserungen und dem Stand der Buendnisse, auf denen sie beruhen.
+    // `buendnisStand` zaehlt jede Trennung einer Sicht (spielziel AC-25).
     this.wirkungenGemerkt = new Map();
+    this.buendnisStand = 0;
     // Wer mit wem verbuendet ist, fragt jede Kampfregel - deshalb eine Map
     // statt `spielerVon` (das sucht in der Liste).
     this.teamVon = new Map(this.spieler.map((s) => [s.id, s.team]));
@@ -423,24 +425,52 @@ class Welt {
 
   /**
    * Alles, was die Werte eines Spielers veraendert, in einer Form: zuerst die
-   * Boni seines Hauses (von Beginn an), dann jede erforschte Verbesserung
-   * (spielziel AC-17). Jede Lesestelle - `einheitenwert`, `gebaeudewert`,
-   * `sammelrate`, `farmNahrung`, `handelswert` - laeuft ueber diese Liste; ein Haus ist
-   * deshalb ein Eintrag in `HAEUSER` und keine Verzweigung.
+   * Boni seines Hauses (von Beginn an), dann die Mannschaftsboni, dann jede
+   * erforschte Verbesserung (spielziel AC-17, AC-25). Jede Lesestelle -
+   * `einheitenwert`, `gebaeudewert`, `sammelrate`, `farmNahrung`,
+   * `handelswert`, `ausbildungstempo` - laeuft ueber diese Liste; ein Haus
+   * ist deshalb ein Eintrag in `HAEUSER` und keine Verzweigung.
    *
-   * Gemerkt je Spieler, solange die Zahl seiner Verbesserungen gleich bleibt:
-   * `sammelrate` fragt in jedem Takt fuer jeden Sammler.
+   * Der Mannschaftsbonus kommt von jedem Haus, das er selbst oder einer
+   * traegt, mit dem er die Sicht teilt - je Haus einmal, auch wenn zwei
+   * Verbuendete dasselbe haben. Gefragt wird `teiltSicht`, nicht
+   * `feindlich`: in der Frist einer Kuendigung ist keiner mehr Verbuendeter
+   * (ADR-0014 Punkt 6). Im Aufbau, bevor es Sichten gibt, gilt das Team.
+   *
+   * Gemerkt je Spieler, solange die Zahl seiner Verbesserungen und der Stand
+   * der Buendnisse gleich bleiben: `sammelrate` fragt in jedem Takt fuer
+   * jeden Sammler.
    */
   wirkungen(besitzer) {
     const spieler = this.spielerVon(besitzer);
     if (!spieler) return [];
     const n = spieler.verbesserungen.length;
+    const stand = this.buendnisStand;
     const da = this.wirkungenGemerkt.get(besitzer);
-    if (da && da.n === n) return da.liste;
-    const liste = spieler.verbesserungen.map((v) => VERBESSERUNGEN[v]);
-    if (spieler.haus) liste.unshift(HAEUSER[spieler.haus].boni);
-    this.wirkungenGemerkt.set(besitzer, { n, liste });
+    if (da && da.n === n && da.stand === stand) return da.liste;
+    const liste = [];
+    if (spieler.haus) liste.push(HAEUSER[spieler.haus].boni);
+    const haeuser = new Set();
+    for (const s of this.spieler) {
+      const mit = s === spieler
+        || (this.sichten ? this.teiltSicht(besitzer, s.id) : Boolean(spieler.team) && s.team === spieler.team);
+      if (mit && s.haus) haeuser.add(s.haus);
+    }
+    for (const haus of haeuser) if (HAEUSER[haus].mannschaft) liste.push(HAEUSER[haus].mannschaft);
+    for (const v of spieler.verbesserungen) liste.push(VERBESSERUNGEN[v]);
+    this.wirkungenGemerkt.set(besitzer, { n, stand, liste });
     return liste;
+  }
+
+  /**
+   * Wie schnell ein Gebaeude dieses Spielers ausbildet, als Faktor auf den
+   * Fortschritt je Takt (spielziel AC-25): 1,2 heisst 20 % schneller. Nur
+   * Einheiten - Verbesserungen und Aufstiege laufen im alten Tempo.
+   */
+  ausbildungstempo(besitzer, gebaeudeArt) {
+    let tempo = 1;
+    for (const w of this.wirkungen(besitzer)) tempo *= w.ausbildung?.[gebaeudeArt] || 1;
+    return tempo;
   }
 
   // Sieht dieser Spieler das Feld jetzt? Und hat er es je gesehen? (kampf AC-15)
@@ -504,7 +534,9 @@ class Welt {
    */
   einheitenwert(besitzer, art, feld) {
     const spieler = this.spielerVon(besitzer);
-    if (!spieler || (!spieler.verbesserungen.length && !spieler.haus)) return EINHEITEN[art][feld] || 0;
+    // Ohne Verbesserung, Haus und Team wirkt nichts - auch kein
+    // Mannschaftsbonus, denn den bringt nur ein Verbuendeter (spielziel AC-25).
+    if (!spieler || (!spieler.verbesserungen.length && !spieler.haus && !spieler.team)) return EINHEITEN[art][feld] || 0;
     // Gemerkt je Spieler: `laufen()` fragt das Tempo in jedem Takt fuer jede
     // Einheit, `wacheTakten()` zweimal je Sekunde die Sicht. Ohne Gedaechtnis
     // liefe darunter je Aufruf eine Schleife ueber alle Verbesserungen mit
@@ -609,7 +641,7 @@ class Welt {
       // Eine Farm traegt Nahrung, und nur einer arbeitet darauf (einheiten AC-18).
       ...(GEBAEUDE[art].nahrung ? { nahrung: this.farmNahrung(besitzer), arbeiter: null } : {}),
       schlange: [], // Arten der bezahlten Auftraege, der erste laeuft
-      fortschritt: 0, // Takte am laufenden Auftrag
+      fortschritt: 0, // Takte am laufenden Auftrag, mit dem Tempo der Ausbildung (spielziel AC-25)
       wartet: false, // Bevoelkerung voll (bauen AC-15)
     };
     this.gebaeude.set(gebaeude.id, gebaeude);
@@ -1295,9 +1327,12 @@ class Welt {
     gebaeude.wartet = wartet;
     if (wartet) return;
 
-    gebaeude.fortschritt++;
+    // Eine Einheit kann schneller fertig werden (spielziel AC-25); der
+    // Fortschritt ist dann kein ganzer Takt mehr. Der kleine Rand faengt die
+    // Rundung der Summe ab: 175 mal 1,2 ergibt 209,99999 statt 210.
+    gebaeude.fortschritt += EINHEITEN[art] ? this.ausbildungstempo(gebaeude.besitzer, gebaeude.art) : 1;
     this.gebaeudeGeaendert(gebaeude);
-    if (gebaeude.fortschritt < this.auftragWerte(art).zeit * TAKTE_PRO_SEKUNDE) return;
+    if (gebaeude.fortschritt < this.auftragWerte(art).zeit * TAKTE_PRO_SEKUNDE - 1e-6) return;
 
     if (verbesserung) {
       gebaeude.schlange.shift();
@@ -1656,7 +1691,9 @@ class Welt {
   /**
    * Gold je Fahrt zwischen zwei Maerkten, nach `HANDEL.karren` - fuer den
    * Besitzer des Heimatmarkts, also mit seinem `karrenAnteil` (spielziel
-   * AC-26).
+   * AC-26), und zwischen zwei Verbuendeten mit `verbuendetAnteil` dazu
+   * (spielziel AC-25). Verbuendet heisst hier: sie teilen die Sicht - in der
+   * Frist einer Kuendigung faehrt der Karren weiter, aber ohne den Bonus.
    */
   handelsgewinn(heimat, ziel) {
     const mitte = (g) => {
@@ -1667,7 +1704,10 @@ class Welt {
     const b = mitte(ziel);
     const d = Math.hypot(a.x - b.x, a.y - b.y);
     const { faktor, sockel } = HANDEL.karren;
-    const anteil = 1 + this.handelswert(heimat.besitzer, 'karrenAnteil');
+    let anteil = 1 + this.handelswert(heimat.besitzer, 'karrenAnteil');
+    if (ziel.besitzer !== heimat.besitzer && this.teiltSicht(heimat.besitzer, ziel.besitzer)) {
+      anteil += this.handelswert(heimat.besitzer, 'verbuendetAnteil');
+    }
     return Math.round(faktor * anteil * d * (d / this.karte.groesse + sockel));
   }
 
@@ -2909,6 +2949,12 @@ class Welt {
     const bisher = this.spieler.filter((s) => s.id !== id && this.sichten.get(s.id) === alt).map((s) => s.id);
     if (!bisher.length) return;
     this.sichten.set(id, { sichtbar: alt.sichtbar.slice(), gebaeude: alt.gebaeude.slice(), erkundet: alt.erkundet.slice() });
+    // Mit der Sicht endet der Mannschaftsbonus in beide Richtungen
+    // (spielziel AC-25): alle Wirkungen und Werte neu, und jeder bekommt
+    // seine Tafel neu - die Sicht der Reiter steht darin.
+    this.buendnisStand += 1;
+    this.werteGemerkt.clear();
+    for (const s of this.spieler) this.werteAenderungen.add(s.id);
     if (this.bekannt) {
       for (const [wer, von] of [...bisher.map((b) => [id, b]), ...bisher.map((b) => [b, id])]) {
         const bekannt = this.bekannt.get(wer);

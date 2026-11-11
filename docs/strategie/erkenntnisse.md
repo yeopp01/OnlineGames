@@ -13,6 +13,16 @@ Kurz halten. Diese Datei wird in jeder Runde gelesen.
 Entscheidungen, die nicht die Schleife trifft. Solange eine offen ist, wird an
 etwas anderem gearbeitet.
 
+- **Rappensteins Reiter sehen jetzt 4 Felder weiter — so gemeint?** (Runde
+  171.) ADR-0014 gibt Rappenstein als Bonus „Reiter sehen 2 Felder weiter"
+  und als Mannschaftsbonus „Reiter der Verbündeten sehen 2 Felder weiter";
+  spielziel AC-25 sagt, der Mannschaftsbonus gilt dem Haus **selbst** und
+  den Verbündeten (wie im Original). Gebaut ist es so, also +2 +2: der
+  Späherreiter sieht 8 statt 4 Felder, ein Verbündeter 6. **Empfehlung:**
+  den eigenen Bonus ändern (etwa Reiter +10 % Tempo), damit Rappenstein
+  nicht zweimal dasselbe trägt; die Zahlen sind ohnehin Startwerte für den
+  Prüfstand. Bis dahin bleibt es, wie es dasteht — ein Eintrag in `daten.js`.
+
 - **Die KI mit eigener Sicht kostet KI gegen KI vier Partien von 40 — Grenze neu fassen?**
   (Runde 144, dritter Anlauf an ki AC-13, nach Runde 112 und 114.) Auf dem
   Boden von Runde 143 (die Wirtschaft wächst, ohne Nebel 40 von 40 vor
@@ -1879,6 +1889,29 @@ ihn, mit Gegenprobe an beiden Formen. Fünf Bilder neu, alle angesehen.
 Neueste oben. Eine Zeile je Runde: Nummer, Datum, Kriterien, Ergebnis,
 wichtigste Erkenntnis.
 
+- **171** · 2026-11-11 · spielziel AC-25 **fertig**: der Mannschaftsbonus
+  steht als `mannschaft` neben den `boni` in `HAEUSER` und läuft durch
+  `welt.wirkungen()` — vom eigenen Haus und von jedem, mit dem man die
+  Sicht teilt, je Haus einmal. Gemessen bei Anna (ohne Haus) mit Bert im
+  Team: Bogenschütze in 292 statt 350 Takten, Miliz 175 statt 210,
+  Späherreiter sieht 6 statt 4, ein Haus 10 statt 8 Felder über den Rand,
+  der Karren zum Verbündeten 31 statt 26 Gold — und nach Annas Kündigung
+  jedes Mal wieder der alte Wert. Neue Lesestellen:
+  `welt.ausbildungstempo()` (Fortschritt je Takt ist jetzt ein Bruch; 175
+  mal 1,2 ergab 209,99999 und kostete einen Takt, daher ein Rand von 1e-6)
+  und `handel.verbuendetAnteil`. Gelernt: **eine Fahrt hin und her dauert
+  länger als die Frist** (96 gegen 60 Sekunden) — wer nach der Kündigung
+  misst, kündigt kurz vor dem Laden, sonst sind die beiden Gegner, bevor
+  der Karren heim ist. Und die Gegenprobe auf `teiltSicht` im Karren blieb
+  zuerst grün: sie zählt nur, wenn Silberfurt **selbst** kündigt und seinen
+  eigenen Mannschaftsbonus behält — der Fall steht jetzt im Test. Rappenstein
+  trägt +2 und +2 Sicht, Frage an den Benutzer. spielziel AC-16 (Profil der
+  Häuser) braucht die Spezialeinheiten aus E7/E8 und wartet mit ihnen.
+  Offen gelassen (Durchsicht): ein **ausgeschiedener** Verbündeter teilt
+  weiter die Sicht und gibt deshalb weiter seinen Mannschaftsbonus — so
+  sagt es das Kriterium („endet mit der gemeinsamen Sicht"). Soll er mit
+  dem Ausscheiden enden, braucht `wirkungen()` ein `!s.aus` und das
+  Ausscheiden einen neuen `buendnisStand`.
 - **170** · 2026-11-11 · spielziel AC-26 **fertig**: jeder Bonus jedes
   Hauses ist im Spiel gemessen, dieselbe Lage mit und ohne Haus, zwölf
   Boni aus den Daten (Holz 223 statt 257 Takte am Baum, Späherreiter 60

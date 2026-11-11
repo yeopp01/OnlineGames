@@ -329,6 +329,16 @@ const PRUEFER = {
   },
 };
 
+// Was der Mannschaftsbonus an derselben Stelle dazugibt: er gilt auch dem
+// Haus selbst (spielziel AC-25) - Rappensteins Reiter sehen 2 + 2 Felder
+// weiter. Gemessen wird beides zusammen; den Mannschaftsbonus allein misst
+// tests/strategie-mannschaft.test.mjs.
+function mannschaftDazu(eintrag, form, weg) {
+  let wert = eintrag.mannschaft?.[form];
+  for (const schritt of weg) wert = wert?.[schritt];
+  return typeof wert === 'number' ? wert : 0;
+}
+
 // Die Blaetter der Boni eines Hauses: [Form, ...Weg zum Wert, Wert].
 function blaetter(boni) {
   const liste = [];
@@ -347,7 +357,9 @@ test('spielziel AC-26: jeder Bonus jedes Hauses wirkt im Spiel - dieselbe Lage m
     for (const [form, ...rest] of blaetter(eintrag.boni)) {
       const pruefer = PRUEFER[form];
       assert.ok(pruefer, `${haus}: Bonus in der Form "${form}" ohne Messung`);
-      gemessen.push(`${haus} - ${pruefer(haus, ...rest)}`);
+      const weg = rest.slice(0, -1);
+      const wert = rest.at(-1) + mannschaftDazu(eintrag, form, weg);
+      gemessen.push(`${haus} - ${pruefer(haus, ...weg, wert)}`);
     }
   }
   // Gegenprobe des Aufbaus: gemessen ist jedes Blatt, und es sind welche -

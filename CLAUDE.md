@@ -165,7 +165,7 @@ Umfang hinzufügt, dort nachsehen.
 
 ## Stand
 
-**459 von 598 Kriterien fertig.** 729 Tests ohne Browser, 209 im Browser. Die
+**460 von 598 Kriterien fertig.** 733 Tests ohne Browser, 209 im Browser. Die
 Übersicht ist der Bericht: `npm run qa:report`.
 
 Gebaut ist der Unterbau: Räume, Übertragung, Karte, Wegfindung, Sammeln,
@@ -474,6 +474,14 @@ und ohne Haus (`tests/strategie-haeuser-wirkung.test.mjs`); Wehrsteins Turm
 und Burg reichen weiter (Angriff, Reichweite und Nachladezeit eines
 Gebäudes nur, wenn es schießt), Silberfurt handelt mit 15 % Gebühr und
 +20 % Gold je Fahrt (`handel` in den Boni, `welt.handelswert`).
+**Der Mannschaftsbonus gilt nur im Bündnis** (spielziel AC-25):
+`mannschaft` neben `boni` in `HAEUSER`, gelesen in `welt.wirkungen()` für
+das Haus selbst und jeden, mit dem es die Sicht teilt (`teiltSicht`), je
+Haus einmal; die Kündigung nimmt ihn im selben Takt (`buendnisStand`).
+Schießanlage und Kaserne bilden 20 % schneller aus
+(`welt.ausbildungstempo`, nur Einheiten), Karren zwischen Verbündeten
+bringen 20 % mehr (`handel.verbuendetAnteil`). Kein Mannschaftsbonus trägt
+Leben oder Nahrung (`tests/strategie-mannschaft.test.mjs`).
 
 1. **Stufe A** Dunkle Zeit mit Wirtschafts-KI und Prüfstand · **B** Feudalzeit
    · **C** Partieende und KI-Gegner · **D** Ritterzeit · **E** fünf Häuser ·

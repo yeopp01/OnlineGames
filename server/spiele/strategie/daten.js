@@ -476,28 +476,43 @@ const HANDEL = {
 // Gebaeude, das schiesst - Wehrsteins "Turm und Burg +1 Reichweite"; ein Haus
 // mit Reichweite 1 waere Unsinn in der Leiste. Und `handel`: `gebuehr` ist
 // ein Zuschlag auf `HANDEL.gebuehr` (-0,15 macht aus 30 % 15 %),
-// `karrenAnteil` ein Anteil am Gold je Fahrt. Die Mannschaftsboni kommen mit
-// spielziel AC-25. Alle Zahlen sind Startwerte (ADR-0014).
+// `karrenAnteil` ein Anteil am Gold je Fahrt.
+//
+// `mannschaft` ist der Mannschaftsbonus (spielziel AC-25): er gilt dem Haus
+// selbst und allen, mit denen es die Sicht teilt, je Haus einmal, und endet
+// mit der gemeinsamen Sicht. Er steht neben `boni`, nicht darin, und hat
+// dieselben Formen und zwei eigene: `ausbildung` je Gebaeudeart als Faktor
+// auf das Tempo der Ausbildung, und `handel.verbuendetAnteil`, ein Anteil am
+// Gold je Fahrt nur zwischen zwei Verbuendeten. Weil er kommen und gehen
+// kann, traegt er nichts, was beim Wechsel an stehenden Einheiten oder
+// Gebaeuden nachgezogen werden muesste - kein Leben, keine Nahrung; darauf
+// achtet tests/strategie-mannschaft.test.mjs. Alle Zahlen sind Startwerte
+// (ADR-0014).
 const HAEUSER = {
   eschenbruch: {
     name: 'Eschenbruch', sitz: 'Waldland', wahlspruch: 'Weit sehen, weit treffen.',
     boni: { sammeln: { holz: 1.15 }, wirkung: { bogenschuetze: { reichweite: 1 } } },
+    mannschaft: { ausbildung: { schiessanlage: 1.2 } },
   },
   rappenstein: {
     name: 'Rappenstein', sitz: 'Grasland', wahlspruch: 'Zuerst am Ziel.',
     boni: { wirkung: { kavallerie: { leben: 15, sicht: 2 } } },
+    mannschaft: { wirkung: { kavallerie: { sicht: 2 } } },
   },
   wehrstein: {
     name: 'Wehrstein', sitz: 'Gebirge', wahlspruch: 'Stein vergisst nicht.',
     boni: { sammeln: { stein: 1.15 }, gebaeude: { lebenAnteil: 0.1, reichweite: 1 } },
+    mannschaft: { gebaeude: { sicht: 2 } },
   },
   silberfurt: {
     name: 'Silberfurt', sitz: 'Flussstadt', wahlspruch: 'Alles hat seinen Preis.',
     boni: { handel: { gebuehr: -0.15, karrenAnteil: 0.2 } },
+    mannschaft: { handel: { verbuendetAnteil: 0.2 } },
   },
   distelhag: {
     name: 'Distelhag', sitz: 'Heide', wahlspruch: 'Wer uns greift, blutet.',
     boni: { wirkung: { infanterie: { nahruestung: 1, fernruestung: 1 } }, farm: { nahrung: 45 } },
+    mannschaft: { ausbildung: { kaserne: 1.2 } },
   },
 };
 

@@ -2,7 +2,7 @@
 
 **Bereich:** Strategie
 **Kuerzel:** spielziel
-**Stand:** 14/26 fertig · 1 in Arbeit · 11 offen
+**Stand:** 15/26 fertig · 1 in Arbeit · 10 offen
 
 ## Zweck
 
@@ -163,14 +163,20 @@ spielt die KI am schlechtesten.
 - **AC-18** `offen` **Kein Haus gewinnt gegen alle** — Über zwanzig Partien je Paarung liegt
   keines dauerhaft vorn (→ Fahrplan AC-18). Belegt durch Partien, nicht
   durch Behauptung.
-- **AC-25** `offen` **Mannschaftsbonus nur im Bündnis** — Der Mannschaftsbonus
+- **AC-25** `fertig` **Mannschaftsbonus nur im Bündnis** — Der Mannschaftsbonus
   eines Hauses gilt für es selbst und für alle, mit denen es die Sicht
   teilt (`welt.teiltSicht`) — zwei Verbündete desselben Hauses bekommen ihn
   einmal, nicht doppelt. Wer kündigt, verliert mit der gemeinsamen Sicht im
   selben Takt den Bonus seiner Verbündeten, und sie den seinen: in der
   Frist ist man kein Gegner, aber auch kein Verbündeter mehr (ADR-0014
   Punkt 6). Belegt an einer Schießanlage, die nach der Kündigung im
-  nächsten Auftrag wieder langsamer ausbildet.
+  nächsten Auftrag wieder langsamer ausbildet. Gebaut als `mannschaft` neben
+  den `boni` in `HAEUSER`, gelesen in `welt.wirkungen()`; neue Lesestellen
+  sind `welt.ausbildungstempo()` (nur Einheiten, nicht Verbesserungen) und
+  `handel.verbuendetAnteil` (nur auf einer Strecke zwischen zwei, die die
+  Sicht teilen). Ein Mannschaftsbonus trägt kein Leben und keine Nahrung:
+  was beim Ausbilden in eine Einheit eingeht, bliebe nach der Kündigung
+  stehen. Belegt in `tests/strategie-mannschaft.test.mjs`.
 - **AC-26** `fertig` **Jeder Bonus wirkt** — Für jeden Bonus jedes Hauses gibt es
   eine Messung gegen ein Haus ohne ihn: dieselbe Lage, ein Wert verschieden
   (Arbeit am Vorrat, Reichweite, Leben, Sicht, Rüstung, Gebühr, Gold je

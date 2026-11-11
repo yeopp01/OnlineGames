@@ -8,6 +8,11 @@
     },
     {
       "spec": "10-strategie/spielziel.md",
+      "ac": "AC-25",
+      "begruendung": "Dass der Mannschaftsbonus nur im Buendnis gilt, ist ein Vergleich ueber die Zeit und ueber Spieler: dieselbe Schiessanlage bildet vor der Kuendigung in 292 Takten aus und danach in 350, Annas Reiter sieht im Buendnis zwei Felder weiter als danach, ein Karren bringt dem Verbuendeten 31 Gold statt 26. Ein Bildschirm zeigt einen Augenblick und nicht, dass ein anderer anders ist; der Fortschrittsbalken laeuft schneller, aber wie schnell er laufen muesste, steht nirgends. Was der Browser davon zeigt - Sicht in der Leiste, Gold je Fahrt -, kommt fertig vom Server (kw, hd) und hat seine Bilder bei bedienung AC-35 und einheiten AC-40; die Kuendigung im Bild bei spielziel AC-24."
+    },
+    {
+      "spec": "10-strategie/spielziel.md",
       "ac": "AC-26",
       "begruendung": "Dass jeder Bonus wirkt, ist ein Vergleich zweier Partien: dieselbe Lage einmal mit dem Haus, einmal ohne, und gemessen wird der Unterschied - Takte am Vorrat, Leben ab der Ausbildung, Felder Sicht, ob der Schuetze vom Platz schiesst, was ein Schlag nimmt, ob der Turm ein Feld weiter trifft, Gold je Verkauf und je Fahrt, Nahrung der Farm. Ein Bildschirm zeigt eine der beiden Seiten und nicht, dass die andere anders ist. Was der Browser davon zeigt - Werte in der Leiste, Preise am Markt, Gold je Fahrt -, kommt fertig vom Server (kw, hp, hd) und hat seine Bilder bei bedienung AC-35, bauen AC-33 und einheiten AC-40."
     },
