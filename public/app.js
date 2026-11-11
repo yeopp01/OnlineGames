@@ -139,6 +139,7 @@ function empfangen(nachricht) {
       leisteZiel(ansicht.vorraete);
       auswahlleiste.aktualisieren();
       untaetigZeigen(ansicht.untaetige.length);
+      wohnraumZeigen(ansicht.wartetEtwas());
       arbeiterZeigen(ansicht.arbeiter);
       zeitalterZeigen(ansicht.zeitalterName());
       spielzeitZeigen(ansicht.spielzeit());
@@ -465,6 +466,17 @@ const leiste = { ziel: {}, gezeigt: {}, von: {}, start: 0, laeuft: false };
 function leisteFeld(name) {
   if (name === 'raum') return teile.vorraete.querySelector('[data-teil="raum"]');
   return teile.vorraete.querySelector(`[data-rohstoff="${name}"] b`);
+}
+
+// Voller Wohnraum (bedienung AC-43): wartet irgendwo ein eigener Auftrag,
+// weil die Bevoelkerung voll ist, wird die Anzeige oben rot - auch wenn das
+// wartende Gebaeude nicht gewaehlt ist. Der Grund steht im Titel; in der
+// Leiste des Gebaeudes steht er ohnehin (bauen AC-15).
+function wohnraumZeigen(wartet) {
+  const feld = teile.vorraete.querySelector('[data-rohstoff="bev"]');
+  if (feld.classList.contains('wartet') === wartet) return;
+  feld.classList.toggle('wartet', wartet);
+  feld.title = wartet ? 'Bevölkerung voll — ein Auftrag wartet, Haus bauen' : 'Bevölkerung';
 }
 
 // Der Knopf fuer untaetige Dorfbewohner (bedienung AC-28): die Zahl, und

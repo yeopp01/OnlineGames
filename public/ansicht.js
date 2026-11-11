@@ -1341,6 +1341,16 @@ export class Ansicht {
   }
 
   /**
+   * Wartet irgendwo ein eigener Auftrag, weil die Bevoelkerung voll ist
+   * (bedienung AC-43)? Der Server sagt es je Gebaeude (`w`, bauen AC-15) -
+   * hier wird nur gefragt, ob eines der eigenen es sagt, gewaehlt oder nicht.
+   */
+  wartetEtwas() {
+    for (const g of this.gebaeude.values()) if (g.b === this.ich && g.w) return true;
+    return false;
+  }
+
+  /**
    * Waehlt den naechsten untaetigen Dorfbewohner und holt ihn ins Bild -
    * reihum, damit zweimal gedrueckt auch zwei verschiedene zeigt
    * (bedienung AC-28).

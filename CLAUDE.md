@@ -165,7 +165,7 @@ Umfang hinzufügt, dort nachsehen.
 
 ## Stand
 
-**460 von 598 Kriterien fertig.** 733 Tests ohne Browser, 209 im Browser. Die
+**461 von 598 Kriterien fertig.** 733 Tests ohne Browser, 210 im Browser. Die
 Übersicht ist der Bericht: `npm run qa:report`.
 
 Gebaut ist der Unterbau: Räume, Übertragung, Karte, Wegfindung, Sammeln,
@@ -482,6 +482,9 @@ Schießanlage und Kaserne bilden 20 % schneller aus
 (`welt.ausbildungstempo`, nur Einheiten), Karren zwischen Verbündeten
 bringen 20 % mehr (`handel.verbuendetAnteil`). Kein Mannschaftsbonus trägt
 Leben oder Nahrung (`tests/strategie-mannschaft.test.mjs`).
+**Voller Wohnraum fällt auf** (bedienung AC-43): wartet ein eigener
+Auftrag, steht die Bevölkerung oben rot umrandet, auch ohne Auswahl
+(`ansicht.wartetEtwas()`).
 
 1. **Stufe A** Dunkle Zeit mit Wirtschafts-KI und Prüfstand · **B** Feudalzeit
    · **C** Partieende und KI-Gegner · **D** Ritterzeit · **E** fünf Häuser ·

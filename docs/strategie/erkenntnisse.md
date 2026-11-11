@@ -1889,6 +1889,16 @@ ihn, mit Gegenprobe an beiden Formen. Fünf Bilder neu, alle angesehen.
 Neueste oben. Eine Zeile je Runde: Nummer, Datum, Kriterien, Ergebnis,
 wichtigste Erkenntnis.
 
+- **172** · 2026-11-12 · bedienung AC-43 **fertig** (E4): wartet ein
+  eigener Auftrag, weil die Bevölkerung voll ist, steht die Anzeige oben
+  rot umrandet, auch ohne Auswahl — `ansicht.wartetEtwas()` fragt das `w`
+  der eigenen Gebäude, das der Server seit bauen AC-15 schickt; kein neuer
+  Draht. Belegt im Ablauf von `strategie-ausbilden` gleich nach bauen
+  AC-15; zwei Gegenproben im Browser: ohne den Aufruf fällt der Test, und
+  mit „voll" statt „wartet" auch (5 / 5 nach dem Abbrechen). Gelernt: Esc
+  verbirgt die Auswahlleiste, leert sie aber nicht — `#wartegrund` bleibt
+  im DOM, geprüft wird `toBeHidden()`. Blender rechnet weiter, deshalb nur
+  diese Datei neu geschrieben (bauen AC-15 trägt jetzt den roten Rand, 0,19 %).
 - **171** · 2026-11-11 · spielziel AC-25 **fertig**: der Mannschaftsbonus
   steht als `mannschaft` neben den `boni` in `HAEUSER` und läuft durch
   `welt.wirkungen()` — vom eigenen Haus und von jedem, mit dem man die

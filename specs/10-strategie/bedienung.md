@@ -2,7 +2,7 @@
 
 **Bereich:** Strategie
 **Kuerzel:** bedienung
-**Stand:** 31/46 fertig · 15 offen
+**Stand:** 32/46 fertig · 14 offen
 
 ## Zweck
 
@@ -203,7 +203,7 @@ Reihenfolge:
   **Messbar:** auf der Schautafel stehen die drei Fassungen nebeneinander;
   der Anteil verschiedener Bildpunkte zwischen je zweien wird gemessen,
   bevor eine Schwelle dasteht (Anweisung, Abschnitt 4).
-- **AC-43** `offen` **Voller Wohnraum fällt auf** — Wartet ein Auftrag, weil
+- **AC-43** `fertig` **Voller Wohnraum fällt auf** — Wartet ein Auftrag, weil
   die Bevölkerung voll ist, zeigt das die Bevölkerungsanzeige oben, auch
   wenn das wartende Gebäude nicht gewählt ist. Heute steht der Grund nur in
   der Auswahlleiste dieses Gebäudes (bauen AC-15). **Gefunden in der
@@ -211,6 +211,10 @@ Reihenfolge:
   jeder anderen Zahl — ob irgendwo eine Schlange stillsteht, verrät sie
   nicht. **Messbar:** die Anzeige trägt eine Kennzeichnung, solange ein
   eigenes Gebäude wartet, und verliert sie, sobald keines mehr wartet.
+  Gebaut: die Anzeige wird rot umrandet (Klasse `wartet`, Titel „Bevölkerung
+  voll — ein Auftrag wartet, Haus bauen"), gefragt wird `ansicht.wartetEtwas()`
+  nach dem `w` der eigenen Gebäude. Voll allein reicht nicht: nach dem
+  Abbrechen des wartenden Auftrags steht 5 / 5 wieder ohne Rand.
 - **AC-44** `offen` **Ein Gefecht hinterlässt Spuren** — Gefallene liegen
   länger als heute zwei Sekunden und verblassen dabei; ein zerstörtes
   Gebäude hinterlässt Trümmer auf seinem Platz, die nichts sperren und nach

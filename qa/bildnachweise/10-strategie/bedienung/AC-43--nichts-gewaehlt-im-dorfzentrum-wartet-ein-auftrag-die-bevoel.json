@@ -1,0 +1,10 @@
+{
+  "spec": "10-strategie/bedienung.md",
+  "ac": "AC-43",
+  "titel": "Nichts gewaehlt, im Dorfzentrum wartet ein Auftrag: die Bevoelkerung oben steht bei 5/5 rot umrandet",
+  "datei": "e2e/tests/strategie-ausbilden.spec.mjs",
+  "pfad": [
+    "Ausbilden",
+    "bedienung AC-43: wartet ein Auftrag, steht die Bevoelkerung oben rot - auch ohne Auswahl, und nur solange er wartet"
+  ]
+}

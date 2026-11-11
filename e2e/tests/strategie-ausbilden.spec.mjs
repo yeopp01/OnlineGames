@@ -141,6 +141,37 @@ test.describe('Ausbilden', () => {
     });
   });
 
+  test('bedienung AC-43: wartet ein Auftrag, steht die Bevoelkerung oben rot - auch ohne Auswahl, und nur solange er wartet', async ({}, info) => {
+    // Weiter vom Fall davor: 5/5, ein Dorfbewohner wartet im Dorfzentrum.
+    const bev = anna.locator('[data-rohstoff="bev"]');
+    await expect(bev).toHaveText(/^\s*5\s*\/\s*5\s*$/);
+    await expect(anna.locator('[data-abbrechen]')).toHaveCount(1);
+
+    // Nichts gewaehlt: die Leiste des Gebaeudes ist weg, die Anzeige oben sagt es.
+    await anna.keyboard.press('Escape');
+    await anna.waitForFunction(() => window.ansicht.ausgewaehlt.size === 0 && !window.ansicht.gewaehltesGebaeude);
+    await expect(anna.locator('#wartegrund')).toBeHidden();
+    await expect(bev).toHaveClass(/\bwartet\b/);
+    await expect(bev).toHaveAttribute('title', 'Bevölkerung voll — ein Auftrag wartet, Haus bauen');
+    await expect(bev).toBeInViewport();
+    await nachweis(anna, {
+      spec: BEDIENUNG,
+      ac: 'AC-43',
+      titel: 'Nichts gewaehlt, im Dorfzentrum wartet ein Auftrag: die Bevoelkerung oben steht bei 5/5 rot umrandet',
+      test: info,
+    });
+
+    // Der Auftrag faellt weg: die Bevoelkerung bleibt voll, aber nichts
+    // wartet mehr - die Kennzeichnung geht. Voll allein ist kein Grund.
+    const zentrum = await meinZentrum();
+    await anna.mouse.click(zentrum.bild.x, zentrum.bild.y - 60);
+    await anna.locator('[data-abbrechen="0"]').click();
+    await expect(anna.locator('[data-abbrechen]')).toHaveCount(0);
+    await expect(bev).toHaveText(/^\s*5\s*\/\s*5\s*$/);
+    await expect(bev).not.toHaveClass(/\bwartet\b/);
+    await expect(bev).toHaveAttribute('title', 'Bevölkerung');
+  });
+
   test('bedienung AC-29: Auswahl zeigt Name, Leben und was der Dorfbewohner traegt', async ({}, info) => {
     // Erst das Gebaeude: Name und Leben.
     const zentrum = await meinZentrum();

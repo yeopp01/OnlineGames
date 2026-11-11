@@ -302,6 +302,18 @@ canvas.angriffslauf {
   color: var(--leise);
 }
 
+/* Voller Wohnraum, waehrend ein Auftrag wartet (bedienung AC-43): rot wie
+   eine Absage, nicht gelb wie der Knopf fuer Untaetige - hier steht etwas
+   still, das bezahlt ist. */
+.rohstoff.bevoelkerung.wartet {
+  border-color: #e0604f;
+  background: #3a1410e6;
+}
+.rohstoff.bevoelkerung.wartet b,
+.rohstoff.bevoelkerung.wartet i {
+  color: #ffb1a5;
+}
+
 /* Rohstoffe, Zeitalter, Uhr, Karte und der Knopf "Aufgeben" brauchen zusammen
    rund 1260 Bildpunkte. Darunter geht der Hinweis: er ist eine Erinnerung, der
    Knopf eine Handlung. */
