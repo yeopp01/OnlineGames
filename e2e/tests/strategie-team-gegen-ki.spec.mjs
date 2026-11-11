@@ -16,7 +16,7 @@
 // Dieser Fall waere dann rot.
 import { nachweis } from '../../scripts/qa-nachweis.mjs';
 import { ANMELDUNG, expect, fehlerSammeln, test, zeitraffer } from '../helpers/seite.mjs';
-import { bedienteileFrei } from '../helpers/strategie.mjs';
+import { bedienteileFrei, haeuserSetzen } from '../helpers/strategie.mjs';
 
 const FAHRPLAN = '10-strategie/fahrplan.md';
 const WALD = 1;
@@ -46,6 +46,9 @@ test.describe('Zwei gegen zwei', () => {
     for (const [i, team] of TEAMS.entries()) {
       await expect(zeilen.nth(i).locator('[data-wahl="team"]')).toHaveValue(JSON.stringify(team));
     }
+    // Handelt nicht von Haeusern (spielauswahl AC-24): alle ohne Boni - mit
+    // Haeusern waere es eine andere Partie als die gemessene.
+    await haeuserSetzen(page);
 
     await page.locator('#starten').click();
     await expect(page.locator('#brett')).toBeVisible();

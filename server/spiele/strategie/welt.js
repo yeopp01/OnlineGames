@@ -3818,6 +3818,9 @@ class Welt {
         // Das Team (spielziel AC-14): der Browser fragt damit, ob ein
         // Rechtsklick angreift oder hingeht - dieselbe Frage wie `feindlich`.
         ...(s.team ? { team: s.team } : {}),
+        // Das Haus (spielauswahl AC-24), wie im Warteraum gewaehlt oder
+        // aus dem Startwert gezogen.
+        ...(s.haus ? { haus: s.haus } : {}),
         ...(s.aus ? { aus: 1 } : {}),
       })),
       // Wer nach dem Ende zurueckkommt, sieht das Ende und nicht eine

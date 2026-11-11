@@ -4,7 +4,7 @@
 import { test, before, after } from 'node:test';
 import assert from 'node:assert/strict';
 import { createRequire } from 'node:module';
-import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { beenden, istTyp, konto, kunde } from './hilfe.mjs';
@@ -488,4 +488,90 @@ test('auswahl AC-22: wer vor dem Start geht, nimmt seine Wahl mit', async () => 
   assert.equal(platzVon(neu, 'Bert').wahl.team, 0);
   gast.zu();
   wieder.zu();
+});
+
+// ---- Haus je Platz (auswahl AC-24, ADR-0014) ----------------------------
+
+const { HAEUSER } = require('../server/spiele/strategie/daten.js');
+const strategie = require('../server/spiele/strategie/steckbrief.js');
+
+test('auswahl AC-24: jeder Platz hat ein Haus, Vorgabe Zufall, und jedes nennt seinen Wahlspruch', async () => {
+  const { gast, bert } = await raumMitBert({ ki: 1 });
+  const raum = await bert.warteAuf((n) => n.typ === 'raum' && n.spieler.length === 2);
+  const haus = raum.jePlatz.find((e) => e.schluessel === 'haus');
+  // Die Wahl kommt aus den Daten: Zufall und jedes Haus aus HAEUSER.
+  assert.deepEqual(haus.werte.map((w) => w.wert), ['zufall', ...Object.keys(HAEUSER)]);
+  for (const [schluessel, h] of Object.entries(HAEUSER)) {
+    const eintrag = haus.werte.find((w) => w.wert === schluessel);
+    assert.ok(eintrag.name.includes(h.name) && eintrag.name.includes(h.wahlspruch), `${eintrag.name} nennt Name und Wahlspruch`);
+  }
+  for (const p of raum.plaetze) assert.equal(p.wahl.haus, 'zufall', `${p.name} beginnt mit Zufall`);
+  gast.zu();
+  bert.zu();
+});
+
+test('auswahl AC-24: Bert waehlt sein Haus, der Gastgeber das der KI - zwei duerfen dasselbe haben', async () => {
+  const { gast, bert } = await raumMitBert({ ki: 1, sicht: 'aufgedeckt' });
+  const vorher = await bert.warteAuf((n) => n.typ === 'raum' && n.spieler.length === 2);
+  const berta = platzVon(vorher, 'Bert').platz;
+
+  bert.senden({ typ: 'platz', platz: berta, wahl: { haus: 'distelhag' } });
+  await gast.warteAuf((n) => n.typ === 'raum' && platzVon(n, 'Bert').wahl.haus === 'distelhag');
+  // Das Haus der KI waehlt nur der Gastgeber.
+  bert.senden({ typ: 'platz', platz: 'platz1', wahl: { haus: 'wehrstein' } });
+  assert.equal((await bert.warteAuf((n) => n.typ === 'fehler')).text, 'Für andere Plätze wählt nur der Gastgeber.');
+  // Ein Haus, das es nicht gibt, weist der Server ab wie jede Einstellung.
+  gast.senden({ typ: 'platz', platz: 'platz1', wahl: { haus: 'nebelheim' } });
+  assert.match((await gast.warteAuf((n) => n.typ === 'fehler')).text, /^Haus: erlaubt ist/);
+  gast.senden({ typ: 'platz', platz: 'platz1', wahl: { haus: 'distelhag' } });
+  await bert.warteAuf((n) => n.typ === 'raum' && platzVon(n, 'KI 1').wahl.haus === 'distelhag');
+
+  gast.senden({ typ: 'start', startwert: 7 });
+  const aufbau = await bert.warteAuf(istTyp('aufbau'));
+  const haeuser = Object.fromEntries(aufbau.spieler.map((s) => [s.name, s.haus]));
+  assert.equal(haeuser.Bert, 'distelhag');
+  assert.equal(haeuser['KI 1'], 'distelhag', 'dasselbe Haus zweimal ist erlaubt');
+  assert.ok(Object.hasOwn(HAEUSER, haeuser.Anna), `Annas Zufall ist ein Haus: ${haeuser.Anna}`);
+  gast.zu();
+  bert.zu();
+});
+
+// Drei Plaetze, wie sie der Raum beim Start durchreicht (raeume.js).
+function haeuserBeimStart(startwert, wahl = {}) {
+  const jePlatz = {
+    aaaaaaaa: { team: 0, haus: wahl.anna || 'zufall' },
+    bbbbbbbb: { team: 0, haus: wahl.bert || 'zufall' },
+    platz1: { team: 0, haus: wahl.ki || 'zufall' },
+  };
+  const welt = strategie.erzeugen(
+    [{ id: 'aaaaaaaa', name: 'Anna' }, { id: 'bbbbbbbb', name: 'Bert' }],
+    { startwert, ki: 1, sicht: 'aufgedeckt', jePlatz },
+  );
+  return ['aaaaaaaa', 'bbbbbbbb', 'ki1'].map((id) => welt.spielerVon(id).haus);
+}
+
+test('auswahl AC-24: Zufall wird aus dem Startwert gezogen - dieselbe Partie ergibt dieselben Haeuser', () => {
+  const gezogen = new Set();
+  for (let startwert = 1; startwert <= 20; startwert++) {
+    const einmal = haeuserBeimStart(startwert);
+    assert.deepEqual(haeuserBeimStart(startwert), einmal, `Startwert ${startwert} zweimal`);
+    for (const haus of einmal) {
+      assert.ok(Object.hasOwn(HAEUSER, haus), `${haus} ist ein Haus`);
+      gezogen.add(haus);
+    }
+  }
+  // Gegenprobe: es ist ein Zug und kein fester Wert - ueber 60 Plaetze kommt
+  // jedes Haus vor.
+  assert.deepEqual([...gezogen].sort(), Object.keys(HAEUSER).sort());
+  // Wer waehlt, aendert nicht, was die anderen ziehen.
+  for (let startwert = 1; startwert <= 20; startwert++) {
+    const [anna, , ki] = haeuserBeimStart(startwert);
+    const mitWahl = haeuserBeimStart(startwert, { bert: 'wehrstein' });
+    assert.deepEqual(mitWahl, [anna, 'wehrstein', ki], `Startwert ${startwert}`);
+  }
+});
+
+test('auswahl AC-24: im Raum steht kein Wort vom Haus (ADR-0006)', () => {
+  const quelle = readFileSync(new URL('../server/raeume.js', import.meta.url), 'utf8').replace(/\/\/.*$/gm, '');
+  assert.doesNotMatch(quelle, /haus/i);
 });

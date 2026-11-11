@@ -264,6 +264,43 @@ etwas anderem gearbeitet.
   nächste Arbeit — dann im Wartefenster den Zeitraffer hochdrehen. Im vollen
   Lauf der Rückschau 168 grün.
 
+- **Im Warteraum liegt „Partie starten" ab drei Plätzen halb unter dem
+  Rand** (Runde 169, auf 1366 × 768: zwei Menschen und eine KI, 59 % des
+  Knopfs sichtbar). Das war schon vor dem Haus so — die Zeilen sind mit der
+  zweiten Wahl nicht höher geworden (Bild auswahl AC-22 neben AC-24).
+  auswahl AC-23 prüft den Gastgeber allein. Zu fünft (das Ziel des
+  Projekts) fehlen rund 150 Bildpunkte. Abhilfe wäre eine engere
+  Spielerliste oder die Einstellungen neben statt unter der Liste;
+  gehört als Lücke in die Rückschau zur Stufe E, die den Rundgang macht.
+
+- **Unter fremder Last schreiben die Pfeil-Fälle ihr Bild nicht**
+  (Runde 169, drei Blender-Instanzen der Parallelsitzung): bedienung AC-40
+  und bauen AC-29 / kampf AC-20 fielen im `:neu`-Lauf und einzeln sechs von
+  sechs. Fehlt das Bild, fotografiert der Test bei jedem Versuch, und das
+  Foto dauert länger, als ein Pfeil fliegt — der Turm hat die Miliz
+  getötet, bevor einer erwischt war. Gegenprobe auf HEAD in einem eigenen
+  Arbeitsbaum: mit vorhandenem Bild grün, ohne Bild vier von vier gefallen —
+  also die Last, nicht die Häuser (auf dem Server laufen Turm und Bogen mit
+  und ohne Haus Takt für Takt gleich). Mit dem Bild aus HEAD grün. **Ein
+  `:neu`-Lauf gehört auf eine freie Maschine**; läuft nebenher Schweres,
+  `check:alles` ohne `:neu`. Dazu wartet Playwright jetzt 120 s statt 30 auf
+  den Testserver — dreimal kam er unter der Last nicht rechtzeitig hoch.
+  Und: `timeout 40 node …` in Git Bash beendet den Node-Prozess nicht; ein
+  Probeserver blieb auf 4191/4192 liegen, ausgewichen mit `E2E_HAFEN=4195`.
+  Im selben Zug fiel in `npm run check` einmal karte AC-15 (Zeit der
+  Wegsuche, 1066 ms), einzeln dreimal grün, der zweite `check` ganz grün.
+
+- **Über den Raum gestartete Partien spielen zufällige Häuser** (Durchsicht
+  Runde 169): der Raum reicht `jePlatz` immer durch, Vorgabe Zufall — also
+  ziehen alle WebSocket-Tests, die `typ: 'start'` schicken, und die
+  Browserfälle, die nicht über `partieMit` starten (`spielauswahl`,
+  `strategie-einstieg`, `vorraum`), ein Haus aus dem Startwert. Heute misst
+  keiner davon Schaden, Reichweite oder Raten (gesucht in Runde 169). Wer
+  einen solchen Test schreibt, setzt `haus` je Platz wie `partieMit` — und
+  wenn E3 Silberfurt Boni gibt, bricht `hausOhneBoni()` ab: dann entscheidet
+  die Runde, womit Tests ohne Haus spielen (etwa eine Einstellung
+  `haeuser: 'keins'` nur für Tests, oder ein festes Haus).
+
 - **Der Späher kann ins Heer geraten** (Durchsicht Runde 165, nicht
   behoben): `heerPruefen` nimmt jede Kampfeinheit, auch den Späherreiter,
   der gerade erkundet; dann bricht `erkunden` ab, und gesucht wird nur noch
@@ -578,6 +615,7 @@ Zahlen, gegen die spätere Runden vergleichen. Mit Datum und Commit.
 | 2026-11-09 | Browserlauf; Tests ohne Browser | 203 Fälle in 18,9 und 19,6 min (Lauf ohne und mit neuen Bildern; Maschine nicht vorher geprüft, bei der Rückschau ruhig); 664 + 8 Tests; langsamste fahrplan AC-24 108 s, AC-14 90 s, AC-12 84 s | Rückschau 158 |
 | 2026-11-10 | Browserlauf; Tests ohne Browser | 207 Fälle in 21,4 min (Runde 161, Maschine nicht vorher geprüft); 695 + 8 Tests, `npm run check:kurz` 277 s | Rückschau 163 |
 | 2026-11-10 | KI gegen KI **im Nebel** (ki AC-13), Startwerte 1-20 / 21-40 bis Minute 90 | 18/20 und 19/20 vor Minute 60, Median 46,0 / 41,9 (gesamt 44,6), längste 77,9 @18; HEAD 41,9 / 38,3; 117–173 ms je 1000 Takte gegen 110–136 (verrauscht, rund ein Viertel mehr); `npm run check:kurz` 702 + 9 Tests in 231 s | Runde 165 |
+| 2026-11-11 | Browserlauf `:neu` unter fremder Last | 209 Fälle in 36,4 min, zwei Pfeil-Fälle gefallen (drei Blender-Instanzen nebenher) | Runde 169 |
 | 2026-11-11 | Browserlauf; Tests ohne Browser | 208 Fälle in 22,4 min, mit Prüfung 1347 s (22 Chrome-Prozesse des Benutzers, ein fremder Node); 713 + 9 Tests, `npm run check:kurz` 401 s | Rückschau 168 |
 
 ## Rückschauen
@@ -1836,6 +1874,16 @@ ihn, mit Gegenprobe an beiden Formen. Fünf Bilder neu, alle angesehen.
 Neueste oben. Eine Zeile je Runde: Nummer, Datum, Kriterien, Ergebnis,
 wichtigste Erkenntnis.
 
+- **169** · 2026-11-11 · spielauswahl AC-24 **fertig**: jeder Platz im
+  Warteraum hat ein Haus (Name und Wahlspruch, Vorgabe Zufall), der
+  Gastgeber wählt auch das der KIs; Zufall zieht der Steckbrief aus dem
+  Startwert, jeder Platz der Reihe nach, damit eine Wahl die anderen nicht
+  verschiebt. Gelernt: **eine neue Vorgabe „Zufall" ändert jede Partie, die
+  sie nicht setzt** — bei Startwert 4711 hätten Anna und Bert in allen
+  Browserfällen Bogen- und Infanterieboni gespielt. `partieMit` setzt
+  deshalb das Haus ohne Boni, wie Tests ohne Nebel aufgedeckt eröffnen.
+  Und: „Partie starten" lag ab drei Plätzen schon vorher halb unter dem
+  Rand (Faden).
 - **168** · 2026-11-11 · **Rückschau.** `npm run qa:waisen` räumt Bilder
   ohne Erzeuger (und `qa:nachweis` tut es vor jedem Lauf), der Wächter
   `waechter-wirkungen` verbietet dem Browser, Wirkungen selbst

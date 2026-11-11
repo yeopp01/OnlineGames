@@ -8,7 +8,7 @@
 // und 4711: 21,1 bis 22,1). Mit Zeitraffer 20 ist das gut eine Minute.
 import { nachweis } from '../../scripts/qa-nachweis.mjs';
 import { ANMELDUNG, expect, fehlerSammeln, test, zeitraffer } from '../helpers/seite.mjs';
-import { bedienteileFrei } from '../helpers/strategie.mjs';
+import { bedienteileFrei, haeuserSetzen } from '../helpers/strategie.mjs';
 
 const FAHRPLAN = '10-strategie/fahrplan.md';
 const WALD = 1;
@@ -26,6 +26,8 @@ test.describe('Allein gegen die KI', () => {
     await page.locator('[data-eroeffnen="strategie"]').click();
     await expect(page.locator('#warteraum')).toBeVisible();
     const code = (await page.locator('#raumcode').textContent()).trim();
+    // Handelt nicht von Haeusern (spielauswahl AC-24): beide ohne Boni.
+    await haeuserSetzen(page);
 
     await page.locator('#starten').click();
     await expect(page.locator('#brett')).toBeVisible();

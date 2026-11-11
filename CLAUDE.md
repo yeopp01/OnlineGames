@@ -165,7 +165,7 @@ Umfang hinzufügt, dort nachsehen.
 
 ## Stand
 
-**457 von 598 Kriterien fertig.** 722 Tests ohne Browser, 208 im Browser. Die
+**458 von 598 Kriterien fertig.** 726 Tests ohne Browser, 209 im Browser. Die
 Übersicht ist der Bericht: `npm run qa:report`.
 
 Gebaut ist der Unterbau: Räume, Übertragung, Karte, Wegfindung, Sammeln,
@@ -464,7 +464,10 @@ Bildunterschriften bleiben die alten Namen die Arbeitsnamen der Stufen.
 **Ein Haus ist Daten** (spielziel AC-17, fahrplan AC-17): `HAEUSER` in
 `daten.js`, Boni in der Form der Verbesserungen, gelesen nur über
 `welt.wirkungen()`; das Haus je Spieler ist die Einstellung
-`haeuser: { <spielerId>: <haus> }`. Gewählt wird es noch nicht im Warteraum.
+`haeuser: { <spielerId>: <haus> }`. **Gewählt wird es im Warteraum** je
+Platz wie das Team (spielauswahl AC-24), Vorgabe Zufall — gezogen aus dem
+Startwert im Steckbrief. Browsertests, die nicht von Häusern handeln, spielen
+das Haus ohne Boni (`partieMit` setzt es, `haeuserSetzen`).
 
 1. **Stufe A** Dunkle Zeit mit Wirtschafts-KI und Prüfstand · **B** Feudalzeit
    · **C** Partieende und KI-Gegner · **D** Ritterzeit · **E** fünf Häuser ·

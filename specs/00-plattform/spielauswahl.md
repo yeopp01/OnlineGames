@@ -2,7 +2,7 @@
 
 **Bereich:** Plattform
 **Kuerzel:** auswahl
-**Stand:** 18/24 fertig · 6 offen
+**Stand:** 19/24 fertig · 5 offen
 
 ## Zweck
 
@@ -114,7 +114,7 @@ Wer nur mitspielt, ueberspringt alles: Code eingeben, Namen eingeben, drin
   `jePlatz` durch; erst der Steckbrief macht daraus `teams`. In `raeume.js`
   steht kein Wort vom Team (ein Test prüft das).
 
-- **AC-24** `offen` **Haus je Platz** — Im Warteraum des Strategiespiels hat
+- **AC-24** `fertig` **Haus je Platz** — Im Warteraum des Strategiespiels hat
   jeder Platz ein Haus ([ADR-0014](../../docs/adr/0014-haeuser-statt-voelker.md)),
   die KIs eingeschlossen, gewählt wie das Team (AC-22): ein Mensch wählt
   seins, der Gastgeber das der KIs, bis zum Start. Vorgabe ist „Zufall",
@@ -125,6 +125,13 @@ Wer nur mitspielt, ueberspringt alles: Code eingeben, Namen eingeben, drin
   Steckbrief beschreibt die Wahl unter `jePlatz`; der Raum trägt sie
   weiter, ohne „Haus" zu kennen (AC-4, ADR-0006). Der Warteraum passt mit
   dieser Wahl weiter auf 1366 × 768 (AC-23).
+  **Gebaut in Runde 169:** `haus` steht im Steckbrief unter `jePlatz`
+  neben dem Team, die Werte kommen aus `HAEUSER` (je Haus „Name – Wahlspruch",
+  dazu „Haus: Zufall"); `haeuserAus()` im Steckbrief zieht den Zufall aus
+  dem Startwert, jeder Platz der Reihe nach, auch wer gewählt hat. Das Haus
+  steht im Aufbau je Spieler (`haus`). Browsertests, die nicht von Häusern
+  handeln, setzen im Warteraum das Haus ohne Boni (`partieMit`,
+  `haeuserSetzen` in `e2e/helpers/strategie.mjs`).
 
 ### Name und Sprache
 

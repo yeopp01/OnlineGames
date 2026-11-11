@@ -48,7 +48,7 @@ test('auswahl AC-22: Teams im Warteraum - jeder wählt seins, der Gastgeber auch
 
     // Der Gastgeber hat auf jedem Platz eine Auswahl: er setzt sich und die KI.
     const beiAnna = anna.locator('#spielerliste li');
-    await expect(beiAnna.locator('select')).toHaveCount(3);
+    await expect(beiAnna.locator('select[data-wahl="team"]')).toHaveCount(3);
     await beiAnna.nth(0).locator('[data-wahl="team"]').selectOption(JSON.stringify(1));
     await beiAnna.nth(2).locator('[data-wahl="team"]').selectOption(JSON.stringify(2));
     await teamZeigt(bert, 0, 1);
