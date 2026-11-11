@@ -2,7 +2,7 @@
 
 **Bereich:** Strategie
 **Kuerzel:** spielziel
-**Stand:** 13/26 fertig · 1 in Arbeit · 12 offen
+**Stand:** 14/26 fertig · 1 in Arbeit · 11 offen
 
 ## Zweck
 
@@ -171,14 +171,17 @@ spielt die KI am schlechtesten.
   Frist ist man kein Gegner, aber auch kein Verbündeter mehr (ADR-0014
   Punkt 6). Belegt an einer Schießanlage, die nach der Kündigung im
   nächsten Auftrag wieder langsamer ausbildet.
-- **AC-26** `offen` **Jeder Bonus wirkt** — Für jeden Bonus jedes Hauses gibt es
+- **AC-26** `fertig` **Jeder Bonus wirkt** — Für jeden Bonus jedes Hauses gibt es
   eine Messung gegen ein Haus ohne ihn: dieselbe Lage, ein Wert verschieden
-  (Holz je Minute, Reichweite, Leben, Sicht, Ausbildungszeit, Gebühr, Gold
-  je Fahrt, Nahrung je Farm). Der Test liest die Boni aus den Daten, keine
-  Liste im Testkopf. Eine neue Lesestelle brauchen Ausbildungszeit,
-  Marktgebühr, Ertrag des Karrens und die Reichweite nur für Turm und Burg
-  (ADR-0014 Punkt 4); ob `gebaeudewert` einen Bonus je Gebäudeart trägt,
-  ist dabei zu prüfen.
+  (Arbeit am Vorrat, Reichweite, Leben, Sicht, Rüstung, Gebühr, Gold je
+  Fahrt, Nahrung je Farm). Der Test liest die Boni aus den Daten, keine
+  Liste im Testkopf; ein Bonus ohne Messung bricht ihn. Eine neue
+  Lesestelle brauchten Marktgebühr und Ertrag des Karrens (`handel` in den
+  Boni, `welt.handelswert`) und die Reichweite nur für Turm und Burg. Einen
+  Bonus je Gebäudeart braucht `gebaeudewert` dafür nicht: Angriff,
+  Reichweite und Nachladezeit gelten nur für ein Gebäude, das schießt. Die
+  Ausbildungszeit ist ein Mannschaftsbonus und kommt mit AC-25. Belegt in
+  `tests/strategie-haeuser-wirkung.test.mjs`.
 - **AC-14** `fertig` **Verbündete kämpfen nicht** — Spieler desselben Teams
   ([Spielauswahl](../00-plattform/spielauswahl.md) AC-22) sind Verbündete.
   Ein Rechtsklick auf einen Verbündeten ist ein Gang dorthin. Wachende

@@ -3,6 +3,8 @@
 import { test as basis, expect } from '@playwright/test';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
+// Dieselben Haeuser wie im Server des Browserlaufs (spielziel AC-26).
+import './pruefhaus.mjs';
 
 export { expect };
 

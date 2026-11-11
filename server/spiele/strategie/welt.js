@@ -17,6 +17,8 @@ const GEBAEUDEFELDER = ['leben', 'nahruestung', 'fernruestung', 'sicht', 'angrif
 // Die Gebaeude, die schiessen (bauen AC-29): wer in den Daten einen Angriff
 // hat. Einmal gezaehlt - `tuermeTakten()` laeuft in jedem Takt.
 const SCHIESSENDE = new Set(Object.keys(GEBAEUDE).filter((art) => GEBAEUDE[art].angriff > 0));
+// Werte eines Gebaeudes, die nur fuer eines gelten, das schiesst (gebaeudewert).
+const SCHUSSFELDER = new Set(['angriff', 'reichweite', 'nachladen']);
 const SUCHWEITE_ERSATZ = 12;
 // So lange liegt ein Toter noch im Bild, bevor er aus dem Zustand faellt
 // (kampf AC-10): lang genug, um zu sehen, was passiert ist.
@@ -401,7 +403,9 @@ class Welt {
    * Ruestung, Sicht (kampf AC-17, bauen AC-34). Das Gegenstueck zu
    * `einheitenwert()`: wer `GEBAEUDE[art].leben` direkt liest, sieht das
    * Mauerwerk nicht. Leben waechst um einen Anteil des Grundwerts
-   * (`lebenAnteil`), alles andere um einen Zuschlag.
+   * (`lebenAnteil`), alles andere um einen Zuschlag. Angriff, Reichweite und
+   * Nachladezeit nur bei einem Gebaeude, das schiesst (spielziel AC-26):
+   * "Turm und Burg +1 Reichweite" gilt nicht dem Wohnhaus.
    */
   gebaeudewert(besitzer, art, feld) {
     const grund = GEBAEUDE[art][feld] || 0;
@@ -411,6 +415,7 @@ class Welt {
       for (const w of wirkungen) anteil += w.gebaeude?.lebenAnteil || 0;
       return Math.round(grund * (1 + anteil));
     }
+    if (SCHUSSFELDER.has(feld) && !SCHIESSENDE.has(art)) return grund;
     let wert = grund;
     for (const w of wirkungen) wert += w.gebaeude?.[feld] || 0;
     return wert;
@@ -420,7 +425,7 @@ class Welt {
    * Alles, was die Werte eines Spielers veraendert, in einer Form: zuerst die
    * Boni seines Hauses (von Beginn an), dann jede erforschte Verbesserung
    * (spielziel AC-17). Jede Lesestelle - `einheitenwert`, `gebaeudewert`,
-   * `sammelrate`, `farmNahrung` - laeuft ueber diese Liste; ein Haus ist
+   * `sammelrate`, `farmNahrung`, `handelswert` - laeuft ueber diese Liste; ein Haus ist
    * deshalb ein Eintrag in `HAEUSER` und keine Verzweigung.
    *
    * Gemerkt je Spieler, solange die Zahl seiner Verbesserungen gleich bleibt:
@@ -1133,10 +1138,19 @@ class Welt {
    */
   handelspreise(spielerId) {
     const spieler = this.spielerVon(spielerId);
+    // Ein Haus kann die Gebuehr senken (spielziel AC-26), nie unter null.
+    const gebuehr = Math.max(0, HANDEL.gebuehr + this.handelswert(spielerId, 'gebuehr'));
     return Object.fromEntries(Object.keys(HANDEL.waren).map((ware) => {
       const grund = spieler.preise[ware];
-      return [ware, [Math.round(grund * (1 + HANDEL.gebuehr)), Math.round(grund * (1 - HANDEL.gebuehr))]];
+      return [ware, [Math.round(grund * (1 + gebuehr)), Math.round(grund * (1 - gebuehr))]];
     }));
+  }
+
+  // Die Summe eines Handelsbonus aus Haus und Verbesserungen (spielziel AC-26).
+  handelswert(spielerId, feld) {
+    let summe = 0;
+    for (const w of this.wirkungen(spielerId)) summe += w.handel?.[feld] || 0;
+    return summe;
   }
 
   // Am Markt 100 einer Ware gegen Gold tauschen (bauen AC-33). Jeder Kauf
@@ -1639,7 +1653,11 @@ class Welt {
     return { heimat, ziel };
   }
 
-  /** Gold je Fahrt zwischen zwei Maerkten, nach `HANDEL.karren`. */
+  /**
+   * Gold je Fahrt zwischen zwei Maerkten, nach `HANDEL.karren` - fuer den
+   * Besitzer des Heimatmarkts, also mit seinem `karrenAnteil` (spielziel
+   * AC-26).
+   */
   handelsgewinn(heimat, ziel) {
     const mitte = (g) => {
       const { x0, y0, x1, y1 } = this.grundflaeche(g.art, g.x, g.y);
@@ -1649,7 +1667,8 @@ class Welt {
     const b = mitte(ziel);
     const d = Math.hypot(a.x - b.x, a.y - b.y);
     const { faktor, sockel } = HANDEL.karren;
-    return Math.round(faktor * d * (d / this.karte.groesse + sockel));
+    const anteil = 1 + this.handelswert(heimat.besitzer, 'karrenAnteil');
+    return Math.round(faktor * anteil * d * (d / this.karte.groesse + sockel));
   }
 
   // Leer zum Ziel, dort laedt er das Gold der Fahrt, beladen heim, dort

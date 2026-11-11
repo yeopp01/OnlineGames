@@ -296,10 +296,15 @@ etwas anderem gearbeitet.
   Browserfälle, die nicht über `partieMit` starten (`spielauswahl`,
   `strategie-einstieg`, `vorraum`), ein Haus aus dem Startwert. Heute misst
   keiner davon Schaden, Reichweite oder Raten (gesucht in Runde 169). Wer
-  einen solchen Test schreibt, setzt `haus` je Platz wie `partieMit` — und
-  wenn E3 Silberfurt Boni gibt, bricht `hausOhneBoni()` ab: dann entscheidet
-  die Runde, womit Tests ohne Haus spielen (etwa eine Einstellung
-  `haeuser: 'keins'` nur für Tests, oder ein festes Haus).
+  einen solchen Test schreibt, setzt `haus` je Platz wie `partieMit`.
+  **Entschieden in Runde 170:** seit Silberfurt Boni hat, spielen solche
+  Browserfälle das **Prüfhaus** — ein sechstes Haus ohne Boni, das nur der
+  Browserlauf in `HAEUSER` einträgt (`e2e/helpers/pruefhaus.mjs`, geladen
+  von `e2e/server.mjs` vor dem Server und von `e2e/helpers/seite.mjs`). Im
+  Browserlauf kann „Zufall" es ziehen; im Spiel gibt es es nicht. Die Bilder
+  aus dem Warteraum nach `haeuserSetzen` zeigen bis zum nächsten
+  `:neu`-Lauf noch „Silberfurt" — unter der Blender-Last nicht neu
+  geschrieben.
 
 - **Der Späher kann ins Heer geraten** (Durchsicht Runde 165, nicht
   behoben): `heerPruefen` nimmt jede Kampfeinheit, auch den Späherreiter,
@@ -1874,6 +1879,21 @@ ihn, mit Gegenprobe an beiden Formen. Fünf Bilder neu, alle angesehen.
 Neueste oben. Eine Zeile je Runde: Nummer, Datum, Kriterien, Ergebnis,
 wichtigste Erkenntnis.
 
+- **170** · 2026-11-11 · spielziel AC-26 **fertig**: jeder Bonus jedes
+  Hauses ist im Spiel gemessen, dieselbe Lage mit und ohne Haus, zwölf
+  Boni aus den Daten (Holz 223 statt 257 Takte am Baum, Späherreiter 60
+  statt 45 Leben und 6 statt 4 Felder Sicht, Farm 220 statt 175, Holz am
+  Markt 85 statt 70 Gold …). Neu gelesen: Wehrsteins Turm und Burg +1
+  Reichweite (`gebaeudewert` gibt Angriff, Reichweite und Nachladezeit nur
+  Gebäuden, die schießen — kein Bonus je Gebäudeart nötig) und Silberfurts
+  Handel (`handel: { gebuehr, karrenAnteil }`, `welt.handelswert`). Gelernt:
+  **ein Fernkämpfer schießt mit einem Schlagrand über seine Reichweite**
+  (4,4 bei 4) — gemessen wird deshalb, ob er vom Platz schießt, nicht eine
+  Weite; und **die Sicht rechnet nicht jeden Takt** (`SICHT_TAKTE`), ein
+  Takt nach dem Aufstellen sah nichts. Die Ausbildungszeit gehört zum
+  Mannschaftsbonus (AC-25). Gegenprobe je Lesestelle: alle drei fallen.
+  Browser nur für die fünf betroffenen Dateien (23 grün), kein `:neu` unter
+  Blender-Last.
 - **169** · 2026-11-11 · spielauswahl AC-24 **fertig**: jeder Platz im
   Warteraum hat ein Haus (Name und Wahlspruch, Vorgabe Zufall), der
   Gastgeber wählt auch das der KIs; Zufall zieht der Steckbrief aus dem

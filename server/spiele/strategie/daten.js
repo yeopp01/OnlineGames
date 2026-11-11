@@ -471,11 +471,13 @@ const HANDEL = {
 // die Verbesserungen gelesen werden (`welt.wirkungen()`); die Simulation
 // kennt kein einzelnes Haus.
 //
-// Hier steht, was sich in dieser Form schreiben laesst. Die Boni, die eine
-// neue Lesestelle brauchen, kommen mit E3 (spielziel AC-26): Wehrsteins
-// Reichweite nur fuer Turm und Burg, Silberfurts Marktgebuehr und Gold je
-// Fahrt, dazu jeder Mannschaftsbonus (AC-25). Silberfurt hat deshalb bis
-// dahin keinen Bonus. Alle Zahlen sind Startwerte (ADR-0014).
+// Zwei Formen gibt es nur bei den Haeusern (spielziel AC-26):
+// `gebaeude.reichweite` (wie `angriff` und `nachladen`) gilt nur fuer ein
+// Gebaeude, das schiesst - Wehrsteins "Turm und Burg +1 Reichweite"; ein Haus
+// mit Reichweite 1 waere Unsinn in der Leiste. Und `handel`: `gebuehr` ist
+// ein Zuschlag auf `HANDEL.gebuehr` (-0,15 macht aus 30 % 15 %),
+// `karrenAnteil` ein Anteil am Gold je Fahrt. Die Mannschaftsboni kommen mit
+// spielziel AC-25. Alle Zahlen sind Startwerte (ADR-0014).
 const HAEUSER = {
   eschenbruch: {
     name: 'Eschenbruch', sitz: 'Waldland', wahlspruch: 'Weit sehen, weit treffen.',
@@ -487,11 +489,11 @@ const HAEUSER = {
   },
   wehrstein: {
     name: 'Wehrstein', sitz: 'Gebirge', wahlspruch: 'Stein vergisst nicht.',
-    boni: { sammeln: { stein: 1.15 }, gebaeude: { lebenAnteil: 0.1 } },
+    boni: { sammeln: { stein: 1.15 }, gebaeude: { lebenAnteil: 0.1, reichweite: 1 } },
   },
   silberfurt: {
     name: 'Silberfurt', sitz: 'Flussstadt', wahlspruch: 'Alles hat seinen Preis.',
-    boni: {},
+    boni: { handel: { gebuehr: -0.15, karrenAnteil: 0.2 } },
   },
   distelhag: {
     name: 'Distelhag', sitz: 'Heide', wahlspruch: 'Wer uns greift, blutet.',

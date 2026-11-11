@@ -6,6 +6,8 @@ import http from 'node:http';
 import { randomBytes } from 'node:crypto';
 import { createRequire } from 'node:module';
 import { KONTO } from './helpers/konto.mjs';
+// Vor dem Server: der Steckbrief liest die Haeuser beim Laden (spielziel AC-26).
+import './helpers/pruefhaus.mjs';
 
 const require = createRequire(import.meta.url);
 const { starten } = require('../server/index.js');

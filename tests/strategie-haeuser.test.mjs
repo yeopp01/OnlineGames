@@ -12,15 +12,19 @@ import { createRequire } from 'node:module';
 
 const require = createRequire(import.meta.url);
 const { Welt } = require('../server/spiele/strategie/welt.js');
-const { EINHEITEN, GEBAEUDE, HAEUSER, VERBESSERUNGEN, STARTAUFSTELLUNG } = require('../server/spiele/strategie/daten.js');
+const { EINHEITEN, GEBAEUDE, HAEUSER, HANDEL, VERBESSERUNGEN, STARTAUFSTELLUNG } = require('../server/spiele/strategie/daten.js');
 const { partieSpielen } = require('../server/spiele/strategie/pruefstand.js');
 
 const ZWEI = [{ id: 'a', name: 'Anna' }, { id: 'b', name: 'Bert' }];
 const mitHaus = (haus) => new Welt(ZWEI, 7, { sicht: 'aufgedeckt', haeuser: { a: haus } });
 
-// Die Formen, die E2 liest. Was ein Haus sonst traegt, braucht eine neue
-// Lesestelle (E3, spielziel AC-26) - und bricht hier, bis es sie gibt.
-const FORMEN = ['wirkung', 'sammeln', 'farm', 'gebaeude'];
+// Die Formen, die gelesen werden - `handel` seit E3 (spielziel AC-26). Was
+// ein Haus sonst traegt, braucht eine neue Lesestelle und bricht hier, bis es
+// sie gibt. Was die Boni im Spiel bewirken, misst
+// tests/strategie-haeuser-wirkung.test.mjs.
+const FORMEN = ['wirkung', 'sammeln', 'farm', 'gebaeude', 'handel'];
+// Gebaeudewerte, die nur ein Gebaeude traegt, das schiesst.
+const SCHIESSEND = Object.keys(GEBAEUDE).find((art) => GEBAEUDE[art].angriff > 0);
 
 // Eine Einheitenart, auf die ein Schluessel aus `wirkung` greift: die Art
 // selbst oder die erste mit dieser Klasse.
@@ -34,7 +38,7 @@ test('spielziel AC-17: jeder Bonus jedes Hauses wirkt von Beginn an, gelesen wie
   for (const [haus, eintrag] of Object.entries(HAEUSER)) {
     for (const form of Object.keys(eintrag.boni)) assert.ok(FORMEN.includes(form), `${haus}: Bonus in unbekannter Form "${form}"`);
     const welt = mitHaus(haus);
-    const { wirkung = {}, sammeln = {}, farm = {}, gebaeude = {} } = eintrag.boni;
+    const { wirkung = {}, sammeln = {}, farm = {}, gebaeude = {}, handel = {} } = eintrag.boni;
 
     // Kampfwerte je Art oder Klasse - Anna mit Haus, Bert ohne, dieselbe Welt.
     for (const [schluessel, felder] of Object.entries(wirkung)) {
@@ -57,13 +61,24 @@ test('spielziel AC-17: jeder Bonus jedes Hauses wirkt von Beginn an, gelesen wie
       geprueft += 1;
     }
     // Gebaeude: Leben als Anteil, alles andere als Zuschlag - am Dorfzentrum,
-    // das von Beginn an steht.
+    // das von Beginn an steht; Angriff, Reichweite und Nachladezeit an einem,
+    // das schiesst.
     for (const [feld, wert] of Object.entries(gebaeude)) {
       const zentrum = [...welt.gebaeude.values()].find((g) => g.besitzer === 'a' && g.art === 'dorfzentrum');
+      const art = ['angriff', 'reichweite', 'nachladen'].includes(feld) ? SCHIESSEND : 'dorfzentrum';
       if (feld === 'lebenAnteil') {
         assert.equal(zentrum.leben, Math.round(GEBAEUDE.dorfzentrum.leben * (1 + wert)), `${haus}: das Dorfzentrum steht mit mehr Leben`);
       } else {
-        assert.equal(welt.gebaeudewert('a', 'dorfzentrum', feld) - welt.gebaeudewert('b', 'dorfzentrum', feld), wert, `${haus}: ${feld}`);
+        assert.equal(welt.gebaeudewert('a', art, feld) - welt.gebaeudewert('b', art, feld), wert, `${haus}: ${art}.${feld}`);
+      }
+      geprueft += 1;
+    }
+    // Handel: die Gebuehr als Zuschlag, der Karren als Anteil.
+    for (const [feld, wert] of Object.entries(handel)) {
+      assert.equal(welt.handelswert('a', feld) - welt.handelswert('b', feld), wert, `${haus}: handel.${feld}`);
+      if (feld === 'gebuehr') {
+        const [kauf] = welt.handelspreise('a').holz;
+        assert.equal(kauf, Math.round(HANDEL.waren.holz * (1 + HANDEL.gebuehr + wert)), `${haus}: Kaufpreis`);
       }
       geprueft += 1;
     }
@@ -75,12 +90,11 @@ test('spielziel AC-17: jeder Bonus jedes Hauses wirkt von Beginn an, gelesen wie
     }
   }
   // Gegenprobe des Aufbaus: jedes Blatt der Boni ist einmal geprueft worden,
-  // und es sind welche - leer waere der Test sonst gruen. Heute neun
-  // (Silberfurt hat bis E3 keinen).
+  // und es sind welche - leer waere der Test sonst gruen. Seit E3 zwoelf.
   const blaetter = (o) => Object.values(o).reduce((n, w) => n + (typeof w === 'object' ? blaetter(w) : 1), 0);
   const erwartet = Object.values(HAEUSER).reduce((n, h) => n + blaetter(h.boni), 0);
   assert.equal(geprueft, erwartet);
-  assert.ok(erwartet >= 9, `Boni in den Daten: ${erwartet}`);
+  assert.ok(erwartet >= 12, `Boni in den Daten: ${erwartet}`);
 });
 
 test('spielziel AC-17: Haus und Verbesserung zaehlen zusammen, ein unbekanntes Haus gibt nichts', () => {
@@ -136,7 +150,8 @@ test('fahrplan AC-17: ein sechstes Haus entsteht allein aus Daten und ist spielb
       wirkung: { dorfbewohner: { leben: 5 } },
       sammeln: { holz: 1.5, gold: 1.5 },
       farm: { nahrung: 100 },
-      gebaeude: { lebenAnteil: 0.2 },
+      gebaeude: { lebenAnteil: 0.2, reichweite: 1 },
+      handel: { gebuehr: -0.1, karrenAnteil: 0.1 },
     },
   };
   try {

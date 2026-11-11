@@ -165,7 +165,7 @@ Umfang hinzufügt, dort nachsehen.
 
 ## Stand
 
-**458 von 598 Kriterien fertig.** 726 Tests ohne Browser, 209 im Browser. Die
+**459 von 598 Kriterien fertig.** 729 Tests ohne Browser, 209 im Browser. Die
 Übersicht ist der Bericht: `npm run qa:report`.
 
 Gebaut ist der Unterbau: Räume, Übertragung, Karte, Wegfindung, Sammeln,
@@ -467,7 +467,13 @@ Bildunterschriften bleiben die alten Namen die Arbeitsnamen der Stufen.
 `haeuser: { <spielerId>: <haus> }`. **Gewählt wird es im Warteraum** je
 Platz wie das Team (spielauswahl AC-24), Vorgabe Zufall — gezogen aus dem
 Startwert im Steckbrief. Browsertests, die nicht von Häusern handeln, spielen
-das Haus ohne Boni (`partieMit` setzt es, `haeuserSetzen`).
+das Haus ohne Boni (`partieMit` setzt es, `haeuserSetzen`) — das
+**Prüfhaus**, das nur der Browserlauf anlegt (`e2e/helpers/pruefhaus.mjs`).
+**Jeder Bonus wirkt** (spielziel AC-26): je Bonus eine Messung im Spiel mit
+und ohne Haus (`tests/strategie-haeuser-wirkung.test.mjs`); Wehrsteins Turm
+und Burg reichen weiter (Angriff, Reichweite und Nachladezeit eines
+Gebäudes nur, wenn es schießt), Silberfurt handelt mit 15 % Gebühr und
++20 % Gold je Fahrt (`handel` in den Boni, `welt.handelswert`).
 
 1. **Stufe A** Dunkle Zeit mit Wirtschafts-KI und Prüfstand · **B** Feudalzeit
    · **C** Partieende und KI-Gegner · **D** Ritterzeit · **E** fünf Häuser ·

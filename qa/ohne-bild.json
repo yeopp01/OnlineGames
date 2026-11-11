@@ -7,6 +7,11 @@
       "begruendung": "Dass ein Haus Daten ist, ist eine Eigenschaft des Aufbaus: seine Boni stehen in HAEUSER in der Form einer Verbesserung und werden an derselben Stelle gelesen (welt.wirkungen), und Welt, KI und Pruefstand nennen kein einzelnes Haus. Belegt im Rechenteil fuer jeden Bonus jedes Hauses gegen einen Spieler ohne Haus. Gewaehlt wird ein Haus erst mit spielauswahl AC-24 im Warteraum; ein Bild der Wahl und eines Bonus im Spiel kommt dort und mit fahrplan AC-16 - eine Zahl in der Wertetafel zeigt nicht, woher sie kommt."
     },
     {
+      "spec": "10-strategie/spielziel.md",
+      "ac": "AC-26",
+      "begruendung": "Dass jeder Bonus wirkt, ist ein Vergleich zweier Partien: dieselbe Lage einmal mit dem Haus, einmal ohne, und gemessen wird der Unterschied - Takte am Vorrat, Leben ab der Ausbildung, Felder Sicht, ob der Schuetze vom Platz schiesst, was ein Schlag nimmt, ob der Turm ein Feld weiter trifft, Gold je Verkauf und je Fahrt, Nahrung der Farm. Ein Bildschirm zeigt eine der beiden Seiten und nicht, dass die andere anders ist. Was der Browser davon zeigt - Werte in der Leiste, Preise am Markt, Gold je Fahrt -, kommt fertig vom Server (kw, hp, hd) und hat seine Bilder bei bedienung AC-35, bauen AC-33 und einheiten AC-40."
+    },
+    {
       "spec": "10-strategie/fahrplan.md",
       "ac": "AC-17",
       "begruendung": "Ein sechstes Haus allein aus Daten: der Test legt einen Eintrag an und laesst damit zwanzig Minuten KI gegen KI spielen, jeder Takt vom Pruefstand auf Widersprueche geprueft, ohne eine Zeile in der Simulation. Was belegt wird, ist das Fehlen einer Aenderung im Code - das zeigt kein Bildschirm."

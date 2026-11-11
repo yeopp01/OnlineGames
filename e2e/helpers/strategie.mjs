@@ -87,6 +87,7 @@
 // Node (so macht es `strategie-feudalzeit.spec.mjs`).
 import { HAEUSER } from '../../server/spiele/strategie/daten.js';
 import { ANMELDUNG, GRIFFHAFEN, expect, fehlerSammeln, zeitraffer } from './seite.mjs';
+import { PRUEFHAUS } from './pruefhaus.mjs';
 
 // **Haeuser** (spielauswahl AC-24): seit Runde 169 hat jeder Platz im
 // Warteraum ein Haus, Vorgabe Zufall aus dem Startwert - bei 4711 spielte
@@ -96,19 +97,20 @@ import { ANMELDUNG, GRIFFHAFEN, expect, fehlerSammeln, zeitraffer } from './seit
 // von selbst; `partieMit(…, { haus: 'zufall' })` laesst die Vorgabe stehen,
 // `{ haus: 'distelhag' }` setzt dieses fuer alle. Im Aufbau steht es als
 // `haus` je Spieler (`ansicht.spieler.get(id).haus`).
-const OHNE_BONI = Object.keys(HAEUSER).filter((h) => !Object.keys(HAEUSER[h].boni).length);
+//
+// Seit Runde 170 hat jedes der fuenf Haeuser Boni; das Haus ohne ist das
+// Pruefhaus, das nur der Browserlauf anlegt (`e2e/helpers/pruefhaus.mjs`).
 
 /**
- * Das Haus ohne Boni aus den Daten. Bekommt es eines Tages Boni (Silberfurt
- * mit E3), gibt es keins mehr - dann bricht der Test hier ab, statt still
- * mit Boni zu messen, und die Runde entscheidet, wie Tests ohne Haus spielen.
+ * Das Haus ohne Boni. Hat das Pruefhaus eines Tages doch welche oder fehlt
+ * es, bricht der Test hier ab, statt still mit Boni zu messen.
  */
 export function hausOhneBoni() {
-  if (OHNE_BONI.length !== 1) {
-    throw new Error(`Gesucht ist genau ein Haus ohne Boni in HAEUSER, gefunden: ${OHNE_BONI.join(', ') || 'keins'}. `
-      + 'Tests, die nicht von Haeusern handeln, brauchen eins (e2e/helpers/strategie.mjs).');
+  const boni = HAEUSER[PRUEFHAUS]?.boni;
+  if (!boni || Object.keys(boni).length) {
+    throw new Error(`Das Pruefhaus "${PRUEFHAUS}" fehlt in HAEUSER oder hat Boni (e2e/helpers/pruefhaus.mjs).`);
   }
-  return OHNE_BONI[0];
+  return PRUEFHAUS;
 }
 
 /**
