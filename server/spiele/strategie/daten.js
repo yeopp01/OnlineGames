@@ -488,16 +488,32 @@ const HANDEL = {
 // Gebaeuden nachgezogen werden muesste - kein Leben, keine Nahrung; darauf
 // achtet tests/strategie-mannschaft.test.mjs. Alle Zahlen sind Startwerte
 // (ADR-0014).
+//
+// `ki` sagt dem Computerspieler, wozu das Haus neigt (ki AC-27): der
+// `schwerpunkt` ist ein Gebaeude - ein Militaergebaeude baut die KI zuerst,
+// baut es nach und bedient es vor den anderen; was sie darin ausbildet,
+// lesen die Daten des Gebaeudes (ki AC-17). `goldKnapp` verschiebt, ab
+// welchem Gold in Reichweite sie zu handeln beginnt (ki AC-26, sonst 800).
+// Wehrstein neigt zu Tuermen (ki AC-30) - das braucht eine KI, die Stein
+// sammelt, und wartet mit ihr.
+// Silberfurt handelt frueher (ki AC-27): gleich mit der Ritterzeit, nicht erst,
+// wenn das Gold in Reichweite knapp wird - jede Menge Gold ist "knapp".
+// Gemessen in Runde 174: 6,5 Karren je Partie statt 0,8, und KI gegen KI
+// endet weiter wie in fahrplan AC-11.
+const GOLD_KNAPP_SILBERFURT = Infinity;
+
 const HAEUSER = {
   eschenbruch: {
     name: 'Eschenbruch', sitz: 'Waldland', wahlspruch: 'Weit sehen, weit treffen.',
     boni: { sammeln: { holz: 1.15 }, wirkung: { bogenschuetze: { reichweite: 1 } } },
     mannschaft: { ausbildung: { schiessanlage: 1.2 } },
+    ki: { schwerpunkt: 'schiessanlage' },
   },
   rappenstein: {
     name: 'Rappenstein', sitz: 'Grasland', wahlspruch: 'Zuerst am Ziel.',
     boni: { wirkung: { kavallerie: { leben: 15, sicht: 2 } } },
     mannschaft: { wirkung: { kavallerie: { sicht: 2 } } },
+    ki: { schwerpunkt: 'stall' },
   },
   wehrstein: {
     name: 'Wehrstein', sitz: 'Gebirge', wahlspruch: 'Stein vergisst nicht.',
@@ -508,11 +524,13 @@ const HAEUSER = {
     name: 'Silberfurt', sitz: 'Flussstadt', wahlspruch: 'Alles hat seinen Preis.',
     boni: { handel: { gebuehr: -0.15, karrenAnteil: 0.2 } },
     mannschaft: { handel: { verbuendetAnteil: 0.2 } },
+    ki: { schwerpunkt: 'markt', goldKnapp: GOLD_KNAPP_SILBERFURT },
   },
   distelhag: {
     name: 'Distelhag', sitz: 'Heide', wahlspruch: 'Wer uns greift, blutet.',
     boni: { wirkung: { infanterie: { nahruestung: 1, fernruestung: 1 } }, farm: { nahrung: 45 } },
     mannschaft: { ausbildung: { kaserne: 1.2 } },
+    ki: { schwerpunkt: 'kaserne' },
   },
 };
 

@@ -1944,6 +1944,25 @@ ihn, mit Gegenprobe an beiden Formen. Fünf Bilder neu, alle angesehen.
 Neueste oben. Eine Zeile je Runde: Nummer, Datum, Kriterien, Ergebnis,
 wichtigste Erkenntnis.
 
+- **174** · 2026-11-12 · ki AC-27 **fertig** (E5): die KI neigt zu ihrem
+  Haus — `ki: { schwerpunkt, goldKnapp }` in `HAEUSER`, gelesen im
+  Konstruktor als `this.neigung`. Ein Militärgebäude als Schwerpunkt baut
+  sie zuerst, nach der ersten Kaserne nach und bedient es zuerst;
+  Silberfurt handelt gleich mit der Ritterzeit. Über vierzig Startwerte im
+  Nebel, je Partie zwei verschiedene Häuser: Eschenbruch 107 aus der
+  Schießanlage gegen 42, Rappenstein 28 aus dem Stall gegen 4, Silberfurt
+  6,5 Karren gegen 0,1, Distelhag 82 aus der Kaserne gegen 35; 38 von 40
+  vor Minute 60, Median 42,9. Gelernt: **„mehr als der Schnitt" hielt auch
+  ohne Neigung** — auf HEAD für Eschenbruch (78 gegen 64, Holzbonus) und
+  Silberfurt (0,8 gegen 0,4, Rauschen); der Test verlangt deshalb das
+  Anderthalbfache und zwei mehr, und beide Gegenproben (ohne Neigung, ohne
+  Schwelle) fallen. Die Partien rechnet der Nebeltest zu fahrplan AC-11
+  jetzt mit Häusern — einmal gerechnet, von beiden Tests gelesen, statt
+  zweimal 115 s. Wehrstein (Türme) ist abgetrennt als **ki AC-30**: die KI
+  baut keinen Turm und sammelt keinen Stein, dieselbe Lücke wie ki AC-28.
+  Rappenstein bildet keinen einzigen Bogenschützen mehr aus (Stall zuerst,
+  Stall nach) — sein Heer ist kleiner; ob es zu einseitig ist, zeigt erst
+  das Profil der Häuser (spielziel AC-16).
 - **173** · 2026-11-12 · **Rückschau.** Die Aufgeben-Messung (171 s)
   machte den ersten Abschnitt von `npm test` allein 205 s lang — jetzt in
   `tests/partien/aufgeben.test.mjs`, und `check:kurz` warnt bei jedem Test

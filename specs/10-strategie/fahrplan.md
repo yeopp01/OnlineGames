@@ -302,7 +302,7 @@ Figuren, nicht auf die Regeln.
 | E2 | Ein Haus ist Daten: `HAEUSER` mit Boni in der Form der Verbesserungen, gelesen in `einheitenwert`, beim Sammeln und in `gebaeudewert`; die Wahl im Warteraum (Name und Wahlspruch, noch ohne Wappen) — Daten fertig in Runde 167, die Wahl im Warteraum in Runde 169 — **fertig** | fahrplan AC-17, spielziel AC-17, spielauswahl AC-24 |
 | E3 | Die Boni, die eine neue Lesestelle brauchen (Ausbildungszeit, Marktgebühr, Ertrag des Karrens, Reichweite nur für Turm und Burg); jeder Bonus gemessen; der Mannschaftsbonus endet mit dem Bündnis | spielziel AC-16, AC-25, AC-26 |
 | E4 | Voller Wohnraum fällt auf (Lücke aus der Rückschau zur Stufe D) | bedienung AC-43 |
-| E5 | Die KI neigt zu ihrem Haus | ki AC-27 |
+| E5 | Die KI neigt zu ihrem Haus | ki AC-27, AC-30 |
 | E6 | Häuser schalten Einheiten frei: Langbogenschütze, Pavesenschütze, Söldner — wartet auf die Figuren | einheiten AC-42 bis AC-44 |
 | E7 | Spezialeinheiten aus vorhandenen Fähigkeiten: Kriegswölfe, Reiterschütze, Riese — wartet auf die Figuren | einheiten AC-45 bis AC-47 |
 | E8 | Der Meuchler mit Tarnung, der Wiedergänger aus Gefallenen — wartet auf die Figuren | einheiten AC-48, AC-49, kampf AC-22 |

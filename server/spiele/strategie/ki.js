@@ -17,7 +17,7 @@
 const karten = require('./karte');
 const { suchen } = require('./wege');
 const { TAKTE_PRO_SEKUNDE } = require('./welt');
-const { EINHEITEN, GEBAEUDE, SAMMELN, AUFSTIEGE, HANDEL } = require('./daten');
+const { EINHEITEN, GEBAEUDE, SAMMELN, AUFSTIEGE, HANDEL, HAEUSER } = require('./daten');
 
 const ENTSCHEIDEN_ALLE = TAKTE_PRO_SEKUNDE / 2;
 
@@ -220,6 +220,9 @@ class Ki {
     this.zufall = karten.zufallAus((welt.startwert * 31 + nummer * 7919) >>> 0);
     // Nicht alle KIs im selben Takt: jede bekommt einen festen Versatz.
     this.versatz = nummer % ENTSCHEIDEN_ALLE;
+    // Wozu ihr Haus neigt (ki AC-27): aus den Daten, nie nach dem Namen.
+    const haus = welt.spieler[nummer]?.haus;
+    this.neigung = (haus && HAEUSER[haus].ki) || {};
     this.abgewiesen = 0;
     this.schafeGetrieben = false;
     // In welchem Takt die Feudalzeit erreicht war - der Pruefstand misst daran
@@ -450,9 +453,12 @@ class Ki {
    */
   militaerPruefen(gebaeude, dorfbewohner) {
     if (this.spieler.zeitalter < 1) return;
+    const { schwerpunkt } = this.neigung;
     if (!gebaeude.some((g) => MILITAER.includes(g.art))) {
       if (this.spieler.holz < MILITAER_HOLZ) return;
-      const art = this.spieler.gold >= MILITAER_GOLD ? 'schiessanlage' : 'stall';
+      // Neigt das Haus zu einem der beiden, zuerst dieses (ki AC-27).
+      const art = MILITAER.includes(schwerpunkt) ? schwerpunkt
+        : this.spieler.gold >= MILITAER_GOLD ? 'schiessanlage' : 'stall';
       this.bauen(art, this.platzBeiBasis(art), dorfbewohner);
       return;
     }
@@ -470,7 +476,10 @@ class Ki {
     // mehr Remis); zusammen damit, dass jeder Untaetige sein naechstes Ziel
     // nimmt (ki AC-16), enden 18 von 20 Partien vor Minute 60 statt 10
     // (Runde 95, gemessen).
-    const meine = gebaeude.filter((g) => MILITAER.includes(g.art) || g.art === 'kaserne');
+    // Der Schwerpunkt des Hauses zuerst (ki AC-27): reicht der Vorrat nur
+    // fuer einen Auftrag, bekommt ihn dieses Gebaeude.
+    const meine = gebaeude.filter((g) => MILITAER.includes(g.art) || g.art === 'kaserne')
+      .sort((a, b) => (b.art === schwerpunkt) - (a.art === schwerpunkt));
     for (const g of meine) {
       if (!g.fertig || g.schlange.length >= MILITAER_SCHLANGE) continue;
       const art = this.naechsteKampfeinheit(g, ruecklage);
@@ -480,7 +489,11 @@ class Ki {
     // uebrig, ein weiteres.
     const alleVoll = meine.every((g) => g.fertig && g.schlange.length >= MILITAER_SCHLANGE);
     if (alleVoll && meine.length < MILITAER_JE_ZEITALTER[Math.min(this.spieler.zeitalter, MILITAER_JE_ZEITALTER.length - 1)] && this.spieler.holz >= MILITAER_HOLZ + MILITAER_RESERVE) {
+      // Nachgebaut wird der Schwerpunkt, wenn er ein Militaergebaeude ist
+      // (ki AC-27) - die erste Kaserne aber in jedem Haus (ki AC-17).
+      const nachbau = MILITAER.includes(schwerpunkt) || schwerpunkt === 'kaserne';
       const art = !meine.some((g) => g.art === 'kaserne') ? 'kaserne'
+        : nachbau ? schwerpunkt
         : this.spieler.gold >= MILITAER_GOLD ? 'schiessanlage' : 'stall';
       this.bauen(art, this.platzBeiBasis(art), dorfbewohner);
     }
@@ -1447,7 +1460,7 @@ class Ki {
     const spieler = this.spieler;
     if (spieler.zeitalter < 2) return;
     if (this.handelSeit === null) {
-      if (this.goldInReichweite() >= GOLD_KNAPP) return;
+      if (this.goldInReichweite() >= (this.neigung.goldKnapp ?? GOLD_KNAPP)) return;
       this.handelSeit = this.welt.takt;
     }
     const maerkte = gebaeude.filter((g) => GEBAEUDE[g.art].handel);

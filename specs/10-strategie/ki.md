@@ -2,7 +2,7 @@
 
 **Bereich:** Strategie
 **Kuerzel:** ki
-**Stand:** 24/29 fertig · 5 offen
+**Stand:** 25/30 fertig · 5 offen
 
 ## Zweck
 
@@ -287,15 +287,27 @@ nicht die Regeln.
 
 ### Stufe E — Häuser
 
-- **AC-27** `offen` **KI neigt zum Haus** — Die KI spielt das Haus,
+- **AC-27** `fertig` **KI neigt zum Haus** — Die KI spielt das Haus,
   das ihr Platz im Warteraum trägt (spielauswahl AC-24), und neigt zu
   seinem Schwerpunkt: Eschenbruch zur Schießanlage, Rappenstein zum Stall,
-  Distelhag zur Kaserne, Silberfurt früher zum Handel, Wehrstein zu Türmen.
+  Distelhag zur Kaserne, Silberfurt früher zum Handel. Wehrstein neigt zu
+  Türmen — das braucht Stein und steht als AC-30 für sich.
   Welche Einheiten sie ausbildet, liest sie aus den Daten des Gebäudes
   (ki AC-17), welches Gebäude zuerst, aus den Daten des Hauses — keine
-  Verzweigung nach dem Namen. **Messbar:** über zwanzig Startwerte bildet
-  jedes Haus mehr Einheiten seines Schwerpunkts aus als der Durchschnitt
-  der anderen, und KI gegen KI endet weiter wie in fahrplan AC-11.
+  Verzweigung nach dem Namen. **Messbar:** über vierzig Startwerte im
+  Nebel, je Partie zwei verschiedene Häuser, bildet jedes Haus aus seinem
+  Schwerpunkt mindestens anderthalbmal so viel aus wie die anderen im
+  Schnitt und mindestens zwei mehr, und KI gegen KI endet weiter wie in
+  fahrplan AC-11. Geschärft beim Bauen (Runde 174): „mehr als der
+  Durchschnitt" hielt auch ohne jede Neigung für Eschenbruch und Silberfurt
+  (78 gegen 64, 0,8 gegen 0,4). Gebaut als `ki` in `HAEUSER`
+  (`schwerpunkt`, `goldKnapp`): ein Militärgebäude als Schwerpunkt baut die
+  KI zuerst, baut es nach der ersten Kaserne nach und bedient es zuerst;
+  Silberfurt handelt gleich mit der Ritterzeit. Gemessen: Eschenbruch 107
+  aus der Schießanlage gegen 42, Rappenstein 28 aus dem Stall gegen 4,
+  Silberfurt 6,5 Karren gegen 0,1, Distelhag 82 aus der Kaserne gegen 35;
+  38 von 40 Partien vor Minute 60, Median 42,9. Belegt in
+  `tests/partien/ki-im-nebel.test.mjs`.
 - **AC-28** `offen` **KI bildet Spezialeinheit aus** — In der Ritterzeit
   baut die KI eine Burg und bildet dort die Spezialeinheit ihres Hauses
   aus, als Teil ihres Heeres. Dafür braucht sie 650 Stein — **die KI
@@ -303,6 +315,15 @@ nicht die Regeln.
   zwanzig Startwerte hat jede KI, die die Ritterzeit erreicht und zehn
   Minuten darin bleibt, eine Burg und mindestens eine Spezialeinheit
   ausgebildet. Ohne das misst fahrplan AC-18 nichts.
+- **AC-30** `offen` **Wehrstein baut Türme** — Die KI, die Wehrstein
+  spielt, baut ab der Feudalzeit Wachtürme an ihrem Dorf, mehr als jedes
+  andere Haus. Dafür sammelt sie Stein (125 je Turm; vom Start sind 200
+  da) — dieselbe Lücke wie bei AC-28, die eine löst sie für beide. Gelesen
+  aus `HAEUSER.wehrstein.ki`, nicht aus dem Namen. **Messbar:** über
+  vierzig Startwerte wie bei AC-27 baut Wehrstein je Partie mindestens
+  zwei Türme und anderthalbmal so viele wie die anderen im Schnitt, und KI
+  gegen KI endet weiter wie in fahrplan AC-11. Abgetrennt von AC-27 in
+  Runde 174: die KI baut bis heute keinen Turm.
 
 ### Stufe F — der Drache (aus ADR-0014)
 

@@ -165,7 +165,7 @@ Umfang hinzufügt, dort nachsehen.
 
 ## Stand
 
-**461 von 598 Kriterien fertig.** 734 Tests ohne Browser, 210 im Browser. Die
+**462 von 599 Kriterien fertig.** 735 Tests ohne Browser, 210 im Browser. Die
 Übersicht ist der Bericht: `npm run qa:report`.
 
 Gebaut ist der Unterbau: Räume, Übertragung, Karte, Wegfindung, Sammeln,
@@ -482,6 +482,11 @@ Schießanlage und Kaserne bilden 20 % schneller aus
 (`welt.ausbildungstempo`, nur Einheiten), Karren zwischen Verbündeten
 bringen 20 % mehr (`handel.verbuendetAnteil`). Kein Mannschaftsbonus trägt
 Leben oder Nahrung (`tests/strategie-mannschaft.test.mjs`).
+**Die KI neigt zu ihrem Haus** (ki AC-27): `ki: { schwerpunkt, goldKnapp }`
+in `HAEUSER` — ein Militärgebäude als Schwerpunkt baut sie zuerst, baut es
+nach und bedient es zuerst, Silberfurt handelt ab der Ritterzeit. Der
+Nebeltest zu fahrplan AC-11 spielt seitdem mit zwei Häusern je Partie
+(`tests/partien/ki-im-nebel.test.mjs`); Wehrsteins Türme sind ki AC-30.
 **Voller Wohnraum fällt auf** (bedienung AC-43): wartet ein eigener
 Auftrag, steht die Bevölkerung oben rot umrandet, auch ohne Auswahl
 (`ansicht.wartetEtwas()`).

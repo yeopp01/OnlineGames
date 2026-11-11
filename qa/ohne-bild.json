@@ -23,6 +23,11 @@
     },
     {
       "spec": "10-strategie/ki.md",
+      "ac": "AC-27",
+      "begruendung": "Wozu die KI neigt, ist eine Haeufigkeit ueber viele Partien: Eschenbruch bildet ueber vierzig Startwerte im Mittel 107 Einheiten aus der Schiessanlage aus, die anderen Haeuser 42; Distelhag 82 aus der Kaserne gegen 35. Ein Standbild zeigt eine KI mit einigen Bogenschuetzen - das tut jedes Haus, und ob es mehr sind als sonst, steht in keinem einzelnen Bild. Belegt im Pruefstand mit denselben Partien ohne Neigung als Gegenprobe; was die KI dabei baut und ausbildet, sieht im Bild aus wie bei ki AC-9 und ki AC-11, der Karren wie bei einheiten AC-40."
+    },
+    {
+      "spec": "10-strategie/ki.md",
       "ac": "AC-26",
       "begruendung": "Wann und wohin die KI handelt, ist eine Entscheidung in ihrem Kopf: Gold in Reichweite knapp, ein Markt am Dorf, ein zweiter weit davon und vom Gegner weg (oder der fernste Markt eines Verbuendeten), Karren ausbilden, Stein verkaufen, wenn ihr Gold fehlt, Holz fuer den Markt zuruecklegen. Belegt im Rechenteil an gebauten Lagen mit Gegenprobe fuer jede tragende Zeile und ueber acht ganze Partien mit geleertem Gold gegen dieselben Partien ohne Handel. Wie ein Karren handelt und was die Leiste dabei sagt, zeigt das Bild zu einheiten AC-40; ein Standbild der KI zeigte einen Karren unterwegs, nicht warum er faehrt."
     },
