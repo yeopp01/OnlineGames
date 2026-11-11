@@ -1,6 +1,6 @@
 // Die KI in der Ritterzeit (→ specs/10-strategie/ki.md AC-21) - ganze Partien
 // im Pruefstand ohne Browser (→ docs/adr/0004-teststrategie.md). Eine eigene
-// Datei wie strategie-partien.test.mjs: zwanzig Partien zu 30 Minuten rechnen
+// Datei wie tests/partien/aufgeben.test.mjs: zwanzig Partien zu 30 Minuten rechnen
 // rund 15 s und laufen so neben den anderen Dateien.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';

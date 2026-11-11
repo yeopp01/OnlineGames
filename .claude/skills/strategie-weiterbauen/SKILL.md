@@ -175,6 +175,13 @@ Setze die gewählten Kriterien auf `in-arbeit`.
   `kampfwerte()` in die Tafel `kw` auf. `tests/waechter-wirkungen.test.mjs`
   sucht im Browser nach `verbesserungen[…].wirkung/sammeln/farm/gebaeude`
   (Rückschau nach Runde 168: `farmVoll` kannte das Haus nicht).
+  **Wer `wirkungen()` eine neue Quelle gibt, sucht jede Stelle, die einen
+  Erwartungswert selbst aus den Daten zusammensetzt** — in Tests ebenso wie
+  im Browser: `grep -rn "HAEUSER\[\|\.boni\|VERBESSERUNGEN\[" tests/ e2e/ public/`.
+  Zweimal hintereinander fand das erst ein roter Lauf: in Runde 167
+  `farmVoll`, in Runde 171 die Messtests zu spielziel AC-17 und AC-26, die
+  den Bonus eines Hauses aus `boni` erwarteten — der Mannschaftsbonus gilt
+  aber auch dem Haus selbst (`mannschaftDazu`).
 - **Ein neuer Eintrag in `daten.js` (Gebäude, Einheit, Verbesserung) fährt
   `npm run e2e:daten` vor dem vollen Lauf** — knapp fünf Minuten für die
   Browserfälle, die „alles, was die Daten für dieses Zeitalter sagen"
@@ -233,6 +240,15 @@ Setze die gewählten Kriterien auf `in-arbeit`.
   Antwort steht als Kommentar am Test. Echte Uhren in Tests nur, wenn die Zeit
   selbst geprüft wird; sonst `t.mock.timers` (Runden 8 und 9: dreimal war die
   Annahme falsch, nie das Produkt).
+- **Ein Test, der nach einer festen Zahl Takte misst, fragt vorher, was in
+  diesen Takten überhaupt rechnet.** Die Sicht rechnet alle `SICHT_TAKTE`,
+  nicht jeden Takt (Runde 170: ein Takt nach dem Aufstellen sah nichts); eine
+  Fahrt des Karrens dauert länger als die Frist einer Kündigung (Runde 171:
+  96 gegen 60 Sekunden — nach der Frist sind beide Gegner und die Strecke
+  endet); ein Fortschritt mit einem Tempo ist ein Bruch, und 175 · 1,2 ergibt
+  209,99999 (Runde 171: ein Takt zu viel). Statt fester Takte: laufen, bis
+  die Bedingung gilt, mit Obergrenze — und die Dauer, auf die es ankommt,
+  vorher aus den Werten rechnen.
 - **Einen Stellvertreter fürs Aussehen erst festschreiben, wenn er gemessen
   ist:** den Wert vorher und an einem schnellen Entwurf nachher
   (`npm run tafel -- "<Ausdruck>"`, Spielbild mit `npm run sicht`). Wird das
@@ -287,7 +303,7 @@ Setze die gewählten Kriterien auf `in-arbeit`.
   sagt `pruefstand:vergleich` in der Zeile „Enden" (`62.0@5`). In den Runden 94
   bis 97 schrieb jede Runde dafür ein eigenes Wegwerfskript.
   **Ein Messtest über viele ganze Partien bekommt eine eigene Datei**
-  (`tests/strategie-partien.test.mjs`): `node --test` rechnet Dateien
+  (`tests/strategie-ki-ritterzeit.test.mjs`): `node --test` rechnet Dateien
   nebeneinander, Tests einer Datei nacheinander. Hinter den Messungen in
   `strategie-ki.test.mjs` verlängerte zwanzig Partien `npm run check` von 48
   auf 88 Sekunden (Runde 97). **Rechnet sie zu viert oder über eine Minute je
@@ -295,7 +311,11 @@ Setze die gewählten Kriterien auf `in-arbeit`.
   Abschnitt von `npm test`, nach allen Zeitmessungen. Neben den vier Dateien
   zwei gegen zwei riss einheiten AC-31 (800 Angreifer unter 1 ms), und ein
   niedrigerer Vorrang half nicht (Rückschau nach Runde 152).
-  `tests/waechter-testordner.test.mjs` hält beides fest.
+  `tests/waechter-testordner.test.mjs` hält beides fest. **Und `check:kurz`
+  warnt** („WARNUNG: … s im ersten Abschnitt"), sobald ein Test dort über
+  90 s rechnet (`scripts/lange-tests.mjs`): bis Runde 173 lag die
+  Aufgeben-Messung mit 171 s im ersten Abschnitt und machte ihn allein
+  205 s lang — die Regel stand da, die Dauer sah niemand.
   **Wer Bewegung oder Kampf ändert, vergleicht auf zwei Sätzen Startwerte**
   (`npm run pruefstand:vergleich -- --minuten 90 --saetze 2`): eine solche
   Änderung verschiebt jede Partie, und ein Satz allein zeigt Zufall als

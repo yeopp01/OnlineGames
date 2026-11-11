@@ -1602,6 +1602,61 @@ Testlauf): `npm run check` 53 s ohne Last, 599 Tests ohne Browser; der
 volle Browserlauf mit 191 Fällen 16,6 min (Runde 140; Runde 135: 17,0 min
 für 190). Die Ritterzeit am Stück braucht 1,7 min.
 
+### Nach Runde 173 (2026-11-12)
+
+Vier Runden, alle in Stufe E: 169 das Haus je Platz im Warteraum
+(spielauswahl AC-24), 170 jeder Bonus wirkt (spielziel AC-26), 171 der
+Mannschaftsbonus nur im Bündnis (spielziel AC-25), 172 voller Wohnraum
+fällt auf (bedienung AC-43). Jede endete mit einem Commit; die Maschine
+rechnete die ganze Zeit Blender, deshalb lief der Browser nur für die
+betroffenen Dateien und nie `:neu`. Was Zeit gekostet hat:
+
+1. **Jede Runde wartete sieben Minuten auf `npm run check`** (437 bis
+   448 s). Der erste Abschnitt von `npm test` dauerte 205 s — und das
+   war ein einziger Test: die Aufgeben-Messung (fahrplan AC-11, ki AC-19),
+   zwanzig Partien bis Minute 90 hintereinander, 171 s. Die Regel „über
+   eine Minute je Datei nach `tests/partien/`" stand seit Runde 152 da;
+   gesehen hat es niemand, weil `check:kurz` die Dauer einzelner Tests
+   verschweigt. → Die Datei liegt jetzt als `tests/partien/aufgeben.test.mjs`
+   im zweiten Abschnitt, neben den Partien zu viert und ohne Zeitmessungen
+   daneben. **Und `check:kurz` warnt**, sobald ein Test im ersten
+   Abschnitt über 90 s rechnet (`scripts/lange-tests.mjs`, mit Test; an
+   der Ausgabe von Runde 172 gegengeprüft: er findet genau diesen).
+2. **Ein Erwartungswert aus den Daten kannte die neue Quelle nicht.** In
+   Runde 171 fielen die Messtests zu spielziel AC-17 und AC-26: sie
+   erwarteten den Bonus eines Hauses aus `boni`, aber der Mannschaftsbonus
+   gilt auch dem Haus selbst. Derselbe Fehler wie `farmVoll` in Runde 167,
+   diesmal in Tests statt im Browser. → **Regel in Abschnitt 3**: wer
+   `wirkungen()` eine neue Quelle gibt, sucht vorher jede Stelle, die einen
+   Erwartungswert selbst zusammensetzt, mit dem `grep` dort.
+3. **Dreimal rechnete etwas nicht in dem Takt, in dem gemessen wurde.**
+   Runde 170: die Sicht rechnet alle `SICHT_TAKTE`, ein Takt nach dem
+   Aufstellen sah nichts. Runde 171: die Fahrt des Karrens dauert länger
+   als die Frist der Kündigung, und 175 · 1,2 ergab 209,99999 — ein Takt
+   zu viel. Jedes Mal ein roter Test und eine Fehlersuche am Produkt, das
+   recht hatte. → **Regel in Abschnitt 4**: vor einer festen Taktzahl
+   fragen, was in diesen Takten rechnet; lieber bis zur Bedingung laufen,
+   und die Dauer vorher aus den Werten rechnen.
+
+Nicht geändert: die Gegenprobe je Lesestelle hat getragen — in Runde 171
+blieb eine grün und fand so einen fehlenden Fall (Silberfurt kündigt
+selbst), genau wofür sie da ist.
+
+**Gespart hat die Verschiebung unter dieser Last nichts**: der erste
+Abschnitt sank von 205 auf 171 s, der zweite stieg von 175 auf 229 s —
+`check:kurz` 451 statt 448 s. Im zweiten Abschnitt rechnen jetzt sechs
+schwere Dateien auf acht Kernen, die Blender ohnehin auslastet (CPU 96 %).
+Was bleibt: die Zeitmessungen des ersten Abschnitts laufen nicht mehr neben
+einem Test, der drei Minuten einen Kern belegt — dafür ist die Regel da.
+Ob es ohne Last Zeit spart, ist nicht geprüft; die Zahlen stehen deshalb
+nicht unter Messwerte.
+
+**Kein Rundgang im Browser** — Stufe E ist nicht erreicht, und ihr Aussehen
+kommt aus der Blender-Sitzung. Offen aus diesen Runden, für den nächsten
+freien Lauf: `npm run check:alles:neu:kurz` (Warteraum-Bilder zeigen noch
+Silberfurt statt des Prüfhauses; Bilder mit wartendem Auftrag bekommen den
+roten Rand der Bevölkerung).
+
 ### Nach Runde 168 (2026-11-11)
 
 Vier Runden: 164 die Spec-Runde zur Stufe E, 165 die KI mit eigener Sicht
@@ -1889,6 +1944,13 @@ ihn, mit Gegenprobe an beiden Formen. Fünf Bilder neu, alle angesehen.
 Neueste oben. Eine Zeile je Runde: Nummer, Datum, Kriterien, Ergebnis,
 wichtigste Erkenntnis.
 
+- **173** · 2026-11-12 · **Rückschau.** Die Aufgeben-Messung (171 s)
+  machte den ersten Abschnitt von `npm test` allein 205 s lang — jetzt in
+  `tests/partien/aufgeben.test.mjs`, und `check:kurz` warnt bei jedem Test
+  über 90 s dort (`scripts/lange-tests.mjs`). Unter Blender-Last spart das
+  nichts (451 statt 448 s, der zweite Abschnitt wird länger). Zwei Regeln: eine neue Quelle
+  in `wirkungen()` sucht die Erwartungswerte, die Tests selbst
+  zusammensetzen; eine feste Taktzahl fragt, was in diesen Takten rechnet.
 - **172** · 2026-11-12 · bedienung AC-43 **fertig** (E4): wartet ein
   eigener Auftrag, weil die Bevölkerung voll ist, steht die Anzeige oben
   rot umrandet, auch ohne Auswahl — `ansicht.wartetEtwas()` fragt das `w`

@@ -1,7 +1,10 @@
 // Ganze Partien KI gegen KI (→ specs/10-strategie/fahrplan.md AC-11) - im
 // Pruefstand ohne Browser (→ docs/adr/0004-teststrategie.md). Eine eigene
 // Datei, weil die Partien rechnen: so laufen sie neben den anderen Dateien
-// statt hinter den Messungen in strategie-ki.test.mjs. Die Messung von
+// statt hinter den Messungen in strategie-ki.test.mjs. Seit der Rueckschau
+// nach Runde 173 in tests/partien/: zwanzig Partien bis Minute 90 rechnen
+// unter Last 171 s und bestimmten allein die Dauer des ersten Abschnitts
+// (vorher tests/strategie-partien.test.mjs). Die Messung von
 // fahrplan AC-11 selbst steht seit Runde 165 in tests/partien/ki-im-nebel
 // (vierzig Partien im Nebel bis Minute 90).
 import { test } from 'node:test';
@@ -9,8 +12,8 @@ import assert from 'node:assert/strict';
 import { createRequire } from 'node:module';
 
 const require = createRequire(import.meta.url);
-const { Ki } = require('../server/spiele/strategie/ki.js');
-const { partieSpielen } = require('../server/spiele/strategie/pruefstand.js');
+const { Ki } = require('../../server/spiele/strategie/ki.js');
+const { partieSpielen } = require('../../server/spiele/strategie/pruefstand.js');
 
 // Bis Minute 90: im Nebel endet Startwert 10 nach 68 Minuten (Runde 165).
 const partie = (startwert) => partieSpielen({ startwert, minuten: 90 });
