@@ -66,6 +66,8 @@ export class Ansicht {
     this.pfeile = [];
     this.empfangen = 0;
     this.ausgewaehlt = new Set();
+    // Abgelegte Auswahlen je Ziffer (bedienung AC-5): Einheiten oder ein Gebaeude.
+    this.gruppen = new Map();
     this.gebaeude = new Map();
     this.werte = { einheiten: {}, gebaeude: {} };
     this.arten = {};
@@ -143,6 +145,7 @@ export class Ansicht {
     this.nachher = new Map();
     this.empfangen = 0;
     this.ausgewaehlt = new Set();
+    this.gruppen = new Map();
     this.gewaehltesGebaeude = null;
     this.zielzeichen = null;
     this.angriffslauf = false;
@@ -1369,6 +1372,46 @@ export class Ansicht {
     this.blickAuf(einheit.x, einheit.y);
     this.beiAuswahl();
     return id;
+  }
+
+  /**
+   * Legt die Auswahl unter einer Ziffer ab (bedienung AC-5) - die Einheiten,
+   * sonst das gewaehlte eigene Gebaeude. Ohne Auswahl wird die Ziffer frei.
+   */
+  gruppeAblegen(ziffer) {
+    if (this.ausgewaehlt.size) this.gruppen.set(ziffer, { einheiten: [...this.ausgewaehlt] });
+    else if (this.gewaehltesGebaeude !== null && this.gebaeude.get(this.gewaehltesGebaeude)?.b === this.ich) {
+      this.gruppen.set(ziffer, { gebaeude: this.gewaehltesGebaeude });
+    } else this.gruppen.delete(ziffer);
+  }
+
+  /**
+   * Ruft die Auswahl unter einer Ziffer zurueck. Wer seither gefallen oder
+   * bekehrt ist, faellt heraus; ist niemand mehr da, bleibt die Auswahl, wie
+   * sie war. Gibt zurueck, wie viele gewaehlt sind.
+   */
+  gruppeAbrufen(ziffer) {
+    const gruppe = this.gruppen.get(ziffer);
+    if (!gruppe) return 0;
+    if (gruppe.gebaeude !== undefined) {
+      if (this.gebaeude.get(gruppe.gebaeude)?.b !== this.ich) return 0;
+      if (this.platzieren) this.platzierenBeenden();
+      this.ausgewaehlt.clear();
+      this.gewaehltesGebaeude = gruppe.gebaeude;
+      this.beiAuswahl();
+      return 1;
+    }
+    const lebend = gruppe.einheiten.filter((id) => {
+      const e = this.nachher.get(id);
+      return e && e.b === this.ich && !e.s;
+    });
+    gruppe.einheiten = lebend;
+    if (!lebend.length) return 0;
+    if (this.platzieren) this.platzierenBeenden();
+    this.gewaehltesGebaeude = null;
+    this.ausgewaehlt = new Set(lebend);
+    this.beiAuswahl();
+    return lebend.length;
   }
 
   /**

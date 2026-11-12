@@ -26,6 +26,8 @@ export const BELEGUNG = [
   // Aus der Liste, nicht aufgezaehlt: sie waechst mit den Stufen.
   ['B (Dorfbewohner gewählt)', `Bautasten an, dann ${BAUTASTEN.join(' ').toUpperCase()} für das Gebäude`],
   ['.', 'nächster untätiger Dorfbewohner'],
+  ['Strg oder Alt + 1 bis 9', 'Auswahl unter der Ziffer ablegen'],
+  ['1 bis 9', 'abgelegte Auswahl zurückholen'],
   ['G, dann Rechtsklick', 'Angriffslauf: hingehen und unterwegs angreifen'],
   ['Esc', 'Angriffslauf oder Platzieren abbrechen, Auswahl aufheben'],
   ['? oder F1', 'diese Übersicht'],
@@ -69,6 +71,22 @@ export class Tasten {
 
   /** Eine Taste; `true` heisst: verbraucht, die Ansicht soll sie nicht sehen. */
   taste(e) {
+    // Gruppen (bedienung AC-5): nach der Taste selbst, nicht nach dem Zeichen -
+    // mit Umschalt oder auf anderer Belegung ist e.key kein "1".
+    const ziffer = /^Digit([1-9])$/.exec(e.code)?.[1];
+    if (ziffer && !e.shiftKey && !e.metaKey) {
+      // Strg wie im Original; Alt daneben, weil Chrome Strg+1 bis 8 fuer die
+      // Tabs behalten kann (nicht geprueft, siehe Spec).
+      if (e.ctrlKey || e.altKey) {
+        e.preventDefault();
+        this.ansicht.gruppeAblegen(Number(ziffer));
+        return true;
+      }
+      if (!this.bauen) {
+        this.ansicht.gruppeAbrufen(Number(ziffer));
+        return true;
+      }
+    }
     if (e.ctrlKey || e.metaKey || e.altKey) return false;
     const taste = e.key.toLowerCase();
     if (taste === '?' || e.key === 'F1') {

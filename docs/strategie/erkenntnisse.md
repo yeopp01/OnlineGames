@@ -2037,6 +2037,23 @@ ihn, mit Gegenprobe an beiden Formen. Fünf Bilder neu, alle angesehen.
 Neueste oben. Eine Zeile je Runde: Nummer, Datum, Kriterien, Ergebnis,
 wichtigste Erkenntnis.
 
+- **181** · 2026-11-12 · **bedienung AC-5 fertig**: Gruppentasten —
+  `Strg`+Ziffer (oder `Alt`+Ziffer) legt die Auswahl ab, die Ziffer holt sie
+  zurück; Einheiten, sonst ein eigenes Gebäude; Gefallene und Bekehrte fallen
+  heraus (`ansicht.gruppeAblegen`/`gruppeAbrufen`, gelesen über `e.code` in
+  `public/tasten.js`). **Abweichung vom Fahrplan, begründet:** Stufe E ist
+  von außen gesperrt (spielziel AC-18 wartet auf die Frage zu Eschenbruch,
+  E6 bis E9 auf die Blender-Figuren), AC-5 steht seit Stufe A offen und
+  heißt in der Spec „ohne das nicht spielbar". `Alt` daneben, weil Chrome
+  `Strg`+`1` bis `8` für die Tabs behalten kann — **nicht geprüft**, der
+  Browserlauf schickt die Taste an der Leiste vorbei. **Erkenntnis:** die
+  erste Gegenprobe (Filter für Gefallene weg) war grün — die Ansicht nimmt
+  Gefallene mit jedem Zustand ohnehin aus der Auswahl, auch bei Zeitraffer 0.
+  Was der Filter wirklich tut, ist die Ablage selbst sauber halten; erst die
+  Zusicherung darauf fiel ohne ihn. Und die Miliz nimmt nicht den
+  Verletzten zuerst: der Test wartet auf *irgendeinen* Gefallenen statt
+  einen vorherzusagen. Nur die Datei im Browser (`E2E_HAFEN=4195`) und
+  `strategie-tasten`, kein voller Lauf, solange Blender rechnet.
 - **180** · 2026-11-12 · **ki AC-32 fertig**: wer zur Kaserne neigt, baut
   im Wechsel nach — eine weitere Kaserne nur, solange es weniger Kasernen
   als andere Militärgebäude gibt, sonst nach der Goldregel. Über 160

@@ -2,7 +2,7 @@
 
 **Bereich:** Strategie
 **Kuerzel:** bedienung
-**Stand:** 32/46 fertig · 14 offen
+**Stand:** 33/46 fertig · 13 offen
 
 ## Zweck
 
@@ -29,8 +29,15 @@ Befehl steht.
 - **AC-3** `offen` **Umschalt erweitert** — Mit gedrückter Umschalttaste kommt zur Auswahl hinzu,
   statt sie zu ersetzen.
 - **AC-4** `offen` **Doppelklick wählt den Typ** — Alle sichtbaren Einheiten desselben Typs.
-- **AC-5** `offen` **Auswahl merken** — `Strg`+`1` bis `9` legt eine Auswahl ab, die Zifferntaste
-  ruft sie zurück. Ohne das ist ein Echtzeitspiel nicht spielbar.
+- **AC-5** `fertig` **Auswahl merken** — `Strg`+`1` bis `9` legt eine Auswahl ab, die Zifferntaste
+  ruft sie zurück. Ohne das ist ein Echtzeitspiel nicht spielbar. Abgelegt
+  werden die gewählten Einheiten, sonst ein gewähltes eigenes Gebäude; wer
+  seither gefallen oder bekehrt ist, fällt beim Zurückholen heraus. `Alt`+Ziffer
+  legt ebenso ab: Chrome kann `Strg`+`1` bis `8` für den Wechsel der Tabs
+  behalten, bevor die Seite die Taste sieht — das ist nicht geprüft, der
+  Browserlauf schickt die Taste an der Leiste vorbei. Gelesen wird die Taste,
+  nicht das Zeichen (`e.code`), damit es auf jeder Belegung dieselbe ist.
+  Zweimal schnell gedrückt springt die Kamera noch nicht hin (Vorlage: ja).
 - **AC-6** `fertig` **Ausgewählte sind aufgelistet** — Am unteren Rand mit Anzahl je Typ.
 
 ### Kamera

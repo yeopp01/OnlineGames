@@ -1,0 +1,10 @@
+{
+  "spec": "10-strategie/bedienung.md",
+  "ac": "AC-5",
+  "titel": "Taste 5 nach dem Fall des einen: nur der Lebende ist gewaehlt, der Gefallene liegt daneben",
+  "datei": "e2e/tests/strategie-gruppentasten.spec.mjs",
+  "pfad": [
+    "Gruppentasten",
+    "bedienung AC-5: wer gefallen ist, faellt beim Zurueckholen heraus, die anderen bleiben gewaehlt"
+  ]
+}

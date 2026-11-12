@@ -167,7 +167,7 @@ Umfang hinzufügt, dort nachsehen.
 
 ## Stand
 
-**464 von 601 Kriterien fertig.** 741 Tests ohne Browser, 210 im Browser. Die
+**465 von 601 Kriterien fertig.** 741 Tests ohne Browser, 212 im Browser. Die
 Übersicht ist der Bericht: `npm run qa:report`.
 
 Gebaut ist der Unterbau: Räume, Übertragung, Karte, Wegfindung, Sammeln,
@@ -509,7 +509,11 @@ offene Frage an den Benutzer; danach spielziel AC-18 (jedes Haus 30 bis
 70 %).
 **Voller Wohnraum fällt auf** (bedienung AC-43): wartet ein eigener
 Auftrag, steht die Bevölkerung oben rot umrandet, auch ohne Auswahl
-(`ansicht.wartetEtwas()`).
+(`ansicht.wartetEtwas()`). **Gruppentasten** (bedienung AC-5): `Strg`
+oder `Alt` mit einer Ziffer legt die Auswahl ab, die Ziffer holt sie
+zurück, ohne Gefallene und Bekehrte (`ansicht.gruppeAblegen`,
+`gruppeAbrufen`; gelesen über `e.code`). Ob Chrome `Strg`+`1` bis `8` für
+die Tabs behält, ist nicht geprüft — deshalb `Alt` daneben.
 
 1. **Stufe A** Dunkle Zeit mit Wirtschafts-KI und Prüfstand · **B** Feudalzeit
    · **C** Partieende und KI-Gegner · **D** Ritterzeit · **E** fünf Häuser ·
