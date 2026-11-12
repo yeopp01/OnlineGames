@@ -231,6 +231,16 @@ etwas anderem gearbeitet.
 
 ## Offene Fäden
 
+- **einheiten AC-31 (800 Angreifer unter 1 ms) reißt wieder** (Runden 188,
+  189): zweimal in drei vollen Läufen 1,03 ms, allein jedes Mal grün
+  (etwa 0,3 ms). Er misst schon den besten von fünf Durchgängen; Grenze
+  und Aufruf bleiben nach Abschnitt 6, Punkt 4. Reißt er weiter, ist das
+  eine Frage an den Benutzer: in den zweiten Abschnitt von `npm test`
+  verschieben, wo nichts nebenher rechnet, oder mehr Durchgänge.
+- **Die Tastenübersicht ist voll** (Runde 189): 21 Zeilen, rund 730
+  Bildpunkte hoch — auf 1366 × 768 bleiben oben und unten knapp 20. Die
+  nächste Taste braucht zwei Spalten oder Gruppen (Auswahl, Kamera,
+  Befehle); geprüft ist die Höhe nur im Fenster der Tests (1400 × 950).
 - **Distelhag stellt weniger her** (Runde 177): gegen Eschenbruch
   (Startwerte 61 bis 63) zwei bis drei Militärgebäude gegen drei bis fünf,
   127 gegen 226 Kampfeinheiten in der längsten Partie, 78 Dorfbewohner
@@ -2108,6 +2118,19 @@ ihn, mit Gegenprobe an beiden Formen. Fünf Bilder neu, alle angesehen.
 Neueste oben. Eine Zeile je Runde: Nummer, Datum, Kriterien, Ergebnis,
 wichtigste Erkenntnis.
 
+- **189** · 2026-11-12 · **bedienung AC-20 fertig** (Abweichung nach
+  Abschnitt 1, Punkt 6 — Stufe E gesperrt): zuerst neu gefasst, denn
+  „Rohstoffe aller Mitspieler" widersprach kampf AC-13. Jetzt: `Tab`
+  gehalten zeigt je Spieler Zeitalter, und Vorräte mit Bevölkerung nur von
+  einem selbst und den Verbündeten (`welt.auszug` schickt sie, wo
+  `teiltSicht`; die Kündigung nimmt sie im selben Takt), bei Gegnern ein
+  Strich. Neues offenes Kriterium AC-47: Punkte für alle. Gegenprobe ohne
+  die Zeile im Auszug: beide Rechentests gefallen. Nur die betroffenen
+  Browserdateien gefahren (Blender); das Bild der Tastenübersicht (AC-22)
+  neu, eine Zeile mehr. Zwei volle Läufe rissen nur an Zeitmessungen
+  (einheiten AC-31; dann fahrplan AC-6 und kampf AC-15, während die
+  Parallelsitzung `check:alles:neu` fuhr), allein grün; der dritte Lauf
+  nach deren Ende grün.
 - **188** · 2026-11-12 · **Rückschau** (Runden 184 bis 187): die Absagen
   der Gegenprobe beginnen mit „Gegenprobe: NICHT GELAUFEN" (Test und
   Gegenprobe gegen die alte Meldung: gefallen); Abschnitt 1, Punkt 6: ein

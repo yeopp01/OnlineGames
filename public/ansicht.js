@@ -98,6 +98,11 @@ export class Ansicht {
     this.nachBild = () => {};
     this.beiTaste = () => false;
     this.beiFeldern = () => {};
+    // Die Tafel auf `Tab` (bedienung AC-20): je Spieler, was zuletzt ankam,
+    // und ob sie gerade offen ist - app.js zeichnet sie.
+    this.stand = new Map();
+    this.spielstandOffen = false;
+    this.beiSpielstand = () => {};
     // Die eigenen untaetigen Dorfbewohner, wie der Server sie meldet (einheiten AC-21).
     this.untaetige = [];
     this.letzterUntaetiger = null;
@@ -223,6 +228,8 @@ export class Ansicht {
     const meine = this.spieler.get(ichId);
     if (meine) this.blickAuf(meine.basis.x, meine.basis.y);
     this.ausMerken(nachricht.spieler);
+    this.stand = new Map();
+    this.standMerken(nachricht.spieler);
     // Wer nach dem Ende zurueckkommt, sieht es sofort (spielziel AC-5).
     if (nachricht.ende) this.endeMerken(nachricht.ende);
     if (Number.isInteger(nachricht.t)) this.takt = nachricht.t;
@@ -298,6 +305,7 @@ export class Ansicht {
     this.kuendigungenMerken(nachricht.bu);
 
     this.ausMerken(nachricht.spieler);
+    this.standMerken(nachricht.spieler);
     const meine = nachricht.spieler.find((s) => s.id === this.ich);
     if (meine) {
       const { holz, nahrung, gold, stein, bev, raum } = meine;
@@ -428,6 +436,47 @@ export class Ansicht {
    *
    * @param {{id: string, aus?: number}[]} liste die Spieler aus der Nachricht
    */
+  // Je Spieler, was der Server zuletzt von ihm schickte (bedienung AC-20).
+  // Der Server entscheidet, was das ist: von Gegnern im Nebel nur Zeitalter
+  // und ob sie draussen sind (kampf AC-13) - der Browser rechnet nichts dazu.
+  standMerken(liste) {
+    for (const s of liste) {
+      const vorraete = Number.isFinite(s.holz)
+        ? { holz: s.holz, nahrung: s.nahrung, gold: s.gold, stein: s.stein, bev: s.bev, raum: s.raum }
+        : null;
+      this.stand.set(s.id, { zeitalter: s.z || 0, aus: s.aus === 1, vorraete });
+    }
+  }
+
+  /**
+   * Die Zeilen der Tafel auf `Tab` (bedienung AC-20), in der Reihenfolge der
+   * Spieler wie die Tafel am Ende. `vorraete` ist null, wo der Server sie
+   * nicht schickt - bei Gegnern, solange der Nebel gilt.
+   *
+   * @returns {{id: string, name: string, farbe: string, ich: boolean,
+   *   aus: boolean, zeitalter: string, vorraete: object|null}[]}
+   */
+  spielstandZeilen() {
+    return [...this.spieler.values()].map((spieler) => {
+      const stand = this.stand.get(spieler.id) || { zeitalter: 0, aus: false, vorraete: null };
+      return {
+        id: spieler.id,
+        name: spieler.name || 'Unbekannt',
+        farbe: spieler.farbe || '#888888',
+        ich: spieler.id === this.ich,
+        aus: stand.aus,
+        zeitalter: this.zeitalterName(stand.zeitalter),
+        vorraete: stand.vorraete,
+      };
+    });
+  }
+
+  spielstandSetzen(an) {
+    if (this.spielstandOffen === an) return;
+    this.spielstandOffen = an;
+    this.beiSpielstand(an);
+  }
+
   ausMerken(liste) {
     const jetzt = liste.find((s) => s.id === this.ich)?.aus === 1;
     const uebergang = jetzt && !this.aus;
@@ -709,10 +758,24 @@ export class Ansicht {
         if (!e.repeat) this.basisSprung();
         return;
       }
+      // Tab gehalten: der Spielstand (bedienung AC-20). Ohne Standard - sonst
+      // wandert der Fokus durch die Knoepfe der Leiste.
+      if (e.key === 'Tab' && !e.ctrlKey && !e.metaKey && !e.altKey) {
+        e.preventDefault();
+        this.spielstandSetzen(true);
+        return;
+      }
       this.tasten.add(e.key.toLowerCase());
     });
-    window.addEventListener('keyup', (e) => this.tasten.delete(e.key.toLowerCase()));
-    window.addEventListener('blur', () => this.tasten.clear());
+    window.addEventListener('keyup', (e) => {
+      if (e.key === 'Tab') this.spielstandSetzen(false);
+      this.tasten.delete(e.key.toLowerCase());
+    });
+    window.addEventListener('blur', () => {
+      this.tasten.clear();
+      // Wer mit gehaltenem Tab das Fenster verlaesst, bekommt kein keyup.
+      this.spielstandSetzen(false);
+    });
   }
 
   // Ausgewaehlt wird im Bild, nicht auf der Karte: ein Rechteck auf dem

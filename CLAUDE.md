@@ -168,7 +168,7 @@ Umfang hinzufügt, dort nachsehen.
 
 ## Stand
 
-**472 von 601 Kriterien fertig.** 741 Tests ohne Browser, 220 im Browser. Die
+**473 von 602 Kriterien fertig.** 743 Tests ohne Browser, 222 im Browser. Die
 Übersicht ist der Bericht: `npm run qa:report`.
 
 Gebaut ist der Unterbau: Räume, Übertragung, Karte, Wegfindung, Sammeln,
@@ -523,7 +523,11 @@ die Wahl merkt sich der Browser. **Die Leertaste** springt zum Dorfzentrum
 und ein zweites Mal zurück (AC-10, `ansicht.basisSprung`). **Reißt die
 Verbindung**, steht ein Hinweis mitten im Bild mit „Neu laden und
 zurückkehren" (AC-19, uebertragung AC-9; im Browsertest kappt der
-Prüfgriff `trennen` sie vom Server aus).
+Prüfgriff `trennen` sie vom Server aus). **`Tab` gehalten** zeigt den
+Spielstand (AC-20): je Spieler Zeitalter, und Vorräte mit Bevölkerung von
+einem selbst und den Verbündeten — Gegnern schickt der Server sie im Nebel
+nicht (kampf AC-13), dort steht ein Strich. Eine Punktzahl für alle ist
+AC-47.
 
 1. **Stufe A** Dunkle Zeit mit Wirtschafts-KI und Prüfstand · **B** Feudalzeit
    · **C** Partieende und KI-Gegner · **D** Ritterzeit · **E** fünf Häuser ·

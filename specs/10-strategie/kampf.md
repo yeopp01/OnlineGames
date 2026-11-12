@@ -114,7 +114,8 @@ aus [Spielziel](spielziel.md) AC-10, gemessen in
   seine Einheiten sehen. Sonst liest ein verändertes Programm die ganze Karte
   mit. Je Spieler eine Zustandsnachricht: eigene Einheiten immer, fremde nur
   auf gesehenen Feldern; von den anderen Spielern nur Zeitalter, Kampfwerte und
-  ob sie draußen sind, nicht ihre Vorräte; ein fremdes Gebäude, wenn man es
+  ob sie draußen sind, nicht ihre Vorräte (Verbündete, mit denen er die Sicht
+  teilt, ausgenommen: bedienung AC-20); ein fremdes Gebäude, wenn man es
   sieht, und was ihm im Nebel geschieht, erst beim nächsten Hinsehen; ebenso
   Feldänderungen (ein gefällter Baum, ein neuer Bauplatz). Wer ausscheidet oder
   wenn alles aufgedeckt ist, bekommt alles (Runde 110).

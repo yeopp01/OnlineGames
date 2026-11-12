@@ -3774,9 +3774,14 @@ class Welt {
       felder: this.felderFuer(id, voll.felder),
       // Von den anderen nur, was jeder sieht: wer draussen ist, das Zeitalter
       // und die Kampfwerte (die zeigt die Auswahl einer fremden Einheit) -
-      // nicht ihre Vorraete und ihre Untaetigen.
+      // nicht ihre Vorraete und ihre Untaetigen. Wer mit ihm die Sicht teilt,
+      // zeigt ihm dazu Vorraete und Bevoelkerung - fuer die Tafel auf `Tab`
+      // (bedienung AC-20); Untaetige, Arbeiter und Angriffe bleiben seine.
       spieler: voll.spieler.map((s) => (s.id === id ? s : {
         id: s.id, ...(s.aus ? { aus: 1 } : {}), ...(s.z ? { z: s.z } : {}), ...(s.kw ? { kw: s.kw } : {}),
+        ...(this.teiltSicht(id, s.id) ? {
+          holz: s.holz, nahrung: s.nahrung, gold: s.gold, stein: s.stein, bev: s.bev, raum: s.raum,
+        } : {}),
       })),
     };
     // Pfeile nur, wenn er Schuetzen oder Ziel sieht (kampf AC-13) - und gar

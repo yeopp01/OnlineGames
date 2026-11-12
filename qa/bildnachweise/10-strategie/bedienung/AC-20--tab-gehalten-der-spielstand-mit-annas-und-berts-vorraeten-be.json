@@ -1,0 +1,10 @@
+{
+  "spec": "10-strategie/bedienung.md",
+  "ac": "AC-20",
+  "titel": "Tab gehalten: der Spielstand mit Annas und Berts Vorraeten, bei Cem als Gegner nur Striche",
+  "datei": "e2e/tests/strategie-spielstand.spec.mjs",
+  "pfad": [
+    "Spielstand",
+    "bedienung AC-20: Tab gehalten zeigt den Spielstand - Vorraete von sich und dem Verbuendeten, beim Gegner ein Strich"
+  ]
+}
