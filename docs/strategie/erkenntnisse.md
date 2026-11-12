@@ -1666,6 +1666,45 @@ Testlauf): `npm run check` 53 s ohne Last, 599 Tests ohne Browser; der
 volle Browserlauf mit 191 Fällen 16,6 min (Runde 140; Runde 135: 17,0 min
 für 190). Die Ritterzeit am Stück braucht 1,7 min.
 
+### Nach Runde 193 (2026-11-12)
+
+Vier Runden aus `bedienung.md`, alle nach Abschnitt 1, Punkt 6 (Stufe E
+gesperrt): 189 Spielstand auf `Tab` (AC-20), 190 läuft auf 1366 × 768
+(AC-23), 191 Ziele hintereinander mit Umschalt (AC-14), 192 die erste
+Partie erklärt sich (AC-21). Was Zeit gekostet hat oder sich wiederholen
+wird:
+
+1. **Feste Kästen auf kleinem Bildschirm, dreimal von Hand** (Runden 189,
+   191, 192): Spielstand, eine Zeile mehr in der Tastenübersicht, die
+   Erklärung — jedes Mal hing, ob er auf einem anderen Bedienteil liegt,
+   daran, dass jemand ihn in die Liste von `bedienteileFrei` schrieb. →
+   **Wächter** `tests/waechter-bedienteile.test.mjs`: jedes direkte Kind
+   von `#spiel` steht in der Liste oder mit Grund in `UEBER_ALLEM`
+   (Gegenprobe: ohne `#erklaerung` fällt er).
+2. **Eine Grenze des Servers im Browser nachgebaut** (Runde 191): 21 statt
+   20, gefunden von der Durchsicht; die Abhilfe schnitt vorn nach `q` ab —
+   und `q` hinkt beim schnellen Klicken hinter den Klicks her. In dieser
+   Rückschau fiel der Fall dazu einmal von zwei Läufen und traf damit einen
+   echten Fehler. → `wegpunkteMax` kommt jetzt über `werte` (wie
+   `mauerMax`), das Abschneiden ist fort (sechsmal hintereinander grün,
+   Gegenprobe ohne den Wert fällt), und die Anweisung sagt in Abschnitt 3:
+   gemeinsame Grenzen über `werte`, nie nach einem hinkenden Wert
+   entscheiden.
+3. **„Einmal je Browser“ im Browserlauf** (Runde 192): jedes Fenster ist
+   frisch, die Erklärung hätte in jedem Bild gestanden. Die Lösung — die
+   Fixtures `context` und `browser` in `e2e/helpers/seite.mjs` setzen den
+   Merker in jedem Fenster, abschaltbar über den Sitzungsspeicher — steht
+   jetzt als Muster in Abschnitt 5 der Anweisung.
+
+Gezählt: 476 von 602 Kriterien fertig, 748 Tests ohne Browser, 227 im
+Browser; Laufzeiten nicht gemessen (kein voller Browserlauf, 30
+Chrome-Prozesse offen). Erledigt aus der letzten Rückschau: die Leertaste
+drückt keinen Knopf mehr, der eben geklickt wurde („Verstanden“ gibt den
+Fokus ab). Weiter offen: ob das Schieben endet, wenn die Maus das Fenster
+verlässt, und ein Server, der schweigt, ohne zu trennen. Nicht geändert:
+die Reihenfolge nach Punkt 6. Kein Rundgang im Browser: keine Stufe
+erreicht.
+
 ### Nach Runde 188 (2026-11-12)
 
 Vier Runden aus `bedienung.md`, alle nach Abschnitt 1, Punkt 6 (Stufe E
@@ -2119,6 +2158,10 @@ ihn, mit Gegenprobe an beiden Formen. Fünf Bilder neu, alle angesehen.
 Neueste oben. Eine Zeile je Runde: Nummer, Datum, Kriterien, Ergebnis,
 wichtigste Erkenntnis.
 
+- **193** · 2026-11-12 · **Rückschau** (siehe „Nach Runde 193“): Wächter
+  für feste Bedienteile, `wegpunkteMax` über `werte` und das hinkende
+  Abschneiden nach `q` entfernt (der Fall dazu fiel einmal), zwei Regeln
+  in der Anweisung.
 - **192** · 2026-11-12 · **bedienung AC-21 fertig** (Abweichung nach
   Abschnitt 1, Punkt 6 — Stufe E gesperrt): vorher gesucht, nichts stand
   da (nur der Hinweis oben, „Ziehen wählt aus · Rechtsklick befiehlt“).

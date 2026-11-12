@@ -1111,13 +1111,15 @@ export class Ansicht {
   wegpunkteMerken(feld, anhaengen) {
     for (const id of this.ausgewaehlt) {
       let liste = anhaengen ? (this.wegpunkte.get(id) || []) : [];
-      // Die Grenze des Servers: das laufende Ziel und 20 wartende. Was
-      // darueber geklickt wird, verwirft er - also hier auch, statt die
-      // aeltesten zu vergessen. Ist die Liste voll, zuerst die schon
-      // erreichten Ziele vorn abschneiden; der Server sagt mit `q`, wie viele
-      // noch warten.
-      if (liste.length >= 21) liste = liste.slice(-((this.nachher.get(id)?.q ?? 0) + 1));
-      if (liste.length >= 21) continue;
+      // Die Grenze des Servers (`wegpunkteMax` aus den Werten): das laufende
+      // Ziel und so viele wartende. Was darueber geklickt wird, verwirft er -
+      // also hier auch, statt die aeltesten zu vergessen. Vorn schon
+      // erreichte Ziele abzuschneiden, ginge nur mit `q` - und das hinkt beim
+      // schnellen Klicken hinterher: die Rueckschau nach Runde 193 sah so
+      // echte Ziele verschwinden. Bleibt eine Ecke: mehr als zwanzig Klicks
+      // in einer Kette, von denen schon welche erreicht sind - dann fehlen
+      // der Linie die neuesten.
+      if (liste.length >= this.werte.wegpunkteMax + 1) continue;
       liste.push(feld);
       this.wegpunkte.set(id, liste);
     }

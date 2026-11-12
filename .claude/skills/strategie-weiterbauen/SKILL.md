@@ -264,6 +264,14 @@ Setze die gewählten Kriterien auf `in-arbeit`.
 - **Die kurzen Namen aus der Übertragung** (`h`, `u`, `k`, `art`, `f`) stehen
   als Tafel oben in `e2e/helpers/strategie.mjs` — dort nachsehen statt in
   `welt.js` suchen.
+- **Eine Grenze, die Server und Browser beide kennen müssen, kommt über
+  `werte`** (`mauerMax`, `wegpunkteMax`), nie als zweite Zahl im Browser.
+  Und **der Browser entscheidet nichts nach einem Wert des Servers, der
+  hinter seinen eigenen Klicks herhinkt**: ein Zustand kommt einen Takt
+  später, schnelles Klicken ist schneller. In Runde 191 schrieb der Browser
+  21 statt der 20 des Servers nach (gefunden von der Durchsicht); die
+  Abhilfe schnitt nach `q` ab, und das hinkte — in der Rückschau nach
+  Runde 193 fiel der Fall dazu einmal von zwei Läufen.
 - Ein Import darf nicht heißen wie ein Parameter der umgebenden Funktion
   (`starten(hafen, einstellungen)` hat einen Import `einstellungen`
   überdeckt, Runde 2) — der Fehler zeigt sich erst zur Laufzeit.
@@ -460,7 +468,20 @@ Setze die gewählten Kriterien auf `in-arbeit`.
   breitesten Zustand — dort, wo die Auswahlleiste am längsten ist (ein
   Dorfbewohner mit Baumenü). Nachsehen allein hat die Überdeckung in Runde 47
   erst eine Runde später gefunden. Neue Teile in die Liste der Hilfe
-  aufnehmen.
+  aufnehmen — **das sucht jetzt `tests/waechter-bedienteile.test.mjs`**:
+  jedes direkte Kind von `#spiel` in `public/index.html` steht dort oder,
+  mit Grund, in `UEBER_ALLEM` (Fenster, die man bewusst öffnet). In den
+  Runden 189 bis 192 kamen drei feste Kästen dazu, jedes Mal hing es am
+  Gedächtnis (Rückschau nach Runde 193).
+- **Was der Browser sich merkt (`localStorage`), gilt im Browserlauf als
+  frisch** — jedes Fenster dort ist neu. Ein „einmal je Browser" (die
+  Erklärung der ersten Partie, bedienung AC-21) stünde sonst in jedem Bild
+  und finge Klicks. Die Fixtures `context` und `browser` in
+  `e2e/helpers/seite.mjs` setzen solche Merker per `addInitScript` in
+  **jedem** Fenster, auch in denen, die ein Test selbst öffnet (Gäste aus
+  `partieMit`); wer davon handelt, schaltet es über den Sitzungsspeicher
+  ab, der ein Neuladen überlebt (`erklaerungPruefen`). Ein neuer Merker
+  dieser Art kommt dorthin, nicht in jeden Test (Runde 192).
 - **Stehen auf dem Bild mehrere Figuren, prüft `figurenFrei(page)`** aus
   derselben Hilfe, dass keine zwei näher als ein halbes Feld beieinander
   stehen. Vier Bilder in zehn Runden zeigten „eine Figur mit drei Schwertern"

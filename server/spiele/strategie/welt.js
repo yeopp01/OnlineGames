@@ -3991,6 +3991,10 @@ class Welt {
         klassen: KLASSEN,
         // Wie lang eine gezogene Mauer hoechstens ist (bauen AC-30).
         mauerMax: MAUER_MAX,
+        // Wie viele Ziele mit Umschalt hoechstens warten (bedienung AC-14) -
+        // der Browser zeichnet die Reihe und darf nicht mehr behalten, als
+        // der Server annimmt (Durchsicht nach Runde 191).
+        wegpunkteMax: WEGPUNKTE_MAX,
         // Die Zeitalter und was ein Aufstieg kostet (bauen AC-23, bedienung AC-33).
         zeitalter: ZEITALTER,
         aufstiege: AUFSTIEGE,
