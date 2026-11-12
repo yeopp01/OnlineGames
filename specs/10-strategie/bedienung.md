@@ -2,7 +2,7 @@
 
 **Bereich:** Strategie
 **Kuerzel:** bedienung
-**Stand:** 58/61 fertig · 3 offen
+**Stand:** 59/62 fertig · 3 offen
 
 ## Zweck
 
@@ -486,16 +486,43 @@ unter [Einheiten](einheiten-und-befehle.md) AC-55 und AC-56,
   für jede Entwicklung, wenn Einheiten gebaut sind, wenn man angegriffen
   wird." **Nicht geprüft:** wie es klingt — gemessen ist, dass am Ausgang
   etwas ankommt, gehört hat es beim Bauen niemand.
-- **AC-60** `fertig` **Leise Musik im Spiel** — Während der Partie spielt
-  leise Musik: kurze gezupfte Folgen auf fünf Tönen über einem Liegeklang,
-  mit Pausen, jedes Mal anders. Sie beginnt mit der ersten Handlung im Spiel
-  (vorher lässt der Browser keinen Ton zu), schweigt im Vorraum und in einem
-  Fenster im Hintergrund, und steht weit unter den Geräuschen. Erzeugt wie
-  diese, kein Stück und keine Aufnahme. **Nicht geprüft:** ob sie beruhigt
-  — das entscheidet ein Ohr, kein Test.
+- **AC-60** `fertig` **Musik im Spiel** — Während der Partie spielt Musik,
+  und sie ist ein Stück, kein Würfeln: ein Thema in d-Moll für Horn über
+  Streichern, Bass und Trommeln, ein heller Mittelteil, ein Schluss über der
+  Dominante — als Noten in `public/ton.js` (`SAETZE`, `AKKORDE`), eigens
+  geschrieben, kein fremdes Stück und keine Aufnahme. Dazwischen Ruhe: Laute
+  und Flöte, jedes Mal neu gewürfelt aus den Tönen des Akkords, manchmal
+  nur die Streicher. **Wird gekämpft, treibt sie:** die Trommeln werden
+  dichter, der Bass geht in Achteln, die Ruhe fällt aus — auch mitten im
+  Takt der Laute; eine halbe Minute nach dem letzten Schlag kommt die Ruhe
+  zurück. Vom Kampf erfährt sie über die Geräusche (AC-62) und das Horn zum
+  Angriff, auch wenn die Geräusche abgeschaltet sind. Sie beginnt mit der
+  ersten Handlung im Spiel (vorher lässt der Browser keinen Ton zu), schweigt
+  im Vorraum und in einem Fenster im Hintergrund, und steht unter den
+  Signalen. **Rückmeldung des Benutzers (2026-11-12)** zur ersten Fassung
+  (gezupfte Folgen auf fünf Tönen): „Der Ton ist sehr langweilig, mach doch
+  da was Schöneres, bisschen schöne kämpferische Hintergrundmusik." **Nicht
+  geprüft:** wie sie klingt — gemessen ist der Pegel (Effektivwert 0,06, im
+  Kampf 0,08, keine Spitze über 0,65), gehört hat sie beim Bauen niemand.
 - **AC-61** `fertig` **Ton abschaltbar** — In der Tastenübersicht stehen zwei
   Schalter, „Geräusche" und „Musik", einzeln; der Browser merkt sich die
   Wahl wie beim Schieben am Rand (AC-9).
+- **AC-62** `fertig` **Kampf und Arbeit hörbar** — Was im Bild geschieht, ist
+  dort zu hören: Schwerter klirren, wo Nahkämpfer schlagen (jeder dritte Hieb
+  trifft kein Eisen), die Ramme und ein getroffenes Gebäude klingen dumpf,
+  ein Pfeil hat Sehne und Zischen, der Mangonel seinen Wurfarm und der Stein
+  seinen Einschlag, ein Gebäude stürzt hörbar ein; leise dazu Axt, Hacke
+  und Hammer der Dorfbewohner. Jedes Geräusch wird jedes Mal neu gewürfelt.
+  **Nur was im Bild steht, klingt** — am Rand leiser als in der Mitte, weit
+  herausgezoomt leiser als nah, und auf der Seite, auf der es geschieht
+  (`ansicht.klangAn`). Schläge im Nahkampf und bei der Arbeit meldet der
+  Server nicht einzeln; sie klingen im Takt der Figur, wenn Schwert oder
+  Werkzeug unten ist (`ansicht.schlagHoeren`). Ein Gefecht bleibt ein
+  Klirren: derselbe Klang beginnt höchstens siebenmal je Sekunde. Erzeugt wie
+  alles (AC-59), kein Material aus dem Original. **Rückmeldung des Benutzers
+  (2026-11-12):** „Man soll auch Schwerter klirren hören bei Kämpfen und so."
+  **Nicht geprüft:** wie es klingt; und ein Dorfbewohner, der Holz getragen
+  hat und dann kämpft, klingt nach Axt — der Zustand sagt nicht, was er tut.
 
 ## Grenzfaelle
 

@@ -1339,7 +1339,12 @@
     {
       "spec": "10-strategie/bedienung.md",
       "ac": "AC-60",
-      "begruendung": "Musik ist Schall, kein Bild: nach dem ersten Klick im Spiel spielt sie leise und hoert auf, wenn das Fenster verdeckt ist oder die Partie endet. Belegt mit einer Messung am Ausgang des Browsers - der Effektivwert liegt ueber 0,002 und in der Spitze unter 0,12, also weit unter einem Geraeusch (e2e/tests/strategie-ton.spec.mjs); dass nur Toene der Leiter d e g a c vorkommen und keine Phrase der vorigen gleicht, im Rechenteil (tests/strategie-ton.test.mjs). Den Schalter dazu zeigt das Bild bei bedienung AC-61. Nicht geprueft: wie sie klingt - das hat noch niemand gehoert."
+      "begruendung": "Musik ist Schall, kein Bild: nach dem ersten Klick im Spiel spielt sie und hoert auf, wenn das Fenster verdeckt ist oder die Partie endet. Belegt mit einer Messung am Ausgang des Browsers - ueber sechs Sekunden liegt der Effektivwert im Mittel ueber 0,015 und nie ueber 0,4, und sie beginnt mit dem Thema (e2e/tests/strategie-ton.spec.mjs); dass jede Stimme ihre Takte fuellt, auf der Leiter von d-Moll bleibt und jeden Takt auf einem Ton des Akkords beginnt, dass im Kampf die Ruhe ausfaellt und die Trommeln dichter werden und dass der Kampf von selbst verklingt, im Rechenteil (tests/strategie-ton.test.mjs). Den Schalter dazu zeigt das Bild bei bedienung AC-61. Nicht geprueft: wie sie klingt - beim Bauen hat sie niemand gehoert."
+    },
+    {
+      "spec": "10-strategie/bedienung.md",
+      "ac": "AC-62",
+      "begruendung": "Schwerterklirren, Pfeile, Einschlaege und die Axt im Wald sind Schall, kein Bild - das Bild dazu (die Figur, die schlaegt) weisen bedienung AC-31 und AC-39 nach. Belegt mit Zaehlen und Messen im Browserlauf: zwoelf Milizen kaempfen ausserhalb des Bildes, und anderthalb Sekunden lang klingt kein Schlag; die Karte springt hin, und vier Schlaege sind zu hoeren, am Ausgang zu messen und heben den Kampfpegel der Musik; ein Dorfbewohner geht in den Wald, und die Axt ist dreimal zu hoeren (e2e/tests/strategie-ton.spec.mjs). Dass jedes Geraeusch jedes Mal anders gewuerfelt wird, seinen Ort im Bild bekommt und vierzig Schwerter hoechstens acht Schlaege je Sekunde sind, im Rechenteil (tests/strategie-ton.test.mjs). Nicht geprueft: wie es klingt."
     },
     {
       "spec": "10-strategie/darstellung.md",

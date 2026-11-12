@@ -34,6 +34,7 @@
     "ausrollen": "node scripts/ausrollen.mjs",
     "sicht": "node scripts/sicht.mjs",
     "tafel": "node scripts/tafel.mjs",
+    "ton:messen": "node scripts/ton-messen.mjs",
     "bilder": "node scripts/bilder.mjs",
     "pruefstand:strategie": "node scripts/pruefstand-strategie.mjs",
     "gegenprobe": "node scripts/gegenprobe.mjs",

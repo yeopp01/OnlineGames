@@ -1,0 +1,10 @@
+{
+  "spec": "10-strategie/kampf.md",
+  "ac": "AC-12",
+  "titel": "Annas Spaeher sieht nur den Rand von Berts Dorfzentrum - es steht trotzdem im Bild, der Rest liegt im Nebel",
+  "datei": "e2e/tests/strategie-nebel.spec.mjs",
+  "pfad": [
+    "Nebel",
+    "kampf AC-12: ein fremdes Gebaeude steht im Bild, sobald ein Feld seiner Grundflaeche in Sicht ist"
+  ]
+}

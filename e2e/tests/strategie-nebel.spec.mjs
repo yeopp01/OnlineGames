@@ -173,6 +173,60 @@ test.describe('Nebel', () => {
     expect(ergebnis.gefallenImNebel, 'im Nebel gefallen: steht in der Erinnerung noch').toBe(true);
     expect(ergebnis.wiederGesehen, 'wieder gesehen: vergessen').toBe(false);
   });
+
+  test('kampf AC-12: ein fremdes Gebaeude steht im Bild, sobald ein Feld seiner Grundflaeche in Sicht ist', async ({}, info) => {
+    // Rueckmeldung des Benutzers (2026-11-12): sein Spaeher stand neben dem
+    // gegnerischen Dorfzentrum und war ein blauer Umriss vor leerem Schwarz.
+    // Der Server schickt ein Gebaeude, sobald ein Feld davon in Sicht ist -
+    // der Browser zeichnete es erst, wenn die Mitte in Sicht war. Mit vier
+    // Feldern Sicht sieht ein Spaeher den Rand eines Dorfzentrums, nicht die
+    // Mitte.
+    const { anna, code } = partie;
+    const fremd = await anna.evaluate(() => {
+      const a = window.ansicht;
+      return [...a.spieler.values()].find((s) => s.id !== a.ich).basis;
+    });
+    // Der Pruefgriff nimmt das erste freie Feld des Rings: links oben vom
+    // genannten. So steht der Spaeher fuenf Felder links der Mitte.
+    await einheitenAufstellen(anna, code, 'Anna', 1, { x: fremd.x - 4, y: fremd.y, art: 'spaeherreiter' });
+    const lage = await anna.waitForFunction((b) => {
+      const a = window.ansicht;
+      const dorf = [...a.gebaeude.values()].find((g) => g.art === 'dorfzentrum' && g.b !== a.ich);
+      // Die Erinnerung schreibt das naechste Bild - darauf warten, nicht raten.
+      if (!dorf || !a.siehtGebaeude(dorf) || !a.erinnert.has(dorf.i)) return false;
+      const mitte = a.gebaeudeMitte(dorf);
+      const reiter = [...a.nachher.values()].find((e) => e.b === a.ich && Math.abs(e.x - b.x) < 8 && Math.abs(e.y - b.y) < 8);
+      return {
+        mitteInSicht: a.nebel.sieht(mitte.x, mitte.y),
+        gezeigt: a.gezeigteGebaeude().some((g) => g.i === dorf.i),
+        erinnert: a.erinnert.has(dorf.i),
+        reiter: reiter ? { x: reiter.x, y: reiter.y } : null,
+      };
+    }, fremd, { timeout: 15_000 }).then((h) => h.jsonValue());
+    expect(lage.reiter, 'der Spaeher steht bei Berts Dorf').not.toBeNull();
+    expect(lage.mitteInSicht, 'der Fall, um den es geht: die Mitte liegt nicht in Sicht').toBe(false);
+    expect(lage.gezeigt, 'das Dorfzentrum steht im Bild').toBe(true);
+    expect(lage.erinnert, 'und bleibt in der Erinnerung').toBe(true);
+    await anna.evaluate((b) => {
+      const a = window.ansicht;
+      a.kamera.zoom = 1.6;
+      a.blickAuf(b.x - 2, b.y);
+    }, fremd);
+    await anna.waitForTimeout(300);
+    // Niemand ist Umriss, ohne dass das Gebaeude davor im Bild steht.
+    const gedeckt = await anna.evaluate(() => {
+      const a = window.ansicht;
+      const gezeigt = new Set(a.gezeigteGebaeude().map((g) => g.i));
+      return (a.verdeckte || []).every((v) => v.decken.every((g) => gezeigt.has(g.i)));
+    });
+    expect(gedeckt, 'ein Umriss ohne Gebaeude davor').toBe(true);
+    await nachweis(anna, {
+      spec: KAMPF,
+      ac: 'AC-12',
+      titel: 'Annas Spaeher sieht nur den Rand von Berts Dorfzentrum - es steht trotzdem im Bild, der Rest liegt im Nebel',
+      test: info,
+    });
+  });
 });
 
 // Die Sicht als Einstellung (kampf AC-16): eroeffnet "Erkundet", ist die Karte

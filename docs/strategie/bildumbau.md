@@ -437,24 +437,27 @@ die Zeilen unter „Für die Erkenntnisse" dorthin und erzeugt das Board neu
   braucht ein ADR, weil „Speicherstände für Strategiepartien" in ADR-0012
   rechts steht), 7 (Ton), 10 (einheiten AC-30), 3 (Reitertempo, Frage), 15
   (Farm-Ablauf, mit dem Rendern), 17 (Klingel).
-  **Arbeitsstand 2026-11-12, 23:30 (fortschreiben):** **Gerenderte Bilder
-  sind die Vorgabe, committet (`6b99ff7`) und ausgerollt.** Zweiter voller
-  Lauf: 259 von 261, die zwei gefallenen (spielziel AC-24, auswahl AC-24)
-  scheiterten im Warteraum am Beitritt und sind einzeln grün — unter Last
-  wackelig, nicht am Bild. `check:kurz` fiel einmal an der Zeitmessung
-  einheiten AC-31 (1,024 ms), allein und im zweiten Lauf grün (804 von 804).
-  Aus der Durchsicht aller Bilder behoben: Baum am Nebelrand, Namensschild
-  über dem Lebensbalken und nie in der Kopfleiste (`KOPFLEISTE`), Umriss
-  ohne Schlagschatten, 23 Titel, bedienung AC-16 zeigt einen, der beladen
-  **geht**. **Ehrlich gesagt bleibt:** Figuren sind bei Zoom 1 rund 30
-  Bildpunkte hoch und erdfarben — Militär ist vom Dorfbewohner schwer zu
-  unterscheiden (bedienung AC-36 misst noch die gezeichnete Figur an der
-  Schautafel); getragene Last sieht man nur beim Gehen; die Baustelle ist
-  immer ein Holzgerüst; Bilder für Verbesserungen, Aufstieg und
-  Sammelpunkt-Fahne sind noch gezeichnet; Schautafel ebenso. **Als
-  Nächstes, in dieser Reihenfolge:** Schautafel umstellen (schließt AC-24),
-  10 (Sammler), 13/18 (Speichern, Liste; ADR-0017), 8/15 (Abläufe
-  Hacken/Feld mit Blender), 17 (Klingel).
+  **Arbeitsstand 2026-11-13, 00:30 (fortschreiben):** Gerenderte Bilder
+  sind die Vorgabe (`6b99ff7`). **Danach, aus dem zweiten Spiel des
+  Benutzers:** (1) *Nebel* — sein Späher stand neben dem gegnerischen
+  Dorfzentrum und war ein blauer Umriss vor Schwarz: der Browser zeichnete
+  ein fremdes Gebäude erst bei sichtbarer Mitte, der Server schickt es ab
+  dem ersten sichtbaren Feld. Jetzt dieselbe Regel (`ansicht.siehtGebaeude`,
+  kampf AC-12 mit Bild). (2) *Ton* — „sehr langweilig … kämpferische
+  Hintergrundmusik … Schwerter klirren": `public/ton.js` neu. Musik als
+  Stück (bedienung AC-60 neu gefasst), Kampf und Arbeit im Bild hörbar
+  (bedienung AC-62 neu). Offline gemessen mit
+  `npm run ton:messen` (OfflineAudioContext in Chromium, schreibt
+  WAV): Musik 0,06 effektiv, im Kampf 0,08, Gefecht darüber Spitze 0,62.
+  **Gehört hat es beim Bauen niemand — das Urteil des Benutzers steht
+  aus.** **Ehrlich gesagt bleibt** an den
+  Bildern: Figuren bei Zoom 1 rund 30 Bildpunkte und erdfarben — Militär
+  vom Dorfbewohner schwer zu unterscheiden (bedienung AC-36 misst noch die
+  gezeichnete Figur); getragene Last nur beim Gehen; Baustelle immer ein
+  Holzgerüst; Bilder für Verbesserungen, Aufstieg, Sammelpunkt-Fahne und
+  die Schautafel noch gezeichnet. **Als Nächstes, in dieser Reihenfolge:**
+  Schautafel umstellen (schließt AC-24), 10 (Sammler), 13/18 (Speichern,
+  Liste; ADR-0017), 8/15 (Abläufe Hacken/Feld mit Blender), 17 (Klingel).
   **Arbeitsstand 2026-11-12, 20:20:** **zweiter Stapel**
   (Pause, Fremdes ansehen, Reitertempo, Ton) ist geprüft: 260 Browserfälle
   grün, ohne Browser 801. Zwei Funde aus dem vollen Lauf: der Wächter zu

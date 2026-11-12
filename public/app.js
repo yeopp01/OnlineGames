@@ -51,8 +51,9 @@ const LETZTE_PARTIE = 'letztePartie';
 
 teile.name.value = localStorage.getItem('name') || '';
 
-// Ton (bedienung AC-59 bis AC-61): Geraeusche zu Ereignissen und leise Musik,
-// beides im Browser erzeugt (public/ton.js). Vor der ersten Handlung laesst
+// Ton (bedienung AC-59 bis AC-62): Geraeusche zu Ereignissen, Kampf und Arbeit
+// dort, wo sie im Bild stehen, und Musik darunter - alles im Browser erzeugt
+// (public/ton.js). Vor der ersten Handlung laesst
 // der Browser keinen Ton zu - der erste Klick, die erste Taste gibt ihn frei.
 const ton = new Ton(localStorage);
 // Fuer den Browserlauf, wie window.ansicht: lesen, nicht schreiben.
@@ -147,7 +148,7 @@ function empfangen(nachricht) {
         const tasten = new Tasten(ansicht, teile.auswahlleiste, document.getElementById('tastenuebersicht'), ton);
         ansicht.beiTaste = (e) => tasten.taste(e);
         ansicht.melden = spielMelden;
-        ansicht.beiEreignis = (name) => ton.spielen(name);
+        ansicht.beiEreignis = (name, wo) => ton.spielen(name, wo);
         ansicht.beiZeitalter = (stufe, name) => {
           ton.spielen('zeitalter');
           zeitalterwechselMelden(name);

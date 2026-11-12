@@ -1,9 +1,11 @@
-// Ton (→ specs/10-strategie/bedienung.md AC-59 bis AC-61): Geraeusche zu
-// Ereignissen, leise Musik, beides abschaltbar. Das Modul laeuft im Browser;
-// hier wird geprueft, was sich ohne Lautsprecher pruefen laesst: welches
-// Ereignis welchen Klang hat, dass derselbe nicht doppelt beginnt, wann die
-// Musik spielt und auf welchen Toenen, und dass die Wahl gemerkt wird. Dass
-// am Ausgang wirklich etwas ankommt, misst e2e/tests/strategie-ton.spec.mjs.
+// Ton (→ specs/10-strategie/bedienung.md AC-59 bis AC-62): Geraeusche zu
+// Ereignissen, Kampf und Arbeit dort, wo sie im Bild stehen, Musik darunter,
+// alles abschaltbar. Das Modul laeuft im Browser; hier wird geprueft, was sich
+// ohne Lautsprecher pruefen laesst: welches Ereignis welchen Klang hat, dass
+// derselbe nicht doppelt beginnt, wann die Musik spielt, dass ihre Stimme zu
+// ihren Akkorden passt, was sie im Kampf anders macht, und dass die Wahl
+// gemerkt wird. Dass am Ausgang wirklich etwas ankommt, misst
+// e2e/tests/strategie-ton.spec.mjs.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
@@ -11,20 +13,36 @@ import { readFileSync } from 'node:fs';
 const lesen = (pfad) => readFileSync(new URL(`../${pfad}`, import.meta.url), 'utf8');
 // public/ton.js ist ein Modul fuer den Browser; Node hielte die Endung .js
 // hier fuer CommonJS. Es bindet nichts ein, also laesst es sich als Text laden.
-const { KLAENGE, Ton } = await import(`data:text/javascript;base64,${Buffer.from(lesen('public/ton.js')).toString('base64')}`);
+const { AKKORDE, KLAENGE, SAETZE, Ton, halbton } = await import(`data:text/javascript;base64,${Buffer.from(lesen('public/ton.js')).toString('base64')}`);
+
+const SIGNALE = ['absage', 'angriff', 'einheit', 'forschung', 'gebaeude', 'gefallen', 'niederlage', 'sieg', 'zeitalter'];
+const GERAEUSCHE = ['einschlag', 'einsturz', 'hacken', 'hammer', 'hieb', 'pfeil', 'pickel', 'schwert', 'treffer', 'wurf'];
 
 function speicher(anfang = {}) {
   const werte = new Map(Object.entries(anfang));
   return { getItem: (k) => (werte.has(k) ? werte.get(k) : null), setItem: (k, v) => werte.set(k, String(v)), werte };
 }
 
+// Ein Zufall mit Startwert: zwei Laeufe rechnen dasselbe.
+function zufallMit(start) {
+  let s = start;
+  return () => {
+    s = (s * 1664525 + 1013904223) % 4294967296;
+    return s / 4294967296;
+  };
+}
+
 // Ein Klangausgang, der nur aufschreibt: welche Schwinger mit welcher
-// Frequenz, und wohin der Regler der Musik laeuft.
+// Frequenz, wie viele Rauschstoesse, welche Orte - und wohin der Regler der
+// Musik laeuft.
 function ausgangAufschreiben() {
   const schwinger = [];
+  const stoesse = [];
+  const orte = [];
   const wert = (v = 0) => ({
     value: v,
-    setValueAtTime(x) { this.value = x; },
+    erst: null,
+    setValueAtTime(x) { this.erst ??= x; this.value = x; },
     linearRampToValueAtTime(x) { this.value = x; },
     exponentialRampToValueAtTime(x) { this.value = x; },
     cancelScheduledValues() {},
@@ -40,23 +58,34 @@ function ausgangAufschreiben() {
     createGain() { return knoten({ gain: wert(1) }); }
     createAnalyser() { return knoten({ fftSize: 0, getFloatTimeDomainData() {} }); }
     createBiquadFilter() { return knoten({ frequency: wert(), Q: wert() }); }
-    createDelay() { return knoten({ delayTime: wert() }); }
+    createDynamicsCompressor() { return knoten({ threshold: wert(), knee: wert(), ratio: wert(), attack: wert(), release: wert() }); }
+    createConvolver() { return knoten({ buffer: null }); }
+    createStereoPanner() {
+      const ort = knoten({ pan: wert() });
+      orte.push(ort);
+      return ort;
+    }
     createOscillator() {
-      const s = knoten({ frequency: wert(), type: 'sine', start() {}, stop() { this.aus = true; } });
+      const s = knoten({ frequency: wert(), detune: wert(), type: 'sine', start() {}, stop() { this.aus = true; } });
       schwinger.push(s);
       return s;
     }
     createBuffer(kanaele, laenge) { return { getChannelData: () => new Float32Array(laenge) }; }
-    createBufferSource() { return knoten({ start() {} }); }
+    createBufferSource() {
+      const s = knoten({ start() {}, stop() { this.aus = true; } });
+      stoesse.push(s);
+      return s;
+    }
     resume() { return Promise.resolve(); }
   }
-  return { Ausgang, schwinger };
+  return { Ausgang, schwinger, stoesse, orte };
 }
 
 test('bedienung AC-59: jedes Ereignis hat seinen Klang - und was im Spiel gemeldet wird, hat einen', () => {
-  assert.deepEqual(Object.keys(KLAENGE).sort(), ['absage', 'angriff', 'einheit', 'forschung', 'gebaeude', 'gefallen', 'niederlage', 'sieg', 'zeitalter']);
+  assert.deepEqual(Object.keys(KLAENGE).sort(), [...SIGNALE, ...GERAEUSCHE].sort());
   const gleich = new Set();
-  for (const [name, klang] of Object.entries(KLAENGE)) {
+  for (const name of SIGNALE) {
+    const klang = KLAENGE[name];
     assert.ok(klang.noten.length > 0, `${name} hat Toene`);
     assert.ok(klang.abstand >= 300, `${name}: ein Mindestabstand`);
     assert.ok(klang.laut > 0 && klang.laut <= 0.25, `${name}: leise genug, dass nichts uebersteuert`);
@@ -64,19 +93,20 @@ test('bedienung AC-59: jedes Ereignis hat seinen Klang - und was im Spiel gemeld
       assert.ok(Number.isFinite(note.h) && note.t >= 0 && note.d > 0, `${name}: ${JSON.stringify(note)}`);
     }
     // Kein Klang gleicht einem anderen - sonst hoerte man nicht, was war.
-    const bild = JSON.stringify([klang.form, klang.noten, klang.klopfen]);
+    const bild = JSON.stringify([klang.form, klang.stimme, klang.noten, klang.klopfen]);
     assert.ok(!gleich.has(bild), `${name} klingt wie ein anderer`);
     gleich.add(bild);
-    // Kurz: nur Aufstieg, Sieg und Niederlage duerfen ueber eine Sekunde dauern.
+    // Kurz: nur Aufstieg, Sieg und Niederlage duerfen ueber anderthalb Sekunden dauern.
     const ende = Math.max(...klang.noten.map((n) => n.t + n.d));
-    if (!['zeitalter', 'sieg', 'niederlage'].includes(name)) assert.ok(ende <= 1.2, `${name} dauert ${ende} s`);
+    if (!['zeitalter', 'sieg', 'niederlage'].includes(name)) assert.ok(ende <= 1.4, `${name} dauert ${ende} s`);
   }
   // Der Angriff darf nicht zum Dauerhorn werden.
   assert.ok(KLAENGE.angriff.abstand >= 5000);
 
-  // Was Ansicht und app.js beim Namen nennen, gibt es.
+  // Was Ansicht und app.js beim Namen nennen, gibt es - und jeder Klang wird
+  // irgendwo gemeldet.
   const genannt = [
-    ...lesen('public/ansicht.js').matchAll(/this\.ereignis\('([a-z]+)'\)/g),
+    ...lesen('public/ansicht.js').matchAll(/this\.(?:ereignis|geraeusch|klangAn)\('([a-z]+)'/g),
     ...lesen('public/app.js').matchAll(/ton\.spielen\('([a-z]+)'/g),
   ].map((m) => m[1]);
   for (const name of genannt) assert.ok(KLAENGE[name], `${name} wird gemeldet, hat aber keinen Klang`);
@@ -115,40 +145,113 @@ test('bedienung AC-59: ein Ereignis wird zu Schwingungen - erst nach der ersten 
     assert.equal(ton.ctx, null);
     assert.equal(schwinger.length, 0);
     ton.entsperren();
+    assert.equal(ton.spielen('forschung'), false, 'eben erst');
+    assert.equal(ton.spielen('einheit'), true);
+    assert.equal(schwinger.length, KLAENGE.einheit.noten.length);
+    // a' ist 440 Hz, das g' darunter 392.
+    assert.ok(Math.abs(schwinger[0].frequency.value - 392) < 0.01, String(schwinger[0].frequency.value));
+    // Die Fanfare zum Aufstieg blaest das Horn der Musik: je Ton zwei
+    // Schwinger, leicht gegeneinander verstimmt.
+    schwinger.length = 0;
     assert.equal(ton.spielen('zeitalter'), true);
-    assert.equal(schwinger.length, KLAENGE.zeitalter.noten.length);
-    assert.ok(schwinger.every((s) => s.aus), 'jede Stimme hat ein Ende');
-    // a' ist 440 Hz, das d' darunter 293,66.
+    assert.equal(schwinger.length, KLAENGE.zeitalter.noten.length * 2);
     assert.ok(Math.abs(schwinger[0].frequency.value - 293.66) < 0.01, String(schwinger[0].frequency.value));
+    assert.notEqual(schwinger[0].detune.value, schwinger[1].detune.value);
+    assert.ok(schwinger.every((s) => s.aus), 'jede Stimme hat ein Ende');
   } finally {
     delete globalThis.AudioContext;
   }
 });
 
-test('bedienung AC-60: die Musik spielt nur in der Partie, nach der ersten Handlung und im sichtbaren Fenster - auf fuenf Toenen', () => {
-  const { Ausgang, schwinger } = ausgangAufschreiben();
+test('bedienung AC-60: die Musik ist ein Stueck - jede Stimme fuellt ihre Takte und beginnt jeden Takt auf einem Ton des Akkords', () => {
+  // d-Moll, mit dem cis der Dominante.
+  const leiter = new Set(['d', 'e', 'f', 'g', 'a', 'bb', 'c', 'c#']);
+  const komponiert = Object.entries(SAETZE).filter(([, satz]) => !satz.gewuerfelt);
+  assert.deepEqual(komponiert.map(([name]) => name).sort(), ['aufbruch', 'hoehe', 'thema']);
+  for (const [name, satz] of Object.entries(SAETZE)) {
+    assert.equal(satz.akkorde.length, 8, `${name}: acht Takte`);
+    for (const akkord of satz.akkorde) assert.ok(AKKORDE[akkord], `${name}: ${akkord} gibt es`);
+  }
+  for (const [name, satz] of komponiert) {
+    assert.equal(satz.stimme.length, 8, `${name}: acht Takte Stimme`);
+    satz.stimme.forEach((takt, i) => {
+      const noten = takt.split(' ').map((teil) => teil.split(':'));
+      const schlaege = noten.reduce((summe, [, dauer]) => summe + Number(dauer), 0);
+      assert.equal(schlaege, 4, `${name}, Takt ${i + 1}: vier Schlaege`);
+      for (const [note] of noten) {
+        if (note === '-') continue;
+        assert.ok(leiter.has(note.slice(0, -1)), `${name}, Takt ${i + 1}: ${note} liegt nicht auf der Leiter`);
+        // Zwischen d' und f'': ein Horn, kein Brummen und kein Pfeifen.
+        assert.ok(halbton(note) >= halbton('d4') && halbton(note) <= halbton('f5'), `${name}: ${note}`);
+      }
+      // Der erste Ton des Takts gehoert zum Akkord - sonst reibt es auf der Eins.
+      const akkord = AKKORDE[satz.akkorde[i]];
+      const klassen = new Set(akkord.toene.map((t) => ((halbton(t) % 12) + 12) % 12));
+      assert.ok(klassen.has(((halbton(noten[0][0]) % 12) + 12) % 12), `${name}, Takt ${i + 1}: ${noten[0][0]} ueber ${satz.akkorde[i]}`);
+    });
+  }
+  // Thema und Aufbruch beginnen gleich und schliessen verschieden; der
+  // Aufbruch schliesst ueber der Dominante.
+  assert.deepEqual(SAETZE.thema.stimme.slice(0, 5), SAETZE.aufbruch.stimme.slice(0, 5));
+  assert.notDeepEqual(SAETZE.thema.stimme.slice(5), SAETZE.aufbruch.stimme.slice(5));
+  assert.deepEqual(SAETZE.aufbruch.akkorde.slice(-2), ['A', 'Dm']);
+  assert.equal(halbton('a4'), 0);
+  assert.equal(halbton('bb3'), -11);
+  assert.equal(halbton('c#5'), 4);
+  assert.throws(() => halbton('h4'));
+});
+
+test('bedienung AC-60: die Musik spielt nur in der Partie, nach der ersten Handlung und im sichtbaren Fenster - im Kampf treibt sie, danach kommt die Ruhe zurueck', () => {
+  const { Ausgang, schwinger, stoesse } = ausgangAufschreiben();
   globalThis.AudioContext = Ausgang;
-  const ton = new Ton(speicher());
+  let jetzt = 0;
+  const ton = new Ton(speicher(), { uhr: () => jetzt, zufall: zufallMit(5) });
   try {
     ton.partieSetzen(true);
     assert.equal(ton.musikLaeuft, false, 'vor dem ersten Klick nicht');
     ton.entsperren();
     assert.equal(ton.musikLaeuft, true);
-    assert.ok(ton.musikUhr, 'die naechste Folge ist bestellt');
-    // Viele Folgen: jeder Ton liegt auf d, e, g, a oder c.
-    for (let i = 0; i < 200; i++) {
-      clearTimeout(ton.musikUhr);
-      ton.phrase();
+    assert.ok(ton.musikUhr, 'die naechsten Takte sind bestellt');
+    assert.deepEqual(ton.gespielt, ['thema'], 'sie beginnt mit dem Thema');
+    assert.ok(schwinger.length > 10, 'der erste Takt ist bestellt');
+    // Unter den Geraeuschen: der Regler der Musik steht unter der Haelfte.
+    assert.ok(ton.musikRegler.gain.value > 0 && ton.musikRegler.gain.value <= 0.5);
+
+    // Zweihundert Takte in Ruhe: Thema, Hoehe und Aufbruch wechseln mit
+    // Ruhe und Stille - nie zwei Themen hintereinander, nie zweimal Ruhe.
+    clearTimeout(ton.musikUhr);
+    const takte = (anzahl) => {
+      const vorher = { schwinger: schwinger.length, stoesse: stoesse.length };
+      for (let i = 0; i < anzahl; i++) ton.taktSpielen(ton.ctx, 10 + i * 2.5);
+      return { schwinger: schwinger.length - vorher.schwinger, stoesse: stoesse.length - vorher.stoesse };
+    };
+    const ruhig = takte(200);
+    const laut = (name) => ['thema', 'hoehe', 'aufbruch'].includes(name);
+    for (const name of ['thema', 'hoehe', 'aufbruch', 'ruhe', 'stille']) assert.ok(ton.gespielt.includes(name), `${name} kommt vor`);
+    for (let i = 1; i < ton.gespielt.length; i++) {
+      assert.notEqual(laut(ton.gespielt[i]), laut(ton.gespielt[i - 1]), `${ton.gespielt[i - 1]} dann ${ton.gespielt[i]}`);
     }
-    const erlaubt = new Set([2, 4, 7, 9, 0]); // Halbtoene ueber c
     for (const s of schwinger) {
-      const ueberC = Math.round(12 * Math.log2(s.frequency.value / 261.6256)) % 12;
-      assert.ok(erlaubt.has((ueberC + 120) % 12), `${s.frequency.value} Hz liegt nicht auf der Leiter`);
-      assert.ok(s.frequency.value >= 70 && s.frequency.value <= 1200, `${s.frequency.value} Hz: weder Brummen noch Pfeifen`);
+      const f = s.frequency.erst ?? s.frequency.value;
+      assert.ok(f >= 40 && f <= 4500, `${f} Hz: weder Brummen noch Pfeifen`);
     }
-    assert.ok(schwinger.length > 1000);
-    // Leise: der Regler der Musik steht weit unter dem der Geraeusche.
-    assert.ok(ton.musikRegler.gain.value > 0 && ton.musikRegler.gain.value <= 0.15);
+
+    // Es wird gekaempft: keine Ruhe mehr, und die Trommeln werden dichter.
+    ton.kampfMelden(1);
+    const ab = ton.gespielt.length;
+    const kampf = takte(200);
+    const imKampf = ton.gespielt.slice(ab);
+    assert.ok(imKampf.length >= 24, String(imKampf.length));
+    assert.ok(imKampf.every(laut), `im Kampf: ${imKampf.join(' ')}`);
+    assert.ok(kampf.stoesse > ruhig.stoesse * 1.5, `Schlaege: ${ruhig.stoesse} in Ruhe, ${kampf.stoesse} im Kampf`);
+    assert.ok(kampf.schwinger > ruhig.schwinger, 'der Bass treibt');
+
+    // Der Kampf verklingt von selbst - eine halbe Minute spaeter ist Ruhe.
+    jetzt += 30_000;
+    assert.equal(ton.kampfpegel(), 0);
+    const danach = ton.gespielt.length;
+    takte(40);
+    assert.ok(ton.gespielt.slice(danach).some((name) => !laut(name)), 'die Ruhe ist zurueck');
 
     // Im Hintergrund schweigt sie, und kommt zurueck.
     ton.sichtbarSetzen(false);
@@ -173,6 +276,109 @@ test('bedienung AC-60: die Musik spielt nur in der Partie, nach der ersten Handl
   }
 });
 
+test('bedienung AC-60: wer mitten in der Ruhe angegriffen wird, wartet nicht auf die Laute - der naechste Takt ist das Thema', () => {
+  const { Ausgang } = ausgangAufschreiben();
+  globalThis.AudioContext = Ausgang;
+  let jetzt = 0;
+  const ton = new Ton(speicher(), { uhr: () => jetzt, zufall: zufallMit(9) });
+  try {
+    ton.partieSetzen(true);
+    ton.entsperren();
+    clearTimeout(ton.musikUhr);
+    // Bis die Ruhe begonnen hat.
+    let t = 10;
+    while (ton.satz.name !== 'ruhe' || ton.satz.takt < 2) ton.taktSpielen(ton.ctx, (t += 2.5));
+    // Das Horn zum Angriff hebt den Kampfpegel ueber die Schwelle.
+    assert.equal(ton.spielen('angriff'), true);
+    assert.ok(ton.kampfpegel() >= 0.5);
+    ton.taktSpielen(ton.ctx, (t += 2.5));
+    assert.notEqual(ton.satz.name, 'ruhe');
+    assert.equal(ton.satz.takt, 1, 'ein neuer Satz hat begonnen');
+    // Arbeit ist kein Kampf, ein Schwert schon - auch wenn die Geraeusche aus sind.
+    jetzt += 60_000;
+    ton.spielen('hacken');
+    ton.spielen('hammer');
+    assert.equal(ton.kampfpegel(), 0);
+    ton.geraeuscheSetzen(false);
+    assert.equal(ton.spielen('schwert'), false, 'zu hoeren ist nichts');
+    assert.ok(ton.kampfpegel() > 0, 'aber die Musik weiss davon');
+    // Und mit der Partie ist der Kampf vorbei.
+    ton.partieSetzen(false);
+    assert.equal(ton.kampfpegel(), 0);
+  } finally {
+    clearTimeout(ton.musikUhr);
+    delete globalThis.AudioContext;
+  }
+});
+
+test('bedienung AC-62: Kampf und Arbeit klingen jedes Mal anders, an ihrem Ort im Bild - und vierzig Schwerter sind ein Klirren, kein Rauschen', () => {
+  const { Ausgang, schwinger, stoesse, orte } = ausgangAufschreiben();
+  globalThis.AudioContext = Ausgang;
+  let jetzt = 0;
+  const ton = new Ton(speicher(), { uhr: () => jetzt, zufall: zufallMit(2) });
+  try {
+    ton.entsperren();
+    // Jedes Geraeusch hat eine Art, die das Modul spielen kann, und einen
+    // kurzen Mindestabstand: es soll oft kommen duerfen, aber nicht zugleich.
+    for (const name of GERAEUSCHE) {
+      const klang = KLAENGE[name];
+      assert.equal(typeof ton[klang.art], 'function', `${name}: ${klang.art}`);
+      assert.ok(klang.abstand >= 80 && klang.abstand <= 600, `${name}: ${klang.abstand} ms`);
+      assert.ok(klang.laut > 0 && klang.laut <= 0.5, `${name}: ${klang.laut}`);
+      const vorher = schwinger.length + stoesse.length;
+      jetzt += 1000;
+      assert.equal(ton.spielen(name, { laut: 0.5, seite: 0 }), true, name);
+      assert.ok(schwinger.length + stoesse.length > vorher, `${name} wird zu Schall`);
+    }
+    // Was kaempft, hebt die Musik in den Kampf; was arbeitet, nicht.
+    for (const name of ['schwert', 'hieb', 'pfeil', 'wurf', 'einschlag', 'treffer', 'einsturz']) assert.ok(KLAENGE[name].kampf > 0, name);
+    for (const name of ['hacken', 'pickel', 'hammer']) assert.equal(KLAENGE[name].kampf, undefined, name);
+    // Im Protokoll stehen nur die Signale; Kampf und Arbeit werden gezaehlt.
+    assert.deepEqual(ton.protokoll, []);
+    assert.equal(ton.gezaehlt.get('schwert'), 1);
+
+    // Der Ort: links im Bild klingt links, und am Rand leiser.
+    jetzt += 1000;
+    orte.length = 0;
+    ton.spielen('schwert', { laut: 0.4, seite: -0.8 });
+    assert.equal(orte.length, 1);
+    assert.equal(orte[0].pan.value, -0.8);
+    // Kein Schlag klingt wie der vorige: die Hoehe wird gewuerfelt.
+    const hoehen = [];
+    for (let i = 0; i < 12; i++) {
+      jetzt += 1000;
+      schwinger.length = 0;
+      ton.spielen('schwert', { laut: 1, seite: 0 });
+      hoehen.push(Math.round(schwinger[0].frequency.value));
+    }
+    assert.ok(new Set(hoehen).size >= 10, hoehen.join(' '));
+    assert.ok(hoehen.every((f) => f >= 1400 && f <= 2900), 'hell, aber kein Pfeifen');
+
+    // Vierzig Kaempfer schlagen eine Sekunde lang, alle 25 Millisekunden
+    // einer: zu hoeren sind hoechstens acht Schlaege.
+    jetzt += 1000;
+    const vorher = ton.gezaehlt.get('schwert');
+    for (let i = 0; i < 40; i++) {
+      ton.spielen('schwert', { laut: 1, seite: 0 });
+      jetzt += 25;
+    }
+    const gehoert = ton.gezaehlt.get('schwert') - vorher;
+    assert.ok(gehoert >= 5 && gehoert <= 8, String(gehoert));
+  } finally {
+    delete globalThis.AudioContext;
+  }
+});
+
+test('bedienung AC-62: das Spielbild nennt, was zu hoeren ist - Schlaege im Takt der Figur, Pfeil, Wurf, Einschlag, Treffer, Einsturz', () => {
+  const ansicht = lesen('public/ansicht.js');
+  const genannt = new Set([...ansicht.matchAll(/this\.(?:geraeusch|klangAn)\('([a-z]+)'/g)].map((m) => m[1]));
+  assert.deepEqual([...genannt].sort(), GERAEUSCHE);
+  // Zu hoeren ist nur, was im Bild steht: jeder Weg fuehrt durch klangAn.
+  assert.match(ansicht, /geraeusch\(name, wx, wy\) \{\s+this\.klangAn\(name, this\.zuBild\(wx, wy\)\);/);
+  // Und app.js reicht den Ort weiter.
+  assert.match(lesen('public/app.js'), /ansicht\.beiEreignis = \(name, wo\) => ton\.spielen\(name, wo\);/);
+});
+
 test('bedienung AC-61: Geraeusche und Musik sind einzeln abschaltbar, und der Browser merkt sich die Wahl', () => {
   const ort = speicher();
   const ton = new Ton(ort);
@@ -181,6 +387,7 @@ test('bedienung AC-61: Geraeusche und Musik sind einzeln abschaltbar, und der Br
 
   ton.geraeuscheSetzen(false);
   assert.equal(ton.spielen('einheit'), false, 'abgeschaltet klingt nichts');
+  assert.equal(ton.spielen('schwert', { laut: 1, seite: 0 }), false, 'auch kein Schwert');
   assert.equal(ton.protokoll.length, 0);
   assert.equal(ton.musik, true, 'die Musik ist davon nicht betroffen');
 

@@ -71,6 +71,11 @@ function jetztPhase(id) {
   return (halt ?? performance.now()) / 110 + id * 1.7;
 }
 
+// Wann im Umlauf eines Schlags man ihn hoert (bedienung AC-62): in den Tafeln
+// `arbeiten` und `angreifen` ist das Werkzeug ab dem fuenften von acht
+// Bildern unten.
+const SCHLAG_PHASE = 0.45;
+
 // Wie lange eine gerenderte Figur faellt, bei Spielgeschwindigkeit 1,0. Am
 // Boden liegt sie zwei Spielsekunden (kampf AC-10) - gut die Haelfte davon.
 const STERBEN_MS = 850;
@@ -179,6 +184,7 @@ export class Ansicht {
     this.richtungen = new Map(); // Einheit → 0 bis 7, fuer gerenderte Figuren (ADR-0016)
     this.gefallen = new Map(); // Einheit → wann das Bild sie zum ersten Mal gefallen sah
     this.schlagblicke = new Map(); // Einheit → wann zuletzt nach ihrem Gegner gesucht wurde
+    this.schlaege = new Map(); // Einheit → der wievielte Schlag zuletzt zu hoeren war (bedienung AC-62)
     this.tiere = new Map();
     this.vorraete = { holz: 0, nahrung: 0, gold: 0, stein: 0, bev: 0, raum: 0 };
     // Was im letzten Bild in welcher Reihenfolge gezeichnet wurde - fuer den
@@ -227,6 +233,7 @@ export class Ansicht {
     this.richtungen = new Map();
     this.gefallen = new Map();
     this.schlagblicke = new Map();
+    this.schlaege = new Map();
     this.pfeile = [];
     this.takt = 0;
     // Null, nicht der alte Stand: sonst meldete der erste Zustand der neuen
@@ -308,6 +315,80 @@ export class Ansicht {
     if (this.meldet) this.beiEreignis(name);
   }
 
+  /**
+   * Ein Geraeusch an einem Ort der Karte (bedienung AC-62): ein Pfeil, ein
+   * Einschlag, ein Gebaeude, das faellt. Zu hoeren ist nur, was im Bild steht.
+   */
+  geraeusch(name, wx, wy) {
+    this.klangAn(name, this.zuBild(wx, wy));
+  }
+
+  /**
+   * Ein Geraeusch an einem Punkt des Bildes: ausserhalb des Fensters still,
+   * am Rand leiser als in der Mitte, weit herausgezoomt leiser als nah - und
+   * auf der Seite, auf der es geschieht.
+   */
+  klangAn(name, punkt) {
+    if (!this.meldet || !this.laeuft) return;
+    const breite = this.leinwand.clientWidth;
+    const hoch = this.leinwand.clientHeight;
+    if (!breite || !hoch) return;
+    const rand = 60;
+    if (punkt.x < -rand || punkt.x > breite + rand || punkt.y < -rand || punkt.y > hoch + rand) return;
+    const naehe = Math.min(1, 0.45 + this.kamera.zoom * 0.4);
+    const abseits = Math.min(1, Math.hypot(punkt.x / breite - 0.5, punkt.y / hoch - 0.5) * 2);
+    this.beiEreignis(name, {
+      laut: naehe * (1 - 0.35 * abseits),
+      seite: Math.max(-1, Math.min(1, (punkt.x / breite) * 2 - 1)) * 0.8,
+    });
+  }
+
+  /**
+   * Wer schlaegt, ist zu hoeren (bedienung AC-62) - im Takt seines Bildes:
+   * einmal je Umlauf, wenn Axt, Hammer oder Schwert unten ist. Der Server
+   * meldet Schlaege im Nahkampf nicht einzeln, und er muss es nicht: was
+   * klingt, soll zu dem passen, was man sieht.
+   */
+  schlagHoeren(einheit, punkt) {
+    if (halt !== null) return;
+    const nummer = Math.floor(jetztPhase(einheit.i) / (Math.PI * 2) - SCHLAG_PHASE);
+    const zuletzt = this.schlaege.get(einheit.i);
+    if (this.schlaege.size > 800) this.schlaege.clear();
+    this.schlaege.set(einheit.i, nummer);
+    // Nur der Schlag, der auf den vorigen folgt: wer eben erst anfaengt,
+    // steht noch irgendwo im Umlauf.
+    if (zuletzt !== nummer - 1) return;
+    const art = this.arten[einheit.k] || 'dorfbewohner';
+    const werte = this.werte.einheiten[art] || {};
+    if (art === 'dorfbewohner') {
+      // Der Zustand sagt nicht, was er tut - nur dass. Wer an einer
+      // Baustelle steht, haemmert; sonst entscheidet, was er traegt.
+      if (this.anBaustelle(einheit)) this.klangAn('hammer', punkt);
+      else if (einheit.a === 'h') this.klangAn('hacken', punkt);
+      else if (einheit.a === 'g' || einheit.a === 's') this.klangAn('pickel', punkt);
+      return;
+    }
+    // Wer nicht angreift (der Moench), ist still; wer schiesst oder wirft,
+    // ist am Geschoss zu hoeren.
+    if (!werte.angriff || werte.reichweite > 0) return;
+    if (werte.nurGebaeude) this.klangAn('treffer', punkt);
+    // Nicht jeder Hieb trifft Eisen: jeder dritte geht ins Leere oder aufs Holz.
+    else if ((nummer + einheit.i) % 3 === 0) this.klangAn('hieb', punkt);
+    else this.klangAn('schwert', punkt);
+  }
+
+  /** Steht die Einheit an einer Baustelle, die sie bauen kann? */
+  anBaustelle(einheit) {
+    const team = this.teamVon(einheit.b);
+    for (const gebaeude of this.gebaeude.values()) {
+      if ((gebaeude.u ?? 1) >= 1) continue;
+      if (gebaeude.b !== einheit.b && (!team || team !== this.teamVon(gebaeude.b))) continue;
+      const mitte = this.gebaeudeMitte(gebaeude);
+      if (Math.max(Math.abs(mitte.x - einheit.x), Math.abs(mitte.y - einheit.y)) <= mitte.groesse / 2 + 1.6) return true;
+    }
+    return false;
+  }
+
   zustand(nachricht) {
     this.meldet = this.eingespielt;
     this.eingespielt = true;
@@ -327,9 +408,18 @@ export class Ansicht {
       // Ein Turm schiesst von oben (bauen AC-29): der Server schickt die Mitte
       // seiner Grundflaeche, die Hoehe kennt nur die Zeichnung.
       const oben = this.schussHoeheBei(x0, y0);
+      const dauer = Math.max(150, (weite / 7) * 1000);
       this.pfeile.push({
-        x0, y0, x1, y1, weite, oben, stein: stein === 1, start: jetzt, dauer: Math.max(150, (weite / 7) * 1000),
+        x0, y0, x1, y1, weite, oben, stein: stein === 1, start: jetzt, dauer,
       });
+      // Zu hoeren (bedienung AC-62): die Sehne beim Schuetzen, der Wurfarm
+      // beim Mangonel - und der Stein dort, wo er herunterkommt.
+      if (stein === 1) {
+        this.geraeusch('wurf', x0, y0);
+        setTimeout(() => this.geraeusch('einschlag', x1, y1), dauer);
+      } else {
+        this.geraeusch('pfeil', x0, y0);
+      }
     }
     for (const aenderung of nachricht.felder || []) {
       if (this.karte.felder[aenderung.i] !== aenderung.a) {
@@ -359,11 +449,24 @@ export class Ansicht {
       }
     }
     for (const gebaeude of nachricht.gebaeude || []) {
-      if (gebaeude.weg) this.gebaeude.delete(gebaeude.i);
-      else {
+      if (gebaeude.weg) {
+        // Es faellt (bedienung AC-62) - zu hoeren, wenn es vorher getroffen
+        // war: ein abgesagter Bau und eine abgeerntete Farm stuerzen nicht ein.
+        const alt = this.gebaeude.get(gebaeude.i);
+        if (alt && alt.h !== undefined) {
+          const mitte = this.gebaeudeMitte(alt);
+          this.geraeusch('einsturz', mitte.x, mitte.y);
+        }
+        this.gebaeude.delete(gebaeude.i);
+      } else {
         // Eben fertig geworden (bedienung AC-59): vorher im Bau, jetzt nicht mehr.
         const alt = this.gebaeude.get(gebaeude.i);
         if (gebaeude.b === this.ich && alt && (alt.u ?? 1) < 1 && (gebaeude.u ?? 1) >= 1) this.ereignis('gebaeude');
+        // Getroffen (bedienung AC-62): es hat weniger Leben als eben noch.
+        if (alt && gebaeude.h !== undefined && gebaeude.h < (alt.h ?? Infinity) && (gebaeude.u ?? 1) >= (alt.u ?? 1)) {
+          const mitte = this.gebaeudeMitte(gebaeude);
+          this.geraeusch('treffer', mitte.x, mitte.y);
+        }
         this.gebaeude.set(gebaeude.i, gebaeude);
       }
     }
@@ -453,13 +556,27 @@ export class Ansicht {
       // Verbuendete erinnert man nicht: man sieht sie (spielziel AC-19) -
       // ausser waehrend der Frist einer Kuendigung (AC-24).
       if (this.teiltSicht(b.b)) continue;
-      const mitte = this.gebaeudeMitte(b);
-      if (this.nebel.sieht(mitte.x, mitte.y)) this.erinnert.set(b.i, { ...b });
+      if (this.siehtGebaeude(b)) this.erinnert.set(b.i, { ...b });
     }
     for (const [id, b] of this.erinnert) {
-      const mitte = this.gebaeudeMitte(b);
-      if (!this.gebaeude.has(id) && this.nebel.sieht(mitte.x, mitte.y)) this.erinnert.delete(id);
+      if (!this.gebaeude.has(id) && this.siehtGebaeude(b)) this.erinnert.delete(id);
     }
+  }
+
+  /**
+   * Sieht man ein Feld der Grundflaeche? Dieselbe Regel wie auf dem Server
+   * (`welt.siehtGebaeude`): er schickt ein Gebaeude, sobald ein Feld davon in
+   * Sicht ist. Zaehlte hier nur die Mitte, kennte der Browser ein
+   * Dorfzentrum, an dessen Rand der Spaeher steht, und zeichnete es nicht -
+   * der Spaeher dahinter waere ein Umriss vor leerem Schwarz (Rueckmeldung
+   * des Benutzers, 2026-11-12).
+   */
+  siehtGebaeude(gebaeude) {
+    const n = this.werte.gebaeude[gebaeude.art]?.groesse || 1;
+    const x0 = gebaeude.x - Math.floor(n / 2);
+    const y0 = gebaeude.y - Math.floor(n / 2);
+    for (let y = y0; y < y0 + n; y++) for (let x = x0; x < x0 + n; x++) if (this.nebel.sieht(x, y)) return true;
+    return false;
   }
 
   /**
@@ -471,11 +588,11 @@ export class Ansicht {
     const liste = [];
     for (const b of this.gebaeude.values()) {
       if (this.teiltSicht(b.b)) liste.push(b);
-      else if (this.nebel.sieht(this.gebaeudeMitte(b).x, this.gebaeudeMitte(b).y)) liste.push(b);
+      else if (this.siehtGebaeude(b)) liste.push(b);
     }
     for (const [id, b] of this.erinnert) {
       const jetzt = this.gebaeude.get(id);
-      if (jetzt && this.nebel.sieht(this.gebaeudeMitte(jetzt).x, this.gebaeudeMitte(jetzt).y)) continue;
+      if (jetzt && this.siehtGebaeude(jetzt)) continue;
       liste.push(b);
     }
     return liste;
@@ -2047,6 +2164,7 @@ export class Ansicht {
     // Flache Gebaeude (Farmen) gehoeren zum Boden: unter Figuren und Baeume.
     // Fremde nur, wie man sie sieht oder erinnert (kampf AC-12).
     const gezeigt = this.gezeigteGebaeude();
+    this.gezeigt = gezeigt;
     this.mauern = this.mauernSammeln(gezeigt);
     for (const gebaeude of gezeigt) {
       if (!this.werte.gebaeude[gebaeude.art]?.begehbar) continue;
@@ -2308,7 +2426,9 @@ export class Ansicht {
     const tiefe = einheit.x + einheit.y;
     const figur = this.figurenHoehe();
     const decken = [];
-    for (const gebaeude of this.gebaeude.values()) {
+    // Nur was im Bild steht, verdeckt: ein Gebaeude, das der Nebel nicht
+    // zeigt, macht niemanden zum Umriss.
+    for (const gebaeude of this.gezeigt || this.gebaeude.values()) {
       if (this.werte.gebaeude[gebaeude.art]?.begehbar) continue;
       // Eine Baustelle, von der erst Fundament und Zaun stehen, verdeckt
       // niemanden - ihr Boden laege sonst als Maske ueber den Fuessen.
@@ -2819,7 +2939,10 @@ export class Ansicht {
 
     // Wer schlaegt, schaut auf den, den er schlaegt - nicht dorthin, wohin er
     // zuletzt ging.
-    if (einheit.w && !laeuft) this.schlagRichtung(einheit);
+    if (einheit.w && !laeuft) {
+      this.schlagRichtung(einheit);
+      this.schlagHoeren(einheit, punkt);
+    }
 
     // Ein Dorfbewohner mit Ladung traegt sie sichtbar: Holzbuendel oder
     // Beerenkorb auf dem Ruecken (bedienung AC-16, darstellung AC-6).

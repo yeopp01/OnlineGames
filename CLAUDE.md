@@ -37,6 +37,7 @@ npm run sicht -- schautafel.html  # eine Seite als Wegwerfbild ansehen, ohne Tes
 npm run sicht -- --spiel --zoom 2 --ziel wald  # dasselbe fuer eine laufende Partie
 npm run sicht -- --spiel --waehlen speerkaempfer --zeitalter 1  # die Auswahlleiste im breitesten Zustand
 npm run tafel -- "t.anmutung('gebaeude', 'haus')"  # auf der Schautafel messen, Ergebnis als JSON
+npm run ton:messen   # den Ton offline rechnen: Pegel je Klang und der Musik, dazu zwei WAV zum Anhoeren
 npm run e2e:laufzeiten -- strategie   # Dauer je Datei aus dem letzten Browserlauf, die langsamsten Faelle (--neu faehrt erst einen)
 npm run e2e:daten     # nur die Browserfaelle, die "alles aus den Daten" aufstellen - nach jedem neuen Eintrag in daten.js
 npm run pruefstand:vergleich          # KI gegen KI: Arbeitsstand neben HEAD, dieselben Partien (--saetze 2: 1-20 und 21-40)
@@ -170,7 +171,7 @@ Umfang hinzufügt, dort nachsehen.
 
 ## Stand
 
-**510 von 631 Kriterien fertig.** 804 Tests ohne Browser, 261 im Browser. Die
+**511 von 632 Kriterien fertig.** 808 Tests ohne Browser, 263 im Browser. Die
 Übersicht ist der Bericht: `npm run qa:report`.
 
 Gebaut ist der Unterbau: Räume, Übertragung, Karte, Wegfindung, Sammeln,
@@ -584,10 +585,22 @@ fremdes Gebäude zeigt Namen, Besitzer und Leben, gestrichelt umrandet, ohne
 Befehle (`ansicht.angesehen`). **Der Späherreiter ist ab der Feudalzeit
 schneller** (einheiten AC-57): `ZEITALTER[1].wirkung`, 1,2 → 1,55 Felder je
 Sekunde, gelesen wie jede Wirkung über `welt.wirkungen()`; der Wert stammt
-nicht aus `vorlage-aoe2.md`. **Ton** (bedienung AC-59 bis AC-61,
-`public/ton.js`): Geräusche zu Ereignissen und leise Musik, alles im Browser
-erzeugt (kein Material von außen), zwei Schalter in der Tastenübersicht.
-Gemessen ist, dass und wann etwas klingt — wie es klingt, hat niemand gehört.
+nicht aus `vorlage-aoe2.md`. **Ton** (bedienung AC-59 bis AC-62,
+`public/ton.js`): Signale zu Ereignissen (`KLAENGE` mit `noten`), **Kampf
+und Arbeit dort, wo sie im Bild stehen** (`KLAENGE` mit `art`, jedes Mal
+neu gewürfelt; `ansicht.klangAn` gibt Lautstärke und Seite aus der Lage im
+Bild, außerhalb ist es still; Schläge klingen im Takt der Figur,
+`ansicht.schlagHoeren`) und **Musik als Stück** — Thema, Höhe und Aufbruch
+in d-Moll als Noten (`SAETZE`, `AKKORDE`), dazwischen gewürfelte Ruhe; im
+Kampf (`ton.kampfMelden`, verklingt in 25 s) dichtere Trommeln und keine
+Ruhe. Alles im Browser erzeugt (kein Material von außen), zwei Schalter in
+der Tastenübersicht. Wer an den Lautstärken dreht, misst offline nach
+(`npm run ton:messen`, schreibt auch WAV; zuletzt Musik 0,06 effektiv, im Gefecht
+keine Spitze über 0,65). Gemessen ist, dass und wann etwas klingt — wie es
+klingt, entscheidet ein Ohr. **Ein fremdes Gebäude steht im Bild, sobald
+ein Feld seiner Grundfläche in Sicht ist** (kampf AC-12,
+`ansicht.siehtGebaeude`) — dieselbe Regel wie `welt.siehtGebaeude`; nur was
+im Bild steht, verdeckt eine Einheit zum Umriss.
 **Die gerenderten Bilder sind die Vorgabe** (darstellung AC-22, AC-24,
 ADR-0016, 2026-11-12): Figuren, Gelände und jedes Gebäude samt Baustelle
 kommen aus den Tafeln unter `public/bilder/`, auch die Knopfbilder der
