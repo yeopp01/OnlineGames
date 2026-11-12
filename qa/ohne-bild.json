@@ -23,6 +23,11 @@
     },
     {
       "spec": "10-strategie/ki.md",
+      "ac": "AC-30",
+      "begruendung": "Dass Wehrstein zu Tuermen neigt, ist eine Zahl ueber vierzig Partien: zwei Wachtuerme in jeder Partie, die Wehrstein spielt, und keiner bei den anderen Haeusern; dazu, dass die Partien dennoch wie in fahrplan AC-11 enden. Ein Standbild zeigt zwei Tuerme an einem Dorf, aber nicht, dass sie von der Neigung des Hauses kommen statt von irgendeiner KI - und wie ein Wachturm aussieht und schiesst, zeigt das Bild zu bauen AC-29 und kampf AC-18."
+    },
+    {
+      "spec": "10-strategie/ki.md",
       "ac": "AC-27",
       "begruendung": "Wozu die KI neigt, ist eine Haeufigkeit ueber viele Partien: Eschenbruch bildet ueber vierzig Startwerte im Mittel 107 Einheiten aus der Schiessanlage aus, die anderen Haeuser 42; Distelhag 82 aus der Kaserne gegen 35. Ein Standbild zeigt eine KI mit einigen Bogenschuetzen - das tut jedes Haus, und ob es mehr sind als sonst, steht in keinem einzelnen Bild. Belegt im Pruefstand mit denselben Partien ohne Neigung als Gegenprobe; was die KI dabei baut und ausbildet, sieht im Bild aus wie bei ki AC-9 und ki AC-11, der Karren wie bei einheiten AC-40."
     },

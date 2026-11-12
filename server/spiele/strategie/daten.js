@@ -494,8 +494,10 @@ const HANDEL = {
 // baut es nach und bedient es vor den anderen; was sie darin ausbildet,
 // lesen die Daten des Gebaeudes (ki AC-17). `goldKnapp` verschiebt, ab
 // welchem Gold in Reichweite sie zu handeln beginnt (ki AC-26, sonst 800).
-// Wehrstein neigt zu Tuermen (ki AC-30) - das braucht eine KI, die Stein
-// sammelt, und wartet mit ihr.
+// Ein Schwerpunkt, der nichts ausbildet (Wehrsteins Wachturm, ki AC-30), ist
+// ein Bauwerk: davon baut die KI ab seinem Zeitalter, nach dem ersten
+// Militaergebaeude und dem ersten Aufbruch, bis zu `anzahl` am Dorf und stellt
+// `steinSammler` an den Stein, solange welche fehlen (`ki.bauwerkePruefen`).
 // Silberfurt handelt frueher (ki AC-27): gleich mit der Ritterzeit, nicht erst,
 // wenn das Gold in Reichweite knapp wird - jede Menge Gold ist "knapp".
 // Gemessen in Runde 174: 6,5 Karren je Partie statt 0,8, und KI gegen KI
@@ -519,6 +521,7 @@ const HAEUSER = {
     name: 'Wehrstein', sitz: 'Gebirge', wahlspruch: 'Stein vergisst nicht.',
     boni: { sammeln: { stein: 1.15 }, gebaeude: { lebenAnteil: 0.1, reichweite: 1 } },
     mannschaft: { gebaeude: { sicht: 2 } },
+    ki: { schwerpunkt: 'wachturm', anzahl: 2, steinSammler: 3 },
   },
   silberfurt: {
     name: 'Silberfurt', sitz: 'Flussstadt', wahlspruch: 'Alles hat seinen Preis.',

@@ -21,6 +21,10 @@
 // Sieger, 38 von 40 vor Minute 60, Median 42,9, die laengste 68,5. Dieselben
 // Haeuser ohne die Neigung der KI (HEAD vor Runde 174): 37 von 40, Median
 // 44,2. Aus denselben Partien liest der zweite Test, wozu jedes Haus neigt.
+// Seit Runde 175 baut Wehrstein zwei Tuerme (ki AC-30): 36 von 40 vor
+// Minute 60, Median 44,9 - **knapp**. Mit vier Tuermen waren es 31 und
+// 46,8, mit zweien vor dem ersten Angriff blieben Startwert 14 und 34 ohne
+// Sieger (beide Distelhag gegen Wehrstein, ein Patt mit leeren Vorraeten).
 //
 // Vierzig Partien bis Minute 90 rechnen hintereinander rund drei Minuten; vier
 // Faeden mit je zehn (`nebel-arbeiter.mjs`) etwa eine. Hier, nicht im ersten
@@ -89,7 +93,9 @@ test('fahrplan AC-11 und ki AC-13: KI gegen KI im Nebel endet ueber 40 Startwert
 
 // Wozu ein Haus neigt (ki AC-27): ein Gebaeude, gelesen aus `HAEUSER[..].ki`.
 // Gezaehlt wird, was dort ausgebildet wird - die Einheiten aus seinem
-// `bildetAus`. Gemessen in Runde 174, je Auftritt (16 je Haus):
+// `bildetAus`. Seit Runde 175 (Wehrsteins Tuerme): Eschenbruch 124 gegen
+// 44, Rappenstein 31 gegen 5, Silberfurt 6,9 gegen 0,2, Distelhag 82 gegen
+// 39. Gemessen in Runde 174, je Auftritt (16 je Haus):
 // Eschenbruch 107 aus der Schiessanlage gegen 42 im Schnitt der anderen,
 // Rappenstein 28 aus dem Stall gegen 4, Silberfurt 6,5 Karren gegen 0,1,
 // Distelhag 82 aus der Kaserne gegen 35.
@@ -116,15 +122,48 @@ test('ki AC-27: ueber 40 Startwerte bildet jedes Haus anderthalbmal so viel aus 
   }
   // Gegenprobe zum Messaufbau: jedes Haus gleich oft, gegen jedes andere.
   for (const haus of NAMEN) assert.equal(auftritte[haus], (2 * STARTWERTE) / NAMEN.length, `${haus}: ${auftritte[haus]} Auftritte`);
-  const mitNeigung = NAMEN.filter((haus) => HAEUSER[haus].ki?.schwerpunkt);
+  // Ein Schwerpunkt, der nichts ausbildet, ist ein Bauwerk - das zaehlt
+  // der Test zu ki AC-30.
+  const mitNeigung = NAMEN.filter((haus) => GEBAEUDE[HAEUSER[haus].ki?.schwerpunkt]?.bildetAus.length);
   assert.ok(mitNeigung.length >= 4, `nur ${mitNeigung.length} Haeuser mit Schwerpunkt`);
   for (const haus of mitNeigung) {
     const gebaeude = HAEUSER[haus].ki.schwerpunkt;
-    assert.ok(GEBAEUDE[gebaeude].bildetAus.length, `${haus}: ${gebaeude} bildet nichts aus`);
     const eigen = aus[haus][gebaeude] / auftritte[haus];
     const andere = NAMEN.filter((h) => h !== haus).map((h) => aus[h][gebaeude] / auftritte[h]);
     const schnitt = andere.reduce((a, b) => a + b, 0) / andere.length;
     assert.ok(eigen >= 1.5 * schnitt && eigen >= schnitt + 2,
       `${haus} aus ${gebaeude}: ${eigen.toFixed(1)} je Partie, die anderen ${schnitt.toFixed(1)}`);
+  }
+});
+
+// Ein Haus, das zu einem Bauwerk neigt (ki AC-30): Wehrstein zum Wachturm.
+// Gezaehlt wird jedes, das fertig wird, je Auftritt. Die KI baut bis heute
+// sonst keinen Turm - der Schnitt der anderen ist null, die Grenze
+// "anderthalbmal" haelt deshalb nur mit der zweiten: mindestens zwei je
+// Partie. Gemessen in Runde 175: Wehrstein 2,0 Tuerme je Partie, in jeder
+// der 16 zwei, die anderen keinen. Vom Start liegen 200 Stein da, ein Turm
+// kostet 125 - der zweite steht nur, wenn die KI Stein sammelt.
+test('ki AC-30: ueber 40 Startwerte baut ein Haus, das zu einem Bauwerk neigt, je Partie mindestens zwei davon und anderthalbmal so viele wie die anderen', async () => {
+  const enden = await allePartien();
+  const auftritte = {};
+  const gebaut = {};
+  for (const e of enden) {
+    for (const [id, haus] of Object.entries(e.haeuser)) {
+      auftritte[haus] = (auftritte[haus] || 0) + 1;
+      gebaut[haus] ??= {};
+      for (const [art, zahl] of Object.entries(e.gebaut[id] || {})) gebaut[haus][art] = (gebaut[haus][art] || 0) + zahl;
+    }
+  }
+  const bauwerk = NAMEN.filter((haus) => {
+    const art = HAEUSER[haus].ki?.schwerpunkt;
+    return art && !GEBAEUDE[art].bildetAus.length;
+  });
+  assert.ok(bauwerk.length >= 1, 'kein Haus neigt zu einem Bauwerk');
+  for (const haus of bauwerk) {
+    const art = HAEUSER[haus].ki.schwerpunkt;
+    const eigen = (gebaut[haus][art] || 0) / auftritte[haus];
+    const andere = NAMEN.filter((h) => h !== haus).map((h) => (gebaut[h][art] || 0) / auftritte[h]);
+    const schnitt = andere.reduce((a, b) => a + b, 0) / andere.length;
+    assert.ok(eigen >= 2 && eigen >= 1.5 * schnitt, `${haus}: ${eigen.toFixed(1)} ${art} je Partie, die anderen ${schnitt.toFixed(1)}`);
   }
 });

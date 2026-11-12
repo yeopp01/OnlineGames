@@ -165,7 +165,7 @@ Umfang hinzufügt, dort nachsehen.
 
 ## Stand
 
-**462 von 599 Kriterien fertig.** 735 Tests ohne Browser, 210 im Browser. Die
+**463 von 599 Kriterien fertig.** 736 Tests ohne Browser, 210 im Browser. Die
 Übersicht ist der Bericht: `npm run qa:report`.
 
 Gebaut ist der Unterbau: Räume, Übertragung, Karte, Wegfindung, Sammeln,
@@ -486,7 +486,13 @@ Leben oder Nahrung (`tests/strategie-mannschaft.test.mjs`).
 in `HAEUSER` — ein Militärgebäude als Schwerpunkt baut sie zuerst, baut es
 nach und bedient es zuerst, Silberfurt handelt ab der Ritterzeit. Der
 Nebeltest zu fahrplan AC-11 spielt seitdem mit zwei Häusern je Partie
-(`tests/partien/ki-im-nebel.test.mjs`); Wehrsteins Türme sind ki AC-30.
+(`tests/partien/ki-im-nebel.test.mjs`). **Wehrstein baut Türme** (ki
+AC-30): ein Schwerpunkt, der nichts ausbildet, ist ein Bauwerk
+(`ki.bauwerkePruefen`) — zwei Wachtürme am Dorf, drei Sammler am Stein,
+erst nach dem ersten Aufbruch, sonst kostet der Stein den ersten Angriff.
+Der Nebeltest steht damit bei 36 von 40 vor Minute 60, Median 44,9 —
+knapp unter der Grenze. Eschenbruch gewinnt 13 von 16 Partien, Silberfurt
+5 — ein Befund für spielziel AC-16.
 **Voller Wohnraum fällt auf** (bedienung AC-43): wartet ein eigener
 Auftrag, steht die Bevölkerung oben rot umrandet, auch ohne Auswahl
 (`ansicht.wartetEtwas()`).

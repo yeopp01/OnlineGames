@@ -1944,6 +1944,27 @@ ihn, mit Gegenprobe an beiden Formen. Fünf Bilder neu, alle angesehen.
 Neueste oben. Eine Zeile je Runde: Nummer, Datum, Kriterien, Ergebnis,
 wichtigste Erkenntnis.
 
+- **175** · 2026-11-12 · ki AC-30 **fertig**, E5 ganz: Wehrstein baut
+  Türme — `ki: { schwerpunkt: 'wachturm', anzahl: 2, steinSammler: 3 }`;
+  ein Schwerpunkt, der nichts ausbildet, ist ein Bauwerk
+  (`ki.bauwerkePruefen`), Stein steht jetzt im Lagerplan. Über vierzig
+  Startwerte: zwei Türme in jeder der 16 Wehrstein-Partien, die anderen
+  keinen; 40 mit Sieger, 36 vor Minute 60, Median 44,9 — **0,1 unter der
+  Grenze**, das ist knapp. Gelernt: **der Stein kostet den ersten
+  Angriff.** Vier Türme: 31 vor Minute 60, Median 46,8; zwei Türme gleich
+  mit dem ersten Militärgebäude: Startwert 14 und 34 ohne Sieger (beide
+  Distelhag gegen Wehrstein, Patt mit leeren Vorräten). Erst „nach dem
+  ersten Aufbruch" hält es, die Gegenprobe ohne diese Bedingung fällt an
+  Startwert 14. Partien ohne Wehrstein rechnen Takt für Takt wie vorher.
+  Neu: `npm run pruefstand:verlauf -- --haeuser a,b`. **Befund für
+  spielziel AC-16:** Siege je Auftritt Eschenbruch 13/16, Rappenstein und
+  Wehrstein 8/16, Distelhag 6/16, Silberfurt 5/16 — Eschenbruch liegt
+  vorn (124 aus der Schießanlage), Silberfurt hinten. Der Wächter zu
+  spielziel AC-17 fand den Hausnamen in einem Kommentar von `ki.js` — er
+  liest auch Kommentare, das ist richtig so. Vom Prüfer, nicht behoben:
+  Gold und Stein teilen das Bergbaulager, und `lagerPruefen` sieht im
+  selben Takt die eben bestellte Baustelle nicht — selten ein zweites
+  Lager, 100 Holz.
 - **174** · 2026-11-12 · ki AC-27 **fertig** (E5): die KI neigt zu ihrem
   Haus — `ki: { schwerpunkt, goldKnapp }` in `HAEUSER`, gelesen im
   Konstruktor als `this.neigung`. Ein Militärgebäude als Schwerpunkt baut

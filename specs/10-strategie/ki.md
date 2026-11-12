@@ -2,7 +2,7 @@
 
 **Bereich:** Strategie
 **Kuerzel:** ki
-**Stand:** 25/30 fertig · 5 offen
+**Stand:** 26/30 fertig · 4 offen
 
 ## Zweck
 
@@ -315,7 +315,7 @@ nicht die Regeln.
   zwanzig Startwerte hat jede KI, die die Ritterzeit erreicht und zehn
   Minuten darin bleibt, eine Burg und mindestens eine Spezialeinheit
   ausgebildet. Ohne das misst fahrplan AC-18 nichts.
-- **AC-30** `offen` **Wehrstein baut Türme** — Die KI, die Wehrstein
+- **AC-30** `fertig` **Wehrstein baut Türme** — Die KI, die Wehrstein
   spielt, baut ab der Feudalzeit Wachtürme an ihrem Dorf, mehr als jedes
   andere Haus. Dafür sammelt sie Stein (125 je Turm; vom Start sind 200
   da) — dieselbe Lücke wie bei AC-28, die eine löst sie für beide. Gelesen
@@ -323,7 +323,17 @@ nicht die Regeln.
   vierzig Startwerte wie bei AC-27 baut Wehrstein je Partie mindestens
   zwei Türme und anderthalbmal so viele wie die anderen im Schnitt, und KI
   gegen KI endet weiter wie in fahrplan AC-11. Abgetrennt von AC-27 in
-  Runde 174: die KI baut bis heute keinen Turm.
+  Runde 174: die KI baut bis heute keinen Turm. Gebaut als
+  `ki: { schwerpunkt: 'wachturm', anzahl: 2, steinSammler: 3 }` — ein
+  Schwerpunkt, der nichts ausbildet, ist ein Bauwerk (`ki.bauwerkePruefen`):
+  ab seinem Zeitalter, wenn das erste Militärgebäude steht **und das erste
+  Heer aufgebrochen ist**, eines nach dem anderen am Dorf; die
+  Steinsammler kommen vom Holz und gehen zurück, wenn alle stehen.
+  Gemessen: zwei Türme in jeder der 16 Partien, die anderen keinen; 40 von
+  40 mit Sieger, 36 vor Minute 60, Median 44,9 — knapp unter der Grenze.
+  Vier Türme ergaben 31 vor Minute 60 und Median 46,8; zwei Türme schon
+  vor dem ersten Angriff ließen zwei Partien ohne Sieger. Belegt in
+  `tests/partien/ki-im-nebel.test.mjs`.
 
 ### Stufe F — der Drache (aus ADR-0014)
 

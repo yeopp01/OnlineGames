@@ -46,7 +46,7 @@ const FEUDALZEIT_NAHRUNG = 500;
 // Ab dieser Entfernung zum naechsten Lager lohnt ein eigenes - und ab so
 // vielen, die dort arbeiten. Gold wird von wenigen geholt, liegt aber weit.
 const LAGER_AB = 5;
-const LAGER_ARBEITER = { holz: 3, nahrung: 3, gold: 2 };
+const LAGER_ARBEITER = { holz: 3, nahrung: 3, gold: 2, stein: 2 };
 // So weit darf ein Vorrat von der Basis liegen, damit die KI ihn nutzt.
 const REICHWEITE = 30;
 // So viele arbeiten hoechstens an den Schafen und an den Beeren - mehr stehen
@@ -243,6 +243,7 @@ class Ki {
     this.verteidigungen = 0;
     // Wann zuletzt ein Sammler den Rohstoff gewechselt hat, und wie oft (ki AC-12).
     this.zuletztUmverteilt = -Infinity;
+    this.zuletztStein = -Infinity; // wann zuletzt einer zum Stein oder zurueck ging (ki AC-30)
     this.umverteilt = 0;
     // Woran jede Einheit des Heeres zuletzt geschickt wurde, und wann (ki AC-16).
     this.heerZiel = new Map();
@@ -339,6 +340,7 @@ class Ki {
     if (this.ritterTakt === null && this.spieler.zeitalter > 1) this.ritterTakt = welt.takt;
     this.ritterzeitPruefen(zentrum, gebaeude, dorfbewohner);
     this.militaerPruefen(gebaeude, dorfbewohner);
+    this.bauwerkePruefen(gebaeude, dorfbewohner);
     this.heerPruefen(eigene);
     // Nach dem Heer: das hat eben wahrgenommen, was sie sieht.
     this.erkunden(eigene);
@@ -349,7 +351,7 @@ class Ki {
 
     // Lager an die Vorraete, sobald dort mehrere arbeiten und es weit ist.
     const rollen = this.rollen(dorfbewohner);
-    for (const rohstoff of ['holz', 'nahrung', 'gold']) this.lagerPruefen(rohstoff, rollen, gebaeude, dorfbewohner);
+    for (const rohstoff of ['holz', 'nahrung', 'gold', 'stein']) this.lagerPruefen(rohstoff, rollen, gebaeude, dorfbewohner);
 
     // Farmen, wenn Schafe und Beeren zur Neige gehen.
     this.farmenPruefen(rollen, gebaeude, dorfbewohner);
@@ -1143,6 +1145,42 @@ class Ki {
     // Mit der ganzen Liste, sonst greifen die Obergrenzen an Schafen und
     // Beeren nicht (Durchsicht Runde 90).
     if (this.schicken(wer, fehlt, dorfbewohner)) this.umverteilt += 1;
+  }
+
+  /**
+   * Ein Haus, das zu einem Bauwerk neigt (ki AC-30, etwa zum Wachturm):
+   * ab dessen Zeitalter, sobald das erste Militaergebaeude steht und das
+   * erste Heer aufgebrochen ist, baut die KI bis zu `anzahl` davon am
+   * Dorf, eines nach dem anderen. Was es an Stein kostet, holen
+   * `steinSammler` Dorfbewohner, je einer alle UMVERTEILEN_SEKUNDEN vom Holz
+   * abgezogen; stehen alle, geht je einer zurueck zum Holz. Alles aus den
+   * Daten des Hauses, kein Name. Frueher gebaut, kostete der Stein den
+   * ersten Angriff: Startwert 14 und 34 blieben bis Minute 90 ohne Sieger
+   * (Runde 175).
+   */
+  bauwerkePruefen(gebaeude, dorfbewohner) {
+    const { schwerpunkt, anzahl, steinSammler = 0 } = this.neigung;
+    if (!schwerpunkt || !anzahl || GEBAEUDE[schwerpunkt].bildetAus.length) return;
+    if (this.spieler.zeitalter < GEBAEUDE[schwerpunkt].zeitalter) return;
+    if (!gebaeude.some((g) => MILITAER.includes(g.art)) || this.angriffTakt === null) return;
+    const stehen = gebaeude.filter((g) => g.art === schwerpunkt);
+    const fertig = stehen.length >= anzahl && stehen.every((g) => g.fertig);
+    const anStein = dorfbewohner.filter((e) => this.rolle(e) === 'stein');
+    const braucht = fertig ? 0 : steinSammler;
+    if (this.welt.takt - this.zuletztStein >= UMVERTEILEN_SEKUNDEN * TAKTE_PRO_SEKUNDE) {
+      if (anStein.length < braucht) {
+        const wer = dorfbewohner.find((e) => !e.weg.length && this.rolle(e) === 'holz');
+        if (wer) {
+          this.zuletztStein = this.welt.takt;
+          this.schicken(wer, 'stein', dorfbewohner);
+        }
+      } else if (anStein.length > braucht) {
+        this.zuletztStein = this.welt.takt;
+        this.schicken(anStein[0], 'holz', dorfbewohner);
+      }
+    }
+    if (stehen.length >= anzahl || stehen.some((g) => !g.fertig)) return;
+    this.bauen(schwerpunkt, this.platzBeiBasis(schwerpunkt), dorfbewohner);
   }
 
   untaetig(einheit) {
