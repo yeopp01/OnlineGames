@@ -1300,6 +1300,11 @@
       "spec": "20-betrieb/betrieb.md",
       "ac": "AC-4",
       "begruendung": "Eine Einstellung des Prozesses, kein Bildschirm: der Server liest PORT aus seiner Umgebung und lauscht dort. Der Test startet ihn so, wie er im Betrieb laeuft - als eigenen Prozess mit node server/index.js und einem anderen Hafen - und fragt ihn dort ab. Im Browser saehe man dieselbe Seite wie unter jedem anderen Hafen."
+    },
+    {
+      "spec": "20-betrieb/betrieb.md",
+      "ac": "AC-2",
+      "begruendung": "Eine Zeile in der Betriebsdatei, kein Bildschirm: betrieb/docker-compose.yml setzt HINTER_PROXY auf 1, und mit ihr wird der Dienst auf dem Server gestartet. Der Test liest die Datei; dass der Server mit dieser Einstellung die Adresse des Fragenden aus X-Forwarded-For nimmt, belegen die Tests des Schutzes. Im Bild saehe man nur, dass eine Grenze greift - nicht, fuer wen sie gezaehlt wurde."
     }
   ]
 }

@@ -46,6 +46,7 @@ npm run pruefstand:haeuser   # jede Paarung der Haeuser 20-mal, Seiten abwechsel
 npm run waechter     # alle Waechter in Sekunden - vor dem Abschlusslauf
 npm run gegenprobe -- <datei> "<neu>" "<alt>" -- <befehl>  # Gegenprobe gegen die alte Zeile, schreibt die Datei immer zurueck
 npm run durchsicht   # Geaendertes und Neues als eine Datei fuer den Pruefer, der keine Shell hat - nennt den Pfad
+npm run ausrollen    # den Stand eines Commits auf den Server bringen (betrieb/README.md); -- --stand zeigt, was dort laeuft
 ```
 
 **Am Strategiespiel wird in Runden gearbeitet:** `/strategie-weiterbauen`

@@ -48,6 +48,7 @@ test('fahrplan AC-22: das Skript fuer den Server wartet auf leere Raeume, sicher
   const melden = stelle('echo "LAEUFT $STAND"');
   assert.ok(bauen < warten && warten < sichern && sichern < starten && starten < melden);
   assert.match(skript, /^STAND='abc1234567'$/m);
+  assert.match(skript, /^chmod 700 daten$/m, 'die Konten liest auf der Maschine sonst niemand');
   assert.match(skript, /^SOFORT='0'$/m);
   assert.match(serverSkript({ ...e, stand: 'abc1234567', sofort: true }), /^SOFORT='1'$/m);
 

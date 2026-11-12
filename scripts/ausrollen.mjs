@@ -74,8 +74,10 @@ export function serverSkript({ stand, adresse, rechner, ordner, caddy, warten, s
 const RUMPF = String.raw`
 cd "$ORDNER"
 mkdir -p daten sicherung
-# Im Abbild laeuft der Dienst als Benutzer node (1000).
+# Im Abbild laeuft der Dienst als Benutzer node (1000). Die Konten liest auf
+# der Maschine sonst niemand.
 chown 1000:1000 daten
+chmod 700 daten
 
 # Das Geheimnis der Sitzungen: einmal erzeugt, danach nie wieder angefasst -
 # sonst meldet jede Aktualisierung alle ab.
@@ -209,10 +211,22 @@ function archivSchicken(ssh, ziel, ordner, stand) {
 }
 
 // Von aussen: kommt die Seite ueber HTTPS, und nimmt der Server eine
-// Spielverbindung ueber wss an?
-async function vonAussen(adresse) {
-  const antwort = await fetch(`${adresse}/api/spiele`, { signal: AbortSignal.timeout(20000) });
-  if (!antwort.ok) throw new Error(`${adresse}/api/spiele antwortet mit ${antwort.status}`);
+// Spielverbindung ueber wss an? Beim ersten Mal holt der Proxy erst das
+// Zertifikat - das dauerte beim ersten Ausrollen rund zehn Sekunden, und bis
+// dahin scheitert jede Anfrage. Deshalb mit Geduld.
+async function vonAussen(adresse, geduld = 90000) {
+  const ende = Date.now() + geduld;
+  let antwort;
+  for (;;) {
+    try {
+      antwort = await fetch(`${adresse}/api/spiele`, { signal: AbortSignal.timeout(20000) });
+      if (antwort.ok) break;
+      throw new Error(`${adresse}/api/spiele antwortet mit ${antwort.status}`);
+    } catch (fehler) {
+      if (Date.now() >= ende) throw fehler;
+      await new Promise((weiter) => setTimeout(weiter, 3000));
+    }
+  }
   const { spiele } = await antwort.json();
   const { default: WebSocket } = await import('ws');
   await new Promise((gut, schlecht) => {

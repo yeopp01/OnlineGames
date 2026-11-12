@@ -2,7 +2,7 @@
 
 **Bereich:** Strategie
 **Kuerzel:** fahrplan
-**Stand:** 18/24 fertig · 6 offen
+**Stand:** 18/24 fertig · 2 in QA · 4 offen
 
 ## Zweck
 
@@ -378,10 +378,10 @@ ADR. Die Spec-Runde zur Stufe F ordnet sie in ihre Bauabfolge ein.
 
 ### Stufe G — Server
 
-- **AC-21** `offen` **Läuft auf dem VPS** — Das Spiel ist über HTTPS auf dem Hetzner-VPS
+- **AC-21** `in-qa` **Läuft auf dem VPS** — Das Spiel ist über HTTPS auf dem Hetzner-VPS
   erreichbar und übersteht einen Neustart der Maschine
   ([Betrieb](../20-betrieb/betrieb.md) AC-1 bis AC-7).
-- **AC-22** `offen` **Aktualisieren ist ein Befehl** — Ein Skript bringt den Stand eines Commits
+- **AC-22** `in-qa` **Aktualisieren ist ein Befehl** — Ein Skript bringt den Stand eines Commits
   auf den Server, wartet auf leere Räume und meldet, ob der Dienst wieder läuft.
 
 ## Sonderregeln — Ideen, noch nicht entschieden

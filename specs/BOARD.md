@@ -7,9 +7,9 @@ Eine Zeile je Abnahmekriterium. Gepflegt wird der Status in der Spec selbst,
 hier steht er zusammengefasst. Erzeugt mit `npm run specs:board`; als Seite
 mit Bildnachweisen, Filter und Suche mit `npm run qa:report`.
 
-**Gesamt:** 477/610 fertig · 3 in Arbeit · 5 in QA · 3 geplant · 114 offen · 8 zurueckgestellt
+**Gesamt:** 478/610 fertig · 3 in Arbeit · 11 in QA · 3 geplant · 107 offen · 8 zurueckgestellt
 
-**Nachweise:** 222 Kriterien mit Bild · 260 ohne Bild, begruendet in `qa/ohne-bild.json`
+**Nachweise:** 222 Kriterien mit Bild · 261 ohne Bild, begruendet in `qa/ohne-bild.json`
 
 ## Nach Spezifikation
 
@@ -25,7 +25,7 @@ mit Bildnachweisen, Filter und Suche mit `npm run qa:report`.
 | [Bedienung](10-strategie/bedienung.md)                         | -         | -     | -       | 7     | -               | 40     |
 | [Darstellung](10-strategie/darstellung.md)                     | 1         | -     | -       | 5     | -               | 18     |
 | [Einheiten und Befehle](10-strategie/einheiten-und-befehle.md) | -         | -     | -       | 17    | 1               | 29     |
-| [Fahrplan zum Klon](10-strategie/fahrplan.md)                  | -         | -     | -       | 6     | -               | 18     |
+| [Fahrplan zum Klon](10-strategie/fahrplan.md)                  | -         | 2     | -       | 4     | -               | 18     |
 | [Kampf](10-strategie/kampf.md)                                 | -         | -     | -       | 2     | 1               | 20     |
 | [Karte und Vorraete](10-strategie/karte-und-vorraete.md)       | -         | -     | -       | 2     | 3               | 12     |
 | [KI-Spieler](10-strategie/ki.md)                               | -         | -     | -       | 5     | -               | 27     |
@@ -43,7 +43,7 @@ mit Bildnachweisen, Filter und Suche mit `npm run qa:report`.
 | [Transfermarkt](15-manager/transfer.md)                        | -         | -     | -       | -     | 1               | 24     |
 | [Verträge](15-manager/vertraege.md)                            | -         | -     | -       | -     | -               | 11     |
 | [Vorstand](15-manager/vorstand.md)                             | -         | -     | -       | -     | -               | 10     |
-| [Betrieb](20-betrieb/betrieb.md)                               | 1         | -     | -       | 10    | -               | 1      |
+| [Betrieb](20-betrieb/betrieb.md)                               | 1         | 4     | -       | 5     | -               | 2      |
 
 ## In Arbeit (3)
 
@@ -51,13 +51,19 @@ mit Bildnachweisen, Filter und Suche mit `npm run qa:report`.
 - **Zeitalter gliedern die Partie** — [Spielziel und Partieverlauf](10-strategie/spielziel.md) AC-1
 - **Zahlen sind abrufbar** — [Betrieb](20-betrieb/betrieb.md) AC-8
 
-## In QA (5)
+## In QA (11)
 
 - **Einladungscodes erzeugen und zuruecknehmen** — [Konten und Anmeldung](00-plattform/konten.md) AC-20
 - **Verwaister Raum wird geschlossen** — [Raeume und Partien](00-plattform/raeume.md) AC-12
 - **Leerlauf endet nach 30 Minuten** — [Raeume und Partien](00-plattform/raeume.md) AC-13
 - **Nachrichtenflut trennt die Verbindung** — [Schutz vor Fremdnutzung](00-plattform/schutz.md) AC-7
+- **Läuft auf dem VPS** — [Fahrplan zum Klon](10-strategie/fahrplan.md) AC-21
+- **Aktualisieren ist ein Befehl** — [Fahrplan zum Klon](10-strategie/fahrplan.md) AC-22
 - **Alle Namen sind erfunden** — [Kader und Spieler](15-manager/kader.md) AC-7
+- **Nur über HTTPS** — [Betrieb](20-betrieb/betrieb.md) AC-1
+- **Dienst startet selbst neu** — [Betrieb](20-betrieb/betrieb.md) AC-3
+- **Aktualisierung wartet auf leere Räume** — [Betrieb](20-betrieb/betrieb.md) AC-6
+- **Konten überleben jede Aktualisierung** — [Betrieb](20-betrieb/betrieb.md) AC-7
 
 ## Geplant (3)
 
@@ -65,7 +71,7 @@ mit Bildnachweisen, Filter und Suche mit `npm run qa:report`.
 - **Kennwort vergessen** — [Konten und Anmeldung](00-plattform/konten.md) AC-5
 - **Automatischer Wiederaufbau** — [Uebertragung](00-plattform/uebertragung.md) AC-10
 
-## Offen (114)
+## Offen (107)
 
 - **Anmeldung ueber Google/GitHub** — [Konten und Anmeldung](00-plattform/konten.md) AC-6
 - **Bilanz je Konto** — [Konten und Anmeldung](00-plattform/konten.md) AC-14
@@ -147,8 +153,6 @@ mit Bildnachweisen, Filter und Suche mit `npm run qa:report`.
 - **Kein Haus vorn** — [Fahrplan zum Klon](10-strategie/fahrplan.md) AC-18
 - **Imperialzeit spielbar** — [Fahrplan zum Klon](10-strategie/fahrplan.md) AC-19
 - **Große Partie bleibt flüssig** — [Fahrplan zum Klon](10-strategie/fahrplan.md) AC-20
-- **Läuft auf dem VPS** — [Fahrplan zum Klon](10-strategie/fahrplan.md) AC-21
-- **Aktualisieren ist ein Befehl** — [Fahrplan zum Klon](10-strategie/fahrplan.md) AC-22
 - **Getarnte sieht man spät** — [Kampf](10-strategie/kampf.md) AC-22
 - **Den Drachen treffen nur Schützen** — [Kampf](10-strategie/kampf.md) AC-23
 - **Kein Spieler ist abgeschnitten** — [Karte und Vorraete](10-strategie/karte-und-vorraete.md) AC-7
@@ -171,12 +175,7 @@ mit Bildnachweisen, Filter und Suche mit `npm run qa:report`.
 - **Mehrere Menschen in einer Welt** — [Karriere: Saison um Saison](15-manager/karriere.md) AC-16
 - **Mehrere Manager, eine Welt** — [Spielziel und Abgrenzung](15-manager/spielziel.md) AC-1
 - **Der Termin wartet auf alle** — [Spielziel und Abgrenzung](15-manager/spielziel.md) AC-2
-- **Nur über HTTPS** — [Betrieb](20-betrieb/betrieb.md) AC-1
-- **Proxy-Adresse ist eingeschaltet** — [Betrieb](20-betrieb/betrieb.md) AC-2
-- **Dienst startet selbst neu** — [Betrieb](20-betrieb/betrieb.md) AC-3
 - **Neustart beendet Partien, angekündigt** — [Betrieb](20-betrieb/betrieb.md) AC-5
-- **Aktualisierung wartet auf leere Räume** — [Betrieb](20-betrieb/betrieb.md) AC-6
-- **Konten überleben jede Aktualisierung** — [Betrieb](20-betrieb/betrieb.md) AC-7
 - **Fehler ins Protokoll, Geheimnisse nie** — [Betrieb](20-betrieb/betrieb.md) AC-9
 - **Absturz trifft nicht alle Partien** — [Betrieb](20-betrieb/betrieb.md) AC-10
 - **Eine kleine Maschine reicht** — [Betrieb](20-betrieb/betrieb.md) AC-11

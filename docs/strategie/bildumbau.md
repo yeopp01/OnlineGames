@@ -322,6 +322,55 @@ die Zeilen unter „Für die Erkenntnisse" dorthin und erzeugt das Board neu
     und das Laden vor der Partie sind nicht gebaut. **Als Nächstes, mit dem
     Benutzer:** ansehen, dann zusammenführen nach `strategie` (dort kommt
     der Marktkarren in die Daten und ins Spielbild), dann R6.
+- **`strategie` ist eingebunden** (2026-11-12, Commits `e2def68` und
+  `81b5e0b`): die Runden 159 bis 189 liegen jetzt neben dem Bildumbau auf
+  `strategie-bildumbau`. Von Hand zusammengeführt: `CLAUDE.md`, ADR-0012,
+  `docs/adr/README.md`, der Fahrplan. Danach Browserlauf 226 von 226,
+  `npm run check` grün. **Der Zweig `strategie` selbst ist nicht
+  vorgespult** — er ist im Hauptbaum ausgecheckt, und dort arbeitet die
+  Parallelschleife. Zusammengeführt wird dort, wenn sie ruht:
+  `git merge strategie-bildumbau` im Hauptbaum (vorspulen geht nur, solange
+  `strategie` nicht weitergelaufen ist).
+  - **Zwei Fehler dabei, beide meine**: `git checkout strategie -- …` nahm
+    den Zweig, wie er in dem Augenblick stand, nicht wie er beim
+    Zusammenführen stand — die Schleife hatte inzwischen eine Runde
+    weitergebaut. Immer einen festen Commit nennen. Und
+    `pruefung | tail && git commit` committet auch nach einer gescheiterten
+    Prüfung: `&&` hängt am Ende der Röhre, nicht an der Prüfung.
+  - **Befund für die Schleife, hier nicht behoben:** schreibt ein Browserlauf
+    alle Bilder neu, zeigen bauen AC-24, AC-27, AC-28, bedienung AC-07 und
+    andere den Kartenrand statt der Gebäude. Ursache ist das Randschieben
+    aus Runde 184 (der Mauszeiger des Tests steht am Bildrand), nicht der
+    Bildumbau; die eingecheckten Bilder stammen aus Runde 169 und sind
+    unverändert übernommen.
+  - **Zwei Prüfläufe zugleich stören sich vermutlich**: die Tests ohne
+    Browser nehmen feste Häfen (4193 bis 4199), der Hauptbaum und dieser
+    Arbeitsbaum dieselben. Am 2026-11-12 hing `tests/konten.test.mjs` hier
+    zwei Stunden ohne Ausgabe; allein läuft er in 2,5 s. Die Ursache ist
+    nicht nachgestellt — dass nebenan die Schleife lief, ist die Vermutung.
+    Deshalb `timeout 840 npm run check:kurz`: ein Lauf, der hängt, fällt
+    dann auf, statt zwei Stunden zu kosten.
+- **Der Betrieb ist vorgezogen** (2026-11-12, Commit `af28899` und
+  Nachfolger): der Benutzer wollte den Stand auf dem VPS ansehen. Gebaut:
+  `Dockerfile`, `betrieb/docker-compose.yml`, `npm run ausrollen`
+  (`scripts/ausrollen.mjs`), `/betrieb/zahlen`, `OEFFENTLICHE_ADRESSE` und
+  `KONTEN_DATEI` aus der Umgebung. Wie es gemacht ist, steht in
+  [`betrieb/README.md`](../../betrieb/README.md); Rechner und Adresse
+  stehen nur in `.env.betrieb` (nicht eingecheckt).
+  - **Gemessen beim ersten Ausrollen:** 32 Sekunden vom Befehl bis „läuft",
+    das Zertifikat kam rund zehn Sekunden danach (deshalb wartet der Blick
+    von außen jetzt bis zu 90 s). Der Dienst nimmt im Leerlauf 70 MB. Nach
+    einem abgeschossenen Prozess antwortet er nach 1,4 s wieder. Von außen:
+    `http` wird nach `https` umgeleitet, `wss` steht, `/betrieb/zahlen` gibt
+    404, eine fremde Herkunft wird beim Anmelden mit 403 abgewiesen.
+  - **Nicht geprüft:** ein Neustart der Maschine (dort laufen andere
+    Anwendungen, er wird nicht ausprobiert), das Warten auf leere Räume mit
+    einer wirklich laufenden Partie, eine Registrierung auf dem Server.
+  - **Stand der Kriterien:** betrieb AC-2 und AC-4 fertig; AC-1, AC-3, AC-6,
+    AC-7 und fahrplan AC-21, AC-22 in QA; AC-8 in Arbeit (ausgelöste
+    Grenzen fehlen). Bevor andere eingeladen werden: betrieb AC-5
+    (Vorwarnung), AC-10 (Absturz einer Partie), AC-11 und AC-12 (Grenze
+    gemessen).
 - **Der ADR heißt jetzt 0016** (umbenannt am 2026-11-10, vorher 0014): auf
   `strategie` sind die Nummern 0014 (Häuser statt Völker) und 0015
   (Statthalter) inzwischen vergeben. Beim Einbinden bleibt nur
