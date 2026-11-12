@@ -34,7 +34,242 @@
       <h2>Gelände und Vorräte</h2>
       <p class="unterzeile">Der Boden in fünf Texturen, die sich ohne Naht wiederholen, Bäume in vier Arten und die drei Vorräte in ihren vier Füllstufen – links voll, rechts fast leer. Das Schaf steht als Maßstab neben dem Beerenstrauch.</p>
       <canvas id="probe-gelaende" width="1160" height="790"></canvas>
+      <h2>Gebäude</h2>
+      <p class="unterzeile">Alle neunzehn Gebäude aus der Kette (Schritt R4): links jeweils die bisherige Zeichnung, rechts das gerenderte Bild, beide so groß wie beim Start einer Partie.</p>
+      <canvas id="probe-gebaeude" width="1160" height="400"></canvas>
+      <h2>Mauer und Tor</h2>
+      <p class="unterzeile">Die Steinmauer ist aus Teilen gesetzt: ein Pfeiler an Enden, Ecken und Kreuzungen, dazu ein Arm je Nachbar – und ein Lauf ohne Pfeiler, wo die Mauer gerade durch ein Feld geht. Die Schatten liegen in einer eigenen Schicht unter allen Mauern. Das vordere Tor ist zu, das hintere offen.</p>
+      <canvas id="probe-mauer" width="1160" height="470"></canvas>
+      <h2>Baustellen</h2>
+      <p class="unterzeile">Je Grundfläche vier Stufen, von abgesteckt bis fast fertig; links daneben, wo Platz ist, die bisherige gezeichnete Baustelle bei halbem Fortschritt.</p>
+      <canvas id="probe-baustellen" width="1160" height="400"></canvas>
     </main>
     <script type="module" src="bildprobe.js"></script>
+    <script type="module">
+      // Die Gebäude der Kette (R4). Sie stehen noch nicht in der Namensliste
+      // von bilder.js – diese Seite lädt ihre Tafeln deshalb selbst. Das
+      // Zusammensetzen der Mauer hier ist die Regel, nach der sie gedacht ist.
+      import { gebaeudeZeichnen } from './gebaeude.js';
+
+      const E = 33;             // halbe Rautenbreite je Feld: Zoom 1,5 wie beim Start einer Partie
+      const BLAU = '#4a90d9';
+      const GRAS = '#56622f';
+      const BREITE = 1160;
+      // Art (wie in den Daten) und der Name, der im Bild steht.
+      const NAMEN = {
+        dorfzentrum: 'Dorfzentrum', burg: 'Burg', markt: 'Markt', kaserne: 'Kaserne', schiessanlage: 'Schießanlage',
+        stall: 'Stall', schmiede: 'Schmiede', kloster: 'Kloster', universitaet: 'Universität',
+        belagerungswerkstatt: 'Belagerungswerkstatt', farm: 'Farm', haus: 'Haus', muehle: 'Mühle',
+        holzfaellerlager: 'Holzfällerlager', bergbaulager: 'Bergbaulager', aussenposten: 'Außenposten',
+        wachturm: 'Wachturm', steinmauer: 'Steinmauer (Pfeiler)', tor: 'Tor',
+      };
+      const ARTEN = Object.keys(NAMEN);
+      const JE_REIHE = { 4: 2, 3: 2, 2: 3, 1: 4 };
+      // So viel Platz über dem Fußpunkt braucht die höchste Zeichnung je Größe.
+      const GEZEICHNET_HOCH = { 4: 270, 3: 270, 2: 160, 1: 180 };
+      const MAUER_HOCH = 470;
+
+      function bild(datei) {
+        return new Promise((ja, nein) => {
+          const b = new Image();
+          b.onload = () => ja(b);
+          b.onerror = () => nein(new Error(`bilder/${datei} lässt sich nicht laden`));
+          b.src = `bilder/${datei}`;
+        });
+      }
+
+      async function laden(name) {
+        const antwort = await fetch(`bilder/${name}.json`);
+        if (!antwort.ok) throw new Error(`bilder/${name}.json fehlt`);
+        const b = await antwort.json();
+        const tafel = { ...b, name, tafel: await bild(b.bild), maskenbild: b.maske ? await bild(b.maske) : null };
+        const schatten = b.ablaeufe && b.ablaeufe.schatten;
+        if (schatten) tafel.schatten = { ...schatten, feldbreite: b.feldbreite, tafel: await bild(schatten.bild), maskenbild: null };
+        return tafel;
+      }
+
+      const werkbank = document.createElement('canvas');
+
+      // Eine Zelle so, dass ihr Fußpunkt - die Mitte der Grundfläche - auf (x, y) steht.
+      function zelle(stift, t, zeile, spalte, x, y, farbe = BLAU) {
+        const [b, h] = t.zelle;
+        const [fx, fy] = t.fuss;
+        const k = (2 * E) / t.feldbreite;
+        let quelle = t.tafel;
+        let sx = spalte * b;
+        let sy = zeile * h;
+        if (t.maskenbild && farbe) {
+          werkbank.width = b;
+          werkbank.height = h;
+          const s = werkbank.getContext('2d');
+          s.drawImage(t.maskenbild, sx, sy, b, h, 0, 0, b, h);
+          s.globalCompositeOperation = 'source-in';
+          s.fillStyle = farbe;
+          s.fillRect(0, 0, b, h);
+          s.globalCompositeOperation = 'multiply';
+          s.drawImage(t.tafel, sx, sy, b, h, 0, 0, b, h);
+          quelle = werkbank;
+          sx = 0;
+          sy = 0;
+        }
+        stift.imageSmoothingQuality = 'high';
+        stift.drawImage(quelle, sx, sy, b, h, x - fx * k, y - fy * k, b * k, h * k);
+      }
+
+      function blatt(id, hoehe) {
+        const leinwand = document.getElementById(id);
+        const dichte = window.devicePixelRatio || 1;
+        leinwand.width = BREITE * dichte;
+        leinwand.height = hoehe * dichte;
+        const stift = leinwand.getContext('2d');
+        stift.scale(dichte, dichte);
+        stift.fillStyle = GRAS;
+        stift.fillRect(0, 0, BREITE, hoehe);
+        return stift;
+      }
+
+      function schrift(stift, text, x, y) {
+        stift.font = '600 13px system-ui, sans-serif';
+        stift.fillStyle = 'rgba(255, 255, 255, 0.92)';
+        stift.fillText(text, x, y);
+      }
+
+      // Ein Gebäude ganz: sein Schatten, wenn er eine eigene Tafel hat, dann das Bild.
+      function gebaeude(stift, t, x, y, zeile = 0, spalte = 0) {
+        if (t.schatten) {
+          stift.save();
+          stift.globalAlpha = t.schattenDeckung;
+          zelle(stift, t.schatten, zeile, t.name === 'tor' ? 0 : spalte, x, y, null);
+          stift.restore();
+        }
+        zelle(stift, t, zeile, spalte, x, y);
+      }
+
+      function gebaeudeMalen(tafeln) {
+        const reihen = [];
+        for (const groesse of [4, 3, 2, 1]) {
+          const arten = ARTEN.filter((art) => tafeln[art].felder === groesse);
+          for (let i = 0; i < arten.length; i += JE_REIHE[groesse]) reihen.push({ groesse, arten: arten.slice(i, i + JE_REIHE[groesse]) });
+        }
+        const k = (2 * E) / 132;
+        for (const reihe of reihen) {
+          // Die gezeichneten Gebäude sind höher als die gerenderten - Platz für beide.
+          reihe.oben = Math.max(...reihe.arten.map((art) => tafeln[art].fuss[1] * k), GEZEICHNET_HOCH[reihe.groesse]);
+          reihe.hoehe = reihe.oben + reihe.groesse * E * 0.5 + 52;
+        }
+        const stift = blatt('probe-gebaeude', reihen.reduce((summe, r) => summe + r.hoehe, 0) + 10);
+        let y = 10;
+        for (const reihe of reihen) {
+          const breit = BREITE / JE_REIHE[reihe.groesse];
+          reihe.arten.forEach((art, i) => {
+            const t = tafeln[art];
+            const fussY = y + reihe.oben;
+            const links = i * breit + breit * 0.25;
+            const rechts = i * breit + breit * 0.68;
+            gebaeudeZeichnen(stift, art, links, fussY, E, BLAU, t.felder);
+            gebaeude(stift, t, rechts, fussY);
+            schrift(stift, `${NAMEN[art]} – ${t.felder} × ${t.felder}`, i * breit + 14, y + reihe.hoehe - 12);
+          });
+          y += reihe.hoehe;
+        }
+      }
+
+      // ---- Mauer und Tor ----
+      // M Mauer, X Tor längs x, Y Tor längs y. Spalte ist x, Zeile ist y.
+      const KARTE = [
+        'M.....M.......',
+        '.M....M...MMMM',
+        '..M...Y...M...',
+        '...M..M...M...',
+        'MMMMMXMMMMM...',
+        '...M......M...',
+        '..M....M..M.M.',
+        '.M.....M...M..',
+        'M......M..M.M.',
+      ];
+      const ACHT = [[1, 0], [-1, 0], [0, 1], [0, -1], [1, 1], [1, -1], [-1, 1], [-1, -1]];
+
+      function mauerMalen(mauer, tor) {
+        const stift = blatt('probe-mauer', MAUER_HOCH);
+        const voll = new Map();
+        KARTE.forEach((zeile, y) => [...zeile].forEach((z, x) => { if (z !== '.') voll.set(`${x},${y}`, z); }));
+        const was = (x, y) => voll.get(`${x},${y}`);
+        // Zu welchen Nachbarn ein Arm geht: ein Tor zählt nur längs seiner
+        // Achse, schräg nur, wenn keines der zwei Felder dazwischen Mauer ist.
+        const nachbarn = (x, y) => ACHT.filter(([dx, dy]) => {
+          const z = was(x + dx, y + dy);
+          if (!z) return false;
+          if (z === 'X' && dy !== 0) return false;
+          if (z === 'Y' && dx !== 0) return false;
+          return !(dx && dy && (was(x + dx, y) || was(x, y + dy)));
+        });
+        const spalteVon = (liste, dx, dy) => liste.find((e) => e.dx === dx && e.dy === dy);
+        // Die Teile eines Feldes in Zeichenfolge: [Tafel, Zeile, Spalte].
+        const teile = (x, y) => {
+          const z = was(x, y);
+          if (z === 'X') return [[tor, 0, 0]];
+          if (z === 'Y') return [[tor, 1, 1]];
+          const n = nachbarn(x, y);
+          if (n.length === 2 && n[0][0] === -n[1][0] && n[0][1] === -n[1][1]) {
+            const lauf = spalteVon(mauer.teile.laeufe, n[0][0], n[0][1]) || spalteVon(mauer.teile.laeufe, n[1][0], n[1][1]);
+            return [[mauer, 0, lauf.spalte]];
+          }
+          return [[mauer, 0, mauer.teile.pfeiler], ...n.map(([dx, dy]) => [mauer, 0, spalteVon(mauer.teile.arme, dx, dy).spalte])];
+        };
+        const ort = (x, y) => [530 + (x - y) * E, 90 + (x + y) * E * 0.5];
+        const felder = [...voll.keys()].map((k) => k.split(',').map(Number)).sort((a, b) => (a[0] + a[1]) - (b[0] + b[1]) || a[0] - b[0]);
+        // Erst alle Schatten in eine eigene Schicht, die als Ganzes aufgelegt
+        // wird - sonst würde es doppelt dunkel, wo sich zwei überdecken.
+        const dichte = window.devicePixelRatio || 1;
+        const schicht = document.createElement('canvas');
+        schicht.width = BREITE * dichte;
+        schicht.height = MAUER_HOCH * dichte;
+        const s = schicht.getContext('2d');
+        s.scale(dichte, dichte);
+        for (const [x, y] of felder) {
+          for (const [t, zeile, spalte] of teile(x, y)) zelle(s, t.schatten, zeile, t === tor ? 0 : spalte, ...ort(x, y), null);
+        }
+        stift.save();
+        stift.globalAlpha = mauer.schattenDeckung;
+        stift.drawImage(schicht, 0, 0, BREITE, MAUER_HOCH);
+        stift.restore();
+        // Dann die Körper, von hinten nach vorn; im Feld erst der Pfeiler, dann die Arme.
+        for (const [x, y] of felder) {
+          for (const [t, zeile, spalte] of teile(x, y)) zelle(stift, t, zeile, spalte, ...ort(x, y));
+        }
+      }
+
+      function baustellenMalen(baustellen) {
+        const k = (2 * E) / 132;
+        const muster = { 1: 'wachturm', 2: 'haus', 3: 'kaserne', 4: 'burg' };
+        const hoehen = baustellen.map((t) => t.zelle[1] * k + 34);
+        const stift = blatt('probe-baustellen', hoehen.reduce((a, b) => a + b, 0) + 10);
+        let y = 10;
+        baustellen.forEach((t, i) => {
+          const fussY = y + t.fuss[1] * k;
+          // Vier mal vier Felder: neben vier Stufen ist für die Zeichnung kein Platz.
+          const mitZeichnung = t.felder < 4;
+          if (mitZeichnung) gebaeudeZeichnen(stift, muster[t.felder], 150, fussY, E, BLAU, t.felder, 0.5);
+          for (let stufe = 0; stufe < t.stufen; stufe++) {
+            zelle(stift, t, 0, stufe, mitZeichnung ? 380 + stufe * 215 : 150 + stufe * 285, fussY);
+          }
+          const davor = mitZeichnung ? 'gezeichnet, dann ' : '';
+          schrift(stift, `${t.felder} × ${t.felder}: ${davor}Stufe 0 bis ${t.stufen - 1}`, 14, y + hoehen[i] - 12);
+          y += hoehen[i];
+        });
+      }
+
+      try {
+        const geladen = await Promise.all(ARTEN.map(laden));
+        const tafeln = Object.fromEntries(geladen.map((t) => [t.name, t]));
+        gebaeudeMalen(tafeln);
+        mauerMalen(tafeln.steinmauer, tafeln.tor);
+        baustellenMalen(await Promise.all([1, 2, 3, 4].map((n) => laden(`baustelle-${n}`))));
+        document.body.dataset.gebaeude = 'fertig';
+      } catch (fehler) {
+        document.body.dataset.gebaeude = 'fehler';
+        console.error(fehler);
+      }
+    </script>
   </body>
 </html>
