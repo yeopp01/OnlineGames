@@ -7,9 +7,9 @@ Eine Zeile je Abnahmekriterium. Gepflegt wird der Status in der Spec selbst,
 hier steht er zusammengefasst. Erzeugt mit `npm run specs:board`; als Seite
 mit Bildnachweisen, Filter und Suche mit `npm run qa:report`.
 
-**Gesamt:** 500/625 fertig · 3 in Arbeit · 11 in QA · 3 geplant · 100 offen · 8 zurueckgestellt
+**Gesamt:** 508/630 fertig · 3 in Arbeit · 11 in QA · 3 geplant · 97 offen · 8 zurueckgestellt
 
-**Nachweise:** 239 Kriterien mit Bild · 266 ohne Bild, begruendet in `qa/ohne-bild.json`
+**Nachweise:** 245 Kriterien mit Bild · 268 ohne Bild, begruendet in `qa/ohne-bild.json`
 
 ## Nach Spezifikation
 
@@ -18,13 +18,13 @@ mit Bildnachweisen, Filter und Suche mit `npm run qa:report`.
 | [Konten und Anmeldung](00-plattform/konten.md)                 | -         | 1     | 2       | 3     | -               | 14     |
 | [Raeume und Partien](00-plattform/raeume.md)                   | -         | 2     | -       | 3     | -               | 13     |
 | [Schutz vor Fremdnutzung](00-plattform/schutz.md)              | -         | 1     | -       | 4     | -               | 7      |
-| [Anhalten und Fortsetzen](00-plattform/speichern.md)           | -         | -     | -       | 26    | -               | -      |
+| [Anhalten und Fortsetzen](00-plattform/speichern.md)           | -         | -     | -       | 23    | -               | 3      |
 | [Spielauswahl und Einstellungen](00-plattform/spielauswahl.md) | -         | -     | -       | 5     | -               | 19     |
 | [Uebertragung](00-plattform/uebertragung.md)                   | -         | -     | 1       | 1     | -               | 8      |
 | [Bauen und Ausbilden](10-strategie/bauen.md)                   | -         | -     | -       | 2     | -               | 34     |
-| [Bedienung](10-strategie/bedienung.md)                         | -         | -     | -       | 3     | -               | 54     |
+| [Bedienung](10-strategie/bedienung.md)                         | -         | -     | -       | 3     | -               | 58     |
 | [Darstellung](10-strategie/darstellung.md)                     | 1         | -     | -       | 5     | -               | 18     |
-| [Einheiten und Befehle](10-strategie/einheiten-und-befehle.md) | -         | -     | -       | 17    | 1               | 31     |
+| [Einheiten und Befehle](10-strategie/einheiten-und-befehle.md) | -         | -     | -       | 17    | 1               | 32     |
 | [Fahrplan zum Klon](10-strategie/fahrplan.md)                  | -         | 2     | -       | 4     | -               | 18     |
 | [Kampf](10-strategie/kampf.md)                                 | -         | -     | -       | 2     | 1               | 20     |
 | [Karte und Vorraete](10-strategie/karte-und-vorraete.md)       | -         | -     | -       | 2     | 3               | 12     |
@@ -71,7 +71,7 @@ mit Bildnachweisen, Filter und Suche mit `npm run qa:report`.
 - **Kennwort vergessen** — [Konten und Anmeldung](00-plattform/konten.md) AC-5
 - **Automatischer Wiederaufbau** — [Uebertragung](00-plattform/uebertragung.md) AC-10
 
-## Offen (100)
+## Offen (97)
 
 - **Anmeldung ueber Google/GitHub** — [Konten und Anmeldung](00-plattform/konten.md) AC-6
 - **Bilanz je Konto** — [Konten und Anmeldung](00-plattform/konten.md) AC-14
@@ -101,9 +101,6 @@ mit Bildnachweisen, Filter und Suche mit `npm run qa:report`.
 - **Jeder Spielstand trägt eine Fassungsnummer** — [Anhalten und Fortsetzen](00-plattform/speichern.md) AC-16
 - **Unbekannte Fassung wird abgelehnt** — [Anhalten und Fortsetzen](00-plattform/speichern.md) AC-17
 - **Ältere Fassungen werden hochgezogen** — [Anhalten und Fortsetzen](00-plattform/speichern.md) AC-18
-- **Pause hält die Uhr an** — [Anhalten und Fortsetzen](00-plattform/speichern.md) AC-19
-- **Anhalten ist begrenzt** — [Anhalten und Fortsetzen](00-plattform/speichern.md) AC-20
-- **Fortsetzen kann jeder** — [Anhalten und Fortsetzen](00-plattform/speichern.md) AC-21
 - **Sichern verlangt Einigkeit** — [Anhalten und Fortsetzen](00-plattform/speichern.md) AC-22
 - **Der Gastgeber besitzt den Stand** — [Anhalten und Fortsetzen](00-plattform/speichern.md) AC-23
 - **Fortsetzen wartet auf dieselben Plätze** — [Anhalten und Fortsetzen](00-plattform/speichern.md) AC-24

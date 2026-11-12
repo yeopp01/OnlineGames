@@ -15,6 +15,10 @@ const ZEICHEN = 'BCDFGHJKLMNPQRSTVWXZ23456789';
 // der nichts kostet, gehoert vorgelegt.
 const CODE_LAENGE = 6;
 const LEERLAUF_MS = 30 * 60 * 1000;
+// Anhalten (speichern AC-20): sitzen mehrere Menschen in der Partie, ist es
+// begrenzt - zweimal je Spieler und Partie, hoechstens fuenf Minuten am Stueck.
+const PAUSE_MS = 5 * 60 * 1000;
+const PAUSEN_JE_SPIELER = 2;
 
 function codeErzeugen() {
   let code = '';
@@ -101,6 +105,11 @@ class Raum {
     // Was die Schluessel bedeuten - beim Strategiespiel das Team -, weiss nur
     // das Spiel; der Raum prueft sie wie Einstellungen und reicht sie durch.
     this.platzwahl = {};
+    // Angehalten (speichern AC-19): { von, name, bis } - `bis` ist die
+    // Wanduhr, zu der die Partie von selbst weiterlaeuft, oder null.
+    this.pause = null;
+    this.pausen = {}; // Spieler -> wie oft er in dieser Partie angehalten hat
+    this.pauseMs = PAUSE_MS;
   }
 
   // Was je Platz gewaehlt wird, aus dem Steckbrief (`jePlatz`). Leer: nichts.
@@ -262,6 +271,10 @@ class Raum {
     this.jeSekunde = takteJeSekunde(this.spiel, this.einstellungen);
     this.beginn = Date.now();
     this.gerechnet = 0;
+    // Eine neue Partie, auch die Revanche, beginnt ohne Pause und mit vollem
+    // Vorrat an Pausen.
+    this.pause = null;
+    this.pausen = {};
     this.uhr = setInterval(() => this.schlag(), 1000 / this.jeSekunde);
     this.beruehrt = Date.now();
     return {};
@@ -272,7 +285,13 @@ class Raum {
     // wartet, statt ohne Zuschauer weiterzulaufen. Kehrt jemand zurueck, geht
     // sie dort weiter, wo sie stand - die Wanduhr wird neu angesetzt, damit
     // nichts nachgeholt wird.
-    if (this.leer) {
+    // Angehalten (speichern AC-19): die Partie taktet nicht. Nach der Frist
+    // laeuft sie von selbst weiter (AC-20) - auch das erfahren alle.
+    if (this.pause && this.pause.bis !== null && Date.now() >= this.pause.bis) {
+      this.pause = null;
+      this.senden(this.pausenstand());
+    }
+    if (this.leer || this.pause) {
       this.steht = true;
       return;
     }
@@ -308,6 +327,37 @@ class Raum {
     // der Raum fragt bloss. Der letzte Zustand ist schon unterwegs und traegt
     // das Ergebnis.
     if (this.welt.vorbei) this.beenden();
+  }
+
+  // ---- Anhalten (speichern AC-19 bis AC-21) --------------------------------
+  // Eine Sache des Raums, nicht des Spiels (ADR-0006): die Partie wird nicht
+  // getaktet, mehr erfaehrt sie nicht. Sitzt nur ein Mensch in der Partie,
+  // gilt keine Grenze - sie schuetzt Mitspieler vor einem, der die Partie
+  // festhaelt, und allein gegen den Computer gibt es keinen.
+  anhalten(wer) {
+    if (!this.laeuft) return { fehler: 'Es läuft keine Partie.' };
+    if (this.pause) return { fehler: 'Die Partie ist schon angehalten.' };
+    const begrenzt = this.spieler.length > 1;
+    const bisher = this.pausen[wer.id] || 0;
+    if (begrenzt && bisher >= PAUSEN_JE_SPIELER) return { fehler: 'Du hast schon zweimal angehalten.' };
+    this.pausen[wer.id] = bisher + 1;
+    this.pause = { von: wer.id, name: wer.name, bis: begrenzt ? Date.now() + this.pauseMs : null };
+    this.beruehrt = Date.now();
+    return {};
+  }
+
+  /** Fortsetzen darf jeder am Tisch, nicht nur, wer angehalten hat (AC-21). */
+  fortsetzen() {
+    this.pause = null;
+    this.beruehrt = Date.now();
+    return {};
+  }
+
+  /** Was alle ueber die Pause erfahren: wer, und wie lange hoechstens noch. */
+  pausenstand() {
+    if (!this.pause) return { typ: 'pause', name: null };
+    const { von, name, bis } = this.pause;
+    return { typ: 'pause', von, name, rest: bis === null ? null : Math.max(0, Math.ceil((bis - Date.now()) / 1000)) };
   }
 
   beenden() {
@@ -408,6 +458,10 @@ class Raeume {
       // ein Raum ohne Befehl (raeume AC-17) - `beruehrt` steht dann auf dem
       // Augenblick, in dem der letzte ging.
       if (raum.leer && !raum.laeuft && jetzt - raum.beruehrt > 60 * 1000) this.schliessen(raum);
+      // Wer allein angehalten hat und noch am Tisch sitzt, wird nicht
+      // abgeraeumt (speichern AC-20): die Pause ist dort unbegrenzt, und eine
+      // Uhr, die steht, kostet keine Rechenzeit.
+      else if (raum.pause && !raum.leer) continue;
       else if (jetzt - raum.beruehrt > LEERLAUF_MS) this.schliessen(raum);
     }
   }

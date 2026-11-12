@@ -1,0 +1,10 @@
+{
+  "spec": "00-plattform/speichern.md",
+  "ac": "AC-19",
+  "titel": "Anna hat auf Pause geklickt: mitten im Bild steht Anna hat die Partie angehalten, darunter die Frist und Weiterspielen, oben rechts heisst der Knopf Weiter",
+  "datei": "e2e/tests/strategie-pause.spec.mjs",
+  "pfad": [
+    "Anhalten und Fortsetzen",
+    "speichern AC-19: Anna haelt an - bei beiden steht die Uhr, und mitten im Bild steht, wer angehalten hat"
+  ]
+}

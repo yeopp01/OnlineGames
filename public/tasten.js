@@ -17,7 +17,7 @@ export const BAUTASTEN = ['q', 'w', 'e', 'r', 't', 'z', 'u', 'i', 'o', 'p', 'y',
 // Texte auf dem Bildschirm mit echten Umlauten (Entscheidung vom 2026-09-17).
 export const BELEGUNG = [
   ['Ziehen mit links', 'Einheiten im Rahmen wählen'],
-  ['Klick links', 'eine Einheit oder ein Gebäude wählen'],
+  ['Klick links', 'eine Einheit oder ein Gebäude wählen – Fremdes nur ansehen'],
   ['Umschalt + Klick oder Ziehen', 'zur Auswahl hinzunehmen'],
   ['Doppelklick', 'alle Einheiten dieser Art im Bild'],
   ['Rechtsklick', 'hingehen, sammeln, bauen – oder Sammelpunkt setzen'],
@@ -37,6 +37,7 @@ export const BELEGUNG = [
   ['1 bis 9', 'abgelegte Auswahl zurückholen'],
   ['G, dann Rechtsklick', 'Angriffslauf: hingehen und unterwegs angreifen'],
   ['Esc', 'Angriffslauf oder Platzieren abbrechen, Auswahl aufheben'],
+  ['F3 oder Pause', 'Partie anhalten, weiterspielen'],
   ['? oder F1', 'diese Übersicht'],
 ];
 
@@ -45,9 +46,11 @@ export class Tasten {
    * @param {import('./ansicht.js').Ansicht} ansicht
    * @param {HTMLElement} wurzel die Auswahlleiste
    * @param {HTMLElement} uebersicht das Feld der Tastenuebersicht
+   * @param {import('./ton.js').Ton} [ton] fuer die zwei Schalter in der Uebersicht
    */
-  constructor(ansicht, wurzel, uebersicht) {
+  constructor(ansicht, wurzel, uebersicht, ton = null) {
     this.ansicht = ansicht;
+    this.ton = ton;
     this.wurzel = wurzel;
     this.uebersicht = uebersicht;
     this.bauen = false; // B gedrueckt, die naechste Buchstabentaste waehlt ein Gebaeude
@@ -68,20 +71,32 @@ export class Tasten {
     titel.textContent = 'Tasten';
     // Schieben am Rand (bedienung AC-9) ist hier abschaltbar: wer die Maus
     // gern an den Rand legt, findet den Schalter dort, wo die Taste steht.
-    const schalter = document.createElement('label');
-    schalter.className = 'schalter';
-    const kasten = document.createElement('input');
-    kasten.type = 'checkbox';
-    kasten.id = 'rand-schieben';
-    kasten.checked = this.ansicht.randSchieben;
-    kasten.addEventListener('change', () => this.ansicht.randSchiebenSetzen(kasten.checked));
-    schalter.append(kasten, ' Karte am Bildschirmrand schieben');
-    // Der Klick auf den Schalter schliesst die Uebersicht nicht.
-    schalter.addEventListener('click', (e) => e.stopPropagation());
+    const schalter = (id, text, an, setzen) => {
+      const zeile = document.createElement('label');
+      zeile.className = 'schalter';
+      const kasten = document.createElement('input');
+      kasten.type = 'checkbox';
+      kasten.id = id;
+      kasten.checked = an;
+      kasten.addEventListener('change', () => setzen(kasten.checked));
+      zeile.append(kasten, ` ${text}`);
+      // Der Klick auf den Schalter schliesst die Uebersicht nicht.
+      zeile.addEventListener('click', (e) => e.stopPropagation());
+      return zeile;
+    };
+    const alle = [schalter('rand-schieben', 'Karte am Bildschirmrand schieben', this.ansicht.randSchieben, (an) => this.ansicht.randSchiebenSetzen(an))];
+    // Ton (bedienung AC-61): Geraeusche und Musik einzeln, die Wahl merkt
+    // sich der Browser.
+    if (this.ton) {
+      alle.push(
+        schalter('ton-geraeusche', 'Geräusche', this.ton.geraeusche, (an) => this.ton.geraeuscheSetzen(an)),
+        schalter('ton-musik', 'Musik', this.ton.musik, (an) => this.ton.musikSetzen(an)),
+      );
+    }
     const hinweis = document.createElement('p');
     hinweis.className = 'leise';
     hinweis.textContent = 'Schließen: noch einmal ? oder F1, Esc oder ein Klick.';
-    this.uebersicht.replaceChildren(titel, liste, schalter, hinweis);
+    this.uebersicht.replaceChildren(titel, liste, ...alle, hinweis);
   }
 
   uebersichtZeigen(an = this.uebersicht.hidden) {
@@ -107,6 +122,13 @@ export class Tasten {
       }
     }
     if (e.ctrlKey || e.metaKey || e.altKey) return false;
+    // F3 haelt an und spielt weiter, wie in der Vorlage; die Pause-Taste
+    // daneben (speichern AC-19). Ohne `preventDefault` sucht F3 im Browser.
+    if (e.key === 'F3' || e.key === 'Pause') {
+      e.preventDefault();
+      this.ansicht.beiPause?.();
+      return true;
+    }
     const taste = e.key.toLowerCase();
     if (taste === '?' || e.key === 'F1') {
       e.preventDefault();

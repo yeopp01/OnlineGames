@@ -1,0 +1,10 @@
+{
+  "spec": "10-strategie/einheiten-und-befehle.md",
+  "ac": "AC-57",
+  "titel": "Die Maus ueber dem Aufstieg: in der Tafel steht Spaeherreiter plus 0,35 Tempo",
+  "datei": "e2e/tests/strategie-rueckmeldung.spec.mjs",
+  "pfad": [
+    "Rueckmeldungen aus dem ersten Spiel",
+    "einheiten AC-57: ueber dem Aufstieg steht, dass der Spaeherreiter schneller wird"
+  ]
+}

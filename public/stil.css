@@ -1065,12 +1065,37 @@ canvas.angriffslauf {
 .tastenuebersicht dd {
   margin: 0;
 }
+/* Die Schalter stehen nebeneinander: mit Geraeuschen und Musik (bedienung
+   AC-61) sind es drei, und untereinander passte der Kasten auf 1366 x 768
+   nicht mehr ins Fenster (bedienung AC-23). */
 .tastenuebersicht .schalter {
-  display: flex;
+  display: inline-flex;
   align-items: center;
   gap: 0.5rem;
-  margin: 0.9rem 0 0;
+  margin: 0.9rem 1.6rem 0 0;
   cursor: pointer;
+}
+/* In einem niedrigen Fenster rueckt die Liste zusammen - und sollte sie
+   einmal doch nicht passen, rollt der Kasten, statt unter dem Rand zu enden. */
+.tastenuebersicht {
+  max-height: calc(100vh - 1rem);
+  overflow-y: auto;
+}
+@media (max-height: 820px) {
+  .tastenuebersicht {
+    padding: 0.8rem 1.3rem;
+    font-size: 0.86rem;
+  }
+  .tastenuebersicht h2 {
+    margin-bottom: 0.4rem;
+    font-size: 1.05rem;
+  }
+  .tastenuebersicht dl {
+    row-gap: 0.18rem;
+  }
+  .tastenuebersicht .schalter {
+    margin-top: 0.6rem;
+  }
 }
 /* Ohne die Breite der Formularfelder (input: 100 %), sonst steht der Kasten
    mitten in der Zeile und der Text daneben in einer schmalen Spalte. */
@@ -1212,6 +1237,23 @@ canvas.angriffslauf {
 
 .aufgebenfrage .haupt:hover {
   background: #c75850;
+}
+
+/* Die Pause (speichern AC-19): dasselbe Feld, aber nichts Gefaehrliches -
+   der Knopf ist der Ausweg, kein Wagnis. */
+.pausefeld {
+  text-align: center;
+}
+
+.pausefeld .reihe {
+  justify-content: center;
+}
+
+.pausefeld .haupt,
+.pausefeld .haupt:hover {
+  background: #c8a24a;
+  border-color: #c8a24a;
+  color: #1a1408;
 }
 
 .bauname {

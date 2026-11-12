@@ -1,0 +1,10 @@
+{
+  "spec": "00-plattform/speichern.md",
+  "ac": "AC-20",
+  "titel": "Annas dritte Pause: die Partie laeuft weiter, im Bild steht Du hast schon zweimal angehalten",
+  "datei": "e2e/tests/strategie-pause.spec.mjs",
+  "pfad": [
+    "Anhalten und Fortsetzen",
+    "speichern AC-20: zweimal je Spieler - Annas dritte Pause weist der Server ab"
+  ]
+}

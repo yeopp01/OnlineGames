@@ -170,7 +170,7 @@ Umfang hinzufügt, dort nachsehen.
 
 ## Stand
 
-**500 von 625 Kriterien fertig.** 790 Tests ohne Browser, 249 im Browser. Die
+**508 von 630 Kriterien fertig.** 801 Tests ohne Browser, 260 im Browser. Die
 Übersicht ist der Bericht: `npm run qa:report`.
 
 Gebaut ist der Unterbau: Räume, Übertragung, Karte, Wegfindung, Sammeln,
@@ -573,7 +573,21 @@ AC-36). **Eine laufende Partie wartet** (raeume AC-17): gehen alle, hält ihre
 Uhr an, dreißig Minuten lang, und sie sperrt beim Eröffnen niemanden aus;
 **der Vorraum bietet die Rückkehr an** (AC-18). **Die KI mauert niemanden
 ein** (ki AC-10, `ki.sperrtEin`): ein Bauplatz, der weniger als 40 Felder
-Land abschneidet, wird verworfen.
+Land abschneidet, wird verworfen. **Zweiter Stapel:** **Pause** (speichern
+AC-19 bis AC-21) — Knopf oben und `F3`: die Uhr steht, Befehle werden
+verworfen, alle sehen, wer angehalten hat; fortsetzen kann jeder. Mit
+mehreren Menschen höchstens fünf Minuten und zweimal je Spieler, allein ohne
+Grenze. Die Pause gehört dem **Raum** (`raum.anhalten`, `fortsetzen`,
+`pausenstand`), die Welt wird nur nicht getaktet (ADR-0006). **Fremdes
+ansehen** (bedienung AC-58): ein Klick auf eine fremde Einheit oder ein
+fremdes Gebäude zeigt Namen, Besitzer und Leben, gestrichelt umrandet, ohne
+Befehle (`ansicht.angesehen`). **Der Späherreiter ist ab der Feudalzeit
+schneller** (einheiten AC-57): `ZEITALTER[1].wirkung`, 1,2 → 1,55 Felder je
+Sekunde, gelesen wie jede Wirkung über `welt.wirkungen()`; der Wert stammt
+nicht aus `vorlage-aoe2.md`. **Ton** (bedienung AC-59 bis AC-61,
+`public/ton.js`): Geräusche zu Ereignissen und leise Musik, alles im Browser
+erzeugt (kein Material von außen), zwei Schalter in der Tastenübersicht.
+Gemessen ist, dass und wann etwas klingt — wie es klingt, hat niemand gehört.
 
 1. **Stufe A** Dunkle Zeit mit Wirtschafts-KI und Prüfstand · **B** Feudalzeit
    · **C** Partieende und KI-Gegner · **D** Ritterzeit · **E** fünf Häuser ·

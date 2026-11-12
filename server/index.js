@@ -250,6 +250,8 @@ async function starten(hafen = HAFEN, einstellungen = {}) {
           draht.send(JSON.stringify({ typ: 'du', id: spieler.id, token: spieler.token, code: raum.code, anzeige: codeZeigen(raum.code) }));
           // Wer zurueckkommt, bekommt seinen eigenen Aufbau (kampf AC-13).
           if (raum.gestartet) draht.send(JSON.stringify(raum.welt.aufbauFuer ? raum.welt.aufbauFuer(spieler.id) : raum.welt.aufbau()));
+          // Wer in eine angehaltene Partie zurueckkommt, sieht, dass sie steht.
+          if (raum.pause) draht.send(JSON.stringify(raum.pausenstand()));
           raum.senden(raum.vorraum());
           break;
         }
@@ -283,8 +285,20 @@ async function starten(hafen = HAFEN, einstellungen = {}) {
           raum.senden(raum.vorraum());
           break;
         }
+        case 'pause':
+        case 'weiter': {
+          // Anhalten und Fortsetzen (speichern AC-19 bis AC-21) - eine Sache
+          // des Raums: das Spiel erfaehrt davon nichts (ADR-0006).
+          if (!raum || !spieler || !raum.gestartet) return;
+          const ergebnis = nachricht.typ === 'pause' ? raum.anhalten(spieler) : raum.fortsetzen(spieler);
+          if (ergebnis.fehler) return fehler(ergebnis.fehler);
+          raum.senden(raum.pausenstand());
+          break;
+        }
         case 'befehl': {
           if (!raum || !spieler || !raum.gestartet) return;
+          // Angehalten: Befehle werden verworfen, nicht aufgehoben (AC-19).
+          if (raum.pause) return;
           // Was der Befehl bedeutet, weiss nur das Spiel (ADR-0006).
           const ergebnis = raum.welt.nachricht(spieler.id, nachricht);
           raum.beruehrt = Date.now();

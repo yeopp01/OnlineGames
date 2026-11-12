@@ -971,8 +971,15 @@ test('ki AC-12 und ki AC-10: ueber zwanzig Startwerte greift jede KI wieder an, 
       // Messpunkt Feinde im Dorf, 128-mal die Wache gerufen.
       if (p.angriffe < 2) {
         const zuletzt = (gefallen.get(p.name) || []).filter((t) => t >= 25 * 60 * TAKTE_PRO_SEKUNDE).length;
-        const belagert = p.feindeAmDorf > p.kampf || zuletzt >= 5 || !p.gebaeude.dorfzentrum;
-        assert.ok(belagert, `${startwert} ${p.name}: ${p.angriffe} Angriffe und nicht belagert (${p.feindeAmDorf} Feinde, ${p.kampf} eigene, ${zuletzt} Gefallene in fuenf Minuten)`);
+        // Oder sie baut nach einem Ueberfall wieder auf: wer in zehn Minuten
+        // zehn verloren hat, hat kein Heer fuer einen zweiten Angriff. Seit
+        // der Spaeher ab der Feudalzeit schneller ist (einheiten AC-57),
+        // Startwert 13, KI 1: zwischen Minute 20 und 22 sechzehn Dorfbewohner
+        // und sechs Schuetzen verloren, danach in fuenf Minuten noch vier am
+        // Dorf - einer unter der Grenze -, waehrend KI 2 sechzehnmal angriff.
+        const seitZehn = (gefallen.get(p.name) || []).filter((t) => t >= 20 * 60 * TAKTE_PRO_SEKUNDE).length;
+        const belagert = p.feindeAmDorf > p.kampf || zuletzt >= 5 || seitZehn >= 10 || !p.gebaeude.dorfzentrum;
+        assert.ok(belagert, `${startwert} ${p.name}: ${p.angriffe} Angriffe und nicht belagert (${p.feindeAmDorf} Feinde, ${p.kampf} eigene, ${zuletzt} Gefallene in fuenf Minuten, ${seitZehn} in zehn)`);
       }
     }
     // Und in jeder Partie haelt mindestens eine KI ihre 20 Dorfbewohner - die,

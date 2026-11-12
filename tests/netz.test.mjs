@@ -4,7 +4,7 @@ import { test, before, after } from 'node:test';
 import assert from 'node:assert/strict';
 import { createRequire } from 'node:module';
 import WebSocket from 'ws';
-import { kunde as kundeMit, istTyp, konto, beenden } from './hilfe.mjs';
+import { kunde as kundeMit, istTyp, konto, beenden, warte } from './hilfe.mjs';
 
 const require = createRequire(import.meta.url);
 const { starten } = require('../server/index.js');
@@ -644,5 +644,157 @@ test('spielziel AC-19: im Nebel bekommt Anna ueber die Leitung, was ihr Verbuend
   assert.ok(await cem.warteAuf((n) => n.typ === 'zustand' && n.einheiten.some((e) => e.i === nah.id), 3000), 'bei Cem');
   anna.zu();
   bert.zu();
+  cem.zu();
+});
+
+// ---- Anhalten und Fortsetzen (speichern AC-19 bis AC-21) -------------------
+
+// Wartet auf eine Nachricht, die erst nach diesem Aufruf eintrifft - `warteAuf`
+// allein faende die Pause von vorhin.
+function danach(wer, passt, frist) {
+  const ab = wer.eingang.length;
+  return wer.warteAuf((n) => wer.eingang.indexOf(n) >= ab && passt(n), frist);
+}
+const pauseVon = (name) => (n) => n.typ === 'pause' && n.name === name;
+
+async function partieZuZweit() {
+  const anna = gastgeber();
+  await anna.offen();
+  anna.senden({ typ: 'erstellen', name: 'Anna', einstellungen: { sicht: 'aufgedeckt' } });
+  const du = await anna.warteAuf(istTyp('du'));
+  const bert = kunde();
+  await bert.offen();
+  bert.senden({ typ: 'beitreten', code: du.code, name: 'Bert' });
+  const duBert = await bert.warteAuf(istTyp('du'));
+  anna.senden({ typ: 'start', startwert: 7 });
+  await bert.warteAuf(istTyp('aufbau'));
+  await bert.warteAuf((n) => n.typ === 'zustand' && n.t >= 3);
+  return { anna, bert, du, duBert, raum: laufend.raeume.finden(du.code) };
+}
+
+test('speichern AC-19: Pause haelt die Uhr an - die Welt taktet nicht, Befehle werden verworfen, alle erfahren, wer angehalten hat', async () => {
+  const { anna, bert, du, duBert, raum } = await partieZuZweit();
+
+  const beiAnna = danach(anna, istTyp('pause'));
+  const beiBert = danach(bert, istTyp('pause'));
+  anna.senden({ typ: 'pause' });
+  assert.equal((await beiAnna).name, 'Anna');
+  const gesehen = await beiBert;
+  assert.equal(gesehen.name, 'Anna', 'auch Bert erfaehrt, wer angehalten hat');
+  assert.equal(gesehen.von, du.id);
+
+  const takt = raum.welt.takt;
+  const bilder = bert.eingang.filter(istTyp('zustand')).length;
+  // Ein Befehl in der Pause: Bert gibt auf. Verworfen, nicht aufgehoben -
+  // sonst waere die Partie mit dem Fortsetzen zu Ende.
+  bert.senden({ typ: 'befehl', auftrag: 'aufgeben' });
+  // Eine halbe Sekunde waeren fuenf Takte.
+  await warte(500);
+  assert.equal(raum.welt.takt, takt, 'die Welt taktet nicht');
+  assert.equal(bert.eingang.filter(istTyp('zustand')).length, bilder, 'es kommt kein neues Bild');
+
+  // Wer in die angehaltene Partie zurueckkommt, sieht, dass sie steht.
+  bert.zu();
+  await bert.zuende();
+  const zurueck = kunde();
+  await zurueck.offen();
+  zurueck.senden({ typ: 'zurueck', code: du.code, token: duBert.token });
+  assert.equal((await zurueck.warteAuf(istTyp('pause'))).name, 'Anna');
+
+  const weiter = danach(zurueck, pauseVon(null));
+  anna.senden({ typ: 'weiter' });
+  await weiter;
+  await danach(zurueck, (n) => n.typ === 'zustand' && n.t >= takt + 5);
+  assert.ok(!raum.welt.vorbei, 'der Befehl aus der Pause ist verworfen: niemand hat aufgegeben');
+  anna.zu();
+  zurueck.zu();
+});
+
+test('speichern AC-21: fortsetzen kann jeder - auch wer nicht angehalten hat, und nichts wird nachgeholt', async () => {
+  const { anna, bert, raum } = await partieZuZweit();
+  const an = danach(bert, pauseVon('Anna'));
+  anna.senden({ typ: 'pause' });
+  await an;
+  const takt = raum.welt.takt;
+  await warte(600);
+
+  const beiAnna = danach(anna, pauseVon(null));
+  const erstes = danach(anna, istTyp('zustand'));
+  bert.senden({ typ: 'weiter' });
+  await beiAnna;
+  const bild = await erstes;
+  // Sechs Zehntel waren es - nachgeholt waeren sechs Takte.
+  assert.ok(bild.t - takt <= 3, `es geht weiter, wo es stand: Takt ${bild.t} nach ${takt}`);
+  await danach(anna, (n) => n.typ === 'zustand' && n.t >= bild.t + 5);
+  anna.zu();
+  bert.zu();
+});
+
+test('speichern AC-20: Anhalten ist begrenzt - nach der Frist geht es von selbst weiter, zweimal je Spieler; allein gilt keine Grenze', async () => {
+  const { anna, bert, raum } = await partieZuZweit();
+
+  // Die Frist: fuenf Minuten, hier auf drei Zehntel gestellt.
+  let an = danach(bert, pauseVon('Anna'));
+  anna.senden({ typ: 'pause' });
+  assert.ok((await an).rest > 290, 'fuenf Minuten sind die Vorgabe');
+  let weiter = danach(anna, pauseVon(null));
+  // Auch Bert muss das Ende dieser Pause gelesen haben, bevor auf das Ende
+  // der naechsten gewartet wird - sonst gilt die Nachricht von eben als die
+  // erwartete, und die Frist scheint vor der Zeit um.
+  const beiBert = danach(bert, pauseVon(null));
+  bert.senden({ typ: 'weiter' });
+  await weiter;
+  await beiBert;
+
+  raum.pauseMs = 300;
+  an = danach(bert, pauseVon('Anna'));
+  weiter = danach(bert, pauseVon(null), 3000);
+  const dann = Date.now();
+  anna.senden({ typ: 'pause' });
+  assert.equal((await an).rest, 1, 'der Rest steht in der Nachricht, auf Sekunden aufgerundet');
+  await weiter;
+  assert.ok(Date.now() - dann >= 280, 'nicht vor der Frist');
+  await danach(bert, istTyp('zustand'));
+  assert.equal(raum.pause, null);
+
+  // Zweimal hat Anna angehalten - das dritte Mal weist der Server ab.
+  const nein = danach(anna, istTyp('fehler'));
+  anna.senden({ typ: 'pause' });
+  assert.equal((await nein).text, 'Du hast schon zweimal angehalten.');
+  assert.equal(raum.pause, null, 'die Partie laeuft weiter');
+  // Bert hat seine eigenen zwei.
+  an = danach(anna, pauseVon('Bert'));
+  bert.senden({ typ: 'pause' });
+  await an;
+  // Und waehrend sie steht, haelt niemand ein zweites Mal an.
+  const schon = danach(bert, istTyp('fehler'));
+  bert.senden({ typ: 'pause' });
+  assert.equal((await schon).text, 'Die Partie ist schon angehalten.');
+  anna.zu();
+  bert.zu();
+
+  // Allein gegen den Computer: so oft und so lange, wie man will.
+  const cem = gastgeber();
+  await cem.offen();
+  // Wer eroeffnet, heisst wie sein Konto - der getippte Name zaehlt nicht.
+  cem.senden({ typ: 'erstellen', name: 'Cem', einstellungen: { ki: 1, sicht: 'aufgedeckt' } });
+  const duCem = await cem.warteAuf(istTyp('du'));
+  cem.senden({ typ: 'start', startwert: 7 });
+  await cem.warteAuf((n) => n.typ === 'zustand' && n.t >= 2);
+  for (let i = 0; i < 3; i++) {
+    const steht = danach(cem, pauseVon('Anna'));
+    cem.senden({ typ: 'pause' });
+    assert.equal((await steht).rest, null, `Pause ${i + 1} allein: ohne Frist`);
+    const laeuft = danach(cem, pauseVon(null));
+    cem.senden({ typ: 'weiter' });
+    await laeuft;
+  }
+  // Und wer allein angehalten hat und am Tisch bleibt, wird nicht abgeraeumt.
+  cem.senden({ typ: 'pause' });
+  await danach(cem, pauseVon('Anna'));
+  const solo = laufend.raeume.finden(duCem.code);
+  solo.beruehrt = Date.now() - 31 * 60 * 1000;
+  laufend.raeume.aufraeumen();
+  assert.ok(laufend.raeume.finden(duCem.code), 'die angehaltene Partie steht noch');
   cem.zu();
 });

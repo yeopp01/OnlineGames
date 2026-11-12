@@ -1,0 +1,10 @@
+{
+  "spec": "10-strategie/bedienung.md",
+  "ac": "AC-58",
+  "titel": "Berts Spaeherreiter angeklickt: gestrichelter Ring am Boden, in der Leiste Spaeherreiter mit 20 von 45 Leben, Bert als Gegner und keine Knoepfe",
+  "datei": "e2e/tests/strategie-rueckmeldung.spec.mjs",
+  "pfad": [
+    "Rueckmeldungen aus dem ersten Spiel",
+    "bedienung AC-58: ein Klick auf Berts Reiter zeigt Namen, Besitzer und Leben - ohne Knoepfe, und befehlen laesst er sich nicht"
+  ]
+}

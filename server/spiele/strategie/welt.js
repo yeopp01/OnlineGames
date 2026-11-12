@@ -6,14 +6,14 @@ const {
   EINHEITEN, SAMMELN, TIERE, GEBAEUDE, VERBESSERUNGEN, ZEITALTER, AUFSTIEGE, KLASSEN, HANDEL, HAEUSER,
   BEVOELKERUNG_MAX, SCHLANGE_MAX, STARTAUFSTELLUNG,
 } = require('./daten');
-const { bringt } = require('./bringt');
+const { bringt, staerkt } = require('./bringt');
 
 const TAKTE_PRO_SEKUNDE = 10;
 // Welche Werte die Auswahlleiste je Einheit zeigt (bedienung AC-35). Leben
 // steht dabei, weil der Lebensbalken denselben Weg nimmt.
 // `sicht` seit Runde 105: der Browser zeichnet den Nebel aus der Sicht der
 // eigenen Einheiten (kampf AC-11), mit Verbesserungen.
-const KAMPFFELDER = ['leben', 'angriff', 'nahruestung', 'fernruestung', 'reichweite', 'sicht'];
+const KAMPFFELDER = ['leben', 'angriff', 'nahruestung', 'fernruestung', 'reichweite', 'sicht', 'tempo'];
 const GEBAEUDEFELDER = ['leben', 'nahruestung', 'fernruestung', 'sicht', 'angriff', 'reichweite', 'nachladen'];
 // Die Gebaeude, die schiessen (bauen AC-29): wer in den Daten einen Angriff
 // hat. Einmal gezaehlt - `tuermeTakten()` laeuft in jedem Takt.
@@ -468,9 +468,12 @@ class Welt {
     if (!spieler) return [];
     const n = spieler.verbesserungen.length;
     const stand = this.buendnisStand;
+    const z = spieler.zeitalter;
     const da = this.wirkungenGemerkt.get(besitzer);
-    if (da && da.n === n && da.stand === stand) return da.liste;
+    if (da && da.n === n && da.stand === stand && da.z === z) return da.liste;
     const liste = [];
+    // Was die erreichten Zeitalter selbst staerken (einheiten AC-57).
+    for (let stufe = 1; stufe <= z; stufe++) if (ZEITALTER[stufe]?.wirkung) liste.push(ZEITALTER[stufe]);
     if (spieler.haus) liste.push(HAEUSER[spieler.haus].boni);
     const haeuser = new Set();
     for (const s of this.spieler) {
@@ -480,7 +483,7 @@ class Welt {
     }
     for (const haus of haeuser) if (HAEUSER[haus].mannschaft) liste.push(HAEUSER[haus].mannschaft);
     for (const v of spieler.verbesserungen) liste.push(VERBESSERUNGEN[v]);
-    this.wirkungenGemerkt.set(besitzer, { n, stand, liste });
+    this.wirkungenGemerkt.set(besitzer, { n, stand, z, liste });
     return liste;
   }
 
@@ -576,13 +579,17 @@ class Welt {
     const spieler = this.spielerVon(besitzer);
     // Ohne Verbesserung, Haus und Team wirkt nichts - auch kein
     // Mannschaftsbonus, denn den bringt nur ein Verbuendeter (spielziel AC-25).
-    if (!spieler || (!spieler.verbesserungen.length && !spieler.haus && !spieler.team)) return EINHEITEN[art][feld] || 0;
+    if (!spieler || (!spieler.verbesserungen.length && !spieler.haus && !spieler.team && !spieler.zeitalter)) return EINHEITEN[art][feld] || 0;
     // Gemerkt je Spieler: `laufen()` fragt das Tempo in jedem Takt fuer jede
     // Einheit, `wacheTakten()` zweimal je Sekunde die Sicht. Ohne Gedaechtnis
     // liefe darunter je Aufruf eine Schleife ueber alle Verbesserungen mit
     // (fahrplan AC-6: ein Takt mit 8 x 100 Einheiten unter 10 ms).
     let gemerkt = this.werteGemerkt.get(besitzer);
-    if (!gemerkt) this.werteGemerkt.set(besitzer, gemerkt = new Map());
+    // Nach einem Aufstieg neu: ein Zeitalter kann selbst staerken (einheiten AC-57).
+    if (!gemerkt || gemerkt.zeitalter !== spieler.zeitalter) {
+      this.werteGemerkt.set(besitzer, gemerkt = new Map());
+      gemerkt.zeitalter = spieler.zeitalter;
+    }
     const schluessel = `${art}|${feld}`;
     const da = gemerkt.get(schluessel);
     if (da !== undefined) return da;
@@ -1424,6 +1431,8 @@ class Welt {
       gebaeude.schlange.shift();
       gebaeude.fortschritt = 0;
       spieler.zeitalter = aufstieg.stufe;
+      // Die Tafel der Werte geht neu hinaus - das Zeitalter kann sie aendern.
+      this.werteAenderungen.add(spieler.id);
       return;
     }
     const feld = this.freiesFeldAm(gebaeude);
@@ -4181,7 +4190,8 @@ class Welt {
         wegpunkteMax: WEGPUNKTE_MAX,
         // Die Zeitalter und was ein Aufstieg kostet (bauen AC-23, bedienung AC-33).
         zeitalter: ZEITALTER,
-        aufstiege: AUFSTIEGE,
+        // Mit dem, was der Aufstieg selbst staerkt, in Worten (bedienung AC-55).
+        aufstiege: Object.fromEntries(Object.entries(AUFSTIEGE).map(([art, a]) => [art, { ...a, staerkt: staerkt(ZEITALTER[a.stufe].wirkung) }])),
       },
     };
   }

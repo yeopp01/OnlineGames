@@ -158,6 +158,13 @@
           <button id="aufgebenJa" class="haupt" type="button">Ja, aufgeben</button>
         </div>
       </div>
+      <div id="pausefeld" class="aufgebenfrage pausefeld" role="status" aria-live="polite" hidden>
+        <p><strong id="pauseWer"></strong></p>
+        <p id="pauseFrist" class="leise"></p>
+        <div class="reihe">
+          <button id="pauseWeiter" class="haupt" type="button">Weiterspielen</button>
+        </div>
+      </div>
       <div id="buendnisfrage" class="aufgebenfrage" role="dialog" aria-modal="true" aria-label="Bündnis lösen" hidden>
         <p>Bündnis wirklich lösen? Ab sofort sieht keiner mehr, was der andere sieht, und in 60 Sekunden seid ihr Gegner — das lässt sich nicht zurücknehmen.</p>
         <div class="reihe">
@@ -207,6 +214,7 @@
         </span>
         <span class="leiste">
           <span id="hinweis" class="hinweis">Ziehen wählt aus · Rechtsklick befiehlt · WASD schiebt die Karte</span>
+          <button id="pause" class="aufgeben" type="button" title="Die Partie anhalten oder weiterspielen (F3)">Pause</button>
           <button id="buendnisloesen" class="aufgeben" type="button" title="Das Bündnis lösen - nach 60 Sekunden seid ihr Gegner" hidden>Bündnis lösen</button>
           <button id="aufgeben" class="aufgeben" type="button" title="Die Partie aufgeben">Aufgeben</button>
         </span>

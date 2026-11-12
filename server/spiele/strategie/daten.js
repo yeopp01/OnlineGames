@@ -303,9 +303,17 @@ const BEVOELKERUNG_MAX = 200;
 // zusammengesetzt, denn sie folgen keiner Regel (das Lehen, aber die Krone):
 // `artikel` am Satzanfang klein, `genitiv` („Gebäude des Lehens"), `ab`
 // („gibt es erst ab dem Lehen") und `zum` („Aufstieg zum Lehen").
+//
+// `wirkung`: was das Zeitalter selbst staerkt, in der Form der Verbesserungen
+// und gelesen ueber `welt.wirkungen()`. Der Spaeherreiter laeuft ab der
+// Feudalzeit 1,55 statt 1,2 Felder je Sekunde, wie in der Vorlage (einheiten
+// AC-57) - in der Dunklen Zeit ist er ein Kundschafter, danach ein Reiter.
 const ZEITALTER = [
   { id: 'dunkel', name: 'Landsitz', artikel: 'der Landsitz', genitiv: 'des Landsitzes', ab: 'ab dem Landsitz', zum: 'zum Landsitz' },
-  { id: 'feudal', name: 'Lehen', artikel: 'das Lehen', genitiv: 'des Lehens', ab: 'ab dem Lehen', zum: 'zum Lehen' },
+  {
+    id: 'feudal', name: 'Lehen', artikel: 'das Lehen', genitiv: 'des Lehens', ab: 'ab dem Lehen', zum: 'zum Lehen',
+    wirkung: { spaeherreiter: { tempo: 0.35 } },
+  },
   { id: 'ritter', name: 'Fürstentum', artikel: 'das Fürstentum', genitiv: 'des Fürstentums', ab: 'ab dem Fürstentum', zum: 'zum Fürstentum' },
   { id: 'imperial', name: 'Krone', artikel: 'die Krone', genitiv: 'der Krone', ab: 'ab der Krone', zum: 'zur Krone' },
 ];

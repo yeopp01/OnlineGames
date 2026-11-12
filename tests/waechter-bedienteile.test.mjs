@@ -26,6 +26,7 @@ const UEBER_ALLEM = {
   spielstand: 'nur solange Tab gehalten wird (bedienung AC-20)',
   verbindungweg: 'nach dem Abbruch ist nichts darunter mehr bedienbar (bedienung AC-19)',
   aufgebenfrage: 'Rueckfrage, die eine Antwort verlangt (spielziel AC-6)',
+  pausefeld: 'solange die Partie angehalten ist, nimmt der Server keinen Befehl an - das Feld sagt, wer angehalten hat, und traegt den einen Knopf, der dann zaehlt (speichern AC-19)',
   buendnisfrage: 'Rueckfrage, die eine Antwort verlangt (spielziel AC-24)',
 };
 

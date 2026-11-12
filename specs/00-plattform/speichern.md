@@ -2,7 +2,7 @@
 
 **Bereich:** Plattform
 **Kuerzel:** speichern
-**Stand:** 0/26 fertig · 26 offen
+**Stand:** 3/26 fertig · 23 offen
 
 ## Zweck
 
@@ -100,13 +100,21 @@ Anhalten und Speichern sind zwei verschiedene Dinge. **Pause** hält die Uhr
 an, alle bleiben verbunden — für den Gang zur Tür. **Sichern** beendet die
 Sitzung und macht sie später wieder aufrufbar.
 
-- **AC-19** `offen` **Pause hält die Uhr an** — Die Welt taktet nicht mehr, Befehle
+- **AC-19** `fertig` **Pause hält die Uhr an** — Die Welt taktet nicht mehr, Befehle
   werden verworfen, alle sehen dasselbe Standbild mit dem Namen dessen, der
-  angehalten hat.
-- **AC-20** `offen` **Anhalten ist begrenzt** — Zweimal je Spieler und
+  angehalten hat. Ein Knopf neben Aufgeben, die Tasten F3 und Pause. Eine
+  Sache des Raums, nicht des Spiels (ADR-0006): Nachrichten `pause` und
+  `weiter`, an alle geht `pause` mit Name und Rest. Wer in eine angehaltene
+  Partie zurückkehrt, sieht, dass sie steht. Schieben und Wählen gehen im
+  Standbild weiter.
+- **AC-20** `fertig` **Anhalten ist begrenzt** — Zweimal je Spieler und
   Partie, höchstens fünf Minuten am Stück, danach läuft sie von selbst
   weiter. Ohne Grenze ist Pause im Wettstreit ein Werkzeug, kein Dienst.
-- **AC-21** `offen` **Fortsetzen kann jeder** — Auch wer nicht angehalten hat. Sonst hält eine
+  **Sitzt nur ein Mensch in der Partie, gilt keine Grenze** (2026-11-12):
+  allein gegen den Computer gibt es keinen Wettstreit, den sie schützt —
+  dort hält man an, so oft und so lange man will, und der Raum wird nicht
+  abgeräumt, solange der Spieler am Tisch sitzt.
+- **AC-21** `fertig` **Fortsetzen kann jeder** — Auch wer nicht angehalten hat. Sonst hält eine
   abgerissene Verbindung die Partie für alle an.
 - **AC-22** `offen` **Sichern verlangt Einigkeit** — Eine Mehrspielerpartie wird nur gesichert,
   wenn alle Verbundenen zustimmen. Ein einzelner darf die Runde nicht

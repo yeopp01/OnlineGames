@@ -2,7 +2,7 @@
 
 **Bereich:** Strategie
 **Kuerzel:** bedienung
-**Stand:** 54/57 fertig · 3 offen
+**Stand:** 58/61 fertig · 3 offen
 
 ## Zweck
 
@@ -463,6 +463,39 @@ unter [Einheiten](einheiten-und-befehle.md) AC-55 und AC-56,
   der Vorlage. Sie nimmt keine Maus an. Die ganze Tafel bleibt auf `Tab`
   (AC-20). **Messbar:** die Liste steht im Bild, und wer mehr gesammelt hat,
   steht oben.
+- **AC-58** `fertig` **Fremdes ansehen** — Ein Linksklick auf eine fremde
+  Einheit oder ein fremdes Gebäude, die man sieht, zeigt in der Leiste Name,
+  Besitzer, Leben und Kampfwerte — mit den Verbesserungen des Besitzers, wie
+  in der Vorlage. Mehr nicht: es steht nicht in der Auswahl, die Leiste hat
+  keine Knöpfe, ein Rechtsklick befiehlt nichts. Am Boden liegt der Ring
+  gestrichelt statt durchgezogen. Eigenes hat Vorrang; die Ansicht endet,
+  wenn etwas Eigenes gewählt wird, mit Esc, und wenn das Angesehene fällt,
+  bekehrt wird oder im Nebel verschwindet. Ein erinnertes Gebäude im Nebel
+  zeigt, was man zuletzt von ihm gesehen hat (kampf AC-12).
+- **AC-59** `fertig` **Geräusche zu Ereignissen** — Was geschieht, ist zu
+  hören, je mit eigenem Klang: eine eigene Einheit ist fertig, ein eigenes
+  Gebäude steht, eine Verbesserung ist erforscht, der Aufstieg ist vollzogen,
+  ein Angriff wird gemeldet (kampf AC-14), eine eigene Einheit fällt, der
+  Server sagt ab, die Partie ist gewonnen oder verloren. Derselbe Klang
+  beginnt nicht zweimal im selben Augenblick — zehn Dorfbewohner aus einem
+  Takt sind einer —, und das Horn zum Angriff ruft höchstens alle acht
+  Sekunden. Alles wird im Browser erzeugt (`public/ton.js`): keine
+  Klangdatei, kein Material aus dem Original (darstellung AC-11). Die
+  Ansicht nennt nur Ereignisse beim Namen (`ansicht.beiEreignis`). **Aus dem
+  ersten Spiel auf dem Server (2026-11-12):** „Es fehlt ein Ton … Geräusche,
+  für jede Entwicklung, wenn Einheiten gebaut sind, wenn man angegriffen
+  wird." **Nicht geprüft:** wie es klingt — gemessen ist, dass am Ausgang
+  etwas ankommt, gehört hat es beim Bauen niemand.
+- **AC-60** `fertig` **Leise Musik im Spiel** — Während der Partie spielt
+  leise Musik: kurze gezupfte Folgen auf fünf Tönen über einem Liegeklang,
+  mit Pausen, jedes Mal anders. Sie beginnt mit der ersten Handlung im Spiel
+  (vorher lässt der Browser keinen Ton zu), schweigt im Vorraum und in einem
+  Fenster im Hintergrund, und steht weit unter den Geräuschen. Erzeugt wie
+  diese, kein Stück und keine Aufnahme. **Nicht geprüft:** ob sie beruhigt
+  — das entscheidet ein Ohr, kein Test.
+- **AC-61** `fertig` **Ton abschaltbar** — In der Tastenübersicht stehen zwei
+  Schalter, „Geräusche" und „Musik", einzeln; der Browser merkt sich die
+  Wahl wie beim Schieben am Rand (AC-9).
 
 ## Grenzfaelle
 

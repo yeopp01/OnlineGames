@@ -1330,6 +1330,16 @@
       "spec": "10-strategie/bedienung.md",
       "ac": "AC-56",
       "begruendung": "Die Karte laeuft weiter, waehrend der Zeiger ausserhalb des Fensters steht. Ein Bildschirmfoto zeigt das Fenster und damit weder den Zeiger draussen noch die Bewegung - nur eine Karte an anderer Stelle. Belegt im Browserlauf an der Kamera: nach dem Ereignis, das der Browser beim Verlassen schickt, laeuft sie in jede der vier Richtungen und steht nach der Rueckkehr, ohne Fokus und abgeschaltet (e2e/tests/strategie-randschieben.spec.mjs). Mit einer echten Maus am Fensterrand ist es nicht geprueft - Playwright bewegt die Maus nicht aus dem Fenster."
+    },
+    {
+      "spec": "10-strategie/bedienung.md",
+      "ac": "AC-59",
+      "begruendung": "Ein Geraeusch zu einem Ereignis ist Schall, kein Bild: wird ein Dorfbewohner fertig oder der Webstuhl erforscht, klingt es am Ausgang des Browsers. Belegt mit einer Messung statt einem Bild - der Effektivwert am Ausgang steigt im Augenblick des Ereignisses ueber 0,02 und faellt danach auf Stille, beim Mitspieler klingt nichts (e2e/tests/strategie-ton.spec.mjs); welches Ereignis welchen Klang hat und dass kein Klang zweimal in seinem Mindestabstand kommt, im Rechenteil (tests/strategie-ton.test.mjs). Nicht geprueft: wie es klingt - das hat noch niemand gehoert."
+    },
+    {
+      "spec": "10-strategie/bedienung.md",
+      "ac": "AC-60",
+      "begruendung": "Musik ist Schall, kein Bild: nach dem ersten Klick im Spiel spielt sie leise und hoert auf, wenn das Fenster verdeckt ist oder die Partie endet. Belegt mit einer Messung am Ausgang des Browsers - der Effektivwert liegt ueber 0,002 und in der Spitze unter 0,12, also weit unter einem Geraeusch (e2e/tests/strategie-ton.spec.mjs); dass nur Toene der Leiter d e g a c vorkommen und keine Phrase der vorigen gleicht, im Rechenteil (tests/strategie-ton.test.mjs). Den Schalter dazu zeigt das Bild bei bedienung AC-61. Nicht geprueft: wie sie klingt - das hat noch niemand gehoert."
     }
   ]
 }

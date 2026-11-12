@@ -336,6 +336,14 @@ nicht die Regeln.
   Steinsammler kommen vom Holz und gehen zurück, wenn alle stehen.
   Gemessen: zwei Türme in jeder der 16 Partien, die anderen keinen; 40 von
   40 mit Sieger, 36 vor Minute 60, Median 44,9 — knapp unter der Grenze.
+  **Seit einheiten AC-57 (2026-11-12, schnellerer Späher):** in 15 von 16
+  Partien zwei Türme; bei Startwert 12 wird Wehrstein ab Minute 19 von
+  Eschenbruch im eigenen Dorf geschlagen, bricht nie auf und baut keinen —
+  200 Stein bleiben liegen. Der Test zählt deshalb die Partien mit
+  Aufbruch (mindestens 14 von 16). **Lücke:** eine KI, die daheim
+  angegriffen wird, verbaut ihren Stein nicht; Türme auch zur Verteidigung
+  wären der nächste Schritt, gemessen an fahrplan AC-11. Im Nebel jetzt 36
+  vor Minute 60, Median 42,6.
   Vier Türme ergaben 31 vor Minute 60 und Median 46,8; zwei Türme schon
   vor dem ersten Angriff ließen zwei Partien ohne Sieger. Belegt in
   `tests/partien/ki-im-nebel.test.mjs`.

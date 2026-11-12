@@ -2,7 +2,7 @@
 
 **Bereich:** Strategie
 **Kuerzel:** einheiten
-**Stand:** 31/49 fertig · 17 offen · 1 zurueckgestellt
+**Stand:** 32/50 fertig · 17 offen · 1 zurueckgestellt
 
 ## Zweck
 
@@ -434,6 +434,16 @@ AC-19). Werte und Dauern sind Startwerte aus ADR-0014.
   am nächsten. Danach geht er zurück an seine Arbeit: an denselben Vorrat,
   an dieselbe Farm. Trägt er nichts oder nimmt das Gebäude die Ladung nicht,
   bleibt es ein Gang. Am Zeiger steht „Abladen" (bedienung AC-52).
+- **AC-57** `fertig` **Späherreiter ab der Feudalzeit schneller** — In der
+  Dunklen Zeit läuft er 1,2 Felder je Sekunde, ab der Feudalzeit 1,55, wie in
+  der Vorlage: erst Kundschafter, dann Reiter. Das Zeitalter trägt die
+  Wirkung selbst (`wirkung` in `ZEITALTER`), gelesen über `welt.wirkungen()`
+  wie jede Verbesserung; am Knopf des Aufstiegs steht sie (bedienung AC-55).
+  **Aus dem ersten Spiel auf dem Server (2026-11-12):** „Der Späherreiter
+  ist sehr langsam." In der Dunklen Zeit bleibt er bei 1,2 — das ist der
+  Wert der Vorlage, und anderthalbmal so schnell wie ein Dorfbewohner. Wem
+  das ganze Spiel zu langsam ist, stellt die Spielgeschwindigkeit
+  (spielziel AC-23).
 
 ## Grenzfaelle
 

@@ -624,6 +624,8 @@ export class Auswahlleiste {
       if (gebaeude.length) zeilen.push(`Neue Gebäude: ${gebaeude.join(', ')}`);
       if (einheiten.length) zeilen.push(`Neue Einheiten: ${einheiten.join(', ')}`);
       if (forschung.length) zeilen.push(`Neue Verbesserungen: ${forschung.join(', ')}`);
+      // Was der Aufstieg selbst staerkt (einheiten AC-57) - der Satz kommt vom Server.
+      for (const s of aufstieg.staerkt || []) zeilen.push(`${einheitName(s.art)}: ${s.text}`);
       const jetzt = werte.zeitalter?.[stufe - 1];
       if (aufstieg.voraussetzung && jetzt) {
         zeilen.push(`Verlangt ${aufstieg.voraussetzung} fertige Gebäude ${jetzt.genitiv} – Häuser, Türme und Mauern zählen nicht`);
@@ -652,7 +654,7 @@ export class Auswahlleiste {
     if (w.nurGebaeude) zeilen.push('Greift nur Gebäude an');
     zeilen.push(kurz(art));
     const weite = lesen('angriff') > 0 ? (lesen('reichweite') > 0 ? `Reichweite ${lesen('reichweite')}` : 'Nahkampf') : null;
-    zeilen.push([weite, w.tempo ? `Tempo ${komma(w.tempo)}` : null, `Sicht ${lesen('sicht')}`].filter(Boolean).join(' · '));
+    zeilen.push([weite, w.tempo ? `Tempo ${komma(lesen('tempo'))}` : null, `Sicht ${lesen('sicht')}`].filter(Boolean).join(' · '));
     if (w.bonus) zeilen.push(Object.entries(w.bonus).map(([k, z]) => `+${z} gegen ${werte.klassen?.[k]?.name || k}`).join(', '));
     return { name: einheitName(art), kosten: w.kosten || {}, dauer: w.zeit ? `Ausbildung ${w.zeit} s` : null, zeilen };
   }
@@ -729,8 +731,58 @@ export class Auswahlleiste {
       return;
     }
 
+    // Nichts Eigenes gewaehlt: vielleicht wird etwas Fremdes angesehen
+    // (bedienung AC-58).
+    const fremd = a.angesehenes();
+    if (fremd) {
+      const ding = fremd.einheit || fremd.gebaeude;
+      const werte = fremd.einheit ? `${a.lebenVoll(ding)}:${a.einheitenwert(ding, 'angriff')}` : a.gebaeudeLebenVoll(ding);
+      const schluessel = `f${fremd.einheit ? 'e' : 'g'}${ding.i}:${ding.h}:${ding.u}:${werte}:${a.feindlich(ding.b)}`;
+      if (schluessel !== this.gezeigt) {
+        this.fremdBauen(fremd);
+        this.gezeigt = schluessel;
+      }
+      this.wurzel.hidden = false;
+      return;
+    }
+
     this.wurzel.hidden = true;
     this.gezeigt = null;
+  }
+
+  /**
+   * Etwas Fremdes ansehen (bedienung AC-58): Name, Besitzer, Leben und
+   * Kampfwerte - aus der Tafel des Besitzers, also mit dessen Verbesserungen.
+   * Keine Knoepfe: befehlen laesst sich nur Eigenes.
+   */
+  fremdBauen({ einheit, gebaeude }) {
+    const a = this.ansicht;
+    const w = this.wurzel;
+    w.replaceChildren();
+    const ding = einheit || gebaeude;
+    const besitzer = a.spieler.get(ding.b);
+    const farbe = besitzer?.farbe || '#888888';
+    if (einheit) {
+      const art = a.arten[einheit.k] || 'dorfbewohner';
+      const voll = a.lebenVoll(einheit);
+      const bild = element('div', 'auswahl-bild');
+      bild.append(bildchen(art, 58, farbe));
+      const kopfteil = kopf(FIGUREN[art]?.name || art, einheit.h ?? voll, voll);
+      kopfteil.append(this.kampfwerteZeile(einheit, art));
+      w.append(bild, kopfteil);
+    } else {
+      const voll = a.gebaeudeLebenVoll(gebaeude) ?? gebaeude.h;
+      w.append(kopf(GEBAEUDE[gebaeude.art]?.name || gebaeude.art, gebaeude.h ?? voll, voll));
+      const wert = (feld) => a.einheitenwerte.get(gebaeude.b)?.[gebaeude.art]?.[feld] ?? a.werte.gebaeude[gebaeude.art]?.[feld] ?? 0;
+      if (wert('angriff') > 0) w.append(this.kampfwerteZeile(gebaeude, gebaeude.art, wert));
+    }
+    const zeile = element('div', 'ladung');
+    zeile.id = 'besitzer';
+    zeile.dataset.besitzer = ding.b;
+    const punkt = element('span', 'farbpunkt');
+    punkt.style.background = farbe;
+    zeile.append(punkt, element('span', null, besitzer?.name || 'Unbekannt'), element('span', 'leise', a.feindlich(ding.b) ? ' – Gegner' : ' – verbündet'));
+    w.append(zeile);
   }
 
   // Was ein Gebaeude ausbildet, mit den Kosten aus den Werten des Servers.

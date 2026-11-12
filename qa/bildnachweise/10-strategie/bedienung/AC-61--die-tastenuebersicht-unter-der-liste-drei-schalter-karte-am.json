@@ -1,0 +1,10 @@
+{
+  "spec": "10-strategie/bedienung.md",
+  "ac": "AC-61",
+  "titel": "Die Tastenuebersicht: unter der Liste drei Schalter - Karte am Bildschirmrand schieben, Geraeusche, Musik - alle angehakt",
+  "datei": "e2e/tests/strategie-ton.spec.mjs",
+  "pfad": [
+    "Ton",
+    "bedienung AC-61: in der Tastenuebersicht stehen Geraeusche und Musik - Musik aus, und es wird still"
+  ]
+}

@@ -2,6 +2,7 @@ import { Ansicht } from './ansicht.js';
 import { Auswahlleiste } from './auswahlleiste.js';
 import { Uebersicht } from './uebersicht.js';
 import { Tasten } from './tasten.js';
+import { Ton } from './ton.js';
 
 const teile = {
   vorraum: document.getElementById('vorraum'),
@@ -50,10 +51,23 @@ const LETZTE_PARTIE = 'letztePartie';
 
 teile.name.value = localStorage.getItem('name') || '';
 
+// Ton (bedienung AC-59 bis AC-61): Geraeusche zu Ereignissen und leise Musik,
+// beides im Browser erzeugt (public/ton.js). Vor der ersten Handlung laesst
+// der Browser keinen Ton zu - der erste Klick, die erste Taste gibt ihn frei.
+const ton = new Ton(localStorage);
+// Fuer den Browserlauf, wie window.ansicht: lesen, nicht schreiben.
+window.ton = ton;
+for (const art of ['pointerdown', 'keydown']) {
+  window.addEventListener(art, () => ton.entsperren(), { capture: true });
+}
+document.addEventListener('visibilitychange', () => ton.sichtbarSetzen(!document.hidden));
+
 function zeigen(welcher) {
   teile.vorraum.hidden = welcher !== 'vorraum';
   teile.warteraum.hidden = welcher !== 'warteraum';
   teile.spiel.hidden = welcher !== 'spiel';
+  // Die Musik gehoert zur Partie, nicht zum Vorraum.
+  ton.partieSetzen(welcher === 'spiel');
   document.body.style.display = welcher === 'spiel' ? 'block' : 'grid';
   // Im Spiel gehoert jede Bewegung der Karte, nicht der Seite.
   document.body.style.overflow = welcher === 'spiel' ? 'hidden' : '';
@@ -130,17 +144,28 @@ function empfangen(nachricht) {
         ansicht.beiFeldern = () => uebersicht.feldGeaendert();
         // Fuer den Browserlauf, wie window.ansicht: lesen, nicht schreiben.
         window.uebersicht = uebersicht;
-        const tasten = new Tasten(ansicht, teile.auswahlleiste, document.getElementById('tastenuebersicht'));
+        const tasten = new Tasten(ansicht, teile.auswahlleiste, document.getElementById('tastenuebersicht'), ton);
         ansicht.beiTaste = (e) => tasten.taste(e);
         ansicht.melden = spielMelden;
-        ansicht.beiZeitalter = (stufe, name) => zeitalterwechselMelden(name);
-        ansicht.beiAngriff = (ort) => angriffZeigen(ort);
+        ansicht.beiEreignis = (name) => ton.spielen(name);
+        ansicht.beiZeitalter = (stufe, name) => {
+          ton.spielen('zeitalter');
+          zeitalterwechselMelden(name);
+        };
+        ansicht.beiAngriff = (ort) => {
+          ton.spielen('angriff');
+          angriffZeigen(ort);
+        };
         ansicht.beiEnde = (ende, text) => {
+          // Gewonnen oder verloren; ein Unentschieden bleibt still.
+          if ((ende.gewinner || []).includes(ansicht.ich)) ton.spielen('sieg');
+          else if ((ende.gewinner || []).length) ton.spielen('niederlage');
           // Eine entschiedene Partie bietet der Vorraum nicht mehr an.
           try { localStorage.removeItem(LETZTE_PARTIE); } catch { /* dann bleibt es stehen */ }
           partieendeZeigen(text);
         };
         ansicht.beiSpielstand = () => spielstandZeigen();
+        ansicht.beiPause = () => pauseUmschalten();
         ansicht.sammelpunktSenden = (gebaeude, ziel) =>
           senden({ typ: 'befehl', auftrag: 'sammelpunkt', gebaeude, ziel });
         ansicht.bauenSenden = (einheiten, art, ziel, anhaengen) =>
@@ -156,6 +181,9 @@ function empfangen(nachricht) {
       // Ein Aufbau kann der zweite sein: die Revanche (spielziel AC-9). Dann
       // muss weg, was von der alten Partie noch im Bild steht.
       partieraumAufraeumen();
+      // Eine neue Partie laeuft; steht sie doch, sagt es die naechste Nachricht.
+      pauseZeigen(null);
+      ausVergessen = false;
       aufgebenZeigen();
       buendnisZeigen();
       zuschauerZeigen();
@@ -167,9 +195,20 @@ function empfangen(nachricht) {
       }
       break;
 
+    case 'pause':
+      pauseZeigen(nachricht);
+      break;
+
     case 'zustand':
       if (!ansicht) return;
       ansicht.zustand(nachricht);
+      // Wer ausgeschieden ist, dem bietet der Vorraum die Rueckkehr nicht
+      // mehr an (raeume AC-18): die Partie laeuft vielleicht weiter, aber
+      // nicht mehr fuer ihn. Im selben Fenster bleibt er Zuschauer.
+      if (ansicht.aus && !ausVergessen) {
+        ausVergessen = true;
+        try { localStorage.removeItem(LETZTE_PARTIE); } catch { /* dann bleibt es stehen */ }
+      }
       leisteZiel(ansicht.vorraete);
       auswahlleiste.aktualisieren();
       untaetigZeigen(ansicht.untaetige.length);
@@ -194,7 +233,10 @@ function empfangen(nachricht) {
         platzVergessen();
       }
       // Im Spiel als kurze Einblendung, nicht in einem verdeckten Formular.
-      if (!teile.spiel.hidden) spielMelden(nachricht.text);
+      if (!teile.spiel.hidden) {
+        ton.spielen('absage');
+        spielMelden(nachricht.text);
+      }
       else melden(nachricht.text, teile.warteraum.hidden ? meldeort || teile.meldung : teile.wartemeldung);
       break;
   }
@@ -505,7 +547,53 @@ const aufgebenFrage = document.getElementById('aufgebenfrage');
 
 function aufgebenZeigen() {
   aufgebenKnopf.hidden = !ansicht || ansicht.aus || ansicht.ende !== null;
+  // Wer nicht mehr spielt, haelt auch nicht an (speichern AC-19).
+  pauseKnopf.hidden = aufgebenKnopf.hidden;
 }
+
+// ---- Anhalten (speichern AC-19 bis AC-21) --------------------------------
+// Der Knopf steht neben Aufgeben, die Tasten sind F3 (wie in der Vorlage) und
+// Pause. Angehalten wird auf dem Server: die Welt taktet nicht, Befehle
+// verwirft er. Alle sehen dasselbe Feld mit dem Namen dessen, der angehalten
+// hat - und jeder kann weiterspielen, nicht nur er.
+const pauseKnopf = document.getElementById('pause');
+const pauseFeld = document.getElementById('pausefeld');
+let pauseUhr = null;
+// Gemerkt, damit der Platz nur einmal vergessen wird (raeume AC-18).
+let ausVergessen = false;
+
+function pauseZeigen(nachricht) {
+  clearInterval(pauseUhr);
+  pauseUhr = null;
+  const an = Boolean(nachricht && nachricht.name);
+  if (ansicht) ansicht.anhalten(an);
+  pauseFeld.hidden = !an;
+  pauseKnopf.textContent = an ? 'Weiter' : 'Pause';
+  if (!an) return;
+  document.getElementById('pauseWer').textContent = `${nachricht.name} hat die Partie angehalten.`;
+  const frist = document.getElementById('pauseFrist');
+  if (nachricht.rest === null || nachricht.rest === undefined) {
+    frist.textContent = 'Sie wartet, bis jemand weiterspielt.';
+    return;
+  }
+  const ende = performance.now() + nachricht.rest * 1000;
+  const zeigen = () => {
+    const rest = Math.max(0, Math.ceil((ende - performance.now()) / 1000));
+    frist.textContent = `Geht in ${Math.floor(rest / 60)}:${String(rest % 60).padStart(2, '0')} von selbst weiter.`;
+  };
+  zeigen();
+  pauseUhr = setInterval(zeigen, 250);
+}
+
+function pauseUmschalten() {
+  if (!ansicht || ansicht.ende !== null) return;
+  // Weiterspielen darf auch, wer ausgeschieden ist und zusieht (AC-21).
+  if (!pauseFeld.hidden) senden({ typ: 'weiter' });
+  else if (!ansicht.aus) senden({ typ: 'pause' });
+}
+
+pauseKnopf.addEventListener('click', pauseUmschalten);
+document.getElementById('pauseWeiter').addEventListener('click', () => senden({ typ: 'weiter' }));
 
 function aufgebenFrageTaste(e) {
   if (e.key !== 'Escape') return;

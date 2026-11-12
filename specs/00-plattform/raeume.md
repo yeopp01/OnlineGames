@@ -89,7 +89,9 @@ Name eintragen → Partie eroeffnen → Code weitergeben
   Platz nicht mehr, sagt der Server das **einmal** ("Diese Partie gibt es
   nicht mehr", mit `platzWeg`), und der Browser vergisst den Platz — die
   Absage kam vorher bei jedem Neuladen wieder. Eine entschiedene Partie wird
-  nicht angeboten, eine aeltere als 30 Minuten auch nicht. Die Liste aller
+  nicht angeboten, eine aeltere als 30 Minuten auch nicht, und keine, aus der
+  man ausgeschieden ist - sie laeuft vielleicht weiter, aber nicht mehr fuer
+  einen selbst. Die Liste aller
   eigenen offenen Partien am Konto und das Fortsetzen nach einem Neustart des
   Servers gehoeren zum Speichern (eigene Spec, noch nicht gebaut).
 

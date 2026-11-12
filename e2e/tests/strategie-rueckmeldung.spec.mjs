@@ -7,7 +7,7 @@
 // bleibt stehen, das Menue sagt die Wirkung, die Punkte stehen staendig im
 // Bild, und der Vorraum bietet die Rueckkehr an.
 import { nachweis } from '../../scripts/qa-nachweis.mjs';
-import { einheitenAufstellen, expect, rohstoffe, test, zeitraffer } from '../helpers/seite.mjs';
+import { einheitenAufstellen, expect, lebenSetzen, rohstoffe, test, zeitraffer } from '../helpers/seite.mjs';
 import { partieBeenden, partieZuZweit, platzImBild, waehlen } from '../helpers/strategie.mjs';
 
 const BEDIENUNG = '10-strategie/bedienung.md';
@@ -440,6 +440,98 @@ test.describe('Rueckmeldungen aus dem ersten Spiel', () => {
       titel: 'Vier Dorfbewohner hinter dem Fundament einer Kaserne: keiner ist blau eingefaerbt, das Fundament verdeckt niemanden',
       test: info,
     });
+  });
+
+  test('bedienung AC-58: ein Klick auf Berts Reiter zeigt Namen, Besitzer und Leben - ohne Knoepfe, und befehlen laesst er sich nicht', async ({}, info) => {
+    const reiter = await anna.evaluate(() => {
+      const a = window.ansicht;
+      const e = [...a.nachher.values()].find((x) => x.b !== a.ich && a.arten[x.k] === 'spaeherreiter');
+      a.ausgewaehlt = new Set();
+      a.gewaehltesGebaeude = null;
+      a.kamera.zoom = 2;
+      a.blickAuf(e.x, e.y);
+      const p = a.zuBild(e.x, e.y);
+      return { i: e.i, px: p.x, py: p.y - a.figurenHoehe() * 0.6, angriff: a.werte.einheiten.spaeherreiter.angriff, leben: a.werte.einheiten.spaeherreiter.leben };
+    });
+    const rand = await anna.locator('#brett').boundingBox();
+    await anna.mouse.click(rand.x + reiter.px, rand.y + reiter.py);
+    const leiste = anna.locator('#auswahlleiste');
+    await expect(leiste.locator('.auswahl-kopf strong')).toHaveText('Späherreiter');
+    await expect(leiste.locator('.leben')).toHaveAttribute('data-leben', `${reiter.leben}/${reiter.leben}`);
+    await expect(leiste.locator('#besitzer')).toHaveText('Bert – Gegner');
+    await expect(leiste.locator('#kampfwerte')).toHaveAttribute('data-angriff', String(reiter.angriff));
+    await expect(leiste.locator('button')).toHaveCount(0);
+    expect(await anna.evaluate(() => window.ansicht.ausgewaehlt.size), 'in der Auswahl steht er nicht').toBe(0);
+
+    // Wird er getroffen, geht das Leben in der Leiste mit.
+    await lebenSetzen(anna, code, reiter.i, 20);
+    await expect(leiste.locator('.leben')).toHaveAttribute('data-leben', `20/${reiter.leben}`);
+    // Ein Rechtsklick befiehlt ihm nichts: kein Zeichen am Ziel, er bleibt, wo er ist.
+    const vorher = await anna.evaluate((i) => {
+      const a = window.ansicht;
+      a.zielzeichen = null;
+      const e = a.nachher.get(i);
+      return { x: e.x, y: e.y };
+    }, reiter.i);
+    await anna.mouse.click(rand.x + reiter.px + 180, rand.y + reiter.py + 70, { button: 'right' });
+    await anna.waitForTimeout(400);
+    expect(await anna.evaluate(() => window.ansicht.zielzeichen)).toBeNull();
+    expect(await anna.evaluate((i) => {
+      const e = window.ansicht.nachher.get(i);
+      return { x: e.x, y: e.y };
+    }, reiter.i)).toEqual(vorher);
+    await anna.mouse.move(rand.x + reiter.px + 180, rand.y + reiter.py - 160);
+    await nachweis(anna, {
+      spec: BEDIENUNG,
+      ac: 'AC-58',
+      titel: 'Berts Spaeherreiter angeklickt: gestrichelter Ring am Boden, in der Leiste Spaeherreiter mit 20 von 45 Leben, Bert als Gegner und keine Knoepfe',
+      test: info,
+    });
+
+    // Ein fremdes Gebaeude ebenso.
+    const zentrum = await anna.evaluate(() => {
+      const a = window.ansicht;
+      const g = [...a.gebaeude.values()].find((x) => x.b !== a.ich && x.art === 'dorfzentrum');
+      const m = a.gebaeudeMitte(g);
+      a.blickAuf(m.x, m.y);
+      const p = a.zuBild(m.x, m.y);
+      return { px: p.x, py: p.y - 12, voll: a.gebaeudeLebenVoll(g) };
+    });
+    await anna.mouse.click(rand.x + zentrum.px, rand.y + zentrum.py);
+    await expect(leiste.locator('.auswahl-kopf strong')).toHaveText('Dorfzentrum');
+    await expect(leiste.locator('.leben')).toHaveAttribute('data-leben', `${zentrum.voll}/${zentrum.voll}`);
+    await expect(leiste.locator('#besitzer')).toHaveText('Bert – Gegner');
+    await expect(leiste.locator('button')).toHaveCount(0);
+    expect(await anna.evaluate(() => window.ansicht.gewaehltesGebaeude), 'gewaehlt ist es nicht').toBeNull();
+
+    // Esc beendet das Ansehen.
+    await anna.keyboard.press('Escape');
+    await expect(leiste).toBeHidden();
+  });
+
+  test('einheiten AC-57: ueber dem Aufstieg steht, dass der Spaeherreiter schneller wird',async ({}, info) => {
+    await zurBasis(1.6);
+    await zentrumWaehlen();
+    const tafel = anna.locator('#knopftafel');
+    await anna.locator('[data-aufstieg="feudalzeit"]').hover();
+    await expect(tafel).toBeVisible();
+    await expect(tafel).toContainText('Späherreiter: +0,35 Tempo');
+    await nachweis(anna, {
+      spec: EINHEITEN,
+      ac: 'AC-57',
+      titel: 'Die Maus ueber dem Aufstieg: in der Tafel steht Spaeherreiter plus 0,35 Tempo',
+      test: info,
+    });
+    await anna.mouse.move(700, 300);
+    await expect(tafel).toBeHidden();
+    // Noch steht Anna in der Dunklen Zeit: der Reiter traegt den Wert der
+    // Vorlage. Dass er nach dem Aufstieg 1,55 laeuft, misst
+    // tests/strategie-zeitalter-wirkung.test.mjs.
+    expect(await anna.evaluate(() => {
+      const a = window.ansicht;
+      const reiter = [...a.nachher.values()].find((e) => e.b === a.ich && a.arten[e.k] === 'spaeherreiter');
+      return a.einheitenwert(reiter, 'tempo');
+    })).toBeCloseTo(1.2, 3);
   });
 });
 

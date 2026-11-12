@@ -41,6 +41,8 @@ const enden = workerData.startwerte.map((startwert) => {
   const { ende, spieler } = partieSpielen({ startwert, minuten: workerData.minuten, einstellungen: { haeuser }, eingriff });
   // Wann jede KI zum ersten Mal ein Gebaeude eines Gegners sah (ki AC-13).
   const gegnerMinuten = spieler.map((p) => p.gegnerMinute);
-  return { startwert, haeuser, takt: ende ? ende.takt : null, sieger: ende ? ende.sieger : null, gegnerMinuten, neu, gebaut };
+  // Wie oft jede KI ein Heer losgeschickt hat (ki AC-30: Tuerme erst danach).
+  const angriffe = Object.fromEntries(spieler.map((p, i) => [`ki${i + 1}`, p.angriffe]));
+  return { startwert, haeuser, takt: ende ? ende.takt : null, sieger: ende ? ende.sieger : null, gegnerMinuten, neu, gebaut, angriffe };
 });
 parentPort.postMessage(enden);

@@ -76,4 +76,14 @@ function bringt(verbesserung) {
   return zeilen;
 }
 
-module.exports = { bringt };
+/**
+ * Was ein Zeitalter selbst staerkt, je Einheitenart: `[{ art, text }]`. Den
+ * Namen der Art setzt der Browser davor - er kennt ihn, der Server nicht.
+ */
+function staerkt(wirkung) {
+  return Object.entries(wirkung || {})
+    .map(([art, w]) => ({ art, text: zuschlaege(w) }))
+    .filter((eintrag) => eintrag.text);
+}
+
+module.exports = { bringt, staerkt };

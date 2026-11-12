@@ -437,7 +437,27 @@ die Zeilen unter „Für die Erkenntnisse" dorthin und erzeugt das Board neu
   braucht ein ADR, weil „Speicherstände für Strategiepartien" in ADR-0012
   rechts steht), 7 (Ton), 10 (einheiten AC-30), 3 (Reitertempo, Frage), 15
   (Farm-Ablauf, mit dem Rendern), 17 (Klingel).
-  **Arbeitsstand 2026-11-12, 13:45 (fortschreiben):** erster Stapel
+  **Arbeitsstand 2026-11-12, 20:20 (fortschreiben):** **zweiter Stapel**
+  (Pause, Fremdes ansehen, Reitertempo, Ton) ist geprüft: 260 Browserfälle
+  grün, ohne Browser 801. Zwei Funde aus dem vollen Lauf: der Wächter zu
+  raeume AC-16 verbietet das Wort „Welt" in `raeume.js`, auch im Kommentar;
+  und ki AC-12 fiel bei Startwert 13 (KI 1 nach einem Überfall im
+  Wiederaufbau, vier statt fünf Gefallene in fünf Minuten) — der Test kennt
+  jetzt auch „zehn Gefallene in zehn Minuten". **Der Benutzer will die
+  gerenderten Bilder als Vorgabe** (2026-11-12, 19:40: „können wir bitte die
+  neuen bilder als standard nehmen … und auch in die Bildernachweise
+  integrieren, etc. die Optik ist schon wichtig"). Der Blender-Agent ist
+  fertig: Zweig `strategie-gebaeude`, Commits `160a22a` bis `2060173`, alle
+  19 Gebäude und `baustelle-1` bis `-4`. **Nächste Schritte:** (1) zweiten
+  Stapel committen und ausrollen; (2) `strategie-gebaeude` übernehmen
+  (Konflikt in dieser Datei zu erwarten); (3) die Skripte im Scratchpad
+  anwenden — `a32.py` (Vorgabe an, `?bilder=0`, Ladesatz, ETag/304,
+  darstellung AC-25), `a33.py` (Gebäude im Spielbild: Mauer aus Teilen, Tor,
+  Farm, Baustellen, Schattenschicht, Treffer am Bild), `a34.py` (Knopfbilder
+  der Leiste, `laeuft` erst mit Bildern), `a35.py` (Tests, `sicht.mjs`);
+  (4) `E2E_HAFEN=4391 npm run check:alles:neu:kurz`, Fehler beheben,
+  `npm run qa:abweichung`, Bilder durchsehen, committen, ausrollen.
+  **Arbeitsstand 2026-11-12, 13:45:** erster Stapel
   uncommittet im Arbeitsbaum. Der Abschlusslauf `check:alles:neu:kurz` ist
   durch: 248 Browserfälle grün, ohne Browser fiel **ki AC-10/AC-12 beim
   Startwert 12** (346 s untätig) — die KI stellte eine Mühle vor eine

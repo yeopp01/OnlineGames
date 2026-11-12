@@ -1,0 +1,10 @@
+{
+  "spec": "00-plattform/speichern.md",
+  "ac": "AC-21",
+  "titel": "Berts Bild waehrend Annas Pause: auch bei ihm steht Anna hat die Partie angehalten mit dem Knopf Weiterspielen",
+  "datei": "e2e/tests/strategie-pause.spec.mjs",
+  "pfad": [
+    "Anhalten und Fortsetzen",
+    "speichern AC-21: Bert spielt weiter, obwohl Anna angehalten hat"
+  ]
+}

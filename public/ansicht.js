@@ -60,8 +60,12 @@ export function figurHoeheBei(zoom) {
 // Schrittphase fuer die Beine: laeuft mit der Uhr, je Einheit versetzt, damit
 // eine Gruppe nicht im Gleichschritt marschiert.
 
+// Angehalten (speichern AC-19) steht die Uhr der Bilder: wer geht oder
+// arbeitet, tritt sonst auf der Stelle weiter.
+let halt = null;
+
 function jetztPhase(id) {
-  return performance.now() / 110 + id * 1.7;
+  return (halt ?? performance.now()) / 110 + id * 1.7;
 }
 
 // Wie lange eine gerenderte Figur faellt, bei Spielgeschwindigkeit 1,0. Am
@@ -101,6 +105,9 @@ export class Ansicht {
     // eine Stelle.
     this.einheitenwerte = new Map();
     this.gewaehltesGebaeude = null; // id; entweder Einheiten oder ein Gebaeude
+    // Etwas Fremdes, das nur angesehen wird (bedienung AC-58): { e: id } oder
+    // { g: id }. Es steht nicht in der Auswahl - befohlen wird ihm nichts.
+    this.angesehen = null;
     // Das Zeichen am Ziel eines Befehls (bedienung AC-34): rot auf Feindliches,
     // weiss auf freies Gelaende. { x, y, feindlich, seit }.
     this.zielzeichen = null;
@@ -148,6 +155,15 @@ export class Ansicht {
     this.beiZeitalter = () => {};
     // Ein Angriff auf den eigenen Spieler (kampf AC-14), mit Ort.
     this.beiAngriff = () => {};
+    // Was eben geschehen ist, beim Namen (bedienung AC-59): 'einheit',
+    // 'gebaeude', 'forschung', 'gefallen'. Was daraus klingt, weiss app.js -
+    // die Ansicht kennt keinen Ton.
+    this.beiEreignis = () => {};
+    // Erst ab dem zweiten Zustand nach einem Aufbau wird gemeldet: der erste
+    // vergleicht mit nichts, und wer zurueckkehrt, hoerte sonst alles auf
+    // einmal, was laengst fertig ist.
+    this.eingespielt = false;
+    this.meldet = false;
     // Das Ende der Partie, wie der Server es schickt (spielziel AC-5), und
     // die Meldung dazu. `beiEnde` laeuft genau einmal - der Raum haelt danach
     // seine Uhr an, aber ein zurueckkehrender Spieler bekommt es im Aufbau.
@@ -175,6 +191,7 @@ export class Ansicht {
   }
 
   aufbau(nachricht, ichId) {
+    this.eingespielt = false;
     const roh = atob(nachricht.karte.felder);
     const felder = new Uint8Array(roh.length);
     for (let i = 0; i < roh.length; i++) felder[i] = roh.charCodeAt(i);
@@ -276,7 +293,14 @@ export class Ansicht {
     }
   }
 
+  /** Ein Ereignis beim Namen nennen (bedienung AC-59) - nicht im ersten Zustand nach dem Aufbau. */
+  ereignis(name) {
+    if (this.meldet) this.beiEreignis(name);
+  }
+
   zustand(nachricht) {
+    this.meldet = this.eingespielt;
+    this.eingespielt = true;
     // Pfeile (bedienung AC-40): jeder fliegt vom Schuetzen zum Ziel, so lange,
     // wie er bei sieben Feldern je Sekunde braucht - mindestens 0,15 Sekunden.
     // Mit zehn war ein Schuss ueber vier Felder 0,4 s unterwegs, kaum zu
@@ -326,10 +350,23 @@ export class Ansicht {
     }
     for (const gebaeude of nachricht.gebaeude || []) {
       if (gebaeude.weg) this.gebaeude.delete(gebaeude.i);
-      else this.gebaeude.set(gebaeude.i, gebaeude);
+      else {
+        // Eben fertig geworden (bedienung AC-59): vorher im Bau, jetzt nicht mehr.
+        const alt = this.gebaeude.get(gebaeude.i);
+        if (gebaeude.b === this.ich && alt && (alt.u ?? 1) < 1 && (gebaeude.u ?? 1) >= 1) this.ereignis('gebaeude');
+        this.gebaeude.set(gebaeude.i, gebaeude);
+      }
     }
     this.vorher = this.nachher;
     this.nachher = new Map(nachricht.einheiten.map((e) => [e.i, e]));
+    // Eine eigene Einheit ist neu, eine eigene ist gefallen (bedienung AC-59).
+    // Eine bekehrte gab es schon - sie ist keine neue.
+    for (const einheit of this.nachher.values()) {
+      if (einheit.b !== this.ich) continue;
+      const alt = this.vorher.get(einheit.i);
+      if (!alt && !einheit.s) this.ereignis('einheit');
+      else if (alt && einheit.s && !alt.s) this.ereignis('gefallen');
+    }
     this.empfangen = performance.now();
     // Die Spielzeit zaehlt die Takte des Servers (bedienung AC-37) - im
     // Zeitraffer kommen sie schneller, und genau so soll die Uhr laufen.
@@ -345,6 +382,8 @@ export class Ansicht {
     if (meine) {
       const { holz, nahrung, gold, stein, bev, raum } = meine;
       this.vorraete = { holz, nahrung, gold, stein, bev, raum };
+      // Eine Verbesserung ist erforscht (bedienung AC-59).
+      if ((meine.v || []).length > this.verbesserungen.length) this.ereignis('forschung');
       this.verbesserungen = meine.v || [];
       // Nach einem Handel die neuen Preise (bauen AC-33).
       if (meine.hp) this.handelspreise = meine.hp;
@@ -814,6 +853,7 @@ export class Ansicht {
         else {
           this.ausgewaehlt.clear();
           this.gewaehltesGebaeude = null;
+          this.angesehen = null;
           this.beiAuswahl();
         }
         return;
@@ -904,6 +944,7 @@ export class Ansicht {
     const hoehe = Math.abs(rahmen.bisY - rahmen.vonY);
     this.ausgewaehlt.clear();
     this.gewaehltesGebaeude = null;
+    this.angesehen = null;
 
     const figur = this.figurenHoehe();
     if (breite < 5 && hoehe < 5) {
@@ -934,12 +975,18 @@ export class Ansicht {
         this.ausgewaehlt.add(bestes.i);
         return;
       }
-      // Keine Einheit getroffen: vielleicht ein eigenes Gebaeude.
+      // Keine eigene Einheit getroffen: steht dort eine fremde, wird sie
+      // angesehen (bedienung AC-58) - vor dem eigenen Gebaeude dahinter, denn
+      // der Zeiger liegt auf ihrem Koerper.
+      this.angesehen = this.fremdeEinheitUnter(rahmen.vonX, rahmen.vonY);
+      if (this.angesehen) return;
+      // Sonst vielleicht ein eigenes Gebaeude.
       const getroffen = this.gebaeudeUnter(rahmen.vonX, rahmen.vonY);
       if (getroffen) {
         this.gewaehltesGebaeude = getroffen.i;
         return;
       }
+      this.angesehen = this.fremdesGebaeudeUnter(rahmen.vonX, rahmen.vonY);
       return;
     }
     const links = Math.min(rahmen.vonX, rahmen.bisX);
@@ -960,6 +1007,74 @@ export class Ansicht {
       const p = this.zuBild(tier.x, tier.y);
       if (p.x >= links && p.x <= rechts && p.y >= oben && p.y <= unten + figur * 0.3) this.ausgewaehlt.add(tier.i);
     }
+  }
+
+  // ---- Fremdes ansehen (bedienung AC-58) ------------------------------------
+  // Ein Linksklick, der nichts Eigenes trifft, zeigt die fremde Einheit oder
+  // das fremde Gebaeude darunter in der Leiste: Name, Besitzer, Leben,
+  // Kampfwerte. Mehr nicht - es steht nicht in der Auswahl, ein Rechtsklick
+  // befiehlt ihm nichts.
+
+  fremdeEinheitUnter(px, py) {
+    const figur = this.figurenHoehe();
+    let bestes = null;
+    let besterAbstand = Math.max(KLICK_WEITE * this.kamera.zoom, figur * 0.75);
+    for (const einheit of this.nachher.values()) {
+      if (einheit.b === this.ich || einheit.s || !this.zuSehen(einheit.b, einheit.x, einheit.y)) continue;
+      const p = this.zuBild(einheit.x, einheit.y);
+      const abstand = Math.hypot(p.x - px, p.y - figur * KOERPER_MITTE - py);
+      if (abstand < besterAbstand) {
+        besterAbstand = abstand;
+        bestes = einheit;
+      }
+    }
+    return bestes ? { e: bestes.i } : null;
+  }
+
+  // Auch ein erinnertes Gebaeude im Nebel (kampf AC-12): man sieht dann, was
+  // man zuletzt von ihm gesehen hat.
+  fremdesGebaeudeUnter(px, py) {
+    const e = HALB_B * this.kamera.zoom;
+    let bestes = null;
+    let tiefe = -Infinity;
+    for (const gebaeude of this.gezeigteGebaeude()) {
+      if (gebaeude.b === this.ich) continue;
+      const mitte = this.gebaeudeMitte(gebaeude);
+      const p = this.zuBild(mitte.x, mitte.y);
+      if (!gebaeudeGetroffen(gebaeude.art, px - p.x, py - p.y, e, mitte.groesse)) continue;
+      if (mitte.x + mitte.y > tiefe) {
+        tiefe = mitte.x + mitte.y;
+        bestes = gebaeude;
+      }
+    }
+    return bestes ? { g: bestes.i } : null;
+  }
+
+  /** Wird genau das gerade angesehen? `schluessel` ist 'e' oder 'g'. */
+  siehtAn(schluessel, id) {
+    return this.angesehen?.[schluessel] === id && !this.ausgewaehlt.size && !this.gewaehltesGebaeude;
+  }
+
+  /**
+   * Was angesehen wird: `{ einheit }` oder `{ gebaeude }`. Null, sobald etwas
+   * Eigenes gewaehlt ist oder es nichts mehr zu sehen gibt - gefallen,
+   * bekehrt, im Nebel verschwunden.
+   */
+  angesehenes() {
+    const a = this.angesehen;
+    if (!a) return null;
+    let ding = null;
+    if (!this.ausgewaehlt.size && !this.gewaehltesGebaeude) {
+      if (a.e !== undefined) {
+        const einheit = this.nachher.get(a.e);
+        if (einheit && !einheit.s && einheit.b !== this.ich && this.zuSehen(einheit.b, einheit.x, einheit.y)) ding = { einheit };
+      } else {
+        const gebaeude = this.gebaeude.get(a.g) || this.erinnert.get(a.g);
+        if (gebaeude && gebaeude.b !== this.ich) ding = { gebaeude };
+      }
+    }
+    if (!ding) this.angesehen = null;
+    return ding;
   }
 
   // ---- Bauplatz waehlen (bauen AC-4) ----------------------------------------
@@ -1739,9 +1854,16 @@ export class Ansicht {
     const dauer = Math.min(50, jetzt - (this.letztesBild || jetzt));
     this.letztesBild = jetzt;
     this.schieben(dauer);
-    this.zeichnen(jetzt);
+    // Angehalten steht das Bild - schieben und waehlen geht weiter.
+    this.zeichnen(halt ?? jetzt);
     this.nachBild(jetzt);
     requestAnimationFrame((t) => this.bild(t));
+  }
+
+  /** Angehalten (speichern AC-19): das Bild steht, bis es weitergeht. */
+  anhalten(an) {
+    if (an === (halt !== null)) return;
+    halt = an ? performance.now() : null;
   }
 
   // Der Server schickt zehn Bilder je Sekunde, der Schirm zeigt sechzig.
@@ -2364,7 +2486,8 @@ export class Ansicht {
     const lebenVoll = this.gebaeudeLebenVoll(gebaeude);
     const fertig = (gebaeude.u ?? 1) >= 1;
     const beschaedigt = fertig && lebenVoll && gebaeude.h < lebenVoll;
-    if (lebenVoll && (this.gewaehltesGebaeude === gebaeude.i || beschaedigt)) {
+    const angesehen = this.siehtAn('g', gebaeude.i);
+    if (lebenVoll && (this.gewaehltesGebaeude === gebaeude.i || angesehen || beschaedigt)) {
       const zeichnung = GEBAEUDE[gebaeude.art];
       const m = zeichnung ? (e * groesse * 0.95) / zeichnung.halbeBreite : e;
       // Knapp ueber dem Dach - die Trefferhoehe reicht bis zur Fahnenspitze, drei
@@ -2374,12 +2497,15 @@ export class Ansicht {
         art: 'gebaeude', i: gebaeude.i, x: p.x, y: p.y - oben - 4, breite: Math.round(Math.min(e * groesse * 0.6, 140)), anteil: (gebaeude.h ?? lebenVoll) / lebenVoll,
       });
     }
-    if (this.gewaehltesGebaeude === gebaeude.i) {
-      // Ausgewaehlt: ein heller Rand um die Grundflaeche, wie die Ellipse bei Figuren.
+    if (this.gewaehltesGebaeude === gebaeude.i || angesehen) {
+      // Ausgewaehlt: ein heller Rand um die Grundflaeche, wie die Ellipse bei
+      // Figuren - gestrichelt, wenn es nur angesehen wird (bedienung AC-58).
       raute(stift, p.x, p.y, e * groesse, e * groesse / 2);
       stift.strokeStyle = '#ffffff';
       stift.lineWidth = 2;
+      if (angesehen) stift.setLineDash([6, 5]);
       stift.stroke();
+      stift.setLineDash([]);
     }
     const voll = this.werte.gebaeude[gebaeude.art]?.nahrung;
     const offen = Boolean(this.werte.gebaeude[gebaeude.art]?.tor) && this.torOffen(gebaeude);
@@ -2537,13 +2663,17 @@ export class Ansicht {
       return;
     }
 
-    if (this.ausgewaehlt.has(einheit.i)) {
-      // Die Auswahl liegt als Ellipse am Boden, unter den Fuessen.
+    const angesehen = this.siehtAn('e', einheit.i);
+    if (this.ausgewaehlt.has(einheit.i) || angesehen) {
+      // Die Auswahl liegt als Ellipse am Boden, unter den Fuessen. Was nur
+      // angesehen wird (bedienung AC-58), traegt sie gestrichelt.
       stift.strokeStyle = '#ffffff';
       stift.lineWidth = 2;
+      if (angesehen) stift.setLineDash([5, 4]);
       stift.beginPath();
       stift.ellipse(punkt.x, punkt.y, hoehe * 0.42, hoehe * 0.2, 0, 0, Math.PI * 2);
       stift.stroke();
+      stift.setLineDash([]);
       // Darueber, ueber dem Kopf, das Leben.
       const voll = this.lebenVoll(einheit);
       if (voll) {
