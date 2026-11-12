@@ -1,6 +1,7 @@
 'use strict';
 
 const http = require('node:http');
+const crypto = require('node:crypto');
 const fs = require('node:fs');
 const path = require('node:path');
 const { WebSocketServer } = require('ws');
@@ -28,6 +29,9 @@ const TYPEN = {
   '.json': 'application/json; charset=utf-8',
 };
 
+// Datei -> { groesse, zeit, marke }: die Marke aus dem Inhalt, einmal gerechnet.
+const MARKEN = new Map();
+
 function ausliefern(anfrage, antwort) {
   const pfad = decodeURIComponent(new URL(anfrage.url, 'http://x').pathname);
   const datei = path.join(OEFFENTLICH, pfad === '/' ? 'index.html' : pfad);
@@ -36,13 +40,31 @@ function ausliefern(anfrage, antwort) {
     antwort.writeHead(403).end('Verboten');
     return;
   }
-  fs.readFile(datei, (fehler, inhalt) => {
-    if (fehler) {
-      antwort.writeHead(404, { 'Content-Type': 'text/plain; charset=utf-8' }).end('Nicht gefunden');
-      return;
-    }
-    antwort.writeHead(200, { 'Content-Type': TYPEN[path.extname(datei)] || 'application/octet-stream' });
-    antwort.end(inhalt);
+  const fehlt = () => antwort.writeHead(404, { 'Content-Type': 'text/plain; charset=utf-8' }).end('Nicht gefunden');
+  // Jede Datei traegt eine Marke aus ihrem Inhalt (darstellung AC-25): der
+  // Browser fragt bei jedem Aufruf nach, und was er schon hat, kommt nicht
+  // noch einmal - die Bildtafeln sind ueber 20 MB. Gemerkt wird die Marke,
+  // solange Groesse und Zeit der Datei stimmen; dann braucht die Antwort
+  // "unveraendert" die Datei nicht zu lesen.
+  fs.stat(datei, (fehler, stand) => {
+    if (fehler || !stand.isFile()) return fehlt();
+    const kennt = anfrage.headers['if-none-match'];
+    const gemerkt = MARKEN.get(datei);
+    const gilt = gemerkt && gemerkt.groesse === stand.size && gemerkt.zeit === stand.mtimeMs;
+    const unveraendert = (marke) => antwort.writeHead(304, { ETag: marke, 'Cache-Control': 'no-cache' }).end();
+    if (gilt && kennt === gemerkt.marke) return unveraendert(gemerkt.marke);
+    fs.readFile(datei, (lesefehler, inhalt) => {
+      if (lesefehler) return fehlt();
+      const marke = gilt ? gemerkt.marke : `"${crypto.createHash('sha1').update(inhalt).digest('base64url')}"`;
+      MARKEN.set(datei, { groesse: stand.size, zeit: stand.mtimeMs, marke });
+      if (kennt === marke) return unveraendert(marke);
+      antwort.writeHead(200, {
+        'Content-Type': TYPEN[path.extname(datei)] || 'application/octet-stream',
+        ETag: marke,
+        'Cache-Control': 'no-cache',
+      });
+      antwort.end(inhalt);
+    });
   });
 }
 

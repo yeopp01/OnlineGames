@@ -364,7 +364,7 @@ test.describe('Feudalzeit am Stueck', () => {
     await nachweis(anna, {
       spec: FAHRPLAN,
       ac: 'AC-8',
-      titel: 'Die Feudalzeit im Browser gespielt: oben das Zeitalter, Schießanlage, Stall und Schmiede gebaut, davor die vier Einheiten der Feudalzeit — unten zählt die Leiste sie als vier ausgewählte',
+      titel: 'Die Feudalzeit im Browser gespielt: oben das Zeitalter, Schießanlage, Stall und Schmiede gebaut, dazu die vier Einheiten der Feudalzeit — unten zählt die Leiste sie als vier ausgewählte',
       test: info,
     });
   });

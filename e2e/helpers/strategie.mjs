@@ -656,7 +656,7 @@ export function figurenFrei(page, { abstand = 0.5, nur = null } = {}) {
  *
  * @returns {Promise<string>} die Id des Gebaeudes
  */
-export async function gebaeudeInDerNaehe(page, code, name, art, um, { von = 4, bis = 14 } = {}) {
+export async function gebaeudeInDerNaehe(page, code, name, art, um, { von = 4, bis = 14, bau = undefined } = {}) {
   const versuche = [];
   for (let r = von; r <= bis; r++) {
     for (const [dx, dy] of [[-1, 0], [0, 1], [1, 0], [0, -1], [-1, 1], [1, 1], [-1, -1], [1, -1]]) {
@@ -665,7 +665,8 @@ export async function gebaeudeInDerNaehe(page, code, name, art, um, { von = 4, b
   }
   for (const [x, y] of versuche) {
     const antwort = await page.request.post(`http://localhost:${GRIFFHAFEN}/griff`, {
-      data: { id: code, befehl: 'gebaeude', werte: { name, art, x, y } },
+      // `bau` (0 bis 1): eine Baustelle in diesem Stand statt des fertigen Gebaeudes.
+      data: { id: code, befehl: 'gebaeude', werte: { name, art, x, y, ...(bau === undefined ? {} : { bau }) } },
     });
     if (antwort.ok()) return (await antwort.json()).id;
   }

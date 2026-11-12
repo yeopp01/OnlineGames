@@ -1,0 +1,10 @@
+{
+  "spec": "10-strategie/bedienung.md",
+  "ac": "AC-16",
+  "titel": "Nah herangeholt: ein Dorfbewohner geht mit seinem Holz vom Waldrand heim - er traegt es sichtbar",
+  "datei": "e2e/tests/strategie-spielbild.spec.mjs",
+  "pfad": [
+    "Das Spielbild",
+    "bedienung AC-12 / bedienung AC-16 / fahrplan AC-2: Rechtsklick auf den Wald, gesammelt wird sichtbar"
+  ]
+}

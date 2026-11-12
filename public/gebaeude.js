@@ -13,7 +13,7 @@
 // sondern eine duenne, halb durchsichtige dunkelbraune Kante, und gedaempfte,
 // erdige Farben fuer Daecher und Holz.
 
-import { gerendert, zelleZeichnen, zellenRand } from './bilder.js';
+import { gerendert, zelleGetroffen, zelleZeichnen, zellenHoehe, zellenRand } from './bilder.js';
 
 const KONTUR = 'rgba(48, 34, 22, 0.5)';
 
@@ -1905,9 +1905,74 @@ export function gebaeudeZeichnen(stift, art, x, y, e, farbe, groesse, bau = 1, r
 // wird deshalb jedes einmal in ein kleines Bild gezeichnet und danach nur
 // kopiert - neu erst, wenn sich Zoom, Farbe oder Baufortschritt aendern.
 const ZWISCHENSPEICHER = new Map();
-const SPEICHER_MAX = 64;
+// Neunzehn Gebaeude, vier Baustellen, die Mauer in jeder Verbindung, das
+// alles in zwei Farben: mit 64 flog staendig etwas heraus.
+const SPEICHER_MAX = 240;
 
-export function gebaeudeBildZeichnen(stift, art, x, y, e, farbe, groesse, bau = 1, rest = 1, offen = false) {
+// ---- Gerendert (ADR-0016) ---------------------------------------------------
+//
+// Welche Zellen seiner Tafel ein fertiges Gebaeude zeigt, als [Zeile, Spalte]
+// in Zeichenfolge. Die meisten haben eine. Die Mauer setzt sich aus Stuecken:
+// ein Pfeiler an Enden, Ecken und Kreuzungen, dazu ein Arm je Nachbar - und
+// ein Lauf ohne Pfeiler, wo sie gerade durch ein Feld geht. Das Tor hat je
+// Richtung eine Zeile und je Zustand eine Spalte, die Farm je Ernte eine Zeile.
+function fertigeZellen(tafel, rest, offen, lage) {
+  if (tafel.stuecke) return mauerZellen(tafel.stuecke, lage?.nachbarn || []);
+  if (tafel.zustaende) return [[lage?.achse === 'y' ? 1 : 0, offen ? 1 : 0]];
+  if (tafel.stufen && tafel.zeilen > 1) return [[Math.min(tafel.stufen - 1, Math.round((1 - rest) * (tafel.stufen - 1))), 0]];
+  return [[0, 0]];
+}
+
+function mauerZellen({ pfeiler, arme, laeufe }, nachbarn) {
+  const finde = (liste, [dx, dy]) => liste.find((e) => e.dx === dx && e.dy === dy);
+  if (nachbarn.length === 2 && nachbarn[0][0] === -nachbarn[1][0] && nachbarn[0][1] === -nachbarn[1][1]) {
+    const lauf = finde(laeufe, nachbarn[0]) || finde(laeufe, nachbarn[1]);
+    if (lauf) return [[0, lauf.spalte]];
+  }
+  return [[0, pfeiler], ...nachbarn.map((n) => finde(arme, n)).filter(Boolean).map((arm) => [0, arm.spalte])];
+}
+
+// Die Tafel und ihre Zellen fuer ein Gebaeude in diesem Zustand - oder null,
+// wenn es gezeichnet wird. Im Bau steht die Baustelle seiner Grundflaeche;
+// ein Feld im Bau ist der abgeerntete Acker, Gerueste stuenden dort im Weg.
+function tafelFuer(art, groesse, bau, rest, offen, lage) {
+  const tafel = gerendert(art);
+  if (bau >= 1) return tafel ? { tafel, zellen: fertigeZellen(tafel, rest, offen, lage) } : null;
+  if (tafel?.flach) return { tafel, zellen: [[(tafel.stufen || 1) - 1, 0]] };
+  const geruest = tafel ? gerendert(`baustelle-${groesse || tafel.felder || 1}`) : null;
+  return geruest ? { tafel: geruest, zellen: [[0, Math.min(geruest.stufen - 1, Math.floor(bau * geruest.stufen))]] } : null;
+}
+
+/**
+ * Der Schlagschatten, wo er eine eigene Tafel hat (Mauer, Tor) - gezeichnet in
+ * die Schattenschicht des Spielbilds, deckend; die Schicht wird als Ganzes
+ * aufgelegt. Gibt die Deckung zurueck, mit der das geschieht, sonst 0.
+ */
+export function gebaeudeSchattenZeichnen(stift, art, x, y, e, lage) {
+  const tafel = gerendert(art);
+  if (!tafel?.schatten) return 0;
+  const k = (2 * e) / tafel.feldbreite;
+  for (const [zeile, spalte] of fertigeZellen(tafel, 1, false, lage)) {
+    // Der Schatten des Tors ist fuer zu und offen derselbe: eine Spalte.
+    zelleZeichnen(stift, tafel.schatten, tafel.zustaende ? zeile : 0, tafel.zustaende ? 0 : spalte, x, y, k, null);
+  }
+  return tafel.schatten.deckung;
+}
+
+/**
+ * Wie hoch das gerenderte Gebaeude ueber seinem Fusspunkt steht, in
+ * Bildpunkten - fuer Lebensbalken und Namen. null, wenn es gezeichnet wird.
+ */
+export function gebaeudeHoehe(art, e, groesse) {
+  const tafel = gerendert(art);
+  if (!tafel) return null;
+  if (tafel.flach) return e * (groesse || tafel.felder || 1) * 0.6;
+  return zellenHoehe(tafel, 0, tafel.stuecke ? tafel.stuecke.pfeiler : 0) * ((2 * e) / tafel.feldbreite);
+}
+
+// `lage`: was Mauer und Tor von ihren Nachbarn wissen muessen -
+// { nachbarn: [[dx, dy], ...] } oder { achse: 'x' | 'y' }.
+export function gebaeudeBildZeichnen(stift, art, x, y, e, farbe, groesse, bau = 1, rest = 1, offen = false, lage = undefined) {
   const gebaeude = GEBAEUDE[art];
   if (!gebaeude || typeof document === 'undefined') {
     gebaeudeZeichnen(stift, art, x, y, e, farbe, groesse, bau, rest, offen);
@@ -1919,12 +1984,15 @@ export function gebaeudeBildZeichnen(stift, art, x, y, e, farbe, groesse, bau = 
   // Baufortschritt in Zwanzigsteln: die Baustelle waechst sichtbar, der
   // Speicher bleibt klein.
   const stufe = bau < 1 ? Math.floor(bau * 20) / 20 : 1;
-  // Gibt es das Gebaeude gerendert (ADR-0016), kommt das fertige aus der
-  // Tafel; die Baustelle wird weiter gezeichnet.
-  const tafel = stufe >= 1 ? gerendert(art) : null;
+  // Gibt es das Gebaeude gerendert (ADR-0016), kommt es aus der Tafel - auch
+  // die Baustelle, in vier Stufen statt in zwanzig.
+  const wahl = tafelFuer(art, groesse, stufe, restStufe, offen, lage);
+  const tafel = wahl ? wahl.tafel : null;
   const tafelMass = tafel ? (2 * e) / tafel.feldbreite : 0;
   const rand = tafel ? zellenRand(tafel, tafelMass) : null;
-  const schluessel = `${art}|${farbe}|${m.toFixed(2)}|${stufe}|${restStufe}|${dichte}|${offen ? 'offen' : ''}${tafel ? '|r' : ''}`;
+  const schluessel = tafel
+    ? `${tafel.name}|${farbe}|${tafelMass.toFixed(3)}|${dichte}|r${wahl.zellen.join(';')}`
+    : `${art}|${farbe}|${m.toFixed(2)}|${stufe}|${restStufe}|${dichte}|${offen ? 'offen' : ''}`;
   let bild = ZWISCHENSPEICHER.get(schluessel);
   // Breit genug fuer den Schlagschatten nach rechts.
   const breite = rand ? rand.halb * 2 : 10 * m;
@@ -1936,7 +2004,7 @@ export function gebaeudeBildZeichnen(stift, art, x, y, e, farbe, groesse, bau = 
     bild.height = Math.ceil((oben + unten) * dichte);
     const s = bild.getContext('2d');
     s.scale(dichte, dichte);
-    if (tafel) zelleZeichnen(s, tafel, 0, 0, breite / 2, oben, tafelMass, farbe);
+    if (tafel) for (const [zeile, spalte] of wahl.zellen) zelleZeichnen(s, tafel, zeile, spalte, breite / 2, oben, tafelMass, farbe);
     else gebaeudeZeichnen(s, art, breite / 2, oben, e, farbe, groesse, stufe, restStufe, offen);
     ZWISCHENSPEICHER.set(schluessel, bild);
     if (ZWISCHENSPEICHER.size > SPEICHER_MAX) ZWISCHENSPEICHER.delete(ZWISCHENSPEICHER.keys().next().value);
@@ -1961,6 +2029,16 @@ function massstab(gebaeude, groesse) {
 export function gebaeudeGetroffen(art, dx, dy, e, groesse) {
   const g = GEBAEUDE[art];
   if (!g) return false;
+  // Gerendert trifft der Klick das Bild selbst (bedienung AC-51): wo es
+  // deckt, ohne seinen Schatten. Die Mauer ist ein Kasten ueber ihrem Feld -
+  // welche Arme sie hat, weiss hier niemand. Ein Feld am Boden bleibt bei
+  // seiner Flaeche.
+  const tafel = gerendert(art);
+  if (tafel && !tafel.flach) {
+    const k = (2 * e) / tafel.feldbreite;
+    if (tafel.stuecke) return Math.abs(dx) <= e && dy <= e * 0.5 && dy >= -zellenHoehe(tafel, 0, tafel.stuecke.pfeiler) * k;
+    return zelleGetroffen(tafel, 0, 0, dx, dy, k);
+  }
   const m = e * massstab(g, groesse);
   return Math.abs(dx) <= g.trefferBreite * m && dy >= -g.trefferOben * m && dy <= g.trefferUnten * m;
 }

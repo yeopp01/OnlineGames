@@ -1,0 +1,10 @@
+{
+  "spec": "10-strategie/bauen.md",
+  "ac": "AC-9",
+  "titel": "Die fertige Kaserne, davor die erste Miliz",
+  "datei": "e2e/tests/strategie-bauen.spec.mjs",
+  "pfad": [
+    "Bauen",
+    "bauen AC-9: eine Kaserne bauen und darin Miliz ausbilden"
+  ]
+}

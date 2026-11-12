@@ -198,5 +198,7 @@ test.describe('Tempo im Browser', () => {
     console.log(`darstellung AC-10, im Gehen: gerendert ${imGehen.jeSekunde.toFixed(1)} Bilder/s, ${imGehen.msJeBild.toFixed(1)} ms je Bild, ${zellenImGehen} Zellen aus der Tafel; gezeichnet ${gezeichnet.jeSekunde.toFixed(1)} Bilder/s, ${gezeichnet.msJeBild.toFixed(1)} ms je Bild`);
     expect(zellenImGehen, 'im Gehen kommen viele verschiedene Bilder aus der Tafel').toBeGreaterThan(30);
     expect(imGehen.jeSekunde, `im Gehen ${imGehen.msJeBild.toFixed(1)} ms je Bild`).toBeGreaterThanOrEqual(50);
+    // Gerendert ist die Vorgabe: so bleibt das Fenster zurueck.
+    await anna.evaluate(async () => (await import('/bilder.js')).bilderEin());
   });
 });

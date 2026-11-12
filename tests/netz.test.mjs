@@ -798,3 +798,36 @@ test('speichern AC-20: Anhalten ist begrenzt - nach der Frist geht es von selbst
   assert.ok(laufend.raeume.finden(duCem.code), 'die angehaltene Partie steht noch');
   cem.zu();
 });
+
+// ---- Dateien nur einmal uebertragen (darstellung AC-25) ---------------------
+
+test('darstellung AC-25: jede Datei traegt eine Marke aus ihrem Inhalt - wer sie nennt, bekommt "unveraendert" ohne Inhalt', async () => {
+  const basis = `http://localhost:${HAFEN}`;
+  for (const pfad of ['/bilder/boden.webp', '/bilder/dorfbewohner.json', '/ansicht.js', '/']) {
+    const erste = await fetch(basis + pfad);
+    assert.equal(erste.status, 200, pfad);
+    const marke = erste.headers.get('etag');
+    assert.match(marke, /^"[\w-]{20,}"$/, `${pfad}: eine Marke in Anfuehrungszeichen`);
+    assert.equal(erste.headers.get('cache-control'), 'no-cache', `${pfad}: der Browser fragt jedes Mal nach`);
+    const groesse = (await erste.arrayBuffer()).byteLength;
+    assert.ok(groesse > 0);
+
+    const zweite = await fetch(basis + pfad, { headers: { 'If-None-Match': marke } });
+    assert.equal(zweite.status, 304, `${pfad}: unveraendert`);
+    assert.equal((await zweite.arrayBuffer()).byteLength, 0, `${pfad}: ohne Inhalt`);
+    assert.equal(zweite.headers.get('etag'), marke);
+
+    // Eine andere Marke - etwa die von vor dem letzten Ausrollen - bekommt die Datei.
+    const dritte = await fetch(basis + pfad, { headers: { 'If-None-Match': '"veraltet"' } });
+    assert.equal(dritte.status, 200, `${pfad}: mit alter Marke die ganze Datei`);
+    assert.equal((await dritte.arrayBuffer()).byteLength, groesse);
+    assert.equal(dritte.headers.get('etag'), marke, `${pfad}: dieselbe Datei, dieselbe Marke`);
+  }
+  // Zwei verschiedene Dateien haben verschiedene Marken.
+  const a = (await fetch(`${basis}/bilder/boden.webp`)).headers.get('etag');
+  const b = (await fetch(`${basis}/bilder/baum.webp`)).headers.get('etag');
+  assert.notEqual(a, b);
+  // Und was es nicht gibt, bleibt 404 - auch ein Ordner.
+  assert.equal((await fetch(`${basis}/bilder/gibt-es-nicht.webp`)).status, 404);
+  assert.equal((await fetch(`${basis}/bilder/`)).status, 404);
+});

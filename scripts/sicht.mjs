@@ -58,7 +58,7 @@ const beobachten = (blatt) => {
 //   --ziel basis|wald|gold|stein|beere|wasser   wohin die Kamera schaut
 //   --warten 5         Sekunden, die das Spiel vorher laeuft
 //   --aufgedeckt       ohne Nebel
-//   --bilder           mit den gerenderten Bildern (ADR-0016)
+//   --gezeichnet       das gezeichnete Aussehen von vor ADR-0016 (?bilder=0)
 async function spielbild() {
   const base = `http://localhost:${HAFEN}`;
   // Ein Konto wie in tests/hilfe.mjs: Einladungscode, Registrieren, Keks behalten.
@@ -79,8 +79,8 @@ async function spielbild() {
   beobachten(anna);
   beobachten(bert);
 
-  // --bilder: mit den gerenderten Bildern der Probe (ADR-0016).
-  await anna.goto(argumente.includes('--bilder') ? `${base}/?bilder=1` : base);
+  // Gerendert ist die Vorgabe; `--gezeichnet` zeigt das Aussehen davor.
+  await anna.goto(argumente.includes('--gezeichnet') ? `${base}/?bilder=0` : base);
   await anna.locator('[data-oeffnen="strategie"]').click();
   await anna.locator('[data-einstellung="startwert"]').fill(String(wert('startwert', '4711')));
   // --aufgedeckt: ohne Nebel - wer Gelaende ansehen will, will es ganz sehen.

@@ -225,7 +225,7 @@ test.describe('Rueckmeldungen aus dem ersten Spiel', () => {
     await nachweis(anna, {
       spec: BEDIENUNG,
       ac: 'AC-51',
-      titel: 'Auf den Koerper des Schafs geklickt, nicht auf den Boden darunter: es liegt geschlachtet, der Dorfbewohner traegt Fleisch',
+      titel: 'Auf den Koerper des Schafs geklickt, nicht auf den Boden darunter: der Dorfbewohner hat es geschlachtet und nimmt Nahrung',
       test: info,
     });
   });

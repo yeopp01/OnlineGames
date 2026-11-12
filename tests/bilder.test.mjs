@@ -6,6 +6,7 @@
 // deckungsgleich, und zu jedem Bild ein Modell als Skript.
 import assert from 'node:assert/strict';
 import { existsSync, readdirSync, readFileSync } from 'node:fs';
+import { createRequire } from 'node:module';
 import { test } from 'node:test';
 import { beschreibungBilder, bestandLesen, bildmasse, modelleWaehlen, quellenPruefen, quellenZeilen, verzeichnisPruefen } from '../scripts/bilder-verzeichnis.mjs';
 
@@ -48,7 +49,10 @@ test('darstellung AC-17: jede Tafel ist so gross, wie ihre Beschreibung sagt, un
       assert.equal(teil.hoehe, zelle[1] * b.zeilen, `${ablauf.bild}: Hoehe`);
       assert.ok(fuss[0] > 0 && fuss[0] < zelle[0] && fuss[1] > 0 && fuss[1] <= zelle[1], `${ablauf.bild}: Fusspunkt ausserhalb der Zelle`);
       assert.ok(teil.durchsicht, `${ablauf.bild}: keine Durchsicht`);
-      assert.equal(Boolean(ablauf.maske), Boolean(b.maske), `${b.name}, ${name}: Maske wie die Haupttafel`);
+      // Der Schlagschatten von Mauer und Tor ist eine eigene Tafel ohne
+      // Spielerfarbe - er hat nie eine Maske.
+      if (name === 'schatten') assert.equal(ablauf.maske, null, `${b.name}: ein Schatten traegt keine Farbe`);
+      else assert.equal(Boolean(ablauf.maske), Boolean(b.maske), `${b.name}, ${name}: Maske wie die Haupttafel`);
       if (ablauf.maske) {
         const maske = masse(ablauf.maske);
         assert.deepEqual([maske.breite, maske.hoehe], [teil.breite, teil.hoehe], `${ablauf.maske} deckt sich nicht mit ${ablauf.bild}`);
@@ -284,6 +288,56 @@ test('darstellung AC-23: der Boden liegt in fuenf Texturen vor, die sich in jede
   const [r, g, b] = boden.mittel.gras;
   assert.ok(g > r && r > b, `Gras im Mittel ${boden.mittel.gras}`);
   assert.ok(g < 130, `Gras im Mittel ${boden.mittel.gras}: zu hell`);
+});
+
+// --- Gebaeude und Einheiten aus den Daten (darstellung AC-22, AC-24) --------
+const { EINHEITEN, GEBAEUDE, TIERE } = createRequire(import.meta.url)('../server/spiele/strategie/daten.js');
+const geladeneNamen = () => {
+  const laden = readFileSync(new URL('../public/bilder.js', import.meta.url), 'utf8');
+  return [...(/const NAMEN = \[([^\]]*)\]/.exec(laden)?.[1] || '').matchAll(/'([^']+)'/g)].map((m) => m[1]);
+};
+
+test('darstellung AC-22: jedes Gebaeude der Daten hat eine Tafel, jede Groesse eine Baustelle in vier Stufen, und der Browser laedt sie', () => {
+  const geladen = geladeneNamen();
+  for (const art of Object.keys(GEBAEUDE)) {
+    const tafel = von(art);
+    assert.ok(tafel, `${art}: keine Tafel unter public/bilder/`);
+    assert.equal(tafel.art, 'gebaeude', `${art}: die Tafel ist kein Gebaeude`);
+    assert.ok(geladen.includes(art), `public/bilder.js laedt ${art} nicht`);
+    // Die Spielerfarbe steht als Maske ueber dem Bild (AC-21).
+    assert.ok(tafel.maske, `${art}: keine Maske fuer die Spielerfarbe`);
+  }
+  for (const groesse of new Set(Object.values(GEBAEUDE).map((g) => g.groesse || 1))) {
+    const geruest = von(`baustelle-${groesse}`);
+    assert.ok(geruest, `keine Baustelle fuer Gebaeude der Groesse ${groesse}`);
+    assert.ok(geruest.stufen >= 4, `baustelle-${groesse}: ${geruest.stufen} Stufen`);
+    assert.equal(geruest.spalten, geruest.stufen, `baustelle-${groesse}: eine Spalte je Stufe`);
+    assert.ok(geladen.includes(`baustelle-${groesse}`), `public/bilder.js laedt baustelle-${groesse} nicht`);
+  }
+  // Die Mauer besteht aus Stuecken: ein Pfeiler, ein Arm je Nachbar, ein Lauf
+  // je Achse - und ihr Schatten liegt als eigene Tafel in derselben Ordnung.
+  const mauer = von('steinmauer');
+  assert.equal(mauer.teile.arme.length, 8, 'Mauer: ein Arm je Nachbarrichtung');
+  assert.equal(mauer.teile.laeufe.length, 4, 'Mauer: ein Lauf je Achse');
+  const spalten = [mauer.teile.pfeiler, ...mauer.teile.arme.map((a) => a.spalte), ...mauer.teile.laeufe.map((l) => l.spalte)];
+  assert.deepEqual([...spalten].sort((a, b) => a - b), Array.from({ length: mauer.spalten }, (_, i) => i), 'Mauer: jede Spalte ist genau ein Stueck');
+  assert.ok(mauer.ablaeufe.schatten.bild, 'Mauer: kein Schatten');
+  // Das Tor steht in zwei Richtungen, zu und offen.
+  const tor = von('tor');
+  assert.deepEqual([tor.zeilen, tor.spalten], [tor.ausrichtungen.length, tor.zustaende.length], 'Tor: Richtungen mal Zustaende');
+  assert.deepEqual(tor.zustaende, ['zu', 'offen']);
+  // Die Farm leert sich in Stufen (AC-3).
+  assert.ok(von('farm').stufen >= 4 && von('farm').zeilen === von('farm').stufen, 'Farm: eine Zeile je Stufe');
+});
+
+test('darstellung AC-24: jede Einheit und jedes Tier der Daten hat eine Tafel mit acht Richtungen, und der Browser laedt sie', () => {
+  const geladen = geladeneNamen();
+  for (const art of [...Object.keys(EINHEITEN), ...Object.keys(TIERE)]) {
+    const tafel = von(art);
+    assert.ok(tafel, `${art}: keine Tafel unter public/bilder/`);
+    assert.equal(tafel.zeilen, 8, `${art}: ${tafel.zeilen} Blickrichtungen`);
+    assert.ok(geladen.includes(art), `public/bilder.js laedt ${art} nicht`);
+  }
 });
 
 test('darstellung AC-23: der Browser nimmt Baum, Beere, Gold, Stein und Boden aus den Tafeln', () => {

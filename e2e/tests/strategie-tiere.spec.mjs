@@ -82,7 +82,7 @@ test.describe('Schafe', () => {
     await nachweis(anna, {
       spec: EINHEITEN,
       ac: 'AC-17',
-      titel: 'Das Schaf liegt geschlachtet, Beine nach oben, der Dorfbewohner daneben traegt Nahrung im Korb',
+      titel: 'Das Schaf ist geschlachtet, der Dorfbewohner daneben nimmt Nahrung von ihm - die Leiste nennt, was er traegt',
       test: info,
     });
   });
@@ -126,7 +126,7 @@ test.describe('Schafe', () => {
     await nachweis(anna, {
       spec: DARSTELLUNG,
       ac: 'AC-12',
-      titel: 'Aus der Naehe: Ziegeldach und Mauerwerk, schattierte Figuren, Mischwald mit Tannen, Grasbueschel - vorher flach, siehe docs/strategie/bilder',
+      titel: 'Aus der Naehe: Ziegeldach und Fachwerk, Figuren mit Licht und Schatten, Wald und Wiese - vorher flach, siehe docs/strategie/bilder',
       test: info,
     });
   });

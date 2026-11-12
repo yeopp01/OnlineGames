@@ -198,7 +198,7 @@ test.describe('Alle Gebaeude im Spielbild', () => {
     await nachweis(anna, {
       spec: DARSTELLUNG,
       ac: 'AC-14',
-      titel: 'Zoom 1: Dorfzentrum mit Fahne, Haus mit Strohdach, Mühle mit Flügeln, Holzfällerlager mit Stämmen, Bergbaulager mit Schieferfirst und Karre, Kaserne mit Zinnen, Farm als Acker, Schießanlage mit Zielscheibe, Stall mit Koppel, Schmiede mit Schornstein',
+      titel: 'Zoom 1: Dorfzentrum mit Fahne, Haus mit Strohdach, Mühle mit Flügeln, Holzfällerlager, Bergbaulager mit Schieferdach, Kaserne mit Zinnen, Farm als Acker, Schießanlage mit Zielscheiben, Stall mit Koppel, Schmiede mit Schornstein',
       test: info,
     });
   });
@@ -305,7 +305,7 @@ test.describe('Militaer bei Spielgroesse', () => {
     await nachweis(anna, {
       spec: BEDIENUNG,
       ac: 'AC-36',
-      titel: 'Zoom 1, von links nach rechts: Dorfbewohner mit Axt, Miliz mit langem Schild, Soldat mit Streitaxt, Speerkämpfer mit Rundschild und hohem Speer, Bogenschütze mit gespanntem Bogen, Plänkler mit Wurfspieß über der Schulter',
+      titel: 'Zoom 1, von links nach rechts: Dorfbewohner, Miliz, Soldat, Speerkämpfer, Bogenschütze, Plänkler - in der Größe, in der gespielt wird',
       test: info,
     });
   });

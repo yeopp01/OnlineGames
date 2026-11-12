@@ -113,7 +113,7 @@ test.describe('Moench', () => {
     await nachweis(anna, {
       spec: EINHEITEN,
       ac: 'AC-37',
-      titel: 'Annas Mönch (blau) hebt den Stab, an dessen Spitze ein warmer Schein glimmt: er heilt ihre gewählte Miliz daneben – deren Lebensbalken ist noch nicht voll',
+      titel: 'Annas Mönch (blau) heilt ihre gewählte Miliz daneben – deren Lebensbalken ist noch nicht voll',
       test: info,
     });
     await zeitraffer(anna, code, 1);
@@ -195,7 +195,7 @@ test.describe('Moench', () => {
     await nachweis(anna, {
       spec: EINHEITEN,
       ac: 'AC-38',
-      titel: 'Vorher: Annas gewählter Mönch (blau) hebt den Stab gegen Berts Dorfbewohner (rot), auf dem das rote Zeichen des Rechtsklicks liegt',
+      titel: 'Vorher: Annas gewählter Mönch (blau) bekehrt Berts Dorfbewohner (rot), auf dem das rote Zeichen des Rechtsklicks liegt',
       test: info,
     });
 
@@ -214,7 +214,7 @@ test.describe('Moench', () => {
     await nachweis(anna, {
       spec: EINHEITEN,
       ac: 'AC-38',
-      titel: 'Nachher: derselbe Dorfbewohner trägt jetzt Annas Blau und steht neben ihrem Mönch, der den Stab gesenkt hat',
+      titel: 'Nachher: derselbe Dorfbewohner trägt jetzt Annas Blau, ihr Mönch ruht',
       test: info,
     });
     await zeitraffer(anna, code, 1);

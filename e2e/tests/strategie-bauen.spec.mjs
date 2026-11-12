@@ -162,7 +162,7 @@ test.describe('Bauen', () => {
     await nachweis(anna, {
       spec: DARSTELLUNG,
       ac: 'AC-5',
-      titel: 'Eine Baustelle: Fundament, Geruest und halbhohe Waende, der Dorfbewohner baut daneben',
+      titel: 'Eine Baustelle hinter dem Dorfzentrum: Fundament aus Stein und Holzgeruest, ein Dorfbewohner baut daran',
       test: info,
     });
 
@@ -180,7 +180,7 @@ test.describe('Bauen', () => {
     await nachweis(anna, {
       spec: BAUEN,
       ac: 'AC-1',
-      titel: 'Das fertige Haus mit Strohdach und blauer Tuer neben dem Dorfzentrum, oben Bevoelkerung 4/10',
+      titel: 'Das fertige Haus mit Strohdach neben dem Dorfzentrum, oben Bevoelkerung 4/10',
       test: info,
     });
   });
@@ -289,7 +289,7 @@ test.describe('Bauen', () => {
     await nachweis(anna, {
       spec: BAUEN,
       ac: 'AC-9',
-      titel: 'Die Kaserne mit Banner und Waffenstaender, davor die erste Miliz mit Schwert und Schild',
+      titel: 'Die fertige Kaserne, davor die erste Miliz',
       test: info,
     });
     await anna.keyboard.press('Escape');

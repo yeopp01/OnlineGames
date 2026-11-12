@@ -437,7 +437,36 @@ die Zeilen unter „Für die Erkenntnisse" dorthin und erzeugt das Board neu
   braucht ein ADR, weil „Speicherstände für Strategiepartien" in ADR-0012
   rechts steht), 7 (Ton), 10 (einheiten AC-30), 3 (Reitertempo, Frage), 15
   (Farm-Ablauf, mit dem Rendern), 17 (Klingel).
-  **Arbeitsstand 2026-11-12, 20:20 (fortschreiben):** **zweiter Stapel**
+  **Arbeitsstand 2026-11-12, 23:00 (fortschreiben):** zweiter Stapel ist
+  committet (`d6a3739`) und ausgerollt; `strategie-gebaeude` ist übernommen
+  (`5249fb7`). **Gerenderte Bilder als Vorgabe: gebaut, uncommittet.**
+  Vorgabe an, `?bilder=0` zeigt das Gezeichnete, Ladesatz, ETag/304
+  (darstellung AC-25), Gebäude im Spielbild (Mauer aus Stücken, Tor, Farm in
+  Stufen, Baustellen, Schattenschicht, Treffer am Bild), Knopfbilder der
+  Leiste, darstellung AC-22 `fertig` (`tests/bilder.test.mjs`,
+  `e2e/tests/strategie-gerendert.spec.mjs`), Board 510 von 631. Erster voller
+  Lauf: 258 von 260, die zwei behoben (bedienung AC-30 Aufstellung, bauen
+  AC-29 Pfeil festhalten). **Drei Prüfer haben alle 168 Bilder über 1 %
+  gegen die Titel gelesen:** kein Bild kaputt. Daraus behoben: Baum am
+  Nebelrand (stand als Stamm ohne Krone, wenn die Felder dahinter unerkundet
+  sind — `ansicht.js`, Schleife „Alles, was steht"), Namensschild über dem
+  Lebensbalken und nie in der Kopfleiste (`namenZeichnen`, `KOPFLEISTE`),
+  Umriss verdeckter Einheiten ohne Schlagschatten (`figuren.js`), 23 Titel,
+  die die Zeichnung beschrieben (Skript `a50.py`), und bedienung AC-16 sucht
+  jetzt einen, der beladen **geht** — wer hackt, zeigt den Ablauf der Arbeit
+  ohne Bündel. **Läuft:** zweiter voller Lauf
+  `E2E_HAFEN=4391 npm run check:alles:neu:kurz` (Log `neu2.log` im
+  Scratchpad). **Danach:** `npm run qa:abweichung`, Stichproben, committen,
+  `node scripts/ausrollen.mjs`, dem Benutzer mit zwei bis drei Bildern
+  berichten. **Ehrlich zu sagen:** Figuren sind bei Zoom 1 rund 30 Bildpunkte
+  hoch und erdfarben — Militär ist vom Dorfbewohner schwer zu unterscheiden
+  (bedienung AC-36 misst noch die gezeichnete Figur an der Schautafel);
+  getragene Last sieht man nur beim Gehen; die Baustelle ist immer ein
+  Holzgerüst; Bilder für Verbesserungen, Aufstieg und Sammelpunkt-Fahne sind
+  noch gezeichnet; Schautafel ebenso. **Danach in dieser Reihenfolge:**
+  Schautafel umstellen (schließt AC-24), 10 (Sammler), 13/18 (Speichern,
+  Liste; ADR-0017), 8/15 (Abläufe Hacken/Feld mit Blender), 17 (Klingel).
+  **Arbeitsstand 2026-11-12, 20:20:** **zweiter Stapel**
   (Pause, Fremdes ansehen, Reitertempo, Ton) ist geprüft: 260 Browserfälle
   grün, ohne Browser 801. Zwei Funde aus dem vollen Lauf: der Wächter zu
   raeume AC-16 verbietet das Wort „Welt" in `raeume.js`, auch im Kommentar;

@@ -1340,6 +1340,11 @@
       "spec": "10-strategie/bedienung.md",
       "ac": "AC-60",
       "begruendung": "Musik ist Schall, kein Bild: nach dem ersten Klick im Spiel spielt sie leise und hoert auf, wenn das Fenster verdeckt ist oder die Partie endet. Belegt mit einer Messung am Ausgang des Browsers - der Effektivwert liegt ueber 0,002 und in der Spitze unter 0,12, also weit unter einem Geraeusch (e2e/tests/strategie-ton.spec.mjs); dass nur Toene der Leiter d e g a c vorkommen und keine Phrase der vorigen gleicht, im Rechenteil (tests/strategie-ton.test.mjs). Den Schalter dazu zeigt das Bild bei bedienung AC-61. Nicht geprueft: wie sie klingt - das hat noch niemand gehoert."
+    },
+    {
+      "spec": "10-strategie/darstellung.md",
+      "ac": "AC-25",
+      "begruendung": "Die Marke einer Datei und die Antwort 'unveraendert' sind Kopfzeilen einer HTTP-Antwort: ETag aus dem Inhalt, Cache-Control no-cache, 304 ohne Inhalt, wenn der Browser die Marke nennt. Ein Bildschirm zeigt dieselbe Seite, ob die Tafeln neu kamen oder aus dem Speicher des Browsers - der Unterschied ist die uebertragene Menge. Belegt ueber HTTP gegen den laufenden Server an vier Dateien, mit richtiger, alter und ohne Marke (tests/netz.test.mjs)."
     }
   ]
 }

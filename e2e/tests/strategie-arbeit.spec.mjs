@@ -140,7 +140,11 @@ test.describe('Im Spielbild', () => {
       a.blickAuf(b.x, b.y);
       return b;
     });
-    await einheitenAufstellen(anna, code, 'Anna', 2, { x: basis.x - 3, y: basis.y - 3 });
+    // Gleich hinter der Rueckwand: verdeckt ist, wessen Koerper das Bild des
+    // Gebaeudes deckt (bedienung AC-51) - und das gerenderte Dorfzentrum ist
+    // niedriger als das gezeichnete. Ein Feld weiter hinten schaut der Zweite
+    // schon ueber den First.
+    await einheitenAufstellen(anna, code, 'Anna', 2, { x: basis.x - 2, y: basis.y - 2 });
     await anna.waitForFunction(() => window.ansicht.umrisse?.length >= 2, null, { timeout: 20_000 });
     const lage = await anna.evaluate(() => {
       const a = window.ansicht;

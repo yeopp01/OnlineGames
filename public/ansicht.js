@@ -6,8 +6,8 @@
 // (x nach rechts unten, y nach links unten); nur zuBild und zuWelt kennen die
 // Raute. Die Kamera liegt in Bildpunkten der Raute bei Vergroesserung 1.
 import { FIGUREN, figurBildZeichnen } from './figuren.js';
-import { GEBAEUDE, gebaeudeBildZeichnen, gebaeudeGetroffen } from './gebaeude.js';
-import { gerendert, richtungAus } from './bilder.js';
+import { GEBAEUDE, gebaeudeBildZeichnen, gebaeudeGetroffen, gebaeudeHoehe, gebaeudeSchattenZeichnen } from './gebaeude.js';
+import { bilderBereit, bilderWarten, gerendert, richtungAus } from './bilder.js';
 import { KACHEL, kachelMassstab, kachelZeichnen } from './boden.js';
 import { Nebel } from './nebel.js';
 import {
@@ -33,6 +33,9 @@ const KLICK_WEITE = 16; // Bildpunkte bei Vergroesserung 1
 // nicht im Weg ist, lang genug, dass man es bei einem Klick bemerkt.
 const ZIELZEICHEN_DAUER = 800; // Millisekunden
 const RAND_SCHIEBEN = 12; // Bildpunkte am Fensterrand, in denen die Maus die Karte schiebt (bedienung AC-9)
+const KOPFLEISTE = 58; // Bildpunkte oben, ueber denen Rohstoffe, Uhr und Knoepfe liegen
+// Die acht Nachbarn eines Feldes: gerade zuerst, dann schraeg.
+const RINGSUM = [[1, 0], [-1, 0], [0, 1], [0, -1], [1, 1], [1, -1], [-1, 1], [-1, -1]];
 // Was ein Rechtsklick taete, in Worten am Zeiger (bedienung AC-52).
 const ZIELTEXT = {
   angreifen: 'Angreifen', bekehren: 'Bekehren', schlachten: 'Schlachten', fleisch: 'Fleisch holen', bauen: 'Mitbauen',
@@ -287,9 +290,16 @@ export class Ansicht {
     // gibt (spielziel AC-9).
     this.beiFeldern();
     this.groesseAnpassen();
-    if (!this.laeuft) {
-      this.laeuft = true;
+    if (!this.laeuft && !this.beginnt) {
+      this.beginnt = true;
       requestAnimationFrame(() => this.bild());
+      // "Laeuft" heisst: die Partie steht im Bild - mit ihren Bildern
+      // (darstellung AC-24). Bis dahin zeigt bild() den Ladesatz. Danach die
+      // Leiste noch einmal: ihre Knopfbilder kommen aus denselben Tafeln.
+      bilderWarten().then(() => {
+        this.laeuft = true;
+        this.beiAuswahl();
+      });
     }
   }
 
@@ -651,6 +661,87 @@ export class Ansicht {
   // Name eines Zeitalters, wie der Server ihn mit dem Aufbau geschickt hat.
   zeitalterName(stufe = this.zeitalter) {
     return this.werte?.zeitalter?.[stufe]?.name || 'Landsitz';
+  }
+
+  // ---- Mauer und Tor aus Teilen (ADR-0016) ---------------------------------
+
+  /**
+   * Wo fertige Mauern (M) und Tore stehen (X laengs x, Y laengs y) - einmal
+   * je Bild, aus dem, was gezeigt wird. Die gerenderte Mauer setzt sich danach
+   * zusammen. Ein Tor steht laengs der Mauer, in der es sitzt.
+   */
+  mauernSammeln(gezeigt) {
+    const felder = new Map();
+    for (const g of gezeigt) {
+      const werte = this.werte.gebaeude[g.art];
+      if (!werte || (g.u ?? 1) < 1) continue;
+      if (werte.tor) felder.set(`${g.x},${g.y}`, 'T');
+      else if (werte.gezogen) felder.set(`${g.x},${g.y}`, 'M');
+    }
+    for (const [ort, zeichen] of felder) {
+      if (zeichen !== 'T') continue;
+      const [x, y] = ort.split(',').map(Number);
+      const laengsX = felder.has(`${x - 1},${y}`) || felder.has(`${x + 1},${y}`);
+      const laengsY = felder.has(`${x},${y - 1}`) || felder.has(`${x},${y + 1}`);
+      felder.set(ort, !laengsX && laengsY ? 'Y' : 'X');
+    }
+    return felder;
+  }
+
+  /**
+   * Was eine Mauer oder ein Tor zum Zeichnen wissen muss: die Mauer ihre
+   * Nachbarn, das Tor seine Richtung. Alles andere: undefined. Ein Tor zaehlt
+   * als Nachbar nur laengs seiner Achse, schraeg nur, wenn keines der zwei
+   * Felder dazwischen Mauer ist - sonst liefe die Mauer doppelt ums Eck.
+   */
+  gebaeudeLage(gebaeude) {
+    const felder = this.mauern;
+    const zeichen = felder?.get(`${gebaeude.x},${gebaeude.y}`);
+    if (!zeichen || (gebaeude.u ?? 1) < 1) return undefined;
+    if (zeichen !== 'M') return { achse: zeichen === 'Y' ? 'y' : 'x' };
+    const was = (x, y) => felder.get(`${x},${y}`);
+    const { x, y } = gebaeude;
+    const nachbarn = RINGSUM.filter(([dx, dy]) => {
+      const z = was(x + dx, y + dy);
+      if (!z) return false;
+      if (z === 'X' && dy !== 0) return false;
+      if (z === 'Y' && dx !== 0) return false;
+      return !(dx && dy && (was(x + dx, y) || was(x, y + dy)));
+    });
+    return { nachbarn };
+  }
+
+  /**
+   * Die Schlagschatten von Mauern und Toren: erst alle in eine Schicht, dann
+   * die Schicht als Ganzes aufgelegt - unter allem, was steht.
+   */
+  mauerschatten(gezeigt, e) {
+    if (!this.mauern.size) return;
+    const breite = this.leinwand.clientWidth;
+    const hoehe = this.leinwand.clientHeight;
+    const dichte = window.devicePixelRatio || 1;
+    if (!this.schattenschicht) this.schattenschicht = document.createElement('canvas');
+    const schicht = this.schattenschicht;
+    if (schicht.width !== Math.ceil(breite * dichte) || schicht.height !== Math.ceil(hoehe * dichte)) {
+      schicht.width = Math.ceil(breite * dichte);
+      schicht.height = Math.ceil(hoehe * dichte);
+    }
+    const s = schicht.getContext('2d');
+    s.setTransform(dichte, 0, 0, dichte, 0, 0);
+    s.clearRect(0, 0, breite, hoehe);
+    let deckung = 0;
+    for (const gebaeude of gezeigt) {
+      const lage = this.gebaeudeLage(gebaeude);
+      if (!lage) continue;
+      const p = this.zuBild(gebaeude.x, gebaeude.y);
+      if (p.x < -4 * e || p.x > breite + 4 * e || p.y < -4 * e || p.y > hoehe + 4 * e) continue;
+      deckung = gebaeudeSchattenZeichnen(s, gebaeude.art, p.x, p.y, e, lage) || deckung;
+    }
+    if (!deckung) return;
+    this.stift.save();
+    this.stift.globalAlpha = deckung;
+    this.stift.drawImage(schicht, 0, 0, breite, hoehe);
+    this.stift.restore();
   }
 
   // Die Mitte der Grundflaeche: der Server nennt das Ankerfeld, die Flaeche
@@ -1849,11 +1940,34 @@ export class Ansicht {
     }
   }
 
+  /** Solange die Tafeln unterwegs sind: ein ruhiges Bild mit einem Satz. */
+  ladebild() {
+    const s = this.stift;
+    const b = this.leinwand.clientWidth;
+    const h = this.leinwand.clientHeight;
+    s.save();
+    s.fillStyle = '#0d1016';
+    s.fillRect(0, 0, b, h);
+    s.fillStyle = '#c9ced8';
+    s.font = '600 18px system-ui, sans-serif';
+    s.textAlign = 'center';
+    s.textBaseline = 'middle';
+    s.fillText('Bilder werden geladen …', b / 2, h / 2);
+    s.restore();
+  }
+
   bild(jetzt = performance.now()) {
     if (!this.karte) return;
     const dauer = Math.min(50, jetzt - (this.letztesBild || jetzt));
     this.letztesBild = jetzt;
     this.schieben(dauer);
+    // Die Partie zeichnet erst, wenn ihre Bilder da sind (darstellung AC-24):
+    // sonst stuenden einen Augenblick lang die gezeichneten Figuren im Bild.
+    if (!bilderBereit()) {
+      this.ladebild();
+      requestAnimationFrame((t) => this.bild(t));
+      return;
+    }
     // Angehalten steht das Bild - schieben und waehlen geht weiter.
     this.zeichnen(halt ?? jetzt);
     this.nachBild(jetzt);
@@ -1933,11 +2047,13 @@ export class Ansicht {
     // Flache Gebaeude (Farmen) gehoeren zum Boden: unter Figuren und Baeume.
     // Fremde nur, wie man sie sieht oder erinnert (kampf AC-12).
     const gezeigt = this.gezeigteGebaeude();
+    this.mauern = this.mauernSammeln(gezeigt);
     for (const gebaeude of gezeigt) {
       if (!this.werte.gebaeude[gebaeude.art]?.begehbar) continue;
       const mitte = this.gebaeudeMitte(gebaeude);
       this.gebaeudeBild(gebaeude, this.zuBild(mitte.x, mitte.y), HALB_B * zoom);
     }
+    this.mauerschatten(gezeigt, HALB_B * zoom);
 
     // 2. Alles, was steht, nach Tiefe: was weiter unten im Bild steht, verdeckt,
     //    was dahinter steht (darstellung AC-7).
@@ -1949,6 +2065,11 @@ export class Ansicht {
         // Nie Gesehenes wird gar nicht erst gezeichnet: ein Baum am Kartenrand
         // ragt mit seiner Krone ueber die Flaeche, die der Nebel deckt (Runde 105).
         if (this.nebelAn && !this.nebel.hatErkundet(x, y)) continue;
+        // Ein Baum am Rand des Erkundeten kommt erst, wenn auch die zwei
+        // Felder dahinter bekannt sind: seine Krone laege sonst unter ihrem
+        // Schwarz, und aus dem Dunkel ragte ein blanker Stamm (gerenderte
+        // Baeume sind hoeher als die gezeichneten, 2026-11-12).
+        if (this.nebelAn && art === WALD && [1, 2].some((n) => x >= n && y >= n && !this.nebel.hatErkundet(x - n, y - n))) continue;
         if (DINGE.includes(art)) stehend.push({ tiefe: x + y, x, y, art: 'vorrat', feld: art, index });
       }
     }
@@ -2246,7 +2367,7 @@ export class Ansicht {
       const p = this.zuBild(mitte.x, mitte.y);
       const voll = this.werte.gebaeude[gebaeude.art]?.nahrung;
       const offen = Boolean(this.werte.gebaeude[gebaeude.art]?.tor) && this.torOffen(gebaeude);
-      gebaeudeBildZeichnen(maske, gebaeude.art, p.x, p.y, e, '#888888', mitte.groesse, gebaeude.u ?? 1, voll ? (gebaeude.n ?? voll) / voll : 1, offen);
+      gebaeudeBildZeichnen(maske, gebaeude.art, p.x, p.y, e, '#888888', mitte.groesse, gebaeude.u ?? 1, voll ? (gebaeude.n ?? voll) / voll : 1, offen, this.gebaeudeLage(gebaeude));
     }
     // Der Schlagschatten eines Gebaeudes verdeckt niemanden: zweimal mit sich
     // selbst beschnitten bleibt von seiner halben Deckung fast nichts, von
@@ -2492,7 +2613,9 @@ export class Ansicht {
       const m = zeichnung ? (e * groesse * 0.95) / zeichnung.halbeBreite : e;
       // Knapp ueber dem Dach - die Trefferhoehe reicht bis zur Fahnenspitze, drei
       // Viertel davon sind der First (Runde 42: ganz oben deckte er den Namen zu).
-      const oben = zeichnung?.flach ? e * groesse * 0.6 : (zeichnung?.trefferOben ?? 3) * m * 0.75;
+      // Gerendert: knapp ueber dem, was im Bild wirklich deckt.
+      const hoch = gebaeudeHoehe(gebaeude.art, e, groesse);
+      const oben = hoch ?? (zeichnung?.flach ? e * groesse * 0.6 : (zeichnung?.trefferOben ?? 3) * m * 0.75);
       this.lebensbalken.push({
         art: 'gebaeude', i: gebaeude.i, x: p.x, y: p.y - oben - 4, breite: Math.round(Math.min(e * groesse * 0.6, 140)), anteil: (gebaeude.h ?? lebenVoll) / lebenVoll,
       });
@@ -2509,15 +2632,26 @@ export class Ansicht {
     }
     const voll = this.werte.gebaeude[gebaeude.art]?.nahrung;
     const offen = Boolean(this.werte.gebaeude[gebaeude.art]?.tor) && this.torOffen(gebaeude);
-    gebaeudeBildZeichnen(stift, gebaeude.art, p.x, p.y, e, spieler ? spieler.farbe : '#888888', groesse, gebaeude.u ?? 1, voll ? (gebaeude.n ?? voll) / voll : 1, offen);
+    gebaeudeBildZeichnen(stift, gebaeude.art, p.x, p.y, e, spieler ? spieler.farbe : '#888888', groesse, gebaeude.u ?? 1, voll ? (gebaeude.n ?? voll) / voll : 1, offen, this.gebaeudeLage(gebaeude));
   }
 
   namenZeichnen(spieler) {
     if (this.kamera.zoom <= 0.6) return;
     const stift = this.stift;
     const p = this.zuBild(spieler.basis.x, spieler.basis.y);
-    // Ueber der Fahne des Dorfzentrums.
-    const oben = p.y - HALB_B * 7.6 * this.kamera.zoom - 4;
+    // Ueber der Fahne des Dorfzentrums - gerendert ueber seinem First.
+    // Gerendert noch ein Stueck hoeher: knapp ueber dem First liegt der
+    // Lebensbalken des gewaehlten Dorfzentrums.
+    const hoch = gebaeudeHoehe('dorfzentrum', HALB_B * this.kamera.zoom, 4);
+    let oben = p.y - (hoch === null ? HALB_B * 7.6 * this.kamera.zoom : hoch + 18) - 4;
+    // Liegt dort der Lebensbalken eines Gebaeudes, steht der Name darueber -
+    // gemessen am Balken selbst, nicht an einer zweiten Rechnung der Hoehe.
+    for (const balken of this.lebensbalken) {
+      if (balken.art !== 'gebaeude' || Math.abs(balken.x - p.x) > balken.breite / 2 + 30) continue;
+      if (oben > balken.y - 22 && oben < balken.y + 14) oben = balken.y - 11;
+    }
+    // Unter der Kopfleiste stuende er ueber ihrer Schrift.
+    if (oben < KOPFLEISTE) return;
     stift.font = '600 12px system-ui, sans-serif';
     stift.textAlign = 'center';
     stift.lineWidth = 3;

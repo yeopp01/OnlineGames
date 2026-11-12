@@ -12,6 +12,7 @@
 import { BAUTASTEN } from './tasten.js';
 import { FIGUREN, WAREN, figurZeichnen } from './figuren.js';
 import { GEBAEUDE, gebaeudeZeichnen } from './gebaeude.js';
+import { ablaufZelle, gerendert, zelleEinpassen } from './bilder.js';
 
 const ROHSTOFF_NAMEN = { holz: 'Holz', nahrung: 'Nahrung', gold: 'Gold', stein: 'Stein' };
 
@@ -24,7 +25,16 @@ function bildchen(art, groesse, farbe, lage = {}) {
   leinwand.style.height = `${groesse}px`;
   const stift = leinwand.getContext('2d');
   stift.scale(dichte, dichte);
-  figurZeichnen(stift, art, groesse / 2, groesse * 0.95, groesse * 0.95, farbe, lage);
+  // Gerendert (ADR-0016): dieselbe Figur wie im Spielbild, stehend, den Blick
+  // nach vorn rechts - mit ihrer Ladung, wenn sie eine traegt.
+  const tafel = gerendert(art);
+  if (tafel?.ablaeufe?.stehen) {
+    const stand = lage.ladung && tafel.ablaeufe[`stehen_${lage.ladung}`] ? `stehen_${lage.ladung}` : 'stehen';
+    const zelle = ablaufZelle(tafel, 1, stand);
+    zelleEinpassen(stift, zelle.quelle, zelle.zeile, zelle.spalte, groesse, farbe);
+  } else {
+    figurZeichnen(stift, art, groesse / 2, groesse * 0.95, groesse * 0.95, farbe, lage);
+  }
   return leinwand;
 }
 
@@ -467,6 +477,13 @@ function gebaeudeBildchen(art, groesse, farbe, n) {
   // gezeichnet oben aus dem Knopf, man sah nur seine Beine (Runde 109). Dann
   // passt es nach der Hoehe. Die Grenze von einem Zehntel laesst Dachspitzen
   // der anderen Gebaeude, die knapp an den Rand reichen, wie sie sind.
+  // Gerendert (ADR-0016): das Bild aus der Tafel, in den Knopf eingepasst.
+  // Die Mauer zeigt ein Stueck Lauf, das Tor steht zu.
+  const tafel = gerendert(art);
+  if (tafel) {
+    zelleEinpassen(stift, tafel, 0, tafel.stuecke ? tafel.stuecke.laeufe[0].spalte : 0, groesse, farbe);
+    return leinwand;
+  }
   const breit = groesse / (2.3 * n);
   const g = GEBAEUDE[art];
   const hoch = g ? (groesse * 0.74) / (g.trefferOben * ((n * 0.95) / g.halbeBreite)) : breit;

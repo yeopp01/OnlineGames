@@ -1287,6 +1287,16 @@ export function figurBildZeichnen(stift, art, x, y, hoehe, farbe, lage = {}, umr
     if (umriss) {
       // Der Umriss (bedienung AC-30): dieselbe Gestalt, ganz in Spielerfarbe -
       // so sieht man durch ein Gebaeude hindurch, wer dahinter steht.
+      // Der Schlagschatten einer gerenderten Figur gehoert nicht zur Gestalt:
+      // zweimal mit sich selbst beschnitten bleibt von seiner halben Deckung
+      // fast nichts, vom Koerper alles.
+      if (zelle) {
+        s.setTransform(1, 0, 0, 1, 0, 0);
+        s.globalCompositeOperation = 'destination-in';
+        s.drawImage(bild, 0, 0);
+        s.drawImage(bild, 0, 0);
+        s.setTransform(dichte, 0, 0, dichte, 0, 0);
+      }
       s.globalCompositeOperation = 'source-in';
       s.fillStyle = farbe;
       s.fillRect(0, 0, breite, oben + unten);

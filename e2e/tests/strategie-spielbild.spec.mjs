@@ -183,21 +183,33 @@ test.describe('Das Spielbild', () => {
     // war ein paar Bildpunkte gross (Rueckschau nach Runde 83). Und wer
     // hinter einem Gebaeude steht, ist nur ein Umriss - dann traegt er
     // sichtbar nichts, und die Unterschrift waere wieder falsch.
-    await anna.waitForFunction(() => {
+    // Gerendert traegt nur, wer geht: wer hackt, zeigt den Ablauf der Arbeit.
+    // Also einen suchen, der beladen heimgeht - und die Welt anhalten, sobald
+    // es ihn gibt, sonst hat er abgeladen, bevor das Bild entsteht.
+    const traegt = () => {
       const a = window.ansicht;
-      const e = [...a.nachher.values()].find((f) => f.b === a.ich && f.l > 0 && f.a === 'h'
+      const e = [...a.nachher.values()].find((f) => f.b === a.ich && f.l > 0 && f.a === 'h' && !f.w
         && !(a.umrisse || []).includes(f.i));
       if (!e) return false;
       a.blickAuf(e.x, e.y);
       return true;
-    }, null, { timeout: 20_000 });
+    };
+    for (let versuch = 0; ; versuch++) {
+      await anna.waitForFunction(traegt, null, { timeout: 30_000 });
+      await zeitraffer(anna, code, 0);
+      await anna.waitForTimeout(250);
+      if (await anna.evaluate(traegt)) break;
+      expect(versuch, 'kein Traeger blieb im Bild').toBeLessThan(6);
+      await zeitraffer(anna, code, 5);
+    }
     await anna.waitForTimeout(200);
     await nachweis(anna, {
       spec: BEDIENUNG,
       ac: 'AC-16',
-      titel: 'Nah herangeholt: ein beladener Dorfbewohner am Waldrand traegt ein Holzbuendel auf dem Ruecken',
+      titel: 'Nah herangeholt: ein Dorfbewohner geht mit seinem Holz vom Waldrand heim - er traegt es sichtbar',
       test: info,
     });
+    await zeitraffer(anna, code, 5);
     // Zurueck zum Blick vom Start (darstellung AC-16). Nicht fuenfmal zurueck
     // am Rad: von 1,5 aus stoesst das Heranholen an die Grenze 2,5, und fuenf
     // Rasten zurueck enden dann unter dem Start.
@@ -298,7 +310,7 @@ test.describe('Das Spielbild', () => {
     await nachweis(bert, {
       spec: KARTE,
       ac: 'AC-16',
-      titel: 'Berts Dorfzentrum nah: Schafe im Kreis darum, das Halsband in seinem Rot - eines steht dahinter',
+      titel: 'Berts Dorfzentrum nah: seine Schafe im Kreis darum, jedes mit einem Tuch in seinem Rot - eines steht dahinter',
       test: info,
     });
   });
@@ -338,7 +350,7 @@ test.describe('Das Spielbild', () => {
     await nachweis(bert, {
       spec: DARSTELLUNG,
       ac: 'AC-1',
-      titel: 'Berts Siedlung im isometrischen Blick: Boden ohne Raster, Wald, Beeren, Gold und Stein als Dinge',
+      titel: 'Berts Siedlung im isometrischen Blick: Boden ohne Raster, Wald, Beeren und Gold als Dinge',
       test: info,
     });
   });
@@ -397,14 +409,14 @@ test.describe('Das Spielbild', () => {
     await nachweis(anna, {
       spec: DARSTELLUNG,
       ac: 'AC-2',
-      titel: 'Am See: ein weiches Ufer aus Sand und Schlamm, auf dem Wasser leise Lichtstreifen, das Gras getoent',
+      titel: 'Am See: ein weiches Ufer aus Sand, auf dem Wasser feine Wellen, das Gras getoent',
       test: info,
     });
   });
 
-  // Dieselbe Partie mit den gerenderten Bildern (ADR-0016): Boden, Ufer, Wald
-  // und Vorraete kommen aus der Kette. Der Fall schaltet sie ein, sieht hin
-  // und schaltet sie wieder aus - die Faelle danach belegen das gezeichnete Bild.
+  // Die gerenderten Bilder (ADR-0016): Boden, Ufer, Wald und Vorraete kommen
+  // aus der Kette. Seit 2026-11-12 sind sie die Vorgabe - der Fall wartet nur,
+  // bis sie da sind, und zaehlt, was aus den Tafeln kam.
   test('darstellung AC-23: im Spiel liegen Boden, Ufer, Wald und Vorraete gerendert vor', async ({}, info) => {
     await anna.evaluate(async () => (await import('/bilder.js')).bilderEin());
     // Eine Stelle am Ufer, von der aus Wald und ein Vorrat nah sind.
@@ -483,7 +495,6 @@ test.describe('Das Spielbild', () => {
       titel: 'Im Spiel mit gerenderten Bildern: Gras, Waldboden und Sand als Textur, das Ufer mit flachem Wasser, Baeume in vier Arten und ein Vorrat',
       test: info,
     });
-    await anna.evaluate(async () => (await import('/bilder.js')).bilderEin(false));
   });
 
   test('darstellung AC-13: das Spielbild bei Zoom 1 - erdig, ohne Umrisse und Raster, mit Schatten', async ({}, info) => {
@@ -513,7 +524,7 @@ test.describe('Das Spielbild', () => {
     await nachweis(anna, {
       spec: DARSTELLUNG,
       ac: 'AC-13',
-      titel: 'Zoom 1: olivbrauner Boden ohne Raster, Gebaeude und Baeume mit Schatten nach rechts, See mit weichem Ufer - vorher siehe docs/strategie/bilder/vorher-runde35',
+      titel: 'Zoom 1: Wiese und Erde ohne Raster, Gebaeude und Baeume mit Schlagschatten, See mit weichem Ufer - vorher siehe docs/strategie/bilder/vorher-runde35',
       test: info,
     });
   });
@@ -584,7 +595,7 @@ test.describe('Das Spielbild', () => {
     await nachweis(anna, {
       spec: '10-strategie/einheiten-und-befehle.md',
       ac: 'AC-15',
-      titel: 'Am Goldvorkommen: ein Dorfbewohner trägt gelbe Goldbrocken in beiden Händen',
+      titel: 'Am Goldvorkommen: Annas Dorfbewohner bauen mit der Hacke Gold ab',
       test: info,
     });
     await zeitraffer(anna, code, 1);

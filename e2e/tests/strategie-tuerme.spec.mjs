@@ -2,10 +2,9 @@
 // kampf.md AC-20): der Wachturm steht ab der Feudalzeit im Baumenue, zeigt an
 // der Auswahl seine Kampfwerte und schiesst von selbst auf Berts Miliz.
 //
-// Wie in strategie-pfeile.spec.mjs: ein Pfeil fliegt nur Zehntelsekunden. Der
-// Test merkt sich einen, der gerade abgeschossen ist, macht das Bild und
-// prueft danach, dass derselbe Pfeil noch unterwegs war.
-import { unlink } from 'node:fs/promises';
+// Ein Pfeil fliegt nur Zehntelsekunden: der Test haelt einen, sobald er im
+// Bild ist, auf knapp der Haelfte seines Wegs fest - im Bild, nicht auf dem
+// Server -, wie an der Burg (strategie-burg.spec.mjs).
 import { nachweis } from '../../scripts/qa-nachweis.mjs';
 import { einheitenAufstellen, expect, rohstoffe, test, zeitraffer } from '../helpers/seite.mjs';
 import {
@@ -101,30 +100,33 @@ test.describe('Tuerme', () => {
     // Er schiesst: die Miliz verliert Leben, und Pfeile fliegen.
     await expect.poll(async () => (await miliz())?.h ?? 0, { timeout: 15_000 }).toBeLessThan(lebenVorher);
     await anna.waitForFunction(() => window.ansicht.pfeile.length > 0, null, { timeout: 10_000 });
-    // Ein Pfeil auf halbem Weg: merken, fotografieren, nachsehen.
-    let getroffen = false;
-    for (let versuch = 0; versuch < 20 && !getroffen; versuch++) {
-      const pfeil = await anna.waitForFunction(() => {
-        const jetzt = performance.now();
-        const p = window.ansicht.pfeile.find((q) => (jetzt - q.start) / q.dauer < 0.15 && q.dauer >= 600);
-        return p ? { start: p.start, dauer: p.dauer, oben: p.oben } : null;
-      }, null, { timeout: 10_000, polling: 10 });
-      const gemerkt = await pfeil.jsonValue();
-      expect(gemerkt.oben, 'der Pfeil beginnt oben auf dem Turm, nicht an seinem Fuss').toBeGreaterThan(0);
-      const bilder = [];
-      for (const [spec, ac] of [[BAUEN, 'AC-29'], [KAMPF, 'AC-20']]) {
-        bilder.push(await nachweis(anna, {
-          spec,
-          ac,
-          titel: 'Annas Wachturm (blau) gewählt, mit Angriff und Reichweite, und ein Pfeil auf dem Weg zu Berts Miliz (rot)',
-          test: info,
-        }));
-      }
-      getroffen = await anna.evaluate((g) => window.ansicht.pfeile.some((q) => q.start === g.start)
-        && performance.now() - g.start < g.dauer, gemerkt);
-      if (!getroffen) for (const bild of bilder) await unlink(bild).catch(() => {});
+    // Ein Pfeil auf knapp halbem Weg, im Bild festgehalten - nicht auf dem
+    // Server -, wie an der Burg (strategie-burg.spec.mjs). Vorher wurde er im
+    // Flug fotografiert und danach nachgesehen, ob er noch flog; seit das
+    // Spielbild gerendert ist, dauern zwei Bilder laenger als sein Flug von
+    // 0,86 Sekunden (2026-11-12).
+    const pfeil = await anna.waitForFunction(() => {
+      const p = window.ansicht.pfeile.find((q) => !q.stein && q.dauer >= 600);
+      if (!p) return false;
+      const dauer = p.dauer;
+      p.dauer = 1e9;
+      p.start = performance.now() - 0.45e9;
+      return { oben: p.oben, dauer, x0: p.x0, y0: p.y0, x1: p.x1, y1: p.y1 };
+    }, null, { timeout: 10_000, polling: 10 }).then((h) => h.jsonValue());
+    expect(pfeil.oben, 'der Pfeil beginnt oben auf dem Turm, nicht an seinem Fuss').toBeGreaterThan(0);
+    // Er kommt aus dem Turm und fliegt zur Miliz.
+    expect([pfeil.x0, pfeil.y0]).toEqual([turm.x, turm.y]);
+    const ziel = await miliz();
+    expect(Math.hypot(pfeil.x1 - ziel.x, pfeil.y1 - ziel.y), 'auf Berts Miliz').toBeLessThan(0.5);
+    await anna.waitForTimeout(100);
+    for (const [spec, ac] of [[BAUEN, 'AC-29'], [KAMPF, 'AC-20']]) {
+      await nachweis(anna, {
+        spec,
+        ac,
+        titel: 'Annas Wachturm (blau) gewählt, mit Angriff und Reichweite, und ein Pfeil auf dem Weg zu Berts Miliz (rot)',
+        test: info,
+      });
     }
-    expect(getroffen, 'ein Pfeil war im Bild, als es entstand').toBe(true);
     // Anna hat der Miliz keinen Befehl gegeben - und der Turm hat getroffen.
     expect((await miliz())?.h ?? 0).toBeLessThan(lebenVorher);
   });

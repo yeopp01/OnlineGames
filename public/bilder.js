@@ -5,14 +5,24 @@
 // grosser Zellen, daneben eine JSON-Datei, die sagt, wo welches Bild steht,
 // und - wo es Spielerfarbe gibt - eine zweite Tafel als Maske.
 //
-// Solange der Umbau eine Probe ist, sind sie abgeschaltet. Eingeschaltet
-// werden sie mit `?bilder=1` in der Adresse oder mit bilderEin(). Was dann
-// noch kein gerendertes Bild hat, wird weiter gezeichnet.
+// Sie sind die Vorgabe (Benutzer, 2026-11-12). Abgeschaltet werden sie mit
+// `?bilder=0` in der Adresse oder mit bilderEin(false) - dann zeichnet das
+// Spiel wie vor dem Umbau. Was noch kein gerendertes Bild hat oder dessen
+// Tafel fehlt, wird weiter gezeichnet.
 
-const NAMEN = ['dorfbewohner', 'haus', 'baum', 'marktkarren', 'spaeherreiter', 'ritter', 'miliz', 'soldat', 'speerkaempfer', 'bogenschuetze', 'plaenkler', 'armbrustschuetze', 'moench', 'ramme', 'mangonel', 'schaf', 'beere', 'gold', 'stein', 'boden'];
+const NAMEN = [
+  'dorfbewohner', 'baum', 'marktkarren', 'spaeherreiter', 'ritter', 'miliz', 'soldat', 'speerkaempfer', 'bogenschuetze', 'plaenkler',
+  'armbrustschuetze', 'moench', 'ramme', 'mangonel', 'schaf', 'beere', 'gold', 'stein', 'boden',
+  // Gebaeude (R4): jedes eine Tafel; die Baustelle je Grundflaeche eine.
+  'haus', 'dorfzentrum', 'muehle', 'holzfaellerlager', 'bergbaulager', 'farm', 'kaserne', 'schiessanlage', 'stall', 'schmiede',
+  'aussenposten', 'markt', 'kloster', 'universitaet', 'belagerungswerkstatt', 'wachturm', 'burg', 'steinmauer', 'tor',
+  'baustelle-1', 'baustelle-2', 'baustelle-3', 'baustelle-4',
+];
 const tafeln = new Map();
+const fehlend = [];
 let an = false;
 let laden = null;
+let da = false;
 
 function bildLaden(pfad) {
   return new Promise((fertig, fehler) => {
@@ -26,12 +36,31 @@ function bildLaden(pfad) {
 /** Holt alle Tafeln. Das Versprechen erfuellt sich, wenn sie da sind. */
 export function bilderLaden() {
   if (!laden) {
+    // Fehlt eine Tafel, fehlt nur sie: das Stueck wird gezeichnet wie bisher,
+    // und die Partie wartet nicht ewig auf ein Bild, das nicht kommt.
     laden = Promise.all(NAMEN.map(async (name) => {
-      const angaben = await (await fetch(`/bilder/${name}.json`)).json();
-      const tafel = await bildLaden(`/bilder/${angaben.bild}`);
-      const maske = angaben.maske ? await bildLaden(`/bilder/${angaben.maske}`) : null;
-      tafeln.set(name, { ...angaben, name, tafel, maskenbild: maske, gezeichnet: 0, teile: new Map() });
-    })).then(() => true);
+      try {
+        const angaben = await (await fetch(`/bilder/${name}.json`)).json();
+        const tafel = await bildLaden(`/bilder/${angaben.bild}`);
+        const maske = angaben.maske ? await bildLaden(`/bilder/${angaben.maske}`) : null;
+        // Mauer und Tor haben ihren Schlagschatten in einer eigenen Tafel: er
+        // liegt als Schicht unter allen Mauern, sonst wuerde es doppelt dunkel,
+        // wo sich zwei ueberdecken.
+        const wurf = angaben.art === 'gebaeude' ? angaben.ablaeufe?.schatten : null;
+        const schatten = wurf ? {
+          name: `${name}-schatten`, zelle: wurf.zelle, fuss: wurf.fuss, feldbreite: angaben.feldbreite,
+          tafel: await bildLaden(`/bilder/${wurf.bild}`), maskenbild: null, gezeichnet: 0, deckung: angaben.schattenDeckung ?? 0.6,
+        } : null;
+        // `teile` heisst in den Angaben der Mauer, aus welchen Stuecken sie
+        // sich setzt; hier ist es der Speicher der nachgeladenen Ablaeufe.
+        tafeln.set(name, { ...angaben, name, tafel, maskenbild: maske, gezeichnet: 0, teile: new Map(), stuecke: angaben.teile || null, schatten });
+      } catch {
+        fehlend.push(name);
+      }
+    })).then(() => {
+      da = true;
+      return true;
+    });
   }
   return laden;
 }
@@ -76,6 +105,21 @@ export function ablaeufeLaden(name) {
 export function bilderEin(wert = true) {
   an = wert;
   return an ? bilderLaden() : Promise.resolve(false);
+}
+
+/** Erfuellt sich, wenn gezeichnet werden kann - sofort, wenn abgeschaltet. */
+export function bilderWarten() {
+  return an ? bilderLaden() : Promise.resolve(true);
+}
+
+/** Kann gezeichnet werden? Ja, wenn abgeschaltet oder alle Tafeln da sind. */
+export function bilderBereit() {
+  return !an || da;
+}
+
+/** Welche Tafeln nicht kamen - leer, wenn alles da ist. */
+export function bilderFehlend() {
+  return [...fehlend];
 }
 
 /** Die Tafel zu einem Namen - oder null, wenn abgeschaltet oder nicht da. */
@@ -145,6 +189,84 @@ export function zelleZeichnen(stift, tafel, zeile, spalte, x, y, massstab, farbe
   );
 }
 
+// Wo eine Zelle deckt: ein grobes Raster ihrer Deckkraft, einmal gelesen. Der
+// Schlagschatten im Bild ist halb durchsichtig und zaehlt nicht - gemessen an
+// den Tafeln: der Koerper deckt mit 255, der Schatten unter 200.
+const RASTER = 4;
+
+function deckung(tafel, zeile, spalte) {
+  if (!tafel.deckend) tafel.deckend = new Map();
+  const schluessel = zeile * 1000 + spalte;
+  let d = tafel.deckend.get(schluessel);
+  if (d === undefined) {
+    d = null;
+    try {
+      const [breite, hoehe] = tafel.zelle;
+      const b = Math.ceil(breite / RASTER);
+      const h = Math.ceil(hoehe / RASTER);
+      const leinwand = document.createElement('canvas');
+      leinwand.width = b;
+      leinwand.height = h;
+      const s = leinwand.getContext('2d', { willReadFrequently: true });
+      s.drawImage(tafel.tafel, spalte * breite, zeile * hoehe, breite, hoehe, 0, 0, b, h);
+      const daten = s.getImageData(0, 0, b, h).data;
+      const voll = new Uint8Array(b * h);
+      let oben = h;
+      let unten = -1;
+      let links = b;
+      let rechts = -1;
+      for (let i = 0; i < b * h; i++) {
+        if (daten[i * 4 + 3] < 200) continue;
+        voll[i] = 1;
+        const y = (i / b) | 0;
+        const x = i % b;
+        oben = Math.min(oben, y);
+        unten = Math.max(unten, y);
+        links = Math.min(links, x);
+        rechts = Math.max(rechts, x);
+      }
+      d = { b, h, voll, oben: oben * RASTER, unten: (unten + 1) * RASTER, links: links * RASTER, rechts: (rechts + 1) * RASTER };
+    } catch {
+      d = null;
+    }
+    tafel.deckend.set(schluessel, d);
+  }
+  return d;
+}
+
+/** Trifft ein Punkt (relativ zum Fusspunkt, im Massstab) das Bild der Zelle? */
+export function zelleGetroffen(tafel, zeile, spalte, dx, dy, massstab) {
+  const x = dx / massstab + tafel.fuss[0];
+  const y = dy / massstab + tafel.fuss[1];
+  if (x < 0 || y < 0 || x >= tafel.zelle[0] || y >= tafel.zelle[1]) return false;
+  const d = deckung(tafel, zeile, spalte);
+  if (!d) return true;
+  return d.voll[((y / RASTER) | 0) * d.b + ((x / RASTER) | 0)] === 1;
+}
+
+/**
+ * Zeichnet eine Zelle so gross wie moeglich in ein Quadrat der Kantenlaenge
+ * `groesse` - gemessen an dem, was deckt, ohne den Schlagschatten: fuer die
+ * Bilder auf den Knoepfen. `rand` ist der freie Rand als Anteil.
+ */
+export function zelleEinpassen(stift, tafel, zeile, spalte, groesse, farbe, rand = 0.06) {
+  const d = deckung(tafel, zeile, spalte);
+  const [breite, hoehe] = tafel.zelle;
+  const k = d && d.rechts > d.links ? d : { links: 0, rechts: breite, oben: 0, unten: hoehe };
+  const innen = groesse * (1 - 2 * rand);
+  const massstab = Math.min(innen / (k.rechts - k.links), innen / (k.unten - k.oben));
+  // Waagrecht in die Mitte, senkrecht auf den Boden des Knopfs.
+  const x = groesse / 2 - ((k.links + k.rechts) / 2 - tafel.fuss[0]) * massstab;
+  const y = groesse * (1 - rand) - (k.unten - tafel.fuss[1]) * massstab;
+  zelleZeichnen(stift, tafel, zeile, spalte, x, y, massstab, farbe);
+}
+
+/** Wie hoch das Bild einer Zelle ueber seinem Fusspunkt steht, in Bildpunkten der Tafel. */
+export function zellenHoehe(tafel, zeile = 0, spalte = 0) {
+  const d = deckung(tafel, zeile, spalte);
+  return tafel.fuss[1] - (d ? d.oben : 0);
+}
+
 /** Welche Zelle eine Figur zeigt: Zeile ist die Blickrichtung, Spalte das Bild. */
 export function figurZelle(tafel, richtung, schrittStufe, stufen) {
   const zeile = (((richtung ?? 1) % tafel.richtungen) + tafel.richtungen) % tafel.richtungen;
@@ -180,4 +302,4 @@ export function richtungAus(dx, dy) {
   return ((Math.round((90 - winkel) / 45) % 8) + 8) % 8;
 }
 
-if (typeof location !== 'undefined' && new URLSearchParams(location.search).has('bilder')) bilderEin();
+if (typeof location !== 'undefined' && new URLSearchParams(location.search).get('bilder') !== '0') bilderEin();

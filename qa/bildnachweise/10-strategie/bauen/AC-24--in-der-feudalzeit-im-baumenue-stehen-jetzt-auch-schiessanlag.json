@@ -1,0 +1,10 @@
+{
+  "spec": "10-strategie/bauen.md",
+  "ac": "AC-24",
+  "titel": "In der Feudalzeit: im Baumenü stehen jetzt auch Schießanlage, Stall und Schmiede, daneben die fertige Schießanlage mit Zielscheiben",
+  "datei": "e2e/tests/strategie-feudalbauten.spec.mjs",
+  "pfad": [
+    "Gebaeude der Feudalzeit",
+    "bauen AC-24: nach dem Aufstieg stehen alle drei im Menue und lassen sich bauen"
+  ]
+}

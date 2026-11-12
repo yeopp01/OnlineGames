@@ -280,7 +280,7 @@ test.describe('Aussenposten', () => {
     await nachweis(anna, {
       spec: KAMPF,
       ac: 'AC-18',
-      titel: 'Ein Außenposten weit vor Annas Dorf: der Holzturm mit Wimpel, um ihn ein eigener heller Kreis, dazwischen Nebel',
+      titel: 'Ein Außenposten weit vor Annas Dorf: der Holzturm, um ihn ein eigener heller Kreis, dazwischen Nebel',
       test: info,
     });
   });

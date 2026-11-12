@@ -1,6 +1,8 @@
 # ADR-0016: Gerenderte Bilder aus eigenen Modellen statt gezeichnetem Code
 
-**Status:** entschieden; gebaut wird in Schritten, der erste ist eine Probe
+**Status:** entschieden und gebaut; seit 2026-11-12 sind die gerenderten
+Bilder die Vorgabe im Spiel (`?bilder=0` zeigt das Gezeichnete, solange es
+die Fassungen noch gibt)
 **Datum:** 2026-11-09
 **Löst ab:** in [ADR-0012](0012-aoe2-als-vorlage.md), Punkt 4, den zweiten
 Absatz („Die Darstellung ist isometrisch und in Code gezeichnet … Gezeichnete

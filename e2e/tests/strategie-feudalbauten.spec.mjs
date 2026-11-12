@@ -111,7 +111,7 @@ test.describe('Gebaeude der Feudalzeit', () => {
     await nachweis(anna, {
       spec: BAUEN,
       ac: 'AC-24',
-      titel: 'In der Feudalzeit: das Baumenü mit den drei neuen Gebäuden, daneben die fertige Schießanlage mit Zielscheibe',
+      titel: 'In der Feudalzeit: im Baumenü stehen jetzt auch Schießanlage, Stall und Schmiede, daneben die fertige Schießanlage mit Zielscheiben',
       test: info,
     });
   });

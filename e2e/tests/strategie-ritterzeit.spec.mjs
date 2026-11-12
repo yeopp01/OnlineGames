@@ -211,7 +211,7 @@ test.describe('Ritterzeit', () => {
       await nachweis(anna, {
         spec: EINHEITEN,
         ac,
-        titel: 'Links ein Ritter aus dem Stall – Pferdedecke in Spielerfarbe, Topfhelm, Lanze –, rechts ein Armbrustschütze, der Bogenschütze nach der Verbesserung Armbrust',
+        titel: 'Links ein Ritter aus dem Stall – gepanzert, die Pferdedecke mit Saum in Spielerfarbe –, rechts ein Armbrustschütze, der Bogenschütze nach der Verbesserung Armbrust',
         test: info,
       });
     }

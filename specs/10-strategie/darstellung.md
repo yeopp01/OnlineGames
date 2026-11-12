@@ -2,7 +2,7 @@
 
 **Bereich:** Strategie
 **Kuerzel:** darstellung
-**Stand:** 18/24 fertig · 1 in Arbeit · 5 offen
+**Stand:** 20/25 fertig · 1 in Arbeit · 4 offen
 
 ## Zweck
 
@@ -160,10 +160,19 @@ nicht so kindlich gemalt". Die Bauabfolge R1 bis R6 steht im
   Drittel der Figur und bei keiner weniger, als man bei Zoom 1 erkennt — die
   untere Grenze misst die Runde, bevor sie dasteht ([Bedienung](bedienung.md)
   AC-36 gilt weiter).
-- **AC-22** `offen` **Gebäude gerendert** — Jedes Gebäude der Daten samt
+- **AC-22** `fertig` **Gebäude gerendert** — Jedes Gebäude der Daten samt
   Baustelle in ihren Stufen kommt aus der Kette, mit Material (Holz, Putz,
   Stein, Stroh, Ziegel) und einem Schattenwurf aus derselben Sonne. Jedes
-  behält sein Merkmal aus AC-14.
+  behält sein Merkmal aus AC-14. **Gemessen:** zu jedem Gebäude der Daten
+  gibt es eine Tafel mit Maske für die Spielerfarbe, und im Spiel wird es aus
+  ihr gezeichnet; je Größe eine Baustelle in vier Stufen; die Mauer setzt
+  sich aus Pfeiler, Armen und Läufen zusammen (ein Arm je Nachbar, zwei
+  gegenüber ergeben einen Lauf), das Tor steht in zwei Richtungen zu und
+  offen, die Farm leert sich in vier Stufen. **Am Bild zu sehen, nicht
+  gemessen:** Material, Schattenwurf und Merkmal. **Bekannte Schwächen:**
+  die Baustelle ist immer ein Holzgerüst, auch bei Burg, Turm und Mauer;
+  Mühle, Bergbaulager, Schmiede und Stall wirken kleiner als gezeichnet; die
+  Vorschau beim Ziehen einer Mauer zeigt jeden Pfeiler ohne seine Nachbarn.
 - **AC-23** `fertig` **Gelände und Vorräte gerendert** — Boden, Bäume in
   mindestens vier Arten, Beeren, Gold, Stein und das Ufer. Vorräte sind nicht
   greller als ihre Umgebung: ein Beerenstrauch ist höchstens doppelt so hoch
@@ -173,13 +182,30 @@ nicht so kindlich gemalt". Die Bauabfolge R1 bis R6 steht im
   der Daten kommt aus der Kette, nach AC-19 bis AC-21. Die gezeichneten
   Fassungen sind entfernt. Mit 100 Einheiten und 30 Gebäuden bleibt das Bild
   bei mindestens 50 Bildern je Sekunde (AC-10), und die Partie zeichnet erst,
-  wenn ihre Bilder geladen sind.
+  wenn ihre Bilder geladen sind. **Seit 2026-11-12 sind die gerenderten
+  Bilder die Vorgabe** (Benutzer: „die Optik ist schon wichtig"); `?bilder=0`
+  zeigt das gezeichnete Aussehen, solange es die Fassungen noch gibt. Bis
+  die Tafeln da sind, steht „Bilder werden geladen …" im Bild; fehlt eine
+  Tafel, wird nur dieses Stück gezeichnet. **Offen:** die gezeichneten
+  Fassungen stehen noch im Code, und was der Browser an Speicher für alle
+  Tafeln hält, ist nicht gemessen.
+- **AC-25** `fertig` **Bilder nur einmal übertragen** — Jede Datei des
+  Spiels trägt eine Marke aus ihrem Inhalt (`ETag`), und der Browser fragt
+  bei jedem Aufruf nach (`Cache-Control: no-cache`): was er schon hat,
+  beantwortet der Server mit „unverändert" ohne Inhalt. Die Bildtafeln sind
+  über 20 MB — ohne Marke kämen sie bei jedem Seitenaufruf neu. Nach einem
+  Ausrollen kommt nur, was sich geändert hat. **Messbar:** dieselbe Anfrage
+  mit der Marke ergibt 304 und null Byte, mit einer alten die ganze Datei.
 
 **Was der Bildumbau ablöst.** AC-12 („gezeichnet statt flach") und die
 Messungen 1 und 3 aus AC-13 beschreiben eine Zeichnung. Sie bleiben `fertig`,
 bis AC-22 bis AC-24 gebaut sind; die Runde, die den Nachfolger baut, passt
 Text, Test und Bild an. AC-14 (unterscheidbar) und AC-16 (Spielgröße) gelten
-für gerenderte Bilder unverändert.
+für gerenderte Bilder unverändert. **Stand 2026-11-12:** im Spielbild ist
+alles gerendert, und jeder Bildnachweis aus dem Spielbild zeigt es so. Die
+Schautafel (`/schautafel.html`) und die Messungen, die an ihr hängen (AC-12
+bis AC-14, die Figuren- und Gebäudereihen), zeigen noch die gezeichneten
+Fassungen — sie umzustellen ist der Schritt, der AC-24 schließt.
 
 ## Grenzfaelle
 

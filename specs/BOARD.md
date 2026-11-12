@@ -7,9 +7,9 @@ Eine Zeile je Abnahmekriterium. Gepflegt wird der Status in der Spec selbst,
 hier steht er zusammengefasst. Erzeugt mit `npm run specs:board`; als Seite
 mit Bildnachweisen, Filter und Suche mit `npm run qa:report`.
 
-**Gesamt:** 508/630 fertig · 3 in Arbeit · 11 in QA · 3 geplant · 97 offen · 8 zurueckgestellt
+**Gesamt:** 510/631 fertig · 3 in Arbeit · 11 in QA · 3 geplant · 96 offen · 8 zurueckgestellt
 
-**Nachweise:** 245 Kriterien mit Bild · 268 ohne Bild, begruendet in `qa/ohne-bild.json`
+**Nachweise:** 246 Kriterien mit Bild · 269 ohne Bild, begruendet in `qa/ohne-bild.json`
 
 ## Nach Spezifikation
 
@@ -23,7 +23,7 @@ mit Bildnachweisen, Filter und Suche mit `npm run qa:report`.
 | [Uebertragung](00-plattform/uebertragung.md)                   | -         | -     | 1       | 1     | -               | 8      |
 | [Bauen und Ausbilden](10-strategie/bauen.md)                   | -         | -     | -       | 2     | -               | 34     |
 | [Bedienung](10-strategie/bedienung.md)                         | -         | -     | -       | 3     | -               | 58     |
-| [Darstellung](10-strategie/darstellung.md)                     | 1         | -     | -       | 5     | -               | 18     |
+| [Darstellung](10-strategie/darstellung.md)                     | 1         | -     | -       | 4     | -               | 20     |
 | [Einheiten und Befehle](10-strategie/einheiten-und-befehle.md) | -         | -     | -       | 17    | 1               | 32     |
 | [Fahrplan zum Klon](10-strategie/fahrplan.md)                  | -         | 2     | -       | 4     | -               | 18     |
 | [Kampf](10-strategie/kampf.md)                                 | -         | -     | -       | 2     | 1               | 20     |
@@ -71,7 +71,7 @@ mit Bildnachweisen, Filter und Suche mit `npm run qa:report`.
 - **Kennwort vergessen** — [Konten und Anmeldung](00-plattform/konten.md) AC-5
 - **Automatischer Wiederaufbau** — [Uebertragung](00-plattform/uebertragung.md) AC-10
 
-## Offen (97)
+## Offen (96)
 
 - **Anmeldung ueber Google/GitHub** — [Konten und Anmeldung](00-plattform/konten.md) AC-6
 - **Bilanz je Konto** — [Konten und Anmeldung](00-plattform/konten.md) AC-14
@@ -121,7 +121,6 @@ mit Bildnachweisen, Filter und Suche mit `npm run qa:report`.
 - **Acht Blickrichtungen** — [Darstellung](10-strategie/darstellung.md) AC-19
 - **Bewegung statt Verschieben** — [Darstellung](10-strategie/darstellung.md) AC-20
 - **Spielerfarbe als Akzent** — [Darstellung](10-strategie/darstellung.md) AC-21
-- **Gebäude gerendert** — [Darstellung](10-strategie/darstellung.md) AC-22
 - **Einheiten blockieren sich nicht** — [Einheiten und Befehle](10-strategie/einheiten-und-befehle.md) AC-10
 - **Sammler teilen keinen Platz** — [Einheiten und Befehle](10-strategie/einheiten-und-befehle.md) AC-30
 - **Marschierende laufen nicht aufeinander** — [Einheiten und Befehle](10-strategie/einheiten-und-befehle.md) AC-32

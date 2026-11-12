@@ -170,7 +170,7 @@ Umfang hinzufügt, dort nachsehen.
 
 ## Stand
 
-**508 von 630 Kriterien fertig.** 801 Tests ohne Browser, 260 im Browser. Die
+**510 von 631 Kriterien fertig.** 804 Tests ohne Browser, 261 im Browser. Die
 Übersicht ist der Bericht: `npm run qa:report`.
 
 Gebaut ist der Unterbau: Räume, Übertragung, Karte, Wegfindung, Sammeln,
@@ -588,6 +588,22 @@ nicht aus `vorlage-aoe2.md`. **Ton** (bedienung AC-59 bis AC-61,
 `public/ton.js`): Geräusche zu Ereignissen und leise Musik, alles im Browser
 erzeugt (kein Material von außen), zwei Schalter in der Tastenübersicht.
 Gemessen ist, dass und wann etwas klingt — wie es klingt, hat niemand gehört.
+**Die gerenderten Bilder sind die Vorgabe** (darstellung AC-22, AC-24,
+ADR-0016, 2026-11-12): Figuren, Gelände und jedes Gebäude samt Baustelle
+kommen aus den Tafeln unter `public/bilder/`, auch die Knopfbilder der
+Leiste; `?bilder=0` zeigt das gezeichnete Aussehen, das als Rückfall im Code
+bleibt (`npm run sicht -- --gezeichnet`). Die Partie zeichnet erst, wenn die
+Tafeln geladen sind (`bilderWarten()`, bis dahin „Bilder werden geladen …");
+fehlt eine Tafel, wird nur dieses Stück gezeichnet. Mauer und Tor setzen sich
+aus Stücken zusammen (`mauerZellen`, `ansicht.gebaeudeLage`), ihre Schatten
+liegen in einer eigenen Schicht. Getroffen und verdeckt wird am Bild
+(`zelleGetroffen`): das gerenderte Dorfzentrum ist niedriger als das
+gezeichnete. Jede Datei trägt ein `ETag` — die Tafeln (über 20 MB) kommen
+nur einmal (darstellung AC-25). **Die Schautafel zeigt noch die gezeichneten
+Fassungen**, und was der Browser für alle Tafeln an Speicher hält, ist nicht
+gemessen. Ein Bildschirmfoto des gerenderten Spielbilds dauert länger als
+ein Pfeilflug: wer einen Pfeil belegt, hält ihn im Bild fest
+(`strategie-burg.spec.mjs`, `strategie-tuerme.spec.mjs`).
 
 1. **Stufe A** Dunkle Zeit mit Wirtschafts-KI und Prüfstand · **B** Feudalzeit
    · **C** Partieende und KI-Gegner · **D** Ritterzeit · **E** fünf Häuser ·

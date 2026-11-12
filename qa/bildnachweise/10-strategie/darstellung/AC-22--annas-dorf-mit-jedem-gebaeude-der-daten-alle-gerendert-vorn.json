@@ -1,0 +1,10 @@
+{
+  "spec": "10-strategie/darstellung.md",
+  "ac": "AC-22",
+  "titel": "Annas Dorf mit jedem Gebaeude der Daten: alle gerendert, vorn Baustellen in ihren Stufen, dazu eine Mauer mit Tor",
+  "datei": "e2e/tests/strategie-gerendert.spec.mjs",
+  "pfad": [
+    "Gerenderte Gebaeude",
+    "darstellung AC-22: jedes Gebaeude der Daten steht gerendert im Spiel, die Baustelle in ihren Stufen, Mauer und Tor aus Stuecken"
+  ]
+}

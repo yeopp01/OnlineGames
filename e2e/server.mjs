@@ -112,7 +112,13 @@ const griffe = http.createServer(async (anfrage, antwortGriff) => {
       const spieler = welt?.spieler.find((s) => s.name === werte.name);
       if (!spieler) throw new Error(`Spieler ${werte.name} gibt es in Raum ${id} nicht.`);
       if (!welt.platzPruefen(werte.art, werte.x, werte.y)) throw new Error(`Kein Platz fuer ${werte.art} auf ${werte.x}, ${werte.y}.`);
-      const gebaeude = welt.gebaeudeAnlegen(spieler.id, werte.art, werte.x, werte.y, true);
+      // Mit `bau` (0 bis 1) steht eine Baustelle in diesem Stand da - fuer
+      // Bilder ihrer Stufen (darstellung AC-22).
+      const gebaeude = welt.gebaeudeAnlegen(spieler.id, werte.art, werte.x, werte.y, werte.bau === undefined);
+      if (werte.bau !== undefined) {
+        gebaeude.bau = werte.bau;
+        welt.gebaeudeGeaendert(gebaeude);
+      }
       antwortGriff.writeHead(200, { 'Content-Type': 'application/json', Connection: 'close' }).end(JSON.stringify({ ok: true, id: gebaeude.id }));
       return;
     }
