@@ -2158,6 +2158,22 @@ ihn, mit Gegenprobe an beiden Formen. Fünf Bilder neu, alle angesehen.
 Neueste oben. Eine Zeile je Runde: Nummer, Datum, Kriterien, Ergebnis,
 wichtigste Erkenntnis.
 
+- **196** · 2026-11-12 · **bedienung AC-49 fertig** (neu angelegt,
+  Abweichung nach Abschnitt 1, Punkt 6 — Stufe E gesperrt, AC-42, AC-44,
+  AC-46 brauchen Zeichnungen): Punkte für Siege im Kampf, ein Punkt je 5
+  Rohstoffe, die vernichtete fremde Einheiten und Gebäude gekostet haben.
+  Gezählt an genau einer Stelle, `schlaegeAbrechnen()` — dort fällt jedes
+  Ziel, auch durch Turm, Stein und Ramme —, in `welt.siegZaehlen()`; der
+  Schlag, der das Ziel fallen lässt, bekommt es, nur wenn `feindlich`. Der
+  Verlierer verliert nichts (`besiegtWert` nur beim Sieger). Regeltest:
+  Miliz gegen Dorfbewohner und Haus, und ein Stein, der Eigenen,
+  Verbündeten und Gegner zugleich fällt, zählt nur den Gegner; zwei
+  Gegenproben gefallen (ohne `feindlich`, ohne Aufruf). Browserfall
+  `strategie-punkte-sieg.spec.mjs` mit Bild. **Erkenntnis:** weil jeder
+  Schaden über die eine Warteschlange `schlaege` läuft, brauchte eine Regel
+  über „wer hat getötet" keine Stelle je Waffe — die Warteschlange, die
+  einmal für die Gleichzeitigkeit gebaut wurde, ist auch der Ort für
+  alles, was am Tod hängt.
 - **195** · 2026-11-12 · **bedienung AC-48 fertig** (neu angelegt,
   Abweichung nach Abschnitt 1, Punkt 6 — Stufe E gesperrt, und die drei
   offenen Kriterien in `bedienung.md` brauchen neue Zeichnungen, die die

@@ -259,6 +259,7 @@ class Welt {
       gesammelt: { holz: 0, nahrung: 0, gold: 0, stein: 0 },
       ausgebildet: 0, // Einheiten, die er aus einem Gebaeude bekommen hat
       ausgebildetWert: 0, // was sie gekostet haben, fuer die Punkte (bedienung AC-47)
+      besiegtWert: 0, // was getoetete und zerstoerte des Gegners gekostet haben (bedienung AC-49)
       verloren: 0, // eigene Einheiten, die gefallen sind
       // Das Team (spielziel AC-14): 1 bis 4 oder keins. Wer keins hat,
       // spielt gegen alle.
@@ -518,8 +519,9 @@ class Welt {
    * Die Punkte eines Spielers (bedienung AC-47): ein Punkt je 10 gesammelte
    * Rohstoffe, je 10 Rohstoffe, die ausgebildete Einheiten gekostet haben, und
    * je 5, die Verbesserungen und Aufstiege gekostet haben - Wissen zaehlt
-   * doppelt. Alles aus Zaehlern, die waehrend der Partie wachsen; nichts geht
-   * zurueck, wenn eine Einheit faellt.
+   * doppelt. Dazu je 5 Rohstoffe, die vernichtete Einheiten und Gebaeude des
+   * Gegners gekostet haben (bedienung AC-49). Alles aus Zaehlern, die waehrend
+   * der Partie wachsen; nichts geht zurueck, wenn eine Einheit faellt.
    */
   punkte(spieler) {
     const gesammelt = kostenSumme(spieler.gesammelt);
@@ -528,7 +530,7 @@ class Welt {
     for (const aufstieg of Object.values(AUFSTIEGE)) {
       if (aufstieg.stufe <= spieler.zeitalter) wissen += kostenSumme(aufstieg.kosten);
     }
-    return Math.floor((gesammelt + spieler.ausgebildetWert) / 10 + wissen / 5);
+    return Math.floor((gesammelt + spieler.ausgebildetWert) / 10 + (wissen + spieler.besiegtWert) / 5);
   }
 
   // Ein Auftrag, der keinen Platz in der Bevoelkerung braucht: Verbesserung
@@ -2766,14 +2768,29 @@ class Welt {
       if (gebaeude) {
         if (!this.gebaeude.has(ziel.id)) continue;
         this.gebaeudeGeaendert(ziel);
-        if (ziel.leben <= 0) this.gebaeudeZerstoeren(ziel);
+        if (ziel.leben <= 0) {
+          this.siegZaehlen(angreifer, ziel, GEBAEUDE[ziel.art].kosten);
+          this.gebaeudeZerstoeren(ziel);
+        }
       } else if (ziel.leben <= 0 && !ziel.tot) {
+        this.siegZaehlen(angreifer, ziel, EINHEITEN[ziel.art].kosten);
         this.einheitSterben(ziel);
       } else {
         this.wehren(ziel, angreifer);
       }
     }
     this.schlaege = [];
+  }
+
+  /**
+   * Punkte fuer Siege im Kampf (bedienung AC-49): dem Besitzer des Schlags,
+   * der das Ziel fallen laesst, die Kosten des Ziels - nur gegen Gegner. Wer
+   * eigene oder verbuendete trifft (der Stein eines Mangonels), bekommt nichts.
+   */
+  siegZaehlen(angreifer, ziel, kosten) {
+    if (!angreifer || !this.feindlich(angreifer.besitzer, ziel.besitzer)) return;
+    const sieger = this.spielerVon(angreifer.besitzer);
+    if (sieger) sieger.besiegtWert += kostenSumme(kosten);
   }
 
   /**

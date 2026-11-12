@@ -168,7 +168,7 @@ Umfang hinzufügt, dort nachsehen.
 
 ## Stand
 
-**478 von 603 Kriterien fertig.** 753 Tests ohne Browser, 229 im Browser. Die
+**479 von 604 Kriterien fertig.** 756 Tests ohne Browser, 230 im Browser. Die
 Übersicht ist der Bericht: `npm run qa:report`.
 
 Gebaut ist der Unterbau: Räume, Übertragung, Karte, Wegfindung, Sammeln,
@@ -544,7 +544,9 @@ einem selbst und den Verbündeten — Gegnern schickt der Server sie im Nebel
 nicht (kampf AC-13), dort steht ein Strich. **Punkte sieht jeder**
 (AC-47): ein Punkt je 10 gesammelte Rohstoffe und je 10, die ausgebildete
 Einheiten gekostet haben, je 5 für Verbesserungen und Aufstiege
-(`welt.punkte()`, auf der Leitung `pk`, auch an Gegner im Nebel).
+(`welt.punkte()`, auf der Leitung `pk`, auch an Gegner im Nebel); je 5
+für das, was vernichtete Gegner gekostet haben (AC-49, `welt.siegZaehlen()`
+in `schlaegeAbrechnen()`, nur bei `feindlich`).
 
 1. **Stufe A** Dunkle Zeit mit Wirtschafts-KI und Prüfstand · **B** Feudalzeit
    · **C** Partieende und KI-Gegner · **D** Ritterzeit · **E** fünf Häuser ·

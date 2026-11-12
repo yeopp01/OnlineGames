@@ -2,7 +2,7 @@
 
 **Bereich:** Strategie
 **Kuerzel:** bedienung
-**Stand:** 45/48 fertig · 3 offen
+**Stand:** 46/49 fertig · 3 offen
 
 ## Zweck
 
@@ -343,6 +343,20 @@ aufgelistet), AC-11 (Übersichtskarte — auf 120 × 120 unverzichtbar), AC-15
   Reihe nach, ohne neuen Befehl; ohne Umschalt geht er sofort zur neuen.
   Im Browser bleibt der Bauplatz nach dem Klick mit Umschalt in der Hand,
   und drei Baustellen stehen im Bild.
+- **AC-49** `fertig` **Punkte für Siege im Kampf** — Zu den Punkten aus
+  AC-47 kommt ein Punkt je 5 Rohstoffe, die fremde Einheiten und Gebäude
+  gekostet haben, die man getötet oder zerstört hat — wie der Wert des
+  Militärs im Original (ein Fünftel des Vernichteten). Gezählt wird nur gegen
+  Gegner (`welt.feindlich`): wer eigene oder verbündete trifft, etwa mit dem
+  Stein eines Mangonels, bekommt nichts. Gutgeschrieben wird dem Besitzer
+  des Schlags, der das Ziel fallen lässt — fallen zwei Schläge in denselben
+  Takt, dem ersten in der Reihe des Servers, so dass dieselbe Partie immer
+  gleich zählt. Eine Baustelle zählt mit ihren vollen Kosten, ein Feld
+  Mauer mit seinen. Bekehrungen und Aufgeben zählen nicht: dort fällt kein
+  Schlag. Der Verlierer verliert keine Punkte. **Messbar:** ein Regeltest
+  lässt eine Miliz einen Dorfbewohner und ein Haus des Gegners zerstören und
+  rechnet die Punkte aus den Daten nach; ein Mangonel, der eigene trifft,
+  bringt nichts; im Bild steht der Sieger in der Tafel auf `Tab` vorn.
 
 ## Grenzfaelle
 
