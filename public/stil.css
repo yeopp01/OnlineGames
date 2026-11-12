@@ -920,6 +920,50 @@ canvas.angriffslauf {
 }
 
 /* Tastenuebersicht (bedienung AC-22): mitten im Bild, ein Klick schliesst. */
+/* ---- Die erste Partie erklaert sich (bedienung AC-21) -----------------------
+   Links unter der Leiste, nicht in der Mitte: dort steht das eigene Dorf
+   (bedienung AC-41), und die Mitte oben gehoert den Ansagen. Kein Dialog,
+   der das Spiel anhaelt - die Partie laeuft, und wer liest, klickt weg. */
+.erklaerung {
+  position: fixed;
+  left: 1rem;
+  top: 4.2rem;
+  width: min(22rem, calc(100vw - 2rem));
+  margin: 0;
+  padding: 0.9rem 1.1rem 1rem;
+  border: 1px solid #f0b35a88;
+  border-radius: 0.7rem;
+  background: #12161ef2;
+  color: #e6e9ee;
+  box-shadow: 0 8px 28px #000b;
+  z-index: 15;
+}
+.erklaerung[hidden] {
+  display: none;
+}
+.erklaerung h2 {
+  margin: 0 0 0.5rem;
+  font-size: 1.05rem;
+  color: #ffd79a;
+}
+.erklaerung ol {
+  margin: 0 0 0.8rem;
+  padding-left: 1.2rem;
+  line-height: 1.4;
+}
+.erklaerung li + li {
+  margin-top: 0.35rem;
+}
+.erklaerung b {
+  color: #ffd79a;
+}
+.erklaerung kbd {
+  padding: 0 0.3rem;
+  border: 1px solid #ffffff40;
+  border-radius: 0.25rem;
+  font: inherit;
+}
+
 .tastenuebersicht {
   position: fixed;
   /* Mittig ueber `inset` und `margin: auto`, nicht ueber `left: 50%`: dort

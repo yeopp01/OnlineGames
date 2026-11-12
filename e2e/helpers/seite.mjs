@@ -33,7 +33,37 @@ export function fehlerSammeln(page) {
  * `test` mit einer Seite, die am Ende keine Fehler gemeldet haben darf. Ein
  * Test ist nicht gruen, waehrend in der Seite Ausnahmen fliegen.
  */
+// Die Erklaerung der ersten Partie (bedienung AC-21) steht in jedem frischen
+// Browser - und jedes Fenster eines Browserlaufs ist frisch. Damit sie nicht
+// in jedem Bild links oben steht und Klicks faengt, gilt sie hier als gesehen:
+// fuer die Seite des Tests und fuer jedes Fenster, das ein Test selbst
+// oeffnet (`browser.newContext`, Gaeste in `partieMit`). Wer von ihr handelt,
+// setzt vor dem Start `erklaerungPruefen` im Sitzungsspeicher und nimmt den
+// Merker weg; der Sitzungsspeicher ueberlebt ein Neuladen, so laesst sich
+// auch "danach nicht wieder" pruefen (e2e/tests/strategie-erklaerung.spec.mjs).
+const ERKLAERUNG_GESEHEN = () => {
+  try {
+    if (!sessionStorage.getItem('erklaerungPruefen')) localStorage.setItem('erklaerungGesehen', '1');
+  } catch { /* fremde Seite */ }
+};
+
 export const test = basis.extend({
+  browser: [async ({ browser }, use) => {
+    if (!browser.erklaerungUnterdrueckt) {
+      const neu = browser.newContext.bind(browser);
+      browser.newContext = async (...argumente) => {
+        const kontext = await neu(...argumente);
+        await kontext.addInitScript(ERKLAERUNG_GESEHEN);
+        return kontext;
+      };
+      browser.erklaerungUnterdrueckt = true;
+    }
+    await use(browser);
+  }, { scope: 'worker' }],
+  context: async ({ context }, use) => {
+    await context.addInitScript(ERKLAERUNG_GESEHEN);
+    await use(context);
+  },
   page: async ({ page }, use) => {
     const fehler = fehlerSammeln(page);
     await use(page);

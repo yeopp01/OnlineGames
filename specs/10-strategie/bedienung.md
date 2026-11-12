@@ -2,7 +2,7 @@
 
 **Bereich:** Strategie
 **Kuerzel:** bedienung
-**Stand:** 42/47 fertig · 5 offen
+**Stand:** 43/47 fertig · 4 offen
 
 ## Zweck
 
@@ -115,8 +115,12 @@ Befehl steht.
 
 ### Erster Eindruck
 
-- **AC-21** `offen` **Die erste Partie erklärt sich** — Beim ersten Start eine kurze Einblendung:
+- **AC-21** `fertig` **Die erste Partie erklärt sich** — Beim ersten Start eine kurze Einblendung:
   ziehen, rechtsklicken, sammeln. Drei Sätze, wegklickbar.
+  Sie steht links unter der Leiste, nicht auf der Mitte (AC-41), und hält
+  die Partie nicht an. „Verstanden“ schließt sie, und der Browser merkt es
+  sich — wer sie nie wegklickt, sieht sie in der nächsten Partie wieder.
+  Gemerkt wird im Browser, nicht am Konto: wer mitspielt, hat keins.
 - **AC-22** `fertig` **Tastenübersicht** — Auf `?` oder `F1`.
 - **AC-23** `fertig` **Läuft auf einem Laptop-Bildschirm** — 1366 × 768 ohne Abschneiden: in
   jedem Zeitalter, mit dem Baumenü eines Dorfbewohners, dem Dorfzentrum und

@@ -2119,6 +2119,21 @@ ihn, mit Gegenprobe an beiden Formen. Fünf Bilder neu, alle angesehen.
 Neueste oben. Eine Zeile je Runde: Nummer, Datum, Kriterien, Ergebnis,
 wichtigste Erkenntnis.
 
+- **192** · 2026-11-12 · **bedienung AC-21 fertig** (Abweichung nach
+  Abschnitt 1, Punkt 6 — Stufe E gesperrt): vorher gesucht, nichts stand
+  da (nur der Hinweis oben, „Ziehen wählt aus · Rechtsklick befiehlt“).
+  Drei Sätze links unter der Leiste, „Verstanden“ merkt sich der Browser
+  (`localStorage` `erklaerungGesehen`, nicht am Konto — Mitspieler haben
+  keins). Die eigentliche Frage war der Browserlauf: jedes Fenster dort ist
+  frisch, die Einblendung hätte in jedem Bild gestanden und Klicks
+  gefangen. Gelöst an einer Stelle, `e2e/helpers/seite.mjs`: die Fixtures
+  `context` und `browser` (dort `newContext` umwickelt, damit auch Gäste
+  aus `partieMit` es bekommen) setzen den Merker per `addInitScript`. Wer
+  von der Erklärung handelt, setzt `erklaerungPruefen` im
+  Sitzungsspeicher — der überlebt ein Neuladen, so belegt der Fall auch
+  „nach Verstanden nicht wieder, ohne schon“. Eine Wegwerfprobe bestätigte
+  alle drei Arten von Fenstern (Testseite, eigenes Fenster mit Anmeldung,
+  Gast). Gegenprobe: ohne das Lesen des Merkers fiel der Fall am Neuladen.
 - **191** · 2026-11-12 · **bedienung AC-14 fertig** (Abweichung nach
   Abschnitt 1, Punkt 6 — Stufe E gesperrt): vorher gesucht, nichts stand
   halb — kein `shiftKey` am Rechtsklick, keine Liste von Zielen in der

@@ -168,7 +168,7 @@ Umfang hinzufügt, dort nachsehen.
 
 ## Stand
 
-**475 von 602 Kriterien fertig.** 747 Tests ohne Browser, 226 im Browser. Die
+**476 von 602 Kriterien fertig.** 747 Tests ohne Browser, 227 im Browser. Die
 Übersicht ist der Bericht: `npm run qa:report`.
 
 Gebaut ist der Unterbau: Räume, Übertragung, Karte, Wegfindung, Sammeln,
@@ -526,7 +526,11 @@ Umschalt** kommen Klick und Rahmen zur Auswahl hinzu (bedienung AC-3), ein
 Reihe (AC-14, `einheit.wegpunkte`, höchstens 20): wer geht, geht sie der
 Reihe nach ab, wer steht, sofort; ein Befehl ohne Umschalt oder eine
 Unterbrechung verwirft sie. Der Server schickt nur die Zahl `q`, die Linie
-mit Ringen zeichnet der Browser aus den eigenen Klicks. **Die Maus am Bildschirmrand schiebt die Karte**
+mit Ringen zeichnet der Browser aus den eigenen Klicks. **Die erste Partie
+erklärt sich** (AC-21): drei Sätze links unter der Leiste, bis „Verstanden“;
+der Browser merkt es sich (`erklaerungGesehen`). Im Browserlauf gilt sie als
+gesehen — `e2e/helpers/seite.mjs` setzt den Merker in jedem Fenster, außer
+`erklaerungPruefen` steht im Sitzungsspeicher. **Die Maus am Bildschirmrand schiebt die Karte**
 (AC-9, die äußersten 12 Bildpunkte), abschaltbar in der Tastenübersicht;
 die Wahl merkt sich der Browser. **Die Leertaste** springt zum Dorfzentrum
 und ein zweites Mal zurück (AC-10, `ansicht.basisSprung`). **Reißt die

@@ -134,6 +134,7 @@ function empfangen(nachricht) {
           senden({ typ: 'befehl', auftrag: 'mauer', einheiten, art, von, bis });
       }
       zeigen('spiel');
+      erklaerungZeigen();
       teile.kartenwert.textContent = `· Karte ${nachricht.startwert}`;
       ansicht.aufbau(nachricht, ich);
       zeitgrenzeZeigen(ansicht.zeitgrenze);
@@ -306,6 +307,23 @@ const TAFELKOPF = ['Spieler', 'Zeitalter', 'Holz', 'Nahrung', 'Gold', 'Stein', '
 // Ende, aber mit dem, was jetzt ist. Wo der Server nichts schickt (Gegner im
 // Nebel, kampf AC-13), steht ein Strich - kein geschaetzter Wert.
 const STANDKOPF = ['Spieler', 'Zeitalter', 'Bevölkerung', 'Holz', 'Nahrung', 'Gold', 'Stein'];
+
+// Die erste Partie erklaert sich (bedienung AC-21): drei Saetze, bis sie
+// einmal weggeklickt sind. Gemerkt wird im Browser, nicht am Konto - wer
+// mitspielt, hat keins. Ohne Speicher (privates Fenster) steht sie jedes Mal.
+const ERKLAERT = 'erklaerungGesehen';
+function erklaerungZeigen() {
+  let gesehen = false;
+  try { gesehen = localStorage.getItem(ERKLAERT) === '1'; } catch { /* zeigen */ }
+  document.getElementById('erklaerung').hidden = gesehen;
+}
+document.getElementById('erklaerungZu').addEventListener('click', (e) => {
+  document.getElementById('erklaerung').hidden = true;
+  try { localStorage.setItem(ERKLAERT, '1'); } catch { /* dann eben wieder */ }
+  // Sonst haelt der Knopf den Fokus, und die Leertaste (bedienung AC-10)
+  // druckte ihn ein zweites Mal statt zur Basis zu springen.
+  e.currentTarget.blur();
+});
 
 function spielstandZeigen() {
   const feld = document.getElementById('spielstand');
