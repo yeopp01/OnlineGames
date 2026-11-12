@@ -76,6 +76,20 @@ Vorlage 10,7 Gold je Minute gegen 20 des Dorfbewohners; erst die Messung
 zeigte, dass „wie im Original" hier „halb so viel" heißt (Rückschau nach
 Runde 163).
 
+**Und eine Ursache wird gemessen, bevor sie ein Kriterium wird.** „X
+verliert, weil Y" ist eine Vermutung, bis Y **nur bei X** geändert wurde
+und die Paarung gekippt ist: eine Austauschprobe (`--probe`), deren
+ersetzte Methode nur für die KI des schwachen Hauses greift
+(`this.neigung` sagt, welches). Eine Regel, die beide Seiten bekommen,
+ändert eine Paarung nur, wenn sie der schwächeren mehr hilft. Und vor jeder
+Vermutung über das „Was" die Zahlen über das „Wie viel":
+`npm run pruefstand:haeuser` zählt je Haus Kampfeinheiten, Dorfbewohner und
+Ausbildungsgebäude je Partie. In Runde 176 entstand ki AC-31 aus
+„Distelhag antwortet nicht auf Schützen"; Runde 177 baute es, beide Seiten
+antworteten, und Distelhag verlor weiter 0 zu 20 — über die Menge, 112
+gegen 145 Kampfeinheiten aus 3,5 gegen 5 Gebäuden (Rückschau nach Runde
+178).
+
 Setze die gewählten Kriterien auf `in-arbeit`.
 
 ## 2. Spec-Runde (wenn eine Stufe beginnt)
@@ -134,6 +148,14 @@ Setze die gewählten Kriterien auf `in-arbeit`.
   beinahe `tests/strategie-tempo.test.mjs` (fahrplan AC-6). Und kein `cat`
   ohne Datei in einer Kette: es wartet auf die Eingabe, der Befehl rutscht
   nach zwei Minuten in den Hintergrund (Runde 162).
+  **Vor dem Abschlusslauf `npm run waechter`** — alle Wächter in Sekunden.
+  In Runde 175 fiel der ganze Check nach sieben Minuten an einem Hausnamen
+  in einem Kommentar (der Wächter dazu steht seitdem in
+  `tests/waechter-haeuser.test.mjs`). **Und vor einer neuen Methode
+  `grep -n "  <name>(" <datei>`**: in Runde 177 hieß eine neue Methode in
+  `ki.js` wie eine vorhandene mit anderem Sinn; die spätere überschreibt
+  die frühere still, und neun Tests fielen mit einer Meldung, die nach
+  allem anderen aussah.
 - **Listen, die mit den Stufen wachsen, prüft ein Test nie auf Gleichheit.**
   Was ein Dorfbewohner baut, was ein Gebäude anbietet, wie viele Knöpfe ein
   Menü hat: „enthält" oder aus den Werten zählen (`werte.einheiten…baut.length`).

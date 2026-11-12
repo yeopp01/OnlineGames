@@ -41,7 +41,8 @@ npm run e2e:daten     # nur die Browserfaelle, die "alles aus den Daten" aufstel
 npm run pruefstand:vergleich          # KI gegen KI: Arbeitsstand neben HEAD, dieselben Partien (--saetze 2: 1-20 und 21-40)
 npm run pruefstand:vergleich -- --probe probe.cjs --saetze 3  # Austauschprobe: eine Methode nur im Arbeitsstand ersetzt, 60 Startwerte
 npm run pruefstand:verlauf -- --startwert 5  # eine Partie KI gegen KI Minute fuer Minute
-npm run pruefstand:haeuser   # jede Paarung der Haeuser 20-mal, Seiten abwechselnd (--nur, --probe, --je)
+npm run pruefstand:haeuser   # jede Paarung der Haeuser 20-mal, Seiten abwechselnd, mit Herstellung je Haus (--nur, --probe, --je)
+npm run waechter     # alle Waechter in Sekunden - vor dem Abschlusslauf
 npm run gegenprobe -- <datei> "<neu>" "<alt>" -- <befehl>  # Gegenprobe gegen die alte Zeile, schreibt die Datei immer zurueck
 npm run durchsicht   # Geaendertes und Neues als eine Datei fuer den Pruefer, der keine Shell hat - nennt den Pfad
 ```
@@ -166,7 +167,7 @@ Umfang hinzufügt, dort nachsehen.
 
 ## Stand
 
-**463 von 600 Kriterien fertig.** 738 Tests ohne Browser, 210 im Browser. Die
+**463 von 600 Kriterien fertig.** 739 Tests ohne Browser, 210 im Browser. Die
 Übersicht ist der Bericht: `npm run qa:report`.
 
 Gebaut ist der Unterbau: Räume, Übertragung, Karte, Wegfindung, Sammeln,

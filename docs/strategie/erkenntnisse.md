@@ -225,7 +225,10 @@ etwas anderem gearbeitet.
   Holz und Sammler je Rohstoff über die Partie neben Eschenbruch
   (`pruefstand:verlauf --haeuser eschenbruch,distelhag`), und ob Distelhag
   gegen Wehrstein (2 zu 18) aus demselben Grund verliert. Der Zweig
-  `strategie-ki-antwort` (ki AC-31) wartet darauf.
+  `strategie-ki-antwort` (ki AC-31) wartet darauf. **Rückschau nach Runde
+  178**, gezählt über Distelhags 80 Partien: je Partie 112 Kampfeinheiten
+  aus 3,5 Ausbildungsgebäuden (Eschenbruch 145 aus 5,0, Wehrstein 155 aus
+  5,0, Silberfurt 117 aus 5,5, Rappenstein 40 aus 2,4).
 
 - **Die linke Seite gewinnt öfter** (Runde 176): über 200 Partien mit
   abwechselnden Seiten gewann `ki1` 112 bis 119 von rund 197 (56 bis 60 %).
@@ -1620,6 +1623,46 @@ Testlauf): `npm run check` 53 s ohne Last, 599 Tests ohne Browser; der
 volle Browserlauf mit 191 Fällen 16,6 min (Runde 140; Runde 135: 17,0 min
 für 190). Die Ritterzeit am Stück braucht 1,7 min.
 
+### Nach Runde 178 (2026-11-12)
+
+Vier Runden in Stufe E: 174 die KI neigt zu ihrem Haus (ki AC-27), 175
+Wehrstein baut Türme (ki AC-30), 176 die Häuser gegeneinander gemessen
+(Werkzeug, drei Specs), 177 ki AC-31 gebaut und verworfen. Die Maschine
+rechnete weiter Blender; Zeiten gehören deshalb nicht unter Messwerte.
+Was Zeit gekostet hat:
+
+1. **Eine Ursache wurde erschlossen und dann gebaut.** Runde 176 legte
+   ki AC-31 an, weil die KI nie auf das gesehene Heer antwortet — das
+   stimmte, erklärte aber Distelhags 0 zu 20 nicht: gebaut antworteten
+   beide Seiten, und Distelhag verlor über die Menge. Eine ganze Runde für
+   eine Messung, die ein Aufruf gewesen wäre. → **Regel in Abschnitt 1**:
+   eine Ursache „X verliert, weil Y" erst als Kriterium, wenn eine
+   Austauschprobe Y **nur bei X** ändert und die Paarung kippt; vorher die
+   Mengen zählen.
+2. **Dreimal ein Wegwerfskript, um zu zählen, was eine Seite herstellt**
+   (Runde 174 Einheiten je Art im Nebeltest, Runde 177 `r177-arten.cjs` und
+   `r177-summe.cjs`). → `npm run pruefstand:haeuser` zählt jetzt je Haus
+   Kampfeinheiten, Dorfbewohner und Ausbildungsgebäude je Partie
+   (`zaehlen()`, mit Test), ohne messbare Mehrkosten (117 statt 120 s für
+   80 Partien). Erster Lauf, Distelhags Paarungen: Distelhag 112
+   Kampfeinheiten aus 3,5 Gebäuden, Eschenbruch 145 aus 5,0, Wehrstein
+   155 aus 5,0, Rappenstein 40 aus 2,4 — und Rappenstein verliert gegen
+   Distelhag.
+3. **Ein Check von sieben Minuten fiel an einem Wort im Kommentar**
+   (Runde 175, „Wehrstein" in ki.js), und ein Methodenname in ki.js war
+   schon vergeben (Runde 177, neun rote Tests). → `npm run waechter` fährt
+   alle Wächter in Sekunden; der Wächter „die Simulation nennt kein
+   einzelnes Haus" ist aus `tests/strategie-haeuser.test.mjs` nach
+   `tests/waechter-haeuser.test.mjs` gezogen (gleicher Testname,
+   Gegenprobe mit einem Hausnamen im Kommentar fällt). **Regel in
+   Abschnitt 3**: vor dem Abschlusslauf `npm run waechter`, vor einer neuen
+   Methode ein `grep` nach ihrem Namen.
+
+Nicht geändert: die Regel „was gemessen nichts bringt, bleibt nicht im
+Code" hat in Runde 177 getragen — der Entwurf liegt auf einem Zweig, statt
+als wirkungslose Regel in der KI zu stehen. Kein Rundgang im Browser: keine
+Stufe erreicht.
+
 ### Nach Runde 173 (2026-11-12)
 
 Vier Runden, alle in Stufe E: 169 das Haus je Platz im Warteraum
@@ -1962,6 +2005,12 @@ ihn, mit Gegenprobe an beiden Formen. Fünf Bilder neu, alle angesehen.
 Neueste oben. Eine Zeile je Runde: Nummer, Datum, Kriterien, Ergebnis,
 wichtigste Erkenntnis.
 
+- **178** · 2026-11-12 · **Rückschau** (Runden 174 bis 177):
+  `pruefstand:haeuser` zählt die Herstellung je Haus, `npm run waechter`
+  und der Wächter `waechter-haeuser`, zwei Regeln (Ursache erst an einer
+  Seite messen; Wächter und Methodenname vor dem Check). Erster Lauf mit
+  Zählung: Distelhag 112 Kampfeinheiten aus 3,5 Gebäuden je Partie gegen
+  Eschenbruch 145 aus 5,0.
 - **177** · 2026-11-12 · ki AC-31 **gebaut, gemessen, verworfen**: die KI
   wählt in jedem Militärgebäude die Einheit, deren Bonus die meisten
   gesehenen Kampfeinheiten trifft, und baut das Gebäude mit der besten

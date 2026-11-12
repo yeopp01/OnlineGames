@@ -16,6 +16,13 @@
 // Distelhag 0 von 20 gegen Eschenbruch; jede Gegenprobe (ohne Holzbonus, ohne
 // Reichweite, ohne Neigung) brauchte ein Wegwerfskript und 80 Partien.
 //
+// Je Haus zaehlt es mit, was es herstellt: Kampfeinheiten und Dorfbewohner,
+// die nach dem Start dazukamen, und fertige Gebaeude, die Einheiten
+// ausbilden. In Runde 177 stand die Frage "verliert es, weil es das Falsche
+// ausbildet, oder weil es zu wenig ausbildet?" erst nach einer Runde Bauen -
+// die Antwort war 127 gegen 226 Kampfeinheiten, gezaehlt mit einem
+// Wegwerfskript.
+//
 // Zwanzig Partien je Paarung sind wenig: zwei gleich starke Haeuser enden
 // in einer von vier Paarungen 13 zu 7 oder weiter auseinander. Belastbar ist
 // die Quote je Haus ueber seine 80 Partien (Streuung rund 6 Punkte).
@@ -41,17 +48,54 @@ export function paarungen(namen, je) {
   return haeuser;
 }
 
-/** Siege je Haus und je Paarung aus den Enden `{ haeuser, sieger }`. */
+/**
+ * Zaehlt, was seit dem letzten Aufruf dazukam, je Spieler in `stand.je`:
+ * `kampf` (Einheiten mit Angriff, keine Dorfbewohner), `dorf`, `gebaeude`
+ * (fertige, die Einheiten ausbilden, ohne Dorfzentrum) und `arten`. Was beim
+ * ersten Aufruf steht, ist der Start und zaehlt nicht.
+ */
+export function zaehlen(welt, stand, { EINHEITEN, GEBAEUDE }) {
+  stand.einheiten ??= new Set();
+  stand.gebaeude ??= new Set();
+  stand.je ??= {};
+  const erstes = !stand.begonnen;
+  stand.begonnen = true;
+  const von = (id) => (stand.je[id] ??= { kampf: 0, dorf: 0, gebaeude: 0, arten: {} });
+  for (const e of welt.einheiten.values()) {
+    if (stand.einheiten.has(e.id)) continue;
+    stand.einheiten.add(e.id);
+    if (erstes) continue;
+    const werte = EINHEITEN[e.art];
+    const z = von(e.besitzer);
+    if ((werte.klassen || []).includes('dorf')) z.dorf += 1;
+    else if (werte.angriff > 0) z.kampf += 1;
+    z.arten[e.art] = (z.arten[e.art] || 0) + 1;
+  }
+  for (const g of welt.gebaeude.values()) {
+    if (!g.fertig || stand.gebaeude.has(g.id)) continue;
+    stand.gebaeude.add(g.id);
+    if (erstes || g.art === 'dorfzentrum') continue;
+    if (!(GEBAEUDE[g.art].bildetAus || []).some((art) => EINHEITEN[art])) continue;
+    von(g.besitzer).gebaeude += 1;
+  }
+}
+
+/**
+ * Siege je Haus und je Paarung aus den Enden `{ haeuser, sieger, zaehlung }`;
+ * mit `zaehlung` (je Spieler aus `zaehlen`) dazu die Summen je Haus.
+ */
 export function auswerten(enden) {
   const haus = {};
   const paar = {};
   let links = 0;
-  for (const { haeuser, sieger } of enden) {
+  for (const { haeuser, sieger, zaehlung } of enden) {
     const name = Object.values(haeuser).sort().join(' - ');
     paar[name] ??= Object.fromEntries(Object.values(haeuser).sort().map((h) => [h, 0]));
-    for (const h of Object.values(haeuser)) {
-      haus[h] ??= { siege: 0, partien: 0 };
+    for (const [spieler, h] of Object.entries(haeuser)) {
+      haus[h] ??= { siege: 0, partien: 0, kampf: 0, dorf: 0, gebaeude: 0 };
       haus[h].partien += 1;
+      const z = zaehlung && zaehlung[spieler];
+      if (z) for (const k of ['kampf', 'dorf', 'gebaeude']) haus[h][k] += z[k];
     }
     if (!sieger) continue;
     haus[haeuser[sieger]].siege += 1;
@@ -65,10 +109,15 @@ if (!isMainThread) {
   const laden = (datei) => require(ORDNER + datei);
   if (workerData.probe) require(workerData.probe)(laden);
   const { partieSpielen } = laden('pruefstand.js');
+  const daten = laden('daten.js');
   parentPort.postMessage(workerData.startwerte.map((startwert) => {
     const haeuser = workerData.haeuser[startwert];
-    const { ende } = partieSpielen({ startwert, minuten: workerData.minuten, einstellungen: { haeuser } });
-    return { startwert, haeuser, takt: ende ? ende.takt : null, sieger: ende ? ende.sieger : null };
+    const stand = {};
+    // Alle fuenf Spielsekunden: eine Einheit lebt laenger, und ein Gebaeude
+    // faellt nicht im selben Atemzug, in dem es fertig wird.
+    const eingriff = (welt) => { if (welt.takt % 50 === 0) zaehlen(welt, stand, daten); };
+    const { ende } = partieSpielen({ startwert, minuten: workerData.minuten, einstellungen: { haeuser }, eingriff });
+    return { startwert, haeuser, takt: ende ? ende.takt : null, sieger: ende ? ende.sieger : null, zaehlung: stand.je || {} };
   }));
 } else if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
   const wert = (name, vorgabe) => {
@@ -99,8 +148,10 @@ if (!isMainThread) {
   const { haus, paar, links } = auswerten(enden);
   const ohne = enden.filter((e) => !e.sieger).length;
   console.log(`${enden.length} Partien${probe ? ` mit Probe ${probe}` : ''}, ${((Date.now() - t0) / 1000).toFixed(0)} s - ohne Sieger ${ohne}, links gewonnen ${links}`);
-  for (const [h, { siege, partien }] of Object.entries(haus).sort((a, b) => b[1].siege / b[1].partien - a[1].siege / a[1].partien)) {
-    console.log(`  ${h.padEnd(12)} ${String(siege).padStart(3)} von ${partien}  ${(100 * siege / partien).toFixed(0).padStart(3)} %`);
+  console.log('  Haus          Siege        je Partie: Kampfeinheiten, Dorfbewohner, Ausbildungsgebaeude');
+  for (const [h, { siege, partien, kampf, dorf, gebaeude }] of Object.entries(haus).sort((a, b) => b[1].siege / b[1].partien - a[1].siege / a[1].partien)) {
+    const je = (n) => (n / partien).toFixed(0).padStart(4);
+    console.log(`  ${h.padEnd(12)} ${String(siege).padStart(3)} von ${partien}  ${(100 * siege / partien).toFixed(0).padStart(3)} %   ${je(kampf)} ${je(dorf)} ${(gebaeude / partien).toFixed(1).padStart(5)}`);
   }
   for (const [name, s] of Object.entries(paar)) {
     const [a, b] = Object.keys(s);

@@ -2,7 +2,12 @@
 // abwechselnd, und gezaehlt wird je Haus und je Paarung.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { paarungen, auswerten } from './pruefstand-haeuser.mjs';
+import { createRequire } from 'node:module';
+import { paarungen, auswerten, zaehlen } from './pruefstand-haeuser.mjs';
+
+const require = createRequire(import.meta.url);
+const { Welt } = require('../server/spiele/strategie/welt.js');
+const daten = require('../server/spiele/strategie/daten.js');
 
 test('pruefstand:haeuser - jede Paarung je-mal, jedes Haus gleich oft links und rechts', () => {
   const namen = ['a', 'b', 'c', 'd'];
@@ -27,10 +32,34 @@ test('pruefstand:haeuser - Siege zaehlen fuer das Haus des Siegers, ohne Sieger 
     { haeuser: { ki1: 'a', ki2: 'c' }, sieger: null },
   ];
   const { haus, paar, links } = auswerten(enden);
-  assert.deepEqual(haus.a, { siege: 2, partien: 4 });
-  assert.deepEqual(haus.b, { siege: 1, partien: 3 });
-  assert.deepEqual(haus.c, { siege: 0, partien: 1 });
+  assert.deepEqual([haus.a.siege, haus.a.partien], [2, 4]);
+  assert.deepEqual([haus.b.siege, haus.b.partien], [1, 3]);
+  assert.deepEqual([haus.c.siege, haus.c.partien], [0, 1]);
   assert.deepEqual(paar['a - b'], { a: 2, b: 1 });
   assert.deepEqual(paar['a - c'], { a: 0, c: 0 });
   assert.equal(links, 2);
+});
+
+test('pruefstand:haeuser - zaehlt, was nach dem Start dazukommt, je Spieler und Art', () => {
+  const welt = new Welt([{ id: 'a', name: 'Anna' }, { id: 'b', name: 'Bert' }], 4711, { sicht: 'aufgedeckt' });
+  const stand = {};
+  zaehlen(welt, stand, daten);
+  assert.deepEqual(stand.je, {}, 'der Start zaehlt nicht');
+  const { basis } = welt.spielerVon('a');
+  welt.einheitAnlegen('a', basis.x + 6, basis.y + 6, 'speerkaempfer');
+  welt.einheitAnlegen('a', basis.x + 6, basis.y + 7, 'dorfbewohner');
+  welt.einheitAnlegen('b', basis.x + 7, basis.y + 6, 'marktkarren');
+  welt.gebaeudeAnlegen('a', 'kaserne', basis.x + 9, basis.y + 9, true);
+  welt.gebaeudeAnlegen('a', 'haus', basis.x + 13, basis.y + 9, true);
+  zaehlen(welt, stand, daten);
+  assert.equal(stand.je.a.kampf, 1);
+  assert.equal(stand.je.a.dorf, 1);
+  assert.equal(stand.je.a.gebaeude, 1, 'die Kaserne, nicht das Haus');
+  assert.equal(stand.je.b.kampf, 0, 'der Karren greift nicht an');
+  assert.equal(stand.je.b.arten.marktkarren, 1);
+  zaehlen(welt, stand, daten);
+  assert.equal(stand.je.a.kampf, 1, 'nichts doppelt');
+  const { haus } = auswerten([{ haeuser: { a: 'x', b: 'y' }, sieger: 'a', zaehlung: stand.je }]);
+  assert.equal(haus.x.kampf, 1);
+  assert.equal(haus.y.kampf, 0);
 });

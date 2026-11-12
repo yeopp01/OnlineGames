@@ -7,7 +7,6 @@
 // ein neuer Bonus in einer bekannten Form von selbst mitgeprueft wird.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { readFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
 
 const require = createRequire(import.meta.url);
@@ -141,16 +140,8 @@ test('spielziel AC-17: die Wertetafel fuer den Browser traegt die Boni, auch die
   }
 });
 
-test('spielziel AC-17: die Simulation nennt kein einzelnes Haus', () => {
-  // Ein Haus ist ein Eintrag, keine Verzweigung: weder Welt noch KI noch
-  // Pruefstand schreiben den Schluessel eines Hauses aus.
-  for (const datei of ['welt.js', 'ki.js', 'pruefstand.js']) {
-    const quelle = readFileSync(new URL(`../server/spiele/strategie/${datei}`, import.meta.url), 'utf8');
-    for (const haus of Object.keys(HAEUSER)) {
-      assert.ok(!quelle.toLowerCase().includes(haus), `${datei} nennt ${haus}`);
-    }
-  }
-});
+// "Die Simulation nennt kein einzelnes Haus" steht als Waechter in
+// tests/waechter-haeuser.test.mjs (Rueckschau nach Runde 178).
 
 test('fahrplan AC-17: ein sechstes Haus entsteht allein aus Daten und ist spielbar', () => {
   // Das sechste Haus traegt jede Form, die es gibt - als Eintrag, sonst nichts.
