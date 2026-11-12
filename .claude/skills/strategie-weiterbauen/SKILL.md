@@ -61,6 +61,15 @@ In dieser Reihenfolge, das Erste, was zutrifft:
    Abschnitt 1", und Abschnitt 1 hatte für diesen Fall keine Antwort; die
    Runden 181 und 182 bauten dann Gruppentasten, Umschalt und Doppelklick
    (Rückschau nach Runde 183).
+   **Ein altes Kriterium wird vor dem Bauen gesucht, nicht nur gelesen**:
+   `grep -rn` nach seinem Kern (Taste, Meldung, Element) in `public/` und
+   `e2e/`. Viele stehen schon halb — gebaut unter einem anderen Kriterium,
+   oder gebaut, aber unsichtbar. In Runde 186 stand der Ring am Zielpunkt
+   (bedienung AC-13) seit bedienung AC-34 da, es fehlte nur der Beleg; in
+   Runde 187 meldete der Browser den Abbruch schon — in `#wartemeldung`, das
+   während der Partie verborgen ist. Dann ist die Runde ein Beleg oder ein
+   Umzug, kein Neubau, und der Test prüft genau die Lücke (sichtbar? ohne
+   Server?).
 
 **Einen offenen Produktfehler umschiffst du höchstens einmal.** Scheitert ein
 Bild oder Test an einem Fehler, der schon als `offen`-Kriterium dasteht, darf

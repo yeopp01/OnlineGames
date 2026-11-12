@@ -121,6 +121,7 @@ function empfangen(nachricht) {
         ansicht.beiZeitalter = (stufe, name) => zeitalterwechselMelden(name);
         ansicht.beiAngriff = (ort) => angriffZeigen(ort);
         ansicht.beiEnde = (ende, text) => partieendeZeigen(text);
+        ansicht.beiSpielstand = () => spielstandZeigen();
         ansicht.sammelpunktSenden = (gebaeude, ziel) =>
           senden({ typ: 'befehl', auftrag: 'sammelpunkt', gebaeude, ziel });
         ansicht.bauenSenden = (einheiten, art, ziel) =>
@@ -153,6 +154,8 @@ function empfangen(nachricht) {
       aufgebenZeigen();
       buendnisZeigen();
       zuschauerZeigen();
+      // Offen gehalten, zieht die Tafel mit (bedienung AC-20).
+      if (ansicht.spielstandOffen) spielstandZeigen();
       break;
 
     case 'fehler':
@@ -294,6 +297,56 @@ function partieraumAufraeumen() {
 // ganze Partie - deshalb stehen hier auch die Zahlen eines Spielers, von dem
 // am Ende nichts mehr auf der Karte ist.
 const TAFELKOPF = ['Spieler', 'Zeitalter', 'Holz', 'Nahrung', 'Gold', 'Stein', 'Ausgebildet', 'Verloren'];
+
+// Der Spielstand auf `Tab` (bedienung AC-20): dieselbe Form wie die Tafel am
+// Ende, aber mit dem, was jetzt ist. Wo der Server nichts schickt (Gegner im
+// Nebel, kampf AC-13), steht ein Strich - kein geschaetzter Wert.
+const STANDKOPF = ['Spieler', 'Zeitalter', 'Bevölkerung', 'Holz', 'Nahrung', 'Gold', 'Stein'];
+
+function spielstandZeigen() {
+  const feld = document.getElementById('spielstand');
+  feld.hidden = !ansicht.spielstandOffen;
+  if (feld.hidden) return;
+  const kopf = document.createElement('tr');
+  for (const [i, titel] of STANDKOPF.entries()) {
+    const zelle = document.createElement('th');
+    zelle.textContent = titel;
+    zelle.scope = 'col';
+    if (i > 0) zelle.className = 'zahl';
+    kopf.append(zelle);
+  }
+  const koerper = ansicht.spielstandZeilen().map((zeile) => {
+    const tr = document.createElement('tr');
+    tr.dataset.spieler = zeile.id;
+    if (zeile.aus) tr.className = 'draussen';
+    else if (zeile.ich) tr.className = 'sieger';
+    const name = document.createElement('th');
+    name.scope = 'row';
+    const punkt = document.createElement('span');
+    punkt.className = 'farbpunkt';
+    punkt.style.background = zeile.farbe;
+    name.append(punkt, document.createTextNode(zeile.aus ? `${zeile.name} (ausgeschieden)` : zeile.name));
+    tr.append(name);
+    const v = zeile.vorraete;
+    const werte = [
+      zeile.zeitalter,
+      v ? `${v.bev} / ${v.raum}` : '–',
+      v ? v.holz : '–',
+      v ? v.nahrung : '–',
+      v ? v.gold : '–',
+      v ? v.stein : '–',
+    ];
+    for (const [i, wert] of werte.entries()) {
+      const td = document.createElement('td');
+      td.className = 'zahl';
+      if (i > 0) td.dataset.wert = v ? 'ja' : 'nein';
+      td.textContent = String(wert);
+      tr.append(td);
+    }
+    return tr;
+  });
+  document.getElementById('spielstandtafel').replaceChildren(kopf, ...koerper);
+}
 
 function abschlusstafelFuellen() {
   const tafel = document.getElementById('abschlusstafel');

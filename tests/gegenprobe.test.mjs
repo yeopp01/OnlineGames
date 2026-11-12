@@ -36,6 +36,9 @@ test('gegenprobe: steht der Text nicht genau einmal da, aendert sie nichts', () 
   try {
     const lauf = spawnSync(process.execPath, [SKRIPT, relativ, 'ALT', 'NEU', '--', 'node -e "0"'], { cwd: WURZEL, encoding: 'utf8' });
     assert.equal(lauf.status, 2);
+    // Die Absage traegt dasselbe Wort wie das Ergebnis: ein Filter auf
+    // "Gegenprobe" verschluckt sie nicht (Rueckschau nach Runde 188).
+    assert.match(lauf.stderr, /^Gegenprobe: NICHT GELAUFEN/m);
     assert.equal(readFileSync(datei, 'utf8'), 'ALT ALT\n');
   } finally {
     rmSync(ordner, { recursive: true, force: true });

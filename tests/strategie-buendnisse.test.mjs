@@ -547,3 +547,41 @@ test('spielziel AC-21: wem nur noch einer bleibt, der selbst schon gekuendigt ha
   assert.match(kuendigen(welt, 'c').fehler, /keinen Verbündeten/);
   assert.equal(welt.kuendigungen.length, 1);
 });
+
+// ---- Der Spielstand auf Tab (bedienung AC-20, Runde 189) --------------------
+
+test('bedienung AC-20: im Nebel bekommt Anna Vorraete und Bevoelkerung ihrer Verbuendeten - die des Gegners nicht, ohne Teams keine', () => {
+  for (const [teams, carlaOffen] of [[TEAMS, true], [{}, false]]) {
+    const welt = new Welt(DREI, 7, { sicht: 'nebel', teams });
+    // Unterschiedliche Vorraete, damit niemand zufaellig die eigenen liest.
+    welt.spielerVon('b').holz = 111;
+    welt.spielerVon('c').holz = 333;
+    welt.sichtAktualisieren();
+    const zustand = welt.zustandJeSpieler(['a']).get('a');
+    const von = (id) => zustand.spieler.find((s) => s.id === id);
+    assert.equal(von('a').holz, 200, 'die eigenen immer');
+    assert.equal(von('b').holz, undefined, 'Bert ist Gegner: nichts (kampf AC-13)');
+    assert.equal(von('b').bev, undefined);
+    if (carlaOffen) {
+      assert.equal(von('c').holz, 333, 'Carla ist Verbuendete: ihr Holz');
+      assert.equal(von('c').bev, welt.bevoelkerung().get('c'), 'und ihre Bevoelkerung');
+      assert.equal(von('c').raum, welt.wohnraum(welt.spielerVon('c')));
+      for (const feld of ['nahrung', 'gold', 'stein']) assert.equal(von('c')[feld], welt.spielerVon('c')[feld], feld);
+      // Was nur ihr gehoert, bleibt bei ihr: Untaetige, Arbeiter, Angriffe.
+      assert.equal(von('c').a, undefined, 'keine Arbeiter je Rohstoff');
+      assert.equal(von('c').u, undefined, 'keine Untaetigen');
+    } else {
+      assert.equal(von('c').holz, undefined, 'ohne Teams ist Carla Gegnerin');
+    }
+  }
+});
+
+test('bedienung AC-20: nach der Kuendigung endet mit der Sicht auch der Blick in die Vorraete', () => {
+  const welt = new Welt(DREI, 7, { sicht: 'nebel', teams: TEAMS, buendnisse: 'loesbar' });
+  welt.sichtAktualisieren();
+  const carla = () => welt.zustandJeSpieler(['a']).get('a').spieler.find((s) => s.id === 'c');
+  assert.equal(carla().holz, 200, 'vorher verbuendet');
+  assert.deepEqual(welt.nachricht('a', { auftrag: 'kuendigen' }), {});
+  welt.takten();
+  assert.equal(carla().holz, undefined, 'gleich nach der Kuendigung nicht mehr - wie die Sicht (spielziel AC-21)');
+});

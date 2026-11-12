@@ -2,7 +2,7 @@
 
 **Bereich:** Strategie
 **Kuerzel:** bedienung
-**Stand:** 39/46 fertig · 7 offen
+**Stand:** 40/47 fertig · 7 offen
 
 ## Zweck
 
@@ -92,8 +92,16 @@ Befehl steht.
   Mitten im Bild und stehend, mit einem Knopf, der neu lädt und mit dem
   gemerkten Platz zurückkehrt. Ein Server, der schweigt, ohne die
   Verbindung zu schließen, zeigt noch nichts.
-- **AC-20** `offen` **Spielstand aller Spieler einsehbar** — Auf Tastendruck: Bevölkerung und
-  Rohstoffe aller Mitspieler. Wer vorne liegt, gehört zur Spannung.
+- **AC-20** `fertig` **Spielstand aller Spieler einsehbar** — Solange `Tab` gedrückt ist,
+  steht mitten im Bild eine Tafel mit jedem Spieler: Farbe, Name,
+  Zeitalter, und ob er ausgeschieden ist. Für einen selbst und für die
+  Verbündeten, mit denen man die Sicht teilt (spielziel AC-19), auch
+  Bevölkerung mit Wohnraum und die vier Vorräte; bei Gegnern steht dort ein
+  Strich, denn der Server schickt sie nicht (kampf AC-13). Ist alles
+  aufgedeckt oder sieht man ausgeschieden zu, kommt alles, und die Tafel
+  zeigt es. Neu gefasst in Runde 189: „Rohstoffe aller Mitspieler"
+  widersprach dem Nebel — ein verändertes Programm läse sie mit. Woran man
+  auch beim Gegner sieht, wer vorne liegt, ist AC-47.
 
 ### Erster Eindruck
 
@@ -284,6 +292,11 @@ aufgelistet), AC-11 (Übersichtskarte — auf 120 × 120 unverzichtbar), AC-15
   Farbe: zwei Spieler desselben Hauses unterscheidet die Farbe ihres
   Platzes. Bei Zoom 1 sind die fünf Wappen voneinander unterscheidbar.
   Die Wappen kommen aus der Blender-Sitzung.
+- **AC-47** `offen` **Punkte für alle sichtbar** — Je Spieler eine Punktzahl
+  in der Tafel aus AC-20, auch für Gegner: sie verrät, wer vorne liegt, nicht
+  seine Vorräte. Gerechnet auf dem Server aus dem, was über die Partie zählt
+  (gesammelt, ausgebildet, erforscht, Zeitalter); wie genau, steht im
+  Kriterium, bevor gebaut wird.
 
 ## Grenzfaelle
 

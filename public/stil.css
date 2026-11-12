@@ -953,6 +953,32 @@ canvas.angriffslauf {
   margin: 0;
   accent-color: #f0b35a;
 }
+/* Spielstand auf Tab (bedienung AC-20): wie die Tastenuebersicht mitten im
+   Bild, aber ohne Maus - er steht, solange die Taste gehalten wird. */
+.spielstand {
+  position: fixed;
+  left: 50%;
+  top: 45%;
+  transform: translate(-50%, -50%);
+  max-width: calc(100vw - 2rem);
+  padding: 1.1rem 1.4rem;
+  border: 1px solid #f0c06040;
+  border-radius: 0.9rem;
+  background: #1a140cfa;
+  box-shadow: 0 10px 40px #000b;
+  z-index: 20;
+  pointer-events: none;
+}
+.spielstand h2 {
+  margin: 0 0 0.6rem;
+  color: #ffe9bd;
+  font-size: 1.1rem;
+}
+.spielstand .leise {
+  margin: 0.7rem 0 0;
+  color: #9b907f;
+  font-size: 0.82rem;
+}
 .tastenuebersicht .leise {
   margin: 0.8rem 0 0;
   color: #9aa3ad;
