@@ -1,0 +1,57 @@
+{
+  "bild": "armbrustschuetze.webp",
+  "maske": "armbrustschuetze-maske.webp",
+  "zelle": [
+    152,
+    131
+  ],
+  "fuss": [
+    55,
+    94
+  ],
+  "feldbreite": 132,
+  "zeilen": 8,
+  "spalten": 9,
+  "art": "figur",
+  "richtungen": 8,
+  "hoehe": 86,
+  "ablaeufe": {
+    "stehen": {
+      "spalte": 0,
+      "bilder": 1
+    },
+    "gehen": {
+      "spalte": 1,
+      "bilder": 8
+    },
+    "angreifen": {
+      "spalte": 0,
+      "bilder": 8,
+      "bild": "armbrustschuetze-angreifen.webp",
+      "maske": "armbrustschuetze-angreifen-maske.webp",
+      "zelle": [
+        187,
+        145
+      ],
+      "fuss": [
+        62,
+        106
+      ]
+    },
+    "sterben": {
+      "spalte": 0,
+      "bilder": 8,
+      "einmal": true,
+      "bild": "armbrustschuetze-sterben.webp",
+      "maske": "armbrustschuetze-sterben-maske.webp",
+      "zelle": [
+        213,
+        148
+      ],
+      "fuss": [
+        89,
+        98
+      ]
+    }
+  }
+}

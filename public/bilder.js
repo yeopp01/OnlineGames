@@ -9,7 +9,7 @@
 // werden sie mit `?bilder=1` in der Adresse oder mit bilderEin(). Was dann
 // noch kein gerendertes Bild hat, wird weiter gezeichnet.
 
-const NAMEN = ['dorfbewohner', 'haus', 'baum', 'marktkarren', 'beere', 'gold', 'stein', 'boden'];
+const NAMEN = ['dorfbewohner', 'haus', 'baum', 'marktkarren', 'spaeherreiter', 'ritter', 'miliz', 'soldat', 'speerkaempfer', 'bogenschuetze', 'plaenkler', 'armbrustschuetze', 'moench', 'ramme', 'mangonel', 'schaf', 'beere', 'gold', 'stein', 'boden'];
 const tafeln = new Map();
 let an = false;
 let laden = null;
@@ -30,10 +30,47 @@ export function bilderLaden() {
       const angaben = await (await fetch(`/bilder/${name}.json`)).json();
       const tafel = await bildLaden(`/bilder/${angaben.bild}`);
       const maske = angaben.maske ? await bildLaden(`/bilder/${angaben.maske}`) : null;
-      tafeln.set(name, { ...angaben, name, tafel, maskenbild: maske, gezeichnet: 0 });
+      tafeln.set(name, { ...angaben, name, tafel, maskenbild: maske, gezeichnet: 0, teile: new Map() });
     })).then(() => true);
   }
   return laden;
+}
+
+/**
+ * Ein Ablauf mit eigener Tafel (Angreifen, Sterben): geholt wird sie erst,
+ * wenn jemand sie braucht - wer nur Dorfbewohner hat, laedt keinen Kampf.
+ * Gibt die Tafel des Ablaufs zurueck oder null, solange sie unterwegs ist.
+ * Gemerkt wird je Bilddatei: Stehen und Gehen mit Holz teilen sich eine.
+ */
+function teilHolen(tafel, name) {
+  const ablauf = tafel.ablaeufe[name];
+  if (!ablauf.bild) return tafel;
+  let teil = tafel.teile.get(ablauf.bild);
+  if (!teil) {
+    teil = { bereit: null };
+    tafel.teile.set(ablauf.bild, teil);
+    teil.laden = Promise.all([bildLaden(`/bilder/${ablauf.bild}`), ablauf.maske ? bildLaden(`/bilder/${ablauf.maske}`) : null])
+      .then(([bild, maske]) => {
+        // Ein anderes Bild - und, wo die Tafel knapp geschnitten ist, ihre
+        // eigene Zelle mit ihrem eigenen Fusspunkt: ein Hieb braucht mehr
+        // Platz als das Stehen.
+        teil.bereit = { ...tafel, tafel: bild, maskenbild: maske, haupt: tafel, zelle: ablauf.zelle || tafel.zelle, fuss: ablauf.fuss || tafel.fuss };
+        return true;
+      })
+      // Fehlt die Tafel, bleibt die Figur im Stand - besser als ein Loch.
+      .catch(() => false);
+  }
+  return teil.bereit;
+}
+
+/** Holt die Tafeln der Ablaeufe einer Figur vorab - fuer Seiten, die alles zeigen. */
+export function ablaeufeLaden(name) {
+  const tafel = tafeln.get(name);
+  if (!tafel?.ablaeufe) return Promise.resolve(false);
+  return Promise.all(Object.keys(tafel.ablaeufe).filter((a) => tafel.ablaeufe[a].bild).map((a) => {
+    teilHolen(tafel, a);
+    return tafel.teile.get(tafel.ablaeufe[a].bild).laden;
+  })).then(() => true);
 }
 
 export function bilderEin(wert = true) {
@@ -99,7 +136,7 @@ export function zelleZeichnen(stift, tafel, zeile, spalte, x, y, massstab, farbe
   const [fx, fy] = tafel.fuss;
   stift.imageSmoothingEnabled = true;
   stift.imageSmoothingQuality = 'high';
-  tafel.gezeichnet += 1;
+  (tafel.haupt || tafel).gezeichnet += 1;
   const gefaerbt = tafel.maskenbild && farbe;
   const quelle = gefaerbt ? zelleInFarbe(tafel, spalte * breite, zeile * hoehe, breite, hoehe, farbe) : tafel.tafel;
   stift.drawImage(
@@ -114,6 +151,23 @@ export function figurZelle(tafel, richtung, schrittStufe, stufen) {
   if (schrittStufe < 0) return { zeile, spalte: tafel.ablaeufe.stehen.spalte };
   const gehen = tafel.ablaeufe.gehen;
   return { zeile, spalte: gehen.spalte + Math.floor((schrittStufe / stufen) * gehen.bilder) % gehen.bilder };
+}
+
+/**
+ * Welche Zelle eine Figur in einem Ablauf zeigt. `anteil` laeuft von 0 bis 1
+ * durch den Ablauf; ein Ablauf, der einmal laeuft (Sterben), bleibt auf dem
+ * letzten Bild stehen. Gibt es den Ablauf nicht oder ist seine Tafel noch
+ * unterwegs, steht die Figur. `quelle` ist die Tafel, aus der gezeichnet wird.
+ */
+export function ablaufZelle(tafel, richtung, name, anteil = 0) {
+  const zeile = (((richtung ?? 1) % tafel.richtungen) + tafel.richtungen) % tafel.richtungen;
+  const ablauf = tafel.ablaeufe[name];
+  const quelle = ablauf ? teilHolen(tafel, name) : null;
+  if (!quelle) return { quelle: tafel, zeile, spalte: tafel.ablaeufe.stehen.spalte, ablauf: 'stehen' };
+  const bild = ablauf.einmal
+    ? Math.min(ablauf.bilder - 1, Math.max(0, Math.floor(anteil * ablauf.bilder)))
+    : ((Math.floor(anteil * ablauf.bilder) % ablauf.bilder) + ablauf.bilder) % ablauf.bilder;
+  return { quelle, zeile, spalte: ablauf.spalte + bild, ablauf: name };
 }
 
 /**

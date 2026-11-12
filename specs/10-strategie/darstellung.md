@@ -2,7 +2,7 @@
 
 **Bereich:** Strategie
 **Kuerzel:** darstellung
-**Stand:** 18/24 fertig · 6 offen
+**Stand:** 18/24 fertig · 1 in Arbeit · 5 offen
 
 ## Zweck
 
@@ -169,7 +169,7 @@ nicht so kindlich gemalt". Die Bauabfolge R1 bis R6 steht im
   greller als ihre Umgebung: ein Beerenstrauch ist höchstens doppelt so hoch
   wie ein Schaf, Gold glänzt, ohne gelb zu leuchten. Leert sich ein
   Vorrat, wird er sichtbar kleiner (AC-3 gilt weiter).
-- **AC-24** `offen` **Alle Einheiten gerendert** — Jede Einheit und jedes Tier
+- **AC-24** `in-arbeit` **Alle Einheiten gerendert** — Jede Einheit und jedes Tier
   der Daten kommt aus der Kette, nach AC-19 bis AC-21. Die gezeichneten
   Fassungen sind entfernt. Mit 100 Einheiten und 30 Gebäuden bleibt das Bild
   bei mindestens 50 Bildern je Sekunde (AC-10), und die Partie zeichnet erst,

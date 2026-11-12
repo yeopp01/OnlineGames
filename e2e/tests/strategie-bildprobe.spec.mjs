@@ -346,3 +346,178 @@ test('darstellung AC-23: Laubwald und Nadelwald stehen in Gruppen, und alle vier
   // Eine Tafel mit nur einer Art hat nur Zeile 0.
   expect(wald.eineArt).toBe(0);
 });
+
+// Die gerenderten Einheiten (darstellung AC-24): gemessen wird jede Einheit,
+// die das Blatt "Einheiten" der Bildprobe zeigt - an den Tafeln, wie sie im
+// Browser ankommen. Was hier steht, sind die Teile von AC-19 bis AC-21, die
+// sich an der Tafel pruefen lassen; ob eine Einheit im Spiel dorthin schaut,
+// wohin sie geht, prueft der Test im Spielbild.
+test('darstellung AC-24: jede gerenderte Einheit hat acht Blickrichtungen, Ablaeufe aus acht Bildern und Spielerfarbe als Akzent', async ({ page }, info) => {
+  await page.setViewportSize({ width: 1240, height: 1750 });
+  await page.goto('/bildprobe.html?still=1');
+  await page.waitForFunction(() => window.bildprobe?.fertig);
+
+  // Welche Ablaeufe eine Einheit hat. Der Dorfbewohner arbeitet, statt
+  // anzugreifen (derselbe Hieb fuer Holz, Stein, Gold, Bauen und Kampf), und
+  // geht mit jeder der vier Waren; das Schaf geht nur - geschlachtet liegt es
+  // als Kadaver da; der Marktkarren faehrt und bricht, er greift nie an.
+  const ERWARTET = {
+    sonst: ['gehen', 'angreifen', 'sterben'],
+    dorfbewohner: ['gehen', 'arbeiten', 'sterben', 'gehen_h', 'gehen_n', 'gehen_g', 'gehen_s'],
+    marktkarren: ['gehen', 'sterben'],
+    schaf: ['gehen'],
+  };
+  // Was Raeder hat, legt sich nicht hin: es bricht zusammen.
+  const GERAETE = ['ramme', 'mangonel', 'marktkarren'];
+  const messung = await page.evaluate(async (erwartet) => {
+    const { ablaeufeLaden, ablaufZelle, gerendert, zelleZeichnen } = await import('/bilder.js');
+    const ergebnis = {};
+    // Der Marktkarren hat in der Bildprobe sein eigenes Blatt, gemessen wird er hier mit.
+    for (const art of [...window.bildprobe.einheiten, 'marktkarren']) {
+      const tafel = gerendert(art);
+      await ablaeufeLaden(art);
+      // Jede Tafel einer Einheit kann ihre eigene Zelle haben (knapp
+      // geschnitten). Gemessen wird auf einer Leinwand, in die jede passt,
+      // den Fusspunkt immer an derselben Stelle.
+      const zellen = [tafel, ...Object.values(tafel.ablaeufe).filter((a) => a.zelle)];
+      const links = Math.max(...zellen.map((z) => z.fuss[0]));
+      const oben = Math.max(...zellen.map((z) => z.fuss[1]));
+      const breite = links + Math.max(...zellen.map((z) => z.zelle[0] - z.fuss[0]));
+      const hoehe = oben + Math.max(...zellen.map((z) => z.zelle[1] - z.fuss[1]));
+      const lesen = (richtung, ablauf, bild, farbe = '#4a90d9') => {
+        const leinwand = document.createElement('canvas');
+        leinwand.width = breite;
+        leinwand.height = hoehe;
+        const stift = leinwand.getContext('2d', { willReadFrequently: true });
+        const zelle = ablaufZelle(tafel, richtung, ablauf, (bild + 0.5) / tafel.ablaeufe[ablauf].bilder);
+        if (zelle.ablauf !== ablauf) throw new Error(`${art}: der Ablauf ${ablauf} ist nicht geladen`);
+        zelleZeichnen(stift, zelle.quelle, zelle.zeile, zelle.spalte, links, oben, 1, farbe);
+        return stift.getImageData(0, 0, breite, hoehe).data;
+      };
+      // Wie verschieden zwei Bilder sind: Anteil des Koerpers (ohne Schatten),
+      // der sich deutlich unterscheidet.
+      const unterschied = (a, b) => {
+        let anders = 0;
+        let belegt = 0;
+        for (let i = 0; i < a.length; i += 4) {
+          if (a[i + 3] < 200 && b[i + 3] < 200) continue;
+          belegt += 1;
+          const d = Math.abs(a[i] - b[i]) + Math.abs(a[i + 1] - b[i + 1]) + Math.abs(a[i + 2] - b[i + 2]);
+          if (d > 60 || (a[i + 3] < 200) !== (b[i + 3] < 200)) anders += 1;
+        }
+        return { anteil: anders / Math.max(1, belegt), punkte: anders };
+      };
+      const abstand = (a, b) => unterschied(a, b).anteil;
+      const kleinster = (bilder) => {
+        let wert = 1;
+        for (let a = 0; a < bilder.length; a += 1) for (let b = a + 1; b < bilder.length; b += 1) wert = Math.min(wert, abstand(bilder[a], bilder[b]));
+        return wert;
+      };
+      // Dasselbe in Bildpunkten: an einem grossen Geraet bewegt sich ein
+      // kleines Stueck (die Raeder, der Rammbock), und das ist ein kleiner
+      // Anteil, aber deutlich zu sehen.
+      const wenigstePunkte = (bilder) => {
+        let wert = Infinity;
+        for (let a = 0; a < bilder.length; a += 1) for (let b = a + 1; b < bilder.length; b += 1) wert = Math.min(wert, unterschied(bilder[a], bilder[b]).punkte);
+        return wert;
+      };
+      // Die Oberkante des Koerpers, vom oberen Rand der Zelle gemessen.
+      const oberkante = (daten) => {
+        for (let i = 3; i < daten.length; i += 4) if (daten[i] >= 200) return Math.floor(i / 4 / breite);
+        return hoehe;
+      };
+      const stehend = Array.from({ length: tafel.richtungen }, (_, r) => lesen(r, 'stehen', 0));
+      const ablaeufe = {};
+      for (const name of erwartet[art] || erwartet.sonst) {
+        if (!tafel.ablaeufe[name]) throw new Error(`${art}: der Ablauf ${name} fehlt`);
+        const bilder = Array.from({ length: tafel.ablaeufe[name].bilder }, (_, i) => lesen(1, name, i));
+        ablaeufe[name] = { bilder: bilder.length, kleinster: kleinster(bilder), punkte: wenigstePunkte(bilder), eigeneTafel: Boolean(tafel.ablaeufe[name].bild) };
+        if (name === 'sterben') {
+          ablaeufe[name].sinkt = oberkante(bilder.at(-1)) - oberkante(bilder[0]);
+          ablaeufe[name].bruch = abstand(bilder[0], bilder.at(-1));
+        }
+      }
+      // Was er traegt, sieht man (bedienung AC-16): jede Ladung ein anderes
+      // Bild, und keines davon das Bild ohne Ladung.
+      const ladungen = ['h', 'n', 'g', 's'].filter((ware) => tafel.ablaeufe[`stehen_${ware}`]);
+      const ladung = ladungen.length ? kleinster([lesen(3, 'stehen', 0), ...ladungen.map((ware) => lesen(3, `stehen_${ware}`, 0))]) : null;
+      // Ein geschlachtetes Tier liegt in Stufen da, je nach dem, was uebrig
+      // ist (einheiten AC-17) - und jede Stufe ist ein anderes Bild.
+      let kadaver = null;
+      if (tafel.ablaeufe.kadaver) {
+        const stufen = Array.from({ length: tafel.ablaeufe.kadaver.bilder }, (_, i) => lesen(1, 'kadaver', i));
+        kadaver = { stufen: stufen.length, kleinster: kleinster(stufen), liegt: oberkante(stufen[0]) - oberkante(lesen(1, 'stehen', 0)) };
+      }
+      // Anteil des Koerpers, der sich mit der Spielerfarbe aendert - in der
+      // Richtung, in der am meisten Farbe zu sehen ist, und in der mit am wenigsten.
+      const anteile = stehend.map((blau, r) => {
+        const rot = lesen(r, 'stehen', 0, '#d94a4a');
+        let koerper = 0;
+        let gefaerbt = 0;
+        for (let i = 0; i < blau.length; i += 4) {
+          if (blau[i + 3] < 200) continue;
+          koerper += 1;
+          if (Math.abs(blau[i] - rot[i]) + Math.abs(blau[i + 2] - rot[i + 2]) > 60) gefaerbt += 1;
+        }
+        return gefaerbt / koerper;
+      });
+      ergebnis[art] = { richtungen: tafel.richtungen, kleinsterRichtung: kleinster(stehend), ablaeufe, ladungen: ladungen.length, ladung, kadaver, farbeMin: Math.min(...anteile), farbeMax: Math.max(...anteile) };
+    }
+    return ergebnis;
+  }, ERWARTET);
+  info.annotations.push({ type: 'messung', description: JSON.stringify(messung) });
+  const rund = (w) => Math.round(w * 100) / 100;
+  // Weich geprueft: ein Lauf nennt jede Einheit, an der etwas nicht stimmt,
+  // nicht nur die erste.
+  const pruefen = expect.soft;
+  for (const [art, m] of Object.entries(messung)) {
+    console.log(`darstellung AC-24, ${art}: Richtungen ${m.richtungen}, aehnlichstes Paar ${rund(m.kleinsterRichtung)}; `
+      + Object.entries(m.ablaeufe).map(([name, a]) => `${name} ${a.bilder} Bilder, aehnlichstes Paar ${a.punkte} px`).join('; ')
+      + `${m.ablaeufe.sterben ? `; Sterben sinkt um ${m.ablaeufe.sterben.sinkt} px, Ende gegen Anfang ${rund(m.ablaeufe.sterben.bruch)}` : ''}${m.ladung === null ? '' : `; aehnlichstes Paar der Ladungen ${rund(m.ladung)}`}`
+      + `${m.kadaver ? `; Kadaver ${m.kadaver.stufen} Stufen, aehnlichstes Paar ${rund(m.kadaver.kleinster)}, liegt ${m.kadaver.liegt} px tiefer` : ''}; Spielerfarbe ${rund(m.farbeMin)} bis ${rund(m.farbeMax)}`);
+    // Acht Blickrichtungen sind acht verschiedene Bilder (darstellung AC-19).
+    pruefen(m.richtungen, art).toBe(8);
+    pruefen(m.kleinsterRichtung, `${art}: zwei Blickrichtungen zeigen dasselbe Bild`).toBeGreaterThan(0.1);
+    // Gehen, Angreifen und Sterben sind Ablaeufe aus mindestens acht Bildern,
+    // und keine zwei davon sind dasselbe Bild (darstellung AC-20): je zwei
+    // unterscheiden sich in mindestens 60 Bildpunkten - das sind 2 % eines
+    // Fusskaempfers. Ein Bild, das doppelt auf der Tafel steht, misst 0.
+    for (const [name, ablauf] of Object.entries(m.ablaeufe)) {
+      pruefen(ablauf.bilder, `${art}, ${name}`).toBeGreaterThanOrEqual(8);
+      pruefen(ablauf.punkte, `${art}, ${name}: zwei Bilder des Ablaufs sind gleich`).toBeGreaterThanOrEqual(60);
+    }
+    // Alles ausser Stehen und Gehen liegt in eigenen Tafeln, die erst geholt
+    // werden, wenn jemand kaempft, arbeitet oder traegt.
+    for (const [name, ablauf] of Object.entries(m.ablaeufe)) {
+      if (name !== 'gehen') pruefen(ablauf.eigeneTafel, `${art}, ${name}: Ablauf ohne eigene Tafel`).toBe(true);
+    }
+    // Wer stirbt, liegt am Ende am Boden: der Koerper ist deutlich niedriger.
+    // Ein Geraet legt sich nicht hin, es bricht: am Ende ist mehr als ein
+    // Viertel des Bildes ein anderes als am Anfang.
+    if (m.ablaeufe.sterben && GERAETE.includes(art)) pruefen(m.ablaeufe.sterben.bruch, `${art}: am Ende steht das Geraet noch ganz da`).toBeGreaterThan(0.25);
+    else if (m.ablaeufe.sterben) pruefen(m.ablaeufe.sterben.sinkt, `${art}: am Ende des Sterbens steht die Figur noch`).toBeGreaterThan(20);
+    if (art === 'dorfbewohner') {
+      pruefen(m.ladungen, 'der Dorfbewohner traegt vier Waren').toBe(4);
+      pruefen(m.ladung, 'zwei Ladungen sehen gleich aus, oder eine sieht aus wie keine').toBeGreaterThan(0.02);
+    }
+    if (art === 'schaf') {
+      pruefen(m.kadaver.stufen, 'der Kadaver hat vier Stufen').toBeGreaterThanOrEqual(4);
+      pruefen(m.kadaver.kleinster, 'zwei Stufen des Kadavers sind dasselbe Bild').toBeGreaterThan(0.02);
+      pruefen(m.kadaver.liegt, 'der Kadaver steht noch').toBeGreaterThan(8);
+    }
+    // Die Spielerfarbe ist ein Akzent (darstellung AC-21): in keiner
+    // Blickrichtung mehr als ein Drittel der Figur, in keiner so wenig, dass
+    // sie verschwindet.
+    pruefen(m.farbeMax, `${art}: zu viel Spielerfarbe`).toBeLessThan(1 / 3);
+    pruefen(m.farbeMin, `${art}: zu wenig Spielerfarbe`).toBeGreaterThan(0.04);
+  }
+  // Alle Einheiten der Daten und das Schaf.
+  expect(Object.keys(messung).length).toBe(14);
+
+  await nachweis(page.locator('#probe-einheiten'), {
+    spec: DARSTELLUNG,
+    ac: 'AC-24',
+    titel: 'Die Bildprobe: die gerenderten Einheiten, je Einheit links die bisherige Zeichnung, daneben acht Blickrichtungen im Gehen, darunter Angriff oder Arbeit, Sterben und die Groesse beim Start einer Partie; der Dorfbewohner traegt Holz, Nahrung, Gold und Stein, das Schaf liegt geschlachtet in vier Stufen',
+    test: info,
+  });
+});

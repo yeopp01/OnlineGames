@@ -1,0 +1,57 @@
+{
+  "bild": "mangonel.webp",
+  "maske": "mangonel-maske.webp",
+  "zelle": [
+    243,
+    154
+  ],
+  "fuss": [
+    101,
+    100
+  ],
+  "feldbreite": 132,
+  "zeilen": 8,
+  "spalten": 9,
+  "art": "figur",
+  "richtungen": 8,
+  "hoehe": 86,
+  "ablaeufe": {
+    "stehen": {
+      "spalte": 0,
+      "bilder": 1
+    },
+    "gehen": {
+      "spalte": 1,
+      "bilder": 8
+    },
+    "angreifen": {
+      "spalte": 0,
+      "bilder": 8,
+      "bild": "mangonel-angreifen.webp",
+      "maske": "mangonel-angreifen-maske.webp",
+      "zelle": [
+        255,
+        186
+      ],
+      "fuss": [
+        101,
+        132
+      ]
+    },
+    "sterben": {
+      "spalte": 0,
+      "bilder": 8,
+      "einmal": true,
+      "bild": "mangonel-sterben.webp",
+      "maske": "mangonel-sterben-maske.webp",
+      "zelle": [
+        244,
+        154
+      ],
+      "fuss": [
+        102,
+        100
+      ]
+    }
+  }
+}

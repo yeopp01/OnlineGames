@@ -45,6 +45,10 @@ function jetztPhase(id) {
   return performance.now() / 110 + id * 1.7;
 }
 
+// Wie lange eine gerenderte Figur faellt, bei Spielgeschwindigkeit 1,0. Am
+// Boden liegt sie zwei Spielsekunden (kampf AC-10) - gut die Haelfte davon.
+const STERBEN_MS = 850;
+
 export class Ansicht {
   constructor(leinwand, befehlSenden) {
     this.leinwand = leinwand;
@@ -116,6 +120,8 @@ export class Ansicht {
     this.aus = false;
     this.blicke = new Map(); // Einheit → -1 links, 1 rechts
     this.richtungen = new Map(); // Einheit → 0 bis 7, fuer gerenderte Figuren (ADR-0016)
+    this.gefallen = new Map(); // Einheit → wann das Bild sie zum ersten Mal gefallen sah
+    this.schlagblicke = new Map(); // Einheit → wann zuletzt nach ihrem Gegner gesucht wurde
     this.tiere = new Map();
     this.vorraete = { holz: 0, nahrung: 0, gold: 0, stein: 0, bev: 0, raum: 0 };
     // Was im letzten Bild in welcher Reihenfolge gezeichnet wurde - fuer den
@@ -155,6 +161,8 @@ export class Ansicht {
     this.verbesserungen = [];
     this.blicke = new Map();
     this.richtungen = new Map();
+    this.gefallen = new Map();
+    this.schlagblicke = new Map();
     this.pfeile = [];
     this.takt = 0;
     // Null, nicht der alte Stand: sonst meldete der erste Zustand der neuen
@@ -255,6 +263,11 @@ export class Ansicht {
           tier.vx = alt.x;
           tier.vy = alt.y;
           tier.seit = performance.now();
+          // Wohin es schaut, fuer die gerenderten Bilder (ADR-0016): dorthin,
+          // wohin es zuletzt lief.
+          const dx = tier.x - alt.x;
+          const dy = tier.y - alt.y;
+          tier.richtung = Math.hypot(dx, dy) > 0.001 ? richtungAus(dx - dy, (dx + dy) / 2) : alt.richtung;
         }
         this.tiere.set(tier.i, tier);
       }
@@ -1305,9 +1318,13 @@ export class Ansicht {
           stift.ellipse(p.x, p.y, r * 0.55, r * 0.26, 0, 0, Math.PI * 2);
           stift.stroke();
         }
-        const laeuft = ding.tier.vx !== undefined && (ding.tier.vx !== ding.tier.x || ding.tier.vy !== ding.tier.y);
+        // Gemeldet wird ein Tier nur, wenn sich an ihm etwas aendert: nach dem
+        // letzten Schritt kommt nichts mehr, und es liefe sonst auf der Stelle.
+        const laeuft = ding.tier.vx !== undefined && (ding.tier.vx !== ding.tier.x || ding.tier.vy !== ding.tier.y)
+          && jetzt - ding.tier.seit < this.taktdauer * 2;
         figurBildZeichnen(stift, ding.tier.art, p.x, p.y, Math.max(9, HALB_B * 0.9 * zoom), spieler ? spieler.farbe : '#888888', {
           blick: ding.tier.i % 2 ? 1 : -1,
+          richtung: ding.tier.richtung,
           // Geschlachtet: ein Kadaver, der mit der Nahrung kleiner wird (einheiten AC-17).
           liegt: Boolean(ding.tier.g),
           rest: (ding.tier.n ?? 100) / 100,
@@ -1704,6 +1721,29 @@ export class Ansicht {
     // Gefallen (kampf AC-10): liegt zwei Sekunden am Boden, blass und ohne
     // Ring - so sieht man, wer den Kampf verloren hat, bevor er verschwindet.
     if (einheit.s) {
+      const art = this.arten[einheit.k] || 'dorfbewohner';
+      if (gerendert(art)?.ablaeufe?.sterben) {
+        // Gerendert faellt die Figur selbst (darstellung AC-19): der Ablauf
+        // laeuft einmal, das letzte Bild bleibt liegen und verblasst. Der
+        // Zustand sagt nur, dass sie gefallen ist - seit wann, merkt sich das
+        // Bild, wenn es sie zum ersten Mal so sieht.
+        const jetzt = performance.now();
+        let seit = this.gefallen.get(einheit.i);
+        if (seit === undefined) {
+          seit = jetzt;
+          if (this.gefallen.size > 300) this.gefallen.clear();
+          this.gefallen.set(einheit.i, seit);
+        }
+        const anteil = (jetzt - seit) / (STERBEN_MS * this.taktdauer / 100);
+        stift.save();
+        stift.globalAlpha = 1 - 0.4 * Math.min(1, Math.max(0, anteil - 1));
+        figurBildZeichnen(stift, art, punkt.x, punkt.y, hoehe, spieler ? spieler.farbe : '#888888', {
+          richtung: this.richtungen.get(einheit.i),
+          sterben: Math.min(1, anteil),
+        });
+        stift.restore();
+        return;
+      }
       stift.save();
       stift.globalAlpha = 0.65;
       // Gedreht um die Fuesse, bis der Koerper flach liegt, und ein Stueck
@@ -1734,6 +1774,10 @@ export class Ansicht {
       }
     }
 
+    // Wer schlaegt, schaut auf den, den er schlaegt - nicht dorthin, wohin er
+    // zuletzt ging.
+    if (einheit.w && !laeuft) this.schlagRichtung(einheit);
+
     // Ein Dorfbewohner mit Ladung traegt sie sichtbar: Holzbuendel oder
     // Beerenkorb auf dem Ruecken (bedienung AC-16, darstellung AC-6).
     figurBildZeichnen(stift, this.arten[einheit.k] || 'dorfbewohner', punkt.x, punkt.y, hoehe, spieler ? spieler.farbe : '#888888', {
@@ -1746,6 +1790,51 @@ export class Ansicht {
     });
     // Steht jemand hinter einem Gebaeude, kommt er danach als Umriss darueber.
     if (this.hinterGebaeude(einheit, punkt)) this.verdeckte.push({ einheit, punkt, hoehe, laeuft });
+  }
+
+  /**
+   * Dreht eine gerenderte Figur, die schlaegt, zu ihrem Gegner. Der Zustand
+   * nennt das Ziel nicht (nur `w`); genommen wird deshalb der naechste, der
+   * ihr Gegner ist - Einheit oder Gebaeude. Gesucht wird hoechstens alle 300
+   * Millisekunden je Einheit, nicht in jedem Bild.
+   */
+  schlagRichtung(einheit) {
+    const art = this.arten[einheit.k];
+    if (!gerendert(art)?.ablaeufe?.angreifen || !this.werte.einheiten[art]?.angriff) return;
+    const jetzt = performance.now();
+    const zuletzt = this.schlagblicke.get(einheit.i);
+    if (zuletzt !== undefined && jetzt - zuletzt < 300) return;
+    if (this.schlagblicke.size > 600) this.schlagblicke.clear();
+    this.schlagblicke.set(einheit.i, jetzt);
+    const team = this.teamVon(einheit.b);
+    const gegner = (besitzer) => besitzer !== einheit.b && (!team || team !== this.teamVon(besitzer));
+    let ziel = null;
+    let naechster = Infinity;
+    for (const anderer of this.nachher.values()) {
+      if (anderer.s || !gegner(anderer.b)) continue;
+      const abstand = Math.hypot(anderer.x - einheit.x, anderer.y - einheit.y);
+      if (abstand < naechster) {
+        naechster = abstand;
+        ziel = anderer;
+      }
+    }
+    for (const gebaeude of this.gebaeude.values()) {
+      if (!gegner(gebaeude.b)) continue;
+      const mitte = this.gebaeudeMitte(gebaeude);
+      // Gemessen bis an den Rand: ein Dorfzentrum ist vier Felder breit.
+      const abstand = Math.hypot(mitte.x - einheit.x, mitte.y - einheit.y) - mitte.groesse / 2;
+      if (abstand < naechster) {
+        naechster = abstand;
+        ziel = mitte;
+      }
+    }
+    // Weiter weg als jede Reichweite: dann schlaegt sie etwas, das hier nicht
+    // zu sehen ist, und bleibt, wie sie steht.
+    if (!ziel || naechster > 12) return;
+    const dx = ziel.x - einheit.x;
+    const dy = ziel.y - einheit.y;
+    if (Math.abs(dx) + Math.abs(dy) < 0.01) return;
+    this.richtungen.set(einheit.i, richtungAus(dx - dy, (dx + dy) / 2));
   }
 
   rahmenZeichnen() {

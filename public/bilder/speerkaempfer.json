@@ -1,0 +1,57 @@
+{
+  "bild": "speerkaempfer.webp",
+  "maske": "speerkaempfer-maske.webp",
+  "zelle": [
+    161,
+    157
+  ],
+  "fuss": [
+    39,
+    123
+  ],
+  "feldbreite": 132,
+  "zeilen": 8,
+  "spalten": 9,
+  "art": "figur",
+  "richtungen": 8,
+  "hoehe": 86,
+  "ablaeufe": {
+    "stehen": {
+      "spalte": 0,
+      "bilder": 1
+    },
+    "gehen": {
+      "spalte": 1,
+      "bilder": 8
+    },
+    "angreifen": {
+      "spalte": 0,
+      "bilder": 8,
+      "bild": "speerkaempfer-angreifen.webp",
+      "maske": "speerkaempfer-angreifen-maske.webp",
+      "zelle": [
+        266,
+        153
+      ],
+      "fuss": [
+        113,
+        103
+      ]
+    },
+    "sterben": {
+      "spalte": 0,
+      "bilder": 8,
+      "einmal": true,
+      "bild": "speerkaempfer-sterben.webp",
+      "maske": "speerkaempfer-sterben-maske.webp",
+      "zelle": [
+        226,
+        170
+      ],
+      "fuss": [
+        86,
+        123
+      ]
+    }
+  }
+}

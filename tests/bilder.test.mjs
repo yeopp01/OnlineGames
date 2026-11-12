@@ -7,7 +7,7 @@
 import assert from 'node:assert/strict';
 import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { test } from 'node:test';
-import { bestandLesen, bildmasse, modelleWaehlen, quellenPruefen, quellenZeilen, verzeichnisPruefen } from '../scripts/bilder-verzeichnis.mjs';
+import { beschreibungBilder, bestandLesen, bildmasse, modelleWaehlen, quellenPruefen, quellenZeilen, verzeichnisPruefen } from '../scripts/bilder-verzeichnis.mjs';
 
 const ordner = new URL('../public/bilder/', import.meta.url);
 const grafik = new URL('../grafik/', import.meta.url);
@@ -35,6 +35,24 @@ test('darstellung AC-17: jede Tafel ist so gross, wie ihre Beschreibung sagt, un
     if (b.maske) {
       const maske = masse(b.maske);
       assert.deepEqual([maske.breite, maske.hoehe], [bild.breite, bild.hoehe], `${b.maske} deckt sich nicht mit ${b.bild}`);
+    }
+    // Ein Ablauf mit eigener Tafel: dieselbe Zelle, dieselben Zeilen, so viele
+    // Spalten, wie er Bilder hat.
+    for (const [name, ablauf] of Object.entries(b.ablaeufe || {}).filter(([, a]) => a.bild)) {
+      const teil = masse(ablauf.bild);
+      // Eine knapp geschnittene Tafel nennt ihre eigene Zelle und ihren Fuss.
+      const zelle = ablauf.zelle || b.zelle;
+      const fuss = ablauf.fuss || b.fuss;
+      const spalten = Math.max(...Object.values(b.ablaeufe).filter((a) => a.bild === ablauf.bild).map((a) => a.spalte + a.bilder));
+      assert.equal(teil.breite, zelle[0] * spalten, `${ablauf.bild}: Breite`);
+      assert.equal(teil.hoehe, zelle[1] * b.zeilen, `${ablauf.bild}: Hoehe`);
+      assert.ok(fuss[0] > 0 && fuss[0] < zelle[0] && fuss[1] > 0 && fuss[1] <= zelle[1], `${ablauf.bild}: Fusspunkt ausserhalb der Zelle`);
+      assert.ok(teil.durchsicht, `${ablauf.bild}: keine Durchsicht`);
+      assert.equal(Boolean(ablauf.maske), Boolean(b.maske), `${b.name}, ${name}: Maske wie die Haupttafel`);
+      if (ablauf.maske) {
+        const maske = masse(ablauf.maske);
+        assert.deepEqual([maske.breite, maske.hoehe], [teil.breite, teil.hoehe], `${ablauf.maske} deckt sich nicht mit ${ablauf.bild}`);
+      }
     }
   }
 });
@@ -76,9 +94,9 @@ test('darstellung AC-18: jede Rastergrafik unter public/bilder/ steht mit ihrem 
 });
 
 test('darstellung AC-18: ein Bild ohne Eintrag wird beanstandet', () => {
-  const funde = verzeichnisPruefen(gestellt((b) => b.bilddateien.push('ritter.webp')));
+  const funde = verzeichnisPruefen(gestellt((b) => b.bilddateien.push('drache.webp')));
   assert.equal(funde.length, 1);
-  assert.match(funde[0], /ritter\.webp: Bild ohne Eintrag/);
+  assert.match(funde[0], /drache\.webp: Bild ohne Eintrag/);
   // Auch eine Maske, die niemand nennt, ist ein Bild ohne Eintrag.
   const ohneMaske = verzeichnisPruefen(gestellt((b) => {
     b.verzeichnis.modelle.find((m) => m.name === 'haus').bilder = ['haus.webp'];
@@ -88,14 +106,28 @@ test('darstellung AC-18: ein Bild ohne Eintrag wird beanstandet', () => {
 
 test('darstellung AC-18: ein Eintrag ohne Bild wird beanstandet', () => {
   const funde = verzeichnisPruefen(gestellt((b) => {
-    b.verzeichnis.modelle.push({ name: 'ritter', skript: 'haus.py', bilder: ['ritter.webp'] });
+    b.verzeichnis.modelle.push({ name: 'drache', skript: 'haus.py', bilder: ['drache.webp'] });
   }));
-  assert.ok(funde.some((f) => /ritter: Eintrag ohne Bild/.test(f)), funde.join('\n'));
+  assert.ok(funde.some((f) => /drache: Eintrag ohne Bild/.test(f)), funde.join('\n'));
   // Ein Bild, das von der Platte verschwindet, faellt genauso auf.
   const geloescht = verzeichnisPruefen(gestellt((b) => {
     b.bilddateien = b.bilddateien.filter((d) => d !== 'baum.webp');
   }));
   assert.ok(geloescht.some((f) => /baum: Eintrag ohne Bild/.test(f)), geloescht.join('\n'));
+});
+
+test('darstellung AC-18: die Tafel eines Ablaufs zaehlt zu den Bildern ihres Modells', () => {
+  // Angreifen und Sterben liegen in eigenen Tafeln; die Beschreibung nennt sie
+  // am Ablauf, das Verzeichnis in der Liste des Modells.
+  const reiter = bestand.beschreibungen.spaeherreiter;
+  assert.ok(beschreibungBilder(reiter).includes('spaeherreiter-angreifen.webp'));
+  assert.ok(beschreibungBilder(reiter).includes('spaeherreiter-sterben-maske.webp'));
+  const vergessen = verzeichnisPruefen(gestellt((b) => {
+    const modell = b.verzeichnis.modelle.find((m) => m.name === 'spaeherreiter');
+    modell.bilder = modell.bilder.filter((d) => d !== 'spaeherreiter-sterben.webp');
+  }));
+  assert.ok(vergessen.some((f) => /spaeherreiter-sterben\.webp: Bild ohne Eintrag/.test(f)), vergessen.join('\n'));
+  assert.ok(vergessen.some((f) => /spaeherreiter: das Verzeichnis nennt/.test(f)), vergessen.join('\n'));
 });
 
 test('darstellung AC-18: ein Eintrag ohne Skript und ein Bild mit zwei Skripten werden beanstandet', () => {

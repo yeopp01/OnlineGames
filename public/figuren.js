@@ -18,7 +18,7 @@
 // Kante, und nichts Dunkles mehr fast schwarz - Stiefel, Hufe, Schafskoepfe
 // sind dunkles Braun.
 
-import { figurZelle, gerendert, zelleZeichnen, zellenRand } from './bilder.js';
+import { ablaufZelle, gerendert, zelleZeichnen, zellenRand } from './bilder.js';
 
 const HAUT = '#e2b48c';
 const HAAR = '#5b3a24';
@@ -1162,11 +1162,32 @@ export function figurBildZeichnen(stift, art, x, y, hoehe, farbe, lage = {}, umr
   const arbeitStufe = lage.arbeit ? Math.round(((lage.arbeit % (Math.PI * 2)) + Math.PI * 2) % (Math.PI * 2) / (Math.PI * 2) * SCHRITT_STUFEN) % SCHRITT_STUFEN : -1;
   const arbeit = arbeitStufe < 0 ? 0 : ((arbeitStufe || SCHRITT_STUFEN) / SCHRITT_STUFEN) * Math.PI * 2;
   // Gibt es die Figur gerendert (ADR-0016), kommt ihr Bild aus der Tafel:
-  // eine Zeile je Blickrichtung, eine Spalte je Bild des Ablaufs.
-  const tafel = lage.liegt ? null : gerendert(art);
+  // eine Zeile je Blickrichtung, eine Spalte je Bild des Ablaufs. Wer liegt
+  // oder faellt, braucht dafuer den Ablauf `sterben` - sonst wird er gezeichnet.
+  const stirbt = Boolean(lage.liegt) || lage.sterben !== undefined;
+  const vorhanden = gerendert(art);
+  // Ein geschlachtetes Tier liegt als Kadaver da, der mit dem Rest weniger wird.
+  const kadaver = Boolean(lage.liegt) && Boolean(vorhanden?.ablaeufe?.kadaver);
+  const tafel = vorhanden && (!stirbt || kadaver || vorhanden.ablaeufe?.sterben) ? vorhanden : null;
   const richtung = lage.richtung ?? (lage.blick === -1 ? 7 : 1);
-  const schluessel = `${art}|${farbe}|${h}|${lage.blick === -1 ? -1 : 1}|${lage.ladung || ''}|${stufe}|${arbeitStufe}|${lage.liegt ? 1 : 0}|${rest}|${umriss ? 'u' : ''}|${dichte}${tafel ? `|r${richtung}` : ''}`;
-  const rand = tafel ? zellenRand(tafel, h / tafel.hoehe) : null;
+  let zelle = null;
+  if (tafel) {
+    // Wer traegt, hat seine eigenen Bilder vom Stehen und Gehen (bedienung AC-16).
+    const mitLadung = (name) => (lage.ladung && tafel.ablaeufe[`${name}_${lage.ladung}`] ? `${name}_${lage.ladung}` : name);
+    // Der Dorfbewohner arbeitet, die anderen greifen an - ein Ablauf je Figur.
+    const schlag = tafel.ablaeufe.arbeiten ? 'arbeiten' : 'angreifen';
+    if (kadaver) zelle = ablaufZelle(tafel, richtung, 'kadaver', 1 - rest);
+    else if (stirbt) zelle = ablaufZelle(tafel, richtung, 'sterben', lage.sterben ?? 1);
+    else if (arbeitStufe >= 0 && tafel.ablaeufe[schlag]) zelle = ablaufZelle(tafel, richtung, schlag, arbeitStufe / SCHRITT_STUFEN);
+    else if (stufe >= 0) zelle = ablaufZelle(tafel, richtung, mitLadung('gehen'), stufe / SCHRITT_STUFEN);
+    else zelle = ablaufZelle(tafel, richtung, mitLadung('stehen'));
+  }
+  // Der Schluessel nennt die Zelle, die wirklich gezeichnet wird: ist die
+  // Tafel eines Ablaufs noch unterwegs, steht die Figur, und das Bild davon
+  // darf nicht unter dem Namen des Ablaufs liegen bleiben.
+  const schluessel = `${art}|${farbe}|${h}|${lage.blick === -1 ? -1 : 1}|${lage.ladung || ''}|${stufe}|${arbeitStufe}|${lage.liegt ? 1 : 0}|${rest}|${umriss ? 'u' : ''}|${dichte}${zelle ? `|r${zelle.zeile}|${zelle.ablauf}|${zelle.spalte}` : ''}`;
+  // Die Tafel eines Ablaufs kann ihre eigene Zelle haben - gemessen wird die, aus der gezeichnet wird.
+  const rand = zelle ? zellenRand(zelle.quelle, h / tafel.hoehe) : null;
   // Platz fuer Reiter, Ladung auf dem Ruecken und Schatten.
   const breite = rand ? rand.halb * 2 : h * 2.2 * (figur.breite || 1);
   const oben = rand ? rand.oben : h * 1.3;
@@ -1178,9 +1199,8 @@ export function figurBildZeichnen(stift, art, x, y, hoehe, farbe, lage = {}, umr
     bild.height = Math.ceil((oben + unten) * dichte);
     const s = bild.getContext('2d');
     s.scale(dichte, dichte);
-    if (tafel) {
-      const zelle = figurZelle(tafel, richtung, stufe, SCHRITT_STUFEN);
-      zelleZeichnen(s, tafel, zelle.zeile, zelle.spalte, breite / 2, oben, h / tafel.hoehe, farbe);
+    if (zelle) {
+      zelleZeichnen(s, zelle.quelle, zelle.zeile, zelle.spalte, breite / 2, oben, h / tafel.hoehe, farbe);
     } else {
       figurZeichnen(s, art, breite / 2, oben, h, farbe, { ...lage, schritt, arbeit, rest });
     }

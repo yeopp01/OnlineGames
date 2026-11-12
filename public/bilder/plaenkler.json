@@ -1,0 +1,57 @@
+{
+  "bild": "plaenkler.webp",
+  "maske": "plaenkler-maske.webp",
+  "zelle": [
+    196,
+    137
+  ],
+  "fuss": [
+    68,
+    105
+  ],
+  "feldbreite": 132,
+  "zeilen": 8,
+  "spalten": 9,
+  "art": "figur",
+  "richtungen": 8,
+  "hoehe": 86,
+  "ablaeufe": {
+    "stehen": {
+      "spalte": 0,
+      "bilder": 1
+    },
+    "gehen": {
+      "spalte": 1,
+      "bilder": 8
+    },
+    "angreifen": {
+      "spalte": 0,
+      "bilder": 8,
+      "bild": "plaenkler-angreifen.webp",
+      "maske": "plaenkler-angreifen-maske.webp",
+      "zelle": [
+        219,
+        159
+      ],
+      "fuss": [
+        73,
+        125
+      ]
+    },
+    "sterben": {
+      "spalte": 0,
+      "bilder": 8,
+      "einmal": true,
+      "bild": "plaenkler-sterben.webp",
+      "maske": "plaenkler-sterben-maske.webp",
+      "zelle": [
+        218,
+        160
+      ],
+      "fuss": [
+        90,
+        106
+      ]
+    }
+  }
+}

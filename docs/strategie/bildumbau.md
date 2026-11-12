@@ -49,7 +49,270 @@ die Zeilen unter „Für die Erkenntnisse" dorthin und erzeugt das Board neu
 - **R3 (2026-11-10): Gelände und Vorräte** (darstellung AC-23 fertig) —
   Boden in fünf Texturen, Ufer, vier Baumarten, Beeren, Gold und Stein in
   vier Füllstufen. Siehe „R3: Gelände und Vorräte".
-- **Als Nächstes:** R4 — Gebäude samt Baustellen (darstellung AC-22).
+- **Als Nächstes laut Fahrplan:** R4 — Gebäude samt Baustellen (darstellung
+  AC-22). **Vorgezogen auf Wunsch des Benutzers: die Einheiten** — siehe
+  „Der Nachtauftrag".
+- **Der Nachtauftrag (2026-11-10, abends).** Der Benutzer, nach R3: „mach
+  einfach die Reiter", und dann: „ich werde jetzt dann ins Bett gehn, du
+  kannst ja über Nacht weiterbauen, und wenn wir dann alle Einheiten haben,
+  mergen wir nach main." Das heißt: **alle Einheiten rendern, ohne
+  Rückfrage, Gruppe für Gruppe committen** (auf `strategie-bildumbau`, mit
+  grünem `npm run check`). **Kein Push, kein Merge** — das Zusammenführen
+  macht der Benutzer mit („mergen wir"). Reihenfolge:
+  1. **Reiter**: Späherreiter und Ritter. Das Pferd steckt seit dem
+     Marktkarren in der Kette; es zieht nach `grafik/pferd.py` um, der Karren
+     benutzt es von dort (danach neu rendern und mit dem alten Bild
+     vergleichen). Reiter und Sattelzeug in `grafik/reiter.py`, die zwei
+     Modelle `spaeherreiter.py` und `ritter.py`. Abläufe: Stehen, Traben
+     (als `gehen`), Angreifen, Sterben — je acht Bilder, acht Richtungen.
+     **Eine Tafel je Ablauf** (`ritter-angreifen.webp`), der Browser lädt
+     Angreifen und Sterben erst, wenn er sie braucht — die Entscheidung, die
+     vor R5 anstand.
+  2. **Fußkämpfer und Schützen** auf dem Skelett des Dorfbewohners: Miliz,
+     Soldat, Speerkämpfer, Bogenschütze, Plänkler, Armbrustschütze, Mönch.
+  3. **Belagerung**: Ramme, Mangonel (starr wie der Karren).
+  4. **Das Schaf.**
+  5. **Der Dorfbewohner ganz** (Arbeiten, Tragen, Angreifen, Sterben) — R5.
+
+  `fertig` wird dabei nur, was ganz belegt ist: AC-24 („alle Einheiten")
+  erst, wenn wirklich alle stehen und die gezeichneten Fassungen weg sind —
+  das Entfernen wartet auf das Ja des Benutzers zum Umschalten.
+
+  **Stand in der Nacht (fortgeschrieben, damit nach einer Zusammenfassung
+  weitergearbeitet werden kann):**
+  - Gebaut, noch nicht committet: `grafik/pferd.py` (Abläufe `stehen`,
+    `gehen`, `traben`, `kampf`, `sterben`), `grafik/reiter.py` (Sattelzeug,
+    Mensch im Sattel, `tafel(ziel, art)`; Zelle und Fuß je Art in `ARTEN`),
+    `spaeherreiter.py`, `ritter.py`, beide im Verzeichnis. `kette.py` kennt
+    `blatt.bild(zeile, spalte, teil='angreifen')` — eine eigene Tafel je
+    Ablauf, die Beschreibung nennt sie am Ablauf (`bild`, `maske`).
+    `formen.py`: `tiefster_punkt`, `aufsetzen` (für alles, was fällt).
+  - Browser: `bilder.js` mit `ablaufZelle(tafel, richtung, ablauf, anteil)`
+    und `ablaeufeLaden(name)`; die Tafel eines Ablaufs wird beim ersten
+    Gebrauch geholt, bis dahin steht die Figur. `figurBildZeichnen` wählt
+    sterben / angreifen / gehen / stehen; `lage.sterben` (0 bis 1) ist neu.
+    `ansicht.js`: Gefallene mit gerendertem Sterben werden nicht gedreht,
+    sondern spielen den Ablauf einmal (`this.gefallen`, `STERBEN_MS`); wer
+    schlägt, dreht sich zum nächsten Gegner (`schlagRichtung`, alle 300 ms).
+  - Bildprobe: Blatt „Einheiten" (`EINHEITEN` in `bildprobe.js`, je Einheit
+    ein Band) — jede neue Einheit bekommt dort eine Zeile.
+  - Proberender: `BILDER_PROBE=1 npm run bilder -- <name> --ziel=<ordner>`
+    (drei Richtungen, vier Bilder je Ablauf), ansehen mit dem Wegwerfskript
+    `ansehen.py` im Scratchpad. Späherreiter stand beim ersten Versuch; der
+    Ritter stieß mit der Lanze an den Zellenrand (deshalb 352 × 304).
+  - Stand 2026-11-11, 00:30: Späherreiter voll gerendert (unter
+    `public/bilder/`, angesehen, Spielerfarbe 0,11 bis 0,27 des Körpers);
+    Ritter-Probe gut (Lanze waagerecht, Schabracke ruhig), voller Render und
+    Marktkarren laufen. Offen in dieser Gruppe: Marktkarren mit
+    `scratchpad/alt/marktkarren.webp` vergleichen, Bildprobe und Spielbild im
+    Browser ansehen, Browsertest zum Blatt, `npm run check:alles`, Commit.
+  - **Fußvolk angefangen** (`grafik/fussvolk.py`, dünne Module `miliz.py`,
+    `soldat.py`, `speerkaempfer.py`, `bogenschuetze.py`, `plaenkler.py`,
+    `armbrustschuetze.py`, `moench.py`, alle im Verzeichnis): derselbe
+    Gliedermann wie der Dorfbewohner, Kleider aus `rock`/`bahn`/`band`,
+    Haltungen als Wörterbuch je Gelenk, der Angriff als Stationen
+    (`ARTEN[art]['angriff']`), `waffe` ist die Neigung der Waffe an der Figur.
+    Die Miliz stand beim ersten Proberender; ihr Wappenrock war mit 0,38 zu
+    blau und ist jetzt zwei Bahnen. Zwei Wegwerfskripte im Scratchpad:
+    `masse.py` (misst ohne Rendern, wie viel Platz Körper und Schatten in der
+    Zelle brauchen — danach Zelle und Fuß je Art setzen, vor dem vollen
+    Render) und `anteil.py <ordner> <name>` (Anteil der Spielerfarbe je
+    Zelle; Grenze ein Drittel, darstellung AC-21).
+  - `npm run bilder` prüft am Ende das ganze Verzeichnis: stehen dort schon
+    Einträge ohne Bild, endet der Lauf mit Fehler, obwohl gerendert ist —
+    Läufe deshalb mit `;` verketten, nicht mit `&&`.
+  - **Stand 2026-11-11, 20:50** (die Sitzung stand von 00:47 bis 20:45 —
+    über Nacht ist nichts weiter gerendert worden): voll gerendert liegen
+    unter `public/bilder/` Späherreiter, Ritter (1690 s) und der Marktkarren
+    neu (351 s, jetzt mit `hoehe` in der Beschreibung). Noch nichts davon ist
+    committet, nichts war in einem Browser oder Testlauf.
+  - **Die Tafeln werden knapp geschnitten** (`Tafel(..., knapp=True)` in
+    `kette.py`): gerendert wird in einer Zelle, in die Hieb und Sturz passen,
+    geschrieben wird jede Tafel so klein, wie ihre Bilder es erlauben; ein
+    Ablauf mit eigener Tafel nennt dann `zelle` und `fuss` selbst
+    (`bilder.js` `teilHolen`, `figuren.js` misst an `zelle.quelle`,
+    `tests/bilder.test.mjs` prüft je Ablauf). Miliz-Probe: Haupttafel
+    156 × 133 statt 304 × 224 je Zelle. Fußvolk rendert deshalb für alle
+    sieben in `ZELLE = (304, 224)`, `FUSS = (130, 160)` — `masse.py` sagt,
+    alle passen; Zelle je Art von Hand setzen entfällt.
+  - **Ein Teil darf mehreren Abläufen gehören** (`'teil': 'h'` am Ablauf):
+    der Dorfbewohner hat je Ware eine Tafel mit Stehen und Gehen
+    (`stehen_h`, `gehen_h`, … `_n`, `_g`, `_s`); der Browser merkt sich
+    Tafeln je Bilddatei.
+  - **Fußvolk**: alle sieben als Probe angesehen und gut (Spielerfarbe
+    Miliz 0,05–0,26, Soldat 0,08–0,25, Speer 0,06–0,23, Bogen 0,09–0,27,
+    Plänkler 0,14–0,30, Mönch 0,10–0,29). Der Armbrustschütze lag bei
+    0,28–0,36 und hielt die Armbrust zu tief: Kragen aus Kette und Anschlag
+    an der Wange sind geändert, **noch nicht nachgesehen**. Voll gerendert
+    werden gerade Soldat, Speerkämpfer, Bogenschütze, Plänkler, Mönch
+    (Hintergrundlauf); Miliz und Armbrustschütze danach.
+  - **Dorfbewohner ganz** (`grafik/dorfbewohner.py` umgebaut, gebaut und
+    vermessen, **noch nie gerendert**): Gelenk `koerper`, Abläufe `arbeiten`
+    (Axthieb, eigene Tafel), `sterben` (eigene Tafel), `stellen(g, ablauf, t,
+    ladung=None)` mit vier Ladungen auf dem Rücken, Zelle (224, 176), knapp.
+    Im Verzeichnis stehen seine 14 Bilder.
+  - **Belagerung und Schaf** (`belagerung.py`, `ramme.py`, `mangonel.py`,
+    `schaf.py`): geschrieben und vermessen, **noch nie gerendert**. Zu
+    prüfen: dreht sich das Scheibenrad sichtbar (sonst sind die acht Bilder
+    des Gehens gleich)? Das Schaf hat `kadaver` (vier Stufen) statt Sterben.
+  - **Browser, noch in keinem Browser gewesen**: `NAMEN` in `bilder.js`
+    nennt alle 20 Tafeln (ohne Bild schlägt `bilderLaden` fehl — erst
+    einschalten, wenn alles gerendert ist); `figurBildZeichnen` nimmt
+    `arbeiten` statt `angreifen`, wo es das gibt, `stehen_<ware>`/
+    `gehen_<ware>` bei Ladung und `kadaver` (Anteil `1 - rest`) für ein
+    geschlachtetes Tier; `ansicht.js` gibt Tieren eine Blickrichtung aus
+    ihrer Bewegung (`tier.richtung`) und lässt sie nach dem letzten Schritt
+    stehen (vorher lief ein Schaf nach dem letzten Schritt auf der Stelle
+    weiter, weil Tiere nur bei Änderung gemeldet werden).
+  - **Offen**: Blatt „Einheiten" der Bildprobe um alle Einheiten erweitern
+    (`EINHEITEN` in `bildprobe.js`), der Browsertest AC-24 misst in der Zelle
+    der Haupttafel — er braucht eine Leinwand, in die jede Tafel passt, und
+    je Einheit die Abläufe, die sie hat (Dorfbewohner `arbeiten`, Schaf
+    `kadaver`); Marktkarren hat kein `sterben`. Wegwerfskripte im
+    Scratchpad: `schau.py <ordner> <name> [faktor]` (alle Tafeln als Blatt
+    unter `scratchpad/blaetter/`, dazu Zelle, Größe und Spielerfarbe),
+    `masse.py -- <modul>` (Platz ohne Rendern; `dorf_m` ist die Hülle für
+    den Dorfbewohner).
+  - **Stand 2026-11-11, 21:35**: Proben angesehen und abgenommen:
+    Armbrustschütze (0,14–0,24, Anschlag an der Wange), Ramme (0,09–0,28),
+    Mangonel (0,20–0,31), Dorfbewohner (Hieb, Sturz, vier Ladungen
+    unterscheidbar; Spielerfarbe nach `schau.py` 0,29–0,37 — der Browsertest
+    misst anders, dort **noch nicht gelaufen**). Schaf lebend gut; am Kadaver
+    standen die Rippen wie Latten ab — jetzt Bögen (`strang`) auf dem
+    Fleisch, **Probe läuft**. **Marktkarren hat `sterben`** (Pferd fällt,
+    Karren kippt um die Achse auf die Deichsel, `KIPPEN`), eigene Tafel, im
+    Verzeichnis eingetragen, **Probe läuft**. Reiter und Marktkarren sind
+    auf `knapp=True` gestellt und werden neu gerendert (Ritter lag entpackt
+    bei 30,8 + 27,4 + 27,4 MB, Späherreiter bei 19,9 + 17,7 + 17,7 MB,
+    Marktkarren 27,9 MB).
+  - **Laufende volle Render** (zwei Reihen nebeneinander): Soldat,
+    Speerkämpfer, Bogenschütze, Plänkler, Mönch · Miliz, Armbrustschütze,
+    Ramme, Mangonel, Dorfbewohner, Späherreiter, Ritter. Danach noch Schaf
+    und Marktkarren voll, sobald ihre Proben abgenommen sind.
+  - **Bildprobe und Browsertest AC-24 sind umgeschrieben, nicht gelaufen**:
+    `EINHEITEN` in `bildprobe.js` nennt 13 Einträge; der Test misst auf
+    einer Leinwand, in die jede Tafel der Einheit passt, und nennt in
+    `ERWARTET`, welche Abläufe eine Einheit hat (Dorfbewohner `gehen`,
+    `arbeiten`, `sterben`, `gehen_<ware>`; Schaf nur `gehen`, dazu `kadaver`
+    in vier verschiedenen Stufen; alle anderen `gehen`, `angreifen`,
+    `sterben`), verlangt genau 13 Einheiten.
+  - **Rechenzeit, gemessen 21:25**: drei Blender nebeneinander lasten je
+    1,5 bis 1,9 von 8 Kernen aus, die Maschine steht bei 100 %. Je Bild gut
+    3 s, obwohl das Bild winzig ist — das Drumherum (stellen, Szene
+    übergeben, schreiben, lesen) kostet, nicht die Strahlen. Die Arc 140V
+    steht Cycles über oneAPI zur Verfügung, **nicht ausprobiert**. Für R6:
+    messen, wo die 3 s bleiben.
+  - **Nur noch ein Renderprozess** (Benutzer, 2026-11-11 abends: „kannst du
+    bitte auf einen render prozess reduzieren"): seitdem läuft immer nur ein
+    Blender, auch für Proben. Einmal lief es dagegen — die Miliz renderte von
+    22:48 bis 23:14 neben dem Armbrustschützen, weil eine Warteschleife auf
+    eine Datumszeile wartete, die schon in der Ausgabe stand. Beim Verketten
+    auf eine **eindeutige Marke** warten. Nach `TaskStop` laufen Blender
+    weiter: mit `Get-CimInstance Win32_Process` suchen, mit `taskkill /T`
+    beenden.
+  - **Stand 2026-11-12, 01:00: alles einmal voll gerendert.** Zeiten je
+    Einheit allein: Plänkler 843 s, Mönch 846 s (je 200 Bilder, 4,2 s je
+    Bild), Mangonel 788 s, Späherreiter 798 s, Marktkarren 986 s (136
+    Bilder), Dorfbewohner 1020 s (488 Bilder, 2,1 s je Bild), Ritter 1351 s,
+    Ramme 1402 s; zu zweit nebeneinander Soldat 1489 s, Miliz 1561 s,
+    Armbrustschütze 1511 s, Bogenschütze 1862 s, Speerkämpfer 2018 s —
+    zwei Prozesse bringen 20 bis 35 %, nicht das Doppelte. Mit `knapp`
+    entpackt je Tafel: Fußvolk 6 bis 10 MB, Späherreiter 12,9 / 12,4 / 12,6
+    (vorher 19,9 / 17,7 / 17,7), Ritter 20,8 / 20,0 / 21,7 (vorher 30,8 /
+    27,4 / 27,4), Ramme 19,1 / 17,8 / 17,7, Mangonel 10,8 / 12,0 / 9,6,
+    Marktkarren 22,7 / 20,1, Dorfbewohner 5 bis 7,5 je Tafel (sieben Tafeln).
+  - **Der Browsertest AC-24 lief zum ersten Mal (01:05) und fand echte
+    Mängel** — an fast jeder Einheit:
+    1. **Doppelte Bilder.** Beim Sterben lag die Figur in den letzten zwei
+       Bildern schon still (der Fall endete bei t = 0,8), der Axthieb des
+       Dorfbewohners, der Anschlag des Armbrustschützen und der gespannte Arm
+       des Mangonels standen zwei bis vier Bilder lang. Ein Bild, das doppelt
+       auf der Tafel steht, kostet Speicher und zeigt nichts. Geändert: der
+       Fall reicht in jedem Modell bis zum letzten Bild (das Spielbild spielt
+       ihn weiter in `STERBEN_MS` = 850 ms ab und lässt das letzte Bild
+       liegen); `NACHGESETZT` nach dem Hieb; die Armbrust hebt, legt an,
+       schießt, setzt ab; der Mangonel ist ein Kreis ohne Stillstand (winden,
+       laden, werfen, winden).
+    2. **Der Mönch ging, ohne dass man es sah**: unter der Kutte sind der
+       linke und der rechte Schritt dasselbe Bild (10 Bildpunkte Unterschied).
+       Jetzt setzt er den Stab einmal je Doppelschritt vor (`'stab'` in
+       `ARTEN`). Sein Heilen war hin und zurück derselbe Weg — vier Stationen
+       statt zwei.
+    3. **Zu viel Spielerfarbe** (darstellung AC-21, Grenze ein Drittel):
+       Dorfbewohner 0,355 von hinten (Kragen der Gugel gekürzt), Marktkarren
+       0,341 (Plane kürzer und schmaler), Mönch 0,33 (Skapulier schmaler).
+    4. **Die Ramme sah von links aus wie von rechts** (ähnlichstes Paar der
+       Blickrichtungen 0,05, verlangt 0,1): das Tuch liegt jetzt über der
+       vorderen Hälfte und hängt im vorderen Giebel.
+  - **Am Test geändert, weil die Messung nicht passte, nicht das Bild:**
+    „keine zwei Bilder eines Ablaufs gleich" misst jetzt **mindestens 60
+    Bildpunkte** statt 2 % des Körpers — 60 sind 2 % eines Fußkämpfers, und
+    an einer Ramme bewegt sich mit Rädern und Bock ein kleiner Teil eines
+    großen Bildes (Gehen 271, Stoßen 160 Bildpunkte; ein doppeltes Bild misst
+    0). Was Räder hat, legt sich nicht hin: Ramme, Mangonel und Marktkarren
+    müssen am Ende zu mehr als einem Viertel ein anderes Bild sein statt 20
+    Bildpunkte niedriger. Der Marktkarren wird mitgemessen (14 Einheiten),
+    und der Test prüft weich (`expect.soft`), damit ein Lauf jede Einheit
+    nennt und nicht nur die erste.
+  - **Stand 2026-11-12, 01:22**: Proben der geänderten Modelle angesehen und
+    gut (Mönch setzt den Stab, Mangonel windet, Ramme zeigt mit dem Tuch nach
+    vorn, Dorfbewohner 0,20–0,29 Spielerfarbe nach `schau.py` statt
+    0,29–0,37). Der Marktkarren und die fünf übrigen Fußkämpfer gingen ohne
+    Probe in den vollen Render.
+  - **Neu gerendert in einer Reihe, ein Prozess, 01:23 bis 03:50** (2 h
+    27 min für elf Einheiten): Dorfbewohner 1138 s, Mönch 617 s,
+    Armbrustschütze 619 s, Ramme 1105 s, Mangonel 670 s, Marktkarren 829 s,
+    Miliz 742 s, Soldat 863 s, Speerkämpfer 831 s, Bogenschütze 759 s,
+    Plänkler 616 s. Allein rendert ein Fußkämpfer also in 10 bis 14 Minuten;
+    die 25 bis 34 Minuten vom Abend waren die zwei Prozesse nebeneinander.
+  - **Der Test AC-24 ist für alle 14 Einheiten grün** (03:51, mit
+    Bildnachweis). Gemessen, je Einheit das ähnlichste Paar der acht
+    Blickrichtungen (verlangt > 0,1), das ähnlichste Bildpaar je Ablauf in
+    Bildpunkten (verlangt ≥ 60) und die Spielerfarbe (verlangt 0,04 bis 1/3):
+
+    | Einheit | Richtungen | Gehen | Angriff | Sterben | Spielerfarbe |
+    | --- | --- | --- | --- | --- | --- |
+    | Dorfbewohner | 0,20 | 492 | 451 (Arbeiten) | 907 | 0,18–0,28 |
+    | Miliz | 0,44 | 528 | 332 | 1107 | 0,11–0,28 |
+    | Soldat | 0,35 | 497 | 408 | 1042 | 0,10–0,26 |
+    | Speerkämpfer | 0,46 | 499 | 135 | 1214 | 0,08–0,21 |
+    | Bogenschütze | 0,27 | 527 | **79** | 1056 | 0,13–0,24 |
+    | Plänkler | 0,41 | 505 | 586 | 1011 | 0,15–0,24 |
+    | Armbrustschütze | 0,35 | 516 | 391 | 1082 | 0,12–0,22 |
+    | Späherreiter | 0,61 | 917 | 481 | 347 | 0,14–0,24 |
+    | Ritter | 0,70 | 798 | 813 | 458 | 0,14–0,21 |
+    | Mönch | 0,29 | 372 | 591 | 1375 | 0,09–0,28 |
+    | Ramme | 0,30 | 272 | 162 | 2359 | 0,15–0,25 |
+    | Mangonel | 0,51 | 244 | 346 | 2132 | 0,20–0,26 |
+    | Schaf | 0,51 | 174 | – | Kadaver 0,24 | 0,11–0,20 |
+    | Marktkarren | 0,82 | 1563 | – | 341 | 0,17–**0,30** |
+
+    Knapp sind zwei: der **Bogenschütze im Angriff** (79 Bildpunkte — zwei
+    Bilder des gespannten Bogens sind sich sehr ähnlich, nicht gleich) und
+    der **Marktkarren von der Seite** (0,30 Spielerfarbe bei Grenze 0,333).
+    Der Dorfbewohner trägt in den vier Ladungen wenigstens 0,04 Unterschied
+    (verlangt 0,02) — die Ladung ist klein am Körper.
+  - **Im Spielbild gesehen** (`sicht --spiel --bilder --waehlen` mit zwölf
+    Arten, Zoom 1 und 2): alle zwölf Einheiten der Daten stehen gerendert da,
+    in richtiger Größe zueinander. **Nicht gesehen:** Kampf, Tragen, Kadaver
+    und Sterben im Spielbild — `sicht` stellt nur hin, es lässt nichts
+    kämpfen. Der **Marktkarren** steht auf diesem Zweig nicht in den Daten
+    (D14 kam auf `strategie` danach) — er ist nur in der Bildprobe gesehen
+    und gemessen, im Spiel erst nach dem Zusammenführen.
+  - **Speicher, gemessen an den fertigen Tafeln**: die Farbtafeln aller
+    Einheiten, Gelände und Vorräte sind entpackt **469 MB** (als Dateien
+    20,2 MB, 115 Dateien), dazu dieselbe Fläche noch einmal als Masken. Je
+    Einheit alle Abläufe zusammen: Fußkämpfer 21 bis 28 MB, Dorfbewohner 40
+    (sieben Tafeln), Späherreiter 38, Marktkarren 43, Mangonel 33, Ramme 55,
+    Ritter 63. Geladen wird je Ablauf erst, wenn er gebraucht wird — in
+    einer Schlacht mit allen Arten ist das aber alles. **Das ist die Frage
+    für R6, bevor umgeschaltet wird**: Masken kleiner ablegen (ein Kanal
+    statt vier), Tafeln in halber Auflösung für Zoom 1, oder wieder
+    freigeben, was eine Weile nicht gezeichnet wurde. Nicht gemessen ist,
+    was der Browser davon wirklich hält.
+  - In der Bildprobe stehen Ramme und Mangonel mit `zoom: 1.35`, `weit: 108`
+    und `luft: 44` vor der Spielgröße — bei Zoom 2 liefen sie aus dem Band,
+    und die Trümmer des letzten Sterbebilds lagen auf der Spielgröße.
 - **Der ADR heißt jetzt 0016** (umbenannt am 2026-11-10, vorher 0014): auf
   `strategie` sind die Nummern 0014 (Häuser statt Völker) und 0015
   (Statthalter) inzwischen vergeben. Beim Einbinden bleibt nur
@@ -460,9 +723,22 @@ Speicher, gerechnet aus den Leinwandgrößen: die entpackte Bodentafel
   mit dem Inhalt ändert.
 - **Laden vor der Partie** (AC-24): heute zeichnet das Spiel, bis die Tafeln
   da sind, die alten Figuren.
-- **Der Gefallene** wird wie bisher als gedrehtes Bild gezeichnet — mit
-  gerenderter Figur dreht sich der Schatten mit.
-- **Wer arbeitet oder trägt,** zeigt mit `?bilder=1` nur Stehen und Gehen.
+- ~~Der Gefallene als gedrehtes Bild~~ — erledigt (2026-11-12): jede Einheit
+  hat einen Sterbeablauf aus acht Bildern, das Spielbild spielt ihn in
+  `STERBEN_MS` ab.
+- ~~Wer arbeitet oder trägt, zeigt nur Stehen und Gehen~~ — erledigt: der
+  Dorfbewohner hat `arbeiten` und vier Tafeln mit Ladung. **Offen daran:** er
+  schwingt die Axt auch an Beeren und auf der Farm, und der Schlag einer
+  Kampfeinheit läuft nach der Uhr des Browsers (`jetztPhase`), nicht nach dem
+  Schlag des Servers — Treffer und Bild können eine halbe Sekunde auseinander
+  liegen.
+- **Speicher** (2026-11-12): 469 MB Farbtafeln entpackt und dieselbe Fläche
+  als Masken, siehe „Wo es steht". Vor dem Umschalten entscheiden (R6).
+- **Im Spielbild nicht gesehen**: Kampf, Tragen, Kadaver, Sterben mit
+  gerenderten Bildern — nur in der Bildprobe. Und der Marktkarren gar nicht,
+  solange dieser Zweig ihn nicht in den Daten hat.
+- **Wo die 2 bis 4 s je Bild bleiben**, ist nicht gemessen; die Arc 140V
+  (Cycles über oneAPI) nicht ausprobiert.
 - **Baustelle, Farm, Tor:** nur das fertige Haus kommt aus der Tafel.
 - **Ein altes Bild zu einem geänderten Skript** fällt nicht auf (siehe R2).
 - **Eine Ausnahme im Spielbild, einmal gesehen, nicht erklärt** (2026-11-10,

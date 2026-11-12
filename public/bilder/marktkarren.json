@@ -2,18 +2,19 @@
   "bild": "marktkarren.webp",
   "maske": "marktkarren-maske.webp",
   "zelle": [
-    384,
-    252
+    339,
+    233
   ],
   "fuss": [
-    160,
-    162
+    140,
+    147
   ],
   "feldbreite": 132,
   "zeilen": 8,
   "spalten": 9,
   "art": "figur",
   "richtungen": 8,
+  "hoehe": 86,
   "ablaeufe": {
     "stehen": {
       "spalte": 0,
@@ -22,6 +23,21 @@
     "gehen": {
       "spalte": 1,
       "bilder": 8
+    },
+    "sterben": {
+      "spalte": 0,
+      "bilder": 8,
+      "einmal": true,
+      "bild": "marktkarren-sterben.webp",
+      "maske": "marktkarren-sterben-maske.webp",
+      "zelle": [
+        338,
+        232
+      ],
+      "fuss": [
+        141,
+        146
+      ]
     }
   }
 }

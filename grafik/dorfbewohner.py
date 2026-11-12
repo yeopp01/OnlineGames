@@ -11,17 +11,28 @@
 # Die Tafel: je Zeile eine Blickrichtung (0 schaut zum Betrachter, dann gegen
 # den Uhrzeigersinn von oben gesehen: 2 nach rechts, 4 weg, 6 nach links), je
 # Spalte ein Bild - erst Stehen, dann acht Bilder Gehen.
+#
+# Dazu je eine eigene Tafel: Arbeiten (er holt mit der Axt aus und schlaegt zu -
+# ein Ablauf fuer Holz, Stein, Gold, Bauen und den Kampf), Sterben, und fuer
+# jede der vier Waren Stehen und Gehen mit der Ladung auf dem Ruecken
+# (bedienung AC-16): ein verschnuertes Buendel Holz, ein Korb Beeren, eine
+# Kiepe mit Gold oder mit Stein. Wer traegt, hat die Axt weggesteckt.
 
 import math
 import os
 
-from formen import drehkoerper, glied, kugel, leer, quader
+from formen import aufsetzen, drehkoerper, glied, kugel, leer, quader
 from kette import Tafel, szene_leeren
 from stoffe import einfarbig, gemustert
 
 GROESSE = 1.06 / 1.75     # Felder je Meter
 RICHTUNGEN = 8
 SCHRITTE = 8
+BILDER = 8                # je Ablauf, der eine eigene Tafel hat
+WAREN = ('h', 'n', 'g', 's')
+ZELLE = (224, 176)        # fuer den Hieb und den Sturz; geschrieben wird jede Tafel knapp
+FUSS = (90, 130)
+WEG = (0.001, 0.001, 0.001)   # so klein, dass es im Bild fehlt
 
 OBERSCHENKEL = 0.42
 UNTERSCHENKEL = 0.4
@@ -45,7 +56,59 @@ def stoffe():
         'holz': gemustert('stiel', ('#6b4a2c', '#8c6638'), massstab=(8, 1, 8), groesse=4, relief=0.5),
         'eisen': gemustert('eisen', ('#6d7176', '#a3a8ad'), groesse=20, detail=2, relief=0.15, rau=0.38,
                            metall=0.85),
+        # Was er traegt.
+        'scheit': gemustert('scheit', ('#4d3722', '#6f5233', '#84643f'), massstab=(1, 9, 9), groesse=3, detail=4,
+                            relief=0.8, fugen=0.7),
+        'schnitt': einfarbig('schnitt', '#c9a56c', rau=0.8),
+        'seil': einfarbig('seil', '#a8966a', rau=0.9),
+        'geflecht': gemustert('geflecht', ('#7a6238', '#9b8250', '#ab9462'), massstab=(1, 1, 14), groesse=6,
+                              relief=0.9, fugen=0.6, rau=0.9),
+        'beere': einfarbig('beere', '#b02a3e', rau=0.35),
+        'blatt': einfarbig('blatt', '#3f6a2c', rau=0.8),
+        'gold': gemustert('gold', ('#b8891f', '#e6c046', '#f3d868'), groesse=18, detail=3, relief=0.6, rau=0.3,
+                          metall=0.9),
+        'stein': gemustert('stein', ('#6f6a62', '#8f8a80', '#a39d90'), groesse=14, detail=5, relief=0.8, fugen=0.5),
     }
+
+
+def _kiepe(s, eltern, stoff):
+    """Ein Tragkorb auf dem Ruecken, oben offen."""
+    drehkoerper('kiepe', [(-0.16, 0), (-0.16, 0.11), (0.14, 0.165), (0.16, 0.16), (0.13, 0.14), (-0.12, 0.09), (-0.12, 0)],
+                s[stoff], eltern=eltern, streckung=(1.15, 0.85), teile=14)
+    for x in (-0.11, 0.11):
+        quader('tragriemen', (0.035, 0.26, 0.02), s['leder'], ort=(x, -0.21, 0.2), drehung=(-0.5, 0, 0), eltern=eltern,
+               fase=0.006)
+
+
+def _ladungen(s, g, rumpf):
+    """Die vier Ladungen, alle am Ruecken; zu sehen ist je Bild hoechstens eine."""
+    quer = (0, math.pi / 2, 0)
+    g['ladung'] = {}
+    # Holz: drei Scheite quer, zweimal verschnuert.
+    h = g['ladung']['h'] = leer('ladung_h', (0, 0.25, 0.32), rumpf)
+    for y, z, lang in ((0, -0.05, 0.62), (0.01, 0.075, 0.56), (0.105, 0.012, 0.6)):
+        drehkoerper('scheit', [(-lang / 2, 0), (-lang / 2, 0.06), (lang / 2, 0.062), (lang / 2, 0)], s['scheit'],
+                    ort=(0, y, z), drehung=quer, eltern=h, teile=10)
+        for x in (-lang / 2 - 0.002, lang / 2 + 0.002):
+            drehkoerper('schnittflaeche', [(-0.002, 0), (-0.002, 0.052), (0.002, 0.052), (0.002, 0)], s['schnitt'],
+                        ort=(x, y, z), drehung=quer, eltern=h, teile=10)
+    for x in (-0.17, 0.17):
+        drehkoerper('schnur', [(-0.012, 0.125), (-0.012, 0.14), (0.012, 0.14), (0.012, 0.125), (-0.012, 0.125)], s['seil'],
+                    ort=(x, 0.04, 0.01), drehung=quer, eltern=h, streckung=(1.05, 1.0), teile=12, glatt=False)
+    # Nahrung: ein Korb aus Weide, gehaeuft mit Beeren.
+    n = g['ladung']['n'] = leer('ladung_n', (0, 0.27, 0.27), rumpf)
+    _kiepe(s, n, 'geflecht')
+    for x, y, z, r in ((0, 0, 0.15, 0.085), (0.08, 0.02, 0.14, 0.06), (-0.08, -0.01, 0.14, 0.065), (0.02, 0.07, 0.14, 0.055),
+                       (-0.03, -0.06, 0.15, 0.055), (0.07, -0.05, 0.14, 0.05)):
+        kugel('beeren', r, s['beere'], ort=(x, y, z), eltern=n, teile=8, ringe=6)
+    kugel('laub', 0.05, s['blatt'], ort=(-0.09, 0.06, 0.15), eltern=n, streckung=(1.4, 1, 0.4), teile=8, ringe=5)
+    # Gold und Stein: eine Kiepe aus Leder, darin die Brocken.
+    for ware, stoff in (('g', 'gold'), ('s', 'stein')):
+        k = g['ladung'][ware] = leer('ladung_' + ware, (0, 0.27, 0.27), rumpf)
+        _kiepe(s, k, 'leder')
+        for x, y, z, r in ((0.01, 0, 0.15, 0.09), (0.085, 0.03, 0.13, 0.065), (-0.08, -0.02, 0.13, 0.07),
+                           (0, 0.075, 0.13, 0.06), (-0.02, -0.07, 0.14, 0.055)):
+            kugel('brocken', r, s[stoff], ort=(x, y, z), eltern=k, streckung=(1.1, 0.9, 0.8), teile=6, ringe=4)
 
 
 def bauen():
@@ -54,7 +117,9 @@ def bauen():
     g = {}
     g['figur'] = leer('figur')
     g['figur'].scale = (GROESSE, GROESSE, GROESSE)
-    g['becken'] = leer('becken', (0, 0, 0.93), g['figur'])
+    # Wer faellt, kippt um seine Fuesse: dafuer ein Gelenk am Boden.
+    g['koerper'] = leer('koerper', (0, 0, 0), g['figur'])
+    g['becken'] = leer('becken', (0, 0, 0.93), g['koerper'])
     g['rumpf'] = leer('rumpf', (0, 0, 0), g['becken'])
     rumpf = g['rumpf']
 
@@ -79,7 +144,7 @@ def bauen():
     kugel('kapuze', 0.14, s['gugel'], ort=(0, 0.014, 0.132), eltern=kopf, streckung=(0.95, 1.02, 1.12),
           weglassen=lambda x, y, z: y < -0.42 and -0.8 < z < 0.52)
     quader('zipfel', (0.05, 0.05, 0.2), s['gugel'], ort=(0, 0.15, 0.07), drehung=(0.35, 0, 0), eltern=kopf, fase=0.02)
-    drehkoerper('kragen', [(0.62, 0.08), (0.57, 0.125), (0.5, 0.255), (0.4, 0.292), (0.34, 0.288), (0.36, 0.22), (0.42, 0)],
+    drehkoerper('kragen', [(0.62, 0.08), (0.57, 0.125), (0.52, 0.225), (0.47, 0.25), (0.44, 0.246), (0.455, 0.19), (0.49, 0)],
                 s['gugel'], eltern=rumpf, streckung=(1, 0.76), teile=18)
 
     # Arme: Aermel der Tunika, darunter Leinen, die Hand.
@@ -93,10 +158,12 @@ def bauen():
               teile=10, ringe=6)
 
     # Die Axt in der Rechten, kurz unter dem Kopf gefasst; der Stiel haengt.
-    achse = leer('axt', (0, -0.01, -0.04), g['hand_r'])
-    achse.rotation_euler = (0.55, 0, 0)
-    quader('stiel', (0.034, 0.034, 0.62), s['holz'], ort=(0, 0, -0.2), eltern=achse, fase=0.008)
-    quader('axtkopf', (0.036, 0.2, 0.11), s['eisen'], ort=(0, -0.085, 0.07), eltern=achse, fase=0.014)
+    # Zum Schlagen fasst er sie am Ende: der Schaft rutscht dann durch die Hand.
+    g['axt'] = leer('axt', (0, -0.01, -0.04), g['hand_r'])
+    g['schaft'] = leer('schaft', (0, 0, 0), g['axt'])
+    quader('stiel', (0.034, 0.034, 0.62), s['holz'], ort=(0, 0, -0.2), eltern=g['schaft'], fase=0.008)
+    quader('axtkopf', (0.036, 0.2, 0.11), s['eisen'], ort=(0, -0.085, 0.07), eltern=g['schaft'], fase=0.014)
+    _ladungen(s, g, rumpf)
 
     # Beine: Beinlinge, Stiefel bis zur halben Wade.
     for seite, x in (('l', 0.1), ('r', -0.1)):
@@ -111,11 +178,49 @@ def bauen():
     return g
 
 
-def stellen(g, ablauf, t=0.0):
-    """Bringt die Figur in ein Bild eines Ablaufs; t laeuft von 0 bis 1."""
-    for name, gelenk in g.items():
-        if name != 'figur':
-            gelenk.rotation_euler = (0, 0, 0)
+GELENKE = ('becken', 'rumpf', 'kopf', 'schulter_l', 'ellbogen_l', 'hand_l', 'schulter_r', 'ellbogen_r', 'hand_r',
+           'huefte_l', 'knie_l', 'knoechel_l', 'huefte_r', 'knie_r', 'knoechel_r')
+
+# Arbeiten: bereit, ausgeholt, geschlagen. Je Gelenk drei Winkel; `axt` ist
+# die Neigung der Axt an der Figur: 0 zeigt nach vorn, -pi/2 nach oben.
+BEREIT = {'rumpf': (0.08, 0, -0.2), 'kopf': (0, 0, 0.15), 'schulter_r': (-0.5, 0.15, 0), 'ellbogen_r': (-1.3, 0, 0),
+          'schulter_l': (-0.5, -0.1, 0), 'ellbogen_l': (-1.2, 0, -0.5), 'axt': (-1.1,)}
+AUSGEHOLT = {'rumpf': (-0.12, 0, -0.35), 'kopf': (0.1, 0, 0.2), 'schulter_r': (-2.5, 0.2, 0), 'ellbogen_r': (-1.1, 0, 0),
+             'schulter_l': (-1.4, -0.1, 0), 'ellbogen_l': (-1.2, 0, -0.5), 'axt': (-2.5,)}
+GESCHLAGEN = {'rumpf': (0.38, 0, 0.25), 'kopf': (-0.15, 0, -0.1), 'schulter_r': (-0.95, 0.1, 0), 'ellbogen_r': (-0.35, 0, 0),
+              'schulter_l': (-0.7, -0.15, 0), 'ellbogen_l': (-0.8, 0, -0.4), 'axt': (0.55,)}
+# Nach dem Hieb drueckt er nach - bliebe er stehen, stuende ein Bild doppelt auf der Tafel.
+NACHGESETZT = {**GESCHLAGEN, 'rumpf': (0.45, 0, 0.3), 'kopf': (-0.2, 0, -0.1), 'schulter_r': (-0.82, 0.1, 0),
+               'axt': (0.72,)}
+SCHLAG = [(0.0, BEREIT), (0.36, AUSGEHOLT), (0.5, GESCHLAGEN), (0.64, NACHGESETZT), (1.0, BEREIT)]
+# Am Boden, auf dem Ruecken.
+LIEGT = {'rumpf': (0, 0, 0), 'kopf': (0.1, 0, 0.5), 'schulter_l': (0.1, -1.15, 0), 'ellbogen_l': (-0.4, 0, 0),
+         'schulter_r': (0.1, 1.0, 0), 'ellbogen_r': (-0.5, 0, 0)}
+
+
+def _glatt(t):
+    t = max(0.0, min(1.0, t))
+    return t * t * (3 - 2 * t)
+
+
+def _mischen(a, b, u):
+    return {name: tuple(x + (y - x) * u for x, y in zip(a[name], b[name])) for name in a}
+
+
+def stellen(g, ablauf, t=0.0, ladung=None):
+    """Bringt die Figur in ein Bild eines Ablaufs; t laeuft von 0 bis 1.
+
+    `ladung`: 'h', 'n', 'g' oder 's' - dann traegt er sie und hat keine Axt.
+    """
+    for name in GELENKE:
+        g[name].rotation_euler = (0, 0, 0)
+    g['axt'].rotation_euler = (0.55, 0, 0)
+    g['axt'].scale = WEG if ladung else (1, 1, 1)
+    g['schaft'].location.z = 0
+    for ware, halter in g['ladung'].items():
+        halter.scale = (1, 1, 1) if ware == ladung else WEG
+    g['koerper'].rotation_euler = (0, 0, 0)
+    g['koerper'].location = (0, 0, 0)
     beine = {'l': (0.0, 0.0), 'r': (0.0, 0.0)}   # (Huefte, Knie), vor ist negativ
     if ablauf == 'gehen':
         p = 2 * math.pi * t
@@ -130,6 +235,21 @@ def stellen(g, ablauf, t=0.0):
         g['ellbogen_r'].rotation_euler = (-0.28, 0, 0)
         g['rumpf'].rotation_euler = (0.07, 0, 0.09 * math.sin(p))
         g['kopf'].rotation_euler = (-0.04, 0, -0.06 * math.sin(p))
+    elif ablauf in ('arbeiten', 'angreifen'):
+        # Das linke Bein steht vor, im Schlag geht er in die Knie.
+        haltung = SCHLAG[-1][1]
+        for (t0, a), (t1, b) in zip(SCHLAG, SCHLAG[1:]):
+            if t <= t1:
+                haltung = _mischen(a, b, _glatt((t - t0) / (t1 - t0)))
+                break
+        for name in ('rumpf', 'kopf', 'schulter_l', 'ellbogen_l', 'schulter_r', 'ellbogen_r'):
+            g[name].rotation_euler = haltung[name]
+        tief = max(0.0, haltung['rumpf'][0] - 0.08) / 0.3
+        beine = {'l': (-0.3 - 0.2 * tief, 0.32 + 0.25 * tief), 'r': (0.26 + 0.1 * tief, 0.12)}
+        # Am Ende gefasst; die Neigung der Axt rechnet heraus, was Rumpf und Arm schon gekippt haben.
+        g['schaft'].location.z = 0.42
+        g['axt'].rotation_euler = (math.pi / 2 + haltung['axt'][0] - haltung['rumpf'][0] - haltung['schulter_r'][0]
+                                   - haltung['ellbogen_r'][0], 0, 0)
     else:
         beine = {'l': (-0.03, 0.04), 'r': (0.02, 0.03)}
         g['huefte_l'].rotation_euler.y = -0.05
@@ -139,6 +259,28 @@ def stellen(g, ablauf, t=0.0):
         g['schulter_r'].rotation_euler = (0.0, 0.14, 0)
         g['ellbogen_r'].rotation_euler = (-0.22, 0, 0)
         g['rumpf'].rotation_euler = (0.02, 0, 0)
+    if ladung and ablauf in ('stehen', 'gehen'):
+        # Unter der Last geht er vorgebeugt, die Haende an den Riemen.
+        g['rumpf'].rotation_euler.x += 0.14
+        g['kopf'].rotation_euler.x -= 0.1
+        for seite, aussen in (('l', -1), ('r', 1)):
+            schwung = g['schulter_' + seite].rotation_euler.x * 0.3
+            g['schulter_' + seite].rotation_euler = (-0.35 + schwung, aussen * 0.1, 0)
+            g['ellbogen_' + seite].rotation_euler = (-2.0, 0, aussen * 0.35)
+    liegen = 0.0
+    if ablauf == 'sterben':
+        # Getroffen knickt er ein, kippt nach hinten und bleibt auf dem Ruecken liegen.
+        # Der Fall reicht bis zum letzten Bild (wie beim Fussvolk).
+        liegen = _glatt((t - 0.1) / 0.9)
+        knick = math.sin(math.pi * min(1.0, t / 0.7))
+        steht = {name: tuple(g[name].rotation_euler) for name in LIEGT}
+        for name, winkel in _mischen(steht, LIEGT, liegen).items():
+            g[name].rotation_euler = winkel
+        g['rumpf'].rotation_euler.x -= 0.3 * knick
+        beine = {'l': (-0.03 * (1 - liegen) - 0.06 * liegen - 0.45 * knick, 0.04 + 0.08 * liegen + knick),
+                 'r': (0.02 * (1 - liegen) - 0.3 * liegen - 0.45 * knick, 0.03 + 0.57 * liegen + knick)}
+        g['koerper'].rotation_euler = (-math.pi / 2 * liegen, 0, 0)
+        g['koerper'].location = (0, -0.4 * liegen, 0)
 
     # Das Becken steht so hoch, dass das tiefere Bein genau den Boden beruehrt
     # - sonst schwebt die Figur im weiten Schritt.
@@ -149,24 +291,52 @@ def stellen(g, ablauf, t=0.0):
         g['knoechel_' + seite].rotation_euler.x = -(huefte + knie) * 0.75
         tiefe = max(tiefe, OBERSCHENKEL * math.cos(huefte) + UNTERSCHENKEL * math.cos(huefte + knie))
     g['becken'].location.z = HUEFTE_TIEFER + tiefe + KNOECHEL
+    if ablauf == 'sterben':
+        aufsetzen(g['koerper'], g['koerper'])
 
 
 def tafel(ziel):
     szene_leeren()
     g = bauen()
-    blatt = Tafel('dorfbewohner', zelle=(144, 128), fuss=(56, 102), ziel=ziel)
-    probe = os.environ.get('BILDER_PROBE') == '1'
-    schritte = [0, 2] if probe else list(range(SCHRITTE))
-    for richtung in range(RICHTUNGEN):
+    blatt = Tafel('dorfbewohner', zelle=ZELLE, fuss=FUSS, ziel=ziel, knapp=True)
+    # Zum Ansehen beim Bauen: '1' drei Richtungen und vier Bilder je Ablauf,
+    # '2' eine Richtung mit allen Bildern.
+    probe = os.environ.get('BILDER_PROBE')
+    richtungen = {'1': [1, 3, 6], '2': [1]}.get(probe, list(range(RICHTUNGEN)))
+    schritte = [0, 3, 4, 7] if probe == '1' else list(range(SCHRITTE))
+    for zeile, richtung in enumerate(richtungen):
         g['figur'].rotation_euler = (0, 0, math.radians(45 + 45 * richtung))
         stellen(g, 'stehen')
-        blatt.bild(richtung, 0)
+        blatt.bild(zeile, 0)
         for spalte, schritt in enumerate(schritte):
             stellen(g, 'gehen', schritt / SCHRITTE)
-            blatt.bild(richtung, 1 + spalte)
+            blatt.bild(zeile, 1 + spalte)
+        for spalte, bild in enumerate(schritte):
+            stellen(g, 'arbeiten', bild / BILDER)
+            blatt.bild(zeile, spalte, teil='arbeiten')
+        for spalte, bild in enumerate(schritte):
+            # Sterben laeuft einmal: das letzte Bild ist das Ende.
+            stellen(g, 'sterben', bild / (BILDER - 1))
+            blatt.bild(zeile, spalte, teil='sterben')
+        for ware in WAREN:
+            stellen(g, 'stehen', ladung=ware)
+            blatt.bild(zeile, 0, teil=ware)
+            for spalte, schritt in enumerate(schritte):
+                stellen(g, 'gehen', schritt / SCHRITTE, ladung=ware)
+                blatt.bild(zeile, 1 + spalte, teil=ware)
+    ablaeufe = {
+        'stehen': {'spalte': 0, 'bilder': 1},
+        'gehen': {'spalte': 1, 'bilder': len(schritte)},
+        'arbeiten': {'spalte': 0, 'bilder': len(schritte)},
+        'sterben': {'spalte': 0, 'bilder': len(schritte), 'einmal': True},
+    }
+    # Mit Ladung: Stehen und Gehen teilen sich eine Tafel je Ware.
+    for ware in WAREN:
+        ablaeufe['stehen_' + ware] = {'spalte': 0, 'bilder': 1, 'teil': ware}
+        ablaeufe['gehen_' + ware] = {'spalte': 1, 'bilder': len(schritte), 'teil': ware}
     return blatt.schreiben({
         'art': 'figur',
-        'richtungen': RICHTUNGEN,
+        'richtungen': len(richtungen),
         'hoehe': round(1.06 * math.cos(math.radians(30)) / math.sqrt(2) * 132),
-        'ablaeufe': {'stehen': {'spalte': 0, 'bilder': 1}, 'gehen': {'spalte': 1, 'bilder': len(schritte)}},
+        'ablaeufe': ablaeufe,
     })

@@ -42,6 +42,39 @@ def leer(name, ort=(0, 0, 0), eltern=None):
     return gelenk
 
 
+def tiefster_punkt(wurzel):
+    """Die tiefste Ecke von allem, was an `wurzel` haengt - in der Welt."""
+    bpy.context.view_layer.update()
+    tief = None
+    stapel = [wurzel]
+    while stapel:
+        o = stapel.pop()
+        stapel.extend(o.children)
+        if o.type != 'MESH' or not o.data.vertices:
+            continue
+        # Nur die Hoehe: die dritte Zeile der Lage genuegt.
+        zx, zy, zz, zw = o.matrix_world[2]
+        unten = min(zx * v.co.x + zy * v.co.y + zz * v.co.z + zw for v in o.data.vertices)
+        tief = unten if tief is None else min(tief, unten)
+    return 0.0 if tief is None else tief
+
+
+def aufsetzen(wurzel, gelenk, nur_heben=False):
+    """Hebt oder senkt `gelenk`, bis das Tiefste unter `wurzel` den Boden
+    beruehrt. Fuer alles, was faellt und liegt: dort laesst sich die Hoehe
+    nicht mehr aus den Beinen rechnen. Gibt die neue Hoehe des Gelenks zurueck.
+    """
+    tief = tiefster_punkt(wurzel)
+    if nur_heben and tief >= 0:
+        return gelenk.location.z
+    # Das Gelenk misst in seinem eigenen Mass: Weltmeter durch die Streckung
+    # dessen, woran es haengt.
+    mass = gelenk.parent.matrix_world.to_scale().z if gelenk.parent else 1.0
+    gelenk.location.z -= tief / mass
+    bpy.context.view_layer.update()
+    return gelenk.location.z
+
+
 def quader(name, mass, stoff, ort=(0, 0, 0), drehung=(0, 0, 0), eltern=None, fase=0.012):
     """Ein Balken, ein Brett, ein Stein. `mass` ist Breite, Tiefe, Hoehe."""
     x, y, z = mass[0] / 2, mass[1] / 2, mass[2] / 2

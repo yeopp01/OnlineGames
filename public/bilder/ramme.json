@@ -1,0 +1,57 @@
+{
+  "bild": "ramme.webp",
+  "maske": "ramme-maske.webp",
+  "zelle": [
+    311,
+    214
+  ],
+  "fuss": [
+    135,
+    143
+  ],
+  "feldbreite": 132,
+  "zeilen": 8,
+  "spalten": 9,
+  "art": "figur",
+  "richtungen": 8,
+  "hoehe": 86,
+  "ablaeufe": {
+    "stehen": {
+      "spalte": 0,
+      "bilder": 1
+    },
+    "gehen": {
+      "spalte": 1,
+      "bilder": 8
+    },
+    "angreifen": {
+      "spalte": 0,
+      "bilder": 8,
+      "bild": "ramme-angreifen.webp",
+      "maske": "ramme-angreifen-maske.webp",
+      "zelle": [
+        327,
+        214
+      ],
+      "fuss": [
+        143,
+        143
+      ]
+    },
+    "sterben": {
+      "spalte": 0,
+      "bilder": 8,
+      "einmal": true,
+      "bild": "ramme-sterben.webp",
+      "maske": "ramme-sterben-maske.webp",
+      "zelle": [
+        321,
+        214
+      ],
+      "fuss": [
+        136,
+        143
+      ]
+    }
+  }
+}

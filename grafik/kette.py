@@ -287,7 +287,7 @@ def _schreiben(pfad, feld):
 class Tafel:
     """Sammelt Einzelbilder gleicher Groesse und schreibt sie als Raster."""
 
-    def __init__(self, name, zelle, fuss, ziel, randlos=False, saum=(0, 0)):
+    def __init__(self, name, zelle, fuss, ziel, randlos=False, saum=(0, 0), knapp=False):
         self.name = name
         self.zelle = zelle
         self.fuss = fuss
@@ -301,12 +301,26 @@ class Tafel:
         # Spiel eine Linie alle acht Felder (gemessen 2026-11-10: Rand gegen
         # Rand bis 1,95-mal so verschieden wie zwei Nachbarn, mit Saum 1,1).
         self.saum = saum
+        # knapp: gerendert wird in einer Zelle, in die alles passt - der Hieb,
+        # der Sturz, der lange Schatten -, geschrieben wird jede Tafel so
+        # klein, wie ihre eigenen Bilder es erlauben. Stehen und Gehen brauchen
+        # ein Drittel des Platzes eines Hiebs: der Dorfbewohner belegte sonst
+        # mit seinen vier Ladungen 2016 x 1408 Bildpunkte je Tafel statt rund
+        # 1300 x 1000. Jede Tafel nennt dann ihre eigene Zelle und ihren Fuss.
+        self.knapp = knapp
+        if knapp and (saum != (0, 0) or randlos):
+            raise SystemExit(f'{name}: knapp geht nicht mit Saum oder randlos')
         self.ordner = tempfile.mkdtemp(prefix=f'bilder-{name}-')
         self.bilder = {}   # (zeile, spalte) -> (Bild, Maske oder None)
+        # Ein Ablauf kann seine eigene Tafel bekommen (`teil`): eine Einheit
+        # mit Stehen, Gehen, Angreifen und Sterben in acht Richtungen waere als
+        # ein Bild 7200 Bildpunkte breit und entpackt 55 MB - so laedt der
+        # Browser Angreifen und Sterben erst, wenn jemand kaempft.
+        self.teile = {}    # Name -> {(zeile, spalte) -> (Bild, Maske oder None)}
         self.maske = False
         kamera_setzen(zelle[0], zelle[1], fuss)
 
-    def bild(self, zeile, spalte, maske=True):
+    def bild(self, zeile, spalte, maske=True, teil=None):
         bild, deckung, spieler = rendern(os.path.join(self.ordner, 'bild.exr'))
         anteil = _schwarz_anteil(bild, deckung)
         if anteil > SCHWARZ_GRENZE:
@@ -323,18 +337,44 @@ class Tafel:
         rand_schatten = max(float(r.max()) for r in (a[0], a[-1], a[:, 0], a[:, -1]))
         if rand_schatten > 0.15 and not self.randlos:
             print(f'RAND {self.name}, Zeile {zeile}, Spalte {spalte}: der Schatten ist am Zellenrand abgeschnitten (Deckung {rand_schatten:.2f})')
-        self.bilder[(zeile, spalte)] = (fertig, spieler if maske else None)
+        ziel = self.bilder if teil is None else self.teile.setdefault(teil, {})
+        ziel[(zeile, spalte)] = (fertig, spieler if maske else None)
         self.maske = self.maske or maske
 
-    def schreiben(self, beschreibung):
-        zeilen = 1 + max(z for z, _ in self.bilder)
-        spalten = 1 + max(s for _, s in self.bilder)
+    def _ausschnitt(self, bilder):
+        """Der kleinste Kasten (links, oben, Breite, Hoehe) in der Zelle, in
+        den alle Bilder einer Tafel passen - mit zwei Bildpunkten Luft, und
+        immer so, dass der Fusspunkt darin liegt."""
+        if not self.knapp:
+            return 0, 0, self.zelle[0], self.zelle[1]
+        belegt = np.zeros((self.zelle[1], self.zelle[0]), dtype=bool)
+        for zelle, _ in bilder.values():
+            belegt |= zelle[:, :, 3] > 1 / 255
+        belegt[min(self.zelle[1] - 1, self.fuss[1]), self.fuss[0]] = True
+        if self.fuss[1] > 0:
+            belegt[self.fuss[1] - 1, self.fuss[0]] = True
+        xs = np.where(belegt.any(axis=0))[0]
+        ys = np.where(belegt.any(axis=1))[0]
+        luft = 2
+        links, rechts = max(0, int(xs[0]) - luft), min(self.zelle[0], int(xs[-1]) + 1 + luft)
+        oben, unten = max(0, int(ys[0]) - luft), min(self.zelle[1], int(ys[-1]) + 1 + luft)
+        return links, oben, rechts - links, unten - oben
+
+    def _raster(self, name, bilder):
+        """Schreibt ein Raster aus Zellen als Bild und, wo es Spielerfarbe
+        gibt, als Maske. Gibt (Zeilen, Spalten, Ausschnitt) zurueck."""
+        zeilen = 1 + max(z for z, _ in bilder)
+        spalten = 1 + max(s for _, s in bilder)
         sb, sh = self.saum
-        b, h = self.zelle[0] + 2 * sb, self.zelle[1] + 2 * sh
+        links, oben, b, h = self._ausschnitt(bilder)
+        if self.knapp:
+            bilder = {ort: (zelle[oben:oben + h, links:links + b], None if spieler is None else spieler[oben:oben + h, links:links + b])
+                      for ort, (zelle, spieler) in bilder.items()}
+        b, h = b + 2 * sb, h + 2 * sh
         os.makedirs(self.ziel, exist_ok=True)
         feld = np.zeros((zeilen * h, spalten * b, 4), dtype=np.float32)
         maske = np.zeros((zeilen * h, spalten * b, 4), dtype=np.float32)
-        for (z, s), (zelle, spieler) in self.bilder.items():
+        for (z, s), (zelle, spieler) in bilder.items():
             if sb or sh:
                 zelle = np.pad(zelle, ((sh, sh), (sb, sb), (0, 0)), mode='wrap')
                 if spieler is not None:
@@ -345,14 +385,19 @@ class Tafel:
                 # nur die Deckung.
                 maske[z * h:(z + 1) * h, s * b:(s + 1) * b] = np.where(spieler[:, :, None] >= 1 / 255, 1.0, 0.0)
                 maske[z * h:(z + 1) * h, s * b:(s + 1) * b, 3] = np.where(spieler >= 1 / 255, spieler, 0.0)
-        _schreiben(os.path.join(self.ziel, f'{self.name}.webp'), feld)
+        _schreiben(os.path.join(self.ziel, f'{name}.webp'), feld)
         if self.maske:
-            _schreiben(os.path.join(self.ziel, f'{self.name}-maske.webp'), maske)
+            _schreiben(os.path.join(self.ziel, f'{name}-maske.webp'), maske)
+        return zeilen, spalten, (links, oben, b, h)
+
+    def schreiben(self, beschreibung):
+        zeilen, spalten, (links, oben, b, h) = self._raster(self.name, self.bilder)
+        sb, sh = self.saum
         angaben = {
             'bild': f'{self.name}.webp',
             'maske': f'{self.name}-maske.webp' if self.maske else None,
             'zelle': [b, h],
-            'fuss': [self.fuss[0] + sb, self.fuss[1] + sh],
+            'fuss': [self.fuss[0] - links + sb, self.fuss[1] - oben + sh],
             'feldbreite': FELD_BREITE,
             'zeilen': zeilen,
             'spalten': spalten,
@@ -362,6 +407,24 @@ class Tafel:
             angaben['kachel'] = list(self.zelle)
             angaben['saum'] = [sb, sh]
         angaben.update(beschreibung)
+        # Ablaeufe mit eigener Tafel: dieselbe Zelle, derselbe Fuss, dieselben
+        # Zeilen - die Beschreibung des Ablaufs nennt nur noch sein Bild. Ist
+        # die Tafel knapp geschnitten, nennt er dazu seine Zelle und seinen Fuss.
+        # Ein Teil heisst wie sein Ablauf - oder mehrere Ablaeufe nennen ihn
+        # als `teil` (der Dorfbewohner mit Holz: Stehen und Gehen in einer Tafel).
+        for teil, bilder in self.teile.items():
+            zugehoerig = [a for name, a in angaben.get('ablaeufe', {}).items() if a.get('teil', name) == teil]
+            if not zugehoerig:
+                raise SystemExit(f'{self.name}: der Teil "{teil}" gehoert zu keinem Ablauf der Beschreibung')
+            teilzeilen, teilspalten, (links, oben, b, h) = self._raster(f'{self.name}-{teil}', bilder)
+            if teilzeilen != zeilen or teilspalten != max(a['spalte'] + a['bilder'] for a in zugehoerig):
+                raise SystemExit(f'{self.name}-{teil}: {teilspalten} x {teilzeilen} Bilder passen nicht zur Beschreibung')
+            for ablauf in zugehoerig:
+                ablauf['bild'] = f'{self.name}-{teil}.webp'
+                ablauf['maske'] = f'{self.name}-{teil}-maske.webp' if self.maske else None
+                if self.knapp:
+                    ablauf['zelle'] = [b, h]
+                    ablauf['fuss'] = [self.fuss[0] - links, self.fuss[1] - oben]
         with open(os.path.join(self.ziel, f'{self.name}.json'), 'w', encoding='utf-8') as f:
             json.dump(angaben, f, indent=2, ensure_ascii=False)
             f.write('\n')

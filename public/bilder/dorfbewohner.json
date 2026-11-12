@@ -2,12 +2,12 @@
   "bild": "dorfbewohner.webp",
   "maske": "dorfbewohner-maske.webp",
   "zelle": [
-    144,
-    128
+    132,
+    123
   ],
   "fuss": [
-    56,
-    102
+    38,
+    93
   ],
   "feldbreite": 132,
   "zeilen": 8,
@@ -23,6 +23,155 @@
     "gehen": {
       "spalte": 1,
       "bilder": 8
+    },
+    "arbeiten": {
+      "spalte": 0,
+      "bilder": 8,
+      "bild": "dorfbewohner-arbeiten.webp",
+      "maske": "dorfbewohner-arbeiten-maske.webp",
+      "zelle": [
+        192,
+        155
+      ],
+      "fuss": [
+        63,
+        125
+      ]
+    },
+    "sterben": {
+      "spalte": 0,
+      "bilder": 8,
+      "einmal": true,
+      "bild": "dorfbewohner-sterben.webp",
+      "maske": "dorfbewohner-sterben-maske.webp",
+      "zelle": [
+        208,
+        143
+      ],
+      "fuss": [
+        84,
+        97
+      ]
+    },
+    "stehen_h": {
+      "spalte": 0,
+      "bilder": 1,
+      "teil": "h",
+      "bild": "dorfbewohner-h.webp",
+      "maske": "dorfbewohner-h-maske.webp",
+      "zelle": [
+        139,
+        131
+      ],
+      "fuss": [
+        41,
+        95
+      ]
+    },
+    "gehen_h": {
+      "spalte": 1,
+      "bilder": 8,
+      "teil": "h",
+      "bild": "dorfbewohner-h.webp",
+      "maske": "dorfbewohner-h-maske.webp",
+      "zelle": [
+        139,
+        131
+      ],
+      "fuss": [
+        41,
+        95
+      ]
+    },
+    "stehen_n": {
+      "spalte": 0,
+      "bilder": 1,
+      "teil": "n",
+      "bild": "dorfbewohner-n.webp",
+      "maske": "dorfbewohner-n-maske.webp",
+      "zelle": [
+        136,
+        125
+      ],
+      "fuss": [
+        38,
+        95
+      ]
+    },
+    "gehen_n": {
+      "spalte": 1,
+      "bilder": 8,
+      "teil": "n",
+      "bild": "dorfbewohner-n.webp",
+      "maske": "dorfbewohner-n-maske.webp",
+      "zelle": [
+        136,
+        125
+      ],
+      "fuss": [
+        38,
+        95
+      ]
+    },
+    "stehen_g": {
+      "spalte": 0,
+      "bilder": 1,
+      "teil": "g",
+      "bild": "dorfbewohner-g.webp",
+      "maske": "dorfbewohner-g-maske.webp",
+      "zelle": [
+        136,
+        125
+      ],
+      "fuss": [
+        38,
+        95
+      ]
+    },
+    "gehen_g": {
+      "spalte": 1,
+      "bilder": 8,
+      "teil": "g",
+      "bild": "dorfbewohner-g.webp",
+      "maske": "dorfbewohner-g-maske.webp",
+      "zelle": [
+        136,
+        125
+      ],
+      "fuss": [
+        38,
+        95
+      ]
+    },
+    "stehen_s": {
+      "spalte": 0,
+      "bilder": 1,
+      "teil": "s",
+      "bild": "dorfbewohner-s.webp",
+      "maske": "dorfbewohner-s-maske.webp",
+      "zelle": [
+        136,
+        125
+      ],
+      "fuss": [
+        38,
+        95
+      ]
+    },
+    "gehen_s": {
+      "spalte": 1,
+      "bilder": 8,
+      "teil": "s",
+      "bild": "dorfbewohner-s.webp",
+      "maske": "dorfbewohner-s-maske.webp",
+      "zelle": [
+        136,
+        125
+      ],
+      "fuss": [
+        38,
+        95
+      ]
     }
   }
 }

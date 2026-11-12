@@ -1,0 +1,43 @@
+{
+  "bild": "schaf.webp",
+  "maske": "schaf-maske.webp",
+  "zelle": [
+    118,
+    84
+  ],
+  "fuss": [
+    43,
+    59
+  ],
+  "feldbreite": 132,
+  "zeilen": 8,
+  "spalten": 9,
+  "art": "figur",
+  "richtungen": 8,
+  "hoehe": 59,
+  "ablaeufe": {
+    "stehen": {
+      "spalte": 0,
+      "bilder": 1
+    },
+    "gehen": {
+      "spalte": 1,
+      "bilder": 8
+    },
+    "kadaver": {
+      "spalte": 0,
+      "bilder": 4,
+      "einmal": true,
+      "bild": "schaf-kadaver.webp",
+      "maske": "schaf-kadaver-maske.webp",
+      "zelle": [
+        157,
+        101
+      ],
+      "fuss": [
+        70,
+        60
+      ]
+    }
+  }
+}

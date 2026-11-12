@@ -40,6 +40,16 @@ export function bestandLesen(grafik = GRAFIK, bilder = BILDER) {
 }
 
 /**
+ * Die Bilder, die eine Beschreibung nennt: die Tafel, ihre Maske - und bei
+ * Figuren die Tafeln der Ablaeufe, die eine eigene haben (Angreifen, Sterben).
+ */
+export function beschreibungBilder(beschreibung) {
+  const eigene = Object.values(beschreibung.ablaeufe || {}).flatMap((ablauf) => [ablauf.bild, ablauf.maske]);
+  // Zwei Ablaeufe koennen sich eine Tafel teilen (Stehen und Gehen mit Ladung).
+  return [...new Set([beschreibung.bild, beschreibung.maske, ...eigene].filter(Boolean))];
+}
+
+/**
  * Passt das Verzeichnis zu dem, was auf der Platte liegt? Gibt die
  * Beanstandungen zurueck, eine Zeile je Fund; leer heisst: es passt.
  */
@@ -70,7 +80,7 @@ export function verzeichnisPruefen({ verzeichnis, grafikdateien, bilddateien, be
       funde.push(`${name}: die Beschreibung public/bilder/${name}.json fehlt (npm run bilder -- ${name})`);
       continue;
     }
-    const geschrieben = [beschreibung.bild, beschreibung.maske].filter(Boolean).sort();
+    const geschrieben = beschreibungBilder(beschreibung).sort();
     if (geschrieben.join() !== [...bilder].sort().join()) {
       funde.push(`${name}: das Verzeichnis nennt ${[...bilder].sort().join(', ')}, die Beschreibung ${geschrieben.join(', ')}`);
     }

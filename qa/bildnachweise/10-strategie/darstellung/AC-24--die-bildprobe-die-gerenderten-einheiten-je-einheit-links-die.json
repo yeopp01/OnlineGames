@@ -1,0 +1,9 @@
+{
+  "spec": "10-strategie/darstellung.md",
+  "ac": "AC-24",
+  "titel": "Die Bildprobe: die gerenderten Einheiten, je Einheit links die bisherige Zeichnung, daneben acht Blickrichtungen im Gehen, darunter Angriff oder Arbeit, Sterben und die Groesse beim Start einer Partie; der Dorfbewohner traegt Holz, Nahrung, Gold und Stein, das Schaf liegt geschlachtet in vier Stufen",
+  "datei": "e2e/tests/strategie-bildprobe.spec.mjs",
+  "pfad": [
+    "darstellung AC-24: jede gerenderte Einheit hat acht Blickrichtungen, Ablaeufe aus acht Bildern und Spielerfarbe als Akzent"
+  ]
+}

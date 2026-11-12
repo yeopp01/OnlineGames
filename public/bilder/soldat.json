@@ -1,0 +1,57 @@
+{
+  "bild": "soldat.webp",
+  "maske": "soldat-maske.webp",
+  "zelle": [
+    164,
+    141
+  ],
+  "fuss": [
+    43,
+    113
+  ],
+  "feldbreite": 132,
+  "zeilen": 8,
+  "spalten": 9,
+  "art": "figur",
+  "richtungen": 8,
+  "hoehe": 86,
+  "ablaeufe": {
+    "stehen": {
+      "spalte": 0,
+      "bilder": 1
+    },
+    "gehen": {
+      "spalte": 1,
+      "bilder": 8
+    },
+    "angreifen": {
+      "spalte": 0,
+      "bilder": 8,
+      "bild": "soldat-angreifen.webp",
+      "maske": "soldat-angreifen-maske.webp",
+      "zelle": [
+        228,
+        170
+      ],
+      "fuss": [
+        82,
+        130
+      ]
+    },
+    "sterben": {
+      "spalte": 0,
+      "bilder": 8,
+      "einmal": true,
+      "bild": "soldat-sterben.webp",
+      "maske": "soldat-sterben-maske.webp",
+      "zelle": [
+        212,
+        163
+      ],
+      "fuss": [
+        86,
+        113
+      ]
+    }
+  }
+}

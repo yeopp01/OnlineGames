@@ -9,7 +9,7 @@
 import { figurZeichnen } from './figuren.js';
 import { gebaeudeZeichnen } from './gebaeude.js';
 import { WALD, dingZeichnen } from './gelaende.js';
-import { bilderEin, figurZelle, gerendert, richtungAus, zelleZeichnen } from './bilder.js';
+import { ablaeufeLaden, ablaufZelle, bilderEin, figurZelle, gerendert, richtungAus, zelleZeichnen } from './bilder.js';
 
 const HALB_B = 22;          // halbe Rautenbreite bei Zoom 1, wie im Spielbild
 const FIGUR_HOEHE = 1.3;
@@ -78,7 +78,41 @@ function gerenderterKarren(stift, x, y, zoom, farbe, richtung, schritt) {
   zelleZeichnen(stift, tafel, zelle.zeile, zelle.spalte, x, y, (2 * HALB_B * zoom) / tafel.feldbreite, farbe);
 }
 
+// Die Einheiten, die schon gerendert sind (darstellung AC-24): je Einheit ein
+// Band auf dem Blatt. `weit` ist der Abstand zwischen zwei Figuren bei Zoom 2.
+// `schlag` nennt den Ablauf, mit dem sie zuschlaegt - der Dorfbewohner
+// arbeitet, das Schaf tut nichts dergleichen; `ladungen`: was sie in den acht
+// Richtungen traegt; `hoch`: die Figurenhoehe, wo sie nicht die uebliche ist;
+// `zoom` und `luft`: die Geraete sind breit - sie stehen kleiner im Band und
+// mit Abstand vor der Spielgroesse, sonst liegen die Truemmer darauf.
+const EINHEITEN = [
+  { art: 'dorfbewohner', titel: 'Dorfbewohner', weit: 96, schlag: 'arbeiten', schlagTitel: 'Arbeiten', ladungen: [null, 'h', 'n', 'g', 's', null, 'h', 'g'] },
+  { art: 'miliz', titel: 'Miliz', weit: 96 },
+  { art: 'soldat', titel: 'Soldat', weit: 96 },
+  { art: 'speerkaempfer', titel: 'Speerkämpfer', weit: 104 },
+  { art: 'bogenschuetze', titel: 'Bogenschütze', weit: 96 },
+  { art: 'plaenkler', titel: 'Plänkler', weit: 96 },
+  { art: 'armbrustschuetze', titel: 'Armbrustschütze', weit: 96 },
+  { art: 'spaeherreiter', titel: 'Späherreiter', weit: 118 },
+  { art: 'ritter', titel: 'Ritter', weit: 118 },
+  { art: 'moench', titel: 'Mönch', weit: 96, schlagTitel: 'Heilen und Bekehren' },
+  { art: 'ramme', titel: 'Ramme', weit: 108, zoom: 1.35, luft: 44 },
+  { art: 'mangonel', titel: 'Mangonel', weit: 108, zoom: 1.35, luft: 44 },
+  { art: 'schaf', titel: 'Schaf', weit: 80, hoch: 0.9, schlag: null },
+];
+const BAND = 330;
+document.getElementById('probe-einheiten').height = EINHEITEN.length * BAND;
+
+function gerenderteEinheit(stift, art, x, y, zoom, farbe, richtung, ablauf, anteil, hoch = FIGUR_HOEHE) {
+  const tafel = gerendert(art);
+  if (!tafel) return;
+  const zelle = ablaufZelle(tafel, richtung, ablauf, anteil);
+  // Derselbe Massstab wie im Spielbild: Figurenhoehe durch die Hoehe, die die Tafel nennt.
+  zelleZeichnen(stift, zelle.quelle, zelle.zeile, zelle.spalte, x, y, (HALB_B * hoch * zoom) / tafel.hoehe, farbe);
+}
+
 const blaetter = {
+  einheiten: blatt('probe-einheiten'),
   figur: blatt('probe-figur'),
   haus: blatt('probe-haus'),
   baum: blatt('probe-baum'),
@@ -251,7 +285,59 @@ function gelaendeMalen(b) {
   figurZeichnen(s, 'schaf', 362, 584, Math.max(9, HALB_B * 0.9 * 2), '#888888', {});
 }
 
+// Je Einheit: links die bisherige Zeichnung, daneben die acht Blickrichtungen
+// im Gehen; darunter der Angriff in vier Richtungen, das Sterben in vier
+// Bildern und die Einheit so gross wie beim Start einer Partie.
+function einheitenMalen(b) {
+  const s = b.stift;
+  grund(b);
+  EINHEITEN.forEach(({ art, titel, weit, schlag = 'angreifen', schlagTitel = 'Angriff', ladungen, hoch = FIGUR_HOEHE, zoom = 2, luft = 0 }, nummer) => {
+    const oben = nummer * BAND;
+    if (nummer) {
+      s.fillStyle = 'rgba(0, 0, 0, 0.28)';
+      s.fillRect(0, oben - 1, b.breite, 2);
+    }
+    schrift(s, titel, 16, oben + 24);
+    schrift(s, 'gezeichnet (bisher)', 16, oben + 44, 0.6);
+    schrift(s, `gerendert (neu) – acht Blickrichtungen, im Gehen${ladungen ? ', mit Holz, Nahrung, Gold und Stein' : ''}`, 190, oben + 44, 0.6);
+    const p = phase(nummer * 1.7);
+    const gehen = stufe(p) / 8;
+    const tafel = gerendert(art);
+    figurZeichnen(s, art, 80, oben + 160, HALB_B * hoch * zoom, BLAU, { blick: 1, schritt: p });
+    for (let richtung = 0; richtung < 8; richtung += 1) {
+      const ware = ladungen?.[richtung];
+      gerenderteEinheit(s, art, 230 + richtung * weit, oben + 160, zoom, richtung < 5 ? BLAU : ROT, richtung, ware ? `gehen_${ware}` : 'gehen', gehen, hoch);
+    }
+    if (schlag) {
+      schrift(s, schlagTitel, 16, oben + 200, 0.6);
+      [1, 3, 5, 7].forEach((richtung, i) => {
+        // Steht die Zeit, zeigt jede Spalte einen anderen Augenblick des Schlags.
+        const anteil = STILL ? [1, 3, 4, 6][i] / 8 : stufe(p + i * 0.8) / 8;
+        gerenderteEinheit(s, art, 80 + i * weit, oben + 305, zoom, i < 2 ? BLAU : ROT, richtung, schlag, anteil, hoch);
+      });
+    }
+    if (tafel?.ablaeufe.kadaver) {
+      // Ein geschlachtetes Tier: von voll bis fast leer (einheiten AC-17).
+      schrift(s, 'Geschlachtet – von voll bis fast leer', 16, oben + 200, 0.6);
+      for (let i = 0; i < tafel.ablaeufe.kadaver.bilder; i += 1) {
+        gerenderteEinheit(s, art, 80 + i * weit * 1.4, oben + 305, zoom, BLAU, 1, 'kadaver', (i + 0.5) / tafel.ablaeufe.kadaver.bilder, hoch);
+      }
+    }
+    if (tafel?.ablaeufe.sterben) {
+      schrift(s, 'Sterben', 16 + 4 * weit + 30, oben + 200, 0.6);
+      [2, 4, 5, 7].forEach((bild, i) => {
+        gerenderteEinheit(s, art, 80 + (4 + i) * weit + 30, oben + 305, zoom, BLAU, 1, 'sterben', bild / 8 + 0.01, hoch);
+      });
+    }
+    schrift(s, 'Spielgröße', 16 + 8 * weit + 20 + luft, oben + 200, 0.6);
+    [1, 6].forEach((richtung, i) => {
+      gerenderteEinheit(s, art, 60 + 8 * weit + 20 + luft + i * (70 + luft), oben + 305, STARTZOOM, i ? ROT : BLAU, richtung, 'gehen', gehen, hoch);
+    });
+  });
+}
+
 function malen() {
+  einheitenMalen(blaetter.einheiten);
   figurMalen(blaetter.figur);
   hausMalen(blaetter.haus);
   baumMalen(blaetter.baum);
@@ -261,11 +347,11 @@ function malen() {
   if (!STILL) requestAnimationFrame(malen);
 }
 
-bilderEin().then(() => {
+bilderEin().then(() => Promise.all(EINHEITEN.map((e) => ablaeufeLaden(e.art)))).then(() => {
   malen();
   // Fuer den Browserlauf: die Seite sagt, wann ihre Bilder gemalt sind.
   window.bildprobe = { fertig: true, tafeln: ['dorfbewohner', 'haus', 'baum'].map((name) => {
     const tafel = gerendert(name);
     return { name, zelle: tafel.zelle, zeilen: tafel.zeilen, spalten: tafel.spalten };
-  }) };
+  }), einheiten: EINHEITEN.map((e) => e.art) };
 });

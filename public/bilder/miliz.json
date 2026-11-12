@@ -1,0 +1,57 @@
+{
+  "bild": "miliz.webp",
+  "maske": "miliz-maske.webp",
+  "zelle": [
+    159,
+    144
+  ],
+  "fuss": [
+    41,
+    110
+  ],
+  "feldbreite": 132,
+  "zeilen": 8,
+  "spalten": 9,
+  "art": "figur",
+  "richtungen": 8,
+  "hoehe": 86,
+  "ablaeufe": {
+    "stehen": {
+      "spalte": 0,
+      "bilder": 1
+    },
+    "gehen": {
+      "spalte": 1,
+      "bilder": 8
+    },
+    "angreifen": {
+      "spalte": 0,
+      "bilder": 8,
+      "bild": "miliz-angreifen.webp",
+      "maske": "miliz-angreifen-maske.webp",
+      "zelle": [
+        207,
+        158
+      ],
+      "fuss": [
+        78,
+        123
+      ]
+    },
+    "sterben": {
+      "spalte": 0,
+      "bilder": 8,
+      "einmal": true,
+      "bild": "miliz-sterben.webp",
+      "maske": "miliz-sterben-maske.webp",
+      "zelle": [
+        210,
+        159
+      ],
+      "fuss": [
+        88,
+        110
+      ]
+    }
+  }
+}
