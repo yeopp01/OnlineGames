@@ -228,8 +228,11 @@ def _schwarz_anteil(bild, deckung):
 SCHATTEN = 0.6
 
 
-def _schatten_daempfen(bild, deckung):
+def _schatten_daempfen(bild, deckung, staerke=SCHATTEN):
     """Trennt Koerper und Schatten und schwaecht nur den Schatten ab.
+
+    `staerke` 0 laesst den Schatten ganz weg, 1 laesst ihn voll stehen - fuer
+    Tafeln, die Koerper und Schatten getrennt liefern (die Mauer).
 
     Im gerenderten Bild ist die Deckung a = o + (1 - o) * s: o der Koerper,
     s der Schatten daneben. Ganz schwacher Schatten faellt weg - der
@@ -239,7 +242,7 @@ def _schatten_daempfen(bild, deckung):
     o = deckung
     a = bild[:, :, 3]
     s = np.clip((a - o) / np.maximum(1 - o, 1e-4), 0, 1)
-    s = s * np.clip((s - 0.05) / 0.12, 0, 1) * SCHATTEN
+    s = s * np.clip((s - 0.05) / 0.12, 0, 1) * staerke
     neu = o + (1 - o) * s
     aus = bild.copy()
     aus[:, :, :3] = bild[:, :, :3] * (a / np.maximum(neu, 1e-4))[:, :, None]
@@ -322,12 +325,30 @@ class Tafel:
         self.maske = False
         kamera_setzen(zelle[0], zelle[1], fuss)
 
-    def bild(self, zeile, spalte, maske=True, teil=None):
+    def bild(self, zeile, spalte, maske=True, teil=None, schatten='mit'):
+        """Rendert die Szene in eine Zelle.
+
+        schatten: 'mit' - Koerper und gedaempfter Schlagschatten in einem Bild
+        (so stehen alle Figuren und Gebaeude); 'ohne' - nur der Koerper;
+        'nur' - nur der Schlagschatten, voll gedeckt und auch dort, wo der
+        Koerper ihn verdeckt. Die beiden letzten sind fuer Teile, die im Spiel
+        aneinandergesetzt werden: ein Schatten im Bild des einen Teils laege
+        sonst ueber dem Nachbarn. Eine Szene wird nur einmal gerendert - der
+        Renderer behaelt sie, und ein Koerper, der danach wieder sichtbar
+        wird, kaeme nicht sicher zurueck.
+        """
+        if schatten not in ('mit', 'ohne', 'nur'):
+            raise SystemExit(f'{self.name}: schatten={schatten!r} gibt es nicht')
+        if schatten == 'nur':
+            # Der Koerper wirft weiter Schatten, die Kamera sieht ihn nicht.
+            for koerper in _koerper():
+                koerper.visible_camera = False
+            maske = False
         bild, deckung, spieler = rendern(os.path.join(self.ordner, 'bild.exr'))
         anteil = _schwarz_anteil(bild, deckung)
         if anteil > SCHWARZ_GRENZE:
             raise SystemExit(f'{self.name}, Zeile {zeile}, Spalte {spalte}: {anteil:.0%} des Koerpers sind schwarz - ein Stoff ist beim Rendern verloren gegangen')
-        fertig = _schatten_daempfen(bild, deckung)
+        fertig = _schatten_daempfen(bild, deckung, {'mit': SCHATTEN, 'ohne': 0.0, 'nur': 1.0}[schatten])
         # Was am Rand der Zelle steht, ist abgeschnitten: ein Koerper bricht
         # den Lauf ab, ein Schatten wird gemeldet - im Spiel endete er sonst
         # an einer geraden Kante. (Der Marktkarren musste zweimal wachsen,
@@ -364,7 +385,8 @@ class Tafel:
 
     def _raster(self, name, bilder):
         """Schreibt ein Raster aus Zellen als Bild und, wo es Spielerfarbe
-        gibt, als Maske. Gibt (Zeilen, Spalten, Ausschnitt) zurueck."""
+        gibt, als Maske. Gibt (Zeilen, Spalten, Ausschnitt, ob es eine Maske gibt)
+        zurueck."""
         zeilen = 1 + max(z for z, _ in bilder)
         spalten = 1 + max(s for _, s in bilder)
         sb, sh = self.saum
@@ -388,16 +410,19 @@ class Tafel:
                 maske[z * h:(z + 1) * h, s * b:(s + 1) * b] = np.where(spieler[:, :, None] >= 1 / 255, 1.0, 0.0)
                 maske[z * h:(z + 1) * h, s * b:(s + 1) * b, 3] = np.where(spieler >= 1 / 255, spieler, 0.0)
         _schreiben(os.path.join(self.ziel, f'{name}.webp'), feld)
-        if self.maske:
+        # Eine Maske bekommt ein Raster, sobald eines seiner Bilder eine hat -
+        # ein Teil aus lauter Schatten braucht keine.
+        hat_maske = self.maske and any(spieler is not None for _, spieler in bilder.values())
+        if hat_maske:
             _schreiben(os.path.join(self.ziel, f'{name}-maske.webp'), maske)
-        return zeilen, spalten, (links, oben, b, h)
+        return zeilen, spalten, (links, oben, b, h), hat_maske
 
     def schreiben(self, beschreibung):
-        zeilen, spalten, (links, oben, b, h) = self._raster(self.name, self.bilder)
+        zeilen, spalten, (links, oben, b, h), hat_maske = self._raster(self.name, self.bilder)
         sb, sh = self.saum
         angaben = {
             'bild': f'{self.name}.webp',
-            'maske': f'{self.name}-maske.webp' if self.maske else None,
+            'maske': f'{self.name}-maske.webp' if hat_maske else None,
             'zelle': [b, h],
             'fuss': [self.fuss[0] - links + sb, self.fuss[1] - oben + sh],
             'feldbreite': FELD_BREITE,
@@ -418,12 +443,12 @@ class Tafel:
             zugehoerig = [a for name, a in angaben.get('ablaeufe', {}).items() if a.get('teil', name) == teil]
             if not zugehoerig:
                 raise SystemExit(f'{self.name}: der Teil "{teil}" gehoert zu keinem Ablauf der Beschreibung')
-            teilzeilen, teilspalten, (links, oben, b, h) = self._raster(f'{self.name}-{teil}', bilder)
+            teilzeilen, teilspalten, (links, oben, b, h), teilmaske = self._raster(f'{self.name}-{teil}', bilder)
             if teilzeilen != zeilen or teilspalten != max(a['spalte'] + a['bilder'] for a in zugehoerig):
                 raise SystemExit(f'{self.name}-{teil}: {teilspalten} x {teilzeilen} Bilder passen nicht zur Beschreibung')
             for ablauf in zugehoerig:
                 ablauf['bild'] = f'{self.name}-{teil}.webp'
-                ablauf['maske'] = f'{self.name}-{teil}-maske.webp' if self.maske else None
+                ablauf['maske'] = f'{self.name}-{teil}-maske.webp' if teilmaske else None
                 if self.knapp:
                     ablauf['zelle'] = [b, h]
                     ablauf['fuss'] = [self.fuss[0] - links, self.fuss[1] - oben]

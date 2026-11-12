@@ -355,26 +355,42 @@ def schlitz(r, x, z, s, hoehe=0.3, breite=0.045):
 
 def zinnen(mitte, laenge, breite, z, stoff, hoch=0.17, tief=0.09, zahn=0.16, brust=0.08):
     """Ein Zinnenkranz um ein Rechteck: eine niedrige Brustwehr, darauf die
-    Zinnen. `z` ist die Hoehe der Krone, auf der er steht."""
+    Zinnen. `z` ist die Hoehe der Krone, auf der er steht.
+
+    Die Ecken gehoeren den Reihen laengs X; die Reihen laengs Y sind an beiden
+    Enden um die Tiefe kuerzer. Laegen zwei Eckzinnen ineinander, deckten sich
+    ihre Flaechen - und deckungsgleiche Flaechen rendert Cycles nach Laune
+    schwarz (gesehen am Bergfried und am Mauerpfeiler)."""
     for achse, lang, quer in (('x', laenge, breite), ('y', breite, laenge)):
         zahl = max(2, round((lang + zahn) / (2 * zahn)))
         schritt = (lang - zahn) / (zahl - 1) if zahl > 1 else 0
         for seite in (-1, 1):
             rand = seite * (quer / 2 - tief / 2)
-            mass = (lang, tief, brust) if achse == 'x' else (tief, lang, brust)
-            ort = (mitte[0], mitte[1] + rand, z + brust / 2) if achse == 'x' else (mitte[0] + rand, mitte[1], z + brust / 2)
-            quader('brustwehr', mass, stoff, ort=ort, fase=0.01)
+            if achse == 'x':
+                quader('brustwehr', (lang, tief, brust), stoff, ort=(mitte[0], mitte[1] + rand, z + brust / 2), fase=0.01)
+            else:
+                quader('brustwehr', (tief, lang - 2 * tief, brust), stoff, ort=(mitte[0] + rand, mitte[1], z + brust / 2),
+                       fase=0.01)
             for i in range(zahl):
                 d = -lang / 2 + zahn / 2 + i * schritt
-                mass = (zahn, tief, hoch) if achse == 'x' else (tief, zahn, hoch)
-                ort = ((mitte[0] + d, mitte[1] + rand, z + brust + hoch / 2) if achse == 'x'
-                       else (mitte[0] + rand, mitte[1] + d, z + brust + hoch / 2))
-                quader('zinne', mass, stoff, ort=ort, fase=0.012)
+                if achse == 'x':
+                    quader('zinne', (zahn, tief, hoch), stoff, ort=(mitte[0] + d, mitte[1] + rand, z + brust + hoch / 2),
+                           fase=0.012)
+                    continue
+                breit = zahn
+                if i in (0, zahl - 1):
+                    # Die Eckzinne dieser Reihe reicht nur bis an die der anderen.
+                    breit = zahn - tief
+                    d += tief / 2 if i == 0 else -tief / 2
+                if breit > 0.02:
+                    quader('zinne', (tief, breit, hoch), stoff, ort=(mitte[0] + rand, mitte[1] + d, z + brust + hoch / 2),
+                           fase=0.012)
 
 
 def rundzinnen(mitte, halbmesser, z, stoff, zahl=10, hoch=0.17, tief=0.09, brust=0.08):
     """Ein Zinnenkranz um einen runden Turm."""
-    drehkoerper('brustwehr', [(0, halbmesser - tief), (0, halbmesser), (brust, halbmesser), (brust, halbmesser - tief)],
+    drehkoerper('brustwehr', [(0, halbmesser - tief), (0, halbmesser), (brust, halbmesser), (brust, halbmesser - tief),
+                              (0, halbmesser - tief)],
                 stoff, ort=(mitte[0], mitte[1], z), teile=24)
     breit = 2 * math.pi * (halbmesser - tief / 2) / zahl * 0.52
     for i in range(zahl):
@@ -700,3 +716,37 @@ def wagenrad(ort, s, r=0.3, richtung=ZUR_KAMERA, speichen=8, stoff='hellholz', b
         w = 2 * math.pi * i / speichen
         d = u * math.cos(w) + v * math.sin(w)
         balken('speiche', tuple(mitte + d * r * 0.1), tuple(mitte + d * r * 0.88), r * 0.09, s[stoff], fase=0.003)
+
+
+def kasten(name, von, bis, stoff, eltern=None):
+    """Ein Quader zwischen zwei Ecken, dessen Netz in den Massen der Szene
+    steht statt um seine eigene Mitte. Mauerwerk aus mehreren solchen Kaesten
+    traegt deshalb ein Fugenbild: die Lagen laufen von einem zum naechsten
+    durch."""
+    (x0, y0, z0), (x1, y1, z1) = von, bis
+    ecken = [(x0, y0, z0), (x1, y0, z0), (x1, y1, z0), (x0, y1, z0),
+             (x0, y0, z1), (x1, y0, z1), (x1, y1, z1), (x0, y1, z1)]
+    seiten = [(3, 2, 1, 0), (4, 5, 6, 7), (0, 1, 5, 4), (1, 2, 6, 5), (2, 3, 7, 6), (3, 0, 4, 7)]
+    return netz(name, ecken, seiten, stoff, eltern=eltern)
+
+
+def aussparen(vorher):
+    """Macht alles, was seit `vorher` (eine Menge von Koerpern) dazugekommen
+    ist, zur Aussparung: es steht im Raum und verdeckt, im Bild bleibt an
+    seiner Stelle Durchsicht, und es wirft keinen Schatten. So wird ein Teil
+    gerendert, das im Spiel hinter oder in einem anderen steckt - etwa der Arm
+    einer Mauer, der in ihrem Pfeiler endet."""
+    import bpy
+    leerstoff = einfarbig('aussparung', '#000000')
+    for koerper in [o for o in bpy.context.scene.objects if o not in vorher and o.type in ('MESH', 'CURVE')]:
+        koerper.data.materials.clear()
+        koerper.data.materials.append(leerstoff)
+        koerper.is_holdout = True
+        koerper.visible_shadow = False
+        koerper['kulisse'] = True
+
+
+def bestand():
+    """Die Koerper, die jetzt in der Szene stehen - fuer aussparen()."""
+    import bpy
+    return set(bpy.context.scene.objects)

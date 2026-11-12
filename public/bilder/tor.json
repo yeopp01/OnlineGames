@@ -1,0 +1,42 @@
+{
+  "bild": "tor.webp",
+  "maske": "tor-maske.webp",
+  "zelle": [
+    118,
+    215
+  ],
+  "fuss": [
+    59,
+    185
+  ],
+  "feldbreite": 132,
+  "zeilen": 2,
+  "spalten": 2,
+  "art": "gebaeude",
+  "felder": 1,
+  "ausrichtungen": [
+    "x",
+    "y"
+  ],
+  "zustaende": [
+    "zu",
+    "offen"
+  ],
+  "ablaeufe": {
+    "schatten": {
+      "spalte": 0,
+      "bilder": 1,
+      "bild": "tor-schatten.webp",
+      "maske": null,
+      "zelle": [
+        283,
+        116
+      ],
+      "fuss": [
+        92,
+        56
+      ]
+    }
+  },
+  "schattenDeckung": 0.6
+}

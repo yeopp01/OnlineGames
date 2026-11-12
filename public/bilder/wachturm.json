@@ -1,0 +1,17 @@
+{
+  "bild": "wachturm.webp",
+  "maske": "wachturm-maske.webp",
+  "zelle": [
+    332,
+    290
+  ],
+  "fuss": [
+    77,
+    233
+  ],
+  "feldbreite": 132,
+  "zeilen": 1,
+  "spalten": 1,
+  "art": "gebaeude",
+  "felder": 1
+}
