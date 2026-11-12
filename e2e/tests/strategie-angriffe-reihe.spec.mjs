@@ -11,7 +11,7 @@
 // Einzelnen prueft der Regeltest tests/strategie-angriffe-reihe.test.mjs.
 import { nachweis } from '../../scripts/qa-nachweis.mjs';
 import { einheitenAufstellen, expect, gebaeudeAufstellen, lebenSetzen, test, zeitraffer } from '../helpers/seite.mjs';
-import { freieWiesen, partieBeenden, partieZuZweit } from '../helpers/strategie.mjs';
+import { aufSeite, freieWiesen, partieBeenden, partieZuZweit, waehlen } from '../helpers/strategie.mjs';
 
 const BEDIENUNG = '10-strategie/bedienung.md';
 
@@ -37,29 +37,15 @@ test('bedienung AC-50: mit Umschalt haengen zwei Haeuser hinter dem ersten, rot 
     await zeitraffer(anna, code, 0);
 
     // Die Miliz waehlen und alle drei Haeuser ins Bild nehmen.
-    await anna.evaluate(([id, w]) => {
-      const a = window.ansicht;
-      a.gewaehltesGebaeude = null;
-      a.ausgewaehlt = new Set([id]);
-      a.beiAuswahl();
-      a.kamera.zoom = 1.8;
-      a.blickAuf(w.x, w.y - 1);
-    }, [miliz, wiese]);
-    const aufSeite = (h) => anna.evaluate((g) => {
-      const a = window.ansicht;
-      const m = a.gebaeudeMitte(a.gebaeude.get(g));
-      const r = a.leinwand.getBoundingClientRect();
-      const p = a.zuBild(m.x, m.y);
-      return { x: r.left + p.x, y: r.top + p.y };
-    }, h);
+    await waehlen(anna, [miliz], { zoom: 1.8, blick: { x: wiese.x, y: wiese.y - 1 } });
 
     // Das erste ohne Umschalt, die beiden anderen mit.
-    const erstes = await aufSeite(haeuser[0]);
+    const erstes = await aufSeite(anna, { gebaeude: haeuser[0] });
     await anna.mouse.click(erstes.x, erstes.y, { button: 'right' });
     expect(await anna.evaluate(() => window.ansicht.zielzeichen?.feindlich), 'ein Angriff').toBe(true);
     await anna.keyboard.down('Shift');
     for (const h of haeuser.slice(1)) {
-      const p = await aufSeite(h);
+      const p = await aufSeite(anna, { gebaeude: h });
       await anna.mouse.click(p.x, p.y, { button: 'right' });
     }
     await anna.keyboard.up('Shift');

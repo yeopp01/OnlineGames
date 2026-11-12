@@ -10,7 +10,7 @@
 // tests/strategie-punkte.test.mjs.
 import { nachweis } from '../../scripts/qa-nachweis.mjs';
 import { einheitenAufstellen, expect, gebaeudeAufstellen, lebenSetzen, test, zeitraffer } from '../helpers/seite.mjs';
-import { freieWiesen, partieBeenden, partieZuZweit } from '../helpers/strategie.mjs';
+import { aufSeite, freieWiesen, partieBeenden, partieZuZweit, waehlen } from '../helpers/strategie.mjs';
 
 const BEDIENUNG = '10-strategie/bedienung.md';
 
@@ -47,23 +47,18 @@ test('bedienung AC-49: wer Dorfbewohner und Haus des Gegners vernichtet, steht i
 
     // Ein Rechtsklick auf das Ziel greift an (kampf AC-1).
     const angreifen = async (ziel, istGebaeude) => {
-      const punkt = await anna.evaluate(([e, z, g]) => {
+      const wo = istGebaeude ? { gebaeude: ziel } : { einheit: ziel };
+      // Eine Miliz wacht (kampf AC-2): kam ihr das Ziel schon in Sicht, ist
+      // es vielleicht schon gefallen - dann gibt es nichts mehr zu klicken.
+      const mitte = await anna.evaluate(([z, g]) => {
         const a = window.ansicht;
-        a.gewaehltesGebaeude = null;
-        a.ausgewaehlt = new Set([e]);
-        a.beiAuswahl();
         const ding = g ? a.gebaeude.get(z) : a.nachher.get(z);
-        // Eine Miliz wacht (kampf AC-2): kam ihr das Ziel schon in Sicht, ist
-        // es vielleicht schon gefallen - dann gibt es nichts mehr zu klicken.
-        if (!ding) return null;
-        const m = g ? a.gebaeudeMitte(ding) : { x: ding.x, y: ding.y };
-        a.kamera.zoom = 1.8;
-        a.blickAuf(m.x, m.y);
-        a.zielzeichen = null;
-        const r = a.leinwand.getBoundingClientRect();
-        const p = a.zuBild(m.x, m.y);
-        return { x: r.left + p.x, y: r.top + p.y };
-      }, [miliz, ziel, istGebaeude]);
+        return ding ? (g ? a.gebaeudeMitte(ding) : { x: ding.x, y: ding.y }) : null;
+      }, [ziel, istGebaeude]);
+      if (!mitte) return;
+      await waehlen(anna, [miliz], { zoom: 1.8, blick: mitte });
+      await anna.evaluate(() => { window.ansicht.zielzeichen = null; });
+      const punkt = await aufSeite(anna, wo);
       if (!punkt) return;
       await anna.mouse.click(punkt.x, punkt.y, { button: 'right' });
       expect(await anna.evaluate(() => window.ansicht.zielzeichen?.feindlich), 'ein Angriff (rotes Zeichen)').toBe(true);

@@ -70,6 +70,14 @@ In dieser Reihenfolge, das Erste, was zutrifft:
    während der Partie verborgen ist. Dann ist die Runde ein Beleg oder ein
    Umzug, kein Neubau, und der Test prüft genau die Lücke (sichtbar? ohne
    Server?).
+   **Ein neues Kriterium nach Punkt 6 erst, wenn in keiner Spec mehr ein
+   offenes ohne Sperre steht** — gezählt, nicht erinnert:
+   `` grep -c '`offen`' specs/10-strategie/*.md ``, dann die Titel lesen. Die
+   Runden 194 bis 197 legten vier neue Kriterien in `bedienung.md` an, weil
+   dort die drei übrigen Zeichnungen brauchten; in `bauen.md`,
+   `einheiten-und-befehle.md`, `karte-und-vorraete.md` und `ki.md` standen
+   derweil zehn offene aus den Stufen A bis C ohne Sperre, einige davon
+   längst gebaut und nur nicht belegt (Rückschau nach Runde 198).
 
 **Einen offenen Produktfehler umschiffst du höchstens einmal.** Scheitert ein
 Bild oder Test an einem Fehler, der schon als `offen`-Kriterium dasteht, darf
@@ -517,7 +525,11 @@ Setze die gewählten Kriterien auf `in-arbeit`.
   Klickpunkt an der Körpermitte (`klick`), Kürzel (`k`) und ob der Fußpunkt
   im Bild steht (`imBild`). So liefen in Runde 182 Umschalt-Klick, Rahmen
   und Doppelklick beim ersten Mal grün; vorher schrieb jede Datei ihre
-  eigene Liste.
+  eigene Liste. **Wer auswählt, ohne zu klicken**, nimmt `waehlen(page,
+  ids, { zoom, blick })`, und den Klickpunkt eines Felds, Gebäudes oder
+  einer Einheit gibt `aufSeite(page, { feld | gebaeude | einheit })` —
+  `null`, wenn es nicht mehr da ist. Beide aus der Rückschau nach Runde
+  198; 17 ältere Dateien schreiben dieselben Zeilen noch selbst.
 - **Warten auf Spielzeit** geht über den Zeitraffer (bis 20), nicht über die
   Uhr: wer länger als fünf Sekunden auf etwas wartet, das im Spiel dauert, dreht
   ihn hoch — und rechnet Abstandsgrenzen mit ein, denn ein Zustand fasst dann
@@ -639,7 +651,9 @@ Setze die gewählten Kriterien auf `in-arbeit`.
    <testdatei>` ersetzt genau eine Stelle, lässt laufen und schreibt die Datei
    **immer** zurück, auch wenn der Befehl fällt oder abbricht; der Test muss
    fallen. Mit `--datei <ersatz>` statt der zwei Texte tauscht sie die ganze
-   Datei (etwa gegen `git show HEAD:<datei>`). Nicht von Hand mit Kopie und
+   Datei (etwa gegen `git show HEAD:<datei>`). Mehrzeiliger Text geht mit
+   `--zeilen`: ein geschriebenes `\n` steht für das Zeilenende der Datei
+   (Rückschau nach Runde 198; vorher half nur `--datei` mit einer Kopie). Nicht von Hand mit Kopie und
    `sed`: in Runde 112 schob ein Zeitlimit den Befehl in den Hintergrund,
    bevor das Zurückkopieren lief. Nicht `git stash`: das nimmt den neuen
    Test mit weg, und „grün" heißt dann nichts (Runde 97). Die Durchsicht traf

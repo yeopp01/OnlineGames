@@ -1666,6 +1666,47 @@ Testlauf): `npm run check` 53 s ohne Last, 599 Tests ohne Browser; der
 volle Browserlauf mit 191 Fällen 16,6 min (Runde 140; Runde 135: 17,0 min
 für 190). Die Ritterzeit am Stück braucht 1,7 min.
 
+### Nach Runde 198 (2026-11-12)
+
+Vier Runden aus `bedienung.md`, alle nach Abschnitt 1, Punkt 6 (Stufe E
+gesperrt), und alle vier **neu angelegt**: 194 Punkte für alle (AC-47),
+195 mehrere Bauten mit Umschalt (AC-48), 196 Punkte für Siege (AC-49), 197
+Angriffe hintereinander (AC-50). Was Zeit gekostet hat oder sich
+wiederholen wird:
+
+1. **Neue Kriterien statt alter** (Runden 194 bis 197): die drei offenen in
+   `bedienung.md` brauchen Zeichnungen, also legte jede Runde ein neues an.
+   Gezählt stehen in den anderen Specs zehn offene aus den Stufen A bis C
+   ohne Sperre — bauen AC-7, AC-17, AC-18, AC-19, einheiten AC-10, AC-30,
+   AC-32, karte AC-7, AC-10, ki AC-20, AC-23 —, und einige sind gebaut, nur
+   nicht belegt: der Wohnraum zählt nur fertige Gebäude (`welt.wohnraum`),
+   also sinkt die Grenze, wenn ein Haus fällt (bauen AC-18); Gebäude haben
+   Leben seit B5 (AC-17); die Eroberung entscheidet seit C2 (AC-19). → Regel
+   in Abschnitt 1, Punkt 6: **ein neues Kriterium erst, wenn in keiner Spec
+   ein offenes ohne Sperre steht** — gezählt mit `grep -c`. Damit braucht
+   es die Frage „weiter neue Kriterien?“ an den Benutzer nicht.
+2. **Mehrzeilige Gegenprobe** (Runde 197): eine Zeile stand zweimal, nur mit
+   der davor eindeutig, und mehrzeiliger Text kommt nicht heil durch
+   `npm run`. Geholfen hat eine Kopie mit `--datei`. → `npm run gegenprobe
+   -- <datei> --zeilen "<alt mit \n>" "<neu mit \n>" -- …`; geprüft an der
+   Stelle aus Runde 197 (der Test fiel, die Datei war danach wie vorher),
+   steht in der Anweisung bei der Gegenprobe.
+3. **Wählen und Klicken in jeder Datei neu** (Runden 196, 197): fünf Zeilen
+   Auswahl, dazu der Klickpunkt aus `zuBild` und `getBoundingClientRect`,
+   in 19 Dateien. → `waehlen(page, ids, { zoom, blick })` und
+   `aufSeite(page, { feld | gebaeude | einheit })` in
+   `e2e/helpers/strategie.mjs`; die beiden neuen Dateien nutzen sie (beide
+   grün), die 17 älteren bleiben, bis eine Runde sie ohnehin anfasst.
+
+Gezählt: 480 von 605 Kriterien fertig, 759 Tests ohne Browser, 231 im
+Browser. Laufzeiten nicht gemessen: Blender rechnet nicht mehr, aber kein
+voller Browserlauf seit Runde 190. Erledigt aus der letzten Rückschau: der
+Wächter für feste Kästen hat in den Runden 194 bis 197 nichts beanstandet,
+weil keine neuen dazukamen. Weiter offen: ob das Schieben endet, wenn die
+Maus das Fenster verlässt; ein Server, der schweigt, ohne zu trennen; aus
+Runde 197 der Mangonel ohne Rückzug, der seine Reihe vergisst. Kein
+Rundgang im Browser: keine Stufe erreicht.
+
 ### Nach Runde 193 (2026-11-12)
 
 Vier Runden aus `bedienung.md`, alle nach Abschnitt 1, Punkt 6 (Stufe E
@@ -2158,6 +2199,12 @@ ihn, mit Gegenprobe an beiden Formen. Fünf Bilder neu, alle angesehen.
 Neueste oben. Eine Zeile je Runde: Nummer, Datum, Kriterien, Ergebnis,
 wichtigste Erkenntnis.
 
+- **198** · 2026-11-12 · **Rückschau** (Runden 194 bis 197): `gegenprobe
+  --zeilen` für mehrzeiligen Text, Testhilfen `waehlen` und `aufSeite` in
+  `e2e/helpers/strategie.mjs`, Regel in Abschnitt 1, Punkt 6: ein neues
+  Kriterium erst, wenn kein altes offenes ohne Sperre mehr dasteht — es
+  stehen zehn da, einige gebaut und nur nicht belegt. Nächste Runde:
+  bauen AC-17, AC-18, AC-19 belegen.
 - **197** · 2026-11-12 · **bedienung AC-50 fertig** (neu angelegt,
   Abweichung nach Abschnitt 1, Punkt 6 — Stufe E gesperrt): Angriffe
   hintereinander mit Umschalt. `einheit.angriffe` neben `wegpunkte`,

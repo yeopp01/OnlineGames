@@ -510,6 +510,53 @@ export function bedienteileFrei(page) {
 }
 
 /**
+ * Waehlt eigene Einheiten aus, ohne zu klicken, und nimmt auf Wunsch einen
+ * Ort ins Bild. Fuer Faelle, in denen die Auswahl nur der Anfang ist und das
+ * Kriterium vom Befehl danach handelt (Rueckschau nach Runde 198: dieselben
+ * fuenf Zeilen standen in 19 Dateien).
+ *
+ * @param {import('@playwright/test').Page} page
+ * @param {number[]} ids
+ * @param {{ zoom?: number, blick?: {x: number, y: number} }} [wie]
+ */
+export function waehlen(page, ids, { zoom = null, blick = null } = {}) {
+  return page.evaluate(([ids, zoom, blick]) => {
+    const a = window.ansicht;
+    a.gewaehltesGebaeude = null;
+    a.ausgewaehlt = new Set(ids);
+    a.beiAuswahl();
+    if (zoom) a.kamera.zoom = zoom;
+    if (blick) a.blickAuf(blick.x, blick.y);
+  }, [ids, zoom, blick]);
+}
+
+/**
+ * Der Punkt auf der Seite, an dem ein Feld, ein Gebaeude (seine Mitte) oder
+ * eine Einheit gerade im Bild steht - fuer `page.mouse.click`. `null`, wenn
+ * das Gebaeude oder die Einheit nicht (mehr) da ist.
+ *
+ * @param {import('@playwright/test').Page} page
+ * @param {{ feld?: {x: number, y: number}, gebaeude?: number, einheit?: number }} wo
+ * @returns {Promise<{x: number, y: number} | null>}
+ */
+export function aufSeite(page, wo) {
+  return page.evaluate((wo) => {
+    const a = window.ansicht;
+    let m = wo.feld;
+    if (wo.gebaeude !== undefined) {
+      const g = a.gebaeude.get(wo.gebaeude);
+      m = g && a.gebaeudeMitte(g);
+    } else if (wo.einheit !== undefined) {
+      m = a.nachher.get(wo.einheit);
+    }
+    if (!m) return null;
+    const r = a.leinwand.getBoundingClientRect();
+    const p = a.zuBild(m.x, m.y);
+    return { x: r.left + p.x, y: r.top + p.y };
+  }, wo);
+}
+
+/**
  * Freie Wiesen neben der eigenen Basis, je mit fuenf Feldern Gras ringsum und
  * mindestens 16 Felder auseinander. Auf Stein oder Wald sieht man die Figuren
  * zwar, aber das Bild erzaehlt dann vom Steinbruch (Runde 63); und wer zwei
