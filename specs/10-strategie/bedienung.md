@@ -2,7 +2,7 @@
 
 **Bereich:** Strategie
 **Kuerzel:** bedienung
-**Stand:** 44/47 fertig · 3 offen
+**Stand:** 45/48 fertig · 3 offen
 
 ## Zweck
 
@@ -328,6 +328,21 @@ aufgelistet), AC-11 (Übersichtskarte — auf 120 × 120 unverzichtbar), AC-15
   Ausbildung, einer Verbesserung und einem Aufstieg aus den Daten nach; über
   das Netz kommt die Zahl auch beim Gegner an, dessen Vorräte im Nebel
   fehlen; im Bild steht sie in der Tafel auf `Tab` für jeden Spieler.
+- **AC-48** `fertig` **Mehrere Bauten mit Umschalt** — Wer beim Setzen
+  einer Baustelle Umschalt hält, behält den Bauplatz in der Hand und setzt
+  die nächste; erst ein Klick ohne Umschalt, Rechtsklick oder Esc legt ihn
+  weg. Wer von den Bauleuten schon baut, baut die neue Baustelle danach —
+  hinten an seine Reihe, wie die Felder einer gezogenen Mauer (bauen
+  AC-30); wer nicht baut, beginnt sofort. Jede Baustelle wird beim Setzen
+  bezahlt wie ohne Umschalt, die Reihe braucht deshalb keine eigene Grenze
+  (ADR-0005: sie kostet Rohstoffe, nicht nur Klicks). Ein Klick ohne
+  Umschalt verwirft die Reihe nicht, was schon steht, bleibt Baustelle —
+  wie im Original. Fortsetzung von AC-14: dort hängt Umschalt Wege an.
+  Mauern bleiben, wie sie sind: gezogen ist schon eine Reihe. **Messbar:**
+  ein Dorfbewohner, der ein Haus baut, baut mit Umschalt zwei weitere der
+  Reihe nach, ohne neuen Befehl; ohne Umschalt geht er sofort zur neuen.
+  Im Browser bleibt der Bauplatz nach dem Klick mit Umschalt in der Hand,
+  und drei Baustellen stehen im Bild.
 
 ## Grenzfaelle
 

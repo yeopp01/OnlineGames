@@ -128,8 +128,8 @@ function empfangen(nachricht) {
         ansicht.beiSpielstand = () => spielstandZeigen();
         ansicht.sammelpunktSenden = (gebaeude, ziel) =>
           senden({ typ: 'befehl', auftrag: 'sammelpunkt', gebaeude, ziel });
-        ansicht.bauenSenden = (einheiten, art, ziel) =>
-          senden({ typ: 'befehl', auftrag: 'bauen', einheiten, art, ziel });
+        ansicht.bauenSenden = (einheiten, art, ziel, anhaengen) =>
+          senden({ typ: 'befehl', auftrag: 'bauen', einheiten, art, ziel, ...(anhaengen ? { anhaengen: true } : {}) });
         ansicht.mauerSenden = (einheiten, art, von, bis) =>
           senden({ typ: 'befehl', auftrag: 'mauer', einheiten, art, von, bis });
       }

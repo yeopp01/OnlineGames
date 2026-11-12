@@ -22,6 +22,7 @@ export const BELEGUNG = [
   ['Doppelklick', 'alle Einheiten dieser Art im Bild'],
   ['Rechtsklick', 'hingehen, sammeln, bauen – oder Sammelpunkt setzen'],
   ['Umschalt + Rechtsklick', 'Ziel hinten anhängen, der Reihe nach abgehen'],
+  ['Umschalt beim Bauen', 'weitere Baustellen setzen, der Reihe nach bauen'],
   ['W A S D, Pfeile', 'Karte schieben'],
   ['Maus an den Bildschirmrand', 'Karte schieben – unten abschaltbar'],
   ['Mausrad', 'näher, weiter'],

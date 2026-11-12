@@ -882,7 +882,7 @@ class Welt {
 
   // Ein Bauauftrag: der Platz wird geprueft, die Kosten gehen sofort ab
   // (bauen AC-5), die Baustelle entsteht, die Dorfbewohner gehen hin (AC-1).
-  bauen(spielerId, einheitIds, art, ziel) {
+  bauen(spielerId, einheitIds, art, ziel, anhaengen = false) {
     if (!Array.isArray(einheitIds) || !ziel || !GEBAEUDE[art]) return { fehler: 'Das lässt sich nicht bauen.' };
     const bauer = einheitIds.slice(0, 200)
       .map((id) => this.einheiten.get(id))
@@ -908,7 +908,16 @@ class Welt {
     // baute, geht zum naechsten Feld seiner Mauer (welt.bauenWeiter).
     if (alt) this.gebaeudeZerstoeren(alt);
     const baustelle = this.gebaeudeAnlegen(spielerId, art, x, y, false);
-    for (const einheit of bauer) this.bauenBeginnen(einheit, baustelle);
+    for (const einheit of bauer) {
+      // Mit Umschalt (bedienung AC-48): wer schon baut, baut das danach -
+      // hinten an seine Reihe, wie die Felder einer Mauer. Eine eigene Grenze
+      // braucht sie nicht, jede Baustelle ist schon bezahlt.
+      if (anhaengen && einheit.auftrag?.art === 'bauen') {
+        einheit.auftrag.folge = [...(einheit.auftrag.folge || []), baustelle.id];
+      } else {
+        this.bauenBeginnen(einheit, baustelle);
+      }
+    }
     return { gebaeude: baustelle.id };
   }
 
@@ -1094,7 +1103,7 @@ class Welt {
       case 'abbrechen':
         return this.abbrechen(spielerId, nachricht.gebaeude, nachricht.platz);
       case 'bauen':
-        return this.bauen(spielerId, nachricht.einheiten, nachricht.art, nachricht.ziel);
+        return this.bauen(spielerId, nachricht.einheiten, nachricht.art, nachricht.ziel, Boolean(nachricht.anhaengen));
       case 'mauer':
         return this.mauerZiehen(spielerId, nachricht.einheiten, nachricht.art, nachricht.von, nachricht.bis);
       case 'abreissen':

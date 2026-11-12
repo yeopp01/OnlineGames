@@ -2158,6 +2158,19 @@ ihn, mit Gegenprobe an beiden Formen. Fünf Bilder neu, alle angesehen.
 Neueste oben. Eine Zeile je Runde: Nummer, Datum, Kriterien, Ergebnis,
 wichtigste Erkenntnis.
 
+- **195** · 2026-11-12 · **bedienung AC-48 fertig** (neu angelegt,
+  Abweichung nach Abschnitt 1, Punkt 6 — Stufe E gesperrt, und die drei
+  offenen Kriterien in `bedienung.md` brauchen neue Zeichnungen, die die
+  Blender-Sitzung baut): mehrere Bauten mit Umschalt. Fast alles stand
+  schon: die gezogene Mauer gibt ihren Bauleuten eine Reihe
+  (`auftrag.folge`, `bauenWeiter`). Neu ist nur, dass `bauen` mit
+  `anhaengen` die Baustelle hinten an diese Reihe hängt, wenn der Bauer
+  schon baut — sonst beginnt er sofort —, und dass der Browser mit
+  Umschalt den Bauplatz in der Hand behält. Keine eigene Grenze: jede
+  Baustelle ist beim Setzen bezahlt. Gegenprobe: ohne das Anhängen fallen
+  zwei von drei Regelfällen. Die Tastenübersicht hat eine Zeile mehr (Bild
+  zu AC-22 neu, auf 1366 × 768 weiter grün). Die Durchsicht fand nichts
+  über der Schwelle (kein geteiltes `folge`, Randfälle fängt `bauenWeiter`).
 - **194** · 2026-11-12 · **bedienung AC-47 fertig** (Abweichung nach
   Abschnitt 1, Punkt 6 — Stufe E gesperrt): erst die Rechnung ins
   Kriterium, dann gebaut. Ein Punkt je 10 gesammelte Rohstoffe, je 10
