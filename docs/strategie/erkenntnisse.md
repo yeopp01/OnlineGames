@@ -258,7 +258,9 @@ etwas anderem gearbeitet.
   Offen: eine Probe, in der Distelhag zur Kaserne neigt (zuerst gebaut,
   zuerst bedient — ki AC-27 bleibt), aber nicht nur Kasernen nachbaut.
   Der Zweig `strategie-ki-antwort` bleibt liegen: das Antworten war nicht
-  die Ursache.
+  die Ursache. **Runde 180: erledigt bis auf Eschenbruch** — ki AC-32 baut
+  im Wechsel nach, Distelhag 47 statt 26 % über 160 Partien; was bleibt,
+  ist die Frage nach Eschenbruchs Boni.
 
 - **Die linke Seite gewinnt öfter** (Runde 176): über 200 Partien mit
   abwechselnden Seiten gewann `ki1` 112 bis 119 von rund 197 (56 bis 60 %).
@@ -2035,6 +2037,17 @@ ihn, mit Gegenprobe an beiden Formen. Fünf Bilder neu, alle angesehen.
 Neueste oben. Eine Zeile je Runde: Nummer, Datum, Kriterien, Ergebnis,
 wichtigste Erkenntnis.
 
+- **180** · 2026-11-12 · **ki AC-32 fertig**: wer zur Kaserne neigt, baut
+  im Wechsel nach — eine weitere Kaserne nur, solange es weniger Kasernen
+  als andere Militärgebäude gibt, sonst nach der Goldregel. Über 160
+  Partien mit anderen Startwerten (`--je 40`) Distelhag 26 % vorher, 47 %
+  danach. Die erste Fassung (nie eine zweite Kaserne, 48 %) brach ki AC-27:
+  aus der einen Kaserne kamen 47,5 Einheiten je Partie gegen 38,6 der
+  anderen, verlangt ist das Anderthalbfache. **Erkenntnis:** die 31 % der
+  Vorgabe waren eine Stichprobe, nicht der Wert — die Startwerte sind fest,
+  also sind es immer dieselben 80 Partien; erst 160 neue (26 %) zeigten,
+  dass der Unterschied rund vier Standardabweichungen beträgt. Gegen
+  Eschenbruch weiter 6 zu 33 (die Frage an den Benutzer bleibt).
 - **179** · 2026-11-12 · **Messrunde**, kein Kriterium fertig, kein Code:
   warum Distelhag gegen Eschenbruch 0 zu 20 verliert. Zehn
   Austauschproben mit `pruefstand:haeuser --probe` (je 80 oder 200

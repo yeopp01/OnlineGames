@@ -2,7 +2,7 @@
 
 **Bereich:** Strategie
 **Kuerzel:** ki
-**Stand:** 26/31 fertig · 5 offen
+**Stand:** 27/32 fertig · 5 offen
 
 ## Zweck
 
@@ -366,6 +366,29 @@ nicht die Regeln.
   Probe, die Gebäude ohne Antwort pausieren lässt, ergab 1 zu 19. Bevor
   dieses Kriterium wieder gebaut wird, steht die Herstellung (siehe Offene
   Fäden „Distelhag stellt weniger her").
+- **AC-32** `fertig` **Kasernen-Neigung baut im Wechsel** — Neigt das
+  Haus der KI zur Kaserne, baut sie die erste Kaserne wie jedes Haus
+  (AC-17) und bedient sie zuerst (AC-27); danach eine weitere Kaserne nur,
+  solange sie weniger Kasernen als andere Militärgebäude hat, sonst nach
+  der Goldregel — Schießanlage mit Gold, sonst Stall. Im Lehen ergibt das
+  Schießanlage, Kaserne, Schießanlage, im Fürstentum dazu Kaserne und
+  Schießanlage, statt Kaserne um Kaserne. Wer zu einem Militärgebäude
+  neigt, baut weiter dieses nach. **Messbar:** in einer gebauten Lage
+  (Gebäude voll beschäftigt, Vorrat für alles) schickt die KI des Hauses,
+  das zur Kaserne neigt, neben Kaserne und Schießanlage eine Schießanlage,
+  neben einer Kaserne und zwei Schießanlagen eine Kaserne; die des Hauses,
+  das zum Stall neigt, weiter einen Stall. Die Gegenproben mit der alten
+  Regel und mit „nie eine zweite Kaserne" fallen. Über 160 Partien
+  (`npm run pruefstand:haeuser -- --nur distelhag --je 40`, andere
+  Startwerte als die Vorgabe) gewinnt das Haus über 40 %, und AC-27 und
+  fahrplan AC-11 halten. **Gemessen in Runde 180:** Kaserne um Kaserne 26 %
+  (41 von 160), im Wechsel 47 % (75 von 160), nie eine zweite Kaserne 48 %
+  — aber dann bildete das Haus nur noch 47,5 Einheiten je Partie aus der
+  Kaserne aus gegen 38,6 der anderen, und AC-27 (das Anderthalbfache) fiel;
+  im Wechsel hält es. Die Paarung gegen Eschenbruch kippt davon nicht (0
+  zu 39, danach 6 zu 33); das hängt an Eschenbruchs Boni (spielziel AC-18,
+  Frage an den Benutzer). Angelegt in Runde 180 aus der Messung der Runde
+  179: ohne jede Neigung gewann das Haus 51 %.
 
 ### Stufe F — der Drache (aus ADR-0014)
 

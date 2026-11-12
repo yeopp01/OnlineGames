@@ -322,7 +322,7 @@ Figuren, nicht auf die Regeln.
 | E7 | Spezialeinheiten aus vorhandenen Fähigkeiten: Kriegswölfe, Reiterschütze, Riese — wartet auf die Figuren | einheiten AC-45 bis AC-47 |
 | E8 | Der Meuchler mit Tarnung, der Wiedergänger aus Gefallenen — wartet auf die Figuren | einheiten AC-48, AC-49, kampf AC-22 |
 | E9 | Wappen, Zeitalter am Dorf, Spuren eines Gefechts — wartet auf die Figuren | bedienung AC-42, AC-44, AC-46 |
-| E5b | Die KI antwortet auf das Heer, das sie sieht; kein Haus gewinnt gegen alle (ohne Spezialeinheiten, im Test) — gemessen in Runde 176 mit `npm run pruefstand:haeuser` | ki AC-31, spielziel AC-18 |
+| E5b | Die KI antwortet auf das Heer, das sie sieht; die Neigung zur Kaserne baut vielseitig nach; kein Haus gewinnt gegen alle (ohne Spezialeinheiten, im Test) — gemessen in Runde 176 mit `npm run pruefstand:haeuser`, Ursachen in den Runden 179 und 180 | ki AC-31, AC-32, spielziel AC-18 |
 | E10 | Die KI bildet ihre Spezialeinheit aus; kein Haus vorn im Prüfstand; die Häuser am Stück im Browser | ki AC-28, fahrplan AC-16, AC-18 |
 
 **Was Stufe E ablöst.** spielauswahl AC-6 (der Satz „das Volk je Spieler

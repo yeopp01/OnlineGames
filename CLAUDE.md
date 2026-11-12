@@ -167,7 +167,7 @@ Umfang hinzufügt, dort nachsehen.
 
 ## Stand
 
-**463 von 600 Kriterien fertig.** 739 Tests ohne Browser, 210 im Browser. Die
+**464 von 601 Kriterien fertig.** 741 Tests ohne Browser, 210 im Browser. Die
 Übersicht ist der Bericht: `npm run qa:report`.
 
 Gebaut ist der Unterbau: Räume, Übertragung, Karte, Wegfindung, Sammeln,
@@ -501,9 +501,12 @@ das Antworten, gebaut als ki AC-31 (Runde 177, lokaler Zweig
 `strategie-ki-antwort`), änderte nichts, denn beide antworten. **Gemessen
 in Runde 179** (zehn Austauschproben): Eschenbruchs Vorsprung ist die Summe
 aus Holzbonus und Reichweite (ganz leer 51 %), Distelhag kostet seine
-Neigung zur Kaserne 15 bis 20 Punkte. Welcher Bonus schwächer wird, ist
-eine offene Frage an den Benutzer; danach spielziel AC-18 (jedes Haus 30
-bis 70 %).
+Neigung zur Kaserne 15 bis 20 Punkte. **Wer zur Kaserne neigt, baut im
+Wechsel nach** (ki AC-32, Runde 180): eine weitere Kaserne nur, solange es
+weniger Kasernen als andere Militärgebäude gibt — Distelhag 47 statt 26 %
+über 160 Partien. Welcher Bonus Eschenbruchs schwächer wird, ist eine
+offene Frage an den Benutzer; danach spielziel AC-18 (jedes Haus 30 bis
+70 %).
 **Voller Wohnraum fällt auf** (bedienung AC-43): wartet ein eigener
 Auftrag, steht die Bevölkerung oben rot umrandet, auch ohne Auswahl
 (`ansicht.wartetEtwas()`).

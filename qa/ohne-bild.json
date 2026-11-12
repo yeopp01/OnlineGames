@@ -28,6 +28,11 @@
     },
     {
       "spec": "10-strategie/ki.md",
+      "ac": "AC-32",
+      "begruendung": "Das Kriterium ist eine Entscheidung der KI: welches Gebaeude sie als drittes Militaergebaeude in Auftrag gibt, wenn ihr Haus zur Kaserne neigt - und was das ueber 160 Partien an Siegen ausmacht. Ein Standbild zeigt eine Schiessanlage neben einer Kaserne, aber nicht, dass die KI an dieser Stelle frueher eine zweite Kaserne gebaut haette; das belegen die gebaute Lage mit Gegenprobe gegen die alte Zeile und die Zaehlung von pruefstand:haeuser. Was die KI dabei baut und ausbildet, sieht im Bild aus wie bei ki AC-9 und ki AC-11, die Gebaeude der Feudalzeit wie bei bauen AC-24."
+    },
+    {
+      "spec": "10-strategie/ki.md",
       "ac": "AC-27",
       "begruendung": "Wozu die KI neigt, ist eine Haeufigkeit ueber viele Partien: Eschenbruch bildet ueber vierzig Startwerte im Mittel 107 Einheiten aus der Schiessanlage aus, die anderen Haeuser 42; Distelhag 82 aus der Kaserne gegen 35. Ein Standbild zeigt eine KI mit einigen Bogenschuetzen - das tut jedes Haus, und ob es mehr sind als sonst, steht in keinem einzelnen Bild. Belegt im Pruefstand mit denselben Partien ohne Neigung als Gegenprobe; was die KI dabei baut und ausbildet, sieht im Bild aus wie bei ki AC-9 und ki AC-11, der Karren wie bei einheiten AC-40."
     },

@@ -492,8 +492,16 @@ class Ki {
     const alleVoll = meine.every((g) => g.fertig && g.schlange.length >= MILITAER_SCHLANGE);
     if (alleVoll && meine.length < MILITAER_JE_ZEITALTER[Math.min(this.spieler.zeitalter, MILITAER_JE_ZEITALTER.length - 1)] && this.spieler.holz >= MILITAER_HOLZ + MILITAER_RESERVE) {
       // Nachgebaut wird der Schwerpunkt, wenn er ein Militaergebaeude ist
-      // (ki AC-27) - die erste Kaserne aber in jedem Haus (ki AC-17).
-      const nachbau = MILITAER.includes(schwerpunkt) || schwerpunkt === 'kaserne';
+      // (ki AC-27) - die erste Kaserne aber in jedem Haus (ki AC-17). Eine
+      // Neigung zur Kaserne baut im Wechsel nach (ki AC-32): eine weitere
+      // Kaserne nur, solange es weniger Kasernen als andere Militaergebaeude
+      // gibt, sonst nach der Goldregel. Kaserne um Kaserne verlor gegen
+      // jedes Heer mit Schuetzen: ueber 160 Partien des Hauses 26 % gegen
+      // 47 % im Wechsel (Runde 180). Nie eine zweite Kaserne gewann 48 %,
+      // nahm aber der Neigung ihre Wirkung (ki AC-27 fiel).
+      const kasernen = meine.filter((g) => g.art === 'kaserne').length;
+      const nachbau = MILITAER.includes(schwerpunkt)
+        || (schwerpunkt === 'kaserne' && kasernen < meine.length - kasernen);
       const art = !meine.some((g) => g.art === 'kaserne') ? 'kaserne'
         : nachbau ? schwerpunkt
         : this.spieler.gold >= MILITAER_GOLD ? 'schiessanlage' : 'stall';
