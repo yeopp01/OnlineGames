@@ -1,0 +1,17 @@
+{
+  "bild": "belagerungswerkstatt.webp",
+  "maske": "belagerungswerkstatt-maske.webp",
+  "zelle": [
+    551,
+    340
+  ],
+  "fuss": [
+    198,
+    224
+  ],
+  "feldbreite": 132,
+  "zeilen": 1,
+  "spalten": 1,
+  "art": "gebaeude",
+  "felder": 3
+}

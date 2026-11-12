@@ -1,0 +1,17 @@
+{
+  "bild": "universitaet.webp",
+  "maske": "universitaet-maske.webp",
+  "zelle": [
+    482,
+    397
+  ],
+  "fuss": [
+    201,
+    279
+  ],
+  "feldbreite": 132,
+  "zeilen": 1,
+  "spalten": 1,
+  "art": "gebaeude",
+  "felder": 3
+}
