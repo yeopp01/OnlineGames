@@ -354,6 +354,18 @@ nicht die Regeln.
   Startwerten. Angelegt in Runde 176: Distelhag bildet gegen Schützen
   weiter Speerkämpfer aus, die der Bogen mit Bonus trifft, statt Plänklern
   aus einer Schießanlage.
+  **Runde 177: gebaut, gemessen, ohne Wirkung — nicht eingecheckt**, auf
+  dem lokalen Zweig `strategie-ki-antwort` (9c69b75, mit vier Tests, die
+  gegen den alten Stand fallen). Distelhag gegen Eschenbruch blieb 0 zu 20,
+  die Tafel über 200 Partien fast gleich (Eschenbruch 85 %, Distelhag
+  29 % statt 31 %). Die Annahme dahinter war falsch: **beide** Seiten
+  antworten — Eschenbruch bildet gegen Distelhags Schützen 40 Plänkler aus
+  —, und Distelhag verliert über die Menge: in den Startwerten 61 bis 63
+  zwei bis drei Militärgebäude gegen drei bis fünf, 127 gegen 226
+  Kampfeinheiten, fast immer unter 50 Holz bei 200 bis 500 Gold. Auch eine
+  Probe, die Gebäude ohne Antwort pausieren lässt, ergab 1 zu 19. Bevor
+  dieses Kriterium wieder gebaut wird, steht die Herstellung (siehe Offene
+  Fäden „Distelhag stellt weniger her").
 
 ### Stufe F — der Drache (aus ADR-0014)
 

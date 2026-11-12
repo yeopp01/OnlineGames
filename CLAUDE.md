@@ -495,8 +495,10 @@ Der Nebeltest steht damit bei 36 von 40 vor Minute 60, Median 44,9 —
 knapp unter der Grenze. **Die Häuser gegeneinander** misst `npm run pruefstand:haeuser`
 (Runde 176, 200 Partien): Eschenbruch gewinnt 85 %, Distelhag 31 % und
 gegen Eschenbruch 0 von 20 — auch nach jeder Gegenprobe an den Boni. Die
-Ursache ist die KI, die nie auf das gesehene Heer antwortet; das ist
-ki AC-31, danach spielziel AC-18 (jedes Haus 30 bis 70 %).
+Ursache ist nicht, dass die KI nie auf das gesehene Heer antwortet: das
+das Antworten, gebaut als ki AC-31 (Runde 177, lokaler Zweig
+`strategie-ki-antwort`), änderte nichts, denn beide antworten. Distelhag stellt weniger
+her — offen als Faden; danach spielziel AC-18 (jedes Haus 30 bis 70 %).
 **Voller Wohnraum fällt auf** (bedienung AC-43): wartet ein eigener
 Auftrag, steht die Bevölkerung oben rot umrandet, auch ohne Auswahl
 (`ansicht.wartetEtwas()`).

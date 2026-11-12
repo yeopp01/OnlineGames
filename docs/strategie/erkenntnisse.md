@@ -215,6 +215,18 @@ etwas anderem gearbeitet.
 
 ## Offene Fäden
 
+- **Distelhag stellt weniger her** (Runde 177): gegen Eschenbruch
+  (Startwerte 61 bis 63) zwei bis drei Militärgebäude gegen drei bis fünf,
+  127 gegen 226 Kampfeinheiten in der längsten Partie, 78 Dorfbewohner
+  ausgebildet gegen 49 (es verliert viele), fast immer unter 50 Holz bei
+  200 bis 500 Gold. Der Nachbau verlangt Holz über `MILITAER_HOLZ +
+  MILITAER_RESERVE`; Distelhags erstes Militärgebäude folgt der Goldregel,
+  weil die Kaserne nicht in `MILITAER` steht. Zu messen, bevor gebaut wird:
+  Holz und Sammler je Rohstoff über die Partie neben Eschenbruch
+  (`pruefstand:verlauf --haeuser eschenbruch,distelhag`), und ob Distelhag
+  gegen Wehrstein (2 zu 18) aus demselben Grund verliert. Der Zweig
+  `strategie-ki-antwort` (ki AC-31) wartet darauf.
+
 - **Die linke Seite gewinnt öfter** (Runde 176): über 200 Partien mit
   abwechselnden Seiten gewann `ki1` 112 bis 119 von rund 197 (56 bis 60 %).
   Nicht untersucht, ob es an der Karte (Startplätze, Wege), an der
@@ -1950,6 +1962,24 @@ ihn, mit Gegenprobe an beiden Formen. Fünf Bilder neu, alle angesehen.
 Neueste oben. Eine Zeile je Runde: Nummer, Datum, Kriterien, Ergebnis,
 wichtigste Erkenntnis.
 
+- **177** · 2026-11-12 · ki AC-31 **gebaut, gemessen, verworfen**: die KI
+  wählt in jedem Militärgebäude die Einheit, deren Bonus die meisten
+  gesehenen Kampfeinheiten trifft, und baut das Gebäude mit der besten
+  Antwort nach — vier Tests, Gegenprobe fällt. Gemessen mit
+  `pruefstand:haeuser`: Distelhag gegen Eschenbruch 0 zu 20 wie vorher, die
+  Tafel unverändert. Nach der Regel „was gemessen nichts bringt, bleibt
+  nicht im Code" auf den lokalen Zweig `strategie-ki-antwort` (9c69b75),
+  das Kriterium bleibt `offen` mit dem Befund. Gelernt: (1) Die Ursache
+  aus Runde 176 war geschlossen, nicht gemessen — „die KI antwortet nicht"
+  stimmte, erklärte aber die Niederlagen nicht, weil die andere Seite
+  dieselbe Regel bekommt. Eine Abhilfe, die beide Seiten trifft, ändert
+  eine Paarung nur, wenn sie der schwächeren mehr hilft. (2) Erst zählen,
+  was die Seiten herstellen (ein Eingriff zählt neue Einheiten je Art und
+  fertige Militärgebäude, `r177-summe.cjs` im Scratchpad), dann die Abhilfe
+  wählen: 127 gegen 226 Kampfeinheiten ist eine andere Frage als „welche".
+  (3) Ein Name, der schon belegt ist, überdeckt still eine Methode:
+  `kampfeinheitenVon(id)` gab es in `ki.js`, meine gleichnamige mit
+  anderem Sinn brach neun Tests.
 - **176** · 2026-11-12 · **Mess- und Spec-Runde**, kein Kriterium fertig:
   die Häuser gegeneinander. Neues Werkzeug `npm run pruefstand:haeuser`
   (`scripts/pruefstand-haeuser.mjs`, Test daneben): jede Paarung `--je`
