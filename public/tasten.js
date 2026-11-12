@@ -21,6 +21,7 @@ export const BELEGUNG = [
   ['Umschalt + Klick oder Ziehen', 'zur Auswahl hinzunehmen'],
   ['Doppelklick', 'alle Einheiten dieser Art im Bild'],
   ['Rechtsklick', 'hingehen, sammeln, bauen – oder Sammelpunkt setzen'],
+  ['Umschalt + Rechtsklick', 'Ziel hinten anhängen, der Reihe nach abgehen'],
   ['W A S D, Pfeile', 'Karte schieben'],
   ['Maus an den Bildschirmrand', 'Karte schieben – unten abschaltbar'],
   ['Mausrad', 'näher, weiter'],

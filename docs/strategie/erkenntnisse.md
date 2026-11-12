@@ -2119,6 +2119,27 @@ ihn, mit Gegenprobe an beiden Formen. Fünf Bilder neu, alle angesehen.
 Neueste oben. Eine Zeile je Runde: Nummer, Datum, Kriterien, Ergebnis,
 wichtigste Erkenntnis.
 
+- **191** · 2026-11-12 · **bedienung AC-14 fertig** (Abweichung nach
+  Abschnitt 1, Punkt 6 — Stufe E gesperrt): vorher gesucht, nichts stand
+  halb — kein `shiftKey` am Rechtsklick, keine Liste von Zielen in der
+  Welt. Zugeschnitten auf Gänge: Umschalt + Rechtsklick auf freien Boden
+  hängt an (`einheit.wegpunkte`, höchstens 20), wer steht, geht sofort,
+  ohne Umschalt oder bei jeder Unterbrechung ist die Reihe fort. Umschalt
+  auf Vorrat, Bau oder Gegner ist ein Befehl wie ohne — das wäre ein
+  eigenes Kriterium. Der Server schickt nur die Zahl `q`, nicht die Punkte:
+  so verrät der Draht keine fremden Ziele, und der Browser zeichnet die
+  letzten `q` seiner eigenen Klicks. Im Browserfall steht die Zeit beim
+  Klicken still (`zeitraffer 0`), sonst ist der Dorfbewohner am ersten Ziel,
+  bevor das zweite ankommt. Die Tastenübersicht bekam eine Zeile — und
+  passte trotzdem auf 1366 × 768, weil sie jetzt breiter ist: mit `left:
+  50%` hatte der Kasten nur die halbe Fensterbreite zum Wachsen, und zwei
+  Zeilen brachen um. Mittig über `inset: 0; margin: auto; width:
+  fit-content` braucht er drei Zeilen weniger Höhe. Die Notiz aus Runde 189
+  („eine weitere Zeile passt nicht mehr“) stimmte nur für die alte
+  Zentrierung. Gegenproben: Weitergehen und Verwerfen fielen je einzeln.
+  Die Durchsicht fand eine Anzeige über der Grenze: der Browser vergaß bei
+  21 Klicks die ältesten, der Server die neuesten — jetzt verwirft auch
+  der Browser (Fall und Gegenprobe dazu).
 - **190** · 2026-11-12 · **bedienung AC-23 fertig** (Abweichung nach
   Abschnitt 1, Punkt 6 — Stufe E gesperrt): alle anderen Browserfälle
   laufen auf 1400 × 950, 1366 × 768 prüfte niemand. Zuerst gemessen

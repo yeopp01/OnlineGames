@@ -2,7 +2,7 @@
 
 **Bereich:** Strategie
 **Kuerzel:** bedienung
-**Stand:** 41/47 fertig · 6 offen
+**Stand:** 42/47 fertig · 5 offen
 
 ## Zweck
 
@@ -75,7 +75,17 @@ Befehl steht.
   Gebaut mit AC-34 (der Ring wird im Klick selbst gesetzt); belegt, indem
   der Browserfall den Befehl anhält, ehe er hinausgeht: der Ring ist
   trotzdem gezeichnet, die Einheiten laufen erst nach dem Senden.
-- **AC-14** `offen` **Warteschlange mit Umschalt** — Mehrere Ziele hintereinander abarbeiten.
+- **AC-14** `fertig` **Warteschlange mit Umschalt** — Mehrere Ziele hintereinander abarbeiten.
+  Umschalt + Rechtsklick auf freien Boden hängt das Ziel hinten an, wenn die
+  Einheit gerade geht; wer steht, geht sofort los. Ein Befehl ohne Umschalt
+  verwirft die Reihe, ebenso alles, was den Gang unterbricht (Zurückschlagen,
+  Sammeln, Bauen). Höchstens 20 Ziele je Einheit, damit ein Zustand nicht mit
+  jedem Klick wächst (ADR-0005). Eine Gruppe bekommt an jedem Ziel eigene
+  Felder. Im Bild: eine gestrichelte Linie über die wartenden Ziele, an jedem
+  ein Ring. Der Server schickt nur die Zahl (`q`), die Punkte kennt der
+  Browser, der sie geklickt hat. Umschalt auf einen Vorrat, einen Bau oder
+  einen Gegner ist ein Befehl wie ohne — das Anhängen solcher Aufträge
+  stünde als eigenes Kriterium an.
 - **AC-15** `fertig` **Abbrechen mit Esc** — Hebt Auswahl und angefangene Platzierung auf.
 
 ### Rückmeldung

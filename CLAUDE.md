@@ -168,7 +168,7 @@ Umfang hinzufügt, dort nachsehen.
 
 ## Stand
 
-**474 von 602 Kriterien fertig.** 743 Tests ohne Browser, 223 im Browser. Die
+**475 von 602 Kriterien fertig.** 747 Tests ohne Browser, 226 im Browser. Die
 Übersicht ist der Bericht: `npm run qa:report`.
 
 Gebaut ist der Unterbau: Räume, Übertragung, Karte, Wegfindung, Sammeln,
@@ -522,7 +522,11 @@ zurück, ohne Gefallene und Bekehrte (`ansicht.gruppeAblegen`,
 die Tabs behält, ist nicht geprüft — deshalb `Alt` daneben. **Mit
 Umschalt** kommen Klick und Rahmen zur Auswahl hinzu (bedienung AC-3), ein
 **Doppelklick** wählt alle eigenen Einheiten der Art im Bild (AC-4,
-`ansicht.typWaehlen`). **Die Maus am Bildschirmrand schiebt die Karte**
+`ansicht.typWaehlen`). **Umschalt mit Rechtsklick** hängt ein Ziel an die
+Reihe (AC-14, `einheit.wegpunkte`, höchstens 20): wer geht, geht sie der
+Reihe nach ab, wer steht, sofort; ein Befehl ohne Umschalt oder eine
+Unterbrechung verwirft sie. Der Server schickt nur die Zahl `q`, die Linie
+mit Ringen zeichnet der Browser aus den eigenen Klicks. **Die Maus am Bildschirmrand schiebt die Karte**
 (AC-9, die äußersten 12 Bildpunkte), abschaltbar in der Tastenübersicht;
 die Wahl merkt sich der Browser. **Die Leertaste** springt zum Dorfzentrum
 und ein zweites Mal zurück (AC-10, `ansicht.basisSprung`). **Reißt die

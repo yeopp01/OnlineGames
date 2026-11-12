@@ -101,8 +101,12 @@ function empfangen(nachricht) {
 
     case 'aufbau':
       if (!ansicht) {
-        ansicht = new Ansicht(teile.brett, (einheiten, ziel, angriffslauf) =>
-          senden({ typ: 'befehl', einheiten, ziel, ...(angriffslauf ? { angriffslauf: true } : {}) }));
+        ansicht = new Ansicht(teile.brett, (einheiten, ziel, angriffslauf, anhaengen) =>
+          senden({
+            typ: 'befehl', einheiten, ziel,
+            ...(angriffslauf ? { angriffslauf: true } : {}),
+            ...(anhaengen ? { anhaengen: true } : {}),
+          }));
         // Fuer den Browserlauf: die Leinwand laesst sich nicht befragen, die
         // Ansicht schon (e2e/tests/strategie-spielbild.spec.mjs). Lesen, nicht
         // schreiben - befohlen wird dort ueber Maus und Tastatur.

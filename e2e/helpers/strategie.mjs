@@ -13,7 +13,9 @@
 //   wenn welche fehlen** (voll wird gar nicht geschickt - der Anteil ist
 //   `h / ansicht.lebenVoll(e)`) · `w` arbeitet oder kaempft gerade (bedienung AC-31, AC-39) · `s` gefallen ·
 //   `r` ruht nach dem Bekehren (einheiten AC-38) · `hd` die Strecke eines Karrens,
-//   `[heimatmarkt, zielmarkt, Gold je Fahrt]`, nur solange er handelt (einheiten AC-40).
+//   `[heimatmarkt, zielmarkt, Gold je Fahrt]`, nur solange er handelt (einheiten AC-40) ·
+//   `q` wie viele Ziele mit Umschalt noch in der Reihe warten, nur wenn welche (bedienung AC-14;
+//   die Punkte selbst merkt sich der Browser in `ansicht.wegpunkte`).
 //
 // ### KUERZEL
 // Diese Liste prueft `tests/waechter-drahttafel.test.mjs` gegen `daten.js` -

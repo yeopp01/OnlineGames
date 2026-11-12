@@ -922,9 +922,14 @@ canvas.angriffslauf {
 /* Tastenuebersicht (bedienung AC-22): mitten im Bild, ein Klick schliesst. */
 .tastenuebersicht {
   position: fixed;
-  left: 50%;
-  top: 50%;
-  transform: translate(-50%, -50%);
+  /* Mittig ueber `inset` und `margin: auto`, nicht ueber `left: 50%`: dort
+     hatte der Kasten nur die halbe Fensterbreite zum Wachsen, zwei Zeilen
+     brachen um, und auf 1366 x 768 passte keine weitere (bedienung AC-14,
+     AC-23). */
+  inset: 0;
+  margin: auto;
+  width: fit-content;
+  height: fit-content;
   min-width: 26rem;
   max-width: calc(100vw - 2rem);
   padding: 1.2rem 1.5rem;

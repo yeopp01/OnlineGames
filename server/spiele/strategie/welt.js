@@ -23,6 +23,9 @@ const SUCHWEITE_ERSATZ = 12;
 // So lange liegt ein Toter noch im Bild, bevor er aus dem Zustand faellt
 // (kampf AC-10): lang genug, um zu sehen, was passiert ist.
 const TOT_SEKUNDEN = 2;
+// So viele Ziele haengt Umschalt hoechstens an einen Gang (bedienung AC-14):
+// eine Grenze, damit ein Zustand nicht mit jedem Klick waechst (ADR-0005).
+const WEGPUNKTE_MAX = 20;
 // Spielraum auf die Reichweite, damit ein Nahkaempfer auch schraeg (1,41
 // Felder) zuschlaegt; am Rand einer Grundflaeche messen wir genauer.
 const SCHLAGRAND = 0.5;
@@ -615,6 +618,7 @@ class Welt {
       weg: [],
       auftrag: null, // { art: 'gehen' | 'sammeln', feld }
       angriffslauf: null, // Marschziel, solange ein Angriffslauf laeuft (kampf AC-4)
+      wegpunkte: [], // die naechsten Ziele eines Gangs, mit Umschalt angehaengt (bedienung AC-14)
       ladung: 0,
       ladungsart: null,
       sammelt: false, // steht am Vorrat und arbeitet
@@ -1073,7 +1077,8 @@ class Welt {
       case 'kuendigen':
         return this.kuendigen(spielerId);
       default:
-        return this.befehl(spielerId, nachricht.einheiten, nachricht.ziel, Boolean(nachricht.angriffslauf));
+        return this.befehl(spielerId, nachricht.einheiten, nachricht.ziel, Boolean(nachricht.angriffslauf),
+          Boolean(nachricht.anhaengen));
     }
   }
 
@@ -1480,7 +1485,7 @@ class Welt {
    *   kommt er als Angabe mit. Sammeln, Bauen und Schafe sind dabei aus: wer
    *   zum Gefecht laeuft, faengt unterwegs nicht an zu holzen.
    */
-  befehl(spielerId, einheitIds, ziel, angriffslauf = false) {
+  befehl(spielerId, einheitIds, ziel, angriffslauf = false, anhaengen = false) {
     if (!Array.isArray(einheitIds) || !ziel) return;
     const g = this.karte.groesse;
     const zx = Math.round(Number(ziel.x));
@@ -1505,6 +1510,9 @@ class Welt {
     // Ein eigenes Schaf in der Naehe des Klicks (einheiten AC-17) - aber nur,
     // wenn auf dem Feld selbst nichts zu sammeln ist: neben Beeren weiden Schafe.
     const schaf = sammeln || angriffslauf ? null : this.tierAn(spielerId, Number(ziel.x), Number(ziel.y));
+    // Ein Gang auf freien Boden laesst sich anhaengen (bedienung AC-14) -
+    // alles andere ist ein Befehl wie ohne Umschalt.
+    const nurGehen = !angriffslauf && !sammeln && !baustelle && !feind && !schaf;
     // Ein Befehl fuer viele (einheiten AC-20): wer geht, bekommt ein eigenes Feld
     // um das Ziel; wer sammelt, einen eigenen Vorrat derselben Art daneben.
     const gruppe = einheitIds.slice(0, 200).map((id) => this.einheiten.get(id)).filter((e) => e && e.besitzer === spielerId);
@@ -1523,6 +1531,18 @@ class Welt {
       }
       const einheit = this.einheiten.get(id);
       if (!einheit || einheit.besitzer !== spielerId) continue;
+      // Mit Umschalt kommt der Gang hinten an die Reihe (bedienung AC-14) -
+      // fuer den, der gerade geht. Wer steht oder arbeitet, geht gleich los.
+      // Jeder bekommt um den Punkt sein eigenes Feld, gewaehlt vom vorigen
+      // Ziel aus, wie beim ersten Gang (einheiten AC-20).
+      if (anhaengen && nurGehen && einheit.auftrag?.art === 'gehen' && !einheit.angriffslauf) {
+        if (einheit.wegpunkte.length >= WEGPUNKTE_MAX) continue;
+        aufstellung ??= this.aufstellungUm({ x: zx, y: zy }, gruppe.length);
+        const von = einheit.wegpunkte.at(-1) || einheit.auftrag.feld;
+        einheit.wegpunkte.push(this.naechstesFreies(von, aufstellung) || { x: zx, y: zy });
+        continue;
+      }
+      einheit.wegpunkte = [];
       this.farmVerlassen(einheit);
       einheit.sammelt = false;
       einheit.baut = false;
@@ -2775,6 +2795,7 @@ class Welt {
     einheit.gefallen = this.takt;
     einheit.auftrag = null;
     einheit.weg = [];
+    einheit.wegpunkte = [];
     einheit.sammelt = false;
     einheit.baut = false;
     einheit.bekehrt = false;
@@ -3306,6 +3327,10 @@ class Welt {
       if (this.takt - einheit.gefallen >= TOT_SEKUNDEN * TAKTE_PRO_SEKUNDE) this.einheiten.delete(einheit.id);
       return;
     }
+    // Die Reihe gilt nur fuer einen Gang: wer unterwegs etwas anderes tut -
+    // getroffen zurueckschlaegt, ausweicht, gerufen wird -, vergisst sie,
+    // statt spaeter alte Ziele abzulaufen (bedienung AC-14).
+    if (einheit.wegpunkte.length && einheit.auftrag?.art !== 'gehen') einheit.wegpunkte = [];
     // Angreifen geht vor dem Laufen: wer in Reichweite ist, schlaegt zu, statt
     // seinen Weg zu Ende zu gehen (kampf AC-1).
     if (einheit.auftrag?.art === 'angreifen') {
@@ -3335,6 +3360,14 @@ class Welt {
     // Einheit fuer die Wache ewig als beschaeftigt und wehrt sich nie mehr
     // (kampf AC-2) - gefunden beim Bau des Angriffslaufs, Runde 67.
     if (einheit.auftrag.art === 'gehen') {
+      // Steht noch ein Ziel in der Reihe, geht es dorthin weiter
+      // (bedienung AC-14).
+      if (einheit.wegpunkte.length) {
+        const feld = einheit.wegpunkte.shift();
+        einheit.auftrag = { art: 'gehen', feld };
+        einheit.weg = this.wegNach(einheit, feld);
+        return;
+      }
       einheit.auftrag = null;
       einheit.angriffslauf = null;
       return;
@@ -3582,6 +3615,9 @@ class Welt {
         // Ein Karren auf der Strecke (einheiten AC-40): Heimat, Ziel und das
         // Gold je Fahrt - die Leiste nennt sie.
         ...(e.auftrag?.art === 'handel' ? { hd: this.streckeFuerDraht(e) } : {}),
+        // Wie viele Ziele noch in der Reihe stehen (bedienung AC-14) - die
+        // Punkte selbst kennt der Browser, der sie geklickt hat.
+        ...(e.wegpunkte.length ? { q: e.wegpunkte.length } : {}),
         // Gefallen: der Browser legt ihn hin, bis der Server ihn nimmt
         // (kampf AC-10).
         ...(e.tot ? { s: 1 } : {}),

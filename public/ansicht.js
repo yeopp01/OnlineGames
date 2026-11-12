@@ -90,6 +90,9 @@ export class Ansicht {
     // Das Zeichen am Ziel eines Befehls (bedienung AC-34): rot auf Feindliches,
     // weiss auf freies Gelaende. { x, y, feindlich, seit }.
     this.zielzeichen = null;
+    // Einheit -> die geklickten Ziele ihres Gangs, fuer die Linie der Reihe
+    // (bedienung AC-14). Wie viele davon noch warten, sagt der Server (`q`).
+    this.wegpunkte = new Map();
     // Der Angriffslauf (kampf AC-4) ist eine Betriebsart: G schaltet sie ein,
     // der naechste Rechtsklick fuehrt sie aus und schaltet sie wieder aus.
     this.angriffslauf = false;
@@ -170,6 +173,9 @@ export class Ansicht {
     this.sprung = null;
     this.gewaehltesGebaeude = null;
     this.zielzeichen = null;
+    // Einheit -> die geklickten Ziele ihres Gangs, fuer die Linie der Reihe
+    // (bedienung AC-14). Wie viele davon noch warten, sagt der Server (`q`).
+    this.wegpunkte = new Map();
     this.angriffslauf = false;
     this.platzieren = null;
     this.untaetige = [];
@@ -683,7 +689,8 @@ export class Ansicht {
         this.zug = { vonX: e.offsetX, vonY: e.offsetY, bisX: e.offsetX, bisY: e.offsetY };
         this.leinwand.setPointerCapture(e.pointerId);
       } else if (e.button === 2) {
-        this.befehlen(e.offsetX, e.offsetY);
+        // Mit Umschalt kommt das Ziel hinten an die Reihe (bedienung AC-14).
+        this.befehlen(e.offsetX, e.offsetY, e.shiftKey);
       }
     });
 
@@ -1074,7 +1081,7 @@ export class Ansicht {
     stift.globalAlpha = 1;
   }
 
-  befehlen(px, py) {
+  befehlen(px, py, anhaengen = false) {
     const ziel = this.zuWelt(px, py);
     // Ein eigenes Gebaeude gewaehlt: der Rechtsklick setzt seinen Sammelpunkt (bauen AC-13).
     if (this.gewaehltesGebaeude) {
@@ -1090,10 +1097,67 @@ export class Ansicht {
     // Ein Angriffslauf ist ein Angriffsbefehl, auch auf leeres Gras: das
     // Zeichen am Ziel ist deshalb rot (bedienung AC-34).
     this.zielzeichenSetzen(ziel, lauf);
-    this.befehlSenden([...this.ausgewaehlt], {
-      x: Math.round(ziel.x),
-      y: Math.round(ziel.y),
-    }, lauf);
+    const feld = { x: Math.round(ziel.x), y: Math.round(ziel.y) };
+    const hinten = anhaengen && !lauf;
+    this.wegpunkteMerken(feld, hinten);
+    this.befehlSenden([...this.ausgewaehlt], feld, lauf, hinten);
+  }
+
+  /**
+   * Die geklickten Ziele je Einheit (bedienung AC-14). Ob ein Ziel wirklich
+   * wartet, entscheidet der Server - er schickt nur die Zahl (`q`); gezeigt
+   * werden die letzten `q` dieser Liste. Ohne Umschalt beginnt sie neu.
+   */
+  wegpunkteMerken(feld, anhaengen) {
+    for (const id of this.ausgewaehlt) {
+      let liste = anhaengen ? (this.wegpunkte.get(id) || []) : [];
+      // Die Grenze des Servers: das laufende Ziel und 20 wartende. Was
+      // darueber geklickt wird, verwirft er - also hier auch, statt die
+      // aeltesten zu vergessen. Ist die Liste voll, zuerst die schon
+      // erreichten Ziele vorn abschneiden; der Server sagt mit `q`, wie viele
+      // noch warten.
+      if (liste.length >= 21) liste = liste.slice(-((this.nachher.get(id)?.q ?? 0) + 1));
+      if (liste.length >= 21) continue;
+      liste.push(feld);
+      this.wegpunkte.set(id, liste);
+    }
+  }
+
+  /**
+   * Die Reihe der gewaehlten Einheiten (bedienung AC-14): eine gestrichelte
+   * Linie vom laufenden Ziel ueber jedes wartende, an jedem wartenden ein
+   * Ring. Eine Gruppe mit denselben Zielen zeigt sie einmal.
+   */
+  wegpunkteZeichnen(e) {
+    const gezeigt = new Set();
+    const stift = this.stift;
+    for (const id of this.ausgewaehlt) {
+      const einheit = this.nachher.get(id);
+      const liste = this.wegpunkte.get(id);
+      if (!einheit?.q || !liste || liste.length <= einheit.q) continue;
+      const punkte = liste.slice(-(einheit.q + 1));
+      const schluessel = punkte.map((p) => `${p.x},${p.y}`).join(';');
+      if (gezeigt.has(schluessel)) continue;
+      gezeigt.add(schluessel);
+      const bild = punkte.map((p) => this.zuBild(p.x, p.y));
+      stift.save();
+      stift.lineCap = 'round';
+      for (const [strich, breite] of [['rgba(20,16,12,0.6)', 3.5], ['rgba(255,255,255,0.85)', 1.6]]) {
+        stift.setLineDash([7, 6]);
+        stift.strokeStyle = strich;
+        stift.lineWidth = breite;
+        stift.beginPath();
+        bild.forEach((p, i) => (i ? stift.lineTo(p.x, p.y) : stift.moveTo(p.x, p.y)));
+        stift.stroke();
+        stift.setLineDash([]);
+        for (const p of bild.slice(1)) {
+          stift.beginPath();
+          stift.ellipse(p.x, p.y, e * 0.55, e * 0.275, 0, 0, Math.PI * 2);
+          stift.stroke();
+        }
+      }
+      stift.restore();
+    }
   }
 
   /**
@@ -1504,6 +1568,7 @@ export class Ansicht {
     this.pfeileZeichnen(stift);
     if (this.nebelAn) this.nebelZeichnen(stift);
     for (const balken of this.lebensbalken) this.lebensbalkenZeichnen(balken);
+    this.wegpunkteZeichnen(e);
     this.zielzeichenZeichnen(e, jetzt);
 
     for (const spieler of this.spieler.values()) {
