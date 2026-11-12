@@ -53,6 +53,11 @@
 // `ansicht.werte`, `ansicht.verbesserungen`, `ansicht.zuBild(x, y)`,
 // `ansicht.gebaeudeMitte(g)`, `ansicht.platzTaugt(x, y)`.
 //
+// **Spieler im Zustand** (`spieler`, je Eintrag): `id` · Vorraete und `bev`/`raum`
+//   (fremde nur, wer die Sicht teilt; bedienung AC-20) · `z` Zeitalter · `aus` ·
+//   `pk` Punkte, von **jedem** an alle, fehlt bei 0 (bedienung AC-47). Im
+//   Browser `ansicht.stand` (Map id -> { zeitalter, aus, punkte, vorraete }).
+//
 // **Geloeste Buendnisse** (spielziel AC-21): `bu` im Zustand und im Aufbau,
 //   je `[wer, Takt des Fristendes]`, an alle - solange es Kuendigungen gibt.
 //   Liegt `t` darueber, gehoert `wer` keinem Team mehr an. Im Browser

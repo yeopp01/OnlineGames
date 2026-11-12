@@ -2158,6 +2158,21 @@ ihn, mit Gegenprobe an beiden Formen. Fünf Bilder neu, alle angesehen.
 Neueste oben. Eine Zeile je Runde: Nummer, Datum, Kriterien, Ergebnis,
 wichtigste Erkenntnis.
 
+- **194** · 2026-11-12 · **bedienung AC-47 fertig** (Abweichung nach
+  Abschnitt 1, Punkt 6 — Stufe E gesperrt): erst die Rechnung ins
+  Kriterium, dann gebaut. Ein Punkt je 10 gesammelte Rohstoffe, je 10
+  Rohstoffe, die ausgebildete Einheiten gekostet haben, je 5 für
+  Verbesserungen und Aufstiege; Verluste ziehen nichts ab, Siege im Kampf
+  zählen (noch) nicht. Gerechnet in `welt.punkte()` aus Zählern, die es
+  schon für die Tafel am Ende gab — dazu nur `ausgebildetWert`. Auf der
+  Leitung `pk` je Spieler, und `auszug()` gibt es als Einziges neben
+  Zeitalter und Kampfwerten auch dem Gegner im Nebel. In der Tafel auf
+  `Tab` die zweite Spalte; der Fall zu AC-20 rückte deshalb um eine Spalte.
+  Der Prüfgriff `rohstoffe` nimmt jetzt auch `gesammelt`. Gegenproben:
+  ohne `pk` im Auszug und ohne den Zähler beim Ausbilden fällt je ein Fall.
+  Die Durchsicht fand nichts über der Schwelle; vermerkt: der `aufbau`
+  trägt weder `pk` noch `z`, nach dem Neuladen steht einen Takt lang 0
+  und Landsitz in der Tafel — nicht gebaut, der nächste Zustand heilt es.
 - **193** · 2026-11-12 · **Rückschau** (siehe „Nach Runde 193“): Wächter
   für feste Bedienteile, `wegpunkteMax` über `werte` und das hinkende
   Abschneiden nach `q` entfernt (der Fall dazu fiel einmal), zwei Regeln

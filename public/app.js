@@ -306,7 +306,7 @@ const TAFELKOPF = ['Spieler', 'Zeitalter', 'Holz', 'Nahrung', 'Gold', 'Stein', '
 // Der Spielstand auf `Tab` (bedienung AC-20): dieselbe Form wie die Tafel am
 // Ende, aber mit dem, was jetzt ist. Wo der Server nichts schickt (Gegner im
 // Nebel, kampf AC-13), steht ein Strich - kein geschaetzter Wert.
-const STANDKOPF = ['Spieler', 'Zeitalter', 'Bevölkerung', 'Holz', 'Nahrung', 'Gold', 'Stein'];
+const STANDKOPF = ['Spieler', 'Punkte', 'Zeitalter', 'Bevölkerung', 'Holz', 'Nahrung', 'Gold', 'Stein'];
 
 // Die erste Partie erklaert sich (bedienung AC-21): drei Saetze, bis sie
 // einmal weggeklickt sind. Gemerkt wird im Browser, nicht am Konto - wer
@@ -350,7 +350,10 @@ function spielstandZeigen() {
     name.append(punkt, document.createTextNode(zeile.aus ? `${zeile.name} (ausgeschieden)` : zeile.name));
     tr.append(name);
     const v = zeile.vorraete;
+    // Punkte und Zeitalter von jedem (bedienung AC-47), der Rest nur, wo der
+    // Server ihn schickt.
     const werte = [
+      zeile.punkte,
       zeile.zeitalter,
       v ? `${v.bev} / ${v.raum}` : '–',
       v ? v.holz : '–',
@@ -361,7 +364,7 @@ function spielstandZeigen() {
     for (const [i, wert] of werte.entries()) {
       const td = document.createElement('td');
       td.className = 'zahl';
-      if (i > 0) td.dataset.wert = v ? 'ja' : 'nein';
+      if (i > 1) td.dataset.wert = v ? 'ja' : 'nein';
       td.textContent = String(wert);
       tr.append(td);
     }

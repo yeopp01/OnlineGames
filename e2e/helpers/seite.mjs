@@ -162,7 +162,11 @@ export async function uhrStellen(page, code, minuten) {
   expect(antwort.ok(), await antwort.text()).toBe(true);
 }
 
-/** Rohstoffe eines Spielers im Raum setzen (Pruefgriff, e2e/server.mjs). */
+/**
+ * Rohstoffe eines Spielers im Raum setzen (Pruefgriff, e2e/server.mjs).
+ * `werte.gesammelt` (`{ gold: 1234 }`) setzt, was er ueber die Partie
+ * gesammelt hat - davon haengen Tafel und Punkte ab (bedienung AC-47).
+ */
 export async function rohstoffe(page, code, name, werte) {
   const antwort = await page.request.post(`http://localhost:${GRIFFHAFEN}/griff`, {
     data: { id: code, befehl: 'rohstoffe', werte: { name, ...werte } },

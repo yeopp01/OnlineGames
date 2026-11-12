@@ -168,7 +168,7 @@ Umfang hinzufügt, dort nachsehen.
 
 ## Stand
 
-**476 von 602 Kriterien fertig.** 748 Tests ohne Browser, 227 im Browser. Die
+**477 von 602 Kriterien fertig.** 750 Tests ohne Browser, 228 im Browser. Die
 Übersicht ist der Bericht: `npm run qa:report`.
 
 Gebaut ist der Unterbau: Räume, Übertragung, Karte, Wegfindung, Sammeln,
@@ -539,8 +539,10 @@ zurückkehren" (AC-19, uebertragung AC-9; im Browsertest kappt der
 Prüfgriff `trennen` sie vom Server aus). **`Tab` gehalten** zeigt den
 Spielstand (AC-20): je Spieler Zeitalter, und Vorräte mit Bevölkerung von
 einem selbst und den Verbündeten — Gegnern schickt der Server sie im Nebel
-nicht (kampf AC-13), dort steht ein Strich. Eine Punktzahl für alle ist
-AC-47.
+nicht (kampf AC-13), dort steht ein Strich. **Punkte sieht jeder**
+(AC-47): ein Punkt je 10 gesammelte Rohstoffe und je 10, die ausgebildete
+Einheiten gekostet haben, je 5 für Verbesserungen und Aufstiege
+(`welt.punkte()`, auf der Leitung `pk`, auch an Gegner im Nebel).
 
 1. **Stufe A** Dunkle Zeit mit Wirtschafts-KI und Prüfstand · **B** Feudalzeit
    · **C** Partieende und KI-Gegner · **D** Ritterzeit · **E** fünf Häuser ·

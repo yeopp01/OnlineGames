@@ -450,7 +450,8 @@ export class Ansicht {
       const vorraete = Number.isFinite(s.holz)
         ? { holz: s.holz, nahrung: s.nahrung, gold: s.gold, stein: s.stein, bev: s.bev, raum: s.raum }
         : null;
-      this.stand.set(s.id, { zeitalter: s.z || 0, aus: s.aus === 1, vorraete });
+      // Die Punkte kommen von jedem, auch vom Gegner (bedienung AC-47).
+      this.stand.set(s.id, { zeitalter: s.z || 0, aus: s.aus === 1, punkte: s.pk || 0, vorraete });
     }
   }
 
@@ -460,17 +461,18 @@ export class Ansicht {
    * nicht schickt - bei Gegnern, solange der Nebel gilt.
    *
    * @returns {{id: string, name: string, farbe: string, ich: boolean,
-   *   aus: boolean, zeitalter: string, vorraete: object|null}[]}
+   *   aus: boolean, punkte: number, zeitalter: string, vorraete: object|null}[]}
    */
   spielstandZeilen() {
     return [...this.spieler.values()].map((spieler) => {
-      const stand = this.stand.get(spieler.id) || { zeitalter: 0, aus: false, vorraete: null };
+      const stand = this.stand.get(spieler.id) || { zeitalter: 0, aus: false, punkte: 0, vorraete: null };
       return {
         id: spieler.id,
         name: spieler.name || 'Unbekannt',
         farbe: spieler.farbe || '#888888',
         ich: spieler.id === this.ich,
         aus: stand.aus,
+        punkte: stand.punkte,
         zeitalter: this.zeitalterName(stand.zeitalter),
         vorraete: stand.vorraete,
       };

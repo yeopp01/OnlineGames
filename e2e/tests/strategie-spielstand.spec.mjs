@@ -49,16 +49,16 @@ test.describe('Spielstand', () => {
     await expect(tafel.locator('tr[data-spieler]')).toHaveCount(3);
     for (const [wer, name] of [['anna', 'Anna'], ['bert', 'Bert'], ['cem', 'Cem']]) {
       await expect(zeile(ids[wer]).locator('th')).toContainText(name);
-      await expect(zeile(ids[wer]).locator('td').first(), `${name}: das Zeitalter`).toHaveText('Landsitz');
+      await expect(zeile(ids[wer]).locator('td').nth(1), `${name}: das Zeitalter`).toHaveText('Landsitz');
     }
     // Bert, der Verbuendete: seine Zahlen, nicht Annas.
-    await expect(zeile(ids.bert).locator('td')).toHaveText(['Landsitz', /^\d+ \/ \d+$/, '1234', '567', '89', '321']);
+    await expect(zeile(ids.bert).locator('td')).toHaveText([/^\d+$/, 'Landsitz', /^\d+ \/ \d+$/, '1234', '567', '89', '321']);
     // Anna: ihre eigenen, wie in der Leiste oben.
     const meine = await anna.evaluate(() => window.ansicht.vorraete);
-    await expect(zeile(ids.anna).locator('td')).toHaveText(['Landsitz', `${meine.bev} / ${meine.raum}`,
+    await expect(zeile(ids.anna).locator('td')).toHaveText([/^\d+$/, 'Landsitz', `${meine.bev} / ${meine.raum}`,
       String(meine.holz), String(meine.nahrung), String(meine.gold), String(meine.stein)]);
     // Cem, der Gegner: ein Strich - und seine 999 kommen gar nicht erst an.
-    await expect(zeile(ids.cem).locator('td')).toHaveText(['Landsitz', '–', '–', '–', '–', '–']);
+    await expect(zeile(ids.cem).locator('td')).toHaveText([/^\d+$/, 'Landsitz', '–', '–', '–', '–', '–']);
     expect(await anna.evaluate((id) => window.ansicht.stand.get(id).vorraete, ids.cem), 'nichts von Cem im Browser').toBe(null);
 
     await anna.waitForTimeout(200);
@@ -71,11 +71,50 @@ test.describe('Spielstand', () => {
 
     // Gehalten zieht sie mit: Berts Holz aendert sich, die Tafel auch.
     await rohstoffe(anna, code, 'Bert', { holz: 1500 });
-    await expect(zeile(ids.bert).locator('td').nth(2)).toHaveText('1500');
+    await expect(zeile(ids.bert).locator('td').nth(3)).toHaveText('1500');
 
     // Losgelassen ist sie fort.
     await anna.keyboard.up('Tab');
     await expect(tafel).toBeHidden();
+  });
+
+  test('bedienung AC-47: in der Tafel stehen Punkte fuer jeden - auch fuer den Gegner, dessen Vorraete fehlen', async ({}, info) => {
+    const { anna, bert, cem, code } = partie;
+    // Gesammelt ueber die Partie, erkennbar: ein Punkt je 10 Rohstoffe. Sonst
+    // hat niemand etwas getan - keiner sammelt, keiner bildet aus, die drei
+    // Dorfbewohner vom Start zaehlen nicht (tests/strategie-punkte.test.mjs).
+    await rohstoffe(anna, code, 'Bert', { gesammelt: { holz: 500 } });
+    await rohstoffe(anna, code, 'Cem', { gesammelt: { gold: 1234, stein: 6 } });
+    const ids = {
+      anna: await anna.evaluate(() => window.ansicht.ich),
+      bert: await bert.evaluate(() => window.ansicht.ich),
+      cem: await cem.evaluate(() => window.ansicht.ich),
+    };
+    await anna.waitForFunction((id) => window.ansicht.stand.get(id)?.punkte === 124, ids.cem);
+
+    const tafel = anna.locator('#spielstand');
+    await anna.keyboard.down('Tab');
+    await expect(tafel).toBeVisible();
+    await expect(tafel.locator('tr').first().locator('th').nth(1)).toHaveText('Punkte');
+    const punkte = (id) => tafel.locator(`tr[data-spieler="${id}"] td`).first();
+    await expect(punkte(ids.anna), 'Anna hat nichts getan').toHaveText('0');
+    await expect(punkte(ids.bert), 'Bert, der Verbuendete: 500 Holz').toHaveText('50');
+    await expect(punkte(ids.cem), 'Cem, der Gegner: 1240 Rohstoffe').toHaveText('124');
+    // Cems Vorraete bleiben ein Strich - die Punkte verraten, wer vorne liegt,
+    // nicht womit.
+    await expect(tafel.locator(`tr[data-spieler="${ids.cem}"] td`).nth(3)).toHaveText('–');
+    expect(await anna.evaluate((id) => window.ansicht.stand.get(id).vorraete, ids.cem)).toBe(null);
+    // Und Cem sieht dieselbe Zahl fuer sich.
+    await cem.waitForFunction((id) => window.ansicht.stand.get(id)?.punkte === 124, ids.cem);
+
+    await anna.waitForTimeout(200);
+    await nachweis(anna, {
+      spec: BEDIENUNG,
+      ac: 'AC-47',
+      titel: 'Tab gehalten: Punkte in der zweiten Spalte - Anna 0, Bert 50, Cem als Gegner 124, seine Vorraete nur Striche',
+      test: info,
+    });
+    await anna.keyboard.up('Tab');
   });
 
   test('bedienung AC-20: wer mit gehaltenem Tab das Fenster verlaesst, findet die Tafel zu', async () => {

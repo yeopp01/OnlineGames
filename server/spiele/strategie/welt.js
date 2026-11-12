@@ -182,6 +182,19 @@ function untaetigeListe(welt, spielerId) {
   return ids.length ? { u: ids } : {};
 }
 
+// Alle Rohstoffe einer Kostenangabe zusammen - Holz, Nahrung, Gold und Stein
+// zaehlen fuer die Punkte gleich (bedienung AC-47).
+function kostenSumme(kosten) {
+  let summe = 0;
+  for (const menge of Object.values(kosten || {})) summe += menge;
+  return summe;
+}
+
+// Die Punkte im Zustand, nur wenn es welche gibt - ein Zustand bleibt klein.
+function punkteFeld(punkte) {
+  return punkte > 0 ? { pk: punkte } : {};
+}
+
 class Welt {
   /**
    * @param {{id: string, name: string}[]} spielerListe
@@ -245,6 +258,7 @@ class Welt {
       // sonst alle null.
       gesammelt: { holz: 0, nahrung: 0, gold: 0, stein: 0 },
       ausgebildet: 0, // Einheiten, die er aus einem Gebaeude bekommen hat
+      ausgebildetWert: 0, // was sie gekostet haben, fuer die Punkte (bedienung AC-47)
       verloren: 0, // eigene Einheiten, die gefallen sind
       // Das Team (spielziel AC-14): 1 bis 4 oder keins. Wer keins hat,
       // spielt gegen alle.
@@ -498,6 +512,23 @@ class Welt {
   // allen dreien gleich, und ein Abbruch erstattet voll (bauen AC-11, AC-23).
   auftragWerte(art) {
     return EINHEITEN[art] || VERBESSERUNGEN[art] || AUFSTIEGE[art];
+  }
+
+  /**
+   * Die Punkte eines Spielers (bedienung AC-47): ein Punkt je 10 gesammelte
+   * Rohstoffe, je 10 Rohstoffe, die ausgebildete Einheiten gekostet haben, und
+   * je 5, die Verbesserungen und Aufstiege gekostet haben - Wissen zaehlt
+   * doppelt. Alles aus Zaehlern, die waehrend der Partie wachsen; nichts geht
+   * zurueck, wenn eine Einheit faellt.
+   */
+  punkte(spieler) {
+    const gesammelt = kostenSumme(spieler.gesammelt);
+    let wissen = 0;
+    for (const art of spieler.verbesserungen) wissen += kostenSumme(VERBESSERUNGEN[art].kosten);
+    for (const aufstieg of Object.values(AUFSTIEGE)) {
+      if (aufstieg.stufe <= spieler.zeitalter) wissen += kostenSumme(aufstieg.kosten);
+    }
+    return Math.floor((gesammelt + spieler.ausgebildetWert) / 10 + wissen / 5);
   }
 
   // Ein Auftrag, der keinen Platz in der Bevoelkerung braucht: Verbesserung
@@ -1361,6 +1392,7 @@ class Welt {
     // Fuer die Tafel (spielziel AC-8): die drei vom Anfang zaehlen nicht mit,
     // die hat niemand ausgebildet.
     spieler.ausgebildet++;
+    spieler.ausgebildetWert += kostenSumme(this.auftragWerte(art).kosten);
     bevoelkerung.set(spieler.id, belegt + 1);
     // Zum Sammelpunkt; liegt er auf einem Vorrat, wird dort gleich gesammelt (bauen AC-13).
     if (gebaeude.sammelpunkt) this.befehl(spieler.id, [neu.id], gebaeude.sammelpunkt);
@@ -3655,6 +3687,8 @@ class Welt {
         a: this.arbeiterVon(s.id),
         // Ausgeschieden, nur wenn es zutrifft (spielziel AC-5).
         ...(s.aus ? { aus: 1 } : {}),
+        // Die Punkte (bedienung AC-47), sobald es welche gibt.
+        ...punkteFeld(this.punkte(s)),
         // Ein neuer Angriff auf ihn, mit Ort (kampf AC-14) - einmal.
         ...(s.angriff?.neu ? { m: [Math.round(s.angriff.x), Math.round(s.angriff.y)] } : {}),
       })),
@@ -3813,8 +3847,11 @@ class Welt {
       // nicht ihre Vorraete und ihre Untaetigen. Wer mit ihm die Sicht teilt,
       // zeigt ihm dazu Vorraete und Bevoelkerung - fuer die Tafel auf `Tab`
       // (bedienung AC-20); Untaetige, Arbeiter und Angriffe bleiben seine.
+      // Die Punkte sieht jeder (bedienung AC-47): sie sagen, wer vorne liegt,
+      // nicht womit.
       spieler: voll.spieler.map((s) => (s.id === id ? s : {
         id: s.id, ...(s.aus ? { aus: 1 } : {}), ...(s.z ? { z: s.z } : {}), ...(s.kw ? { kw: s.kw } : {}),
+        ...punkteFeld(s.pk),
         ...(this.teiltSicht(id, s.id) ? {
           holz: s.holz, nahrung: s.nahrung, gold: s.gold, stein: s.stein, bev: s.bev, raum: s.raum,
         } : {}),

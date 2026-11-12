@@ -2,7 +2,7 @@
 
 **Bereich:** Strategie
 **Kuerzel:** bedienung
-**Stand:** 43/47 fertig · 4 offen
+**Stand:** 44/47 fertig · 3 offen
 
 ## Zweck
 
@@ -312,11 +312,22 @@ aufgelistet), AC-11 (Übersichtskarte — auf 120 × 120 unverzichtbar), AC-15
   Farbe: zwei Spieler desselben Hauses unterscheidet die Farbe ihres
   Platzes. Bei Zoom 1 sind die fünf Wappen voneinander unterscheidbar.
   Die Wappen kommen aus der Blender-Sitzung.
-- **AC-47** `offen` **Punkte für alle sichtbar** — Je Spieler eine Punktzahl
+- **AC-47** `fertig` **Punkte für alle sichtbar** — Je Spieler eine Punktzahl
   in der Tafel aus AC-20, auch für Gegner: sie verrät, wer vorne liegt, nicht
   seine Vorräte. Gerechnet auf dem Server aus dem, was über die Partie zählt
-  (gesammelt, ausgebildet, erforscht, Zeitalter); wie genau, steht im
-  Kriterium, bevor gebaut wird.
+  (gesammelt, ausgebildet, erforscht, Zeitalter). **Die Rechnung:**
+  ein Punkt je 10 Rohstoffe, die abgeladen oder durch Handel gutgeschrieben
+  wurden (dieselbe Zahl wie „gesammelt“ auf der Tafel am Ende), ein Punkt je
+  10 Rohstoffe, die die ausgebildeten Einheiten gekostet haben, und ein Punkt
+  je 5 Rohstoffe, die erforschte Verbesserungen und erreichte Aufstiege
+  gekostet haben — Wissen zählt doppelt, wie im Original. Abgerundet, am
+  Anfang 0; die drei Dorfbewohner vom Start und bekehrte Einheiten zählen
+  nicht, Verluste ziehen nichts ab (Punkte für Siege im Kampf sind nicht
+  Teil dieses Kriteriums). Ein Dorfbewohner bringt 5 Punkte, der Aufstieg
+  ins Lehen 100. **Messbar:** ein Regeltest rechnet die Punkte nach einer
+  Ausbildung, einer Verbesserung und einem Aufstieg aus den Daten nach; über
+  das Netz kommt die Zahl auch beim Gegner an, dessen Vorräte im Nebel
+  fehlen; im Bild steht sie in der Tafel auf `Tab` für jeden Spieler.
 
 ## Grenzfaelle
 
