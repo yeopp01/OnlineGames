@@ -176,11 +176,17 @@ spielt die KI am schlechtesten.
   71 %, ohne seine Neigung zur Schießanlage 79 %; Holz 1,05 statt 1,15,
   Distelhag mit Fernrüstung +2 und Silberfurt ohne vorgezogenen Handel
   75 %; ganz ohne Holzbonus und mit denselben zwei Änderungen 61 % — und in
-  jeder Probe bleibt Distelhag gegen Eschenbruch bei 0 bis 3 zu 20. Das
-  liegt nicht an einem Bonus: die KI baut ihren Schwerpunkt und bildet
-  daraus aus, was sie bezahlen kann, gleich wen sie vor sich hat — gegen
-  Schützen schickt Distelhag weiter Fußvolk. Der Hebel ist [KI](ki.md)
-  AC-31; die Boni werden danach gemessen, nicht vorher.
+  jeder Probe bleibt Distelhag gegen Eschenbruch bei 0 bis 3 zu 20.
+  **Berichtigt in Runde 179:** die Vermutung „das liegt an der KI, der
+  Hebel ist ki AC-31" hielt nicht — gebaut antworteten beide Seiten, und
+  nichts änderte sich (Runde 177). Gemessen liegt Eschenbruchs Vorsprung
+  in der **Summe** aus Holzbonus und Reichweite: nur die KI-Neigung ohne
+  Boni 60 %, ganz leer 51 % und Distelhag gegen Eschenbruch 11 zu 9.
+  Reichweite erst ab dem Fürstentum (Vorlage) 73 %; dazu Holz 1,10 über
+  alle 200 Partien 75 % bei allen anderen zwischen 34 und 55. Distelhag
+  kostet seine Neigung zur Kaserne 15 bis 20 Punkte (31 gegen 51 %).
+  Welcher Bonus schwächer wird, entscheidet der Benutzer
+  ([Erkenntnisse](../../docs/strategie/erkenntnisse.md), Fragen).
 - **AC-25** `fertig` **Mannschaftsbonus nur im Bündnis** — Der Mannschaftsbonus
   eines Hauses gilt für es selbst und für alle, mit denen es die Sicht
   teilt (`welt.teiltSicht`) — zwei Verbündete desselben Hauses bekommen ihn

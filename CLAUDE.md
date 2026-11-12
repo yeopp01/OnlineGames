@@ -498,8 +498,12 @@ knapp unter der Grenze. **Die Häuser gegeneinander** misst `npm run pruefstand:
 gegen Eschenbruch 0 von 20 — auch nach jeder Gegenprobe an den Boni. Die
 Ursache ist nicht, dass die KI nie auf das gesehene Heer antwortet: das
 das Antworten, gebaut als ki AC-31 (Runde 177, lokaler Zweig
-`strategie-ki-antwort`), änderte nichts, denn beide antworten. Distelhag stellt weniger
-her — offen als Faden; danach spielziel AC-18 (jedes Haus 30 bis 70 %).
+`strategie-ki-antwort`), änderte nichts, denn beide antworten. **Gemessen
+in Runde 179** (zehn Austauschproben): Eschenbruchs Vorsprung ist die Summe
+aus Holzbonus und Reichweite (ganz leer 51 %), Distelhag kostet seine
+Neigung zur Kaserne 15 bis 20 Punkte. Welcher Bonus schwächer wird, ist
+eine offene Frage an den Benutzer; danach spielziel AC-18 (jedes Haus 30
+bis 70 %).
 **Voller Wohnraum fällt auf** (bedienung AC-43): wartet ein eigener
 Auftrag, steht die Bevölkerung oben rot umrandet, auch ohne Auswahl
 (`ansicht.wartetEtwas()`).

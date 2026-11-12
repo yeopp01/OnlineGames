@@ -13,6 +13,22 @@ Kurz halten. Diese Datei wird in jeder Runde gelesen.
 Entscheidungen, die nicht die Schleife trifft. Solange eine offen ist, wird an
 etwas anderem gearbeitet.
 
+- **Eschenbruch ist zu stark — welcher Bonus wird schwächer?** (Runde 179.)
+  Eschenbruch gewinnt 85 % seiner 80 Partien, spielziel AC-18 verlangt
+  höchstens 70. Gemessen mit `pruefstand:haeuser --probe`, je 80 Partien:
+  ohne Holzbonus 69 bis 75 %, ohne die Reichweite seiner Schützen 71 %,
+  Reichweite erst ab dem Fürstentum (wie in der Vorlage: +1 je Zeitalter
+  ab der Ritterzeit) 73 %, ohne seine KI-Neigung zur Schießanlage 79 %,
+  nur die Neigung ohne Boni 60 %, ganz leer 51 %. Kein Teil trägt allein;
+  es ist die Summe aus Holz und Reichweite. Über alle 200 Partien:
+  Reichweite ab Fürstentum **und** Holz 1,10 ergibt Eschenbruch 75,
+  Wehrstein 55, Rappenstein 45, Silberfurt 40, Distelhag 34 % — alle außer
+  Eschenbruch in der Spanne. **Empfehlung:** die Reichweite ab dem
+  Fürstentum (Vorlage, ein Zeitalter an einem Bonus ist klein gebaut) und
+  den Holzbonus auf +10 %; reicht das nicht, +5 %. Beides ändert die
+  Tabelle der Häuser in ADR-0014, deshalb die Frage. Bis dahin bleibt es,
+  und die Schleife misst an Distelhags KI weiter (siehe Faden).
+
 - **Rappensteins Reiter sehen jetzt 4 Felder weiter — so gemeint?** (Runde
   171.) ADR-0014 gibt Rappenstein als Bonus „Reiter sehen 2 Felder weiter"
   und als Mannschaftsbonus „Reiter der Verbündeten sehen 2 Felder weiter";
@@ -228,7 +244,21 @@ etwas anderem gearbeitet.
   `strategie-ki-antwort` (ki AC-31) wartet darauf. **Rückschau nach Runde
   178**, gezählt über Distelhags 80 Partien: je Partie 112 Kampfeinheiten
   aus 3,5 Ausbildungsgebäuden (Eschenbruch 145 aus 5,0, Wehrstein 155 aus
-  5,0, Silberfurt 117 aus 5,5, Rappenstein 40 aus 2,4).
+  5,0, Silberfurt 117 aus 5,5, Rappenstein 40 aus 2,4). **Runde 179,
+  gemessen statt vermutet:** die Partie fällt am ersten Zusammenstoß (beim
+  Startwert 61 bis Minute 18 gleichauf, dann 16 gegen 8 Kampfeinheiten,
+  Distelhag kommt nie über das Lehen). Distelhags Neigung zur Kaserne
+  kostet es 15 bis 20 Punkte: mit 31 %, mit Schießanlage als Schwerpunkt
+  46 %, ohne Neigung 51 % (und 131 statt 112 Kampfeinheiten) — gegen
+  Eschenbruch aber weiter 2 bis 3 zu 20. Diese Paarung kippt erst, wenn
+  Eschenbruch **weder** Boni **noch** Neigung hat (11 zu 9); mit nur einem
+  von beiden bleibt sie bei 2 zu 18. Mit Reichweite ab Fürstentum, Holz
+  1,10 und Distelhag ohne Neigung: 7 zu 13, Eschenbruch 69, Distelhag 56,
+  Silberfurt 29 % (Distelhag ohne Neigung schlägt Silberfurt 18 zu 2).
+  Offen: eine Probe, in der Distelhag zur Kaserne neigt (zuerst gebaut,
+  zuerst bedient — ki AC-27 bleibt), aber nicht nur Kasernen nachbaut.
+  Der Zweig `strategie-ki-antwort` bleibt liegen: das Antworten war nicht
+  die Ursache.
 
 - **Die linke Seite gewinnt öfter** (Runde 176): über 200 Partien mit
   abwechselnden Seiten gewann `ki1` 112 bis 119 von rund 197 (56 bis 60 %).
@@ -2005,6 +2035,17 @@ ihn, mit Gegenprobe an beiden Formen. Fünf Bilder neu, alle angesehen.
 Neueste oben. Eine Zeile je Runde: Nummer, Datum, Kriterien, Ergebnis,
 wichtigste Erkenntnis.
 
+- **179** · 2026-11-12 · **Messrunde**, kein Kriterium fertig, kein Code:
+  warum Distelhag gegen Eschenbruch 0 zu 20 verliert. Zehn
+  Austauschproben mit `pruefstand:haeuser --probe` (je 80 oder 200
+  Partien). Eschenbruchs 85 % sind die Summe aus Holzbonus und Reichweite
+  (jedes allein weg: 69 bis 75 %; beides weg, Neigung bleibt: 60 %; ganz
+  leer: 51 %), Distelhag kostet seine Neigung zur Kaserne 15 bis 20
+  Punkte (31 gegen 51 %). Die Aussage in spielziel AC-18 „liegt nicht an
+  einem Bonus, der Hebel ist ki AC-31" ist widerlegt und berichtigt.
+  Welcher Bonus schwächer wird, ist eine Frage an den Benutzer (mit
+  Empfehlung: Reichweite ab Fürstentum, Holz +10 %). Nebenbefund: links
+  gewinnt über 200 Partien 114 bis 126 (58 bis 63 %).
 - **178** · 2026-11-12 · **Rückschau** (Runden 174 bis 177):
   `pruefstand:haeuser` zählt die Herstellung je Haus, `npm run waechter`
   und der Wächter `waechter-haeuser`, zwei Regeln (Ursache erst an einer
