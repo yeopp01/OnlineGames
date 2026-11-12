@@ -2,7 +2,7 @@
 
 **Bereich:** Strategie
 **Kuerzel:** bedienung
-**Stand:** 37/46 fertig · 9 offen
+**Stand:** 38/46 fertig · 8 offen
 
 ## Zweck
 
@@ -69,9 +69,12 @@ Befehl steht.
 
 - **AC-12** `fertig` **Rechtsklick befiehlt** — Laufen, sammeln oder angreifen, je nach Ziel. Kein
   Umschalten der Betriebsart.
-- **AC-13** `offen` **Der Befehl ist sofort sichtbar** — Ein Kringel am Zielpunkt, ohne auf die
+- **AC-13** `fertig` **Der Befehl ist sofort sichtbar** — Ein Kringel am Zielpunkt, ohne auf die
   Antwort des Servers zu warten. Zehn Takte je Sekunde heißt bis zu 100 ms
   Verzögerung — ohne Rückmeldung fühlt sich das kaputt an.
+  Gebaut mit AC-34 (der Ring wird im Klick selbst gesetzt); belegt, indem
+  der Browserfall den Befehl anhält, ehe er hinausgeht: der Ring ist
+  trotzdem gezeichnet, die Einheiten laufen erst nach dem Senden.
 - **AC-14** `offen` **Warteschlange mit Umschalt** — Mehrere Ziele hintereinander abarbeiten.
 - **AC-15** `fertig` **Abbrechen mit Esc** — Hebt Auswahl und angefangene Platzierung auf.
 

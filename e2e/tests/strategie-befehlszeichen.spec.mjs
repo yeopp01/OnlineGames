@@ -110,4 +110,90 @@ test.describe('Befehlszeichen', () => {
     });
     await expect.poll(() => anna.evaluate(() => window.ansicht.zielzeichen)).toBe(null);
   });
+
+  test('bedienung AC-13: der Ring am Zielpunkt steht und ist gezeichnet, bevor der Befehl den Browser verlassen hat', async ({}, info) => {
+    const { anna } = partie;
+    // Der Befehl wird angehalten, ehe er zum Server geht: kommt das Zeichen
+    // trotzdem, wartet es auf keine Antwort. Gemessen wird am Bild selbst -
+    // die Bildpunkte um den Zielpunkt vor dem Klick und zwei Bilder danach.
+    // Der Fall davor hat die Milizen auf Bert geschickt: erst, wenn sie auf
+    // der Stelle stehen (im Nahkampf oder danach), beginnt dieser - sonst
+    // hiesse "bewegt sich erst nach dem Senden" nichts.
+    const lebende = () => anna.evaluate((ids) => ids.filter((id) => {
+      const e = window.ansicht.nachher.get(id);
+      return e && !e.s;
+    }).map((id) => ({ i: id, x: window.ansicht.nachher.get(id).x, y: window.ansicht.nachher.get(id).y })), meine.map((e) => e.i));
+    await expect.poll(async () => {
+      const a = await lebende();
+      await anna.waitForTimeout(600);
+      const b = await lebende();
+      return a.length > 0 && JSON.stringify(a) === JSON.stringify(b);
+    }, { timeout: 60_000 }).toBe(true);
+    const stehen = await lebende();
+    const bild = await anna.evaluate((ids) => {
+      const a = window.ansicht;
+      a.gewaehltesGebaeude = null;
+      a.ausgewaehlt = new Set(ids);
+      a.beiAuswahl();
+      a.kamera.zoom = 2;
+      const m = a.nachher.get(ids[0]);
+      a.blickAuf(m.x, m.y);
+      window.gehalten = [];
+      window.echtSenden = a.befehlSenden;
+      a.befehlSenden = (...befehl) => window.gehalten.push(befehl);
+      return a.zuBild(m.x, m.y);
+    }, stehen.map((e) => e.i));
+    // Weit neben die Milizen, damit sich im Ausschnitt nur der Ring regt.
+    const ziel = { x: Math.round(bild.x + 160), y: Math.round(bild.y + 60) };
+    const ausschnitt = (z) => anna.evaluate(async (p) => {
+      const a = window.ansicht;
+      // Zwei Bilder abwarten: das Zeichen wird im naechsten gezeichnet.
+      await new Promise((fertig) => requestAnimationFrame(() => requestAnimationFrame(fertig)));
+      const d = window.devicePixelRatio || 1;
+      const r = Math.round(60 * d);
+      return [...a.stift.getImageData(Math.round(p.x * d) - r, Math.round(p.y * d) - r, 2 * r, 2 * r).data];
+    }, z);
+    const vorher = await ausschnitt(ziel);
+
+    await anna.mouse.click(ziel.x, ziel.y, { button: 'right' });
+    const lage = await anna.evaluate(() => ({
+      zeichen: window.ansicht.zielzeichen && { ...window.ansicht.zielzeichen },
+      gehalten: window.gehalten.length,
+    }));
+    expect(lage.gehalten, 'der Befehl ist angehalten, nicht gesendet').toBe(1);
+    expect(lage.zeichen, 'das Zeichen steht trotzdem').toBeTruthy();
+    expect(lage.zeichen.feindlich).toBe(false);
+    const nachher = await ausschnitt(ziel);
+    // Weiss mit dunklem Rand auf Gras: ein Ring von rund 2 x 1 Feld veraendert
+    // Hunderte Bildpunkte. Gezaehlt wird, was sich deutlich aendert.
+    let anders = 0;
+    for (let i = 0; i < vorher.length; i += 4) {
+      const abstand = Math.abs(vorher[i] - nachher[i]) + Math.abs(vorher[i + 1] - nachher[i + 1]) + Math.abs(vorher[i + 2] - nachher[i + 2]);
+      if (abstand > 90) anders += 1;
+    }
+    expect(anders, 'der Ring ist gezeichnet').toBeGreaterThan(200);
+
+    // Fuer das Bild angehalten; die Milizen stehen noch, denn der Server weiss nichts.
+    await anna.evaluate(() => { window.ansicht.zielzeichen.seit = performance.now() + 60_000; });
+    await nachweis(anna, {
+      spec: BEDIENUNG,
+      ac: 'AC-13',
+      titel: 'Der weisse Ring am Zielpunkt steht, waehrend der Befehl noch angehalten ist - die Milizen stehen, der Server weiss nichts',
+      test: info,
+    });
+
+    // Jetzt geht der Befehl hinaus, und erst danach laufen die Milizen.
+    // Bis hierher hat sich keine bewegt.
+    expect(await lebende(), 'die Milizen stehen noch').toEqual(stehen);
+    await anna.evaluate(() => {
+      const a = window.ansicht;
+      a.befehlSenden = window.echtSenden;
+      for (const befehl of window.gehalten) a.befehlSenden(...befehl);
+      a.zielzeichen = null;
+    });
+    await expect.poll(async () => {
+      const [e] = await lebende();
+      return Math.hypot(e.x - stehen[0].x, e.y - stehen[0].y);
+    }).toBeGreaterThan(0.5);
+  });
 });

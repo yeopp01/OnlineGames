@@ -2071,6 +2071,17 @@ ihn, mit Gegenprobe an beiden Formen. Fünf Bilder neu, alle angesehen.
 Neueste oben. Eine Zeile je Runde: Nummer, Datum, Kriterien, Ergebnis,
 wichtigste Erkenntnis.
 
+- **186** · 2026-11-12 · **bedienung AC-13 fertig, ohne neuen Code**
+  (Abweichung nach Abschnitt 1, Punkt 6): der Ring am Zielpunkt war mit
+  AC-34 schon im Klick gesetzt; es fehlte nur der Beleg, dass er
+  nicht auf den Server wartet. Der Browserfall in
+  `e2e/tests/strategie-befehlszeichen.spec.mjs` hält `befehlSenden` an,
+  zählt die Bildpunkte um den Zielpunkt vor und zwei Bilder nach dem Klick
+  (Gegenprobe ohne `zielzeichenZeichnen`: 0 statt über 200) und zeigt, dass
+  die Milizen erst nach dem Loslassen laufen. **Vor dem Bauen nachsehen,
+  ob ein anderes Kriterium es schon gebaut hat** — die Spec von AC-34 sagte
+  „sofort" in fast denselben Worten.
+
 - **185** · 2026-11-12 · **bedienung AC-10 fertig** (Abweichung nach
   Abschnitt 1, Punkt 6): die Leertaste springt zum eigenen Dorfzentrum
   nächst dem Startplatz, ein zweites Mal zurück — nur, solange die Kamera

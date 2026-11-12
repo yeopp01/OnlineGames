@@ -1,0 +1,10 @@
+{
+  "spec": "10-strategie/bedienung.md",
+  "ac": "AC-13",
+  "titel": "Der weisse Ring am Zielpunkt steht, waehrend der Befehl noch angehalten ist - die Milizen stehen, der Server weiss nichts",
+  "datei": "e2e/tests/strategie-befehlszeichen.spec.mjs",
+  "pfad": [
+    "Befehlszeichen",
+    "bedienung AC-13: der Ring am Zielpunkt steht und ist gezeichnet, bevor der Befehl den Browser verlassen hat"
+  ]
+}
