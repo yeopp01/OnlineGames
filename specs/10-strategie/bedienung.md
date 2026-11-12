@@ -2,7 +2,7 @@
 
 **Bereich:** Strategie
 **Kuerzel:** bedienung
-**Stand:** 35/46 fertig · 11 offen
+**Stand:** 36/46 fertig · 10 offen
 
 ## Zweck
 
@@ -49,7 +49,13 @@ Befehl steht.
 
 - **AC-7** `fertig` **Schieben mit Tasten** — `W A S D` und die Pfeiltasten.
 - **AC-8** `fertig` **Zoom mit dem Rad** — Der Punkt unter dem Zeiger bleibt dabei stehen.
-- **AC-9** `offen` **Schieben am Bildschirmrand** — Mit der Maus am Rand, abschaltbar.
+- **AC-9** `fertig` **Schieben am Bildschirmrand** — Mit der Maus am Rand, abschaltbar.
+  Die äußersten 12 Bildpunkte des Spielbilds schieben in ihre Richtung, so
+  schnell wie die Tasten; oben auch unter der Kopfzeile, die keine Maus
+  annimmt. Verlässt die Maus das Bild oder das Fenster den Fokus, steht die
+  Karte. Der Schalter steht in der Tastenübersicht (`?`), Vorgabe an; die
+  Wahl merkt sich der Browser. Nicht geprüft: das Stehenbleiben beim
+  Verlassen des Fensters — Playwright bewegt die Maus nicht aus dem Bild.
 - **AC-10** `offen` **Leertaste springt zur Basis** — Und ein zweites Mal zurück.
 - **AC-11** `fertig` **Übersichtskarte unten rechts** — Gelände, eigene und fremde Einheiten als
   Punkte, der Bildausschnitt als Rahmen. Klick springt hin.

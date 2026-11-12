@@ -907,6 +907,20 @@ canvas.angriffslauf {
 .tastenuebersicht dd {
   margin: 0;
 }
+.tastenuebersicht .schalter {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 0.9rem 0 0;
+  cursor: pointer;
+}
+/* Ohne die Breite der Formularfelder (input: 100 %), sonst steht der Kasten
+   mitten in der Zeile und der Text daneben in einer schmalen Spalte. */
+.tastenuebersicht .schalter input {
+  width: auto;
+  margin: 0;
+  accent-color: #f0b35a;
+}
 .tastenuebersicht .leise {
   margin: 0.8rem 0 0;
   color: #9aa3ad;

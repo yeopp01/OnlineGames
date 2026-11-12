@@ -2071,6 +2071,20 @@ ihn, mit Gegenprobe an beiden Formen. Fünf Bilder neu, alle angesehen.
 Neueste oben. Eine Zeile je Runde: Nummer, Datum, Kriterien, Ergebnis,
 wichtigste Erkenntnis.
 
+- **184** · 2026-11-12 · **bedienung AC-9 fertig** (Abweichung vom Fahrplan
+  nach Abschnitt 1, Punkt 6: Stufe E gesperrt): die äußersten 12 Bildpunkte
+  schieben die Karte (`ansicht.amRand()` in `schieben`, `RAND_SCHIEBEN`),
+  abschaltbar in der Tastenübersicht (`#rand-schieben`, gemerkt in
+  `localStorage`, gelesen von `randSchiebenGemerkt()`). Browserfall
+  `e2e/tests/strategie-randschieben.spec.mjs`, Bild AC-22 neu (eine Zeile
+  und der Schalter mehr). Drei Gegenproben: Schalter wirkungslos und Zeiger
+  nie gesetzt fallen; **die Maus am Fenster statt an der Leinwand blieb
+  grün** — keine Leiste reicht bis an den Rand, also ist der Fensterhörer
+  zurückgebaut, statt ihn mit einem falschen Kommentar zu behalten. Das
+  erste Bild zeigte den Kasten mitten in der Zeile: `input { width: 100% }`
+  gilt auch für Kästchen. Nicht geprüft: Stehenbleiben beim Verlassen des
+  Fensters.
+
 - **183** · 2026-11-12 · **Rückschau** (Runden 179 bis 182): Punkt 6 in
   Abschnitt 1 (gesperrte Stufe → frühere Stufen, zuerst Bedienung), eine
   Regel zur grünen Gegenprobe und zu Vorhersagen über die Simulation

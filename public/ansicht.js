@@ -31,6 +31,16 @@ const KLICK_WEITE = 16; // Bildpunkte bei Vergroesserung 1
 // Wie lange das Zeichen am Ziel steht (bedienung AC-34). Kurz genug, dass es
 // nicht im Weg ist, lang genug, dass man es bei einem Klick bemerkt.
 const ZIELZEICHEN_DAUER = 800; // Millisekunden
+const RAND_SCHIEBEN = 12; // Bildpunkte am Fensterrand, in denen die Maus die Karte schiebt (bedienung AC-9)
+
+// Die gemerkte Wahl zum Schieben am Rand; ohne Speicher (privates Fenster) "an".
+export function randSchiebenGemerkt() {
+  try {
+    return localStorage.getItem('randSchieben') !== 'aus';
+  } catch {
+    return true;
+  }
+}
 
 /** Hoehe einer Figur in Bildpunkten bei einem Zoom - auch fuer die Schautafel. */
 export function figurHoeheBei(zoom) {
@@ -95,6 +105,11 @@ export class Ansicht {
     // Platzieren eines Gebaeudes (bauen AC-4): welche Art, und wo der Zeiger ist.
     this.platzieren = null;
     this.zeiger = null;
+    // Schieben am Bildschirmrand (bedienung AC-9): wo die Maus im Spielbild
+    // steht (null, sobald sie es verlaesst), und ob es an ist. Die Wahl merkt
+    // sich der Browser, ohne ihn gilt die Vorgabe "an".
+    this.randZeiger = null;
+    this.randSchieben = randSchiebenGemerkt();
     this.bauenSenden = () => {};
     this.mauerSenden = () => {};
     this.sammelpunktSenden = () => {};
@@ -623,6 +638,7 @@ export class Ansicht {
 
     this.leinwand.addEventListener('pointermove', (e) => {
       this.zeiger = { x: e.offsetX, y: e.offsetY };
+      this.randZeiger = this.zeiger;
       if (!this.zug) return;
       this.zug.bisX = e.offsetX;
       this.zug.bisY = e.offsetY;
@@ -645,6 +661,13 @@ export class Ansicht {
       if (this.platzieren) return;
       this.typWaehlen(e.offsetX, e.offsetY, e.shiftKey);
     });
+
+    // Verlaesst die Maus das Spielbild oder das Fenster den Fokus, steht die
+    // Karte (bedienung AC-9). Keine Leiste reicht bis an den Rand - alle
+    // stehen mindestens 1rem davor, die Kopfzeile nimmt keine Maus an -, also
+    // sieht die Leinwand die Maus in jedem Randstreifen selbst.
+    this.leinwand.addEventListener('pointerleave', () => { this.randZeiger = null; });
+    window.addEventListener('blur', () => { this.randZeiger = null; });
 
     this.leinwand.addEventListener('wheel', (e) => {
       e.preventDefault();
@@ -1190,10 +1213,11 @@ export class Ansicht {
 
   schieben(dauer) {
     const tempo = (600 / this.kamera.zoom) * (dauer / 1000);
-    if (this.tasten.has('w') || this.tasten.has('arrowup')) this.kamera.y -= tempo;
-    if (this.tasten.has('s') || this.tasten.has('arrowdown')) this.kamera.y += tempo;
-    if (this.tasten.has('a') || this.tasten.has('arrowleft')) this.kamera.x -= tempo;
-    if (this.tasten.has('d') || this.tasten.has('arrowright')) this.kamera.x += tempo;
+    const rand = this.amRand();
+    if (this.tasten.has('w') || this.tasten.has('arrowup') || rand.oben) this.kamera.y -= tempo;
+    if (this.tasten.has('s') || this.tasten.has('arrowdown') || rand.unten) this.kamera.y += tempo;
+    if (this.tasten.has('a') || this.tasten.has('arrowleft') || rand.links) this.kamera.x -= tempo;
+    if (this.tasten.has('d') || this.tasten.has('arrowright') || rand.rechts) this.kamera.x += tempo;
 
     // Die Karte als Raute: links und rechts je g Halbbreiten, unten 2g Halbhoehen.
     const g = this.karte.groesse;
@@ -1201,6 +1225,34 @@ export class Ansicht {
     const hoehe = this.leinwand.clientHeight / this.kamera.zoom;
     this.kamera.x = Math.max(-g * HALB_B - breite / 2, Math.min(g * HALB_B - breite / 2, this.kamera.x));
     this.kamera.y = Math.max(-hoehe / 2, Math.min(2 * g * HALB_H - hoehe / 2, this.kamera.y));
+  }
+
+  /**
+   * An welchem Rand des Spielbilds die Maus steht (bedienung AC-9): in den
+   * aeussersten RAND_SCHIEBEN Bildpunkten - oben auch unter der Kopfzeile
+   * mit den Rohstoffen. Aus, wenn abgeschaltet oder die Maus draussen.
+   */
+  amRand() {
+    const z = this.randZeiger;
+    if (!this.randSchieben || !z) return {};
+    const b = this.leinwand.clientWidth;
+    const h = this.leinwand.clientHeight;
+    if (z.x < 0 || z.y < 0 || z.x >= b || z.y >= h) return {};
+    return {
+      links: z.x < RAND_SCHIEBEN,
+      rechts: z.x >= b - RAND_SCHIEBEN,
+      oben: z.y < RAND_SCHIEBEN,
+      unten: z.y >= h - RAND_SCHIEBEN,
+    };
+  }
+
+  randSchiebenSetzen(an) {
+    this.randSchieben = Boolean(an);
+    try {
+      localStorage.setItem('randSchieben', an ? 'an' : 'aus');
+    } catch {
+      // Ohne Speicher gilt die Wahl bis zum Neuladen.
+    }
   }
 
   bild(jetzt = performance.now()) {

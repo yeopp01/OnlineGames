@@ -84,7 +84,7 @@ test.describe('Auswahl mit der Maus', () => {
     await anna.keyboard.up('Shift');
     expect(await gewaehlt(anna)).toEqual({ ids: fuenf, gebaeude: null });
     await expect(anna.locator('.auswahl-kopf')).toHaveText('5 ausgewählt');
-    await anna.mouse.move(5, 300);
+    await anna.mouse.move(40, 300);
     await anna.waitForTimeout(200);
     await nachweis(anna, {
       spec: BEDIENUNG,
@@ -110,7 +110,7 @@ test.describe('Auswahl mit der Maus', () => {
     await anna.mouse.dblclick(milizenImBild[1].x, milizenImBild[1].y);
     expect(await gewaehlt(anna)).toEqual({ ids: sortiert(milizenImBild), gebaeude: null });
     await expect(anna.locator('.auswahl-kopf')).toHaveText('3 ausgewählt');
-    await anna.mouse.move(5, 300);
+    await anna.mouse.move(40, 300);
     await anna.waitForTimeout(200);
     await nachweis(anna, {
       spec: BEDIENUNG,

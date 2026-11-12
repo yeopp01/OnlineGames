@@ -22,6 +22,7 @@ export const BELEGUNG = [
   ['Doppelklick', 'alle Einheiten dieser Art im Bild'],
   ['Rechtsklick', 'hingehen, sammeln, bauen – oder Sammelpunkt setzen'],
   ['W A S D, Pfeile', 'Karte schieben'],
+  ['Maus an den Bildschirmrand', 'Karte schieben – unten abschaltbar'],
   ['Mausrad', 'näher, weiter'],
   ['H', 'Dorfzentrum wählen'],
   ['Q (Dorfzentrum gewählt)', 'Dorfbewohner ausbilden'],
@@ -61,10 +62,22 @@ export class Tasten {
     }
     const titel = document.createElement('h2');
     titel.textContent = 'Tasten';
+    // Schieben am Rand (bedienung AC-9) ist hier abschaltbar: wer die Maus
+    // gern an den Rand legt, findet den Schalter dort, wo die Taste steht.
+    const schalter = document.createElement('label');
+    schalter.className = 'schalter';
+    const kasten = document.createElement('input');
+    kasten.type = 'checkbox';
+    kasten.id = 'rand-schieben';
+    kasten.checked = this.ansicht.randSchieben;
+    kasten.addEventListener('change', () => this.ansicht.randSchiebenSetzen(kasten.checked));
+    schalter.append(kasten, ' Karte am Bildschirmrand schieben');
+    // Der Klick auf den Schalter schliesst die Uebersicht nicht.
+    schalter.addEventListener('click', (e) => e.stopPropagation());
     const hinweis = document.createElement('p');
     hinweis.className = 'leise';
     hinweis.textContent = 'Schließen: noch einmal ? oder F1, Esc oder ein Klick.';
-    this.uebersicht.replaceChildren(titel, liste, hinweis);
+    this.uebersicht.replaceChildren(titel, liste, schalter, hinweis);
   }
 
   uebersichtZeigen(an = this.uebersicht.hidden) {
