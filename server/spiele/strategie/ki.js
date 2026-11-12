@@ -493,8 +493,12 @@ class Ki {
     if (alleVoll && meine.length < MILITAER_JE_ZEITALTER[Math.min(this.spieler.zeitalter, MILITAER_JE_ZEITALTER.length - 1)] && this.spieler.holz >= MILITAER_HOLZ + MILITAER_RESERVE) {
       // Nachgebaut wird der Schwerpunkt, wenn er ein Militaergebaeude ist
       // (ki AC-27) - die erste Kaserne aber in jedem Haus (ki AC-17).
+      // Fehlt das Gebaeude, aus dem die beste Antwort auf das gesehene Heer
+      // kommt, geht es vor (ki AC-31).
       const nachbau = MILITAER.includes(schwerpunkt) || schwerpunkt === 'kaserne';
+      const antwort = this.antwortGebaeude();
       const art = !meine.some((g) => g.art === 'kaserne') ? 'kaserne'
+        : antwort && !meine.some((g) => g.art === antwort) ? antwort
         : nachbau ? schwerpunkt
         : this.spieler.gold >= MILITAER_GOLD ? 'schiessanlage' : 'stall';
       this.bauen(art, this.platzBeiBasis(art), dorfbewohner);
@@ -510,17 +514,59 @@ class Ki {
   // Speerkaempfer vor der Miliz. Ohne das kostete der Aufstieg 1000
   // Rohstoffe und brachte nichts - Startwert 11 dauerte 71 statt 46 Minuten
   // (Runde 137). In der Feudalzeit bleibt die Reihenfolge der Daten.
+  //
+  // Unter den bezahlten die, deren Bonus die meisten gesehenen fremden
+  // Kampfeinheiten trifft (ki AC-31); bei gleich vielen die erste nach dieser
+  // Reihenfolge, und ohne gesehenes Heer bleibt alles wie vorher.
   naechsteKampfeinheit(gebaeude, ruecklage = {}) {
-    const liste = GEBAEUDE[gebaeude.art].bildetAus;
+    let beste = null;
+    let besterWert = -1;
+    for (const art of this.ausbildbar(gebaeude.art)) {
+      if (Object.entries(EINHEITEN[art].kosten).some(([r, menge]) => this.spieler[r] - (ruecklage[r] || 0) < menge)) continue;
+      const wert = this.antwortAuf(art);
+      if (wert > besterWert) { beste = art; besterWert = wert; }
+    }
+    return beste;
+  }
+
+  // Was ein Gebaeude jetzt ausbilden kann, in der Reihenfolge der Wahl.
+  ausbildbar(gebaeudeArt) {
+    const liste = GEBAEUDE[gebaeudeArt].bildetAus;
     const ritter = this.spieler.zeitalter >= 2
       ? [...liste].sort((a, b) => (EINHEITEN[b]?.zeitalter || 0) - (EINHEITEN[a]?.zeitalter || 0)) : liste;
-    for (const art of ritter) {
-      const werte = EINHEITEN[art];
-      if (!werte || (werte.zeitalter || 0) > this.spieler.zeitalter) continue;
-      if (Object.entries(werte.kosten).some(([r, menge]) => this.spieler[r] - (ruecklage[r] || 0) < menge)) continue;
-      return art;
+    return ritter.filter((art) => EINHEITEN[art] && (EINHEITEN[art].zeitalter || 0) <= this.spieler.zeitalter);
+  }
+
+  /**
+   * Wie viele der fremden Kampfeinheiten, die sie gesehen hat und noch nicht
+   * vergessen hat, der Bonus dieser Art trifft (ki AC-31) - gezaehlt, nicht
+   * gewichtet: +15 gegen einen Reiter ist nicht fuenfmal so viel Antwort wie
+   * +3 gegen einen Schuetzen. Gelesen aus `bonus` und `klassen` der Daten.
+   */
+  antwortAuf(art) {
+    const bonus = EINHEITEN[art].bonus;
+    if (!bonus) return 0;
+    let n = 0;
+    for (const f of this.feindeGesehen.values()) {
+      if (!f.kaempft || !EINHEITEN[f.art]) continue;
+      if ((EINHEITEN[f.art].klassen || []).some((k) => bonus[k])) n += 1;
     }
-    return null;
+    return n;
+  }
+
+  // Das Militaergebaeude mit der besten Antwort auf das gesehene Heer, oder
+  // null, wenn keines eine hat (ki AC-31). Bei gleich guten das erste nach
+  // MILITAER, dann die Kaserne.
+  antwortGebaeude() {
+    let beste = null;
+    let besterWert = 0;
+    for (const art of [...MILITAER, 'kaserne']) {
+      for (const einheit of this.ausbildbar(art)) {
+        const wert = this.antwortAuf(einheit);
+        if (wert > besterWert) { beste = art; besterWert = wert; }
+      }
+    }
+    return beste;
   }
 
   /**
@@ -639,7 +685,7 @@ class Ki {
       // kein Karren, kein Moench: gezaehlt wird beim Gegner wie bei ihr
       // selbst, wer kaempft (`kaempft`, Durchsicht Runde 165).
       const dorf = (EINHEITEN[e.art].klassen || []).includes('dorf');
-      this.feindeGesehen.set(e.id, { id: e.id, besitzer: e.besitzer, dorf, kaempft: this.kaempft(e), takt: welt.takt, x: Math.round(e.x), y: Math.round(e.y) });
+      this.feindeGesehen.set(e.id, { id: e.id, art: e.art, besitzer: e.besitzer, dorf, kaempft: this.kaempft(e), takt: welt.takt, x: Math.round(e.x), y: Math.round(e.y) });
       // Ein Dorfbewohner verraet, wo jemand wohnt; eine Kampfeinheit draussen
       // nicht - ein fremder Spaeher vor dem eigenen Dorf hiesse sonst, der
       // Gegner wohne hier.
