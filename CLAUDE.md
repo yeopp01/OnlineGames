@@ -168,7 +168,7 @@ Umfang hinzufügt, dort nachsehen.
 
 ## Stand
 
-**483 von 605 Kriterien fertig.** 762 Tests ohne Browser, 232 im Browser. Die
+**484 von 605 Kriterien fertig.** 767 Tests ohne Browser, 233 im Browser. Die
 Übersicht ist der Bericht: `npm run qa:report`.
 
 Gebaut ist der Unterbau: Räume, Übertragung, Karte, Wegfindung, Sammeln,
@@ -257,7 +257,8 @@ Einheit oder ein fremdes Gebäude greift an — kein eigener Knopf, der Server
 liest es aus dem geklickten Feld; mehrere Angreifer verteilen sich um das
 Ziel. Der Schaden ist `max(1, Angriff − Rüstung + Bonus)` ohne Ausnahme und
 ohne Zufall, jede Einheit hat ihre Nachladezeit, Gebäude tragen 0/7 Rüstung
-und fallen samt ihrem Platz. Wer stirbt, liegt zwei Sekunden am Boden.
+und fallen samt ihrem Platz; eine Baustelle hat erst so viel Leben, wie
+gebaut ist (bauen AC-7, `welt.bauleben`). Wer stirbt, liegt zwei Sekunden am Boden.
 **Kampfeinheiten wehren sich von selbst**: was in die Sichtweite einer
 stehenden Einheit kommt, wird ohne Befehl angegriffen (wer wacht, steht als
 Wert in den Daten); ein Dorfbewohner arbeitet weiter, bis ihn ein Schlag
@@ -510,9 +511,12 @@ aus Holzbonus und Reichweite (ganz leer 51 %), Distelhag kostet seine
 Neigung zur Kaserne 15 bis 20 Punkte. **Wer zur Kaserne neigt, baut im
 Wechsel nach** (ki AC-32, Runde 180): eine weitere Kaserne nur, solange es
 weniger Kasernen als andere Militärgebäude gibt — Distelhag 47 statt 26 %
-über 160 Partien. Welcher Bonus Eschenbruchs schwächer wird, ist eine
-offene Frage an den Benutzer; danach spielziel AC-18 (jedes Haus 30 bis
-70 %).
+über 160 Partien. **Eschenbruch abgeschwächt** (Runde 201, Benutzer):
+Holz +5 % statt +15 %, Schützen +1 Reichweite erst ab dem Fürstentum —
+ein Bonus ab einem Zeitalter steht als `boniAb` in `HAEUSER` und kommt mit
+dem Aufstieg (`welt.zeitalterWirkungen`). Gemessen 73 % statt 85 %, weiter
+über spielziel AC-18 (jedes Haus 30 bis 70 %); der nächste Schritt ist
+eine Frage an den Benutzer.
 **Voller Wohnraum fällt auf** (bedienung AC-43): wartet ein eigener
 Auftrag, steht die Bevölkerung oben rot umrandet, auch ohne Auswahl
 (`ansicht.wartetEtwas()`). **Gruppentasten** (bedienung AC-5): `Strg`

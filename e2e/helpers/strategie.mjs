@@ -114,7 +114,7 @@ import { PRUEFHAUS } from './pruefhaus.mjs';
  */
 export function hausOhneBoni() {
   const boni = HAEUSER[PRUEFHAUS]?.boni;
-  if (!boni || Object.keys(boni).length) {
+  if (!boni || Object.keys(boni).length || Object.keys(HAEUSER[PRUEFHAUS].boniAb || {}).length) {
     throw new Error(`Das Pruefhaus "${PRUEFHAUS}" fehlt in HAEUSER oder hat Boni (e2e/helpers/pruefhaus.mjs).`);
   }
   return PRUEFHAUS;

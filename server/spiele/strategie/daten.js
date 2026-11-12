@@ -507,7 +507,12 @@ const GOLD_KNAPP_SILBERFURT = Infinity;
 const HAEUSER = {
   eschenbruch: {
     name: 'Eschenbruch', sitz: 'Waldland', wahlspruch: 'Weit sehen, weit treffen.',
-    boni: { sammeln: { holz: 1.15 }, wirkung: { bogenschuetze: { reichweite: 1 } } },
+    // Holz +5 % und die Reichweite erst ab dem Fuerstentum (Benutzer,
+    // 2026-11-12, Runde 201): mit +15 % und Reichweite ab dem Lehen gewann
+    // Eschenbruch 85 % seiner Partien, mit +10 % und Reichweite ab dem
+    // Fuerstentum 80 % - beides ueber der Grenze von spielziel AC-18.
+    boni: { sammeln: { holz: 1.05 } },
+    boniAb: { 2: { wirkung: { bogenschuetze: { reichweite: 1 } } } }, // 2 = Fuerstentum (Ritterzeit)
     mannschaft: { ausbildung: { schiessanlage: 1.2 } },
     ki: { schwerpunkt: 'schiessanlage' },
   },

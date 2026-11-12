@@ -2,7 +2,7 @@
 
 **Bereich:** Strategie
 **Kuerzel:** bauen
-**Stand:** 33/35 fertig · 2 offen
+**Stand:** 34/35 fertig · 1 offen
 
 ## Zweck
 
@@ -103,7 +103,7 @@ Spezialeinheit der Burg (kommt mit den Häusern, Stufe E), Palisade.
   Vorrat nicht, entsteht keine Baustelle.
 - **AC-6** `fertig` **Abbruch erstattet den Rest** — Eine Baustelle lässt sich abreißen. Erstattet
   wird der Anteil der Kosten, der noch nicht verbaut ist.
-- **AC-7** `offen` **Gebäude im Bau angreifbar** — Mit Leben im Verhältnis zum Baufortschritt.
+- **AC-7** `fertig` **Gebäude im Bau angreifbar** — Mit Leben im Verhältnis zum Baufortschritt: eine Baustelle beginnt mit einem Leben, jeder Bautakt legt seinen Anteil am vollen Leben drauf, erlittener Schaden bleibt abgezogen. Mauerwerk legt auf eine Baustelle nur den Anteil ihres Fortschritts nach. Die Leiste zeigt an einer Baustelle Fortschritt und Leben.
   _(Stufe B, mit dem Kampf.)_
 - **AC-20** `fertig` **Die Gebäude der Dunklen Zeit** — Dorfzentrum, Haus, Mühle,
   Holzfällerlager, Bergbaulager, Farm und Kaserne lassen sich mit Kosten,

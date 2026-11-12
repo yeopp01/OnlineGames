@@ -57,7 +57,7 @@ AC-42 bis AC-44).
 
 | Haus | Schwerpunkt | Boni | Spezialeinheit (Burg) | Mannschaftsbonus |
 | --- | --- | --- | --- | --- |
-| Eschenbruch | Fernkampf, Holz | Holz +15 %; Schützen +1 Reichweite | Kriegswölfe | Schießanlagen der Verbündeten bilden 20 % schneller aus |
+| Eschenbruch | Fernkampf, Holz | Holz +5 %; Schützen +1 Reichweite ab dem Fürstentum | Kriegswölfe | Schießanlagen der Verbündeten bilden 20 % schneller aus |
 | Rappenstein | Reiterei, Tempo | Reiter +15 Leben; Reiter sehen 2 Felder weiter | Reiterschütze | Reiter der Verbündeten sehen 2 Felder weiter |
 | Wehrstein | Befestigung, Stein | Stein +15 %; Gebäude +10 % Leben; Turm und Burg +1 Reichweite | Riese | Gebäude der Verbündeten sehen 2 Felder weiter |
 | Silberfurt | Handel, Gold | Marktgebühr 15 % statt 30 %; Karren +20 % Gold | Meuchler | Karren zwischen Verbündeten bringen 20 % mehr |
@@ -152,7 +152,10 @@ spielt die KI am schlechtesten.
   `sammeln` als Faktor, `gebaeude`), und gilt von Beginn an; gelesen wird er
   dort, wo die Verbesserungen gelesen werden (`welt.einheitenwert`,
   `welt.gebaeudewert`). Sonst wird das fünfte Haus teurer als das erste
-  statt billiger.
+  statt billiger. Ein Bonus darf erst ab einem Zeitalter gelten
+  (`boniAb: { <zeitalter>: { wirkung } }`, Runde 201): er kommt mit dem
+  Aufstieg, auch für die Einheiten, die schon stehen, und in die Tafel des
+  Browsers (`welt.zeitalterWirkungen`).
   **Fertig in Runde 167:** `HAEUSER` in `daten.js`, das Haus je Spieler als
   Einstellung `haeuser: { <spielerId>: <haus> }` (wie `teams`), und eine
   Stelle `welt.wirkungen()`, die die Boni des Hauses vor die erforschten
@@ -185,8 +188,12 @@ spielt die KI am schlechtesten.
   Reichweite erst ab dem Fürstentum (Vorlage) 73 %; dazu Holz 1,10 über
   alle 200 Partien 75 % bei allen anderen zwischen 34 und 55. Distelhag
   kostet seine Neigung zur Kaserne 15 bis 20 Punkte (31 gegen 51 %).
-  Welcher Bonus schwächer wird, entscheidet der Benutzer
-  ([Erkenntnisse](../../docs/strategie/erkenntnisse.md), Fragen).
+  **Entschieden (Benutzer, 2026-11-12), gebaut in Runde 201:** Eschenbruch
+  sammelt Holz mit +5 % statt +15 %, und seine Schützen reichen erst ab dem
+  Fürstentum ein Feld weiter. Gemessen über 200 Partien: mit Holz +10 %
+  80 %, mit +5 % **73 %** (Wehrstein 53, Rappenstein 48, Distelhag 45,
+  Silberfurt 30) — weiter über der Grenze; der nächste Schritt ist eine
+  Frage an den Benutzer.
 - **AC-25** `fertig` **Mannschaftsbonus nur im Bündnis** — Der Mannschaftsbonus
   eines Hauses gilt für es selbst und für alle, mit denen es die Sicht
   teilt (`welt.teiltSicht`) — zwei Verbündete desselben Hauses bekommen ihn

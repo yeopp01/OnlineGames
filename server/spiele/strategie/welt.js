@@ -464,10 +464,16 @@ class Welt {
     if (!spieler) return [];
     const n = spieler.verbesserungen.length;
     const stand = this.buendnisStand;
+    const zeitalter = spieler.zeitalter;
     const da = this.wirkungenGemerkt.get(besitzer);
-    if (da && da.n === n && da.stand === stand) return da.liste;
+    if (da && da.n === n && da.stand === stand && da.zeitalter === zeitalter) return da.liste;
     const liste = [];
     if (spieler.haus) liste.push(HAEUSER[spieler.haus].boni);
+    // Boni, die erst ab einem Zeitalter gelten (`boniAb`), in der Form der
+    // uebrigen - mit dem Aufstieg nachgetragen (`zeitalterWirkungen`).
+    for (const [ab, boni] of Object.entries(spieler.haus ? HAEUSER[spieler.haus].boniAb || {} : {})) {
+      if (zeitalter >= Number(ab)) liste.push(boni);
+    }
     const haeuser = new Set();
     for (const s of this.spieler) {
       const mit = s === spieler
@@ -476,7 +482,7 @@ class Welt {
     }
     for (const haus of haeuser) if (HAEUSER[haus].mannschaft) liste.push(HAEUSER[haus].mannschaft);
     for (const v of spieler.verbesserungen) liste.push(VERBESSERUNGEN[v]);
-    this.wirkungenGemerkt.set(besitzer, { n, stand, liste });
+    this.wirkungenGemerkt.set(besitzer, { n, stand, zeitalter, liste });
     return liste;
   }
 
@@ -577,8 +583,13 @@ class Welt {
     // Einheit, `wacheTakten()` zweimal je Sekunde die Sicht. Ohne Gedaechtnis
     // liefe darunter je Aufruf eine Schleife ueber alle Verbesserungen mit
     // (fahrplan AC-6: ein Takt mit 8 x 100 Einheiten unter 10 ms).
+    // Mit dem Zeitalter, denn ein Haus kann Boni ab einem Zeitalter tragen
+    // (`boniAb`) - auch wenn jemand die Stufe ohne Aufstieg setzt.
     let gemerkt = this.werteGemerkt.get(besitzer);
-    if (!gemerkt) this.werteGemerkt.set(besitzer, gemerkt = new Map());
+    if (!gemerkt || gemerkt.zeitalter !== spieler.zeitalter) {
+      this.werteGemerkt.set(besitzer, gemerkt = new Map());
+      gemerkt.zeitalter = spieler.zeitalter;
+    }
     const schluessel = `${art}|${feld}`;
     const da = gemerkt.get(schluessel);
     if (da !== undefined) return da;
@@ -675,7 +686,9 @@ class Welt {
       y,
       fertig,
       bau: fertig ? 1 : 0, // Anteil der Bauarbeit
-      leben: this.gebaeudewert(besitzer, art, 'leben'),
+      // Eine Baustelle beginnt mit einem Leben und waechst mit dem Bau
+      // (bauen AC-7, `bauleben`).
+      leben: fertig ? this.gebaeudewert(besitzer, art, 'leben') : this.bauleben(besitzer, art, 0),
       // Eine Farm traegt Nahrung, und nur einer arbeitet darauf (einheiten AC-18).
       ...(GEBAEUDE[art].nahrung ? { nahrung: this.farmNahrung(besitzer), arbeiter: null } : {}),
       schlange: [], // Arten der bezahlten Auftraege, der erste laeuft
@@ -1060,14 +1073,29 @@ class Welt {
       if (einheit.baut && einheit.auftrag?.gebaeude === gebaeude.id) bauleute++;
     }
     if (!bauleute) return;
+    const vorher = gebaeude.bau;
     gebaeude.bau = Math.min(1, gebaeude.bau + (bauleute + 2) / (3 * GEBAEUDE[gebaeude.art].bauzeit * TAKTE_PRO_SEKUNDE));
-    this.gebaeudeGeaendert(gebaeude);
     // Ein Hauch Rechenspiel: 1 - 1e-9 zaehlt als fertig, sonst fehlt der
     // letzte Takt wegen der Rundung.
-    if (gebaeude.bau < 1 - 1e-9) return;
-    gebaeude.bau = 1;
+    if (gebaeude.bau >= 1 - 1e-9) gebaeude.bau = 1;
+    // Das Leben waechst um das, was der Bau dazugibt - erlittener Schaden
+    // bleibt abgezogen (bauen AC-7).
+    gebaeude.leben += this.bauleben(gebaeude.besitzer, gebaeude.art, gebaeude.bau)
+      - this.bauleben(gebaeude.besitzer, gebaeude.art, vorher);
+    this.gebaeudeGeaendert(gebaeude);
+    if (gebaeude.bau < 1) return;
     gebaeude.fertig = true;
     this.nachDemBau(gebaeude);
+  }
+
+  /**
+   * Das Leben, das ein Bau bei diesem Anteil hat, ohne Schaden: der Anteil
+   * am vollen Leben, wenigstens eines (bauen AC-7). Eine eben gesetzte
+   * Baustelle faellt mit dem ersten Schlag, wie im Original; fertig traegt
+   * sie das volle Leben aus `gebaeudewert`.
+   */
+  bauleben(besitzer, art, bau) {
+    return Math.max(1, Math.round(this.gebaeudewert(besitzer, art, 'leben') * bau));
   }
 
   // Nach einem Lager oder einer Muehle sammeln die Bauleute am naechsten
@@ -1259,6 +1287,23 @@ class Welt {
     return {};
   }
 
+  // Boni eines Hauses ab einem Zeitalter (`boniAb` in HAEUSER): mit dem
+  // Aufstieg wirken sie wie eine eben erforschte Verbesserung - auf alle
+  // Einheiten, die es schon gibt, und auf alle spaeteren. Formen, die an
+  // Stehendem nachgetragen werden muessten (Leben der Gebaeude, Nahrung der
+  // Farm), schliesst tests/strategie-haeuser.test.mjs aus.
+  zeitalterWirkungen(spieler) {
+    const neu = spieler.haus ? HAEUSER[spieler.haus].boniAb?.[spieler.zeitalter] : null;
+    if (!neu) return;
+    this.werteGemerkt.delete(spieler.id);
+    this.werteAenderungen.add(spieler.id);
+    if (neu.gebaeude) this.gebaeudeSichtNeu = true;
+    for (const einheit of this.einheiten.values()) {
+      if (einheit.besitzer !== spieler.id) continue;
+      for (const schluessel of wirkungsschluessel(einheit.art)) einheit.leben += neu.wirkung?.[schluessel]?.leben || 0;
+    }
+  }
+
   // Eine Verbesserung wirkt sofort auf alle, die es schon gibt, und auf alle
   // spaeteren (bauen AC-21).
   erforschen(spieler, art) {
@@ -1273,7 +1318,11 @@ class Welt {
     spieler.verbesserungen.push(art);
     for (const g of this.gebaeude.values()) {
       if (g.besitzer !== spieler.id || !lebenVorher.has(g.art)) continue;
-      g.leben += this.gebaeudewert(spieler.id, g.art, 'leben') - lebenVorher.get(g.art);
+      // Auf eine Baustelle nur der Anteil ihres Fortschritts - den Rest legt
+      // der Bau selbst nach (bauen AC-7).
+      // Gerechnet wie `bauleben`, damit am Ende genau das volle Leben steht.
+      const anteil = (voll) => Math.max(1, Math.round(voll * g.bau));
+      g.leben += anteil(this.gebaeudewert(spieler.id, g.art, 'leben')) - anteil(lebenVorher.get(g.art));
       this.gebaeudeGeaendert(g);
     }
     // Eine Verbesserung kann die Sicht der Gebaeude aendern (kampf AC-17).
@@ -1394,6 +1443,7 @@ class Welt {
       gebaeude.schlange.shift();
       gebaeude.fortschritt = 0;
       spieler.zeitalter = aufstieg.stufe;
+      this.zeitalterWirkungen(spieler);
       return;
     }
     const feld = this.freiesFeldAm(gebaeude);

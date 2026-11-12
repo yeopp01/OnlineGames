@@ -13,7 +13,18 @@ Kurz halten. Diese Datei wird in jeder Runde gelesen.
 Entscheidungen, die nicht die Schleife trifft. Solange eine offen ist, wird an
 etwas anderem gearbeitet.
 
-- **Eschenbruch ist zu stark — welcher Bonus wird schwächer?** (Runde 179.)
+- **NEU (Runde 201): Eschenbruch bleibt auch nach beiden Schritten über 70 %.**
+  Gebaut wie entschieden: Reichweite der Schützen erst ab dem Fürstentum,
+  Holz erst +10 % (80 % Siege), dann +5 % (**73 %**, 58 von 80; Distelhag
+  gegen Eschenbruch 4 : 16). Weiter wird ohne Rückfrage nicht gedreht. Was
+  noch bleibt, ohne die Reichweite weiter anzufassen: der Holzbonus ganz
+  weg (Runde 179: Boni leer 51 %, nur die KI-Neigung 60 %) oder Eschenbruchs
+  Neigung zur Schießanlage schwächer (Runde 179: ohne sie −6 Punkte). Am
+  anderen Ende steht Silberfurt mit 30 % auf der Grenze. **Empfehlung:**
+  Holzbonus ganz weg und Eschenbruch einen anderen Wirtschaftsbonus geben,
+  der nicht in jede Minute der Partie wirkt — erst nach der Entscheidung.
+- **BEANTWORTET (Benutzer, 2026-11-12): „ja passt“ — die Empfehlung gilt:** Schützen-Reichweite +1 erst ab dem Fürstentum, Holzbonus +10 %. Danach `pruefstand:haeuser` über 200 Partien; bleibt Eschenbruch über 70 %, Holz auf +5 %, die Reichweite nicht weiter. ADR-0014 (Tabelle der Häuser) im selben Commit nachziehen. Die Frage, wie sie stand:
+  **Eschenbruch ist zu stark — welcher Bonus wird schwächer?** (Runde 179.)
   Eschenbruch gewinnt 85 % seiner 80 Partien, spielziel AC-18 verlangt
   höchstens 70. Gemessen mit `pruefstand:haeuser --probe`, je 80 Partien:
   ohne Holzbonus 69 bis 75 %, ohne die Reichweite seiner Schützen 71 %,
@@ -2199,6 +2210,42 @@ ihn, mit Gegenprobe an beiden Formen. Fünf Bilder neu, alle angesehen.
 Neueste oben. Eine Zeile je Runde: Nummer, Datum, Kriterien, Ergebnis,
 wichtigste Erkenntnis.
 
+- **201** · 2026-11-12 · **Eschenbruch abgeschwächt** (auf Wunsch des
+  Benutzers, eine Runde außerhalb der Schleife, im selben Baum wie die
+  uncommittete Runde 200). Neu in den Daten: `boniAb: { <zeitalter>: … }` —
+  ein Bonus, der erst ab einem Zeitalter gilt; `welt.wirkungen()` nimmt ihn
+  dazu, beide Speicher (`wirkungenGemerkt`, `werteGemerkt`) merken sich das
+  Zeitalter, und `welt.zeitalterWirkungen()` am Aufstieg schickt die Tafel
+  `kw` neu und trägt Leben auf stehende Einheiten nach. Eschenbruch: Holz
+  +5 % statt +15 %, Schützen +1 Reichweite erst ab dem Fürstentum (Index 2;
+  der erste Entwurf stand auf 3, der Krone, die es noch nicht gibt — dann
+  hätte der Bonus nie gewirkt). Gemessen über 200 Partien: mit Holz +10 %
+  80 %, mit +5 % **73 %** — weiter über der Grenze, die nächste Stufe ist
+  eine Frage an den Benutzer. Belegt: spielziel AC-17 (Form, davor/danach,
+  echter Aufstieg mit Tafel), spielziel AC-26 misst Bonus ab Zeitalter im
+  Zeitalter selbst (erster Pfeil 5,0 statt 4,4 Felder). Gegenproben: ohne
+  Zeitalterbedingung fallen beide AC-17-Tests, ohne `zeitalterWirkungen`
+  der Aufstiegstest. Durchsicht ohne Befund.
+- **200** · 2026-11-12 · **bauen AC-7 fertig**: eine Baustelle beginnt
+  mit einem Leben, jeder Bautakt legt seinen Anteil am vollen Leben drauf
+  (`welt.bauleben`), Schaden bleibt abgezogen; Mauerwerk legt auf eine
+  Baustelle nur den Anteil des Fortschritts nach, mit derselben Rundung,
+  damit am Ende genau das volle Leben steht. Die Leiste zeigt an der
+  Baustelle unter dem Fortschritt das Leben (`#baustellenleben`). Regeltest
+  `tests/strategie-bauleben.test.mjs` (vier Fälle, Gegenproben: alte
+  Startzeile 0 von 4, alter Mauerwerk-Nachschlag 3 von 4), Bild aus
+  `e2e/tests/strategie-zerstoerung.spec.mjs`. **Die Durchsicht fand einen
+  echten Fehler**: die KI erkannte einen Angriff an `g.leben < vorher` —
+  eine Kaserne mit einem Bauer wächst zwischen zwei Entscheidungen um 12
+  Leben, ein Schlag der Miliz nimmt weniger; die Wache wäre nie
+  ausgerückt. Jetzt zählt, was einem Gebäude am Leben seines Baustands
+  fehlt (`ki.fehlt`), neuer Test unter ki AC-14 (mit der alten Erkennung
+  rot). Prüfstand gegen HEAD über 40 Startwerte: gleiche Sieger, 37/40 vor
+  Minute 60 auf beiden Seiten. Gelernt: `u` geht auf zwei Stellen gerundet
+  hinaus — bei 1200 Leben ±6, mehr als ein Schlag; der erste Browserlauf
+  fiel daran, der Test verlangt jetzt Abstand über der Rundung. Und: wer
+  ändert, wie ein Wert wächst, sucht jede Stelle, die an seiner Richtung
+  etwas abliest (`grep -n "leben <" server/spiele/strategie/ki.js`).
 - **199** · 2026-11-12 · **bauen AC-17, AC-18, AC-19 fertig**, nur Belege
   (nach Abschnitt 1, Punkt 6, mit der neuen Regel: alte offene vor neuen —
   Stufe E bleibt gesperrt): alle drei waren gebaut. Das Leben jedes

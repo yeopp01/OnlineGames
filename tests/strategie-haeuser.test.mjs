@@ -10,8 +10,8 @@ import assert from 'node:assert/strict';
 import { createRequire } from 'node:module';
 
 const require = createRequire(import.meta.url);
-const { Welt } = require('../server/spiele/strategie/welt.js');
-const { EINHEITEN, GEBAEUDE, HAEUSER, HANDEL, VERBESSERUNGEN, STARTAUFSTELLUNG } = require('../server/spiele/strategie/daten.js');
+const { Welt, TAKTE_PRO_SEKUNDE } = require('../server/spiele/strategie/welt.js');
+const { AUFSTIEGE, EINHEITEN, GEBAEUDE, HAEUSER, HANDEL, VERBESSERUNGEN, STARTAUFSTELLUNG } = require('../server/spiele/strategie/daten.js');
 const { partieSpielen } = require('../server/spiele/strategie/pruefstand.js');
 
 const ZWEI = [{ id: 'a', name: 'Anna' }, { id: 'b', name: 'Bert' }];
@@ -97,13 +97,81 @@ test('spielziel AC-17: jeder Bonus jedes Hauses wirkt von Beginn an, gelesen wie
       const einheit = [...welt.einheiten.values()].find((e) => e.besitzer === 'a' && e.art === art);
       assert.equal(einheit.leben, welt.einheitenwert('a', art, 'leben'), `${haus}: ${art} beginnt mit vollem Leben`);
     }
+
+    // Boni ab einem Zeitalter (`boniAb`): ein Zeitalter davor wirken sie
+    // nicht, ab ihm wie die uebrigen. Nur Kampfwerte - eine Form, die an
+    // Stehendem nachgetragen werden muesste (Leben der Gebaeude, Nahrung der
+    // Farm), traegt `welt.zeitalterWirkungen()` nicht nach.
+    for (const [ab, boniAb] of Object.entries(eintrag.boniAb || {})) {
+      for (const form of Object.keys(boniAb)) assert.ok(form === 'wirkung', `${haus}: boniAb in der Form "${form}" wird nicht nachgetragen`);
+      const spaeter = mitHaus(haus);
+      const anna = spaeter.spielerVon('a');
+      for (const [schluessel, felder] of Object.entries(boniAb.wirkung)) {
+        const art = artFuer(schluessel);
+        assert.ok(art, `${haus}: "${schluessel}" trifft keine Einheit`);
+        for (const [feld, zuschlag] of Object.entries(felder)) {
+          const mannschaft = mannschaftDazu(eintrag, 'wirkung', schluessel, feld);
+          anna.zeitalter = Number(ab) - 1;
+          assert.equal(spaeter.einheitenwert('a', art, feld) - spaeter.einheitenwert('b', art, feld), mannschaft, `${haus}: ${art}.${feld} noch nicht vor Zeitalter ${ab}`);
+          anna.zeitalter = Number(ab);
+          assert.equal(spaeter.einheitenwert('a', art, feld) - spaeter.einheitenwert('b', art, feld), zuschlag + mannschaft, `${haus}: ${art}.${feld} ab Zeitalter ${ab}`);
+          geprueft += 1;
+        }
+      }
+    }
   }
   // Gegenprobe des Aufbaus: jedes Blatt der Boni ist einmal geprueft worden,
-  // und es sind welche - leer waere der Test sonst gruen. Seit E3 zwoelf.
+  // und es sind welche - leer waere der Test sonst gruen. Seit E3 zwoelf,
+  // seit Runde 201 eins davon ab einem Zeitalter (`boniAb`).
   const blaetter = (o) => Object.values(o).reduce((n, w) => n + (typeof w === 'object' ? blaetter(w) : 1), 0);
-  const erwartet = Object.values(HAEUSER).reduce((n, h) => n + blaetter(h.boni), 0);
+  const erwartet = Object.values(HAEUSER).reduce((n, h) => n + blaetter(h.boni) + blaetter(h.boniAb || {}), 0);
   assert.equal(geprueft, erwartet);
   assert.ok(erwartet >= 12, `Boni in den Daten: ${erwartet}`);
+});
+
+test('spielziel AC-17: ein Bonus ab dem Fuerstentum kommt mit dem Aufstieg - auch fuer die Schuetzen, die schon stehen, und in die Tafel des Browsers', () => {
+  // Aus den Daten: ein Haus mit Boni ab einem Zeitalter, ein Schluessel, eine Einheit.
+  const [haus, eintrag] = Object.entries(HAEUSER).find(([, h]) => h.boniAb);
+  const [ab, boniAb] = Object.entries(eintrag.boniAb)[0];
+  const [schluessel, felder] = Object.entries(boniAb.wirkung)[0];
+  const [feld, zuschlag] = Object.entries(felder)[0];
+  const art = artFuer(schluessel);
+  const stufe = Number(ab);
+  const aufstieg = Object.keys(AUFSTIEGE).find((k) => AUFSTIEGE[k].stufe === stufe);
+  assert.ok(aufstieg, `ein Aufstieg in Zeitalter ${stufe}`);
+
+  const welt = mitHaus(haus);
+  const anna = welt.spielerVon('a');
+  anna.zeitalter = stufe - 1;
+  for (const r of ['holz', 'nahrung', 'gold', 'stein']) anna[r] = 5000;
+  const zentrum = [...welt.gebaeude.values()].find((g) => g.besitzer === 'a' && g.art === 'dorfzentrum');
+  const schuetze = welt.einheitAnlegen('a', anna.basis.x + 5, anna.basis.y + 5, art);
+  const vorher = welt.einheitenwert('a', art, feld);
+  welt.zustand(); // Aenderungen bis hier abholen
+  // Die Voraussetzung des Aufstiegs: Gebaeude der laufenden Zeit, aus den Daten.
+  const derZeit = Object.keys(GEBAEUDE).filter((g) => (GEBAEUDE[g].zeitalter || 0) === stufe - 1 && g !== 'haus' && GEBAEUDE[g].zumAufstieg !== false && !GEBAEUDE[g].gezogen);
+  for (let i = 0; welt.gebaeudeDerZeit(anna) < AUFSTIEGE[aufstieg].voraussetzung; i++) {
+    const g = derZeit[i % derZeit.length];
+    for (let d = 6; d < 40; d++) {
+      const x = anna.basis.x - d;
+      const y = anna.basis.y + (i % 2 ? d : -d);
+      if (welt.platzPruefen(g, x, y)) { welt.gebaeudeAnlegen('a', g, x, y); break; }
+    }
+  }
+  assert.deepEqual(welt.nachricht('a', { auftrag: 'ausbilden', gebaeude: zentrum.id, einheit: aufstieg }), {});
+  for (let t = 0; t < (AUFSTIEGE[aufstieg].zeit - 1) * TAKTE_PRO_SEKUNDE; t++) welt.takten();
+  assert.equal(anna.zeitalter, stufe - 1, 'kurz davor noch nicht');
+  assert.equal(welt.einheitenwert('a', art, feld), vorher, 'und der Bonus fehlt');
+  welt.zustand(); // Aenderungen bis hier abholen - die Tafel muss der Aufstieg schicken
+  for (let t = 0; t < 2 * TAKTE_PRO_SEKUNDE && anna.zeitalter < stufe; t++) welt.takten();
+  assert.equal(anna.zeitalter, stufe, 'aufgestiegen');
+  assert.equal(welt.einheitenwert('a', art, feld), vorher + zuschlag, `${haus}: ${art}.${feld} mit dem Aufstieg`);
+  assert.equal(welt.einheitenwert('a', art, feld), welt.einheitenwert('b', art, feld) + zuschlag, 'gegen Bert ohne Haus');
+  assert.ok(!schuetze.tot, 'der Schuetze, der schon stand, ist derselbe');
+  // Der Browser bekommt seine Tafel neu - er rechnet nichts selbst (bedienung AC-35).
+  const tafel = welt.zustand().spieler.find((s) => s.id === 'a').kw;
+  assert.ok(tafel, 'mit dem Aufstieg geht die Tafel kw neu hinaus');
+  assert.equal(tafel[art][feld], vorher + zuschlag, 'in der Tafel kw');
 });
 
 test('spielziel AC-17: Haus und Verbesserung zaehlen zusammen, ein unbekanntes Haus gibt nichts', () => {

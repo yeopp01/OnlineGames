@@ -1,0 +1,9 @@
+{
+  "spec": "10-strategie/bauen.md",
+  "ac": "AC-7",
+  "titel": "Eine Kaserne im Bau, Berts Miliz schlaegt darauf ein - die Leiste zeigt den Baufortschritt und darunter das Leben, das mit dem Bau waechst",
+  "datei": "e2e/tests/strategie-zerstoerung.spec.mjs",
+  "pfad": [
+    "bauen AC-7: eine Kaserne im Bau, von Berts Miliz angegriffen - die Leiste zeigt den Fortschritt und darunter das Leben, das erst so weit ist wie der Bau"
+  ]
+}

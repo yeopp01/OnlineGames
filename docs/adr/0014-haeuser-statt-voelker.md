@@ -61,7 +61,7 @@ zwei Spieler dürfen dasselbe Haus wählen.
 
 | Haus | Schwerpunkt | Boni | Spezialeinheit | Mannschaftsbonus |
 | --- | --- | --- | --- | --- |
-| Eschenbruch | Fernkampf, Holz | Holz +15 %; Schützen +1 Reichweite | **Kriegswölfe**: schnell wie ein Reiter, aber kein Reiter — der Speer hat keinen Bonus gegen sie | Schießanlagen der Verbündeten bilden 20 % schneller aus |
+| Eschenbruch | Fernkampf, Holz | Holz +5 %; Schützen +1 Reichweite ab dem Fürstentum (Runde 201, vorher +15 % und von Beginn an) | **Kriegswölfe**: schnell wie ein Reiter, aber kein Reiter — der Speer hat keinen Bonus gegen sie | Schießanlagen der Verbündeten bilden 20 % schneller aus |
 | Rappenstein | Reiterei, Tempo | Reiter +15 Leben; Reiter sehen 2 Felder weiter | **Reiterschütze**: schießt vom Pferd; getroffen als Reiter *und* als Schütze | Reiter der Verbündeten sehen 2 Felder weiter |
 | Wehrstein | Befestigung, Stein | Stein +15 %; Gebäude +10 % Leben; Turm und Burg +1 Reichweite | **Riese**: viel Leben, langsam, großer Bonus gegen Gebäude | Gebäude der Verbündeten sehen 2 Felder weiter |
 | Silberfurt | Handel, Gold | Marktgebühr 15 % statt 30 %; Karren +20 % Gold | **Meuchler**: getarnt — Gegner sehen ihn erst aus zwei Feldern; hoher Bonus gegen Dorfbewohner und Mönche, wenig Leben | Karren zwischen Verbündeten bringen 20 % mehr |

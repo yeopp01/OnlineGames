@@ -510,7 +510,7 @@ export class Auswahlleiste {
     const farbe = a.spieler.get(a.ich)?.farbe || '#888888';
 
     if (gebaeude && gebaeude.b === a.ich && gebaeude.u !== undefined) {
-      const schluessel = `b${gebaeude.i}:${gebaeude.u}`;
+      const schluessel = `b${gebaeude.i}:${gebaeude.u}:${gebaeude.h}:${this.ansicht.gebaeudeLebenVoll(gebaeude)}`;
       if (schluessel !== this.gezeigt) {
         this.baustelleBauen(gebaeude, farbe);
         this.gezeigt = schluessel;
@@ -725,6 +725,19 @@ export class Auswahlleiste {
     balken.append(fuellung);
     stand.append(balken, element('span', 'lebenszahl', `${Math.round(gebaeude.u * 100)} %`));
     kopfteil.append(stand);
+    // Eine Baustelle hat erst so viel Leben, wie gebaut ist (bauen AC-7) -
+    // gezeigt gegen das volle Leben, das sie fertig traegt.
+    const voll = this.ansicht.gebaeudeLebenVoll(gebaeude) ?? gebaeude.h;
+    const leben = element('div', 'leben');
+    leben.id = 'baustellenleben';
+    leben.dataset.leben = `${gebaeude.h}/${voll}`;
+    const lebensbalken = element('div', 'lebensbalken');
+    const lebensfuellung = element('span');
+    lebensfuellung.style.width = `${Math.round((gebaeude.h / voll) * 100)}%`;
+    lebensbalken.append(lebensfuellung);
+    leben.append(lebensbalken, element('span', 'lebenszahl', `${gebaeude.h} / ${voll}`));
+    leben.title = 'Leben - wächst mit dem Bau';
+    kopfteil.append(leben);
     const abriss = document.createElement('button');
     abriss.type = 'button';
     abriss.dataset.abreissen = String(gebaeude.i);

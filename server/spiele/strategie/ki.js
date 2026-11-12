@@ -238,6 +238,8 @@ class Ki {
     // sieht die KI, dass sie angegriffen wird (ki AC-14) - sie bekommt keine
     // Meldung, sie sieht nur die Welt, so wie ein Mensch das Bild sieht.
     this.leben = new Map();
+    // Je Gebaeude, wie viel ihm am Leben seines Baustands fehlte.
+    this.fehlt = new Map();
     // Wie oft die Wache zu einem Angriffsort gezogen ist - der Pruefstand
     // misst daran.
     this.verteidigungen = 0;
@@ -1071,13 +1073,19 @@ class Ki {
         getroffeneDorf.push(e);
       }
     }
+    // Ein Gebaeude zaehlt nach dem, was ihm fehlt: eine Baustelle gewinnt
+    // Leben, waehrend sie waechst (bauen AC-7), und ein Schlag von 1 bis 3
+    // ginge im Zuwachs eines Takts unter. Fehlt mehr als zuvor, wurde es
+    // getroffen - so auch nach Mauerwerk, das Soll und Leben zugleich hebt.
+    const fehltJetzt = new Map();
     for (const g of gebaeude) {
-      jetzt.set(g.id, g.leben);
-      const vorher = this.leben.get(g.id);
-      // Eine Baustelle gewinnt Leben, waehrend sie waechst - nur der Verlust zaehlt.
-      if (vorher !== undefined && g.leben < vorher) getroffeneBauten.push(g);
+      const fehlt = this.welt.bauleben(g.besitzer, g.art, g.bau) - g.leben;
+      fehltJetzt.set(g.id, fehlt);
+      const vorher = this.fehlt.get(g.id);
+      if (vorher !== undefined && fehlt > vorher) getroffeneBauten.push(g);
     }
     this.leben = jetzt;
+    this.fehlt = fehltJetzt;
     const getroffen = [...getroffeneBauten, ...getroffeneDorf];
     if (!getroffen.length) return;
 
