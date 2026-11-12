@@ -281,12 +281,27 @@ und Mannschaftsboni stehen in [Spielziel](spielziel.md), „Zu den Häusern".
   Bonusform in `HAEUSER` an und lässt KI 1 es zwanzig Minuten gegen KI 2
   spielen, jeder Takt vom Prüfstand geprüft; Leben, Farmen und Holz zeigen
   den Bonus, und dieselbe Partie ohne Haus verläuft anders.
-- **AC-18** `offen` **Kein Haus vorn** — KI gegen KI, jede Paarung zwanzigmal: kein Haus
-  gewinnt gegen ein anderes mehr als 60 % — **je Paarung**, nicht nur im
-  Mittel, denn die Schwerpunkte sitzen auf den Ecken des Konterkreises
-  (Schützen schlagen Infanterie, Reiter schlagen Schützen; ADR-0014
-  Punkt 8). Die KI spielt dabei ihr Haus ([KI](ki.md) AC-27, AC-28). Fünf
-  Häuser sind zehn Paarungen, also 200 Partien.
+- **AC-18** `offen` **Kein Haus vorn** — KI gegen KI im Nebel
+  (`npm run pruefstand:haeuser`), jede der zehn Paarungen zwanzigmal mit
+  abwechselnden Seiten, also 200 Partien: kein Haus gewinnt mehr als 60 %
+  seiner 80 Partien, und **keine Paarung endet 16 zu 4 oder weiter** — die
+  Paarung zählt, nicht nur das Mittel, denn die Schwerpunkte sitzen auf den
+  Ecken des Konterkreises (Schützen schlagen Infanterie, Reiter schlagen
+  Schützen; ADR-0014 Punkt 8). Die KI spielt dabei ihr Haus samt
+  Spezialeinheit ([KI](ki.md) AC-27, AC-28, AC-31).
+  **Neu gefasst in Runde 176**, weil „höchstens 60 % je Paarung" über
+  zwanzig Partien den Zufall misst: zwei gleich starke Häuser enden in
+  einer von vier Paarungen 13 zu 7 oder weiter, alle zehn Paarungen
+  bestünden in rund 5 % der Läufe. 16 zu 4 hat bei gleich starken Häusern
+  rund 1 %; die Quote eines Hauses über 80 Partien streut um rund 6
+  Punkte, über 60 % kommt ein gleich starkes in rund 3 % — wer die Grenze
+  knapp verfehlt, rechnet einen zweiten Satz Startwerte (`--je 40`).
+  **Gemessen in Runde 176**, ohne Spezialeinheiten: Eschenbruch 68 von 80
+  (85 %), Wehrstein 54 %, Rappenstein 45 %, Silberfurt 34 %, Distelhag
+  31 %; Distelhag gegen Eschenbruch 0 zu 20, Silberfurt gegen Eschenbruch
+  1 zu 19. Die linke Seite gewinnt 56 bis 60 % — deshalb die abwechselnden
+  Seiten. Was die Zahlen allein ändern, steht bei
+  [Spielziel](spielziel.md) AC-18.
 
 **Bauabfolge.** Zuerst, was ohne neue Figur geht. Die Figuren der
 Spezialeinheiten und der hauseigenen Einheiten, die Wappen und die Spuren
@@ -307,6 +322,7 @@ Figuren, nicht auf die Regeln.
 | E7 | Spezialeinheiten aus vorhandenen Fähigkeiten: Kriegswölfe, Reiterschütze, Riese — wartet auf die Figuren | einheiten AC-45 bis AC-47 |
 | E8 | Der Meuchler mit Tarnung, der Wiedergänger aus Gefallenen — wartet auf die Figuren | einheiten AC-48, AC-49, kampf AC-22 |
 | E9 | Wappen, Zeitalter am Dorf, Spuren eines Gefechts — wartet auf die Figuren | bedienung AC-42, AC-44, AC-46 |
+| E5b | Die KI antwortet auf das Heer, das sie sieht; kein Haus gewinnt gegen alle (ohne Spezialeinheiten, im Test) — gemessen in Runde 176 mit `npm run pruefstand:haeuser` | ki AC-31, spielziel AC-18 |
 | E10 | Die KI bildet ihre Spezialeinheit aus; kein Haus vorn im Prüfstand; die Häuser am Stück im Browser | ki AC-28, fahrplan AC-16, AC-18 |
 
 **Was Stufe E ablöst.** spielauswahl AC-6 (der Satz „das Volk je Spieler

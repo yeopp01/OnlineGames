@@ -215,6 +215,12 @@ etwas anderem gearbeitet.
 
 ## Offene Fäden
 
+- **Die linke Seite gewinnt öfter** (Runde 176): über 200 Partien mit
+  abwechselnden Seiten gewann `ki1` 112 bis 119 von rund 197 (56 bis 60 %).
+  Nicht untersucht, ob es an der Karte (Startplätze, Wege), an der
+  Reihenfolge im Takt oder an der KI liegt. `pruefstand:haeuser` wechselt
+  deshalb die Seiten; der Nebeltest tut es über `haeuserFuer` nur zum Teil.
+
 - **Was die Stufe E von der Blender-Sitzung braucht** (Runde 164): Figuren
   für Langbogenschütze, Pavesenschütze, Söldner und die fünf
   Spezialeinheiten (Kriegswölfe, Reiterschütze, Riese, Meuchler,
@@ -1944,6 +1950,30 @@ ihn, mit Gegenprobe an beiden Formen. Fünf Bilder neu, alle angesehen.
 Neueste oben. Eine Zeile je Runde: Nummer, Datum, Kriterien, Ergebnis,
 wichtigste Erkenntnis.
 
+- **176** · 2026-11-12 · **Mess- und Spec-Runde**, kein Kriterium fertig:
+  die Häuser gegeneinander. Neues Werkzeug `npm run pruefstand:haeuser`
+  (`scripts/pruefstand-haeuser.mjs`, Test daneben): jede Paarung `--je`
+  mal, die Seiten abwechselnd, vier Fäden, `--nur <haus>`, `--probe` wie
+  bei `pruefstand:vergleich`. Über 200 Partien im Nebel gewinnt
+  Eschenbruch 85 %, Wehrstein 54, Rappenstein 45, Silberfurt 34, Distelhag
+  31; Distelhag gegen Eschenbruch 0 zu 20. Vier Gegenproben an den Zahlen
+  (Holzbonus 1,10 / 1,05 / keiner, Distelhag Fernrüstung +2, Silberfurt
+  ohne vorgezogenen Handel) brachten Eschenbruch auf 83, 76, 75 und 61 % —
+  Distelhag gegen Eschenbruch blieb bei 0 bis 3 zu 20. Ursache ist die KI,
+  nicht ein Bonus: sie bildet aus ihrem Schwerpunkt aus, was sie bezahlen
+  kann, und Distelhag baut nach der ersten Kaserne nur Kasernen nach — gegen
+  Schützen kommt nie ein Plänkler. Daraus **ki AC-31 neu** (die KI antwortet
+  auf das Heer, das sie sieht), **spielziel AC-18 neu gefasst** (ohne
+  Spezialeinheiten jedes Haus 30 bis 70 % über 100 Partien, als Test) und
+  **fahrplan AC-18 neu gefasst**, Bauabfolge E5b. Gelernt: (1) „höchstens
+  60 % je Paarung über zwanzig Partien" war keine Grenze, sondern ein
+  Würfel — gleich starke Häuser enden in einer von vier Paarungen 13 zu 7
+  oder weiter, alle zehn bestehen in rund 5 % der Läufe. Erst die Streuung
+  rechnen, dann die Grenze schreiben; belastbar ist die Quote je Haus.
+  (2) Die linke Seite gewinnt 56 bis 60 % der Partien — ein Vergleich von
+  Häusern ohne Seitenwechsel misst die Seite mit. (3) Eine Gegenprobe je
+  Zahl hätte als Wegwerfskript wieder 80 Partien gekostet; mit `--probe`
+  ist es ein Aufruf.
 - **175** · 2026-11-12 · ki AC-30 **fertig**, E5 ganz: Wehrstein baut
   Türme — `ki: { schwerpunkt: 'wachturm', anzahl: 2, steinSammler: 3 }`;
   ein Schwerpunkt, der nichts ausbildet, ist ein Bauwerk

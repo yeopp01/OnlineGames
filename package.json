@@ -37,6 +37,7 @@
     "durchsicht": "node scripts/durchsicht.mjs",
     "pruefstand:vergleich": "node scripts/pruefstand-vergleich.mjs",
     "pruefstand:verlauf": "node scripts/pruefstand-verlauf.mjs",
+    "pruefstand:haeuser": "node scripts/pruefstand-haeuser.mjs",
     "konterkreis:strategie": "node scripts/konterkreis-strategie.mjs"
   },
   "dependencies": {

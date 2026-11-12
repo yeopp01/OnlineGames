@@ -41,6 +41,7 @@ npm run e2e:daten     # nur die Browserfaelle, die "alles aus den Daten" aufstel
 npm run pruefstand:vergleich          # KI gegen KI: Arbeitsstand neben HEAD, dieselben Partien (--saetze 2: 1-20 und 21-40)
 npm run pruefstand:vergleich -- --probe probe.cjs --saetze 3  # Austauschprobe: eine Methode nur im Arbeitsstand ersetzt, 60 Startwerte
 npm run pruefstand:verlauf -- --startwert 5  # eine Partie KI gegen KI Minute fuer Minute
+npm run pruefstand:haeuser   # jede Paarung der Haeuser 20-mal, Seiten abwechselnd (--nur, --probe, --je)
 npm run gegenprobe -- <datei> "<neu>" "<alt>" -- <befehl>  # Gegenprobe gegen die alte Zeile, schreibt die Datei immer zurueck
 npm run durchsicht   # Geaendertes und Neues als eine Datei fuer den Pruefer, der keine Shell hat - nennt den Pfad
 ```
@@ -165,7 +166,7 @@ Umfang hinzufügt, dort nachsehen.
 
 ## Stand
 
-**463 von 599 Kriterien fertig.** 736 Tests ohne Browser, 210 im Browser. Die
+**463 von 600 Kriterien fertig.** 738 Tests ohne Browser, 210 im Browser. Die
 Übersicht ist der Bericht: `npm run qa:report`.
 
 Gebaut ist der Unterbau: Räume, Übertragung, Karte, Wegfindung, Sammeln,
@@ -491,8 +492,11 @@ AC-30): ein Schwerpunkt, der nichts ausbildet, ist ein Bauwerk
 (`ki.bauwerkePruefen`) — zwei Wachtürme am Dorf, drei Sammler am Stein,
 erst nach dem ersten Aufbruch, sonst kostet der Stein den ersten Angriff.
 Der Nebeltest steht damit bei 36 von 40 vor Minute 60, Median 44,9 —
-knapp unter der Grenze. Eschenbruch gewinnt 13 von 16 Partien, Silberfurt
-5 — ein Befund für spielziel AC-16.
+knapp unter der Grenze. **Die Häuser gegeneinander** misst `npm run pruefstand:haeuser`
+(Runde 176, 200 Partien): Eschenbruch gewinnt 85 %, Distelhag 31 % und
+gegen Eschenbruch 0 von 20 — auch nach jeder Gegenprobe an den Boni. Die
+Ursache ist die KI, die nie auf das gesehene Heer antwortet; das ist
+ki AC-31, danach spielziel AC-18 (jedes Haus 30 bis 70 %).
 **Voller Wohnraum fällt auf** (bedienung AC-43): wartet ein eigener
 Auftrag, steht die Bevölkerung oben rot umrandet, auch ohne Auswahl
 (`ansicht.wartetEtwas()`).

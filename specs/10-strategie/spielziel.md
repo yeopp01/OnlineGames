@@ -160,9 +160,27 @@ spielt die KI am schlechtesten.
   `farmNahrung` lesen nur noch sie. Silberfurt hat bis E3 keinen Bonus —
   seine beiden brauchen eine neue Lesestelle (AC-26). Belegt in
   `tests/strategie-haeuser.test.mjs`, der jeden Bonus aus den Daten liest.
-- **AC-18** `offen` **Kein Haus gewinnt gegen alle** — Über zwanzig Partien je Paarung liegt
-  keines dauerhaft vorn (→ Fahrplan AC-18). Belegt durch Partien, nicht
-  durch Behauptung.
+- **AC-18** `offen` **Kein Haus gewinnt gegen alle** — Mit den Boni und
+  Neigungen der Häuser, noch ohne Spezialeinheiten: KI gegen KI im Nebel,
+  jede der zehn Paarungen zehnmal, je fünfmal auf jeder Seite, also 100
+  Partien — jedes Haus gewinnt zwischen 30 und 70 % seiner 40 Partien (12
+  bis 28). Ein Test in `npm run check`, keine Behauptung; die schärfere
+  Messung mit Spezialeinheiten ist [Fahrplan](fahrplan.md) AC-18.
+  Die Grenze kommt aus der Streuung: über 40 Partien streut ein gleich
+  starkes Haus um gut drei Siege, außerhalb von 12 bis 28 liegt es in
+  unter 1 %, eines von fünf in rund 3 %. **Gemessen in Runde 176**
+  (`npm run pruefstand:haeuser`, je Paarung zwanzigmal, 80 Partien je
+  Haus): Eschenbruch 85 %, Wehrstein 54, Rappenstein 45, Silberfurt 34,
+  Distelhag 31. Gegenproben nur an den Zahlen (`--probe`):
+  ohne Holzbonus Eschenbruchs 69 %, ohne die Reichweite seiner Schützen
+  71 %, ohne seine Neigung zur Schießanlage 79 %; Holz 1,05 statt 1,15,
+  Distelhag mit Fernrüstung +2 und Silberfurt ohne vorgezogenen Handel
+  75 %; ganz ohne Holzbonus und mit denselben zwei Änderungen 61 % — und in
+  jeder Probe bleibt Distelhag gegen Eschenbruch bei 0 bis 3 zu 20. Das
+  liegt nicht an einem Bonus: die KI baut ihren Schwerpunkt und bildet
+  daraus aus, was sie bezahlen kann, gleich wen sie vor sich hat — gegen
+  Schützen schickt Distelhag weiter Fußvolk. Der Hebel ist [KI](ki.md)
+  AC-31; die Boni werden danach gemessen, nicht vorher.
 - **AC-25** `fertig` **Mannschaftsbonus nur im Bündnis** — Der Mannschaftsbonus
   eines Hauses gilt für es selbst und für alle, mit denen es die Sicht
   teilt (`welt.teiltSicht`) — zwei Verbündete desselben Hauses bekommen ihn

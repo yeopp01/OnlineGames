@@ -2,7 +2,7 @@
 
 **Bereich:** Strategie
 **Kuerzel:** ki
-**Stand:** 26/30 fertig · 4 offen
+**Stand:** 26/31 fertig · 5 offen
 
 ## Zweck
 
@@ -334,6 +334,26 @@ nicht die Regeln.
   Vier Türme ergaben 31 vor Minute 60 und Median 46,8; zwei Türme schon
   vor dem ersten Angriff ließen zwei Partien ohne Sieger. Belegt in
   `tests/partien/ki-im-nebel.test.mjs`.
+
+- **AC-31** `offen` **KI antwortet auf das Heer** — Was die KI ausbildet
+  und welches Militärgebäude sie nachbaut, richtet sich nach den fremden
+  Kampfeinheiten, die sie gesehen hat (`feindeGesehen`, ki AC-13): in
+  jedem Gebäude nimmt sie die Einheit, deren `bonus` die meisten von ihnen
+  nach ihren `klassen` trifft, unter gleichen die bisherige Wahl (die
+  neueste zuerst, ki AC-22); und das nächste Gebäude ist das, aus dem die
+  beste Antwort kommt, wenn sie es noch nicht hat. Hat sie niemanden
+  gesehen, bleibt alles wie heute. Gelesen aus den Daten der Einheiten und
+  Gebäude, keine Liste von Paaren; die Neigung zum Haus (AC-27) entscheidet
+  weiter, welches Gebäude sie zuerst baut und zuerst bedient — nur nicht
+  mehr allein, was danach kommt. Heute baut Distelhag nach der ersten
+  Kaserne nur Kasernen nach, eine Schießanlage nie. **Messbar:** in
+  `npm run pruefstand:haeuser` gewinnt Distelhag mindestens 6 von 20
+  Partien gegen Eschenbruch (Runde 176: 0 von 20, in keiner Gegenprobe an
+  den Zahlen mehr als 3), AC-27 und fahrplan AC-11 halten weiter, und die
+  Gegenprobe mit der alten Wahl zeigt den Unterschied an denselben
+  Startwerten. Angelegt in Runde 176: Distelhag bildet gegen Schützen
+  weiter Speerkämpfer aus, die der Bogen mit Bonus trifft, statt Plänklern
+  aus einer Schießanlage.
 
 ### Stufe F — der Drache (aus ADR-0014)
 
