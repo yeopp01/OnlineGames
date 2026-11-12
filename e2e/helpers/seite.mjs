@@ -116,6 +116,14 @@ export async function zeitraffer(page, code, faktor) {
   expect(antwort.ok(), await antwort.text()).toBe(true);
 }
 
+/** Die Verbindung eines Spielers vom Server aus schliessen (Pruefgriff, e2e/server.mjs). */
+export async function trennen(page, code, name) {
+  const antwort = await page.request.post(`http://localhost:${GRIFFHAFEN}/griff`, {
+    data: { id: code, befehl: 'trennen', werte: { name } },
+  });
+  expect(antwort.ok(), await antwort.text()).toBe(true);
+}
+
 /** Die Uhr einer Partie auf eine Spielminute vorstellen (Pruefgriff, e2e/server.mjs). */
 export async function uhrStellen(page, code, minuten) {
   const antwort = await page.request.post(`http://localhost:${GRIFFHAFEN}/griff`, {

@@ -167,7 +167,7 @@ Umfang hinzufügt, dort nachsehen.
 
 ## Stand
 
-**470 von 601 Kriterien fertig.** 741 Tests ohne Browser, 219 im Browser. Die
+**472 von 601 Kriterien fertig.** 741 Tests ohne Browser, 220 im Browser. Die
 Übersicht ist der Bericht: `npm run qa:report`.
 
 Gebaut ist der Unterbau: Räume, Übertragung, Karte, Wegfindung, Sammeln,
@@ -519,7 +519,10 @@ Umschalt** kommen Klick und Rahmen zur Auswahl hinzu (bedienung AC-3), ein
 `ansicht.typWaehlen`). **Die Maus am Bildschirmrand schiebt die Karte**
 (AC-9, die äußersten 12 Bildpunkte), abschaltbar in der Tastenübersicht;
 die Wahl merkt sich der Browser. **Die Leertaste** springt zum Dorfzentrum
-und ein zweites Mal zurück (AC-10, `ansicht.basisSprung`).
+und ein zweites Mal zurück (AC-10, `ansicht.basisSprung`). **Reißt die
+Verbindung**, steht ein Hinweis mitten im Bild mit „Neu laden und
+zurückkehren" (AC-19, uebertragung AC-9; im Browsertest kappt der
+Prüfgriff `trennen` sie vom Server aus).
 
 1. **Stufe A** Dunkle Zeit mit Wirtschafts-KI und Prüfstand · **B** Feudalzeit
    · **C** Partieende und KI-Gegner · **D** Ritterzeit · **E** fünf Häuser ·

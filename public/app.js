@@ -13,6 +13,7 @@ const teile = {
   spielerliste: document.getElementById('spielerliste'),
   meldung: document.getElementById('meldung'),
   wartemeldung: document.getElementById('wartemeldung'),
+  verbindungweg: document.getElementById('verbindungweg'),
   vorraete: document.getElementById('vorraete'),
   kartenwert: document.getElementById('kartenwert'),
   brett: document.getElementById('brett'),
@@ -66,8 +67,14 @@ function verbinden(dann) {
   draht = new WebSocket(`${schema}://${location.host}`);
   draht.addEventListener('open', dann);
   draht.addEventListener('message', (e) => empfangen(JSON.parse(e.data)));
-  draht.addEventListener('close', () => {
-    if (ansicht) melden('Verbindung weg. Seite neu laden, um zurückzukehren.', teile.wartemeldung);
+  draht.addEventListener('close', (e) => {
+    // Nur wenn es die Verbindung von gerade ist: ein neuer Versuch schliesst
+    // die alte selbst (oben), das ist kein Abbruch.
+    if (e.target !== draht) return;
+    // Im Spiel ein Hinweis mitten im Bild, nicht erst stehende Einheiten
+    // (bedienung AC-19); im Warteraum unter der Spielerliste.
+    if (!teile.spiel.hidden) teile.verbindungweg.hidden = false;
+    else if (!teile.warteraum.hidden) melden('Verbindung weg. Seite neu laden, um zurückzukehren.', teile.wartemeldung);
   });
 }
 
@@ -913,6 +920,9 @@ document.getElementById('abmelden').addEventListener('click', async () => {
   await konto('sign-out', {});
   await sitzungPruefen();
 });
+
+// Neu laden kehrt mit dem gemerkten Platz zurueck (unten, "Start").
+document.getElementById('neuladen').addEventListener('click', () => location.reload());
 
 // ---- Start -------------------------------------------------------------
 

@@ -2,7 +2,7 @@
 
 **Bereich:** Strategie
 **Kuerzel:** bedienung
-**Stand:** 38/46 fertig · 8 offen
+**Stand:** 39/46 fertig · 7 offen
 
 ## Zweck
 
@@ -87,8 +87,11 @@ Befehl steht.
   Wirtschaft läuft.
 - **AC-18** `fertig` **Abgelehnte Befehle sagen warum** — „Zu wenig Holz", „Bevölkerung voll" — kurz
   eingeblendet, nicht als Fenster mit Knopf.
-- **AC-19** `offen` **Verbindungsverlust ist sichtbar** — Ein Hinweis im Bild, nicht erst
+- **AC-19** `fertig` **Verbindungsverlust ist sichtbar** — Ein Hinweis im Bild, nicht erst
   stehenbleibende Einheiten (→ [Übertragung](../00-plattform/uebertragung.md) AC-9).
+  Mitten im Bild und stehend, mit einem Knopf, der neu lädt und mit dem
+  gemerkten Platz zurückkehrt. Ein Server, der schweigt, ohne die
+  Verbindung zu schließen, zeigt noch nichts.
 - **AC-20** `offen` **Spielstand aller Spieler einsehbar** — Auf Tastendruck: Bevölkerung und
   Rohstoffe aller Mitspieler. Wer vorne liegt, gehört zur Spannung.
 

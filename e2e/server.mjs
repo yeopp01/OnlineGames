@@ -203,6 +203,16 @@ const griffe = http.createServer(async (anfrage, antwortGriff) => {
       antwortGriff.writeHead(200, { 'Content-Type': 'application/json', Connection: 'close' }).end(JSON.stringify({ ok: true, takt: raum.welt.takt }));
       return;
     }
+    // Die Verbindung eines Spielers kappen, wie ein Abbruch im Netz
+    // (bedienung AC-19): der Server schliesst sie, der Platz bleibt.
+    if (befehl === 'trennen') {
+      const raum = laufend.raeume.finden(id);
+      const spieler = raum?.spieler.find((s) => s.name === werte.name);
+      if (!spieler?.draht) throw new Error(`${werte.name} hat in Raum ${id} keine Verbindung.`);
+      spieler.draht.close();
+      antwortGriff.writeHead(200, { 'Content-Type': 'application/json', Connection: 'close' }).end(JSON.stringify({ ok: true }));
+      return;
+    }
     if (befehl === 'zeitraffer') {
       const raum = laufend.raeume.finden(id);
       if (!raum) throw new Error(`Raum ${id} gibt es nicht.`);

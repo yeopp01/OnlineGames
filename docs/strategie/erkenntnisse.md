@@ -2071,6 +2071,17 @@ ihn, mit Gegenprobe an beiden Formen. Fünf Bilder neu, alle angesehen.
 Neueste oben. Eine Zeile je Runde: Nummer, Datum, Kriterien, Ergebnis,
 wichtigste Erkenntnis.
 
+- **187** · 2026-11-12 · **bedienung AC-19 und uebertragung AC-9 fertig**
+  (Abweichung nach Abschnitt 1, Punkt 6): die Meldung „Verbindung weg"
+  stand bisher in `#wartemeldung` — im Warteraum, der im Spiel
+  verborgen ist; im Spiel sah also niemand etwas. Jetzt `#verbindungweg`
+  mitten im Bild mit „Neu laden und zurückkehren" (`location.reload()`, der
+  gemerkte Platz aus `sessionStorage` bringt zurück). Prüfgriff `trennen`
+  in `e2e/server.mjs` schließt die Verbindung vom Server aus, Hilfe
+  `trennen()` in `e2e/helpers/seite.mjs`. Browserfall
+  `e2e/tests/strategie-verbindung.spec.mjs` mit zwei Bildern; Gegenprobe
+  fällt. Nicht gebaut: ein Server, der schweigt, ohne zu schließen.
+
 - **186** · 2026-11-12 · **bedienung AC-13 fertig, ohne neuen Code**
   (Abweichung nach Abschnitt 1, Punkt 6): der Ring am Zielpunkt war mit
   AC-34 schon im Klick gesetzt; es fehlte nur der Beleg, dass er
