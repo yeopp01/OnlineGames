@@ -1655,6 +1655,40 @@ Testlauf): `npm run check` 53 s ohne Last, 599 Tests ohne Browser; der
 volle Browserlauf mit 191 Fällen 16,6 min (Runde 140; Runde 135: 17,0 min
 für 190). Die Ritterzeit am Stück braucht 1,7 min.
 
+### Nach Runde 183 (2026-11-12)
+
+Vier Runden: 179 gemessen, woher Eschenbruchs Vorsprung kommt (Holz und
+Reichweite zusammen, Frage an den Benutzer), 180 Distelhag baut im Wechsel
+nach (ki AC-32, 26 → 47 %), 181 Gruppentasten (bedienung AC-5), 182
+Umschalt und Doppelklick (AC-3, AC-4). Seit Runde 180 ist Stufe E von
+außen gesperrt. Die Maschine rechnete weiter Blender; Zeiten gehören nicht
+unter Messwerte. Was Zeit gekostet hat oder sich wiederholen wird:
+
+1. **Abschnitt 1 hatte keine Antwort, wenn die Stufe gesperrt ist.** Der
+   Steuerstand nach Runde 180 sagte nur „Arbeit wählen nach Abschnitt 1";
+   Runde 181 musste die Abweichung selbst begründen. → **Regel als
+   Punkt 6 in Abschnitt 1**: offene Kriterien früherer Stufen, zuerst
+   Bedienung, Abweichung in der Rundenzeile, Kandidat im Steuerstand.
+2. **Eine Gegenprobe blieb grün** (Runde 181): die Ansicht nimmt Gefallene
+   ohnehin aus der Auswahl. Gefunden, weil die Regel „gegen den alten
+   Stand" befolgt wurde — aber die Anweisung sagte nicht, was dann zu tun
+   ist. Im selben Test sagte eine Annahme voraus, wen die Miliz zuerst
+   schlägt. → **Regel in Abschnitt 4**: eine grüne Gegenprobe heißt, eine
+   zweite Stelle tut dasselbe; die Zusicherung gilt dem, was nur das Neue
+   leistet. Kein Test sagt eine Wahl der Simulation voraus.
+3. **Jede Datei schrieb ihre eigene Liste von Klickpunkten.**
+   `eigeneImBild` hieß so, lieferte aber alle eigenen Einheiten mit
+   Fußpunkt; Runde 182 schrieb daneben eine eigene mit Körpermitte und
+   „im Bild". → `eigeneImBild` liefert jetzt auch `k`, `s`, `klick` und
+   `imBild` (alte Felder unverändert), `strategie-auswahl-maus` nutzt sie;
+   **Regel in Abschnitt 5**: wer auf Figuren klickt, hält erst die Zeit
+   an. Die vier Dateien mit der Hilfe liefen danach grün (28 Fälle).
+
+Gezählt: 467 von 601 Kriterien fertig, 741 Tests ohne Browser, 214 im
+Browser; Laufzeiten nicht gemessen (Blender). Nicht geändert: der Zuschnitt
+— zwei kleine Kriterien, die dieselbe Stelle anfassen (AC-3 und AC-4), in
+einer Runde hat getragen. Kein Rundgang im Browser: keine Stufe erreicht.
+
 ### Nach Runde 178 (2026-11-12)
 
 Vier Runden in Stufe E: 174 die KI neigt zu ihrem Haus (ki AC-27), 175
@@ -2037,6 +2071,11 @@ ihn, mit Gegenprobe an beiden Formen. Fünf Bilder neu, alle angesehen.
 Neueste oben. Eine Zeile je Runde: Nummer, Datum, Kriterien, Ergebnis,
 wichtigste Erkenntnis.
 
+- **183** · 2026-11-12 · **Rückschau** (Runden 179 bis 182): Punkt 6 in
+  Abschnitt 1 (gesperrte Stufe → frühere Stufen, zuerst Bedienung), eine
+  Regel zur grünen Gegenprobe und zu Vorhersagen über die Simulation
+  (Abschnitt 4), `eigeneImBild` mit `k`, `s`, `klick`, `imBild` und die
+  Regel „erst die Zeit anhalten" (Abschnitt 5). Nächste Rückschau Runde 188.
 - **182** · 2026-11-12 · **bedienung AC-3 und AC-4 fertig**: mit Umschalt
   kommen Klick und Rahmen zur Auswahl hinzu (`ansicht.auswaehlen(rahmen,
   erweitern)`; ein Gebäude oder das Leere lässt die Einheiten stehen,

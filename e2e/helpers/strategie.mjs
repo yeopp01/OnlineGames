@@ -346,12 +346,30 @@ export async function dorfbewohnerAnklicken(page, { ohne = [], code = null, raff
   return letzte.i;
 }
 
-/** Die eigenen Einheiten mit ihrer Lage auf dem Bildschirm. */
+/**
+ * Die eigenen Einheiten mit ihrer Lage auf dem Bildschirm - alle, auch die
+ * ausserhalb des Ausschnitts: `x`/`y` ist der Fusspunkt, `klick` die
+ * Koerpermitte, auf die ein Klick zielt (`KOERPER_MITTE` in ansicht.js),
+ * `imBild` sagt, ob der Fusspunkt auf der Leinwand steht, `k` die Art,
+ * `s` ob sie gefallen ist. Wer damit klickt, haelt vorher die Zeit an
+ * (`zeitraffer(page, code, 0)`), sonst laeuft das Ziel weg (Rueckschau nach
+ * Runde 183).
+ */
 export const eigeneImBild = (page) => page.evaluate(() => {
   const a = window.ansicht;
+  const h = a.figurenHoehe();
+  const breite = a.leinwand.clientWidth;
+  const hoehe = a.leinwand.clientHeight;
   return [...a.nachher.values()]
     .filter((e) => e.b === a.ich)
-    .map((e) => ({ id: e.i, ...a.zuBild(e.x, e.y) }));
+    .map((e) => {
+      const p = a.zuBild(e.x, e.y);
+      return {
+        id: e.i, k: e.k, s: Boolean(e.s), ...p,
+        klick: { x: p.x, y: p.y - h * 0.6 },
+        imBild: p.x >= 0 && p.x <= breite && p.y >= 0 && p.y <= hoehe,
+      };
+    });
 });
 
 /**

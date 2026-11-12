@@ -4,7 +4,7 @@
 // Die Zeit steht still, damit niemand zwischen Messen und Klicken weitergeht.
 import { nachweis } from '../../scripts/qa-nachweis.mjs';
 import { einheitenAufstellen, expect, test, zeitraffer } from '../helpers/seite.mjs';
-import { partieBeenden, partieZuZweit } from '../helpers/strategie.mjs';
+import { eigeneImBild, partieBeenden, partieZuZweit } from '../helpers/strategie.mjs';
 
 const BEDIENUNG = '10-strategie/bedienung.md';
 
@@ -36,18 +36,10 @@ test.describe('Auswahl mit der Maus', () => {
   });
   test.afterAll(() => partieBeenden(partie));
 
-  // Eigene Einheiten mit Bildpunkt zum Anklicken (Koerpermitte) und ob ihr
-  // Fusspunkt im Bild steht.
-  const eigene = (page) => page.evaluate(() => {
-    const a = window.ansicht;
-    const h = a.figurenHoehe();
-    const b = a.leinwand.clientWidth;
-    const hoehe = a.leinwand.clientHeight;
-    return [...a.nachher.values()].filter((e) => e.b === a.ich && !e.s).map((e) => {
-      const p = a.zuBild(e.x, e.y);
-      return { i: e.i, k: e.k, x: p.x, y: p.y - h * 0.6, fuss: p, imBild: p.x >= 0 && p.x <= b && p.y >= 0 && p.y <= hoehe };
-    });
-  });
+  // Die Lebenden aus der Hilfe, hier mit dem Klickpunkt als x/y und dem
+  // Fusspunkt als `fuss` - der Rahmen misst am Fuss, der Klick an der Mitte.
+  const eigene = async (page) => (await eigeneImBild(page)).filter((e) => !e.s)
+    .map((e) => ({ i: e.id, k: e.k, ...e.klick, fuss: { x: e.x, y: e.y }, imBild: e.imBild }));
   const gewaehlt = (page) => page.evaluate(() => ({
     ids: [...window.ansicht.ausgewaehlt].sort((x, y) => x - y),
     gebaeude: window.ansicht.gewaehltesGebaeude,

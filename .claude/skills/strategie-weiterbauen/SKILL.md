@@ -51,6 +51,16 @@ In dieser Reihenfolge, das Erste, was zutrifft:
 5. Sonst das **nächste `offen`-Kriterium der aktuellen Stufe**, das nichts
    Ungebautes voraussetzt. Bei Wahl: das, welches am frühesten etwas im
    Browser Spielbares ergibt.
+6. **Ist die aktuelle Stufe von außen gesperrt** — jedes offene Kriterium
+   wartet auf eine Frage an den Benutzer oder auf eine fremde Sitzung —,
+   dann ein `offen`-Kriterium einer **früheren** Stufe, das nichts
+   Ungebautes voraussetzt; zuerst aus `bedienung.md`, weil dort Spielbares
+   liegt, das jede Partie braucht. Die Rundenzeile sagt, dass und warum vom
+   Fahrplan abgewichen wurde, und der Steuerstand nennt den Kandidaten der
+   nächsten Runde. In Runde 180 stand dort nur „Arbeit wählen nach
+   Abschnitt 1", und Abschnitt 1 hatte für diesen Fall keine Antwort; die
+   Runden 181 und 182 bauten dann Gruppentasten, Umschalt und Doppelklick
+   (Rückschau nach Runde 183).
 
 **Einen offenen Produktfehler umschiffst du höchstens einmal.** Scheitert ein
 Bild oder Test an einem Fehler, der schon als `offen`-Kriterium dasteht, darf
@@ -287,6 +297,16 @@ Setze die gewählten Kriterien auf `in-arbeit`.
   ohne die umgekehrte Richtung hätte der Konterkreis auch gehalten, wenn
   schlicht immer links gewinnt.) Beides als eigene Zusicherung schreiben, nicht
   nur prüfen und wegwerfen.
+  **Bleibt eine Gegenprobe grün, tut eine zweite Stelle dasselbe.** Dann
+  diese Stelle suchen, nicht die Gegenprobe wegwerfen, und fragen, was nur
+  das Neue leistet — das wird die Zusicherung. In Runde 181 blieb die
+  Gegenprobe zu „Gefallene fallen aus der Gruppe" grün: die Ansicht nimmt
+  Gefallene mit jedem Zustand ohnehin aus der Auswahl. Was der neue Filter
+  allein tut, ist die **Ablage** sauber halten; erst die Zusicherung darauf
+  fiel ohne ihn. **Und ein Test sagt keine Wahl der Simulation voraus** —
+  welches Ziel eine Einheit zuerst nimmt, wer zuerst fällt: er wartet auf
+  *irgendeines* und rechnet mit dem, das es war. In Runde 181 nahm die Miliz
+  den Gesunden zuerst, nicht den mit einem Leben.
   **Und dieselbe Messung einmal gegen den alten Stand, bevor ihre Zahl
   gilt** — `npm run pruefstand:vergleich -- --gegen HEAD` mit derselben
   Aufstellung (`--teams 1,1,2,2`, `--spieler`), beim Rechenteil
@@ -461,7 +481,13 @@ Setze die gewählten Kriterien auf `in-arbeit`.
   `e2e/helpers/strategie.mjs`, beendet wird sie mit `partieBeenden`. Dort
   liegen auch `dorfbewohnerAnklicken` und `platzImBild` (ein freier Bauplatz
   **vorn** oder **seitlich**, damit Gebäude nichts verdecken). Neue
-  Spielbild-Dateien kopieren nichts davon.
+  Spielbild-Dateien kopieren nichts davon. **Wer auf eigene Figuren
+  klickt**, hält erst die Zeit an (`zeitraffer(page, code, 0)`) und nimmt
+  die Punkte aus `eigeneImBild(page)`: je Einheit Fußpunkt (`x`, `y`),
+  Klickpunkt an der Körpermitte (`klick`), Kürzel (`k`) und ob der Fußpunkt
+  im Bild steht (`imBild`). So liefen in Runde 182 Umschalt-Klick, Rahmen
+  und Doppelklick beim ersten Mal grün; vorher schrieb jede Datei ihre
+  eigene Liste.
 - **Warten auf Spielzeit** geht über den Zeitraffer (bis 20), nicht über die
   Uhr: wer länger als fünf Sekunden auf etwas wartet, das im Spiel dauert, dreht
   ihn hoch — und rechnet Abstandsgrenzen mit ein, denn ein Zustand fasst dann
