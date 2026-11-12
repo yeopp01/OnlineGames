@@ -357,6 +357,16 @@ class Raeume {
     this.beimSchliessen?.(raum);
   }
 
+  // Fuer den Betreiber: wie viele Raeume offen sind und in wie vielen eine
+  // Partie laeuft, die ein Neustart beenden wuerde. Keine Codes, keine Namen.
+  zahlen() {
+    let partien = 0;
+    for (const raum of this.nachCode.values()) {
+      if (raum.gestartet && !raum.welt.vorbei) partien += 1;
+    }
+    return { raeume: this.nachCode.size, partien };
+  }
+
   // Raeume, in denen niemand mehr sitzt, kosten sonst dauerhaft Rechenzeit.
   aufraeumen() {
     const jetzt = Date.now();

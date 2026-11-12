@@ -7,9 +7,9 @@ Eine Zeile je Abnahmekriterium. Gepflegt wird der Status in der Spec selbst,
 hier steht er zusammengefasst. Erzeugt mit `npm run specs:board`; als Seite
 mit Bildnachweisen, Filter und Suche mit `npm run qa:report`.
 
-**Gesamt:** 476/610 fertig · 2 in Arbeit · 5 in QA · 3 geplant · 116 offen · 8 zurueckgestellt
+**Gesamt:** 477/610 fertig · 3 in Arbeit · 5 in QA · 3 geplant · 114 offen · 8 zurueckgestellt
 
-**Nachweise:** 222 Kriterien mit Bild · 259 ohne Bild, begruendet in `qa/ohne-bild.json`
+**Nachweise:** 222 Kriterien mit Bild · 260 ohne Bild, begruendet in `qa/ohne-bild.json`
 
 ## Nach Spezifikation
 
@@ -43,12 +43,13 @@ mit Bildnachweisen, Filter und Suche mit `npm run qa:report`.
 | [Transfermarkt](15-manager/transfer.md)                        | -         | -     | -       | -     | 1               | 24     |
 | [Verträge](15-manager/vertraege.md)                            | -         | -     | -       | -     | -               | 11     |
 | [Vorstand](15-manager/vorstand.md)                             | -         | -     | -       | -     | -               | 10     |
-| [Betrieb](20-betrieb/betrieb.md)                               | -         | -     | -       | 12    | -               | -      |
+| [Betrieb](20-betrieb/betrieb.md)                               | 1         | -     | -       | 10    | -               | 1      |
 
-## In Arbeit (2)
+## In Arbeit (3)
 
 - **Alle Einheiten gerendert** — [Darstellung](10-strategie/darstellung.md) AC-24
 - **Zeitalter gliedern die Partie** — [Spielziel und Partieverlauf](10-strategie/spielziel.md) AC-1
+- **Zahlen sind abrufbar** — [Betrieb](20-betrieb/betrieb.md) AC-8
 
 ## In QA (5)
 
@@ -64,7 +65,7 @@ mit Bildnachweisen, Filter und Suche mit `npm run qa:report`.
 - **Kennwort vergessen** — [Konten und Anmeldung](00-plattform/konten.md) AC-5
 - **Automatischer Wiederaufbau** — [Uebertragung](00-plattform/uebertragung.md) AC-10
 
-## Offen (116)
+## Offen (114)
 
 - **Anmeldung ueber Google/GitHub** — [Konten und Anmeldung](00-plattform/konten.md) AC-6
 - **Bilanz je Konto** — [Konten und Anmeldung](00-plattform/konten.md) AC-14
@@ -173,11 +174,9 @@ mit Bildnachweisen, Filter und Suche mit `npm run qa:report`.
 - **Nur über HTTPS** — [Betrieb](20-betrieb/betrieb.md) AC-1
 - **Proxy-Adresse ist eingeschaltet** — [Betrieb](20-betrieb/betrieb.md) AC-2
 - **Dienst startet selbst neu** — [Betrieb](20-betrieb/betrieb.md) AC-3
-- **Der Hafen ist einstellbar** — [Betrieb](20-betrieb/betrieb.md) AC-4
 - **Neustart beendet Partien, angekündigt** — [Betrieb](20-betrieb/betrieb.md) AC-5
 - **Aktualisierung wartet auf leere Räume** — [Betrieb](20-betrieb/betrieb.md) AC-6
 - **Konten überleben jede Aktualisierung** — [Betrieb](20-betrieb/betrieb.md) AC-7
-- **Zahlen sind abrufbar** — [Betrieb](20-betrieb/betrieb.md) AC-8
 - **Fehler ins Protokoll, Geheimnisse nie** — [Betrieb](20-betrieb/betrieb.md) AC-9
 - **Absturz trifft nicht alle Partien** — [Betrieb](20-betrieb/betrieb.md) AC-10
 - **Eine kleine Maschine reicht** — [Betrieb](20-betrieb/betrieb.md) AC-11

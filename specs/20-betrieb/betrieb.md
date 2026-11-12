@@ -2,7 +2,7 @@
 
 **Bereich:** Betrieb
 **Kuerzel:** betrieb
-**Stand:** 0/12 fertig · 12 offen
+**Stand:** 1/12 fertig · 1 in Arbeit · 10 offen
 
 ## Zweck
 
@@ -31,7 +31,7 @@ Stufe G). Zugangsdaten und Adressen stehen nicht im Repository.
   [Schutz](../00-plattform/schutz.md) für alle Spieler gemeinsam.
 - **AC-3** `offen` **Dienst startet selbst neu** — Nach Absturz und nach Neustart der
   Maschine, ohne dass jemand sich anmeldet.
-- **AC-4** `offen` **Der Hafen ist einstellbar** — Über `PORT`, ohne Änderung am Code.
+- **AC-4** `fertig` **Der Hafen ist einstellbar** — Über `PORT`, ohne Änderung am Code.
 
 ### Neustart und Aktualisierung
 
@@ -45,7 +45,7 @@ Stufe G). Zugangsdaten und Adressen stehen nicht im Repository.
 
 ### Sichtbarkeit
 
-- **AC-8** `offen` **Zahlen sind abrufbar** — Laufende Partien, verbundene Spieler, ausgelöste
+- **AC-8** `in-arbeit` **Zahlen sind abrufbar** — Laufende Partien, verbundene Spieler, ausgelöste
   Grenzen. Über einen Weg, den nur der Betreiber erreicht.
 - **AC-9** `offen` **Fehler ins Protokoll, Geheimnisse nie** — Keine Kennwörter, keine
   Sitzungstoken, keine Raumcodes laufender Partien.

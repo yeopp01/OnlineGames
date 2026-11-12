@@ -1295,6 +1295,11 @@
       "spec": "10-strategie/ki.md",
       "ac": "AC-13",
       "begruendung": "Was die KI weiss - welche fremden Gebaeude und Einheiten sie kennt und woraus sie Ziel und Ueberlegenheit rechnet - steht in ihrem Gedaechtnis auf dem Server, nicht auf einem Bildschirm. Ein Bild zeigt, was ein Mensch sieht; ob die KI dasselbe nicht weiss, zeigt es nicht."
+    },
+    {
+      "spec": "20-betrieb/betrieb.md",
+      "ac": "AC-4",
+      "begruendung": "Eine Einstellung des Prozesses, kein Bildschirm: der Server liest PORT aus seiner Umgebung und lauscht dort. Der Test startet ihn so, wie er im Betrieb laeuft - als eigenen Prozess mit node server/index.js und einem anderen Hafen - und fragt ihn dort ab. Im Browser saehe man dieselbe Seite wie unter jedem anderen Hafen."
     }
   ]
 }

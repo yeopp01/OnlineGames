@@ -46,6 +46,23 @@ function ausliefern(anfrage, antwort) {
   });
 }
 
+// Der Betreiber fragt im Rechner selbst, ohne Proxy dazwischen.
+function vomRechnerSelbst(anfrage) {
+  const von = anfrage.socket?.remoteAddress || '';
+  return ['127.0.0.1', '::1', '::ffff:127.0.0.1'].includes(von) && !anfrage.headers['x-forwarded-for'];
+}
+
+// Was im Betrieb aus der Umgebung kommt (→ specs/20-betrieb): unter welcher
+// Adresse der Server von aussen erreichbar ist - daran haengen die erlaubte
+// Herkunft der Anmeldung und das Secure-Kennzeichen der Kekse - und wo die
+// Konten liegen, ausserhalb des Programmordners (betrieb AC-7).
+function kontenAusUmgebung(umgebung = process.env) {
+  const konten = {};
+  if (umgebung.OEFFENTLICHE_ADRESSE) konten.adresse = umgebung.OEFFENTLICHE_ADRESSE.replace(/\/+$/, '');
+  if (umgebung.KONTEN_DATEI) konten.datei = umgebung.KONTEN_DATEI;
+  return konten;
+}
+
 async function starten(hafen = HAFEN, einstellungen = {}) {
   const raeume = new Raeume();
   // Einmal beim Start gelesen: ein kaputter Steckbrief verhindert den Start,
@@ -82,6 +99,18 @@ async function starten(hafen = HAFEN, einstellungen = {}) {
     }
     if (anfrage.method === 'GET' && (anfrage.url || '').split('?')[0] === '/api/spiele') {
       antwort.writeHead(200, { 'Content-Type': TYPEN['.json'], 'Cache-Control': 'no-store' }).end(spiele);
+      return;
+    }
+    // Zahlen fuer den Betreiber (→ specs betrieb AC-8): nur vom Rechner
+    // selbst. Was ueber den Proxy kommt, traegt die Adresse des Fragenden im
+    // Kopf und bekommt dieselbe Antwort wie jeder unbekannte Pfad.
+    if (anfrage.method === 'GET' && (anfrage.url || '').split('?')[0] === '/betrieb/zahlen') {
+      if (!vomRechnerSelbst(anfrage)) {
+        antwort.writeHead(404, { 'Content-Type': 'text/plain; charset=utf-8' }).end('Nicht gefunden');
+        return;
+      }
+      const zahlen = { ...raeume.zahlen(), verbunden: wss.clients.size };
+      antwort.writeHead(200, { 'Content-Type': TYPEN['.json'], 'Cache-Control': 'no-store' }).end(JSON.stringify(zahlen));
       return;
     }
     if (spielManager.behandeln(anfrage, antwort)) return;
@@ -272,7 +301,7 @@ async function starten(hafen = HAFEN, einstellungen = {}) {
 }
 
 if (require.main === module) {
-  starten().catch((fehler) => {
+  starten(HAFEN, { konten: kontenAusUmgebung() }).catch((fehler) => {
     console.error('Start fehlgeschlagen:', fehler.message);
     process.exit(1);
   });

@@ -1,0 +1,39 @@
+# OnlineGames im Betrieb (specs/20-betrieb). Liegt auf dem Server neben
+# daten/, sicherung/ und .env; hingebracht von npm run ausrollen.
+#
+# In .env stehen, was nicht ins Repository gehoert:
+#   KONTEN_GEHEIMNIS       einmal erzeugt, bleibt ueber jede Aktualisierung
+#   OEFFENTLICHE_ADRESSE   https://..., unter der das Spiel erreichbar ist
+#
+# Davor steht der Caddy des Servers im Netz "web": er hat das Zertifikat,
+# hier drin gibt es nur HTTP (betrieb AC-1).
+
+services:
+  onlinegames:
+    image: onlinegames:aktuell
+    container_name: onlinegames
+    # Nach Absturz und nach Neustart der Maschine von selbst (betrieb AC-3).
+    restart: unless-stopped
+    # Node als erster Prozess hoert nicht auf SIGTERM - mit init endet der
+    # Dienst beim Anhalten sofort statt nach zehn Sekunden Wartezeit.
+    init: true
+    env_file: .env
+    environment:
+      PORT: "4180"
+      # Ohne das gelten die Grenzen des Schutzes fuer alle gemeinsam: jede
+      # Anfrage kaeme von der Adresse des Proxys (betrieb AC-2).
+      HINTER_PROXY: "1"
+      KONTEN_DATEI: /daten/konten.sqlite
+      NODE_ENV: production
+      TZ: Europe/Berlin
+    volumes:
+      - ./daten:/daten
+    # Der Server teilt sich die Maschine mit anderen Anwendungen.
+    mem_limit: 1g
+    cpus: 2
+    networks:
+      - web
+
+networks:
+  web:
+    external: true

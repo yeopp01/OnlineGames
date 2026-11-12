@@ -31,6 +31,7 @@
     "e2e:laufzeiten": "node scripts/e2e-laufzeiten.mjs",
     "e2e:daten": "playwright test --config e2e/playwright.config.mjs strategie-bauen strategie-dunkle-zeit strategie-feudalbauten strategie-feudalzeit strategie-ritterzeit strategie-ritterzeit-am-stueck strategie-figuren strategie-unterscheidbar",
     "einladung": "node scripts/einladung.mjs",
+    "ausrollen": "node scripts/ausrollen.mjs",
     "sicht": "node scripts/sicht.mjs",
     "tafel": "node scripts/tafel.mjs",
     "bilder": "node scripts/bilder.mjs",
