@@ -1,0 +1,10 @@
+{
+  "spec": "10-strategie/bedienung.md",
+  "ac": "AC-4",
+  "titel": "Doppelklick auf eine Miliz: die drei Milizen im Bild gewaehlt, die Dorfbewohner daneben nicht",
+  "datei": "e2e/tests/strategie-auswahl-maus.spec.mjs",
+  "pfad": [
+    "Auswahl mit der Maus",
+    "bedienung AC-4: ein Doppelklick waehlt alle Einheiten der Art im Bild, mit Umschalt kommen sie dazu"
+  ]
+}

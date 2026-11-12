@@ -18,6 +18,8 @@ export const BAUTASTEN = ['q', 'w', 'e', 'r', 't', 'z', 'u', 'i', 'o', 'p', 'y',
 export const BELEGUNG = [
   ['Ziehen mit links', 'Einheiten im Rahmen wählen'],
   ['Klick links', 'eine Einheit oder ein Gebäude wählen'],
+  ['Umschalt + Klick oder Ziehen', 'zur Auswahl hinzunehmen'],
+  ['Doppelklick', 'alle Einheiten dieser Art im Bild'],
   ['Rechtsklick', 'hingehen, sammeln, bauen – oder Sammelpunkt setzen'],
   ['W A S D, Pfeile', 'Karte schieben'],
   ['Mausrad', 'näher, weiter'],

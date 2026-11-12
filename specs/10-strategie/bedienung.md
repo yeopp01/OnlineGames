@@ -2,7 +2,7 @@
 
 **Bereich:** Strategie
 **Kuerzel:** bedienung
-**Stand:** 33/46 fertig · 13 offen
+**Stand:** 35/46 fertig · 11 offen
 
 ## Zweck
 
@@ -26,9 +26,14 @@ Befehl steht.
   darin.
 - **AC-2** `fertig` **Klick wählt eine** — Ein Klick ohne Rahmen wählt die nächste eigene Einheit in
   Reichweite.
-- **AC-3** `offen` **Umschalt erweitert** — Mit gedrückter Umschalttaste kommt zur Auswahl hinzu,
-  statt sie zu ersetzen.
-- **AC-4** `offen` **Doppelklick wählt den Typ** — Alle sichtbaren Einheiten desselben Typs.
+- **AC-3** `fertig` **Umschalt erweitert** — Mit gedrückter Umschalttaste kommt zur Auswahl hinzu,
+  statt sie zu ersetzen — beim Klick wie beim Rahmen. Einheiten kommen zu
+  Einheiten; ein Klick mit Umschalt auf ein Gebäude oder ins Leere lässt die
+  gewählten Einheiten stehen, gemischt wird nicht (ein Rechtsklick hieße für
+  beide etwas anderes).
+- **AC-4** `fertig` **Doppelklick wählt den Typ** — Alle sichtbaren Einheiten desselben Typs.
+  „Sichtbar" heißt: der Fußpunkt steht im Bild; wer außerhalb steht, bleibt
+  ungewählt. Mit Umschalt kommen sie zur Auswahl dazu.
 - **AC-5** `fertig` **Auswahl merken** — `Strg`+`1` bis `9` legt eine Auswahl ab, die Zifferntaste
   ruft sie zurück. Ohne das ist ein Echtzeitspiel nicht spielbar. Abgelegt
   werden die gewählten Einheiten, sonst ein gewähltes eigenes Gebäude; wer

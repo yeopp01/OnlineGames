@@ -2037,6 +2037,18 @@ ihn, mit Gegenprobe an beiden Formen. Fünf Bilder neu, alle angesehen.
 Neueste oben. Eine Zeile je Runde: Nummer, Datum, Kriterien, Ergebnis,
 wichtigste Erkenntnis.
 
+- **182** · 2026-11-12 · **bedienung AC-3 und AC-4 fertig**: mit Umschalt
+  kommen Klick und Rahmen zur Auswahl hinzu (`ansicht.auswaehlen(rahmen,
+  erweitern)`; ein Gebäude oder das Leere lässt die Einheiten stehen,
+  gemischt wird nicht), ein Doppelklick wählt alle eigenen Einheiten der
+  Art, deren Fußpunkt im Bild steht (`ansicht.typWaehlen`), mit Umschalt
+  dazu. Beide in der Tastenübersicht. Wie Runde 181 außerhalb des
+  Fahrplans, weil Stufe E gesperrt ist. Zwei Gegenproben fallen (Umschalt
+  nicht weitergegeben; jede Einheit der Art statt nur der im Bild). Der
+  Browserfall hält die Zeit an (Zeitraffer 0), bevor er misst — dann
+  stimmen die Bildpunkte der Klicks, und beide Fälle liefen beim ersten
+  Mal grün. Nur die eigene Datei, `strategie-tasten` und `strategie-gruppe`
+  im Browser.
 - **181** · 2026-11-12 · **bedienung AC-5 fertig**: Gruppentasten —
   `Strg`+Ziffer (oder `Alt`+Ziffer) legt die Auswahl ab, die Ziffer holt sie
   zurück; Einheiten, sonst ein eigenes Gebäude; Gefallene und Bekehrte fallen

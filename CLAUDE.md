@@ -167,7 +167,7 @@ Umfang hinzufügt, dort nachsehen.
 
 ## Stand
 
-**465 von 601 Kriterien fertig.** 741 Tests ohne Browser, 212 im Browser. Die
+**467 von 601 Kriterien fertig.** 741 Tests ohne Browser, 214 im Browser. Die
 Übersicht ist der Bericht: `npm run qa:report`.
 
 Gebaut ist der Unterbau: Räume, Übertragung, Karte, Wegfindung, Sammeln,
@@ -513,7 +513,10 @@ Auftrag, steht die Bevölkerung oben rot umrandet, auch ohne Auswahl
 oder `Alt` mit einer Ziffer legt die Auswahl ab, die Ziffer holt sie
 zurück, ohne Gefallene und Bekehrte (`ansicht.gruppeAblegen`,
 `gruppeAbrufen`; gelesen über `e.code`). Ob Chrome `Strg`+`1` bis `8` für
-die Tabs behält, ist nicht geprüft — deshalb `Alt` daneben.
+die Tabs behält, ist nicht geprüft — deshalb `Alt` daneben. **Mit
+Umschalt** kommen Klick und Rahmen zur Auswahl hinzu (bedienung AC-3), ein
+**Doppelklick** wählt alle eigenen Einheiten der Art im Bild (AC-4,
+`ansicht.typWaehlen`).
 
 1. **Stufe A** Dunkle Zeit mit Wirtschafts-KI und Prüfstand · **B** Feudalzeit
    · **C** Partieende und KI-Gegner · **D** Ritterzeit · **E** fünf Häuser ·

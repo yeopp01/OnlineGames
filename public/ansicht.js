@@ -635,8 +635,15 @@ export class Ansicht {
         return;
       }
       if (!this.zug) return;
-      this.auswaehlen(this.zug);
+      this.auswaehlen(this.zug, e.shiftKey);
       this.zug = null;
+    });
+
+    // Doppelklick auf eine eigene Einheit: alle ihrer Art im Bild (bedienung
+    // AC-4). Die zwei Klicks davor haben sie schon einzeln gewaehlt.
+    this.leinwand.addEventListener('dblclick', (e) => {
+      if (this.platzieren) return;
+      this.typWaehlen(e.offsetX, e.offsetY, e.shiftKey);
     });
 
     this.leinwand.addEventListener('wheel', (e) => {
@@ -677,9 +684,50 @@ export class Ansicht {
 
   // Ausgewaehlt wird im Bild, nicht auf der Karte: ein Rechteck auf dem
   // Bildschirm ist in der Raute kein Rechteck aus Feldern mehr.
-  auswaehlen(rahmen) {
+  // Mit Umschalt kommt hinzu, was getroffen ist (bedienung AC-3): Einheiten
+  // zu Einheiten. Trifft der Klick ein Gebaeude oder nichts, bleiben die
+  // Einheiten gewaehlt - gemischt wird nicht, denn ein Rechtsklick hiesse fuer
+  // beide etwas anderes.
+  auswaehlen(rahmen, erweitern = false) {
+    const vorher = erweitern ? [...this.ausgewaehlt] : [];
     this.auswahlTreffen(rahmen);
+    if (vorher.length) {
+      if (!this.ausgewaehlt.size) this.gewaehltesGebaeude = null;
+      for (const id of vorher) this.ausgewaehlt.add(id);
+    }
     this.beiAuswahl();
+  }
+
+  /**
+   * Alle eigenen Einheiten derselben Art wie die unter dem Zeiger, soweit ihr
+   * Fusspunkt im Bild steht (bedienung AC-4). Mit Umschalt zur Auswahl dazu.
+   * Gibt zurueck, wie viele es sind; trifft der Zeiger keine Einheit, null.
+   */
+  typWaehlen(px, py, erweitern = false) {
+    const figur = this.figurenHoehe();
+    let bestes = null;
+    let besterAbstand = Math.max(KLICK_WEITE * this.kamera.zoom, figur * 0.75);
+    for (const einheit of this.nachher.values()) {
+      if (einheit.b !== this.ich || einheit.s) continue;
+      const p = this.zuBild(einheit.x, einheit.y);
+      const abstand = Math.hypot(p.x - px, p.y - figur * KOERPER_MITTE - py);
+      if (abstand < besterAbstand) {
+        besterAbstand = abstand;
+        bestes = einheit;
+      }
+    }
+    if (!bestes) return null;
+    const breite = this.leinwand.clientWidth;
+    const hoehe = this.leinwand.clientHeight;
+    if (!erweitern) this.ausgewaehlt.clear();
+    this.gewaehltesGebaeude = null;
+    for (const einheit of this.nachher.values()) {
+      if (einheit.b !== this.ich || einheit.s || einheit.k !== bestes.k) continue;
+      const p = this.zuBild(einheit.x, einheit.y);
+      if (p.x >= 0 && p.x <= breite && p.y >= 0 && p.y <= hoehe) this.ausgewaehlt.add(einheit.i);
+    }
+    this.beiAuswahl();
+    return this.ausgewaehlt.size;
   }
 
   auswahlTreffen(rahmen) {

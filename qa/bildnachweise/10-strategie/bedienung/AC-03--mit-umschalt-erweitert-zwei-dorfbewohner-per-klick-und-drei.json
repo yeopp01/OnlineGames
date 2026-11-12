@@ -1,0 +1,10 @@
+{
+  "spec": "10-strategie/bedienung.md",
+  "ac": "AC-3",
+  "titel": "Mit Umschalt erweitert: zwei Dorfbewohner per Klick und drei Milizen per Rahmen zusammen gewaehlt, unten 5 ausgewaehlt",
+  "datei": "e2e/tests/strategie-auswahl-maus.spec.mjs",
+  "pfad": [
+    "Auswahl mit der Maus",
+    "bedienung AC-3: mit Umschalt kommen Klick und Rahmen zur Auswahl hinzu, ein Gebaeude ersetzt sie nicht"
+  ]
+}
