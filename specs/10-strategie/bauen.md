@@ -2,7 +2,7 @@
 
 **Bereich:** Strategie
 **Kuerzel:** bauen
-**Stand:** 30/35 fertig · 5 offen
+**Stand:** 33/35 fertig · 2 offen
 
 ## Zweck
 
@@ -174,11 +174,11 @@ Spezialeinheit der Burg (kommt mit den Häusern, Stufe E), Palisade.
 
 ### Zerstörung
 
-- **AC-17** `offen` **Gebäude haben Leben** — Werte aus der Tabelle oben. _(Wirkung ab Stufe B.)_
-- **AC-18** `offen` **Zerstörte Gebäude nehmen Plätze mit** — Fällt ein Haus, sinkt die Grenze.
+- **AC-17** `fertig` **Gebäude haben Leben** — Werte aus der Tabelle oben. _(Wirkung ab Stufe B.)_
+- **AC-18** `fertig` **Zerstörte Gebäude nehmen Plätze mit** — Fällt ein Haus, sinkt die Grenze.
   Einheiten über der Grenze sterben nicht, es kommen nur keine neuen dazu.
   _(Stufe B.)_
-- **AC-19** `offen` **Eroberung entscheidet** — Die Siegbedingung steht in
+- **AC-19** `fertig` **Eroberung entscheidet** — Die Siegbedingung steht in
   [Spielziel](spielziel.md) AC-5. _(Stufe C.)_
 
 ### Stufe D — Ritterzeit

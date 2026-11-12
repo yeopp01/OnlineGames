@@ -1,0 +1,9 @@
+{
+  "spec": "10-strategie/bauen.md",
+  "ac": "AC-18",
+  "titel": "Berts Miliz hat das Haus eingerissen - oben steht die Bevoelkerung ueber der gesunkenen Grenze, rot, weil ein Dorfbewohner wartet",
+  "datei": "e2e/tests/strategie-zerstoerung.spec.mjs",
+  "pfad": [
+    "bauen AC-17 / bauen AC-18: das Haus traegt sein Leben in der Leiste - faellt es, steht die Bevoelkerung oben ueber der Grenze, und keiner ist gestorben"
+  ]
+}

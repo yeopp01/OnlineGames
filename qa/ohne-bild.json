@@ -393,6 +393,11 @@
     },
     {
       "spec": "10-strategie/bauen.md",
+      "ac": "AC-19",
+      "begruendung": "Eine Regel des Servers: faellt das letzte Gebaeude eines Spielers, das ihn im Spiel haelt, ist er in demselben Takt ausgeschieden, und bleibt einer uebrig, ist die Partie vorbei - eine Farm haelt niemanden. Die Tafel am Ende sieht gleich aus, ob zuletzt eine Einheit oder ein Gebaeude fiel, und dass die Farm daneben noch steht, sagt das Bild nicht; die Tafel selbst hat ihr Bild unter spielziel AC-5 und AC-8."
+    },
+    {
+      "spec": "10-strategie/bauen.md",
       "ac": "AC-2",
       "begruendung": "Eine Dauer in Abhaengigkeit von der Zahl der Bauleute: 35, 26,25 und 21 Sekunden fuer eine Muehle, auf zwei Takte genau gemessen. Ein Bild zeigt eine Baustelle, nicht wie schnell sie waechst."
     },

@@ -2199,6 +2199,20 @@ ihn, mit Gegenprobe an beiden Formen. Fünf Bilder neu, alle angesehen.
 Neueste oben. Eine Zeile je Runde: Nummer, Datum, Kriterien, Ergebnis,
 wichtigste Erkenntnis.
 
+- **199** · 2026-11-12 · **bauen AC-17, AC-18, AC-19 fertig**, nur Belege
+  (nach Abschnitt 1, Punkt 6, mit der neuen Regel: alte offene vor neuen —
+  Stufe E bleibt gesperrt): alle drei waren gebaut. Das Leben jedes
+  Gebäudes kommt aus den Tabellen in `bauen.md` selbst (der Test liest sie,
+  18 Zeilen, statt einer Liste im Testkopf); fällt ein Haus, sinkt
+  `welt.wohnraum`, niemand stirbt, der Dorfbewohner wartet, bis zwei neue
+  Häuser stehen; das letzte Gebäude fällt, und die Partie endet im selben
+  Takt, die Farm daneben hält Bert nicht. Drei Gegenproben gefallen (Haus
+  551 Leben, `wartet = false`, Farm ohne `bestand: false`). Tests
+  `tests/strategie-zerstoerung.test.mjs`, Bilder aus
+  `e2e/tests/strategie-zerstoerung.spec.mjs` (beim ersten Lauf grün, mit
+  `waehlen` und `aufSeite`), AC-19 mit Begründung. Gelernt: Baustellen
+  tragen von Anfang an volles Leben (`gebaeudeAnlegen`) — bauen AC-7 ist
+  echte Arbeit, die nächste Runde.
 - **198** · 2026-11-12 · **Rückschau** (Runden 194 bis 197): `gegenprobe
   --zeilen` für mehrzeiligen Text, Testhilfen `waehlen` und `aufSeite` in
   `e2e/helpers/strategie.mjs`, Regel in Abschnitt 1, Punkt 6: ein neues
