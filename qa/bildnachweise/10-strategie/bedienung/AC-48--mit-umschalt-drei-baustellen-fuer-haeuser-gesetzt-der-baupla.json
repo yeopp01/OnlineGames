@@ -1,0 +1,9 @@
+{
+  "spec": "10-strategie/bedienung.md",
+  "ac": "AC-48",
+  "titel": "Mit Umschalt drei Baustellen fuer Haeuser gesetzt, der Bauplatz liegt weiter gruen unter dem Zeiger",
+  "datei": "e2e/tests/strategie-bauen-reihe.spec.mjs",
+  "pfad": [
+    "bedienung AC-48: mit Umschalt bleibt der Bauplatz in der Hand - drei Haeuser gesetzt, der Dorfbewohner baut sie der Reihe nach"
+  ]
+}

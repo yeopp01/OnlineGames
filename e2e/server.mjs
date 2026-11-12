@@ -96,6 +96,11 @@ const griffe = http.createServer(async (anfrage, antwortGriff) => {
       const spieler = raum?.welt?.spieler.find((s) => s.name === werte.name);
       if (!spieler) throw new Error(`Spieler ${werte.name} gibt es in Raum ${id} nicht.`);
       for (const r of ['holz', 'nahrung', 'gold', 'stein']) if (Number.isInteger(werte[r])) spieler[r] = werte[r];
+      // Und was er ueber die Partie gesammelt hat - fuer erkennbare Punkte
+      // (bedienung AC-47), ohne dass im Test jemand sammeln muss.
+      for (const [r, menge] of Object.entries(werte.gesammelt || {})) {
+        if (Object.hasOwn(spieler.gesammelt, r) && Number.isInteger(menge)) spieler.gesammelt[r] = menge;
+      }
       antwortGriff.writeHead(200, { 'Content-Type': 'application/json', Connection: 'close' }).end(JSON.stringify({ ok: true }));
       return;
     }

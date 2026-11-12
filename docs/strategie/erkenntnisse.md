@@ -237,10 +237,11 @@ etwas anderem gearbeitet.
   und Aufruf bleiben nach Abschnitt 6, Punkt 4. Reißt er weiter, ist das
   eine Frage an den Benutzer: in den zweiten Abschnitt von `npm test`
   verschieben, wo nichts nebenher rechnet, oder mehr Durchgänge.
-- **Die Tastenübersicht ist voll** (Runde 189): 21 Zeilen, rund 730
-  Bildpunkte hoch — auf 1366 × 768 bleiben oben und unten knapp 20. Die
-  nächste Taste braucht zwei Spalten oder Gruppen (Auswahl, Kamera,
-  Befehle); geprüft ist die Höhe nur im Fenster der Tests (1400 × 950).
+- **Die Tastenübersicht ist voll** (Runde 189): 21 Zeilen, auf
+  1366 × 768 von 6 bis 762 — oben und unten je 6 Bildpunkte. Die nächste
+  Taste braucht zwei Spalten oder Gruppen (Auswahl, Kamera, Befehle);
+  seit Runde 190 fällt bedienung AC-23 (`strategie-laptop`), wenn sie nicht
+  mehr ganz im Bild steht.
 - **Distelhag stellt weniger her** (Runde 177): gegen Eschenbruch
   (Startwerte 61 bis 63) zwei bis drei Militärgebäude gegen drei bis fünf,
   127 gegen 226 Kampfeinheiten in der längsten Partie, 78 Dorfbewohner
@@ -1665,6 +1666,86 @@ Testlauf): `npm run check` 53 s ohne Last, 599 Tests ohne Browser; der
 volle Browserlauf mit 191 Fällen 16,6 min (Runde 140; Runde 135: 17,0 min
 für 190). Die Ritterzeit am Stück braucht 1,7 min.
 
+### Nach Runde 198 (2026-11-12)
+
+Vier Runden aus `bedienung.md`, alle nach Abschnitt 1, Punkt 6 (Stufe E
+gesperrt), und alle vier **neu angelegt**: 194 Punkte für alle (AC-47),
+195 mehrere Bauten mit Umschalt (AC-48), 196 Punkte für Siege (AC-49), 197
+Angriffe hintereinander (AC-50). Was Zeit gekostet hat oder sich
+wiederholen wird:
+
+1. **Neue Kriterien statt alter** (Runden 194 bis 197): die drei offenen in
+   `bedienung.md` brauchen Zeichnungen, also legte jede Runde ein neues an.
+   Gezählt stehen in den anderen Specs zehn offene aus den Stufen A bis C
+   ohne Sperre — bauen AC-7, AC-17, AC-18, AC-19, einheiten AC-10, AC-30,
+   AC-32, karte AC-7, AC-10, ki AC-20, AC-23 —, und einige sind gebaut, nur
+   nicht belegt: der Wohnraum zählt nur fertige Gebäude (`welt.wohnraum`),
+   also sinkt die Grenze, wenn ein Haus fällt (bauen AC-18); Gebäude haben
+   Leben seit B5 (AC-17); die Eroberung entscheidet seit C2 (AC-19). → Regel
+   in Abschnitt 1, Punkt 6: **ein neues Kriterium erst, wenn in keiner Spec
+   ein offenes ohne Sperre steht** — gezählt mit `grep -c`. Damit braucht
+   es die Frage „weiter neue Kriterien?“ an den Benutzer nicht.
+2. **Mehrzeilige Gegenprobe** (Runde 197): eine Zeile stand zweimal, nur mit
+   der davor eindeutig, und mehrzeiliger Text kommt nicht heil durch
+   `npm run`. Geholfen hat eine Kopie mit `--datei`. → `npm run gegenprobe
+   -- <datei> --zeilen "<alt mit \n>" "<neu mit \n>" -- …`; geprüft an der
+   Stelle aus Runde 197 (der Test fiel, die Datei war danach wie vorher),
+   steht in der Anweisung bei der Gegenprobe.
+3. **Wählen und Klicken in jeder Datei neu** (Runden 196, 197): fünf Zeilen
+   Auswahl, dazu der Klickpunkt aus `zuBild` und `getBoundingClientRect`,
+   in 19 Dateien. → `waehlen(page, ids, { zoom, blick })` und
+   `aufSeite(page, { feld | gebaeude | einheit })` in
+   `e2e/helpers/strategie.mjs`; die beiden neuen Dateien nutzen sie (beide
+   grün), die 17 älteren bleiben, bis eine Runde sie ohnehin anfasst.
+
+Gezählt: 480 von 605 Kriterien fertig, 759 Tests ohne Browser, 231 im
+Browser. Laufzeiten nicht gemessen: Blender rechnet nicht mehr, aber kein
+voller Browserlauf seit Runde 190. Erledigt aus der letzten Rückschau: der
+Wächter für feste Kästen hat in den Runden 194 bis 197 nichts beanstandet,
+weil keine neuen dazukamen. Weiter offen: ob das Schieben endet, wenn die
+Maus das Fenster verlässt; ein Server, der schweigt, ohne zu trennen; aus
+Runde 197 der Mangonel ohne Rückzug, der seine Reihe vergisst. Kein
+Rundgang im Browser: keine Stufe erreicht.
+
+### Nach Runde 193 (2026-11-12)
+
+Vier Runden aus `bedienung.md`, alle nach Abschnitt 1, Punkt 6 (Stufe E
+gesperrt): 189 Spielstand auf `Tab` (AC-20), 190 läuft auf 1366 × 768
+(AC-23), 191 Ziele hintereinander mit Umschalt (AC-14), 192 die erste
+Partie erklärt sich (AC-21). Was Zeit gekostet hat oder sich wiederholen
+wird:
+
+1. **Feste Kästen auf kleinem Bildschirm, dreimal von Hand** (Runden 189,
+   191, 192): Spielstand, eine Zeile mehr in der Tastenübersicht, die
+   Erklärung — jedes Mal hing, ob er auf einem anderen Bedienteil liegt,
+   daran, dass jemand ihn in die Liste von `bedienteileFrei` schrieb. →
+   **Wächter** `tests/waechter-bedienteile.test.mjs`: jedes direkte Kind
+   von `#spiel` steht in der Liste oder mit Grund in `UEBER_ALLEM`
+   (Gegenprobe: ohne `#erklaerung` fällt er).
+2. **Eine Grenze des Servers im Browser nachgebaut** (Runde 191): 21 statt
+   20, gefunden von der Durchsicht; die Abhilfe schnitt vorn nach `q` ab —
+   und `q` hinkt beim schnellen Klicken hinter den Klicks her. In dieser
+   Rückschau fiel der Fall dazu einmal von zwei Läufen und traf damit einen
+   echten Fehler. → `wegpunkteMax` kommt jetzt über `werte` (wie
+   `mauerMax`), das Abschneiden ist fort (sechsmal hintereinander grün,
+   Gegenprobe ohne den Wert fällt), und die Anweisung sagt in Abschnitt 3:
+   gemeinsame Grenzen über `werte`, nie nach einem hinkenden Wert
+   entscheiden.
+3. **„Einmal je Browser“ im Browserlauf** (Runde 192): jedes Fenster ist
+   frisch, die Erklärung hätte in jedem Bild gestanden. Die Lösung — die
+   Fixtures `context` und `browser` in `e2e/helpers/seite.mjs` setzen den
+   Merker in jedem Fenster, abschaltbar über den Sitzungsspeicher — steht
+   jetzt als Muster in Abschnitt 5 der Anweisung.
+
+Gezählt: 476 von 602 Kriterien fertig, 748 Tests ohne Browser, 227 im
+Browser; Laufzeiten nicht gemessen (kein voller Browserlauf, 30
+Chrome-Prozesse offen). Erledigt aus der letzten Rückschau: die Leertaste
+drückt keinen Knopf mehr, der eben geklickt wurde („Verstanden“ gibt den
+Fokus ab). Weiter offen: ob das Schieben endet, wenn die Maus das Fenster
+verlässt, und ein Server, der schweigt, ohne zu trennen. Nicht geändert:
+die Reihenfolge nach Punkt 6. Kein Rundgang im Browser: keine Stufe
+erreicht.
+
 ### Nach Runde 188 (2026-11-12)
 
 Vier Runden aus `bedienung.md`, alle nach Abschnitt 1, Punkt 6 (Stufe E
@@ -2118,6 +2199,144 @@ ihn, mit Gegenprobe an beiden Formen. Fünf Bilder neu, alle angesehen.
 Neueste oben. Eine Zeile je Runde: Nummer, Datum, Kriterien, Ergebnis,
 wichtigste Erkenntnis.
 
+- **199** · 2026-11-12 · **bauen AC-17, AC-18, AC-19 fertig**, nur Belege
+  (nach Abschnitt 1, Punkt 6, mit der neuen Regel: alte offene vor neuen —
+  Stufe E bleibt gesperrt): alle drei waren gebaut. Das Leben jedes
+  Gebäudes kommt aus den Tabellen in `bauen.md` selbst (der Test liest sie,
+  18 Zeilen, statt einer Liste im Testkopf); fällt ein Haus, sinkt
+  `welt.wohnraum`, niemand stirbt, der Dorfbewohner wartet, bis zwei neue
+  Häuser stehen; das letzte Gebäude fällt, und die Partie endet im selben
+  Takt, die Farm daneben hält Bert nicht. Drei Gegenproben gefallen (Haus
+  551 Leben, `wartet = false`, Farm ohne `bestand: false`). Tests
+  `tests/strategie-zerstoerung.test.mjs`, Bilder aus
+  `e2e/tests/strategie-zerstoerung.spec.mjs` (beim ersten Lauf grün, mit
+  `waehlen` und `aufSeite`), AC-19 mit Begründung. Gelernt: Baustellen
+  tragen von Anfang an volles Leben (`gebaeudeAnlegen`) — bauen AC-7 ist
+  echte Arbeit, die nächste Runde.
+- **198** · 2026-11-12 · **Rückschau** (Runden 194 bis 197): `gegenprobe
+  --zeilen` für mehrzeiligen Text, Testhilfen `waehlen` und `aufSeite` in
+  `e2e/helpers/strategie.mjs`, Regel in Abschnitt 1, Punkt 6: ein neues
+  Kriterium erst, wenn kein altes offenes ohne Sperre mehr dasteht — es
+  stehen zehn da, einige gebaut und nur nicht belegt. Nächste Runde:
+  bauen AC-17, AC-18, AC-19 belegen.
+- **197** · 2026-11-12 · **bedienung AC-50 fertig** (neu angelegt,
+  Abweichung nach Abschnitt 1, Punkt 6 — Stufe E gesperrt): Angriffe
+  hintereinander mit Umschalt. `einheit.angriffe` neben `wegpunkte`,
+  angehängt in `befehl()` nur bei einem befohlenen Angriff (kein `heimat`,
+  kein Angriffslauf), abgearbeitet von `welt.naechsterAngriff()` an den
+  drei Stellen, an denen ein Angriff endet (Ziel fort, Ziel hinter der
+  Mauer fort, unerreichbar) und bei der Bekehrung des Ziels; verworfen von
+  jedem Befehl ohne Umschalt und im Takt, sobald nicht mehr angegriffen
+  wird. Auf dem Draht dasselbe `q`, im Browser dieselbe Linie wie AC-14,
+  angehängte Gegner mit größerem rotem Ring an ihrer Mitte. Drei
+  Regeltests, drei Gegenproben gefallen, Browserfall mit Bild.
+  **Erkenntnis:** `gegenprobe` nimmt keinen mehrzeiligen Text über `npm
+  run` — für eine Zeile, die zweimal (mit anderer Einrückung) vorkommt,
+  ging es nur über `--datei` mit einer vorbereiteten Kopie. Und der Ring
+  in Figurengröße ging auf einem Haus unter; erst das Ansehen des Bildes
+  zeigte es. Offen aus der Durchsicht (unter 80, nicht gebaut): ein
+  Mangonel, der zu nah steht und nicht zurückweichen kann, vergisst die
+  Reihe; wer aus der Reihe nachrückt, bekommt keine verteilte Aufstellung
+  um das Ziel wie beim ersten Befehl.
+- **196** · 2026-11-12 · **bedienung AC-49 fertig** (neu angelegt,
+  Abweichung nach Abschnitt 1, Punkt 6 — Stufe E gesperrt, AC-42, AC-44,
+  AC-46 brauchen Zeichnungen): Punkte für Siege im Kampf, ein Punkt je 5
+  Rohstoffe, die vernichtete fremde Einheiten und Gebäude gekostet haben.
+  Gezählt an genau einer Stelle, `schlaegeAbrechnen()` — dort fällt jedes
+  Ziel, auch durch Turm, Stein und Ramme —, in `welt.siegZaehlen()`; der
+  Schlag, der das Ziel fallen lässt, bekommt es, nur wenn `feindlich`. Der
+  Verlierer verliert nichts (`besiegtWert` nur beim Sieger). Regeltest:
+  Miliz gegen Dorfbewohner und Haus, und ein Stein, der Eigenen,
+  Verbündeten und Gegner zugleich fällt, zählt nur den Gegner; zwei
+  Gegenproben gefallen (ohne `feindlich`, ohne Aufruf). Browserfall
+  `strategie-punkte-sieg.spec.mjs` mit Bild. **Erkenntnis:** weil jeder
+  Schaden über die eine Warteschlange `schlaege` läuft, brauchte eine Regel
+  über „wer hat getötet" keine Stelle je Waffe — die Warteschlange, die
+  einmal für die Gleichzeitigkeit gebaut wurde, ist auch der Ort für
+  alles, was am Tod hängt.
+- **195** · 2026-11-12 · **bedienung AC-48 fertig** (neu angelegt,
+  Abweichung nach Abschnitt 1, Punkt 6 — Stufe E gesperrt, und die drei
+  offenen Kriterien in `bedienung.md` brauchen neue Zeichnungen, die die
+  Blender-Sitzung baut): mehrere Bauten mit Umschalt. Fast alles stand
+  schon: die gezogene Mauer gibt ihren Bauleuten eine Reihe
+  (`auftrag.folge`, `bauenWeiter`). Neu ist nur, dass `bauen` mit
+  `anhaengen` die Baustelle hinten an diese Reihe hängt, wenn der Bauer
+  schon baut — sonst beginnt er sofort —, und dass der Browser mit
+  Umschalt den Bauplatz in der Hand behält. Keine eigene Grenze: jede
+  Baustelle ist beim Setzen bezahlt. Gegenprobe: ohne das Anhängen fallen
+  zwei von drei Regelfällen. Die Tastenübersicht hat eine Zeile mehr (Bild
+  zu AC-22 neu, auf 1366 × 768 weiter grün). Die Durchsicht fand nichts
+  über der Schwelle (kein geteiltes `folge`, Randfälle fängt `bauenWeiter`).
+- **194** · 2026-11-12 · **bedienung AC-47 fertig** (Abweichung nach
+  Abschnitt 1, Punkt 6 — Stufe E gesperrt): erst die Rechnung ins
+  Kriterium, dann gebaut. Ein Punkt je 10 gesammelte Rohstoffe, je 10
+  Rohstoffe, die ausgebildete Einheiten gekostet haben, je 5 für
+  Verbesserungen und Aufstiege; Verluste ziehen nichts ab, Siege im Kampf
+  zählen (noch) nicht. Gerechnet in `welt.punkte()` aus Zählern, die es
+  schon für die Tafel am Ende gab — dazu nur `ausgebildetWert`. Auf der
+  Leitung `pk` je Spieler, und `auszug()` gibt es als Einziges neben
+  Zeitalter und Kampfwerten auch dem Gegner im Nebel. In der Tafel auf
+  `Tab` die zweite Spalte; der Fall zu AC-20 rückte deshalb um eine Spalte.
+  Der Prüfgriff `rohstoffe` nimmt jetzt auch `gesammelt`. Gegenproben:
+  ohne `pk` im Auszug und ohne den Zähler beim Ausbilden fällt je ein Fall.
+  Die Durchsicht fand nichts über der Schwelle; vermerkt: der `aufbau`
+  trägt weder `pk` noch `z`, nach dem Neuladen steht einen Takt lang 0
+  und Landsitz in der Tafel — nicht gebaut, der nächste Zustand heilt es.
+- **193** · 2026-11-12 · **Rückschau** (siehe „Nach Runde 193“): Wächter
+  für feste Bedienteile, `wegpunkteMax` über `werte` und das hinkende
+  Abschneiden nach `q` entfernt (der Fall dazu fiel einmal), zwei Regeln
+  in der Anweisung.
+- **192** · 2026-11-12 · **bedienung AC-21 fertig** (Abweichung nach
+  Abschnitt 1, Punkt 6 — Stufe E gesperrt): vorher gesucht, nichts stand
+  da (nur der Hinweis oben, „Ziehen wählt aus · Rechtsklick befiehlt“).
+  Drei Sätze links unter der Leiste, „Verstanden“ merkt sich der Browser
+  (`localStorage` `erklaerungGesehen`, nicht am Konto — Mitspieler haben
+  keins). Die eigentliche Frage war der Browserlauf: jedes Fenster dort ist
+  frisch, die Einblendung hätte in jedem Bild gestanden und Klicks
+  gefangen. Gelöst an einer Stelle, `e2e/helpers/seite.mjs`: die Fixtures
+  `context` und `browser` (dort `newContext` umwickelt, damit auch Gäste
+  aus `partieMit` es bekommen) setzen den Merker per `addInitScript`. Wer
+  von der Erklärung handelt, setzt `erklaerungPruefen` im
+  Sitzungsspeicher — der überlebt ein Neuladen, so belegt der Fall auch
+  „nach Verstanden nicht wieder, ohne schon“. Eine Wegwerfprobe bestätigte
+  alle drei Arten von Fenstern (Testseite, eigenes Fenster mit Anmeldung,
+  Gast). Gegenprobe: ohne das Lesen des Merkers fiel der Fall am Neuladen.
+- **191** · 2026-11-12 · **bedienung AC-14 fertig** (Abweichung nach
+  Abschnitt 1, Punkt 6 — Stufe E gesperrt): vorher gesucht, nichts stand
+  halb — kein `shiftKey` am Rechtsklick, keine Liste von Zielen in der
+  Welt. Zugeschnitten auf Gänge: Umschalt + Rechtsklick auf freien Boden
+  hängt an (`einheit.wegpunkte`, höchstens 20), wer steht, geht sofort,
+  ohne Umschalt oder bei jeder Unterbrechung ist die Reihe fort. Umschalt
+  auf Vorrat, Bau oder Gegner ist ein Befehl wie ohne — das wäre ein
+  eigenes Kriterium. Der Server schickt nur die Zahl `q`, nicht die Punkte:
+  so verrät der Draht keine fremden Ziele, und der Browser zeichnet die
+  letzten `q` seiner eigenen Klicks. Im Browserfall steht die Zeit beim
+  Klicken still (`zeitraffer 0`), sonst ist der Dorfbewohner am ersten Ziel,
+  bevor das zweite ankommt. Die Tastenübersicht bekam eine Zeile — und
+  passte trotzdem auf 1366 × 768, weil sie jetzt breiter ist: mit `left:
+  50%` hatte der Kasten nur die halbe Fensterbreite zum Wachsen, und zwei
+  Zeilen brachen um. Mittig über `inset: 0; margin: auto; width:
+  fit-content` braucht er drei Zeilen weniger Höhe. Die Notiz aus Runde 189
+  („eine weitere Zeile passt nicht mehr“) stimmte nur für die alte
+  Zentrierung. Gegenproben: Weitergehen und Verwerfen fielen je einzeln.
+  Die Durchsicht fand eine Anzeige über der Grenze: der Browser vergaß bei
+  21 Klicks die ältesten, der Server die neuesten — jetzt verwirft auch
+  der Browser (Fall und Gegenprobe dazu).
+- **190** · 2026-11-12 · **bedienung AC-23 fertig** (Abweichung nach
+  Abschnitt 1, Punkt 6 — Stufe E gesperrt): alle anderen Browserfälle
+  laufen auf 1400 × 950, 1366 × 768 prüfte niemand. Zuerst gemessen
+  (Wegwerfprobe): passte alles bis auf den Hinweis oben, „WASD schieb…“
+  neben „Bündnis lösen“. Der neue Fall steigt durch alle Zeitalter der Daten
+  und fand zwei Fehler mehr: eine Gruppe aus jeder Art drückte das Baumenü
+  auf eine Spalte, die Leiste ragte oben aus dem Fenster (jetzt
+  `.gruppenblock` mit Höchstbreite, die Gruppe bricht um); und
+  „Belagerungswerkstatt“ lief über den Rand ihres Knopfs — gesehen erst im
+  Bild, dann als Regel in die Messung („ein Knopf ist ein Rahmen“), die
+  daran fiel, bevor `hyphens: auto` sie heilte. Der Hinweis fällt jetzt ganz
+  in eine verdeckte zweite Zeile (Flex mit Umbruch und leerem `::before`;
+  die erste Fassung ließ die leere Zeile 0 hoch, und der Hinweis stand doch
+  oben). Der Fall stellt aus den Daten auf, deshalb in `e2e:daten`
+  (Wächter). Nur betroffene Browserdateien gefahren (25 grün).
 - **189** · 2026-11-12 · **bedienung AC-20 fertig** (Abweichung nach
   Abschnitt 1, Punkt 6 — Stufe E gesperrt): zuerst neu gefasst, denn
   „Rohstoffe aller Mitspieler" widersprach kampf AC-13. Jetzt: `Tab`

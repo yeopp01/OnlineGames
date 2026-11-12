@@ -1,0 +1,9 @@
+{
+  "spec": "10-strategie/bedienung.md",
+  "ac": "AC-21",
+  "titel": "Beim ersten Start links oben drei Saetze - ziehen, rechtsklicken, sammeln - und der Knopf Verstanden",
+  "datei": "e2e/tests/strategie-erklaerung.spec.mjs",
+  "pfad": [
+    "bedienung AC-21: beim ersten Start erklaeren drei Saetze Ziehen, Rechtsklick und Sammeln - nach Verstanden kommen sie nicht wieder"
+  ]
+}

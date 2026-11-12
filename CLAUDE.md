@@ -170,7 +170,7 @@ Umfang hinzufügt, dort nachsehen.
 
 ## Stand
 
-**473 von 602 Kriterien fertig.** 743 Tests ohne Browser, 222 im Browser. Die
+**483 von 605 Kriterien fertig.** 762 Tests ohne Browser, 232 im Browser. Die
 Übersicht ist der Bericht: `npm run qa:report`.
 
 Gebaut ist der Unterbau: Räume, Übertragung, Karte, Wegfindung, Sammeln,
@@ -206,7 +206,12 @@ Den Browser für Playwright holt einmal `npm run e2e:browser`.
 
 **Gespielt wird am PC** (spielauswahl AC-23): der Vorraum steht ab 900
 Bildpunkten nebeneinander und passt auf 1366 × 768 ohne Rollen; im
-Warteraum stehen die Einstellungen in drei Spalten.
+Warteraum stehen die Einstellungen in drei Spalten. **Das Spielbild passt
+auch** (bedienung AC-23, `e2e/tests/strategie-laptop.spec.mjs`): auf 1366 × 768
+in jedem Zeitalter, mit Baumenü, Dorfzentrum und einer Gruppe aus jeder Art,
+ragt nichts aus dem Fenster, und kein Text ist halb zu sehen — der Hinweis
+oben steht ganz oder fehlt, lange Namen im Baumenü trennen nach Silben. Alle
+anderen Browserfälle laufen auf 1400 × 950.
 
 **Im Browser gesehen** sind die Manager-Oberfläche, der Vorraum mit
 Spielauswahl und Einstellungen und das **Strategiespiel bis Schritt A6b**:
@@ -519,7 +524,19 @@ zurück, ohne Gefallene und Bekehrte (`ansicht.gruppeAblegen`,
 die Tabs behält, ist nicht geprüft — deshalb `Alt` daneben. **Mit
 Umschalt** kommen Klick und Rahmen zur Auswahl hinzu (bedienung AC-3), ein
 **Doppelklick** wählt alle eigenen Einheiten der Art im Bild (AC-4,
-`ansicht.typWaehlen`). **Die Maus am Bildschirmrand schiebt die Karte**
+`ansicht.typWaehlen`). **Umschalt mit Rechtsklick** hängt ein Ziel an die
+Reihe (AC-14, `einheit.wegpunkte`, höchstens 20): wer geht, geht sie der
+Reihe nach ab, wer steht, sofort; ein Befehl ohne Umschalt oder eine
+Unterbrechung verwirft sie; auf einen Gegner gesetzt, hängt es einen
+Angriff an (AC-50, `einheit.angriffe`, `welt.naechsterAngriff()`).
+**Mit Umschalt gebaut** (AC-48) bleibt der
+Bauplatz in der Hand, und wer schon baut, baut die neue Baustelle danach
+(`auftrag.folge`, wie bei der Mauer). Der Server schickt nur die Zahl `q`, die Linie
+mit Ringen zeichnet der Browser aus den eigenen Klicks. **Die erste Partie
+erklärt sich** (AC-21): drei Sätze links unter der Leiste, bis „Verstanden“;
+der Browser merkt es sich (`erklaerungGesehen`). Im Browserlauf gilt sie als
+gesehen — `e2e/helpers/seite.mjs` setzt den Merker in jedem Fenster, außer
+`erklaerungPruefen` steht im Sitzungsspeicher. **Die Maus am Bildschirmrand schiebt die Karte**
 (AC-9, die äußersten 12 Bildpunkte), abschaltbar in der Tastenübersicht;
 die Wahl merkt sich der Browser. **Die Leertaste** springt zum Dorfzentrum
 und ein zweites Mal zurück (AC-10, `ansicht.basisSprung`). **Reißt die
@@ -528,8 +545,12 @@ zurückkehren" (AC-19, uebertragung AC-9; im Browsertest kappt der
 Prüfgriff `trennen` sie vom Server aus). **`Tab` gehalten** zeigt den
 Spielstand (AC-20): je Spieler Zeitalter, und Vorräte mit Bevölkerung von
 einem selbst und den Verbündeten — Gegnern schickt der Server sie im Nebel
-nicht (kampf AC-13), dort steht ein Strich. Eine Punktzahl für alle ist
-AC-47.
+nicht (kampf AC-13), dort steht ein Strich. **Punkte sieht jeder**
+(AC-47): ein Punkt je 10 gesammelte Rohstoffe und je 10, die ausgebildete
+Einheiten gekostet haben, je 5 für Verbesserungen und Aufstiege
+(`welt.punkte()`, auf der Leitung `pk`, auch an Gegner im Nebel); je 5
+für das, was vernichtete Gegner gekostet haben (AC-49, `welt.siegZaehlen()`
+in `schlaegeAbrechnen()`, nur bei `feindlich`).
 
 1. **Stufe A** Dunkle Zeit mit Wirtschafts-KI und Prüfstand · **B** Feudalzeit
    · **C** Partieende und KI-Gegner · **D** Ritterzeit · **E** fünf Häuser ·

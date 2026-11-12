@@ -13,7 +13,9 @@
 //   wenn welche fehlen** (voll wird gar nicht geschickt - der Anteil ist
 //   `h / ansicht.lebenVoll(e)`) · `w` arbeitet oder kaempft gerade (bedienung AC-31, AC-39) · `s` gefallen ·
 //   `r` ruht nach dem Bekehren (einheiten AC-38) · `hd` die Strecke eines Karrens,
-//   `[heimatmarkt, zielmarkt, Gold je Fahrt]`, nur solange er handelt (einheiten AC-40).
+//   `[heimatmarkt, zielmarkt, Gold je Fahrt]`, nur solange er handelt (einheiten AC-40) ·
+//   `q` wie viele Ziele mit Umschalt noch in der Reihe warten, nur wenn welche (bedienung AC-14;
+//   die Punkte selbst merkt sich der Browser in `ansicht.wegpunkte`).
 //
 // ### KUERZEL
 // Diese Liste prueft `tests/waechter-drahttafel.test.mjs` gegen `daten.js` -
@@ -50,6 +52,11 @@
 // wenn eins gesetzt ist; spielziel AC-14), `ansicht.feindlich(besitzer)`, `ansicht.zeitalter`,
 // `ansicht.werte`, `ansicht.verbesserungen`, `ansicht.zuBild(x, y)`,
 // `ansicht.gebaeudeMitte(g)`, `ansicht.platzTaugt(x, y)`.
+//
+// **Spieler im Zustand** (`spieler`, je Eintrag): `id` · Vorraete und `bev`/`raum`
+//   (fremde nur, wer die Sicht teilt; bedienung AC-20) · `z` Zeitalter · `aus` ·
+//   `pk` Punkte, von **jedem** an alle, fehlt bei 0 (bedienung AC-47). Im
+//   Browser `ansicht.stand` (Map id -> { zeitalter, aus, punkte, vorraete }).
 //
 // **Geloeste Buendnisse** (spielziel AC-21): `bu` im Zustand und im Aufbau,
 //   je `[wer, Takt des Fristendes]`, an alle - solange es Kuendigungen gibt.
@@ -479,7 +486,7 @@ export function platzImBild(page, { n = 2, um, abstand = 5, seitlich = false }) 
  */
 export function bedienteileFrei(page) {
   return page.evaluate(() => {
-    const teile = ['#kopfzeile', '#auswahlleiste', '#untaetig', '#uebersicht', '#spielmeldung', '#angriffsmeldung', '#zeitalterwechsel', '#abschluss', '#zuschauer', '#buendnisansage']
+    const teile = ['#kopfzeile', '#auswahlleiste', '#untaetig', '#uebersicht', '#spielmeldung', '#angriffsmeldung', '#zeitalterwechsel', '#abschluss', '#zuschauer', '#buendnisansage', '#erklaerung']
       .map((wahl) => ({ wahl, el: document.querySelector(wahl) }))
       .filter(({ el }) => el && !el.hidden && el.getClientRects().length)
       .map(({ wahl, el }) => ({ wahl, r: el.getBoundingClientRect() }));
@@ -500,6 +507,53 @@ export function bedienteileFrei(page) {
     }
     return beanstandet;
   });
+}
+
+/**
+ * Waehlt eigene Einheiten aus, ohne zu klicken, und nimmt auf Wunsch einen
+ * Ort ins Bild. Fuer Faelle, in denen die Auswahl nur der Anfang ist und das
+ * Kriterium vom Befehl danach handelt (Rueckschau nach Runde 198: dieselben
+ * fuenf Zeilen standen in 19 Dateien).
+ *
+ * @param {import('@playwright/test').Page} page
+ * @param {number[]} ids
+ * @param {{ zoom?: number, blick?: {x: number, y: number} }} [wie]
+ */
+export function waehlen(page, ids, { zoom = null, blick = null } = {}) {
+  return page.evaluate(([ids, zoom, blick]) => {
+    const a = window.ansicht;
+    a.gewaehltesGebaeude = null;
+    a.ausgewaehlt = new Set(ids);
+    a.beiAuswahl();
+    if (zoom) a.kamera.zoom = zoom;
+    if (blick) a.blickAuf(blick.x, blick.y);
+  }, [ids, zoom, blick]);
+}
+
+/**
+ * Der Punkt auf der Seite, an dem ein Feld, ein Gebaeude (seine Mitte) oder
+ * eine Einheit gerade im Bild steht - fuer `page.mouse.click`. `null`, wenn
+ * das Gebaeude oder die Einheit nicht (mehr) da ist.
+ *
+ * @param {import('@playwright/test').Page} page
+ * @param {{ feld?: {x: number, y: number}, gebaeude?: number, einheit?: number }} wo
+ * @returns {Promise<{x: number, y: number} | null>}
+ */
+export function aufSeite(page, wo) {
+  return page.evaluate((wo) => {
+    const a = window.ansicht;
+    let m = wo.feld;
+    if (wo.gebaeude !== undefined) {
+      const g = a.gebaeude.get(wo.gebaeude);
+      m = g && a.gebaeudeMitte(g);
+    } else if (wo.einheit !== undefined) {
+      m = a.nachher.get(wo.einheit);
+    }
+    if (!m) return null;
+    const r = a.leinwand.getBoundingClientRect();
+    const p = a.zuBild(m.x, m.y);
+    return { x: r.left + p.x, y: r.top + p.y };
+  }, wo);
 }
 
 /**

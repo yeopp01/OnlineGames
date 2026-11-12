@@ -95,6 +95,9 @@ export class Ansicht {
     // Das Zeichen am Ziel eines Befehls (bedienung AC-34): rot auf Feindliches,
     // weiss auf freies Gelaende. { x, y, feindlich, seit }.
     this.zielzeichen = null;
+    // Einheit -> die geklickten Ziele ihres Gangs, fuer die Linie der Reihe
+    // (bedienung AC-14). Wie viele davon noch warten, sagt der Server (`q`).
+    this.wegpunkte = new Map();
     // Der Angriffslauf (kampf AC-4) ist eine Betriebsart: G schaltet sie ein,
     // der naechste Rechtsklick fuehrt sie aus und schaltet sie wieder aus.
     this.angriffslauf = false;
@@ -178,6 +181,9 @@ export class Ansicht {
     this.sprung = null;
     this.gewaehltesGebaeude = null;
     this.zielzeichen = null;
+    // Einheit -> die geklickten Ziele ihres Gangs, fuer die Linie der Reihe
+    // (bedienung AC-14). Wie viele davon noch warten, sagt der Server (`q`).
+    this.wegpunkte = new Map();
     this.angriffslauf = false;
     this.platzieren = null;
     this.untaetige = [];
@@ -460,7 +466,8 @@ export class Ansicht {
       const vorraete = Number.isFinite(s.holz)
         ? { holz: s.holz, nahrung: s.nahrung, gold: s.gold, stein: s.stein, bev: s.bev, raum: s.raum }
         : null;
-      this.stand.set(s.id, { zeitalter: s.z || 0, aus: s.aus === 1, vorraete });
+      // Die Punkte kommen von jedem, auch vom Gegner (bedienung AC-47).
+      this.stand.set(s.id, { zeitalter: s.z || 0, aus: s.aus === 1, punkte: s.pk || 0, vorraete });
     }
   }
 
@@ -470,17 +477,18 @@ export class Ansicht {
    * nicht schickt - bei Gegnern, solange der Nebel gilt.
    *
    * @returns {{id: string, name: string, farbe: string, ich: boolean,
-   *   aus: boolean, zeitalter: string, vorraete: object|null}[]}
+   *   aus: boolean, punkte: number, zeitalter: string, vorraete: object|null}[]}
    */
   spielstandZeilen() {
     return [...this.spieler.values()].map((spieler) => {
-      const stand = this.stand.get(spieler.id) || { zeitalter: 0, aus: false, vorraete: null };
+      const stand = this.stand.get(spieler.id) || { zeitalter: 0, aus: false, punkte: 0, vorraete: null };
       return {
         id: spieler.id,
         name: spieler.name || 'Unbekannt',
         farbe: spieler.farbe || '#888888',
         ich: spieler.id === this.ich,
         aus: stand.aus,
+        punkte: stand.punkte,
         zeitalter: this.zeitalterName(stand.zeitalter),
         vorraete: stand.vorraete,
       };
@@ -698,7 +706,7 @@ export class Ansicht {
           const lage = this.platzLage();
           if (lage) this.platzieren.von = { x: lage.x, y: lage.y };
           this.leinwand.setPointerCapture(e.pointerId);
-        } else if (e.button === 0) this.platzierenKlick();
+        } else if (e.button === 0) this.platzierenKlick(e.shiftKey);
         else if (e.button === 2) this.platzierenBeenden();
         return;
       }
@@ -706,7 +714,8 @@ export class Ansicht {
         this.zug = { vonX: e.offsetX, vonY: e.offsetY, bisX: e.offsetX, bisY: e.offsetY };
         this.leinwand.setPointerCapture(e.pointerId);
       } else if (e.button === 2) {
-        this.befehlen(e.offsetX, e.offsetY);
+        // Mit Umschalt kommt das Ziel hinten an die Reihe (bedienung AC-14).
+        this.befehlen(e.offsetX, e.offsetY, e.shiftKey);
       }
     });
 
@@ -1047,7 +1056,7 @@ export class Ansicht {
     return true;
   }
 
-  platzierenKlick() {
+  platzierenKlick(anhaengen = false) {
     const lage = this.platzLage();
     // Auf Rot baut nichts - und die Absage sagt es noch einmal in Worten.
     if (!lage) return;
@@ -1055,8 +1064,10 @@ export class Ansicht {
       this.melden('Hier ist kein Platz.');
       return;
     }
-    this.bauenSenden([...this.ausgewaehlt], lage.art, { x: lage.x, y: lage.y });
-    this.platzierenBeenden();
+    this.bauenSenden([...this.ausgewaehlt], lage.art, { x: lage.x, y: lage.y }, anhaengen);
+    // Mit Umschalt bleibt der Bauplatz in der Hand fuer die naechste
+    // Baustelle (bedienung AC-48); ohne legt der Klick ihn weg.
+    if (!anhaengen) this.platzierenBeenden();
   }
 
   platzVorschau(e) {
@@ -1097,7 +1108,7 @@ export class Ansicht {
     stift.globalAlpha = 1;
   }
 
-  befehlen(px, py) {
+  befehlen(px, py, anhaengen = false) {
     const ziel = this.zuWelt(px, py);
     // Ein eigenes Gebaeude gewaehlt: der Rechtsklick setzt seinen Sammelpunkt (bauen AC-13).
     if (this.gewaehltesGebaeude) {
@@ -1113,10 +1124,82 @@ export class Ansicht {
     // Ein Angriffslauf ist ein Angriffsbefehl, auch auf leeres Gras: das
     // Zeichen am Ziel ist deshalb rot (bedienung AC-34).
     this.zielzeichenSetzen(ziel, lauf);
-    this.befehlSenden([...this.ausgewaehlt], {
-      x: Math.round(ziel.x),
-      y: Math.round(ziel.y),
-    }, lauf);
+    const feld = { x: Math.round(ziel.x), y: Math.round(ziel.y) };
+    const hinten = anhaengen && !lauf;
+    // Ein Gegner steht in der Reihe mit seiner Mitte und rot (bedienung
+    // AC-50) - dieselbe Frage, die das Zeichen eben beantwortet hat.
+    const feind = !lauf && this.zielzeichen?.feindlich;
+    this.wegpunkteMerken(feind ? { x: this.zielzeichen.x, y: this.zielzeichen.y, feind: true } : feld, hinten);
+    this.befehlSenden([...this.ausgewaehlt], feld, lauf, hinten);
+  }
+
+  /**
+   * Die geklickten Ziele je Einheit (bedienung AC-14). Ob ein Ziel wirklich
+   * wartet, entscheidet der Server - er schickt nur die Zahl (`q`); gezeigt
+   * werden die letzten `q` dieser Liste. Ohne Umschalt beginnt sie neu.
+   */
+  wegpunkteMerken(feld, anhaengen) {
+    for (const id of this.ausgewaehlt) {
+      let liste = anhaengen ? (this.wegpunkte.get(id) || []) : [];
+      // Die Grenze des Servers (`wegpunkteMax` aus den Werten): das laufende
+      // Ziel und so viele wartende. Was darueber geklickt wird, verwirft er -
+      // also hier auch, statt die aeltesten zu vergessen. Vorn schon
+      // erreichte Ziele abzuschneiden, ginge nur mit `q` - und das hinkt beim
+      // schnellen Klicken hinterher: die Rueckschau nach Runde 193 sah so
+      // echte Ziele verschwinden. Bleibt eine Ecke: mehr als zwanzig Klicks
+      // in einer Kette, von denen schon welche erreicht sind - dann fehlen
+      // der Linie die neuesten.
+      if (liste.length >= this.werte.wegpunkteMax + 1) continue;
+      // Ein Gegner steht nur einmal in der Reihe (bedienung AC-50) - ein
+      // Doppelklick auf ihn haengt beim Server nichts an, hier also auch nicht.
+      if (anhaengen && feld.feind && liste.some((p) => p.feind && p.x === feld.x && p.y === feld.y)) continue;
+      liste.push(feld);
+      this.wegpunkte.set(id, liste);
+    }
+  }
+
+  /**
+   * Die Reihe der gewaehlten Einheiten (bedienung AC-14): eine gestrichelte
+   * Linie vom laufenden Ziel ueber jedes wartende, an jedem wartenden ein
+   * Ring - rot, wenn dort ein Gegner angegriffen wird (AC-50). Eine Gruppe
+   * mit denselben Zielen zeigt sie einmal.
+   */
+  wegpunkteZeichnen(e) {
+    const gezeigt = new Set();
+    const stift = this.stift;
+    for (const id of this.ausgewaehlt) {
+      const einheit = this.nachher.get(id);
+      const liste = this.wegpunkte.get(id);
+      if (!einheit?.q || !liste || liste.length <= einheit.q) continue;
+      const punkte = liste.slice(-(einheit.q + 1));
+      const schluessel = punkte.map((p) => `${p.x},${p.y}`).join(';');
+      if (gezeigt.has(schluessel)) continue;
+      gezeigt.add(schluessel);
+      const bild = punkte.map((p) => this.zuBild(p.x, p.y));
+      stift.save();
+      stift.lineCap = 'round';
+      for (const [strich, breite] of [['rgba(20,16,12,0.6)', 3.5], ['rgba(255,255,255,0.85)', 1.6]]) {
+        stift.setLineDash([7, 6]);
+        stift.strokeStyle = strich;
+        stift.lineWidth = breite;
+        stift.beginPath();
+        bild.forEach((p, i) => (i ? stift.lineTo(p.x, p.y) : stift.moveTo(p.x, p.y)));
+        stift.stroke();
+        stift.setLineDash([]);
+        bild.forEach((p, i) => {
+          if (!i) return;
+          // Ein Gegner bekommt einen groesseren Ring: meist ist es ein
+          // Gebaeude, und ein Ring in Groesse einer Figur ging darauf unter.
+          const gross = punkte[i].feind ? 1.6 : 1;
+          stift.strokeStyle = punkte[i].feind && breite < 3 ? 'rgba(232,64,48,0.95)' : strich;
+          stift.lineWidth = punkte[i].feind ? breite * 1.4 : breite;
+          stift.beginPath();
+          stift.ellipse(p.x, p.y, e * 0.55 * gross, e * 0.275 * gross, 0, 0, Math.PI * 2);
+          stift.stroke();
+        });
+      }
+      stift.restore();
+    }
   }
 
   /**
@@ -1534,6 +1617,7 @@ export class Ansicht {
     this.pfeileZeichnen(stift);
     if (this.nebelAn) this.nebelZeichnen(stift);
     for (const balken of this.lebensbalken) this.lebensbalkenZeichnen(balken);
+    this.wegpunkteZeichnen(e);
     this.zielzeichenZeichnen(e, jetzt);
 
     for (const spieler of this.spieler.values()) {

@@ -101,8 +101,12 @@ function empfangen(nachricht) {
 
     case 'aufbau':
       if (!ansicht) {
-        ansicht = new Ansicht(teile.brett, (einheiten, ziel, angriffslauf) =>
-          senden({ typ: 'befehl', einheiten, ziel, ...(angriffslauf ? { angriffslauf: true } : {}) }));
+        ansicht = new Ansicht(teile.brett, (einheiten, ziel, angriffslauf, anhaengen) =>
+          senden({
+            typ: 'befehl', einheiten, ziel,
+            ...(angriffslauf ? { angriffslauf: true } : {}),
+            ...(anhaengen ? { anhaengen: true } : {}),
+          }));
         // Fuer den Browserlauf: die Leinwand laesst sich nicht befragen, die
         // Ansicht schon (e2e/tests/strategie-spielbild.spec.mjs). Lesen, nicht
         // schreiben - befohlen wird dort ueber Maus und Tastatur.
@@ -124,12 +128,13 @@ function empfangen(nachricht) {
         ansicht.beiSpielstand = () => spielstandZeigen();
         ansicht.sammelpunktSenden = (gebaeude, ziel) =>
           senden({ typ: 'befehl', auftrag: 'sammelpunkt', gebaeude, ziel });
-        ansicht.bauenSenden = (einheiten, art, ziel) =>
-          senden({ typ: 'befehl', auftrag: 'bauen', einheiten, art, ziel });
+        ansicht.bauenSenden = (einheiten, art, ziel, anhaengen) =>
+          senden({ typ: 'befehl', auftrag: 'bauen', einheiten, art, ziel, ...(anhaengen ? { anhaengen: true } : {}) });
         ansicht.mauerSenden = (einheiten, art, von, bis) =>
           senden({ typ: 'befehl', auftrag: 'mauer', einheiten, art, von, bis });
       }
       zeigen('spiel');
+      erklaerungZeigen();
       teile.kartenwert.textContent = `· Karte ${nachricht.startwert}`;
       ansicht.aufbau(nachricht, ich);
       zeitgrenzeZeigen(ansicht.zeitgrenze);
@@ -301,7 +306,24 @@ const TAFELKOPF = ['Spieler', 'Zeitalter', 'Holz', 'Nahrung', 'Gold', 'Stein', '
 // Der Spielstand auf `Tab` (bedienung AC-20): dieselbe Form wie die Tafel am
 // Ende, aber mit dem, was jetzt ist. Wo der Server nichts schickt (Gegner im
 // Nebel, kampf AC-13), steht ein Strich - kein geschaetzter Wert.
-const STANDKOPF = ['Spieler', 'Zeitalter', 'Bevölkerung', 'Holz', 'Nahrung', 'Gold', 'Stein'];
+const STANDKOPF = ['Spieler', 'Punkte', 'Zeitalter', 'Bevölkerung', 'Holz', 'Nahrung', 'Gold', 'Stein'];
+
+// Die erste Partie erklaert sich (bedienung AC-21): drei Saetze, bis sie
+// einmal weggeklickt sind. Gemerkt wird im Browser, nicht am Konto - wer
+// mitspielt, hat keins. Ohne Speicher (privates Fenster) steht sie jedes Mal.
+const ERKLAERT = 'erklaerungGesehen';
+function erklaerungZeigen() {
+  let gesehen = false;
+  try { gesehen = localStorage.getItem(ERKLAERT) === '1'; } catch { /* zeigen */ }
+  document.getElementById('erklaerung').hidden = gesehen;
+}
+document.getElementById('erklaerungZu').addEventListener('click', (e) => {
+  document.getElementById('erklaerung').hidden = true;
+  try { localStorage.setItem(ERKLAERT, '1'); } catch { /* dann eben wieder */ }
+  // Sonst haelt der Knopf den Fokus, und die Leertaste (bedienung AC-10)
+  // druckte ihn ein zweites Mal statt zur Basis zu springen.
+  e.currentTarget.blur();
+});
 
 function spielstandZeigen() {
   const feld = document.getElementById('spielstand');
@@ -328,7 +350,10 @@ function spielstandZeigen() {
     name.append(punkt, document.createTextNode(zeile.aus ? `${zeile.name} (ausgeschieden)` : zeile.name));
     tr.append(name);
     const v = zeile.vorraete;
+    // Punkte und Zeitalter von jedem (bedienung AC-47), der Rest nur, wo der
+    // Server ihn schickt.
     const werte = [
+      zeile.punkte,
       zeile.zeitalter,
       v ? `${v.bev} / ${v.raum}` : '–',
       v ? v.holz : '–',
@@ -339,7 +364,7 @@ function spielstandZeigen() {
     for (const [i, wert] of werte.entries()) {
       const td = document.createElement('td');
       td.className = 'zahl';
-      if (i > 0) td.dataset.wert = v ? 'ja' : 'nein';
+      if (i > 1) td.dataset.wert = v ? 'ja' : 'nein';
       td.textContent = String(wert);
       tr.append(td);
     }

@@ -1,0 +1,10 @@
+{
+  "spec": "10-strategie/bedienung.md",
+  "ac": "AC-23",
+  "titel": "1366 x 768 mit Buendnis loesen und dem Baumenue des Fuerstentums - alles im Bild, der Hinweis ganz oder gar nicht",
+  "datei": "e2e/tests/strategie-laptop.spec.mjs",
+  "pfad": [
+    "Laptop",
+    "bedienung AC-23: auf 1366 x 768 ragt in jedem Zeitalter nichts aus dem Fenster und kein Text ist halb zu sehen"
+  ]
+}

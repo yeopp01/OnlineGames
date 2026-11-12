@@ -1,0 +1,9 @@
+{
+  "spec": "10-strategie/bedienung.md",
+  "ac": "AC-50",
+  "titel": "Umschalt und Rechtsklick auf zwei weitere Haeuser - gestrichelt hinter dem ersten, jedes wartende mit rotem Ring",
+  "datei": "e2e/tests/strategie-angriffe-reihe.spec.mjs",
+  "pfad": [
+    "bedienung AC-50: mit Umschalt haengen zwei Haeuser hinter dem ersten, rot geringt - die Miliz reisst alle drei nacheinander ein"
+  ]
+}

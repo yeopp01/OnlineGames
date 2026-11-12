@@ -70,6 +70,14 @@ In dieser Reihenfolge, das Erste, was zutrifft:
    während der Partie verborgen ist. Dann ist die Runde ein Beleg oder ein
    Umzug, kein Neubau, und der Test prüft genau die Lücke (sichtbar? ohne
    Server?).
+   **Ein neues Kriterium nach Punkt 6 erst, wenn in keiner Spec mehr ein
+   offenes ohne Sperre steht** — gezählt, nicht erinnert:
+   `` grep -c '`offen`' specs/10-strategie/*.md ``, dann die Titel lesen. Die
+   Runden 194 bis 197 legten vier neue Kriterien in `bedienung.md` an, weil
+   dort die drei übrigen Zeichnungen brauchten; in `bauen.md`,
+   `einheiten-und-befehle.md`, `karte-und-vorraete.md` und `ki.md` standen
+   derweil zehn offene aus den Stufen A bis C ohne Sperre, einige davon
+   längst gebaut und nur nicht belegt (Rückschau nach Runde 198).
 
 **Einen offenen Produktfehler umschiffst du höchstens einmal.** Scheitert ein
 Bild oder Test an einem Fehler, der schon als `offen`-Kriterium dasteht, darf
@@ -267,6 +275,14 @@ Setze die gewählten Kriterien auf `in-arbeit`.
 - **Die kurzen Namen aus der Übertragung** (`h`, `u`, `k`, `art`, `f`) stehen
   als Tafel oben in `e2e/helpers/strategie.mjs` — dort nachsehen statt in
   `welt.js` suchen.
+- **Eine Grenze, die Server und Browser beide kennen müssen, kommt über
+  `werte`** (`mauerMax`, `wegpunkteMax`), nie als zweite Zahl im Browser.
+  Und **der Browser entscheidet nichts nach einem Wert des Servers, der
+  hinter seinen eigenen Klicks herhinkt**: ein Zustand kommt einen Takt
+  später, schnelles Klicken ist schneller. In Runde 191 schrieb der Browser
+  21 statt der 20 des Servers nach (gefunden von der Durchsicht); die
+  Abhilfe schnitt nach `q` ab, und das hinkte — in der Rückschau nach
+  Runde 193 fiel der Fall dazu einmal von zwei Läufen.
 - Ein Import darf nicht heißen wie ein Parameter der umgebenden Funktion
   (`starten(hafen, einstellungen)` hat einen Import `einstellungen`
   überdeckt, Runde 2) — der Fehler zeigt sich erst zur Laufzeit.
@@ -463,7 +479,20 @@ Setze die gewählten Kriterien auf `in-arbeit`.
   breitesten Zustand — dort, wo die Auswahlleiste am längsten ist (ein
   Dorfbewohner mit Baumenü). Nachsehen allein hat die Überdeckung in Runde 47
   erst eine Runde später gefunden. Neue Teile in die Liste der Hilfe
-  aufnehmen.
+  aufnehmen — **das sucht jetzt `tests/waechter-bedienteile.test.mjs`**:
+  jedes direkte Kind von `#spiel` in `public/index.html` steht dort oder,
+  mit Grund, in `UEBER_ALLEM` (Fenster, die man bewusst öffnet). In den
+  Runden 189 bis 192 kamen drei feste Kästen dazu, jedes Mal hing es am
+  Gedächtnis (Rückschau nach Runde 193).
+- **Was der Browser sich merkt (`localStorage`), gilt im Browserlauf als
+  frisch** — jedes Fenster dort ist neu. Ein „einmal je Browser" (die
+  Erklärung der ersten Partie, bedienung AC-21) stünde sonst in jedem Bild
+  und finge Klicks. Die Fixtures `context` und `browser` in
+  `e2e/helpers/seite.mjs` setzen solche Merker per `addInitScript` in
+  **jedem** Fenster, auch in denen, die ein Test selbst öffnet (Gäste aus
+  `partieMit`); wer davon handelt, schaltet es über den Sitzungsspeicher
+  ab, der ein Neuladen überlebt (`erklaerungPruefen`). Ein neuer Merker
+  dieser Art kommt dorthin, nicht in jeden Test (Runde 192).
 - **Stehen auf dem Bild mehrere Figuren, prüft `figurenFrei(page)`** aus
   derselben Hilfe, dass keine zwei näher als ein halbes Feld beieinander
   stehen. Vier Bilder in zehn Runden zeigten „eine Figur mit drei Schwertern"
@@ -499,7 +528,11 @@ Setze die gewählten Kriterien auf `in-arbeit`.
   Klickpunkt an der Körpermitte (`klick`), Kürzel (`k`) und ob der Fußpunkt
   im Bild steht (`imBild`). So liefen in Runde 182 Umschalt-Klick, Rahmen
   und Doppelklick beim ersten Mal grün; vorher schrieb jede Datei ihre
-  eigene Liste.
+  eigene Liste. **Wer auswählt, ohne zu klicken**, nimmt `waehlen(page,
+  ids, { zoom, blick })`, und den Klickpunkt eines Felds, Gebäudes oder
+  einer Einheit gibt `aufSeite(page, { feld | gebaeude | einheit })` —
+  `null`, wenn es nicht mehr da ist. Beide aus der Rückschau nach Runde
+  198; 17 ältere Dateien schreiben dieselben Zeilen noch selbst.
 - **Warten auf Spielzeit** geht über den Zeitraffer (bis 20), nicht über die
   Uhr: wer länger als fünf Sekunden auf etwas wartet, das im Spiel dauert, dreht
   ihn hoch — und rechnet Abstandsgrenzen mit ein, denn ein Zustand fasst dann
@@ -621,7 +654,9 @@ Setze die gewählten Kriterien auf `in-arbeit`.
    <testdatei>` ersetzt genau eine Stelle, lässt laufen und schreibt die Datei
    **immer** zurück, auch wenn der Befehl fällt oder abbricht; der Test muss
    fallen. Mit `--datei <ersatz>` statt der zwei Texte tauscht sie die ganze
-   Datei (etwa gegen `git show HEAD:<datei>`). Nicht von Hand mit Kopie und
+   Datei (etwa gegen `git show HEAD:<datei>`). Mehrzeiliger Text geht mit
+   `--zeilen`: ein geschriebenes `\n` steht für das Zeilenende der Datei
+   (Rückschau nach Runde 198; vorher half nur `--datei` mit einer Kopie). Nicht von Hand mit Kopie und
    `sed`: in Runde 112 schob ein Zeitlimit den Befehl in den Hintergrund,
    bevor das Zurückkopieren lief. Nicht `git stash`: das nimmt den neuen
    Test mit weg, und „grün" heißt dann nichts (Runde 97). Die Durchsicht traf

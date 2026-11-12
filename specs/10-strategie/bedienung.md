@@ -2,7 +2,7 @@
 
 **Bereich:** Strategie
 **Kuerzel:** bedienung
-**Stand:** 40/47 fertig · 7 offen
+**Stand:** 47/50 fertig · 3 offen
 
 ## Zweck
 
@@ -75,7 +75,17 @@ Befehl steht.
   Gebaut mit AC-34 (der Ring wird im Klick selbst gesetzt); belegt, indem
   der Browserfall den Befehl anhält, ehe er hinausgeht: der Ring ist
   trotzdem gezeichnet, die Einheiten laufen erst nach dem Senden.
-- **AC-14** `offen` **Warteschlange mit Umschalt** — Mehrere Ziele hintereinander abarbeiten.
+- **AC-14** `fertig` **Warteschlange mit Umschalt** — Mehrere Ziele hintereinander abarbeiten.
+  Umschalt + Rechtsklick auf freien Boden hängt das Ziel hinten an, wenn die
+  Einheit gerade geht; wer steht, geht sofort los. Ein Befehl ohne Umschalt
+  verwirft die Reihe, ebenso alles, was den Gang unterbricht (Zurückschlagen,
+  Sammeln, Bauen). Höchstens 20 Ziele je Einheit, damit ein Zustand nicht mit
+  jedem Klick wächst (ADR-0005). Eine Gruppe bekommt an jedem Ziel eigene
+  Felder. Im Bild: eine gestrichelte Linie über die wartenden Ziele, an jedem
+  ein Ring. Der Server schickt nur die Zahl (`q`), die Punkte kennt der
+  Browser, der sie geklickt hat. Umschalt auf einen Vorrat, einen Bau oder
+  einen Gegner ist ein Befehl wie ohne — das Anhängen solcher Aufträge
+  stünde als eigenes Kriterium an.
 - **AC-15** `fertig` **Abbrechen mit Esc** — Hebt Auswahl und angefangene Platzierung auf.
 
 ### Rückmeldung
@@ -105,12 +115,22 @@ Befehl steht.
 
 ### Erster Eindruck
 
-- **AC-21** `offen` **Die erste Partie erklärt sich** — Beim ersten Start eine kurze Einblendung:
+- **AC-21** `fertig` **Die erste Partie erklärt sich** — Beim ersten Start eine kurze Einblendung:
   ziehen, rechtsklicken, sammeln. Drei Sätze, wegklickbar.
+  Sie steht links unter der Leiste, nicht auf der Mitte (AC-41), und hält
+  die Partie nicht an. „Verstanden“ schließt sie, und der Browser merkt es
+  sich — wer sie nie wegklickt, sieht sie in der nächsten Partie wieder.
+  Gemerkt wird im Browser, nicht am Konto: wer mitspielt, hat keins.
 - **AC-22** `fertig` **Tastenübersicht** — Auf `?` oder `F1`.
-- **AC-23** `offen` **Läuft auf einem Laptop-Bildschirm** — 1366 × 768 ohne Abschneiden. Die
-  Bedienung auf dem Handy ist ausdrücklich **kein** Ziel — ein Strategiespiel
-  mit Rahmenauswahl braucht eine Maus.
+- **AC-23** `fertig` **Läuft auf einem Laptop-Bildschirm** — 1366 × 768 ohne Abschneiden: in
+  jedem Zeitalter, mit dem Baumenü eines Dorfbewohners, dem Dorfzentrum und
+  einer Gruppe aus jeder Art, ragt kein Bedienteil aus dem Fenster oder liegt
+  auf einem anderen; Tastenübersicht und Spielstand stehen ganz im Bild; und
+  kein Text ist zum Teil zu sehen und zum Teil nicht — was nicht passt, fehlt
+  ganz (der Hinweis oben) oder wird nach Silben getrennt (lange Namen im
+  Baumenü). Ein Knopf zählt als Rahmen. Die Bedienung auf dem Handy ist
+  ausdrücklich **kein** Ziel — ein Strategiespiel mit Rahmenauswahl braucht
+  eine Maus.
 
 ### Stufe A — Wirtschaft bedienen
 
@@ -292,11 +312,68 @@ aufgelistet), AC-11 (Übersichtskarte — auf 120 × 120 unverzichtbar), AC-15
   Farbe: zwei Spieler desselben Hauses unterscheidet die Farbe ihres
   Platzes. Bei Zoom 1 sind die fünf Wappen voneinander unterscheidbar.
   Die Wappen kommen aus der Blender-Sitzung.
-- **AC-47** `offen` **Punkte für alle sichtbar** — Je Spieler eine Punktzahl
+- **AC-47** `fertig` **Punkte für alle sichtbar** — Je Spieler eine Punktzahl
   in der Tafel aus AC-20, auch für Gegner: sie verrät, wer vorne liegt, nicht
   seine Vorräte. Gerechnet auf dem Server aus dem, was über die Partie zählt
-  (gesammelt, ausgebildet, erforscht, Zeitalter); wie genau, steht im
-  Kriterium, bevor gebaut wird.
+  (gesammelt, ausgebildet, erforscht, Zeitalter). **Die Rechnung:**
+  ein Punkt je 10 Rohstoffe, die abgeladen oder durch Handel gutgeschrieben
+  wurden (dieselbe Zahl wie „gesammelt“ auf der Tafel am Ende), ein Punkt je
+  10 Rohstoffe, die die ausgebildeten Einheiten gekostet haben, und ein Punkt
+  je 5 Rohstoffe, die erforschte Verbesserungen und erreichte Aufstiege
+  gekostet haben — Wissen zählt doppelt, wie im Original. Abgerundet, am
+  Anfang 0; die drei Dorfbewohner vom Start und bekehrte Einheiten zählen
+  nicht, Verluste ziehen nichts ab (Punkte für Siege im Kampf sind nicht
+  Teil dieses Kriteriums). Ein Dorfbewohner bringt 5 Punkte, der Aufstieg
+  ins Lehen 100. **Messbar:** ein Regeltest rechnet die Punkte nach einer
+  Ausbildung, einer Verbesserung und einem Aufstieg aus den Daten nach; über
+  das Netz kommt die Zahl auch beim Gegner an, dessen Vorräte im Nebel
+  fehlen; im Bild steht sie in der Tafel auf `Tab` für jeden Spieler.
+- **AC-48** `fertig` **Mehrere Bauten mit Umschalt** — Wer beim Setzen
+  einer Baustelle Umschalt hält, behält den Bauplatz in der Hand und setzt
+  die nächste; erst ein Klick ohne Umschalt, Rechtsklick oder Esc legt ihn
+  weg. Wer von den Bauleuten schon baut, baut die neue Baustelle danach —
+  hinten an seine Reihe, wie die Felder einer gezogenen Mauer (bauen
+  AC-30); wer nicht baut, beginnt sofort. Jede Baustelle wird beim Setzen
+  bezahlt wie ohne Umschalt, die Reihe braucht deshalb keine eigene Grenze
+  (ADR-0005: sie kostet Rohstoffe, nicht nur Klicks). Ein Klick ohne
+  Umschalt verwirft die Reihe nicht, was schon steht, bleibt Baustelle —
+  wie im Original. Fortsetzung von AC-14: dort hängt Umschalt Wege an.
+  Mauern bleiben, wie sie sind: gezogen ist schon eine Reihe. **Messbar:**
+  ein Dorfbewohner, der ein Haus baut, baut mit Umschalt zwei weitere der
+  Reihe nach, ohne neuen Befehl; ohne Umschalt geht er sofort zur neuen.
+  Im Browser bleibt der Bauplatz nach dem Klick mit Umschalt in der Hand,
+  und drei Baustellen stehen im Bild.
+- **AC-49** `fertig` **Punkte für Siege im Kampf** — Zu den Punkten aus
+  AC-47 kommt ein Punkt je 5 Rohstoffe, die fremde Einheiten und Gebäude
+  gekostet haben, die man getötet oder zerstört hat — wie der Wert des
+  Militärs im Original (ein Fünftel des Vernichteten). Gezählt wird nur gegen
+  Gegner (`welt.feindlich`): wer eigene oder verbündete trifft, etwa mit dem
+  Stein eines Mangonels, bekommt nichts. Gutgeschrieben wird dem Besitzer
+  des Schlags, der das Ziel fallen lässt — fallen zwei Schläge in denselben
+  Takt, dem ersten in der Reihe des Servers, so dass dieselbe Partie immer
+  gleich zählt. Eine Baustelle zählt mit ihren vollen Kosten, ein Feld
+  Mauer mit seinen. Bekehrungen und Aufgeben zählen nicht: dort fällt kein
+  Schlag. Der Verlierer verliert keine Punkte. **Messbar:** ein Regeltest
+  lässt eine Miliz einen Dorfbewohner und ein Haus des Gegners zerstören und
+  rechnet die Punkte aus den Daten nach; ein Mangonel, der eigene trifft,
+  bringt nichts; im Bild steht der Sieger in der Tafel auf `Tab` vorn.
+- **AC-50** `fertig` **Angriffe hintereinander mit Umschalt** — Umschalt
+  und Rechtsklick auf einen Gegner hängt ihn an, wenn die Einheit gerade
+  auf Befehl angreift; fällt ihr Ziel, nimmt sie das nächste der Reihe,
+  ohne neuen Befehl — etwa eine Ramme, die drei Häuser nacheinander
+  einreißt. Wer steht, geht, sammelt oder sich nur von selbst wehrt, greift
+  sofort an, wie ohne Umschalt. Was inzwischen gefallen, bekehrt oder kein
+  Gegner mehr ist, wird übersprungen; ist ein Ziel unerreichbar, kommt das
+  nächste. Ein Befehl ohne Umschalt verwirft die Reihe, ebenso alles, was
+  den Angriff beendet. Höchstens 20 wartende Ziele wie bei AC-14, ein Ziel
+  steht nur einmal darin. Im Bild dieselbe gestrichelte Linie wie bei
+  AC-14, an jedem wartenden Gegner ein roter Ring; der Server schickt nur
+  die Zahl (`q`). Fortsetzung von AC-14 und AC-48; Sammeln mit Umschalt
+  bleibt ein Befehl wie ohne. **Messbar:** ein Regeltest lässt eine Miliz
+  zwei angehängte Häuser nacheinander einreißen, überspringt ein
+  inzwischen gefallenes und verwirft die Reihe mit einem Befehl ohne
+  Umschalt; im Browser stehen nach drei Klicks mit Umschalt zwei rote
+  Ringe in der Linie, und alle drei Häuser fallen.
 
 ## Grenzfaelle
 

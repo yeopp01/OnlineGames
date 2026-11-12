@@ -7,6 +7,12 @@
 //   npm run gegenprobe -- <datei> <alt> <neu> -- <befehl ...>
 //   npm run gegenprobe -- server/spiele/strategie/ki.js "this.erkunden(eigene);" "" -- node --test tests/strategie-ki-sicht.test.mjs
 //   npm run gegenprobe -- <datei> --datei <ersatz.js> -- <befehl ...>   die ganze Datei tauschen
+//   npm run gegenprobe -- <datei> --zeilen "<alt mit \n>" "<neu mit \n>" -- <befehl ...>
+//
+// Mehrzeiliger Text kommt nicht heil durch `npm run` (Windows zerlegt die
+// Zeilen); mit `--zeilen` steht ein geschriebenes `\n` fuer das Zeilenende
+// der Datei (Runde 197: eine Zeile stand zweimal, mit anderer Einrueckung,
+// und war nur mit der Zeile davor eindeutig).
 //
 // `alt` muss genau einmal in der Datei stehen, sonst passiert nichts. Am Ende
 // steht, ob der Befehl gefallen ist - bei einer Gegenprobe ist das der
@@ -30,6 +36,7 @@ if (trenner < 2 || trenner === argumente.length - 1) {
   // mehrzeilige Ersetzung brach still ab, die Ausgabe war gefiltert).
   console.error('Gegenprobe: NICHT GELAUFEN - Aufruf: npm run gegenprobe -- <datei> <alt> <neu> -- <befehl ...>');
   console.error('    oder npm run gegenprobe -- <datei> --datei <ersatz> -- <befehl ...>');
+  console.error('    oder npm run gegenprobe -- <datei> --zeilen "<alt mit \\n>" "<neu mit \\n>" -- <befehl ...>');
   process.exit(2);
 }
 const [datei, ...aenderung] = argumente.slice(0, trenner);
@@ -42,7 +49,11 @@ let nachher;
 if (aenderung[0] === '--datei') {
   nachher = readFileSync(resolve(WURZEL, aenderung[1]), 'utf8');
 } else {
-  const [alt, neu = ''] = aenderung;
+  // `--zeilen`: ein geschriebenes \n ist ein Zeilenende, wie es die Datei hat.
+  const zeilen = aenderung[0] === '--zeilen';
+  const ende = vorher.includes('\r\n') ? '\r\n' : '\n';
+  const lesen = (text) => (zeilen ? text.replaceAll('\\n', ende) : text);
+  const [alt, neu = ''] = (zeilen ? aenderung.slice(1) : aenderung).map(lesen);
   const anzahl = vorher.split(alt).length - 1;
   if (anzahl !== 1) {
     console.error(`Gegenprobe: NICHT GELAUFEN - "${alt}" steht ${anzahl}-mal in ${datei}, nicht genau einmal; nichts geaendert.`);

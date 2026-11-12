@@ -666,7 +666,12 @@ export class Auswahlleiste {
       eintrag.title = `${anzahl} ${FIGUREN[art]?.name || art}`;
       gruppe.append(eintrag);
     }
-    this.wurzel.append(element('div', 'auswahl-kopf', `${auswahl.length} ausgewählt`), gruppe);
+    // Kopf und Gruppe als ein Block mit Hoechstbreite, in dem die Gruppe
+    // umbricht (bedienung AC-23): nebeneinander drueckten vierzehn Arten das
+    // Baumenue auf eine Spalte, und die Leiste ragte oben aus dem Fenster.
+    const block = element('div', 'gruppenblock');
+    block.append(element('div', 'auswahl-kopf', `${auswahl.length} ausgewählt`), gruppe);
+    this.wurzel.append(block);
   }
 
   // Das Baumenue (bedienung AC-25): ein Knopf je Gebaeude, ein Klick beginnt

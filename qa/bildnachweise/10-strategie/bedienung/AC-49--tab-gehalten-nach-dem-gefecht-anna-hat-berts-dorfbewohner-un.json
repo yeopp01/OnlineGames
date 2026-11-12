@@ -1,0 +1,9 @@
+{
+  "spec": "10-strategie/bedienung.md",
+  "ac": "AC-49",
+  "titel": "Tab gehalten nach dem Gefecht: Anna hat Berts Dorfbewohner und Haus vernichtet und steht mit 15 Punkten vorn, Bert bei 0",
+  "datei": "e2e/tests/strategie-punkte-sieg.spec.mjs",
+  "pfad": [
+    "bedienung AC-49: wer Dorfbewohner und Haus des Gegners vernichtet, steht in der Tafel vorn - mit einem Fuenftel ihrer Kosten"
+  ]
+}

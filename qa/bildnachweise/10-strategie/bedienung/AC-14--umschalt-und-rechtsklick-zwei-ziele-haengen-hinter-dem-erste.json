@@ -1,0 +1,10 @@
+{
+  "spec": "10-strategie/bedienung.md",
+  "ac": "AC-14",
+  "titel": "Umschalt und Rechtsklick - zwei Ziele haengen hinter dem ersten, gestrichelt verbunden, jedes wartende mit Ring",
+  "datei": "e2e/tests/strategie-warteschlange.spec.mjs",
+  "pfad": [
+    "Warteschlange",
+    "bedienung AC-14: mit Umschalt haengt ein Rechtsklick ein Ziel an, die Linie zeigt die Reihe, und der Dorfbewohner geht sie der Reihe nach ab"
+  ]
+}

@@ -23,6 +23,9 @@ const SUCHWEITE_ERSATZ = 12;
 // So lange liegt ein Toter noch im Bild, bevor er aus dem Zustand faellt
 // (kampf AC-10): lang genug, um zu sehen, was passiert ist.
 const TOT_SEKUNDEN = 2;
+// So viele Ziele haengt Umschalt hoechstens an einen Gang (bedienung AC-14):
+// eine Grenze, damit ein Zustand nicht mit jedem Klick waechst (ADR-0005).
+const WEGPUNKTE_MAX = 20;
 // Spielraum auf die Reichweite, damit ein Nahkaempfer auch schraeg (1,41
 // Felder) zuschlaegt; am Rand einer Grundflaeche messen wir genauer.
 const SCHLAGRAND = 0.5;
@@ -179,6 +182,19 @@ function untaetigeListe(welt, spielerId) {
   return ids.length ? { u: ids } : {};
 }
 
+// Alle Rohstoffe einer Kostenangabe zusammen - Holz, Nahrung, Gold und Stein
+// zaehlen fuer die Punkte gleich (bedienung AC-47).
+function kostenSumme(kosten) {
+  let summe = 0;
+  for (const menge of Object.values(kosten || {})) summe += menge;
+  return summe;
+}
+
+// Die Punkte im Zustand, nur wenn es welche gibt - ein Zustand bleibt klein.
+function punkteFeld(punkte) {
+  return punkte > 0 ? { pk: punkte } : {};
+}
+
 class Welt {
   /**
    * @param {{id: string, name: string}[]} spielerListe
@@ -242,6 +258,8 @@ class Welt {
       // sonst alle null.
       gesammelt: { holz: 0, nahrung: 0, gold: 0, stein: 0 },
       ausgebildet: 0, // Einheiten, die er aus einem Gebaeude bekommen hat
+      ausgebildetWert: 0, // was sie gekostet haben, fuer die Punkte (bedienung AC-47)
+      besiegtWert: 0, // was getoetete und zerstoerte des Gegners gekostet haben (bedienung AC-49)
       verloren: 0, // eigene Einheiten, die gefallen sind
       // Das Team (spielziel AC-14): 1 bis 4 oder keins. Wer keins hat,
       // spielt gegen alle.
@@ -497,6 +515,24 @@ class Welt {
     return EINHEITEN[art] || VERBESSERUNGEN[art] || AUFSTIEGE[art];
   }
 
+  /**
+   * Die Punkte eines Spielers (bedienung AC-47): ein Punkt je 10 gesammelte
+   * Rohstoffe, je 10 Rohstoffe, die ausgebildete Einheiten gekostet haben, und
+   * je 5, die Verbesserungen und Aufstiege gekostet haben - Wissen zaehlt
+   * doppelt. Dazu je 5 Rohstoffe, die vernichtete Einheiten und Gebaeude des
+   * Gegners gekostet haben (bedienung AC-49). Alles aus Zaehlern, die waehrend
+   * der Partie wachsen; nichts geht zurueck, wenn eine Einheit faellt.
+   */
+  punkte(spieler) {
+    const gesammelt = kostenSumme(spieler.gesammelt);
+    let wissen = 0;
+    for (const art of spieler.verbesserungen) wissen += kostenSumme(VERBESSERUNGEN[art].kosten);
+    for (const aufstieg of Object.values(AUFSTIEGE)) {
+      if (aufstieg.stufe <= spieler.zeitalter) wissen += kostenSumme(aufstieg.kosten);
+    }
+    return Math.floor((gesammelt + spieler.ausgebildetWert) / 10 + (wissen + spieler.besiegtWert) / 5);
+  }
+
   // Ein Auftrag, der keinen Platz in der Bevoelkerung braucht: Verbesserung
   // oder Aufstieg. Er laeuft auch, wenn die Bevoelkerung voll ist.
   ohnePlatz(art) {
@@ -615,6 +651,8 @@ class Welt {
       weg: [],
       auftrag: null, // { art: 'gehen' | 'sammeln', feld }
       angriffslauf: null, // Marschziel, solange ein Angriffslauf laeuft (kampf AC-4)
+      wegpunkte: [], // die naechsten Ziele eines Gangs, mit Umschalt angehaengt (bedienung AC-14)
+      angriffe: [], // die naechsten Angriffsziele, mit Umschalt angehaengt (bedienung AC-50)
       ladung: 0,
       ladungsart: null,
       sammelt: false, // steht am Vorrat und arbeitet
@@ -847,7 +885,7 @@ class Welt {
 
   // Ein Bauauftrag: der Platz wird geprueft, die Kosten gehen sofort ab
   // (bauen AC-5), die Baustelle entsteht, die Dorfbewohner gehen hin (AC-1).
-  bauen(spielerId, einheitIds, art, ziel) {
+  bauen(spielerId, einheitIds, art, ziel, anhaengen = false) {
     if (!Array.isArray(einheitIds) || !ziel || !GEBAEUDE[art]) return { fehler: 'Das lässt sich nicht bauen.' };
     const bauer = einheitIds.slice(0, 200)
       .map((id) => this.einheiten.get(id))
@@ -873,7 +911,16 @@ class Welt {
     // baute, geht zum naechsten Feld seiner Mauer (welt.bauenWeiter).
     if (alt) this.gebaeudeZerstoeren(alt);
     const baustelle = this.gebaeudeAnlegen(spielerId, art, x, y, false);
-    for (const einheit of bauer) this.bauenBeginnen(einheit, baustelle);
+    for (const einheit of bauer) {
+      // Mit Umschalt (bedienung AC-48): wer schon baut, baut das danach -
+      // hinten an seine Reihe, wie die Felder einer Mauer. Eine eigene Grenze
+      // braucht sie nicht, jede Baustelle ist schon bezahlt.
+      if (anhaengen && einheit.auftrag?.art === 'bauen') {
+        einheit.auftrag.folge = [...(einheit.auftrag.folge || []), baustelle.id];
+      } else {
+        this.bauenBeginnen(einheit, baustelle);
+      }
+    }
     return { gebaeude: baustelle.id };
   }
 
@@ -1059,7 +1106,7 @@ class Welt {
       case 'abbrechen':
         return this.abbrechen(spielerId, nachricht.gebaeude, nachricht.platz);
       case 'bauen':
-        return this.bauen(spielerId, nachricht.einheiten, nachricht.art, nachricht.ziel);
+        return this.bauen(spielerId, nachricht.einheiten, nachricht.art, nachricht.ziel, Boolean(nachricht.anhaengen));
       case 'mauer':
         return this.mauerZiehen(spielerId, nachricht.einheiten, nachricht.art, nachricht.von, nachricht.bis);
       case 'abreissen':
@@ -1073,7 +1120,8 @@ class Welt {
       case 'kuendigen':
         return this.kuendigen(spielerId);
       default:
-        return this.befehl(spielerId, nachricht.einheiten, nachricht.ziel, Boolean(nachricht.angriffslauf));
+        return this.befehl(spielerId, nachricht.einheiten, nachricht.ziel, Boolean(nachricht.angriffslauf),
+          Boolean(nachricht.anhaengen));
     }
   }
 
@@ -1356,6 +1404,7 @@ class Welt {
     // Fuer die Tafel (spielziel AC-8): die drei vom Anfang zaehlen nicht mit,
     // die hat niemand ausgebildet.
     spieler.ausgebildet++;
+    spieler.ausgebildetWert += kostenSumme(this.auftragWerte(art).kosten);
     bevoelkerung.set(spieler.id, belegt + 1);
     // Zum Sammelpunkt; liegt er auf einem Vorrat, wird dort gleich gesammelt (bauen AC-13).
     if (gebaeude.sammelpunkt) this.befehl(spieler.id, [neu.id], gebaeude.sammelpunkt);
@@ -1480,7 +1529,7 @@ class Welt {
    *   kommt er als Angabe mit. Sammeln, Bauen und Schafe sind dabei aus: wer
    *   zum Gefecht laeuft, faengt unterwegs nicht an zu holzen.
    */
-  befehl(spielerId, einheitIds, ziel, angriffslauf = false) {
+  befehl(spielerId, einheitIds, ziel, angriffslauf = false, anhaengen = false) {
     if (!Array.isArray(einheitIds) || !ziel) return;
     const g = this.karte.groesse;
     const zx = Math.round(Number(ziel.x));
@@ -1505,6 +1554,9 @@ class Welt {
     // Ein eigenes Schaf in der Naehe des Klicks (einheiten AC-17) - aber nur,
     // wenn auf dem Feld selbst nichts zu sammeln ist: neben Beeren weiden Schafe.
     const schaf = sammeln || angriffslauf ? null : this.tierAn(spielerId, Number(ziel.x), Number(ziel.y));
+    // Ein Gang auf freien Boden laesst sich anhaengen (bedienung AC-14) -
+    // alles andere ist ein Befehl wie ohne Umschalt.
+    const nurGehen = !angriffslauf && !sammeln && !baustelle && !feind && !schaf;
     // Ein Befehl fuer viele (einheiten AC-20): wer geht, bekommt ein eigenes Feld
     // um das Ziel; wer sammelt, einen eigenen Vorrat derselben Art daneben.
     const gruppe = einheitIds.slice(0, 200).map((id) => this.einheiten.get(id)).filter((e) => e && e.besitzer === spielerId);
@@ -1523,6 +1575,32 @@ class Welt {
       }
       const einheit = this.einheiten.get(id);
       if (!einheit || einheit.besitzer !== spielerId) continue;
+      // Mit Umschalt kommt der Gang hinten an die Reihe (bedienung AC-14) -
+      // fuer den, der gerade geht. Wer steht oder arbeitet, geht gleich los.
+      // Jeder bekommt um den Punkt sein eigenes Feld, gewaehlt vom vorigen
+      // Ziel aus, wie beim ersten Gang (einheiten AC-20).
+      // Ein Gegner kommt hinten an die Reihe der Angriffe (bedienung AC-50) -
+      // fuer den, der auf Befehl angreift. Wer sich von selbst wehrt (`heimat`)
+      // oder im Angriffslauf kaempft, hat keinen Befehl, an den sich etwas
+      // haengen liesse: fuer ihn ist es ein Befehl wie ohne Umschalt.
+      const hinten = feind && !EINHEITEN[einheit.art].nurGebaeude ? feind : feindBau;
+      if (anhaengen && hinten && einheit.auftrag?.art === 'angreifen' && !einheit.auftrag.heimat
+        && !einheit.angriffslauf && this.einheitenwert(einheit.besitzer, einheit.art, 'angriff') > 0) {
+        const schon = einheit.auftrag.ziel === hinten.id || einheit.angriffe.some((a) => a.ziel === hinten.id);
+        if (!schon && einheit.angriffe.length < WEGPUNKTE_MAX) {
+          einheit.angriffe.push({ ziel: hinten.id, gebaeude: hinten === feindBau });
+        }
+        continue;
+      }
+      if (anhaengen && nurGehen && einheit.auftrag?.art === 'gehen' && !einheit.angriffslauf) {
+        if (einheit.wegpunkte.length >= WEGPUNKTE_MAX) continue;
+        aufstellung ??= this.aufstellungUm({ x: zx, y: zy }, gruppe.length);
+        const von = einheit.wegpunkte.at(-1) || einheit.auftrag.feld;
+        einheit.wegpunkte.push(this.naechstesFreies(von, aufstellung) || { x: zx, y: zy });
+        continue;
+      }
+      einheit.wegpunkte = [];
+      einheit.angriffe = [];
       this.farmVerlassen(einheit);
       einheit.sammelt = false;
       einheit.baut = false;
@@ -2348,6 +2426,23 @@ class Welt {
    * Nach einem Gefecht unterwegs geht es weiter zum Marschziel (kampf AC-4).
    * Ohne Angriffslauf tut das nichts - dann bleibt stehen, wer gekaempft hat.
    */
+  /**
+   * Das naechste Ziel aus der Reihe der Angriffe (bedienung AC-50): wer
+   * inzwischen gefallen, fort oder kein Gegner mehr ist, wird uebersprungen.
+   *
+   * @returns {boolean} ob ein neuer Angriff begonnen hat
+   */
+  naechsterAngriff(einheit) {
+    while (einheit.angriffe.length) {
+      const { ziel: id, gebaeude } = einheit.angriffe.shift();
+      const ziel = gebaeude ? this.gebaeude.get(id) : this.einheiten.get(id);
+      if (!ziel || ziel.tot || !this.feindlich(einheit.besitzer, ziel.besitzer)) continue;
+      this.angriffBeginnen(einheit, ziel, gebaeude);
+      return true;
+    }
+    return false;
+  }
+
   marschFortsetzen(einheit) {
     if (!einheit.angriffslauf) return;
     const feld = einheit.angriffslauf;
@@ -2372,6 +2467,8 @@ class Welt {
         this.angriffBeginnen(einheit, dahinter, danach.gebaeude, null, auftrag.heimat);
         return;
       }
+      // Steht noch ein Gegner in der Reihe, geht es dorthin (bedienung AC-50).
+      if (this.naechsterAngriff(einheit)) return;
       einheit.auftrag = null;
       einheit.weg = [];
       this.marschFortsetzen(einheit);
@@ -2388,6 +2485,7 @@ class Welt {
       const danach = auftrag.danach;
       const dahinter = danach.gebaeude ? this.gebaeude.get(danach.ziel) : this.einheiten.get(danach.ziel);
       if (!dahinter || dahinter.tot) {
+        if (this.naechsterAngriff(einheit)) return;
         einheit.auftrag = null;
         einheit.weg = [];
         this.marschFortsetzen(einheit);
@@ -2494,7 +2592,8 @@ class Welt {
           this.angriffBeginnen(einheit, mauer, true, null, auftrag.heimat);
           einheit.auftrag.danach = danach;
           einheit.auftrag.mauernStand = this.mauernGefallen || 0;
-        } else {
+        } else if (!this.naechsterAngriff(einheit)) {
+          // Unerreichbar: das naechste Ziel der Reihe (bedienung AC-50), sonst steht er.
           einheit.auftrag = null;
         }
       }
@@ -2705,14 +2804,29 @@ class Welt {
       if (gebaeude) {
         if (!this.gebaeude.has(ziel.id)) continue;
         this.gebaeudeGeaendert(ziel);
-        if (ziel.leben <= 0) this.gebaeudeZerstoeren(ziel);
+        if (ziel.leben <= 0) {
+          this.siegZaehlen(angreifer, ziel, GEBAEUDE[ziel.art].kosten);
+          this.gebaeudeZerstoeren(ziel);
+        }
       } else if (ziel.leben <= 0 && !ziel.tot) {
+        this.siegZaehlen(angreifer, ziel, EINHEITEN[ziel.art].kosten);
         this.einheitSterben(ziel);
       } else {
         this.wehren(ziel, angreifer);
       }
     }
     this.schlaege = [];
+  }
+
+  /**
+   * Punkte fuer Siege im Kampf (bedienung AC-49): dem Besitzer des Schlags,
+   * der das Ziel fallen laesst, die Kosten des Ziels - nur gegen Gegner. Wer
+   * eigene oder verbuendete trifft (der Stein eines Mangonels), bekommt nichts.
+   */
+  siegZaehlen(angreifer, ziel, kosten) {
+    if (!angreifer || !this.feindlich(angreifer.besitzer, ziel.besitzer)) return;
+    const sieger = this.spielerVon(angreifer.besitzer);
+    if (sieger) sieger.besiegtWert += kostenSumme(kosten);
   }
 
   /**
@@ -2775,6 +2889,8 @@ class Welt {
     einheit.gefallen = this.takt;
     einheit.auftrag = null;
     einheit.weg = [];
+    einheit.wegpunkte = [];
+    einheit.angriffe = [];
     einheit.sammelt = false;
     einheit.baut = false;
     einheit.bekehrt = false;
@@ -3087,6 +3203,7 @@ class Welt {
     einheit.auftrag = null;
     einheit.angriffslauf = null;
     einheit.weg = [];
+    einheit.angriffe = [];
     einheit.sammelt = false;
     einheit.baut = false;
     einheit.leben = Math.min(einheit.leben, this.einheitenwert(neuerBesitzer, einheit.art, 'leben'));
@@ -3098,7 +3215,7 @@ class Welt {
       if (!this.feindlich(andere.besitzer, neuerBesitzer) && a?.art === 'angreifen' && !a.gebaeude && a.ziel === einheit.id) {
         andere.auftrag = null;
         andere.weg = [];
-        this.marschFortsetzen(andere);
+        if (!this.naechsterAngriff(andere)) this.marschFortsetzen(andere);
       }
     }
     // Ein Schlag aus diesem Takt, der noch nicht abgerechnet ist, trifft
@@ -3306,6 +3423,13 @@ class Welt {
       if (this.takt - einheit.gefallen >= TOT_SEKUNDEN * TAKTE_PRO_SEKUNDE) this.einheiten.delete(einheit.id);
       return;
     }
+    // Die Reihe gilt nur fuer einen Gang: wer unterwegs etwas anderes tut -
+    // getroffen zurueckschlaegt, ausweicht, gerufen wird -, vergisst sie,
+    // statt spaeter alte Ziele abzulaufen (bedienung AC-14).
+    if (einheit.wegpunkte.length && einheit.auftrag?.art !== 'gehen') einheit.wegpunkte = [];
+    // Ebenso die Reihe der Angriffe: sie gilt nur, solange angegriffen wird
+    // (bedienung AC-50).
+    if (einheit.angriffe.length && einheit.auftrag?.art !== 'angreifen') einheit.angriffe = [];
     // Angreifen geht vor dem Laufen: wer in Reichweite ist, schlaegt zu, statt
     // seinen Weg zu Ende zu gehen (kampf AC-1).
     if (einheit.auftrag?.art === 'angreifen') {
@@ -3335,6 +3459,14 @@ class Welt {
     // Einheit fuer die Wache ewig als beschaeftigt und wehrt sich nie mehr
     // (kampf AC-2) - gefunden beim Bau des Angriffslaufs, Runde 67.
     if (einheit.auftrag.art === 'gehen') {
+      // Steht noch ein Ziel in der Reihe, geht es dorthin weiter
+      // (bedienung AC-14).
+      if (einheit.wegpunkte.length) {
+        const feld = einheit.wegpunkte.shift();
+        einheit.auftrag = { art: 'gehen', feld };
+        einheit.weg = this.wegNach(einheit, feld);
+        return;
+      }
       einheit.auftrag = null;
       einheit.angriffslauf = null;
       return;
@@ -3582,6 +3714,10 @@ class Welt {
         // Ein Karren auf der Strecke (einheiten AC-40): Heimat, Ziel und das
         // Gold je Fahrt - die Leiste nennt sie.
         ...(e.auftrag?.art === 'handel' ? { hd: this.streckeFuerDraht(e) } : {}),
+        // Wie viele Ziele noch in der Reihe stehen (bedienung AC-14, AC-50) -
+        // die Punkte selbst kennt der Browser, der sie geklickt hat. Gaenge
+        // und Angriffe stehen nie zugleich in einer Reihe.
+        ...(e.wegpunkte.length || e.angriffe.length ? { q: e.wegpunkte.length + e.angriffe.length } : {}),
         // Gefallen: der Browser legt ihn hin, bis der Server ihn nimmt
         // (kampf AC-10).
         ...(e.tot ? { s: 1 } : {}),
@@ -3619,6 +3755,8 @@ class Welt {
         a: this.arbeiterVon(s.id),
         // Ausgeschieden, nur wenn es zutrifft (spielziel AC-5).
         ...(s.aus ? { aus: 1 } : {}),
+        // Die Punkte (bedienung AC-47), sobald es welche gibt.
+        ...punkteFeld(this.punkte(s)),
         // Ein neuer Angriff auf ihn, mit Ort (kampf AC-14) - einmal.
         ...(s.angriff?.neu ? { m: [Math.round(s.angriff.x), Math.round(s.angriff.y)] } : {}),
       })),
@@ -3777,8 +3915,11 @@ class Welt {
       // nicht ihre Vorraete und ihre Untaetigen. Wer mit ihm die Sicht teilt,
       // zeigt ihm dazu Vorraete und Bevoelkerung - fuer die Tafel auf `Tab`
       // (bedienung AC-20); Untaetige, Arbeiter und Angriffe bleiben seine.
+      // Die Punkte sieht jeder (bedienung AC-47): sie sagen, wer vorne liegt,
+      // nicht womit.
       spieler: voll.spieler.map((s) => (s.id === id ? s : {
         id: s.id, ...(s.aus ? { aus: 1 } : {}), ...(s.z ? { z: s.z } : {}), ...(s.kw ? { kw: s.kw } : {}),
+        ...punkteFeld(s.pk),
         ...(this.teiltSicht(id, s.id) ? {
           holz: s.holz, nahrung: s.nahrung, gold: s.gold, stein: s.stein, bev: s.bev, raum: s.raum,
         } : {}),
@@ -3955,6 +4096,10 @@ class Welt {
         klassen: KLASSEN,
         // Wie lang eine gezogene Mauer hoechstens ist (bauen AC-30).
         mauerMax: MAUER_MAX,
+        // Wie viele Ziele mit Umschalt hoechstens warten (bedienung AC-14) -
+        // der Browser zeichnet die Reihe und darf nicht mehr behalten, als
+        // der Server annimmt (Durchsicht nach Runde 191).
+        wegpunkteMax: WEGPUNKTE_MAX,
         // Die Zeitalter und was ein Aufstieg kostet (bauen AC-23, bedienung AC-33).
         zeitalter: ZEITALTER,
         aufstiege: AUFSTIEGE,

@@ -1,0 +1,9 @@
+{
+  "spec": "10-strategie/bauen.md",
+  "ac": "AC-17",
+  "titel": "Ein angeschlagenes Haus gewaehlt - die Leiste zeigt sein Leben als Balken und Zahl, 220 von 550",
+  "datei": "e2e/tests/strategie-zerstoerung.spec.mjs",
+  "pfad": [
+    "bauen AC-17 / bauen AC-18: das Haus traegt sein Leben in der Leiste - faellt es, steht die Bevoelkerung oben ueber der Grenze, und keiner ist gestorben"
+  ]
+}

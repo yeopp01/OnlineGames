@@ -1,0 +1,10 @@
+{
+  "spec": "10-strategie/bedienung.md",
+  "ac": "AC-47",
+  "titel": "Tab gehalten: Punkte in der zweiten Spalte - Anna 0, Bert 50, Cem als Gegner 124, seine Vorraete nur Striche",
+  "datei": "e2e/tests/strategie-spielstand.spec.mjs",
+  "pfad": [
+    "Spielstand",
+    "bedienung AC-47: in der Tafel stehen Punkte fuer jeden - auch fuer den Gegner, dessen Vorraete fehlen"
+  ]
+}
