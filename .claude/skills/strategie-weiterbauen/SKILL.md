@@ -51,6 +51,16 @@ In dieser Reihenfolge, das Erste, was zutrifft:
 5. Sonst das **nächste `offen`-Kriterium der aktuellen Stufe**, das nichts
    Ungebautes voraussetzt. Bei Wahl: das, welches am frühesten etwas im
    Browser Spielbares ergibt.
+6. **Ist die aktuelle Stufe von außen gesperrt** — jedes offene Kriterium
+   wartet auf eine Frage an den Benutzer oder auf eine fremde Sitzung —,
+   dann ein `offen`-Kriterium einer **früheren** Stufe, das nichts
+   Ungebautes voraussetzt; zuerst aus `bedienung.md`, weil dort Spielbares
+   liegt, das jede Partie braucht. Die Rundenzeile sagt, dass und warum vom
+   Fahrplan abgewichen wurde, und der Steuerstand nennt den Kandidaten der
+   nächsten Runde. In Runde 180 stand dort nur „Arbeit wählen nach
+   Abschnitt 1", und Abschnitt 1 hatte für diesen Fall keine Antwort; die
+   Runden 181 und 182 bauten dann Gruppentasten, Umschalt und Doppelklick
+   (Rückschau nach Runde 183).
 
 **Einen offenen Produktfehler umschiffst du höchstens einmal.** Scheitert ein
 Bild oder Test an einem Fehler, der schon als `offen`-Kriterium dasteht, darf
@@ -63,6 +73,32 @@ das vier Fassungen eines Bildes (Rückschau nach Runde 88).
 **Zuschnitt:** Eine Runde ist ein Kriterium, oder zwei bis drei, die nur
 zusammen Sinn ergeben. Merkst du beim Bauen, dass es größer ist: Kriterium
 teilen (neue Nummern), das erste Stück fertigmachen.
+
+**Ein Kriterium, das einen Mangel beheben soll, misst ihn zuerst — auf dem
+Stand von heute.** Steht in seiner Begründung eine Beobachtung („die KI
+sitzt ohne Gold fest", „der Karren bringt zu wenig"), ist sie oft viele
+Runden alt. Bevor gebaut wird, dieselbe Messung noch einmal; gibt es den
+Mangel nicht mehr, wird das Kriterium neu gefasst, bevor der erste Entwurf
+steht. ki AC-26 kam aus einem Patt mit leerem Gold (Runden 114, 137, 144);
+in Runde 162 lief das Gold über 88 KIs viermal aus, alle nach Minute 45 —
+gemessen wurde dann an geleertem Gold. In Runde 161 ergab der Faktor der
+Vorlage 10,7 Gold je Minute gegen 20 des Dorfbewohners; erst die Messung
+zeigte, dass „wie im Original" hier „halb so viel" heißt (Rückschau nach
+Runde 163).
+
+**Und eine Ursache wird gemessen, bevor sie ein Kriterium wird.** „X
+verliert, weil Y" ist eine Vermutung, bis Y **nur bei X** geändert wurde
+und die Paarung gekippt ist: eine Austauschprobe (`--probe`), deren
+ersetzte Methode nur für die KI des schwachen Hauses greift
+(`this.neigung` sagt, welches). Eine Regel, die beide Seiten bekommen,
+ändert eine Paarung nur, wenn sie der schwächeren mehr hilft. Und vor jeder
+Vermutung über das „Was" die Zahlen über das „Wie viel":
+`npm run pruefstand:haeuser` zählt je Haus Kampfeinheiten, Dorfbewohner und
+Ausbildungsgebäude je Partie. In Runde 176 entstand ki AC-31 aus
+„Distelhag antwortet nicht auf Schützen"; Runde 177 baute es, beide Seiten
+antworteten, und Distelhag verlor weiter 0 zu 20 — über die Menge, 112
+gegen 145 Kampfeinheiten aus 3,5 gegen 5 Gebäuden (Rückschau nach Runde
+178).
 
 Setze die gewählten Kriterien auf `in-arbeit`.
 
@@ -120,6 +156,19 @@ Setze die gewählten Kriterien auf `in-arbeit`.
   verändert den Inhalt still (Runden 4, 11, 22, 25). Viele Änderungen auf
   einmal: das Skript mit Write in den Temp-Ordner legen und dann mit
   `python "$(cygpath -w …)"` ausführen; anzuhängender Testtext ebenso als Datei.
+  **Vor einer neuen Datei `ls` auf den Namen**: Write überschreibt eine Datei,
+  die früher in der Sitzung gelesen wurde, ohne Rückfrage — in Runde 159
+  beinahe `tests/strategie-tempo.test.mjs` (fahrplan AC-6). Und kein `cat`
+  ohne Datei in einer Kette: es wartet auf die Eingabe, der Befehl rutscht
+  nach zwei Minuten in den Hintergrund (Runde 162).
+  **Vor dem Abschlusslauf `npm run waechter`** — alle Wächter in Sekunden.
+  In Runde 175 fiel der ganze Check nach sieben Minuten an einem Hausnamen
+  in einem Kommentar (der Wächter dazu steht seitdem in
+  `tests/waechter-haeuser.test.mjs`). **Und vor einer neuen Methode
+  `grep -n "  <name>(" <datei>`**: in Runde 177 hieß eine neue Methode in
+  `ki.js` wie eine vorhandene mit anderem Sinn; die spätere überschreibt
+  die frühere still, und neun Tests fielen mit einer Meldung, die nach
+  allem anderen aussah.
 - **Listen, die mit den Stufen wachsen, prüft ein Test nie auf Gleichheit.**
   Was ein Dorfbewohner baut, was ein Gebäude anbietet, wie viele Knöpfe ein
   Menü hat: „enthält" oder aus den Werten zählen (`werte.einheiten…baut.length`).
@@ -155,6 +204,19 @@ Setze die gewählten Kriterien auf `in-arbeit`.
   Tabelle, aber Verbesserungen ändern sie. Wer `EINHEITEN[art].angriff` direkt
   liest, sieht sie nicht — genau so war die Rüstung aus dem Webstuhl eine Stufe
   lang wirkungslos (Runde 68). `tests/waechter-werte.test.mjs` sucht danach.
+  **Seit den Häusern (Runde 167) laufen alle Wirkungen über
+  `welt.wirkungen()`** — Haus zuerst, dann die Verbesserungen —, und der
+  Browser rechnet keine selbst zusammen: was er braucht, nimmt
+  `kampfwerte()` in die Tafel `kw` auf. `tests/waechter-wirkungen.test.mjs`
+  sucht im Browser nach `verbesserungen[…].wirkung/sammeln/farm/gebaeude`
+  (Rückschau nach Runde 168: `farmVoll` kannte das Haus nicht).
+  **Wer `wirkungen()` eine neue Quelle gibt, sucht jede Stelle, die einen
+  Erwartungswert selbst aus den Daten zusammensetzt** — in Tests ebenso wie
+  im Browser: `grep -rn "HAEUSER\[\|\.boni\|VERBESSERUNGEN\[" tests/ e2e/ public/`.
+  Zweimal hintereinander fand das erst ein roter Lauf: in Runde 167
+  `farmVoll`, in Runde 171 die Messtests zu spielziel AC-17 und AC-26, die
+  den Bonus eines Hauses aus `boni` erwarteten — der Mannschaftsbonus gilt
+  aber auch dem Haus selbst (`mannschaftDazu`).
 - **Ein neuer Eintrag in `daten.js` (Gebäude, Einheit, Verbesserung) fährt
   `npm run e2e:daten` vor dem vollen Lauf** — knapp fünf Minuten für die
   Browserfälle, die „alles, was die Daten für dieses Zeitalter sagen"
@@ -213,6 +275,15 @@ Setze die gewählten Kriterien auf `in-arbeit`.
   Antwort steht als Kommentar am Test. Echte Uhren in Tests nur, wenn die Zeit
   selbst geprüft wird; sonst `t.mock.timers` (Runden 8 und 9: dreimal war die
   Annahme falsch, nie das Produkt).
+- **Ein Test, der nach einer festen Zahl Takte misst, fragt vorher, was in
+  diesen Takten überhaupt rechnet.** Die Sicht rechnet alle `SICHT_TAKTE`,
+  nicht jeden Takt (Runde 170: ein Takt nach dem Aufstellen sah nichts); eine
+  Fahrt des Karrens dauert länger als die Frist einer Kündigung (Runde 171:
+  96 gegen 60 Sekunden — nach der Frist sind beide Gegner und die Strecke
+  endet); ein Fortschritt mit einem Tempo ist ein Bruch, und 175 · 1,2 ergibt
+  209,99999 (Runde 171: ein Takt zu viel). Statt fester Takte: laufen, bis
+  die Bedingung gilt, mit Obergrenze — und die Dauer, auf die es ankommt,
+  vorher aus den Werten rechnen.
 - **Einen Stellvertreter fürs Aussehen erst festschreiben, wenn er gemessen
   ist:** den Wert vorher und an einem schnellen Entwurf nachher
   (`npm run tafel -- "<Ausdruck>"`, Spielbild mit `npm run sicht`). Wird das
@@ -229,6 +300,16 @@ Setze die gewählten Kriterien auf `in-arbeit`.
   ohne die umgekehrte Richtung hätte der Konterkreis auch gehalten, wenn
   schlicht immer links gewinnt.) Beides als eigene Zusicherung schreiben, nicht
   nur prüfen und wegwerfen.
+  **Bleibt eine Gegenprobe grün, tut eine zweite Stelle dasselbe.** Dann
+  diese Stelle suchen, nicht die Gegenprobe wegwerfen, und fragen, was nur
+  das Neue leistet — das wird die Zusicherung. In Runde 181 blieb die
+  Gegenprobe zu „Gefallene fallen aus der Gruppe" grün: die Ansicht nimmt
+  Gefallene mit jedem Zustand ohnehin aus der Auswahl. Was der neue Filter
+  allein tut, ist die **Ablage** sauber halten; erst die Zusicherung darauf
+  fiel ohne ihn. **Und ein Test sagt keine Wahl der Simulation voraus** —
+  welches Ziel eine Einheit zuerst nimmt, wer zuerst fällt: er wartet auf
+  *irgendeines* und rechnet mit dem, das es war. In Runde 181 nahm die Miliz
+  den Gesunden zuerst, nicht den mit einem Leben.
   **Und dieselbe Messung einmal gegen den alten Stand, bevor ihre Zahl
   gilt** — `npm run pruefstand:vergleich -- --gegen HEAD` mit derselben
   Aufstellung (`--teams 1,1,2,2`, `--spieler`), beim Rechenteil
@@ -267,7 +348,7 @@ Setze die gewählten Kriterien auf `in-arbeit`.
   sagt `pruefstand:vergleich` in der Zeile „Enden" (`62.0@5`). In den Runden 94
   bis 97 schrieb jede Runde dafür ein eigenes Wegwerfskript.
   **Ein Messtest über viele ganze Partien bekommt eine eigene Datei**
-  (`tests/strategie-partien.test.mjs`): `node --test` rechnet Dateien
+  (`tests/strategie-ki-ritterzeit.test.mjs`): `node --test` rechnet Dateien
   nebeneinander, Tests einer Datei nacheinander. Hinter den Messungen in
   `strategie-ki.test.mjs` verlängerte zwanzig Partien `npm run check` von 48
   auf 88 Sekunden (Runde 97). **Rechnet sie zu viert oder über eine Minute je
@@ -275,7 +356,11 @@ Setze die gewählten Kriterien auf `in-arbeit`.
   Abschnitt von `npm test`, nach allen Zeitmessungen. Neben den vier Dateien
   zwei gegen zwei riss einheiten AC-31 (800 Angreifer unter 1 ms), und ein
   niedrigerer Vorrang half nicht (Rückschau nach Runde 152).
-  `tests/waechter-testordner.test.mjs` hält beides fest.
+  `tests/waechter-testordner.test.mjs` hält beides fest. **Und `check:kurz`
+  warnt** („WARNUNG: … s im ersten Abschnitt"), sobald ein Test dort über
+  90 s rechnet (`scripts/lange-tests.mjs`): bis Runde 173 lag die
+  Aufgeben-Messung mit 171 s im ersten Abschnitt und machte ihn allein
+  205 s lang — die Regel stand da, die Dauer sah niemand.
   **Wer Bewegung oder Kampf ändert, vergleicht auf zwei Sätzen Startwerte**
   (`npm run pruefstand:vergleich -- --minuten 90 --saetze 2`): eine solche
   Änderung verschiebt jede Partie, und ein Satz allein zeigt Zufall als
@@ -399,7 +484,13 @@ Setze die gewählten Kriterien auf `in-arbeit`.
   `e2e/helpers/strategie.mjs`, beendet wird sie mit `partieBeenden`. Dort
   liegen auch `dorfbewohnerAnklicken` und `platzImBild` (ein freier Bauplatz
   **vorn** oder **seitlich**, damit Gebäude nichts verdecken). Neue
-  Spielbild-Dateien kopieren nichts davon.
+  Spielbild-Dateien kopieren nichts davon. **Wer auf eigene Figuren
+  klickt**, hält erst die Zeit an (`zeitraffer(page, code, 0)`) und nimmt
+  die Punkte aus `eigeneImBild(page)`: je Einheit Fußpunkt (`x`, `y`),
+  Klickpunkt an der Körpermitte (`klick`), Kürzel (`k`) und ob der Fußpunkt
+  im Bild steht (`imBild`). So liefen in Runde 182 Umschalt-Klick, Rahmen
+  und Doppelklick beim ersten Mal grün; vorher schrieb jede Datei ihre
+  eigene Liste.
 - **Warten auf Spielzeit** geht über den Zeitraffer (bis 20), nicht über die
   Uhr: wer länger als fünf Sekunden auf etwas wartet, das im Spiel dauert, dreht
   ihn hoch — und rechnet Abstandsgrenzen mit ein, denn ein Zustand fasst dann
@@ -506,10 +597,14 @@ Setze die gewählten Kriterien auf `in-arbeit`.
 
 0. **Eine Durchsicht ohne deine Schlüsse**, bevor der Abschlusslauf beginnt,
    wenn die Runde Simulation, KI oder Kampf geändert hat: ein Subagent
-   (`feature-dev:code-reviewer`, `model: sonnet`, nur lesend) bekommt `git diff`
-   der Produktdateien **als Datei**: `git diff -- <dateien> > <scratchpad>/durchsicht.diff`
-   und der Pfad in den Auftrag — der Prüfer hat keine Shell und las in Runde 97
-   die Dateien statt des Unterschieds. Dazu eine Beschreibung des **Verhaltens**, nicht deines
+   (`feature-dev:code-reviewer`, `model: sonnet`, nur lesend) bekommt den
+   Unterschied der Produktdateien **als Datei**: `npm run durchsicht` schreibt
+   alles Geänderte und Neue außer Dokumenten hinein (mit Pfaden nur diese)
+   und nennt den Pfad — der gehört in den Auftrag. Der Prüfer hat keine Shell
+   und las in Runde 97 die Dateien statt des Unterschieds; in den Runden 151
+   bis 162 hieß der Auftrag trotz dieser Regel „führe `git diff` aus", und
+   der neue Test der Runde stand ohnehin in keinem `git diff` (Rückschau nach
+   Runde 163). Dazu eine Beschreibung des **Verhaltens**, nicht deines
    Urteils — und sucht Fehler, Randfälle, Determinismus, was die KI nicht
    sehen dürfte. Seine Befunde prüfst du am Code nach, bevor du handelst; jeder
    echte bekommt einen Test mit Gegenprobe — **gegen die alte Zeile**:
@@ -542,6 +637,15 @@ Setze die gewählten Kriterien auf `in-arbeit`.
    Stylesheet), dann `npm run check:alles:neu:kurz`: derselbe Lauf, aber er
    schreibt jedes Bild neu. Ein Lauf statt zwei — danach
    `npm run qa:abweichung` und die Bilder über 1 % ansehen.
+   **Das gilt auch, wenn sich nur das Verhalten geändert hat, das ein Bild
+   zeigt** — die KI, die Wegsuche, der Kampf: die Bilder aus
+   `strategie-ki`, `strategie-team-gegen-ki` und alle, die eine Partie
+   laufen lassen, zeigen sonst den alten Verlauf, und die Tests sind grün.
+   Runde 165 machte die KI blind für alles außerhalb ihrer Sicht und fuhr
+   `check:alles`; erst Runde 166 schrieb die Bilder neu (ki AC-11 97 %,
+   fahrplan AC-12 87 % geändert). Waisen nach geänderten Unterschriften
+   räumt `qa:nachweis` vor dem Lauf selbst weg (`npm run qa:waisen` zeigt
+   sie; Rückschau nach Runde 168).
    **In der Schleife immer die `:kurz`-Form**: sie zeigt die Zahlen und bei
    einem Fehler die Fehlerstelle, und spart je Lauf rund 8.000 Token an „ok"
    nach „ok" (Runde 60). Die ganze Ausgabe steht in `qa/letzter-lauf.log`,

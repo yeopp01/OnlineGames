@@ -1,0 +1,9 @@
+{
+  "spec": "10-strategie/spielziel.md",
+  "ac": "AC-23",
+  "titel": "Bert im Warteraum: Anna hat mit Spielgeschwindigkeit 1,5 eröffnet",
+  "datei": "e2e/tests/strategie-geschwindigkeit.spec.mjs",
+  "pfad": [
+    "spielziel AC-23: mit 1,5 eröffnet, steht die Geschwindigkeit im Warteraum, und die Uhr zählt anderthalb Spielsekunden je echte Sekunde"
+  ]
+}

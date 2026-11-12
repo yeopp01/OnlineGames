@@ -13,6 +13,7 @@
     "dev": "node --watch server/index.js",
     "test": "node --test \"tests/*.test.mjs\" \"scripts/**/*.test.mjs\" && node --test \"tests/partien/*.test.mjs\"",
     "test:e2e": "playwright test --config e2e/playwright.config.mjs",
+    "waechter": "node --test \"tests/waechter-*.test.mjs\"",
     "check": "npm run specs:check && npm run specs:belege && npm run qa:report && npm test",
     "check:kurz": "node scripts/leise.mjs check",
     "check:alles": "npm run test:e2e && npm run check",
@@ -25,6 +26,7 @@
     "qa:report": "node scripts/qa-report.mjs",
     "qa:abweichung": "node scripts/qa-abweichung.mjs",
     "qa:nachweis": "node scripts/qa-nachweis-lauf.mjs",
+    "qa:waisen": "node scripts/qa-waisen.mjs",
     "e2e:browser": "playwright install chromium",
     "e2e:laufzeiten": "node scripts/e2e-laufzeiten.mjs",
     "e2e:daten": "playwright test --config e2e/playwright.config.mjs strategie-bauen strategie-dunkle-zeit strategie-feudalbauten strategie-feudalzeit strategie-ritterzeit strategie-ritterzeit-am-stueck strategie-figuren strategie-unterscheidbar",
@@ -34,8 +36,10 @@
     "bilder": "node scripts/bilder.mjs",
     "pruefstand:strategie": "node scripts/pruefstand-strategie.mjs",
     "gegenprobe": "node scripts/gegenprobe.mjs",
+    "durchsicht": "node scripts/durchsicht.mjs",
     "pruefstand:vergleich": "node scripts/pruefstand-vergleich.mjs",
     "pruefstand:verlauf": "node scripts/pruefstand-verlauf.mjs",
+    "pruefstand:haeuser": "node scripts/pruefstand-haeuser.mjs",
     "konterkreis:strategie": "node scripts/konterkreis-strategie.mjs"
   },
   "dependencies": {

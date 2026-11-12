@@ -68,7 +68,7 @@ test.describe('Wirtschafts-KI', () => {
       a.beiAuswahl();
       a.blickAuf(basis.x + 1, basis.y + 1);
     }, lage.basis);
-    await expect(anna.locator('#zeitalter')).toContainText('Feudalzeit');
+    await expect(anna.locator('#zeitalter')).toContainText('Lehen');
     await expect(anna.locator('#zeitalter')).toBeInViewport();
     expect(await bedienteileFrei(anna)).toEqual([]);
     await anna.waitForTimeout(300);
@@ -82,7 +82,7 @@ test.describe('Wirtschafts-KI', () => {
       // Und ohne Spielminuten: die Uhr steht oben im Bild, und sie zeigt den
       // Augenblick, in dem die Bedingungen zutrafen - nicht die zwoelf
       // Minuten, nach denen der Test zu schauen beginnt (Runde 83: 13:44).
-      titel: 'Die Wirtschafts-KI, allein in die Feudalzeit aufgestiegen (oben in der Leiste, daneben die Uhr): sie hat Farmen, eine Schießanlage und Bogenschützen gebaut — befohlen hat das niemand',
+      titel: 'Die Wirtschafts-KI, allein ins Lehen aufgestiegen (oben in der Leiste, daneben die Uhr): sie hat Farmen, eine Schießanlage und Bogenschützen gebaut — befohlen hat das niemand',
       test: info,
     });
     await zeitraffer(anna, code, 1);

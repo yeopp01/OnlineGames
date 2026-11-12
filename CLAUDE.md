@@ -1,7 +1,7 @@
 # OnlineGames
 
 Spiele für mehrere über einen Raumcode. Erstes Spiel: **Fading Allies**, ein
-Echtzeit-Strategiespiel nach den Regeln von Age of Empires II, gebaut in Stufen bis zu fünf Völkern auf
+Echtzeit-Strategiespiel nach den Regeln von Age of Empires II, gebaut in Stufen bis zu fünf Häusern einer eigenen Welt auf
 einem eigenen Server ([ADR-0012](docs/adr/0012-aoe2-als-vorlage.md)). Zweites
 Spiel: ein Fußballmanager im Geist von Anstoss 3 — **die Arbeit daran ruht.**
 
@@ -41,7 +41,10 @@ npm run e2e:daten     # nur die Browserfaelle, die "alles aus den Daten" aufstel
 npm run pruefstand:vergleich          # KI gegen KI: Arbeitsstand neben HEAD, dieselben Partien (--saetze 2: 1-20 und 21-40)
 npm run pruefstand:vergleich -- --probe probe.cjs --saetze 3  # Austauschprobe: eine Methode nur im Arbeitsstand ersetzt, 60 Startwerte
 npm run pruefstand:verlauf -- --startwert 5  # eine Partie KI gegen KI Minute fuer Minute
+npm run pruefstand:haeuser   # jede Paarung der Haeuser 20-mal, Seiten abwechselnd, mit Herstellung je Haus (--nur, --probe, --je)
+npm run waechter     # alle Waechter in Sekunden - vor dem Abschlusslauf
 npm run gegenprobe -- <datei> "<neu>" "<alt>" -- <befehl>  # Gegenprobe gegen die alte Zeile, schreibt die Datei immer zurueck
+npm run durchsicht   # Geaendertes und Neues als eine Datei fuer den Pruefer, der keine Shell hat - nennt den Pfad
 ```
 
 **Am Strategiespiel wird in Runden gearbeitet:** `/strategie-weiterbauen`
@@ -150,6 +153,8 @@ e2e/     Playwright: tests/ im Browser; server.mjs startet den Server samt Prüf
 | [ADR-0011](docs/adr/0011-bildnachweise.md) | **Bildnachweise gehören an das Abnahmekriterium.** `fertig` = Testname **und** (Bild **oder** Begründung). Bilder eingecheckt, Bericht erzeugt. |
 | [ADR-0012](docs/adr/0012-aoe2-als-vorlage.md) | **AoE II ist die Vorlage, gebaut wird in Stufen A–G.** Keine Schiffe, kein Handel über Wasser, keine Kampagnen, kein Material aus dem Original, kein „Age of Empires" im Spiel. Völker sind Daten. |
 | [ADR-0013](docs/adr/0013-buendnisse-karren-dauer.md) | **Bündnisse, die sich lösen lassen**: Teams im Warteraum, fest oder lösbar; Lösen öffentlich mit 60 Sekunden Frist; ein Team gewinnt. **Marktkarren ab der Ritterzeit**, auch zum zweiten eigenen Markt. **Zeitgrenze und Spielgeschwindigkeit sind Einstellungen** (Vorgabe: keine Grenze, 1,0). |
+| [ADR-0014](docs/adr/0014-haeuser-statt-voelker.md) | **Fünf Häuser einer eigenen Welt statt historischer Völker**: Eschenbruch, Rappenstein, Wehrstein, Silberfurt, Distelhag; die Stufen heißen im Spiel Landsitz, Lehen, Fürstentum, Krone. **Der Drache statt des Trebuchets**, abschaltbar. Abrüsten: 40 Nahrung, 20 s. Alle Zahlen Startwerte. |
+| [ADR-0015](docs/adr/0015-statthalter.md) | **Der Statthalter**: Teile des eigenen Reichs der KI übergeben, mit Knöpfen statt Sprachmodell, nach Stufe E; Übernahme bei Verbindungsabbruch nach zehn Sekunden. |
 | [ADR-0016](docs/adr/0016-gerenderte-bilder.md) | **Bilder werden gerendert, nicht gezeichnet**: eigene 3D-Modelle als Blender-Skripte unter `grafik/`, vor dem Spiel zu Bildern unter `public/bilder/` gerendert und eingecheckt. Blender nur örtlich, nicht in der CI. Fremdes nur CC0, keine Bildgeneratoren. Umbau R1 bis R6, **nach der Probe R1 entscheidet der Benutzer**. |
 
 **Eröffnen verlangt ein Konto, Mitspielen nicht.** Wer eine Partie eröffnet,
@@ -163,7 +168,7 @@ Umfang hinzufügt, dort nachsehen.
 
 ## Stand
 
-**449 von 573 Kriterien fertig.** 672 Tests ohne Browser, 204 im Browser. Die
+**472 von 601 Kriterien fertig.** 741 Tests ohne Browser, 220 im Browser. Die
 Übersicht ist der Bericht: `npm run qa:report`.
 
 Gebaut ist der Unterbau: Räume, Übertragung, Karte, Wegfindung, Sammeln,
@@ -182,8 +187,8 @@ Gemessen: **3,10 Tore je Spiel, 48 % Heimsiege, 21 % Unentschieden**
 (Bundesliga: 3,1 / 44 % / 24 %); der Favorit gewinnt 64 %. Über sechs Saisons
 ohne Menschen null Widersprüche in den Spielen, Kader, Stärke und Markt
 stabil. Eine Saison rechnet in rund 400 ms, ein Spielstand ist nach zwei
-Saisons unter 1 MB. Der Browserlauf dauert rund 19 bis 20
-Minuten für 204 Fälle (`npm run e2e:laufzeiten` zeigt, wo; die langsamsten
+Saisons unter 1 MB. Der Browserlauf dauert rund 19 bis 21
+Minuten für 207 Fälle (`npm run e2e:laufzeiten` zeigt, wo; die langsamsten
 Fälle sind `fahrplan AC-24` mit 108 s, zwei gegen zwei bis zur Tafel,
 `fahrplan AC-14` mit 90 s, die Ritterzeit am Stück, und `fahrplan AC-12`
 mit 84 s, eine ganze Partie gegen die KI).
@@ -341,9 +346,14 @@ AC-15), und das Bild zeigt sie in drei Stufen, auch auf der Übersichtskarte
 in `public/nebel.js`, fremde Gebäude im Nebel aus der Erinnerung. **Der
 Server schickt jedem nur, was er sieht** (kampf AC-13): `welt.zustandJeSpieler`
 und `welt.aufbauFuer`, der Raum fragt nur, ob es sie gibt. **Ein Angriff wird
-gemeldet** (kampf AC-14): roter Knopf oben, ein Klick springt hin. Offen ist
-die KI mit eigener Sicht (ki AC-13, auf dem Zweig `strategie-ki-sicht`,
-wartet auf eine Frage an den Benutzer). **Stufe C ist erreicht** (fahrplan
+gemeldet** (kampf AC-14): roter Knopf oben, ein Klick springt hin. **Die KI
+sieht nur ihr Sichtfeld** (ki AC-13, Runde 165): fremde Gebäude, sobald sie
+sie gesehen hat, fremde Einheiten, solange sie sie sieht, gesucht wird mit
+dem Späher (`ki.wahrnehmen()`, `feindOrt`, `gesehen`). Im Nebel gilt für KI
+gegen KI die **Ersatzgrenze** (Benutzer, 2026-11-10): alle mit Sieger vor
+Minute 90, Median unter 45, mindestens 35 von 40 vor Minute 60 —
+gemessen 37 von 40, Median 44,6 (`tests/partien/ki-im-nebel.test.mjs`).
+**Stufe C ist erreicht** (fahrplan
 AC-11 bis AC-13); die Rückschau dazu hat drei Lücken angelegt (bedienung
 AC-39 bis AC-41: Ausholen im Kampf, sichtbare Pfeile, Ansagen nicht auf der
 Mitte). **Stufe D ist spezifiziert** (Bauabfolge D1 bis D9: die drei Lücken,
@@ -422,10 +432,101 @@ der Uhr der Frist; der Browser stellt dieselben zwei Fragen
 Einstellung** (spielziel AC-22, D13): keine, 90 oder 120 Spielminuten,
 Vorgabe keine; steht sie, zeigt die Uhr sie dahinter („89:45 / 90:00").
 Wer im Test das Unentschieden nach Ablauf braucht, gibt `zeitgrenze: 90`
-mit; im Browser stellt der Prüfgriff `uhrStellen` die Uhr vor.
+mit; im Browser stellt der Prüfgriff `uhrStellen` die Uhr vor. **D13 ist
+fertig: die Spielgeschwindigkeit** (spielziel AC-23) — 1,0, 1,5 oder 2,0.
+Eine Spielsekunde bleibt zehn Takte; der Steckbrief sagt dem Raum
+`takte(einstellungen)` (10, 15, 20), und der Raum rechnet nach der
+Wanduhr, nicht nach der Zahl der Schläge — nach einem Stocken holt er
+höchstens eine Sekunde nach. Der Zeitraffer der Tests multipliziert
+darauf. Im Browser streckt `ansicht.taktdauer` die Bewegung, die Uhr
+zählt Spielzeit. **Aus D14 steht der Marktkarren** (einheiten AC-39): am
+Markt ab der Ritterzeit, 100 Holz und 50 Gold, 70 Leben, eigene Figur
+(Pony vor dem Planwagen); Ausbildungszeit 51 s und Sicht 7 gesetzt, nicht
+geprüft. Er ist reine Daten — `angriff: 0` ergibt Gang statt Angriff,
+keine Wache, weißes Zeichen und „Greift nicht an". **Er handelt**
+(AC-40): ein Rechtsklick auf einen anderen Markt, der keinem Gegner gehört,
+ist der Auftrag `handel` — geladen am Ziel, gutgeschrieben daheim, Gold je
+Fahrt `faktor · d · (d / S + sockel)` aus `HANDEL.karren`. Der Faktor ist
+gemessen (0,77 statt 0,46 der Vorlage): auf halber Kartenbreite bringt ein
+Karren 18 Gold je Minute, etwas weniger als ein Dorfbewohner am Gold (20). Fällt ein Markt oder
+wird das Ziel feindlich, steht er im selben Takt. Die Leiste nennt die
+Strecke (`hd` am Karren). Die sichtbare Ladung (AC-41) wartet auf die neuen
+Figuren. **Die KI handelt** (ki AC-26): wird das Gold in Reichweite knapp
+(unter 800), baut sie einen Markt am Dorf und einen zweiten weit davon und
+vom Gegner weg, bildet bis zu acht Karren aus und verkauft Stein, wenn ihr
+das Gold für einen fehlt. Ein Karren ist für sie keine Kampfeinheit
+(`ki.kaempft()` fragt den Angriff). Das Patt mit leerem Gold, das es
+seltener machen sollte, gibt es auf diesem Zweig nicht — gemessen wird
+deshalb mit geleertem Gold (`tests/strategie-ki-handel.test.mjs`).
+**Stufe E hat begonnen** (Häuser, ADR-0014): **am Bildschirm heißen die
+Zeitalter Landsitz, Lehen, Fürstentum, Krone** (bedienung AC-45). Die
+gebeugten Formen stehen in `ZEITALTER` (`artikel`, `genitiv`, `ab`, `zum`),
+nie zusammengesetzt; `tests/waechter-zeitalter.test.mjs` findet die alten
+Namen in jedem Bildschirmtext. In Bezeichnern, Specs, Testnamen und
+Bildunterschriften bleiben die alten Namen die Arbeitsnamen der Stufen.
+**Ein Haus ist Daten** (spielziel AC-17, fahrplan AC-17): `HAEUSER` in
+`daten.js`, Boni in der Form der Verbesserungen, gelesen nur über
+`welt.wirkungen()`; das Haus je Spieler ist die Einstellung
+`haeuser: { <spielerId>: <haus> }`. **Gewählt wird es im Warteraum** je
+Platz wie das Team (spielauswahl AC-24), Vorgabe Zufall — gezogen aus dem
+Startwert im Steckbrief. Browsertests, die nicht von Häusern handeln, spielen
+das Haus ohne Boni (`partieMit` setzt es, `haeuserSetzen`) — das
+**Prüfhaus**, das nur der Browserlauf anlegt (`e2e/helpers/pruefhaus.mjs`).
+**Jeder Bonus wirkt** (spielziel AC-26): je Bonus eine Messung im Spiel mit
+und ohne Haus (`tests/strategie-haeuser-wirkung.test.mjs`); Wehrsteins Turm
+und Burg reichen weiter (Angriff, Reichweite und Nachladezeit eines
+Gebäudes nur, wenn es schießt), Silberfurt handelt mit 15 % Gebühr und
++20 % Gold je Fahrt (`handel` in den Boni, `welt.handelswert`).
+**Der Mannschaftsbonus gilt nur im Bündnis** (spielziel AC-25):
+`mannschaft` neben `boni` in `HAEUSER`, gelesen in `welt.wirkungen()` für
+das Haus selbst und jeden, mit dem es die Sicht teilt (`teiltSicht`), je
+Haus einmal; die Kündigung nimmt ihn im selben Takt (`buendnisStand`).
+Schießanlage und Kaserne bilden 20 % schneller aus
+(`welt.ausbildungstempo`, nur Einheiten), Karren zwischen Verbündeten
+bringen 20 % mehr (`handel.verbuendetAnteil`). Kein Mannschaftsbonus trägt
+Leben oder Nahrung (`tests/strategie-mannschaft.test.mjs`).
+**Die KI neigt zu ihrem Haus** (ki AC-27): `ki: { schwerpunkt, goldKnapp }`
+in `HAEUSER` — ein Militärgebäude als Schwerpunkt baut sie zuerst, baut es
+nach und bedient es zuerst, Silberfurt handelt ab der Ritterzeit. Der
+Nebeltest zu fahrplan AC-11 spielt seitdem mit zwei Häusern je Partie
+(`tests/partien/ki-im-nebel.test.mjs`). **Wehrstein baut Türme** (ki
+AC-30): ein Schwerpunkt, der nichts ausbildet, ist ein Bauwerk
+(`ki.bauwerkePruefen`) — zwei Wachtürme am Dorf, drei Sammler am Stein,
+erst nach dem ersten Aufbruch, sonst kostet der Stein den ersten Angriff.
+Der Nebeltest steht damit bei 36 von 40 vor Minute 60, Median 44,9 —
+knapp unter der Grenze. **Die Häuser gegeneinander** misst `npm run pruefstand:haeuser`
+(Runde 176, 200 Partien): Eschenbruch gewinnt 85 %, Distelhag 31 % und
+gegen Eschenbruch 0 von 20 — auch nach jeder Gegenprobe an den Boni. Die
+Ursache ist nicht, dass die KI nie auf das gesehene Heer antwortet: das
+das Antworten, gebaut als ki AC-31 (Runde 177, lokaler Zweig
+`strategie-ki-antwort`), änderte nichts, denn beide antworten. **Gemessen
+in Runde 179** (zehn Austauschproben): Eschenbruchs Vorsprung ist die Summe
+aus Holzbonus und Reichweite (ganz leer 51 %), Distelhag kostet seine
+Neigung zur Kaserne 15 bis 20 Punkte. **Wer zur Kaserne neigt, baut im
+Wechsel nach** (ki AC-32, Runde 180): eine weitere Kaserne nur, solange es
+weniger Kasernen als andere Militärgebäude gibt — Distelhag 47 statt 26 %
+über 160 Partien. Welcher Bonus Eschenbruchs schwächer wird, ist eine
+offene Frage an den Benutzer; danach spielziel AC-18 (jedes Haus 30 bis
+70 %).
+**Voller Wohnraum fällt auf** (bedienung AC-43): wartet ein eigener
+Auftrag, steht die Bevölkerung oben rot umrandet, auch ohne Auswahl
+(`ansicht.wartetEtwas()`). **Gruppentasten** (bedienung AC-5): `Strg`
+oder `Alt` mit einer Ziffer legt die Auswahl ab, die Ziffer holt sie
+zurück, ohne Gefallene und Bekehrte (`ansicht.gruppeAblegen`,
+`gruppeAbrufen`; gelesen über `e.code`). Ob Chrome `Strg`+`1` bis `8` für
+die Tabs behält, ist nicht geprüft — deshalb `Alt` daneben. **Mit
+Umschalt** kommen Klick und Rahmen zur Auswahl hinzu (bedienung AC-3), ein
+**Doppelklick** wählt alle eigenen Einheiten der Art im Bild (AC-4,
+`ansicht.typWaehlen`). **Die Maus am Bildschirmrand schiebt die Karte**
+(AC-9, die äußersten 12 Bildpunkte), abschaltbar in der Tastenübersicht;
+die Wahl merkt sich der Browser. **Die Leertaste** springt zum Dorfzentrum
+und ein zweites Mal zurück (AC-10, `ansicht.basisSprung`). **Reißt die
+Verbindung**, steht ein Hinweis mitten im Bild mit „Neu laden und
+zurückkehren" (AC-19, uebertragung AC-9; im Browsertest kappt der
+Prüfgriff `trennen` sie vom Server aus).
 
 1. **Stufe A** Dunkle Zeit mit Wirtschafts-KI und Prüfstand · **B** Feudalzeit
-   · **C** Partieende und KI-Gegner · **D** Ritterzeit · **E** fünf Völker ·
+   · **C** Partieende und KI-Gegner · **D** Ritterzeit · **E** fünf Häuser ·
    **F** Imperialzeit · **G** Betrieb auf dem Hetzner-VPS.
 
 Außerhalb der Reihe, aber nicht vergessen: Mailversand (konten AC-4, AC-5) und

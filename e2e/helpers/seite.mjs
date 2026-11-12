@@ -3,6 +3,8 @@
 import { test as basis, expect } from '@playwright/test';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
+// Dieselben Haeuser wie im Server des Browserlaufs (spielziel AC-26).
+import './pruefhaus.mjs';
 
 export { expect };
 
@@ -114,6 +116,14 @@ export async function griff(page, befehl, werte = {}) {
 export async function zeitraffer(page, code, faktor) {
   const antwort = await page.request.post(`http://localhost:${GRIFFHAFEN}/griff`, {
     data: { id: code, befehl: 'zeitraffer', werte: { faktor } },
+  });
+  expect(antwort.ok(), await antwort.text()).toBe(true);
+}
+
+/** Die Verbindung eines Spielers vom Server aus schliessen (Pruefgriff, e2e/server.mjs). */
+export async function trennen(page, code, name) {
+  const antwort = await page.request.post(`http://localhost:${GRIFFHAFEN}/griff`, {
+    data: { id: code, befehl: 'trennen', werte: { name } },
   });
   expect(antwort.ok(), await antwort.text()).toBe(true);
 }

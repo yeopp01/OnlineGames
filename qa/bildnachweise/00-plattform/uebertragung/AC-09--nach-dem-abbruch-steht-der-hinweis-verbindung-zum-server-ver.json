@@ -1,0 +1,10 @@
+{
+  "spec": "00-plattform/uebertragung.md",
+  "ac": "AC-9",
+  "titel": "Nach dem Abbruch steht der Hinweis Verbindung zum Server verloren im Bild, nicht erst stehende Einheiten",
+  "datei": "e2e/tests/strategie-verbindung.spec.mjs",
+  "pfad": [
+    "Verbindungsverlust",
+    "bedienung AC-19 und uebertragung AC-9: reisst die Verbindung, steht ein Hinweis im Bild; Neu laden kehrt zurueck"
+  ]
+}

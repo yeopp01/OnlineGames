@@ -287,7 +287,7 @@ test.describe('Das Abschlussbild', () => {
     await expect(anna.locator('#abschlusstafel tr')).toHaveCount(3);
     await expect(anna.locator('#abschlusstafel tr.sieger')).toContainText('Anna');
     await expect(anna.locator('#abschlusstafel tr.draussen')).toContainText('Bert');
-    await expect(anna.locator('#abschlusstafel tr.sieger td').first()).toHaveText('Dunkle Zeit');
+    await expect(anna.locator('#abschlusstafel tr.sieger td').first()).toHaveText('Landsitz');
     await expect(anna.locator('#abschlusstafel tr.sieger')).toContainText(String(annas.gesammelt.holz));
     await expect(anna.locator('#abschlussdauer')).toHaveText(/^Dauer \d+:\d\d$/);
     await expect(anna.locator('#abschluss')).toBeInViewport();

@@ -195,7 +195,7 @@ test('bauen AC-25 / AC-26: in der Dunklen Zeit gibt es keine davon, und jede nur
   // Die Muehle steht schon in der Dunklen Zeit - das Pferdekummet nicht.
   const p = platz(welt, anna, 'muehle');
   const muehle = welt.gebaeudeAnlegen('a', 'muehle', p.x, p.y);
-  assert.match(welt.ausbilden('a', muehle.id, 'pferdekummet').fehler, /Feudalzeit/);
+  assert.match(welt.ausbilden('a', muehle.id, 'pferdekummet').fehler, /ab dem Lehen/);
 
   anna.zeitalter = 1;
   assert.deepEqual(welt.ausbilden('a', muehle.id, 'pferdekummet'), {});

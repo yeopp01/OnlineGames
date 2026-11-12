@@ -3,7 +3,7 @@
 const karten = require('./karte');
 const { suchen, nachbarfeld } = require('./wege');
 const {
-  EINHEITEN, SAMMELN, TIERE, GEBAEUDE, VERBESSERUNGEN, ZEITALTER, AUFSTIEGE, KLASSEN, HANDEL,
+  EINHEITEN, SAMMELN, TIERE, GEBAEUDE, VERBESSERUNGEN, ZEITALTER, AUFSTIEGE, KLASSEN, HANDEL, HAEUSER,
   BEVOELKERUNG_MAX, SCHLANGE_MAX, STARTAUFSTELLUNG,
 } = require('./daten');
 
@@ -17,6 +17,8 @@ const GEBAEUDEFELDER = ['leben', 'nahruestung', 'fernruestung', 'sicht', 'angrif
 // Die Gebaeude, die schiessen (bauen AC-29): wer in den Daten einen Angriff
 // hat. Einmal gezaehlt - `tuermeTakten()` laeuft in jedem Takt.
 const SCHIESSENDE = new Set(Object.keys(GEBAEUDE).filter((art) => GEBAEUDE[art].angriff > 0));
+// Werte eines Gebaeudes, die nur fuer eines gelten, das schiesst (gebaeudewert).
+const SCHUSSFELDER = new Set(['angriff', 'reichweite', 'nachladen']);
 const SUCHWEITE_ERSATZ = 12;
 // So lange liegt ein Toter noch im Bild, bevor er aus dem Zustand faellt
 // (kampf AC-10): lang genug, um zu sehen, was passiert ist.
@@ -59,6 +61,12 @@ const VERFOLGUNG_FELDER = 5;
 // keine. Steht nach Ablauf keine Entscheidung, endet sie unentschieden
 // (AC-5). Was diese Liste nicht kennt, heisst "keine Grenze".
 const ZEITGRENZEN = [90, 120];
+// Wie schnell die Partie laeuft (spielziel AC-23, ADR-0013): eine
+// Spielsekunde bleibt TAKTE_PRO_SEKUNDE Takte, schneller heisst, der Raum
+// rechnet mehr Takte je echte Sekunde (`takte(einstellungen)` im
+// Steckbrief). Die Welt rechnet nichts anders - sie sagt es nur dem Browser,
+// damit er die Bewegung zwischen zwei Zustaenden passend streckt.
+const GESCHWINDIGKEITEN = [1, 1.5, 2];
 // So lange laeuft die Frist, wenn einer sein Buendnis kuendigt (spielziel
 // AC-21, ADR-0013): erst danach sind die frueheren Verbuendeten Gegner. Die
 // Zahl steht im ADR - genug, um Truppen aus dem fremden Dorf zu holen.
@@ -82,6 +90,10 @@ const ROHSTOFFE = ['holz', 'nahrung', 'gold', 'stein'];
 const ROHSTOFF_NAMEN = { holz: 'Holz', nahrung: 'Nahrung', gold: 'Gold', stein: 'Stein' };
 
 // Namen der Gebaeude fuer Meldungen auf dem Bildschirm - mit echten Umlauten.
+// Ein Satz beginnt gross, auch wenn er mit einer Form aus den Daten beginnt
+// („Das Lehen ist schon erreicht.").
+const grossAnfang = (text) => text.charAt(0).toUpperCase() + text.slice(1);
+
 const GEBAEUDE_NAMEN = {
   dorfzentrum: 'Das Dorfzentrum',
   haus: 'Das Haus',
@@ -118,6 +130,7 @@ const EINHEIT_NAMEN = {
   ramme: 'Die Ramme',
   mangonel: 'Den Mangonel',
   moench: 'Den Mönch',
+  marktkarren: 'Den Marktkarren',
 };
 
 // Welche Verbesserung eine Einheit zur naechsten Stufe macht - `wandelt`
@@ -148,6 +161,17 @@ function wirkungsschluessel(art) {
 function teamAus(teams, id) {
   const team = teams && Object.hasOwn(teams, id) ? teams[id] : null;
   return Number.isInteger(team) && team >= 1 && team <= 4 ? team : null;
+}
+
+/**
+ * Das Haus eines Spielers aus den Einstellungen (spielziel AC-17):
+ * `einstellungen.haeuser` ist `{ <spielerId>: <haus> }` mit einem Schluessel
+ * aus `HAEUSER`. Alles andere heisst: kein Haus, keine Boni - so spielen
+ * alle Partien, die keins waehlen, wie bis Stufe D.
+ */
+function hausAus(haeuser, id) {
+  const haus = haeuser && Object.hasOwn(haeuser, id) ? haeuser[id] : null;
+  return typeof haus === 'string' && Object.hasOwn(HAEUSER, haus) ? haus : null;
 }
 
 function untaetigeListe(welt, spielerId) {
@@ -222,7 +246,15 @@ class Welt {
       // Das Team (spielziel AC-14): 1 bis 4 oder keins. Wer keins hat,
       // spielt gegen alle.
       team: teamAus(einstellungen.teams, eintrag.id),
+      // Das Haus (spielziel AC-17): ein Schluessel aus `HAEUSER` oder keins.
+      // Seine Boni liest `wirkungen()`, nie eine Regel selbst.
+      haus: hausAus(einstellungen.haeuser, eintrag.id),
     }));
+    // Die Wirkungen je Spieler (`wirkungen()`), gemerkt mit der Zahl der
+    // Verbesserungen und dem Stand der Buendnisse, auf denen sie beruhen.
+    // `buendnisStand` zaehlt jede Trennung einer Sicht (spielziel AC-25).
+    this.wirkungenGemerkt = new Map();
+    this.buendnisStand = 0;
     // Wer mit wem verbuendet ist, fragt jede Kampfregel - deshalb eine Map
     // statt `spielerVon` (das sucht in der Liste).
     this.teamVon = new Map(this.spieler.map((s) => [s.id, s.team]));
@@ -238,6 +270,8 @@ class Welt {
     this.buendnisse = einstellungen.buendnisse === 'fest' ? 'fest' : 'loesbar';
     // Die Zeitgrenze in Spielminuten oder null (spielziel AC-22).
     this.zeitgrenze = ZEITGRENZEN.includes(einstellungen.zeitgrenze) ? einstellungen.zeitgrenze : null;
+    // Die Spielgeschwindigkeit (spielziel AC-23); was die Liste nicht kennt, ist 1.
+    this.tempo = GESCHWINDIGKEITEN.includes(einstellungen.tempo) ? einstellungen.tempo : 1;
     // Gekuendigte Buendnisse, je `{ wer, bis }` mit `bis` als Takt, an dem
     // die Frist ablaeuft, und `vorbei`, sobald sie abgelaufen ist. Die Liste
     // geht mit jedem Zustand an alle: eine Kuendigung ist oeffentlich.
@@ -371,19 +405,72 @@ class Welt {
    * Ruestung, Sicht (kampf AC-17, bauen AC-34). Das Gegenstueck zu
    * `einheitenwert()`: wer `GEBAEUDE[art].leben` direkt liest, sieht das
    * Mauerwerk nicht. Leben waechst um einen Anteil des Grundwerts
-   * (`lebenAnteil`), alles andere um einen Zuschlag.
+   * (`lebenAnteil`), alles andere um einen Zuschlag. Angriff, Reichweite und
+   * Nachladezeit nur bei einem Gebaeude, das schiesst (spielziel AC-26):
+   * "Turm und Burg +1 Reichweite" gilt nicht dem Wohnhaus.
    */
   gebaeudewert(besitzer, art, feld) {
     const grund = GEBAEUDE[art][feld] || 0;
-    const verbesserungen = this.spielerVon(besitzer)?.verbesserungen || [];
+    const wirkungen = this.wirkungen(besitzer);
     if (feld === 'leben') {
       let anteil = 0;
-      for (const v of verbesserungen) anteil += VERBESSERUNGEN[v].gebaeude?.lebenAnteil || 0;
+      for (const w of wirkungen) anteil += w.gebaeude?.lebenAnteil || 0;
       return Math.round(grund * (1 + anteil));
     }
+    if (SCHUSSFELDER.has(feld) && !SCHIESSENDE.has(art)) return grund;
     let wert = grund;
-    for (const v of verbesserungen) wert += VERBESSERUNGEN[v].gebaeude?.[feld] || 0;
+    for (const w of wirkungen) wert += w.gebaeude?.[feld] || 0;
     return wert;
+  }
+
+  /**
+   * Alles, was die Werte eines Spielers veraendert, in einer Form: zuerst die
+   * Boni seines Hauses (von Beginn an), dann die Mannschaftsboni, dann jede
+   * erforschte Verbesserung (spielziel AC-17, AC-25). Jede Lesestelle -
+   * `einheitenwert`, `gebaeudewert`, `sammelrate`, `farmNahrung`,
+   * `handelswert`, `ausbildungstempo` - laeuft ueber diese Liste; ein Haus
+   * ist deshalb ein Eintrag in `HAEUSER` und keine Verzweigung.
+   *
+   * Der Mannschaftsbonus kommt von jedem Haus, das er selbst oder einer
+   * traegt, mit dem er die Sicht teilt - je Haus einmal, auch wenn zwei
+   * Verbuendete dasselbe haben. Gefragt wird `teiltSicht`, nicht
+   * `feindlich`: in der Frist einer Kuendigung ist keiner mehr Verbuendeter
+   * (ADR-0014 Punkt 6). Im Aufbau, bevor es Sichten gibt, gilt das Team.
+   *
+   * Gemerkt je Spieler, solange die Zahl seiner Verbesserungen und der Stand
+   * der Buendnisse gleich bleiben: `sammelrate` fragt in jedem Takt fuer
+   * jeden Sammler.
+   */
+  wirkungen(besitzer) {
+    const spieler = this.spielerVon(besitzer);
+    if (!spieler) return [];
+    const n = spieler.verbesserungen.length;
+    const stand = this.buendnisStand;
+    const da = this.wirkungenGemerkt.get(besitzer);
+    if (da && da.n === n && da.stand === stand) return da.liste;
+    const liste = [];
+    if (spieler.haus) liste.push(HAEUSER[spieler.haus].boni);
+    const haeuser = new Set();
+    for (const s of this.spieler) {
+      const mit = s === spieler
+        || (this.sichten ? this.teiltSicht(besitzer, s.id) : Boolean(spieler.team) && s.team === spieler.team);
+      if (mit && s.haus) haeuser.add(s.haus);
+    }
+    for (const haus of haeuser) if (HAEUSER[haus].mannschaft) liste.push(HAEUSER[haus].mannschaft);
+    for (const v of spieler.verbesserungen) liste.push(VERBESSERUNGEN[v]);
+    this.wirkungenGemerkt.set(besitzer, { n, stand, liste });
+    return liste;
+  }
+
+  /**
+   * Wie schnell ein Gebaeude dieses Spielers ausbildet, als Faktor auf den
+   * Fortschritt je Takt (spielziel AC-25): 1,2 heisst 20 % schneller. Nur
+   * Einheiten - Verbesserungen und Aufstiege laufen im alten Tempo.
+   */
+  ausbildungstempo(besitzer, gebaeudeArt) {
+    let tempo = 1;
+    for (const w of this.wirkungen(besitzer)) tempo *= w.ausbildung?.[gebaeudeArt] || 1;
+    return tempo;
   }
 
   // Sieht dieser Spieler das Feld jetzt? Und hat er es je gesehen? (kampf AC-15)
@@ -447,7 +534,9 @@ class Welt {
    */
   einheitenwert(besitzer, art, feld) {
     const spieler = this.spielerVon(besitzer);
-    if (!spieler?.verbesserungen?.length) return EINHEITEN[art][feld] || 0;
+    // Ohne Verbesserung, Haus und Team wirkt nichts - auch kein
+    // Mannschaftsbonus, denn den bringt nur ein Verbuendeter (spielziel AC-25).
+    if (!spieler || (!spieler.verbesserungen.length && !spieler.haus && !spieler.team)) return EINHEITEN[art][feld] || 0;
     // Gemerkt je Spieler: `laufen()` fragt das Tempo in jedem Takt fuer jede
     // Einheit, `wacheTakten()` zweimal je Sekunde die Sicht. Ohne Gedaechtnis
     // liefe darunter je Aufruf eine Schleife ueber alle Verbesserungen mit
@@ -458,8 +547,9 @@ class Welt {
     const da = gemerkt.get(schluessel);
     if (da !== undefined) return da;
     let wert = EINHEITEN[art][feld] || 0;
+    const wirkungen = this.wirkungen(besitzer);
     for (const s of wirkungsschluessel(art)) {
-      for (const v of spieler.verbesserungen) wert += VERBESSERUNGEN[v].wirkung[s]?.[feld] || 0;
+      for (const w of wirkungen) wert += w.wirkung?.[s]?.[feld] || 0;
     }
     gemerkt.set(schluessel, wert);
     return wert;
@@ -488,6 +578,10 @@ class Welt {
     for (const art of Object.keys(GEBAEUDE)) {
       tafel[art] = {};
       for (const feld of GEBAEUDEFELDER) tafel[art][feld] = this.gebaeudewert(besitzer, art, feld);
+      // Was eine neue Farm traegt, mit Haus und Verbesserungen (bauen AC-26,
+      // spielziel AC-17) - sonst rechnete der Browser es selbst und kennte
+      // das Haus nicht (Durchsicht Runde 167).
+      if (GEBAEUDE[art].nahrung) tafel[art].nahrung = this.farmNahrung(besitzer);
     }
     return tafel;
   }
@@ -498,16 +592,14 @@ class Welt {
    */
   sammelrate(besitzer, rohstoff, grundrate) {
     let faktor = 1;
-    for (const v of this.spielerVon(besitzer)?.verbesserungen || []) {
-      faktor *= VERBESSERUNGEN[v].sammeln?.[rohstoff] || 1;
-    }
+    for (const w of this.wirkungen(besitzer)) faktor *= w.sammeln?.[rohstoff] || 1;
     return grundrate * faktor;
   }
 
   // Wie viel Nahrung eine neue Farm dieses Spielers traegt (bauen AC-26).
   farmNahrung(besitzer) {
     let nahrung = GEBAEUDE.farm.nahrung;
-    for (const v of this.spielerVon(besitzer)?.verbesserungen || []) nahrung += VERBESSERUNGEN[v].farm?.nahrung || 0;
+    for (const w of this.wirkungen(besitzer)) nahrung += w.farm?.nahrung || 0;
     return nahrung;
   }
 
@@ -549,7 +641,7 @@ class Welt {
       // Eine Farm traegt Nahrung, und nur einer arbeitet darauf (einheiten AC-18).
       ...(GEBAEUDE[art].nahrung ? { nahrung: this.farmNahrung(besitzer), arbeiter: null } : {}),
       schlange: [], // Arten der bezahlten Auftraege, der erste laeuft
-      fortschritt: 0, // Takte am laufenden Auftrag
+      fortschritt: 0, // Takte am laufenden Auftrag, mit dem Tempo der Ausbildung (spielziel AC-25)
       wartet: false, // Bevoelkerung voll (bauen AC-15)
     };
     this.gebaeude.set(gebaeude.id, gebaeude);
@@ -765,7 +857,7 @@ class Welt {
     // Erst das Zeitalter, dann der Platz (bauen AC-24).
     const noetig = this.gebaeudeZeitalter(art);
     if (noetig > spieler.zeitalter) {
-      return { fehler: `${GEBAEUDE_NAMEN[art] || art} gibt es erst in ${ZEITALTER[noetig].genitiv}.` };
+      return { fehler: `${GEBAEUDE_NAMEN[art] || art} gibt es erst ${ZEITALTER[noetig].ab}.` };
     }
     const x = Math.round(Number(ziel.x));
     const y = Math.round(Number(ziel.y));
@@ -800,7 +892,7 @@ class Welt {
     const spieler = this.spielerVon(spielerId);
     const noetig = this.gebaeudeZeitalter(art);
     if (noetig > spieler.zeitalter) {
-      return { fehler: `${GEBAEUDE_NAMEN[art] || art} gibt es erst in ${ZEITALTER[noetig].genitiv}.` };
+      return { fehler: `${GEBAEUDE_NAMEN[art] || art} gibt es erst ${ZEITALTER[noetig].ab}.` };
     }
     const felder = mauerLinie(von, bis);
     if (!felder) return { fehler: 'Das lässt sich nicht ziehen.' };
@@ -1014,18 +1106,20 @@ class Welt {
     const noetig = (EINHEITEN[art] || VERBESSERUNGEN[art])?.zeitalter || 0;
     if (noetig > spieler.zeitalter) {
       const wer = EINHEIT_NAMEN[art] || VERBESSERUNGEN[art]?.name || art;
-      return { fehler: `${wer} gibt es erst in ${ZEITALTER[noetig].genitiv}.` };
+      return { fehler: `${wer} gibt es erst ${ZEITALTER[noetig].ab}.` };
     }
     // Der Aufstieg: nur der naechste, nur einmal, und nur mit genug Gebaeuden
     // des laufenden Zeitalters (bauen AC-23).
     if (AUFSTIEGE[art]) {
       const aufstieg = AUFSTIEGE[art];
-      if (aufstieg.stufe <= spieler.zeitalter) return { fehler: `Die ${aufstieg.name} ist schon erreicht.` };
+      // Die Formen mit Artikel stehen in den Daten (bedienung AC-45).
+      const ziel = ZEITALTER[aufstieg.stufe];
+      if (aufstieg.stufe <= spieler.zeitalter) return { fehler: `${grossAnfang(ziel.artikel)} ist schon erreicht.` };
       if (aufstieg.stufe > spieler.zeitalter + 1) {
-        return { fehler: `Erst die ${ZEITALTER[spieler.zeitalter + 1].name}, dann die ${aufstieg.name}.` };
+        return { fehler: `Erst ${ZEITALTER[spieler.zeitalter + 1].artikel}, dann ${ziel.artikel}.` };
       }
       const laeuft = [...this.gebaeude.values()].some((g) => g.besitzer === spielerId && g.schlange.includes(art));
-      if (laeuft) return { fehler: `Der Aufstieg in die ${aufstieg.name} läuft schon.` };
+      if (laeuft) return { fehler: `Der ${aufstieg.titel} läuft schon.` };
       const haben = this.gebaeudeDerZeit(spieler);
       if (haben < aufstieg.voraussetzung) {
         return { fehler: `Erst ${aufstieg.voraussetzung} fertige Gebäude ${ZEITALTER[spieler.zeitalter].genitiv} außer Häusern — vorhanden: ${haben}.` };
@@ -1076,10 +1170,19 @@ class Welt {
    */
   handelspreise(spielerId) {
     const spieler = this.spielerVon(spielerId);
+    // Ein Haus kann die Gebuehr senken (spielziel AC-26), nie unter null.
+    const gebuehr = Math.max(0, HANDEL.gebuehr + this.handelswert(spielerId, 'gebuehr'));
     return Object.fromEntries(Object.keys(HANDEL.waren).map((ware) => {
       const grund = spieler.preise[ware];
-      return [ware, [Math.round(grund * (1 + HANDEL.gebuehr)), Math.round(grund * (1 - HANDEL.gebuehr))]];
+      return [ware, [Math.round(grund * (1 + gebuehr)), Math.round(grund * (1 - gebuehr))]];
     }));
+  }
+
+  // Die Summe eines Handelsbonus aus Haus und Verbesserungen (spielziel AC-26).
+  handelswert(spielerId, feld) {
+    let summe = 0;
+    for (const w of this.wirkungen(spielerId)) summe += w.handel?.[feld] || 0;
+    return summe;
   }
 
   // Am Markt 100 einer Ware gegen Gold tauschen (bauen AC-33). Jeder Kauf
@@ -1224,9 +1327,12 @@ class Welt {
     gebaeude.wartet = wartet;
     if (wartet) return;
 
-    gebaeude.fortschritt++;
+    // Eine Einheit kann schneller fertig werden (spielziel AC-25); der
+    // Fortschritt ist dann kein ganzer Takt mehr. Der kleine Rand faengt die
+    // Rundung der Summe ab: 175 mal 1,2 ergibt 209,99999 statt 210.
+    gebaeude.fortschritt += EINHEITEN[art] ? this.ausbildungstempo(gebaeude.besitzer, gebaeude.art) : 1;
     this.gebaeudeGeaendert(gebaeude);
-    if (gebaeude.fortschritt < this.auftragWerte(art).zeit * TAKTE_PRO_SEKUNDE) return;
+    if (gebaeude.fortschritt < this.auftragWerte(art).zeit * TAKTE_PRO_SEKUNDE - 1e-6) return;
 
     if (verbesserung) {
       gebaeude.schlange.shift();
@@ -1391,6 +1497,11 @@ class Welt {
     // eigener Knopf, keine eigene Betriebsart: der Server liest es aus dem Feld.
     const feind = this.feindAn(spielerId, Number(ziel.x), Number(ziel.y));
     const feindBau = !feind && baustelle && this.feindlich(spielerId, baustelle.besitzer) ? baustelle : null;
+    // Ein fertiger Markt, der nicht einem Gegner gehoert, ist fuer den
+    // Karren ein Handelsziel (einheiten AC-40) - der eines Verbuendeten oder
+    // ein zweiter eigener (ADR-0013).
+    const handelsziel = !angriffslauf && !feind && baustelle?.fertig && GEBAEUDE[baustelle.art].handel
+      && !this.feindlich(spielerId, baustelle.besitzer) ? baustelle : null;
     // Ein eigenes Schaf in der Naehe des Klicks (einheiten AC-17) - aber nur,
     // wenn auf dem Feld selbst nichts zu sammeln ist: neben Beeren weiden Schafe.
     const schaf = sammeln || angriffslauf ? null : this.tierAn(spielerId, Number(ziel.x), Number(ziel.y));
@@ -1422,6 +1533,9 @@ class Welt {
       einheit.unerreichbar = null;
       // Jeder neue Befehl beendet einen laufenden Angriffslauf.
       einheit.angriffslauf = null;
+      // Ein Karren auf einen anderen Markt faehrt die Strecke (einheiten
+      // AC-40); ohne eigenen zweiten Markt bleibt es ein Gang.
+      if (handelsziel && EINHEITEN[einheit.art].handelt && this.handelBeginnen(einheit, handelsziel)) continue;
       // Ein Moench bekehrt, wer sich bekehren laesst (einheiten AC-38) - wenn
       // er nicht ruht; sonst geht er nur hin.
       if (!angriffslauf && feind && this.kannBekehren(einheit, feind)) {
@@ -1529,6 +1643,109 @@ class Welt {
     felder.sort((a, b) => a.d - b.d || a.y - b.y || a.x - b.x);
     const auswahl = felder.slice(0, Math.max(1, n)).map(({ x, y }) => ({ x, y }));
     return auswahl.length ? auswahl : [ziel];
+  }
+
+  // ---- Handel mit dem Karren (einheiten AC-40) -----------------------------
+
+  /**
+   * Schickt einen Karren auf die Strecke zwischen seinem Heimatmarkt und
+   * `ziel`. Heimat ist der eigene fertige Markt, der ihm am naechsten steht -
+   * nicht `ziel` selbst. Gibt es keinen, ist es keine Strecke (false).
+   */
+  handelBeginnen(einheit, ziel) {
+    let heimat = null;
+    let besterAbstand = Infinity;
+    for (const g of this.gebaeude.values()) {
+      if (g === ziel || g.besitzer !== einheit.besitzer || !g.fertig || !GEBAEUDE[g.art].handel) continue;
+      const abstand = this.abstandZu(einheit, g);
+      if (abstand < besterAbstand) {
+        besterAbstand = abstand;
+        heimat = g;
+      }
+    }
+    if (!heimat) return false;
+    // Gold aus einer frueheren Strecke wird zuerst heimgebracht - zum neuen
+    // Heimatmarkt; anderes traegt ein Karren nicht.
+    if (einheit.ladungsart !== 'gold') {
+      einheit.ladung = 0;
+      einheit.ladungsart = null;
+    }
+    einheit.auftrag = { art: 'handel', heimat: heimat.id, ziel: ziel.id };
+    einheit.weg = [];
+    return true;
+  }
+
+  /**
+   * Die beiden Maerkte der Strecke, solange sie gilt: beide stehen, die
+   * Heimat gehoert ihm, das Ziel keinem Gegner - nach einer Kuendigung
+   * (spielziel AC-21) wird der Verbuendete einer, und die Strecke endet.
+   */
+  strecke(einheit) {
+    const heimat = this.gebaeude.get(einheit.auftrag.heimat);
+    const ziel = this.gebaeude.get(einheit.auftrag.ziel);
+    if (!heimat || !ziel || heimat.besitzer !== einheit.besitzer) return null;
+    if (this.feindlich(einheit.besitzer, ziel.besitzer)) return null;
+    return { heimat, ziel };
+  }
+
+  /**
+   * Gold je Fahrt zwischen zwei Maerkten, nach `HANDEL.karren` - fuer den
+   * Besitzer des Heimatmarkts, also mit seinem `karrenAnteil` (spielziel
+   * AC-26), und zwischen zwei Verbuendeten mit `verbuendetAnteil` dazu
+   * (spielziel AC-25). Verbuendet heisst hier: sie teilen die Sicht - in der
+   * Frist einer Kuendigung faehrt der Karren weiter, aber ohne den Bonus.
+   */
+  handelsgewinn(heimat, ziel) {
+    const mitte = (g) => {
+      const { x0, y0, x1, y1 } = this.grundflaeche(g.art, g.x, g.y);
+      return { x: (x0 + x1) / 2, y: (y0 + y1) / 2 };
+    };
+    const a = mitte(heimat);
+    const b = mitte(ziel);
+    const d = Math.hypot(a.x - b.x, a.y - b.y);
+    const { faktor, sockel } = HANDEL.karren;
+    let anteil = 1 + this.handelswert(heimat.besitzer, 'karrenAnteil');
+    if (ziel.besitzer !== heimat.besitzer && this.teiltSicht(heimat.besitzer, ziel.besitzer)) {
+      anteil += this.handelswert(heimat.besitzer, 'verbuendetAnteil');
+    }
+    return Math.round(faktor * anteil * d * (d / this.karte.groesse + sockel));
+  }
+
+  // Leer zum Ziel, dort laedt er das Gold der Fahrt, beladen heim, dort
+  // gehoert es dem Spieler - und wieder los.
+  handelTakten(einheit) {
+    const s = this.strecke(einheit);
+    if (!s) {
+      einheit.auftrag = null;
+      return;
+    }
+    const { heimat, ziel } = s;
+    const beladen = einheit.ladung > 0;
+    const markt = beladen ? heimat : ziel;
+    // Angekommen ist, wer am Rand steht. Der Weg endet auf einem Randfeld,
+    // das bis zu drei Felder draussen liegen kann, wenn naeher alles belegt
+    // ist (`randfeld`).
+    if (this.abstandZu(einheit, markt) > 3.5) {
+      const stand = this.randfeld(markt, einheit);
+      einheit.weg = stand ? this.wegNach(einheit, stand) : [];
+      // Kein Weg dorthin: er bleibt stehen, statt in jedem Takt zu suchen.
+      if (!einheit.weg.length) einheit.auftrag = null;
+      return;
+    }
+    if (!beladen) {
+      einheit.ladung = this.handelsgewinn(heimat, ziel);
+      einheit.ladungsart = 'gold';
+      // Ein Weg von null Gold - zwei Maerkte nebeneinander - waere ein
+      // Pendeln ohne Ende ohne Ertrag.
+      if (!einheit.ladung) einheit.auftrag = null;
+      return;
+    }
+    const spieler = this.spielerVon(einheit.besitzer);
+    spieler.gold += einheit.ladung;
+    // Fuer die Tafel (spielziel AC-8): Gold aus dem Handel ist gesammeltes.
+    spieler.gesammelt.gold += einheit.ladung;
+    einheit.ladung = 0;
+    einheit.ladungsart = null;
   }
 
   // ---- Farm (einheiten AC-18) ----------------------------------------------
@@ -2732,6 +2949,12 @@ class Welt {
     const bisher = this.spieler.filter((s) => s.id !== id && this.sichten.get(s.id) === alt).map((s) => s.id);
     if (!bisher.length) return;
     this.sichten.set(id, { sichtbar: alt.sichtbar.slice(), gebaeude: alt.gebaeude.slice(), erkundet: alt.erkundet.slice() });
+    // Mit der Sicht endet der Mannschaftsbonus in beide Richtungen
+    // (spielziel AC-25): alle Wirkungen und Werte neu, und jeder bekommt
+    // seine Tafel neu - die Sicht der Reiter steht darin.
+    this.buendnisStand += 1;
+    this.werteGemerkt.clear();
+    for (const s of this.spieler) this.werteAenderungen.add(s.id);
     if (this.bekannt) {
       for (const [wer, von] of [...bisher.map((b) => [id, b]), ...bisher.map((b) => [b, id])]) {
         const bekannt = this.bekannt.get(wer);
@@ -3093,6 +3316,13 @@ class Welt {
       this.bekehrenTakten(einheit);
       return;
     }
+    // Faellt ein Markt der Strecke, bleibt der Karren stehen - sofort, nicht
+    // erst am Ende des Weges (einheiten AC-40).
+    if (einheit.auftrag?.art === 'handel' && !this.strecke(einheit)) {
+      einheit.auftrag = null;
+      einheit.weg = [];
+      return;
+    }
     if (einheit.weg.length) {
       einheit.sammelt = false;
       einheit.baut = false;
@@ -3126,6 +3356,10 @@ class Welt {
     }
     if (einheit.auftrag.art === 'tier') {
       this.tierTakten(einheit);
+      return;
+    }
+    if (einheit.auftrag.art === 'handel') {
+      this.handelTakten(einheit);
       return;
     }
     if (einheit.auftrag.art === 'farm') {
@@ -3345,6 +3579,9 @@ class Welt {
         ...(e.sammelt || e.baut || e.heilt || e.bekehrt || (e.auftrag?.art === 'angreifen' && !e.weg.length && !e.tot) ? { w: 1 } : {}),
         // Ein Moench, der nach dem Bekehren ruht (einheiten AC-38).
         ...(e.ruhtBis > this.takt ? { r: 1 } : {}),
+        // Ein Karren auf der Strecke (einheiten AC-40): Heimat, Ziel und das
+        // Gold je Fahrt - die Leiste nennt sie.
+        ...(e.auftrag?.art === 'handel' ? { hd: this.streckeFuerDraht(e) } : {}),
         // Gefallen: der Browser legt ihn hin, bis der Server ihn nimmt
         // (kampf AC-10).
         ...(e.tot ? { s: 1 } : {}),
@@ -3420,6 +3657,11 @@ class Welt {
    * @param {string[]} ids die Spieler, die einen Zustand bekommen
    * @returns {Map<string, object>}
    */
+  streckeFuerDraht(einheit) {
+    const s = this.strecke(einheit);
+    return s ? [s.heimat.id, s.ziel.id, this.handelsgewinn(s.heimat, s.ziel)] : undefined;
+  }
+
   zustandJeSpieler(ids) {
     const voll = this.zustand();
     return new Map(ids.map((id) => [id, this.auszug(voll, id)]));
@@ -3619,6 +3861,10 @@ class Welt {
       // Die Zeitgrenze in Spielminuten oder null (spielziel AC-22): der
       // Browser zeigt sie neben der Uhr.
       zeitgrenze: this.zeitgrenze,
+      // Die Spielgeschwindigkeit (spielziel AC-23): `takte` bleibt die Zahl
+      // je Spielsekunde (die Uhr im Bild), in echter Zeit kommen
+      // `takte * tempo` Takte je Sekunde.
+      tempo: this.tempo,
       karte: {
         groesse: this.karte.groesse,
         felder: Buffer.from(this.karte.felder).toString('base64'),
@@ -3637,6 +3883,9 @@ class Welt {
         // Das Team (spielziel AC-14): der Browser fragt damit, ob ein
         // Rechtsklick angreift oder hingeht - dieselbe Frage wie `feindlich`.
         ...(s.team ? { team: s.team } : {}),
+        // Das Haus (spielauswahl AC-24), wie im Warteraum gewaehlt oder
+        // aus dem Startwert gezogen.
+        ...(s.haus ? { haus: s.haus } : {}),
         ...(s.aus ? { aus: 1 } : {}),
       })),
       // Wer nach dem Ende zurueckkommt, sieht das Ende und nicht eine
@@ -3674,6 +3923,8 @@ class Welt {
           // Wer bekehrt, wie weit und wen nicht (einheiten AC-38) - fuer das
           // Zeichen am Ziel und die Leiste.
           bekehren: w.bekehren ? { reichweite: w.bekehren.reichweite, nicht: w.bekehren.nicht } : null,
+          // Wer handelt (einheiten AC-40): die Leiste nennt seine Strecke.
+          handelt: Boolean(w.handelt),
         }])),
         gebaeude: Object.fromEntries(Object.entries(GEBAEUDE).map(([art, w]) => [art, {
           leben: w.leben, bildetAus: w.bildetAus, groesse: w.groesse, kosten: w.kosten, bauzeit: w.bauzeit,
@@ -3734,5 +3985,5 @@ function mauerLinie(von, bis) {
 module.exports = {
   mauerLinie, MAUER_MAX,
   Welt, TAKTE_PRO_SEKUNDE, STARTVORRAT, ROHSTOFFE, VERFOLGUNG_FELDER, WACHE_TAKTE,
-  ZEITGRENZEN, KUENDIGUNG_SEKUNDEN, GEBAEUDE_NAMEN, EINHEIT_NAMEN,
+  ZEITGRENZEN, GESCHWINDIGKEITEN, KUENDIGUNG_SEKUNDEN, GEBAEUDE_NAMEN, EINHEIT_NAMEN,
 };

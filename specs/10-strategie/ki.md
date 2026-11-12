@@ -2,7 +2,7 @@
 
 **Bereich:** Strategie
 **Kuerzel:** ki
-**Stand:** 22/26 fertig · 4 offen
+**Stand:** 27/32 fertig · 5 offen
 
 ## Zweck
 
@@ -107,7 +107,7 @@ nicht die Regeln.
   Nahrung nur aus, wenn danach noch einer bezahlt ist; und ein Vorrat, zu dem
   kein Weg führt, wird zwei Minuten lang nicht wieder vorgeschlagen. Ohne das
   endet jede Partie damit, dass beide Seiten einander zusehen.
-- **AC-13** `offen` **KI sieht nur ihr Sichtfeld** — Mit dem Nebel (C6)
+- **AC-13** `fertig` **KI sieht nur ihr Sichtfeld** — Mit dem Nebel (C6)
   kennt sie ein fremdes Gebäude erst, wenn eine ihrer Einheiten es gesehen
   hat, und behält es, bis sie hinsieht und es fehlt (wie kampf AC-12); fremde
   Einheiten nur, solange sie sie sieht. Ziel, Überlegenheit (AC-18) und freie
@@ -124,7 +124,15 @@ nicht die Regeln.
   behoben (Suche, Überlegenheit ohne frischen Blick), 35 von 40 vor Minute
   60; Frage an den Benutzer (Erkenntnisse). **Stand Runde 144:** auf dem
   Boden der wachsenden Wirtschaft (AC-24) 36 von 40 (ohne eigene Sicht 40);
-  Zweig `strategie-ki-sicht` (`d0314d4`), Frage erneuert.
+  Zweig `strategie-ki-sicht` (`d0314d4`), Frage erneuert. **Fertig in Runde
+  165:** der Zweig zusammengeführt (Benutzer, 2026-11-10: die Ersatzgrenze im
+  Nebel, fahrplan AC-11). Gegner ist, wen `welt.feindlich` nennt — ein
+  Verbündeter wird weder gemerkt noch gesucht; was sie sieht, ist die Sicht
+  ihres Teams. Auch der Platz des zweiten Markts (AC-26) richtet sich nach
+  dem Ort, an dem sie den Gegner zuletzt sah, nicht nach seinem Startplatz.
+  KI gegen KI über 40 Startwerte: alle mit Sieger, 37 vor Minute 60, Median
+  44,6 Minuten (ohne eigene Sicht 40, Median 41,9 und 38,3). Eine Partie
+  rechnet rund ein Viertel länger (173 statt 136 ms je 1000 Takte).
 - **AC-14** `fertig` **Die KI verteidigt zu Hause** — Verliert eines ihrer
   Gebäude oder einer ihrer Dorfbewohner Leben, zieht die Wache im Angriffslauf
   zum Angriffsort, und der getroffene Dorfbewohner lässt die Arbeit liegen und
@@ -210,7 +218,10 @@ nicht die Regeln.
   ab dem ersten Angriff: das Militär gibt nur aus, was über dem Preis liegt,
   und die Umverteilung hält das Zurückgelegte nicht für Überfluss. Im
   Prüfstand über zwanzig Startwerte steigt jede KI vor Spielminute 30 auf,
-  die ab Minute 18 nie unter zwölf Dorfbewohner fällt (Vorlage: 16 bis 20
+  die ab Minute 18 nie unter drei Viertel ihres Ziels der Feudalzeit fällt
+  (AC-24: 24 von 32; in Runde 143 die Hälfte, seit der KI im Nebel, AC-13,
+  drei Viertel — im Nebel fallen Verlierer auf 14 bis 20 statt 0 bis 13,
+  Runde 165) (Vorlage: 16 bis 20
   Minuten im guten Spiel). Abweichung: „jede“ galt für alle; wer überrannt
   wird, steckt jede Nahrung in den Ersatz (AC-12) — gemessen fielen die fünf
   ohne Aufstieg auf 0 bis 10 Dorfbewohner, und vor dem ersten Angriff zu
@@ -251,11 +262,142 @@ nicht die Regeln.
   niemand; die KI sendet dafür keine Nachricht, und weil sie bei jeder
   Entscheidung `feindlich` fragt, ist ein Gekündigter danach ihr Gegner,
   ohne dass sie davon wissen muss — der Test dazu gehört zu AC-21.
-- **AC-26** `offen` **Die KI handelt mit Karren** — Fehlt ihr in der
+- **AC-26** `fertig` **Die KI handelt mit Karren** — Fehlt ihr in der
   Ritterzeit das Gold, baut sie einen zweiten Markt weit vom ersten oder
-  fährt zu einem verbündeten, und bildet Karren aus. Gemessen im Prüfstand:
-  das Patt mit leerem Gold (Erkenntnisse, Runden 114, 137 und 144) wird
-  seltener. Die Zahl dazu legt die Messung beim Bauen fest.
+  fährt zu einem verbündeten, und bildet Karren aus. Gemessen über ganze
+  Partien, in denen das Gold um ihr Dorf beim Aufstieg in die Ritterzeit
+  geleert wird: ohne Handel kommt danach kein Gold mehr herein, mit Handel
+  in fast jeder Partie (alle bis auf zwei) mindestens 90 Gold in 14
+  Minuten. **Neu gefasst in Runde 162:** zuvor sollte das Patt mit leerem
+  Gold (Erkenntnisse, Runden 114, 137 und 144) seltener werden. Das gibt es
+  auf diesem Zweig nicht — der Prüfstand endet 40 von 40 vor Minute 60,
+  und das Gold in Reichweite geht in 88 KIs nur viermal aus, alle nach
+  Minute 45; jene Patts kamen von der KI mit eigener Sicht (ki AC-13).
+  **Gebaut in Runde 162:** knapp heißt weniger als 800 Gold (ein Goldfeld)
+  in den 30 Feldern, in denen sie sammelt. Der erste Markt steht am Dorf,
+  der zweite 50 Felder davon (sonst 42, 34, 26) in der Richtung, die am
+  weitesten von jedem gegnerischen Dorf liegt; Ziel ist der fernste
+  fertige Markt, der keinem Gegner gehört, mindestens 25 Felder weit.
+  Höchstens acht Karren. Fehlt ihr das Gold für einen, verkauft sie am
+  Markt, was über 300 liegt — Stein ganz, den sie nie ausgibt. Solange
+  ein Markt fehlt, legt sie sein Holz zurück. Ein Karren ist keine
+  Kampfeinheit: Angriff 0, er zieht nicht mit dem Heer. Gemessen, Startwerte
+  1 bis 10: mit Handel 720, 562, 270, 10, 125, 93, 350, 706 und 0 Gold in
+  14 Minuten (bei 4 und 10 wird die KI überrannt), ohne Handel 0 bis 30.
+
+### Stufe E — Häuser
+
+- **AC-27** `fertig` **KI neigt zum Haus** — Die KI spielt das Haus,
+  das ihr Platz im Warteraum trägt (spielauswahl AC-24), und neigt zu
+  seinem Schwerpunkt: Eschenbruch zur Schießanlage, Rappenstein zum Stall,
+  Distelhag zur Kaserne, Silberfurt früher zum Handel. Wehrstein neigt zu
+  Türmen — das braucht Stein und steht als AC-30 für sich.
+  Welche Einheiten sie ausbildet, liest sie aus den Daten des Gebäudes
+  (ki AC-17), welches Gebäude zuerst, aus den Daten des Hauses — keine
+  Verzweigung nach dem Namen. **Messbar:** über vierzig Startwerte im
+  Nebel, je Partie zwei verschiedene Häuser, bildet jedes Haus aus seinem
+  Schwerpunkt mindestens anderthalbmal so viel aus wie die anderen im
+  Schnitt und mindestens zwei mehr, und KI gegen KI endet weiter wie in
+  fahrplan AC-11. Geschärft beim Bauen (Runde 174): „mehr als der
+  Durchschnitt" hielt auch ohne jede Neigung für Eschenbruch und Silberfurt
+  (78 gegen 64, 0,8 gegen 0,4). Gebaut als `ki` in `HAEUSER`
+  (`schwerpunkt`, `goldKnapp`): ein Militärgebäude als Schwerpunkt baut die
+  KI zuerst, baut es nach der ersten Kaserne nach und bedient es zuerst;
+  Silberfurt handelt gleich mit der Ritterzeit. Gemessen: Eschenbruch 107
+  aus der Schießanlage gegen 42, Rappenstein 28 aus dem Stall gegen 4,
+  Silberfurt 6,5 Karren gegen 0,1, Distelhag 82 aus der Kaserne gegen 35;
+  38 von 40 Partien vor Minute 60, Median 42,9. Belegt in
+  `tests/partien/ki-im-nebel.test.mjs`.
+- **AC-28** `offen` **KI bildet Spezialeinheit aus** — In der Ritterzeit
+  baut die KI eine Burg und bildet dort die Spezialeinheit ihres Hauses
+  aus, als Teil ihres Heeres. Dafür braucht sie 650 Stein — **die KI
+  sammelt bis heute keinen Stein**; das gehört zu diesem Kriterium. Über
+  zwanzig Startwerte hat jede KI, die die Ritterzeit erreicht und zehn
+  Minuten darin bleibt, eine Burg und mindestens eine Spezialeinheit
+  ausgebildet. Ohne das misst fahrplan AC-18 nichts.
+- **AC-30** `fertig` **Wehrstein baut Türme** — Die KI, die Wehrstein
+  spielt, baut ab der Feudalzeit Wachtürme an ihrem Dorf, mehr als jedes
+  andere Haus. Dafür sammelt sie Stein (125 je Turm; vom Start sind 200
+  da) — dieselbe Lücke wie bei AC-28, die eine löst sie für beide. Gelesen
+  aus `HAEUSER.wehrstein.ki`, nicht aus dem Namen. **Messbar:** über
+  vierzig Startwerte wie bei AC-27 baut Wehrstein je Partie mindestens
+  zwei Türme und anderthalbmal so viele wie die anderen im Schnitt, und KI
+  gegen KI endet weiter wie in fahrplan AC-11. Abgetrennt von AC-27 in
+  Runde 174: die KI baut bis heute keinen Turm. Gebaut als
+  `ki: { schwerpunkt: 'wachturm', anzahl: 2, steinSammler: 3 }` — ein
+  Schwerpunkt, der nichts ausbildet, ist ein Bauwerk (`ki.bauwerkePruefen`):
+  ab seinem Zeitalter, wenn das erste Militärgebäude steht **und das erste
+  Heer aufgebrochen ist**, eines nach dem anderen am Dorf; die
+  Steinsammler kommen vom Holz und gehen zurück, wenn alle stehen.
+  Gemessen: zwei Türme in jeder der 16 Partien, die anderen keinen; 40 von
+  40 mit Sieger, 36 vor Minute 60, Median 44,9 — knapp unter der Grenze.
+  Vier Türme ergaben 31 vor Minute 60 und Median 46,8; zwei Türme schon
+  vor dem ersten Angriff ließen zwei Partien ohne Sieger. Belegt in
+  `tests/partien/ki-im-nebel.test.mjs`.
+
+- **AC-31** `offen` **KI antwortet auf das Heer** — Was die KI ausbildet
+  und welches Militärgebäude sie nachbaut, richtet sich nach den fremden
+  Kampfeinheiten, die sie gesehen hat (`feindeGesehen`, ki AC-13): in
+  jedem Gebäude nimmt sie die Einheit, deren `bonus` die meisten von ihnen
+  nach ihren `klassen` trifft, unter gleichen die bisherige Wahl (die
+  neueste zuerst, ki AC-22); und das nächste Gebäude ist das, aus dem die
+  beste Antwort kommt, wenn sie es noch nicht hat. Hat sie niemanden
+  gesehen, bleibt alles wie heute. Gelesen aus den Daten der Einheiten und
+  Gebäude, keine Liste von Paaren; die Neigung zum Haus (AC-27) entscheidet
+  weiter, welches Gebäude sie zuerst baut und zuerst bedient — nur nicht
+  mehr allein, was danach kommt. Heute baut Distelhag nach der ersten
+  Kaserne nur Kasernen nach, eine Schießanlage nie. **Messbar:** in
+  `npm run pruefstand:haeuser` gewinnt Distelhag mindestens 6 von 20
+  Partien gegen Eschenbruch (Runde 176: 0 von 20, in keiner Gegenprobe an
+  den Zahlen mehr als 3), AC-27 und fahrplan AC-11 halten weiter, und die
+  Gegenprobe mit der alten Wahl zeigt den Unterschied an denselben
+  Startwerten. Angelegt in Runde 176: Distelhag bildet gegen Schützen
+  weiter Speerkämpfer aus, die der Bogen mit Bonus trifft, statt Plänklern
+  aus einer Schießanlage.
+  **Runde 177: gebaut, gemessen, ohne Wirkung — nicht eingecheckt**, auf
+  dem lokalen Zweig `strategie-ki-antwort` (9c69b75, mit vier Tests, die
+  gegen den alten Stand fallen). Distelhag gegen Eschenbruch blieb 0 zu 20,
+  die Tafel über 200 Partien fast gleich (Eschenbruch 85 %, Distelhag
+  29 % statt 31 %). Die Annahme dahinter war falsch: **beide** Seiten
+  antworten — Eschenbruch bildet gegen Distelhags Schützen 40 Plänkler aus
+  —, und Distelhag verliert über die Menge: in den Startwerten 61 bis 63
+  zwei bis drei Militärgebäude gegen drei bis fünf, 127 gegen 226
+  Kampfeinheiten, fast immer unter 50 Holz bei 200 bis 500 Gold. Auch eine
+  Probe, die Gebäude ohne Antwort pausieren lässt, ergab 1 zu 19. Bevor
+  dieses Kriterium wieder gebaut wird, steht die Herstellung (siehe Offene
+  Fäden „Distelhag stellt weniger her").
+- **AC-32** `fertig` **Kasernen-Neigung baut im Wechsel** — Neigt das
+  Haus der KI zur Kaserne, baut sie die erste Kaserne wie jedes Haus
+  (AC-17) und bedient sie zuerst (AC-27); danach eine weitere Kaserne nur,
+  solange sie weniger Kasernen als andere Militärgebäude hat, sonst nach
+  der Goldregel — Schießanlage mit Gold, sonst Stall. Im Lehen ergibt das
+  Schießanlage, Kaserne, Schießanlage, im Fürstentum dazu Kaserne und
+  Schießanlage, statt Kaserne um Kaserne. Wer zu einem Militärgebäude
+  neigt, baut weiter dieses nach. **Messbar:** in einer gebauten Lage
+  (Gebäude voll beschäftigt, Vorrat für alles) schickt die KI des Hauses,
+  das zur Kaserne neigt, neben Kaserne und Schießanlage eine Schießanlage,
+  neben einer Kaserne und zwei Schießanlagen eine Kaserne; die des Hauses,
+  das zum Stall neigt, weiter einen Stall. Die Gegenproben mit der alten
+  Regel und mit „nie eine zweite Kaserne" fallen. Über 160 Partien
+  (`npm run pruefstand:haeuser -- --nur distelhag --je 40`, andere
+  Startwerte als die Vorgabe) gewinnt das Haus über 40 %, und AC-27 und
+  fahrplan AC-11 halten. **Gemessen in Runde 180:** Kaserne um Kaserne 26 %
+  (41 von 160), im Wechsel 47 % (75 von 160), nie eine zweite Kaserne 48 %
+  — aber dann bildete das Haus nur noch 47,5 Einheiten je Partie aus der
+  Kaserne aus gegen 38,6 der anderen, und AC-27 (das Anderthalbfache) fiel;
+  im Wechsel hält es. Die Paarung gegen Eschenbruch kippt davon nicht (0
+  zu 39, danach 6 zu 33); das hängt an Eschenbruchs Boni (spielziel AC-18,
+  Frage an den Benutzer). Angelegt in Runde 180 aus der Messung der Runde
+  179: ohne jede Neigung gewann das Haus 51 %.
+
+### Stufe F — der Drache (aus ADR-0014)
+
+- **AC-29** `offen` **Die KI ruft den Drachen** — Die KI holt Eier, bewacht ihr
+  Kloster und ruft den Drachen, wenn sie Ei, Kloster und fünf Mönche hat.
+  Sieht sie die Ansage eines fremden Rituals oder einen fremden Drachen,
+  stellt sie Schützen dagegen und schickt ihr Heer zum fremden Kloster.
+  KI gegen KI: wer zuerst ruft, gewinnt nicht öfter als 60 %
+  ([Einheiten](einheiten-und-befehle.md) AC-52).
 
 ## Grenzfaelle
 

@@ -18,14 +18,20 @@ export const BAUTASTEN = ['q', 'w', 'e', 'r', 't', 'z', 'u', 'i', 'o', 'p', 'y',
 export const BELEGUNG = [
   ['Ziehen mit links', 'Einheiten im Rahmen wählen'],
   ['Klick links', 'eine Einheit oder ein Gebäude wählen'],
+  ['Umschalt + Klick oder Ziehen', 'zur Auswahl hinzunehmen'],
+  ['Doppelklick', 'alle Einheiten dieser Art im Bild'],
   ['Rechtsklick', 'hingehen, sammeln, bauen – oder Sammelpunkt setzen'],
   ['W A S D, Pfeile', 'Karte schieben'],
+  ['Maus an den Bildschirmrand', 'Karte schieben – unten abschaltbar'],
   ['Mausrad', 'näher, weiter'],
   ['H', 'Dorfzentrum wählen'],
   ['Q (Dorfzentrum gewählt)', 'Dorfbewohner ausbilden'],
   // Aus der Liste, nicht aufgezaehlt: sie waechst mit den Stufen.
   ['B (Dorfbewohner gewählt)', `Bautasten an, dann ${BAUTASTEN.join(' ').toUpperCase()} für das Gebäude`],
   ['.', 'nächster untätiger Dorfbewohner'],
+  ['Leertaste', 'zum Dorfzentrum, noch einmal zurück'],
+  ['Strg oder Alt + 1 bis 9', 'Auswahl unter der Ziffer ablegen'],
+  ['1 bis 9', 'abgelegte Auswahl zurückholen'],
   ['G, dann Rechtsklick', 'Angriffslauf: hingehen und unterwegs angreifen'],
   ['Esc', 'Angriffslauf oder Platzieren abbrechen, Auswahl aufheben'],
   ['? oder F1', 'diese Übersicht'],
@@ -57,10 +63,22 @@ export class Tasten {
     }
     const titel = document.createElement('h2');
     titel.textContent = 'Tasten';
+    // Schieben am Rand (bedienung AC-9) ist hier abschaltbar: wer die Maus
+    // gern an den Rand legt, findet den Schalter dort, wo die Taste steht.
+    const schalter = document.createElement('label');
+    schalter.className = 'schalter';
+    const kasten = document.createElement('input');
+    kasten.type = 'checkbox';
+    kasten.id = 'rand-schieben';
+    kasten.checked = this.ansicht.randSchieben;
+    kasten.addEventListener('change', () => this.ansicht.randSchiebenSetzen(kasten.checked));
+    schalter.append(kasten, ' Karte am Bildschirmrand schieben');
+    // Der Klick auf den Schalter schliesst die Uebersicht nicht.
+    schalter.addEventListener('click', (e) => e.stopPropagation());
     const hinweis = document.createElement('p');
     hinweis.className = 'leise';
     hinweis.textContent = 'Schließen: noch einmal ? oder F1, Esc oder ein Klick.';
-    this.uebersicht.replaceChildren(titel, liste, hinweis);
+    this.uebersicht.replaceChildren(titel, liste, schalter, hinweis);
   }
 
   uebersichtZeigen(an = this.uebersicht.hidden) {
@@ -69,6 +87,22 @@ export class Tasten {
 
   /** Eine Taste; `true` heisst: verbraucht, die Ansicht soll sie nicht sehen. */
   taste(e) {
+    // Gruppen (bedienung AC-5): nach der Taste selbst, nicht nach dem Zeichen -
+    // mit Umschalt oder auf anderer Belegung ist e.key kein "1".
+    const ziffer = /^Digit([1-9])$/.exec(e.code)?.[1];
+    if (ziffer && !e.shiftKey && !e.metaKey) {
+      // Strg wie im Original; Alt daneben, weil Chrome Strg+1 bis 8 fuer die
+      // Tabs behalten kann (nicht geprueft, siehe Spec).
+      if (e.ctrlKey || e.altKey) {
+        e.preventDefault();
+        this.ansicht.gruppeAblegen(Number(ziffer));
+        return true;
+      }
+      if (!this.bauen) {
+        this.ansicht.gruppeAbrufen(Number(ziffer));
+        return true;
+      }
+    }
     if (e.ctrlKey || e.metaKey || e.altKey) return false;
     const taste = e.key.toLowerCase();
     if (taste === '?' || e.key === 'F1') {

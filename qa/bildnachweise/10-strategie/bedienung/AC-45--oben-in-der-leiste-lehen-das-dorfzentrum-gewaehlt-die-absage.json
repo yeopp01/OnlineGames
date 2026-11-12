@@ -1,0 +1,10 @@
+{
+  "spec": "10-strategie/bedienung.md",
+  "ac": "AC-45",
+  "titel": "Oben in der Leiste „Lehen\"; das Dorfzentrum gewählt, die Absage zum nächsten Aufstieg verlangt „Gebäude des Lehens\"",
+  "datei": "e2e/tests/strategie-zeitalter.spec.mjs",
+  "pfad": [
+    "Zeitalterwechsel",
+    "bedienung AC-45: die Stufen heissen nach dem Rang - oben das Lehen, der Knopf zum Fuerstentum, die Absage nennt die Gebaeude des Lehens"
+  ]
+}

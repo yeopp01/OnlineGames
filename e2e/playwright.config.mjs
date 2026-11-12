@@ -76,7 +76,10 @@ export default defineConfig({
     env: { E2E_HAFEN: String(HAFEN) },
     // Immer frisch: ein liegengebliebener Server wuerde alten Code pruefen.
     reuseExistingServer: false,
-    timeout: 30_000,
+    // 120 s statt 30: rechnen nebenher andere Programme (Runde 169: drei
+    // Blender-Instanzen), brauchte der Start dreimal laenger als 30 s und der
+    // Lauf brach nach einer Minute ab. Frei startet er in rund 6 s.
+    timeout: 120_000,
     stdout: 'ignore',
     stderr: 'pipe',
   },

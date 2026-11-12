@@ -21,6 +21,7 @@ import { spawn } from 'node:child_process';
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { GRENZE_MS, langeImErstenAbschnitt } from './lange-tests.mjs';
 
 const WURZEL = join(dirname(fileURLToPath(import.meta.url)), '..');
 const LOG = join(WURZEL, 'qa', 'letzter-lauf.log');
@@ -130,6 +131,12 @@ kind.on('close', (code) => {
       // Kein Muster gegriffen: dann doch das Ende, damit nie nichts da steht.
       for (const z of alleZeilen.filter((z) => z.trim()).slice(-40)) console.log(z);
     }
+  }
+
+  // Ein Test, der den ersten Abschnitt allein lang macht, gehoert nach
+  // tests/partien/ (Rueckschau nach Runde 173, scripts/lange-tests.mjs).
+  for (const { name, ms } of langeImErstenAbschnitt(alles, GRENZE_MS)) {
+    console.log(`WARNUNG: ${(ms / 1000).toFixed(0)} s im ersten Abschnitt von npm test - gehoert nach tests/partien/: ${name}`);
   }
 
   console.log(`\n${code === 0 ? 'gruen' : `GEFALLEN (${code})`} - ${was} - ${dauer} s - ganze Ausgabe: qa/letzter-lauf.log (${alles.length} Zeichen)`);

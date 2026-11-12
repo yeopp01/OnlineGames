@@ -3,6 +3,7 @@
 //
 //   npm run pruefstand:verlauf -- --startwert 5                 jede Minute, bis 90
 //   npm run pruefstand:verlauf -- --startwert 5 --ab 40 --alle 2 --minuten 70
+//   npm run pruefstand:verlauf -- --startwert 14 --haeuser distelhag,wehrstein   KI 1, KI 2 (ki AC-27)
 //
 // Warum es das gibt: in den Runden 94 bis 97 begann jede Runde mit derselben
 // Frage - warum endet diese Partie so spaet? - und jedes Mal mit einem neuen
@@ -35,6 +36,9 @@ if (!Number.isFinite(startwert)) {
   process.exit(1);
 }
 const minuten = wert('minuten', 90);
+// Die Haeuser der Reihe nach (ki1, ki2, ...), wie im Nebeltest zu ki AC-27.
+const hausListe = argumente.includes('--haeuser') ? argumente[argumente.indexOf('--haeuser') + 1].split(',') : [];
+const haeuser = Object.fromEntries(hausListe.map((haus, i) => [`ki${i + 1}`, haus]));
 const ab = wert('ab', 0);
 const alle = wert('alle', 1);
 const TAKTE_JE_MINUTE = 60 * TAKTE_PRO_SEKUNDE;
@@ -71,6 +75,7 @@ function zeile(welt) {
 const r = partieSpielen({
   startwert,
   minuten,
+  einstellungen: hausListe.length ? { haeuser } : {},
   eingriff: (welt, takt) => {
     if (takt % (alle * TAKTE_JE_MINUTE) !== 0 || takt < ab * TAKTE_JE_MINUTE) return;
     console.log(`${String(takt / TAKTE_JE_MINUTE).padStart(3)}  ${zeile(welt)}`);

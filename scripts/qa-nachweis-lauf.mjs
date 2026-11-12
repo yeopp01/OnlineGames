@@ -21,6 +21,13 @@
 import { spawn } from 'node:child_process';
 import { join } from 'node:path';
 import { WURZEL } from './specs-lesen.mjs';
+import { waisenRaeumen } from './qa-waisen.mjs';
+
+// Vor dem Lauf: Bilder ohne Erzeuger weg (Rueckschau nach Runde 168). Hat
+// ein Test seine Unterschrift geaendert, schreibt dieser Lauf das Bild unter
+// dem neuen Namen; das alte bliebe liegen, und `specs:board` braeche ab.
+for (const w of await waisenRaeumen()) console.log(`Waise geloescht: ${w.png}
+  ${w.grund}`);
 
 const kind = spawn(
   process.execPath,

@@ -1,7 +1,9 @@
 'use strict';
 
-const { Welt, TAKTE_PRO_SEKUNDE } = require('./welt');
+const { Welt, TAKTE_PRO_SEKUNDE, GESCHWINDIGKEITEN } = require('./welt');
 const { Ki } = require('./ki');
+const { HAEUSER } = require('./daten');
+const { zufallAus } = require('./karte');
 
 // Computergegner (spielauswahl AC-18, AC-19): sie sitzen auf eigenen Plaetzen
 // und spielen nur ueber welt.nachricht, wie ein Mensch (ki AC-1). Ihre Ids
@@ -9,7 +11,11 @@ const { Ki } = require('./ki');
 // dieselbe.
 function mitKi(spieler, einstellungen) {
   const kis = Array.from({ length: einstellungen.ki || 0 }, (_, i) => ({ id: `ki${i + 1}`, name: `KI ${i + 1}` }));
-  const welt = new Welt([...spieler, ...kis], einstellungen.startwert, { ...einstellungen, teams: teamsAus(einstellungen, spieler, kis) });
+  const welt = new Welt([...spieler, ...kis], einstellungen.startwert, {
+    ...einstellungen,
+    teams: teamsAus(einstellungen, spieler, kis),
+    haeuser: haeuserAus(einstellungen, spieler, kis),
+  });
   if (!kis.length) return welt;
   const lenker = kis.map((k) => new Ki(welt, k.id));
   const takten = welt.takten.bind(welt);
@@ -38,6 +44,37 @@ function teamsAus(einstellungen, spieler, kis) {
   });
   return teams;
 }
+
+// Die Haeuser aus der Wahl je Platz (spielauswahl AC-24), wie die Teams.
+// "Zufall" wird hier aufgeloest, aus dem Startwert der Partie: dieselbe
+// Partie ergibt dieselben Haeuser. Jeder Platz zieht der Reihe nach - erst
+// die Menschen, dann die KIs -, auch wer gewaehlt hat; so haengt das Haus
+// eines Platzes nicht davon ab, was die anderen waehlen. Zwei duerfen
+// dasselbe Haus haben. Kommen die Haeuser schon fertig (Tests, Pruefstand),
+// gelten die; ohne Wahl je Platz spielt niemand ein Haus.
+function haeuserAus(einstellungen, spieler, kis) {
+  if (einstellungen.haeuser) return einstellungen.haeuser;
+  const je = einstellungen.jePlatz;
+  if (!je) return undefined;
+  const namen = Object.keys(HAEUSER);
+  const zufall = zufallAus(((einstellungen.startwert || 0) * 7919 + 29) >>> 0);
+  const plaetze = [...spieler.map((s) => [s.id, s.id]), ...kis.map((k, i) => [k.id, `platz${i + 1}`])];
+  const haeuser = {};
+  for (const [id, platz] of plaetze) {
+    const gezogen = namen[Math.floor(zufall() * namen.length)];
+    const gewaehlt = je[platz]?.haus;
+    haeuser[id] = Object.hasOwn(HAEUSER, gewaehlt ?? '') ? gewaehlt : gezogen;
+  }
+  return haeuser;
+}
+
+// Je Haus ein Eintrag: Name und Wahlspruch, damit alle vor dem Start lesen,
+// wofuer ein Haus steht (spielauswahl AC-24). Das Wappen kommt mit den
+// Figuren (bedienung AC-46).
+const HAUSWAHL = [
+  { wert: 'zufall', name: 'Haus: Zufall' },
+  ...Object.entries(HAEUSER).map(([wert, haus]) => ({ wert, name: `${haus.name} – ${haus.wahlspruch}` })),
+];
 
 const TEAMWAHL = [{ wert: 0, name: 'ohne Team' }, ...[1, 2, 3, 4].map((n) => ({ wert: n, name: `Team ${n}` }))];
 
@@ -98,15 +135,31 @@ module.exports = {
         { wert: 120, name: '120 Spielminuten' },
       ],
     },
+    // Wie schnell die Partie laeuft (spielziel AC-23, ADR-0013). Die Werte
+    // kommen aus GESCHWINDIGKEITEN in der Welt, damit beide dieselbe Liste
+    // kennen.
+    {
+      schluessel: 'tempo', name: 'Spielgeschwindigkeit', art: 'wahl', vorgabe: 1,
+      werte: GESCHWINDIGKEITEN.map((wert) => ({ wert, name: wert.toFixed(1).replace('.', ',') + (wert === 1 ? ' (normal)' : '') })),
+    },
   ],
   // Je Platz ein Team oder keins (spielauswahl AC-22). Wer im selben Team
   // ist, ist verbuendet (spielziel AC-14).
-  jePlatz: [{ schluessel: 'team', name: 'Team', art: 'wahl', vorgabe: 0, werte: TEAMWAHL }],
+  // Und je Platz ein Haus, Vorgabe Zufall (spielauswahl AC-24, ADR-0014).
+  jePlatz: [
+    { schluessel: 'team', name: 'Team', art: 'wahl', vorgabe: 0, werte: TEAMWAHL },
+    { schluessel: 'haus', name: 'Haus', art: 'wahl', vorgabe: 'zufall', werte: HAUSWAHL },
+  ],
   // Wie die Plaetze heissen, die das Spiel besetzt - dieselben Namen wie in
   // der Partie (mitKi).
   platzname: (nummer) => `KI ${nummer}`,
-  // Was der Raum von diesem Spiel braucht (→ specs/00-plattform/raeume.md AC-16).
-  takte: TAKTE_PRO_SEKUNDE,
+  // Was der Raum von diesem Spiel braucht (→ specs/00-plattform/raeume.md AC-16):
+  // Takte je echte Sekunde. Eine Spielsekunde bleibt TAKTE_PRO_SEKUNDE
+  // Takte; die Spielgeschwindigkeit rechnet mehr davon in derselben Zeit
+  // (spielziel AC-23) - 10, 15 oder 20.
+  takte: (einstellungen = {}) => Math.round(
+    TAKTE_PRO_SEKUNDE * (GESCHWINDIGKEITEN.includes(einstellungen.tempo) ? einstellungen.tempo : 1),
+  ),
   // Wie viele Plaetze das Spiel selbst besetzt (raeume.js, spielauswahl AC-19).
   plaetze: (einstellungen) => einstellungen.ki || 0,
   erzeugen: mitKi,

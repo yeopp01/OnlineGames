@@ -51,12 +51,12 @@ test.describe('Ritterzeit', () => {
     // Ritterzeit verweigert, solange zwei Gebaeude der Feudalzeit fehlen.
     await anna.keyboard.press('h');
     await anna.locator('[data-aufstieg="ritterzeit"]').click();
-    await expect(anna.locator('#spielmeldung')).toContainText('Feudalzeit');
+    await expect(anna.locator('#spielmeldung')).toContainText('des Lehens');
     // Zwei Gebaeude der Feudalzeit, dann der Aufstieg.
     await gebaeudeInDerNaehe(anna, code, 'Anna', 'schiessanlage', basis, { von: 8, bis: 16 });
     await gebaeudeInDerNaehe(anna, code, 'Anna', 'stall', basis, { von: 8, bis: 16 });
     await aufsteigen(anna, code, 'ritterzeit', 2);
-    await expect(anna.locator('#zeitalter b')).toHaveText('Ritterzeit');
+    await expect(anna.locator('#zeitalter b')).toHaveText('Fürstentum');
 
     // Jetzt stehen sie im Menue - und das Kloster baut man mit seiner Taste.
     await dorfbewohnerAnklicken(anna);
@@ -108,7 +108,7 @@ test.describe('Ritterzeit', () => {
       await nachweis(anna, {
         spec: BAUEN,
         ac,
-        titel: 'In der Ritterzeit (oben in der Leiste): Kloster mit Glockenturm, Universität mit Kuppel und Belagerungswerkstatt mit Rad',
+        titel: 'Im Fürstentum (oben in der Leiste): Kloster mit Glockenturm, Universität mit Kuppel und Belagerungswerkstatt mit Rad',
         test: info,
       });
     }

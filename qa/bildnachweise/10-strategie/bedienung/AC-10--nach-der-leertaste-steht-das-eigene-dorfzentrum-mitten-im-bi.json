@@ -1,0 +1,10 @@
+{
+  "spec": "10-strategie/bedienung.md",
+  "ac": "AC-10",
+  "titel": "Nach der Leertaste steht das eigene Dorfzentrum mitten im Bild",
+  "datei": "e2e/tests/strategie-leertaste.spec.mjs",
+  "pfad": [
+    "Leertaste",
+    "bedienung AC-10: die Leertaste springt zum Dorfzentrum, ein zweites Mal zurueck"
+  ]
+}

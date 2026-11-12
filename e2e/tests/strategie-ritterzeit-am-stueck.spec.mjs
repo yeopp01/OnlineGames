@@ -103,7 +103,7 @@ test.describe('Ritterzeit am Stueck', () => {
     expect(await anna.evaluate(() => window.ansicht.zeitalter), 'noch Feudalzeit').toBe(1);
     await zeitraffer(anna, code, 20);
     await anna.waitForFunction(() => window.ansicht.zeitalter === 2, null, { timeout: 90_000 });
-    await expect(anna.locator('#zeitalter')).toContainText('Ritterzeit');
+    await expect(anna.locator('#zeitalter')).toContainText('Fürstentum');
 
     // ---- Jedes Gebaeude, das Stufe D gebracht hat. ----
     // Aus den Daten gelesen: was ein Dorfbewohner baut und in der Ritterzeit
@@ -115,9 +115,14 @@ test.describe('Ritterzeit am Stueck', () => {
     const arten = await anna.evaluate(() => {
       const w = window.ansicht.werte;
       const spaet = (art) => (w.gebaeude[art].gezogen ? 1 : 0) + (w.gebaeude[art].tor ? 2 : 0);
+      // Was schon in der Feudalzeit ausbildet oder forscht, baut fahrplan
+      // AC-8 (`bildetAus` traegt beides; eine Verbesserung zaehlt hier wie
+      // eine Einheit der Feudalzeit). Der Markt bildet erst in der Ritterzeit
+      // aus (einheiten AC-39) und gehoert deshalb auch hierher.
+      const feudal = (art) => w.gebaeude[art].bildetAus.some((e) => !w.einheiten[e] || w.einheiten[e].zeitalter <= 1);
       return w.einheiten.dorfbewohner.baut
         .filter((art) => w.gebaeude[art]?.zeitalter === 2
-          || (w.gebaeude[art]?.zeitalter === 1 && !w.gebaeude[art].bildetAus.length))
+          || (w.gebaeude[art]?.zeitalter === 1 && !feudal(art)))
         .sort((p, q) => spaet(p) - spaet(q));
     });
     // Was fahrplan AC-14 aufzaehlt, muss darunter sein - die Daten duerfen mehr
@@ -376,7 +381,7 @@ test.describe('Ritterzeit am Stueck', () => {
     }, [arten, stand.mitte]);
     expect(sichtbar.sort(), 'alle neuen Gebaeude im Bild').toEqual([...arten].sort());
     await expect(anna.locator('.auswahlleiste .gruppe-eintrag')).toHaveCount(bestellt.length);
-    await expect(anna.locator('#zeitalter')).toContainText('Ritterzeit');
+    await expect(anna.locator('#zeitalter')).toContainText('Fürstentum');
     await expect(anna.locator('#zeitalter')).toBeInViewport();
     expect(await figurenFrei(anna, { nur: truppe.ids }), 'keine zwei Figuren uebereinander').toEqual([]);
     expect(await bedienteileFrei(anna)).toEqual([]);

@@ -8,6 +8,46 @@
     },
     {
       "spec": "10-strategie/spielziel.md",
+      "ac": "AC-17",
+      "begruendung": "Dass ein Haus Daten ist, ist eine Eigenschaft des Aufbaus: seine Boni stehen in HAEUSER in der Form einer Verbesserung und werden an derselben Stelle gelesen (welt.wirkungen), und Welt, KI und Pruefstand nennen kein einzelnes Haus. Belegt im Rechenteil fuer jeden Bonus jedes Hauses gegen einen Spieler ohne Haus. Gewaehlt wird ein Haus erst mit spielauswahl AC-24 im Warteraum; ein Bild der Wahl und eines Bonus im Spiel kommt dort und mit fahrplan AC-16 - eine Zahl in der Wertetafel zeigt nicht, woher sie kommt."
+    },
+    {
+      "spec": "10-strategie/spielziel.md",
+      "ac": "AC-25",
+      "begruendung": "Dass der Mannschaftsbonus nur im Buendnis gilt, ist ein Vergleich ueber die Zeit und ueber Spieler: dieselbe Schiessanlage bildet vor der Kuendigung in 292 Takten aus und danach in 350, Annas Reiter sieht im Buendnis zwei Felder weiter als danach, ein Karren bringt dem Verbuendeten 31 Gold statt 26. Ein Bildschirm zeigt einen Augenblick und nicht, dass ein anderer anders ist; der Fortschrittsbalken laeuft schneller, aber wie schnell er laufen muesste, steht nirgends. Was der Browser davon zeigt - Sicht in der Leiste, Gold je Fahrt -, kommt fertig vom Server (kw, hd) und hat seine Bilder bei bedienung AC-35 und einheiten AC-40; die Kuendigung im Bild bei spielziel AC-24."
+    },
+    {
+      "spec": "10-strategie/spielziel.md",
+      "ac": "AC-26",
+      "begruendung": "Dass jeder Bonus wirkt, ist ein Vergleich zweier Partien: dieselbe Lage einmal mit dem Haus, einmal ohne, und gemessen wird der Unterschied - Takte am Vorrat, Leben ab der Ausbildung, Felder Sicht, ob der Schuetze vom Platz schiesst, was ein Schlag nimmt, ob der Turm ein Feld weiter trifft, Gold je Verkauf und je Fahrt, Nahrung der Farm. Ein Bildschirm zeigt eine der beiden Seiten und nicht, dass die andere anders ist. Was der Browser davon zeigt - Werte in der Leiste, Preise am Markt, Gold je Fahrt -, kommt fertig vom Server (kw, hp, hd) und hat seine Bilder bei bedienung AC-35, bauen AC-33 und einheiten AC-40."
+    },
+    {
+      "spec": "10-strategie/fahrplan.md",
+      "ac": "AC-17",
+      "begruendung": "Ein sechstes Haus allein aus Daten: der Test legt einen Eintrag an und laesst damit zwanzig Minuten KI gegen KI spielen, jeder Takt vom Pruefstand auf Widersprueche geprueft, ohne eine Zeile in der Simulation. Was belegt wird, ist das Fehlen einer Aenderung im Code - das zeigt kein Bildschirm."
+    },
+    {
+      "spec": "10-strategie/ki.md",
+      "ac": "AC-30",
+      "begruendung": "Dass Wehrstein zu Tuermen neigt, ist eine Zahl ueber vierzig Partien: zwei Wachtuerme in jeder Partie, die Wehrstein spielt, und keiner bei den anderen Haeusern; dazu, dass die Partien dennoch wie in fahrplan AC-11 enden. Ein Standbild zeigt zwei Tuerme an einem Dorf, aber nicht, dass sie von der Neigung des Hauses kommen statt von irgendeiner KI - und wie ein Wachturm aussieht und schiesst, zeigt das Bild zu bauen AC-29 und kampf AC-18."
+    },
+    {
+      "spec": "10-strategie/ki.md",
+      "ac": "AC-32",
+      "begruendung": "Das Kriterium ist eine Entscheidung der KI: welches Gebaeude sie als drittes Militaergebaeude in Auftrag gibt, wenn ihr Haus zur Kaserne neigt - und was das ueber 160 Partien an Siegen ausmacht. Ein Standbild zeigt eine Schiessanlage neben einer Kaserne, aber nicht, dass die KI an dieser Stelle frueher eine zweite Kaserne gebaut haette; das belegen die gebaute Lage mit Gegenprobe gegen die alte Zeile und die Zaehlung von pruefstand:haeuser. Was die KI dabei baut und ausbildet, sieht im Bild aus wie bei ki AC-9 und ki AC-11, die Gebaeude der Feudalzeit wie bei bauen AC-24."
+    },
+    {
+      "spec": "10-strategie/ki.md",
+      "ac": "AC-27",
+      "begruendung": "Wozu die KI neigt, ist eine Haeufigkeit ueber viele Partien: Eschenbruch bildet ueber vierzig Startwerte im Mittel 107 Einheiten aus der Schiessanlage aus, die anderen Haeuser 42; Distelhag 82 aus der Kaserne gegen 35. Ein Standbild zeigt eine KI mit einigen Bogenschuetzen - das tut jedes Haus, und ob es mehr sind als sonst, steht in keinem einzelnen Bild. Belegt im Pruefstand mit denselben Partien ohne Neigung als Gegenprobe; was die KI dabei baut und ausbildet, sieht im Bild aus wie bei ki AC-9 und ki AC-11, der Karren wie bei einheiten AC-40."
+    },
+    {
+      "spec": "10-strategie/ki.md",
+      "ac": "AC-26",
+      "begruendung": "Wann und wohin die KI handelt, ist eine Entscheidung in ihrem Kopf: Gold in Reichweite knapp, ein Markt am Dorf, ein zweiter weit davon und vom Gegner weg (oder der fernste Markt eines Verbuendeten), Karren ausbilden, Stein verkaufen, wenn ihr Gold fehlt, Holz fuer den Markt zuruecklegen. Belegt im Rechenteil an gebauten Lagen mit Gegenprobe fuer jede tragende Zeile und ueber acht ganze Partien mit geleertem Gold gegen dieselben Partien ohne Handel. Wie ein Karren handelt und was die Leiste dabei sagt, zeigt das Bild zu einheiten AC-40; ein Standbild der KI zeigte einen Karren unterwegs, nicht warum er faehrt."
+    },
+    {
+      "spec": "10-strategie/spielziel.md",
       "ac": "AC-21",
       "begruendung": "Die Regel des Loesens auf dem Server: wer kuendigt, tritt aus dem Team aus, die gemeinsame Sicht endet sofort, Gegner sind sie erst nach 600 Takten, bei fest weist der Server ab, und jeder bekommt die Kuendigung im Zustand. Belegt im Rechenteil an gebauten Lagen mit Gegenprobe fuer jede neue Zeile. Was davon ein Bildschirm zeigen kann - der Knopf, die Ansage mit der Uhr bei allen, das rote Zeichen nach der Frist - ist ein eigenes Kriterium, spielziel AC-24, aus diesem in Runde 154 geteilt; ein Standbild zeigt keine Frist und keine Sicht, die ein anderer nicht mehr hat."
     },
@@ -1250,6 +1290,11 @@
       "spec": "10-strategie/kampf.md",
       "ac": "AC-5",
       "begruendung": "Zahlen aus den Daten und ihr Ausgang im Zweikampf: Angriff 3, keine Boni, keine Ruestung, fuenfzehn Schlaege fuer einen Soldaten gegen dessen fuenf. Zu sehen ist davon nichts, was kampf AC-1 nicht schon zeigt - ein Dorfbewohner, der zuschlaegt, sieht aus wie jede andere Einheit, die zuschlaegt. Der Test rechnet beide Richtungen der Schadensformel nach und spielt Zweikampf und Ueberzahl durch."
+    },
+    {
+      "spec": "10-strategie/ki.md",
+      "ac": "AC-13",
+      "begruendung": "Was die KI weiss - welche fremden Gebaeude und Einheiten sie kennt und woraus sie Ziel und Ueberlegenheit rechnet - steht in ihrem Gedaechtnis auf dem Server, nicht auf einem Bildschirm. Ein Bild zeigt, was ein Mensch sieht; ob die KI dasselbe nicht weiss, zeigt es nicht."
     }
   ]
 }

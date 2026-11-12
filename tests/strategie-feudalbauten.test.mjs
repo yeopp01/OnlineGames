@@ -60,7 +60,7 @@ test('bauen AC-24: in der Dunklen Zeit weist der Server sie ab, in der Feudalzei
   for (const art of FEUDAL) {
     const ziel = platz(welt, anna, 3);
     const absage = welt.nachricht('a', { auftrag: 'bauen', einheiten: bauer, art, ziel }).fehler;
-    assert.match(absage, /erst in der Feudalzeit/, `${art}: ${absage}`);
+    assert.match(absage, /erst ab dem Lehen/, `${art}: ${absage}`);
   }
   // Nichts bezahlt, nichts gebaut.
   assert.equal(anna.holz, 2000);
@@ -123,5 +123,5 @@ test('bauen AC-24: Bert sieht die Gebaeude von Anna, aber sein Zeitalter gilt fu
   const seine = [...welt.einheiten.values()].filter((e) => e.besitzer === 'b' && e.art === 'dorfbewohner').map((e) => e.id);
   const ziel = { x: bert.basis.x + 7, y: bert.basis.y + 7 };
   assert.match(welt.nachricht('b', { auftrag: 'bauen', einheiten: seine, art: 'stall', ziel }).fehler,
-    /erst in der Feudalzeit/, 'Bert ist noch in der Dunklen Zeit');
+    /erst ab dem Lehen/, 'Bert ist noch in der Dunklen Zeit');
 });

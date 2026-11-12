@@ -2,7 +2,7 @@
 
 **Bereich:** Strategie
 **Kuerzel:** bedienung
-**Stand:** 30/44 fertig · 14 offen
+**Stand:** 39/46 fertig · 7 offen
 
 ## Zweck
 
@@ -26,19 +26,42 @@ Befehl steht.
   darin.
 - **AC-2** `fertig` **Klick wählt eine** — Ein Klick ohne Rahmen wählt die nächste eigene Einheit in
   Reichweite.
-- **AC-3** `offen` **Umschalt erweitert** — Mit gedrückter Umschalttaste kommt zur Auswahl hinzu,
-  statt sie zu ersetzen.
-- **AC-4** `offen` **Doppelklick wählt den Typ** — Alle sichtbaren Einheiten desselben Typs.
-- **AC-5** `offen` **Auswahl merken** — `Strg`+`1` bis `9` legt eine Auswahl ab, die Zifferntaste
-  ruft sie zurück. Ohne das ist ein Echtzeitspiel nicht spielbar.
+- **AC-3** `fertig` **Umschalt erweitert** — Mit gedrückter Umschalttaste kommt zur Auswahl hinzu,
+  statt sie zu ersetzen — beim Klick wie beim Rahmen. Einheiten kommen zu
+  Einheiten; ein Klick mit Umschalt auf ein Gebäude oder ins Leere lässt die
+  gewählten Einheiten stehen, gemischt wird nicht (ein Rechtsklick hieße für
+  beide etwas anderes).
+- **AC-4** `fertig` **Doppelklick wählt den Typ** — Alle sichtbaren Einheiten desselben Typs.
+  „Sichtbar" heißt: der Fußpunkt steht im Bild; wer außerhalb steht, bleibt
+  ungewählt. Mit Umschalt kommen sie zur Auswahl dazu.
+- **AC-5** `fertig` **Auswahl merken** — `Strg`+`1` bis `9` legt eine Auswahl ab, die Zifferntaste
+  ruft sie zurück. Ohne das ist ein Echtzeitspiel nicht spielbar. Abgelegt
+  werden die gewählten Einheiten, sonst ein gewähltes eigenes Gebäude; wer
+  seither gefallen oder bekehrt ist, fällt beim Zurückholen heraus. `Alt`+Ziffer
+  legt ebenso ab: Chrome kann `Strg`+`1` bis `8` für den Wechsel der Tabs
+  behalten, bevor die Seite die Taste sieht — das ist nicht geprüft, der
+  Browserlauf schickt die Taste an der Leiste vorbei. Gelesen wird die Taste,
+  nicht das Zeichen (`e.code`), damit es auf jeder Belegung dieselbe ist.
+  Zweimal schnell gedrückt springt die Kamera noch nicht hin (Vorlage: ja).
 - **AC-6** `fertig` **Ausgewählte sind aufgelistet** — Am unteren Rand mit Anzahl je Typ.
 
 ### Kamera
 
 - **AC-7** `fertig` **Schieben mit Tasten** — `W A S D` und die Pfeiltasten.
 - **AC-8** `fertig` **Zoom mit dem Rad** — Der Punkt unter dem Zeiger bleibt dabei stehen.
-- **AC-9** `offen` **Schieben am Bildschirmrand** — Mit der Maus am Rand, abschaltbar.
-- **AC-10** `offen` **Leertaste springt zur Basis** — Und ein zweites Mal zurück.
+- **AC-9** `fertig` **Schieben am Bildschirmrand** — Mit der Maus am Rand, abschaltbar.
+  Die äußersten 12 Bildpunkte des Spielbilds schieben in ihre Richtung, so
+  schnell wie die Tasten; oben auch unter der Kopfzeile, die keine Maus
+  annimmt. Verlässt die Maus das Bild oder das Fenster den Fokus, steht die
+  Karte. Der Schalter steht in der Tastenübersicht (`?`), Vorgabe an; die
+  Wahl merkt sich der Browser. Nicht geprüft: das Stehenbleiben beim
+  Verlassen des Fensters — Playwright bewegt die Maus nicht aus dem Bild.
+- **AC-10** `fertig` **Leertaste springt zur Basis** — Und ein zweites Mal zurück.
+  Basis ist das eigene Dorfzentrum, das dem Startplatz am nächsten steht
+  (ohne eines der Startplatz). Zurück geht es nur, solange die Kamera seit
+  dem Sprung nicht bewegt wurde — wer weggeschoben hat, springt wieder zur
+  Basis. Gehalten springt sie nicht hin und her; die Taste drückt keinen
+  zuletzt geklickten Knopf (ohne Standard, nicht eigens geprüft).
 - **AC-11** `fertig` **Übersichtskarte unten rechts** — Gelände, eigene und fremde Einheiten als
   Punkte, der Bildausschnitt als Rahmen. Klick springt hin.
 
@@ -46,9 +69,12 @@ Befehl steht.
 
 - **AC-12** `fertig` **Rechtsklick befiehlt** — Laufen, sammeln oder angreifen, je nach Ziel. Kein
   Umschalten der Betriebsart.
-- **AC-13** `offen` **Der Befehl ist sofort sichtbar** — Ein Kringel am Zielpunkt, ohne auf die
+- **AC-13** `fertig` **Der Befehl ist sofort sichtbar** — Ein Kringel am Zielpunkt, ohne auf die
   Antwort des Servers zu warten. Zehn Takte je Sekunde heißt bis zu 100 ms
   Verzögerung — ohne Rückmeldung fühlt sich das kaputt an.
+  Gebaut mit AC-34 (der Ring wird im Klick selbst gesetzt); belegt, indem
+  der Browserfall den Befehl anhält, ehe er hinausgeht: der Ring ist
+  trotzdem gezeichnet, die Einheiten laufen erst nach dem Senden.
 - **AC-14** `offen` **Warteschlange mit Umschalt** — Mehrere Ziele hintereinander abarbeiten.
 - **AC-15** `fertig` **Abbrechen mit Esc** — Hebt Auswahl und angefangene Platzierung auf.
 
@@ -61,8 +87,11 @@ Befehl steht.
   Wirtschaft läuft.
 - **AC-18** `fertig` **Abgelehnte Befehle sagen warum** — „Zu wenig Holz", „Bevölkerung voll" — kurz
   eingeblendet, nicht als Fenster mit Knopf.
-- **AC-19** `offen` **Verbindungsverlust ist sichtbar** — Ein Hinweis im Bild, nicht erst
+- **AC-19** `fertig` **Verbindungsverlust ist sichtbar** — Ein Hinweis im Bild, nicht erst
   stehenbleibende Einheiten (→ [Übertragung](../00-plattform/uebertragung.md) AC-9).
+  Mitten im Bild und stehend, mit einem Knopf, der neu lädt und mit dem
+  gemerkten Platz zurückkehrt. Ein Server, der schweigt, ohne die
+  Verbindung zu schließen, zeigt noch nichts.
 - **AC-20** `offen` **Spielstand aller Spieler einsehbar** — Auf Tastendruck: Bevölkerung und
   Rohstoffe aller Mitspieler. Wer vorne liegt, gehört zur Spannung.
 
@@ -203,7 +232,7 @@ Reihenfolge:
   **Messbar:** auf der Schautafel stehen die drei Fassungen nebeneinander;
   der Anteil verschiedener Bildpunkte zwischen je zweien wird gemessen,
   bevor eine Schwelle dasteht (Anweisung, Abschnitt 4).
-- **AC-43** `offen` **Voller Wohnraum fällt auf** — Wartet ein Auftrag, weil
+- **AC-43** `fertig` **Voller Wohnraum fällt auf** — Wartet ein Auftrag, weil
   die Bevölkerung voll ist, zeigt das die Bevölkerungsanzeige oben, auch
   wenn das wartende Gebäude nicht gewählt ist. Heute steht der Grund nur in
   der Auswahlleiste dieses Gebäudes (bauen AC-15). **Gefunden in der
@@ -211,6 +240,10 @@ Reihenfolge:
   jeder anderen Zahl — ob irgendwo eine Schlange stillsteht, verrät sie
   nicht. **Messbar:** die Anzeige trägt eine Kennzeichnung, solange ein
   eigenes Gebäude wartet, und verliert sie, sobald keines mehr wartet.
+  Gebaut: die Anzeige wird rot umrandet (Klasse `wartet`, Titel „Bevölkerung
+  voll — ein Auftrag wartet, Haus bauen"), gefragt wird `ansicht.wartetEtwas()`
+  nach dem `w` der eigenen Gebäude. Voll allein reicht nicht: nach dem
+  Abbrechen des wartenden Auftrags steht 5 / 5 wieder ohne Rand.
 - **AC-44** `offen` **Ein Gefecht hinterlässt Spuren** — Gefallene liegen
   länger als heute zwei Sekunden und verblassen dabei; ein zerstörtes
   Gebäude hinterlässt Trümmer auf seinem Platz, die nichts sperren und nach
@@ -226,6 +259,31 @@ Reihenfolge:
 Aus den offenen Kriterien oben gehören zu Stufe A: AC-6 (Auswahl
 aufgelistet), AC-11 (Übersichtskarte — auf 120 × 120 unverzichtbar), AC-15
 (Esc), AC-17 (Zahlen zählen hoch), AC-18 (Absagen sagen warum).
+
+### Stufe E — Häuser
+
+- **AC-45** `fertig` **Stufen heißen nach Rang** — Am Bildschirm heißen
+  die vier Zeitalter **Landsitz, Lehen, Fürstentum und Krone**
+  ([ADR-0014](../../docs/adr/0014-haeuser-statt-voelker.md) Punkt 9):
+  oben in der Leiste, am Auftrag zum Aufstieg, in Absagen, in der Ansage
+  des Wechsels und auf der Tafel am Ende. Die gebeugten Formen („des
+  Lehens", „im Fürstentum") stehen mit dem Namen in den Daten, nicht im
+  Browser zusammengesetzt. Dorfbewohner bleiben Dorfbewohner; Bezeichner
+  (`feudalzeit`), Dateinamen und die Arbeitsnamen der Stufen in den Specs
+  bleiben. **Messbar:** ein Wächter findet die alten Namen (Dunkle Zeit,
+  Feudalzeit, Ritterzeit, Imperialzeit) in keinem Text, den `public/` oder
+  die Daten auf den Bildschirm bringen.
+  **Fertig in Runde 166:** die Formen stehen in `ZEITALTER` (`artikel`,
+  `genitiv`, `ab`, `zum` — „das Lehen", „des Lehens", „ab dem Lehen",
+  „zur Krone"); Name und Knopftitel der Aufstiege kommen von dort. Der
+  Wächter ist `tests/waechter-zeitalter.test.mjs`: jede Zeichenkette außerhalb
+  von Kommentaren in `public/` und in Welt, Daten und Steckbrief.
+- **AC-46** `offen` **Das Wappen zeigt das Haus** — Im Warteraum neben dem Namen
+  und am Banner über dem eigenen Dorfzentrum steht das Wappen des Hauses
+  (Esche, Hengst, Turm, Waage, drei Disteln). Es ist ein Zeichen, keine
+  Farbe: zwei Spieler desselben Hauses unterscheidet die Farbe ihres
+  Platzes. Bei Zoom 1 sind die fünf Wappen voneinander unterscheidbar.
+  Die Wappen kommen aus der Blender-Sitzung.
 
 ## Grenzfaelle
 

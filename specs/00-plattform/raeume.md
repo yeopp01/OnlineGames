@@ -77,7 +77,8 @@ Name eintragen → Partie eroeffnen → Code weitergeben
 
 - **AC-16** `fertig` **Der Raum kennt kein Spiel** — Der Raum erzeugt die Welt ueber den
   Steckbrief des gewaehlten Spiels (`erzeugen(spieler, einstellungen)`,
-  `takte` je Sekunde) und spricht mit ihr nur ueber `aufbau`, `takten`,
+  `takte` je Sekunde, seit Runde 159 auch als Funktion der Einstellungen —
+  spielziel AC-23) und spricht mit ihr nur ueber `aufbau`, `takten`,
   `zustand` und `befehl` ([ADR-0006](../../docs/adr/0006-mehrere-spiele.md)).
   `raeume.js` laedt kein Spiel selbst; ein zweites Spiel mit Raum braucht dort
   keine Zeile.

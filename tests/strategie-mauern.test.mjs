@@ -116,7 +116,7 @@ test('bauen AC-30: in der Dunklen Zeit gibt es keine Mauer, und ein Haus laesst 
   const { welt, spieler, x0, y0, bauer } = feudalMitPlatz();
   spieler.zeitalter = 0;
   const dunkel = welt.nachricht('a', { auftrag: 'mauer', einheiten: [bauer.id], art: 'steinmauer', von: { x: x0, y: y0 }, bis: { x: x0 + 3, y: y0 } });
-  assert.equal(dunkel.fehler, 'Die Steinmauer gibt es erst in der Feudalzeit.');
+  assert.equal(dunkel.fehler, 'Die Steinmauer gibt es erst ab dem Lehen.');
   const haus = welt.nachricht('a', { auftrag: 'mauer', einheiten: [bauer.id], art: 'haus', von: { x: x0, y: y0 }, bis: { x: x0 + 3, y: y0 } });
   assert.equal(haus.fehler, 'Das lässt sich nicht ziehen.');
   // Fremde Dorfbewohner ziehen nichts.
@@ -263,7 +263,7 @@ test('bauen AC-31: ein Tor geht in eine Luecke oder auf die eigene Mauer - nicht
   assert.equal(welt.nachricht('a', { auftrag: 'bauen', einheiten: [bauer.id], art: 'tor', ziel: { x: x0 + 1, y: y0 + 1 } }).fehler, undefined);
   // Und vor der Feudalzeit gar nicht.
   spieler.zeitalter = 0;
-  assert.match(welt.nachricht('a', { auftrag: 'bauen', einheiten: [bauer.id], art: 'tor', ziel: { x: x0 + 9, y: y0 + 9 } }).fehler, /erst in der Feudalzeit/);
+  assert.match(welt.nachricht('a', { auftrag: 'bauen', einheiten: [bauer.id], art: 'tor', ziel: { x: x0 + 9, y: y0 + 9 } }).fehler, /erst ab dem Lehen/);
 });
 
 test('bauen AC-31: faellt das Tor, ist die Luecke fuer alle offen', () => {

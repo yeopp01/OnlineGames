@@ -45,6 +45,15 @@ function vomSpielBesetzt(spiel, einstellungen) {
   return Number.isInteger(besetzt) && besetzt >= 0 ? besetzt : 0;
 }
 
+// Takte je echte Sekunde: eine Zahl im Steckbrief oder eine Funktion der
+// Einstellungen (spielziel AC-23). Was keine ganze Zahl von 1 bis 60 ist,
+// wird dorthin gezogen - eine Uhr mit NaN oder 0 liefe nie oder ohne Ende.
+function takteJeSekunde(spiel, einstellungen) {
+  const roh = typeof spiel.takte === 'function' ? spiel.takte(einstellungen) : spiel.takte;
+  const zahl = Math.round(Number(roh));
+  return Number.isFinite(zahl) ? Math.max(1, Math.min(60, zahl)) : 1;
+}
+
 // Passen Menschen und vom Spiel besetzte Plaetze unter die Hoechstzahl?
 function plaetzePruefen(spiel, einstellungen, menschen = 1) {
   const gesamt = Math.min(MAX_SPIELER, einstellungen.spieler || MAX_SPIELER);
@@ -242,15 +251,34 @@ class Raum {
     // Je Spieler, wenn das Spiel das anbietet (kampf AC-13): jeder bekommt
     // nur, was er sieht. Was das heisst, weiss nur das Spiel (ADR-0006).
     this.sendenJe((id) => (this.welt.aufbauFuer ? this.welt.aufbauFuer(id) : this.welt.aufbau()));
-    this.uhr = setInterval(() => this.schlag(), 1000 / this.spiel.takte);
+    // Wie viele Takte je echte Sekunde - eine Zahl oder, je nach
+    // Einstellungen, eine Funktion des Steckbriefs (spielziel AC-23). Was
+    // sie bedeuten, weiss nur das Spiel.
+    this.jeSekunde = takteJeSekunde(this.spiel, this.einstellungen);
+    this.beginn = Date.now();
+    this.gerechnet = 0;
+    this.uhr = setInterval(() => this.schlag(), 1000 / this.jeSekunde);
     this.beruehrt = Date.now();
     return {};
   }
 
   schlag() {
+    // Gerechnet wird nach der Wanduhr, nicht nach der Zahl der Schlaege:
+    // `setInterval` mit 66,7 ms kommt jedes Mal etwas spaet, und ueber eine
+    // Minute fehlten sonst Sekunden (spielziel AC-23: hoechstens einen Takt
+    // daneben). Ein Schlag holt nach, was faellig ist - nach einem Stocken
+    // aber hoechstens eine Sekunde, damit das Spiel nicht davonrennt.
+    const soll = Math.floor(((Date.now() - this.beginn) * this.jeSekunde) / 1000);
+    if (soll - this.gerechnet > this.jeSekunde) this.gerechnet = soll - this.jeSekunde;
+    const faellig = soll - this.gerechnet;
+    if (faellig <= 0) return;
+    this.gerechnet = soll;
     // Der Zeitraffer ist ein Pruefgriff: Tests setzen ihn, damit eine Minute
     // Spiel keine Minute Warten kostet. Im Betrieb bleibt er 1.
-    for (let i = 0; i < this.zeitraffer; i++) this.welt.takten();
+    for (let i = 0; i < faellig * this.zeitraffer; i++) {
+      this.welt.takten();
+      if (this.welt.vorbei) break;
+    }
     if (this.welt.zustandJeSpieler) {
       const je = this.welt.zustandJeSpieler(this.spieler.map((s) => s.id));
       this.sendenJe((id) => je.get(id));

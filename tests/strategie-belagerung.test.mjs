@@ -50,7 +50,7 @@ test('einheiten AC-35: die Ramme mit den Werten der Vorlage, in der Belagerungsw
   const { welt, anna, x0, y0 } = ritterzeitMitPlatz();
   const werkstatt = welt.gebaeudeAnlegen('a', 'belagerungswerkstatt', x0 + 5, y0 + 5);
   anna.zeitalter = 1;
-  assert.match(welt.nachricht('a', { auftrag: 'ausbilden', gebaeude: werkstatt.id, einheit: 'ramme' }).fehler, /Ritterzeit/);
+  assert.match(welt.nachricht('a', { auftrag: 'ausbilden', gebaeude: werkstatt.id, einheit: 'ramme' }).fehler, /ab dem Fürstentum/);
   anna.zeitalter = 2;
   const holz = anna.holz;
   assert.deepEqual(welt.nachricht('a', { auftrag: 'ausbilden', gebaeude: werkstatt.id, einheit: 'ramme' }), {});
@@ -150,7 +150,7 @@ test('einheiten AC-36: der Mangonel mit den Werten der Vorlage, in der Belagerun
   const { welt, anna, x0, y0 } = ritterzeitMitPlatz();
   const werkstatt = welt.gebaeudeAnlegen('a', 'belagerungswerkstatt', x0 + 5, y0 + 5);
   anna.zeitalter = 1;
-  assert.match(welt.nachricht('a', { auftrag: 'ausbilden', gebaeude: werkstatt.id, einheit: 'mangonel' }).fehler, /Ritterzeit/);
+  assert.match(welt.nachricht('a', { auftrag: 'ausbilden', gebaeude: werkstatt.id, einheit: 'mangonel' }).fehler, /ab dem Fürstentum/);
   anna.zeitalter = 2;
   const gold = anna.gold;
   assert.deepEqual(welt.nachricht('a', { auftrag: 'ausbilden', gebaeude: werkstatt.id, einheit: 'mangonel' }), {});

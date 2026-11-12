@@ -302,6 +302,18 @@ canvas.angriffslauf {
   color: var(--leise);
 }
 
+/* Voller Wohnraum, waehrend ein Auftrag wartet (bedienung AC-43): rot wie
+   eine Absage, nicht gelb wie der Knopf fuer Untaetige - hier steht etwas
+   still, das bezahlt ist. */
+.rohstoff.bevoelkerung.wartet {
+  border-color: #e0604f;
+  background: #3a1410e6;
+}
+.rohstoff.bevoelkerung.wartet b,
+.rohstoff.bevoelkerung.wartet i {
+  color: #ffb1a5;
+}
+
 /* Rohstoffe, Zeitalter, Uhr, Karte und der Knopf "Aufgeben" brauchen zusammen
    rund 1260 Bildpunkte. Darunter geht der Hinweis: er ist eine Erinnerung, der
    Knopf eine Handlung. */
@@ -666,6 +678,38 @@ canvas.angriffslauf {
   display: none;
 }
 
+/* Verbindung verloren (bedienung AC-19): mitten im Bild und stehend, bis
+   neu geladen wird - wer weiterklickt, soll wissen, dass nichts ankommt.
+   Ueber allem ausser den Rueckfragen, die ohnehin nichts mehr senden. */
+.verbindungweg {
+  position: fixed;
+  left: 50%;
+  top: 38%;
+  transform: translate(-50%, -50%);
+  width: min(30rem, calc(100vw - 2rem));
+  padding: 1.2rem 1.5rem;
+  border: 1px solid #e0705f;
+  border-radius: 0.9rem;
+  background: #1e1412f2;
+  color: #f1dcd6;
+  text-align: center;
+  box-shadow: 0 10px 40px #000c;
+  z-index: 25;
+}
+.verbindungweg p {
+  margin: 0 0 1rem;
+  line-height: 1.45;
+}
+.verbindungweg strong {
+  display: block;
+  margin-bottom: 0.3rem;
+  color: #ffb4a6;
+  font-size: 1.1rem;
+}
+.verbindungweg[hidden] {
+  display: none;
+}
+
 @keyframes aufsteigen {
   from { opacity: 0; transform: translate(-50%, 0.8rem) scale(0.94); }
   to { opacity: 1; transform: translate(-50%, 0) scale(1); }
@@ -894,6 +938,20 @@ canvas.angriffslauf {
 }
 .tastenuebersicht dd {
   margin: 0;
+}
+.tastenuebersicht .schalter {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 0.9rem 0 0;
+  cursor: pointer;
+}
+/* Ohne die Breite der Formularfelder (input: 100 %), sonst steht der Kasten
+   mitten in der Zeile und der Text daneben in einer schmalen Spalte. */
+.tastenuebersicht .schalter input {
+  width: auto;
+  margin: 0;
+  accent-color: #f0b35a;
 }
 .tastenuebersicht .leise {
   margin: 0.8rem 0 0;

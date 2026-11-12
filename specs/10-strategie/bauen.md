@@ -2,7 +2,7 @@
 
 **Bereich:** Strategie
 **Kuerzel:** bauen
-**Stand:** 30/34 fertig · 4 offen
+**Stand:** 30/35 fertig · 5 offen
 
 ## Zweck
 
@@ -80,7 +80,7 @@ Feudalzeit wie dort.
 | Burg | Ritter | 650 Stein | 200 s | 4800 | schießt (11 Angriff, Reichweite 8), +20 Bevölkerung |
 
 **Nicht in Stufe D:** Unterschlupf (Einheiten in Gebäuden bergen), die
-Spezialeinheit der Burg (kommt mit den Völkern, Stufe E), Palisade.
+Spezialeinheit der Burg (kommt mit den Häusern, Stufe E), Palisade.
 
 ## Abnahmekriterien
 
@@ -278,6 +278,19 @@ Spezialeinheit der Burg (kommt mit den Völkern, Stufe E), Palisade.
   Leben reist in der Tafel `kw` zum Browser (für den Lebensbalken). Die
   Forschungsdauern nennt die Spec nicht; genommen sind die des Originals
   (75, 35, 50, 50 s).
+
+### Stufe F — das Ritual (aus ADR-0014)
+
+- **AC-35** `offen` **Den Drachen rufen** — Ein Kloster mit einem Ei
+  ([Einheiten](einheiten-und-befehle.md) AC-51) bietet den Auftrag „Drachen
+  rufen": 400 Nahrung und 400 Gold, bezahlt beim Beginn, 180 Sekunden. Die
+  Uhr läuft nur, solange **fünf eigene Mönche am Kloster** stehen; fällt
+  einer oder geht er, steht sie. **Alle** Spieler sehen die Ansage mit der
+  Uhr, wie bei der Kündigung eines Bündnisses (spielziel AC-24): der Gegner
+  soll antworten können — Mönche erschlagen, das Kloster einreißen,
+  Schützen ausbilden. Gerechnet: in 180 Sekunden bildet eine Schießanlage
+  sechs Armbrustschützen aus (27 s das Stück). Höchstens ein Drache je
+  Spieler; ist die Einstellung „Drache" aus, gibt es den Auftrag nicht.
 
 ## Grenzfaelle
 

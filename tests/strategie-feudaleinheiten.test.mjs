@@ -90,7 +90,7 @@ test('einheiten AC-23: in der Dunklen Zeit bildet die Kaserne den Speerkaempfer 
   // Die Miliz geht, der Speerkaempfer nicht - dasselbe Gebaeude, anderes Zeitalter.
   assert.deepEqual(welt.nachricht('a', { auftrag: 'ausbilden', gebaeude: kaserne.id, einheit: 'miliz' }), {});
   const absage = welt.nachricht('a', { auftrag: 'ausbilden', gebaeude: kaserne.id, einheit: 'speerkaempfer' }).fehler;
-  assert.match(absage, /erst in der Feudalzeit/, absage);
+  assert.match(absage, /erst ab dem Lehen/, absage);
   assert.equal(anna.holz, 2000, 'nichts bezahlt');
 });
 
@@ -181,7 +181,7 @@ test('einheiten AC-24: der Soldat traegt die Werte der Vorlage, die Verbesserung
 test('einheiten AC-24: in der Dunklen Zeit forscht die Kaserne die Soldatenstufe nicht', () => {
   const { welt, kaserne, anna } = mitKaserne(0);
   const absage = welt.nachricht('a', { auftrag: 'ausbilden', gebaeude: kaserne.id, einheit: 'soldatenstufe' }).fehler;
-  assert.match(absage, /erst in der Feudalzeit/, absage);
+  assert.match(absage, /erst ab dem Lehen/, absage);
   assert.equal(anna.nahrung, 2000, 'nichts bezahlt');
   // Und den Soldaten gibt es ohne die Forschung ueberhaupt nicht.
   const ohne = welt.nachricht('a', { auftrag: 'ausbilden', gebaeude: kaserne.id, einheit: 'soldat' }).fehler;

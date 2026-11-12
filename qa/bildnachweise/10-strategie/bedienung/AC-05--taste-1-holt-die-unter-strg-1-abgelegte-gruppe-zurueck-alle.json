@@ -1,0 +1,10 @@
+{
+  "spec": "10-strategie/bedienung.md",
+  "ac": "AC-5",
+  "titel": "Taste 1 holt die unter Strg+1 abgelegte Gruppe zurueck: alle vier gewaehlt, unten 4 ausgewaehlt",
+  "datei": "e2e/tests/strategie-gruppentasten.spec.mjs",
+  "pfad": [
+    "Gruppentasten",
+    "bedienung AC-5: Strg und Alt mit Ziffer legen die Auswahl ab, die Ziffer holt sie zurueck - Einheiten wie ein Gebaeude"
+  ]
+}

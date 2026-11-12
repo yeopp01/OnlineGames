@@ -32,6 +32,16 @@ const KLICK_WEITE = 16; // Bildpunkte bei Vergroesserung 1
 // Wie lange das Zeichen am Ziel steht (bedienung AC-34). Kurz genug, dass es
 // nicht im Weg ist, lang genug, dass man es bei einem Klick bemerkt.
 const ZIELZEICHEN_DAUER = 800; // Millisekunden
+const RAND_SCHIEBEN = 12; // Bildpunkte am Fensterrand, in denen die Maus die Karte schiebt (bedienung AC-9)
+
+// Die gemerkte Wahl zum Schieben am Rand; ohne Speicher (privates Fenster) "an".
+export function randSchiebenGemerkt() {
+  try {
+    return localStorage.getItem('randSchieben') !== 'aus';
+  } catch {
+    return true;
+  }
+}
 
 /** Hoehe einer Figur in Bildpunkten bei einem Zoom - auch fuer die Schautafel. */
 export function figurHoeheBei(zoom) {
@@ -71,6 +81,8 @@ export class Ansicht {
     this.pfeile = [];
     this.empfangen = 0;
     this.ausgewaehlt = new Set();
+    // Abgelegte Auswahlen je Ziffer (bedienung AC-5): Einheiten oder ein Gebaeude.
+    this.gruppen = new Map();
     this.gebaeude = new Map();
     this.werte = { einheiten: {}, gebaeude: {} };
     this.arten = {};
@@ -98,6 +110,11 @@ export class Ansicht {
     // Platzieren eines Gebaeudes (bauen AC-4): welche Art, und wo der Zeiger ist.
     this.platzieren = null;
     this.zeiger = null;
+    // Schieben am Bildschirmrand (bedienung AC-9): wo die Maus im Spielbild
+    // steht (null, sobald sie es verlaesst), und ob es an ist. Die Wahl merkt
+    // sich der Browser, ohne ihn gilt die Vorgabe "an".
+    this.randZeiger = null;
+    this.randSchieben = randSchiebenGemerkt();
     this.bauenSenden = () => {};
     this.mauerSenden = () => {};
     this.sammelpunktSenden = () => {};
@@ -151,6 +168,9 @@ export class Ansicht {
     this.nachher = new Map();
     this.empfangen = 0;
     this.ausgewaehlt = new Set();
+    this.gruppen = new Map();
+    // Der letzte Sprung mit der Leertaste (bedienung AC-10): woher, wohin.
+    this.sprung = null;
     this.gewaehltesGebaeude = null;
     this.zielzeichen = null;
     this.angriffslauf = false;
@@ -187,7 +207,13 @@ export class Ansicht {
     // Fremde Gebaeude, wie man sie zuletzt gesehen hat (kampf AC-12).
     this.erinnert = new Map();
     this.fuellung = new Map();
-    this.taktdauer = 1000 / nachricht.takte;
+    // Ein Takt dauert in echter Zeit 1000 / (takte * tempo) ms: bei
+    // schnellerem Spiel kommen die Zustaende oefter, und die Bewegung
+    // dazwischen wird kuerzer gestreckt (spielziel AC-23). Die Uhr im Bild
+    // zaehlt weiter Spielzeit - dafuer bleibt `takteProSekunde` die Zahl je
+    // Spielsekunde.
+    this.tempo = Number.isFinite(nachricht.tempo) && nachricht.tempo > 0 ? nachricht.tempo : 1;
+    this.taktdauer = 1000 / (nachricht.takte * this.tempo);
     this.takteProSekunde = nachricht.takte;
     // Das Muster des Bodens haengt am Startwert: jede Karte ihr eigenes.
     // Die Werte der Arten kommen einmal mit dem Aufbau (bedienung AC-29); die
@@ -515,7 +541,7 @@ export class Ansicht {
 
   // Name eines Zeitalters, wie der Server ihn mit dem Aufbau geschickt hat.
   zeitalterName(stufe = this.zeitalter) {
-    return this.werte?.zeitalter?.[stufe]?.name || 'Dunkle Zeit';
+    return this.werte?.zeitalter?.[stufe]?.name || 'Landsitz';
   }
 
   // Die Mitte der Grundflaeche: der Server nennt das Ankerfeld, die Flaeche
@@ -637,6 +663,7 @@ export class Ansicht {
 
     this.leinwand.addEventListener('pointermove', (e) => {
       this.zeiger = { x: e.offsetX, y: e.offsetY };
+      this.randZeiger = this.zeiger;
       if (!this.zug) return;
       this.zug.bisX = e.offsetX;
       this.zug.bisY = e.offsetY;
@@ -649,9 +676,23 @@ export class Ansicht {
         return;
       }
       if (!this.zug) return;
-      this.auswaehlen(this.zug);
+      this.auswaehlen(this.zug, e.shiftKey);
       this.zug = null;
     });
+
+    // Doppelklick auf eine eigene Einheit: alle ihrer Art im Bild (bedienung
+    // AC-4). Die zwei Klicks davor haben sie schon einzeln gewaehlt.
+    this.leinwand.addEventListener('dblclick', (e) => {
+      if (this.platzieren) return;
+      this.typWaehlen(e.offsetX, e.offsetY, e.shiftKey);
+    });
+
+    // Verlaesst die Maus das Spielbild oder das Fenster den Fokus, steht die
+    // Karte (bedienung AC-9). Keine Leiste reicht bis an den Rand - alle
+    // stehen mindestens 1rem davor, die Kopfzeile nimmt keine Maus an -, also
+    // sieht die Leinwand die Maus in jedem Randstreifen selbst.
+    this.leinwand.addEventListener('pointerleave', () => { this.randZeiger = null; });
+    window.addEventListener('blur', () => { this.randZeiger = null; });
 
     this.leinwand.addEventListener('wheel', (e) => {
       e.preventDefault();
@@ -683,6 +724,14 @@ export class Ansicht {
         this.naechsterUntaetiger();
         return;
       }
+      // Leertaste: zur Basis und zurueck (bedienung AC-10). Ohne Standard -
+      // sonst drueckt sie den Knopf, der zuletzt geklickt wurde. Gehalten
+      // springt sie nicht hin und her.
+      if (e.code === 'Space' && !e.ctrlKey && !e.metaKey && !e.altKey) {
+        e.preventDefault();
+        if (!e.repeat) this.basisSprung();
+        return;
+      }
       this.tasten.add(e.key.toLowerCase());
     });
     window.addEventListener('keyup', (e) => this.tasten.delete(e.key.toLowerCase()));
@@ -691,9 +740,50 @@ export class Ansicht {
 
   // Ausgewaehlt wird im Bild, nicht auf der Karte: ein Rechteck auf dem
   // Bildschirm ist in der Raute kein Rechteck aus Feldern mehr.
-  auswaehlen(rahmen) {
+  // Mit Umschalt kommt hinzu, was getroffen ist (bedienung AC-3): Einheiten
+  // zu Einheiten. Trifft der Klick ein Gebaeude oder nichts, bleiben die
+  // Einheiten gewaehlt - gemischt wird nicht, denn ein Rechtsklick hiesse fuer
+  // beide etwas anderes.
+  auswaehlen(rahmen, erweitern = false) {
+    const vorher = erweitern ? [...this.ausgewaehlt] : [];
     this.auswahlTreffen(rahmen);
+    if (vorher.length) {
+      if (!this.ausgewaehlt.size) this.gewaehltesGebaeude = null;
+      for (const id of vorher) this.ausgewaehlt.add(id);
+    }
     this.beiAuswahl();
+  }
+
+  /**
+   * Alle eigenen Einheiten derselben Art wie die unter dem Zeiger, soweit ihr
+   * Fusspunkt im Bild steht (bedienung AC-4). Mit Umschalt zur Auswahl dazu.
+   * Gibt zurueck, wie viele es sind; trifft der Zeiger keine Einheit, null.
+   */
+  typWaehlen(px, py, erweitern = false) {
+    const figur = this.figurenHoehe();
+    let bestes = null;
+    let besterAbstand = Math.max(KLICK_WEITE * this.kamera.zoom, figur * 0.75);
+    for (const einheit of this.nachher.values()) {
+      if (einheit.b !== this.ich || einheit.s) continue;
+      const p = this.zuBild(einheit.x, einheit.y);
+      const abstand = Math.hypot(p.x - px, p.y - figur * KOERPER_MITTE - py);
+      if (abstand < besterAbstand) {
+        besterAbstand = abstand;
+        bestes = einheit;
+      }
+    }
+    if (!bestes) return null;
+    const breite = this.leinwand.clientWidth;
+    const hoehe = this.leinwand.clientHeight;
+    if (!erweitern) this.ausgewaehlt.clear();
+    this.gewaehltesGebaeude = null;
+    for (const einheit of this.nachher.values()) {
+      if (einheit.b !== this.ich || einheit.s || einheit.k !== bestes.k) continue;
+      const p = this.zuBild(einheit.x, einheit.y);
+      if (p.x >= 0 && p.x <= breite && p.y >= 0 && p.y <= hoehe) this.ausgewaehlt.add(einheit.i);
+    }
+    this.beiAuswahl();
+    return this.ausgewaehlt.size;
   }
 
   auswahlTreffen(rahmen) {
@@ -1156,10 +1246,11 @@ export class Ansicht {
 
   schieben(dauer) {
     const tempo = (600 / this.kamera.zoom) * (dauer / 1000);
-    if (this.tasten.has('w') || this.tasten.has('arrowup')) this.kamera.y -= tempo;
-    if (this.tasten.has('s') || this.tasten.has('arrowdown')) this.kamera.y += tempo;
-    if (this.tasten.has('a') || this.tasten.has('arrowleft')) this.kamera.x -= tempo;
-    if (this.tasten.has('d') || this.tasten.has('arrowright')) this.kamera.x += tempo;
+    const rand = this.amRand();
+    if (this.tasten.has('w') || this.tasten.has('arrowup') || rand.oben) this.kamera.y -= tempo;
+    if (this.tasten.has('s') || this.tasten.has('arrowdown') || rand.unten) this.kamera.y += tempo;
+    if (this.tasten.has('a') || this.tasten.has('arrowleft') || rand.links) this.kamera.x -= tempo;
+    if (this.tasten.has('d') || this.tasten.has('arrowright') || rand.rechts) this.kamera.x += tempo;
 
     // Die Karte als Raute: links und rechts je g Halbbreiten, unten 2g Halbhoehen.
     const g = this.karte.groesse;
@@ -1167,6 +1258,34 @@ export class Ansicht {
     const hoehe = this.leinwand.clientHeight / this.kamera.zoom;
     this.kamera.x = Math.max(-g * HALB_B - breite / 2, Math.min(g * HALB_B - breite / 2, this.kamera.x));
     this.kamera.y = Math.max(-hoehe / 2, Math.min(2 * g * HALB_H - hoehe / 2, this.kamera.y));
+  }
+
+  /**
+   * An welchem Rand des Spielbilds die Maus steht (bedienung AC-9): in den
+   * aeussersten RAND_SCHIEBEN Bildpunkten - oben auch unter der Kopfzeile
+   * mit den Rohstoffen. Aus, wenn abgeschaltet oder die Maus draussen.
+   */
+  amRand() {
+    const z = this.randZeiger;
+    if (!this.randSchieben || !z) return {};
+    const b = this.leinwand.clientWidth;
+    const h = this.leinwand.clientHeight;
+    if (z.x < 0 || z.y < 0 || z.x >= b || z.y >= h) return {};
+    return {
+      links: z.x < RAND_SCHIEBEN,
+      rechts: z.x >= b - RAND_SCHIEBEN,
+      oben: z.y < RAND_SCHIEBEN,
+      unten: z.y >= h - RAND_SCHIEBEN,
+    };
+  }
+
+  randSchiebenSetzen(an) {
+    this.randSchieben = Boolean(an);
+    try {
+      localStorage.setItem('randSchieben', an ? 'an' : 'aus');
+    } catch {
+      // Ohne Speicher gilt die Wahl bis zum Neuladen.
+    }
   }
 
   bild(jetzt = performance.now()) {
@@ -1365,6 +1484,54 @@ export class Ansicht {
   }
 
   /**
+   * Wartet irgendwo ein eigener Auftrag, weil die Bevoelkerung voll ist
+   * (bedienung AC-43)? Der Server sagt es je Gebaeude (`w`, bauen AC-15) -
+   * hier wird nur gefragt, ob eines der eigenen es sagt, gewaehlt oder nicht.
+   */
+  wartetEtwas() {
+    for (const g of this.gebaeude.values()) if (g.b === this.ich && g.w) return true;
+    return false;
+  }
+
+  /**
+   * Die Leertaste (bedienung AC-10): springt zum eigenen Dorfzentrum - dem,
+   * das dem Startplatz am naechsten steht, ohne eines zum Startplatz. Ein
+   * zweites Mal, ohne dass die Kamera dazwischen bewegt wurde, zurueck dorthin,
+   * wo sie vorher stand. Wer weggeschoben hat, springt wieder zur Basis.
+   * Gibt 'basis' oder 'zurueck' zurueck.
+   */
+  basisSprung() {
+    const k = this.kamera;
+    const s = this.sprung;
+    if (s && Math.abs(k.x - s.nach.x) < 0.5 && Math.abs(k.y - s.nach.y) < 0.5 && k.zoom === s.nach.zoom) {
+      k.x = s.von.x;
+      k.y = s.von.y;
+      this.sprung = null;
+      return 'zurueck';
+    }
+    const start = this.spieler.get(this.ich)?.basis;
+    if (!start) return null;
+    let ziel = start;
+    let weite = Infinity;
+    for (const g of this.gebaeude.values()) {
+      if (g.b !== this.ich || g.art !== 'dorfzentrum') continue;
+      const mitte = this.gebaeudeMitte(g);
+      const d = Math.hypot(mitte.x - start.x, mitte.y - start.y);
+      if (d < weite) {
+        weite = d;
+        ziel = mitte;
+      }
+    }
+    const von = { x: k.x, y: k.y };
+    this.blickAuf(ziel.x, ziel.y);
+    // Am Kartenrand haelt schieben() die Kamera fest; gemerkt wird, wo sie
+    // danach steht, sonst erkennte der zweite Druck seinen Sprung nicht.
+    this.schieben(0);
+    this.sprung = { von, nach: { x: k.x, y: k.y, zoom: k.zoom } };
+    return 'basis';
+  }
+
+  /**
    * Waehlt den naechsten untaetigen Dorfbewohner und holt ihn ins Bild -
    * reihum, damit zweimal gedrueckt auch zwei verschiedene zeigt
    * (bedienung AC-28).
@@ -1383,6 +1550,46 @@ export class Ansicht {
     this.blickAuf(einheit.x, einheit.y);
     this.beiAuswahl();
     return id;
+  }
+
+  /**
+   * Legt die Auswahl unter einer Ziffer ab (bedienung AC-5) - die Einheiten,
+   * sonst das gewaehlte eigene Gebaeude. Ohne Auswahl wird die Ziffer frei.
+   */
+  gruppeAblegen(ziffer) {
+    if (this.ausgewaehlt.size) this.gruppen.set(ziffer, { einheiten: [...this.ausgewaehlt] });
+    else if (this.gewaehltesGebaeude !== null && this.gebaeude.get(this.gewaehltesGebaeude)?.b === this.ich) {
+      this.gruppen.set(ziffer, { gebaeude: this.gewaehltesGebaeude });
+    } else this.gruppen.delete(ziffer);
+  }
+
+  /**
+   * Ruft die Auswahl unter einer Ziffer zurueck. Wer seither gefallen oder
+   * bekehrt ist, faellt heraus; ist niemand mehr da, bleibt die Auswahl, wie
+   * sie war. Gibt zurueck, wie viele gewaehlt sind.
+   */
+  gruppeAbrufen(ziffer) {
+    const gruppe = this.gruppen.get(ziffer);
+    if (!gruppe) return 0;
+    if (gruppe.gebaeude !== undefined) {
+      if (this.gebaeude.get(gruppe.gebaeude)?.b !== this.ich) return 0;
+      if (this.platzieren) this.platzierenBeenden();
+      this.ausgewaehlt.clear();
+      this.gewaehltesGebaeude = gruppe.gebaeude;
+      this.beiAuswahl();
+      return 1;
+    }
+    const lebend = gruppe.einheiten.filter((id) => {
+      const e = this.nachher.get(id);
+      return e && e.b === this.ich && !e.s;
+    });
+    gruppe.einheiten = lebend;
+    if (!lebend.length) return 0;
+    if (this.platzieren) this.platzierenBeenden();
+    this.gewaehltesGebaeude = null;
+    this.ausgewaehlt = new Set(lebend);
+    this.beiAuswahl();
+    return lebend.length;
   }
 
   /**
@@ -1458,16 +1665,16 @@ export class Ansicht {
    * Wie viel Nahrung eine Farm voll traegt, mit den Verbesserungen ihres
    * Besitzers (bauen AC-26). Ohne das stuende in der Leiste "noch 250 Nahrung
    * von 175" - der Vorrat aus der Tabelle, nicht der dieses Spielers.
+   *
+   * Gelesen aus der Tafel des Servers (`kw`), die Haus und Verbesserungen
+   * kennt (spielziel AC-17). Bis Runde 167 rechnete der Browser die
+   * Verbesserungen hier selbst zusammen und kannte das Haus nicht;
+   * `tests/waechter-wirkungen.test.mjs` haelt das fern.
    */
   farmVoll(gebaeude) {
-    let voll = this.werte.gebaeude[gebaeude.art]?.nahrung || 0;
-    if (!voll) return 0;
-    // Was der Gegner erforscht hat, weiss niemand - fuer fremde Farmen bleibt
-    // es bei der Tabelle.
-    if (gebaeude.b === this.ich) {
-      for (const v of this.verbesserungen) voll += this.werte.verbesserungen?.[v]?.farm?.nahrung || 0;
-    }
-    return voll;
+    const grund = this.werte.gebaeude[gebaeude.art]?.nahrung || 0;
+    if (!grund) return 0;
+    return this.einheitenwerte.get(gebaeude.b)?.[gebaeude.art]?.nahrung || grund;
   }
 
   // Ein Lebensbalken (darstellung AC-8): dunkler Grund, darauf der Anteil in

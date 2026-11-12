@@ -6,6 +6,8 @@ import http from 'node:http';
 import { randomBytes } from 'node:crypto';
 import { createRequire } from 'node:module';
 import { KONTO } from './helpers/konto.mjs';
+// Vor dem Server: der Steckbrief liest die Haeuser beim Laden (spielziel AC-26).
+import './helpers/pruefhaus.mjs';
 
 const require = createRequire(import.meta.url);
 const { starten } = require('../server/index.js');
@@ -199,6 +201,16 @@ const griffe = http.createServer(async (anfrage, antwortGriff) => {
       if (!Number.isFinite(minuten) || minuten < 0) throw new Error('minuten fehlt.');
       raum.welt.takt = Math.max(raum.welt.takt, Math.round(minuten * 60 * TAKTE_PRO_SEKUNDE));
       antwortGriff.writeHead(200, { 'Content-Type': 'application/json', Connection: 'close' }).end(JSON.stringify({ ok: true, takt: raum.welt.takt }));
+      return;
+    }
+    // Die Verbindung eines Spielers kappen, wie ein Abbruch im Netz
+    // (bedienung AC-19): der Server schliesst sie, der Platz bleibt.
+    if (befehl === 'trennen') {
+      const raum = laufend.raeume.finden(id);
+      const spieler = raum?.spieler.find((s) => s.name === werte.name);
+      if (!spieler?.draht) throw new Error(`${werte.name} hat in Raum ${id} keine Verbindung.`);
+      spieler.draht.close();
+      antwortGriff.writeHead(200, { 'Content-Type': 'application/json', Connection: 'close' }).end(JSON.stringify({ ok: true }));
       return;
     }
     if (befehl === 'zeitraffer') {

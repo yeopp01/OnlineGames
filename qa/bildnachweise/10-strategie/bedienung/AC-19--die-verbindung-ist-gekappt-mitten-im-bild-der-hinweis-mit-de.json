@@ -1,0 +1,10 @@
+{
+  "spec": "10-strategie/bedienung.md",
+  "ac": "AC-19",
+  "titel": "Die Verbindung ist gekappt: mitten im Bild der Hinweis mit dem Knopf Neu laden und zurueckkehren",
+  "datei": "e2e/tests/strategie-verbindung.spec.mjs",
+  "pfad": [
+    "Verbindungsverlust",
+    "bedienung AC-19 und uebertragung AC-9: reisst die Verbindung, steht ein Hinweis im Bild; Neu laden kehrt zurueck"
+  ]
+}

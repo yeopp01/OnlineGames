@@ -13,6 +13,32 @@ Kurz halten. Diese Datei wird in jeder Runde gelesen.
 Entscheidungen, die nicht die Schleife trifft. Solange eine offen ist, wird an
 etwas anderem gearbeitet.
 
+- **Eschenbruch ist zu stark — welcher Bonus wird schwächer?** (Runde 179.)
+  Eschenbruch gewinnt 85 % seiner 80 Partien, spielziel AC-18 verlangt
+  höchstens 70. Gemessen mit `pruefstand:haeuser --probe`, je 80 Partien:
+  ohne Holzbonus 69 bis 75 %, ohne die Reichweite seiner Schützen 71 %,
+  Reichweite erst ab dem Fürstentum (wie in der Vorlage: +1 je Zeitalter
+  ab der Ritterzeit) 73 %, ohne seine KI-Neigung zur Schießanlage 79 %,
+  nur die Neigung ohne Boni 60 %, ganz leer 51 %. Kein Teil trägt allein;
+  es ist die Summe aus Holz und Reichweite. Über alle 200 Partien:
+  Reichweite ab Fürstentum **und** Holz 1,10 ergibt Eschenbruch 75,
+  Wehrstein 55, Rappenstein 45, Silberfurt 40, Distelhag 34 % — alle außer
+  Eschenbruch in der Spanne. **Empfehlung:** die Reichweite ab dem
+  Fürstentum (Vorlage, ein Zeitalter an einem Bonus ist klein gebaut) und
+  den Holzbonus auf +10 %; reicht das nicht, +5 %. Beides ändert die
+  Tabelle der Häuser in ADR-0014, deshalb die Frage. Bis dahin bleibt es,
+  und die Schleife misst an Distelhags KI weiter (siehe Faden).
+
+- **Rappensteins Reiter sehen jetzt 4 Felder weiter — so gemeint?** (Runde
+  171.) ADR-0014 gibt Rappenstein als Bonus „Reiter sehen 2 Felder weiter"
+  und als Mannschaftsbonus „Reiter der Verbündeten sehen 2 Felder weiter";
+  spielziel AC-25 sagt, der Mannschaftsbonus gilt dem Haus **selbst** und
+  den Verbündeten (wie im Original). Gebaut ist es so, also +2 +2: der
+  Späherreiter sieht 8 statt 4 Felder, ein Verbündeter 6. **Empfehlung:**
+  den eigenen Bonus ändern (etwa Reiter +10 % Tempo), damit Rappenstein
+  nicht zweimal dasselbe trägt; die Zahlen sind ohnehin Startwerte für den
+  Prüfstand. Bis dahin bleibt es, wie es dasteht — ein Eintrag in `daten.js`.
+
 - **Die KI mit eigener Sicht kostet KI gegen KI vier Partien von 40 — Grenze neu fassen?**
   (Runde 144, dritter Anlauf an ki AC-13, nach Runde 112 und 114.) Auf dem
   Boden von Runde 143 (die Wirtschaft wächst, ohne Nebel 40 von 40 vor
@@ -36,6 +62,18 @@ etwas anderem gearbeitet.
   Benutzer. **Alternative:** ki AC-13 bleibt geparkt, und die Schleife
   baut weiter ohne Nebel für die KI. Der Zweig ist `strategie-ki-sicht`
   (`d0314d4`), lokal und ungepusht.
+  **Beantwortet am 2026-11-10: Ersatzgrenze im Nebel.** Der Zweig wird
+  zusammengeführt, nicht neu geschrieben (Benutzer: „wieso neu entwickeln,
+  wenn schon ein Teil auf nem Zweig liegt?") — 5 Commits, 425 Zeilen,
+  Konflikt nur in `ki.js` gegen 24 Commits auf `strategie`. Danach KI gegen
+  KI über 40 Startwerte auf dem heutigen Stand. Werden es nicht 40 von 40
+  vor Minute 60, gilt für Partien, in denen die KI im Nebel spielt: **alle
+  mit Sieger vor Minute 90, Median unter 45 Minuten, mindestens 35 von 40
+  vor Minute 60** — fahrplan AC-11 bekommt diesen Satz unter derselben
+  Nummer, und ki AC-13 wird eingebunden.
+  **Erledigt in Runde 165:** zusammengeführt, 37 von 40 vor Minute 60,
+  Median 44,6, alle mit Sieger (längste 77,9) — die Ersatzgrenze hält,
+  knapp beim Median.
 
 - **Die KI mit eigener Sicht macht KI gegen KI länger — wie weiter?**
   (Runde 114, zweiter Anlauf an ki AC-13) Die KI sieht nur noch, was ihre
@@ -193,6 +231,52 @@ etwas anderem gearbeitet.
 
 ## Offene Fäden
 
+- **Distelhag stellt weniger her** (Runde 177): gegen Eschenbruch
+  (Startwerte 61 bis 63) zwei bis drei Militärgebäude gegen drei bis fünf,
+  127 gegen 226 Kampfeinheiten in der längsten Partie, 78 Dorfbewohner
+  ausgebildet gegen 49 (es verliert viele), fast immer unter 50 Holz bei
+  200 bis 500 Gold. Der Nachbau verlangt Holz über `MILITAER_HOLZ +
+  MILITAER_RESERVE`; Distelhags erstes Militärgebäude folgt der Goldregel,
+  weil die Kaserne nicht in `MILITAER` steht. Zu messen, bevor gebaut wird:
+  Holz und Sammler je Rohstoff über die Partie neben Eschenbruch
+  (`pruefstand:verlauf --haeuser eschenbruch,distelhag`), und ob Distelhag
+  gegen Wehrstein (2 zu 18) aus demselben Grund verliert. Der Zweig
+  `strategie-ki-antwort` (ki AC-31) wartet darauf. **Rückschau nach Runde
+  178**, gezählt über Distelhags 80 Partien: je Partie 112 Kampfeinheiten
+  aus 3,5 Ausbildungsgebäuden (Eschenbruch 145 aus 5,0, Wehrstein 155 aus
+  5,0, Silberfurt 117 aus 5,5, Rappenstein 40 aus 2,4). **Runde 179,
+  gemessen statt vermutet:** die Partie fällt am ersten Zusammenstoß (beim
+  Startwert 61 bis Minute 18 gleichauf, dann 16 gegen 8 Kampfeinheiten,
+  Distelhag kommt nie über das Lehen). Distelhags Neigung zur Kaserne
+  kostet es 15 bis 20 Punkte: mit 31 %, mit Schießanlage als Schwerpunkt
+  46 %, ohne Neigung 51 % (und 131 statt 112 Kampfeinheiten) — gegen
+  Eschenbruch aber weiter 2 bis 3 zu 20. Diese Paarung kippt erst, wenn
+  Eschenbruch **weder** Boni **noch** Neigung hat (11 zu 9); mit nur einem
+  von beiden bleibt sie bei 2 zu 18. Mit Reichweite ab Fürstentum, Holz
+  1,10 und Distelhag ohne Neigung: 7 zu 13, Eschenbruch 69, Distelhag 56,
+  Silberfurt 29 % (Distelhag ohne Neigung schlägt Silberfurt 18 zu 2).
+  Offen: eine Probe, in der Distelhag zur Kaserne neigt (zuerst gebaut,
+  zuerst bedient — ki AC-27 bleibt), aber nicht nur Kasernen nachbaut.
+  Der Zweig `strategie-ki-antwort` bleibt liegen: das Antworten war nicht
+  die Ursache. **Runde 180: erledigt bis auf Eschenbruch** — ki AC-32 baut
+  im Wechsel nach, Distelhag 47 statt 26 % über 160 Partien; was bleibt,
+  ist die Frage nach Eschenbruchs Boni.
+
+- **Die linke Seite gewinnt öfter** (Runde 176): über 200 Partien mit
+  abwechselnden Seiten gewann `ki1` 112 bis 119 von rund 197 (56 bis 60 %).
+  Nicht untersucht, ob es an der Karte (Startplätze, Wege), an der
+  Reihenfolge im Takt oder an der KI liegt. `pruefstand:haeuser` wechselt
+  deshalb die Seiten; der Nebeltest tut es über `haeuserFuer` nur zum Teil.
+
+- **Was die Stufe E von der Blender-Sitzung braucht** (Runde 164): Figuren
+  für Langbogenschütze, Pavesenschütze, Söldner und die fünf
+  Spezialeinheiten (Kriegswölfe, Reiterschütze, Riese, Meuchler,
+  Wiedergänger), die fünf Wappen (Esche, Hengst, Turm, Waage, drei
+  Disteln), dazu für Stufe F Ei und Drache, und die Ladung des Karrens
+  (einheiten AC-41). Ohne Figur bricht `tests/waechter-namen.test.mjs`
+  („jede Einheit hat eine Zeichnung"); deshalb warten E6 bis E9 im
+  Fahrplan auf sie. E1 bis E5 gehen ohne.
+
 - **Ein gefallener Browserfall kann den Lauf um 40 Minuten verlängern**
   (Runde 148): einheiten AC-16 (Holzfällerlager) fiel zum ersten Mal
   (Zeitüberschreitung beim Warten auf einen Träger vor dem Lager, einzeln
@@ -228,8 +312,74 @@ etwas anderem gearbeitet.
   Zielzeichen; fahrplan AC-03 — „fünf Dorfbewohner und eine Miliz" ist im
   weiten Bild nicht zählbar. Wer eines dieser Bilder anfasst, stellt es neu
   auf (`figurenFrei`, näher heran).
+  Dazu aus der Durchsicht nach Runde 166 (ebenfalls schon im eingecheckten
+  Bild so): einheiten AC-40 — die Unterschrift nennt „die Strecke und das
+  Gold" und den Heimweg, im Bild steht nur „bringt 13 Gold heim" und der
+  Karren am Markt, dessen Fahne über „Karte 4711" ragt; kampf AC-10 — neben
+  der gefallenen Miliz steht eine zweite rote; einheiten AC-23 — drei Knöpfe,
+  die Unterschrift sagt „einen Knopf mehr"; bauen AC-23 — die Absage nennt
+  die Zahl der Gebäude, nicht welche.
 
-- **ki AC-13 liegt auf dem Zweig `strategie-ki-sicht`** (`d0314d4`, Runden
+- **einheiten AC-38 (Mönch bekehrt) fiel einmal im vollen Lauf** (Runde
+  167, Zeitüberschreitung beim Warten auf den Besitzerwechsel, 15 s bei
+  Zeitraffer 1 für 4 bis 10 Spielsekunden; allein viermal grün, in Runde 166
+  grün). Fällt er im nächsten vollen Lauf wieder, ist er nach Abschnitt 1 die
+  nächste Arbeit — dann im Wartefenster den Zeitraffer hochdrehen. Im vollen
+  Lauf der Rückschau 168 grün.
+
+- **Im Warteraum liegt „Partie starten" ab drei Plätzen halb unter dem
+  Rand** (Runde 169, auf 1366 × 768: zwei Menschen und eine KI, 59 % des
+  Knopfs sichtbar). Das war schon vor dem Haus so — die Zeilen sind mit der
+  zweiten Wahl nicht höher geworden (Bild auswahl AC-22 neben AC-24).
+  auswahl AC-23 prüft den Gastgeber allein. Zu fünft (das Ziel des
+  Projekts) fehlen rund 150 Bildpunkte. Abhilfe wäre eine engere
+  Spielerliste oder die Einstellungen neben statt unter der Liste;
+  gehört als Lücke in die Rückschau zur Stufe E, die den Rundgang macht.
+
+- **Unter fremder Last schreiben die Pfeil-Fälle ihr Bild nicht**
+  (Runde 169, drei Blender-Instanzen der Parallelsitzung): bedienung AC-40
+  und bauen AC-29 / kampf AC-20 fielen im `:neu`-Lauf und einzeln sechs von
+  sechs. Fehlt das Bild, fotografiert der Test bei jedem Versuch, und das
+  Foto dauert länger, als ein Pfeil fliegt — der Turm hat die Miliz
+  getötet, bevor einer erwischt war. Gegenprobe auf HEAD in einem eigenen
+  Arbeitsbaum: mit vorhandenem Bild grün, ohne Bild vier von vier gefallen —
+  also die Last, nicht die Häuser (auf dem Server laufen Turm und Bogen mit
+  und ohne Haus Takt für Takt gleich). Mit dem Bild aus HEAD grün. **Ein
+  `:neu`-Lauf gehört auf eine freie Maschine**; läuft nebenher Schweres,
+  `check:alles` ohne `:neu`. Dazu wartet Playwright jetzt 120 s statt 30 auf
+  den Testserver — dreimal kam er unter der Last nicht rechtzeitig hoch.
+  Und: `timeout 40 node …` in Git Bash beendet den Node-Prozess nicht; ein
+  Probeserver blieb auf 4191/4192 liegen, ausgewichen mit `E2E_HAFEN=4195`.
+  Im selben Zug fiel in `npm run check` einmal karte AC-15 (Zeit der
+  Wegsuche, 1066 ms), einzeln dreimal grün, der zweite `check` ganz grün.
+
+- **Über den Raum gestartete Partien spielen zufällige Häuser** (Durchsicht
+  Runde 169): der Raum reicht `jePlatz` immer durch, Vorgabe Zufall — also
+  ziehen alle WebSocket-Tests, die `typ: 'start'` schicken, und die
+  Browserfälle, die nicht über `partieMit` starten (`spielauswahl`,
+  `strategie-einstieg`, `vorraum`), ein Haus aus dem Startwert. Heute misst
+  keiner davon Schaden, Reichweite oder Raten (gesucht in Runde 169). Wer
+  einen solchen Test schreibt, setzt `haus` je Platz wie `partieMit`.
+  **Entschieden in Runde 170:** seit Silberfurt Boni hat, spielen solche
+  Browserfälle das **Prüfhaus** — ein sechstes Haus ohne Boni, das nur der
+  Browserlauf in `HAEUSER` einträgt (`e2e/helpers/pruefhaus.mjs`, geladen
+  von `e2e/server.mjs` vor dem Server und von `e2e/helpers/seite.mjs`). Im
+  Browserlauf kann „Zufall" es ziehen; im Spiel gibt es es nicht. Die Bilder
+  aus dem Warteraum nach `haeuserSetzen` zeigen bis zum nächsten
+  `:neu`-Lauf noch „Silberfurt" — unter der Blender-Last nicht neu
+  geschrieben.
+
+- **Der Späher kann ins Heer geraten** (Durchsicht Runde 165, nicht
+  behoben): `heerPruefen` nimmt jede Kampfeinheit, auch den Späherreiter,
+  der gerade erkundet; dann bricht `erkunden` ab, und gesucht wird nur noch
+  mit dem Heer. Und **das Heer als Sucher kennt kein „Punkt unerreichbar"**:
+  liegt `suchziel` hinter Wasser oder Wald, läuft es, bis die Wegsuche
+  aufgibt, und nimmt erst dann das nächste. Beides kostet Minuten in den
+  langen Partien (Startwerte 10, 18); wer an der Dauer KI gegen KI im Nebel
+  arbeitet, fängt hier an. Und: `s.aus` (wer ausgeschieden ist) liest die
+  KI aus der Welt, nicht aus ihrer Sicht — wie ein Mensch die Ansage.
+
+- Erledigt in Runde 165: **ki AC-13 lag auf dem Zweig `strategie-ki-sicht`** (`d0314d4`, Runden
   112, 114 und 144; die Frage ganz oben): die KI mit eigener Sicht, Späher, Suche über die ganze Karte,
   überlegen nur mit frischem Blick. KI gegen KI: 35 von 40 Partien vor
   Minute 60 (alter Stand 39); übrig sind Patts mit leerer Wirtschaft
@@ -531,6 +681,10 @@ Zahlen, gegen die spätere Runden vergleichen. Mit Datum und Commit.
 | 2026-11-09 | Zwei gegen zwei, Verbündete als Nachbarn, Startwerte 1-20 bis Minute 90 | 20/20 mit einem Team als Sieger, Minute 35,4–52,4, Median 39,6; HEAD von Runde 150: 0/20, 173–434 Angriffsläufe zu Verbündeten je Partie | Runde 151 |
 | 2026-11-09 | `npm run check` (zwei Abschnitte, `tests/partien/` danach) | 651 + 8 Tests, 170 und 165 s, zweimal grün; vorher 151–193 s mit einheiten AC-31 einmal von zweien rot | Rückschau 152 |
 | 2026-11-09 | Browserlauf; Tests ohne Browser | 203 Fälle in 18,9 und 19,6 min (Lauf ohne und mit neuen Bildern; Maschine nicht vorher geprüft, bei der Rückschau ruhig); 664 + 8 Tests; langsamste fahrplan AC-24 108 s, AC-14 90 s, AC-12 84 s | Rückschau 158 |
+| 2026-11-10 | Browserlauf; Tests ohne Browser | 207 Fälle in 21,4 min (Runde 161, Maschine nicht vorher geprüft); 695 + 8 Tests, `npm run check:kurz` 277 s | Rückschau 163 |
+| 2026-11-10 | KI gegen KI **im Nebel** (ki AC-13), Startwerte 1-20 / 21-40 bis Minute 90 | 18/20 und 19/20 vor Minute 60, Median 46,0 / 41,9 (gesamt 44,6), längste 77,9 @18; HEAD 41,9 / 38,3; 117–173 ms je 1000 Takte gegen 110–136 (verrauscht, rund ein Viertel mehr); `npm run check:kurz` 702 + 9 Tests in 231 s | Runde 165 |
+| 2026-11-11 | Browserlauf `:neu` unter fremder Last | 209 Fälle in 36,4 min, zwei Pfeil-Fälle gefallen (drei Blender-Instanzen nebenher) | Runde 169 |
+| 2026-11-11 | Browserlauf; Tests ohne Browser | 208 Fälle in 22,4 min, mit Prüfung 1347 s (22 Chrome-Prozesse des Benutzers, ein fremder Node); 713 + 9 Tests, `npm run check:kurz` 401 s | Rückschau 168 |
 
 ## Rückschauen
 
@@ -1501,6 +1655,251 @@ Testlauf): `npm run check` 53 s ohne Last, 599 Tests ohne Browser; der
 volle Browserlauf mit 191 Fällen 16,6 min (Runde 140; Runde 135: 17,0 min
 für 190). Die Ritterzeit am Stück braucht 1,7 min.
 
+### Nach Runde 183 (2026-11-12)
+
+Vier Runden: 179 gemessen, woher Eschenbruchs Vorsprung kommt (Holz und
+Reichweite zusammen, Frage an den Benutzer), 180 Distelhag baut im Wechsel
+nach (ki AC-32, 26 → 47 %), 181 Gruppentasten (bedienung AC-5), 182
+Umschalt und Doppelklick (AC-3, AC-4). Seit Runde 180 ist Stufe E von
+außen gesperrt. Die Maschine rechnete weiter Blender; Zeiten gehören nicht
+unter Messwerte. Was Zeit gekostet hat oder sich wiederholen wird:
+
+1. **Abschnitt 1 hatte keine Antwort, wenn die Stufe gesperrt ist.** Der
+   Steuerstand nach Runde 180 sagte nur „Arbeit wählen nach Abschnitt 1";
+   Runde 181 musste die Abweichung selbst begründen. → **Regel als
+   Punkt 6 in Abschnitt 1**: offene Kriterien früherer Stufen, zuerst
+   Bedienung, Abweichung in der Rundenzeile, Kandidat im Steuerstand.
+2. **Eine Gegenprobe blieb grün** (Runde 181): die Ansicht nimmt Gefallene
+   ohnehin aus der Auswahl. Gefunden, weil die Regel „gegen den alten
+   Stand" befolgt wurde — aber die Anweisung sagte nicht, was dann zu tun
+   ist. Im selben Test sagte eine Annahme voraus, wen die Miliz zuerst
+   schlägt. → **Regel in Abschnitt 4**: eine grüne Gegenprobe heißt, eine
+   zweite Stelle tut dasselbe; die Zusicherung gilt dem, was nur das Neue
+   leistet. Kein Test sagt eine Wahl der Simulation voraus.
+3. **Jede Datei schrieb ihre eigene Liste von Klickpunkten.**
+   `eigeneImBild` hieß so, lieferte aber alle eigenen Einheiten mit
+   Fußpunkt; Runde 182 schrieb daneben eine eigene mit Körpermitte und
+   „im Bild". → `eigeneImBild` liefert jetzt auch `k`, `s`, `klick` und
+   `imBild` (alte Felder unverändert), `strategie-auswahl-maus` nutzt sie;
+   **Regel in Abschnitt 5**: wer auf Figuren klickt, hält erst die Zeit
+   an. Die vier Dateien mit der Hilfe liefen danach grün (28 Fälle).
+
+Gezählt: 467 von 601 Kriterien fertig, 741 Tests ohne Browser, 214 im
+Browser; Laufzeiten nicht gemessen (Blender). Nicht geändert: der Zuschnitt
+— zwei kleine Kriterien, die dieselbe Stelle anfassen (AC-3 und AC-4), in
+einer Runde hat getragen. Kein Rundgang im Browser: keine Stufe erreicht.
+
+### Nach Runde 178 (2026-11-12)
+
+Vier Runden in Stufe E: 174 die KI neigt zu ihrem Haus (ki AC-27), 175
+Wehrstein baut Türme (ki AC-30), 176 die Häuser gegeneinander gemessen
+(Werkzeug, drei Specs), 177 ki AC-31 gebaut und verworfen. Die Maschine
+rechnete weiter Blender; Zeiten gehören deshalb nicht unter Messwerte.
+Was Zeit gekostet hat:
+
+1. **Eine Ursache wurde erschlossen und dann gebaut.** Runde 176 legte
+   ki AC-31 an, weil die KI nie auf das gesehene Heer antwortet — das
+   stimmte, erklärte aber Distelhags 0 zu 20 nicht: gebaut antworteten
+   beide Seiten, und Distelhag verlor über die Menge. Eine ganze Runde für
+   eine Messung, die ein Aufruf gewesen wäre. → **Regel in Abschnitt 1**:
+   eine Ursache „X verliert, weil Y" erst als Kriterium, wenn eine
+   Austauschprobe Y **nur bei X** ändert und die Paarung kippt; vorher die
+   Mengen zählen.
+2. **Dreimal ein Wegwerfskript, um zu zählen, was eine Seite herstellt**
+   (Runde 174 Einheiten je Art im Nebeltest, Runde 177 `r177-arten.cjs` und
+   `r177-summe.cjs`). → `npm run pruefstand:haeuser` zählt jetzt je Haus
+   Kampfeinheiten, Dorfbewohner und Ausbildungsgebäude je Partie
+   (`zaehlen()`, mit Test), ohne messbare Mehrkosten (117 statt 120 s für
+   80 Partien). Erster Lauf, Distelhags Paarungen: Distelhag 112
+   Kampfeinheiten aus 3,5 Gebäuden, Eschenbruch 145 aus 5,0, Wehrstein
+   155 aus 5,0, Rappenstein 40 aus 2,4 — und Rappenstein verliert gegen
+   Distelhag.
+3. **Ein Check von sieben Minuten fiel an einem Wort im Kommentar**
+   (Runde 175, „Wehrstein" in ki.js), und ein Methodenname in ki.js war
+   schon vergeben (Runde 177, neun rote Tests). → `npm run waechter` fährt
+   alle Wächter in Sekunden; der Wächter „die Simulation nennt kein
+   einzelnes Haus" ist aus `tests/strategie-haeuser.test.mjs` nach
+   `tests/waechter-haeuser.test.mjs` gezogen (gleicher Testname,
+   Gegenprobe mit einem Hausnamen im Kommentar fällt). **Regel in
+   Abschnitt 3**: vor dem Abschlusslauf `npm run waechter`, vor einer neuen
+   Methode ein `grep` nach ihrem Namen.
+
+Nicht geändert: die Regel „was gemessen nichts bringt, bleibt nicht im
+Code" hat in Runde 177 getragen — der Entwurf liegt auf einem Zweig, statt
+als wirkungslose Regel in der KI zu stehen. Kein Rundgang im Browser: keine
+Stufe erreicht.
+
+### Nach Runde 173 (2026-11-12)
+
+Vier Runden, alle in Stufe E: 169 das Haus je Platz im Warteraum
+(spielauswahl AC-24), 170 jeder Bonus wirkt (spielziel AC-26), 171 der
+Mannschaftsbonus nur im Bündnis (spielziel AC-25), 172 voller Wohnraum
+fällt auf (bedienung AC-43). Jede endete mit einem Commit; die Maschine
+rechnete die ganze Zeit Blender, deshalb lief der Browser nur für die
+betroffenen Dateien und nie `:neu`. Was Zeit gekostet hat:
+
+1. **Jede Runde wartete sieben Minuten auf `npm run check`** (437 bis
+   448 s). Der erste Abschnitt von `npm test` dauerte 205 s — und das
+   war ein einziger Test: die Aufgeben-Messung (fahrplan AC-11, ki AC-19),
+   zwanzig Partien bis Minute 90 hintereinander, 171 s. Die Regel „über
+   eine Minute je Datei nach `tests/partien/`" stand seit Runde 152 da;
+   gesehen hat es niemand, weil `check:kurz` die Dauer einzelner Tests
+   verschweigt. → Die Datei liegt jetzt als `tests/partien/aufgeben.test.mjs`
+   im zweiten Abschnitt, neben den Partien zu viert und ohne Zeitmessungen
+   daneben. **Und `check:kurz` warnt**, sobald ein Test im ersten
+   Abschnitt über 90 s rechnet (`scripts/lange-tests.mjs`, mit Test; an
+   der Ausgabe von Runde 172 gegengeprüft: er findet genau diesen).
+2. **Ein Erwartungswert aus den Daten kannte die neue Quelle nicht.** In
+   Runde 171 fielen die Messtests zu spielziel AC-17 und AC-26: sie
+   erwarteten den Bonus eines Hauses aus `boni`, aber der Mannschaftsbonus
+   gilt auch dem Haus selbst. Derselbe Fehler wie `farmVoll` in Runde 167,
+   diesmal in Tests statt im Browser. → **Regel in Abschnitt 3**: wer
+   `wirkungen()` eine neue Quelle gibt, sucht vorher jede Stelle, die einen
+   Erwartungswert selbst zusammensetzt, mit dem `grep` dort.
+3. **Dreimal rechnete etwas nicht in dem Takt, in dem gemessen wurde.**
+   Runde 170: die Sicht rechnet alle `SICHT_TAKTE`, ein Takt nach dem
+   Aufstellen sah nichts. Runde 171: die Fahrt des Karrens dauert länger
+   als die Frist der Kündigung, und 175 · 1,2 ergab 209,99999 — ein Takt
+   zu viel. Jedes Mal ein roter Test und eine Fehlersuche am Produkt, das
+   recht hatte. → **Regel in Abschnitt 4**: vor einer festen Taktzahl
+   fragen, was in diesen Takten rechnet; lieber bis zur Bedingung laufen,
+   und die Dauer vorher aus den Werten rechnen.
+
+Nicht geändert: die Gegenprobe je Lesestelle hat getragen — in Runde 171
+blieb eine grün und fand so einen fehlenden Fall (Silberfurt kündigt
+selbst), genau wofür sie da ist.
+
+**Gespart hat die Verschiebung unter dieser Last nichts**: der erste
+Abschnitt sank von 205 auf 171 s, der zweite stieg von 175 auf 229 s —
+`check:kurz` 451 statt 448 s. Im zweiten Abschnitt rechnen jetzt sechs
+schwere Dateien auf acht Kernen, die Blender ohnehin auslastet (CPU 96 %).
+Was bleibt: die Zeitmessungen des ersten Abschnitts laufen nicht mehr neben
+einem Test, der drei Minuten einen Kern belegt — dafür ist die Regel da.
+Ob es ohne Last Zeit spart, ist nicht geprüft; die Zahlen stehen deshalb
+nicht unter Messwerte.
+
+**Kein Rundgang im Browser** — Stufe E ist nicht erreicht, und ihr Aussehen
+kommt aus der Blender-Sitzung. Offen aus diesen Runden, für den nächsten
+freien Lauf: `npm run check:alles:neu:kurz` (Warteraum-Bilder zeigen noch
+Silberfurt statt des Prüfhauses; Bilder mit wartendem Auftrag bekommen den
+roten Rand der Bevölkerung).
+
+### Nach Runde 168 (2026-11-11)
+
+Vier Runden: 164 die Spec-Runde zur Stufe E, 165 die KI mit eigener Sicht
+(ki AC-13, Zweig zusammengeführt, Ersatzgrenze im Nebel), 166 die Stufen
+heißen Landsitz, Lehen, Fürstentum, Krone (bedienung AC-45), 167 ein Haus
+ist Daten (spielziel AC-17, fahrplan AC-17). Was Zeit gekostet hat:
+
+1. **Bilder ohne Erzeuger musste man von Hand suchen.** Ändert ein Test
+   seine Unterschrift, schreibt der Lauf das Bild unter dem neuen Namen, das
+   alte bleibt liegen, und `npm run specs:board` bricht mit
+   „Beanstandungen" ab. In Runde 166 waren es sieben Paare, jedes einzeln
+   aus der Fehlermeldung herausgesucht und gelöscht. → **`npm run
+   qa:waisen`** zeigt sie (`-- --loeschen` räumt sie weg), und
+   `npm run qa:nachweis` — damit auch `check:alles:neu` — räumt sie vor dem
+   Lauf von selbst. Gesucht wird mit derselben Prüfung, die der Bericht
+   macht (`waisenSuchen()` in `scripts/specs-lesen.mjs`). Ein Test an einem
+   Wegwerf-Ordner: ein Bild mit Erzeuger bleibt, eines mit alter
+   Unterschrift und eines ohne Testdatei verschwinden.
+2. **Der Browser rechnete eine Wirkung selbst.** `farmVoll` zählte die
+   `farm.nahrung` der Verbesserungen zusammen; mit den Häusern kam eine
+   zweite Quelle dazu, die der Browser nicht kennt. Gefunden hat es erst die
+   Durchsicht in Runde 167. → Die Rechnung im Browser ist ganz weg, er nimmt
+   den Wert aus `kw`, und **`tests/waechter-wirkungen.test.mjs`** findet
+   jede Zeile unter `public/`, die aus einem Eintrag der Verbesserungen
+   `wirkung`, `sammeln`, `farm` oder `gebaeude` liest. Gegenprobe: mit der
+   alten Zeile fällt er. In der Anweisung (Abschnitt 3) neben dem Wächter
+   der Werte.
+3. **Ein `:neu`-Lauf fehlte, obwohl sich nur Verhalten geändert hatte.**
+   Runde 165 änderte, was die KI sieht, und damit, was die Bilder der
+   KI-Fälle zeigen — gefahren wurde `check:alles`, nicht `:neu`. Runde 166
+   fand danach Bilder, die nicht mehr zum Spiel passten. → **Regel in
+   Abschnitt 6.2**: `:neu` auch, wenn sich das Verhalten ändert, das ein
+   Bild zeigt (KI, Wegsuche, Kampf), nicht nur das Aussehen.
+
+**Dazu fiel im vollen Lauf dieser Rückschau ein Fall:** bedienung AC-39
+(wer kämpft, holt aus) maß zwischen zwei Augenblicken 0 % geänderte
+Bildpunkte; allein fiel er einmal in fünf Läufen. Das Ausholen schwingt mit
+2π · 110 ms ≈ 691 ms, der Test wartete 345 ms, eine halbe Schwingung —
+aber zwischen den beiden Ausschnitten liegt der erste Bildnachweis, und der
+dauert selbst ein paar hundert Millisekunden. Kam der Abstand auf eine ganze
+Schwingung, standen beide Figuren wieder gleich. Jetzt wartet der Test auf
+die Uhr des Browsers: die nächste halbe Schwingung nach dem ersten
+Ausschnitt. Danach zehn von zehn grün. Gelernt: **zwischen zwei Messungen, deren Abstand zählt, steht nichts, was
+selbst Zeit braucht** — oder der Abstand wird an der Uhr gemessen, nicht
+gewartet.
+
+Einheiten AC-38 (der Mönch bekehrt), in Runde 167 einmal gefallen, war
+diesmal grün; der Faden bleibt stehen.
+
+Gemessen: der volle Browserlauf dauerte 22,4 Minuten für 208 Fälle, mit
+Prüfung 1347 s (Maschine vorher: 22 Chrome-Prozesse des Benutzers, ein
+fremder Node). `npm run check:kurz` danach 401 s, 713 + 9 Tests.
+
+**Kein Rundgang im Browser.** Stufe E hat zwei Kriterien gebaut, beide
+ohne neues Bild außer den Namen der Stufen; was man sehen kann, kommt mit
+der Wahl im Warteraum und dem Aussehen der Blender-Sitzung. Die Rückschau
+zur Stufe E macht den Rundgang.
+
+Nicht geändert: der Zuschnitt hat getragen, jede Runde endete mit einem
+Commit. Die nächste Runde ist **spielauswahl AC-24**, das Haus je Platz im
+Warteraum.
+
+### Nach Runde 163 (2026-11-10)
+
+Vier Runden: 159 die Spielgeschwindigkeit (spielziel AC-23, D13 fertig),
+160 der Marktkarren (einheiten AC-39), 161 der Karren handelt (einheiten
+AC-40), 162 die KI handelt (ki AC-26). Stufe D ist damit bis auf einheiten
+AC-41 (die sichtbare Ladung, wartet auf die Blender-Figuren) gebaut; ihre
+vier Kriterien im Fahrplan (AC-14, AC-15, AC-23, AC-24) sind `fertig`, die
+aktuelle Stufe ist E. Was Zeit gekostet hat:
+
+1. **Die Durchsicht bekam keinen Unterschied.** Die Anweisung verlangt seit
+   Runde 97 `git diff` als Datei, weil der Prüfer keine Shell hat. Die
+   letzte solche Datei im Temp-Ordner ist aus Runde 150; in den Runden 161
+   und 162 hieß der Auftrag „führe `git diff` aus und lies die neue
+   Testdatei". Gefunden hat er trotzdem drei Fallen — aus den ganzen
+   Dateien, nicht aus dem Unterschied, und den neuen Test kannte `git diff`
+   ohnehin nicht. Eine Regel, die zwölf Runden lang nicht befolgt wird, ist
+   keine. → **`npm run durchsicht`** schreibt alles Geänderte und Neue
+   außer Dokumenten in eine Datei und nennt den Pfad, mit Pfaden nur diese
+   (`scripts/durchsicht.mjs`, zwei Tests an einem Wegwerf-Lager, Gegenproben:
+   ohne die neuen Dateien und ohne den Filter auf Dokumente fallen sie). In
+   der Anweisung (Abschnitt 6, Punkt 0) und in CLAUDE.md.
+2. **Zweimal hintereinander stimmte die Annahme hinter dem Kriterium
+   nicht.** Runde 161: „wie im Original" ergab einen Karren mit halb so
+   viel Gold wie ein Dorfbewohner. Runde 162: das Patt mit leerem Gold, aus
+   dem ki AC-26 stammte (Runden 114, 137, 144), gibt es auf `strategie`
+   nicht mehr — über 88 KIs lief das Gold viermal aus, alle nach Minute 45.
+   Beide Male fing die Runde das nur, weil der Steuerstand „zuerst messen"
+   sagte. → **Regel in Abschnitt 1:** ein Kriterium, das einen Mangel
+   beheben soll, misst ihn zuerst auf dem Stand von heute; gibt es ihn
+   nicht mehr, wird es neu gefasst, bevor der erste Entwurf steht.
+3. **Zwei Beinahe-Unfälle mit dem Werkzeug**: Write überschrieb in Runde
+   159 still `tests/strategie-tempo.test.mjs`, und in Runde 162 wartete ein
+   `cat` ohne Datei in einer Kette auf die Eingabe, bis der Befehl in den
+   Hintergrund rutschte. → Zwei Sätze unter „Werkzeug" (Abschnitt 3): vor
+   einer neuen Datei `ls`, kein `cat` ohne Datei.
+
+Gemessen: der volle Browserlauf der Runde 161 dauerte 21,4 Minuten für 207
+Fälle (Maschine nicht vorher geprüft; vor dieser Rückschau 21 Chrome-
+Fenster des Benutzers und zwei Node-Prozesse, keine fremden Tests). CLAUDE.md
+sagt jetzt 19 bis 21 Minuten.
+
+**Kein Rundgang im Browser und keine neuen Lücken.** Die Rückschau zur
+Stufe D war Runde 142; ihre drei Lücken (bedienung AC-42 bis AC-44) sind
+offen und der erste Schritt der Stufe E. Was danach kam (D10 bis D14), ist
+Regelwerk und zwei Knöpfe, und das Aussehen baut die Blender-Sitzung neu —
+Lücken im Aussehen von heute wären Lücken in Zeichnungen, die gerade
+ersetzt werden. Der Rundgang kommt mit der Rückschau zur Stufe E.
+
+Nicht geändert: der Zuschnitt hat getragen, jede Runde endete mit einem
+Commit. Die nächste Runde ist die **Spec-Runde zur Stufe E** nach ADR-0014
+(fünf Häuser, Landsitz, Lehen, Fürstentum, Krone; der Abschnitt „Was die
+Spec-Runde zur Stufe E daraus macht"). ADR-0015 (der Statthalter) kommt
+nach Stufe E.
+
 ### Nach Runde 158 (2026-11-09)
 
 Fünf Runden: 153 zwei gegen zwei im Browser (fahrplan AC-24, D11), 154
@@ -1672,6 +2071,421 @@ ihn, mit Gegenprobe an beiden Formen. Fünf Bilder neu, alle angesehen.
 Neueste oben. Eine Zeile je Runde: Nummer, Datum, Kriterien, Ergebnis,
 wichtigste Erkenntnis.
 
+- **187** · 2026-11-12 · **bedienung AC-19 und uebertragung AC-9 fertig**
+  (Abweichung nach Abschnitt 1, Punkt 6): die Meldung „Verbindung weg"
+  stand bisher in `#wartemeldung` — im Warteraum, der im Spiel
+  verborgen ist; im Spiel sah also niemand etwas. Jetzt `#verbindungweg`
+  mitten im Bild mit „Neu laden und zurückkehren" (`location.reload()`, der
+  gemerkte Platz aus `sessionStorage` bringt zurück). Prüfgriff `trennen`
+  in `e2e/server.mjs` schließt die Verbindung vom Server aus, Hilfe
+  `trennen()` in `e2e/helpers/seite.mjs`. Browserfall
+  `e2e/tests/strategie-verbindung.spec.mjs` mit zwei Bildern; Gegenprobe
+  fällt. Nicht gebaut: ein Server, der schweigt, ohne zu schließen.
+
+- **186** · 2026-11-12 · **bedienung AC-13 fertig, ohne neuen Code**
+  (Abweichung nach Abschnitt 1, Punkt 6): der Ring am Zielpunkt war mit
+  AC-34 schon im Klick gesetzt; es fehlte nur der Beleg, dass er
+  nicht auf den Server wartet. Der Browserfall in
+  `e2e/tests/strategie-befehlszeichen.spec.mjs` hält `befehlSenden` an,
+  zählt die Bildpunkte um den Zielpunkt vor und zwei Bilder nach dem Klick
+  (Gegenprobe ohne `zielzeichenZeichnen`: 0 statt über 200) und zeigt, dass
+  die Milizen erst nach dem Loslassen laufen. **Vor dem Bauen nachsehen,
+  ob ein anderes Kriterium es schon gebaut hat** — die Spec von AC-34 sagte
+  „sofort" in fast denselben Worten.
+
+- **185** · 2026-11-12 · **bedienung AC-10 fertig** (Abweichung nach
+  Abschnitt 1, Punkt 6): die Leertaste springt zum eigenen Dorfzentrum
+  nächst dem Startplatz, ein zweites Mal zurück — nur, solange die Kamera
+  seit dem Sprung steht (`ansicht.sprung` mit `von`/`nach`, gemerkt nach
+  `schieben(0)`, das am Kartenrand festhält). `e.repeat` springt nicht,
+  `preventDefault` gegen den zuletzt geklickten Knopf. Browserfall
+  `e2e/tests/strategie-leertaste.spec.mjs`, Bild AC-22 neu (eine Zeile).
+  Zwei Gegenproben fallen. **Die erste Fassung des Haltens hätte die
+  Gegenprobe überstanden**: dreimal gedrückt heißt hin, her, hin — und das
+  endet wieder an der Basis. Mit einer Wiederholung unterscheiden sich alt
+  und neu.
+
+- **184** · 2026-11-12 · **bedienung AC-9 fertig** (Abweichung vom Fahrplan
+  nach Abschnitt 1, Punkt 6: Stufe E gesperrt): die äußersten 12 Bildpunkte
+  schieben die Karte (`ansicht.amRand()` in `schieben`, `RAND_SCHIEBEN`),
+  abschaltbar in der Tastenübersicht (`#rand-schieben`, gemerkt in
+  `localStorage`, gelesen von `randSchiebenGemerkt()`). Browserfall
+  `e2e/tests/strategie-randschieben.spec.mjs`, Bild AC-22 neu (eine Zeile
+  und der Schalter mehr). Drei Gegenproben: Schalter wirkungslos und Zeiger
+  nie gesetzt fallen; **die Maus am Fenster statt an der Leinwand blieb
+  grün** — keine Leiste reicht bis an den Rand, also ist der Fensterhörer
+  zurückgebaut, statt ihn mit einem falschen Kommentar zu behalten. Das
+  erste Bild zeigte den Kasten mitten in der Zeile: `input { width: 100% }`
+  gilt auch für Kästchen. Nicht geprüft: Stehenbleiben beim Verlassen des
+  Fensters.
+
+- **183** · 2026-11-12 · **Rückschau** (Runden 179 bis 182): Punkt 6 in
+  Abschnitt 1 (gesperrte Stufe → frühere Stufen, zuerst Bedienung), eine
+  Regel zur grünen Gegenprobe und zu Vorhersagen über die Simulation
+  (Abschnitt 4), `eigeneImBild` mit `k`, `s`, `klick`, `imBild` und die
+  Regel „erst die Zeit anhalten" (Abschnitt 5). Nächste Rückschau Runde 188.
+- **182** · 2026-11-12 · **bedienung AC-3 und AC-4 fertig**: mit Umschalt
+  kommen Klick und Rahmen zur Auswahl hinzu (`ansicht.auswaehlen(rahmen,
+  erweitern)`; ein Gebäude oder das Leere lässt die Einheiten stehen,
+  gemischt wird nicht), ein Doppelklick wählt alle eigenen Einheiten der
+  Art, deren Fußpunkt im Bild steht (`ansicht.typWaehlen`), mit Umschalt
+  dazu. Beide in der Tastenübersicht. Wie Runde 181 außerhalb des
+  Fahrplans, weil Stufe E gesperrt ist. Zwei Gegenproben fallen (Umschalt
+  nicht weitergegeben; jede Einheit der Art statt nur der im Bild). Der
+  Browserfall hält die Zeit an (Zeitraffer 0), bevor er misst — dann
+  stimmen die Bildpunkte der Klicks, und beide Fälle liefen beim ersten
+  Mal grün. Nur die eigene Datei, `strategie-tasten` und `strategie-gruppe`
+  im Browser.
+- **181** · 2026-11-12 · **bedienung AC-5 fertig**: Gruppentasten —
+  `Strg`+Ziffer (oder `Alt`+Ziffer) legt die Auswahl ab, die Ziffer holt sie
+  zurück; Einheiten, sonst ein eigenes Gebäude; Gefallene und Bekehrte fallen
+  heraus (`ansicht.gruppeAblegen`/`gruppeAbrufen`, gelesen über `e.code` in
+  `public/tasten.js`). **Abweichung vom Fahrplan, begründet:** Stufe E ist
+  von außen gesperrt (spielziel AC-18 wartet auf die Frage zu Eschenbruch,
+  E6 bis E9 auf die Blender-Figuren), AC-5 steht seit Stufe A offen und
+  heißt in der Spec „ohne das nicht spielbar". `Alt` daneben, weil Chrome
+  `Strg`+`1` bis `8` für die Tabs behalten kann — **nicht geprüft**, der
+  Browserlauf schickt die Taste an der Leiste vorbei. **Erkenntnis:** die
+  erste Gegenprobe (Filter für Gefallene weg) war grün — die Ansicht nimmt
+  Gefallene mit jedem Zustand ohnehin aus der Auswahl, auch bei Zeitraffer 0.
+  Was der Filter wirklich tut, ist die Ablage selbst sauber halten; erst die
+  Zusicherung darauf fiel ohne ihn. Und die Miliz nimmt nicht den
+  Verletzten zuerst: der Test wartet auf *irgendeinen* Gefallenen statt
+  einen vorherzusagen. Nur die Datei im Browser (`E2E_HAFEN=4195`) und
+  `strategie-tasten`, kein voller Lauf, solange Blender rechnet.
+- **180** · 2026-11-12 · **ki AC-32 fertig**: wer zur Kaserne neigt, baut
+  im Wechsel nach — eine weitere Kaserne nur, solange es weniger Kasernen
+  als andere Militärgebäude gibt, sonst nach der Goldregel. Über 160
+  Partien mit anderen Startwerten (`--je 40`) Distelhag 26 % vorher, 47 %
+  danach. Die erste Fassung (nie eine zweite Kaserne, 48 %) brach ki AC-27:
+  aus der einen Kaserne kamen 47,5 Einheiten je Partie gegen 38,6 der
+  anderen, verlangt ist das Anderthalbfache. **Erkenntnis:** die 31 % der
+  Vorgabe waren eine Stichprobe, nicht der Wert — die Startwerte sind fest,
+  also sind es immer dieselben 80 Partien; erst 160 neue (26 %) zeigten,
+  dass der Unterschied rund vier Standardabweichungen beträgt. Gegen
+  Eschenbruch weiter 6 zu 33 (die Frage an den Benutzer bleibt).
+- **179** · 2026-11-12 · **Messrunde**, kein Kriterium fertig, kein Code:
+  warum Distelhag gegen Eschenbruch 0 zu 20 verliert. Zehn
+  Austauschproben mit `pruefstand:haeuser --probe` (je 80 oder 200
+  Partien). Eschenbruchs 85 % sind die Summe aus Holzbonus und Reichweite
+  (jedes allein weg: 69 bis 75 %; beides weg, Neigung bleibt: 60 %; ganz
+  leer: 51 %), Distelhag kostet seine Neigung zur Kaserne 15 bis 20
+  Punkte (31 gegen 51 %). Die Aussage in spielziel AC-18 „liegt nicht an
+  einem Bonus, der Hebel ist ki AC-31" ist widerlegt und berichtigt.
+  Welcher Bonus schwächer wird, ist eine Frage an den Benutzer (mit
+  Empfehlung: Reichweite ab Fürstentum, Holz +10 %). Nebenbefund: links
+  gewinnt über 200 Partien 114 bis 126 (58 bis 63 %).
+- **178** · 2026-11-12 · **Rückschau** (Runden 174 bis 177):
+  `pruefstand:haeuser` zählt die Herstellung je Haus, `npm run waechter`
+  und der Wächter `waechter-haeuser`, zwei Regeln (Ursache erst an einer
+  Seite messen; Wächter und Methodenname vor dem Check). Erster Lauf mit
+  Zählung: Distelhag 112 Kampfeinheiten aus 3,5 Gebäuden je Partie gegen
+  Eschenbruch 145 aus 5,0.
+- **177** · 2026-11-12 · ki AC-31 **gebaut, gemessen, verworfen**: die KI
+  wählt in jedem Militärgebäude die Einheit, deren Bonus die meisten
+  gesehenen Kampfeinheiten trifft, und baut das Gebäude mit der besten
+  Antwort nach — vier Tests, Gegenprobe fällt. Gemessen mit
+  `pruefstand:haeuser`: Distelhag gegen Eschenbruch 0 zu 20 wie vorher, die
+  Tafel unverändert. Nach der Regel „was gemessen nichts bringt, bleibt
+  nicht im Code" auf den lokalen Zweig `strategie-ki-antwort` (9c69b75),
+  das Kriterium bleibt `offen` mit dem Befund. Gelernt: (1) Die Ursache
+  aus Runde 176 war geschlossen, nicht gemessen — „die KI antwortet nicht"
+  stimmte, erklärte aber die Niederlagen nicht, weil die andere Seite
+  dieselbe Regel bekommt. Eine Abhilfe, die beide Seiten trifft, ändert
+  eine Paarung nur, wenn sie der schwächeren mehr hilft. (2) Erst zählen,
+  was die Seiten herstellen (ein Eingriff zählt neue Einheiten je Art und
+  fertige Militärgebäude, `r177-summe.cjs` im Scratchpad), dann die Abhilfe
+  wählen: 127 gegen 226 Kampfeinheiten ist eine andere Frage als „welche".
+  (3) Ein Name, der schon belegt ist, überdeckt still eine Methode:
+  `kampfeinheitenVon(id)` gab es in `ki.js`, meine gleichnamige mit
+  anderem Sinn brach neun Tests.
+- **176** · 2026-11-12 · **Mess- und Spec-Runde**, kein Kriterium fertig:
+  die Häuser gegeneinander. Neues Werkzeug `npm run pruefstand:haeuser`
+  (`scripts/pruefstand-haeuser.mjs`, Test daneben): jede Paarung `--je`
+  mal, die Seiten abwechselnd, vier Fäden, `--nur <haus>`, `--probe` wie
+  bei `pruefstand:vergleich`. Über 200 Partien im Nebel gewinnt
+  Eschenbruch 85 %, Wehrstein 54, Rappenstein 45, Silberfurt 34, Distelhag
+  31; Distelhag gegen Eschenbruch 0 zu 20. Vier Gegenproben an den Zahlen
+  (Holzbonus 1,10 / 1,05 / keiner, Distelhag Fernrüstung +2, Silberfurt
+  ohne vorgezogenen Handel) brachten Eschenbruch auf 83, 76, 75 und 61 % —
+  Distelhag gegen Eschenbruch blieb bei 0 bis 3 zu 20. Ursache ist die KI,
+  nicht ein Bonus: sie bildet aus ihrem Schwerpunkt aus, was sie bezahlen
+  kann, und Distelhag baut nach der ersten Kaserne nur Kasernen nach — gegen
+  Schützen kommt nie ein Plänkler. Daraus **ki AC-31 neu** (die KI antwortet
+  auf das Heer, das sie sieht), **spielziel AC-18 neu gefasst** (ohne
+  Spezialeinheiten jedes Haus 30 bis 70 % über 100 Partien, als Test) und
+  **fahrplan AC-18 neu gefasst**, Bauabfolge E5b. Gelernt: (1) „höchstens
+  60 % je Paarung über zwanzig Partien" war keine Grenze, sondern ein
+  Würfel — gleich starke Häuser enden in einer von vier Paarungen 13 zu 7
+  oder weiter, alle zehn bestehen in rund 5 % der Läufe. Erst die Streuung
+  rechnen, dann die Grenze schreiben; belastbar ist die Quote je Haus.
+  (2) Die linke Seite gewinnt 56 bis 60 % der Partien — ein Vergleich von
+  Häusern ohne Seitenwechsel misst die Seite mit. (3) Eine Gegenprobe je
+  Zahl hätte als Wegwerfskript wieder 80 Partien gekostet; mit `--probe`
+  ist es ein Aufruf.
+- **175** · 2026-11-12 · ki AC-30 **fertig**, E5 ganz: Wehrstein baut
+  Türme — `ki: { schwerpunkt: 'wachturm', anzahl: 2, steinSammler: 3 }`;
+  ein Schwerpunkt, der nichts ausbildet, ist ein Bauwerk
+  (`ki.bauwerkePruefen`), Stein steht jetzt im Lagerplan. Über vierzig
+  Startwerte: zwei Türme in jeder der 16 Wehrstein-Partien, die anderen
+  keinen; 40 mit Sieger, 36 vor Minute 60, Median 44,9 — **0,1 unter der
+  Grenze**, das ist knapp. Gelernt: **der Stein kostet den ersten
+  Angriff.** Vier Türme: 31 vor Minute 60, Median 46,8; zwei Türme gleich
+  mit dem ersten Militärgebäude: Startwert 14 und 34 ohne Sieger (beide
+  Distelhag gegen Wehrstein, Patt mit leeren Vorräten). Erst „nach dem
+  ersten Aufbruch" hält es, die Gegenprobe ohne diese Bedingung fällt an
+  Startwert 14. Partien ohne Wehrstein rechnen Takt für Takt wie vorher.
+  Neu: `npm run pruefstand:verlauf -- --haeuser a,b`. **Befund für
+  spielziel AC-16:** Siege je Auftritt Eschenbruch 13/16, Rappenstein und
+  Wehrstein 8/16, Distelhag 6/16, Silberfurt 5/16 — Eschenbruch liegt
+  vorn (124 aus der Schießanlage), Silberfurt hinten. Der Wächter zu
+  spielziel AC-17 fand den Hausnamen in einem Kommentar von `ki.js` — er
+  liest auch Kommentare, das ist richtig so. Vom Prüfer, nicht behoben:
+  Gold und Stein teilen das Bergbaulager, und `lagerPruefen` sieht im
+  selben Takt die eben bestellte Baustelle nicht — selten ein zweites
+  Lager, 100 Holz.
+- **174** · 2026-11-12 · ki AC-27 **fertig** (E5): die KI neigt zu ihrem
+  Haus — `ki: { schwerpunkt, goldKnapp }` in `HAEUSER`, gelesen im
+  Konstruktor als `this.neigung`. Ein Militärgebäude als Schwerpunkt baut
+  sie zuerst, nach der ersten Kaserne nach und bedient es zuerst;
+  Silberfurt handelt gleich mit der Ritterzeit. Über vierzig Startwerte im
+  Nebel, je Partie zwei verschiedene Häuser: Eschenbruch 107 aus der
+  Schießanlage gegen 42, Rappenstein 28 aus dem Stall gegen 4, Silberfurt
+  6,5 Karren gegen 0,1, Distelhag 82 aus der Kaserne gegen 35; 38 von 40
+  vor Minute 60, Median 42,9. Gelernt: **„mehr als der Schnitt" hielt auch
+  ohne Neigung** — auf HEAD für Eschenbruch (78 gegen 64, Holzbonus) und
+  Silberfurt (0,8 gegen 0,4, Rauschen); der Test verlangt deshalb das
+  Anderthalbfache und zwei mehr, und beide Gegenproben (ohne Neigung, ohne
+  Schwelle) fallen. Die Partien rechnet der Nebeltest zu fahrplan AC-11
+  jetzt mit Häusern — einmal gerechnet, von beiden Tests gelesen, statt
+  zweimal 115 s. Wehrstein (Türme) ist abgetrennt als **ki AC-30**: die KI
+  baut keinen Turm und sammelt keinen Stein, dieselbe Lücke wie ki AC-28.
+  Rappenstein bildet keinen einzigen Bogenschützen mehr aus (Stall zuerst,
+  Stall nach) — sein Heer ist kleiner; ob es zu einseitig ist, zeigt erst
+  das Profil der Häuser (spielziel AC-16).
+- **173** · 2026-11-12 · **Rückschau.** Die Aufgeben-Messung (171 s)
+  machte den ersten Abschnitt von `npm test` allein 205 s lang — jetzt in
+  `tests/partien/aufgeben.test.mjs`, und `check:kurz` warnt bei jedem Test
+  über 90 s dort (`scripts/lange-tests.mjs`). Unter Blender-Last spart das
+  nichts (451 statt 448 s, der zweite Abschnitt wird länger). Zwei Regeln: eine neue Quelle
+  in `wirkungen()` sucht die Erwartungswerte, die Tests selbst
+  zusammensetzen; eine feste Taktzahl fragt, was in diesen Takten rechnet.
+- **172** · 2026-11-12 · bedienung AC-43 **fertig** (E4): wartet ein
+  eigener Auftrag, weil die Bevölkerung voll ist, steht die Anzeige oben
+  rot umrandet, auch ohne Auswahl — `ansicht.wartetEtwas()` fragt das `w`
+  der eigenen Gebäude, das der Server seit bauen AC-15 schickt; kein neuer
+  Draht. Belegt im Ablauf von `strategie-ausbilden` gleich nach bauen
+  AC-15; zwei Gegenproben im Browser: ohne den Aufruf fällt der Test, und
+  mit „voll" statt „wartet" auch (5 / 5 nach dem Abbrechen). Gelernt: Esc
+  verbirgt die Auswahlleiste, leert sie aber nicht — `#wartegrund` bleibt
+  im DOM, geprüft wird `toBeHidden()`. Blender rechnet weiter, deshalb nur
+  diese Datei neu geschrieben (bauen AC-15 trägt jetzt den roten Rand, 0,19 %).
+- **171** · 2026-11-11 · spielziel AC-25 **fertig**: der Mannschaftsbonus
+  steht als `mannschaft` neben den `boni` in `HAEUSER` und läuft durch
+  `welt.wirkungen()` — vom eigenen Haus und von jedem, mit dem man die
+  Sicht teilt, je Haus einmal. Gemessen bei Anna (ohne Haus) mit Bert im
+  Team: Bogenschütze in 292 statt 350 Takten, Miliz 175 statt 210,
+  Späherreiter sieht 6 statt 4, ein Haus 10 statt 8 Felder über den Rand,
+  der Karren zum Verbündeten 31 statt 26 Gold — und nach Annas Kündigung
+  jedes Mal wieder der alte Wert. Neue Lesestellen:
+  `welt.ausbildungstempo()` (Fortschritt je Takt ist jetzt ein Bruch; 175
+  mal 1,2 ergab 209,99999 und kostete einen Takt, daher ein Rand von 1e-6)
+  und `handel.verbuendetAnteil`. Gelernt: **eine Fahrt hin und her dauert
+  länger als die Frist** (96 gegen 60 Sekunden) — wer nach der Kündigung
+  misst, kündigt kurz vor dem Laden, sonst sind die beiden Gegner, bevor
+  der Karren heim ist. Und die Gegenprobe auf `teiltSicht` im Karren blieb
+  zuerst grün: sie zählt nur, wenn Silberfurt **selbst** kündigt und seinen
+  eigenen Mannschaftsbonus behält — der Fall steht jetzt im Test. Rappenstein
+  trägt +2 und +2 Sicht, Frage an den Benutzer. spielziel AC-16 (Profil der
+  Häuser) braucht die Spezialeinheiten aus E7/E8 und wartet mit ihnen.
+  Offen gelassen (Durchsicht): ein **ausgeschiedener** Verbündeter teilt
+  weiter die Sicht und gibt deshalb weiter seinen Mannschaftsbonus — so
+  sagt es das Kriterium („endet mit der gemeinsamen Sicht"). Soll er mit
+  dem Ausscheiden enden, braucht `wirkungen()` ein `!s.aus` und das
+  Ausscheiden einen neuen `buendnisStand`.
+- **170** · 2026-11-11 · spielziel AC-26 **fertig**: jeder Bonus jedes
+  Hauses ist im Spiel gemessen, dieselbe Lage mit und ohne Haus, zwölf
+  Boni aus den Daten (Holz 223 statt 257 Takte am Baum, Späherreiter 60
+  statt 45 Leben und 6 statt 4 Felder Sicht, Farm 220 statt 175, Holz am
+  Markt 85 statt 70 Gold …). Neu gelesen: Wehrsteins Turm und Burg +1
+  Reichweite (`gebaeudewert` gibt Angriff, Reichweite und Nachladezeit nur
+  Gebäuden, die schießen — kein Bonus je Gebäudeart nötig) und Silberfurts
+  Handel (`handel: { gebuehr, karrenAnteil }`, `welt.handelswert`). Gelernt:
+  **ein Fernkämpfer schießt mit einem Schlagrand über seine Reichweite**
+  (4,4 bei 4) — gemessen wird deshalb, ob er vom Platz schießt, nicht eine
+  Weite; und **die Sicht rechnet nicht jeden Takt** (`SICHT_TAKTE`), ein
+  Takt nach dem Aufstellen sah nichts. Die Ausbildungszeit gehört zum
+  Mannschaftsbonus (AC-25). Gegenprobe je Lesestelle: alle drei fallen.
+  Browser nur für die fünf betroffenen Dateien (23 grün), kein `:neu` unter
+  Blender-Last.
+- **169** · 2026-11-11 · spielauswahl AC-24 **fertig**: jeder Platz im
+  Warteraum hat ein Haus (Name und Wahlspruch, Vorgabe Zufall), der
+  Gastgeber wählt auch das der KIs; Zufall zieht der Steckbrief aus dem
+  Startwert, jeder Platz der Reihe nach, damit eine Wahl die anderen nicht
+  verschiebt. Gelernt: **eine neue Vorgabe „Zufall" ändert jede Partie, die
+  sie nicht setzt** — bei Startwert 4711 hätten Anna und Bert in allen
+  Browserfällen Bogen- und Infanterieboni gespielt. `partieMit` setzt
+  deshalb das Haus ohne Boni, wie Tests ohne Nebel aufgedeckt eröffnen.
+  Und: „Partie starten" lag ab drei Plätzen schon vorher halb unter dem
+  Rand (Faden).
+- **168** · 2026-11-11 · **Rückschau.** `npm run qa:waisen` räumt Bilder
+  ohne Erzeuger (und `qa:nachweis` tut es vor jedem Lauf), der Wächter
+  `waechter-wirkungen` verbietet dem Browser, Wirkungen selbst
+  zusammenzurechnen, und `:neu` gilt auch, wenn sich nur das gezeigte
+  Verhalten ändert. Bedienung AC-39 fiel im vollen Lauf: der Bildnachweis
+  zwischen zwei Ausschnitten machte aus einer halben Schwingung manchmal
+  eine ganze — jetzt wird an der Uhr des Browsers gewartet, zehn von zehn
+  grün.
+- **167** · 2026-11-10 · **spielziel AC-17 und fahrplan AC-17 fertig (E2,
+  erster Teil): ein Haus ist Daten.** `HAEUSER` mit Name, Sitz, Wahlspruch
+  und Boni in der Form der Verbesserungen; `welt.wirkungen()` stellt die
+  Boni des Hauses vor die erforschten Verbesserungen, und die vier
+  Lesestellen fragen nur noch sie. Das Haus kommt wie das Team als
+  Einstellung (`haeuser`). Ein sechstes Haus „Probe" spielt im Test zwanzig
+  Minuten ohne eine Zeile Code. Gegenprobe: `sammelrate` mit der alten
+  Schleife lässt beide Tests fallen. **Gelernt:** Silberfurt hat in dieser
+  Form keinen einzigen Bonus — beide (Gebühr, Karren) brauchen eine neue
+  Lesestelle; bis E3 ist es ein Haus ohne Boni. Die Wahl im Warteraum
+  (spielauswahl AC-24) ist die nächste Bau-Runde nach der Rückschau.
+  Die Durchsicht fand eine Stelle im Browser, die selbst rechnete:
+  `farmVoll` kannte nur die Verbesserungen — die Tafel `kw` trägt jetzt
+  die Nahrung je Farm mit (Gegenprobe gegen die Zeile). Vergleich gegen
+  HEAD: dieselben 20 Partien, 166 gegen 167 ms je 1000 Takte.
+- **166** · 2026-11-10 · **bedienung AC-45 fertig (E1): die Stufen heißen
+  Landsitz, Lehen, Fürstentum, Krone.** Die Formen stehen in `ZEITALTER`
+  (`artikel`, `genitiv`, `ab`, `zum`), weil sie keiner Regel folgen — „ab
+  dem Lehen", aber „ab der Krone". Absagen, Knopftitel („Aufstieg zum
+  Lehen"), Leiste, Ansage und Tafel lesen von dort; ein Wächter
+  (`tests/waechter-zeitalter.test.mjs`) sucht die alten Namen in jeder
+  Zeichenkette außerhalb von Kommentaren. Von 324 Fundstellen waren nur 6
+  im Produkt Bildschirmtext; 34 Testzeilen und 7 Bildunterschriften
+  zitierten ihn. Bild: oben „Lehen", darunter die Absage mit „Gebäude des
+  Lehens". 208 Browserfälle in 24,1 min, 705 + 9 Tests. **Gelernt:** ein
+  Lauf mit neuen Unterschriften lässt die alten Bilddateien als Waisen
+  liegen, und `specs:board` bricht dann ab — sie gehören vor dem Lauf
+  gelöscht, nicht danach. Und: Runde 165 hatte die KI-Bilder nicht neu
+  geschrieben (kein Lauf mit `:neu`); erst dieser Lauf zeigte die KI im
+  Nebel im Bild (ki AC-11 97 %, fahrplan AC-12 87 % geändert) — alle
+  angesehen, alle stimmen. Ein Bild war neu falsch: bauen AC-04 zeigte
+  „Zu wenig Holz." aus dem Fall davor (die Absage steht drei Sekunden, der
+  Lauf war schneller) — der Fall wartet jetzt, bis sie weg ist. Vier
+  ältere Abweichungen stehen unter „Bildrückstand".
+- **165** · 2026-11-10 · **ki AC-13 fertig: die KI sieht nur ihr
+  Sichtfeld** — der Zweig `strategie-ki-sicht` zusammengeführt (Benutzer),
+  Konflikt nur in `ki.js`. Nachgezogen, was seit Runde 144 dazukam: Teams
+  (`welt.feindlich` statt „nicht meins" beim Wahrnehmen, sonst hielt sie
+  den Verbündeten für den Gegner), Handel (`fernerMarktplatz` weg vom Ort,
+  an dem sie den Feind sah), Karren und Mönche zählen nicht als Gegner
+  (`kaempft`). Zwei Fehler aus dem Zweig: der Merker „einmal je Takt"
+  übersah eine neue Sicht im selben Takt (jetzt mit `welt.sichtStempel`),
+  und `feindOrt` = das zuletzt Gesehene schickte das Heer über Eck zum
+  Falschen (jetzt geht ein bekanntes Dorfzentrum vor). KI gegen KI im
+  Nebel: 37 von 40 vor Minute 60, Median 44,6 (HEAD 40 von 40, 41,9 und
+  38,3), Ersatzgrenze in `tests/partien/ki-im-nebel.test.mjs` (40 Partien
+  in vier Fäden, rund 60 s). Drei alte Tests hingen am Allwissen: ki AC-21
+  (Schwelle 16 trennte nicht mehr, jetzt drei Viertel = 24), ki AC-12
+  („überrannt" zählt jetzt jeden, der daheim fällt), ki AC-25 und
+  Bündnistests eröffnen aufgedeckt. **Gelernt:** ein Zweig, der 24 Commits
+  alt ist, braucht nach dem Zusammenführen dieselbe Durchsicht wie neuer
+  Code — die Funde zu Teams, Handel und Karren lagen an Stellen, die der
+  Zweig nie gesehen hatte; der Merge war konfliktfrei, wo sie standen.
+- **164** · 2026-11-10 · **Spec-Runde Stufe E: Häuser nach ADR-0014.**
+  Fahrplan AC-16 bis AC-18 neu gefasst (gleiche Nummern), Bauabfolge E1
+  bis E10; spielziel AC-16 bis AC-18 neu, AC-25 (Mannschaftsbonus nur im
+  Bündnis) und AC-26 (jeder Bonus gemessen); spielauswahl AC-24 (Haus je
+  Platz); bedienung AC-45 (Stufen heißen nach dem Rang) und AC-46
+  (Wappen); einheiten AC-42 bis AC-49 (drei hauseigene, fünf
+  Spezialeinheiten) und — schon jetzt aus dem ADR — AC-50 bis AC-54 für
+  Abrüsten, Ei und Drache, kampf AC-22 (Tarnung) und AC-23, bauen AC-35
+  (Ritual), ki AC-27 bis AC-29. 598 Kriterien statt 574. **Gelernt:** die
+  Bauabfolge muss die Blender-Abhängigkeit sichtbar machen — sechs der
+  zehn Schritte brauchen keine Figur, vier warten; ohne die Trennung wäre
+  der nächste Bauschritt an einem Wächter gescheitert. Und: die KI sammelt
+  keinen Stein — ohne das misst „kein Haus vorn" nichts, weil keine KI
+  je ihre Burg baut (jetzt Teil von ki AC-28). Gerechnet statt geschätzt:
+  Riese 16,7 Schaden je Sekunde gegen Gebäude (Ramme 25,4), vier
+  Wiedergänger fällen einen Ritter, der Drache frisst rund 96 Nahrung je
+  Minute.
+- **163** · 2026-11-10 · **Rückschau** — `npm run durchsicht` legt den
+  Unterschied samt neuer Dateien für den Prüfer ab (seit Runde 151 hatte er
+  keinen bekommen); ein Kriterium, das einen Mangel beheben soll, misst ihn
+  zuerst neu; vor einer neuen Datei `ls`, kein `cat` ohne Datei. Stufe D
+  gilt bis auf einheiten AC-41 (Blender) als gebaut, die nächste Runde ist
+  die Spec-Runde zur Stufe E.
+- **162** · 2026-11-10 · **ki AC-26 fertig: die KI handelt mit Karren** (D14).
+  Liegt in Reichweite weniger als ein Goldfeld (800), baut sie einen Markt
+  am Dorf und einen zweiten 50 Felder davon in der Richtung, die am
+  weitesten vom Gegner liegt, bildet bis zu acht Karren aus und schickt
+  jeden, der steht, per `befehl` auf den fernsten Markt, der keinem Gegner
+  gehört. **Gelernt:** zuerst messen, ob es das Problem gibt — das Patt
+  mit leerem Gold, das AC-26 seltener machen sollte, gibt es auf diesem
+  Zweig nicht (40 von 40 vor Minute 60; das Gold in Reichweite geht in 88
+  KIs viermal aus, alle nach Minute 45). Das Kriterium ist neu gefasst und
+  misst den Fall selbst: Gold beim Aufstieg leeren, mit und ohne Handel.
+  Drei Dinge fand erst der gestellte Fall: (1) ohne Rücklage lag nach dem
+  Ende des Goldes acht Minuten lang nie 175 Holz für den Markt da; (2) mit
+  0 Gold gibt es keinen Karren (50 Gold) — sie verkauft jetzt den Stein,
+  den sie nie ausgibt; (3) **jeder Nicht-Dorfbewohner galt als
+  Kampfeinheit** — Karren wären mit dem Heer marschiert; `ki.kaempft()`
+  fragt jetzt den Angriff, und ohne das fällt auch die Messung über ganze
+  Partien. Ein zweiter Markt zum Gegner hin fällt dort ebenfalls (Gegenprobe
+  auf die Sortierung). Der Vorrang für den Markt eines Verbündeten flog
+  wieder raus: kein Test belegte ihn, und der fernste Markt bringt mehr.
+  `goldInReichweite` über alle Vorräte kostete 5 bis 9 % je Takt; mit den
+  Goldfeldern einmal gesucht bleibt rund 3 %, davon ein Punkt `kaempft`
+  (`einheitenwert` statt der Klasse), der Rest im Rauschen des Vergleichs.
+  Die Durchsicht fand drei Fallen, alle behoben und belegt: zwei Märkte zu
+  nah beieinander ohne Ziel (gefragt wird jetzt nach dem Ziel, nicht nach
+  der Zahl), eine Rücklage für einen Markt ohne Platz (jetzt nur, wenn das
+  Holz fehlt; der Platz wird erst gesucht, wenn er bezahlt ist), und ein
+  Karren ohne Weg bekam jede halbe Sekunde einen neuen Befehl (jetzt
+  höchstens alle 30 s). Offen und vermerkt: `aussichtslos` zählt einen
+  bezahlbaren Karren als Möglichkeit, obwohl ohne zweiten Markt keiner
+  bestellt würde — ein Grenzfall, eine KI ohne Einheiten mit Markt und
+  150 Rohstoffen gibt dann nicht auf.
+- **161** · 2026-11-10 · **einheiten AC-40 fertig: der Karren handelt** (D14).
+  Rechtsklick auf einen anderen nicht feindlichen Markt: Auftrag `handel`,
+  Gold je Fahrt `faktor * d * (d / S + sockel)` aus `HANDEL.karren`,
+  geladen am Ziel, gutgeschrieben daheim. Die sichtbare Ladung ist als
+  AC-41 abgetrennt (Figur, wartet auf die Blender-Sitzung). **Gelernt:**
+  erst messen, dann eichen — der Faktor der Vorlage ergab 10,7 Gold je
+  Minute gegen 20,0 des Dorfbewohners; erst 0,86 (gleich viel), dann auf
+  Wunsch des Benutzers 0,77 („ein kleines bisschen weniger": 18,0). Die Rundfahrt auf 60
+  Feldern dauert 123 s, nicht 112: der Weg führt um die Ränder der Märkte.
+  „Je Minute lohnt die lange Strecke" hält, aber knapp (14,9 auf 25,
+  17,6 auf 50 Felder, mit 0,86) — die erste Schwelle (+20 %) war geschätzt und fiel.
+  Ein Prüfgriff stellt Gebäude „in der Nähe" auf: wer zwei Märkte vom Dorf
+  aus sucht, bekommt zwei nebeneinander (5 Gold je Fahrt im ersten Bild).
+  Und ein Bildnachweis wird nur neu geschrieben mit `QA_NACHWEIS=1` — das
+  erste Bild blieb nach der Korrektur stehen. Gegenproben: ohne `handelt`
+  fallen sechs Tests, linear statt quadratisch einer, ohne den Blick auf
+  Gegner einer, ohne den sofortigen Halt einer.
+- **160** · 2026-11-09 · **einheiten AC-39 fertig: der Marktkarren** (D14,
+  erster Schritt) — am Markt ab der Ritterzeit, 100 Holz und 50 Gold, 70
+  Leben, 0/0, Tempo 1,0. Ausbildungszeit (51 s) und Sicht (7) sind gesetzt,
+  nicht geprüft. **Gelernt:** eine Einheit, die nicht kämpft, ist seit Mönch
+  und Ramme reine Daten — `angriff: 0` reicht für Wache, Gang, weißes
+  Zeichen und Leiste; gebaut wurden nur Eintrag, Klasse, Name und Figur.
+  Die breite Figur: `t.ueberstand()` meldete 11/25 px über die Zelle bei
+  `gross: 104`; mit 66 und einem Fußversatz passt sie. Das erste Bild auf
+  der Schautafel zeigte ein Pony mit waagerechtem Hals — der Kopf verschwand
+  hinter dem Kummet und unter der Nachbarzelle; aufgerichtet liest es sich
+  als Zugtier. Gegenprobe: mit `angriff: 3` fallen drei der vier Tests.
+- **159** · 2026-11-09 · **spielziel AC-23 fertig: die Spielgeschwindigkeit
+  ist eine Einstellung** (D13 fertig) — 1,0, 1,5 oder 2,0. Der Steckbrief
+  sagt dem Raum `takte(einstellungen)`, 10, 15 oder 20; die Welt rechnet
+  nichts anders und schickt nur `tempo` für die Bewegung im Bild. **Gelernt:**
+  ein Raum, der je Schlag einen Takt rechnet, misst nicht die Zeit, sondern
+  die Pünktlichkeit von `setInterval` — jetzt zählt die Wanduhr, nachgeholt
+  wird höchstens eine Sekunde. Und: `t.mock.timers.tick(500)` feuert ein
+  Intervall nur **einmal**; die alten Raumtests mit „zehn Takte in einer
+  halben Sekunde" sind erst mit gemockter `Date` und Nachholen wieder grün.
+  Beinahe-Fehler: `tests/strategie-tempo.test.mjs` gab es schon (fahrplan
+  AC-6) — Write überschrieb ihn still; vor einer neuen Testdatei `ls`.
+  Bilddurchsicht: 33 Bilder über 1 %, kein Mangel; in spielauswahl AC-08
+  (Formular mit Fehlermeldung, 1400 × 950) ist der Rahmen jetzt 10 px unten
+  abgeschnitten, die Seite rollt dort — erlaubt nach auswahl AC-23, sieben
+  Einstellungen plus Fehlermeldung sind die Grenze.
 - **158** · 2026-11-09 · **Rückschau** — ein Browserfall prüft den
   Warteraum auf 1366 × 768 für jede Einstellung des Steckbriefs (auswahl
   AC-23, Gegenprobe mit der alten Breite fällt), die Bilddurchsicht ist

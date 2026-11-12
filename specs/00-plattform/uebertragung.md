@@ -2,7 +2,7 @@
 
 **Bereich:** Plattform
 **Kuerzel:** uebertragung
-**Stand:** 7/10 fertig · 2 geplant · 1 offen
+**Stand:** 8/10 fertig · 1 geplant · 1 offen
 
 ## Zweck
 
@@ -46,7 +46,7 @@ und warum es so wenig ist.
 
 ### Verbindung
 
-- **AC-9** `geplant` **Abbruch ist sichtbar** — Reisst die Verbindung, sieht der Spieler das im Bild
+- **AC-9** `fertig` **Abbruch ist sichtbar** — Reisst die Verbindung, sieht der Spieler das im Bild
   und nicht erst an stehenden Einheiten.
 - **AC-10** `geplant` **Automatischer Wiederaufbau** — Der Browser verbindet sich nach einem Abbruch
   von selbst neu und kehrt mit dem Token auf seinen Platz zurueck, ohne dass

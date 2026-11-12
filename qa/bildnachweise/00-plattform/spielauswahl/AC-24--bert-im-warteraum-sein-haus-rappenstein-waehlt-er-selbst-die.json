@@ -1,0 +1,9 @@
+{
+  "spec": "00-plattform/spielauswahl.md",
+  "ac": "AC-24",
+  "titel": "Bert im Warteraum: sein Haus Rappenstein wählt er selbst, die KI steht auf Distelhag mit Wahlspruch, Annas Haus auf Zufall",
+  "datei": "e2e/tests/strategie-haeuser.spec.mjs",
+  "pfad": [
+    "auswahl AC-24: Haus je Platz im Warteraum - Bert wählt seins, Anna das der KI, ihres bleibt Zufall"
+  ]
+}

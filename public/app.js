@@ -13,6 +13,7 @@ const teile = {
   spielerliste: document.getElementById('spielerliste'),
   meldung: document.getElementById('meldung'),
   wartemeldung: document.getElementById('wartemeldung'),
+  verbindungweg: document.getElementById('verbindungweg'),
   vorraete: document.getElementById('vorraete'),
   kartenwert: document.getElementById('kartenwert'),
   brett: document.getElementById('brett'),
@@ -66,8 +67,14 @@ function verbinden(dann) {
   draht = new WebSocket(`${schema}://${location.host}`);
   draht.addEventListener('open', dann);
   draht.addEventListener('message', (e) => empfangen(JSON.parse(e.data)));
-  draht.addEventListener('close', () => {
-    if (ansicht) melden('Verbindung weg. Seite neu laden, um zurückzukehren.', teile.wartemeldung);
+  draht.addEventListener('close', (e) => {
+    // Nur wenn es die Verbindung von gerade ist: ein neuer Versuch schliesst
+    // die alte selbst (oben), das ist kein Abbruch.
+    if (e.target !== draht) return;
+    // Im Spiel ein Hinweis mitten im Bild, nicht erst stehende Einheiten
+    // (bedienung AC-19); im Warteraum unter der Spielerliste.
+    if (!teile.spiel.hidden) teile.verbindungweg.hidden = false;
+    else if (!teile.warteraum.hidden) melden('Verbindung weg. Seite neu laden, um zurückzukehren.', teile.wartemeldung);
   });
 }
 
@@ -139,6 +146,7 @@ function empfangen(nachricht) {
       leisteZiel(ansicht.vorraete);
       auswahlleiste.aktualisieren();
       untaetigZeigen(ansicht.untaetige.length);
+      wohnraumZeigen(ansicht.wartetEtwas());
       arbeiterZeigen(ansicht.arbeiter);
       zeitalterZeigen(ansicht.zeitalterName());
       spielzeitZeigen(ansicht.spielzeit());
@@ -465,6 +473,17 @@ const leiste = { ziel: {}, gezeigt: {}, von: {}, start: 0, laeuft: false };
 function leisteFeld(name) {
   if (name === 'raum') return teile.vorraete.querySelector('[data-teil="raum"]');
   return teile.vorraete.querySelector(`[data-rohstoff="${name}"] b`);
+}
+
+// Voller Wohnraum (bedienung AC-43): wartet irgendwo ein eigener Auftrag,
+// weil die Bevoelkerung voll ist, wird die Anzeige oben rot - auch wenn das
+// wartende Gebaeude nicht gewaehlt ist. Der Grund steht im Titel; in der
+// Leiste des Gebaeudes steht er ohnehin (bauen AC-15).
+function wohnraumZeigen(wartet) {
+  const feld = teile.vorraete.querySelector('[data-rohstoff="bev"]');
+  if (feld.classList.contains('wartet') === wartet) return;
+  feld.classList.toggle('wartet', wartet);
+  feld.title = wartet ? 'Bevölkerung voll — ein Auftrag wartet, Haus bauen' : 'Bevölkerung';
 }
 
 // Der Knopf fuer untaetige Dorfbewohner (bedienung AC-28): die Zahl, und
@@ -901,6 +920,9 @@ document.getElementById('abmelden').addEventListener('click', async () => {
   await konto('sign-out', {});
   await sitzungPruefen();
 });
+
+// Neu laden kehrt mit dem gemerkten Platz zurueck (unten, "Start").
+document.getElementById('neuladen').addEventListener('click', () => location.reload());
 
 // ---- Start -------------------------------------------------------------
 

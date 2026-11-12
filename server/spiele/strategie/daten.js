@@ -123,6 +123,21 @@ const EINHEITEN = {
     bekehren: { reichweite: 9, frueh: 4, spaet: 10, chance: 0.28, ruhe: 62, nicht: ['belagerung', 'moench'] },
     zeitalter: 2,
   },
+  // Der Marktkarren (einheiten AC-39), Werte aus der Vorlage: 100 Holz, 50
+  // Gold, 70 Leben, keine Ruestung, Tempo 1,0. Er greift nie an - ohne
+  // `angriff` wacht er nicht, und ein Befehl auf einen Fremden ist ein Gang.
+  // Am Markt erst ab der Ritterzeit (ADR-0013: in der Feudalzeit reicht das
+  // Gold auf der Karte noch). Nicht in der Tabelle der Vorlage und deshalb
+  // gesetzt, nach dem Fan-Wiki und **nicht geprueft**: 51 s Ausbildung, Sicht 7.
+  // Was er handelt, kommt mit AC-40.
+  marktkarren: {
+    leben: 70, tempo: 1.0, sicht: 7, tragkraft: 0, kosten: { holz: 100, gold: 50 }, zeit: 51, kuerzel: 'c',
+    angriff: 0, nahruestung: 0, fernruestung: 0, reichweite: 0, nachladen: 0,
+    klassen: ['karren'], zeitalter: 2,
+    // Pendelt zwischen zwei Maerkten und bringt Gold (einheiten AC-40) - wie
+    // viel, steht unter `HANDEL.karren`.
+    handelt: true,
+  },
 };
 
 // Wer von selbst wacht, greift an, was in seine Sichtweite kommt, ohne Befehl
@@ -250,8 +265,10 @@ const GEBAEUDE = {
   // Feudalzeit wie dort. Vier mal vier Felder wie im Original. `handel` sagt,
   // dass an ihm getauscht wird - die Preise stehen unten in HANDEL. Karren und
   // Handel zwischen Maerkten gibt es nicht (ADR-0012).
+  // Der Markt bildet ab der Ritterzeit den Marktkarren aus (einheiten AC-39) -
+  // das Zeitalter steht an der Einheit, gebaut wird er schon in der Feudalzeit.
   markt: {
-    groesse: 4, kosten: { holz: 175 }, bauzeit: 60, leben: 1300, wohnraum: 0, annahme: [], bildetAus: [], zeitalter: 1,
+    groesse: 4, kosten: { holz: 175 }, bauzeit: 60, leben: 1300, wohnraum: 0, annahme: [], bildetAus: ['marktkarren'], zeitalter: 1,
     handel: true,
   },
 };
@@ -279,14 +296,18 @@ const STARTAUFSTELLUNG = ['dorfbewohner', 'dorfbewohner', 'dorfbewohner', 'spaeh
 const BEVOELKERUNG_MAX = 200;
 
 // Die vier Zeitalter (spielziel AC-1). `stufe` ist der Index: 0 ist die
-// Dunkle Zeit, in der jede Partie beginnt.
-// `genitiv` steht in Meldungen („Gebäude der Dunklen Zeit"), deshalb gebeugt
-// und mit echten Umlauten - es ist ein Text für den Bildschirm.
+// Dunkle Zeit, in der jede Partie beginnt. Am Bildschirm heissen sie nach dem
+// Rang des Hauses (bedienung AC-45, ADR-0014 Punkt 9): Landsitz, Lehen,
+// Fuerstentum, Krone - in Bezeichnern und Specs bleiben die alten Namen als
+// Arbeitsnamen. Die gebeugten Formen stehen hier, nicht in den Meldungen
+// zusammengesetzt, denn sie folgen keiner Regel (das Lehen, aber die Krone):
+// `artikel` am Satzanfang klein, `genitiv` („Gebäude des Lehens"), `ab`
+// („gibt es erst ab dem Lehen") und `zum` („Aufstieg zum Lehen").
 const ZEITALTER = [
-  { id: 'dunkel', name: 'Dunkle Zeit', genitiv: 'der Dunklen Zeit' },
-  { id: 'feudal', name: 'Feudalzeit', genitiv: 'der Feudalzeit' },
-  { id: 'ritter', name: 'Ritterzeit', genitiv: 'der Ritterzeit' },
-  { id: 'imperial', name: 'Imperialzeit', genitiv: 'der Imperialzeit' },
+  { id: 'dunkel', name: 'Landsitz', artikel: 'der Landsitz', genitiv: 'des Landsitzes', ab: 'ab dem Landsitz', zum: 'zum Landsitz' },
+  { id: 'feudal', name: 'Lehen', artikel: 'das Lehen', genitiv: 'des Lehens', ab: 'ab dem Lehen', zum: 'zum Lehen' },
+  { id: 'ritter', name: 'Fürstentum', artikel: 'das Fürstentum', genitiv: 'des Fürstentums', ab: 'ab dem Fürstentum', zum: 'zum Fürstentum' },
+  { id: 'imperial', name: 'Krone', artikel: 'die Krone', genitiv: 'der Krone', ab: 'ab der Krone', zum: 'zur Krone' },
 ];
 
 // Der Aufstieg ist ein Auftrag im Dorfzentrum wie eine Verbesserung: bezahlt
@@ -294,10 +315,13 @@ const ZEITALTER = [
 // AC-23). `voraussetzung` ist die Zahl fertiger eigener Gebaeude des
 // **laufenden** Zeitalters ausser Haeusern - das Dorfzentrum zaehlt mit.
 // Werte aus der Vorlage (docs/strategie/vorlage-aoe2.md).
+// Name und Titel des Knopfes kommen aus `ZEITALTER`, damit es nur eine Stelle
+// gibt, an der ein Zeitalter heisst.
+const aufstieg = (stufe, werte) => ({ name: ZEITALTER[stufe].name, titel: `Aufstieg ${ZEITALTER[stufe].zum}`, stufe, ...werte });
 const AUFSTIEGE = {
-  feudalzeit: { name: 'Feudalzeit', stufe: 1, kosten: { nahrung: 500 }, zeit: 130, voraussetzung: 2 },
-  ritterzeit: { name: 'Ritterzeit', stufe: 2, kosten: { nahrung: 800, gold: 200 }, zeit: 160, voraussetzung: 2 },
-  imperialzeit: { name: 'Imperialzeit', stufe: 3, kosten: { nahrung: 1000, gold: 800 }, zeit: 190, voraussetzung: 2 },
+  feudalzeit: aufstieg(1, { kosten: { nahrung: 500 }, zeit: 130, voraussetzung: 2 }),
+  ritterzeit: aufstieg(2, { kosten: { nahrung: 800, gold: 200 }, zeit: 160, voraussetzung: 2 }),
+  imperialzeit: aufstieg(3, { kosten: { nahrung: 1000, gold: 800 }, zeit: 190, voraussetzung: 2 }),
 };
 
 // Verbesserungen: einmal je Partie, im Gebaeude wie eine Einheit eingereiht.
@@ -408,6 +432,8 @@ const KLASSEN = {
   belagerung: { name: 'Belagerung' },
   // Der Moench (einheiten AC-37) - bekehrt keine Moenche (AC-38).
   moench: { name: 'Mönche' },
+  // Der Marktkarren (einheiten AC-39) - noch greift kein Bonus auf ihn.
+  karren: { name: 'Karren' },
   gebaeude: { name: 'Gebäude' },
 };
 
@@ -430,9 +456,88 @@ const HANDEL = {
   gebuehr: 0.3,
   schritt: 2,
   tiefst: 20,
+  // Der Karren (einheiten AC-40): je Fahrt `faktor * d * (d / S + sockel)`
+  // Gold, `d` der Abstand der Maerkte von Mitte zu Mitte in Feldern, `S` die
+  // Kantenlaenge der Karte. Die Form ist die der Vorlage - die Menge waechst
+  // mit dem Abstand schneller als dieser, also lohnt die lange Strecke auch
+  // je Minute. Der Faktor ist gemessen, nicht uebernommen: siehe Runde 161.
+  karren: { faktor: 0.77, sockel: 0.3 },
+};
+
+// Die fuenf Haeuser (ADR-0014, spielziel AC-16, AC-17). Ein Haus ist ein
+// Eintrag: Name, Sitz, Wahlspruch und `boni`. Die Boni haben die Form einer
+// Verbesserung - `wirkung` je Einheitenart oder Klasse, `sammeln` als Faktor,
+// `farm`, `gebaeude` - und gelten von Beginn an. Gelesen werden sie dort, wo
+// die Verbesserungen gelesen werden (`welt.wirkungen()`); die Simulation
+// kennt kein einzelnes Haus.
+//
+// Zwei Formen gibt es nur bei den Haeusern (spielziel AC-26):
+// `gebaeude.reichweite` (wie `angriff` und `nachladen`) gilt nur fuer ein
+// Gebaeude, das schiesst - Wehrsteins "Turm und Burg +1 Reichweite"; ein Haus
+// mit Reichweite 1 waere Unsinn in der Leiste. Und `handel`: `gebuehr` ist
+// ein Zuschlag auf `HANDEL.gebuehr` (-0,15 macht aus 30 % 15 %),
+// `karrenAnteil` ein Anteil am Gold je Fahrt.
+//
+// `mannschaft` ist der Mannschaftsbonus (spielziel AC-25): er gilt dem Haus
+// selbst und allen, mit denen es die Sicht teilt, je Haus einmal, und endet
+// mit der gemeinsamen Sicht. Er steht neben `boni`, nicht darin, und hat
+// dieselben Formen und zwei eigene: `ausbildung` je Gebaeudeart als Faktor
+// auf das Tempo der Ausbildung, und `handel.verbuendetAnteil`, ein Anteil am
+// Gold je Fahrt nur zwischen zwei Verbuendeten. Weil er kommen und gehen
+// kann, traegt er nichts, was beim Wechsel an stehenden Einheiten oder
+// Gebaeuden nachgezogen werden muesste - kein Leben, keine Nahrung; darauf
+// achtet tests/strategie-mannschaft.test.mjs. Alle Zahlen sind Startwerte
+// (ADR-0014).
+//
+// `ki` sagt dem Computerspieler, wozu das Haus neigt (ki AC-27): der
+// `schwerpunkt` ist ein Gebaeude - ein Militaergebaeude baut die KI zuerst,
+// baut es nach und bedient es vor den anderen; was sie darin ausbildet,
+// lesen die Daten des Gebaeudes (ki AC-17). `goldKnapp` verschiebt, ab
+// welchem Gold in Reichweite sie zu handeln beginnt (ki AC-26, sonst 800).
+// Ein Schwerpunkt, der nichts ausbildet (Wehrsteins Wachturm, ki AC-30), ist
+// ein Bauwerk: davon baut die KI ab seinem Zeitalter, nach dem ersten
+// Militaergebaeude und dem ersten Aufbruch, bis zu `anzahl` am Dorf und stellt
+// `steinSammler` an den Stein, solange welche fehlen (`ki.bauwerkePruefen`).
+// Silberfurt handelt frueher (ki AC-27): gleich mit der Ritterzeit, nicht erst,
+// wenn das Gold in Reichweite knapp wird - jede Menge Gold ist "knapp".
+// Gemessen in Runde 174: 6,5 Karren je Partie statt 0,8, und KI gegen KI
+// endet weiter wie in fahrplan AC-11.
+const GOLD_KNAPP_SILBERFURT = Infinity;
+
+const HAEUSER = {
+  eschenbruch: {
+    name: 'Eschenbruch', sitz: 'Waldland', wahlspruch: 'Weit sehen, weit treffen.',
+    boni: { sammeln: { holz: 1.15 }, wirkung: { bogenschuetze: { reichweite: 1 } } },
+    mannschaft: { ausbildung: { schiessanlage: 1.2 } },
+    ki: { schwerpunkt: 'schiessanlage' },
+  },
+  rappenstein: {
+    name: 'Rappenstein', sitz: 'Grasland', wahlspruch: 'Zuerst am Ziel.',
+    boni: { wirkung: { kavallerie: { leben: 15, sicht: 2 } } },
+    mannschaft: { wirkung: { kavallerie: { sicht: 2 } } },
+    ki: { schwerpunkt: 'stall' },
+  },
+  wehrstein: {
+    name: 'Wehrstein', sitz: 'Gebirge', wahlspruch: 'Stein vergisst nicht.',
+    boni: { sammeln: { stein: 1.15 }, gebaeude: { lebenAnteil: 0.1, reichweite: 1 } },
+    mannschaft: { gebaeude: { sicht: 2 } },
+    ki: { schwerpunkt: 'wachturm', anzahl: 2, steinSammler: 3 },
+  },
+  silberfurt: {
+    name: 'Silberfurt', sitz: 'Flussstadt', wahlspruch: 'Alles hat seinen Preis.',
+    boni: { handel: { gebuehr: -0.15, karrenAnteil: 0.2 } },
+    mannschaft: { handel: { verbuendetAnteil: 0.2 } },
+    ki: { schwerpunkt: 'markt', goldKnapp: GOLD_KNAPP_SILBERFURT },
+  },
+  distelhag: {
+    name: 'Distelhag', sitz: 'Heide', wahlspruch: 'Wer uns greift, blutet.',
+    boni: { wirkung: { infanterie: { nahruestung: 1, fernruestung: 1 } }, farm: { nahrung: 45 } },
+    mannschaft: { ausbildung: { kaserne: 1.2 } },
+    ki: { schwerpunkt: 'kaserne' },
+  },
 };
 
 module.exports = {
-  EINHEITEN, SAMMELN, TIERE, GEBAEUDE, VERBESSERUNGEN, ZEITALTER, AUFSTIEGE, KLASSEN, HANDEL,
+  EINHEITEN, SAMMELN, TIERE, GEBAEUDE, VERBESSERUNGEN, ZEITALTER, AUFSTIEGE, KLASSEN, HANDEL, HAEUSER,
   BEVOELKERUNG_MAX, SCHLANGE_MAX, STARTAUFSTELLUNG,
 };

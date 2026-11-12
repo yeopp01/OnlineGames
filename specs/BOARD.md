@@ -7,9 +7,9 @@ Eine Zeile je Abnahmekriterium. Gepflegt wird der Status in der Spec selbst,
 hier steht er zusammengefasst. Erzeugt mit `npm run specs:board`; als Seite
 mit Bildnachweisen, Filter und Suche mit `npm run qa:report`.
 
-**Gesamt:** 452/581 fertig · 2 in Arbeit · 5 in QA · 4 geplant · 110 offen · 8 zurueckgestellt
+**Gesamt:** 475/609 fertig · 2 in Arbeit · 5 in QA · 3 geplant · 116 offen · 8 zurueckgestellt
 
-**Nachweise:** 207 Kriterien mit Bild · 250 ohne Bild, begruendet in `qa/ohne-bild.json`
+**Nachweise:** 221 Kriterien mit Bild · 259 ohne Bild, begruendet in `qa/ohne-bild.json`
 
 ## Nach Spezifikation
 
@@ -19,17 +19,17 @@ mit Bildnachweisen, Filter und Suche mit `npm run qa:report`.
 | [Raeume und Partien](00-plattform/raeume.md)                   | -         | 2     | -       | 3     | -               | 11     |
 | [Schutz vor Fremdnutzung](00-plattform/schutz.md)              | -         | 1     | -       | 4     | -               | 7      |
 | [Anhalten und Fortsetzen](00-plattform/speichern.md)           | -         | -     | -       | 26    | -               | -      |
-| [Spielauswahl und Einstellungen](00-plattform/spielauswahl.md) | -         | -     | -       | 5     | -               | 18     |
-| [Uebertragung](00-plattform/uebertragung.md)                   | -         | -     | 2       | 1     | -               | 7      |
-| [Bauen und Ausbilden](10-strategie/bauen.md)                   | -         | -     | -       | 4     | -               | 30     |
-| [Bedienung](10-strategie/bedienung.md)                         | -         | -     | -       | 14    | -               | 30     |
+| [Spielauswahl und Einstellungen](00-plattform/spielauswahl.md) | -         | -     | -       | 5     | -               | 19     |
+| [Uebertragung](00-plattform/uebertragung.md)                   | -         | -     | 1       | 1     | -               | 8      |
+| [Bauen und Ausbilden](10-strategie/bauen.md)                   | -         | -     | -       | 5     | -               | 30     |
+| [Bedienung](10-strategie/bedienung.md)                         | -         | -     | -       | 7     | -               | 39     |
 | [Darstellung](10-strategie/darstellung.md)                     | 1         | -     | -       | 5     | -               | 18     |
-| [Einheiten und Befehle](10-strategie/einheiten-und-befehle.md) | -         | -     | -       | 5     | 1               | 27     |
-| [Fahrplan zum Klon](10-strategie/fahrplan.md)                  | -         | -     | -       | 7     | -               | 17     |
-| [Kampf](10-strategie/kampf.md)                                 | -         | -     | -       | -     | 1               | 20     |
+| [Einheiten und Befehle](10-strategie/einheiten-und-befehle.md) | -         | -     | -       | 17    | 1               | 29     |
+| [Fahrplan zum Klon](10-strategie/fahrplan.md)                  | -         | -     | -       | 6     | -               | 18     |
+| [Kampf](10-strategie/kampf.md)                                 | -         | -     | -       | 2     | 1               | 20     |
 | [Karte und Vorraete](10-strategie/karte-und-vorraete.md)       | -         | -     | -       | 2     | 3               | 12     |
-| [KI-Spieler](10-strategie/ki.md)                               | -         | -     | -       | 4     | -               | 22     |
-| [Spielziel und Partieverlauf](10-strategie/spielziel.md)       | 1         | -     | -       | 12    | -               | 11     |
+| [KI-Spieler](10-strategie/ki.md)                               | -         | -     | -       | 5     | -               | 27     |
+| [Spielziel und Partieverlauf](10-strategie/spielziel.md)       | 1         | -     | -       | 10    | -               | 15     |
 | [Aufstellung, Taktik und Training](15-manager/aufstellung.md)  | -         | -     | -       | -     | 2               | 23     |
 | [Bedienung des Managerspiels](15-manager/bedienung.md)         | -         | -     | -       | -     | -               | 15     |
 | [Finanzen](15-manager/finanzen.md)                             | -         | -     | -       | -     | -               | 16     |
@@ -58,14 +58,13 @@ mit Bildnachweisen, Filter und Suche mit `npm run qa:report`.
 - **Nachrichtenflut trennt die Verbindung** — [Schutz vor Fremdnutzung](00-plattform/schutz.md) AC-7
 - **Alle Namen sind erfunden** — [Kader und Spieler](15-manager/kader.md) AC-7
 
-## Geplant (4)
+## Geplant (3)
 
 - **Mailadresse wird bestaetigt** — [Konten und Anmeldung](00-plattform/konten.md) AC-4
 - **Kennwort vergessen** — [Konten und Anmeldung](00-plattform/konten.md) AC-5
-- **Abbruch ist sichtbar** — [Uebertragung](00-plattform/uebertragung.md) AC-9
 - **Automatischer Wiederaufbau** — [Uebertragung](00-plattform/uebertragung.md) AC-10
 
-## Offen (110)
+## Offen (116)
 
 - **Anmeldung ueber Google/GitHub** — [Konten und Anmeldung](00-plattform/konten.md) AC-6
 - **Bilanz je Konto** — [Konten und Anmeldung](00-plattform/konten.md) AC-14
@@ -113,20 +112,14 @@ mit Bildnachweisen, Filter und Suche mit `npm run qa:report`.
 - **Gebäude haben Leben** — [Bauen und Ausbilden](10-strategie/bauen.md) AC-17
 - **Zerstörte Gebäude nehmen Plätze mit** — [Bauen und Ausbilden](10-strategie/bauen.md) AC-18
 - **Eroberung entscheidet** — [Bauen und Ausbilden](10-strategie/bauen.md) AC-19
-- **Umschalt erweitert** — [Bedienung](10-strategie/bedienung.md) AC-3
-- **Doppelklick wählt den Typ** — [Bedienung](10-strategie/bedienung.md) AC-4
-- **Auswahl merken** — [Bedienung](10-strategie/bedienung.md) AC-5
-- **Schieben am Bildschirmrand** — [Bedienung](10-strategie/bedienung.md) AC-9
-- **Leertaste springt zur Basis** — [Bedienung](10-strategie/bedienung.md) AC-10
-- **Der Befehl ist sofort sichtbar** — [Bedienung](10-strategie/bedienung.md) AC-13
+- **Den Drachen rufen** — [Bauen und Ausbilden](10-strategie/bauen.md) AC-35
 - **Warteschlange mit Umschalt** — [Bedienung](10-strategie/bedienung.md) AC-14
-- **Verbindungsverlust ist sichtbar** — [Bedienung](10-strategie/bedienung.md) AC-19
 - **Spielstand aller Spieler einsehbar** — [Bedienung](10-strategie/bedienung.md) AC-20
 - **Die erste Partie erklärt sich** — [Bedienung](10-strategie/bedienung.md) AC-21
 - **Läuft auf einem Laptop-Bildschirm** — [Bedienung](10-strategie/bedienung.md) AC-23
 - **Das Zeitalter steht am Dorf** — [Bedienung](10-strategie/bedienung.md) AC-42
-- **Voller Wohnraum fällt auf** — [Bedienung](10-strategie/bedienung.md) AC-43
 - **Ein Gefecht hinterlässt Spuren** — [Bedienung](10-strategie/bedienung.md) AC-44
+- **Das Wappen zeigt das Haus** — [Bedienung](10-strategie/bedienung.md) AC-46
 - **Nur eigenes Material** — [Darstellung](10-strategie/darstellung.md) AC-11
 - **Acht Blickrichtungen** — [Darstellung](10-strategie/darstellung.md) AC-19
 - **Bewegung statt Verschieben** — [Darstellung](10-strategie/darstellung.md) AC-20
@@ -135,21 +128,35 @@ mit Bildnachweisen, Filter und Suche mit `npm run qa:report`.
 - **Einheiten blockieren sich nicht** — [Einheiten und Befehle](10-strategie/einheiten-und-befehle.md) AC-10
 - **Sammler teilen keinen Platz** — [Einheiten und Befehle](10-strategie/einheiten-und-befehle.md) AC-30
 - **Marschierende laufen nicht aufeinander** — [Einheiten und Befehle](10-strategie/einheiten-und-befehle.md) AC-32
-- **Der Marktkarren** — [Einheiten und Befehle](10-strategie/einheiten-und-befehle.md) AC-39
-- **Der Karren handelt** — [Einheiten und Befehle](10-strategie/einheiten-und-befehle.md) AC-40
-- **Fünf Völker wählbar** — [Fahrplan zum Klon](10-strategie/fahrplan.md) AC-16
-- **Ein Volk ist ein Eintrag** — [Fahrplan zum Klon](10-strategie/fahrplan.md) AC-17
-- **Kein Volk vorn** — [Fahrplan zum Klon](10-strategie/fahrplan.md) AC-18
+- **Ladung des Karrens sichtbar** — [Einheiten und Befehle](10-strategie/einheiten-und-befehle.md) AC-41
+- **Langbogenschütze nur für Eschenbruch** — [Einheiten und Befehle](10-strategie/einheiten-und-befehle.md) AC-42
+- **Pavesenschütze nur für Wehrstein** — [Einheiten und Befehle](10-strategie/einheiten-und-befehle.md) AC-43
+- **Söldner für Gold** — [Einheiten und Befehle](10-strategie/einheiten-und-befehle.md) AC-44
+- **Kriegswölfe aus der Burg** — [Einheiten und Befehle](10-strategie/einheiten-und-befehle.md) AC-45
+- **Reiterschütze aus der Burg** — [Einheiten und Befehle](10-strategie/einheiten-und-befehle.md) AC-46
+- **Riese aus der Burg** — [Einheiten und Befehle](10-strategie/einheiten-und-befehle.md) AC-47
+- **Meuchler aus der Burg** — [Einheiten und Befehle](10-strategie/einheiten-und-befehle.md) AC-48
+- **Wiedergänger aus Gefallenen** — [Einheiten und Befehle](10-strategie/einheiten-und-befehle.md) AC-49
+- **Abrüsten** — [Einheiten und Befehle](10-strategie/einheiten-und-befehle.md) AC-50
+- **Das Ei liegt, wird getragen** — [Einheiten und Befehle](10-strategie/einheiten-und-befehle.md) AC-51
+- **Der Drache fliegt und brennt** — [Einheiten und Befehle](10-strategie/einheiten-und-befehle.md) AC-52
+- **Wo er fällt, liegt Ei** — [Einheiten und Befehle](10-strategie/einheiten-und-befehle.md) AC-53
+- **Der Drache frisst** — [Einheiten und Befehle](10-strategie/einheiten-und-befehle.md) AC-54
+- **Fünf Häuser wählbar** — [Fahrplan zum Klon](10-strategie/fahrplan.md) AC-16
+- **Kein Haus vorn** — [Fahrplan zum Klon](10-strategie/fahrplan.md) AC-18
 - **Imperialzeit spielbar** — [Fahrplan zum Klon](10-strategie/fahrplan.md) AC-19
 - **Große Partie bleibt flüssig** — [Fahrplan zum Klon](10-strategie/fahrplan.md) AC-20
 - **Läuft auf dem VPS** — [Fahrplan zum Klon](10-strategie/fahrplan.md) AC-21
 - **Aktualisieren ist ein Befehl** — [Fahrplan zum Klon](10-strategie/fahrplan.md) AC-22
+- **Getarnte sieht man spät** — [Kampf](10-strategie/kampf.md) AC-22
+- **Den Drachen treffen nur Schützen** — [Kampf](10-strategie/kampf.md) AC-23
 - **Kein Spieler ist abgeschnitten** — [Karte und Vorraete](10-strategie/karte-und-vorraete.md) AC-7
 - **Vorraete sind endlich und knapp** — [Karte und Vorraete](10-strategie/karte-und-vorraete.md) AC-10
-- **KI sieht nur ihr Sichtfeld** — [KI-Spieler](10-strategie/ki.md) AC-13
 - **KI liest die Zustandsnachricht** — [KI-Spieler](10-strategie/ki.md) AC-20
 - **Rammen gegen Befestigung** — [KI-Spieler](10-strategie/ki.md) AC-23
-- **Die KI handelt mit Karren** — [KI-Spieler](10-strategie/ki.md) AC-26
+- **KI bildet Spezialeinheit aus** — [KI-Spieler](10-strategie/ki.md) AC-28
+- **KI antwortet auf das Heer** — [KI-Spieler](10-strategie/ki.md) AC-31
+- **Die KI ruft den Drachen** — [KI-Spieler](10-strategie/ki.md) AC-29
 - **Partiedauer 25 bis 45 Minuten** — [Spielziel und Partieverlauf](10-strategie/spielziel.md) AC-2
 - **Kein Aus nach drei Minuten** — [Spielziel und Partieverlauf](10-strategie/spielziel.md) AC-3
 - **Aufholen ist möglich** — [Spielziel und Partieverlauf](10-strategie/spielziel.md) AC-4
@@ -157,11 +164,9 @@ mit Bildnachweisen, Filter und Suche mit `npm run qa:report`.
 - **Rein sammeln verliert** — [Spielziel und Partieverlauf](10-strategie/spielziel.md) AC-11
 - **Rein angreifen verliert auch** — [Spielziel und Partieverlauf](10-strategie/spielziel.md) AC-12
 - **Zwei bis acht Spieler** — [Spielziel und Partieverlauf](10-strategie/spielziel.md) AC-13
-- **Fünf Völker mit Profil** — [Spielziel und Partieverlauf](10-strategie/spielziel.md) AC-16
-- **Ein Volk ist Daten** — [Spielziel und Partieverlauf](10-strategie/spielziel.md) AC-17
-- **Kein Volk gewinnt gegen alle** — [Spielziel und Partieverlauf](10-strategie/spielziel.md) AC-18
+- **Fünf Häuser mit Profil** — [Spielziel und Partieverlauf](10-strategie/spielziel.md) AC-16
+- **Kein Haus gewinnt gegen alle** — [Spielziel und Partieverlauf](10-strategie/spielziel.md) AC-18
 - **Ein Aussteiger blockiert nicht** — [Spielziel und Partieverlauf](10-strategie/spielziel.md) AC-15
-- **Spielgeschwindigkeit ist eine Einstellung** — [Spielziel und Partieverlauf](10-strategie/spielziel.md) AC-23
 - **Mehrere Menschen in einer Welt** — [Karriere: Saison um Saison](15-manager/karriere.md) AC-16
 - **Mehrere Manager, eine Welt** — [Spielziel und Abgrenzung](15-manager/spielziel.md) AC-1
 - **Der Termin wartet auf alle** — [Spielziel und Abgrenzung](15-manager/spielziel.md) AC-2

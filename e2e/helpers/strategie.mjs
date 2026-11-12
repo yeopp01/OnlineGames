@@ -12,7 +12,8 @@
 //   `a` erster Buchstabe der Ladungsart · `h` Lebenspunkte, **absolut, und nur
 //   wenn welche fehlen** (voll wird gar nicht geschickt - der Anteil ist
 //   `h / ansicht.lebenVoll(e)`) · `w` arbeitet oder kaempft gerade (bedienung AC-31, AC-39) · `s` gefallen ·
-//   `r` ruht nach dem Bekehren (einheiten AC-38).
+//   `r` ruht nach dem Bekehren (einheiten AC-38) · `hd` die Strecke eines Karrens,
+//   `[heimatmarkt, zielmarkt, Gold je Fahrt]`, nur solange er handelt (einheiten AC-40).
 //
 // ### KUERZEL
 // Diese Liste prueft `tests/waechter-drahttafel.test.mjs` gegen `daten.js` -
@@ -31,6 +32,7 @@
 //   `w` = ramme
 //   `n` = mangonel
 //   `g` = moench
+//   `c` = marktkarren
 // ### ENDE KUERZEL
 //
 // **`ansicht.gebaeude`** (Map id -> Gebaeude): `i` · `art` **ausgeschrieben**
@@ -62,6 +64,10 @@
 //   oder null (Vorgabe: keine). Im Browser `ansicht.zeitgrenze`; die Leiste
 //   zeigt sie hinter der Uhr (`#spielzeit .zeitgrenze`, " / 90:00").
 //   `partieMit(…, { zeitgrenze: 90 })` waehlt sie beim Eroeffnen.
+// **Geschwindigkeit** (spielziel AC-23): `tempo` im Aufbau (1, 1.5, 2),
+//   `takte` bleibt 10 je Spielsekunde. Im Browser `ansicht.tempo`,
+//   `ansicht.taktdauer` = 1000 / (takte * tempo). Einstellung `tempo`,
+//   `partieMit(…, { geschwindigkeit: 1.5 })`.
 //
 // **Werte im Browser** (Runde 75): `ansicht.werte.einheiten[art]` fuehrt
 // Kuerzel, Leben, Tragkraft, Kosten, Zeit, `baut`, Zeitalter, Angriff,
@@ -79,7 +85,46 @@
 // `ansicht.einheitenwert(einheit, 'angriff')` - nie selbst summieren.
 // Wer den Schaden eines Treffers ausrechnen will, importiert `daten.js` in
 // Node (so macht es `strategie-feudalzeit.spec.mjs`).
+import { HAEUSER } from '../../server/spiele/strategie/daten.js';
 import { ANMELDUNG, GRIFFHAFEN, expect, fehlerSammeln, zeitraffer } from './seite.mjs';
+import { PRUEFHAUS } from './pruefhaus.mjs';
+
+// **Haeuser** (spielauswahl AC-24): seit Runde 169 hat jeder Platz im
+// Warteraum ein Haus, Vorgabe Zufall aus dem Startwert - bei 4711 spielte
+// Anna Eschenbruch (Bogen +1 Reichweite) und Bert Distelhag (Infanterie
+// +1/+1). Wer nicht von Haeusern handelt, spielt deshalb das Haus ohne Boni,
+// wie wer nicht vom Nebel handelt, aufgedeckt eroeffnet. `partieMit` setzt es
+// von selbst; `partieMit(…, { haus: 'zufall' })` laesst die Vorgabe stehen,
+// `{ haus: 'distelhag' }` setzt dieses fuer alle. Im Aufbau steht es als
+// `haus` je Spieler (`ansicht.spieler.get(id).haus`).
+//
+// Seit Runde 170 hat jedes der fuenf Haeuser Boni; das Haus ohne ist das
+// Pruefhaus, das nur der Browserlauf anlegt (`e2e/helpers/pruefhaus.mjs`).
+
+/**
+ * Das Haus ohne Boni. Hat das Pruefhaus eines Tages doch welche oder fehlt
+ * es, bricht der Test hier ab, statt still mit Boni zu messen.
+ */
+export function hausOhneBoni() {
+  const boni = HAEUSER[PRUEFHAUS]?.boni;
+  if (!boni || Object.keys(boni).length) {
+    throw new Error(`Das Pruefhaus "${PRUEFHAUS}" fehlt in HAEUSER oder hat Boni (e2e/helpers/pruefhaus.mjs).`);
+  }
+  return PRUEFHAUS;
+}
+
+/**
+ * Der Gastgeber setzt im Warteraum jedem Platz, die KIs eingeschlossen, ein
+ * Haus - vor dem Start, so wie ein Mensch es waehlt (spielauswahl AC-24).
+ * Die Nachrichten gehen ueber dieselbe Leitung wie der Start danach, also in
+ * dieser Reihenfolge an.
+ */
+export async function haeuserSetzen(gastgeber, haus = hausOhneBoni()) {
+  const felder = gastgeber.locator('#spielerliste select[data-wahl="haus"]');
+  await expect(felder.first()).toBeVisible();
+  for (const feld of await felder.all()) await feld.selectOption(JSON.stringify(haus));
+  for (const feld of await felder.all()) await expect(feld).toHaveValue(JSON.stringify(haus));
+}
 
 /**
  * Anna (angemeldet) eroeffnet mit festem Startwert, Bert tritt bei, Anna
@@ -118,10 +163,13 @@ export function partieZuDritt(browser, info, wie = {}) {
  * @param {import('@playwright/test').Browser} browser
  * @param {import('@playwright/test').TestInfo} info
  * @param {string[]} gaeste die Namen der Beitretenden, in dieser Reihenfolge
- * @param {{startwert?: number, breite?: number, hoehe?: number, sicht?: string, teams?: number[], buendnisse?: string, zeitgrenze?: number}} [wie]
+ * @param {{startwert?: number, breite?: number, hoehe?: number, sicht?: string, teams?: number[], buendnisse?: string, zeitgrenze?: number, geschwindigkeit?: number, haus?: string, vorDemStart?: Function}} [wie]
+ *   `haus`: fuer jeden Platz dieses Haus, 'zufall' fuer die Vorgabe; ohne Angabe das Haus ohne Boni.
  *   `teams`: je Seite ein Team 1..4 oder 0 (keins), im Warteraum gesetzt (auswahl AC-22).
+ *   `geschwindigkeit`: 1, 1.5 oder 2 (spielziel AC-23). `vorDemStart({ anna, bert, seiten, code })`
+ *   laeuft im Warteraum, wenn alle drin sind - fuer ein Bild davon.
  */
-async function partieMit(browser, info, gaeste, { startwert = 4711, breite = 1400, hoehe = 950, sicht = null, teams = null, buendnisse = null, zeitgrenze = null } = {}) {
+async function partieMit(browser, info, gaeste, { startwert = 4711, breite = 1400, hoehe = 950, sicht = null, teams = null, buendnisse = null, zeitgrenze = null, geschwindigkeit = null, haus = null, vorDemStart = null } = {}) {
   const optionen = { baseURL: info.project.use.baseURL, viewport: { width: breite, height: hoehe }, locale: 'de-DE' };
   const anna = await (await browser.newContext({ ...optionen, storageState: ANMELDUNG })).newPage();
   const fehler = [fehlerSammeln(anna)];
@@ -134,6 +182,7 @@ async function partieMit(browser, info, gaeste, { startwert = 4711, breite = 140
   if (sicht) await anna.locator('[data-einstellung="sicht"]').selectOption(JSON.stringify(sicht));
   if (buendnisse) await anna.locator('[data-einstellung="buendnisse"]').selectOption(JSON.stringify(buendnisse));
   if (zeitgrenze) await anna.locator('[data-einstellung="zeitgrenze"]').selectOption(JSON.stringify(zeitgrenze));
+  if (geschwindigkeit) await anna.locator('[data-einstellung="tempo"]').selectOption(JSON.stringify(geschwindigkeit));
   await anna.locator('[data-eroeffnen="strategie"]').click();
   await expect(anna.locator('#raumcode')).toHaveText(/^[A-Z0-9]{3}-[A-Z0-9]{3}$/);
   const code = (await anna.locator('#raumcode').textContent()).trim();
@@ -162,6 +211,9 @@ async function partieMit(browser, info, gaeste, { startwert = 4711, breite = 140
     // Erst weiter, wenn es der Letzte, der beitrat, auch so sieht.
     for (const [i, team] of teams.entries()) await teamZeigt(seiten.at(-1), i, team);
   }
+  // Das Haus je Platz (spielauswahl AC-24): ohne Angabe das ohne Boni.
+  if (haus !== 'zufall') await haeuserSetzen(anna, haus || hausOhneBoni());
+  if (vorDemStart) await vorDemStart({ anna, bert: seiten[1], seiten, code });
 
   await anna.locator('#starten').click();
   for (const seite of seiten) {
@@ -294,12 +346,30 @@ export async function dorfbewohnerAnklicken(page, { ohne = [], code = null, raff
   return letzte.i;
 }
 
-/** Die eigenen Einheiten mit ihrer Lage auf dem Bildschirm. */
+/**
+ * Die eigenen Einheiten mit ihrer Lage auf dem Bildschirm - alle, auch die
+ * ausserhalb des Ausschnitts: `x`/`y` ist der Fusspunkt, `klick` die
+ * Koerpermitte, auf die ein Klick zielt (`KOERPER_MITTE` in ansicht.js),
+ * `imBild` sagt, ob der Fusspunkt auf der Leinwand steht, `k` die Art,
+ * `s` ob sie gefallen ist. Wer damit klickt, haelt vorher die Zeit an
+ * (`zeitraffer(page, code, 0)`), sonst laeuft das Ziel weg (Rueckschau nach
+ * Runde 183).
+ */
 export const eigeneImBild = (page) => page.evaluate(() => {
   const a = window.ansicht;
+  const h = a.figurenHoehe();
+  const breite = a.leinwand.clientWidth;
+  const hoehe = a.leinwand.clientHeight;
   return [...a.nachher.values()]
     .filter((e) => e.b === a.ich)
-    .map((e) => ({ id: e.i, ...a.zuBild(e.x, e.y) }));
+    .map((e) => {
+      const p = a.zuBild(e.x, e.y);
+      return {
+        id: e.i, k: e.k, s: Boolean(e.s), ...p,
+        klick: { x: p.x, y: p.y - h * 0.6 },
+        imBild: p.x >= 0 && p.x <= breite && p.y >= 0 && p.y <= hoehe,
+      };
+    });
 });
 
 /**

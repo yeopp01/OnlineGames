@@ -1,0 +1,10 @@
+{
+  "spec": "10-strategie/bedienung.md",
+  "ac": "AC-9",
+  "titel": "Tastenuebersicht mit dem Schalter Karte am Bildschirmrand schieben, hier abgeschaltet",
+  "datei": "e2e/tests/strategie-randschieben.spec.mjs",
+  "pfad": [
+    "Schieben am Bildschirmrand",
+    "bedienung AC-9: in der Tastenuebersicht abschaltbar, dann steht die Karte auch am Rand - der Browser merkt es sich"
+  ]
+}
