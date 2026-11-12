@@ -2071,6 +2071,18 @@ ihn, mit Gegenprobe an beiden Formen. Fünf Bilder neu, alle angesehen.
 Neueste oben. Eine Zeile je Runde: Nummer, Datum, Kriterien, Ergebnis,
 wichtigste Erkenntnis.
 
+- **185** · 2026-11-12 · **bedienung AC-10 fertig** (Abweichung nach
+  Abschnitt 1, Punkt 6): die Leertaste springt zum eigenen Dorfzentrum
+  nächst dem Startplatz, ein zweites Mal zurück — nur, solange die Kamera
+  seit dem Sprung steht (`ansicht.sprung` mit `von`/`nach`, gemerkt nach
+  `schieben(0)`, das am Kartenrand festhält). `e.repeat` springt nicht,
+  `preventDefault` gegen den zuletzt geklickten Knopf. Browserfall
+  `e2e/tests/strategie-leertaste.spec.mjs`, Bild AC-22 neu (eine Zeile).
+  Zwei Gegenproben fallen. **Die erste Fassung des Haltens hätte die
+  Gegenprobe überstanden**: dreimal gedrückt heißt hin, her, hin — und das
+  endet wieder an der Basis. Mit einer Wiederholung unterscheiden sich alt
+  und neu.
+
 - **184** · 2026-11-12 · **bedienung AC-9 fertig** (Abweichung vom Fahrplan
   nach Abschnitt 1, Punkt 6: Stufe E gesperrt): die äußersten 12 Bildpunkte
   schieben die Karte (`ansicht.amRand()` in `schieben`, `RAND_SCHIEBEN`),

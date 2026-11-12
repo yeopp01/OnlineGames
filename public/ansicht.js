@@ -161,6 +161,8 @@ export class Ansicht {
     this.empfangen = 0;
     this.ausgewaehlt = new Set();
     this.gruppen = new Map();
+    // Der letzte Sprung mit der Leertaste (bedienung AC-10): woher, wohin.
+    this.sprung = null;
     this.gewaehltesGebaeude = null;
     this.zielzeichen = null;
     this.angriffslauf = false;
@@ -697,6 +699,14 @@ export class Ansicht {
       // Der naechste untaetige Dorfbewohner (bedienung AC-28).
       if (e.key === '.' && !e.ctrlKey && !e.metaKey && !e.altKey) {
         this.naechsterUntaetiger();
+        return;
+      }
+      // Leertaste: zur Basis und zurueck (bedienung AC-10). Ohne Standard -
+      // sonst drueckt sie den Knopf, der zuletzt geklickt wurde. Gehalten
+      // springt sie nicht hin und her.
+      if (e.code === 'Space' && !e.ctrlKey && !e.metaKey && !e.altKey) {
+        e.preventDefault();
+        if (!e.repeat) this.basisSprung();
         return;
       }
       this.tasten.add(e.key.toLowerCase());
@@ -1451,6 +1461,44 @@ export class Ansicht {
   wartetEtwas() {
     for (const g of this.gebaeude.values()) if (g.b === this.ich && g.w) return true;
     return false;
+  }
+
+  /**
+   * Die Leertaste (bedienung AC-10): springt zum eigenen Dorfzentrum - dem,
+   * das dem Startplatz am naechsten steht, ohne eines zum Startplatz. Ein
+   * zweites Mal, ohne dass die Kamera dazwischen bewegt wurde, zurueck dorthin,
+   * wo sie vorher stand. Wer weggeschoben hat, springt wieder zur Basis.
+   * Gibt 'basis' oder 'zurueck' zurueck.
+   */
+  basisSprung() {
+    const k = this.kamera;
+    const s = this.sprung;
+    if (s && Math.abs(k.x - s.nach.x) < 0.5 && Math.abs(k.y - s.nach.y) < 0.5 && k.zoom === s.nach.zoom) {
+      k.x = s.von.x;
+      k.y = s.von.y;
+      this.sprung = null;
+      return 'zurueck';
+    }
+    const start = this.spieler.get(this.ich)?.basis;
+    if (!start) return null;
+    let ziel = start;
+    let weite = Infinity;
+    for (const g of this.gebaeude.values()) {
+      if (g.b !== this.ich || g.art !== 'dorfzentrum') continue;
+      const mitte = this.gebaeudeMitte(g);
+      const d = Math.hypot(mitte.x - start.x, mitte.y - start.y);
+      if (d < weite) {
+        weite = d;
+        ziel = mitte;
+      }
+    }
+    const von = { x: k.x, y: k.y };
+    this.blickAuf(ziel.x, ziel.y);
+    // Am Kartenrand haelt schieben() die Kamera fest; gemerkt wird, wo sie
+    // danach steht, sonst erkennte der zweite Druck seinen Sprung nicht.
+    this.schieben(0);
+    this.sprung = { von, nach: { x: k.x, y: k.y, zoom: k.zoom } };
+    return 'basis';
   }
 
   /**

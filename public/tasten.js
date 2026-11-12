@@ -29,6 +29,7 @@ export const BELEGUNG = [
   // Aus der Liste, nicht aufgezaehlt: sie waechst mit den Stufen.
   ['B (Dorfbewohner gewählt)', `Bautasten an, dann ${BAUTASTEN.join(' ').toUpperCase()} für das Gebäude`],
   ['.', 'nächster untätiger Dorfbewohner'],
+  ['Leertaste', 'zum Dorfzentrum, noch einmal zurück'],
   ['Strg oder Alt + 1 bis 9', 'Auswahl unter der Ziffer ablegen'],
   ['1 bis 9', 'abgelegte Auswahl zurückholen'],
   ['G, dann Rechtsklick', 'Angriffslauf: hingehen und unterwegs angreifen'],

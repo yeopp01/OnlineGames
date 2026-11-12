@@ -2,7 +2,7 @@
 
 **Bereich:** Strategie
 **Kuerzel:** bedienung
-**Stand:** 36/46 fertig · 10 offen
+**Stand:** 37/46 fertig · 9 offen
 
 ## Zweck
 
@@ -56,7 +56,12 @@ Befehl steht.
   Karte. Der Schalter steht in der Tastenübersicht (`?`), Vorgabe an; die
   Wahl merkt sich der Browser. Nicht geprüft: das Stehenbleiben beim
   Verlassen des Fensters — Playwright bewegt die Maus nicht aus dem Bild.
-- **AC-10** `offen` **Leertaste springt zur Basis** — Und ein zweites Mal zurück.
+- **AC-10** `fertig` **Leertaste springt zur Basis** — Und ein zweites Mal zurück.
+  Basis ist das eigene Dorfzentrum, das dem Startplatz am nächsten steht
+  (ohne eines der Startplatz). Zurück geht es nur, solange die Kamera seit
+  dem Sprung nicht bewegt wurde — wer weggeschoben hat, springt wieder zur
+  Basis. Gehalten springt sie nicht hin und her; die Taste drückt keinen
+  zuletzt geklickten Knopf (ohne Standard, nicht eigens geprüft).
 - **AC-11** `fertig` **Übersichtskarte unten rechts** — Gelände, eigene und fremde Einheiten als
   Punkte, der Bildausschnitt als Rahmen. Klick springt hin.
 
