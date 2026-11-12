@@ -168,7 +168,7 @@ Umfang hinzufügt, dort nachsehen.
 
 ## Stand
 
-**473 von 602 Kriterien fertig.** 743 Tests ohne Browser, 222 im Browser. Die
+**474 von 602 Kriterien fertig.** 743 Tests ohne Browser, 223 im Browser. Die
 Übersicht ist der Bericht: `npm run qa:report`.
 
 Gebaut ist der Unterbau: Räume, Übertragung, Karte, Wegfindung, Sammeln,
@@ -204,7 +204,12 @@ Den Browser für Playwright holt einmal `npm run e2e:browser`.
 
 **Gespielt wird am PC** (spielauswahl AC-23): der Vorraum steht ab 900
 Bildpunkten nebeneinander und passt auf 1366 × 768 ohne Rollen; im
-Warteraum stehen die Einstellungen in drei Spalten.
+Warteraum stehen die Einstellungen in drei Spalten. **Das Spielbild passt
+auch** (bedienung AC-23, `e2e/tests/strategie-laptop.spec.mjs`): auf 1366 × 768
+in jedem Zeitalter, mit Baumenü, Dorfzentrum und einer Gruppe aus jeder Art,
+ragt nichts aus dem Fenster, und kein Text ist halb zu sehen — der Hinweis
+oben steht ganz oder fehlt, lange Namen im Baumenü trennen nach Silben. Alle
+anderen Browserfälle laufen auf 1400 × 950.
 
 **Im Browser gesehen** sind die Manager-Oberfläche, der Vorraum mit
 Spielauswahl und Einstellungen und das **Strategiespiel bis Schritt A6b**:

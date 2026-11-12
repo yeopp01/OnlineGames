@@ -237,10 +237,11 @@ etwas anderem gearbeitet.
   und Aufruf bleiben nach Abschnitt 6, Punkt 4. Reißt er weiter, ist das
   eine Frage an den Benutzer: in den zweiten Abschnitt von `npm test`
   verschieben, wo nichts nebenher rechnet, oder mehr Durchgänge.
-- **Die Tastenübersicht ist voll** (Runde 189): 21 Zeilen, rund 730
-  Bildpunkte hoch — auf 1366 × 768 bleiben oben und unten knapp 20. Die
-  nächste Taste braucht zwei Spalten oder Gruppen (Auswahl, Kamera,
-  Befehle); geprüft ist die Höhe nur im Fenster der Tests (1400 × 950).
+- **Die Tastenübersicht ist voll** (Runde 189): 21 Zeilen, auf
+  1366 × 768 von 6 bis 762 — oben und unten je 6 Bildpunkte. Die nächste
+  Taste braucht zwei Spalten oder Gruppen (Auswahl, Kamera, Befehle);
+  seit Runde 190 fällt bedienung AC-23 (`strategie-laptop`), wenn sie nicht
+  mehr ganz im Bild steht.
 - **Distelhag stellt weniger her** (Runde 177): gegen Eschenbruch
   (Startwerte 61 bis 63) zwei bis drei Militärgebäude gegen drei bis fünf,
   127 gegen 226 Kampfeinheiten in der längsten Partie, 78 Dorfbewohner
@@ -2118,6 +2119,21 @@ ihn, mit Gegenprobe an beiden Formen. Fünf Bilder neu, alle angesehen.
 Neueste oben. Eine Zeile je Runde: Nummer, Datum, Kriterien, Ergebnis,
 wichtigste Erkenntnis.
 
+- **190** · 2026-11-12 · **bedienung AC-23 fertig** (Abweichung nach
+  Abschnitt 1, Punkt 6 — Stufe E gesperrt): alle anderen Browserfälle
+  laufen auf 1400 × 950, 1366 × 768 prüfte niemand. Zuerst gemessen
+  (Wegwerfprobe): passte alles bis auf den Hinweis oben, „WASD schieb…“
+  neben „Bündnis lösen“. Der neue Fall steigt durch alle Zeitalter der Daten
+  und fand zwei Fehler mehr: eine Gruppe aus jeder Art drückte das Baumenü
+  auf eine Spalte, die Leiste ragte oben aus dem Fenster (jetzt
+  `.gruppenblock` mit Höchstbreite, die Gruppe bricht um); und
+  „Belagerungswerkstatt“ lief über den Rand ihres Knopfs — gesehen erst im
+  Bild, dann als Regel in die Messung („ein Knopf ist ein Rahmen“), die
+  daran fiel, bevor `hyphens: auto` sie heilte. Der Hinweis fällt jetzt ganz
+  in eine verdeckte zweite Zeile (Flex mit Umbruch und leerem `::before`;
+  die erste Fassung ließ die leere Zeile 0 hoch, und der Hinweis stand doch
+  oben). Der Fall stellt aus den Daten auf, deshalb in `e2e:daten`
+  (Wächter). Nur betroffene Browserdateien gefahren (25 grün).
 - **189** · 2026-11-12 · **bedienung AC-20 fertig** (Abweichung nach
   Abschnitt 1, Punkt 6 — Stufe E gesperrt): zuerst neu gefasst, denn
   „Rohstoffe aller Mitspieler" widersprach kampf AC-13. Jetzt: `Tab`

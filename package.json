@@ -29,7 +29,7 @@
     "qa:waisen": "node scripts/qa-waisen.mjs",
     "e2e:browser": "playwright install chromium",
     "e2e:laufzeiten": "node scripts/e2e-laufzeiten.mjs",
-    "e2e:daten": "playwright test --config e2e/playwright.config.mjs strategie-bauen strategie-dunkle-zeit strategie-feudalbauten strategie-feudalzeit strategie-ritterzeit strategie-ritterzeit-am-stueck strategie-figuren strategie-unterscheidbar",
+    "e2e:daten": "playwright test --config e2e/playwright.config.mjs strategie-bauen strategie-dunkle-zeit strategie-feudalbauten strategie-feudalzeit strategie-ritterzeit strategie-ritterzeit-am-stueck strategie-figuren strategie-unterscheidbar strategie-laptop",
     "einladung": "node scripts/einladung.mjs",
     "sicht": "node scripts/sicht.mjs",
     "tafel": "node scripts/tafel.mjs",

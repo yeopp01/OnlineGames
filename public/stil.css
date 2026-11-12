@@ -242,7 +242,21 @@ canvas.angriffslauf {
      (spielziel AC-24), schob der Hinweis den Knopf aus dem Fenster. */
   min-width: 0;
   overflow: hidden;
-  text-overflow: ellipsis;
+  /* Ganz oder gar nicht (bedienung AC-23): statt "WASD schieb…" faellt der
+     Hinweis als Ganzes in eine zweite Zeile, die die Hoehe abschneidet. Das
+     leere ::before ist das erste Element der Zeile - ohne es gaebe es nur
+     eines, und ein einzelnes Element bricht nicht um. */
+  display: flex;
+  flex-wrap: wrap;
+  line-height: 1.3;
+  height: 1.3em;
+}
+
+.hinweis::before {
+  content: '';
+  /* Volle Hoehe: eine leere erste Zeile waere 0 hoch, und der umgebrochene
+     Hinweis stuende doch wieder oben. */
+  height: 100%;
 }
 
 /* Die rechte Haelfte der Kopfzeile darf schmaler werden als ihr Inhalt -
@@ -1091,7 +1105,11 @@ canvas.angriffslauf {
 .bauname {
   font-size: 0.68rem;
   line-height: 1.1;
-  white-space: nowrap;
+  /* Nach Silben getrennt (bedienung AC-23): "Belagerungswerkstatt" ist
+     breiter als ihr Knopf und lief ueber dessen Rand unter den Nachbarn.
+     Die Seite steht auf lang="de", danach trennt der Browser. */
+  hyphens: auto;
+  max-width: 100%;
 }
 
 .preis {
@@ -1108,8 +1126,17 @@ canvas.angriffslauf {
   height: 0.6rem;
 }
 
+.gruppenblock {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  flex: 0 1 auto;
+  max-width: 18rem;
+}
+
 .gruppe {
   display: flex;
+  flex-wrap: wrap;
   gap: 0.3rem;
 }
 

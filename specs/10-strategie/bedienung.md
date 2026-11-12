@@ -2,7 +2,7 @@
 
 **Bereich:** Strategie
 **Kuerzel:** bedienung
-**Stand:** 40/47 fertig · 7 offen
+**Stand:** 41/47 fertig · 6 offen
 
 ## Zweck
 
@@ -108,9 +108,15 @@ Befehl steht.
 - **AC-21** `offen` **Die erste Partie erklärt sich** — Beim ersten Start eine kurze Einblendung:
   ziehen, rechtsklicken, sammeln. Drei Sätze, wegklickbar.
 - **AC-22** `fertig` **Tastenübersicht** — Auf `?` oder `F1`.
-- **AC-23** `offen` **Läuft auf einem Laptop-Bildschirm** — 1366 × 768 ohne Abschneiden. Die
-  Bedienung auf dem Handy ist ausdrücklich **kein** Ziel — ein Strategiespiel
-  mit Rahmenauswahl braucht eine Maus.
+- **AC-23** `fertig` **Läuft auf einem Laptop-Bildschirm** — 1366 × 768 ohne Abschneiden: in
+  jedem Zeitalter, mit dem Baumenü eines Dorfbewohners, dem Dorfzentrum und
+  einer Gruppe aus jeder Art, ragt kein Bedienteil aus dem Fenster oder liegt
+  auf einem anderen; Tastenübersicht und Spielstand stehen ganz im Bild; und
+  kein Text ist zum Teil zu sehen und zum Teil nicht — was nicht passt, fehlt
+  ganz (der Hinweis oben) oder wird nach Silben getrennt (lange Namen im
+  Baumenü). Ein Knopf zählt als Rahmen. Die Bedienung auf dem Handy ist
+  ausdrücklich **kein** Ziel — ein Strategiespiel mit Rahmenauswahl braucht
+  eine Maus.
 
 ### Stufe A — Wirtschaft bedienen
 
