@@ -1655,6 +1655,43 @@ Testlauf): `npm run check` 53 s ohne Last, 599 Tests ohne Browser; der
 volle Browserlauf mit 191 Fällen 16,6 min (Runde 140; Runde 135: 17,0 min
 für 190). Die Ritterzeit am Stück braucht 1,7 min.
 
+### Nach Runde 188 (2026-11-12)
+
+Vier Runden aus `bedienung.md`, alle nach Abschnitt 1, Punkt 6 (Stufe E
+gesperrt): 184 Schieben am Bildschirmrand (AC-9), 185 Leertaste zur Basis
+und zurück (AC-10), 186 der Ring am Zielpunkt wartet nicht auf den Server
+(AC-13), 187 Verbindungsverlust im Bild (AC-19, uebertragung AC-9). Die
+Maschine rechnete weiter Blender; nur die betroffenen Dateien liefen im
+Browser. Was Zeit gekostet hat oder sich wiederholen wird:
+
+1. **Eine Gegenprobe brach still ab** (Runde 187): die Ersetzung war
+   mehrzeilig, die Gegenprobe sagte „steht 0-mal" und hörte auf — aber die
+   Ausgabe war auf das Ergebnis gefiltert, und die Absage trug dessen Wort
+   nicht. Es sah aus wie keine Antwort. → **Jede Absage beginnt jetzt mit
+   „Gegenprobe: NICHT GELAUFEN"** (`scripts/gegenprobe.mjs`), ein Filter
+   auf „Gegenprobe" zeigt sie; `tests/gegenprobe.test.mjs` prüft das, und
+   die Gegenprobe dazu fiel gegen die alte Meldung.
+2. **Zwei der vier „offenen" Kriterien standen schon halb.** AC-13 war seit
+   bedienung AC-34 gebaut, es fehlte nur der Beleg (Runde 186); den Abbruch
+   meldete der Browser schon, aber in `#wartemeldung`, das in der Partie
+   verborgen ist (Runde 187). Beides fand erst das Bauen. → **Regel in
+   Abschnitt 1, Punkt 6**: ein altes Kriterium wird vor dem Bauen mit
+   `grep -rn` nach seinem Kern gesucht; dann ist die Runde ein Beleg oder
+   ein Umzug, und der Test prüft genau die Lücke.
+3. **Ein einzelnes Bild neu schreiben** stand nirgends; Runde 184 schrieb
+   mit `QA_NACHWEIS=1` auf die ganze Datei auch ein fremdes Bild mit 0,01 %
+   Rauschen neu, das zurückgenommen werden musste. → **Befehlszeile in
+   CLAUDE.md** mit `-g "AC-n"`, so wie Runde 185 das Bild zu AC-22
+   neu schrieb.
+
+Gezählt: 472 von 601 Kriterien fertig, 741 Tests ohne Browser, 220 im
+Browser; Laufzeiten nicht gemessen (Blender). Nicht geändert: die
+Reihenfolge nach Punkt 6 — vier Runden mit je etwas Spielbarem hat
+getragen. Noch nicht geprüft ist, ob das Schieben endet, wenn die Maus das
+Fenster verlässt, ob die Leertaste einen fokussierten Knopf drückt, und
+ein Server, der schweigt, ohne zu trennen. Kein Rundgang im Browser: keine
+Stufe erreicht.
+
 ### Nach Runde 183 (2026-11-12)
 
 Vier Runden: 179 gemessen, woher Eschenbruchs Vorsprung kommt (Holz und
@@ -2070,6 +2107,16 @@ ihn, mit Gegenprobe an beiden Formen. Fünf Bilder neu, alle angesehen.
 
 Neueste oben. Eine Zeile je Runde: Nummer, Datum, Kriterien, Ergebnis,
 wichtigste Erkenntnis.
+
+- **188** · 2026-11-12 · **Rückschau** (Runden 184 bis 187): die Absagen
+  der Gegenprobe beginnen mit „Gegenprobe: NICHT GELAUFEN" (Test und
+  Gegenprobe gegen die alte Meldung: gefallen); Abschnitt 1, Punkt 6: ein
+  altes Kriterium vor dem Bauen per `grep -rn` suchen — zwei von vier
+  standen halb; CLAUDE.md nennt den Befehl für einzelne Bilder. Kein Code
+  am Spiel. Der erste Check fiel einmal an einheiten AC-31 (800 Angreifer,
+  1,031 ms statt unter 1 ms, unter Blender-Last); einzeln dreimal grün
+  (50 statt 160 ms), der zweite volle Lauf grün. Fällt er wieder, ist die
+  Messung zu knapp gegen Last.
 
 - **187** · 2026-11-12 · **bedienung AC-19 und uebertragung AC-9 fertig**
   (Abweichung nach Abschnitt 1, Punkt 6): die Meldung „Verbindung weg"

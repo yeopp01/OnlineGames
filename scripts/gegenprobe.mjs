@@ -25,7 +25,10 @@ const WURZEL = join(dirname(fileURLToPath(import.meta.url)), '..');
 const argumente = process.argv.slice(2);
 const trenner = argumente.indexOf('--');
 if (trenner < 2 || trenner === argumente.length - 1) {
-  console.error('Aufruf: npm run gegenprobe -- <datei> <alt> <neu> -- <befehl ...>');
+  // Jede Absage beginnt wie das Ergebnis mit "Gegenprobe:" - wer die Ausgabe
+  // nach diesem Wort filtert, sieht auch sie (Rueckschau nach Runde 188: eine
+  // mehrzeilige Ersetzung brach still ab, die Ausgabe war gefiltert).
+  console.error('Gegenprobe: NICHT GELAUFEN - Aufruf: npm run gegenprobe -- <datei> <alt> <neu> -- <befehl ...>');
   console.error('    oder npm run gegenprobe -- <datei> --datei <ersatz> -- <befehl ...>');
   process.exit(2);
 }
@@ -42,7 +45,7 @@ if (aenderung[0] === '--datei') {
   const [alt, neu = ''] = aenderung;
   const anzahl = vorher.split(alt).length - 1;
   if (anzahl !== 1) {
-    console.error(`"${alt}" steht ${anzahl}-mal in ${datei}, nicht genau einmal - nichts geaendert.`);
+    console.error(`Gegenprobe: NICHT GELAUFEN - "${alt}" steht ${anzahl}-mal in ${datei}, nicht genau einmal; nichts geaendert.`);
     process.exit(2);
   }
   nachher = vorher.replace(alt, neu);

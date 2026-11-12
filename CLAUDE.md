@@ -29,6 +29,7 @@ npm run check:kurz        # dasselbe leise: nur Zahlen und Fehler, alles in qa/l
 npm run check:alles:kurz  # dasselbe mit Browserlauf
 npm run check:alles:neu:kurz  # ein Browserlauf, der ALLE Bilder neu schreibt, dann check
 npm run qa:abweichung  # welche Bildnachweise haben sich geändert - und wie stark?
+QA_NACHWEIS=1 E2E_HAFEN=4195 npx playwright test -c e2e/playwright.config.mjs <datei> -g "AC-22"  # nur die Bilder der gewählten Fälle neu, die übrigen der Datei bleiben
 npm run qa:report    # die Übersicht als Seite: qa/report/index.html
 npm start            # http://localhost:4180/
 npm run dev          # dasselbe mit --watch
