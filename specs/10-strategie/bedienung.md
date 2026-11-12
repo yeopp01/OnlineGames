@@ -2,7 +2,7 @@
 
 **Bereich:** Strategie
 **Kuerzel:** bedienung
-**Stand:** 46/49 fertig · 3 offen
+**Stand:** 47/50 fertig · 3 offen
 
 ## Zweck
 
@@ -357,6 +357,23 @@ aufgelistet), AC-11 (Übersichtskarte — auf 120 × 120 unverzichtbar), AC-15
   lässt eine Miliz einen Dorfbewohner und ein Haus des Gegners zerstören und
   rechnet die Punkte aus den Daten nach; ein Mangonel, der eigene trifft,
   bringt nichts; im Bild steht der Sieger in der Tafel auf `Tab` vorn.
+- **AC-50** `fertig` **Angriffe hintereinander mit Umschalt** — Umschalt
+  und Rechtsklick auf einen Gegner hängt ihn an, wenn die Einheit gerade
+  auf Befehl angreift; fällt ihr Ziel, nimmt sie das nächste der Reihe,
+  ohne neuen Befehl — etwa eine Ramme, die drei Häuser nacheinander
+  einreißt. Wer steht, geht, sammelt oder sich nur von selbst wehrt, greift
+  sofort an, wie ohne Umschalt. Was inzwischen gefallen, bekehrt oder kein
+  Gegner mehr ist, wird übersprungen; ist ein Ziel unerreichbar, kommt das
+  nächste. Ein Befehl ohne Umschalt verwirft die Reihe, ebenso alles, was
+  den Angriff beendet. Höchstens 20 wartende Ziele wie bei AC-14, ein Ziel
+  steht nur einmal darin. Im Bild dieselbe gestrichelte Linie wie bei
+  AC-14, an jedem wartenden Gegner ein roter Ring; der Server schickt nur
+  die Zahl (`q`). Fortsetzung von AC-14 und AC-48; Sammeln mit Umschalt
+  bleibt ein Befehl wie ohne. **Messbar:** ein Regeltest lässt eine Miliz
+  zwei angehängte Häuser nacheinander einreißen, überspringt ein
+  inzwischen gefallenes und verwirft die Reihe mit einem Befehl ohne
+  Umschalt; im Browser stehen nach drei Klicks mit Umschalt zwei rote
+  Ringe in der Linie, und alle drei Häuser fallen.
 
 ## Grenzfaelle
 

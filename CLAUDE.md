@@ -168,7 +168,7 @@ Umfang hinzufügt, dort nachsehen.
 
 ## Stand
 
-**479 von 604 Kriterien fertig.** 756 Tests ohne Browser, 230 im Browser. Die
+**480 von 605 Kriterien fertig.** 759 Tests ohne Browser, 231 im Browser. Die
 Übersicht ist der Bericht: `npm run qa:report`.
 
 Gebaut ist der Unterbau: Räume, Übertragung, Karte, Wegfindung, Sammeln,
@@ -525,7 +525,9 @@ Umschalt** kommen Klick und Rahmen zur Auswahl hinzu (bedienung AC-3), ein
 `ansicht.typWaehlen`). **Umschalt mit Rechtsklick** hängt ein Ziel an die
 Reihe (AC-14, `einheit.wegpunkte`, höchstens 20): wer geht, geht sie der
 Reihe nach ab, wer steht, sofort; ein Befehl ohne Umschalt oder eine
-Unterbrechung verwirft sie. **Mit Umschalt gebaut** (AC-48) bleibt der
+Unterbrechung verwirft sie; auf einen Gegner gesetzt, hängt es einen
+Angriff an (AC-50, `einheit.angriffe`, `welt.naechsterAngriff()`).
+**Mit Umschalt gebaut** (AC-48) bleibt der
 Bauplatz in der Hand, und wer schon baut, baut die neue Baustelle danach
 (`auftrag.folge`, wie bei der Mauer). Der Server schickt nur die Zahl `q`, die Linie
 mit Ringen zeichnet der Browser aus den eigenen Klicks. **Die erste Partie

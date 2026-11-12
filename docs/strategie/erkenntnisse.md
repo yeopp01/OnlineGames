@@ -2158,6 +2158,25 @@ ihn, mit Gegenprobe an beiden Formen. Fünf Bilder neu, alle angesehen.
 Neueste oben. Eine Zeile je Runde: Nummer, Datum, Kriterien, Ergebnis,
 wichtigste Erkenntnis.
 
+- **197** · 2026-11-12 · **bedienung AC-50 fertig** (neu angelegt,
+  Abweichung nach Abschnitt 1, Punkt 6 — Stufe E gesperrt): Angriffe
+  hintereinander mit Umschalt. `einheit.angriffe` neben `wegpunkte`,
+  angehängt in `befehl()` nur bei einem befohlenen Angriff (kein `heimat`,
+  kein Angriffslauf), abgearbeitet von `welt.naechsterAngriff()` an den
+  drei Stellen, an denen ein Angriff endet (Ziel fort, Ziel hinter der
+  Mauer fort, unerreichbar) und bei der Bekehrung des Ziels; verworfen von
+  jedem Befehl ohne Umschalt und im Takt, sobald nicht mehr angegriffen
+  wird. Auf dem Draht dasselbe `q`, im Browser dieselbe Linie wie AC-14,
+  angehängte Gegner mit größerem rotem Ring an ihrer Mitte. Drei
+  Regeltests, drei Gegenproben gefallen, Browserfall mit Bild.
+  **Erkenntnis:** `gegenprobe` nimmt keinen mehrzeiligen Text über `npm
+  run` — für eine Zeile, die zweimal (mit anderer Einrückung) vorkommt,
+  ging es nur über `--datei` mit einer vorbereiteten Kopie. Und der Ring
+  in Figurengröße ging auf einem Haus unter; erst das Ansehen des Bildes
+  zeigte es. Offen aus der Durchsicht (unter 80, nicht gebaut): ein
+  Mangonel, der zu nah steht und nicht zurückweichen kann, vergisst die
+  Reihe; wer aus der Reihe nachrückt, bekommt keine verteilte Aufstellung
+  um das Ziel wie beim ersten Befehl.
 - **196** · 2026-11-12 · **bedienung AC-49 fertig** (neu angelegt,
   Abweichung nach Abschnitt 1, Punkt 6 — Stufe E gesperrt, AC-42, AC-44,
   AC-46 brauchen Zeichnungen): Punkte für Siege im Kampf, ein Punkt je 5

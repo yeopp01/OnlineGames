@@ -1103,7 +1103,10 @@ export class Ansicht {
     this.zielzeichenSetzen(ziel, lauf);
     const feld = { x: Math.round(ziel.x), y: Math.round(ziel.y) };
     const hinten = anhaengen && !lauf;
-    this.wegpunkteMerken(feld, hinten);
+    // Ein Gegner steht in der Reihe mit seiner Mitte und rot (bedienung
+    // AC-50) - dieselbe Frage, die das Zeichen eben beantwortet hat.
+    const feind = !lauf && this.zielzeichen?.feindlich;
+    this.wegpunkteMerken(feind ? { x: this.zielzeichen.x, y: this.zielzeichen.y, feind: true } : feld, hinten);
     this.befehlSenden([...this.ausgewaehlt], feld, lauf, hinten);
   }
 
@@ -1124,6 +1127,9 @@ export class Ansicht {
       // in einer Kette, von denen schon welche erreicht sind - dann fehlen
       // der Linie die neuesten.
       if (liste.length >= this.werte.wegpunkteMax + 1) continue;
+      // Ein Gegner steht nur einmal in der Reihe (bedienung AC-50) - ein
+      // Doppelklick auf ihn haengt beim Server nichts an, hier also auch nicht.
+      if (anhaengen && feld.feind && liste.some((p) => p.feind && p.x === feld.x && p.y === feld.y)) continue;
       liste.push(feld);
       this.wegpunkte.set(id, liste);
     }
@@ -1132,7 +1138,8 @@ export class Ansicht {
   /**
    * Die Reihe der gewaehlten Einheiten (bedienung AC-14): eine gestrichelte
    * Linie vom laufenden Ziel ueber jedes wartende, an jedem wartenden ein
-   * Ring. Eine Gruppe mit denselben Zielen zeigt sie einmal.
+   * Ring - rot, wenn dort ein Gegner angegriffen wird (AC-50). Eine Gruppe
+   * mit denselben Zielen zeigt sie einmal.
    */
   wegpunkteZeichnen(e) {
     const gezeigt = new Set();
@@ -1156,11 +1163,17 @@ export class Ansicht {
         bild.forEach((p, i) => (i ? stift.lineTo(p.x, p.y) : stift.moveTo(p.x, p.y)));
         stift.stroke();
         stift.setLineDash([]);
-        for (const p of bild.slice(1)) {
+        bild.forEach((p, i) => {
+          if (!i) return;
+          // Ein Gegner bekommt einen groesseren Ring: meist ist es ein
+          // Gebaeude, und ein Ring in Groesse einer Figur ging darauf unter.
+          const gross = punkte[i].feind ? 1.6 : 1;
+          stift.strokeStyle = punkte[i].feind && breite < 3 ? 'rgba(232,64,48,0.95)' : strich;
+          stift.lineWidth = punkte[i].feind ? breite * 1.4 : breite;
           stift.beginPath();
-          stift.ellipse(p.x, p.y, e * 0.55, e * 0.275, 0, 0, Math.PI * 2);
+          stift.ellipse(p.x, p.y, e * 0.55 * gross, e * 0.275 * gross, 0, 0, Math.PI * 2);
           stift.stroke();
-        }
+        });
       }
       stift.restore();
     }

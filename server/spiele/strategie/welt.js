@@ -652,6 +652,7 @@ class Welt {
       auftrag: null, // { art: 'gehen' | 'sammeln', feld }
       angriffslauf: null, // Marschziel, solange ein Angriffslauf laeuft (kampf AC-4)
       wegpunkte: [], // die naechsten Ziele eines Gangs, mit Umschalt angehaengt (bedienung AC-14)
+      angriffe: [], // die naechsten Angriffsziele, mit Umschalt angehaengt (bedienung AC-50)
       ladung: 0,
       ladungsart: null,
       sammelt: false, // steht am Vorrat und arbeitet
@@ -1578,6 +1579,19 @@ class Welt {
       // fuer den, der gerade geht. Wer steht oder arbeitet, geht gleich los.
       // Jeder bekommt um den Punkt sein eigenes Feld, gewaehlt vom vorigen
       // Ziel aus, wie beim ersten Gang (einheiten AC-20).
+      // Ein Gegner kommt hinten an die Reihe der Angriffe (bedienung AC-50) -
+      // fuer den, der auf Befehl angreift. Wer sich von selbst wehrt (`heimat`)
+      // oder im Angriffslauf kaempft, hat keinen Befehl, an den sich etwas
+      // haengen liesse: fuer ihn ist es ein Befehl wie ohne Umschalt.
+      const hinten = feind && !EINHEITEN[einheit.art].nurGebaeude ? feind : feindBau;
+      if (anhaengen && hinten && einheit.auftrag?.art === 'angreifen' && !einheit.auftrag.heimat
+        && !einheit.angriffslauf && this.einheitenwert(einheit.besitzer, einheit.art, 'angriff') > 0) {
+        const schon = einheit.auftrag.ziel === hinten.id || einheit.angriffe.some((a) => a.ziel === hinten.id);
+        if (!schon && einheit.angriffe.length < WEGPUNKTE_MAX) {
+          einheit.angriffe.push({ ziel: hinten.id, gebaeude: hinten === feindBau });
+        }
+        continue;
+      }
       if (anhaengen && nurGehen && einheit.auftrag?.art === 'gehen' && !einheit.angriffslauf) {
         if (einheit.wegpunkte.length >= WEGPUNKTE_MAX) continue;
         aufstellung ??= this.aufstellungUm({ x: zx, y: zy }, gruppe.length);
@@ -1586,6 +1600,7 @@ class Welt {
         continue;
       }
       einheit.wegpunkte = [];
+      einheit.angriffe = [];
       this.farmVerlassen(einheit);
       einheit.sammelt = false;
       einheit.baut = false;
@@ -2411,6 +2426,23 @@ class Welt {
    * Nach einem Gefecht unterwegs geht es weiter zum Marschziel (kampf AC-4).
    * Ohne Angriffslauf tut das nichts - dann bleibt stehen, wer gekaempft hat.
    */
+  /**
+   * Das naechste Ziel aus der Reihe der Angriffe (bedienung AC-50): wer
+   * inzwischen gefallen, fort oder kein Gegner mehr ist, wird uebersprungen.
+   *
+   * @returns {boolean} ob ein neuer Angriff begonnen hat
+   */
+  naechsterAngriff(einheit) {
+    while (einheit.angriffe.length) {
+      const { ziel: id, gebaeude } = einheit.angriffe.shift();
+      const ziel = gebaeude ? this.gebaeude.get(id) : this.einheiten.get(id);
+      if (!ziel || ziel.tot || !this.feindlich(einheit.besitzer, ziel.besitzer)) continue;
+      this.angriffBeginnen(einheit, ziel, gebaeude);
+      return true;
+    }
+    return false;
+  }
+
   marschFortsetzen(einheit) {
     if (!einheit.angriffslauf) return;
     const feld = einheit.angriffslauf;
@@ -2435,6 +2467,8 @@ class Welt {
         this.angriffBeginnen(einheit, dahinter, danach.gebaeude, null, auftrag.heimat);
         return;
       }
+      // Steht noch ein Gegner in der Reihe, geht es dorthin (bedienung AC-50).
+      if (this.naechsterAngriff(einheit)) return;
       einheit.auftrag = null;
       einheit.weg = [];
       this.marschFortsetzen(einheit);
@@ -2451,6 +2485,7 @@ class Welt {
       const danach = auftrag.danach;
       const dahinter = danach.gebaeude ? this.gebaeude.get(danach.ziel) : this.einheiten.get(danach.ziel);
       if (!dahinter || dahinter.tot) {
+        if (this.naechsterAngriff(einheit)) return;
         einheit.auftrag = null;
         einheit.weg = [];
         this.marschFortsetzen(einheit);
@@ -2557,7 +2592,8 @@ class Welt {
           this.angriffBeginnen(einheit, mauer, true, null, auftrag.heimat);
           einheit.auftrag.danach = danach;
           einheit.auftrag.mauernStand = this.mauernGefallen || 0;
-        } else {
+        } else if (!this.naechsterAngriff(einheit)) {
+          // Unerreichbar: das naechste Ziel der Reihe (bedienung AC-50), sonst steht er.
           einheit.auftrag = null;
         }
       }
@@ -2854,6 +2890,7 @@ class Welt {
     einheit.auftrag = null;
     einheit.weg = [];
     einheit.wegpunkte = [];
+    einheit.angriffe = [];
     einheit.sammelt = false;
     einheit.baut = false;
     einheit.bekehrt = false;
@@ -3166,6 +3203,7 @@ class Welt {
     einheit.auftrag = null;
     einheit.angriffslauf = null;
     einheit.weg = [];
+    einheit.angriffe = [];
     einheit.sammelt = false;
     einheit.baut = false;
     einheit.leben = Math.min(einheit.leben, this.einheitenwert(neuerBesitzer, einheit.art, 'leben'));
@@ -3177,7 +3215,7 @@ class Welt {
       if (!this.feindlich(andere.besitzer, neuerBesitzer) && a?.art === 'angreifen' && !a.gebaeude && a.ziel === einheit.id) {
         andere.auftrag = null;
         andere.weg = [];
-        this.marschFortsetzen(andere);
+        if (!this.naechsterAngriff(andere)) this.marschFortsetzen(andere);
       }
     }
     // Ein Schlag aus diesem Takt, der noch nicht abgerechnet ist, trifft
@@ -3389,6 +3427,9 @@ class Welt {
     // getroffen zurueckschlaegt, ausweicht, gerufen wird -, vergisst sie,
     // statt spaeter alte Ziele abzulaufen (bedienung AC-14).
     if (einheit.wegpunkte.length && einheit.auftrag?.art !== 'gehen') einheit.wegpunkte = [];
+    // Ebenso die Reihe der Angriffe: sie gilt nur, solange angegriffen wird
+    // (bedienung AC-50).
+    if (einheit.angriffe.length && einheit.auftrag?.art !== 'angreifen') einheit.angriffe = [];
     // Angreifen geht vor dem Laufen: wer in Reichweite ist, schlaegt zu, statt
     // seinen Weg zu Ende zu gehen (kampf AC-1).
     if (einheit.auftrag?.art === 'angreifen') {
@@ -3673,9 +3714,10 @@ class Welt {
         // Ein Karren auf der Strecke (einheiten AC-40): Heimat, Ziel und das
         // Gold je Fahrt - die Leiste nennt sie.
         ...(e.auftrag?.art === 'handel' ? { hd: this.streckeFuerDraht(e) } : {}),
-        // Wie viele Ziele noch in der Reihe stehen (bedienung AC-14) - die
-        // Punkte selbst kennt der Browser, der sie geklickt hat.
-        ...(e.wegpunkte.length ? { q: e.wegpunkte.length } : {}),
+        // Wie viele Ziele noch in der Reihe stehen (bedienung AC-14, AC-50) -
+        // die Punkte selbst kennt der Browser, der sie geklickt hat. Gaenge
+        // und Angriffe stehen nie zugleich in einer Reihe.
+        ...(e.wegpunkte.length || e.angriffe.length ? { q: e.wegpunkte.length + e.angriffe.length } : {}),
         // Gefallen: der Browser legt ihn hin, bis der Server ihn nimmt
         // (kampf AC-10).
         ...(e.tot ? { s: 1 } : {}),
