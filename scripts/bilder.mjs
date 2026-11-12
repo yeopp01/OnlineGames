@@ -10,7 +10,8 @@
 // eingecheckt; `npm run check` kommt ohne Blender aus.
 //
 // Wo Blender liegt: Umgebungsvariable BLENDER, sonst der uebliche Ort unter
-// Windows, sonst `blender` im Pfad.
+// Windows, sonst `blender` im Pfad. Wie viele Kerne es nimmt: BILDER_KERNE,
+// sonst vier.
 import { spawnSync } from 'node:child_process';
 import { existsSync, readdirSync, statSync } from 'node:fs';
 import { join } from 'node:path';
@@ -39,7 +40,11 @@ try {
 
 const blender = blenderFinden();
 const beginn = Date.now();
-const lauf = spawnSync(blender, ['-b', '-P', join(GRAFIK, 'bilder.py'), '--', ...namen, ...schalter], {
+// Blender nimmt sonst jeden Kern - und auf demselben Rechner laufen nebenher
+// Prueflaeufe, die Zeiten messen. Vorgabe vier, BILDER_KERNE stellt es um
+// (0 heisst: alle).
+const kerne = process.env.BILDER_KERNE ?? '4';
+const lauf = spawnSync(blender, ['-b', '-t', kerne, '-P', join(GRAFIK, 'bilder.py'), '--', ...namen, ...schalter], {
   encoding: 'utf8',
   maxBuffer: 256 * 1024 * 1024,
 });

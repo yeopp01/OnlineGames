@@ -1,0 +1,17 @@
+{
+  "bild": "markt.webp",
+  "maske": "markt-maske.webp",
+  "zelle": [
+    584,
+    382
+  ],
+  "fuss": [
+    253,
+    256
+  ],
+  "feldbreite": 132,
+  "zeilen": 1,
+  "spalten": 1,
+  "art": "gebaeude",
+  "felder": 4
+}

@@ -1,0 +1,101 @@
+{
+  "bild": "steinmauer.webp",
+  "maske": "steinmauer-maske.webp",
+  "zelle": [
+    138,
+    160
+  ],
+  "fuss": [
+    69,
+    124
+  ],
+  "feldbreite": 132,
+  "zeilen": 1,
+  "spalten": 13,
+  "art": "gebaeude",
+  "felder": 1,
+  "teile": {
+    "pfeiler": 0,
+    "arme": [
+      {
+        "dx": 1,
+        "dy": 0,
+        "spalte": 1
+      },
+      {
+        "dx": -1,
+        "dy": 0,
+        "spalte": 2
+      },
+      {
+        "dx": 0,
+        "dy": 1,
+        "spalte": 3
+      },
+      {
+        "dx": 0,
+        "dy": -1,
+        "spalte": 4
+      },
+      {
+        "dx": 1,
+        "dy": 1,
+        "spalte": 5
+      },
+      {
+        "dx": 1,
+        "dy": -1,
+        "spalte": 6
+      },
+      {
+        "dx": -1,
+        "dy": 1,
+        "spalte": 7
+      },
+      {
+        "dx": -1,
+        "dy": -1,
+        "spalte": 8
+      }
+    ],
+    "laeufe": [
+      {
+        "dx": 1,
+        "dy": 0,
+        "spalte": 9
+      },
+      {
+        "dx": 0,
+        "dy": 1,
+        "spalte": 10
+      },
+      {
+        "dx": 1,
+        "dy": 1,
+        "spalte": 11
+      },
+      {
+        "dx": 1,
+        "dy": -1,
+        "spalte": 12
+      }
+    ]
+  },
+  "ablaeufe": {
+    "schatten": {
+      "spalte": 0,
+      "bilder": 13,
+      "bild": "steinmauer-schatten.webp",
+      "maske": null,
+      "zelle": [
+        230,
+        110
+      ],
+      "fuss": [
+        78,
+        51
+      ]
+    }
+  },
+  "schattenDeckung": 0.6
+}

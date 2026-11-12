@@ -1,0 +1,17 @@
+{
+  "bild": "burg.webp",
+  "maske": "burg-maske.webp",
+  "zelle": [
+    665,
+    518
+  ],
+  "fuss": [
+    275,
+    362
+  ],
+  "feldbreite": 132,
+  "zeilen": 1,
+  "spalten": 1,
+  "art": "gebaeude",
+  "felder": 4
+}

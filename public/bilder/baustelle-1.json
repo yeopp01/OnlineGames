@@ -1,0 +1,18 @@
+{
+  "bild": "baustelle-1.webp",
+  "maske": "baustelle-1-maske.webp",
+  "zelle": [
+    217,
+    179
+  ],
+  "fuss": [
+    75,
+    122
+  ],
+  "feldbreite": 132,
+  "zeilen": 1,
+  "spalten": 4,
+  "art": "gebaeude",
+  "felder": 1,
+  "stufen": 4
+}

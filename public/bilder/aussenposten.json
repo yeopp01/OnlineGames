@@ -1,0 +1,17 @@
+{
+  "bild": "aussenposten.webp",
+  "maske": "aussenposten-maske.webp",
+  "zelle": [
+    332,
+    302
+  ],
+  "fuss": [
+    88,
+    245
+  ],
+  "feldbreite": 132,
+  "zeilen": 1,
+  "spalten": 1,
+  "art": "gebaeude",
+  "felder": 1
+}

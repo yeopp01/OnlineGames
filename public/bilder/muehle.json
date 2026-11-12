@@ -1,0 +1,17 @@
+{
+  "bild": "muehle.webp",
+  "maske": "muehle-maske.webp",
+  "zelle": [
+    325,
+    291
+  ],
+  "fuss": [
+    109,
+    209
+  ],
+  "feldbreite": 132,
+  "zeilen": 1,
+  "spalten": 1,
+  "art": "gebaeude",
+  "felder": 2
+}

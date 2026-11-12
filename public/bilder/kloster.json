@@ -1,0 +1,17 @@
+{
+  "bild": "kloster.webp",
+  "maske": "kloster-maske.webp",
+  "zelle": [
+    486,
+    490
+  ],
+  "fuss": [
+    192,
+    369
+  ],
+  "feldbreite": 132,
+  "zeilen": 1,
+  "spalten": 1,
+  "art": "gebaeude",
+  "felder": 3
+}

@@ -1,0 +1,17 @@
+{
+  "bild": "kaserne.webp",
+  "maske": "kaserne-maske.webp",
+  "zelle": [
+    540,
+    454
+  ],
+  "fuss": [
+    216,
+    331
+  ],
+  "feldbreite": 132,
+  "zeilen": 1,
+  "spalten": 1,
+  "art": "gebaeude",
+  "felder": 3
+}

@@ -1,0 +1,17 @@
+{
+  "bild": "stall.webp",
+  "maske": "stall-maske.webp",
+  "zelle": [
+    412,
+    321
+  ],
+  "fuss": [
+    201,
+    217
+  ],
+  "feldbreite": 132,
+  "zeilen": 1,
+  "spalten": 1,
+  "art": "gebaeude",
+  "felder": 3
+}

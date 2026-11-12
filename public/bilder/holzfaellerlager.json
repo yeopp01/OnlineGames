@@ -1,0 +1,17 @@
+{
+  "bild": "holzfaellerlager.webp",
+  "maske": "holzfaellerlager-maske.webp",
+  "zelle": [
+    375,
+    261
+  ],
+  "fuss": [
+    131,
+    183
+  ],
+  "feldbreite": 132,
+  "zeilen": 1,
+  "spalten": 1,
+  "art": "gebaeude",
+  "felder": 2
+}

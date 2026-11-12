@@ -1032,3 +1032,237 @@ Speicher, gerechnet aus den Leinwandgrößen: die entpackte Bodentafel
   ein eigenes Arbeitsverzeichnis (`git worktree add`), bevor die erste Datei
   geändert wird. Der Browserlauf dort braucht einen eigenen Hafen
   (`E2E_HAFEN=4391`).
+
+## R4: Gebäude
+
+Stand 2026-11-12, Zweig `strategie-gebaeude` (Arbeitsbaum `OnlineGames-gebaeude`).
+**Alle neunzehn Arten aus `GEBAEUDE` haben eine gerenderte Tafel**, dazu vier
+Baustellen-Tafeln. Eingebunden ins Spielbild ist davon nichts: `public/bilder.js`
+kennt in `NAMEN` nur das Haus, und Baustelle, Farm, Tor und Mauer zeichnet
+weiter `public/gebaeude.js`. Zu sehen sind die neuen Tafeln auf
+`/bildprobe.html` (Abschnitte „Gebäude", „Mauer und Tor", „Baustellen") —
+die Seite lädt sie dafür selbst.
+
+### Was es gibt
+
+Gemessen an den Dateien unter `public/bilder/` (KB), Zelle und Fuß in
+Bildpunkten der Tafel:
+
+| Tafel | Felder | Spalten × Zeilen | Zelle | Fuß | Bild | Maske | Schatten |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| `dorfzentrum` | 4 | 1 × 1 | 675 × 523 | 283, 367 | 74,6 | 1,8 | – |
+| `haus` | 2 | 1 × 1 | 400 × 330 | 170, 215 | 26,9 | 0,8 | – |
+| `aussenposten` | 1 | 1 × 1 | 332 × 302 | 88, 245 | 22,6 | 1,0 | – |
+| `muehle` | 2 | 1 × 1 | 325 × 291 | 109, 209 | 18,5 | 0,8 | – |
+| `holzfaellerlager` | 2 | 1 × 1 | 375 × 261 | 131, 183 | 21,8 | 0,9 | – |
+| `bergbaulager` | 2 | 1 × 1 | 299 × 231 | 127, 155 | 16,6 | 0,8 | – |
+| `farm` | 3 | 1 × 4 | 402 × 246 | 190, 149 | 99,4 | 2,4 | – |
+| `kaserne` | 3 | 1 × 1 | 540 × 454 | 216, 331 | 50,0 | 2,7 | – |
+| `schiessanlage` | 3 | 1 × 1 | 470 × 277 | 180, 185 | 28,9 | 1,1 | – |
+| `stall` | 3 | 1 × 1 | 412 × 321 | 201, 217 | 33,5 | 1,1 | – |
+| `schmiede` | 3 | 1 × 1 | 434 × 344 | 179, 229 | 28,5 | 0,7 | – |
+| `kloster` | 3 | 1 × 1 | 486 × 490 | 192, 369 | 40,6 | 1,3 | – |
+| `universitaet` | 3 | 1 × 1 | 482 × 397 | 201, 279 | 38,8 | 1,6 | – |
+| `belagerungswerkstatt` | 3 | 1 × 1 | 551 × 340 | 198, 224 | 39,6 | 1,1 | – |
+| `wachturm` | 1 | 1 × 1 | 332 × 290 | 77, 233 | 18,2 | 1,1 | – |
+| `tor` | 1 | 2 × 2 | 118 × 215 | 59, 185 | 34,2 | 1,6 | 15,7 |
+| `steinmauer` | 1 | 13 × 1 | 138 × 160 | 69, 124 | 36,0 | 1,2 | 48,1 |
+| `burg` | 4 | 1 × 1 | 665 × 518 | 275, 362 | 71,0 | 2,7 | – |
+| `markt` | 4 | 1 × 1 | 584 × 382 | 253, 256 | 53,1 | 8,0 | – |
+| `baustelle-1` | 1 | 4 × 1 | 217 × 179 | 75, 122 | 32,4 | 1,1 | – |
+| `baustelle-2` | 2 | 4 × 1 | 332 × 239 | 138, 149 | 64,0 | 1,7 | – |
+| `baustelle-3` | 3 | 4 × 1 | 482 × 318 | 206, 195 | 116,1 | 2,5 | – |
+| `baustelle-4` | 4 | 4 × 1 | 640 × 396 | 283, 240 | 179,2 | 3,6 | – |
+
+Zusammen 1250 KB. Das Haus stammt aus R1 und ist unverändert.
+
+Commits: `160a22a` (Dorfzentrum, Mühle, Holzfällerlager, Bergbaulager, Farm),
+`eb64718` (Kaserne, Schießanlage, Stall, Schmiede, Außenposten), `c3c7738`
+(Markt, Kloster, Universität, Belagerungswerkstatt), `cf26053` (Wachturm,
+Burg, Steinmauer, Tor); die Baustellen, die Bildprobe, die neu gerenderte
+Kaserne und dieser Abschnitt stehen im Commit danach.
+
+### Die Beschreibung neben der Tafel
+
+Jede `<name>.json` hat die Felder des Hauses:
+
+- `bild`, `maske` — Dateien in `public/bilder/`. Die Maske deckt, wo
+  Spielerfarbe hingehört (heller unbunter Stoff, eingefärbt wie bei den Figuren:
+  Maske, Farbe hinein, Bild malgenommen darüber).
+- `zelle` `[Breite, Höhe]` — eine Zelle der Tafel; `zeilen`, `spalten`.
+- `fuss` `[x, y]` — **die Mitte der Grundfläche am Boden**, in der Zelle. Das
+  gilt für jede Größe, auch 1 × 1, auch für Mauerteile und Baustellen.
+- `feldbreite` 132 — so breit ist die Raute eines Feldes in der Tafel. Der
+  Maßstab im Spiel ist `2 · halbe Rautenbreite / 132`; bei Zoom 1,5 genau 0,5.
+- `art: "gebaeude"`, `felder` — Kantenlänge der Grundfläche, gleich `groesse`
+  in den Daten.
+
+Die Zellen sind knapp geschnitten (wie bei den Figuren seit R2): `zelle` und
+`fuss` sind je Tafel verschieden, niemand darf sie raten. Der Schlagschatten
+liegt im Bild, mit 0,6 gedämpft, nach rechts hinten — er ragt über die
+Grundfläche hinaus (bei der Burg bis 390 Bildpunkte rechts vom Fuß, 126 mehr
+als die Raute).
+
+Dazu je nach Art:
+
+- **`farm`**: `stufen: 4` als **Zeilen** — Zeile 0 voll bestellt, Zeile 3
+  abgeerntet; gedacht als `zeile = min(3, floor((1 − rest) · 4))`.
+  `flach: true`: nichts steht darauf, Einheiten gehören immer darüber.
+- **`baustelle-1` … `baustelle-4`** (nach Kantenlänge): `stufen: 4` als
+  **Spalten** — 0 abgesteckt, 1 Fundament und Ständer, 2 Gebälk und halbe
+  Wände, 3 Wände und offene Sparren; gedacht als
+  `spalte = min(3, floor(bau · 4))`. Die Baustelle ist für alle Gebäude einer
+  Größe dieselbe, auch für Mauer, Tor und Turm (1 × 1).
+- **`tor`**: Zeilen sind `ausrichtungen` (`"x"`: die Mauer läuft längs x des
+  Spiels, die Durchfahrt längs y; `"y"` umgekehrt), Spalten sind `zustaende`
+  (`"zu"`, `"offen"`). Welche Ausrichtung ein Tor hat, steht nicht in der
+  Tafel — das muss das Spielbild aus den Nachbarn lesen (Mauer oder Tor links
+  und rechts längs x → `"x"`).
+- **`steinmauer`**: `teile` nennt die Spalten — `pfeiler` (0), `arme` (acht,
+  je `dx`, `dy`, `spalte`) und `laeufe` (vier, je `dx`, `dy`, `spalte`; ein
+  Lauf geht zu `(dx, dy)` und zum Nachbarn gegenüber).
+- **`steinmauer` und `tor`**: der Schlagschatten steht nicht im Bild, sondern
+  in einer eigenen Tafel — `ablaeufe.schatten` mit `bild`, eigener `zelle` und
+  eigenem `fuss`, dieselben Spalten (beim Tor eine Spalte je Zeile: der
+  Schatten ist zu und offen derselbe). Er ist voll gedeckt geschrieben;
+  `schattenDeckung` (0,6) sagt, wie stark er stehen soll. Der Weg über
+  `ablaeufe` ist gewählt, weil die Verzeichnisprüfung so ohne Änderung auch
+  die dritte Datei kennt.
+
+### Die Mauer zusammensetzen
+
+So macht es die Bildprobe (das Skript unten in `public/bildprobe.html` ist die
+Regel als Code):
+
+1. **Nachbarn** eines Mauerfeldes sind die Felder ringsum, auf denen Mauer oder
+   Tor steht. Ein Tor zählt nur längs seiner Achse. Ein schräger Nachbar zählt
+   nur, wenn keines der zwei Felder dazwischen Mauer oder Tor ist — sonst
+   entstünde an jeder Ecke ein dritter Arm.
+2. Genau zwei Nachbarn, die sich gegenüberliegen: **ein Lauf**, sonst nichts.
+3. Sonst: **der Pfeiler, danach ein Arm je Nachbar**, in beliebiger Folge. Die
+   Arme sind mit dem Pfeiler als Aussparung gerendert — wo er sie verdeckt,
+   haben sie ein Loch. Deshalb braucht es innerhalb des Feldes keine
+   Tiefensortierung.
+4. **Schatten zuerst, in eine eigene Schicht**: alle Schattenzellen aller
+   Mauer- und Torfelder auf eine leere Leinwand, diese einmal mit
+   `schattenDeckung` auflegen, dann die Körper von hinten nach vorn. Einzeln
+   mit 0,6 gezeichnet würde es doppelt dunkel, wo sich zwei Schatten decken.
+   Liegt der Schatten nicht unter allen Körpern, fällt er auf die Mauer
+   dahinter.
+
+Arme und Läufe enden an der Feldgrenze stumpf und passen dort aneinander; die
+Zinnen stehen in einem Takt, der an der Grenze aufgeht. Das Torhaus füllt sein
+Feld längs der Mauer ganz.
+
+### Was an der Kette geändert ist
+
+- `scripts/bilder.mjs`: Blender läuft mit `-t 4`; `BILDER_KERNE` ändert das.
+- `grafik/kette.py`: `BILDER_PROBEN` (Vorgabe 96) für schnelle Vorschauen;
+  `Tafel.bild(…, schatten='mit' | 'ohne' | 'nur')` — `'ohne'` nur der Körper,
+  `'nur'` nur der Schlagschatten, voll gedeckt; eine Maske je Raster nur, wenn
+  eines seiner Bilder eine hat. Die Vorgabe ist das bisherige Verhalten;
+  **keine der Tafeln aus R1 bis R3 ist neu gerendert oder betroffen.**
+- `grafik/stoffe.py`: neu `gefugt()` (Mauerwerk, Ziegel, Schindeln aus der
+  Brick-Textur) und `glut()`. Bestehende Stoffe unverändert.
+- `grafik/bauteile.py` (neu): woraus die Gebäude gesetzt sind — Palette
+  `stoffe()`, Wände, Dächer in Lagen, Zinnen, Fahnen, Banner, Wimpel, Fässer,
+  Stapel, Zäune; `einzeltafel()` und `reihentafel()`; `kasten()`,
+  `aussparen()`.
+- `formen.py`, `haus.py` und alle Figuren: unverändert.
+
+### Gemessen
+
+96 Proben, vier Threads, je Tafel einmal gerendert, **neben anderen
+Sitzungen auf demselben Rechner** — die Zeiten schwanken mit deren Last
+(der Wachturm brauchte als Vorschau mit 24 Proben 13 s, voll 129 s; nur ein
+Teil davon ist die Güte):
+
+| Tafel | Sekunden |
+| --- | --- |
+| Dorfzentrum | 75,8 |
+| Mühle | 24,8 |
+| Holzfällerlager | 16,1 |
+| Bergbaulager | 15,1 |
+| Farm (4 Bilder) | 82,8 |
+| Kaserne | 82,6 (neu nach der Korrektur an `zinnen()`: 57,2) |
+| Schießanlage | 52,8 |
+| Stall | 45,3 |
+| Schmiede | 32,8 |
+| Außenposten | 12,7 |
+| Markt | 28,8 |
+| Kloster | 44,6 |
+| Universität | 34,4 |
+| Belagerungswerkstatt | 64,3 |
+| Wachturm | 129,2 |
+| Burg | 84,1 |
+| Steinmauer (26 Bilder) | 145,3 |
+| Tor (6 Bilder) | 45,1 |
+| Baustelle 1 × 1 (4 Bilder) | 26,5 |
+| Baustelle 2 × 2 (4 Bilder) | 56,5 |
+| Baustelle 3 × 3 (4 Bilder) | 97,3 |
+| Baustelle 4 × 4 (4 Bilder) | 173,7 |
+
+### Gelernt
+
+- **Deckungsgleiche Flächen rendert Cycles nach Laune schwarz.** Zwei Kästen,
+  deren Deckflächen auf derselben Höhe liegen, oder zwei Eckzinnen, die
+  ineinanderstecken: mal sauber, mal ein schwarzer Fleck — am Wachturm nichts,
+  am Bergfried mit demselben Aufruf drei schwarze Ecken. Die Schwarz-Grenze
+  der Kette (2 %) hat es beim Mauerpfeiler und beim Tor gefangen, bei der
+  Burg nicht (unter 2 %); dort hat es nur das Ansehen der Vorschau gefunden.
+  Seitdem: was aufeinandersteht, endet unter dem, was darauf liegt.
+- **Ein offenes Profil ist ein Loch.** Die runde Brustwehr war ein
+  Drehkörper ohne Innenwand; von oben sah man hinein, als schwarzen Ring.
+- **Teile, die aneinandergesetzt werden, brauchen den Schatten getrennt** —
+  und das Verdecken untereinander schon im Bild (Aussparung), sonst braucht
+  das Spiel eine Tiefensortierung innerhalb eines Feldes.
+
+### Nicht geprüft
+
+- **Im Spielbild steht keines der Gebäude.** Ob Größe und Fußpunkt neben
+  Einheiten, Bäumen und dem Raster des Spiels stimmen, ist nur an der
+  Bildprobe und an den Vorschauen der Kette gesehen (Grundfläche gefüllt,
+  nichts ragt mit dem Körper darüber hinaus — Dachüberstände, Fahnen und der
+  Kran der Belagerungswerkstatt ausgenommen), nicht in einer Partie.
+- **Kein Test ist gelaufen** außer `node scripts/bilder-verzeichnis.mjs`
+  (Exit 0). `npm run check`, `npm test` und der Browserlauf waren dieser
+  Sitzung untersagt (Häfen). Insbesondere: `tests/bilder.test.mjs` und
+  `e2e/tests/strategie-bildprobe.spec.mjs` sind gegen die neuen Tafeln und die
+  längere Bildprobe nicht gelaufen. Die neuen Abschnitte der Bildprobe laden
+  nach `window.bildprobe.fertig`; sie melden sich mit
+  `document.body.dataset.gebaeude` (`fertig` oder `fehler`).
+- **Die Mauer ist nur an einer Probekarte gesehen** (gerade, schräg, Ecke,
+  Kreuz, T, zwei Tore). Nicht gesehen: Mauer neben einem Gebäude, eine Einheit
+  hinter und vor einer Mauer, ein Tor ohne Mauer daneben.
+- **Zerstörte oder brennende Gebäude gibt es nicht**, ebenso keine Stufen je
+  Zeitalter und keine Unterschiede je Haus.
+- **Speicher und Bildrate** mit allen Tafeln zugleich sind nicht gemessen.
+- **Die Renderzeiten** sind je einmal und unter fremder Last gemessen.
+
+### Was noch nicht gefällt
+
+- **Neben den Zeichnungen wirken die gerenderten Gebäude kleiner.** Sie bleiben
+  mit Hof und Beiwerk in ihrer Grundfläche, die Zeichnungen füllen die Raute
+  mit dem Baukörper und ragen darüber. Am deutlichsten bei Mühle,
+  Bergbaulager, Schmiede und Stall. Ob das im Spielbild stört, zeigt erst das
+  Einbinden; größer bauen hieße, Dach und Wände über die Grundfläche zu
+  ziehen.
+- **Die Mühle** ist ein runder Turm mit kurzen Flügeln — in Spielgröße sind
+  die Flügel das Erste, was verschwindet.
+- **Der Stall**: das offene Tor ist eine glatte schwarze Fläche.
+- **Die Mauer läuft schräg auf die Kamera zu** (Nachbar bei +1, +1) als
+  schmaler Streifen, an dem man fast nur die Krone sieht — richtig gerechnet,
+  aber unruhig. Und an einer Ecke, deren Arme beide zur Kamera zeigen, bleibt
+  vom Pfeiler nur die Krone.
+- **Die Baustelle ist immer ein Holzbau**, auch unter Mauer, Tor, Turm und
+  Burg; der Wimpel steht ab Stufe 2 vor der Wand statt frei.
+- **Offen und zu unterscheiden sich am Tor nur im Bogen** (dunkle Durchfahrt
+  statt Torblatt); das hochgezogene Gitter sieht man in Spielgröße nicht.
+
+### Offen
+
+- Die drei zusätzlichen Dorfbewohner-Tafeln (Feld, Pflücken, Bergbau) sind
+  **nicht gebaut**.
+- Die Tafel der Kaserne ist nach der Korrektur an `zinnen()` neu gerendert
+  (am Eckturm standen drei Eckzinnen schwarz). Die übrigen Tafeln aus den
+  Gruppen 1 bis 3 benutzen `zinnen()` nicht.
