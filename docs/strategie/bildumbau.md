@@ -313,6 +313,15 @@ die Zeilen unter „Für die Erkenntnisse" dorthin und erzeugt das Board neu
   - In der Bildprobe stehen Ramme und Mangonel mit `zoom: 1.35`, `weit: 108`
     und `luft: 44` vor der Spielgröße — bei Zoom 2 liefen sie aus dem Band,
     und die Trümmer des letzten Sterbebilds lagen auf der Spielgröße.
+  - **Committet als `b2145ea`** (2026-11-12, 04:25) auf `strategie-bildumbau`,
+    nicht gepusht, nicht zusammengeführt. Davor grün: Browserlauf 210 von
+    210 in 21,4 min, `npm run check` mit 680 + 8 Tests. darstellung AC-24
+    steht auf `in-arbeit` — `offen` mit Bildnachweis lässt `specs:check`
+    nicht durch, und `fertig` ist es nicht: die Zeichnungen stehen noch, die
+    Bilder sind abgeschaltet, 50 Bilder je Sekunde mit gerenderten Einheiten
+    und das Laden vor der Partie sind nicht gebaut. **Als Nächstes, mit dem
+    Benutzer:** ansehen, dann zusammenführen nach `strategie` (dort kommt
+    der Marktkarren in die Daten und ins Spielbild), dann R6.
 - **Der ADR heißt jetzt 0016** (umbenannt am 2026-11-10, vorher 0014): auf
   `strategie` sind die Nummern 0014 (Häuser statt Völker) und 0015
   (Statthalter) inzwischen vergeben. Beim Einbinden bleibt nur
