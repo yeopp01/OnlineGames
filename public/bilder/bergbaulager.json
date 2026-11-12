@@ -1,0 +1,17 @@
+{
+  "bild": "bergbaulager.webp",
+  "maske": "bergbaulager-maske.webp",
+  "zelle": [
+    299,
+    231
+  ],
+  "fuss": [
+    127,
+    155
+  ],
+  "feldbreite": 132,
+  "zeilen": 1,
+  "spalten": 1,
+  "art": "gebaeude",
+  "felder": 2
+}

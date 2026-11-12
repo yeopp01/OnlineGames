@@ -1,0 +1,19 @@
+{
+  "bild": "farm.webp",
+  "maske": "farm-maske.webp",
+  "zelle": [
+    402,
+    246
+  ],
+  "fuss": [
+    190,
+    149
+  ],
+  "feldbreite": 132,
+  "zeilen": 4,
+  "spalten": 1,
+  "art": "gebaeude",
+  "felder": 3,
+  "stufen": 4,
+  "flach": true
+}

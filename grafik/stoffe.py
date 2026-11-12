@@ -336,3 +336,106 @@ def einfarbig(name, hex_wert, rau=0.7, metall=0.0, spieler=False):
     if spieler:
         stoff['spielerfarbe'] = True
     return stoff
+
+
+def gefugt(name, farben, stein=(0.24, 0.12), fuge=0.012, fugenfarbe='#3a352e', koordinaten='wand',
+           rau=0.9, relief=0.7, versatz=0.5, toenung=0.18, enge=0.5, glatt=0.1):
+    """Steine in Reihen mit Fugen: Hausteinmauer, Dachziegel, Schindeln, Pflaster.
+
+    stein         Breite und Hoehe eines Steins
+    koordinaten   'wand': am Koerper - auf stehenden Flaechen laufen die Reihen
+                  waagerecht, auf liegenden wird daraus ein Pflaster;
+                  'UV': aus dem Netz (ein Dach nennt je Lage eine Reihe)
+    toenung       wie stark ein Rauschen die Steine heller und dunkler macht
+    """
+    stoff, netz, flaeche = _grund(name)
+    k = netz.nodes
+    ort = k.new('ShaderNodeTexCoord')
+    if koordinaten == 'UV':
+        vektor = ort.outputs['UV']
+    else:
+        teile = k.new('ShaderNodeSeparateXYZ')
+        netz.links.new(ort.outputs['Object'], teile.inputs[0])
+        quer = k.new('ShaderNodeMath')
+        quer.operation = 'ADD'
+        netz.links.new(teile.outputs['X'], quer.inputs[0])
+        netz.links.new(teile.outputs['Y'], quer.inputs[1])
+        stehend = k.new('ShaderNodeCombineXYZ')
+        netz.links.new(quer.outputs[0], stehend.inputs['X'])
+        netz.links.new(teile.outputs['Z'], stehend.inputs['Y'])
+        # Wo die Flaeche liegt (Mauerkrone, Platz), zaehlt der Grundriss.
+        lage = k.new('ShaderNodeNewGeometry')
+        normale = k.new('ShaderNodeVectorTransform')
+        normale.vector_type = 'NORMAL'
+        normale.convert_from = 'WORLD'
+        normale.convert_to = 'OBJECT'
+        netz.links.new(lage.outputs['Normal'], normale.inputs[0])
+        hoch = k.new('ShaderNodeSeparateXYZ')
+        netz.links.new(normale.outputs[0], hoch.inputs[0])
+        betrag = k.new('ShaderNodeMath')
+        betrag.operation = 'ABSOLUTE'
+        netz.links.new(hoch.outputs['Z'], betrag.inputs[0])
+        liegt = k.new('ShaderNodeMath')
+        liegt.operation = 'GREATER_THAN'
+        liegt.inputs[1].default_value = 0.7
+        netz.links.new(betrag.outputs[0], liegt.inputs[0])
+        vektor = _mischen(netz, liegt.outputs[0], stehend.outputs[0], ort.outputs['Object'])
+
+    steine = k.new('ShaderNodeTexBrick')
+    steine.offset = versatz
+    steine.inputs['Scale'].default_value = 1.0
+    steine.inputs['Brick Width'].default_value = stein[0]
+    steine.inputs['Row Height'].default_value = stein[1]
+    steine.inputs['Mortar Size'].default_value = fuge
+    steine.inputs['Mortar Smooth'].default_value = glatt
+    steine.inputs['Bias'].default_value = 0.0
+    steine.inputs['Color1'].default_value = farbe(farben[0])
+    steine.inputs['Color2'].default_value = farbe(farben[-1])
+    steine.inputs['Mortar'].default_value = farbe(fugenfarbe)
+    netz.links.new(vektor, steine.inputs['Vector'])
+    ton = steine.outputs['Color']
+
+    if toenung > 0:
+        rauschen = k.new('ShaderNodeTexNoise')
+        rauschen.inputs['Scale'].default_value = 7.0
+        rauschen.inputs['Detail'].default_value = 6.0
+        netz.links.new(ort.outputs['Object'], rauschen.inputs['Vector'])
+        hell = k.new('ShaderNodeMapRange')
+        hell.inputs['From Min'].default_value = 0.3
+        hell.inputs['From Max'].default_value = 0.7
+        hell.inputs['To Min'].default_value = 1 - toenung
+        hell.inputs['To Max'].default_value = 1 + toenung
+        netz.links.new(rauschen.outputs[0], hell.inputs['Value'])
+        mal = k.new('ShaderNodeVectorMath')
+        mal.operation = 'SCALE'
+        netz.links.new(ton, mal.inputs[0])
+        netz.links.new(hell.outputs[0], mal.inputs['Scale'])
+        ton = mal.outputs[0]
+    if enge > 0:
+        ecke = k.new('ShaderNodeAmbientOcclusion')
+        ecke.inputs['Distance'].default_value = 0.12
+        ecke.samples = 8
+        ton = _mischen(netz, enge, ton, ecke.outputs[0], 'MULTIPLY')
+    netz.links.new(ton, flaeche.inputs['Base Color'])
+    flaeche.inputs['Roughness'].default_value = rau
+    if relief > 0:
+        um = k.new('ShaderNodeMath')
+        um.operation = 'SUBTRACT'
+        um.inputs[0].default_value = 1.0
+        netz.links.new(steine.outputs['Fac'], um.inputs[1])
+        hoehe = k.new('ShaderNodeBump')
+        hoehe.inputs['Strength'].default_value = relief
+        hoehe.inputs['Distance'].default_value = 0.02
+        netz.links.new(um.outputs[0], hoehe.inputs['Height'])
+        netz.links.new(hoehe.outputs[0], flaeche.inputs['Normal'])
+    return stoff
+
+
+def glut(name, hex_wert='#ff7a1e', staerke=6.0):
+    """Was von selbst leuchtet: die Esse der Schmiede, ein Feuer."""
+    stoff, netz, flaeche = _grund(name)
+    flaeche.inputs['Base Color'].default_value = farbe(hex_wert)
+    flaeche.inputs['Emission Color'].default_value = farbe(hex_wert)
+    flaeche.inputs['Emission Strength'].default_value = staerke
+    flaeche.inputs['Roughness'].default_value = 0.8
+    return stoff

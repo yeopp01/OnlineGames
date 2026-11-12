@@ -35,7 +35,9 @@ KAMERA_DREHUNG = (math.radians(60), 0, math.radians(45))
 SONNE_RICHTUNG = math.radians(65)   # wohin das Licht am Boden laeuft, von +X aus
 SONNE_HOEHE = math.radians(50)
 
-PROBEN = 96
+# Proben je Bildpunkt. `BILDER_PROBEN=24` rendert eine Vorschau in einem Viertel
+# der Zeit - nur zum Ansehen beim Bauen, nie fuer eine Tafel, die bleibt.
+PROBEN = int(os.environ.get('BILDER_PROBEN', 96))
 
 # Zwei Nebenkanaele, die jeder Stoff beim Rendern mitschreibt: `deckung` ist 1,
 # wo ein Koerper steht, `spieler` ist 1, wo er Spielerfarbe traegt. Beide
