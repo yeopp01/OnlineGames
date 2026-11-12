@@ -648,3 +648,55 @@ def halme(name, zufall, reihen, s, hoch=0.3, dicht=0.03, farben=('#b89a48', '#d1
     if not ecken:
         return None
     return netz(name, ecken, seiten, aus_merkmal(name, rau=0.8), farben=farbwerte)
+
+
+def stumpf(name, mitte, unten, oben, z0, z1, stoff, versatz=(0.0, 0.0)):
+    """Ein Kasten, der sich nach oben verjuengt: unten (Laenge, Breite) auf
+    Hoehe z0, oben auf z1 - Rauchfang, Turmfuss, Sockel. `versatz` schiebt
+    die obere Flaeche."""
+    x, y = mitte
+    ecken = []
+    for (l, b), z, (dx, dy) in ((unten, z0, (0.0, 0.0)), (oben, z1, versatz)):
+        for sx, sy in ((-1, -1), (1, -1), (1, 1), (-1, 1)):
+            ecken.append((x + dx + sx * l / 2, y + dy + sy * b / 2, z))
+    seiten = [(3, 2, 1, 0), (4, 5, 6, 7), (0, 1, 5, 4), (1, 2, 6, 5), (2, 3, 7, 6), (3, 0, 4, 7)]
+    return netz(name, ecken, seiten, stoff)
+
+
+def leiter(von, bis, s, breit=0.2, sprossen=7, stoff='hellholz'):
+    """Eine Leiter von unten (`von`) nach oben (`bis`)."""
+    a, b = Vector(von), Vector(bis)
+    d = (b - a).normalized()
+    quer = d.cross(Vector((0, 0, 1)))
+    if quer.length < 0.1:
+        quer = Vector((1, 0, 0))
+    quer = quer.normalized() * (breit / 2)
+    for seite in (-1, 1):
+        balken('holm', tuple(a + quer * seite), tuple(b + quer * seite), 0.028, s[stoff])
+    for i in range(sprossen):
+        p = a.lerp(b, (i + 0.7) / (sprossen + 0.4))
+        balken('sprosse', tuple(p - quer), tuple(p + quer), 0.02, s[stoff])
+
+
+def wagenrad(ort, s, r=0.3, richtung=ZUR_KAMERA, speichen=8, stoff='hellholz', breit=0.05, eisen=True):
+    """Ein Speichenrad um `ort`, die Achse zeigt nach `richtung`."""
+    n = Vector(richtung).normalized()
+    mitte = Vector(ort)
+    drehung = tuple(n.to_track_quat('Z', 'Y').to_euler())
+    h = breit / 2
+    drehkoerper('felge', [(-h, r * 0.84), (-h, r * 0.97), (h, r * 0.97), (h, r * 0.84), (-h, r * 0.84)], s[stoff],
+                ort=ort, drehung=drehung, teile=24)
+    if eisen:
+        drehkoerper('radreifen', [(-h * 0.9, r * 0.96), (-h * 0.9, r), (h * 0.9, r), (h * 0.9, r * 0.96)], s['eisen'],
+                    ort=ort, drehung=drehung, teile=24)
+    drehkoerper('nabe', [(-h * 1.6, 0), (-h * 1.6, r * 0.16), (h * 1.6, r * 0.16), (h * 1.6, 0)], s['balken'], ort=ort,
+                drehung=drehung, teile=10)
+    u = n.cross(Vector((0, 0, 1)))
+    if u.length < 0.1:
+        u = Vector((1, 0, 0))
+    u.normalize()
+    v = n.cross(u)
+    for i in range(speichen):
+        w = 2 * math.pi * i / speichen
+        d = u * math.cos(w) + v * math.sin(w)
+        balken('speiche', tuple(mitte + d * r * 0.1), tuple(mitte + d * r * 0.88), r * 0.09, s[stoff], fase=0.003)
