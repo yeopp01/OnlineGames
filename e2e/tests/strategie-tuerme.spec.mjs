@@ -52,7 +52,7 @@ test.describe('Tuerme', () => {
     await anna.keyboard.press('b');
     const menue = await baumenue(anna);
     expect(menue).toContain('wachturm');
-    await expect(anna.locator('#baumenue [data-bauen="wachturm"]')).toHaveAttribute('title', /Wachturm/);
+    await expect(anna.locator('#baumenue [data-bauen="wachturm"]')).toHaveAttribute('aria-label', /Wachturm/);
     await anna.keyboard.press(BAUTASTEN[menue.indexOf('wachturm')]);
     await expect.poll(() => anna.evaluate(() => window.ansicht.platzieren?.art)).toBe('wachturm');
     await anna.keyboard.press('Escape');

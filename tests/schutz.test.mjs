@@ -140,6 +140,60 @@ test('schutz AC-4: eine Adresse haelt nur begrenzt viele Partien offen', async (
   await warte(100);
 });
 
+test('raeume AC-17 / schutz AC-4: eine verlassene Partie sperrt niemanden aus - steht die Grenze im Weg, weicht die aelteste', async () => {
+  // Zwei laufende Partien, aus denen alle gegangen sind: sie warten auf die
+  // Rueckkehr und zaehlen so lange mit. Die Grenze steht hier bei zwei.
+  const codes = [];
+  for (let i = 0; i < 2; i++) {
+    const anna = verbinde(true);
+    await anna.offen();
+    anna.senden({ typ: 'erstellen', name: 'Anna' });
+    await warte(80);
+    const du = anna.eingang.find((n) => n.typ === 'du');
+    assert.ok(du, `Partie ${i + 1} wurde eroeffnet`);
+    const bert = verbinde();
+    await bert.offen();
+    bert.senden({ typ: 'beitreten', code: du.code, name: 'Bert' });
+    await warte(80);
+    anna.senden({ typ: 'start', startwert: 7 });
+    await warte(200);
+    assert.ok(anna.eingang.some((n) => n.typ === 'aufbau'), 'sie laeuft');
+    anna.zu();
+    bert.zu();
+    await warte(150);
+    assert.ok(laufend.raeume.finden(du.code), 'verlassen, aber noch da');
+    codes.push(du.code);
+  }
+
+  const neu = verbinde(true);
+  await neu.offen();
+  neu.senden({ typ: 'erstellen', name: 'Anna' });
+  await warte(100);
+  assert.ok(neu.eingang.some((n) => n.typ === 'du'), 'die dritte Partie wird eroeffnet');
+  assert.equal(laufend.raeume.finden(codes[0]), null, 'die aeltere verlassene ist gewichen');
+  assert.ok(laufend.raeume.finden(codes[1]), 'die juengere wartet weiter');
+
+  // Eine Partie, an der jemand sitzt, weicht nicht: jetzt stehen zwei
+  // Raeume, einer besetzt, einer verlassen - der naechste nimmt den
+  // verlassenen, der uebernaechste wird abgewiesen.
+  const vierter = verbinde(true);
+  await vierter.offen();
+  vierter.senden({ typ: 'erstellen', name: 'Anna' });
+  await warte(100);
+  assert.ok(vierter.eingang.some((n) => n.typ === 'du'));
+  assert.equal(laufend.raeume.finden(codes[1]), null);
+  const fuenfter = verbinde(true);
+  await fuenfter.offen();
+  fuenfter.senden({ typ: 'erstellen', name: 'Anna' });
+  await warte(100);
+  assert.match(fuenfter.eingang.find((n) => n.typ === 'fehler').text, /Zu viele offene Partien/);
+
+  neu.zu();
+  vierter.zu();
+  fuenfter.zu();
+  await warte(150);
+});
+
 test('schutz AC-5: ein ausgelasteter Server nimmt keine neuen Partien an', () => {
   const schutz = new Schutz({ raeumeGesamt: 2, raeumeJeAdresse: 99 });
   assert.equal(schutz.raumErlaubt('a').ok, true);

@@ -217,6 +217,11 @@ class Raum {
     return this.spieler.every((s) => !s.verbunden) || this.spieler.length === 0;
   }
 
+  /** Laeuft hier eine Partie, die noch nicht entschieden ist? */
+  get laeuft() {
+    return Boolean(this.gestartet && !this.welt.vorbei);
+  }
+
   // Ein **zweiter** Start desselben Raums ist die Revanche (→ spielziel AC-9):
   // dieselben Leute, dieselben Einstellungen, eine neue Partie - und niemand
   // tippt einen Code. Erlaubt ist er nur, wenn `welt.vorbei` es sagt; waehrend
@@ -263,6 +268,18 @@ class Raum {
   }
 
   schlag() {
+    // Sitzt niemand mehr am Tisch, steht die Uhr (raeume AC-17): die Partie
+    // wartet, statt ohne Zuschauer weiterzulaufen. Kehrt jemand zurueck, geht
+    // sie dort weiter, wo sie stand - die Wanduhr wird neu angesetzt, damit
+    // nichts nachgeholt wird.
+    if (this.leer) {
+      this.steht = true;
+      return;
+    }
+    if (this.steht) {
+      this.steht = false;
+      this.beginn = Date.now() - (this.gerechnet * 1000) / this.jeSekunde;
+    }
     // Gerechnet wird nach der Wanduhr, nicht nach der Zahl der Schlaege:
     // `setInterval` mit 66,7 ms kommt jedes Mal etwas spaet, und ueber eine
     // Minute fehlten sonst Sekunden (spielziel AC-23: hoechstens einen Takt
@@ -357,12 +374,28 @@ class Raeume {
     this.beimSchliessen?.(raum);
   }
 
+  // Die am laengsten verlassene laufende Partie schliessen, auf die `passt`
+  // zutrifft. Eine Partie, an der niemand sitzt, haelt keinen Platz fest
+  // (raeume AC-17): steht eine Grenze dem Eroeffnen im Weg, weicht sie.
+  verlasseneSchliessen(passt = () => true) {
+    let aelteste = null;
+    for (const raum of this.nachCode.values()) {
+      if (!raum.leer || !raum.laeuft || !passt(raum)) continue;
+      if (!aelteste || raum.beruehrt < aelteste.beruehrt) aelteste = raum;
+    }
+    if (!aelteste) return false;
+    this.schliessen(aelteste);
+    return true;
+  }
+
   // Fuer den Betreiber: wie viele Raeume offen sind und in wie vielen eine
   // Partie laeuft, die ein Neustart beenden wuerde. Keine Codes, keine Namen.
+  // Eine verlassene Partie (raeume AC-17) zaehlt nicht: an ihr sitzt niemand,
+  // und ein Ausrollen soll nicht eine halbe Stunde auf sie warten.
   zahlen() {
     let partien = 0;
     for (const raum of this.nachCode.values()) {
-      if (raum.gestartet && !raum.welt.vorbei) partien += 1;
+      if (raum.laeuft && !raum.leer) partien += 1;
     }
     return { raeume: this.nachCode.size, partien };
   }
@@ -371,7 +404,10 @@ class Raeume {
   aufraeumen() {
     const jetzt = Date.now();
     for (const raum of [...this.nachCode.values()]) {
-      if (raum.leer && jetzt - raum.beruehrt > 60 * 1000) this.schliessen(raum);
+      // Eine laufende Partie, die alle verlassen haben, wartet so lange wie
+      // ein Raum ohne Befehl (raeume AC-17) - `beruehrt` steht dann auf dem
+      // Augenblick, in dem der letzte ging.
+      if (raum.leer && !raum.laeuft && jetzt - raum.beruehrt > 60 * 1000) this.schliessen(raum);
       else if (jetzt - raum.beruehrt > LEERLAUF_MS) this.schliessen(raum);
     }
   }

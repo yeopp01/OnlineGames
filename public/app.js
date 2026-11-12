@@ -39,6 +39,14 @@ let meldeort = null;
 // Bin ich der Gastgeber dieses Raums? Nur er startet - und nur er die
 // Revanche (spielziel AC-9).
 let binGastgeber = false;
+// Der eigene Platz, wie ihn der Server genannt hat - fuer die Rueckkehr.
+let meinPlatz = null;
+// Laeuft gerade ein Versuch zurueckzukehren? Dann gilt seine Absage dem
+// gemerkten Platz und nicht einem Formular.
+let kehrtZurueck = false;
+// Die laufende Partie, auch ueber das Schliessen des Fensters hinweg
+// (raeume AC-18). Der Sitzungsspeicher traegt nur das Neuladen.
+const LETZTE_PARTIE = 'letztePartie';
 
 teile.name.value = localStorage.getItem('name') || '';
 
@@ -85,6 +93,9 @@ function empfangen(nachricht) {
       gastgeberFelder = null;
       // Fuer die Rueckkehr nach einem Absturz - lebt nur solange die Partie laeuft.
       sessionStorage.setItem('platz', JSON.stringify({ code: nachricht.code, token: nachricht.token }));
+      meinPlatz = { code: nachricht.code, token: nachricht.token, anzeige: nachricht.anzeige || nachricht.code };
+      kehrtZurueck = false;
+      document.getElementById('rueckkehr').hidden = true;
       teile.raumcode.textContent = nachricht.anzeige || nachricht.code;
       zeigen('warteraum');
       break;
@@ -124,7 +135,11 @@ function empfangen(nachricht) {
         ansicht.melden = spielMelden;
         ansicht.beiZeitalter = (stufe, name) => zeitalterwechselMelden(name);
         ansicht.beiAngriff = (ort) => angriffZeigen(ort);
-        ansicht.beiEnde = (ende, text) => partieendeZeigen(text);
+        ansicht.beiEnde = (ende, text) => {
+          // Eine entschiedene Partie bietet der Vorraum nicht mehr an.
+          try { localStorage.removeItem(LETZTE_PARTIE); } catch { /* dann bleibt es stehen */ }
+          partieendeZeigen(text);
+        };
         ansicht.beiSpielstand = () => spielstandZeigen();
         ansicht.sammelpunktSenden = (gebaeude, ziel) =>
           senden({ typ: 'befehl', auftrag: 'sammelpunkt', gebaeude, ziel });
@@ -144,6 +159,12 @@ function empfangen(nachricht) {
       aufgebenZeigen();
       buendnisZeigen();
       zuschauerZeigen();
+      punkteZeigen();
+      // Ab jetzt laeuft eine Partie: wer das Fenster schliesst, findet sie
+      // im Vorraum wieder (raeume AC-18).
+      if (meinPlatz && !nachricht.ende) {
+        try { localStorage.setItem(LETZTE_PARTIE, JSON.stringify({ ...meinPlatz, zeit: Date.now() })); } catch { /* dann ohne */ }
+      }
       break;
 
     case 'zustand':
@@ -156,6 +177,7 @@ function empfangen(nachricht) {
       arbeiterZeigen(ansicht.arbeiter);
       zeitalterZeigen(ansicht.zeitalterName());
       spielzeitZeigen(ansicht.spielzeit());
+      punkteZeigen();
       aufgebenZeigen();
       buendnisZeigen();
       zuschauerZeigen();
@@ -164,6 +186,13 @@ function empfangen(nachricht) {
       break;
 
     case 'fehler':
+      // Die Partie, in die es zurueckgehen sollte, gibt es nicht mehr: den
+      // Platz vergessen, sonst kaeme die Absage bei jedem Neuladen wieder
+      // (raeume AC-18; das erste Spiel auf dem Server, 2026-11-12).
+      if (nachricht.platzWeg || kehrtZurueck) {
+        kehrtZurueck = false;
+        platzVergessen();
+      }
       // Im Spiel als kurze Einblendung, nicht in einem verdeckten Formular.
       if (!teile.spiel.hidden) spielMelden(nachricht.text);
       else melden(nachricht.text, teile.warteraum.hidden ? meldeort || teile.meldung : teile.wartemeldung);
@@ -286,7 +315,45 @@ document.getElementById('revanche').addEventListener('click', () => {
 // beschriftet: sie zaehlt in einer halben Sekunde auf den neuen Wert, und
 // vom Stand der alten Partie herunterzuzaehlen waere eine Wirtschaft, die es
 // nie gab.
+// ---- Die Punkte, staendig im Bild (bedienung AC-57) -----------------------
+// Rechts ueber der Uebersichtskarte, wie in der Vorlage: wer fuehrt, steht
+// oben. Die Zahlen schickt der Server jedem, auch von Gegnern im Nebel
+// (bedienung AC-47) - mit `Tab` gibt es die ganze Tafel.
+let punkteStand = null;
+
+function punkteZeigen() {
+  const ort = document.getElementById('punkteliste');
+  if (!ansicht) {
+    ort.hidden = true;
+    return;
+  }
+  const zeilen = ansicht.spielstandZeilen().sort((a, b) => b.punkte - a.punkte);
+  const stand = zeilen.map((z) => `${z.id}:${z.punkte}:${z.aus ? 1 : 0}`).join('|');
+  ort.hidden = false;
+  if (stand === punkteStand) return;
+  punkteStand = stand;
+  ort.replaceChildren(...zeilen.map((z) => {
+    const zeile = document.createElement('li');
+    zeile.dataset.spieler = z.id;
+    zeile.dataset.punkte = z.punkte;
+    if (z.ich) zeile.classList.add('ich');
+    if (z.aus) zeile.classList.add('draussen');
+    const punkt = document.createElement('span');
+    punkt.className = 'farbpunkt';
+    punkt.style.background = z.farbe;
+    const name = document.createElement('span');
+    name.className = 'name';
+    name.textContent = z.name;
+    const zahl = document.createElement('span');
+    zahl.className = 'zahl';
+    zahl.textContent = String(z.punkte);
+    zeile.append(punkt, name, zahl);
+    return zeile;
+  }));
+}
+
 function partieraumAufraeumen() {
+  punkteStand = null;
   document.getElementById('abschluss').hidden = true;
   document.getElementById('partieende').textContent = '';
   aufgebenFrageSchliessen();
@@ -1006,9 +1073,49 @@ document.getElementById('neuladen').addEventListener('click', () => location.rel
 
 await sitzungPruefen();
 
+// ---- Rueckkehr (raeume AC-9, AC-18) ------------------------------------------
+
+function zurueckkehren({ code, token }) {
+  kehrtZurueck = true;
+  verbinden(() => senden({ typ: 'zurueck', code, token }));
+}
+
+function platzVergessen() {
+  sessionStorage.removeItem('platz');
+  try { localStorage.removeItem(LETZTE_PARTIE); } catch { /* nichts zu vergessen */ }
+  document.getElementById('rueckkehr').hidden = true;
+}
+
+// Eine Partie, die noch laufen kann: der Server haelt sie eine halbe Stunde,
+// nachdem der letzte gegangen ist (raeume AC-13, AC-17).
+function letztePartie() {
+  try {
+    const gemerkt = JSON.parse(localStorage.getItem(LETZTE_PARTIE) || 'null');
+    if (gemerkt && gemerkt.code && gemerkt.token && Date.now() - gemerkt.zeit < 30 * 60 * 1000) return gemerkt;
+    if (gemerkt) localStorage.removeItem(LETZTE_PARTIE);
+  } catch { /* unlesbar ist wie leer */ }
+  return null;
+}
+
+document.getElementById('rueckkehrJa').addEventListener('click', () => {
+  const gemerkt = letztePartie();
+  if (gemerkt) zurueckkehren(gemerkt);
+  else platzVergessen();
+});
+document.getElementById('rueckkehrNein').addEventListener('click', platzVergessen);
+
 // Nach einem Neuladen zurueck in die eigene Partie, ohne Code abzutippen.
 const platz = sessionStorage.getItem('platz');
 if (platz) {
-  const { code, token } = JSON.parse(platz);
-  verbinden(() => senden({ typ: 'zurueck', code, token }));
+  zurueckkehren(JSON.parse(platz));
+} else {
+  // Das Fenster war zu, die Partie wartet vielleicht noch: der Vorraum bietet
+  // sie an, statt dass man den Code wissen muss. Von selbst geht es nicht
+  // zurueck - ein zweites Fenster im selben Browser naehme sonst dem ersten
+  // den Platz.
+  const gemerkt = letztePartie();
+  if (gemerkt) {
+    document.getElementById('rueckkehrCode').textContent = gemerkt.anzeige || gemerkt.code;
+    document.getElementById('rueckkehr').hidden = false;
+  }
 }

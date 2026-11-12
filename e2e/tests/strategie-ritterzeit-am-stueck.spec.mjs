@@ -299,7 +299,7 @@ test.describe('Ritterzeit am Stueck', () => {
     expect(stoss, 'Ramme gegen Haus: Angriff plus Bonus gegen Gebaeude').toBe(erwartet);
 
     // ---- Das Bild: das Dorf der Ritterzeit. ----
-    // Die fuenf neuen Einheiten vor den Gebaeuden gesammelt und ausgewaehlt:
+    // Die sechs neuen Einheiten vor den Gebaeuden gesammelt und ausgewaehlt:
     // die Leiste unten zeigt dann je Art ein Bildchen mit Anzahl.
     await anna.keyboard.press('Escape');
     const truppe = await anna.evaluate(([kuerzel, arten, b]) => {
@@ -389,7 +389,7 @@ test.describe('Ritterzeit am Stueck', () => {
     await nachweis(anna, {
       spec: FAHRPLAN,
       ac: 'AC-14',
-      titel: 'Die Ritterzeit im Browser gespielt: oben das Zeitalter, gebaut Burg, Universität, Kloster, Belagerungswerkstatt, Wachturm, Markt und eine Steinmauer mit Tor, davor die fünf Einheiten der Ritterzeit — unten zählt die Leiste sie als fünf ausgewählte',
+      titel: 'Die Ritterzeit im Browser gespielt: oben das Zeitalter, gebaut Burg, Universität, Kloster, Belagerungswerkstatt, Wachturm, Markt und eine Steinmauer mit Tor, davor die sechs Einheiten der Ritterzeit — unten zählt die Leiste sie als sechs ausgewählte',
       test: info,
     });
   });

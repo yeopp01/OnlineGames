@@ -64,7 +64,7 @@ test.describe('Mauern', () => {
     await anna.keyboard.press('b');
     const menue = await baumenue(anna);
     expect(menue).toContain('steinmauer');
-    await expect(anna.locator('#baumenue [data-bauen="steinmauer"]')).toHaveAttribute('title', /Steinmauer/);
+    await expect(anna.locator('#baumenue [data-bauen="steinmauer"]')).toHaveAttribute('aria-label', /Steinmauer/);
     await anna.keyboard.press(BAUTASTEN[menue.indexOf('steinmauer')]);
     await expect.poll(() => anna.evaluate(() => window.ansicht.platzieren?.art)).toBe('steinmauer');
 
@@ -131,7 +131,7 @@ test.describe('Mauern', () => {
     await anna.keyboard.press('b');
     const menue = await baumenue(anna);
     expect(menue).toContain('tor');
-    await expect(anna.locator('#baumenue [data-bauen="tor"]')).toHaveAttribute('title', /Tor/);
+    await expect(anna.locator('#baumenue [data-bauen="tor"]')).toHaveAttribute('aria-label', /Tor/);
     await anna.keyboard.press(BAUTASTEN[menue.indexOf('tor')]);
     await expect.poll(() => anna.evaluate(() => window.ansicht.platzieren?.art)).toBe('tor');
 

@@ -1,0 +1,10 @@
+{
+  "spec": "10-strategie/bedienung.md",
+  "ac": "AC-53",
+  "titel": "Rechtsklick in die Mitte der Uebersichtskarte: dort steht der weisse Ring, der Reiter ist unterwegs, das Bild zeigt weiter das Dorf",
+  "datei": "e2e/tests/strategie-rueckmeldung.spec.mjs",
+  "pfad": [
+    "Rueckmeldungen aus dem ersten Spiel",
+    "bedienung AC-53: ein Rechtsklick auf die Uebersichtskarte schickt den Reiter, die Kamera bleibt"
+  ]
+}

@@ -1,0 +1,10 @@
+{
+  "spec": "10-strategie/einheiten-und-befehle.md",
+  "ac": "AC-56",
+  "titel": "Ein Dorfbewohner mit Holz gewaehlt, der Zeiger auf dem Dach des Dorfzentrums: am Zeiger steht Abladen, die Raute liegt um das ganze Gebaeude",
+  "datei": "e2e/tests/strategie-rueckmeldung.spec.mjs",
+  "pfad": [
+    "Rueckmeldungen aus dem ersten Spiel",
+    "einheiten AC-56: mit Holz auf dem Ruecken das Dach des Dorfzentrums geklickt - er laedt ab und hackt weiter"
+  ]
+}

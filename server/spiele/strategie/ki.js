@@ -78,6 +78,9 @@ const ZIEL_GESCHEITERT_TAKTE = 2 * TAKTE_PRO_SEKUNDE;
 // So weit muessen Feinde von einer verlassenen Baustelle weg sein, bevor ein
 // Ersatz hingeht (Durchsicht Runde 94).
 const BAUSTELLE_FEIND_FERN = 6;
+// Ein Bauplatz darf kein Stueck Land abschneiden, das kleiner ist als so
+// viele Felder (ki AC-10, `sperrtEin`): wer darin steht, sitzt fest.
+const TASCHE = 40;
 
 // Nach dem Aufstieg (ki AC-9): ein Gebaeude der Feudalzeit, in dem
 // Kampfeinheiten entstehen. Mit Gold die Schiessanlage - Bogenschuetzen
@@ -1665,10 +1668,62 @@ class Ki {
         const [dx, dy] = ring[(start + i) % ring.length];
         const x = um.x + dx;
         const y = um.y + dy;
-        if (this.welt.platzPruefen(art, x, y) && this.randFrei(x, y, n)) return { x, y };
+        if (this.welt.platzPruefen(art, x, y) && this.randFrei(x, y, n) && !this.sperrtEin(art, x, y)) return { x, y };
       }
     }
     return null;
+  }
+
+  /**
+   * Schnitte der Bau ein Stueck begehbares Land ab (ki AC-10)? Geprueft wird
+   * jedes freie Feld rings um die Grundflaeche: kommt man von dort jetzt
+   * mindestens TASCHE Felder weit und mit dem Bau nicht mehr, entstuende eine
+   * Tasche - und wer darin steht, kaeme nie wieder heraus.
+   *
+   * Beim Startwert 12 setzte die KI eine Muehle vor eine Luecke im Waldrand,
+   * in der zwei Holzfaeller hackten; sie standen von Minute 21 bis zum Ende
+   * mit voller Ladung darin, 346 Sekunden (gemessen 2026-11-12). Dieselbe
+   * Luecke schloss vorher ein Holzfaellerlager - das fiel nicht auf, weil die
+   * beiden dort neben sich abliefern konnten.
+   *
+   * Gezaehlt wird mit der Regel der Wegsuche: schraeg nur, wenn beide
+   * Nachbarfelder frei sind. Eine Tasche, die es schon gibt, zaehlt nicht -
+   * an ihr aendert der Bau nichts.
+   */
+  sperrtEin(art, x, y) {
+    if (GEBAEUDE[art].begehbar) return false;
+    const { karte } = this.welt;
+    const g = karte.groesse;
+    const { x0, y0, x1, y1 } = this.welt.grundflaeche(art, x, y);
+    const frei = (fx, fy, mitBau) => karten.begehbar(karte, fx, fy)
+      && !(mitBau && fx >= x0 && fx <= x1 && fy >= y0 && fy <= y1);
+    const weit = (sx, sy, mitBau) => {
+      const gesehen = new Set([sy * g + sx]);
+      const offen = [[sx, sy]];
+      while (offen.length && gesehen.size < TASCHE) {
+        const [fx, fy] = offen.pop();
+        for (let dy = -1; dy <= 1; dy++) {
+          for (let dx = -1; dx <= 1; dx++) {
+            if (!dx && !dy) continue;
+            const nx = fx + dx;
+            const ny = fy + dy;
+            if (!frei(nx, ny, mitBau) || gesehen.has(ny * g + nx)) continue;
+            if (dx && dy && (!frei(nx, fy, mitBau) || !frei(fx, ny, mitBau))) continue;
+            gesehen.add(ny * g + nx);
+            offen.push([nx, ny]);
+          }
+        }
+      }
+      return gesehen.size;
+    };
+    for (let fy = y0 - 1; fy <= y1 + 1; fy++) {
+      for (let fx = x0 - 1; fx <= x1 + 1; fx++) {
+        if (fx >= x0 && fx <= x1 && fy >= y0 && fy <= y1) continue;
+        if (!karten.begehbar(karte, fx, fy)) continue;
+        if (weit(fx, fy, true) < TASCHE && weit(fx, fy, false) >= TASCHE) return true;
+      }
+    }
+    return false;
   }
 
   // Um die Grundflaeche ein Feld, auf dem kein Gebaeude steht und das nicht

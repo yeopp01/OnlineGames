@@ -49,7 +49,7 @@ test.describe('Markt', () => {
     await anna.keyboard.press('b');
     const menue = await baumenue(anna);
     expect(menue).toContain('markt');
-    await expect(anna.locator('#baumenue [data-bauen="markt"]')).toHaveAttribute('title', /Markt/);
+    await expect(anna.locator('#baumenue [data-bauen="markt"]')).toHaveAttribute('aria-label', /Markt/);
     await anna.keyboard.press(BAUTASTEN[menue.indexOf('markt')]);
     await expect.poll(() => anna.evaluate(() => window.ansicht.platzieren?.art)).toBe('markt');
     await anna.keyboard.press('Escape');

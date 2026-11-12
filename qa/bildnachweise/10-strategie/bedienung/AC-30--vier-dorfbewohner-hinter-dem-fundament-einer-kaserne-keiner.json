@@ -1,0 +1,10 @@
+{
+  "spec": "10-strategie/bedienung.md",
+  "ac": "AC-30",
+  "titel": "Vier Dorfbewohner hinter dem Fundament einer Kaserne: keiner ist blau eingefaerbt, das Fundament verdeckt niemanden",
+  "datei": "e2e/tests/strategie-rueckmeldung.spec.mjs",
+  "pfad": [
+    "Rueckmeldungen aus dem ersten Spiel",
+    "bedienung AC-30: neben einer Baustelle, von der erst das Fundament steht, bleibt der Dorfbewohner, wie er ist"
+  ]
+}

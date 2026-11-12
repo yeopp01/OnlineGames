@@ -371,6 +371,161 @@ die Zeilen unter „Für die Erkenntnisse" dorthin und erzeugt das Board neu
     Grenzen fehlen). Bevor andere eingeladen werden: betrieb AC-5
     (Vorwarnung), AC-10 (Absturz einer Partie), AC-11 und AC-12 (Grenze
     gemessen).
+- **Das erste Spiel auf dem Server (2026-11-12): die Liste des Benutzers.**
+  Davor `strategie` bis Runde 199 eingebunden (`b4a202f`, fester Commit
+  `144fc2d`). Neue Nummern: einheiten ab AC-55, bedienung ab AC-51.
+  Stand je Punkt — fortschreiben, was gebaut ist:
+  1. Schafe lassen sich nicht schlachten — der Klick trifft das Feld unter
+     dem Zeiger, nicht das Bild; `tierAn` nimmt nur 1,01 Felder um das
+     gerundete Feld. → bedienung AC-51 (Klick trifft das Bild: Schaf, Baum,
+     Feind, Baustelle), `ansicht.zielUnter()`.
+  2. Im Menü steht nur der Preis, nicht die Wirkung (Forschung und Einheit).
+     → bedienung AC-55, Text aus `werte.verbesserungen[...]`.
+  3. Späherreiter wirkt langsam: 1,2 gegen 0,8 des Dorfbewohners, wie in der
+     Vorlage; das Original gibt ihm ab der Feudalzeit 1,55. **Nicht gebaut,
+     Frage an den Benutzer** (Konterkreis neu messen).
+  4. Verdeckte Einheiten sind ganze blaue Flächen, schon an der Baustelle.
+     → bedienung AC-30 nachbessern: nur der verdeckte Teil, als Kontur.
+  5. Rechtsklick auf die Übersichtskarte schickt nicht. → bedienung AC-53.
+  6. Die Leiste wandert, wenn die Schlange wächst. → bedienung AC-54.
+  7. Ton: ruhige Musik, Geräusche für Fertigstellung, Angriff. **Offen,
+     eigener Schritt** (WebAudio, eigenes Material).
+  8. Beim Holzhacken nicht erkennbar, ob der Klick den Baum traf. →
+     bedienung AC-52 (Zeiger sagt vorher, was der Klick tut; Zeichen am
+     Ziel für Arbeit anders als für Gehen).
+  9. Ohne Vollbild endet das Randschieben am Fensterrand. → bedienung AC-56.
+  10. Sammler stehen ineinander — das ist einheiten AC-30, offen seit Runde
+      89 (kostet die KI 0,4 Minuten). **Offen, eigener Schritt.**
+  11. Vorrat leer: der Dorfbewohner bleibt mit Ladung stehen. → einheiten
+      AC-55 (`abgebenBeginnen`), **Server geschrieben**.
+  12. Rechtsklick aufs Dorfzentrum lädt nicht ab. → einheiten AC-56,
+      **Server geschrieben**.
+  13. Pause, Speichern und Laden. **Offen, eigener Schritt** (ADR-0007: der
+      Raum ist flüchtig — Speichern ist eine Entscheidung).
+  14. „Die Übersicht über die Punkte der Spieler aus dem Original fehlt" —
+      die Punkte gibt es (bedienung AC-47), aber nur bei gehaltenem `Tab`,
+      und auf dem Server lief noch Runde 189. → bedienung AC-57: die Liste
+      steht ständig rechts über der Übersichtskarte.
+  15. „Die Dorfbewohner hacken auf dem Feld ja ganz schön rum, da bräuchten
+      sie ne andere Interaktion" — auf der Farm läuft der Ablauf des
+      Holzhackens. **Offen, mit dem Render-Schritt**: ein eigener Ablauf
+      (Hacke, gebückt) in `grafik/dorfbewohner.py`; der Zustand nennt nur
+      `w`, die Art der Arbeit liest das Bild aus dem Ort (Farm unter den
+      Füßen) oder der Ladung.
+  16. „Zwei Häuser nebeneinander — das zweite direkt mitbauen." → bauen
+      AC-36 (`welt.nachDemBau()`, `BAU_NAEHE = 8`).
+  17. Notfallklingel: Dorfbewohner ins Dorfzentrum, das dann schießt.
+      **Offen, eigener Schritt** — neue Mechanik (Einquartieren), vorher
+      gegen „Wird nicht gebaut" in ADR-0012 halten.
+  18. „Diesen Raumcode gibt es nicht" nach dem Neuladen; Liste offener
+      Spiele, Wiedereinstieg, Startklick. → **erster Teil** raeume AC-17
+      (laufende Partie wartet, Uhr steht) und AC-18 (Vorraum bietet die
+      Rückkehr, Absage vergisst den Platz). Liste am Konto, Fortsetzen nach
+      Neustart und Startklick gehören zum Speichern (Punkt 13).
+  Außerdem gefragt: Gebäude sind noch gezeichnet (R4 offen). Offene Antwort:
+  die blauen Einheiten kommen nicht von den gezeichneten Gebäuden, sondern
+  von der Regel AC-30.
+  **Erster Stapel gebaut (2026-11-12):** Punkte 1, 2, 4, 5, 6, 8, 9, 11, 12,
+  14, 16 und der erste Teil von 18 — zwölf Kriterien `fertig` (bedienung
+  AC-51 bis AC-57, einheiten AC-55 und AC-56, bauen AC-36, raeume AC-17 und
+  AC-18), bedienung AC-9 und AC-30 nachgeführt. Belege:
+  `tests/strategie-abgeben.test.mjs`, `tests/strategie-bringt.test.mjs`,
+  `tests/netz.test.mjs`, `tests/schutz.test.mjs`,
+  `e2e/tests/strategie-rueckmeldung.spec.mjs`,
+  `e2e/tests/strategie-randschieben.spec.mjs`. **Zweiter Stapel, je ein
+  eigener Schritt:** 13 + Rest von 18 (Pause, Speichern, Liste am Konto —
+  braucht ein ADR, weil „Speicherstände für Strategiepartien" in ADR-0012
+  rechts steht), 7 (Ton), 10 (einheiten AC-30), 3 (Reitertempo, Frage), 15
+  (Farm-Ablauf, mit dem Rendern), 17 (Klingel).
+  **Arbeitsstand 2026-11-12, 13:45 (fortschreiben):** erster Stapel
+  uncommittet im Arbeitsbaum. Der Abschlusslauf `check:alles:neu:kurz` ist
+  durch: 248 Browserfälle grün, ohne Browser fiel **ki AC-10/AC-12 beim
+  Startwert 12** (346 s untätig) — die KI stellte eine Mühle vor eine
+  Ein-Feld-Lücke am Waldrand, zwei Holzfäller saßen fest. Behoben mit
+  `ki.sperrtEin` (`TASCHE = 40`) in `platzBei`; `check:kurz` danach grün
+  (789/789), Regeltest dazu in `tests/strategie-ki.test.mjs` (Gegenprobe
+  fällt). Die sechs Browserdateien mit KI danach: 27 grün. Die Durchsicht
+  der 110 Bilder über 1 % fand drei falsche; behoben (siehe unten), fünf
+  Browserdateien nachgefahren: 21 grün, Bilder angesehen. **14:05:** letzter
+  `check:kurz` läuft (Grenze 1500 s, `kurz3.log`), danach Commit und
+  `node scripts/ausrollen.mjs`. Der Blender-Agent (R4) steht seit 14:00 an
+  der Nutzungsgrenze, frei ab 17:10: zwei Gruppen committet (zehn Gebäude),
+  Gruppe 3 (Kloster, Markt, Universität, Werkstatt) uncommittet im
+  Arbeitsbaum `OnlineGames-gebaeude` — mit SendMessage an denselben Agenten
+  fortsetzen, keinen neuen starten. **Zweiter Stapel liegt
+  fertig geprobt im Scratchpad** (`a12.py` Pause und Aufgeben-Lücke,
+  `a13.py` Fremdes ansehen, `a14.py` Reitertempo, `a15.py` Browserfall dazu,
+  `a16.py` Ton; dazu `ton.js`, `strategie-ton.test.mjs`,
+  `strategie-ton.spec.mjs`, `strategie-pause.spec.mjs`,
+  `strategie-zeitalter-wirkung.test.mjs`, `pause-netz.txt`) — in dieser
+  Reihenfolge anwenden, dann ein gemeinsamer voller Lauf. Vergeben sind
+  dort bedienung AC-58 bis AC-61, einheiten AC-57, speichern AC-19 bis
+  AC-21. **Nachgefragt vom Benutzer währenddessen:**
+  (19) Gegnerische Einheiten und Gebäude anklicken und Leben sehen — geht
+  noch nicht, Linksklick wählt nur Eigenes; wird ein eigenes Kriterium
+  (ansehen ohne Befehle). (20) „Laufen alte Spiele weiter?" — gemessen:
+  Server 0 Räume, 0 Partien; aber wer gegen mehrere KIs aufgibt, sieht die
+  Partie weiterlaufen. **Lücke:** wer ausgeschieden ist, soll im Vorraum
+  die Rückkehr nicht angeboten bekommen (`LETZTE_PARTIE` bei `ansicht.aus`
+  vergessen). (21) Ein **Agent rendert die Gebäude** (R4) im eigenen
+  Arbeitsbaum `OnlineGames-gebaeude` neben diesem, Zweig
+  `strategie-gebaeude`: nur `grafik/`, `public/bilder/`, Bildprobe; ein
+  Blender-Prozess, vier Threads; kein Push. Einbinden ins Spielbild danach
+  hier. **Reihenfolge zweiter Stapel:** Pause (speichern AC-19 bis AC-21,
+  als Nachricht `pause`/`weiter` am Raum, eigene Nachricht `pause` an alle,
+  Tasten F3 und Pause, allein ohne Grenze), Gegner ansehen, Reitertempo,
+  Aufgeben-Lücke, Ton — ein gemeinsamer Lauf; dann einheiten AC-30,
+  Klingel, Speichern mit ADR-0017.
+  **Was dabei gelernt wurde:**
+  - **Ein Test, der eine Wahl prüft, muss die Wahl erzwingen.** Der erste
+    Regeltest zu `sperrtEin` rief `platzBei` vierzigmal und blieb in der
+    Gegenprobe grün: im Ring mit Abstand eins gab es nur einen gültigen
+    Platz, und der sperrte nichts. Erst mit dem Ring im Abstand zwei und
+    jedem der sechzehn Startpunkte der Reihe nach (`ki.zufall` gesetzt)
+    fällt er ohne die Prüfung. Gegenprobe vor dem Abhaken, nicht danach.
+  - **Die Durchsicht der Bilder fand, was 248 grüne Fälle nicht sahen.**
+    Ein Hilfsagent sah alle 110 Bilder über 1 % gegen ihre Titel durch:
+    auf einem stand nur Schwarz (bedienung AC-36), auf einem klebten die
+    Gebäude am unteren Rand (bauen AC-28). Zwei Ursachen. Erstens: wird
+    das Fenster kleiner und die Maus steht im alten Bereich, meldet der
+    Browser `mouseleave` ohne Ziel — für AC-56 ein Gang über den Rand, und
+    die Karte lief davon (`groesseGeaendert` in `ansicht.js`, eigener
+    Browserfall). Zweitens: zwei Tests klickten `platz.x, platz.y` — Felder
+    der Karte als Bildpunkte, oben links im Randstreifen; das stand so seit
+    Runden im Zweig und fiel erst auf, als sich die Zahl um eins verschob.
+    Ein Test, der vor dem Bild „alle im Bild" prüft und dann 300 ms wartet,
+    sieht nicht, was in den 300 ms geschieht.
+  - **`check:kurz` unter Last braucht mehr als 840 s.** Neben dem
+    Blender-Agenten und zwei Wegwerfbildern lief der Abschnitt mit den
+    ganzen Partien 527 s statt 150 — die eigene Zeitgrenze schnitt ihn ab
+    („aufgeben.test.mjs test failed", Ende 124). Kein Fehler im Code;
+    Grenze 1500 s, und nebenher keinen Browser starten.
+  - **Ein anderer Verlauf deckt alte Fehler auf.** Das Einmauern gab es am
+    HEAD schon — dort schloss ein Holzfällerlager dieselbe Lücke, und die
+    Eingeschlossenen lieferten neben sich ab. Eine Messung über zwanzig
+    Startwerte ist eine Stichprobe, kein Beweis.
+  - **Eine Partie, die wartet, zählt gegen jede Grenze, die Räume zählt.**
+    Mit raeume AC-17 blieben verlassene Partien 30 Minuten stehen — bei drei
+    Partien je Anschluss wäre nach dreimal Neu-Eröffnen Schluss gewesen, und
+    der Browserlauf (über 200 Partien von einer Adresse) hätte die Grenze
+    des Testservers gerissen. Deshalb weicht die älteste verlassene
+    (`raeume.verlasseneSchliessen()`), und `/betrieb/zahlen` zählt sie nicht
+    als laufend. Wer einem Raum ein längeres Leben gibt, sieht nach, wer
+    Räume zählt.
+  - **Ein Hinweis, der über der Leiste steht, gehört nicht in die Leiste.**
+    Die Leiste baut ihren Inhalt bei jeder Änderung neu (`replaceChildren`);
+    die Tafel am Knopf (`#knopftafel`) hängt deshalb daneben und sucht ihren
+    Knopf über `data-`Attribute wieder. Und `title` an denselben Knöpfen
+    hätte zwei Hinweise übereinander gezeigt — sie tragen `aria-label`.
+  - **Eine Maske aus dem Bild des Gebäudes** statt des Trefferkastens: der
+    Umriss (AC-30) färbt nur, was unter dem gezeichneten Gebäude liegt
+    (`umrissZeichnen`, zweimal `destination-in`, damit der Schlagschatten
+    nicht zählt). Baustellen unter 50 % verdecken niemanden — dieselbe
+    Grenze gilt beim Klick (`gebaeudeDavor`).
+  - **`npm run sicht -- --spiel --tun probe.mjs`**: ein Modul spielt im
+    Wegwerfbild (`{ anna, bert, welt, bild }`), `bild('name')` schreibt ein
+    Bild. Damit ließ sich jede der Änderungen ansehen, bevor ein Test
+    geschrieben war.
 - **Der ADR heißt jetzt 0016** (umbenannt am 2026-11-10, vorher 0014): auf
   `strategie` sind die Nummern 0014 (Häuser statt Völker) und 0015
   (Statthalter) inzwischen vergeben. Beim Einbinden bleibt nur

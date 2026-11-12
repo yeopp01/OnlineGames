@@ -3,7 +3,7 @@
 // Die ganze Karte als Raute, wie das Spielbild sie zeigt: Gelaende in seinen
 // Farben, Gebaeude und Einheiten als Punkte in Spielerfarbe, der Ausschnitt
 // der grossen Ansicht als Rahmen. Ein Klick - oder Ziehen - schiebt die
-// Ansicht dorthin.
+// Ansicht dorthin; ein Rechtsklick schickt die Auswahl hin (AC-53).
 //
 // Das Gelaende wird einmal in ein Bild gezeichnet und nur neu, wenn sich
 // Felder aendern; Punkte und Rahmen fuenfmal je Sekunde - mehr sieht man auf
@@ -35,6 +35,7 @@ export class Uebersicht {
     // Was zuletzt gemalt wurde - fuer den Browserlauf (bedienung AC-11).
     this.punkte = [];
     this.rahmen = [];
+    this.zielpunkt = null;
     this.binden();
   }
 
@@ -77,7 +78,21 @@ export class Uebersicht {
       this.zuletzt = 0;
     };
     this.leinwand.addEventListener('mousedown', (e) => {
-      if (e.button !== 0 || !this.ansicht.karte) return;
+      if (!this.ansicht.karte) return;
+      // Rechts: die Auswahl geht zu diesem Feld - wie ein Rechtsklick im
+      // Spielbild auf den Boden dort (bedienung AC-53). Mit Umschalt hinten
+      // an die Reihe, mit einem gewaehlten Gebaeude sein Sammelpunkt.
+      if (e.button === 2) {
+        const rand = this.leinwand.getBoundingClientRect();
+        const feld = this.punktZuFeld(e.clientX - rand.left, e.clientY - rand.top);
+        const g = this.ansicht.karte.groesse;
+        if (feld.x < -0.5 || feld.y < -0.5 || feld.x > g - 0.5 || feld.y > g - 0.5) return;
+        this.ansicht.befehlenAufFeld(feld.x, feld.y, e.shiftKey);
+        this.zuletzt = 0;
+        e.preventDefault();
+        return;
+      }
+      if (e.button !== 0) return;
       zieht = true;
       springen(e);
       e.preventDefault();
@@ -173,6 +188,23 @@ export class Uebersicht {
       punkte.push({ art: 'einheit', i: e.i, b: e.b, x: p.x, y: p.y });
     }
     this.punkte = punkte;
+
+    // Das Zeichen am Ziel eines Befehls steht auch hier (bedienung AC-53):
+    // wer auf der Uebersicht schickt, sieht das Spielbild dort meist nicht.
+    const zeichen = ansicht.zielzeichen;
+    this.zielpunkt = null;
+    if (zeichen) {
+      const p = this.feldZuPunkt(zeichen.x, zeichen.y);
+      this.zielpunkt = { x: p.x, y: p.y, feindlich: zeichen.feindlich };
+      s.beginPath();
+      s.arc(p.x, p.y, 4.5, 0, Math.PI * 2);
+      s.strokeStyle = 'rgba(15,18,22,0.9)';
+      s.lineWidth = 3.5;
+      s.stroke();
+      s.strokeStyle = zeichen.feindlich ? '#e23c2a' : zeichen.arbeit ? '#f2c14e' : '#ffffff';
+      s.lineWidth = 1.5;
+      s.stroke();
+    }
 
     // Der Ausschnitt der grossen Ansicht: die vier Ecken des Bildes als Felder.
     const w = ansicht.leinwand.clientWidth;

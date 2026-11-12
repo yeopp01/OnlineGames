@@ -1713,3 +1713,64 @@ test('ki AC-21: fehlen Dorfbewohner, kommt trotzdem der Aufstieg zuerst, sobald 
   // Gegenprobe: fehlt Gold, bildet sie weiter Dorfbewohner aus.
   assert.ok(entschieden(199).includes('dorfbewohner'), 'ohne das Gold der Ritterzeit wird weiter ausgebildet');
 });
+
+// ---- Niemanden einmauern (ki AC-10, 2026-11-12) ------------------------------
+//
+// Beim Startwert 12 setzte die KI eine Muehle vor eine Luecke im Waldrand, in
+// der zwei Holzfaeller hackten: 346 Sekunden mit voller Ladung, bis zum Ende.
+// Hier dieselbe Lage im Kleinen, auf einer freigeraeumten Wiese.
+test('ki AC-10: die KI mauert niemanden ein - ein Bauplatz, der eine Luecke am Wald verschliesst, wird verworfen', () => {
+  // Eine freigeraeumte Wiese in der Kartenmitte; die Muehle auf (m, m)
+  // belegt (m-1..m, m-1..m).
+  const lage = () => {
+    const welt = new Welt(ZWEI, 7);
+    const g = welt.karte.groesse;
+    const m = Math.floor(g / 2);
+    const setzen = (x, y, art) => {
+      welt.karte.felder[y * g + x] = art;
+      welt.karte.vorrat.delete(y * g + x);
+    };
+    for (let y = m - 8; y <= m + 8; y++) for (let x = m - 8; x <= m + 8; x++) setzen(x, y, karten.GRAS);
+    return { welt, ki: new Ki(welt, 'a'), m, setzen, g };
+  };
+  const { welt, ki, m, setzen, g } = lage();
+  const draussen = { x: m + 5, y: m + 5 };
+  assert.equal(welt.platzPruefen('muehle', m, m), true, 'der Platz selbst ist frei');
+  assert.equal(ki.sperrtEin('muehle', m, m), false, 'auf offener Wiese schneidet sie nichts ab');
+
+  // Eine Luecke westlich davon: links, oben und unten Wald, offen nur nach
+  // Osten - dorthin, wo die Muehle stehen soll.
+  for (const [x, y] of [[m - 3, m - 1], [m - 2, m - 2], [m - 2, m]]) setzen(x, y, karten.WALD);
+  const luecke = { x: m - 2, y: m - 1 };
+  assert.ok(suchen(welt.karte, luecke, draussen).length > 0, 'noch kommt man heraus');
+  assert.equal(ki.sperrtEin('muehle', m, m), true, 'die Muehle schloesse die Luecke');
+  // Ein Feld weiter oestlich bleibt der Ausgang frei.
+  assert.equal(ki.sperrtEin('muehle', m + 1, m), false);
+  // Und eine Farm ist begehbar: sie sperrt niemanden ein.
+  assert.equal(ki.sperrtEin('farm', m, m), false);
+
+  // Die Platzwahl selbst geht an der Luecke vorbei: mit jedem gewaehlten
+  // Platz fuehrt aus ihr noch ein Weg. Der Ring im Abstand zwei hat sechzehn
+  // Felder, und die Wahl beginnt an einem zufaelligen davon - hier der Reihe
+  // nach an jedem, denn zwei davon schloessen die Luecke.
+  for (let i = 0; i < 16; i++) {
+    ki.zufall = () => (i + 0.5) / 16;
+    const platz = ki.platzBei('muehle', luecke, 2);
+    assert.ok(platz, 'es gibt einen Platz');
+    const { x0, y0, x1, y1 } = welt.grundflaeche('muehle', platz.x, platz.y);
+    for (let y = y0; y <= y1; y++) for (let x = x0; x <= x1; x++) welt.karte.felder[y * g + x] = karten.BEBAUT;
+    const weg = suchen(welt.karte, luecke, draussen).length;
+    for (let y = y0; y <= y1; y++) for (let x = x0; x <= x1; x++) welt.karte.felder[y * g + x] = karten.GRAS;
+    assert.ok(weg > 0, `der Platz ${platz.x},${platz.y} mauerte die Luecke zu`);
+  }
+
+  // Gegenprobe an der Welt: steht die Muehle doch dort, fuehrt kein Weg mehr heraus.
+  welt.gebaeudeAnlegen('a', 'muehle', m, m);
+  assert.equal(suchen(welt.karte, luecke, draussen).length, 0, 'eingemauert');
+
+  // Eine Tasche, die es schon gibt, zaehlt nicht - an ihr aendert der Bau nichts.
+  const zweite = lage();
+  for (const [x, y] of [[m + 1, m], [m + 2, m + 1], [m + 1, m + 2], [m, m + 1]]) zweite.setzen(x, y, karten.WALD);
+  assert.equal(suchen(zweite.welt.karte, { x: m + 1, y: m + 1 }, draussen).length, 0, 'das Feld ist schon zu');
+  assert.equal(zweite.ki.sperrtEin('muehle', m, m), false);
+});

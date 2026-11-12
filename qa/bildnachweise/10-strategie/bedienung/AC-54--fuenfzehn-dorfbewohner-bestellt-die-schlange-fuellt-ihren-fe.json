@@ -1,0 +1,10 @@
+{
+  "spec": "10-strategie/bedienung.md",
+  "ac": "AC-54",
+  "titel": "Fuenfzehn Dorfbewohner bestellt: die Schlange fuellt ihren festen Platz in zwei Reihen, der Knopf steht unter der Maus, wo er stand",
+  "datei": "e2e/tests/strategie-rueckmeldung.spec.mjs",
+  "pfad": [
+    "Rueckmeldungen aus dem ersten Spiel",
+    "bedienung AC-54: fuenfmal und fuenfzehnmal Dorfbewohner - der Knopf steht auf den Bildpunkt, wo er stand"
+  ]
+}

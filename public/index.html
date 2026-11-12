@@ -13,6 +13,14 @@
         <p class="unterzeile">Ein Raumcode, kein Konto — außer du eröffnest.</p>
       </header>
 
+      <section id="rueckkehr" class="block rueckkehr" hidden>
+        <p>Du warst in der Partie <strong id="rueckkehrCode"></strong>. Sie wartet, solange niemand am Tisch sitzt.</p>
+        <div class="reihe">
+          <button id="rueckkehrJa" type="button">Zurückkehren</button>
+          <button id="rueckkehrNein" class="leise" type="button">verwerfen</button>
+        </div>
+      </section>
+
       <div class="vorraumspalten">
       <section class="block mitspielen">
         <h2>Mitspielen</h2>
@@ -157,7 +165,8 @@
           <button id="buendnisJa" class="haupt" type="button">Ja, lösen</button>
         </div>
       </div>
-      <canvas id="uebersicht" class="uebersicht" title="Übersichtskarte - klicken springt hin" aria-label="Übersichtskarte"></canvas>
+      <ol id="punkteliste" class="punkteliste" aria-label="Punkte der Spieler" hidden></ol>
+      <canvas id="uebersicht" class="uebersicht" title="Übersichtskarte – Klick springt hin, Rechtsklick schickt die Auswahl" aria-label="Übersichtskarte"></canvas>
       <button id="untaetig" class="untaetig" type="button" title="Untätige Dorfbewohner (Taste .)" aria-label="Untätige Dorfbewohner: 0" disabled>
         <svg viewBox="0 0 20 20" aria-hidden="true"><circle cx="10" cy="5" r="3" fill="#e2b48c"/><path d="M5 18c0-6 2-8.5 5-8.5s5 2.5 5 8.5z" fill="#8a8f96"/><path d="M13 12l4 5" stroke="#6b4a2b" stroke-width="1.4"/></svg>
         <b>0</b>

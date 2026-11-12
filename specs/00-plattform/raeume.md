@@ -2,7 +2,7 @@
 
 **Bereich:** Plattform
 **Kuerzel:** raeume
-**Stand:** 11/16 fertig · 2 in QA · 3 offen
+**Stand:** 13/18 fertig · 2 in QA · 3 offen
 
 ## Zweck
 
@@ -63,9 +63,35 @@ Name eintragen → Partie eroeffnen → Code weitergeben
 ### Aufraeumen
 
 - **AC-12** `in-qa` **Verwaister Raum wird geschlossen** — Ein Raum, in dem nach einer Minute niemand
-  mehr verbunden ist, wird geschlossen und seine Uhr angehalten.
+  mehr verbunden ist, wird geschlossen und seine Uhr angehalten. Das gilt dem
+  Warteraum und der entschiedenen Partie; eine **laufende** Partie wartet
+  laenger (AC-17).
 - **AC-13** `in-qa` **Leerlauf endet nach 30 Minuten** — Ein Raum ohne jeden Befehl wird nach 30
   Minuten geschlossen.
+
+- **AC-17** `fertig` **Laufende Partie wartet** — Gehen alle aus einer
+  laufenden Partie, bleibt der Raum stehen und seine **Uhr haelt an**: wer
+  allein gegen den Computer spielte und neu lud, fand vorher keinen Raum mehr
+  ("Diesen Raumcode gibt es nicht", das erste Spiel auf dem Server,
+  2026-11-12). Kehrt einer zurueck (AC-10), geht sie weiter, wo sie stand —
+  nachgeholt wird nichts. Nach 30 Minuten ohne jeden am Tisch wird sie
+  geschlossen (wie AC-13). Sie **sperrt niemanden aus**: steht eine Grenze
+  des Schutzes dem Eroeffnen im Weg, weicht die am laengsten verlassene
+  Partie — zuerst eine desselben Anschlusses. Fuer den Betreiber zaehlt sie
+  nicht als laufend; ein Ausrollen wartet nicht auf sie. Ein Raum vor dem
+  Start schliesst weiter mit dem Letzten, der geht.
+- **AC-18** `fertig` **Der Vorraum bietet die Rueckkehr** — Der Browser merkt
+  sich die laufende Partie ueber das Schliessen des Fensters hinweg. Wer die
+  Seite wieder oeffnet, sieht im Vorraum "Du warst in der Partie KRN-4TZ" mit
+  "Zurueckkehren" und "verwerfen" — niemand muss Code oder Token kennen. Von
+  selbst geht es nur nach einem Neuladen im selben Fenster zurueck (AC-10);
+  ein zweites Fenster naehme sonst dem ersten den Platz. Gibt es Partie oder
+  Platz nicht mehr, sagt der Server das **einmal** ("Diese Partie gibt es
+  nicht mehr", mit `platzWeg`), und der Browser vergisst den Platz — die
+  Absage kam vorher bei jedem Neuladen wieder. Eine entschiedene Partie wird
+  nicht angeboten, eine aeltere als 30 Minuten auch nicht. Die Liste aller
+  eigenen offenen Partien am Konto und das Fortsetzen nach einem Neustart des
+  Servers gehoeren zum Speichern (eigene Spec, noch nicht gebaut).
 
 ### Robustheit
 

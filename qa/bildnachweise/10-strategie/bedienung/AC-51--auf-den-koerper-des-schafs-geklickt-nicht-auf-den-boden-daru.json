@@ -1,0 +1,10 @@
+{
+  "spec": "10-strategie/bedienung.md",
+  "ac": "AC-51",
+  "titel": "Auf den Koerper des Schafs geklickt, nicht auf den Boden darunter: es liegt geschlachtet, der Dorfbewohner traegt Fleisch",
+  "datei": "e2e/tests/strategie-rueckmeldung.spec.mjs",
+  "pfad": [
+    "Rueckmeldungen aus dem ersten Spiel",
+    "bedienung AC-51: ein Rechtsklick auf den Koerper des Schafs schlachtet - obwohl der Boden dahinter ein anderes Feld ist"
+  ]
+}

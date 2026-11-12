@@ -8,6 +8,9 @@
 //   npm run sicht -- --spiel --zoom 1 --messen   (Zeichenzeit je Bild)
 //   npm run sicht -- --spiel --waehlen speerkaempfer   (Einheit anlegen und
 //       anwaehlen - fuer die Auswahlleiste, die ohne Auswahl nicht da ist)
+//   npm run sicht -- --spiel --tun probe.mjs   (vor dem Bild ein eigenes
+//       Stueck Ablauf: `export default async ({ anna, bert, welt, bild })`,
+//       `bild('name')` schreibt ein weiteres Bild und nennt den Pfad)
 //
 // Fuer das schnelle Hinsehen beim Zeichnen (Rueckschau nach Runde 10). Die
 // Bilder sind Wegwerfbilder und gehoeren nicht ins Repository - belegt wird
@@ -175,6 +178,23 @@ async function spielbild() {
       return ((performance.now() - start) / 40).toFixed(1);
     });
     console.log(`Zeichnen je Bild: ${ms} ms (Zoom ${wert('zoom', 1)})`);
+  }
+  // --tun <datei>: ein eigenes Stueck Ablauf vor dem Bild - eine Schlange
+  // fuellen, einen Knopf ueberfahren, etwas messen. Die Datei liegt, wo sie
+  // will; sie bekommt die zwei Fenster und die Welt des Servers.
+  const tun = wert('tun', null);
+  if (tun) {
+    const { pathToFileURL } = await import('node:url');
+    const { resolve } = await import('node:path');
+    const ablauf = (await import(pathToFileURL(resolve(tun)).href)).default;
+    const bild = async (bildname, fenster = anna) => {
+      const pfad = join(ordner, `${bildname}.png`);
+      await fenster.screenshot({ path: pfad });
+      console.log(pfad);
+      return pfad;
+    };
+    const ergebnis = await ablauf({ anna, bert, welt: laufend.raeume.finden(code)?.welt, laufend, code, bild });
+    if (ergebnis !== undefined) console.log(JSON.stringify(ergebnis, null, 1));
   }
   await anna.screenshot({ path: ziel });
 }

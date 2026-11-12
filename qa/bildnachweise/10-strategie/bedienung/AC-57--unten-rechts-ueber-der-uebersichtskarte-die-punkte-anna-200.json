@@ -1,0 +1,10 @@
+{
+  "spec": "10-strategie/bedienung.md",
+  "ac": "AC-57",
+  "titel": "Unten rechts ueber der Uebersichtskarte die Punkte: Anna 200 vor Bert 123, ohne eine Taste",
+  "datei": "e2e/tests/strategie-rueckmeldung.spec.mjs",
+  "pfad": [
+    "Rueckmeldungen aus dem ersten Spiel",
+    "bedienung AC-57: die Punkte stehen staendig ueber der Uebersichtskarte, der Fuehrende oben"
+  ]
+}

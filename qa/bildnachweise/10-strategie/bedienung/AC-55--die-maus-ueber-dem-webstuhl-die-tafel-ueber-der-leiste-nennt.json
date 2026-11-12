@@ -1,0 +1,10 @@
+{
+  "spec": "10-strategie/bedienung.md",
+  "ac": "AC-55",
+  "titel": "Die Maus ueber dem Webstuhl: die Tafel ueber der Leiste nennt Preis, Wirkung in Zahlen und Dauer",
+  "datei": "e2e/tests/strategie-rueckmeldung.spec.mjs",
+  "pfad": [
+    "Rueckmeldungen aus dem ersten Spiel",
+    "bedienung AC-55: ueber dem Webstuhl steht, was er bringt - und ueber dem Dorfbewohner, was er kann"
+  ]
+}

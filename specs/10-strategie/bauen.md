@@ -2,7 +2,7 @@
 
 **Bereich:** Strategie
 **Kuerzel:** bauen
-**Stand:** 33/35 fertig · 2 offen
+**Stand:** 34/36 fertig · 2 offen
 
 ## Zweck
 
@@ -291,6 +291,16 @@ Spezialeinheit der Burg (kommt mit den Häusern, Stufe E), Palisade.
   Schützen ausbilden. Gerechnet: in 180 Sekunden bildet eine Schießanlage
   sechs Armbrustschützen aus (27 s das Stück). Höchstens ein Drache je
   Spieler; ist die Einstellung „Drache" aus, gibt es den Auftrag nicht.
+
+### Aus dem ersten Spiel auf dem Server (2026-11-12)
+
+- **AC-36** `fertig` **Danach die nächste Baustelle** — Ist ein Gebäude
+  fertig und wartet kein angehängter Bau (bedienung AC-48), baut der
+  Dorfbewohner von selbst an der nächsten eigenen Baustelle im Umkreis von
+  acht Feldern weiter, die seine Art bauen darf — wer zwei Häuser
+  nebeneinander setzt, bekommt beide. Weiter weg holt ihn keine. Nach einem
+  Lager oder einer Mühle geht das Sammeln vor (AC-1), die Baustelle daneben
+  wartet.
 
 ## Grenzfaelle
 

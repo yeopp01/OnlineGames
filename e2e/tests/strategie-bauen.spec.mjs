@@ -58,7 +58,7 @@ test.describe('Bauen', () => {
     for (const art of ['muehle', 'holzfaellerlager', 'bergbaulager']) {
       const knopf = menue.locator(`[data-bauen="${art}"]`);
       await expect(knopf).toHaveAttribute('aria-disabled', 'true');
-      await expect(knopf).toHaveAttribute('title', /zu wenig Holz$/);
+      await expect(knopf).toHaveAttribute('aria-label', /zu wenig Holz$/);
       await expect(knopf).toContainText('100');
     }
     await expect(menue.locator('[data-bauen="kaserne"]')).toHaveAttribute('aria-disabled', 'true');

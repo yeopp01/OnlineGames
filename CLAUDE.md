@@ -170,7 +170,7 @@ Umfang hinzufügt, dort nachsehen.
 
 ## Stand
 
-**483 von 605 Kriterien fertig.** 762 Tests ohne Browser, 232 im Browser. Die
+**500 von 625 Kriterien fertig.** 790 Tests ohne Browser, 249 im Browser. Die
 Übersicht ist der Bericht: `npm run qa:report`.
 
 Gebaut ist der Unterbau: Räume, Übertragung, Karte, Wegfindung, Sammeln,
@@ -551,6 +551,29 @@ Einheiten gekostet haben, je 5 für Verbesserungen und Aufstiege
 (`welt.punkte()`, auf der Leitung `pk`, auch an Gegner im Nebel); je 5
 für das, was vernichtete Gegner gekostet haben (AC-49, `welt.siegZaehlen()`
 in `schlaegeAbrechnen()`, nur bei `feindlich`).
+
+**Rückmeldungen aus dem ersten Spiel auf dem Server** (2026-11-12, Zweig
+`strategie-bildumbau`): **Der Klick trifft das Bild** (bedienung AC-51) — den
+Körper des Schafs, die Baumkrone, das Dach des Lagers, nicht das Bodenfeld
+dahinter —, und **am Zeiger steht vorher, was der Rechtsklick täte** (AC-52,
+`ansicht.zeigerZiel`). Ein **Rechtsklick auf die Übersichtskarte** schickt die
+Auswahl (AC-53). **Die Leiste bleibt stehen** (AC-54): die Schlange hat ihren
+eigenen Platz, kein Knopf wandert. **Über jedem Knopf steht eine Tafel** mit
+Preis, Wirkung in Zahlen und Dauer (AC-55) — die Sätze schreibt der Server
+(`server/spiele/strategie/bringt.js`), der Browser liest keine Wirkung aus
+den Daten. **Geschoben wird auch, wenn die Maus das Fenster verlässt**
+(AC-56), und **die Punkte stehen ständig über der Übersichtskarte** (AC-57).
+Als Umriss erscheint nur, wer hinter einem Gebäude steht, das schon Wände
+hat (AC-30) — ein Fundament verdeckt niemanden. **Ist ein Vorrat leer** und
+kein gleicher in der Nähe, bringt der Sammler heim, was er trägt
+(einheiten AC-55); ein **Rechtsklick auf ein Lager lädt ab** und führt zur
+alten Arbeit zurück (AC-56, Auftrag `abgeben`); nach einem fertigen Bau baut
+der Bauer **an der nächsten eigenen Baustelle** in acht Feldern weiter (bauen
+AC-36). **Eine laufende Partie wartet** (raeume AC-17): gehen alle, hält ihre
+Uhr an, dreißig Minuten lang, und sie sperrt beim Eröffnen niemanden aus;
+**der Vorraum bietet die Rückkehr an** (AC-18). **Die KI mauert niemanden
+ein** (ki AC-10, `ki.sperrtEin`): ein Bauplatz, der weniger als 40 Felder
+Land abschneidet, wird verworfen.
 
 1. **Stufe A** Dunkle Zeit mit Wirtschafts-KI und Prüfstand · **B** Feudalzeit
    · **C** Partieende und KI-Gegner · **D** Ritterzeit · **E** fünf Häuser ·

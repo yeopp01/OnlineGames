@@ -68,7 +68,11 @@ test.describe('Ritterzeit', () => {
     await expect.poll(() => anna.evaluate(() => window.ansicht.platzieren?.art)).toBe('kloster');
     const platz = await platzImBild(anna, { n: 3, um: basis, abstand: 9, seitlich: true });
     expect(platz, 'Platz fuer das Kloster').not.toBeNull();
-    await anna.mouse.click(platz.x, platz.y);
+    // `platz.x` und `platz.y` sind Felder der Karte, geklickt wird im Bild:
+    // bis 2026-11-12 ging dieser Klick auf die Bildpunkte mit den Zahlen der
+    // Felder, oben links unter der Kopfzeile - und die Maus blieb dort im
+    // Randstreifen liegen, der die Karte schiebt.
+    await anna.mouse.click(platz.bild.x, platz.bild.y);
     await expect.poll(() => anna.evaluate(() => [...window.ansicht.gebaeude.values()].some((g) => g.art === 'kloster'))).toBe(true);
     const kloster = await anna.evaluate(() => {
       const g = [...window.ansicht.gebaeude.values()].find((x) => x.art === 'kloster');
@@ -256,8 +260,8 @@ test.describe('Ritterzeit', () => {
     await forschen(['schmiedeangriff', 'befiedertePfeile']);
     // Danach stehen die beiden der Ritterzeit an ihrer Stelle.
     await waehlen(schmiede);
-    await expect(knopf('eisenguss')).toHaveAttribute('title', 'Eisenguss erforschen (220 Nahrung, 120 Gold)');
-    await expect(knopf('bodkinpfeil')).toHaveAttribute('title', 'Bodkinpfeil erforschen (200 Nahrung, 100 Gold)');
+    await expect(knopf('eisenguss')).toHaveAttribute('aria-label', 'Eisenguss erforschen (220 Nahrung, 120 Gold)');
+    await expect(knopf('bodkinpfeil')).toHaveAttribute('aria-label', 'Bodkinpfeil erforschen (200 Nahrung, 100 Gold)');
     await expect(knopf('eisenguss')).toBeInViewport();
     await expect(knopf('bodkinpfeil')).toBeInViewport();
     const bild = (art) => anna.evaluate((art) => document.querySelector(`[data-ausbilden="${art}"] canvas`).toDataURL(), art);
@@ -282,7 +286,7 @@ test.describe('Ritterzeit', () => {
     }, haus);
     const vorher = await hausWerte();
     await waehlen(await meins('universitaet'));
-    await expect(knopf('mauerwerk')).toHaveAttribute('title', 'Mauerwerk erforschen (175 Holz, 150 Stein)');
+    await expect(knopf('mauerwerk')).toHaveAttribute('aria-label', 'Mauerwerk erforschen (175 Holz, 150 Stein)');
     bilder.mauerwerk = await bild('mauerwerk');
     await forschen(['mauerwerk']);
     await expect.poll(hausWerte).toEqual({ h: Math.round(vorher.voll * 1.1), voll: Math.round(vorher.voll * 1.1) });
@@ -293,7 +297,7 @@ test.describe('Ritterzeit', () => {
     await expect(knopf('stadtpatrouille')).toHaveCount(0);
     await forschen(['stadtwache']);
     await waehlen(zentrum);
-    await expect(knopf('stadtpatrouille')).toHaveAttribute('title', 'Stadtpatrouille erforschen (300 Nahrung, 100 Gold)');
+    await expect(knopf('stadtpatrouille')).toHaveAttribute('aria-label', 'Stadtpatrouille erforschen (300 Nahrung, 100 Gold)');
     bilder.stadtpatrouille = await bild('stadtpatrouille');
     // Vier Verbesserungen, vier Bilder.
     expect(new Set(Object.values(bilder)).size, 'vier verschiedene Bilder').toBe(4);

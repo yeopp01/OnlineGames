@@ -6,6 +6,7 @@ const {
   EINHEITEN, SAMMELN, TIERE, GEBAEUDE, VERBESSERUNGEN, ZEITALTER, AUFSTIEGE, KLASSEN, HANDEL, HAEUSER,
   BEVOELKERUNG_MAX, SCHLANGE_MAX, STARTAUFSTELLUNG,
 } = require('./daten');
+const { bringt } = require('./bringt');
 
 const TAKTE_PRO_SEKUNDE = 10;
 // Welche Werte die Auswahlleiste je Einheit zeigt (bedienung AC-35). Leben
@@ -26,6 +27,9 @@ const TOT_SEKUNDEN = 2;
 // So viele Ziele haengt Umschalt hoechstens an einen Gang (bedienung AC-14):
 // eine Grenze, damit ein Zustand nicht mit jedem Klick waechst (ADR-0005).
 const WEGPUNKTE_MAX = 20;
+// Wie weit ein Bauer nach getaner Arbeit von selbst zur naechsten eigenen
+// Baustelle geht (bauen AC-36), in Feldern.
+const BAU_NAEHE = 8;
 // Spielraum auf die Reichweite, damit ein Nahkaempfer auch schraeg (1,41
 // Felder) zuschlaegt; am Rand einer Grundflaeche messen wir genauer.
 const SCHLAGRAND = 0.5;
@@ -1085,12 +1089,38 @@ class Welt {
         this.farmBeginnen(einheit, gebaeude);
         continue;
       }
-      if (!arten.size || gebaeude.art === 'dorfzentrum') continue;
-      const feld = this.naechsterVorratAus(einheit, arten);
-      if (!feld) continue;
-      einheit.auftrag = { art: 'sammeln', feld };
-      this.wegZumVorrat(einheit);
+      const feld = arten.size && gebaeude.art !== 'dorfzentrum' ? this.naechsterVorratAus(einheit, arten) : null;
+      if (feld) {
+        einheit.auftrag = { art: 'sammeln', feld };
+        this.wegZumVorrat(einheit);
+        continue;
+      }
+      // Wer sonst nur bereitstuende, baut an der naechsten eigenen Baustelle
+      // in der Naehe weiter (bauen AC-36): zwei Haeuser nebeneinander gesetzt
+      // sind ein Auftrag, nicht zwei.
+      const naechste = this.baustelleNahe(einheit);
+      if (naechste) this.bauenBeginnen(einheit, naechste);
     }
+  }
+
+  /**
+   * Die naechste eigene Baustelle, die diese Einheit bauen kann, hoechstens
+   * BAU_NAEHE Felder entfernt (bauen AC-36). Bei gleichem Abstand die
+   * aeltere - die Simulation bleibt deterministisch.
+   */
+  baustelleNahe(einheit) {
+    const kann = EINHEITEN[einheit.art].baut || [];
+    let beste = null;
+    let abstand = BAU_NAEHE + 1e-9;
+    for (const gebaeude of this.gebaeude.values()) {
+      if (gebaeude.fertig || gebaeude.besitzer !== einheit.besitzer || !kann.includes(gebaeude.art)) continue;
+      const d = Math.hypot(gebaeude.x - einheit.x, gebaeude.y - einheit.y);
+      if (d < abstand) {
+        abstand = d;
+        beste = gebaeude;
+      }
+    }
+    return beste;
   }
 
   gebaeudeGeaendert(gebaeude) {
@@ -1636,6 +1666,12 @@ class Welt {
         && EINHEITEN[einheit.art].tragkraft > 0
         && (!baustelle.arbeiter || baustelle.arbeiter === einheit.id || !this.einheiten.has(baustelle.arbeiter))) {
         this.farmBeginnen(einheit, baustelle);
+      } else if (!angriffslauf && baustelle && baustelle.fertig && baustelle.besitzer === spielerId
+        && einheit.ladung > 0 && GEBAEUDE[baustelle.art].annahme.includes(einheit.ladungsart)) {
+        // Ein Rechtsklick auf ein eigenes Lager, das die Ladung annimmt: dort
+        // wird abgeladen, danach geht es zurueck an die alte Arbeit
+        // (einheiten AC-56).
+        this.abgebenBeginnen(einheit, baustelle);
       } else if (schaf && EINHEITEN[einheit.art].tragkraft > 0) {
         if (einheit.ladung > 0 && einheit.ladungsart !== 'nahrung') {
           einheit.ladung = 0;
@@ -2039,6 +2075,11 @@ class Welt {
   // Abgegeben wird am naechsten fertigen eigenen Gebaeude, das den Rohstoff
   // annimmt (einheiten AC-16) - gemessen an seinem Rand.
   lagerFuer(einheit) {
+    // Wer zu einem bestimmten Lager geschickt wurde, gibt dort ab - solange
+    // es steht und die Ladung annimmt (einheiten AC-56).
+    const wunsch = einheit.auftrag?.art === 'abgeben' ? this.gebaeude.get(einheit.auftrag.gebaeude) : null;
+    if (wunsch && wunsch.fertig && wunsch.besitzer === einheit.besitzer
+      && GEBAEUDE[wunsch.art].annahme.includes(einheit.ladungsart)) return wunsch;
     let bestes = null;
     let besterAbstand = Infinity;
     for (const gebaeude of this.gebaeude.values()) {
@@ -2051,6 +2092,20 @@ class Welt {
       }
     }
     return bestes;
+  }
+
+  /**
+   * Die Ladung abgeben und sonst nichts (einheiten AC-55, AC-56). Ohne
+   * `lager` am naechsten, das sie annimmt. Aus einer laufenden Arbeit heraus
+   * - Sammeln, Tier, Farm - merkt sich der Auftrag sie als `zurueck`, und
+   * `abladen` setzt sie danach fort.
+   */
+  abgebenBeginnen(einheit, lager = null) {
+    const alt = einheit.auftrag;
+    const zurueck = lager && alt && ['sammeln', 'tier', 'farm'].includes(alt.art) && !alt.leer ? alt : null;
+    einheit.auftrag = { art: 'abgeben', ...(lager ? { gebaeude: lager.id } : {}), ...(zurueck ? { zurueck } : {}) };
+    einheit.sammelt = false;
+    this.wegZumLager(einheit);
   }
 
   wegZumLager(einheit) {
@@ -3504,6 +3559,11 @@ class Welt {
       this.farmTakten(einheit);
       return;
     }
+    if (einheit.auftrag.art === 'abgeben') {
+      if (einheit.ladung > 0) this.abladen(einheit);
+      else einheit.auftrag = null;
+      return;
+    }
     if (einheit.auftrag.art !== 'sammeln') {
       einheit.auftrag = null;
       return;
@@ -3542,8 +3602,11 @@ class Welt {
       // damit die Sammler nicht einfach stehenbleiben.
       const ersatz = this.naechsterVorrat(einheit, einheit.zuletztGesammelt);
       if (!ersatz) {
-        einheit.auftrag = null;
         einheit.sammelt = false;
+        // Nichts Gleiches mehr in der Naehe: was er traegt, bringt er noch
+        // heim, statt damit stehenzubleiben (einheiten AC-55).
+        if (einheit.ladung > 0) this.abgebenBeginnen(einheit);
+        else einheit.auftrag = null;
         return;
       }
       einheit.auftrag = { art: 'sammeln', feld: ersatz };
@@ -3636,9 +3699,21 @@ class Welt {
     einheit.ladung = 0;
     einheit.ladungsart = null;
     einheit.angefangen = 0;
+    // Wer nur abgeben sollte, ist fertig - oder nimmt die Arbeit wieder auf,
+    // aus der ihn der Befehl geholt hat (einheiten AC-55, AC-56).
+    if (einheit.auftrag?.art === 'abgeben') {
+      einheit.auftrag = einheit.auftrag.zurueck || null;
+      if (!einheit.auftrag) return;
+    }
     // Zurueck an die Arbeit: zum selben Vorrat, Tier oder zur selben Farm.
     if (einheit.auftrag?.art === 'farm') {
       const farm = this.gebaeude.get(einheit.auftrag.gebaeude);
+      // Der Befehl zum Abladen hat die Farm freigegeben (`farmVerlassen`);
+      // ist sie noch frei, gehoert sie wieder ihm (einheiten AC-56).
+      if (farm && !einheit.auftrag.leer && !farm.arbeiter) {
+        farm.arbeiter = einheit.id;
+        this.gebaeudeGeaendert(farm);
+      }
       if (farm && !einheit.auftrag.leer) this.wegZurFarm(einheit, farm);
       else einheit.auftrag = null;
       return;
@@ -4056,6 +4131,8 @@ class Welt {
           angriff: w.angriff || 0, nahruestung: w.nahruestung || 0, fernruestung: w.fernruestung || 0,
           reichweite: w.reichweite || 0,
           sicht: w.sicht || 0,
+          // Felder je Sekunde - das Menue nennt es (bedienung AC-55).
+          tempo: w.tempo || 0,
           // Klassen und Bonus, damit die Leiste "+15 gegen Kavallerie"
           // schreiben kann (bedienung AC-35). Der Browser rechnet damit
           // keinen Schaden - das tut der Server (kampf AC-3).
@@ -4091,7 +4168,9 @@ class Welt {
         // Wie viel ein Handel tauscht und welche Waren (bauen AC-33). Die
         // Preise rechnet der Server (`hp` je Spieler).
         handel: { menge: HANDEL.menge, waren: Object.keys(HANDEL.waren) },
-        verbesserungen: VERBESSERUNGEN,
+        // Jede Verbesserung mit dem, was sie bringt, in Worten (bedienung
+        // AC-55) - der Browser liest keine Wirkung aus den Daten.
+        verbesserungen: Object.fromEntries(Object.entries(VERBESSERUNGEN).map(([art, v]) => [art, { ...v, bringt: bringt(v) }])),
         // Die Namen der Klassen, fuer den Bonus an der Auswahl (bedienung AC-35).
         klassen: KLASSEN,
         // Wie lang eine gezogene Mauer hoechstens ist (bauen AC-30).

@@ -68,8 +68,8 @@ test.describe('Verbesserungen der Feudalzeit', () => {
     const pfeile = anna.locator('[data-ausbilden="befiedertePfeile"]');
     await expect(angriff).toHaveCount(1);
     await expect(pfeile).toHaveCount(1);
-    await expect(angriff).toHaveAttribute('title', 'Schmiedeangriff erforschen (100 Nahrung)');
-    await expect(pfeile).toHaveAttribute('title', 'Befiederte Pfeile erforschen (100 Nahrung, 50 Gold)');
+    await expect(angriff).toHaveAttribute('aria-label', 'Schmiedeangriff erforschen (100 Nahrung)');
+    await expect(pfeile).toHaveAttribute('aria-label', 'Befiederte Pfeile erforschen (100 Nahrung, 50 Gold)');
     await expect(angriff).toBeInViewport();
     await expect(pfeile).toBeInViewport();
 
@@ -123,7 +123,7 @@ test.describe('Verbesserungen der Feudalzeit', () => {
     await gebaeudeWaehlen(anna, muehle);
     const kummet = anna.locator('[data-ausbilden="pferdekummet"]');
     await expect(kummet).toHaveCount(1);
-    await expect(kummet).toHaveAttribute('title', 'Pferdekummet erforschen (75 Nahrung, 75 Holz)');
+    await expect(kummet).toHaveAttribute('aria-label', 'Pferdekummet erforschen (75 Nahrung, 75 Holz)');
     await expect(kummet).toBeInViewport();
     await erforschen(anna, code, 'pferdekummet');
 
@@ -154,7 +154,7 @@ test.describe('Verbesserungen der Feudalzeit', () => {
     await gebaeudeWaehlen(anna, lager);
     const axt = anna.locator('[data-ausbilden="doppelaxt"]');
     await expect(axt).toHaveCount(1);
-    await expect(axt).toHaveAttribute('title', 'Doppelaxt erforschen (100 Nahrung, 50 Holz)');
+    await expect(axt).toHaveAttribute('aria-label', 'Doppelaxt erforschen (100 Nahrung, 50 Holz)');
     await erforschen(anna, code, 'doppelaxt');
     await gebaeudeWaehlen(anna, lager);
     await expect(anna.locator('[data-ausbilden="doppelaxt"]')).toHaveCount(0);
@@ -231,7 +231,7 @@ test.describe('Verbesserungen der Feudalzeit', () => {
     await gebaeudeWaehlen(anna, zentrum, 0.8);
     const knopf = anna.locator('[data-ausbilden="stadtwache"]');
     await expect(knopf).toHaveCount(1);
-    await expect(knopf).toHaveAttribute('title', 'Stadtwache erforschen (75 Nahrung)');
+    await expect(knopf).toHaveAttribute('aria-label', 'Stadtwache erforschen (75 Nahrung)');
     await expect(knopf).toBeInViewport();
     // Ein eigenes Bild: nicht dasselbe wie der Webstuhl daneben (darstellung AC-14).
     const gleich = await anna.evaluate(() => {

@@ -2,7 +2,7 @@
 
 **Bereich:** Strategie
 **Kuerzel:** einheiten
-**Stand:** 29/47 fertig · 17 offen · 1 zurueckgestellt
+**Stand:** 31/49 fertig · 17 offen · 1 zurueckgestellt
 
 ## Zweck
 
@@ -418,6 +418,22 @@ AC-19). Werte und Dauern sind Startwerte aus ADR-0014.
   Nahrung bei null, hungert er und verliert Leben, bis er fällt — wo er
   gerade ist (dann AC-53). Das ist die Bremse statt einer Sperre durch das
   Zeitalter: früh ist er ein großer Teil der Wirtschaft, spät ein kleiner.
+
+### Aus dem ersten Spiel auf dem Server (2026-11-12)
+
+- **AC-55** `fertig` **Leerer Vorrat: Ladung heimbringen** — Ist der Vorrat
+  leer und kein weiterer derselben Art in Reichweite (AC-13), bringt der
+  Sammler heim, was er trägt, und steht **danach** bereit — im ersten Spiel
+  blieb er mit acht Beeren neben dem leeren Strauch stehen. Zu einer anderen
+  Nahrungsquelle wechselt er nicht von selbst: Schafe und Farmen sind eine
+  Entscheidung des Spielers. Ohne Ladung bleibt er stehen wie bisher.
+- **AC-56** `fertig` **Rechtsklick aufs Lager lädt ab** — Ein Rechtsklick auf
+  ein eigenes fertiges Gebäude, das die getragene Ladung annimmt
+  (Dorfzentrum alles, Mühle Nahrung, Holzfällerlager Holz, Bergarbeiterlager
+  Gold und Stein), ist der Auftrag abzuladen — an **diesem** Gebäude, nicht
+  am nächsten. Danach geht er zurück an seine Arbeit: an denselben Vorrat,
+  an dieselbe Farm. Trägt er nichts oder nimmt das Gebäude die Ladung nicht,
+  bleibt es ein Gang. Am Zeiger steht „Abladen" (bedienung AC-52).
 
 ## Grenzfaelle
 

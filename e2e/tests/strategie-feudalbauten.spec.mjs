@@ -75,7 +75,11 @@ test.describe('Gebaeude der Feudalzeit', () => {
     // Seitlich neben das Dorfzentrum: genau dahinter verdeckt es sie (Runde 59).
     const platz = await platzImBild(anna, { n: 3, um: basis, abstand: 8, seitlich: true });
     expect(platz, 'Platz fuer die Schiessanlage').not.toBeNull();
-    await anna.mouse.click(platz.x, platz.y);
+    // `platz.x` und `platz.y` sind Felder der Karte, geklickt wird im Bild:
+    // bis 2026-11-12 ging dieser Klick auf die Bildpunkte mit den Zahlen der
+    // Felder, oben links unter der Kopfzeile - und die Maus blieb dort im
+    // Randstreifen liegen, der die Karte schiebt.
+    await anna.mouse.click(platz.bild.x, platz.bild.y);
     await expect.poll(() => anna.evaluate(() => [...window.ansicht.gebaeude.values()].some((g) => g.art === 'schiessanlage'))).toBe(true);
 
     // Fertig bauen lassen und ansehen.

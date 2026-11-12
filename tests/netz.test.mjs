@@ -371,6 +371,92 @@ test('raeume AC-9 / raeume AC-10: nach Verbindungsabbruch kehrt der Spieler zuru
   zurueck.zu();
 });
 
+test('raeume AC-17: gehen alle, bleibt die laufende Partie stehen - die Uhr haelt an, und die Rueckkehr findet sie', async () => {
+  const anna = gastgeber();
+  await anna.offen();
+  anna.senden({ typ: 'erstellen', name: 'Anna' });
+  const du = await anna.warteAuf(istTyp('du'));
+  const bert = kunde();
+  await bert.offen();
+  bert.senden({ typ: 'beitreten', code: du.code, name: 'Bert' });
+  await bert.warteAuf(istTyp('du'));
+  anna.senden({ typ: 'start', startwert: 7 });
+  await anna.warteAuf(istTyp('aufbau'));
+  await anna.warteAuf((n) => n.typ === 'zustand' && n.t >= 3);
+
+  // Beide weg - vorher war der Raum im selben Augenblick geschlossen, und
+  // wer allein gegen den Computer neu lud, bekam "Diesen Raumcode gibt es
+  // nicht" (das erste Spiel auf dem Server, 2026-11-12).
+  bert.zu();
+  anna.zu();
+  await Promise.all([anna.zuende(), bert.zuende()]);
+  const vorher = anna.eingang.filter(istTyp('zustand')).at(-1).t;
+  // Eine Sekunde ohne jeden am Tisch waeren zehn Takte.
+  await new Promise((fertig) => setTimeout(fertig, 1000));
+  const raum = laufend.raeume.finden(du.code);
+  assert.ok(raum, 'der Raum ist noch da');
+  assert.ok(raum.welt.takt - vorher <= 2, `die Uhr steht: Takt ${raum.welt.takt} nach ${vorher}`);
+
+  const zurueck = kunde();
+  await zurueck.offen();
+  zurueck.senden({ typ: 'zurueck', code: du.code, token: du.token });
+  const wieder = await zurueck.warteAuf(istTyp('du'));
+  assert.equal(wieder.id, du.id, 'derselbe Platz');
+  await zurueck.warteAuf(istTyp('aufbau'));
+  const erster = await zurueck.warteAuf(istTyp('zustand'));
+  assert.ok(erster.t - vorher <= 4, `sie geht weiter, wo sie stand - nichts wird nachgeholt: Takt ${erster.t} nach ${vorher}`);
+  // Und sie laeuft wieder.
+  await zurueck.warteAuf((n) => n.typ === 'zustand' && n.t >= erster.t + 5);
+
+  // Vor dem Start gibt es nichts zu bewahren: ein Raum im Warteraum schliesst
+  // mit dem letzten, der geht.
+  const cem = gastgeber();
+  await cem.offen();
+  cem.senden({ typ: 'erstellen', name: 'Cem' });
+  const duCem = await cem.warteAuf(istTyp('du'));
+  cem.zu();
+  await cem.zuende();
+  await new Promise((fertig) => setTimeout(fertig, 100));
+  assert.equal(laufend.raeume.finden(duCem.code), null, 'der Warteraum ist zu');
+  zurueck.zu();
+});
+
+test('raeume AC-18: eine Rueckkehr ins Leere sagt, dass der Platz weg ist - damit der Browser ihn vergisst', async () => {
+  // Die Partie gibt es nicht mehr: das war die Meldung "Diesen Raumcode gibt
+  // es nicht" bei jedem Neuladen (das erste Spiel auf dem Server).
+  const spaet = kunde();
+  await spaet.offen();
+  spaet.senden({ typ: 'zurueck', code: 'ZZZZZZ', token: 'x'.repeat(32) });
+  const weg = await spaet.warteAuf(istTyp('fehler'));
+  assert.equal(weg.platzWeg, true, 'der Browser erfaehrt, dass er den Platz vergessen soll');
+  assert.equal(weg.text, 'Diese Partie gibt es nicht mehr.');
+  spaet.zu();
+
+  // Den Raum gibt es, den Platz nicht: dieselbe Antwort.
+  const anna = gastgeber();
+  await anna.offen();
+  anna.senden({ typ: 'erstellen', name: 'Anna' });
+  const du = await anna.warteAuf(istTyp('du'));
+  const fremd = kunde();
+  await fremd.offen();
+  fremd.senden({ typ: 'zurueck', code: du.code, token: 'y'.repeat(32) });
+  const keiner = await fremd.warteAuf(istTyp('fehler'));
+  assert.equal(keiner.platzWeg, true);
+  assert.equal(keiner.text, weg.text, 'die Antwort verraet nicht, ob es den Raum gibt');
+  assert.equal(fremd.eingang.some(istTyp('du')), false, 'und niemand sitzt auf einem fremden Platz');
+
+  // Ein Beitritt mit falschem Code traegt das Zeichen nicht - dort gibt es
+  // nichts zu vergessen.
+  const bert = kunde();
+  await bert.offen();
+  bert.senden({ typ: 'beitreten', code: 'ZZZZZY', name: 'Bert' });
+  const daneben = await bert.warteAuf(istTyp('fehler'));
+  assert.equal(daneben.platzWeg, undefined);
+  anna.zu();
+  fremd.zu();
+  bert.zu();
+});
+
 test('raeume AC-14 / uebertragung AC-3: unsinnige Nachrichten bringen den Server nicht um', async () => {
   const anna = gastgeber();
   await anna.offen();

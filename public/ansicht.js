@@ -11,7 +11,7 @@ import { gerendert, richtungAus } from './bilder.js';
 import { KACHEL, kachelMassstab, kachelZeichnen } from './boden.js';
 import { Nebel } from './nebel.js';
 import {
-  DINGE, GRAS, WALD, WASSER, dingBildZeichnen, grasBeginnen, grasSammeln, grasZeichnen, raute, wellenZeichnen,
+  BEERE, DINGE, GOLD, GRAS, STEIN, WALD, WASSER, dingBildZeichnen, grasBeginnen, grasSammeln, grasZeichnen, raute, wellenZeichnen,
 } from './gelaende.js';
 
 const HALB_B = 22; // halbe Rautenbreite in Bildpunkten bei Vergroesserung 1
@@ -33,6 +33,15 @@ const KLICK_WEITE = 16; // Bildpunkte bei Vergroesserung 1
 // nicht im Weg ist, lang genug, dass man es bei einem Klick bemerkt.
 const ZIELZEICHEN_DAUER = 800; // Millisekunden
 const RAND_SCHIEBEN = 12; // Bildpunkte am Fensterrand, in denen die Maus die Karte schiebt (bedienung AC-9)
+// Was ein Rechtsklick taete, in Worten am Zeiger (bedienung AC-52).
+const ZIELTEXT = {
+  angreifen: 'Angreifen', bekehren: 'Bekehren', schlachten: 'Schlachten', fleisch: 'Fleisch holen', bauen: 'Mitbauen',
+  farm: 'Farm bestellen', abladen: 'Abladen', handeln: 'Handeln',
+};
+const SAMMELTEXT = { [WALD]: 'Holz hacken', [BEERE]: 'Beeren sammeln', [GOLD]: 'Gold abbauen', [STEIN]: 'Stein abbauen' };
+// Die Ladung kommt als erster Buchstabe ihres Rohstoffs (`a` an der Einheit).
+const LADUNGSART = { h: 'holz', n: 'nahrung', g: 'gold', s: 'stein' };
+const ARBEITSFARBE = '#f2c14e'; // Zeichen fuer Arbeit: weder Gang (weiss) noch Angriff (rot)
 
 // Die gemerkte Wahl zum Schieben am Rand; ohne Speicher (privates Fenster) "an".
 export function randSchiebenGemerkt() {
@@ -118,6 +127,10 @@ export class Ansicht {
     // Platzieren eines Gebaeudes (bauen AC-4): welche Art, und wo der Zeiger ist.
     this.platzieren = null;
     this.zeiger = null;
+    // Steht der Zeiger ueber dem Spielbild - und was ein Rechtsklick dort
+    // taete (bedienung AC-52). Jedes Bild neu bestimmt.
+    this.zeigerDrin = false;
+    this.zeigerZiel = null;
     // Schieben am Bildschirmrand (bedienung AC-9): wo die Maus im Spielbild
     // steht (null, sobald sie es verlaesst), und ob es an ist. Die Wahl merkt
     // sich der Browser, ohne ihn gilt die Vorgabe "an".
@@ -692,12 +705,22 @@ export class Ansicht {
   }
 
   binden() {
-    window.addEventListener('resize', () => this.groesseAnpassen());
+    // Wird das Fenster kleiner, waehrend die Maus im alten Bereich steht,
+    // meldet der Browser, sie habe es verlassen - das ist kein Gang ueber den
+    // Rand, und die Karte bleibt stehen (bedienung AC-56). Welche der beiden
+    // Meldungen zuerst kommt, ist nicht zugesagt: deshalb hier vergessen und
+    // dort eine halbe Sekunde lang nicht annehmen.
+    window.addEventListener('resize', () => {
+      this.groesseAnpassen();
+      this.groesseGeaendert = performance.now();
+      if (this.randZeiger?.draussen) this.randZeiger = null;
+    });
 
     this.leinwand.addEventListener('contextmenu', (e) => e.preventDefault());
 
     this.leinwand.addEventListener('pointerdown', (e) => {
       this.zeiger = { x: e.offsetX, y: e.offsetY };
+      this.zeigerDrin = true;
       if (this.platzieren) {
         // Links setzt die Baustelle, rechts bricht ab. Eine Mauer wird
         // gezogen: hier beginnt die Linie, beim Loslassen ist sie fertig
@@ -721,6 +744,7 @@ export class Ansicht {
 
     this.leinwand.addEventListener('pointermove', (e) => {
       this.zeiger = { x: e.offsetX, y: e.offsetY };
+      this.zeigerDrin = true;
       this.randZeiger = this.zeiger;
       if (!this.zug) return;
       this.zug.bisX = e.offsetX;
@@ -745,12 +769,29 @@ export class Ansicht {
       this.typWaehlen(e.offsetX, e.offsetY, e.shiftKey);
     });
 
-    // Verlaesst die Maus das Spielbild oder das Fenster den Fokus, steht die
-    // Karte (bedienung AC-9). Keine Leiste reicht bis an den Rand - alle
-    // stehen mindestens 1rem davor, die Kopfzeile nimmt keine Maus an -, also
-    // sieht die Leinwand die Maus in jedem Randstreifen selbst.
-    this.leinwand.addEventListener('pointerleave', () => { this.randZeiger = null; });
+    // Geht die Maus vom Spielbild auf eine Leiste oder verliert das Fenster
+    // den Fokus, steht die Karte (bedienung AC-9). Keine Leiste reicht bis an
+    // den Rand - alle stehen mindestens 1rem davor, die Kopfzeile nimmt keine
+    // Maus an -, also sieht die Leinwand die Maus in jedem Randstreifen selbst.
+    this.leinwand.addEventListener('pointerleave', () => {
+      this.randZeiger = null;
+      this.zeigerDrin = false;
+    });
     window.addEventListener('blur', () => { this.randZeiger = null; });
+    // Geht sie dagegen ueber den Rand aus dem Fenster hinaus, schiebt die
+    // Karte weiter (bedienung AC-56): ohne Vollbild ist der Rand nur zwoelf
+    // Bildpunkte breit, und wer zuegig dorthin faehrt, ist schon draussen. Der
+    // Zeiger gilt dann als an der Stelle des Randes stehend, ueber die er
+    // ging. Kommt er zurueck oder verliert das Fenster den Fokus, ist es vorbei.
+    const wurzel = document.documentElement;
+    wurzel.addEventListener('mouseleave', (e) => {
+      if (e.relatedTarget) return;
+      if (performance.now() - (this.groesseGeaendert ?? -Infinity) < 500) return;
+      this.randZeiger = this.austritt(e.clientX, e.clientY);
+    });
+    wurzel.addEventListener('mouseenter', () => {
+      if (this.randZeiger?.draussen) this.randZeiger = null;
+    });
 
     this.leinwand.addEventListener('wheel', (e) => {
       e.preventDefault();
@@ -1108,7 +1149,7 @@ export class Ansicht {
     stift.globalAlpha = 1;
   }
 
-  befehlen(px, py, anhaengen = false) {
+  befehlen(px, py, anhaengen = false, nurBoden = false) {
     const ziel = this.zuWelt(px, py);
     // Ein eigenes Gebaeude gewaehlt: der Rechtsklick setzt seinen Sammelpunkt (bauen AC-13).
     if (this.gewaehltesGebaeude) {
@@ -1121,16 +1162,275 @@ export class Ansicht {
     if (!this.ausgewaehlt.size) return;
     const lauf = this.angriffslauf;
     this.angriffslaufSetzen(false);
-    // Ein Angriffslauf ist ein Angriffsbefehl, auch auf leeres Gras: das
-    // Zeichen am Ziel ist deshalb rot (bedienung AC-34).
-    this.zielzeichenSetzen(ziel, lauf);
     const feld = { x: Math.round(ziel.x), y: Math.round(ziel.y) };
-    const hinten = anhaengen && !lauf;
+    if (lauf) {
+      // Ein Angriffslauf ist ein Angriffsbefehl, auch auf leeres Gras: das
+      // Zeichen am Ziel ist deshalb rot (bedienung AC-34). Sein Ziel ist der
+      // Boden - ein Befehl auf ein fremdes Bild waere ein Angriff darauf.
+      this.zielzeichenSetzen(ziel, true);
+      this.wegpunkteMerken(feld, false);
+      this.befehlSenden([...this.ausgewaehlt], feld, true, false);
+      return;
+    }
+    // Was der Klick trifft, ist das Bild unter dem Zeiger, nicht das Feld
+    // dahinter (bedienung AC-51): gesendet wird der Ort dessen, was gemeint ist.
+    const gemeint = this.zielUnter(px, py, nurBoden);
+    const feindlich = gemeint.art === 'angreifen' || gemeint.art === 'bekehren';
+    this.zielzeichen = {
+      x: gemeint.x,
+      y: gemeint.y,
+      feindlich,
+      // Arbeit hat ein eigenes Zeichen (bedienung AC-52): eine goldene Raute
+      // um das, woran gearbeitet wird.
+      arbeit: !feindlich && gemeint.art !== 'gehen',
+      art: gemeint.art,
+      groesse: gemeint.groesse || 1,
+      seit: performance.now(),
+    };
     // Ein Gegner steht in der Reihe mit seiner Mitte und rot (bedienung
     // AC-50) - dieselbe Frage, die das Zeichen eben beantwortet hat.
-    const feind = !lauf && this.zielzeichen?.feindlich;
-    this.wegpunkteMerken(feind ? { x: this.zielzeichen.x, y: this.zielzeichen.y, feind: true } : feld, hinten);
-    this.befehlSenden([...this.ausgewaehlt], feld, lauf, hinten);
+    this.wegpunkteMerken(feindlich ? { x: gemeint.x, y: gemeint.y, feind: true } : feld, anhaengen);
+    this.befehlSenden([...this.ausgewaehlt], gemeint.sende, false, anhaengen);
+  }
+
+  /** Ein Befehl auf ein Feld der Karte, ohne Bild - von der Uebersichtskarte (bedienung AC-53). */
+  befehlenAufFeld(x, y, anhaengen = false) {
+    const p = this.zuBild(x, y);
+    this.befehlen(p.x, p.y, anhaengen, true);
+  }
+
+  /**
+   * Was die Auswahl kann - fuer die Frage, was ein Rechtsklick taete
+   * (bedienung AC-51). Null, wenn keine eigene Einheit gewaehlt ist (nur
+   * Schafe gehen ueberall bloss hin).
+   */
+  auswahlKann() {
+    const einheiten = [];
+    for (const id of this.ausgewaehlt) {
+      const einheit = this.nachher.get(id);
+      if (einheit && einheit.b === this.ich && !einheit.s) einheiten.push(einheit);
+    }
+    if (!einheiten.length) return null;
+    const wert = (einheit) => this.werte.einheiten[this.arten[einheit.k]] || {};
+    const friedlich = einheiten.every((e) => !wert(e).angriff);
+    return {
+      einheiten,
+      // Lauter Rammen greifen keine Einheit an, nur Gebaeude (einheiten AC-35).
+      nurGebaeude: einheiten.every((e) => wert(e).nurGebaeude),
+      // Wer gar nicht angreift (der Moench, einheiten AC-37), geht nur hin.
+      friedlich,
+      // Lauter Moenche, die nicht ruhen (einheiten AC-38).
+      bekehrer: friedlich && einheiten.every((e) => wert(e).bekehren && !e.r),
+      sammler: einheiten.some((e) => wert(e).tragkraft > 0),
+      bauarten: new Set(einheiten.flatMap((e) => wert(e).baut || [])),
+      haendler: einheiten.some((e) => wert(e).handelt),
+      ladungen: new Set(einheiten.filter((e) => e.l > 0).map((e) => LADUNGSART[e.a])),
+    };
+  }
+
+  /**
+   * Was die Auswahl an einem Gebaeude taete - in der Reihenfolge, in der der
+   * Server fragt (`welt.befehl`): angreifen, mitbauen, die Farm bestellen,
+   * abladen, handeln. Null: nichts Besonderes, es ist ein Gang.
+   */
+  gebaeudeHandlung(gebaeude, kann) {
+    const werte = this.werte.gebaeude[gebaeude.art] || {};
+    const fertig = (gebaeude.u ?? 1) >= 1;
+    if (this.feindlich(gebaeude.b)) return kann.friedlich ? null : 'angreifen';
+    if (gebaeude.b === this.ich) {
+      if (!fertig) return kann.bauarten.has(gebaeude.art) ? 'bauen' : null;
+      if (werte.nahrung && kann.sammler) return 'farm';
+      if ((werte.annahme || []).some((rohstoff) => kann.ladungen.has(rohstoff))) return 'abladen';
+    }
+    if (fertig && werte.handel && kann.haendler) {
+      // Zum eigenen Markt faehrt ein Karren nur, wenn es einen zweiten gibt.
+      if (gebaeude.b !== this.ich) return 'handeln';
+      let maerkte = 0;
+      for (const g of this.gebaeude.values()) if (g.b === this.ich && this.werte.gebaeude[g.art]?.handel) maerkte += 1;
+      if (maerkte > 1) return 'handeln';
+    }
+    return null;
+  }
+
+  /**
+   * Was ein Rechtsklick an diesem Bildpunkt meint (bedienung AC-51).
+   *
+   * Vorher ging das Feld unter dem Zeiger an den Server - der Boden also, auf
+   * den man durch das Bild hindurch zeigt. Ein Schaf, ein Baum, ein Haus
+   * stehen aber ueber ihrem Fusspunkt: wer auf den Koerper des Schafs klickt,
+   * zeigt auf den Boden ein, zwei Felder dahinter, und der Dorfbewohner ging
+   * dorthin statt zu schlachten (das erste Spiel auf dem Server, 2026-11-12).
+   *
+   * Getroffen wird deshalb im Bild, in der Rangfolge des Servers: fremde
+   * Einheit, eigenes Schaf, Gebaeude, Vorrat - und erst dann der Boden.
+   * `sende` ist der Ort, aus dem der Server dasselbe liest: die Stelle der
+   * Einheit oder des Tiers (ungerundet, er misst 1,01 Felder darum), ein Feld
+   * des Gebaeudes, das Feld des Vorrats.
+   *
+   * @returns {{art: string, x: number, y: number, sende: {x: number, y: number}, text: string|null, groesse?: number}}
+   */
+  zielUnter(px, py, nurBoden = false) {
+    const boden = this.zuWelt(px, py);
+    const g = this.karte.groesse;
+    const feld = {
+      x: Math.max(0, Math.min(g - 1, Math.round(boden.x))),
+      y: Math.max(0, Math.min(g - 1, Math.round(boden.y))),
+    };
+    const kann = this.auswahlKann();
+    let ziel = null;
+    if (kann && !nurBoden) ziel = this.bildZiel(px, py, feld, kann);
+    if (kann && !ziel) ziel = this.bodenZiel(feld, kann);
+    ziel ||= { art: 'gehen', x: feld.x, y: feld.y, sende: feld };
+    // Der Server greift an, was naeher als ein Feld am gesendeten Ort steht
+    // (kampf AC-1) - vor allem anderen, also auch hier.
+    if (kann && ziel.art !== 'angreifen' && ziel.art !== 'bekehren') {
+      const feind = !kann.friedlich ? this.feindlichAn(ziel.sende, kann.nurGebaeude) : kann.bekehrer ? this.bekehrbarAn(ziel.sende) : null;
+      if (feind) ziel = { art: kann.friedlich ? 'bekehren' : 'angreifen', x: feind.x, y: feind.y, sende: ziel.sende };
+    }
+    ziel.text = ziel.art === 'sammeln' ? SAMMELTEXT[ziel.feldart] : ZIELTEXT[ziel.art] || null;
+    return ziel;
+  }
+
+  /** Was der Zeiger im Bild trifft - null, wenn nur Boden. Teil von `zielUnter`. */
+  /**
+   * Liegt der Bildpunkt im Bild eines Gebaeudes, das tiefer im Bild steht als
+   * `tiefe` - also ueber allem, was dort gezeichnet ist? Flache Gebaeude und
+   * fruehe Baustellen verdecken nichts (wie beim Umriss, bedienung AC-30).
+   */
+  gebaeudeDavor(px, py, tiefe) {
+    const e = HALB_B * this.kamera.zoom;
+    for (const gebaeude of this.gezeigteGebaeude()) {
+      if (this.werte.gebaeude[gebaeude.art]?.begehbar || (gebaeude.u ?? 1) < 0.5) continue;
+      const mitte = this.gebaeudeMitte(gebaeude);
+      if (mitte.x + mitte.y <= tiefe) continue;
+      const p = this.zuBild(mitte.x, mitte.y);
+      if (gebaeudeGetroffen(gebaeude.art, px - p.x, py - p.y, e, mitte.groesse)) return true;
+    }
+    return false;
+  }
+
+  bildZiel(px, py, feld, kann) {
+    const figur = this.figurenHoehe();
+    const e = HALB_B * this.kamera.zoom;
+    // 1. Eine fremde Einheit, deren Koerper der Zeiger trifft.
+    if (kann.bekehrer || (!kann.friedlich && !kann.nurGebaeude)) {
+      const nicht = kann.bekehrer ? this.werte.einheiten[this.arten[kann.einheiten[0].k]].bekehren.nicht : null;
+      let weite = Math.max(KLICK_WEITE * this.kamera.zoom, figur * 0.6);
+      let bestes = null;
+      for (const einheit of this.nachher.values()) {
+        if (einheit.s || !this.feindlich(einheit.b) || !this.zuSehen(einheit.b, einheit.x, einheit.y)) continue;
+        if (nicht && (this.werte.einheiten[this.arten[einheit.k]]?.klassen || []).some((klasse) => nicht.includes(klasse))) continue;
+        const p = this.zuBild(einheit.x, einheit.y);
+        const abstand = Math.hypot(p.x - px, p.y - figur * KOERPER_MITTE - py);
+        if (abstand < weite) {
+          weite = abstand;
+          bestes = einheit;
+        }
+      }
+      if (bestes) return { art: kann.bekehrer ? 'bekehren' : 'angreifen', x: bestes.x, y: bestes.y, sende: { x: bestes.x, y: bestes.y } };
+    }
+    // 2. Ein eigenes Schaf, lebend oder schon geschlachtet (einheiten AC-17).
+    if (kann.sammler) {
+      let weite = Math.max(KLICK_WEITE * this.kamera.zoom, figur * 0.5);
+      let bestes = null;
+      for (const tier of this.tiere.values()) {
+        if (tier.b !== this.ich) continue;
+        const p = this.zuBild(tier.x, tier.y);
+        // Ein Schaf hinter dem Dorfzentrum faengt keinen Klick auf das Dach.
+        if (this.gebaeudeDavor(p.x, p.y - figur * 0.3, tier.x + tier.y)) continue;
+        const abstand = Math.hypot(p.x - px, p.y - figur * 0.3 - py);
+        if (abstand < weite) {
+          weite = abstand;
+          bestes = tier;
+        }
+      }
+      if (bestes) return { art: bestes.g ? 'fleisch' : 'schlachten', x: bestes.x, y: bestes.y, sende: { x: bestes.x, y: bestes.y } };
+    }
+    // 3. Ein Gebaeude, dessen Bild der Zeiger trifft: das vorderste, an dem
+    //    die Auswahl etwas zu tun hat.
+    let ziel = null;
+    let tiefe = -Infinity;
+    for (const gebaeude of this.gezeigteGebaeude()) {
+      const mitte = this.gebaeudeMitte(gebaeude);
+      if (mitte.x + mitte.y <= tiefe) continue;
+      const p = this.zuBild(mitte.x, mitte.y);
+      if (!gebaeudeGetroffen(gebaeude.art, px - p.x, py - p.y, e, mitte.groesse)) continue;
+      const art = this.gebaeudeHandlung(gebaeude, kann);
+      if (!art) continue;
+      tiefe = mitte.x + mitte.y;
+      // Das Ankerfeld liegt immer in der Grundflaeche - daraus liest der
+      // Server das Gebaeude (`gebaeudeAn`).
+      ziel = { art, x: mitte.x, y: mitte.y, groesse: mitte.groesse, sende: { x: gebaeude.x, y: gebaeude.y } };
+    }
+    if (ziel || !kann.sammler) return ziel;
+    // 4. Ein Vorrat, dessen Bild der Zeiger trifft: der vorderste. Ein Baum
+    //    ragt gut zwei Felder ueber seinen Fuss, deshalb die Felder davor.
+    const g = this.karte.groesse;
+    for (let y = feld.y - 1; y <= feld.y + 4; y++) {
+      for (let x = feld.x - 1; x <= feld.x + 4; x++) {
+        if (x < 0 || y < 0 || x >= g || y >= g || x + y <= tiefe) continue;
+        const art = this.karte.felder[y * g + x];
+        if (!DINGE.includes(art)) continue;
+        if (this.nebelAn && !this.nebel.hatErkundet(x, y)) continue;
+        const p = this.zuBild(x, y);
+        // Ein geschlagener Baum schrumpft mit seiner Fuellung (gelaende.js).
+        const voll = 0.6 + 0.1 * (this.fuellung.get(y * g + x) || 4);
+        const [halb, oben] = art === WALD ? [0.7, 2.3 * voll] : [0.8, 0.9];
+        if (Math.abs(px - p.x) > halb * e || py < p.y - oben * e || py > p.y + 0.5 * e) continue;
+        // Steht ein Gebaeude davor, gilt der Klick dem Dach, nicht dem Baum dahinter.
+        if (this.gebaeudeDavor(px, py, x + y)) continue;
+        tiefe = x + y;
+        ziel = { art: 'sammeln', feldart: art, x, y, sende: { x, y } };
+      }
+    }
+    return ziel;
+  }
+
+  /** Was der Server aus einem Feld liest (`welt.befehl`) - null: ein Gang. Teil von `zielUnter`. */
+  bodenZiel(feld, kann) {
+    const art = this.karte.felder[feld.y * this.karte.groesse + feld.x];
+    if (kann.sammler && DINGE.includes(art)) return { art: 'sammeln', feldart: art, x: feld.x, y: feld.y, sende: feld };
+    for (const gebaeude of this.gezeigteGebaeude()) {
+      const mitte = this.gebaeudeMitte(gebaeude);
+      const halb = (mitte.groesse - 1) / 2;
+      if (Math.abs(feld.x - mitte.x) > halb || Math.abs(feld.y - mitte.y) > halb) continue;
+      const handlung = this.gebaeudeHandlung(gebaeude, kann);
+      return handlung ? { art: handlung, x: mitte.x, y: mitte.y, groesse: mitte.groesse, sende: feld } : null;
+    }
+    if (!kann.sammler) return null;
+    // Ein eigenes Schaf naeher als ein Feld (`welt.tierAn`).
+    let bestes = null;
+    let weite = 1.01;
+    for (const tier of this.tiere.values()) {
+      if (tier.b !== this.ich) continue;
+      const abstand = Math.hypot(tier.x - feld.x, tier.y - feld.y);
+      if (abstand < weite) {
+        weite = abstand;
+        bestes = tier;
+      }
+    }
+    return bestes ? { art: bestes.g ? 'fleisch' : 'schlachten', x: bestes.x, y: bestes.y, sende: feld } : null;
+  }
+
+  /**
+   * Wo die Maus das Fenster verlassen hat, als Punkt am Rand des Spielbilds
+   * (bedienung AC-56). Liegt die gemeldete Stelle noch im Fenster - bei
+   * schneller Bewegung meldet der Browser die letzte davor -, gilt der
+   * naechste Rand.
+   */
+  austritt(clientX, clientY) {
+    const rand = this.leinwand.getBoundingClientRect();
+    const b = rand.width;
+    const h = rand.height;
+    let x = Math.max(0, Math.min(b - 1, clientX - rand.left));
+    let y = Math.max(0, Math.min(h - 1, clientY - rand.top));
+    const abstaende = [x, b - 1 - x, y, h - 1 - y];
+    const naechster = abstaende.indexOf(Math.min(...abstaende));
+    if (naechster === 0) x = 0;
+    else if (naechster === 1) x = b - 1;
+    else if (naechster === 2) y = 0;
+    else y = h - 1;
+    return { x, y, draussen: true };
   }
 
   /**
@@ -1602,16 +1902,7 @@ export class Ansicht {
     this.reihenfolge = stehend.map((d) => ({ art: d.art, tiefe: d.tiefe, id: d.einheit?.i }));
     // Verdeckte Einheiten als Umriss in Spielerfarbe, ueber allem (bedienung AC-30).
     this.umrisse = this.verdeckte.map((v) => v.einheit.i);
-    for (const { einheit, punkt, hoehe, laeuft } of this.verdeckte) {
-      const spieler = this.spieler.get(einheit.b);
-      figurBildZeichnen(stift, this.arten[einheit.k] || 'dorfbewohner', punkt.x, punkt.y, hoehe, spieler ? spieler.farbe : '#888888', {
-        blick: this.blicke.get(einheit.i) || 1,
-        richtung: this.richtungen.get(einheit.i),
-        ladung: einheit.l > 0 ? einheit.a : null,
-        schritt: laeuft ? jetztPhase(einheit.i) : 0,
-        arbeit: einheit.w && !laeuft ? jetztPhase(einheit.i) : 0,
-      }, true);
-    }
+    for (const verdeckt of this.verdeckte) this.umrissZeichnen(verdeckt, e);
     // Der Nebel liegt ueber allem, was steht, und unter den Hilfen der
     // Bedienung - Lebensbalken, Zielzeichen und Rahmen bleiben lesbar.
     this.pfeileZeichnen(stift);
@@ -1619,6 +1910,7 @@ export class Ansicht {
     for (const balken of this.lebensbalken) this.lebensbalkenZeichnen(balken);
     this.wegpunkteZeichnen(e);
     this.zielzeichenZeichnen(e, jetzt);
+    this.zeigerZielZeichnen(e);
 
     for (const spieler of this.spieler.values()) {
       // Ein fremder Name steht erst dort, wo man schon war.
@@ -1762,22 +2054,96 @@ export class Ansicht {
   }
 
   /**
-   * Steht die Einheit hinter einem Gebaeude, das sie verdeckt? Nur Gebaeude,
-   * die tiefer im Bild stehen (groesseres x + y), liegen ueber ihr; flache
-   * (Farmen) verdecken nichts (bedienung AC-30).
+   * Die Gebaeude, hinter denen die Einheit stehen kann: nur solche, die
+   * tiefer im Bild stehen (groesseres x + y), liegen ueber ihr; flache
+   * (Farmen) verdecken nichts (bedienung AC-30). Das ist die grobe Auswahl
+   * nach dem Trefferkasten - was wirklich verdeckt ist, entscheidet beim
+   * Zeichnen das Bild des Gebaeudes (`umrissZeichnen`).
    */
-  hinterGebaeude(einheit, punkt) {
+  deckendeGebaeude(einheit, punkt) {
     const e = HALB_B * this.kamera.zoom;
     const tiefe = einheit.x + einheit.y;
+    const figur = this.figurenHoehe();
+    const decken = [];
     for (const gebaeude of this.gebaeude.values()) {
       if (this.werte.gebaeude[gebaeude.art]?.begehbar) continue;
+      // Eine Baustelle, von der erst Fundament und Zaun stehen, verdeckt
+      // niemanden - ihr Boden laege sonst als Maske ueber den Fuessen.
+      if ((gebaeude.u ?? 1) < 0.5) continue;
       const mitte = this.gebaeudeMitte(gebaeude);
       if (mitte.x + mitte.y <= tiefe) continue;
       const p = this.zuBild(mitte.x, mitte.y);
       // Etwas ueber dem Fusspunkt gemessen: dort steht der Koerper.
-      if (gebaeudeGetroffen(gebaeude.art, punkt.x - p.x, punkt.y - this.figurenHoehe() * 0.5 - p.y, e, mitte.groesse)) return true;
+      if (gebaeudeGetroffen(gebaeude.art, punkt.x - p.x, punkt.y - figur * 0.5 - p.y, e, mitte.groesse)) decken.push(gebaeude);
     }
-    return false;
+    return decken;
+  }
+
+  hinterGebaeude(einheit, punkt) {
+    return this.deckendeGebaeude(einheit, punkt).length > 0;
+  }
+
+  /**
+   * Der Umriss einer verdeckten Einheit in Spielerfarbe, ueber allem
+   * (bedienung AC-30) - aber nur dort, wo wirklich ein Gebaeude ueber ihr
+   * liegt. Vorher wurde die ganze Gestalt eingefaerbt, sobald ihre Mitte im
+   * Trefferkasten eines Gebaeudes lag: neben einer Baustelle, von der erst
+   * das Fundament steht, stand ein ganz blauer Dorfbewohner (das erste Spiel
+   * auf dem Server, 2026-11-12).
+   *
+   * Zwei kleine Hilfsbilder: die Gebaeude als Maske, die Gestalt in Farbe -
+   * uebrig bleibt, was von der Gestalt unter der Maske liegt.
+   */
+  umrissZeichnen({ einheit, punkt, hoehe, laeuft, decken }, e) {
+    const dichte = window.devicePixelRatio || 1;
+    const spieler = this.spieler.get(einheit.b);
+    // Der Kasten um die Gestalt: breit genug fuer Reiter und Ladung.
+    const breite = Math.ceil(hoehe * 3.2);
+    const hoch = Math.ceil(hoehe * 2.3);
+    const links = Math.round(punkt.x - breite / 2);
+    const oben = Math.round(punkt.y - hoehe * 1.8);
+    if (!this.umrissbild) {
+      this.umrissbild = document.createElement('canvas');
+      this.umrissmaske = document.createElement('canvas');
+    }
+    const stifte = [this.umrissbild, this.umrissmaske].map((leinwand) => {
+      if (leinwand.width !== Math.ceil(breite * dichte) || leinwand.height !== Math.ceil(hoch * dichte)) {
+        leinwand.width = Math.ceil(breite * dichte);
+        leinwand.height = Math.ceil(hoch * dichte);
+      }
+      const s = leinwand.getContext('2d');
+      s.setTransform(1, 0, 0, 1, 0, 0);
+      s.globalCompositeOperation = 'source-over';
+      s.clearRect(0, 0, leinwand.width, leinwand.height);
+      s.setTransform(dichte, 0, 0, dichte, -links * dichte, -oben * dichte);
+      return s;
+    });
+    const [bild, maske] = stifte;
+    for (const gebaeude of decken) {
+      const mitte = this.gebaeudeMitte(gebaeude);
+      const p = this.zuBild(mitte.x, mitte.y);
+      const voll = this.werte.gebaeude[gebaeude.art]?.nahrung;
+      const offen = Boolean(this.werte.gebaeude[gebaeude.art]?.tor) && this.torOffen(gebaeude);
+      gebaeudeBildZeichnen(maske, gebaeude.art, p.x, p.y, e, '#888888', mitte.groesse, gebaeude.u ?? 1, voll ? (gebaeude.n ?? voll) / voll : 1, offen);
+    }
+    // Der Schlagschatten eines Gebaeudes verdeckt niemanden: zweimal mit sich
+    // selbst beschnitten bleibt von seiner halben Deckung fast nichts, von
+    // der vollen des Mauerwerks alles.
+    maske.setTransform(1, 0, 0, 1, 0, 0);
+    maske.globalCompositeOperation = 'destination-in';
+    maske.drawImage(this.umrissmaske, 0, 0);
+    maske.drawImage(this.umrissmaske, 0, 0);
+    figurBildZeichnen(bild, this.arten[einheit.k] || 'dorfbewohner', punkt.x, punkt.y, hoehe, spieler ? spieler.farbe : '#888888', {
+      blick: this.blicke.get(einheit.i) || 1,
+      richtung: this.richtungen.get(einheit.i),
+      ladung: einheit.l > 0 ? einheit.a : null,
+      schritt: laeuft ? jetztPhase(einheit.i) : 0,
+      arbeit: einheit.w && !laeuft ? jetztPhase(einheit.i) : 0,
+    }, true);
+    bild.setTransform(1, 0, 0, 1, 0, 0);
+    bild.globalCompositeOperation = 'destination-in';
+    bild.drawImage(this.umrissmaske, 0, 0);
+    this.stift.drawImage(this.umrissbild, links, oben, this.umrissbild.width / dichte, this.umrissbild.height / dichte);
   }
 
   /**
@@ -1863,10 +2229,23 @@ export class Ansicht {
     const p = this.zuBild(zeichen.x, zeichen.y);
     const r = e * (1.6 - 0.9 * lauf);
     const sicht = lauf < 0.6 ? 1 : 1 - (lauf - 0.6) / 0.4;
-    const farbe = zeichen.feindlich ? '#e23c2a' : '#ffffff';
+    const farbe = zeichen.feindlich ? '#e23c2a' : zeichen.arbeit ? ARBEITSFARBE : '#ffffff';
     stift.save();
     stift.globalAlpha = sicht;
     stift.lineCap = 'round';
+    if (zeichen.arbeit) {
+      // Arbeit (bedienung AC-52): eine Raute um das, woran gearbeitet wird -
+      // den Baum, die Baustelle, das Lager -, die sich darauf zusammenzieht.
+      const halb = e * (zeichen.groesse || 1) * (1.5 - 0.45 * lauf);
+      for (const [strich, breite] of [['rgba(20,16,12,0.75)', e * 0.16], [farbe, e * 0.09]]) {
+        raute(stift, p.x, p.y, halb, halb / 2);
+        stift.strokeStyle = strich;
+        stift.lineWidth = Math.max(1.5, breite);
+        stift.stroke();
+      }
+      stift.restore();
+      return;
+    }
     // Erst dunkel darunter, dann die Farbe: sonst verschwindet Weiss im Sand
     // und Rot im Schatten.
     for (const [strich, breite] of [['rgba(20,16,12,0.75)', e * 0.16], [farbe, e * 0.09]]) {
@@ -1886,6 +2265,52 @@ export class Ansicht {
       }
       stift.stroke();
     }
+    stift.restore();
+  }
+
+  /**
+   * Vor dem Klick (bedienung AC-52): was ein Rechtsklick an der Stelle des
+   * Zeigers taete - eine Marke um das Ziel und das Wort dazu am Zeiger. Nur,
+   * wenn es mehr waere als ein Gang; rot fuer Angriff, golden fuer Arbeit.
+   * Wer einen Dorfbewohner zum Holz schickt, sieht so vorher, ob er den Baum
+   * trifft oder den Boden daneben.
+   */
+  zeigerZielZeichnen(e) {
+    this.zeigerZiel = null;
+    if (!this.zeigerDrin || !this.zeiger || this.platzieren || this.zug || this.angriffslauf) return;
+    if (this.gewaehltesGebaeude || !this.ausgewaehlt.size) return;
+    const ziel = this.zielUnter(this.zeiger.x, this.zeiger.y);
+    if (ziel.art === 'gehen' || !ziel.text) return;
+    this.zeigerZiel = ziel;
+    const stift = this.stift;
+    const p = this.zuBild(ziel.x, ziel.y);
+    const feindlich = ziel.art === 'angreifen' || ziel.art === 'bekehren';
+    const farbe = feindlich ? '#e23c2a' : ARBEITSFARBE;
+    const halb = e * (ziel.groesse || 1);
+    stift.save();
+    stift.lineJoin = 'round';
+    for (const [strich, breite] of [['rgba(20,16,12,0.7)', 4], [farbe, 2]]) {
+      raute(stift, p.x, p.y, halb, halb / 2);
+      stift.strokeStyle = strich;
+      stift.lineWidth = breite;
+      stift.stroke();
+    }
+    // Das Wort rechts unter dem Zeiger, im Bild gehalten.
+    stift.font = '600 13px system-ui, sans-serif';
+    stift.textBaseline = 'middle';
+    stift.textAlign = 'left';
+    const breite = stift.measureText(ziel.text).width + 16;
+    const x = Math.min(this.leinwand.clientWidth - breite - 4, this.zeiger.x + 16);
+    const y = Math.min(this.leinwand.clientHeight - 28, this.zeiger.y + 18);
+    stift.fillStyle = 'rgba(15,18,22,0.88)';
+    stift.beginPath();
+    stift.roundRect(x, y, breite, 22, 5);
+    stift.fill();
+    stift.strokeStyle = farbe;
+    stift.lineWidth = 1;
+    stift.stroke();
+    stift.fillStyle = '#f4f1ea';
+    stift.fillText(ziel.text, x + 8, y + 11.5);
     stift.restore();
   }
 
@@ -2143,7 +2568,8 @@ export class Ansicht {
       arbeit: einheit.w && !laeuft ? jetztPhase(einheit.i) : 0,
     });
     // Steht jemand hinter einem Gebaeude, kommt er danach als Umriss darueber.
-    if (this.hinterGebaeude(einheit, punkt)) this.verdeckte.push({ einheit, punkt, hoehe, laeuft });
+    const decken = this.deckendeGebaeude(einheit, punkt);
+    if (decken.length) this.verdeckte.push({ einheit, punkt, hoehe, laeuft, decken });
   }
 
   /**

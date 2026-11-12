@@ -32,7 +32,7 @@ test.describe('Zeitalterwechsel', () => {
     // Mit 600 Nahrung ist der Knopf frei - die Voraussetzung prueft der Server.
     await rohstoffe(anna, code, 'Anna', { nahrung: 600 });
     await expect(knopf).toHaveAttribute('aria-disabled', 'false');
-    await expect(knopf).toHaveAttribute('title', 'Aufstieg zum Lehen (500 Nahrung)');
+    await expect(knopf).toHaveAttribute('aria-label', 'Aufstieg zum Lehen (500 Nahrung)');
 
     // Nur das Dorfzentrum steht: der Server sagt, was fehlt (bedienung AC-18).
     await knopf.click();
@@ -90,6 +90,10 @@ test.describe('Zeitalterwechsel', () => {
 
   test('bedienung AC-33 und bedienung AC-41: der Wechsel wird einmal gemeldet, nicht auf der Mitte, danach steht die Feudalzeit oben', async ({}, info) => {
     const { anna, code } = partie;
+    // Die Maus ruht noch auf dem Knopf des Aufstiegs, und ueber ihm steht die
+    // Tafel mit dem Preis - auf einem Bild, das die freie Mitte zeigen soll,
+    // gehoert sie nicht hin.
+    await anna.mouse.move(240, 320);
     await zeitraffer(anna, code, 20);
     // Die Ankuendigung steht gross oben, solange sie zu sehen ist.
     const ankuendigung = anna.locator('#zeitalterwechsel');
@@ -141,7 +145,7 @@ test.describe('Zeitalterwechsel', () => {
     await anna.keyboard.press('h');
     const knopf = anna.locator('[data-aufstieg="ritterzeit"]');
     await expect(knopf).toHaveAttribute('aria-disabled', 'false');
-    await expect(knopf).toHaveAttribute('title', 'Aufstieg zum Fürstentum (800 Nahrung, 200 Gold)');
+    await expect(knopf).toHaveAttribute('aria-label', 'Aufstieg zum Fürstentum (800 Nahrung, 200 Gold)');
     await knopf.click();
     const meldung = anna.locator('#spielmeldung');
     await expect(meldung).toContainText('2 fertige Gebäude des Lehens außer Häusern');

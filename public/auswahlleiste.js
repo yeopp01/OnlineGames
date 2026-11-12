@@ -474,6 +474,12 @@ function gebaeudeBildchen(art, groesse, farbe, n) {
   return leinwand;
 }
 
+/** "Holz, Nahrung und Stein" */
+function aufzaehlung(namen) {
+  if (namen.length < 2) return namen.join('');
+  return `${namen.slice(0, -1).join(', ')} und ${namen.at(-1)}`;
+}
+
 function element(name, klasse, text) {
   const e = document.createElement(name);
   if (klasse) e.className = klasse;
@@ -502,9 +508,156 @@ export class Auswahlleiste {
     this.ansicht = ansicht;
     this.senden = senden;
     this.gezeigt = null; // Schluessel des zuletzt gebauten Inhalts
+
+    // Die Tafel am Knopf (bedienung AC-55): was eine Einheit, ein Gebaeude,
+    // eine Verbesserung bringt - nicht nur, was sie kostet. Sie steht neben
+    // der Leiste und nicht in ihr: die Leiste wird bei jeder Aenderung neu
+    // gebaut, die Tafel bleibt und haengt sich an den Knopf derselben Art.
+    this.tafel = element('div', 'knopftafel');
+    this.tafel.id = 'knopftafel';
+    this.tafel.setAttribute('role', 'tooltip');
+    this.tafel.hidden = true;
+    wurzel.after(this.tafel);
+    this.tafelFuer = null;
+    this.tafelStand = null;
+    const knopfVon = (ziel) => ziel?.closest?.('[data-ausbilden], [data-bauen]') || null;
+    wurzel.addEventListener('mouseover', (e) => this.tafelZeigen(knopfVon(e.target)));
+    wurzel.addEventListener('mouseleave', () => this.tafelZeigen(null));
+    wurzel.addEventListener('focusin', (e) => this.tafelZeigen(knopfVon(e.target)));
+    // Ein Klick baut die Leiste neu, und der Knopf mit dem Fokus ist weg -
+    // solange der Zeiger noch darauf steht, bleibt die Tafel.
+    wurzel.addEventListener('focusout', () => {
+      if (!wurzel.matches(':hover')) this.tafelZeigen(null);
+    });
   }
 
   aktualisieren() {
+    this.inhaltAktualisieren();
+    if ((this.tafelFuer || !this.tafel.hidden) && this.tafelStand !== this.gezeigt) this.tafelNachfuehren();
+  }
+
+  tafelZeigen(knopf) {
+    if (!knopf) this.tafelFuer = null;
+    else if (knopf.dataset.bauen) this.tafelFuer = { typ: 'bauen', art: knopf.dataset.bauen };
+    else this.tafelFuer = { typ: 'ausbilden', art: knopf.dataset.ausbilden };
+    this.tafelNachfuehren();
+  }
+
+  /** Die Tafel an ihren Knopf haengen - nach jedem Neubau der Leiste. */
+  tafelNachfuehren() {
+    this.tafelStand = this.gezeigt;
+    const fuer = this.tafelFuer;
+    const knopf = fuer && !this.wurzel.hidden ? this.wurzel.querySelector(`[data-${fuer.typ}="${fuer.art}"]`) : null;
+    if (!knopf) {
+      this.tafel.hidden = true;
+      this.tafelFuer = null;
+      return;
+    }
+    const inhalt = this.tafelInhalt(fuer.typ, fuer.art);
+    const kopfzeile = element('div', 'kt-kopf');
+    const preis = element('span', 'preis');
+    for (const [r, m] of Object.entries(inhalt.kosten)) preis.append(element('span', `ware ware-${r[0]}`), element('span', null, String(m)));
+    kopfzeile.append(element('strong', null, inhalt.name), preis);
+    this.tafel.replaceChildren(kopfzeile, ...inhalt.zeilen.map((zeile) => element('div', 'kt-zeile', zeile)));
+    if (inhalt.dauer) this.tafel.append(element('div', 'kt-fuss', inhalt.dauer));
+    if (knopf.dataset.fehlt) this.tafel.append(element('div', 'kt-fehlt', `Zu wenig ${knopf.dataset.fehlt}`));
+    this.tafel.dataset.fuer = fuer.art;
+    this.tafel.hidden = false;
+    // Mittig ueber dem Knopf, ueber der ganzen Leiste, und nie aus dem Fenster.
+    const k = knopf.getBoundingClientRect();
+    const l = this.wurzel.getBoundingClientRect();
+    const breite = this.tafel.offsetWidth;
+    const links = Math.max(8, Math.min(window.innerWidth - breite - 8, k.left + k.width / 2 - breite / 2));
+    this.tafel.style.left = `${Math.round(links)}px`;
+    this.tafel.style.bottom = `${Math.round(window.innerHeight - l.top + 8)}px`;
+  }
+
+  /**
+   * Was auf der Tafel steht: Name, Kosten, Dauer und die Zeilen, die sagen,
+   * was es bringt. Werte von Einheiten und Gebaeuden kommen aus der Tafel,
+   * die der Server dem Spieler schickt (mit Haus und Verbesserungen), die
+   * Saetze zu einer Verbesserung fertig vom Server (`bringt`).
+   */
+  tafelInhalt(typ, art) {
+    const a = this.ansicht;
+    const werte = a.werte;
+    const eigene = a.einheitenwerte.get(a.ich) || {};
+    const komma = (n) => String(Math.round(n * 100) / 100).replace('.', ',');
+    const einheitName = (k) => FIGUREN[k]?.name || k;
+    const kurz = (k) => {
+      const lesen = (feld) => eigene[k]?.[feld] ?? werte.einheiten[k]?.[feld] ?? 0;
+      const ruestung = `Rüstung ${lesen('nahruestung')} / ${lesen('fernruestung')}`;
+      return lesen('angriff') > 0
+        ? `${lesen('leben')} Leben · ${lesen('angriff')} Angriff · ${ruestung}`
+        : `${lesen('leben')} Leben · greift nicht an · ${ruestung}`;
+    };
+
+    if (typ === 'bauen') {
+      const w = werte.gebaeude[art] || {};
+      const lesen = (feld) => eigene[art]?.[feld] ?? w[feld] ?? 0;
+      const zeilen = [];
+      if (w.wohnraum) zeilen.push(`+${w.wohnraum} Wohnraum`);
+      if (w.annahme?.length) zeilen.push(`Lager für ${aufzaehlung(w.annahme.map((r) => ROHSTOFF_NAMEN[r] || r))}`);
+      if (w.nahrung) zeilen.push(`Trägt ${lesen('nahrung')} Nahrung, ein Dorfbewohner erntet sie`);
+      const aus = w.bildetAus || [];
+      const einheiten = aus.filter((k) => werte.einheiten[k]).map(einheitName);
+      const forschung = aus.filter((k) => werte.verbesserungen?.[k]).map((k) => werte.verbesserungen[k].name);
+      if (einheiten.length) zeilen.push(`Bildet aus: ${einheiten.join(', ')}`);
+      if (forschung.length) zeilen.push(`Erforscht: ${forschung.join(', ')}`);
+      if (w.handel) zeilen.push(`Tauscht ${aufzaehlung((werte.handel?.waren || []).map((r) => ROHSTOFF_NAMEN[r] || r))} gegen Gold`);
+      if (lesen('angriff') > 0) zeilen.push(`Schießt von selbst: ${lesen('angriff')} Angriff, Reichweite ${lesen('reichweite')}`);
+      if (w.tor) zeilen.push('Lässt die eigenen Einheiten durch');
+      if (w.gezogen) zeilen.push('Wird von Feld zu Feld gezogen');
+      zeilen.push(`${lesen('leben')} Leben · Sicht ${lesen('sicht')}`);
+      return { name: GEBAEUDE[art]?.name || art, kosten: w.kosten || {}, dauer: w.bauzeit ? `Bauzeit ${w.bauzeit} s` : null, zeilen };
+    }
+
+    const aufstieg = werte.aufstiege?.[art];
+    if (aufstieg) {
+      const stufe = aufstieg.stufe;
+      const neu = (tafel) => Object.keys(tafel || {}).filter((k) => (tafel[k].zeitalter || 0) === stufe);
+      const ausbildbar = new Set(Object.values(werte.gebaeude).flatMap((g) => g.bildetAus || []));
+      const zeilen = [];
+      const gebaeude = neu(werte.gebaeude).map((k) => GEBAEUDE[k]?.name || k);
+      const einheiten = neu(werte.einheiten).filter((k) => ausbildbar.has(k)).map(einheitName);
+      const forschung = neu(werte.verbesserungen).map((k) => werte.verbesserungen[k].name);
+      if (gebaeude.length) zeilen.push(`Neue Gebäude: ${gebaeude.join(', ')}`);
+      if (einheiten.length) zeilen.push(`Neue Einheiten: ${einheiten.join(', ')}`);
+      if (forschung.length) zeilen.push(`Neue Verbesserungen: ${forschung.join(', ')}`);
+      const jetzt = werte.zeitalter?.[stufe - 1];
+      if (aufstieg.voraussetzung && jetzt) {
+        zeilen.push(`Verlangt ${aufstieg.voraussetzung} fertige Gebäude ${jetzt.genitiv} – Häuser, Türme und Mauern zählen nicht`);
+      }
+      return { name: aufstieg.titel || aufstieg.name, kosten: aufstieg.kosten || {}, dauer: `Dauer ${aufstieg.zeit} s`, zeilen };
+    }
+
+    const verbesserung = werte.verbesserungen?.[art];
+    if (verbesserung) {
+      const zeilen = [...(verbesserung.bringt || [])];
+      for (const [von, nach] of Object.entries(verbesserung.wandelt || {})) {
+        zeilen.push(`${einheitName(von)} wird ${einheitName(nach)} – auch jede, die schon steht`);
+        zeilen.push(`${einheitName(nach)}: ${kurz(nach)}`);
+        zeilen.push(`bisher: ${kurz(von)}`);
+      }
+      return { name: verbesserung.name, kosten: verbesserung.kosten || {}, dauer: `Forschung ${verbesserung.zeit} s`, zeilen };
+    }
+
+    const w = werte.einheiten[art] || {};
+    const lesen = (feld) => eigene[art]?.[feld] ?? w[feld] ?? 0;
+    const zeilen = [];
+    if (w.tragkraft && w.baut?.length) zeilen.push('Sammelt Rohstoffe und baut Gebäude');
+    if (w.handelt) zeilen.push('Fährt zwischen zwei Märkten und bringt Gold');
+    if (w.heilen) zeilen.push(`Heilt eigene Verletzte bis ${w.heilen.reichweite} Felder weit`);
+    if (w.bekehren) zeilen.push(`Bekehrt fremde Einheiten aus ${w.bekehren.reichweite} Feldern`);
+    if (w.nurGebaeude) zeilen.push('Greift nur Gebäude an');
+    zeilen.push(kurz(art));
+    const weite = lesen('angriff') > 0 ? (lesen('reichweite') > 0 ? `Reichweite ${lesen('reichweite')}` : 'Nahkampf') : null;
+    zeilen.push([weite, w.tempo ? `Tempo ${komma(w.tempo)}` : null, `Sicht ${lesen('sicht')}`].filter(Boolean).join(' · '));
+    if (w.bonus) zeilen.push(Object.entries(w.bonus).map(([k, z]) => `+${z} gegen ${werte.klassen?.[k]?.name || k}`).join(', '));
+    return { name: einheitName(art), kosten: w.kosten || {}, dauer: w.zeit ? `Ausbildung ${w.zeit} s` : null, zeilen };
+  }
+
+  inhaltAktualisieren() {
     const a = this.ansicht;
     const gebaeude = a.gewaehltesGebaeude ? a.gebaeude.get(a.gewaehltesGebaeude) : null;
     const farbe = a.spieler.get(a.ich)?.farbe || '#888888';
@@ -690,7 +843,9 @@ export class Auswahlleiste {
       knopf.setAttribute('aria-disabled', fehlt ? 'true' : 'false');
       if (fehlt) knopf.dataset.fehlt = fehlt;
       const kosten = Object.entries(eintrag.kosten).map(([r, m]) => `${m} ${ROHSTOFF_NAMEN[r]}`).join(', ');
-      knopf.title = fehlt ? `${eintrag.name} - zu wenig ${fehlt}` : `${eintrag.name} bauen (${kosten})`;
+      // Als aria-label, nicht als title: beim Ueberfahren steht die Tafel
+      // (bedienung AC-55), ein zweiter Hinweis des Browsers laege darueber.
+      knopf.setAttribute('aria-label', fehlt ? `${eintrag.name} - zu wenig ${fehlt}` : `${eintrag.name} bauen (${kosten})`);
       if (this.ansicht.platzieren?.art === eintrag.art) knopf.classList.add('aktiv');
       const preis = element('span', 'preis');
       for (const [r, m] of Object.entries(eintrag.kosten)) preis.append(element('span', `ware ware-${r[0]}`), element('span', null, String(m)));
@@ -961,13 +1116,13 @@ export class Auswahlleiste {
       const kosten = Object.entries(eintrag.kosten).map(([r, m]) => `${m} ${ROHSTOFF_NAMEN[r]}`).join(', ');
       if (eintrag.aufstieg) {
         knopf.dataset.aufstieg = eintrag.art;
-        knopf.title = fehlt
+        knopf.setAttribute('aria-label', fehlt
           ? `${eintrag.titel} - zu wenig ${fehlt}`
-          : `${eintrag.titel} (${kosten})`;
+          : `${eintrag.titel} (${kosten})`);
       } else {
         // Eine Verbesserung wird erforscht, keine Einheit ausgebildet.
         const tun = eintrag.verbesserung ? 'erforschen' : 'ausbilden';
-        knopf.title = fehlt ? `${eintrag.name} - zu wenig ${fehlt}` : `${eintrag.name} ${tun} (${kosten})`;
+        knopf.setAttribute('aria-label', fehlt ? `${eintrag.name} - zu wenig ${fehlt}` : `${eintrag.name} ${tun} (${kosten})`);
       }
       const preis = element('span', 'preis');
       for (const [r, m] of Object.entries(eintrag.kosten)) preis.append(element('span', `ware ware-${r[0]}`), element('span', null, String(m)));
@@ -989,7 +1144,9 @@ export class Auswahlleiste {
       eintrag.type = 'button';
       eintrag.dataset.abbrechen = String(platz);
       eintrag.title = 'Abbrechen - die Kosten kommen voll zurück';
-      const mass = platz === 0 ? 50 : 38;
+      // Die Wartenden klein: vierzehn davon haben in zwei Reihen ihren
+      // festen Platz (bedienung AC-54).
+      const mass = platz === 0 ? 50 : 28;
       const verbesserung = Boolean(this.ansicht.werte.verbesserungen?.[art]);
       const aufstieg = Boolean(this.ansicht.werte.aufstiege?.[art]);
       if (aufstieg) {

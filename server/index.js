@@ -169,7 +169,12 @@ async function starten(hafen = HAFEN, einstellungen = {}) {
       const platz = plaetzePruefen(spiel, geprueft.werte);
       if (platz) return fehler(platz.fehler);
 
-      const erlaubt = schutz.raumErlaubt(adresse);
+      // Eine verlassene Partie wartet auf die Rueckkehr (raeume AC-17), aber
+      // sie sperrt niemanden aus: steht eine Grenze im Weg, weicht zuerst
+      // die aelteste verlassene desselben Anschlusses, dann irgendeine.
+      let erlaubt = schutz.raumErlaubt(adresse);
+      if (!erlaubt.ok && raeume.verlasseneSchliessen((r) => r.adresse === adresse)) erlaubt = schutz.raumErlaubt(adresse);
+      if (!erlaubt.ok && raeume.verlasseneSchliessen()) erlaubt = schutz.raumErlaubt(adresse);
       if (!erlaubt.ok) return fehler(erlaubt.grund);
 
       raum = raeume.anlegen(spiel);
@@ -231,9 +236,15 @@ async function starten(hafen = HAFEN, einstellungen = {}) {
         case 'zurueck': {
           if (raum) return;
           const gesucht = raeume.finden(nachricht.code);
-          if (!gesucht) return codeDaneben();
-          const zurueck = gesucht.zurueckkehren(nachricht.token, draht);
-          if (!zurueck) return fehler('Dieser Platz ist nicht mehr da.');
+          const zurueck = gesucht ? gesucht.zurueckkehren(nachricht.token, draht) : null;
+          if (!zurueck) {
+            // `platzWeg`: der Browser vergisst den gemerkten Platz - sonst
+            // kaeme dieselbe Absage bei jedem Neuladen wieder (raeume AC-18).
+            draht.send(JSON.stringify({ typ: 'fehler', text: 'Diese Partie gibt es nicht mehr.', platzWeg: true }));
+            // Ein falscher Code bleibt ein Fehlversuch, auch auf diesem Weg.
+            if (!gesucht && !schutz.fehlversuch(adresse)) draht.close(1008, 'zu viele Fehlversuche');
+            return;
+          }
           raum = gesucht;
           spieler = zurueck;
           draht.send(JSON.stringify({ typ: 'du', id: spieler.id, token: spieler.token, code: raum.code, anzeige: codeZeigen(raum.code) }));
@@ -290,7 +301,12 @@ async function starten(hafen = HAFEN, einstellungen = {}) {
       if (!raum) return;
       raum.verlassen(draht);
       raum.senden(raum.vorraum());
-      if (raum.leer) raeume.schliessen(raum);
+      // Eine laufende Partie bleibt stehen, auch wenn der letzte geht: wer
+      // allein gegen den Computer spielt und neu laedt, kam sonst nie zurueck
+      // - der Raum war im selben Augenblick weg (raeume AC-12, AC-17). Ihre
+      // Uhr haelt an, bis jemand zurueckkehrt; geschlossen wird sie vom
+      // Aufraeumen.
+      if (raum.leer && !raum.laeuft) raeume.schliessen(raum);
     });
   });
 

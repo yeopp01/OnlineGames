@@ -73,7 +73,12 @@ nicht die Regeln.
   Weg führte (bis 655 s; behoben in Runde 90, AC-12), und Holzfäller mit
   voller Ladung fanden keinen Weg zum nächsten Rand ihres Lagers — die KI
   hatte es in eine Waldlücke gestellt. Jetzt sucht der Weg zum Lager andere
-  Randfelder und die anderen Lager.
+  Randfelder und die anderen Lager. **Die KI mauert niemanden ein**
+  (2026-11-12): ein Bauplatz, der ein Stück begehbares Land von weniger als
+  40 Feldern abschneidet, wird verworfen (`ki.sperrtEin`). Beim Startwert 12
+  schloss eine Mühle zwei Holzfäller in eine Lücke am Waldrand ein, 346 s
+  bis zum Ende; dieselbe Lücke schloss vorher ein Holzfällerlager, an dem
+  sie neben sich abliefern konnten — deshalb fiel es nie auf.
 
 ### Kampf und Partieende (Stufe C)
 

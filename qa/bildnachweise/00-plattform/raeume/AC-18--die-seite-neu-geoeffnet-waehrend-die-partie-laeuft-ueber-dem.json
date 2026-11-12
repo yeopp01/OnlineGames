@@ -1,0 +1,10 @@
+{
+  "spec": "00-plattform/raeume.md",
+  "ac": "AC-18",
+  "titel": "Die Seite neu geoeffnet, waehrend die Partie laeuft: ueber dem Vorraum steht Du warst in der Partie mit Zurueckkehren und verwerfen",
+  "datei": "e2e/tests/strategie-rueckmeldung.spec.mjs",
+  "pfad": [
+    "Rueckkehr aus dem Vorraum",
+    "raeume AC-18: das Fenster war zu - der Vorraum bietet die Partie an, und eine Absage vergisst den Platz"
+  ]
+}

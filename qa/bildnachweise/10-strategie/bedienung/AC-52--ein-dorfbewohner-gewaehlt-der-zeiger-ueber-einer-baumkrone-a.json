@@ -1,0 +1,10 @@
+{
+  "spec": "10-strategie/bedienung.md",
+  "ac": "AC-52",
+  "titel": "Ein Dorfbewohner gewaehlt, der Zeiger ueber einer Baumkrone: am Zeiger steht Holz hacken, die goldene Raute liegt um den Fuss dieses Baums",
+  "datei": "e2e/tests/strategie-rueckmeldung.spec.mjs",
+  "pfad": [
+    "Rueckmeldungen aus dem ersten Spiel",
+    "bedienung AC-51 / bedienung AC-52: ueber der Krone steht Holz hacken am Zeiger, der Klick trifft diesen Baum"
+  ]
+}

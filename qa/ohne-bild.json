@@ -1310,6 +1310,26 @@
       "spec": "20-betrieb/betrieb.md",
       "ac": "AC-2",
       "begruendung": "Eine Zeile in der Betriebsdatei, kein Bildschirm: betrieb/docker-compose.yml setzt HINTER_PROXY auf 1, und mit ihr wird der Dienst auf dem Server gestartet. Der Test liest die Datei; dass der Server mit dieser Einstellung die Adresse des Fragenden aus X-Forwarded-For nimmt, belegen die Tests des Schutzes. Im Bild saehe man nur, dass eine Grenze greift - nicht, fuer wen sie gezaehlt wurde."
+    },
+    {
+      "spec": "10-strategie/einheiten-und-befehle.md",
+      "ac": "AC-55",
+      "begruendung": "Eine Regel des Servers darueber, was ein Sammler ohne Befehl tut, wenn sein Vorrat leer ist: er bringt heim, was er traegt, und steht danach bereit. Das ist ein Ablauf ueber die Zeit - ein Standbild zeigte nur einen Dorfbewohner am Dorfzentrum und nicht, dass ihn niemand geschickt hat. Belegt im Rechenteil am letzten Strauch mit und ohne Ladung (tests/strategie-abgeben.test.mjs); das Abladen auf Befehl, das man sieht, weist einheiten AC-56 mit Bild nach."
+    },
+    {
+      "spec": "10-strategie/bauen.md",
+      "ac": "AC-36",
+      "begruendung": "Eine Regel des Servers darueber, was ein Dorfbewohner nach einem fertigen Bau von selbst tut: er baut an der naechsten eigenen Baustelle im Umkreis von acht Feldern weiter. Ob er auf Befehl oder von selbst an der zweiten Baustelle steht, sieht man keinem Bild an. Belegt im Rechenteil mit zwei Haeusern nebeneinander, einer Baustelle ausser Reichweite und dem Vorrang des Sammelns nach einem Lager (tests/strategie-abgeben.test.mjs)."
+    },
+    {
+      "spec": "00-plattform/raeume.md",
+      "ac": "AC-17",
+      "begruendung": "Was der Server mit einer laufenden Partie tut, an der niemand mehr sitzt: er behaelt den Raum, haelt die Uhr an und laesst ihn weichen, wenn eine Grenze des Schutzes im Weg steht. In dem Augenblick sieht niemand zu - es gibt keinen Bildschirm, der es zeigen koennte. Belegt ueber WebSocket gegen den laufenden Server: die Takte stehen, die Rueckkehr geht weiter, wo sie stand (tests/netz.test.mjs), und die aelteste verlassene Partie weicht einer neuen (tests/schutz.test.mjs). Das Angebot im Vorraum, das man sieht, weist raeume AC-18 mit Bild nach."
+    },
+    {
+      "spec": "10-strategie/bedienung.md",
+      "ac": "AC-56",
+      "begruendung": "Die Karte laeuft weiter, waehrend der Zeiger ausserhalb des Fensters steht. Ein Bildschirmfoto zeigt das Fenster und damit weder den Zeiger draussen noch die Bewegung - nur eine Karte an anderer Stelle. Belegt im Browserlauf an der Kamera: nach dem Ereignis, das der Browser beim Verlassen schickt, laeuft sie in jede der vier Richtungen und steht nach der Rueckkehr, ohne Fokus und abgeschaltet (e2e/tests/strategie-randschieben.spec.mjs). Mit einer echten Maus am Fensterrand ist es nicht geprueft - Playwright bewegt die Maus nicht aus dem Fenster."
     }
   ]
 }

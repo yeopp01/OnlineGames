@@ -72,7 +72,7 @@ test.describe('Marktkarren', () => {
     await marktWaehlen(anna, marktId);
     const knopf = anna.locator('[data-ausbilden="marktkarren"]');
     await expect(knopf).toBeInViewport();
-    await expect(knopf).toHaveAttribute('title', /Marktkarren ausbilden/);
+    await expect(knopf).toHaveAttribute('aria-label', /Marktkarren ausbilden/);
     await expect(anna.locator('#handel')).toBeInViewport();
 
     // Ausbilden: der Unterschied zaehlt, nicht der Bestand.

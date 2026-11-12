@@ -2,7 +2,7 @@
 
 **Bereich:** Strategie
 **Kuerzel:** bedienung
-**Stand:** 47/50 fertig · 3 offen
+**Stand:** 54/57 fertig · 3 offen
 
 ## Zweck
 
@@ -54,8 +54,9 @@ Befehl steht.
   schnell wie die Tasten; oben auch unter der Kopfzeile, die keine Maus
   annimmt. Verlässt die Maus das Bild oder das Fenster den Fokus, steht die
   Karte. Der Schalter steht in der Tastenübersicht (`?`), Vorgabe an; die
-  Wahl merkt sich der Browser. Nicht geprüft: das Stehenbleiben beim
-  Verlassen des Fensters — Playwright bewegt die Maus nicht aus dem Bild.
+  Wahl merkt sich der Browser. Geht die Maus über den Rand aus dem Fenster
+  hinaus, schiebt die Karte weiter (AC-56); auf eine Leiste gegangen oder
+  ohne Fokus steht sie.
 - **AC-10** `fertig` **Leertaste springt zur Basis** — Und ein zweites Mal zurück.
   Basis ist das eigene Dorfzentrum, das dem Startplatz am nächsten steht
   (ohne eines der Startplatz). Zurück geht es nur, solange die Kamera seit
@@ -163,7 +164,14 @@ verglichen: die drei größten Lücken in Lesbarkeit und Aussehen.
 - **AC-30** `fertig` **Verdeckte Einheiten als Umriss** — Steht eine Einheit hinter einem
   Gebäude, ist sie als Umriss in Spielerfarbe durch das Gebäude sichtbar. Im
   Dorf nach zehn Minuten verschwanden Dorfbewohner hinter Häusern und Lagern
-  ganz.
+  ganz. **Eingefärbt wird nur, was wirklich verdeckt ist** (seit dem ersten
+  Spiel auf dem Server, 2026-11-12): der Teil der Gestalt, über dem das Bild
+  des Gebäudes liegt — der Rest bleibt, wie er ist. Vorher war die ganze
+  Gestalt blau, sobald ihre Mitte im Trefferkasten eines Gebäudes lag, auch
+  neben einer Baustelle, von der erst das Fundament stand. Der Schlagschatten
+  eines Gebäudes verdeckt niemanden, eine Baustelle unter der Hälfte auch
+  nicht. **Messbar:** hinter dem Dorfzentrum trägt ein Dorfbewohner den
+  Umriss, neben einer eben begonnenen Baustelle keiner.
 - **AC-31** `fertig` **Arbeit ist zu sehen** — Wer sammelt, baut oder eine Farm bestellt,
   bewegt sich dabei sichtbar (Schlag, Bücken); wer untätig steht, steht still.
   Heute sehen Arbeitende und Wartende gleich aus.
@@ -374,6 +382,87 @@ aufgelistet), AC-11 (Übersichtskarte — auf 120 × 120 unverzichtbar), AC-15
   inzwischen gefallenes und verwirft die Reihe mit einem Befehl ohne
   Umschalt; im Browser stehen nach drei Klicks mit Umschalt zwei rote
   Ringe in der Linie, und alle drei Häuser fallen.
+
+### Aus dem ersten Spiel auf dem Server (2026-11-12)
+
+Der Benutzer hat die erste Partie auf dem Server gespielt und aufgeschrieben,
+was ihn aufhielt. Was davon Bedienung ist, steht hier; die Regeln dazu stehen
+unter [Einheiten](einheiten-und-befehle.md) AC-55 und AC-56,
+[Bauen](bauen.md) AC-36 und [Räume](../00-plattform/raeume.md) AC-17 und AC-18.
+
+- **AC-51** `fertig` **Der Klick trifft das Bild** — Ein Rechtsklick meint, was
+  unter dem Zeiger zu **sehen** ist, nicht das Bodenfeld dahinter. Ein Schaf,
+  ein Baum, ein Haus stehen über ihrem Fußpunkt: wer auf den Körper des
+  Schafs klickte, zeigte auf den Boden ein, zwei Felder dahinter, und der
+  Dorfbewohner ging dorthin, statt zu schlachten. Getroffen wird im Bild, in
+  der Rangfolge des Servers — fremde Einheit, eigenes Schaf, Gebäude, Vorrat,
+  dann erst der Boden —, und gesendet wird der Ort dessen, was gemeint ist.
+  Was hinter einem Gebäude steht, fängt den Klick auf das Gebäude nicht ab.
+  Die Regel bleibt auf dem Server; der Browser beantwortet dieselbe Frage
+  noch einmal, wie schon beim Zeichen am Ziel (Grenzfall zu AC-34).
+  **Messbar:** ein Rechtsklick auf den Körper eines Schafs gibt den Auftrag
+  zu schlachten, einer auf die Krone eines Baums den, an diesem Baum Holz zu
+  hacken.
+- **AC-52** `fertig` **Der Zeiger sagt den Befehl** — Mit einer Auswahl steht
+  am Zeiger, was ein Rechtsklick an dieser Stelle täte, sobald es mehr wäre
+  als ein Gang: „Holz hacken", „Beeren sammeln", „Gold abbauen", „Stein
+  abbauen", „Schlachten", „Fleisch holen", „Mitbauen", „Farm bestellen",
+  „Abladen", „Handeln", „Angreifen", „Bekehren" — dazu eine Raute um das
+  Ziel, rot für Angriff, golden für Arbeit. Nach dem Klick steht dieselbe
+  goldene Raute als Zeichen am Ziel (weiß bleibt der Gang, rot der Angriff,
+  AC-34). Wer einen Dorfbewohner zum Holz schickt, sieht so **vor** dem
+  Klick, ob er den Baum trifft oder das Gras daneben. Kein Wort ohne Auswahl,
+  beim Platzieren, beim Rahmenziehen und im Angriffslauf. **Messbar:** über
+  einem Baum steht „Holz hacken" am Zeiger, über Gras nichts; nach dem Klick
+  trägt das Zeichen am Ziel die Arbeit.
+- **AC-53** `fertig` **Rechtsklick auf die Übersichtskarte** — Ein Rechtsklick
+  auf die Übersichtskarte schickt die Auswahl an diese Stelle der Karte, mit
+  Umschalt angehängt wie im Bild (AC-14); dort steht kurz ein Ring. Gemeint
+  ist der Boden: was an der Stelle steht, wird von dort nicht angegriffen und
+  nicht bearbeitet. Der Linksklick springt weiter hin (AC-11). **Messbar:**
+  nach einem Rechtsklick in die Mitte der Übersichtskarte geht der gewählte
+  Reiter dorthin, und die Kamera steht, wo sie stand.
+- **AC-54** `fertig` **Die Leiste bleibt stehen** — Ein Knopf der Auswahlleiste
+  steht nach dem Klick dort, wo er vorher stand. Die Schlange wuchs mit jedem
+  Auftrag in die Breite und schob die Leiste samt Knopf weiter: fünfmal
+  „Dorfbewohner" hieß fünfmal neu zielen. Die Schlange hat jetzt ihren festen
+  Platz — der laufende Auftrag groß, bis zu vierzehn wartende in zwei Reihen
+  daneben —, und warum ein Auftrag wartet, steht über der Leiste statt in
+  ihr. **Messbar:** der Knopf „Dorfbewohner" steht nach fünf und nach
+  fünfzehn Aufträgen auf den Bildpunkt dort, wo er ohne Auftrag stand.
+- **AC-55** `fertig` **Das Menü sagt die Wirkung** — Zu jedem Knopf, der etwas
+  kostet, zeigt eine Tafel über der Leiste, **was es bringt**, nicht nur den
+  Preis: eine Verbesserung ihre Wirkung in Zahlen („Dorfbewohner: +15 Leben,
+  +1 / +2 Rüstung"), eine Einheit Leben, Angriff, Rüstung, Reichweite, Tempo,
+  Sicht und ihren Bonus, ein Gebäude, wozu es da ist (Wohnraum, Lager für …,
+  bildet aus, erforscht), der Aufstieg, was er freischaltet und was er
+  verlangt; dazu die Dauer, und was fehlt, wenn es zu teuer ist. Die Sätze
+  einer Verbesserung schreibt der **Server** aus denselben Daten, mit denen
+  er rechnet (`bringt.js`) — der Browser liest keine Wirkungen
+  (`tests/waechter-wirkungen.test.mjs`). Die Tafel erscheint unter der Maus
+  und mit dem Fokus der Tastatur und bleibt nach dem Klick stehen.
+  **Messbar:** ein Regeltest verlangt von jeder Verbesserung einen Satz oder
+  einen Tausch und rechnet die Zahl des Webstuhls aus den Daten nach; im
+  Browser steht über dem Webstuhl seine Wirkung.
+- **AC-56** `fertig` **Schieben über den Fensterrand** — Ohne Vollbild ist
+  der Rand zum Schieben (AC-9) nur zwölf Bildpunkte breit, und wer zügig
+  dorthin fährt, ist schon aus dem Fenster — oben und unten vor allem, wo
+  Adressleiste und Taskleiste liegen. Verlässt die Maus das Fenster über
+  einen Rand, schiebt die Karte in dieser Richtung weiter, bis sie
+  zurückkommt oder das Fenster den Fokus verliert. Geht sie auf eine Leiste
+  im Fenster, steht die Karte wie bisher. **Wird das Fenster kleiner**,
+  während die Maus im alten Bereich steht, meldet der Browser dasselbe
+  Verlassen — das zählt nicht, die Karte bleibt stehen (gefunden an einem
+  Bildnachweis, auf dem nach dem Verkleinern nur Schwarz stand). Geprüft
+  mit dem Ereignis, das der Browser beim Verlassen schickt — Playwright
+  bewegt die Maus nicht aus dem Fenster; mit einer echten Maus am
+  Fensterrand ist es **nicht geprüft**.
+- **AC-57** `fertig` **Punkte ständig im Bild** — Über der Übersichtskarte
+  steht die Liste der Spieler mit ihren Punkten (AC-47), der Führende oben,
+  der eigene Name fett, Ausgeschiedene durchgestrichen — ohne Taste, wie in
+  der Vorlage. Sie nimmt keine Maus an. Die ganze Tafel bleibt auf `Tab`
+  (AC-20). **Messbar:** die Liste steht im Bild, und wer mehr gesammelt hat,
+  steht oben.
 
 ## Grenzfaelle
 
