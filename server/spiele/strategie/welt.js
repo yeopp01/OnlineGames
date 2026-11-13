@@ -2482,7 +2482,11 @@ class Welt {
       // Takt des Schusses geht mit ab wie bei `angriffTakten()`.
       const nachladen = this.gebaeudewert(turm.besitzer, turm.art, 'nachladen');
       turm.nachladen = Math.round(nachladen * TAKTE_PRO_SEKUNDE) - 1;
-      this.schlagen(turm, ziel, false);
+      // Eine Salve (bauen AC-32): so viele Pfeile, wie `pfeile` in den Daten
+      // sagt, alle auf dasselbe Ziel und jeder fuer sich gegen die Ruestung
+      // gerechnet. Ohne den Eintrag ist es einer - der Wachturm.
+      const pfeile = GEBAEUDE[turm.art].pfeile || 1;
+      for (let i = 0; i < pfeile; i++) this.schlagen(turm, ziel, false);
     }
   }
 
@@ -4168,6 +4172,8 @@ class Welt {
           sicht: w.sicht,
           // Ein Turm zeigt an der Auswahl, was er kann (bauen AC-29).
           angriff: w.angriff || 0, reichweite: w.reichweite || 0,
+          // Die Burg schiesst eine Salve (bauen AC-32).
+          pfeile: w.pfeile || 1,
           nahruestung: w.nahruestung, fernruestung: w.fernruestung,
           // Gezogen statt gesetzt, von Feld zu Feld (bauen AC-30).
           gezogen: Boolean(w.gezogen),

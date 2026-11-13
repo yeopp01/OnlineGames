@@ -87,28 +87,43 @@ test('bauen AC-32: eine fertige Burg gibt zwanzig Plaetze Wohnraum, eine Baustel
   assert.equal(fertig.welt.wohnraum(fertig.welt.spielerVon('a')), vorher + 20, 'zwanzig mehr');
 });
 
-test('bauen AC-32: die Burg schiesst von selbst - 11 gegen die Fernruestung, alle zwei Sekunden', () => {
+test('bauen AC-32: die Burg schiesst von selbst eine Salve - vier Pfeile, jeder 11 gegen die Fernruestung, alle zwei Sekunden', () => {
   const { welt, rand } = mitBurg();
-  const miliz = welt.einheitAnlegen('b', rand.x1 + 5, rand.y0, 'miliz');
+  assert.equal(GEBAEUDE.burg.pfeile, 4);
+  const ritter = welt.einheitAnlegen('b', rand.x1 + 5, rand.y0, 'ritter');
+  ritter.haltung = 'stehen';
+  const voll = ritter.leben;
+  // Ritter 100 Leben, Fernruestung 2: ein Pfeil nimmt 11 - 2 = 9, die Salve 36.
+  const jeSalve = 4 * (GEBAEUDE.burg.angriff - EINHEITEN.ritter.fernruestung);
+  assert.equal(jeSalve, 36);
+  welt.schuesse = [];
   welt.takten();
-  // Miliz 40 Leben, Fernruestung 1: ein Pfeil nimmt 11 - 1 = 10.
-  assert.equal(miliz.leben, 30, 'der erste Pfeil im ersten Takt');
-  // Nach dem ersten Takt noch vier Sekunden: der dritte Pfeil faellt genau
+  assert.equal(ritter.leben, voll - jeSalve, 'die erste Salve im ersten Takt');
+  assert.equal(welt.schuesse.length, 4, 'vier Pfeile gehen in den Zustand');
+  // Nach dem ersten Takt noch vier Sekunden: die dritte Salve faellt genau
   // bei 4 s; einen Takt vorher waren es erst zwei.
   sekunden(welt, 4 - 1 / TAKTE_PRO_SEKUNDE);
-  assert.equal(miliz.leben, 20, 'Pfeile bei 0 und 2 Sekunden');
+  assert.equal(ritter.leben, voll - 2 * jeSalve, 'Salven bei 0 und 2 Sekunden');
   welt.takten();
-  assert.equal(miliz.leben, 10, 'der dritte bei 4 Sekunden');
-  assert.equal(miliz.auftrag, null, 'die Miliz hat keinen Befehl bekommen');
+  assert.ok(ritter.tot, 'die dritte bei 4 Sekunden: 108 sind mehr, als er hat');
+});
+
+test('bauen AC-32: Gegenprobe - der Wachturm schiesst weiter einen Pfeil, und eine Miliz faellt in der ersten Salve der Burg', () => {
+  assert.equal(GEBAEUDE.wachturm.pfeile, undefined, 'ohne Eintrag ist es ein Pfeil');
+  const { welt, rand } = mitBurg();
+  const miliz = welt.einheitAnlegen('b', rand.x1 + 5, rand.y0, 'miliz');
+  // Miliz 40 Leben, Fernruestung 1: vier Pfeile zu je 10.
+  welt.takten();
+  assert.ok(miliz.tot, 'vier mal zehn sind ihr ganzes Leben');
 });
 
 test('bauen AC-32: acht Felder vom Rand der Burg, auf jeder Seite - achteinhalb nicht', () => {
   for (const seite of ['rechts', 'links']) {
     const nah = mitBurg();
     const x = seite === 'rechts' ? nah.rand.x1 + 8 : nah.rand.x0 - 8;
-    const getroffen = nah.welt.einheitAnlegen('b', x, nah.rand.y0 + 1, 'miliz');
+    const getroffen = nah.welt.einheitAnlegen('b', x, nah.rand.y0 + 1, 'ritter');
     nah.welt.takten();
-    assert.equal(getroffen.leben, 30, `${seite}: auf acht Feldern getroffen`);
+    assert.equal(getroffen.leben, 100 - 36, `${seite}: auf acht Feldern getroffen`);
 
     // Gegenprobe: gemessen wird vom Rand, nicht von der Mitte und nicht von
     // der Ecke, an der die Burg verankert ist - ein halbes Feld weiter nicht.

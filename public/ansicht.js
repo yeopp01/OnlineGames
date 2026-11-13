@@ -413,14 +413,27 @@ export class Ansicht {
     // Ein fuenfter Wert 1 ist ein Stein des Mangonels (kampf AC-19). Er fliegt
     // ebenso sieben Felder je Sekunde - so lange, wie der Server ihn rechnet
     // (`geschoss` in den Daten) -, nur in hoeherem Bogen.
-    for (const [x0, y0, x1, y1, stein] of nachricht.p || []) {
+    // Eine Salve (bauen AC-32): mehrere Pfeile in einer Nachricht von
+    // derselben Stelle zum selben Ziel. Gerechnet sind sie alle im selben
+    // Takt; im Bild fliegen sie kurz nacheinander und eine Handbreit
+    // auseinander, sonst saehe man einen.
+    const salve = new Map();
+    for (const [x0, y0, zx, zy, stein] of nachricht.p || []) {
+      const marke = `${x0}|${y0}|${zx}|${zy}`;
+      const nummer = stein === 1 ? 0 : salve.get(marke) || 0;
+      salve.set(marke, nummer + 1);
+      // Quer zur Flugbahn versetzt: 0, +, -, ++ ...
+      const lang = Math.hypot(zx - x0, zy - y0) || 1;
+      const seite = (nummer % 2 ? 1 : -1) * Math.ceil(nummer / 2) * 0.22;
+      const x1 = zx + (-(zy - y0) / lang) * seite;
+      const y1 = zy + ((zx - x0) / lang) * seite;
       const weite = Math.hypot(x1 - x0, y1 - y0);
       // Ein Turm schiesst von oben (bauen AC-29): der Server schickt die Mitte
       // seiner Grundflaeche, die Hoehe kennt nur die Zeichnung.
       const oben = this.schussHoeheBei(x0, y0);
       const dauer = Math.max(150, (weite / 7) * 1000);
       this.pfeile.push({
-        x0, y0, x1, y1, weite, oben, stein: stein === 1, start: jetzt, dauer,
+        x0, y0, x1, y1, weite, oben, stein: stein === 1, start: jetzt + nummer * 70, dauer,
       });
       // Zu hoeren (bedienung AC-62): die Sehne beim Schuetzen, der Wurfarm
       // beim Mangonel - und der Stein dort, wo er herunterkommt.
@@ -2828,6 +2841,8 @@ export class Ansicht {
     stift.lineCap = 'round';
     for (const p of this.pfeile) {
       const t = Math.min(1, (jetzt - p.start) / p.dauer);
+      // Der spaetere Pfeil einer Salve ist noch nicht von der Sehne.
+      if (t < 0) continue;
       if (p.stein) {
         // Ein grauer Brocken, oben links im Licht.
         const mitte = ort(p, t);

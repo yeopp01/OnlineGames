@@ -1117,6 +1117,12 @@ export class Auswahlleiste {
           ? wert('Reichweite', `${reichweite}`, 'Schussweite in Feldern')
           : wert(null, 'Nahkampf', 'Trifft nur, wer daneben steht'),
       );
+      // Eine Salve (bauen AC-32): die Burg schiesst mehrere Pfeile auf einmal.
+      const pfeile = lesen('pfeile');
+      if (pfeile > 1) {
+        zeile.dataset.pfeile = String(pfeile);
+        zeile.append(wert('Pfeile', `${pfeile}`, 'So viele Pfeile je Salve, jeder mit dem vollen Angriff'));
+      }
     } else {
       zeile.append(
         wert(null, 'Greift nicht an', 'Ein Rechtsklick auf einen Gegner ist nur ein Gang dorthin'),

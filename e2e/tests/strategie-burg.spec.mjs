@@ -34,7 +34,7 @@ test.describe('Burg', () => {
     await zeitraffer(page, code, 1);
   };
 
-  test('bauen AC-32: die Burg steht erst in der Ritterzeit im Baumenue, gibt zwanzig Plaetze Wohnraum und schiesst von selbst auf Berts Miliz', async ({}, info) => {
+  test('bauen AC-32: die Burg steht erst in der Ritterzeit im Baumenue, gibt zwanzig Plaetze Wohnraum und schiesst von selbst eine Salve auf Berts Ramme', async ({}, info) => {
     const { anna, code } = partie;
     await rohstoffe(anna, code, 'Anna', { holz: 3000, nahrung: 3000, gold: 1000, stein: 1000 });
     const basis = await anna.evaluate(() => window.ansicht.spieler.get(window.ansicht.ich).basis);
@@ -77,13 +77,18 @@ test.describe('Burg', () => {
     }, burgId);
     await expect(raum).toHaveText(String(raumVorher + 20));
 
-    // Berts Miliz auf der Seite, die vom Dorf weg zeigt, gerade daneben: die
+    // Berts Ramme auf der Seite, die vom Dorf weg zeigt, gerade daneben: die
     // Grundflaeche reicht von x - 2 bis x + 1, also sechs Felder vom Rand.
     const rechts = burg.x >= basis.x;
     const ort = { x: rechts ? burg.x + 1 + 6 : burg.x - 2 - 6, y: burg.y };
-    expect(await einheitenAufstellen(anna, code, 'Bert', 1, { ...ort, art: 'miliz' })).toBe(1);
-    const kuerzel = await anna.evaluate(() => window.ansicht.werte.einheiten.miliz.kuerzel);
-    const miliz = () => anna.evaluate((k) => [...window.ansicht.nachher.values()].find((e) => e.k === k && e.b !== window.ansicht.ich), kuerzel);
+    // Eine Ramme, keine Miliz: seit die Burg eine Salve schiesst (vier Pfeile
+    // zu je 11), faellt eine Miliz im ersten Takt. Die Ramme haelt Pfeile aus
+    // und bleibt stehen, wo sie steht (sie wacht nicht) - am Ziel laesst sich
+    // messen.
+    expect(await einheitenAufstellen(anna, code, 'Bert', 1, { ...ort, art: 'ramme' })).toBe(1);
+    const kuerzel = await anna.evaluate(() => window.ansicht.werte.einheiten.ramme.kuerzel);
+    const voll = await anna.evaluate(() => window.ansicht.werte.einheiten.ramme.leben);
+    const ramme = () => anna.evaluate((k) => [...window.ansicht.nachher.values()].find((e) => e.k === k && e.b !== window.ansicht.ich), kuerzel);
     await anna.waitForFunction((k) => [...window.ansicht.nachher.values()].some((e) => e.k === k && e.b !== window.ansicht.ich), kuerzel);
 
     // Die Burg waehlen: die Leiste zeigt ihre Kampfwerte aus den Daten.
@@ -100,34 +105,44 @@ test.describe('Burg', () => {
     await expect(kampfwerte).toBeInViewport();
     await expect(kampfwerte).toHaveAttribute('data-angriff', '11');
     await expect(kampfwerte).toHaveAttribute('data-reichweite', '8');
+    await expect(kampfwerte).toHaveAttribute('data-pfeile', '4');
+    await expect(kampfwerte).toContainText('Pfeile');
     await expect(raum).toBeInViewport();
     // Die Zahl in der Unterschrift: das Dorfzentrum und die Burg, sonst nichts.
     await expect(raum).toHaveText('25');
     await bedienteileFrei(anna);
 
-    // Sie schiesst: die Miliz verliert Leben (`h` kommt erst, wenn welches
+    // Sie schiesst: die Ramme verliert Leben (`h` kommt erst, wenn welches
     // fehlt), und Pfeile fliegen.
-    await expect.poll(async () => (await miliz())?.h ?? Infinity, { timeout: 15_000 }).toBeLessThan(40);
+    await expect.poll(async () => (await ramme())?.h ?? Infinity, { timeout: 15_000 }).toBeLessThan(voll);
     await anna.waitForFunction(() => window.ansicht.pfeile.length > 0, null, { timeout: 10_000 });
-    const pfeil = await anna.waitForFunction(() => {
-      const p = window.ansicht.pfeile.find((q) => !q.stein);
-      if (!p) return false;
-      p.dauer = 1e9;
-      p.start = performance.now() - 0.45e9;
-      return { oben: p.oben, x0: p.x0, y0: p.y0, x1: p.x1, y1: p.y1 };
+    // Die Salve: vier Pfeile aus einer Nachricht. Angehalten wird jeder an
+    // einer anderen Stelle seines Flugs, damit das Bild sie einzeln zeigt.
+    const salve = await anna.waitForFunction(() => {
+      const alle = window.ansicht.pfeile.filter((q) => !q.stein);
+      if (alle.length < 4) return false;
+      alle.forEach((p, i) => {
+        p.dauer = 1e9;
+        p.start = performance.now() - (0.3 + i * 0.12) * 1e9;
+      });
+      return alle.map((p) => ({ oben: p.oben, x0: p.x0, y0: p.y0, x1: p.x1, y1: p.y1 }));
     }, null, { timeout: 10_000, polling: 10 }).then((h) => h.jsonValue());
+    expect(salve.length, 'vier Pfeile je Salve').toBe(4);
+    // Nebeneinander, nicht aufeinander: keine zwei treffen denselben Punkt.
+    expect(new Set(salve.map((p) => `${p.x1.toFixed(2)}|${p.y1.toFixed(2)}`)).size).toBe(4);
+    const pfeil = salve[0];
     expect(pfeil.oben, 'der Pfeil beginnt oben am Bergfried, nicht am Fuss der Burg').toBeGreaterThan(0);
-    // Er kommt aus der Mitte der Burg (vier Felder: x - 0,5) und fliegt zur Miliz.
+    // Er kommt aus der Mitte der Burg (vier Felder: x - 0,5) und fliegt zur Ramme.
     expect([pfeil.x0, pfeil.y0]).toEqual([burg.x - 0.5, burg.y - 0.5]);
     // Der Pruefgriff stellt sie aufs naechste freie Feld - gemessen wird an
     // ihr, nicht am bestellten Platz.
-    const ziel = await miliz();
-    expect(Math.hypot(pfeil.x1 - ziel.x, pfeil.y1 - ziel.y), 'auf Berts Miliz').toBeLessThan(0.5);
+    const ziel = await ramme();
+    expect(Math.hypot(pfeil.x1 - ziel.x, pfeil.y1 - ziel.y), 'auf Berts Ramme').toBeLessThan(0.5);
     await anna.waitForTimeout(100);
     await nachweis(anna, {
       spec: BAUEN,
       ac: 'AC-32',
-      titel: 'Annas Burg (blau) gewählt, mit Angriff und Reichweite, und ein Pfeil auf dem Weg zu Berts Miliz (rot); oben in der Leiste Wohnraum für 25',
+      titel: 'Annas Burg (blau) gewählt, mit Angriff, Reichweite und vier Pfeilen je Salve; die Salve auf dem Weg zu Berts Ramme (rot); oben in der Leiste Wohnraum für 25',
       test: info,
     });
   });

@@ -247,7 +247,13 @@ Spezialeinheit der Burg (kommt mit den Häusern, Stufe E), Palisade.
   (kampf AC-18). Gezeichnet als Ringmauer mit vier Ecktürmen und hohem
   Bergfried, Banner und Fahne in Spielerfarbe, das Tor vorn rechts; im
   Baumenü die Taste F. Spezialeinheit und Unterschlupf kommen später (Stufe
-  E, nicht gebaut).
+  E, nicht gebaut). **Seit 2026-11-13 schießt sie eine Salve** (Benutzer:
+  „Im Original hat die Burg eher 4/5 Pfeile alle 2 Sekunden"): vier Pfeile
+  alle zwei Sekunden auf dasselbe Ziel, jeder für sich gegen die Rüstung
+  gerechnet (`pfeile` in den Daten; ohne den Eintrag ist es einer, der
+  Wachturm). Die Leiste nennt die Zahl, im Bild fliegen die vier kurz
+  nacheinander und nebeneinander. Der eine Pfeil bis dahin war falsch aus
+  der Vorlage abgeschrieben.
 - **AC-33** `fertig` **Markt tauscht** — Am Markt kauft man 100 Holz, Nahrung
   oder Stein für Gold und verkauft sie gegen Gold. Jeder Kauf macht diesen
   Rohstoff teurer, jeder Verkauf billiger; zwischen Kauf- und Verkaufspreis

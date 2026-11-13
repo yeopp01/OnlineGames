@@ -81,8 +81,11 @@ aber nicht linear: n Dorfbewohner brauchen etwa `3·t / (n + 2)`.
 | Wunder | Imperial | je 1000 Holz, Nahrung, Gold, Stein | 3500 s | 4800 | Sieg nach Zeit |
 
 Was schießt: der **Wachturm** 5 Angriff, Reichweite 8, ein Pfeil alle 2 s,
-Rüstung 1/7, Sicht 9; die **Burg** 11 Angriff, Reichweite 8, ein Pfeil alle
-2 s, Rüstung 8/11, Sicht 11, vier mal vier Felder. Mit Besatzung schießen
+Rüstung 1/7, Sicht 9; die **Burg** 11 Angriff, Reichweite 8, eine Salve alle
+2 s, Rüstung 8/11, Sicht 11, vier mal vier Felder. **Berichtigt am
+2026-11-13:** hier stand „ein Pfeil alle 2 s" — eine leere Burg schießt im
+Original eine Salve (das Wiki nennt fünf Pfeile, ein Beitrag zur Definitive
+Edition vier zu zusammen 44); gebaut sind vier. Mit Besatzung schießen
 beide mehr Pfeile — der Unterschlupf ist hier nicht gebaut.
 
 Der **Markt** tauscht je 100 Holz, Nahrung oder Stein gegen Gold. Grundpreis
