@@ -171,7 +171,7 @@ Umfang hinzufügt, dort nachsehen.
 
 ## Stand
 
-**512 von 634 Kriterien fertig.** 824 Tests ohne Browser, 265 im Browser. Die
+**513 von 635 Kriterien fertig.** 826 Tests ohne Browser, 265 im Browser. Die
 Übersicht ist der Bericht: `npm run qa:report`.
 
 Gebaut ist der Unterbau: Räume, Übertragung, Karte, Wegfindung, Sammeln,
@@ -425,7 +425,12 @@ Gemessen im Nebel: 38 von 40 vor Minute 60, Median 41,4; zu viert Median
 50,9 statt 44,8. **Knapp** ist ki AC-27 (Distelhag 1,61-fach bei verlangten
 1,5); zwei Burgen und Türme nebeneinander knackt die KI nicht. Die
 Stellwerte stehen mit ihren Messungen oben in `ki.js` — wer daran dreht,
-fährt `tests/partien/ki-im-nebel.test.mjs` und die Team-Tests.
+fährt `tests/partien/ki-im-nebel.test.mjs` und die Team-Tests. **Bei
+Überfluss baut sie über ihre Grenze hinaus** (ki AC-34): ab dem Fürstentum,
+alle Schlangen voll, 600 Holz und zusammen 1000 Nahrung und Gold im Vorrat
+— ein weiteres Militärgebäude, höchstens neun. KI gegen KI greift das fast
+nie (sie ist arm, nicht gedeckelt: im Mittel 55 Holz im Vorrat); gegen
+einen Menschen, der mauert, ist es nicht gemessen.
 Die **Sicht ist eine Einstellung beim Eröffnen** (kampf AC-16):
 Nebel, Erkundet oder Aufgedeckt — Tests, die nicht vom Nebel handeln,
 eröffnen aufgedeckt (`partieZuZweit(…, { sicht: 'aufgedeckt' })`).

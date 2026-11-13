@@ -2,7 +2,7 @@
 
 **Bereich:** Strategie
 **Kuerzel:** ki
-**Stand:** 29/33 fertig · 4 offen
+**Stand:** 30/34 fertig · 4 offen
 
 ## Zweck
 
@@ -351,6 +351,27 @@ nicht die Regeln.
   belegt sind sie nur in der gebauten Lage.
   Angelegt am 2026-11-13 (Benutzer: „Und ki muss auch burgen bauen,
   definitiv"); die Spezialeinheit aus der Burg bleibt AC-28.
+- **AC-34** `fertig` **Mehr Militärgebäude bei Überfluss** — Ab dem
+  Fürstentum baut die KI über die Grenze ihres Zeitalters (AC-12, AC-24:
+  drei, drei, fünf, sechs) hinaus ein weiteres Militärgebäude, wenn alle
+  Schlangen voll sind und trotzdem mindestens 600 Holz und zusammen 1000
+  Nahrung und Gold im Vorrat liegen — bis höchstens neun. Welches, sagt
+  dieselbe Regel wie bisher (AC-27, AC-32). Im Lehen nicht: dort ist ein
+  voller Vorrat der Aufstieg. **Messbar:** in einer gebauten Lage an der
+  Grenze baut sie mit Überfluss ein weiteres und mit einem Rohstoff knapp
+  darunter keines, im Lehen keines, am neunten ist Schluss; die Gegenprobe
+  ohne die Regel fällt (`tests/strategie-ki-nachbau.test.mjs`); fahrplan
+  AC-11 und AC-24 halten. **Gemessen am 2026-11-13:** KI gegen KI ändert
+  die Regel fast nichts — über vierzig Startwerte steht die KI im
+  Fürstentum nur in 46 von 1446 KI-Minuten an der Grenze, mit vollen
+  Schlangen in 7, und ihr Vorrat liegt im Mittel bei 55 Holz, 57 Nahrung
+  und 86 Gold: **sie ist arm, nicht gedeckelt.** Im Nebel unverändert 38
+  von 40 vor Minute 60, Median 41,4; zu viert alle zwanzig vor Minute 90,
+  längste 83,2 statt 76,7. Die Regel ist für die lange Partie gegen einen
+  Menschen, der sich einmauert — **das ist nicht gemessen**, dafür gibt es
+  keinen Prüfstand. Angelegt am 2026-11-13 (Benutzer: „man darf dann bei
+  fortgeschrittener spielzeit wenns die ressourcen hergeben auch mehrere
+  kasernen, schießanlagen, usw. Bauen als ki").
 
 ### Stufe E — Häuser
 

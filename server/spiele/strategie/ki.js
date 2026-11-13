@@ -97,6 +97,19 @@ const MILITAER_HOECHSTENS = 3;
 // Startwert 13 ab Minute 40 1500 Nahrung und 1400 Gold, und das Heer stand
 // bei 10 bis 19 - drei Gebaeude mit je zwei Auftraegen gaben es nicht aus.
 const MILITAER_JE_ZEITALTER = [MILITAER_HOECHSTENS, MILITAER_HOECHSTENS, 5, 6];
+// Ueber diese Grenze hinaus nur bei Ueberfluss (ki AC-34), ab dem
+// Fuerstentum: sind alle Schlangen voll und liegen trotzdem so viel Holz
+// und so viel Nahrung und Gold zusammen im Vorrat, gibt die KI es nicht
+// aus - dann ein weiteres Gebaeude, bis MILITAER_ALLERHOECHSTENS. KI gegen
+// KI kommt das fast nie vor (gemessen ueber vierzig Startwerte: 7 von 1446
+// KI-Minuten im Fuerstentum, Vorrat sonst im Mittel 55 Holz, 57 Nahrung,
+// 86 Gold - sie ist arm, nicht gedeckelt); es ist fuer die lange Partie
+// gegen einen Menschen, der sich einmauert. Im Lehen nicht: dort ist ein
+// voller Vorrat der Aufstieg, der bezahlt werden will.
+const MILITAER_UEBERFLUSS_AB = 2;
+const MILITAER_UEBERFLUSS_HOLZ = 600;
+const MILITAER_UEBERFLUSS_KAMPF = 1000;
+const MILITAER_ALLERHOECHSTENS = 9;
 const MILITAER_RESERVE = 200;
 // So viele Auftraege stehen hoechstens in der Schlange eines Militaergebaeudes:
 // mehr wuerde den Vorrat binden, den die naechste Stufe braucht.
@@ -575,7 +588,11 @@ class Ki {
     // Nachschub braucht Durchsatz: sind alle voll beschaeftigt und ist Holz
     // uebrig, ein weiteres.
     const alleVoll = meine.every((g) => g.fertig && g.schlange.length >= MILITAER_SCHLANGE);
-    if (alleVoll && meine.length < MILITAER_JE_ZEITALTER[Math.min(this.spieler.zeitalter, MILITAER_JE_ZEITALTER.length - 1)] && this.spieler.holz >= MILITAER_HOLZ + MILITAER_RESERVE) {
+    const grenze = MILITAER_JE_ZEITALTER[Math.min(this.spieler.zeitalter, MILITAER_JE_ZEITALTER.length - 1)];
+    // Ueber die Grenze hinaus nur bei Ueberfluss (ki AC-34).
+    const ueberfluss = this.spieler.zeitalter >= MILITAER_UEBERFLUSS_AB && meine.length < MILITAER_ALLERHOECHSTENS
+      && this.spieler.holz >= MILITAER_UEBERFLUSS_HOLZ && this.spieler.nahrung + this.spieler.gold >= MILITAER_UEBERFLUSS_KAMPF;
+    if (alleVoll && (meine.length < grenze ? this.spieler.holz >= MILITAER_HOLZ + MILITAER_RESERVE : ueberfluss)) {
       // Nachgebaut wird der Schwerpunkt, wenn er ein Militaergebaeude ist
       // (ki AC-27) - die erste Kaserne aber in jedem Haus (ki AC-17). Eine
       // Neigung zur Kaserne baut im Wechsel nach (ki AC-32): eine weitere
@@ -2039,6 +2056,7 @@ class Ki {
 module.exports = {
   Ki, ENTSCHEIDEN_ALLE, ZIEL_DORFBEWOHNER, DORFBEWOHNER_JE_ZEITALTER, zielDorfbewohner, FEUDALZEIT_NAHRUNG, AN_SCHAFEN, AN_BEEREN, MILITAER,
   HEER, WACHE, UEBERLEGEN, MARSCH_MINDESTENS, HEER_ABSTAND, WACHE_NAH, FEIND_FERN, VERGEBEN_ABSTAND, MILITAER_HOLZ, UEBERSCHUSS, MANGEL, UMVERTEILEN_SEKUNDEN, UNERREICHBAR_SEKUNDEN, MILITAER_HOECHSTENS, MILITAER_JE_ZEITALTER, plan,
+  MILITAER_UEBERFLUSS_AB, MILITAER_UEBERFLUSS_HOLZ, MILITAER_UEBERFLUSS_KAMPF, MILITAER_ALLERHOECHSTENS,
   GOLD_KNAPP, KARREN, HANDEL_ABSTAENDE, HANDEL_MINDESTENS, VERKAUF_RUECKLAGE, KARREN_WARTEN_SEKUNDEN, FEIND_VERGESSEN,
   WERKSTATT, RAMME, RAMMEN, RAMMEN_MIT, HEER_BEFESTIGT, SAMMEL_ABSTAND, RAMME_WARTEN_SEKUNDEN, ZUG_WARTEN_SEKUNDEN, HANDEL_VOR,
   FESTUNG, BURGEN_JE_ZEITALTER, BURG_ABSTAND_SEKUNDEN, BURG_STEINSAMMLER, BURG_VOR, BURG_BAUER,

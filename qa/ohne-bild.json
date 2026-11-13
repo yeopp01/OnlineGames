@@ -1308,6 +1308,11 @@
     },
     {
       "spec": "10-strategie/ki.md",
+      "ac": "AC-34",
+      "begruendung": "Wann die KI ein weiteres Militaergebaeude baut - alle Schlangen voll, mindestens 600 Holz und zusammen 1000 Nahrung und Gold im Vorrat, ab dem Fuerstentum, hoechstens neun - ist eine Entscheidung aus Zahlen im Vorrat der KI auf dem Server, geprueft an ihrem Bauauftrag in gebauten Lagen. Ein Bild zeigte ein Dorf mit sechs Gebaeuden, nicht, warum das sechste dort steht; wie die Gebaeude aussehen, zeigen die Bilder zu bauen AC-24 und darstellung AC-14."
+    },
+    {
+      "spec": "10-strategie/ki.md",
       "ac": "AC-23",
       "begruendung": "Dass die KI gegen eine Befestigung Rammen haelt, nicht ohne sie aufbricht, sie vorausschickt und erst mit dem Heer hineingehen laesst, ist eine Abfolge ueber viele Spielminuten auf dem Server: wer wartet worauf, wer geht wann. Geprueft wird sie Takt fuer Takt an den Befehlen der KI in gebauten Lagen und ueber vierzig Partien im Pruefstand; ein Bild zeigte Rammen neben einem Heer, nicht, in welcher Reihenfolge sie dorthin kamen. Wie eine Ramme aussieht und stoesst, zeigt das Bild zu einheiten AC-35."
     },
