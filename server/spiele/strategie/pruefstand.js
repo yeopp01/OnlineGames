@@ -33,7 +33,11 @@ function pruefen(welt) {
   for (const e of welt.einheiten.values()) {
     const x = Math.round(e.x);
     const y = Math.round(e.y);
-    if (!karten.begehbar(welt.karte, x, y)) {
+    // Die Durchfahrt eines eigenen oder verbuendeten Tors ist auf der Karte
+    // bebaut und fuer ihn trotzdem ein Weg (bauen AC-31) - aufgefallen, als
+    // die KI ihr erstes Tor baute (ki AC-35).
+    const tore = welt.toreVon(e.besitzer);
+    if (!karten.begehbar(welt.karte, x, y) && !(tore && tore.has(y * welt.karte.groesse + x))) {
       befunde.push(`Einheit ${e.id} (${e.art}) steht auf ${x}, ${y} in einem Hindernis (Feld ${welt.karte.felder[y * welt.karte.groesse + x]})`);
     }
   }

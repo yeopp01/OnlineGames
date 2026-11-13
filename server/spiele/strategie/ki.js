@@ -268,6 +268,27 @@ const BURG_STEINSAMMLER = 4;
 const BURG_VOR = 6;
 const BURG_BAUER = 3;
 
+// Der Mauerring (ki AC-35): aussen ums Dorf und ganz herum, nicht irgendwo
+// hinein. Was sich ziehen laesst, ist die Mauer, was `tor` traegt, das Tor -
+// aus den Daten gelesen. Ein Quadrat um das Dorfzentrum, so weit, dass das
+// weiteste eigene Gebaeude in RING_HOECHSTENS Feldern noch RING_RAND Felder
+// Luft hat, mindestens RING_MINDESTENS. Je Seite ein Tor, moeglichst in der
+// Mitte und nie naeher als RING_ECKE an einer Ecke; alle RING_SEKUNDEN sieht
+// sie nach und fuellt, was offen ist.
+const MAUER = Object.keys(GEBAEUDE).find((g) => GEBAEUDE[g].gezogen);
+const TOR = Object.keys(GEBAEUDE).find((g) => GEBAEUDE[g].tor);
+const RING = Number(process.env.KI_RING ?? 1);
+const RING_MINDESTENS = 10;
+const RING_HOECHSTENS = 16;
+const RING_RAND = 2;
+const RING_ECKE = 4;
+const RING_STEINSAMMLER = 4;
+const RING_BAUER = 3;
+const RING_SEKUNDEN = 10;
+// Eine Seite wird erst gezogen, wenn der Stein fuer so viele Felder reicht -
+// sonst liefen die Bauer fuer jedes einzelne Feld los.
+const RING_STUECK = 8;
+
 const FELD_FUER = { holz: [karten.WALD], nahrung: [karten.BEERE], gold: [karten.GOLD], stein: [karten.STEIN] };
 const LAGER_FUER = { holz: 'holzfaellerlager', nahrung: 'muehle', gold: 'bergbaulager', stein: 'bergbaulager' };
 
@@ -354,6 +375,10 @@ class Ki {
     this.belagerungFehlt = null;
     // In welchem Takt die erste Burg fertig war (ki AC-33) - `null`: noch keine.
     this.burgTakt = null;
+    // Der Mauerring (ki AC-35): die Seiten, einmal geplant, und was beim
+    // letzten Nachsehen offen war.
+    this.ring = null;
+    this.ringStand = null;
   }
 
   get spieler() {
@@ -1440,8 +1465,10 @@ class Ki {
       const stehen = gebaeude.filter((g) => g.art === b.art);
       return stehen.length < b.anzahl || stehen.some((g) => !g.fertig);
     });
+    // Steht alles andere, der Mauerring (ki AC-35) - nach der ersten Burg.
+    const ring = !offen && handel ? this.ringLage(gebaeude) : null;
     const anStein = dorfbewohner.filter((e) => this.rolle(e) === 'stein');
-    const braucht = offen ? offen.steinSammler : 0;
+    const braucht = offen ? offen.steinSammler : ring?.offen ? RING_STEINSAMMLER : 0;
     if (this.welt.takt - this.zuletztStein >= UMVERTEILEN_SEKUNDEN * TAKTE_PRO_SEKUNDE) {
       if (anStein.length < braucht) {
         const wer = dorfbewohner.find((e) => !e.weg.length && this.rolle(e) === 'holz');
@@ -1454,10 +1481,151 @@ class Ki {
         this.schicken(anStein[0], 'holz', dorfbewohner);
       }
     }
-    if (!offen) return;
+    if (!offen) {
+      if (ring?.offen) this.ringBauen(ring, dorfbewohner);
+      return;
+    }
     const stehen = gebaeude.filter((g) => g.art === offen.art);
     if (stehen.length >= offen.anzahl || stehen.some((g) => !g.fertig)) return;
     this.bauen(offen.art, this.bauwerkPlatz(offen, stehen.length), dorfbewohner, offen.bauer);
+  }
+
+  /**
+   * Die Seiten des Mauerrings (ki AC-35), einmal geplant: ein Quadrat um das
+   * Dorfzentrum, das alles einschliesst, was in RING_HOECHSTENS Feldern
+   * steht. Eine Seite, die ueber den Kartenrand hinausfiele, entfaellt - der
+   * Rand ist die Mauer.
+   */
+  ringSeiten(gebaeude) {
+    if (this.ring) return this.ring;
+    const { basis } = this.spieler;
+    const g = this.welt.karte.groesse;
+    let weit = 0;
+    for (const b of gebaeude) {
+      if (b.art === MAUER || b.art === TOR) continue;
+      const f = this.welt.grundflaeche(b.art, b.x, b.y, b.quer);
+      const d = Math.max(Math.abs(f.x0 - basis.x), Math.abs(f.x1 - basis.x), Math.abs(f.y0 - basis.y), Math.abs(f.y1 - basis.y));
+      if (d <= RING_HOECHSTENS - RING_RAND) weit = Math.max(weit, d);
+    }
+    const r = Math.max(RING_MINDESTENS, Math.min(RING_HOECHSTENS, weit + RING_RAND));
+    const x0 = Math.max(0, basis.x - r);
+    const x1 = Math.min(g - 1, basis.x + r);
+    const y0 = Math.max(0, basis.y - r);
+    const y1 = Math.min(g - 1, basis.y + r);
+    const seiten = [];
+    if (basis.y - r >= 0) seiten.push({ entlang: 'x', wert: y0, a: x0, b: x1 });
+    if (basis.y + r <= g - 1) seiten.push({ entlang: 'x', wert: y1, a: x0, b: x1 });
+    if (basis.x - r >= 0) seiten.push({ entlang: 'y', wert: x0, a: y0, b: y1 });
+    if (basis.x + r <= g - 1) seiten.push({ entlang: 'y', wert: x1, a: y0, b: y1 });
+    this.ring = seiten;
+    return seiten;
+  }
+
+  /**
+   * Was am Mauerring offen ist (ki AC-35), hoechstens alle RING_SEKUNDEN neu
+   * nachgesehen: das naechste Tor, das fehlt und Platz hat, und die erste
+   * Seite mit einem freien Feld. Wald, Wasser, Vorraete und eigene Gebaeude
+   * auf der Linie zaehlen als Mauer - faellt der Wald, ist das Feld beim
+   * naechsten Nachsehen frei und wird gefuellt. Null vor der ersten Burg
+   * und solange es Mauer oder Tor nicht gibt.
+   */
+  ringLage(gebaeude) {
+    if (!RING || !MAUER || !TOR || this.burgTakt === null) return null;
+    if (this.spieler.zeitalter < Math.max(GEBAEUDE[MAUER].zeitalter, GEBAEUDE[TOR].zeitalter)) return null;
+    if (this.ringStand && this.welt.takt - this.ringStand.takt < RING_SEKUNDEN * TAKTE_PRO_SEKUNDE) return this.ringStand;
+    const feld = (s, i) => (s.entlang === 'x' ? { x: i, y: s.wert } : { x: s.wert, y: i });
+    const aufSeite = (s, b) => {
+      const f = this.welt.grundflaeche(b.art, b.x, b.y, b.quer);
+      return s.entlang === 'x'
+        ? f.y0 === s.wert && f.y1 === s.wert && f.x0 >= s.a && f.x1 <= s.b
+        : f.x0 === s.wert && f.x1 === s.wert && f.y0 >= s.a && f.y1 <= s.b;
+    };
+    const seiten = this.ringSeiten(gebaeude);
+    const tore = gebaeude.filter((b) => b.art === TOR);
+    let tor = null;
+    let stehen = 0;
+    for (const s of seiten) {
+      if (tore.some((b) => aufSeite(s, b))) stehen += 1;
+      else if (!tor) tor = this.torPlatz(s, feld);
+    }
+    let seite = null;
+    for (const s of seiten) {
+      const frei = [];
+      for (let i = s.a; i <= s.b; i++) {
+        const f = feld(s, i);
+        if (this.welt.platzPruefen(MAUER, f.x, f.y)) frei.push(f);
+      }
+      if (!frei.length) continue;
+      seite = { von: frei[0], bis: frei[frei.length - 1], frei: frei.length };
+      break;
+    }
+    const imBau = gebaeude.some((b) => (b.art === MAUER || b.art === TOR) && !b.fertig);
+    // Ohne ein einziges Tor kein Ring: sie sperrte sich selbst ein.
+    const moeglich = stehen > 0 || tor !== null;
+    this.ringStand = { takt: this.welt.takt, tor, stehen, seite, imBau, offen: moeglich && Boolean(tor || seite || imBau), erledigt: false };
+    return this.ringStand;
+  }
+
+  /**
+   * Wo auf einer Seite des Rings das Tor hinkommt: von der Mitte nach aussen
+   * der erste Platz, an dem es steht (auch auf der eigenen Mauer, die es
+   * ersetzt) und vor und hinter dem man gehen kann - ein Tor in den Wald
+   * nuetzt niemandem.
+   */
+  torPlatz(s, feld) {
+    const quer = s.entlang === 'y';
+    const mitte = Math.round((s.a + s.b) / 2);
+    const weit = Math.floor((s.b - s.a) / 2) - RING_ECKE;
+    const { karte } = this.welt;
+    const gangbar = (x, y) => karten.begehbar(karte, x, y) && !this.welt.gebaeudeAn(x, y);
+    for (let k = 0; k <= weit; k++) {
+      for (const i of k ? [mitte + k, mitte - k] : [mitte]) {
+        const f = feld(s, i);
+        const alte = this.welt.ersetzbar(this.spielerId, TOR, f.x, f.y, quer);
+        if (!this.welt.platzPruefen(TOR, f.x, f.y, alte, quer)) continue;
+        const { x0, y0, x1, y1 } = this.welt.grundflaeche(TOR, f.x, f.y, quer);
+        let durch = true;
+        for (let y = y0; y <= y1 && durch; y++) {
+          for (let x = x0; x <= x1 && durch; x++) {
+            durch = quer ? gangbar(x - 1, y) && gangbar(x + 1, y) : gangbar(x, y - 1) && gangbar(x, y + 1);
+          }
+        }
+        if (durch) return { ...f, quer };
+      }
+    }
+    return null;
+  }
+
+  /**
+   * Am Mauerring weiterbauen (ki AC-35): erst die Tore, eines nach dem
+   * anderen, dann die Mauer Seite fuer Seite - und nie, solange noch ein
+   * Stueck im Bau ist. Ein Auftrag je Nachsehen.
+   */
+  ringBauen(lage, dorfbewohner) {
+    if (lage.erledigt || lage.imBau) return;
+    const bauer = [];
+    const holen = (anzahl) => {
+      for (let i = 0; i < anzahl; i++) {
+        const naechster = this.bauer(dorfbewohner.filter((e) => !bauer.includes(e)));
+        if (naechster) bauer.push(naechster);
+      }
+      return bauer.map((e) => e.id);
+    };
+    if (lage.tor) {
+      if (Object.entries(GEBAEUDE[TOR].kosten).some(([r, menge]) => this.spieler[r] < menge)) return;
+      const wer = holen(1);
+      if (!wer.length) return;
+      this.senden({ auftrag: 'bauen', einheiten: wer, art: TOR, ziel: { x: lage.tor.x, y: lage.tor.y }, quer: lage.tor.quer });
+      lage.erledigt = true;
+      return;
+    }
+    if (!lage.stehen || !lage.seite) return;
+    const stueck = Math.min(lage.seite.frei, RING_STUECK);
+    if (Object.entries(GEBAEUDE[MAUER].kosten).some(([r, menge]) => this.spieler[r] < menge * stueck)) return;
+    const wer = holen(RING_BAUER);
+    if (!wer.length) return;
+    this.senden({ auftrag: 'mauer', einheiten: wer, art: MAUER, von: lage.seite.von, bis: lage.seite.bis });
+    lage.erledigt = true;
   }
 
   /**
