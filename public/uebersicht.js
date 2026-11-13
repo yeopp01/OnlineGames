@@ -1,3 +1,4 @@
+// @ts-check
 // Die Uebersichtskarte unten rechts (→ specs/10-strategie/bedienung.md AC-11).
 //
 // Die ganze Karte als Raute, wie das Spielbild sie zeigt: Gelaende in seinen

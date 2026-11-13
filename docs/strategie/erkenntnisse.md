@@ -13,7 +13,8 @@ Kurz halten. Diese Datei wird in jeder Runde gelesen.
 Entscheidungen, die nicht die Schleife trifft. Solange eine offen ist, wird an
 etwas anderem gearbeitet.
 
-- **NEU (Runde 201): Eschenbruch bleibt auch nach beiden Schritten über 70 %.**
+- **BEANTWORTET (Benutzer, 2026-11-12, gebaut in Runde 202): die anderen stärken statt Eschenbruch weiter schwächen**, dazu den Bogenschützen teurer. Ergebnis: Eschenbruch 66, Silberfurt 29 % — Silberfurt einen Punkt unter der Grenze, im Rauschen (±5 Punkte bei 80 Partien). Die Frage, wie sie stand:
+  **Eschenbruch bleibt auch nach beiden Schritten über 70 %.**
   Gebaut wie entschieden: Reichweite der Schützen erst ab dem Fürstentum,
   Holz erst +10 % (80 % Siege), dann +5 % (**73 %**, 58 von 80; Distelhag
   gegen Eschenbruch 4 : 16). Weiter wird ohne Rückfrage nicht gedreht. Was
@@ -2210,6 +2211,29 @@ ihn, mit Gegenprobe an beiden Formen. Fünf Bilder neu, alle angesehen.
 Neueste oben. Eine Zeile je Runde: Nummer, Datum, Kriterien, Ergebnis,
 wichtigste Erkenntnis.
 
+- **202** · 2026-11-12 · **Die anderen Häuser gestärkt, der Schütze
+  teurer** (Benutzer: „den anderen noch Boni geben, statt Eschenbruch
+  weiter zu nerven“, dazu „die Bogenschützen um 5 teurer“). Drei Fassungen
+  über je 200 Partien:
+  - Schützen **50 Gold**, Silberfurt Gold +10 %, Distelhag Fernrüstung +2:
+    Eschenbruch 65, Rappenstein 56, Distelhag 53, Wehrstein 45, Silberfurt
+    31 % — alle in der Grenze, **aber ki AC-26 fiel**: ohne Häuser holte
+    die KI ohne Gold nur noch in 3 von 8 Partien Gold mit Karren. Die
+    Karren kamen acht Minuten nach dem Leeren und wurden abgeschossen
+    (Startwert 7: sechs von sieben in einer Minute) — der Goldpreis
+    verschiebt den Verlauf, die Schwäche (Karren durch den Gegner) ist
+    älter.
+  - Schützen **30 Holz** statt 25, sonst gleich: ki AC-26 7 von 8, aber
+    Silberfurt 25 %.
+  - **Gebaut:** 30 Holz, Silberfurt Gold **+15 %**, Distelhag Fernrüstung
+    +2: **Eschenbruch 66, Distelhag 58, Rappenstein 50, Wehrstein 48,
+    Silberfurt 29 %**; Distelhag gegen Eschenbruch 10 : 10 (vorher 4 : 16),
+    ohne Sieger 0 von 200.
+  Bei 80 Partien je Haus streut eine Quote um ±5 Punkte — Silberfurt 29
+  gegen 31 ist Rauschen, weiteres Drehen wäre Jagd darauf. Konterkreis hält
+  (kein Konter unter 80 %). **Nicht gebaut:** der Test zu spielziel AC-18
+  in `npm run check`. **Offener Faden:** die KI schickt Karren weiter auf
+  eine Strecke, auf der eben einer gestorben ist.
 - **201** · 2026-11-12 · **Eschenbruch abgeschwächt** (auf Wunsch des
   Benutzers, eine Runde außerhalb der Schleife, im selben Baum wie die
   uncommittete Runde 200). Neu in den Daten: `boniAb: { <zeitalter>: … }` —

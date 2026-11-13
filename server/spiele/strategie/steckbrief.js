@@ -1,3 +1,4 @@
+// @ts-check
 'use strict';
 
 const { Welt, TAKTE_PRO_SEKUNDE, GESCHWINDIGKEITEN } = require('./welt');

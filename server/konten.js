@@ -1,3 +1,4 @@
+// @ts-check
 'use strict';
 
 // Konten, Sitzungen und Einladungscodes. Better Auth laeuft als Bibliothek im
@@ -224,7 +225,11 @@ function koerperLesen(anfrage) {
 // Eine bereits gelesene Anfrage noch einmal lesbar machen.
 function koerperNachreichen(anfrage, text) {
   const { Readable } = require('node:stream');
-  const neu = Readable.from([Buffer.from(text)]);
+  // Eine echte Anfrage ist das nicht: gesetzt wird nur, was Better Auth liest.
+  // Deshalb steht der Typ hier von Hand.
+  const neu = /** @type {import('node:http').IncomingMessage} */ (
+    /** @type {unknown} */ (Readable.from([Buffer.from(text)]))
+  );
   neu.method = anfrage.method;
   neu.url = anfrage.url;
   neu.headers = { ...anfrage.headers, 'content-length': String(Buffer.byteLength(text)) };

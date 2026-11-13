@@ -1,3 +1,4 @@
+// @ts-check
 'use strict';
 
 // Ein Computerspieler (→ specs/10-strategie/ki.md).
@@ -210,7 +211,7 @@ function plan(n) {
 
 class Ki {
   /**
-   * @param {import('./welt').Welt} welt
+   * @param {InstanceType<typeof import('./welt').Welt>} welt
    * @param {string} spielerId
    */
   constructor(welt, spielerId) {
@@ -222,6 +223,7 @@ class Ki {
     this.versatz = nummer % ENTSCHEIDEN_ALLE;
     // Wozu ihr Haus neigt (ki AC-27): aus den Daten, nie nach dem Namen.
     const haus = welt.spieler[nummer]?.haus;
+    /** @type {import('./daten').Neigung} */
     this.neigung = (haus && HAEUSER[haus].ki) || {};
     this.abgewiesen = 0;
     this.schafeGetrieben = false;
@@ -483,7 +485,7 @@ class Ki {
     // Der Schwerpunkt des Hauses zuerst (ki AC-27): reicht der Vorrat nur
     // fuer einen Auftrag, bekommt ihn dieses Gebaeude.
     const meine = gebaeude.filter((g) => MILITAER.includes(g.art) || g.art === 'kaserne')
-      .sort((a, b) => (b.art === schwerpunkt) - (a.art === schwerpunkt));
+      .sort((a, b) => Number(b.art === schwerpunkt) - Number(a.art === schwerpunkt));
     for (const g of meine) {
       if (!g.fertig || g.schlange.length >= MILITAER_SCHLANGE) continue;
       const art = this.naechsteKampfeinheit(g, ruecklage);

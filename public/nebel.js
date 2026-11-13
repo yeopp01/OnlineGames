@@ -1,3 +1,4 @@
+// @ts-check
 // Der Nebel im Bild (→ specs/10-strategie/kampf.md AC-11, AC-12,
 // darstellung.md AC-15).
 //

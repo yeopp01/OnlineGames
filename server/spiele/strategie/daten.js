@@ -1,8 +1,120 @@
+// @ts-check
 'use strict';
 
 // Die Werte des Strategiespiels an einer Stelle (→ specs/10-strategie/bauen.md
 // AC-20, docs/strategie/vorlage-aoe2.md). Die Simulation liest sie hier und
 // verzweigt nicht nach Einheit oder Volk.
+
+// Die Formen der Tabellen, fuer den Pruefer (`npm run typen`): ein Feld, das
+// hier nicht steht, ist in einer Tabelle unten und in jeder geprueften Datei,
+// die es liest, ein Fehler. Wer ein neues Feld einfuehrt, traegt es hier ein.
+// Was die Felder bedeuten, steht an den Tabellen.
+
+/**
+ * Mengen je Rohstoff - Kosten, Faktoren auf das Sammeln, Zuschlaege.
+ * @typedef {{holz?: number, nahrung?: number, gold?: number, stein?: number}} Rohstoffe
+ */
+
+/**
+ * @typedef {object} Einheitenwerte
+ * @property {number} leben
+ * @property {number} tempo Felder je Sekunde
+ * @property {number} sicht Felder
+ * @property {number} tragkraft
+ * @property {Rohstoffe} kosten
+ * @property {number} zeit Sekunden der Ausbildung
+ * @property {string} kuerzel die Art auf der Leitung
+ * @property {number} angriff
+ * @property {number} nahruestung
+ * @property {number} fernruestung
+ * @property {number} reichweite Felder, 0 heisst Nahkampf
+ * @property {number} nachladen Sekunden zwischen zwei Schlaegen
+ * @property {string[]} klassen als was die Einheit getroffen wird
+ * @property {Record<string, number>} [bonus] Zuschlag je Klasse des Ziels
+ * @property {boolean} [wacht] fehlt es, wacht jede Einheit mit einem Angriff
+ * @property {string[]} [baut]
+ * @property {number} [zeitalter] fehlt es, gilt die Dunkle Zeit (0)
+ * @property {string} [stufeVon]
+ * @property {boolean} [nurGebaeude]
+ * @property {number} [mindestreichweite]
+ * @property {number} [flaeche]
+ * @property {number} [geschoss] Felder je Sekunde
+ * @property {{reichweite: number, je: number}} [heilen]
+ * @property {{reichweite: number, frueh: number, spaet: number, chance: number, ruhe: number, nicht: string[]}} [bekehren]
+ * @property {boolean} [handelt]
+ */
+
+/**
+ * @typedef {object} Gebaeudewerte
+ * @property {number} groesse Kantenlaenge in Feldern
+ * @property {Rohstoffe} kosten
+ * @property {number} bauzeit Sekunden
+ * @property {number} leben
+ * @property {number} wohnraum
+ * @property {string[]} annahme welche Rohstoffe dort abgegeben werden
+ * @property {string[]} bildetAus Einheiten, Verbesserungen und Aufstiege
+ * @property {number} [zeitalter] fehlt es, gilt die Dunkle Zeit (0)
+ * @property {boolean} [zumAufstieg]
+ * @property {boolean} [bestand]
+ * @property {number} [sicht] fehlt es, sind es acht Felder
+ * @property {number} [nahruestung] fehlt es, ist es 0
+ * @property {number} [fernruestung] fehlt es, ist es 7
+ * @property {string[]} [klassen] fehlt es, ist es `gebaeude`
+ * @property {number} [angriff] nur ein Gebaeude, das schiesst
+ * @property {Record<string, number>} [bonus] Zuschlag je Klasse des Ziels - die Schadensformel liest ihn, noch traegt ihn keins
+ * @property {number} [reichweite]
+ * @property {number} [nachladen]
+ * @property {boolean} [begehbar]
+ * @property {number} [nahrung] die Farm
+ * @property {number} [rate]
+ * @property {boolean} [tor]
+ * @property {string} [ersetzt]
+ * @property {boolean} [gezogen]
+ * @property {boolean} [handel]
+ */
+
+/**
+ * Was eine Verbesserung oder ein Haus bewirkt - dieselben Formen, gelesen in
+ * `welt.wirkungen()`.
+ *
+ * @typedef {object} Wirkungen
+ * @property {Record<string, Record<string, number>>} [wirkung] je Einheitenart oder Klasse
+ * @property {Rohstoffe} [sammeln] Faktor je Rohstoff
+ * @property {{nahrung?: number}} [farm]
+ * @property {Record<string, number>} [gebaeude]
+ * @property {Record<string, number>} [handel] nur bei Haeusern
+ * @property {Record<string, number>} [ausbildung] nur im Mannschaftsbonus
+ */
+
+/**
+ * @typedef {object} VerbesserungNurHier
+ * @property {string} name
+ * @property {Rohstoffe} kosten
+ * @property {number} zeit Sekunden der Forschung
+ * @property {number} [zeitalter]
+ * @property {string} [zeichen] das Bild im Menue
+ * @property {string} [vorstufe]
+ * @property {Record<string, string>} [wandelt] tauscht eine Einheitenart aus
+ *
+ * @typedef {VerbesserungNurHier & Wirkungen} Verbesserung
+ */
+
+/**
+ * Wozu ein Haus den Computerspieler neigen laesst (ki AC-27). Ohne Haus ist
+ * sie leer.
+ * @typedef {{schwerpunkt?: string, goldKnapp?: number, anzahl?: number, steinSammler?: number}} Neigung
+ */
+
+/**
+ * @typedef {object} Haus
+ * @property {string} name
+ * @property {string} sitz
+ * @property {string} wahlspruch
+ * @property {Wirkungen} boni
+ * @property {Record<number, Wirkungen>} [boniAb] je Zeitalter, ab dem sie gelten
+ * @property {Wirkungen} mannschaft
+ * @property {Neigung} ki
+ */
 
 // Einheiten: Leben, Tempo in Feldern je Sekunde, Sicht in Feldern, Tragkraft.
 //
@@ -14,6 +126,7 @@
 // damit der Bogenschuetze seinen Bonus gegen ihn findet (einheiten AC-23).
 // Der Kreis, auf den es ankommt: Speer schlaegt Reiter, Reiter schlaegt
 // Bogen, Bogen schlaegt Speer, Plaenkler schlaegt Bogen.
+/** @type {Record<string, Einheitenwerte>} */
 const EINHEITEN = {
   // kosten und zeit (Sekunden): Ausbildung (bauen AC-8). kuerzel: so geht die
   // Art ueber die Leitung - ein Zustand bleibt unter 1 kB (uebertragung AC-7).
@@ -48,8 +161,13 @@ const EINHEITEN = {
     angriff: 3, nahruestung: 0, fernruestung: 0, reichweite: 0, nachladen: 3,
     klassen: ['infanterie', 'speer'], bonus: { kavallerie: 15 }, zeitalter: 1,
   },
+  // Bogen- und Armbrustschuetze kosten 30 Holz statt 25 der Vorlage
+  // (Benutzer, 2026-11-12, Runde 202): Eschenbruch gewann mit seiner Neigung
+  // zur Schiessanlage auch ohne Boni die meisten Partien (spielziel AC-18).
+  // Erst stand hier 50 Gold - dann holte die KI ohne Gold in der Ritterzeit
+  // nur noch in 3 von 8 Partien Gold mit Karren (ki AC-26), mit Holz in 7.
   bogenschuetze: {
-    leben: 30, tempo: 0.96, sicht: 6, tragkraft: 0, kosten: { holz: 25, gold: 45 }, zeit: 35, kuerzel: 'b',
+    leben: 30, tempo: 0.96, sicht: 6, tragkraft: 0, kosten: { holz: 30, gold: 45 }, zeit: 35, kuerzel: 'b',
     angriff: 4, nahruestung: 0, fernruestung: 0, reichweite: 4, nachladen: 2,
     klassen: ['bogenschuetze'], bonus: { speer: 3 }, zeitalter: 1,
   },
@@ -76,7 +194,7 @@ const EINHEITEN = {
     angriff: 10, nahruestung: 2, fernruestung: 2, reichweite: 0, nachladen: 1.8, klassen: ['kavallerie'], zeitalter: 2,
   },
   armbrustschuetze: {
-    leben: 35, tempo: 0.96, sicht: 7, tragkraft: 0, kosten: { holz: 25, gold: 45 }, zeit: 27, kuerzel: 'a',
+    leben: 35, tempo: 0.96, sicht: 7, tragkraft: 0, kosten: { holz: 30, gold: 45 }, zeit: 27, kuerzel: 'a',
     angriff: 5, nahruestung: 0, fernruestung: 0, reichweite: 5, nachladen: 2,
     klassen: ['bogenschuetze'], bonus: { speer: 3 }, zeitalter: 2, stufeVon: 'bogenschuetze',
   },
@@ -171,6 +289,7 @@ const TIERE = {
 // `zeitalter` fehlt hier ueberall: ohne Angabe gehoert ein Gebaeude der
 // Dunklen Zeit (Stufe 0). Die Gebaeude der Feudalzeit tragen Stufe 1.
 const ALLE = ['holz', 'nahrung', 'gold', 'stein'];
+/** @type {Record<string, Gebaeudewerte>} */
 const GEBAEUDE = {
   dorfzentrum: {
     groesse: 4, kosten: { holz: 275, stein: 100 }, bauzeit: 150, leben: 2400, wohnraum: 5,
@@ -327,6 +446,7 @@ const AUFSTIEGE = {
 // Verbesserungen: einmal je Partie, im Gebaeude wie eine Einheit eingereiht.
 // `wirkung` gibt je Einheitenart Zuschlaege (bauen AC-21). Ruestung wirkt ab
 // Stufe B mit dem Kampf; sie steht schon hier, damit die Werte an einer Stelle sind.
+/** @type {Record<string, Verbesserung>} */
 const VERBESSERUNGEN = {
   webstuhl: {
     name: 'Webstuhl', kosten: { gold: 50 }, zeit: 25,
@@ -504,6 +624,7 @@ const HANDEL = {
 // endet weiter wie in fahrplan AC-11.
 const GOLD_KNAPP_SILBERFURT = Infinity;
 
+/** @type {Record<string, Haus>} */
 const HAEUSER = {
   eschenbruch: {
     name: 'Eschenbruch', sitz: 'Waldland', wahlspruch: 'Weit sehen, weit treffen.',
@@ -530,13 +651,19 @@ const HAEUSER = {
   },
   silberfurt: {
     name: 'Silberfurt', sitz: 'Flussstadt', wahlspruch: 'Alles hat seinen Preis.',
-    boni: { handel: { gebuehr: -0.15, karrenAnteil: 0.2 } },
+    // Gold +15 % von Beginn an (Runde 202): die beiden Handelsboni greifen
+    // erst mit einem Markt, und die KI handelt erst ab dem Fuerstentum -
+    // bis dahin spielte Silberfurt ohne Haus (30 % Siege; mit +10 % und
+    // Schuetzen fuer 30 Holz 25 %).
+    boni: { sammeln: { gold: 1.15 }, handel: { gebuehr: -0.15, karrenAnteil: 0.2 } },
     mannschaft: { handel: { verbuendetAnteil: 0.2 } },
     ki: { schwerpunkt: 'markt', goldKnapp: GOLD_KNAPP_SILBERFURT },
   },
   distelhag: {
     name: 'Distelhag', sitz: 'Heide', wahlspruch: 'Wer uns greift, blutet.',
-    boni: { wirkung: { infanterie: { nahruestung: 1, fernruestung: 1 } }, farm: { nahrung: 45 } },
+    // Fernruestung +2 statt +1 (Runde 202): gegen Eschenbruchs Schuetzen
+    // stand Distelhag 0 bis 4 zu 20.
+    boni: { wirkung: { infanterie: { nahruestung: 1, fernruestung: 2 } }, farm: { nahrung: 45 } },
     mannschaft: { ausbildung: { kaserne: 1.2 } },
     ki: { schwerpunkt: 'kaserne' },
   },

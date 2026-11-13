@@ -1,3 +1,4 @@
+// @ts-check
 'use strict';
 
 // Der Pruefstand (→ specs/10-strategie/ki.md AC-7, AC-8, fahrplan AC-4):
@@ -153,7 +154,7 @@ function zentrumStillZaehlen(welt, still, ziel) {
 /**
  * Eine Partie KI gegen KI.
  * @param {{startwert: number, spieler?: number, minuten?: number, einstellungen?: object,
- *   eingriff?: (welt: Welt, takt: number) => void}} optionen
+ *   eingriff?: (welt: InstanceType<typeof Welt>, takt: number) => void}} optionen
  *   `eingriff` ist nur fuer Tests: er laeuft vor der Pruefung jedes Takts.
  */
 function partieSpielen({ startwert, spieler = 2, minuten = 10, einstellungen = {}, eingriff = null }) {

@@ -1,3 +1,4 @@
+// @ts-check
 'use strict';
 
 const karten = require('./karte');
@@ -195,11 +196,44 @@ function punkteFeld(punkte) {
   return punkte > 0 ? { pk: punkte } : {};
 }
 
+/**
+ * Die Einstellungen einer Partie, wie der Steckbrief sie durchreicht. Was
+ * fehlt oder nicht passt, faellt auf die Vorgabe zurueck.
+ *
+ * @typedef {object} Einstellungen
+ * @property {string} [kartengroesse]
+ * @property {string} [vorrat] ein Schluessel aus `STARTVORRAT`
+ * @property {string} [sicht] 'nebel', 'erkundet' oder 'aufgedeckt' (kampf AC-16)
+ * @property {Record<string, number>} [teams] je Spieler 1 bis 4 (spielziel AC-14)
+ * @property {Record<string, string>} [haeuser] je Spieler ein Schluessel aus `HAEUSER` (spielziel AC-17)
+ * @property {string} [buendnisse] 'fest' oder 'loesbar' (spielziel AC-21)
+ * @property {number} [zeitgrenze] 90 oder 120 Spielminuten (spielziel AC-22)
+ * @property {number} [tempo] 1, 1.5 oder 2 (spielziel AC-23)
+ */
+
+/**
+ * Was je Takt ueber die Leitung geht (uebertragung AC-7). Beschrieben sind
+ * bisher nur die Felder der obersten Ebene - was in den Listen steht, prueft
+ * noch niemand.
+ *
+ * @typedef {object} Zustand
+ * @property {'zustand'} typ
+ * @property {number} t der Takt
+ * @property {Record<string, any>[]} spieler
+ * @property {Record<string, any>[]} einheiten
+ * @property {any[]} felder
+ * @property {number[][]} [p] Pfeile seit dem letzten Zustand (bedienung AC-40)
+ * @property {[string, number][]} [bu] geloeste Buendnisse (spielziel AC-21)
+ * @property {object} [ende] das Ende, sobald es feststeht (spielziel AC-5)
+ * @property {Record<string, any>[]} [gebaeude] nur die geaenderten
+ * @property {Record<string, any>[]} [tiere] nur die geaenderten
+ */
+
 class Welt {
   /**
    * @param {{id: string, name: string}[]} spielerListe
    * @param {number} startwert
-   * @param {{kartengroesse?: string, vorrat?: string}} [einstellungen]
+   * @param {Einstellungen} [einstellungen]
    */
   constructor(spielerListe, startwert, einstellungen = {}) {
     this.startwert = startwert;
@@ -212,6 +246,12 @@ class Welt {
     this.naechsteId = 1;
     this.einheiten = new Map();
     this.gebaeude = new Map();
+    // Wem ein Gebaeude gehoert hat, auch nachdem es gefallen ist (kampf AC-13).
+    this.gebaeudeBesitzer = new Map();
+    // Die Tore je Besitzer als Feldnummern (bauen AC-31), angelegt mit dem
+    // ersten Tor.
+    /** @type {Map<string, Set<number>> | null} */
+    this.tore = null;
     // Werte mit Verbesserungen, gemerkt je Spieler (`einheitenwert`). Geleert,
     // sobald dieser Spieler etwas erforscht.
     this.werteGemerkt = new Map();
@@ -698,7 +738,7 @@ class Welt {
     this.gebaeude.set(gebaeude.id, gebaeude);
     // Wem es gehoert, bleibt bekannt, auch wenn es faellt - der Auszug je
     // Spieler schickt das Verschwinden eigener Gebaeude immer (kampf AC-13).
-    (this.gebaeudeBesitzer ??= new Map()).set(gebaeude.id, besitzer);
+    this.gebaeudeBesitzer.set(gebaeude.id, besitzer);
     this.gebaeudeSichtNeu = true;
     this.belegen(gebaeude);
     this.gebaeudeGeaendert(gebaeude);
@@ -3431,6 +3471,7 @@ class Welt {
     const fx = Math.round(einheit.x);
     const fy = Math.round(einheit.y);
     const auftrag = einheit.auftrag;
+    /** @type {(x: number, y: number) => boolean} */
     let passt = () => true;
     if (auftrag?.art === 'bauen') {
       const baustelle = this.gebaeude.get(auftrag.gebaeude);
@@ -3778,6 +3819,7 @@ class Welt {
     // Pfeile seit dem letzten Zustand (bedienung AC-40), je [x0, y0, x1, y1].
     const schuesse = this.schuesse || [];
     this.schuesse = [];
+    /** @type {Zustand} */
     const zustand = {
       typ: 'zustand',
       t: this.takt,
@@ -3836,6 +3878,11 @@ class Welt {
     return zustand;
   }
 
+  streckeFuerDraht(einheit) {
+    const s = this.strecke(einheit);
+    return s ? [s.heimat.id, s.ziel.id, this.handelsgewinn(s.heimat, s.ziel)] : undefined;
+  }
+
   /**
    * Jedem Spieler sein Auszug (kampf AC-13, fahrplan AC-13): der Zustand wird
    * einmal gerechnet und dann je Spieler gefiltert. Sonst laese ein
@@ -3845,11 +3892,6 @@ class Welt {
    * @param {string[]} ids die Spieler, die einen Zustand bekommen
    * @returns {Map<string, object>}
    */
-  streckeFuerDraht(einheit) {
-    const s = this.strecke(einheit);
-    return s ? [s.heimat.id, s.ziel.id, this.handelsgewinn(s.heimat, s.ziel)] : undefined;
-  }
-
   zustandJeSpieler(ids) {
     const voll = this.zustand();
     return new Map(ids.map((id) => [id, this.auszug(voll, id)]));

@@ -44,6 +44,7 @@ npm run pruefstand:vergleich -- --probe probe.cjs --saetze 3  # Austauschprobe: 
 npm run pruefstand:verlauf -- --startwert 5  # eine Partie KI gegen KI Minute fuer Minute
 npm run pruefstand:haeuser   # jede Paarung der Haeuser 20-mal, Seiten abwechselnd, mit Herstellung je Haus (--nur, --probe, --je)
 npm run waechter     # alle Waechter in Sekunden - vor dem Abschlusslauf
+npm run typen        # TypeScript prueft jede Datei mit // @ts-check - gebaut wird nichts, die Dateien bleiben JavaScript
 npm run gegenprobe -- <datei> "<neu>" "<alt>" -- <befehl>  # Gegenprobe gegen die alte Zeile, schreibt die Datei immer zurueck
 npm run durchsicht   # Geaendertes und Neues als eine Datei fuer den Pruefer, der keine Shell hat - nennt den Pfad
 ```
@@ -75,6 +76,14 @@ dann `check:alles`: das sind zwei Browserläufe und neun Minuten umsonst
 Lauf ändert achtzig Bilder, an den meisten nur den zufälligen Raumcode. Die
 Liste sortiert nach Anteil geänderter Bildpunkte; was über 1 % steht, wird
 angesehen, bevor etwas eingecheckt wird.
+
+**TypeScript ist der Prüfer, nicht die Sprache** (`npm run typen`, als
+Wächter in `npm test`). Geprüft wird, was in der ersten Zeile `// @ts-check`
+trägt: der Server ohne das Managerspiel, im Browser bisher `nebel.js`,
+`uebersicht.js` und `auswahlleiste.js`. Die Formen der Tabellen stehen als
+`@typedef` oben in `server/spiele/strategie/daten.js` — **ein neues Feld wird
+dort eingetragen**, sonst meldet der Prüfer es. Welche Dateien noch fehlen und
+warum, steht unter `OFFEN` in `tests/waechter-typen.test.mjs`.
 
 ### Die wichtigste Regel
 
@@ -514,9 +523,13 @@ weniger Kasernen als andere Militärgebäude gibt — Distelhag 47 statt 26 %
 über 160 Partien. **Eschenbruch abgeschwächt** (Runde 201, Benutzer):
 Holz +5 % statt +15 %, Schützen +1 Reichweite erst ab dem Fürstentum —
 ein Bonus ab einem Zeitalter steht als `boniAb` in `HAEUSER` und kommt mit
-dem Aufstieg (`welt.zeitalterWirkungen`). Gemessen 73 % statt 85 %, weiter
-über spielziel AC-18 (jedes Haus 30 bis 70 %); der nächste Schritt ist
-eine Frage an den Benutzer.
+dem Aufstieg (`welt.zeitalterWirkungen`). Gemessen 73 % statt 85 %.
+**Die anderen gestärkt** (Runde 202, Benutzer): Bogen- und
+Armbrustschütze 30 statt 25 Holz, Silberfurt Gold +15 %, Distelhag
+Fernrüstung +2. Über 200 Partien jetzt Eschenbruch 66, Distelhag 58,
+Rappenstein 50, Wehrstein 48, Silberfurt 29 % — Silberfurt einen Punkt
+unter spielziel AC-18 (30 bis 70 %), innerhalb der Streuung; der Test dazu
+in `npm run check` fehlt.
 **Voller Wohnraum fällt auf** (bedienung AC-43): wartet ein eigener
 Auftrag, steht die Bevölkerung oben rot umrandet, auch ohne Auswahl
 (`ansicht.wartetEtwas()`). **Gruppentasten** (bedienung AC-5): `Strg`

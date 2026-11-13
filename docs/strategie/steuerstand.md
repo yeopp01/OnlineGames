@@ -13,7 +13,7 @@ hier nichts eintraegt, verliert den Faden beim naechsten Autocompact.
 
 ## Zuletzt fortgeschrieben
 
-2026-11-12, 21:50 — **von Grund auf neu gefasst** (Benutzer: „da ist vieles
+2026-11-13, 08:05 (zuletzt: Schautafel auf gerenderte Bilder umgestellt, **uncommittet** im Baum `strategie-bildumbau`, voller Browserlauf mit neuen Bildern läuft; **ADR-0017 als Entwurf geschrieben** (`docs/adr/0017-strategiepartien-fortsetzen.md`, Status vorgeschlagen, uncommittet); davor einheiten AC-30 geparkt auf `strategie-standplatz` `97815b7`; Server auf `2f9ec0e`) — am 2026-11-12 um 21:50 **von Grund auf neu gefasst** (Benutzer: „da ist vieles
 nicht mehr aktuell"). Vorher stand hier eine Chronik der Runden 60 bis 200 und
 ein „Wo ich stehe", das bei Runde 86 endete. Beides liegt unverändert in
 [`steuerstand-archiv.md`](steuerstand-archiv.md) und wird nicht mehr
@@ -30,10 +30,11 @@ Sitzungsbeginn ganz vorgelegt — über 300 Zeilen liest sie niemand mehr.
 | Baum | Zweig | Stand | Wem er gehört |
 | --- | --- | --- | --- |
 | `C:\Users\danie\OnlineGames` | `strategie` | Runden 200 und 201 in einem Commit (auf Wunsch des Benutzers, **mit rotem Check**: fahrplan AC-24, Startwert 11), 43 Commits vor `origin/strategie`: 200 = bauen AC-7, Leben der Baustelle (`welt.js`, `ki.js`, `auswahlleiste.js`, `tests/strategie-bauleben.test.mjs`, Bild zu AC-7); 201 = Eschenbruch abgeschwächt (`daten.js`, `welt.js` `boniAb`/`zeitalterWirkungen`, Haus-Tests, ADR-0014, spielziel). **Die Schleife ruht** (Benutzer: Pause) | der Schleife `/loop /strategie-weiterbauen` |
-| `C:\Users\danie\OnlineGames-bildumbau` | `strategie-bildumbau` | HEAD `5249fb7`, 21 Commits vor `strategie` (abgezweigt bei `144fc2d`). Enthält Bildumbau R1 bis R6, Betrieb auf dem VPS und die Rückmeldungen aus dem ersten Spiel. **Uncommittet: gerenderte Bilder als Vorgabe** (siehe unten) | der Sitzung „Bildumbau und Rückmeldungen" |
+| `C:\Users\danie\OnlineGames-bildumbau` | `strategie-bildumbau` | HEAD `2f9ec0e`, 24 Commits seit der Abzweigung bei `144fc2d`. Enthält Bildumbau R1 bis R6 (gerenderte Bilder sind die Vorgabe), Betrieb auf dem VPS, die Rückmeldungen aus dem ersten Spiel und aus dem zweiten Nebelfix und neuen Ton. Sauber | der Sitzung „Bildumbau und Rückmeldungen" |
 | `C:\Users\danie\OnlineGames-gebaeude` | `strategie-gebaeude` | HEAD `2060173`, sauber, in `strategie-bildumbau` übernommen (`5249fb7`) | dem Blender-Agenten — **fertig**, der Baum kann weg |
 
-Geparkte Zweige ohne Baum: `strategie-ki-antwort` (ki AC-31, nicht wirksam),
+Geparkte Zweige ohne Baum: **`strategie-standplatz`** (einheiten AC-30,
+wartet auf den Benutzer, siehe unten), `strategie-ki-antwort` (ki AC-31, nicht wirksam),
 `strategie-ki-ritterzeit`, `strategie-ki-sicht` (beide längst eingebunden).
 
 **Regeln dazu:**
@@ -55,17 +56,26 @@ die Schleife ruht und fahrplan AC-24 wieder grün ist. Zu erwarten:
   `strategie-bildumbau` sind alle neu aufgenommen — nach dem Zusammenführen
   einmal `npm run check:alles:neu:kurz`).
 - **Nummern, die `strategie-bildumbau` schon vergeben hat** und die die
-  Schleife nicht noch einmal vergeben darf: bedienung AC-51 bis AC-61,
+  Schleife nicht noch einmal vergeben darf: bedienung AC-51 bis AC-62,
   einheiten AC-55 bis AC-57, bauen AC-36, raeume AC-17 und AC-18,
   darstellung AC-17 bis AC-25. (speichern AC-19 bis AC-21 gab es schon, dort
   sind sie jetzt `fertig`.)
 - Zwei Testkorrekturen an `platz.bild` gibt es nur auf `strategie-bildumbau`.
+- **Seit 2026-11-13 prüft TypeScript auf `strategie`** (`npm run typen`,
+  `tests/waechter-typen.test.mjs`, uncommittet): jede Datei unter `server/`
+  außer dem Managerspiel trägt `// @ts-check`. Nach dem Zusammenführen
+  verlangt der Wächter die Marke auch für neue Serverdateien von
+  `strategie-bildumbau` (etwa `bringt.js`), und neue Felder in `daten.js`
+  gehören in die `@typedef` dort. Danach die Browserdateien unter `OFFEN` im
+  Wächter abarbeiten (`ansicht.js`, `app.js`, `tasten.js`, `gelaende.js`,
+  `boden.js`).
 
 ## Was auf dem Server läuft
 
 `https://spiele.featureinsights.com`, Hetzner-VPS `mem-vps`, Container
-`onlinegames` — **Commit `d6a3739`** (zweiter Stapel der Rückmeldungen, noch
-mit gezeichneten Gebäuden). Ausrollen: `node scripts/ausrollen.mjs` im Baum
+`onlinegames` — **Commit `2f9ec0e`** (2026-11-13, 00:40: alles gerendert,
+auch die Gebäude; `?bilder=0` zeigt die gezeichneten Fassungen; neuer Ton,
+Nebelfix). Ausrollen: `node scripts/ausrollen.mjs` im Baum
 `OnlineGames-bildumbau` (rollt HEAD aus, sichert vorher die Konten, prüft
 danach von außen; unter einer Minute). Auf der Maschine laufen fremde
 Anwendungen: nichts davon anfassen, nicht neu starten, am Caddy nur
@@ -82,9 +92,11 @@ Anwendungen: nichts davon anfassen, nicht neu starten, am Caddy nur
   (Gruppen, Wegpunkte, Bauen und Angreifen mit Umschalt, Punkte) und bauen
   AC-17 bis AC-19, AC-7.
 - **Runde 201 (Eschenbruch) ist committet:** Holz +5 %,
-  Reichweite ab dem Fürstentum (`boniAb`). Eschenbruch 73 % über 200
-  Partien — weiter über spielziel AC-18 (30 bis 70 %). Nächster Schritt ist
-  eine Frage an den Benutzer (Erkenntnisse, Fragen).
+  Reichweite ab dem Fürstentum (`boniAb`), 73 %.
+- **Runde 202:** Schützen 30 Holz, Silberfurt Gold +15 %, Distelhag
+  Fernrüstung +2 — Eschenbruch 66 … Silberfurt 29 %. Offen: der Test zu
+  spielziel AC-18 in `npm run check`; die KI schickt Karren in den Gegner
+  (Erkenntnisse, Runde 202).
 - **Der Check ist rot, committet trotzdem (Benutzer: „committe das zeug bitte“):** Runde 200 macht fahrplan AC-24 rot (zwei gegen
   zwei, Startwert 11 endet nicht vor Minute 90; auf HEAD Minute 66,2).
   Nicht untersucht. Nächster Schritt: `npm run pruefstand:verlauf` für
@@ -97,7 +109,7 @@ Anwendungen: nichts davon anfassen, nicht neu starten, am Caddy nur
 
 ## Stand `strategie-bildumbau`
 
-**Board dort:** 510 von 631 fertig, 804 Tests ohne Browser, 261 im Browser.
+**Board dort:** 511 von 632 fertig, 808 Tests ohne Browser, 263 im Browser.
 Das genaue Standdokument dieses Zweigs ist
 `docs/strategie/bildumbau.md` **im Baum `OnlineGames-bildumbau`** (Absatz
 „Arbeitsstand … (fortschreiben)").
@@ -106,59 +118,174 @@ Das genaue Standdokument dieses Zweigs ist
 Baustellen in vier Stufen, Mauer aus Stücken und Tor liegen als gerenderte
 Tafeln unter `public/bilder/` (Blender-Skripte unter `grafik/`).
 
-**Rückmeldungen des Benutzers aus dem ersten Spiel auf dem Server** (21
-Punkte, 2026-11-12):
+**Rückmeldungen des Benutzers aus dem ersten und zweiten Spiel auf dem
+Server** (23 Punkte, 2026-11-12):
 
 | Punkt | Stand |
 | --- | --- |
 | 1 Schafe schlachten · 2 Wirkung an Forschung und Einheit · 4 blaue Umrisse ab Baubeginn · 5 Rechtsklick Übersichtskarte · 6 Leiste verschiebt sich · 9 Randschieben ohne Vollbild · 11 leerer Vorrat → heim · 12 Rechtsklick aufs Lager lädt ab · 14 Punkte ständig im Bild · 16 nächste Baustelle mitbauen · 20 verlassene Partien halten an | **fertig, auf dem Server** (erster Stapel, `4ede74f`) |
 | 3 Späherreiter schneller (1,55 ab dem Lehen) · 7 Ton · 13 Pause (Knopf, `F3`) · 19 Fremdes ansehen mit Leben | **fertig, auf dem Server** (zweiter Stapel, `d6a3739`) |
-| 21 Gebäude gerendert, gerenderte Bilder als Vorgabe, Bildnachweise neu | **gebaut, uncommittet** — siehe unten |
+| 21 Gebäude gerendert, gerenderte Bilder als Vorgabe, Bildnachweise neu | **fertig, auf dem Server** (`6b99ff7`) |
+| 22 Nebel: fremdes Dorfzentrum unsichtbar, Späher nur Umriss — jetzt im Bild ab dem ersten sichtbaren Feld der Grundfläche (kampf AC-12, `ansicht.siehtGebaeude`) · 23 Ton „sehr langweilig": Musik als Stück in d-Moll, im Kampf dichter (bedienung AC-60 neu gefasst), Schwerter, Pfeile, Einschläge, Axt und Hammer dort, wo sie im Bild stehen (bedienung AC-62) | **fertig, auf dem Server** (`2f9ec0e`) — der Klang ist gemessen (`npm run ton:messen`), nicht gehört; das Urteil des Benutzers steht aus |
 | 8 Holzhacken erkennbar | halb: am Zeiger steht, was der Rechtsklick tut; eigener Ablauf im Bild fehlt |
 | 18 Liste offener Spiele, Wiedereinstieg, Startklick | halb: Partie wartet 30 Minuten, Vorraum bietet Rückkehr; Liste und Startklick hängen am Speichern |
-| 10 Sammler stehen ineinander (einheiten AC-30) | offen |
+| 10 Sammler stehen ineinander (einheiten AC-30) | **gebaut, geparkt auf dem örtlichen Zweig `strategie-standplatz` (`97815b7`), nicht auf dem Server** — siehe „Geparkt" unten: zwei Partientests fallen, die Entscheidung liegt beim Benutzer |
 | 13 Speichern und Laden | offen — braucht ADR-0017, „Speicherstände für Strategiepartien" steht in ADR-0012 unter „Wird nicht gebaut" |
 | 15 Feldarbeit statt Hacken auf der Farm | offen — neue Abläufe des Dorfbewohners mit Blender |
 | 17 Notfallklingel | offen — neuer Umfang, erst gegen ADR-0012 halten |
 
-**Im Gang (uncommittet in `OnlineGames-bildumbau`): gerenderte Bilder als
-Vorgabe.** Gebaut: Vorgabe an, `?bilder=0` zeigt das Gezeichnete, Ladesatz,
-`ETag`/304 für alle Dateien (darstellung AC-25), Gebäude im Spielbild samt
-Mauer, Tor, Farm, Baustellen, Knopfbilder der Leiste, darstellung AC-22
-`fertig` mit `e2e/tests/strategie-gerendert.spec.mjs`. Der volle Lauf
-`check:alles:neu` ergab 258 von 260 grün; die zwei gefallenen sind behoben
-(bedienung AC-30: Aufstellung hinter dem niedrigeren Dorfzentrum; bauen
-AC-29: Pfeil im Bild festhalten). 212 Bildnachweise sind neu, 168 über 1 %
-— drei Prüfer haben sie gegen die Titel gelesen.
+**Geparkt (2026-11-13, 02:00) — einheiten AC-30, Standplätze.** Zweig
+`strategie-standplatz`, ein Commit `97815b7` auf `2f9ec0e`, **Check rot**;
+der Baum `OnlineGames-bildumbau` steht wieder sauber auf
+`strategie-bildumbau` (`2f9ec0e`). Einbinden, sobald der Benutzer
+entschieden hat: `git merge strategie-standplatz` (alle Bildnachweise sind
+dort neu aufgenommen, 264 Browserfälle grün, die 23 über 1 % gelesen).
+Darin: `welt.js`
+(`standplatz`, `amStand`, `wegZumPlatz`, `STANDPLAETZE` — vier Viertel je
+Nachbarfeld des Vorrats, Platz im Auftrag als `auftrag.stand`), `wege.js`
+(`NACHBARN`), `ki.js` (`erkunder`: der Späher auf Erkundung ist keine
+Wache — sonst fällt ki AC-13 an Startwert 4), `tests/strategie-standplatz.test.mjs`
+(fünf Tests, grün), `tests/regeln.test.mjs` (karte AC-9 angepasst),
+Browserfall mit Bild in `e2e/tests/strategie-ausweichen.spec.mjs`, Spec
+(AC-30 `fertig`, Satz in AC-29 und ki AC-14), `CLAUDE.md`, Board 512/632.
 
-**Noch zu tun, in dieser Reihenfolge:**
+- **Gemessen:** engstes Paar 0,5 Felder (vorher 1661 von 12 379 Proben
+  näher); 500 Nahrung Median 9,45 statt 9,39 min, keine KI nach Minute 10;
+  Feudalzeit 11,6 wie zuvor; Späher findet den Gegner nach 1,9 bis 2,4 min.
+- **Rot, und nicht meine Entscheidung:** `tests/partien/ki-im-nebel`
+  (Startwerte 1–40: 34 statt 35 vor Minute 60, Median 44,4, Startwert 27
+  ohne Sieger — ausgeglichene Partie, bei Minute 90 gerade entschieden) und
+  fahrplan AC-24 (zwei gegen zwei, Startwert 16 unentschieden). Über mehr
+  Startwerte: Nebel 1–120 neu 107 vor Minute 60 und 2 ohne Sieger, HEAD 111
+  und 1 (auch HEAD hat einen ohne Sieger, bei 41–80); zwei gegen zwei 1–40
+  neu 35 vor 60 und 1 ohne Sieger, HEAD 38 und 0. Zusammen 142 gegen 149 von
+  160 vor Minute 60 (z = 1,4, nicht gesichert), Mediane im Mittel 42,8 neu
+  gegen 43,5. **Die Grenzen nicht lockern** (Ersatzgrenze des Benutzers vom
+  2026-11-10).
+- **Gegenproben:** der Späher allein ändert nichts (HEAD mit ihm: 111 von
+  120 wie HEAD), die Plätze allein 106; die Wirtschaft kostet es auch spät
+  nichts (bis Minute 25 gesammelt 8402 statt 8252).
+- **Vorgehen:** `strategie-bildumbau` bleibt grün auf `2f9ec0e`, dort geht
+  es mit der Schautafel weiter. Dem Benutzer vorlegen: (a) so nehmen wie Runde 200 auf `strategie` („mit
+  rotem Check"), (b) den Nebeltest auf 120 Startwerte verbreitern — dann
+  hält „alle mit Sieger" auch auf HEAD nicht —, (c) die KI gibt früher auf.
+  Empfehlung: (b), bis dahin (a). **Nicht ausrollen ohne sein Wort.**
+- Messskripte im Scratchpad der Sitzung: `n40.cjs <wurzel> [probe|-] [ab]`
+  (40 Nebelpartien mit Häusern), `p5.cjs` (500 Nahrung), `p13.cjs` (Späher),
+  HEAD-Kopie unter `head/`.
 
-1. ~~Befunde der Bilddurchsicht~~ — **erledigt 2026-11-12, 23:00,
-   uncommittet:** Baum am Nebelrand, Namensschild über dem Lebensbalken und
-   nie in der Kopfleiste, Umriss ohne Schlagschatten, 23 Titel neu gefasst,
-   bedienung AC-16 zeigt einen, der beladen geht. (Die leeren Lebensbalken in
-   bedienung AC-50 waren kein Fehler: der Test setzt das Leben auf 3.)
-2. Zweiter voller Lauf `check:alles:neu:kurz` (läuft seit 23:00, Log
-   `neu2.log` im Scratchpad der Sitzung), `npm run qa:abweichung`, committen,
-   `node scripts/ausrollen.mjs`.
-3. **Schautafel umstellen:** `/schautafel.html` und die Messungen daran
-   (darstellung AC-12 bis AC-14, Figuren- und Gebäudereihen) zeigen noch die
-   gezeichneten Fassungen; ebenso die Bilder zu Verbesserungen und Aufstieg
-   im Menü und die Sammelpunkt-Fahne. Danach die gezeichneten Fassungen
-   entfernen — das schließt darstellung AC-24.
+**Gerenderte Bilder als Vorgabe: fertig** (`6b99ff7`, ausgerollt). Vorgabe
+an, `?bilder=0` zeigt das Gezeichnete, Ladesatz, `ETag`/304 (darstellung
+AC-25), Gebäude samt Mauer, Tor, Farm, Baustellen, Knopfbilder der Leiste,
+darstellung AC-22 `fertig`. Alle Bildnachweise neu; drei Prüfer haben sie
+gegen die Titel gelesen, 23 Titel sind neu gefasst. Voller Lauf: 259 von
+261, die zwei gefallenen (spielziel AC-24, auswahl AC-24) scheiterten im
+Warteraum am Beitritt und sind einzeln grün. `check:kurz` 804 von 804; die
+Zeitmessung einheiten AC-31 reißt gelegentlich knapp (1,02 ms), wenn die
+Maschine belastet ist.
 
-**Nicht geprüft und so zu sagen:** wie der Ton klingt; das Randschieben mit
+**Noch zu tun:**
+
+1. **Schautafel umstellen — in Arbeit, uncommittet (Stand 04:30).**
+   `public/schautafel.js` ist neu geschrieben: alles aus den Tafeln
+   (`t.gezeichnet` ist leer), ein Maßstab für alle, Zellenbreite aus dem
+   Bild; `public/ansicht.js` hat dafür `tierHoeheBei`, `ZOOM_FERN`,
+   `ZOOM_NAH`. Messungen umgestellt, **ohne Grenzen zu lockern, wo es um das
+   Bild geht**:
+   - Spielerfarbe = was sich mit dem Spieler ändert (`FARBSPRUNG`): Einheiten
+     11,5 bis 24 %.
+   - darstellung AC-3 am **Farbton** statt am Farbwert (`dingBild`): Wald
+     86 % grün, Beere 11,6 % rot, Gold 79 % Ocker bis Gelb und 5,7 % helles
+     Gold, Gold gegen Stein 0,70 verschieden. Neu: „Gold höchstens 2 % grau"
+     gilt nicht mehr (20 % Fels, wie AC-23 es will) — **dem Benutzer sagen**.
+   - AC-2: See aus neun Feldern, `ufer` 2865, `wasser` 3185 von 4356.
+   - AC-13 (1): `rand` (fast schwarz am Rand der Gestalt) höchstens ein
+     Viertel, gemessen 0 bis 9 %; (5) Schatten außerhalb der Raute.
+   - darstellung AC-4: Höhe in eigenen Feldern (`feld`). **Neu gerendert**
+     (Blender, je unter einer Minute): Schmiede mit Bannermast im Hof (5 →
+     55 Bildpunkte Farbe), Markt nur der mittlere Stand in Spielerfarbe
+     (18 → 7,7 %), Wachturm kürzeres Banner (10,0 → 8,7 %).
+   - **Echter Befund, bleibt rot:** bedienung AC-36 (Umriss bei Zoom 1 gegen
+     Dorfbewohner: Armbrust 0,188 · Soldat 0,192 · Miliz 0,195 · Plänkler
+     0,233 · Bogen 0,237 · Speer 0,246 · Mönch 0,300, Grenze 1/3) und
+     darstellung AC-6 (Dorfbewohner/Miliz decken sich zu 0,793, Grenze
+     0,75). Beide Tests tragen `test.fail`, beide Kriterien gehen auf
+     `in-arbeit`; Abhilfe am Modell im Blender-Block (8/15).
+   **Noch offen in diesem Schritt:** Messfälle fahren (`strategie-figuren`,
+   `strategie-unterscheidbar`, `strategie-bauen -g "AC-4 /"`,
+   `strategie-arbeit`, `strategie-tiere -g "AC-12"`), Specs anpassen
+   (darstellung AC-3, AC-6, AC-12, AC-13, AC-24, „Was der Bildumbau ablöst";
+   bedienung AC-36), `specs:board`, voller Lauf `check:alles:neu:kurz`,
+   `qa:abweichung`, committen (nicht pushen, nicht ausrollen). Die
+   gezeichneten Fassungen entfernen ist ein eigener Schritt **nach dem Wort
+   des Benutzers**; darstellung AC-24 bleibt bis dahin `in-arbeit` (auch
+   AC-19 bis AC-21 stehen noch auf `offen`, Speicher nicht gemessen).
+2. **Schwächen der gerenderten Bilder, dem Benutzer gesagt:** Figuren bei
+   Zoom 1 rund 30 Bildpunkte und erdfarben, Militär vom Dorfbewohner schwer
+   zu unterscheiden; getragene Last nur beim Gehen zu sehen; Baustelle immer
+   ein Holzgerüst.
+
+**Nicht geprüft und so zu sagen:** wie der Ton klingt (Musik 0,06
+effektiv, im Kampf 0,08, Gefecht darüber Spitze 0,62 — nur gemessen; ein
+Dorfbewohner, der Holz trug und dann kämpft, klingt nach Axt; Geräusche
+außerhalb des Bildes heben den Kampfpegel der Musik nicht); das Randschieben mit
 echter Maus; was der Browser für alle Tafeln an Speicher hält; das
 Reitertempo 1,55 stammt nicht aus `vorlage-aoe2.md`.
 
 ## Was als Nächstes kommt
 
-1. `strategie-bildumbau`: die drei Schritte oben.
+1. `strategie-bildumbau`: die Schautafel (oben), dann die Rückmeldungen.
+   **ADR-0017 (Fortsetzen) ist entschieden** (Benutzer, 2026-11-13: „Ja die
+   adr zum speichern und fortsetzen passt") — gebaut wird in den Schritten S1
+   bis S4 aus dem ADR, nach dem, was er heute Morgen bestellt hat. Gemessen mit einer Probe im Scratchpad
+   (`probe-sichern.cjs`): Welt und KI sind bis auf die zwei Zufallsfunktionen
+   reine Werte; `v8.serialize` legt sie in 1 bis 17 ms ab (227 bis 687 KB,
+   gepackt 17 bis 51 KB), und nach dem Laden rechnen Original und Kopie über
+   3000 Takte Wert für Wert gleich (3 von 3 Partien; `werteGemerkt` und
+   `wirkungenGemerkt` nicht mitgezählt). Angenommen sind damit auch:
+   Fortsetzen statt Zurückspringen, kein Knopf „Speichern".
 2. Aus den Rückmeldungen, Empfehlung in dieser Reihenfolge: **10** Sammler
    nicht ineinander (einheiten AC-30; kostet die KI Zeit — mit
    `pruefstand:vergleich` messen) → **13/18** Speichern, Laden, Liste offener
    Spiele am Konto (erst ADR-0017) → **8/15** eigene Abläufe für Hacken,
    Pflücken, Feldarbeit, Bergbau (Blender) → **17** Notfallklingel.
+   **Bestellt vom Benutzer am 2026-11-13 (08:10 bis 08:30), in dieser
+   Reihenfolge nach dem Schautafel-Commit:**
+   - **Burg-Salve:** die Burg schießt vier Pfeile je Salve statt einem
+     (Original: Wiki fünf, Beitrag zur Definitive Edition vier; `pfeile` in
+     den Daten, `welt.tuermeTakten`). `docs/strategie/vorlage-aoe2.md` Zeile
+     83 ff. berichtigen („ein Pfeil alle 2 s" ist falsch abgeschrieben).
+   - **Tor breiter** („Das Tor muss breiter sein"): vier Felder in
+     Mauerrichtung statt eines; neues Bild in zwei Richtungen (Blender, ein
+     Prozess). Originalmaß nicht belegt.
+   - **Die KI baut Burgen** („definitiv") — neues Kriterium ki AC-33: im
+     Fürstentum, nach dem ersten Aufbruch, am Dorf zum Gegner hin, über
+     `ki.bauwerkePruefen` (verallgemeinern, Stein sammeln). Messen: Partien
+     enden weiter (Grenzen im Nebeltest NICHT lockern); prüfen, ob die KI
+     Rammen gegen Burgen ausbildet. Burg-Salve und KI-Burg zusammen ausrollen.
+   - **Zwei Schützenlinien nebeneinander** (Benutzer nach Hin und Her,
+     letztes Wort: „mach 2 parallele linien für bogen und armbrust, dein
+     vorschlag oben is top"; danach: „vll kurzbogen, bogen langbogen?" — so
+     übernommen): **Kurzbogenschütze** (Lehen, Werte des heutigen
+     Bogenschützen) → **Bogenschütze** (Fürstentum: 5 Angriff, Reichweite 5,
+     35 Leben = Werte des heutigen Armbrustschützen) → **Langbogenschütze**
+     (Krone, Stufe F). Der Bezeichner `bogenschuetze` bleibt an der Einheit
+     des Lehens hängen (Tests, Bilder, Nachweise) — beim Bauen entscheiden,
+     wie die zweite Stufe im Code heißt, ohne Nummern oder Nachweise zu
+     verschieben; **Armbrustschütze als eigene Einheit** der
+     Schießanlage ab dem Fürstentum (Startwerte: 9 Angriff, alle 3,5 s,
+     Reichweite 5, 35 Holz + 55 Gold), in der Krone schwere Armbrust. Die
+     Verbesserung `armbrust` (wandelt Bogen → Armbrust) entfällt. Abweichung
+     vom Original (dort eine Linie) in `vorlage-aoe2.md` festhalten;
+     Konterkreis messen (Reiter schlagen weiter Schützen); Langbogenschütze
+     braucht eine eigene Figur.
+   - **Fehlt für die Ritterzeit, dem Benutzer genannt:** Wehrturm (+2
+     Angriff, +480 Leben, +1/+1), Langschwertkämpfer, Pikenier, Eliteplänkler,
+     leichte Kavallerie, alle Rüstungsverbesserungen der Schmiede.
+   - **Gebäude je Zeitalter** (gefragt, nicht bestellt): heute ein Bild je
+     Gebäude; empfohlen zwei Fassungen (Holz bis Lehen, Stein ab Fürstentum)
+     für Dorfzentrum, Haus, Kaserne, Schießanlage, Stall — im Blender-Block.
+   - Unterschlupf (mehr Pfeile mit Besatzung) fehlt; käme mit Rückmeldung 17.
 3. Zusammenführen nach `strategie`, sobald die Schleife ruht.
 4. `strategie`: Stufe E zu Ende (spielziel AC-18), dann F (Imperialzeit).
 
@@ -313,9 +440,6 @@ node scripts/ausrollen.mjs                         # nur in OnlineGames-bildumba
 
 ## Offene Fragen an den Benutzer
 
-- **Eschenbruch nach Runde 201 noch 73 %** (Holz +5 %, Reichweite ab dem
-  Fuerstentum). Weiter drehen? Empfehlung: Holzbonus ganz weg. Daran haengt
-  spielziel AC-18.
 - **Speichern und Laden von Strategiepartien** steht in ADR-0012 unter „Wird
   nicht gebaut". Der Benutzer will es (Rueckmeldung 13): ADR-0017 schreiben
   und ihm vorlegen.

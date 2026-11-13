@@ -54,7 +54,7 @@ test('einheiten AC-23: die drei neuen Einheiten tragen die Werte der Vorlage', (
     }),
     [
       [{ nahrung: 35, holz: 25 }, 22, 45, 3, '0/0', 0, 1.0],
-      [{ holz: 25, gold: 45 }, 35, 30, 4, '0/0', 4, 0.96],
+      [{ holz: 30, gold: 45 }, 35, 30, 4, '0/0', 4, 0.96], // 30 statt 25 Holz seit Runde 202
       [{ nahrung: 25, holz: 35 }, 22, 30, 2, '0/3', 4, 0.96],
     ],
   );

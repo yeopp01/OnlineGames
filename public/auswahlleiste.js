@@ -1,3 +1,4 @@
+// @ts-check
 // Unten im Spielbild: was ausgewaehlt ist und was es kann.
 // - ein eigenes Gebaeude: Name, Leben, ein Knopf je Einheit mit Bild und
 //   Kosten, darunter die Warteschlange; der laufende Auftrag zeigt seinen

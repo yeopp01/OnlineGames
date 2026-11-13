@@ -1,3 +1,4 @@
+// @ts-check
 'use strict';
 
 // Die Karte nach der Vorlage (→ specs/10-strategie/karte-und-vorraete.md).
