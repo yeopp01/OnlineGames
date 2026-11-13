@@ -2,11 +2,11 @@
   "bild": "schmiede.webp",
   "maske": "schmiede-maske.webp",
   "zelle": [
-    434,
+    444,
     344
   ],
   "fuss": [
-    179,
+    189,
     229
   ],
   "feldbreite": 132,

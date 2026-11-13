@@ -2,16 +2,32 @@
 // der aktuellen Stufe nebeneinander, gross und in Spielgroesse, in zwei
 // Spielerfarben. Sie ist Bildnachweis und Pruefstueck zugleich - der
 // Browserlauf liest `window.schautafel`.
-import { FIGUREN, figurZeichnen } from './figuren.js';
-import { GEBAEUDE, gebaeudeZeichnen } from './gebaeude.js';
-import { KACHEL, bodenAn, kachelZeichnen } from './boden.js';
-import { figurHoeheBei } from './ansicht.js';
+//
+// Gezeigt und gemessen wird, was das Spiel zeigt: die gerenderten Bilder
+// (ADR-0016), geholt ueber dieselben Funktionen wie im Spielbild. Die Tafel
+// wartet deshalb, bis alle Bilder samt den Ablaeufen da sind, und setzt
+// `window.schautafel` erst dann.
+//
+// Alles steht in einem Massstab: eine Ramme ist neben einem Dorfbewohner so
+// gross wie im Spiel. Wie breit eine Zelle ist, kommt deshalb aus dem Bild
+// selbst (`rahmen`) und nicht aus einer Liste von Hand.
+import { ablaeufeLaden, bilderWarten, gerendert } from './bilder.js';
+import { FIGUREN, figurBildZeichnen } from './figuren.js';
+import { GEBAEUDE, gebaeudeBildZeichnen, gebaeudeSchattenZeichnen } from './gebaeude.js';
+import { KACHEL, kachelZeichnen } from './boden.js';
+import { ZOOM_NAH, figurHoeheBei, tierHoeheBei } from './ansicht.js';
 import {
-  BEERE, GOLD, GRAS as BODEN_GRAS, STEIN, WALD, WASSER, dingZeichnen, raute, wellenZeichnen,
+  BEERE, GOLD, GRAS as BODEN_GRAS, STEIN, WALD, WASSER, dingBildZeichnen, raute,
 } from './gelaende.js';
+
+await bilderWarten();
+await Promise.all(Object.keys(FIGUREN).map(ablaeufeLaden));
 
 const FARBEN = ['#4a90d9', '#d94a4a'];
 const GRAS = '#2f4636';
+const SCHRIFT = '#e6e9ee';
+const LEISE = '#9aa3b0';
+const SALZ = 4711;
 
 const EINTRAEGE = [
   { art: 'dorfbewohner', titel: 'Dorfbewohner', lage: {} },
@@ -21,33 +37,24 @@ const EINTRAEGE = [
   { art: 'miliz', titel: 'Miliz', lage: {} },
   { art: 'soldat', titel: 'Soldat', lage: {} },
   // Ritterzeit (einheiten AC-33, AC-34).
-  { art: 'ritter', titel: 'Ritter', lage: {}, gross: 104 },
+  { art: 'ritter', titel: 'Ritter', lage: {} },
   { art: 'armbrustschuetze', titel: 'Armbrust', lage: {} },
   // Belagerung (einheiten AC-35).
-  { art: 'ramme', titel: 'Ramme', lage: {}, gross: 78 },
-  { art: 'mangonel', titel: 'Mangonel', lage: {}, gross: 78 },
+  { art: 'ramme', titel: 'Ramme', lage: {} },
+  { art: 'mangonel', titel: 'Mangonel', lage: {} },
   // Der Moench, stehend und beim Heilen (einheiten AC-37).
   { art: 'moench', titel: 'Mönch', lage: {} },
   { art: 'moench', titel: 'Mönch heilt', lage: { arbeit: 1.2 } },
   // Der Marktkarren (einheiten AC-39).
-  { art: 'marktkarren', titel: 'Marktkarren', lage: {}, gross: 66 },
-  { art: 'spaeherreiter', titel: 'Späherreiter', lage: {}, gross: 104 },
+  { art: 'marktkarren', titel: 'Marktkarren', lage: {} },
+  { art: 'spaeherreiter', titel: 'Späherreiter', lage: {} },
   { art: 'speerkaempfer', titel: 'Speerkämpfer', lage: {} },
   { art: 'bogenschuetze', titel: 'Bogenschütze', lage: {} },
   { art: 'plaenkler', titel: 'Plänkler', lage: {} },
-  { art: 'schaf', titel: 'Schaf', lage: {} },
-  { art: 'schaf', titel: 'Kadaver, halb', lage: { liegt: true, rest: 0.5 } },
+  { art: 'schaf', titel: 'Schaf', lage: {}, tier: true },
+  { art: 'schaf', titel: 'Kadaver, halb', lage: { liegt: true, rest: 0.5 }, tier: true },
 ];
 
-const leinwand = document.getElementById('tafel');
-const stift = leinwand.getContext('2d');
-const dichte = window.devicePixelRatio || 1;
-const BREITE = 1100;
-// Die Gebaeude stehen in Reihen von hoechstens GEBAEUDE_SPALTEN, je
-// Spielerfarbe; die Hoehe waechst mit den Reihen (seit der Burg, Runde 132:
-// das einundzwanzigste Gebaeude). Mit siebzehn in einer Reihe liefen die
-// Beschriftungen ineinander (Runde 122).
-const GEBAEUDE_SPALTEN = 10;
 const GEBAEUDE_REIHE = [
   { art: 'dorfzentrum', groesse: 4, titel: 'Dorfzentrum' },
   { art: 'haus', groesse: 2, titel: 'Haus' },
@@ -78,52 +85,8 @@ const GEBAEUDE_REIHE = [
   { art: 'haus', groesse: 2, titel: 'Baustelle 20 %', bau: 0.2 },
   { art: 'haus', groesse: 2, titel: 'Baustelle 70 %', bau: 0.7 },
 ];
-const GEBAEUDE_REIHEN = Math.ceil(GEBAEUDE_REIHE.length / GEBAEUDE_SPALTEN);
-// Die Einheiten ebenso: hoechstens zehn je Reihe (Runde 123: mit vierzehn
-// liefen die Namen ineinander). Jede weitere Reihe je Farbe schiebt Gelaende
-// und Gebaeude um 250 nach unten.
-const EINHEIT_SPALTEN = 10;
-const EINHEIT_REIHEN = Math.ceil(EINTRAEGE.length / EINHEIT_SPALTEN);
-const VERSATZ = (EINHEIT_REIHEN - 1) * 2 * 250;
-const HOEHE = 790 + VERSATZ + 6 + 2 * GEBAEUDE_REIHEN * 190 + 4;
-leinwand.width = BREITE * dichte;
-leinwand.height = HOEHE * dichte;
-stift.scale(dichte, dichte);
-
-stift.fillStyle = '#1d222a';
-stift.fillRect(0, 0, BREITE, HOEHE);
-
-const spalte = BREITE / EINHEIT_SPALTEN;
-const zellen = [];
-// Breite Figuren stehen nicht mittig: der Reiter hat den Kopf des Pferdes
-// vorn, die Ramme ihren Stossbalken, der Mangonel den Wurfarm hinten. Ob sie
-// in ihre Zelle passen, misst `ueberstand()` (darstellung AC-9); die Reiter
-// sind deshalb seit der Rueckschau nach Runde 130 etwas kleiner (`gross`).
-const FUSS_VERSATZ = { spaeherreiter: 9, ritter: 15, ramme: 24, mangonel: -8, marktkarren: 3 };
-const fussX = (x, art) => x + spalte / 2 - (FUSS_VERSATZ[art] ?? 0);
-
-FARBEN.forEach((farbe, reihe) => {
-  EINTRAEGE.forEach((eintrag, i) => {
-    const oben = 20 + (reihe * EINHEIT_REIHEN + Math.floor(i / EINHEIT_SPALTEN)) * 250;
-    const x = (i % EINHEIT_SPALTEN) * spalte;
-    stift.fillStyle = GRAS;
-    stift.fillRect(x + 8, oben, spalte - 16, 200);
-    // Gross ...
-    // Die Ramme ist fast doppelt so breit wie hoch: kleiner gezeichnet, sonst
-    // uebermalt die naechste Zelle ihre Spitze.
-    figurZeichnen(stift, eintrag.art, fussX(x, eintrag.art), oben + 150, eintrag.gross ?? 120, farbe, { blick: 1, ...eintrag.lage });
-    // ... und in Spielgroesse daneben, wie bei Zoom 1.
-    figurZeichnen(stift, eintrag.art, x + spalte - 34, oben + 185, 24, farbe, { blick: 1, ...eintrag.lage });
-    stift.fillStyle = '#e6e9ee';
-    stift.font = '600 14px system-ui, sans-serif';
-    stift.textAlign = 'center';
-    stift.fillText(eintrag.titel, x + spalte / 2, oben + 222);
-    zellen.push({ art: eintrag.art, titel: eintrag.titel, farbe, x: x + 8, y: oben, breite: spalte - 16, hoehe: 200 });
-  });
-});
-
-// ---- Gelaende und Vorraete (darstellung AC-2, AC-3) -----------------------
-// Je ein kleines Stueck Karte als Raute: voll, halb leer, und in Spielgroesse.
+// Wie viele Felder ein Gebaeude breit ist - fuer die Messungen unten.
+const felderVon = (art) => GEBAEUDE_REIHE.find((g) => g.art === art && !g.bau && !g.offen)?.groesse || 2;
 
 const DINGE = [
   { art: WALD, titel: 'Wald' },
@@ -133,255 +96,550 @@ const DINGE = [
   { art: WASSER, titel: 'Wasser am Ufer' },
 ];
 
-// Eine Bodenkachel um ein kleines Stueck Karte, dessen Mitte (Feld 1, 1) in
-// der Mitte der Kachel liegt.
-function wasserKachel(karte, e) {
-  return kachelZeichnen(karte, -KACHEL / 2, -KACHEL / 2 + e, 1, e, e / 2, 4711);
+// ---- Werkzeug: zeichnen und lesen --------------------------------------------
+
+function blattMit(breite, hoehe = breite) {
+  const blatt = document.createElement('canvas');
+  blatt.width = Math.ceil(breite);
+  blatt.height = Math.ceil(hoehe);
+  return [blatt, blatt.getContext('2d', { willReadFrequently: true })];
 }
 
-function flecken(mitteX, mitteY, e, art, fuellung) {
-  // Ein 3 x 3-Stueck Boden, hinten beginnend, dann die Dinge nach Tiefe.
-  const felder = [];
-  for (let gy = 0; gy < 3; gy++) {
-    for (let gx = 0; gx < 3; gx++) felder.push({ gx, gy });
-  }
-  felder.sort((a, b) => a.gx + a.gy - (b.gx + b.gy));
-  for (const { gx, gy } of felder) {
-    const x = mitteX + (gx - gy) * e;
-    const y = mitteY + (gx + gy - 2) * e * 0.5;
-    const hier = art === WALD ? WALD : BODEN_GRAS;
-    raute(stift, x, y, e, e * 0.5);
-    const farbe = bodenAn(gx * 2.3, gy * 2.3, hier, 4711);
-    stift.fillStyle = `rgb(${farbe[0] | 0}, ${farbe[1] | 0}, ${farbe[2] | 0})`;
-    stift.fill();
-  }
-  if (art === WASSER) {
-    // Wie im Spiel: das Wasser liegt mit seinem Ufer in der Bodentextur.
-    const karte = { groesse: 3, felder: felder.map(() => 0) };
-    for (const { gx, gy } of felder) if (gx + gy >= 2) karte.felder[gy * 3 + gx] = WASSER;
-    stift.save();
-    raute(stift, mitteX, mitteY, e * 3, e * 1.5);
-    stift.clip();
-    stift.drawImage(wasserKachel(karte, e), mitteX - KACHEL / 2, mitteY - KACHEL / 2);
-    stift.restore();
-    for (const { gx, gy } of felder) {
-      if (gx + gy >= 2) wellenZeichnen(stift, mitteX + (gx - gy) * e, mitteY + (gx + gy - 2) * e * 0.5, e, gx * 7 + gy * 13);
+/** Die Bildpunkte einer Zeichnung auf einem leeren Blatt der Kantenlaenge `groesse`. */
+function bildpunkte(groesse, malen) {
+  const [, s] = blattMit(groesse);
+  malen(s);
+  return s.getImageData(0, 0, groesse, groesse).data;
+}
+
+/**
+ * Was eine Zeichnung um ihren Fusspunkt deckt: wie weit sie nach links,
+ * rechts, oben und unten reicht. Der Schlagschatten ist halb durchsichtig
+ * und zaehlt nicht; eine Bogensehne, die nur halb deckt, zaehlt (`DECKT`) -
+ * mit der Schwelle 200 ragte der Bogen des Schuetzen vier Bildpunkte aus
+ * seiner Zelle.
+ */
+const DECKT = 128;
+function rahmen(malen, halb = 320) {
+  const g = halb * 2;
+  const daten = bildpunkte(g, (s) => malen(s, halb, halb));
+  let links = g;
+  let rechts = -1;
+  let oben = g;
+  let unten = -1;
+  for (let y = 0; y < g; y++) {
+    for (let x = 0; x < g; x++) {
+      if (daten[(y * g + x) * 4 + 3] <= DECKT) continue;
+      if (x < links) links = x;
+      if (x > rechts) rechts = x;
+      if (y < oben) oben = y;
+      if (y > unten) unten = y;
     }
-    return;
   }
+  if (rechts < links) return { links: 0, rechts: 0, oben: 0, unten: 0 };
+  return { links: halb - links, rechts: rechts + 1 - halb, oben: halb - oben, unten: unten + 1 - halb };
+}
+
+// Mauer und Tor werfen ihren Schatten aus einer eigenen Schicht, die das
+// Spielbild als Ganzes auflegt (public/bilder.js) - hier je Gebaeude.
+function schattenMalen(s, art, x, y, e) {
+  const b = Math.ceil(12 * e);
+  const [blatt, schicht] = blattMit(b);
+  const deckung = gebaeudeSchattenZeichnen(schicht, art, b / 2, b / 2, e);
+  if (!deckung) return;
+  s.save();
+  s.globalAlpha = deckung;
+  s.drawImage(blatt, x - b / 2, y - b / 2);
+  s.restore();
+}
+
+function gebaeudeMalen(s, eintrag, x, y, e, farbe) {
+  schattenMalen(s, eintrag.art, x, y, e);
+  gebaeudeBildZeichnen(s, eintrag.art, x, y, e, farbe, eintrag.groesse, eintrag.bau ?? 1, 1, Boolean(eintrag.offen));
+}
+
+const hoeheVon = (eintrag, zoom) => (eintrag.tier ? tierHoeheBei(zoom) : figurHoeheBei(zoom));
+
+function figurMalen(s, eintrag, x, y, zoom, farbe) {
+  figurBildZeichnen(s, eintrag.art, x, y, hoeheVon(eintrag, zoom), farbe, { blick: 1, ...eintrag.lage });
+}
+
+// ---- Anordnung ---------------------------------------------------------------
+// Eine Zelle ist ein Vielfaches von RASTER breit, so viel, wie ihr Bild
+// braucht; ist die Reihe voll, beginnt die naechste.
+
+const BREITE = 1100;
+const RASTER = 55;
+const SPALTEN = BREITE / RASTER;
+
+function anordnen(breiten) {
+  const plaetze = [];
+  let reihe = 0;
+  let spalte = 0;
+  for (const innen of breiten) {
+    const n = Math.min(SPALTEN, Math.max(2, Math.ceil((innen + 28) / RASTER)));
+    if (spalte + n > SPALTEN) {
+      reihe += 1;
+      spalte = 0;
+    }
+    plaetze.push({ reihe, x: spalte * RASTER + 8, breite: n * RASTER - 16 });
+    spalte += n;
+  }
+  return { plaetze, reihen: reihe + 1 };
+}
+
+// Einheiten: gross wie beim naechsten Zoom, daneben in Spielgroesse (Zoom 1).
+const ABSTAND = 10;
+const figurMasse = EINTRAEGE.map((eintrag) => ({
+  gross: rahmen((s, x, y) => figurMalen(s, eintrag, x, y, ZOOM_NAH, FARBEN[0])),
+  klein: rahmen((s, x, y) => figurMalen(s, eintrag, x, y, 1, FARBEN[0])),
+}));
+const figurBreite = (m) => m.gross.links + m.gross.rechts + ABSTAND + m.klein.links + m.klein.rechts;
+const figurOrdnung = anordnen(figurMasse.map(figurBreite));
+const figurOben = Math.ceil(Math.max(...figurMasse.map((m) => m.gross.oben)));
+const figurUnten = Math.ceil(Math.max(...figurMasse.map((m) => m.gross.unten)));
+const figurGras = figurOben + figurUnten + 20;
+const figurTeilung = figurGras + 34;
+const figurenOben = 40;
+
+// Gelaende: ein Stueck Karte gross, darunter fast leer und in Spielgroesse.
+const E_GROSS = 30;
+const E_SPIEL = 22;
+const dingIndex = (gx, gy) => gx * 7 + gy * 13;
+// Weit auseinander auf der Karte: so stehen Laub- und Nadelbaeume im selben Stueck.
+const dingFeld = (gx, gy) => ({ x: gx * 5, y: gy * 5 });
+
+// Wie weit ein Stueck Wald aus 3 x 3 Feldern ueber seine Mitte ragt.
+function waldOben(e) {
+  let hoch = 1.5 * e;
+  for (let gy = 0; gy < 3; gy++) {
+    for (let gx = 0; gx < 3; gx++) {
+      const b = rahmen((s, x, y) => dingBildZeichnen(s, WALD, x, y, e, dingIndex(gx, gy), 1, dingFeld(gx, gy), SALZ), 200);
+      hoch = Math.max(hoch, b.oben - (gx + gy - 2) * e * 0.5);
+    }
+  }
+  return Math.ceil(hoch);
+}
+
+const gelaendeOben = figurenOben + 2 * figurOrdnung.reihen * figurTeilung + 30;
+const dingSpalte = BREITE / DINGE.length;
+const dingMitteGross = gelaendeOben + 6 + 10 + waldOben(E_GROSS);
+const dingMitteSpiel = dingMitteGross + 1.5 * E_GROSS + 26 + waldOben(E_SPIEL);
+const dingUnten = dingMitteSpiel + 1.5 * E_SPIEL + 30;
+const gelaendeHoehe = dingUnten + 6 - gelaendeOben;
+
+// Gebaeude: alle in Spielgroesse (Zoom 1).
+const E_BAU = 22;
+const bauMasse = GEBAEUDE_REIHE.map((eintrag) => rahmen((s, x, y) => gebaeudeMalen(s, eintrag, x, y, E_BAU, FARBEN[0])));
+const bauOrdnung = anordnen(bauMasse.map((m) => m.links + m.rechts));
+const bauOben = Math.ceil(Math.max(...bauMasse.map((m) => m.oben)));
+const bauUnten = Math.ceil(Math.max(...bauMasse.map((m) => m.unten)));
+const bauGras = bauOben + bauUnten + 20;
+const bauTeilung = bauGras + 34;
+const gebaeudeOben = gelaendeOben + gelaendeHoehe + 40;
+const HOEHE = gebaeudeOben + 6 + 2 * bauOrdnung.reihen * bauTeilung;
+
+// ---- Zeichnen ----------------------------------------------------------------
+
+const leinwand = document.getElementById('tafel');
+const stift = leinwand.getContext('2d');
+const dichte = window.devicePixelRatio || 1;
+leinwand.width = BREITE * dichte;
+leinwand.height = HOEHE * dichte;
+stift.scale(dichte, dichte);
+stift.fillStyle = '#1d222a';
+stift.fillRect(0, 0, BREITE, HOEHE);
+
+function ueberschrift(text, y) {
+  stift.fillStyle = SCHRIFT;
+  stift.font = '600 15px system-ui, sans-serif';
+  stift.textAlign = 'left';
+  stift.fillText(text, 12, y);
+}
+
+function name(text, x, y, groesse = 13) {
+  stift.fillStyle = SCHRIFT;
+  stift.font = `600 ${groesse}px system-ui, sans-serif`;
+  stift.textAlign = 'center';
+  stift.fillText(text, x, y);
+}
+
+ueberschrift('Einheiten – so groß, wie das Rad sie heranholt, daneben in Spielgröße (Zoom 1), in zwei Spielerfarben', figurenOben - 14);
+const zellen = [];
+FARBEN.forEach((farbe, f) => {
+  EINTRAEGE.forEach((eintrag, i) => {
+    const platz = figurOrdnung.plaetze[i];
+    const m = figurMasse[i];
+    const oben = figurenOben + (f * figurOrdnung.reihen + platz.reihe) * figurTeilung;
+    const beginn = platz.x + (platz.breite - figurBreite(m)) / 2;
+    const boden = oben + 10 + figurOben;
+    zellen.push({
+      art: eintrag.art, titel: eintrag.titel, farbe, x: platz.x, y: oben, breite: platz.breite, hoehe: figurGras,
+      eintrag,
+      gross: { x: Math.round(beginn + m.gross.links), y: boden },
+      klein: { x: Math.round(beginn + m.gross.links + m.gross.rechts + ABSTAND + m.klein.links), y: boden },
+    });
+  });
+});
+// Erst das Gras aller Zellen, dann die Figuren: so faellt ein Schatten auch
+// auf das Gras der Nachbarzelle, statt von ihm uebermalt zu werden.
+for (const z of zellen) {
+  stift.fillStyle = GRAS;
+  stift.fillRect(z.x, z.y, z.breite, z.hoehe);
+}
+for (const z of zellen) {
+  figurMalen(stift, z.eintrag, z.gross.x, z.gross.y, ZOOM_NAH, z.farbe);
+  figurMalen(stift, z.eintrag, z.klein.x, z.klein.y, 1, z.farbe);
+  name(z.titel, z.x + z.breite / 2, z.y + z.hoehe + 20);
+}
+
+// ---- Gelaende und Vorraete (darstellung AC-2, AC-3) -----------------------
+
+// Der Boden unter einem Stueck Karte aus n x n Feldern, wie ihn das Spiel
+// zeichnet: eine Kachel, deren Mitte die Mitte des Stuecks ist.
+function bodenKachel(karte, e, salz = SALZ) {
+  const mitte = (karte.groesse - 1) / 2;
+  return kachelZeichnen(karte, -KACHEL / 2, -KACHEL / 2 + mitte * 2 * e * 0.5, 1, e, e / 2, salz);
+}
+
+function flecken(s, mitteX, mitteY, e, art, fuellung, n = 3) {
+  const felder = [];
+  for (let gy = 0; gy < n; gy++) {
+    for (let gx = 0; gx < n; gx++) felder.push({ gx, gy });
+  }
+  // Hinten beginnend, dann die Dinge nach Tiefe.
+  felder.sort((a, b) => a.gx + a.gy - (b.gx + b.gy));
+  const karte = { groesse: n, felder: new Array(n * n).fill(art === WALD ? WALD : BODEN_GRAS) };
+  // Wasser in der vorderen Haelfte, mit seinem Ufer.
+  if (art === WASSER) for (const { gx, gy } of felder) if (gx + gy >= n - 1) karte.felder[gy * n + gx] = WASSER;
+  s.save();
+  raute(s, mitteX, mitteY, e * n, e * n * 0.5);
+  s.clip();
+  s.drawImage(bodenKachel(karte, e), mitteX - KACHEL / 2, mitteY - KACHEL / 2);
+  s.restore();
+  if (art === WASSER) return;
+  const mitte = (n - 1) / 2;
   for (const { gx, gy } of felder) {
-    const mitte = gx === 1 && gy === 1;
-    if (art !== WALD && !mitte) continue;
+    if (art !== WALD && (gx !== mitte || gy !== mitte)) continue;
     const x = mitteX + (gx - gy) * e;
-    const y = mitteY + (gx + gy - 2) * e * 0.5;
-    dingZeichnen(stift, art, x, y, e, gx * 7 + gy * 13, fuellung);
+    const y = mitteY + (gx + gy - (n - 1)) * e * 0.5;
+    dingBildZeichnen(s, art, x, y, e, dingIndex(gx, gy), fuellung, dingFeld(gx, gy), SALZ);
   }
 }
 
-const gelaendeOben = 520 + VERSATZ;
-stift.fillStyle = '#e6e9ee';
-stift.font = '600 15px system-ui, sans-serif';
-stift.textAlign = 'left';
-stift.fillText('Gelaende und Vorraete - voll, fast leer, in Spielgroesse', 12, gelaendeOben - 6);
-const dingSpalte = BREITE / DINGE.length;
+ueberschrift('Gelände und Vorräte – voll, darunter fast leer und in Spielgröße (Zoom 1)', gelaendeOben - 6);
 DINGE.forEach((ding, i) => {
   const x = i * dingSpalte;
   stift.fillStyle = '#26303a';
-  stift.fillRect(x + 8, gelaendeOben + 6, dingSpalte - 16, 230);
-  // Gross links, fast leer rechts, in Spielgroesse unten - alles in der Zelle.
-  flecken(x + dingSpalte * 0.36, gelaendeOben + 100, 30, ding.art, 1);
-  flecken(x + dingSpalte * 0.78, gelaendeOben + 100, 16, ding.art, 0.25);
-  flecken(x + dingSpalte * 0.5, gelaendeOben + 190, 22, ding.art, 1);
-  stift.fillStyle = '#e6e9ee';
-  stift.font = '600 14px system-ui, sans-serif';
+  stift.fillRect(x + 8, gelaendeOben + 6, dingSpalte - 16, gelaendeHoehe - 12);
+  flecken(stift, x + dingSpalte / 2, dingMitteGross, E_GROSS, ding.art, 1);
+  // Fast leer auf einem Feld; das Wasser wird nicht leer.
+  if (ding.art !== WASSER) flecken(stift, x + 48, dingMitteSpiel + 1.5 * E_SPIEL - E_GROSS * 0.5, E_GROSS, ding.art, 0.25, 1);
+  flecken(stift, x + (ding.art === WASSER ? dingSpalte / 2 : 142), dingMitteSpiel, E_SPIEL, ding.art, 1);
+  stift.fillStyle = LEISE;
+  stift.font = '11px system-ui, sans-serif';
   stift.textAlign = 'center';
-  stift.fillText(ding.titel, x + dingSpalte / 2, gelaendeOben + 232);
+  if (ding.art !== WASSER) stift.fillText('fast leer', x + 48, dingUnten - 20);
+  stift.fillText('Zoom 1', x + (ding.art === WASSER ? dingSpalte / 2 : 142), dingUnten - 20);
+  name(ding.titel, x + dingSpalte / 2, dingUnten - 3, 14);
 });
 
 // ---- Gebaeude und Baustellen (darstellung AC-4, AC-5) -----------------------
-// Jedes Gebaeude der Stufe gross in beiden Spielerfarben, dazu die Baustelle
-// in drei Staenden und alles noch einmal in Spielgroesse (Zoom 1).
 
-const gebaeudeOben = 790 + VERSATZ;
-stift.fillStyle = '#e6e9ee';
-stift.font = '600 15px system-ui, sans-serif';
-stift.textAlign = 'left';
-stift.fillText('Gebaeude und Baustellen - in Spielgroesse (Zoom 1), das Dorfzentrum halb so gross, in zwei Spielerfarben', 12, gebaeudeOben - 6);
-const gebaeudeSpalte = BREITE / GEBAEUDE_SPALTEN;
-const gebaeudeReihen = GEBAEUDE_REIHEN;
+ueberschrift('Gebäude und Baustellen – in Spielgröße (Zoom 1), in zwei Spielerfarben', gebaeudeOben - 6);
 const gebaeudeZellen = [];
-FARBEN.forEach((farbe, reihe) => {
+FARBEN.forEach((farbe, f) => {
   GEBAEUDE_REIHE.forEach((eintrag, i) => {
-    const oben = gebaeudeOben + 6 + (reihe * gebaeudeReihen + Math.floor(i / GEBAEUDE_SPALTEN)) * 190;
-    const x = (i % GEBAEUDE_SPALTEN) * gebaeudeSpalte;
-    stift.fillStyle = GRAS;
-    stift.fillRect(x + 6, oben, gebaeudeSpalte - 12, 170);
-    // In Spielgroesse (e = 22 wie bei Zoom 1); das Dorfzentrum halb so gross, sonst passt es nicht.
-    const e = eintrag.groesse === 4 ? 11 : eintrag.groesse === 3 ? 15 : 22;
-    gebaeudeZeichnen(stift, eintrag.art, x + gebaeudeSpalte / 2 - 8, oben + 120, e, farbe, eintrag.groesse, eintrag.bau ?? 1, 1, Boolean(eintrag.offen));
-    if (reihe === 1) {
-      stift.fillStyle = '#e6e9ee';
-      stift.font = '600 13px system-ui, sans-serif';
-      stift.textAlign = 'center';
-      stift.fillText(eintrag.titel, x + gebaeudeSpalte / 2, oben + 164);
-    }
-    gebaeudeZellen.push({ art: eintrag.art, titel: eintrag.titel, bau: eintrag.bau ?? 1, farbe, x: x + 6, y: oben, breite: gebaeudeSpalte - 12, hoehe: 170 });
+    const platz = bauOrdnung.plaetze[i];
+    const m = bauMasse[i];
+    const oben = gebaeudeOben + 6 + (f * bauOrdnung.reihen + platz.reihe) * bauTeilung;
+    gebaeudeZellen.push({
+      art: eintrag.art, titel: eintrag.titel, bau: eintrag.bau ?? 1, farbe, x: platz.x, y: oben, breite: platz.breite, hoehe: bauGras,
+      eintrag,
+      fuss: { x: Math.round(platz.x + (platz.breite - m.links - m.rechts) / 2 + m.links), y: oben + 10 + bauOben },
+    });
   });
 });
+for (const z of gebaeudeZellen) {
+  stift.fillStyle = GRAS;
+  stift.fillRect(z.x, z.y, z.breite, z.hoehe);
+}
+for (const z of gebaeudeZellen) {
+  gebaeudeMalen(stift, z.eintrag, z.fuss.x, z.fuss.y, E_BAU, z.farbe);
+  name(z.titel, z.x + z.breite / 2, z.y + z.hoehe + 20);
+}
+
+// ---- Messen ------------------------------------------------------------------
+//
+// Alles Folgende ist fuer den Browserlauf. Gemessen wird am Bild, wie es das
+// Spiel zeichnet - nie an einer Angabe darueber.
+
+// Was sich aendert, wenn der Spieler ein anderer ist, traegt seine Farbe.
+// Bei gerenderten Bildern ist das Tuch mit der Farbe malgenommen: es hat
+// Falten und Schatten und ist nirgends genau der Ton des Spielers. Bis zum
+// Bildumbau wurde gezaehlt, was nahe am reinen Ton lag - an einer Zeichnung
+// dasselbe, an einem Bild fast nichts.
+const gegenfarbe = (farbe) => (farbe.toLowerCase() === FARBEN[1] ? FARBEN[0] : FARBEN[1]);
+const FARBSPRUNG = 60;
+
+/** Liest ein Bild in beiden Farben: was es belegt, und was davon die Spielerfarbe traegt. */
+function auswerten(groesse, malen, farbe, mitFarben = true) {
+  const eigen = bildpunkte(groesse, (s) => malen(s, farbe));
+  const fremd = bildpunkte(groesse, (s) => malen(s, gegenfarbe(farbe)));
+  const belegt = [];
+  const farben = [];
+  let pixel = 0;
+  let farbpixel = 0;
+  let hoechster = groesse;
+  for (let i = 0; i < eigen.length; i += 4) {
+    // Der Schatten ist halb durchsichtig und gehoert nicht zur Gestalt.
+    const voll = eigen[i + 3] > 200;
+    belegt.push(voll ? 1 : 0);
+    if (mitFarben) farben.push(voll ? [eigen[i], eigen[i + 1], eigen[i + 2]] : null);
+    if (!voll) continue;
+    pixel += 1;
+    hoechster = Math.min(hoechster, Math.floor(i / 4 / groesse));
+    if (Math.abs(eigen[i] - fremd[i]) + Math.abs(eigen[i + 1] - fremd[i + 1]) + Math.abs(eigen[i + 2] - fremd[i + 2]) > FARBSPRUNG) farbpixel += 1;
+  }
+  return { belegt, farben, pixel, farbpixel, oben: hoechster };
+}
 
 /**
- * Fuer den Browserlauf (darstellung AC-4): ein Gebaeude allein auf
- * durchsichtigem Grund - welche Bildpunkte es belegt und wie viele die
- * Spielerfarbe tragen.
+ * Ein Gebaeude allein auf durchsichtigem Grund (darstellung AC-4): welche
+ * Bildpunkte es belegt und wie viele die Spielerfarbe tragen. Alle gleich
+ * gross: jedes so, dass seine Grundflaeche zwei Felder von e = 20 fuellt -
+ * nur, wer auf einem Feld steht, in seiner eigenen Groesse (der Aussenposten
+ * ist hoch; als zwei Felder gezeichnet ragten Dach und Wimpel aus dem Blatt,
+ * Runde 109).
  */
 function gebaeudeMaske(art, farbe, bau = 1) {
   const groesse = 140;
-  const blatt = document.createElement('canvas');
-  blatt.width = groesse;
-  blatt.height = groesse;
-  const s = blatt.getContext('2d');
-  // Alle in derselben Groesse wie zwei Felder - nur, wer kleiner ist, in
-  // seiner eigenen: der Aussenposten steht auf einem Feld und ist hoch; als
-  // zwei Felder gezeichnet ragten Dach und Wimpel aus dem Blatt (Runde 109).
-  const felder = Math.min(2, GEBAEUDE_REIHE.find((g) => g.art === art && !g.bau && !g.offen)?.groesse || 2);
-  gebaeudeZeichnen(s, art, groesse / 2, groesse * 0.72, 20, farbe, felder, bau);
-  const { data } = s.getImageData(0, 0, groesse, groesse);
-  const r = parseInt(farbe.slice(1, 3), 16);
-  const g = parseInt(farbe.slice(3, 5), 16);
-  const b = parseInt(farbe.slice(5, 7), 16);
-  const belegt = [];
-  const farben = [];
-  let farbpixel = 0;
-  let hoechster = groesse;
-  for (let i = 0; i < data.length; i += 4) {
-    const voll = data[i + 3] > 200;
-    belegt.push(voll ? 1 : 0);
-    farben.push(voll ? [data[i], data[i + 1], data[i + 2]] : null);
-    if (voll) hoechster = Math.min(hoechster, Math.floor(i / 4 / groesse));
-    if (voll && Math.abs(data[i] - r) < 30 && Math.abs(data[i + 1] - g) < 30 && Math.abs(data[i + 2] - b) < 30) farbpixel += 1;
-  }
+  const echt = felderVon(art);
+  const felder = Math.min(2, echt);
+  const e = (20 * felder) / echt;
+  const m = auswerten(groesse, (s, f) => gebaeudeMalen(s, { art, groesse: echt, bau }, groesse / 2, groesse * 0.72, e, f), farbe);
   // `grundOben`: die obere Ecke der Grundflaeche - die Raute reicht bei
   // e = 20 je Feld zehn Bildpunkte ueber und unter die Mitte.
-  return { belegt, farben, pixel: belegt.reduce((a, v) => a + v, 0), farbpixel, oben: hoechster, grundOben: Math.floor(groesse * 0.72 - 10 * felder) };
+  // `feld`: die Hoehe eines Feldes dieses Gebaeudes im Bild - woran sich
+  // misst, ob es Koerper hat. Wer auf drei oder vier Feldern steht, ist hier
+  // verkleinert gezeichnet, und sein Feld mit ihm.
+  // `grundflaeche`: die Raute, auf der es steht, in Bildpunkten - 40 mal 20
+  // je Feld, halbiert.
+  return { ...m, grundOben: Math.floor(groesse * 0.72 - 10 * felder), feld: e, grundflaeche: 400 * felder * felder };
 }
 
 /**
- * Fuer den Browserlauf: ein Vorrat allein auf durchsichtigem Grund, mit dem
- * Anteil der Bildpunkte in einer Farbfamilie (gelb, rot, grau, gruen).
+ * Ein Vorrat allein auf durchsichtigem Grund (darstellung AC-3): wie viele
+ * Bildpunkte er belegt und wie viele davon in einer Farbfamilie liegen.
+ *
+ * Gelesen wird der **Farbton**, nicht der Farbwert. Ein gerendertes Bild hat
+ * Licht und Schatten: dasselbe Laub ist in der Sonne hell und unter der Krone
+ * fast schwarz, und eine Schwelle auf den Farbwerten (bis zum Bildumbau:
+ * "Rot ueber 150, Gruen unter 90") trifft davon nur die Sonnenseite - an der
+ * Zeichnung war das dasselbe, am Bild blieben vom Wald 41 % gruen. Was im
+ * tiefen Schatten liegt (kein Kanal ueber 50), hat keinen Farbton und zaehlt
+ * nicht zu `farbig`; die Anteile der Familien beziehen sich auf `farbig`.
+ *
+ *   grau   Saettigung unter 0,18
+ *   rot    Farbton innerhalb von 20 Grad um Rot, Saettigung ab 0,4
+ *   gold   Ocker bis Gelb, 20 bis 70 Grad - das Gestein des Goldes und das Gold
+ *   glanz  davon das helle Gold: ab 35 Grad, Saettigung ab 0,4, hell (ab 130)
+ *   gruen  70 bis 180 Grad
  */
-function dingMaske(art, fuellung = 1) {
-  const groesse = 120;
-  const blatt = document.createElement('canvas');
-  blatt.width = groesse;
-  blatt.height = groesse;
-  const s = blatt.getContext('2d');
-  dingZeichnen(s, art, groesse / 2, groesse * 0.8, 48, 17, fuellung);
-  const { data } = s.getImageData(0, 0, groesse, groesse);
-  const zaehler = { pixel: 0, gelb: 0, rot: 0, grau: 0, gruen: 0 };
-  for (let i = 0; i < data.length; i += 4) {
-    if (data[i + 3] < 200) continue;
-    const [r, g, b] = [data[i], data[i + 1], data[i + 2]];
-    zaehler.pixel += 1;
-    if (r > 150 && g > 110 && b < 120 && r - b > 80) zaehler.gelb += 1;
-    else if (r > 150 && g < 90 && b < 110) zaehler.rot += 1;
-    else if (Math.abs(r - g) < 14 && Math.abs(g - b) < 14 && r > 80) zaehler.grau += 1;
-    else if (g > r + 15 && g > b + 5) zaehler.gruen += 1;
-  }
-  return zaehler;
-}
-
-/**
- * Fuer den Browserlauf: eine Figur allein auf durchsichtigem Grund zeichnen und
- * zurueckgeben, welche Bildpunkte sie belegt und wie viele davon die
- * Spielerfarbe tragen.
- */
-function maske(art, farbe, lage = {}) {
-  const groesse = 96;
-  // `hoehe` ist die Figurenhoehe in Bildpunkten; ohne Angabe herangezoomt
-  // (72), fuer die Spielgroesse `figurHoeheBei(1)` - rund 29 (bedienung
-  // AC-36). Die Leinwand bleibt gleich gross, damit zwei Masken Punkt fuer
-  // Punkt vergleichbar bleiben.
-  const { hoehe = 72, ...rest } = lage;
-  const blatt = document.createElement('canvas');
-  blatt.width = groesse;
-  blatt.height = groesse;
-  const s = blatt.getContext('2d');
-  figurZeichnen(s, art, groesse / 2, groesse / 2 + hoehe / 2, hoehe, farbe, { blick: 1, ...rest });
-  const { data } = s.getImageData(0, 0, groesse, groesse);
-  const r = parseInt(farbe.slice(1, 3), 16);
-  const g = parseInt(farbe.slice(3, 5), 16);
-  const b = parseInt(farbe.slice(5, 7), 16);
+function dingBild(art, fuellung = 1) {
+  const groesse = 240;
+  const data = bildpunkte(groesse, (s) => dingBildZeichnen(s, art, groesse / 2, groesse * 0.8, 48, 17, fuellung));
+  const z = { pixel: 0, farbig: 0, grau: 0, rot: 0, gold: 0, glanz: 0, gruen: 0 };
   const belegt = [];
   const farben = [];
-  let farbpixel = 0;
   for (let i = 0; i < data.length; i += 4) {
-    // Der Schatten ist halb durchsichtig und gehoert nicht zur Gestalt.
-    const voll = data[i + 3] > 200;
+    const voll = data[i + 3] >= 200;
+    const [r, g, b] = [data[i], data[i + 1], data[i + 2]];
     belegt.push(voll ? 1 : 0);
-    farben.push(voll ? [data[i], data[i + 1], data[i + 2]] : null);
-    if (voll && Math.abs(data[i] - r) < 40 && Math.abs(data[i + 1] - g) < 40 && Math.abs(data[i + 2] - b) < 40) farbpixel += 1;
+    farben.push(voll ? [r, g, b] : null);
+    if (!voll) continue;
+    z.pixel += 1;
+    const hoch = Math.max(r, g, b);
+    if (hoch <= 50) continue;
+    z.farbig += 1;
+    const satt = (hoch - Math.min(r, g, b)) / hoch;
+    if (satt < 0.18) {
+      z.grau += 1;
+      continue;
+    }
+    const ton = farbton([r, g, b]);
+    if (ton >= 340 || ton < 20) {
+      if (satt >= 0.4) z.rot += 1;
+    } else if (ton <= 70) {
+      z.gold += 1;
+      if (ton >= 35 && satt >= 0.4 && hoch >= 130) z.glanz += 1;
+    } else if (ton <= 180) z.gruen += 1;
   }
-  return { belegt, farben, pixel: belegt.reduce((a, v) => a + v, 0), farbpixel };
+  return { z, belegt, farben };
+}
+
+const dingMaske = (art, fuellung = 1) => dingBild(art, fuellung).z;
+
+// Wie verschieden zwei Bilder sind: Anteil der gemeinsamen Flaeche, die sich
+// im Umriss oder deutlich in der Farbe (Summe der Kanaele ueber 90)
+// unterscheidet - das Mass aus darstellung AC-14.
+function verschieden(a, b) {
+  let anders = 0;
+  let flaeche = 0;
+  for (let k = 0; k < a.belegt.length; k++) {
+    if (!a.belegt[k] && !b.belegt[k]) continue;
+    flaeche += 1;
+    if (a.belegt[k] !== b.belegt[k]) { anders += 1; continue; }
+    const [r1, g1, b1] = a.farben[k];
+    const [r2, g2, b2] = b.farben[k];
+    if (Math.abs(r1 - r2) + Math.abs(g1 - g2) + Math.abs(b1 - b2) > 90) anders += 1;
+  }
+  return Math.round((anders / flaeche) * 1000) / 1000;
+}
+
+/** Je zwei Vorraete gegeneinander, nach dem Mass aus darstellung AC-14. */
+function dingUnterschiede() {
+  const bilder = Object.entries({ wald: WALD, beere: BEERE, gold: GOLD, stein: STEIN }).map(([name, art]) => [name, dingBild(art)]);
+  const paare = [];
+  for (let i = 0; i < bilder.length; i++) {
+    for (let j = i + 1; j < bilder.length; j++) {
+      paare.push({ paar: `${bilder[i][0]} gegen ${bilder[j][0]}`, anteil: verschieden(bilder[i][1], bilder[j][1]) });
+    }
+  }
+  return paare.sort((x, y) => x.anteil - y.anteil);
+}
+
+/**
+ * Eine Figur allein auf durchsichtigem Grund: welche Bildpunkte sie belegt
+ * und wie viele davon die Spielerfarbe tragen.
+ *
+ * `hoehe` ist die Figurenhoehe in Bildpunkten; ohne Angabe herangezoomt
+ * (72), fuer die Spielgroesse `figurHoeheBei(1)` - rund 29 (bedienung AC-36).
+ * Das Blatt bleibt gleich gross, damit zwei Masken Punkt fuer Punkt
+ * vergleichbar bleiben: 240, damit auch ein Reiter mit Lanze ganz darauf
+ * steht (mit 96 war die Miliz rechts abgeschnitten); `blatt` macht es
+ * groesser, wo Ramme und Karren ganz gebraucht werden.
+ */
+function maske(art, farbe, lage = {}) {
+  const { hoehe = 72, blatt = 240, ...rest } = lage;
+  return auswerten(blatt, (s, f) => figurBildZeichnen(s, art, blatt / 2, blatt / 2 + hoehe / 2, hoehe, f, { blick: 1, ...rest }), farbe);
+}
+
+/**
+ * Wie viel einer Einheit die Spielerfarbe traegt (darstellung AC-6, AC-9):
+ * Anteil der Figur, der sich mit dem Spieler aendert - die ganze Figur,
+ * nichts abgeschnitten.
+ */
+function spielerfarbe(art, hoehe = 72) {
+  const blatt = 480;
+  const anteil = (farbe) => {
+    const m = auswerten(blatt, (s, f) => figurBildZeichnen(s, art, blatt / 2, blatt / 2 + hoehe / 2, hoehe, f, { blick: 1 }), farbe, false);
+    return m.pixel ? Math.round((m.farbpixel / m.pixel) * 1000) / 1000 : 0;
+  };
+  return FARBEN.map(anteil);
+}
+
+// Mittlere Farbe je Block einer Kachel: die Halme der Textur mitteln sich
+// heraus, was bleibt, ist die Toenung des Bodens.
+function bloecke(kachel, block = 12) {
+  const { data } = kachel.getContext('2d').getImageData(0, 0, KACHEL, KACHEL);
+  const aus = [];
+  for (let y = 40; y + block <= KACHEL - 40; y += block) {
+    for (let x = 40; x + block <= KACHEL - 40; x += block) {
+      const summe = [0, 0, 0];
+      let ganz = true;
+      for (let j = 0; j < block && ganz; j++) {
+        for (let i = 0; i < block; i++) {
+          const k = ((y + j) * KACHEL + x + i) * 4;
+          if (data[k + 3] < 255) { ganz = false; break; }
+          summe[0] += data[k];
+          summe[1] += data[k + 1];
+          summe[2] += data[k + 2];
+        }
+      }
+      aus.push(ganz ? summe.map((w) => w / (block * block)) : null);
+    }
+  }
+  return aus;
+}
+
+function farbton([rot, gruen, blau]) {
+  const [r, g, b] = [rot / 255, gruen / 255, blau / 255];
+  const hoch = Math.max(r, g, b);
+  const tief = Math.min(r, g, b);
+  const d = hoch - tief || 1;
+  let ton = hoch === r ? ((g - b) / d) % 6 : hoch === g ? (b - r) / d + 2 : (r - g) / d + 4;
+  ton *= 60;
+  return Math.round(ton < 0 ? ton + 360 : ton);
+}
+
+// Eine Kachel aus lauter Gras, mitten aus einer Karte von 30 x 30 Feldern.
+function grasKachel(salz) {
+  const g = 30;
+  return kachelZeichnen({ groesse: g, felder: new Array(g * g).fill(BODEN_GRAS) }, -KACHEL / 2, 100, 1, 22, 11, salz);
 }
 
 /**
  * Fuer den Browserlauf (darstellung AC-2): wie viele Toenungen das Gras hat,
  * wie verschieden zwei Startwerte es toenen, und ob am Ufer Sand liegt.
+ * Gelesen aus der Kachel, die das Spielbild zeichnet - je Block von zwoelf
+ * Bildpunkten die mittlere Farbe.
  */
 function bodenProbe() {
+  const a = bloecke(grasKachel(SALZ));
+  const b = bloecke(grasKachel(1234));
   const toene = new Set();
-  let verschieden = 0;
-  // Der Boden, wie ihn das Spielbild zeichnet (public/boden.js, darstellung AC-13).
-  for (let i = 0; i < 1000; i++) {
-    const x = (i % 40) * 1.7;
-    const y = Math.floor(i / 40) * 1.7;
-    const a = bodenAn(x, y, BODEN_GRAS, 4711);
-    const b = bodenAn(x, y, BODEN_GRAS, 1234);
-    toene.add(a.map((k) => Math.round(k) >> 3).join(','));
-    if (Math.abs(a[0] - b[0]) + Math.abs(a[1] - b[1]) + Math.abs(a[2] - b[2]) > 6) verschieden += 1;
+  let anders = 0;
+  let gezaehlt = 0;
+  for (let i = 0; i < a.length; i++) {
+    if (!a[i] || !b[i]) continue;
+    gezaehlt += 1;
+    toene.add(a[i].map((k) => Math.round(k) >> 3).join(','));
+    if (Math.abs(a[i][0] - b[i][0]) + Math.abs(a[i][1] - b[i][1]) + Math.abs(a[i][2] - b[i][2]) > 6) anders += 1;
   }
-  // Ein See aus einem Feld mitten im Gras, wie im Spiel gezeichnet.
-  const karte = { groesse: 3, felder: [0, 0, 0, 0, WASSER, 0, 0, 0, 0] };
-  const blatt = document.createElement('canvas');
-  blatt.width = 160;
-  blatt.height = 100;
-  const s = blatt.getContext('2d');
-  s.drawImage(wasserKachel(karte, 22), 80 - KACHEL / 2, 50 - KACHEL / 2);
-  const { data } = s.getImageData(0, 0, 160, 100);
-  let sand = 0;
-  for (let i = 0; i < data.length; i += 4) {
-    if (data[i + 3] > 200 && data[i] > 150 && data[i + 1] > 140 && data[i + 2] < 140) sand += 1;
+  // Ein See aus drei mal drei Feldern mitten im Gras, wie im Spiel gezeichnet,
+  // und dieselbe Karte ohne ihn. Ein einzelnes Wasserfeld taugt als Probe
+  // nicht mehr: das weiche Ufer reicht von jeder Seite ein halbes Feld hinein,
+  // und von dem Feld bleibt eine Pfuetze. `wasser` ist, was blau ist; `ufer`,
+  // was der See am Boden sonst veraendert hat - der Streifen zwischen Wasser
+  // und Gras.
+  const g = 9;
+  const see = new Array(g * g).fill(0).map((_, i) => (Math.abs((i % g) - 4) <= 1 && Math.abs(Math.floor(i / g) - 4) <= 1 ? WASSER : BODEN_GRAS));
+  const lesen = (felder) => {
+    const [, s] = blattMit(320, 200);
+    s.drawImage(bodenKachel({ groesse: g, felder }, 22), 160 - KACHEL / 2, 100 - KACHEL / 2);
+    return s.getImageData(0, 0, 320, 200).data;
+  };
+  const mit = lesen(see);
+  const ohne = lesen(new Array(g * g).fill(BODEN_GRAS));
+  let ufer = 0;
+  let wasser = 0;
+  for (let i = 0; i < mit.length; i += 4) {
+    if (mit[i + 3] <= 200) continue;
+    if (mit[i + 2] > mit[i] + 12 && mit[i + 2] >= mit[i + 1]) wasser += 1;
+    else if (Math.abs(mit[i] - ohne[i]) + Math.abs(mit[i + 1] - ohne[i + 1]) + Math.abs(mit[i + 2] - ohne[i + 2]) > 30) ufer += 1;
   }
   // Farbtoene (Grad) an einigen Stellen des Grases, fuer AC-13: erdig statt gruen.
+  const voll = a.filter(Boolean);
   const farbtoene = [];
-  for (let i = 0; i < 12; i++) {
-    const [r, g, b] = bodenAn(i * 3.7, i * 2.3, BODEN_GRAS, 4711).map((k) => k / 255);
-    const hoch = Math.max(r, g, b);
-    const tief = Math.min(r, g, b);
-    const d = hoch - tief;
-    let ton = hoch === r ? ((g - b) / d) % 6 : hoch === g ? (b - r) / d + 2 : (r - g) / d + 4;
-    ton *= 60;
-    farbtoene.push(Math.round(ton < 0 ? ton + 360 : ton));
-  }
-  return { toene: toene.size, verschieden: verschieden / 1000, sand, farbtoene };
+  for (let i = 0; i < 12; i++) farbtoene.push(farbton(voll[Math.floor((i + 0.5) * voll.length / 12)]));
+  // Ein Feld deckt bei e = 22 eine Raute von 44 mal 22 Bildpunkten: 484.
+  return { toene: toene.size, verschieden: anders / gezaehlt, ufer, wasser, seeflaeche: 9 * 484, farbtoene, bloecke: gezaehlt };
 }
 
 /**
  * Fuer den Browserlauf (darstellung AC-12): wie viele deutlich verschiedene
- * Farbtoene eine Zeichnung hat - Kanaele auf 16 Stufen gerundet, gezaehlt nur
+ * Farbtoene ein Bild hat - Kanaele auf 16 Stufen gerundet, gezaehlt nur
  * Toene mit mindestens einem Hundertstel der Flaeche. Flach gezeichnet ist das
  * etwa eine Stufe je Flaeche, schattiert ein Mehrfaches.
  */
 function tonstufen(welche, art) {
-  const g = 160;
-  const blatt = document.createElement('canvas');
-  blatt.width = g;
-  blatt.height = g;
-  const s = blatt.getContext('2d');
-  if (welche === 'figur') figurZeichnen(s, art, g / 2, g - 10, 130, '#4a90d9', {});
-  else if (welche === 'gebaeude') gebaeudeZeichnen(s, art, g / 2, g * 0.72, 22, '#4a90d9', 2);
-  else dingZeichnen(s, art, g / 2, g * 0.8, 50, 17, 1);
-  const { data } = s.getImageData(0, 0, g, g);
+  const g = 480;
+  const data = bildpunkte(g, (s) => {
+    if (welche === 'figur') figurBildZeichnen(s, art, g / 2, g - 60, 130, FARBEN[0], {});
+    else if (welche === 'gebaeude') gebaeudeMalen(s, { art, groesse: felderVon(art) }, g / 2, g * 0.72, 22, FARBEN[0]);
+    else dingBildZeichnen(s, art, g / 2, g * 0.8, 50, 17, 1);
+  });
   const zaehler = new Map();
   let pixel = 0;
   for (let i = 0; i < data.length; i += 4) {
@@ -396,40 +654,46 @@ function tonstufen(welche, art) {
 }
 
 /**
- * Fuer den Browserlauf (darstellung AC-13): wie comichaft eine Zeichnung ist.
- * `schwarz` ist der Anteil fast schwarzer Bildpunkte (kein Kanal ueber 50) -
- * das sind vor allem Umrisse; `saettigung` die mittlere Saettigung (HSL, 0..1).
- * Gezeichnet in Spielgroesse, gezaehlt nur deckende Punkte - der
- * Schlagschatten ist halb durchsichtig und zaehlt nicht.
+ * Fuer den Browserlauf (darstellung AC-13): wie comichaft ein Bild ist.
+ * `schwarz` ist der Anteil fast schwarzer Bildpunkte (kein Kanal ueber 50),
+ * `rand` derselbe Anteil nur am Rand der Gestalt - an den deckenden Punkten,
+ * die einen nicht deckenden Nachbarn haben. Ein gezeichneter Umriss ist
+ * genau dort schwarz; ein tiefer Schatten im Inneren eines offenen Schuppens
+ * ist es nicht. `saettigung` ist die mittlere Saettigung (HSL, 0..1).
+ * In Spielgroesse, gezaehlt nur deckende Punkte - der Schlagschatten ist
+ * halb durchsichtig und zaehlt nicht.
  */
-const GEBAEUDE_GROESSE = { dorfzentrum: 4, haus: 2, muehle: 2, holzfaellerlager: 2, bergbaulager: 2, kaserne: 3, farm: 3 };
-
 function anmutung(welche, art) {
-  const g = 260;
-  const blatt = document.createElement('canvas');
-  blatt.width = g;
-  blatt.height = g;
-  const s = blatt.getContext('2d');
-  if (welche === 'figur') figurZeichnen(s, art, g / 2, g - 20, 40, '#4a90d9', {});
-  else if (welche === 'ding') dingZeichnen(s, art, g / 2, g * 0.72, 22, 17, 1);
-  else gebaeudeZeichnen(s, art, g / 2, g * 0.72, 22, '#4a90d9', GEBAEUDE_GROESSE[art] ?? 2);
-  const { data } = s.getImageData(0, 0, g, g);
+  const g = 420;
+  const data = bildpunkte(g, (s) => {
+    if (welche === 'figur') figurBildZeichnen(s, art, g / 2, g - 60, 40, FARBEN[0], {});
+    else if (welche === 'ding') dingBildZeichnen(s, art, g / 2, g * 0.72, 22, 17, 1);
+    else gebaeudeBildZeichnen(s, art, g / 2, g * 0.72, 22, FARBEN[0], felderVon(art));
+  });
+  const deckt = (i) => i >= 0 && i < data.length && data[i + 3] >= 250;
   let pixel = 0;
   let schwarz = 0;
   let saettigung = 0;
+  let rand = 0;
+  let randSchwarz = 0;
   for (let i = 0; i < data.length; i += 4) {
-    if (data[i + 3] < 250) continue;
+    if (!deckt(i)) continue;
     const r = data[i] / 255;
     const gr = data[i + 1] / 255;
     const b = data[i + 2] / 255;
     pixel += 1;
     const hoch = Math.max(r, gr, b);
     const tief = Math.min(r, gr, b);
-    if (hoch * 255 <= 50) schwarz += 1;
+    const dunkel = hoch * 255 <= 50;
+    if (dunkel) schwarz += 1;
+    if (!deckt(i - 4) || !deckt(i + 4) || !deckt(i - g * 4) || !deckt(i + g * 4)) {
+      rand += 1;
+      if (dunkel) randSchwarz += 1;
+    }
     const l = (hoch + tief) / 2;
     if (hoch > tief) saettigung += (hoch - tief) / (1 - Math.abs(2 * l - 1));
   }
-  return { pixel, schwarz: schwarz / pixel, saettigung: saettigung / pixel };
+  return { pixel, schwarz: schwarz / pixel, rand: rand ? randSchwarz / rand : 0, saettigung: saettigung / pixel };
 }
 
 /** Hoehe der deckenden Bildpunkte (Alpha ueber 200) einer Zeichnung. */
@@ -445,30 +709,37 @@ function deckendeHoehe(daten, breite) {
   return unten >= oben ? unten - oben + 1 : 0;
 }
 
+// Haut im gerenderten Bild: warm und hell - Rot ueber Gruen ueber Blau, mit
+// Abstand. Leinen und Wolle sind unbunter, Leder und Haar dunkler.
+const istHaut = (r, g, b) => r > 130 && r - g >= 18 && g - b >= 10 && r - b <= 120;
+
 /**
- * Fuer den Browserlauf (darstellung AC-13, Proportionen): die Figur einmal mit
- * einem Hautton gezeichnet, den sonst nichts hat. `kopf` ist die Zahl der
- * Zeilen im oberen Drittel mit diesem Ton - das Gesicht; die Hand haengt
- * tiefer. `figur` die Hoehe der ganzen Figur.
+ * Fuer den Browserlauf (darstellung AC-13, Proportionen): `kopf` ist die
+ * Zahl der Zeilen im oberen Drittel, in denen das Gesicht zu sehen ist -
+ * mindestens `breit` Bildpunkte Haut nebeneinander; ein Lanzenschaft ist
+ * schmaler. `figur` ist die Hoehe der ganzen Figur.
+ *
+ * Bis zum Bildumbau wurde die Figur dafuer mit einem Hautton gezeichnet, den
+ * sonst nichts hat; ein gerendertes Bild laesst sich nicht umfaerben.
  */
-function proportionen(art) {
-  const g = 200;
-  const blatt = document.createElement('canvas');
-  blatt.width = g;
-  blatt.height = g;
-  const s = blatt.getContext('2d');
-  figurZeichnen(s, art, g / 2, g - 20, 150, '#4a90d9', { haut: '#ff00ff' });
-  const { data } = s.getImageData(0, 0, g, g);
+function proportionen(art, breit = 5) {
+  const g = 480;
+  const data = bildpunkte(g, (s) => figurBildZeichnen(s, art, g / 2, g - 80, 150, FARBEN[0], {}));
   const figur = deckendeHoehe(data, g);
   let oben = Infinity;
   for (let i = 3; i < data.length; i += 4) if (data[i] > 200) { oben = Math.floor((i - 3) / 4 / g); break; }
-  const zeilen = new Set();
-  for (let i = 0; i < data.length; i += 4) {
-    const zeile = Math.floor(i / 4 / g);
-    if (zeile > oben + figur / 3) break;
-    if (data[i + 3] > 200 && data[i] > 120 && data[i + 2] > 120 && data[i + 1] < 90) zeilen.add(zeile);
+  let kopf = 0;
+  for (let zeile = oben; zeile <= oben + figur / 3; zeile++) {
+    let lauf = 0;
+    let laengster = 0;
+    for (let x = 0; x < g; x++) {
+      const i = (zeile * g + x) * 4;
+      lauf = data[i + 3] > 200 && istHaut(data[i], data[i + 1], data[i + 2]) ? lauf + 1 : 0;
+      laengster = Math.max(laengster, lauf);
+    }
+    if (laengster >= breit) kopf += 1;
   }
-  return { figur, kopf: zeilen.size };
+  return { figur, kopf };
 }
 
 /**
@@ -477,55 +748,47 @@ function proportionen(art) {
  */
 function groessen() {
   const g = 300;
-  const zeichnen = (malen) => {
-    const blatt = document.createElement('canvas');
-    blatt.width = g;
-    blatt.height = g;
-    const s = blatt.getContext('2d');
-    malen(s);
-    return deckendeHoehe(s.getImageData(0, 0, g, g).data, g);
-  };
+  const zeichnen = (malen) => deckendeHoehe(bildpunkte(g, malen), g);
   return {
-    dorfbewohner: zeichnen((s) => figurZeichnen(s, 'dorfbewohner', g / 2, g - 20, figurHoeheBei(1), '#4a90d9', {})),
-    haus: zeichnen((s) => gebaeudeZeichnen(s, 'haus', g / 2, g * 0.7, 22, '#4a90d9', 2)),
+    dorfbewohner: zeichnen((s) => figurBildZeichnen(s, 'dorfbewohner', g / 2, g - 20, figurHoeheBei(1), FARBEN[0], {})),
+    haus: zeichnen((s) => gebaeudeBildZeichnen(s, 'haus', g / 2, g * 0.7, 22, FARBEN[0], 2)),
   };
 }
 
 /**
- * Fuer den Browserlauf (darstellung AC-9): wie viele Bildpunkte die grosse
- * Figur jeder Einheit links und rechts in das Gras der Nachbarzelle reicht.
- * Rechts malt die Nachbarzelle ihr Gras darueber, links liegt die Figur auf
- * fremdem Gras - die Spitze der Ramme war in Runde 129 abgeschnitten, der
- * Wurfarm des Mangonels ragte in Runde 130 hinaus, und beide Male fand es
- * erst das Auge (Rueckschau nach Runde 130). Der dunkle Spalt zwischen zwei
- * Zellen (je acht Punkte) darf sie fuellen; was ueber dem Gras steht (eine
- * Lanze), auch. Gezeichnet wird jede allein auf ein leeres Blatt, gezaehlt,
- * was deckt - der weiche Schatten nicht.
+ * Fuer den Browserlauf (darstellung AC-9): wie viele Bildpunkte jede Einheit
+ * links, rechts und oben aus dem Gras ihrer Zelle ragt - die grosse Figur
+ * und die in Spielgroesse zusammen. Die Spitze der Ramme war in Runde 129
+ * abgeschnitten, der Wurfarm des Mangonels ragte in Runde 130 hinaus, und
+ * beide Male fand es erst das Auge (Rueckschau nach Runde 130). Seit dem
+ * Bildumbau kommt die Breite der Zelle aus dem Bild selbst; gemessen wird
+ * trotzdem, auf einem leeren Blatt und gegen die Zelle, wie sie dasteht.
+ * Gezaehlt wird, was deckt - der weiche Schatten nicht.
  */
 function ueberstand() {
-  const b = spalte * 3;
-  const h = 260;
-  return EINTRAEGE.map((eintrag) => {
-    const blatt = document.createElement('canvas');
-    blatt.width = b;
-    blatt.height = h;
-    const s = blatt.getContext('2d');
-    figurZeichnen(s, eintrag.art, fussX(spalte, eintrag.art), 200, eintrag.gross ?? 120, '#4a90d9', { blick: 1, ...eintrag.lage });
-    const { data } = s.getImageData(0, 0, b, h);
-    let links = b;
+  const rand = 40;
+  const h = figurGras + 2 * rand;
+  return zellen.filter((z) => z.farbe === FARBEN[0]).map((z) => {
+    const [, s] = blattMit(BREITE, h);
+    const dy = rand - z.y;
+    figurMalen(s, z.eintrag, z.gross.x, z.gross.y + dy, ZOOM_NAH, z.farbe);
+    figurMalen(s, z.eintrag, z.klein.x, z.klein.y + dy, 1, z.farbe);
+    const { data } = s.getImageData(0, 0, BREITE, h);
+    let links = BREITE;
     let rechts = -1;
-    // Der Fuss steht 150 unter der Oberkante des Grases, also bei 200 auf
-    // 50; das Gras ist 200 hoch.
-    for (let y = 50; y < h; y++) {
-      for (let x = 0; x < b; x++) {
-        if (data[(y * b + x) * 4 + 3] <= 128) continue;
+    let oben = h;
+    for (let y = 0; y < h; y++) {
+      for (let x = 0; x < BREITE; x++) {
+        if (data[(y * BREITE + x) * 4 + 3] <= DECKT) continue;
         if (x < links) links = x;
         if (x > rechts) rechts = x;
+        if (y < oben) oben = y;
       }
     }
-    // Das Gras der Zelle reicht von spalte + 8 bis 2 * spalte - 8, das der
-    // Nachbarn bis spalte - 8 und ab 2 * spalte + 8.
-    return { art: eintrag.art, links: Math.max(0, spalte - 8 - links), rechts: Math.max(0, rechts - (2 * spalte + 7)) };
+    return {
+      art: z.art, titel: z.titel,
+      links: Math.max(0, z.x - links), rechts: Math.max(0, rechts - (z.x + z.breite - 1)), oben: Math.max(0, rand - oben),
+    };
   });
 }
 
@@ -537,13 +800,11 @@ function ueberstand() {
  * an den Feldgrenzen.
  */
 function bodenRaster() {
-  const g = 30;
-  const karte = { groesse: g, felder: new Array(g * g).fill(0) };
   const hb = 22;
   const hh = 11;
   const x0 = -KACHEL / 2;
   const y0 = 100;
-  const kachel = kachelZeichnen(karte, x0, y0, 1, hb, hh, 4711);
+  const kachel = grasKachel(SALZ);
   const { data } = kachel.getContext('2d').getImageData(0, 0, KACHEL, KACHEL);
   const feld = (i, j) => {
     const px = x0 + i + 0.5;
@@ -572,33 +833,39 @@ function bodenRaster() {
 
 /**
  * Fuer den Browserlauf (darstellung AC-13, Schlagschatten): halb durchsichtige
- * dunkle Bildpunkte rechts und links neben einer Zeichnung. Licht von links
- * oben heisst: der Schatten liegt rechts.
+ * dunkle Bildpunkte **neben der Grundflaeche**, rechts und links der Mitte.
+ * Licht von links oben heisst: der Schatten liegt rechts.
+ *
+ * Bis zum Bildumbau galt als "neben der Grundflaeche", was rechts der rechten
+ * Ecke der Raute lag. Der gezeichnete Schatten war ein Streifen, der dort
+ * begann; der gerenderte faellt, wie die Sonne steht - nach rechts unten -,
+ * und bei einem niedrigen Bau auf drei Feldern (Stall, Schmiede) erreicht er
+ * die Ecke nicht: er liegt vor der rechten unteren Kante. Jenseits der Ecke
+ * lagen beim Stall 2 Bildpunkte. Gezaehlt wird deshalb, was ausserhalb der
+ * Raute liegt.
  */
 function schlagschatten(welche, art) {
-  const g = 300;
-  const blatt = document.createElement('canvas');
-  blatt.width = g;
-  blatt.height = g;
-  const s = blatt.getContext('2d');
+  const g = 480;
   const e = 22;
-  let halb;
-  if (welche === 'ding') {
-    dingZeichnen(s, art, g / 2, g * 0.6, e, 17, 1);
-    halb = e;
-  } else {
-    gebaeudeZeichnen(s, art, g / 2, g * 0.6, e, '#4a90d9', GEBAEUDE_GROESSE[art] ?? 2);
-    halb = (GEBAEUDE_GROESSE[art] ?? 2) * e;
-  }
-  const { data } = s.getImageData(0, 0, g, g);
+  const felder = welche === 'ding' ? 1 : felderVon(art);
+  const mitteY = g * 0.6;
+  const data = bildpunkte(g, (s) => {
+    if (welche === 'ding') dingBildZeichnen(s, art, g / 2, mitteY, e, 17, 1);
+    else gebaeudeMalen(s, { art, groesse: felder }, g / 2, mitteY, e, FARBEN[0]);
+  });
   let rechts = 0;
   let links = 0;
   for (let i = 0; i < data.length; i += 4) {
     const a = data[i + 3];
     if (a < 20 || a > 200 || Math.max(data[i], data[i + 1], data[i + 2]) > 90) continue;
-    const x = (i / 4) % g;
-    if (x > g / 2 + halb) rechts += 1;
-    else if (x < g / 2 - halb) links += 1;
+    const dx = ((i / 4) % g) + 0.5 - g / 2;
+    const dy = Math.floor(i / 4 / g) + 0.5 - mitteY;
+    if (Math.abs(dx) / (felder * e) + Math.abs(dy) / (felder * e * 0.5) <= 1) continue;
+    // Der geglaettete Rand einer dunklen Krone ist auch halb durchsichtig und
+    // dunkel - aber kein Schatten: wer an die Gestalt grenzt, zaehlt nicht.
+    if ([i - 4, i + 4, i - g * 4, i + g * 4].some((n) => data[n + 3] > 200)) continue;
+    if (dx > 0) rechts += 1;
+    else links += 1;
   }
   return { rechts, links };
 }
@@ -607,27 +874,16 @@ function schlagschatten(welche, art) {
  * Fuer den Browserlauf (darstellung AC-14): wie verschieden je zwei Einheiten
  * oder je zwei Gebaeude sind - Anteil der gemeinsamen Flaeche, die sich im
  * Umriss oder deutlich in der Farbe (Summe der Kanaele ueber 90) unterscheidet.
- * Alle in Blau und gleich gross gezeichnet, damit nur die Gestalt zaehlt.
+ * Alle in Blau und im selben Massstab, damit nur die Gestalt zaehlt; die
+ * Einheiten auf einem Blatt, auf dem auch Ramme und Karren ganz stehen.
  */
 function unterschiede(welche, lage = {}) {
   const arten = welche === 'figur' ? Object.keys(FIGUREN) : Object.keys(GEBAEUDE);
-  const masken = arten.map((art) => [art, welche === 'figur' ? maske(art, FARBEN[0], lage) : gebaeudeMaske(art, FARBEN[0])]);
+  const masken = arten.map((art) => [art, welche === 'figur' ? maske(art, FARBEN[0], { blatt: 360, ...lage }) : gebaeudeMaske(art, FARBEN[0])]);
   const paare = [];
   for (let i = 0; i < masken.length; i++) {
     for (let j = i + 1; j < masken.length; j++) {
-      const a = masken[i][1];
-      const b = masken[j][1];
-      let anders = 0;
-      let flaeche = 0;
-      for (let k = 0; k < a.belegt.length; k++) {
-        if (!a.belegt[k] && !b.belegt[k]) continue;
-        flaeche += 1;
-        if (a.belegt[k] !== b.belegt[k]) { anders += 1; continue; }
-        const [r1, g1, b1] = a.farben[k];
-        const [r2, g2, b2] = b.farben[k];
-        if (Math.abs(r1 - r2) + Math.abs(g1 - g2) + Math.abs(b1 - b2) > 90) anders += 1;
-      }
-      paare.push({ paar: `${masken[i][0]} gegen ${masken[j][0]}`, anteil: Math.round((anders / flaeche) * 1000) / 1000 });
+      paare.push({ paar: `${masken[i][0]} gegen ${masken[j][0]}`, anteil: verschieden(masken[i][1], masken[j][1]) });
     }
   }
   return paare.sort((x, y) => x.anteil - y.anteil);
@@ -656,8 +912,16 @@ function umrissUnterschied(eine, andere, hoehe = figurHoeheBei(1)) {
   return Math.round((anders / flaeche) * 1000) / 1000;
 }
 
+// Was nicht aus der Kette kommt, sondern noch gezeichnet wird (darstellung AC-24).
+const TAFEL_ZU = { [WALD]: 'baum', [BEERE]: 'beere', [GOLD]: 'gold', [STEIN]: 'stein' };
+const gezeichnet = [
+  ...Object.keys(FIGUREN), ...Object.keys(GEBAEUDE), ...Object.values(TAFEL_ZU), 'boden',
+  ...[1, 2, 3, 4].map((n) => `baustelle-${n}`),
+].filter((art) => !gerendert(art));
+
+const blank = ({ eintrag, ...rest }) => rest;
 window.schautafel = {
-  zellen, maske, dingMaske, bodenProbe, arten: Object.keys(FIGUREN), dinge: { WALD, BEERE, GOLD, STEIN },
-  gebaeudeZellen, gebaeudeMaske, gebaeudeArten: Object.keys(GEBAEUDE), tonstufen, anmutung, proportionen, groessen, ueberstand, bodenRaster, schlagschatten, unterschiede,
-  umrissUnterschied, spielhoehe: figurHoeheBei(1), gelaendeOben,
+  zellen: zellen.map(blank), maske, dingMaske, dingUnterschiede, bodenProbe, arten: Object.keys(FIGUREN), dinge: { WALD, BEERE, GOLD, STEIN },
+  gebaeudeZellen: gebaeudeZellen.map(blank), gebaeudeMaske, gebaeudeArten: Object.keys(GEBAEUDE), tonstufen, anmutung, proportionen, groessen, ueberstand, bodenRaster, schlagschatten, unterschiede,
+  umrissUnterschied, spielerfarbe, spielhoehe: figurHoeheBei(1), gelaendeOben, gelaendeHoehe, gebaeudeOben, hoehe: HOEHE, gezeichnet,
 };

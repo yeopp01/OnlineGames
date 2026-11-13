@@ -60,6 +60,16 @@ export function figurHoeheBei(zoom) {
   return Math.max(12, HALB_B * FIGUR_HOEHE * zoom);
 }
 
+/** Dasselbe fuer ein Tier: es ist niedriger als ein Mensch. */
+export function tierHoeheBei(zoom) {
+  return Math.max(9, HALB_B * 0.9 * zoom);
+}
+
+// Wie weit das Rad heraus- und heranholt. Naeher als ZOOM_NAH steht im Spiel
+// nichts im Bild - so gross zeigt die Schautafel jedes Stueck.
+export const ZOOM_FERN = 0.4;
+export const ZOOM_NAH = 2.5;
+
 // Schrittphase fuer die Beine: laeuft mit der Uhr, je Einheit versetzt, damit
 // eine Gruppe nicht im Gleichschritt marschiert.
 
@@ -1046,7 +1056,7 @@ export class Ansicht {
       const ix = e.offsetX / this.kamera.zoom + this.kamera.x;
       const iy = e.offsetY / this.kamera.zoom + this.kamera.y;
       const faktor = e.deltaY < 0 ? 1.15 : 1 / 1.15;
-      this.kamera.zoom = Math.min(2.5, Math.max(0.4, this.kamera.zoom * faktor));
+      this.kamera.zoom = Math.min(ZOOM_NAH, Math.max(ZOOM_FERN, this.kamera.zoom * faktor));
       this.kamera.x = ix - e.offsetX / this.kamera.zoom;
       this.kamera.y = iy - e.offsetY / this.kamera.zoom;
     }, { passive: false });
@@ -2237,7 +2247,7 @@ export class Ansicht {
       } else if (ding.art === 'tier') {
         const spieler = this.spieler.get(ding.tier.b);
         if (this.ausgewaehlt.has(ding.tier.i)) {
-          const r = Math.max(9, HALB_B * 0.9 * zoom);
+          const r = tierHoeheBei(zoom);
           stift.strokeStyle = '#ffffff';
           stift.lineWidth = 2;
           stift.beginPath();
@@ -2248,7 +2258,7 @@ export class Ansicht {
         // letzten Schritt kommt nichts mehr, und es liefe sonst auf der Stelle.
         const laeuft = ding.tier.vx !== undefined && (ding.tier.vx !== ding.tier.x || ding.tier.vy !== ding.tier.y)
           && jetzt - ding.tier.seit < this.taktdauer * 2;
-        figurBildZeichnen(stift, ding.tier.art, p.x, p.y, Math.max(9, HALB_B * 0.9 * zoom), spieler ? spieler.farbe : '#888888', {
+        figurBildZeichnen(stift, ding.tier.art, p.x, p.y, tierHoeheBei(zoom), spieler ? spieler.farbe : '#888888', {
           blick: ding.tier.i % 2 ? 1 : -1,
           richtung: ding.tier.richtung,
           // Geschlachtet: ein Kadaver, der mit der Nahrung kleiner wird (einheiten AC-17).

@@ -21,9 +21,10 @@ WAND = 1.0
 FIRST = 0.8
 
 
-def _stand(s, waren, ort, zufall, breit=0.9, tief=0.62, winkel=0.0):
+def _stand(s, waren, ort, zufall, breit=0.9, tief=0.62, winkel=0.0, plane='tuch'):
     """Ein Marktstand: vier Pfosten, ein Tisch, darueber die gestreifte Plane,
-    die nach vorn abfaellt. Vorn ist -Y des Rahmens."""
+    die nach vorn abfaellt. Vorn ist -Y des Rahmens. `plane` ist der Stoff der
+    farbigen Streifen."""
     r = rahmen((ort[0], ort[1], 0), winkel)
     for sx in (-1, 1):
         quader('standpfosten', (0.045, 0.045, 0.82), s['hellholz'], ort=(sx * breit / 2, -tief / 2, 0.41), eltern=r)
@@ -35,7 +36,7 @@ def _stand(s, waren, ort, zufall, breit=0.9, tief=0.62, winkel=0.0):
     for i in range(streifen):
         x0 = -weit / 2 + i * weit / streifen
         x1 = x0 + weit / streifen
-        stoff = s['tuch'] if i % 2 == 0 else s['kalk']
+        stoff = s[plane] if i % 2 == 0 else s['kalk']
         vorn, hinten = -tief / 2 - 0.2, tief / 2 + 0.06
         netz('plane', [(x0, vorn, 0.76), (x1, vorn, 0.76), (x1, hinten, 1.1), (x0, hinten, 1.1)], [(0, 1, 2, 3)], stoff,
              dicke=0.012, eltern=r)
@@ -95,10 +96,13 @@ def bauen():
     for i in range(5):
         sack((hx + 0.85 + (i % 3) * 0.2, hy + 0.3 - (i // 3) * 0.2, BODEN), s, gross=1.05)
 
-    # Die drei Staende auf dem Platz.
-    _stand(s, (rot, gruen, gelb), (-1.15, -0.25), zufall)
+    # Die drei Staende auf dem Platz. Nur der mittlere traegt die Farbe des
+    # Besitzers, die aeusseren ungefaerbtes Leinen: mit drei farbigen Planen
+    # trug der Markt die Spielerfarbe auf 18 % seiner Flaeche - eine Flaeche,
+    # kein Akzent (darstellung AC-4: unter einem Zehntel).
+    _stand(s, (rot, gruen, gelb), (-1.15, -0.25), zufall, plane='leinen')
     _stand(s, (braun, rot, gruen), (0.1, -0.75), zufall, winkel=0.12)
-    _stand(s, (gelb, braun), (1.2, -0.1), zufall, breit=0.8, winkel=-0.1)
+    _stand(s, (gelb, braun), (1.2, -0.1), zufall, breit=0.8, winkel=-0.1, plane='leinen')
     wimpel((-1.15 - 0.45, -0.25 + 0.31, 1.08), 0.3, s)
     wimpel((1.2 + 0.4, -0.1 + 0.27, 1.08), 0.3, s)
 

@@ -2,7 +2,7 @@
 
 **Bereich:** Strategie
 **Kuerzel:** darstellung
-**Stand:** 20/25 fertig · 1 in Arbeit · 4 offen
+**Stand:** 19/25 fertig · 1 in Arbeit · 1 in QA · 4 offen
 
 ## Zweck
 
@@ -37,7 +37,15 @@ fremder Quelle.
   Startwert, weiche Kanten zu Wasser. Wasser ist als Wasser erkennbar.
 - **AC-3** `fertig` **Bäume, Sträucher, Felsen** — Ein Baum hat Stamm und Krone, ein
   Beerenstrauch rote Punkte, Gold glänzt gelb, Stein ist grau und kantig.
-  Leert sich ein Vorrat, wird er sichtbar kleiner.
+  Leert sich ein Vorrat, wird er sichtbar kleiner. **Gemessen seit dem
+  Bildumbau am Farbton** statt am Farbwert (ein gerendertes Bild hat Licht
+  und Schatten): Wald 86 % grün, Stein 100 % grau, Beere 74 % grün und
+  11,6 % rot, Gold 79 % Ocker bis Gelb, davon 5,7 % helles Gold — und 20 %
+  grauer Fels, wie AC-23 es will („ohne gelb zu leuchten"). Die alte Grenze
+  „im Gold höchstens 2 % Grau" beschrieb den gezeichneten Goldhaufen; an
+  ihrer Stelle steht: der Stein trägt keinen Goldton, helles Gold hat nur das
+  Gold, und je zwei Vorräte unterscheiden sich nach dem Maß aus AC-14 auf
+  mindestens einem Drittel der Fläche (Gold gegen Stein 0,70).
 
 ### Gebäude und Einheiten (Stufe A)
 
@@ -46,9 +54,16 @@ fremder Quelle.
   Dachkante), nicht als ganze Fläche.
 - **AC-5** `fertig` **Baustelle sichtbar** — Eine Baustelle zeigt Gerüst und Fundament und
   wächst mit dem Fortschritt.
-- **AC-6** `fertig` **Einheiten sind Figuren** — Dorfbewohner, Miliz und Späherreiter sind an der
+- **AC-6** `in-qa` **Einheiten sind Figuren** — Dorfbewohner, Miliz und Späherreiter sind an der
   Gestalt zu unterscheiden (Werkzeug, Schwert und Schild, Pferd), mit
-  Spielerfarbe am Körper. Ein Dorfbewohner zeigt, was er trägt.
+  Spielerfarbe am Körper. Ein Dorfbewohner zeigt, was er trägt. **Seit dem
+  Bildumbau nicht mehr ganz belegt** (2026-11-13): gerendert decken sich
+  Dorfbewohner und Miliz zu 0,793, die Grenze ist 0,75 — beide stehen auf
+  demselben Körper, Schwert und Schild liegen vor dem Rumpf. Alles andere
+  hält (gegen den Späherreiter 0,287 und 0,295; Spielerfarbe 0,155 bis
+  0,207; mit Holz 0,74, mit Nahrung 0,77). Der Test zu dem einen Paar steht
+  als erwartet rot; die Abhilfe ist am Modell, zusammen mit
+  [Bedienung](bedienung.md) AC-36.
 - **AC-7** `fertig` **Vorn verdeckt hinten** — Was weiter unten im Bild steht, wird später
   gezeichnet. Eine Einheit hinter einem Haus ist verdeckt; eine ausgewählte
   bleibt als Umriss erkennbar.
@@ -82,11 +97,19 @@ fremder Quelle.
   eine Oberfläche (Holzmaserung, Dachziegel oder Stroh, Wolle, Blattwerk,
   Steinfugen) und Konturen, die nicht überall gleich dick sind. Das Gras hat
   Büschel statt nur Tönung. Geprüft bei Zoom 1 im Spielbild und auf der
-  Schautafel, mit einem Vorher-Nachher-Bild.
+  Schautafel, mit einem Vorher-Nachher-Bild. **Seit dem Bildumbau** ist
+  nichts mehr gezeichnet: Licht, Schatten und Oberfläche kommen aus dem
+  Rendern, Konturen gibt es keine. Gemessen bleiben die Tonstufen, an den
+  gerenderten Bildern: Figuren 18 bis 37, Gebäude 17 bis 32, Vorräte 17 bis
+  25 (Schwellen unverändert 20, 19 und 12 für die geprüften Stücke).
 - **AC-13** `fertig` **Naturalistisch statt Comic** — Wunsch des Benutzers (Runde 35),
   mit einem Bild des Originals als Maßstab für die Anmutung, nicht als Vorlage
   zum Abzeichnen. Messbar: (1) keine schwarzen Umrisse — in keiner Figur und
-  keinem Gebäude mehr als 3 % fast schwarze Bildpunkte; (2) gedämpfte,
+  keinem Gebäude ist mehr als ein Viertel des **Randes der Gestalt** fast
+  schwarz (bis zum Bildumbau: höchstens 3 % aller Bildpunkte; das traf an
+  einer Zeichnung den Umriss, an einem gerenderten Bild die tiefen Schatten
+  — die offene Werkstatt hat 12,7 %, und keinen Umriss. Am Rand gemessen: 0
+  bis 9 %, ein gezeichneter Umriss läge bei 100 %); (2) gedämpfte,
   erdige Farben — Gebäude und Vorräte im Mittel weniger gesättigt als vor
   A6c, der Boden im Farbton zwischen Braun und Oliv (25° bis 100°) statt
   Grün; die Spielerfarbe bleibt kräftig, damit man Besitz erkennt. (Bis Runde
@@ -94,10 +117,16 @@ fremder Quelle.
   maß das Falsche: erdiges Oliv hat in HSL mehr Sättigung als das frühere
   graublaue Grün, 0,32 gegen 0,25, sieht aber natürlicher aus.);
   (3) Proportionen statt Kindchenschema — der Kopf höchstens ein Sechstel der
-  Figur, ein Dorfbewohner bei Zoom 1 höchstens halb so hoch wie ein Haus;
+  Figur, ein Dorfbewohner bei Zoom 1 höchstens halb so hoch wie ein Haus
+  (gerendert: Gesicht 20 von 166 Zeilen, Dorfbewohner 32 und Haus 87
+  Bildpunkte; das Gesicht wird an der Hautfarbe erkannt, eine Zeichnung ließ
+  sich dafür umfärben);
   (4) der Boden zeigt kein Rautenraster, sondern Gras, Erde und Flecken, die
   über Feldgrenzen hinweglaufen; (5) Gebäude und Bäume werfen Schlagschatten
-  in eine Richtung. Vorher-Nachher-Bild bei Zoom 1.
+  in eine Richtung (gezählt neben der Grundfläche, seit dem Bildumbau
+  außerhalb der Raute statt jenseits ihrer rechten Ecke: der gerenderte
+  Schatten eines niedrigen Baus erreicht die Ecke nicht). Vorher-Nachher-Bild
+  bei Zoom 1.
 - **AC-14** `fertig` **Alles auf einen Blick unterscheidbar** — Wunsch des Benutzers
   (Runde 35). Je zwei Einheiten und je zwei Gebäude unterscheiden sich auf der
   Schautafel in mindestens einem Drittel ihrer Fläche (Umriss oder Farbe); bei
@@ -186,9 +215,12 @@ nicht so kindlich gemalt". Die Bauabfolge R1 bis R6 steht im
   Bilder die Vorgabe** (Benutzer: „die Optik ist schon wichtig"); `?bilder=0`
   zeigt das gezeichnete Aussehen, solange es die Fassungen noch gibt. Bis
   die Tafeln da sind, steht „Bilder werden geladen …" im Bild; fehlt eine
-  Tafel, wird nur dieses Stück gezeichnet. **Offen:** die gezeichneten
-  Fassungen stehen noch im Code, und was der Browser an Speicher für alle
-  Tafeln hält, ist nicht gemessen.
+  Tafel, wird nur dieses Stück gezeichnet. **Seit 2026-11-13 zeigt und
+  misst auch die Schautafel die gerenderten Bilder** — über dieselben
+  Funktionen wie das Spielbild, alle in einem Maßstab. **Offen:** die
+  gezeichneten Fassungen stehen noch im Code (entfernt werden sie auf das
+  Wort des Benutzers), AC-19 bis AC-21 sind nicht belegt, und was der
+  Browser an Speicher für alle Tafeln hält, ist nicht gemessen.
 - **AC-25** `fertig` **Bilder nur einmal übertragen** — Jede Datei des
   Spiels trägt eine Marke aus ihrem Inhalt (`ETag`), und der Browser fragt
   bei jedem Aufruf nach (`Cache-Control: no-cache`): was er schon hat,
@@ -201,11 +233,20 @@ nicht so kindlich gemalt". Die Bauabfolge R1 bis R6 steht im
 Messungen 1 und 3 aus AC-13 beschreiben eine Zeichnung. Sie bleiben `fertig`,
 bis AC-22 bis AC-24 gebaut sind; die Runde, die den Nachfolger baut, passt
 Text, Test und Bild an. AC-14 (unterscheidbar) und AC-16 (Spielgröße) gelten
-für gerenderte Bilder unverändert. **Stand 2026-11-12:** im Spielbild ist
-alles gerendert, und jeder Bildnachweis aus dem Spielbild zeigt es so. Die
-Schautafel (`/schautafel.html`) und die Messungen, die an ihr hängen (AC-12
-bis AC-14, die Figuren- und Gebäudereihen), zeigen noch die gezeichneten
-Fassungen — sie umzustellen ist der Schritt, der AC-24 schließt.
+für gerenderte Bilder unverändert. **Stand 2026-11-13:** im Spielbild ist
+alles gerendert, und die Schautafel (`/schautafel.html`) zeigt und misst
+dieselben Bilder. Dabei ist jede Messung, die an ihr hängt, neu gelesen
+worden. **Angepasst, weil sie eine Zeichnung beschrieb:** AC-13 (1) am Rand
+der Gestalt statt über alle Bildpunkte, AC-13 (3) über die Hautfarbe, AC-13
+(5) und [Bauen](bauen.md) AC-20 in der Geometrie (Raute statt Ecke, Höhe in
+eigenen Feldern), AC-3 am Farbton, AC-2 an einem See aus neun Feldern, die
+Spielerfarbe als das, was sich mit dem Spieler ändert. **Am Bild
+nachgebessert** (neu gerendert): die Schmiede trug die Spielerfarbe nur am
+Wimpel (jetzt ein Banner im Hof), der Markt auf 18 % seiner Fläche (jetzt
+nur der mittlere Stand, 7,7 %), der Wachturm auf 10,0 % (jetzt 8,7 %).
+**Nicht bestanden und so geführt:** AC-6 (Dorfbewohner gegen Miliz) und
+[Bedienung](bedienung.md) AC-36 (Umriss der Fußtruppen bei Zoom 1) stehen
+auf `in-qa`, bis die Modelle Schild und Waffe neben dem Körper tragen.
 
 ## Grenzfaelle
 

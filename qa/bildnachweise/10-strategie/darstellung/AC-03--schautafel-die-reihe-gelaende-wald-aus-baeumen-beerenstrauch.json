@@ -1,7 +1,7 @@
 {
   "spec": "10-strategie/darstellung.md",
   "ac": "AC-3",
-  "titel": "Schautafel unten: Wald aus Baeumen, Beerenstrauch mit roten Beeren, Goldhaufen, Steinbrocken - voll, fast leer, in Spielgroesse",
+  "titel": "Schautafel, die Reihe Gelaende: Wald aus Baeumen, Beerenstrauch mit roten Beeren, Gold im Fels, Steinbrocken, Wasser am Ufer - voll, fast leer, in Spielgroesse",
   "datei": "e2e/tests/strategie-figuren.spec.mjs",
   "pfad": [
     "darstellung AC-3: Baum, Beerenstrauch, Gold und Stein an der Farbe erkennbar, leer werdend kleiner"

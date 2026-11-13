@@ -567,6 +567,44 @@ die Zeilen unter „Für die Erkenntnisse" dorthin und erzeugt das Board neu
     Wegwerfbild (`{ anna, bert, welt, bild }`), `bild('name')` schreibt ein
     Bild. Damit ließ sich jede der Änderungen ansehen, bevor ein Test
     geschrieben war.
+- **Die Schautafel zeigt und misst die gerenderten Bilder (2026-11-13).**
+  `public/schautafel.js` ist neu geschrieben und zeichnet über dieselben
+  Funktionen wie das Spielbild (`figurBildZeichnen`, `gebaeudeBildZeichnen`
+  samt Schattenschicht, `dingBildZeichnen`, `kachelZeichnen`).
+  - **Ein Maßstab für alle.** Die gezeichneten Figuren hatten je Zelle einen
+    eigenen (`gross`, `FUSS_VERSATZ`); die gerenderten tragen ihren echten —
+    Ramme, Karren und Ritter sind mehrfach so breit wie ein Mensch. Die
+    Breite einer Zelle kommt deshalb aus dem gemessenen Bild (`rahmen`,
+    `anordnen`), jede Einheit steht groß (wie das Rad sie heranholt,
+    `ZOOM_NAH`) und daneben bei Zoom 1.
+  - **Was an der Messung hing, nicht am Bild** — und deshalb umgestellt ist:
+    die Spielerfarbe wurde „nahe am reinen Ton" gezählt (gerendert 0 bis
+    0,5 %, weil das Tuch Falten hat; jetzt: was sich mit dem Spieler ändert,
+    11,5 bis 24 %); die Farbfamilien der Vorräte am Farbwert (Wald 41 % grün;
+    am Farbton 86 %); „fast schwarz" über alle Bildpunkte (verbietet
+    Schatten; jetzt am Rand der Gestalt, 0 bis 9 %); der Schlagschatten
+    jenseits der rechten Ecke der Raute (Stall 2 Bildpunkte; außerhalb der
+    Raute 550 gegen 3); die Höhe eines Gebäudes in Feldern von 20
+    Bildpunkten, auch wenn es verkleinert gezeichnet ist; das Ufer an einem
+    einzelnen Wasserfeld (davon lässt das weiche Ufer eine Pfütze).
+  - **Was am Bild hing** — und neu gerendert ist: Schmiede (Banner stand
+    hinter der Esse, 5 Bildpunkte Farbe → Bannermast im Hof, 55), Markt
+    (drei farbige Planen, 18 % → nur der mittlere Stand, 7,7 %), Wachturm
+    (10,0 % → 8,7 %). Je unter einer Minute.
+  - **Was am Bild hängt und offen bleibt:** die Fußtruppen stehen auf dem
+    Körper des Dorfbewohners. Bei 29 Bildpunkten unterscheiden sie sich im
+    Umriss auf 0,19 bis 0,30 statt einem Drittel (bedienung AC-36), und
+    Dorfbewohner und Miliz decken sich zu 0,793 statt unter 0,75
+    (darstellung AC-6). Beide Kriterien stehen auf `in-qa`, beide Tests als
+    erwartet rot (`test.fail`). Abhilfe: Schild und Waffe **neben** den
+    Körper — am Modell, sieben Einheiten, je 10 bis 14 Minuten Rendern.
+  - **Ein Irrtum, den die Messung berichtigt hat:** nach Augenschein war das
+    Gold „vom Stein kaum zu unterscheiden". Gemessen unterscheiden sich die
+    zwei auf 70 % der Fläche — das Gold ist ockerbrauner Fels, der Stein
+    grau. Erst messen, dann neu rendern.
+  - **Eine Falle:** der geglättete Rand einer dunklen Baumkrone ist halb
+    durchsichtig und dunkel wie ein Schatten. Als Schatten zählt nur, was
+    nicht an die Gestalt grenzt.
 - **Der ADR heißt jetzt 0016** (umbenannt am 2026-11-10, vorher 0014): auf
   `strategie` sind die Nummern 0014 (Häuser statt Völker) und 0015
   (Statthalter) inzwischen vergeben. Beim Einbinden bleibt nur

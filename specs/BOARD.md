@@ -7,7 +7,7 @@ Eine Zeile je Abnahmekriterium. Gepflegt wird der Status in der Spec selbst,
 hier steht er zusammengefasst. Erzeugt mit `npm run specs:board`; als Seite
 mit Bildnachweisen, Filter und Suche mit `npm run qa:report`.
 
-**Gesamt:** 511/632 fertig · 3 in Arbeit · 11 in QA · 3 geplant · 96 offen · 8 zurueckgestellt
+**Gesamt:** 509/632 fertig · 3 in Arbeit · 13 in QA · 3 geplant · 96 offen · 8 zurueckgestellt
 
 **Nachweise:** 246 Kriterien mit Bild · 270 ohne Bild, begruendet in `qa/ohne-bild.json`
 
@@ -22,8 +22,8 @@ mit Bildnachweisen, Filter und Suche mit `npm run qa:report`.
 | [Spielauswahl und Einstellungen](00-plattform/spielauswahl.md) | -         | -     | -       | 5     | -               | 19     |
 | [Uebertragung](00-plattform/uebertragung.md)                   | -         | -     | 1       | 1     | -               | 8      |
 | [Bauen und Ausbilden](10-strategie/bauen.md)                   | -         | -     | -       | 2     | -               | 34     |
-| [Bedienung](10-strategie/bedienung.md)                         | -         | -     | -       | 3     | -               | 59     |
-| [Darstellung](10-strategie/darstellung.md)                     | 1         | -     | -       | 4     | -               | 20     |
+| [Bedienung](10-strategie/bedienung.md)                         | -         | 1     | -       | 3     | -               | 58     |
+| [Darstellung](10-strategie/darstellung.md)                     | 1         | 1     | -       | 4     | -               | 19     |
 | [Einheiten und Befehle](10-strategie/einheiten-und-befehle.md) | -         | -     | -       | 17    | 1               | 32     |
 | [Fahrplan zum Klon](10-strategie/fahrplan.md)                  | -         | 2     | -       | 4     | -               | 18     |
 | [Kampf](10-strategie/kampf.md)                                 | -         | -     | -       | 2     | 1               | 20     |
@@ -51,12 +51,14 @@ mit Bildnachweisen, Filter und Suche mit `npm run qa:report`.
 - **Zeitalter gliedern die Partie** — [Spielziel und Partieverlauf](10-strategie/spielziel.md) AC-1
 - **Zahlen sind abrufbar** — [Betrieb](20-betrieb/betrieb.md) AC-8
 
-## In QA (11)
+## In QA (13)
 
 - **Einladungscodes erzeugen und zuruecknehmen** — [Konten und Anmeldung](00-plattform/konten.md) AC-20
 - **Verwaister Raum wird geschlossen** — [Raeume und Partien](00-plattform/raeume.md) AC-12
 - **Leerlauf endet nach 30 Minuten** — [Raeume und Partien](00-plattform/raeume.md) AC-13
 - **Nachrichtenflut trennt die Verbindung** — [Schutz vor Fremdnutzung](00-plattform/schutz.md) AC-7
+- **Militär bei Spielgröße erkennbar** — [Bedienung](10-strategie/bedienung.md) AC-36
+- **Einheiten sind Figuren** — [Darstellung](10-strategie/darstellung.md) AC-6
 - **Läuft auf dem VPS** — [Fahrplan zum Klon](10-strategie/fahrplan.md) AC-21
 - **Aktualisieren ist ein Befehl** — [Fahrplan zum Klon](10-strategie/fahrplan.md) AC-22
 - **Alle Namen sind erfunden** — [Kader und Spieler](15-manager/kader.md) AC-7

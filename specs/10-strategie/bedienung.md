@@ -2,7 +2,7 @@
 
 **Bereich:** Strategie
 **Kuerzel:** bedienung
-**Stand:** 59/62 fertig · 3 offen
+**Stand:** 58/62 fertig · 1 in QA · 3 offen
 
 ## Zweck
 
@@ -206,7 +206,7 @@ Reihenfolge:
   die Werte schon schickt. Zu prüfen am Bild und an den Zahlen, die
   `welt.einheitenwert()` liefert (nicht an den rohen Daten: Verbesserungen
   müssen sich zeigen).
-- **AC-36** `fertig` **Militär bei Spielgröße erkennbar** — Bei Zoom 1 unterscheidet
+- **AC-36** `in-qa` **Militär bei Spielgröße erkennbar** — Bei Zoom 1 unterscheidet
   sich jede Kampfeinheit von einem Dorfbewohner **im Umriss** auf mindestens
   einem Drittel der gemeinsamen Fläche. Gemessen wird die Figur in der Höhe,
   die Zoom 1 ihr gibt (`figurHoeheBei(1)`, rund 29 Bildpunkte), und nur der
@@ -219,7 +219,16 @@ Reihenfolge:
   darüber, weil ihn sein Pferd breit macht. Der Hebel ist deshalb die Waffe
   **außerhalb** des Körperumrisses, nicht mehr Farbe im Körper. **Danach
   gemessen:** Miliz 0,401 · Soldat 0,352 · Speerkämpfer 0,371 · Bogenschütze
-  0,356 · Plänkler 0,348 · Späherreiter 0,705.
+  0,356 · Plänkler 0,348 · Späherreiter 0,705. **Seit dem Bildumbau nicht
+  mehr belegt** (2026-11-13, gemessen an den gerenderten Bildern):
+  Armbrustschütze 0,188 · Soldat 0,192 · Miliz 0,195 · Plänkler 0,233 ·
+  Bogenschütze 0,237 · Speerkämpfer 0,246 · Mönch 0,300 — sieben unter dem
+  Drittel; Späherreiter 0,708 · Ritter 0,750 · Mangonel 0,850 · Marktkarren
+  0,868 · Ramme 0,881 darüber. Die gerenderten Fußtruppen stehen auf dem
+  Körper des Dorfbewohners, und was sie unterscheidet, liegt vor dem Rumpf.
+  Die Grenze bleibt; der Hebel ist derselbe wie in Runde 76 — Schild und
+  Waffe neben den Körper —, diesmal am Modell. Der Test steht bis dahin als
+  erwartet rot (`test.fail`) und meldet sich, sobald alle bestehen.
 - **AC-37** `fertig` **Die Spielzeit steht im Bild** — Oben, neben dem Zeitalter,
   steht die verstrichene Spielzeit als `m:ss`. Ohne sie lässt sich nicht
   sagen, ob ein Aufstieg schnell war — die erste Frage, die ein Spieler an

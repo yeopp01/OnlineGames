@@ -43,7 +43,9 @@ def bauen():
     quader('boden', (GANG - 0.16, GANG - 0.16, 0.02), s['bohle'], ort=(0, 0, krone + 0.01), fase=0)
 
     fahne((0, 0, krone), 0.8, s, lang=0.46, hoch=0.28)
-    banner((BREIT / 2 + 0.04, 0, SCHAFT - 0.22), s, breit=0.3, lang=0.6, richtung=(0, 1, 0))
+    # 0,46 lang statt 0,6: mit dem langen Banner trug der Turm die Spielerfarbe
+    # auf genau einem Zehntel seiner Flaeche (darstellung AC-4: darunter).
+    banner((BREIT / 2 + 0.04, 0, SCHAFT - 0.22), s, breit=0.3, lang=0.46, richtung=(0, 1, 0))
 
 
 def tafel(ziel):

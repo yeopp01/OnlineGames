@@ -7,7 +7,7 @@
 
 import random
 
-from bauteile import (RECHTS, VORN, banner, bodenfleck, einzeltafel, fass, fenster, giebel, rahmen, rundholz,
+from bauteile import (RECHTS, VORN, bannermast, bodenfleck, einzeltafel, fass, fenster, giebel, rahmen, rundholz,
                       satteldach, stoffe, stumpf, tuer, wimpel)
 from formen import drehkoerper, kugel, quader
 
@@ -93,7 +93,10 @@ def bauen():
         quader('speiche', (0.02, 0.42, 0.025), s['hellholz'], ort=(rechts + 0.08, my + 0.5, 0.25), drehung=(w, 0, 0),
                fase=0)
 
-    banner((mx - 0.05, vorn - 0.04, WAND - 0.1), s, breit=0.28, lang=0.46, richtung=(1, 0, 0))
+    # Das Banner steht frei im Hof, nicht an der Wand: dort verdeckte es die
+    # Esse, und von der Spielerfarbe blieb der Wimpel am First - fuenf
+    # Bildpunkte auf der Schautafel (darstellung AC-4 verlangt mehr als acht).
+    bannermast((-1.15, -1.05), 1.25, s, breit=0.3, lang=0.5)
     wimpel((rechts + 0.05, my, WAND + FIRST), 0.45, s)
 
 

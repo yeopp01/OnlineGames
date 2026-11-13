@@ -420,7 +420,7 @@ test('darstellung AC-4 / bauen AC-20: jedes Gebaeude hat Koerper, die Spielerfar
       const rot = t.gebaeudeMaske(art, '#d94a4a');
       // Was sich unterscheidet, zaehlt die Maske selbst - ueber die Leitung waeren
       // die Farblisten zu gross.
-      return { art, pixel: blau.pixel, farbeBlau: blau.farbpixel, farbeRot: rot.farbpixel, oben: blau.oben, grundOben: blau.grundOben };
+      return { art, pixel: blau.pixel, farbeBlau: blau.farbpixel, farbeRot: rot.farbpixel, oben: blau.oben, grundOben: blau.grundOben, feld: blau.feld, grundflaeche: blau.grundflaeche };
     });
   });
   // Unterscheidbar heisst: Umriss oder Farbe weichen auf einem spuerbaren Teil
@@ -450,19 +450,36 @@ test('darstellung AC-4 / bauen AC-20: jedes Gebaeude hat Koerper, die Spielerfar
     return paare;
   });
   for (const m of messung) {
-    expect(m.pixel, `${m.art} ist gezeichnet`).toBeGreaterThan(800);
+    // Gezeichnet heisst: es deckt mehr als die Haelfte seiner Grundflaeche.
+    // Bis zum Bildumbau stand hier 800 - die halbe Raute von zwei Feldern,
+    // fuer alle. Fuer Turm, Mauer und Tor auf einem Feld sind es 200; der
+    // gerenderte Mauerpfeiler deckt allein 770 Bildpunkte, gezeichnet war er
+    // ein Block. Fuer alles ab zwei Feldern bleibt es bei 800.
+    expect(m.grundflaeche, `${m.art}: Grundflaeche gemessen`).toBeGreaterThanOrEqual(400);
+    expect(m.pixel, `${m.art} ist gezeichnet`).toBeGreaterThan(m.grundflaeche / 2);
     // Farbe da, in beiden Farben, aber als Fahne, Tuer oder Wimpel - unter einem Zehntel.
     expect(m.farbeBlau, `${m.art} traegt Blau`).toBeGreaterThan(8);
     expect(m.farbeRot, `${m.art} traegt Rot`).toBeGreaterThan(8);
     expect(m.farbeBlau / m.pixel, `${m.art}: Farbe nur an einer Stelle`).toBeLessThan(0.1);
-    // Koerper: das Gebaeude ragt mindestens ein Feld (e = 20) ueber die obere
-    // Ecke seiner Grundflaeche hinaus - ausser der Farm, die ist ein Acker und
+    // Koerper: das Gebaeude ragt mindestens ein Feld ueber die obere Ecke
+    // seiner Grundflaeche hinaus - ausser der Farm, die ist ein Acker und
     // begehbar, wie in der Vorlage. Bis Runde 127 stand hier `oben < 60`, und
     // das setzte zwei Felder voraus (Ecke bei 80): die Steinmauer steht auf
     // einem, ihre Ecke liegt bei 90, und mit 68 ragt sie 22 Bildpunkte darueber.
     // Falsch war die Annahme, nicht das Bild.
+    //
+    // Dieselbe Annahme steckte noch im Feld selbst: 20 Bildpunkte sind ein
+    // Feld nur fuer ein Gebaeude auf einem oder zwei Feldern. Die Maske
+    // zeichnet jedes so, dass seine Grundflaeche zwei Felder fuellt - wer auf
+    // dreien steht, ist auf zwei Drittel verkleinert, und sein Feld misst 13,3
+    // Bildpunkte, auf vieren 10. Die Grenze von 20 verlangte von der
+    // Schiessanlage anderthalb eigene Felder und vom Markt zwei. Gemessen wird
+    // in eigenen Feldern (`feld`): Schiessanlage 16 von 13,3 Bildpunkten ·
+    // Markt 17 von 10 · Stall 22 von 13,3. Fuer alles auf einem oder zwei
+    // Feldern aendert sich nichts.
     expect(m.grundOben, `${m.art}: Grundflaeche gemessen`).toBeGreaterThan(0);
-    if (m.art !== 'farm') expect(m.oben, `${m.art} hat Hoehe`).toBeLessThan(m.grundOben - 20);
+    expect(m.feld, `${m.art}: Feld gemessen`).toBeGreaterThan(0);
+    if (m.art !== 'farm') expect(m.oben, `${m.art} hat Hoehe`).toBeLessThan(m.grundOben - m.feld);
   }
   // Mindestens ein Viertel der Flaeche anders: das sieht man ohne Hinschauen.
   for (const { paar, anteil } of unterschiede) expect(anteil, paar).toBeGreaterThan(0.25);
