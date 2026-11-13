@@ -2,18 +2,18 @@
   "bild": "tor.webp",
   "maske": "tor-maske.webp",
   "zelle": [
-    118,
-    215
+    336,
+    335
   ],
   "fuss": [
-    59,
-    185
+    168,
+    252
   ],
   "feldbreite": 132,
   "zeilen": 2,
   "spalten": 2,
   "art": "gebaeude",
-  "felder": 1,
+  "felder": 4,
   "ausrichtungen": [
     "x",
     "y"
@@ -29,12 +29,12 @@
       "bild": "tor-schatten.webp",
       "maske": null,
       "zelle": [
-        283,
-        116
+        533,
+        226
       ],
       "fuss": [
-        92,
-        56
+        205,
+        116
       ]
     }
   },

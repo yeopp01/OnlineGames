@@ -178,14 +178,16 @@ test.describe('Ritterzeit am Stueck', () => {
         await zeitraffer(anna, code, 20);
         await expect.poll(() => eigeneFertig(anna, art), { message: 'die Mauer steht', timeout: 90_000 }).toBe(5);
       } else if (GEBAEUDE[art].tor) {
-        // Auf das mittlere Feld der eigenen Mauer gesetzt, das es ersetzt (bauen AC-31).
+        // Auf die eigene Mauer gesetzt, von der es vier Felder ersetzt
+        // (bauen AC-31, AC-37): der Zeiger zwischen dem dritten und vierten
+        // Feld, dann liegt es ueber den Feldern zwei bis fuenf.
         expect(mauerlinie, 'die Mauer steht vor dem Tor').not.toBeNull();
         await taste(menue, art);
-        const feld = await aufSeite(anna, mauerlinie[2]);
+        const feld = await aufSeite(anna, { x: mauerlinie[2].x + 0.5, y: mauerlinie[2].y });
         await anna.mouse.move(feld.x, feld.y, { steps: 3 });
         await anna.mouse.click(feld.x, feld.y);
         await expect.poll(() => anna.evaluate((t) => [...window.ansicht.gebaeude.values()]
-          .some((g) => g.art === 'tor' && g.x === t.x && g.y === t.y), mauerlinie[2]), { message: 'das Tor als Baustelle' }).toBe(true);
+          .some((g) => g.art === 'tor' && g.x === t.x && g.y === t.y), mauerlinie[3]), { message: 'das Tor als Baustelle' }).toBe(true);
         await zeitraffer(anna, code, 20);
         await expect.poll(() => eigeneFertig(anna, art), { message: 'das Tor steht', timeout: 90_000 }).toBe(1);
       } else {

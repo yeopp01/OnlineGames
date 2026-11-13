@@ -23,6 +23,7 @@ export const BELEGUNG = [
   ['Rechtsklick', 'hingehen, sammeln, bauen – oder Sammelpunkt setzen'],
   ['Umschalt + Rechtsklick', 'Ziel hinten anhängen, der Reihe nach abgehen'],
   ['Umschalt beim Bauen', 'weitere Baustellen setzen, der Reihe nach bauen'],
+  ['R (Tor in der Hand)', 'das Tor drehen'],
   ['W A S D, Pfeile', 'Karte schieben'],
   ['Maus an den Bildschirmrand', 'Karte schieben – unten abschaltbar'],
   ['Mausrad', 'näher, weiter'],
@@ -151,6 +152,10 @@ export class Tasten {
       }
       if (e.key === 'Escape') return true;
     }
+
+    // R dreht das Tor in der Hand (bauen AC-37). Nur dann: sonst gehoert die
+    // Taste niemandem.
+    if (taste === 'r' && a.platzieren && a.platzDrehen()) return true;
 
     // G schaltet den Angriffslauf ein (kampf AC-4). Nicht A: das schiebt die
     // Karte nach links (W A S D). G wie "gegen".

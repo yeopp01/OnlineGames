@@ -354,6 +354,35 @@ export async function dorfbewohnerAnklicken(page, { ohne = [], code = null, raff
 }
 
 /**
+ * Das naechste Zeichen am Ziel eines Befehls bleibt stehen (bedienung AC-34):
+ * vor dem Klick gerufen, setzt es dem Zeichen im Augenblick seines Entstehens
+ * einen Beginn in der Zukunft - das friert sein erstes Bild ein. Ohne das lebt
+ * es 800 ms, und wer es erst nach dem Klick anhaelt, kommt an einem langsamen
+ * Tag zu spaet: "Cannot set properties of null (setting 'seit')" in
+ * strategie-befehlszeichen und strategie-buendnisse (2026-11-13). Gilt fuer
+ * genau ein Zeichen; ob es von selbst verschwindet, prueft bedienung AC-34
+ * mit einem Beginn in der Vergangenheit.
+ */
+export const zeichenHalten = (page) => page.evaluate(() => {
+  const a = window.ansicht;
+  let zeichen = a.zielzeichen;
+  Object.defineProperty(a, 'zielzeichen', {
+    configurable: true,
+    enumerable: true,
+    get: () => zeichen,
+    set: (neu) => {
+      if (!neu) {
+        zeichen = neu;
+        return;
+      }
+      neu.seit = performance.now() + 60_000;
+      delete a.zielzeichen;
+      a.zielzeichen = neu;
+    },
+  });
+});
+
+/**
  * Die eigenen Einheiten mit ihrer Lage auf dem Bildschirm - alle, auch die
  * ausserhalb des Ausschnitts: `x`/`y` ist der Fusspunkt, `klick` die
  * Koerpermitte, auf die ein Klick zielt (`KOERPER_MITTE` in ansicht.js),

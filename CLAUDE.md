@@ -171,7 +171,7 @@ Umfang hinzufügt, dort nachsehen.
 
 ## Stand
 
-**511 von 632 Kriterien fertig.** 808 Tests ohne Browser, 263 im Browser. Die
+**510 von 633 Kriterien fertig.** 813 Tests ohne Browser, 265 im Browser. Die
 Übersicht ist der Bericht: `npm run qa:report`.
 
 Gebaut ist der Unterbau: Räume, Übertragung, Karte, Wegfindung, Sammeln,
@@ -380,7 +380,15 @@ eine Baustelle, belegte übersprungen, und die Bauer gehen die Felder der
 Reihe nach ab. **Das Tor** lässt die eigenen Einheiten durch und sperrt
 alle anderen: die Wegsuche bekommt die Tore des Besitzers als Felder, die
 nur für ihn frei sind (`welt.toreVon`); auf die eigene Mauer gesetzt,
-ersetzt es dieses Feld. **D6 ist fertig.** Die Ramme (einheiten AC-35): 127 je
+ersetzt es sie. **Es ist vier Felder lang** (bauen AC-37, Benutzer: „Das
+Tor muss breiter sein"): `laenge: 4, pfeiler: 1` in den Daten — zwei Türme
+an den Enden, für niemanden begehbar, dazwischen zwei Felder Durchfahrt.
+`welt.grundflaeche(art, x, y, quer)` ist die eine Stelle, die Rechtecke
+kennt; ein Gebäude längs y trägt `quer` (Leitung `qu: 1`). Die Richtung
+sagt der Auftrag (`quer`), sonst rät sie der Server aus der Mauer darunter;
+im Browser dreht `R` das Tor in der Hand. Gezeichnet wird es in vier
+Streifen, je Feld einem (`ansicht.gebaeudeMalen`). Schräg gibt es kein Tor
+mehr. **D6 ist fertig.** Die Ramme (einheiten AC-35): 127 je
 Stoß gegen jedes Gebäude, Pfeile ritzen sie mit 1; `nurGebaeude` in den
 Daten — ein Befehl auf eine Einheit ist ein Gang dorthin, sie wacht nicht,
 schlägt nicht zurück und lässt im Angriffslauf jede Einheit stehen. Der

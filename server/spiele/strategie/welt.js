@@ -405,7 +405,7 @@ class Welt {
       for (const b of this.gebaeude.values()) {
         const sicht = this.sichten.get(b.besitzer);
         if (!sicht) continue;
-        const { x0, y0, x1, y1 } = this.grundflaeche(b.art, b.x, b.y);
+        const { x0, y0, x1, y1 } = this.grundflaeche(b.art, b.x, b.y, b.quer);
         markieren(sicht.gebaeude, 1, sicht.erkundet, x0, y0, x1, y1, this.gebaeudeSicht(b.besitzer, b.art));
       }
     }
@@ -677,13 +677,16 @@ class Welt {
   // x, y ist das Ankerfeld; die Grundflaeche reicht von x - groesse/2 (abgerundet)
   // ueber groesse Felder (grundflaeche). Fertig steht ein Gebaeude nur zu Beginn
   // da - alles andere ist erst eine Baustelle (bauen AC-1).
-  gebaeudeAnlegen(besitzer, art, x, y, fertig = true) {
+  // `quer`: ein langes Gebaeude (das Tor, bauen AC-37) liegt laengs y statt
+  // laengs x. Nur dort steht das Feld am Gebaeude.
+  gebaeudeAnlegen(besitzer, art, x, y, fertig = true, quer = false) {
     const gebaeude = {
       id: this.naechsteId++,
       art,
       besitzer,
       x,
       y,
+      ...(GEBAEUDE[art].laenge && quer ? { quer: true } : {}),
       fertig,
       bau: fertig ? 1 : 0, // Anteil der Bauarbeit
       leben: this.gebaeudewert(besitzer, art, 'leben'),
@@ -703,24 +706,31 @@ class Welt {
     return gebaeude;
   }
 
-  grundflaeche(art, x, y) {
-    const groesse = GEBAEUDE[art].groesse;
-    const x0 = x - Math.floor(groesse / 2);
-    const y0 = y - Math.floor(groesse / 2);
-    return { x0, y0, x1: x0 + groesse - 1, y1: y0 + groesse - 1 };
+  // Die eine Stelle, die weiss, welche Felder ein Gebaeude belegt. Fast alle
+  // sind Quadrate aus `groesse`; ein langes (das Tor, bauen AC-37) hat
+  // `laenge` Felder laengs x - oder laengs y, wenn es `quer` liegt - und ist
+  // `groesse` tief.
+  grundflaeche(art, x, y, quer = false) {
+    const tief = GEBAEUDE[art].groesse;
+    const lang = GEBAEUDE[art].laenge || tief;
+    const bx = quer ? tief : lang;
+    const by = quer ? lang : tief;
+    const x0 = x - Math.floor(bx / 2);
+    const y0 = y - Math.floor(by / 2);
+    return { x0, y0, x1: x0 + bx - 1, y1: y0 + by - 1 };
   }
 
   // Taugt der Platz? Alle Felder auf der Karte, Gras, kein Tier darauf
   // (bauen AC-3). Einheiten stehen nicht im Weg - sie gehen beiseite.
-  // `ausser`: ein Gebaeude, das der Neubau ersetzt (ein Tor auf der Mauer,
-  // bauen AC-31) - sein Platz zaehlt als frei.
-  platzPruefen(art, x, y, ausser = null) {
+  // `ausser`: die Gebaeude, die der Neubau ersetzt (ein Tor auf der Mauer,
+  // bauen AC-31) - ihr Platz zaehlt als frei. `quer`: siehe `grundflaeche`.
+  platzPruefen(art, x, y, ausser = null, quer = false) {
     if (!GEBAEUDE[art] || !Number.isInteger(x) || !Number.isInteger(y)) return false;
-    const { x0, y0, x1, y1 } = this.grundflaeche(art, x, y);
-    const alt = ausser ? this.grundflaeche(ausser.art, ausser.x, ausser.y) : null;
+    const { x0, y0, x1, y1 } = this.grundflaeche(art, x, y, quer);
+    const alte = (ausser || []).map((a) => this.grundflaeche(a.art, a.x, a.y, a.quer));
     for (let fy = y0; fy <= y1; fy++) {
       for (let fx = x0; fx <= x1; fx++) {
-        if (alt && fx >= alt.x0 && fx <= alt.x1 && fy >= alt.y0 && fy <= alt.y1) continue;
+        if (alte.some((alt) => fx >= alt.x0 && fx <= alt.x1 && fy >= alt.y0 && fy <= alt.y1)) continue;
         if (!karten.begehbar(this.karte, fx, fy)) return false;
       }
     }
@@ -732,25 +742,41 @@ class Welt {
     // Begehbare Gebaeude (Farmen) belegen kein Feld der Karte - sie werden hier
     // eigens ausgeschlossen, damit niemand ueber sie baut.
     for (const gebaeude of this.gebaeude.values()) {
-      if (gebaeude === ausser) continue;
-      const g = this.grundflaeche(gebaeude.art, gebaeude.x, gebaeude.y);
+      if (ausser && ausser.includes(gebaeude)) continue;
+      const g = this.grundflaeche(gebaeude.art, gebaeude.x, gebaeude.y, gebaeude.quer);
       if (g.x0 <= x1 && g.x1 >= x0 && g.y0 <= y1 && g.y1 >= y0) return false;
     }
     return true;
   }
 
   /**
-   * Das eigene Gebaeude, das ein Neubau an dieser Stelle ersetzt - ein Tor auf
-   * einem Feld der eigenen Mauer (bauen AC-31). Nur genau deckungsgleich:
-   * gleicher Anker, gleiche Groesse. Sonst null.
+   * Die eigenen Gebaeude, die ein Neubau an dieser Stelle ersetzt - ein Tor
+   * auf der eigenen Mauer (bauen AC-31, AC-37): jedes Mauerfeld, das ganz
+   * unter seiner Grundflaeche liegt. Eine Liste, leer, wenn dort keines steht
+   * oder die Art nichts ersetzt.
    */
-  ersetzbar(spielerId, art, x, y) {
+  ersetzbar(spielerId, art, x, y, quer = false) {
     const ersetzt = GEBAEUDE[art]?.ersetzt;
-    if (!ersetzt) return null;
-    const alt = this.gebaeudeAn(x, y);
-    if (!alt || alt.besitzer !== spielerId || alt.art !== ersetzt) return null;
-    if (alt.x !== x || alt.y !== y || GEBAEUDE[alt.art].groesse !== GEBAEUDE[art].groesse) return null;
-    return alt;
+    if (!ersetzt) return [];
+    const { x0, y0, x1, y1 } = this.grundflaeche(art, x, y, quer);
+    const alte = [];
+    for (const alt of this.gebaeude.values()) {
+      if (alt.besitzer !== spielerId || alt.art !== ersetzt) continue;
+      const g = this.grundflaeche(alt.art, alt.x, alt.y, alt.quer);
+      if (g.x0 >= x0 && g.x1 <= x1 && g.y0 >= y0 && g.y1 <= y1) alte.push(alt);
+    }
+    return alte;
+  }
+
+  /**
+   * Wie ein langes Gebaeude liegt, wenn der Auftrag es nicht sagt (bauen
+   * AC-37): laengs der eigenen Mauer, die es ersetzt - quer, wenn unter der
+   * queren Grundflaeche mehr davon steht als unter der laengsen. Sonst
+   * laengs x.
+   */
+  lageRaten(spielerId, art, x, y) {
+    if (!GEBAEUDE[art]?.laenge) return false;
+    return this.ersetzbar(spielerId, art, x, y, true).length > this.ersetzbar(spielerId, art, x, y, false).length;
   }
 
   /**
@@ -787,7 +813,14 @@ class Welt {
   belegen(gebaeude) {
     if (GEBAEUDE[gebaeude.art].begehbar) return;
     const g = this.karte.groesse;
-    const { x0, y0, x1, y1 } = this.grundflaeche(gebaeude.art, gebaeude.x, gebaeude.y);
+    const { x0, y0, x1, y1 } = this.grundflaeche(gebaeude.art, gebaeude.x, gebaeude.y, gebaeude.quer);
+    // Die Felder an den Enden eines langen Tors sind seine Tuerme (bauen
+    // AC-37): begehbar ist nur die Durchfahrt dazwischen.
+    const pfeiler = GEBAEUDE[gebaeude.art].pfeiler || 0;
+    const durchfahrt = (fx, fy) => {
+      const [stelle, lang] = gebaeude.quer ? [fy - y0, y1 - y0 + 1] : [fx - x0, x1 - x0 + 1];
+      return stelle >= pfeiler && stelle < lang - pfeiler;
+    };
     for (let fy = Math.max(0, y0); fy <= Math.min(g - 1, y1); fy++) {
       for (let fx = Math.max(0, x0); fx <= Math.min(g - 1, x1); fx++) {
         const i = fy * g + fx;
@@ -796,7 +829,7 @@ class Welt {
         this.feldAenderungen.push({ i, a: karten.BEBAUT });
         // Fuer den Besitzer bleibt ein Tor begehbar (bauen AC-31) - auf der
         // Karte ist es bebaut, die Wegsuche bekommt es eigens.
-        if (GEBAEUDE[gebaeude.art].tor) {
+        if (GEBAEUDE[gebaeude.art].tor && durchfahrt(fx, fy)) {
           this.tore ??= new Map();
           if (!this.tore.has(gebaeude.besitzer)) this.tore.set(gebaeude.besitzer, new Set());
           this.tore.get(gebaeude.besitzer).add(i);
@@ -836,7 +869,7 @@ class Welt {
   freigeben(gebaeude) {
     if (GEBAEUDE[gebaeude.art].begehbar) return;
     const g = this.karte.groesse;
-    const { x0, y0, x1, y1 } = this.grundflaeche(gebaeude.art, gebaeude.x, gebaeude.y);
+    const { x0, y0, x1, y1 } = this.grundflaeche(gebaeude.art, gebaeude.x, gebaeude.y, gebaeude.quer);
     for (let fy = y0; fy <= y1; fy++) {
       for (let fx = x0; fx <= x1; fx++) {
         const i = fy * g + fx;
@@ -851,7 +884,7 @@ class Welt {
   }
 
   aufGrundflaeche(einheit, gebaeude) {
-    const { x0, y0, x1, y1 } = this.grundflaeche(gebaeude.art, gebaeude.x, gebaeude.y);
+    const { x0, y0, x1, y1 } = this.grundflaeche(gebaeude.art, gebaeude.x, gebaeude.y, gebaeude.quer);
     const ex = Math.round(einheit.x);
     const ey = Math.round(einheit.y);
     return ex >= x0 && ex <= x1 && ey >= y0 && ey <= y1;
@@ -859,7 +892,7 @@ class Welt {
 
   // Abstand in Feldern von einer Einheit zum Rand der Grundflaeche.
   abstandZu(einheit, gebaeude) {
-    const { x0, y0, x1, y1 } = this.grundflaeche(gebaeude.art, gebaeude.x, gebaeude.y);
+    const { x0, y0, x1, y1 } = this.grundflaeche(gebaeude.art, gebaeude.x, gebaeude.y, gebaeude.quer);
     const dx = Math.max(x0 - einheit.x, 0, einheit.x - x1);
     const dy = Math.max(y0 - einheit.y, 0, einheit.y - y1);
     return Math.max(dx, dy);
@@ -867,7 +900,7 @@ class Welt {
 
   // Das begehbare Feld rund um die Grundflaeche, das `von` am naechsten liegt.
   randfeld(gebaeude, von) {
-    const { x0, y0, x1, y1 } = this.grundflaeche(gebaeude.art, gebaeude.x, gebaeude.y);
+    const { x0, y0, x1, y1 } = this.grundflaeche(gebaeude.art, gebaeude.x, gebaeude.y, gebaeude.quer);
     let bestes = null;
     let besterAbstand = Infinity;
     for (let r = 1; r <= 3 && !bestes; r++) {
@@ -888,7 +921,7 @@ class Welt {
 
   gebaeudeAn(x, y) {
     for (const gebaeude of this.gebaeude.values()) {
-      const { x0, y0, x1, y1 } = this.grundflaeche(gebaeude.art, gebaeude.x, gebaeude.y);
+      const { x0, y0, x1, y1 } = this.grundflaeche(gebaeude.art, gebaeude.x, gebaeude.y, gebaeude.quer);
       if (x >= x0 && x <= x1 && y >= y0 && y <= y1) return gebaeude;
     }
     return null;
@@ -896,7 +929,9 @@ class Welt {
 
   // Ein Bauauftrag: der Platz wird geprueft, die Kosten gehen sofort ab
   // (bauen AC-5), die Baustelle entsteht, die Dorfbewohner gehen hin (AC-1).
-  bauen(spielerId, einheitIds, art, ziel, anhaengen = false) {
+  // `quer`: wie ein langes Gebaeude liegt (bauen AC-37) - true laengs y,
+  // false laengs x; ohne Angabe laengs der eigenen Mauer darunter.
+  bauen(spielerId, einheitIds, art, ziel, anhaengen = false, quer = undefined) {
     if (!Array.isArray(einheitIds) || !ziel || !GEBAEUDE[art]) return { fehler: 'Das lässt sich nicht bauen.' };
     const bauer = einheitIds.slice(0, 200)
       .map((id) => this.einheiten.get(id))
@@ -910,18 +945,19 @@ class Welt {
     }
     const x = Math.round(Number(ziel.x));
     const y = Math.round(Number(ziel.y));
-    // Ein Tor auf der eigenen Mauer ersetzt dieses Feld (bauen AC-31).
-    const alt = this.ersetzbar(spielerId, art, x, y);
-    if (!this.platzPruefen(art, x, y, alt)) return { fehler: 'Hier ist kein Platz.' };
+    // Ein Tor auf der eigenen Mauer ersetzt ihre Felder dort (bauen AC-31).
+    const liegtQuer = Boolean(GEBAEUDE[art].laenge) && (typeof quer === 'boolean' ? quer : this.lageRaten(spielerId, art, x, y));
+    const alte = this.ersetzbar(spielerId, art, x, y, liegtQuer);
+    if (!this.platzPruefen(art, x, y, alte, liegtQuer)) return { fehler: 'Hier ist kein Platz.' };
     const kosten = GEBAEUDE[art].kosten;
     for (const [rohstoff, menge] of Object.entries(kosten)) {
       if (spieler[rohstoff] < menge) return { fehler: `Zu wenig ${ROHSTOFF_NAMEN[rohstoff]}.` };
     }
     for (const [rohstoff, menge] of Object.entries(kosten)) spieler[rohstoff] -= menge;
-    // Das Mauerfeld verschwindet ohne Erstattung, wie in der Vorlage; wer daran
-    // baute, geht zum naechsten Feld seiner Mauer (welt.bauenWeiter).
-    if (alt) this.gebaeudeZerstoeren(alt);
-    const baustelle = this.gebaeudeAnlegen(spielerId, art, x, y, false);
+    // Die Mauerfelder verschwinden ohne Erstattung, wie in der Vorlage; wer
+    // daran baute, geht zum naechsten Feld seiner Mauer (welt.bauenWeiter).
+    for (const alt of alte) this.gebaeudeZerstoeren(alt);
+    const baustelle = this.gebaeudeAnlegen(spielerId, art, x, y, false, liegtQuer);
     for (const einheit of bauer) {
       // Mit Umschalt (bedienung AC-48): wer schon baut, baut das danach -
       // hinten an seine Reihe, wie die Felder einer Mauer. Eine eigene Grenze
@@ -1143,7 +1179,8 @@ class Welt {
       case 'abbrechen':
         return this.abbrechen(spielerId, nachricht.gebaeude, nachricht.platz);
       case 'bauen':
-        return this.bauen(spielerId, nachricht.einheiten, nachricht.art, nachricht.ziel, Boolean(nachricht.anhaengen));
+        return this.bauen(spielerId, nachricht.einheiten, nachricht.art, nachricht.ziel, Boolean(nachricht.anhaengen),
+          typeof nachricht.quer === 'boolean' ? nachricht.quer : undefined);
       case 'mauer':
         return this.mauerZiehen(spielerId, nachricht.einheiten, nachricht.art, nachricht.von, nachricht.bis);
       case 'abreissen':
@@ -1820,7 +1857,7 @@ class Welt {
    */
   handelsgewinn(heimat, ziel) {
     const mitte = (g) => {
-      const { x0, y0, x1, y1 } = this.grundflaeche(g.art, g.x, g.y);
+      const { x0, y0, x1, y1 } = this.grundflaeche(g.art, g.x, g.y, g.quer);
       return { x: (x0 + x1) / 2, y: (y0 + y1) / 2 };
     };
     const a = mitte(heimat);
@@ -2174,7 +2211,7 @@ class Welt {
 
   // Alle begehbaren Felder unmittelbar um die Grundflaeche, nach Abstand zu `von`.
   randfelder(gebaeude, von) {
-    const { x0, y0, x1, y1 } = this.grundflaeche(gebaeude.art, gebaeude.x, gebaeude.y);
+    const { x0, y0, x1, y1 } = this.grundflaeche(gebaeude.art, gebaeude.x, gebaeude.y, gebaeude.quer);
     const felder = [];
     for (let fy = Math.floor(y0) - 1; fy <= Math.ceil(y1) + 1; fy++) {
       for (let fx = Math.floor(x0) - 1; fx <= Math.ceil(x1) + 1; fx++) {
@@ -2299,7 +2336,7 @@ class Welt {
     let mitte = ziel;
     let rand = 0;
     if (istGebaeude) {
-      const { x0, y0, x1, y1 } = this.grundflaeche(ziel.art, ziel.x, ziel.y);
+      const { x0, y0, x1, y1 } = this.grundflaeche(ziel.art, ziel.x, ziel.y, ziel.quer);
       mitte = { x: (x0 + x1) / 2, y: (y0 + y1) / 2 };
       rand = (x1 - x0) / 2;
     }
@@ -2458,7 +2495,7 @@ class Welt {
       const reichweite = this.gebaeudewert(turm.besitzer, turm.art, 'reichweite');
       // Die Grundflaeche einmal je Turm, nicht je Einheit: ein Turm ohne Ziel
       // sieht in jedem Takt alle Einheiten durch (Durchsicht Runde 125).
-      const { x0, y0, x1, y1 } = this.grundflaeche(turm.art, turm.x, turm.y);
+      const { x0, y0, x1, y1 } = this.grundflaeche(turm.art, turm.x, turm.y, turm.quer);
       const abstandVon = (e) => Math.hypot(Math.max(x0 - e.x, 0, e.x - x1), Math.max(y0 - e.y, 0, e.y - y1));
       let ziel = this.einheiten.get(turm.ziel);
       if (!ziel || ziel.tot || abstandVon(ziel) > reichweite) {
@@ -2710,7 +2747,7 @@ class Welt {
     let mauern = 0;
     for (const b of this.gebaeude.values()) {
       if (!sperre(b)) continue;
-      const { x0, y0, x1, y1 } = this.grundflaeche(b.art, b.x, b.y);
+      const { x0, y0, x1, y1 } = this.grundflaeche(b.art, b.x, b.y, b.quer);
       for (let y = y0; y <= y1; y++) for (let x = x0; x <= x1; x++) frei.add(y * g + x);
       mauern += 1;
     }
@@ -2787,7 +2824,7 @@ class Welt {
       : this.einheitenwert(angreifer.besitzer, angreifer.art, 'reichweite');
     if (fern > 0) {
       const mitte = (g) => {
-        const { x0, y0, x1, y1 } = this.grundflaeche(g.art, g.x, g.y);
+        const { x0, y0, x1, y1 } = this.grundflaeche(g.art, g.x, g.y, g.quer);
         return { x: (x0 + x1) / 2, y: (y0 + y1) / 2 };
       };
       const von = vonGebaeude ? mitte(angreifer) : angreifer;
@@ -2808,7 +2845,7 @@ class Welt {
   steinWerfen(angreifer, ziel, istGebaeude, geschoss) {
     let nach = { x: ziel.x, y: ziel.y };
     if (istGebaeude) {
-      const { x0, y0, x1, y1 } = this.grundflaeche(ziel.art, ziel.x, ziel.y);
+      const { x0, y0, x1, y1 } = this.grundflaeche(ziel.art, ziel.x, ziel.y, ziel.quer);
       nach = { x: (x0 + x1) / 2, y: (y0 + y1) / 2 };
     }
     const weite = Math.hypot(nach.x - angreifer.x, nach.y - angreifer.y);
@@ -2907,7 +2944,7 @@ class Welt {
     if (!spieler || spieler.aus || (angreifer && !this.feindlich(angreifer.besitzer, ziel.besitzer))) return;
     let ort = { x: ziel.x, y: ziel.y };
     if (gebaeude) {
-      const { x0, y0, x1, y1 } = this.grundflaeche(ziel.art, ziel.x, ziel.y);
+      const { x0, y0, x1, y1 } = this.grundflaeche(ziel.art, ziel.x, ziel.y, ziel.quer);
       ort = { x: (x0 + x1) / 2, y: (y0 + y1) / 2 };
     }
     const alt = spieler.angriff;
@@ -3903,7 +3940,7 @@ class Welt {
 
   // Sieht der Spieler ein Feld der Grundflaeche?
   siehtGebaeude(id, g) {
-    const { x0, y0, x1, y1 } = this.grundflaeche(g.art, g.x, g.y);
+    const { x0, y0, x1, y1 } = this.grundflaeche(g.art, g.x, g.y, g.quer);
     for (let y = y0; y <= y1; y++) for (let x = x0; x <= x1; x++) if (this.sieht(id, x, y)) return true;
     return false;
   }
@@ -4062,6 +4099,8 @@ class Welt {
       b: g.besitzer,
       x: g.x,
       y: g.y,
+      // Ein langes Gebaeude, das laengs y liegt (bauen AC-37).
+      ...(g.quer ? { qu: 1 } : {}),
       h: g.leben,
       // Baufortschritt nur fuer Baustellen (darstellung AC-5).
       ...(g.fertig ? {} : { u: Math.round(g.bau * 100) / 100 }),
@@ -4164,6 +4203,9 @@ class Welt {
         }])),
         gebaeude: Object.fromEntries(Object.entries(GEBAEUDE).map(([art, w]) => [art, {
           leben: w.leben, bildetAus: w.bildetAus, groesse: w.groesse, kosten: w.kosten, bauzeit: w.bauzeit,
+          // Kein Quadrat (bauen AC-37): so viele Felder in einer Reihe, davon
+          // an jedem Ende so viele Tuerme.
+          laenge: w.laenge || null, pfeiler: w.pfeiler || 0,
           wohnraum: w.wohnraum, annahme: w.annahme, begehbar: Boolean(w.begehbar), nahrung: w.nahrung || null,
           // Ein Tor laesst Eigene durch und darf auf die eigene Mauer (bauen AC-31).
           tor: Boolean(w.tor), ersetzt: w.ersetzt || null,

@@ -178,10 +178,14 @@ export async function rohstoffe(page, code, name, werte) {
   expect(antwort.ok(), await antwort.text()).toBe(true);
 }
 
-/** Ein fertiges Gebaeude fuer einen Spieler aufstellen (Pruefgriff, e2e/server.mjs). */
-export async function gebaeudeAufstellen(page, code, name, art, x, y) {
+/**
+ * Ein fertiges Gebaeude fuer einen Spieler aufstellen (Pruefgriff, e2e/server.mjs).
+ * `mehr`: `quer` fuer ein langes Gebaeude laengs y (bauen AC-37), `bau` (0 bis 1)
+ * fuer eine Baustelle in diesem Stand.
+ */
+export async function gebaeudeAufstellen(page, code, name, art, x, y, mehr = {}) {
   const antwort = await page.request.post(`http://localhost:${GRIFFHAFEN}/griff`, {
-    data: { id: code, befehl: 'gebaeude', werte: { name, art, x, y } },
+    data: { id: code, befehl: 'gebaeude', werte: { name, art, x, y, ...mehr } },
   });
   expect(antwort.ok(), await antwort.text()).toBe(true);
   return (await antwort.json()).id;

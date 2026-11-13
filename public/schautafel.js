@@ -77,8 +77,9 @@ const GEBAEUDE_REIHE = [
   { art: 'wachturm', groesse: 1, titel: 'Wachturm' },
   { art: 'steinmauer', groesse: 1, titel: 'Steinmauer' },
   // Zu und offen (bauen AC-31).
-  { art: 'tor', groesse: 1, titel: 'Tor' },
-  { art: 'tor', groesse: 1, titel: 'Tor, offen', offen: true },
+  // Vier Felder lang, eines tief (bauen AC-37).
+  { art: 'tor', groesse: 4, tief: 1, titel: 'Tor' },
+  { art: 'tor', groesse: 4, tief: 1, titel: 'Tor, offen', offen: true },
   // Schiesst und gibt Wohnraum (bauen AC-32).
   { art: 'burg', groesse: 4, titel: 'Burg' },
   { art: 'markt', groesse: 4, titel: 'Markt' },
@@ -87,6 +88,8 @@ const GEBAEUDE_REIHE = [
 ];
 // Wie viele Felder ein Gebaeude breit ist - fuer die Messungen unten.
 const felderVon = (art) => GEBAEUDE_REIHE.find((g) => g.art === art && !g.bau && !g.offen)?.groesse || 2;
+// Wie tief, wenn es kein Quadrat ist - das Tor.
+const tiefeVon = (art) => GEBAEUDE_REIHE.find((g) => g.art === art && !g.bau && !g.offen)?.tief || felderVon(art);
 
 const DINGE = [
   { art: WALD, titel: 'Wald' },
@@ -425,7 +428,7 @@ function gebaeudeMaske(art, farbe, bau = 1) {
   // verkleinert gezeichnet, und sein Feld mit ihm.
   // `grundflaeche`: die Raute, auf der es steht, in Bildpunkten - 40 mal 20
   // je Feld, halbiert.
-  return { ...m, grundOben: Math.floor(groesse * 0.72 - 10 * felder), feld: e, grundflaeche: 400 * felder * felder };
+  return { ...m, grundOben: Math.floor(groesse * 0.72 - 10 * felder), feld: e, grundflaeche: (400 * felder * felder * tiefeVon(art)) / echt };
 }
 
 /**

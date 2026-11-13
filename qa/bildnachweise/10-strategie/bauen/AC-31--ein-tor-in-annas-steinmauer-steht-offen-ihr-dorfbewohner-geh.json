@@ -5,6 +5,6 @@
   "datei": "e2e/tests/strategie-mauern.spec.mjs",
   "pfad": [
     "Mauern",
-    "bauen AC-31: ein Tor ersetzt ein Feld der eigenen Mauer, und Annas Dorfbewohner geht hindurch"
+    "bauen AC-31: ein Tor ersetzt die eigene Mauer, wo es steht, und Annas Dorfbewohner geht hindurch"
   ]
 }

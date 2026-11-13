@@ -2025,8 +2025,11 @@ function massstab(gebaeude, groesse) {
   return groesse ? (groesse * 0.95) / gebaeude.halbeBreite : 1;
 }
 
-/** Trifft ein Bildpunkt (relativ zum Fusspunkt) das Gebaeude? */
-export function gebaeudeGetroffen(art, dx, dy, e, groesse) {
+/**
+ * Trifft ein Bildpunkt (relativ zum Fusspunkt) das Gebaeude? `lage`: wie ein
+ * Tor liegt ({ achse }) - es hat je Richtung ein eigenes Bild.
+ */
+export function gebaeudeGetroffen(art, dx, dy, e, groesse, lage = undefined) {
   const g = GEBAEUDE[art];
   if (!g) return false;
   // Gerendert trifft der Klick das Bild selbst (bedienung AC-51): wo es
@@ -2037,7 +2040,7 @@ export function gebaeudeGetroffen(art, dx, dy, e, groesse) {
   if (tafel && !tafel.flach) {
     const k = (2 * e) / tafel.feldbreite;
     if (tafel.stuecke) return Math.abs(dx) <= e && dy <= e * 0.5 && dy >= -zellenHoehe(tafel, 0, tafel.stuecke.pfeiler) * k;
-    return zelleGetroffen(tafel, 0, 0, dx, dy, k);
+    return zelleGetroffen(tafel, tafel.zustaende && lage?.achse === 'y' ? 1 : 0, 0, dx, dy, k);
   }
   const m = e * massstab(g, groesse);
   return Math.abs(dx) <= g.trefferBreite * m && dy >= -g.trefferOben * m && dy <= g.trefferUnten * m;

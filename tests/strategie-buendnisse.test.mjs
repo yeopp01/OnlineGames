@@ -145,7 +145,8 @@ test('spielziel AC-14: das Tor eines Verbuendeten oeffnet sich, das eines Gegner
   const { welt, x0, y0 } = mitPlatz();
   for (let i = 2; i <= 8; i++) {
     for (const [x, y] of [[x0 + i, y0 + 2], [x0 + i, y0 + 8], [x0 + 2, y0 + i], [x0 + 8, y0 + i]]) {
-      if (x === x0 + 5 && y === y0 + 2) continue;
+      // Das Tor ist vier Felder lang (bauen AC-37): x0 + 3 bis x0 + 6.
+      if (y === y0 + 2 && x >= x0 + 3 && x <= x0 + 6) continue;
       if (!welt.gebaeudeAn(x, y)) welt.gebaeudeAnlegen('c', 'steinmauer', x, y, true);
     }
   }
@@ -157,7 +158,7 @@ test('spielziel AC-14: das Tor eines Verbuendeten oeffnet sich, das eines Gegner
   welt.befehl('b', [bert.id], innen);
   assert.ok(anna.weg.length > 0, 'Anna hat einen Weg durch Carlas Tor');
   assert.deepEqual(bert.weg, [], 'Bert nicht');
-  assert.ok(welt.toreVon('c').size === 1, 'Carlas eigene Liste bleibt ihre');
+  assert.ok(welt.toreVon('c').size === 2, 'Carlas eigene Liste bleibt ihre: die zwei Felder der Durchfahrt');
   sekunden(welt, 10);
   assert.ok(Math.hypot(anna.x - innen.x, anna.y - innen.y) < 1.5, 'Anna steht drinnen');
 });

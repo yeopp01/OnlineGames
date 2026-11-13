@@ -37,7 +37,7 @@ function pruefen(welt) {
       befunde.push(`Einheit ${e.id} (${e.art}) steht auf ${x}, ${y} in einem Hindernis (Feld ${welt.karte.felder[y * welt.karte.groesse + x]})`);
     }
   }
-  const liste = [...welt.gebaeude.values()].map((g) => ({ g, f: welt.grundflaeche(g.art, g.x, g.y) }));
+  const liste = [...welt.gebaeude.values()].map((g) => ({ g, f: welt.grundflaeche(g.art, g.x, g.y, g.quer) }));
   for (let i = 0; i < liste.length; i++) {
     for (let j = i + 1; j < liste.length; j++) {
       const a = liste[i].f;
@@ -430,31 +430,26 @@ function belagerungSpielen({ startwert, mauer = true, heer = { soldat: 10 }, min
 
   const ring = [];
   if (mauer) {
-    const { x0, y0, x1, y1 } = welt.grundflaeche(zentrum.art, zentrum.x, zentrum.y);
+    const { x0, y0, x1, y1 } = welt.grundflaeche(zentrum.art, zentrum.x, zentrum.y, zentrum.quer);
     const a = 2;
-    // Das Tor: das Ringfeld, das am weitesten vom Angreifer weg liegt.
-    let torfeld = null;
-    let weiteste = -Infinity;
-    const felder = [];
+    // Das Tor: mitten in der Seite des Rings, die am weitesten vom Angreifer
+    // weg liegt - vier Felder in einer Reihe (bauen AC-37), deshalb eine
+    // Seite und kein Eckfeld. Passt es dort nicht (Wald, Wasser), bleibt der
+    // Ring ohne Tor.
+    const seiten = [
+      { x: Math.round((x0 + x1 + 1) / 2), y: y0 - a, quer: false, nx: 0, ny: -1 },
+      { x: Math.round((x0 + x1 + 1) / 2), y: y1 + a, quer: false, nx: 0, ny: 1 },
+      { x: x0 - a, y: Math.round((y0 + y1 + 1) / 2), quer: true, nx: -1, ny: 0 },
+      { x: x1 + a, y: Math.round((y0 + y1 + 1) / 2), quer: true, nx: 1, ny: 0 },
+    ].sort((s, t) => (s.nx * richtung.x + s.ny * richtung.y) - (t.nx * richtung.x + t.ny * richtung.y));
+    const seite = seiten.find((s) => welt.platzPruefen('tor', s.x, s.y, null, s.quer));
+    if (seite) ring.push(welt.gebaeudeAnlegen('rechts', 'tor', seite.x, seite.y, true, seite.quer));
     for (let y = y0 - a; y <= y1 + a; y++) {
       for (let x = x0 - a; x <= x1 + a; x++) {
         if (x > x0 - a && x < x1 + a && y > y0 - a && y < y1 + a) continue;
         if (!karten.begehbar(welt.karte, x, y) || welt.gebaeudeAn(x, y)) continue;
-        const feld = { x, y };
-        felder.push(feld);
-        const weg = -((x - mitte.x) * richtung.x + (y - mitte.y) * richtung.y);
-        if (weg > weiteste) {
-          weiteste = weg;
-          // Dasselbe Objekt wie in `felder` - der Vergleich unten ist einer
-          // auf Gleichheit des Objekts (die erste Fassung baute so nie ein Tor,
-          // gefunden von der Durchsicht in Runde 139).
-          torfeld = feld;
-        }
+        ring.push(welt.gebaeudeAnlegen('rechts', 'steinmauer', x, y, true));
       }
-    }
-    for (const f of felder) {
-      const art = f === torfeld ? 'tor' : 'steinmauer';
-      ring.push(welt.gebaeudeAnlegen('rechts', art, f.x, f.y, true));
     }
   }
 

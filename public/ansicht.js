@@ -394,7 +394,7 @@ export class Ansicht {
       if ((gebaeude.u ?? 1) >= 1) continue;
       if (gebaeude.b !== einheit.b && (!team || team !== this.teamVon(gebaeude.b))) continue;
       const mitte = this.gebaeudeMitte(gebaeude);
-      if (Math.max(Math.abs(mitte.x - einheit.x), Math.abs(mitte.y - einheit.y)) <= mitte.groesse / 2 + 1.6) return true;
+      if (Math.abs(mitte.x - einheit.x) <= mitte.bx / 2 + 1.6 && Math.abs(mitte.y - einheit.y) <= mitte.by / 2 + 1.6) return true;
     }
     return false;
   }
@@ -595,10 +595,10 @@ export class Ansicht {
    * des Benutzers, 2026-11-12).
    */
   siehtGebaeude(gebaeude) {
-    const n = this.werte.gebaeude[gebaeude.art]?.groesse || 1;
-    const x0 = gebaeude.x - Math.floor(n / 2);
-    const y0 = gebaeude.y - Math.floor(n / 2);
-    for (let y = y0; y < y0 + n; y++) for (let x = x0; x < x0 + n; x++) if (this.nebel.sieht(x, y)) return true;
+    const { bx, by } = this.masse(gebaeude.art, gebaeude.qu);
+    const x0 = gebaeude.x - Math.floor(bx / 2);
+    const y0 = gebaeude.y - Math.floor(by / 2);
+    for (let y = y0; y < y0 + by; y++) for (let x = x0; x < x0 + bx; x++) if (this.nebel.sieht(x, y)) return true;
     return false;
   }
 
@@ -808,22 +808,16 @@ export class Ansicht {
   /**
    * Wo fertige Mauern (M) und Tore stehen (X laengs x, Y laengs y) - einmal
    * je Bild, aus dem, was gezeigt wird. Die gerenderte Mauer setzt sich danach
-   * zusammen. Ein Tor steht laengs der Mauer, in der es sitzt.
+   * zusammen. Ein Tor steht mit jedem seiner Felder darin (bauen AC-37); wie
+   * es liegt, sagt der Server (`qu`).
    */
   mauernSammeln(gezeigt) {
     const felder = new Map();
     for (const g of gezeigt) {
       const werte = this.werte.gebaeude[g.art];
       if (!werte || (g.u ?? 1) < 1) continue;
-      if (werte.tor) felder.set(`${g.x},${g.y}`, 'T');
+      if (werte.tor) for (const f of this.gebaeudeFelder(g)) felder.set(`${f.x},${f.y}`, g.qu ? 'Y' : 'X');
       else if (werte.gezogen) felder.set(`${g.x},${g.y}`, 'M');
-    }
-    for (const [ort, zeichen] of felder) {
-      if (zeichen !== 'T') continue;
-      const [x, y] = ort.split(',').map(Number);
-      const laengsX = felder.has(`${x - 1},${y}`) || felder.has(`${x + 1},${y}`);
-      const laengsY = felder.has(`${x},${y - 1}`) || felder.has(`${x},${y + 1}`);
-      felder.set(ort, !laengsX && laengsY ? 'Y' : 'X');
     }
     return felder;
   }
@@ -835,10 +829,12 @@ export class Ansicht {
    * Felder dazwischen Mauer ist - sonst liefe die Mauer doppelt ums Eck.
    */
   gebaeudeLage(gebaeude) {
+    // Ein langes Gebaeude weiss selbst, wie es liegt - auch als Baustelle und
+    // in der Vorschau, wo es in keiner Mauer steht.
+    if (this.werte.gebaeude[gebaeude.art]?.laenge) return { achse: gebaeude.qu ? 'y' : 'x' };
     const felder = this.mauern;
     const zeichen = felder?.get(`${gebaeude.x},${gebaeude.y}`);
     if (!zeichen || (gebaeude.u ?? 1) < 1) return undefined;
-    if (zeichen !== 'M') return { achse: zeichen === 'Y' ? 'y' : 'x' };
     const was = (x, y) => felder.get(`${x},${y}`);
     const { x, y } = gebaeude;
     const nachbarn = RINGSUM.filter(([dx, dy]) => {
@@ -871,9 +867,11 @@ export class Ansicht {
     s.clearRect(0, 0, breite, hoehe);
     let deckung = 0;
     for (const gebaeude of gezeigt) {
+      if ((gebaeude.u ?? 1) < 1) continue;
       const lage = this.gebaeudeLage(gebaeude);
       if (!lage) continue;
-      const p = this.zuBild(gebaeude.x, gebaeude.y);
+      const mitte = this.gebaeudeMitte(gebaeude);
+      const p = this.zuBild(mitte.x, mitte.y);
       if (p.x < -4 * e || p.x > breite + 4 * e || p.y < -4 * e || p.y > hoehe + 4 * e) continue;
       deckung = gebaeudeSchattenZeichnen(s, gebaeude.art, p.x, p.y, e, lage) || deckung;
     }
@@ -884,12 +882,55 @@ export class Ansicht {
     this.stift.restore();
   }
 
+  /**
+   * Wie viele Felder eine Grundflaeche laengs x (`bx`) und laengs y (`by`)
+   * misst - dieselbe Regel wie `welt.grundflaeche`. Fast alles ist ein Quadrat
+   * aus `groesse`; ein langes Gebaeude (das Tor, bauen AC-37) hat `laenge`
+   * Felder laengs x, oder laengs y, wenn es quer liegt.
+   */
+  masse(art, quer = false) {
+    const werte = this.werte.gebaeude[art];
+    const tief = werte?.groesse || 1;
+    const lang = werte?.laenge || tief;
+    return quer ? { bx: tief, by: lang } : { bx: lang, by: tief };
+  }
+
   // Die Mitte der Grundflaeche: der Server nennt das Ankerfeld, die Flaeche
-  // reicht von x - groesse/2 (abgerundet) ueber groesse Felder.
+  // reicht von x - bx/2 (abgerundet) ueber bx Felder, ebenso in y. `groesse`
+  // ist die laengere Kante - fuer Ringe, Balken und Zeichen.
   gebaeudeMitte(gebaeude) {
-    const n = this.werte.gebaeude[gebaeude.art]?.groesse || 1;
-    const versatz = -Math.floor(n / 2) + (n - 1) / 2;
-    return { x: gebaeude.x + versatz, y: gebaeude.y + versatz, groesse: n };
+    const { bx, by } = this.masse(gebaeude.art, gebaeude.qu);
+    return {
+      x: gebaeude.x - Math.floor(bx / 2) + (bx - 1) / 2,
+      y: gebaeude.y - Math.floor(by / 2) + (by - 1) / 2,
+      groesse: Math.max(bx, by),
+      bx,
+      by,
+    };
+  }
+
+  /** Die Felder der Grundflaeche, von hinten nach vorn im Bild. */
+  gebaeudeFelder(gebaeude) {
+    const { bx, by } = this.masse(gebaeude.art, gebaeude.qu);
+    const x0 = gebaeude.x - Math.floor(bx / 2);
+    const y0 = gebaeude.y - Math.floor(by / 2);
+    const felder = [];
+    for (let y = y0; y < y0 + by; y++) for (let x = x0; x < x0 + bx; x++) felder.push({ x, y });
+    return felder;
+  }
+
+  /**
+   * Der Umriss einer Grundflaeche als Pfad: `p` ist ihre Mitte im Bild. Ein
+   * Quadrat wird die Raute, ein langes Gebaeude ein Parallelogramm.
+   */
+  flaecheWeg(stift, p, e, bx, by) {
+    const ecke = (dx, dy) => [p.x + (dx - dy) * e, p.y + ((dx + dy) * e) / 2];
+    stift.beginPath();
+    stift.moveTo(...ecke(-bx / 2, -by / 2));
+    stift.lineTo(...ecke(bx / 2, -by / 2));
+    stift.lineTo(...ecke(bx / 2, by / 2));
+    stift.lineTo(...ecke(-bx / 2, by / 2));
+    stift.closePath();
   }
 
   // ---- Boden in Kacheln (darstellung AC-13) --------------------------------
@@ -1272,7 +1313,7 @@ export class Ansicht {
       if (gebaeude.b === this.ich) continue;
       const mitte = this.gebaeudeMitte(gebaeude);
       const p = this.zuBild(mitte.x, mitte.y);
-      if (!gebaeudeGetroffen(gebaeude.art, px - p.x, py - p.y, e, mitte.groesse)) continue;
+      if (!gebaeudeGetroffen(gebaeude.art, px - p.x, py - p.y, e, mitte.groesse, this.gebaeudeLage(gebaeude))) continue;
       if (mitte.x + mitte.y > tiefe) {
         tiefe = mitte.x + mitte.y;
         bestes = gebaeude;
@@ -1315,6 +1356,39 @@ export class Ansicht {
     this.beiAuswahl();
   }
 
+  /**
+   * Ein langes Gebaeude in der Hand drehen (bauen AC-37): von laengs x nach
+   * laengs y und zurueck. Ohne Drehen liegt es laengs der eigenen Mauer unter
+   * dem Zeiger (`platzQuer`).
+   */
+  platzDrehen() {
+    const lage = this.platzLage();
+    if (!lage || !this.werte.gebaeude[lage.art]?.laenge) return false;
+    this.platzieren.quer = !lage.quer;
+    return true;
+  }
+
+  /**
+   * Wie ein langes Gebaeude unter dem Zeiger liegt: wie gedreht - sonst laengs
+   * der eigenen Mauer, die es ersetzt, dieselbe Regel wie `welt.lageRaten`.
+   */
+  platzQuer(art, welt) {
+    if (!this.werte.gebaeude[art]?.laenge) return false;
+    if (typeof this.platzieren?.quer === 'boolean') return this.platzieren.quer;
+    const anker = (quer) => this.platzAnker(art, welt, quer);
+    const [laengs, quer] = [anker(false), anker(true)];
+    return this.ersetzbar(art, quer.x, quer.y, true).length > this.ersetzbar(art, laengs.x, laengs.y, false).length;
+  }
+
+  /** Das Ankerfeld, wenn die Mitte der Grundflaeche unter dem Zeiger liegt. */
+  platzAnker(art, welt, quer) {
+    const { bx, by } = this.masse(art, quer);
+    return {
+      x: Math.round(welt.x + Math.floor(bx / 2) - (bx - 1) / 2),
+      y: Math.round(welt.y + Math.floor(by / 2) - (by - 1) / 2),
+    };
+  }
+
   platzierenBeenden() {
     this.platzieren = null;
     this.beiAuswahl();
@@ -1326,14 +1400,17 @@ export class Ansicht {
   platzLage() {
     if (!this.platzieren || !this.zeiger) return null;
     const art = this.platzieren.art;
-    const n = this.werte.gebaeude[art]?.groesse || 1;
     const welt = this.zuWelt(this.zeiger.x, this.zeiger.y);
-    const versatz = Math.floor(n / 2) - (n - 1) / 2;
-    const x = Math.round(welt.x + versatz);
-    const y = Math.round(welt.y + versatz);
-    const x0 = x - Math.floor(n / 2);
-    const y0 = y - Math.floor(n / 2);
-    const lage = { art, x, y, groesse: n, mitte: { x: x0 + (n - 1) / 2, y: y0 + (n - 1) / 2 }, taugt: this.platzTaugt(art, x, y) };
+    const quer = this.platzQuer(art, welt);
+    const { bx, by } = this.masse(art, quer);
+    const { x, y } = this.platzAnker(art, welt, quer);
+    const x0 = x - Math.floor(bx / 2);
+    const y0 = y - Math.floor(by / 2);
+    const lage = {
+      art, x, y, groesse: Math.max(bx, by), bx, by, quer,
+      mitte: { x: x0 + (bx - 1) / 2, y: y0 + (by - 1) / 2 },
+      taugt: this.platzTaugt(art, x, y, 0, quer),
+    };
     if (!this.werte.gebaeude[art]?.gezogen) return lage;
     return { ...lage, ...this.mauerLage(art, this.platzieren.von || { x, y }, { x, y }) };
   }
@@ -1390,23 +1467,31 @@ export class Ansicht {
    * sie immer.
    */
   torOffen(tor) {
+    // Gemessen von der Mitte der Durchfahrt: sie ist zwei Felder breit.
+    const mitte = this.gebaeudeMitte(tor);
     for (const einheit of this.nachher.values()) {
-      if (einheit.b === tor.b && !einheit.s && Math.hypot(einheit.x - tor.x, einheit.y - tor.y) <= 1.5) return true;
+      if (einheit.b === tor.b && !einheit.s && Math.hypot(einheit.x - mitte.x, einheit.y - mitte.y) <= 1.8) return true;
     }
     return false;
   }
 
   /**
-   * Das eigene Gebaeude, das ein Neubau an dieser Stelle ersetzt - ein Tor auf
-   * der eigenen Mauer (bauen AC-31), wie `welt.ersetzbar` auf dem Server.
+   * Die eigenen Gebaeude, die ein Neubau an dieser Stelle ersetzt - ein Tor
+   * auf der eigenen Mauer (bauen AC-31, AC-37): jedes Mauerfeld unter seiner
+   * Grundflaeche, wie `welt.ersetzbar` auf dem Server. Eine Liste.
    */
-  ersetzbar(art, x, y) {
+  ersetzbar(art, x, y, quer = false) {
     const ersetzt = this.werte.gebaeude[art]?.ersetzt;
-    if (!ersetzt) return null;
+    if (!ersetzt) return [];
+    const { bx, by } = this.masse(art, quer);
+    const x0 = x - Math.floor(bx / 2);
+    const y0 = y - Math.floor(by / 2);
+    const alte = [];
     for (const gebaeude of this.gebaeude.values()) {
-      if (gebaeude.b === this.ich && gebaeude.art === ersetzt && gebaeude.x === x && gebaeude.y === y) return gebaeude;
+      if (gebaeude.b !== this.ich || gebaeude.art !== ersetzt) continue;
+      if (gebaeude.x >= x0 && gebaeude.x < x0 + bx && gebaeude.y >= y0 && gebaeude.y < y0 + by) alte.push(gebaeude);
     }
-    return null;
+    return alte;
   }
 
   // Taugt der Platz fuer ein Gebaeude? Dieselbe Regel wie auf dem Server
@@ -1414,31 +1499,32 @@ export class Ansicht {
   // von der Vorschau abweichen (Rueckschau Runde 35).
   // Ein ersetzbares Gebaeude (ein Tor auf der eigenen Mauer, bauen AC-31)
   // zaehlt als frei - nur ohne Rand, der Rand gilt dem Platz drumherum.
-  platzTaugt(art, x, y, rand = 0) {
-    const n = this.werte.gebaeude[art]?.groesse || 1;
-    const x0 = x - Math.floor(n / 2) - rand;
-    const y0 = y - Math.floor(n / 2) - rand;
-    const m = n + 2 * rand;
+  platzTaugt(art, x, y, rand = 0, quer = false) {
+    const { bx, by } = this.masse(art, quer);
+    const x0 = x - Math.floor(bx / 2) - rand;
+    const y0 = y - Math.floor(by / 2) - rand;
+    const mx = bx + 2 * rand;
+    const my = by + 2 * rand;
     const g = this.karte.groesse;
-    const alt = rand === 0 ? this.ersetzbar(art, x, y) : null;
-    for (let fy = y0; fy < y0 + m; fy++) {
-      for (let fx = x0; fx < x0 + m; fx++) {
-        if (alt && fx === alt.x && fy === alt.y) continue;
+    const alte = rand === 0 ? this.ersetzbar(art, x, y, quer) : [];
+    for (let fy = y0; fy < y0 + my; fy++) {
+      for (let fx = x0; fx < x0 + mx; fx++) {
+        if (alte.some((alt) => fx === alt.x && fy === alt.y)) continue;
         if (fx < 0 || fy < 0 || fx >= g || fy >= g || this.karte.felder[fy * g + fx] !== GRAS) return false;
       }
     }
     for (const tier of this.tiere.values()) {
       const tx = Math.round(tier.x);
       const ty = Math.round(tier.y);
-      if (tx >= x0 && tx < x0 + m && ty >= y0 && ty < y0 + m) return false;
+      if (tx >= x0 && tx < x0 + mx && ty >= y0 && ty < y0 + my) return false;
     }
     // Farmen liegen auf Gras, belegen ihren Platz aber trotzdem.
     for (const gebaeude of this.gebaeude.values()) {
-      if (gebaeude === alt) continue;
-      const k = this.werte.gebaeude[gebaeude.art]?.groesse || 1;
-      const gx0 = gebaeude.x - Math.floor(k / 2);
-      const gy0 = gebaeude.y - Math.floor(k / 2);
-      if (gx0 < x0 + m && gx0 + k > x0 && gy0 < y0 + m && gy0 + k > y0) return false;
+      if (alte.includes(gebaeude)) continue;
+      const k = this.masse(gebaeude.art, gebaeude.qu);
+      const gx0 = gebaeude.x - Math.floor(k.bx / 2);
+      const gy0 = gebaeude.y - Math.floor(k.by / 2);
+      if (gx0 < x0 + mx && gx0 + k.bx > x0 && gy0 < y0 + my && gy0 + k.by > y0) return false;
     }
     return true;
   }
@@ -1451,7 +1537,10 @@ export class Ansicht {
       this.melden('Hier ist kein Platz.');
       return;
     }
-    this.bauenSenden([...this.ausgewaehlt], lage.art, { x: lage.x, y: lage.y }, anhaengen);
+    // Ein langes Gebaeude sagt, wie es liegt (bauen AC-37) - so steht es, wie
+    // die Vorschau es gezeigt hat.
+    const quer = this.werte.gebaeude[lage.art]?.laenge ? lage.quer : undefined;
+    this.bauenSenden([...this.ausgewaehlt], lage.art, { x: lage.x, y: lage.y }, anhaengen, quer);
     // Mit Umschalt bleibt der Bauplatz in der Hand fuer die naechste
     // Baustelle (bedienung AC-48); ohne legt der Klick ihn weg.
     if (!anhaengen) this.platzierenBeenden();
@@ -1484,14 +1573,16 @@ export class Ansicht {
     }
     const p = this.zuBild(lage.mitte.x, lage.mitte.y);
     const spieler = this.spieler.get(this.ich);
-    raute(stift, p.x, p.y, e * lage.groesse, (e * lage.groesse) / 2);
+    this.flaecheWeg(stift, p, e, lage.bx, lage.by);
     stift.fillStyle = lage.taugt ? 'rgba(80, 220, 110, 0.35)' : 'rgba(235, 70, 60, 0.4)';
     stift.fill();
     stift.strokeStyle = lage.taugt ? '#5fe07a' : '#ff5a4a';
     stift.lineWidth = 2;
     stift.stroke();
     stift.globalAlpha = 0.55;
-    gebaeudeBildZeichnen(stift, lage.art, p.x, p.y, e, spieler ? spieler.farbe : '#888888', lage.groesse);
+    const lang = Boolean(this.werte.gebaeude[lage.art]?.laenge);
+    gebaeudeBildZeichnen(stift, lage.art, p.x, p.y, e, spieler ? spieler.farbe : '#888888', lage.groesse, 1, 1, false,
+      lang ? { achse: lage.quer ? 'y' : 'x' } : undefined);
     stift.globalAlpha = 1;
   }
 
@@ -1531,6 +1622,8 @@ export class Ansicht {
       arbeit: !feindlich && gemeint.art !== 'gehen',
       art: gemeint.art,
       groesse: gemeint.groesse || 1,
+      bx: gemeint.bx,
+      by: gemeint.by,
       seit: performance.now(),
     };
     // Ein Gegner steht in der Reihe mit seiner Mitte und rot (bedienung
@@ -1650,7 +1743,7 @@ export class Ansicht {
       const mitte = this.gebaeudeMitte(gebaeude);
       if (mitte.x + mitte.y <= tiefe) continue;
       const p = this.zuBild(mitte.x, mitte.y);
-      if (gebaeudeGetroffen(gebaeude.art, px - p.x, py - p.y, e, mitte.groesse)) return true;
+      if (gebaeudeGetroffen(gebaeude.art, px - p.x, py - p.y, e, mitte.groesse, this.gebaeudeLage(gebaeude))) return true;
     }
     return false;
   }
@@ -1700,13 +1793,13 @@ export class Ansicht {
       const mitte = this.gebaeudeMitte(gebaeude);
       if (mitte.x + mitte.y <= tiefe) continue;
       const p = this.zuBild(mitte.x, mitte.y);
-      if (!gebaeudeGetroffen(gebaeude.art, px - p.x, py - p.y, e, mitte.groesse)) continue;
+      if (!gebaeudeGetroffen(gebaeude.art, px - p.x, py - p.y, e, mitte.groesse, this.gebaeudeLage(gebaeude))) continue;
       const art = this.gebaeudeHandlung(gebaeude, kann);
       if (!art) continue;
       tiefe = mitte.x + mitte.y;
       // Das Ankerfeld liegt immer in der Grundflaeche - daraus liest der
       // Server das Gebaeude (`gebaeudeAn`).
-      ziel = { art, x: mitte.x, y: mitte.y, groesse: mitte.groesse, sende: { x: gebaeude.x, y: gebaeude.y } };
+      ziel = { art, x: mitte.x, y: mitte.y, groesse: mitte.groesse, bx: mitte.bx, by: mitte.by, sende: { x: gebaeude.x, y: gebaeude.y } };
     }
     if (ziel || !kann.sammler) return ziel;
     // 4. Ein Vorrat, dessen Bild der Zeiger trifft: der vorderste. Ein Baum
@@ -1738,10 +1831,9 @@ export class Ansicht {
     if (kann.sammler && DINGE.includes(art)) return { art: 'sammeln', feldart: art, x: feld.x, y: feld.y, sende: feld };
     for (const gebaeude of this.gezeigteGebaeude()) {
       const mitte = this.gebaeudeMitte(gebaeude);
-      const halb = (mitte.groesse - 1) / 2;
-      if (Math.abs(feld.x - mitte.x) > halb || Math.abs(feld.y - mitte.y) > halb) continue;
+      if (Math.abs(feld.x - mitte.x) > (mitte.bx - 1) / 2 || Math.abs(feld.y - mitte.y) > (mitte.by - 1) / 2) continue;
       const handlung = this.gebaeudeHandlung(gebaeude, kann);
-      return handlung ? { art: handlung, x: mitte.x, y: mitte.y, groesse: mitte.groesse, sende: feld } : null;
+      return handlung ? { art: handlung, x: mitte.x, y: mitte.y, groesse: mitte.groesse, bx: mitte.bx, by: mitte.by, sende: feld } : null;
     }
     if (!kann.sammler) return null;
     // Ein eigenes Schaf naeher als ein Feld (`welt.tierAn`).
@@ -2028,8 +2120,7 @@ export class Ansicht {
     for (const gebaeude of this.gebaeude.values()) {
       if (!this.feindlich(gebaeude.b)) continue;
       const mitte = this.gebaeudeMitte(gebaeude);
-      const halb = (mitte.groesse - 1) / 2;
-      if (zx >= mitte.x - halb && zx <= mitte.x + halb && zy >= mitte.y - halb && zy <= mitte.y + halb) {
+      if (Math.abs(zx - mitte.x) <= (mitte.bx - 1) / 2 && Math.abs(zy - mitte.y) <= (mitte.by - 1) / 2) {
         return { x: mitte.x, y: mitte.y };
       }
     }
@@ -2218,6 +2309,16 @@ export class Ansicht {
       // Farmen liegen flach am Boden und sind schon gezeichnet.
       if (this.werte.gebaeude[gebaeude.art]?.begehbar) continue;
       const mitte = this.gebaeudeMitte(gebaeude);
+      // Ein langes Gebaeude (das Tor, bauen AC-37) steht je Feld einmal in
+      // der Folge und wird in Streifen gezeichnet: als Ganzes laege es nach
+      // seiner Mitte, und wer vor dem hinteren Ende steht, verschwaende
+      // dahinter.
+      if (mitte.bx !== mitte.by) {
+        this.gebaeudeFelder(gebaeude).forEach((f, stueck) => {
+          stehend.push({ tiefe: f.x + f.y, x: mitte.x, y: mitte.y, art: 'gebaeude', gebaeude, stueck });
+        });
+        continue;
+      }
       stehend.push({ tiefe: mitte.x + mitte.y, x: mitte.x, y: mitte.y, art: 'gebaeude', gebaeude });
     }
     for (const tier of this.tiere.values()) {
@@ -2256,7 +2357,7 @@ export class Ansicht {
         // Aus dem Zwischenspeicher: direkt gezeichnet kostete es bei Zoom 1 doppelt so viel (Runde 29).
         dingBildZeichnen(stift, ding.feld, p.x, p.y, e, ding.index, (this.fuellung.get(ding.index) || 4) / 4, ding, this.salz);
       } else if (ding.art === 'gebaeude') {
-        this.gebaeudeBild(ding.gebaeude, p, e);
+        this.gebaeudeBild(ding.gebaeude, p, e, ding.stueck);
       } else if (ding.art === 'tier') {
         const spieler = this.spieler.get(ding.tier.b);
         if (this.ausgewaehlt.has(ding.tier.i)) {
@@ -2428,7 +2529,7 @@ export class Ansicht {
       if (gebaeude.b !== this.ich) continue;
       const mitte = this.gebaeudeMitte(gebaeude);
       const p = this.zuBild(mitte.x, mitte.y);
-      if (!gebaeudeGetroffen(gebaeude.art, px - p.x, py - p.y, e, mitte.groesse)) continue;
+      if (!gebaeudeGetroffen(gebaeude.art, px - p.x, py - p.y, e, mitte.groesse, this.gebaeudeLage(gebaeude))) continue;
       if (mitte.x + mitte.y > tiefe) {
         tiefe = mitte.x + mitte.y;
         bestes = gebaeude;
@@ -2457,10 +2558,15 @@ export class Ansicht {
       // niemanden - ihr Boden laege sonst als Maske ueber den Fuessen.
       if ((gebaeude.u ?? 1) < 0.5) continue;
       const mitte = this.gebaeudeMitte(gebaeude);
-      if (mitte.x + mitte.y <= tiefe) continue;
+      // Ein langes Gebaeude liegt je Feld in der Folge: es zaehlt das Feld,
+      // das der Einheit laengs seiner Achse am naechsten ist.
+      const tiefeDort = mitte.bx === mitte.by ? mitte.x + mitte.y
+        : Math.min(Math.max(einheit.x, mitte.x - (mitte.bx - 1) / 2), mitte.x + (mitte.bx - 1) / 2)
+          + Math.min(Math.max(einheit.y, mitte.y - (mitte.by - 1) / 2), mitte.y + (mitte.by - 1) / 2);
+      if (tiefeDort <= tiefe) continue;
       const p = this.zuBild(mitte.x, mitte.y);
       // Etwas ueber dem Fusspunkt gemessen: dort steht der Koerper.
-      if (gebaeudeGetroffen(gebaeude.art, punkt.x - p.x, punkt.y - figur * 0.5 - p.y, e, mitte.groesse)) decken.push(gebaeude);
+      if (gebaeudeGetroffen(gebaeude.art, punkt.x - p.x, punkt.y - figur * 0.5 - p.y, e, mitte.groesse, this.gebaeudeLage(gebaeude))) decken.push(gebaeude);
     }
     return decken;
   }
@@ -2508,9 +2614,7 @@ export class Ansicht {
     for (const gebaeude of decken) {
       const mitte = this.gebaeudeMitte(gebaeude);
       const p = this.zuBild(mitte.x, mitte.y);
-      const voll = this.werte.gebaeude[gebaeude.art]?.nahrung;
-      const offen = Boolean(this.werte.gebaeude[gebaeude.art]?.tor) && this.torOffen(gebaeude);
-      gebaeudeBildZeichnen(maske, gebaeude.art, p.x, p.y, e, '#888888', mitte.groesse, gebaeude.u ?? 1, voll ? (gebaeude.n ?? voll) / voll : 1, offen, this.gebaeudeLage(gebaeude));
+      this.gebaeudeMalen(maske, gebaeude, p, e, '#888888');
     }
     // Der Schlagschatten eines Gebaeudes verdeckt niemanden: zweimal mit sich
     // selbst beschnitten bleibt von seiner halben Deckung fast nichts, von
@@ -2622,9 +2726,9 @@ export class Ansicht {
     if (zeichen.arbeit) {
       // Arbeit (bedienung AC-52): eine Raute um das, woran gearbeitet wird -
       // den Baum, die Baustelle, das Lager -, die sich darauf zusammenzieht.
-      const halb = e * (zeichen.groesse || 1) * (1.5 - 0.45 * lauf);
+      const weit = e * (1.5 - 0.45 * lauf);
       for (const [strich, breite] of [['rgba(20,16,12,0.75)', e * 0.16], [farbe, e * 0.09]]) {
-        raute(stift, p.x, p.y, halb, halb / 2);
+        this.flaecheWeg(stift, p, weit, zeichen.bx || zeichen.groesse || 1, zeichen.by || zeichen.groesse || 1);
         stift.strokeStyle = strich;
         stift.lineWidth = Math.max(1.5, breite);
         stift.stroke();
@@ -2672,11 +2776,10 @@ export class Ansicht {
     const p = this.zuBild(ziel.x, ziel.y);
     const feindlich = ziel.art === 'angreifen' || ziel.art === 'bekehren';
     const farbe = feindlich ? '#e23c2a' : ARBEITSFARBE;
-    const halb = e * (ziel.groesse || 1);
     stift.save();
     stift.lineJoin = 'round';
     for (const [strich, breite] of [['rgba(20,16,12,0.7)', 4], [farbe, 2]]) {
-      raute(stift, p.x, p.y, halb, halb / 2);
+      this.flaecheWeg(stift, p, e, ziel.bx || ziel.groesse || 1, ziel.by || ziel.groesse || 1);
       stift.strokeStyle = strich;
       stift.lineWidth = breite;
       stift.stroke();
@@ -2741,10 +2844,58 @@ export class Ansicht {
     stift.restore();
   }
 
-  gebaeudeBild(gebaeude, p, e) {
+  /**
+   * Ein Gebaeude malen, wie es jetzt steht - ins Spielbild oder in die Maske
+   * des Umrisses. `p` ist die Mitte seiner Grundflaeche im Bild.
+   *
+   * Ein langes Gebaeude (das Tor, bauen AC-37) kommt in Streifen, je Feld
+   * einem: `stueck` nennt, welcher; ohne Angabe alle. Fertig ist es ein Bild,
+   * von dem jeder Streifen seinen senkrechten Ausschnitt zeigt - die Enden
+   * bis an den Bildrand. Im Bau steht auf jedem Feld das Geruest eines Feldes.
+   */
+  gebaeudeMalen(stift, gebaeude, p, e, farbe, stueck = undefined) {
+    const mitte = this.gebaeudeMitte(gebaeude);
+    const werte = this.werte.gebaeude[gebaeude.art];
+    const voll = werte?.nahrung;
+    const rest = voll ? (gebaeude.n ?? voll) / voll : 1;
+    const offen = Boolean(werte?.tor) && this.torOffen(gebaeude);
+    const lage = this.gebaeudeLage(gebaeude);
+    const bau = gebaeude.u ?? 1;
+    if (mitte.bx === mitte.by) {
+      gebaeudeBildZeichnen(stift, gebaeude.art, p.x, p.y, e, farbe, mitte.groesse, bau, rest, offen, lage);
+      return;
+    }
+    const felder = this.gebaeudeFelder(gebaeude);
+    const welche = stueck === undefined ? felder.map((_, i) => i) : [stueck];
+    for (const i of welche) {
+      // Wo das Feld im Bild liegt, von der Mitte der Grundflaeche aus.
+      const dx = ((felder[i].x - mitte.x) - (felder[i].y - mitte.y)) * e;
+      const dy = (((felder[i].x - mitte.x) + (felder[i].y - mitte.y)) * e) / 2;
+      if (bau < 1) {
+        gebaeudeBildZeichnen(stift, gebaeude.art, p.x + dx, p.y + dy, e, farbe, 1, bau, rest, false, lage);
+        continue;
+      }
+      const links = i === (gebaeude.qu ? felder.length - 1 : 0) ? -1e5 : p.x + dx - e / 2;
+      const rechts = i === (gebaeude.qu ? 0 : felder.length - 1) ? 1e5 : p.x + dx + e / 2;
+      stift.save();
+      stift.beginPath();
+      stift.rect(links, -1e5, rechts - links, 2e5);
+      stift.clip();
+      gebaeudeBildZeichnen(stift, gebaeude.art, p.x, p.y, e, farbe, mitte.groesse, 1, rest, offen, lage);
+      stift.restore();
+    }
+  }
+
+  // `stueck`: bei einem langen Gebaeude der Streifen, der jetzt an der Reihe
+  // ist (`gebaeudeMalen`); Balken und Rand kommen mit dem ersten.
+  gebaeudeBild(gebaeude, p, e, stueck = undefined) {
     const spieler = this.spieler.get(gebaeude.b);
     const stift = this.stift;
-    const { groesse } = this.gebaeudeMitte(gebaeude);
+    const { groesse, bx, by } = this.gebaeudeMitte(gebaeude);
+    if (stueck) {
+      this.gebaeudeMalen(stift, gebaeude, p, e, spieler ? spieler.farbe : '#888888', stueck);
+      return;
+    }
     // Balken, wenn ausgewaehlt oder beschaedigt - eine Baustelle hat ihren
     // Fortschritt in der Auswahlleiste und zaehlt hier nicht als beschaedigt.
     const lebenVoll = this.gebaeudeLebenVoll(gebaeude);
@@ -2766,16 +2917,14 @@ export class Ansicht {
     if (this.gewaehltesGebaeude === gebaeude.i || angesehen) {
       // Ausgewaehlt: ein heller Rand um die Grundflaeche, wie die Ellipse bei
       // Figuren - gestrichelt, wenn es nur angesehen wird (bedienung AC-58).
-      raute(stift, p.x, p.y, e * groesse, e * groesse / 2);
+      this.flaecheWeg(stift, p, e, bx, by);
       stift.strokeStyle = '#ffffff';
       stift.lineWidth = 2;
       if (angesehen) stift.setLineDash([6, 5]);
       stift.stroke();
       stift.setLineDash([]);
     }
-    const voll = this.werte.gebaeude[gebaeude.art]?.nahrung;
-    const offen = Boolean(this.werte.gebaeude[gebaeude.art]?.tor) && this.torOffen(gebaeude);
-    gebaeudeBildZeichnen(stift, gebaeude.art, p.x, p.y, e, spieler ? spieler.farbe : '#888888', groesse, gebaeude.u ?? 1, voll ? (gebaeude.n ?? voll) / voll : 1, offen, this.gebaeudeLage(gebaeude));
+    this.gebaeudeMalen(stift, gebaeude, p, e, spieler ? spieler.farbe : '#888888', stueck);
   }
 
   namenZeichnen(spieler) {

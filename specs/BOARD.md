@@ -7,9 +7,9 @@ Eine Zeile je Abnahmekriterium. Gepflegt wird der Status in der Spec selbst,
 hier steht er zusammengefasst. Erzeugt mit `npm run specs:board`; als Seite
 mit Bildnachweisen, Filter und Suche mit `npm run qa:report`.
 
-**Gesamt:** 509/632 fertig · 3 in Arbeit · 13 in QA · 3 geplant · 96 offen · 8 zurueckgestellt
+**Gesamt:** 510/633 fertig · 3 in Arbeit · 13 in QA · 3 geplant · 96 offen · 8 zurueckgestellt
 
-**Nachweise:** 246 Kriterien mit Bild · 270 ohne Bild, begruendet in `qa/ohne-bild.json`
+**Nachweise:** 247 Kriterien mit Bild · 270 ohne Bild, begruendet in `qa/ohne-bild.json`
 
 ## Nach Spezifikation
 
@@ -21,7 +21,7 @@ mit Bildnachweisen, Filter und Suche mit `npm run qa:report`.
 | [Anhalten und Fortsetzen](00-plattform/speichern.md)           | -         | -     | -       | 23    | -               | 3      |
 | [Spielauswahl und Einstellungen](00-plattform/spielauswahl.md) | -         | -     | -       | 5     | -               | 19     |
 | [Uebertragung](00-plattform/uebertragung.md)                   | -         | -     | 1       | 1     | -               | 8      |
-| [Bauen und Ausbilden](10-strategie/bauen.md)                   | -         | -     | -       | 2     | -               | 34     |
+| [Bauen und Ausbilden](10-strategie/bauen.md)                   | -         | -     | -       | 2     | -               | 35     |
 | [Bedienung](10-strategie/bedienung.md)                         | -         | 1     | -       | 3     | -               | 58     |
 | [Darstellung](10-strategie/darstellung.md)                     | 1         | 1     | -       | 4     | -               | 19     |
 | [Einheiten und Befehle](10-strategie/einheiten-und-befehle.md) | -         | -     | -       | 17    | 1               | 32     |

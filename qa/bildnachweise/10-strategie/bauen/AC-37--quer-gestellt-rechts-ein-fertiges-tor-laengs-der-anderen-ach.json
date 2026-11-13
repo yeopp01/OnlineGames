@@ -1,0 +1,10 @@
+{
+  "spec": "10-strategie/bauen.md",
+  "ac": "AC-37",
+  "titel": "Quer gestellt: rechts ein fertiges Tor längs der anderen Achse, links das eben bestellte im Bau, je Feld ein Gerüst",
+  "datei": "e2e/tests/strategie-mauern.spec.mjs",
+  "pfad": [
+    "Mauern",
+    "bauen AC-37: das Tor ist vier Felder lang - in der Mauer mit zwei Tuermen, und mit R gedreht liegt ein zweites quer"
+  ]
+}

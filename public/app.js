@@ -169,8 +169,13 @@ function empfangen(nachricht) {
         ansicht.beiPause = () => pauseUmschalten();
         ansicht.sammelpunktSenden = (gebaeude, ziel) =>
           senden({ typ: 'befehl', auftrag: 'sammelpunkt', gebaeude, ziel });
-        ansicht.bauenSenden = (einheiten, art, ziel, anhaengen) =>
-          senden({ typ: 'befehl', auftrag: 'bauen', einheiten, art, ziel, ...(anhaengen ? { anhaengen: true } : {}) });
+        ansicht.bauenSenden = (einheiten, art, ziel, anhaengen, quer) =>
+          senden({
+            typ: 'befehl', auftrag: 'bauen', einheiten, art, ziel,
+            ...(anhaengen ? { anhaengen: true } : {}),
+            // Wie ein langes Gebaeude liegt (bauen AC-37).
+            ...(typeof quer === 'boolean' ? { quer } : {}),
+          });
         ansicht.mauerSenden = (einheiten, art, von, bis) =>
           senden({ typ: 'befehl', auftrag: 'mauer', einheiten, art, von, bis });
       }

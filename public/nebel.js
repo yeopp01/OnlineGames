@@ -103,10 +103,10 @@ export class Nebel {
       this.gebaeudeSchluessel = schluessel;
       this.gebaeude.fill(0);
       for (const b of meine) {
-        const groesse = ansicht.werte.gebaeude[b.art]?.groesse || 1;
-        const x0 = b.x - Math.floor(groesse / 2);
-        const y0 = b.y - Math.floor(groesse / 2);
-        this.markieren(this.gebaeude, x0, y0, x0 + groesse - 1, y0 + groesse - 1, weite(b));
+        const { bx, by } = ansicht.masse(b.art, b.qu);
+        const x0 = b.x - Math.floor(bx / 2);
+        const y0 = b.y - Math.floor(by / 2);
+        this.markieren(this.gebaeude, x0, y0, x0 + bx - 1, y0 + by - 1, weite(b));
       }
     }
     const daten = this.punkte.data;

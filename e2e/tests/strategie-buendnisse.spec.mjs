@@ -6,6 +6,7 @@
 // selbst prüfen tests/strategie-buendnisse.test.mjs und
 // tests/spielauswahl.test.mjs über den Server.
 import { nachweis } from '../../scripts/qa-nachweis.mjs';
+import { zeichenHalten } from '../helpers/strategie.mjs';
 import {
   ANMELDUNG, aufgebenLassen, einheitenAufstellen, expect, fehlerSammeln, test,
 } from '../helpers/seite.mjs';
@@ -129,6 +130,7 @@ test.describe('Verbündete', () => {
 
     // 1. Rechtsklick auf Cems Dorfbewohner: kein Ziel, das Zeichen ist weiß.
     const aufCem = await aufSeite(anna, cem);
+    await zeichenHalten(anna);
     await anna.mouse.click(aufCem.x, aufCem.y, { button: 'right' });
     const zeichen = await anna.evaluate(() => window.ansicht.zielzeichen && { ...window.ansicht.zielzeichen });
     expect(zeichen, 'ein Zeichen steht').toBeTruthy();

@@ -7,6 +7,7 @@
 // bleibt stehen, das Menue sagt die Wirkung, die Punkte stehen staendig im
 // Bild, und der Vorraum bietet die Rueckkehr an.
 import { nachweis } from '../../scripts/qa-nachweis.mjs';
+import { zeichenHalten } from '../helpers/strategie.mjs';
 import { einheitenAufstellen, expect, lebenSetzen, rohstoffe, test, zeitraffer } from '../helpers/seite.mjs';
 import { partieBeenden, partieZuZweit, platzImBild, waehlen } from '../helpers/strategie.mjs';
 
@@ -363,6 +364,7 @@ test.describe('Rueckmeldungen aus dem ersten Spiel', () => {
     const vorher = await kamera();
     const karte = await anna.locator('#uebersicht').boundingBox();
     const klick = { x: karte.x + karte.width * 0.5, y: karte.y + karte.height * 0.5 };
+    await zeichenHalten(anna);
     await anna.mouse.click(klick.x, klick.y, { button: 'right' });
     // Der Ring steht auf der Uebersicht, wo geklickt wurde - fuer das Bild angehalten.
     await anna.evaluate(() => { window.ansicht.zielzeichen.seit = performance.now() + 60_000; });

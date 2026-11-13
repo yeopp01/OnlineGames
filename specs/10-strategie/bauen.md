@@ -2,7 +2,7 @@
 
 **Bereich:** Strategie
 **Kuerzel:** bauen
-**Stand:** 34/36 fertig · 2 offen
+**Stand:** 35/37 fertig · 2 offen
 
 ## Zweck
 
@@ -226,9 +226,9 @@ Spezialeinheit der Burg (kommt mit den Häusern, Stufe E), Palisade.
   für die eigenen Einheiten begehbar, für fremde eine Sperre. Die Wegsuche
   kennt den Unterschied.
   Gebaut in Runde 128: Werte aus der Vorlage (30 Stein, 70 Sekunden, 2750
-  Leben, ab der Feudalzeit). Abweichung: **ein Feld statt vier** — Gebäude
-  sind hier quadratisch, und ein Feld passt in eine Mauer jeder Richtung,
-  auch schräg. Auf der Karte ist das Tor bebaut wie jedes Gebäude; die
+  Leben, ab der Feudalzeit). Abweichung damals: **ein Feld statt vier** —
+  Gebäude waren hier quadratisch, und ein Feld passt in eine Mauer jeder
+  Richtung, auch schräg; **seit AC-37 sind es vier**. Auf der Karte ist das Tor bebaut wie jedes Gebäude; die
   Wegsuche bekommt die Tore des Besitzers als Felder, die nur für ihn frei
   sind (`suchen(…, frei)`, `welt.toreVon`). Gesetzt wird es in eine Lücke
   oder auf ein Feld der eigenen Mauer, das es ohne Erstattung ersetzt
@@ -307,6 +307,32 @@ Spezialeinheit der Burg (kommt mit den Häusern, Stufe E), Palisade.
   nebeneinander setzt, bekommt beide. Weiter weg holt ihn keine. Nach einem
   Lager oder einer Mühle geht das Sammeln vor (AC-1), die Baustelle daneben
   wartet.
+- **AC-37** `fertig` **Tor vier Felder lang** — Das Tor belegt vier Felder
+  in einer Reihe und eines in der Tiefe, längs x oder längs y. Die zwei
+  Felder an den Enden sind seine Türme und für niemanden begehbar, die zwei
+  dazwischen die Durchfahrt (AC-31). Benutzer am 2026-11-13: „Das Tor muss
+  breiter sein." Auf die eigene Mauer gesetzt, liegt es längs der Mauer und
+  ersetzt jedes Feld darunter ohne Erstattung; halb in eine Lücke, halb auf
+  Mauer geht auch. Auf freiem Gras liegt es längs x; **`R` dreht es in der
+  Hand**, und der Auftrag sagt dem Server, wie es liegt (`quer`). Die
+  Vorschau zeigt die vier Felder grün oder rot. Schräg gibt es keines: in
+  eine schräge Mauer passt kein Tor mehr — der Preis für die Breite. Kosten,
+  Bauzeit und Leben bleiben die der Vorlage (30 Stein, 70 Sekunden, 2750
+  Leben), die für ihr Tor gelten; ob es dort vier mal eins misst, ist nicht
+  belegt. Im Bild ein Torhaus mit zwei Türmen und einem Bogen über zwei
+  Felder; gezeichnet wird es in vier Streifen, je Feld einem, damit niemand
+  vor dem einen Ende hinter dem anderen verschwindet. Es ist das eine
+  Gebäude, das kein Quadrat ist: `laenge` und `pfeiler` in den Daten,
+  `welt.grundflaeche` die eine Stelle, die es weiß.
+  Gebaut am 2026-11-13. Der Anker ist das dritte der vier Felder, die Mitte
+  liegt ein halbes Feld davor. Ohne Ansage rät der Server die Richtung wie
+  der Browser (`welt.lageRaten`, `ansicht.platzQuer`): quer, wenn dort mehr
+  eigene Mauer darunter liegt. Ein Gebäude längs y trägt `quer`, auf der
+  Leitung `qu: 1`. Im Bau steht je Feld ein Gerüst. Der Prüfstand setzt das
+  Tor im Mauerring jetzt mitten in die Seite, die vom Angreifer am
+  weitesten weg liegt. Nicht geprüft: ein Tor an einer Ecke, in die zwei
+  Mauern laufen (der Arm der zweiten stößt an den Turm, wie er an ein
+  Mauerfeld stieße).
 
 ## Grenzfaelle
 

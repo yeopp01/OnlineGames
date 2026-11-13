@@ -199,13 +199,18 @@ function mauerring(welt, besitzer, x0, y0) {
   return { innen: { x: x0 + 5, y: y0 + 5 }, aussen: { x: x0 + 5, y: y0 }, torfeld: { x: x0 + 5, y: y0 + 2 } };
 }
 
-test('bauen AC-31: das Tor mit den Werten der Vorlage - ab der Feudalzeit, ein Feld', () => {
+/** Ein fertiges Tor an die Stelle der Mauerfelder, die unter ihm liegen. */
+function torSetzen(welt, besitzer, feld, quer = false) {
+  for (const alt of welt.ersetzbar(besitzer, 'tor', feld.x, feld.y, quer)) welt.gebaeudeZerstoeren(alt);
+  return welt.gebaeudeAnlegen(besitzer, 'tor', feld.x, feld.y, true, quer);
+}
+
+test('bauen AC-31: das Tor mit den Werten der Vorlage - ab der Feudalzeit', () => {
   const t = GEBAEUDE.tor;
   assert.deepEqual(t.kosten, { stein: 30 });
   assert.equal(t.bauzeit, 70);
   assert.equal(t.leben, 2750);
   assert.equal(t.zeitalter, 1);
-  assert.equal(t.groesse, 1, 'ein Feld statt vier - begruendet in den Daten');
   assert.equal(t.tor, true);
   assert.equal(t.ersetzt, 'steinmauer');
   assert.ok(EINHEITEN.dorfbewohner.baut.includes('tor'));
@@ -223,7 +228,7 @@ test('bauen AC-31: ein Tor im Mauerring laesst Annas Dorfbewohner hinaus und Ber
   welt.befehl('a', [anna.id], aussen);
   assert.deepEqual(anna.weg, [], 'ohne Tor kein Weg hinaus');
 
-  // Das Tor auf das Mauerfeld: es ersetzt die Mauer dort, ohne Erstattung.
+  // Das Tor auf die Mauer: es ersetzt sie dort, ohne Erstattung.
   const mauer = welt.gebaeudeAn(torfeld.x, torfeld.y);
   assert.equal(mauer.art, 'steinmauer');
   const steinVorher = spieler.stein;
@@ -260,7 +265,7 @@ test('bauen AC-31: ein Tor geht in eine Luecke oder auf die eigene Mauer - nicht
   welt.gebaeudeAnlegen('a', 'haus', x0 + 7, y0 + 7, true);
   assert.equal(welt.nachricht('a', { auftrag: 'bauen', einheiten: [bauer.id], art: 'tor', ziel: { x: x0 + 7, y: y0 + 7 } }).fehler, 'Hier ist kein Platz.');
   // In eine Luecke auf Gras geht es.
-  assert.equal(welt.nachricht('a', { auftrag: 'bauen', einheiten: [bauer.id], art: 'tor', ziel: { x: x0 + 1, y: y0 + 1 } }).fehler, undefined);
+  assert.equal(welt.nachricht('a', { auftrag: 'bauen', einheiten: [bauer.id], art: 'tor', ziel: { x: x0 + 3, y: y0 + 1 } }).fehler, undefined);
   // Und vor der Feudalzeit gar nicht.
   spieler.zeitalter = 0;
   assert.match(welt.nachricht('a', { auftrag: 'bauen', einheiten: [bauer.id], art: 'tor', ziel: { x: x0 + 9, y: y0 + 9 } }).fehler, /erst ab dem Lehen/);
@@ -269,8 +274,7 @@ test('bauen AC-31: ein Tor geht in eine Luecke oder auf die eigene Mauer - nicht
 test('bauen AC-31: faellt das Tor, ist die Luecke fuer alle offen', () => {
   const { welt, x0, y0 } = feudalMitPlatz();
   const { innen, torfeld } = mauerring(welt, 'a', x0, y0);
-  welt.gebaeudeZerstoeren(welt.gebaeudeAn(torfeld.x, torfeld.y));
-  const tor = welt.gebaeudeAnlegen('a', 'tor', torfeld.x, torfeld.y, true);
+  const tor = torSetzen(welt, 'a', torfeld);
   assert.ok(welt.toreVon('a').has(torfeld.y * welt.karte.groesse + torfeld.x));
   const bert = welt.einheitAnlegen('b', x0, y0 + 1, 'dorfbewohner');
   welt.befehl('b', [bert.id], innen);
@@ -439,4 +443,97 @@ test('kampf AC-21: wer sich von selbst wehrt, bricht keine Mauer, um an einen Fe
   sekunden(welt, 15);
   assert.ok(mauern.every((m) => m.leben === GEBAEUDE.steinmauer.leben), 'keine Mauer beschaedigt');
   assert.ok(Math.hypot(wache.x - (x0 + 5), wache.y - y0) < 1.5, 'die Wache steht noch an ihrem Platz');
+});
+
+// ---- Das Tor ist vier Felder lang (bauen AC-37) ----------------------------------
+
+test('bauen AC-37: das Tor ist vier Felder lang und eines tief - zwei Tuerme, dazwischen die Durchfahrt', () => {
+  const t = GEBAEUDE.tor;
+  assert.equal(t.laenge, 4);
+  assert.equal(t.groesse, 1, 'die Tiefe');
+  assert.equal(t.pfeiler, 1, 'ein Feld Turm an jedem Ende');
+  const { welt, x0, y0 } = feudalMitPlatz();
+  const { innen, aussen, torfeld } = mauerring(welt, 'a', x0, y0);
+  const g = welt.karte.groesse;
+  const tor = torSetzen(welt, 'a', torfeld);
+  // Der Anker ist das dritte der vier Felder - wie bei jedem Gebaeude mit
+  // gerader Kantenlaenge.
+  assert.deepEqual(welt.grundflaeche('tor', tor.x, tor.y, tor.quer), { x0: x0 + 3, y0: y0 + 2, x1: x0 + 6, y1: y0 + 2 });
+  for (let x = x0 + 3; x <= x0 + 6; x++) assert.equal(welt.gebaeudeAn(x, y0 + 2), tor, `Feld ${x - x0}`);
+  assert.equal(welt.gebaeudeAn(x0 + 2, y0 + 2).art, 'steinmauer', 'davor die Mauer');
+  assert.equal(welt.gebaeudeAn(x0 + 7, y0 + 2).art, 'steinmauer', 'dahinter auch');
+  // Begehbar sind nur die zwei Felder in der Mitte.
+  assert.deepEqual([...welt.toreVon('a')].sort((a, b) => a - b), [x0 + 4, x0 + 5].map((x) => (y0 + 2) * g + x));
+  // Anna geht hindurch - durch die Durchfahrt, nicht durch einen Turm.
+  const anna = welt.einheitAnlegen('a', innen.x, innen.y, 'dorfbewohner');
+  welt.befehl('a', [anna.id], aussen);
+  const imTor = anna.weg.filter((f) => f.y === y0 + 2);
+  assert.ok(imTor.length > 0, 'der Weg fuehrt durch das Tor');
+  assert.ok(imTor.every((f) => f.x === x0 + 4 || f.x === x0 + 5), 'und nur durch die Durchfahrt');
+  // Gegenprobe: mit Tuermen ueber die ganze Laenge gaebe es keinen Weg.
+  const bert = welt.einheitAnlegen('b', x0, y0 + 1, 'dorfbewohner');
+  welt.befehl('b', [bert.id], innen);
+  assert.deepEqual(bert.weg, [], 'fuer Bert ist alles Mauer');
+  // Faellt es, sind alle vier Felder frei.
+  welt.gebaeudeZerstoeren(tor);
+  for (let x = x0 + 3; x <= x0 + 6; x++) assert.ok(karten.begehbar(welt.karte, x, y0 + 2), `Feld ${x - x0} ist wieder Gras`);
+  assert.equal(welt.toreVon('a'), null);
+});
+
+test('bauen AC-37: auf die eigene Mauer gesetzt, liegt es laengs der Mauer - und ersetzt alle vier Felder ohne Erstattung', () => {
+  const { welt, spieler, x0, y0, bauer } = feudalMitPlatz();
+  mauerring(welt, 'a', x0, y0);
+  // Die linke Seite des Rings laeuft laengs y: x0 + 2, von y0 + 2 bis y0 + 8.
+  const ziel = { x: x0 + 2, y: y0 + 5 };
+  const mauern = [3, 4, 5, 6].map((d) => welt.gebaeudeAn(x0 + 2, y0 + d));
+  assert.ok(mauern.every((m) => m.art === 'steinmauer'));
+  const vorher = spieler.stein;
+  const antwort = welt.nachricht('a', { auftrag: 'bauen', einheiten: [bauer.id], art: 'tor', ziel });
+  assert.equal(antwort.fehler, undefined);
+  const tor = welt.gebaeude.get(antwort.gebaeude);
+  assert.equal(tor.quer, true, 'geraten aus der Mauer darunter');
+  assert.deepEqual(welt.grundflaeche('tor', tor.x, tor.y, tor.quer), { x0: x0 + 2, y0: y0 + 3, x1: x0 + 2, y1: y0 + 6 });
+  assert.ok(mauern.every((m) => !welt.gebaeude.has(m.id)), 'alle vier Mauerfelder sind ersetzt');
+  assert.equal(spieler.stein, vorher - 30, 'bezahlt ist das Tor, erstattet nichts');
+  assert.equal(welt.gebaeudeFuerDraht(tor.id).qu, 1, 'der Browser erfaehrt die Richtung');
+  // Die Felder daneben, laengs x, hat es nicht angefasst.
+  assert.equal(welt.gebaeudeAn(x0 + 3, y0 + 5), null);
+  // Laengs x liegt eines ohne das Zeichen in der Leitung.
+  const laengs = torSetzen(welt, 'a', { x: x0 + 5, y: y0 + 2 });
+  assert.equal(laengs.quer, undefined);
+  assert.equal(welt.gebaeudeFuerDraht(laengs.id).qu, undefined);
+});
+
+test('bauen AC-37: die Richtung laesst sich ansagen - quer auf freiem Gras, und halb auf Mauer, halb in die Luecke', () => {
+  const { welt, x0, y0, bauer } = feudalMitPlatz();
+  // Auf freiem Gras: ohne Ansage laengs x, mit Ansage laengs y.
+  const frei = welt.nachricht('a', { auftrag: 'bauen', einheiten: [bauer.id], art: 'tor', ziel: { x: x0 + 3, y: y0 + 1 } });
+  assert.equal(welt.gebaeude.get(frei.gebaeude).quer, undefined);
+  const quer = welt.nachricht('a', { auftrag: 'bauen', einheiten: [bauer.id], art: 'tor', ziel: { x: x0 + 9, y: y0 + 5 }, quer: true });
+  assert.equal(quer.fehler, undefined);
+  const tor = welt.gebaeude.get(quer.gebaeude);
+  assert.equal(tor.quer, true);
+  assert.equal(welt.gebaeudeAn(x0 + 9, y0 + 3), tor);
+  assert.equal(welt.gebaeudeAn(x0 + 9, y0 + 6), tor);
+  assert.equal(welt.gebaeudeAn(x0 + 8, y0 + 5), null, 'laengs x belegt es nur sein eines Feld');
+  // Zwei Felder Mauer, zwei Felder Luecke: es fuellt die Luecke und ersetzt
+  // die Mauer.
+  const m1 = welt.gebaeudeAnlegen('a', 'steinmauer', x0 + 3, y0 + 9, true);
+  const m2 = welt.gebaeudeAnlegen('a', 'steinmauer', x0 + 4, y0 + 9, true);
+  const halb = welt.nachricht('a', { auftrag: 'bauen', einheiten: [bauer.id], art: 'tor', ziel: { x: x0 + 5, y: y0 + 9 } });
+  assert.equal(halb.fehler, undefined);
+  assert.equal(welt.gebaeude.has(m1.id) || welt.gebaeude.has(m2.id), false);
+  // Ersetzt wird nur die eigene Mauer: liegt ein Feld von Bert unter dem
+  // Tor, ist dort kein Platz.
+  welt.gebaeudeAnlegen('b', 'steinmauer', x0 + 6, y0 + 11, true);
+  const fremd = welt.nachricht('a', { auftrag: 'bauen', einheiten: [bauer.id], art: 'tor', ziel: { x: x0 + 5, y: y0 + 11 } });
+  assert.equal(fremd.fehler, 'Hier ist kein Platz.', 'ein Feld von Bert unter dem Tor');
+});
+
+test('bauen AC-37: der Aufbau nennt Laenge und Tuerme, und nur das Tor hat sie', () => {
+  const { welt } = feudalMitPlatz();
+  const werte = welt.aufbau().werte.gebaeude;
+  assert.equal(werte.tor.laenge, 4);
+  assert.equal(werte.tor.pfeiler, 1);
+  for (const [art, w] of Object.entries(werte)) if (art !== 'tor') assert.equal(w.laenge, null, art);
 });

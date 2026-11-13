@@ -6,6 +6,7 @@
 // ist ein Rechtsklick auf Annas Mann ein Angriff. Die Regeln selbst prüft
 // tests/strategie-buendnisse.test.mjs (spielziel AC-21) gegen die Welt.
 import { nachweis } from '../../scripts/qa-nachweis.mjs';
+import { zeichenHalten } from '../helpers/strategie.mjs';
 import { einheitenAufstellen, expect, test, zeitraffer } from '../helpers/seite.mjs';
 import {
   bedienteileFrei, freieWiesen, partieBeenden, partieZuDritt,
@@ -173,6 +174,7 @@ test.describe('Bündnis lösen', () => {
     }, [paar.meiner, jetzt]);
     await cem.waitForTimeout(300);
     const ziel = await aufSeite(cem, jetzt);
+    await zeichenHalten(cem);
     await cem.mouse.click(ziel.x, ziel.y, { button: 'right' });
     expect(await cem.evaluate(() => window.ansicht.zielzeichen?.feindlich), 'nach der Frist rot').toBe(true);
     await cem.evaluate(() => { window.ansicht.zielzeichen.seit = performance.now() + 60_000; });

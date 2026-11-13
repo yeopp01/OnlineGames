@@ -114,14 +114,20 @@ test.describe('Mauern', () => {
     });
   });
 
-  test('bauen AC-31: ein Tor ersetzt ein Feld der eigenen Mauer, und Annas Dorfbewohner geht hindurch', async ({}, info) => {
+  const tore = (page) => page.evaluate(() => [...window.ansicht.gebaeude.values()]
+    .filter((g) => g.art === 'tor' && g.b === window.ansicht.ich)
+    .map((g) => ({ i: g.i, x: g.x, y: g.y, quer: Boolean(g.qu), fertig: g.u === undefined })));
+
+  test('bauen AC-31: ein Tor ersetzt die eigene Mauer, wo es steht, und Annas Dorfbewohner geht hindurch', async ({}, info) => {
     const { anna, code } = partie;
     expect(wiese, 'die Mauer aus bauen AC-30 steht').toBeTruthy();
-    const torfeld = { x: wiese.x + 2, y: wiese.y };
-    const tore = () => anna.evaluate(() => [...window.ansicht.gebaeude.values()]
-      .filter((g) => g.art === 'tor' && g.b === window.ansicht.ich)
-      .map((g) => ({ i: g.i, x: g.x, y: g.y, fertig: g.u === undefined })));
-    expect((await eigeneMauern(anna)).some((m) => m.x === torfeld.x && m.y === torfeld.y && m.fertig)).toBe(true);
+    // Rechts des Hauses stehen vier Felder Mauer: wiese.x + 1 bis + 4. Das Tor
+    // ist vier Felder lang (bauen AC-37) und ersetzt sie alle; sein Anker ist
+    // das dritte Feld, seine Mitte liegt zwischen dem zweiten und dritten.
+    const torfeld = { x: wiese.x + 3, y: wiese.y };
+    const tormitte = { x: wiese.x + 2.5, y: wiese.y };
+    const unterDemTor = (m) => m.y === wiese.y && m.x >= wiese.x + 1 && m.x <= wiese.x + 4;
+    expect((await eigeneMauern(anna)).filter((m) => unterDemTor(m) && m.fertig)).toHaveLength(4);
 
     const bauer = await dorfbewohnerAnklicken(anna, { code });
     await anna.evaluate((w) => {
@@ -135,17 +141,19 @@ test.describe('Mauern', () => {
     await anna.keyboard.press(BAUTASTEN[menue.indexOf('tor')]);
     await expect.poll(() => anna.evaluate(() => window.ansicht.platzieren?.art)).toBe('tor');
 
-    // Ueber dem eigenen Mauerfeld ist die Vorschau gruen: das Tor ersetzt es.
-    const ueber = await aufSeite(anna, torfeld);
+    // Ueber der eigenen Mauer ist die Vorschau gruen: das Tor ersetzt sie -
+    // und liegt von selbst laengs der Mauer.
+    const ueber = await aufSeite(anna, tormitte);
     await anna.mouse.move(ueber.x, ueber.y);
     const lage = await anna.evaluate(() => window.ansicht.platzLage());
     expect({ x: lage.x, y: lage.y }).toEqual(torfeld);
+    expect({ bx: lage.bx, by: lage.by, quer: lage.quer }).toEqual({ bx: 4, by: 1, quer: false });
     expect(lage.taugt).toBe(true);
     const steinVorher = await anna.evaluate(() => window.ansicht.vorraete.stein);
     await anna.mouse.click(ueber.x, ueber.y);
     await expect.poll(async () => (await tore(anna)).length).toBe(1);
-    expect((await tore(anna))[0]).toMatchObject(torfeld);
-    await expect.poll(async () => (await eigeneMauern(anna)).some((m) => m.x === torfeld.x && m.y === torfeld.y)).toBe(false);
+    expect((await tore(anna))[0]).toMatchObject({ ...torfeld, quer: false });
+    await expect.poll(async () => (await eigeneMauern(anna)).some(unterDemTor)).toBe(false);
     await expect.poll(() => anna.evaluate(() => window.ansicht.vorraete.stein)).toBe(steinVorher - 30);
 
     await zeitraffer(anna, code, 20);
@@ -153,9 +161,10 @@ test.describe('Mauern', () => {
     await zeitraffer(anna, code, 1);
 
     // Hindurch: auf die andere Seite der Mauer, zwei Felder vom Tor. Fuer jeden
-    // anderen ist das Torfeld bebaut - steht der Dorfbewohner darauf, hat die
-    // Wegsuche es ihm geoeffnet. (Dass Bert dort keinen Weg hat, belegt der
-    // Rechenteil im Mauerring, tests/strategie-mauern.test.mjs.)
+    // anderen ist die Durchfahrt bebaut - steht der Dorfbewohner darin, hat die
+    // Wegsuche sie ihm geoeffnet. (Dass Bert dort keinen Weg hat, belegt der
+    // Rechenteil im Mauerring, tests/strategie-mauern.test.mjs.) Die
+    // Durchfahrt sind die zwei mittleren Felder: wiese.x + 2 und + 3.
     const id = bauer;
     const wo = () => anna.evaluate((i) => {
       const e = window.ansicht.nachher.get(i);
@@ -172,10 +181,10 @@ test.describe('Mauern', () => {
     }, id);
     const zielPunkt = await aufSeite(anna, ziel);
     await anna.mouse.click(zielPunkt.x, zielPunkt.y, { button: 'right' });
-    await anna.waitForFunction(([i, t]) => {
+    await anna.waitForFunction(([i, m]) => {
       const e = window.ansicht.nachher.get(i);
-      return e && Math.abs(e.x - t.x) < 0.3 && Math.abs(e.y - t.y) < 0.3;
-    }, [id, torfeld], { timeout: 30_000 });
+      return e && Math.abs(e.x - m.x) < 1 && Math.abs(e.y - m.y) < 0.3;
+    }, [id, tormitte], { timeout: 30_000 });
     expect(await anna.evaluate((t) => {
       const tor = [...window.ansicht.gebaeude.values()].find((g) => g.art === 'tor' && g.x === t.x && g.y === t.y);
       return window.ansicht.torOffen(tor);
@@ -190,5 +199,101 @@ test.describe('Mauern', () => {
       const e = await wo();
       return Math.sign(e.y - torfeld.y);
     }, { timeout: 30_000 }).toBe(seite);
+  });
+
+  test('bauen AC-37: das Tor ist vier Felder lang - in der Mauer mit zwei Tuermen, und mit R gedreht liegt ein zweites quer', async ({}, info) => {
+    const { anna, code } = partie;
+    expect((await tore(anna)).length, 'das Tor aus bauen AC-31 steht').toBe(1);
+    const erstes = (await tore(anna))[0];
+
+    // Das fertige Tor in der Mauer: vier Felder, laengs x, und die Mauer links
+    // davon ist weg, wo es steht.
+    const masse = await anna.evaluate((i) => {
+      const a = window.ansicht;
+      const tor = a.gebaeude.get(i);
+      const mitte = a.gebaeudeMitte(tor);
+      return { bx: mitte.bx, by: mitte.by, felder: a.gebaeudeFelder(tor), laenge: a.werte.gebaeude.tor.laenge, pfeiler: a.werte.gebaeude.tor.pfeiler };
+    }, erstes.i);
+    expect(masse).toMatchObject({ bx: 4, by: 1, laenge: 4, pfeiler: 1 });
+    expect(masse.felder.map((f) => f.x)).toEqual([wiese.x + 1, wiese.x + 2, wiese.x + 3, wiese.x + 4]);
+    // Bebaut sind alle vier Felder.
+    expect(await anna.evaluate((felder) => {
+      const a = window.ansicht;
+      return felder.every((f) => a.karte.felder[f.y * a.karte.groesse + f.x] !== 0);
+    }, masse.felder)).toBe(true);
+    await anna.evaluate((w) => {
+      const a = window.ansicht;
+      a.ausgewaehlt.clear();
+      a.gewaehltesGebaeude = null;
+      a.beiAuswahl();
+      a.kamera.zoom = 2;
+      a.blickAuf(w.x + 2, w.y + 1);
+    }, wiese);
+    // Niemand steht mehr in der Durchfahrt: das Tor ist zu.
+    await anna.waitForFunction((i) => !window.ansicht.torOffen(window.ansicht.gebaeude.get(i)), erstes.i, { timeout: 30_000 });
+    await nachweis(anna, {
+      spec: BAUEN,
+      ac: 'AC-37',
+      titel: 'Annas Tor in der Steinmauer: vier Felder lang, zwei Türme und dazwischen der Bogen, die Mauer stößt an den Turm',
+      test: info,
+    });
+
+    // Ein zweites auf freiem Gras: ohne Mauer darunter liegt es laengs x, R
+    // dreht es - die Vorschau zeigt vier Felder in der anderen Richtung.
+    await dorfbewohnerAnklicken(anna, { code });
+    await anna.evaluate((w) => {
+      window.ansicht.kamera.zoom = 1.5;
+      window.ansicht.blickAuf(w.x, w.y + 2);
+    }, wiese);
+    await anna.keyboard.press('b');
+    const menue = await baumenue(anna);
+    await anna.keyboard.press(BAUTASTEN[menue.indexOf('tor')]);
+    await expect.poll(() => anna.evaluate(() => window.ansicht.platzieren?.art)).toBe('tor');
+    const anker = { x: wiese.x - 3, y: wiese.y + 4 };
+    const ueber = await aufSeite(anna, { x: anker.x, y: anker.y - 0.5 });
+    await anna.mouse.move(ueber.x, ueber.y);
+    const laengs = await anna.evaluate(() => window.ansicht.platzLage());
+    expect({ bx: laengs.bx, by: laengs.by, quer: laengs.quer }).toEqual({ bx: 4, by: 1, quer: false });
+    await anna.keyboard.press('r');
+    const quer = await anna.evaluate(() => window.ansicht.platzLage());
+    expect({ x: quer.x, y: quer.y, bx: quer.bx, by: quer.by, quer: quer.quer, taugt: quer.taugt })
+      .toEqual({ ...anker, bx: 1, by: 4, quer: true, taugt: true });
+    await nachweis(anna, {
+      spec: BAUEN,
+      ac: 'AC-37',
+      titel: 'Ein zweites Tor in der Hand, mit R gedreht: die Vorschau zeigt vier Felder quer zur Mauer grün',
+      test: info,
+    });
+    // Noch einmal R dreht zurueck, ein drittes Mal wieder quer.
+    await anna.keyboard.press('r');
+    expect((await anna.evaluate(() => window.ansicht.platzLage())).quer).toBe(false);
+    await anna.keyboard.press('r');
+    await anna.mouse.click(ueber.x, ueber.y);
+    await expect.poll(async () => (await tore(anna)).length).toBe(2);
+    const zweites = (await tore(anna)).find((t) => t.i !== erstes.i);
+    expect(zweites).toMatchObject({ ...anker, quer: true, fertig: false });
+    // Der Server hat es so gestellt, wie die Vorschau es zeigte: vier Felder laengs y.
+    const felder = await anna.evaluate((i) => window.ansicht.gebaeudeFelder(window.ansicht.gebaeude.get(i)), zweites.i);
+    expect(felder).toEqual([0, 1, 2, 3].map((d) => ({ x: anker.x, y: anker.y - 2 + d })));
+    expect(await anna.evaluate(() => window.ansicht.platzieren)).toBeNull();
+
+    // Daneben ein fertiges in derselben Richtung: das Bild fuer laengs y ist
+    // ein eigenes, kein gespiegeltes.
+    const fertig = await gebaeudeAufstellen(anna, code, 'Anna', 'tor', anker.x + 3, anker.y, { quer: true });
+    await anna.waitForFunction((i) => window.ansicht.gebaeude.get(i)?.qu === 1, fertig);
+    await anna.evaluate((a) => {
+      const sicht = window.ansicht;
+      sicht.ausgewaehlt.clear();
+      sicht.gewaehltesGebaeude = null;
+      sicht.beiAuswahl();
+      sicht.kamera.zoom = 2;
+      sicht.blickAuf(a.x + 1.5, a.y);
+    }, anker);
+    await nachweis(anna, {
+      spec: BAUEN,
+      ac: 'AC-37',
+      titel: 'Quer gestellt: rechts ein fertiges Tor längs der anderen Achse, links das eben bestellte im Bau, je Feld ein Gerüst',
+      test: info,
+    });
   });
 });

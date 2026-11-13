@@ -4,6 +4,7 @@
 // er heilt. Die Regeln selbst (je Sekunde ein Punkt, nicht Gebaeude, nicht
 // Belagerung, nicht wer kaempft) prueft tests/strategie-moench.test.mjs.
 import { nachweis } from '../../scripts/qa-nachweis.mjs';
+import { zeichenHalten } from '../helpers/strategie.mjs';
 import { einheitenAufstellen, expect, lebenSetzen, test, zeitraffer } from '../helpers/seite.mjs';
 import {
   bedienteileFrei, figurenFrei, freieWiesen, partieBeenden, partieZuZweit,
@@ -164,6 +165,7 @@ test.describe('Moench', () => {
     // Rechtsklick auf Berts Dorfbewohner: fuer den Moench ein Ziel, das
     // Zeichen ist rot - anders als auf Berts Dorfzentrum (einheiten AC-37).
     const aufBauer = await aufSeite(anna, bauer);
+    await zeichenHalten(anna);
     await anna.mouse.click(aufBauer.x, aufBauer.y, { button: 'right' });
     expect(await anna.evaluate(() => window.ansicht.zielzeichen?.feindlich), 'der Dorfbewohner ist ein Ziel').toBe(true);
 

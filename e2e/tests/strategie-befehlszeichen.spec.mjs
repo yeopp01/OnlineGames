@@ -5,7 +5,8 @@
 // beim Befehl entscheidet. Genau das wird hier geprueft: beide Faelle am
 // selben Bild, und dass das Zeichen von selbst wieder verschwindet.
 import { nachweis } from '../../scripts/qa-nachweis.mjs';
-import { einheitenAufstellen, expect, test } from '../helpers/seite.mjs';
+import { zeichenHalten } from '../helpers/strategie.mjs';
+import { einheitenAufstellen, expect, test, zeitraffer } from '../helpers/seite.mjs';
 import { bedienteileFrei, figurenFrei, freieWiesen, partieBeenden, partieZuZweit } from '../helpers/strategie.mjs';
 
 const BEDIENUNG = '10-strategie/bedienung.md';
@@ -26,7 +27,22 @@ test.describe('Befehlszeichen', () => {
     // vier weiter; mit dem Nebel war sie dort unsichtbar und kein Ziel.
     expect(await einheitenAufstellen(anna, code, 'Anna', 2, { art: 'miliz', x: wiese.x - 1, y: wiese.y - 1 })).toBe(2);
     expect(await einheitenAufstellen(anna, code, 'Bert', 1, { art: 'miliz', x: wiese.x + 1, y: wiese.y + 1 })).toBe(1);
-    await anna.waitForFunction(() => [...window.ansicht.nachher.values()].filter((e) => e.k === 'm').length >= 3);
+    // Sobald Anna alle drei sieht - der Server schickt Berts Miliz, und der
+    // Browser hat sie in seiner eigenen Sicht (kampf AC-11) -, steht die Uhr,
+    // bis der erste Fall seine zwei Klicks gesetzt hat: wer steht, greift an,
+    // was er sieht, und zwei Milizen brauchen fuer eine dritte zehn Sekunden.
+    // Lief die Uhr weiter, war Berts Miliz an manchen Tagen gefallen, bevor
+    // der Klick auf sie kam (2026-11-13, drei von vier Laeufen). Frueher
+    // anhalten geht nicht: die Sicht rechnen Server und Browser im Takt, ohne
+    // ihn bliebe Berts Miliz im Nebel.
+    await anna.waitForFunction(() => {
+      const a = window.ansicht;
+      const milizen = [...a.nachher.values()].filter((e) => e.k === 'm');
+      const fremd = milizen.find((e) => e.b !== a.ich);
+      return milizen.length >= 3 && fremd && a.nebel.sieht(fremd.x, fremd.y);
+    });
+    await zeitraffer(anna, code, 0);
+    await anna.waitForTimeout(300);
     const alle = await anna.evaluate(() => {
       const a = window.ansicht;
       return [...a.nachher.values()].filter((e) => e.k === 'm')
@@ -35,12 +51,12 @@ test.describe('Befehlszeichen', () => {
     meine = alle.filter((e) => e.eigen);
     [feind] = alle.filter((e) => !e.eigen);
     expect(meine.length).toBe(2);
-    await anna.waitForFunction((f) => window.ansicht.nebel.sieht(f.x, f.y), feind, { timeout: 5_000 });
+    expect(feind, 'Berts Miliz steht noch').toBeTruthy();
   });
   test.afterAll(() => partieBeenden(partie));
 
   test('bedienung AC-34: ein Rechtsklick auf Feindliches zeigt ein rotes Zeichen, einer auf freies Gelaende ein weisses', async ({}, info) => {
-    const { anna } = partie;
+    const { anna, code } = partie;
 
     // Auswaehlen und auf das Gefecht blicken.
     const bild = await anna.evaluate(([ids, ziel]) => {
@@ -56,6 +72,7 @@ test.describe('Befehlszeichen', () => {
     // 1. Freies Gelaende: das Zeichen ist weiss und liegt auf dem geklickten
     // Feld. Geklickt wird deutlich neben alles, was steht.
     const leer = { x: bild.ich.x - 150, y: bild.ich.y + 40 };
+    await zeichenHalten(anna);
     await anna.mouse.click(leer.x, leer.y, { button: 'right' });
     const weiss = await anna.evaluate(([px, py]) => {
       const a = window.ansicht;
@@ -69,6 +86,7 @@ test.describe('Befehlszeichen', () => {
 
     // 2. Dieselbe Geste auf die fremde Miliz: rot, und am Ziel - nicht auf dem
     // gerundeten Feld, sondern da, wo die Einheit wirklich steht.
+    await zeichenHalten(anna);
     await anna.mouse.click(bild.feind.x, bild.feind.y, { button: 'right' });
     const rot = await anna.evaluate(() => {
       const a = window.ansicht;
@@ -78,12 +96,10 @@ test.describe('Befehlszeichen', () => {
     expect(rot.feindlich, 'die fremde Miliz ist feindlich').toBe(true);
     expect(Math.hypot(rot.x - feind.x, rot.y - feind.y), 'am Ziel').toBeLessThan(1.5);
 
-    // 3. Es haelt den Augenblick an: ein Beginn in der Zukunft friert das
-    // erste Bild ein, damit der Nachweis nicht gegen die Uhr laeuft. Ohne das
-    // waere das Zeichen nach 800 ms fort - und ein Screenshot dauert laenger.
-    await anna.evaluate(() => {
-      window.ansicht.zielzeichen.seit = performance.now() + 60_000;
-    });
+    // 3. Der Augenblick ist angehalten (`zeichenHalten` vor dem Klick): ein
+    // Beginn in der Zukunft friert das erste Bild ein, damit der Nachweis
+    // nicht gegen die Uhr laeuft. Ohne das waere das Zeichen nach 800 ms fort
+    // - und ein Screenshot dauert laenger.
     const lage = await anna.evaluate(() => {
       const a = window.ansicht;
       const p = a.zuBild(a.zielzeichen.x, a.zielzeichen.y);
@@ -109,6 +125,10 @@ test.describe('Befehlszeichen', () => {
       window.ansicht.zielzeichen.seit = performance.now() - 5_000;
     });
     await expect.poll(() => anna.evaluate(() => window.ansicht.zielzeichen)).toBe(null);
+
+    // Die Uhr laeuft wieder: der Angriff, den der zweite Klick befohlen hat,
+    // beginnt jetzt, und der naechste Fall wartet sein Ende ab.
+    await zeitraffer(anna, code, 1);
   });
 
   test('bedienung AC-13: der Ring am Zielpunkt steht und ist gezeichnet, bevor der Befehl den Browser verlassen hat', async ({}, info) => {
@@ -156,10 +176,16 @@ test.describe('Befehlszeichen', () => {
     const vorher = await ausschnitt(ziel);
 
     await anna.mouse.click(ziel.x, ziel.y, { button: 'right' });
-    const lage = await anna.evaluate(() => ({
-      zeichen: window.ansicht.zielzeichen && { ...window.ansicht.zielzeichen },
-      gehalten: window.gehalten.length,
-    }));
+    // Im selben Zug angehalten (ein Beginn in der Zukunft friert das erste
+    // Bild ein): das Zeichen lebt 800 ms, und der Vergleich der Bildpunkte
+    // braucht ueber den Kanal des Tests laenger - gemessen 0,5 bis 1,2 s
+    // (2026-11-13). Ob es von selbst verschwindet, prueft der Fall davor.
+    const lage = await anna.evaluate(() => {
+      const zeichen = window.ansicht.zielzeichen;
+      const kopie = zeichen && { ...zeichen };
+      if (zeichen) zeichen.seit = performance.now() + 60_000;
+      return { zeichen: kopie, gehalten: window.gehalten.length };
+    });
     expect(lage.gehalten, 'der Befehl ist angehalten, nicht gesendet').toBe(1);
     expect(lage.zeichen, 'das Zeichen steht trotzdem').toBeTruthy();
     expect(lage.zeichen.feindlich).toBe(false);
@@ -173,8 +199,7 @@ test.describe('Befehlszeichen', () => {
     }
     expect(anders, 'der Ring ist gezeichnet').toBeGreaterThan(200);
 
-    // Fuer das Bild angehalten; die Milizen stehen noch, denn der Server weiss nichts.
-    await anna.evaluate(() => { window.ansicht.zielzeichen.seit = performance.now() + 60_000; });
+    // Das Zeichen ist angehalten; die Milizen stehen noch, denn der Server weiss nichts.
     await nachweis(anna, {
       spec: BEDIENUNG,
       ac: 'AC-13',

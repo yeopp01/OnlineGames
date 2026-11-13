@@ -52,11 +52,18 @@ test.describe('Gerenderte Gebaeude', () => {
       const a = window.ansicht;
       for (let r = 6; r <= 30; r++) {
         for (const [ox, oy] of [[b.x - r, b.y + 2], [b.x + 2, b.y - r], [b.x + r - 6, b.y + r], [b.x - r, b.y - r], [b.x + r, b.y - 2]]) {
+          // Neun Felder in einer Reihe: zwei Mauer, das Tor ueber vier
+          // (bauen AC-37, sein Anker ist das dritte davon), drei Mauer.
           const felder = [];
-          for (let i = 0; i < 7; i++) felder.push({ x: ox + i, y: oy, art: i === 3 ? 'tor' : 'steinmauer' });
-          for (let i = 1; i < 4; i++) felder.push({ x: ox + 6, y: oy + i, art: 'steinmauer' });
+          const frei = [];
+          for (let i = 0; i < 9; i++) {
+            frei.push({ x: ox + i, y: oy });
+            if (i < 2 || i > 5) felder.push({ x: ox + i, y: oy, art: 'steinmauer' });
+            else if (i === 4) felder.push({ x: ox + i, y: oy, art: 'tor' });
+          }
+          for (let i = 1; i < 4; i++) felder.push({ x: ox + 8, y: oy + i, art: 'steinmauer' });
           for (let i = 1; i < 3; i++) felder.push({ x: ox - i, y: oy + i, art: 'steinmauer' });
-          if (felder.every((f) => a.platzTaugt('steinmauer', f.x, f.y))) return felder;
+          if ([...frei, ...felder].every((f) => a.platzTaugt('steinmauer', f.x, f.y))) return felder;
         }
       }
       return null;

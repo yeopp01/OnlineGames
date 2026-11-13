@@ -172,7 +172,9 @@ export class Uebersicht {
     for (const geb of ansicht.gezeigteGebaeude()) {
       const mitte = ansicht.gebaeudeMitte(geb);
       const p = this.feldZuPunkt(mitte.x, mitte.y);
-      const groesse = Math.max(3, mitte.groesse * 1.2);
+      // Ein langes Gebaeude (das Tor) nach seiner Flaeche, nicht nach seiner
+      // Laenge: sonst stuende es als Klotz in der Mauer.
+      const groesse = Math.max(3, Math.sqrt(mitte.bx * mitte.by) * 1.2);
       s.fillStyle = farbe(geb.b);
       s.fillRect(p.x - groesse / 2, p.y - groesse / 2, groesse, groesse);
       s.strokeStyle = 'rgba(0,0,0,0.6)';
