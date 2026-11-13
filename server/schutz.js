@@ -1,3 +1,4 @@
+// @ts-check
 'use strict';
 
 // Grenzen, die vor jeder Anmeldung greifen. Ein Fremder, der Raumcodes

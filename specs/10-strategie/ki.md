@@ -208,6 +208,14 @@ nicht die Regeln.
   **Gemessen und verworfen:** stattdessen gegen einen Gegner ohne
   Kampfeinheit nur Nahkämpfer auszubilden — die längste Partie endete nach
   61,9 statt 62,0 Minuten, weil das Heer beim Schleifen schon steht.
+  **Seit 2026-11-13 zählt, wer nur handelt, nicht als Einheit:** ein
+  Marktkarren sammelt nicht, baut nicht und schlägt nicht. Er bringt Gold —
+  das gilt deshalb als vorhanden, solange einer lebt; fehlt für jede
+  Einheit auch Holz oder Nahrung, gibt sie auf. Beim Startwert 8 (ohne
+  Häuser) hatte die Verliererin ab Minute 84 weder Dorfbewohner noch
+  Dorfzentrum, drei Karren fuhren weiter, und die Partie lief über Minute
+  90 hinaus; jetzt endet sie in Minute 83.
+
 - **AC-20** `offen` **KI liest die Zustandsnachricht** — Sie entscheidet aus
   derselben Nachricht, die ein Browser bekommt (kampf AC-13), nicht aus der
   Welt. Erst dann ist AC-13 bewiesen statt befolgt: heute fragt sie die Welt
@@ -266,7 +274,22 @@ nicht die Regeln.
   Sieger, weil das Gold für das Heer fehlte. Nur Gold und Holz
   zurückzulegen, statt die Ausbildung ruhen zu lassen, lenkte jedes Haus zur
   goldfreien Kaserne — AC-27 fiel (Distelhag 1,15- bis 1,45-fach).
-  **Knapp:** Distelhag bildet 52,4 aus der Kaserne aus gegen 32,5 der
+  **Seit dem Zusammenführen mit der neuen Balance (2026-11-13) gehen die
+  Rammen vor, sobald die KI beim Gegner etwas gesehen hat, das schießt** —
+  nicht erst, wenn ihr Heer schon wartet: die Ausbildung ruht, bis drei
+  stehen. Mit dem früheren Handel (AC-26) und dem Aufgeben ohne
+  Dorfbewohner (AC-19) gemessen: Nebel 1 bis 40 alle mit Sieger, 36 vor
+  Minute 60, Median 40,4, längste 79,4; Startwerte 41 bis 80 alle mit
+  Sieger, 37, Median 39,8, längste 76,5; zu viert alle zwanzig vor Minute
+  90, Median 44,6, **längste 87,1 — knapp**; ohne Häuser 1 bis 20 alle mit
+  Sieger, längste 83. **Die Grenzen halten an diesen Startwerten, nicht
+  aus Abstand:** eine Probe, die nur die Zufallsfolge der Platzsuche
+  verschob (der Platz erst gesucht, wenn das Gebäude bezahlt ist — 45 %
+  weniger Rechenzeit im Prüfstand), ließ je Satz eine Partie ohne Sieger
+  und nur 32 vor Minute 60; sie ist deshalb nicht eingebaut. Nicht gemessen:
+  was es heißt, dass eine KI, die selbst angegriffen wird, bis zur dritten
+  Ramme keine Kämpfer ausbildet.
+  **Knapp (vor dem Zusammenführen):** Distelhag bildet 52,4 aus der Kaserne aus gegen 32,5 der
   anderen (1,61-fach, verlangt 1,5); über die Startwerte 41 bis 80 sind es
   44,7 gegen 38,6. **Lücke:** zwei Burgen und Türme nebeneinander knackt
   die KI nicht — jede nimmt einer Ramme zwei Leben je Sekunde, und eine
@@ -319,6 +342,17 @@ nicht die Regeln.
   Kampfeinheit: Angriff 0, er zieht nicht mit dem Heer. Gemessen, Startwerte
   1 bis 10: mit Handel 720, 562, 270, 10, 125, 93, 350, 706 und 0 Gold in
   14 Minuten (bei 4 und 10 wird die KI überrannt), ohne Handel 0 bis 30.
+  **Seit 2026-11-13, mit den Burgen (AC-33) und der neuen Balance der
+  Häuser:** knapp heißt weniger als **1500** Gold — der Handel braucht zehn
+  Minuten, bis er trägt, und wem das Gold vorher ausgeht, der steht ohne
+  Ramme vor der Burg. **Bis vier Karren fahren, liegt zurück, was der
+  nächste kostet** (`karrenFehlt`), und dafür verkauft sie bis auf seinen
+  Preis, auch Holz unter 300. **Ist das Dorf zugebaut, sucht sie den
+  Bauplatz dahinter** (`platzBeiBasis`, Ringe 16 bis 27). Anlass war der
+  Startwert 14: beiden ging um Minute 60 das Gold aus, der Angreifer fand
+  von Minute 56 bis 85 keinen Platz für den Markt, hatte bis Minute 90
+  einen Karren und keine Ramme. Vorher, auf dem vereinten Stand: 2 von 40
+  Nebelpartien ohne Sieger; danach keine (siehe AC-23).
 
 - **AC-33** `fertig` **Die KI baut Burgen** — Im Fürstentum baut die KI
   eine Burg, sobald ihr erstes Heer aufgebrochen ist: sechs Felder vor ihrem

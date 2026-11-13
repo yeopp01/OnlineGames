@@ -1,3 +1,4 @@
+// @ts-check
 'use strict';
 
 // Einstellungen einer Partie (→ specs/00-plattform/spielauswahl.md AC-4, AC-5, AC-8).

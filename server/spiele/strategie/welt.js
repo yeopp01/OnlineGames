@@ -1,3 +1,4 @@
+// @ts-check
 'use strict';
 
 const karten = require('./karte');
@@ -199,11 +200,44 @@ function punkteFeld(punkte) {
   return punkte > 0 ? { pk: punkte } : {};
 }
 
+/**
+ * Die Einstellungen einer Partie, wie der Steckbrief sie durchreicht. Was
+ * fehlt oder nicht passt, faellt auf die Vorgabe zurueck.
+ *
+ * @typedef {object} Einstellungen
+ * @property {string} [kartengroesse]
+ * @property {string} [vorrat] ein Schluessel aus `STARTVORRAT`
+ * @property {string} [sicht] 'nebel', 'erkundet' oder 'aufgedeckt' (kampf AC-16)
+ * @property {Record<string, number>} [teams] je Spieler 1 bis 4 (spielziel AC-14)
+ * @property {Record<string, string>} [haeuser] je Spieler ein Schluessel aus `HAEUSER` (spielziel AC-17)
+ * @property {string} [buendnisse] 'fest' oder 'loesbar' (spielziel AC-21)
+ * @property {number} [zeitgrenze] 90 oder 120 Spielminuten (spielziel AC-22)
+ * @property {number} [tempo] 1, 1.5 oder 2 (spielziel AC-23)
+ */
+
+/**
+ * Was je Takt ueber die Leitung geht (uebertragung AC-7). Beschrieben sind
+ * bisher nur die Felder der obersten Ebene - was in den Listen steht, prueft
+ * noch niemand.
+ *
+ * @typedef {object} Zustand
+ * @property {'zustand'} typ
+ * @property {number} t der Takt
+ * @property {Record<string, any>[]} spieler
+ * @property {Record<string, any>[]} einheiten
+ * @property {any[]} felder
+ * @property {number[][]} [p] Pfeile seit dem letzten Zustand (bedienung AC-40)
+ * @property {[string, number][]} [bu] geloeste Buendnisse (spielziel AC-21)
+ * @property {object} [ende] das Ende, sobald es feststeht (spielziel AC-5)
+ * @property {Record<string, any>[]} [gebaeude] nur die geaenderten
+ * @property {Record<string, any>[]} [tiere] nur die geaenderten
+ */
+
 class Welt {
   /**
    * @param {{id: string, name: string}[]} spielerListe
    * @param {number} startwert
-   * @param {{kartengroesse?: string, vorrat?: string}} [einstellungen]
+   * @param {Einstellungen} [einstellungen]
    */
   constructor(spielerListe, startwert, einstellungen = {}) {
     this.startwert = startwert;
@@ -216,6 +250,12 @@ class Welt {
     this.naechsteId = 1;
     this.einheiten = new Map();
     this.gebaeude = new Map();
+    // Wem ein Gebaeude gehoert hat, auch nachdem es gefallen ist (kampf AC-13).
+    this.gebaeudeBesitzer = new Map();
+    // Die Tore je Besitzer als Feldnummern (bauen AC-31), angelegt mit dem
+    // ersten Tor.
+    /** @type {Map<string, Set<number>> | null} */
+    this.tore = null;
     // Werte mit Verbesserungen, gemerkt je Spieler (`einheitenwert`). Geleert,
     // sobald dieser Spieler etwas erforscht.
     this.werteGemerkt = new Map();
@@ -468,13 +508,18 @@ class Welt {
     if (!spieler) return [];
     const n = spieler.verbesserungen.length;
     const stand = this.buendnisStand;
-    const z = spieler.zeitalter;
+    const zeitalter = spieler.zeitalter;
     const da = this.wirkungenGemerkt.get(besitzer);
-    if (da && da.n === n && da.stand === stand && da.z === z) return da.liste;
+    if (da && da.n === n && da.stand === stand && da.zeitalter === zeitalter) return da.liste;
     const liste = [];
     // Was die erreichten Zeitalter selbst staerken (einheiten AC-57).
-    for (let stufe = 1; stufe <= z; stufe++) if (ZEITALTER[stufe]?.wirkung) liste.push(ZEITALTER[stufe]);
+    for (let stufe = 1; stufe <= zeitalter; stufe++) if (ZEITALTER[stufe]?.wirkung) liste.push(ZEITALTER[stufe]);
     if (spieler.haus) liste.push(HAEUSER[spieler.haus].boni);
+    // Boni, die erst ab einem Zeitalter gelten (`boniAb`), in der Form der
+    // uebrigen - mit dem Aufstieg nachgetragen (`zeitalterWirkungen`).
+    for (const [ab, boni] of Object.entries(spieler.haus ? HAEUSER[spieler.haus].boniAb || {} : {})) {
+      if (zeitalter >= Number(ab)) liste.push(boni);
+    }
     const haeuser = new Set();
     for (const s of this.spieler) {
       const mit = s === spieler
@@ -483,7 +528,7 @@ class Welt {
     }
     for (const haus of haeuser) if (HAEUSER[haus].mannschaft) liste.push(HAEUSER[haus].mannschaft);
     for (const v of spieler.verbesserungen) liste.push(VERBESSERUNGEN[v]);
-    this.wirkungenGemerkt.set(besitzer, { n, stand, z, liste });
+    this.wirkungenGemerkt.set(besitzer, { n, stand, zeitalter, liste });
     return liste;
   }
 
@@ -584,6 +629,8 @@ class Welt {
     // Einheit, `wacheTakten()` zweimal je Sekunde die Sicht. Ohne Gedaechtnis
     // liefe darunter je Aufruf eine Schleife ueber alle Verbesserungen mit
     // (fahrplan AC-6: ein Takt mit 8 x 100 Einheiten unter 10 ms).
+    // Mit dem Zeitalter, denn ein Haus kann Boni ab einem Zeitalter tragen
+    // (`boniAb`) - auch wenn jemand die Stufe ohne Aufstieg setzt.
     let gemerkt = this.werteGemerkt.get(besitzer);
     // Nach einem Aufstieg neu: ein Zeitalter kann selbst staerken (einheiten AC-57).
     if (!gemerkt || gemerkt.zeitalter !== spieler.zeitalter) {
@@ -689,7 +736,9 @@ class Welt {
       ...(GEBAEUDE[art].laenge && quer ? { quer: true } : {}),
       fertig,
       bau: fertig ? 1 : 0, // Anteil der Bauarbeit
-      leben: this.gebaeudewert(besitzer, art, 'leben'),
+      // Eine Baustelle beginnt mit einem Leben und waechst mit dem Bau
+      // (bauen AC-7, `bauleben`).
+      leben: fertig ? this.gebaeudewert(besitzer, art, 'leben') : this.bauleben(besitzer, art, 0),
       // Eine Farm traegt Nahrung, und nur einer arbeitet darauf (einheiten AC-18).
       ...(GEBAEUDE[art].nahrung ? { nahrung: this.farmNahrung(besitzer), arbeiter: null } : {}),
       schlange: [], // Arten der bezahlten Auftraege, der erste laeuft
@@ -699,7 +748,7 @@ class Welt {
     this.gebaeude.set(gebaeude.id, gebaeude);
     // Wem es gehoert, bleibt bekannt, auch wenn es faellt - der Auszug je
     // Spieler schickt das Verschwinden eigener Gebaeude immer (kampf AC-13).
-    (this.gebaeudeBesitzer ??= new Map()).set(gebaeude.id, besitzer);
+    this.gebaeudeBesitzer.set(gebaeude.id, besitzer);
     this.gebaeudeSichtNeu = true;
     this.belegen(gebaeude);
     this.gebaeudeGeaendert(gebaeude);
@@ -1107,14 +1156,29 @@ class Welt {
       if (einheit.baut && einheit.auftrag?.gebaeude === gebaeude.id) bauleute++;
     }
     if (!bauleute) return;
+    const vorher = gebaeude.bau;
     gebaeude.bau = Math.min(1, gebaeude.bau + (bauleute + 2) / (3 * GEBAEUDE[gebaeude.art].bauzeit * TAKTE_PRO_SEKUNDE));
-    this.gebaeudeGeaendert(gebaeude);
     // Ein Hauch Rechenspiel: 1 - 1e-9 zaehlt als fertig, sonst fehlt der
     // letzte Takt wegen der Rundung.
-    if (gebaeude.bau < 1 - 1e-9) return;
-    gebaeude.bau = 1;
+    if (gebaeude.bau >= 1 - 1e-9) gebaeude.bau = 1;
+    // Das Leben waechst um das, was der Bau dazugibt - erlittener Schaden
+    // bleibt abgezogen (bauen AC-7).
+    gebaeude.leben += this.bauleben(gebaeude.besitzer, gebaeude.art, gebaeude.bau)
+      - this.bauleben(gebaeude.besitzer, gebaeude.art, vorher);
+    this.gebaeudeGeaendert(gebaeude);
+    if (gebaeude.bau < 1) return;
     gebaeude.fertig = true;
     this.nachDemBau(gebaeude);
+  }
+
+  /**
+   * Das Leben, das ein Bau bei diesem Anteil hat, ohne Schaden: der Anteil
+   * am vollen Leben, wenigstens eines (bauen AC-7). Eine eben gesetzte
+   * Baustelle faellt mit dem ersten Schlag, wie im Original; fertig traegt
+   * sie das volle Leben aus `gebaeudewert`.
+   */
+  bauleben(besitzer, art, bau) {
+    return Math.max(1, Math.round(this.gebaeudewert(besitzer, art, 'leben') * bau));
   }
 
   // Nach einem Lager oder einer Muehle sammeln die Bauleute am naechsten
@@ -1333,6 +1397,23 @@ class Welt {
     return {};
   }
 
+  // Boni eines Hauses ab einem Zeitalter (`boniAb` in HAEUSER): mit dem
+  // Aufstieg wirken sie wie eine eben erforschte Verbesserung - auf alle
+  // Einheiten, die es schon gibt, und auf alle spaeteren. Formen, die an
+  // Stehendem nachgetragen werden muessten (Leben der Gebaeude, Nahrung der
+  // Farm), schliesst tests/strategie-haeuser.test.mjs aus.
+  zeitalterWirkungen(spieler) {
+    const neu = spieler.haus ? HAEUSER[spieler.haus].boniAb?.[spieler.zeitalter] : null;
+    if (!neu) return;
+    this.werteGemerkt.delete(spieler.id);
+    this.werteAenderungen.add(spieler.id);
+    if (neu.gebaeude) this.gebaeudeSichtNeu = true;
+    for (const einheit of this.einheiten.values()) {
+      if (einheit.besitzer !== spieler.id) continue;
+      for (const schluessel of wirkungsschluessel(einheit.art)) einheit.leben += neu.wirkung?.[schluessel]?.leben || 0;
+    }
+  }
+
   // Eine Verbesserung wirkt sofort auf alle, die es schon gibt, und auf alle
   // spaeteren (bauen AC-21).
   erforschen(spieler, art) {
@@ -1347,7 +1428,11 @@ class Welt {
     spieler.verbesserungen.push(art);
     for (const g of this.gebaeude.values()) {
       if (g.besitzer !== spieler.id || !lebenVorher.has(g.art)) continue;
-      g.leben += this.gebaeudewert(spieler.id, g.art, 'leben') - lebenVorher.get(g.art);
+      // Auf eine Baustelle nur der Anteil ihres Fortschritts - den Rest legt
+      // der Bau selbst nach (bauen AC-7).
+      // Gerechnet wie `bauleben`, damit am Ende genau das volle Leben steht.
+      const anteil = (voll) => Math.max(1, Math.round(voll * g.bau));
+      g.leben += anteil(this.gebaeudewert(spieler.id, g.art, 'leben')) - anteil(lebenVorher.get(g.art));
       this.gebaeudeGeaendert(g);
     }
     // Eine Verbesserung kann die Sicht der Gebaeude aendern (kampf AC-17).
@@ -1468,8 +1553,10 @@ class Welt {
       gebaeude.schlange.shift();
       gebaeude.fortschritt = 0;
       spieler.zeitalter = aufstieg.stufe;
-      // Die Tafel der Werte geht neu hinaus - das Zeitalter kann sie aendern.
+      // Die Tafel der Werte geht neu hinaus - das Zeitalter kann sie aendern
+      // (einheiten AC-57), und ein Haus kann Boni ab dieser Stufe tragen.
       this.werteAenderungen.add(spieler.id);
+      this.zeitalterWirkungen(spieler);
       return;
     }
     const feld = this.freiesFeldAm(gebaeude);
@@ -3486,6 +3573,7 @@ class Welt {
     const fx = Math.round(einheit.x);
     const fy = Math.round(einheit.y);
     const auftrag = einheit.auftrag;
+    /** @type {(x: number, y: number) => boolean} */
     let passt = () => true;
     if (auftrag?.art === 'bauen') {
       const baustelle = this.gebaeude.get(auftrag.gebaeude);
@@ -3853,6 +3941,7 @@ class Welt {
     // Pfeile seit dem letzten Zustand (bedienung AC-40), je [x0, y0, x1, y1].
     const schuesse = this.schuesse || [];
     this.schuesse = [];
+    /** @type {Zustand} */
     const zustand = {
       typ: 'zustand',
       t: this.takt,
@@ -3911,6 +4000,11 @@ class Welt {
     return zustand;
   }
 
+  streckeFuerDraht(einheit) {
+    const s = this.strecke(einheit);
+    return s ? [s.heimat.id, s.ziel.id, this.handelsgewinn(s.heimat, s.ziel)] : undefined;
+  }
+
   /**
    * Jedem Spieler sein Auszug (kampf AC-13, fahrplan AC-13): der Zustand wird
    * einmal gerechnet und dann je Spieler gefiltert. Sonst laese ein
@@ -3920,11 +4014,6 @@ class Welt {
    * @param {string[]} ids die Spieler, die einen Zustand bekommen
    * @returns {Map<string, object>}
    */
-  streckeFuerDraht(einheit) {
-    const s = this.strecke(einheit);
-    return s ? [s.heimat.id, s.ziel.id, this.handelsgewinn(s.heimat, s.ziel)] : undefined;
-  }
-
   zustandJeSpieler(ids) {
     const voll = this.zustand();
     return new Map(ids.map((id) => [id, this.auszug(voll, id)]));

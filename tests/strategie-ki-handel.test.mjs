@@ -10,7 +10,8 @@ const require = createRequire(import.meta.url);
 const karten = require('../server/spiele/strategie/karte.js');
 const { Welt, TAKTE_PRO_SEKUNDE } = require('../server/spiele/strategie/welt.js');
 const { EINHEITEN, GEBAEUDE } = require('../server/spiele/strategie/daten.js');
-const { Ki, GOLD_KNAPP, KARREN, HANDEL_MINDESTENS } = require('../server/spiele/strategie/ki.js');
+const { Ki, GOLD_KNAPP, KARREN, HANDEL_MINDESTENS, HANDEL_VOR, PLATZ_RINGE } = require('../server/spiele/strategie/ki.js');
+const { HANDEL } = require('../server/spiele/strategie/daten.js');
 
 const ZWEI = [{ id: 'a', name: 'Anna' }, { id: 'b', name: 'Bert' }];
 const DREI = [...ZWEI, { id: 'c', name: 'Cora' }];
@@ -194,11 +195,17 @@ test('ki AC-26: mit zwei Maerkten bildet sie Karren aus und schickt jeden, der s
   assert.ok(!gesendet.some((n) => n.einheit === 'marktkarren'), `bei ${KARREN} Karren keiner mehr`);
 });
 
-test('ki AC-26: fehlt das Gold fuer den Karren, verkauft sie am Markt, was sie uebrig hat - zuerst den Stein, den sie nie braucht', () => {
+/** So viele Karren, dass der Handel laeuft (`handelLaeuft`) - auf der Strecke, nicht in der Schlange. */
+function karrenStellen(welt, heimat, n = HANDEL_VOR) {
+  for (let i = 0; i < n; i++) welt.einheitAnlegen('a', heimat.x + 3 + (i % 4), heimat.y + 3 + Math.floor(i / 4), 'marktkarren');
+}
+
+test('ki AC-26: fehlt das Gold fuer den Karren, verkauft sie am Markt, was sie uebrig hat - zuerst den Stein', () => {
   const { welt, a, gesendet, pruefen } = ritterzeit();
   goldLeeren(welt, a.basis);
   const heimat = marktBei(welt, 'a', a.basis, 8);
   marktBei(welt, 'a', heimat, 40);
+  karrenStellen(welt, heimat);
   Object.assign(a, { gold: 0, holz: 350, nahrung: 350, stein: 200 });
   pruefen();
   assert.ok(gesendet.some((n) => n.auftrag === 'handeln' && n.ware === 'stein' && n.richtung === 'verkaufen'), JSON.stringify(gesendet));
@@ -212,9 +219,88 @@ test('ki AC-26: fehlt das Gold fuer den Karren, verkauft sie am Markt, was sie u
   goldLeeren(knapp.welt, knapp.a.basis);
   const h = marktBei(knapp.welt, 'a', knapp.a.basis, 8);
   marktBei(knapp.welt, 'a', h, 40);
+  karrenStellen(knapp.welt, h);
   Object.assign(knapp.a, { gold: 0, holz: 350, nahrung: 350, stein: 0 });
   knapp.pruefen();
   assert.ok(!knapp.gesendet.some((n) => n.auftrag === 'handeln'), JSON.stringify(knapp.gesendet));
+});
+
+test('ki AC-26: bis die ersten Karren fahren, liegt zurueck, was der naechste kostet - das Militaer gibt es nicht aus', () => {
+  // Beim Startwert 14 ging beiden um Minute 60 das Gold aus; der Angreifer
+  // hatte bis Minute 90 einen einzigen Karren, weil das Militaer jede Ladung
+  // Holz nahm, und stand ohne Ramme vor einer Burg (gemessen 2026-11-13).
+  const kosten = EINHEITEN.marktkarren.kosten;
+  const bestellt = (karrenFehlt) => {
+    const { welt, a, ki, gesendet, pruefen } = ritterzeit();
+    goldLeeren(welt, a.basis);
+    const heimat = marktBei(welt, 'a', a.basis, 8);
+    marktBei(welt, 'a', heimat, 40);
+    Object.assign(a, { holz: 50, nahrung: 0, gold: 0, stein: 0 });
+    pruefen();
+    assert.equal(ki.karrenFehlt, true, 'noch kein Karren: der Handel laeuft nicht');
+    // Der Karren, und solange das Gold fehlt, die Ware fuer einen Verkauf.
+    assert.deepEqual(ki.ruecklage(), { holz: kosten.holz + HANDEL.menge, gold: kosten.gold });
+    if (!karrenFehlt) ki.karrenFehlt = false;
+    // Eine Schiessanlage, Holz knapp ueber dem Preis des Karrens: ein
+    // Schuetze griffe die Ruecklage an.
+    const s = welt.gebaeudeAnlegen('a', 'schiessanlage', a.basis.x + 8, a.basis.y + 8);
+    Object.assign(a, { holz: kosten.holz + 15, nahrung: 0, gold: 500 });
+    gesendet.length = 0;
+    ki.militaerPruefen(gebaeudeVon(welt, 'a'), dorf(welt, 'a'));
+    return gesendet.filter((n) => n.auftrag === 'ausbilden' && n.gebaeude === s.id);
+  };
+  assert.deepEqual(bestellt(true), [], 'mit Ruecklage kein Schuetze');
+  assert.ok(bestellt(false).length > 0, 'Gegenprobe: ohne Ruecklage einer');
+
+  // Fahren genug, liegt fuer Karren nichts mehr zurueck.
+  const { welt, a, ki, pruefen } = ritterzeit();
+  goldLeeren(welt, a.basis);
+  const heimat = marktBei(welt, 'a', a.basis, 8);
+  marktBei(welt, 'a', heimat, 40);
+  karrenStellen(welt, heimat);
+  pruefen();
+  assert.equal(ki.karrenFehlt, false);
+  assert.deepEqual(ki.ruecklage(), {});
+});
+
+test('ki AC-26: fuer die ersten Karren verkauft sie bis auf deren Preis - auch Holz, das sonst liegen bliebe', () => {
+  const kosten = EINHEITEN.marktkarren.kosten;
+  const { welt, a, gesendet, pruefen } = ritterzeit();
+  goldLeeren(welt, a.basis);
+  const heimat = marktBei(welt, 'a', a.basis, 8);
+  marktBei(welt, 'a', heimat, 40);
+  // 250 Holz sind weniger als die Ruecklage von 300 - fuer den ersten
+  // Karren verkauft sie trotzdem 100 davon und bestellt ihn aus dem Erloes.
+  Object.assign(a, { gold: 0, holz: kosten.holz + HANDEL.menge + 50, nahrung: 0, stein: 0 });
+  pruefen();
+  assert.ok(gesendet.some((n) => n.auftrag === 'handeln' && n.ware === 'holz' && n.richtung === 'verkaufen'), JSON.stringify(gesendet));
+  assert.equal(heimat.schlange.at(-1), 'marktkarren', 'und der Karren ist bestellt');
+  // Gegenprobe: was der Karren selbst kostet, verkauft sie nicht.
+  const knapp = ritterzeit();
+  goldLeeren(knapp.welt, knapp.a.basis);
+  const h = marktBei(knapp.welt, 'a', knapp.a.basis, 8);
+  marktBei(knapp.welt, 'a', h, 40);
+  Object.assign(knapp.a, { gold: 0, holz: kosten.holz + HANDEL.menge - 1, nahrung: 0, stein: 0 });
+  knapp.pruefen();
+  assert.ok(!knapp.gesendet.some((n) => n.auftrag === 'handeln'), JSON.stringify(knapp.gesendet));
+});
+
+test('ki AC-26: ist das Dorf zugebaut, sucht sie den Bauplatz dahinter', () => {
+  // Beim Startwert 14 standen nach einer Stunde Haeuser, Farmen und Lager in
+  // den ersten sechzehn Feldern um das Dorfzentrum dicht an dicht: von Minute
+  // 56 bis 85 fand sie keinen Platz fuer den Markt (gemessen 2026-11-13).
+  const { a, ki } = ritterzeit();
+  const fern = (x, y) => Math.max(Math.abs(x - a.basis.x), Math.abs(y - a.basis.y));
+  const randFrei = ki.randFrei.bind(ki);
+  ki.randFrei = (x, y, n) => fern(x, y) >= 4 + PLATZ_RINGE && randFrei(x, y, n);
+  assert.equal(ki.platzBei('markt', a.basis, 4), null, 'in den ersten Ringen ist nichts frei');
+  const platz = ki.platzBeiBasis('markt');
+  assert.ok(platz, 'dahinter findet sie einen');
+  assert.ok(fern(platz.x, platz.y) >= 4 + PLATZ_RINGE, JSON.stringify(platz));
+  // Und ist am Dorf Platz, bleibt sie dort.
+  ki.randFrei = randFrei;
+  const nah = ki.platzBeiBasis('markt');
+  assert.ok(fern(nah.x, nah.y) < 4 + PLATZ_RINGE, JSON.stringify(nah));
 });
 
 test('ki AC-26: steht der Markt eines Verbuendeten weit genug, faehrt sie dorthin und baut keinen zweiten', () => {
@@ -245,62 +331,4 @@ test('ki AC-26: ein Karren ist keine Kampfeinheit - er zieht nicht mit dem Heer 
   assert.ok(![...ki.heer].some((id) => welt.einheiten.get(id).art === 'marktkarren'), 'kein Karren im Heer');
 });
 
-/**
- * Eine Partie KI gegen KI; sobald KI 1 die Ritterzeit erreicht, ist das Gold
- * um ihr Dorf leer. Zurueck kommt, wie viel Gold sie in den 14 Minuten
- * danach sammelt (`gesammelt`, also auch das der Karren) und wie weit ihre
- * Maerkte auseinander stehen - `null`, wenn sie die Ritterzeit nicht
- * erreicht.
- */
-function ohneGold(startwert, handel = true) {
-  const welt = new Welt([{ id: 'ki1', name: 'KI 1' }, { id: 'ki2', name: 'KI 2' }], startwert, {});
-  const kis = welt.spieler.map((s) => new Ki(welt, s.id));
-  if (!handel) kis[0].handelPruefen = () => {};
-  const ki1 = welt.spielerVon('ki1');
-  let geleert = null;
-  let vorher = 0;
-  let maerkte = 0;
-  for (let t = 0; t < 70 * 60 * TAKTE_PRO_SEKUNDE && !welt.ende; t++) {
-    for (const ki of kis) ki.takt();
-    welt.takten();
-    if (geleert === null && ki1.zeitalter >= 2) {
-      geleert = welt.takt;
-      goldLeeren(welt, ki1.basis);
-      vorher = ki1.gesammelt.gold;
-    }
-    if (geleert !== null) {
-      const m = gebaeudeVon(welt, 'ki1').filter((g) => g.art === 'markt' && g.fertig);
-      if (m.length >= 2) maerkte = Math.max(maerkte, Math.hypot(m[0].x - m[1].x, m[0].y - m[1].y));
-      if (welt.takt - geleert >= 14 * 60 * TAKTE_PRO_SEKUNDE) break;
-    }
-  }
-  return geleert === null ? null : { gold: ki1.gesammelt.gold - vorher, maerkte };
-}
-
-test('ki AC-26: geht ihr in der Ritterzeit das Gold aus, holt sie es mit Karren - ohne Handel kommt keins mehr', () => {
-  // Gemessen in Runde 162, Startwerte 1 bis 10, 14 Minuten nach dem Ende des
-  // Goldes: mit Handel 720, 562, 270, 10, 125, 93, 350, 706 und 0 Gold (der
-  // Startwert 6 erreicht die Ritterzeit nicht; bei 4 und 10 wird KI 1
-  // ueberrannt und kann keinen Karren bezahlen). Ohne Handel 0 bis 30 - nur
-  // was die Sammler gerade trugen.
-  //
-  // Ohne Gold enden die Partien hier nicht im Patt: der Pruefstand auf dem
-  // Zweig `strategie` endet 40 von 40 vor Minute 60, das Gold in Reichweite
-  // geht in 88 KIs nur viermal aus, alle nach Minute 45. Die Patts der
-  // Erkenntnisse (Runden 114, 137, 144) kamen von der KI mit eigener Sicht.
-  // Deshalb misst der Test den Fall selbst: das Gold wird geleert.
-  const mit = [];
-  const ohne = [];
-  for (let s = 1; s <= 8; s++) {
-    const r = ohneGold(s);
-    if (!r) continue;
-    mit.push(r);
-    ohne.push(ohneGold(s, false));
-  }
-  const bericht = `mit ${mit.map((r) => r.gold).join(', ')} | ohne ${ohne.map((r) => r.gold).join(', ')}`;
-  assert.ok(mit.length >= 6, `die Ritterzeit erreicht: ${mit.length}`);
-  assert.ok(ohne.every((r) => r.gold <= 50), `ohne Handel kommt kein Gold mehr: ${bericht}`);
-  const handelt = mit.filter((r) => r.gold >= 90);
-  assert.ok(handelt.length >= mit.length - 2, `mit Handel in fast jeder Partie mindestens 90 Gold: ${bericht}`);
-  assert.ok(handelt.every((r) => r.maerkte >= HANDEL_MINDESTENS), `die Maerkte weit auseinander: ${mit.map((r) => r.maerkte.toFixed(0)).join(', ')}`);
-});
+// Was der Handel ueber ganze Partien bringt, misst `tests/partien/ki-handel.test.mjs`.

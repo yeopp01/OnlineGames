@@ -1,3 +1,4 @@
+// @ts-check
 'use strict';
 
 const http = require('node:http');
@@ -346,7 +347,7 @@ async function starten(hafen = HAFEN, einstellungen = {}) {
     });
   });
 
-  await new Promise((fertig) => server.listen(hafen, fertig));
+  await new Promise((fertig) => server.listen(hafen, () => fertig(undefined)));
   console.log(`OnlineGames laeuft auf http://localhost:${hafen}/ (bis zu ${MAX_SPIELER} Spieler je Raum)`);
 
   return { server, wss, raeume, schutz, zugang, manager: spielManager };

@@ -219,30 +219,42 @@ test('ki AC-23: die Rammen gehen voraus zum Sammelplatz, das Heer folgt, wenn si
   assert.ok(!rammen.some((r) => ki.heer.has(r.id)), 'und sie gehoeren nicht mehr zum Heer draussen');
 });
 
-test('ki AC-23: wartet das Heer auf Rammen, ruht die Ausbildung und liegt zurueck, was die naechste kostet', () => {
+test('ki AC-23: hat der Gegner etwas, das schiesst, ruht die Ausbildung und liegt zurueck, was die naechste Ramme kostet', () => {
   const { welt, a, b, ki, gesendet } = lage();
-  bauBei(welt, 'b', FESTUNG, b.basis, 7, a.basis);
   bauBei(welt, 'a', WERKSTATT, a.basis, 8);
   bauBei(welt, 'a', 'schiessanlage', a.basis, 11);
   const pruefen = () => {
     ki.belagerungPruefen(eigene(welt, 'a'), gebaeudeVon(welt, 'a'), dorf(welt, 'a'));
     ki.militaerPruefen(gebaeudeVon(welt, 'a'), dorf(welt, 'a'));
   };
-  // Ohne wartendes Heer bildet die Schiessanlage aus, und nichts liegt zurueck.
+  // Gegen ein offenes Dorf bildet die Schiessanlage aus, und nichts liegt
+  // zurueck - die Rammen kommen nebenher.
   pruefen();
   assert.ok(gesendet.some((n) => n.auftrag === 'ausbilden' && n.einheit !== RAMME), 'die Schiessanlage bildet aus');
   assert.deepEqual(ki.ruecklage(), {}, 'nichts liegt zurueck');
 
-  // Das Heer steht bereit und wartet.
-  aufstellen(welt, a, 'speerkaempfer', HEER_BEFESTIGT + WACHE);
-  ki.heerPruefen(eigene(welt, 'a'));
-  assert.notEqual(ki.rammeWartet, null);
+  // Der Gegner hat eine Burg, und sie hat sie gesehen: von da an die Rammen
+  // zuerst - nicht erst, wenn das Heer schon wartet. Beim Startwert 14 nahm
+  // das Militaer sonst dreissig Minuten lang jedes Gold, und es stand nie
+  // eine Ramme vor der Burg (gemessen 2026-11-13).
+  bauBei(welt, 'b', FESTUNG, b.basis, 7, a.basis);
+  // Hingesehen wird einmal je Takt (`wahrnehmen`) - also im naechsten.
+  welt.takt += 1;
+  assert.equal(ki.rammeWartet, null, 'kein Heer wartet');
   for (const g of gebaeudeVon(welt, 'a')) g.schlange.length = 0;
   const ab = gesendet.length;
   pruefen();
   const neu = gesendet.slice(ab).filter((n) => n.auftrag === 'ausbilden');
   assert.deepEqual(neu.map((n) => n.einheit), [RAMME], 'nur die Ramme wird bestellt');
   assert.deepEqual(ki.ruecklage(), EINHEITEN[RAMME].kosten, 'ihre Kosten liegen zurueck');
+
+  // Stehen die Rammen, bildet die Schiessanlage wieder aus.
+  for (let i = 0; i < RAMMEN; i++) welt.einheitAnlegen('a', a.basis.x + 3 + i, a.basis.y + 9, RAMME);
+  for (const g of gebaeudeVon(welt, 'a')) g.schlange.length = 0;
+  const danach = gesendet.length;
+  pruefen();
+  assert.ok(gesendet.slice(danach).some((n) => n.auftrag === 'ausbilden' && n.einheit !== RAMME), 'mit allen Rammen wieder Kampfeinheiten');
+  assert.deepEqual(ki.ruecklage(), {}, 'und nichts liegt mehr zurueck');
 });
 
 test('ki AC-33: im Fuerstentum baut sie nach dem ersten Aufbruch eine Burg, zum Gegner hin - davor nicht', () => {

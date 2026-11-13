@@ -1,3 +1,4 @@
+// @ts-check
 'use strict';
 
 // Was eine Verbesserung bringt, in Worten (bedienung AC-55).

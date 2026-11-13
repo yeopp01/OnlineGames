@@ -1,0 +1,18 @@
+{
+  // Die Fassung fuer den Browser (→ ../tsconfig.json): `document` und
+  // `window` gelten, die Typen von Node nicht. Geprueft wird auch hier nur,
+  // was `// @ts-check` traegt.
+  "compilerOptions": {
+    "allowJs": true,
+    "checkJs": false,
+    "noEmit": true,
+    "strict": false,
+    "target": "es2023",
+    "module": "esnext",
+    "moduleResolution": "bundler",
+    "lib": ["es2023", "dom", "dom.iterable"],
+    "skipLibCheck": true,
+    "types": []
+  },
+  "include": ["*.js"]
+}

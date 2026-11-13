@@ -1,3 +1,4 @@
+// @ts-check
 'use strict';
 
 // Ein Computerspieler (→ specs/10-strategie/ki.md).
@@ -191,7 +192,13 @@ const VERGEBEN_ABSTAND = 2;
 // Karren auf halber Kartenbreite 18 und kostet 150 (einheiten AC-40). Ein
 // Goldfeld reicht acht Sammlern rund fuenf Minuten - so lange, wie Markt
 // und erste Karren brauchen.
-const GOLD_KNAPP = 800;
+// Seit die KI Burgen baut, sind es 1500 statt 800: der Handel braucht zehn
+// Minuten, bis er traegt, und wem das Gold vorher ausgeht, der steht ohne
+// Ramme vor der Burg (gemessen 2026-11-13 ueber vierzig Startwerte: mit 800
+// eine Partie ohne Sieger, mit 1500 keine).
+const GOLD_KNAPP = 1500;
+// So viele Ringe um einen Ort sucht `platzBei` nach einem Bauplatz ab.
+const PLATZ_RINGE = 12;
 // So viele Karren hoechstens. Auf 50 Feldern bringt einer rund 16 Gold je
 // Minute; acht ersetzen also sechs, sieben Dorfbewohner am Gold.
 const KARREN = 8;
@@ -204,13 +211,15 @@ const HANDEL_ABSTAENDE = [50, 42, 34, 26];
 // auf 50 (gemessen in Runde 161).
 const HANDEL_MINDESTENS = 25;
 // Fehlt das Gold fuer einen Karren, verkauft die KI am Markt, was sie davon
-// uebrig hat - so viel bleibt mindestens liegen. Stein gibt die KI nirgends
-// aus (niemand sammelt ihn, sie baut weder Turm noch Burg), die 200 vom
-// Start liegen sonst die ganze Partie.
+// uebrig hat - so viel bleibt mindestens liegen. Stein haelt sie nicht
+// zurueck: ohne Gold kommt weder Ramme noch Heer, und die Burg wartet
+// ohnehin, bis der Handel laeuft (ki AC-33).
 const VERKAUF_RUECKLAGE = { holz: 300, nahrung: 300, stein: 0 };
 // So lange wartet ein Karren, der nach seinem Befehl gleich wieder steht,
 // auf den naechsten - er fand keinen Weg zum Ziel.
 const KARREN_WARTEN_SEKUNDEN = 30;
+// Was das handelt, kostet - aus den Daten gelesen.
+const KARREN_KOSTEN = EINHEITEN[Object.keys(EINHEITEN).find((e) => EINHEITEN[e].handelt)]?.kosten || {};
 
 // Die Belagerung (ki AC-23). Was nur Gebaeude angreift (`nurGebaeude`), ist
 // eine Ramme, und das Gebaeude, das sie ausbildet, die Werkstatt - beides aus
@@ -282,7 +291,7 @@ function plan(n) {
 
 class Ki {
   /**
-   * @param {import('./welt').Welt} welt
+   * @param {InstanceType<typeof import('./welt').Welt>} welt
    * @param {string} spielerId
    */
   constructor(welt, spielerId) {
@@ -294,6 +303,7 @@ class Ki {
     this.versatz = nummer % ENTSCHEIDEN_ALLE;
     // Wozu ihr Haus neigt (ki AC-27): aus den Daten, nie nach dem Namen.
     const haus = welt.spieler[nummer]?.haus;
+    /** @type {import('./daten').Neigung} */
     this.neigung = (haus && HAEUSER[haus].ki) || {};
     this.abgewiesen = 0;
     this.schafeGetrieben = false;
@@ -310,6 +320,8 @@ class Ki {
     // sieht die KI, dass sie angegriffen wird (ki AC-14) - sie bekommt keine
     // Meldung, sie sieht nur die Welt, so wie ein Mensch das Bild sieht.
     this.leben = new Map();
+    // Je Gebaeude, wie viel ihm am Leben seines Baustands fehlte.
+    this.fehlt = new Map();
     // Wie oft die Wache zu einem Angriffsort gezogen ist - der Pruefstand
     // misst daran.
     this.verteidigungen = 0;
@@ -341,6 +353,9 @@ class Ki {
     this.handelSeit = null;
     // Ob dafuer ein Markt fehlt - dann liegt sein Holz zurueck (`ruecklage`).
     this.marktFehlt = false;
+    // Ob der Handel noch nicht laeuft, weil Karren fehlen (`handelLaeuft`) -
+    // dann liegt zurueck, was der naechste kostet (`ruecklage`).
+    this.karrenFehlt = false;
     // Die Goldfelder in Reichweite, einmal gesucht (`goldInReichweite`).
     this.goldfelder = null;
     // Wann jeder Karren zuletzt losgeschickt wurde (KARREN_WARTEN_SEKUNDEN).
@@ -488,6 +503,12 @@ class Ki {
   ruecklage() {
     const ruecklage = { ...this.ruecklageRitterzeit() };
     if (this.marktFehlt) ruecklage.holz = (ruecklage.holz || 0) + GEBAEUDE.markt.kosten.holz;
+    // Die ersten Karren (ki AC-26): was einer kostet, und solange das Gold
+    // dafuer fehlt, dazu die Ware fuer einen Verkauf.
+    if (this.karrenFehlt) {
+      for (const [r, menge] of Object.entries(KARREN_KOSTEN)) ruecklage[r] = (ruecklage[r] || 0) + menge;
+      if (this.spieler.gold < (KARREN_KOSTEN.gold || 0)) ruecklage.holz = (ruecklage.holz || 0) + HANDEL.menge;
+    }
     for (const [r, menge] of Object.entries(this.belagerungFehlt || {})) ruecklage[r] = (ruecklage[r] || 0) + menge;
     return ruecklage;
   }
@@ -579,7 +600,7 @@ class Ki {
     // Der Schwerpunkt des Hauses zuerst (ki AC-27): reicht der Vorrat nur
     // fuer einen Auftrag, bekommt ihn dieses Gebaeude.
     const meine = gebaeude.filter((g) => MILITAER.includes(g.art) || g.art === 'kaserne')
-      .sort((a, b) => (b.art === schwerpunkt) - (a.art === schwerpunkt));
+      .sort((a, b) => Number(b.art === schwerpunkt) - Number(a.art === schwerpunkt));
     for (const g of meine) {
       if (!g.fertig || g.schlange.length >= MILITAER_SCHLANGE) continue;
       const art = this.naechsteKampfeinheit(g, ruecklage);
@@ -641,9 +662,17 @@ class Ki {
    * Sieger schleifen muesste: beim Startwert 5 achteinhalb Minuten lang, mit
    * 28 Nahrung im Vorrat und einem Dorfzentrum ohne Dorfbewohner (Runde 97).
    * Eine Einschaetzung "wird wohl verlieren" ist das bewusst nicht.
+   *
+   * Wer nur handelt, zaehlt nicht als Einheit: ein Karren sammelt nicht,
+   * baut nicht und schlaegt nicht. Er bringt Gold - das gilt deshalb als
+   * vorhanden, solange einer lebt; alles andere waechst ohne Dorfbewohner
+   * nicht mehr. Beim Startwert 8 hatte die Verliererin ab Minute 84 weder
+   * Dorfbewohner noch Dorfzentrum, drei Karren fuhren weiter, und der Sieger
+   * schleifte bis ueber Minute 90 Holzfaellerlager (gemessen 2026-11-13).
    */
   aussichtslos(eigene, gebaeude) {
-    if (eigene.some((e) => !e.tot)) return false;
+    if (eigene.some((e) => !e.tot && !EINHEITEN[e.art].handelt)) return false;
+    const handel = eigene.some((e) => !e.tot);
     for (const g of gebaeude) {
       // Jeder Eintrag zaehlt, nicht nur Einheiten: ein bezahlter Aufstieg
       // oder eine Verbesserung wird fertig und kann ein Gebaeude freischalten
@@ -653,7 +682,7 @@ class Ki {
       for (const art of GEBAEUDE[g.art].bildetAus) {
         const werte = EINHEITEN[art];
         if (!werte || (werte.zeitalter || 0) > this.spieler.zeitalter) continue;
-        if (Object.entries(werte.kosten).every(([r, menge]) => this.spieler[r] >= menge)) return false;
+        if (Object.entries(werte.kosten).every(([r, menge]) => (handel && r === 'gold') || this.spieler[r] >= menge)) return false;
       }
     }
     return true;
@@ -1100,7 +1129,10 @@ class Ki {
     // Naechstes fehlt: sonst nahm das Militaer jedes Gold, und es kam nie
     // eine Ramme (Startwert 4: fuenfzig Minuten lang 6 bis 42 Gold im
     // Vorrat, 63 Wellen unter der Burg).
-    const dringend = this.rammeWartet !== null;
+    // Und nicht erst dann: sobald sie beim Gegner etwas gesehen hat, das
+    // schiesst, sollen die Rammen stehen, bevor das Heer wartet (Startwert
+    // 14: Minute 44 statt 87).
+    const dringend = this.rammeWartet !== null || this.befestigt(this.naechsterGegner());
     const werkstaetten = gebaeude.filter((g) => g.art === WERKSTATT);
     if (!werkstaetten.length) {
       if (dringend) this.belagerungFehlt = GEBAEUDE[WERKSTATT].kosten;
@@ -1330,13 +1362,19 @@ class Ki {
         getroffeneDorf.push(e);
       }
     }
+    // Ein Gebaeude zaehlt nach dem, was ihm fehlt: eine Baustelle gewinnt
+    // Leben, waehrend sie waechst (bauen AC-7), und ein Schlag von 1 bis 3
+    // ginge im Zuwachs eines Takts unter. Fehlt mehr als zuvor, wurde es
+    // getroffen - so auch nach Mauerwerk, das Soll und Leben zugleich hebt.
+    const fehltJetzt = new Map();
     for (const g of gebaeude) {
-      jetzt.set(g.id, g.leben);
-      const vorher = this.leben.get(g.id);
-      // Eine Baustelle gewinnt Leben, waehrend sie waechst - nur der Verlust zaehlt.
-      if (vorher !== undefined && g.leben < vorher) getroffeneBauten.push(g);
+      const fehlt = this.welt.bauleben(g.besitzer, g.art, g.bau) - g.leben;
+      fehltJetzt.set(g.id, fehlt);
+      const vorher = this.fehlt.get(g.id);
+      if (vorher !== undefined && fehlt > vorher) getroffeneBauten.push(g);
     }
     this.leben = jetzt;
+    this.fehlt = fehltJetzt;
     const getroffen = [...getroffeneBauten, ...getroffeneDorf];
     if (!getroffen.length) return;
 
@@ -1819,6 +1857,7 @@ class Ki {
     }
     const maerkte = gebaeude.filter((g) => GEBAEUDE[g.art].handel);
     this.marktFehlt = false;
+    this.karrenFehlt = false;
     if (!maerkte.length) {
       this.marktBauen(() => this.platzBeiBasis('markt'), dorfbewohner, 1);
       return;
@@ -1839,9 +1878,14 @@ class Ki {
 
     const karren = eigene.filter((e) => !e.tot && EINHEITEN[e.art].handelt);
     const imBau = maerkte.reduce((n, g) => n + g.schlange.filter((s) => s === 'marktkarren').length, 0);
-    const kosten = EINHEITEN.marktkarren.kosten;
+    const kosten = KARREN_KOSTEN;
+    // Bis der Handel laeuft, liegt zurueck, was der naechste Karren kostet
+    // (`ruecklage`) - sonst nimmt das Militaer jedes Holz und jedes Gold, die
+    // Karren kommen nie, und mit ihnen weder Ramme noch Burg (Startwert 14:
+    // dreissig Minuten ohne Gold vor einer Burg, ein Karren).
+    this.karrenFehlt = HANDEL_VOR > 0 && karren.length + imBau < HANDEL_VOR;
     if (karren.length + imBau < KARREN && !heimat.schlange.length) {
-      if (spieler.gold < (kosten.gold || 0)) this.goldKaufen(heimat);
+      if (spieler.gold < (kosten.gold || 0)) this.goldKaufen(heimat, this.karrenFehlt ? kosten : VERKAUF_RUECKLAGE);
       if (Object.entries(kosten).every(([r, menge]) => spieler[r] >= menge)) {
         this.senden({ auftrag: 'ausbilden', gebaeude: heimat.id, einheit: 'marktkarren' });
       }
@@ -1946,24 +1990,35 @@ class Ki {
     return null;
   }
 
-  /** 100 der Ware verkaufen, von der am meisten uebrig ist - wenn genug da ist. */
-  goldKaufen(markt) {
+  /**
+   * 100 der Ware verkaufen, von der am meisten uebrig ist - wenn genug da
+   * ist. Was liegen bleibt, sagt `bleibt`: sonst die Ruecklage, fuer die
+   * ersten Karren nur, was der Karren selbst kostet.
+   * @param {{id: number}} markt
+   * @param {Record<string, number>} [bleibt]
+   */
+  goldKaufen(markt, bleibt = VERKAUF_RUECKLAGE) {
     const spieler = this.spieler;
-    const uebrig = (w) => spieler[w] - (VERKAUF_RUECKLAGE[w] || 0);
+    const uebrig = (w) => spieler[w] - (bleibt[w] || 0);
     const ware = Object.keys(HANDEL.waren).sort((a, b) => uebrig(b) - uebrig(a))[0];
     if (uebrig(ware) < HANDEL.menge) return;
     this.senden({ auftrag: 'handeln', gebaeude: markt.id, ware, richtung: 'verkaufen' });
   }
 
+  // Ein Platz am Dorf. Ist das Dorf zugebaut - nach einer Stunde stehen
+  // Haeuser, Farmen und Lager in den ersten sechzehn Feldern dicht an dicht -,
+  // sucht sie dahinter weiter (ki AC-26): beim Startwert 14 fand sie von
+  // Minute 56 bis 85 keinen Platz fuer den Markt, hatte kein Gold fuer eine
+  // Ramme und stand bis zum Ende vor einer Burg (gemessen 2026-11-13).
   platzBeiBasis(art) {
-    return this.platzBei(art, this.spieler.basis, 4);
+    return this.platzBei(art, this.spieler.basis, 4) || this.platzBei(art, this.spieler.basis, 4 + PLATZ_RINGE);
   }
 
   // Ein Bauplatz nahe einem Punkt, ringweise, mit einem Feld Abstand zu anderen
   // Gebaeuden, damit Wege frei bleiben.
   platzBei(art, um, abstand = 2) {
     const n = GEBAEUDE[art].groesse;
-    for (let r = abstand; r < abstand + 12; r++) {
+    for (let r = abstand; r < abstand + PLATZ_RINGE; r++) {
       const ring = [];
       for (let dy = -r; dy <= r; dy++) {
         for (let dx = -r; dx <= r; dx++) if (Math.max(Math.abs(dx), Math.abs(dy)) === r) ring.push([dx, dy]);
@@ -2057,7 +2112,7 @@ module.exports = {
   Ki, ENTSCHEIDEN_ALLE, ZIEL_DORFBEWOHNER, DORFBEWOHNER_JE_ZEITALTER, zielDorfbewohner, FEUDALZEIT_NAHRUNG, AN_SCHAFEN, AN_BEEREN, MILITAER,
   HEER, WACHE, UEBERLEGEN, MARSCH_MINDESTENS, HEER_ABSTAND, WACHE_NAH, FEIND_FERN, VERGEBEN_ABSTAND, MILITAER_HOLZ, UEBERSCHUSS, MANGEL, UMVERTEILEN_SEKUNDEN, UNERREICHBAR_SEKUNDEN, MILITAER_HOECHSTENS, MILITAER_JE_ZEITALTER, plan,
   MILITAER_UEBERFLUSS_AB, MILITAER_UEBERFLUSS_HOLZ, MILITAER_UEBERFLUSS_KAMPF, MILITAER_ALLERHOECHSTENS,
-  GOLD_KNAPP, KARREN, HANDEL_ABSTAENDE, HANDEL_MINDESTENS, VERKAUF_RUECKLAGE, KARREN_WARTEN_SEKUNDEN, FEIND_VERGESSEN,
+  GOLD_KNAPP, PLATZ_RINGE, KARREN, HANDEL_ABSTAENDE, HANDEL_MINDESTENS, VERKAUF_RUECKLAGE, KARREN_WARTEN_SEKUNDEN, FEIND_VERGESSEN,
   WERKSTATT, RAMME, RAMMEN, RAMMEN_MIT, HEER_BEFESTIGT, SAMMEL_ABSTAND, RAMME_WARTEN_SEKUNDEN, ZUG_WARTEN_SEKUNDEN, HANDEL_VOR,
   FESTUNG, BURGEN_JE_ZEITALTER, BURG_ABSTAND_SEKUNDEN, BURG_STEINSAMMLER, BURG_VOR, BURG_BAUER,
 };

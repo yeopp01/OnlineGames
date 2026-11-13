@@ -21,10 +21,15 @@ const { Welt, TAKTE_PRO_SEKUNDE } = require('../server/spiele/strategie/welt.js'
 const { EINHEITEN, GEBAEUDE, HAEUSER, HANDEL, SAMMELN } = require('../server/spiele/strategie/daten.js');
 
 const ZWEI = [{ id: 'a', name: 'Anna' }, { id: 'b', name: 'Bert' }];
-// Anna mit dem Haus oder ohne eins, Bert immer ohne.
-const weltMit = (haus, einstellungen = {}) => new Welt(ZWEI, 7, {
-  sicht: 'aufgedeckt', ...(haus ? { haeuser: { a: haus } } : {}), ...einstellungen,
-});
+// Anna mit dem Haus oder ohne eins, Bert immer ohne. Ein Bonus aus `boniAb`
+// wird in dem Zeitalter gemessen, ab dem er gilt: dann stehen beide Welten -
+// mit und ohne Haus - schon dort (`abZeitalter`).
+let abZeitalter = 0;
+const weltMit = (haus, einstellungen = {}) => {
+  const welt = new Welt(ZWEI, 7, { sicht: 'aufgedeckt', ...(haus ? { haeuser: { a: haus } } : {}), ...einstellungen });
+  for (const { id } of ZWEI) welt.spielerVon(id).zeitalter = abZeitalter;
+  return welt;
+};
 const ROHSTOFFE = ['holz', 'nahrung', 'gold', 'stein'];
 const reich = (spieler) => { for (const r of ROHSTOFFE) spieler[r] = 5000; };
 const bauerVon = (welt) => [...welt.einheiten.values()].find((e) => e.besitzer === 'a' && e.art === 'dorfbewohner');
@@ -93,7 +98,7 @@ function ausgebildet(haus, art) {
   const welt = weltMit(haus);
   const anna = welt.spielerVon('a');
   const gebaeudeArt = Object.keys(GEBAEUDE).find((g) => GEBAEUDE[g].bildetAus?.includes(art));
-  anna.zeitalter = Math.max(EINHEITEN[art].zeitalter || 0, GEBAEUDE[gebaeudeArt].zeitalter || 0);
+  anna.zeitalter = Math.max(anna.zeitalter, EINHEITEN[art].zeitalter || 0, GEBAEUDE[gebaeudeArt].zeitalter || 0);
   reich(anna);
   const p = platz(welt, gebaeudeArt, anna.basis);
   const gebaeude = welt.gebaeudeAnlegen('a', gebaeudeArt, p.x, p.y);
@@ -351,23 +356,33 @@ function blaetter(boni) {
   return liste;
 }
 
+// Die Boni eines Hauses je Zeitalter, ab dem sie gelten: [Zeitalter, Boni].
+const stufen = (eintrag) => [[0, eintrag.boni], ...Object.entries(eintrag.boniAb || {}).map(([ab, boni]) => [Number(ab), boni])];
+
 test('spielziel AC-26: jeder Bonus jedes Hauses wirkt im Spiel - dieselbe Lage mit und ohne Haus, ein Wert verschieden', () => {
   const gemessen = [];
-  for (const [haus, eintrag] of Object.entries(HAEUSER)) {
-    for (const [form, ...rest] of blaetter(eintrag.boni)) {
-      const pruefer = PRUEFER[form];
-      assert.ok(pruefer, `${haus}: Bonus in der Form "${form}" ohne Messung`);
-      const weg = rest.slice(0, -1);
-      const wert = rest.at(-1) + mannschaftDazu(eintrag, form, weg);
-      gemessen.push(`${haus} - ${pruefer(haus, ...weg, wert)}`);
+  try {
+    for (const [haus, eintrag] of Object.entries(HAEUSER)) {
+      for (const [ab, boni] of stufen(eintrag)) {
+        abZeitalter = ab;
+        for (const [form, ...rest] of blaetter(boni)) {
+          const pruefer = PRUEFER[form];
+          assert.ok(pruefer, `${haus}: Bonus in der Form "${form}" ohne Messung`);
+          const weg = rest.slice(0, -1);
+          const wert = rest.at(-1) + mannschaftDazu(eintrag, form, weg);
+          gemessen.push(`${haus}${ab ? ` (ab Zeitalter ${ab})` : ''} - ${pruefer(haus, ...weg, wert)}`);
+        }
+      }
     }
+  } finally {
+    abZeitalter = 0;
   }
   // Gegenprobe des Aufbaus: gemessen ist jedes Blatt, und es sind welche -
   // heute zwoelf in fuenf Haeusern, jedes Haus mit mindestens einem.
-  const alle = Object.values(HAEUSER).reduce((n, h) => n + blaetter(h.boni).length, 0);
+  const alle = Object.values(HAEUSER).reduce((n, h) => n + stufen(h).reduce((m, [, boni]) => m + blaetter(boni).length, 0), 0);
   assert.equal(gemessen.length, alle);
   assert.ok(alle >= 12, `Boni: ${alle}`);
-  for (const [haus, eintrag] of Object.entries(HAEUSER)) assert.ok(blaetter(eintrag.boni).length > 0, `${haus} hat keinen Bonus`);
+  for (const [haus, eintrag] of Object.entries(HAEUSER)) assert.ok(stufen(eintrag).some(([, boni]) => blaetter(boni).length > 0), `${haus} hat keinen Bonus`);
   console.log(gemessen.join('\n'));
 });
 

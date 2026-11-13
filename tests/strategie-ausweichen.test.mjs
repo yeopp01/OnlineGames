@@ -216,8 +216,12 @@ test('einheiten AC-31: 800 angekommene Angreifer an einem Ziel kosten unter 1 ms
     for (const e of welt.einheiten.values()) e.weg = [];
   };
   for (let n = 0; n < 5; n++) durchgang();
+  // Der kleinste Wert aus 25 Runden, nicht aus 5: seit `npm test` daneben
+  // den Typpruefer startet (tests/waechter-typen.test.mjs), fielen im
+  // parallelen Lauf alle fuenf Runden in dessen Last - 1,03 und 1,12 ms,
+  // allein gemessen 0,26 (2026-11-13). Die Grenze bleibt 1 ms.
   let bestes = Infinity;
-  for (let d = 0; d < 5; d++) {
+  for (let d = 0; d < 25; d++) {
     const t0 = performance.now();
     for (let n = 0; n < 20; n++) durchgang();
     bestes = Math.min(bestes, (performance.now() - t0) / 20);

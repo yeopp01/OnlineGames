@@ -104,7 +104,7 @@ Befehl bewirkt.
 ### Feudalzeit (Stufe B)
 
 - **AC-23** `fertig` **Drei neue Einheiten** — Speerkämpfer (35 Nahrung, 25 Holz, 22 s) in der
-  Kaserne, Bogenschütze (25 Holz, 45 Gold, 35 s) und Plänkler (25 Nahrung,
+  Kaserne, Bogenschütze (30 Holz, 45 Gold, 35 s — 25 Holz in der Vorlage, seit Runde 202 teurer, weil die Schützen KI gegen KI zu stark waren, spielziel AC-18) und Plänkler (25 Nahrung,
   35 Holz, 22 s) in der Schießanlage, Späherreiter (80 Nahrung, 30 s) im
   Stall. Werte für Leben, Angriff, Rüstung, Reichweite und Tempo nach der
   [Vorlage](../../docs/strategie/vorlage-aoe2.md). Alle drei tragen

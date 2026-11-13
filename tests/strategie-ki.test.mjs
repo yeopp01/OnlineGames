@@ -560,6 +560,48 @@ test('ki AC-14: wird ein Gebaeude angegriffen, zieht die Wache hin und schlaegt 
   }
 });
 
+// Runde 200, von der Durchsicht gefunden: seit eine Baustelle mit dem Bau
+// Leben gewinnt (bauen AC-7), waechst eine Kaserne mit einem Bauer zwischen
+// zwei Entscheidungen um 12 Leben - mehr, als ein Schlag der Miliz nimmt. Die
+// KI verglich das Leben mit dem vorigen und sah keinen Angriff.
+test('ki AC-14: auch eine wachsende Baustelle, auf die geschlagen wird, ruft die Wache - Wachsen allein nicht', () => {
+  const welt = new Welt(ZWEI, 13);
+  const ki = new Ki(welt, 'b');
+  const b = welt.spielerVon('b');
+  const zentrum = zentrumVon(welt, 'b');
+  b.holz = 1000;
+  kampfeinheitenAnlegen(welt, 'b', { x: b.basis.x, y: b.basis.y - 20 }, 2);
+  const bauer = welt.einheitAnlegen('b', b.basis.x + 6, b.basis.y + 6);
+  let baustelle = null;
+  for (let d = 7; !baustelle && d < 20; d++) {
+    for (const [dx, dy] of [[d, d], [d, 0], [0, d], [-d, d], [d, -d]]) {
+      const antwort = welt.bauen('b', [bauer.id], 'kaserne', { x: b.basis.x + dx, y: b.basis.y + dy });
+      if (antwort.gebaeude) { baustelle = welt.gebaeude.get(antwort.gebaeude); break; }
+    }
+  }
+  assert.ok(baustelle, 'eine Kaserne begonnen');
+  const eigene = () => eigeneVon(welt, 'b');
+  const entscheiden = () => ki.verteidigenPruefen(eigene(), gebaeudeVon(welt, 'b'), zentrum);
+
+  // Zehn Sekunden Bauen ohne Angriff: das Leben waechst, niemand zieht los.
+  for (let t = 0; t < 10 * TAKTE_PRO_SEKUNDE; t += ENTSCHEIDEN_ALLE) {
+    takten(welt, ENTSCHEIDEN_ALLE);
+    entscheiden();
+  }
+  assert.ok(baustelle.bau > 0.05 && baustelle.leben > 50, `gebaut: ${baustelle.bau.toFixed(2)}, Leben ${baustelle.leben}`);
+  assert.equal(ki.verteidigungen, 0, 'Wachsen ist kein Angriff');
+
+  // Annas Miliz schlaegt auf die Baustelle; der Bauer baut weiter.
+  const angreifer = welt.einheitAnlegen('a', baustelle.x + 3, baustelle.y + 3, 'miliz');
+  rechtsklick(welt, 'a', [angreifer], baustelle);
+  for (let t = 0; t < 30 * TAKTE_PRO_SEKUNDE && !ki.verteidigungen; t += ENTSCHEIDEN_ALLE) {
+    takten(welt, ENTSCHEIDEN_ALLE);
+    entscheiden();
+  }
+  assert.equal(baustelle.fertig, false, 'noch im Bau, als die Wache loszog');
+  assert.equal(ki.verteidigungen, 1, 'die Wache ist losgeschickt');
+});
+
 // Runde 86, im Browser gefunden, waehrend die drei Tests darueber gruen waren:
 // Dort kam die Wache aus **derselben Richtung** wie der Angreifer, und das
 // naechste freie Feld am Angriffsort war das Feld neben ihm. `feindAn` zieht
@@ -1530,6 +1572,28 @@ test('ki AC-19: die KI gibt auf, wenn nie wieder etwas geschehen kann - und nur 
   letzter.tot = true;
   assert.equal(lage(), true, 'ein Gefallener zaehlt nicht');
   welt.einheiten.delete(letzter.id);
+  // Wer nur handelt, haelt die Partie nicht offen: ein Karren sammelt nicht,
+  // baut nicht und schlaegt nicht (Startwert 8: drei Karren, kein
+  // Dorfbewohner, kein Dorfzentrum, sechs Minuten bis ueber Minute 90).
+  const karren = welt.einheitAnlegen('b', b.basis.x + 5, b.basis.y + 5, 'marktkarren');
+  assert.equal(lage(), true, 'nur noch ein Karren: aussichtslos');
+  // Aber er bringt Gold: was ausser Gold nichts kostet, was fehlt, kommt noch.
+  // Ein Schuetze kostet Holz und Gold: das Holz liegt da, das Gold nicht.
+  const anlage = welt.gebaeudeAnlegen('b', 'schiessanlage', b.basis.x + 8, b.basis.y + 8, true);
+  const schuetze = EINHEITEN.bogenschuetze.kosten;
+  assert.deepEqual(Object.keys(schuetze).sort(), ['gold', 'holz'], 'der Schuetze kostet Holz und Gold');
+  b.zeitalter = EINHEITEN.bogenschuetze.zeitalter;
+  b.holz = schuetze.holz;
+  assert.equal(lage(), false, 'mit einem Karren gilt das Gold als kommend');
+  karren.tot = true;
+  assert.equal(lage(), true, 'Gegenprobe: ohne Karren fehlt das Gold fuer immer');
+  karren.tot = false;
+  b.holz = schuetze.holz - 1;
+  assert.equal(lage(), true, 'und Holz bringt auch ein Karren nicht');
+  b.holz = 0;
+  b.zeitalter = 0;
+  welt.gebaeude.delete(anlage.id);
+  welt.einheiten.delete(karren.id);
   // Und dann gibt sie auf: die Partie hat einen Sieger.
   ki.entscheiden();
   assert.equal(b.aus, true, 'ausgeschieden');

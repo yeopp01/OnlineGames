@@ -45,6 +45,7 @@ npm run pruefstand:vergleich -- --probe probe.cjs --saetze 3  # Austauschprobe: 
 npm run pruefstand:verlauf -- --startwert 5  # eine Partie KI gegen KI Minute fuer Minute
 npm run pruefstand:haeuser   # jede Paarung der Haeuser 20-mal, Seiten abwechselnd, mit Herstellung je Haus (--nur, --probe, --je)
 npm run waechter     # alle Waechter in Sekunden - vor dem Abschlusslauf
+npm run typen        # TypeScript prueft jede Datei mit // @ts-check - gebaut wird nichts, die Dateien bleiben JavaScript
 npm run gegenprobe -- <datei> "<neu>" "<alt>" -- <befehl>  # Gegenprobe gegen die alte Zeile, schreibt die Datei immer zurueck
 npm run durchsicht   # Geaendertes und Neues als eine Datei fuer den Pruefer, der keine Shell hat - nennt den Pfad
 npm run ausrollen    # den Stand eines Commits auf den Server bringen (betrieb/README.md); -- --stand zeigt, was dort laeuft
@@ -77,6 +78,14 @@ dann `check:alles`: das sind zwei Browserläufe und neun Minuten umsonst
 Lauf ändert achtzig Bilder, an den meisten nur den zufälligen Raumcode. Die
 Liste sortiert nach Anteil geänderter Bildpunkte; was über 1 % steht, wird
 angesehen, bevor etwas eingecheckt wird.
+
+**TypeScript ist der Prüfer, nicht die Sprache** (`npm run typen`, als
+Wächter in `npm test`). Geprüft wird, was in der ersten Zeile `// @ts-check`
+trägt: der Server ohne das Managerspiel, im Browser bisher `nebel.js`,
+`uebersicht.js` und `auswahlleiste.js`. Die Formen der Tabellen stehen als
+`@typedef` oben in `server/spiele/strategie/daten.js` — **ein neues Feld wird
+dort eingetragen**, sonst meldet der Prüfer es. Welche Dateien noch fehlen und
+warum, steht unter `OFFEN` in `tests/waechter-typen.test.mjs`.
 
 ### Die wichtigste Regel
 
@@ -171,7 +180,7 @@ Umfang hinzufügt, dort nachsehen.
 
 ## Stand
 
-**513 von 635 Kriterien fertig.** 826 Tests ohne Browser, 265 im Browser. Die
+**514 von 635 Kriterien fertig.** 839 Tests ohne Browser, 265 im Browser. Die
 Übersicht ist der Bericht: `npm run qa:report`.
 
 Gebaut ist der Unterbau: Räume, Übertragung, Karte, Wegfindung, Sammeln,
@@ -260,7 +269,8 @@ Einheit oder ein fremdes Gebäude greift an — kein eigener Knopf, der Server
 liest es aus dem geklickten Feld; mehrere Angreifer verteilen sich um das
 Ziel. Der Schaden ist `max(1, Angriff − Rüstung + Bonus)` ohne Ausnahme und
 ohne Zufall, jede Einheit hat ihre Nachladezeit, Gebäude tragen 0/7 Rüstung
-und fallen samt ihrem Platz. Wer stirbt, liegt zwei Sekunden am Boden.
+und fallen samt ihrem Platz; eine Baustelle hat erst so viel Leben, wie
+gebaut ist (bauen AC-7, `welt.bauleben`). Wer stirbt, liegt zwei Sekunden am Boden.
 **Kampfeinheiten wehren sich von selbst**: was in die Sichtweite einer
 stehenden Einheit kommt, wird ohne Befehl angegriffen (wer wacht, steht als
 Wert in den Daten); ein Dorfbewohner arbeitet weiter, bis ihn ein Schlag
@@ -430,7 +440,20 @@ fährt `tests/partien/ki-im-nebel.test.mjs` und die Team-Tests. **Bei
 alle Schlangen voll, 600 Holz und zusammen 1000 Nahrung und Gold im Vorrat
 — ein weiteres Militärgebäude, höchstens neun. KI gegen KI greift das fast
 nie (sie ist arm, nicht gedeckelt: im Mittel 55 Holz im Vorrat); gegen
-einen Menschen, der mauert, ist es nicht gemessen.
+einen Menschen, der mauert, ist es nicht gemessen. **Seit dem
+Zusammenführen mit der neuen Balance (2026-11-13)** hielt „alle mit
+Sieger" nicht mehr (2 von 40); vier Regeln bringen es zurück: der Handel
+beginnt bei 1500 statt 800 Gold in Reichweite, bis vier Karren fahren,
+liegt der nächste zurück (`karrenFehlt`), ist das Dorf zugebaut, sucht sie
+den Bauplatz dahinter (`platzBeiBasis`), und sobald der Gegner etwas hat,
+das schießt, gehen die Rammen vor der Ausbildung (ki AC-26, ki AC-23);
+wer nur noch Marktkarren hat, gibt auf (ki AC-19). Gemessen: Nebel 1–40
+und 41–80 alle mit Sieger, 36 und 37 vor Minute 60, zu viert längste 87,1.
+**Die Grenzen halten an diesen Startwerten, nicht aus Abstand** — eine
+Probe, die nur die Zufallsfolge verschob, riss sie wieder. Der Platz für
+ein Gebäude wird gesucht, bevor es bezahlt ist: das ist die halbe
+Rechenzeit des Prüfstands und wartet auf die nächste Runde, in der die KI
+ohnehin neu gemessen wird.
 Die **Sicht ist eine Einstellung beim Eröffnen** (kampf AC-16):
 Nebel, Erkundet oder Aufgedeckt — Tests, die nicht vom Nebel handeln,
 eröffnen aufgedeckt (`partieZuZweit(…, { sicht: 'aufgedeckt' })`).
@@ -543,9 +566,16 @@ aus Holzbonus und Reichweite (ganz leer 51 %), Distelhag kostet seine
 Neigung zur Kaserne 15 bis 20 Punkte. **Wer zur Kaserne neigt, baut im
 Wechsel nach** (ki AC-32, Runde 180): eine weitere Kaserne nur, solange es
 weniger Kasernen als andere Militärgebäude gibt — Distelhag 47 statt 26 %
-über 160 Partien. Welcher Bonus Eschenbruchs schwächer wird, ist eine
-offene Frage an den Benutzer; danach spielziel AC-18 (jedes Haus 30 bis
-70 %).
+über 160 Partien. **Eschenbruch abgeschwächt** (Runde 201, Benutzer):
+Holz +5 % statt +15 %, Schützen +1 Reichweite erst ab dem Fürstentum —
+ein Bonus ab einem Zeitalter steht als `boniAb` in `HAEUSER` und kommt mit
+dem Aufstieg (`welt.zeitalterWirkungen`). Gemessen 73 % statt 85 %.
+**Die anderen gestärkt** (Runde 202, Benutzer): Bogen- und
+Armbrustschütze 30 statt 25 Holz, Silberfurt Gold +15 %, Distelhag
+Fernrüstung +2. Über 200 Partien jetzt Eschenbruch 66, Distelhag 58,
+Rappenstein 50, Wehrstein 48, Silberfurt 29 % — Silberfurt einen Punkt
+unter spielziel AC-18 (30 bis 70 %), innerhalb der Streuung; der Test dazu
+in `npm run check` fehlt.
 **Voller Wohnraum fällt auf** (bedienung AC-43): wartet ein eigener
 Auftrag, steht die Bevölkerung oben rot umrandet, auch ohne Auswahl
 (`ansicht.wartetEtwas()`). **Gruppentasten** (bedienung AC-5): `Strg`

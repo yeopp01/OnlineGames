@@ -1,3 +1,4 @@
+// @ts-check
 'use strict';
 
 // Welche Spiele es gibt (→ specs/00-plattform/spielauswahl.md AC-1 bis AC-3).

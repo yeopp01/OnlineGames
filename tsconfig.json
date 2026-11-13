@@ -1,0 +1,18 @@
+{
+  // TypeScript als Pruefer, nicht als Sprache: die Dateien bleiben JavaScript,
+  // es wird nichts erzeugt (`noEmit`). Geprueft wird nur, was in der ersten
+  // Zeile `// @ts-check` traegt - so kommt Datei um Datei dazu.
+  // Aufruf: `npm run typen`. Der Browser hat seine eigene Fassung in
+  // `public/tsconfig.json`, weil dort `document` gilt und `require` nicht.
+  "compilerOptions": {
+    "allowJs": true,
+    "checkJs": false,
+    "noEmit": true,
+    "strict": false,
+    "target": "es2023",
+    "module": "nodenext",
+    "skipLibCheck": true,
+    "types": ["node"]
+  },
+  "include": ["server/**/*.js"]
+}

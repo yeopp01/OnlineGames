@@ -1,3 +1,4 @@
+// @ts-check
 'use strict';
 
 const { randomUUID, randomInt } = require('node:crypto');
@@ -427,6 +428,7 @@ class Raeume {
   // Die am laengsten verlassene laufende Partie schliessen, auf die `passt`
   // zutrifft. Eine Partie, an der niemand sitzt, haelt keinen Platz fest
   // (raeume AC-17): steht eine Grenze dem Eroeffnen im Weg, weicht sie.
+  /** @param {(raum: any) => boolean} [passt] */
   verlasseneSchliessen(passt = () => true) {
     let aelteste = null;
     for (const raum of this.nachCode.values()) {
