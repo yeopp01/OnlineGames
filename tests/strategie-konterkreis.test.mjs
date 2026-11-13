@@ -152,6 +152,57 @@ test('fahrplan AC-23: umgekehrt gewinnt der Gekonterte in der Ritterzeit so gut 
   }
 });
 
+// Der Konterkreis mit den Stufen des Fuerstentums (fahrplan AC-25): jede
+// Stufe behaelt, was ihre Vorstufe schlug - und die zwei Schuetzenlinien
+// fallen beide vor den Reitern (Benutzer, 2026-11-13). Gemessen am
+// 2026-11-13: jede Paarung 20 von 20, umgekehrt 0 von 20.
+const KREIS_STUFEN = [
+  ['pikenier', 'ritter'],
+  ['pikenier', 'leichtekavallerie'],
+  ['eliteplaenkler', 'bogenschuetze2'],
+  ['eliteplaenkler', 'armbrustschuetze'],
+  ['bogenschuetze2', 'pikenier'],
+  ['ritter', 'bogenschuetze2'],
+  ['ritter', 'armbrustschuetze'],
+  ['leichtekavallerie', 'bogenschuetze2'],
+  ['leichtekavallerie', 'armbrustschuetze'],
+];
+
+test('fahrplan AC-25: die Stufen des Fuerstentums halten den Konterkreis - und Reiter schlagen beide Schuetzenlinien', () => {
+  const schwelle = Math.ceil(STARTWERTE * 0.8);
+  for (const [konter, ziel] of KREIS_STUFEN) {
+    const hin = siegeLinks(konter, ziel);
+    assert.ok(hin.siege >= schwelle, `${konter} soll ${ziel} kontern, gewinnt aber nur ${hin.siege} von ${STARTWERTE}`);
+    assert.equal(hin.ohneEnde, 0, `${konter} gegen ${ziel}: ${hin.ohneEnde} Gefechte ohne Ende`);
+    // Die Gegenprobe gegen "links gewinnt immer".
+    const her = siegeLinks(ziel, konter);
+    assert.ok(her.siege <= STARTWERTE - schwelle, `${ziel} wird von ${konter} gekontert, gewinnt als linke Seite aber ${her.siege} von ${STARTWERTE}`);
+  }
+});
+
+test('fahrplan AC-25: die Armbrust ist die Antwort auf Ruestung - gegen geruestete Schuetzen schlaegt sie den Bogen, ohne Ruestung nicht', () => {
+  // Wofuer es zwei Linien gibt (einheiten AC-34): der Bolzen trifft mit 9
+  // alle 3,5 s, der Pfeil mit 5 alle 2 s. Ohne Ruestung ist das je Sekunde
+  // gleich und der Bogen billiger - gemessen 6 von 20 fuer die Armbrust. Mit
+  // beiden Schuetzenruestungen der Schmiede auf beiden Seiten bleiben vom
+  // Pfeil 3, vom Bolzen 7: 20 von 20.
+  const gegenBogen = (erforscht) => {
+    let siege = 0;
+    for (let startwert = 1; startwert <= STARTWERTE; startwert++) {
+      const ergebnis = gefechtSpielen({
+        links: 'armbrustschuetze', rechts: 'bogenschuetze2', startwert, budget: BUDGET_RITTERZEIT, minuten: 10,
+        erforscht: { links: erforscht, rechts: erforscht },
+      });
+      if (ergebnis.sieger === 'links') siege += 1;
+    }
+    return siege;
+  };
+  const ohne = gegenBogen([]);
+  const mit = gegenBogen(['polsterruestung', 'lederruestung']);
+  assert.ok(ohne <= STARTWERTE / 2, `ohne Ruestung gewinnt die Armbrust ${ohne} von ${STARTWERTE} - sie soll den Bogen nicht ersetzen`);
+  assert.ok(mit >= Math.ceil(STARTWERTE * 0.8), `gegen geruestete Schuetzen gewinnt die Armbrust nur ${mit} von ${STARTWERTE}`);
+});
+
 /** Wie viele Gegner ein Stein des Mangonels im Mittel trifft, ueber alle Startwerte. */
 function trefferJeStein() {
   const urform = Welt.prototype.einschlaegeTakten;

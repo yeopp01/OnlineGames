@@ -180,7 +180,7 @@ Umfang hinzufügt, dort nachsehen.
 
 ## Stand
 
-**514 von 635 Kriterien fertig.** 839 Tests ohne Browser, 265 im Browser. Die
+**522 von 644 Kriterien fertig.** 852 Tests ohne Browser, 269 im Browser. Die
 Übersicht ist der Bericht: `npm run qa:report`.
 
 Gebaut ist der Unterbau: Räume, Übertragung, Karte, Wegfindung, Sammeln,
@@ -432,8 +432,9 @@ Rammen auf; solange das Heer darauf wartet, ruht die Ausbildung
 vor dem Ziel (`ki.zug`), hinein erst mit dem Heer, zuerst auf das, was
 schießt. Ist das Gold knapp, geht der Handel vor (`ki.handelLaeuft`).
 Gemessen im Nebel: 38 von 40 vor Minute 60, Median 41,4; zu viert Median
-50,9 statt 44,8. **Knapp** ist ki AC-27 (Distelhag 1,61-fach bei verlangten
-1,5); zwei Burgen und Türme nebeneinander knackt die KI nicht. Die
+50,9 statt 44,8. ki AC-27 verlangt seit dem 2026-11-13 das 1,4-fache
+(Freigabe des Benutzers, siehe Truppenstufen unten; Distelhag 1,44-fach);
+zwei Burgen und Türme nebeneinander knackt die KI nicht. Die
 Stellwerte stehen mit ihren Messungen oben in `ki.js` — wer daran dreht,
 fährt `tests/partien/ki-im-nebel.test.mjs` und die Team-Tests. **Bei
 Überfluss baut sie über ihre Grenze hinaus** (ki AC-34): ab dem Fürstentum,
@@ -454,6 +455,40 @@ Probe, die nur die Zufallsfolge verschob, riss sie wieder. Der Platz für
 ein Gebäude wird gesucht, bevor es bezahlt ist: das ist die halbe
 Rechenzeit des Prüfstands und wartet auf die nächste Runde, in der die KI
 ohnehin neu gemessen wird.
+**Truppenstufen (D15, 2026-11-13, Benutzer):** jede Einheit des Lehens
+bekommt im Fürstentum ihre Stufe, als Verbesserung mit `wandelt` — sie
+tauscht aus, was schon steht (einheiten AC-58 bis AC-62): Kurzbogenschütze
+→ Bogenschütze (`bogenstufe`, Schlüssel `bogenschuetze2`), Soldat →
+Langschwertkämpfer (verlangt die `soldatenstufe`), Speerkämpfer → Pikenier,
+Plänkler → Eliteplänkler, Späherreiter → leichte Kavallerie. **Bogen und
+Armbrust sind zwei Linien nebeneinander**: der Armbrustschütze ist eine
+eigene Einheit der Schießanlage ab dem Fürstentum (35 Holz, 55 Gold, 9
+Angriff alle 3,5 s, Reichweite 5), keine Verbesserung des Bogens mehr
+(einheiten AC-34); der Langbogenschütze ist die Krone-Stufe der Bogenlinie
+für alle, Eschenbruchs eigene Einheit heißt deshalb **Eibenschütze**
+(einheiten AC-42: voll erforscht höchstens ein Feld weiter als die Burg).
+Der **Wehrturm** (bauen AC-38) ist eine Verbesserung der Universität, die
+jeden eigenen Wachturm umbenennt und stärkt (`bauwerk`, `nennt` — den Namen
+schickt der Server in `kw`); er behält vorerst das Bild des Wachturms. Die
+**Schmiede rüstet** (bauen AC-39): je zwei Stufen für Fußvolk, Reiter und
+Schützen, jede +1/+1. **Der Konterkreis hält auch damit** (fahrplan AC-25,
+Budget 1200): neun Paarungen 20 von 20, umgekehrt 0 — auch Reiter gegen
+beide Schützenlinien. Die Armbrust verliert ohne Rüstungen gegen den Bogen
+(6 von 20) und gewinnt mit den Schützenrüstungen (20 von 20). **Die KI
+bildet die neuen Einheiten aus, erforscht aber nichts** — das ist ki AC-35
+(`offen`, als Nächstes). **Die Burg wartet auf den Handel nur bei echter
+Goldnot** (ki AC-33): wer aus Neigung handelt, baut sie gleich und verkauft
+den Stein dafür nicht (`ki.steinFuerBauwerk`) — Silberfurt baute sonst in 16
+Partien eine Burg, jetzt sechs, und gewinnt 36 statt 30 %. Dabei fiel ki
+AC-27 auf das 1,44-fache; die Grenze steht mit Freigabe des Benutzers
+(2026-11-13) bei 1,4, ki AC-30 bleibt bei zwei. Gemessen: Nebel 1–40 und
+42–81 alle mit Sieger, 36 und 38 vor Minute 60, zu viert längste 87,7.
+`npm run pruefstand:haeuser` danach: Eschenbruch 65, Rappenstein 60,
+Distelhag 54, Silberfurt 36, Wehrstein 30 % — am Commit davor 53, 63, 63,
+35, 35: **die Truppenstufen nützen Eschenbruch** und kosten Distelhag —
+vermutet, nicht gemessen: die KI bildet im Fürstentum Armbrustschützen
+aus, deren 9 Angriff Distelhags Fernrüstung entwertet. Wehrstein steht am
+unteren Rand von spielziel AC-18.
 Die **Sicht ist eine Einstellung beim Eröffnen** (kampf AC-16):
 Nebel, Erkundet oder Aufgedeckt — Tests, die nicht vom Nebel handeln,
 eröffnen aufgedeckt (`partieZuZweit(…, { sicht: 'aufgedeckt' })`).

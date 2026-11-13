@@ -225,6 +225,36 @@ test('ki AC-26: fehlt das Gold fuer den Karren, verkauft sie am Markt, was sie u
   assert.ok(!knapp.gesendet.some((n) => n.auftrag === 'handeln'), JSON.stringify(knapp.gesendet));
 });
 
+test('ki AC-33: wer handelt, obwohl noch Gold in Reichweite liegt, verkauft den Stein fuer seine Burg nicht - ist das Gold knapp, schon', () => {
+  // Ein Haus, das aus Neigung ab der Ritterzeit handelt, verkaufte sonst den
+  // Stein fuer Karren, und die 650 fuer die Burg kamen nie zusammen: in 16
+  // Partien eine Burg (gemessen 2026-11-13).
+  const stellen = (knapp) => {
+    const l = ritterzeit();
+    if (knapp) goldLeeren(l.welt, l.a.basis);
+    l.welt.gebaeudeAnlegen('a', 'schiessanlage', l.a.basis.x + 8, l.a.basis.y + 8);
+    const heimat = marktBei(l.welt, 'a', l.a.basis, 8);
+    marktBei(l.welt, 'a', heimat, 40);
+    karrenStellen(l.welt, heimat);
+    l.ki.angriffTakt = 1;
+    l.ki.handelSeit = 1;
+    Object.assign(l.a, { gold: 0, holz: 350, nahrung: 350, stein: 600 });
+    l.ki.bauwerkePruefen(gebaeudeVon(l.welt, 'a'), dorf(l.welt, 'a'));
+    l.pruefen();
+    return l;
+  };
+  const verkauft = (l) => l.gesendet.filter((n) => n.auftrag === 'handeln' && n.richtung === 'verkaufen').map((n) => n.ware);
+  const neigung = stellen(false);
+  assert.ok(neigung.ki.goldInReichweite() >= GOLD_KNAPP, 'es liegt Gold in Reichweite');
+  assert.equal(neigung.ki.steinFuerBauwerk, GEBAEUDE.burg.kosten.stein, 'der Stein ist fuer die Burg vorgemerkt');
+  assert.deepEqual(verkauft(neigung), [], 'der Stein fuer die Burg bleibt liegen');
+  assert.equal(neigung.a.stein, 600);
+  // Gegenprobe: ist das Gold knapp, kauft der Stein den Handel wie bisher.
+  const knapp = stellen(true);
+  assert.equal(knapp.ki.steinFuerBauwerk, 0);
+  assert.deepEqual(verkauft(knapp), ['stein'], 'bei Goldnot geht der Stein zum Markt');
+});
+
 test('ki AC-26: bis die ersten Karren fahren, liegt zurueck, was der naechste kostet - das Militaer gibt es nicht aus', () => {
   // Beim Startwert 14 ging beiden um Minute 60 das Gold aus; der Angreifer
   // hatte bis Minute 90 einen einzigen Karren, weil das Militaer jede Ladung

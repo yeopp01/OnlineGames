@@ -456,7 +456,217 @@ const ZEICHEN = {
       }
     }
   },
+  // Wehrturm (bauen AC-38): die Krone eines Turms mit Zinnen, darueber die
+  // Fahne in der Volksfarbe.
+  zinne(s, g, farbe) {
+    s.fillStyle = '#8f8a82';
+    s.fillRect(0.24 * g, 0.5 * g, 0.52 * g, 0.42 * g);
+    s.fillStyle = '#a7a299';
+    s.fillRect(0.16 * g, 0.4 * g, 0.68 * g, 0.14 * g);
+    for (const x of [0.16, 0.36, 0.56, 0.74]) s.fillRect(x * g, 0.26 * g, 0.1 * g, 0.16 * g);
+    s.fillStyle = '#3a3531';
+    s.fillRect(0.46 * g, 0.62 * g, 0.08 * g, 0.2 * g);
+    s.strokeStyle = '#4a4440';
+    s.lineWidth = g * 0.04;
+    s.beginPath();
+    s.moveTo(0.5 * g, 0.4 * g);
+    s.lineTo(0.5 * g, 0.06 * g);
+    s.stroke();
+    s.fillStyle = farbe;
+    s.beginPath();
+    s.moveTo(0.52 * g, 0.07 * g);
+    s.lineTo(0.82 * g, 0.14 * g);
+    s.lineTo(0.52 * g, 0.22 * g);
+    s.closePath();
+    s.fill();
+  },
+  // Die Ruestungen der Schmiede (bauen AC-39). Drei Gattungen, drei Formen:
+  // fuer das Fussvolk ein Leib, fuer die Reiterei ein Pferdekopf, fuer die
+  // Schuetzen eine Weste mit Koecher. Die erste Stufe ist jeweils hell, die
+  // zweite dunkles Geflecht aus Ringen.
+  schuppen(s, g, farbe) {
+    leib(s, g, '#b9c2cb', true);
+    schuppenmuster(s, g, 0.3, 0.7, 0.34, 0.8, '#7f8a94');
+    kragen(s, g, farbe);
+  },
+  kette(s, g, farbe) {
+    leib(s, g, '#5f666d', true);
+    ringmuster(s, g, 0.14, 0.86, 0.3, 0.84, '#aab3bb');
+    kragen(s, g, farbe);
+  },
+  rossschuppen(s, g, farbe) {
+    pferdekopf(s, g, '#b9c2cb', farbe);
+    schuppenmuster(s, g, 0.2, 0.62, 0.5, 0.92, '#7f8a94');
+  },
+  rosskette(s, g, farbe) {
+    pferdekopf(s, g, '#5f666d', farbe);
+    ringmuster(s, g, 0.18, 0.64, 0.5, 0.92, '#aab3bb');
+  },
+  // Polsterruestung: eine helle Weste, in Rauten gesteppt.
+  polster(s, g, farbe) {
+    leib(s, g, '#d9c9a3', false);
+    s.strokeStyle = '#a08c62';
+    s.lineWidth = g * 0.03;
+    s.save();
+    s.beginPath();
+    s.rect(0.3 * g, 0.3 * g, 0.4 * g, 0.56 * g);
+    s.clip();
+    for (let i = -4; i < 6; i++) {
+      s.beginPath();
+      s.moveTo((0.3 + i * 0.14) * g, 0.3 * g);
+      s.lineTo((0.3 + i * 0.14 + 0.56) * g, 0.86 * g);
+      s.moveTo((0.3 + i * 0.14) * g, 0.86 * g);
+      s.lineTo((0.3 + i * 0.14 + 0.56) * g, 0.3 * g);
+      s.stroke();
+    }
+    s.restore();
+    koecherchen(s, g, farbe);
+  },
+  // Lederruestung: ein dunkles Wams, vorn geschnuert.
+  leder(s, g, farbe) {
+    leib(s, g, '#7a5232', false);
+    s.strokeStyle = '#e0cfa8';
+    s.lineWidth = g * 0.03;
+    s.lineCap = 'round';
+    for (let i = 0; i < 4; i++) {
+      const y = (0.4 + i * 0.11) * g;
+      s.beginPath();
+      s.moveTo(0.44 * g, y);
+      s.lineTo(0.56 * g, y + 0.07 * g);
+      s.moveTo(0.56 * g, y);
+      s.lineTo(0.44 * g, y + 0.07 * g);
+      s.stroke();
+    }
+    koecherchen(s, g, farbe);
+  },
 };
+
+// Ein Leib von vorn - mit kurzen Aermeln ein Panzerhemd, ohne eine Weste.
+function leib(s, g, farbe, aermel) {
+  s.fillStyle = farbe;
+  s.beginPath();
+  s.moveTo(0.38 * g, 0.2 * g);
+  s.quadraticCurveTo(0.5 * g, 0.3 * g, 0.62 * g, 0.2 * g);
+  if (aermel) {
+    s.lineTo(0.9 * g, 0.34 * g);
+    s.lineTo(0.84 * g, 0.54 * g);
+    s.lineTo(0.72 * g, 0.48 * g);
+  } else {
+    s.lineTo(0.74 * g, 0.26 * g);
+    s.lineTo(0.7 * g, 0.44 * g);
+  }
+  s.lineTo(0.74 * g, 0.88 * g);
+  s.lineTo(0.26 * g, 0.88 * g);
+  if (aermel) {
+    s.lineTo(0.28 * g, 0.48 * g);
+    s.lineTo(0.16 * g, 0.54 * g);
+    s.lineTo(0.1 * g, 0.34 * g);
+  } else {
+    s.lineTo(0.3 * g, 0.44 * g);
+    s.lineTo(0.26 * g, 0.26 * g);
+  }
+  s.closePath();
+  s.fill();
+}
+
+// Der Halsausschnitt in der Volksfarbe.
+function kragen(s, g, farbe) {
+  s.strokeStyle = farbe;
+  s.lineWidth = g * 0.07;
+  s.lineCap = 'round';
+  s.beginPath();
+  s.moveTo(0.39 * g, 0.21 * g);
+  s.quadraticCurveTo(0.5 * g, 0.31 * g, 0.61 * g, 0.21 * g);
+  s.stroke();
+}
+
+// Reihen von Schuppen: Boegen nach unten, jede zweite Reihe versetzt.
+function schuppenmuster(s, g, x0, x1, y0, y1, farbe) {
+  s.strokeStyle = farbe;
+  s.lineWidth = g * 0.03;
+  for (let r = 0, y = y0; y < y1; r++, y += 0.1) {
+    for (let x = x0 + (r % 2 ? 0.05 : 0); x < x1 - 0.04; x += 0.1) {
+      s.beginPath();
+      s.arc((x + 0.05) * g, y * g, 0.05 * g, 0.15, Math.PI - 0.15);
+      s.stroke();
+    }
+  }
+}
+
+// Ringe eines Kettenhemds: kleine Kreise, dicht an dicht - nur dort, wo
+// schon Farbe liegt.
+function ringmuster(s, g, x0, x1, y0, y1, farbe) {
+  s.save();
+  s.globalCompositeOperation = 'source-atop';
+  s.strokeStyle = farbe;
+  s.lineWidth = g * 0.022;
+  for (let r = 0, y = y0; y < y1; r++, y += 0.075) {
+    for (let x = x0 + (r % 2 ? 0.04 : 0); x < x1; x += 0.08) {
+      s.beginPath();
+      s.arc(x * g, y * g, 0.028 * g, 0, Math.PI * 2);
+      s.stroke();
+    }
+  }
+  s.restore();
+}
+
+// Ein Pferdekopf nach rechts mit gepanzertem Hals; der Zuegel in der Volksfarbe.
+function pferdekopf(s, g, panzer, farbe) {
+  // Der Hals unter dem Panzer.
+  s.fillStyle = panzer;
+  s.beginPath();
+  s.moveTo(0.14 * g, 0.94 * g);
+  s.lineTo(0.2 * g, 0.5 * g);
+  s.quadraticCurveTo(0.3 * g, 0.26 * g, 0.5 * g, 0.2 * g);
+  s.lineTo(0.66 * g, 0.44 * g);
+  s.lineTo(0.66 * g, 0.94 * g);
+  s.closePath();
+  s.fill();
+  // Der Kopf: Stirn, Nase, Ohr.
+  s.fillStyle = '#6b4a30';
+  s.beginPath();
+  s.moveTo(0.46 * g, 0.2 * g);
+  s.lineTo(0.5 * g, 0.06 * g);
+  s.lineTo(0.58 * g, 0.18 * g);
+  s.lineTo(0.9 * g, 0.5 * g);
+  s.lineTo(0.84 * g, 0.62 * g);
+  s.lineTo(0.66 * g, 0.56 * g);
+  s.lineTo(0.56 * g, 0.44 * g);
+  s.closePath();
+  s.fill();
+  s.fillStyle = '#1d1a18';
+  s.beginPath();
+  s.arc(0.62 * g, 0.31 * g, 0.03 * g, 0, Math.PI * 2);
+  s.fill();
+  s.strokeStyle = farbe;
+  s.lineWidth = g * 0.05;
+  s.lineCap = 'round';
+  s.beginPath();
+  s.moveTo(0.8 * g, 0.42 * g);
+  s.lineTo(0.72 * g, 0.58 * g);
+  s.lineTo(0.5 * g, 0.66 * g);
+  s.stroke();
+}
+
+// Der Koecher der Schuetzen: schraeg hinter der Schulter, die Federn in der Volksfarbe.
+function koecherchen(s, g, farbe) {
+  s.strokeStyle = '#5a3d26';
+  s.lineWidth = g * 0.1;
+  s.lineCap = 'butt';
+  s.beginPath();
+  s.moveTo(0.8 * g, 0.5 * g);
+  s.lineTo(0.88 * g, 0.2 * g);
+  s.stroke();
+  s.strokeStyle = farbe;
+  s.lineWidth = g * 0.04;
+  s.lineCap = 'round';
+  for (const dx of [-0.03, 0.03]) {
+    s.beginPath();
+    s.moveTo((0.88 + dx) * g, 0.2 * g);
+    s.lineTo((0.91 + dx) * g, 0.07 * g);
+    s.stroke();
+  }
+}
 
 function zeichenBildchen(zeichen, groesse, farbe) {
   const { leinwand, stift } = knopfleinwand(groesse);
@@ -591,6 +801,15 @@ export class Auswahlleiste {
   }
 
   /**
+   * Wie ein Gebaeude bei seinem Besitzer heisst: eine Verbesserung kann ihm
+   * einen neuen Namen geben (bauen AC-38 - aus dem Wachturm wird der
+   * Wehrturm). Der Name kommt mit den Werten vom Server.
+   */
+  gebaeudeName(besitzer, art) {
+    return this.ansicht.einheitenwerte.get(besitzer)?.[art]?.name || GEBAEUDE[art]?.name || art;
+  }
+
+  /**
    * Was auf der Tafel steht: Name, Kosten, Dauer und die Zeilen, die sagen,
    * was es bringt. Werte von Einheiten und Gebaeuden kommen aus der Tafel,
    * die der Server dem Spieler schickt (mit Haus und Verbesserungen), die
@@ -627,7 +846,7 @@ export class Auswahlleiste {
       if (w.tor) zeilen.push('Lässt die eigenen Einheiten durch');
       if (w.gezogen) zeilen.push('Wird von Feld zu Feld gezogen');
       zeilen.push(`${lesen('leben')} Leben · Sicht ${lesen('sicht')}`);
-      return { name: GEBAEUDE[art]?.name || art, kosten: w.kosten || {}, dauer: w.bauzeit ? `Bauzeit ${w.bauzeit} s` : null, zeilen };
+      return { name: this.gebaeudeName(a.ich, art), kosten: w.kosten || {}, dauer: w.bauzeit ? `Bauzeit ${w.bauzeit} s` : null, zeilen };
     }
 
     const aufstieg = werte.aufstiege?.[art];
@@ -790,7 +1009,7 @@ export class Auswahlleiste {
       w.append(bild, kopfteil);
     } else {
       const voll = a.gebaeudeLebenVoll(gebaeude) ?? gebaeude.h;
-      w.append(kopf(GEBAEUDE[gebaeude.art]?.name || gebaeude.art, gebaeude.h ?? voll, voll));
+      w.append(kopf(this.gebaeudeName(gebaeude.b, gebaeude.art), gebaeude.h ?? voll, voll));
       const wert = (feld) => a.einheitenwerte.get(gebaeude.b)?.[gebaeude.art]?.[feld] ?? a.werte.gebaeude[gebaeude.art]?.[feld] ?? 0;
       if (wert('angriff') > 0) w.append(this.kampfwerteZeile(gebaeude, gebaeude.art, wert));
     }
@@ -837,11 +1056,19 @@ export class Auswahlleiste {
         return !vorstufe || this.ansicht.verbesserungen.includes(vorstufe);
       })
       // Die zweite Stufe ersetzt die erste: nach der Verbesserung bildet die
-      // Kaserne Soldaten aus, nicht mehr Milizen (einheiten AC-24).
+      // Kaserne Soldaten aus, nicht mehr Milizen (einheiten AC-24) - und
+      // nach der naechsten Langschwertkaempfer (AC-59), Stufe um Stufe.
       .map((art) => {
-        for (const v of this.ansicht.verbesserungen) {
-          const nach = werte.verbesserungen?.[v]?.wandelt?.[art];
-          if (nach) return nach;
+        for (let weiter = true; weiter;) {
+          weiter = false;
+          for (const v of this.ansicht.verbesserungen) {
+            const nach = werte.verbesserungen?.[v]?.wandelt?.[art];
+            if (nach) {
+              art = nach;
+              weiter = true;
+              break;
+            }
+          }
         }
         return art;
       })
@@ -870,7 +1097,7 @@ export class Auswahlleiste {
     }
     return [...arten].map((art) => ({
       art,
-      name: GEBAEUDE[art]?.name || art,
+      name: this.gebaeudeName(this.ansicht.ich, art),
       kosten: werte.gebaeude[art]?.kosten || {},
       groesse: werte.gebaeude[art]?.groesse || 1,
     }));
@@ -936,7 +1163,7 @@ export class Auswahlleiste {
   baustelleBauen(gebaeude, farbe) {
     const w = this.wurzel;
     w.replaceChildren();
-    const name = GEBAEUDE[gebaeude.art]?.name || gebaeude.art;
+    const name = this.gebaeudeName(gebaeude.b, gebaeude.art);
     const bild = element('div', 'auswahl-bild');
     bild.append(gebaeudeBildchen(gebaeude.art, 58, farbe, 2));
     const kopfteil = element('div', 'auswahl-kopf');
@@ -1173,7 +1400,7 @@ export class Auswahlleiste {
     const w = this.wurzel;
     w.replaceChildren();
     const voll = this.ansicht.gebaeudeLebenVoll(gebaeude) ?? gebaeude.h;
-    w.append(kopf(GEBAEUDE[gebaeude.art]?.name || gebaeude.art, gebaeude.h ?? voll, voll));
+    w.append(kopf(this.gebaeudeName(gebaeude.b, gebaeude.art), gebaeude.h ?? voll, voll));
     // Ein Gebaeude, das schiesst, zeigt seine Kampfwerte wie eine Einheit
     // (bauen AC-29, bedienung AC-35) - aus der Tafel seines Besitzers.
     const a = this.ansicht;

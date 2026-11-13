@@ -130,11 +130,16 @@ const EINHEIT_NAMEN = {
   spaeherreiter: 'Den Späherreiter',
   miliz: 'Die Miliz',
   speerkaempfer: 'Den Speerkämpfer',
-  bogenschuetze: 'Den Bogenschützen',
+  bogenschuetze: 'Den Kurzbogenschützen',
   plaenkler: 'Den Plänkler',
   soldat: 'Den Soldaten',
   ritter: 'Den Ritter',
+  bogenschuetze2: 'Den Bogenschützen',
   armbrustschuetze: 'Den Armbrustschützen',
+  langschwertkaempfer: 'Den Langschwertkämpfer',
+  pikenier: 'Den Pikenier',
+  eliteplaenkler: 'Den Eliteplänkler',
+  leichtekavallerie: 'Die leichte Kavallerie',
   ramme: 'Die Ramme',
   mangonel: 'Den Mangonel',
   moench: 'Den Mönch',
@@ -147,6 +152,16 @@ const STUFE_DURCH = Object.fromEntries(
   Object.entries(VERBESSERUNGEN).flatMap(([v, w]) =>
     Object.values(w.wandelt || {}).map((nach) => [nach, v])),
 );
+
+/**
+ * Die erste Stufe einer Einheit: der Langschwertkaempfer ist die dritte der
+ * Miliz (einheiten AC-59). Im Gebaeude steht immer die erste.
+ */
+function grundstufeVon(art) {
+  let grund = art;
+  while (EINHEITEN[grund]?.stufeVon) grund = EINHEITEN[grund].stufeVon;
+  return grund;
+}
 
 /**
  * Unter welchen Schluesseln eine Verbesserung eine Einheit trifft: ihre eigene
@@ -470,10 +485,15 @@ class Welt {
    * (`lebenAnteil`), alles andere um einen Zuschlag. Angriff, Reichweite und
    * Nachladezeit nur bei einem Gebaeude, das schiesst (spielziel AC-26):
    * "Turm und Burg +1 Reichweite" gilt nicht dem Wohnhaus.
+   *
+   * `bauwerk` gibt Zuschlaege einer einzelnen Gebaeudeart (bauen AC-38, der
+   * Wehrturm) - sie kommen zum Grundwert, bevor der Anteil des Mauerwerks
+   * darauf rechnet.
    */
   gebaeudewert(besitzer, art, feld) {
-    const grund = GEBAEUDE[art][feld] || 0;
     const wirkungen = this.wirkungen(besitzer);
+    let grund = GEBAEUDE[art][feld] || 0;
+    for (const w of wirkungen) grund += w.bauwerk?.[art]?.[feld] || 0;
     if (feld === 'leben') {
       let anteil = 0;
       for (const w of wirkungen) anteil += w.gebaeude?.lebenAnteil || 0;
@@ -672,6 +692,9 @@ class Welt {
     for (const art of Object.keys(GEBAEUDE)) {
       tafel[art] = {};
       for (const feld of GEBAEUDEFELDER) tafel[art][feld] = this.gebaeudewert(besitzer, art, feld);
+      // Wie es bei diesem Spieler heisst, wenn eine Verbesserung es umbenennt
+      // (bauen AC-38): sein Wachturm ist nach der Forschung ein Wehrturm.
+      for (const w of this.wirkungen(besitzer)) if (w.nennt?.[art]) tafel[art].name = w.nennt[art];
       // Was eine neue Farm traegt, mit Haus und Verbesserungen (bauen AC-26,
       // spielziel AC-17) - sonst rechnete der Browser es selbst und kennte
       // das Haus nicht (Durchsicht Runde 167).
@@ -1269,17 +1292,21 @@ class Welt {
     const gebaeude = this.gebaeude.get(gebaeudeId);
     if (!gebaeude || gebaeude.besitzer !== spielerId) return { fehler: 'Das ist nicht dein Gebäude.' };
     if (!gebaeude.fertig) return { fehler: 'Das Gebäude ist noch nicht fertig.' };
-    // Die zweite Stufe einer Einheit zaehlt als ihre Grundstufe: die Kaserne
+    // Jede spaetere Stufe einer Einheit zaehlt als ihre erste: die Kaserne
     // bildet die Miliz aus, nach der Verbesserung kommt daraus ein Soldat
-    // (einheiten AC-24).
-    const grundstufe = EINHEITEN[art]?.stufeVon || art;
+    // (einheiten AC-24), nach der naechsten ein Langschwertkaempfer (AC-59).
+    const grundstufe = grundstufeVon(art);
     if (!GEBAEUDE[gebaeude.art].bildetAus.includes(grundstufe)) return { fehler: 'Das bildet dieses Gebäude nicht aus.' };
     if (gebaeude.schlange.length >= SCHLANGE_MAX) return { fehler: 'Die Warteschlange ist voll.' };
     const spieler = this.spielerVon(spielerId);
     // Welche Stufe dieser Spieler ausbildet, haengt an seinen Verbesserungen:
     // ohne sie gibt es den Soldaten nicht, mit ihr nur noch ihn.
     const stufe = this.einheitenStufe(spieler, grundstufe);
-    if (art !== stufe && EINHEITEN[art]?.stufeVon) {
+    // Abgesagt wird nur eine Stufe, die er noch nicht erreicht hat; wer eine
+    // fruehere nennt, bekommt die erreichte.
+    let voraus = false;
+    for (let davor = EINHEITEN[art]?.stufeVon; davor && !voraus; davor = EINHEITEN[davor]?.stufeVon) voraus = davor === stufe;
+    if (voraus) {
       const noch = VERBESSERUNGEN[STUFE_DURCH[art]]?.name || art;
       return { fehler: `${EINHEIT_NAMEN[art] || art} gibt es erst mit der Verbesserung „${noch}".` };
     }
@@ -1419,11 +1446,12 @@ class Welt {
   erforschen(spieler, art) {
     // Mauerwerk legt auf jedes eigene Gebaeude Leben nach, auch auf die, die
     // schon stehen - der Schaden bleibt stehen (bauen AC-34).
+    // Dasselbe, wenn eine Verbesserung einer Gebaeudeart Leben gibt - der
+    // Wehrturm (bauen AC-38).
     const lebenVorher = new Map();
-    if (VERBESSERUNGEN[art].gebaeude?.lebenAnteil) {
-      for (const g of this.gebaeude.values()) {
-        if (g.besitzer === spieler.id && !lebenVorher.has(g.art)) lebenVorher.set(g.art, this.gebaeudewert(spieler.id, g.art, 'leben'));
-      }
+    const mehrLeben = (g) => VERBESSERUNGEN[art].gebaeude?.lebenAnteil || VERBESSERUNGEN[art].bauwerk?.[g.art]?.leben;
+    for (const g of this.gebaeude.values()) {
+      if (g.besitzer === spieler.id && !lebenVorher.has(g.art) && mehrLeben(g)) lebenVorher.set(g.art, this.gebaeudewert(spieler.id, g.art, 'leben'));
     }
     spieler.verbesserungen.push(art);
     for (const g of this.gebaeude.values()) {
@@ -1473,11 +1501,20 @@ class Welt {
     }
   }
 
-  // Welche Stufe einer Einheit dieser Spieler ausbildet (einheiten AC-24).
+  // Welche Stufe einer Einheit dieser Spieler ausbildet (einheiten AC-24) -
+  // Stufe um Stufe, so weit seine Verbesserungen reichen (AC-59).
   einheitenStufe(spieler, art) {
-    for (const v of spieler?.verbesserungen || []) {
-      const nach = VERBESSERUNGEN[v].wandelt?.[art];
-      if (nach) return nach;
+    const erforscht = spieler?.verbesserungen || [];
+    for (let weiter = true; weiter;) {
+      weiter = false;
+      for (const v of erforscht) {
+        const nach = VERBESSERUNGEN[v].wandelt?.[art];
+        if (nach) {
+          art = nach;
+          weiter = true;
+          break;
+        }
+      }
     }
     return art;
   }
@@ -4316,7 +4353,7 @@ class Welt {
         handel: { menge: HANDEL.menge, waren: Object.keys(HANDEL.waren) },
         // Jede Verbesserung mit dem, was sie bringt, in Worten (bedienung
         // AC-55) - der Browser liest keine Wirkung aus den Daten.
-        verbesserungen: Object.fromEntries(Object.entries(VERBESSERUNGEN).map(([art, v]) => [art, { ...v, bringt: bringt(v) }])),
+        verbesserungen: Object.fromEntries(Object.entries(VERBESSERUNGEN).map(([art, v]) => [art, { ...v, bringt: bringt(v, GEBAEUDE_NAMEN) }])),
         // Die Namen der Klassen, fuer den Bonus an der Auswahl (bedienung AC-35).
         klassen: KLASSEN,
         // Wie lang eine gezogene Mauer hoechstens ist (bauen AC-30).

@@ -1,10 +1,8 @@
 // Pfeile fliegen sichtbar (→ specs/10-strategie/bedienung.md AC-40).
 //
 // Annas Bogenschuetze schiesst auf Berts Haus. Ein Pfeil fliegt nur
-// Zehntelsekunden; der Test merkt sich einen, der gerade unterwegs ist, macht
-// das Bild und prueft danach, dass derselbe Pfeil noch nicht angekommen war -
-// dann war er auf dem Bild.
-import { unlink } from 'node:fs/promises';
+// Zehntelsekunden; der Test misst einen, der gerade unterwegs ist, haelt ihn
+// fuer das Bild auf halbem Weg fest und laesst ihn danach ankommen.
 import { nachweis } from '../../scripts/qa-nachweis.mjs';
 import { einheitenAufstellen, expect, test } from '../helpers/seite.mjs';
 import { gebaeudeInDerNaehe, partieBeenden, partieZuZweit } from '../helpers/strategie.mjs';
@@ -53,31 +51,44 @@ test.describe('Pfeile', () => {
     // Er geht in Reichweite und schiesst: Pfeile kommen an.
     await anna.waitForFunction(() => window.ansicht.pfeile.length > 0, null, { timeout: 20_000 });
 
-    // Ein Pfeil auf halbem Weg: merken, fotografieren, nachsehen.
-    let getroffen = false;
-    for (let versuch = 0; versuch < 30 && !getroffen; versuch++) {
-      const pfeil = await anna.waitForFunction(() => {
-        const jetzt = performance.now();
-        // Frisch abgeschossen und lang unterwegs: im vollen Browserlauf dauert
-        // das Bild selbst Zehntelsekunden (Runde 122).
-        const p = window.ansicht.pfeile.find((q) => (jetzt - q.start) / q.dauer < 0.2 && q.dauer >= 400);
-        return p ? { start: p.start, dauer: p.dauer, weite: p.weite } : null;
-      }, null, { timeout: 20_000, polling: 10 });
-      const gemerkt = await pfeil.jsonValue();
-      const bild = await nachweis(anna, {
-        spec: BEDIENUNG,
-        ac: 'AC-40',
-        titel: 'Ein Pfeil im Flug zwischen Annas Bogenschützen (blau) und Berts Haus',
-        test: info,
-      });
-      // War er nach dem Bild noch unterwegs, war er auf dem Bild.
-      getroffen = await anna.evaluate((g) => window.ansicht.pfeile.some((q) => q.start === g.start)
-        && performance.now() - g.start < g.dauer, gemerkt);
-      // Sonst weg mit dem Bild: der gewoehnliche Lauf schreibt nur fehlende
-      // Bilder, und eines ohne Pfeil bliebe liegen.
-      if (!getroffen) await unlink(bild).catch(() => {});
-      expect(gemerkt.weite, 'ein Schuss ueber mehr als ein Feld').toBeGreaterThan(1);
-    }
-    expect(getroffen, 'ein Pfeil war im Bild, als es entstand').toBe(true);
+    // Ein Pfeil auf halbem Weg, fuer das Bild festgehalten: er fliegt 0,57
+    // Sekunden (vier Felder bei sieben je Sekunde), und ein Bildschirmfoto des
+    // gerenderten Spielbilds dauert laenger - im Flug war er nicht mehr
+    // verlaesslich zu erwischen (2026-11-13). Gemessen wird vorher, am
+    // fliegenden Pfeil: wie lange er unterwegs ist, wo er beginnt und endet.
+    const pfeil = await anna.waitForFunction(() => {
+      const jetzt = performance.now();
+      const p = window.ansicht.pfeile.find((q) => !q.stein && jetzt >= q.start && (jetzt - q.start) / q.dauer < 0.5);
+      if (!p) return null;
+      const gemessen = { dauer: p.dauer, weite: p.weite, x0: p.x0, y0: p.y0, x1: p.x1, y1: p.y1 };
+      p.dauer = 1e9;
+      p.start = jetzt - 0.45e9;
+      return gemessen;
+    }, null, { timeout: 20_000, polling: 10 }).then((h) => h.jsonValue());
+    expect(pfeil.weite, 'ein Schuss ueber mehr als ein Feld').toBeGreaterThan(1);
+    // Sieben Felder je Sekunde, mindestens 0,15 Sekunden.
+    expect(pfeil.dauer).toBeCloseTo(Math.max(150, (pfeil.weite / 7) * 1000), 0);
+    const schuetze = await anna.evaluate((k) => {
+      const a = window.ansicht;
+      const e = [...a.nachher.values()].find((x) => x.k === k && x.b === a.ich);
+      return { x: e.x, y: e.y };
+    }, kuerzel);
+    expect(Math.hypot(pfeil.x0 - schuetze.x, pfeil.y0 - schuetze.y), 'er beginnt beim Schuetzen').toBeLessThan(0.6);
+    // Das Haus ist zwei Felder breit: das Ziel liegt auf seiner Grundflaeche.
+    expect(Math.hypot(pfeil.x1 - haus.x, pfeil.y1 - haus.y), 'er endet am Haus').toBeLessThan(2);
+    // Ein Bild weiter, dann steht er gezeichnet da.
+    await anna.evaluate(() => new Promise((fertig) => requestAnimationFrame(() => requestAnimationFrame(fertig))));
+    expect(await anna.evaluate(() => window.ansicht.pfeile.some((q) => q.dauer === 1e9)), 'der Pfeil steht im Bild').toBe(true);
+    await nachweis(anna, {
+      spec: BEDIENUNG,
+      ac: 'AC-40',
+      titel: 'Ein Pfeil im Flug zwischen Annas Bogenschützen (blau) und Berts Haus',
+      test: info,
+    });
+    // Losgelassen: er kommt an und verschwindet wie jeder andere.
+    await anna.evaluate(() => {
+      for (const q of window.ansicht.pfeile) if (q.dauer === 1e9) q.dauer = 1;
+    });
+    await anna.waitForFunction(() => !window.ansicht.pfeile.some((q) => q.dauer === 1), null, { timeout: 5_000 });
   });
 });

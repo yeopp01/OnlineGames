@@ -13,6 +13,7 @@ import { createRequire } from 'node:module';
 const require = createRequire(import.meta.url);
 const { Welt, TAKTE_PRO_SEKUNDE } = require('../server/spiele/strategie/welt.js');
 const { EINHEITEN, GEBAEUDE } = require('../server/spiele/strategie/daten.js');
+const karten = require('../server/spiele/strategie/karte.js');
 const {
   Ki, HEER, WACHE, WERKSTATT, RAMME, RAMMEN, RAMMEN_MIT, HEER_BEFESTIGT, SAMMEL_ABSTAND, RAMME_WARTEN_SEKUNDEN,
   FESTUNG, BURGEN_JE_ZEITALTER, BURG_VOR, BURG_BAUER, BURG_ABSTAND_SEKUNDEN, HANDEL_VOR,
@@ -311,10 +312,25 @@ test('ki AC-33: steht ihre Burg, baut sie im Fuerstentum keine zweite - in der K
 
 test('ki AC-33: ist das Gold knapp und faehrt noch kein Handel, wartet die Burg - der Stein kauft den ersten Karren', () => {
   const pruefen = (l) => l.ki.bauwerkePruefen(gebaeudeVon(l.welt, 'a'), dorf(l.welt, 'a'));
-  const l = lage();
-  bauBei(l.welt, 'a', 'schiessanlage', l.a.basis, 9);
-  l.ki.wahrnehmen();
-  l.ki.handelSeit = 1;
+  // Jedes Goldfeld der Karte traegt nur noch 1 Gold: jetzt ist es knapp.
+  const goldLeeren = (welt) => {
+    for (const [i] of welt.karte.vorrat) if (welt.karte.felder[i] === karten.GOLD) welt.karte.vorrat.set(i, 1);
+  };
+  const stellen = () => {
+    const l = lage();
+    bauBei(l.welt, 'a', 'schiessanlage', l.a.basis, 9);
+    l.ki.wahrnehmen();
+    l.ki.handelSeit = 1;
+    return l;
+  };
+  // Gegenprobe: wer handelt, obwohl noch Gold in Reichweite liegt (die Neigung
+  // seines Hauses), wartet mit der Burg nicht auf die Karren.
+  const neigung = stellen();
+  pruefen(neigung);
+  assert.equal(bauten(neigung.gesendet, FESTUNG).length, 1, 'Handel aus Neigung haelt die Burg nicht auf');
+
+  const l = stellen();
+  goldLeeren(l.welt);
   pruefen(l);
   assert.equal(bauten(l.gesendet, FESTUNG).length, 0, 'ohne Karren keine Burg');
   aufstellen(l.welt, l.a, 'marktkarren', HANDEL_VOR);

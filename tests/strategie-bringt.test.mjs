@@ -8,7 +8,7 @@ import { createRequire } from 'node:module';
 const require = createRequire(import.meta.url);
 const { bringt } = require('../server/spiele/strategie/bringt.js');
 const { VERBESSERUNGEN, EINHEITEN } = require('../server/spiele/strategie/daten.js');
-const { Welt } = require('../server/spiele/strategie/welt.js');
+const { Welt, GEBAEUDE_NAMEN } = require('../server/spiele/strategie/welt.js');
 
 test('bedienung AC-55: jede Verbesserung sagt, was sie bringt - oder tauscht eine Einheit aus', () => {
   for (const [art, verbesserung] of Object.entries(VERBESSERUNGEN)) {
@@ -49,7 +49,7 @@ test('bedienung AC-55: der Aufbau traegt die Saetze und das Tempo jeder Einheit'
   const welt = new Welt(spieler, 7);
   const aufbau = welt.aufbau();
   for (const [art, verbesserung] of Object.entries(aufbau.werte.verbesserungen)) {
-    assert.deepEqual(verbesserung.bringt, bringt(VERBESSERUNGEN[art]), art);
+    assert.deepEqual(verbesserung.bringt, bringt(VERBESSERUNGEN[art], GEBAEUDE_NAMEN), art);
   }
   for (const [art, einheit] of Object.entries(aufbau.werte.einheiten)) {
     assert.equal(einheit.tempo, EINHEITEN[art].tempo || 0, `Tempo von ${art}`);

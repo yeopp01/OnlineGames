@@ -33,6 +33,11 @@ BREITE = 0.88                          # der Leib ist schmaler als hoch
 FELLE = {
     'braun': (('#38220f', '#52341c', '#664425'), ('#1d1611', '#33261b'), ('#15100c', '#2a2019'), '#3b2a1e'),
     'schimmel': (('#77736b', '#99958b', '#b5b0a5'), ('#4b4843', '#6d6962'), ('#3a3733', '#5b5751'), '#5a4f48'),
+    # Der Falbe der leichten Kavallerie: sandfarben, Beine, Maehne und Schweif
+    # dunkel. Ein Fuchs stand hier zuerst - leuchtend war er zu grell,
+    # zurueckgenommen vom Braunen des Spaehers nicht zu unterscheiden
+    # (darstellung AC-14: 0,26 statt einem Drittel).
+    'falbe': (('#8a744e', '#a48c60', '#b9a172'), ('#2a2018', '#44362a'), ('#1b1510', '#30261d'), '#3f3128'),
 }
 
 

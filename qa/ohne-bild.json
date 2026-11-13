@@ -218,6 +218,11 @@
     },
     {
       "spec": "10-strategie/fahrplan.md",
+      "ac": "AC-25",
+      "begruendung": "Der Konterkreis der Truppenstufen ist wie AC-9 und AC-23 eine Verteilung ueber Gefechte im Gefechtsstand ohne Browser: neun Paarungen der Stufen der Ritterzeit bei gleichen Kosten, je zwanzig Startwerte in beiden Richtungen, dazu Armbrust gegen Bogen einmal ohne und einmal mit den Schuetzenruestungen. Ein Bild zeigt ein Gefecht und keinen Anteil gewonnener Gefechte; wie die Einheiten aussehen und dass ihre Werte in der Leiste stehen, belegen einheiten AC-58 bis AC-62 im Bild."
+    },
+    {
+      "spec": "10-strategie/fahrplan.md",
       "ac": "AC-10",
       "begruendung": "Dasselbe Gefecht zweimal gerechnet verlaeuft Takt fuer Takt gleich. Verglichen werden zwei Spuren aus Kennung, Leben und Ort aller Einheiten ueber hunderte Takte; das ist ein Vergleich zweier ganzer Laeufe. Ein Bild zeigt einen Augenblick und koennte Gleichheit nie belegen."
     },

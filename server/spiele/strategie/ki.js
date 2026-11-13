@@ -213,7 +213,9 @@ const HANDEL_MINDESTENS = 25;
 // Fehlt das Gold fuer einen Karren, verkauft die KI am Markt, was sie davon
 // uebrig hat - so viel bleibt mindestens liegen. Stein haelt sie nicht
 // zurueck: ohne Gold kommt weder Ramme noch Heer, und die Burg wartet
-// ohnehin, bis der Handel laeuft (ki AC-33).
+// ohnehin, bis der Handel laeuft (ki AC-33). Ausnahme: wer handelt, obwohl
+// noch Gold in Reichweite liegt, behaelt den Stein fuer sein Bauwerk
+// (`steinFuerBauwerk`).
 const VERKAUF_RUECKLAGE = { holz: 300, nahrung: 300, stein: 0 };
 // So lange wartet ein Karren, der nach seinem Befehl gleich wieder steht,
 // auf den naechsten - er fand keinen Weg zum Ziel.
@@ -351,6 +353,9 @@ class Ki {
     // Seit welchem Takt das Gold knapp ist (ki AC-26) - `null`: noch nicht.
     // Einmal knapp, bleibt es knapp; die Vorkommen wachsen nicht nach.
     this.handelSeit = null;
+    // Stein, den sie fuer ein Bauwerk sammelt und deshalb nicht verkauft
+    // (`bauwerkePruefen`, `goldKaufen`).
+    this.steinFuerBauwerk = 0;
     // Ob dafuer ein Markt fehlt - dann liegt sein Holz zurueck (`ruecklage`).
     this.marktFehlt = false;
     // Ob der Handel noch nicht laeuft, weil Karren fehlen (`handelLaeuft`) -
@@ -1472,12 +1477,21 @@ class Ki {
 
   bauwerkePruefen(gebaeude, dorfbewohner) {
     if (!gebaeude.some((g) => MILITAER.includes(g.art)) || this.angriffTakt === null) return;
-    const handel = this.handelLaeuft([...this.welt.einheiten.values()].filter((e) => e.besitzer === this.spielerId));
+    // Die Burg wartet auf den Handel nur, wenn das Gold wirklich knapp ist.
+    // Wer aus Neigung frueher handelt (`goldKnapp` seines Hauses), wartete
+    // sonst in jeder Partie auf vier Karren: gemessen am 2026-11-13 standen
+    // sie erst um Minute 32 bis 35, und in 16 Partien kam eine Burg. Werkstatt
+    // und Rammen bleiben hinter dem Handel - sie kosten, was er kostet.
+    const reich = this.goldInReichweite() >= GOLD_KNAPP;
+    const handel = reich || this.handelLaeuft([...this.welt.einheiten.values()].filter((e) => e.besitzer === this.spielerId));
     // Das erste Bauwerk der Liste, von dem noch eines fehlt oder im Bau ist.
     const offen = this.bauwerke(gebaeude).filter((b) => handel || b.art !== FESTUNG).find((b) => {
       const stehen = gebaeude.filter((g) => g.art === b.art);
       return stehen.length < b.anzahl || stehen.some((g) => !g.fertig);
     });
+    // Was sie dafuer an Stein sammelt, verkauft sie nicht fuer Karren - nur
+    // solange das Gold nicht knapp ist: sonst kauft der Stein den Handel.
+    this.steinFuerBauwerk = offen && reich ? GEBAEUDE[offen.art].kosten.stein || 0 : 0;
     const anStein = dorfbewohner.filter((e) => this.rolle(e) === 'stein');
     const braucht = offen ? offen.steinSammler : 0;
     if (this.welt.takt - this.zuletztStein >= UMVERTEILEN_SEKUNDEN * TAKTE_PRO_SEKUNDE) {
@@ -1999,7 +2013,7 @@ class Ki {
    */
   goldKaufen(markt, bleibt = VERKAUF_RUECKLAGE) {
     const spieler = this.spieler;
-    const uebrig = (w) => spieler[w] - (bleibt[w] || 0);
+    const uebrig = (w) => spieler[w] - Math.max(bleibt[w] || 0, w === 'stein' ? this.steinFuerBauwerk : 0);
     const ware = Object.keys(HANDEL.waren).sort((a, b) => uebrig(b) - uebrig(a))[0];
     if (uebrig(ware) < HANDEL.menge) return;
     this.senden({ auftrag: 'handeln', gebaeude: markt.id, ware, richtung: 'verkaufen' });

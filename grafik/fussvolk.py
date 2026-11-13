@@ -12,6 +12,18 @@
 #   Armbrustschuetze  Eisenhut, Stepprock in Spielerfarbe, Armbrust, Bolzentasche
 #   Moench            Kutte bis zum Boden, Skapulier in Spielerfarbe, Strick, Stab
 #
+# Die Stufen des Fuerstentums (einheiten AC-58 bis AC-61) - jede so anders
+# gekleidet als ihre Vorstufe, dass man sieht, wer aufgeruestet hat:
+#
+#   Bogenschuetze        Lederkoller ueber einem Rock in Spielerfarbe, helle Hose,
+#                        gruener Filzhut mit Feder, ein groesserer Bogen
+#   Langschwertkaempfer  Brustplatte ueber dem Kettenhemd, Waffenrock in Spielerfarbe
+#                        darunter, Beckenhaube, Dreieckschild, langes Schwert
+#   Pikenier             Brustplatte, Sturmhaube mit Kamm, Hose in Spielerfarbe,
+#                        die Pike in beiden Haenden - kein Schild
+#   Eliteplaenkler       heller Kittel, Weste in Spielerfarbe, Kettenhaube,
+#                        eisenbeschlagener Schild, Wurfspiess
+#
 # Die Spielerfarbe steht bei jedem am Rumpf - von dort sieht man sie aus jeder
 # Richtung -, und bei keinem an mehr als einem Drittel der Figur (darstellung
 # AC-21). Auseinander haelt man sie am Umriss: Schild, Waffe, Kopfbedeckung
@@ -213,10 +225,14 @@ def kragen(name, stoff, rumpf):
 
 # ---- Kopfbedeckungen --------------------------------------------------------------
 
-def haube(name, stoff, kopf, frei=-0.3):
-    """Eine Haube, die das Gesicht frei laesst: Leder, Kette, Stoff."""
+def haube(name, stoff, kopf, frei=-0.3, oben=0.55):
+    """Eine Haube, die das Gesicht frei laesst: Leder, Kette, Stoff.
+
+    Unter einem Helm bleibt sie am Scheitel offen; wer nichts darueber traegt,
+    schliesst sie mit `oben=None` - sonst sieht man die Kopfhaut.
+    """
     kugel(name, 0.132, stoff, ort=(0, 0.012, 0.12), eltern=kopf, streckung=(0.95, 1.0, 1.1),
-          weglassen=lambda x, y, z: y < frei or z > 0.55)
+          weglassen=lambda x, y, z: y < frei or (oben is not None and z > oben))
 
 
 def lederkappe(s, kopf):
@@ -252,6 +268,31 @@ def kapuze(s, kopf, rumpf, stoff):
     kragen('kapuzenkragen', stoff, rumpf)
 
 
+def beckenhaube(s, kopf):
+    """Die Beckenhaube: hoch und spitz, bis in den Nacken - das Gesicht bleibt frei."""
+    haube('helmglocke', s['eisen'], kopf)
+    drehkoerper('helmspitze', [(0.17, 0.134), (0.24, 0.126), (0.31, 0.09), (0.37, 0.04), (0.4, 0)], s['eisen'],
+                eltern=kopf, streckung=(0.95, 1.03), teile=16)
+
+
+def sturmhaube(s, kopf):
+    """Die Sturmhaube: eine runde Glocke mit einem Kamm von der Stirn zum Nacken."""
+    drehkoerper('sturmhaube', [(0.15, 0.131), (0.2, 0.129), (0.27, 0.1), (0.305, 0.05), (0.315, 0)], s['eisen'],
+                eltern=kopf, streckung=(0.94, 1.02), teile=16)
+    quader('kamm', (0.026, 0.34, 0.09), s['eisen'], ort=(0, 0.01, 0.31), eltern=kopf, fase=0.012)
+    ring('helmreif', 0.129, 0.014, 0.04, s['messing'], ort=(0, 0, 0.165), eltern=kopf, streckung=(0.94, 1.02), teile=16)
+
+
+def federhut(s, kopf, stoff):
+    """Ein Filzhut: die Krempe vorn lang und spitz, an der Seite eine Feder."""
+    drehkoerper('hutkopf', [(0.17, 0.127), (0.24, 0.12), (0.3, 0.085), (0.33, 0)], stoff, eltern=kopf,
+                streckung=(0.95, 1.02), teile=14)
+    drehkoerper('hutkrempe', [(0.168, 0.1), (0.168, 0.19), (0.19, 0.195), (0.19, 0.1)], stoff, ort=(0, -0.045, 0),
+                eltern=kopf, streckung=(0.88, 1.3), teile=14)
+    quader('hutfeder', (0.014, 0.06, 0.3), s['feder'], ort=(0.11, 0.05, 0.36), drehung=(0.55, 0.2, 0), eltern=kopf,
+           fase=0.005)
+
+
 # ---- Waffen und Schilde -----------------------------------------------------------
 
 def schwert(s, griff):
@@ -259,6 +300,14 @@ def schwert(s, griff):
     quader('parierstange', (0.03, 0.03, 0.2), s['eisen'], ort=(0, -0.07, 0), eltern=griff, fase=0.008)
     quader('heft', (0.026, 0.13, 0.03), s['leder'], ort=(0, 0, 0), eltern=griff, fase=0.008)
     kugel('knauf', 0.028, s['eisen'], ort=(0, 0.08, 0), eltern=griff, teile=8, ringe=6)
+
+
+def langschwert(s, griff):
+    """Das lange Schwert: eine Handbreit laenger als ein Mann breit ist."""
+    quader('klinge', (0.012, 0.98, 0.058), s['klinge'], ort=(0, -0.59, 0), eltern=griff, fase=0.004)
+    quader('parierstange', (0.03, 0.03, 0.28), s['eisen'], ort=(0, -0.085, 0), eltern=griff, fase=0.008)
+    quader('heft', (0.026, 0.2, 0.03), s['leder'], ort=(0, 0.02, 0), eltern=griff, fase=0.008)
+    kugel('knauf', 0.034, s['messing'], ort=(0, 0.135, 0), eltern=griff, teile=8, ringe=6)
 
 
 def axt(s, griff):
@@ -306,9 +355,13 @@ def armbrust(s, griff):
     quader('steigbuegel', (0.1, 0.07, 0.02), s['eisen'], ort=(0, -0.66, 0.03), eltern=griff, fase=0.006)
 
 
-def rundschild(s, schild, halb, stoff):
+def rundschild(s, schild, halb, stoff, feld=None):
     drehkoerper('rundschild', [(-0.012, 0), (-0.012, halb), (0.012, halb), (0.02, halb * 0.75), (0.03, 0)], s[stoff],
                 drehung=SEITE, eltern=schild, teile=20)
+    if feld:
+        # Ein bemaltes Feld um den Buckel, ringsum bleibt der Schild, wie er ist.
+        drehkoerper('schildfeld', [(0.016, 0), (0.016, halb * 0.62), (0.026, halb * 0.62), (0.035, 0)], s[feld],
+                    drehung=SEITE, eltern=schild, teile=20)
     ring('schildreif', halb, 0.014, 0.03, s['eisen'], drehung=SEITE, eltern=schild, teile=20)
     kugel('schildbuckel', 0.06, s['eisen'], ort=(0.03, 0, 0), eltern=schild, streckung=(0.6, 1, 1), teile=10, ringe=6)
 
@@ -331,6 +384,22 @@ def langschild(s, schild):
          s['tuch'], eltern=schild, glatt=False)
     quader('schildleiste', (0.04, 0.84, 0.035), s['eisen'], ort=(0, 0.1, 0), eltern=schild, fase=0.006)
     kugel('schildbuckel', 0.065, s['eisen'], ort=(0.03, -0.05, 0), eltern=schild, streckung=(0.6, 1, 1), teile=10, ringe=6)
+
+
+def dreieckschild(s, schild):
+    """Der Schild des Langschwertkaempfers: oben gerade, unten spitz, aus
+    Eisen - das Feld in der Mitte traegt die Spielerfarbe."""
+    umriss = [(-0.21, 0.3), (0.21, 0.3), (0.22, 0.05), (0.13, -0.2), (0.0, -0.36), (-0.13, -0.2), (-0.22, 0.05)]
+    n = len(umriss)
+    seiten = [tuple(range(n)), tuple(range(n, 2 * n))] + [(i, (i + 1) % n, n + (i + 1) % n, n + i) for i in range(n)]
+    netz('dreieckschild', [(d, -hoch, weit) for d in (-0.016, 0.016) for weit, hoch in umriss], seiten, s['eisen'],
+         eltern=schild, glatt=False)
+    # Das Feld: derselbe Umriss, kleiner und ein Stueck nach oben - ringsum bleibt Eisen.
+    feld = [(weit * 0.7, hoch * 0.7 + 0.02) for weit, hoch in umriss]
+    netz('schildfeld', [(d, -hoch, weit) for d in (0.014, 0.022) for weit, hoch in feld], seiten, s['tuch'],
+         eltern=schild, glatt=False)
+    kugel('schildbuckel', 0.05, s['messing'], ort=(0.03, -0.04, 0), eltern=schild, streckung=(0.6, 1, 1), teile=10,
+          ringe=6)
 
 
 def koecher(s, rumpf, ort, drehung, pfeile=5):
@@ -412,11 +481,20 @@ def _bogenschuetze(s):
     gesicht(s, kopf)
     kapuze(s, kopf, rumpf, s['gruen'])
     koecher(s, rumpf, (-0.09, 0.19, 0.3), (-0.25, 0.35, 0))
+    _bogen(s, g)
+    return g
+
+
+def _bogen(s, g, halb=0.8, dick=1.0):
+    """Bogen, Sehne und der Pfeil auf der Sehne. `halb` ist die halbe Laenge
+    des Bogens, `dick` macht das Holz staerker."""
     # Der Bogen in der Linken: die Wurfarme laengs der X-Achse des Griffs, der
     # Bauch vom Schuetzen weg.
     g['bogen'] = leer('bogen', (0, 0, 0), g['griff_l'])
-    strang('bogenholz', [(-0.8, 0, 0.2, 0.01), (-0.45, 0, 0.05, 0.016), (0, 0, -0.02, 0.02), (0.45, 0, 0.05, 0.016),
-                         (0.8, 0, 0.2, 0.01)], s['holz'], eltern=g['bogen'], rund=2)
+    knie = halb * 0.5625
+    strang('bogenholz', [(-halb, 0, 0.2, 0.01 * dick), (-knie, 0, 0.05, 0.016 * dick), (0, 0, -0.02, 0.02 * dick),
+                         (knie, 0, 0.05, 0.016 * dick), (halb, 0, 0.2, 0.01 * dick)], s['holz'], eltern=g['bogen'],
+           rund=2)
     # Die Sehne: drei Punkte, der mittlere wandert mit der Zughand.
     kurve = bpy.data.curves.new('sehne', 'CURVE')
     kurve.dimensions = '3D'
@@ -424,7 +502,7 @@ def _bogenschuetze(s):
     kurve.bevel_resolution = 1
     zug = kurve.splines.new('POLY')
     zug.points.add(2)
-    for punkt, ort in zip(zug.points, ((-0.8, 0, 0.2), (0, 0, 0.2), (0.8, 0, 0.2))):
+    for punkt, ort in zip(zug.points, ((-halb, 0, 0.2), (0, 0, 0.2), (halb, 0, 0.2))):
         punkt.co = (*ort, 1)
     sehne = bpy.data.objects.new('sehne', kurve)
     bpy.context.scene.collection.objects.link(sehne)
@@ -437,6 +515,84 @@ def _bogenschuetze(s):
     drehkoerper('pfeilspitze', [(0.72, 0.016), (0.8, 0)], s['eisen'], drehung=QUER, eltern=pfeil, teile=6, glatt=False)
     quader('pfeilfeder', (0.04, 0.1, 0.012), s['feder'], ort=(0, -0.07, 0), eltern=pfeil, fase=0.003)
     g['pfeil'] = pfeil
+
+
+def _bogenschuetze2(s):
+    g = skelett(s, {'oberarm': 'tuch', 'unterarm': 'leder', 'hand': 'haut', 'bein': 'leinen', 'schaft': 'leder',
+                    'schuh': 'leder'})
+    rumpf, kopf = g['rumpf'], g['kopf']
+    # Der Rock in Spielerfarbe schaut unter dem Lederkoller hervor: an den
+    # Aermeln und als Schoss ueber der Huefte.
+    rock('rock', s['tuch'], rumpf, saum=-0.27, weite=0.275)
+    rock('koller', s['leder'], rumpf, saum=-0.08, weite=0.24, dick=0.022)
+    guertel(s, rumpf, dick=0.04, stoff='strick')
+    gesicht(s, kopf)
+    federhut(s, kopf, s['gruen'])
+    koecher(s, rumpf, (-0.09, 0.19, 0.3), (-0.25, 0.35, 0), pfeile=7)
+    _bogen(s, g, halb=0.96, dick=1.25)
+    return g
+
+
+def _langschwertkaempfer(s):
+    g = skelett(s, {'oberarm': 'kette', 'unterarm': 'eisen', 'hand': 'leder', 'bein': 'kette', 'schaft': 'eisen',
+                    'schuh': 'eisen'})
+    rumpf, kopf = g['rumpf'], g['kopf']
+    # Das Kettenhemd reicht bis ueber die Knie, der Waffenrock in Spielerfarbe
+    # endet eine Handbreit darueber - bis zum Saum war er mehr als ein Drittel
+    # der Figur (darstellung AC-21). Darueber liegt die Brustplatte.
+    rock('kettenhemd', s['kette'], rumpf, saum=-0.4, weite=0.3)
+    rock('waffenrock', s['tuch'], rumpf, saum=-0.27, weite=0.31, dick=0.006)
+    rock('brustplatte', s['eisen'], rumpf, saum=0.1, weite=0.215, dick=0.02)
+    guertel(s, rumpf, dick=0.03)
+    kragen('kettenkragen', s['kette'], rumpf)
+    gesicht(s, kopf, hals='kette')
+    beckenhaube(s, kopf)
+    langschwert(s, g['griff_r'])
+    dreieckschild(s, g['schild'])
+    return g
+
+
+def _pikenier(s):
+    g = skelett(s, {'oberarm': 'stepp', 'unterarm': 'leder', 'hand': 'leder', 'bein': 'tuch', 'schaft': 'leder',
+                    'schuh': 'leder'})
+    rumpf, kopf = g['rumpf'], g['kopf']
+    # Ein kurzes Kettenhemd, darueber die Brustplatte - und die Hose in
+    # Spielerfarbe: kein anderer traegt sie an den Beinen.
+    rock('kettenhemd', s['kette'], rumpf, saum=-0.2, weite=0.27)
+    rock('brustplatte', s['eisen'], rumpf, saum=0.1, weite=0.215, dick=0.02)
+    guertel(s, rumpf, dick=0.03)
+    gesicht(s, kopf)
+    haube('polsterhaube', s['stepp'], kopf)
+    sturmhaube(s, kopf)
+    # Die Pike: gut anderthalbmal so lang wie der Speer, ohne Wimpel.
+    speer(s, g['griff_r'], hinten=1.0, vorn=1.62)
+    return g
+
+
+def _eliteplaenkler(s):
+    g = skelett(s, {'oberarm': 'leinen', 'unterarm': 'leder', 'hand': 'haut', 'bein': 'leinen', 'schaft': 'leder',
+                    'schuh': 'leder'})
+    rumpf, kopf = g['rumpf'], g['kopf']
+    rock('kittel', s['leinen'], rumpf, saum=-0.26, weite=0.28)
+    # Die Weste in Spielerfarbe: vorn und hinten eine Bahn, an den Seiten der helle Kittel.
+    profil = ausschnitt(torso(-0.26, 0.28), 0.5, -0.12)
+    bahn('weste_vorn', s['steppung'], rumpf, profil, -90, 50, dick=0.03)
+    bahn('weste_hinten', s['steppung'], rumpf, profil, 90, 50, dick=0.03)
+    guertel(s, rumpf, dick=0.034)
+    kragen('kettenkragen', s['kette'], rumpf)
+    gesicht(s, kopf, hals='kette')
+    haube('kettenhaube', s['kette'], kopf, oben=None)
+    ring('stirnreif', 0.134, 0.014, 0.045, s['eisen'], ort=(0, 0.01, 0.2), eltern=kopf, streckung=(0.95, 1.02), teile=16)
+    # Der Wurfspiess in der Rechten, zwei weitere hinter dem Schild.
+    g['spiess'] = leer('spiess', (0, 0, 0), g['griff_r'])
+    speer(s, g['spiess'], hinten=0.5, vorn=0.66)
+    # Das Feld des Schilds traegt die Spielerfarbe: von links verdeckt er die
+    # Weste, und ohne das stuende die Figur dort ohne Farbe (darstellung AC-21).
+    rundschild(s, g['schild'], 0.27, 'eisen', feld='tuch')
+    for z in (-0.05, 0.05):
+        vorrat = leer('vorrat', (-0.04, 0.1, z), g['schild'])
+        vorrat.rotation_euler = (0.2, 0, 0)
+        speer(s, vorrat, hinten=0.5, vorn=0.66)
     return g
 
 
@@ -634,6 +790,8 @@ ARTEN = {
                     'kopf': (0.05, 0, 0.1)}),
         ],
     },
+    # Die Stufen des Fuerstentums. Bewegt wird jede wie ihre Vorstufe - nur der
+    # Pikenier fuehrt die Pike in beiden Haenden - und unten nachgetragen.
     'moench': {
         'bauen': _moench, 'schritt': 0.42, 'schwung': (0.0, 0.8), 'stab': 0.2,
         # Der Stab steht neben ihm, die Linke liegt am Strick.
@@ -654,6 +812,30 @@ ARTEN = {
                     'kopf': (0.05, 0, 0)}),
         ],
     },
+}
+
+
+ARTEN['bogenschuetze2'] = {**ARTEN['bogenschuetze'], 'bauen': _bogenschuetze2}
+ARTEN['langschwertkaempfer'] = {**ARTEN['miliz'], 'bauen': _langschwertkaempfer, 'schritt': 0.95}
+ARTEN['eliteplaenkler'] = {**ARTEN['plaenkler'], 'bauen': _eliteplaenkler}
+ARTEN['pikenier'] = {
+    'bauen': _pikenier, 'schritt': 0.95, 'schwung': (0.0, 0.0),
+    # Die Pike steht: die Rechte unten am Schaft, die Linke darueber.
+    'trage': {'schulter_r': (-0.15, 0.2, 0), 'ellbogen_r': (-0.6, 0, 0), 'waffe': (-1.5,),
+              'schulter_l': (-1.0, 0.3, 0), 'ellbogen_l': (-1.2, 0, -0.9)},
+    # Gefaellt in beiden Haenden, dann der Stoss aus dem ganzen Leib.
+    'angriff': [
+        (0.0, {**STAND, 'schulter_r': (0.4, 0.25, 0), 'ellbogen_r': (-1.7, 0, 0), 'waffe': (0.02,),
+               'schulter_l': (-0.9, 0.1, 0), 'ellbogen_l': (-0.6, 0, -0.5), 'rumpf': (0.1, 0, -0.4)}),
+        (0.3, {**STAND, 'schulter_r': (0.7, 0.3, 0), 'ellbogen_r': (-1.9, 0, 0), 'waffe': (-0.03,),
+               'schulter_l': (-0.6, 0.1, 0), 'ellbogen_l': (-1.0, 0, -0.5), 'rumpf': (0.0, 0, -0.55)}),
+        (0.5, {**AUSFALL, 'schulter_r': (-1.0, 0.1, 0), 'ellbogen_r': (-0.4, 0, 0), 'waffe': (0.07,),
+               'schulter_l': (-1.3, 0.1, 0), 'ellbogen_l': (-0.2, 0, -0.4), 'rumpf': (0.32, 0, 0.3)}),
+        (0.62, {**AUSFALL, 'schulter_r': (-1.0, 0.1, 0), 'ellbogen_r': (-0.4, 0, 0), 'waffe': (0.09,),
+                'schulter_l': (-1.3, 0.1, 0), 'ellbogen_l': (-0.2, 0, -0.4), 'rumpf': (0.32, 0, 0.3)}),
+    ],
+    # Die Pike ragt weit ueber den Kopf und im Stoss weit nach vorn.
+    'zelle': (400, 288), 'fuss': (176, 216),
 }
 
 

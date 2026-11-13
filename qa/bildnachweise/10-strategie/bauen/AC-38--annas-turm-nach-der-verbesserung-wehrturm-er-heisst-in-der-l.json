@@ -1,0 +1,10 @@
+{
+  "spec": "10-strategie/bauen.md",
+  "ac": "AC-38",
+  "titel": "Annas Turm nach der Verbesserung Wehrturm: er heißt in der Leiste Wehrturm, hat 480 Leben mehr (980 von 1500, vorher beschädigt auf 500) und 7 statt 5 Angriff – das Bild ist noch das des Wachturms",
+  "datei": "e2e/tests/strategie-truppenstufen.spec.mjs",
+  "pfad": [
+    "Truppenstufen",
+    "bauen AC-38: die Universitaet macht aus dem Wachturm den Wehrturm - auch aus dem, der schon steht, und nur bei dem, der geforscht hat"
+  ]
+}

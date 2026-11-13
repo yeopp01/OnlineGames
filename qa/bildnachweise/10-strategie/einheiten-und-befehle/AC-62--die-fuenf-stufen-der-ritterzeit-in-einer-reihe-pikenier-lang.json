@@ -1,0 +1,10 @@
+{
+  "spec": "10-strategie/einheiten-und-befehle.md",
+  "ac": "AC-62",
+  "titel": "Die fünf Stufen der Ritterzeit in einer Reihe: Pikenier, Langschwertkämpfer, Bogenschütze, Eliteplänkler, leichte Kavallerie – gewählt die leichte Kavallerie auf dem Fuchs: 60 Leben, 7 Angriff, Rüstung 0/2",
+  "datei": "e2e/tests/strategie-truppenstufen.spec.mjs",
+  "pfad": [
+    "Truppenstufen",
+    "einheiten AC-58, einheiten AC-59, einheiten AC-60, einheiten AC-61 und einheiten AC-62: jede Einheit des Lehens bekommt im Fuerstentum ihre Stufe - auch die, die schon steht"
+  ]
+}

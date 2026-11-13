@@ -68,9 +68,11 @@ test.describe('Ritterzeit am Stueck', () => {
     // Die Voraussetzungen der beiden Aufstiege: zwei Gebaeude der Dunklen
     // Zeit (Dorfzentrum und Muehle) und zwei der Feudalzeit. Die drei der
     // Feudalzeit baut fahrplan AC-8 im Browser; hier stehen sie, weil Stall
-    // und Schiessanlage Ritter und Armbrust ausbilden.
+    // und Schiessanlage Ritter und Armbrust ausbilden. Die Kaserne dazu,
+    // seit ihre Einheiten im Fuerstentum eine Stufe bekommen (einheiten
+    // AC-59, AC-60): ohne sie gaebe es Langschwertkaempfer und Pikenier nicht.
     await gebaeudeInDerNaehe(anna, code, 'Anna', 'muehle', basis, { von: 5, bis: 12 });
-    for (const art of ['schiessanlage', 'stall', 'schmiede']) {
+    for (const art of ['kaserne', 'schiessanlage', 'stall', 'schmiede']) {
       await gebaeudeInDerNaehe(anna, code, 'Anna', art, basis, { von: 8, bis: 20 });
     }
   });
@@ -212,34 +214,49 @@ test.describe('Ritterzeit am Stueck', () => {
     // Gebaeude aus, kommt sie aus dessen Knopf; sonst entsteht sie aus einer
     // Verbesserung, die eine aeltere austauscht (`wandelt`, einheiten AC-34) -
     // dann erst die Verbesserung, danach derselbe Knopf, der jetzt die neue
-    // Stufe ausbildet.
-    const plan = await anna.evaluate(() => {
+    // Stufe ausbildet. Verlangt die Verbesserung eine Vorstufe (der
+    // Langschwertkaempfer den Soldaten, einheiten AC-59), wird die zuerst
+    // erforscht: `forschung` nennt alles, was noetig ist, mit seinem Gebaeude.
+    const { plan, forschung } = await anna.evaluate(() => {
       const a = window.ansicht;
       const w = a.werte;
       const eigene = [...a.gebaeude.values()].filter((g) => g.b === a.ich && g.u === undefined);
       const woher = (eintrag) => eigene.find((g) => (w.gebaeude[g.art].bildetAus || []).includes(eintrag))?.i ?? null;
-      return Object.entries(w.einheiten).filter(([, e]) => e.zeitalter === 2).map(([art]) => {
+      const plan = Object.entries(w.einheiten).filter(([, e]) => e.zeitalter === 2).map(([art]) => {
         const direkt = woher(art);
         if (direkt !== null) return { art, gebaeude: direkt, verbesserung: null };
         const [v] = Object.entries(w.verbesserungen).find(([, x]) => Object.values(x.wandelt || {}).includes(art)) || [];
         return { art, gebaeude: v ? woher(v) : null, verbesserung: v || null };
       });
+      const forschung = new Map();
+      for (const p of plan) {
+        for (let v = p.verbesserung; v && !forschung.has(v); v = w.verbesserungen[v].vorstufe) {
+          forschung.set(v, { verbesserung: v, gebaeude: woher(v), vorstufe: w.verbesserungen[v].vorstufe || null });
+        }
+      }
+      return { plan, forschung: [...forschung.values()] };
     });
     expect(plan.length, 'Einheiten der Ritterzeit').toBeGreaterThanOrEqual(5);
     for (const art of ['ritter', 'armbrustschuetze', 'moench', 'ramme', 'mangonel']) {
       expect(plan.map((p) => p.art), `${art} unter den Einheiten der Ritterzeit`).toContain(art);
     }
     for (const p of plan) expect(p.gebaeude, `woher ${p.art} kommt`).not.toBeNull();
-    // Erst die Verbesserungen, die austauschen.
-    for (const p of plan.filter((x) => x.verbesserung)) {
-      await gebaeudeWaehlen(anna, p.gebaeude);
-      await anna.locator(`[data-ausbilden="${p.verbesserung}"]`).click();
-    }
-    if (plan.some((x) => x.verbesserung)) {
+    for (const f of forschung) expect(f.gebaeude, `wo ${f.verbesserung} erforscht wird`).not.toBeNull();
+    // Erst die Verbesserungen, die austauschen - in Wellen: was eine Vorstufe
+    // verlangt, steht erst im Gebaeude, wenn die erforscht ist.
+    const erforscht = new Set();
+    while (erforscht.size < forschung.length) {
+      const welle = forschung.filter((f) => !erforscht.has(f.verbesserung) && (!f.vorstufe || erforscht.has(f.vorstufe)));
+      expect(welle.length, 'eine Verbesserung ohne offene Vorstufe').toBeGreaterThan(0);
+      for (const f of welle) {
+        await gebaeudeWaehlen(anna, f.gebaeude);
+        await anna.locator(`[data-ausbilden="${f.verbesserung}"]`).click();
+      }
       await zeitraffer(anna, code, 20);
       await anna.waitForFunction((vs) => vs.every((v) => window.ansicht.verbesserungen.includes(v)),
-        plan.filter((x) => x.verbesserung).map((x) => x.verbesserung), { timeout: 90_000 });
+        welle.map((f) => f.verbesserung), { timeout: 120_000 });
       await zeitraffer(anna, code, 1);
+      for (const f of welle) erforscht.add(f.verbesserung);
     }
     // Der Bestand **vor** dem Bestellen; verlangt wird je Art eine mehr.
     const vorher = await einheitenJeArt(anna);

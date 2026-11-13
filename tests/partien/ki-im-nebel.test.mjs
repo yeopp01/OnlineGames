@@ -115,7 +115,17 @@ test('fahrplan AC-11 und ki AC-13: KI gegen KI im Nebel endet ueber 40 Startwert
 // Schnitt hielte dort also schon fuer zwei von vier - deshalb verlangt der
 // Test das Anderthalbfache und zwei mehr; daran faellt der alte Stand bei
 // allen vier.
-test('ki AC-27: ueber 40 Startwerte bildet jedes Haus anderthalbmal so viel aus seinem Schwerpunkt aus wie die anderen im Schnitt', async () => {
+//
+// Seit dem 2026-11-13 das 1,4-fache - freigegeben vom Benutzer an diesem Tag
+// ("ki AC-27 und AC-30 halten knapp. Wenn sie fallen, sind 1,4 und 1,75
+// freigegeben."). Gefallen ist es, als das Haus, das frueh handelt, seine
+// Burg bekam (ki AC-33) und laenger lebte: Distelhag bildet aus der Kaserne
+// weiter 47,6 je Partie aus (davor 48,1), die anderen aber 33,1 statt 29,9
+// - das 1,44-fache. Der Stand ohne Neigung faellt auch am 1,4-fachen bei
+// allen vier (Eschenbruch 1,22, Rappenstein 0,92, Distelhag 0,91; Silberfurt
+// an "zwei mehr").
+const NEIGUNG_FACH = 1.4;
+test('ki AC-27: ueber 40 Startwerte bildet jedes Haus deutlich mehr aus seinem Schwerpunkt aus als die anderen im Schnitt - das 1,4-fache und zwei mehr', async () => {
   const enden = await allePartien();
   const auftritte = {};
   const aus = {}; // aus[haus][gebaeude] = Summe ueber alle Auftritte
@@ -140,7 +150,7 @@ test('ki AC-27: ueber 40 Startwerte bildet jedes Haus anderthalbmal so viel aus 
     const eigen = aus[haus][gebaeude] / auftritte[haus];
     const andere = NAMEN.filter((h) => h !== haus).map((h) => aus[h][gebaeude] / auftritte[h]);
     const schnitt = andere.reduce((a, b) => a + b, 0) / andere.length;
-    assert.ok(eigen >= 1.5 * schnitt && eigen >= schnitt + 2,
+    assert.ok(eigen >= NEIGUNG_FACH * schnitt && eigen >= schnitt + 2,
       `${haus} aus ${gebaeude}: ${eigen.toFixed(1)} je Partie, die anderen ${schnitt.toFixed(1)}`);
   }
 });

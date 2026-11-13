@@ -13,6 +13,9 @@
 #                  Spielerfarbe: Waffenrock, Schild, Wimpel und der Saum der
 #                  Decke - nicht die ganze Decke, sonst waere die Figur zur
 #                  Haelfte Farbe (darstellung AC-21: hoechstens ein Drittel).
+#   Leichte Kavallerie  die Stufe des Spaeherreiters (einheiten AC-62): ein
+#                  Fuchs, der Reiter mit Kettenkragen und Eisenhut, ein
+#                  eisenbeschlagener Schild und eine kurze Lanze mit Wimpel.
 #
 # Die Tafel: je Zeile eine Blickrichtung, je Spalte ein Bild. Stehen und
 # Gehen (ein Trab) liegen in der Haupttafel, Angreifen und Sterben je in
@@ -42,6 +45,8 @@ ARTEN = {
                       'zelle': (288, 240), 'fuss': (128, 176)},
     'ritter': {'fell': 'schimmel', 'mass': 1.07, 'breite': 0.9, 'spreiz': (0.32, 0.62),
                'zelle': (352, 304), 'fuss': (160, 224)},
+    'leichtekavallerie': {'fell': 'falbe', 'mass': 1.03, 'breite': 0.86, 'spreiz': (0.27, 0.54),
+                          'zelle': (352, 304), 'fuss': (160, 224)},
 }
 
 TUCH = ('#7e7e7e', '#b4b4b4')      # hell und unbunt: der Browser faerbt es ein
@@ -67,6 +72,9 @@ def stoffe(art):
         'steppung': gemustert('steppung', TUCH, massstab=(1, 1, 9), groesse=7, detail=2, relief=0.8, fugen=0.6,
                               rau=0.95, spieler=True),
     })
+    if art == 'leichtekavallerie':
+        s['kette'] = gemustert('kette', ('#3f4347', '#73787d'), groesse=120, detail=2, relief=0.7, fugen=0.5,
+                               rau=0.5, metall=0.75)
     if art == 'ritter':
         s.update({
             # Kettengeflecht: feines, hartes Korn in dunklem Eisen.
@@ -153,11 +161,12 @@ def _sattel(s, g, art):
 
 def _mensch(s, m, eltern, art):
     ritter = art == 'ritter'
+    leicht = art == 'leichtekavallerie'
     m['reiter'] = leer('reiter', (0, 0, 0), eltern)
     m['becken'] = leer('becken', (0, 0, 0), m['reiter'])
     m['rumpf'] = leer('rumpf', (0, 0, 0), m['becken'])
     rumpf = m['rumpf']
-    arm = s['kette'] if ritter else s['aermel']
+    arm = s['kette'] if ritter or leicht else s['aermel']
     bein = s['kette'] if ritter else s['hose']
     schuh = s['eisen'] if ritter else s['stiefel']
 
@@ -172,6 +181,7 @@ def _mensch(s, m, eltern, art):
         # Kragen auf den Schultern.
         drehkoerper('hemdsaum', [(-0.05, 0.236), (-0.2, 0.25), (-0.2, 0.2), (-0.1, 0)], s['kette'], eltern=rumpf,
                     streckung=(1, 0.72), teile=18)
+    if ritter or leicht:
         drehkoerper('kragen', [(0.64, 0.085), (0.58, 0.13), (0.5, 0.25), (0.44, 0.262), (0.44, 0.2), (0.46, 0)],
                     s['kette'], eltern=rumpf, streckung=(1, 0.76), teile=18)
 
@@ -193,12 +203,19 @@ def _mensch(s, m, eltern, art):
             kugel('auge', 0.014, s['auge_m'], ort=(x, -0.104, 0.148), eltern=kopf, teile=8, ringe=6)
         kugel('bart', 0.078, s['bart'], ort=(0, -0.058, 0.058), eltern=kopf, streckung=(1.05, 0.85, 0.75),
               teile=12, ringe=8)
+    if leicht:
+        # Der Eisenhut: eine flache Glocke mit breiter Krempe.
+        drehkoerper('eisenhut', [(0.15, 0.225), (0.165, 0.228), (0.185, 0.135), (0.25, 0.122), (0.3, 0.075),
+                                 (0.315, 0)], s['eisen'], eltern=kopf, streckung=(0.96, 1.0), teile=18)
+        drehkoerper('krempe', [(0.15, 0.225), (0.15, 0.1)], s['eisen'], eltern=kopf, streckung=(0.96, 1.0), teile=18)
+    elif not ritter:
         # Der Nasalhelm: eine spitze Haube mit Stirnreif und Nasenschutz.
         drehkoerper('helm', [(0.15, 0.129), (0.2, 0.128), (0.27, 0.098), (0.32, 0.05), (0.345, 0)], s['eisen'],
                     eltern=kopf, streckung=(0.94, 1.02), teile=16)
         pferd.ring('stirnreif', 0.127, 0.012, 0.035, s['eisen'], ort=(0, 0, 0.165), eltern=kopf,
                    streckung=(0.94, 1.02), teile=16)
         quader('nasal', (0.03, 0.016, 0.1), s['eisen'], ort=(0, -0.13, 0.11), eltern=kopf, fase=0.005)
+    if not ritter:
         # Unter dem Helm eine lederne Haube ueber Nacken und Ohren.
         kugel('haube', 0.132, s['leder'], ort=(0, 0.012, 0.12), eltern=kopf, streckung=(0.95, 1.0, 1.1),
               weglassen=lambda x, y, z: y < -0.3 or z > 0.55)
@@ -241,6 +258,14 @@ def _mensch(s, m, eltern, art):
         # Der Wimpel: ein Dreieck unter der Spitze.
         netz('wimpel', [(0, -1.36, 0.012), (0, -1.14, 0.012), (0, -1.21, -0.3)], [(0, 1, 2)], s['tuch'],
              eltern=griff, dicke=0.012)
+    elif leicht:
+        # Die kurze Lanze: getragen steht sie, gestossen wird von oben.
+        drehkoerper('schaft', [(-0.5, 0), (-0.5, 0.019), (1.1, 0.016), (1.1, 0)], s['holz'], drehung=quer,
+                    eltern=griff, teile=8)
+        drehkoerper('spitze', [(1.08, 0), (1.08, 0.024), (1.14, 0.03), (1.32, 0)], s['klinge'], drehung=quer,
+                    eltern=griff, teile=8, glatt=False)
+        netz('wimpel', [(0, -1.04, 0.012), (0, -0.84, 0.012), (0, -0.9, -0.26)], [(0, 1, 2)], s['tuch'],
+             eltern=griff, dicke=0.012)
     else:
         # Das Schwert: Klinge, Parierstange, Knauf.
         quader('klinge', (0.012, 0.74, 0.05), s['klinge'], ort=(0, -0.45, 0), eltern=griff, fase=0.004)
@@ -264,7 +289,7 @@ def _mensch(s, m, eltern, art):
     else:
         scheibe = (0, math.pi / 2, 0)   # die Hochachse der Scheibe zeigt dann zur Seite
         drehkoerper('rundschild', [(-0.012, 0), (-0.012, 0.27), (0.012, 0.27), (0.02, 0.2), (0.03, 0)],
-                    s['schildleder'], drehung=scheibe, eltern=schild, teile=20)
+                    s['eisen'] if leicht else s['schildleder'], drehung=scheibe, eltern=schild, teile=20)
         pferd.ring('schildreif', 0.27, 0.014, 0.03, s['eisen'], drehung=scheibe, eltern=schild, teile=20)
         kugel('schildbuckel', 0.06, s['eisen'], ort=(0.03, 0, 0), eltern=schild, streckung=(0.6, 1, 1), teile=10, ringe=6)
 
@@ -304,6 +329,14 @@ ARM = {
         'ruhe': (-0.35, 0.15, -1.45, 0.1),       # Unterarm vor, die Klinge steht
         'aushol': (-2.35, 0.25, -1.15, 0.35),    # ueber dem Kopf, die Klinge nach hinten
         'treffer': (-0.85, 0.5, -0.2, 1.35),     # rechts neben dem Pferd nach unten
+        'liegt': (0.15, 0.55, -0.1, 1.5),
+    },
+    # Die kurze Lanze wird gefuehrt wie das Schwert: sie steht, holt ueber dem
+    # Kopf aus und stoesst rechts neben dem Pferd nach unten.
+    'leichtekavallerie': {
+        'ruhe': (-0.35, 0.15, -1.45, 0.1),
+        'aushol': (-2.35, 0.25, -1.15, 0.35),
+        'treffer': (-0.85, 0.5, -0.2, 1.35),
         'liegt': (0.15, 0.55, -0.1, 1.5),
     },
     'ritter': {

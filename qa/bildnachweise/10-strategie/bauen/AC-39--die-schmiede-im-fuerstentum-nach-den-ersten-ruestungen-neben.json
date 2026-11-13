@@ -1,0 +1,10 @@
+{
+  "spec": "10-strategie/bauen.md",
+  "ac": "AC-39",
+  "titel": "Die Schmiede im Fürstentum nach den ersten Rüstungen: neben Schmiedeangriff und Befiederten Pfeilen stehen Kettenpanzer, Kettenrossharnisch und Lederne Schützenrüstung, jede mit eigenem Bild",
+  "datei": "e2e/tests/strategie-truppenstufen.spec.mjs",
+  "pfad": [
+    "Truppenstufen",
+    "bauen AC-39: die Schmiede ruestet Infanterie, Kavallerie und Schuetzen in zwei Stufen - die zweite erst nach der ersten, jede mit eigenem Bild"
+  ]
+}

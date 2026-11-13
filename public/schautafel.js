@@ -49,8 +49,14 @@ const EINTRAEGE = [
   { art: 'marktkarren', titel: 'Marktkarren', lage: {} },
   { art: 'spaeherreiter', titel: 'Späherreiter', lage: {} },
   { art: 'speerkaempfer', titel: 'Speerkämpfer', lage: {} },
-  { art: 'bogenschuetze', titel: 'Bogenschütze', lage: {} },
+  { art: 'bogenschuetze', titel: 'Kurzbogen', lage: {} },
   { art: 'plaenkler', titel: 'Plänkler', lage: {} },
+  // Die Stufen des Fuerstentums (einheiten AC-58 bis AC-62).
+  { art: 'bogenschuetze2', titel: 'Bogenschütze', lage: {} },
+  { art: 'langschwertkaempfer', titel: 'Langschwert', lage: {} },
+  { art: 'pikenier', titel: 'Pikenier', lage: {} },
+  { art: 'eliteplaenkler', titel: 'Eliteplänkler', lage: {} },
+  { art: 'leichtekavallerie', titel: 'Leichte Kavallerie', lage: {} },
   { art: 'schaf', titel: 'Schaf', lage: {}, tier: true },
   { art: 'schaf', titel: 'Kadaver, halb', lage: { liegt: true, rest: 0.5 }, tier: true },
 ];

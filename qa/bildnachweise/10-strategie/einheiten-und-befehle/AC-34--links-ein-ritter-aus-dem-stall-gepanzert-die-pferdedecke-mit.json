@@ -1,10 +1,10 @@
 {
   "spec": "10-strategie/einheiten-und-befehle.md",
   "ac": "AC-34",
-  "titel": "Links ein Ritter aus dem Stall – gepanzert, die Pferdedecke mit Saum in Spielerfarbe –, rechts ein Armbrustschütze, der Bogenschütze nach der Verbesserung Armbrust",
+  "titel": "Links ein Ritter aus dem Stall – gepanzert, die Pferdedecke mit Saum in Spielerfarbe –, rechts ein Armbrustschütze aus der Schießanlage, eine eigene Einheit neben dem Kurzbogenschützen",
   "datei": "e2e/tests/strategie-ritterzeit.spec.mjs",
   "pfad": [
     "Ritterzeit",
-    "einheiten AC-33 und einheiten AC-34: der Stall bildet den Ritter aus, die Armbrust macht den Bogenschuetzen zum Armbrustschuetzen"
+    "einheiten AC-33 und einheiten AC-34: der Stall bildet den Ritter aus, die Schiessanlage den Armbrustschuetzen als eigene Einheit - der Kurzbogenschuetze bleibt, was er ist"
   ]
 }

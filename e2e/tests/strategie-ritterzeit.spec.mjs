@@ -120,7 +120,7 @@ test.describe('Ritterzeit', () => {
 
   // Haengt am Test davor: Anna ist in der Ritterzeit und hat Stall und
   // Schiessanlage.
-  test('einheiten AC-33 und einheiten AC-34: der Stall bildet den Ritter aus, die Armbrust macht den Bogenschuetzen zum Armbrustschuetzen', async ({}, info) => {
+  test('einheiten AC-33 und einheiten AC-34: der Stall bildet den Ritter aus, die Schiessanlage den Armbrustschuetzen als eigene Einheit - der Kurzbogenschuetze bleibt, was er ist', async ({}, info) => {
     test.setTimeout(180_000);
     const { anna, code } = partie;
     await rohstoffe(anna, code, 'Anna', { holz: 2000, nahrung: 2000, gold: 2000 });
@@ -129,14 +129,16 @@ test.describe('Ritterzeit', () => {
       const e = window.ansicht.werte.einheiten;
       return { ritter: e.ritter.kuerzel, armbrust: e.armbrustschuetze.kuerzel, bogen: e.bogenschuetze.kuerzel };
     });
-    // Wohnraum fuer den Ritter: mit dem Bogenschuetzen ist sie sonst voll
-    // (4 von 5), und der Ritter wartete in der Schlange.
+    // Wohnraum fuer Ritter und Armbrustschuetzen: mit dem Kurzbogenschuetzen
+    // ist sie sonst voll (4 von 5), und beide warteten in der Schlange.
     await gebaeudeInDerNaehe(anna, code, 'Anna', 'haus', basis, { von: 6, bis: 16 });
     await gebaeudeInDerNaehe(anna, code, 'Anna', 'haus', basis, { von: 6, bis: 16 });
     expect(await einheitenAufstellen(anna, code, 'Anna', 1, { x: basis.x + 2, y: basis.y - 6, art: 'bogenschuetze' })).toBe(1);
     const zahl = (k) => anna.evaluate((k) => [...window.ansicht.nachher.values()]
       .filter((e) => e.b === window.ansicht.ich && e.k === k && !e.s).length, k);
     const ritterVorher = await zahl(kuerzel.ritter);
+    const bogenVorher = await zahl(kuerzel.bogen);
+    expect(await zahl(kuerzel.armbrust)).toBe(0);
     const waehlen = (art) => anna.evaluate((art) => {
       const a = window.ansicht;
       const g = [...a.gebaeude.values()].find((x) => x.b === a.ich && x.art === art);
@@ -147,15 +149,31 @@ test.describe('Ritterzeit', () => {
     // Der Ritter aus dem Stall.
     await waehlen('stall');
     await anna.locator('[data-ausbilden="ritter"]').click();
-    // Die Armbrust in der Schiessanlage.
+    // Der Armbrustschuetze aus der Schiessanlage: eine eigene Einheit neben
+    // dem Kurzbogenschuetzen, keine Verbesserung, die ihn austauscht
+    // (Benutzer, 2026-11-13: zwei parallele Linien).
     await waehlen('schiessanlage');
-    await anna.locator('[data-ausbilden="armbrust"]').click();
+    await expect(anna.locator('[data-ausbilden="armbrust"]'), 'die Verbesserung gibt es nicht mehr').toHaveCount(0);
+    await expect(anna.locator('[data-ausbilden="bogenschuetze"]')).toHaveCount(1);
+    await expect(anna.locator('[data-ausbilden="armbrustschuetze"]'))
+      .toHaveAttribute('aria-label', 'Armbrustschütze ausbilden (35 Holz, 55 Gold)');
+    await anna.locator('[data-ausbilden="armbrustschuetze"]').click();
     await zeitraffer(anna, code, 20);
-    await anna.waitForFunction(() => window.ansicht.verbesserungen.includes('armbrust'), null, { timeout: 90_000 });
+    await expect.poll(() => zahl(kuerzel.armbrust), { timeout: 90_000 }).toBe(1);
     await expect.poll(() => zahl(kuerzel.ritter), { timeout: 60_000 }).toBeGreaterThan(ritterVorher);
     await zeitraffer(anna, code, 1);
-    expect(await zahl(kuerzel.bogen), 'kein Bogenschuetze mehr').toBe(0);
-    expect(await zahl(kuerzel.armbrust), 'ein Armbrustschuetze').toBeGreaterThanOrEqual(1);
+    expect(await zahl(kuerzel.bogen), 'der Kurzbogenschuetze steht weiter da').toBe(bogenVorher);
+    expect(bogenVorher).toBeGreaterThanOrEqual(1);
+    // Was ihn ausmacht: 9 Angriff auf fuenf Felder.
+    await anna.evaluate((k) => {
+      const a = window.ansicht;
+      const e = [...a.nachher.values()].find((x) => x.b === a.ich && x.k === k && !x.s);
+      a.gewaehltesGebaeude = null;
+      a.ausgewaehlt = new Set([e.i]);
+      a.beiAuswahl();
+    }, kuerzel.armbrust);
+    await expect(anna.locator('.auswahl-kopf strong')).toHaveText('Armbrustschütze');
+    expect(await anna.locator('#kampfwerte').evaluate((z) => [z.dataset.angriff, z.dataset.reichweite])).toEqual(['9', '5']);
 
     // Beide nebeneinander auf freies Gras, dann das Bild.
     const ziel = await anna.evaluate((b) => {
@@ -211,7 +229,7 @@ test.describe('Ritterzeit', () => {
       await nachweis(anna, {
         spec: EINHEITEN,
         ac,
-        titel: 'Links ein Ritter aus dem Stall – gepanzert, die Pferdedecke mit Saum in Spielerfarbe –, rechts ein Armbrustschütze, der Bogenschütze nach der Verbesserung Armbrust',
+        titel: 'Links ein Ritter aus dem Stall – gepanzert, die Pferdedecke mit Saum in Spielerfarbe –, rechts ein Armbrustschütze aus der Schießanlage, eine eigene Einheit neben dem Kurzbogenschützen',
         test: info,
       });
     }

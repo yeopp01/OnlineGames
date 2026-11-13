@@ -1,7 +1,7 @@
 {
   "spec": "10-strategie/bedienung.md",
   "ac": "AC-36",
-  "titel": "Zoom 1, von links nach rechts: Dorfbewohner, Miliz, Soldat, Speerkämpfer, Bogenschütze, Plänkler - in der Größe, in der gespielt wird",
+  "titel": "Zoom 1, von links nach rechts: Dorfbewohner, Miliz, Soldat, Speerkämpfer, Kurzbogenschütze, Plänkler - in der Größe, in der gespielt wird",
   "datei": "e2e/tests/strategie-unterscheidbar.spec.mjs",
   "pfad": [
     "Militaer bei Spielgroesse",

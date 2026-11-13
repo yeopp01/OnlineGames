@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 // Der Gefechtsstand des Strategiespiels (→ specs/10-strategie/fahrplan.md
-// AC-9, AC-10, AC-23): zwei Heere gleicher Kosten laufen aufeinander zu, der Rest
+// AC-9, AC-10, AC-23, AC-25): zwei Heere gleicher Kosten laufen aufeinander zu, der Rest
 // ist die Simulation. Ohne Server, ohne Browser, jeder Takt geprueft.
 //
 //   npm run konterkreis:strategie
@@ -45,6 +45,20 @@ const KREIS_RITTERZEIT = [
   ['ritter', 'mangonel'],
 ];
 
+// Die Stufen des Fuerstentums (fahrplan AC-25): jede behaelt, was ihre
+// Vorstufe schlug, und Reiter schlagen beide Schuetzenlinien.
+const KREIS_STUFEN = [
+  ['pikenier', 'ritter'],
+  ['pikenier', 'leichtekavallerie'],
+  ['eliteplaenkler', 'bogenschuetze2'],
+  ['eliteplaenkler', 'armbrustschuetze'],
+  ['bogenschuetze2', 'pikenier'],
+  ['ritter', 'bogenschuetze2'],
+  ['ritter', 'armbrustschuetze'],
+  ['leichtekavallerie', 'bogenschuetze2'],
+  ['leichtekavallerie', 'armbrustschuetze'],
+];
+
 const mittelwert = (zahlen) => zahlen.reduce((a, b) => a + b, 0) / zahlen.length;
 
 function reihe(links, rechts, budget) {
@@ -67,7 +81,7 @@ console.log(`Gefechtsstand: ${startwerte} Startwerte je Paarung, bis zu ${minute
 const beginn = Date.now();
 let gebrochen = 0;
 try {
-  for (const [titel, kreis, geld] of [['Feudalzeit', KREIS, budget], ['Ritterzeit', KREIS_RITTERZEIT, budgetRitterzeit]]) {
+  for (const [titel, kreis, geld] of [['Feudalzeit', KREIS, budget], ['Ritterzeit', KREIS_RITTERZEIT, budgetRitterzeit], ['Stufen des Fuerstentums', KREIS_STUFEN, budgetRitterzeit]]) {
     console.log(`${titel}, Budget ${geld}:`);
     for (const art of new Set(kreis.flat())) console.log(`  ${art}: ${kostenSumme(art)} Rohstoffe, also ${Math.floor(geld / kostenSumme(art))} Stueck`);
     for (const [konter, ziel] of kreis) {
@@ -76,7 +90,7 @@ try {
         const anteil = Math.round((siege / startwerte) * 100);
         const rolle = links === konter ? 'Konter' : 'gekontert';
         if (links === konter && anteil < 80) gebrochen += 1;
-        console.log(`${links.padEnd(14)} gegen ${rechts.padEnd(14)} (${rolle.padEnd(9)}) ${String(siege).padStart(2)}/${startwerte} = ${String(anteil).padStart(3)} %, ohne Ende ${ohneEnde}, Takte ${dauer[0]} bis ${dauer[dauer.length - 1]} (Median ${dauer[dauer.length >> 1]}), uebrig ${mittelwert(uebrig).toFixed(1)}`);
+        console.log(`${links.padEnd(17)} gegen ${rechts.padEnd(17)} (${rolle.padEnd(9)}) ${String(siege).padStart(2)}/${startwerte} = ${String(anteil).padStart(3)} %, ohne Ende ${ohneEnde}, Takte ${dauer[0]} bis ${dauer[dauer.length - 1]} (Median ${dauer[dauer.length >> 1]}), uebrig ${mittelwert(uebrig).toFixed(1)}`);
       }
     }
   }

@@ -7,9 +7,9 @@ Eine Zeile je Abnahmekriterium. Gepflegt wird der Status in der Spec selbst,
 hier steht er zusammengefasst. Erzeugt mit `npm run specs:board`; als Seite
 mit Bildnachweisen, Filter und Suche mit `npm run qa:report`.
 
-**Gesamt:** 514/635 fertig · 3 in Arbeit · 13 in QA · 3 geplant · 94 offen · 8 zurueckgestellt
+**Gesamt:** 522/644 fertig · 3 in Arbeit · 13 in QA · 3 geplant · 95 offen · 8 zurueckgestellt
 
-**Nachweise:** 248 Kriterien mit Bild · 273 ohne Bild, begruendet in `qa/ohne-bild.json`
+**Nachweise:** 255 Kriterien mit Bild · 274 ohne Bild, begruendet in `qa/ohne-bild.json`
 
 ## Nach Spezifikation
 
@@ -21,14 +21,14 @@ mit Bildnachweisen, Filter und Suche mit `npm run qa:report`.
 | [Anhalten und Fortsetzen](00-plattform/speichern.md)           | -         | -     | -       | 23    | -               | 3      |
 | [Spielauswahl und Einstellungen](00-plattform/spielauswahl.md) | -         | -     | -       | 5     | -               | 19     |
 | [Uebertragung](00-plattform/uebertragung.md)                   | -         | -     | 1       | 1     | -               | 8      |
-| [Bauen und Ausbilden](10-strategie/bauen.md)                   | -         | -     | -       | 1     | -               | 36     |
+| [Bauen und Ausbilden](10-strategie/bauen.md)                   | -         | -     | -       | 1     | -               | 38     |
 | [Bedienung](10-strategie/bedienung.md)                         | -         | 1     | -       | 3     | -               | 58     |
 | [Darstellung](10-strategie/darstellung.md)                     | 1         | 1     | -       | 4     | -               | 19     |
-| [Einheiten und Befehle](10-strategie/einheiten-und-befehle.md) | -         | -     | -       | 17    | 1               | 32     |
-| [Fahrplan zum Klon](10-strategie/fahrplan.md)                  | -         | 2     | -       | 4     | -               | 18     |
+| [Einheiten und Befehle](10-strategie/einheiten-und-befehle.md) | -         | -     | -       | 17    | 1               | 37     |
+| [Fahrplan zum Klon](10-strategie/fahrplan.md)                  | -         | 2     | -       | 4     | -               | 19     |
 | [Kampf](10-strategie/kampf.md)                                 | -         | -     | -       | 2     | 1               | 20     |
 | [Karte und Vorraete](10-strategie/karte-und-vorraete.md)       | -         | -     | -       | 2     | 3               | 12     |
-| [KI-Spieler](10-strategie/ki.md)                               | -         | -     | -       | 4     | -               | 30     |
+| [KI-Spieler](10-strategie/ki.md)                               | -         | -     | -       | 5     | -               | 30     |
 | [Spielziel und Partieverlauf](10-strategie/spielziel.md)       | 1         | -     | -       | 10    | -               | 15     |
 | [Aufstellung, Taktik und Training](15-manager/aufstellung.md)  | -         | -     | -       | -     | 2               | 23     |
 | [Bedienung des Managerspiels](15-manager/bedienung.md)         | -         | -     | -       | -     | -               | 15     |
@@ -73,7 +73,7 @@ mit Bildnachweisen, Filter und Suche mit `npm run qa:report`.
 - **Kennwort vergessen** — [Konten und Anmeldung](00-plattform/konten.md) AC-5
 - **Automatischer Wiederaufbau** — [Uebertragung](00-plattform/uebertragung.md) AC-10
 
-## Offen (94)
+## Offen (95)
 
 - **Anmeldung ueber Google/GitHub** — [Konten und Anmeldung](00-plattform/konten.md) AC-6
 - **Bilanz je Konto** — [Konten und Anmeldung](00-plattform/konten.md) AC-14
@@ -126,7 +126,7 @@ mit Bildnachweisen, Filter und Suche mit `npm run qa:report`.
 - **Sammler teilen keinen Platz** — [Einheiten und Befehle](10-strategie/einheiten-und-befehle.md) AC-30
 - **Marschierende laufen nicht aufeinander** — [Einheiten und Befehle](10-strategie/einheiten-und-befehle.md) AC-32
 - **Ladung des Karrens sichtbar** — [Einheiten und Befehle](10-strategie/einheiten-und-befehle.md) AC-41
-- **Langbogenschütze nur für Eschenbruch** — [Einheiten und Befehle](10-strategie/einheiten-und-befehle.md) AC-42
+- **Eibenschütze nur für Eschenbruch** — [Einheiten und Befehle](10-strategie/einheiten-und-befehle.md) AC-42
 - **Pavesenschütze nur für Wehrstein** — [Einheiten und Befehle](10-strategie/einheiten-und-befehle.md) AC-43
 - **Söldner für Gold** — [Einheiten und Befehle](10-strategie/einheiten-und-befehle.md) AC-44
 - **Kriegswölfe aus der Burg** — [Einheiten und Befehle](10-strategie/einheiten-und-befehle.md) AC-45
@@ -148,6 +148,7 @@ mit Bildnachweisen, Filter und Suche mit `npm run qa:report`.
 - **Kein Spieler ist abgeschnitten** — [Karte und Vorraete](10-strategie/karte-und-vorraete.md) AC-7
 - **Vorraete sind endlich und knapp** — [Karte und Vorraete](10-strategie/karte-und-vorraete.md) AC-10
 - **KI liest die Zustandsnachricht** — [KI-Spieler](10-strategie/ki.md) AC-20
+- **Die KI forscht** — [KI-Spieler](10-strategie/ki.md) AC-35
 - **KI bildet Spezialeinheit aus** — [KI-Spieler](10-strategie/ki.md) AC-28
 - **KI antwortet auf das Heer** — [KI-Spieler](10-strategie/ki.md) AC-31
 - **Die KI ruft den Drachen** — [KI-Spieler](10-strategie/ki.md) AC-29

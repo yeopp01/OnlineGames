@@ -2,7 +2,7 @@
 
 **Bereich:** Strategie
 **Kuerzel:** bauen
-**Stand:** 36/37 fertig · 1 offen
+**Stand:** 38/39 fertig · 1 offen
 
 ## Zweck
 
@@ -284,6 +284,27 @@ Spezialeinheit der Burg (kommt mit den Häusern, Stufe E), Palisade.
   Leben reist in der Tafel `kw` zum Browser (für den Lebensbalken). Die
   Forschungsdauern nennt die Spec nicht; genommen sind die des Originals
   (75, 35, 50, 50 s).
+- **AC-38** `fertig` **Wachturm wird Wehrturm** — Die Verbesserung Wehrturm in
+  der Universität (100 Nahrung, 250 Holz, 30 s) macht aus jedem Wachturm
+  einen Wehrturm, auch aus jedem, der schon steht: +480 Leben, +2 Angriff,
+  +1/+1 Rüstung; die Reichweite bleibt. Ein beschädigter Turm bekommt die 480
+  dazu, nicht das volle Leben. Der Turm heißt danach überall Wehrturm — in
+  der Auswahl, im Baumenü, für den Gegner, der ihn ansieht —, aber nur bei
+  dem, der geforscht hat. Benutzer am 2026-11-13: „Kann man Wachtürme
+  weiterentwickeln?" Die Wirkung steht als `bauwerk` je Gebäudeart in den
+  Daten und kommt in `welt.gebaeudewert()` zum Grundwert, bevor das
+  Mauerwerk (AC-34) seinen Anteil rechnet; der Name steht als `nennt` und
+  reist in der Tafel `kw`. **Das Bild bleibt vorerst das des Wachturms.**
+- **AC-39** `fertig` **Rüstungen der Schmiede** — Je Waffengattung zwei
+  Stufen, jede +1/+1 Rüstung: Schuppenpanzer (100 Nahrung) und Kettenpanzer
+  (200 Nahrung, 100 Gold) für die Infanterie, Schuppenrossharnisch (150
+  Nahrung) und Kettenrossharnisch (250 Nahrung, 150 Gold) für die
+  Kavallerie, Gepolsterte (100 Nahrung) und Lederne Schützenrüstung (150
+  Nahrung, 150 Gold) für die Schützen. Die erste ab der Feudalzeit, die
+  zweite ab der Ritterzeit und erst nach der ersten (wie AC-34); jede mit
+  eigenem Bild im Menü. Von jeder Reihe steht nur die nächste Stufe im Menü
+  der Schmiede — höchstens fünf Knöpfe zugleich. Die dritten Stufen kommen
+  mit Stufe F.
 
 ### Stufe F — das Ritual (aus ADR-0014)
 

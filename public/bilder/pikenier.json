@@ -1,0 +1,57 @@
+{
+  "bild": "pikenier.webp",
+  "maske": "pikenier-maske.webp",
+  "zelle": [
+    180,
+    172
+  ],
+  "fuss": [
+    36,
+    147
+  ],
+  "feldbreite": 132,
+  "zeilen": 8,
+  "spalten": 9,
+  "art": "figur",
+  "richtungen": 8,
+  "hoehe": 86,
+  "ablaeufe": {
+    "stehen": {
+      "spalte": 0,
+      "bilder": 1
+    },
+    "gehen": {
+      "spalte": 1,
+      "bilder": 8
+    },
+    "angreifen": {
+      "spalte": 0,
+      "bilder": 8,
+      "bild": "pikenier-angreifen.webp",
+      "maske": "pikenier-angreifen-maske.webp",
+      "zelle": [
+        311,
+        177
+      ],
+      "fuss": [
+        138,
+        114
+      ]
+    },
+    "sterben": {
+      "spalte": 0,
+      "bilder": 8,
+      "einmal": true,
+      "bild": "pikenier-sterben.webp",
+      "maske": "pikenier-sterben-maske.webp",
+      "zelle": [
+        271,
+        199
+      ],
+      "fuss": [
+        105,
+        150
+      ]
+    }
+  }
+}

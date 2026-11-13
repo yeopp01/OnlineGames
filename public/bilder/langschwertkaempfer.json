@@ -1,0 +1,57 @@
+{
+  "bild": "langschwertkaempfer.webp",
+  "maske": "langschwertkaempfer-maske.webp",
+  "zelle": [
+    182,
+    160
+  ],
+  "fuss": [
+    46,
+    126
+  ],
+  "feldbreite": 132,
+  "zeilen": 8,
+  "spalten": 9,
+  "art": "figur",
+  "richtungen": 8,
+  "hoehe": 86,
+  "ablaeufe": {
+    "stehen": {
+      "spalte": 0,
+      "bilder": 1
+    },
+    "gehen": {
+      "spalte": 1,
+      "bilder": 8
+    },
+    "angreifen": {
+      "spalte": 0,
+      "bilder": 8,
+      "bild": "langschwertkaempfer-angreifen.webp",
+      "maske": "langschwertkaempfer-angreifen-maske.webp",
+      "zelle": [
+        240,
+        182
+      ],
+      "fuss": [
+        94,
+        139
+      ]
+    },
+    "sterben": {
+      "spalte": 0,
+      "bilder": 8,
+      "einmal": true,
+      "bild": "langschwertkaempfer-sterben.webp",
+      "maske": "langschwertkaempfer-sterben-maske.webp",
+      "zelle": [
+        225,
+        179
+      ],
+      "fuss": [
+        88,
+        127
+      ]
+    }
+  }
+}

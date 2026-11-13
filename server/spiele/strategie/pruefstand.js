@@ -305,13 +305,19 @@ function nachsetzen(welt) {
  * wer uebrig ist, und `spur`: je Takt eine Zahl aus dem Zustand aller
  * Einheiten - zwei gleiche Gefechte haben dieselbe Spur (AC-10).
  *
+ * `erforscht` gibt einer Seite Verbesserungen mit, bevor ihr Heer steht - so
+ * laesst sich messen, was die Ruestungen der Schmiede an einer Paarung
+ * aendern (bauen AC-39).
+ *
  * @param {{links: string, rechts: string, startwert: number, budget?: number,
- *   minuten?: number, abstand?: number, spurFuehren?: boolean}} optionen
+ *   minuten?: number, abstand?: number, spurFuehren?: boolean,
+ *   erforscht?: {links?: string[], rechts?: string[]}}} optionen
  */
-function gefechtSpielen({ links, rechts, startwert, budget = 600, minuten = 5, abstand = 12, spurFuehren = false }) {
+function gefechtSpielen({ links, rechts, startwert, budget = 600, minuten = 5, abstand = 12, spurFuehren = false, erforscht = {} }) {
   const welt = new Welt([{ id: 'links', name: 'Links' }, { id: 'rechts', name: 'Rechts' }], startwert);
   welt.einheiten.clear();
   welt.tiere.clear();
+  for (const [seite, liste] of Object.entries(erforscht)) welt.spielerVon(seite).verbesserungen.push(...liste);
 
   // Das Schlachtfeld liegt auf freiem Grund zwischen den beiden Basen, die
   // Heere je zur Haelfte des Abstands daneben - so ist der Weg zueinander fuer

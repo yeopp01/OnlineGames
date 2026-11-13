@@ -137,7 +137,7 @@ test.describe('Einheiten der Feudalzeit', () => {
     await expect(anna.locator('.auswahl-kopf')).toHaveText('3 ausgewählt');
     const titel = await anna.locator('#auswahlleiste .gruppe-eintrag')
       .evaluateAll((k) => k.map((x) => x.title));
-    for (const name of ['Speerkämpfer', 'Bogenschütze', 'Plänkler']) {
+    for (const name of ['Speerkämpfer', 'Kurzbogenschütze', 'Plänkler']) {
       expect(titel.join(' | '), name).toContain(name);
     }
     expect(await bedienteileFrei(anna)).toEqual([]);
@@ -145,7 +145,7 @@ test.describe('Einheiten der Feudalzeit', () => {
     await nachweis(anna, {
       spec: EINHEITEN,
       ac: 'AC-23',
-      titel: 'Alle drei Einheiten der Feudalzeit ausgewählt: der Speerkämpfer an der Kaserne, Bogenschütze und Plänkler an der Schießanlage',
+      titel: 'Alle drei Einheiten der Feudalzeit ausgewählt: der Speerkämpfer an der Kaserne, Kurzbogenschütze und Plänkler an der Schießanlage',
       test: info,
     });
   });

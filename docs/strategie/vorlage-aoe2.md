@@ -143,12 +143,41 @@ Rüstungsklasse „Gebäude" — Pfeile richten an Mauerwerk kaum etwas aus.
 | Soldat (Miliz-Stufe 2) | Feudal | 60 N, 20 G | 21 s | 45 | 6 | 0/1 | – | 0,9 | |
 | Ritter | Ritter | 60 N, 75 G | 30 s | 100 | 10 | 2/2 | – | 1,35 | |
 | Armbrustschütze | Ritter | 25 H, 45 G | 27 s | 35 | 5 | 0/0 | 5 | 0,96 | |
+| Langschwertkämpfer (Miliz-Stufe 3) | Ritter | 60 N, 20 G | 21 s | 60 | 9 | 1/1 | – | 0,9 | |
+| Pikenier (Speer-Stufe 2) | Ritter | 35 N, 25 H | 22 s | 55 | 4 | 0/0 | – | 1,0 | +22 gegen Kavallerie |
+| Eliteplänkler (Plänkler-Stufe 2) | Ritter | 25 N, 35 H | 22 s | 35 | 3 | 0/4 | 5 | 0,96 | +4 gegen Bogenschützen |
+| Leichte Kavallerie (Späher-Stufe 2) | Ritter | 80 N | 30 s | 60 | 7 | 0/2 | – | 1,5 | |
 | Kamelreiter | Ritter | 55 N, 60 G | 22 s | 100 | 6 | 0/0 | – | 1,45 | +9 gegen Kavallerie |
 | Berittener Bogen | Ritter | 40 H, 70 G | 34 s | 50 | 6 | 0/0 | 4 | 1,4 | |
 | Mönch | Ritter | 100 G | 51 s | 30 | – | 0/0 | 9 | 0,7 | bekehrt, heilt |
 | Ramme | Ritter | 160 H, 75 G | 36 s | 175 | 2 | 0/180 | – | 0,5 | +125 gegen Gebäude |
 | Mangonel | Ritter | 160 H, 135 G | 46 s | 50 | 40 | 0/6 | 7 | 0,6 | Flächenschaden |
 | Trebuchet | Imperial | 200 H, 200 G | 50 s | 150 | 200 | 1/150 | 16 | 0,8 | aufbauen, gegen Gebäude |
+
+Die vier Stufen der Ritterzeit, der Wehrturm und die Rüstungen der Schmiede
+stammen aus den offenen Technikbaum-Daten zum Original
+(SiegeEngineers/aoe2techtree, gelesen 2026-11-13) — Leben, Angriff, Rüstung,
+Bonus, Kosten und Dauer der Verbesserungen. Nicht übernommen: Zuschläge gegen
+Gebäude, Mönche und Sonderklassen, die es hier nicht gibt.
+
+**Abweichung: zwei Schützenlinien** (Benutzer, 2026-11-13; einheiten AC-34,
+AC-58). In der Vorlage wird der Bogenschütze durch eine Verbesserung zum
+Armbrustschützen und später zum Arbalestenschützen — eine Linie. Hier sind es
+zwei nebeneinander:
+
+| Linie | Lehen | Fürstentum | Krone (Stufe F) |
+| --- | --- | --- | --- |
+| Bogen | Kurzbogenschütze (die Werte des Bogenschützen der Vorlage) | Bogenschütze (die Werte des Armbrustschützen der Vorlage: 35 Leben, 5 Angriff, Reichweite 5) | Langbogenschütze |
+| Armbrust | – | Armbrustschütze, eine eigene Einheit: 35 H, 55 G, 9 Angriff alle 3,5 s, Reichweite 5 | schwere Armbrust |
+
+Den Namen Langbogenschütze trägt damit die Krone-Stufe für alle Häuser;
+Eschenbruchs eigene Einheit (in der Vorlage der Langbogenschütze der Briten)
+heißt **Eibenschütze** (Benutzer, 2026-11-13; einheiten AC-42).
+
+Die Werte des Armbrustschützen hier sind Startwerte ohne Vorbild. Seine Rolle
+kommt ohne Sonderregel aus `Angriff − Rüstung`: gegen 2 Fernrüstung macht der
+Bolzen 7 in 3,5 s, der Pfeil 3 in 2 s; gegen Ungerüstete liegen beide gleich,
+und der Bogen ist billiger (gemessen: fahrplan AC-25).
 
 Der Kreis, auf den es ankommt:
 
@@ -169,6 +198,11 @@ Ramme ──schlägt──▶ Gebäude           Reiter ──schlägt──▶ 
 | Stadtwache | Dorfzentrum | Feudal | 75 N | Gebäude +4 Sicht |
 | Stadtpatrouille | Dorfzentrum | Ritter | 300 N, 100 G | Gebäude +4 Sicht |
 | Schmiedeangriff Stufe 1 | Schmiede | Feudal | 100 N | Nah +1 Angriff |
+| Schuppenpanzer / Kettenpanzer | Schmiede | Feudal / Ritter | 100 N / 200 N, 100 G | Infanterie +1/+1 Rüstung je Stufe |
+| Schuppen- / Kettenrossharnisch | Schmiede | Feudal / Ritter | 150 N / 250 N, 150 G | Kavallerie +1/+1 Rüstung je Stufe |
+| Gepolsterte / Lederne Schützenrüstung | Schmiede | Feudal / Ritter | 100 N / 150 N, 150 G | Schützen +1/+1 Rüstung je Stufe |
+| Wehrturm | Universität | Ritter | 100 N, 250 H | Wachturm +480 Leben, +2 Angriff, +1/+1 Rüstung |
+| Langschwertkämpfer, Pikenier, Eliteplänkler, Leichte Kavallerie | Kaserne, Schießanlage, Stall | Ritter | 150 N 65 G · 160 N 90 G · 230 H 130 G · 150 N 50 G | tauscht die Einheit gegen ihre nächste Stufe |
 | Befiederte Pfeile | Schmiede | Feudal | 100 N, 50 G | Fern +1 Angriff, +1 Reichweite |
 | Belagerung (Soldat → Wache) | Kaserne | Feudal/Ritter | … | Einheitenstufen |
 

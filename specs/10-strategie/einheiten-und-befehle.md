@@ -2,7 +2,7 @@
 
 **Bereich:** Strategie
 **Kuerzel:** einheiten
-**Stand:** 32/50 fertig · 17 offen · 1 zurueckgestellt
+**Stand:** 37/55 fertig · 17 offen · 1 zurueckgestellt
 
 ## Zweck
 
@@ -103,7 +103,8 @@ Befehl bewirkt.
 
 ### Feudalzeit (Stufe B)
 
-- **AC-23** `fertig` **Drei neue Einheiten** — Speerkämpfer (35 Nahrung, 25 Holz, 22 s) in der
+- **AC-23** `fertig` **Drei neue Einheiten** — (Der Bogenschütze dieser Stufe
+  heißt seit AC-58 am Bildschirm Kurzbogenschütze.) Speerkämpfer (35 Nahrung, 25 Holz, 22 s) in der
   Kaserne, Bogenschütze (30 Holz, 45 Gold, 35 s — 25 Holz in der Vorlage, seit Runde 202 teurer, weil die Schützen KI gegen KI zu stark waren, spielziel AC-18) und Plänkler (25 Nahrung,
   35 Holz, 22 s) in der Schießanlage, Späherreiter (80 Nahrung, 30 s) im
   Stall. Werte für Leben, Angriff, Rüstung, Reichweite und Tempo nach der
@@ -198,9 +199,19 @@ Werte aus der [Vorlage](../../docs/strategie/vorlage-aoe2.md), als Daten in
 - **AC-33** `fertig` **Ritter** — Im Stall ab der Ritterzeit: 60 Nahrung, 75
   Gold, 30 s, 100 Leben, 10 Angriff, 2/2 Rüstung, Tempo 1,35. Eigene Figur,
   bei Zoom 1 vom Späherreiter unterscheidbar.
-- **AC-34** `fertig` **Armbrustschütze** — Die Verbesserung Armbrust in der
-  Schießanlage (125 Nahrung, 75 Gold) tauscht jeden Bogenschützen aus, wie
-  Soldat die Miliz (AC-24): 35 Leben, 5 Angriff, Reichweite 5. Eigene Figur.
+- **AC-34** `fertig` **Armbrustschütze** — Eine eigene Einheit der
+  Schießanlage ab der Ritterzeit, **neben** dem Bogenschützen und nicht seine
+  Stufe: 35 Holz, 55 Gold, 27 s, 35 Leben, 9 Angriff alle 3,5 Sekunden,
+  Reichweite 5, kein Bonus. Eigene Figur. Seine Rolle ist die Antwort auf
+  Rüstung, ohne Sonderregel aus `Angriff − Rüstung`: gegen einen Ritter macht
+  der Bolzen 7 je Schuss, der Pfeil des Bogenschützen (AC-58) 3.
+  **Benutzer am 2026-11-13:** „Bogenschütze und Armbrustschütze sind zwei
+  parallele Stufen, die haben jeweils ihre eigenen Weiterentwicklungen" —
+  eine Abweichung von der Vorlage, in der der eine zum anderen wird
+  (`docs/strategie/vorlage-aoe2.md`). Bis dahin war er die zweite Stufe des
+  Bogenschützen mit 5 Angriff; die Verbesserung Armbrust gibt es nicht mehr,
+  ihre Werte und ihren Preis trägt die Bogenstufe (AC-58). Die schwere
+  Armbrust der Krone kommt mit Stufe F.
 - **AC-35** `fertig` **Ramme** — In der Belagerungswerkstatt: 160 Holz, 75
   Gold, 36 s, 175 Leben, 0/180 Rüstung, Tempo 0,5, 2 Angriff mit +125 gegen
   Gebäude. Sie greift nur Gebäude an; ein Befehl auf eine Einheit ist ein
@@ -297,6 +308,44 @@ Werte aus der [Vorlage](../../docs/strategie/vorlage-aoe2.md), als Daten in
   der Figur, und die Figuren baut seit 2026-11-10 eine eigene Sitzung mit
   Blender neu. Der Server schickt die Ladung schon (`l`, `a` am Karren).
 
+### Truppenstufen der Ritterzeit (Benutzer, 2026-11-13)
+
+Jede Einheit des Lehens bekommt in der Ritterzeit ihre nächste Stufe, wie die
+Miliz den Soldaten (AC-24): eine Verbesserung im Gebäude tauscht jede
+stehende Einheit und jede in der Schlange aus, danach bildet das Gebäude die
+neue Stufe aus, zum Preis der alten. Eine Stufe erbt, was ihre Vorstufe an
+Verbesserungen trägt. Leben, Angriff, Rüstung und Bonus stammen aus den
+offenen Technikbaum-Daten zum Original, Kosten und Dauer der Verbesserungen
+ebenso; nicht übernommen sind dessen Zuschläge gegen Gebäude und
+Sonderklassen. Jede Stufe hat eine eigene Figur (darstellung AC-14, AC-24).
+Die Stufen der Krone kommen mit Stufe F. **Die KI erforscht keine davon** —
+sie erforscht bisher gar nichts; das ist kein Kriterium hier.
+
+- **AC-58** `fertig` **Kurzbogen wird Bogenschütze** — Der Bogenschütze des
+  Lehens heißt am Bildschirm **Kurzbogenschütze**. Die Verbesserung
+  Bogenschütze in der Schießanlage (125 Nahrung, 75 Gold, 35 s, ab der
+  Ritterzeit) macht aus jedem einen Bogenschützen: 35 Leben, 5 Angriff,
+  Reichweite 5, weiter +3 gegen Speer. Der Langbogenschütze folgt mit der
+  Krone. Im Code behält der Kurzbogenschütze den Bezeichner
+  `bogenschuetze`, weil Tests, Bilder und Nachweise an ihm hängen; die
+  zweite Stufe heißt deshalb `bogenschuetze2`.
+- **AC-59** `fertig` **Soldat wird Langschwertkämpfer** — Die Verbesserung in
+  der Kaserne (150 Nahrung, 65 Gold, 40 s) erscheint erst nach der
+  Soldatenstufe: 60 Leben, 9 Angriff, 1/1 Rüstung. Die Kette hat drei
+  Glieder; ausgebildet wird immer das letzte erreichte
+  (`welt.einheitenStufe`, `grundstufeVon`).
+- **AC-60** `fertig` **Speerkämpfer wird Pikenier** — In der Kaserne (160
+  Nahrung, 90 Gold, 35 s): 55 Leben, 4 Angriff, +22 gegen Kavallerie statt
+  +15.
+- **AC-61** `fertig` **Plänkler wird Eliteplänkler** — In der Schießanlage
+  (230 Holz, 130 Gold, 50 s): 35 Leben, 3 Angriff, 0/4 Rüstung, Reichweite
+  5, +4 gegen Bogenschützen — und damit auch gegen Armbrustschützen.
+- **AC-62** `fertig` **Späherreiter wird leichte Kavallerie** — Im Stall (150
+  Nahrung, 50 Gold, 45 s): 60 Leben, 7 Angriff, 0/2 Rüstung. Das Tempo
+  bleibt 1,55 und nicht die 1,5 der Vorlage: so schnell ist der Späherreiter
+  hier schon ab dem Lehen (AC-57), und eine Verbesserung, die ihn bremst,
+  verstünde niemand.
+
 ### Stufe E — Häuser
 
 Keine dieser Einheiten steht in der Vorlage; ihre Werte sind
@@ -307,16 +356,30 @@ wogegen sie verliert — mindestens 80 % in beiden Richtungen, wie der
 Konterkreis (fahrplan AC-9, AC-23). Jede braucht eine eigene Figur; die
 kommen aus der Blender-Sitzung (Bauabfolge E6 bis E8).
 
-- **AC-42** `offen` **Langbogenschütze nur für Eschenbruch** — Häuser schalten
+- **AC-42** `offen` **Eibenschütze nur für Eschenbruch** — Häuser schalten
   Einheiten frei (ADR-0014 Punkt 11): eine Einheit trägt in den Daten
   `haeuser: [...]`, gelesen überall dort, wo heute `zeitalter` gelesen wird
   (Menü des Gebäudes, Ausbildung auf dem Server, Absage, KI). Wer sie nicht
   ausbilden darf, sieht sie nicht im Menü, und der Server weist den Auftrag
-  ab. Der erste Fall: der **Langbogenschütze** in der Schießanlage ab der
+  ab. Der erste Fall: der **Eibenschütze** in der Schießanlage ab der
   Ritterzeit, nur Haus Eschenbruch. Startwerte: 35 Holz, 40 Gold, 35 Leben,
   Angriff 6, Reichweite 6, Rüstung 0/0, Tempo 0,96, Nachladezeit 2 s.
   **Entscheidung:** er schießt weiter als der Armbrustschütze (5) und
   gewinnt gegen ihn bei gleichen Kosten; gegen Ritter verliert er.
+  **Der Name** (Benutzer, 2026-11-13): im ersten Entwurf und in ADR-0014
+  hieß er Langbogenschütze; den Namen trägt jetzt die Krone-Stufe der
+  Bogenlinie für alle Häuser (AC-58: Kurzbogen, Bogen, Langbogen). Der
+  Eibenschütze steht **neben** der Linie: so viel Schaden wie der
+  Langbogenschütze, ein Feld mehr Reichweite, ein Zeitalter früher, weniger
+  Leben. **Die Reichweite passt zur Burg** (Benutzer, 2026-11-13: „der
+  eibenschütze darf gerne 1 mehr reichweite als die burg haben - bzw. der
+  elite eibenschütze"): mit allen Verbesserungen und dem Hausbonus schießt
+  der Eibenschütze, in der Krone der Elite-Eibenschütze, **höchstens ein
+  Feld weiter** als eine Burg. Gerechnet am 2026-11-13: im Fürstentum 9
+  gegen 8, das passt; in der Krone wären es mit einer dritten
+  Pfeil-Verbesserung 10 gegen 8 — dort bekommt entweder die Elitestufe
+  Schaden und Leben statt Reichweite, oder die Burg wächst mit. Entschieden
+  wird das mit der Messung in Stufe F.
 - **AC-43** `offen` **Pavesenschütze nur für Wehrstein** — Schießanlage ab der
   Ritterzeit, nur Haus Wehrstein: ein Schütze hinter einem großen Schild.
   Startwerte: 30 Holz, 45 Gold, 45 Leben, Angriff 4, Reichweite 4, Rüstung

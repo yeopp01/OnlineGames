@@ -279,7 +279,7 @@ test.describe('Kampf', () => {
     await nachweis(anna, {
       spec: BEFEHLE,
       ac: 'AC-25',
-      titel: 'Bogenschütze und Plänkler Annas (blau) halten vier Felder Abstand zu Berts Miliz (rot), während Annas Miliz daneben im Nahkampf steht',
+      titel: 'Kurzbogenschütze und Plänkler Annas (blau) halten vier Felder Abstand zu Berts Miliz (rot), während Annas Miliz daneben im Nahkampf steht',
       test: info,
     });
     await zeitraffer(anna, code, 1);

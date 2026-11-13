@@ -1089,11 +1089,19 @@ export const FIGUREN = {
   // der Bogen nach vorn - daher `oben` und `breite`.
   soldat: { name: 'Soldat', zeichnen: soldat, breite: 1.3, oben: 1.2 },
   speerkaempfer: { name: 'Speerkämpfer', zeichnen: speerkaempfer, breite: 1.1, oben: 1.2 },
-  bogenschuetze: { name: 'Bogenschütze', zeichnen: bogenschuetze, breite: 1.3 },
+  bogenschuetze: { name: 'Kurzbogenschütze', zeichnen: bogenschuetze, breite: 1.3 },
   plaenkler: { name: 'Plänkler', zeichnen: plaenkler, breite: 1.3, oben: 1.05 },
   // Ritterzeit (einheiten AC-33, AC-34). Die Lanze ragt weit nach oben vorn.
   ritter: { name: 'Ritter', zeichnen: ritter, breite: 1.7, oben: 1.35 },
   armbrustschuetze: { name: 'Armbrustschütze', zeichnen: armbrustschuetze, breite: 1.3 },
+  // Die Stufen des Fuerstentums (einheiten AC-58 bis AC-62). Gezeichnet gibt
+  // es sie nicht eigens: ohne gerenderte Bilder (`?bilder=0`) sieht jede aus
+  // wie ihre Vorstufe. Die Pike ragt weiter hinaus als der Speer.
+  bogenschuetze2: { name: 'Bogenschütze', zeichnen: bogenschuetze, breite: 1.3 },
+  langschwertkaempfer: { name: 'Langschwertkämpfer', zeichnen: soldat, breite: 1.3, oben: 1.2 },
+  pikenier: { name: 'Pikenier', zeichnen: speerkaempfer, breite: 1.1, oben: 1.4 },
+  eliteplaenkler: { name: 'Eliteplänkler', zeichnen: plaenkler, breite: 1.3, oben: 1.05 },
+  leichtekavallerie: { name: 'Leichte Kavallerie', zeichnen: spaeherreiter, breite: 1.6, oben: 1.25 },
   // Belagerung (einheiten AC-35): breit statt hoch. `stoesst`: wer rammt,
   // stoesst den Bock vor, statt sich als Ganzes vorzubeugen.
   ramme: { name: 'Ramme', zeichnen: ramme, breite: 1.7, stoesst: true },

@@ -11,15 +11,18 @@
 //
 // Was er sucht: in jeder Datei unter public/ (ausser dem Managerspiel) eine
 // Zeile ausserhalb von Kommentaren, die aus einem Eintrag der Verbesserungen
-// eine Wirkung liest - `wirkung`, `sammeln`, `farm` oder `gebaeude`. Was eine
-// Verbesserung **zeigt** (`name`, `kosten`, `zeichen`, `wandelt` fuer das
-// Bildchen, `vorstufe` fuer das Angebot), bleibt erlaubt.
+// eine Wirkung liest - `wirkung`, `sammeln`, `farm`, `gebaeude` oder
+// `bauwerk` (der Wehrturm, bauen AC-38). Was eine Verbesserung **zeigt**
+// (`name`, `kosten`, `zeichen`, `wandelt` fuer das Bildchen und die Stufe im
+// Angebot, `vorstufe` fuer das Angebot), bleibt erlaubt. Wie ein Gebaeude
+// nach einer Verbesserung heisst (`nennt`), liest der Browser auch nicht aus
+// den Daten: der Name steht in der Tafel `kw` des Besitzers.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readdirSync } from 'node:fs';
 import { quelltext } from './quelltext.mjs';
 
-const WIRKUNG = /verbesserungen\??\.?\[[^\]]+\]\??\.(wirkung|sammeln|farm|gebaeude)\b/;
+const WIRKUNG = /verbesserungen\??\.?\[[^\]]+\]\??\.(wirkung|sammeln|farm|gebaeude|bauwerk|nennt)\b/;
 
 function treffer(inhalt) {
   return inhalt.split('\n')

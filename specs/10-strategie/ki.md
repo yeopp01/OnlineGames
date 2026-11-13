@@ -2,7 +2,7 @@
 
 **Bereich:** Strategie
 **Kuerzel:** ki
-**Stand:** 30/34 fertig · 4 offen
+**Stand:** 30/35 fertig · 5 offen
 
 ## Zweck
 
@@ -385,6 +385,17 @@ nicht die Regeln.
   belegt sind sie nur in der gebauten Lage.
   Angelegt am 2026-11-13 (Benutzer: „Und ki muss auch burgen bauen,
   definitiv"); die Spezialeinheit aus der Burg bleibt AC-28.
+  **Nachgezogen am 2026-11-13 mit den Truppenstufen:** „der Handel geht
+  vor" gilt nur noch bei echter Goldnot. Silberfurt handelt aus Neigung ab
+  dem Fürstentum, und die Sperre griff bei ihm in jeder Partie — vier
+  Karren standen erst um Minute 32 bis 35, und den Stein verkaufte es für
+  Karren: in 16 Partien eine Burg (vor den Truppenstufen zwei, genau die
+  Grenze). Jetzt wartet die Burg nicht, solange Gold in Reichweite liegt,
+  und der Stein für sie wird nicht verkauft (`steinFuerBauwerk`); Werkstatt
+  und Rammen bleiben hinter dem Handel. Gemessen: Silberfurt 6 Burgen in 16
+  Partien, gesamt 51 Burgen bei 51 von 80 KIs, 212 Rammen bei 42. Zwei
+  Fassungen davor verworfen: alles freigeben ließ Startwert 22 ohne Sieger,
+  nur die Burg freigeben ohne den Stein zu halten brachte vier.
 - **AC-34** `fertig` **Mehr Militärgebäude bei Überfluss** — Ab dem
   Fürstentum baut die KI über die Grenze ihres Zeitalters (AC-12, AC-24:
   drei, drei, fünf, sechs) hinaus ein weiteres Militärgebäude, wenn alle
@@ -406,6 +417,29 @@ nicht die Regeln.
   keinen Prüfstand. Angelegt am 2026-11-13 (Benutzer: „man darf dann bei
   fortgeschrittener spielzeit wenns die ressourcen hergeben auch mehrere
   kasernen, schießanlagen, usw. Bauen als ki").
+- **AC-35** `offen` **Die KI forscht** — Bis zu den Truppenstufen
+  (einheiten AC-58 bis AC-62, bauen AC-38, AC-39) erforscht die KI nichts:
+  sie bildet im Fürstentum die Einheiten des Lehens aus und ist jedem
+  Menschen unterlegen, der einmal in die Schmiede geht. Die KI erforscht,
+  was den Einheiten nützt, die sie hält und ausbildet — gelesen aus den
+  Daten der Verbesserung (`wandelt`, `wirkung` auf eine Klasse), **keine
+  Liste von Namen**: zuerst die Stufe der Einheit aus ihrem Schwerpunkt
+  (AC-27), dann Angriff und Rüstung der Schmiede für die Klasse, von der
+  sie am meisten hält, dann die Wirtschaft (Holz, Farm), solange sie dort
+  arbeitet. Sie forscht nicht, wenn ihr dafür der Aufstieg, die Rücklage
+  für Karren oder Rammen (AC-26, AC-23) oder die laufende Ausbildung des
+  ersten Heers fehlte. **Messbar:** in einer gebauten Lage mit Vorrat
+  bestellt sie die Stufe ihrer Schwerpunkt-Einheit vor jeder anderen
+  Verbesserung und keine, deren `vorstufe` fehlt; mit knappem Vorrat keine.
+  Über vierzig Startwerte im Nebel hat jede KI, die das Fürstentum
+  erreicht und danach noch zehn Minuten lebt, mindestens drei
+  Verbesserungen erforscht, darunter eine Truppenstufe; fahrplan AC-11 und
+  AC-24 halten. Und sie ist dadurch stärker: in der Austauschprobe
+  (`npm run pruefstand:vergleich -- --probe`) gewinnt die forschende KI
+  gegen die von vorher über sechzig Startwerte mehr als die Hälfte.
+  Angelegt am 2026-11-13 (Benutzer: direkt nach den Truppenstufen, die
+  vorher auf den Server gehen). Die Grenzen „drei" und „zehn Minuten" sind
+  Startwerte und werden beim Bauen gemessen.
 
 ### Stufe E — Häuser
 
@@ -429,7 +463,15 @@ nicht die Regeln.
   aus der Schießanlage gegen 42, Rappenstein 28 aus dem Stall gegen 4,
   Silberfurt 6,5 Karren gegen 0,1, Distelhag 82 aus der Kaserne gegen 35;
   38 von 40 Partien vor Minute 60, Median 42,9. Belegt in
-  `tests/partien/ki-im-nebel.test.mjs`.
+  `tests/partien/ki-im-nebel.test.mjs`. **Die Grenze ist seit dem
+  2026-11-13 das 1,4-fache statt des Anderthalbfachen** — freigegeben vom
+  Benutzer an diesem Tag („ki AC-27 und AC-30 halten knapp. Wenn sie
+  fallen, sind 1,4 und 1,75 freigegeben."). Gefallen ist sie mit der Burg
+  des Hauses, das früh handelt (ki AC-33): Silberfurt lebt länger und
+  bildet mehr aus der Kaserne aus; Distelhag selbst unverändert 47,6 je
+  Partie gegen jetzt 33,1 der anderen (das 1,44-fache). „Zwei mehr" gilt
+  weiter, und der Stand ohne Neigung fällt auch am 1,4-fachen. ki AC-30
+  hielt und bleibt bei zwei.
 - **AC-28** `offen` **KI bildet Spezialeinheit aus** — In der Ritterzeit
   baut die KI eine Burg und bildet dort die Spezialeinheit ihres Hauses
   aus, als Teil ihres Heeres. Dafür braucht sie 650 Stein — **die KI

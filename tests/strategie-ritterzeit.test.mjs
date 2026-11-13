@@ -135,27 +135,9 @@ test('einheiten AC-33: der Ritter mit den Werten der Vorlage, im Stall erst ab d
   assert.equal(welt.schaden(speer, ritter, false), 16);
 });
 
-test('einheiten AC-34: die Armbrust macht jeden Bogenschuetzen zum Armbrustschuetzen, und die Schiessanlage bildet danach nur noch sie aus', () => {
-  const a = EINHEITEN.armbrustschuetze;
-  assert.deepEqual([a.leben, a.angriff, a.reichweite], [35, 5, 5]);
-  assert.deepEqual(a.kosten, EINHEITEN.bogenschuetze.kosten, 'kostet dasselbe wie der Bogenschuetze');
-  assert.equal(a.stufeVon, 'bogenschuetze');
-  assert.deepEqual(VERBESSERUNGEN.armbrust.kosten, { nahrung: 125, gold: 75 });
-  assert.deepEqual(VERBESSERUNGEN.armbrust.wandelt, { bogenschuetze: 'armbrustschuetze' });
-  // In der Feudalzeit gibt es die Forschung nicht.
-  const feudal = mitGebaeude('schiessanlage', 1);
-  assert.match(feudal.welt.nachricht('a', { auftrag: 'ausbilden', gebaeude: feudal.gebaeude.id, einheit: 'armbrust' }).fehler, /ab dem Fürstentum/);
-  // In der Ritterzeit: zwei Bogenschuetzen, dann die Forschung.
-  const { welt, anna, gebaeude } = mitGebaeude('schiessanlage', 2);
-  const boegen = [0, 1].map((i) => welt.einheitAnlegen('a', anna.basis.x + 2 + i, anna.basis.y + 2, 'bogenschuetze'));
-  assert.deepEqual(welt.nachricht('a', { auftrag: 'ausbilden', gebaeude: gebaeude.id, einheit: 'armbrust' }), {});
-  sekunden(welt, VERBESSERUNGEN.armbrust.zeit);
-  assert.equal(zaehlenArt(welt, 'bogenschuetze'), 0, 'kein Bogenschuetze mehr');
-  assert.deepEqual(boegen.map((b) => welt.einheiten.get(b.id).art), ['armbrustschuetze', 'armbrustschuetze'], 'dieselben Einheiten');
-  // Der Browser schickt weiter "bogenschuetze", der Server bildet die Armbrust aus.
-  assert.deepEqual(welt.nachricht('a', { auftrag: 'ausbilden', gebaeude: gebaeude.id, einheit: 'bogenschuetze' }), {});
-  assert.deepEqual(gebaeude.schlange, ['armbrustschuetze']);
-});
+// einheiten AC-34 steht seit den zwei Schuetzenlinien in
+// tests/strategie-truppenstufen.test.mjs: der Armbrustschuetze ist eine eigene
+// Einheit, keine Stufe des Bogenschuetzen mehr.
 
 // ---- Verbesserungen der Ritterzeit (bauen AC-34) -----------------------------
 

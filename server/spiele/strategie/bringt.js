@@ -51,9 +51,20 @@ function zuschlaege(w) {
  * Die Zeilen zu einer Verbesserung. Wer Einheiten austauscht (`wandelt`),
  * bekommt hier nichts dazu - die Namen und Werte der neuen Einheit kennt der
  * Browser aus seiner Tafel.
+ *
+ * `bauwerkNamen`: wie ein Gebaeude im Satz heisst ("Der Wachturm") - fuer
+ * eine Verbesserung, die eine einzelne Gebaeudeart staerkt (bauen AC-38).
+ * @param {import('./daten.js').Verbesserung} verbesserung
+ * @param {Record<string, string>} [bauwerkNamen]
  */
-function bringt(verbesserung) {
+function bringt(verbesserung, bauwerkNamen = {}) {
   const zeilen = [];
+  for (const [art, w] of Object.entries(verbesserung.bauwerk || {})) {
+    const wer = bauwerkNamen[art] || art;
+    const neu = verbesserung.nennt?.[art];
+    const text = zuschlaege(w);
+    if (text) zeilen.push(`${wer}${neu ? ` wird ${neu}` : ''}: ${text} – auch jeder, der schon steht`);
+  }
   // Gleiche Zuschlaege fuer mehrere Klassen in einer Zeile: "Infanterie und
   // Kavallerie: +1 Angriff".
   const gruppen = new Map();

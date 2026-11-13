@@ -2,7 +2,7 @@
 
 **Bereich:** Strategie
 **Kuerzel:** fahrplan
-**Stand:** 18/24 fertig · 2 in QA · 4 offen
+**Stand:** 19/25 fertig · 2 in QA · 4 offen
 
 ## Zweck
 
@@ -215,6 +215,22 @@ Zustandsnachricht umbaut und damit jeden Browsertest berührt: was dort heute
   Browser auf neun Startwerten jedes Mal Team 2, nach 28,6 bis 33,9
   Minuten. Mit der KI von vor ki AC-25 endet dieselbe Partie nicht vor
   Minute 90.
+- **AC-25** `fertig` **Konterkreis der Truppenstufen** — Im Gefechtsstand bei
+  gleichen Kosten (Budget 1200), je zwanzig Startwerte, in beiden Richtungen
+  (wie AC-9, AC-23): Pikenier gegen Ritter und gegen leichte Kavallerie,
+  Eliteplänkler gegen Bogenschütze und gegen Armbrustschütze, Bogenschütze
+  gegen Pikenier gewinnen in mindestens 80 %, umgekehrt höchstens 20 %. Und,
+  vom Benutzer verlangt (2026-11-13): **Reiter schlagen beide
+  Schützenlinien** — Ritter und leichte Kavallerie gegen Bogenschütze und
+  gegen Armbrustschütze. Gemessen: jede der neun Paarungen 20 von 20,
+  umgekehrt 0 von 20. Dazu die Rolle der Armbrust: gegen Bogenschützen
+  gleicher Kosten gewinnt sie ohne Rüstungen in höchstens der Hälfte der
+  Gefechte (gemessen 6 von 20), mit beiden Schützenrüstungen auf beiden
+  Seiten (bauen AC-39) in mindestens 80 % (gemessen 20 von 20) — sie ist die
+  Antwort auf Rüstung, nicht der bessere Bogen. Nicht Teil des Kreises und
+  nur gemessen: der Langschwertkämpfer schlägt bei gleichen Kosten Pikenier,
+  Eliteplänkler, leichte Kavallerie und beide Schützen und liegt mit dem
+  Ritter gleichauf; ihn schlägt der Mangonel.
 
 **Bauabfolge Stufe D.** Jeder Schritt endet mit etwas im Browser Sichtbarem.
 
@@ -242,6 +258,8 @@ mir":
 | D12 | Bündnis lösen, öffentlich und mit Frist; im Bild mit Knopf und Uhr — **fertig** (Runden 154, 155) | spielziel AC-21, AC-24 |
 | D13 | Zeitgrenze und Spielgeschwindigkeit als Einstellung — **fertig** (Runde 159) | spielziel AC-22, AC-23 |
 | D14 | Der Marktkarren und sein Handel; die KI handelt — der Karren steht (Runde 160), er handelt (Runde 161), die KI handelt (Runde 162); die sichtbare Ladung wartet auf die neuen Figuren | einheiten AC-39, AC-40, AC-41, ki AC-26 |
+| D15 | Truppenstufen (Benutzer, 2026-11-13): zwei Schützenlinien, die Stufen der Ritterzeit für jede Einheit des Lehens, Wehrturm, Rüstungen der Schmiede; der Konterkreis damit gemessen | einheiten AC-34, AC-58 bis AC-62, bauen AC-38, AC-39, fahrplan AC-25 |
+| D16 | Die KI forscht (Benutzer, 2026-11-13: direkt nach den Truppenstufen): Stufen, Schmiede, Wirtschaft, gelesen aus den Daten | ki AC-35 |
 
 **Was ADR-0013 ablöst.** spielziel AC-5 (der Satz über die 90
 Spielminuten, mit D13) und spielauswahl AC-20 (die Begründung des Namens
@@ -335,7 +353,7 @@ Figuren, nicht auf die Regeln.
 | E3 | Die Boni, die eine neue Lesestelle brauchen (Ausbildungszeit, Marktgebühr, Ertrag des Karrens, Reichweite nur für Turm und Burg); jeder Bonus gemessen; der Mannschaftsbonus endet mit dem Bündnis | spielziel AC-16, AC-25, AC-26 |
 | E4 | Voller Wohnraum fällt auf (Lücke aus der Rückschau zur Stufe D) | bedienung AC-43 |
 | E5 | Die KI neigt zu ihrem Haus | ki AC-27, AC-30 |
-| E6 | Häuser schalten Einheiten frei: Langbogenschütze, Pavesenschütze, Söldner — wartet auf die Figuren | einheiten AC-42 bis AC-44 |
+| E6 | Häuser schalten Einheiten frei: Eibenschütze (im ersten Entwurf Langbogenschütze), Pavesenschütze, Söldner — wartet auf die Figuren | einheiten AC-42 bis AC-44 |
 | E7 | Spezialeinheiten aus vorhandenen Fähigkeiten: Kriegswölfe, Reiterschütze, Riese — wartet auf die Figuren | einheiten AC-45 bis AC-47 |
 | E8 | Der Meuchler mit Tarnung, der Wiedergänger aus Gefallenen — wartet auf die Figuren | einheiten AC-48, AC-49, kampf AC-22 |
 | E9 | Wappen, Zeitalter am Dorf, Spuren eines Gefechts — wartet auf die Figuren | bedienung AC-42, AC-44, AC-46 |

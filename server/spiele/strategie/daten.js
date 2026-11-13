@@ -34,7 +34,7 @@
  * @property {boolean} [wacht] fehlt es, wacht jede Einheit mit einem Angriff
  * @property {string[]} [baut]
  * @property {number} [zeitalter] fehlt es, gilt die Dunkle Zeit (0)
- * @property {string} [stufeVon]
+ * @property {string} [stufeVon] die Stufe davor - ausgebildet wird immer die erreichte (einheiten AC-24, AC-58)
  * @property {boolean} [nurGebaeude]
  * @property {number} [mindestreichweite]
  * @property {number} [flaeche]
@@ -85,6 +85,7 @@
  * @property {Rohstoffe} [sammeln] Faktor je Rohstoff
  * @property {{nahrung?: number}} [farm]
  * @property {Record<string, number>} [gebaeude]
+ * @property {Record<string, Record<string, number>>} [bauwerk] Zuschlaege je Gebaeudeart (bauen AC-38)
  * @property {Record<string, number>} [handel] nur bei Haeusern
  * @property {Record<string, number>} [ausbildung] nur im Mannschaftsbonus
  */
@@ -98,6 +99,7 @@
  * @property {string} [zeichen] das Bild im Menue
  * @property {string} [vorstufe]
  * @property {Record<string, string>} [wandelt] tauscht eine Einheitenart aus
+ * @property {Record<string, string>} [nennt] wie ein Gebaeude danach heisst (bauen AC-38)
  *
  * @typedef {VerbesserungNurHier & Wirkungen} Verbesserung
  */
@@ -188,18 +190,71 @@ const EINHEITEN = {
     angriff: 6, nahruestung: 0, fernruestung: 1, reichweite: 0, nachladen: 2,
     klassen: ['infanterie'], zeitalter: 1, stufeVon: 'miliz',
   },
-  // Die Einheiten der Ritterzeit (einheiten AC-33, AC-34), Werte aus der
-  // Vorlage. Der Ritter ist eine neue Einheit im Stall; der Armbrustschuetze
-  // ist die zweite Stufe des Bogenschuetzen, wie der Soldat die der Miliz -
-  // er kostet dasselbe und ersetzt ihn mit der Verbesserung `armbrust`.
+  // Der Ritter (einheiten AC-33), Werte aus der Vorlage: eine neue Einheit im
+  // Stall.
   ritter: {
     leben: 100, tempo: 1.35, sicht: 4, tragkraft: 0, kosten: { nahrung: 60, gold: 75 }, zeit: 30, kuerzel: 'r',
     angriff: 10, nahruestung: 2, fernruestung: 2, reichweite: 0, nachladen: 1.8, klassen: ['kavallerie'], zeitalter: 2,
   },
-  armbrustschuetze: {
-    leben: 35, tempo: 0.96, sicht: 7, tragkraft: 0, kosten: { holz: 30, gold: 45 }, zeit: 27, kuerzel: 'a',
+  // **Zwei Schuetzenlinien nebeneinander** (einheiten AC-34, AC-58; Benutzer,
+  // 2026-11-13) - eine Abweichung vom Original, in dem der Bogenschuetze zum
+  // Armbrustschuetzen wird (docs/strategie/vorlage-aoe2.md).
+  //
+  // Die Bogenlinie: der `bogenschuetze` des Lehens heisst am Bildschirm
+  // Kurzbogenschuetze; im Fuerstentum macht die Verbesserung `bogenstufe`
+  // daraus den Bogenschuetzen - diese Einheit hier, mit den Werten, die bis
+  // dahin der Armbrustschuetze trug. Der Langbogenschuetze der Krone kommt
+  // mit Stufe F. Der Bezeichner des Lehens bleibt, weil Tests, Bilder und
+  // Nachweise an ihm haengen; deshalb traegt die zweite Stufe die Zwei.
+  bogenschuetze2: {
+    leben: 35, tempo: 0.96, sicht: 7, tragkraft: 0, kosten: { holz: 30, gold: 45 }, zeit: 27, kuerzel: 'j',
     angriff: 5, nahruestung: 0, fernruestung: 0, reichweite: 5, nachladen: 2,
     klassen: ['bogenschuetze'], bonus: { speer: 3 }, zeitalter: 2, stufeVon: 'bogenschuetze',
+  },
+  // Die Armbrustlinie: eine eigene Einheit der Schiessanlage ab dem
+  // Fuerstentum, langsam und mit schwerem Bolzen. Alle Werte sind Startwerte
+  // des Benutzers: 9 Angriff alle 3,5 Sekunden, Reichweite 5, 35 Holz und 55
+  // Gold; Leben, Tempo, Sicht und Ausbildungszeit wie der Bogenschuetze
+  // daneben. Der Unterschied kommt ohne Sonderregel aus `Angriff - Ruestung`:
+  // gegen 2 Fernruestung macht der Bolzen 7 in 3,5 s (2,0 je Sekunde), der
+  // Pfeil 3 in 2 s (1,5); gegen Ungeruestete liegen beide gleich (2,6 und
+  // 2,5), und der Bogen ist billiger. Keinen Bonus gegen Speer - den hat die
+  // Bogenlinie. Die schwere Armbrust der Krone kommt mit Stufe F.
+  armbrustschuetze: {
+    leben: 35, tempo: 0.96, sicht: 7, tragkraft: 0, kosten: { holz: 35, gold: 55 }, zeit: 27, kuerzel: 'a',
+    angriff: 9, nahruestung: 0, fernruestung: 0, reichweite: 5, nachladen: 3.5,
+    klassen: ['bogenschuetze'], zeitalter: 2,
+  },
+  // Die zweiten und dritten Stufen des Fuerstentums (einheiten AC-59 bis
+  // AC-62): jede ersetzt ihre Vorstufe durch eine Verbesserung, wie der
+  // Soldat die Miliz, und kostet dasselbe wie sie. Leben, Angriff, Ruestung,
+  // Reichweite und Bonus aus den offenen Technikbaum-Daten zum Original
+  // (SiegeEngineers/aoe2techtree, gelesen 2026-11-13); das Tempo bleibt das
+  // der Vorstufe hier. Nicht uebernommen: die Zuschlaege des Originals gegen
+  // Gebaeude, Moenche und Sonderklassen, die es hier nicht gibt.
+  langschwertkaempfer: {
+    leben: 60, tempo: 0.9, sicht: 4, tragkraft: 0, kosten: { nahrung: 60, gold: 20 }, zeit: 21, kuerzel: 'l',
+    angriff: 9, nahruestung: 1, fernruestung: 1, reichweite: 0, nachladen: 2,
+    klassen: ['infanterie'], zeitalter: 2, stufeVon: 'soldat',
+  },
+  pikenier: {
+    leben: 55, tempo: 1.0, sicht: 4, tragkraft: 0, kosten: { nahrung: 35, holz: 25 }, zeit: 22, kuerzel: 'i',
+    angriff: 4, nahruestung: 0, fernruestung: 0, reichweite: 0, nachladen: 3,
+    klassen: ['infanterie', 'speer'], bonus: { kavallerie: 22 }, zeitalter: 2, stufeVon: 'speerkaempfer',
+  },
+  eliteplaenkler: {
+    leben: 35, tempo: 0.96, sicht: 7, tragkraft: 0, kosten: { nahrung: 25, holz: 35 }, zeit: 22, kuerzel: 'e',
+    angriff: 3, nahruestung: 0, fernruestung: 4, reichweite: 5, nachladen: 3,
+    klassen: ['bogenschuetze'], bonus: { bogenschuetze: 4 }, zeitalter: 2, stufeVon: 'plaenkler',
+  },
+  // Tempo 1,55 und nicht die 1,5 des Originals: so schnell laeuft der
+  // Spaeherreiter hier schon ab dem Lehen (einheiten AC-57), und eine
+  // Verbesserung, die ihn bremst, verstuende niemand. Die Wirkung des Lehens
+  // gilt der Art `spaeherreiter` und kommt hier nicht dazu.
+  leichtekavallerie: {
+    leben: 60, tempo: 1.55, sicht: 4, tragkraft: 0, kosten: { nahrung: 80 }, zeit: 30, kuerzel: 'v',
+    angriff: 7, nahruestung: 0, fernruestung: 2, reichweite: 0, nachladen: 2,
+    klassen: ['kavallerie'], zeitalter: 2, stufeVon: 'spaeherreiter',
   },
   // Die Ramme (einheiten AC-35), Werte aus der Vorlage. `nurGebaeude`: sie
   // greift nur Gebaeude an - ein Befehl auf eine Einheit ist ein Gang dorthin,
@@ -320,26 +375,35 @@ const GEBAEUDE = {
     groesse: 3, kosten: { holz: 60 }, bauzeit: 15, leben: 480, wohnraum: 0, annahme: [], bildetAus: [],
     begehbar: true, nahrung: 175, rate: 0.32, bestand: false,
   },
-  kaserne: { groesse: 3, kosten: { holz: 175 }, bauzeit: 50, leben: 1200, wohnraum: 0, annahme: [], bildetAus: ['miliz', 'speerkaempfer', 'soldatenstufe'] },
+  kaserne: {
+    groesse: 3, kosten: { holz: 175 }, bauzeit: 50, leben: 1200, wohnraum: 0, annahme: [],
+    bildetAus: ['miliz', 'speerkaempfer', 'soldatenstufe', 'langschwertstufe', 'pikenierstufe'],
+  },
   // Gebaeude der Feudalzeit (bauen AC-24): `zeitalter: 1` sperrt sie, bis die
   // Feudalzeit erreicht ist. Die Schmiede bildet keine Einheiten aus - sie
   // forscht (bauen AC-25).
   schiessanlage: {
     groesse: 3, kosten: { holz: 175 }, bauzeit: 50, leben: 1000, wohnraum: 0, annahme: [],
-    bildetAus: ['bogenschuetze', 'plaenkler', 'armbrust'], zeitalter: 1,
+    bildetAus: ['bogenschuetze', 'plaenkler', 'armbrustschuetze', 'bogenstufe', 'eliteplaenklerstufe'], zeitalter: 1,
   },
   stall: {
-    groesse: 3, kosten: { holz: 175 }, bauzeit: 50, leben: 1000, wohnraum: 0, annahme: [], bildetAus: ['spaeherreiter', 'ritter'], zeitalter: 1,
+    groesse: 3, kosten: { holz: 175 }, bauzeit: 50, leben: 1000, wohnraum: 0, annahme: [],
+    bildetAus: ['spaeherreiter', 'ritter', 'kavalleriestufe'], zeitalter: 1,
   },
+  // Angriff und Ruestung je Waffengattung (bauen AC-25, AC-34, AC-39): von
+  // jeder Verbesserung steht nur die naechste Stufe im Menue, hoechstens
+  // fuenf Knoepfe zugleich.
   schmiede: {
     groesse: 3, kosten: { holz: 150 }, bauzeit: 40, leben: 1200, wohnraum: 0, annahme: [],
-    bildetAus: ['schmiedeangriff', 'befiedertePfeile', 'eisenguss', 'bodkinpfeil'], zeitalter: 1,
+    bildetAus: ['schmiedeangriff', 'befiedertePfeile', 'eisenguss', 'bodkinpfeil',
+      'schuppenpanzer', 'kettenpanzer', 'schuppenharnisch', 'kettenharnisch', 'polsterruestung', 'lederruestung'],
+    zeitalter: 1,
   },
   // Gebaeude der Ritterzeit (bauen AC-28), Werte aus der Vorlage. Was sie
   // ausbilden und erforschen, kommt mit ihren Schritten: der Moench (D8),
   // Ramme und Mangonel (D6). Die Universitaet forscht Mauerwerk (bauen AC-34).
   kloster: { groesse: 3, kosten: { holz: 175 }, bauzeit: 40, leben: 2100, wohnraum: 0, annahme: [], bildetAus: ['moench'], zeitalter: 2 },
-  universitaet: { groesse: 3, kosten: { holz: 200 }, bauzeit: 60, leben: 2100, wohnraum: 0, annahme: [], bildetAus: ['mauerwerk'], zeitalter: 2 },
+  universitaet: { groesse: 3, kosten: { holz: 200 }, bauzeit: 60, leben: 2100, wohnraum: 0, annahme: [], bildetAus: ['mauerwerk', 'wehrturm'], zeitalter: 2 },
   belagerungswerkstatt: { groesse: 3, kosten: { holz: 200 }, bauzeit: 40, leben: 2100, wohnraum: 0, annahme: [], bildetAus: ['ramme', 'mangonel'], zeitalter: 2 },
   // Ein Gebaeude, das schiesst (bauen AC-29): `angriff`, `reichweite` und
   // `nachladen` wie bei einer Einheit, Pfeile also Fernkampf. Werte aus der
@@ -479,11 +543,32 @@ const VERBESSERUNGEN = {
     name: 'Soldat', kosten: { nahrung: 100, gold: 40 }, zeit: 40, zeitalter: 1,
     wirkung: {}, wandelt: { miliz: 'soldat' },
   },
-  // Die Armbrust (einheiten AC-34): jeder Bogenschuetze wird Armbrustschuetze,
-  // wie Soldat die Miliz. Kosten aus dem Original, die Dauer ebenso.
-  armbrust: {
-    name: 'Armbrust', kosten: { nahrung: 125, gold: 75 }, zeit: 35, zeitalter: 2,
-    wirkung: {}, wandelt: { bogenschuetze: 'armbrustschuetze' },
+  // Die Stufen des Fuerstentums (einheiten AC-58 bis AC-62), jede wie die
+  // Soldatenstufe: sie tauscht die Einheit aus, auch die stehenden und die in
+  // den Schlangen. Kosten und Dauer aus den offenen Technikbaum-Daten zum
+  // Original (SiegeEngineers/aoe2techtree, gelesen 2026-11-13). Die
+  // Bogenstufe traegt, was bis 2026-11-13 die Verbesserung `armbrust`
+  // kostete - die gibt es nicht mehr, der Armbrustschuetze ist eine eigene
+  // Einheit (einheiten AC-34).
+  bogenstufe: {
+    name: 'Bogenschütze', kosten: { nahrung: 125, gold: 75 }, zeit: 35, zeitalter: 2,
+    wirkung: {}, wandelt: { bogenschuetze: 'bogenschuetze2' },
+  },
+  langschwertstufe: {
+    name: 'Langschwertkämpfer', kosten: { nahrung: 150, gold: 65 }, zeit: 40, zeitalter: 2,
+    vorstufe: 'soldatenstufe', wirkung: {}, wandelt: { soldat: 'langschwertkaempfer' },
+  },
+  pikenierstufe: {
+    name: 'Pikenier', kosten: { nahrung: 160, gold: 90 }, zeit: 35, zeitalter: 2,
+    wirkung: {}, wandelt: { speerkaempfer: 'pikenier' },
+  },
+  eliteplaenklerstufe: {
+    name: 'Eliteplänkler', kosten: { holz: 230, gold: 130 }, zeit: 50, zeitalter: 2,
+    wirkung: {}, wandelt: { plaenkler: 'eliteplaenkler' },
+  },
+  kavalleriestufe: {
+    name: 'Leichte Kavallerie', kosten: { nahrung: 150, gold: 50 }, zeit: 45, zeitalter: 2,
+    wirkung: {}, wandelt: { spaeherreiter: 'leichtekavallerie' },
   },
   // Die Verbesserungen der Feudalzeit (bauen AC-25, AC-26). Kosten und Wirkung
   // stehen in der Vorlage; die Vorlage nennt keine Forschungsdauer, deshalb
@@ -552,6 +637,52 @@ const VERBESSERUNGEN = {
     name: 'Stadtpatrouille', kosten: { nahrung: 300, gold: 100 }, zeit: 50, zeitalter: 2,
     vorstufe: 'stadtwache', zeichen: 'horn',
     wirkung: {}, gebaeude: { sicht: 4 },
+  },
+  // Der Wehrturm (bauen AC-38): die Universitaet macht aus jedem Wachturm
+  // einen - auch aus denen, die schon stehen. `bauwerk` gibt Zuschlaege je
+  // Gebaeudeart, gelesen in `welt.gebaeudewert()`; `nennt` sagt, wie der Turm
+  // danach heisst. Werte aus den Technikbaum-Daten zum Original: +480 Leben,
+  // +2 Angriff, +1/+1 Ruestung, 100 Nahrung und 250 Holz, 30 Sekunden. Das
+  // Bild bleibt das des Wachturms.
+  wehrturm: {
+    name: 'Wehrturm', kosten: { nahrung: 100, holz: 250 }, zeit: 30, zeitalter: 2,
+    zeichen: 'zinne',
+    wirkung: {}, bauwerk: { wachturm: { leben: 480, angriff: 2, nahruestung: 1, fernruestung: 1 } },
+    nennt: { wachturm: 'Wehrturm' },
+  },
+  // Die Ruestungen der Schmiede (bauen AC-39), je Waffengattung zwei Stufen:
+  // die erste ab dem Lehen, die zweite ab dem Fuerstentum und nur nach der
+  // ersten. Jede gibt +1 / +1. Kosten und Dauer aus den Technikbaum-Daten zum
+  // Original. Die dritten Stufen kommen mit der Krone (Stufe F).
+  schuppenpanzer: {
+    name: 'Schuppenpanzer', kosten: { nahrung: 100 }, zeit: 40, zeitalter: 1,
+    zeichen: 'schuppen',
+    wirkung: { infanterie: { nahruestung: 1, fernruestung: 1 } },
+  },
+  kettenpanzer: {
+    name: 'Kettenpanzer', kosten: { nahrung: 200, gold: 100 }, zeit: 55, zeitalter: 2,
+    vorstufe: 'schuppenpanzer', zeichen: 'kette',
+    wirkung: { infanterie: { nahruestung: 1, fernruestung: 1 } },
+  },
+  schuppenharnisch: {
+    name: 'Schuppenrossharnisch', kosten: { nahrung: 150 }, zeit: 45, zeitalter: 1,
+    zeichen: 'rossschuppen',
+    wirkung: { kavallerie: { nahruestung: 1, fernruestung: 1 } },
+  },
+  kettenharnisch: {
+    name: 'Kettenrossharnisch', kosten: { nahrung: 250, gold: 150 }, zeit: 60, zeitalter: 2,
+    vorstufe: 'schuppenharnisch', zeichen: 'rosskette',
+    wirkung: { kavallerie: { nahruestung: 1, fernruestung: 1 } },
+  },
+  polsterruestung: {
+    name: 'Gepolsterte Schützenrüstung', kosten: { nahrung: 100 }, zeit: 40, zeitalter: 1,
+    zeichen: 'polster',
+    wirkung: { bogenschuetze: { nahruestung: 1, fernruestung: 1 } },
+  },
+  lederruestung: {
+    name: 'Lederne Schützenrüstung', kosten: { nahrung: 150, gold: 150 }, zeit: 55, zeitalter: 2,
+    vorstufe: 'polsterruestung', zeichen: 'leder',
+    wirkung: { bogenschuetze: { nahruestung: 1, fernruestung: 1 } },
   },
 };
 

@@ -342,7 +342,7 @@ test.describe('Feudalzeit am Stueck', () => {
     // Die Leiste nennt jede der vier Arten mit Bild und Anzahl: das belegt die
     // Unterschrift, nicht das Auge auf dem Spielfeld.
     await expect(anna.locator('.auswahlleiste .gruppe-eintrag')).toHaveCount(bestellt.size);
-    for (const name of ['Speerkämpfer', 'Bogenschütze', 'Plänkler', 'Späherreiter']) {
+    for (const name of ['Speerkämpfer', 'Kurzbogenschütze', 'Plänkler', 'Späherreiter']) {
       await expect(anna.locator(`.gruppe-eintrag[title$="${name}"]`), name).toHaveCount(1);
     }
     await expect(anna.locator('#zeitalter')).toContainText('Lehen');

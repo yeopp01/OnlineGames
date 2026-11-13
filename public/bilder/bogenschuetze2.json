@@ -1,0 +1,57 @@
+{
+  "bild": "bogenschuetze2.webp",
+  "maske": "bogenschuetze2-maske.webp",
+  "zelle": [
+    171,
+    137
+  ],
+  "fuss": [
+    65,
+    105
+  ],
+  "feldbreite": 132,
+  "zeilen": 8,
+  "spalten": 9,
+  "art": "figur",
+  "richtungen": 8,
+  "hoehe": 86,
+  "ablaeufe": {
+    "stehen": {
+      "spalte": 0,
+      "bilder": 1
+    },
+    "gehen": {
+      "spalte": 1,
+      "bilder": 8
+    },
+    "angreifen": {
+      "spalte": 0,
+      "bilder": 8,
+      "bild": "bogenschuetze2-angreifen.webp",
+      "maske": "bogenschuetze2-angreifen-maske.webp",
+      "zelle": [
+        195,
+        160
+      ],
+      "fuss": [
+        53,
+        134
+      ]
+    },
+    "sterben": {
+      "spalte": 0,
+      "bilder": 8,
+      "einmal": true,
+      "bild": "bogenschuetze2-sterben.webp",
+      "maske": "bogenschuetze2-sterben-maske.webp",
+      "zelle": [
+        228,
+        159
+      ],
+      "fuss": [
+        94,
+        107
+      ]
+    }
+  }
+}

@@ -140,7 +140,7 @@ test('darstellung AC-9 / fahrplan AC-7: die Schautafel zeigt jede Einheit und je
     await nachweis(page, {
       spec,
       ac,
-      titel: 'Die Schautafel: Dorfbewohner, Miliz, Soldat, Späherreiter, Speerkämpfer, Bogenschütze, Plänkler, Ritter, Armbrust, Schaf, Gelände und alle Gebäude in Blau und Rot, mit Namen',
+      titel: 'Die Schautafel: Dorfbewohner, Miliz, Soldat, Späherreiter, Speerkämpfer, Kurzbogenschütze, Plänkler, Ritter, Armbrust, die Stufen des Fürstentums, Schaf, Gelände und alle Gebäude in Blau und Rot, mit Namen',
       test: info,
       // Die ganze Seite: seit die Reihen umbrechen (Runde 123), reicht das
       // Fenster nicht mehr bis zu den Gebaeuden, die die Unterschrift nennt.
@@ -321,7 +321,7 @@ test.describe('Militaer bei Spielgroesse', () => {
     await nachweis(anna, {
       spec: BEDIENUNG,
       ac: 'AC-36',
-      titel: 'Zoom 1, von links nach rechts: Dorfbewohner, Miliz, Soldat, Speerkämpfer, Bogenschütze, Plänkler - in der Größe, in der gespielt wird',
+      titel: 'Zoom 1, von links nach rechts: Dorfbewohner, Miliz, Soldat, Speerkämpfer, Kurzbogenschütze, Plänkler - in der Größe, in der gespielt wird',
       test: info,
     });
   });

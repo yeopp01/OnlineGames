@@ -29,7 +29,7 @@ function schluesselDerTabelle(text, name) {
   assert.ok(anfang >= 0, `${name} nicht gefunden`);
   const ende = text.indexOf('\n};', anfang);
   const rumpf = text.slice(anfang, ende);
-  return new Set([...rumpf.matchAll(/^ {2}([a-z]+):/gm)].map((m) => m[1]));
+  return new Set([...rumpf.matchAll(/^ {2}([a-z][a-z0-9]*):/gm)].map((m) => m[1]));
 }
 
 test('waechter: jedes Gebaeude und jede Einheit hat einen Namen fuer die Absagen', () => {
