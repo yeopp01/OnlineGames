@@ -2,7 +2,7 @@
 
 **Bereich:** Strategie
 **Kuerzel:** ki
-**Stand:** 27/32 fertig · 5 offen
+**Stand:** 29/33 fertig · 4 offen
 
 ## Zweck
 
@@ -237,10 +237,40 @@ nicht die Regeln.
   ist: im Stall den Ritter, in der Kaserne den Speerkämpfer. KI gegen KI
   endet weiter (fahrplan AC-11). Geteilt in Runde 137: der Aufstieg allein
   kostete und brachte nichts, Startwert 11 dauerte 71 Minuten.
-- **AC-23** `offen` **Rammen gegen Befestigung** — Die KI baut in der
+- **AC-23** `fertig` **Rammen gegen Befestigung** — Die KI baut in der
   Ritterzeit eine Belagerungswerkstatt; steht beim Gegner ein Turm oder eine
   Burg, nimmt ihr Angriff Rammen mit. KI gegen KI endet weiter (fahrplan
-  AC-11).
+  AC-11). **Gebaut am 2026-11-13**, zusammen mit AC-33 — ohne Rammen
+  verheizte die KI unter einer Burg vierzig bis 63 kleine Wellen und hatte
+  nie Gold für eine Ramme (Startwert 4). Werkstatt und Ramme liest sie aus
+  den Daten (das Gebäude, das ausbildet, was `nurGebaeude` trägt). Nach dem
+  ersten Aufbruch baut sie die Werkstatt und hält **drei Rammen**; eine
+  Ramme ist keine Kampfeinheit, sie zählt nicht zum Heer und steht nicht
+  Wache. Hat der nächste Gegner ein Gebäude, das schießt, und sie hat es
+  gesehen: sie bricht mit **zehn statt acht** auf, **nicht ohne drei Rammen**
+  (höchstens 240 Sekunden gewartet), und solange das Heer darauf wartet,
+  ruht die Ausbildung — was die Werkstatt oder die nächste Ramme kostet,
+  liegt zurück. Die Rammen gehen voraus zu einem Sammelplatz 16 Felder vor
+  dem Marschziel, das Heer folgt, wenn es sie einholt; hinein gehen sie
+  erst mit dem Heer, zuerst auf das, was schießt, und ohne Heer draußen
+  kehren sie heim. Fehlt das Gold in Reichweite, geht der Handel vor (vier
+  Karren, AC-26). **Messbar:** in gebauten Lagen jede dieser Regeln mit
+  Gegenprobe (`tests/strategie-ki-belagerung.test.mjs`); über vierzig
+  Startwerte im Nebel hält mindestens jede dritte KI Rammen, keine vor
+  ihrem ersten Aufbruch, und fahrplan AC-11, AC-24 und ki AC-27 halten.
+  **Gemessen:** 155 Rammen bei 39 von 80 KIs; 40 von 40 mit Sieger, 38 vor
+  Minute 60, Median 41,4, längste 71,5 (ohne Burgen und Rammen: 37 / 42,2 /
+  75,7); zu viert alle zwanzig vor Minute 90, Median 50,9 (ohne: 44,8).
+  Zu zweit brachten acht Wellen eine Burg von 4800 auf 278 Leben, ohne dass
+  sie fiel; mit vier oder fünf Rammen blieben ein bis zwei Partien ohne
+  Sieger, weil das Gold für das Heer fehlte. Nur Gold und Holz
+  zurückzulegen, statt die Ausbildung ruhen zu lassen, lenkte jedes Haus zur
+  goldfreien Kaserne — AC-27 fiel (Distelhag 1,15- bis 1,45-fach).
+  **Knapp:** Distelhag bildet 52,4 aus der Kaserne aus gegen 32,5 der
+  anderen (1,61-fach, verlangt 1,5); über die Startwerte 41 bis 80 sind es
+  44,7 gegen 38,6. **Lücke:** zwei Burgen und Türme nebeneinander knackt
+  die KI nicht — jede nimmt einer Ramme zwei Leben je Sekunde, und eine
+  Belagerung aus der Ferne kommt erst in der Krone.
 - **AC-24** `fertig` **Das Dorf wächst weiter** — Nach jedem Aufstieg bildet
   das Dorfzentrum weiter Dorfbewohner aus: bis 32 in der Feudalzeit, 42 in
   der Ritterzeit, 50 in der Imperialzeit (`DORFBEWOHNER_JE_ZEITALTER` in
@@ -290,6 +320,38 @@ nicht die Regeln.
   1 bis 10: mit Handel 720, 562, 270, 10, 125, 93, 350, 706 und 0 Gold in
   14 Minuten (bei 4 und 10 wird die KI überrannt), ohne Handel 0 bis 30.
 
+- **AC-33** `fertig` **Die KI baut Burgen** — Im Fürstentum baut die KI
+  eine Burg, sobald ihr erstes Heer aufgebrochen ist: sechs Felder vor ihrem
+  Dorfzentrum zum nächsten Gegner hin, mit drei Bauern, und vier Sammler
+  gehen dafür vom Holz an den Stein und zurück, wenn sie steht. In der
+  Krone darf sie eine zweite und dritte bauen, die zweite frühestens zehn,
+  die dritte zwanzig Spielminuten, nachdem die erste steht
+  (`BURGEN_JE_ZEITALTER = [0, 0, 1, 3]`, `BURG_ABSTAND_SEKUNDEN`), links
+  und rechts der ersten. Fällt eine, baut
+  sie sie wieder. Fehlt das Gold in Reichweite, wartet die Burg, bis vier
+  Karren fahren — sonst nahm sie den Stein, den die KI für den ersten
+  Karren verkauft (AC-26). Kein Haus ist ausgenommen; Wehrsteins Türme
+  (AC-30) kommen zuerst. **Messbar:** in gebauten Lagen baut sie die Burg
+  erst nach dem Aufbruch und zum Gegner hin, im Fürstentum keine zweite, in
+  der Krone nach der Frist, und nicht vor dem Handel
+  (`tests/strategie-ki-belagerung.test.mjs`); über vierzig Startwerte im
+  Nebel baut mindestens jede dritte KI eine Burg, jedes Haus mindestens
+  zwei in sechzehn Partien, keine vor ihrem ersten Aufbruch, und fahrplan
+  AC-11 hält. **Gemessen am 2026-11-13:** 44 Burgen bei 43 von 80 KIs
+  (Eschenbruch 11, Rappenstein 11, Distelhag 10, Wehrstein 9, Silberfurt 3
+  — dort geht der Handel vor); wer keine baut, fällt vorher oder bricht nie
+  auf. **Zweite und dritte Burg erst in der Krone** (Benutzer, 2026-11-13:
+  „Im laufe der spielzeit darf ne ki auch ne zweite oder dritte burg
+  baun"): mit bis zu drei schon im Fürstentum blieb über die Startwerte 1
+  bis 40 und über 41 bis 80 je eine Partie ohne Sieger, und zu viert
+  endete Startwert 7 nicht vor Minute 90 (fahrplan AC-24) — siehe Lücke
+  bei AC-23. Auch eine zweite erst zwanzig Minuten nach der ersten ließ
+  Startwert 14 ohne Sieger und zu viert Startwert 5. **Die KI steigt bis heute nicht in die Krone auf** (Stufe
+  F): die zweite und dritte Burg baut sie deshalb in keiner ganzen Partie,
+  belegt sind sie nur in der gebauten Lage.
+  Angelegt am 2026-11-13 (Benutzer: „Und ki muss auch burgen bauen,
+  definitiv"); die Spezialeinheit aus der Burg bleibt AC-28.
+
 ### Stufe E — Häuser
 
 - **AC-27** `fertig` **KI neigt zum Haus** — Die KI spielt das Haus,
@@ -319,7 +381,9 @@ nicht die Regeln.
   sammelt bis heute keinen Stein**; das gehört zu diesem Kriterium. Über
   zwanzig Startwerte hat jede KI, die die Ritterzeit erreicht und zehn
   Minuten darin bleibt, eine Burg und mindestens eine Spezialeinheit
-  ausgebildet. Ohne das misst fahrplan AC-18 nichts.
+  ausgebildet. Ohne das misst fahrplan AC-18 nichts. **Seit AC-33
+  (2026-11-13)** sammelt die KI Stein und baut die Burg; offen bleibt hier
+  die Spezialeinheit daraus.
 - **AC-30** `fertig` **Wehrstein baut Türme** — Die KI, die Wehrstein
   spielt, baut ab der Feudalzeit Wachtürme an ihrem Dorf, mehr als jedes
   andere Haus. Dafür sammelt sie Stein (125 je Turm; vom Start sind 200

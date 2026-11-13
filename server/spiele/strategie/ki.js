@@ -199,6 +199,62 @@ const VERKAUF_RUECKLAGE = { holz: 300, nahrung: 300, stein: 0 };
 // auf den naechsten - er fand keinen Weg zum Ziel.
 const KARREN_WARTEN_SEKUNDEN = 30;
 
+// Die Belagerung (ki AC-23). Was nur Gebaeude angreift (`nurGebaeude`), ist
+// eine Ramme, und das Gebaeude, das sie ausbildet, die Werkstatt - beides aus
+// den Daten gelesen, kein Name.
+const WERKSTATT = Object.keys(GEBAEUDE).find((g) => GEBAEUDE[g].bildetAus.some((e) => EINHEITEN[e]?.nurGebaeude));
+const RAMME = WERKSTATT && GEBAEUDE[WERKSTATT].bildetAus.find((e) => EINHEITEN[e]?.nurGebaeude);
+// So viele Rammen haelt sie, und mit so vielen bricht sie gegen eine
+// Befestigung auf. Drei reissen eine Burg nur knapp ein: sie nimmt jeder zwei
+// Leben je Sekunde, 175 hat sie, und ein Stoss alle fuenf Sekunden nimmt der
+// Burg 127 von 4800. Zu zweit brachten acht Wellen eine Burg von 4800 auf
+// 278, ohne dass sie fiel (Startwert 11, gemessen); mit vier und fuenf
+// blieben ueber vierzig Startwerte ein bis zwei Partien ohne Sieger - das
+// Gold reicht dann nicht mehr fuer das Heer.
+const RAMMEN = 3;
+const RAMMEN_MIT = 3;
+// Gegen einen Gegner mit einer Befestigung, die schiesst, bricht ein
+// groesseres Heer auf - und nie zu zweit hinterher. Mit zwoelf statt zehn
+// endeten gleich viele Partien vor Minute 60, aber alle Haeuser bildeten
+// aehnlicher aus (ki AC-27: das Haus, das zur Kaserne neigt, 1,52- statt
+// 1,61-fach).
+const HEER_BEFESTIGT = 10;
+// So lange wartet das Heer hoechstens darauf, dass die Rammen weit genug
+// voraus sind.
+const ZUG_WARTEN_SEKUNDEN = 200;
+// Gegen eine Befestigung bricht sie nicht ohne Rammen auf - es sei denn, es
+// kommen so lange keine.
+const RAMME_WARTEN_SEKUNDEN = 240;
+// Die Rammen warten so viele Felder vor dem Marschziel auf das Heer -
+// ausserhalb dessen, was eine Burg am Dorf erreicht. Mit zwoelf blieben von
+// acht Partien drei ueber 75 Minuten.
+const SAMMEL_ABSTAND = 16;
+// Sie gehen hinein, sobald einer vom Heer hoechstens so viele Felder weiter
+// von ihrem Ziel steht als sie selbst.
+const RAMME_HINTER = 3;
+// Fehlt das Gold in Reichweite, geht der Handel vor: Burgen und Rammen erst,
+// wenn so viele Karren fahren - sonst nahm die Burg den Stein, den sie fuer
+// den ersten Karren verkauft (ki AC-26).
+const HANDEL_VOR = 4;
+
+// Die Burgen (ki AC-33): so viele je Zeitalter, die erste zum Gegner hin,
+// jede weitere fruehestens BURG_ABSTAND_SEKUNDEN nach der ersten. Im
+// Fuerstentum eine: mit zweien und dreien blieb ueber je vierzig Startwerte
+// eine Partie ohne Sieger - zwei Burgen nebeneinander nehmen jeder Ramme
+// vier Leben je Sekunde, und eine Belagerung aus der Ferne gibt es erst in
+// der Krone. Auch eine zweite erst zwanzig Minuten nach der ersten
+// (`[0, 0, 2, 3]`, Abstand 1200) liess Startwert 14 ohne Sieger und zu
+// viert Startwert 5 (fahrplan AC-24).
+const FESTUNG = 'burg';
+const BURGEN_JE_ZEITALTER = [0, 0, 1, 3];
+const BURG_ABSTAND_SEKUNDEN = 600;
+// Vier Sammler am Stein, drei Bauer: mit drei Sammlern blieb eine Partie
+// ohne Sieger, mit zwei Bauern fiel ki AC-27 (gemessen, je vierzig
+// Startwerte).
+const BURG_STEINSAMMLER = 4;
+const BURG_VOR = 6;
+const BURG_BAUER = 3;
+
 const FELD_FUER = { holz: [karten.WALD], nahrung: [karten.BEERE], gold: [karten.GOLD], stein: [karten.STEIN] };
 const LAGER_FUER = { holz: 'holzfaellerlager', nahrung: 'muehle', gold: 'bergbaulager', stein: 'bergbaulager' };
 
@@ -276,6 +332,15 @@ class Ki {
     this.goldfelder = null;
     // Wann jeder Karren zuletzt losgeschickt wurde (KARREN_WARTEN_SEKUNDEN).
     this.karrenGeschickt = new Map();
+    // Der Belagerungszug (ki AC-23): die Rammen sind voraus, das Heer wartet
+    // noch - mit dem Marschziel, dem Takt des Aufbruchs und den Rammen.
+    this.zug = null;
+    // Seit wann das Heer auf eine Ramme wartet, und was ihr fuer Werkstatt
+    // oder Ramme fehlt - das liegt zurueck (`ruecklage`).
+    this.rammeWartet = null;
+    this.belagerungFehlt = null;
+    // In welchem Takt die erste Burg fertig war (ki AC-33) - `null`: noch keine.
+    this.burgTakt = null;
   }
 
   get spieler() {
@@ -343,6 +408,7 @@ class Ki {
     if (this.ritterTakt === null && this.spieler.zeitalter > 1) this.ritterTakt = welt.takt;
     this.ritterzeitPruefen(zentrum, gebaeude, dorfbewohner);
     this.militaerPruefen(gebaeude, dorfbewohner);
+    this.belagerungPruefen(eigene, gebaeude, dorfbewohner);
     this.bauwerkePruefen(gebaeude, dorfbewohner);
     this.heerPruefen(eigene);
     // Nach dem Heer: das hat eben wahrgenommen, was sie sieht.
@@ -409,7 +475,16 @@ class Ki {
   ruecklage() {
     const ruecklage = { ...this.ruecklageRitterzeit() };
     if (this.marktFehlt) ruecklage.holz = (ruecklage.holz || 0) + GEBAEUDE.markt.kosten.holz;
+    for (const [r, menge] of Object.entries(this.belagerungFehlt || {})) ruecklage[r] = (ruecklage[r] || 0) + menge;
     return ruecklage;
+  }
+
+  // Hat dieser Gegner etwas, das schiesst - Turm oder Burg -, soweit sie es
+  // gesehen hat (ki AC-13)?
+  befestigt(gegner) {
+    if (!gegner) return false;
+    for (const g of this.gesehen.values()) if (g.besitzer === gegner.id && GEBAEUDE[g.art].angriff) return true;
+    return false;
   }
 
   ruecklageRitterzeit() {
@@ -471,6 +546,13 @@ class Ki {
     // wenn danach noch einer bezahlt ist. Beim Startwert 14 stand die Nahrung
     // ab Minute 24 bei 10 - drei Militaergebaeude nahmen jede Ladung, und das
     // Dorfzentrum ersetzte keinen Gefallenen mehr (Runde 90).
+    // Wartet das Heer auf Rammen (ki AC-23), ruht die Ausbildung: alles
+    // geht in Werkstatt und Rammen. Nur Holz und Gold zurueckzulegen lenkte
+    // jedes Haus zu dem, was kein Gold kostet - alle bildeten aus der
+    // Kaserne aus, und die Neigung der Haeuser verschwand (ki AC-27:
+    // die Kaserne des Hauses, das zu ihr neigt, 1,15- bis 1,45-fach statt
+    // anderthalbfach, gemessen).
+    if (this.belagerungFehlt) return;
     const ruecklage = this.ruecklage();
     if (dorfbewohner.length < zielDorfbewohner(this.spieler.zeitalter)) {
       for (const [r, menge] of Object.entries(EINHEITEN.dorfbewohner.kosten)) ruecklage[r] = (ruecklage[r] || 0) + menge;
@@ -563,8 +645,15 @@ class Ki {
   // Eine Kampfeinheit ist, wer kein Dorfbewohner ist und schlagen kann. Der
   // Marktkarren (Angriff 0) zieht nicht mit dem Heer und steht nicht Wache
   // (ki AC-26) - bis Runde 162 galt jeder, der kein Dorfbewohner war.
+  // Die Ramme auch nicht (ki AC-23): sie schlaegt nur Gebaeude, wacht nicht
+  // und zaehlt nicht zum Heer - sie hat ihren eigenen Zug.
   kaempft(e) {
-    return !(EINHEITEN[e.art].klassen || []).includes('dorf') && this.welt.einheitenwert(e.besitzer, e.art, 'angriff') > 0;
+    return !(EINHEITEN[e.art].klassen || []).includes('dorf') && !this.belagert(e)
+      && this.welt.einheitenwert(e.besitzer, e.art, 'angriff') > 0;
+  }
+
+  belagert(e) {
+    return Boolean(EINHEITEN[e.art].nurGebaeude);
   }
 
   // Kampfeinheiten eines Spielers, die noch stehen.
@@ -778,9 +867,12 @@ class Ki {
     // Wer gefallen ist, marschiert nicht mehr.
     for (const id of this.heer) if (!this.welt.einheiten.has(id)) this.heer.delete(id);
     const kampf = eigene.filter((e) => !e.tot && this.kaempft(e));
+    const rammen = eigene.filter((e) => !e.tot && this.belagert(e));
     this.wahrnehmen();
-    if (!kampf.length) return;
+    if (!kampf.length && !rammen.length) return;
     const gegner = this.naechsterGegner();
+    this.rammenFuehren(rammen, kampf, gegner);
+    if (!kampf.length) return;
     // Keinen Gegner gesehen (ki AC-13): das Heer erkundet selbst, im
     // Angriffslauf zum naechsten nie gesehenen Punkt des Rings - sonst stuende
     // es, wenn der Spaeher gefallen ist, fuer immer daheim.
@@ -850,16 +942,163 @@ class Ki {
     const daheim = kampf.filter((e) => !this.heer.has(e.id));
     // Ueberlegen (ki AC-18), zieht los, wer daheim ist - bis auf die Wache.
     const alle = this.ueberlegen();
-    if (daheim.length < (alle ? WACHE + MARSCH_MINDESTENS : HEER + WACHE)) return;
+    // Gegen eine Befestigung, die schiesst, ein groesseres Heer (ki AC-23):
+    // je acht fielen sonst Welle um Welle unter der Burg.
+    // Auch wer ueberlegen ist, troepfelt dann nicht zu zweit nach: unter einer
+    // Burg zaehlt nicht, wie viele Kaempfer der Gegner noch hat.
+    const befestigt = this.befestigt(gegner);
+    const heer = befestigt ? HEER_BEFESTIGT : HEER;
+    const jetzt = this.welt.takt;
+    // Ein Zug, dessen Rammen gefallen sind oder der zu lange wartet, ist
+    // vorbei - die Rammen fuehrt dann `rammenFuehren` heim oder ans Ziel.
+    if (this.zug && (jetzt - this.zug.takt > ZUG_WARTEN_SEKUNDEN * TAKTE_PRO_SEKUNDE || !rammen.some((e) => this.zug.rammen.has(e.id)))) this.zug = null;
+    // Sind die Rammen schon unterwegs, folgt das Heer mit dem, was es hat:
+    // fiel inzwischen einer daheim, staenden sie sonst allein vor dem Dorf.
+    // Das Warten auf Rammen laeuft ab, auch wenn das Heer inzwischen
+    // geschrumpft ist - sonst laege die Ruecklage fuer immer.
+    const abgelaufen = this.rammeWartet !== null && jetzt - this.rammeWartet >= RAMME_WARTEN_SEKUNDEN * TAKTE_PRO_SEKUNDE;
+    if (daheim.length < (this.zug || (alle && !befestigt) ? WACHE + MARSCH_MINDESTENS : heer + WACHE)) {
+      if (abgelaufen) this.rammeWartet = null;
+      return;
+    }
+    // Gegen eine Befestigung nicht ohne Ramme: ohne sie faellt das Heer
+    // unter der Burg, und die steht danach wie zuvor. Kommt keine - kein
+    // Gold mehr auf der Karte -, geht es nach RAMME_WARTEN_SEKUNDEN doch.
+    const rammenDaheim = rammen.filter((e) => !this.heer.has(e.id)).length;
+    if (befestigt && RAMME && !this.zug && rammenDaheim < RAMMEN_MIT && this.spieler.zeitalter >= GEBAEUDE[WERKSTATT].zeitalter) {
+      if (this.rammeWartet === null) this.rammeWartet = jetzt;
+      if (!abgelaufen) return;
+    }
+    this.rammeWartet = null;
     const { basis } = this.spieler;
     const nachAbstand = [...daheim].sort((a, b) => Math.hypot(a.x - basis.x, a.y - basis.y) - Math.hypot(b.x - basis.x, b.y - basis.y));
-    const marsch = alle ? nachAbstand.slice(WACHE) : nachAbstand.slice(WACHE, WACHE + HEER);
-    const feld = this.marschziel(ziel);
+    const marsch = alle || befestigt ? nachAbstand.slice(WACHE) : nachAbstand.slice(WACHE, WACHE + heer);
+    const feld = this.zug?.feld || this.marschziel(ziel);
     if (!feld) return;
+    // Die Rammen zuerst (ki AC-23): das Heer wartet, bis sie so weit voraus
+    // sind, dass beide zusammen ankommen.
+    if (this.rammenVoraus(rammen, marsch, feld)) return;
+    this.zug = null;
     this.senden({ auftrag: 'befehl', einheiten: marsch.map((e) => e.id), ziel: feld, angriffslauf: true });
     for (const e of marsch) this.heer.add(e.id);
     this.angriffe += 1;
     if (this.angriffTakt === null) this.angriffTakt = this.welt.takt;
+  }
+
+  /**
+   * Die Rammen brechen vor dem Heer auf (ki AC-23): sie sind halb so schnell,
+   * und kamen sie nach, standen sie allein vor einem Dorf, dessen Wache noch
+   * lebte. Beim ersten Aufruf gehen alle Rammen daheim los, und das Heer
+   * wartet (`true`); es folgt, sobald sein Weg kuerzer dauert als der Rest
+   * des ihren - oder wenn keine Ramme des Zugs mehr lebt, oder nach
+   * ZUG_WARTEN_SEKUNDEN.
+   */
+  rammenVoraus(rammen, marsch, feld) {
+    const jetzt = this.welt.takt;
+    if (!this.zug) {
+      const daheim = rammen.filter((e) => !this.heer.has(e.id));
+      if (!daheim.length) return false;
+      const sammel = this.sammelplatz(feld) || feld;
+      this.senden({ auftrag: 'befehl', einheiten: daheim.map((e) => e.id), ziel: sammel });
+      for (const e of daheim) this.heer.add(e.id);
+      this.zug = { feld, sammel, takt: jetzt, rammen: new Set(daheim.map((e) => e.id)) };
+      return true;
+    }
+    const vorn = rammen.filter((e) => this.zug.rammen.has(e.id));
+    if (!vorn.length) return false;
+    const { basis } = this.spieler;
+    const { sammel } = this.zug;
+    const tempo = (e) => this.welt.einheitenwert(e.besitzer, e.art, 'tempo') || 1;
+    const heerzeit = Math.hypot(sammel.x - basis.x, sammel.y - basis.y) / Math.min(...marsch.map(tempo));
+    const rammzeit = Math.min(...vorn.map((e) => Math.hypot(sammel.x - e.x, sammel.y - e.y) / tempo(e)));
+    return rammzeit > heerzeit;
+  }
+
+  // Wo die Rammen auf das Heer warten: SAMMEL_ABSTAND Felder vor dem
+  // Marschziel, auf der Linie von daheim. Liegt das Ziel naeher, nirgends.
+  sammelplatz(feld) {
+    const { basis } = this.spieler;
+    const d = Math.hypot(feld.x - basis.x, feld.y - basis.y);
+    if (d < SAMMEL_ABSTAND + 6) return null;
+    const um = {
+      x: Math.round(feld.x + ((basis.x - feld.x) / d) * SAMMEL_ABSTAND),
+      y: Math.round(feld.y + ((basis.y - feld.y) / d) * SAMMEL_ABSTAND),
+    };
+    return this.freiesFeldUm(um, basis);
+  }
+
+  /**
+   * Was die Rammen am Ziel tun (ki AC-23): jede nimmt das naechste Gebaeude
+   * des Gegners, das schiesst - Burg und Turm zuerst, denn die toeten das
+   * Heer -, sonst das naechste Gebaeude. Hinein gehen sie erst mit dem Heer:
+   * solange keiner von ihm so nah am Ziel steht wie sie selbst, warten sie
+   * auf dem Sammelplatz - allein im Dorf fielen sie der Wache, zwoelf und
+   * siebzehn in einer Partie, ohne dass eine Burg ein Leben verlor. Ist vom
+   * Heer niemand mehr draussen, kehren sie um und warten auf den naechsten
+   * Zug.
+   */
+  rammenFuehren(rammen, kampf, gegner) {
+    if (this.zug) return;
+    const stehend = rammen.filter((e) => this.heer.has(e.id) && !e.auftrag && !e.weg.length);
+    if (!stehend.length) return;
+    const heerDraussen = kampf.some((e) => this.heer.has(e.id));
+    const bauten = gegner && heerDraussen
+      ? [...this.gesehen.values()].filter((g) => g.besitzer === gegner.id && !GEBAEUDE[g.art].begehbar && !this.gesperrt(ZIEL + g.id)) : [];
+    if (!bauten.length) {
+      const heim = this.freiesFeldUm(this.spieler.basis, stehend[0], { ausser: new Set(stehend.map((e) => e.id)) });
+      if (heim) this.senden({ auftrag: 'befehl', einheiten: stehend.map((e) => e.id), ziel: heim });
+      for (const e of stehend) this.heer.delete(e.id);
+      return;
+    }
+    const naechstes = (e, liste) => liste.reduce((best, z) => {
+      const d = Math.hypot(z.x - e.x, z.y - e.y);
+      return !best || d < best.d ? { z, d } : best;
+    }, null);
+    const schiessend = bauten.filter((g) => GEBAEUDE[g.art].angriff);
+    const draussen = kampf.filter((e) => this.heer.has(e.id));
+    for (const e of stehend) {
+      const ziel = (naechstes(e, schiessend) || naechstes(e, bauten))?.z;
+      if (!ziel) continue;
+      const weit = Math.hypot(ziel.x - e.x, ziel.y - e.y);
+      if (!draussen.some((k) => Math.hypot(ziel.x - k.x, ziel.y - k.y) <= weit + RAMME_HINTER)) continue;
+      const zuletzt = this.heerZiel.get(e.id);
+      if (zuletzt && this.welt.takt - zuletzt.takt < ZIEL_GESCHEITERT_TAKTE) this.unerreichbar.set(ZIEL + zuletzt.id, this.welt.takt);
+      this.senden({ auftrag: 'befehl', einheiten: [e.id], ziel: { x: Math.round(ziel.x), y: Math.round(ziel.y) } });
+      this.heerZiel.set(e.id, { id: ziel.id, takt: this.welt.takt });
+    }
+  }
+
+  /**
+   * Werkstatt und Rammen (ki AC-23): ab dem Zeitalter der Werkstatt und nach
+   * dem ersten Aufbruch - vorher kostete sie den ersten Angriff - eine
+   * Werkstatt am Dorf, und daraus Rammen, bis RAMMEN stehen. Ohne sie nimmt
+   * ein Schuetze einem Gebaeude einen Punkt je Schuss, und eine Burg haelt
+   * jede Welle auf.
+   */
+  belagerungPruefen(eigene, gebaeude, dorfbewohner) {
+    this.belagerungFehlt = null;
+    if (!WERKSTATT || this.spieler.zeitalter < GEBAEUDE[WERKSTATT].zeitalter || this.angriffTakt === null) return;
+    if (!this.handelLaeuft(eigene)) return;
+    // Wartet das Heer auf Rammen (`rammeWartet`), liegt zurueck, was als
+    // Naechstes fehlt: sonst nahm das Militaer jedes Gold, und es kam nie
+    // eine Ramme (Startwert 4: fuenfzig Minuten lang 6 bis 42 Gold im
+    // Vorrat, 63 Wellen unter der Burg).
+    const dringend = this.rammeWartet !== null;
+    const werkstaetten = gebaeude.filter((g) => g.art === WERKSTATT);
+    if (!werkstaetten.length) {
+      if (dringend) this.belagerungFehlt = GEBAEUDE[WERKSTATT].kosten;
+      this.bauen(WERKSTATT, this.platzBeiBasis(WERKSTATT), dorfbewohner);
+      return;
+    }
+    const fertig = werkstaetten.find((g) => g.fertig);
+    if (!fertig) return;
+    const stehen = eigene.filter((e) => !e.tot && e.art === RAMME).length + fertig.schlange.filter((a) => a === RAMME).length;
+    if (stehen >= RAMMEN) return;
+    const ruecklage = this.ruecklage();
+    if (dringend) this.belagerungFehlt = EINHEITEN[RAMME].kosten;
+    if (fertig.schlange.length) return;
+    if (Object.entries(EINHEITEN[RAMME].kosten).some(([r, menge]) => this.spieler[r] - (ruecklage[r] || 0) < menge)) return;
+    this.senden({ auftrag: 'ausbilden', gebaeude: fertig.id, einheit: RAMME });
   }
 
   // Der naechste Gegner, der noch mitspielt und von dem sie etwas gesehen
@@ -1169,15 +1408,23 @@ class Ki {
    * ersten Angriff: Startwert 14 und 34 blieben bis Minute 90 ohne Sieger
    * (Runde 175).
    */
+  // Braucht sie den Handel (das Gold in Reichweite ist knapp, ki AC-26),
+  // laeuft er erst mit HANDEL_VOR Karren.
+  handelLaeuft(eigene) {
+    if (this.handelSeit === null || !HANDEL_VOR) return true;
+    return eigene.filter((e) => !e.tot && EINHEITEN[e.art].handelt).length >= HANDEL_VOR;
+  }
+
   bauwerkePruefen(gebaeude, dorfbewohner) {
-    const { schwerpunkt, anzahl, steinSammler = 0 } = this.neigung;
-    if (!schwerpunkt || !anzahl || GEBAEUDE[schwerpunkt].bildetAus.length) return;
-    if (this.spieler.zeitalter < GEBAEUDE[schwerpunkt].zeitalter) return;
     if (!gebaeude.some((g) => MILITAER.includes(g.art)) || this.angriffTakt === null) return;
-    const stehen = gebaeude.filter((g) => g.art === schwerpunkt);
-    const fertig = stehen.length >= anzahl && stehen.every((g) => g.fertig);
+    const handel = this.handelLaeuft([...this.welt.einheiten.values()].filter((e) => e.besitzer === this.spielerId));
+    // Das erste Bauwerk der Liste, von dem noch eines fehlt oder im Bau ist.
+    const offen = this.bauwerke(gebaeude).filter((b) => handel || b.art !== FESTUNG).find((b) => {
+      const stehen = gebaeude.filter((g) => g.art === b.art);
+      return stehen.length < b.anzahl || stehen.some((g) => !g.fertig);
+    });
     const anStein = dorfbewohner.filter((e) => this.rolle(e) === 'stein');
-    const braucht = fertig ? 0 : steinSammler;
+    const braucht = offen ? offen.steinSammler : 0;
     if (this.welt.takt - this.zuletztStein >= UMVERTEILEN_SEKUNDEN * TAKTE_PRO_SEKUNDE) {
       if (anStein.length < braucht) {
         const wer = dorfbewohner.find((e) => !e.weg.length && this.rolle(e) === 'holz');
@@ -1190,8 +1437,49 @@ class Ki {
         this.schicken(anStein[0], 'holz', dorfbewohner);
       }
     }
-    if (stehen.length >= anzahl || stehen.some((g) => !g.fertig)) return;
-    this.bauen(schwerpunkt, this.platzBeiBasis(schwerpunkt), dorfbewohner);
+    if (!offen) return;
+    const stehen = gebaeude.filter((g) => g.art === offen.art);
+    if (stehen.length >= offen.anzahl || stehen.some((g) => !g.fertig)) return;
+    this.bauen(offen.art, this.bauwerkPlatz(offen, stehen.length), dorfbewohner, offen.bauer);
+  }
+
+  /**
+   * Was sie an Bauwerken will, der Reihe nach: erst das, wozu ihr Haus neigt
+   * (ki AC-30), dann Burgen (ki AC-33) - die erste, sobald das Zeitalter sie
+   * erlaubt, jede weitere BURG_ABSTAND_SEKUNDEN nach der ersten, hoechstens
+   * so viele, wie BURGEN_JE_ZEITALTER fuer ihr Zeitalter nennt. Faellt eine,
+   * baut sie sie wieder.
+   */
+  bauwerke(gebaeude) {
+    const liste = [];
+    const { schwerpunkt, anzahl, steinSammler = 0 } = this.neigung;
+    if (schwerpunkt && anzahl && !GEBAEUDE[schwerpunkt].bildetAus.length) liste.push({ art: schwerpunkt, anzahl, steinSammler, bauer: 1 });
+    if (this.burgTakt === null && gebaeude.some((g) => g.art === FESTUNG && g.fertig)) this.burgTakt = this.welt.takt;
+    const burgen = this.burgTakt === null ? 1
+      : 1 + Math.floor((this.welt.takt - this.burgTakt) / (BURG_ABSTAND_SEKUNDEN * TAKTE_PRO_SEKUNDE));
+    const hoechstens = BURGEN_JE_ZEITALTER[Math.min(this.spieler.zeitalter, BURGEN_JE_ZEITALTER.length - 1)];
+    liste.push({ art: FESTUNG, anzahl: Math.min(hoechstens, burgen), steinSammler: BURG_STEINSAMMLER, bauer: BURG_BAUER, vor: BURG_VOR });
+    return liste.filter((b) => b.anzahl > 0 && this.spieler.zeitalter >= GEBAEUDE[b.art].zeitalter);
+  }
+
+  /**
+   * Wo ein Bauwerk hinkommt. Ohne `vor` ans Dorf. Mit `vor` so viele Felder
+   * vom Dorfzentrum: das erste zum naechsten Gegner hin, das zweite und
+   * dritte an die beiden Flanken - so deckt jede Burg eine andere Seite.
+   */
+  bauwerkPlatz(b, nummer) {
+    if (!b.vor) return this.platzBeiBasis(b.art);
+    const gegner = this.naechsterGegner();
+    const ort = gegner && this.feindOrt.get(gegner.id);
+    if (!ort) return this.platzBeiBasis(b.art);
+    const { basis } = this.spieler;
+    const d = Math.hypot(ort.x - basis.x, ort.y - basis.y) || 1;
+    let rx = (ort.x - basis.x) / d;
+    let ry = (ort.y - basis.y) / d;
+    if (nummer % 3 === 1) [rx, ry] = [-ry, rx];
+    else if (nummer % 3 === 2) [rx, ry] = [ry, -rx];
+    const um = { x: Math.round(basis.x + rx * b.vor), y: Math.round(basis.y + ry * b.vor) };
+    return this.platzBei(b.art, um, 0) || this.platzBeiBasis(b.art);
   }
 
   untaetig(einheit) {
@@ -1752,4 +2040,6 @@ module.exports = {
   Ki, ENTSCHEIDEN_ALLE, ZIEL_DORFBEWOHNER, DORFBEWOHNER_JE_ZEITALTER, zielDorfbewohner, FEUDALZEIT_NAHRUNG, AN_SCHAFEN, AN_BEEREN, MILITAER,
   HEER, WACHE, UEBERLEGEN, MARSCH_MINDESTENS, HEER_ABSTAND, WACHE_NAH, FEIND_FERN, VERGEBEN_ABSTAND, MILITAER_HOLZ, UEBERSCHUSS, MANGEL, UMVERTEILEN_SEKUNDEN, UNERREICHBAR_SEKUNDEN, MILITAER_HOECHSTENS, MILITAER_JE_ZEITALTER, plan,
   GOLD_KNAPP, KARREN, HANDEL_ABSTAENDE, HANDEL_MINDESTENS, VERKAUF_RUECKLAGE, KARREN_WARTEN_SEKUNDEN, FEIND_VERGESSEN,
+  WERKSTATT, RAMME, RAMMEN, RAMMEN_MIT, HEER_BEFESTIGT, SAMMEL_ABSTAND, RAMME_WARTEN_SEKUNDEN, ZUG_WARTEN_SEKUNDEN, HANDEL_VOR,
+  FESTUNG, BURGEN_JE_ZEITALTER, BURG_ABSTAND_SEKUNDEN, BURG_STEINSAMMLER, BURG_VOR, BURG_BAUER,
 };

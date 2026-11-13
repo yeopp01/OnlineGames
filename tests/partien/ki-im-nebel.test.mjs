@@ -25,6 +25,14 @@
 // Minute 60, Median 44,9 - **knapp**. Mit vier Tuermen waren es 31 und
 // 46,8, mit zweien vor dem ersten Angriff blieben Startwert 14 und 34 ohne
 // Sieger (beide Distelhag gegen Wehrstein, ein Patt mit leeren Vorraeten).
+// Seit dem 2026-11-13 baut jede KI eine Burg und haelt Rammen (ki AC-33,
+// ki AC-23): alle mit Sieger, 38 von 40 vor Minute 60, Median 41,4, die
+// laengste 71,5. Mit bis zu drei Burgen schon im Fuerstentum blieb je Satz
+// Startwerte eine Partie ohne Sieger, nur mit Burgen und ohne Rammen
+// verheizte die KI bis zu 63 Wellen unter einer Burg (Startwert 4). Die
+// Startwerte 41 bis 80 als Gegenprobe: 37 vor Minute 60, Median 43,8 - ohne
+// Burgen und Rammen dort 34 und 41,3; die Grenze 35 schwankt mit den
+// Startwerten um drei.
 //
 // Vierzig Partien bis Minute 90 rechnen hintereinander rund drei Minuten; vier
 // Faeden mit je zehn (`nebel-arbeiter.mjs`) etwa eine. Hier, nicht im ersten
@@ -37,6 +45,7 @@ import { createRequire } from 'node:module';
 
 const require = createRequire(import.meta.url);
 const { HAEUSER, GEBAEUDE } = require('../../server/spiele/strategie/daten.js');
+const { FESTUNG, WERKSTATT, RAMME, RAMMEN } = require('../../server/spiele/strategie/ki.js');
 
 const MINUTEN = 90;
 const STARTWERTE = 40;
@@ -183,4 +192,49 @@ test('ki AC-30: ueber 40 Startwerte baut ein Haus, das zu einem Bauwerk neigt, j
     assert.ok(eigen >= 2 && eigen >= 1.5 * schnitt,
       `${haus}: ${eigen.toFixed(1)} ${art} je Partie mit Aufbruch (${aufgebrochen[haus]} von ${auftritte[haus]}), die anderen ${schnitt.toFixed(1)}`);
   }
+});
+
+// Burgen und Rammen (ki AC-33, ki AC-23), gezaehlt aus denselben Partien:
+// jede Burg und jede Werkstatt, sobald sie fertig ist, jede Ramme, sobald sie
+// da ist. Gemessen am 2026-11-13 ueber die achtzig Auftritte: 0,55 Burgen,
+// 0,66 Werkstaetten und 1,94 Rammen je KI. Nicht jede baut - wer vor dem
+// Fuerstentum faellt oder nie aufbricht, kommt nicht dazu; die Grenzen unten
+// lassen dafuer Luft, aber nicht so viel, dass eine KI ohne Burgen oder ohne
+// Rammen sie hielte (beide Zahlen waeren dann null).
+//
+// Gegenprobe zur Ursache: beides kommt erst nach dem ersten Aufbruch - wer
+// nie aufgebrochen ist, hat keine Burg, keine Werkstatt und keine Ramme.
+test('ki AC-33 und ki AC-23: ueber 40 Startwerte bauen die KIs Burgen und Rammen, jedes Haus, und keine vor ihrem ersten Aufbruch', async (t) => {
+  const enden = await allePartien();
+  let kis = 0;
+  let burgen = 0;
+  let rammen = 0;
+  let mitBurg = 0;
+  let mitRammen = 0;
+  const burgenJeHaus = {};
+  for (const e of enden) {
+    for (const [id, haus] of Object.entries(e.haeuser)) {
+      kis += 1;
+      const b = e.gebaut[id]?.[FESTUNG] || 0;
+      const w = e.gebaut[id]?.[WERKSTATT] || 0;
+      const r = e.neu[id]?.[RAMME] || 0;
+      if (!e.angriffe[id]) assert.equal(b + w + r, 0, `Startwert ${e.startwert}, ${id}: nie aufgebrochen, aber ${b} Burgen, ${w} Werkstaetten, ${r} Rammen`);
+      // Ohne Werkstatt keine Ramme.
+      if (r) assert.ok(w >= 1, `Startwert ${e.startwert}, ${id}: ${r} Rammen ohne Werkstatt`);
+      burgen += b;
+      rammen += r;
+      if (b) mitBurg += 1;
+      if (r) mitRammen += 1;
+      burgenJeHaus[haus] = (burgenJeHaus[haus] || 0) + b;
+    }
+  }
+  t.diagnostic(`${kis} Auftritte: ${burgen} Burgen bei ${mitBurg} KIs, ${rammen} Rammen bei ${mitRammen} KIs; je Haus ${NAMEN.map((h) => `${h} ${burgenJeHaus[h] || 0}`).join(', ')}`);
+  assert.equal(kis, 2 * STARTWERTE);
+  // Eine Burg in mindestens jeder dritten KI, Rammen ebenso - und wer Rammen
+  // haelt, im Schnitt mehr als eine.
+  assert.ok(mitBurg >= kis / 3, `nur ${mitBurg} von ${kis} KIs mit Burg`);
+  assert.ok(mitRammen >= kis / 3, `nur ${mitRammen} von ${kis} KIs mit Rammen`);
+  assert.ok(rammen >= 1.5 * mitRammen, `${rammen} Rammen bei ${mitRammen} KIs - sie haelt bis zu ${RAMMEN}`);
+  // Die Burg haengt an keinem Haus: jedes baut sie.
+  for (const haus of NAMEN) assert.ok(burgenJeHaus[haus] >= 2, `${haus}: ${burgenJeHaus[haus] || 0} Burgen in ${(2 * STARTWERTE) / NAMEN.length} Partien`);
 });

@@ -171,7 +171,7 @@ Umfang hinzufügt, dort nachsehen.
 
 ## Stand
 
-**510 von 633 Kriterien fertig.** 813 Tests ohne Browser, 265 im Browser. Die
+**512 von 634 Kriterien fertig.** 824 Tests ohne Browser, 265 im Browser. Die
 Übersicht ist der Bericht: `npm run qa:report`.
 
 Gebaut ist der Unterbau: Räume, Übertragung, Karte, Wegfindung, Sammeln,
@@ -409,7 +409,24 @@ keine Gebäude; er selbst greift nie an. **D8 ist fertig: der Mönch
 bekehrt** (einheiten AC-38) — ein Rechtsklick auf eine fremde Einheit in
 neun Feldern, nach vier bis zehn Sekunden gehört sie ihm, danach ruht er
 62 Sekunden; keine Gebäude, keine Belagerung, keine Mönche. Die Dauer kommt
-aus `welt.zufall`, einem eigenen Zufall aus dem Startwert. **Die KI wächst mit den Zeitaltern** (ki AC-24): 22, 32, 42 und 50 Dorfbewohner, ab der Ritterzeit bis zu fünf Militärgebäude; sie steigt in die Ritterzeit auf und bildet Ritter aus (ki AC-21, AC-22). KI gegen KI endet über vierzig Startwerte jedes Mal vor Minute 60, am Ende mit im Median 42 Dorfbewohnern — das ist die schwere Stufe; mittel (25) und leicht (15) folgen. Die **Sicht ist eine Einstellung beim Eröffnen** (kampf AC-16):
+aus `welt.zufall`, einem eigenen Zufall aus dem Startwert. **Die KI wächst mit den Zeitaltern** (ki AC-24): 22, 32, 42 und 50 Dorfbewohner, ab der Ritterzeit bis zu fünf Militärgebäude; sie steigt in die Ritterzeit auf und bildet Ritter aus (ki AC-21, AC-22). KI gegen KI endet über vierzig Startwerte jedes Mal vor Minute 60, am Ende mit im Median 42 Dorfbewohnern — das ist die schwere Stufe; mittel (25) und leicht (15) folgen. **Die KI baut
+Burgen und belagert** (ki AC-33, ki AC-23, 2026-11-13): nach ihrem ersten
+Aufbruch im Fürstentum eine Burg sechs Felder vor dem Dorf zum Gegner hin
+(vier Sammler am Stein, drei Bauer), eine zweite und dritte erst in der
+Krone (`BURGEN_JE_ZEITALTER`) — die KI steigt dorthin noch nicht auf, in
+ganzen Partien steht also eine. Dazu eine Werkstatt und drei Rammen
+(beides aus den Daten gelesen: was `nurGebaeude` trägt). Hat der Gegner
+etwas, das schießt, bricht sie mit zehn statt acht und nicht ohne drei
+Rammen auf; solange das Heer darauf wartet, ruht die Ausbildung
+(`ki.belagerungFehlt`). Die Rammen gehen voraus zum Sammelplatz 16 Felder
+vor dem Ziel (`ki.zug`), hinein erst mit dem Heer, zuerst auf das, was
+schießt. Ist das Gold knapp, geht der Handel vor (`ki.handelLaeuft`).
+Gemessen im Nebel: 38 von 40 vor Minute 60, Median 41,4; zu viert Median
+50,9 statt 44,8. **Knapp** ist ki AC-27 (Distelhag 1,61-fach bei verlangten
+1,5); zwei Burgen und Türme nebeneinander knackt die KI nicht. Die
+Stellwerte stehen mit ihren Messungen oben in `ki.js` — wer daran dreht,
+fährt `tests/partien/ki-im-nebel.test.mjs` und die Team-Tests.
+Die **Sicht ist eine Einstellung beim Eröffnen** (kampf AC-16):
 Nebel, Erkundet oder Aufgedeckt — Tests, die nicht vom Nebel handeln,
 eröffnen aufgedeckt (`partieZuZweit(…, { sicht: 'aufgedeckt' })`).
 **Bündnisse (D10, ADR-0013) haben begonnen:** `welt.feindlich(a, b)` ist die
