@@ -13,7 +13,7 @@ hier nichts eintraegt, verliert den Faden beim naechsten Autocompact.
 
 ## Zuletzt fortgeschrieben
 
-2026-11-13, 08:05 (zuletzt: Schautafel auf gerenderte Bilder umgestellt, **uncommittet** im Baum `strategie-bildumbau`, voller Browserlauf mit neuen Bildern läuft; **ADR-0017 als Entwurf geschrieben** (`docs/adr/0017-strategiepartien-fortsetzen.md`, Status vorgeschlagen, uncommittet); davor einheiten AC-30 geparkt auf `strategie-standplatz` `97815b7`; Server auf `2f9ec0e`) — am 2026-11-12 um 21:50 **von Grund auf neu gefasst** (Benutzer: „da ist vieles
+2026-11-13, 09:20 (zuletzt: **das breite Tor, bauen AC-37, uncommittet** im Baum `strategie-bildumbau` — Server, Tests, Bild und Browser stehen, der volle Lauf fehlt; davor committet: Schautafel `787cd4a`, ADR-0017 `c3329b1`, Burg-Salve `e3b4b41`; einheiten AC-30 geparkt auf `strategie-standplatz` `97815b7`; Server auf `2f9ec0e`) — am 2026-11-12 um 21:50 **von Grund auf neu gefasst** (Benutzer: „da ist vieles
 nicht mehr aktuell"). Vorher stand hier eine Chronik der Runden 60 bis 200 und
 ein „Wo ich stehe", das bei Runde 86 endete. Beides liegt unverändert in
 [`steuerstand-archiv.md`](steuerstand-archiv.md) und wird nicht mehr
@@ -30,7 +30,7 @@ Sitzungsbeginn ganz vorgelegt — über 300 Zeilen liest sie niemand mehr.
 | Baum | Zweig | Stand | Wem er gehört |
 | --- | --- | --- | --- |
 | `C:\Users\danie\OnlineGames` | `strategie` | Runden 200 und 201 in einem Commit (auf Wunsch des Benutzers, **mit rotem Check**: fahrplan AC-24, Startwert 11), 43 Commits vor `origin/strategie`: 200 = bauen AC-7, Leben der Baustelle (`welt.js`, `ki.js`, `auswahlleiste.js`, `tests/strategie-bauleben.test.mjs`, Bild zu AC-7); 201 = Eschenbruch abgeschwächt (`daten.js`, `welt.js` `boniAb`/`zeitalterWirkungen`, Haus-Tests, ADR-0014, spielziel). **Die Schleife ruht** (Benutzer: Pause) | der Schleife `/loop /strategie-weiterbauen` |
-| `C:\Users\danie\OnlineGames-bildumbau` | `strategie-bildumbau` | HEAD `2f9ec0e`, 24 Commits seit der Abzweigung bei `144fc2d`. Enthält Bildumbau R1 bis R6 (gerenderte Bilder sind die Vorgabe), Betrieb auf dem VPS, die Rückmeldungen aus dem ersten Spiel und aus dem zweiten Nebelfix und neuen Ton. Sauber | der Sitzung „Bildumbau und Rückmeldungen" |
+| `C:\Users\danie\OnlineGames-bildumbau` | `strategie-bildumbau` | HEAD `e3b4b41`, 27 Commits seit der Abzweigung bei `144fc2d`: Bildumbau R1 bis R6, Betrieb auf dem VPS, Rückmeldungen aus zwei Spielen, Schautafel aus den Tafeln (`787cd4a`), ADR-0017 (`c3329b1`), Burg-Salve (`e3b4b41`). **Uncommittet: das breite Tor** (siehe unten). Nicht gepusht, nicht ausgerollt | der Sitzung „Bildumbau und Rückmeldungen" |
 | `C:\Users\danie\OnlineGames-gebaeude` | `strategie-gebaeude` | HEAD `2060173`, sauber, in `strategie-bildumbau` übernommen (`5249fb7`) | dem Blender-Agenten — **fertig**, der Baum kann weg |
 
 Geparkte Zweige ohne Baum: **`strategie-standplatz`** (einheiten AC-30,
@@ -58,7 +58,7 @@ die Schleife ruht und fahrplan AC-24 wieder grün ist. Zu erwarten:
 - **Nummern, die `strategie-bildumbau` schon vergeben hat** und die die
   Schleife nicht noch einmal vergeben darf: bedienung AC-51 bis AC-62,
   einheiten AC-55 bis AC-57, bauen AC-36, raeume AC-17 und AC-18,
-  darstellung AC-17 bis AC-25. (speichern AC-19 bis AC-21 gab es schon, dort
+  darstellung AC-17 bis AC-25, **bauen AC-37**. (speichern AC-19 bis AC-21 gab es schon, dort
   sind sie jetzt `fertig`.)
 - Zwei Testkorrekturen an `platz.bild` gibt es nur auf `strategie-bildumbau`.
 - **Seit 2026-11-13 prüft TypeScript auf `strategie`** (`npm run typen`,
@@ -130,7 +130,7 @@ Server** (23 Punkte, 2026-11-12):
 | 8 Holzhacken erkennbar | halb: am Zeiger steht, was der Rechtsklick tut; eigener Ablauf im Bild fehlt |
 | 18 Liste offener Spiele, Wiedereinstieg, Startklick | halb: Partie wartet 30 Minuten, Vorraum bietet Rückkehr; Liste und Startklick hängen am Speichern |
 | 10 Sammler stehen ineinander (einheiten AC-30) | **gebaut, geparkt auf dem örtlichen Zweig `strategie-standplatz` (`97815b7`), nicht auf dem Server** — siehe „Geparkt" unten: zwei Partientests fallen, die Entscheidung liegt beim Benutzer |
-| 13 Speichern und Laden | offen — braucht ADR-0017, „Speicherstände für Strategiepartien" steht in ADR-0012 unter „Wird nicht gebaut" |
+| 13 Speichern und Laden | offen — **ADR-0017 ist entschieden** (`c3329b1`), gebaut wird in S1 bis S4 |
 | 15 Feldarbeit statt Hacken auf der Farm | offen — neue Abläufe des Dorfbewohners mit Blender |
 | 17 Notfallklingel | offen — neuer Umfang, erst gegen ADR-0012 halten |
 
@@ -184,46 +184,55 @@ Warteraum am Beitritt und sind einzeln grün. `check:kurz` 804 von 804; die
 Zeitmessung einheiten AC-31 reißt gelegentlich knapp (1,02 ms), wenn die
 Maschine belastet ist.
 
-**Noch zu tun:**
+**Erledigt seit dem letzten Ausrollen (nicht auf dem Server):**
 
-1. **Schautafel umstellen — in Arbeit, uncommittet (Stand 04:30).**
-   `public/schautafel.js` ist neu geschrieben: alles aus den Tafeln
-   (`t.gezeichnet` ist leer), ein Maßstab für alle, Zellenbreite aus dem
-   Bild; `public/ansicht.js` hat dafür `tierHoeheBei`, `ZOOM_FERN`,
-   `ZOOM_NAH`. Messungen umgestellt, **ohne Grenzen zu lockern, wo es um das
-   Bild geht**:
-   - Spielerfarbe = was sich mit dem Spieler ändert (`FARBSPRUNG`): Einheiten
-     11,5 bis 24 %.
-   - darstellung AC-3 am **Farbton** statt am Farbwert (`dingBild`): Wald
-     86 % grün, Beere 11,6 % rot, Gold 79 % Ocker bis Gelb und 5,7 % helles
-     Gold, Gold gegen Stein 0,70 verschieden. Neu: „Gold höchstens 2 % grau"
-     gilt nicht mehr (20 % Fels, wie AC-23 es will) — **dem Benutzer sagen**.
-   - AC-2: See aus neun Feldern, `ufer` 2865, `wasser` 3185 von 4356.
-   - AC-13 (1): `rand` (fast schwarz am Rand der Gestalt) höchstens ein
-     Viertel, gemessen 0 bis 9 %; (5) Schatten außerhalb der Raute.
-   - darstellung AC-4: Höhe in eigenen Feldern (`feld`). **Neu gerendert**
-     (Blender, je unter einer Minute): Schmiede mit Bannermast im Hof (5 →
-     55 Bildpunkte Farbe), Markt nur der mittlere Stand in Spielerfarbe
-     (18 → 7,7 %), Wachturm kürzeres Banner (10,0 → 8,7 %).
-   - **Echter Befund, bleibt rot:** bedienung AC-36 (Umriss bei Zoom 1 gegen
-     Dorfbewohner: Armbrust 0,188 · Soldat 0,192 · Miliz 0,195 · Plänkler
-     0,233 · Bogen 0,237 · Speer 0,246 · Mönch 0,300, Grenze 1/3) und
-     darstellung AC-6 (Dorfbewohner/Miliz decken sich zu 0,793, Grenze
-     0,75). Beide Tests tragen `test.fail`, beide Kriterien gehen auf
-     `in-arbeit`; Abhilfe am Modell im Blender-Block (8/15).
-   **Noch offen in diesem Schritt:** Messfälle fahren (`strategie-figuren`,
-   `strategie-unterscheidbar`, `strategie-bauen -g "AC-4 /"`,
-   `strategie-arbeit`, `strategie-tiere -g "AC-12"`), Specs anpassen
-   (darstellung AC-3, AC-6, AC-12, AC-13, AC-24, „Was der Bildumbau ablöst";
-   bedienung AC-36), `specs:board`, voller Lauf `check:alles:neu:kurz`,
-   `qa:abweichung`, committen (nicht pushen, nicht ausrollen). Die
-   gezeichneten Fassungen entfernen ist ein eigener Schritt **nach dem Wort
-   des Benutzers**; darstellung AC-24 bleibt bis dahin `in-arbeit` (auch
-   AC-19 bis AC-21 stehen noch auf `offen`, Speicher nicht gemessen).
-2. **Schwächen der gerenderten Bilder, dem Benutzer gesagt:** Figuren bei
-   Zoom 1 rund 30 Bildpunkte und erdfarben, Militär vom Dorfbewohner schwer
-   zu unterscheiden; getragene Last nur beim Gehen zu sehen; Baustelle immer
-   ein Holzgerüst.
+- **Schautafel aus den Tafeln** (`787cd4a`, darstellung AC-24 bleibt
+  `in-arbeit`, bis die gezeichneten Fassungen auf das Wort des Benutzers
+  entfernt sind). Messungen umgestellt, Grenzen am Bild nicht gelockert.
+  **Echter Befund, bleibt rot:** bedienung AC-36 (Umriss bei Zoom 1 gegen
+  den Dorfbewohner, 0,19 bis 0,30 statt 1/3) und darstellung AC-6
+  (Dorfbewohner und Miliz decken sich zu 0,793 statt 0,75) — beide `in-qa`
+  mit `test.fail`, Abhilfe am Modell im Blender-Block. „Gold höchstens 2 %
+  grau" gilt nicht mehr (20 % Fels, wie AC-23 es will) — **dem Benutzer
+  sagen**.
+- **Burg-Salve** (`e3b4b41`, bauen AC-32): vier Pfeile je Salve, `pfeile`
+  in den Daten.
+
+**In Arbeit, uncommittet — das breite Tor (bauen AC-37, `fertig`, Lauf fehlt):**
+
+- Daten: `tor: { groesse: 1, laenge: 4, pfeiler: 1 }`; Gebäudefeld `quer`
+  (längs y), auf der Leitung `qu: 1`, im Aufbau `laenge` und `pfeiler`.
+  `welt.grundflaeche(art, x, y, quer)` ist die eine Stelle; Anker ist das
+  dritte der vier Felder. Richtung: Nachricht `bauen` mit `quer`, sonst
+  `welt.lageRaten()`; im Browser dreht `R`. Ersetzt jedes eigene Mauerfeld
+  darunter. Schräg gibt es kein Tor mehr.
+- Bild: `grafik/tor.py` neu (Torhaus, zwei Türme, Bogen über zwei Felder,
+  zu und offen, zwei Richtungen), gerendert. Der Browser zeichnet es in
+  vier Streifen je Feld (`ansicht.gebaeudeMalen`), im Bau je Feld ein Gerüst.
+- Tests: `tests/strategie-mauern.test.mjs` (vier neue zu AC-37),
+  `strategie-buendnisse`, Prüfstand-Ring mit langem Tor; Browser:
+  `strategie-mauern` (AC-31 angepasst, AC-37 neu mit drei Bildern),
+  `strategie-gerendert`, `strategie-ritterzeit-am-stueck` — einzeln grün,
+  Bilder angesehen.
+- Erledigt seit 09:20: AC-37 auf `fertig` (Board 510/633), CLAUDE.md-Absatz.
+  Ein voller Lauf um 09:40 brach nach 45 min ab (acht Fälle rot), **weil ich
+  nebenher KI-Partien rechnete** — nachgefahren waren sie grün bis auf
+  `strategie-befehlszeichen`. Dort zwei Rennen, **beide auch auf HEAD**
+  (Gegenprobe im HEAD-Baum, kein Regress durch das Tor), beide im Test
+  behoben: AC-13 hält das Zeichen im selben `evaluate` an, das es liest;
+  AC-34 hält die Uhr an (`zeitraffer 0`), sobald Anna alle drei Milizen
+  sieht, und lässt sie am Ende des Falls wieder laufen. Viermal grün.
+- **Fehlt (11:25: voller Lauf `check:alles:neu:kurz` läuft im Hintergrund,
+  nichts nebenher):** danach `qa:abweichung` (über 1 % ansehen), Zahlen in
+  CLAUDE.md (510/633, Tests ohne Browser 813, im Browser nach dem Lauf),
+  committen — nicht pushen, nicht ausrollen. Nicht geprüft: ein Tor an einer
+  Ecke, in die zwei Mauern laufen; Originalmaß des Tors.
+- Später beachten: das Feld `quer` gehört zur Form des Stands (ADR-0017).
+
+**Schwächen der gerenderten Bilder, dem Benutzer gesagt:** Figuren bei
+Zoom 1 rund 30 Bildpunkte und erdfarben, Militär vom Dorfbewohner schwer
+zu unterscheiden; getragene Last nur beim Gehen zu sehen; Baustelle immer
+ein Holzgerüst.
 
 **Nicht geprüft und so zu sagen:** wie der Ton klingt (Musik 0,06
 effektiv, im Kampf 0,08, Gefecht darüber Spitze 0,62 — nur gemessen; ein
@@ -234,7 +243,7 @@ Reitertempo 1,55 stammt nicht aus `vorlage-aoe2.md`.
 
 ## Was als Nächstes kommt
 
-1. `strategie-bildumbau`: die Schautafel (oben), dann die Rückmeldungen.
+1. `strategie-bildumbau`: das breite Tor zu Ende (oben), dann **ki AC-33**, Truppenstufen, ADR-0017 S1 bis S4.
    **ADR-0017 (Fortsetzen) ist entschieden** (Benutzer, 2026-11-13: „Ja die
    adr zum speichern und fortsetzen passt") — gebaut wird in den Schritten S1
    bis S4 aus dem ADR, nach dem, was er heute Morgen bestellt hat. Gemessen mit einer Probe im Scratchpad
@@ -251,13 +260,28 @@ Reitertempo 1,55 stammt nicht aus `vorlage-aoe2.md`.
    Pflücken, Feldarbeit, Bergbau (Blender) → **17** Notfallklingel.
    **Bestellt vom Benutzer am 2026-11-13 (08:10 bis 08:30), in dieser
    Reihenfolge nach dem Schautafel-Commit:**
-   - **Burg-Salve:** die Burg schießt vier Pfeile je Salve statt einem
-     (Original: Wiki fünf, Beitrag zur Definitive Edition vier; `pfeile` in
-     den Daten, `welt.tuermeTakten`). `docs/strategie/vorlage-aoe2.md` Zeile
-     83 ff. berichtigen („ein Pfeil alle 2 s" ist falsch abgeschrieben).
-   - **Tor breiter** („Das Tor muss breiter sein"): vier Felder in
-     Mauerrichtung statt eines; neues Bild in zwei Richtungen (Blender, ein
-     Prozess). Originalmaß nicht belegt.
+   - **Burg-Salve:** fertig (`e3b4b41`).
+   - **Tor breiter** („Das Tor muss breiter sein"): in Arbeit, siehe oben.
+   - **Benutzer 2026-11-13, 10:00: „Im laufe der spielzeit darf ne ki auch ne
+     zweite oder dritte burg baun."** — also bis zu drei, mit Abstand.
+     Gemessen als Probe (Scratchpad `probe-burg.cjs`, `b1.cjs <wurzel>
+     <probe|-> 1-4`, Umgebung `RAMMEN=3`): Startwerte 1 bis 4 ohne Burg 40,4 /
+     50,5 / 44,5 / 46,7 min, mit einer Burg 46,5 / 75,8 / 45,1 / 64,9 — **die
+     KI bildet keine Rammen aus, ohne sie werden die Partien zu lang**; also
+     ki AC-34 „Rammen gegen Befestigungen" dazu.
+   - **Benutzer 2026-11-13, 09:30, wörtlich:** „Und mauern baut man
+     normalerweise eher außen und bestenfalls komplett drumherum. Nicht
+     irgendwo ins dorf" und „man darf dann bei fortgeschrittener spielzeit
+     wenns die ressourcen hergeben auch mehrere kasernen, schießanlagen, usw.
+     Bauen als ki". Meine Lesart (so gesagt, nicht bestätigt): (a) **die KI
+     zieht einen Mauerring außen um ihr Dorf, mit Toren** — heute baut sie
+     keine Mauer; das Bild zu darstellung AC-22 mit der Mauer mitten im Dorf
+     ist ein Testaufbau; (b) **mehr Militärgebäude bei Überfluss** — heute
+     höchstens 3 / 3 / 5 / 6 je Zeitalter (`MILITAER_JE_ZEITALTER`), künftig
+     darüber hinaus, wenn die Vorräte sich stapeln. Reihenfolge: Burgen und
+     Rammen (ki AC-33, AC-34) → mehr Militärgebäude → Mauerring (das
+     Riskanteste: Wege durch Tore, der Gegner braucht Rammen; an fahrplan
+     AC-11 messen, Grenzen nicht lockern).
    - **Die KI baut Burgen** („definitiv") — neues Kriterium ki AC-33: im
      Fürstentum, nach dem ersten Aufbruch, am Dorf zum Gegner hin, über
      `ki.bauwerkePruefen` (verallgemeinern, Stein sammeln). Messen: Partien
@@ -319,6 +343,15 @@ Reitertempo 1,55 stammt nicht aus `vorlage-aoe2.md`.
 
 ## Fallen, die schon einmal Zeit gekostet haben
 
+- **Während eines Browserlaufs nichts nebenher rechnen** (2026-11-13): mit
+  KI-Probepartien daneben fielen acht Fälle und der Lauf riss an seiner
+  Zeitgrenze. Auch `check:kurz` verträgt keinen Browserfall daneben
+  (`karriere AC-7`).
+- **`qa/letzter-lauf.log` wird erst am Ende geschrieben.** Wer es liest,
+  während der Lauf noch läuft, liest den vorigen — so habe ich einmal
+  falsch „grün" gemeldet.
+- **`zeitraffer 0` hält auch die Sicht an**: was der Prüfgriff danach
+  aufstellt, bleibt für den Gegner im Nebel. Erst sehen lassen, dann anhalten.
 - **Zeitmessungen reissen unter Last.** `karte AC-15` und `karriere AC-7`
   messen deshalb den schnellsten von mehreren Durchgaengen. Wer eine neue
   Zeitmessung schreibt, macht es genauso — und senkt nie die Schwelle.
