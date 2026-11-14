@@ -1393,6 +1393,11 @@
     },
     {
       "spec": "10-strategie/ki.md",
+      "ac": "AC-36",
+      "begruendung": "Wann die Dorfbewohner der KI gemeinsam auf einen Angreifer gehen, ist eine Rechnung in ihrer Entscheidung: wie viele Angreifer sie beim Getroffenen sieht, wie viele Dorfbewohner in acht Feldern stehen und ob die zusammen in zehn Sekunden fertig waeren - sonst bleibt es bei der Flucht. Was danach im Bild steht, ist der Angriff nach einem Rechtsklick, wie ihn ein Mensch setzt, und der ist nachgewiesen (kampf AC-1, kampf AC-5). Ein Bildschirmfoto zeigte Dorfbewohner um einen Reiter, aber nicht, dass es gegen einen Ritter oder drei Angreifer unterbleibt und an der Leine endet. Geprueft wird das im Rechenteil in gebauten Lagen mit Gegenprobe ohne die Regel (tests/strategie-ki-sturm.test.mjs)."
+    },
+    {
+      "spec": "10-strategie/ki.md",
       "ac": "AC-38",
       "begruendung": "An welches Feld die KI einen Sammler schickt und wann sie ein Lager baut, ist eine Rechnung aus Entfernungen auf dem Server - Feld zur naechsten Annahme, Anteil der Sammler, die weit laufen - samt einer Ruecklage im Vorrat. Geprueft wird das gewaehlte Feld und der Bauauftrag in gebauten Lagen und der Laufweg der Holzfaeller in ganzen Partien im Pruefstand. Ein Bild zeigte Holzfaeller an einem Lager, nicht die Wege der anderen und nicht, warum das Lager dort steht."
     }

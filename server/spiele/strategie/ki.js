@@ -180,6 +180,23 @@ const HEER_ABSTAND = 4;
 // ein neuer Befehl in jeder Entscheidung wuerde ihr nur den Weg neu rechnen.
 const WACHE_NAH = 3;
 
+// Gemeinsam auf den Angreifer (ki AC-36). Ein Dorfbewohner allein verliert
+// gegen jeden (Angriff 3, keine Ruestung) - sechs zusammen erschlagen einen
+// Spaeherreiter in fuenf Sekunden. Wer in STURM_UMKREIS Feldern um den
+// Getroffenen arbeitet, geht mit, hoechstens STURM_HOECHSTENS. Nur gegen
+// hoechstens STURM_FEINDE Angreifer, und nur, wenn sie zusammen in
+// STURM_SEKUNDEN fallen (gerechnet mit dem Schaden, den die Welt rechnet):
+// gegen einen Ritter (Ruestung 2, 100 Leben) waeren es 25 Sekunden - da
+// bleibt es bei der Flucht. Weiter als STURM_LEINE Felder vom Ort des ersten
+// Schlags folgt keiner: ein Reiter ist schneller und zoege sie sonst ueber
+// die Karte. Wer weniger als STURM_SCHWACH Leben hat, flieht.
+const STURM_UMKREIS = 8;
+const STURM_HOECHSTENS = 8;
+const STURM_FEINDE = 2;
+const STURM_SEKUNDEN = 10;
+const STURM_LEINE = 10;
+const STURM_SCHWACH = 8;
+
 // Wie weit das Marschziel der Wache von jedem Feind wegbleibt. `feindAn` im
 // Server zieht einen Feind im Umkreis von 1,01 Feldern unter den Klick, und
 // daraus wuerde ein Angriff auf genau ihn statt des Angriffslaufs.
@@ -362,6 +379,10 @@ class Ki {
     // Wie oft die Wache zu einem Angriffsort gezogen ist - der Pruefstand
     // misst daran.
     this.verteidigungen = 0;
+    // Die Dorfbewohner, die gemeinsam auf einen Angreifer gehen (ki AC-36):
+    // `{ ziel, ort, wer }` - und wie oft es dazu kam.
+    this.sturm = null;
+    this.stuerme = 0;
     // Wann zuletzt ein Sammler den Rohstoff gewechselt hat, und wie oft (ki AC-12).
     this.zuletztUmverteilt = -Infinity;
     this.zuletztStein = -Infinity; // wann zuletzt einer zum Stein oder zurueck ging (ki AC-30)
@@ -433,7 +454,10 @@ class Ki {
     // Ohne Gefallene: ein Toter liegt zwei Sekunden in der Welt, hat keinen
     // Auftrag und galt so als untaetig - `bauer()` konnte ihn waehlen
     // (Durchsicht Runde 94).
-    const dorfbewohner = eigene.filter((e) => e.art === 'dorfbewohner' && !e.tot);
+    // Wer gemeinsam auf einen Angreifer geht (ki AC-36), ist so lange fuer
+    // nichts anderes da - sonst holte ihn die naechste Baustelle wieder weg.
+    const ohneSturm = (liste) => (this.sturm ? liste.filter((e) => !this.sturm.wer.has(e.id)) : liste);
+    let dorfbewohner = ohneSturm(eigene.filter((e) => e.art === 'dorfbewohner' && !e.tot));
     const gebaeude = [...welt.gebaeude.values()].filter((g) => g.besitzer === this.spielerId);
     const zentrum = gebaeude.find((g) => g.art === 'dorfzentrum' && g.fertig);
 
@@ -482,6 +506,7 @@ class Ki {
     // Nach dem Heer: das hat eben wahrgenommen, was sie sieht.
     this.erkunden(eigene);
     this.verteidigenPruefen(eigene, gebaeude, zentrum);
+    dorfbewohner = ohneSturm(dorfbewohner);
     this.umverteilen(dorfbewohner);
     this.baustellenWeiterbauen(gebaeude, dorfbewohner);
     this.handelPruefen(eigene, gebaeude, dorfbewohner);
@@ -1427,6 +1452,8 @@ class Ki {
     }
     this.leben = jetzt;
     this.fehlt = fehltJetzt;
+    // Erst die Dorfbewohner selbst (ki AC-36): wer mitgeht, flieht nicht.
+    const stuermt = this.sturmPruefen(eigene, getroffeneDorf, zentrum);
     const getroffen = [...getroffeneBauten, ...getroffeneDorf];
     if (!getroffen.length) return;
 
@@ -1458,13 +1485,129 @@ class Ki {
       }
     }
 
-    if (!getroffeneDorf.length) return;
+    const fliehen = getroffeneDorf.filter((e) => !stuermt.has(e.id));
+    if (!fliehen.length) return;
     // Auch der Fluchtpunkt haelt Abstand: wer vor dem Angreifer flieht, laeuft
     // nicht zwischen seine Leute, und nicht auf das Feld, zu dem eben die Wache
     // geschickt wurde.
-    const heim = this.freiesFeldUm(zentrum || basis, { x: getroffeneDorf[0].x, y: getroffeneDorf[0].y },
-      { feindFern: FEIND_FERN, vergeben, ausser: new Set(getroffeneDorf.map((e) => e.id)) });
-    if (heim) this.senden({ auftrag: 'befehl', einheiten: getroffeneDorf.map((e) => e.id), ziel: heim });
+    const heim = this.freiesFeldUm(zentrum || basis, { x: fliehen[0].x, y: fliehen[0].y },
+      { feindFern: FEIND_FERN, vergeben, ausser: new Set(fliehen.map((e) => e.id)) });
+    if (heim) this.senden({ auftrag: 'befehl', einheiten: fliehen.map((e) => e.id), ziel: heim });
+  }
+
+  /**
+   * Gemeinsam auf den Angreifer (ki AC-36). Wird ein Dorfbewohner getroffen
+   * und stehen nur ein oder zwei Angreifer da, die die Nachbarn zusammen
+   * schnell erschlagen, dann gehen die Nachbarn mit auf ihn los - ein
+   * Rechtsklick auf den Angreifer, wie ihn ein Mensch setzte. Sonst bleibt es
+   * bei der Flucht (ki AC-14).
+   *
+   * Ein laufender Sturm endet, wenn das Ziel gefallen, aus der Sicht oder
+   * ueber die Leine ist, oder wenn mehr Angreifer dastehen als erlaubt: wer
+   * dann noch hinterherliefe, bekommt einen Gang zurueck und danach von der
+   * naechsten Entscheidung wieder Arbeit.
+   *
+   * @returns {Set<number>} wer mitgeht - der flieht in dieser Entscheidung nicht
+   */
+  sturmPruefen(eigene, getroffeneDorf, zentrum) {
+    const welt = this.welt;
+    const mit = new Set();
+    const dorf = (e) => (EINHEITEN[e.art].klassen || []).includes('dorf');
+    const angreiferUm = (ort) => this.sichtbareFeinde().filter((f) => welt.einheitenwert(f.besitzer, f.art, 'angriff') > 0
+      && Math.hypot(f.x - ort.x, f.y - ort.y) <= STURM_UMKREIS);
+
+    if (this.sturm) {
+      const { ort, wer } = this.sturm;
+      const ziel = welt.einheiten.get(this.sturm.ziel);
+      const da = ziel && !ziel.tot && welt.feindlich(this.spielerId, ziel.besitzer)
+        && welt.sieht(this.spielerId, Math.round(ziel.x), Math.round(ziel.y))
+        && Math.hypot(ziel.x - ort.x, ziel.y - ort.y) <= STURM_LEINE;
+      const zuViele = angreiferUm(ort).length > STURM_FEINDE;
+      if (da && !zuViele) {
+        for (const e of eigene) {
+          if (!wer.has(e.id) || e.tot) continue;
+          if (e.leben < STURM_SCHWACH) wer.delete(e.id);
+          else mit.add(e.id);
+        }
+        return mit;
+      }
+      // Vorbei. Steht dort jetzt ein Heer, gehen alle heim. Sonst geht
+      // jeder zurueck an das, was er vorher tat - derselbe Rechtsklick, den
+      // ein Mensch setzte: auf sein Feld, sein Schaf, seine Farm. Ein Gang
+      // "zurueck zum Ort" waere neben den Schafen ein Schlachtbefehl fuer
+      // alle gewesen (einheiten AC-17 liest das Schaf aus dem Klick), und
+      // wer nichts mehr hat, bekommt von dieser Entscheidung neue Arbeit.
+      const { vorher } = this.sturm;
+      const zurueck = eigene.filter((e) => !e.tot && wer.has(e.id) && (!e.auftrag || e.auftrag.art === 'angreifen'));
+      this.sturm = null;
+      if (zuViele) {
+        if (zurueck.length) {
+          const ausser = new Set(zurueck.map((e) => e.id));
+          const feld = this.freiesFeldUm(zentrum || this.spieler.basis, zurueck[0], { feindFern: FEIND_FERN, ausser });
+          if (feld) this.senden({ auftrag: 'befehl', einheiten: zurueck.map((e) => e.id), ziel: feld });
+          for (const e of zurueck) mit.add(e.id);
+        }
+        return mit;
+      }
+      for (const e of zurueck) {
+        const ziel = this.alteArbeit(vorher.get(e.id));
+        if (ziel) this.senden({ auftrag: 'befehl', einheiten: [e.id], ziel });
+        else if (e.auftrag) this.senden({ auftrag: 'befehl', einheiten: [e.id], ziel: { x: Math.round(e.x), y: Math.round(e.y) } });
+      }
+      return mit;
+    }
+
+    if (!getroffeneDorf.length) return mit;
+    const opfer = getroffeneDorf[0];
+    const feinde = angreiferUm(opfer);
+    if (!feinde.length || feinde.length > STURM_FEINDE) return mit;
+    const abstand = (e) => Math.hypot(e.x - opfer.x, e.y - opfer.y);
+    // Wer baut, baut weiter: ein Haus, das zwei Minuten liegen bleibt, kostet
+    // mehr als ein Schlag weniger (gemessen am Startwert 4: 110 Sekunden
+    // ohne Wohnraum).
+    const helfer = eigene
+      .filter((e) => !e.tot && dorf(e) && e.leben >= STURM_SCHWACH && abstand(e) <= STURM_UMKREIS
+        && (e === opfer || e.auftrag?.art !== 'bauen'))
+      .sort((a, b) => abstand(a) - abstand(b) || a.id - b.id)
+      .slice(0, STURM_HOECHSTENS);
+    if (helfer.length < 2) return mit;
+    // Reicht es? So lange braeuchten sie fuer alle, die dastehen - mit dem
+    // Schaden, den die Welt rechnet (Ruestung, Verbesserungen, Haus).
+    const nachladen = welt.einheitenwert(this.spielerId, helfer[0].art, 'nachladen') || 1;
+    let sekunden = 0;
+    for (const f of feinde) sekunden += f.leben / (helfer.length * welt.schaden(helfer[0], f, false) / nachladen);
+    if (sekunden > STURM_SEKUNDEN) return mit;
+
+    const ziel = feinde.slice().sort((a, b) => abstand(a) - abstand(b) || a.id - b.id)[0];
+    this.senden({ auftrag: 'befehl', einheiten: helfer.map((e) => e.id), ziel: { x: ziel.x, y: ziel.y } });
+    // Was jeder vorher tat - dorthin geht er danach zurueck. Der Getroffene
+    // hat seine Arbeit schon verloren (die Gegenwehr aus kampf AC-2).
+    const vorher = new Map(helfer.map((e) => [e.id, e.auftrag && e.auftrag.art !== 'angreifen' ? { ...e.auftrag } : null]));
+    this.sturm = { ziel: ziel.id, ort: { x: opfer.x, y: opfer.y }, wer: new Set(helfer.map((e) => e.id)), vorher };
+    this.stuerme += 1;
+    for (const e of helfer) mit.add(e.id);
+    return mit;
+  }
+
+  // Wohin der Rechtsklick geht, der einen an seine alte Arbeit zurueckbringt
+  // (ki AC-36): das Feld des Vorrats, das Schaf, die Farm - soweit es sie
+  // noch gibt.
+  alteArbeit(auftrag) {
+    if (!auftrag) return null;
+    const welt = this.welt;
+    if (auftrag.art === 'sammeln' && auftrag.feld) {
+      const feld = welt.karte.felder[auftrag.feld.y * welt.karte.groesse + auftrag.feld.x];
+      return SAMMELN[feld] ? { x: auftrag.feld.x, y: auftrag.feld.y } : null;
+    }
+    if (auftrag.art === 'tier') {
+      const tier = welt.tiere.get(auftrag.tier);
+      return tier ? { x: tier.x, y: tier.y } : null;
+    }
+    if (auftrag.art === 'farm') {
+      const farm = welt.gebaeude.get(auftrag.gebaeude);
+      return farm && !farm.brach ? { x: farm.x, y: farm.y } : null;
+    }
+    return null;
   }
 
   /**
@@ -2284,7 +2427,7 @@ class Ki {
 
 module.exports = {
   Ki, ENTSCHEIDEN_ALLE, ZIEL_DORFBEWOHNER, DORFBEWOHNER_JE_ZEITALTER, zielDorfbewohner, FEUDALZEIT_NAHRUNG, AN_SCHAFEN, AN_BEEREN, MILITAER,
-  HEER, WACHE, UEBERLEGEN, MARSCH_MINDESTENS, HEER_ABSTAND, WACHE_NAH, FEIND_FERN, VERGEBEN_ABSTAND, MILITAER_HOLZ, UEBERSCHUSS, MANGEL, UMVERTEILEN_SEKUNDEN, UNERREICHBAR_SEKUNDEN, MILITAER_HOECHSTENS, MILITAER_JE_ZEITALTER, plan,
+  HEER, WACHE, UEBERLEGEN, MARSCH_MINDESTENS, HEER_ABSTAND, WACHE_NAH, FEIND_FERN, STURM_UMKREIS, STURM_HOECHSTENS, STURM_FEINDE, STURM_SEKUNDEN, STURM_LEINE, STURM_SCHWACH, VERGEBEN_ABSTAND, MILITAER_HOLZ, UEBERSCHUSS, MANGEL, UMVERTEILEN_SEKUNDEN, UNERREICHBAR_SEKUNDEN, MILITAER_HOECHSTENS, MILITAER_JE_ZEITALTER, plan,
   MILITAER_UEBERFLUSS_AB, MILITAER_UEBERFLUSS_HOLZ, MILITAER_UEBERFLUSS_KAMPF, MILITAER_ALLERHOECHSTENS,
   GOLD_KNAPP, PLATZ_RINGE, KARREN, HANDEL_ABSTAENDE, HANDEL_MINDESTENS, VERKAUF_RUECKLAGE, KARREN_WARTEN_SEKUNDEN, FEIND_VERGESSEN,
   WERKSTATT, RAMME, RAMMEN, RAMMEN_MIT, HEER_BEFESTIGT, SAMMEL_ABSTAND, RAMME_WARTEN_SEKUNDEN, ZUG_WARTEN_SEKUNDEN, HANDEL_VOR,

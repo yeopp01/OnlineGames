@@ -2,7 +2,7 @@
 
 **Bereich:** Strategie
 **Kuerzel:** ki
-**Stand:** 32/37 fertig · 5 offen
+**Stand:** 33/38 fertig · 5 offen
 
 ## Zweck
 
@@ -483,6 +483,43 @@ nicht die Regeln.
   vorher 78 %) und die Beeren (48 %).
   **Rückmeldung des Benutzers:** „sie bauen keine neuen holzfällerplätze
   mehr".
+- **AC-36** `fertig` **Dorfbewohner gemeinsam auf Angreifer** — Wird ein
+  Dorfbewohner der KI getroffen und stehen höchstens zwei Angreifer da, gehen
+  die Dorfbewohner im Umkreis von acht Feldern gemeinsam auf ihn los,
+  höchstens acht, der Getroffene mit — ein Rechtsklick auf den Angreifer,
+  wie ihn ein Mensch setzte. Aber nur, wenn sie zusammen in zehn Sekunden
+  mit ihm fertig sind, gerechnet mit dem Schaden, den die Welt rechnet
+  ([Kampf](kampf.md) AC-5): sechs erschlagen einen Späherreiter in fünf
+  Sekunden; gegen einen Ritter (Rüstung 2, 100 Leben) wären es 25, da bleibt
+  es bei der Flucht aus AC-14, ebenso gegen drei und mehr Angreifer und wenn
+  nur einer in der Nähe ist. Wer weniger als acht Leben hat, flieht, und
+  wer baut, baut weiter. Dem Ziel folgt keiner weiter als zehn Felder vom
+  Ort des ersten Schlags — ein Reiter ist schneller und zöge sie sonst über
+  die Karte. Ist es gefallen, fort oder über diese Leine, geht jeder an
+  seine alte Arbeit zurück — derselbe Rechtsklick auf sein Feld, sein Schaf,
+  seine Farm, den ein Mensch setzte; wer keine mehr hat, bekommt sie von der
+  nächsten Entscheidung. Stehen inzwischen mehr als zwei Angreifer da, gehen
+  alle zum Dorfzentrum. Solange sie stürmen, holt sie keine Baustelle und
+  keine Umverteilung weg. **Gemessen am 2026-11-14** in vier gebauten Lagen
+  (ein Späherreiter mitten im Dorf, der immer den nächsten Dorfbewohner
+  schlägt): er fällt nach 4 bis 11 Sekunden statt nach 11 bis 25, und die KI
+  verliert dabei 6 bis 18 Leben statt 27 bis 30 (kein Dorfbewohner fällt,
+  mit und ohne). Über vierzig Startwerte im Nebel danach: alle mit Sieger,
+  **35 vor Minute 60 — genau die Grenze, ohne Abstand** (vorher 37), Median
+  39,6 (38,9), längste 84,8 (71,3); die Schwerpunkte der Häuser halten. Über
+  die Startwerte 41 bis 80 kostet die Regel nichts: 37 vor Minute 60, Median
+  41,6, längste 72,8 — ohne sie 36, 41,0 und 75,7. Zwei gegen zwei über
+  zwanzig Startwerte: alle entschieden, längste 71,3. **Die erste Fassung
+  riss ki AC-4, ki AC-5 und fahrplan AC-5** am Startwert 4: die Bauer liefen
+  mit, das Haus blieb liegen (110 Sekunden ohne Wohnraum), und der Gang
+  „zurück zum Ort“ war neben den Schafen ein Schlachtbefehl für alle acht
+  (einheiten AC-17 liest das Schaf aus dem Klick) — daher „wer baut, baut
+  weiter“ und der Weg zurück an die alte Arbeit. **Nicht gemessen:** wie oft
+  es KI gegen KI dazu kommt, und wie es sich gegen einen Menschen anfühlt,
+  der den Reiter zurückzieht und wiederkommt — jeder neue Schlag ruft sie
+  wieder. **Rückmeldung des Benutzers:** „ich greife früh immer mit dem
+  Späher die KI an und kann immer gleich 2 dorfbewohner töten, da muss sie
+  gleich konsequent mit den dorfbewohnern auf den späher draufgehn".
 - **AC-35** `offen` **Die KI forscht** — Bis zu den Truppenstufen
   (einheiten AC-58 bis AC-62, bauen AC-38, AC-39) erforscht die KI nichts:
   sie bildet im Fürstentum die Einheiten des Lehens aus und ist jedem

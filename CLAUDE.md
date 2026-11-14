@@ -180,7 +180,7 @@ Umfang hinzufügt, dort nachsehen.
 
 ## Stand
 
-**549 von 672 Kriterien fertig.** 922 Tests ohne Browser und 14 ganze Partien, 293 im Browser. Die
+**550 von 673 Kriterien fertig.** 926 Tests ohne Browser und 14 ganze Partien, 293 im Browser. Die
 Übersicht ist der Bericht: `npm run qa:report`.
 
 Gebaut ist der Unterbau: Räume, Übertragung, Karte, Wegfindung, Sammeln,
@@ -455,7 +455,17 @@ scheiterte sie spät alle zehn Sekunden am abgebauten Gold, und neben 4500
 Holz fehlte die Nahrung (zwei gegen zwei, Startwert 2: kein Sieger bis
 Minute 90). Gemessen danach: im Nebel 37 von 40 vor Minute 60, Median
 38,9, längste 71,3; zu viert alle zwanzig vor Minute 90, längste 73,4;
-die Häuser gegeneinander sind danach nicht neu gemessen. **Bei
+die Häuser gegeneinander sind danach nicht neu gemessen. **Dorfbewohner
+gehen gemeinsam auf einen Angreifer** (ki AC-36, `ki.sturmPruefen`,
+`STURM_*`): höchstens zwei Angreifer, bis zu acht Dorfbewohner aus acht
+Feldern, nur wenn sie in zehn Sekunden fertig wären (gegen einen Ritter
+bleibt es bei der Flucht), und nicht weiter als zehn Felder vom ersten
+Schlag; wer baut, baut weiter, und danach geht jeder an seine alte Arbeit
+zurück (`ki.alteArbeit`). Ein Späherreiter im Dorf fällt nach 4 bis 11
+statt 11 bis 25 Sekunden; im Nebel danach **35 von 40 vor Minute 60 —
+genau die Grenze**, Median 39,6, längste 84,8 (Startwerte 41 bis 80: 37,
+41,6 und 72,8, ohne die Regel 36), zu viert längste 71,3. Gegen einen
+Menschen nicht geprüft. **Bei
 Überfluss baut sie über ihre Grenze hinaus** (ki AC-34): ab dem Fürstentum,
 alle Schlangen voll, 600 Holz und zusammen 1000 Nahrung und Gold im Vorrat
 — ein weiteres Militärgebäude, höchstens neun. KI gegen KI greift das fast
