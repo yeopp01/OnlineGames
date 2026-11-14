@@ -57,14 +57,22 @@ test.describe('Ausweichen', () => {
       await anna.waitForTimeout(150);
     }
 
-    // Angekommen: alle vier stehen am Ziel und laufen nicht mehr.
+    // Angekommen: alle vier stehen am Ziel und laufen nicht mehr - und sind
+    // auseinandergetreten. Ohne das Zweite gewann der Test einen Wettlauf:
+    // in dem Takt, in dem zwei auf demselben Feld ankommen, stehen beide
+    // still, und das Ausweichen beginnt erst danach (gefallen im vollen Lauf
+    // am 2026-11-14, einzeln dreimal gruen). Treten sie nie auseinander,
+    // laeuft diese Wartezeit ab.
     await anna.waitForFunction(({ ids: alle, ziel }) => {
       const a = window.ansicht;
-      return alle.every((i) => {
+      const stehen = alle.every((i) => {
         const e = a.nachher.get(i);
         const v = a.vorher?.get(i);
         return e && Math.hypot(e.x - ziel.x, e.y - ziel.y) <= 1.6 && (!v || (v.x === e.x && v.y === e.y));
       });
+      if (!stehen) return false;
+      const orte = alle.map((i) => a.nachher.get(i));
+      return orte.every((e, n) => orte.every((f, m) => m <= n || Math.hypot(e.x - f.x, e.y - f.y) >= 0.5));
     }, { ids, ziel: lage.ziel }, { timeout: 60_000 });
     await anna.evaluate((ziel) => {
       const a = window.ansicht;

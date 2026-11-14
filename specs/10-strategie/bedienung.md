@@ -2,7 +2,7 @@
 
 **Bereich:** Strategie
 **Kuerzel:** bedienung
-**Stand:** 69/74 fertig · 2 in QA · 3 offen
+**Stand:** 70/75 fertig · 2 in QA · 3 offen
 
 ## Zweck
 
@@ -537,9 +537,8 @@ unter [Einheiten](einheiten-und-befehle.md) AC-55 und AC-56,
 ### Aus dem Spiel auf dem Server (2026-11-13)
 
 Rückmeldungen des Benutzers aus seinen Partien gegen die KI. Die Nummern 63
-bis 66, 68 und 69 waren für die Punkte derselben Liste vorgemerkt; 63, 64
-und 69 fehlen noch (Vorräte ansehen, zwei Seiten im Baumenü, das Haus im
-Spiel) — sie werden hier eingetragen, wenn sie gebaut sind.
+bis 66, 68 und 69 waren für die Punkte derselben Liste vorgemerkt und sind
+inzwischen alle eingetragen.
 
 - **AC-63** `fertig` **Vorräte lassen sich ansehen** — Ein Klick auf einen
   Baum, einen Beerenstrauch, ein Gold- oder Steinvorkommen zeigt unten
@@ -554,6 +553,24 @@ Spiel) — sie werden hier eingetragen, wenn sie gebaut sind.
   Sicht zeigt. **Rückmeldung des Benutzers:** „Auf Baum, Holz, Schafe, etc.
   kann man nicht draufklicken um zu sehen, wie viel noch da ist (v.a. tote
   schafe".
+- **AC-64** `fertig` **Baumenü auf zwei Seiten** — Das Baumenü eines
+  Dorfbewohners (AC-25) hat zwei Seiten: **Wirtschaft** (Haus, Mühle, Lager,
+  Farm, Schmiede, Kloster, Universität, Markt) und **Militär** (Kaserne,
+  Schießanlage, Stall, Außenposten, Belagerungswerkstatt, Wachturm,
+  Steinmauer, Tor, Burg). Zwei Reiter links wechseln die Seite. Wer neu zu
+  bauen beginnt, sieht die Wirtschaft: nach jeder neuen Auswahl und nachdem
+  ein Gebäude gesetzt oder das Setzen abgebrochen ist; wer mit Umschalt
+  weitersetzt (AC-48), bleibt auf seiner Seite. Auf welcher Seite ein
+  Gebäude steht, sagen die Daten (`seite` in `GEBAEUDE`), nicht der
+  Browser. **Die Tasten bleiben** (AC-27): `B` und der Buchstabe wählen ein
+  Gebäude, gleich welche Seite offen ist — sie zeigt sich dann von selbst —,
+  und noch einmal `B` wechselt die Seite. **Messbar:** im Fürstentum stehen
+  alle achtzehn Gebäude im Menü, sichtbar sind die neun der offenen Seite in
+  höchstens zwei Reihen (vorher drei Reihen zu sechs: auf 1366 × 768 fast die
+  halbe Bildhöhe); was Kampfeinheiten ausbildet, schießt oder sperrt, steht
+  auf der Militärseite, und keine Seite trägt mehr als zehn Gebäude.
+  **Rückmeldung des Benutzers:** „gebäude muss man irgendwie beim
+  dorfbewohner etwas organisieren, dass das nicht zu breit wird."
 - **AC-65** `fertig` **Forschung erkennbar, laufende grau** — Ein Knopf, der
   forscht (eine Verbesserung oder der Aufstieg), trägt einen goldenen Rand
   und eine goldene Ecke — am Knopf wie in der Schlange —, ein Knopf, der eine

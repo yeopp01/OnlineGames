@@ -11,6 +11,9 @@
 // Rechnen tut hier nichts: die Leiste zeigt den Zustand und schickt Absichten.
 // Werte wie Leben und Kosten kommen vom Server mit dem Aufbau (ansicht.werte).
 import { BAUTASTEN } from './tasten.js';
+
+// Die Seiten des Baumenues (bedienung AC-64), nach `seite` in den Daten.
+const BAUSEITEN = ['Wirtschaft', 'Militär'];
 import { BEERE, GOLD, STEIN, WALD } from './gelaende.js';
 import { FIGUREN, WAREN, figurZeichnen } from './figuren.js';
 import { GEBAEUDE, gebaeudeZeichnen } from './gebaeude.js';
@@ -988,6 +991,7 @@ export class Auswahlleiste {
     this.ansicht = ansicht;
     this.senden = senden;
     this.gezeigt = null; // Schluessel des zuletzt gebauten Inhalts
+    this.bauAuswahl = ''; // fuer wen das Baumenue zuletzt stand (bedienung AC-64)
 
     // Die Tafel am Knopf (bedienung AC-55): was eine Einheit, ein Gebaeude,
     // eine Verbesserung bringt - nicht nur, was sie kostet. Sie steht neben
@@ -1229,12 +1233,19 @@ export class Auswahlleiste {
       return;
     }
     if (auswahl.length) {
+      // Eine neue Auswahl beginnt im Baumenue bei der Wirtschaft (bedienung
+      // AC-64) - ausser sie setzt gerade etwas.
+      const wer = auswahl.map((e) => e.i).join(',');
+      if (wer !== this.bauAuswahl) {
+        this.bauAuswahl = wer;
+        if (!a.platzieren) a.bauseite = 0;
+      }
       const bauplan = this.bauplan(auswahl);
       const bezahlbar = bauplan.map((e) => this.fehlt(e.kosten)).join('|');
       const einzeln = auswahl.length === 1 ? auswahl[0] : null;
       const schluessel = einzeln
-        ? `e${einzeln.i}:${einzeln.h}:${einzeln.l}:${einzeln.a}:${einzeln.hd}:${einzeln.r}:${bezahlbar}:${a.platzieren?.art}:${a.verbesserungen.length}`
-        : `m${auswahl.map((e) => e.i).join(',')}:${bezahlbar}:${a.platzieren?.art}`;
+        ? `e${einzeln.i}:${einzeln.h}:${einzeln.l}:${einzeln.a}:${einzeln.hd}:${einzeln.r}:${bezahlbar}:${a.platzieren?.art}:${a.verbesserungen.length}:${a.bauseite || 0}`
+        : `m${auswahl.map((e) => e.i).join(',')}:${bezahlbar}:${a.platzieren?.art}:${a.bauseite || 0}`;
       if (schluessel !== this.gezeigt) {
         this.wurzel.replaceChildren();
         if (einzeln) this.einheitBauen(einzeln, farbe);
@@ -1454,6 +1465,7 @@ export class Auswahlleiste {
       name: this.gebaeudeName(this.ansicht.ich, art),
       kosten: werte.gebaeude[art]?.kosten || {},
       groesse: werte.gebaeude[art]?.groesse || 1,
+      seite: werte.gebaeude[art]?.seite || 0,
     }));
   }
 
@@ -1484,10 +1496,37 @@ export class Auswahlleiste {
     const menue = element('div', 'baumenue');
     menue.id = 'baumenue';
     if (this.ansicht.bautasten) menue.classList.add('tasten');
+    // Zwei Seiten (bedienung AC-64): Wirtschaft und Militaer. Auf welcher ein
+    // Gebaeude steht, sagen die Daten (`seite`). Gezeigt wird eine; die Knoepfe
+    // der anderen bleiben versteckt im Baum, in der Reihenfolge des Bauplans -
+    // die Tasten nach B zaehlen ueber beide Seiten (bedienung AC-27).
+    const seiten = [...new Set(bauplan.map((e) => e.seite))].sort((x, y) => x - y);
+    const seite = seiten.includes(this.ansicht.bauseite) ? this.ansicht.bauseite : seiten[0];
+    if (seiten.length > 1) {
+      const reiter = element('div', 'bauseiten');
+      for (const s of seiten) {
+        const knopf = document.createElement('button');
+        knopf.type = 'button';
+        knopf.dataset.bauseite = String(s);
+        knopf.textContent = BAUSEITEN[s] || `Seite ${s + 1}`;
+        knopf.setAttribute('aria-pressed', s === seite ? 'true' : 'false');
+        knopf.addEventListener('click', () => {
+          this.ansicht.bauseite = s;
+          this.aktualisieren();
+        });
+        reiter.append(knopf);
+      }
+      menue.append(reiter);
+    }
+    // Die Knoepfe in einem eigenen Kasten: so beginnt die zweite Reihe unter
+    // der ersten und nicht unter den Reitern.
+    const knoepfe = element('div', 'bauknoepfe');
+    menue.append(knoepfe);
     for (const eintrag of bauplan) {
       const knopf = document.createElement('button');
       knopf.type = 'button';
       knopf.dataset.bauen = eintrag.art;
+      if (eintrag.seite !== seite) knopf.hidden = true;
       const fehlt = this.fehlt(eintrag.kosten);
       // Nicht `disabled`: ein gesperrter Knopf soll beim Ueberfahren noch sagen,
       // was fehlt - das tut er in Chrome nur, wenn er Zeigerereignisse bekommt.
@@ -1506,10 +1545,17 @@ export class Auswahlleiste {
       if (nummer < BAUTASTEN.length) knopf.append(element('kbd', 'taste', BAUTASTEN[nummer].toUpperCase()));
       knopf.addEventListener('click', () => {
         // Gesperrt sagt der Klick, warum (bedienung AC-18).
-        if (fehlt) this.ansicht.melden(`Zu wenig ${fehlt}.`);
-        else this.ansicht.platzierenBeginnen(eintrag.art);
+        if (fehlt) {
+          this.ansicht.melden(`Zu wenig ${fehlt}.`);
+          return;
+        }
+        // Mit der Taste gewaehlt, kann es auf der anderen Seite stehen: die
+        // zeigt sich dann, damit das Gewaehlte im Menue zu sehen ist.
+        this.ansicht.platzierenBeginnen(eintrag.art);
+        this.ansicht.bauseite = eintrag.seite;
+        this.aktualisieren();
       });
-      menue.append(knopf);
+      knoepfe.append(knopf);
     }
     this.wurzel.append(menue);
   }

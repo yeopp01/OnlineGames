@@ -70,7 +70,7 @@ test.describe('Bauen', () => {
     await nachweis(anna, {
       spec: BEDIENUNG,
       ac: 'AC-25',
-      titel: 'Dorfbewohner gewaehlt, 60 Holz: Haus und Farm bereit, Muehle, beide Lager und Kaserne ausgegraut',
+      titel: 'Dorfbewohner gewaehlt, 60 Holz: Haus und Farm bereit, Muehle und beide Lager ausgegraut',
       test: info,
     });
     await rohstoffe(anna, code, 'Anna', { holz: 200 });
@@ -246,6 +246,7 @@ test.describe('Bauen', () => {
       a.blickAuf(b.x + 2, b.y + 2);
     }, basis);
     await dorfbewohnerAnklicken(anna);
+    await anna.locator('[data-bauseite="1"]').click();
     await anna.locator('[data-bauen="kaserne"]').click();
     const platz = await platzImBild(anna, { n: 3, um: basis, abstand: 7 });
     expect(platz).not.toBeNull();

@@ -1,0 +1,10 @@
+{
+  "spec": "10-strategie/bedienung.md",
+  "ac": "AC-64",
+  "titel": "Mit B und der Taste der Burg gewaehlt, waehrend die Wirtschaft offen war: das Menue zeigt das Militaer, die Burg ist markiert",
+  "datei": "e2e/tests/strategie-baumenue.spec.mjs",
+  "pfad": [
+    "Baumenue auf zwei Seiten",
+    "bedienung AC-64: das Baumenue hat zwei Seiten - Wirtschaft und Militaer in hoechstens zwei Reihen, ein Reiter oder noch einmal B wechselt, die Taste eines Gebaeudes gilt auf beiden"
+  ]
+}

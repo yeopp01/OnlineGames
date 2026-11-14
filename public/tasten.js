@@ -31,7 +31,7 @@ export const BELEGUNG = [
   ['H', 'Dorfzentrum wählen'],
   ['Q (Dorfzentrum gewählt)', 'Dorfbewohner ausbilden'],
   // Aus der Liste, nicht aufgezaehlt: sie waechst mit den Stufen.
-  ['B (Dorfbewohner gewählt)', `Bautasten an, dann ${BAUTASTEN.join(' ').toUpperCase()} für das Gebäude`],
+  ['B (Dorfbewohner gewählt)', `Bautasten an, dann ${BAUTASTEN.join(' ').toUpperCase()} für das Gebäude; noch einmal B zeigt die andere Seite`],
   ['.', 'nächster untätiger Dorfbewohner'],
   ['Leertaste', 'zum Dorfzentrum, noch einmal zurück'],
   ['Tab halten', 'Spielstand aller Spieler'],
@@ -147,6 +147,14 @@ export class Tasten {
     const a = this.ansicht;
 
     if (this.bauen) {
+      // Noch einmal B: die andere Seite des Baumenues (bedienung AC-64). Die
+      // Bautasten bleiben an.
+      if (taste === 'b') {
+        const reiter = [...this.wurzel.querySelectorAll('#baumenue [data-bauseite]')];
+        const jetzt = reiter.findIndex((k) => k.getAttribute('aria-pressed') === 'true');
+        if (reiter.length) reiter[(jetzt + 1) % reiter.length].click();
+        return true;
+      }
       const nummer = BAUTASTEN.indexOf(taste);
       this.bauenSetzen(false);
       if (nummer >= 0) {

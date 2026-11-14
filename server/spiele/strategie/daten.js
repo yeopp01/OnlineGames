@@ -73,6 +73,7 @@
  * @property {number} [pfeiler] Felder je Ende, die niemand betritt (bauen AC-37)
  * @property {string} [ersetzt]
  * @property {boolean} [gezogen]
+ * @property {number} [seite] Seite im Baumenue (bedienung AC-64): fehlt es, ist es die erste (Wirtschaft), 1 ist die zweite (Militaer)
  * @property {boolean} [handel]
  */
 
@@ -362,7 +363,7 @@ const GEBAEUDE = {
   // Ein Turm nur zum Sehen (kampf AC-18, Wunsch des Benutzers: Gebaeude und
   // Forschung veraendern die Flaeche des Nebels). Werte aus der Vorlage, die
   // Sicht von zehn Feldern wie im Original.
-  aussenposten: { groesse: 1, kosten: { holz: 25, stein: 25 }, bauzeit: 15, leben: 500, wohnraum: 0, annahme: [], bildetAus: [], sicht: 10, zumAufstieg: false },
+  aussenposten: { seite: 1, groesse: 1, kosten: { holz: 25, stein: 25 }, bauzeit: 15, leben: 500, wohnraum: 0, annahme: [], bildetAus: [], sicht: 10, zumAufstieg: false },
   muehle: { groesse: 2, kosten: { holz: 100 }, bauzeit: 35, leben: 1000, wohnraum: 0, annahme: ['nahrung'], bildetAus: ['pferdekummet', 'schwererPflug'] },
   holzfaellerlager: { groesse: 2, kosten: { holz: 100 }, bauzeit: 35, leben: 1000, wohnraum: 0, annahme: ['holz'], bildetAus: ['doppelaxt', 'bogensaege'] },
   bergbaulager: { groesse: 2, kosten: { holz: 100 }, bauzeit: 35, leben: 1000, wohnraum: 0, annahme: ['gold', 'stein'], bildetAus: ['goldbergbau', 'goldschacht', 'steinbergbau', 'steinschacht'] },
@@ -377,6 +378,7 @@ const GEBAEUDE = {
     begehbar: true, nahrung: 175, rate: 0.32, bestand: false,
   },
   kaserne: {
+    seite: 1,
     groesse: 3, kosten: { holz: 175 }, bauzeit: 50, leben: 1200, wohnraum: 0, annahme: [],
     bildetAus: ['miliz', 'speerkaempfer', 'soldatenstufe', 'langschwertstufe', 'pikenierstufe'],
   },
@@ -384,10 +386,12 @@ const GEBAEUDE = {
   // Feudalzeit erreicht ist. Die Schmiede bildet keine Einheiten aus - sie
   // forscht (bauen AC-25).
   schiessanlage: {
+    seite: 1,
     groesse: 3, kosten: { holz: 175 }, bauzeit: 50, leben: 1000, wohnraum: 0, annahme: [],
     bildetAus: ['bogenschuetze', 'plaenkler', 'armbrustschuetze', 'bogenstufe', 'eliteplaenklerstufe'], zeitalter: 1,
   },
   stall: {
+    seite: 1,
     groesse: 3, kosten: { holz: 175 }, bauzeit: 50, leben: 1000, wohnraum: 0, annahme: [],
     bildetAus: ['spaeherreiter', 'ritter', 'kavalleriestufe'], zeitalter: 1,
   },
@@ -405,7 +409,7 @@ const GEBAEUDE = {
   // Ramme und Mangonel (D6). Die Universitaet forscht Mauerwerk (bauen AC-34).
   kloster: { groesse: 3, kosten: { holz: 175 }, bauzeit: 40, leben: 2100, wohnraum: 0, annahme: [], bildetAus: ['moench'], zeitalter: 2 },
   universitaet: { groesse: 3, kosten: { holz: 200 }, bauzeit: 60, leben: 2100, wohnraum: 0, annahme: [], bildetAus: ['mauerwerk', 'wehrturm'], zeitalter: 2 },
-  belagerungswerkstatt: { groesse: 3, kosten: { holz: 200 }, bauzeit: 40, leben: 2100, wohnraum: 0, annahme: [], bildetAus: ['ramme', 'mangonel'], zeitalter: 2 },
+  belagerungswerkstatt: { seite: 1, groesse: 3, kosten: { holz: 200 }, bauzeit: 40, leben: 2100, wohnraum: 0, annahme: [], bildetAus: ['ramme', 'mangonel'], zeitalter: 2 },
   // Ein Gebaeude, das schiesst (bauen AC-29): `angriff`, `reichweite` und
   // `nachladen` wie bei einer Einheit, Pfeile also Fernkampf. Werte aus der
   // Vorlage - 5 Angriff, Reichweite 8, alle zwei Sekunden ein Pfeil, Ruestung
@@ -415,6 +419,7 @@ const GEBAEUDE = {
   // schiesst - und weniger als der Aussenposten, der das Gebaeude zum Sehen
   // ist (kampf AC-18).
   wachturm: {
+    seite: 1,
     groesse: 1, kosten: { holz: 25, stein: 125 }, bauzeit: 80, leben: 1020, wohnraum: 0, annahme: [], bildetAus: [], zeitalter: 1,
     angriff: 5, reichweite: 8, nachladen: 2, nahruestung: 1, fernruestung: 7, sicht: 9, zumAufstieg: false,
   },
@@ -434,9 +439,10 @@ const GEBAEUDE = {
   // niemanden begehbar, dazwischen liegt die Durchfahrt. Gesetzt wird es in
   // eine Luecke oder auf die eigene Mauer, deren Felder es ersetzt
   // (`ersetzt`), wie in der Vorlage.
-  tor: { groesse: 1, laenge: 4, pfeiler: 1, kosten: { stein: 30 }, bauzeit: 70, leben: 2750, wohnraum: 0, annahme: [], bildetAus: [], zeitalter: 1,
+  tor: { seite: 1, groesse: 1, laenge: 4, pfeiler: 1, kosten: { stein: 30 }, bauzeit: 70, leben: 2750, wohnraum: 0, annahme: [], bildetAus: [], zeitalter: 1,
     tor: true, ersetzt: 'steinmauer', bestand: false, zumAufstieg: false, sicht: 2 },
   steinmauer: {
+    seite: 1,
     groesse: 1, kosten: { stein: 5 }, bauzeit: 8, leben: 1800, wohnraum: 0, annahme: [], bildetAus: [], zeitalter: 1,
     gezogen: true, bestand: false, zumAufstieg: false, sicht: 2,
   },
@@ -453,6 +459,7 @@ const GEBAEUDE = {
   // das am weitesten sieht (kampf AC-18). Die Spezialeinheit kommt mit den
   // Voelkern (Stufe E), der Unterschlupf ist nicht gebaut.
   burg: {
+    seite: 1,
     groesse: 4, kosten: { stein: 650 }, bauzeit: 200, leben: 4800, wohnraum: 20, annahme: [], bildetAus: [], zeitalter: 2,
     angriff: 11, reichweite: 8, nachladen: 2, pfeile: 4, nahruestung: 8, fernruestung: 11, sicht: 9,
   },

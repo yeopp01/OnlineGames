@@ -214,6 +214,9 @@ export class Ansicht {
     this.arbeiter = { holz: 0, nahrung: 0, gold: 0, stein: 0 };
     // Platzieren eines Gebaeudes (bauen AC-4): welche Art, und wo der Zeiger ist.
     this.platzieren = null;
+    // Welche Seite des Baumenues offen ist (bedienung AC-64): 0 die
+    // Wirtschaft, 1 das Militaer.
+    this.bauseite = 0;
     this.zeiger = null;
     // Steht der Zeiger ueber dem Spielbild - und was ein Rechtsklick dort
     // taete (bedienung AC-52). Jedes Bild neu bestimmt.
@@ -306,6 +309,7 @@ export class Ansicht {
     this.wegpunkte = new Map();
     this.angriffslauf = false;
     this.platzieren = null;
+    this.bauseite = 0;
     this.untaetige = [];
     this.letzterUntaetiger = null;
     this.arbeiter = { holz: 0, nahrung: 0, gold: 0, stein: 0 };
@@ -1683,6 +1687,9 @@ export class Ansicht {
 
   platzierenBeenden() {
     this.platzieren = null;
+    // Gesetzt oder abgebrochen: das Baumenue beginnt wieder bei der
+    // Wirtschaft (bedienung AC-64).
+    this.bauseite = 0;
     this.beiAuswahl();
   }
 

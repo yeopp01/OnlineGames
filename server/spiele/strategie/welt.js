@@ -4668,6 +4668,8 @@ class Welt {
         }])),
         gebaeude: Object.fromEntries(Object.entries(GEBAEUDE).map(([art, w]) => [art, {
           leben: w.leben, bildetAus: w.bildetAus, groesse: w.groesse, kosten: w.kosten, bauzeit: w.bauzeit,
+          // Auf welcher Seite des Baumenues es steht (bedienung AC-64).
+          seite: w.seite || 0,
           // Kein Quadrat (bauen AC-37): so viele Felder in einer Reihe, davon
           // an jedem Ende so viele Tuerme.
           laenge: w.laenge || null, pfeiler: w.pfeiler || 0,

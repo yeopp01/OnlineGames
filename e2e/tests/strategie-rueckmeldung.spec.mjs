@@ -487,6 +487,7 @@ test.describe('Rueckmeldungen aus dem ersten Spiel', () => {
     await rohstoffe(anna, code, 'Anna', { holz: 600 });
     await waehlen(anna, [dorf[2]]);
     await expect(anna.locator('[data-bauen="kaserne"]')).toHaveAttribute('aria-disabled', 'false');
+    await anna.locator('[data-bauseite="1"]').click();
     await anna.locator('[data-bauen="kaserne"]').click();
     const platz = await platzImBild(anna, { n: 3, um: basis, abstand: 6 });
     expect(platz, 'ein freier Platz im Bild').not.toBeNull();

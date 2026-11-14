@@ -1,0 +1,10 @@
+{
+  "spec": "10-strategie/bedienung.md",
+  "ac": "AC-64",
+  "titel": "Dorfbewohner im Fuerstentum gewaehlt: links die Reiter Wirtschaft und Militaer, offen die Wirtschaft in zwei Reihen",
+  "datei": "e2e/tests/strategie-baumenue.spec.mjs",
+  "pfad": [
+    "Baumenue auf zwei Seiten",
+    "bedienung AC-64: das Baumenue hat zwei Seiten - Wirtschaft und Militaer in hoechstens zwei Reihen, ein Reiter oder noch einmal B wechselt, die Taste eines Gebaeudes gilt auf beiden"
+  ]
+}

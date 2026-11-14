@@ -1056,16 +1056,46 @@ canvas.angriffslauf {
 
 .baumenue {
   display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
+  align-items: center;
   gap: 0.35rem;
   padding-left: 1rem;
   border-left: 1px solid #ffffff1f;
 }
 
+.baumenue .bauknoepfe {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
+
 .baumenue button {
   width: 5.2rem;
   gap: 0.1rem;
+}
+
+/* Zwei Seiten (bedienung AC-64): die Reiter stehen links uebereinander. Die
+   Knoepfe der anderen Seite bleiben im Baum und sind versteckt - `display`
+   der Leistenknoepfe ueberstimmte sonst das Attribut. */
+.baumenue .bauseiten {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 0.35rem;
+}
+
+.baumenue .bauseiten button {
+  padding: 0.45rem 0.25rem;
+  font-size: 0.8rem;
+}
+
+.baumenue .bauseiten button[aria-pressed="true"] {
+  border-color: #f0b35a;
+  background: #1a170e;
+  color: #f0b35a;
+}
+
+.baumenue button[hidden] {
+  display: none;
 }
 
 .baumenue button.aktiv {

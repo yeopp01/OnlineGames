@@ -180,7 +180,7 @@ Umfang hinzufügt, dort nachsehen.
 
 ## Stand
 
-**548 von 671 Kriterien fertig.** 920 Tests ohne Browser und 14 ganze Partien, 292 im Browser. Die
+**549 von 672 Kriterien fertig.** 922 Tests ohne Browser und 14 ganze Partien, 293 im Browser. Die
 Übersicht ist der Bericht: `npm run qa:report`.
 
 Gebaut ist der Unterbau: Räume, Übertragung, Karte, Wegfindung, Sammeln,
@@ -753,7 +753,12 @@ eigene und fremde Haus an der Auswahl (AC-69), Kampfwerte als „3+1"
 Schlagbewegung je Schlag (AC-72), der Mönch ist zu hören und seine Ruhe zu
 sehen (AC-74, AC-68). **`Entf` entfernt das Gewählte** (AC-75,
 Nachricht `entlassen`): eine Einheit oder ein Gebäude je Druck, ohne
-Punkte für den Gegner. Ein gefallenes Gebäude liegt kurz als Trümmer da
+Punkte für den Gegner. **Das Baumenü hat zwei Seiten** (AC-64): Wirtschaft
+und Militär, `seite` in `GEBAEUDE`, Reiter links oder noch einmal `B`; die
+Tasten zählen über beide Seiten, und nach jedem gesetzten oder
+abgebrochenen Bau und jeder neuen Auswahl steht wieder die Wirtschaft
+(`ansicht.bauseite`). Browsertests, die ein Militärgebäude mit der Maus
+wählen, klicken vorher `[data-bauseite="1"]`. Ein gefallenes Gebäude liegt kurz als Trümmer da
 (darstellung AC-26), nach dem Ende steht das Bild (spielziel AC-28), Zoomen
 stockt nicht mehr (darstellung AC-27), und **Pfeil und Wurfstein kommen aus
 einer gerenderten Tafel** (`geschoss`, darstellung AC-28) — der gezeichnete

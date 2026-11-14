@@ -110,6 +110,7 @@ test('bauen AC-7: eine Kaserne im Bau, von Berts Miliz angegriffen - die Leiste 
       return e?.i;
     }, [kuerzel, wiese]).then((h) => h.jsonValue());
     await waehlen(anna, [bauer], { zoom: 1.6, blick: wiese });
+    await anna.locator('[data-bauseite="1"]').click();
     await anna.locator('[data-bauen="kaserne"]').click();
     const platz = await platzImBild(anna, { n: 3, um: wiese, abstand: 0 });
     expect(platz).not.toBeNull();
