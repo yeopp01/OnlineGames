@@ -1,0 +1,10 @@
+{
+  "spec": "10-strategie/bedienung.md",
+  "ac": "AC-69",
+  "titel": "Annas Dorfzentrum gewählt: unter dem Namen steht Haus Wehrstein, darüber die Tafel mit den Boni des Hauses",
+  "datei": "e2e/tests/strategie-haus.spec.mjs",
+  "pfad": [
+    "Das Haus im Spiel",
+    "bedienung AC-69: am eigenen und am fremden Dorfzentrum steht das Haus, und die Tafel sagt, was es bringt"
+  ]
+}

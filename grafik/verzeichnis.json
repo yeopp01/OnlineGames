@@ -47,6 +47,7 @@
     { "name": "beere", "skript": "beere.py", "bilder": ["beere.webp"] },
     { "name": "gold", "skript": "gold.py", "bilder": ["gold.webp"] },
     { "name": "stein", "skript": "stein.py", "bilder": ["stein.webp"] },
-    { "name": "boden", "skript": "boden.py", "bilder": ["boden.webp"] }
+    { "name": "boden", "skript": "boden.py", "bilder": ["boden.webp"] },
+    { "name": "geschoss", "skript": "geschoss.py", "bilder": ["geschoss.webp"] }
   ]
 }

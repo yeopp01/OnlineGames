@@ -392,10 +392,18 @@ canvas.angriffslauf {
 }
 
 .punkteliste .name {
-  flex: 1;
+  flex: 0 1 auto;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+/* Das Zeitalter als roemische Ziffer (bedienung AC-67): gleich hinter dem
+   Namen, leiser als er - die Zahl rechts bleibt die Hauptsache. */
+.punkteliste .stufe {
+  flex: 1 0 auto;
+  color: #c9d2dc;
+  opacity: 0.8;
 }
 
 .punkteliste .ich .name,
@@ -650,6 +658,27 @@ canvas.angriffslauf {
   text-shadow: 0 2px 8px #000c;
 }
 
+/* Der Grund unter dem Ergebnis (spielziel AC-27): „KI 1 hat aufgegeben". */
+.endegrund {
+  margin: -0.55rem 0 0.9rem;
+  color: #d9c7a3;
+  font-size: 1rem;
+  text-align: center;
+  text-shadow: 0 1px 4px #000c;
+}
+
+.endegrund[hidden] {
+  display: none;
+}
+
+.abschlusstafel .vermerk {
+  margin-left: 0.5rem;
+  font-size: 0.78rem;
+  font-weight: 400;
+  font-style: italic;
+  opacity: 0.85;
+}
+
 .abschlusstafel {
   border-collapse: collapse;
   width: 100%;
@@ -827,6 +856,43 @@ canvas.angriffslauf {
   white-space: nowrap;
 }
 
+/* Der Rest eines Vorrats (bedienung AC-63): derselbe Balken wie das Leben,
+   aber in der Farbe von Vorraeten - ein Baum hat kein Leben. */
+.lebensbalken.restbalken {
+  background: #3a3226;
+}
+
+.lebensbalken.restbalken > span {
+  background: linear-gradient(90deg, #b58a3c, #e3c26c);
+}
+
+#vorratsrest .leise {
+  color: var(--leise);
+}
+
+/* Das Haus unter dem Namen eines Gebaeudes (bedienung AC-69). Gepunktet
+   unterstrichen: wer darauf zeigt, bekommt die Tafel mit den Boni. */
+.hausmarke {
+  display: block;
+  width: fit-content;
+  margin-top: 0.2rem;
+  color: #e8d2a0;
+  font-size: 0.8rem;
+  white-space: nowrap;
+  text-decoration: underline dotted #e8d2a088;
+  text-underline-offset: 0.2em;
+  cursor: help;
+}
+
+/* Und hinter dem Namen im Spielstand. */
+.hausvermerk {
+  margin-left: 0.6rem;
+  color: #e8d2a0;
+  font-size: 0.78rem;
+  font-weight: 400;
+  opacity: 0.85;
+}
+
 .auswahlleiste button {
   position: relative;
   display: inline-flex;
@@ -851,6 +917,40 @@ canvas.angriffslauf {
   cursor: not-allowed;
   opacity: 0.45;
   filter: grayscale(0.8);
+}
+
+/* Forschung ist keine Ausbildung (bedienung AC-65): goldener Rand und eine
+   goldene Ecke oben links - am Knopf wie in der Schlange. Was anderswo schon
+   erforscht wird, ist grau und sagt es. */
+.auswahlleiste button.forschung {
+  border-color: #d8b04a8c;
+  background: #1a170e;
+}
+
+.auswahlleiste button.forschung::before {
+  content: "";
+  position: absolute;
+  top: -1px;
+  left: -1px;
+  border-top: 0.85rem solid #d8b04a;
+  border-right: 0.85rem solid transparent;
+  border-top-left-radius: 0.5rem;
+  pointer-events: none;
+}
+
+.auswahlleiste button.forschung[data-laeuft]::after {
+  content: "läuft";
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 32%;
+  padding: 0.05rem 0;
+  background: #000000c4;
+  color: #ffe6a8;
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-align: center;
+  pointer-events: none;
 }
 
 .leben {
@@ -905,6 +1005,17 @@ canvas.angriffslauf {
 .kampfwerte .bonus {
   flex-basis: 100%;
   color: #f3c266;
+}
+
+/* Was Forschung und Haus auf den Grundwert legen (bedienung AC-70): "4+2",
+   der Zuschlag in dem Gold, das auch die Forschungsknoepfe tragen. */
+.kampfwerte .zuschlag {
+  color: #e8c15a;
+}
+
+/* Der Moench ruht (bedienung AC-68): in dem Blau des Balkens ueber ihm. */
+.kampfwerte .ruht {
+  color: #8fc6f2;
 }
 
 .auswahl-bild {
@@ -1239,6 +1350,65 @@ canvas.angriffslauf {
   background: #c75850;
 }
 
+/* Das Menue (bedienung AC-66): dasselbe Feld, die Knoepfe untereinander und
+   alle gleich breit. Nichts darin ist gefaehrlich - Aufgeben bleibt oben
+   rechts mit seiner eigenen Rueckfrage. */
+.spielmenue {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  min-width: 19rem;
+  max-width: min(24rem, calc(100vw - 2rem));
+  top: 38%;
+  z-index: 21;
+}
+
+.spielmenue[hidden] {
+  display: none;
+}
+
+.spielmenue h2 {
+  margin: 0 0 0.3rem;
+  font-size: 1.05rem;
+}
+
+.spielmenue button {
+  padding: 0.55rem 0.9rem;
+  border: 1px solid #ffffff2e;
+  border-radius: 0.5rem;
+  background: #1a212b;
+  color: #e6e9ee;
+  font: inherit;
+  cursor: pointer;
+}
+
+.spielmenue button:hover,
+.spielmenue button:focus-visible {
+  border-color: var(--betont);
+  background: #223044;
+}
+
+.spielmenue .menue-haupt {
+  background: #2b5a8a;
+  border-color: #3f77b0;
+  font-weight: 600;
+}
+
+.spielmenue p {
+  margin: 0;
+  font-size: 0.8rem;
+  line-height: 1.4;
+}
+
+.kopfzeile .menueknopf {
+  color: #e6e9ee;
+}
+
+.kopfzeile .menueknopf:hover {
+  border-color: var(--betont);
+  color: #ffffff;
+}
+
 /* Die Pause (speichern AC-19): dasselbe Feld, aber nichts Gefaehrliches -
    der Knopf ist der Ausweg, kein Wagnis. */
 .pausefeld {
@@ -1307,6 +1477,18 @@ canvas.angriffslauf {
 .abriss {
   padding: 0.4rem 0.8rem !important;
   color: #ffb4a8 !important;
+}
+
+/* Farmen von selbst neu aussaeen (bauen AC-42): ein Schalter, kein Befehl -
+   an steht er golden wie alles, was gilt. */
+.farmenschalter {
+  padding: 0.4rem 0.8rem !important;
+  white-space: nowrap;
+}
+
+.farmenschalter[aria-pressed='true'] {
+  color: #f2c14e !important;
+  border-color: #f2c14e99 !important;
 }
 
 /* Der Markt (bauen AC-33): je Ware eine Spalte, darin Kaufen und Verkaufen

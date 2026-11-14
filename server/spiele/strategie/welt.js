@@ -2,12 +2,12 @@
 'use strict';
 
 const karten = require('./karte');
-const { suchen, nachbarfeld } = require('./wege');
+const { suchen, nachbarfeld, erreichbar } = require('./wege');
 const {
   EINHEITEN, SAMMELN, TIERE, GEBAEUDE, VERBESSERUNGEN, ZEITALTER, AUFSTIEGE, KLASSEN, HANDEL, HAEUSER,
   BEVOELKERUNG_MAX, SCHLANGE_MAX, STARTAUFSTELLUNG,
 } = require('./daten');
-const { bringt, staerkt } = require('./bringt');
+const { bringt, staerkt, hausBringt } = require('./bringt');
 
 const TAKTE_PRO_SEKUNDE = 10;
 // Welche Werte die Auswahlleiste je Einheit zeigt (bedienung AC-35). Leben
@@ -79,6 +79,9 @@ const GESCHWINDIGKEITEN = [1, 1.5, 2];
 // AC-21, ADR-0013): erst danach sind die frueheren Verbuendeten Gegner. Die
 // Zahl steht im ADR - genug, um Truppen aus dem fremden Dorf zu holen.
 const KUENDIGUNG_SEKUNDEN = 60;
+// So lange liegen die Truemmer eines gefallenen Gebaeudes im Bild
+// (darstellung AC-26). Reine Darstellung: der Platz ist sofort frei.
+const RUINE_SEKUNDEN = 20;
 // Zellengroesse des Suchrasters fuer die Wache. Groesser als jede Sichtweite,
 // damit die eigene Zelle und ihre acht Nachbarn alles Sichtbare enthalten.
 const RASTER_FELDER = 8;
@@ -246,6 +249,7 @@ function punkteFeld(punkte) {
  * @property {object} [ende] das Ende, sobald es feststeht (spielziel AC-5)
  * @property {Record<string, any>[]} [gebaeude] nur die geaenderten
  * @property {Record<string, any>[]} [tiere] nur die geaenderten
+ * @property {[number, number]} [av] der Vorrat, den dieser Spieler ansieht: Feld und Rest (bedienung AC-63)
  */
 
 class Welt {
@@ -276,6 +280,9 @@ class Welt {
     this.werteGemerkt = new Map();
     // Gebaeude gehen wie Tiere nur bei Aenderung ueber die Leitung.
     this.gebaeudeAenderungen = new Set();
+    // Eben eingestuerzte Gebaeude: Nummer -> Takt (darstellung AC-26).
+    /** @type {Map<number, number>} */
+    this.eingestuerzt = new Map();
     // Wessen Kampfwerte sich geaendert haben (bedienung AC-35): der naechste
     // Zustand schickt ihm seine Tafel. Ohne das muesste sie in jedem Takt
     // mitfahren, oder der Browser muesste die Verbesserungen selbst
@@ -311,6 +318,9 @@ class Welt {
       preise: { ...HANDEL.waren },
       zeitalter: 0, // jede Partie beginnt in der Dunklen Zeit (spielziel AC-1)
       aus: false, // ausgeschieden oder aufgegeben (spielziel AC-5, AC-6)
+      // Aufgegeben und nicht besiegt (spielziel AC-27): das Bild sagt es,
+      // sonst gewinnt jemand, ohne zu sehen, warum.
+      aufgegeben: false,
       // Fuer die Tafel am Ende (spielziel AC-8). Gezaehlt wird waehrend der
       // ganzen Partie, nicht am Schluss ausgerechnet: wer frueh ausscheidet,
       // hat am Ende weder Einheiten noch Vorraete, und seine Zahlen waeren
@@ -326,6 +336,12 @@ class Welt {
       // Das Haus (spielziel AC-17): ein Schluessel aus `HAEUSER` oder keins.
       // Seine Boni liest `wirkungen()`, nie eine Regel selbst.
       haus: hausAus(einstellungen.haeuser, eintrag.id),
+      // Das Feld des Vorrats, den er gerade ansieht (bedienung AC-63).
+      ansieht: /** @type {number | null} */ (null),
+      // Leere Farmen (bauen AC-41, AC-42): ob sie von selbst neu ausgesaet
+      // werden - und ob sie verschwinden, statt brachzuliegen (die KI).
+      farmenErneuern: false,
+      brachenRaeumen: false,
     }));
     // Die Wirkungen je Spieler (`wirkungen()`), gemerkt mit der Zahl der
     // Verbesserungen und dem Stand der Buendnisse, auf denen sie beruhen.
@@ -459,7 +475,10 @@ class Welt {
       for (const sicht of new Set(this.sichten.values())) sicht.gebaeude.fill(0);
       for (const b of this.gebaeude.values()) {
         const sicht = this.sichten.get(b.besitzer);
-        if (!sicht) continue;
+        // Eine Baustelle sieht nichts (kampf AC-24): erst das fertige Gebaeude
+        // deckt auf - sonst waere ein Fundament in der Ferne ein Spaeher fuer
+        // ein paar Holz. Wer baut, sieht selbst.
+        if (!sicht || !b.fertig) continue;
         const { x0, y0, x1, y1 } = this.grundflaeche(b.art, b.x, b.y, b.quer);
         markieren(sicht.gebaeude, 1, sicht.erkundet, x0, y0, x1, y1, this.gebaeudeSicht(b.besitzer, b.art));
       }
@@ -685,6 +704,9 @@ class Welt {
     for (const art of Object.keys(EINHEITEN)) {
       tafel[art] = {};
       for (const feld of KAMPFFELDER) tafel[art][feld] = this.einheitenwert(besitzer, art, feld);
+      // Wer traegt, zeigt, wie viel - nach der Schubkarre 13 statt 10 (bauen AC-44).
+      const tragkraft = this.einheitenwert(besitzer, art, 'tragkraft');
+      if (tragkraft) tafel[art].tragkraft = tragkraft;
     }
     // Die Gebaeude in derselben Tafel (bauen AC-34): der Lebensbalken braucht
     // das volle Leben nach dem Mauerwerk. Die Namen von Einheiten und
@@ -720,6 +742,15 @@ class Welt {
     return nahrung;
   }
 
+  /**
+   * Wie viel einer tragen kann, bevor er zum Lager geht (bauen AC-44):
+   * Schubkarre und Handkarren legen darauf. Gelesen wie jeder Wert ueber
+   * `einheitenwert()` - die Tabelle allein kennt die Verbesserungen nicht.
+   */
+  tragkraft(einheit) {
+    return this.einheitenwert(einheit.besitzer, einheit.art, 'tragkraft');
+  }
+
   einheitAnlegen(besitzer, x, y, art = 'dorfbewohner') {
     const werte = { ...EINHEITEN[art], leben: this.lebenMax(besitzer, art) };
     const einheit = {
@@ -739,6 +770,8 @@ class Welt {
       sammelt: false, // steht am Vorrat und arbeitet
       baut: false, // steht an einer Baustelle und arbeitet
       angefangen: 0, // Bruchteil der naechsten Einheit Rohstoff
+      /** @type {number | null} */
+      schlagTakt: null, // der Takt ihres letzten Schlags oder Schusses (bedienung AC-72)
     };
     this.einheiten.set(einheit.id, einheit);
     return einheit;
@@ -1028,7 +1061,8 @@ class Welt {
     for (const [rohstoff, menge] of Object.entries(kosten)) spieler[rohstoff] -= menge;
     // Die Mauerfelder verschwinden ohne Erstattung, wie in der Vorlage; wer
     // daran baute, geht zum naechsten Feld seiner Mauer (welt.bauenWeiter).
-    for (const alt of alte) this.gebaeudeZerstoeren(alt);
+    // Ersetzt, nicht eingestuerzt: keine Truemmer unter dem neuen Tor.
+    for (const alt of alte) this.gebaeudeZerstoeren(alt, false);
     const baustelle = this.gebaeudeAnlegen(spielerId, art, x, y, false, liegtQuer);
     for (const einheit of bauer) {
       // Mit Umschalt (bedienung AC-48): wer schon baut, baut das danach -
@@ -1191,6 +1225,8 @@ class Welt {
     this.gebaeudeGeaendert(gebaeude);
     if (gebaeude.bau < 1) return;
     gebaeude.fertig = true;
+    // Ab jetzt sieht es (kampf AC-24).
+    this.gebaeudeSichtNeu = true;
     this.nachDemBau(gebaeude);
   }
 
@@ -1280,6 +1316,10 @@ class Welt {
         return this.aufgeben(spielerId);
       case 'kuendigen':
         return this.kuendigen(spielerId);
+      case 'ansehen':
+        return this.ansehen(spielerId, nachricht.feld);
+      case 'farmen':
+        return this.farmenEinstellen(spielerId, nachricht);
       default:
         return this.befehl(spielerId, nachricht.einheiten, nachricht.ziel, Boolean(nachricht.angriffslauf),
           Boolean(nachricht.anhaengen));
@@ -1477,7 +1517,8 @@ class Welt {
     const mehrNahrung = VERBESSERUNGEN[art].farm?.nahrung || 0;
     if (mehrNahrung) {
       for (const g of this.gebaeude.values()) {
-        if (g.besitzer !== spieler.id || g.nahrung === undefined) continue;
+        // Eine Brache bleibt leer, bis sie neu ausgesaet ist (bauen AC-41).
+        if (g.besitzer !== spieler.id || g.nahrung === undefined || g.brach) continue;
         g.nahrung += mehrNahrung;
         this.gebaeudeGeaendert(g);
       }
@@ -1527,9 +1568,30 @@ class Welt {
     const x = Math.round(Number(ziel?.x));
     const y = Math.round(Number(ziel?.y));
     if (!Number.isInteger(x) || !Number.isInteger(y) || x < 0 || y < 0 || x >= g || y >= g) return { fehler: 'Dort geht kein Sammelpunkt.' };
-    gebaeude.sammelpunkt = { x, y };
+    // Liegt er auf einem Vorrat, merkt er sich dessen Art (bauen AC-40): ist
+    // der Baum gefaellt, gilt der naechste daneben.
+    const art = this.karte.felder[y * g + x];
+    gebaeude.sammelpunkt = SAMMELN[art] && this.karte.vorrat.has(y * g + x) ? { x, y, art } : { x, y };
     this.gebaeudeGeaendert(gebaeude);
     return {};
+  }
+
+  /**
+   * Wohin eine neue Einheit vom Sammelpunkt aus geht. Lag er auf einem
+   * Vorrat, den es nicht mehr gibt, wandert er zum naechsten derselben Art,
+   * hoechstens SUCHWEITE_ERSATZ Felder weiter (bauen AC-40) - sonst stuende
+   * jeder neue Dorfbewohner auf dem Stumpf.
+   */
+  sammelpunktZiel(gebaeude) {
+    const punkt = gebaeude.sammelpunkt;
+    if (punkt.art === undefined) return punkt;
+    const index = punkt.y * this.karte.groesse + punkt.x;
+    if (this.karte.felder[index] === punkt.art && this.karte.vorrat.has(index)) return punkt;
+    const ersatz = this.naechsterVorrat(punkt, punkt.art);
+    if (!ersatz) return punkt;
+    gebaeude.sammelpunkt = { x: ersatz.x, y: ersatz.y, art: punkt.art };
+    this.gebaeudeGeaendert(gebaeude);
+    return gebaeude.sammelpunkt;
   }
 
   // Wohnraum aus den eigenen Gebaeuden, hoechstens 200 (bauen AC-14).
@@ -1607,7 +1669,7 @@ class Welt {
     spieler.ausgebildetWert += kostenSumme(this.auftragWerte(art).kosten);
     bevoelkerung.set(spieler.id, belegt + 1);
     // Zum Sammelpunkt; liegt er auf einem Vorrat, wird dort gleich gesammelt (bauen AC-13).
-    if (gebaeude.sammelpunkt) this.befehl(spieler.id, [neu.id], gebaeude.sammelpunkt);
+    if (gebaeude.sammelpunkt) this.befehl(spieler.id, [neu.id], this.sammelpunktZiel(gebaeude));
   }
 
   // Ein begehbares Feld am Rand des Gebaeudes, auf dem niemand steht
@@ -1765,6 +1827,15 @@ class Welt {
     let vorraete = null;
     let naechsterVorrat = 0;
 
+    // Eine Brache (bauen AC-41): der Rechtsklick eines Dorfbewohners saet sie
+    // neu aus. Bezahlt wird hier, einmal und vor allem anderen - reicht es
+    // nicht, geht niemand los, und die Absage sagt, was fehlt.
+    if (baustelle?.brach && baustelle.besitzer === spielerId && !angriffslauf && !feind
+      && gruppe.some((e) => this.tragkraft(e) > 0)) {
+      const fehlt = this.aussaeen(this.spielerVon(spielerId), baustelle);
+      if (fehlt) return { fehler: `Zu wenig ${ROHSTOFF_NAMEN[fehlt]}.` };
+    }
+
     for (const id of einheitIds.slice(0, 200)) {
       // Ein eigenes, lebendes Schaf wird getrieben (einheiten AC-22).
       const tier = this.tiere.get(id);
@@ -1833,7 +1904,7 @@ class Welt {
         && (EINHEITEN[einheit.art].baut || []).includes(baustelle.art)) {
         this.bauenBeginnen(einheit, baustelle);
       } else if (!angriffslauf && baustelle && baustelle.fertig && GEBAEUDE[baustelle.art].nahrung && baustelle.besitzer === spielerId
-        && EINHEITEN[einheit.art].tragkraft > 0
+        && !baustelle.brach && this.tragkraft(einheit) > 0
         && (!baustelle.arbeiter || baustelle.arbeiter === einheit.id || !this.einheiten.has(baustelle.arbeiter))) {
         this.farmBeginnen(einheit, baustelle);
       } else if (!angriffslauf && baustelle && baustelle.fertig && baustelle.besitzer === spielerId
@@ -1842,7 +1913,7 @@ class Welt {
         // wird abgeladen, danach geht es zurueck an die alte Arbeit
         // (einheiten AC-56).
         this.abgebenBeginnen(einheit, baustelle);
-      } else if (schaf && EINHEITEN[einheit.art].tragkraft > 0) {
+      } else if (schaf && this.tragkraft(einheit) > 0) {
         if (einheit.ladung > 0 && einheit.ladungsart !== 'nahrung') {
           einheit.ladung = 0;
           einheit.ladungsart = null;
@@ -1850,7 +1921,7 @@ class Welt {
         einheit.angefangen = 0;
         einheit.auftrag = { art: 'tier', tier: schaf.id };
         this.wegZumTier(einheit, schaf);
-      } else if (sammeln && EINHEITEN[einheit.art].tragkraft > 0) {
+      } else if (sammeln && this.tragkraft(einheit) > 0) {
         // Wer den Rohstoff wechselt, laesst die alte Ladung fallen.
         if (einheit.ladung > 0 && einheit.ladungsart !== sammeln.rohstoff) {
           einheit.ladung = 0;
@@ -1989,10 +2060,15 @@ class Welt {
     const d = Math.hypot(a.x - b.x, a.y - b.y);
     const { faktor, sockel } = HANDEL.karren;
     let anteil = 1 + this.handelswert(heimat.besitzer, 'karrenAnteil');
+    // Der Markt eines anderen bringt mehr als der zweite eigene (einheiten
+    // AC-40): wer nur mit sich selbst handelt, soll es schlechter haben als
+    // zwei, die einander die Maerkte hinstellen.
+    // Er rechnet auf alles andere obendrauf, auch auf den Mannschaftsbonus.
+    const fremd = ziel.besitzer !== heimat.besitzer ? 1 + HANDEL.karren.fremdAnteil : 1;
     if (ziel.besitzer !== heimat.besitzer && this.teiltSicht(heimat.besitzer, ziel.besitzer)) {
       anteil += this.handelswert(heimat.besitzer, 'verbuendetAnteil');
     }
-    return Math.round(faktor * anteil * d * (d / this.karte.groesse + sockel));
+    return Math.round(faktor * anteil * fremd * d * (d / this.karte.groesse + sockel));
   }
 
   // Leer zum Ziel, dort laedt er das Gold der Fahrt, beladen heim, dort
@@ -2074,7 +2150,11 @@ class Welt {
       einheit.sammelt = false;
       return;
     }
-    if (einheit.ladung >= EINHEITEN[einheit.art].tragkraft) {
+    if (farm.brach) {
+      this.bracheTakten(einheit, farm);
+      return;
+    }
+    if (einheit.ladung >= this.tragkraft(einheit)) {
       einheit.sammelt = false;
       this.abladen(einheit);
       return;
@@ -2093,14 +2173,94 @@ class Welt {
     einheit.ladung += 1;
     einheit.ladungsart = 'nahrung';
     this.gebaeudeGeaendert(farm);
-    // Leer: die Farm ist weg, wie im Original muss eine neue her.
-    if (farm.nahrung <= 0) {
+    if (farm.nahrung <= 0) this.farmLeer(einheit, farm);
+  }
+
+  /**
+   * Die letzte Nahrung ist geerntet (bauen AC-41, AC-42). Wer seine Farmen
+   * von selbst erneuert, zahlt und erntet weiter. Sonst liegt die Farm brach,
+   * bis ein Dorfbewohner sie neu aussaet - bis zum ersten Spiel auf dem
+   * Server verschwand sie, und wer nicht hinsah, hatte auf einmal keine mehr.
+   * Wer Brachen raeumt (die KI), verliert sie wie bis dahin jeder.
+   */
+  farmLeer(einheit, farm) {
+    const spieler = this.spielerVon(farm.besitzer);
+    if (spieler.farmenErneuern && !this.aussaeen(spieler, farm)) return;
+    einheit.sammelt = false;
+    if (spieler.brachenRaeumen) {
       this.gebaeude.delete(farm.id);
       this.gebaeudeSichtNeu = true;
-      einheit.sammelt = false;
-      einheit.auftrag = null;
-      if (einheit.ladung > 0) einheit.auftrag = { art: 'farm', gebaeude: farm.id, leer: true };
+      einheit.auftrag = einheit.ladung > 0 ? { art: 'farm', gebaeude: farm.id, leer: true } : null;
+      return;
     }
+    farm.nahrung = 0;
+    farm.brach = true;
+    this.gebaeudeGeaendert(farm);
+    // Wer von selbst erneuert und es nicht bezahlen kann, behaelt die Farm
+    // und wartet darauf (`bracheTakten`).
+    if (spieler.farmenErneuern) return;
+    farm.arbeiter = null;
+    einheit.auftrag = einheit.ladung > 0 ? { art: 'farm', gebaeude: farm.id, leer: true } : null;
+  }
+
+  /**
+   * Auf der eigenen Brache (bauen AC-42): neu aussaeen, sobald es reicht -
+   * bis dahin die Ladung heimbringen und warten. Wer wartet, zaehlt als
+   * untaetig (`untaetig`): so findet der Spieler ihn. Ist der Schalter
+   * inzwischen aus, ist die Farm frei.
+   */
+  bracheTakten(einheit, farm) {
+    const spieler = this.spielerVon(farm.besitzer);
+    einheit.sammelt = false;
+    if (!spieler.farmenErneuern) {
+      farm.arbeiter = null;
+      this.gebaeudeGeaendert(farm);
+      einheit.auftrag = einheit.ladung > 0 ? { art: 'farm', gebaeude: farm.id, leer: true } : null;
+      return;
+    }
+    // Erst heim, was er traegt - `abladen` fuehrt ihn danach zurueck.
+    if (einheit.ladung > 0 && this.lagerFuer(einheit)) {
+      this.abladen(einheit);
+      return;
+    }
+    if (!this.aufGrundflaeche(einheit, farm)) {
+      this.wegZurFarm(einheit, farm);
+      if (!einheit.weg.length) {
+        farm.arbeiter = null;
+        this.gebaeudeGeaendert(farm);
+        einheit.auftrag = null;
+      }
+      return;
+    }
+    this.aussaeen(spieler, farm);
+  }
+
+  /**
+   * Eine Farm neu aussaeen (bauen AC-41): kostet, was die Farm kostet, und
+   * sie traegt wieder voll. Zurueck kommt der Rohstoff, der fehlt - oder
+   * null, dann ist bezahlt.
+   */
+  aussaeen(spieler, farm) {
+    const kosten = Object.entries(GEBAEUDE[farm.art].kosten);
+    for (const [rohstoff, menge] of kosten) if (spieler[rohstoff] < menge) return rohstoff;
+    for (const [rohstoff, menge] of kosten) spieler[rohstoff] -= menge;
+    farm.nahrung = this.farmNahrung(farm.besitzer);
+    farm.brach = false;
+    this.gebaeudeGeaendert(farm);
+    return null;
+  }
+
+  /**
+   * Wie ein Spieler mit leeren Farmen umgeht (bauen AC-42): `erneuern` saet
+   * sie von selbst neu aus, `raeumen` laesst sie verschwinden, statt
+   * brachzuliegen. Gesetzt wird nur, was als Wahrheitswert mitkommt.
+   */
+  farmenEinstellen(spielerId, nachricht) {
+    const spieler = this.spielerVon(spielerId);
+    if (!spieler) return { fehler: 'Diesen Spieler gibt es hier nicht.' };
+    if (typeof nachricht.erneuern === 'boolean') spieler.farmenErneuern = nachricht.erneuern;
+    if (typeof nachricht.raeumen === 'boolean') spieler.brachenRaeumen = nachricht.raeumen;
+    return {};
   }
 
   // Das naechste eigene Tier hoechstens ein Feld vom Klick entfernt.
@@ -2138,7 +2298,7 @@ class Welt {
       }
       einheit.auftrag = { art: 'tier', tier: tier.id };
     }
-    if (einheit.ladung >= EINHEITEN[einheit.art].tragkraft) {
+    if (einheit.ladung >= this.tragkraft(einheit)) {
       einheit.sammelt = false;
       this.abladen(einheit);
       return;
@@ -2161,7 +2321,7 @@ class Welt {
     this.tierNahrungNehmen(tier);
     einheit.ladung += 1;
     einheit.ladungsart = 'nahrung';
-    if (!this.tiere.has(tier.id) || einheit.ladung >= EINHEITEN[einheit.art].tragkraft) einheit.sammelt = false;
+    if (!this.tiere.has(tier.id) || einheit.ladung >= this.tragkraft(einheit)) einheit.sammelt = false;
   }
 
   tierNahrungNehmen(tier) {
@@ -2238,7 +2398,12 @@ class Welt {
   }
 
   wegZumVorrat(einheit) {
-    const stand = nachbarfeld(this.karte, einheit.auftrag.feld, einheit);
+    // `stand`: das Feld am Vorrat, das `vorratErsatz` als erreichbar gefunden
+    // hat (einheiten AC-63) - sonst das naechste in Luftlinie.
+    const fest = einheit.auftrag.stand;
+    const stand = fest && karten.begehbar(this.karte, fest.x, fest.y)
+      ? fest
+      : nachbarfeld(this.karte, einheit.auftrag.feld, einheit);
     einheit.weg = stand ? suchen(this.karte, this.feldVon(einheit), stand, this.toreVon(einheit.besitzer)) : [];
   }
 
@@ -2622,7 +2787,11 @@ class Welt {
       const { x0, y0, x1, y1 } = this.grundflaeche(turm.art, turm.x, turm.y, turm.quer);
       const abstandVon = (e) => Math.hypot(Math.max(x0 - e.x, 0, e.x - x1), Math.max(y0 - e.y, 0, e.y - y1));
       let ziel = this.einheiten.get(turm.ziel);
-      if (!ziel || ziel.tot || abstandVon(ziel) > reichweite) {
+      // Das Ziel bleibt, solange es lebt, in Reichweite steht und ein Gegner
+      // ist: ein Bekehrter gehoert im selben Takt nicht mehr dazu (einheiten
+      // AC-38) - sonst schoss der Turm weiter auf die eigene Einheit, bis sie
+      // einmal aus der Reichweite ging.
+      if (!ziel || ziel.tot || abstandVon(ziel) > reichweite || !this.feindlich(turm.besitzer, ziel.besitzer)) {
         ziel = null;
         let bester = Infinity;
         for (const einheit of this.einheiten.values()) {
@@ -2806,6 +2975,16 @@ class Welt {
         ? this.randfeld(ziel, einheit)
         : this.angriffsplatz(einheit, ziel, auftrag.platz);
       einheit.weg = stand ? this.wegNach(einheit, stand) : [];
+      // Schon auf dem Platz, und das Ziel ist trotzdem zu weit: es laeuft
+      // schraeg davon und steht gerade zwischen zwei Feldern (1,98 Felder
+      // statt 1,5). Dann auf sein Feld zu - vorher galt es hier als
+      // unerreichbar, der befohlene Angriff endete, und die Wache nahm den
+      // Naechstbesten (kampf AC-25; im Spiel auf dem Server: der Spaeher
+      // liess den fliehenden Dorfbewohner laufen und schlug einen anderen).
+      if (!einheit.weg.length && stand && !auftrag.gebaeude) {
+        const hier = this.feldVon(einheit);
+        if (hier.x === stand.x && hier.y === stand.y) einheit.weg = this.wegNach(einheit, this.feldVon(ziel));
+      }
       if (!einheit.weg.length) {
         // Versperrt eine fremde Mauer den Weg, wird sie angegriffen (kampf
         // AC-21) - aber nur einmal: wer schon eine Mauer angreift und sie
@@ -2851,6 +3030,9 @@ class Welt {
     // zwei Treffern genau die Zeit der Vorlage liegt und nicht ein Takt mehr.
     const nachladen = this.einheitenwert(einheit.besitzer, einheit.art, 'nachladen');
     einheit.nachladen = Math.round(nachladen * TAKTE_PRO_SEKUNDE) - 1;
+    // Wann sie zuschlug, geht mit dem Zustand hinaus: das Bild holt genau
+    // dazu aus (bedienung AC-72).
+    einheit.schlagTakt = this.takt;
     this.schlagen(einheit, ziel, auftrag.gebaeude);
   }
 
@@ -3128,8 +3310,13 @@ class Welt {
   }
 
   // Ein Gebaeude ohne Leben verschwindet samt seinem Platz auf der Karte.
-  // Truemmer gibt es nicht - die waeren eine Entscheidung fuer Stufe C.
-  gebaeudeZerstoeren(gebaeude) {
+  // Truemmer sind nur ein Bild (darstellung AC-26): der Server merkt sich,
+  // wann es fiel, und sagt es mit dem Verschwinden - der Platz ist sofort
+  // frei, begehbar und bebaubar.
+  gebaeudeZerstoeren(gebaeude, truemmer = true) {
+    const frist = RUINE_SEKUNDEN * TAKTE_PRO_SEKUNDE;
+    for (const [id, takt] of this.eingestuerzt) if (this.takt - takt >= frist) this.eingestuerzt.delete(id);
+    if (truemmer) this.eingestuerzt.set(gebaeude.id, this.takt);
     this.gebaeude.delete(gebaeude.id);
     this.gebaeudeSichtNeu = true;
     this.freigeben(gebaeude);
@@ -3226,6 +3413,7 @@ class Welt {
         verloren: s.verloren,
         zeitalter: s.zeitalter,
         ...(s.aus ? { aus: 1 } : {}),
+        ...(s.aufgegeben ? { ag: 1 } : {}),
       })),
     };
   }
@@ -3250,6 +3438,7 @@ class Welt {
       if (gebaeude.besitzer === spielerId) this.gebaeudeZerstoeren(gebaeude);
     }
     spieler.aus = true;
+    spieler.aufgegeben = true;
     // Sofort und nicht erst im naechsten Takt: wer aufgibt, soll nicht noch
     // ein Zehntel lang als Mitspieler zaehlen.
     this.endePruefen();
@@ -3743,7 +3932,7 @@ class Welt {
       einheit.auftrag = null;
       return;
     }
-    if (einheit.ladung >= EINHEITEN[einheit.art].tragkraft) this.abladen(einheit);
+    if (einheit.ladung >= this.tragkraft(einheit)) this.abladen(einheit);
     else if (einheit.sammelt) this.sammelnSchritt(einheit);
     else this.sammelnBeginnen(einheit);
   }
@@ -3804,6 +3993,14 @@ class Welt {
   vorratUnerreichbar(einheit, index) {
     einheit.unerreichbar ??= [];
     einheit.unerreichbar.push(index);
+    // Zuerst der Vorrat gleicher Art, der dem gewuenschten am naechsten liegt
+    // und an den sie herankommt (einheiten AC-63) - auch derselbe von einer
+    // anderen Seite. Gibt es dort keinen, wie bisher der naechste bei ihr.
+    const nahe = einheit.unerreichbar.length <= 3 ? this.vorratErsatz(einheit, index) : null;
+    if (nahe) {
+      einheit.auftrag = { art: 'sammeln', feld: nahe.feld, stand: nahe.stand };
+      return;
+    }
     const ersatz = einheit.unerreichbar.length <= 3
       ? this.naechsterVorrat(einheit, this.karte.felder[index], einheit.unerreichbar)
       : null;
@@ -3813,6 +4010,51 @@ class Welt {
       return;
     }
     einheit.auftrag = { art: 'sammeln', feld: ersatz };
+  }
+
+  /**
+   * Der Vorrat derselben Art, der dem Feld `index` am naechsten liegt und an
+   * den die Einheit herankommt, hoechstens SUCHWEITE_ERSATZ Felder davon
+   * (einheiten AC-63): wer auf einen Baum mitten im Wald klickt, meint den
+   * Wald dort - nicht den Baum neben dem Dorfbewohner. Geflutet wird einmal
+   * je Fall, nicht je Takt. `stand` ist das erreichbare Feld am Vorrat, das
+   * der Einheit am naechsten liegt.
+   *
+   * @returns {{feld: {x: number, y: number}, stand: {x: number, y: number}} | null}
+   */
+  vorratErsatz(einheit, index) {
+    const g = this.karte.groesse;
+    const art = this.karte.felder[index];
+    const wx = index % g;
+    const wy = (index / g) | 0;
+    const da = erreichbar(this.karte, this.feldVon(einheit), this.toreVon(einheit.besitzer));
+    let bestes = null;
+    let bester = SUCHWEITE_ERSATZ;
+    for (const i of this.karte.vorrat.keys()) {
+      if (this.karte.felder[i] !== art || (i !== index && einheit.unerreichbar?.includes(i))) continue;
+      const x = i % g;
+      const y = (i / g) | 0;
+      const abstand = Math.hypot(x - wx, y - wy);
+      if (abstand >= bester) continue;
+      let stand = null;
+      let naehe = Infinity;
+      for (let dy = -1; dy <= 1; dy++) {
+        for (let dx = -1; dx <= 1; dx++) {
+          const nx = x + dx;
+          const ny = y + dy;
+          if ((!dx && !dy) || nx < 0 || ny < 0 || nx >= g || ny >= g || !da[ny * g + nx]) continue;
+          const d = Math.hypot(nx - einheit.x, ny - einheit.y);
+          if (d < naehe) {
+            naehe = d;
+            stand = { x: nx, y: ny };
+          }
+        }
+      }
+      if (!stand) continue;
+      bester = abstand;
+      bestes = { feld: { x, y }, stand };
+    }
+    return bestes;
   }
 
   // Ein Takt Arbeit am Vorrat: die Rate der Vorlage, in ganzen Einheiten vom
@@ -3853,7 +4095,7 @@ class Welt {
       einheit.sammelt = false;
     }
 
-    if (einheit.ladung >= EINHEITEN[einheit.art].tragkraft) {
+    if (einheit.ladung >= this.tragkraft(einheit)) {
       einheit.sammelt = false;
       this.wegZumLager(einheit);
     }
@@ -3959,8 +4201,17 @@ class Welt {
         // Zustand bleibt klein.
         // Ein Moench, der heilt, arbeitet auch (einheiten AC-37).
         ...(e.sammelt || e.baut || e.heilt || e.bekehrt || (e.auftrag?.art === 'angreifen' && !e.weg.length && !e.tot) ? { w: 1 } : {}),
-        // Ein Moench, der nach dem Bekehren ruht (einheiten AC-38).
-        ...(e.ruhtBis > this.takt ? { r: 1 } : {}),
+        // Ein Moench, der gerade bekehrt (bedienung AC-74): `w` sagt nur,
+        // dass er arbeitet - heilen und bekehren klingen verschieden.
+        ...(e.bekehrt ? { bk: 1 } : {}),
+        // Wer kaempft, nennt den Takt seines letzten Schlags (bedienung
+        // AC-72): eine Schlagbewegung je Schlag, nicht eine je Bild. Die Zahl
+        // aendert sich nur mit dem Schlag - der Zustand bleibt klein.
+        ...(e.auftrag?.art === 'angreifen' && !e.weg.length && !e.tot && e.schlagTakt !== null ? { sl: e.schlagTakt } : {}),
+        // Ein Moench, der nach dem Bekehren ruht (einheiten AC-38): wie viele
+        // Sekunden noch (bedienung AC-68) - in ganzen Sekunden, damit sich
+        // der Zustand nur einmal je Sekunde aendert.
+        ...(e.ruhtBis > this.takt ? { r: Math.ceil((e.ruhtBis - this.takt) / TAKTE_PRO_SEKUNDE) } : {}),
         // Ein Karren auf der Strecke (einheiten AC-40): Heimat, Ziel und das
         // Gold je Fahrt - die Leiste nennt sie.
         ...(e.auftrag?.art === 'handel' ? { hd: this.streckeFuerDraht(e) } : {}),
@@ -3999,13 +4250,17 @@ class Welt {
         // Zeitalter als Stufe, nur wenn es nicht die Dunkle Zeit ist
         // (bedienung AC-33) - ein Zustand bleibt klein.
         ...(s.zeitalter ? { z: s.zeitalter } : {}),
+        // Farmen werden von selbst neu ausgesaet (bauen AC-42) - nur wenn an.
+        ...(s.farmenErneuern ? { fe: 1 } : {}),
         // Untaetige Dorfbewohner, nur wenn es welche gibt (einheiten AC-21).
         ...untaetigeListe(this, s.id),
         // Arbeiter je Rohstoff, in der Reihenfolge holz, nahrung, gold, stein
         // (bedienung AC-32).
         a: this.arbeiterVon(s.id),
-        // Ausgeschieden, nur wenn es zutrifft (spielziel AC-5).
+        // Ausgeschieden, nur wenn es zutrifft (spielziel AC-5) - und ob durch
+        // Aufgeben (spielziel AC-27).
         ...(s.aus ? { aus: 1 } : {}),
+        ...(s.aufgegeben ? { ag: 1 } : {}),
         // Die Punkte (bedienung AC-47), sobald es welche gibt.
         ...punkteFeld(this.punkte(s)),
         // Ein neuer Angriff auf ihn, mit Ort (kampf AC-14) - einmal.
@@ -4053,7 +4308,47 @@ class Welt {
    */
   zustandJeSpieler(ids) {
     const voll = this.zustand();
-    return new Map(ids.map((id) => [id, this.auszug(voll, id)]));
+    return new Map(ids.map((id) => [id, this.mitAngesehenem(this.auszug(voll, id), id)]));
+  }
+
+  /**
+   * Einen Vorrat ansehen (bedienung AC-63): der Spieler nennt ein Feld, und
+   * solange er hinsieht, traegt sein Zustand den Rest dieses einen Vorrats.
+   * Die Mengen aller Vorraete gingen sonst nie hinaus - Tausende Zahlen, von
+   * denen er eine braucht. Ohne Feld oder mit einem, das es nicht gibt:
+   * er sieht nichts mehr an. Kein Befehl - nichts in der Welt aendert sich.
+   *
+   * @param {string} spielerId
+   * @param {{x: number, y: number} | undefined} feld
+   */
+  ansehen(spielerId, feld) {
+    const spieler = this.spielerVon(spielerId);
+    if (!spieler) return { fehler: 'Diesen Spieler gibt es hier nicht.' };
+    const g = this.karte.groesse;
+    const gueltig = Boolean(feld) && Number.isInteger(feld.x) && Number.isInteger(feld.y)
+      && feld.x >= 0 && feld.y >= 0 && feld.x < g && feld.y < g;
+    spieler.ansieht = gueltig ? feld.y * g + feld.x : null;
+    return {};
+  }
+
+  /**
+   * Der Rest des angesehenen Vorrats, nur fuer den, der hinsieht - und nur,
+   * wenn er das Feld sieht (kampf AC-13): wie weit der Gegner seinen Wald
+   * schon geschlagen hat, verriete sonst der Nebel. Ist der Vorrat leer,
+   * sieht er nichts mehr an.
+   */
+  mitAngesehenem(auszug, id) {
+    const spieler = this.spielerVon(id);
+    const index = spieler?.ansieht;
+    if (index === null || index === undefined) return auszug;
+    const rest = this.karte.vorrat.get(index);
+    if (!(rest > 0)) {
+      spieler.ansieht = null;
+      return auszug;
+    }
+    const g = this.karte.groesse;
+    if (this.nebelGiltFuer(id) && !this.sieht(id, index % g, Math.floor(index / g))) return auszug;
+    return { ...auszug, av: [index, rest] };
   }
 
   // Gilt fuer diesen Spieler der Nebel? Nicht, wenn alles aufgedeckt ist, nicht
@@ -4103,7 +4398,7 @@ class Welt {
     }
     for (const [gid, ort] of bekannt) {
       if (this.gebaeude.has(gid) || !this.siehtGebaeude(id, ort)) continue;
-      raus.push({ i: gid, weg: true });
+      raus.push(this.gebaeudeWeg(gid));
       bekannt.delete(gid);
     }
     return raus;
@@ -4135,7 +4430,7 @@ class Welt {
   nebelAufheben(voll, id) {
     const offen = this.felderOffen?.get(id);
     // Was im Nebel fiel, steht in seinem Browser noch da.
-    const weg = [...this.bekannt.get(id).keys()].filter((gid) => !this.gebaeude.has(gid)).map((gid) => ({ i: gid, weg: true }));
+    const weg = [...this.bekannt.get(id).keys()].filter((gid) => !this.gebaeude.has(gid)).map((gid) => this.gebaeudeWeg(gid));
     this.bekannt.delete(id);
     this.felderOffen?.delete(id);
     const neu = new Set((voll.gebaeude || []).map((g) => g.i));
@@ -4169,7 +4464,7 @@ class Welt {
       // Die Punkte sieht jeder (bedienung AC-47): sie sagen, wer vorne liegt,
       // nicht womit.
       spieler: voll.spieler.map((s) => (s.id === id ? s : {
-        id: s.id, ...(s.aus ? { aus: 1 } : {}), ...(s.z ? { z: s.z } : {}), ...(s.kw ? { kw: s.kw } : {}),
+        id: s.id, ...(s.aus ? { aus: 1 } : {}), ...(s.ag ? { ag: 1 } : {}), ...(s.z ? { z: s.z } : {}), ...(s.kw ? { kw: s.kw } : {}),
         ...punkteFeld(s.pk),
         ...(this.teiltSicht(id, s.id) ? {
           holz: s.holz, nahrung: s.nahrung, gold: s.gold, stein: s.stein, bev: s.bev, raum: s.raum,
@@ -4215,9 +4510,22 @@ class Welt {
 
   // Gebaeude mit Schlange und Fortschritt (bauen AC-10), fuer die
   // Ausbildungsleiste (bedienung AC-26).
+  /**
+   * Ein Gebaeude, das es nicht mehr gibt, fuer die Leitung. Ist es eben
+   * eingestuerzt, steht dabei, wie viele Takte seine Truemmer noch liegen
+   * (`z`, darstellung AC-26) - wer es erst spaeter bemerkt, sieht sie
+   * entsprechend kuerzer oder gar nicht.
+   * @param {number} id
+   */
+  gebaeudeWeg(id) {
+    const takt = this.eingestuerzt.get(id);
+    const rest = takt === undefined ? 0 : RUINE_SEKUNDEN * TAKTE_PRO_SEKUNDE - (this.takt - takt);
+    return { i: id, weg: true, ...(rest > 0 ? { z: rest } : {}) };
+  }
+
   gebaeudeFuerDraht(id) {
     const g = this.gebaeude.get(id);
-    if (!g) return { i: id, weg: true };
+    if (!g) return this.gebaeudeWeg(id);
     const laufend = g.schlange[0];
     return {
       i: g.id,
@@ -4231,9 +4539,11 @@ class Welt {
       // Baufortschritt nur fuer Baustellen (darstellung AC-5).
       ...(g.fertig ? {} : { u: Math.round(g.bau * 100) / 100 }),
       ...(g.nahrung !== undefined ? { n: g.nahrung } : {}),
+      // Eine leere Farm, die auf neue Saat wartet (bauen AC-41).
+      ...(g.brach ? { br: 1 } : {}),
       s: g.schlange,
       f: laufend ? Math.round((g.fortschritt / (this.auftragWerte(laufend).zeit * TAKTE_PRO_SEKUNDE)) * 100) / 100 : 0,
-      ...(g.sammelpunkt ? { p: g.sammelpunkt } : {}),
+      ...(g.sammelpunkt ? { p: { x: g.sammelpunkt.x, y: g.sammelpunkt.y } } : {}),
       w: g.wartet,
     };
   }
@@ -4286,6 +4596,7 @@ class Welt {
         // aus dem Startwert gezogen.
         ...(s.haus ? { haus: s.haus } : {}),
         ...(s.aus ? { aus: 1 } : {}),
+        ...(s.aufgegeben ? { ag: 1 } : {}),
       })),
       // Wer nach dem Ende zurueckkommt, sieht das Ende und nicht eine
       // Partie, die nicht mehr laeuft (spielziel AC-5).
@@ -4308,6 +4619,9 @@ class Welt {
           // seiner Tafel `kw` (bedienung AC-35).
           angriff: w.angriff || 0, nahruestung: w.nahruestung || 0, fernruestung: w.fernruestung || 0,
           reichweite: w.reichweite || 0,
+          // Sekunden zwischen zwei Schlaegen: das Bild holt danach aus
+          // (bedienung AC-72).
+          nachladen: w.nachladen || 0,
           sicht: w.sicht || 0,
           // Felder je Sekunde - das Menue nennt es (bedienung AC-55).
           tempo: w.tempo || 0,
@@ -4323,7 +4637,7 @@ class Welt {
           heilen: w.heilen || null,
           // Wer bekehrt, wie weit und wen nicht (einheiten AC-38) - fuer das
           // Zeichen am Ziel und die Leiste.
-          bekehren: w.bekehren ? { reichweite: w.bekehren.reichweite, nicht: w.bekehren.nicht } : null,
+          bekehren: w.bekehren ? { reichweite: w.bekehren.reichweite, ruhe: w.bekehren.ruhe, nicht: w.bekehren.nicht } : null,
           // Wer handelt (einheiten AC-40): die Leiste nennt seine Strecke.
           handelt: Boolean(w.handelt),
         }])),
@@ -4354,6 +4668,15 @@ class Welt {
         // Jede Verbesserung mit dem, was sie bringt, in Worten (bedienung
         // AC-55) - der Browser liest keine Wirkung aus den Daten.
         verbesserungen: Object.fromEntries(Object.entries(VERBESSERUNGEN).map(([art, v]) => [art, { ...v, bringt: bringt(v, GEBAEUDE_NAMEN) }])),
+        // Die Haeuser mit dem, was sie bringen, in Worten (bedienung AC-69) -
+        // welches jeder spielt, steht als `haus` am Spieler.
+        // Wie voll ein Vorrat anfangs ist und was er gibt, je Feldart - und
+        // die Nahrung eines Tiers (bedienung AC-63: "73 von 100").
+        vorrat: Object.fromEntries(Object.entries(SAMMELN).map(([art, s]) => [art, { voll: karten.VORRAT[art], rohstoff: s.rohstoff }])),
+        tiere: Object.fromEntries(Object.entries(TIERE).map(([art, t]) => [art, { nahrung: t.nahrung }])),
+        haeuser: Object.fromEntries(Object.entries(HAEUSER).map(([art, haus]) => [art, {
+          name: haus.name, wahlspruch: haus.wahlspruch, ...hausBringt(haus, GEBAEUDE_NAMEN),
+        }])),
         // Die Namen der Klassen, fuer den Bonus an der Auswahl (bedienung AC-35).
         klassen: KLASSEN,
         // Wie lang eine gezogene Mauer hoechstens ist (bauen AC-30).

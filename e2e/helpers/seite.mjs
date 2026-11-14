@@ -181,7 +181,8 @@ export async function rohstoffe(page, code, name, werte) {
 /**
  * Ein fertiges Gebaeude fuer einen Spieler aufstellen (Pruefgriff, e2e/server.mjs).
  * `mehr`: `quer` fuer ein langes Gebaeude laengs y (bauen AC-37), `bau` (0 bis 1)
- * fuer eine Baustelle in diesem Stand.
+ * fuer eine Baustelle in diesem Stand, fuer eine Farm `nahrung` (wie viel sie
+ * noch traegt) oder `brach` (bauen AC-41).
  */
 export async function gebaeudeAufstellen(page, code, name, art, x, y, mehr = {}) {
   const antwort = await page.request.post(`http://localhost:${GRIFFHAFEN}/griff`, {
@@ -210,6 +211,14 @@ export async function einheitenAufstellen(page, code, name, anzahl, werte = {}) 
   });
   expect(antwort.ok(), await antwort.text()).toBe(true);
   return (await antwort.json()).angelegt;
+}
+
+/** Einen Vorrat abraeumen (Pruefgriff): der Baum auf diesem Feld ist gefaellt (bauen AC-40). */
+export async function vorratLeeren(page, code, x, y) {
+  const antwort = await page.request.post(`http://localhost:${GRIFFHAFEN}/griff`, {
+    data: { id: code, befehl: 'vorratLeeren', werte: { x, y } },
+  });
+  expect(antwort.ok(), await antwort.text()).toBe(true);
 }
 
 /**

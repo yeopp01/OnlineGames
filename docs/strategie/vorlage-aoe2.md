@@ -189,12 +189,22 @@ Ramme ──schlägt──▶ Gebäude           Reiter ──schlägt──▶ 
 
 ## Wichtige Verbesserungen (Auswahl)
 
+(¹) Nachgetragen am 2026-11-14 (bauen AC-43, AC-44): Kosten und
+Forschungsdauer aus den offenen Technikbaum-Daten zum Original
+(SiegeEngineers/aoe2techtree); die Wirkung nennt die Datei nicht, sie ist im
+Spiel als Startwert gesetzt. Der Radkarren heißt im Spiel „Schubkarre".
+
 | Verbesserung | Ort | Zeitalter | Kosten | Wirkung |
 | --- | --- | --- | --- | --- |
 | Webstuhl | Dorfzentrum | Dunkel | 50 G | Dorfbewohner +15 Leben, +1/+2 Rüstung |
 | Doppelaxt | Holzfällerlager | Feudal | 100 N, 50 H | Holz +20 % |
 | Pferdekummet | Mühle | Feudal | 75 N, 75 H | Farmen +75 Nahrung |
 | Radkarren | Dorfzentrum | Feudal | 175 N, 50 H | Dorfbewohner +10 % Tempo, +25 % Tragkraft |
+| Goldbergbau, Steinbergbau | Bergbaulager | Feudal | je 100 N, 75 H | Gold bzw. Stein +15 % (¹) |
+| Goldschacht, Steinschacht | Bergbaulager | Ritter | je 175 N, 75 H | noch einmal +15 % (¹) |
+| Bogensäge | Holzfällerlager | Ritter | 150 N, 100 H | Holz noch einmal +20 % (¹) |
+| Schwerer Pflug | Mühle | Ritter | 125 N, 125 H | Farmen +125 Nahrung (¹) |
+| Handkarren | Dorfzentrum | Ritter | 300 N, 200 H | Dorfbewohner noch einmal +10 % Tempo, mehr Tragkraft (¹) |
 | Stadtwache | Dorfzentrum | Feudal | 75 N | Gebäude +4 Sicht |
 | Stadtpatrouille | Dorfzentrum | Ritter | 300 N, 100 G | Gebäude +4 Sicht |
 | Schmiedeangriff Stufe 1 | Schmiede | Feudal | 100 N | Nah +1 Angriff |

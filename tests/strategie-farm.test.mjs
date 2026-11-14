@@ -86,7 +86,7 @@ test('einheiten AC-18: auf einer Farm arbeitet hoechstens einer', () => {
   assert.equal(farm.arbeiter, zweiter.id);
 });
 
-test('einheiten AC-18: voll zum Dorfzentrum, zurueck auf dieselbe Farm; leer ist sie weg', () => {
+test('einheiten AC-18: voll zum Dorfzentrum, zurueck auf dieselbe Farm; leer liegt sie brach, und der Rest wird abgegeben', () => {
   const { welt, farm } = mitFarm();
   const anna = welt.spielerVon('a');
   const [bauer] = dorfbewohner(welt);
@@ -99,13 +99,14 @@ test('einheiten AC-18: voll zum Dorfzentrum, zurueck auf dieselbe Farm; leer ist
   assert.equal(bauer.auftrag.art, 'farm');
   assert.equal(bauer.auftrag.gebaeude, farm.id, 'zurueck auf dieselbe Farm');
 
-  // Die letzte Nahrung: danach ist die Farm fort, der Rest wird abgegeben.
+  // Die letzte Nahrung: danach liegt die Farm brach (bauen AC-41), der Rest
+  // wird abgegeben.
   farm.nahrung = 1;
   bauer.angefangen = 0.99;
   welt.zustand();
   welt.takten();
-  assert.equal(welt.gebaeude.has(farm.id), false);
-  assert.ok(welt.zustand().gebaeude.some((g) => g.i === farm.id && g.weg));
+  assert.equal(welt.gebaeude.has(farm.id), true);
+  assert.ok(welt.zustand().gebaeude.some((g) => g.i === farm.id && g.br === 1 && g.n === 0));
   const vorher = anna.nahrung;
   const getragen = bauer.ladung;
   for (let i = 0; i < 120 * TAKTE_PRO_SEKUNDE && bauer.ladung > 0; i++) welt.takten();

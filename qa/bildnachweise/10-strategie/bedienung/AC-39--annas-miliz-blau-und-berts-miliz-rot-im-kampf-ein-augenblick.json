@@ -5,6 +5,6 @@
   "datei": "e2e/tests/strategie-kampfbild.spec.mjs",
   "pfad": [
     "Kampf im Bild",
-    "bedienung AC-39: wer kaempft, holt aus - zwei Augenblicke desselben Gefechts sehen verschieden aus"
+    "bedienung AC-39: wer kaempft, holt aus - beim Schlag steht die Figur anders als zwischen zwei Schlaegen"
   ]
 }

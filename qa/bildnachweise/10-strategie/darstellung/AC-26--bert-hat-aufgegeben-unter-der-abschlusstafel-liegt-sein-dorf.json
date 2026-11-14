@@ -1,0 +1,10 @@
+{
+  "spec": "10-strategie/darstellung.md",
+  "ac": "AC-26",
+  "titel": "Bert hat aufgegeben: unter der Abschlusstafel liegt sein Dorfzentrum in Trümmern, und sie bleiben liegen",
+  "datei": "e2e/tests/strategie-ruinen.spec.mjs",
+  "pfad": [
+    "Truemmer nach dem Einsturz",
+    "darstellung AC-26: wo Berts Kaserne stand, liegen zwanzig Sekunden Truemmer - begehbar, nicht anklickbar, und am Ende der Partie bleiben sie liegen"
+  ]
+}

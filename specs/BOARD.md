@@ -7,9 +7,9 @@ Eine Zeile je Abnahmekriterium. Gepflegt wird der Status in der Spec selbst,
 hier steht er zusammengefasst. Erzeugt mit `npm run specs:board`; als Seite
 mit Bildnachweisen, Filter und Suche mit `npm run qa:report`.
 
-**Gesamt:** 522/644 fertig · 3 in Arbeit · 13 in QA · 3 geplant · 95 offen · 8 zurueckgestellt
+**Gesamt:** 545/668 fertig · 3 in Arbeit · 14 in QA · 3 geplant · 95 offen · 8 zurueckgestellt
 
-**Nachweise:** 255 Kriterien mit Bild · 274 ohne Bild, begruendet in `qa/ohne-bild.json`
+**Nachweise:** 276 Kriterien mit Bild · 277 ohne Bild, begruendet in `qa/ohne-bild.json`
 
 ## Nach Spezifikation
 
@@ -21,15 +21,15 @@ mit Bildnachweisen, Filter und Suche mit `npm run qa:report`.
 | [Anhalten und Fortsetzen](00-plattform/speichern.md)           | -         | -     | -       | 23    | -               | 3      |
 | [Spielauswahl und Einstellungen](00-plattform/spielauswahl.md) | -         | -     | -       | 5     | -               | 19     |
 | [Uebertragung](00-plattform/uebertragung.md)                   | -         | -     | 1       | 1     | -               | 8      |
-| [Bauen und Ausbilden](10-strategie/bauen.md)                   | -         | -     | -       | 1     | -               | 38     |
-| [Bedienung](10-strategie/bedienung.md)                         | -         | 1     | -       | 3     | -               | 58     |
-| [Darstellung](10-strategie/darstellung.md)                     | 1         | 1     | -       | 4     | -               | 19     |
-| [Einheiten und Befehle](10-strategie/einheiten-und-befehle.md) | -         | -     | -       | 17    | 1               | 37     |
+| [Bauen und Ausbilden](10-strategie/bauen.md)                   | -         | -     | -       | 1     | -               | 43     |
+| [Bedienung](10-strategie/bedienung.md)                         | -         | 2     | -       | 3     | -               | 68     |
+| [Darstellung](10-strategie/darstellung.md)                     | 1         | 1     | -       | 4     | -               | 22     |
+| [Einheiten und Befehle](10-strategie/einheiten-und-befehle.md) | -         | -     | -       | 17    | 1               | 38     |
 | [Fahrplan zum Klon](10-strategie/fahrplan.md)                  | -         | 2     | -       | 4     | -               | 19     |
-| [Kampf](10-strategie/kampf.md)                                 | -         | -     | -       | 2     | 1               | 20     |
+| [Kampf](10-strategie/kampf.md)                                 | -         | -     | -       | 2     | 1               | 22     |
 | [Karte und Vorraete](10-strategie/karte-und-vorraete.md)       | -         | -     | -       | 2     | 3               | 12     |
 | [KI-Spieler](10-strategie/ki.md)                               | -         | -     | -       | 5     | -               | 30     |
-| [Spielziel und Partieverlauf](10-strategie/spielziel.md)       | 1         | -     | -       | 10    | -               | 15     |
+| [Spielziel und Partieverlauf](10-strategie/spielziel.md)       | 1         | -     | -       | 10    | -               | 17     |
 | [Aufstellung, Taktik und Training](15-manager/aufstellung.md)  | -         | -     | -       | -     | 2               | 23     |
 | [Bedienung des Managerspiels](15-manager/bedienung.md)         | -         | -     | -       | -     | -               | 15     |
 | [Finanzen](15-manager/finanzen.md)                             | -         | -     | -       | -     | -               | 16     |
@@ -51,13 +51,14 @@ mit Bildnachweisen, Filter und Suche mit `npm run qa:report`.
 - **Zeitalter gliedern die Partie** — [Spielziel und Partieverlauf](10-strategie/spielziel.md) AC-1
 - **Zahlen sind abrufbar** — [Betrieb](20-betrieb/betrieb.md) AC-8
 
-## In QA (13)
+## In QA (14)
 
 - **Einladungscodes erzeugen und zuruecknehmen** — [Konten und Anmeldung](00-plattform/konten.md) AC-20
 - **Verwaister Raum wird geschlossen** — [Raeume und Partien](00-plattform/raeume.md) AC-12
 - **Leerlauf endet nach 30 Minuten** — [Raeume und Partien](00-plattform/raeume.md) AC-13
 - **Nachrichtenflut trennt die Verbindung** — [Schutz vor Fremdnutzung](00-plattform/schutz.md) AC-7
 - **Militär bei Spielgröße erkennbar** — [Bedienung](10-strategie/bedienung.md) AC-36
+- **Vollbild gibt die Tasten** — [Bedienung](10-strategie/bedienung.md) AC-73
 - **Einheiten sind Figuren** — [Darstellung](10-strategie/darstellung.md) AC-6
 - **Läuft auf dem VPS** — [Fahrplan zum Klon](10-strategie/fahrplan.md) AC-21
 - **Aktualisieren ist ein Befehl** — [Fahrplan zum Klon](10-strategie/fahrplan.md) AC-22

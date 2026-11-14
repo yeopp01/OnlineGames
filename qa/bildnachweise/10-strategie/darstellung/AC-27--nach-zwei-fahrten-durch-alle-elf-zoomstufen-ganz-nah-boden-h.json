@@ -1,0 +1,10 @@
+{
+  "spec": "10-strategie/darstellung.md",
+  "ac": "AC-27",
+  "titel": "Nach zwei Fahrten durch alle elf Zoomstufen ganz nah: Boden, Häuser und Dorfbewohner stehen scharf im Bild",
+  "datei": "e2e/tests/strategie-zoom.spec.mjs",
+  "pfad": [
+    "Zoomen ohne Stocken",
+    "darstellung AC-27: das Rad geht in elf festen Stufen, auf dem Rueckweg wird kein Stueck neu gezeichnet, und der Boden schaerft nach, statt das Bild anzuhalten"
+  ]
+}

@@ -471,7 +471,16 @@ nicht die Regeln.
   bildet mehr aus der Kaserne aus; Distelhag selbst unverändert 47,6 je
   Partie gegen jetzt 33,1 der anderen (das 1,44-fache). „Zwei mehr" gilt
   weiter, und der Stand ohne Neigung fällt auch am 1,4-fachen. ki AC-30
-  hielt und bleibt bei zwei.
+  hielt und bleibt bei zwei. **Für den Handel gilt seit dem 2026-11-14
+  „eine halbe mehr" statt „zwei mehr"** — freigegeben vom Benutzer an diesem
+  Tag (gefragt: „Darf ich die Grenze für den Schwerpunkt Handel lockern?",
+  Antwort: „Lockern"). Gemessen: Silberfurt 1,8 Karren je Partie gegen 1,2
+  der anderen. Die Ursache ist nicht die Neigung, sondern dass Silberfurt in
+  9 von 16 Partien geschlagen ist, bevor ein Karren fährt (Fürstentum erst
+  um Minute 22 bis 29, der Markt danach), und dass die anderen seit dem
+  Handel ab 1500 Gold selbst Karren ausbilden. Ein Versuch, den Markt früher
+  zu bauen, brachte 2,3 gegen 1,3 und riss fahrplan AC-11 (33 von 40 vor
+  Minute 60). **Vorerst**: die Ursache bleibt offen und gehört zur KI.
 - **AC-28** `offen` **KI bildet Spezialeinheit aus** — In der Ritterzeit
   baut die KI eine Burg und bildet dort die Spezialeinheit ihres Hauses
   aus, als Teil ihres Heeres. Dafür braucht sie 650 Stein — **die KI
@@ -487,7 +496,8 @@ nicht die Regeln.
   da) — dieselbe Lücke wie bei AC-28, die eine löst sie für beide. Gelesen
   aus `HAEUSER.wehrstein.ki`, nicht aus dem Namen. **Messbar:** über
   vierzig Startwerte wie bei AC-27 baut Wehrstein je Partie mindestens
-  zwei Türme und anderthalbmal so viele wie die anderen im Schnitt, und KI
+  1,75 Türme (bis 2026-11-13: zwei) und anderthalbmal so viele wie die
+  anderen im Schnitt, und KI
   gegen KI endet weiter wie in fahrplan AC-11. Abgetrennt von AC-27 in
   Runde 174: die KI baut bis heute keinen Turm. Gebaut als
   `ki: { schwerpunkt: 'wachturm', anzahl: 2, steinSammler: 3 }` — ein
@@ -507,7 +517,14 @@ nicht die Regeln.
   vor Minute 60, Median 42,6.
   Vier Türme ergaben 31 vor Minute 60 und Median 46,8; zwei Türme schon
   vor dem ersten Angriff ließen zwei Partien ohne Sieger. Belegt in
-  `tests/partien/ki-im-nebel.test.mjs`.
+  `tests/partien/ki-im-nebel.test.mjs`. **Die Grenze ist seit dem
+  2026-11-14 1,75 statt zwei** — freigegeben vom Benutzer am 2026-11-13
+  („ki AC-27 und AC-30 halten knapp. Wenn sie fallen, sind 1,4 und 1,75
+  freigegeben."). Gefallen ist sie mit drei Regeln aus dem Spiel auf dem
+  Server (kampf AC-24: eine Baustelle gibt keine Sicht; kampf AC-25: ein
+  befohlenes Ziel bleibt; einheiten AC-63: unerreichbarer Vorrat): 1,9
+  Türme je Partie mit Aufbruch. Keine der drei allein ist die Ursache —
+  ohne die erste 1,8, ohne die zweite 2,1, ohne die dritte 1,8.
 
 - **AC-31** `offen` **KI antwortet auf das Heer** — Was die KI ausbildet
   und welches Militärgebäude sie nachbaut, richtet sich nach den fremden

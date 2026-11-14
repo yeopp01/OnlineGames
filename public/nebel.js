@@ -94,7 +94,10 @@ export class Nebel {
     }
     // Gebaeude stehen still: neu nur, wenn eines dazukam oder fiel - wie auf
     // dem Server (Runde 104).
-    const meine = [...ansicht.gebaeude.values()].filter((b) => freund(b.b));
+    // Eine Baustelle sieht nichts (kampf AC-24) - `u` traegt nur, was noch
+    // im Bau ist. Wird sie fertig, faellt sie aus dem Schluessel heraus und
+    // wieder hinein: die Liste ist dann eine andere.
+    const meine = [...ansicht.gebaeude.values()].filter((b) => freund(b.b) && b.u === undefined);
     // Die Sicht eines Gebaeudes mit den Verbesserungen seines Besitzers
     // (kampf AC-17, Stadtwache) - der Server rechnet sie in die Werte je
     // Spieler (`welt.kampfwerte`), wie `welt.gebaeudeSicht`.

@@ -12,6 +12,7 @@
 // kleines Bild gezeichnet und danach kopiert (dingBildZeichnen).
 
 import { gerendert, zelleZeichnen, zellenRand } from './bilder.js';
+import { Bildspeicher } from './bildspeicher.js';
 import { rauschen } from './boden.js';
 
 export const GRAS = 0;
@@ -427,8 +428,11 @@ export function dingZeichnen(stift, art, x, y, e, index, fuellung = 1) {
 const VARIANTEN = 8;
 const VARIANTE = (index) => Math.floor(streuung(index, 77) * VARIANTEN) * 131 + 17;
 
-const ZWISCHENSPEICHER = new Map();
-const SPEICHER_MAX = 400;
+// 24 Millionen Bildpunkte, rund 96 MB (darstellung AC-27): ein Baum ganz nah
+// wiegt 77 000, und achtzig Gestalten stehen leicht im Bild - mit sechs
+// Millionen flog bei jeder Zoomstufe der halbe Wald hinaus (gemessen: 1755
+// Bilder gezeichnet, 1677 verworfen, in vier Fahrten).
+const ZWISCHENSPEICHER = new Bildspeicher('gelaende', 24_000_000);
 
 // Welche Tafel einen Vorrat zeigt (ADR-0016, darstellung AC-23).
 const TAFEL = { [WALD]: 'baum', [BEERE]: 'beere', [GOLD]: 'gold', [STEIN]: 'stein' };
@@ -475,13 +479,17 @@ export function dingBildZeichnen(stift, art, x, y, e, index, fuellung = 1, feld 
   const zeile = !tafel ? 0 : stufen ? Math.min(stufen - 1, Math.round((1 - viertel) * stufen)) : baumart(tafel, index, feld, salz);
   const tafelMass = tafel ? ((2 * e) / tafel.feldbreite) * (stufen ? 1 : 0.6 + 0.4 * viertel) : 0;
   const rand = tafel ? zellenRand(tafel, tafelMass) : null;
-  const schluessel = `${art}|${variante}|${e.toFixed(2)}|${viertel}|${dichte}${tafel ? `|r${zeile}` : ''}`;
+  // Die Familie ist dasselbe Bild ohne seine Groesse (darstellung AC-27).
+  const familie = `${art}|${variante}|${viertel}|${dichte}${tafel ? `|r${zeile}` : ''}`;
+  const schluessel = `${e.toFixed(2)}|${familie}`;
   // Breit genug fuer den Schlagschatten nach rechts.
   const breite = rand ? rand.halb * 2 : 5.2 * e;
   const oben = rand ? rand.oben : 3 * e;
   const unten = rand ? rand.unten : 0.8 * e;
-  let bild = ZWISCHENSPEICHER.get(schluessel);
+  let bild = ZWISCHENSPEICHER.holen(schluessel, familie);
+  if (!bild && ZWISCHENSPEICHER.ersatzZeichnen(stift, familie, x - breite / 2, y - oben, breite, oben + unten)) return;
   if (!bild) {
+    const beginn = performance.now();
     bild = document.createElement('canvas');
     bild.width = Math.ceil(breite * dichte);
     bild.height = Math.ceil((oben + unten) * dichte);
@@ -489,8 +497,7 @@ export function dingBildZeichnen(stift, art, x, y, e, index, fuellung = 1, feld 
     s.scale(dichte, dichte);
     if (tafel) zelleZeichnen(s, tafel, zeile, variante % tafel.gestalten, breite / 2, oben, tafelMass, null);
     else dingZeichnen(s, art, breite / 2, oben, e, index, viertel);
-    ZWISCHENSPEICHER.set(schluessel, bild);
-    if (ZWISCHENSPEICHER.size > SPEICHER_MAX) ZWISCHENSPEICHER.delete(ZWISCHENSPEICHER.keys().next().value);
+    ZWISCHENSPEICHER.legen(schluessel, bild, familie, beginn);
   }
   // Auf ganze Bildpunkte und in Originalgroesse: sonst glaettet der Browser bei
   // jedem Kopieren, und das kostete mit 100 Figuren und 30 Gebaeuden ein

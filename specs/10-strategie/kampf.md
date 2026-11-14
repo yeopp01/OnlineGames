@@ -2,7 +2,7 @@
 
 **Bereich:** Strategie
 **Kuerzel:** kampf
-**Stand:** 20/23 fertig · 2 offen · 1 zurueckgestellt
+**Stand:** 22/25 fertig · 2 offen · 1 zurueckgestellt
 
 ## Zweck
 
@@ -195,6 +195,26 @@ aus [Spielziel](spielziel.md) AC-10, gemessen in
   Ramme in unter einer halben Minute"; das passt nicht zu den Werten der
   Vorlage. Gebaut in Runde 139: `welt.mauerImWeg()` sucht ein zweites Mal
   mit fremden Mauern als begehbar, auch schräg an einer Ecke vorbei.
+
+### Aus dem Spiel auf dem Server
+
+- **AC-24** `fertig` **Baustellen sehen nichts** — Ein Gebäude gibt Sicht
+  erst, wenn es fertig ist. Eine Baustelle deckt nichts auf und erkundet
+  nichts, auch ihren eigenen Grund nicht — sonst wäre ein Fundament in der
+  Ferne ein Späher für ein paar Holz. Wer daran baut, sieht mit seiner
+  eigenen Sichtweite. Mit dem letzten Schlag des Bauers sieht das Gebäude
+  wie jedes andere (AC-15). Der Browser rechnet dieselbe Regel
+  (`public/nebel.js`): eine eigene Baustelle im Nebel steht im Bild, hellt
+  aber nichts auf.
+
+- **AC-25** `fertig` **Befohlenes Ziel bleibt** — Wer auf Befehl eine
+  Einheit angreift, bleibt an ihr, bis sie fällt, bekehrt ist oder
+  wirklich kein Weg mehr zu ihr führt — auch wenn sie flieht und andere
+  Gegner näher stehen. Die Wache wählt nur für den, der keinen Befehl hat
+  (AC-2). **Aus dem Spiel auf dem Server (2026-11-13):** der Späher ließ
+  den fliehenden Dorfbewohner laufen und schlug einen anderen — lief das
+  Ziel schräg davon, galt es für einen Takt als unerreichbar (42 von 90
+  gemessenen Verfolgungen).
 
 ### Stufe E und F — Häuser und Drache
 

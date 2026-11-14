@@ -150,6 +150,43 @@ function suchen(karte, start, ziel, frei = null) {
   return weg;
 }
 
+// Alle Felder, die von `start` aus zu Fuss erreichbar sind: 1 im Ergebnis.
+// Geflutet wird in vier Richtungen - was so erreichbar ist, findet auch
+// `suchen` mit seinen acht. Das Feld gehoert dem Aufrufer nur bis zum
+// naechsten Aufruf: der Puffer wird wiederverwendet.
+let flutFeld = new Uint8Array(0);
+let flutReihe = new Int32Array(0);
+function erreichbar(karte, start, frei = null) {
+  const g = karte.groesse;
+  if (flutFeld.length !== g * g) {
+    flutFeld = new Uint8Array(g * g);
+    flutReihe = new Int32Array(g * g);
+  } else {
+    flutFeld.fill(0);
+  }
+  const felder = karte.felder;
+  let kopf = 0;
+  let ende = 0;
+  const s = start.y * g + start.x;
+  flutFeld[s] = 1;
+  flutReihe[ende++] = s;
+  while (kopf < ende) {
+    const i = flutReihe[kopf++];
+    const x = i % g;
+    const y = (i / g) | 0;
+    for (let r = 0; r < 4; r++) {
+      const nx = x + DX[r];
+      const ny = y + DY[r];
+      if (nx < 0 || ny < 0 || nx >= g || ny >= g) continue;
+      const n = ny * g + nx;
+      if (flutFeld[n] || (felder[n] !== GRAS && !(frei && frei.has(n)))) continue;
+      flutFeld[n] = 1;
+      flutReihe[ende++] = n;
+    }
+  }
+  return flutFeld;
+}
+
 // Vorrat steht auf einem Feld, das man nicht betreten kann. Gesucht ist also
 // das begehbare Nachbarfeld, das am naechsten am Sammler liegt.
 function nachbarfeld(karte, feld, von) {
@@ -168,4 +205,4 @@ function nachbarfeld(karte, feld, von) {
   return bestes;
 }
 
-module.exports = { suchen, nachbarfeld };
+module.exports = { suchen, nachbarfeld, erreichbar };

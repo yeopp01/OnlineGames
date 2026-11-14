@@ -1,0 +1,10 @@
+{
+  "spec": "10-strategie/bauen.md",
+  "ac": "AC-40",
+  "titel": "Das Dorfzentrum gewählt und auf die Krone geklickt: die Fahne steht am Baum, nicht auf der Wiese dahinter",
+  "datei": "e2e/tests/strategie-sammelpunkt.spec.mjs",
+  "pfad": [
+    "Sammelpunkt am Vorrat",
+    "bauen AC-40: ein Rechtsklick auf die Krone setzt die Fahne an den Baum - ist er gefaellt, wandert sie zum naechsten"
+  ]
+}

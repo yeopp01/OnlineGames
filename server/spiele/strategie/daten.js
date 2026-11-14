@@ -351,7 +351,8 @@ const ALLE = ['holz', 'nahrung', 'gold', 'stein'];
 const GEBAEUDE = {
   dorfzentrum: {
     groesse: 4, kosten: { holz: 275, stein: 100 }, bauzeit: 150, leben: 2400, wohnraum: 5,
-    annahme: ALLE, bildetAus: ['dorfbewohner', 'webstuhl', 'stadtwache', 'stadtpatrouille', 'feudalzeit', 'ritterzeit', 'imperialzeit'],
+    annahme: ALLE,
+    bildetAus: ['dorfbewohner', 'webstuhl', 'stadtwache', 'stadtpatrouille', 'schubkarre', 'handkarren', 'feudalzeit', 'ritterzeit', 'imperialzeit'],
   },
   // `zumAufstieg: false`: zaehlt nicht zu den zwei Gebaeuden, die ein Aufstieg
   // verlangt (bauen AC-23) - Haeuser, Aussenposten, Tuerme und Mauern nicht,
@@ -362,9 +363,9 @@ const GEBAEUDE = {
   // Forschung veraendern die Flaeche des Nebels). Werte aus der Vorlage, die
   // Sicht von zehn Feldern wie im Original.
   aussenposten: { groesse: 1, kosten: { holz: 25, stein: 25 }, bauzeit: 15, leben: 500, wohnraum: 0, annahme: [], bildetAus: [], sicht: 10, zumAufstieg: false },
-  muehle: { groesse: 2, kosten: { holz: 100 }, bauzeit: 35, leben: 1000, wohnraum: 0, annahme: ['nahrung'], bildetAus: ['pferdekummet'] },
-  holzfaellerlager: { groesse: 2, kosten: { holz: 100 }, bauzeit: 35, leben: 1000, wohnraum: 0, annahme: ['holz'], bildetAus: ['doppelaxt'] },
-  bergbaulager: { groesse: 2, kosten: { holz: 100 }, bauzeit: 35, leben: 1000, wohnraum: 0, annahme: ['gold', 'stein'], bildetAus: [] },
+  muehle: { groesse: 2, kosten: { holz: 100 }, bauzeit: 35, leben: 1000, wohnraum: 0, annahme: ['nahrung'], bildetAus: ['pferdekummet', 'schwererPflug'] },
+  holzfaellerlager: { groesse: 2, kosten: { holz: 100 }, bauzeit: 35, leben: 1000, wohnraum: 0, annahme: ['holz'], bildetAus: ['doppelaxt', 'bogensaege'] },
+  bergbaulager: { groesse: 2, kosten: { holz: 100 }, bauzeit: 35, leben: 1000, wohnraum: 0, annahme: ['gold', 'stein'], bildetAus: ['goldbergbau', 'goldschacht', 'steinbergbau', 'steinschacht'] },
   // Eine Farm ist begehbar, traegt 175 Nahrung und wird mit 0,32 je Sekunde
   // bestellt - von hoechstens einem (einheiten AC-18).
   //
@@ -601,6 +602,60 @@ const VERBESSERUNGEN = {
     zeichen: 'kummet',
     wirkung: {}, farm: { nahrung: 75 },
   },
+  // Die Wirtschaft waechst mit den Zeitaltern (bauen AC-43, AC-44; Benutzer:
+  // "Im Fürstentum muss es auch noch weiterentwicklungen für bergbau, mühle,
+  // holzabbau, etc. geben"). Bis dahin gab es fuer Gold und Stein nichts und
+  // nach dem Lehen nichts mehr. Dieselben Formen wie Doppelaxt und
+  // Pferdekummet: `sammeln` ist ein Faktor, zwei Stufen multiplizieren sich;
+  // `farm` ein Zuschlag. Kosten und Dauer aus den offenen Technikbaum-Daten
+  // zum Original (SiegeEngineers/aoe2techtree, gelesen 2026-11-14). Die
+  // Wirkungen nennt die Datei nicht: sie sind als Startwerte gesetzt - je
+  // Stufe 15 % am Gold und am Stein, 20 % am Holz, 125 Nahrung je Farm.
+  goldbergbau: {
+    name: 'Goldbergbau', kosten: { nahrung: 100, holz: 75 }, zeit: 30, zeitalter: 1,
+    zeichen: 'goldhacke',
+    wirkung: {}, sammeln: { gold: 1.15 },
+  },
+  steinbergbau: {
+    name: 'Steinbergbau', kosten: { nahrung: 100, holz: 75 }, zeit: 30, zeitalter: 1,
+    zeichen: 'steinhacke',
+    wirkung: {}, sammeln: { stein: 1.15 },
+  },
+  bogensaege: {
+    name: 'Bogensäge', kosten: { nahrung: 150, holz: 100 }, zeit: 50, zeitalter: 2,
+    vorstufe: 'doppelaxt', zeichen: 'saege',
+    wirkung: {}, sammeln: { holz: 1.2 },
+  },
+  goldschacht: {
+    name: 'Goldschacht', kosten: { nahrung: 175, holz: 75 }, zeit: 75, zeitalter: 2,
+    vorstufe: 'goldbergbau', zeichen: 'goldschacht',
+    wirkung: {}, sammeln: { gold: 1.15 },
+  },
+  steinschacht: {
+    name: 'Steinschacht', kosten: { nahrung: 175, holz: 75 }, zeit: 75, zeitalter: 2,
+    vorstufe: 'steinbergbau', zeichen: 'steinschacht',
+    wirkung: {}, sammeln: { stein: 1.15 },
+  },
+  schwererPflug: {
+    name: 'Schwerer Pflug', kosten: { nahrung: 125, holz: 125 }, zeit: 40, zeitalter: 2,
+    vorstufe: 'pferdekummet', zeichen: 'pflug',
+    wirkung: {}, farm: { nahrung: 125 },
+  },
+  // Schubkarre und Handkarren (bauen AC-44): der Dorfbewohner geht schneller
+  // und traegt mehr - `tragkraft` ist ein Wert wie jeder andere und wird ueber
+  // `welt.tragkraft()` gelesen. Die Vorlage nennt fuer den ersten +10 % Tempo
+  // und +25 % Tragkraft (bei zehn sind das aufgerundet drei); der Handkarren
+  // steht dort nicht, seine Wirkung ist gesetzt.
+  schubkarre: {
+    name: 'Schubkarre', kosten: { nahrung: 175, holz: 50 }, zeit: 75, zeitalter: 1,
+    zeichen: 'schubkarre',
+    wirkung: { dorfbewohner: { tempo: 0.08, tragkraft: 3 } },
+  },
+  handkarren: {
+    name: 'Handkarren', kosten: { nahrung: 300, holz: 200 }, zeit: 55, zeitalter: 2,
+    vorstufe: 'schubkarre', zeichen: 'handkarren',
+    wirkung: { dorfbewohner: { tempo: 0.08, tragkraft: 5 } },
+  },
   // Sicht fuer Gebaeude (kampf AC-17, Wunsch des Benutzers: Forschung
   // veraendert die Flaeche des Nebels). Kosten und Wirkung aus der Vorlage,
   // die Dauer die des Originals. `gebaeude` trifft jedes eigene Gebaeude, wie
@@ -731,7 +786,9 @@ const HANDEL = {
   // Kantenlaenge der Karte. Die Form ist die der Vorlage - die Menge waechst
   // mit dem Abstand schneller als dieser, also lohnt die lange Strecke auch
   // je Minute. Der Faktor ist gemessen, nicht uebernommen: siehe Runde 161.
-  karren: { faktor: 0.77, sockel: 0.3 },
+  // `fremdAnteil`: zum Markt eines anderen bringt die Fahrt so viel mehr als
+  // zum eigenen in gleicher Entfernung (Benutzer, 2026-11-13: „nimm 20% mehr").
+  karren: { faktor: 0.77, sockel: 0.3, fremdAnteil: 0.2 },
 };
 
 // Die fuenf Haeuser (ADR-0014, spielziel AC-16, AC-17). Ein Haus ist ein

@@ -1,0 +1,10 @@
+{
+  "spec": "10-strategie/bedienung.md",
+  "ac": "AC-63",
+  "titel": "Ein erlegtes Schaf angesehen: gestrichelt umrandet, unten „Erlegtes Schaf“, die Nahrung, die noch daran ist, und wem es gehört",
+  "datei": "e2e/tests/strategie-ansehen.spec.mjs",
+  "pfad": [
+    "Vorraete ansehen",
+    "bedienung AC-63: ein erlegtes Schaf zeigt, wie viel Nahrung noch daran ist; das eigene lebende wird weiter gewaehlt, das fremde angesehen"
+  ]
+}

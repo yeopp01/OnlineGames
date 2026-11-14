@@ -13,10 +13,13 @@ import { readFileSync } from 'node:fs';
 const lesen = (pfad) => readFileSync(new URL(`../${pfad}`, import.meta.url), 'utf8');
 // public/ton.js ist ein Modul fuer den Browser; Node hielte die Endung .js
 // hier fuer CommonJS. Es bindet nichts ein, also laesst es sich als Text laden.
-const { AKKORDE, KLAENGE, SAETZE, Ton, halbton } = await import(`data:text/javascript;base64,${Buffer.from(lesen('public/ton.js')).toString('base64')}`);
+const { AKKORDE, GESANG_DAUER, KLAENGE, SAETZE, Ton, halbton } = await import(`data:text/javascript;base64,${Buffer.from(lesen('public/ton.js')).toString('base64')}`);
 
 const SIGNALE = ['absage', 'angriff', 'einheit', 'forschung', 'gebaeude', 'gefallen', 'niederlage', 'sieg', 'zeitalter'];
 const GERAEUSCHE = ['einschlag', 'einsturz', 'hacken', 'hammer', 'hieb', 'pfeil', 'pickel', 'schwert', 'treffer', 'wurf'];
+// Der Moench (bedienung AC-74): eigene Abstaende - ein Gloeckchen je Sekunde,
+// ein Gesang, der haelt.
+const MOENCH = ['bekehren', 'bekehrt', 'heilen'];
 
 function speicher(anfang = {}) {
   const werte = new Map(Object.entries(anfang));
@@ -82,7 +85,7 @@ function ausgangAufschreiben() {
 }
 
 test('bedienung AC-59: jedes Ereignis hat seinen Klang - und was im Spiel gemeldet wird, hat einen', () => {
-  assert.deepEqual(Object.keys(KLAENGE).sort(), [...SIGNALE, ...GERAEUSCHE].sort());
+  assert.deepEqual(Object.keys(KLAENGE).sort(), [...SIGNALE, ...GERAEUSCHE, ...MOENCH].sort());
   const gleich = new Set();
   for (const name of SIGNALE) {
     const klang = KLAENGE[name];
@@ -372,7 +375,7 @@ test('bedienung AC-62: Kampf und Arbeit klingen jedes Mal anders, an ihrem Ort i
 test('bedienung AC-62: das Spielbild nennt, was zu hoeren ist - Schlaege im Takt der Figur, Pfeil, Wurf, Einschlag, Treffer, Einsturz', () => {
   const ansicht = lesen('public/ansicht.js');
   const genannt = new Set([...ansicht.matchAll(/this\.(?:geraeusch|klangAn)\('([a-z]+)'/g)].map((m) => m[1]));
-  assert.deepEqual([...genannt].sort(), GERAEUSCHE);
+  assert.deepEqual([...genannt].sort(), [...GERAEUSCHE, ...MOENCH].sort());
   // Zu hoeren ist nur, was im Bild steht: jeder Weg fuehrt durch klangAn.
   assert.match(ansicht, /geraeusch\(name, wx, wy\) \{\s+this\.klangAn\(name, this\.zuBild\(wx, wy\)\);/);
   // Und app.js reicht den Ort weiter.
@@ -408,4 +411,66 @@ test('bedienung AC-61: Geraeusche und Musik sind einzeln abschaltbar, und der Br
   ohne.musikSetzen(false);
   assert.equal(ohne.musik, false);
   assert.equal(new Ton().musik, true);
+});
+
+test('bedienung AC-74: der Moench hat drei Klaenge - ein Gloeckchen je Sekunde, ein Gesang, der bis in den naechsten Ton haelt, und ein Schlag zum Uebertritt', () => {
+  const { Ausgang, schwinger, stoesse } = ausgangAufschreiben();
+  globalThis.AudioContext = Ausgang;
+  let jetzt = 0;
+  const ton = new Ton(speicher(), { uhr: () => jetzt, zufall: zufallMit(4) });
+  try {
+    ton.entsperren();
+    const arten = new Set();
+    for (const name of MOENCH) {
+      const klang = KLAENGE[name];
+      assert.equal(typeof ton[klang.art], 'function', `${name}: ${klang.art}`);
+      arten.add(klang.art);
+      assert.ok(klang.laut > 0 && klang.laut <= 0.5, `${name}: ${klang.laut}`);
+      // Heilen und Bekehren sind kein Gefecht: die Musik bleibt ruhig.
+      assert.equal(klang.kampf, undefined, name);
+      const vorher = schwinger.length + stoesse.length;
+      jetzt += 5000;
+      assert.equal(ton.spielen(name, { laut: 0.5, seite: 0 }), true, name);
+      assert.ok(schwinger.length + stoesse.length > vorher, `${name} wird zu Schall`);
+    }
+    assert.equal(arten.size, 3, 'drei verschiedene Klaenge');
+    assert.deepEqual(ton.protokoll, [], 'gezaehlt, nicht protokolliert - wie Kampf und Arbeit');
+
+    // Ein Leben je Sekunde: drei Moenche heilen nebeneinander, in jedem Bild
+    // meldet sich jeder - zu hoeren ist ein Gloeckchen je Sekunde.
+    jetzt += 5000;
+    let gloeckchen = 0;
+    for (let ms = 0; ms < 5000; ms += 16) {
+      for (let m = 0; m < 3; m++) if (ton.spielen('heilen', { laut: 1, seite: 0 })) gloeckchen += 1;
+      jetzt += 16;
+    }
+    assert.ok(gloeckchen >= 5 && gloeckchen <= 6, String(gloeckchen));
+
+    // Der Gesang ist gehalten: ein Ton klingt noch, wenn der naechste beginnt.
+    assert.ok(GESANG_DAUER * 1000 >= KLAENGE.bekehren.abstand + 250, `${GESANG_DAUER} s bei ${KLAENGE.bekehren.abstand} ms Abstand`);
+    // Tief gesungen, und nicht immer derselbe Ton.
+    const toene = [];
+    for (let i = 0; i < 12; i++) {
+      jetzt += 2000;
+      schwinger.length = 0;
+      ton.spielen('bekehren', { laut: 1, seite: 0 });
+      toene.push(Math.round(schwinger[0].frequency.value));
+    }
+    assert.ok(new Set(toene).size >= 3, toene.join(' '));
+    assert.ok(toene.every((f) => f >= 140 && f <= 230), toene.join(' '));
+    // Das Gloeckchen ist hoch.
+    jetzt += 2000;
+    schwinger.length = 0;
+    ton.spielen('heilen', { laut: 1, seite: 0 });
+    assert.ok(schwinger[0].frequency.value >= 1100 && schwinger[0].frequency.value <= 2200);
+  } finally {
+    delete globalThis.AudioContext;
+  }
+});
+
+test('bedienung AC-74: das Spielbild nennt die Klaenge des Moenchs - Heilen und Bekehren am Moench, der Uebertritt an der Einheit', () => {
+  const ansicht = lesen('public/ansicht.js');
+  assert.match(ansicht, /einheit\.bk\) this\.klangAn\('bekehren', punkt\)/);
+  assert.match(ansicht, /else this\.klangAn\('heilen', punkt\)/);
+  assert.match(ansicht, /frueher\.b !== einheit\.b && !einheit\.s\) this\.geraeusch\('bekehrt', einheit\.x, einheit\.y\)/);
 });

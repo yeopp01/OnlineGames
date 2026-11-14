@@ -1,0 +1,10 @@
+{
+  "spec": "10-strategie/bauen.md",
+  "ac": "AC-42",
+  "titel": "Eine fast leere Farm gewählt, der Schalter „Von selbst neu aussäen“ steht golden auf an",
+  "datei": "e2e/tests/strategie-brache.spec.mjs",
+  "pfad": [
+    "Die Brache",
+    "bauen AC-42: der Schalter an der Farm - an, und beim letzten Korn wird bezahlt und ohne Pause weiter geerntet"
+  ]
+}

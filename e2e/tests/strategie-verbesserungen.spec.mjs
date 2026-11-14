@@ -92,6 +92,62 @@ test.describe('Verbesserungen der Feudalzeit', () => {
     });
   });
 
+  test('bedienung AC-65: Forschung traegt Gold am Knopf - und was in der anderen Schmiede schon laeuft, ist dort grau', async ({}, info) => {
+    const { anna, code } = partie;
+    // Im Dorfzentrum: der Dorfbewohner ist Ausbildung, der Aufstieg Forschung.
+    await anna.keyboard.press('h');
+    await expect(anna.locator('[data-ausbilden="dorfbewohner"]')).not.toHaveClass(/forschung/);
+    await expect(anna.locator('[data-aufstieg]')).toHaveClass(/forschung/);
+    const rand = (l) => l.evaluate((el) => getComputedStyle(el).borderTopColor);
+    expect(await rand(anna.locator('[data-aufstieg]')), 'ein anderer Rand als am Dorfbewohner')
+      .not.toBe(await rand(anna.locator('[data-ausbilden="dorfbewohner"]')));
+
+    // Zwei Schmieden: in der ersten werden die Befiederten Pfeile bestellt.
+    const zweite = await gebaeudeInDerNaehe(anna, code, 'Anna', 'schmiede', basis, { von: 6, bis: 16 });
+    await gebaeudeWaehlen(anna, schmiede);
+    const pfeile = anna.locator('[data-ausbilden="befiedertePfeile"]');
+    await expect(pfeile).toHaveClass(/forschung/);
+    await expect(pfeile).toHaveAttribute('aria-disabled', 'false');
+    await pfeile.click();
+    await expect(anna.locator('[data-abbrechen="0"]')).toHaveClass(/forschung/);
+    // Der Knopf dort sagt es selbst - ein zweiter Klick waere eine Absage.
+    await expect(pfeile).toHaveAttribute('data-laeuft', 'befiedertePfeile');
+    await expect(pfeile).toHaveAttribute('aria-label', 'Befiederte Pfeile wird schon erforscht');
+
+    // In der zweiten Schmiede: die Pfeile grau, der Schmiedeangriff nicht.
+    await gebaeudeWaehlen(anna, zweite);
+    await expect(pfeile).toHaveAttribute('aria-disabled', 'true');
+    await expect(pfeile).toHaveAttribute('data-laeuft', 'befiedertePfeile');
+    await expect(anna.locator('[data-ausbilden="schmiedeangriff"]')).toHaveAttribute('aria-disabled', 'false');
+    await expect(anna.locator('[data-ausbilden="schmiedeangriff"]')).not.toHaveAttribute('data-laeuft');
+    expect(await pfeile.evaluate((el) => getComputedStyle(el, '::after').content), 'das Wort auf dem Knopf').toBe('"läuft"');
+    // Ein Klick bestellt nichts und sagt, warum. Mit `force`: fuer Playwright
+    // ist ein Knopf mit `aria-disabled` nicht bedienbar, fuer die Maus schon.
+    await pfeile.click({ force: true });
+    await expect(anna.locator('#spielmeldung')).toContainText('Befiederte Pfeile wird schon erforscht.');
+    await expect(anna.locator('[data-abbrechen]')).toHaveCount(0);
+    expect(await anna.evaluate((g) => window.ansicht.gebaeude.get(g).s.length, zweite), 'die zweite Schlange bleibt leer').toBe(0);
+
+    expect(await bedienteileFrei(anna)).toEqual([]);
+    await anna.mouse.move(700, 300);
+    await anna.waitForTimeout(300);
+    await nachweis(anna, {
+      spec: BEDIENUNG,
+      ac: 'AC-65',
+      titel: 'Die zweite Schmiede gewählt: beide Forschungen mit goldenem Rand und goldener Ecke, die Befiederten Pfeile grau mit „läuft“ — sie werden in der ersten Schmiede erforscht',
+      test: info,
+    });
+
+    // Abgebrochen ist der Knopf wieder frei - in beiden Schmieden.
+    await gebaeudeWaehlen(anna, schmiede);
+    await anna.locator('[data-abbrechen="0"]').click();
+    await expect(anna.locator('[data-abbrechen]')).toHaveCount(0);
+    await expect(pfeile).not.toHaveAttribute('data-laeuft');
+    await expect(pfeile).toHaveAttribute('aria-disabled', 'false');
+    await gebaeudeWaehlen(anna, zweite);
+    await expect(pfeile).toHaveAttribute('aria-disabled', 'false');
+  });
+
   test('bauen AC-25: erforscht wirkt es sofort, der Knopf ist weg', async () => {
     const { anna, code } = partie;
     await gebaeudeWaehlen(anna, schmiede);
@@ -204,7 +260,8 @@ test.describe('Verbesserungen der Feudalzeit', () => {
     await expect(zeile).toContainText('Angriff');
     await expect(zeile).toContainText('Rüstung');
     await expect(zeile).toContainText('Nahkampf');
-    await expect(zeile.locator('.wert').nth(0)).toContainText(String(meins));
+    // Seit bedienung AC-70 als Grundwert und Zuschlag: "3+1".
+    await expect(zeile.locator('.wert').nth(0)).toContainText(`${roh}+1`);
     await expect(zeile.locator('.wert').nth(1)).toContainText('0 / 0');
     await expect(zeile.locator('.bonus')).toHaveText('+15 gegen Kavallerie');
     await expect(zeile).toBeInViewport();
@@ -215,9 +272,51 @@ test.describe('Verbesserungen der Feudalzeit', () => {
     await nachweis(anna, {
       spec: BEDIENUNG,
       ac: 'AC-35',
-      titel: 'Ein Speerkämpfer gewählt: unten Angriff 4 (3 plus Schmiedeangriff), Rüstung 0 / 0, Nahkampf und „+15 gegen Kavallerie"',
+      titel: 'Ein Speerkämpfer gewählt: unten Angriff 3+1 (der Schmiedeangriff), Rüstung 0 / 0, Nahkampf und „+15 gegen Kavallerie"',
       test: info,
     });
+  });
+
+  // Rueckmeldung des Benutzers: Angriff und Ruestung als Grundwert und
+  // Zuschlag. Der Speerkaempfer aus dem Fall davor ist noch gewaehlt.
+  test('bedienung AC-70: der Angriff steht als 3+1, der Zuschlag in Gold - und wer keinen hat, zeigt die Zahl allein', async ({}, info) => {
+    const { anna } = partie;
+    const zeile = anna.locator('#kampfwerte');
+    const roh = await anna.evaluate(() => window.ansicht.werte.einheiten.speerkaempfer.angriff);
+    const angriff = zeile.locator('.wert').nth(0);
+    await expect(angriff.locator('b')).toHaveText(`${roh}+1`);
+    await expect(angriff.locator('.zuschlag')).toHaveText('+1');
+    await expect(zeile).toHaveAttribute('data-zuschlag', 'angriff:1');
+    // Die Summe steht weiter als Zahl an der Zeile - sie kommt vom Server.
+    await expect(zeile).toHaveAttribute('data-angriff', String(roh + 1));
+    // Der Zuschlag hat eine andere Farbe als der Grundwert.
+    const farbe = (l) => l.evaluate((el) => getComputedStyle(el).color);
+    expect(await farbe(angriff.locator('.zuschlag')), 'der Zuschlag in eigener Farbe').not.toBe(await farbe(angriff.locator('b')));
+    // Die Ruestung hat keinen: dort steht kein Plus.
+    await expect(zeile.locator('.wert').nth(1).locator('.zuschlag')).toHaveCount(0);
+    await expect(zeile.locator('.wert').nth(1).locator('b')).toHaveText('0 / 0');
+    await expect(zeile).toBeInViewport();
+
+    expect(await bedienteileFrei(anna)).toEqual([]);
+    await anna.waitForTimeout(300);
+    await nachweis(anna, {
+      spec: BEDIENUNG,
+      ac: 'AC-70',
+      titel: 'Ein Speerkämpfer nach dem Schmiedeangriff: unten steht der Angriff als 3+1, das +1 in Gold; die Rüstung 0 / 0 ohne Plus',
+      test: info,
+    });
+
+    // Ein Dorfbewohner hat nichts erforscht bekommen: seine Zahl steht allein.
+    await anna.evaluate(() => {
+      const a = window.ansicht;
+      const k = a.werte.einheiten.dorfbewohner.kuerzel;
+      const e = [...a.nachher.values()].find((f) => f.b === a.ich && f.k === k);
+      a.ausgewaehlt.clear();
+      a.ausgewaehlt.add(e.i);
+    });
+    await expect(anna.locator('.auswahl-kopf strong')).toHaveText('Dorfbewohner');
+    await expect(zeile).not.toHaveAttribute('data-zuschlag');
+    await expect(zeile.locator('.zuschlag')).toHaveCount(0);
   });
 
   // Forschung veraendert die Flaeche des Nebels (kampf AC-17, Wunsch des
@@ -255,6 +354,8 @@ test.describe('Verbesserungen der Feudalzeit', () => {
     const nachher = await anna.evaluate(() => window.ansicht.nebel.zaehlen().beobachtet);
     // Vier Felder mehr um jedes Gebaeude: deutlich mehr Helles, nicht ein paar Felder.
     expect(nachher, `${vorher} -> ${nachher} beobachtete Felder`).toBeGreaterThan(vorher * 1.3);
+    // Die Maus weg vom Knopf: sonst steht die Tafel des naechsten im Bild.
+    await anna.mouse.move(700, 300);
     await gebaeudeWaehlen(anna, zentrum, 0.8);
     await anna.waitForTimeout(300);
     await nachweis(anna, {

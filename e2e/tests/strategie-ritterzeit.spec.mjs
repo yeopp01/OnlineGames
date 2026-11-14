@@ -136,6 +136,10 @@ test.describe('Ritterzeit', () => {
     expect(await einheitenAufstellen(anna, code, 'Anna', 1, { x: basis.x + 2, y: basis.y - 6, art: 'bogenschuetze' })).toBe(1);
     const zahl = (k) => anna.evaluate((k) => [...window.ansicht.nachher.values()]
       .filter((e) => e.b === window.ansicht.ich && e.k === k && !e.s).length, k);
+    // Der aufgestellte Schuetze steht erst mit dem naechsten Zustand im Bild:
+    // ohne dieses Warten las der Test einmal 0 und danach 1 (voller Lauf,
+    // 2026-11-14).
+    await expect.poll(() => zahl(kuerzel.bogen)).toBeGreaterThanOrEqual(1);
     const ritterVorher = await zahl(kuerzel.ritter);
     const bogenVorher = await zahl(kuerzel.bogen);
     expect(await zahl(kuerzel.armbrust)).toBe(0);

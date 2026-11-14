@@ -1,0 +1,10 @@
+{
+  "spec": "10-strategie/bedienung.md",
+  "ac": "AC-65",
+  "titel": "Die zweite Schmiede gewählt: beide Forschungen mit goldenem Rand und goldener Ecke, die Befiederten Pfeile grau mit „läuft“ — sie werden in der ersten Schmiede erforscht",
+  "datei": "e2e/tests/strategie-verbesserungen.spec.mjs",
+  "pfad": [
+    "Verbesserungen der Feudalzeit",
+    "bedienung AC-65: Forschung traegt Gold am Knopf - und was in der anderen Schmiede schon laeuft, ist dort grau"
+  ]
+}

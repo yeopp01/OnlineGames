@@ -1,0 +1,10 @@
+{
+  "spec": "10-strategie/bauen.md",
+  "ac": "AC-43",
+  "titel": "Das Bergbaulager im Lehen: Goldbergbau und Steinbergbau, die Tafel über dem Knopf nennt 15 % mehr Gold",
+  "datei": "e2e/tests/strategie-wirtschaft.spec.mjs",
+  "pfad": [
+    "Verbesserungen der Wirtschaft",
+    "bauen AC-43: das Bergbaulager forscht Gold- und Steinbergbau, die zweite Stufe kommt im Fürstentum nach der ersten - ebenso Bogensäge und Schwerer Pflug"
+  ]
+}

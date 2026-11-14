@@ -96,6 +96,12 @@ export async function nachweis(ziel, { spec, ac, titel, test, ganzeSeite = false
 
   const bild = join(ordner, `${name}.png`);
   if (sollBildSchreiben(existsSync(bild))) {
+    // Nach einem Dreh am Rad zeichnet das Spielbild ein paar Bilder lang
+    // Ersatzstuecke (darstellung AC-27): das Bild wartet, bis alles scharf ist.
+    const seite = typeof ziel.goto === 'function' ? ziel : ziel.page?.();
+    await seite?.waitForFunction(() => new Promise((fertig) => {
+      requestAnimationFrame(() => requestAnimationFrame(() => fertig(!window.ansicht || window.ansicht.scharf !== false)));
+    }), null, { timeout: 5000 }).catch(() => {});
     const optionen = { path: bild, animations: 'disabled', caret: 'hide' };
     if (typeof ziel.goto === 'function') optionen.fullPage = ganzeSeite;
     await ziel.screenshot(optionen);

@@ -1,0 +1,10 @@
+{
+  "spec": "10-strategie/spielziel.md",
+  "ac": "AC-27",
+  "titel": "Annas Abschlussbild: Du hast gewonnen, darunter Bert und Cem haben aufgegeben — in der Tafel tragen beide Zeilen den Vermerk aufgegeben",
+  "datei": "e2e/tests/strategie-partieende.spec.mjs",
+  "pfad": [
+    "Aufgeben steht im Bild",
+    "spielziel AC-27: Cem gibt auf und es wird angesagt - gibt auch Bert auf, steht der Grund unter dem Ergebnis und in der Tafel"
+  ]
+}

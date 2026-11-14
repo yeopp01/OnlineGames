@@ -180,7 +180,7 @@ Umfang hinzufügt, dort nachsehen.
 
 ## Stand
 
-**522 von 644 Kriterien fertig.** 852 Tests ohne Browser, 269 im Browser. Die
+**545 von 668 Kriterien fertig.** 908 Tests ohne Browser und 14 ganze Partien, 291 im Browser. Die
 Übersicht ist der Bericht: `npm run qa:report`.
 
 Gebaut ist der Unterbau: Räume, Übertragung, Karte, Wegfindung, Sammeln,
@@ -199,8 +199,8 @@ Gemessen: **3,10 Tore je Spiel, 48 % Heimsiege, 21 % Unentschieden**
 (Bundesliga: 3,1 / 44 % / 24 %); der Favorit gewinnt 64 %. Über sechs Saisons
 ohne Menschen null Widersprüche in den Spielen, Kader, Stärke und Markt
 stabil. Eine Saison rechnet in rund 400 ms, ein Spielstand ist nach zwei
-Saisons unter 1 MB. Der Browserlauf dauert rund 19 bis 21
-Minuten für 207 Fälle (`npm run e2e:laufzeiten` zeigt, wo; die langsamsten
+Saisons unter 1 MB. Der Browserlauf dauert rund 31
+Minuten für 291 Fälle (`npm run e2e:laufzeiten` zeigt, wo; die langsamsten
 Fälle sind `fahrplan AC-24` mit 108 s, zwei gegen zwei bis zur Tafel,
 `fahrplan AC-14` mit 90 s, die Ritterzeit am Stück, und `fahrplan AC-12`
 mit 84 s, eine ganze Partie gegen die KI).
@@ -712,6 +712,33 @@ Fassungen**, und was der Browser für alle Tafeln an Speicher hält, ist nicht
 gemessen. Ein Bildschirmfoto des gerenderten Spielbilds dauert länger als
 ein Pfeilflug: wer einen Pfeil belegt, hält ihn im Bild fest
 (`strategie-burg.spec.mjs`, `strategie-tuerme.spec.mjs`).
+
+**Rückmeldungen aus dem zweiten Spiel auf dem Server** (2026-11-13/14, 41
+Punkte; welche gebaut sind und welche warten, steht im Steuerstand).
+**Wirtschaft:** das Bergbaulager forscht Gold- und Steinbergbau, im
+Fürstentum folgen Schächte, Bogensäge und Schwerer Pflug (bauen AC-43), das
+Dorfzentrum gibt Schubkarre und Handkarren (AC-44) — `tragkraft` ist seitdem
+ein verbesserbarer Wert und wird nur über `welt.tragkraft()` gelesen. **Eine
+leere Farm liegt brach** statt zu verschwinden (AC-41): ein Rechtsklick mit
+einem Dorfbewohner sät für 60 Holz neu aus, ein Schalter an der Farm lässt
+das von selbst geschehen (AC-42, Nachricht `farmen`); die KI räumt ihre
+Brachen wie bisher. Ein Lager neben einem Vorrat schickt seine Bauleute
+dorthin (AC-40), und wer einen unerreichbaren Vorrat angewiesen bekommt,
+nimmt den daneben (einheiten AC-63). **Kampf:** Baustellen sehen und
+schießen nicht (kampf AC-24), ein befohlenes Ziel bleibt das Ziel (AC-25),
+ein Karren zwischen zwei eigenen Märkten bringt weniger als zu einem fremden
+(einheiten AC-40). **Im Bild:** ein Menü mit dem Weg zurück in den Vorraum
+(bedienung AC-66), das Zeitalter der anderen in der Punkteliste (AC-67), das
+eigene und fremde Haus an der Auswahl (AC-69), Kampfwerte als „3+1"
+(AC-70), Vorräte und erlegte Schafe lassen sich ansehen (AC-63), eine
+Schlagbewegung je Schlag (AC-72), der Mönch ist zu hören und seine Ruhe zu
+sehen (AC-74, AC-68). Ein gefallenes Gebäude liegt kurz als Trümmer da
+(darstellung AC-26), nach dem Ende steht das Bild (spielziel AC-28), Zoomen
+stockt nicht mehr (darstellung AC-27), und **Pfeil und Wurfstein kommen aus
+einer gerenderten Tafel** (`geschoss`, darstellung AC-28) — der gezeichnete
+Strich bleibt der Rückfall. **Offen:** ob Chrome im Vollbild `Strg`+Ziffer
+hergibt (bedienung AC-73, `in-qa`), das Baumenü auf zwei Seiten (AC-64) und
+alles an der KI.
 
 1. **Stufe A** Dunkle Zeit mit Wirtschafts-KI und Prüfstand · **B** Feudalzeit
    · **C** Partieende und KI-Gegner · **D** Ritterzeit · **E** fünf Häuser ·

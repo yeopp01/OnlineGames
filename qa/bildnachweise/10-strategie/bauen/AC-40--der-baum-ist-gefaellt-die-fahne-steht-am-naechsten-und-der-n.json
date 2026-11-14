@@ -1,0 +1,10 @@
+{
+  "spec": "10-strategie/bauen.md",
+  "ac": "AC-40",
+  "titel": "Der Baum ist gefällt: die Fahne steht am nächsten, und der neue Dorfbewohner hackt dort",
+  "datei": "e2e/tests/strategie-sammelpunkt.spec.mjs",
+  "pfad": [
+    "Sammelpunkt am Vorrat",
+    "bauen AC-40: ein Rechtsklick auf die Krone setzt die Fahne an den Baum - ist er gefaellt, wandert sie zum naechsten"
+  ]
+}

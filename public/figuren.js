@@ -19,6 +19,7 @@
 // sind dunkles Braun.
 
 import { ablaufZelle, gerendert, zelleZeichnen, zellenRand } from './bilder.js';
+import { Bildspeicher } from './bildspeicher.js';
 
 const HAUT = '#e2b48c';
 const HAAR = '#5b3a24';
@@ -1233,8 +1234,9 @@ function marktkarren(stift, farbe, { schritt = 0, fein = true, haut = HAUT }) {
 }
 
 const SCHRITT_STUFEN = 8;
-const ZWISCHENSPEICHER = new Map();
-const SPEICHER_MAX = 400;
+// Zehn Millionen Bildpunkte, rund 40 MB: bei Zoom 1 sind das dreitausend
+// Figurenbilder, ganz nah heran fuenfhundert (darstellung AC-27).
+const ZWISCHENSPEICHER = new Bildspeicher('figuren', 10_000_000);
 
 export function figurBildZeichnen(stift, art, x, y, hoehe, farbe, lage = {}, umriss = false) {
   if (typeof document === 'undefined') {
@@ -1273,15 +1275,19 @@ export function figurBildZeichnen(stift, art, x, y, hoehe, farbe, lage = {}, umr
   // Der Schluessel nennt die Zelle, die wirklich gezeichnet wird: ist die
   // Tafel eines Ablaufs noch unterwegs, steht die Figur, und das Bild davon
   // darf nicht unter dem Namen des Ablaufs liegen bleiben.
-  const schluessel = `${art}|${farbe}|${h}|${lage.blick === -1 ? -1 : 1}|${lage.ladung || ''}|${stufe}|${arbeitStufe}|${lage.liegt ? 1 : 0}|${rest}|${umriss ? 'u' : ''}|${dichte}${zelle ? `|r${zelle.zeile}|${zelle.ablauf}|${zelle.spalte}` : ''}`;
+  // Die Familie ist dasselbe Bild ohne seine Groesse (darstellung AC-27).
+  const familie = `${art}|${farbe}|${lage.blick === -1 ? -1 : 1}|${lage.ladung || ''}|${stufe}|${arbeitStufe}|${lage.liegt ? 1 : 0}|${rest}|${umriss ? 'u' : ''}|${dichte}${zelle ? `|r${zelle.zeile}|${zelle.ablauf}|${zelle.spalte}` : ''}`;
+  const schluessel = `${h}|${familie}`;
   // Die Tafel eines Ablaufs kann ihre eigene Zelle haben - gemessen wird die, aus der gezeichnet wird.
   const rand = zelle ? zellenRand(zelle.quelle, h / tafel.hoehe) : null;
   // Platz fuer Reiter, Ladung auf dem Ruecken und Schatten.
   const breite = rand ? rand.halb * 2 : h * 2.2 * (figur.breite || 1);
   const oben = rand ? rand.oben : h * 1.3;
   const unten = rand ? rand.unten : h * 0.35;
-  let bild = ZWISCHENSPEICHER.get(schluessel);
+  let bild = ZWISCHENSPEICHER.holen(schluessel, familie);
+  if (!bild && ZWISCHENSPEICHER.ersatzZeichnen(stift, familie, x - breite / 2, y - oben, breite, oben + unten)) return;
   if (!bild) {
+    const beginn = performance.now();
     bild = document.createElement('canvas');
     bild.width = Math.ceil(breite * dichte);
     bild.height = Math.ceil((oben + unten) * dichte);
@@ -1310,8 +1316,7 @@ export function figurBildZeichnen(stift, art, x, y, hoehe, farbe, lage = {}, umr
       s.fillRect(0, 0, breite, oben + unten);
       s.globalCompositeOperation = 'source-over';
     }
-    ZWISCHENSPEICHER.set(schluessel, bild);
-    if (ZWISCHENSPEICHER.size > SPEICHER_MAX) ZWISCHENSPEICHER.delete(ZWISCHENSPEICHER.keys().next().value);
+    ZWISCHENSPEICHER.legen(schluessel, bild, familie, beginn);
   }
   // Auf ganze Bildpunkte und in Originalgroesse: sonst glaettet der Browser bei
   // jedem Kopieren, und das kostete mit 100 Figuren und 30 Gebaeuden ein

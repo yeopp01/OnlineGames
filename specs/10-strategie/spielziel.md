@@ -2,7 +2,7 @@
 
 **Bereich:** Strategie
 **Kuerzel:** spielziel
-**Stand:** 15/26 fertig · 1 in Arbeit · 10 offen
+**Stand:** 17/28 fertig · 1 in Arbeit · 10 offen
 
 ## Zweck
 
@@ -324,6 +324,28 @@ spielt die KI am schlechtesten.
   sind. Ein Rechtsklick auf den früheren Verbündeten ist ab dann ein
   Angriff (rotes Zeichen), und der Nebel zeigt seine Einheiten nur noch in
   Sicht. Aus AC-21 geteilt (Runde 154): der Server kündigt, das Bild sagt es.
+
+### Aus dem Spiel auf dem Server (2026-11-13)
+
+- **AC-27** `fertig` **Aufgeben steht im Bild** — Scheidet ein anderer aus,
+  sagt das Bild es an, mit dem Grund: „KI 1 hat aufgegeben." oder „KI 1 ist
+  ausgeschieden." Endet die Partie damit, steht der Grund unter dem Ergebnis
+  („Du hast gewonnen" — darunter „KI 1 hat aufgegeben"), und in der Tafel
+  trägt die Zeile den Vermerk „aufgegeben". Der Server merkt sich, wer
+  aufgegeben hat (`ag` am Spieler und in der Tafel) — auch für Gegner im
+  Nebel und für den, der nach einem Abbruch zurückkommt. Die KI gibt auf,
+  wenn sie nie wieder etwas tun kann ([KI](ki.md) AC-19): keine Einheit,
+  nichts in der Schlange, nichts bezahlbar — ihr Dorfzentrum kann dann noch
+  stehen. **Rückmeldung des Benutzers:** „ich hab grade ein Spiel gewonnen,
+  obwohl das dorfzentrum noch nicht kaputt war, sondern nur alle einheiten" —
+  die Regel stimmte, das Bild sagte sie nicht.
+- **AC-28** `fertig` **Nach Ende steht das Bild** — Ist die Partie
+  entschieden, rechnet die Welt nicht weiter (AC-5), und das Bild steht mit
+  ihr: niemand geht, hackt oder schlägt auf der Stelle weiter. Was der
+  Aufgebende hatte, ist im selben Takt gefallen und zerstört (`aufgeben()`).
+  Mit der Revanche läuft das Bild wieder (im Browser nicht eigens geprüft). **Rückmeldung des Benutzers:** „so isses
+  lustig, dass meine ritter noch weiter an den gebäuden rumfuhrwerken,
+  obwohl sie weg sind".
 
 ## Der Prüfstein
 

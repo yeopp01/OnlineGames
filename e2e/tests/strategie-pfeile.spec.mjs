@@ -8,6 +8,7 @@ import { einheitenAufstellen, expect, test } from '../helpers/seite.mjs';
 import { gebaeudeInDerNaehe, partieBeenden, partieZuZweit } from '../helpers/strategie.mjs';
 
 const BEDIENUNG = '10-strategie/bedienung.md';
+const DARSTELLUNG = '10-strategie/darstellung.md';
 
 test.describe('Pfeile', () => {
   test.describe.configure({ mode: 'serial' });
@@ -90,5 +91,58 @@ test.describe('Pfeile', () => {
       for (const q of window.ansicht.pfeile) if (q.dauer === 1e9) q.dauer = 1;
     });
     await anna.waitForFunction(() => !window.ansicht.pfeile.some((q) => q.dauer === 1), null, { timeout: 5_000 });
+  });
+
+  test('darstellung AC-28: Pfeil und Stein kommen aus der gerenderten Tafel - der Pfeil in Flugrichtung gedreht, der Stein mit Schatten am Boden, kein Strich mehr', async ({}, info) => {
+    const { anna } = partie;
+    // Die Tafel ist geladen: eine Zeile, der Pfeil und sechs Lagen des Steins.
+    const tafel = await anna.evaluate(async () => {
+      const { gerendert } = await import('./bilder.js');
+      const t = gerendert('geschoss');
+      return t && { zeilen: t.zeilen, spalten: t.spalten, pfeil: t.pfeil, steine: t.steine.length };
+    });
+    expect(tafel).toEqual({ zeilen: 1, spalten: 7, pfeil: 0, steine: 6 });
+
+    // Drei Pfeile an drei Stellen ihrer Bahn und zwei Steine, festgehalten:
+    // ein Bildschirmfoto dauert laenger als jeder Flug.
+    const basis = await anna.evaluate(() => window.ansicht.spieler.get(window.ansicht.ich).basis);
+    const vorher = await anna.evaluate((b) => {
+      const a = window.ansicht;
+      a.ausgewaehlt = new Set();
+      a.gewaehltesGebaeude = null;
+      a.beiAuswahl();
+      a.kamera.zoom = 2.5;
+      a.blickAuf(b.x - 5, b.y + 6);
+      const jetzt = performance.now();
+      const halten = (x0, y0, x1, y1, t, stein) => ({
+        x0, y0, x1, y1, weite: Math.hypot(x1 - x0, y1 - y0), oben: 0, stein, start: jetzt - t * 1e9, dauer: 1e9,
+      });
+      const x = b.x - 5;
+      const y = b.y + 6;
+      a.pfeile = [
+        // Steigend, im Scheitel, fallend - quer durchs Bild.
+        halten(x - 4, y + 1, x + 2, y - 5, 0.15, false),
+        halten(x - 4, y + 1, x + 2, y - 5, 0.5, false),
+        halten(x - 4, y + 1, x + 2, y - 5, 0.88, false),
+        // Einer in die Gegenrichtung: die Spitze zeigt, wohin er fliegt.
+        halten(x + 3, y + 1, x - 1, y + 5, 0.5, false),
+        // Zwei Steine desselben Wurfs.
+        halten(x - 1, y + 4, x + 5, y - 2, 0.3, true),
+        halten(x - 1, y + 4, x + 5, y - 2, 0.7, true),
+      ];
+      return { ...a.geschosseGezeichnet };
+    }, basis);
+    await anna.evaluate(() => new Promise((fertig) => requestAnimationFrame(() => requestAnimationFrame(fertig))));
+    const nachher = await anna.evaluate(() => ({ ...window.ansicht.geschosseGezeichnet }));
+    expect(nachher.tafel - vorher.tafel, 'alle sechs kommen aus der Tafel').toBeGreaterThanOrEqual(6);
+    expect(nachher.strich, 'keiner als Strich oder Kreis').toBe(vorher.strich);
+    expect(await anna.evaluate(() => window.ansicht.pfeile.length)).toBe(6);
+    await nachweis(anna, {
+      spec: DARSTELLUNG,
+      ac: 'AC-28',
+      titel: 'Gerenderte Geschosse: Pfeile steigend, im Scheitel und fallend, einer in Gegenrichtung, und zwei Wurfsteine mit Schatten am Boden',
+      test: info,
+    });
+    await anna.evaluate(() => { window.ansicht.pfeile = []; });
   });
 });

@@ -11,6 +11,7 @@ import {
 } from '../helpers/strategie.mjs';
 
 const EINHEITEN = '10-strategie/einheiten-und-befehle.md';
+const BEDIENUNG = '10-strategie/bedienung.md';
 
 test.describe('Moench', () => {
   test.describe.configure({ mode: 'serial' });
@@ -209,7 +210,7 @@ test.describe('Moench', () => {
     await zeitraffer(anna, code, 0);
     // Danach ruht der Moench: ein zweiter Rechtsklick auf einen Fremden waere
     // kein Ziel - der Browser fragt dafuer `r`.
-    expect(await anna.evaluate((id) => window.ansicht.nachher.get(id).r, moench.i), 'er ruht').toBe(1);
+    expect(await anna.evaluate((id) => window.ansicht.nachher.get(id).r, moench.i), 'er ruht').toBeGreaterThan(0);
     expect(await anna.evaluate((id) => window.ansicht.nachher.get(id).w, moench.i), 'er arbeitet nicht mehr').toBeFalsy();
 
     await imBild();
@@ -220,5 +221,172 @@ test.describe('Moench', () => {
       test: info,
     });
     await zeitraffer(anna, code, 1);
+  });
+
+  // Rueckmeldung des Benutzers: man sah dem Moench nicht an, ob er schon
+  // wieder bekehren kann. Der Moench aus dem Fall davor ruht noch.
+  test('bedienung AC-68: der Moench ruht sichtbar - ueber ihm fuellt sich ein blauer Balken, die Leiste zaehlt die Sekunden herunter', async ({}, info) => {
+    const { anna, code } = partie;
+    const moench = await anna.evaluate(() => {
+      const a = window.ansicht;
+      const e = [...a.nachher.values()].find((f) => f.b === a.ich && f.r > 0 && !f.s);
+      if (!e) return null;
+      a.gewaehltesGebaeude = null;
+      a.ausgewaehlt = new Set([e.i]);
+      a.beiAuswahl();
+      a.kamera.zoom = 2.5;
+      a.blickAuf(e.x, e.y + 1.2);
+      return { i: e.i, r: e.r, ruhe: a.werte.einheiten[a.arten[e.k]].bekehren.ruhe };
+    });
+    expect(moench, 'Annas Moench ruht noch').not.toBeNull();
+    expect(moench.ruhe).toBe(62);
+
+    const stand = () => anna.evaluate((id) => {
+      const a = window.ansicht;
+      const balken = a.lebensbalken.find((b) => b.art === 'ruhe' && b.i === id);
+      if (!balken) return { r: a.nachher.get(id).r ?? 0, balken: null };
+      // Die Farbe mitten im gefuellten Teil und im leeren dahinter.
+      const d = window.devicePixelRatio || 1;
+      const punkt = (x) => [...a.stift.getImageData(Math.round(x * d), Math.round((balken.y - 2) * d), 1, 1).data].slice(0, 3);
+      const links = balken.x - balken.breite / 2;
+      return {
+        r: a.nachher.get(id).r ?? 0,
+        balken: { anteil: balken.anteil, breite: balken.breite, voll: punkt(links + (balken.breite * balken.anteil) / 2), leer: punkt(links + balken.breite * (balken.anteil + 1) / 2) },
+        leben: a.lebensbalken.find((b) => b.art === 'einheit' && b.i === id)?.y ?? null,
+        y: balken.y,
+      };
+    }, moench.i);
+
+    // Bis er noch rund zwanzig Sekunden ruht, dann steht die Welt.
+    await zeitraffer(anna, code, 6);
+    await anna.waitForFunction((id) => window.ansicht.nachher.get(id).r <= 22, moench.i, { timeout: 30_000 });
+    await zeitraffer(anna, code, 0);
+    await anna.waitForTimeout(400);
+    const mitten = await stand();
+    expect(mitten.r).toBeGreaterThan(0);
+    expect(mitten.r).toBeLessThanOrEqual(22);
+    expect(mitten.balken, 'ueber dem Moench steht der Balken der Ruhe').not.toBeNull();
+    expect(mitten.balken.anteil).toBeCloseTo(1 - mitten.r / 62, 5);
+    // Gefuellt blau, dahinter der dunkle Grund.
+    const [rot, gruen, blau] = mitten.balken.voll;
+    expect(blau, `gefuellt ist er blau: ${mitten.balken.voll}`).toBeGreaterThan(rot + 60);
+    expect(blau).toBeGreaterThan(gruen + 20);
+    expect(Math.max(...mitten.balken.leer), `der Rest ist dunkel: ${mitten.balken.leer}`).toBeLessThan(70);
+    // Unter dem Lebensbalken, nicht darauf.
+    expect(mitten.y - mitten.leben).toBeGreaterThanOrEqual(5);
+
+    // Die Leiste nennt die Sekunden.
+    const zeit = `${Math.floor(mitten.r / 60)}:${String(mitten.r % 60).padStart(2, '0')}`;
+    await expect(anna.locator('#kampfwerte')).toHaveAttribute('data-ruht', String(mitten.r));
+    await expect(anna.locator('#kampfwerte .ruht')).toContainText(`ruht noch ${zeit}`);
+    await nachweis(anna, {
+      spec: BEDIENUNG,
+      ac: 'AC-68',
+      titel: 'Annas Mönch ruht nach der Bekehrung: unter seinem Lebensbalken füllt sich ein blauer, unten steht, wie lange noch',
+      test: info,
+    });
+
+    // Ist die Ruhe um, verschwindet beides, und die Leiste nennt wieder die Reichweite.
+    await zeitraffer(anna, code, 8);
+    await anna.waitForFunction((id) => !window.ansicht.nachher.get(id).r, moench.i, { timeout: 30_000 });
+    await zeitraffer(anna, code, 1);
+    await expect(anna.locator('#kampfwerte')).not.toHaveAttribute('data-ruht', /.*/);
+    await expect(anna.locator('#kampfwerte')).toContainText('9 Felder');
+    await anna.waitForTimeout(200);
+    expect((await stand()).balken).toBeNull();
+  });
+
+  // Rueckmeldung des Benutzers: "der mönch macht keine geräuscht beim bekehren
+  // oder heilen". Schall hat kein Bild - gezaehlt wird, was das Spiel spielt
+  // (`ton.gezaehlt`, wie bei Kampf und Arbeit in strategie-ton.spec.mjs).
+  test('bedienung AC-74: der Moench ist zu hoeren - ein Gloeckchen, solange er heilt, Gesang, solange er bekehrt, ein heller Schlag beim Uebertritt', async () => {
+    const { anna, code } = partie;
+    await zeitraffer(anna, code, 1);
+    // Die zweite Wiese noch einmal - eine dritte hat die Karte nicht. Dort
+    // steht Annas Moench aus den beiden Faellen davor, ausgeruht, und der
+    // Dorfbewohner, den er bekehrt hat.
+    const [, wiese] = await freieWiesen(anna, 2);
+    const kuerzel = await anna.evaluate(() => window.ansicht.werte.einheiten.moench.kuerzel);
+    const gezaehlt = (name) => anna.evaluate((n) => window.ton.gezaehlt.get(n) || 0, name);
+    const wert = (id, feld) => anna.evaluate(([i, f]) => window.ansicht.nachher.get(i)?.[f], [id, feld]);
+
+    // Erst woanders hinsehen: Berts Dorf, weit weg von der Wiese.
+    await anna.evaluate(() => {
+      const a = window.ansicht;
+      const fremd = [...a.spieler.values()].find((s) => s.id !== a.ich).basis;
+      a.gewaehltesGebaeude = null;
+      a.ausgewaehlt = new Set();
+      a.beiAuswahl();
+      a.kamera.zoom = 1.5;
+      a.blickAuf(fremd.x, fremd.y);
+    });
+    // Neben Annas Moench ein Dorfbewohner von ihr - der wacht nicht und
+    // griffe Berts Dorfbewohner nicht an, wie es eine Miliz taete.
+    await einheitenAufstellen(anna, code, 'Anna', 1, { art: 'dorfbewohner', x: wiese.x - 3, y: wiese.y - 1 });
+    const { moench, kranker } = await anna.waitForFunction(([k, w]) => {
+      const a = window.ansicht;
+      const moench = [...a.nachher.values()].find((e) => e.k === k && e.b === a.ich && !e.r && Math.hypot(e.x - w.x, e.y - w.y) < 4.5);
+      const kranker = [...a.nachher.values()].find((e) => e.k === 'd' && e.b === a.ich && Math.hypot(e.x - (w.x - 3), e.y - (w.y - 1)) < 1.5);
+      return moench && kranker && { moench: { i: moench.i }, kranker: { i: kranker.i } };
+    }, [kuerzel, wiese]).then((h) => h.jsonValue());
+    await lebenSetzen(anna, code, kranker.i, 5);
+    await expect.poll(() => wert(moench.i, 'w'), { timeout: 10_000 }).toBe(1);
+    expect(await wert(moench.i, 'bk'), 'er heilt, er bekehrt nicht').toBeUndefined();
+
+    // Ausserhalb des Bildes klingt nichts.
+    const still = await gezaehlt('heilen');
+    await anna.waitForTimeout(1500);
+    expect(await gezaehlt('heilen'), 'der Moench heilt ausserhalb des Bildes').toBe(still);
+
+    // Hingesehen: das Gloeckchen, rund einmal je Sekunde - und kein Gesang.
+    const gesangVorher = await gezaehlt('bekehren');
+    await anna.evaluate((w) => {
+      const a = window.ansicht;
+      a.kamera.zoom = 2;
+      a.blickAuf(w.x, w.y + 1);
+    }, wiese);
+    const beginn = Date.now();
+    await expect.poll(() => gezaehlt('heilen'), { timeout: 10_000 }).toBeGreaterThanOrEqual(still + 3);
+    const sekunden = (Date.now() - beginn) / 1000;
+    expect(sekunden, 'drei Gloeckchen brauchen ihre Zeit - kein Dauerlaeuten').toBeGreaterThan(1.7);
+    expect(await gezaehlt('bekehren')).toBe(gesangVorher);
+    expect(await wert(kranker.i, 'h'), 'und der Dorfbewohner hat wieder mehr Leben').toBeGreaterThan(5);
+
+    // Berts Dorfbewohner ein paar Felder daneben; der Moench bekommt ihn als Ziel.
+    await einheitenAufstellen(anna, code, 'Bert', 1, { art: 'dorfbewohner', x: wiese.x + 1, y: wiese.y + 3 });
+    const bauer = await anna.waitForFunction((w) => {
+      const a = window.ansicht;
+      const e = [...a.nachher.values()].find((f) => f.k === 'd' && f.b !== a.ich && Math.hypot(f.x - w.x, f.y - w.y) < 4.5);
+      return e && { i: e.i, x: e.x, y: e.y };
+    }, wiese).then((h) => h.jsonValue());
+    await anna.evaluate((id) => {
+      const a = window.ansicht;
+      a.gewaehltesGebaeude = null;
+      a.ausgewaehlt = new Set([id]);
+      a.beiAuswahl();
+    }, moench.i);
+    const schlagVorher = await gezaehlt('bekehrt');
+    const aufBauer = await aufSeite(anna, bauer);
+    await anna.mouse.click(aufBauer.x, aufBauer.y, { button: 'right' });
+    await expect.poll(() => wert(moench.i, 'bk'), { timeout: 5_000 }).toBe(1);
+
+    // Er singt, solange er bekehrt: mindestens zwei Toene in den vier
+    // Sekunden, die es mindestens dauert - und das Gloeckchen schweigt.
+    await expect.poll(() => gezaehlt('bekehren'), { timeout: 8_000 }).toBeGreaterThanOrEqual(gesangVorher + 2);
+    const glockeBeimSingen = await gezaehlt('heilen');
+    expect(await gezaehlt('bekehrt'), 'noch ist er nicht uebergetreten').toBe(schlagVorher);
+
+    // Der Uebertritt: ein Schlag, genau einer.
+    await anna.waitForFunction((id) => window.ansicht.nachher.get(id)?.b === window.ansicht.ich, bauer.i, { timeout: 20_000 });
+    await expect.poll(() => gezaehlt('bekehrt')).toBe(schlagVorher + 1);
+    expect(await wert(moench.i, 'bk'), 'er bekehrt nicht mehr').toBeUndefined();
+    // Waehrend des Gesangs hat das Gloeckchen dieses Moenchs geschwiegen
+    // (hoechstens eines faellt in das Bild, in dem er aufhoerte zu heilen).
+    expect(glockeBeimSingen - (still + 3)).toBeLessThanOrEqual(Math.ceil(sekunden) + 3);
+    // Und danach ist der Gesang zu Ende.
+    const amEnde = await gezaehlt('bekehren');
+    await anna.waitForTimeout(1600);
+    expect(await gezaehlt('bekehren')).toBe(amEnde);
+    expect(await gezaehlt('bekehrt')).toBe(schlagVorher + 1);
   });
 });

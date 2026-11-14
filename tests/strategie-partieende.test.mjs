@@ -144,6 +144,27 @@ test('spielziel AC-6: aufgeben kommt ueber dieselbe Nachricht wie jeder Auftrag'
   assert.equal(w.spielerVon('b1').aus, true);
 });
 
+test('spielziel AC-27: wer aufgibt, steht als aufgegeben im Zustand, im Auszug der anderen, im Aufbau und in der Tafel - wer besiegt wird, nicht', () => {
+  const w = welt(4711, [...ZWEI, { id: 'c1', name: 'Cora' }]);
+  const von = (liste, id) => liste.find((s) => s.id === id);
+  assert.equal(von(w.zustand().spieler, 'c1').ag, undefined, 'solange sie spielt, steht nichts da');
+  w.aufgeben('c1');
+  assert.equal(w.ende, null, 'zu dritt laeuft die Partie weiter');
+  assert.deepEqual([von(w.zustand().spieler, 'c1').aus, von(w.zustand().spieler, 'c1').ag], [1, 1]);
+  // Anna sieht Cora im Nebel nicht - dass sie aufgegeben hat, erfaehrt sie trotzdem.
+  const fuerAnna = w.zustandJeSpieler(['a1']).get('a1');
+  assert.equal(von(fuerAnna.spieler, 'c1').ag, 1, 'im Auszug fuer Anna');
+  assert.equal(von(w.aufbauFuer('a1').spieler, 'c1').ag, 1, 'und im Aufbau, fuer den, der zurueckkommt');
+  // Bert wird besiegt: ausgeschieden, aber nicht aufgegeben.
+  allesVerlieren(w, 'b1');
+  w.takten();
+  assert.equal(w.ende.sieger, 'a1');
+  const tafel = w.ende.tafel;
+  assert.deepEqual([von(tafel, 'c1').aus, von(tafel, 'c1').ag], [1, 1], 'Cora: aufgegeben');
+  assert.deepEqual([von(tafel, 'b1').aus, von(tafel, 'b1').ag], [1, undefined], 'Bert: besiegt');
+  assert.deepEqual([von(tafel, 'a1').aus, von(tafel, 'a1').ag], [undefined, undefined], 'Anna: Siegerin');
+});
+
 test('spielziel AC-5: das Ende steht im Zustand und im Aufbau', () => {
   const w = welt();
   assert.equal(w.zustand().ende, undefined, 'solange sie laeuft, steht nichts da');

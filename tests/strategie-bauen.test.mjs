@@ -590,6 +590,51 @@ test('bauen AC-13: ein Sammelpunkt schickt neue Einheiten hin, auf einem Vorrat 
   assert.deepEqual(zweiter.auftrag.feld, { x: baum % g, y: (baum / g) | 0 });
 });
 
+test('bauen AC-40: ist der Baum am Sammelpunkt gefaellt, wandert der Sammelpunkt zum naechsten Baum', () => {
+  const welt = new Welt(ZWEI, 7, { vorrat: 'viel' });
+  const zentrum = dorfzentrum(welt);
+  const g = welt.karte.groesse;
+  const basis = welt.spielerVon('a').basis;
+  const baeume = [...welt.karte.vorrat.keys()].filter((i) => welt.karte.felder[i] === karten.WALD)
+    .sort((a, b) => Math.hypot(a % g - basis.x, ((a / g) | 0) - basis.y) - Math.hypot(b % g - basis.x, ((b / g) | 0) - basis.y));
+  const baum = { x: baeume[0] % g, y: (baeume[0] / g) | 0 };
+  welt.sammelpunktSetzen('a', zentrum.id, baum);
+  assert.equal(zentrum.sammelpunkt.art, karten.WALD, 'er merkt sich, dass es ein Baum war');
+  // Der Baum faellt, bevor der Neue fertig ist.
+  welt.karte.vorrat.delete(baeume[0]);
+  welt.karte.felder[baeume[0]] = karten.GRAS;
+  welt.ausbilden('a', zentrum.id, 'dorfbewohner');
+  sekunden(welt, 25);
+  const neuer = eigene(welt).at(-1);
+  assert.equal(neuer.auftrag?.art, 'sammeln', 'er sammelt - und steht nicht auf dem Stumpf');
+  const feld = neuer.auftrag.feld;
+  assert.equal(welt.karte.felder[feld.y * g + feld.x], karten.WALD);
+  assert.ok(Math.hypot(feld.x - baum.x, feld.y - baum.y) <= 3, 'an einem Baum gleich daneben');
+  assert.deepEqual({ x: zentrum.sammelpunkt.x, y: zentrum.sammelpunkt.y }, feld, 'der Sammelpunkt ist mitgewandert');
+});
+
+test('bauen AC-40: ein Sammelpunkt auf Gras bleibt, wo er ist - und ohne Vorrat gleicher Art in der Naehe auch der auf dem Stumpf', () => {
+  const welt = new Welt(ZWEI, 7, { vorrat: 'viel' });
+  const zentrum = dorfzentrum(welt);
+  const g = welt.karte.groesse;
+  const basis = welt.spielerVon('a').basis;
+  let gras = null;
+  for (let r = 6; r < 12 && !gras; r++) if (karten.begehbar(welt.karte, basis.x + r, basis.y)) gras = { x: basis.x + r, y: basis.y };
+  welt.sammelpunktSetzen('a', zentrum.id, gras);
+  assert.equal(zentrum.sammelpunkt.art, undefined);
+  assert.deepEqual(welt.sammelpunktZiel(zentrum), gras);
+  // Gold, und danach alles Gold der Karte fort: der Punkt bleibt.
+  const gold = [...welt.karte.vorrat.keys()].find((i) => welt.karte.felder[i] === karten.GOLD);
+  const ort = { x: gold % g, y: (gold / g) | 0 };
+  welt.sammelpunktSetzen('a', zentrum.id, ort);
+  for (const i of [...welt.karte.vorrat.keys()]) {
+    if (welt.karte.felder[i] !== karten.GOLD) continue;
+    welt.karte.vorrat.delete(i);
+    welt.karte.felder[i] = karten.GRAS;
+  }
+  assert.deepEqual({ x: welt.sammelpunktZiel(zentrum).x, y: welt.sammelpunktZiel(zentrum).y }, ort);
+});
+
 test('bauen AC-3: wer unterwegs ueber den neuen Bauplatz laeuft, sucht einen neuen Weg', () => {
   // Vom Pruefstand gefunden (Startwert 1, Takt 1015): ein Haus entstand auf
   // Feldern, ueber die ein Dorfbewohner schon seinen Weg hatte.

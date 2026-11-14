@@ -13,10 +13,10 @@
 // Verbesserungen liest (tests/waechter-wirkungen.test.mjs, ADR-0001): er
 // bekommt die fertigen Zeilen in `werte.verbesserungen[art].bringt`.
 
-const { EINHEITEN, KLASSEN } = require('./daten.js');
+const { EINHEITEN, KLASSEN, GEBAEUDE, HANDEL, ZEITALTER } = require('./daten.js');
 
 const ROHSTOFFE = { holz: 'Holz', nahrung: 'Nahrung', gold: 'Gold', stein: 'Stein' };
-const FELDER = [['leben', 'Leben'], ['angriff', 'Angriff'], ['reichweite', 'Reichweite'], ['sicht', 'Sicht'], ['tempo', 'Tempo']];
+const FELDER = [['leben', 'Leben'], ['angriff', 'Angriff'], ['reichweite', 'Reichweite'], ['sicht', 'Sicht'], ['tempo', 'Tempo'], ['tragkraft', 'Tragkraft']];
 
 const mit = (zahl) => `${zahl > 0 ? '+' : '−'}${String(Math.abs(zahl)).replace('.', ',')}`;
 const prozent = (anteil) => `${Math.round(anteil * 100)} %`;
@@ -33,11 +33,21 @@ function wen(schluessel) {
   return KLASSEN[klasse]?.name || schluessel;
 }
 
-/** Zuschlaege als Text: "+15 Leben, +1 / +2 Rüstung". */
-function zuschlaege(w) {
+/**
+ * Zuschlaege als Text: "+15 Leben, +1 / +2 Rüstung". Mit `grund`, den Werten
+ * der Einheit, steht das Tempo als Anteil da: "+0,08 Tempo" sagt niemandem
+ * etwas, "+10 % Tempo" schon (bauen AC-44).
+ * @param {Record<string, number>} w
+ * @param {{tempo?: number}} [grund]
+ */
+function zuschlaege(w, grund) {
   const teile = [];
   if (w.lebenAnteil) teile.push(`+${prozent(w.lebenAnteil)} Leben`);
-  for (const [feld, name] of FELDER) if (w[feld]) teile.push(`${mit(w[feld])} ${name}`);
+  for (const [feld, name] of FELDER) {
+    if (!w[feld]) continue;
+    if (feld === 'tempo' && grund?.tempo) teile.push(`+${prozent(w.tempo / grund.tempo)} ${name}`);
+    else teile.push(`${mit(w[feld])} ${name}`);
+  }
   const nah = w.nahruestung || 0;
   const fern = w.fernruestung || 0;
   // Dieselbe Reihenfolge wie an der Auswahl: gegen Nahkampf / gegen Fernkampf.
@@ -69,7 +79,7 @@ function bringt(verbesserung, bauwerkNamen = {}) {
   // Kavallerie: +1 Angriff".
   const gruppen = new Map();
   for (const [schluessel, w] of Object.entries(verbesserung.wirkung || {})) {
-    const text = zuschlaege(w);
+    const text = zuschlaege(w, EINHEITEN[schluessel]);
     if (!text) continue;
     if (!gruppen.has(text)) gruppen.set(text, []);
     gruppen.get(text).push(wen(schluessel));
@@ -98,4 +108,52 @@ function staerkt(wirkung) {
     .filter((eintrag) => eintrag.text);
 }
 
-module.exports = { bringt, staerkt };
+/**
+ * Die Zeilen zu einem Satz Boni eines Hauses. Dieselben Formen wie bei einer
+ * Verbesserung und drei, die es nur bei den Haeusern gibt (daten.js):
+ * `gebaeude.reichweite` gilt nur dem, was schiesst, `handel` und `ausbildung`.
+ * @param {import('./daten.js').Wirkungen} [wirkungen]
+ * @param {Record<string, string>} [bauwerkNamen]
+ */
+function hausZeilen(wirkungen, bauwerkNamen = {}) {
+  const { gebaeude, handel, ausbildung, ...rest } = wirkungen || {};
+  const zeilen = bringt(/** @type {any} */ (rest), bauwerkNamen);
+  if (gebaeude) {
+    const { reichweite, sicht, ...uebrig } = gebaeude;
+    const text = zuschlaege(uebrig);
+    if (text) zeilen.push(`Gebäude: ${text}`);
+    if (sicht) zeilen.push(`Gebäude sehen ${sicht} Felder weiter`);
+    if (reichweite) {
+      // Nur was schiesst - gelesen aus den Daten, nicht aufgezaehlt.
+      const schiesst = Object.entries(GEBAEUDE)
+        .filter(([, g]) => (g.angriff || 0) > 0)
+        .map(([art]) => (bauwerkNamen[art] || art).replace(/^(Der|Die|Das) /, ''));
+      zeilen.push(`${aufzaehlung(schiesst)}: ${mit(reichweite)} Reichweite`);
+    }
+  }
+  if (handel?.gebuehr) zeilen.push(`Am Markt ${prozent(HANDEL.gebuehr + handel.gebuehr)} Gebühr statt ${prozent(HANDEL.gebuehr)}`);
+  if (handel?.karrenAnteil) zeilen.push(`Marktkarren bringen ${prozent(handel.karrenAnteil)} mehr Gold je Fahrt`);
+  if (handel?.verbuendetAnteil) zeilen.push(`Marktkarren zwischen Verbündeten bringen ${prozent(handel.verbuendetAnteil)} mehr Gold je Fahrt`);
+  for (const [art, faktor] of Object.entries(ausbildung || {})) {
+    if (faktor !== 1) zeilen.push(`${bauwerkNamen[art] || art} bildet ${prozent(faktor - 1)} schneller aus`);
+  }
+  return zeilen;
+}
+
+/**
+ * Was ein Haus bringt, in Worten (bedienung AC-69): `bringt` sind die Boni
+ * des Hauses selbst - die spaeteren mit ihrem Zeitalter davor -, `mannschaft`
+ * die, die im Buendnis auch den Verbuendeten gelten (spielziel AC-25).
+ * @param {import('./daten.js').Haus} haus
+ * @param {Record<string, string>} [bauwerkNamen]
+ */
+function hausBringt(haus, bauwerkNamen = {}) {
+  const zeilen = hausZeilen(haus.boni, bauwerkNamen);
+  for (const [stufe, boni] of Object.entries(haus.boniAb || {})) {
+    const ab = ZEITALTER[Number(stufe)]?.ab || '';
+    for (const zeile of hausZeilen(boni, bauwerkNamen)) zeilen.push(`${ab.charAt(0).toUpperCase()}${ab.slice(1)} – ${zeile}`);
+  }
+  return { bringt: zeilen, mannschaft: hausZeilen(haus.mannschaft, bauwerkNamen) };
+}
+
+module.exports = { bringt, staerkt, hausBringt };

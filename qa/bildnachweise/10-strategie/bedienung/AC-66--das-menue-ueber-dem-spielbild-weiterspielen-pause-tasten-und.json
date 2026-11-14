@@ -1,0 +1,10 @@
+{
+  "spec": "10-strategie/bedienung.md",
+  "ac": "AC-66",
+  "titel": "Das Menü über dem Spielbild: Weiterspielen, Pause, Tasten und Ton, Zurück in den Vorraum — darunter, dass die Partie weiterläuft und wartet",
+  "datei": "e2e/tests/strategie-rueckmeldung.spec.mjs",
+  "pfad": [
+    "Rueckkehr aus dem Vorraum",
+    "bedienung AC-66: das Menue oben rechts und mit F10 - und von dort in den Vorraum und wieder zurueck auf den Platz"
+  ]
+}

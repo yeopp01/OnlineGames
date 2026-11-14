@@ -137,6 +137,62 @@ test.describe('Rueckmeldungen aus dem ersten Spiel', () => {
     await anna.mouse.move(700, 300);
   });
 
+  // Rueckmeldung des Benutzers: "wenn ich ganz viele einheiten produzieren
+  // will und ganz schnell draufklicke, dann klickt man zu schnell fuer den
+  // browser". Die Leiste wird mit jedem Auftrag neu gebaut - ein Klick,
+  // zwischen dessen Haelften der Knopf ersetzt wurde, ging verloren.
+  test('bedienung AC-71: gedrueckt ist bestellt, auch wenn die Leiste vor dem Loslassen neu gebaut wird - sechs schnelle Klicks sind sechs, mit Umschalt fuenf', async ({}, info) => {
+    await zentrumWaehlen();
+    await rohstoffe(anna, code, 'Anna', { nahrung: 2000 });
+    const knopf = anna.locator('[data-ausbilden="dorfbewohner"]');
+    await expect(knopf).toHaveAttribute('aria-disabled', 'false');
+    const schlange = anna.locator('[data-abbrechen]');
+    await expect(schlange).toHaveCount(0);
+    const r = await knopf.boundingBox();
+    const mitte = { x: r.x + r.width / 2, y: r.y + r.height / 2 };
+
+    // Druecken und halten: der Auftrag steht, die Leiste ist neu gebaut -
+    // der Knopf unter der Maus ist ein anderer als der gedrueckte.
+    await anna.mouse.move(mitte.x, mitte.y);
+    await knopf.evaluate((el) => { el.dataset.gedrueckt = '1'; });
+    await anna.mouse.down();
+    await expect(schlange).toHaveCount(1);
+    await expect(knopf, 'die Leiste wurde neu gebaut').not.toHaveAttribute('data-gedrueckt');
+    await anna.mouse.up();
+    // Das Loslassen bestellt nicht noch einmal.
+    await anna.waitForTimeout(400);
+    await expect(schlange).toHaveCount(1);
+
+    // Sechsmal so schnell es geht.
+    for (let i = 0; i < 6; i++) await anna.mouse.click(mitte.x, mitte.y);
+    await expect(schlange).toHaveCount(7);
+
+    // Mit Umschalt fuenf auf einmal.
+    await anna.keyboard.down('Shift');
+    await anna.mouse.click(mitte.x, mitte.y);
+    await anna.keyboard.up('Shift');
+    await expect(schlange).toHaveCount(12);
+
+    // Ohne Zeiger ausgeloest (Tastatur) wirkt der Knopf wie bisher - einmal.
+    await knopf.dispatchEvent('click');
+    await expect(schlange).toHaveCount(13);
+
+    await nachweis(anna, {
+      spec: BEDIENUNG,
+      ac: 'AC-71',
+      titel: 'Dreizehn Dorfbewohner in der Schlange: einer gedrückt und gehalten, sechs schnelle Klicks, fünf mit Umschalt, einer ohne Zeiger',
+      test: info,
+    });
+
+    // Abbestellen wirkt ebenso beim Druecken: dreizehnmal ohne Warten.
+    const erster = await anna.locator('[data-abbrechen="0"]').boundingBox();
+    for (let i = 0; i < 13; i++) {
+      await anna.mouse.click(erster.x + erster.width / 2, erster.y + erster.height / 2);
+      await expect(schlange).toHaveCount(12 - i);
+    }
+    await anna.mouse.move(700, 300);
+  });
+
   test('bedienung AC-57: die Punkte stehen staendig ueber der Uebersichtskarte, der Fuehrende oben', async ({}, info) => {
     const liste = anna.locator('#punkteliste');
     await expect(liste).toBeVisible();
@@ -168,6 +224,40 @@ test.describe('Rueckmeldungen aus dem ersten Spiel', () => {
       titel: 'Unten rechts ueber der Uebersichtskarte die Punkte: Anna 200 vor Bert 123, ohne eine Taste',
       test: info,
     });
+  });
+
+  test('bedienung AC-67: hinter jedem Namen steht das Zeitalter als roemische Ziffer - und es zieht mit dem Aufstieg nach', async ({}, info) => {
+    const liste = anna.locator('#punkteliste');
+    const stufe = (name) => liste.locator('li', { has: anna.locator('.name', { hasText: name }) }).locator('.stufe');
+    await expect(stufe('Anna')).toHaveText('(I)');
+    await expect(stufe('Bert')).toHaveText('(I)');
+    // Bert steigt zweimal auf, Anna einmal: jeder sieht es am anderen, ohne
+    // eine Taste und ohne dessen Dorf zu sehen.
+    await rohstoffe(anna, code, 'Bert', { zeitalter: 2 });
+    await rohstoffe(anna, code, 'Anna', { zeitalter: 1 });
+    await expect(stufe('Bert')).toHaveText('(III)');
+    await expect(stufe('Anna')).toHaveText('(II)');
+    await expect(partie.bert.locator('#punkteliste li.ich .stufe')).toHaveText('(III)');
+    // Die Ziffer steht zwischen Name und Zahl, die Zeile bleibt eine Zeile.
+    const zeile = liste.locator('li.ich');
+    const [n, s, z] = await Promise.all(['.name', '.stufe', '.zahl'].map((k) => zeile.locator(k).boundingBox()));
+    expect(n.x + n.width, 'die Ziffer folgt dem Namen').toBeLessThanOrEqual(s.x + 1);
+    expect(s.x - (n.x + n.width), 'und steht dicht an ihm').toBeLessThan(12);
+    expect(s.x + s.width, 'vor der Zahl').toBeLessThanOrEqual(z.x + 1);
+    expect(Math.abs(n.y - z.y), 'in einer Zeile').toBeLessThan(3);
+    await expect(liste).toBeInViewport({ ratio: 1 });
+    await zurBasis(1.4);
+    await anna.waitForTimeout(150);
+    await nachweis(anna, {
+      spec: BEDIENUNG,
+      ac: 'AC-67',
+      titel: 'In der Punkteliste unten rechts steht hinter jedem Namen das Zeitalter: Anna (II), Bert (III)',
+      test: info,
+    });
+    // Zurueck in die erste Stufe - die Faelle danach rechnen mit ihr.
+    await rohstoffe(anna, code, 'Bert', { zeitalter: 0 });
+    await rohstoffe(anna, code, 'Anna', { zeitalter: 0 });
+    await expect(stufe('Anna')).toHaveText('(I)');
   });
 
   test('bedienung AC-51: ein Rechtsklick auf den Koerper des Schafs schlachtet - obwohl der Boden dahinter ein anderes Feld ist', async ({}, info) => {
@@ -544,6 +634,79 @@ test.describe('Rueckkehr aus dem Vorraum', () => {
     partie = await partieZuZweit(browser, info, { sicht: 'aufgedeckt' });
   });
   test.afterAll(() => partieBeenden(partie));
+
+  test('bedienung AC-66: das Menue oben rechts und mit F10 - und von dort in den Vorraum und wieder zurueck auf den Platz', async ({}, info) => {
+    const { anna, bert, code } = partie;
+    const ich = await anna.evaluate(() => window.ansicht.ich);
+    const menue = anna.locator('#spielmenue');
+    await expect(menue).toBeHidden();
+    await expect(anna.locator('#menue')).toBeVisible();
+    await expect(anna.locator('#menue')).toBeInViewport({ ratio: 1 });
+
+    // F10 oeffnet und schliesst, Esc schliesst - und hebt dabei nichts auf.
+    await anna.keyboard.press('F10');
+    await expect(menue).toBeVisible();
+    await anna.keyboard.press('F10');
+    await expect(menue).toBeHidden();
+    await anna.locator('#menue').click();
+    await expect(menue).toBeVisible();
+    await expect(menue.locator('button')).toHaveText(['Weiterspielen', 'Pause', 'Tasten und Ton', 'Vollbild (F11)', 'Zurück in den Vorraum']);
+    await expect(anna.locator('#menueVorraumHinweis')).toContainText('wartet sie 30 Minuten');
+    // Die Partie laeuft darunter weiter: die Uhr zaehlt.
+    const uhr = () => anna.evaluate(() => window.ansicht.takt);
+    const vorher = await uhr();
+    await expect.poll(uhr).toBeGreaterThan(vorher);
+    await nachweis(anna, {
+      spec: BEDIENUNG,
+      ac: 'AC-66',
+      titel: 'Das Menü über dem Spielbild: Weiterspielen, Pause, Tasten und Ton, Zurück in den Vorraum — darunter, dass die Partie weiterläuft und wartet',
+      test: info,
+    });
+    await anna.keyboard.press('Escape');
+    await expect(menue).toBeHidden();
+
+    // Tasten und Ton: die Uebersicht, die sonst `?` zeigt.
+    await anna.locator('#menue').click();
+    await anna.locator('#menueTasten').click();
+    await expect(menue).toBeHidden();
+    await expect(anna.locator('#tastenuebersicht')).toBeVisible();
+    await anna.keyboard.press('Escape');
+    await expect(anna.locator('#tastenuebersicht')).toBeHidden();
+
+    // Pause aus dem Menue: beide sehen das Feld, Anna spielt weiter.
+    await anna.locator('#menue').click();
+    await anna.locator('#menuePause').click();
+    await expect(anna.locator('#pausefeld')).toBeVisible();
+    await expect(bert.locator('#pausefeld')).toBeVisible();
+    await anna.locator('#pauseWeiter').click();
+    await expect(anna.locator('#pausefeld')).toBeHidden();
+
+    // Zurueck in den Vorraum: kein Spielbild mehr, keine Meldung "Verbindung
+    // verloren", und die Partie steht dort zum Zurueckkehren.
+    await anna.locator('#menue').click();
+    await anna.locator('#menueVorraum').click();
+    await expect(anna.locator('#vorraum')).toBeVisible();
+    await expect(anna.locator('#spiel')).toBeHidden();
+    await expect(anna.locator('#rueckkehr')).toBeVisible();
+    await expect(anna.locator('#rueckkehrCode')).toHaveText(code);
+    expect(await anna.evaluate(() => sessionStorage.getItem('platz')), 'der Platz dieses Fensters ist vergessen').toBeNull();
+    // Bert spielt weiter - fuer ihn ist nichts vorbei.
+    await expect(bert.locator('#abschluss')).toBeHidden();
+    await expect(bert.locator('#verbindungweg')).toBeHidden();
+    await nachweis(anna, {
+      spec: BEDIENUNG,
+      ac: 'AC-66',
+      titel: 'Nach Zurück in den Vorraum: der Vorraum, und darüber die Partie von eben mit Zurückkehren',
+      test: info,
+    });
+
+    // Und wieder hinein, auf denselben Platz.
+    await anna.locator('#rueckkehrJa').click();
+    await expect(anna.locator('#brett')).toBeVisible();
+    await anna.waitForFunction(() => window.ansicht?.nachher?.size > 0);
+    expect(await anna.evaluate(() => window.ansicht.ich), 'derselbe Platz').toBe(ich);
+    await expect(anna.locator('#spielmenue')).toBeHidden();
+  });
 
   test('raeume AC-18: das Fenster war zu - der Vorraum bietet die Partie an, und eine Absage vergisst den Platz', async ({}, info) => {
     const { anna, code } = partie;

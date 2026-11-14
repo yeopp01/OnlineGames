@@ -196,6 +196,21 @@ test('einheiten AC-40: der Markt eines Verbuendeten ist ein Ziel, der eines Gegn
   assert.notEqual(cora.auftrag?.art, 'handel', 'wer nur den einen Markt hat, faehrt keine Strecke');
 });
 
+test('einheiten AC-40: der Markt eines anderen bringt ein Fuenftel mehr als der zweite eigene in gleicher Entfernung', () => {
+  const { welt, heimat, markt } = handelswelt(DREI, { teams: { a: 1, b: 1, c: 2 } });
+  // Derselbe Platz, einmal Annas, einmal Berts: `markt` nimmt den ersten
+  // freien auf dem Kreis - nach dem Abriss wieder denselben.
+  const eigen = markt('a', 55);
+  const gewinnEigen = welt.handelsgewinn(heimat, eigen);
+  welt.gebaeudeZerstoeren(eigen);
+  const fremd = markt('b', 55);
+  assert.deepEqual([fremd.x, fremd.y], [eigen.x, eigen.y], 'derselbe Platz');
+  const gewinnFremd = welt.handelsgewinn(heimat, fremd);
+  assert.ok(gewinnEigen > 20, `der eigene bringt etwas: ${gewinnEigen}`);
+  // Gerundet je Fahrt: um ein Gold neben dem Anteil darf es liegen.
+  assert.ok(Math.abs(gewinnFremd - gewinnEigen * 1.2) <= 1 && gewinnFremd > gewinnEigen, `eigen ${gewinnEigen}, fremd ${gewinnFremd}`);
+});
+
 test('einheiten AC-40: das Gold je Fahrt waechst mit dem Abstand schneller als dieser - und je Minute lohnt die lange Strecke mehr', () => {
   const { welt, heimat, markt } = handelswelt();
   const nah = welt.handelsgewinn(heimat, markt('a', 25));

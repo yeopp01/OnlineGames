@@ -1,0 +1,10 @@
+{
+  "spec": "10-strategie/kampf.md",
+  "ac": "AC-24",
+  "titel": "Annas Baustelle links liegt im Dunkeln der erkundeten Karte, ihr fertiges Haus rechts hellt seinen Umkreis auf — nur dort steht Berts Miliz im Bild",
+  "datei": "e2e/tests/strategie-baustellensicht.spec.mjs",
+  "pfad": [
+    "Baustellen sehen nichts",
+    "kampf AC-24: Annas Baustelle hellt nichts auf, ihr fertiges Haus daneben schon - und nur dort sieht sie Berts Miliz"
+  ]
+}

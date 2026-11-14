@@ -1,0 +1,26 @@
+{
+  "bild": "geschoss.webp",
+  "maske": null,
+  "zelle": [
+    116,
+    72
+  ],
+  "fuss": [
+    88,
+    36
+  ],
+  "feldbreite": 132,
+  "zeilen": 1,
+  "spalten": 7,
+  "art": "geschoss",
+  "pfeil": 0,
+  "steine": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6
+  ],
+  "laenge": 0.46
+}

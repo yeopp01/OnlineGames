@@ -2,7 +2,7 @@
 
 **Bereich:** Strategie
 **Kuerzel:** darstellung
-**Stand:** 19/25 fertig · 1 in Arbeit · 1 in QA · 4 offen
+**Stand:** 22/28 fertig · 1 in Arbeit · 1 in QA · 4 offen
 
 ## Zweck
 
@@ -228,6 +228,52 @@ nicht so kindlich gemalt". Die Bauabfolge R1 bis R6 steht im
   über 20 MB — ohne Marke kämen sie bei jedem Seitenaufruf neu. Nach einem
   Ausrollen kommt nur, was sich geändert hat. **Messbar:** dieselbe Anfrage
   mit der Marke ergibt 304 und null Byte, mit einer alten die ganze Datei.
+- **AC-26** `fertig` **Trümmer nach dem Einsturz** — Ein Gebäude, das
+  zerstört wird, verschwindet nicht einfach: zwanzig Spielsekunden liegen
+  seine Trümmer im Bild — verbrannter Boden auf der Grundfläche, ringsum
+  die gebrochenen Reste der Mauern, dazwischen Schutt und verkohlte Balken,
+  für jedes Gebäude dieselbe Zeichnung in seiner Größe —, dann verblassen
+  sie. Die Trümmer sind nur ein Bild: der Platz ist im selben Takt frei,
+  begehbar und bebaubar, ein Klick trifft dort nichts, und wer darüber geht,
+  steht davor. Das gilt auch für alles, was ein Spieler beim Aufgeben
+  verliert; endet die Partie damit, bleiben die Trümmer im stehenden Bild
+  ([Spielziel](spielziel.md) AC-28). Keine Trümmer hinterlässt, was nicht
+  einstürzt: ein abgesagter Bau, eine abgeerntete Farm, die Mauer unter
+  einem neuen Tor. Der Server sagt mit dem Verschwinden, wie lange die
+  Trümmer noch liegen (`z` in Takten) — wer den Einsturz erst später
+  bemerkt, sieht sie kürzer oder gar nicht. **Rückmeldung des Benutzers:**
+  „kaputte gebäude sollten nicht nur verschwinden, sondern kurz zur ruine
+  werden, aber man kann trotzdem drüberreiten/gehen" und „nach dem sieg
+  sollten die gebäude des gegners der aufgegeben hat, automatisch ne ruine
+  werden".
+- **AC-27** `fertig` **Zoomen ohne Stocken** — Das Mausrad geht in elf
+  festen Stufen von 0,4 bis 2,5 (jede rund das 1,2-fache der vorigen, Zoom 1
+  ist eine davon); nach einem Anschlag am Rand liegt der Zoom wieder auf
+  denselben Werten. Figuren, Gebäude, Vorräte und Bodenkacheln liegen je
+  Stufe als fertige Bilder im Speicher, gezählt nach Bildpunkten, und hinaus
+  geht, was am längsten nicht gebraucht wurde: wer durch alle Stufen und
+  zurück dreht, bekommt auf dem Rückweg kein Stück neu gezeichnet. Wechselt
+  der Zoom die Auflösung des Bodens, entsteht keine Kachel, solange gedreht
+  wird — die von eben liegen vergrößert da —, und danach höchstens eine je
+  Bild; dasselbe gilt für die Kacheln um ein Feld, das sich ändert (der Baum
+  fällt). Nach einem Dreh darf ein Bild fünf Millisekunden an neuen Stücken
+  zeichnen, was dann noch fehlt, steht für dieses Bild in der Größe von eben
+  da. Ohne Dreh am Rad zeichnet das Bild wie bisher alles sofort. Gemessen
+  mit hundert Einheiten und dreißig Gebäuden im Browserlauf, vorher: jeder
+  Dreh ein Bild von 43 bis 107 ms, auch beim zehnten Mal, der Wechsel der
+  Bodenauflösung eines von 274 bis 368 ms. **Rückmeldung des Benutzers:**
+  „jetzt ruckelts langsam schon relativ stark" — „v.a. wenn ich rein und
+  rauszoome, ansonsten nicht". Nicht gemessen ist der Rechner des Benutzers:
+  der Browserlauf zeichnet ohne Grafikkarte.
+- **AC-28** `fertig` **Geschosse sind gerendert** — Der Pfeil und der Stein
+  des Mangonels kommen aus einer eigenen Tafel (`geschoss`, Skript unter
+  `grafik/`): der Pfeil mit Schaft, Eisenspitze und heller Fiederung, in die
+  Flugrichtung gedreht; der Stein als kantiger Brocken, der sich im Flug
+  überschlägt, mit einem Fleck Schatten am Boden unter sich. Ein Pfeil wird
+  nie kleiner gezeichnet als bei Zoom 1,2 — darunter wäre der Schaft unter
+  einem Bildpunkt breit. Ohne Tafel (`?bilder=0`) bleibt es bei Strich und
+  Kreis. **Rückmeldung des Benutzers:** „Pfeile sind noch nicht gerendert, da
+  brauchen wir noch was".
 
 **Was der Bildumbau ablöst.** AC-12 („gezeichnet statt flach") und die
 Messungen 1 und 3 aus AC-13 beschreiben eine Zeichnung. Sie bleiben `fertig`,

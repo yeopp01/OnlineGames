@@ -1,0 +1,10 @@
+{
+  "spec": "10-strategie/bedienung.md",
+  "ac": "AC-70",
+  "titel": "Ein Speerkämpfer nach dem Schmiedeangriff: unten steht der Angriff als 3+1, das +1 in Gold; die Rüstung 0 / 0 ohne Plus",
+  "datei": "e2e/tests/strategie-verbesserungen.spec.mjs",
+  "pfad": [
+    "Verbesserungen der Feudalzeit",
+    "bedienung AC-70: der Angriff steht als 3+1, der Zuschlag in Gold - und wer keinen hat, zeigt die Zahl allein"
+  ]
+}

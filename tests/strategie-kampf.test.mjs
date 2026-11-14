@@ -92,7 +92,8 @@ test('kampf AC-1: ein Rechtsklick auf ein fremdes Gebaeude greift es an, bis es 
   // Der Platz ist wieder frei, und der Browser erfaehrt davon.
   assert.notEqual(welt.karte.felder[feld], require('../server/spiele/strategie/karte.js').BEBAUT);
   const zustand = welt.zustand();
-  assert.deepEqual(zustand.gebaeude.find((g) => g.i === haus.id), { i: haus.id, weg: true });
+  // Mit dem Verschwinden steht, wie lange die Truemmer liegen (darstellung AC-26).
+  assert.deepEqual(zustand.gebaeude.find((g) => g.i === haus.id), { i: haus.id, weg: true, z: 20 * TAKTE_PRO_SEKUNDE });
   // Der Auftrag endet im Takt danach: der Schlag ist abgerechnet, bevor der
   // Angreifer das naechste Mal nach seinem Ziel sieht.
   welt.takten();
@@ -611,4 +612,58 @@ test('kampf AC-10: ein Dorfbewohner, der sich wehrt, zaehlt nicht als untaetig',
   kaempft.auftrag = { art: 'angreifen', ziel: 'irgendwer', gebaeude: false };
   assert.ok(!welt.untaetig(kaempft), 'wer kaempft, nicht');
   assert.ok(!welt.untaetigeVon('a').includes(kaempft.id), 'und der Knopf fuer Untaetige findet ihn nicht');
+});
+
+/**
+ * Ein freier Streifen abseits beider Doerfer, 32 Felder lang in der Richtung
+ * (dx, dy) und drei breit: Platz fuer eine Flucht.
+ */
+function streifen(welt, dx, dy) {
+  const g = welt.karte.groesse;
+  for (let y = 30; y < g - 30; y += 3) {
+    for (let x = 30; x < g - 30; x += 3) {
+      let frei = true;
+      for (let i = -8; i <= 24 && frei; i++) {
+        for (const q of [-1, 0, 1]) frei = frei && karten.begehbar(welt.karte, x + dx * i - dy * q, y + dy * i + dx * q);
+      }
+      if (frei && ![...welt.einheiten.values()].some((e) => Math.hypot(e.x - x, e.y - y) < 30)) return { x, y };
+    }
+  }
+  return null;
+}
+
+test('kampf AC-25: ein befohlenes Ziel bleibt das Ziel, auch wenn es flieht - in jeder Richtung, bis es faellt', () => {
+  // Aus dem Spiel auf dem Server (2026-11-13): der Spaeher liess den
+  // fliehenden Dorfbewohner laufen und schlug einen anderen. Lief das Ziel
+  // schraeg davon, stand es fuer einen Takt 1,98 Felder vom Angreifer auf
+  // dessen eigenem Angriffsplatz - "kein Weg", der Auftrag endete, und die
+  // Wache nahm den Naechstbesten. Gemessen vorher: 42 von 90 Verfolgungen.
+  let geprueft = 0;
+  for (const startwert of [1, 2, 3]) {
+    for (const [dx, dy] of [[1, 0], [1, 1], [0, 1], [-1, 1], [-1, 0], [-1, -1], [0, -1], [1, -1]]) {
+      const welt = new Welt(ZWEI, startwert, { sicht: 'aufgedeckt' });
+      const start = streifen(welt, dx, dy);
+      if (!start) continue;
+      const opfer = welt.einheitAnlegen('b', start.x, start.y, 'dorfbewohner');
+      // Zwei andere am Weg - die naeheren Ziele, sobald der Reiter vorbeikommt.
+      welt.einheitAnlegen('b', start.x + dx * 2 - dy, start.y + dy * 2 + dx, 'dorfbewohner');
+      welt.einheitAnlegen('b', start.x + dx * 5 + dy, start.y + dy * 5 - dx, 'dorfbewohner');
+      const reiter = welt.einheitAnlegen('a', start.x - dx * 6, start.y - dy * 6, 'spaeherreiter');
+      const fort = { x: start.x + dx * 22, y: start.y + dy * 22 };
+      rechtsklick(welt, 'b', [opfer], fort);
+      rechtsklick(welt, 'a', [reiter], opfer);
+      assert.equal(reiter.auftrag?.ziel, opfer.id, 'der Befehl gilt dem Fliehenden');
+      for (let t = 0; t < 900 && !opfer.tot && welt.einheiten.has(opfer.id); t++) {
+        welt.takten();
+        // Wer angekommen ist, laeuft wieder zurueck: die Flucht hoert nicht auf.
+        if (!opfer.tot && !opfer.weg.length) rechtsklick(welt, 'b', [opfer], t % 2 ? fort : start);
+        if (opfer.tot || !welt.einheiten.has(opfer.id)) break;
+        assert.equal(reiter.auftrag?.art, 'angreifen', `Startwert ${startwert}, Richtung ${dx},${dy}, Takt ${t}: er greift weiter an`);
+        assert.equal(reiter.auftrag.ziel, opfer.id, `Startwert ${startwert}, Richtung ${dx},${dy}, Takt ${t}: und zwar den Befohlenen`);
+      }
+      assert.ok(opfer.tot || !welt.einheiten.has(opfer.id), `Startwert ${startwert}, Richtung ${dx},${dy}: er holt ihn ein`);
+      geprueft += 1;
+    }
+  }
+  assert.ok(geprueft >= 12, `mindestens zwoelf Verfolgungen geprueft (${geprueft})`);
 });

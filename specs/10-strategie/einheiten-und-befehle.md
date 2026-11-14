@@ -2,7 +2,7 @@
 
 **Bereich:** Strategie
 **Kuerzel:** einheiten
-**Stand:** 37/55 fertig · 17 offen · 1 zurueckgestellt
+**Stand:** 38/56 fertig · 17 offen · 1 zurueckgestellt
 
 ## Zweck
 
@@ -289,6 +289,11 @@ Werte aus der [Vorlage](../../docs/strategie/vorlage-aoe2.md), als Daten in
   weniger"; zuvor „etwa so viel"). Die Werte stehen in `HANDEL`, denn die
   Formel der Vorlage ist nur nachgemessen und nicht geprüft. Die Leiste
   nennt die Strecke. (Die sichtbare Ladung steht seit Runde 161 als AC-41.)
+  **Der Markt eines anderen bringt ein Fünftel mehr** als der zweite eigene
+  in gleicher Entfernung (`HANDEL.karren.fremdAnteil`, Benutzer 2026-11-13:
+  zwischen zwei eigenen Märkten „sollte es aber weniger bringen, als wenn
+  man mit einem fremden marktplatz handelt" — „nimm 20% mehr"). Der eigene
+  bleibt, wie er gemessen ist; die KI handelt nur zwischen eigenen.
   **Gebaut in Runde 161:** der Auftrag `handel` mit Heimat- und Zielmarkt;
   Heimat ist der nächste eigene fertige Markt außer dem Ziel. Geladen wird
   am Ziel, dem Spieler gehört das Gold erst daheim, und die Tafel zählt es
@@ -507,6 +512,15 @@ AC-19). Werte und Dauern sind Startwerte aus ADR-0014.
   Wert der Vorlage, und anderthalbmal so schnell wie ein Dorfbewohner. Wem
   das ganze Spiel zu langsam ist, stellt die Spielgeschwindigkeit
   (spielziel AC-23).
+- **AC-63** `fertig` **Unerreichbar: der Vorrat daneben** — Führt zu dem
+  Vorrat, auf den der Spieler geklickt hat, kein Weg — ein Baum mitten im
+  Wald, Gold hinter Bäumen —, nimmt der Sammler den nächsten **derselben
+  Art am Klick**, an den er herankommt, höchstens zwölf Felder davon (AC-13).
+  Ist nur die ihm nahe Seite zu, ist es derselbe Vorrat von der anderen
+  Seite. Gilt für Holz, Beeren, Gold und Stein. Erst wenn es dort keinen
+  gibt, nimmt er wie bisher den nächsten bei sich. **Aus dem Spiel auf dem
+  Server (2026-11-13):** vorher sammelte er dann neben sich selbst —
+  gemessen 24 bis 38 Felder vom Klick entfernt.
 
 ## Grenzfaelle
 

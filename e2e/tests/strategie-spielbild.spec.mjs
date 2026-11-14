@@ -474,7 +474,7 @@ test.describe('Das Spielbild', () => {
       return {
         imBild,
         zellen: Object.fromEntries(['baum', 'beere', 'gold', 'stein'].map((name) => [name, gerendert(name)?.gezeichnet ?? 0])),
-        kachelnAusTexturen: a.kachelnMitBildern === true && a.kacheln.size > 0,
+        kachelnAusTexturen: a.kachelnMitBildern === true && a.kacheln.zahl > 0,
         texturenMB: texturSpeicher() / 1e6,
       };
     });

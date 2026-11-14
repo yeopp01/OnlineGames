@@ -44,7 +44,7 @@ import { Worker } from 'node:worker_threads';
 import { createRequire } from 'node:module';
 
 const require = createRequire(import.meta.url);
-const { HAEUSER, GEBAEUDE } = require('../../server/spiele/strategie/daten.js');
+const { HAEUSER, GEBAEUDE, EINHEITEN } = require('../../server/spiele/strategie/daten.js');
 const { FESTUNG, WERKSTATT, RAMME, RAMMEN } = require('../../server/spiele/strategie/ki.js');
 
 const MINUTEN = 90;
@@ -124,8 +124,23 @@ test('fahrplan AC-11 und ki AC-13: KI gegen KI im Nebel endet ueber 40 Startwert
 // - das 1,44-fache. Der Stand ohne Neigung faellt auch am 1,4-fachen bei
 // allen vier (Eschenbruch 1,22, Rappenstein 0,92, Distelhag 0,91; Silberfurt
 // an "zwei mehr").
+//
+// Seit dem 2026-11-14 fuer den Handel "eine halbe mehr" statt "zwei mehr" -
+// freigegeben vom Benutzer an diesem Tag (gefragt: "Darf ich die Grenze fuer
+// den Schwerpunkt Handel lockern?", Antwort: "Lockern"). Gemessen: Silberfurt
+// 1,8 Karren je Partie, die anderen 1,2 - das 1,4-fache haelt, "zwei mehr"
+// nicht. Die Ursache ist nicht die Neigung: Silberfurt erreicht das
+// Fuerstentum um Minute 22 bis 29, baut den Markt danach und ist in 9 von 16
+// Partien geschlagen, bevor ein Karren faehrt; die anderen handeln seit
+// `GOLD_KNAPP = 1500` selbst. Ein Versuch, den Markt frueher zu bauen, brachte
+// 2,3 gegen 1,3 und riss den Nebeltest (33 von 40 vor Minute 60). Vorerst -
+// die Ursache gehoert zur KI, nicht zur Grenze. Der Stand ohne Neigung faellt
+// beim Handel weiter am 1,4-fachen nicht sicher (0,8 gegen 0,4 in Runde
+// 174): fuer dieses eine Haus misst der Test seitdem weniger scharf.
 const NEIGUNG_FACH = 1.4;
-test('ki AC-27: ueber 40 Startwerte bildet jedes Haus deutlich mehr aus seinem Schwerpunkt aus als die anderen im Schnitt - das 1,4-fache und zwei mehr', async () => {
+const NEIGUNG_MEHR = 2;
+const NEIGUNG_MEHR_HANDEL = 0.5;
+test('ki AC-27: ueber 40 Startwerte bildet jedes Haus deutlich mehr aus seinem Schwerpunkt aus als die anderen im Schnitt - das 1,4-fache und zwei mehr, beim Handel eine halbe mehr', async () => {
   const enden = await allePartien();
   const auftritte = {};
   const aus = {}; // aus[haus][gebaeude] = Summe ueber alle Auftritte
@@ -150,7 +165,10 @@ test('ki AC-27: ueber 40 Startwerte bildet jedes Haus deutlich mehr aus seinem S
     const eigen = aus[haus][gebaeude] / auftritte[haus];
     const andere = NAMEN.filter((h) => h !== haus).map((h) => aus[h][gebaeude] / auftritte[h]);
     const schnitt = andere.reduce((a, b) => a + b, 0) / andere.length;
-    assert.ok(eigen >= NEIGUNG_FACH * schnitt && eigen >= schnitt + 2,
+    // Was ein Gebaeude ausbildet, das handelt, sagen die Daten - kein Name.
+    const handel = GEBAEUDE[gebaeude].bildetAus.some((einheit) => EINHEITEN[einheit]?.handelt);
+    const mehr = handel ? NEIGUNG_MEHR_HANDEL : NEIGUNG_MEHR;
+    assert.ok(eigen >= NEIGUNG_FACH * schnitt && eigen >= schnitt + mehr,
       `${haus} aus ${gebaeude}: ${eigen.toFixed(1)} je Partie, die anderen ${schnitt.toFixed(1)}`);
   }
 });
@@ -172,7 +190,15 @@ test('ki AC-27: ueber 40 Startwerte bildet jedes Haus deutlich mehr aus seinem S
 // es das in mindestens 14 von 16 tut, sonst maesse der Test nichts mehr.
 // Dass eine ueberrannte KI ihren Stein nicht verbaut, ist eine Luecke der KI,
 // kein Messfehler (steht bei ki AC-30 in der Spec).
-test('ki AC-30: ueber 40 Startwerte baut ein Haus, das zu einem Bauwerk neigt, je Partie mindestens zwei davon und anderthalbmal so viele wie die anderen', async () => {
+//
+// Seit dem 2026-11-14 mindestens 1,75 je Partie statt zwei - freigegeben vom
+// Benutzer am 2026-11-13 ("ki AC-27 und AC-30 halten knapp. Wenn sie fallen,
+// sind 1,4 und 1,75 freigegeben."). Gefallen ist es mit drei Regeln aus dem
+// Spiel auf dem Server (kampf AC-24, kampf AC-25, einheiten AC-63): 1,9
+// Tuerme je Partie mit Aufbruch, in 15 von 16. Keine der drei allein ist
+// die Ursache - ohne die eine 2,1, ohne jede der beiden anderen 1,8.
+const BAUWERKE_MINDESTENS = 1.75;
+test('ki AC-30: ueber 40 Startwerte baut ein Haus, das zu einem Bauwerk neigt, je Partie mindestens 1,75 davon und anderthalbmal so viele wie die anderen', async () => {
   const enden = await allePartien();
   const auftritte = {};
   const aufgebrochen = {};
@@ -199,7 +225,7 @@ test('ki AC-30: ueber 40 Startwerte baut ein Haus, das zu einem Bauwerk neigt, j
     const eigen = (gebaut[haus][art] || 0) / aufgebrochen[haus];
     const andere = NAMEN.filter((h) => h !== haus).map((h) => (gebaut[h][art] || 0) / auftritte[h]);
     const schnitt = andere.reduce((a, b) => a + b, 0) / andere.length;
-    assert.ok(eigen >= 2 && eigen >= 1.5 * schnitt,
+    assert.ok(eigen >= BAUWERKE_MINDESTENS && eigen >= 1.5 * schnitt,
       `${haus}: ${eigen.toFixed(1)} ${art} je Partie mit Aufbruch (${aufgebrochen[haus]} von ${auftritte[haus]}), die anderen ${schnitt.toFixed(1)}`);
   }
 });

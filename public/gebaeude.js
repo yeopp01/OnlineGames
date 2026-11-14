@@ -14,6 +14,7 @@
 // erdige Farben fuer Daecher und Holz.
 
 import { gerendert, zelleGetroffen, zelleZeichnen, zellenHoehe, zellenRand } from './bilder.js';
+import { Bildspeicher } from './bildspeicher.js';
 
 const KONTUR = 'rgba(48, 34, 22, 0.5)';
 
@@ -1904,10 +1905,11 @@ export function gebaeudeZeichnen(stift, art, x, y, e, farbe, groesse, bau = 1, r
 // Gezeichnet werden Gebaeude jetzt mit Hunderten Strichen (AC-12). Im Spielbild
 // wird deshalb jedes einmal in ein kleines Bild gezeichnet und danach nur
 // kopiert - neu erst, wenn sich Zoom, Farbe oder Baufortschritt aendern.
-const ZWISCHENSPEICHER = new Map();
 // Neunzehn Gebaeude, vier Baustellen, die Mauer in jeder Verbindung, das
-// alles in zwei Farben: mit 64 flog staendig etwas heraus.
-const SPEICHER_MAX = 240;
+// alles in zwei Farben und je Zoomstufe: gezaehlt werden die Bildpunkte, nicht
+// die Stuecke - eine Burg ganz nah wiegt so viel wie vierzig Haeuser von
+// weitem. Zwoelf Millionen sind rund 48 MB (darstellung AC-27).
+const ZWISCHENSPEICHER = new Bildspeicher('gebaeude', 12_000_000);
 
 // ---- Gerendert (ADR-0016) ---------------------------------------------------
 //
@@ -1990,15 +1992,20 @@ export function gebaeudeBildZeichnen(stift, art, x, y, e, farbe, groesse, bau = 
   const tafel = wahl ? wahl.tafel : null;
   const tafelMass = tafel ? (2 * e) / tafel.feldbreite : 0;
   const rand = tafel ? zellenRand(tafel, tafelMass) : null;
-  const schluessel = tafel
-    ? `${tafel.name}|${farbe}|${tafelMass.toFixed(3)}|${dichte}|r${wahl.zellen.join(';')}`
-    : `${art}|${farbe}|${m.toFixed(2)}|${stufe}|${restStufe}|${dichte}|${offen ? 'offen' : ''}`;
-  let bild = ZWISCHENSPEICHER.get(schluessel);
+  // Die Familie ist dasselbe Bild ohne seine Groesse (darstellung AC-27).
+  const familie = tafel
+    ? `${tafel.name}|${farbe}|${dichte}|r${wahl.zellen.join(';')}`
+    : `${art}|${farbe}|${stufe}|${restStufe}|${dichte}|${offen ? 'offen' : ''}`;
+  const schluessel = `${tafel ? tafelMass.toFixed(3) : m.toFixed(2)}|${familie}`;
+  // Geholt gilt es als eben gebraucht: das am laengsten Ungenutzte geht zuerst.
+  let bild = ZWISCHENSPEICHER.holen(schluessel, familie);
   // Breit genug fuer den Schlagschatten nach rechts.
   const breite = rand ? rand.halb * 2 : 10 * m;
   const oben = rand ? rand.oben : 6.4 * m;
   const unten = rand ? rand.unten : 2.6 * m;
+  if (!bild && ZWISCHENSPEICHER.ersatzZeichnen(stift, familie, x - breite / 2, y - oben, breite, oben + unten)) return;
   if (!bild) {
+    const beginn = performance.now();
     bild = document.createElement('canvas');
     bild.width = Math.ceil(breite * dichte);
     bild.height = Math.ceil((oben + unten) * dichte);
@@ -2006,12 +2013,7 @@ export function gebaeudeBildZeichnen(stift, art, x, y, e, farbe, groesse, bau = 
     s.scale(dichte, dichte);
     if (tafel) for (const [zeile, spalte] of wahl.zellen) zelleZeichnen(s, tafel, zeile, spalte, breite / 2, oben, tafelMass, farbe);
     else gebaeudeZeichnen(s, art, breite / 2, oben, e, farbe, groesse, stufe, restStufe, offen);
-    ZWISCHENSPEICHER.set(schluessel, bild);
-    if (ZWISCHENSPEICHER.size > SPEICHER_MAX) ZWISCHENSPEICHER.delete(ZWISCHENSPEICHER.keys().next().value);
-  } else {
-    // Zuletzt benutzt nach hinten, damit das Aelteste zuerst geht.
-    ZWISCHENSPEICHER.delete(schluessel);
-    ZWISCHENSPEICHER.set(schluessel, bild);
+    ZWISCHENSPEICHER.legen(schluessel, bild, familie, beginn);
   }
   // Auf ganze Bildpunkte und in Originalgroesse: sonst glaettet der Browser bei
   // jedem Kopieren, und das kostete mit 100 Figuren und 30 Gebaeuden ein

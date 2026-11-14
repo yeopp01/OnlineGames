@@ -11,6 +11,7 @@
 // Rechnen tut hier nichts: die Leiste zeigt den Zustand und schickt Absichten.
 // Werte wie Leben und Kosten kommen vom Server mit dem Aufbau (ansicht.werte).
 import { BAUTASTEN } from './tasten.js';
+import { BEERE, GOLD, STEIN, WALD } from './gelaende.js';
 import { FIGUREN, WAREN, figurZeichnen } from './figuren.js';
 import { GEBAEUDE, gebaeudeZeichnen } from './gebaeude.js';
 import { ablaufZelle, gerendert, zelleEinpassen } from './bilder.js';
@@ -150,12 +151,236 @@ function knopfleinwand(groesse) {
 }
 
 /**
+ * Eine Spitzhacke, schraeg von unten links nach oben rechts (Bergbau).
+ * @param {CanvasRenderingContext2D} s
+ * @param {number} g
+ * @param {string} farbe
+ */
+function hackeMalen(s, g, farbe) {
+  s.lineCap = 'round';
+  s.strokeStyle = '#8a6a44';
+  s.lineWidth = g * 0.08;
+  s.beginPath();
+  s.moveTo(0.14 * g, 0.84 * g);
+  s.lineTo(0.6 * g, 0.3 * g);
+  s.stroke();
+  // Das Eisen: ein flacher Bogen quer zum Stiel.
+  s.strokeStyle = '#b9c2cb';
+  s.lineWidth = g * 0.09;
+  s.beginPath();
+  s.moveTo(0.28 * g, 0.18 * g);
+  s.quadraticCurveTo(0.66 * g, 0.16 * g, 0.84 * g, 0.5 * g);
+  s.stroke();
+  // Ein Band in der Volksfarbe am Stiel.
+  s.strokeStyle = farbe;
+  s.lineCap = 'butt';
+  s.beginPath();
+  s.moveTo(0.44 * g, 0.49 * g);
+  s.lineTo(0.52 * g, 0.395 * g);
+  s.stroke();
+}
+
+/**
+ * Ein Brocken, unten rechts oder um `dx` verschoben.
+ * @param {CanvasRenderingContext2D} s
+ * @param {number} g
+ * @param {string} hell
+ * @param {string} dunkel
+ * @param {number} [dx]
+ */
+function brockenMalen(s, g, hell, dunkel, dx = 0) {
+  /** @type {(x: number, y: number) => [number, number]} */
+  const p = (x, y) => [(x + dx) * g, y * g];
+  s.fillStyle = dunkel;
+  s.beginPath();
+  s.moveTo(...p(0.5, 0.94));
+  s.lineTo(...p(0.56, 0.7));
+  s.lineTo(...p(0.74, 0.62));
+  s.lineTo(...p(0.92, 0.74));
+  s.lineTo(...p(0.9, 0.94));
+  s.closePath();
+  s.fill();
+  s.fillStyle = hell;
+  s.beginPath();
+  s.moveTo(...p(0.58, 0.72));
+  s.lineTo(...p(0.74, 0.64));
+  s.lineTo(...p(0.84, 0.75));
+  s.lineTo(...p(0.66, 0.82));
+  s.closePath();
+  s.fill();
+}
+
+/**
+ * Der Eingang eines Stollens: zwei Stempel und eine Kappe, dahinter das Dunkel.
+ * @param {CanvasRenderingContext2D} s
+ * @param {number} g
+ * @param {string} farbe
+ */
+function stollenMalen(s, g, farbe) {
+  s.fillStyle = '#1d1a17';
+  s.fillRect(0.24 * g, 0.24 * g, 0.52 * g, 0.7 * g);
+  s.strokeStyle = '#8a6a44';
+  s.lineWidth = g * 0.1;
+  s.lineCap = 'butt';
+  for (const x of [0.22, 0.78]) {
+    s.beginPath();
+    s.moveTo(x * g, 0.95 * g);
+    s.lineTo(x * g, 0.22 * g);
+    s.stroke();
+  }
+  s.beginPath();
+  s.moveTo(0.1 * g, 0.2 * g);
+  s.lineTo(0.9 * g, 0.2 * g);
+  s.stroke();
+  s.fillStyle = farbe;
+  s.fillRect(0.42 * g, 0.15 * g, 0.16 * g, 0.1 * g);
+}
+
+/**
+ * Ein Rad von der Seite.
+ * @param {CanvasRenderingContext2D} s
+ * @param {number} g
+ * @param {number} x
+ * @param {number} y
+ * @param {number} r
+ */
+function radMalen(s, g, x, y, r) {
+  s.fillStyle = '#4a4440';
+  s.beginPath();
+  s.arc(x * g, y * g, r * g, 0, Math.PI * 2);
+  s.fill();
+  s.fillStyle = '#b08a5a';
+  s.beginPath();
+  s.arc(x * g, y * g, r * 0.62 * g, 0, Math.PI * 2);
+  s.fill();
+  s.fillStyle = '#4a4440';
+  s.beginPath();
+  s.arc(x * g, y * g, r * 0.22 * g, 0, Math.PI * 2);
+  s.fill();
+}
+
+/**
  * Die Bildchen der Verbesserungen der Feudalzeit (bauen AC-25, AC-26). Jede
  * braucht ein eigenes, sonst stehen vier gleiche Knoepfe nebeneinander
  * (darstellung AC-14). Welches gezeichnet wird, steht als `zeichen` in den
  * Daten - nicht als Verzweigung nach dem Namen der Verbesserung.
  */
 const ZEICHEN = {
+  // Die Wirtschaft (bauen AC-43): Hacke mit Gold, Hacke mit Stein - und fuer
+  // die zweite Stufe der Stollen, in dem das eine oder das andere liegt.
+  goldhacke(s, g, farbe) {
+    hackeMalen(s, g, farbe);
+    brockenMalen(s, g, '#f6d667', '#b8902c');
+  },
+  steinhacke(s, g, farbe) {
+    hackeMalen(s, g, farbe);
+    brockenMalen(s, g, '#c9c4bb', '#77726a');
+  },
+  goldschacht(s, g, farbe) {
+    stollenMalen(s, g, farbe);
+    brockenMalen(s, g, '#f6d667', '#b8902c', -0.21);
+  },
+  steinschacht(s, g, farbe) {
+    stollenMalen(s, g, farbe);
+    brockenMalen(s, g, '#c9c4bb', '#77726a', -0.21);
+  },
+  // Bogensaege: ein Buegel aus Holz, darunter das Blatt mit Zaehnen.
+  saege(s, g, farbe) {
+    s.strokeStyle = '#8a6a44';
+    s.lineWidth = g * 0.08;
+    s.lineCap = 'round';
+    s.beginPath();
+    s.moveTo(0.12 * g, 0.64 * g);
+    s.quadraticCurveTo(0.5 * g, 0.0, 0.88 * g, 0.64 * g);
+    s.stroke();
+    s.fillStyle = '#b9c2cb';
+    s.beginPath();
+    s.moveTo(0.12 * g, 0.6 * g);
+    s.lineTo(0.88 * g, 0.6 * g);
+    s.lineTo(0.88 * g, 0.69 * g);
+    for (let i = 9; i >= 0; i--) {
+      const x = 0.12 + i * 0.076;
+      s.lineTo((x + 0.038) * g, 0.79 * g);
+      s.lineTo(x * g, 0.69 * g);
+    }
+    s.closePath();
+    s.fill();
+    s.fillStyle = farbe;
+    s.fillRect(0.43 * g, 0.27 * g, 0.14 * g, 0.1 * g);
+  },
+  // Schwerer Pflug: Grindel und Sterz aus Holz, die eiserne Schar in der Furche.
+  pflug(s, g, farbe) {
+    s.lineCap = 'round';
+    s.strokeStyle = '#6b4a2b';
+    s.lineWidth = g * 0.06;
+    s.beginPath();
+    s.moveTo(0.06 * g, 0.9 * g);
+    s.lineTo(0.94 * g, 0.9 * g);
+    s.stroke();
+    s.strokeStyle = '#8a6a44';
+    s.lineWidth = g * 0.08;
+    s.lineJoin = 'round';
+    s.beginPath();
+    s.moveTo(0.92 * g, 0.46 * g);
+    s.lineTo(0.34 * g, 0.54 * g);
+    s.lineTo(0.12 * g, 0.16 * g);
+    s.stroke();
+    s.fillStyle = '#b9c2cb';
+    s.beginPath();
+    s.moveTo(0.3 * g, 0.54 * g);
+    s.lineTo(0.56 * g, 0.52 * g);
+    s.lineTo(0.72 * g, 0.88 * g);
+    s.lineTo(0.38 * g, 0.8 * g);
+    s.closePath();
+    s.fill();
+    s.fillStyle = farbe;
+    s.fillRect(0.72 * g, 0.41 * g, 0.1 * g, 0.14 * g);
+  },
+  // Schubkarre: die Wanne, ein Rad vorn, der Holm nach hinten.
+  schubkarre(s, g, farbe) {
+    s.strokeStyle = '#6b4a2b';
+    s.lineWidth = g * 0.06;
+    s.lineCap = 'round';
+    s.beginPath();
+    s.moveTo(0.3 * g, 0.72 * g);
+    s.lineTo(0.96 * g, 0.42 * g);
+    s.stroke();
+    s.beginPath();
+    s.moveTo(0.66 * g, 0.6 * g);
+    s.lineTo(0.7 * g, 0.88 * g);
+    s.stroke();
+    s.fillStyle = '#8a6a44';
+    s.beginPath();
+    s.moveTo(0.16 * g, 0.3 * g);
+    s.lineTo(0.8 * g, 0.3 * g);
+    s.lineTo(0.68 * g, 0.6 * g);
+    s.lineTo(0.3 * g, 0.6 * g);
+    s.closePath();
+    s.fill();
+    s.fillStyle = farbe;
+    s.fillRect(0.18 * g, 0.3 * g, 0.6 * g, 0.07 * g);
+    radMalen(s, g, 0.26, 0.76, 0.15);
+  },
+  // Handkarren: ein Kasten auf zwei grossen Raedern, hoch beladen.
+  handkarren(s, g, farbe) {
+    s.fillStyle = '#d8b25a';
+    s.beginPath();
+    s.ellipse(0.46 * g, 0.34 * g, 0.27 * g, 0.16 * g, 0, Math.PI, Math.PI * 2);
+    s.fill();
+    s.fillStyle = '#8a6a44';
+    s.fillRect(0.14 * g, 0.34 * g, 0.64 * g, 0.26 * g);
+    s.fillStyle = farbe;
+    s.fillRect(0.14 * g, 0.34 * g, 0.64 * g, 0.07 * g);
+    s.strokeStyle = '#6b4a2b';
+    s.lineWidth = g * 0.06;
+    s.lineCap = 'round';
+    s.beginPath();
+    s.moveTo(0.78 * g, 0.54 * g);
+    s.lineTo(0.97 * g, 0.38 * g);
+    s.stroke();
+    radMalen(s, g, 0.3, 0.74, 0.17);
+    radMalen(s, g, 0.64, 0.74, 0.17);
+  },
   // Schmiedeangriff: ein Amboss, darauf ein Schwert, darueber Funken.
   amboss(s, g, farbe) {
     s.fillStyle = '#4a4440';
@@ -708,11 +933,38 @@ function aufzaehlung(namen) {
   return `${namen.slice(0, -1).join(', ')} und ${namen.at(-1)}`;
 }
 
+// Wie ein Vorrat heisst, je Feldart der Karte, und was er gibt
+// (bedienung AC-63).
+const VORRATSNAMEN = { [WALD]: 'Baum', [BEERE]: 'Beerenstrauch', [GOLD]: 'Goldvorkommen', [STEIN]: 'Steinvorkommen' };
+
 function element(name, klasse, text) {
   const e = document.createElement(name);
   if (klasse) e.className = klasse;
   if (text !== undefined) e.textContent = text;
   return e;
+}
+
+// So viele bestellt ein Klick mit Umschalt (bedienung AC-71).
+const MIT_UMSCHALT = 5;
+
+/**
+ * Ein Knopf, der beim Druecken wirkt, nicht beim Loslassen (bedienung AC-71).
+ * Die Leiste wird neu gebaut, sobald sich die Schlange aendert - zehnmal in
+ * der Sekunde kann das sein. Ein `click` entsteht nur, wenn Druecken und
+ * Loslassen denselben Knopf treffen: wer schnell hintereinander klickte,
+ * verlor jeden Klick, zwischen dessen Haelften der Knopf ersetzt wurde.
+ * Mit der Tastatur (Eingabe, Leertaste) kommt nur `click`, ohne Zeiger davor
+ * - dann hat er `detail` 0.
+ * @param {HTMLElement} knopf
+ * @param {(e: MouseEvent) => void} tun
+ */
+function beimDruecken(knopf, tun) {
+  knopf.addEventListener('pointerdown', (e) => {
+    if (e.button === 0) tun(e);
+  });
+  knopf.addEventListener('click', (e) => {
+    if (e.detail === 0) tun(e);
+  });
 }
 
 /** Name und Lebensbalken, fuer Einheit und Gebaeude gleich. */
@@ -748,7 +1000,7 @@ export class Auswahlleiste {
     wurzel.after(this.tafel);
     this.tafelFuer = null;
     this.tafelStand = null;
-    const knopfVon = (ziel) => ziel?.closest?.('[data-ausbilden], [data-bauen]') || null;
+    const knopfVon = (ziel) => ziel?.closest?.('[data-ausbilden], [data-bauen], [data-haus]') || null;
     wurzel.addEventListener('mouseover', (e) => this.tafelZeigen(knopfVon(e.target)));
     wurzel.addEventListener('mouseleave', () => this.tafelZeigen(null));
     wurzel.addEventListener('focusin', (e) => this.tafelZeigen(knopfVon(e.target)));
@@ -767,6 +1019,7 @@ export class Auswahlleiste {
   tafelZeigen(knopf) {
     if (!knopf) this.tafelFuer = null;
     else if (knopf.dataset.bauen) this.tafelFuer = { typ: 'bauen', art: knopf.dataset.bauen };
+    else if (knopf.dataset.haus) this.tafelFuer = { typ: 'haus', art: knopf.dataset.haus };
     else this.tafelFuer = { typ: 'ausbilden', art: knopf.dataset.ausbilden };
     this.tafelNachfuehren();
   }
@@ -801,6 +1054,21 @@ export class Auswahlleiste {
   }
 
   /**
+   * Zu welchem Haus ein Spieler gehoert (bedienung AC-69): eine Zeile unter
+   * dem Namen eines Gebaeudes, eigen wie fremd. Wer darauf zeigt, bekommt die
+   * Tafel mit dem, was das Haus bringt - die Saetze schreibt der Server.
+   */
+  hausMarke(besitzer) {
+    const a = this.ansicht;
+    const art = a.spieler.get(besitzer)?.haus;
+    const haus = art ? a.werte.haeuser?.[art] : null;
+    if (!haus) return null;
+    const marke = element('span', 'hausmarke', `Haus ${haus.name}`);
+    marke.dataset.haus = art;
+    return marke;
+  }
+
+  /**
    * Wie ein Gebaeude bei seinem Besitzer heisst: eine Verbesserung kann ihm
    * einen neuen Namen geben (bauen AC-38 - aus dem Wachturm wird der
    * Wehrturm). Der Name kommt mit den Werten vom Server.
@@ -828,6 +1096,14 @@ export class Auswahlleiste {
         ? `${lesen('leben')} Leben · ${lesen('angriff')} Angriff · ${ruestung}`
         : `${lesen('leben')} Leben · greift nicht an · ${ruestung}`;
     };
+
+    if (typ === 'haus') {
+      const haus = werte.haeuser?.[art] || {};
+      const zeilen = [...(haus.bringt || [])];
+      if (haus.mannschaft?.length) zeilen.push('Im Bündnis, auch für Verbündete:', ...haus.mannschaft.map((zeile) => `· ${zeile}`));
+      if (!zeilen.length) zeilen.push('Keine Boni');
+      return { name: `Haus ${haus.name || art}`, kosten: {}, dauer: haus.wahlspruch ? `„${haus.wahlspruch}“` : null, zeilen };
+    }
 
     if (typ === 'bauen') {
       const w = werte.gebaeude[art] || {};
@@ -919,7 +1195,9 @@ export class Auswahlleiste {
       // Am Markt aendern ein Handel die Preise und jeder Vorrat, ob er geht.
       const handel = a.werte.gebaeude[gebaeude.art]?.handel
         ? `${JSON.stringify(a.handelspreise)}:${this.handelGesperrt().join(',')}` : '';
-      const schluessel = `g${gebaeude.i}:${gebaeude.h}:${gebaeude.n}:${gebaeude.s.join(',')}:${gebaeude.w}:${bezahlbar}:${a.verbesserungen.join(',')}:${a.zeitalter}:${handel}`;
+      // Und was anderswo schon erforscht wird (bedienung AC-65).
+      const laeuft = angebot.filter((e) => e.verbesserung && this.forschungLaeuft(e.art)).map((e) => e.art).join(',');
+      const schluessel = `g${gebaeude.i}:${gebaeude.h}:${gebaeude.n}:${gebaeude.br || 0}:${a.farmenErneuern}:${gebaeude.s.join(',')}:${gebaeude.w}:${bezahlbar}:${a.verbesserungen.join(',')}:${a.zeitalter}:${handel}:${laeuft}`;
       if (schluessel !== this.gezeigt) {
         this.gebaeudeBauen(gebaeude, angebot, farbe);
         this.gezeigt = schluessel;
@@ -955,7 +1233,7 @@ export class Auswahlleiste {
       const bezahlbar = bauplan.map((e) => this.fehlt(e.kosten)).join('|');
       const einzeln = auswahl.length === 1 ? auswahl[0] : null;
       const schluessel = einzeln
-        ? `e${einzeln.i}:${einzeln.h}:${einzeln.l}:${einzeln.a}:${einzeln.hd}:${bezahlbar}:${a.platzieren?.art}:${a.verbesserungen.length}`
+        ? `e${einzeln.i}:${einzeln.h}:${einzeln.l}:${einzeln.a}:${einzeln.hd}:${einzeln.r}:${bezahlbar}:${a.platzieren?.art}:${a.verbesserungen.length}`
         : `m${auswahl.map((e) => e.i).join(',')}:${bezahlbar}:${a.platzieren?.art}`;
       if (schluessel !== this.gezeigt) {
         this.wurzel.replaceChildren();
@@ -971,10 +1249,23 @@ export class Auswahlleiste {
     // Nichts Eigenes gewaehlt: vielleicht wird etwas Fremdes angesehen
     // (bedienung AC-58).
     const fremd = a.angesehenes();
+    if (fremd && (fremd.vorrat || fremd.tier)) {
+      // Ein Vorrat oder ein Schaf (bedienung AC-63): was es ist, wie viel
+      // noch da ist.
+      const schluessel = fremd.vorrat
+        ? `v${fremd.vorrat.i}:${fremd.vorrat.art}:${fremd.vorrat.rest}:${fremd.vorrat.inSicht}`
+        : `t${fremd.tier.i}:${fremd.tier.n}:${fremd.tier.g}:${fremd.tier.b}`;
+      if (schluessel !== this.gezeigt) {
+        this.vorratBauen(fremd);
+        this.gezeigt = schluessel;
+      }
+      this.wurzel.hidden = false;
+      return;
+    }
     if (fremd) {
       const ding = fremd.einheit || fremd.gebaeude;
       const werte = fremd.einheit ? `${a.lebenVoll(ding)}:${a.einheitenwert(ding, 'angriff')}` : a.gebaeudeLebenVoll(ding);
-      const schluessel = `f${fremd.einheit ? 'e' : 'g'}${ding.i}:${ding.h}:${ding.u}:${werte}:${a.feindlich(ding.b)}`;
+      const schluessel = `f${fremd.einheit ? 'e' : 'g'}${ding.i}:${ding.h}:${ding.u}:${ding.r}:${werte}:${a.feindlich(ding.b)}`;
       if (schluessel !== this.gezeigt) {
         this.fremdBauen(fremd);
         this.gezeigt = schluessel;
@@ -985,6 +1276,55 @@ export class Auswahlleiste {
 
     this.wurzel.hidden = true;
     this.gezeigt = null;
+  }
+
+  /**
+   * Einen Vorrat, ein Schaf oder einen Kadaver ansehen (bedienung AC-63):
+   * der Name und wie viel noch da ist - "Holz: 73 von 100". Den Rest eines
+   * Vorrats nennt der Server nur in Sicht; im Nebel steht das da. Ein Tier
+   * traegt seine Nahrung schon mit sich.
+   * @param {{ vorrat?: any, tier?: any }} was
+   */
+  vorratBauen({ vorrat, tier }) {
+    const a = this.ansicht;
+    const w = this.wurzel;
+    w.replaceChildren();
+    const werte = vorrat
+      ? a.werte.vorrat?.[vorrat.art] || {}
+      : { voll: a.werte.tiere?.[tier.art]?.nahrung ?? 100, rohstoff: 'nahrung' };
+    const name = vorrat ? VORRATSNAMEN[vorrat.art] || 'Vorrat' : tier.g ? 'Erlegtes Schaf' : 'Schaf';
+    const ware = ROHSTOFF_NAMEN[werte.rohstoff] || 'Vorrat';
+    const rest = vorrat ? vorrat.rest : tier.n;
+    const k = element('div', 'auswahl-kopf');
+    k.append(element('strong', null, name));
+    const zeile = element('div', 'leben');
+    zeile.id = 'vorratsrest';
+    zeile.dataset.ware = werte.rohstoff || '';
+    if (rest === null || rest === undefined) {
+      // Noch keine Antwort des Servers - oder keine, weil das Feld im Nebel liegt.
+      zeile.append(element('span', 'leise', vorrat?.inSicht === false ? `${ware} – wie viel noch, zeigt sich erst in Sicht` : `${ware}: …`));
+    } else {
+      zeile.dataset.rest = String(rest);
+      zeile.dataset.voll = String(werte.voll);
+      const balken = element('div', 'lebensbalken restbalken');
+      const fuellung = element('span');
+      fuellung.style.width = `${Math.max(0, Math.min(100, Math.round((rest / werte.voll) * 100)))}%`;
+      balken.append(fuellung);
+      zeile.append(balken, element('span', 'lebenszahl', `${ware}: ${rest} von ${werte.voll}`));
+    }
+    k.append(zeile);
+    w.append(k);
+    if (!tier) return;
+    // Wem das Schaf gehoert - auch das eigene erlegte.
+    const besitzer = a.spieler.get(tier.b);
+    const reihe = element('div', 'ladung');
+    reihe.id = 'besitzer';
+    reihe.dataset.besitzer = tier.b;
+    const punkt = element('span', 'farbpunkt');
+    punkt.style.background = besitzer?.farbe || '#888888';
+    const zusatz = tier.b === a.ich ? ' – deins' : a.feindlich(tier.b) ? ' – Gegner' : ' – verbündet';
+    reihe.append(punkt, element('span', null, besitzer?.name || 'Unbekannt'), element('span', 'leise', zusatz));
+    w.append(reihe);
   }
 
   /**
@@ -1006,12 +1346,17 @@ export class Auswahlleiste {
       bild.append(bildchen(art, 58, farbe));
       const kopfteil = kopf(FIGUREN[art]?.name || art, einheit.h ?? voll, voll);
       kopfteil.append(this.kampfwerteZeile(einheit, art));
+      const marke = this.hausMarke(einheit.b);
+      if (marke) kopfteil.append(marke);
       w.append(bild, kopfteil);
     } else {
       const voll = a.gebaeudeLebenVoll(gebaeude) ?? gebaeude.h;
-      w.append(kopf(this.gebaeudeName(gebaeude.b, gebaeude.art), gebaeude.h ?? voll, voll));
+      const kopfteil = kopf(this.gebaeudeName(gebaeude.b, gebaeude.art), gebaeude.h ?? voll, voll);
+      const marke = this.hausMarke(gebaeude.b);
+      if (marke) kopfteil.append(marke);
+      w.append(kopfteil);
       const wert = (feld) => a.einheitenwerte.get(gebaeude.b)?.[gebaeude.art]?.[feld] ?? a.werte.gebaeude[gebaeude.art]?.[feld] ?? 0;
-      if (wert('angriff') > 0) w.append(this.kampfwerteZeile(gebaeude, gebaeude.art, wert));
+      if (wert('angriff') > 0) w.append(this.kampfwerteZeile(gebaeude, gebaeude.art, wert, (feld) => a.werte.gebaeude[gebaeude.art]?.[feld] ?? 0));
     }
     const zeile = element('div', 'ladung');
     zeile.id = 'besitzer';
@@ -1034,6 +1379,15 @@ export class Auswahlleiste {
     // (bauen AC-25, AC-26); der Webstuhl bleibt der Webstuhl.
     if (w.zeichen && ZEICHEN[w.zeichen]) return zeichenBildchen(w.zeichen, mass, farbe);
     return webstuhlBildchen(mass, farbe);
+  }
+
+  // Eine Verbesserung gibt es einmal (bauen AC-21): steht sie in der Schlange
+  // irgendeines eigenen Gebaeudes, sagt der Server jeden zweiten Auftrag ab.
+  // Der Knopf sagt es vorher (bedienung AC-65).
+  forschungLaeuft(art) {
+    const a = this.ansicht;
+    for (const g of a.gebaeude.values()) if (g.b === a.ich && g.s?.includes(art)) return true;
+    return false;
   }
 
   angebot(gebaeude) {
@@ -1244,7 +1598,7 @@ export class Auswahlleiste {
         const preis = element('span', 'preis');
         preis.append(element('span', 'ware ware-g'), element('span', null, String(gold)));
         knopf.append(element('span', 'handel-wort', wort), preis);
-        knopf.addEventListener('click', () => {
+        beimDruecken(knopf, () => {
           if (zu) this.ansicht.melden(`Zu wenig ${grund}.`);
           else this.senden({ auftrag: 'handeln', gebaeude: gebaeude.i, ware, richtung });
         });
@@ -1277,7 +1631,8 @@ export class Auswahlleiste {
     w.append(bild, kopfteil);
 
     // Nur wer tragen kann, zeigt, was er traegt.
-    const tragkraft = werte[art]?.tragkraft || 0;
+    // Mit Schubkarre und Handkarren mehr als in der Tabelle (bauen AC-44).
+    const tragkraft = this.ansicht.einheitenwerte.get(einheit.b)?.[art]?.tragkraft ?? werte[art]?.tragkraft ?? 0;
     if (tragkraft > 0) {
       const ladung = element('div', 'ladung');
       ladung.id = 'ladung';
@@ -1328,8 +1683,18 @@ export class Auswahlleiste {
    * Die Zahlen kommen aus der Tafel, die der Server je Spieler schickt
    * (`welt.einheitenwert`), nicht aus den Grunddaten - sonst stuende hier 3
    * Angriff, wo der Schmiedeangriff 4 macht.
+   *
+   * Was ueber dem Grundwert liegt, steht als Zuschlag daneben (bedienung
+   * AC-70): "4+2" - der Grundwert aus den Daten, der Rest aus Forschung und
+   * Haus. Die Summe rechnet weiter nur der Server; der Browser zieht den
+   * Grundwert ab, den er ohnehin kennt (`grund`).
    */
-  kampfwerteZeile(einheit, art, lesen = (feld) => this.ansicht.einheitenwert(einheit, feld)) {
+  kampfwerteZeile(
+    einheit,
+    art,
+    lesen = (feld) => this.ansicht.einheitenwert(einheit, feld),
+    grund = (feld) => this.ansicht.werte.einheiten[art]?.[feld] ?? 0,
+  ) {
     const a = this.ansicht;
     const zeile = element('div', 'kampfwerte');
     zeile.id = 'kampfwerte';
@@ -1340,22 +1705,41 @@ export class Auswahlleiste {
     Object.assign(zeile.dataset, {
       angriff: String(angriff), nahruestung: String(nah), fernruestung: String(fern), reichweite: String(reichweite),
     });
+    // Grundwert und Zuschlag eines Felds: [4, 2] fuer "4+2". Ohne Zuschlag -
+    // oder wenn etwas den Wert senkt - steht die Zahl allein.
+    const zuschlaege = [];
+    const geteilt = (feld, summe) => {
+      const basis = grund(feld) || 0;
+      const plus = Math.round((summe - basis) * 100) / 100;
+      if (!(plus > 0)) return [element('span', null, String(summe))];
+      zuschlaege.push(`${feld}:${plus}`);
+      const zusatz = element('span', 'zuschlag', `+${plus}`);
+      return [element('span', null, String(basis)), zusatz];
+    };
     const wert = (name, zahl, titel) => {
       const e = element('span', 'wert');
       if (name) e.append(element('span', 'leise', name));
-      e.append(element('b', null, zahl));
+      const fett = element('b');
+      fett.append(...(Array.isArray(zahl) ? zahl : [zahl]));
+      e.append(fett);
       e.title = titel;
       return e;
     };
+    const ZUSCHLAG = ' – die Zahl hinter dem Plus kommt aus Forschung und Haus';
+    const ruestung = () => wert(
+      'Rüstung',
+      [...geteilt('nahruestung', nah), ' / ', ...geteilt('fernruestung', fern)],
+      `Rüstung gegen Nahkampf / gegen Fernkampf${ZUSCHLAG}`,
+    );
     // Wer nicht angreift (der Moench, einheiten AC-37), bekommt keinen
     // "Angriff 0 - Nahkampf", sondern das, was er stattdessen tut.
     const heilen = a.werte.einheiten[art]?.heilen;
     if (angriff > 0) {
       zeile.append(
-        wert('Angriff', String(angriff), 'Schaden je Schlag, bevor die Rüstung des Ziels abgeht'),
-        wert('Rüstung', `${nah} / ${fern}`, 'Rüstung gegen Nahkampf / gegen Fernkampf'),
+        wert('Angriff', geteilt('angriff', angriff), `Schaden je Schlag, bevor die Rüstung des Ziels abgeht${ZUSCHLAG}`),
+        ruestung(),
         reichweite > 0
-          ? wert('Reichweite', `${reichweite}`, 'Schussweite in Feldern')
+          ? wert('Reichweite', geteilt('reichweite', reichweite), `Schussweite in Feldern${ZUSCHLAG}`)
           : wert(null, 'Nahkampf', 'Trifft nur, wer daneben steht'),
       );
       // Eine Salve (bauen AC-32): die Burg schiesst mehrere Pfeile auf einmal.
@@ -1367,13 +1751,22 @@ export class Auswahlleiste {
     } else {
       zeile.append(
         wert(null, 'Greift nicht an', 'Ein Rechtsklick auf einen Gegner ist nur ein Gang dorthin'),
-        wert('Rüstung', `${nah} / ${fern}`, 'Rüstung gegen Nahkampf / gegen Fernkampf'),
+        ruestung(),
       );
     }
+    if (zuschlaege.length) zeile.dataset.zuschlag = zuschlaege.join(' ');
     const bekehren = a.werte.einheiten[art]?.bekehren;
     if (bekehren) {
-      const e = wert('Bekehrt', `${bekehren.reichweite} Felder`, 'Rechtsklick auf eine fremde Einheit: nach ein paar Sekunden gehört sie dir – keine Gebäude, keine Belagerung, keine Mönche. Danach ruht er eine Weile.');
+      // Ruht er (bedienung AC-68), steht statt der Reichweite, wie lange noch.
+      const ruht = einheit?.r > 0 ? einheit.r : 0;
+      const e = ruht
+        ? wert('Bekehrt', `ruht noch ${Math.floor(ruht / 60)}:${String(ruht % 60).padStart(2, '0')}`, 'Nach einer Bekehrung ruht der Mönch – so lange ist ein Rechtsklick auf einen Fremden nur ein Gang dorthin.')
+        : wert('Bekehrt', `${bekehren.reichweite} Felder`, `Rechtsklick auf eine fremde Einheit: nach ein paar Sekunden gehört sie dir – keine Gebäude, keine Belagerung, keine Mönche. Danach ruht er ${bekehren.ruhe} Sekunden.`);
       zeile.dataset.bekehren = String(bekehren.reichweite);
+      if (ruht) {
+        e.classList.add('ruht');
+        zeile.dataset.ruht = String(ruht);
+      }
       zeile.append(e);
     }
     if (heilen) {
@@ -1400,19 +1793,45 @@ export class Auswahlleiste {
     const w = this.wurzel;
     w.replaceChildren();
     const voll = this.ansicht.gebaeudeLebenVoll(gebaeude) ?? gebaeude.h;
-    w.append(kopf(this.gebaeudeName(gebaeude.b, gebaeude.art), gebaeude.h ?? voll, voll));
+    const kopfteil = kopf(this.gebaeudeName(gebaeude.b, gebaeude.art), gebaeude.h ?? voll, voll);
+    // Zu welchem Haus man gehoert (bedienung AC-69).
+    const marke = this.hausMarke(gebaeude.b);
+    if (marke) kopfteil.append(marke);
+    w.append(kopfteil);
     // Ein Gebaeude, das schiesst, zeigt seine Kampfwerte wie eine Einheit
     // (bauen AC-29, bedienung AC-35) - aus der Tafel seines Besitzers.
     const a = this.ansicht;
     const gebaeudewert = (feld) => a.einheitenwerte.get(gebaeude.b)?.[gebaeude.art]?.[feld] ?? a.werte.gebaeude[gebaeude.art]?.[feld] ?? 0;
-    if (gebaeudewert('angriff') > 0) w.append(this.kampfwerteZeile(gebaeude, gebaeude.art, gebaeudewert));
+    if (gebaeudewert('angriff') > 0) w.append(this.kampfwerteZeile(gebaeude, gebaeude.art, gebaeudewert, (feld) => a.werte.gebaeude[gebaeude.art]?.[feld] ?? 0));
     // Eine Farm zeigt, wie viel Nahrung sie noch traegt (einheiten AC-18).
     const vorrat = this.ansicht.farmVoll(gebaeude);
     if (vorrat && gebaeude.n !== undefined) {
       const zeile = element('div', 'ladung');
       zeile.id = 'farmvorrat';
-      zeile.append(element('span', 'ware ware-n'), element('span', null, `noch ${gebaeude.n} Nahrung`), element('span', 'leise', ` von ${vorrat}`));
+      const preis = a.saatpreis();
+      if (gebaeude.br) {
+        // Leer: sie liegt brach, bis jemand neu aussaet (bauen AC-41).
+        zeile.dataset.brach = '1';
+        zeile.append(element('span', 'ware ware-n'), element('span', null, 'Liegt brach'),
+          element('span', 'leise', a.farmenErneuern
+            ? ` – wird neu ausgesät, sobald ${preis} da sind`
+            : ` – ein Rechtsklick mit einem Dorfbewohner sät neu aus (${preis})`));
+      } else {
+        zeile.append(element('span', 'ware ware-n'), element('span', null, `noch ${gebaeude.n} Nahrung`), element('span', 'leise', ` von ${vorrat}`));
+      }
       w.append(zeile);
+      // Der Schalter gilt allen eigenen Farmen (bauen AC-42) - er steht an
+      // jeder, damit man ihn dort findet, wo man die Brache sieht.
+      const an = a.farmenErneuern;
+      const schalter = document.createElement('button');
+      schalter.type = 'button';
+      schalter.id = 'farmenschalter';
+      schalter.className = 'farmenschalter';
+      schalter.setAttribute('aria-pressed', an ? 'true' : 'false');
+      schalter.textContent = `Von selbst neu aussäen: ${an ? 'an' : 'aus'}`;
+      schalter.title = `Gilt für alle deine Farmen: ist eine leer, wird sie für ${preis} neu ausgesät. Reicht es nicht, wartet der Bauer darauf.`;
+      schalter.addEventListener('click', () => this.senden({ auftrag: 'farmen', erneuern: !an }));
+      w.append(schalter);
     }
 
     // Am Markt wird getauscht (bauen AC-33).
@@ -1426,8 +1845,13 @@ export class Auswahlleiste {
       knopf.type = 'button';
       knopf.dataset.ausbilden = eintrag.art;
       const fehlt = this.fehlt(eintrag.kosten);
+      // Forschung sieht anders aus als Ausbildung (bedienung AC-65): goldener
+      // Rand und Ecke - wer in der Schmiede klickt, bekommt keine Einheit.
+      if (eintrag.verbesserung || eintrag.aufstieg) knopf.classList.add('forschung');
+      const laeuft = eintrag.verbesserung && this.forschungLaeuft(eintrag.art);
+      if (laeuft) knopf.dataset.laeuft = eintrag.art;
       // Wie im Baumenue: gesperrt, aber noch ansprechbar - er sagt, was fehlt.
-      knopf.setAttribute('aria-disabled', fehlt ? 'true' : 'false');
+      knopf.setAttribute('aria-disabled', fehlt || laeuft ? 'true' : 'false');
       if (fehlt) knopf.dataset.fehlt = fehlt;
       const kosten = Object.entries(eintrag.kosten).map(([r, m]) => `${m} ${ROHSTOFF_NAMEN[r]}`).join(', ');
       if (eintrag.aufstieg) {
@@ -1438,7 +1862,9 @@ export class Auswahlleiste {
       } else {
         // Eine Verbesserung wird erforscht, keine Einheit ausgebildet.
         const tun = eintrag.verbesserung ? 'erforschen' : 'ausbilden';
-        knopf.setAttribute('aria-label', fehlt ? `${eintrag.name} - zu wenig ${fehlt}` : `${eintrag.name} ${tun} (${kosten})`);
+        knopf.setAttribute('aria-label', laeuft
+          ? `${eintrag.name} wird schon erforscht`
+          : fehlt ? `${eintrag.name} - zu wenig ${fehlt}` : `${eintrag.name} ${tun} (${kosten})`);
       }
       const preis = element('span', 'preis');
       for (const [r, m] of Object.entries(eintrag.kosten)) preis.append(element('span', `ware ware-${r[0]}`), element('span', null, String(m)));
@@ -1446,9 +1872,14 @@ export class Auswahlleiste {
       else if (eintrag.verbesserung) knopf.append(this.verbesserungBildchen(eintrag.art, 58, farbe));
       else knopf.append(bildchen(eintrag.art, 58, farbe));
       knopf.append(preis);
-      knopf.addEventListener('click', () => {
-        if (fehlt) this.ansicht.melden(`Zu wenig ${fehlt}.`);
-        else this.senden({ auftrag: 'ausbilden', gebaeude: gebaeude.i, einheit: eintrag.art });
+      beimDruecken(knopf, (e) => {
+        if (laeuft) this.ansicht.melden(`${eintrag.name} wird schon erforscht.`);
+        else if (fehlt) this.ansicht.melden(`Zu wenig ${fehlt}.`);
+        else {
+          // Mit Umschalt fuenf Einheiten auf einmal - geforscht wird einmal.
+          const zahl = e.shiftKey && !eintrag.verbesserung && !eintrag.aufstieg ? MIT_UMSCHALT : 1;
+          for (let i = 0; i < zahl; i++) this.senden({ auftrag: 'ausbilden', gebaeude: gebaeude.i, einheit: eintrag.art });
+        }
       });
       knoepfe.append(knopf);
     }
@@ -1465,6 +1896,7 @@ export class Auswahlleiste {
       const mass = platz === 0 ? 50 : 28;
       const verbesserung = Boolean(this.ansicht.werte.verbesserungen?.[art]);
       const aufstieg = Boolean(this.ansicht.werte.aufstiege?.[art]);
+      if (aufstieg || verbesserung) eintrag.classList.add('forschung');
       if (aufstieg) {
         eintrag.append(aufstiegBildchen(mass, farbe));
         eintrag.dataset.laufenderAufstieg = art;
@@ -1479,7 +1911,7 @@ export class Auswahlleiste {
         balken.append(element('span'));
         eintrag.append(balken);
       }
-      eintrag.addEventListener('click', () => {
+      beimDruecken(eintrag, () => {
         this.senden({ auftrag: 'abbrechen', gebaeude: gebaeude.i, platz });
       });
       schlange.append(eintrag);

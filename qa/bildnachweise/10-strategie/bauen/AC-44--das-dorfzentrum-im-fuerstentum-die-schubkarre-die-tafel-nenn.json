@@ -1,0 +1,10 @@
+{
+  "spec": "10-strategie/bauen.md",
+  "ac": "AC-44",
+  "titel": "Das Dorfzentrum im Fürstentum: die Schubkarre, die Tafel nennt 10 % Tempo und 3 Tragkraft für den Dorfbewohner",
+  "datei": "e2e/tests/strategie-wirtschaft.spec.mjs",
+  "pfad": [
+    "Verbesserungen der Wirtschaft",
+    "bauen AC-44: das Dorfzentrum erforscht die Schubkarre - der Dorfbewohner trägt danach 13 statt 10, und der Handkarren folgt"
+  ]
+}

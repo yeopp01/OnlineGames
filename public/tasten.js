@@ -23,6 +23,7 @@ export const BELEGUNG = [
   ['Rechtsklick', 'hingehen, sammeln, bauen – oder Sammelpunkt setzen'],
   ['Umschalt + Rechtsklick', 'Ziel hinten anhängen, der Reihe nach abgehen'],
   ['Umschalt beim Bauen', 'weitere Baustellen setzen, der Reihe nach bauen'],
+  ['Umschalt + Klick auf eine Einheit im Gebäude', 'fünf auf einmal ausbilden'],
   ['R (Tor in der Hand)', 'das Tor drehen'],
   ['W A S D, Pfeile', 'Karte schieben'],
   ['Maus an den Bildschirmrand', 'Karte schieben – unten abschaltbar'],
@@ -34,11 +35,13 @@ export const BELEGUNG = [
   ['.', 'nächster untätiger Dorfbewohner'],
   ['Leertaste', 'zum Dorfzentrum, noch einmal zurück'],
   ['Tab halten', 'Spielstand aller Spieler'],
-  ['Strg oder Alt + 1 bis 9', 'Auswahl unter der Ziffer ablegen'],
+  ['Strg oder Alt + 1 bis 9', 'Auswahl unter der Ziffer ablegen – Strg nur im Vollbild, im Fenster wechselt der Browser damit den Tab'],
   ['1 bis 9', 'abgelegte Auswahl zurückholen'],
   ['G, dann Rechtsklick', 'Angriffslauf: hingehen und unterwegs angreifen'],
   ['Esc', 'Angriffslauf oder Platzieren abbrechen, Auswahl aufheben'],
   ['F3 oder Pause', 'Partie anhalten, weiterspielen'],
+  ['F10', 'Menü'],
+  ['F11', 'Vollbild – Strg + Ziffer und Esc gehören dann dem Spiel; Esc halten oder F11 verlässt es'],
   ['? oder F1', 'diese Übersicht'],
 ];
 

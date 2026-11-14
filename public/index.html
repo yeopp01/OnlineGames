@@ -125,11 +125,13 @@
       <p id="zuschauer" class="zuschauer" role="status" hidden>Du bist ausgeschieden — die Partie läuft weiter, du siehst zu</p>
       <div id="abschluss" class="abschluss" hidden>
         <p id="partieende" class="partieende" role="status"></p>
+        <p id="partieendeGrund" class="endegrund" hidden></p>
         <table id="abschlusstafel" class="abschlusstafel"></table>
         <p id="abschlussdauer" class="abschlussdauer"></p>
         <div class="revanchereihe">
           <button id="revanche" class="haupt" type="button" hidden>Revanche</button>
           <p id="revanchehinweis" class="revanchehinweis" hidden>Der Gastgeber kann eine Revanche starten.</p>
+          <button id="abschlussVorraum" class="leise-knopf" type="button">Zurück in den Vorraum</button>
         </div>
       </div>
       <aside id="erklaerung" class="erklaerung" aria-label="So geht es los" hidden>
@@ -171,6 +173,15 @@
           <button id="buendnisNein" class="leise-knopf" type="button">Verbündet bleiben</button>
           <button id="buendnisJa" class="haupt" type="button">Ja, lösen</button>
         </div>
+      </div>
+      <div id="spielmenue" class="aufgebenfrage spielmenue" role="dialog" aria-modal="true" aria-label="Menü" hidden>
+        <h2>Menü</h2>
+        <button id="menueWeiter" class="menue-haupt" type="button">Weiterspielen</button>
+        <button id="menuePause" type="button">Pause</button>
+        <button id="menueTasten" type="button">Tasten und Ton</button>
+        <button id="menueVollbild" type="button" title="Im Vollbild gehören Strg + Ziffer und Esc dem Spiel">Vollbild (F11)</button>
+        <button id="menueVorraum" type="button">Zurück in den Vorraum</button>
+        <p id="menueVorraumHinweis" class="leise"></p>
       </div>
       <ol id="punkteliste" class="punkteliste" aria-label="Punkte der Spieler" hidden></ol>
       <canvas id="uebersicht" class="uebersicht" title="Übersichtskarte – Klick springt hin, Rechtsklick schickt die Auswahl" aria-label="Übersichtskarte"></canvas>
@@ -214,6 +225,7 @@
         </span>
         <span class="leiste">
           <span id="hinweis" class="hinweis">Ziehen wählt aus · Rechtsklick befiehlt · WASD schiebt die Karte</span>
+          <button id="menue" class="aufgeben menueknopf" type="button" title="Menü (F10)" aria-haspopup="dialog">Menü</button>
           <button id="pause" class="aufgeben" type="button" title="Die Partie anhalten oder weiterspielen (F3)">Pause</button>
           <button id="buendnisloesen" class="aufgeben" type="button" title="Das Bündnis lösen - nach 60 Sekunden seid ihr Gegner" hidden>Bündnis lösen</button>
           <button id="aufgeben" class="aufgeben" type="button" title="Die Partie aufgeben">Aufgeben</button>

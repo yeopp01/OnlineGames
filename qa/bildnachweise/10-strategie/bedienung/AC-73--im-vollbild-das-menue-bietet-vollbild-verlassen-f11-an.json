@@ -1,0 +1,10 @@
+{
+  "spec": "10-strategie/bedienung.md",
+  "ac": "AC-73",
+  "titel": "Im Vollbild: das Menü bietet „Vollbild verlassen (F11)“ an",
+  "datei": "e2e/tests/strategie-vollbild.spec.mjs",
+  "pfad": [
+    "Vollbild",
+    "bedienung AC-73: Menue und F11 schalten das Vollbild, und darin verlangt das Spiel seine Tasten vom Browser"
+  ]
+}

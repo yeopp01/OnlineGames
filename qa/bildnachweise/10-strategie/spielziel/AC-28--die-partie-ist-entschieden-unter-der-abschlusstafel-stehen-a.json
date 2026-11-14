@@ -1,0 +1,10 @@
+{
+  "spec": "10-strategie/spielziel.md",
+  "ac": "AC-28",
+  "titel": "Die Partie ist entschieden: unter der Abschlusstafel stehen Annas Holzfäller mitten in der Bewegung still",
+  "datei": "e2e/tests/strategie-partieende.spec.mjs",
+  "pfad": [
+    "Nach dem Ende steht das Bild",
+    "spielziel AC-28: wer Holz hackt, bewegt sich - gibt Bert auf, steht das Bild still"
+  ]
+}

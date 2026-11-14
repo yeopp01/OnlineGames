@@ -1,0 +1,10 @@
+{
+  "spec": "10-strategie/bedienung.md",
+  "ac": "AC-68",
+  "titel": "Annas Mönch ruht nach der Bekehrung: unter seinem Lebensbalken füllt sich ein blauer, unten steht, wie lange noch",
+  "datei": "e2e/tests/strategie-moench.spec.mjs",
+  "pfad": [
+    "Moench",
+    "bedienung AC-68: der Moench ruht sichtbar - ueber ihm fuellt sich ein blauer Balken, die Leiste zaehlt die Sekunden herunter"
+  ]
+}

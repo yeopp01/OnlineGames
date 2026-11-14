@@ -2,7 +2,7 @@
 
 **Bereich:** Strategie
 **Kuerzel:** bedienung
-**Stand:** 58/62 fertig · 1 in QA · 3 offen
+**Stand:** 68/73 fertig · 2 in QA · 3 offen
 
 ## Zweck
 
@@ -250,9 +250,10 @@ Reihenfolge:
   Fernkämpfer spannen den Bogen — so, wie ein Dorfbewohner bei der Arbeit
   ausholt (AC-31). **Gefunden in der Rückschau zur Stufe C:** im Gefecht der
   KI stehen rote und blaue Kämpfer reglos nebeneinander, und wer gerade
-  kämpft, ist nicht zu erkennen. **Messbar:** in zwei Bildern derselben
-  angreifenden Einheit im Abstand ihrer Nachladezeit unterscheiden sich die
-  Bildpunkte der Figur.
+  kämpft, ist nicht zu erkennen. **Messbar:** das Bild einer angreifenden
+  Einheit beim Schlag unterscheidet sich in den Bildpunkten der Figur von
+  ihrem Bild zwischen zwei Schlägen (seit AC-72 holt sie einmal je Schlag
+  aus, vorher lief die Bewegung durch).
 - **AC-40** `fertig` **Pfeile fliegen sichtbar** — Ein Schuss eines
   Fernkämpfers ist als Pfeil zu sehen, der vom Schützen zum Ziel fliegt und
   dort verschwindet; ein Gebäude trifft er ebenso. Gezeichnet im Browser aus
@@ -532,6 +533,151 @@ unter [Einheiten](einheiten-und-befehle.md) AC-55 und AC-56,
   (2026-11-12):** „Man soll auch Schwerter klirren hören bei Kämpfen und so."
   **Nicht geprüft:** wie es klingt; und ein Dorfbewohner, der Holz getragen
   hat und dann kämpft, klingt nach Axt — der Zustand sagt nicht, was er tut.
+
+### Aus dem Spiel auf dem Server (2026-11-13)
+
+Rückmeldungen des Benutzers aus seinen Partien gegen die KI. Die Nummern 63
+bis 66, 68 und 69 waren für die Punkte derselben Liste vorgemerkt; 63, 64
+und 69 fehlen noch (Vorräte ansehen, zwei Seiten im Baumenü, das Haus im
+Spiel) — sie werden hier eingetragen, wenn sie gebaut sind.
+
+- **AC-63** `fertig` **Vorräte lassen sich ansehen** — Ein Klick auf einen
+  Baum, einen Beerenstrauch, ein Gold- oder Steinvorkommen zeigt unten
+  seinen Namen und wie viel noch da ist („Holz: 73 von 100"), ein Klick auf
+  ein fremdes Schaf oder ein erlegtes — auch das eigene — „Nahrung: 41 von
+  100" und den Besitzer. Angesehen wird wie bei AC-58: gestrichelt umrandet,
+  ohne Befehle, und der Klick trifft das Bild, nicht das Feld dahinter
+  (AC-51); das eigene lebende Schaf wird weiter gewählt (einheiten AC-22).
+  Die Zahl läuft mit, solange man hinsieht. Den Rest eines Vorrats schickt
+  der Server nur dem, der ihn ansieht, und nur, wenn er das Feld sieht
+  (kampf AC-13) — im Nebel steht der Name und dass sich der Rest erst in
+  Sicht zeigt. **Rückmeldung des Benutzers:** „Auf Baum, Holz, Schafe, etc.
+  kann man nicht draufklicken um zu sehen, wie viel noch da ist (v.a. tote
+  schafe".
+- **AC-65** `fertig` **Forschung erkennbar, laufende grau** — Ein Knopf, der
+  forscht (eine Verbesserung oder der Aufstieg), trägt einen goldenen Rand
+  und eine goldene Ecke — am Knopf wie in der Schlange —, ein Knopf, der eine
+  Einheit ausbildet, nicht. Wird eine Verbesserung schon erforscht, gleich in
+  welchem eigenen Gebäude, ist ihr Knopf überall grau und trägt „läuft"; ein
+  Klick bestellt nichts und sagt „… wird schon erforscht." Abgebrochen ist er
+  wieder frei. Der Server sagte den zweiten Auftrag schon ab (bauen AC-21) —
+  nur stand es vorher nirgends. **Rückmeldung des Benutzers:** Forschung und
+  Ausbildung sähen gleich aus, und dieselbe Forschung ließ sich in zwei
+  Schmieden anklicken.
+
+- **AC-66** `fertig` **Menü mit Weg zum Vorraum** — Oben rechts steht „Menü",
+  `F10` öffnet und schließt es, `Esc` schließt es. Darin: Weiterspielen,
+  Pause, Tasten und Ton, **Zurück in den Vorraum**. Die Partie läuft unter
+  dem Menü weiter — zu mehreren hält niemand die anderen an, nur weil er
+  nachsieht. „Zurück in den Vorraum" gibt nicht auf: das Fenster vergisst
+  seinen Platz, die Partie läuft ohne den Spieler weiter oder wartet, wenn
+  niemand mehr da ist (raeume AC-17), und der Vorraum bietet die Rückkehr an
+  (raeume AC-18); das sagt ein Satz unter dem Knopf. Ist die Partie vorbei
+  oder der Spieler ausgeschieden, führt derselbe Knopf ohne Angebot in den
+  Vorraum — er steht dann auch auf der Abschlusstafel. Aufgeben und Bündnis
+  lösen bleiben oben rechts mit ihrer Rückfrage. **Rückmeldung des
+  Benutzers:** „wir brauchen irgendwie ein menü, ich kann zwar auf Pause
+  drücken, aber nicht zurück in die Lobby oder so."
+
+- **AC-67** `fertig` **Zeitalter in der Punkteliste** — In der Punkteliste
+  (AC-57) steht hinter jedem Namen das Zeitalter des Spielers als römische
+  Ziffer in Klammern: „Anna (II) 412". Es zieht mit dem Aufstieg nach, bei
+  jedem, auch für Gegner im Nebel — das Zeitalter schickt der Server ohnehin
+  jedem (AC-20). Die Zeile bleibt eine Zeile; ein langer Name wird gekürzt,
+  nicht die Ziffer. **Rückmeldung des Benutzers:** man sehe nicht, in welchem
+  Zeitalter der Gegner ist, ohne `Tab` zu halten.
+- **AC-68** `fertig` **Ruhe des Mönchs sichtbar** — Nach einer Bekehrung
+  ruht der Mönch 62 Sekunden ([Einheiten](einheiten-und-befehle.md) AC-38);
+  man sieht es ihm an. Über jedem eigenen Mönch, der ruht, steht unter dem
+  Platz des Lebensbalkens ein schmaler blauer Balken, der sich füllt, bis er
+  wieder bekehren kann — auch ohne Auswahl, damit man unter mehreren den
+  findet, der bereit ist. Ist er gewählt, steht in der Leiste statt der
+  Reichweite „ruht noch 0:41". Der Zustand nennt dazu die Sekunden, die er
+  noch ruht (`r`, aufgerundet, auch an fremden Mönchen: wer einen ansieht,
+  liest dasselbe); die Dauer der Ruhe steht in den Werten. An der Ruhe
+  selbst ändert das nichts. **Rückmeldung des Benutzers:** „Mönchen können
+  unendlich oft hintereinander bekehren oder? sollte man ggf. bissl
+  einschränken" — sie ruhten schon, nur sah man es nicht.
+- **AC-69** `fertig` **Das Haus im Spiel** — Wer ein Gebäude wählt, liest
+  unter dessen Namen, zu welchem Haus es gehört („Haus Eschenbruch") — am
+  eigenen wie an einem fremden, das er ansieht (AC-58), dort auch an einer
+  fremden Einheit. Wer auf die Zeile zeigt, bekommt die Tafel (AC-55): was
+  das Haus bringt, in Zahlen — ein späterer Bonus mit seinem Zeitalter davor
+  („Ab dem Fürstentum – …") —, darunter abgesetzt, was im Bündnis auch den
+  Verbündeten gilt (spielziel AC-25), und der Wahlspruch. Die Sätze schreibt
+  der Server aus `HAEUSER` (`bringt.js`, `hausBringt`), der Browser liest
+  keine Wirkung; Reichweite an Gebäuden nennt nur, was schießt. Im
+  Spielstand unter `Tab` (AC-20) steht das Haus hinter jedem Namen, in der
+  Punkteliste (AC-57) am Zeiger. **Rückmeldung des Benutzers:** „wo sehe
+  ich welches volk ich bin? Wenn ich auf ein gebäude von mir klicke - oder
+  zumindest aufs dorfzentrum sollte mans sehn, auch beim gegner seh ichs
+  nicht".
+- **AC-70** `fertig` **Kampfwerte mit Zuschlag** — An der Auswahl (AC-35)
+  stehen Angriff, Rüstung und Reichweite als Grundwert und Zuschlag: „3+1",
+  wo der Schmiedeangriff aus 3 Angriff 4 macht; die Rüstung je Seite
+  („0+1 / 0+2"). Der Zuschlag ist alles, was Forschung und Haus auf den
+  Grundwert legen, und steht in Gold. Ohne Zuschlag steht die Zahl allein,
+  kein „+0". Die Summe rechnet weiter nur der Server (`welt.einheitenwert`,
+  `welt.gebaeudewert`); der Browser zieht den Grundwert aus den Daten ab.
+  Gilt für Einheiten und für Gebäude, die schießen. **Rückmeldung des
+  Benutzers:** „die angriffs und rüstungspunkte sollten mit basiswert + den
+  durch forschung, etc. wert dargestellt werden, also mit ‚+'".
+- **AC-71** `fertig` **Jeder schnelle Klick zählt** — Ein Knopf, der
+  ausbildet, forscht, abbestellt oder am Markt tauscht, wirkt beim Drücken
+  der Maustaste, nicht beim Loslassen. Die Leiste wird neu gebaut, sobald
+  sich die Schlange ändert; ein Klick, zwischen dessen Hälften der Knopf
+  ersetzt wurde, ging vorher verloren. Sechs Klicks so schnell es geht sind
+  sechs Aufträge. Mit Umschalt bestellt ein Klick fünf Einheiten (eine
+  Forschung bleibt eine); es steht in der Tastenübersicht. Mit der Tastatur
+  ausgelöst, wirkt der Knopf wie bisher. **Rückmeldung des Benutzers:**
+  „wenn ich ganz viele einheiten produizieren will und ganz schnell
+  draufklicke, dann klickt man zu schnell für den browser".
+- **AC-72** `fertig` **Eine Schlagbewegung je Schlag** — Wer kämpft, bewegt
+  sich im Takt seines Schadens: je Schlag oder Schuss des Servers genau eine
+  Bewegung — Ausholen, Treffer, Ausschwingen —, dazwischen steht die Figur
+  bereit. Das gilt für jede Figur: die Miliz schlägt alle zwei Sekunden, der
+  Bogenschütze spannt einmal je Pfeil, die Ramme stößt einmal je Stoß, der
+  Mangonel wirft, wenn der Stein fliegt. Der Zustand nennt dazu den Takt des
+  letzten Schlags (`sl`, nur an Kämpfenden und nur mit dem Schlag neu); der
+  Klang des Hiebs (AC-62) fällt auf denselben Takt. Bei anderer
+  Spielgeschwindigkeit und in der Pause geht es mit, weil in Takten
+  gerechnet wird. Vorher lief die Bewegung nach der Uhr des Browsers, alle
+  0,7 Sekunden einmal, gleich für alle (AC-39). **Rückmeldung des
+  Benutzers:** „die Animation der Mange passt GAR nicht. sie bewegt sich
+  schnell und oft und nur alle paar sekunden geht nen gemalter stein weg" —
+  und ebenso zu Ramme und Bogenschütze: „da sollten wir nochmal allgemein
+  nachjustieren".
+- **AC-73** `in-qa` **Vollbild gibt die Tasten** — Im Fenster gehören
+  `Strg`+`1` bis `8` dem Browser: er wechselt damit den Tab, und keine Seite
+  kann das verhindern (AC-5 nennt deshalb `Alt` daneben). Im Menü steht
+  „Vollbild (F11)", und `F11` schaltet im Spiel dasselbe: die Seite fordert
+  das Vollbild selbst an und verlangt darin die Tasten des Spiels vom
+  Browser — Buchstaben, Ziffern, `Esc`, Leertaste, Punkt, `Entf` und `F1`
+  bis `F12` (`navigator.keyboard.lock`, in Chrome und Edge). Dann legt
+  `Strg` mit einer Ziffer eine Gruppe ab, `Strg`+`W` schließt nichts, und
+  `Esc` hebt die Auswahl auf, statt das Vollbild zu beenden; hinaus führen
+  `F11`, das Menü und `Esc` gehalten. `Alt`+`Tab` bleibt beim
+  Betriebssystem. Wo es die Tastensperre nicht gibt (Firefox, Safari),
+  bleibt es beim Vollbild ohne sie. Die Tastenübersicht sagt beides.
+  **Geprüft** ist im Browserlauf, dass Menü und `F11` das Vollbild schalten
+  und die Sperre mit diesen Tasten verlangt wird; **nicht prüfbar** ist
+  dort, ob der Browser die Tasten dann hergibt — ein Testbrowser bekommt
+  jede Taste. Das probiert der Benutzer im Chrome; bis dahin `in-qa`.
+  **Rückmeldung des Benutzers:** „mit strg + 1 und andere zahlen muss man
+  gruppen machen können von einheiten".
+- **AC-74** `fertig` **Der Mönch ist zu hören** — Solange ein Mönch heilt,
+  klingt bei ihm ein Glöckchen, eines je Sekunde und damit je geheiltem
+  Leben, auch wenn mehrere nebeneinander heilen; solange er bekehrt, singt
+  er einen tiefen, gehaltenen Ton, der in den nächsten übergeht; tritt die
+  Einheit über, klingt dort ein heller Schlag — für jeden, der sie im Bild
+  hat, auch für den, der sie verliert. Wie alle Geräusche (AC-62) nur, was
+  im Bild steht, leiser am Rand und auf seiner Seite, jedes Mal neu
+  gewürfelt, im Browser erzeugt und kein Material von außen. Keiner der drei
+  hebt die Musik in den Kampf. Dass ein Mönch bekehrt und nicht heilt, sagt
+  der Zustand (`bk` neben `w`), erst in Reichweite. **Rückmeldung des
+  Benutzers:** „der mönch macht keine geräuscht beim bekehren oder heilen".
+  **Nicht geprüft:** wie es klingt — das entscheidet ein Ohr
+  (`npm run ton:messen` schreibt die Klänge als WAV).
 
 ## Grenzfaelle
 

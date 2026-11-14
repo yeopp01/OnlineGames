@@ -505,3 +505,131 @@ test.describe('Zuschauen nach dem Ausscheiden', () => {
     await expect(cem.locator('#zuschauer')).toBeVisible();
   });
 });
+
+// Aufgeben steht im Bild (spielziel AC-27). Aus dem Spiel auf dem Server: der
+// Benutzer gewann, obwohl das Dorfzentrum der KI noch stand - sie hatte
+// aufgegeben (ki AC-19), und nichts im Bild sagte es.
+test.describe('Aufgeben steht im Bild', () => {
+  test.describe.configure({ mode: 'serial' });
+  let partie;
+
+  test.beforeAll(async ({ browser }, info) => {
+    partie = await partieZuDritt(browser, info);
+  });
+  test.afterAll(() => partieBeenden(partie));
+
+  test('spielziel AC-27: Cem gibt auf und es wird angesagt - gibt auch Bert auf, steht der Grund unter dem Ergebnis und in der Tafel', async ({}, info) => {
+    const { anna, bert, cem, code } = partie;
+    await expect(anna.locator('#partieendeGrund')).toBeHidden();
+
+    // Der Erste: die Partie laeuft weiter, die anderen lesen es.
+    await aufgebenLassen(anna, code, 'Cem');
+    await expect(anna.locator('#spielmeldung')).toHaveText('Cem hat aufgegeben.');
+    await expect(bert.locator('#spielmeldung')).toHaveText('Cem hat aufgegeben.');
+    expect(await anna.evaluate(() => window.ansicht.ende), 'zu dritt endet die Partie nicht').toBe(null);
+    // Ihm selbst sagt es der Zuschauerhinweis, keine Ansage ueber sich.
+    await expect(cem.locator('#zuschauer')).toBeVisible();
+
+    // Der Zweite: damit ist die Partie entschieden.
+    await aufgebenLassen(anna, code, 'Bert');
+    await anna.waitForFunction(() => window.ansicht.ende !== null, undefined, { timeout: 15_000 });
+    await expect(anna.locator('#partieende')).toHaveText('Du hast gewonnen');
+    await expect(anna.locator('#partieendeGrund')).toHaveText('Bert und Cem haben aufgegeben');
+    await expect(anna.locator('#partieendeGrund')).toBeInViewport({ ratio: 1 });
+    await expect(anna.locator('#abschlusstafel .vermerk')).toHaveText(['aufgegeben', 'aufgegeben']);
+    await expect(anna.locator('#abschlusstafel tr.sieger .vermerk')).toHaveCount(0);
+    // Jeder liest es aus seiner Sicht.
+    await expect(bert.locator('#partieendeGrund')).toHaveText('Du und Cem haben aufgegeben');
+    await expect(cem.locator('#partieende')).toHaveText('Anna hat gewonnen');
+    expect(await bedienteileFrei(anna)).toEqual([]);
+
+    await nachweis(anna, {
+      spec: SPIELZIEL,
+      ac: 'AC-27',
+      titel: 'Annas Abschlussbild: Du hast gewonnen, darunter Bert und Cem haben aufgegeben — in der Tafel tragen beide Zeilen den Vermerk aufgegeben',
+      test: info,
+    });
+  });
+});
+
+// Nach dem Ende steht das Bild (spielziel AC-28). Rueckmeldung des Benutzers:
+// "so isses lustig, dass meine ritter noch weiter an den gebaeuden
+// rumfuhrwerken, obwohl sie weg sind" - die Welt rechnete nicht mehr, das Bild
+// schwang weiter.
+test.describe('Nach dem Ende steht das Bild', () => {
+  test.describe.configure({ mode: 'serial' });
+  let partie;
+
+  test.beforeAll(async ({ browser }, info) => {
+    partie = await partieZuZweit(browser, info, { sicht: 'aufgedeckt' });
+  });
+  test.afterAll(() => partieBeenden(partie));
+
+  test('spielziel AC-28: wer Holz hackt, bewegt sich - gibt Bert auf, steht das Bild still', async ({}, info) => {
+    const { anna, code } = partie;
+    await anna.waitForFunction(() => window.ansicht && window.ansicht.nachher.size > 0);
+    await rahmenUmAlle(anna);
+    const wald = await waldInDerNaehe(anna);
+    await anna.mouse.click(wald.x, wald.y, { button: 'right' });
+    await zeitraffer(anna, code, 8);
+    await anna.waitForFunction(() => {
+      const a = window.ansicht;
+      return [...a.nachher.values()].filter((e) => e.b === a.ich && e.w && !e.s).length >= 2;
+    }, undefined, { timeout: 30_000 });
+    await zeitraffer(anna, code, 1);
+    // Die Auswahl weg: ihr Ring gehoert nicht zur Frage.
+    await anna.keyboard.press('Escape');
+    const ort = await anna.evaluate(() => {
+      const a = window.ansicht;
+      const e = [...a.nachher.values()].find((f) => f.b === a.ich && f.w && !f.s);
+      a.kamera.zoom = 2.2;
+      a.blickAuf(e.x, e.y);
+      return { x: e.x, y: e.y };
+    });
+    await anna.waitForTimeout(300);
+
+    // Zwei Ausschnitte um den Holzfaeller, eine halbe Schwingung der Axt
+    // auseinander (`jetztPhase`: 110 ms je Bogenmass, eine Schwingung 691 ms).
+    const zweimal = () => anna.evaluate(async (o) => {
+      const a = window.ansicht;
+      const lesen = () => {
+        const p = a.zuBild(o.x, o.y);
+        const d = window.devicePixelRatio || 1;
+        const breite = Math.round(200 * d);
+        const hoehe = Math.round(160 * d);
+        const daten = a.stift.getImageData(Math.round((p.x - 100) * d), Math.round((p.y - 120) * d), breite, hoehe).data;
+        const hell = new Uint8Array(breite * hoehe);
+        for (let i = 0; i < hell.length; i++) hell[i] = (daten[i * 4] + daten[i * 4 + 1] + daten[i * 4 + 2]) / 3;
+        return hell;
+      };
+      const erstes = lesen();
+      await new Promise((weiter) => setTimeout(weiter, 345));
+      const zweites = lesen();
+      let anders = 0;
+      for (let i = 0; i < erstes.length; i++) if (Math.abs(erstes[i] - zweites[i]) > 24) anders++;
+      return anders / erstes.length;
+    }, ort);
+
+    // Solange die Partie laeuft, hackt er: das Bild aendert sich.
+    expect(await zweimal(), 'vor dem Ende bewegt sich der Holzfaeller').toBeGreaterThan(0.005);
+
+    await aufgebenLassen(anna, code, 'Bert');
+    await anna.waitForFunction(() => window.ansicht.ende !== null, undefined, { timeout: 15_000 });
+    await expect(anna.locator('#partieende')).toHaveText('Du hast gewonnen');
+    await anna.waitForTimeout(300);
+    // Entschieden: kein Bildpunkt aendert sich mehr, auch nach einer Weile nicht.
+    expect(await zweimal(), 'nach dem Ende steht das Bild').toBe(0);
+    await anna.waitForTimeout(700);
+    expect(await zweimal(), 'und bleibt stehen').toBe(0);
+
+    // Fuer das Bild: die Holzfaeller unter die Tafel ruecken, nicht dahinter.
+    await anna.evaluate((o) => window.ansicht.blickAuf(o.x - 4, o.y - 4), ort);
+    await anna.waitForTimeout(200);
+    await nachweis(anna, {
+      spec: SPIELZIEL,
+      ac: 'AC-28',
+      titel: 'Die Partie ist entschieden: unter der Abschlusstafel stehen Annas Holzfäller mitten in der Bewegung still',
+      test: info,
+    });
+  });
+});

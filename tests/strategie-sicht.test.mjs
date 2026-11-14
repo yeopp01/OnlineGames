@@ -124,6 +124,28 @@ test('kampf AC-15: faellt ein Gebaeude, sieht es nichts mehr - erkundet bleibt',
   assert.equal(welt.erkundet('a', x1 + 5, y0), true, 'das Feld bleibt erkundet');
 });
 
+test('kampf AC-24: eine Baustelle sieht nichts und erkundet nichts - erst das fertige Gebaeude', () => {
+  const welt = new Welt(ZWEI, 4711);
+  const p = abseits(welt);
+  const haus = welt.gebaeudeAnlegen('a', 'haus', p.x, p.y, false);
+  welt.sichtAktualisieren();
+  const { x0, x1, y0 } = welt.grundflaeche('haus', haus.x, haus.y);
+  assert.equal(welt.sieht('a', x1 + 3, y0), false, 'drei Felder daneben: nichts');
+  assert.equal(welt.sieht('a', x0, y0), false, 'auch den eigenen Grund nicht');
+  assert.equal(welt.erkundet('a', x1 + 3, y0), false, 'und erkundet ist dort nichts');
+  // Ein Bauer daneben sieht selbst - das ist seine Sicht, nicht die des Hauses.
+  const bauer = welt.einheitAnlegen('a', x1 + 1, y0, 'dorfbewohner');
+  assert.equal(welt.nachricht('a', { einheiten: [bauer.id], ziel: { x: haus.x, y: haus.y } })?.fehler, undefined);
+  const weit = EINHEITEN.dorfbewohner.sicht;
+  for (let t = 0; t < 120 * TAKTE_PRO_SEKUNDE && !haus.fertig; t++) welt.takten();
+  assert.equal(haus.fertig, true, 'er baut es fertig');
+  // Jetzt geht er weit weg: was bleibt, sieht das Haus.
+  welt.einheiten.delete(bauer.id);
+  for (let t = 0; t < TAKTE_PRO_SEKUNDE; t++) welt.takten();
+  assert.equal(GEBAEUDE.haus.sicht > weit, true, 'das Haus sieht weiter als der Bauer');
+  assert.equal(welt.sieht('a', x1 + GEBAEUDE.haus.sicht, y0), true, 'fertig sieht es acht Felder ueber den Rand');
+});
+
 test('kampf AC-15: ausserhalb der Karte sieht niemand', () => {
   // Durchsicht Runde 104: ohne Grenze griff x = -1 in die Nachbarreihe.
   const welt = new Welt(ZWEI, 4711);

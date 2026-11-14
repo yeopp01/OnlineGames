@@ -7,7 +7,8 @@
 // Raute. Die Kamera liegt in Bildpunkten der Raute bei Vergroesserung 1.
 import { FIGUREN, figurBildZeichnen } from './figuren.js';
 import { GEBAEUDE, gebaeudeBildZeichnen, gebaeudeGetroffen, gebaeudeHoehe, gebaeudeSchattenZeichnen } from './gebaeude.js';
-import { bilderBereit, bilderWarten, gerendert, richtungAus } from './bilder.js';
+import { bilderBereit, bilderWarten, gerendert, richtungAus, zelleZeichnen } from './bilder.js';
+import { Bildspeicher } from './bildspeicher.js';
 import { KACHEL, kachelMassstab, kachelZeichnen } from './boden.js';
 import { Nebel } from './nebel.js';
 import {
@@ -36,11 +37,26 @@ const RAND_SCHIEBEN = 12; // Bildpunkte am Fensterrand, in denen die Maus die Ka
 const KOPFLEISTE = 58; // Bildpunkte oben, ueber denen Rohstoffe, Uhr und Knoepfe liegen
 // Die acht Nachbarn eines Feldes: gerade zuerst, dann schraeg.
 const RINGSUM = [[1, 0], [-1, 0], [0, 1], [0, -1], [1, 1], [1, -1], [-1, 1], [-1, -1]];
+
+// Truemmer (darstellung AC-26): in den letzten Takten verblassen sie.
+const RUINE_VERBLASSEN = 30;
+// Was herumliegt: Stein, Stein, Balken, Ziegel - oben hell, die Seite dunkel.
+const SCHUTT = [['#96928a', '#5f5b55'], ['#7d7870', '#4c4843'], ['#8a8172', '#585147'], ['#5a4330', '#33251a'], ['#84503f', '#53301f']];
+// Was von den Mauern steht: die Seite im Licht, die im Schatten, die Krone.
+const MAUERREST = ['#7f7769', '#59524a', '#9a9282'];
+// Ein verkohlter Balken: die Kante im Licht, der Balken selbst.
+const BALKENREST = ['#5c4533', '#2c2018'];
+/** Eine feste Zufallszahl zwischen 0 und 1 je Zaehler - dieselben Truemmer in jedem Bild. */
+function streu(n) {
+  const s = Math.sin(n * 127.1 + 311.7) * 43758.5453;
+  return s - Math.floor(s);
+}
 // Was ein Rechtsklick taete, in Worten am Zeiger (bedienung AC-52).
 const ZIELTEXT = {
   angreifen: 'Angreifen', bekehren: 'Bekehren', schlachten: 'Schlachten', fleisch: 'Fleisch holen', bauen: 'Mitbauen',
-  farm: 'Farm bestellen', abladen: 'Abladen', handeln: 'Handeln',
+  farm: 'Farm bestellen', aussaeen: 'Neu aussäen', abladen: 'Abladen', handeln: 'Handeln',
 };
+const ROHSTOFFWORT = { holz: 'Holz', nahrung: 'Nahrung', gold: 'Gold', stein: 'Stein' };
 const SAMMELTEXT = { [WALD]: 'Holz hacken', [BEERE]: 'Beeren sammeln', [GOLD]: 'Gold abbauen', [STEIN]: 'Stein abbauen' };
 // Die Ladung kommt als erster Buchstabe ihres Rohstoffs (`a` an der Einheit).
 const LADUNGSART = { h: 'holz', n: 'nahrung', g: 'gold', s: 'stein' };
@@ -69,6 +85,30 @@ export function tierHoeheBei(zoom) {
 // nichts im Bild - so gross zeigt die Schautafel jedes Stueck.
 export const ZOOM_FERN = 0.4;
 export const ZOOM_NAH = 2.5;
+// Das Rad geht in festen Stufen (darstellung AC-27), jede rund das 1,2-fache
+// der vorigen: elf Werte von fern bis nah - und nur fuer diese elf entstehen
+// Bilder. Frueher nahm jeder Dreh den Wert von eben mal 1,15: nach einem
+// Anschlag am Rand lag der Zoom auf einem anderen Raster, und jedes Bild im
+// Speicher war das falsche.
+export const ZOOMSTUFEN = [ZOOM_FERN, 0.5, 0.6, 0.7, 0.85, 1, 1.2, 1.5, 1.8, 2.1, ZOOM_NAH];
+
+/** Die naechste Zoomstufe nach innen (`richtung` 1) oder aussen (-1). */
+export function zoomstufe(zoom, richtung) {
+  if (richtung > 0) return ZOOMSTUFEN.find((z) => z > zoom + 1e-6) ?? ZOOM_NAH;
+  return ZOOMSTUFEN.findLast((z) => z < zoom - 1e-6) ?? ZOOM_FERN;
+}
+
+// So viele Millisekunden darf ein Bild nach einem Dreh am Rad an neuen
+// Figuren, Gebaeuden und Vorraeten zeichnen, bevor Ersatz genommen wird
+// (→ bildspeicher.js). Ohne Dreh am Rad gilt keine Frist: wer die Karte
+// schiebt, bekommt jedes Stueck sofort in seiner Groesse, wie bisher.
+const BILD_FRIST = 5;
+// Bodenkacheln: so viele Bildpunkte liegen hoechstens im Speicher (rund
+// 130 MB - eine Kachel in doppelter Aufloesung wiegt allein 4,5), und so lange
+// nach dem letzten Dreh am Rad rechnet das Bild keine, fuer die es einen
+// Ersatz hat: solange gedreht wird, reicht der.
+const KACHEL_PUNKTE = 32_000_000;
+const KACHEL_RUHE = 150;
 
 // Schrittphase fuer die Beine: laeuft mit der Uhr, je Einheit versetzt, damit
 // eine Gruppe nicht im Gleichschritt marschiert.
@@ -85,6 +125,17 @@ function jetztPhase(id) {
 // `arbeiten` und `angreifen` ist das Werkzeug ab dem fuenften von acht
 // Bildern unten.
 const SCHLAG_PHASE = 0.45;
+
+// Eine Schlagbewegung je Schlag (bedienung AC-72): Ausholen vor dem Treffer,
+// Ausschwingen danach, dazwischen Ruhe. So lang ist jede der beiden Haelften
+// - ein Anteil der Nachladezeit, in Spielsekunden begrenzt: die Miliz (2 s)
+// holt 0,45 s aus, die Ramme (5 s) 0,9 s.
+const SCHLAG_ANTEIL = 0.225;
+const SCHLAG_HALB_MIN = 0.3;
+const SCHLAG_HALB_MAX = 0.9;
+// Bleibt der naechste Schlag so lange ueber seine Zeit aus (Spielsekunden),
+// nimmt die Figur die Waffe wieder hoch.
+const SCHLAG_UEBERFAELLIG = 0.4;
 
 // Wie lange eine gerenderte Figur faellt, bei Spielgeschwindigkeit 1,0. Am
 // Boden liegt sie zwei Spielsekunden (kampf AC-10) - gut die Haelfte davon.
@@ -110,6 +161,9 @@ export class Ansicht {
     this.nachher = new Map();
     // Pfeile im Flug (bedienung AC-40).
     this.pfeile = [];
+    // Wie viele Geschosse aus der Tafel kamen und wie viele als Strich
+    // (darstellung AC-28) - der Browserlauf liest es.
+    this.geschosseGezeichnet = { tafel: 0, strich: 0 };
     this.empfangen = 0;
     this.ausgewaehlt = new Set();
     // Abgelegte Auswahlen je Ziffer (bedienung AC-5): Einheiten oder ein Gebaeude.
@@ -125,7 +179,14 @@ export class Ansicht {
     this.gewaehltesGebaeude = null; // id; entweder Einheiten oder ein Gebaeude
     // Etwas Fremdes, das nur angesehen wird (bedienung AC-58): { e: id } oder
     // { g: id }. Es steht nicht in der Auswahl - befohlen wird ihm nichts.
+    // Dazu, was niemandem zu befehlen ist (bedienung AC-63): { t: id } ein
+    // Schaf oder sein Kadaver, { v: feld } ein Vorrat auf der Karte.
     this.angesehen = null;
+    // Der Rest des angesehenen Vorrats, wie ihn der Server zuletzt nannte:
+    // { i: feld, rest }. Und das Feld, das der Server als angesehen kennt.
+    this.vorratRest = null;
+    this.gemeldetesFeld = null;
+    this.ansehenSenden = () => {};
     // Das Zeichen am Ziel eines Befehls (bedienung AC-34): rot auf Feindliches,
     // weiss auf freies Gelaende. { x, y, feindlich, seit }.
     this.zielzeichen = null;
@@ -165,6 +226,8 @@ export class Ansicht {
     this.mauerSenden = () => {};
     this.sammelpunktSenden = () => {};
     this.verbesserungen = [];
+    // Ob leere Farmen von selbst neu ausgesaet werden (bauen AC-42).
+    this.farmenErneuern = false;
     // Das eigene Zeitalter als Stufe, 0 ist die Dunkle Zeit (bedienung AC-33).
     this.zeitalter = 0;
     // Kurz eingeblendete Absagen (bedienung AC-18); app.js setzt die Anzeige.
@@ -186,6 +249,9 @@ export class Ansicht {
     // die Meldung dazu. `beiEnde` laeuft genau einmal - der Raum haelt danach
     // seine Uhr an, aber ein zurueckkehrender Spieler bekommt es im Aufbau.
     this.ende = null;
+    // Ob die Partie angehalten ist (speichern AC-19) - das Bild steht dann,
+    // und nach dem Ende auch (`anhalten`).
+    this.pausiert = false;
     this.beiEnde = () => {};
     // Bin ich ausgeschieden? Der Server sagt es in jedem Zustand; der
     // Aufgeben-Knopf haengt daran (bedienung AC-38).
@@ -195,6 +261,9 @@ export class Ansicht {
     this.gefallen = new Map(); // Einheit → wann das Bild sie zum ersten Mal gefallen sah
     this.schlagblicke = new Map(); // Einheit → wann zuletzt nach ihrem Gegner gesucht wurde
     this.schlaege = new Map(); // Einheit → der wievielte Schlag zuletzt zu hoeren war (bedienung AC-62)
+    // Truemmer eingestuerzter Gebaeude (darstellung AC-26): das Gebaeude, wie
+    // es zuletzt stand, und der Takt, bis zu dem sie liegen.
+    this.ruinen = [];
     this.tiere = new Map();
     this.vorraete = { holz: 0, nahrung: 0, gold: 0, stein: 0, bev: 0, raum: 0 };
     // Was im letzten Bild in welcher Reihenfolge gezeichnet wurde - fuer den
@@ -244,12 +313,15 @@ export class Ansicht {
     this.gefallen = new Map();
     this.schlagblicke = new Map();
     this.schlaege = new Map();
+    this.ruinen = [];
     this.pfeile = [];
     this.takt = 0;
     // Null, nicht der alte Stand: sonst meldete der erste Zustand der neuen
     // Partie einen Zeitalterwechsel zurueck in die Dunkle Zeit.
     this.zeitalter = 0;
     this.ende = null;
+    // Eine neue Partie (die Revanche): das Bild laeuft wieder.
+    this.anhalten(this.pausiert);
     this.aus = false;
     // Geloeste Buendnisse (spielziel AC-21, AC-24): wer -> Takt des
     // Fristendes. Ob ein Buendnis ueberhaupt geloest werden kann, sagt die
@@ -268,6 +340,8 @@ export class Ansicht {
     // Fremde Gebaeude, wie man sie zuletzt gesehen hat (kampf AC-12).
     this.erinnert = new Map();
     this.fuellung = new Map();
+    this.vorratRest = null;
+    this.gemeldetesFeld = null;
     // Ein Takt dauert in echter Zeit 1000 / (takte * tempo) ms: bei
     // schnellerem Spiel kommen die Zustaende oefter, und die Bewegung
     // dazwischen wird kuerzer gestreckt (spielziel AC-23). Die Uhr im Bild
@@ -361,13 +435,31 @@ export class Ansicht {
    */
   schlagHoeren(einheit, punkt) {
     if (halt !== null) return;
-    const nummer = Math.floor(jetztPhase(einheit.i) / (Math.PI * 2) - SCHLAG_PHASE);
+    // Der Moench schlaegt nicht (bedienung AC-74): er singt, solange er
+    // bekehrt, und sein Gloeckchen klingt, solange er heilt. Den Takt gibt
+    // der Mindestabstand des Klangs - ein Leben je Sekunde, ein Ton je Atem.
+    const moench = this.werte.einheiten[this.arten[einheit.k]];
+    if (moench?.heilen || moench?.bekehren) {
+      if (einheit.bk) this.klangAn('bekehren', punkt);
+      else this.klangAn('heilen', punkt);
+      return;
+    }
+    // Wer kaempft, klingt mit dem Schlag des Servers (bedienung AC-72): die
+    // Marke ist sein Takt. Wer arbeitet, im Takt seines Bildes.
+    const gezaehlt = einheit.sl !== undefined;
+    const nummer = gezaehlt ? einheit.sl : Math.floor(jetztPhase(einheit.i) / (Math.PI * 2) - SCHLAG_PHASE);
     const zuletzt = this.schlaege.get(einheit.i);
     if (this.schlaege.size > 800) this.schlaege.clear();
     this.schlaege.set(einheit.i, nummer);
-    // Nur der Schlag, der auf den vorigen folgt: wer eben erst anfaengt,
-    // steht noch irgendwo im Umlauf.
-    if (zuletzt !== nummer - 1) return;
+    if (gezaehlt) {
+      // Ein neuer Schlag - und nur ein frischer: wer eben erst ins Bild
+      // kommt, bringt einen alten Takt mit.
+      if (zuletzt === nummer || this.takt - nummer > 3) return;
+    } else if (zuletzt !== nummer - 1) {
+      // Nur der Schlag, der auf den vorigen folgt: wer eben erst anfaengt,
+      // steht noch irgendwo im Umlauf.
+      return;
+    }
     const art = this.arten[einheit.k] || 'dorfbewohner';
     const werte = this.werte.einheiten[art] || {};
     if (art === 'dorfbewohner') {
@@ -402,6 +494,10 @@ export class Ansicht {
   zustand(nachricht) {
     this.meldet = this.eingespielt;
     this.eingespielt = true;
+    // Der Rest des Vorrats, den ich ansehe (bedienung AC-63) - und der Server
+    // erfaehrt, wenn ich inzwischen etwas anderes oder nichts mehr ansehe.
+    if (nachricht.av) this.vorratRest = { i: nachricht.av[0], rest: nachricht.av[1] };
+    this.ansehenAbgleichen();
     // Pfeile (bedienung AC-40): jeder fliegt vom Schuetzen zum Ziel, so lange,
     // wie er bei sieben Feldern je Sekunde braucht - mindestens 0,15 Sekunden.
     // Mit zehn war ein Schuss ueber vier Felder 0,4 s unterwegs, kaum zu
@@ -480,6 +576,9 @@ export class Ansicht {
           const mitte = this.gebaeudeMitte(alt);
           this.geraeusch('einsturz', mitte.x, mitte.y);
         }
+        // Eingestuerzt: seine Truemmer bleiben eine Weile liegen
+        // (darstellung AC-26). Der Server nennt die Takte, die sie noch haben.
+        if (alt && gebaeude.z) this.ruinen.push({ gebaeude: alt, bis: (nachricht.t ?? this.takt) + gebaeude.z });
         this.gebaeude.delete(gebaeude.i);
       } else {
         // Eben fertig geworden (bedienung AC-59): vorher im Bau, jetzt nicht mehr.
@@ -498,6 +597,10 @@ export class Ansicht {
     // Eine eigene Einheit ist neu, eine eigene ist gefallen (bedienung AC-59).
     // Eine bekehrte gab es schon - sie ist keine neue.
     for (const einheit of this.nachher.values()) {
+      // Uebergetreten (bedienung AC-74): dieselbe Einheit, ein anderer
+      // Besitzer - zu hoeren fuer jeden, der sie im Bild hat.
+      const frueher = this.vorher.get(einheit.i);
+      if (frueher && frueher.b !== einheit.b && !einheit.s) this.geraeusch('bekehrt', einheit.x, einheit.y);
       if (einheit.b !== this.ich) continue;
       const alt = this.vorher.get(einheit.i);
       if (!alt && !einheit.s) this.ereignis('einheit');
@@ -521,6 +624,7 @@ export class Ansicht {
       // Eine Verbesserung ist erforscht (bedienung AC-59).
       if ((meine.v || []).length > this.verbesserungen.length) this.ereignis('forschung');
       this.verbesserungen = meine.v || [];
+      this.farmenErneuern = Boolean(meine.fe);
       // Nach einem Handel die neuen Preise (bauen AC-33).
       if (meine.hp) this.handelspreise = meine.hp;
       // Ein Aufstieg wird einmal gemeldet - erkannt an der Stufe, die der
@@ -668,8 +772,16 @@ export class Ansicht {
       const vorraete = Number.isFinite(s.holz)
         ? { holz: s.holz, nahrung: s.nahrung, gold: s.gold, stein: s.stein, bev: s.bev, raum: s.raum }
         : null;
+      // Wer eben ausgeschieden ist, wird angesagt (spielziel AC-27) - mit dem
+      // Grund, den der Server nennt. Nicht beim Aufbau (da gibt es kein
+      // Vorher) und nicht fuer einen selbst: das sagt der Zuschauerhinweis.
+      const vorher = this.stand.get(s.id);
+      if (vorher && !vorher.aus && s.aus === 1 && s.id !== this.ich) {
+        const name = this.spieler.get(s.id)?.name || 'Ein Mitspieler';
+        this.melden(s.ag === 1 ? `${name} hat aufgegeben.` : `${name} ist ausgeschieden.`);
+      }
       // Die Punkte kommen von jedem, auch vom Gegner (bedienung AC-47).
-      this.stand.set(s.id, { zeitalter: s.z || 0, aus: s.aus === 1, punkte: s.pk || 0, vorraete });
+      this.stand.set(s.id, { zeitalter: s.z || 0, aus: s.aus === 1, aufgegeben: s.ag === 1, punkte: s.pk || 0, vorraete });
     }
   }
 
@@ -692,6 +804,9 @@ export class Ansicht {
         aus: stand.aus,
         punkte: stand.punkte,
         zeitalter: this.zeitalterName(stand.zeitalter),
+        stufe: stand.zeitalter || 0,
+        // Das Haus (bedienung AC-69) - der Name, wie ihn der Server nennt.
+        haus: this.werte?.haeuser?.[spieler.haus]?.name || null,
         vorraete: stand.vorraete,
       };
     });
@@ -718,6 +833,8 @@ export class Ansicht {
   endeMerken(ende) {
     if (this.ende) return;
     this.ende = ende;
+    // Das Bild steht mit der Welt (spielziel AC-28).
+    this.anhalten(this.pausiert);
     this.beiEnde(ende, this.endeText());
   }
 
@@ -738,6 +855,22 @@ export class Ansicht {
     const liste = `${namen.slice(0, -1).join(', ')} und ${namen.at(-1)}`;
     if (gewinner.includes(this.ich)) return `Ihr habt gewonnen — Team ${team}: ${liste}`;
     return `Team ${team} hat gewonnen — ${liste}`;
+  }
+
+  /**
+   * Warum die Partie zu Ende ist, wenn jemand aufgegeben hat (spielziel
+   * AC-27): „KI 1 hat aufgegeben" unter der Zeile mit dem Sieger. Wer
+   * gewinnt, obwohl beim Gegner noch ein Dorfzentrum steht, soll nicht
+   * raetseln. Leer, wenn niemand aufgegeben hat.
+   */
+  endeGrund() {
+    const auf = (this.ende?.tafel || []).filter((z) => z.ag === 1);
+    if (!auf.length) return '';
+    if (auf.some((z) => z.id === this.ich) && auf.length === 1) return 'Du hast aufgegeben';
+    const namen = auf.map((z) => (z.id === this.ich ? 'du' : this.spieler.get(z.id)?.name || 'ein Mitspieler'));
+    if (namen.length === 1) return `${namen[0]} hat aufgegeben`;
+    const liste = `${namen.slice(0, -1).join(', ')} und ${namen.at(-1)}`;
+    return `${liste[0].toUpperCase()}${liste.slice(1)} haben aufgegeben`;
   }
 
   /**
@@ -763,6 +896,7 @@ export class Ansicht {
         farbe: spieler?.farbe || '#888888',
         sieger: (this.ende.gewinner || []).includes(zeile.id),
         aus: zeile.aus === 1,
+        aufgegeben: zeile.ag === 1,
         zeitalter: this.zeitalterName(zeile.zeitalter || 0),
         gesammelt: zeile.gesammelt,
         ausgebildet: zeile.ausgebildet,
@@ -935,6 +1069,11 @@ export class Ansicht {
 
   // ---- Boden in Kacheln (darstellung AC-13) --------------------------------
 
+  // Aendert sich ein Feld - der Baum ist gefaellt, die Farm steht -, stimmen
+  // die Kacheln darum nicht mehr. Sie bleiben liegen, als veraltet: das Bild
+  // zeichnet sie neu, eine je Bild, und zeigt bis dahin die alte. Der Fleck
+  // unter einem Baum faellt in den paar Bildern niemandem auf - neun Kacheln
+  // auf einmal neu gerechnet waeren ein Ruck (darstellung AC-27).
   kachelnVerwerfen(index) {
     if (!this.kacheln) return;
     const g = this.karte.groesse;
@@ -944,18 +1083,25 @@ export class Ansicht {
     const cy = Math.floor(((x + y) * HALB_H) / KACHEL);
     for (const massstab of [0.5, 1, 2]) {
       for (let dy = -1; dy <= 1; dy++) {
-        for (let dx = -1; dx <= 1; dx++) this.kacheln.delete(`${massstab}|${cx + dx}|${cy + dy}`);
+        for (let dx = -1; dx <= 1; dx++) {
+          const schluessel = `${massstab}|${cx + dx}|${cy + dy}`;
+          if (this.kacheln.ansehen(schluessel)) this.kachelnVeraltet.add(schluessel);
+        }
       }
     }
   }
 
   bodenZeichnen(stift, zoom) {
-    if (!this.kacheln) this.kacheln = new Map();
+    if (!this.kacheln) {
+      this.kacheln = new Bildspeicher('kacheln', KACHEL_PUNKTE);
+      this.kachelnVeraltet = new Set();
+    }
     // Kommen die gerenderten Texturen an (oder gehen sie), sind die Kacheln
     // von eben die falschen.
     const mitBildern = Boolean(gerendert('boden'));
     if (this.kachelnMitBildern !== mitBildern) {
-      this.kacheln.clear();
+      this.kacheln.leeren();
+      this.kachelnVeraltet.clear();
       this.kachelnMitBildern = mitBildern;
     }
     const massstab = kachelMassstab(zoom);
@@ -965,15 +1111,49 @@ export class Ansicht {
     const cx1 = Math.floor((this.kamera.x + breite) / KACHEL);
     const cy0 = Math.max(0, Math.floor(this.kamera.y / KACHEL));
     const cy1 = Math.floor((this.kamera.y + hoehe) / KACHEL);
+    // Wechselt der Zoom die Aufloesung der Kacheln, fehlt mit einem Schlag
+    // jede im Bild - alle auf einmal gerechnet stand das Bild eine Drittel-
+    // sekunde (darstellung AC-27, gemessen 304 ms von 368). Nach einem Dreh
+    // am Rad liegt deshalb fuers Erste die Kachel derselben Stelle in der
+    // alten Aufloesung da, vergroessert oder verkleinert. Neu gerechnet wird
+    // erst, wenn das Rad ruht, hoechstens eine je Bild, und nach jeder eine
+    // Pause, doppelt so lang, wie sie gekostet hat: eine Kachel in doppelter
+    // Aufloesung kostet mehrere Bilder, und neun hintereinander waeren wieder
+    // ein Stocken - so bleibt zwischen zweien Zeit fuer fluessige Bilder.
+    // Eine veraltete Kachel ist ihr eigener Ersatz und wartet auf keine
+    // Pause. Wo es keinen Ersatz gibt, wird gleich gerechnet.
+    const beginn = performance.now();
+    const ruhig = beginn - (this.zoomZuletzt ?? -Infinity) > KACHEL_RUHE;
+    const frei = beginn >= (this.kachelPause ?? 0);
+    let gerechnet = 0;
+    this.kachelnFehlen = 0;
     for (let cy = cy0; cy <= cy1; cy++) {
       for (let cx = cx0; cx <= cx1; cx++) {
         const schluessel = `${massstab}|${cx}|${cy}`;
-        let kachel = this.kacheln.get(schluessel);
-        if (!kachel) {
-          kachel = kachelZeichnen(this.karte, cx * KACHEL, cy * KACHEL, massstab, HALB_B, HALB_H, this.salz);
-          this.kacheln.set(schluessel, kachel);
-          // Hoechstens rund 150 Kacheln im Speicher; die aeltesten gehen zuerst.
-          if (this.kacheln.size > 150) this.kacheln.delete(this.kacheln.keys().next().value);
+        let kachel = this.kacheln.holen(schluessel);
+        const veraltet = Boolean(kachel) && this.kachelnVeraltet.has(schluessel);
+        if (!kachel || veraltet) {
+          let ersatz = kachel;
+          if (!ersatz && this.zoomt) {
+            for (const anderer of [1, 2, 0.5]) {
+              if (anderer !== massstab) ersatz = ersatz || this.kacheln.holen(`${anderer}|${cx}|${cy}`);
+            }
+          }
+          const darf = gerechnet === 0 && (veraltet || (ruhig && frei));
+          if (ersatz && !darf) {
+            kachel = ersatz;
+            this.kachelnFehlen += 1;
+          } else {
+            const start = performance.now();
+            kachel = kachelZeichnen(this.karte, cx * KACHEL, cy * KACHEL, massstab, HALB_B, HALB_H, this.salz);
+            this.kacheln.legen(schluessel, kachel);
+            this.kachelnVeraltet.delete(schluessel);
+            gerechnet += 1;
+            if (ersatz && !veraltet) {
+              const ende = performance.now();
+              this.kachelPause = ende + 2 * (ende - start);
+            }
+          }
         }
         const x = (cx * KACHEL - this.kamera.x) * zoom;
         const y = (cy * KACHEL - this.kamera.y) * zoom;
@@ -1109,8 +1289,12 @@ export class Ansicht {
       // Der Punkt unter dem Zeiger bleibt stehen (bedienung AC-8).
       const ix = e.offsetX / this.kamera.zoom + this.kamera.x;
       const iy = e.offsetY / this.kamera.zoom + this.kamera.y;
-      const faktor = e.deltaY < 0 ? 1.15 : 1 / 1.15;
-      this.kamera.zoom = Math.min(ZOOM_NAH, Math.max(ZOOM_FERN, this.kamera.zoom * faktor));
+      this.kamera.zoom = zoomstufe(this.kamera.zoom, e.deltaY < 0 ? 1 : -1);
+      // Von hier an darf das Bild Ersatz zeichnen, bis einmal alles scharf
+      // dasteht (darstellung AC-27).
+      this.zoomZuletzt = performance.now();
+      this.zoomt = true;
+      this.zoomBilder = 0;
       this.kamera.x = ix - e.offsetX / this.kamera.zoom;
       this.kamera.y = iy - e.offsetY / this.kamera.zoom;
     }, { passive: false });
@@ -1172,6 +1356,7 @@ export class Ansicht {
   auswaehlen(rahmen, erweitern = false) {
     const vorher = erweitern ? [...this.ausgewaehlt] : [];
     this.auswahlTreffen(rahmen);
+    this.ansehenAbgleichen();
     if (vorher.length) {
       if (!this.ausgewaehlt.size) this.gewaehltesGebaeude = null;
       for (const id of vorher) this.ausgewaehlt.add(id);
@@ -1252,13 +1437,18 @@ export class Ansicht {
       // der Zeiger liegt auf ihrem Koerper.
       this.angesehen = this.fremdeEinheitUnter(rahmen.vonX, rahmen.vonY);
       if (this.angesehen) return;
+      // Ein Schaf, das sich nicht waehlen laesst - ein fremdes oder ein
+      // erlegtes -, wird angesehen (bedienung AC-63).
+      this.angesehen = this.tierUnter(rahmen.vonX, rahmen.vonY);
+      if (this.angesehen) return;
       // Sonst vielleicht ein eigenes Gebaeude.
       const getroffen = this.gebaeudeUnter(rahmen.vonX, rahmen.vonY);
       if (getroffen) {
         this.gewaehltesGebaeude = getroffen.i;
         return;
       }
-      this.angesehen = this.fremdesGebaeudeUnter(rahmen.vonX, rahmen.vonY);
+      // Zuletzt ein Vorrat: Baum, Beeren, Gold, Stein (bedienung AC-63).
+      this.angesehen = this.fremdesGebaeudeUnter(rahmen.vonX, rahmen.vonY) || this.vorratUnter(rahmen.vonX, rahmen.vonY);
       return;
     }
     const links = Math.min(rahmen.vonX, rahmen.bisX);
@@ -1322,7 +1512,60 @@ export class Ansicht {
     return bestes ? { g: bestes.i } : null;
   }
 
-  /** Wird genau das gerade angesehen? `schluessel` ist 'e' oder 'g'. */
+  /**
+   * Das Schaf oder der Kadaver unter dem Zeiger (bedienung AC-63) - gemessen
+   * am Koerper wie beim Rechtsklick (`bildZiel`). Im Nebel steht keins.
+   */
+  tierUnter(px, py) {
+    const figur = this.figurenHoehe();
+    let weite = Math.max(KLICK_WEITE * this.kamera.zoom, figur * 0.5);
+    let bestes = null;
+    for (const tier of this.tiere.values()) {
+      if (this.nebelAn && !this.teiltSicht(tier.b) && !this.nebel.sieht(tier.x, tier.y)) continue;
+      const p = this.zuBild(tier.x, tier.y);
+      if (this.gebaeudeDavor(p.x, p.y - figur * 0.3, tier.x + tier.y)) continue;
+      const abstand = Math.hypot(p.x - px, p.y - figur * 0.3 - py);
+      if (abstand < weite) {
+        weite = abstand;
+        bestes = tier;
+      }
+    }
+    return bestes ? { t: bestes.i } : null;
+  }
+
+  /**
+   * Der Vorrat unter dem Zeiger (bedienung AC-63): der, dessen Bild er
+   * trifft - die Baumkrone, nicht das Feld dahinter (wie AC-51) -, sonst
+   * der auf dem Bodenfeld. Nur was erkundet ist.
+   */
+  vorratUnter(px, py) {
+    const boden = this.zuWelt(px, py);
+    const g = this.karte.groesse;
+    const feld = {
+      x: Math.max(0, Math.min(g - 1, Math.round(boden.x))),
+      y: Math.max(0, Math.min(g - 1, Math.round(boden.y))),
+    };
+    const imBild = this.vorratImBild(px, py, feld, -Infinity);
+    if (imBild) return { v: imBild.y * g + imBild.x };
+    if (!DINGE.includes(this.karte.felder[feld.y * g + feld.x])) return null;
+    if (this.nebelAn && !this.nebel.hatErkundet(feld.x, feld.y)) return null;
+    return { v: feld.y * g + feld.x };
+  }
+
+  /**
+   * Dem Server sagen, welchen Vorrat ich ansehe - nur, wenn es sich geaendert
+   * hat (bedienung AC-63). Er nennt dann in jedem Zustand dessen Rest.
+   */
+  ansehenAbgleichen() {
+    const feld = this.angesehen?.v ?? null;
+    if (feld === this.gemeldetesFeld) return;
+    this.gemeldetesFeld = feld;
+    this.vorratRest = null;
+    const g = this.karte.groesse;
+    this.ansehenSenden(feld === null ? null : { x: feld % g, y: Math.floor(feld / g) });
+  }
+
+  /** Wird genau das gerade angesehen? `schluessel` ist 'e', 'g', 't' oder 'v'. */
   siehtAn(schluessel, id) {
     return this.angesehen?.[schluessel] === id && !this.ausgewaehlt.size && !this.gewaehltesGebaeude;
   }
@@ -1340,6 +1583,27 @@ export class Ansicht {
       if (a.e !== undefined) {
         const einheit = this.nachher.get(a.e);
         if (einheit && !einheit.s && einheit.b !== this.ich && this.zuSehen(einheit.b, einheit.x, einheit.y)) ding = { einheit };
+      } else if (a.t !== undefined) {
+        // Ein eigenes lebendes Schaf laesst sich waehlen - angesehen wird nur
+        // das fremde und das erlegte.
+        const tier = this.tiere.get(a.t);
+        const verborgen = tier && this.nebelAn && !this.teiltSicht(tier.b) && !this.nebel.sieht(tier.x, tier.y);
+        if (tier && !verborgen) ding = { tier };
+      } else if (a.v !== undefined) {
+        const g = this.karte.groesse;
+        const art = this.karte.felder[a.v];
+        const x = a.v % g;
+        const y = Math.floor(a.v / g);
+        if (DINGE.includes(art)) {
+          ding = {
+            vorrat: {
+              i: a.v, x, y, art,
+              rest: this.vorratRest?.i === a.v ? this.vorratRest.rest : null,
+              // Im Nebel nennt der Server den Rest nicht (kampf AC-13).
+              inSicht: !this.nebelAn || this.nebel.sieht(x, y),
+            },
+          };
+        }
       } else {
         const gebaeude = this.gebaeude.get(a.g) || this.erinnert.get(a.g);
         if (gebaeude && gebaeude.b !== this.ich) ding = { gebaeude };
@@ -1590,8 +1854,17 @@ export class Ansicht {
     const ziel = this.zuWelt(px, py);
     // Ein eigenes Gebaeude gewaehlt: der Rechtsklick setzt seinen Sammelpunkt (bauen AC-13).
     if (this.gewaehltesGebaeude) {
-      this.sammelpunktSenden(this.gewaehltesGebaeude, { x: Math.round(ziel.x), y: Math.round(ziel.y) });
-      this.zielzeichenSetzen(ziel);
+      // Trifft der Zeiger das Bild eines Vorrats - die Krone eines Baums -,
+      // gilt der Vorrat, nicht das Bodenfeld dahinter (bauen AC-40), wie
+      // beim Befehl an eine Einheit (bedienung AC-51).
+      const g = this.karte.groesse;
+      const feld = {
+        x: Math.max(0, Math.min(g - 1, Math.round(ziel.x))),
+        y: Math.max(0, Math.min(g - 1, Math.round(ziel.y))),
+      };
+      const vorrat = nurBoden ? null : this.vorratImBild(px, py, feld, -Infinity);
+      this.sammelpunktSenden(this.gewaehltesGebaeude, vorrat ? vorrat.sende : feld);
+      this.zielzeichenSetzen(vorrat ? { x: vorrat.x, y: vorrat.y } : ziel);
       return;
     }
     // Ein Rechtsklick ohne Auswahl tut nichts - und zeigt deshalb auch nichts
@@ -1678,7 +1951,8 @@ export class Ansicht {
     if (this.feindlich(gebaeude.b)) return kann.friedlich ? null : 'angreifen';
     if (gebaeude.b === this.ich) {
       if (!fertig) return kann.bauarten.has(gebaeude.art) ? 'bauen' : null;
-      if (werte.nahrung && kann.sammler) return 'farm';
+      // Eine Brache wird neu ausgesaet, das kostet (bauen AC-41).
+      if (werte.nahrung && kann.sammler) return gebaeude.br ? 'aussaeen' : 'farm';
       if ((werte.annahme || []).some((rohstoff) => kann.ladungen.has(rohstoff))) return 'abladen';
     }
     if (fertig && werte.handel && kann.haendler) {
@@ -1727,7 +2001,15 @@ export class Ansicht {
       if (feind) ziel = { art: kann.friedlich ? 'bekehren' : 'angreifen', x: feind.x, y: feind.y, sende: ziel.sende };
     }
     ziel.text = ziel.art === 'sammeln' ? SAMMELTEXT[ziel.feldart] : ZIELTEXT[ziel.art] || null;
+    // Was kostet, sagt es vorher (bauen AC-41).
+    if (ziel.art === 'aussaeen') ziel.text = `${ZIELTEXT.aussaeen} (${this.saatpreis()})`;
     return ziel;
+  }
+
+  /** Was es kostet, eine Brache neu auszusaeen - die Kosten der Farm, in Worten (bauen AC-41). */
+  saatpreis() {
+    const farm = Object.values(this.werte.gebaeude).find((werte) => werte.nahrung);
+    return Object.entries(farm?.kosten || {}).map(([rohstoff, menge]) => `${menge} ${ROHSTOFFWORT[rohstoff] || rohstoff}`).join(', ');
   }
 
   /** Was der Zeiger im Bild trifft - null, wenn nur Boden. Teil von `zielUnter`. */
@@ -1802,8 +2084,18 @@ export class Ansicht {
       ziel = { art, x: mitte.x, y: mitte.y, groesse: mitte.groesse, bx: mitte.bx, by: mitte.by, sende: { x: gebaeude.x, y: gebaeude.y } };
     }
     if (ziel || !kann.sammler) return ziel;
-    // 4. Ein Vorrat, dessen Bild der Zeiger trifft: der vorderste. Ein Baum
-    //    ragt gut zwei Felder ueber seinen Fuss, deshalb die Felder davor.
+    // 4. Ein Vorrat, dessen Bild der Zeiger trifft.
+    return this.vorratImBild(px, py, feld, tiefe);
+  }
+
+  /**
+   * Der Vorrat, dessen Bild der Zeiger trifft: der vorderste, der tiefer im
+   * Bild steht als `tiefe`. Ein Baum ragt gut zwei Felder ueber seinen Fuss,
+   * deshalb die Felder davor. Null: keiner.
+   */
+  vorratImBild(px, py, feld, tiefe) {
+    const e = HALB_B * this.kamera.zoom;
+    let ziel = null;
     const g = this.karte.groesse;
     for (let y = feld.y - 1; y <= feld.y + 4; y++) {
       for (let x = feld.x - 1; x <= feld.x + 4; x++) {
@@ -2205,10 +2497,50 @@ export class Ansicht {
     requestAnimationFrame((t) => this.bild(t));
   }
 
-  /** Angehalten (speichern AC-19): das Bild steht, bis es weitergeht. */
+  /**
+   * Angehalten (speichern AC-19): das Bild steht, bis es weitergeht. Ist die
+   * Partie vorbei, steht es auch (spielziel AC-28): die Welt rechnet nicht
+   * mehr, und wer eben noch zuschlug, hieb sonst endlos auf der Stelle.
+   */
   anhalten(an) {
-    if (an === (halt !== null)) return;
-    halt = an ? performance.now() : null;
+    this.pausiert = Boolean(an);
+    const steht = this.pausiert || Boolean(this.ende);
+    if (steht === (halt !== null)) return;
+    halt = steht ? performance.now() : null;
+  }
+
+  /**
+   * Wo im Umlauf ihrer Schlagbewegung eine kaempfende Einheit steht, 0 bis 1
+   * (bedienung AC-72) - im Takt des Servers: bei 0,5 trifft der Schlag, davor
+   * holt sie aus, danach schwingt sie aus, dazwischen ruht sie (0). Der
+   * Zustand nennt den Takt ihres letzten Schlags (`sl`), der naechste folgt
+   * nach der Nachladezeit. Gerechnet in Takten, also richtig bei jeder
+   * Spielgeschwindigkeit und in der Pause. `null`: der Zustand nennt keinen
+   * Schlag - sie arbeitet, heilt oder bekehrt.
+   */
+  schlagAnteil(einheit, jetzt = performance.now()) {
+    if (einheit.sl === undefined) return null;
+    const nachladen = this.einheitenwert(einheit, 'nachladen');
+    if (!(nachladen > 0)) return null;
+    // Steht das Bild (Pause, Ende), steht auch der Schlag - an derselben
+    // Stelle zwischen zwei Takten wie die Schritte der Figuren.
+    const weiter = Math.max(0, this.anteil(halt ?? jetzt));
+    const seit = Math.max(0, (this.takt + weiter - einheit.sl) / (this.takteProSekunde || 10));
+    const halb = Math.min(nachladen / 2, Math.max(SCHLAG_HALB_MIN, Math.min(SCHLAG_HALB_MAX, nachladen * SCHLAG_ANTEIL)));
+    if (seit < halb) return 0.5 + 0.5 * (seit / halb);
+    if (seit < nachladen - halb) return 0;
+    if (seit < nachladen) return 0.5 * ((seit - (nachladen - halb)) / halb);
+    // Ueberfaellig: der Schlag steht aus (das Ziel wich, der Zustand fehlt).
+    return seit < nachladen + SCHLAG_UEBERFAELLIG ? 0.5 : 0;
+  }
+
+  /**
+   * Die Phase fuer `arbeit` einer Figur: wer kaempft, nach dem Schlag des
+   * Servers, wer arbeitet, nach der Uhr. Nie 0 - das hiesse "arbeitet nicht".
+   */
+  arbeitPhase(einheit) {
+    const anteil = this.schlagAnteil(einheit);
+    return anteil === null ? jetztPhase(einheit.i) : (1 + anteil) * Math.PI * 2;
   }
 
   // Der Server schickt zehn Bilder je Sekunde, der Schirm zeigt sechzig.
@@ -2236,9 +2568,24 @@ export class Ansicht {
     };
   }
 
+  /**
+   * Steht alles in seiner richtigen Groesse im Bild? Nach einem Zoomwechsel
+   * zeichnen ein paar Bilder lang Ersatzstuecke (darstellung AC-27).
+   */
+  get scharf() {
+    return !this.kachelnFehlen && Bildspeicher.ersetzt === 0;
+  }
+
   zeichnen(jetzt) {
     const stift = this.stift;
     const zoom = this.kamera.zoom;
+    // Nach einem Dreh am Rad gilt die Frist, bis ein Bild nach dem Dreh
+    // ganz ohne Ersatz auskam.
+    if (this.zoomt) {
+      if (this.zoomBilder > 0 && this.scharf) this.zoomt = false;
+      else this.zoomBilder += 1;
+    }
+    Bildspeicher.bildBeginn(this.zoomt ? BILD_FRIST : Infinity);
     stift.fillStyle = '#0f1216';
     stift.fillRect(0, 0, this.leinwand.clientWidth, this.leinwand.clientHeight);
 
@@ -2286,6 +2633,8 @@ export class Ansicht {
       this.gebaeudeBild(gebaeude, this.zuBild(mitte.x, mitte.y), HALB_B * zoom);
     }
     this.mauerschatten(gezeigt, HALB_B * zoom);
+    // Truemmer liegen am Boden: wer darueber geht, steht davor.
+    this.ruinenMalen(stift, HALB_B * zoom, jetzt);
 
     // 2. Alles, was steht, nach Tiefe: was weiter unten im Bild steht, verdeckt,
     //    was dahinter steht (darstellung AC-7).
@@ -2351,22 +2700,30 @@ export class Ansicht {
     // Lebensbalken sammeln die Zeichnungen unterwegs; gemalt werden sie danach,
     // ueber allem, damit kein Baum sie verdeckt (darstellung AC-8).
     this.lebensbalken = [];
+    // Der Ring um den angesehenen Vorrat (bedienung AC-63) - auch er ueber
+    // allem: im dichten Wald stuende sonst der Baum davor darauf.
+    let vorratRing = null;
     for (const ding of stehend) {
       const p = this.zuBild(ding.x, ding.y);
       if (ding.art === 'vorrat') {
+        if (this.siehtAn('v', ding.index)) vorratRing = p;
         // Aus dem Zwischenspeicher: direkt gezeichnet kostete es bei Zoom 1 doppelt so viel (Runde 29).
         dingBildZeichnen(stift, ding.feld, p.x, p.y, e, ding.index, (this.fuellung.get(ding.index) || 4) / 4, ding, this.salz);
       } else if (ding.art === 'gebaeude') {
         this.gebaeudeBild(ding.gebaeude, p, e, ding.stueck);
       } else if (ding.art === 'tier') {
         const spieler = this.spieler.get(ding.tier.b);
-        if (this.ausgewaehlt.has(ding.tier.i)) {
+        const tierAngesehen = this.siehtAn('t', ding.tier.i);
+        if (this.ausgewaehlt.has(ding.tier.i) || tierAngesehen) {
           const r = tierHoeheBei(zoom);
           stift.strokeStyle = '#ffffff';
           stift.lineWidth = 2;
+          // Gestrichelt, was nur angesehen wird (bedienung AC-58, AC-63).
+          if (tierAngesehen) stift.setLineDash([5, 4]);
           stift.beginPath();
           stift.ellipse(p.x, p.y, r * 0.55, r * 0.26, 0, 0, Math.PI * 2);
           stift.stroke();
+          stift.setLineDash([]);
         }
         // Gemeldet wird ein Tier nur, wenn sich an ihm etwas aendert: nach dem
         // letzten Schritt kommt nichts mehr, und es liefe sonst auf der Stelle.
@@ -2393,6 +2750,15 @@ export class Ansicht {
     this.pfeileZeichnen(stift);
     if (this.nebelAn) this.nebelZeichnen(stift);
     for (const balken of this.lebensbalken) this.lebensbalkenZeichnen(balken);
+    if (vorratRing) {
+      stift.strokeStyle = '#ffffff';
+      stift.lineWidth = 2;
+      stift.setLineDash([6, 5]);
+      stift.beginPath();
+      stift.ellipse(vorratRing.x, vorratRing.y, e * 0.72, e * 0.36, 0, 0, Math.PI * 2);
+      stift.stroke();
+      stift.setLineDash([]);
+    }
     this.wegpunkteZeichnen(e);
     this.zielzeichenZeichnen(e, jetzt);
     this.zeigerZielZeichnen(e);
@@ -2628,7 +2994,7 @@ export class Ansicht {
       richtung: this.richtungen.get(einheit.i),
       ladung: einheit.l > 0 ? einheit.a : null,
       schritt: laeuft ? jetztPhase(einheit.i) : 0,
-      arbeit: einheit.w && !laeuft ? jetztPhase(einheit.i) : 0,
+      arbeit: einheit.w && !laeuft ? this.arbeitPhase(einheit) : 0,
     }, true);
     bild.setTransform(1, 0, 0, 1, 0, 0);
     bild.globalCompositeOperation = 'destination-in';
@@ -2682,14 +3048,16 @@ export class Ansicht {
 
   // Ein Lebensbalken (darstellung AC-8): dunkler Grund, darauf der Anteil in
   // Gruen, unter einem Drittel in Rot - schmal, damit er nichts zudeckt.
-  lebensbalkenZeichnen({ x, y, breite, anteil }) {
+  lebensbalkenZeichnen({ art, x, y, breite, anteil }) {
     const stift = this.stift;
-    const hoch = Math.min(5, Math.max(3, Math.round(breite / 9)));
+    // Die Ruhe des Moenchs (bedienung AC-68) steht darunter: flacher und blau.
+    const ruhe = art === 'ruhe';
+    const hoch = ruhe ? 3 : Math.min(5, Math.max(3, Math.round(breite / 9)));
     const links = Math.round(x - breite / 2);
     const oben = Math.round(y - hoch);
     stift.fillStyle = 'rgba(16, 18, 20, 0.8)';
     stift.fillRect(links - 1, oben - 1, breite + 2, hoch + 2);
-    stift.fillStyle = anteil < 1 / 3 ? '#c8463c' : '#5daa45';
+    stift.fillStyle = ruhe ? '#6fb4ea' : anteil < 1 / 3 ? '#c8463c' : '#5daa45';
     stift.fillRect(links, oben, Math.max(1, Math.round(breite * Math.max(0, Math.min(1, anteil)))), hoch);
   }
 
@@ -2845,6 +3213,170 @@ export class Ansicht {
   }
 
   /**
+   * Die Truemmer eingestuerzter Gebaeude (darstellung AC-26): verbrannter
+   * Boden auf der Grundflaeche, Schutt darauf, und vorn die Stuempfe der
+   * Waende - aus dem Bild des Gebaeudes selbst, damit die Ruine einer Burg
+   * nach Burg aussieht und die eines Hauses nach Haus. Nur ein Bild: der
+   * Platz ist frei, getroffen wird hier nichts, und wer darueber geht, wird
+   * danach gezeichnet. Zum Schluss verblassen sie.
+   */
+  ruinenMalen(stift, e, jetzt) {
+    if (!this.ruinen.length) return;
+    const stand = this.takt + Math.max(0, this.anteil(jetzt));
+    this.ruinen = this.ruinen.filter((r) => r.bis > this.takt);
+    const breite = this.leinwand.clientWidth;
+    const hoehe = this.leinwand.clientHeight;
+    for (const ruine of this.ruinen) {
+      const g = ruine.gebaeude;
+      // Was flach am Boden lag (die Farm), hinterlaesst nichts.
+      if (this.werte.gebaeude[g.art]?.begehbar) continue;
+      const mitte = this.gebaeudeMitte(g);
+      const p = this.zuBild(mitte.x, mitte.y);
+      const weit = (mitte.groesse + 1) * e;
+      if (p.x < -weit || p.x > breite + weit || p.y < -weit || p.y > hoehe + weit) continue;
+      // Im nie Gesehenen liegt nichts.
+      if (this.nebelAn && !this.nebel.hatErkundet(Math.round(mitte.x), Math.round(mitte.y))) continue;
+      const { bx, by } = mitte;
+      const ecke = (u, v, hoch = 0) => [p.x + (u - v) * e, p.y + ((u + v) * e) / 2 - hoch];
+      stift.save();
+      stift.globalAlpha = Math.max(0, Math.min(1, (ruine.bis - stand) / RUINE_VERBLASSEN));
+      // 1. Der Boden: verbrannte Erde, zum Rand hin auslaufend.
+      for (const [mass, deckung] of [[1.12, 0.24], [1.0, 0.32], [0.86, 0.3], [0.6, 0.2]]) {
+        this.flaecheWeg(stift, p, e, bx * mass, by * mass);
+        stift.fillStyle = `rgba(30, 24, 19, ${deckung})`;
+        stift.fill();
+      }
+      // Die Mauern stehen etwas eingerueckt, wie das Gebaeude auf seinem Platz.
+      const ku = (bx / 2) * 0.76;
+      const kv = (by / 2) * 0.76;
+      // Eine gebrochene Mauer von (u0, v0) nach (u1, v1): die Schauseite in
+      // Stufen, obenauf die Krone. `licht`: steht die Seite im Licht?
+      const mauer = (u0, v0, u1, v1, keim, licht) => {
+        const m = Math.max(2, Math.round(Math.hypot(u1 - u0, v1 - v0) * 4));
+        const dick = 0.11;
+        const nu = v1 !== v0 ? -dick : 0;
+        const nv = u1 !== u0 ? -dick : 0;
+        const stufen = [];
+        for (let n = 0; n < m; n++) {
+          const z = streu(keim + n * 3);
+          stufen.push({
+            // Jedes dritte, vierte Stueck ist fast bis auf den Grund weggebrochen.
+            hoch: (z < 0.28 ? 0.03 + z * 0.12 : 0.16 + z * 0.42) * e,
+            a: [u0 + ((u1 - u0) * n) / m, v0 + ((v1 - v0) * n) / m],
+            b: [u0 + ((u1 - u0) * (n + 1)) / m, v0 + ((v1 - v0) * (n + 1)) / m],
+          });
+        }
+        stift.fillStyle = MAUERREST[licht ? 0 : 1];
+        stift.beginPath();
+        stift.moveTo(...ecke(u0, v0));
+        stift.lineTo(...ecke(u1, v1));
+        for (let n = m - 1; n >= 0; n--) {
+          stift.lineTo(...ecke(stufen[n].b[0], stufen[n].b[1], stufen[n].hoch));
+          stift.lineTo(...ecke(stufen[n].a[0], stufen[n].a[1], stufen[n].hoch));
+        }
+        stift.closePath();
+        stift.fill();
+        stift.fillStyle = MAUERREST[2];
+        for (const s of stufen) {
+          stift.beginPath();
+          stift.moveTo(...ecke(s.a[0], s.a[1], s.hoch));
+          stift.lineTo(...ecke(s.b[0], s.b[1], s.hoch));
+          stift.lineTo(...ecke(s.b[0] + nu, s.b[1] + nv, s.hoch));
+          stift.lineTo(...ecke(s.a[0] + nu, s.a[1] + nv, s.hoch));
+          stift.closePath();
+          stift.fill();
+        }
+      };
+      // Ein Brocken: die Seite, dann die Oberseite - Licht von links oben.
+      const brocken = (s) => {
+        const [x, y0] = ecke(s.u, s.v);
+        const y = y0 - s.auf * e;
+        const l = s.lang * e;
+        const h = s.hoch * e;
+        const k = s.schraeg * l * 0.5;
+        stift.fillStyle = s.farbe[1];
+        stift.beginPath();
+        stift.moveTo(x - l, y + k * 0.5);
+        stift.lineTo(x, y + l * 0.5);
+        stift.lineTo(x + l, y - k * 0.5);
+        stift.lineTo(x + l, y - k * 0.5 - h);
+        stift.lineTo(x, y + l * 0.5 - h);
+        stift.lineTo(x - l, y + k * 0.5 - h);
+        stift.closePath();
+        stift.fill();
+        stift.fillStyle = s.farbe[0];
+        stift.beginPath();
+        stift.moveTo(x - l, y + k * 0.5 - h);
+        stift.lineTo(x, y + l * 0.5 - h);
+        stift.lineTo(x + l, y - k * 0.5 - h);
+        stift.lineTo(x, y - l * 0.5 - h);
+        stift.closePath();
+        stift.fill();
+      };
+      // Ein verkohlter Balken, ein Ende am Boden, das andere liegt auf.
+      const balken = (s) => {
+        const von = ecke(s.u, s.v);
+        const bis = ecke(s.u + s.du, s.v + s.dv, s.auf * e);
+        stift.lineCap = 'butt';
+        stift.strokeStyle = BALKENREST[1];
+        stift.lineWidth = Math.max(2, 0.1 * e);
+        stift.beginPath();
+        stift.moveTo(...von);
+        stift.lineTo(...bis);
+        stift.stroke();
+        stift.strokeStyle = BALKENREST[0];
+        stift.lineWidth = Math.max(1, 0.035 * e);
+        stift.beginPath();
+        stift.moveTo(von[0], von[1] - 0.035 * e);
+        stift.lineTo(bis[0], bis[1] - 0.035 * e);
+        stift.stroke();
+      };
+      // 2. Die beiden hinteren Mauern.
+      mauer(-ku, -kv, ku, -kv, g.i * 17 + 1, true);
+      mauer(-ku, -kv, -ku, kv, g.i * 17 + 101, false);
+      // 3. Was hineingestuerzt ist: Schutt und Balken, von hinten nach vorn,
+      //    zur Mitte hin aufgehaeuft. Jedes fuenfte Stueck liegt vor der Mauer.
+      const innen = [];
+      const davor = [];
+      const zahl = Math.round(9 * bx * by + 4);
+      for (let n = 0; n < zahl; n++) {
+        const z = g.i * 31 + n * 7;
+        const farbe = SCHUTT[Math.floor(streu(z + 4) * SCHUTT.length)];
+        const form = { lang: 0.06 + streu(z + 2) * 0.13, hoch: 0.04 + streu(z + 3) * 0.1, farbe, schraeg: streu(z + 5) - 0.5 };
+        if (n % 5 === 4) {
+          // Vor einer der beiden vorderen Mauern.
+          const entlang = (streu(z) - 0.5) * 2;
+          const hinaus = 1.08 + streu(z + 1) * 0.3;
+          davor.push(n % 2 ? { ...form, u: entlang * ku, v: kv * hinaus, auf: 0 } : { ...form, u: ku * hinaus, v: entlang * kv, auf: 0 });
+          continue;
+        }
+        const u = (streu(z) - 0.5) * 2 * ku * 0.86;
+        const v = (streu(z + 1) - 0.5) * 2 * kv * 0.86;
+        innen.push({ ...form, u, v, auf: 0.2 * Math.max(0, 1 - 1.6 * Math.hypot(u / ku, v / kv)) });
+      }
+      for (let n = 0, m = Math.round(1.3 * bx * by + 1); n < m; n++) {
+        const z = g.i * 43 + n * 11;
+        const u = (streu(z) - 0.5) * 2 * ku * 0.6;
+        const v = (streu(z + 1) - 0.5) * 2 * kv * 0.6;
+        const winkel = streu(z + 2) * Math.PI;
+        const lang = Math.min(ku, kv) * (0.5 + streu(z + 3) * 0.7);
+        const du = Math.max(-ku * 0.9 - u, Math.min(ku * 0.9 - u, Math.cos(winkel) * lang));
+        const dv = Math.max(-kv * 0.9 - v, Math.min(kv * 0.9 - v, Math.sin(winkel) * lang));
+        innen.push({ balken: true, u, v, du, dv, auf: 0.08 + streu(z + 4) * 0.3 });
+      }
+      const tiefe = (s) => s.u + s.v + (s.balken ? (s.du + s.dv) / 2 : 0);
+      innen.sort((a, b) => tiefe(a) - tiefe(b));
+      for (const s of innen) (s.balken ? balken : brocken)(s);
+      // 4. Die beiden vorderen Mauern, und was davor liegt.
+      mauer(ku, -kv, ku, kv, g.i * 17 + 201, false);
+      mauer(-ku, kv, ku, kv, g.i * 17 + 301, true);
+      davor.sort((a, b) => tiefe(a) - tiefe(b));
+      for (const s of davor) brocken(s);
+      stift.restore();
+    }
+  }
+
+  /**
    * Ein Gebaeude malen, wie es jetzt steht - ins Spielbild oder in die Maske
    * des Umrisses. `p` ist die Mitte seiner Grundflaeche im Bild.
    *
@@ -2956,7 +3488,11 @@ export class Ansicht {
   /**
    * Pfeile im Flug (bedienung AC-40): ein dunkler Schaft mit heller Fiederung,
    * auf einem flachen Bogen von der Brust des Schuetzen zur Brust des Ziels.
-   * Was angekommen ist, faellt heraus.
+   * Was angekommen ist, faellt heraus. Pfeil und Stein kommen aus der Tafel
+   * `geschoss` (darstellung AC-28): der Pfeil liegt dort waagrecht, die Spitze
+   * auf dem Fusspunkt, und wird in die Flugrichtung gedreht; der Stein
+   * ueberschlaegt sich in sechs Lagen und wirft einen Fleck auf den Boden.
+   * Ohne Tafel (`?bilder=0`) bleibt es bei Strich und Kreis.
    */
   /** Steht an diesem Punkt ein Gebaeude, das von oben schiesst? Seine Schusshoehe, sonst 0. */
   schussHoeheBei(x, y) {
@@ -2975,10 +3511,13 @@ export class Ansicht {
     this.pfeile = this.pfeile.filter((p) => jetzt - p.start < p.dauer);
     const zoom = this.kamera.zoom;
     const brust = this.figurenHoehe() * 0.55;
+    const tafel = gerendert('geschoss');
+    // Nie kleiner als bei Zoom 1,2: darunter waere der Schaft unter einem
+    // Bildpunkt breit und der Pfeil nicht mehr zu sehen.
+    const massstab = tafel ? Math.max(0.4, (2 * HALB_B * zoom) / tafel.feldbreite) : 0;
+    const amBoden = (p, t) => this.zuBild(p.x0 + (p.x1 - p.x0) * t, p.y0 + (p.y1 - p.y0) * t);
     const ort = (p, t) => {
-      const x = p.x0 + (p.x1 - p.x0) * t;
-      const y = p.y0 + (p.y1 - p.y0) * t;
-      const b = this.zuBild(x, y);
+      const b = amBoden(p, t);
       // Vom Turm faellt der Pfeil von seiner Hoehe bis auf Brusthoehe.
       const turm = (1 - t) * Math.max(0, (p.oben || 0) * HALB_B * zoom - brust);
       // Der Bogen: in der Mitte ein Viertel der Weite hoeher als die Enden,
@@ -2992,9 +3531,25 @@ export class Ansicht {
       const t = Math.min(1, (jetzt - p.start) / p.dauer);
       // Der spaetere Pfeil einer Salve ist noch nicht von der Sehne.
       if (t < 0) continue;
+      if (p.stein && tafel) {
+        const mitte = ort(p, t);
+        const boden = amBoden(p, t);
+        const r = 0.15 * tafel.feldbreite * Math.SQRT1_2 * massstab;
+        // Sein Schatten am Boden: daran ist zu lesen, wo er herunterkommt.
+        stift.fillStyle = 'rgba(0, 0, 0, 0.26)';
+        stift.beginPath();
+        stift.ellipse(boden.x, boden.y, r, r * 0.5, 0, 0, Math.PI * 2);
+        stift.fill();
+        // Anderthalb Ueberschlaege je Wurf.
+        const lage = tafel.steine[Math.floor(t * tafel.steine.length * 1.5) % tafel.steine.length];
+        zelleZeichnen(stift, tafel, 0, lage, mitte.x, mitte.y, massstab);
+        this.geschosseGezeichnet.tafel += 1;
+        continue;
+      }
       if (p.stein) {
         // Ein grauer Brocken, oben links im Licht.
         const mitte = ort(p, t);
+        this.geschosseGezeichnet.strich += 1;
         const r = Math.max(2.6, 0.2 * HALB_B * zoom);
         const verlauf = stift.createRadialGradient(mitte.x - r * 0.35, mitte.y - r * 0.35, r * 0.1, mitte.x, mitte.y, r);
         verlauf.addColorStop(0, '#c9c4bb');
@@ -3009,6 +3564,19 @@ export class Ansicht {
         continue;
       }
       const kopf = ort(p, t);
+      if (tafel) {
+        // Die Richtung aus einem Stueck Bahn - am Anfang aus dem ersten.
+        const vorn = ort(p, Math.max(t, 0.06));
+        const hinten = ort(p, Math.max(t, 0.06) - 0.06);
+        stift.save();
+        stift.translate(kopf.x, kopf.y);
+        stift.rotate(Math.atan2(vorn.y - hinten.y, vorn.x - hinten.x));
+        zelleZeichnen(stift, tafel, 0, tafel.pfeil, 0, 0, massstab);
+        stift.restore();
+        this.geschosseGezeichnet.tafel += 1;
+        continue;
+      }
+      this.geschosseGezeichnet.strich += 1;
       const hinter = ort(p, Math.max(0, t - 0.06));
       const dx = kopf.x - hinter.x;
       const dy = kopf.y - hinter.y;
@@ -3091,6 +3659,17 @@ export class Ansicht {
       return;
     }
 
+    // Ein eigener Moench, der ruht (bedienung AC-68): ein schmaler blauer
+    // Balken ueber dem Kopf fuellt sich, bis er wieder bekehren kann - auch
+    // ohne Auswahl, damit man sieht, welcher bereit ist.
+    const ruhe = einheit.r && einheit.b === this.ich ? this.werte.einheiten[this.arten[einheit.k]]?.bekehren?.ruhe : 0;
+    if (ruhe) {
+      this.lebensbalken.push({
+        art: 'ruhe', i: einheit.i, x: punkt.x, y: punkt.y - hoehe * (FIGUREN[this.arten[einheit.k]]?.oben ?? 1) + 1,
+        breite: Math.max(16, Math.round(hoehe * 0.9)), anteil: 1 - einheit.r / ruhe,
+      });
+    }
+
     const angesehen = this.siehtAn('e', einheit.i);
     if (this.ausgewaehlt.has(einheit.i) || angesehen) {
       // Die Auswahl liegt als Ellipse am Boden, unter den Fuessen. Was nur
@@ -3125,8 +3704,9 @@ export class Ansicht {
       richtung: this.richtungen.get(einheit.i),
       ladung: einheit.l > 0 ? einheit.a : null,
       schritt: laeuft ? jetztPhase(einheit.i) : 0,
-      // Wer arbeitet, bewegt sich dabei (bedienung AC-31).
-      arbeit: einheit.w && !laeuft ? jetztPhase(einheit.i) : 0,
+      // Wer arbeitet, bewegt sich dabei (bedienung AC-31) - wer kaempft,
+      // einmal je Schlag (bedienung AC-72).
+      arbeit: einheit.w && !laeuft ? this.arbeitPhase(einheit) : 0,
     });
     // Steht jemand hinter einem Gebaeude, kommt er danach als Umriss darueber.
     const decken = this.deckendeGebaeude(einheit, punkt);

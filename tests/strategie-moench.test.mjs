@@ -289,9 +289,34 @@ test('einheiten AC-38: im Zustand - `w` waehrend er bekehrt, `r` waehrend er ruh
   assert.ok(bisBekehrt(welt, bauer, 'a'));
   welt.takten();
   assert.equal(eintrag().w, undefined);
-  assert.equal(eintrag().r, 1);
+  assert.ok(eintrag().r > 0);
   const aufbau = welt.aufbauFuer('a');
-  assert.deepEqual(aufbau.werte.einheiten.moench.bekehren, { reichweite: 9, nicht: ['belagerung', 'moench'] });
+  assert.deepEqual(aufbau.werte.einheiten.moench.bekehren, { reichweite: 9, ruhe: BEKEHREN.ruhe, nicht: ['belagerung', 'moench'] });
+});
+
+test('bedienung AC-68: der Zustand nennt, wie viele Sekunden der Moench noch ruht - von 62 herunter, dann nichts mehr', () => {
+  const { welt, x0, y0 } = ritterzeitMitPlatz();
+  const moench = welt.einheitAnlegen('a', x0 + 1, y0 + 5, 'moench');
+  const bauer = welt.einheitAnlegen('b', x0 + 7, y0 + 5, 'dorfbewohner');
+  befehlen(welt, 'a', moench, bauer);
+  // Beide sehen ihn: die Ruhe ist kein Geheimnis.
+  const eintrag = (wer = 'a') => welt.zustandJeSpieler([wer]).get(wer).einheiten.find((e) => e.i === moench.id);
+  assert.ok(bisBekehrt(welt, bauer, 'a'));
+  assert.equal(moench.ruhtBis - welt.takt, BEKEHREN.ruhe * TAKTE_PRO_SEKUNDE);
+  assert.equal(eintrag().r, BEKEHREN.ruhe);
+  assert.equal(eintrag('b').r, BEKEHREN.ruhe);
+  // Ein Takt spaeter immer noch 62 (aufgerundet), nach einer Sekunde 61.
+  welt.takten();
+  assert.equal(eintrag().r, BEKEHREN.ruhe);
+  for (let t = 1; t < TAKTE_PRO_SEKUNDE; t++) welt.takten();
+  assert.equal(eintrag().r, BEKEHREN.ruhe - 1);
+  // Nach zwanzig Sekunden 41, im letzten Takt 1, danach fehlt das Feld.
+  for (let t = 0; t < 20 * TAKTE_PRO_SEKUNDE; t++) welt.takten();
+  assert.equal(eintrag().r, BEKEHREN.ruhe - 21);
+  while (moench.ruhtBis - welt.takt > 1) welt.takten();
+  assert.equal(eintrag().r, 1);
+  welt.takten();
+  assert.equal(eintrag().r, undefined);
 });
 
 // Aus der Durchsicht der Runde 135: vier Faelle am Rand des Bekehrens.
@@ -331,6 +356,22 @@ test('einheiten AC-38: ein Angreifer im Angriffslauf geht nach dem Bekehren sein
   assert.deepEqual(miliz.auftrag.feld, marsch);
 });
 
+test('einheiten AC-38: Annas Turm und Burg schiessen nicht weiter auf den, der eben bekehrt wurde', () => {
+  for (const art of ['wachturm', 'burg']) {
+    const { welt, x0, y0 } = ritterzeitMitPlatz();
+    const turm = welt.gebaeudeAnlegen('a', art, x0 + 1, y0 + 3, true);
+    const ritter = welt.einheitAnlegen('b', x0 + 7, y0 + 3, 'ritter');
+    sekunden(welt, 1);
+    assert.equal(turm.ziel, ritter.id, `${art}: der Turm hat ihn zum Ziel`);
+    assert.ok(ritter.leben < voll(welt, ritter), `${art}: und trifft`);
+    welt.bekehrt(ritter, 'a');
+    const leben = ritter.leben;
+    sekunden(welt, 10);
+    assert.equal(ritter.leben, leben, `${art}: nach der Bekehrung kein Schaden mehr`);
+    assert.equal(turm.ziel, null, `${art}: und kein Ziel`);
+  }
+});
+
 test('einheiten AC-38: ein Schlag aus demselben Takt trifft den eben Bekehrten nicht mehr', () => {
   const { welt, x0, y0 } = ritterzeitMitPlatz();
   const bauer = welt.einheitAnlegen('b', x0 + 7, y0 + 5, 'dorfbewohner');
@@ -355,4 +396,45 @@ test('einheiten AC-38: kommt der Moench nicht hin, gibt er auf statt ewig zu war
   sekunden(welt, 3);
   assert.equal(moench.auftrag, null, 'kein ewiges Warten');
   assert.equal(bauer.besitzer, 'b');
+});
+
+// --- bedienung AC-74: der Moench ist zu hoeren ------------------------------
+// Der Browser spielt zwei verschiedene Klaenge; `w` allein sagte ihm nur,
+// dass der Moench arbeitet.
+test('bedienung AC-74: der Zustand sagt, ob der Moench bekehrt - `bk` nur dann, nicht beim Heilen und nicht in der Ruhe', () => {
+  const { welt, x0, y0 } = ritterzeitMitPlatz();
+  const moench = welt.einheitAnlegen('a', x0 + 1, y0 + 5, 'moench');
+  verletzt(welt, 'a', x0 + 2, y0 + 5, 'dorfbewohner', 12);
+  const eintrag = (wer = 'a') => welt.zustandJeSpieler([wer]).get(wer).einheiten.find((e) => e.i === moench.id);
+  sekunden(welt, 2);
+  assert.equal(eintrag().w, 1, 'er heilt');
+  assert.equal(eintrag().bk, undefined, 'und bekehrt nicht');
+
+  const bauer = welt.einheitAnlegen('b', x0 + 7, y0 + 5, 'dorfbewohner');
+  befehlen(welt, 'a', moench, bauer);
+  welt.takten();
+  assert.equal(eintrag().w, 1);
+  assert.equal(eintrag().bk, 1, 'er bekehrt');
+  // Auch Bert hoert den Gesang ueber seinem Dorfbewohner.
+  assert.equal(eintrag('b').bk, 1);
+
+  assert.ok(bisBekehrt(welt, bauer, 'a'));
+  welt.takten();
+  assert.equal(eintrag().bk, undefined, 'bekehrt ist bekehrt');
+  assert.ok(eintrag().r > 0, 'er ruht');
+});
+
+test('bedienung AC-74: wer erst hingehen muss, bekehrt noch nicht - `bk` erst in Reichweite', () => {
+  const { welt, x0, y0 } = ritterzeitMitPlatz();
+  const moench = welt.einheitAnlegen('a', x0, y0, 'moench');
+  const bauer = welt.einheitAnlegen('b', x0 + 10, y0 + 10, 'dorfbewohner');
+  assert.ok(Math.hypot(10, 10) > BEKEHREN.reichweite);
+  befehlen(welt, 'a', moench, bauer);
+  welt.takten();
+  const eintrag = () => welt.zustandJeSpieler(['a']).get('a').einheiten.find((e) => e.i === moench.id);
+  assert.equal(eintrag().bk, undefined, 'er geht noch');
+  let takte = 0;
+  while (!eintrag().bk && takte < 200) { welt.takten(); takte += 1; }
+  assert.equal(eintrag().bk, 1);
+  assert.ok(Math.hypot(bauer.x - moench.x, bauer.y - moench.y) <= BEKEHREN.reichweite + 0.01);
 });

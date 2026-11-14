@@ -13,6 +13,7 @@ const require = createRequire(import.meta.url);
 const { starten } = require('../server/index.js');
 const { Ki } = require('../server/spiele/strategie/ki.js');
 const { TAKTE_PRO_SEKUNDE } = require('../server/spiele/strategie/welt.js');
+const karten = require('../server/spiele/strategie/karte.js');
 
 const hafen = Number(process.env.E2E_HAFEN) || 4191;
 
@@ -101,6 +102,13 @@ const griffe = http.createServer(async (anfrage, antwortGriff) => {
       for (const [r, menge] of Object.entries(werte.gesammelt || {})) {
         if (Object.hasOwn(spieler.gesammelt, r) && Number.isInteger(menge)) spieler.gesammelt[r] = menge;
       }
+      // Und das Zeitalter, wie es der Aufstieg setzt (welt.ausbildungTakten) -
+      // fuer Bilder, die nur zeigen, wer wie weit ist (bedienung AC-67).
+      if (Number.isInteger(werte.zeitalter) && werte.zeitalter >= 0 && werte.zeitalter <= 3) {
+        spieler.zeitalter = werte.zeitalter;
+        raum.welt.werteAenderungen.add(spieler.id);
+        raum.welt.zeitalterWirkungen(spieler);
+      }
       antwortGriff.writeHead(200, { 'Content-Type': 'application/json', Connection: 'close' }).end(JSON.stringify({ ok: true }));
       return;
     }
@@ -119,6 +127,13 @@ const griffe = http.createServer(async (anfrage, antwortGriff) => {
       const gebaeude = welt.gebaeudeAnlegen(spieler.id, werte.art, werte.x, werte.y, werte.bau === undefined, quer);
       if (werte.bau !== undefined) {
         gebaeude.bau = werte.bau;
+        welt.gebaeudeGeaendert(gebaeude);
+      }
+      // Eine Farm kurz vor dem letzten Korn (`nahrung`) oder schon brach
+      // (`brach`), fuer bauen AC-41 und AC-42.
+      if (gebaeude.nahrung !== undefined && (Number.isInteger(werte.nahrung) || werte.brach)) {
+        gebaeude.nahrung = werte.brach ? 0 : werte.nahrung;
+        if (werte.brach) gebaeude.brach = true;
         welt.gebaeudeGeaendert(gebaeude);
       }
       antwortGriff.writeHead(200, { 'Content-Type': 'application/json', Connection: 'close' }).end(JSON.stringify({ ok: true, id: gebaeude.id }));
@@ -177,6 +192,19 @@ const griffe = http.createServer(async (anfrage, antwortGriff) => {
         }
       }
       antwortGriff.writeHead(200, { 'Content-Type': 'application/json', Connection: 'close' }).end(JSON.stringify({ ok: true, angelegt }));
+      return;
+    }
+    // Einen Vorrat abraeumen - der Baum ist gefaellt, das Gold abgebaut -, so
+    // wie es der letzte Schlag eines Sammlers tut (`welt.sammelnTakten`):
+    // fuer den Sammelpunkt, der danach weiterwandert (bauen AC-40).
+    if (befehl === 'vorratLeeren') {
+      const welt = laufend.raeume.finden(id)?.welt;
+      const index = werte.y * welt.karte.groesse + werte.x;
+      if (!welt.karte.vorrat.has(index)) throw new Error(`Kein Vorrat auf ${werte.x}, ${werte.y}.`);
+      welt.karte.felder[index] = karten.GRAS;
+      welt.karte.vorrat.delete(index);
+      welt.feldAenderungen.push({ i: index, a: karten.GRAS });
+      antwortGriff.writeHead(200, { 'Content-Type': 'application/json', Connection: 'close' }).end(JSON.stringify({ ok: true }));
       return;
     }
     // Leben einer Einheit oder eines Gebaeudes setzen, fuer beschaedigte

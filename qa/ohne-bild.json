@@ -1367,6 +1367,21 @@
       "begruendung": "Schwerterklirren, Pfeile, Einschlaege und die Axt im Wald sind Schall, kein Bild - das Bild dazu (die Figur, die schlaegt) weisen bedienung AC-31 und AC-39 nach. Belegt mit Zaehlen und Messen im Browserlauf: zwoelf Milizen kaempfen ausserhalb des Bildes, und anderthalb Sekunden lang klingt kein Schlag; die Karte springt hin, und vier Schlaege sind zu hoeren, am Ausgang zu messen und heben den Kampfpegel der Musik; ein Dorfbewohner geht in den Wald, und die Axt ist dreimal zu hoeren (e2e/tests/strategie-ton.spec.mjs). Dass jedes Geraeusch jedes Mal anders gewuerfelt wird, seinen Ort im Bild bekommt und vierzig Schwerter hoechstens acht Schlaege je Sekunde sind, im Rechenteil (tests/strategie-ton.test.mjs). Nicht geprueft: wie es klingt."
     },
     {
+      "spec": "10-strategie/bedienung.md",
+      "ac": "AC-74",
+      "begruendung": "Das Kriterium ist Schall: ein Glöckchen, solange der Mönch heilt, ein gehaltener Gesang, solange er bekehrt, ein heller Schlag beim Übertritt. Ein Bildschirmfoto zeigt keinen Ton - im Bild stünde derselbe Mönch wie in einheiten AC-37 und AC-38. Belegt ist es durch Zählen: der Browserfall in strategie-moench.spec.mjs liest, was das Spiel spielt (ton.gezaehlt) - nichts außerhalb des Bildes, das Glöckchen rund einmal je Sekunde, Gesang nur während der Bekehrung, genau ein Schlag beim Besitzerwechsel; der Rechenteil prüft Abstände, Tonhöhen und dass der Zustand das Bekehren mit bk ausweist. Nicht geprüft: wie es klingt - das entscheidet ein Ohr."
+    },
+    {
+      "spec": "10-strategie/einheiten-und-befehle.md",
+      "ac": "AC-63",
+      "begruendung": "Eine Regel des Servers darueber, welcher Vorrat das Ziel wird, wenn zum geklickten kein Weg fuehrt: der naechste derselben Art am Klick, an den der Sammler herankommt. Ein Standbild zeigt einen Dorfbewohner an einem Baum - nicht, auf welchen Baum geklickt wurde, und nicht, dass zu jenem kein Weg fuehrte. Belegt im Rechenteil an eingeschlossenen Vorraeten und an solchen, deren nahe Seite zu ist, ueber sechs Karten, samt Gegenprobe gegen die alte Regel (tests/strategie-vorrat-erreichbar.test.mjs)."
+    },
+    {
+      "spec": "10-strategie/kampf.md",
+      "ac": "AC-25",
+      "begruendung": "Eine Regel des Servers ueber die Dauer eines Befehls: der Angreifer behaelt sein befohlenes Ziel ueber eine ganze Verfolgung, auch wenn andere Gegner naeher stehen. Das ist ein Ablauf ueber viele Sekunden - ein Standbild zeigt einen Reiter hinter einem Dorfbewohner, aber nicht, dass er ihn seit dem Befehl nie gewechselt hat. Belegt im Rechenteil mit Verfolgungen in allen acht Richtungen ueber drei Karten, in jedem Takt geprueft, samt Gegenprobe gegen die alte Zeile (tests/strategie-kampf.test.mjs)."
+    },
+    {
       "spec": "10-strategie/darstellung.md",
       "ac": "AC-25",
       "begruendung": "Die Marke einer Datei und die Antwort 'unveraendert' sind Kopfzeilen einer HTTP-Antwort: ETag aus dem Inhalt, Cache-Control no-cache, 304 ohne Inhalt, wenn der Browser die Marke nennt. Ein Bildschirm zeigt dieselbe Seite, ob die Tafeln neu kamen oder aus dem Speicher des Browsers - der Unterschied ist die uebertragene Menge. Belegt ueber HTTP gegen den laufenden Server an vier Dateien, mit richtiger, alter und ohne Marke (tests/netz.test.mjs)."

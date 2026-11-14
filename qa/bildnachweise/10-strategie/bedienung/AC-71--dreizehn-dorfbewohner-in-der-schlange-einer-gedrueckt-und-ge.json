@@ -1,0 +1,10 @@
+{
+  "spec": "10-strategie/bedienung.md",
+  "ac": "AC-71",
+  "titel": "Dreizehn Dorfbewohner in der Schlange: einer gedrückt und gehalten, sechs schnelle Klicks, fünf mit Umschalt, einer ohne Zeiger",
+  "datei": "e2e/tests/strategie-rueckmeldung.spec.mjs",
+  "pfad": [
+    "Rueckmeldungen aus dem ersten Spiel",
+    "bedienung AC-71: gedrueckt ist bestellt, auch wenn die Leiste vor dem Loslassen neu gebaut wird - sechs schnelle Klicks sind sechs, mit Umschalt fuenf"
+  ]
+}

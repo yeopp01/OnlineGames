@@ -192,7 +192,11 @@ const PRUEFER = {
     // Gerundet je Fahrt: der Bonus darf um ein Gold neben dem Anteil liegen.
     assert.ok(Math.abs(zumVerbuendeten - ohneHaus * (1 + wert)) <= 1 && zumVerbuendeten > ohneHaus, `${haus}: ${zumVerbuendeten} gegen ${ohneHaus}`);
     assert.equal(nachKuendigung, ohneHaus, `${haus}: in der Frist faehrt der Karren weiter, aber ohne den Bonus`);
-    assert.equal(zuSichSelbst, ohneHaus, `${haus}: zwischen zwei eigenen Maerkten gilt er nicht`);
+    // Verglichen mit derselben Strecke ohne das Haus - der Markt eines
+    // anderen bringt seit einheiten AC-40 ohnehin ein Fuenftel mehr als der
+    // eigene, das ist kein Mannschaftsbonus.
+    assert.equal(zuSichSelbst, ersteFahrt({}, 'a', false), `${haus}: zwischen zwei eigenen Maerkten gilt er nicht`);
+    assert.ok(zuSichSelbst < ohneHaus, `${haus}: der eigene Markt bringt weniger als der des anderen (${zuSichSelbst} gegen ${ohneHaus})`);
     // Traegt Anna das Haus selbst, behaelt sie nach der Kuendigung ihren
     // eigenen Mannschaftsbonus - zum Markt des frueheren Verbuendeten gilt er
     // trotzdem nicht mehr, nur noch das, was sie auch daheim bekaeme.
@@ -200,7 +204,11 @@ const PRUEFER = {
     const selbstIm = ersteFahrt({ a: haus }, 'b', false);
     const selbstNach = ersteFahrt({ a: haus }, 'b', true);
     assert.ok(selbstIm > selbstDaheim, `${haus}: auch fuer das Haus selbst, ${selbstIm} gegen ${selbstDaheim}`);
-    assert.equal(selbstNach, selbstDaheim, `${haus}: nach der eigenen Kuendigung nicht mehr zum frueheren Verbuendeten`);
+    // Der Markt bleibt der eines anderen und bringt deshalb ein Fuenftel mehr
+    // als der eigene (einheiten AC-40) - das ist kein Mannschaftsbonus. Um
+    // ein Gold daneben darf es liegen, gerundet wird je Fahrt.
+    assert.ok(Math.abs(selbstNach - selbstDaheim * 1.2) <= 1 && selbstNach < selbstIm,
+      `${haus}: nach der eigenen Kuendigung nicht mehr zum frueheren Verbuendeten (${selbstNach} gegen ${selbstDaheim} daheim und ${selbstIm} im Buendnis)`);
     return `Karren zum Verbuendeten: ${zumVerbuendeten} statt ${ohneHaus} Gold, nach der Kuendigung ${nachKuendigung}; `
       + `mit dem Haus selbst ${selbstIm} statt ${selbstDaheim}, danach ${selbstNach}`;
   },

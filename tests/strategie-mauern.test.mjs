@@ -235,6 +235,8 @@ test('bauen AC-31: ein Tor im Mauerring laesst Annas Dorfbewohner hinaus und Ber
   const antwort = welt.nachricht('a', { auftrag: 'bauen', einheiten: [bauer.id], art: 'tor', ziel: torfeld });
   assert.equal(antwort.fehler, undefined);
   assert.equal(welt.gebaeude.has(mauer.id), false, 'das Mauerfeld ist ersetzt');
+  // Ersetzt, nicht eingestuerzt: unter dem Tor liegen keine Truemmer (darstellung AC-26).
+  assert.deepEqual(welt.zustand().gebaeude.find((g) => g.i === mauer.id), { i: mauer.id, weg: true });
   assert.equal(welt.gebaeudeAn(torfeld.x, torfeld.y).art, 'tor');
   assert.equal(spieler.stein, steinVorher - 30);
   // Siebzig Sekunden fuer einen Bauer, dazu der Weg: er geht durch die eigene

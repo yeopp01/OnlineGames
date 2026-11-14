@@ -1,0 +1,10 @@
+{
+  "spec": "10-strategie/bedienung.md",
+  "ac": "AC-39",
+  "titel": "Dieselben zwei kurz darauf: wer eben zuschlägt, steht anders als zwischen zwei Schlägen",
+  "datei": "e2e/tests/strategie-kampfbild.spec.mjs",
+  "pfad": [
+    "Kampf im Bild",
+    "bedienung AC-39: wer kaempft, holt aus - beim Schlag steht die Figur anders als zwischen zwei Schlaegen"
+  ]
+}

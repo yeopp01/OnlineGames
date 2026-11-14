@@ -2,7 +2,7 @@
 
 **Bereich:** Strategie
 **Kuerzel:** bauen
-**Stand:** 38/39 fertig · 1 offen
+**Stand:** 43/44 fertig · 1 offen
 
 ## Zweck
 
@@ -354,6 +354,58 @@ Spezialeinheit der Burg (kommt mit den Häusern, Stufe E), Palisade.
   weitesten weg liegt. Nicht geprüft: ein Tor an einer Ecke, in die zwei
   Mauern laufen (der Arm der zweiten stößt an den Turm, wie er an ein
   Mauerfeld stieße).
+- **AC-40** `fertig` **Sammelpunkt folgt dem Vorrat** — Wer mit gewähltem
+  Gebäude auf einen Baum klickt, setzt den Sammelpunkt **auf den Baum**:
+  getroffen wird das Bild — die Krone —, nicht das Bodenfeld dahinter, wie
+  beim Befehl an eine Einheit (bedienung AC-51). Der Sammelpunkt merkt sich
+  die Art des Vorrats. Ist der Baum gefällt, das Gold abgebaut, wandert er
+  zum nächsten Vorrat derselben Art, höchstens zwölf Felder weiter, und die
+  Fahne im Bild wandert mit — neue Dorfbewohner stehen nicht auf dem Stumpf.
+  Gibt es dort keinen mehr, bleibt er. **Aus dem Spiel auf dem Server
+  (2026-11-13).**
+- **AC-41** `fertig` **Leere Farm liegt brach** — Ist die letzte Nahrung
+  geerntet, bleibt die Farm stehen: ein kahler Acker, auf dem niemand
+  arbeitet; was der Bauer noch trägt, bringt er heim. Der **Rechtsklick eines
+  Dorfbewohners** auf die Brache sät sie neu aus — für die Kosten der Farm
+  (60 Holz), und sie trägt wieder voll, mit Pferdekummet und Haus. Am Zeiger
+  steht vorher „Neu aussäen (60 Holz)" (bedienung AC-52), unten an der Farm
+  „Liegt brach". Bezahlt wird einmal, auch wenn mehrere klicken; reicht das
+  Holz nicht, kommt die Absage „Zu wenig Holz.", und niemand geht los. Das
+  Pferdekummet füllt eine Brache nicht. Die KI räumt ihre leeren Farmen wie
+  bisher und legt neue an. **Aus dem Spiel auf dem Server (2026-11-13):**
+  bis dahin verschwand die Farm mit dem letzten Korn.
+- **AC-42** `fertig` **Farmen von selbst erneuern** — An jeder eigenen Farm
+  steht der Schalter „Von selbst neu aussäen", Vorgabe aus; er gilt allen
+  Farmen des Spielers. Ist er an, wird beim letzten Korn bezahlt, und der
+  Bauer erntet ohne Pause weiter. Reicht das Holz nicht, liegt die Farm
+  brach, der Bauer bringt heim, was er trägt, und wartet auf ihr — er zählt
+  als untätig (einheiten AC-21) —, und sobald das Holz da ist, sät er aus.
+  Wird der Schalter ausgestellt, ist die Farm frei. Brachen, auf denen
+  niemand steht, sät der Schalter nicht aus: dazu braucht es den Rechtsklick
+  (AC-41).
+- **AC-43** `fertig` **Wirtschaft verbessern bis ins Fürstentum** — Das
+  Bergbaulager forscht: **Goldbergbau** und **Steinbergbau** im Lehen (je
+  100 Nahrung, 75 Holz, 30 s), **Goldschacht** und **Steinschacht** im
+  Fürstentum (je 175 Nahrung, 75 Holz, 75 s) — jede Stufe 15 % mehr an ihrem
+  Rohstoff, zwei Stufen multiplizieren sich. Das Holzfällerlager bekommt nach
+  der Doppelaxt die **Bogensäge** (150 Nahrung, 100 Holz, 50 s, noch einmal
+  20 % Holz), die Mühle nach dem Pferdekummet den **Schweren Pflug**
+  (125 Nahrung, 125 Holz, 40 s, +125 Nahrung je Farm — auch auf die, die
+  schon steht, nicht auf eine Brache). Die zweite Stufe erscheint erst im
+  Fürstentum und erst, wenn die erste erforscht ist. Jede hat ihr eigenes
+  Bild, und die Tafel über dem Knopf nennt die Wirkung in Zahlen. Kosten und
+  Dauer aus den offenen Technikbaum-Daten zum Original; die Wirkungen sind
+  Startwerte. **Rückmeldung des Benutzers:** „Im Fürstentum muss es auch noch
+  weiterentwicklungen für bergbau, mühle, holzabbau, etc. geben". Die KI
+  erforscht nichts davon (ki AC-35).
+- **AC-44** `fertig` **Schubkarre und Handkarren** — Das Dorfzentrum erforscht
+  im Lehen die **Schubkarre** (175 Nahrung, 50 Holz, 75 s): jeder
+  Dorfbewohner geht 10 % schneller und trägt 13 statt 10, bevor er zum Lager
+  geht. Im Fürstentum folgt an derselben Stelle der **Handkarren**
+  (300 Nahrung, 200 Holz, 55 s): noch einmal 10 % Tempo, und er trägt 18. Die
+  Auswahl zeigt, wie viel ein Dorfbewohner tragen kann („trägt 7 Holz von
+  13"). Gemessen mit einem Holzfäller über fünf Minuten: 70 Holz ohne, 78 mit
+  Schubkarre, 90 mit Handkarren.
 
 ## Grenzfaelle
 
@@ -368,5 +420,5 @@ Spezialeinheit der Burg (kommt mit den Häusern, Stufe E), Palisade.
 - Zwei Spieler beanspruchen denselben Platz: wer zuerst den Baubeginn absetzt,
   bekommt ihn; der andere bekommt eine Absage und behält seine Rohstoffe.
 - Eine Farm ist begehbar. Sie sperrt den Platz für Gebäude, nicht für Einheiten.
-- Ist die Farm leer, bleibt sie als leerer Acker stehen; neu anlegen kostet
-  wieder 60 Holz.
+- Ist die Farm leer, bleibt sie als leerer Acker stehen; neu aussäen kostet
+  wieder 60 Holz (AC-41).

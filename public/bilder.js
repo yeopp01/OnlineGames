@@ -13,7 +13,7 @@
 const NAMEN = [
   'dorfbewohner', 'baum', 'marktkarren', 'spaeherreiter', 'ritter', 'miliz', 'soldat', 'speerkaempfer', 'bogenschuetze', 'plaenkler',
   'armbrustschuetze', 'bogenschuetze2', 'langschwertkaempfer', 'pikenier', 'eliteplaenkler', 'leichtekavallerie',
-  'moench', 'ramme', 'mangonel', 'schaf', 'beere', 'gold', 'stein', 'boden',
+  'moench', 'ramme', 'mangonel', 'schaf', 'beere', 'gold', 'stein', 'boden', 'geschoss',
   // Gebaeude (R4): jedes eine Tafel; die Baustelle je Grundflaeche eine.
   'haus', 'dorfzentrum', 'muehle', 'holzfaellerlager', 'bergbaulager', 'farm', 'kaserne', 'schiessanlage', 'stall', 'schmiede',
   'aussenposten', 'markt', 'kloster', 'universitaet', 'belagerungswerkstatt', 'wachturm', 'burg', 'steinmauer', 'tor',

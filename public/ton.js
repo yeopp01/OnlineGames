@@ -97,7 +97,20 @@ export const KLAENGE = {
   hacken: { art: 'hacken', abstand: 110, laut: 0.16 },
   pickel: { art: 'pickel', abstand: 110, laut: 0.08 },
   hammer: { art: 'hammer', abstand: 110, laut: 0.22 },
+
+  // ---- Der Moench (AC-74) ---------------------------------------------------
+  // Heilen: ein Gloeckchen je geheiltem Leben - eines je Sekunde, auch wenn
+  // drei Moenche nebeneinander heilen.
+  heilen: { art: 'gloeckchen', abstand: 950, laut: 0.07 },
+  // Bekehren: ein gehaltener Gesangston. Der naechste beginnt, bevor dieser
+  // verklungen ist (`GESANG_DAUER`) - so singt er, solange er bekehrt.
+  bekehren: { art: 'gesang', abstand: 1250, laut: 0.18 },
+  // Der Uebertritt: ein heller Schlag, der nachklingt.
+  bekehrt: { art: 'uebertritt', abstand: 400, laut: 0.14 },
 };
+
+/** Wie lange ein Ton des Gesangs klingt, in Sekunden - laenger als sein Abstand. */
+export const GESANG_DAUER = 1.6;
 
 // ---- Die Musik als Noten (bedienung AC-60) ---------------------------------
 // d-Moll, vier Viertel, 96 Schlaege in der Minute. Ein Takt je Eintrag; die
@@ -517,6 +530,68 @@ export class Ton {
   hammer(ctx, ziel, t, laut) {
     this.stoss(ctx, ziel, t, { f: 520, q: 1.2, d: 0.09, laut: laut * 1.3, an: 0.001 });
     this.stimme(ctx, ziel, { f: 210, nach: 160, t, d: 0.05, laut: laut * 0.6, an: 0.002 });
+  }
+
+  // ---- Der Moench (bedienung AC-74) ------------------------------------------
+
+  /**
+   * Heilen: ein kleines Gloeckchen, weich angeschlagen. Die Hoehe wandert
+   * ueber fuenf Toene, die sich mit der Musik in d-Moll vertragen.
+   */
+  gloeckchen(ctx, ziel, t, laut) {
+    const hoehen = ['d6', 'f6', 'g6', 'a6', 'c7'];
+    const f = frequenz(halbton(hoehen[Math.floor(this.zufall() * hoehen.length)]));
+    for (const [faktor, anteil, dauer] of [[1, 1, 0.55], [2.76, 0.35, 0.3], [5.4, 0.12, 0.16]]) {
+      this.stimme(ctx, ziel, { f: f * faktor, t, d: dauer, laut: laut * anteil, an: 0.006 });
+    }
+  }
+
+  /**
+   * Bekehren: ein gesungener, gehaltener Ton - eine tiefe Stimme auf "o".
+   * Zwei leicht verstimmte Saegezaehne durch zwei Formanten, langsam da und
+   * langsam weg. Die Hoehe wandert ueber vier Toene aus d-Moll.
+   */
+  gesang(ctx, ziel, t, laut) {
+    const hoehen = ['d3', 'f3', 'g3', 'a3'];
+    const f = frequenz(halbton(hoehen[Math.floor(this.zufall() * hoehen.length)]));
+    const d = GESANG_DAUER;
+    const huelle = ctx.createGain();
+    huelle.gain.setValueAtTime(0.0001, t);
+    huelle.gain.linearRampToValueAtTime(laut, t + 0.3);
+    huelle.gain.linearRampToValueAtTime(laut * 0.8, t + d * 0.7);
+    huelle.gain.linearRampToValueAtTime(0.0001, t + d);
+    huelle.connect(ziel);
+    for (const [mitte, guete, anteil] of [[430, 4, 1], [820, 5, 0.5]]) {
+      const formant = ctx.createBiquadFilter();
+      formant.type = 'bandpass';
+      formant.frequency.value = mitte;
+      formant.Q.value = guete;
+      const teil = ctx.createGain();
+      teil.gain.value = anteil;
+      formant.connect(teil);
+      teil.connect(huelle);
+      for (const verstimmt of [-6, 7]) {
+        const schwinger = ctx.createOscillator();
+        schwinger.type = 'sawtooth';
+        schwinger.frequency.setValueAtTime(f, t);
+        schwinger.detune.setValueAtTime(verstimmt, t);
+        schwinger.connect(formant);
+        schwinger.start(t);
+        schwinger.stop(t + d + 0.05);
+      }
+    }
+  }
+
+  /**
+   * Der Uebertritt: ein heller Schlag wie eine kleine Glocke - Grundton,
+   * Quinte und Oktave, darueber die unreinen Teiltoene des Metalls.
+   */
+  uebertritt(ctx, ziel, t, laut) {
+    const grund = frequenz(halbton('d5'));
+    for (const [faktor, anteil, dauer] of [[1, 1, 1.3], [1.5, 0.6, 1.1], [2, 0.5, 0.9], [2.76, 0.22, 0.5], [5.4, 0.08, 0.25]]) {
+      this.stimme(ctx, ziel, { f: grund * faktor * (1 + (this.zufall() - 0.5) * 0.004), t, d: dauer, laut: laut * anteil, an: 0.004 });
+    }
+    this.stoss(ctx, ziel, t, { art: 'highpass', f: 5000, q: 0.7, d: 0.03, laut: laut * 0.4, an: 0.001 });
   }
 
   // ---- Musik (bedienung AC-60) ----------------------------------------------

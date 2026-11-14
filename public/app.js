@@ -93,7 +93,7 @@ function verbinden(dann) {
   draht.addEventListener('close', (e) => {
     // Nur wenn es die Verbindung von gerade ist: ein neuer Versuch schliesst
     // die alte selbst (oben), das ist kein Abbruch.
-    if (e.target !== draht) return;
+    if (e.target !== draht || gehtWeg) return;
     // Im Spiel ein Hinweis mitten im Bild, nicht erst stehende Einheiten
     // (bedienung AC-19); im Warteraum unter der Spielerliste.
     if (!teile.spiel.hidden) teile.verbindungweg.hidden = false;
@@ -146,6 +146,7 @@ function empfangen(nachricht) {
         // Fuer den Browserlauf, wie window.ansicht: lesen, nicht schreiben.
         window.uebersicht = uebersicht;
         const tasten = new Tasten(ansicht, teile.auswahlleiste, document.getElementById('tastenuebersicht'), ton);
+        tastenhilfe = tasten;
         ansicht.beiTaste = (e) => tasten.taste(e);
         ansicht.melden = spielMelden;
         ansicht.beiEreignis = (name, wo) => ton.spielen(name, wo);
@@ -169,6 +170,9 @@ function empfangen(nachricht) {
         ansicht.beiPause = () => pauseUmschalten();
         ansicht.sammelpunktSenden = (gebaeude, ziel) =>
           senden({ typ: 'befehl', auftrag: 'sammelpunkt', gebaeude, ziel });
+        // Welchen Vorrat ich ansehe (bedienung AC-63) - ohne Feld: keinen mehr.
+        ansicht.ansehenSenden = (feld) =>
+          senden({ typ: 'befehl', auftrag: 'ansehen', ...(feld ? { feld } : {}) });
         ansicht.bauenSenden = (einheiten, art, ziel, anhaengen, quer) =>
           senden({
             typ: 'befehl', auftrag: 'bauen', einheiten, art, ziel,
@@ -331,6 +335,10 @@ function zeitgrenzeZeigen(minuten) {
 // (spielziel AC-8) nimmt spaeter diesen Platz ein.
 function partieendeZeigen(text) {
   document.getElementById('partieende').textContent = text;
+  // Darunter, wenn jemand aufgegeben hat (spielziel AC-27).
+  const grund = document.getElementById('partieendeGrund');
+  grund.textContent = ansicht.endeGrund();
+  grund.hidden = !grund.textContent;
   abschlusstafelFuellen();
   angriffVerbergen();
   document.getElementById('abschluss').hidden = false;
@@ -369,6 +377,11 @@ document.getElementById('revanche').addEventListener('click', () => {
 // (bedienung AC-47) - mit `Tab` gibt es die ganze Tafel.
 let punkteStand = null;
 
+// Das Zeitalter steht als roemische Ziffer hinter dem Namen (bedienung
+// AC-67): vier Namen untereinander waeren breiter als die Karte darunter,
+// und wer spielt, will nur wissen, wer schon weiter ist.
+const STUFENZIFFER = ['I', 'II', 'III', 'IV'];
+
 function punkteZeigen() {
   const ort = document.getElementById('punkteliste');
   if (!ansicht) {
@@ -376,7 +389,7 @@ function punkteZeigen() {
     return;
   }
   const zeilen = ansicht.spielstandZeilen().sort((a, b) => b.punkte - a.punkte);
-  const stand = zeilen.map((z) => `${z.id}:${z.punkte}:${z.aus ? 1 : 0}`).join('|');
+  const stand = zeilen.map((z) => `${z.id}:${z.punkte}:${z.aus ? 1 : 0}:${z.stufe}`).join('|');
   ort.hidden = false;
   if (stand === punkteStand) return;
   punkteStand = stand;
@@ -384,6 +397,8 @@ function punkteZeigen() {
     const zeile = document.createElement('li');
     zeile.dataset.spieler = z.id;
     zeile.dataset.punkte = z.punkte;
+    // Wer darauf zeigt, liest das Haus (bedienung AC-69).
+    if (z.haus) zeile.title = `Haus ${z.haus}`;
     if (z.ich) zeile.classList.add('ich');
     if (z.aus) zeile.classList.add('draussen');
     const punkt = document.createElement('span');
@@ -392,18 +407,25 @@ function punkteZeigen() {
     const name = document.createElement('span');
     name.className = 'name';
     name.textContent = z.name;
+    const stufe = document.createElement('span');
+    stufe.className = 'stufe';
+    stufe.dataset.stufe = z.stufe;
+    stufe.textContent = `(${STUFENZIFFER[z.stufe] || 'I'})`;
+    stufe.setAttribute('aria-label', z.zeitalter);
     const zahl = document.createElement('span');
     zahl.className = 'zahl';
     zahl.textContent = String(z.punkte);
-    zeile.append(punkt, name, zahl);
+    zeile.append(punkt, name, stufe, zahl);
     return zeile;
   }));
 }
 
 function partieraumAufraeumen() {
   punkteStand = null;
+  menueSchliessen();
   document.getElementById('abschluss').hidden = true;
   document.getElementById('partieende').textContent = '';
+  document.getElementById('partieendeGrund').hidden = true;
   aufgebenFrageSchliessen();
   buendnisFrageSchliessen();
   angriffVerbergen();
@@ -463,6 +485,13 @@ function spielstandZeigen() {
     punkt.className = 'farbpunkt';
     punkt.style.background = zeile.farbe;
     name.append(punkt, document.createTextNode(zeile.aus ? `${zeile.name} (ausgeschieden)` : zeile.name));
+    // Das Haus hinter dem Namen (bedienung AC-69), von jedem.
+    if (zeile.haus) {
+      const haus = document.createElement('span');
+      haus.className = 'hausvermerk';
+      haus.textContent = `Haus ${zeile.haus}`;
+      name.append(haus);
+    }
     tr.append(name);
     const v = zeile.vorraete;
     // Punkte und Zeitalter von jedem (bedienung AC-47), der Rest nur, wo der
@@ -509,6 +538,12 @@ function abschlusstafelFuellen() {
     punkt.className = 'farbpunkt';
     punkt.style.background = zeile.farbe;
     name.append(punkt, document.createTextNode(zeile.name));
+    if (zeile.aufgegeben) {
+      const vermerk = document.createElement('span');
+      vermerk.className = 'vermerk';
+      vermerk.textContent = 'aufgegeben';
+      name.append(vermerk);
+    }
     tr.append(name);
     const werte = [
       zeile.zeitalter,
@@ -600,6 +635,127 @@ function pauseUmschalten() {
 
 pauseKnopf.addEventListener('click', pauseUmschalten);
 document.getElementById('pauseWeiter').addEventListener('click', () => senden({ typ: 'weiter' }));
+
+// ---- Das Menue (bedienung AC-66) -------------------------------------------
+// Ein Knopf oben rechts und F10, wie in der Vorlage. Darin, was man selten
+// braucht und dann sucht: weiterspielen, anhalten, Tasten und Ton - und der
+// Weg zurueck in den Vorraum, den es vorher nur ueber Neuladen-und-nicht-
+// zurueckkehren gab. Die Partie laeuft unter dem Menue weiter: in einer
+// Partie zu mehreren haelt niemand die anderen an, nur weil er nachsieht.
+const menue = document.getElementById('spielmenue');
+const menueKnopf = document.getElementById('menue');
+let tastenhilfe = null;
+// Damit das Neuladen nicht noch "Verbindung verloren" ins Bild stellt.
+let gehtWeg = false;
+
+function menueTaste(e) {
+  if (e.key !== 'Escape') return;
+  e.stopPropagation();
+  menueSchliessen();
+}
+
+function menueOeffnen() {
+  if (!ansicht || teile.spiel.hidden) return;
+  aufgebenFrageSchliessen();
+  buendnisFrageSchliessen();
+  const pause = document.getElementById('menuePause');
+  pause.hidden = pauseKnopf.hidden && pauseFeld.hidden;
+  pause.textContent = pauseFeld.hidden ? 'Pause' : 'Weiterspielen lassen';
+  // Wer noch spielt, kann zurueckkommen - das sagt der Satz darunter.
+  const laeuft = ansicht.ende === null && !ansicht.aus;
+  document.getElementById('menueVorraumHinweis').textContent = laeuft
+    ? 'Die Partie läuft ohne dich weiter. Ist niemand mehr da, wartet sie 30 Minuten — der Vorraum bietet dir die Rückkehr an.'
+    : 'Die Partie ist für dich vorbei.';
+  menue.hidden = false;
+  window.addEventListener('keydown', menueTaste, true);
+  document.getElementById('menueWeiter').focus();
+}
+
+function menueSchliessen() {
+  if (menue.hidden) return;
+  menue.hidden = true;
+  window.removeEventListener('keydown', menueTaste, true);
+}
+
+// Zurueck in den Vorraum: der Platz dieses Fensters wird vergessen, die
+// gemerkte Partie nicht - sie steht dann im Vorraum unter "Zurückkehren"
+// (raeume AC-18). Ist die Partie vorbei oder man selbst draussen, ist sie
+// schon vergessen. Neu geladen wird, statt den Zustand von Hand abzubauen:
+// so sieht der Vorraum aus wie nach jedem anderen Weg dorthin.
+function zumVorraum() {
+  gehtWeg = true;
+  sessionStorage.removeItem('platz');
+  location.reload();
+}
+
+menueKnopf.addEventListener('click', () => (menue.hidden ? menueOeffnen() : menueSchliessen()));
+document.getElementById('menueWeiter').addEventListener('click', menueSchliessen);
+document.getElementById('menuePause').addEventListener('click', () => {
+  menueSchliessen();
+  pauseUmschalten();
+});
+document.getElementById('menueTasten').addEventListener('click', () => {
+  menueSchliessen();
+  tastenhilfe?.uebersichtZeigen(true);
+});
+document.getElementById('menueVorraum').addEventListener('click', zumVorraum);
+document.getElementById('abschlussVorraum').addEventListener('click', zumVorraum);
+// F10 vor allem anderen: der Browser oeffnet damit sonst sein eigenes Menue.
+window.addEventListener('keydown', (e) => {
+  if (e.key !== 'F10' || teile.spiel.hidden || !ansicht) return;
+  e.preventDefault();
+  e.stopPropagation();
+  if (menue.hidden) menueOeffnen();
+  else menueSchliessen();
+}, true);
+
+// ---- Vollbild (bedienung AC-73) --------------------------------------------
+// Im Fenster gehoeren Strg+1 bis 8 dem Browser - er wechselt damit den Tab,
+// und keine Seite kann das verhindern. Erst im Vollbild, das die Seite selbst
+// anfordert, gibt er Tasten her (`navigator.keyboard.lock`, in Chrome und
+// Edge): dann kommen Strg + Ziffer im Spiel an, Strg+W schliesst nichts, und
+// Esc hebt die Auswahl auf, statt das Vollbild zu beenden - das tut Esc
+// gehalten, F11 oder das Menue. Verlangt werden die Tasten des Spiels, nicht
+// alle: Alt+Tab bleibt beim Betriebssystem.
+const VOLLBILD_TASTEN = [
+  'Escape', 'Space', 'Period', 'Delete',
+  ...'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('').map((b) => `Key${b}`),
+  ...Array.from({ length: 10 }, (_, n) => `Digit${n}`),
+  ...Array.from({ length: 12 }, (_, n) => `F${n + 1}`),
+];
+const vollbildKnopf = document.getElementById('menueVollbild');
+
+async function vollbildUmschalten() {
+  if (document.fullscreenElement) {
+    await document.exitFullscreen().catch(() => {});
+    return;
+  }
+  try {
+    await document.documentElement.requestFullscreen();
+  } catch {
+    // Der Browser hat abgelehnt - dann bleibt es beim Fenster.
+    return;
+  }
+  // Firefox und Safari kennen die Tastensperre nicht: dort bleibt Alt + Ziffer.
+  await navigator.keyboard?.lock?.(VOLLBILD_TASTEN).catch(() => {});
+}
+
+document.addEventListener('fullscreenchange', () => {
+  const voll = Boolean(document.fullscreenElement);
+  if (!voll) navigator.keyboard?.unlock?.();
+  vollbildKnopf.textContent = voll ? 'Vollbild verlassen (F11)' : 'Vollbild (F11)';
+});
+vollbildKnopf.addEventListener('click', () => {
+  menueSchliessen();
+  vollbildUmschalten();
+});
+// F11 im Spiel: das Vollbild des Browsers selbst gaebe die Tasten nicht her.
+window.addEventListener('keydown', (e) => {
+  if (e.key !== 'F11' || teile.spiel.hidden || !ansicht) return;
+  e.preventDefault();
+  e.stopPropagation();
+  if (!e.repeat) vollbildUmschalten();
+}, true);
 
 function aufgebenFrageTaste(e) {
   if (e.key !== 'Escape') return;

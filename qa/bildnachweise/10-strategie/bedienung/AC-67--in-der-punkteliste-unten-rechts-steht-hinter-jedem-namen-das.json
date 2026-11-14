@@ -1,0 +1,10 @@
+{
+  "spec": "10-strategie/bedienung.md",
+  "ac": "AC-67",
+  "titel": "In der Punkteliste unten rechts steht hinter jedem Namen das Zeitalter: Anna (II), Bert (III)",
+  "datei": "e2e/tests/strategie-rueckmeldung.spec.mjs",
+  "pfad": [
+    "Rueckmeldungen aus dem ersten Spiel",
+    "bedienung AC-67: hinter jedem Namen steht das Zeitalter als roemische Ziffer - und es zieht mit dem Aufstieg nach"
+  ]
+}

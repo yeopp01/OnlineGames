@@ -307,6 +307,11 @@ class Ki {
     const haus = welt.spieler[nummer]?.haus;
     /** @type {import('./daten').Neigung} */
     this.neigung = (haus && HAEUSER[haus].ki) || {};
+    // Ihre leeren Farmen verschwinden, statt brachzuliegen (bauen AC-41) -
+    // wie bis dahin jede Farm: `farmenPruefen` legt neue an. Dass sie Brachen
+    // neu aussaet, waere eine andere KI, und ihre Grenzen halten an diesen
+    // Startwerten, nicht aus Abstand.
+    welt.nachricht(spielerId, { auftrag: 'farmen', raeumen: true });
     this.abgewiesen = 0;
     this.schafeGetrieben = false;
     // In welchem Takt die Feudalzeit erreicht war - der Pruefstand misst daran
@@ -1735,7 +1740,7 @@ class Ki {
     for (const e of dorfbewohner) {
       // Festsitzend heisst: volle Ladung, sammelt nicht, kein Weg - nicht jeder,
       // der gerade etwas traegt (Durchsicht Runde 95).
-      if (e.ladung < EINHEITEN[e.art].tragkraft || e.sammelt || e.weg.length || e.auftrag?.art !== 'sammeln') continue;
+      if (e.ladung < this.welt.tragkraft(e) || e.sammelt || e.weg.length || e.auftrag?.art !== 'sammeln') continue;
       const lager = this.welt.lagerFuer(e);
       if (lager && this.welt.abstandZu(e, lager) <= 1.2) continue;
       const daneben = baustellen.find((g) => this.welt.abstandZu(e, g) <= 1.2);

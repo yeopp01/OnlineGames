@@ -1,0 +1,10 @@
+{
+  "spec": "10-strategie/bedienung.md",
+  "ac": "AC-72",
+  "titel": "Annas Ramme und ihr Bogenschütze vor Berts Dorfzentrum: je Schlag eine Bewegung, dazwischen stehen sie bereit",
+  "datei": "e2e/tests/strategie-kampfbild.spec.mjs",
+  "pfad": [
+    "Kampf im Bild",
+    "bedienung AC-72: je Schlag des Servers eine Schlagbewegung, dazwischen Ruhe - die Ramme alle fuenf Sekunden, der Bogenschuetze alle zwei"
+  ]
+}

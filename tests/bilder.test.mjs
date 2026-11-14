@@ -290,6 +290,25 @@ test('darstellung AC-23: der Boden liegt in fuenf Texturen vor, die sich in jede
   assert.ok(g < 130, `Gras im Mittel ${boden.mittel.gras}: zu hell`);
 });
 
+test('darstellung AC-28: Pfeil und Stein kommen aus einer Tafel - ein Pfeil, der Stein in mehreren Lagen, ohne Spielerfarbe, und der Browser laedt und zeichnet sie', () => {
+  const geschoss = von('geschoss');
+  assert.ok(geschoss, 'geschoss fehlt unter public/bilder/');
+  assert.equal(geschoss.zeilen, 1);
+  assert.equal(geschoss.pfeil, 0);
+  assert.ok(geschoss.steine.length >= 4, 'der Stein ueberschlaegt sich in mehreren Lagen');
+  assert.equal(geschoss.spalten, 1 + geschoss.steine.length);
+  assert.ok(!geschoss.steine.includes(geschoss.pfeil));
+  assert.equal(geschoss.maske, null, 'ein Geschoss traegt keine Spielerfarbe');
+  // Die Spitze des Pfeils liegt auf dem Fusspunkt, der Schaft links davon:
+  // rechts vom Fuss bleibt nur der Rand der Zelle.
+  assert.ok(geschoss.fuss[0] > geschoss.zelle[0] / 2);
+  const laden = readFileSync(new URL('../public/bilder.js', import.meta.url), 'utf8');
+  const geladen = [...(/const NAMEN = \[([^\]]*)\]/.exec(laden)?.[1] || '').matchAll(/'([^']+)'/g)].map((m) => m[1]);
+  assert.ok(geladen.includes('geschoss'), 'public/bilder.js laedt geschoss nicht');
+  const ansicht = readFileSync(new URL('../public/ansicht.js', import.meta.url), 'utf8');
+  assert.match(ansicht, /gerendert\('geschoss'\)/);
+});
+
 // --- Gebaeude und Einheiten aus den Daten (darstellung AC-22, AC-24) --------
 const { EINHEITEN, GEBAEUDE, TIERE } = createRequire(import.meta.url)('../server/spiele/strategie/daten.js');
 const geladeneNamen = () => {

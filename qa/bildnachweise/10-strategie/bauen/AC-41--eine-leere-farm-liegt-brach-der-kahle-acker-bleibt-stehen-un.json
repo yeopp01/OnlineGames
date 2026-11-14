@@ -1,0 +1,10 @@
+{
+  "spec": "10-strategie/bauen.md",
+  "ac": "AC-41",
+  "titel": "Eine leere Farm liegt brach: der kahle Acker bleibt stehen, unten steht, wie sie neu ausgesät wird, daneben der Schalter",
+  "datei": "e2e/tests/strategie-brache.spec.mjs",
+  "pfad": [
+    "Die Brache",
+    "bauen AC-41: eine leere Farm liegt brach - unten steht es, am Zeiger „Neu aussäen (60 Holz)“, ohne Holz eine Absage, und der Rechtsklick sät sie neu aus"
+  ]
+}

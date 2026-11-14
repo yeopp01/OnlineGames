@@ -1,0 +1,10 @@
+{
+  "spec": "10-strategie/darstellung.md",
+  "ac": "AC-28",
+  "titel": "Gerenderte Geschosse: Pfeile steigend, im Scheitel und fallend, einer in Gegenrichtung, und zwei Wurfsteine mit Schatten am Boden",
+  "datei": "e2e/tests/strategie-pfeile.spec.mjs",
+  "pfad": [
+    "Pfeile",
+    "darstellung AC-28: Pfeil und Stein kommen aus der gerenderten Tafel - der Pfeil in Flugrichtung gedreht, der Stein mit Schatten am Boden, kein Strich mehr"
+  ]
+}
