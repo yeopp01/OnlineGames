@@ -200,6 +200,8 @@ export class Ansicht {
     // Nach jedem Bild und bei geaenderten Feldern - fuer die Uebersichtskarte (bedienung AC-11).
     this.nachBild = () => {};
     this.beiTaste = () => false;
+    // Ein Auftrag, der kein Befehl an ein Ziel ist (Entf, bedienung AC-75).
+    this.beiAuftrag = (auftrag) => {};
     this.beiFeldern = () => {};
     // Die Tafel auf `Tab` (bedienung AC-20): je Spieler, was zuletzt ankam,
     // und ob sie gerade offen ist - app.js zeichnet sie.
@@ -1314,6 +1316,12 @@ export class Ansicht {
         }
         return;
       }
+      // Entf entfernt das Gewaehlte (bedienung AC-75) - eines je Druck, eine
+      // gehaltene Taste raeumt kein Heer ab.
+      if (e.key === 'Delete' && !e.ctrlKey && !e.metaKey && !e.altKey) {
+        if (!e.repeat) this.entlassen();
+        return;
+      }
       // Der naechste untaetige Dorfbewohner (bedienung AC-28).
       if (e.key === '.' && !e.ctrlKey && !e.metaKey && !e.altKey) {
         this.naechsterUntaetiger();
@@ -1345,6 +1353,26 @@ export class Ansicht {
       // Wer mit gehaltenem Tab das Fenster verlaesst, bekommt kein keyup.
       this.spielstandSetzen(false);
     });
+  }
+
+  /**
+   * Das Gewaehlte entfernen (bedienung AC-75): von mehreren gewaehlten
+   * Einheiten die erste, sonst das gewaehlte eigene Gebaeude. Entschieden
+   * wird auf dem Server; hier wird nur gefragt. Gibt zurueck, ob etwas
+   * geschickt wurde.
+   */
+  entlassen() {
+    if (this.ende || this.aus || this.pausiert) return false;
+    for (const id of this.ausgewaehlt) {
+      const einheit = this.nachher.get(id);
+      if (!einheit || einheit.b !== this.ich || einheit.s) continue;
+      this.beiAuftrag({ auftrag: 'entlassen', einheit: id });
+      return true;
+    }
+    const gebaeude = this.ausgewaehlt.size ? null : this.gebaeude.get(this.gewaehltesGebaeude);
+    if (!gebaeude || gebaeude.b !== this.ich) return false;
+    this.beiAuftrag({ auftrag: 'entlassen', gebaeude: gebaeude.i });
+    return true;
   }
 
   // Ausgewaehlt wird im Bild, nicht auf der Karte: ein Rechteck auf dem

@@ -39,6 +39,7 @@ export const BELEGUNG = [
   ['1 bis 9', 'abgelegte Auswahl zurückholen'],
   ['G, dann Rechtsklick', 'Angriffslauf: hingehen und unterwegs angreifen'],
   ['Esc', 'Angriffslauf oder Platzieren abbrechen, Auswahl aufheben'],
+  ['Entf', 'die gewählte Einheit oder das gewählte Gebäude entfernen – eines je Druck'],
   ['F3 oder Pause', 'Partie anhalten, weiterspielen'],
   ['F10', 'Menü'],
   ['F11', 'Vollbild – Strg + Ziffer und Esc gehören dann dem Spiel; Esc halten oder F11 verlässt es'],

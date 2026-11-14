@@ -148,6 +148,7 @@ function empfangen(nachricht) {
         const tasten = new Tasten(ansicht, teile.auswahlleiste, document.getElementById('tastenuebersicht'), ton);
         tastenhilfe = tasten;
         ansicht.beiTaste = (e) => tasten.taste(e);
+        ansicht.beiAuftrag = (auftrag) => senden({ typ: 'befehl', ...auftrag });
         ansicht.melden = spielMelden;
         ansicht.beiEreignis = (name, wo) => ton.spielen(name, wo);
         ansicht.beiZeitalter = (stufe, name) => {

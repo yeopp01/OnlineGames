@@ -180,7 +180,7 @@ Umfang hinzufügt, dort nachsehen.
 
 ## Stand
 
-**545 von 668 Kriterien fertig.** 908 Tests ohne Browser und 14 ganze Partien, 291 im Browser. Die
+**546 von 669 Kriterien fertig.** 912 Tests ohne Browser und 14 ganze Partien, 292 im Browser. Die
 Übersicht ist der Bericht: `npm run qa:report`.
 
 Gebaut ist der Unterbau: Räume, Übertragung, Karte, Wegfindung, Sammeln,
@@ -200,7 +200,7 @@ Gemessen: **3,10 Tore je Spiel, 48 % Heimsiege, 21 % Unentschieden**
 ohne Menschen null Widersprüche in den Spielen, Kader, Stärke und Markt
 stabil. Eine Saison rechnet in rund 400 ms, ein Spielstand ist nach zwei
 Saisons unter 1 MB. Der Browserlauf dauert rund 31
-Minuten für 291 Fälle (`npm run e2e:laufzeiten` zeigt, wo; die langsamsten
+Minuten für 292 Fälle (`npm run e2e:laufzeiten` zeigt, wo; die langsamsten
 Fälle sind `fahrplan AC-24` mit 108 s, zwei gegen zwei bis zur Tafel,
 `fahrplan AC-14` mit 90 s, die Ritterzeit am Stück, und `fahrplan AC-12`
 mit 84 s, eine ganze Partie gegen die KI).
@@ -732,7 +732,9 @@ ein Karren zwischen zwei eigenen Märkten bringt weniger als zu einem fremden
 eigene und fremde Haus an der Auswahl (AC-69), Kampfwerte als „3+1"
 (AC-70), Vorräte und erlegte Schafe lassen sich ansehen (AC-63), eine
 Schlagbewegung je Schlag (AC-72), der Mönch ist zu hören und seine Ruhe zu
-sehen (AC-74, AC-68). Ein gefallenes Gebäude liegt kurz als Trümmer da
+sehen (AC-74, AC-68). **`Entf` entfernt das Gewählte** (AC-75,
+Nachricht `entlassen`): eine Einheit oder ein Gebäude je Druck, ohne
+Punkte für den Gegner. Ein gefallenes Gebäude liegt kurz als Trümmer da
 (darstellung AC-26), nach dem Ende steht das Bild (spielziel AC-28), Zoomen
 stockt nicht mehr (darstellung AC-27), und **Pfeil und Wurfstein kommen aus
 einer gerenderten Tafel** (`geschoss`, darstellung AC-28) — der gezeichnete

@@ -1320,6 +1320,8 @@ class Welt {
         return this.ansehen(spielerId, nachricht.feld);
       case 'farmen':
         return this.farmenEinstellen(spielerId, nachricht);
+      case 'entlassen':
+        return this.entlassen(spielerId, nachricht);
       default:
         return this.befehl(spielerId, nachricht.einheiten, nachricht.ziel, Boolean(nachricht.angriffslauf),
           Boolean(nachricht.anhaengen));
@@ -2260,6 +2262,29 @@ class Welt {
     if (!spieler) return { fehler: 'Diesen Spieler gibt es hier nicht.' };
     if (typeof nachricht.erneuern === 'boolean') spieler.farmenErneuern = nachricht.erneuern;
     if (typeof nachricht.raeumen === 'boolean') spieler.brachenRaeumen = nachricht.raeumen;
+    return {};
+  }
+
+  /**
+   * Etwas Eigenes entfernen (bedienung AC-75): eine Einheit oder ein Gebaeude
+   * je Nachricht. Die Einheit faellt wie im Kampf (sie liegt zwei Sekunden,
+   * zaehlt auf der Tafel als verloren), das Gebaeude stuerzt ein und
+   * hinterlaesst Truemmer; eine Baustelle wird abgerissen und erstattet, was
+   * nicht verbaut ist (bauen AC-6). Punkte bekommt dafuer niemand - es gibt
+   * keinen Angreifer (bedienung AC-49).
+   */
+  entlassen(spielerId, nachricht) {
+    if (nachricht.gebaeude !== undefined) {
+      const gebaeude = this.gebaeude.get(nachricht.gebaeude);
+      if (!gebaeude || gebaeude.besitzer !== spielerId) return { fehler: 'Das ist nicht dein Gebäude.' };
+      if (!gebaeude.fertig) return this.abreissen(spielerId, gebaeude.id);
+      gebaeude.leben = 0;
+      this.gebaeudeZerstoeren(gebaeude);
+      return {};
+    }
+    const einheit = this.einheiten.get(nachricht.einheit);
+    if (!einheit || einheit.besitzer !== spielerId || einheit.tot) return { fehler: 'Das ist nicht deine Einheit.' };
+    this.einheitSterben(einheit);
     return {};
   }
 

@@ -1,0 +1,10 @@
+{
+  "spec": "10-strategie/bedienung.md",
+  "ac": "AC-75",
+  "titel": "Entf auf das gewählte Haus: es liegt in Trümmern - von drei Dorfbewohnern steht nach zwei Tastendrücken noch einer",
+  "datei": "e2e/tests/strategie-entlassen.spec.mjs",
+  "pfad": [
+    "Entf entfernt das Gewaehlte",
+    "bedienung AC-75: Entf nimmt von drei gewählten Dorfbewohnern einen je Druck, gehalten nur einen - und ein gewähltes Haus liegt danach in Trümmern"
+  ]
+}

@@ -2,7 +2,7 @@
 
 **Bereich:** Strategie
 **Kuerzel:** bedienung
-**Stand:** 68/73 fertig · 2 in QA · 3 offen
+**Stand:** 69/74 fertig · 2 in QA · 3 offen
 
 ## Zweck
 
@@ -678,6 +678,22 @@ Spiel) — sie werden hier eingetragen, wenn sie gebaut sind.
   Benutzers:** „der mönch macht keine geräuscht beim bekehren oder heilen".
   **Nicht geprüft:** wie es klingt — das entscheidet ein Ohr
   (`npm run ton:messen` schreibt die Klänge als WAV).
+- **AC-75** `fertig` **Entf entfernt das Gewählte** — Die Taste `Entf`
+  entfernt, was gewählt ist: eine eigene Einheit oder ein eigenes Gebäude.
+  **Eines je Druck** — sind mehrere Einheiten gewählt, fällt die erste, die
+  anderen bleiben gewählt; eine gehaltene Taste zählt einmal. Die Einheit
+  fällt wie im Kampf (sie liegt zwei Sekunden am Boden und zählt auf der
+  Tafel als verloren), das Gebäude stürzt ein und hinterlässt Trümmer
+  (darstellung AC-26), eine Baustelle wird abgerissen und erstattet, was
+  nicht verbaut ist (bauen AC-6) — so räumt man auch eine Brache weg (bauen
+  AC-41). Niemand bekommt dafür Punkte (AC-49), und Fremdes entfernt die
+  Taste nicht: entschieden wird auf dem Server (Nachricht `entlassen`). Wer
+  sein letztes Gebäude und seine letzte Einheit entfernt, scheidet aus wie
+  jeder, der nichts mehr hat (spielziel AC-5). Keine Rückfrage, kein
+  Entfernen ganzer Gruppen. **Rückmeldung des Benutzers:** „sollte es
+  möglich sein, dass ein dorfbewohner sich selbst umbringt? durch entf
+  taste?" und, zum Vorschlag mit Umschalt für alle: „nur entfernen, müssen
+  keine massenentf sein oder so."
 
 ## Grenzfaelle
 
