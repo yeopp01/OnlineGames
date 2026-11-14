@@ -1385,6 +1385,16 @@
       "spec": "10-strategie/darstellung.md",
       "ac": "AC-25",
       "begruendung": "Die Marke einer Datei und die Antwort 'unveraendert' sind Kopfzeilen einer HTTP-Antwort: ETag aus dem Inhalt, Cache-Control no-cache, 304 ohne Inhalt, wenn der Browser die Marke nennt. Ein Bildschirm zeigt dieselbe Seite, ob die Tafeln neu kamen oder aus dem Speicher des Browsers - der Unterschied ist die uebertragene Menge. Belegt ueber HTTP gegen den laufenden Server an vier Dateien, mit richtiger, alter und ohne Marke (tests/netz.test.mjs)."
+    },
+    {
+      "spec": "10-strategie/ki.md",
+      "ac": "AC-37",
+      "begruendung": "Wohin die KI eine Farm legt, ist eine Suche auf dem Server: der Platz mit dem kleinsten Abstand von Rand zu Rand zu einer Annahme, und oberhalb von drei Feldern lieber eine neue Muehle. Geprueft wird der gewaehlte Platz in einer gebauten Lage und der Abstand jeder Farm in ganzen Partien im Pruefstand. Ein Bild zeigte Farmen um eine Muehle - nicht, dass keine weiter weg liegt und nach welcher Regel sie dort stehen; wie Farm und Muehle aussehen, zeigen die Bilder zu bauen AC-20 und bauen AC-41."
+    },
+    {
+      "spec": "10-strategie/ki.md",
+      "ac": "AC-38",
+      "begruendung": "An welches Feld die KI einen Sammler schickt und wann sie ein Lager baut, ist eine Rechnung aus Entfernungen auf dem Server - Feld zur naechsten Annahme, Anteil der Sammler, die weit laufen - samt einer Ruecklage im Vorrat. Geprueft wird das gewaehlte Feld und der Bauauftrag in gebauten Lagen und der Laufweg der Holzfaeller in ganzen Partien im Pruefstand. Ein Bild zeigte Holzfaeller an einem Lager, nicht die Wege der anderen und nicht, warum das Lager dort steht."
     }
   ]
 }

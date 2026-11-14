@@ -180,7 +180,7 @@ Umfang hinzufügt, dort nachsehen.
 
 ## Stand
 
-**546 von 669 Kriterien fertig.** 912 Tests ohne Browser und 14 ganze Partien, 292 im Browser. Die
+**548 von 671 Kriterien fertig.** 920 Tests ohne Browser und 14 ganze Partien, 292 im Browser. Die
 Übersicht ist der Bericht: `npm run qa:report`.
 
 Gebaut ist der Unterbau: Räume, Übertragung, Karte, Wegfindung, Sammeln,
@@ -436,7 +436,26 @@ Gemessen im Nebel: 38 von 40 vor Minute 60, Median 41,4; zu viert Median
 (Freigabe des Benutzers, siehe Truppenstufen unten; Distelhag 1,44-fach);
 zwei Burgen und Türme nebeneinander knackt die KI nicht. Die
 Stellwerte stehen mit ihren Messungen oben in `ki.js` — wer daran dreht,
-fährt `tests/partien/ki-im-nebel.test.mjs` und die Team-Tests. **Bei
+fährt `tests/partien/ki-im-nebel.test.mjs` und die Team-Tests. **Die KI
+legt Farmen an Mühle und Dorfzentrum** (ki AC-37, 2026-11-14,
+`ki.farmplatz`): kleinster Abstand von Rand zu Rand, höchstens drei Felder,
+sonst eine weitere Mühle — bei Minute 25 lag vorher 66 % der Farmen weiter
+weg, jetzt keine. **Sammler gehen an das Feld beim Lager** (ki AC-38,
+`naechstesFeld` mit `ANMARSCH`), ein Lager kommt, wo ein Viertel weit
+läuft, und für das Holzfällerlager liegt der Preis zurück
+(`LAGER_RUECKLAGE` — für Mühle und Bergbaulager nicht, sonst fällt ki
+AC-9): bei Minute 15 läuft 1 % der Holzfäller weiter als acht Felder
+statt 37 %; ab Minute 25 ist es nicht besser, Stein und Beeren sind nicht
+gelöst. Das Haus mit Neigung zur Kaserne baut ohne Gold eine Kaserne
+statt eines Stalls und verlangt für eine Schießanlage doppelt so viel Gold
+(ki AC-32, `KASERNE_GOLD`) — sonst trug die Neigung mit der besseren
+Wirtschaft nicht mehr. **Die Umverteilung versucht den nächsten fehlenden
+Rohstoff**, wenn sich der knappste nicht holen lässt (ki AC-12): sonst
+scheiterte sie spät alle zehn Sekunden am abgebauten Gold, und neben 4500
+Holz fehlte die Nahrung (zwei gegen zwei, Startwert 2: kein Sieger bis
+Minute 90). Gemessen danach: im Nebel 37 von 40 vor Minute 60, Median
+38,9, längste 71,3; zu viert alle zwanzig vor Minute 90, längste 73,4;
+die Häuser gegeneinander sind danach nicht neu gemessen. **Bei
 Überfluss baut sie über ihre Grenze hinaus** (ki AC-34): ab dem Fürstentum,
 alle Schlangen voll, 600 Holz und zusammen 1000 Nahrung und Gold im Vorrat
 — ein weiteres Militärgebäude, höchstens neun. KI gegen KI greift das fast

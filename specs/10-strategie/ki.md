@@ -2,7 +2,7 @@
 
 **Bereich:** Strategie
 **Kuerzel:** ki
-**Stand:** 30/35 fertig · 5 offen
+**Stand:** 32/37 fertig · 5 offen
 
 ## Zweck
 
@@ -112,6 +112,12 @@ nicht die Regeln.
   Nahrung nur aus, wenn danach noch einer bezahlt ist; und ein Vorrat, zu dem
   kein Weg führt, wird zwei Minuten lang nicht wieder vorgeschlagen. Ohne das
   endet jede Partie damit, dass beide Seiten einander zusehen.
+  **Seit dem 2026-11-14** versucht die Umverteilung den nächsten fehlenden
+  Rohstoff, wenn sich der knappste nicht holen lässt: spät fehlten Gold und
+  Nahrung zugleich, das Gold der Karte war abgebaut, der Versuch scheiterte
+  alle zehn Sekunden, und zur Nahrung zog niemand (zwei gegen zwei,
+  Startwert 2: 4500 Holz neben 30 Nahrung, bis Minute 90 kein Sieger; danach
+  endet die Partie nach 73 Minuten).
 - **AC-13** `fertig` **KI sieht nur ihr Sichtfeld** — Mit dem Nebel (C6)
   kennt sie ein fremdes Gebäude erst, wenn eine ihrer Einheiten es gesehen
   hat, und behält es, bis sie hinsieht und es fehlt (wie kampf AC-12); fremde
@@ -417,6 +423,66 @@ nicht die Regeln.
   keinen Prüfstand. Angelegt am 2026-11-13 (Benutzer: „man darf dann bei
   fortgeschrittener spielzeit wenns die ressourcen hergeben auch mehrere
   kasernen, schießanlagen, usw. Bauen als ki").
+- **AC-37** `fertig` **Felder an Mühle und Dorfzentrum** — Die KI legt
+  eine Farm an ein fertiges Gebäude, das Nahrung annimmt: an den Platz mit
+  dem kleinsten Abstand von Rand zu Rand, bei Gleichstand an den, dessen
+  Mitte der Annahme am nächsten liegt. Farmen berühren einander und das
+  Gebäude — sie sind begehbar und versperren niemandem den Weg. Weiter als
+  drei Felder vom Rand (`FARM_WEIT`: eine zweite Reihe hinter der ersten)
+  legt sie keine; ist dort alles belegt, baut sie eine weitere Mühle, wo in
+  den drei Feldern rings um sie mindestens 45 von 60 Feldern freies Gras
+  sind, und findet sich auch dafür nichts, eine Farm am Dorf wie bis dahin —
+  lieber eine ferne Farm als Hunger. Gesucht wird der Platz erst, wenn das
+  Holz für die Farm da ist. **Messbar:** in einer gebauten Lage berühren die
+  ersten Farmen die Mühle oder das Dorfzentrum, keine liegt auf einer
+  anderen, und keine weiter als drei Felder; in ganzen Partien KI gegen KI
+  (vier Startwerte) steht bei Minute 15 und bei Minute 25 keine Farm weiter
+  als drei Felder vom Rand einer Annahme. **Gemessen am 2026-11-14 über
+  zwanzig Startwerte:** vorher lagen bei Minute 15 38 % der Farmen weiter als
+  drei Felder weg, bei Minute 25 66 % (im Mittel 4,2, die weiteste 9), bei
+  Minute 35 73 %; danach bei Minute 15 und 25 keine (im Mittel 0,5 und 0,7),
+  bei Minute 35 9 %. Bis dahin
+  stand jede Farm mit einem Feld Abstand zu allem, abwechselnd „irgendwo" um
+  Mühle und Dorfzentrum. **Rückmeldung des Benutzers:** „die KI muss die
+  Felder näher zu mühlen und dorfzentren bauen, nicht irgendwo" und „die ki
+  hat sehr viele dorfbewohner, aber die felder sind weit weg von den
+  mühlen". Wer nach Minute 30 seine Mühle verliert, hat ferne Farmen, bis
+  die nächste steht — das sind die 9 % bei Minute 35.
+- **AC-38** `fertig` **Lager, wo weit gelaufen wird** — Zweierlei. **Die
+  Feldwahl:** einen Dorfbewohner, der Holz, Gold oder Stein holen soll,
+  schickt die KI an das Feld mit dem kürzesten Weg zur nächsten Annahme; sein
+  eigener Anmarsch zählt nur zu einem Viertel (`ANMARSCH`) — den Weg zum
+  Lager geht er mit jeder Ladung, den Anmarsch einmal. Bis dahin ging er an
+  den nächsten Baum, auch wenn es von dort zwanzig Felder bis zum Lager
+  waren. **Das Lager:** gezählt wird jeder Sammler, dessen Feld weiter als
+  fünf Felder von jeder Annahme liegt (bis dahin nur der mittlere der
+  Liste); sind es mindestens drei (Gold und Stein: zwei) und mindestens ein
+  Viertel derer, die diesen Rohstoff sammeln, baut die KI ein Lager dorthin,
+  wo die meisten von ihnen arbeiten. Fehlt das Holz für ein
+  Holzfällerlager, liegt sein Preis zurück wie der eines Markts
+  (`ruecklage`): die Ausbildung nimmt ihn nicht. Für Mühle und Bergbaulager
+  gilt das nicht (`LAGER_RUECKLAGE`) — als es für alle galt, wartete eine
+  Mühle an den letzten Beeren drei Minuten auf 100 Holz, die Farmen und
+  Häuser vorher nahmen, und die fertige Schießanlage bildete niemanden aus
+  (ki AC-9 fiel bei zwei von zwanzig Startwerten).
+  **Messbar:** in einer gebauten Lage wählt die KI für einen Holzfäller das
+  Feld am Lager statt des nächsten Baums; laufen drei von vier weit, schickt
+  sie den Bau eines Lagers bei ihnen, und ohne Holz legt sie seinen Preis
+  zurück; in ganzen Partien (vier Startwerte) haben bei Minute 15 höchstens
+  15 % der Holzfäller ein Feld weiter als acht Felder vom Lager, im Mittel
+  sind es höchstens sechs Felder. **Gemessen
+  am 2026-11-14 über zwanzig Startwerte:** vorher 37 % der Holzfäller weiter
+  als acht Felder bei Minute 15 (im Mittel 8,8; zwischen Minute 12 und 18
+  oft zehn bis sechzehn Holzfäller 18 bis 25 Felder weit, weil für das Lager
+  nie 100 Holz übrig blieben), danach 1 % (im Mittel 3,9). **Später ist es
+  nicht besser:** bei Minute 25 sind es 31 % (vorher 14 %, bei anderthalbmal
+  so vielen Holzfällern) — dann ist der Wald am Lager gefällt, die Gruppe
+  wechselt gemeinsam zum nächsten, neun bis elf Felder weit, und das Lager
+  dort steht eine bis drei Minuten später; bei Minute 35 19 % wie vorher.
+  **Nicht gelöst:** der Stein (bei Minute 25 50 % weiter als acht Felder,
+  vorher 78 %) und die Beeren (48 %).
+  **Rückmeldung des Benutzers:** „sie bauen keine neuen holzfällerplätze
+  mehr".
 - **AC-35** `offen` **Die KI forscht** — Bis zu den Truppenstufen
   (einheiten AC-58 bis AC-62, bauen AC-38, AC-39) erforscht die KI nichts:
   sie bildet im Fürstentum die Einheiten des Lehens aus und ist jedem
@@ -579,7 +645,21 @@ nicht die Regeln.
   im Wechsel hält es. Die Paarung gegen Eschenbruch kippt davon nicht (0
   zu 39, danach 6 zu 33); das hängt an Eschenbruchs Boni (spielziel AC-18,
   Frage an den Benutzer). Angelegt in Runde 180 aus der Messung der Runde
-  179: ohne jede Neigung gewann das Haus 51 %.
+  179: ohne jede Neigung gewann das Haus 51 %. **Seit dem 2026-11-14 baut es
+  ohne Gold eine Kaserne statt eines Stalls** — ihre Einheiten kosten am
+  wenigsten davon. Anlass: mit AC-37 und AC-38 läuft die Wirtschaft jeder KI
+  besser, jedes Haus lastet seine eine Kaserne aus, und „zuerst bedient"
+  greift nur bei Mangel — das Haus bildete das 1,27-fache der anderen aus
+  der Kaserne aus (51,8 gegen 40,8), AC-27 fiel. Die zweite Kaserne schon
+  als drittes Gebäude brachte das 2,3-fache (102 gegen 44), aber eine Partie
+  ohne Sieger und 34 statt 36 vor Minute 60. Mit der Kaserne statt des
+  Stalls das 1,51-fache — und nach der Berichtigung der Umverteilung (ki
+  AC-12) wieder nur das 1,38-fache. Deshalb verlangt das Haus im Nachbau
+  für eine Schießanlage doppelt so viel Gold wie die anderen
+  (`KASERNE_GOLD`), darunter baut es die Kaserne: 60,4 gegen 37,8 (das
+  1,60-fache), fahrplan AC-11 hält (37 vor Minute 60, Median 38,9, längste
+  71,3). **Nicht neu gemessen:** der Anteil der Siege des Hauses über 160
+  Partien.
 
 ### Stufe F — der Drache (aus ADR-0014)
 

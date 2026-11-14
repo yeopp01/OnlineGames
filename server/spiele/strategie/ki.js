@@ -47,7 +47,37 @@ const FEUDALZEIT_NAHRUNG = 500;
 // Ab dieser Entfernung zum naechsten Lager lohnt ein eigenes - und ab so
 // vielen, die dort arbeiten. Gold wird von wenigen geholt, liegt aber weit.
 const LAGER_AB = 5;
+// So weit vom Rand einer Muehle oder des Dorfzentrums darf eine Farm liegen
+// (ki AC-37): 0 heisst, sie beruehrt es, bei 3 passt eine zweite Reihe
+// dahinter. Darueber baut die KI erst eine weitere Muehle. Gemessen vor der
+// Regel (acht Startwerte, 2026-11-14): bei Minute 25 lagen 64 % der Farmen
+// weiter als drei Felder von jeder Annahme, bei Minute 35 waren es 70 %,
+// die weiteste 17 Felder.
+const FARM_WEIT = 3;
+// Das Haus, das zur Kaserne neigt, verlangt fuer eine Schiessanlage im
+// Nachbau so viel mal mehr Gold als die anderen (ki AC-32) - darunter baut
+// es die Kaserne.
+const KASERNE_GOLD = 2;
+// Fuer das Lager dieser Rohstoffe legt die KI den Preis zurueck, solange er
+// fehlt (ki AC-38). Fuer alle galt es einen halben Tag lang - dann wartete
+// beim Startwert 14 von Minute 12 bis 15 eine Muehle an den letzten Beeren
+// auf 100 Holz, die Farmen und Haeuser vorher nahmen, die Ruecklage stand
+// drei Minuten, und die fertige Schiessanlage bildete niemanden aus (ki AC-9
+// fiel: zwei Kampfeinheiten bei Minute 16 statt mindestens drei).
+const LAGER_RUECKLAGE = ['holz'];
+// So viel freies Gras verlangt eine Muehle, die fuer Farmen gebaut wird, in
+// den drei Feldern rings um ihre Grundflaeche (60 Felder): Platz fuer vier
+// Farmen und etwas Luft.
+const MUEHLE_RAUM = 45;
+// So weit vom Dorf sucht sie diesen Platz zuerst - naeher stehen Haeuser.
+const MUEHLE_AB = 6;
 const LAGER_ARBEITER = { holz: 3, nahrung: 3, gold: 2, stein: 2 };
+// ... und mindestens jeder soundsovielte derer, die diesen Rohstoff sammeln:
+// fuer drei von zwanzig lohnt kein Lager.
+const LAGER_ANTEIL = 4;
+// Bei der Wahl eines Feldes fuer Holz, Gold oder Stein zaehlt der Anmarsch
+// des Sammlers nur zu diesem Teil, der Rest ist der Weg vom Feld zur Annahme.
+const ANMARSCH = 0.25;
 // So weit darf ein Vorrat von der Basis liegen, damit die KI ihn nutzt.
 const REICHWEITE = 30;
 // So viele arbeiten hoechstens an den Schafen und an den Beeren - mehr stehen
@@ -458,6 +488,7 @@ class Ki {
 
     // Lager an die Vorraete, sobald dort mehrere arbeiten und es weit ist.
     const rollen = this.rollen(dorfbewohner);
+    this.lagerFehlt = null;
     for (const rohstoff of ['holz', 'nahrung', 'gold', 'stein']) this.lagerPruefen(rohstoff, rollen, gebaeude, dorfbewohner);
 
     // Farmen, wenn Schafe und Beeren zur Neige gehen.
@@ -520,6 +551,8 @@ class Ki {
       if (this.spieler.gold < (KARREN_KOSTEN.gold || 0)) ruecklage.holz = (ruecklage.holz || 0) + HANDEL.menge;
     }
     for (const [r, menge] of Object.entries(this.belagerungFehlt || {})) ruecklage[r] = (ruecklage[r] || 0) + menge;
+    // Ein Lager, zu dem viele weit laufen (ki AC-38).
+    for (const [r, menge] of Object.entries(this.lagerFehlt || {})) ruecklage[r] = (ruecklage[r] || 0) + menge;
     return ruecklage;
   }
 
@@ -635,9 +668,18 @@ class Ki {
       const kasernen = meine.filter((g) => g.art === 'kaserne').length;
       const nachbau = MILITAER.includes(schwerpunkt)
         || (schwerpunkt === 'kaserne' && kasernen < meine.length - kasernen);
+      // Fehlt das Gold, baut dieses Haus eine Kaserne statt eines Stalls -
+      // ihre Einheiten kosten am wenigsten davon. Ohne das trug die Neigung
+      // nicht mehr, seit die Wirtschaft der KI besser laeuft (ki AC-37,
+      // AC-38): jedes Haus lastet seine eine Kaserne aus, "zuerst bedient"
+      // greift nur bei Mangel, und das Haus bildete das 1,27-fache der
+      // anderen aus statt des 1,4-fachen (ki AC-27; gemessen 2026-11-14 ueber
+      // 40 Startwerte). Die zweite Kaserne schon als drittes Gebaeude brachte
+      // das 2,3-fache - und eine Partie ohne Sieger, 34 statt 36 vor Minute 60.
       const art = !meine.some((g) => g.art === 'kaserne') ? 'kaserne'
         : nachbau ? schwerpunkt
-        : this.spieler.gold >= MILITAER_GOLD ? 'schiessanlage' : 'stall';
+        : this.spieler.gold >= MILITAER_GOLD * (schwerpunkt === 'kaserne' ? KASERNE_GOLD : 1) ? 'schiessanlage'
+          : schwerpunkt === 'kaserne' ? 'kaserne' : 'stall';
       this.bauen(art, this.platzBeiBasis(art), dorfbewohner);
     }
   }
@@ -1439,27 +1481,36 @@ class Ki {
     // Ueberfluss (ki AC-21, ki AC-26).
     const ruecklage = this.ruecklage();
     const vorrat = (r) => this.spieler[r] - (ruecklage[r] || 0);
-    const fehlt = ['holz', 'gold', 'nahrung'].filter((r) => vorrat(r) < MANGEL)
-      .sort((a, b) => vorrat(a) - vorrat(b))[0];
-    if (!fehlt) return;
-    // Ueberfluss heisst: mindestens UEBERSCHUSS mehr als beim fehlenden. Bis
-    // Runde 94 eine feste Grenze von 600 - beim Startwert 20 lag die Nahrung ab
-    // Minute 20 bei 0 bis 40, das Holz bei 580, und niemand zog um; das
-    // Dorfzentrum ersetzte keinen der zehn Gefallenen (Runde 95).
-    const satt = ['nahrung', 'holz', 'gold'].filter((r) => r !== fehlt && vorrat(r) - vorrat(fehlt) >= UEBERSCHUSS)
-      .sort((a, b) => vorrat(b) - vorrat(a))[0];
-    if (!satt) return;
-    const kandidaten = dorfbewohner.filter((e) => !e.weg.length && this.rolle(e) === satt);
-    const wer = kandidaten.find((e) => e.auftrag?.art !== 'farm') || kandidaten[0];
-    if (!wer) return;
-    // Die Sperre gilt fuer jeden **Versuch**, nicht nur fuer einen gelungenen:
-    // ein Befehl nimmt dem Sammler seine Arbeit, auch wenn kein Weg zum neuen
-    // Vorrat fuehrt - ohne Sperre risse die naechste halbe Sekunde den
-    // naechsten heraus (Durchsicht Runde 90).
-    this.zuletztUmverteilt = this.welt.takt;
-    // Mit der ganzen Liste, sonst greifen die Obergrenzen an Schafen und
-    // Beeren nicht (Durchsicht Runde 90).
-    if (this.schicken(wer, fehlt, dorfbewohner)) this.umverteilt += 1;
+    const fehlend = ['holz', 'gold', 'nahrung'].filter((r) => vorrat(r) < MANGEL)
+      .sort((a, b) => vorrat(a) - vorrat(b));
+    // Der knappste zuerst - und laesst er sich nicht holen, der naechste. Bis
+    // zum 2026-11-14 blieb es beim knappsten: spaet in der Partie fehlten Gold
+    // und Nahrung zugleich, das Gold der Karte war abgebaut, der Versuch
+    // scheiterte alle zehn Sekunden, und zur Nahrung zog niemand. Zwei gegen
+    // zwei, Startwert 2: 4500 Holz neben 30 Nahrung, mit Minute 90 kein Sieger.
+    for (const fehlt of fehlend) {
+      // Ueberfluss heisst: mindestens UEBERSCHUSS mehr als beim fehlenden. Bis
+      // Runde 94 eine feste Grenze von 600 - beim Startwert 20 lag die Nahrung ab
+      // Minute 20 bei 0 bis 40, das Holz bei 580, und niemand zog um; das
+      // Dorfzentrum ersetzte keinen der zehn Gefallenen (Runde 95).
+      const satt = ['nahrung', 'holz', 'gold'].filter((r) => r !== fehlt && vorrat(r) - vorrat(fehlt) >= UEBERSCHUSS)
+        .sort((a, b) => vorrat(b) - vorrat(a))[0];
+      if (!satt) continue;
+      const kandidaten = dorfbewohner.filter((e) => !e.weg.length && this.rolle(e) === satt);
+      const wer = kandidaten.find((e) => e.auftrag?.art !== 'farm') || kandidaten[0];
+      if (!wer) continue;
+      // Die Sperre gilt fuer jeden **Versuch**, nicht nur fuer einen gelungenen:
+      // ein Befehl nimmt dem Sammler seine Arbeit, auch wenn kein Weg zum neuen
+      // Vorrat fuehrt - ohne Sperre risse die naechste halbe Sekunde den
+      // naechsten heraus (Durchsicht Runde 90).
+      this.zuletztUmverteilt = this.welt.takt;
+      // Mit der ganzen Liste, sonst greifen die Obergrenzen an Schafen und
+      // Beeren nicht (Durchsicht Runde 90).
+      if (this.schicken(wer, fehlt, dorfbewohner)) {
+        this.umverteilt += 1;
+        return;
+      }
+    }
   }
 
   /**
@@ -1614,7 +1665,11 @@ class Ki {
       // naechste Moeglichkeit (siehe zumFeld).
       return versuche.some((versuch) => versuch() && this.unterwegs(einheit));
     }
-    const feld = this.naechstesFeld(einheit, FELD_FUER[rohstoff]);
+    // Holz, Gold und Stein dort, wo ein Lager nah ist (ki AC-38) - nicht am
+    // naechsten Baum, von dem aus es zwanzig Felder bis zur Annahme sind.
+    const annahme = [...this.welt.gebaeude.values()].filter((g) => g.besitzer === this.spielerId && g.fertig
+      && GEBAEUDE[g.art].annahme.includes(rohstoff));
+    const feld = this.naechstesFeld(einheit, FELD_FUER[rohstoff], annahme);
     return feld ? this.zumFeld(einheit, feld) && this.unterwegs(einheit) : false;
   }
 
@@ -1698,7 +1753,10 @@ class Ki {
     return bestes;
   }
 
-  naechstesFeld(von, arten) {
+  // `annahme`: Gebaeude, die den Rohstoff nehmen. Dann zaehlt vor allem der
+  // Weg vom Feld zur naechsten Annahme - den geht der Sammler mit jeder
+  // Ladung -, der Anmarsch nur mit ANMARSCH.
+  naechstesFeld(von, arten, annahme = null) {
     const { karte } = this.welt;
     const { basis } = this.spieler;
     let bestes = null;
@@ -1708,7 +1766,12 @@ class Ki {
       const x = index % karte.groesse;
       const y = (index / karte.groesse) | 0;
       if (Math.hypot(x - basis.x, y - basis.y) > REICHWEITE) continue;
-      const abstand = Math.hypot(x - von.x, y - von.y);
+      let abstand = Math.hypot(x - von.x, y - von.y);
+      if (annahme && annahme.length) {
+        let zurAnnahme = Infinity;
+        for (const g of annahme) zurAnnahme = Math.min(zurAnnahme, Math.hypot(x - g.x, y - g.y));
+        abstand = abstand * ANMARSCH + zurAnnahme;
+      }
       if (abstand < besterAbstand) {
         besterAbstand = abstand;
         bestes = { x, y };
@@ -1822,13 +1885,36 @@ class Ki {
     const militaerFehlt = this.spieler.zeitalter > 0 && !gebaeude.some((g) => MILITAER.includes(g.art));
     if (militaerFehlt && this.spieler.holz < MILITAER_HOLZ + (GEBAEUDE[art].kosten.holz || 0)) return;
     if (gebaeude.some((g) => g.art === art && !g.fertig)) return;
-    // Wo die meisten dieses Rohstoffs arbeiten: dort der Mittelpunkt.
     const arbeiter = dorfbewohner.filter((e) => this.rolle(e) === rohstoff && e.auftrag?.art === 'sammeln');
     if (arbeiter.length < mindestens) return;
-    const mitte = arbeiter[Math.floor(arbeiter.length / 2)].auftrag.feld;
+    // Wer weit laeuft (ki AC-38): gezaehlt wird jeder, dessen Feld weiter als
+    // LAGER_AB von jeder Annahme liegt - nicht mehr nur der mittlere der
+    // Liste. Gemessen davor (2026-11-14): zwischen Minute 12 und 18 liefen
+    // oft zehn bis sechzehn Holzfaeller 18 bis 25 Felder weit.
     const annehmend = gebaeude.filter((g) => GEBAEUDE[g.art].annahme.includes(rohstoff));
-    const naechstes = Math.min(...annehmend.map((g) => Math.hypot(g.x - mitte.x, g.y - mitte.y)));
-    if (naechstes <= LAGER_AB) return;
+    const zurAnnahme = (feld) => Math.min(...annehmend.map((g) => Math.hypot(g.x - feld.x, g.y - feld.y)));
+    const weit = arbeiter.filter((e) => zurAnnahme(e.auftrag.feld) > LAGER_AB);
+    if (weit.length < mindestens || weit.length * LAGER_ANTEIL < arbeiter.length) return;
+    // Das Lager dorthin, wo die meisten von ihnen arbeiten.
+    const nahe = (feld) => weit.filter((e) => Math.hypot(e.auftrag.feld.x - feld.x, e.auftrag.feld.y - feld.y) <= LAGER_AB).length;
+    let mitte = weit[0].auftrag.feld;
+    let meiste = 0;
+    for (const e of weit) {
+      const n = nahe(e.auftrag.feld);
+      if (n > meiste) {
+        meiste = n;
+        mitte = e.auftrag.feld;
+      }
+    }
+    // Bis es bezahlt ist, liegt sein Preis zurueck (`ruecklage`): sonst nimmt
+    // die Ausbildung jede Ladung, und das Lager kommt nie. Nur fuer das Holz
+    // (`LAGER_RUECKLAGE`): dort arbeiten die meisten, und dieses Lager bringt
+    // selbst das Holz, auf das es wartet.
+    const kosten = GEBAEUDE[art].kosten;
+    if (Object.entries(kosten).some(([r, menge]) => this.spieler[r] < menge)) {
+      if (LAGER_RUECKLAGE.includes(rohstoff)) this.lagerFehlt = kosten;
+      return;
+    }
     this.bauen(art, this.platzBei(art, mitte), dorfbewohner);
   }
 
@@ -1852,10 +1938,76 @@ class Ki {
     // Startwert 11 hungerte KI 1 ab Minute 22 neben 640 Gold (Runde 90).
     const hunger = this.spieler.zeitalter > 0 && this.spieler.nahrung < MANGEL && !this.freieFarm();
     if (farmen.length >= tragen && !hunger) return;
-    const zentrum = gebaeude.find((g) => g.art === 'dorfzentrum');
-    const muehle = gebaeude.find((g) => g.art === 'muehle' && g.fertig);
-    const um = farmen.length % 2 && muehle ? muehle : zentrum;
-    if (um) this.bauen('farm', this.platzBei('farm', um, 3), dorfbewohner);
+    // Erst das Holz, dann der Platz: gesucht wird nur, was bezahlt werden kann.
+    if (this.spieler.holz < GEBAEUDE.farm.kosten.holz) return;
+    // An Muehle und Dorfzentrum, so nah es geht (ki AC-37) - bis dahin stand
+    // jede Farm mit einem Feld Abstand zu allem "irgendwo" um sie herum.
+    const platz = this.farmplatz(gebaeude);
+    if (platz) {
+      this.bauen('farm', platz, dorfbewohner);
+      return;
+    }
+    // Dort ist alles belegt: eine weitere Muehle, wo Platz fuer Farmen ist.
+    const muehle = LAGER_FUER.nahrung;
+    if (gebaeude.some((g) => g.art === muehle && !g.fertig)) return;
+    const { basis } = this.spieler;
+    const raum = (x, y) => this.freiesLand(muehle, x, y, GEBAEUDE.farm.groesse) >= MUEHLE_RAUM;
+    const fuerMuehle = this.platzBei(muehle, basis, MUEHLE_AB, raum);
+    if (fuerMuehle) {
+      this.bauen(muehle, fuerMuehle, dorfbewohner);
+      return;
+    }
+    // Auch dafuer nichts: lieber eine ferne Farm als Hunger.
+    this.bauen('farm', this.platzBei('farm', basis, 3), dorfbewohner);
+  }
+
+  /**
+   * Der Platz fuer die naechste Farm (ki AC-37): an einem fertigen Gebaeude,
+   * das Nahrung annimmt - gewaehlt wird der Platz mit dem kleinsten Abstand
+   * von Rand zu Rand, bei Gleichstand der, dessen Mitte der Annahme am
+   * naechsten liegt. So legt sich die erste Reihe wie ein Windrad um die
+   * Muehle, die zweite dahinter. Farmen beruehren einander und das Gebaeude:
+   * sie sind begehbar und versperren niemandem den Weg. Weiter als FARM_WEIT
+   * liegt kein Platz - dann gibt es `null`, und die KI baut eine Muehle.
+   */
+  farmplatz(gebaeude) {
+    const { welt } = this;
+    const n = GEBAEUDE.farm.groesse;
+    let bester = null;
+    for (const g of gebaeude) {
+      if (!g.fertig || !GEBAEUDE[g.art].annahme.includes('nahrung')) continue;
+      const f = welt.grundflaeche(g.art, g.x, g.y, g.quer);
+      const mx = (f.x0 + f.x1) / 2;
+      const my = (f.y0 + f.y1) / 2;
+      for (let y = f.y0 - FARM_WEIT - n; y <= f.y1 + FARM_WEIT + n; y++) {
+        for (let x = f.x0 - FARM_WEIT - n; x <= f.x1 + FARM_WEIT + n; x++) {
+          const p = welt.grundflaeche('farm', x, y);
+          const rand = Math.max(0, p.x0 - f.x1 - 1, f.x0 - p.x1 - 1, p.y0 - f.y1 - 1, f.y0 - p.y1 - 1);
+          if (rand > FARM_WEIT) continue;
+          const mitte = Math.hypot((p.x0 + p.x1) / 2 - mx, (p.y0 + p.y1) / 2 - my);
+          if (bester && (rand > bester.rand || (rand === bester.rand && mitte >= bester.mitte))) continue;
+          if (!welt.platzPruefen('farm', x, y)) continue;
+          bester = { x, y, rand, mitte };
+        }
+      }
+    }
+    return bester && { x: bester.x, y: bester.y };
+  }
+
+  // Wie viele Felder Gras ohne Gebaeude liegen in den `breit` Feldern rings
+  // um die Grundflaeche?
+  freiesLand(art, x, y, breit) {
+    const { karte } = this.welt;
+    const { x0, y0, x1, y1 } = this.welt.grundflaeche(art, x, y);
+    let frei = 0;
+    for (let fy = y0 - breit; fy <= y1 + breit; fy++) {
+      for (let fx = x0 - breit; fx <= x1 + breit; fx++) {
+        if (fx >= x0 && fx <= x1 && fy >= y0 && fy <= y1) continue;
+        if (fx < 0 || fy < 0 || fx >= karte.groesse || fy >= karte.groesse) continue;
+        if (karte.felder[fy * karte.groesse + fx] === karten.GRAS && !this.welt.gebaeudeAn(fx, fy)) frei += 1;
+      }
+    }
+    return frei;
   }
 
   /**
@@ -2034,8 +2186,9 @@ class Ki {
   }
 
   // Ein Bauplatz nahe einem Punkt, ringweise, mit einem Feld Abstand zu anderen
-  // Gebaeuden, damit Wege frei bleiben.
-  platzBei(art, um, abstand = 2) {
+  // Gebaeuden, damit Wege frei bleiben. `taugt(x, y)`: was der Platz darueber
+  // hinaus erfuellen muss.
+  platzBei(art, um, abstand = 2, taugt = null) {
     const n = GEBAEUDE[art].groesse;
     for (let r = abstand; r < abstand + PLATZ_RINGE; r++) {
       const ring = [];
@@ -2047,7 +2200,9 @@ class Ki {
         const [dx, dy] = ring[(start + i) % ring.length];
         const x = um.x + dx;
         const y = um.y + dy;
-        if (this.welt.platzPruefen(art, x, y) && this.randFrei(x, y, n) && !this.sperrtEin(art, x, y)) return { x, y };
+        if (!this.welt.platzPruefen(art, x, y) || !this.randFrei(x, y, n) || this.sperrtEin(art, x, y)) continue;
+        if (taugt && !taugt(x, y)) continue;
+        return { x, y };
       }
     }
     return null;
@@ -2134,4 +2289,5 @@ module.exports = {
   GOLD_KNAPP, PLATZ_RINGE, KARREN, HANDEL_ABSTAENDE, HANDEL_MINDESTENS, VERKAUF_RUECKLAGE, KARREN_WARTEN_SEKUNDEN, FEIND_VERGESSEN,
   WERKSTATT, RAMME, RAMMEN, RAMMEN_MIT, HEER_BEFESTIGT, SAMMEL_ABSTAND, RAMME_WARTEN_SEKUNDEN, ZUG_WARTEN_SEKUNDEN, HANDEL_VOR,
   FESTUNG, BURGEN_JE_ZEITALTER, BURG_ABSTAND_SEKUNDEN, BURG_STEINSAMMLER, BURG_VOR, BURG_BAUER,
+  FARM_WEIT, MUEHLE_RAUM, LAGER_AB, LAGER_ARBEITER, LAGER_ANTEIL, LAGER_RUECKLAGE, ANMARSCH,
 };

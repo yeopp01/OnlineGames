@@ -1079,6 +1079,39 @@ test('ki AC-12: nach dem Aufstieg geht ein Sammler vom Ueberfluss zum Mangel - h
   assert.equal(feudal.ki.umverteilt, 1);
 });
 
+// Zwei gegen zwei, Startwert 2 (2026-11-14): spaet fehlten Gold und Nahrung
+// zugleich, das Gold der Karte war abgebaut. Die Umverteilung versuchte alle
+// zehn Sekunden nur das Gold, scheiterte, und zur Nahrung zog niemand - 4500
+// Holz neben 30 Nahrung, bis Minute 90 kein Sieger.
+test('ki AC-12: laesst sich der knappste Rohstoff nicht holen, geht der Sammler zum naechsten, der fehlt', () => {
+  const lauf = (goldAufDerKarte) => {
+    const welt = new Welt(ZWEI, 4711);
+    const ki = new Ki(welt, 'a');
+    const a = welt.spielerVon('a');
+    for (const e of dorfVon(welt, 'a')) ki.schicken(e, 'holz', dorfVon(welt, 'a'));
+    takten(welt, 30 * TAKTE_PRO_SEKUNDE);
+    assert.ok(dorfVon(welt, 'a').some((e) => !e.weg.length && ki.rolle(e) === 'holz'), 'sie faellen Holz');
+    if (!goldAufDerKarte) {
+      const { felder } = welt.karte;
+      for (let i = 0; i < felder.length; i++) if (felder[i] === karten.GOLD) felder[i] = karten.GRAS;
+    }
+    a.zeitalter = 1;
+    a.holz = UEBERSCHUSS + 800;
+    a.gold = 0;
+    a.nahrung = 50;
+    const vorher = ki.rollen(dorfVon(welt, 'a'));
+    ki.umverteilen(dorfVon(welt, 'a'));
+    return { vorher, nachher: ki.rollen(dorfVon(welt, 'a')), ki };
+  };
+  // Gegenprobe: liegt Gold auf der Karte, geht er dorthin - es ist das knappste.
+  const mit = lauf(true);
+  assert.equal(mit.nachher.gold || 0, (mit.vorher.gold || 0) + 1, 'einer geht zum Gold');
+  const ohne = lauf(false);
+  assert.equal(ohne.nachher.gold || 0, 0, 'kein Gold auf der Karte - dorthin geht niemand');
+  assert.equal(ohne.nachher.nahrung || 0, (ohne.vorher.nahrung || 0) + 1, 'einer geht zur Nahrung');
+  assert.equal(ohne.ki.umverteilt, 1);
+});
+
 test('ki AC-12: sind alle Militaergebaeude beschaeftigt und ist Holz uebrig, baut die KI ein weiteres', () => {
   const bestellt = (schlange, holz) => {
     const welt = new Welt(ZWEI, 4711);

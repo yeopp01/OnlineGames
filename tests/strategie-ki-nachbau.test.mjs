@@ -62,6 +62,20 @@ test('ki AC-32: wer zu einem Militaergebaeude neigt, baut es weiter nach - die R
   for (const haus of andere) assert.equal(nachbauVon(haus), HAEUSER[haus].ki.schwerpunkt, haus);
 });
 
+test('ki AC-32: ohne Gold baut das Haus, das zur Kaserne neigt, eine Kaserne statt eines Stalls - die anderen weiter den Stall', () => {
+  const ohneGold = { holz: 1000, gold: 0, nahrung: 1000 };
+  const haus = hausMitNeigung('kaserne');
+  // Eine Kaserne, eine Schiessanlage, kein Gold: nach dem Wechsel waere ein
+  // anderes Gebaeude dran - die Goldregel naehme den Stall.
+  assert.equal(nachbauVon(haus, ['schiessanlage', 'kaserne'], 1, ohneGold), 'kaserne', 'ohne Gold die Kaserne');
+  // Gegenprobe mit Gold: dann bleibt es bei der Schiessanlage.
+  assert.equal(nachbauVon(haus, ['schiessanlage', 'kaserne'], 1, { ...ohneGold, gold: 1000 }), 'schiessanlage');
+  // Gegenprobe mit einem Haus, das zu keinem Militaergebaeude neigt: der Stall.
+  const anderes = Object.keys(HAEUSER).find((h) => !MILITAER.includes(HAEUSER[h].ki?.schwerpunkt) && HAEUSER[h].ki?.schwerpunkt !== 'kaserne');
+  assert.ok(anderes, 'ein Haus ohne Neigung zu einem Militaergebaeude');
+  assert.equal(nachbauVon(anderes, ['schiessanlage', 'kaserne'], 1, ohneGold), 'stall', anderes);
+});
+
 // Mehr Militaergebaeude bei Ueberfluss (ki AC-34). Die Gebaeude der Lage
 // reihum aus Schiessanlage, Kaserne und Stall - so viele, wie verlangt.
 const REIHUM = ['schiessanlage', 'kaserne', 'stall'];
