@@ -1377,6 +1377,11 @@
       "begruendung": "Eine Regel des Servers darueber, welcher Vorrat das Ziel wird, wenn zum geklickten kein Weg fuehrt: der naechste derselben Art am Klick, an den der Sammler herankommt. Ein Standbild zeigt einen Dorfbewohner an einem Baum - nicht, auf welchen Baum geklickt wurde, und nicht, dass zu jenem kein Weg fuehrte. Belegt im Rechenteil an eingeschlossenen Vorraeten und an solchen, deren nahe Seite zu ist, ueber sechs Karten, samt Gegenprobe gegen die alte Regel (tests/strategie-vorrat-erreichbar.test.mjs)."
     },
     {
+      "spec": "10-strategie/einheiten-und-befehle.md",
+      "ac": "AC-64",
+      "begruendung": "Eine Regel des Servers darueber, welches Feld das Ziel eines Gangs wird, wenn zum geklickten kein Weg fuehrt: das naechste am Klick, zu dem die Einheit einen Weg hat. Ein Standbild zeigt eine Einheit an einem Ufer oder Waldrand - nicht, wohin geklickt wurde, und nicht, dass dorthin kein Weg fuehrte oder dass es kein naeheres erreichbares Feld gibt. Belegt im Rechenteil an einer Insel hinter einem Wassergraben ueber vier Karten, an einem See, der breiter ist als die Suche der Aufstellung, an einer Gruppe, am angehaengten Wegpunkt und am Marschziel des Angriffslaufs, jeweils gegen den kleinsten Abstand ueber alles Erreichbare gerechnet, samt Gegenprobe gegen die alte Regel (tests/strategie-gang-unerreichbar.test.mjs)."
+    },
+    {
       "spec": "10-strategie/kampf.md",
       "ac": "AC-25",
       "begruendung": "Eine Regel des Servers ueber die Dauer eines Befehls: der Angreifer behaelt sein befohlenes Ziel ueber eine ganze Verfolgung, auch wenn andere Gegner naeher stehen. Das ist ein Ablauf ueber viele Sekunden - ein Standbild zeigt einen Reiter hinter einem Dorfbewohner, aber nicht, dass er ihn seit dem Befehl nie gewechselt hat. Belegt im Rechenteil mit Verfolgungen in allen acht Richtungen ueber drei Karten, in jedem Takt geprueft, samt Gegenprobe gegen die alte Zeile (tests/strategie-kampf.test.mjs)."

@@ -10,7 +10,7 @@ import { GEBAEUDE, gebaeudeBildZeichnen, gebaeudeGetroffen, gebaeudeHoehe, gebae
 import { bilderBereit, bilderWarten, gerendert, richtungAus, zelleZeichnen } from './bilder.js';
 import { Bildspeicher } from './bildspeicher.js';
 import { KACHEL, kachelMassstab, kachelZeichnen } from './boden.js';
-import { Nebel } from './nebel.js';
+import { Nebel, NEBELRAND } from './nebel.js';
 import {
   BEERE, DINGE, GOLD, GRAS, STEIN, WALD, WASSER, dingBildZeichnen, grasBeginnen, grasSammeln, grasZeichnen, raute, wellenZeichnen,
 } from './gelaende.js';
@@ -748,8 +748,8 @@ export class Ansicht {
     stift.save();
     stift.transform(HALB_B * z, HALB_H * z, -HALB_B * z, HALB_H * z, -this.kamera.x * z, -this.kamera.y * z);
     stift.imageSmoothingEnabled = true;
-    // Das Bild hat einen Rand von einem Feld (nebel.js).
-    stift.drawImage(this.nebel.bild, -1.5, -1.5, this.karte.groesse + 2, this.karte.groesse + 2);
+    // Das Bild reicht ueber die Karte hinaus (nebel.js, darstellung AC-29).
+    stift.drawImage(this.nebel.bild, -0.5 - NEBELRAND, -0.5 - NEBELRAND, this.karte.groesse + 2 * NEBELRAND, this.karte.groesse + 2 * NEBELRAND);
     stift.restore();
   }
 
@@ -1907,7 +1907,10 @@ export class Ansicht {
     if (!this.ausgewaehlt.size) return;
     const lauf = this.angriffslauf;
     this.angriffslaufSetzen(false);
-    const feld = { x: Math.round(ziel.x), y: Math.round(ziel.y) };
+    // Ein Klick neben die Karte meint ihr naechstes Feld (einheiten AC-64) -
+    // der Server verwirft, was nicht auf der Karte liegt.
+    const rand = this.karte.groesse - 1;
+    const feld = { x: Math.max(0, Math.min(rand, Math.round(ziel.x))), y: Math.max(0, Math.min(rand, Math.round(ziel.y))) };
     if (lauf) {
       // Ein Angriffslauf ist ein Angriffsbefehl, auch auf leeres Gras: das
       // Zeichen am Ziel ist deshalb rot (bedienung AC-34). Sein Ziel ist der
@@ -2685,7 +2688,9 @@ export class Ansicht {
         // Felder dahinter bekannt sind: seine Krone laege sonst unter ihrem
         // Schwarz, und aus dem Dunkel ragte ein blanker Stamm (gerenderte
         // Baeume sind hoeher als die gezeichneten, 2026-11-12).
-        if (this.nebelAn && art === WALD && [1, 2].some((n) => x >= n && y >= n && !this.nebel.hatErkundet(x - n, y - n))) continue;
+        // An der Kante der Karte gilt das Feld der Kante: so weit reicht
+        // dort der Nebel hinaus (darstellung AC-29).
+        if (this.nebelAn && art === WALD && [1, 2].some((n) => !this.nebel.hatErkundet(Math.max(0, x - n), Math.max(0, y - n)))) continue;
         if (DINGE.includes(art)) stehend.push({ tiefe: x + y, x, y, art: 'vorrat', feld: art, index });
       }
     }

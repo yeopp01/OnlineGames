@@ -1,0 +1,10 @@
+{
+  "spec": "10-strategie/darstellung.md",
+  "ac": "AC-29",
+  "titel": "Ein Baum an der Kante der Karte im Erkundeten: die Krone ragt über die Karte hinaus und ist gedämpft wie der Baum daneben im Land",
+  "datei": "e2e/tests/strategie-nebel.spec.mjs",
+  "pfad": [
+    "Sicht erkundet",
+    "darstellung AC-29: ein Baum an der Kante der Karte liegt bis in die Krone unter dem Nebel seines Felds"
+  ]
+}

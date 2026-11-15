@@ -225,8 +225,9 @@ test('bauen AC-31: ein Tor im Mauerring laesst Annas Dorfbewohner hinaus und Ber
   const bert = welt.einheitAnlegen('b', x0, y0 + 1, 'dorfbewohner');
 
   // Gegenprobe: ohne Tor ist der Ring zu - auch fuer Anna.
-  welt.befehl('a', [anna.id], aussen);
-  assert.deepEqual(anna.weg, [], 'ohne Tor kein Weg hinaus');
+  // (Gefragt wird die Wegsuche: ein Befehl dorthin schickt sie seit
+  // einheiten AC-64 so nah heran, wie es geht - bis an die Mauer.)
+  assert.deepEqual(welt.wegNach(anna, aussen), [], 'ohne Tor kein Weg hinaus');
 
   // Das Tor auf die Mauer: es ersetzt sie dort, ohne Erstattung.
   const mauer = welt.gebaeudeAn(torfeld.x, torfeld.y);
@@ -251,8 +252,11 @@ test('bauen AC-31: ein Tor im Mauerring laesst Annas Dorfbewohner hinaus und Ber
   assert.deepEqual(welt.feldVon(anna), aussen, 'Anna steht draussen');
 
   // Bert kommt nicht hinein: fuer ihn ist das Tor eine Mauer.
+  assert.deepEqual(welt.wegNach(bert, innen), [], 'fuer Bert kein Weg in den Ring');
+  // Geschickt geht er so nah heran, wie es geht (einheiten AC-64): bis vor
+  // die Mauer, nicht durch das Tor.
   welt.befehl('b', [bert.id], innen);
-  assert.deepEqual(bert.weg, [], 'fuer Bert kein Weg in den Ring');
+  assert.ok(!bert.weg.some((f) => f.x === torfeld.x && f.y === torfeld.y), 'Berts Weg fuehrt nicht durch das Tor');
   sekunden(welt, 10);
   const feld = welt.feldVon(bert);
   assert.ok(feld.x < x0 + 2 || feld.y < y0 + 2, 'Bert steht weiter draussen');
@@ -279,8 +283,7 @@ test('bauen AC-31: faellt das Tor, ist die Luecke fuer alle offen', () => {
   const tor = torSetzen(welt, 'a', torfeld);
   assert.ok(welt.toreVon('a').has(torfeld.y * welt.karte.groesse + torfeld.x));
   const bert = welt.einheitAnlegen('b', x0, y0 + 1, 'dorfbewohner');
-  welt.befehl('b', [bert.id], innen);
-  assert.deepEqual(bert.weg, [], 'solange das Tor steht, kein Weg');
+  assert.deepEqual(welt.wegNach(bert, innen), [], 'solange das Tor steht, kein Weg');
   welt.gebaeudeZerstoeren(tor);
   assert.equal(welt.toreVon('a'), null, 'kein Tor mehr in der Liste');
   welt.befehl('b', [bert.id], innen);

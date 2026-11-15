@@ -155,9 +155,10 @@ test('spielziel AC-14: das Tor eines Verbuendeten oeffnet sich, das eines Gegner
   const anna = stellen(welt, 'a', 'dorfbewohner', x0 + 5, y0);
   const bert = stellen(welt, 'b', 'dorfbewohner', x0 + 4, y0);
   welt.befehl('a', [anna.id], innen);
-  welt.befehl('b', [bert.id], innen);
+  // (Gefragt wird die Wegsuche: ein Befehl schickte Bert seit einheiten
+  // AC-64 so nah heran, wie es geht - bis vor die Mauer.)
   assert.ok(anna.weg.length > 0, 'Anna hat einen Weg durch Carlas Tor');
-  assert.deepEqual(bert.weg, [], 'Bert nicht');
+  assert.deepEqual(welt.wegNach(bert, innen), [], 'Bert nicht');
   assert.ok(welt.toreVon('c').size === 2, 'Carlas eigene Liste bleibt ihre: die zwei Felder der Durchfahrt');
   sekunden(welt, 10);
   assert.ok(Math.hypot(anna.x - innen.x, anna.y - innen.y) < 1.5, 'Anna steht drinnen');

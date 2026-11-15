@@ -13,6 +13,7 @@ import { bedienteileFrei, dorfbewohnerAnklicken, partieBeenden, partieZuZweit, p
 const KAMPF = '10-strategie/kampf.md';
 const DARSTELLUNG = '10-strategie/darstellung.md';
 const GRAS = 0;
+const WALD = 1;
 
 test.describe('Nebel', () => {
   test.describe.configure({ mode: 'serial' });
@@ -263,6 +264,104 @@ test.describe('Sicht erkundet', () => {
       spec: KAMPF,
       ac: 'AC-16',
       titel: 'Als „Erkundet“ eröffnet: die ganze Karte ist bekannt und gedämpft, hell nur um Annas Dorf — auch auf der Übersichtskarte',
+      test: info,
+    });
+  });
+
+  test('darstellung AC-29: ein Baum an der Kante der Karte liegt bis in die Krone unter dem Nebel seines Felds', async ({}, info) => {
+    // Rueckmeldung des Benutzers (2026-11-15, mit Bild): "der baum ist
+    // lustigerweise draussen und hell". Das Nebelbild deckte die Karte und ein
+    // Feld Rand - die Krone eines Baums an der Kante ragt weiter hinaus.
+    const { anna } = partie;
+    // Ein Baum an die Kante (x = 0), fern von Annas Dorf, und einer daneben
+    // im Land zum Vergleich. Gepflanzt nur in Annas Ansicht: gezeichnet wird
+    // aus ihrer Karte, und um das Zeichnen geht es.
+    const baum = await anna.evaluate(({ gras, wald }) => {
+      const a = window.ansicht;
+      const g = a.karte.groesse;
+      const frei = (x, y0, y1) => {
+        for (let y = y0; y <= y1; y++) if (a.karte.felder[y * g + x] !== gras || a.nebel.sieht(x, y)) return false;
+        return true;
+      };
+      for (let y = 8; y < g - 8; y++) {
+        // Rundum Gras: keine fremde Krone im gemessenen Ausschnitt.
+        if (![0, 1, 2, 3, 4].every((x) => frei(x, y - 4, y + 4))) continue;
+        a.karte.felder[y * g] = wald;
+        a.karte.felder[(y + 3) * g + 3] = wald;
+        a.kamera.zoom = 2;
+        a.blickAuf(0, y - 1);
+        return { x: 0, y };
+      }
+      return null;
+    }, { gras: GRAS, wald: WALD });
+    expect(baum, 'ein freier Platz an der Kante').not.toBeNull();
+
+    const mass = await anna.evaluate(async (b) => {
+      const a = window.ansicht;
+      const bild = () => new Promise((fertig) => { requestAnimationFrame(() => requestAnimationFrame(fertig)); });
+      const d = window.devicePixelRatio || 1;
+      const p = a.zuBild(b.x, b.y);
+      const e = a.zuBild(b.x + 1, b.y).x - p.x;
+      const x0 = Math.round((p.x - 1.5 * e) * d);
+      const y0 = Math.round((p.y - 4 * e) * d);
+      const breite = Math.round(3 * e * d);
+      const hoehe = Math.round(4 * e * d);
+      const lesen = () => a.stift.getImageData(x0, y0, breite, hoehe).data;
+      await bild();
+      const mit = lesen();
+      // Dasselbe Bild ohne Nebel: so hell ist die Krone wirklich.
+      const art = a.sichtArt;
+      a.sichtArt = 'aufgedeckt';
+      await bild();
+      const ohne = lesen();
+      a.sichtArt = art;
+      await bild();
+      let krone = 0;
+      let hell = 0;
+      let summeOhne = 0;
+      let summeMit = 0;
+      for (let y = 0; y < hoehe; y++) {
+        for (let x = 0; x < breite; x++) {
+          // Nur was weiter draussen liegt, als das alte Nebelbild reichte
+          // (ein Feld Rand, also bis -1,5).
+          const w = a.zuWelt((x0 + x) / d, (y0 + y) / d);
+          if (w.x > -1.7) continue;
+          const i = (y * breite + x) * 4;
+          const o = (ohne[i] + ohne[i + 1] + ohne[i + 2]) / 3;
+          // Der Grund der Leinwand ist fast schwarz - gezaehlt wird die Krone.
+          if (o < 50) continue;
+          const m = (mit[i] + mit[i + 1] + mit[i + 2]) / 3;
+          krone++;
+          summeOhne += o;
+          summeMit += m;
+          if (m > o * 0.7) hell++;
+        }
+      }
+      return {
+        krone,
+        hell,
+        ohne: krone ? summeOhne / krone : 0,
+        mit: krone ? summeMit / krone : 0,
+        feld: a.nebel.deckkraft(b.x, b.y),
+        draussen: [1, 2, 3, 4, 5, 6].map((n) => a.nebel.deckkraft(b.x - n, b.y - n)),
+        kante: [1, 2, 3, 4, 5, 6].map((n) => a.nebel.deckkraft(0, b.y - n)),
+        gesehen: a.nebel.sieht(b.x, b.y),
+      };
+    }, baum);
+    expect(mass.gesehen, 'der Baum steht im Erkundeten, nicht im Beobachteten').toBe(false);
+    expect(mass.feld, 'ueber seinem Feld liegt der gedaempfte Nebel').toBeGreaterThan(0);
+    expect(mass.feld).toBeLessThan(255);
+    // Draussen traegt der Nebel den Stand des naechsten Felds der Kante.
+    // (Jede Messung fuer sich gemeldet: die Gegenprobe soll zeigen, was im Bild steht.)
+    expect.soft(mass.draussen, 'sechs Felder hinaus derselbe Nebel wie an der Kante').toEqual(mass.kante);
+    // Die Krone ragt wirklich ueber den alten Rand hinaus - sonst misst der Fall nichts.
+    expect.soft(mass.krone, 'Bildpunkte der Krone jenseits des alten Rands').toBeGreaterThan(150);
+    expect.soft(mass.hell, `${mass.hell} von ${mass.krone} Bildpunkten der Krone sind so hell wie ohne Nebel`).toBe(0);
+    expect.soft(mass.mit, `im Mittel ${mass.mit.toFixed(0)} statt ${mass.ohne.toFixed(0)}`).toBeLessThan(mass.ohne * 0.65);
+    await nachweis(anna, {
+      spec: DARSTELLUNG,
+      ac: 'AC-29',
+      titel: 'Ein Baum an der Kante der Karte im Erkundeten: die Krone ragt über die Karte hinaus und ist gedämpft wie der Baum daneben im Land',
       test: info,
     });
   });

@@ -22,6 +22,10 @@ export const BEOBACHTET = 0;
 const NEU_ALLE_TAKTE = 5;
 // Die Farbe des Nichts - dieselbe wie der Grund der Leinwand.
 const SCHWARZ = [15, 18, 22];
+// So viele Felder reicht das Nebelbild ueber die Karte hinaus (darstellung
+// AC-29): was an der Kante steht, ragt mit Krone oder Dach darueber, und
+// draussen laege sonst kein Nebel - der Baum am Rand stand hell im Schwarzen.
+export const NEBELRAND = 6;
 
 export class Nebel {
   /**
@@ -36,10 +40,12 @@ export class Nebel {
     if (erkundet) this.erkundet.fill(1);
     this.gebaeudeSchluessel = null;
     this.takt = -Infinity;
-    // Ein Bildpunkt Rand rundum, immer "nie gesehen": sonst mischt die
-    // Glaettung am Kartenrand mit dem Durchsichtigen draussen, und eine
-    // duenne Linie Gelaende scheint durch den Nebel (Runde 105, gesehen).
-    const seite = groesse + 2;
+    // Ein Rand rundum, der den Stand des naechsten Felds der Kante traegt:
+    // ohne Rand mischt die Glaettung am Kartenrand mit dem Durchsichtigen
+    // draussen, und eine duenne Linie Gelaende scheint durch den Nebel
+    // (Runde 105, gesehen); und was an der Kante hoch aufragt, liegt mit
+    // seiner Spitze im Rand (darstellung AC-29).
+    const seite = groesse + 2 * NEBELRAND;
     this.bild = document.createElement('canvas');
     this.bild.width = seite;
     this.bild.height = seite;
@@ -115,10 +121,12 @@ export class Nebel {
     }
     const daten = this.punkte.data;
     const g = this.groesse;
-    for (let y = 0; y < g; y++) {
-      for (let x = 0; x < g; x++) {
-        const i = y * g + x;
-        daten[((y + 1) * (g + 2) + x + 1) * 4 + 3] = this.sichtbar[i] || this.gebaeude[i] ? BEOBACHTET : this.erkundet[i] ? ERKUNDET : NIE;
+    const seite = g + 2 * NEBELRAND;
+    for (let py = 0; py < seite; py++) {
+      const y = Math.max(0, Math.min(g - 1, py - NEBELRAND));
+      for (let px = 0; px < seite; px++) {
+        const i = y * g + Math.max(0, Math.min(g - 1, px - NEBELRAND));
+        daten[(py * seite + px) * 4 + 3] = this.sichtbar[i] || this.gebaeude[i] ? BEOBACHTET : this.erkundet[i] ? ERKUNDET : NIE;
       }
     }
     this.bild.getContext('2d').putImageData(this.punkte, 0, 0);
@@ -140,6 +148,18 @@ export class Nebel {
   hatErkundet(x, y) {
     const i = this.index(x, y);
     return i >= 0 && this.erkundet[i] === 1;
+  }
+
+  /**
+   * Die Deckkraft des Nebelbilds ueber einem Feld - auch draussen vor der
+   * Kante, bis `NEBELRAND` Felder weit (darstellung AC-29).
+   */
+  deckkraft(x, y) {
+    const seite = this.groesse + 2 * NEBELRAND;
+    const px = Math.round(x) + NEBELRAND;
+    const py = Math.round(y) + NEBELRAND;
+    if (px < 0 || py < 0 || px >= seite || py >= seite) return 0;
+    return this.punkte.data[(py * seite + px) * 4 + 3];
   }
 
   // Die drei Stufen gezaehlt - fuer den Browserlauf (darstellung AC-15).

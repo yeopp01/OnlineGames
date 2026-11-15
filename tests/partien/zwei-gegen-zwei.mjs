@@ -35,7 +35,17 @@ export const MINUTEN = 90;
  * jeder Schaden nach Besitzern, jeder Angriffslauf nach dem Dorf, auf das er
  * zielt - das, dessen Basis dem Marschziel am naechsten liegt, wenn es naeher
  * liegt als die eigene (sonst ist es ein Marsch nach Hause, ki AC-14).
+ *
+ * Ein Marsch zu eigenem Besitz ist Verteidigung, wo immer er liegt (ki AC-14):
+ * steht am Marschziel ein eigenes Gebaeude, zaehlt der Lauf zu keinem Dorf.
+ * Gefunden am 2026-11-15, Startwert 9, Minute 63,5: die Wache von KI 2 zog zu
+ * ihrem Holzfaellerlager, das KI 4 angriff - 39,1 Felder vom eigenen Dorf,
+ * 37,2 von dem des schon ausgeschiedenen Verbuendeten -, und zaehlte als
+ * Angriffslauf zu ihm. Eine KI, die zum Verbuendeten zieht, zielt vier Felder
+ * vor dessen Dorfzentrum; dort steht nichts Eigenes.
  */
+const EIGENES_NAH = 6;
+
 export function zweiGegenZwei(startwert) {
   const z = { verbuendet: 0, fremd: 0, laeufeVerbuendet: 0, laeufeFremd: 0 };
   let beobachtet = false;
@@ -62,7 +72,8 @@ export function zweiGegenZwei(startwert) {
         if (n?.auftrag === 'befehl' && n.angriffslauf && n.ziel) {
           const weit = (b) => Math.hypot(b.x - n.ziel.x, b.y - n.ziel.y);
           const andere = welt.spieler.filter((s) => s.id !== id).sort((a, b) => weit(a.basis) - weit(b.basis));
-          if (andere.length && weit(andere[0].basis) < weit(welt.spielerVon(id).basis)) {
+          const daheim = [...welt.gebaeude.values()].some((g) => g.besitzer === id && weit(g) < EIGENES_NAH);
+          if (!daheim && andere.length && weit(andere[0].basis) < weit(welt.spielerVon(id).basis)) {
             if (welt.feindlich(id, andere[0].id)) z.laeufeFremd++;
             else z.laeufeVerbuendet++;
           }

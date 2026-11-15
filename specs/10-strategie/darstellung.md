@@ -2,7 +2,7 @@
 
 **Bereich:** Strategie
 **Kuerzel:** darstellung
-**Stand:** 22/28 fertig · 1 in Arbeit · 1 in QA · 4 offen
+**Stand:** 23/29 fertig · 1 in Arbeit · 1 in QA · 4 offen
 
 ## Zweck
 
@@ -274,6 +274,16 @@ nicht so kindlich gemalt". Die Bauabfolge R1 bis R6 steht im
   einem Bildpunkt breit. Ohne Tafel (`?bilder=0`) bleibt es bei Strich und
   Kreis. **Rückmeldung des Benutzers:** „Pfeile sind noch nicht gerendert, da
   brauchen wir noch was".
+- **AC-29** `fertig` **Nebel reicht über die Kante** — Was an der Kante der
+  Karte steht, ragt mit Krone oder Dach über sie hinaus. Der Nebel reicht
+  deshalb sechs Felder weiter als die Karte (`NEBELRAND` in
+  `public/nebel.js`) und trägt dort den Stand des nächsten Felds der Kante:
+  ein Baum am Rand ist im Erkundeten bis in die Spitze gedämpft und im
+  Beobachteten ganz hell, nie halb. Vorher deckte das Nebelbild die Karte und
+  ein Feld Rand; die Krone darüber blieb hell. Gemessen im Browserlauf an
+  einem Baum an der Kante, mit und ohne Nebel gelesen: jeder Bildpunkt der
+  Krone jenseits des alten Rands ist gedämpft. **Rückmeldung des Benutzers
+  (2026-11-15, mit Bild):** „der baum ist lustigerweise draussen und hell".
 
 **Was der Bildumbau ablöst.** AC-12 („gezeichnet statt flach") und die
 Messungen 1 und 3 aus AC-13 beschreiben eine Zeichnung. Sie bleiben `fertig`,

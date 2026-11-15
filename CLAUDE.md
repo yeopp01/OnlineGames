@@ -180,7 +180,7 @@ Umfang hinzufügt, dort nachsehen.
 
 ## Stand
 
-**550 von 673 Kriterien fertig.** 926 Tests ohne Browser und 14 ganze Partien, 293 im Browser. Die
+**552 von 675 Kriterien fertig.** 931 Tests ohne Browser und 14 ganze Partien, 294 im Browser. Die
 Übersicht ist der Bericht: `npm run qa:report`.
 
 Gebaut ist der Unterbau: Räume, Übertragung, Karte, Wegfindung, Sammeln,
@@ -753,7 +753,13 @@ einem Dorfbewohner sät für 60 Holz neu aus, ein Schalter an der Farm lässt
 das von selbst geschehen (AC-42, Nachricht `farmen`); die KI räumt ihre
 Brachen wie bisher. Ein Lager neben einem Vorrat schickt seine Bauleute
 dorthin (AC-40), und wer einen unerreichbaren Vorrat angewiesen bekommt,
-nimmt den daneben (einheiten AC-63). **Kampf:** Baustellen sehen und
+nimmt den daneben (einheiten AC-63). **Führt zum geklickten Feld kein
+Weg**, geht die Einheit so nah heran, wie es geht (einheiten AC-64,
+`welt.gangBeginnen`, `welt.naechstesErreichbare`) — auch am angehängten
+Wegpunkt und als Marschziel des Angriffslaufs; nicht gemessen ist, was das
+Fluten bei großen Gruppen kostet. **Der Nebel reicht sechs Felder über die
+Kartenkante** (darstellung AC-29, `NEBELRAND` in `public/nebel.js`): ein
+Baum an der Kante ist bis in die Krone gedämpft. **Kampf:** Baustellen sehen und
 schießen nicht (kampf AC-24), ein befohlenes Ziel bleibt das Ziel (AC-25),
 ein Karren zwischen zwei eigenen Märkten bringt weniger als zu einem fremden
 (einheiten AC-40). **Im Bild:** ein Menü mit dem Weg zurück in den Vorraum

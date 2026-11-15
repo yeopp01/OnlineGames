@@ -10,6 +10,8 @@
 // Felder aendern; Punkte und Rahmen fuenfmal je Sekunde - mehr sieht man auf
 // so kleiner Flaeche nicht, und es kostet die grosse Ansicht nichts.
 
+import { NEBELRAND } from './nebel.js';
+
 const FARBEN = {
   0: '#6b7a3c', // Gras
   1: '#2f4a2a', // Wald
@@ -162,7 +164,7 @@ export class Uebersicht {
       s.save();
       s.transform(this.breite / (2 * g), this.hoehe / (2 * g), -this.breite / (2 * g), this.hoehe / (2 * g), this.breite / 2, this.hoehe / (2 * g));
       s.imageSmoothingEnabled = true;
-      s.drawImage(ansicht.nebel.bild, -1.5, -1.5, g + 2, g + 2);
+      s.drawImage(ansicht.nebel.bild, -0.5 - NEBELRAND, -0.5 - NEBELRAND, g + 2 * NEBELRAND, g + 2 * NEBELRAND);
       s.restore();
     }
     s.restore();

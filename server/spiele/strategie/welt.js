@@ -1828,6 +1828,9 @@ class Welt {
     let angriffsfelder = null;
     let vorraete = null;
     let naechsterVorrat = 0;
+    // Was dieser Befehl schon geflutet und vergeben hat, wenn zum Ziel kein
+    // Weg fuehrt (einheiten AC-64).
+    const gebiete = [];
 
     // Eine Brache (bauen AC-41): der Rechtsklick eines Dorfbewohners saet sie
     // neu aus. Bezahlt wird hier, einmal und vor allem anderen - reicht es
@@ -1936,14 +1939,81 @@ class Welt {
         this.wegZumVorrat(einheit);
       } else {
         aufstellung ??= this.aufstellungUm({ x: zx, y: zy }, gruppe.length);
-        const feld = this.naechstesFreies(einheit, aufstellung) || { x: zx, y: zy };
+        // Fuehrt kein Weg zum Platz der Aufstellung, geht es so nah an den
+        // Klick, wie es geht (einheiten AC-64).
+        const feld = this.gangBeginnen(einheit, this.naechstesFreies(einheit, aufstellung) || { x: zx, y: zy }, { x: zx, y: zy }, gebiete);
         // Der Angriffslauf merkt sich das Marschziel: nach jedem Gefecht
         // unterwegs geht es dorthin weiter (kampf AC-4).
         if (angriffslauf && this.einheitenwert(einheit.besitzer, einheit.art, 'angriff') > 0) einheit.angriffslauf = feld;
-        einheit.auftrag = { art: 'gehen', feld };
-        einheit.weg = this.wegNach(einheit, feld);
       }
     }
+  }
+
+  /**
+   * Der Gang zu einem Feld. Fuehrt kein Weg dorthin - eine Lichtung mitten im
+   * Wald, das andere Ufer, hinter einer fremden Mauer -, geht es so nah an
+   * `gemeint` heran, wie es geht (einheiten AC-64), statt stehenzubleiben.
+   *
+   * @param {{x: number, y: number}} feld wohin es gehen soll
+   * @param {{x: number, y: number}} [gemeint] der Klick, von dem `feld` stammt
+   * @param {{maske: Uint8Array, vergeben: Set<number>}[]} [gebiete] was dieser
+   *   Befehl schon geflutet und vergeben hat
+   * @returns {{x: number, y: number}} das Feld, zu dem es wirklich geht
+   */
+  gangBeginnen(einheit, feld, gemeint = feld, gebiete = []) {
+    let weg = this.wegNach(einheit, feld);
+    const hier = this.feldVon(einheit);
+    if (!weg.length && (hier.x !== feld.x || hier.y !== feld.y)) {
+      const nah = this.naechstesErreichbare(einheit, gemeint, gebiete);
+      if (nah) {
+        feld = nah;
+        weg = this.wegNach(einheit, nah);
+      }
+    }
+    einheit.auftrag = { art: 'gehen', feld };
+    einheit.weg = weg;
+    return feld;
+  }
+
+  /**
+   * Das begehbare Feld, das `ziel` am naechsten liegt und zu dem die Einheit
+   * einen Weg hat (einheiten AC-64) - bei gleichem Abstand das, das ihr
+   * naeher ist. Eine Gruppe flutet ihr Gebiet einmal je Befehl, und jeder
+   * bekommt ein eigenes Feld. Null, wenn sie nirgends hin kann.
+   *
+   * @param {{x: number, y: number}} ziel
+   * @param {{maske: Uint8Array, vergeben: Set<number>}[]} [gebiete]
+   * @returns {{x: number, y: number} | null}
+   */
+  naechstesErreichbare(einheit, ziel, gebiete = []) {
+    const g = this.karte.groesse;
+    const von = this.feldVon(einheit);
+    const hier = von.y * g + von.x;
+    let gebiet = gebiete.find((b) => b.maske[hier]);
+    if (!gebiet) {
+      gebiet = { maske: Uint8Array.from(erreichbar(this.karte, von, this.toreVon(einheit.besitzer))), vergeben: new Set() };
+      gebiete.push(gebiet);
+    }
+    let bestes = -1;
+    let amZiel = Infinity;
+    let beiIhr = Infinity;
+    for (let i = 0; i < gebiet.maske.length; i++) {
+      // Nur Gras: in der Durchfahrt des eigenen Tors bleibt niemand stehen.
+      if (!gebiet.maske[i] || this.karte.felder[i] !== karten.GRAS || gebiet.vergeben.has(i)) continue;
+      const x = i % g;
+      const y = (i / g) | 0;
+      const d = (x - ziel.x) ** 2 + (y - ziel.y) ** 2;
+      if (d > amZiel) continue;
+      const e = (x - von.x) ** 2 + (y - von.y) ** 2;
+      if (d < amZiel || e < beiIhr) {
+        bestes = i;
+        amZiel = d;
+        beiIhr = e;
+      }
+    }
+    if (bestes < 0) return null;
+    gebiet.vergeben.add(bestes);
+    return { x: bestes % g, y: (bestes / g) | 0 };
   }
 
   // Freie Felder um ein Ziel, nach Abstand - das Ziel selbst zuerst, wenn frei
@@ -3906,9 +3976,7 @@ class Welt {
       // Steht noch ein Ziel in der Reihe, geht es dorthin weiter
       // (bedienung AC-14).
       if (einheit.wegpunkte.length) {
-        const feld = einheit.wegpunkte.shift();
-        einheit.auftrag = { art: 'gehen', feld };
-        einheit.weg = this.wegNach(einheit, feld);
+        this.gangBeginnen(einheit, einheit.wegpunkte.shift());
         return;
       }
       einheit.auftrag = null;

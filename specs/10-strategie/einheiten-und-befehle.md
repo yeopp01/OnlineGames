@@ -2,7 +2,7 @@
 
 **Bereich:** Strategie
 **Kuerzel:** einheiten
-**Stand:** 38/56 fertig · 17 offen · 1 zurueckgestellt
+**Stand:** 39/57 fertig · 17 offen · 1 zurueckgestellt
 
 ## Zweck
 
@@ -521,6 +521,19 @@ AC-19). Werte und Dauern sind Startwerte aus ADR-0014.
   gibt, nimmt er wie bisher den nächsten bei sich. **Aus dem Spiel auf dem
   Server (2026-11-13):** vorher sammelte er dann neben sich selbst —
   gemessen 24 bis 38 Felder vom Klick entfernt.
+- **AC-64** `fertig` **Unerreichbar: so nah wie möglich** — Führt zu dem
+  Feld, auf das der Spieler geklickt hat, kein Weg — eine Lichtung mitten im
+  Wald, das andere Ufer, hinter einer fremden Mauer, mitten in einem See —,
+  geht die Einheit zu dem begehbaren Feld, das dem Klick am nächsten liegt
+  **und zu dem sie einen Weg hat**; bei gleichem Abstand zu dem, das ihr
+  näher ist. Aus einer Gruppe bekommt jeder ein eigenes Feld. Dasselbe gilt
+  für den angehängten Wegpunkt ([Bedienung](bedienung.md) AC-14) und für das
+  Marschziel des Angriffslaufs. Führt ein Weg zum Klick, ändert sich nichts.
+  **Aus dem Spiel auf dem Server (2026-11-15):** „wenn ich mit einer einheit
+  wo hinklicke, wo sie nicht hingehn kann, dann passiert nichts - aber sie
+  sollte sich dann einfach möglichst nah da hin bewegen". Vorher nahm der
+  Befehl das nächste *begehbare* Feld am Klick und fragte nicht, ob ein Weg
+  dorthin führt.
 
 ## Grenzfaelle
 
