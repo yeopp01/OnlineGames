@@ -1,0 +1,10 @@
+{
+  "spec": "10-strategie/einheiten-und-befehle.md",
+  "ac": "AC-30",
+  "titel": "Zehn Dorfbewohner mit einem Befehl an einen Baum geschickt: jeder hackt von seinem Platz aus, keine zwei stehen aufeinander",
+  "datei": "e2e/tests/strategie-ausweichen.spec.mjs",
+  "pfad": [
+    "Ausweichen",
+    "einheiten AC-30: zehn Dorfbewohner an einem Baum, jeder auf seinem Platz"
+  ]
+}

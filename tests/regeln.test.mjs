@@ -155,8 +155,13 @@ test('karte AC-12: vier Rohstoffe mit Startvorrat nach Einstellung', () => {
 
 test('karte AC-9: ein erschoepftes Feld wird Gras und wird gemeldet', () => {
   const welt = new Welt(ZWEI, 7);
-  const index = [...welt.karte.vorrat.keys()].find((i) => welt.karte.felder[i] === karten.WALD);
   const g = welt.karte.groesse;
+  // Ein Baum am Waldrand: rechts von ihm ist Gras, auf dem der Holzfaeller
+  // steht. (Vorher der erste Baum der Karte, mitten im Wald - der Sammler
+  // stand dort selbst in einem Baum; seit einheiten AC-30 braucht er einen
+  // Platz auf begehbarem Boden.)
+  const index = [...welt.karte.vorrat.keys()].find((i) => welt.karte.felder[i] === karten.WALD
+    && karten.begehbar(welt.karte, (i % g) + 1, (i / g) | 0));
   const feld = { x: index % g, y: (index / g) | 0 };
   welt.karte.vorrat.set(index, 5); // fast leer
 
@@ -167,8 +172,9 @@ test('karte AC-9: ein erschoepftes Feld wird Gras und wird gemeldet', () => {
   einheit.weg = [];
   welt.feldAenderungen = [];
 
-  // Fuenf Einheiten Holz bei der Rate aus den Daten, und zwei Takte Spiel.
-  const takte = Math.ceil(5 / (SAMMELN[karten.WALD].rate / TAKTE_PRO_SEKUNDE)) + 2;
+  // Fuenf Einheiten Holz bei der Rate aus den Daten, zwei Takte Spiel - und
+  // vorher der Schritt von der Feldmitte auf seinen Platz (einheiten AC-30).
+  const takte = Math.ceil(5 / (SAMMELN[karten.WALD].rate / TAKTE_PRO_SEKUNDE)) + 2 + 10;
   welt.sammelnBeginnen(einheit);
   for (let i = 0; i < takte; i++) welt.einheitTakten(einheit);
 

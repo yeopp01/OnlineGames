@@ -205,4 +205,7 @@ function nachbarfeld(karte, feld, von) {
   return bestes;
 }
 
-module.exports = { suchen, nachbarfeld, erreichbar };
+// Die acht Nachbarn eines Feldes als Versatz, gerade zuerst.
+const NACHBARN = DX.map((dx, r) => [dx, DY[r]]);
+
+module.exports = { suchen, nachbarfeld, erreichbar, NACHBARN };

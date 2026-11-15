@@ -396,6 +396,8 @@ class Ki {
     this.feindeGesehen = new Map();
     // Wohin der Spaeher gerade erkundet.
     this.erkundung = null;
+    // Wer gerade erkundet - er wird nicht als Wache heimgerufen.
+    this.erkunder = null;
     this.erkundungFertig = new Set();
     // Wann sie zum ersten Mal ein fremdes Gebaeude sah (Pruefstand).
     this.gegnerGesehenTakt = null;
@@ -926,6 +928,7 @@ class Ki {
       // und Wohnraum (ki AC-4).
       if (this.erkundung) {
         this.erkundung = null;
+        this.erkunder = null;
         const heim = this.freiesFeldUm(this.spieler.basis, spaeher);
         if (heim) this.senden({ auftrag: 'befehl', einheiten: [spaeher.id], ziel: heim });
       }
@@ -945,6 +948,7 @@ class Ki {
     const feld = this.freiesFeldUm(punkt, spaeher);
     if (!feld) return;
     this.erkundung = punkt;
+    this.erkunder = spaeher.id;
     this.senden({ auftrag: 'befehl', einheiten: [spaeher.id], ziel: feld });
   }
 
@@ -1465,7 +1469,13 @@ class Ki {
       .map((d) => ({ x: d.x, y: d.y, d: Math.hypot(d.x - basis.x, d.y - basis.y) }))
       .sort((a, b) => a.d - b.d)[0];
 
-    const wache = eigene.filter((e) => !e.tot && !this.heer.has(e.id) && this.kaempft(e));
+    // Wer auf Erkundung reitet, ist keine Wache (ki AC-13): der Spaeher ist
+    // zu Beginn die einzige Kampfeinheit und meist am anderen Ende der Karte.
+    // Heimgerufen kaeme er zu spaet, und der Gegner bliebe ungefunden - beim
+    // Startwert 4 drehte er vier Felder vor dem fremden Dorfzentrum um, weil
+    // daheim ein fremder Spaeher einen Dorfbewohner schlug.
+    const wache = eigene.filter((e) => !e.tot && !this.heer.has(e.id) && this.kaempft(e)
+      && !(this.erkundung && e.id === this.erkunder));
     const ziehen = wache.filter((e) => Math.hypot(e.x - ort.x, e.y - ort.y) > WACHE_NAH
       && e.auftrag?.art !== 'angreifen');
     const vergeben = [];

@@ -2,7 +2,7 @@
 
 **Bereich:** Strategie
 **Kuerzel:** einheiten
-**Stand:** 39/57 fertig · 17 offen · 1 zurueckgestellt
+**Stand:** 40/57 fertig · 16 offen · 1 zurueckgestellt
 
 ## Zweck
 
@@ -134,19 +134,51 @@ Befehl bewirkt.
   Baustelle). Schräg nur, wenn beide Ecken frei sind. **Messbar: keine zwei
   stehenden Einheiten im Bild näher als ein halbes Feld** (`figurenFrei`), auch
   wenn sie mit getrennten Befehlen auf dasselbe Feld geschickt wurden.
-  **Noch nicht** für Sammler am Vorrat und am Tier (AC-30); Kämpfende seit
-  Runde 100 (AC-31). Gesehen in Runde 64; danach siebenmal an der Stelle
+  Sammler am Vorrat und am Tier weichen nicht aus, sie haben ihren eigenen
+  Platz (AC-30); Kämpfende seit Runde 100 (AC-31). Gesehen in Runde 64; danach siebenmal an der Stelle
   umschifft, die ein Ziel vergibt (Runden 56 bis 86), bis die Rückschau nach
   Runde 88 die Regel aufstellte, einen offenen Fehler nur einmal zu umschiffen.
-- **AC-30** `offen` **Sammler teilen keinen Platz** — Auch wer am Vorrat oder
-  am Tier arbeitet, steht nicht auf einem anderen. **Bedingung:** fahrplan
-  AC-5 hält weiter — gemessen in Runde 89 kostet das die Wirtschafts-KI im
-  Median 0,4 Minuten bis zu den ersten 500 Nahrung (9,38 → 9,80), und neun von
-  vierzig KIs verfehlen die zehn Minuten. Am Beerenbusch gehen 13 bis 16 %
-  verloren: gestapelt standen alle auf dem einen Feld, das der Mühle am
-  nächsten liegt. Nicht geholfen haben: das freie Feld nach dem Lager wählen,
-  auf ein anderes Buschfeld wechseln, weniger Sammler an die Beeren. Die
-  Antwort liegt vermutlich in der Lage der Mühle.
+- **AC-30** `fertig` **Sammler teilen keinen Platz** — Auch wer am Vorrat oder
+  am Tier arbeitet, steht nicht auf einem anderen. **Gebaut am 2026-11-13**
+  (Benutzer nach dem zweiten Spiel: „hier stehen zig Dorfbewohner komplett
+  ineinander"): gearbeitet wird nicht von der Mitte des Nachbarfelds aus,
+  sondern von einem **Standplatz** — jedes begehbare Nachbarfeld des Vorrats
+  hat vier davon, seine Viertel, je ein halbes Feld auseinander
+  (`welt.standplatz`, `STANDPLAETZE`). Der Platz steht im Auftrag und bleibt
+  über den Gang zum Lager vergeben; nach jedem Abladen nimmt der Sammler den
+  freien, der ihm am nächsten liegt, und rückt so von selbst auf. Sind am
+  Vorrat alle vergeben, geht er an einen Vorrat derselben Art daneben.
+  **Die Grenze der Regel:** gibt es auch dort keinen freien, teilt er einen
+  Platz — ein einzelnes Goldfeld mit einem freien Nachbarfeld trägt vier
+  Sammler, der fünfte steht auf einem von ihnen. Und vier je Feld stehen
+  dichter, als AC-29 sonst stellt (einen je Feld), aber nie näher als das
+  halbe Feld, an dem `figurenFrei` misst. **Bedingung:** fahrplan AC-5 hält
+  weiter — und hält (gemessen am 2026-11-15, Startwerte 1 bis 20): die ersten
+  500 Nahrung hat die Wirtschafts-KI im Median nach 9,38 Minuten statt 9,45
+  (späteste 9,86; keine von vierzig nach Minute 10). Zehn Holzfäller und
+  sechs am Gold über vier Minuten (gemessen am 13.11.): engstes Paar 0,5
+  Felder (vorher 1661 von 12 379 Proben näher), 560 Holz und 330 Gold (vorher
+  510 und 310). Der erste Versuch (Runde 89, ein Sammler je Feld) kostete 0,4
+  Minuten bis zu den 500 Nahrung und am Beerenbusch 13 bis 16 %: gestapelt
+  standen alle auf dem einen Feld, das der Mühle am nächsten liegt — vier
+  Plätze auf diesem Feld sind die Antwort, nicht die Lage der Mühle.
+  **Jede Partie KI gegen KI verläuft damit anders.** Am 13.11. fielen
+  deshalb zwei Messungen an festen Startwerten (im Nebel 34 statt 35 vor
+  Minute 60 und Startwert 27 ohne Sieger, zwei gegen zwei Startwert 16
+  unentschieden), und die Regel blieb auf einem eigenen Zweig liegen.
+  **Eingebaut am 2026-11-15** auf dem Stand mit AC-63 und AC-64: das
+  erreichbare Nachbarfeld eines Vorrats heißt seitdem `auftrag.seite`, und
+  der Standplatz liegt auf ihm. Dabei fielen zuerst ki AC-13 (5 von 40
+  Spähern fanden den Gegner nicht) und fahrplan AC-5 (drei KIs ohne 500
+  Nahrung): der Späher, mit einem Gang ins unbekannte Dorf geschickt, griff
+  den Hirten an, der jetzt auf seinem Platz neben dem Schaf stand statt auf
+  dem Schaf. Die Ursache lag nicht hier, sondern im Befehl — ein Klick in den
+  Nebel ist seitdem ein Gang ([Kampf](kampf.md) AC-11). An den vierzig
+  festen Startwerten im Nebel blieb danach noch Startwert 14 ohne Sieger;
+  wie am 13.11. entschieden, misst der Nebeltest seitdem über 120
+  Startwerte mit anteiligen Grenzen ([Fahrplan](fahrplan.md) AC-11): mit
+  Standplätzen 111 vor Minute 60 und Median 39,4, ohne sie 109 und 41,0 —
+  kein Nachteil, aber eine Partie von 120 ohne Sieger statt keiner.
 - **AC-31** `fertig` **Kämpfende stehen nebeneinander** — Nahkämpfer um ihr
   Ziel und Fernkämpfer auf ihrem Schussring stehen nicht aufeinander. **Gebaut
   in Runde 100:** wer am Ziel angekommen ist, darf wie jeder Stehende (AC-29)

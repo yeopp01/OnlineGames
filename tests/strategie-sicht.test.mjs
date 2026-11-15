@@ -312,3 +312,42 @@ test('kampf AC-13: wer ausscheidet, bekommt einmal alle Gebaeude - sein Browser 
   // Nur einmal - danach wieder nur Aenderungen.
   assert.ok(!(zustand().gebaeude || []).some((x) => x.i === zentrumBert.id), 'danach nicht jedes Mal');
 });
+
+// ---- Der Klick in den Nebel (kampf AC-11) ----------------------------------
+//
+// Der Browser bietet Fremdes ausserhalb der Sicht nicht als Ziel an; der
+// Server las es trotzdem aus dem Feld. Ein Befehl auf ein Feld, das man nicht
+// sieht, wurde so zum Angriff auf den, der zufaellig dort stand - der Spaeher
+// der KI, ins unbekannte Dorf geschickt, griff den Hirten am Dorfzentrum an
+// und fiel unter den Dorfbewohnern (ki AC-36), bevor er das Dorf gesehen hatte.
+test('kampf AC-11: ein Klick in den Nebel ist ein Gang, auch wenn dort ein Gegner steht - gesehen ist er ein Angriff', () => {
+  const welt = new Welt(ZWEI, 4711);
+  const p = abseits(welt);
+  const hirte = welt.einheitAnlegen('b', p.x, p.y, 'dorfbewohner');
+  const basis = welt.spielerVon('a').basis;
+  const reiter = welt.einheitAnlegen('a', basis.x + 4, basis.y + 4, 'spaeherreiter');
+  welt.sichtAktualisieren();
+  assert.equal(welt.sieht('a', p.x, p.y), false, 'Anna sieht das Feld nicht');
+  welt.befehl('a', [reiter.id], { x: p.x, y: p.y });
+  assert.equal(reiter.auftrag?.art, 'gehen', 'im Nebel: ein Gang dorthin');
+  assert.ok(reiter.weg.length > 0, 'und er reitet los');
+  // Gegenprobe: derselbe Klick, sobald Anna das Feld sieht.
+  welt.einheitAnlegen('a', p.x + 3, p.y, 'dorfbewohner');
+  welt.sichtAktualisieren();
+  assert.equal(welt.sieht('a', p.x, p.y), true);
+  welt.befehl('a', [reiter.id], { x: p.x, y: p.y });
+  assert.equal(reiter.auftrag?.art, 'angreifen', 'gesehen: ein Angriff');
+  assert.equal(reiter.auftrag.ziel, hirte.id);
+});
+
+test('kampf AC-11: aufgedeckt gibt es keinen Nebel - der Klick auf den fernen Gegner greift an', () => {
+  const welt = new Welt(ZWEI, 4711, { sicht: 'aufgedeckt' });
+  const p = abseits(welt);
+  const hirte = welt.einheitAnlegen('b', p.x, p.y, 'dorfbewohner');
+  const basis = welt.spielerVon('a').basis;
+  const reiter = welt.einheitAnlegen('a', basis.x + 4, basis.y + 4, 'spaeherreiter');
+  welt.sichtAktualisieren();
+  welt.befehl('a', [reiter.id], { x: p.x, y: p.y });
+  assert.equal(reiter.auftrag?.art, 'angreifen');
+  assert.equal(reiter.auftrag.ziel, hirte.id);
+});

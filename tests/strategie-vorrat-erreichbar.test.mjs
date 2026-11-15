@@ -115,7 +115,8 @@ test('einheiten AC-63: ein erreichbarer Vorrat bleibt der geklickte', () => {
   for (let t = 0; t < 600 && !bauer.sammelt; t++) welt.takten();
   assert.equal(bauer.sammelt, true);
   assert.deepEqual(bauer.auftrag.feld, ziel);
-  assert.equal(bauer.auftrag.stand, undefined, 'ohne festes Standfeld - das naechste in Luftlinie reicht');
+  // (`seite` heisst das Feld seit einheiten AC-30: `stand` ist der Platz, auf dem er steht.)
+  assert.equal(bauer.auftrag.seite, undefined, 'ohne feste Seite - der naechste Platz in Luftlinie reicht');
 });
 
 test('einheiten AC-63: erreichbar ist, was sich zu Fuss erreichen laesst - Tore nur fuer den, dem sie offenstehen', () => {

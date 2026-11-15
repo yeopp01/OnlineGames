@@ -180,7 +180,7 @@ Umfang hinzufügt, dort nachsehen.
 
 ## Stand
 
-**552 von 675 Kriterien fertig.** 931 Tests ohne Browser und 14 ganze Partien, 294 im Browser. Die
+**553 von 675 Kriterien fertig.** 938 Tests ohne Browser und 14 ganze Partien, 295 im Browser. Die
 Übersicht ist der Bericht: `npm run qa:report`.
 
 Gebaut ist der Unterbau: Räume, Übertragung, Karte, Wegfindung, Sammeln,
@@ -371,6 +371,10 @@ dem Späher (`ki.wahrnehmen()`, `feindOrt`, `gesehen`). Im Nebel gilt für KI
 gegen KI die **Ersatzgrenze** (Benutzer, 2026-11-10): alle mit Sieger vor
 Minute 90, Median unter 45, mindestens 35 von 40 vor Minute 60 —
 gemessen 37 von 40, Median 44,6 (`tests/partien/ki-im-nebel.test.mjs`).
+**Seit dem 2026-11-15 über 120 Startwerte, anteilig** (Benutzer,
+2026-11-13): mindestens 105 von 120 vor Minute 60, Median unter 45,
+höchstens eine ohne Sieger — gemessen 111, 39,4 und eine (Startwert 14).
+Die Datei rechnet allein rund sechs Minuten.
 **Stufe C ist erreicht** (fahrplan
 AC-11 bis AC-13); die Rückschau dazu hat drei Lücken angelegt (bedienung
 AC-39 bis AC-41: Ausholen im Kampf, sichtbare Pfeile, Ansagen nicht auf der
@@ -759,7 +763,17 @@ Weg**, geht die Einheit so nah heran, wie es geht (einheiten AC-64,
 Wegpunkt und als Marschziel des Angriffslaufs; nicht gemessen ist, was das
 Fluten bei großen Gruppen kostet. **Der Nebel reicht sechs Felder über die
 Kartenkante** (darstellung AC-29, `NEBELRAND` in `public/nebel.js`): ein
-Baum an der Kante ist bis in die Krone gedämpft. **Kampf:** Baustellen sehen und
+Baum an der Kante ist bis in die Krone gedämpft. **Sammler haben einen
+Standplatz** (einheiten AC-30, `welt.standplatz`, `STANDPLAETZE`): jedes
+Nachbarfeld eines Vorrats hat vier Plätze, seine Viertel; der Platz steht
+als `auftrag.stand` und bleibt über das Abladen vergeben, sind alle
+vergeben, geht es an den Vorrat daneben. Das erreichbare Nachbarfeld aus
+AC-63 heißt `auftrag.seite`. Einheiten stehen damit auch auf gebrochenen
+Koordinaten — wer ein Feld braucht, rundet. **Ein Klick in den Nebel ist
+ein Gang** (kampf AC-11, `welt.feindAn`): der Server liest nur einen
+Gegner aus dem Feld, den der Spieler sieht. Rechenteil-Tests, die einen
+Angriff befehlen, rechnen nach dem Hinstellen die Sicht
+(`welt.sichtAktualisieren()`) oder spielen aufgedeckt. **Kampf:** Baustellen sehen und
 schießen nicht (kampf AC-24), ein befohlenes Ziel bleibt das Ziel (AC-25),
 ein Karren zwischen zwei eigenen Märkten bringt weniger als zu einem fremden
 (einheiten AC-40). **Im Bild:** ein Menü mit dem Weg zurück in den Vorraum

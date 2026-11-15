@@ -2,7 +2,7 @@
 'use strict';
 
 const karten = require('./karte');
-const { suchen, nachbarfeld, erreichbar } = require('./wege');
+const { suchen, nachbarfeld, erreichbar, NACHBARN: NACHBARFELDER } = require('./wege');
 const {
   EINHEITEN, SAMMELN, TIERE, GEBAEUDE, VERBESSERUNGEN, ZEITALTER, AUFSTIEGE, KLASSEN, HANDEL, HAEUSER,
   BEVOELKERUNG_MAX, SCHLANGE_MAX, STARTAUFSTELLUNG,
@@ -46,6 +46,18 @@ const SICHT_ARTEN = ['nebel', 'erkundet', 'aufgedeckt'];
 // Naeher als ein halbes Feld, und zwei Figuren sind im Bild eine mit zwei
 // Schwertern (einheiten AC-29; dieselbe Grenze misst `figurenFrei`).
 const AUSWEICHEN_ABSTAND = 0.5;
+
+// Wer am Vorrat oder am Tier arbeitet, steht nicht auf der Feldmitte, sondern
+// auf einem von vier Plaetzen des Standfelds - den Vierteln, ein halbes Feld
+// auseinander (einheiten AC-30). Vier Sammler teilen so das Feld, das dem
+// Lager am naechsten liegt, statt aufeinander zu stehen; mit einem Sammler
+// je Feld verlor die Wirtschafts-KI am Beerenbusch 13 bis 16 % (Runde 89).
+const STANDPLAETZE = [[-0.25, -0.25], [0.25, -0.25], [-0.25, 0.25], [0.25, 0.25]];
+// Wie weit vom Vorrat noch gearbeitet wird: das schraege Nachbarfeld samt
+// seinem aeusseren Viertel (1,77). Am Tier zaehlt dessen Lage, nicht sein
+// Feld - dort bleibt es bei anderthalb Feldern.
+const SAMMELN_WEIT = 1.9;
+const TIER_WEIT = 1.5;
 
 // Die Meldung "Angriff" (kampf AC-14): ein Gefecht an derselben Stelle meldet
 // sich einmal, solange es ohne Pause von zwanzig Sekunden weitergeht; ein
@@ -958,16 +970,30 @@ class Welt {
     // das jetzt in der Grundflaeche, steht er im Gebaeude. Als der Weg
     // berechnet wurde, war die Ecke frei (Pruefstand, Startwert 3, Takt 52113:
     // ein Plaenkler im eben begonnenen Stall des Gegners - Runde 92).
-    const drin = (p) => p.x >= x0 && p.x <= x1 && p.y >= y0 && p.y <= y1;
-    const ecke = (a, b) => a.x !== b.x && a.y !== b.y && (drin({ x: a.x, y: b.y }) || drin({ x: b.x, y: a.y }));
+    // Gerundet: der letzte Schritt eines Sammlers ist ein Platz im Feld, kein
+    // Feld (einheiten AC-30) - ungerundet lag ein Platz am Rand der
+    // Grundflaeche knapp draussen, und er ging in die Baustelle (Pruefstand,
+    // Startwert 5, Takt 2578).
+    const drin = (p) => {
+      const x = Math.round(p.x);
+      const y = Math.round(p.y);
+      return x >= x0 && x <= x1 && y >= y0 && y <= y1;
+    };
+    const feldVon = (p) => ({ x: Math.round(p.x), y: Math.round(p.y) });
+    const ecke = (von, nach) => {
+      const a = feldVon(von);
+      const b = feldVon(nach);
+      return a.x !== b.x && a.y !== b.y && (drin({ x: a.x, y: b.y }) || drin({ x: b.x, y: a.y }));
+    };
     for (const einheit of this.einheiten.values()) {
       if (!einheit.weg.length) continue;
       const schritte = [{ x: Math.round(einheit.x), y: Math.round(einheit.y) }, ...einheit.weg];
       let betroffen = einheit.weg.some(drin);
       for (let i = 1; i < schritte.length && !betroffen; i++) betroffen = ecke(schritte[i - 1], schritte[i]);
       if (!betroffen) continue;
-      const ziel = einheit.weg[einheit.weg.length - 1];
-      einheit.weg = suchen(this.karte, this.feldVon(einheit), ziel, this.toreVon(einheit.besitzer));
+      // Das Ziel ist ein Feld - auch wenn der Weg auf einem Platz darin
+      // endet (einheiten AC-30).
+      einheit.weg = this.wegZumPlatz(einheit, einheit.weg[einheit.weg.length - 1]);
     }
   }
 
@@ -2373,11 +2399,12 @@ class Welt {
     return bestes;
   }
 
-  // Neben das Tier, nicht darauf - sonst verdeckt der Hirte den Kadaver.
+  // Neben das Tier, nicht darauf - sonst verdeckt der Hirte den Kadaver. Und
+  // jeder auf seinen Platz (einheiten AC-30).
   wegZumTier(einheit, tier) {
-    const feld = { x: Math.round(tier.x), y: Math.round(tier.y) };
-    const stand = nachbarfeld(this.karte, feld, einheit);
-    einheit.weg = stand ? suchen(this.karte, this.feldVon(einheit), stand, this.toreVon(einheit.besitzer)) : [];
+    const stand = this.standplatz(einheit, tier, TIER_WEIT) || this.standplatz(einheit, tier, TIER_WEIT, true);
+    einheit.auftrag.stand = stand;
+    einheit.weg = stand ? this.wegZumPlatz(einheit, stand) : [];
   }
 
   // Am Tier: beim ersten Mal schlachten, dann Nahrung nehmen wie an einem
@@ -2398,12 +2425,16 @@ class Welt {
       this.abladen(einheit);
       return;
     }
-    // Ein Nachbarfeld, auch schraeg (Wurzel aus 2), gilt als am Tier.
-    if (Math.hypot(einheit.x - tier.x, einheit.y - tier.y) > 1.5) {
+    // Ein Nachbarfeld, auch schraeg (Wurzel aus 2), gilt als am Tier -
+    // gearbeitet wird vom eigenen Platz aus (einheiten AC-30).
+    if (!this.amStand(einheit) || Math.hypot(einheit.x - tier.x, einheit.y - tier.y) > TIER_WEIT) {
       einheit.sammelt = false;
       this.wegZumTier(einheit, tier);
-      if (!einheit.weg.length) einheit.auftrag = null;
-      return;
+      if (einheit.weg.length) return;
+      if (!this.amStand(einheit)) {
+        einheit.auftrag = null;
+        return;
+      }
     }
     if (!tier.geschlachtet) {
       tier.geschlachtet = true;
@@ -2492,14 +2523,104 @@ class Welt {
     }
   }
 
+  // Zum Vorrat heisst: auf einen freien Platz neben ihm (einheiten AC-30).
+  // Sind dort alle vergeben, nimmt der Sammler einen Vorrat derselben Art
+  // daneben; erst wenn es auch dort keinen gibt, teilt er einen Platz. Hat
+  // der Vorrat gar kein begehbares Nachbarfeld, bleibt es dabei: kein Weg
+  // (ki AC-12 liest daran, dass ein Busch eingemauert ist).
   wegZumVorrat(einheit) {
-    // `stand`: das Feld am Vorrat, das `vorratErsatz` als erreichbar gefunden
-    // hat (einheiten AC-63) - sonst das naechste in Luftlinie.
-    const fest = einheit.auftrag.stand;
-    const stand = fest && karten.begehbar(this.karte, fest.x, fest.y)
-      ? fest
-      : nachbarfeld(this.karte, einheit.auftrag.feld, einheit);
-    einheit.weg = stand ? suchen(this.karte, this.feldVon(einheit), stand, this.toreVon(einheit.besitzer)) : [];
+    const auftrag = einheit.auftrag;
+    // `seite`: das Feld am Vorrat, das `vorratErsatz` als erreichbar gefunden
+    // hat (einheiten AC-63) - der Platz liegt dann auf diesem Feld; die
+    // anderen Seiten sind zu, auch wenn sie in Luftlinie naeher liegen.
+    const seite = auftrag.seite && karten.begehbar(this.karte, auftrag.seite.x, auftrag.seite.y) ? auftrag.seite : null;
+    let stand = this.standplatz(einheit, auftrag.feld, SAMMELN_WEIT, false, seite);
+    if (!stand) {
+      const geteilt = this.standplatz(einheit, auftrag.feld, SAMMELN_WEIT, true, seite);
+      if (geteilt) {
+        for (const feld of this.vorraeteUm(auftrag.feld, 49)) {
+          stand = this.standplatz(einheit, feld, SAMMELN_WEIT);
+          if (!stand) continue;
+          auftrag.feld = feld;
+          // Ein anderer Vorrat: die erreichbare Seite des alten gilt nicht mehr.
+          delete auftrag.seite;
+          break;
+        }
+        stand ??= geteilt;
+      }
+    }
+    auftrag.stand = stand;
+    einheit.weg = stand ? this.wegZumPlatz(einheit, stand) : [];
+  }
+
+  /**
+   * Der Platz eines Sammlers neben seinem Vorrat oder Tier (einheiten AC-30):
+   * von den begehbaren Nachbarfeldern des Ziels der naechste freie der je vier
+   * Plaetze (`STANDPLAETZE`), nicht weiter als `weit` vom Ziel. Vergeben ist
+   * ein Platz, solange ein anderer ihn im Auftrag traegt - auch waehrend er
+   * zum Lager geht: so bleibt die Verteilung stehen, statt bei jedem Gang zu
+   * wechseln. Wer selbst neu waehlt (nach jedem Abladen), nimmt den jetzt
+   * naechsten und rueckt damit von selbst auf, wenn einer frei geworden ist.
+   *
+   * @param {{x: number, y: number}} ziel das Feld des Vorrats oder die Lage des Tiers
+   * @param {number} weit so weit vom Ziel darf der Platz liegen
+   * @param {boolean} [geteilt] auch vergebene Plaetze - der letzte Ausweg
+   * @param {{x: number, y: number} | null} [nur] nur Plaetze auf diesem Nachbarfeld (einheiten AC-63)
+   * @returns {{x: number, y: number} | null}
+   */
+  standplatz(einheit, ziel, weit, geteilt = false, nur = null) {
+    const nummer = (x, y) => Math.round(y * 4) * this.karte.groesse * 4 + Math.round(x * 4);
+    const vergeben = new Set();
+    if (!geteilt) {
+      for (const o of this.einheiten.values()) {
+        if (o === einheit || o.tot) continue;
+        const s = o.auftrag?.stand || o.auftrag?.zurueck?.stand;
+        if (s) vergeben.add(nummer(s.x, s.y));
+      }
+    }
+    const fx = Math.round(ziel.x);
+    const fy = Math.round(ziel.y);
+    let bester = null;
+    let naechster = Infinity;
+    for (const [dx, dy] of NACHBARFELDER) {
+      if (!karten.begehbar(this.karte, fx + dx, fy + dy)) continue;
+      if (nur && (nur.x !== fx + dx || nur.y !== fy + dy)) continue;
+      for (const [vx, vy] of STANDPLAETZE) {
+        const x = fx + dx + vx;
+        const y = fy + dy + vy;
+        if (Math.hypot(x - ziel.x, y - ziel.y) > weit || vergeben.has(nummer(x, y))) continue;
+        const abstand = Math.hypot(x - einheit.x, y - einheit.y);
+        if (abstand < naechster) {
+          naechster = abstand;
+          bester = { x, y };
+        }
+      }
+    }
+    return bester;
+  }
+
+  // Steht die Einheit auf dem Platz, den ihr Auftrag nennt?
+  amStand(einheit) {
+    const stand = einheit.auftrag?.stand;
+    return Boolean(stand) && einheit.x === stand.x && einheit.y === stand.y;
+  }
+
+  /**
+   * Ein Weg, der auf einem Platz innerhalb eines Feldes endet (einheiten
+   * AC-30): gesucht wird bis zum Feld, der letzte Schritt geht auf den Platz
+   * statt auf die Feldmitte. Schraeg ist das letzte Stueck nur, wenn die Suche
+   * es schraeg erlaubt hat - beide Ecken sind dann frei. Liegt der Platz auf
+   * einer Feldmitte, ist es ein gewoehnlicher Weg.
+   */
+  wegZumPlatz(einheit, platz) {
+    const feld = { x: Math.round(platz.x), y: Math.round(platz.y) };
+    const von = this.feldVon(einheit);
+    if (von.x === feld.x && von.y === feld.y) {
+      return einheit.x === platz.x && einheit.y === platz.y ? [] : [{ x: platz.x, y: platz.y }];
+    }
+    const weg = suchen(this.karte, von, feld, this.toreVon(einheit.besitzer));
+    if (weg.length) weg[weg.length - 1] = { x: platz.x, y: platz.y };
+    return weg;
   }
 
   // Abgegeben wird am naechsten fertigen eigenen Gebaeude, das den Rohstoff
@@ -2610,12 +2731,18 @@ class Welt {
   // ---- Kampf (kampf AC-1, AC-6 bis AC-8, AC-10) ---------------------------
 
   // Die naechste fremde, lebende Einheit hoechstens ein Feld vom Klick
-  // entfernt - gemessen wie beim eigenen Schaf (einheiten AC-17).
+  // entfernt - gemessen wie beim eigenen Schaf (einheiten AC-17). Nur wer
+  // gesehen wird (kampf AC-11): ein Klick in den Nebel ist ein Gang dorthin,
+  // auch wenn dort jemand steht - sonst verriete der Befehl, was der Server
+  // nicht schickt (kampf AC-13), und der Spaeher der KI, ins unbekannte Dorf
+  // geschickt, griffe den Hirten an, der zufaellig auf dem Feld steht.
   feindAn(spielerId, x, y) {
     let bestes = null;
     let besterAbstand = 1.01;
+    const nebel = this.nebelGiltFuer(spielerId);
     for (const einheit of this.einheiten.values()) {
       if (einheit.tot || !this.feindlich(spielerId, einheit.besitzer)) continue;
+      if (nebel && !this.sieht(spielerId, Math.round(einheit.x), Math.round(einheit.y))) continue;
       const abstand = Math.hypot(einheit.x - x, einheit.y - y);
       if (abstand < besterAbstand) {
         besterAbstand = abstand;
@@ -3828,8 +3955,9 @@ class Welt {
         if (o.tot) continue;
         belegt.add(schluessel(Math.round(o.x), Math.round(o.y)));
         if (o.weg.length) {
+          // Gerundet: ein Sammler geht auf einen Platz im Feld (einheiten AC-30).
           const ziel = o.weg[o.weg.length - 1];
-          belegt.add(schluessel(ziel.x, ziel.y));
+          belegt.add(schluessel(Math.round(ziel.x), Math.round(ziel.y)));
         }
       }
       return belegt;
@@ -3866,11 +3994,10 @@ class Welt {
   // Wer ausweichen darf: wer kaempft, erst wenn er an seinem Ziel angekommen
   // ist und es noch steht - dann auf ein Feld in Schlagweite (einheiten AC-31,
   // Runde 100); nicht der Bauer auf seiner Farm (eine Farm hat einen
-  // Arbeiter) - und noch nicht, wer am Vorrat oder am Tier arbeitet. Sammler, die sich nicht
-  // stapeln, kosten die Wirtschafts-KI im Median 0,4 Minuten bis zu den
-  // ersten 500 Nahrung, und neun von vierzig KIs verfehlen damit die zehn
-  // Minuten aus fahrplan AC-5 (Runde 89, gemessen). Das ist einheiten AC-30,
-  // eine eigene Runde.
+  // Arbeiter) - und nicht, wer am Vorrat oder am Tier arbeitet: der hat
+  // seinen eigenen Platz (einheiten AC-30, `standplatz`), und ein Schritt auf
+  // ein ganzes Nachbarfeld kostete die Wirtschafts-KI im Median 0,4 Minuten
+  // bis zu den ersten 500 Nahrung (Runde 89, gemessen).
   darfAusweichen(einheit) {
     const art = einheit.auftrag?.art;
     if (art === 'angreifen') return Boolean(einheit.auftrag.angekommen && this.angriffsziel(einheit.auftrag));
@@ -3886,7 +4013,8 @@ class Welt {
   /**
    * Das naechste freie Nachbarfeld, auf dem die Einheit ihre Arbeit behaelt:
    * wer baut, bleibt an der Baustelle (1,2 Felder, wie der Bauauftrag).
-   * Sammler und Schlachter weichen noch nicht aus (einheiten AC-30). Frei
+   * Sammler und Schlachter weichen nicht aus, sie haben ihren Platz
+   * (einheiten AC-30). Frei
    * heisst: begehbar, kein Gebaeude, niemand steht dort oder ist dorthin
    * unterwegs.
    */
@@ -4070,10 +4198,17 @@ class Welt {
       this.wegZumVorrat(einheit);
       return;
     }
-    if (Math.hypot(einheit.x - feld.x, einheit.y - feld.y) > 1.9) {
+    // Gearbeitet wird vom eigenen Platz aus (einheiten AC-30) - wer noch
+    // keinen hat oder nicht darauf steht, geht hin.
+    if (!this.amStand(einheit) || Math.hypot(einheit.x - feld.x, einheit.y - feld.y) > SAMMELN_WEIT) {
       this.wegZumVorrat(einheit);
-      if (!einheit.weg.length) this.vorratUnerreichbar(einheit, index);
-      return;
+      if (einheit.weg.length) return;
+      if (!this.amStand(einheit)) {
+        this.vorratUnerreichbar(einheit, index);
+        return;
+      }
+      // Der Weg kann den Vorrat gewechselt haben (alle Plaetze vergeben).
+      if (einheit.auftrag.feld !== feld) return;
     }
     einheit.zuletztGesammelt = this.karte.felder[index];
     einheit.unerreichbar = null;
@@ -4091,7 +4226,7 @@ class Welt {
     // anderen Seite. Gibt es dort keinen, wie bisher der naechste bei ihr.
     const nahe = einheit.unerreichbar.length <= 3 ? this.vorratErsatz(einheit, index) : null;
     if (nahe) {
-      einheit.auftrag = { art: 'sammeln', feld: nahe.feld, stand: nahe.stand };
+      einheit.auftrag = { art: 'sammeln', feld: nahe.feld, seite: nahe.stand };
       return;
     }
     const ersatz = einheit.unerreichbar.length <= 3

@@ -437,7 +437,24 @@ die Zeilen unter „Für die Erkenntnisse" dorthin und erzeugt das Board neu
   braucht ein ADR, weil „Speicherstände für Strategiepartien" in ADR-0012
   rechts steht), 7 (Ton), 10 (einheiten AC-30), 3 (Reitertempo, Frage), 15
   (Farm-Ablauf, mit dem Rendern), 17 (Klingel).
-  **Arbeitsstand 2026-11-13, 00:30 (fortschreiben):** Gerenderte Bilder
+  **Arbeitsstand 2026-11-13, 02:00 (fortschreiben) — nur auf dem Zweig
+  `strategie-standplatz`, Check rot:** Punkt 10, *Sammler stehen
+  ineinander* (einheiten AC-30). Gebaut als **Standplätze**: vier Viertel
+  je begehbarem Nachbarfeld des Vorrats oder Tiers, der Platz steht im
+  Auftrag (`welt.standplatz`, `auftrag.stand`). Engstes Paar 0,5 Felder
+  statt 0; die Wirtschaft der KI kostet es nichts (500 Nahrung 9,45 statt
+  9,39 min, bis Minute 25 gesammelt 8402 statt 8252). Dazu: der Späher auf
+  Erkundung ist keine Wache (ki AC-13 fiel sonst an Startwert 4; für sich
+  genommen ändert das an 120 Nebelpartien nichts). **Zwei Partientests
+  fallen** — Nebel 34 statt 35 vor Minute 60 und Startwert 27 ohne Sieger,
+  zwei gegen zwei Startwert 16 unentschieden. Über 160 Partien (120 Nebel,
+  40 zu viert) 142 statt 149 vor Minute 60 und 3 statt 1 ohne Sieger,
+  Mediane im Mittel 42,8 statt 43,5: die langen Partien werden eher mehr,
+  gesichert ist es nicht (z = 1,4). **Gelernt:** „alle mit Sieger vor
+  Minute 90" hält auch auf HEAD nur auf den Startwerten 1 bis 40 (41 bis
+  80: einer ohne Sieger) — die Grenze misst die Startwerte mit. Die
+  Entscheidung liegt beim Benutzer; die Grenzen sind nicht angefasst.
+  **Arbeitsstand 2026-11-13, 00:30:** Gerenderte Bilder
   sind die Vorgabe (`6b99ff7`). **Danach, aus dem zweiten Spiel des
   Benutzers:** (1) *Nebel* — sein Späher stand neben dem gegnerischen
   Dorfzentrum und war ein blauer Umriss vor Schwarz: der Browser zeichnete

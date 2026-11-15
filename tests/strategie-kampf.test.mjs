@@ -18,13 +18,20 @@ const TOT_SEKUNDEN_TAKTE = 2 * TAKTE_PRO_SEKUNDE;
  * Eine Welt mit zwei Einheiten, die sich sehen: Annas Angreifer und Berts
  * Ziel, `abstand` Felder weit auseinander auf derselben Zeile.
  */
-function gegenueber(art, zielArt, abstand = 3) {
-  const welt = new Welt(ZWEI, 7);
+function gegenueber(art, zielArt, abstand = 3, einstellungen = {}) {
+  const welt = new Welt(ZWEI, 7, einstellungen);
   const basis = welt.spielerVon('a').basis;
   const angreifer = welt.einheitAnlegen('a', basis.x + 4, basis.y + 4, art);
   const ziel = welt.einheitAnlegen('b', basis.x + 4 + abstand, basis.y + 4, zielArt);
+  // Beide sehen, was eben hingestellt wurde: ein Klick trifft nur, wen man
+  // sieht (kampf AC-11), und gerechnet wird die Sicht sonst erst im Takt.
+  welt.sichtAktualisieren();
   return { welt, angreifer, ziel };
 }
+
+// Wo das Ziel weiter weg steht, als der Angreifer sieht, und es nicht um den
+// Nebel geht: aufgedeckt. Im Nebel waere der Klick ein Gang (kampf AC-11).
+const AUFGEDECKT = { sicht: 'aufgedeckt' };
 
 /** Der Rechtsklick des Browsers: auf das Feld, nicht auf die Nummer. */
 function rechtsklick(welt, spielerId, einheiten, auf) {
@@ -135,7 +142,7 @@ test('kampf AC-1: auf Eigenes wird nicht geschlagen', () => {
 });
 
 test('kampf AC-1: stirbt das Ziel unterwegs, bleibt der Angreifer stehen', () => {
-  const { welt, angreifer, ziel } = gegenueber('soldat', 'miliz', 12);
+  const { welt, angreifer, ziel } = gegenueber('soldat', 'miliz', 12, AUFGEDECKT);
   rechtsklick(welt, 'a', [angreifer], ziel);
   takten(welt, 10);
   assert.ok(angreifer.weg.length, 'er ist unterwegs');
@@ -413,6 +420,7 @@ test('kampf AC-5: vier Dorfbewohner erschlagen einen Soldaten - einer nie', () =
   const soldat = welt.einheitAnlegen('b', basis.x + 7, basis.y + 7, 'soldat');
   const bauern = [[0, 1], [1, 0], [0, -1], [-1, 0]]
     .map(([dx, dy]) => welt.einheitAnlegen('a', soldat.x + dx, soldat.y + dy, 'dorfbewohner'));
+  welt.sichtAktualisieren();
   for (const bauer of bauern) rechtsklick(welt, 'a', [bauer], soldat);
 
   // Vier mal drei Schaden je zwei Sekunden gegen 45 Leben: vier Runden. Der
@@ -476,7 +484,7 @@ test('kampf AC-5: wer sich wehrt, sammelt nicht mehr', () => {
  * wie die Reichweite eines Fernkaempfers.
  */
 function ersterTreffer(art) {
-  const welt = new Welt(ZWEI, 7);
+  const welt = new Welt(ZWEI, 7, AUFGEDECKT);
   const basis = welt.spielerVon('a').basis;
   const angreifer = welt.einheitAnlegen('a', basis.x + 4, basis.y + 4, art);
   const ziel = welt.einheitAnlegen('b', basis.x + 12, basis.y + 4, 'miliz');
@@ -586,7 +594,12 @@ test('kampf AC-5: ein Bauer, der sich wehrt, gibt seine Farm frei', () => {
   assert.equal(farm.arbeiter, bauer.id, 'der Bauer steht auf seiner Farm');
 
   const voll = bauer.leben;
-  const angreifer = welt.einheitAnlegen('a', farm.x + 3, farm.y + 3, 'miliz');
+  // Neben der Farm, drei Felder vom Bauern und damit in Sichtweite der Miliz
+  // (vier): geklickt wird nur, wen man sieht (kampf AC-11) - sonst traefe der
+  // Klick die Farm unter ihm.
+  const angreifer = welt.einheitAnlegen('a', bauer.x + 3, bauer.y, 'miliz');
+  welt.sichtAktualisieren();
+  assert.ok(welt.sieht('a', bauer.x, bauer.y), 'die Miliz sieht den Bauern');
   welt.nachricht('a', { auftrag: 'befehl', einheiten: [angreifer.id], ziel: { x: bauer.x, y: bauer.y } });
   for (let t = 0; t < 30 * TAKTE_PRO_SEKUNDE && bauer.leben === voll; t++) welt.takten();
   assert.ok(bauer.leben < voll, 'der Bauer ist getroffen');

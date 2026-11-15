@@ -104,7 +104,15 @@ aus [Spielziel](spielziel.md) AC-10, gemessen in
   dargestellt. Seit Runde 105 rechnet der Browser die eigene Sicht nach
   derselben Regel wie der Server (AC-15) und lässt fremde Einheiten und Tiere
   außerhalb davon weg, ebenso als Ziel eines Rechtsklicks. Seit AC-13 schickt
-  der Server sie gar nicht erst.
+  der Server sie gar nicht erst. **Seit dem 2026-11-15 liest auch der Server
+  keinen Gegner aus einem Feld, das der Spieler nicht sieht**
+  (`welt.feindAn`): ein Befehl in den Nebel ist ein Gang dorthin, auch wenn
+  dort jemand steht. Vorher wurde daraus ein Angriff auf den, der zufällig
+  auf dem Feld stand — der Befehl verriet, was die Leitung verschweigt, und
+  der Späher der KI, ins unbekannte Dorf geschickt, griff den Hirten am
+  Dorfzentrum an und fiel, bevor er das Dorf gesehen hatte (ki AC-13: mit
+  den Standplätzen aus einheiten AC-30 fanden 5 von 40 den Gegner nicht).
+  Erinnerte Gebäude bleiben ein Ziel.
 - **AC-12** `fertig` **Erkundetes bleibt erinnert** — Gelände bleibt sichtbar, fremde Einheiten
   nicht. Der klassische Nebel: man weiß, wo der Wald steht, aber nicht, wer
   gerade dort ist. Fremde Gebäude stehen im Nebel so da, wie man sie zuletzt

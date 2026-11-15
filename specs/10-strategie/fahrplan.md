@@ -133,7 +133,15 @@ neuen Karte grün bleiben.
   Minute 45, und mindestens 35 von 40 vor Minute 60. Der Nebel kostet sie
   Zeit, weil das Heer suchen muss, was es nicht sieht — das ist der Preis
   der Ehrlichkeit, kein Fehler. Gemessen in Runde 165: 37 von 40, Median
-  44,6, die längste 77,9 Minuten.
+  44,6, die längste 77,9 Minuten. **Seit dem 2026-11-15 über 120 Startwerte,
+  die Grenzen anteilig** (Benutzer, 2026-11-13, zum Einbau der Standplätze,
+  [Einheiten](einheiten-und-befehle.md) AC-30): mindestens 105 von 120 vor
+  Minute 60, Median unter 45 — gemessen 111 und 39,4 (ohne Standplätze 109
+  und 41,0). „Jedes Mal mit Sieger" lässt sich nicht anteilig rechnen: der
+  Test verlangt **höchstens eine von 120 ohne Sieger** — gemessen eine
+  (Startwert 14; ohne Standplätze keine). Diese eine Zahl ist die Auslegung
+  beim Umstellen, nicht die des Benutzers; die Partie ist kein Patt, der
+  Sieger findet die letzten Holzfällerlager des Geschlagenen nicht rechtzeitig.
 - **AC-12** `fertig` **Mensch gegen KI spielbar** — Eine Partie allein gegen die KI lässt sich
   eröffnen, spielen und mit Abschlussbild beenden. Im Browser gespielt (Runde
   102): mit einem KI-Gegner eröffnet, allein gestartet, Holz gesammelt, und

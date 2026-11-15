@@ -153,7 +153,13 @@ nicht die Regeln.
   gewonnener Kampf). Was ihr Heer unterwegs einsteckt, zählt nicht — sonst
   holte ein Scharmützel am anderen Ende der Karte die Wache vom Dorf weg. Die
   KI bekommt dafür keine Meldung: sie sieht nur, dass Leben fehlt. Ohne das
-  ist eine Partie gegen die KI ein Spaziergang.
+  ist eine Partie gegen die KI ein Spaziergang. **Der Späher auf Erkundung
+  ist keine Wache** (2026-11-13): zu Beginn ist er die einzige Kampfeinheit
+  und meist am anderen Ende der Karte. Heimgerufen drehte er beim Startwert 4
+  vier Felder vor dem fremden Dorfzentrum um, weil daheim ein fremder Späher
+  einen Dorfbewohner schlug, und fand den Gegner nicht mehr (AC-13). Jetzt
+  finden ihn über zwanzig Startwerte alle vierzig KIs nach 1,9 bis 2,4
+  Minuten.
 - **AC-15** `fertig` **Liegengebliebenes wird weitergebaut** — Eine eigene
   Baustelle, an der niemand mehr baut — ihr Bauer ist gefallen oder geflohen
   (AC-14) —, bekommt einen Bauer zurück, eine je Entscheidung. Gefunden in
