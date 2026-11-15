@@ -91,7 +91,13 @@ Name eintragen → Partie eroeffnen → Code weitergeben
   Absage kam vorher bei jedem Neuladen wieder. Eine entschiedene Partie wird
   nicht angeboten, eine aeltere als 30 Minuten auch nicht, und keine, aus der
   man ausgeschieden ist - sie laeuft vielleicht weiter, aber nicht mehr fuer
-  einen selbst. Die Liste aller
+  einen selbst. **Wer beitritt, waehrend die Seite noch die Anmeldung prueft,
+  behaelt seinen Platz**: der gemerkte Platz wird vor dem Warten gelesen, und
+  wer danach schon verbunden ist, kehrt nirgendwohin zurueck - sonst "kehrte"
+  die Seite in den eigenen frischen Platz "zurueck", schloss dafuer die
+  Verbindung und stand im leeren Warteraum unter "Diese Partie gibt es nicht
+  mehr" (gefallen in zwei vollen Browserlaeufen, 2026-11-13 und 2026-11-15).
+  Die Liste aller
   eigenen offenen Partien am Konto und das Fortsetzen nach einem Neustart des
   Servers gehoeren zum Speichern (eigene Spec, noch nicht gebaut).
 

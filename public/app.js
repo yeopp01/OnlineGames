@@ -1322,6 +1322,13 @@ document.getElementById('neuladen').addEventListener('click', () => location.rel
 
 // ---- Start -------------------------------------------------------------
 
+// Der gemerkte Platz wird gelesen, bevor gewartet wird: waehrend
+// `sitzungPruefen()` laeuft, laesst sich schon beitreten, und dann laege
+// hier der eigene frische Platz. Die Seite kehrte in ihn "zurueck",
+// schloesse dafuer die Verbindung und verloere den Platz im Warteraum
+// (fahrplan AC-1 im vollen Browserlauf, 2026-11-13).
+const platz = sessionStorage.getItem('platz');
+
 await sitzungPruefen();
 
 // ---- Rueckkehr (raeume AC-9, AC-18) ------------------------------------------
@@ -1356,8 +1363,10 @@ document.getElementById('rueckkehrJa').addEventListener('click', () => {
 document.getElementById('rueckkehrNein').addEventListener('click', platzVergessen);
 
 // Nach einem Neuladen zurueck in die eigene Partie, ohne Code abzutippen.
-const platz = sessionStorage.getItem('platz');
-if (platz) {
+// Wer schon verbunden ist, hat waehrend des Wartens selbst gewaehlt.
+if (draht) {
+  // nichts: weder zurueck noch die Rueckkehr anbieten
+} else if (platz) {
   zurueckkehren(JSON.parse(platz));
 } else {
   // Das Fenster war zu, die Partie wartet vielleicht noch: der Vorraum bietet

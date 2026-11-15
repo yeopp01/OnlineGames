@@ -7,7 +7,7 @@
 // Anmeldung im Lauf (e2e/helpers/konto.mjs: hoechstens fuenf je Stunde).
 import { nachweis } from '../../scripts/qa-nachweis.mjs';
 import { KONTO } from '../helpers/konto.mjs';
-import { expect, fehlerSammeln, test } from '../helpers/seite.mjs';
+import { ANMELDUNG, expect, fehlerSammeln, test } from '../helpers/seite.mjs';
 
 const AUSWAHL = '00-plattform/spielauswahl.md';
 const FAHRPLAN = '10-strategie/fahrplan.md';
@@ -92,5 +92,60 @@ test.describe('Einstieg am Stueck', () => {
       titel: 'Nach dem Start bei Bert: sein Dorfzentrum mit drei Dorfbewohnern und einem Reiter, oben der Startwert',
       test: info,
     });
+  });
+});
+
+// Ein Beitritt, waehrend die Seite noch die Anmeldung prueft: im vollen
+// Browserlauf (2026-11-13, 36 Minuten unter Last) fand die Seite nach dem
+// Warten den eigenen frischen Platz im Sitzungsspeicher, "kehrte zurueck",
+// schloss dafuer die Verbindung und verlor den Platz - Bert stand im leeren
+// Warteraum unter "Diese Partie gibt es nicht mehr.". Hier wird das Warten
+// erzwungen: die Abfrage der Sitzung haengt, bis Bert beigetreten ist.
+test.describe('Beitreten waehrend des Ladens', () => {
+  test('raeume AC-18: wer beitritt, waehrend die Seite noch die Anmeldung prueft, behaelt seinen Platz', async ({ browser }, info) => {
+    const optionen = { baseURL: info.project.use.baseURL, viewport: { width: 1400, height: 950 }, locale: 'de-DE' };
+    const anna = await (await browser.newContext({ ...optionen, storageState: ANMELDUNG })).newPage();
+    const bert = await (await browser.newContext(optionen)).newPage();
+    const fehler = [fehlerSammeln(anna), fehlerSammeln(bert)];
+    try {
+      await anna.goto('/');
+      await anna.locator('[data-oeffnen="strategie"]').click();
+      await anna.locator('[data-eroeffnen="strategie"]').click();
+      await expect(anna.locator('#raumcode')).toHaveText(/^[A-Z0-9]{3}-[A-Z0-9]{3}$/);
+      const code = (await anna.locator('#raumcode').textContent()).trim();
+
+      let loslassen;
+      const losgelassen = new Promise((fertig) => { loslassen = fertig; });
+      let gefragt = false;
+      await bert.route('**/api/auth/get-session*', async (weg) => {
+        gefragt = true;
+        await losgelassen;
+        await weg.continue();
+      });
+      await bert.goto('/', { waitUntil: 'domcontentloaded' });
+      await expect.poll(() => gefragt, { message: 'die Seite fragt nach der Sitzung' }).toBe(true);
+      await bert.locator('#name').fill('Bert');
+      await bert.locator('#code').fill(code);
+      await bert.locator('#beitreten').click();
+      await expect(anna.locator('#spielerliste li:not(.vom-spiel)')).toHaveCount(2);
+      await expect(bert.locator('#warteraum')).toBeVisible();
+
+      // Jetzt erst kommt die Antwort - und damit der Rest des Seitenstarts.
+      loslassen();
+      await bert.waitForLoadState('load');
+      await bert.waitForFunction(() => document.readyState === 'complete');
+      // Der Start ist durch, wenn die Seite die Sitzung gezeichnet hat; eine
+      // Rueckkehr kaeme im selben Augenblick. Zwei Sekunden reichen der
+      // Absage dreimal (sie kam im Lauf nach weniger als einer).
+      await bert.waitForTimeout(2000);
+      await expect(bert.getByText('Diese Partie gibt es nicht mehr.')).toHaveCount(0);
+      await expect(anna.locator('#spielerliste li:not(.vom-spiel)')).toHaveCount(2);
+      await expect(bert.locator('[data-wert="spieler"]')).toBeVisible();
+      await expect(bert.locator('#rueckkehr')).toBeHidden();
+      expect(fehler.flat(), 'Eine der Seiten hat Fehler gemeldet').toEqual([]);
+    } finally {
+      await anna.context().close();
+      await bert.context().close();
+    }
   });
 });
