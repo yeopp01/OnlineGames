@@ -1,0 +1,10 @@
+{
+  "spec": "10-strategie/bedienung.md",
+  "ac": "AC-78",
+  "titel": "Das Menü mit den zwei Schiebern: Geräusche auf 60 %, Musik auf 30 %",
+  "datei": "e2e/tests/strategie-ton.spec.mjs",
+  "pfad": [
+    "Ton",
+    "bedienung AC-78: im Menue stehen zwei Schieber - die Musik auf 30 % ist am Ausgang deutlich leiser, und der Browser merkt es sich"
+  ]
+}

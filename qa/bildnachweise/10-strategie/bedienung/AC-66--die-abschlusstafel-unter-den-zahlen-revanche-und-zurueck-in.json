@@ -1,0 +1,10 @@
+{
+  "spec": "10-strategie/bedienung.md",
+  "ac": "AC-66",
+  "titel": "Die Abschlusstafel: unter den Zahlen Revanche und Zurück in den Vorraum",
+  "datei": "e2e/tests/strategie-rueckmeldung.spec.mjs",
+  "pfad": [
+    "Rueckmeldungen aus der Partie zu zweit",
+    "bedienung AC-66: an der Abschlusstafel fuehrt Zurück in den Vorraum mit der Maus dorthin - und bietet keine Rueckkehr mehr an"
+  ]
+}

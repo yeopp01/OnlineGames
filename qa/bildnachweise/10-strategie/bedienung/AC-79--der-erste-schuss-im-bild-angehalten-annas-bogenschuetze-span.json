@@ -1,0 +1,10 @@
+{
+  "spec": "10-strategie/bedienung.md",
+  "ac": "AC-79",
+  "titel": "Der erste Schuss, im Bild angehalten: Annas Bogenschütze spannt den Bogen, sein Pfeil ist noch nicht in der Luft",
+  "datei": "e2e/tests/strategie-kampfbild.spec.mjs",
+  "pfad": [
+    "Schlag und Ziel",
+    "bedienung AC-79: beim ersten Schuss spannt der Bogenschuetze erst - der Pfeil fliegt, wenn die Sehne los ist"
+  ]
+}

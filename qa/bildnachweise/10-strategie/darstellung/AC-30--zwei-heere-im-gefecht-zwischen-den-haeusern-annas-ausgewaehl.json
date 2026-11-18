@@ -1,0 +1,10 @@
+{
+  "spec": "10-strategie/darstellung.md",
+  "ac": "AC-30",
+  "titel": "Zwei Heere im Gefecht zwischen den Haeusern, Annas ausgewaehlt, Verdeckte als Umriss - gemessen hoechstens sechs Bilder ueber 50 ms in zehn Sekunden",
+  "datei": "e2e/tests/strategie-tempo.spec.mjs",
+  "pfad": [
+    "Tempo im Browser",
+    "darstellung AC-30: ein Gefecht zwischen den Haeusern stockt nicht"
+  ]
+}

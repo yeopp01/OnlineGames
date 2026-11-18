@@ -1,0 +1,10 @@
+{
+  "spec": "10-strategie/bedienung.md",
+  "ac": "AC-76",
+  "titel": "Annas Bogenschütze schießt auf die befohlene Ramme und schaut dorthin - die andere steht näher, auf seiner anderen Seite",
+  "datei": "e2e/tests/strategie-kampfbild.spec.mjs",
+  "pfad": [
+    "Schlag und Ziel",
+    "bedienung AC-76: wer schiesst, schaut auf sein befohlenes Ziel, auch wenn ein anderer Gegner naeher steht - und wer faellt, liegt zu dem hin, der ihn traf"
+  ]
+}

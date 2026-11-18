@@ -1,0 +1,10 @@
+{
+  "spec": "10-strategie/bedienung.md",
+  "ac": "AC-77",
+  "titel": "Nach einem Doppelklick auf den Namen in der Leiste: kein Wort ist blau hinterlegt",
+  "datei": "e2e/tests/strategie-rueckmeldung.spec.mjs",
+  "pfad": [
+    "Rueckmeldungen aus der Partie zu zweit",
+    "bedienung AC-77: im Spielbild laesst sich nichts markieren - nicht mit Doppelklick auf den Namen, nicht mit einem Zug von der Karte ueber die Leiste"
+  ]
+}
