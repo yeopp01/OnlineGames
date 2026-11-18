@@ -38,6 +38,19 @@ FELLE = {
     # zurueckgenommen vom Braunen des Spaehers nicht zu unterscheiden
     # (darstellung AC-14: 0,26 statt einem Drittel).
     'falbe': (('#8a744e', '#a48c60', '#b9a172'), ('#2a2018', '#44362a'), ('#1b1510', '#30261d'), '#3f3128'),
+    # Der Rappe des Reiterschuetzen (einheiten AC-46): Rappenstein fuehrt ihn im
+    # Namen. Nicht ganz schwarz - sonst waere er auf dunklem Boden ein Loch.
+    'rappe': (('#14110f', '#231f1c', '#34302c'), ('#0c0a09', '#1a1715'), ('#090807', '#151210'), '#2b2420'),
+    # Die Pferde der Krone (einheiten AC-66). Der Lichtfuchs des Husaren:
+    # ein helles Rotbraun bis in die Beine, Maehne und Schweif hell wie
+    # Flachs. Der Leib ist heller als beim Braunen des Spaehers - Rappe und
+    # Brauner lagen im Bild zu nah beieinander (darstellung AC-14: 0,15), das
+    # soll dem Fuchs nicht auch geschehen.
+    'lichtfuchs': (('#7a4424', '#93582f', '#a96b3c'), ('#6a3a1e', '#84502a'), ('#a08a5e', '#c2ad80'), '#3a2a20'),
+    # Der Schwarzbraune des Kavaliers: dunkler als der Braune, waermer als der Rappe.
+    'schwarzbraun': (('#241711', '#35231a', '#463024'), ('#120d0a', '#1f1713'), ('#0d0a08', '#1a1512'), '#33261f'),
+    # Der Weisse des Paladins: heller als der Schimmel des Ritters, auch im Langhaar.
+    'weiss': (('#a8a59c', '#c6c2b8', '#dedad0'), ('#8a877f', '#a9a59c'), ('#cfcabd', '#e6e1d4'), '#77695f'),
 }
 
 

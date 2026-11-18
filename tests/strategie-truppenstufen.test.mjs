@@ -217,6 +217,7 @@ test('bauen AC-38: der Wehrturm - die Universitaet staerkt jeden Wachturm, auch 
   const wert = (feld, wer = 'a') => welt.gebaeudewert(wer, 'wachturm', feld);
   const vorher = { leben: wert('leben'), angriff: wert('angriff'), nah: wert('nahruestung'), fern: wert('fernruestung'), weit: wert('reichweite') };
   assert.equal(welt.kampfwerte('a').wachturm.name, undefined, 'vorher heisst er, wie er heisst');
+  assert.equal(welt.kampfwerte('a').wachturm.bild, undefined, 'und sieht aus, wie er aussieht');
   assert.deepEqual(bestellen(welt, uni, 'wehrturm'), {});
   sekunden(welt, w.zeit);
   assert.ok(anna.verbesserungen.includes('wehrturm'));
@@ -234,6 +235,9 @@ test('bauen AC-38: der Wehrturm - die Universitaet staerkt jeden Wachturm, auch 
   // Wie er heisst, sagt der Server je Spieler - auch dem Gegner, der ihn ansieht.
   assert.equal(welt.kampfwerte('a').wachturm.name, 'Wehrturm');
   assert.equal(welt.kampfwerte('b').wachturm.name, undefined);
+  // Und mit welchem Bild er steht: der Wehrturm hat sein eigenes.
+  assert.equal(welt.kampfwerte('a').wachturm.bild, 'wehrturm');
+  assert.equal(welt.kampfwerte('b').wachturm.bild, undefined);
   // Er trifft haerter: 7 statt 5 gegen 1 Fernruestung der Miliz.
   const miliz = welt.einheitAnlegen('b', turm.x + 3, turm.y, 'miliz');
   assert.equal(welt.schaden(turm, miliz, false), 7 - 1);

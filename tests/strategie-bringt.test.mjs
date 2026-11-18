@@ -8,7 +8,7 @@ import { createRequire } from 'node:module';
 const require = createRequire(import.meta.url);
 const { bringt, hausBringt } = require('../server/spiele/strategie/bringt.js');
 const { VERBESSERUNGEN, EINHEITEN, HAEUSER, HANDEL, ZEITALTER } = require('../server/spiele/strategie/daten.js');
-const { Welt, GEBAEUDE_NAMEN } = require('../server/spiele/strategie/welt.js');
+const { Welt, GEBAEUDE_NAMEN, EINHEIT_NAMEN } = require('../server/spiele/strategie/welt.js');
 
 test('bedienung AC-55: jede Verbesserung sagt, was sie bringt - oder tauscht eine Einheit aus', () => {
   for (const [art, verbesserung] of Object.entries(VERBESSERUNGEN)) {
@@ -126,7 +126,7 @@ test('bedienung AC-69: der Aufbau traegt die Saetze jedes Hauses und das Haus je
   const aufbau = welt.aufbau();
   for (const art of FUENF) {
     assert.deepEqual(aufbau.werte.haeuser[art], {
-      name: HAEUSER[art].name, wahlspruch: HAEUSER[art].wahlspruch, ...hausBringt(HAEUSER[art], GEBAEUDE_NAMEN),
+      name: HAEUSER[art].name, wahlspruch: HAEUSER[art].wahlspruch, ...hausBringt(HAEUSER[art], GEBAEUDE_NAMEN, EINHEIT_NAMEN),
     }, art);
   }
   // Was die KI mit dem Haus vorhat, geht den Browser nichts an.

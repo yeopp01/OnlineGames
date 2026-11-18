@@ -2,7 +2,7 @@
 
 **Bereich:** Strategie
 **Kuerzel:** spielziel
-**Stand:** 17/28 fertig · 1 in Arbeit · 10 offen
+**Stand:** 17/29 fertig · 1 in Arbeit · 11 offen
 
 ## Zweck
 
@@ -346,6 +346,21 @@ spielt die KI am schlechtesten.
   Mit der Revanche läuft das Bild wieder (im Browser nicht eigens geprüft). **Rückmeldung des Benutzers:** „so isses
   lustig, dass meine ritter noch weiter an den gebäuden rumfuhrwerken,
   obwohl sie weg sind".
+
+### Stufe F — die Krone (Spec-Runde 2026-11-18)
+
+- **AC-29** `offen` **Sieg durch das Wunder** — Steht ein fertiges Wunder
+  ([Bauen](bauen.md) AC-51) zehn Spielminuten (`WUNDER_SEKUNDEN`, als
+  Takte), gewinnt sein Besitzer mit seinem Team (AC-20). Mit der
+  Fertigstellung sehen **alle** die Ansage mit der Uhr, an derselben Stelle
+  wie die Frist einer Kündigung (AC-24), und die Übersichtskarte zeigt das
+  Wunder auch im Nebel — der Sieg soll eine Entscheidung sein, auf die die
+  anderen antworten können, kein Überfall. Fällt das Wunder, endet seine
+  Uhr; ein neues beginnt von vorn. Stehen mehrere, läuft jede Uhr für sich.
+  Löst der Besitzer sein Bündnis, läuft die Uhr weiter, für ihn und wer
+  dann noch mit ihm verbündet ist. Läuft die Zeitgrenze (AC-22) zuerst ab,
+  bleibt es beim Unentschieden. Eine Einstellung zum Abschalten gibt es
+  nicht.
 
 ## Der Prüfstein
 

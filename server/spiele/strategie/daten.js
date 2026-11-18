@@ -12,7 +12,9 @@
 
 /**
  * Mengen je Rohstoff - Kosten, Faktoren auf das Sammeln, Zuschlaege.
- * @typedef {{holz?: number, nahrung?: number, gold?: number, stein?: number}} Rohstoffe
+ * `gefallene` steht nur in Kosten (einheiten AC-49): bezahlt wird mit eigenen
+ * Einheiten, die gestorben sind.
+ * @typedef {{holz?: number, nahrung?: number, gold?: number, stein?: number, gefallene?: number}} Rohstoffe
  */
 
 /**
@@ -32,14 +34,16 @@
  * @property {string[]} klassen als was die Einheit getroffen wird
  * @property {Record<string, number>} [bonus] Zuschlag je Klasse des Ziels
  * @property {boolean} [wacht] fehlt es, wacht jede Einheit mit einem Angriff
+ * @property {number} [getarnt] Felder: erst so nah an einer Einheit oder einem Gebaeude des Gegners zaehlt sie fuer ihn als gesehen (kampf AC-22)
  * @property {string[]} [baut]
  * @property {number} [zeitalter] fehlt es, gilt die Dunkle Zeit (0)
+ * @property {string[]} [haeuser] nur diese Haeuser bilden sie aus; fehlt es, jedes (einheiten AC-42)
  * @property {string} [stufeVon] die Stufe davor - ausgebildet wird immer die erreichte (einheiten AC-24, AC-58)
  * @property {boolean} [nurGebaeude]
  * @property {number} [mindestreichweite]
  * @property {number} [flaeche]
  * @property {number} [geschoss] Felder je Sekunde
- * @property {{reichweite: number, je: number}} [heilen]
+ * @property {{reichweite: number, je: number, nicht: string[]}} [heilen]
  * @property {{reichweite: number, frueh: number, spaet: number, chance: number, ruhe: number, nicht: string[]}} [bekehren]
  * @property {boolean} [handelt]
  */
@@ -88,6 +92,7 @@
  * @property {Record<string, number>} [gebaeude]
  * @property {Record<string, Record<string, number>>} [bauwerk] Zuschlaege je Gebaeudeart (bauen AC-38)
  * @property {Record<string, number>} [handel] nur bei Haeusern
+ * @property {Record<string, number>} [preis] Faktor auf die Kosten je Einheitenart, nur bei Haeusern (einheiten AC-44)
  * @property {Record<string, number>} [ausbildung] nur im Mannschaftsbonus
  */
 
@@ -101,6 +106,7 @@
  * @property {string} [vorstufe]
  * @property {Record<string, string>} [wandelt] tauscht eine Einheitenart aus
  * @property {Record<string, string>} [nennt] wie ein Gebaeude danach heisst (bauen AC-38)
+ * @property {Record<string, string>} [bild] mit welchem Bild es danach steht (bauen AC-38)
  *
  * @typedef {VerbesserungNurHier & Wirkungen} Verbesserung
  */
@@ -257,6 +263,98 @@ const EINHEITEN = {
     angriff: 7, nahruestung: 0, fernruestung: 2, reichweite: 0, nachladen: 2,
     klassen: ['kavallerie'], zeitalter: 2, stufeVon: 'spaeherreiter',
   },
+  // **Einheiten der Haeuser** (ADR-0014, einheiten AC-42 bis AC-44). `haeuser`
+  // nennt, wer sie ausbildet - gelesen neben `zeitalter`: im Menue, bei der
+  // Ausbildung, in der Absage und von der KI. Fehlt es, bildet sie jedes Haus
+  // aus. Alle Zahlen sind Startwerte aus der Spec; gesetzt, weil sie dort
+  // nicht stehen: Sicht (Reichweite plus zwei wie bei Bogen und Armbrust, im
+  // Nahkampf 4), Ausbildungszeit der Schuetzen (27 s wie ihre Nachbarn in der
+  // Schiessanlage) und die Nachladezeit von Pavesenschuetze und Soeldner (2 s).
+  //
+  // Der Eibenschuetze, nur Eschenbruch: so viel Schaden wie kuenftig der
+  // Langbogenschuetze, ein Feld weiter als jeder andere Schuetze, wenig Leben.
+  // Keinen Bonus gegen Speer - den hat die Bogenlinie.
+  eibenschuetze: {
+    leben: 35, tempo: 0.96, sicht: 8, tragkraft: 0, kosten: { holz: 35, gold: 40 }, zeit: 27, kuerzel: 'y',
+    angriff: 6, nahruestung: 0, fernruestung: 0, reichweite: 6, nachladen: 2,
+    klassen: ['bogenschuetze'], zeitalter: 2, haeuser: ['eschenbruch'],
+  },
+  // Der Pavesenschuetze, nur Wehrstein: ein Schuetze hinter einem grossen
+  // Schild - langsam, kurz, und Pfeile ritzen ihn nur.
+  pavesenschuetze: {
+    leben: 45, tempo: 0.85, sicht: 6, tragkraft: 0, kosten: { holz: 30, gold: 45 }, zeit: 27, kuerzel: 'z',
+    angriff: 4, nahruestung: 1, fernruestung: 4, reichweite: 4, nachladen: 2,
+    klassen: ['bogenschuetze'], zeitalter: 2, haeuser: ['wehrstein'],
+  },
+  // Der Soeldner, jedes Haus: kostet nur Gold und ist schnell da. Silberfurt
+  // bekommt ihn billiger - das steht als `preis` in den Boni des Hauses.
+  // 60 Leben statt der 55 aus der Spec: mit 55 faellt er einen Schlag frueher
+  // als der Langschwertkaempfer und verliert gegen ihn 71 von 80 Gefechten;
+  // mit 60 gewinnt er 44 von 80 (einheiten AC-44: keiner ueber 60 %).
+  soeldner: {
+    leben: 60, tempo: 1.0, sicht: 4, tragkraft: 0, kosten: { gold: 80 }, zeit: 18, kuerzel: 'q',
+    angriff: 9, nahruestung: 1, fernruestung: 1, reichweite: 0, nachladen: 2,
+    klassen: ['infanterie'], zeitalter: 2,
+  },
+  // **Aus der Burg** (einheiten AC-45 bis AC-47): je Haus eine Einheit, die
+  // es sonst nirgends gibt. Kosten, Dauer und Tempo sind die Startwerte der
+  // Spec; wo eine Entscheidung der Spec damit nicht hielt, steht es dabei.
+  // Gemessen im Gefechtsstand, Budget 1200, jede Art auf beiden Seiten
+  // (2026-11-18).
+  //
+  // Der Kriegswolf: schnell wie ein Ritter, aber kein Reiter - Klasse `tier`,
+  // der Speer hat keinen Bonus gegen ihn, und die Schmiede ruestet ihn nicht.
+  // Gegen Speerkaempfer und Pikeniere 40 von 40, gegen Langschwertkaempfer 0.
+  kriegswolf: {
+    leben: 55, tempo: 1.35, sicht: 5, tragkraft: 0, kosten: { nahrung: 60, gold: 30 }, zeit: 20, kuerzel: 'f',
+    angriff: 7, nahruestung: 0, fernruestung: 1, reichweite: 0, nachladen: 1.5,
+    klassen: ['tier'], zeitalter: 2, haeuser: ['eschenbruch'],
+  },
+  // Der Reiterschuetze: schiesst vom Pferd und wird als Reiter und als
+  // Schuetze getroffen - Speer und Plaenkler haben beide ihren Bonus. Mit
+  // zwei Klassen bekommt er auch beide Linien der Schmiede; das ist die eine
+  // Regel der Wirkungen (Schluessel = Art oder Klasse), keine Ausnahme fuer
+  // ihn. Reichweite 5 und Fernruestung 2 statt 4 und 0 aus der Spec: mit den
+  // Startwerten verlor er gegen Armbrustschuetzen 40 von 40 - im Gefecht
+  // haelt niemand Abstand, das Pferd nuetzt dort nichts. So gewinnt er 39 von
+  // 40 und verliert gegen Plaenkler und Speerkaempfer 40 von 40.
+  reiterschuetze: {
+    leben: 60, tempo: 1.4, sicht: 6, tragkraft: 0, kosten: { holz: 40, gold: 70 }, zeit: 34, kuerzel: 'h',
+    angriff: 5, nahruestung: 0, fernruestung: 2, reichweite: 5, nachladen: 2,
+    klassen: ['kavallerie', 'bogenschuetze'], zeitalter: 2, haeuser: ['rappenstein'],
+  },
+  // Der Riese: viel Leben, langsam, +40 gegen Gebaeude - 50 je Schlag alle
+  // drei Sekunden, zwei Drittel einer Ramme, aber er schlaegt auch Einheiten.
+  // 180 Leben und keine Fernruestung statt 250 und 1 aus der Spec: mit den
+  // Startwerten gewann er gegen Armbrustschuetzen 40 von 40, jetzt keines.
+  // Speerkaempfer und Pikeniere haelt er auf (40 von 40), gegen
+  // Langschwertkaempfer und Ritter verliert er.
+  riese: {
+    leben: 180, tempo: 0.6, sicht: 4, tragkraft: 0, kosten: { nahrung: 120, gold: 100 }, zeit: 40, kuerzel: 't',
+    angriff: 10, nahruestung: 2, fernruestung: 0, reichweite: 0, nachladen: 3,
+    klassen: ['infanterie'], bonus: { gebaeude: 40 }, zeitalter: 2, haeuser: ['wehrstein'],
+  },
+  // Der Meuchler (einheiten AC-48): **getarnt** - ein Gegner sieht ihn erst,
+  // wenn eine seiner Einheiten oder eines seiner Gebaeude hoechstens `getarnt`
+  // Felder entfernt steht (kampf AC-22). Er wacht nicht: wer von selbst auf
+  // jeden losgeht, der in Sicht kommt, verraet sich. Getroffen, schlaegt er
+  // zurueck wie ein Dorfbewohner. Ein Dorfbewohner (25 Leben) faellt nach
+  // zwei Stichen. Gegen Soldaten gleicher Kosten 0 von 40.
+  meuchler: {
+    leben: 35, tempo: 1.1, sicht: 5, tragkraft: 0, kosten: { nahrung: 40, gold: 60 }, zeit: 25, kuerzel: 'u',
+    angriff: 6, nahruestung: 0, fernruestung: 0, reichweite: 0, nachladen: 1.5,
+    klassen: ['infanterie'], bonus: { dorf: 10, moench: 10 }, getarnt: 2, wacht: false,
+    zeitalter: 2, haeuser: ['silberfurt'],
+  },
+  // Der Wiedergaenger (einheiten AC-49): kostet Gold **und einen Gefallenen** -
+  // jede eigene Einheit, die stirbt, ist einer, und bezahlt wird er wie Holz
+  // (`kosten`). Wer selbst aus einem Gefallenen entstand, zaehlt nicht noch
+  // einmal. Untot: kein Moench bekehrt oder heilt ihn (`nicht` am Moench).
+  wiedergaenger: {
+    leben: 60, tempo: 0.7, sicht: 4, tragkraft: 0, kosten: { gold: 30, gefallene: 1 }, zeit: 10, kuerzel: 'x',
+    angriff: 6, nahruestung: 1, fernruestung: 0, reichweite: 0, nachladen: 2,
+    klassen: ['infanterie', 'untot'], zeitalter: 2, haeuser: ['distelhag'],
+  },
   // Die Ramme (einheiten AC-35), Werte aus der Vorlage. `nurGebaeude`: sie
   // greift nur Gebaeude an - ein Befehl auf eine Einheit ist ein Gang dorthin,
   // und sie wacht nicht und wehrt sich nicht. Der Bonus gilt der Klasse
@@ -296,8 +394,8 @@ const EINHEITEN = {
   moench: {
     leben: 30, tempo: 0.7, sicht: 11, tragkraft: 0, kosten: { gold: 100 }, zeit: 51, kuerzel: 'g',
     angriff: 0, nahruestung: 0, fernruestung: 0, reichweite: 0, nachladen: 0,
-    klassen: ['moench'], heilen: { reichweite: 4, je: 1 },
-    bekehren: { reichweite: 9, frueh: 4, spaet: 10, chance: 0.28, ruhe: 62, nicht: ['belagerung', 'moench'] },
+    klassen: ['moench'], heilen: { reichweite: 4, je: 1, nicht: ['belagerung', 'untot'] },
+    bekehren: { reichweite: 9, frueh: 4, spaet: 10, chance: 0.28, ruhe: 62, nicht: ['belagerung', 'moench', 'untot'] },
     zeitalter: 2,
   },
   // Der Marktkarren (einheiten AC-39), Werte aus der Vorlage: 100 Holz, 50
@@ -380,7 +478,7 @@ const GEBAEUDE = {
   kaserne: {
     seite: 1,
     groesse: 3, kosten: { holz: 175 }, bauzeit: 50, leben: 1200, wohnraum: 0, annahme: [],
-    bildetAus: ['miliz', 'speerkaempfer', 'soldatenstufe', 'langschwertstufe', 'pikenierstufe'],
+    bildetAus: ['miliz', 'speerkaempfer', 'soeldner', 'soldatenstufe', 'langschwertstufe', 'pikenierstufe'],
   },
   // Gebaeude der Feudalzeit (bauen AC-24): `zeitalter: 1` sperrt sie, bis die
   // Feudalzeit erreicht ist. Die Schmiede bildet keine Einheiten aus - sie
@@ -388,7 +486,7 @@ const GEBAEUDE = {
   schiessanlage: {
     seite: 1,
     groesse: 3, kosten: { holz: 175 }, bauzeit: 50, leben: 1000, wohnraum: 0, annahme: [],
-    bildetAus: ['bogenschuetze', 'plaenkler', 'armbrustschuetze', 'bogenstufe', 'eliteplaenklerstufe'], zeitalter: 1,
+    bildetAus: ['bogenschuetze', 'plaenkler', 'armbrustschuetze', 'eibenschuetze', 'pavesenschuetze', 'bogenstufe', 'eliteplaenklerstufe'], zeitalter: 1,
   },
   stall: {
     seite: 1,
@@ -460,7 +558,8 @@ const GEBAEUDE = {
   // Voelkern (Stufe E), der Unterschlupf ist nicht gebaut.
   burg: {
     seite: 1,
-    groesse: 4, kosten: { stein: 650 }, bauzeit: 200, leben: 4800, wohnraum: 20, annahme: [], bildetAus: [], zeitalter: 2,
+    groesse: 4, kosten: { stein: 650 }, bauzeit: 200, leben: 4800, wohnraum: 20, annahme: [],
+    bildetAus: ['kriegswolf', 'reiterschuetze', 'riese', 'meuchler', 'wiedergaenger'], zeitalter: 2,
     angriff: 11, reichweite: 8, nachladen: 2, pfeile: 4, nahruestung: 8, fernruestung: 11, sicht: 9,
   },
   // Der Markt (bauen AC-33): Kosten, Bauzeit und Leben aus der Vorlage, ab der
@@ -716,14 +815,15 @@ const VERBESSERUNGEN = {
   // Der Wehrturm (bauen AC-38): die Universitaet macht aus jedem Wachturm
   // einen - auch aus denen, die schon stehen. `bauwerk` gibt Zuschlaege je
   // Gebaeudeart, gelesen in `welt.gebaeudewert()`; `nennt` sagt, wie der Turm
-  // danach heisst. Werte aus den Technikbaum-Daten zum Original: +480 Leben,
-  // +2 Angriff, +1/+1 Ruestung, 100 Nahrung und 250 Holz, 30 Sekunden. Das
-  // Bild bleibt das des Wachturms.
+  // danach heisst, `bild`, mit welchem Bild er steht - beides schickt der
+  // Server je Spieler mit den Werten (`kw`). Werte aus den Technikbaum-Daten
+  // zum Original: +480 Leben, +2 Angriff, +1/+1 Ruestung, 100 Nahrung und 250
+  // Holz, 30 Sekunden.
   wehrturm: {
     name: 'Wehrturm', kosten: { nahrung: 100, holz: 250 }, zeit: 30, zeitalter: 2,
     zeichen: 'zinne',
     wirkung: {}, bauwerk: { wachturm: { leben: 480, angriff: 2, nahruestung: 1, fernruestung: 1 } },
-    nennt: { wachturm: 'Wehrturm' },
+    nennt: { wachturm: 'Wehrturm' }, bild: { wachturm: 'wehrturm' },
   },
   // Die Ruestungen der Schmiede (bauen AC-39), je Waffengattung zwei Stufen:
   // die erste ab dem Lehen, die zweite ab dem Fuerstentum und nur nach der
@@ -772,6 +872,11 @@ const KLASSEN = {
   speer: { name: 'Speerkämpfer' },
   bogenschuetze: { name: 'Bogenschützen' },
   kavallerie: { name: 'Kavallerie' },
+  // Der Kriegswolf (einheiten AC-45): laeuft wie ein Reiter, ist aber keiner -
+  // kein Bonus greift auf ihn, keine Verbesserung staerkt ihn.
+  tier: { name: 'Tiere' },
+  // Der Wiedergaenger (einheiten AC-49): kein Moench bekehrt oder heilt ihn.
+  untot: { name: 'Untote' },
   // Belagerung (einheiten AC-35). `gebaeude` traegt jedes Gebaeude von selbst
   // (oben) - die Ramme hat ihren Bonus dagegen.
   belagerung: { name: 'Belagerung' },
@@ -817,6 +922,12 @@ const HANDEL = {
 // `farm`, `gebaeude` - und gelten von Beginn an. Gelesen werden sie dort, wo
 // die Verbesserungen gelesen werden (`welt.wirkungen()`); die Simulation
 // kennt kein einzelnes Haus.
+//
+// `preis` (einheiten AC-44) ist ein Faktor auf die Kosten einer Einheitenart:
+// Silberfurt bekommt den Soeldner fuer 64 statt 80 Gold. Gelesen in
+// `welt.auftragKosten()` - bezahlt, erstattet und gezeigt wird nur darueber.
+// Im Mannschaftsbonus steht er nicht: der kommt und geht, und eine Absage
+// muss erstatten, was bezahlt wurde.
 //
 // Zwei Formen gibt es nur bei den Haeusern (spielziel AC-26):
 // `gebaeude.reichweite` (wie `angriff` und `nachladen`) gilt nur fuer ein
@@ -882,7 +993,7 @@ const HAEUSER = {
     // erst mit einem Markt, und die KI handelt erst ab dem Fuerstentum -
     // bis dahin spielte Silberfurt ohne Haus (30 % Siege; mit +10 % und
     // Schuetzen fuer 30 Holz 25 %).
-    boni: { sammeln: { gold: 1.15 }, handel: { gebuehr: -0.15, karrenAnteil: 0.2 } },
+    boni: { sammeln: { gold: 1.15 }, handel: { gebuehr: -0.15, karrenAnteil: 0.2 }, preis: { soeldner: 0.8 } },
     mannschaft: { handel: { verbuendetAnteil: 0.2 } },
     ki: { schwerpunkt: 'markt', goldKnapp: GOLD_KNAPP_SILBERFURT },
   },

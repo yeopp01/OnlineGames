@@ -512,7 +512,7 @@ test('darstellung AC-24: jede gerenderte Einheit hat acht Blickrichtungen, Ablae
     pruefen(m.farbeMin, `${art}: zu wenig Spielerfarbe`).toBeGreaterThan(0.04);
   }
   // Alle Einheiten der Daten und das Schaf.
-  expect(Object.keys(messung).length).toBe(19);
+  expect(Object.keys(messung).length).toBe(27);
 
   await nachweis(page.locator('#probe-einheiten'), {
     spec: DARSTELLUNG,

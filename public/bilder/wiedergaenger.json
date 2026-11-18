@@ -1,0 +1,57 @@
+{
+  "bild": "wiedergaenger.webp",
+  "maske": "wiedergaenger-maske.webp",
+  "zelle": [
+    144,
+    124
+  ],
+  "fuss": [
+    42,
+    97
+  ],
+  "feldbreite": 132,
+  "zeilen": 8,
+  "spalten": 9,
+  "art": "figur",
+  "richtungen": 8,
+  "hoehe": 86,
+  "ablaeufe": {
+    "stehen": {
+      "spalte": 0,
+      "bilder": 1
+    },
+    "gehen": {
+      "spalte": 1,
+      "bilder": 8
+    },
+    "angreifen": {
+      "spalte": 0,
+      "bilder": 8,
+      "bild": "wiedergaenger-angreifen.webp",
+      "maske": "wiedergaenger-angreifen-maske.webp",
+      "zelle": [
+        192,
+        157
+      ],
+      "fuss": [
+        72,
+        123
+      ]
+    },
+    "sterben": {
+      "spalte": 0,
+      "bilder": 8,
+      "einmal": true,
+      "bild": "wiedergaenger-sterben.webp",
+      "maske": "wiedergaenger-sterben-maske.webp",
+      "zelle": [
+        208,
+        144
+      ],
+      "fuss": [
+        85,
+        97
+      ]
+    }
+  }
+}

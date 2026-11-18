@@ -1135,6 +1135,22 @@ canvas.angriffslauf {
 .ware-n { background: #c8323c; border-radius: 50%; }
 .ware-g { background: #e0b43a; }
 .ware-s { background: #9aa0a6; }
+/* Gefallene (einheiten AC-49): bleich und rund wie ein Schaedel. */
+.ware-x { background: #d9d4c2; border-radius: 50% 50% 38% 38%; }
+
+/* Wie viele Gefallene da sind, in der Ecke des Knopfs. */
+.ausbilden button .gefallene {
+  position: absolute;
+  top: 2px;
+  left: 3px;
+  padding: 0 0.3rem;
+  border: 1px solid #d9d4c260;
+  border-radius: 0.6rem;
+  background: #1c1a17cc;
+  color: #d9d4c2;
+  font: 600 0.68rem system-ui, sans-serif;
+  font-variant-numeric: tabular-nums;
+}
 
 .baumenue {
   display: flex;

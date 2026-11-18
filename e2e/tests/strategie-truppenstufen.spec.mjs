@@ -242,8 +242,23 @@ test.describe('Truppenstufen', () => {
         ...(await page.locator('#kampfwerte').evaluate((z) => ({ ...z.dataset }))),
       };
     };
+    // Mit welchem Bild er steht und wie hoch es ist: der Balken des Gewaehlten
+    // sitzt knapp ueber dem, was im Bild deckt.
+    const turmbild = async (page, id) => {
+      await gebaeudeWaehlen(page, id, 2);
+      await page.waitForFunction((g) => window.ansicht.lebensbalken.some((b) => b.art === 'gebaeude' && b.i === g), id);
+      return page.evaluate((g) => {
+        const a = window.ansicht;
+        const gebaeude = a.gebaeude.get(g);
+        const m = a.gebaeudeMitte(gebaeude);
+        const balken = a.lebensbalken.find((b) => b.art === 'gebaeude' && b.i === g);
+        return { bild: a.bildart(gebaeude), hoch: Math.round(a.zuBild(m.x, m.y).y - balken.y) };
+      }, id);
+    };
     const vorher = await turmZeigt(anna, turm);
     expect(vorher.name).toBe('Wachturm');
+    const bildVorher = await turmbild(anna, turm);
+    expect(bildVorher.bild).toBe('wachturm');
     const voll = Number(vorher.leben.split('/')[1]);
     expect(vorher.leben).toBe(`${voll}/${voll}`);
     // Beschaedigt: der Wehrturm gibt 480 dazu, nicht das volle Leben.
@@ -261,8 +276,13 @@ test.describe('Truppenstufen', () => {
     expect(Number(nachher.nahruestung), '+1 Nahruestung').toBe(Number(vorher.nahruestung) + 1);
     expect(Number(nachher.fernruestung), '+1 Fernruestung').toBe(Number(vorher.fernruestung) + 1);
     expect(nachher.reichweite, 'die Reichweite bleibt').toBe(vorher.reichweite);
+    // Er steht mit seinem eigenen Bild da, und das ist hoeher.
+    const bildNachher = await turmbild(anna, turm);
+    expect(bildNachher.bild).toBe('wehrturm');
+    expect(bildNachher.hoch, 'der Wehrturm ragt hoeher als der Wachturm').toBeGreaterThan(bildVorher.hoch + 8);
     // Bert hat nicht geforscht: sein Turm bleibt ein Wachturm.
     expect((await turmZeigt(bert, bertTurm)).name).toBe('Wachturm');
+    expect((await turmbild(bert, bertTurm)).bild).toBe('wachturm');
     // Und im Baumenue heisst er bei Anna jetzt Wehrturm.
     await dorfbewohnerAnklicken(anna);
     await anna.keyboard.press('b');
@@ -276,7 +296,7 @@ test.describe('Truppenstufen', () => {
     await nachweis(anna, {
       spec: BAUEN,
       ac: 'AC-38',
-      titel: 'Annas Turm nach der Verbesserung Wehrturm: er heißt in der Leiste Wehrturm, hat 480 Leben mehr (980 von 1500, vorher beschädigt auf 500) und 7 statt 5 Angriff – das Bild ist noch das des Wachturms',
+      titel: 'Annas Turm nach der Verbesserung Wehrturm: er heißt in der Leiste Wehrturm, hat 480 Leben mehr (980 von 1500, vorher beschädigt auf 500) und 7 statt 5 Angriff – und er steht mit eigenem Bild da, höher als der Wachturm',
       test: info,
     });
   });

@@ -110,7 +110,11 @@ const STARTVORRAT = {
   viel: { holz: 1000, nahrung: 1000, gold: 1000, stein: 1000 },
 };
 const ROHSTOFFE = ['holz', 'nahrung', 'gold', 'stein'];
-const ROHSTOFF_NAMEN = { holz: 'Holz', nahrung: 'Nahrung', gold: 'Gold', stein: 'Stein' };
+const ROHSTOFF_NAMEN = { holz: 'Holz', nahrung: 'Nahrung', gold: 'Gold', stein: 'Stein', gefallene: 'Gefallene' };
+// Was mit Gefallenen bezahlt wird (einheiten AC-49) und welche Klassen kein
+// Heiler heilt (einheiten AC-37) - beides aus den Daten gelesen.
+const AUS_GEFALLENEN = Object.keys(EINHEITEN).filter((art) => EINHEITEN[art].kosten?.gefallene);
+const UNHEILBAR = new Set(Object.values(EINHEITEN).flatMap((w) => w.heilen?.nicht || []));
 
 // Namen der Gebaeude fuer Meldungen auf dem Bildschirm - mit echten Umlauten.
 // Ein Satz beginnt gross, auch wenn er mit einer Form aus den Daten beginnt
@@ -155,6 +159,14 @@ const EINHEIT_NAMEN = {
   pikenier: 'Den Pikenier',
   eliteplaenkler: 'Den Eliteplänkler',
   leichtekavallerie: 'Die leichte Kavallerie',
+  eibenschuetze: 'Den Eibenschützen',
+  pavesenschuetze: 'Den Pavesenschützen',
+  soeldner: 'Den Söldner',
+  kriegswolf: 'Den Kriegswolf',
+  reiterschuetze: 'Den Reiterschützen',
+  riese: 'Den Riesen',
+  meuchler: 'Den Meuchler',
+  wiedergaenger: 'Den Wiedergänger',
   ramme: 'Die Ramme',
   mangonel: 'Den Mangonel',
   moench: 'Den Mönch',
@@ -218,10 +230,11 @@ function untaetigeListe(welt, spielerId) {
 }
 
 // Alle Rohstoffe einer Kostenangabe zusammen - Holz, Nahrung, Gold und Stein
-// zaehlen fuer die Punkte gleich (bedienung AC-47).
+// zaehlen fuer die Punkte gleich (bedienung AC-47). Ein Gefallener, mit dem
+// der Wiedergaenger bezahlt wird (einheiten AC-49), ist kein Rohstoff.
 function kostenSumme(kosten) {
   let summe = 0;
-  for (const menge of Object.values(kosten || {})) summe += menge;
+  for (const rohstoff of ROHSTOFFE) summe += kosten?.[rohstoff] || 0;
   return summe;
 }
 
@@ -355,6 +368,9 @@ class Welt {
       ausgebildetWert: 0, // was sie gekostet haben, fuer die Punkte (bedienung AC-47)
       besiegtWert: 0, // was getoetete und zerstoerte des Gegners gekostet haben (bedienung AC-49)
       verloren: 0, // eigene Einheiten, die gefallen sind
+      // Gefallene, mit denen noch nichts bezahlt ist (einheiten AC-49) -
+      // gezaehlt nur fuer ein Haus, das damit etwas ausbildet.
+      gefallene: 0,
       // Das Team (spielziel AC-14): 1 bis 4 oder keins. Wer keins hat,
       // spielt gegen alle.
       team: teamAus(einstellungen.teams, eintrag.id),
@@ -483,8 +499,10 @@ class Welt {
     };
     // Die Sichtweite je Besitzer und Art einmal je Rechnung - nicht je Einheit.
     const weite = new Map();
+    const getarnte = [];
     for (const e of this.einheiten.values()) {
       if (e.tot) continue;
+      if (EINHEITEN[e.art].getarnt) getarnte.push(e);
       const sicht = this.sichten.get(e.besitzer);
       if (!sicht) continue;
       const schluessel = `${e.besitzer}|${e.art}`;
@@ -508,6 +526,61 @@ class Welt {
         markieren(sicht.gebaeude, 1, sicht.erkundet, x0, y0, x1, y1, this.gebaeudeSicht(b.besitzer, b.art));
       }
     }
+    if (getarnte.length) this.tarnungRechnen(getarnte);
+  }
+
+  /**
+   * Wer die Getarnten entdeckt hat (kampf AC-22): je getarnter Einheit die
+   * Sichten, zu denen eine lebende Einheit oder ein fertiges Gebaeude gehoert,
+   * das hoechstens `getarnt` Felder entfernt steht - vom Rand der
+   * Grundflaeche gemessen wie die Reichweite eines Turms. Gerechnet mit der
+   * Sicht, zweimal je Sekunde, und nur, wenn es Getarnte gibt.
+   */
+  tarnungRechnen(getarnte) {
+    for (const g of getarnte) {
+      const weit = EINHEITEN[g.art].getarnt;
+      const eigene = this.sichten.get(g.besitzer);
+      const entdeckt = new Set();
+      for (const e of this.einheiten.values()) {
+        if (e.tot) continue;
+        const sicht = this.sichten.get(e.besitzer);
+        if (!sicht || sicht === eigene || entdeckt.has(sicht)) continue;
+        if (Math.hypot(e.x - g.x, e.y - g.y) <= weit) entdeckt.add(sicht);
+      }
+      for (const b of this.gebaeude.values()) {
+        if (!b.fertig) continue;
+        const sicht = this.sichten.get(b.besitzer);
+        if (!sicht || sicht === eigene || entdeckt.has(sicht)) continue;
+        const { x0, y0, x1, y1 } = this.grundflaeche(b.art, b.x, b.y, b.quer);
+        if (Math.hypot(Math.max(x0 - g.x, 0, g.x - x1), Math.max(y0 - g.y, 0, g.y - y1)) <= weit) entdeckt.add(sicht);
+      }
+      g.entdeckt = entdeckt;
+    }
+  }
+
+  /**
+   * Zaehlt diese Einheit fuer den Spieler als gesehen? Die eine Stelle fuer
+   * jede Frage nach einer fremden Einheit - was der Server schickt (kampf
+   * AC-13), was ein Klick trifft (kampf AC-11), was die KI wahrnimmt (ki
+   * AC-13). Eigene und die der Verbuendeten immer; ohne Nebel alle. Eine
+   * Getarnte erst, wenn sie entdeckt ist (kampf AC-22, `tarnungRechnen`) -
+   * dass sie in seiner Sicht steht, reicht nicht.
+   */
+  siehtEinheit(spielerId, einheit) {
+    if (this.teiltSicht(spielerId, einheit.besitzer) || !this.nebelGiltFuer(spielerId)) return true;
+    if (EINHEITEN[einheit.art].getarnt) return Boolean(einheit.entdeckt?.has(this.sichten.get(spielerId)));
+    return this.sieht(spielerId, Math.round(einheit.x), Math.round(einheit.y));
+  }
+
+  /**
+   * Ist diese Einheit vor dem Spieler verborgen, obwohl sie in seiner Sicht
+   * stehen mag (kampf AC-22)? Das fragen Wache, Tuerme und der laufende
+   * Angriff: sie greifen nicht an, was der Spieler nicht sieht. Fuer alle
+   * anderen Einheiten aendert sich nichts - eine Wache fragte nie nach dem
+   * Nebel, sie sieht selbst.
+   */
+  verborgen(spielerId, einheit) {
+    return Boolean(EINHEITEN[einheit.art].getarnt) && !this.siehtEinheit(spielerId, einheit);
   }
 
   aufKarte(x, y) {
@@ -632,6 +705,31 @@ class Welt {
   }
 
   /**
+   * Was ein Auftrag **diesen Spieler** kostet (einheiten AC-44): die Kosten
+   * aus den Daten, mal dem `preis` aus seinen Wirkungen - ein Haus bekommt
+   * den Soeldner billiger. Die eine Stelle: bezahlt, erstattet, gezaehlt und
+   * gezeigt wird nur hierueber. Ohne Nachlass ist es dasselbe Objekt wie in
+   * den Daten - daran erkennt `kampfwerte()`, ob es etwas zu schicken gibt.
+   */
+  auftragKosten(besitzer, art) {
+    const kosten = this.auftragWerte(art).kosten;
+    let faktor = 1;
+    for (const w of this.wirkungen(besitzer)) faktor *= w.preis?.[art] ?? 1;
+    if (faktor === 1) return kosten;
+    return Object.fromEntries(Object.entries(kosten).map(([rohstoff, menge]) => [rohstoff, Math.round(menge * faktor)]));
+  }
+
+  /**
+   * Ob das Haus dieses Spielers eine Einheit ausbildet (einheiten AC-42):
+   * `haeuser` an der Einheit nennt, wer es darf; fehlt es, darf es jeder.
+   * Gefragt wird ueberall, wo auch das Zeitalter gefragt wird.
+   */
+  hausBildetAus(spieler, art) {
+    const nur = EINHEITEN[art]?.haeuser;
+    return !nur || nur.includes(spieler.haus);
+  }
+
+  /**
    * Die Punkte eines Spielers (bedienung AC-47): ein Punkt je 10 gesammelte
    * Rohstoffe, je 10 Rohstoffe, die ausgebildete Einheiten gekostet haben, und
    * je 5, die Verbesserungen und Aufstiege gekostet haben - Wissen zaehlt
@@ -741,6 +839,9 @@ class Welt {
       // Wer traegt, zeigt, wie viel - nach der Schubkarre 13 statt 10 (bauen AC-44).
       const tragkraft = this.einheitenwert(besitzer, art, 'tragkraft');
       if (tragkraft) tafel[art].tragkraft = tragkraft;
+      // Was sie ihn kostet, wenn sein Haus den Preis aendert (einheiten AC-44).
+      const kosten = this.auftragKosten(besitzer, art);
+      if (kosten !== EINHEITEN[art].kosten) tafel[art].kosten = kosten;
     }
     // Die Gebaeude in derselben Tafel (bauen AC-34): der Lebensbalken braucht
     // das volle Leben nach dem Mauerwerk. Die Namen von Einheiten und
@@ -750,7 +851,11 @@ class Welt {
       for (const feld of GEBAEUDEFELDER) tafel[art][feld] = this.gebaeudewert(besitzer, art, feld);
       // Wie es bei diesem Spieler heisst, wenn eine Verbesserung es umbenennt
       // (bauen AC-38): sein Wachturm ist nach der Forschung ein Wehrturm.
-      for (const w of this.wirkungen(besitzer)) if (w.nennt?.[art]) tafel[art].name = w.nennt[art];
+      // Und mit welchem Bild es dann steht: der Wehrturm ist hoeher und hat ein Dach.
+      for (const w of this.wirkungen(besitzer)) {
+        if (w.nennt?.[art]) tafel[art].name = w.nennt[art];
+        if (w.bild?.[art]) tafel[art].bild = w.bild[art];
+      }
       // Was eine neue Farm traegt, mit Haus und Verbesserungen (bauen AC-26,
       // spielziel AC-17) - sonst rechnete der Browser es selbst und kennte
       // das Haus nicht (Durchsicht Runde 167).
@@ -807,6 +912,8 @@ class Welt {
       /** @type {number | null} */
       schlagTakt: null, // der Takt ihres letzten Schlags oder Schusses (bedienung AC-72)
       fallrichtung: null, // gefallen: die Richtung zu dem, der sie traf, als Achtel (bedienung AC-76)
+      /** @type {Set<object> | null} */
+      entdeckt: null, // getarnt: die Sichten, die sie entdeckt haben (kampf AC-22)
     };
     this.einheiten.set(einheit.id, einheit);
     return einheit;
@@ -1541,6 +1648,12 @@ class Welt {
       const wer = EINHEIT_NAMEN[art] || VERBESSERUNGEN[art]?.name || art;
       return { fehler: `${wer} gibt es erst ${ZEITALTER[noetig].ab}.` };
     }
+    // Und ein bestimmtes Haus (einheiten AC-42): den Eibenschuetzen bildet
+    // nur sein Haus aus.
+    if (!this.hausBildetAus(spieler, art)) {
+      const wer = EINHEITEN[art].haeuser.map((h) => HAEUSER[h]?.name || h).join(' oder ');
+      return { fehler: `${EINHEIT_NAMEN[art] || art} bildet nur Haus ${wer} aus.` };
+    }
     // Der Aufstieg: nur der naechste, nur einmal, und nur mit genug Gebaeuden
     // des laufenden Zeitalters (bauen AC-23).
     if (AUFSTIEGE[art]) {
@@ -1570,7 +1683,7 @@ class Welt {
       const eingereiht = [...this.gebaeude.values()].some((g) => g.besitzer === spielerId && g.schlange.includes(art));
       if (spieler.verbesserungen.includes(art) || eingereiht) return { fehler: `${VERBESSERUNGEN[art].name} gibt es nur einmal.` };
     }
-    const kosten = this.auftragWerte(art).kosten;
+    const kosten = this.auftragKosten(spielerId, art);
     for (const [rohstoff, menge] of Object.entries(kosten)) {
       if (spieler[rohstoff] < menge) return { fehler: `Zu wenig ${ROHSTOFF_NAMEN[rohstoff]}.` };
     }
@@ -1587,7 +1700,7 @@ class Welt {
     if (!Number.isInteger(platz) || platz < 0 || platz >= gebaeude.schlange.length) return { fehler: 'Diesen Auftrag gibt es nicht.' };
     const [art] = gebaeude.schlange.splice(platz, 1);
     const spieler = this.spielerVon(spielerId);
-    for (const [rohstoff, menge] of Object.entries(this.auftragWerte(art).kosten)) spieler[rohstoff] += menge;
+    for (const [rohstoff, menge] of Object.entries(this.auftragKosten(spielerId, art))) spieler[rohstoff] += menge;
     if (platz === 0) {
       gebaeude.fortschritt = 0;
       gebaeude.wartet = false;
@@ -1846,7 +1959,7 @@ class Welt {
     // Fuer die Tafel (spielziel AC-8): die drei vom Anfang zaehlen nicht mit,
     // die hat niemand ausgebildet.
     spieler.ausgebildet++;
-    spieler.ausgebildetWert += kostenSumme(this.auftragWerte(art).kosten);
+    spieler.ausgebildetWert += kostenSumme(this.auftragKosten(spieler.id, art));
     bevoelkerung.set(spieler.id, belegt + 1);
     // Zum Sammelpunkt; liegt er auf einem Vorrat, wird dort gleich gesammelt (bauen AC-13).
     if (gebaeude.sammelpunkt) this.befehl(spieler.id, [neu.id], this.sammelpunktZiel(gebaeude));
@@ -2913,10 +3026,9 @@ class Welt {
   feindAn(spielerId, x, y) {
     let bestes = null;
     let besterAbstand = 1.01;
-    const nebel = this.nebelGiltFuer(spielerId);
     for (const einheit of this.einheiten.values()) {
       if (einheit.tot || !this.feindlich(spielerId, einheit.besitzer)) continue;
-      if (nebel && !this.sieht(spielerId, Math.round(einheit.x), Math.round(einheit.y))) continue;
+      if (!this.siehtEinheit(spielerId, einheit)) continue;
       const abstand = Math.hypot(einheit.x - x, einheit.y - y);
       if (abstand < besterAbstand) {
         besterAbstand = abstand;
@@ -3087,6 +3199,8 @@ class Welt {
         if (!zelle) continue;
         for (const anderer of zelle) {
           if (!this.feindlich(einheit.besitzer, anderer.besitzer)) continue;
+          // Einen Getarnten erst, wenn er entdeckt ist (kampf AC-22).
+          if (this.verborgen(einheit.besitzer, anderer)) continue;
           const abstand = Math.hypot(anderer.x - einheit.x, anderer.y - einheit.y);
           if (abstand < mindest) continue;
           if (abstand <= besterAbstand) {
@@ -3187,11 +3301,14 @@ class Welt {
       // ist: ein Bekehrter gehoert im selben Takt nicht mehr dazu (einheiten
       // AC-38) - sonst schoss der Turm weiter auf die eigene Einheit, bis sie
       // einmal aus der Reichweite ging.
-      if (!ziel || ziel.tot || abstandVon(ziel) > reichweite || !this.feindlich(turm.besitzer, ziel.besitzer)) {
+      // Ein Getarnter, der wieder verborgen ist, ist auch keines mehr (kampf AC-22).
+      if (!ziel || ziel.tot || abstandVon(ziel) > reichweite || !this.feindlich(turm.besitzer, ziel.besitzer)
+        || this.verborgen(turm.besitzer, ziel)) {
         ziel = null;
         let bester = Infinity;
         for (const einheit of this.einheiten.values()) {
           if (einheit.tot || !this.feindlich(turm.besitzer, einheit.besitzer)) continue;
+          if (this.verborgen(turm.besitzer, einheit)) continue;
           // Erst das Rechteck, dann die Luftlinie.
           if (einheit.x < x0 - reichweite || einheit.x > x1 + reichweite
             || einheit.y < y0 - reichweite || einheit.y > y1 + reichweite) continue;
@@ -3252,8 +3369,10 @@ class Welt {
     const auftrag = einheit.auftrag;
     const ziel = auftrag.gebaeude ? this.gebaeude.get(auftrag.ziel) : this.einheiten.get(auftrag.ziel);
     // Das Ziel ist gefallen, waehrend der Angreifer noch hinlief: stehenbleiben,
-    // nicht auf das leere Feld weiterlaufen.
-    if (!ziel || ziel.tot) {
+    // nicht auf das leere Feld weiterlaufen. Ebenso, wenn ein Getarnter wieder
+    // verborgen ist (kampf AC-22): wen der Spieler nicht sieht, den verfolgt
+    // auch seine Einheit nicht.
+    if (!ziel || ziel.tot || (!auftrag.gebaeude && this.verborgen(einheit.besitzer, ziel))) {
       // Die Mauer ist gebrochen (kampf AC-21): weiter zum Ziel dahinter.
       const danach = auftrag.danach;
       const dahinter = danach && (danach.gebaeude ? this.gebaeude.get(danach.ziel) : this.einheiten.get(danach.ziel));
@@ -3692,6 +3811,11 @@ class Welt {
     // einmal - das ist richtig so: gefallen ist gefallen.
     const spieler = this.spielerVon(einheit.besitzer);
     if (spieler) spieler.verloren++;
+    // Ein Gefallener fuer das Haus, das damit bezahlt (einheiten AC-49) - wer
+    // selbst aus einem Gefallenen entstand, zaehlt nicht noch einmal.
+    if (spieler && !EINHEITEN[einheit.art].kosten?.gefallene && AUS_GEFALLENEN.some((art) => this.hausBildetAus(spieler, art))) {
+      spieler.gefallene++;
+    }
     einheit.leben = 0;
     einheit.tot = true;
     // Der Takt des Todes steht getrennt daneben: Takt 0 waere als Schalter
@@ -3977,7 +4101,10 @@ class Welt {
     const auftrag = moench.auftrag;
     const bekehren = EINHEITEN[moench.art].bekehren;
     const ziel = this.einheiten.get(auftrag.ziel);
-    if (!ziel || ziel.tot || !this.feindlich(moench.besitzer, ziel.besitzer)) {
+    // Auch ein Getarnter, der sich wieder verborgen hat, ist kein Ziel mehr
+    // (kampf AC-22): sonst folgte der Moench einem, den sein Spieler nicht
+    // sieht, und bekehrte ihn im Verborgenen.
+    if (!ziel || ziel.tot || !this.feindlich(moench.besitzer, ziel.besitzer) || this.verborgen(moench.besitzer, ziel)) {
       moench.auftrag = null;
       moench.weg = [];
       moench.bekehrt = false;
@@ -4080,7 +4207,8 @@ class Welt {
   kannHeilen(einheit, ziel) {
     if (!ziel || ziel === einheit || ziel.tot || !EINHEITEN[einheit.art].heilen) return false;
     if (this.feindlich(einheit.besitzer, ziel.besitzer)) return false;
-    if (EINHEITEN[ziel.art].klassen.includes('belagerung')) return false;
+    // Wen er nicht heilt, steht in den Daten: Belagerung und Untote.
+    if (EINHEITEN[ziel.art].klassen.some((k) => EINHEITEN[einheit.art].heilen.nicht.includes(k))) return false;
     return ziel.leben < this.einheitenwert(ziel.besitzer, ziel.art, 'leben');
   }
 
@@ -4092,12 +4220,11 @@ class Welt {
   verletzterAn(spielerId, x, y) {
     let bestes = null;
     let besterAbstand = 1.01;
-    const nebel = this.nebelGiltFuer(spielerId);
     for (const einheit of this.einheiten.values()) {
       if (einheit.tot || this.feindlich(spielerId, einheit.besitzer)) continue;
-      if (EINHEITEN[einheit.art].klassen.includes('belagerung')) continue;
+      if (EINHEITEN[einheit.art].klassen.some((k) => UNHEILBAR.has(k))) continue;
       if (einheit.leben >= this.einheitenwert(einheit.besitzer, einheit.art, 'leben')) continue;
-      if (nebel && einheit.besitzer !== spielerId && !this.sieht(spielerId, Math.round(einheit.x), Math.round(einheit.y))) continue;
+      if (!this.siehtEinheit(spielerId, einheit)) continue;
       const abstand = Math.hypot(einheit.x - x, einheit.y - y);
       if (abstand < besterAbstand) {
         besterAbstand = abstand;
@@ -4794,6 +4921,8 @@ class Welt {
         ...(s.zeitalter ? { z: s.zeitalter } : {}),
         // Farmen werden von selbst neu ausgesaet (bauen AC-42) - nur wenn an.
         ...(s.farmenErneuern ? { fe: 1 } : {}),
+        // Gefallene, mit denen sich bezahlen laesst (einheiten AC-49).
+        ...(s.gefallene ? { gf: s.gefallene } : {}),
         // Untaetige Dorfbewohner, nur wenn es welche gibt (einheiten AC-21).
         ...untaetigeListe(this, s.id),
         // Arbeiter je Rohstoff, in der Reihenfolge holz, nahrung, gold, stein
@@ -4996,7 +5125,14 @@ class Welt {
       // Gefragt wird die Sicht, nicht das Team: waehrend der Frist einer
       // Kuendigung sind sie noch Verbuendete, sehen aber nicht mehr
       // gemeinsam (spielziel AC-21).
-      einheiten: voll.einheiten.filter((e) => this.teiltSicht(id, e.b) || this.sieht(id, Math.round(e.x), Math.round(e.y))),
+      // Eine Getarnte erst, wenn sie entdeckt ist (kampf AC-22) - gefragt
+      // wird die eine Stelle; wer eben erst gefallen und schon geloescht ist,
+      // nach seinem Feld.
+      einheiten: voll.einheiten.filter((e) => {
+        if (this.teiltSicht(id, e.b)) return true;
+        const einheit = this.einheiten.get(e.i);
+        return einheit ? this.siehtEinheit(id, einheit) : this.sieht(id, Math.round(e.x), Math.round(e.y));
+      }),
       felder: this.felderFuer(id, voll.felder),
       // Von den anderen nur, was jeder sieht: wer draussen ist, das Zeitalter
       // und die Kampfwerte (die zeigt die Auswahl einer fremden Einheit) -
@@ -5161,6 +5297,10 @@ class Welt {
           // Ohne diese Zeile stuende der Speerkaempfer schon in der Dunklen
           // Zeit im Ausbildungsmenue (einheiten AC-23).
           zeitalter: w.zeitalter || 0,
+          // Und nur bei den Haeusern, die sie ausbilden (einheiten AC-42).
+          haeuser: w.haeuser || null,
+          // Getarnt (kampf AC-22): die Tafel sagt, wie nah ein Gegner sein muss.
+          getarnt: w.getarnt || 0,
           // Kampfwerte als Grundwerte; was fuer einen Spieler gilt, steht in
           // seiner Tafel `kw` (bedienung AC-35).
           angriff: w.angriff || 0, nahruestung: w.nahruestung || 0, fernruestung: w.fernruestung || 0,
@@ -5223,7 +5363,7 @@ class Welt {
         vorrat: Object.fromEntries(Object.entries(SAMMELN).map(([art, s]) => [art, { voll: karten.VORRAT[art], rohstoff: s.rohstoff }])),
         tiere: Object.fromEntries(Object.entries(TIERE).map(([art, t]) => [art, { nahrung: t.nahrung }])),
         haeuser: Object.fromEntries(Object.entries(HAEUSER).map(([art, haus]) => [art, {
-          name: haus.name, wahlspruch: haus.wahlspruch, ...hausBringt(haus, GEBAEUDE_NAMEN),
+          name: haus.name, wahlspruch: haus.wahlspruch, ...hausBringt(haus, GEBAEUDE_NAMEN, EINHEIT_NAMEN),
         }])),
         // Die Namen der Klassen, fuer den Bonus an der Auswahl (bedienung AC-35).
         klassen: KLASSEN,

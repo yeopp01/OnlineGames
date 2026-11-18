@@ -284,7 +284,7 @@ export class Ansicht {
     // es zuletzt stand, und der Takt, bis zu dem sie liegen.
     this.ruinen = [];
     this.tiere = new Map();
-    this.vorraete = { holz: 0, nahrung: 0, gold: 0, stein: 0, bev: 0, raum: 0 };
+    this.vorraete = { holz: 0, nahrung: 0, gold: 0, stein: 0, bev: 0, raum: 0, gefallene: 0 };
     // Was im letzten Bild in welcher Reihenfolge gezeichnet wurde - fuer den
     // Browserlauf (darstellung AC-7).
     this.reihenfolge = [];
@@ -703,7 +703,9 @@ export class Ansicht {
     const meine = nachricht.spieler.find((s) => s.id === this.ich);
     if (meine) {
       const { holz, nahrung, gold, stein, bev, raum } = meine;
-      this.vorraete = { holz, nahrung, gold, stein, bev, raum };
+      // `gf`: die eigenen Gefallenen, aus denen ein Haus ausbildet (einheiten
+      // AC-49) - der Server schickt sie nur, wenn es welche gibt.
+      this.vorraete = { holz, nahrung, gold, stein, bev, raum, gefallene: meine.gf || 0 };
       // Eine Verbesserung ist erforscht (bedienung AC-59).
       if ((meine.v || []).length > this.verbesserungen.length) this.ereignis('forschung');
       this.verbesserungen = meine.v || [];
@@ -1090,7 +1092,7 @@ export class Ansicht {
       const mitte = this.gebaeudeMitte(gebaeude);
       const p = this.zuBild(mitte.x, mitte.y);
       if (p.x < -4 * e || p.x > breite + 4 * e || p.y < -4 * e || p.y > hoehe + 4 * e) continue;
-      deckung = gebaeudeSchattenZeichnen(s, gebaeude.art, p.x, p.y, e, lage) || deckung;
+      deckung = gebaeudeSchattenZeichnen(s, this.bildart(gebaeude), p.x, p.y, e, lage) || deckung;
     }
     if (!deckung) return;
     this.stift.save();
@@ -1612,7 +1614,7 @@ export class Ansicht {
       if (gebaeude.b === this.ich) continue;
       const mitte = this.gebaeudeMitte(gebaeude);
       const p = this.zuBild(mitte.x, mitte.y);
-      if (!gebaeudeGetroffen(gebaeude.art, px - p.x, py - p.y, e, mitte.groesse, this.gebaeudeLage(gebaeude))) continue;
+      if (!gebaeudeGetroffen(this.bildart(gebaeude), px - p.x, py - p.y, e, mitte.groesse, this.gebaeudeLage(gebaeude))) continue;
       if (mitte.x + mitte.y > tiefe) {
         tiefe = mitte.x + mitte.y;
         bestes = gebaeude;
@@ -1959,7 +1961,7 @@ export class Ansicht {
     stift.stroke();
     stift.globalAlpha = 0.55;
     const lang = Boolean(this.werte.gebaeude[lage.art]?.laenge);
-    gebaeudeBildZeichnen(stift, lage.art, p.x, p.y, e, spieler ? spieler.farbe : '#888888', lage.groesse, 1, 1, false,
+    gebaeudeBildZeichnen(stift, this.bildVon(this.ich, lage.art), p.x, p.y, e, spieler ? spieler.farbe : '#888888', lage.groesse, 1, 1, false,
       lang ? { achse: lage.quer ? 'y' : 'x' } : undefined);
     stift.globalAlpha = 1;
   }
@@ -2155,7 +2157,7 @@ export class Ansicht {
       const mitte = this.gebaeudeMitte(gebaeude);
       if (mitte.x + mitte.y <= tiefe) continue;
       const p = this.zuBild(mitte.x, mitte.y);
-      if (gebaeudeGetroffen(gebaeude.art, px - p.x, py - p.y, e, mitte.groesse, this.gebaeudeLage(gebaeude))) return true;
+      if (gebaeudeGetroffen(this.bildart(gebaeude), px - p.x, py - p.y, e, mitte.groesse, this.gebaeudeLage(gebaeude))) return true;
     }
     return false;
   }
@@ -2221,7 +2223,7 @@ export class Ansicht {
       const mitte = this.gebaeudeMitte(gebaeude);
       if (mitte.x + mitte.y <= tiefe) continue;
       const p = this.zuBild(mitte.x, mitte.y);
-      if (!gebaeudeGetroffen(gebaeude.art, px - p.x, py - p.y, e, mitte.groesse, this.gebaeudeLage(gebaeude))) continue;
+      if (!gebaeudeGetroffen(this.bildart(gebaeude), px - p.x, py - p.y, e, mitte.groesse, this.gebaeudeLage(gebaeude))) continue;
       const art = this.gebaeudeHandlung(gebaeude, kann);
       if (!art) continue;
       tiefe = mitte.x + mitte.y;
@@ -2468,7 +2470,21 @@ export class Ansicht {
     if (einheit.s || einheit.h === undefined || this.feindlich(einheit.b)) return false;
     if (!heiler.some((id) => id !== einheit.i)) return false;
     if (!this.zuSehen(einheit.b, einheit.x, einheit.y)) return false;
-    return !(this.werte.einheiten[this.arten[einheit.k]]?.klassen || []).includes('belagerung');
+    const unheilbar = this.unheilbar();
+    return !(this.werte.einheiten[this.arten[einheit.k]]?.klassen || []).some((k) => unheilbar.has(k));
+  }
+
+  /**
+   * Die Klassen, die niemand heilt - aus den Daten jedes Heilers, wie
+   * `UNHEILBAR` auf dem Server (einheiten AC-37, AC-49).
+   *
+   * @returns {Set<string>}
+   */
+  unheilbar() {
+    if (!this.unheilbarGemerkt) {
+      this.unheilbarGemerkt = new Set(Object.values(this.werte.einheiten).flatMap((w) => w.heilen?.nicht || []));
+    }
+    return this.unheilbarGemerkt;
   }
 
   /**
@@ -3090,7 +3106,7 @@ export class Ansicht {
       if (gebaeude.b !== this.ich) continue;
       const mitte = this.gebaeudeMitte(gebaeude);
       const p = this.zuBild(mitte.x, mitte.y);
-      if (!gebaeudeGetroffen(gebaeude.art, px - p.x, py - p.y, e, mitte.groesse, this.gebaeudeLage(gebaeude))) continue;
+      if (!gebaeudeGetroffen(this.bildart(gebaeude), px - p.x, py - p.y, e, mitte.groesse, this.gebaeudeLage(gebaeude))) continue;
       if (mitte.x + mitte.y > tiefe) {
         tiefe = mitte.x + mitte.y;
         bestes = gebaeude;
@@ -3127,7 +3143,7 @@ export class Ansicht {
       if (tiefeDort <= tiefe) continue;
       const p = this.zuBild(mitte.x, mitte.y);
       // Etwas ueber dem Fusspunkt gemessen: dort steht der Koerper.
-      if (gebaeudeGetroffen(gebaeude.art, punkt.x - p.x, punkt.y - figur * 0.5 - p.y, e, mitte.groesse, this.gebaeudeLage(gebaeude))) decken.push(gebaeude);
+      if (gebaeudeGetroffen(this.bildart(gebaeude), punkt.x - p.x, punkt.y - figur * 0.5 - p.y, e, mitte.groesse, this.gebaeudeLage(gebaeude))) decken.push(gebaeude);
     }
     return decken;
   }
@@ -3262,6 +3278,21 @@ export class Ansicht {
   // Das volle Leben eines Gebaeudes, wie es fuer seinen Besitzer gilt - nach
   // dem Mauerwerk 10 % mehr (bauen AC-34). Aus der Tafel des Servers, sonst
   // der Grundwert.
+  /**
+   * Mit welchem Bild ein Gebaeude steht: eine Verbesserung kann es bei ihrem
+   * Besitzer austauschen (bauen AC-38 - sein Wachturm ist danach ein
+   * Wehrturm). Kommt wie der Name mit den Werten vom Server. Die eine Stelle:
+   * wer zeichnet, trifft oder misst, fragt hier und nicht `gebaeude.art`.
+   */
+  bildart(gebaeude) {
+    return this.bildVon(gebaeude.b, gebaeude.art);
+  }
+
+  /** Dasselbe fuer eine Art bei einem Spieler: was er baut, sieht schon im Menue und in der Hand so aus. */
+  bildVon(besitzer, art) {
+    return this.einheitenwerte.get(besitzer)?.[art]?.bild || art;
+  }
+
   gebaeudeLebenVoll(gebaeude) {
     return this.einheitenwerte.get(gebaeude.b)?.[gebaeude.art]?.leben ?? this.werte.gebaeude[gebaeude.art]?.leben;
   }
@@ -3634,7 +3665,7 @@ export class Ansicht {
     const lage = this.gebaeudeLage(gebaeude);
     const bau = gebaeude.u ?? 1;
     if (mitte.bx === mitte.by) {
-      gebaeudeBildZeichnen(stift, gebaeude.art, p.x, p.y, e, farbe, mitte.groesse, bau, rest, offen, lage);
+      gebaeudeBildZeichnen(stift, this.bildart(gebaeude), p.x, p.y, e, farbe, mitte.groesse, bau, rest, offen, lage);
       return;
     }
     const felder = this.gebaeudeFelder(gebaeude);
@@ -3644,7 +3675,7 @@ export class Ansicht {
       const dx = ((felder[i].x - mitte.x) - (felder[i].y - mitte.y)) * e;
       const dy = (((felder[i].x - mitte.x) + (felder[i].y - mitte.y)) * e) / 2;
       if (bau < 1) {
-        gebaeudeBildZeichnen(stift, gebaeude.art, p.x + dx, p.y + dy, e, farbe, 1, bau, rest, false, lage);
+        gebaeudeBildZeichnen(stift, this.bildart(gebaeude), p.x + dx, p.y + dy, e, farbe, 1, bau, rest, false, lage);
         continue;
       }
       const links = i === (gebaeude.qu ? felder.length - 1 : 0) ? -1e5 : p.x + dx - e / 2;
@@ -3653,7 +3684,7 @@ export class Ansicht {
       stift.beginPath();
       stift.rect(links, -1e5, rechts - links, 2e5);
       stift.clip();
-      gebaeudeBildZeichnen(stift, gebaeude.art, p.x, p.y, e, farbe, mitte.groesse, 1, rest, offen, lage);
+      gebaeudeBildZeichnen(stift, this.bildart(gebaeude), p.x, p.y, e, farbe, mitte.groesse, 1, rest, offen, lage);
       stift.restore();
     }
   }
@@ -3675,12 +3706,12 @@ export class Ansicht {
     const beschaedigt = fertig && lebenVoll && gebaeude.h < lebenVoll;
     const angesehen = this.siehtAn('g', gebaeude.i);
     if (lebenVoll && (this.gewaehltesGebaeude === gebaeude.i || angesehen || beschaedigt)) {
-      const zeichnung = GEBAEUDE[gebaeude.art];
+      const zeichnung = GEBAEUDE[this.bildart(gebaeude)];
       const m = zeichnung ? (e * groesse * 0.95) / zeichnung.halbeBreite : e;
       // Knapp ueber dem Dach - die Trefferhoehe reicht bis zur Fahnenspitze, drei
       // Viertel davon sind der First (Runde 42: ganz oben deckte er den Namen zu).
       // Gerendert: knapp ueber dem, was im Bild wirklich deckt.
-      const hoch = gebaeudeHoehe(gebaeude.art, e, groesse);
+      const hoch = gebaeudeHoehe(this.bildart(gebaeude), e, groesse);
       const oben = hoch ?? (zeichnung?.flach ? e * groesse * 0.6 : (zeichnung?.trefferOben ?? 3) * m * 0.75);
       this.lebensbalken.push({
         art: 'gebaeude', i: gebaeude.i, x: p.x, y: p.y - oben - 4, breite: Math.round(Math.min(e * groesse * 0.6, 140)), anteil: (gebaeude.h ?? lebenVoll) / lebenVoll,
@@ -3737,7 +3768,7 @@ export class Ansicht {
   /** Steht an diesem Punkt ein Gebaeude, das von oben schiesst? Seine Schusshoehe, sonst 0. */
   schussHoeheBei(x, y) {
     for (const g of this.gebaeude.values()) {
-      const hoehe = GEBAEUDE[g.art]?.schussHoehe;
+      const hoehe = GEBAEUDE[this.bildart(g)]?.schussHoehe;
       if (!hoehe) continue;
       const m = this.gebaeudeMitte(g);
       if (Math.abs(m.x - x) < 0.3 && Math.abs(m.y - y) < 0.3) return hoehe;

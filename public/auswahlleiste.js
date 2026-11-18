@@ -19,7 +19,18 @@ import { FIGUREN, WAREN, figurZeichnen } from './figuren.js';
 import { GEBAEUDE, gebaeudeZeichnen } from './gebaeude.js';
 import { ablaufZelle, gerendert, zelleEinpassen } from './bilder.js';
 
-const ROHSTOFF_NAMEN = { holz: 'Holz', nahrung: 'Nahrung', gold: 'Gold', stein: 'Stein' };
+const ROHSTOFF_NAMEN = { holz: 'Holz', nahrung: 'Nahrung', gold: 'Gold', stein: 'Stein', gefallene: 'Gefallene' };
+
+/** Ein Posten des Preises als Text: "60 Holz", "1 Gefallener" (einheiten AC-49). */
+function postenText(rohstoff, menge) {
+  if (rohstoff === 'gefallene' && menge === 1) return '1 Gefallener';
+  return `${menge} ${ROHSTOFF_NAMEN[rohstoff]}`;
+}
+
+/** Die Klasse des Farbflecks zu einem Rohstoff - Gold und Gefallene beginnen gleich. */
+function warenklasse(rohstoff) {
+  return `ware ware-${rohstoff === 'gefallene' ? 'x' : rohstoff[0]}`;
+}
 
 function bildchen(art, groesse, farbe, lage = {}) {
   const leinwand = document.createElement('canvas');
@@ -1077,7 +1088,7 @@ export class Auswahlleiste {
     const inhalt = this.tafelInhalt(fuer.typ, fuer.art);
     const kopfzeile = element('div', 'kt-kopf');
     const preis = element('span', 'preis');
-    for (const [r, m] of Object.entries(inhalt.kosten)) preis.append(element('span', `ware ware-${r[0]}`), element('span', null, String(m)));
+    for (const [r, m] of Object.entries(inhalt.kosten)) preis.append(element('span', warenklasse(r)), element('span', null, String(m)));
     kopfzeile.append(element('strong', null, inhalt.name), preis);
     this.tafel.replaceChildren(kopfzeile, ...inhalt.zeilen.map((zeile) => element('div', 'kt-zeile', zeile)));
     if (inhalt.dauer) this.tafel.append(element('div', 'kt-fuss', inhalt.dauer));
@@ -1153,7 +1164,7 @@ export class Auswahlleiste {
       if (w.annahme?.length) zeilen.push(`Lager für ${aufzaehlung(w.annahme.map((r) => ROHSTOFF_NAMEN[r] || r))}`);
       if (w.nahrung) zeilen.push(`Trägt ${lesen('nahrung')} Nahrung, ein Dorfbewohner erntet sie`);
       const aus = w.bildetAus || [];
-      const einheiten = aus.filter((k) => werte.einheiten[k]).map(einheitName);
+      const einheiten = aus.filter((k) => werte.einheiten[k] && this.hausBildetAus(k)).map(einheitName);
       const forschung = aus.filter((k) => werte.verbesserungen?.[k]).map((k) => werte.verbesserungen[k].name);
       if (einheiten.length) zeilen.push(`Bildet aus: ${einheiten.join(', ')}`);
       if (forschung.length) zeilen.push(`Erforscht: ${forschung.join(', ')}`);
@@ -1172,7 +1183,7 @@ export class Auswahlleiste {
       const ausbildbar = new Set(Object.values(werte.gebaeude).flatMap((g) => g.bildetAus || []));
       const zeilen = [];
       const gebaeude = neu(werte.gebaeude).map((k) => GEBAEUDE[k]?.name || k);
-      const einheiten = neu(werte.einheiten).filter((k) => ausbildbar.has(k)).map(einheitName);
+      const einheiten = neu(werte.einheiten).filter((k) => ausbildbar.has(k) && this.hausBildetAus(k)).map(einheitName);
       const forschung = neu(werte.verbesserungen).map((k) => werte.verbesserungen[k].name);
       if (gebaeude.length) zeilen.push(`Neue Gebäude: ${gebaeude.join(', ')}`);
       if (einheiten.length) zeilen.push(`Neue Einheiten: ${einheiten.join(', ')}`);
@@ -1207,11 +1218,15 @@ export class Auswahlleiste {
     if (w.heilen) zeilen.push(`Heilt eigene Verletzte bis ${w.heilen.reichweite} Felder weit`);
     if (w.bekehren) zeilen.push(`Bekehrt fremde Einheiten aus ${w.bekehren.reichweite} Feldern`);
     if (w.nurGebaeude) zeilen.push('Greift nur Gebäude an');
+    // Getarnt (kampf AC-22) und aus Gefallenen (einheiten AC-49).
+    if (w.getarnt) zeilen.push(`Getarnt: Gegner sehen ihn erst auf ${w.getarnt} Felder`);
+    if (w.kosten?.gefallene) zeilen.push(`Ersteht aus eigenen Gefallenen – vorhanden: ${a.vorraete.gefallene || 0}`);
     zeilen.push(kurz(art));
     const weite = lesen('angriff') > 0 ? (lesen('reichweite') > 0 ? `Reichweite ${lesen('reichweite')}` : 'Nahkampf') : null;
     zeilen.push([weite, w.tempo ? `Tempo ${komma(lesen('tempo'))}` : null, `Sicht ${lesen('sicht')}`].filter(Boolean).join(' · '));
     if (w.bonus) zeilen.push(Object.entries(w.bonus).map(([k, z]) => `+${z} gegen ${werte.klassen?.[k]?.name || k}`).join(', '));
-    return { name: einheitName(art), kosten: w.kosten || {}, dauer: w.zeit ? `Ausbildung ${w.zeit} s` : null, zeilen };
+    if (w.haeuser) zeilen.push(`Nur Haus ${w.haeuser.map((h) => werte.haeuser?.[h]?.name || h).join(' oder ')}`);
+    return { name: einheitName(art), kosten: eigene[art]?.kosten || w.kosten || {}, dauer: w.zeit ? `Ausbildung ${w.zeit} s` : null, zeilen };
   }
 
   inhaltAktualisieren() {
@@ -1239,7 +1254,9 @@ export class Auswahlleiste {
         ? `${JSON.stringify(a.handelspreise)}:${this.handelGesperrt().join(',')}` : '';
       // Und was anderswo schon erforscht wird (bedienung AC-65).
       const laeuft = angebot.filter((e) => e.verbesserung && this.forschungLaeuft(e.art)).map((e) => e.art).join(',');
-      const schluessel = `g${gebaeude.i}:${gebaeude.h}:${gebaeude.n}:${gebaeude.br || 0}:${a.farmenErneuern}:${gebaeude.s.join(',')}:${gebaeude.w}:${bezahlbar}:${a.verbesserungen.join(',')}:${a.zeitalter}:${handel}:${laeuft}`;
+      // Und wie viele Gefallene da sind, wenn hier etwas daraus ersteht (einheiten AC-49).
+      const gefallene = angebot.some((e) => e.kosten?.gefallene) ? a.vorraete.gefallene : '';
+      const schluessel = `g${gebaeude.i}:${gebaeude.h}:${gebaeude.n}:${gebaeude.br || 0}:${a.farmenErneuern}:${gebaeude.s.join(',')}:${gebaeude.w}:${bezahlbar}:${a.verbesserungen.join(',')}:${a.zeitalter}:${handel}:${laeuft}:${gefallene}`;
       if (schluessel !== this.gezeigt) {
         this.gebaeudeBauen(gebaeude, angebot, farbe);
         this.gezeigt = schluessel;
@@ -1442,6 +1459,16 @@ export class Auswahlleiste {
     return false;
   }
 
+  /**
+   * Ob das eigene Haus eine Einheit ausbildet (einheiten AC-42): `haeuser`
+   * an der Einheit nennt, wer es darf; fehlt es, darf es jeder. Entschieden
+   * wird auf dem Server - hier steht nur, was gar nicht erst angeboten wird.
+   */
+  hausBildetAus(art) {
+    const nur = this.ansicht.werte.einheiten[art]?.haeuser;
+    return !nur || nur.includes(this.ansicht.spieler.get(this.ansicht.ich)?.haus);
+  }
+
   angebot(gebaeude) {
     const werte = this.ansicht.werte;
     const aufstiege = werte.aufstiege || {};
@@ -1455,6 +1482,9 @@ export class Auswahlleiste {
       // (einheiten AC-23): die Kaserne steht schon in der Dunklen Zeit, den
       // Speerkaempfer bildet sie erst ab der Feudalzeit aus.
       .filter((art) => ((werte.einheiten[art] || werte.verbesserungen?.[art])?.zeitalter || 0) <= this.ansicht.zeitalter)
+      // Und manche bildet nur ein Haus aus (einheiten AC-42): den
+      // Eibenschuetzen sieht in der Schiessanlage nur Eschenbruch.
+      .filter((art) => this.hausBildetAus(art))
       // Eine Verbesserung mit Vorstufe erscheint erst, wenn die Vorstufe
       // erforscht ist (bauen AC-34) - Eisenguss nach dem Schmiedeangriff.
       .filter((art) => {
@@ -1481,7 +1511,10 @@ export class Auswahlleiste {
       .map((art) => ({
         art,
         name: aufstiege[art]?.name || werte.verbesserungen?.[art]?.name || FIGUREN[art]?.name || art,
-        kosten: werte.einheiten[art]?.kosten || werte.verbesserungen?.[art]?.kosten || aufstiege[art]?.kosten || {},
+        // Der Preis des eigenen Hauses zuerst (einheiten AC-44): Silberfurt
+        // bekommt den Soeldner billiger, und das schickt der Server je Spieler.
+        kosten: this.ansicht.einheitenwerte.get(this.ansicht.ich)?.[art]?.kosten
+          || werte.einheiten[art]?.kosten || werte.verbesserungen?.[art]?.kosten || aufstiege[art]?.kosten || {},
         verbesserung: Boolean(werte.verbesserungen?.[art]),
         aufstieg: Boolean(aufstiege[art]),
         // „Aufstieg zum Lehen" - die Form steht in den Daten (bedienung AC-45).
@@ -1594,14 +1627,14 @@ export class Auswahlleiste {
       // was fehlt - das tut er in Chrome nur, wenn er Zeigerereignisse bekommt.
       knopf.setAttribute('aria-disabled', fehlt ? 'true' : 'false');
       if (fehlt) knopf.dataset.fehlt = fehlt;
-      const kosten = Object.entries(eintrag.kosten).map(([r, m]) => `${m} ${ROHSTOFF_NAMEN[r]}`).join(', ');
+      const kosten = Object.entries(eintrag.kosten).map(([r, m]) => postenText(r, m)).join(', ');
       // Als aria-label, nicht als title: beim Ueberfahren steht die Tafel
       // (bedienung AC-55), ein zweiter Hinweis des Browsers laege darueber.
       knopf.setAttribute('aria-label', fehlt ? `${eintrag.name} - zu wenig ${fehlt}` : `${eintrag.name} bauen (${kosten})`);
       if (this.ansicht.platzieren?.art === eintrag.art) knopf.classList.add('aktiv');
       const preis = element('span', 'preis');
-      for (const [r, m] of Object.entries(eintrag.kosten)) preis.append(element('span', `ware ware-${r[0]}`), element('span', null, String(m)));
-      knopf.append(gebaeudeBildchen(eintrag.art, 52, farbe, eintrag.groesse), element('span', 'bauname', eintrag.name), preis);
+      for (const [r, m] of Object.entries(eintrag.kosten)) preis.append(element('span', warenklasse(r)), element('span', null, String(m)));
+      knopf.append(gebaeudeBildchen(this.ansicht.bildVon(this.ansicht.ich, eintrag.art), 52, farbe, eintrag.groesse), element('span', 'bauname', eintrag.name), preis);
       // Die Taste nach B (bedienung AC-27), in der Reihenfolge des Menues.
       const nummer = bauplan.indexOf(eintrag);
       if (nummer < BAUTASTEN.length) knopf.append(element('kbd', 'taste', BAUTASTEN[nummer].toUpperCase()));
@@ -1627,7 +1660,7 @@ export class Auswahlleiste {
     w.replaceChildren();
     const name = this.gebaeudeName(gebaeude.b, gebaeude.art);
     const bild = element('div', 'auswahl-bild');
-    bild.append(gebaeudeBildchen(gebaeude.art, 58, farbe, 2));
+    bild.append(gebaeudeBildchen(this.ansicht.bildart(gebaeude), 58, farbe, 2));
     const kopfteil = element('div', 'auswahl-kopf');
     kopfteil.append(element('strong', null, `${name} im Bau`));
     const stand = element('div', 'leben');
@@ -1962,7 +1995,7 @@ export class Auswahlleiste {
       // Wie im Baumenue: gesperrt, aber noch ansprechbar - er sagt, was fehlt.
       knopf.setAttribute('aria-disabled', fehlt || laeuft ? 'true' : 'false');
       if (fehlt) knopf.dataset.fehlt = fehlt;
-      const kosten = Object.entries(eintrag.kosten).map(([r, m]) => `${m} ${ROHSTOFF_NAMEN[r]}`).join(', ');
+      const kosten = Object.entries(eintrag.kosten).map(([r, m]) => postenText(r, m)).join(', ');
       if (eintrag.aufstieg) {
         knopf.dataset.aufstieg = eintrag.art;
         knopf.setAttribute('aria-label', fehlt
@@ -1985,7 +2018,7 @@ export class Auswahlleiste {
       }
       const preis = element('span', 'preis');
       for (const [r, m] of Object.entries(eintrag.kosten)) {
-        const teile = [element('span', `ware ware-${r[0]}`), element('span', null, String(m))];
+        const teile = [element('span', warenklasse(r)), element('span', null, String(m))];
         // Am flachen Knopf der Weiterentwicklung stehen die Posten untereinander.
         if (eintrag.stufeVon) {
           const posten = element('span', 'posten');
@@ -1998,6 +2031,13 @@ export class Auswahlleiste {
       else if (eintrag.verbesserung) knopf.append(this.verbesserungBildchen(eintrag.art, 58, farbe));
       else knopf.append(bildchen(eintrag.art, 58, farbe));
       knopf.append(preis);
+      // Wie viele Gefallene da sind, steht am Knopf (einheiten AC-49): eine
+      // Rohstoffleiste dafuer gibt es nicht.
+      if (eintrag.kosten.gefallene) {
+        const da = this.ansicht.vorraete.gefallene || 0;
+        knopf.dataset.gefallene = String(da);
+        knopf.append(element('span', 'gefallene', String(da)));
+      }
       beimDruecken(knopf, (e) => {
         if (laeuft) this.ansicht.melden(`${eintrag.name} wird schon erforscht.`);
         else if (fehlt) this.ansicht.melden(`Zu wenig ${fehlt}.`);

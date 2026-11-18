@@ -1,0 +1,57 @@
+{
+  "bild": "meuchler.webp",
+  "maske": "meuchler-maske.webp",
+  "zelle": [
+    153,
+    135
+  ],
+  "fuss": [
+    53,
+    96
+  ],
+  "feldbreite": 132,
+  "zeilen": 8,
+  "spalten": 9,
+  "art": "figur",
+  "richtungen": 8,
+  "hoehe": 86,
+  "ablaeufe": {
+    "stehen": {
+      "spalte": 0,
+      "bilder": 1
+    },
+    "gehen": {
+      "spalte": 1,
+      "bilder": 8
+    },
+    "angreifen": {
+      "spalte": 0,
+      "bilder": 8,
+      "bild": "meuchler-angreifen.webp",
+      "maske": "meuchler-angreifen-maske.webp",
+      "zelle": [
+        169,
+        136
+      ],
+      "fuss": [
+        56,
+        100
+      ]
+    },
+    "sterben": {
+      "spalte": 0,
+      "bilder": 8,
+      "einmal": true,
+      "bild": "meuchler-sterben.webp",
+      "maske": "meuchler-sterben-maske.webp",
+      "zelle": [
+        210,
+        147
+      ],
+      "fuss": [
+        87,
+        98
+      ]
+    }
+  }
+}

@@ -1,0 +1,57 @@
+{
+  "bild": "soeldner.webp",
+  "maske": "soeldner-maske.webp",
+  "zelle": [
+    159,
+    147
+  ],
+  "fuss": [
+    42,
+    108
+  ],
+  "feldbreite": 132,
+  "zeilen": 8,
+  "spalten": 9,
+  "art": "figur",
+  "richtungen": 8,
+  "hoehe": 86,
+  "ablaeufe": {
+    "stehen": {
+      "spalte": 0,
+      "bilder": 1
+    },
+    "gehen": {
+      "spalte": 1,
+      "bilder": 8
+    },
+    "angreifen": {
+      "spalte": 0,
+      "bilder": 8,
+      "bild": "soeldner-angreifen.webp",
+      "maske": "soeldner-angreifen-maske.webp",
+      "zelle": [
+        197,
+        158
+      ],
+      "fuss": [
+        73,
+        118
+      ]
+    },
+    "sterben": {
+      "spalte": 0,
+      "bilder": 8,
+      "einmal": true,
+      "bild": "soeldner-sterben.webp",
+      "maske": "soeldner-sterben-maske.webp",
+      "zelle": [
+        235,
+        163
+      ],
+      "fuss": [
+        97,
+        110
+      ]
+    }
+  }
+}

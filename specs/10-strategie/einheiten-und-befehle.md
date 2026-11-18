@@ -2,7 +2,7 @@
 
 **Bereich:** Strategie
 **Kuerzel:** einheiten
-**Stand:** 41/58 fertig · 16 offen · 1 zurueckgestellt
+**Stand:** 49/62 fertig · 12 offen · 1 zurueckgestellt
 
 ## Zweck
 
@@ -393,16 +393,20 @@ wogegen sie verliert — mindestens 80 % in beiden Richtungen, wie der
 Konterkreis (fahrplan AC-9, AC-23). Jede braucht eine eigene Figur; die
 kommen aus der Blender-Sitzung (Bauabfolge E6 bis E8).
 
-- **AC-42** `offen` **Eibenschütze nur für Eschenbruch** — Häuser schalten
+- **AC-42** `fertig` **Eibenschütze nur für Eschenbruch** — Häuser schalten
   Einheiten frei (ADR-0014 Punkt 11): eine Einheit trägt in den Daten
   `haeuser: [...]`, gelesen überall dort, wo heute `zeitalter` gelesen wird
-  (Menü des Gebäudes, Ausbildung auf dem Server, Absage, KI). Wer sie nicht
-  ausbilden darf, sieht sie nicht im Menü, und der Server weist den Auftrag
-  ab. Der erste Fall: der **Eibenschütze** in der Schießanlage ab der
-  Ritterzeit, nur Haus Eschenbruch. Startwerte: 35 Holz, 40 Gold, 35 Leben,
-  Angriff 6, Reichweite 6, Rüstung 0/0, Tempo 0,96, Nachladezeit 2 s.
+  (Menü des Gebäudes, Ausbildung auf dem Server, Absage, KI —
+  `welt.hausBildetAus`). Wer sie nicht ausbilden darf, sieht sie nicht im
+  Menü, und der Server weist den Auftrag ab („Den Eibenschützen bildet nur
+  Haus Eschenbruch aus"). Der erste Fall: der **Eibenschütze** in der
+  Schießanlage ab der Ritterzeit, nur Haus Eschenbruch. Werte: 35 Holz,
+  40 Gold, 27 s, 35 Leben, Angriff 6, Reichweite 6, Rüstung 0/0, Tempo
+  0,96, Nachladezeit 2 s (Ausbildungszeit und Sicht 7 gesetzt).
   **Entscheidung:** er schießt weiter als der Armbrustschütze (5) und
   gewinnt gegen ihn bei gleichen Kosten; gegen Ritter verliert er.
+  **Gemessen** (2026-11-18, Budget 1200, zwanzig Startwerte je Richtung):
+  gegen Armbrustschützen 20 von 20, umgekehrt 0; gegen Ritter 0 von 20.
   **Der Name** (Benutzer, 2026-11-13): im ersten Entwurf und in ADR-0014
   hieß er Langbogenschütze; den Namen trägt jetzt die Krone-Stufe der
   Bogenlinie für alle Häuser (AC-58: Kurzbogen, Bogen, Langbogen). Der
@@ -416,67 +420,108 @@ kommen aus der Blender-Sitzung (Bauabfolge E6 bis E8).
   gegen 8, das passt; in der Krone wären es mit einer dritten
   Pfeil-Verbesserung 10 gegen 8 — dort bekommt entweder die Elitestufe
   Schaden und Leben statt Reichweite, oder die Burg wächst mit. Entschieden
-  wird das mit der Messung in Stufe F.
-- **AC-43** `offen` **Pavesenschütze nur für Wehrstein** — Schießanlage ab der
+  wird das mit der Messung in Stufe F. **Die KI bildet vorerst keine
+  Einheit eines Hauses aus** (`NOCH_NICHT` in `ki.js`, gilt für AC-42 bis
+  AC-49): mit dem Söldner endeten im Nebel 97, mit den zwei Schützen 102
+  von 120 Partien vor Minute 60, die Grenze ist 105. Der Einsatz gehört zu
+  ki AC-28.
+- **AC-43** `fertig` **Pavesenschütze nur für Wehrstein** — Schießanlage ab der
   Ritterzeit, nur Haus Wehrstein: ein Schütze hinter einem großen Schild.
-  Startwerte: 30 Holz, 45 Gold, 45 Leben, Angriff 4, Reichweite 4, Rüstung
-  1/4, Tempo 0,85. **Entscheidung:** gegen Armbrustschützen gleicher Kosten
-  gewinnt er, gegen Ritter und gegen Mangonels verliert er.
-- **AC-44** `offen` **Söldner für Gold** — Kaserne ab der Ritterzeit, jedes Haus;
-  kostet **nur Gold** und ist schnell da. Startwerte: 80 Gold (Silberfurt:
-  64), 18 s, 55 Leben, Angriff 9, Rüstung 1/1, Tempo 1,0. **Entscheidung:**
-  er verwandelt Gold in Truppen, ohne Nahrung und Holz, und ist dabei nicht
-  besser als der Soldat — bei gleichen Kosten gewinnt keiner von beiden
-  mehr als 60 %. Der Preis für Silberfurt ist ein Bonus des Hauses in den
-  Daten, keine Verzweigung.
-- **AC-45** `offen` **Kriegswölfe aus der Burg** — Spezialeinheit von Haus
+  Werte: 30 Holz, 45 Gold, 27 s, 45 Leben, Angriff 4, Reichweite 4, Rüstung
+  1/4, Tempo 0,85, Nachladezeit 2 s (Zeiten und Sicht gesetzt).
+  **Entscheidung:** gegen Armbrustschützen gleicher Kosten gewinnt er,
+  gegen Ritter und gegen Mangonels verliert er. **Gemessen** (2026-11-18):
+  gegen Armbrustschützen 20 von 20, umgekehrt 0; gegen Ritter und Mangonel
+  0 von 20.
+- **AC-44** `fertig` **Söldner für Gold** — Kaserne ab der Ritterzeit, jedes Haus;
+  kostet **nur Gold** und ist schnell da. Werte: 80 Gold (Silberfurt: 64),
+  18 s, **60 Leben** (Startwert 55), Angriff 9, Rüstung 1/1, Tempo 1,0,
+  Nachladezeit 2 s. **Entscheidung:** er verwandelt Gold in Truppen, ohne
+  Nahrung und Holz, und ist dabei nicht besser als der Kämpfer seiner Zeit
+  — bei gleichen Kosten gewinnt keiner von beiden mehr als 60 %. **Der
+  Maßstab ist der Langschwertkämpfer**, nicht der Soldat des Lehens: der
+  Söldner kommt im Fürstentum, und dort steht ihm die Stufe gegenüber.
+  Gemessen (2026-11-18, jede Art einmal links und einmal rechts): mit 60
+  Leben gewinnt er 21 von 40; mit den 55 des Startwerts lag er außerhalb
+  der Grenze. Der Preis für Silberfurt ist ein
+  Bonus des Hauses in den Daten (`preis` in den `boni`, gelesen in
+  `welt.auftragKosten`), keine Verzweigung; das Haus sagt es in Worten
+  („Den Söldner gibt es 20 % billiger").
+- **AC-45** `fertig` **Kriegswölfe aus der Burg** — Spezialeinheit von Haus
   Eschenbruch. Schnell wie ein Reiter, aber **kein Reiter**: Klasse `tier`,
-  der Speer hat keinen Bonus gegen sie. Startwerte: 60 Nahrung, 30 Gold,
-  20 s, 55 Leben, Angriff 7, Rüstung 0/1, Tempo 1,35, Nachladezeit 1,5 s.
-  **Entscheidung:** gegen Speerkämpfer gleicher Kosten gewinnen sie (der
-  Ritter dort 0 von 20), gegen Soldaten verlieren sie.
-- **AC-46** `offen` **Reiterschütze aus der Burg** — Spezialeinheit von Haus
+  der Speer hat keinen Bonus gegen sie, und keine Verbesserung stärkt sie.
+  Werte: 60 Nahrung, 30 Gold, 20 s, 55 Leben, Angriff 7, Rüstung 0/1,
+  Tempo 1,35, Nachladezeit 1,5 s (Sicht 5 gesetzt). **Entscheidung:**
+  gegen Speerkämpfer und Pikeniere gleicher Kosten gewinnen sie (der
+  Ritter gegen Pikeniere 0 von 40), gegen den Schwertkämpfer ihrer Zeit
+  verlieren sie. **Gemessen** (2026-11-18): gegen Speerkämpfer und
+  Pikeniere 40 von 40, gegen Langschwertkämpfer 0 — gegen den Soldaten des
+  Lehens, den es im Fürstentum kaum noch gibt, gewinnen sie.
+- **AC-46** `fertig` **Reiterschütze aus der Burg** — Spezialeinheit von Haus
   Rappenstein: schießt vom Pferd und wird **als Reiter und als Schütze**
   getroffen (Klassen `kavallerie` und `bogenschuetze`: der Speer und der
-  Plänkler haben beide ihren Bonus). Startwerte: 40 Holz, 70 Gold, 34 s,
-  60 Leben, Angriff 5, Reichweite 4, Rüstung 0/0, Tempo 1,4.
-  **Entscheidung:** gegen Armbrustschützen gleicher Kosten gewinnt er —
-  er holt sie ein und hält Abstand —, gegen Plänkler und Speerkämpfer
-  verliert er.
-- **AC-47** `offen` **Riese aus der Burg** — Spezialeinheit von Haus Wehrstein:
+  Plänkler haben beide ihren Bonus). Werte: 40 Holz, 70 Gold, 34 s,
+  60 Leben, Angriff 5, **Reichweite 5, Rüstung 0/2** (Startwerte 4 und
+  0/0), Tempo 1,4 (Sicht 6 gesetzt). **Entscheidung:** gegen
+  Armbrustschützen gleicher Kosten gewinnt er, gegen Plänkler und
+  Speerkämpfer verliert er. **Gemessen** (2026-11-18): mit den Startwerten
+  verlor er gegen Armbrustschützen 0 von 40 — das Abstandhalten, das die
+  Entscheidung tragen sollte, gibt es im Spiel nicht, er steht und schießt
+  wie jeder Schütze; mit Reichweite 5 und Fernrüstung 2 gewinnt er 39 von
+  40, gegen Plänkler und Speerkämpfer bleibt es bei 0. Mit zwei Klassen
+  bekommt er beide Schmiedelinien und die Pferdezucht, in Haus Rappenstein
+  75 Leben — die Regel „Schlüssel = Art oder Klasse" ist dafür nicht
+  aufgebrochen.
+- **AC-47** `fertig` **Riese aus der Burg** — Spezialeinheit von Haus Wehrstein:
   viel Leben, langsam, ein großer Bonus gegen Gebäude — der Bonus der Ramme
-  auf zwei Beinen, aber er schlägt auch Einheiten und wehrt sich.
-  Startwerte: 120 Nahrung, 100 Gold, 40 s, 250 Leben, Angriff 10, Bonus
-  +40 gegen Gebäude, Rüstung 2/1, Tempo 0,6, Nachladezeit 3 s. Gegen ein
-  Gebäude (0 Rüstung gegen Hieb) sind das 50 je Schlag, 16,7 je Sekunde —
-  zwei Drittel einer Ramme (127 alle 5 s, 25,4 je Sekunde).
-  **Entscheidung:** er bricht Gebäude und hält dabei Nahkämpfer auf; gegen
-  Armbrustschützen gleicher Kosten verliert er, denn er holt sie nie ein.
-- **AC-48** `offen` **Meuchler aus der Burg** — Spezialeinheit von Haus
+  auf zwei Beinen, aber er schlägt auch Einheiten und wehrt sich. Werte:
+  120 Nahrung, 100 Gold, 40 s, **180 Leben** (Startwert 250), Angriff 10,
+  Bonus +40 gegen Gebäude, **Rüstung 2/0** (Startwert 2/1), Tempo 0,6,
+  Nachladezeit 3 s (Sicht 4 gesetzt). Gegen ein Gebäude (0 Rüstung gegen
+  Hieb) sind das 50 je Schlag, 16,7 je Sekunde — zwei Drittel einer Ramme
+  (127 alle 5 s, 25,4 je Sekunde). **Entscheidung:** er bricht Gebäude und
+  hält dabei Nahkämpfer auf; gegen Armbrustschützen gleicher Kosten
+  verliert er. **Gemessen** (2026-11-18): mit den Startwerten gewann er
+  gegen Armbrustschützen 40 von 40 — er kam an, weil 250 Leben und eine
+  Fernrüstung den Weg überstehen; mit 180 Leben und Rüstung 2/0 verliert
+  er 0 von 40. Gegen Speerkämpfer und Pikeniere 40 von 40, gegen
+  Langschwertkämpfer und Ritter 0.
+- **AC-48** `fertig` **Meuchler aus der Burg** — Spezialeinheit von Haus
   Silberfurt: **getarnt** (kampf AC-22), wenig Leben, ein hoher Bonus gegen
-  Dorfbewohner und Mönche. Startwerte: 40 Nahrung, 60 Gold, 25 s, 35
-  Leben, Angriff 6, Bonus +10 gegen Dorfbewohner und Mönche, Rüstung 0/0,
-  Tempo 1,1, Nachladezeit 1,5 s. Ein Dorfbewohner (25 Leben) fällt nach
-  zwei Stichen, 1,5 Sekunden. **Entscheidung:** er trifft die Wirtschaft
-  ungesehen; gegen Soldaten gleicher Kosten verliert er, und ein Turm oder
-  eine Wache, die ihn auf zwei Felder sieht, stellt ihn.
-- **AC-49** `offen` **Wiedergänger aus Gefallenen** — Spezialeinheit von Haus
+  Dorfbewohner und Mönche. Werte: 40 Nahrung, 60 Gold, 25 s, 35 Leben,
+  Angriff 6, Bonus +10 gegen Dorfbewohner und Mönche, Rüstung 0/0, Tempo
+  1,1, Nachladezeit 1,5 s (Sicht 5 gesetzt). Ein Dorfbewohner (25 Leben)
+  fällt nach zwei Stichen, ein Mönch (30) auch. **Er sticht nicht von
+  selbst** (`wacht: false`): ein Getarnter, der jeden angreift, der
+  vorbeikommt, verriete sich — getroffen schlägt er zurück.
+  **Entscheidung:** er trifft die Wirtschaft ungesehen; gegen
+  Schwertkämpfer gleicher Kosten verliert er, und ein Turm oder eine
+  Wache, die ihn auf zwei Felder sieht, stellt ihn. **Gemessen**
+  (2026-11-18): gegen Soldaten und Langschwertkämpfer 0 von 40.
+- **AC-49** `fertig` **Wiedergänger aus Gefallenen** — Spezialeinheit von Haus
   Distelhag, ein Untoter. Jede eigene Einheit, die stirbt, zählt für das
-  Haus als ein **Gefallener** (gezählt wird beim Sterben schon heute, für
-  die Tafel); ein Wiedergänger kostet 30 Gold **und einen Gefallenen**,
-  bezahlt über denselben Weg wie Holz (`kosten`), und steht nach 10 s an
-  der Burg — nicht dort, wo jemand fiel. Ein gefallener Wiedergänger zählt
-  nicht noch einmal. Klassen `infanterie` und `untot`: er bekommt
-  Schmiede und Hausbonus, kein Mönch bekehrt oder heilt ihn (die Liste
-  `nicht` am Bekehren — ob das Heilen sie liest, ist zu prüfen), und er
-  kostet keine Nahrung. Startwerte aus ADR-0014: 60 Leben, Angriff 6,
-  Rüstung 1/0, Tempo 0,7, Nachladezeit 2 s. Gerechnet: gegen einen Soldaten
-  (45 Leben, Rüstung 0) braucht er acht Schläge und behält 20 Leben, ein
-  Drittel; vier Wiedergänger (je 4 an einem Ritter) fällen einen Ritter in
-  sieben Runden, bevor der den ersten (sieben Schläge zu 1,8 s) fällt.
-  **Entscheidung:** er bringt nach einer verlorenen Schlacht etwas zurück
-  (spielziel AC-4), nie mehr, als verloren wurde; seine Antwort sind
-  Schützen — gegen Bogenschützen gleicher Kosten verliert er.
+  Haus als ein **Gefallener** — auch eine entlassene (bedienung AC-75),
+  nicht eine bekehrte, und gezählt wird nur für ein Haus, das damit
+  bezahlt. Ein Wiedergänger kostet 30 Gold **und einen Gefallenen**,
+  bezahlt und bei einer Absage erstattet über denselben Weg wie Holz
+  (`kosten: { gold: 30, gefallene: 1 }`), und steht nach 10 s an der Burg
+  — nicht dort, wo jemand fiel. Ein gefallener Wiedergänger zählt nicht
+  noch einmal. Klassen `infanterie` und `untot`: er bekommt Schmiede und
+  Hausbonus, kein Mönch bekehrt oder heilt ihn (beide lesen ihre Liste
+  `nicht` aus den Daten), und er kostet keine Nahrung. Wie viele Gefallene
+  da sind, steht am Knopf in der Burg und in seiner Tafel; der Server
+  schickt die Zahl nur dem Spieler selbst (`gf`). Werte aus ADR-0014:
+  60 Leben, Angriff 6, Rüstung 1/0, Tempo 0,7, Nachladezeit 2 s (Sicht 4
+  gesetzt). **Entscheidung:** er bringt nach einer verlorenen Schlacht
+  etwas zurück (spielziel AC-4), nie mehr, als verloren wurde; seine
+  Antwort sind Schützen. **„Gleiche Kosten" gibt es für ihn nicht von
+  selbst** — gerechnet wird der Gefallene mit dem billigsten Kämpfer, dem
+  Speerkämpfer (60), also 90 je Wiedergänger. **Gemessen** (2026-11-18,
+  13 Wiedergänger gegen 1200 Rohstoffe): gegen Bogenschützen des
+  Fürstentums und Armbrustschützen 0 von 40; nur nach dem Gold gerechnet
+  (38 Stück) überrennt er jeden — deshalb zählt der Gefallene mit. Nicht
+  gemessen ist er mit Distelhags Bonus (Rüstung dann 2/2): der
+  Gefechtsstand kennt keine Häuser.
 
 ### Stufe F — der Drache (aus ADR-0014)
 
@@ -580,6 +625,64 @@ AC-19). Werte und Dauern sind Startwerte aus ADR-0014.
   Leben bleibt ein Gang. **Aus dem Spiel (2026-11-17):**
   „dem Mönch sollte man mit rechtsklick genau mitgeben können, wen er heilen
   soll" — vorher heilte er nur von selbst, immer den Nächsten.
+
+### Stufe F — die Krone (Spec-Runde 2026-11-18)
+
+Die Linien bekommen ihre letzte Stufe, auf demselben Weg wie im Fürstentum
+(AC-58 bis AC-62): eine Verbesserung mit `wandelt` und `vorstufe` im Gebäude
+der Linie, die austauscht, was schon steht. Preis, Tempo und Ausbildungszeit
+der Einheit bleiben die der Vorstufe. Die Werte stehen in
+[`vorlage-aoe2.md`](../../docs/strategie/vorlage-aoe2.md) unter „Krone".
+
+- **AC-66** `offen` **Fünf Stufen der Krone** — Zweihandkämpfer (aus dem
+  Langschwertkämpfer: 65 Leben, 12 Angriff, Rüstung 1/1; 200 Nahrung, 100
+  Gold, 45 s), Hellebardier (aus dem Pikenier: 60 Leben, 6 Angriff, +32
+  gegen Kavallerie; 300 Nahrung, 600 Gold, 50 s), Husar (aus der leichten
+  Kavallerie: 75 Leben, 7 Angriff, Rüstung 0/2, ein Schlag alle 1,9 s; 500
+  Nahrung, 600 Gold, 50 s), Kavalier (aus dem Ritter: 120 Leben, 12
+  Angriff, Rüstung 2/2; 300 Nahrung, 300 Gold, 80 s) und **Paladin** (aus
+  dem Kavalier: 160 Leben, 14 Angriff, Rüstung 2/3, ein Schlag alle 1,9 s;
+  1300 Nahrung, 750 Gold, 170 s, verlangt den Kavalier). **Der Ritter hat
+  zwei Stufen** (Benutzer, 2026-11-18: „Wir brauchen auch
+  Weiterentwicklungen für den Ritter, vielleicht sogar zwei weitere") —
+  wie in der Vorlage, und der Paladin ist mit Abstand die teuerste Stufe
+  im Spiel. Die Schwertlinie bleibt bei einer: der Champion der Vorlage
+  wäre eine weitere Figur und eine weitere Unbekannte im Konterkreis
+  (fahrplan AC-26). **Zu messen, bevor es `fertig` heißt:** Hellebardiere
+  gleicher Kosten schlagen auch Paladine (fahrplan AC-26).
+- **AC-67** `offen` **Schützen der Krone** — Beide Linien behalten ihre
+  Rolle (AC-34, AC-58). Langbogenschütze (aus dem Bogenschützen: 40 Leben,
+  6 Angriff, Reichweite 5; 450 Nahrung, 350 Gold, 50 s — die Werte des
+  Arbalestenschützen der Vorlage) und schwere Armbrust (aus dem
+  Armbrustschützen: 40 Leben, 12 Angriff alle 3,5 s, Reichweite 5; 400
+  Nahrung, 350 Gold, 50 s — Startwerte ohne Vorbild). Der Eliteplänkler
+  bekommt keine weitere Stufe; in der Vorlage haben sie nur einzelne
+  Völker. Der Eibenschütze bleibt voll erforscht die Einheit mit der
+  größten Reichweite (AC-42). Gemessen wird mit fahrplan AC-26: ohne
+  Rüstungen gewinnt der Langbogen gegen die schwere Armbrust gleicher
+  Kosten, mit den Schützenrüstungen die Armbrust.
+- **AC-68** `offen` **Belagerung der Krone** — Belagerungsramme (aus der
+  Ramme: 270 Leben, 4 Angriff, +175 gegen Gebäude statt +125, Fernrüstung
+  195; 1000 Nahrung, 75 s) und Onager (aus dem Mangonel: 60 Leben, 55
+  Angriff, Rüstung 0/8, Reichweite 8; 800 Nahrung, 500 Gold, 75 s), beide in
+  der Werkstatt. Die Vorlage hebt den Stoß der Ramme über zwei Stufen um
+  ein Drittel; hier ist es eine Stufe. Was `nurGebaeude`, `flaeche` und die
+  Mindestweite regeln (AC-35, AC-36), gilt unverändert. Ein Trebuchet gibt
+  es nicht — an seiner Stelle steht der Drache (AC-52).
+- **AC-69** `offen` **Elitestufen der Spezialeinheiten** — Jede der fünf
+  Einheiten aus der Burg (AC-45 bis AC-49) lässt sich dort einmal
+  weiterentwickeln (ADR-0014 Punkt 12), sichtbar nur für ihr Haus:
+  Kriegswolf 70 Leben und 9 Angriff (statt 55 und 7), Reiterschütze 75
+  Leben und 6 Angriff (statt 60 und 5), Riese 220 Leben, 12 Angriff und +50
+  gegen Gebäude (statt 180, 10 und +40), Meuchler 45 Leben, 8 Angriff und
+  +14 gegen Dorfbewohner und Mönche (statt 35, 6 und +10), Wiedergänger 75
+  Leben, 8 Angriff und Rüstung 1/1 (statt 60, 6 und 1/0). Jede kostet 500
+  Nahrung, 400 Gold und 60 s — Startwerte ohne Vorbild. Tarnung, Preis in
+  Gefallenen und alle übrigen Regeln bleiben. Die Namen („Elite-…") sind
+  Daten und vorläufig. Eibenschütze, Pavesenschütze und Söldner bekommen
+  keine Stufe; sie stehen in gewöhnlichen Gebäuden. **Zu messen, bevor es
+  `fertig` heißt:** jede Paarung, die bei AC-45 bis AC-49 gemessen ist,
+  behält ihre Richtung, wenn beide Seiten auf ihrer Stufe der Krone stehen.
 
 ## Grenzfaelle
 

@@ -222,7 +222,10 @@ test.describe('Ritterzeit am Stueck', () => {
       const w = a.werte;
       const eigene = [...a.gebaeude.values()].filter((g) => g.b === a.ich && g.u === undefined);
       const woher = (eintrag) => eigene.find((g) => (w.gebaeude[g.art].bildetAus || []).includes(eintrag))?.i ?? null;
-      const plan = Object.entries(w.einheiten).filter(([, e]) => e.zeitalter === 2).map(([art]) => {
+      // Ohne die Einheiten, die nur ein Haus ausbildet (einheiten AC-42 bis
+      // AC-49): hier spielt das Pruefhaus, und das hat keine. Sie belegt
+      // strategie-hauseinheiten.spec.mjs.
+      const plan = Object.entries(w.einheiten).filter(([, e]) => e.zeitalter === 2 && !e.haeuser).map(([art]) => {
         const direkt = woher(art);
         if (direkt !== null) return { art, gebaeude: direkt, verbesserung: null };
         const [v] = Object.entries(w.verbesserungen).find(([, x]) => Object.values(x.wandelt || {}).includes(art)) || [];
@@ -356,9 +359,13 @@ test.describe('Ritterzeit am Stueck', () => {
     expect(truppe.ids.length, 'je Art eine Einheit').toBe(bestellt.length);
     await anna.mouse.click(truppe.punkt.x, truppe.punkt.y, { button: 'right' });
     await zeitraffer(anna, code, 10);
+    // Angekommen heisst: am Sammelplatz und still. Der Mangonel ist langsam
+    // und geht auf dem Weg zu seinem Platz ueber die Plaetze der anderen -
+    // wer nur die Naehe abwartet, erwischt ihn mitten auf dem Pikenier.
     await anna.waitForFunction(([ids, s]) => ids.every((id) => {
       const e = window.ansicht.nachher.get(id);
-      return e && Math.hypot(e.x - s.x, e.y - s.y) < 4;
+      const alt = window.ansicht.vorher.get(id);
+      return e && alt && alt.x === e.x && alt.y === e.y && Math.hypot(e.x - s.x, e.y - s.y) < 4;
     }), [truppe.ids, truppe.sammel], { timeout: 90_000 });
     await zeitraffer(anna, code, 1);
 

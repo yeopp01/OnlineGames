@@ -13,10 +13,11 @@
 const NAMEN = [
   'dorfbewohner', 'baum', 'baumstumpf', 'marktkarren', 'spaeherreiter', 'ritter', 'miliz', 'soldat', 'speerkaempfer', 'bogenschuetze', 'plaenkler',
   'armbrustschuetze', 'bogenschuetze2', 'langschwertkaempfer', 'pikenier', 'eliteplaenkler', 'leichtekavallerie',
+  'eibenschuetze', 'pavesenschuetze', 'soeldner', 'kriegswolf', 'reiterschuetze', 'riese', 'meuchler', 'wiedergaenger',
   'moench', 'ramme', 'mangonel', 'schaf', 'beere', 'gold', 'stein', 'boden', 'geschoss',
   // Gebaeude (R4): jedes eine Tafel; die Baustelle je Grundflaeche eine.
   'haus', 'dorfzentrum', 'muehle', 'holzfaellerlager', 'bergbaulager', 'farm', 'kaserne', 'schiessanlage', 'stall', 'schmiede',
-  'aussenposten', 'markt', 'kloster', 'universitaet', 'belagerungswerkstatt', 'wachturm', 'burg', 'steinmauer', 'tor',
+  'aussenposten', 'markt', 'kloster', 'universitaet', 'belagerungswerkstatt', 'wachturm', 'wehrturm', 'burg', 'steinmauer', 'tor',
   'baustelle-1', 'baustelle-2', 'baustelle-3', 'baustelle-4',
 ];
 const tafeln = new Map();

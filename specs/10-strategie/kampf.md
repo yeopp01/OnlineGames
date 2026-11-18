@@ -2,7 +2,7 @@
 
 **Bereich:** Strategie
 **Kuerzel:** kampf
-**Stand:** 22/25 fertig · 2 offen · 1 zurueckgestellt
+**Stand:** 23/25 fertig · 1 offen · 1 zurueckgestellt
 
 ## Zweck
 
@@ -226,15 +226,22 @@ aus [Spielziel](spielziel.md) AC-10, gemessen in
 
 ### Stufe E und F — Häuser und Drache
 
-- **AC-22** `offen` **Getarnte sieht man spät** — Eine Einheit mit `getarnt` in
-  den Daten (der Meuchler, einheiten AC-48) zählt für einen Gegner erst als
-  gesehen, wenn eine seiner Einheiten oder eines seiner Gebäude höchstens
-  zwei Felder entfernt steht — nicht schon in dessen Sicht. Was nicht
-  gesehen ist, schickt der Server ihm nicht (AC-13), und seine Wache, seine
-  Türme und sein Angriffslauf greifen es nicht an. Wer zuschlägt, steht
-  ohnehin näher: im Nahkampf ist der Meuchler gesehen. Verbündete sehen ihn
-  wie jede Einheit, und bei der Sicht „Aufgedeckt" gibt es keine Tarnung
-  (AC-16). Fragt die Welt an einer Stelle, nicht jede Regel einzeln.
+- **AC-22** `fertig` **Getarnte sieht man spät** — Eine Einheit mit `getarnt` in
+  den Daten (der Meuchler, einheiten AC-48; der Wert ist die Zahl der
+  Felder, 2) zählt für einen Gegner erst als gesehen, wenn eine seiner
+  Einheiten oder eines seiner fertigen Gebäude höchstens so viele Felder
+  entfernt steht — bei einem Gebäude vom Rand der Grundfläche gemessen —,
+  nicht schon in dessen Sicht. Was nicht gesehen ist, schickt der Server
+  ihm nicht (AC-13), ein Klick auf das Feld ist ein Gang (AC-11), und seine
+  Wache, seine Türme und sein Angriffslauf greifen es nicht an; ein
+  laufender Angriff endet, sobald das Ziel wieder verborgen ist. Wer
+  zuschlägt, steht ohnehin näher: im Nahkampf ist der Meuchler gesehen.
+  Verbündete sehen ihn wie jede Einheit — entdeckt ist er für alle, die
+  die Sicht teilen —, und bei der Sicht „Aufgedeckt" gibt es keine Tarnung
+  (AC-16). Die Welt fragt an einer Stelle (`welt.siehtEinheit`,
+  `welt.verborgen`), nicht jede Regel einzeln; auch die KI fragt dort.
+  Gerechnet wird mit der Sicht, zweimal je Sekunde — so lange kann ein
+  Meuchler, der wegläuft, noch gesehen sein.
 - **AC-23** `offen` **Den Drachen treffen nur Schützen** — Den fliegenden
   Drachen (einheiten AC-52) treffen nur Fernkämpfer mit Pfeilen, Türme und
   Burgen — kein Nahkämpfer, keine Ramme, kein Mangonel. Ein Rechtsklick

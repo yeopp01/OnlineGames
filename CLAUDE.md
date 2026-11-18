@@ -181,7 +181,7 @@ Umfang hinzufügt, dort nachsehen.
 
 ## Stand
 
-**563 von 685 Kriterien fertig.** 965 Tests ohne Browser und 14 ganze Partien, 308 im Browser. Die
+**572 von 704 Kriterien fertig.** 991 Tests ohne Browser und 14 ganze Partien, 316 im Browser. Die
 Übersicht ist der Bericht: `npm run qa:report`.
 
 Gebaut ist der Unterbau: Räume, Übertragung, Karte, Wegfindung, Sammeln,
@@ -201,7 +201,7 @@ Gemessen: **3,10 Tore je Spiel, 48 % Heimsiege, 21 % Unentschieden**
 ohne Menschen null Widersprüche in den Spielen, Kader, Stärke und Markt
 stabil. Eine Saison rechnet in rund 400 ms, ein Spielstand ist nach zwei
 Saisons unter 1 MB. Der Browserlauf dauert rund 36
-Minuten für 308 Fälle (`npm run e2e:laufzeiten` zeigt, wo; die langsamsten
+Minuten für 308 Fälle (inzwischen 316, rund 42 Minuten) (`npm run e2e:laufzeiten` zeigt, wo; die langsamsten
 Fälle sind `fahrplan AC-24` mit 108 s, zwei gegen zwei bis zur Tafel,
 `fahrplan AC-14` mit 90 s, die Ritterzeit am Stück, und `fahrplan AC-12`
 mit 84 s, eine ganze Partie gegen die KI).
@@ -741,9 +741,9 @@ aus Stücken zusammen (`mauerZellen`, `ansicht.gebaeudeLage`), ihre Schatten
 liegen in einer eigenen Schicht. Getroffen und verdeckt wird am Bild
 (`zelleGetroffen`): das gerenderte Dorfzentrum ist niedriger als das
 gezeichnete. Jede Datei trägt ein `ETag` — die Tafeln (über 20 MB) kommen
-nur einmal (darstellung AC-25). **Die Schautafel zeigt noch die gezeichneten
-Fassungen**, und was der Browser für alle Tafeln an Speicher hält, ist nicht
-gemessen. Ein Bildschirmfoto des gerenderten Spielbilds dauert länger als
+nur einmal (darstellung AC-25). Die Schautafel zeigt und misst, was das Spiel
+zeigt — die gerenderten Bilder; was der Browser für alle Tafeln an Speicher
+hält, ist nicht gemessen. Ein Bildschirmfoto des gerenderten Spielbilds dauert länger als
 ein Pfeilflug: wer einen Pfeil belegt, hält ihn im Bild fest
 (`strategie-burg.spec.mjs`, `strategie-tuerme.spec.mjs`).
 
@@ -843,6 +843,49 @@ Abbau kürzer — der Server schickt, welche Vorräte angebrochen sind
 sie aus der Tafel `baumstumpf` (je Baumart eine Zeile, je Stufe mehrere
 Gestalten). Browsertests setzen einen Vorrat mit dem Prüfgriff
 `vorratSetzen`. Die Schautafel zeigt die Liegenden nicht.
+
+**Die Einheiten der Häuser** (E6 bis E8, 2026-11-18, einheiten AC-42 bis
+AC-49). Drei aus gewöhnlichen Gebäuden: **Eibenschütze** (Eschenbruch,
+Schießanlage), **Pavesenschütze** (Wehrstein, Schießanlage, Rüstung 1/4),
+**Söldner** (Kaserne, jedes Haus, Silberfurt billiger). Fünf aus der Burg,
+je Haus eine: **Kriegswolf** (Eschenbruch), **Reiterschütze** (Rappenstein),
+**Riese** (Wehrstein), **Meuchler** (Silberfurt), **Wiedergänger**
+(Distelhag). Wer sie ausbildet, steht als `haeuser` an der Einheit
+(`welt.hausBildetAus`). **Der Meuchler ist getarnt** (kampf AC-22,
+`getarnt: 2`): ein Gegner sieht ihn erst auf zwei Felder —
+`welt.siehtEinheit` und `welt.verborgen(spielerId, einheit)` sind die eine
+Stelle, nicht jede Regel einzeln; bei „Aufgedeckt" gibt es keine Tarnung.
+**Der Wiedergänger kostet Gefallene**: `spieler.gefallene` zählt die eigenen
+Toten (auch Entlassene), auf der Leitung `gf`, im Browser
+`ansicht.vorraete.gefallene` — sie stehen am Knopf und in der Tafel, nicht
+in der Rohstoffleiste. Jede der acht hat ihre gerenderte Figur, der
+Wehrturm sein eigenes Bild (bauen AC-38). **Abweichungen von der ersten
+Fassung der Spec**, nach dem Gefechtsstand gesetzt: Reiterschütze
+Reichweite 5 und Fernrüstung 2, Riese 180 Leben und Rüstung 2/0, Söldner
+60 Leben. **Die KI bildet vorerst keine Hauseinheit aus** (`NOCH_NICHT` in
+`ki.js`): mit dem Söldner fiel der Nebeltest auf 97, mit den zwei Schützen
+auf 102 von 120 (Grenze 105); `npm run pruefstand:haeuser` ist damit nicht
+neu gemessen. Der Gefechtsstand ist nicht seitengleich — bei gleichen
+Heeren gewinnt die rechte Seite 32 von 40 —, nicht untersucht.
+**Je zwei Figuren unterscheiden sich um ein Drittel** (darstellung AC-14),
+auch die neuen: der Reiterschütze trägt deshalb einen hellen Filzmantel
+statt des Wamses in Spielerfarbe (gegen den Späherreiter vorher 0,15) —
+und, weil ihm damit die Spielerfarbe fehlte (0,092, verlangt über 0,1),
+eine Leibbinde und einen breiten Deckensaum darin —, der
+Kriegswolf ist 1,3-fach so groß wie zuerst (`MASS` in `grafik/wolf.py`,
+472 statt 241 Bildpunkte bei Höhe 40). Wer eine Figur ändert, probt mit
+`BILDER_PROBE=2 npm run bilder -- <name>` (eine Richtung, rund 2,5 Minuten)
+und misst mit `npm run tafel -- "t.unterschiede('figur').filter((p) => p.anteil < 0.4)"`,
+bevor er zwanzig Minuten voll rendert.
+**Stufe F ist spezifiziert** (Bauabfolge F1 bis F13 im Fahrplan): Aufstieg
+in die Krone, je Linie eine Stufe — **der Ritter zwei: Kavalier und
+Paladin** (Benutzer, 2026-11-18; kein Champion) —, jede mit eigener
+gerenderter Figur, Verbesserungen, Elitestufen der Spezialeinheiten,
+Drache, Wunder, die KI in der Krone. Dazu **elf Verbesserungen mit eigenem
+Charakter** (bauen AC-52 bis AC-56, `offen`): Kartografie, Blutlinien,
+Karawane, Brandstiftung, Knappen, vier Lehren des Klosters, Tretkran,
+Sappeure. **Die Figuren der Einheiten schreibt und rendert die Sitzung
+selbst** — kein Hilfsagent mit kleinerem Modell (Benutzer, 2026-11-18).
 
 1. **Stufe A** Dunkle Zeit mit Wirtschafts-KI und Prüfstand · **B** Feudalzeit
    · **C** Partieende und KI-Gegner · **D** Ritterzeit · **E** fünf Häuser ·

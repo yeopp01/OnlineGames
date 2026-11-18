@@ -7,9 +7,9 @@ Eine Zeile je Abnahmekriterium. Gepflegt wird der Status in der Spec selbst,
 hier steht er zusammengefasst. Erzeugt mit `npm run specs:board`; als Seite
 mit Bildnachweisen, Filter und Suche mit `npm run qa:report`.
 
-**Gesamt:** 563/685 fertig · 3 in Arbeit · 14 in QA · 3 geplant · 94 offen · 8 zurueckgestellt
+**Gesamt:** 572/704 fertig · 3 in Arbeit · 14 in QA · 3 geplant · 104 offen · 8 zurueckgestellt
 
-**Nachweise:** 290 Kriterien mit Bild · 281 ohne Bild, begruendet in `qa/ohne-bild.json`
+**Nachweise:** 299 Kriterien mit Bild · 281 ohne Bild, begruendet in `qa/ohne-bild.json`
 
 ## Nach Spezifikation
 
@@ -21,15 +21,15 @@ mit Bildnachweisen, Filter und Suche mit `npm run qa:report`.
 | [Anhalten und Fortsetzen](00-plattform/speichern.md)           | -         | -     | -       | 23    | -               | 3      |
 | [Spielauswahl und Einstellungen](00-plattform/spielauswahl.md) | -         | -     | -       | 5     | -               | 19     |
 | [Uebertragung](00-plattform/uebertragung.md)                   | -         | -     | 1       | 1     | -               | 8      |
-| [Bauen und Ausbilden](10-strategie/bauen.md)                   | -         | -     | -       | 1     | -               | 45     |
+| [Bauen und Ausbilden](10-strategie/bauen.md)                   | -         | -     | -       | 11    | -               | 45     |
 | [Bedienung](10-strategie/bedienung.md)                         | -         | 2     | -       | 3     | -               | 75     |
-| [Darstellung](10-strategie/darstellung.md)                     | 1         | 1     | -       | 4     | -               | 25     |
-| [Einheiten und Befehle](10-strategie/einheiten-und-befehle.md) | -         | -     | -       | 16    | 1               | 41     |
-| [Fahrplan zum Klon](10-strategie/fahrplan.md)                  | -         | 2     | -       | 4     | -               | 19     |
-| [Kampf](10-strategie/kampf.md)                                 | -         | -     | -       | 2     | 1               | 22     |
+| [Darstellung](10-strategie/darstellung.md)                     | 1         | 1     | -       | 5     | -               | 25     |
+| [Einheiten und Befehle](10-strategie/einheiten-und-befehle.md) | -         | -     | -       | 12    | 1               | 49     |
+| [Fahrplan zum Klon](10-strategie/fahrplan.md)                  | -         | 2     | -       | 5     | -               | 19     |
+| [Kampf](10-strategie/kampf.md)                                 | -         | -     | -       | 1     | 1               | 23     |
 | [Karte und Vorraete](10-strategie/karte-und-vorraete.md)       | -         | -     | -       | 2     | 3               | 12     |
-| [KI-Spieler](10-strategie/ki.md)                               | -         | -     | -       | 5     | -               | 33     |
-| [Spielziel und Partieverlauf](10-strategie/spielziel.md)       | 1         | -     | -       | 10    | -               | 17     |
+| [KI-Spieler](10-strategie/ki.md)                               | -         | -     | -       | 7     | -               | 33     |
+| [Spielziel und Partieverlauf](10-strategie/spielziel.md)       | 1         | -     | -       | 11    | -               | 17     |
 | [Aufstellung, Taktik und Training](15-manager/aufstellung.md)  | -         | -     | -       | -     | 2               | 23     |
 | [Bedienung des Managerspiels](15-manager/bedienung.md)         | -         | -     | -       | -     | -               | 15     |
 | [Finanzen](15-manager/finanzen.md)                             | -         | -     | -       | -     | -               | 16     |
@@ -74,7 +74,7 @@ mit Bildnachweisen, Filter und Suche mit `npm run qa:report`.
 - **Kennwort vergessen** — [Konten und Anmeldung](00-plattform/konten.md) AC-5
 - **Automatischer Wiederaufbau** — [Uebertragung](00-plattform/uebertragung.md) AC-10
 
-## Offen (94)
+## Offen (104)
 
 - **Anmeldung ueber Google/GitHub** — [Konten und Anmeldung](00-plattform/konten.md) AC-6
 - **Bilanz je Konto** — [Konten und Anmeldung](00-plattform/konten.md) AC-14
@@ -116,6 +116,16 @@ mit Bildnachweisen, Filter und Suche mit `npm run qa:report`.
 - **Sitzungsspiele erscheinen dort nicht** — [Spielauswahl und Einstellungen](00-plattform/spielauswahl.md) AC-17
 - **Befehlsflut wird gebremst** — [Uebertragung](00-plattform/uebertragung.md) AC-4
 - **Den Drachen rufen** — [Bauen und Ausbilden](10-strategie/bauen.md) AC-35
+- **Aufstieg in die Krone** — [Bauen und Ausbilden](10-strategie/bauen.md) AC-47
+- **Schmiede der Krone** — [Bauen und Ausbilden](10-strategie/bauen.md) AC-48
+- **Wirtschaft der Krone** — [Bauen und Ausbilden](10-strategie/bauen.md) AC-49
+- **Universität und Burg der Krone** — [Bauen und Ausbilden](10-strategie/bauen.md) AC-50
+- **Das Wunder** — [Bauen und Ausbilden](10-strategie/bauen.md) AC-51
+- **Kartografie deckt die Karte auf** — [Bauen und Ausbilden](10-strategie/bauen.md) AC-52
+- **Blutlinien und Karawane** — [Bauen und Ausbilden](10-strategie/bauen.md) AC-53
+- **Knappen und Brandstiftung** — [Bauen und Ausbilden](10-strategie/bauen.md) AC-54
+- **Vier Lehren des Klosters** — [Bauen und Ausbilden](10-strategie/bauen.md) AC-55
+- **Tretkran und Sappeure** — [Bauen und Ausbilden](10-strategie/bauen.md) AC-56
 - **Das Zeitalter steht am Dorf** — [Bedienung](10-strategie/bedienung.md) AC-42
 - **Ein Gefecht hinterlässt Spuren** — [Bedienung](10-strategie/bedienung.md) AC-44
 - **Das Wappen zeigt das Haus** — [Bedienung](10-strategie/bedienung.md) AC-46
@@ -123,27 +133,24 @@ mit Bildnachweisen, Filter und Suche mit `npm run qa:report`.
 - **Acht Blickrichtungen** — [Darstellung](10-strategie/darstellung.md) AC-19
 - **Bewegung statt Verschieben** — [Darstellung](10-strategie/darstellung.md) AC-20
 - **Spielerfarbe als Akzent** — [Darstellung](10-strategie/darstellung.md) AC-21
+- **Figuren der Krone** — [Darstellung](10-strategie/darstellung.md) AC-32
 - **Einheiten blockieren sich nicht** — [Einheiten und Befehle](10-strategie/einheiten-und-befehle.md) AC-10
 - **Marschierende laufen nicht aufeinander** — [Einheiten und Befehle](10-strategie/einheiten-und-befehle.md) AC-32
 - **Ladung des Karrens sichtbar** — [Einheiten und Befehle](10-strategie/einheiten-und-befehle.md) AC-41
-- **Eibenschütze nur für Eschenbruch** — [Einheiten und Befehle](10-strategie/einheiten-und-befehle.md) AC-42
-- **Pavesenschütze nur für Wehrstein** — [Einheiten und Befehle](10-strategie/einheiten-und-befehle.md) AC-43
-- **Söldner für Gold** — [Einheiten und Befehle](10-strategie/einheiten-und-befehle.md) AC-44
-- **Kriegswölfe aus der Burg** — [Einheiten und Befehle](10-strategie/einheiten-und-befehle.md) AC-45
-- **Reiterschütze aus der Burg** — [Einheiten und Befehle](10-strategie/einheiten-und-befehle.md) AC-46
-- **Riese aus der Burg** — [Einheiten und Befehle](10-strategie/einheiten-und-befehle.md) AC-47
-- **Meuchler aus der Burg** — [Einheiten und Befehle](10-strategie/einheiten-und-befehle.md) AC-48
-- **Wiedergänger aus Gefallenen** — [Einheiten und Befehle](10-strategie/einheiten-und-befehle.md) AC-49
 - **Abrüsten** — [Einheiten und Befehle](10-strategie/einheiten-und-befehle.md) AC-50
 - **Das Ei liegt, wird getragen** — [Einheiten und Befehle](10-strategie/einheiten-und-befehle.md) AC-51
 - **Der Drache fliegt und brennt** — [Einheiten und Befehle](10-strategie/einheiten-und-befehle.md) AC-52
 - **Wo er fällt, liegt Ei** — [Einheiten und Befehle](10-strategie/einheiten-und-befehle.md) AC-53
 - **Der Drache frisst** — [Einheiten und Befehle](10-strategie/einheiten-und-befehle.md) AC-54
+- **Fünf Stufen der Krone** — [Einheiten und Befehle](10-strategie/einheiten-und-befehle.md) AC-66
+- **Schützen der Krone** — [Einheiten und Befehle](10-strategie/einheiten-und-befehle.md) AC-67
+- **Belagerung der Krone** — [Einheiten und Befehle](10-strategie/einheiten-und-befehle.md) AC-68
+- **Elitestufen der Spezialeinheiten** — [Einheiten und Befehle](10-strategie/einheiten-und-befehle.md) AC-69
 - **Fünf Häuser wählbar** — [Fahrplan zum Klon](10-strategie/fahrplan.md) AC-16
 - **Kein Haus vorn** — [Fahrplan zum Klon](10-strategie/fahrplan.md) AC-18
 - **Imperialzeit spielbar** — [Fahrplan zum Klon](10-strategie/fahrplan.md) AC-19
 - **Große Partie bleibt flüssig** — [Fahrplan zum Klon](10-strategie/fahrplan.md) AC-20
-- **Getarnte sieht man spät** — [Kampf](10-strategie/kampf.md) AC-22
+- **Konterkreis hält in der Krone** — [Fahrplan zum Klon](10-strategie/fahrplan.md) AC-26
 - **Den Drachen treffen nur Schützen** — [Kampf](10-strategie/kampf.md) AC-23
 - **Kein Spieler ist abgeschnitten** — [Karte und Vorraete](10-strategie/karte-und-vorraete.md) AC-7
 - **Vorraete sind endlich und knapp** — [Karte und Vorraete](10-strategie/karte-und-vorraete.md) AC-10
@@ -152,6 +159,8 @@ mit Bildnachweisen, Filter und Suche mit `npm run qa:report`.
 - **KI bildet Spezialeinheit aus** — [KI-Spieler](10-strategie/ki.md) AC-28
 - **KI antwortet auf das Heer** — [KI-Spieler](10-strategie/ki.md) AC-31
 - **Die KI ruft den Drachen** — [KI-Spieler](10-strategie/ki.md) AC-29
+- **KI steigt zur Krone auf** — [KI-Spieler](10-strategie/ki.md) AC-39
+- **Die KI geht aufs Wunder** — [KI-Spieler](10-strategie/ki.md) AC-40
 - **Partiedauer 25 bis 45 Minuten** — [Spielziel und Partieverlauf](10-strategie/spielziel.md) AC-2
 - **Kein Aus nach drei Minuten** — [Spielziel und Partieverlauf](10-strategie/spielziel.md) AC-3
 - **Aufholen ist möglich** — [Spielziel und Partieverlauf](10-strategie/spielziel.md) AC-4
@@ -162,6 +171,7 @@ mit Bildnachweisen, Filter und Suche mit `npm run qa:report`.
 - **Fünf Häuser mit Profil** — [Spielziel und Partieverlauf](10-strategie/spielziel.md) AC-16
 - **Kein Haus gewinnt gegen alle** — [Spielziel und Partieverlauf](10-strategie/spielziel.md) AC-18
 - **Ein Aussteiger blockiert nicht** — [Spielziel und Partieverlauf](10-strategie/spielziel.md) AC-15
+- **Sieg durch das Wunder** — [Spielziel und Partieverlauf](10-strategie/spielziel.md) AC-29
 - **Mehrere Menschen in einer Welt** — [Karriere: Saison um Saison](15-manager/karriere.md) AC-16
 - **Mehrere Manager, eine Welt** — [Spielziel und Abgrenzung](15-manager/spielziel.md) AC-1
 - **Der Termin wartet auf alle** — [Spielziel und Abgrenzung](15-manager/spielziel.md) AC-2

@@ -433,7 +433,7 @@ test('einheiten AC-38: im Zustand - `w` waehrend er bekehrt, `r` waehrend er ruh
   assert.equal(eintrag().w, undefined);
   assert.ok(eintrag().r > 0);
   const aufbau = welt.aufbauFuer('a');
-  assert.deepEqual(aufbau.werte.einheiten.moench.bekehren, { reichweite: 9, ruhe: BEKEHREN.ruhe, nicht: ['belagerung', 'moench'] });
+  assert.deepEqual(aufbau.werte.einheiten.moench.bekehren, { reichweite: 9, ruhe: BEKEHREN.ruhe, nicht: ['belagerung', 'moench', 'untot'] });
 });
 
 test('bedienung AC-68: der Zustand nennt, wie viele Sekunden der Moench noch ruht - von 62 herunter, dann nichts mehr', () => {

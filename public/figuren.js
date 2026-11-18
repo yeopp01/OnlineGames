@@ -1103,6 +1103,22 @@ export const FIGUREN = {
   pikenier: { name: 'Pikenier', zeichnen: speerkaempfer, breite: 1.1, oben: 1.4 },
   eliteplaenkler: { name: 'Eliteplänkler', zeichnen: plaenkler, breite: 1.3, oben: 1.05 },
   leichtekavallerie: { name: 'Leichte Kavallerie', zeichnen: spaeherreiter, breite: 1.6, oben: 1.25 },
+  // Einheiten der Haeuser (einheiten AC-42 bis AC-44). Auch sie gibt es
+  // gezeichnet nicht eigens: ohne gerenderte Bilder steht der Eibenschuetze
+  // als Bogenschuetze da, der Pavesenschuetze als Armbrustschuetze, der
+  // Soeldner als Soldat.
+  eibenschuetze: { name: 'Eibenschütze', zeichnen: bogenschuetze, breite: 1.3, oben: 1.15 },
+  pavesenschuetze: { name: 'Pavesenschütze', zeichnen: armbrustschuetze, breite: 1.4 },
+  soeldner: { name: 'Söldner', zeichnen: soldat, breite: 1.3, oben: 1.2 },
+  // Aus der Burg (einheiten AC-45 bis AC-47), gezeichnet als das Naechste,
+  // was es gibt: der Kriegswolf als Spaeherreiter, der Reiterschuetze ebenso,
+  // der Riese als Soldat.
+  kriegswolf: { name: 'Kriegswolf', zeichnen: spaeherreiter, breite: 1.6, oben: 1.15 },
+  reiterschuetze: { name: 'Reiterschütze', zeichnen: spaeherreiter, breite: 1.6, oben: 1.25 },
+  riese: { name: 'Riese', zeichnen: soldat, breite: 1.5, oben: 1.3 },
+  // Meuchler und Wiedergaenger (einheiten AC-48, AC-49): gezeichnet als Soldat.
+  meuchler: { name: 'Meuchler', zeichnen: soldat, breite: 1.2, oben: 1.15 },
+  wiedergaenger: { name: 'Wiedergänger', zeichnen: soldat, breite: 1.3, oben: 1.2 },
   // Belagerung (einheiten AC-35): breit statt hoch. `stoesst`: wer rammt,
   // stoesst den Bock vor, statt sich als Ganzes vorzubeugen.
   ramme: { name: 'Ramme', zeichnen: ramme, breite: 1.7, stoesst: true },

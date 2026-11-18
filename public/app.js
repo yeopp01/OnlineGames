@@ -931,6 +931,9 @@ function arbeiterZeigen(arbeiter) {
 function leisteZiel(werte) {
   let geaendert = false;
   for (const [name, wert] of Object.entries(werte)) {
+    // Nicht jeder Vorrat hat ein Feld oben: die Gefallenen stehen nur am
+    // Knopf, der sie verlangt (einheiten AC-49).
+    if (!leisteFeld(name)) continue;
     if (leiste.ziel[name] === wert) continue;
     // Der erste Wert erscheint sofort - hochzaehlen ab null waere falsch.
     if (leiste.ziel[name] === undefined) {

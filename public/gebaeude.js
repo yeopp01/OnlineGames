@@ -1868,6 +1868,13 @@ export const GEBAEUDE = {
   wachturm: {
     name: 'Wachturm', zeichnen: wachturm, halbeBreite: 1.0, trefferBreite: 1.1, trefferOben: 5.2, trefferUnten: 0.8, schussHoehe: 3.6,
   },
+  // Der Wehrturm (bauen AC-38) ist kein Gebaeude der Daten, sondern das Bild
+  // des Wachturms nach der Forschung: hoeher, mit Dach ueber dem Wehrgang.
+  // Gezeichnet gibt es ihn nicht eigens - ohne gerenderte Bilder (`?bilder=0`)
+  // sieht er aus wie der Wachturm.
+  wehrturm: {
+    name: 'Wehrturm', zeichnen: wachturm, halbeBreite: 1.0, trefferBreite: 1.1, trefferOben: 5.2, trefferUnten: 0.8, schussHoehe: 4.3,
+  },
   // Ein Feld, so breit wie die Raute, damit Nachbarn zur Wand werden (bauen AC-30).
   steinmauer: { name: 'Steinmauer', zeichnen: steinmauer, halbeBreite: 1.0, trefferBreite: 1.0, trefferOben: 2.0, trefferUnten: 0.6 },
   // Ein Feld wie die Mauer, etwas hoeher (bauen AC-31).

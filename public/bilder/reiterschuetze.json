@@ -1,0 +1,57 @@
+{
+  "bild": "reiterschuetze.webp",
+  "maske": "reiterschuetze-maske.webp",
+  "zelle": [
+    222,
+    183
+  ],
+  "fuss": [
+    80,
+    128
+  ],
+  "feldbreite": 132,
+  "zeilen": 8,
+  "spalten": 9,
+  "art": "figur",
+  "richtungen": 8,
+  "hoehe": 86,
+  "ablaeufe": {
+    "stehen": {
+      "spalte": 0,
+      "bilder": 1
+    },
+    "gehen": {
+      "spalte": 1,
+      "bilder": 8
+    },
+    "angreifen": {
+      "spalte": 0,
+      "bilder": 8,
+      "bild": "reiterschuetze-angreifen.webp",
+      "maske": "reiterschuetze-angreifen-maske.webp",
+      "zelle": [
+        228,
+        197
+      ],
+      "fuss": [
+        78,
+        143
+      ]
+    },
+    "sterben": {
+      "spalte": 0,
+      "bilder": 8,
+      "einmal": true,
+      "bild": "reiterschuetze-sterben.webp",
+      "maske": "reiterschuetze-sterben-maske.webp",
+      "zelle": [
+        237,
+        186
+      ],
+      "fuss": [
+        91,
+        130
+      ]
+    }
+  }
+}

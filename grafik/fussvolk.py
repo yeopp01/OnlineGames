@@ -24,6 +24,34 @@
 #   Eliteplaenkler       heller Kittel, Weste in Spielerfarbe, Kettenhaube,
 #                        eisenbeschlagener Schild, Wurfspiess
 #
+# Die Eigenen der Haeuser (einheiten AC-42 bis AC-49) - jede an einem Stueck
+# zu erkennen, das sonst keiner traegt:
+#
+#   Eibenschuetze     Gugel in Spielerfarbe, gruener Umhang bis ans Knie, ein
+#                     mannshoher Bogen aus dunkler Eibe (Eschenbruch)
+#   Pavesenschuetze   die Pavese auf dem Ruecken: ein helles Brett mit einem Pfahl
+#                     in Spielerfarbe, breiter als er selbst; Armbrust (Wehrstein)
+#   Soeldner          breiter schwarzer Hut mit Federn, Aermel in Spielerfarbe,
+#                     Streitkolben und ein kleiner Faustschild (jedes Haus)
+#   Riese             anderthalbmal so gross wie ein Mann, Fell, nackte Arme, eine
+#                     Keule in beiden Haenden (Wehrstein)
+#   Meuchler          dunkel von Kopf bis Fuss, das Gesicht verhuellt, in jeder
+#                     Hand ein Dolch (Silberfurt)
+#   Wiedergaenger     fahle Haut, Fetzen eines Wappenrocks, rostiges Eisen; er
+#                     geht gebeugt, die Linke voraus (Distelhag)
+#
+# Die Stufen der Krone (einheiten AC-66) - schwerer geruestet als alles davor,
+# und jede mit einer Waffe, die kein anderer fuehrt:
+#
+#   Zweihandkaempfer  Harnisch mit Beintaschen ueber einem Lederkoller, gepuffte
+#                     Aermel und das linke Hosenbein in Spielerfarbe, Schaller mit
+#                     Federbusch - und ein Schwert, so lang wie er selbst, auf
+#                     der Schulter. Kein Schild.
+#   Hellebardier      Brigantine in Spielerfarbe ueber dem langen Kettenhemd,
+#                     Arme und Beine in Platten, der Schaller mit Kinnreff - vom
+#                     Gesicht ist nichts zu sehen. Die Hellebarde lehnt an der
+#                     Schulter: Beil, Haken und Stossklinge an einem Schaft.
+#
 # Die Spielerfarbe steht bei jedem am Rumpf - von dort sieht man sie aus jeder
 # Richtung -, und bei keinem an mehr als einem Drittel der Figur (darstellung
 # AC-21). Auseinander haelt man sie am Umriss: Schild, Waffe, Kopfbedeckung
@@ -102,6 +130,15 @@ def stoffe():
         'messing': einfarbig('messing', '#a8842f', rau=0.35, metall=0.9),
         'sehne': einfarbig('sehne', '#d8d0b8', rau=0.8),
         'feder': einfarbig('feder', '#cfc9b8', rau=0.9),
+        # Fuer die Eigenen der Haeuser: das rotbraune Holz der Eibe, das dunkle
+        # Tuch des Meuchlers, der helle Grund der Pavese, die fahle Haut und
+        # das rostige Eisen des Wiedergaengers.
+        'eibe': gemustert('eibe', ('#4a2716', '#6b3a1f'), massstab=(8, 8, 1), groesse=4, relief=0.5),
+        'nacht': gemustert('nacht', ('#1d1f24', '#30333a'), groesse=30, detail=3, relief=0.35, fugen=0.55, rau=0.95),
+        'bemalt': gemustert('bemalt', ('#b9ae90', '#cdc3a6'), massstab=(1, 14, 1), groesse=5, relief=0.3, fugen=0.5),
+        'fahl': einfarbig('fahl', '#9aa08e', rau=0.8),
+        'rost': gemustert('rost', ('#4a3122', '#75462a', '#5a5651'), groesse=9, detail=4, relief=0.45, fugen=0.5,
+                          rau=0.75, metall=0.45),
         # Das Tuch in Spielerfarbe, glatt und gesteppt.
         'tuch': gemustert('tuch', TUCH, groesse=36, detail=3, relief=0.35, fugen=0.55, rau=0.95, spieler=True),
         'steppung': gemustert('steppung', TUCH, massstab=(1, 1, 9), groesse=7, detail=2, relief=0.8, fugen=0.6,
@@ -415,7 +452,227 @@ def koecher(s, rumpf, ort, drehung, pfeile=5):
         quader('befiederung', (0.035, 0.012, 0.09), s['feder'], ort=(x, y, 0.33), eltern=halter, fase=0.004)
 
 
+def streitkolben(s, griff):
+    """Der Streitkolben: ein kurzer Stiel, vorn ein Kopf aus sechs Schlagblaettern."""
+    drehkoerper('kolbenstiel', [(-0.12, 0), (-0.12, 0.02), (0.5, 0.018), (0.5, 0)], s['holz'], drehung=QUER,
+                eltern=griff, teile=8)
+    kugel('kolbenkern', 0.05, s['eisen'], ort=(0, -0.56, 0), eltern=griff, teile=8, ringe=6)
+    # Drei Platten ueber Kreuz sind sechs Blaetter.
+    for i in range(3):
+        quader('schlagblatt', (0.2, 0.15, 0.014), s['eisen'], ort=(0, -0.56, 0), drehung=(0, i * math.pi / 3, 0),
+               eltern=griff, fase=0.004)
+    drehkoerper('kolbendorn', [(0.62, 0.02), (0.7, 0)], s['eisen'], drehung=QUER, eltern=griff, teile=6, glatt=False)
+
+
+def keule(s, griff):
+    """Die Keule des Riesen: ein Stamm, vorn dick, mit zwei Eisenreifen und Naegeln."""
+    drehkoerper('keule', [(-0.3, 0), (-0.3, 0.032), (0.25, 0.036), (0.7, 0.075), (0.98, 0.095), (1.08, 0.075),
+                          (1.12, 0)], s['holz'], drehung=QUER, eltern=griff, teile=10)
+    for vorn, halb in ((0.74, 0.084), (1.0, 0.1)):
+        ring('keulenreif', halb, 0.012, 0.05, s['eisen'], ort=(0, -vorn, 0), drehung=QUER, eltern=griff, teile=10)
+    # Vier Staebe quer durch den Kopf: acht Naegel, die herausstehen.
+    for i in range(4):
+        quader('nagel', (0.27, 0.026, 0.026), s['eisen'], ort=(0, -0.87, 0), drehung=(0, i * math.pi / 4, 0),
+               eltern=griff, fase=0.006)
+
+
+def dolch(s, griff):
+    quader('dolchklinge', (0.012, 0.36, 0.05), s['klinge'], ort=(0, -0.24, 0), eltern=griff, fase=0.004)
+    quader('dolchstange', (0.028, 0.024, 0.12), s['eisen'], ort=(0, -0.055, 0), eltern=griff, fase=0.006)
+    quader('dolchheft', (0.024, 0.1, 0.028), s['leder'], eltern=griff, fase=0.008)
+
+
+def pavese(s, rumpf):
+    """Die Pavese auf dem Ruecken: ein Brett, breiter als der Mann und vom Knie
+    bis ueber die Augen. Im Feld stellt er sie vor sich - getragen wird sie so."""
+    halter = leer('pavese', (0, 0.225, 0.2), rumpf)
+    halter.rotation_euler = (0.05, 0, 0)
+    quader('pavesenbrett', (0.66, 0.04, 1.1), s['bemalt'], eltern=halter, fase=0.03)
+    # Der Grat in der Mitte, und darauf der Pfahl in Spielerfarbe: von hinten
+    # verdeckt das Brett alles andere, was Farbe traegt.
+    quader('pavesengrat', (0.13, 0.03, 1.08), s['bemalt'], ort=(0, 0.03, 0), eltern=halter, fase=0.012)
+    quader('pavesenpfahl', (0.18, 0.012, 1.0), s['tuch'], ort=(0, 0.05, 0), eltern=halter, fase=0.003)
+    for z in (-0.535, 0.535):
+        quader('pavesenrand', (0.68, 0.05, 0.035), s['eisen'], ort=(0, 0, z), eltern=halter, fase=0.008)
+
+
+def schlapphut(s, kopf):
+    """Ein breiter Hut aus schwarzem Filz, daran zwei Federn in Spielerfarbe."""
+    drehkoerper('hutkopf', [(0.17, 0.128), (0.25, 0.122), (0.31, 0.09), (0.335, 0)], s['nacht'], eltern=kopf,
+                streckung=(0.95, 1.02), teile=14)
+    drehkoerper('hutkrempe', [(0.178, 0.1), (0.162, 0.25), (0.18, 0.255), (0.198, 0.1)], s['nacht'], eltern=kopf,
+                teile=18)
+    for i, (neigung, lang) in enumerate(((0.75, 0.34), (1.05, 0.28))):
+        quader('hutfeder', (0.024, 0.085, lang), s['tuch'], ort=(0.12, 0.1 + 0.03 * i, 0.3 + lang * 0.3),
+               drehung=(neigung, 0.2, 0), eltern=kopf, fase=0.008)
+
+
 # ---- die sieben ---------------------------------------------------------------------
+
+# ---- was erst die Krone traegt --------------------------------------------------------
+
+def schaller(s, kopf, kinnreff=False):
+    """Der Schaller: eine glatte Glocke bis ueber die Augen, davor ein
+    Sehschlitz, hinten ein Schirm ueber dem Nacken. Mit `kinnreff` deckt eine
+    Platte Kinn und Mund - vom Gesicht bleibt dann nichts zu sehen."""
+    kugel('schaller', 0.142, s['eisen'], ort=(0, 0.01, 0.17), eltern=kopf, streckung=(0.95, 1.06, 0.92), teile=18,
+          weglassen=lambda x, y, z: z < -0.28)
+    # Der Rand der Glocke: ein Wulst ringsum - daran sieht man, wo sie endet.
+    ring('schallerrand', 0.137, 0.009, 0.012, s['eisen'], ort=(0, 0.01, 0.136), eltern=kopf, streckung=(0.95, 1.06),
+         teile=18)
+    quader('sehschlitz', (0.11, 0.02, 0.016), s['auge'], ort=(0, -0.136, 0.16), eltern=kopf, fase=0.004)
+    # Der Nackenschirm: eine flache Schale, die hinten weit ueber den Kragen steht.
+    kugel('nackenschirm', 0.15, s['eisen'], ort=(0, 0.07, 0.15), eltern=kopf, streckung=(0.92, 1.3, 0.5), teile=18,
+          weglassen=lambda x, y, z: y < 0.25 or z > 0.35)
+    if kinnreff:
+        kugel('kinnreff', 0.128, s['eisen'], ort=(0, -0.016, 0.06), eltern=kopf, streckung=(0.95, 1.0, 0.95), teile=14,
+              weglassen=lambda x, y, z: y > 0.3 or z > 0.55)
+        # Der Kragen des Kinnreffs liegt auf der Brust auf.
+        drehkoerper('reffkragen', [(-0.04, 0.1), (-0.075, 0.135), (-0.085, 0.13), (-0.055, 0.09)], s['eisen'],
+                    ort=(0, -0.016, 0.06), eltern=kopf, streckung=(0.95, 1.0), teile=14)
+
+
+def federbusch(s, kopf, mitte):
+    """Drei Federn vom Scheitel nach hinten, die mittlere in Spielerfarbe."""
+    for x, stoff, hoch in ((-0.055, s['feder'], 0.0), (0.0, mitte, 0.045), (0.055, s['feder'], 0.0)):
+        strang('feder', [(x * 0.3, 0.05, 0.275, 0.012), (x * 0.7, 0.11, 0.39 + hoch, 0.032),
+                         (x, 0.23, 0.455 + hoch, 0.04), (x * 1.3, 0.35, 0.4 + hoch, 0.024),
+                         (x * 1.5, 0.42, 0.31 + hoch, 0.008)], stoff, eltern=kopf, rund=2)
+    kugel('federhuelse', 0.024, s['messing'], ort=(0, 0.045, 0.285), eltern=kopf, teile=8, ringe=6)
+
+
+def halsberge(s, rumpf):
+    """Ein Kragen aus Platten um Hals und Schluesselbein - schmaler als der Kettenkragen."""
+    drehkoerper('halsberge', [(0.61, 0.082), (0.56, 0.115), (0.505, 0.205), (0.47, 0.222), (0.465, 0.21), (0.5, 0.1)],
+                s['eisen'], eltern=rumpf, streckung=(1, 0.76), teile=18)
+
+
+def platte(name, umriss, stoff, griff, dick=0.012):
+    """Ein flaches Stueck Eisen an einer Waffe. `umriss` nennt die Ecken
+    ringsum als (quer, laengs) am Griff - ohne Einbuchtung, sonst reisst die
+    Flaeche."""
+    n = len(umriss)
+    ecken = [(d, y, z) for d in (-dick, dick) for z, y in umriss]
+    seiten = [tuple(range(n)), tuple(range(n, 2 * n))] + [(i, (i + 1) % n, n + (i + 1) % n, n + i) for i in range(n)]
+    return netz(name, ecken, seiten, stoff, eltern=griff, glatt=False)
+
+
+def zweihaender(s, griff):
+    """Der Zweihaender: so lang wie sein Traeger. Ueber der Parierstange ein
+    Stueck ohne Schneide, mit Leder umwickelt und von zwei Parierhaken gedeckt
+    - dort greift die zweite Hand, wenn es eng wird."""
+    # Die Klinge: breit an der Wurzel, die letzte Handbreit laeuft spitz zu.
+    platte('klinge', [(-0.036, -0.27), (-0.03, -1.27), (0.0, -1.44), (0.03, -1.27), (0.036, -0.27)], s['klinge'], griff,
+           dick=0.007)
+    # Der Grat in der Mitte der Klinge faengt das Licht.
+    quader('grat', (0.022, 0.92, 0.014), s['klinge'], ort=(0, -0.74, 0), eltern=griff, fase=0.005)
+    quader('fehlschaerfe', (0.022, 0.18, 0.05), s['leder'], ort=(0, -0.19, 0), eltern=griff, fase=0.006)
+    for z in (-1, 1):
+        platte('parierhaken', [(z * 0.02, -0.262), (z * 0.02, -0.31), (z * 0.105, -0.325)], s['eisen'], griff, dick=0.01)
+        kugel('stangenknopf', 0.026, s['messing'], ort=(0, -0.1, z * 0.225), eltern=griff, teile=8, ringe=6)
+    quader('parierstange', (0.032, 0.032, 0.44), s['eisen'], ort=(0, -0.1, 0), eltern=griff, fase=0.01)
+    # Das Heft fuer zwei Haende, in der Mitte ein Bund, am Ende der Knauf.
+    drehkoerper('heft', [(-0.3, 0), (-0.3, 0.017), (-0.1, 0.022), (0.08, 0.018), (0.08, 0)], s['leder'], drehung=QUER,
+                eltern=griff, teile=10)
+    ring('heftbund', 0.022, 0.006, 0.01, s['messing'], ort=(0, 0.1, 0), drehung=QUER, eltern=griff, teile=10)
+    kugel('knauf', 0.04, s['messing'], ort=(0, 0.33, 0), eltern=griff, streckung=(1, 1.3, 1), teile=10, ringe=6)
+
+
+def hellebarde(s, griff, quaste):
+    """Die Hellebarde: am langen Schaft ein Beil mit breiter Schneide,
+    gegenueber ein Haken, obenauf eine lange Stossklinge - darunter eine
+    Quaste in Spielerfarbe."""
+    hinten, vorn = 0.9, 1.22
+    drehkoerper('schaft', [(-hinten, 0), (-hinten, 0.019), (vorn, 0.017), (vorn, 0)], s['holz'], drehung=QUER,
+                eltern=griff, teile=8)
+    drehkoerper('schaftschuh', [(-hinten - 0.05, 0), (-hinten, 0.022), (-hinten + 0.08, 0.022), (-hinten + 0.08, 0.019)],
+                s['eisen'], drehung=QUER, eltern=griff, teile=8)
+    # Zwei Schaftfedern halten den Kopf: Eisenbaender, die den Schaft hinablaufen.
+    quader('schaftfedern', (0.014, 0.5, 0.046), s['eisen'], ort=(0, -(vorn - 0.22), 0), eltern=griff, fase=0.004)
+    quader('tuelle', (0.054, 0.24, 0.054), s['eisen'], ort=(0, -(vorn - 0.06), 0), eltern=griff, fase=0.01)
+    # Das Beil steht nach unten wie das Blatt der Axt: so faellt es beim Hieb voran.
+    platte('beil', [(-0.02, -(vorn - 0.17)), (-0.02, -(vorn + 0.04)), (-0.2, -(vorn + 0.13)), (-0.26, -(vorn - 0.04)),
+                    (-0.2, -(vorn - 0.21))], s['eisen'], griff)
+    # Die Schneide: der aeussere Keil des Beils, blank geschliffen.
+    platte('schneide', [(-0.2, -(vorn + 0.13)), (-0.26, -(vorn - 0.04)), (-0.2, -(vorn - 0.21))], s['klinge'], griff,
+           dick=0.014)
+    platte('haken', [(0.02, -(vorn - 0.13)), (0.02, -(vorn + 0.02)), (0.16, -(vorn - 0.1))], s['eisen'], griff)
+    drehkoerper('stossklinge', [(vorn - 0.02, 0), (vorn - 0.02, 0.022), (vorn + 0.07, 0.027), (vorn + 0.36, 0)],
+                s['klinge'], drehung=QUER, eltern=griff, teile=6, glatt=False)
+    drehkoerper('quaste', [(vorn - 0.46, 0.019), (vorn - 0.45, 0.058), (vorn - 0.37, 0.046), (vorn - 0.345, 0.019)],
+                quaste, drehung=QUER, eltern=griff, teile=10)
+
+
+def _zweihandkaempfer(s):
+    g = skelett(s, {'oberarm': 'tuch', 'unterarm': 'eisen', 'hand': 'leder', 'bein': 'leinen', 'schaft': 'leder',
+                    'schuh': 'leder'})
+    rumpf, kopf = g['rumpf'], g['kopf']
+    # Der Koller: ein Lederrock bis ueber die Huefte. Darueber der Harnisch,
+    # an dem vorn zwei Beintaschen haengen.
+    rock('koller', s['leder'], rumpf, saum=-0.24, weite=0.29)
+    rock('harnisch', s['eisen'], rumpf, saum=0.1, weite=0.215, dick=0.022)
+    quader('brustgrat', (0.024, 0.026, 0.27), s['eisen'], ort=(0, -0.168, 0.33), drehung=(0.07, 0, 0), eltern=rumpf,
+           fase=0.008)
+    tasche = ausschnitt(torso(-0.24, 0.29), 0.09, -0.21)
+    bahn('beintasche_l', s['eisen'], rumpf, tasche, -52, 30, dick=0.03)
+    bahn('beintasche_r', s['eisen'], rumpf, tasche, -128, 30, dick=0.03)
+    guertel(s, rumpf, dick=0.036)
+    halsberge(s, rumpf)
+    # Die Aermel: zwei Puffen in Spielerfarbe, dazwischen ein Band aus hellem
+    # Leinen - so sieht man die Farbe auch von der Seite und von hinten.
+    for seite in ('l', 'r'):
+        schulter = g['schulter_' + seite]
+        kugel('puffe', 0.108, s['tuch'], ort=(0, 0, -0.04), eltern=schulter, streckung=(1.0, 1.0, 1.05), teile=12,
+              ringe=8)
+        kugel('puffe', 0.092, s['tuch'], ort=(0, 0, -0.2), eltern=schulter, streckung=(1.0, 1.0, 0.9), teile=12, ringe=8)
+        ring('aermelband', 0.072, 0.01, 0.014, s['leinen'], ort=(0, 0, -0.125), eltern=schulter, teile=12)
+        kugel('ellbogenkachel', 0.058, s['eisen'], eltern=g['ellbogen_' + seite], streckung=(1.0, 1.15, 1.0), teile=10,
+              ringe=6)
+    # Geteilte Hose: das linke Bein in Spielerfarbe, das rechte in Leinen.
+    glied('hosenbein', OBERSCHENKEL, 0.108, 0.081, s['tuch'], eltern=g['huefte_l'])
+    glied('hosenbein', UNTERSCHENKEL, 0.078, 0.059, s['tuch'], eltern=g['knie_l'])
+    for seite in ('l', 'r'):
+        ring('kniebund', 0.079, 0.008, 0.016, s['leder'], ort=(0, 0, -0.045), eltern=g['knie_' + seite], teile=12)
+    # An der linken Huefte das kurze Schwert fuer das Gedraenge.
+    quader('scheide', (0.03, 0.05, 0.46), s['leder'], ort=(0.26, 0.06, -0.16), drehung=(0.45, 0, 0), eltern=rumpf,
+           fase=0.01)
+    quader('kurzheft', (0.03, 0.03, 0.13), s['messing'], ort=(0.26, -0.067, 0.105), drehung=(0.45, 0, 0), eltern=rumpf,
+           fase=0.008)
+    quader('kurzstange', (0.03, 0.15, 0.03), s['eisen'], ort=(0.26, -0.041, 0.052), drehung=(0.45, 0, 0), eltern=rumpf,
+           fase=0.008)
+    gesicht(s, kopf)
+    schaller(s, kopf)
+    federbusch(s, kopf, s['tuch'])
+    zweihaender(s, g['griff_r'])
+    return g
+
+
+def _hellebardier(s):
+    g = skelett(s, {'oberarm': 'kette', 'unterarm': 'eisen', 'hand': 'leder', 'bein': 'eisen', 'schaft': None,
+                    'schuh': 'eisen'})
+    rumpf, kopf = g['rumpf'], g['kopf']
+    # Das Kettenhemd reicht bis ans Knie. Darueber die Brigantine: Tuch in
+    # Spielerfarbe ueber Eisenplaettchen, in Reihen vernietet.
+    rock('kettenhemd', s['kette'], rumpf, saum=-0.36, weite=0.3)
+    rock('brigantine', s['steppung'], rumpf, saum=-0.1, weite=0.25, dick=0.022)
+    for z, halb in ((0.4, 0.25), (0.28, 0.24), (0.16, 0.226), (0.0, 0.243)):
+        ring('nieten', halb, 0.007, 0.014, s['messing'], ort=(0, 0, z), eltern=rumpf, streckung=(1, 0.7), teile=18)
+    guertel(s, rumpf, dick=0.028)
+    halsberge(s, rumpf)
+    for seite in ('l', 'r'):
+        kugel('schulterkachel', 0.096, s['eisen'], eltern=g['schulter_' + seite], streckung=(1.0, 1.08, 0.86), teile=12,
+              ringe=8)
+        kugel('ellbogenkachel', 0.06, s['eisen'], eltern=g['ellbogen_' + seite], streckung=(1.0, 1.15, 1.0), teile=10,
+              ringe=6)
+        kugel('kniekachel', 0.086, s['eisen'], ort=(0, -0.012, 0), eltern=g['knie_' + seite], streckung=(1.0, 1.1, 1.0),
+              teile=10, ringe=6)
+        # Ein Riemen haelt die Beinschiene in der Kniekehle.
+        ring('schienenriemen', 0.079, 0.006, 0.012, s['leder'], ort=(0, 0, -0.11), eltern=g['knie_' + seite], teile=12)
+    gesicht(s, kopf, bart=False, hals='kette')
+    schaller(s, kopf, kinnreff=True)
+    hellebarde(s, g['griff_r'], s['tuch'])
+    return g
+
 
 def _miliz(s):
     g = skelett(s, {'oberarm': 'wolle', 'unterarm': 'leinen', 'hand': 'haut', 'bein': 'hose', 'schaft': 'leder',
@@ -485,7 +742,7 @@ def _bogenschuetze(s):
     return g
 
 
-def _bogen(s, g, halb=0.8, dick=1.0):
+def _bogen(s, g, halb=0.8, dick=1.0, stoff='holz'):
     """Bogen, Sehne und der Pfeil auf der Sehne. `halb` ist die halbe Laenge
     des Bogens, `dick` macht das Holz staerker."""
     # Der Bogen in der Linken: die Wurfarme laengs der X-Achse des Griffs, der
@@ -493,7 +750,7 @@ def _bogen(s, g, halb=0.8, dick=1.0):
     g['bogen'] = leer('bogen', (0, 0, 0), g['griff_l'])
     knie = halb * 0.5625
     strang('bogenholz', [(-halb, 0, 0.2, 0.01 * dick), (-knie, 0, 0.05, 0.016 * dick), (0, 0, -0.02, 0.02 * dick),
-                         (knie, 0, 0.05, 0.016 * dick), (halb, 0, 0.2, 0.01 * dick)], s['holz'], eltern=g['bogen'],
+                         (knie, 0, 0.05, 0.016 * dick), (halb, 0, 0.2, 0.01 * dick)], s[stoff], eltern=g['bogen'],
            rund=2)
     # Die Sehne: drei Punkte, der mittlere wandert mit der Zughand.
     kurve = bpy.data.curves.new('sehne', 'CURVE')
@@ -664,6 +921,127 @@ def _moench(s):
     kugel('haarkranz', 0.124, s['haar'], ort=(0, 0.01, 0.13), eltern=kopf, streckung=(0.95, 1.0, 1.0),
           weglassen=lambda x, y, z: z > 0.62 or z < -0.2 or (y < -0.35 and z < 0.45))
     stab(s, g['griff_r'])
+    return g
+
+
+# ---- die Eigenen der Haeuser -----------------------------------------------------------
+
+def _eibenschuetze(s):
+    g = skelett(s, {'oberarm': 'gruen', 'unterarm': 'leder', 'hand': 'haut', 'bein': 'hose', 'schaft': 'leder',
+                    'schuh': 'leder'})
+    rumpf, kopf = g['rumpf'], g['kopf']
+    rock('wams', s['leder'], rumpf, saum=-0.2, weite=0.262, dick=0.006)
+    # Der Umhang: eine breite Bahn im Ruecken, von den Schultern bis ans Knie -
+    # laenger, und die Wade traete beim Gehen hindurch.
+    bahn('umhang', s['gruen'], rumpf, ausschnitt(torso(-0.48, 0.36), 0.5, -0.46), 90, 60, dick=0.034, teile=8)
+    guertel(s, rumpf, dick=0.012)
+    gesicht(s, kopf)
+    # Die Gugel in Spielerfarbe: beim Bogenschuetzen ist sie gruen und das Wams gefaerbt.
+    kapuze(s, kopf, rumpf, s['tuch'])
+    koecher(s, rumpf, (-0.09, 0.26, 0.3), (-0.25, 0.35, 0), pfeile=7)
+    # Der Bogen ist so lang, wie der Mann hoch ist.
+    _bogen(s, g, halb=1.04, dick=1.35, stoff='eibe')
+    return g
+
+
+def _pavesenschuetze(s):
+    g = skelett(s, {'oberarm': 'tuch', 'unterarm': 'leder', 'hand': 'haut', 'bein': 'hose', 'schaft': 'leder',
+                    'schuh': 'leder'})
+    rumpf, kopf = g['rumpf'], g['kopf']
+    rock('stepprock', s['stepp'], rumpf, saum=-0.24, weite=0.28, dick=0.014)
+    # Der Schoss des Rocks in Spielerfarbe: von vorn tragen sie sonst nur die Oberarme.
+    band('schoss', s['tuch'], rumpf, ausschnitt(torso(-0.24, 0.28), -0.02, -0.24), dick=0.03)
+    guertel(s, rumpf, dick=0.03)
+    koecher(s, rumpf, (-0.2, 0.08, -0.02), (0.25, 0.1, 0), pfeile=4)
+    gesicht(s, kopf, hals='kette')
+    haube('kettenhaube', s['kette'], kopf)
+    hirnhaube(s, kopf)
+    pavese(s, rumpf)
+    armbrust(s, g['griff_r'])
+    return g
+
+
+def _soeldner(s):
+    g = skelett(s, {'oberarm': 'tuch', 'unterarm': 'leder', 'hand': 'leder', 'bein': 'hose', 'schaft': 'leder',
+                    'schuh': 'leder'})
+    rumpf, kopf = g['rumpf'], g['kopf']
+    rock('rock', s['wolle'], rumpf, saum=-0.25, weite=0.275)
+    # Die Brigantine: Leder ueber Eisenplaettchen, in drei Reihen vernietet.
+    rock('brigantine', s['leder'], rumpf, saum=-0.1, weite=0.245, dick=0.022)
+    for z, halb in ((0.4, 0.25), (0.28, 0.24), (0.16, 0.226)):
+        ring('nieten', halb, 0.008, 0.018, s['messing'], ort=(0, 0, z), eltern=rumpf, streckung=(1, 0.7), teile=18)
+    guertel(s, rumpf, dick=0.026)
+    gesicht(s, kopf)
+    kugel('haar', 0.126, s['haar'], ort=(0, 0.012, 0.14), eltern=kopf, streckung=(0.95, 1.0, 1.05),
+          weglassen=lambda x, y, z: y < -0.25 and z < 0.5)
+    schlapphut(s, kopf)
+    streitkolben(s, g['griff_r'])
+    rundschild(s, g['schild'], 0.16, 'eisen')
+    return g
+
+
+def _riese(s):
+    g = skelett(s, {'oberarm': 'haut', 'unterarm': 'haut', 'hand': 'haut', 'bein': 'hose', 'schaft': 'fell',
+                    'schuh': 'leder'})
+    rumpf, kopf = g['rumpf'], g['kopf']
+    rock('fellrock', s['fell'], rumpf, saum=-0.24, weite=0.3, dick=0.03)
+    # Das Lendentuch in Spielerfarbe: vorn und hinten eine Bahn vom Guertel
+    # bis ans Knie, darueber die Leibbinde ringsum - die sieht man auch von der Seite.
+    profil = ausschnitt(torso(-0.42, 0.32), 0.08, -0.4)
+    bahn('lendentuch_vorn', s['tuch'], rumpf, profil, -90, 30, dick=0.05)
+    bahn('lendentuch_hinten', s['tuch'], rumpf, profil, 90, 30, dick=0.05)
+    band('leibbinde', s['tuch'], rumpf, ausschnitt(torso(), 0.18, 0.07), dick=0.05)
+    guertel(s, rumpf, dick=0.062)
+    kragen('fellkragen', s['fell'], rumpf)
+    for seite in ('l', 'r'):
+        ring('armreif', 0.058, 0.012, 0.07, s['eisen'], ort=(0, 0, -0.19), eltern=g['ellbogen_' + seite], teile=10)
+    gesicht(s, kopf)
+    # Kahl, schwere Brauen, der Bart bis auf die Brust.
+    quader('braue', (0.14, 0.03, 0.03), s['haut'], ort=(0, -0.102, 0.176), eltern=kopf, fase=0.01)
+    kugel('langbart', 0.07, s['bart'], ort=(0, -0.08, -0.02), eltern=kopf, streckung=(0.9, 0.7, 1.3), teile=10,
+          ringe=6)
+    keule(s, g['griff_r'])
+    return g
+
+
+def _meuchler(s):
+    g = skelett(s, {'oberarm': 'nacht', 'unterarm': 'leder', 'hand': 'leder', 'bein': 'nacht', 'schaft': 'leder',
+                    'schuh': 'leder'})
+    rumpf, kopf = g['rumpf'], g['kopf']
+    rock('rock', s['nacht'], rumpf, saum=-0.3, weite=0.275)
+    guertel(s, rumpf, dick=0.006)
+    # Der Schulterkragen und das Tuch vor dem Gesicht tragen die Spielerfarbe,
+    # alles andere ist dunkel.
+    kragen('schulterkragen', s['tuch'], rumpf)
+    gesicht(s, kopf, bart=False)
+    kugel('gesichtstuch', 0.126, s['tuch'], ort=(0, -0.004, 0.1), eltern=kopf, streckung=(0.92, 1.0, 1.1), ringe=14,
+          weglassen=lambda x, y, z: z > 0.15 or y > 0.2)
+    kugel('kapuze', 0.14, s['nacht'], ort=(0, 0.014, 0.132), eltern=kopf, streckung=(0.95, 1.02, 1.12),
+          weglassen=lambda x, y, z: y < -0.42 and -0.8 < z < 0.52)
+    quader('zipfel', (0.05, 0.05, 0.24), s['nacht'], ort=(0, 0.16, 0.05), drehung=(0.45, 0, 0), eltern=kopf, fase=0.02)
+    dolch(s, g['griff_r'])
+    dolch(s, g['griff_l'])
+    return g
+
+
+def _wiedergaenger(s):
+    # Fahl statt Haut, Rost statt Eisen: derselbe Bau, andere Stoffe.
+    s = {**s, 'haut': s['fahl'], 'eisen': s['rost'], 'klinge': s['rost']}
+    g = skelett(s, {'oberarm': 'leinen', 'unterarm': 'haut', 'hand': 'haut', 'bein': 'hose', 'schaft': None,
+                    'schuh': 'haut'})
+    rumpf, kopf = g['rumpf'], g['kopf']
+    rock('hemd', s['leinen'], rumpf, saum=-0.22, weite=0.265)
+    # Was vom Wappenrock blieb: vorn ein kurzer Fetzen, hinten ein schmaler
+    # langer, beide schief.
+    bahn('fetzen_vorn', s['tuch'], rumpf, ausschnitt(torso(-0.3, 0.29), 0.49, -0.05), -96, 40)
+    bahn('fetzen_hinten', s['tuch'], rumpf, ausschnitt(torso(-0.34, 0.3), 0.49, -0.3), 84, 28)
+    guertel(s, rumpf, dick=0.02, stoff='strick')
+    gesicht(s, kopf, bart=False)
+    # Die Augen liegen tief in dunklen Hoehlen.
+    for x in (-0.04, 0.04):
+        kugel('hoehle', 0.027, s['auge'], ort=(x, -0.094, 0.148), eltern=kopf, teile=8, ringe=6)
+    hirnhaube(s, kopf)
+    schwert(s, g['griff_r'])
     return g
 
 
@@ -838,9 +1216,76 @@ ARTEN['pikenier'] = {
     'zelle': (400, 288), 'fuss': (176, 216),
 }
 
+# Die Eigenen der Haeuser. Geschnitten wird jede Tafel knapp um das, was im
+# Bild steht - eine grosse Zelle kostet deshalb nichts.
+ARTEN['eibenschuetze'] = {**ARTEN['bogenschuetze'], 'bauen': _eibenschuetze, 'zelle': (336, 256), 'fuss': (150, 190)}
+ARTEN['pavesenschuetze'] = {**ARTEN['armbrustschuetze'], 'bauen': _pavesenschuetze, 'schritt': 0.85}
+ARTEN['soeldner'] = {**ARTEN['miliz'], 'bauen': _soeldner}
+# Der Riese schlaegt wie der Soldat mit beiden Haenden, nur langsamer - und er
+# ist derselbe Gliedermann, anderthalbmal so gross (`mass`).
+ARTEN['riese'] = {**ARTEN['soldat'], 'bauen': _riese, 'schritt': 0.8, 'mass': 1.45,
+                  'zelle': (520, 400), 'fuss': (260, 300)}
+ARTEN['meuchler'] = {
+    'bauen': _meuchler, 'schritt': 1.15, 'schwung': (0.3, 0.3),
+    # Geduckt, beide Dolche vor dem Leib.
+    'trage': {'rumpf': (0.2, 0, 0), 'kopf': (-0.12, 0, 0),
+              'schulter_r': (-0.3, 0.2, 0), 'ellbogen_r': (-1.1, 0, 0), 'waffe': (-0.2,),
+              'schulter_l': (-0.3, -0.2, 0), 'ellbogen_l': (-1.1, 0, 0), 'griff_l': (1.0, 0, 0)},
+    # Der Stich von oben mit der Rechten, die Klinge nach unten; die Linke deckt.
+    'angriff': [
+        (0.0, {**STAND}),
+        (0.3, {**STAND, 'schulter_r': (-2.3, 0.3, 0), 'ellbogen_r': (-1.3, 0, 0), 'waffe': (1.1,),
+               'rumpf': (0.0, 0, -0.35)}),
+        (0.5, {**AUSFALL, 'schulter_r': (-1.1, 0.1, 0), 'ellbogen_r': (-0.4, 0, 0), 'waffe': (0.9,),
+               'rumpf': (0.4, 0, 0.35), 'schulter_l': (-0.9, -0.3, 0)}),
+        (0.64, {**AUSFALL, 'schulter_r': (-1.0, 0.1, 0), 'ellbogen_r': (-0.4, 0, 0), 'waffe': (1.0,),
+                'rumpf': (0.42, 0, 0.38), 'schulter_l': (-0.9, -0.3, 0)}),
+    ],
+}
+ARTEN['wiedergaenger'] = {
+    'bauen': _wiedergaenger, 'schritt': 0.6, 'schwung': (0.0, 0.5),
+    # Gebeugt, der Kopf schief, die Linke tastet voraus, das Schwert schleift nach.
+    'trage': {'rumpf': (0.32, 0, 0), 'kopf': (-0.15, 0.2, 0.25),
+              'schulter_l': (-1.2, -0.1, 0), 'ellbogen_l': (-0.3, 0, 0),
+              'schulter_r': (0.1, 0.18, 0), 'ellbogen_r': (-0.25, 0, 0), 'waffe': (1.0,)},
+    # Ein weiter, schwerer Hieb aus der Schulter - er faellt dem Schwert hinterher.
+    'angriff': [
+        (0.0, {**STAND}),
+        (0.34, {**STAND, 'schulter_r': (-2.5, 0.3, 0), 'ellbogen_r': (-0.9, 0, 0), 'waffe': (-2.9,),
+                'rumpf': (0.05, 0, -0.3)}),
+        (0.5, {**AUSFALL, 'schulter_r': (-0.9, 0.1, 0), 'ellbogen_r': (-0.2, 0, 0), 'waffe': (0.5,),
+               'rumpf': (0.5, 0, 0.3)}),
+        (0.66, {**AUSFALL, 'schulter_r': (-0.8, 0.1, 0), 'ellbogen_r': (-0.2, 0, 0), 'waffe': (0.65,),
+                'rumpf': (0.52, 0, 0.3)}),
+    ],
+}
+
+# Die Stufen der Krone. Beide schlagen wie der Soldat mit beiden Haenden von
+# oben - getragen wird anders: die langen Waffen ragen weit ueber den Kopf
+# und im Hieb weit nach vorn, deshalb die grossen Zellen.
+ARTEN['zweihandkaempfer'] = {
+    'bauen': _zweihandkaempfer, 'schritt': 0.95, 'schwung': (0.25, 0.0),
+    # Das Schwert liegt auf der rechten Schulter, die Spitze nach hinten
+    # oben; die Linke geht frei mit.
+    'trage': {'schulter_r': (-0.5, 0.15, 0), 'ellbogen_r': (-1.6, 0, 0), 'waffe': (-2.6,)},
+    'angriff': ARTEN['soldat']['angriff'],
+    'zelle': (432, 368), 'fuss': (192, 290),
+}
+ARTEN['hellebardier'] = {
+    'bauen': _hellebardier, 'schritt': 0.92, 'schwung': (0.22, 0.0),
+    # Die Hellebarde lehnt an der rechten Schulter, der Schuh knapp ueber
+    # dem Boden; die Linke geht frei mit.
+    'trage': {'schulter_r': (-0.15, 0.2, 0), 'ellbogen_r': (-0.6, 0, 0), 'waffe': (-1.95,)},
+    'angriff': ARTEN['soldat']['angriff'],
+    'zelle': (432, 368), 'fuss': (192, 290),
+}
+
 
 def bauen(art):
-    return ARTEN[art]['bauen'](stoffe())
+    g = ARTEN[art]['bauen'](stoffe())
+    mass = GROESSE * ARTEN[art].get('mass', 1.0)
+    g['figur'].scale = (mass, mass, mass)
+    return g
 
 
 def _glatt(t):

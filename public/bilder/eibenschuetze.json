@@ -1,0 +1,57 @@
+{
+  "bild": "eibenschuetze.webp",
+  "maske": "eibenschuetze-maske.webp",
+  "zelle": [
+    177,
+    145
+  ],
+  "fuss": [
+    67,
+    105
+  ],
+  "feldbreite": 132,
+  "zeilen": 8,
+  "spalten": 9,
+  "art": "figur",
+  "richtungen": 8,
+  "hoehe": 86,
+  "ablaeufe": {
+    "stehen": {
+      "spalte": 0,
+      "bilder": 1
+    },
+    "gehen": {
+      "spalte": 1,
+      "bilder": 8
+    },
+    "angreifen": {
+      "spalte": 0,
+      "bilder": 8,
+      "bild": "eibenschuetze-angreifen.webp",
+      "maske": "eibenschuetze-angreifen-maske.webp",
+      "zelle": [
+        199,
+        172
+      ],
+      "fuss": [
+        53,
+        138
+      ]
+    },
+    "sterben": {
+      "spalte": 0,
+      "bilder": 8,
+      "einmal": true,
+      "bild": "eibenschuetze-sterben.webp",
+      "maske": "eibenschuetze-sterben-maske.webp",
+      "zelle": [
+        213,
+        155
+      ],
+      "fuss": [
+        85,
+        105
+      ]
+    }
+  }
+}

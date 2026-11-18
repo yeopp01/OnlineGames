@@ -145,6 +145,18 @@ const MILITAER_RESERVE = 200;
 // So viele Auftraege stehen hoechstens in der Schlange eines Militaergebaeudes:
 // mehr wuerde den Vorrat binden, den die naechste Stufe braucht.
 const MILITAER_SCHLANGE = 2;
+// Was die KI noch nicht ausbildet, obwohl ihr Gebaeude es anbietet: die
+// Einheiten der Haeuser. Der Soeldner kostet nur Gold und ist in der Kaserne
+// die einzige Einheit des dritten Zeitalters - "das Neueste zuerst" (ki
+// AC-22) machte ihn zur Regel, und das Gold fehlte fuer Ritter, Rammen und
+// die Burg: im Nebel endeten 97 statt 111 von 120 Partien vor Minute 60.
+// Ohne ihn, aber mit Eiben- und Pavesenschuetze (genommen, wenn das Gold
+// fuer die Armbrust nicht reicht) waren es 102 - auch unter der Grenze von
+// 105 (beides gemessen 2026-11-18). Wann sich welche Einheit eines Hauses
+// lohnt, ist ki AC-28 - bis dahin auch nichts aus der Burg: bestellt wird
+// dort ohnehin nichts, aber "kann nie wieder etwas tun" (ki AC-19) fragt
+// jedes Gebaeude.
+const NOCH_NICHT = new Set(['soeldner', 'eibenschuetze', 'pavesenschuetze', 'kriegswolf', 'reiterschuetze', 'riese', 'meuchler', 'wiedergaenger']);
 // Was ein Militaergebaeude an Holz kostet - dafuer wird es zurueckgehalten.
 const MILITAER_HOLZ = Math.max(...MILITAER.map((art) => GEBAEUDE[art].kosten.holz || 0));
 
@@ -726,11 +738,21 @@ class Ki {
       ? [...liste].sort((a, b) => (EINHEITEN[b]?.zeitalter || 0) - (EINHEITEN[a]?.zeitalter || 0)) : liste;
     for (const art of ritter) {
       const werte = EINHEITEN[art];
-      if (!werte || (werte.zeitalter || 0) > this.spieler.zeitalter) continue;
-      if (Object.entries(werte.kosten).some(([r, menge]) => this.spieler[r] - (ruecklage[r] || 0) < menge)) continue;
+      if (!werte || !this.bildetAus(art)) continue;
+      if (Object.entries(this.welt.auftragKosten(this.spielerId, art)).some(([r, menge]) => this.spieler[r] - (ruecklage[r] || 0) < menge)) continue;
       return art;
     }
     return null;
+  }
+
+  // Ob sie diese Einheit ueberhaupt ausbildet: im erreichten Zeitalter, von
+  // ihrem Haus (was nur ein anderes ausbildet, gibt es fuer sie nicht -
+  // einheiten AC-42) und nicht zurueckgestellt. Gefragt beim Ausbilden und
+  // bei "kann nie wieder etwas tun" - sonst wartete sie auf eine Einheit,
+  // die sie nie bestellt.
+  bildetAus(art) {
+    return (EINHEITEN[art].zeitalter || 0) <= this.spieler.zeitalter
+      && this.welt.hausBildetAus(this.spieler, art) && !NOCH_NICHT.has(art);
   }
 
   /**
@@ -760,8 +782,8 @@ class Ki {
       if (!g.fertig) continue;
       for (const art of GEBAEUDE[g.art].bildetAus) {
         const werte = EINHEITEN[art];
-        if (!werte || (werte.zeitalter || 0) > this.spieler.zeitalter) continue;
-        if (Object.entries(werte.kosten).every(([r, menge]) => (handel && r === 'gold') || this.spieler[r] >= menge)) return false;
+        if (!werte || !this.bildetAus(art)) continue;
+        if (Object.entries(this.welt.auftragKosten(this.spielerId, art)).every(([r, menge]) => (handel && r === 'gold') || this.spieler[r] >= menge)) return false;
       }
     }
     return true;
@@ -909,7 +931,7 @@ class Ki {
   sichtbareFeinde() {
     const ich = this.spielerId;
     return [...this.welt.einheiten.values()].filter((e) => !e.tot && this.welt.feindlich(ich, e.besitzer)
-      && this.welt.sieht(ich, Math.round(e.x), Math.round(e.y)));
+      && this.welt.siehtEinheit(ich, e));
   }
 
   /**
@@ -1364,7 +1386,7 @@ class Ki {
       // 86, eigener Test).
       if (ausser?.has(e.id)) continue;
       // Fremde nur, wenn sie sie sieht (ki AC-13).
-      if (e.besitzer !== this.spielerId && !this.welt.sieht(this.spielerId, Math.round(e.x), Math.round(e.y))) continue;
+      if (e.besitzer !== this.spielerId && !this.welt.siehtEinheit(this.spielerId, e)) continue;
       besetzt.add(`${Math.round(e.x)},${Math.round(e.y)}`);
       // Wohin die **eigenen** gerade laufen, ist auch belegt - sonst schickt die
       // naechste Entscheidung den naechsten Getroffenen auf dasselbe Feld
@@ -1530,7 +1552,7 @@ class Ki {
       const { ort, wer } = this.sturm;
       const ziel = welt.einheiten.get(this.sturm.ziel);
       const da = ziel && !ziel.tot && welt.feindlich(this.spielerId, ziel.besitzer)
-        && welt.sieht(this.spielerId, Math.round(ziel.x), Math.round(ziel.y))
+        && welt.siehtEinheit(this.spielerId, ziel)
         && Math.hypot(ziel.x - ort.x, ziel.y - ort.y) <= STURM_LEINE;
       const zuViele = angreiferUm(ort).length > STURM_FEINDE;
       if (da && !zuViele) {

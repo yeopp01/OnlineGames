@@ -101,6 +101,16 @@ const EINHEITEN = [
   { art: 'pikenier', titel: 'Pikenier', weit: 112 },
   { art: 'eliteplaenkler', titel: 'Eliteplänkler', weit: 96 },
   { art: 'leichtekavallerie', titel: 'Leichte Kavallerie', weit: 118 },
+  // Einheiten der Haeuser (einheiten AC-42 bis AC-44).
+  { art: 'eibenschuetze', titel: 'Eibenschütze', weit: 104 },
+  { art: 'pavesenschuetze', titel: 'Pavesenschütze', weit: 100 },
+  { art: 'soeldner', titel: 'Söldner', weit: 100 },
+  // Aus der Burg (einheiten AC-45 bis AC-47).
+  { art: 'kriegswolf', titel: 'Kriegswolf', weit: 112 },
+  { art: 'reiterschuetze', titel: 'Reiterschütze', weit: 122 },
+  { art: 'riese', titel: 'Riese', weit: 124, zoom: 1.2 },
+  { art: 'meuchler', titel: 'Meuchler', weit: 100 },
+  { art: 'wiedergaenger', titel: 'Wiedergänger', weit: 100 },
   { art: 'moench', titel: 'Mönch', weit: 96, schlagTitel: 'Heilen und Bekehren' },
   { art: 'ramme', titel: 'Ramme', weit: 108, zoom: 1.35, luft: 44 },
   { art: 'mangonel', titel: 'Mangonel', weit: 108, zoom: 1.35, luft: 44 },

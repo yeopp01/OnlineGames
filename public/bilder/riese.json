@@ -1,0 +1,57 @@
+{
+  "bild": "riese.webp",
+  "maske": "riese-maske.webp",
+  "zelle": [
+    248,
+    218
+  ],
+  "fuss": [
+    60,
+    167
+  ],
+  "feldbreite": 132,
+  "zeilen": 8,
+  "spalten": 9,
+  "art": "figur",
+  "richtungen": 8,
+  "hoehe": 86,
+  "ablaeufe": {
+    "stehen": {
+      "spalte": 0,
+      "bilder": 1
+    },
+    "gehen": {
+      "spalte": 1,
+      "bilder": 8
+    },
+    "angreifen": {
+      "spalte": 0,
+      "bilder": 8,
+      "bild": "riese-angreifen.webp",
+      "maske": "riese-angreifen-maske.webp",
+      "zelle": [
+        345,
+        256
+      ],
+      "fuss": [
+        122,
+        189
+      ]
+    },
+    "sterben": {
+      "spalte": 0,
+      "bilder": 8,
+      "einmal": true,
+      "bild": "riese-sterben.webp",
+      "maske": "riese-sterben-maske.webp",
+      "zelle": [
+        310,
+        239
+      ],
+      "fuss": [
+        121,
+        167
+      ]
+    }
+  }
+}

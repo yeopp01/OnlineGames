@@ -1,0 +1,17 @@
+{
+  "bild": "wehrturm.webp",
+  "maske": "wehrturm-maske.webp",
+  "zelle": [
+    416,
+    376
+  ],
+  "fuss": [
+    88,
+    319
+  ],
+  "feldbreite": 132,
+  "zeilen": 1,
+  "spalten": 1,
+  "art": "gebaeude",
+  "felder": 1
+}

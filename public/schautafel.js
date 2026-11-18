@@ -57,6 +57,16 @@ const EINTRAEGE = [
   { art: 'pikenier', titel: 'Pikenier', lage: {} },
   { art: 'eliteplaenkler', titel: 'Eliteplänkler', lage: {} },
   { art: 'leichtekavallerie', titel: 'Leichte Kavallerie', lage: {} },
+  // Einheiten der Haeuser (einheiten AC-42 bis AC-44).
+  { art: 'eibenschuetze', titel: 'Eibenschütze', lage: {} },
+  { art: 'pavesenschuetze', titel: 'Pavesenschütze', lage: {} },
+  { art: 'soeldner', titel: 'Söldner', lage: {} },
+  // Aus der Burg (einheiten AC-45 bis AC-47).
+  { art: 'kriegswolf', titel: 'Kriegswolf', lage: {} },
+  { art: 'reiterschuetze', titel: 'Reiterschütze', lage: {} },
+  { art: 'riese', titel: 'Riese', lage: {} },
+  { art: 'meuchler', titel: 'Meuchler', lage: {} },
+  { art: 'wiedergaenger', titel: 'Wiedergänger', lage: {} },
   { art: 'schaf', titel: 'Schaf', lage: {}, tier: true },
   { art: 'schaf', titel: 'Kadaver, halb', lage: { liegt: true, rest: 0.5 }, tier: true },
 ];

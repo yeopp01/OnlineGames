@@ -2,7 +2,7 @@
 
 **Bereich:** Strategie
 **Kuerzel:** bauen
-**Stand:** 45/46 fertig · 1 offen
+**Stand:** 45/56 fertig · 11 offen
 
 ## Zweck
 
@@ -294,7 +294,13 @@ Spezialeinheit der Burg (kommt mit den Häusern, Stufe E), Palisade.
   weiterentwickeln?" Die Wirkung steht als `bauwerk` je Gebäudeart in den
   Daten und kommt in `welt.gebaeudewert()` zum Grundwert, bevor das
   Mauerwerk (AC-34) seinen Anteil rechnet; der Name steht als `nennt` und
-  reist in der Tafel `kw`. **Das Bild bleibt vorerst das des Wachturms.**
+  reist in der Tafel `kw`. **Er hat sein eigenes Bild** (Benutzer am
+  2026-11-17: „Wehrtürme und weitere Türme brauchen ein eigenes gerendertes
+  Muster"): höher als der Wachturm, aus `grafik/wehrturm.py`. Welches Bild
+  ein Gebäude bei seinem Besitzer hat, steht als `bild` neben `nennt` und
+  reist mit; der Browser fragt nur `ansicht.bildart()`. Die Baustelle sieht
+  aus wie jede andere, und ohne gerenderte Bilder (`?bilder=0`) ist er
+  gezeichnet der Wachturm.
 - **AC-39** `fertig` **Rüstungen der Schmiede** — Je Waffengattung zwei
   Stufen, jede +1/+1 Rüstung: Schuppenpanzer (100 Nahrung) und Kettenpanzer
   (200 Nahrung, 100 Gold) für die Infanterie, Schuppenrossharnisch (150
@@ -446,6 +452,117 @@ Spezialeinheit der Burg (kommt mit den Häusern, Stufe E), Palisade.
   Startwerte. Die KI erforscht sie nicht (ki AC-35). **Rückmeldung des
   Benutzers:** „und vll sollte es beim angriff nochmal schnellere pferde
   geben z.B."
+
+### Stufe F — die Krone (Spec-Runde 2026-11-18)
+
+Kosten und Dauer aus den offenen Technikbaum-Daten zum Original (gelesen
+2026-11-18, [`vorlage-aoe2.md`](../../docs/strategie/vorlage-aoe2.md) unter
+„Krone"); die Wirkungen sind Startwerte in der Form der vorhandenen
+Verbesserungen. Jede hat ein eigenes Bild im Menü und ihre Tafel (bedienung
+AC-55).
+
+- **AC-47** `offen` **Aufstieg in die Krone** — 1000 Nahrung, 800 Gold, 190
+  Sekunden; verlangt zwei fertige Gebäude des Fürstentums **oder eine
+  Burg** — die Burg zählt allein. Der Auftrag steht seit Stufe B als Daten
+  im Dorfzentrum; neu sind die Regel der Burg, die Tafel, die sie nennt,
+  und alles, was der Aufstieg freischaltet (AC-48 bis AC-51,
+  [Einheiten](einheiten-und-befehle.md) AC-66 bis AC-69).
+- **AC-48** `offen` **Schmiede der Krone** — Die dritte Stufe jeder Reihe,
+  jede verlangt ihre Vorstufe: Hochofen (nach Eisenguss: Infanterie und
+  Kavallerie +2 Angriff; 275 Nahrung, 225 Gold, 100 s), Armschiene (nach
+  Bodkinpfeil: Schützen +1 Angriff, +1 Reichweite; 300 Nahrung, 200 Gold,
+  40 s), Plattenpanzer (Infanterie; 300 Nahrung, 150 Gold, 70 s),
+  Plattenharnisch (Kavallerie; 350 Nahrung, 200 Gold, 75 s) und Ringpanzer
+  (Schützen; 250 Nahrung, 250 Gold, 70 s) — jede Rüstung +1 gegen Nah, +2
+  gegen Fern.
+- **AC-49** `offen` **Wirtschaft der Krone** — Fruchtwechsel in der Mühle
+  (nach dem Schweren Pflug: Farmen +175 Nahrung; 250 Nahrung, 250 Holz,
+  70 s) und Zweimannsäge im Holzfällerlager (nach der Bogensäge: Holz
+  +10 %; 300 Nahrung, 200 Holz, 100 s).
+- **AC-50** `offen` **Universität und Burg der Krone** — In der
+  Universität: **Chemie** (alles, was Pfeile schießt — Schützen, Türme,
+  Burg — +1 Angriff; 300 Nahrung, 200 Gold, 100 s), **Bergfried** (nach dem
+  Wehrturm, AC-38: jeder eigene Turm +750 Leben, +1 Angriff, +1/+1 Rüstung,
+  heißt Bergfried und bekommt sein eigenes gerendertes Bild; 500 Nahrung,
+  350 Holz, 75 s), **Architektur** (nach Mauerwerk: Gebäude noch einmal
+  +10 % Leben und +1/+1; 300 Nahrung, 200 Holz, 70 s) und
+  **Belagerungsingenieure** (Mangonel und Onager +1 Reichweite, Belagerung
+  +20 % Schaden an Gebäuden; 500 Nahrung, 600 Holz, 45 s). In der Burg:
+  **Wehrpflicht** (Kaserne, Schießanlage, Stall und Burg bilden 33 %
+  schneller aus; 150 Nahrung, 150 Gold, 60 s). **Nicht übernommen:**
+  Wehrgänge (Burg +21 % Leben) und die befestigte Mauer — die Verteidigung
+  ist schon stark, zwei Burgen und Türme nebeneinander knackt die KI nicht
+  ([KI](ki.md) AC-23); dazu alles mit Schießpulver.
+- **AC-51** `offen` **Das Wunder** — Ein Gebäude der Krone, fünf mal fünf
+  Felder, je 1000 Holz, Stein und Gold, 4800 Leben, Rüstung 3/10, 3500
+  Sekunden Bauzeit für einen einzelnen Bauer; höchstens eines je Spieler.
+  Es bildet nichts aus, schießt nicht und gibt keinen Wohnraum. Eigenes
+  gerendertes Bild samt Baustelle, auf der Übersichtskarte für alle zu
+  sehen, sobald es fertig ist. Was es bewirkt, steht bei
+  [Spielziel](spielziel.md) AC-29. **Zu messen, bevor es `fertig` heißt:**
+  wie lange zwanzig Bauer brauchen — Ziel acht bis zwölf Spielminuten,
+  sonst ändert sich die Bauzeit.
+
+### Verbesserungen mit eigenem Charakter (Benutzer, 2026-11-18)
+
+**Aus dem Spiel:** „Und noch so spannende Sachen wie Kartografie, etc." Die
+Schmiede macht Zahlen größer; diese hier ändern, wie sich etwas spielt. Sie
+stehen dort, wo die Vorlage sie hat, also zum Teil schon im Lehen. Kosten
+und Dauer aus den offenen Technikbaum-Daten (gelesen 2026-11-18), die
+Wirkungen aus dem Gedächtnis und im Spiel Startwerte. Jede hat ihr eigenes
+Bild im Menü und ihre Tafel (bedienung AC-55). **Keine davon erforscht die
+KI**, bis [KI](ki.md) AC-35 gebaut ist.
+
+- **AC-52** `offen` **Kartografie deckt die Karte auf** — Am Markt ab dem
+  Lehen, 100 Nahrung, 100 Gold, 40 s (in der Vorlage inzwischen
+  abgeschafft und geschenkt; der Preis ist der von früher, aus dem
+  Gedächtnis). Mit ihr gilt für den Spieler und alle, mit denen er die
+  Sicht teilt, **die ganze Karte als erkundet**: Gelände, Wald, Gold,
+  Stein und Beeren stehen im Bild und auf der Übersichtskarte, gedämpft
+  wie alles Erkundete. Fremde Einheiten und Gebäude zeigt sie nicht — die
+  sieht weiter nur, wer hinsieht ([Kampf](kampf.md) AC-11 bis AC-13). Die
+  Vorlage ließ mit ihr Verbündete gemeinsam sehen; das gilt hier schon
+  ohne sie ([Spielziel](spielziel.md) AC-19), deshalb bekommt der Name eine
+  eigene Wirkung. Wer ein Bündnis löst, nimmt die Karte mit (spielziel
+  AC-21). Bei „Erkundet" und „Aufgedeckt" (kampf AC-16) steht der Knopf
+  nicht im Menü.
+- **AC-53** `offen` **Blutlinien und Karawane** — **Blutlinien** im Stall
+  ab dem Lehen (150 Nahrung, 100 Gold, 50 s): alles Berittene +20 Leben,
+  auch was schon steht — der Reiterschütze eingeschlossen. **Karawane** am
+  Markt in der Krone (200 Nahrung, 200 Gold, 40 s): Marktkarren fahren
+  50 % schneller, eine Fahrt bringt dasselbe Gold, also die Hälfte mehr je
+  Minute.
+- **AC-54** `offen` **Knappen und Brandstiftung** — In der Kaserne.
+  **Brandstiftung** ab dem Lehen (75 Nahrung, 25 Gold, 25 s): Fußvolk +2
+  Angriff gegen Gebäude. **Knappen** ab dem Fürstentum (100 Nahrung, 40 s):
+  Fußvolk 10 % schneller — ein Anteil am Tempo wie bei der Pferdezucht
+  (AC-46). Fußvolk ist, was die Klasse Infanterie trägt, die Einheiten der
+  Häuser eingeschlossen.
+- **AC-55** `offen` **Vier Lehren des Klosters** — **Heiligkeit** (175
+  Gold, 60 s): der Mönch hat 45 statt 30 Leben. **Inbrunst** (140 Gold,
+  50 s): er geht 15 % schneller. Beide ab dem Fürstentum. **Buchdruck**
+  (200 Gold, 55 s): er bekehrt auf zwölf statt neun Felder. **Erleuchtung**
+  (120 Gold, 65 s): er ruht nach einer Bekehrung 41 statt 62 Sekunden.
+  Beide erst in der Krone. Was ein Mönch kann, liest der Server danach an
+  einer Stelle je Spieler, und Tafel und Leiste nennen die Werte des
+  eigenen Mönchs ([Bedienung](bedienung.md) AC-68, AC-70). **Nicht
+  übernommen:** Erlösung und Sühne (Gebäude und Mönche bekehren — neue
+  Regeln, kein neuer Wert), Glaube, Theokratie und Kräutermedizin (hier
+  wird niemand einquartiert).
+- **AC-56** `offen` **Tretkran und Sappeure** — **Tretkran** in der
+  Universität ab dem Fürstentum (300 Nahrung, 200 Holz, 50 s):
+  Dorfbewohner bauen 20 % schneller; repariert wird wie bisher (AC-45).
+  **Sappeure** in der Burg in der Krone (400 Nahrung, 200 Holz, 10 s):
+  Dorfbewohner +15 Angriff gegen Gebäude — wer keine Ramme hat, reißt mit
+  dem Dorf ein.
+
+**Was wartet, und warum.** **Daumenring** (Schützen laden schneller nach):
+verschiebt beide Schützenlinien im Konterkreis und kommt deshalb erst
+nach dessen Messung in der Krone (fahrplan AC-26). **Spione** (sehen, was
+der Gegner sieht): eine neue Regel der Sicht, kein Wert — eigenes
+Kriterium, wenn die Krone steht. **Ballistik**: hier trifft jeder Pfeil,
+es gibt nichts zu verbessern. **Gilden**: die halbe Marktgebühr ist
+Silberfurts Hausbonus ([Spielziel](spielziel.md) AC-17).
 
 ## Grenzfaelle
 

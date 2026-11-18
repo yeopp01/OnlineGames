@@ -109,6 +109,19 @@ function ausgebildet(haus, art) {
   return neu;
 }
 
+/** Was Annas Vorrat nach der Bestellung einer Einheit fehlt, je Rohstoff. */
+function bezahlt(haus, art) {
+  const welt = weltMit(haus);
+  const anna = welt.spielerVon('a');
+  const gebaeudeArt = Object.keys(GEBAEUDE).find((g) => GEBAEUDE[g].bildetAus?.includes(art));
+  anna.zeitalter = Math.max(anna.zeitalter, EINHEITEN[art].zeitalter || 0, GEBAEUDE[gebaeudeArt].zeitalter || 0);
+  reich(anna);
+  const p = platz(welt, gebaeudeArt, anna.basis);
+  const gebaeude = welt.gebaeudeAnlegen('a', gebaeudeArt, p.x, p.y);
+  assert.deepEqual(welt.ausbilden('a', gebaeude.id, art), {});
+  return Object.fromEntries(ROHSTOFFE.map((r) => [r, 5000 - anna[r]]));
+}
+
 /** Wie viele Felder rechts der Einheit Anna im Nebel sieht, am Stueck. */
 function sichtNachRechts(haus, art) {
   const welt = weltMit(haus, { sicht: 'nebel' });
@@ -332,6 +345,21 @@ const PRUEFER = {
     }
     return OHNE_MESSUNG('handel', feld);
   },
+  // Ein Faktor auf den Preis einer Einheit (einheiten AC-44): dieselbe
+  // Bestellung mit und ohne Haus, gezaehlt wird, was dem Vorrat danach fehlt.
+  preis(haus, art, faktor) {
+    const mit = bezahlt(haus, art);
+    const ohne = bezahlt(null, art);
+    const teile = [];
+    for (const rohstoff of ROHSTOFFE) {
+      const menge = EINHEITEN[art].kosten[rohstoff] || 0;
+      assert.equal(ohne[rohstoff], menge, `${art} ohne Haus: ${rohstoff}`);
+      assert.equal(mit[rohstoff], Math.round(menge * faktor), `${haus}: ${art} kostet ${rohstoff}`);
+      if (menge) teile.push(`${mit[rohstoff]} statt ${ohne[rohstoff]} ${rohstoff}`);
+    }
+    assert.ok(teile.length && faktor !== 1, `${haus}: der Preis von ${art} aendert sich`);
+    return `${art}: kostet ${teile.join(', ')}`;
+  },
 };
 
 // Was der Mannschaftsbonus an derselben Stelle dazugibt: er gilt auch dem
@@ -378,7 +406,7 @@ test('spielziel AC-26: jeder Bonus jedes Hauses wirkt im Spiel - dieselbe Lage m
     abZeitalter = 0;
   }
   // Gegenprobe des Aufbaus: gemessen ist jedes Blatt, und es sind welche -
-  // heute zwoelf in fuenf Haeusern, jedes Haus mit mindestens einem.
+  // heute dreizehn in fuenf Haeusern, jedes Haus mit mindestens einem.
   const alle = Object.values(HAEUSER).reduce((n, h) => n + stufen(h).reduce((m, [, boni]) => m + blaetter(boni).length, 0), 0);
   assert.equal(gemessen.length, alle);
   assert.ok(alle >= 12, `Boni: ${alle}`);

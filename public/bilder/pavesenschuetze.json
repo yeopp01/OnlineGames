@@ -1,0 +1,57 @@
+{
+  "bild": "pavesenschuetze.webp",
+  "maske": "pavesenschuetze-maske.webp",
+  "zelle": [
+    157,
+    128
+  ],
+  "fuss": [
+    55,
+    96
+  ],
+  "feldbreite": 132,
+  "zeilen": 8,
+  "spalten": 9,
+  "art": "figur",
+  "richtungen": 8,
+  "hoehe": 86,
+  "ablaeufe": {
+    "stehen": {
+      "spalte": 0,
+      "bilder": 1
+    },
+    "gehen": {
+      "spalte": 1,
+      "bilder": 8
+    },
+    "angreifen": {
+      "spalte": 0,
+      "bilder": 8,
+      "bild": "pavesenschuetze-angreifen.webp",
+      "maske": "pavesenschuetze-angreifen-maske.webp",
+      "zelle": [
+        187,
+        139
+      ],
+      "fuss": [
+        62,
+        106
+      ]
+    },
+    "sterben": {
+      "spalte": 0,
+      "bilder": 8,
+      "einmal": true,
+      "bild": "pavesenschuetze-sterben.webp",
+      "maske": "pavesenschuetze-sterben-maske.webp",
+      "zelle": [
+        209,
+        147
+      ],
+      "fuss": [
+        86,
+        97
+      ]
+    }
+  }
+}

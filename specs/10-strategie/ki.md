@@ -2,7 +2,7 @@
 
 **Bereich:** Strategie
 **Kuerzel:** ki
-**Stand:** 33/38 fertig · 5 offen
+**Stand:** 33/40 fertig · 7 offen
 
 ## Zweck
 
@@ -712,6 +712,27 @@ nicht die Regeln.
   stellt sie Schützen dagegen und schickt ihr Heer zum fremden Kloster.
   KI gegen KI: wer zuerst ruft, gewinnt nicht öfter als 60 %
   ([Einheiten](einheiten-und-befehle.md) AC-52).
+
+### Stufe F — die Krone (Spec-Runde 2026-11-18)
+
+- **AC-39** `offen` **KI steigt zur Krone auf** — Im Fürstentum, nach ihrem
+  ersten Aufbruch, mit freiem Dorfzentrum, 42 Dorfbewohnern (AC-24) und
+  einer Burg oder zwei Gebäuden des Fürstentums spart sie 1000 Nahrung und
+  800 Gold an und steigt auf. Danach gelten die Werte, die schon in den
+  Daten stehen: 50 Dorfbewohner (AC-24), die zweite und dritte Burg
+  (AC-33); die Stufen der Krone erforscht sie für das, was sie ausbildet
+  (AC-35). **Gemessen wie jede Änderung an der KI:** die Grenzen im Nebel
+  (fahrplan AC-11) und zu viert halten, und von den Partien, die länger als
+  45 Spielminuten dauern, erreicht in mindestens der Hälfte eine KI die
+  Krone.
+- **AC-40** `offen` **Die KI geht aufs Wunder** — Steht ein fertiges
+  Wunder eines Gegners (die Ansage kennt jeder,
+  [Spielziel](spielziel.md) AC-29), ist es das Ziel ihres nächsten
+  Aufbruchs, und sie bricht dafür sofort auf, mit allem außer der Wache
+  (AC-18) und mit ihren Rammen voraus (AC-23). Sie selbst baut kein Wunder.
+  Belegt im Prüfstand: einer KI wird im Test ein fertiges Wunder
+  hingestellt, und die andere steht vor Ablauf der Uhr davor und schlägt
+  darauf ein.
 
 ## Grenzfaelle
 

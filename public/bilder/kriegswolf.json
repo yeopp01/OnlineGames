@@ -1,0 +1,57 @@
+{
+  "bild": "kriegswolf.webp",
+  "maske": "kriegswolf-maske.webp",
+  "zelle": [
+    207,
+    137
+  ],
+  "fuss": [
+    84,
+    94
+  ],
+  "feldbreite": 132,
+  "zeilen": 8,
+  "spalten": 9,
+  "art": "figur",
+  "richtungen": 8,
+  "hoehe": 86,
+  "ablaeufe": {
+    "stehen": {
+      "spalte": 0,
+      "bilder": 1
+    },
+    "gehen": {
+      "spalte": 1,
+      "bilder": 8
+    },
+    "angreifen": {
+      "spalte": 0,
+      "bilder": 8,
+      "bild": "kriegswolf-angreifen.webp",
+      "maske": "kriegswolf-angreifen-maske.webp",
+      "zelle": [
+        240,
+        149
+      ],
+      "fuss": [
+        93,
+        106
+      ]
+    },
+    "sterben": {
+      "spalte": 0,
+      "bilder": 8,
+      "einmal": true,
+      "bild": "kriegswolf-sterben.webp",
+      "maske": "kriegswolf-sterben-maske.webp",
+      "zelle": [
+        205,
+        147
+      ],
+      "fuss": [
+        82,
+        94
+      ]
+    }
+  }
+}

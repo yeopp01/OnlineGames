@@ -28,6 +28,9 @@ function pruefen(welt) {
     for (const r of ROHSTOFFE) {
       if (!(spieler[r] >= 0)) befunde.push(`${spieler.name}: ${r} ist ${spieler[r]}`);
     }
+    // Die Gefallenen sind kein Rohstoff, werden aber wie einer bezahlt und
+    // erstattet (einheiten AC-49).
+    if (!(spieler.gefallene >= 0)) befunde.push(`${spieler.name}: gefallene ist ${spieler.gefallene}`);
     const zahl = bevoelkerung.get(spieler.id) || 0;
     if (zahl > BEVOELKERUNG_MAX) befunde.push(`${spieler.name}: Bevoelkerung ${zahl} ueber ${BEVOELKERUNG_MAX}`);
   }
@@ -311,9 +314,10 @@ function nachsetzen(welt) {
  *
  * @param {{links: string, rechts: string, startwert: number, budget?: number,
  *   minuten?: number, abstand?: number, spurFuehren?: boolean,
- *   erforscht?: {links?: string[], rechts?: string[]}}} optionen
+ *   erforscht?: {links?: string[], rechts?: string[]},
+ *   anzahl?: {links?: number, rechts?: number} | null}} optionen `anzahl` gibt die Zahl einer Seite vor, statt sie aus dem Budget zu rechnen
  */
-function gefechtSpielen({ links, rechts, startwert, budget = 600, minuten = 5, abstand = 12, spurFuehren = false, erforscht = {} }) {
+function gefechtSpielen({ links, rechts, startwert, budget = 600, minuten = 5, abstand = 12, spurFuehren = false, erforscht = {}, anzahl = null }) {
   const welt = new Welt([{ id: 'links', name: 'Links' }, { id: 'rechts', name: 'Rechts' }], startwert);
   welt.einheiten.clear();
   welt.tiere.clear();
@@ -353,7 +357,7 @@ function gefechtSpielen({ links, rechts, startwert, budget = 600, minuten = 5, a
     seite.um = laengsY
       ? { x: feld.x + querWeg, y: feld.y + laengsWeg }
       : { x: feld.x + laengsWeg, y: feld.y + querWeg };
-    seite.anzahl = Math.floor(budget / kostenSumme(seite.art));
+    seite.anzahl = anzahl?.[seite.id] ?? Math.floor(budget / kostenSumme(seite.art));
     seite.felder = freieFelder(welt, seite.um, seite.anzahl, belegt);
     if (seite.felder.length < seite.anzahl) throw new Error(`Startwert ${startwert}: zu wenig Platz fuer ${seite.anzahl} ${seite.art}`);
     seite.ids = seite.felder.map((f) => welt.einheitAnlegen(seite.id, f.x, f.y, seite.art).id);

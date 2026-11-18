@@ -21,7 +21,7 @@ const mitHaus = (haus) => new Welt(ZWEI, 7, { sicht: 'aufgedeckt', haeuser: { a:
 // ein Haus sonst traegt, braucht eine neue Lesestelle und bricht hier, bis es
 // sie gibt. Was die Boni im Spiel bewirken, misst
 // tests/strategie-haeuser-wirkung.test.mjs.
-const FORMEN = ['wirkung', 'sammeln', 'farm', 'gebaeude', 'handel'];
+const FORMEN = ['wirkung', 'sammeln', 'farm', 'gebaeude', 'handel', 'preis'];
 // Gebaeudewerte, die nur ein Gebaeude traegt, das schiesst.
 const SCHIESSEND = Object.keys(GEBAEUDE).find((art) => GEBAEUDE[art].angriff > 0);
 
@@ -46,7 +46,7 @@ test('spielziel AC-17: jeder Bonus jedes Hauses wirkt von Beginn an, gelesen wie
   for (const [haus, eintrag] of Object.entries(HAEUSER)) {
     for (const form of Object.keys(eintrag.boni)) assert.ok(FORMEN.includes(form), `${haus}: Bonus in unbekannter Form "${form}"`);
     const welt = mitHaus(haus);
-    const { wirkung = {}, sammeln = {}, farm = {}, gebaeude = {}, handel = {} } = eintrag.boni;
+    const { wirkung = {}, sammeln = {}, farm = {}, gebaeude = {}, handel = {}, preis = {} } = eintrag.boni;
 
     // Kampfwerte je Art oder Klasse - Anna mit Haus, Bert ohne, dieselbe Welt.
     for (const [schluessel, felder] of Object.entries(wirkung)) {
@@ -89,6 +89,14 @@ test('spielziel AC-17: jeder Bonus jedes Hauses wirkt von Beginn an, gelesen wie
         const [kauf] = welt.handelspreise('a').holz;
         assert.equal(kauf, Math.round(HANDEL.waren.holz * (1 + HANDEL.gebuehr + wert)), `${haus}: Kaufpreis`);
       }
+      geprueft += 1;
+    }
+    // Der Preis einer Einheit als Faktor (einheiten AC-44) - gelesen an der
+    // einen Stelle, die bezahlt, erstattet und zeigt.
+    for (const [art, faktor] of Object.entries(preis)) {
+      const voll = EINHEITEN[art].kosten;
+      assert.deepEqual(welt.auftragKosten('a', art), Object.fromEntries(Object.entries(voll).map(([r, menge]) => [r, Math.round(menge * faktor)])), `${haus}: ${art}`);
+      assert.equal(welt.auftragKosten('b', art), voll, 'ohne Haus der Preis aus den Daten');
       geprueft += 1;
     }
     // Was von Beginn an steht, traegt den Bonus schon: die Startaufstellung

@@ -78,7 +78,7 @@ aber nicht linear: n Dorfbewohner brauchen etwa `3·t / (n + 2)`.
 | Kloster | Ritter | 175 Holz | 40 s | 2100 | Mönche |
 | Universität | Ritter | 200 Holz | 60 s | 2100 | Bau- und Fernkampfverbesserungen |
 | Belagerungswerkstatt | Ritter | 200 Holz | 40 s | 2100 | Ramme, Mangonel, Skorpion |
-| Wunder | Imperial | je 1000 Holz, Nahrung, Gold, Stein | 3500 s | 4800 | Sieg nach Zeit |
+| Wunder | Imperial | je 1000 Holz, Gold, Stein | 3500 s | 4800 | Sieg nach Zeit |
 
 Was schießt: der **Wachturm** 5 Angriff, Reichweite 8, ein Pfeil alle 2 s,
 Rüstung 1/7, Sicht 9; die **Burg** 11 Angriff, Reichweite 8, eine Salve alle
@@ -215,6 +215,77 @@ Spiel als Startwert gesetzt. Der Radkarren heißt im Spiel „Schubkarre".
 | Langschwertkämpfer, Pikenier, Eliteplänkler, Leichte Kavallerie | Kaserne, Schießanlage, Stall | Ritter | 150 N 65 G · 160 N 90 G · 230 H 130 G · 150 N 50 G | tauscht die Einheit gegen ihre nächste Stufe |
 | Befiederte Pfeile | Schmiede | Feudal | 100 N, 50 G | Fern +1 Angriff, +1 Reichweite |
 | Belagerung (Soldat → Wache) | Kaserne | Feudal/Ritter | … | Einheitenstufen |
+
+## Krone (Imperialzeit)
+
+Gelesen am 2026-11-18 aus den offenen Technikbaum-Daten zum Original
+(SiegeEngineers/aoe2techtree, `data/data.json`) für die Spec-Runde zur
+Stufe F. Die Datei nennt Werte, Kosten und Dauer; die **Wirkung** einer
+Verbesserung nennt sie nicht — die steht hier aus dem Gedächtnis und ist im
+Spiel ein Startwert. **Berichtigt:** das Wunder kostet dort je 1000 Holz,
+Gold und Stein, keine Nahrung; Rüstung 3/10.
+
+| Stufe | aus | Leben | Angriff | Rüstung | Sonst | Verbesserung |
+| --- | --- | --- | --- | --- | --- | --- |
+| Zweihänder | Langschwertkämpfer | 65 | 12 | 1/1 | | 200 N, 100 G, 45 s |
+| Champion | Zweihänder | 70 | 14 | 1/1 | | 650 N, 350 G, 70 s |
+| Hellebardier | Pikenier | 60 | 6 | 0/0 | +32 gegen Kavallerie | 300 N, 600 G, 50 s |
+| Husar | Leichte Kavallerie | 75 | 7 | 0/2 | Nachladen 1,9 s | 500 N, 600 G, 50 s |
+| Kavalier | Ritter | 120 | 12 | 2/2 | | 300 N, 300 G, 80 s |
+| Paladin | Kavalier | 160 | 14 | 2/3 | Nachladen 1,9 s | 1300 N, 750 G, 170 s |
+| Arbalestenschütze | Armbrustschütze | 40 | 6 | 0/0 | Reichweite 5 | 450 N, 350 G, 50 s |
+| Sturmramme | Ramme | 200 | 3 | −2/190 | +160 gegen Gebäude (Ramme: +150) | 300 N, 50 s (Ritterzeit) |
+| Belagerungsramme | Sturmramme | 270 | 4 | −1/195 | +200 gegen Gebäude | 1000 N, 75 s |
+| Onager | Mangonel | 60 | 55 | 0/8 | Reichweite 8 | 800 N, 500 G, 75 s |
+| Belagerungsonager | Onager | 70 | 75 | 0/8 | Reichweite 8 | 1450 N, 1000 G, 150 s |
+
+Türme: Wachturm 850 Leben, 5 Angriff, 1/7; Wehrturm 1500, 7, 2/8;
+**Bergfried** 2250, 8, 3/9 — die Verbesserung 500 N, 350 H, 75 s. (Der
+Wachturm hat hier 1020 Leben aus einer älteren Fassung; die Schritte
+zwischen den Stufen sind übernommen.)
+
+| Verbesserung | Ort | Kosten | Dauer | Wirkung (aus dem Gedächtnis) |
+| --- | --- | --- | --- | --- |
+| Hochofen | Schmiede | 275 N, 225 G | 100 s | Nahkampf +2 Angriff |
+| Armschiene | Schmiede | 300 N, 200 G | 40 s | Fern +1 Angriff, +1 Reichweite |
+| Plattenpanzer | Schmiede | 300 N, 150 G | 70 s | Infanterie +1/+2 |
+| Plattenrossharnisch | Schmiede | 350 N, 200 G | 75 s | Kavallerie +1/+2 |
+| Ringpanzer der Schützen | Schmiede | 250 N, 250 G | 70 s | Schützen +1/+2 |
+| Fruchtwechsel | Mühle | 250 N, 250 H | 70 s | Farmen +175 Nahrung |
+| Zweimannsäge | Holzfällerlager | 300 N, 200 H | 100 s | Holz +10 % |
+| Chemie | Universität | 300 N, 200 G | 100 s | Geschosse +1 Angriff |
+| Architektur | Universität | 300 N, 200 H | 70 s | Gebäude +10 % Leben, +1/+1 |
+| Belagerungsingenieure | Universität | 500 N, 600 H | 45 s | Belagerung +1 Reichweite, +20 % gegen Gebäude |
+| Wehrpflicht | Burg | 150 N, 150 G | 60 s | Militärgebäude bilden 33 % schneller aus |
+| Wehrgänge | Burg | 400 N, 400 H | 75 s | Burg +21 % Leben — nicht übernommen |
+| Befestigte Mauer | Universität | 200 N, 100 H | 50 s | Mauer 3000 statt 1800 Leben — nicht übernommen |
+
+Dazu das Paket vom 2026-11-18 (bauen AC-52 bis AC-56), Kosten und Dauer aus
+denselben Daten, Wirkungen aus dem Gedächtnis:
+
+| Verbesserung | Ort | Kosten | Dauer | Wirkung (aus dem Gedächtnis) |
+| --- | --- | --- | --- | --- |
+| Kartografie | Markt | heute geschenkt, früher 100 N, 100 G | 40 s (gesetzt) | Verbündete sehen gemeinsam — hier: die Karte gilt als erkundet |
+| Blutlinien | Stall | 150 N, 100 G | 50 s | Berittene +20 Leben |
+| Karawane | Markt | 200 N, 200 G | 40 s | Marktkarren +50 % Tempo |
+| Brandstiftung | Kaserne | 75 N, 25 G | 25 s | Infanterie +2 gegen Gebäude |
+| Knappen | Kaserne | 100 N | 40 s | Infanterie +10 % Tempo |
+| Heiligkeit | Kloster | 175 G | 60 s | Mönch +50 % Leben |
+| Inbrunst | Kloster | 140 G | 50 s | Mönch +15 % Tempo |
+| Buchdruck | Kloster | 200 G | 55 s | Bekehren +3 Reichweite |
+| Erleuchtung | Kloster | 120 G | 65 s | Glaube kehrt 50 % schneller zurück |
+| Tretkran | Universität | 300 N, 200 H | 50 s | Dorfbewohner bauen 20 % schneller |
+| Sappeure | Burg | 400 N, 200 H | 10 s | Dorfbewohner +15 gegen Gebäude |
+| Daumenring | Schießanlage | 300 N, 250 H | 45 s | Schützen laden schneller — wartet |
+
+**Abweichungen** (bauen AC-47 bis AC-51, einheiten AC-66 bis AC-69): eine
+Stufe je Linie statt zwei, **außer beim Ritter** (Kavalier und Paladin,
+Benutzer 2026-11-18) — der Zweihandkämpfer trägt die Werte des
+Zweihänders, die Belagerungsramme ist die eine Stufe der Ramme, und ihr Stoß
+steigt um 50 auf +175 (die Ramme hat hier +125 aus einer älteren Fassung).
+Die Bogenlinie endet im Langbogenschützen mit den Werten des
+Arbalestenschützen; die schwere Armbrust und die fünf Elitestufen der
+Spezialeinheiten haben kein Vorbild.
 
 ## Völker: Vorschlag für die ersten fünf
 

@@ -2,7 +2,7 @@
 
 **Bereich:** Strategie
 **Kuerzel:** fahrplan
-**Stand:** 19/25 fertig · 2 in QA · 4 offen
+**Stand:** 19/26 fertig · 2 in QA · 5 offen
 
 ## Zweck
 
@@ -385,22 +385,52 @@ Text am Bildschirm zitieren, zieht die Runde zu E1 nach. Alle bleiben
   Befestigungen aus der Luft und ist eine Einstellung beim Eröffnen, die
   sich abschalten lässt — der Benutzer will ohne Trebuchet spielen können
   (2026-11-09).
+  Belegt wie AC-8 und AC-14: ein Browsertest steigt auf, erforscht eine
+  Stufe in jedem Militärgebäude und eine Verbesserung der Schmiede, bildet
+  die Elitestufe seines Hauses aus und baut ein Wunder, dessen Uhr zum Sieg
+  läuft; ein zweiter ruft den Drachen und reißt mit ihm eine Mauer ein.
 
-**Die Kriterien des Drachen stehen schon** (aus ADR-0014, Spec-Runde zur
-Stufe E); jeder Schritt ist für sich spielbar, die Reihenfolge ist die des
-ADR. Die Spec-Runde zur Stufe F ordnet sie in ihre Bauabfolge ein.
+- **AC-20** `offen` **Große Partie bleibt flüssig** — Acht Spieler mit je 200 Einheiten: ein Takt
+  unter 30 ms im Mittel, je Spieler unter 50 KB Übertragung je Sekunde.
+- **AC-26** `offen` **Konterkreis hält in der Krone** — Der Gefechtsstand
+  mit den Stufen der Krone ([Einheiten](einheiten-und-befehle.md) AC-66,
+  AC-67) und der vollen Schmiede ([Bauen](bauen.md) AC-48), Budget 2000:
+  jede der neun Paarungen aus AC-25 behält ihre Richtung — 20 von 20
+  Startwerten, umgekehrt 0 —, mit der Stufe der Krone an der Stelle ihrer
+  Vorstufe (Hellebardier gegen Kavalier, Kavalier und Husar gegen beide
+  Schützenlinien, Langbogen gegen Zweihandkämpfer). Wer an Angriff,
+  Rüstung, Bonus oder Nachladezeit einer Stufe dreht, fährt ihn danach.
+
+**Bauabfolge (Spec-Runde 2026-11-18).** Die Krone ist als Aufstieg schon in
+den Daten, aber leer. Erst kommt, was aus vorhandenen Regeln besteht —
+Stufen und Verbesserungen sind Einträge mit `wandelt`, `vorstufe` und
+`wirkung` —, dann das eine teure Stück, der Drache, in den Schritten des ADR,
+jeder für sich spielbar; das Wunder danach (Reihenfolge vom Benutzer
+freigegeben, 2026-11-18). Die Figuren baut dieselbe Sitzung in Blender,
+immer nur ein Prozess.
 
 | Schritt | Was | Kriterien |
 | --- | --- | --- |
-| Abrüsten | Infanterie, Schützen und Reiter werden Dorfbewohner (Sonderregel, entschieden) | einheiten AC-50 |
-| Das Ei | liegt, wird getragen, fällt | einheiten AC-51 |
-| Das Ritual | „Drachen rufen" am Kloster, mit Ansage für alle | bauen AC-35 |
-| Der Drache | fliegt und brennt; wer ihn treffen kann | einheiten AC-52, kampf AC-23 |
-| Tod und Ei | wo er fällt, liegt sein Ei | einheiten AC-53 |
-| Fressen | er kostet laufend Nahrung | einheiten AC-54 |
-| Die KI | holt Eier, schützt ihr Kloster, ruft, stellt Schützen dagegen | ki AC-29 |
-- **AC-20** `offen` **Große Partie bleibt flüssig** — Acht Spieler mit je 200 Einheiten: ein Takt
-  unter 30 ms im Mittel, je Spieler unter 50 KB Übertragung je Sekunde.
+| F1 | Aufstieg in die Krone mit der Regel der Burg; die fünf Stufen nach der Vorlage: Zweihandkämpfer, Hellebardier, Husar, Kavalier und Paladin | bauen AC-47, einheiten AC-66 |
+| F2 | Langbogenschütze und schwere Armbrust; Belagerungsramme und Onager | einheiten AC-67, AC-68 |
+| F3 | Verbesserungen der Krone: Schmiede, Wirtschaft, Universität, Burg; der Bergfried mit eigenem Bild. Dazu das Paket um die Kartografie (Benutzer, 2026-11-18), das zum Teil schon im Lehen steht | bauen AC-48 bis AC-50, AC-52 bis AC-56 |
+| F4 | Elitestufen der fünf Spezialeinheiten | einheiten AC-69 |
+| F5 | Die Figuren der Stufen; der Konterkreis in der Krone | darstellung AC-32, fahrplan AC-26 |
+| F6 | Abrüsten: Infanterie, Schützen und Reiter werden Dorfbewohner (Sonderregel, entschieden) | einheiten AC-50 |
+| F7 | Das Ei: liegt, wird getragen, fällt | einheiten AC-51 |
+| F8 | Das Ritual: „Drachen rufen" am Kloster, mit Ansage für alle | bauen AC-35 |
+| F9 | Der Drache: fliegt und brennt; wer ihn treffen kann; abschaltbar beim Eröffnen | einheiten AC-52, kampf AC-23 |
+| F10 | Tod und Ei; er frisst | einheiten AC-53, AC-54 |
+| F11 | Das Wunder und der Sieg nach zehn Minuten | bauen AC-51, spielziel AC-29 |
+| F12 | Die KI in der Krone: steigt auf, erforscht, geht aufs Wunder, holt Eier und ruft | ki AC-35, AC-39, AC-40, AC-29 |
+| F13 | Die Krone am Stück im Browser; die große Partie bleibt flüssig | fahrplan AC-19, AC-20 |
+
+**Was Stufe F nicht hereinholt.** Die zweite Stufe für das Schwert
+(Champion; der Paladin ist seit dem 2026-11-18 dabei, einheiten AC-66),
+eine Stufe für den Eliteplänkler, Skorpion und
+Belagerungsonager, Wehrgänge und befestigte Mauer, alles mit Schießpulver,
+das Trebuchet. Jede Zeile wäre eine Figur oder eine weitere Unbekannte im
+Konterkreis; hereingeholt wird eine davon, wenn eine Messung sie verlangt.
 
 ### Stufe G — Server
 

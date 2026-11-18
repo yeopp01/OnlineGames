@@ -2,7 +2,7 @@
 
 **Bereich:** Strategie
 **Kuerzel:** darstellung
-**Stand:** 25/31 fertig · 1 in Arbeit · 1 in QA · 4 offen
+**Stand:** 25/32 fertig · 1 in Arbeit · 1 in QA · 5 offen
 
 ## Zweck
 
@@ -385,6 +385,18 @@ nur der mittlere Stand, 7,7 %), der Wachturm auf 10,0 % (jetzt 8,7 %).
 **Nicht bestanden und so geführt:** AC-6 (Dorfbewohner gegen Miliz) und
 [Bedienung](bedienung.md) AC-36 (Umriss der Fußtruppen bei Zoom 1) stehen
 auf `in-qa`, bis die Modelle Schild und Waffe neben dem Körper tragen.
+
+### Stufe F — die Krone (Spec-Runde 2026-11-18)
+
+- **AC-32** `offen` **Figuren der Krone** — Jede Stufe der Krone aus
+  [Einheiten](einheiten-und-befehle.md) AC-66 bis AC-68 — Zweihandkämpfer,
+  Hellebardier, Husar, Kavalier, Paladin, Langbogenschütze, schwere
+  Armbrust, Belagerungsramme, Onager — hat eine eigene gerenderte Figur mit allen
+  Abläufen (ADR-0016), die sich bei Zoom 1 von ihrer Vorstufe
+  unterscheiden lässt (Schautafel, wie AC-14). Die fünf Elitestufen
+  (AC-69) behalten die Figur ihrer Einheit, wie in der Vorlage. Bergfried
+  und Wunder haben eigene Bilder ([Bauen](bauen.md) AC-50, AC-51), der
+  Drache und sein Ei ebenso (einheiten AC-51, AC-52).
 
 ## Grenzfaelle
 

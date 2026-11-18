@@ -112,12 +112,17 @@ function staerkt(wirkung) {
 /**
  * Die Zeilen zu einem Satz Boni eines Hauses. Dieselben Formen wie bei einer
  * Verbesserung und drei, die es nur bei den Haeusern gibt (daten.js):
- * `gebaeude.reichweite` gilt nur dem, was schiesst, `handel` und `ausbildung`.
+ * `gebaeude.reichweite` gilt nur dem, was schiesst, `handel` und `ausbildung`;
+ * dazu `preis` je Einheitenart (einheiten AC-44).
+ *
+ * `einheitNamen`: wie eine Einheit im Satz heisst, im vierten Fall ("Den
+ * Söldner") - so stehen sie in den Meldungen der Welt.
  * @param {import('./daten.js').Wirkungen} [wirkungen]
  * @param {Record<string, string>} [bauwerkNamen]
+ * @param {Record<string, string>} [einheitNamen]
  */
-function hausZeilen(wirkungen, bauwerkNamen = {}) {
-  const { gebaeude, handel, ausbildung, ...rest } = wirkungen || {};
+function hausZeilen(wirkungen, bauwerkNamen = {}, einheitNamen = {}) {
+  const { gebaeude, handel, ausbildung, preis, ...rest } = wirkungen || {};
   const zeilen = bringt(/** @type {any} */ (rest), bauwerkNamen);
   if (gebaeude) {
     const { reichweite, sicht, ...uebrig } = gebaeude;
@@ -138,6 +143,9 @@ function hausZeilen(wirkungen, bauwerkNamen = {}) {
   for (const [art, faktor] of Object.entries(ausbildung || {})) {
     if (faktor !== 1) zeilen.push(`${bauwerkNamen[art] || art} bildet ${prozent(faktor - 1)} schneller aus`);
   }
+  for (const [art, faktor] of Object.entries(preis || {})) {
+    if (faktor !== 1) zeilen.push(`${einheitNamen[art] || art} gibt es ${prozent(Math.abs(1 - faktor))} ${faktor < 1 ? 'billiger' : 'teurer'}`);
+  }
   return zeilen;
 }
 
@@ -147,12 +155,13 @@ function hausZeilen(wirkungen, bauwerkNamen = {}) {
  * die, die im Buendnis auch den Verbuendeten gelten (spielziel AC-25).
  * @param {import('./daten.js').Haus} haus
  * @param {Record<string, string>} [bauwerkNamen]
+ * @param {Record<string, string>} [einheitNamen]
  */
-function hausBringt(haus, bauwerkNamen = {}) {
-  const zeilen = hausZeilen(haus.boni, bauwerkNamen);
+function hausBringt(haus, bauwerkNamen = {}, einheitNamen = {}) {
+  const zeilen = hausZeilen(haus.boni, bauwerkNamen, einheitNamen);
   for (const [stufe, boni] of Object.entries(haus.boniAb || {})) {
     const ab = ZEITALTER[Number(stufe)]?.ab || '';
-    for (const zeile of hausZeilen(boni, bauwerkNamen)) zeilen.push(`${ab.charAt(0).toUpperCase()}${ab.slice(1)} – ${zeile}`);
+    for (const zeile of hausZeilen(boni, bauwerkNamen, einheitNamen)) zeilen.push(`${ab.charAt(0).toUpperCase()}${ab.slice(1)} – ${zeile}`);
   }
   return { bringt: zeilen, mannschaft: hausZeilen(haus.mannschaft, bauwerkNamen) };
 }
