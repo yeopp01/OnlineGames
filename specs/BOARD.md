@@ -7,9 +7,9 @@ Eine Zeile je Abnahmekriterium. Gepflegt wird der Status in der Spec selbst,
 hier steht er zusammengefasst. Erzeugt mit `npm run specs:board`; als Seite
 mit Bildnachweisen, Filter und Suche mit `npm run qa:report`.
 
-**Gesamt:** 558/680 fertig · 3 in Arbeit · 14 in QA · 3 geplant · 94 offen · 8 zurueckgestellt
+**Gesamt:** 563/685 fertig · 3 in Arbeit · 14 in QA · 3 geplant · 94 offen · 8 zurueckgestellt
 
-**Nachweise:** 285 Kriterien mit Bild · 281 ohne Bild, begruendet in `qa/ohne-bild.json`
+**Nachweise:** 290 Kriterien mit Bild · 281 ohne Bild, begruendet in `qa/ohne-bild.json`
 
 ## Nach Spezifikation
 
@@ -21,10 +21,10 @@ mit Bildnachweisen, Filter und Suche mit `npm run qa:report`.
 | [Anhalten und Fortsetzen](00-plattform/speichern.md)           | -         | -     | -       | 23    | -               | 3      |
 | [Spielauswahl und Einstellungen](00-plattform/spielauswahl.md) | -         | -     | -       | 5     | -               | 19     |
 | [Uebertragung](00-plattform/uebertragung.md)                   | -         | -     | 1       | 1     | -               | 8      |
-| [Bauen und Ausbilden](10-strategie/bauen.md)                   | -         | -     | -       | 1     | -               | 43     |
-| [Bedienung](10-strategie/bedienung.md)                         | -         | 2     | -       | 3     | -               | 74     |
-| [Darstellung](10-strategie/darstellung.md)                     | 1         | 1     | -       | 4     | -               | 24     |
-| [Einheiten und Befehle](10-strategie/einheiten-und-befehle.md) | -         | -     | -       | 16    | 1               | 40     |
+| [Bauen und Ausbilden](10-strategie/bauen.md)                   | -         | -     | -       | 1     | -               | 45     |
+| [Bedienung](10-strategie/bedienung.md)                         | -         | 2     | -       | 3     | -               | 75     |
+| [Darstellung](10-strategie/darstellung.md)                     | 1         | 1     | -       | 4     | -               | 25     |
+| [Einheiten und Befehle](10-strategie/einheiten-und-befehle.md) | -         | -     | -       | 16    | 1               | 41     |
 | [Fahrplan zum Klon](10-strategie/fahrplan.md)                  | -         | 2     | -       | 4     | -               | 19     |
 | [Kampf](10-strategie/kampf.md)                                 | -         | -     | -       | 2     | 1               | 22     |
 | [Karte und Vorraete](10-strategie/karte-und-vorraete.md)       | -         | -     | -       | 2     | 3               | 12     |

@@ -53,8 +53,8 @@ function streu(n) {
 }
 // Was ein Rechtsklick taete, in Worten am Zeiger (bedienung AC-52).
 const ZIELTEXT = {
-  angreifen: 'Angreifen', bekehren: 'Bekehren', schlachten: 'Schlachten', fleisch: 'Fleisch holen', bauen: 'Mitbauen',
-  farm: 'Farm bestellen', aussaeen: 'Neu aussäen', abladen: 'Abladen', handeln: 'Handeln',
+  angreifen: 'Angreifen', bekehren: 'Bekehren', heilen: 'Heilen', schlachten: 'Schlachten', fleisch: 'Fleisch holen', bauen: 'Mitbauen',
+  farm: 'Farm bestellen', aussaeen: 'Neu aussäen', abladen: 'Abladen', handeln: 'Handeln', reparieren: 'Reparieren',
 };
 const ROHSTOFFWORT = { holz: 'Holz', nahrung: 'Nahrung', gold: 'Gold', stein: 'Stein' };
 const SAMMELTEXT = { [WALD]: 'Holz hacken', [BEERE]: 'Beeren sammeln', [GOLD]: 'Gold abbauen', [STEIN]: 'Stein abbauen' };
@@ -235,6 +235,7 @@ export class Ansicht {
     // taete (bedienung AC-52). Jedes Bild neu bestimmt.
     this.zeigerDrin = false;
     this.zeigerZiel = null;
+    this.heilerGewaehlt = [];
     // Schieben am Bildschirmrand (bedienung AC-9): wo die Maus im Spielbild
     // steht (null, sobald sie es verlaesst), und ob es an ist. Die Wahl merkt
     // sich der Browser, ohne ihn gilt die Vorgabe "an".
@@ -358,7 +359,9 @@ export class Ansicht {
     this.nebel = new Nebel(nachricht.karte.groesse, this.sichtArt === 'erkundet');
     // Fremde Gebaeude, wie man sie zuletzt gesehen hat (kampf AC-12).
     this.erinnert = new Map();
-    this.fuellung = new Map();
+    // Was schon angebrochen ist, bringt der Aufbau mit (darstellung AC-31) -
+    // nach einer Rueckkehr staende sonst jeder gefaellte Baum wieder.
+    this.fuellung = new Map(Array.isArray(nachricht.karte.fuellung) ? nachricht.karte.fuellung : []);
     this.vorratRest = null;
     this.gemeldetesFeld = null;
     // Ein Takt dauert in echter Zeit 1000 / (takte * tempo) ms: bei
@@ -485,8 +488,9 @@ export class Ansicht {
     const werte = this.werte.einheiten[art] || {};
     if (art === 'dorfbewohner') {
       // Der Zustand sagt nicht, was er tut - nur dass. Wer an einer
-      // Baustelle steht, haemmert; sonst entscheidet, was er traegt.
-      if (this.anBaustelle(einheit)) this.klangAn('hammer', punkt);
+      // Baustelle steht, haemmert, und wer repariert (`rp`, bauen AC-45),
+      // auch; sonst entscheidet, was er traegt.
+      if (einheit.rp || this.anBaustelle(einheit)) this.klangAn('hammer', punkt);
       else if (einheit.a === 'h') this.klangAn('hacken', punkt);
       else if (einheit.a === 'g' || einheit.a === 's') this.klangAn('pickel', punkt);
       return;
@@ -1703,6 +1707,8 @@ export class Ansicht {
           ding = {
             vorrat: {
               i: a.v, x, y, art,
+              // Ein Baum, von dem schon Holz genommen ist, liegt (darstellung AC-31).
+              liegt: art === WALD && this.fuellung.has(a.v),
               rest: this.vorratRest?.i === a.v ? this.vorratRest.rest : null,
               // Im Nebel nennt der Server den Rest nicht (kampf AC-13).
               inSicht: !this.nebelAn || this.nebel.sieht(x, y),
@@ -2044,6 +2050,9 @@ export class Ansicht {
       friedlich,
       // Lauter Moenche, die nicht ruhen (einheiten AC-38).
       bekehrer: friedlich && einheiten.every((e) => wert(e).bekehren && !e.r),
+      // Wer heilen kann (einheiten AC-65): ein Verletzter unter dem Zeiger
+      // ist fuer ihn ein Ziel - er selbst nicht.
+      heiler: einheiten.filter((e) => wert(e).heilen).map((e) => e.i),
       sammler: einheiten.some((e) => wert(e).tragkraft > 0),
       bauarten: new Set(einheiten.flatMap((e) => wert(e).baut || [])),
       haendler: einheiten.some((e) => wert(e).handelt),
@@ -2054,7 +2063,7 @@ export class Ansicht {
   /**
    * Was die Auswahl an einem Gebaeude taete - in der Reihenfolge, in der der
    * Server fragt (`welt.befehl`): angreifen, mitbauen, die Farm bestellen,
-   * abladen, handeln. Null: nichts Besonderes, es ist ein Gang.
+   * abladen, handeln, reparieren. Null: nichts Besonderes, es ist ein Gang.
    */
   gebaeudeHandlung(gebaeude, kann) {
     const werte = this.werte.gebaeude[gebaeude.art] || {};
@@ -2072,6 +2081,12 @@ export class Ansicht {
       let maerkte = 0;
       for (const g of this.gebaeude.values()) if (g.b === this.ich && this.werte.gebaeude[g.art]?.handel) maerkte += 1;
       if (maerkte > 1) return 'handeln';
+    }
+    // Ein beschaedigtes Gebaeude, das keinem Gegner gehoert: wer bauen kann,
+    // repariert es (bauen AC-45) - eine Farm nicht, die wird bestellt.
+    if (fertig && !werte.nahrung && kann.bauarten.size) {
+      const voll = this.gebaeudeLebenVoll(gebaeude);
+      if (voll && gebaeude.h < voll) return 'reparieren';
     }
     return null;
   }
@@ -2110,6 +2125,10 @@ export class Ansicht {
     if (kann && ziel.art !== 'angreifen' && ziel.art !== 'bekehren') {
       const feind = !kann.friedlich ? this.feindlichAn(ziel.sende, kann.nurGebaeude) : kann.bekehrer ? this.bekehrbarAn(ziel.sende) : null;
       if (feind) ziel = { art: kann.friedlich ? 'bekehren' : 'angreifen', x: feind.x, y: feind.y, sende: ziel.sende };
+      // Steht dort kein Gegner, heilt der Server den Verletzten, der naeher
+      // als ein Feld am gesendeten Ort steht (einheiten AC-65).
+      const wund = !feind && ziel.art !== 'heilen' && kann.heiler.length ? this.heilbarAn(ziel.sende, kann.heiler) : null;
+      if (wund) ziel = { art: 'heilen', x: wund.x, y: wund.y, sende: ziel.sende };
     }
     ziel.text = ziel.art === 'sammeln' ? SAMMELTEXT[ziel.feldart] : ZIELTEXT[ziel.art] || null;
     // Was kostet, sagt es vorher (bauen AC-41).
@@ -2160,6 +2179,22 @@ export class Ansicht {
         }
       }
       if (bestes) return { art: kann.bekehrer ? 'bekehren' : 'angreifen', x: bestes.x, y: bestes.y, sende: { x: bestes.x, y: bestes.y } };
+    }
+    // 1b. Ein Verletzter, der keinem Gegner gehoert - fuer den, der heilen
+    // kann (einheiten AC-65).
+    if (kann.heiler.length) {
+      let weite = Math.max(KLICK_WEITE * this.kamera.zoom, figur * 0.6);
+      let bestes = null;
+      for (const einheit of this.nachher.values()) {
+        if (!this.heilbar(einheit, kann.heiler)) continue;
+        const p = this.zuBild(einheit.x, einheit.y);
+        const abstand = Math.hypot(p.x - px, p.y - figur * KOERPER_MITTE - py);
+        if (abstand < weite) {
+          weite = abstand;
+          bestes = einheit;
+        }
+      }
+      if (bestes) return { art: 'heilen', x: bestes.x, y: bestes.y, sende: { x: bestes.x, y: bestes.y } };
     }
     // 2. Ein eigenes Schaf, lebend oder schon geschlachtet (einheiten AC-17).
     if (kann.sammler) {
@@ -2215,9 +2250,10 @@ export class Ansicht {
         if (!DINGE.includes(art)) continue;
         if (this.nebelAn && !this.nebel.hatErkundet(x, y)) continue;
         const p = this.zuBild(x, y);
-        // Ein geschlagener Baum schrumpft mit seiner Fuellung (gelaende.js).
-        const voll = 0.6 + 0.1 * (this.fuellung.get(y * g + x) || 4);
-        const [halb, oben] = art === WALD ? [0.7, 2.3 * voll] : [0.8, 0.9];
+        // Ein gefaellter Baum liegt flach (darstellung AC-31): wer ueber ihn
+        // hinweg klickt, trifft, was dahinter steht.
+        const liegt = art === WALD && this.fuellung.has(y * g + x);
+        const [halb, oben] = liegt ? [0.9, 0.55] : art === WALD ? [0.7, 2.3] : [0.8, 0.9];
         if (Math.abs(px - p.x) > halb * e || py < p.y - oben * e || py > p.y + 0.5 * e) continue;
         // Steht ein Gebaeude davor, gilt der Klick dem Dach, nicht dem Baum dahinter.
         if (this.gebaeudeDavor(px, py, x + y)) continue;
@@ -2420,6 +2456,39 @@ export class Ansicht {
     if (!bestes) return null;
     const klassen = this.werte.einheiten[this.arten[bestes.k]]?.klassen || [];
     return klassen.some((k) => nicht.includes(k)) ? null : { x: bestes.x, y: bestes.y };
+  }
+
+  /**
+   * Ob einer der Heiler diese Einheit heilen koennte (einheiten AC-65) -
+   * dieselbe Frage wie `welt.kannHeilen`: sie lebt, gehoert keinem Gegner,
+   * ist verletzt (`h` steht nur dann im Zustand), ist keine Belagerung, und
+   * es gibt einen Heiler, der nicht sie selbst ist.
+   */
+  heilbar(einheit, heiler) {
+    if (einheit.s || einheit.h === undefined || this.feindlich(einheit.b)) return false;
+    if (!heiler.some((id) => id !== einheit.i)) return false;
+    if (!this.zuSehen(einheit.b, einheit.x, einheit.y)) return false;
+    return !(this.werte.einheiten[this.arten[einheit.k]]?.klassen || []).includes('belagerung');
+  }
+
+  /**
+   * Wen ein Moench unter dem Klick heilen wuerde: der naechste Heilbare
+   * naeher als ein Feld - wie `welt.verletzterAn`.
+   *
+   * @returns {{x: number, y: number}|null}
+   */
+  heilbarAn(ziel, heiler) {
+    let bestes = null;
+    let besterAbstand = 1.01;
+    for (const einheit of this.nachher.values()) {
+      if (!this.heilbar(einheit, heiler)) continue;
+      const abstand = Math.hypot(einheit.x - ziel.x, einheit.y - ziel.y);
+      if (abstand < besterAbstand) {
+        besterAbstand = abstand;
+        bestes = einheit;
+      }
+    }
+    return bestes && { x: bestes.x, y: bestes.y };
   }
 
   /**
@@ -2819,6 +2888,13 @@ export class Ansicht {
     // Lebensbalken sammeln die Zeichnungen unterwegs; gemalt werden sie danach,
     // ueber allem, damit kein Baum sie verdeckt (darstellung AC-8).
     this.lebensbalken = [];
+    // Wer heilen kann, sieht, wer verletzt ist (einheiten AC-65): die
+    // gewaehlten Heiler, einmal je Bild gesammelt.
+    this.heilerGewaehlt = [];
+    for (const id of this.ausgewaehlt) {
+      const heiler = this.nachher.get(id);
+      if (heiler && heiler.b === this.ich && !heiler.s && this.werte.einheiten[this.arten[heiler.k]]?.heilen) this.heilerGewaehlt.push(id);
+    }
     // Der Ring um den angesehenen Vorrat (bedienung AC-63) - auch er ueber
     // allem: im dichten Wald stuende sonst der Baum davor darauf.
     let vorratRing = null;
@@ -2827,7 +2903,7 @@ export class Ansicht {
       if (ding.art === 'vorrat') {
         if (this.siehtAn('v', ding.index)) vorratRing = p;
         // Aus dem Zwischenspeicher: direkt gezeichnet kostete es bei Zoom 1 doppelt so viel (Runde 29).
-        dingBildZeichnen(stift, ding.feld, p.x, p.y, e, ding.index, (this.fuellung.get(ding.index) || 4) / 4, ding, this.salz);
+        dingBildZeichnen(stift, ding.feld, p.x, p.y, e, ding.index, (this.fuellung.get(ding.index) || 4) / 4, ding, this.salz, this.fuellung.has(ding.index));
       } else if (ding.art === 'gebaeude') {
         this.gebaeudeBild(ding.gebaeude, p, e, ding.stueck);
       } else if (ding.art === 'tier') {
@@ -3857,6 +3933,15 @@ export class Ansicht {
       if (voll) {
         this.lebensbalken.push({
           art: 'einheit', i: einheit.i, x: punkt.x, y: punkt.y - hoehe * (FIGUREN[this.arten[einheit.k]]?.oben ?? 1) - 5, breite: Math.max(16, Math.round(hoehe * 0.9)), anteil: (einheit.h ?? voll) / voll,
+        });
+      }
+    } else if (this.heilerGewaehlt.length && this.heilbar(einheit, this.heilerGewaehlt)) {
+      // Ist ein Moench gewaehlt, traegt jeder, den er heilen koennte, seinen
+      // Lebensbalken - sonst saehe man nicht, wem etwas fehlt (einheiten AC-65).
+      const voll = this.lebenVoll(einheit);
+      if (voll) {
+        this.lebensbalken.push({
+          art: 'einheit', i: einheit.i, x: punkt.x, y: punkt.y - hoehe * (FIGUREN[this.arten[einheit.k]]?.oben ?? 1) - 5, breite: Math.max(16, Math.round(hoehe * 0.9)), anteil: einheit.h / voll,
         });
       }
     }

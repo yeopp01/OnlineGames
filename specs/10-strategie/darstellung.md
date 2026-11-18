@@ -2,7 +2,7 @@
 
 **Bereich:** Strategie
 **Kuerzel:** darstellung
-**Stand:** 24/30 fertig · 1 in Arbeit · 1 in QA · 4 offen
+**Stand:** 25/31 fertig · 1 in Arbeit · 1 in QA · 4 offen
 
 ## Zweck
 
@@ -37,7 +37,8 @@ fremder Quelle.
   Startwert, weiche Kanten zu Wasser. Wasser ist als Wasser erkennbar.
 - **AC-3** `fertig` **Bäume, Sträucher, Felsen** — Ein Baum hat Stamm und Krone, ein
   Beerenstrauch rote Punkte, Gold glänzt gelb, Stein ist grau und kantig.
-  Leert sich ein Vorrat, wird er sichtbar kleiner. **Gemessen seit dem
+  Leert sich ein Vorrat, wird er sichtbar kleiner (ein Baum liegt
+  stattdessen, AC-31). **Gemessen seit dem
   Bildumbau am Farbton** statt am Farbwert (ein gerendertes Bild hat Licht
   und Schatten): Wald 86 % grün, Stein 100 % grau, Beere 74 % grün und
   11,6 % rot, Gold 79 % Ocker bis Gelb, davon 5,7 % helles Gold — und 20 %
@@ -335,6 +336,36 @@ nicht so kindlich gemalt". Die Bauabfolge R1 bis R6 steht im
   **Rückmeldung des Benutzers (2026-11-17):** „die Performance, wenn da ein
   paar mehr Einheiten aufm Spielfeld sind, oder wenn sie kämpfen, die muss
   unbedingt verbessert werden - erheblich".
+- **AC-31** `fertig` **Gefällter Baum liegt** — Mit dem ersten Stück Holz,
+  das ein Dorfbewohner nimmt, ist der Baum gefällt: statt Stamm und Krone
+  liegt auf dem Feld ein Stumpf mit heller Schnittfläche und daneben der
+  Stamm. Er wird mit dem Vorrat weniger, in den vier Vierteln, die der
+  Server kennt: eben gefällt der ganze Stamm mit Aststummeln und einem Rest
+  der Krone, dann der Stamm kürzer und Rollen daneben, zuletzt Stumpf,
+  Scheite und Späne. Das Feld bleibt Wald, bis es leer ist — es sperrt den
+  Weg wie vorher, und gesammelt wird daran wie vorher. Die Bilder kommen aus
+  einer eigenen gerenderten Tafel (`grafik/baumstumpf.py`, Tafel
+  `baumstumpf`): Zeilen sind die vier Baumarten in der Reihenfolge der
+  stehenden — eine gefällte Birke hat Birkenrinde —, Spalten die vier Stufen
+  mit je drei Gestalten. Fehlt die Tafel oder ist `?bilder=0` gesetzt, wird
+  der Liegende gezeichnet; weit herausgezoomt ist er ein brauner Fleck statt
+  eines grünen. **Der Server meldet dafür das erste Stück** als
+  Feldänderung mit dem vollen Viertel (`v: 4`); vorher meldete er einen
+  Vorrat erst, wenn ein Viertel fehlte, und ein Baum sah 25 Stück Holz lang
+  aus wie unberührt. Eine Nachricht je Stück gibt es weiter nicht. **Der
+  Aufbau bringt mit, was angebrochen ist** (`karte.fuellung`, jeder Vorrat
+  unter seinem vollen Wert mit seinem Viertel): wer zurückkehrt, sieht den
+  Baum liegen und den halben Goldhaufen halb — vorher stand nach einer
+  Rückkehr alles wieder voll da, bis das nächste Viertel fiel. **Getroffen
+  wird der Liegende flach** (ein halbes Feld hoch statt gut zwei): ein Klick
+  dorthin, wo die Krone war, trifft, was dahinter steht. Angesehen
+  ([Bedienung](bedienung.md) AC-63) heißt er „Gefällter Baum“. **Entschieden
+  ohne Rückfrage:** wie im Original fällt der Baum mit dem ersten Hieb, nicht
+  nach einer Zahl von Schlägen; und der Aufbau schickt die Füllung wie die
+  Karte selbst auch für Felder im Nebel. **Nicht gebaut:** ein Fallen als
+  Bewegung — der Baum liegt von einem Bild zum nächsten; die Schautafel
+  zeigt die Liegenden nicht. **Rückmeldung des Benutzers (2026-11-17):**
+  „angehakte Holzbäume gibts nicht,".
 
 **Was der Bildumbau ablöst.** AC-12 („gezeichnet statt flach") und die
 Messungen 1 und 3 aus AC-13 beschreiben eine Zeichnung. Sie bleiben `fertig`,

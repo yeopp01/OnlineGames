@@ -11,7 +11,7 @@
 // Tafel fehlt, wird weiter gezeichnet.
 
 const NAMEN = [
-  'dorfbewohner', 'baum', 'marktkarren', 'spaeherreiter', 'ritter', 'miliz', 'soldat', 'speerkaempfer', 'bogenschuetze', 'plaenkler',
+  'dorfbewohner', 'baum', 'baumstumpf', 'marktkarren', 'spaeherreiter', 'ritter', 'miliz', 'soldat', 'speerkaempfer', 'bogenschuetze', 'plaenkler',
   'armbrustschuetze', 'bogenschuetze2', 'langschwertkaempfer', 'pikenier', 'eliteplaenkler', 'leichtekavallerie',
   'moench', 'ramme', 'mangonel', 'schaf', 'beere', 'gold', 'stein', 'boden', 'geschoss',
   // Gebaeude (R4): jedes eine Tafel; die Baustelle je Grundflaeche eine.

@@ -43,6 +43,7 @@ function wen(schluessel) {
 function zuschlaege(w, grund) {
   const teile = [];
   if (w.lebenAnteil) teile.push(`+${prozent(w.lebenAnteil)} Leben`);
+  if (w.tempoAnteil) teile.push(`+${prozent(w.tempoAnteil)} Tempo`);
   for (const [feld, name] of FELDER) {
     if (!w[feld]) continue;
     if (feld === 'tempo' && grund?.tempo) teile.push(`+${prozent(w.tempo / grund.tempo)} ${name}`);

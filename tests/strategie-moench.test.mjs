@@ -143,6 +143,148 @@ test('einheiten AC-37: der Browser sieht, dass der Moench heilt - `w` im Zustand
   assert.equal(eintrag(welt.zustandJeSpieler(['a']).get('a')).w, undefined, 'geheilt - er arbeitet nicht mehr');
 });
 
+// --- einheiten AC-65: der Moench heilt auf Befehl ---------------------------
+
+const klick = (welt, wer, einheiten, ziel) => welt.nachricht(wer, { einheiten: einheiten.map((e) => e.id), ziel: { x: ziel.x, y: ziel.y } });
+
+test('einheiten AC-65: ein Rechtsklick auf einen Verletzten - der Moench heilt genau ihn, nicht den Naechsten', () => {
+  const { welt, x0, y0 } = ritterzeitMitPlatz();
+  const moench = welt.einheitAnlegen('a', x0 + 5, y0 + 5, 'moench');
+  const nah = verletzt(welt, 'a', x0 + 6, y0 + 5, 'dorfbewohner', 15);
+  const gemeint = verletzt(welt, 'a', x0 + 8, y0 + 5, 'miliz', 15);
+  const [n0, g0] = [nah.leben, gemeint.leben];
+  klick(welt, 'a', [moench], gemeint);
+  assert.equal(moench.auftrag?.art, 'heilen');
+  assert.equal(moench.auftrag.ziel, gemeint.id);
+  sekunden(welt, 8);
+  assert.equal(gemeint.leben, g0 + 8, 'acht Sekunden, acht Leben - er stand schon in Reichweite');
+  assert.equal(nah.leben, n0, 'der Naehere bekommt solange nichts');
+  assert.equal(moench.heilt, gemeint.id);
+  // Ist der Gemeinte voll, ist der Auftrag erledigt, und er heilt wieder von selbst.
+  sekunden(welt, 8);
+  assert.equal(gemeint.leben, voll(welt, gemeint));
+  assert.equal(moench.auftrag, null);
+  sekunden(welt, 3);
+  assert.ok(nah.leben > n0, 'danach ist der Naechste dran');
+});
+
+test('einheiten AC-65: steht der Verletzte weiter als vier Felder, geht der Moench hin und bleibt in Reichweite stehen', () => {
+  const { welt, x0, y0 } = ritterzeitMitPlatz();
+  const moench = welt.einheitAnlegen('a', x0 + 1, y0 + 5, 'moench');
+  const miliz = verletzt(welt, 'a', x0 + 9, y0 + 5, 'miliz', 20);
+  const vorher = miliz.leben;
+  klick(welt, 'a', [moench], miliz);
+  sekunden(welt, 3);
+  assert.equal(miliz.leben, vorher, 'unterwegs heilt er nicht');
+  assert.ok(moench.weg.length > 0, 'er geht hin');
+  sekunden(welt, 12);
+  const abstand = Math.hypot(miliz.x - moench.x, miliz.y - moench.y);
+  assert.ok(abstand <= EINHEITEN.moench.heilen.reichweite, `in Reichweite: ${abstand}`);
+  assert.ok(abstand > EINHEITEN.moench.heilen.reichweite - 1.5, `er geht nicht weiter als noetig: ${abstand}`);
+  assert.ok(miliz.leben > vorher, 'angekommen heilt er');
+});
+
+test('einheiten AC-65: laeuft der Verletzte weg, geht der Moench nach', () => {
+  const { welt, x0, y0 } = ritterzeitMitPlatz();
+  const moench = welt.einheitAnlegen('a', x0 + 1, y0 + 2, 'moench');
+  const bauer = verletzt(welt, 'a', x0 + 3, y0 + 2, 'dorfbewohner', 20);
+  klick(welt, 'a', [moench], bauer);
+  welt.nachricht('a', { einheiten: [bauer.id], ziel: { x: x0 + 10, y: y0 + 9 } });
+  sekunden(welt, 25);
+  assert.ok(Math.hypot(bauer.x - moench.x, bauer.y - moench.y) <= EINHEITEN.moench.heilen.reichweite + 0.5, 'er ist ihm gefolgt');
+  assert.ok(bauer.leben > voll(welt, bauer) - 20, 'und hat ihn geheilt');
+});
+
+test('einheiten AC-65: ein Verbuendeter laesst sich heilen, ein Gegner nicht - und von selbst heilt er Verbuendete weiter nicht', () => {
+  const welt = new Welt([...ZWEI, { id: 'c', name: 'Cem' }], 7, { sicht: 'aufgedeckt', teams: { a: 1, b: 1, c: 2 } });
+  const anna = welt.spielerVon('a');
+  const frei = (x, y) => welt.platzPruefen('haus', x, y) && welt.platzPruefen('haus', x + 3, y) && welt.platzPruefen('haus', x + 6, y);
+  let ort = null;
+  for (let r = 6; r < 30 && !ort; r++) {
+    for (const [dx, dy] of [[r, 0], [0, r], [-r, 0], [0, -r]]) {
+      if (frei(anna.basis.x + dx, anna.basis.y + dy)) { ort = { x: anna.basis.x + dx, y: anna.basis.y + dy }; break; }
+    }
+  }
+  assert.ok(ort, 'ein freier Platz');
+  const moench = welt.einheitAnlegen('a', ort.x, ort.y, 'moench');
+  const freund = verletzt(welt, 'b', ort.x + 2, ort.y, 'dorfbewohner', 10);
+  const gegner = verletzt(welt, 'c', ort.x + 6, ort.y, 'ramme', 50);
+  const f0 = freund.leben;
+  sekunden(welt, 3);
+  assert.equal(freund.leben, f0, 'von selbst heilt er nur eigene (AC-37)');
+  klick(welt, 'a', [moench], freund);
+  assert.equal(moench.auftrag?.art, 'heilen');
+  sekunden(welt, 4);
+  assert.equal(freund.leben, f0 + 4);
+  klick(welt, 'a', [moench], gegner);
+  assert.notEqual(moench.auftrag?.art, 'heilen', 'eine fremde Ramme: weder heilen noch bekehren, ein Gang');
+});
+
+test('einheiten AC-65: keine Belagerung, nicht sich selbst, niemand mit vollem Leben - der Klick ist ein Gang', () => {
+  const { welt, x0, y0 } = ritterzeitMitPlatz();
+  const moench = welt.einheitAnlegen('a', x0 + 5, y0 + 5, 'moench');
+  moench.leben -= 10;
+  const ramme = verletzt(welt, 'a', x0 + 8, y0 + 5, 'ramme', 50);
+  const gesund = welt.einheitAnlegen('a', x0 + 5, y0 + 9, 'miliz');
+  for (const ziel of [ramme, gesund, moench]) {
+    klick(welt, 'a', [moench], ziel);
+    assert.notEqual(moench.auftrag?.art, 'heilen', ziel.art);
+  }
+  // Zwei Moenche, einer davon verletzt und angeklickt: der andere heilt ihn, er selbst geht nur.
+  const zweiter = welt.einheitAnlegen('a', x0 + 2, y0 + 2, 'moench');
+  klick(welt, 'a', [moench, zweiter], moench);
+  assert.equal(zweiter.auftrag?.art, 'heilen');
+  assert.notEqual(moench.auftrag?.art, 'heilen');
+});
+
+test('einheiten AC-65: solange das Ziel kaempft, wartet der Moench bei ihm - danach heilt er', () => {
+  const { welt, x0, y0 } = ritterzeitMitPlatz();
+  const moench = welt.einheitAnlegen('a', x0 + 5, y0 + 5, 'moench');
+  const haus = welt.gebaeudeAnlegen('b', 'haus', x0 + 1, y0 + 1);
+  const miliz = verletzt(welt, 'a', x0 + 3, y0 + 3, 'miliz', 10);
+  welt.nachricht('a', { einheiten: [miliz.id], ziel: { x: haus.x, y: haus.y } });
+  assert.equal(miliz.auftrag?.art, 'angreifen');
+  const vorher = miliz.leben;
+  klick(welt, 'a', [moench], miliz);
+  assert.equal(moench.auftrag?.art, 'heilen');
+  sekunden(welt, 5);
+  assert.equal(miliz.leben, vorher, 'wer kaempft, wird nicht geheilt');
+  assert.equal(moench.heilt, null);
+  assert.equal(moench.auftrag?.art, 'heilen', 'der Auftrag bleibt');
+  // Die Miliz hoert auf: jetzt heilt er.
+  welt.nachricht('a', { einheiten: [miliz.id], ziel: { x: x0 + 4, y: y0 + 4 } });
+  sekunden(welt, 6);
+  assert.ok(miliz.leben > vorher);
+});
+
+test('einheiten AC-65: im Zustand arbeitet er erst in Reichweite (`w`), und ein neuer Befehl beendet es', () => {
+  const { welt, x0, y0 } = ritterzeitMitPlatz();
+  const moench = welt.einheitAnlegen('a', x0 + 1, y0 + 5, 'moench');
+  const miliz = verletzt(welt, 'a', x0 + 9, y0 + 5, 'miliz', 30);
+  const eintrag = () => welt.zustandJeSpieler(['a']).get('a').einheiten.find((e) => e.i === moench.id);
+  klick(welt, 'a', [moench], miliz);
+  sekunden(welt, 2);
+  assert.equal(eintrag().w, undefined, 'unterwegs arbeitet er nicht');
+  sekunden(welt, 10);
+  assert.equal(eintrag().w, 1);
+  assert.equal(typeof eintrag().zr, 'number', 'er schaut zu dem, den er heilt');
+  welt.nachricht('a', { einheiten: [moench.id], ziel: { x: x0 + 1, y: y0 + 9 } });
+  assert.equal(eintrag().w, undefined);
+  assert.equal(moench.heilt, null);
+});
+
+test('einheiten AC-65: faellt das Ziel, ist der Auftrag erledigt', () => {
+  const { welt, x0, y0 } = ritterzeitMitPlatz();
+  const moench = welt.einheitAnlegen('a', x0 + 5, y0 + 5, 'moench');
+  const miliz = verletzt(welt, 'a', x0 + 7, y0 + 5, 'miliz', 20);
+  klick(welt, 'a', [moench], miliz);
+  sekunden(welt, 2);
+  welt.einheitSterben(miliz);
+  sekunden(welt, 1);
+  assert.equal(moench.auftrag, null);
+  assert.equal(moench.heilt, null);
+});
+
 // --- einheiten AC-38: der Moench bekehrt -----------------------------------
 
 const BEKEHREN = EINHEITEN.moench.bekehren;

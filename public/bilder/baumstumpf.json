@@ -1,0 +1,24 @@
+{
+  "bild": "baumstumpf.webp",
+  "maske": null,
+  "zelle": [
+    155,
+    97
+  ],
+  "fuss": [
+    84,
+    51
+  ],
+  "feldbreite": 132,
+  "zeilen": 4,
+  "spalten": 12,
+  "art": "ding",
+  "arten": [
+    "eiche",
+    "birke",
+    "fichte",
+    "kiefer"
+  ],
+  "gestalten": 3,
+  "stufen": 4
+}

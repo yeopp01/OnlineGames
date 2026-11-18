@@ -256,6 +256,25 @@ test('darstellung AC-23: Baeume in vier Arten, Beeren, Gold und Stein in vier Fu
   }
 });
 
+test('darstellung AC-31: die Tafel der gefaellten Baeume hat die Arten der stehenden als Zeilen und je Stufe die Gestalten nebeneinander', () => {
+  const baum = von('baum');
+  const stumpf = von('baumstumpf');
+  assert.ok(stumpf, 'baumstumpf fehlt unter public/bilder/');
+  // Dieselben Arten in derselben Reihenfolge: eine gefaellte Fichte war eine Fichte.
+  assert.deepEqual(stumpf.arten, baum.arten);
+  assert.equal(stumpf.zeilen, stumpf.arten.length);
+  assert.equal(stumpf.stufen, 4, 'der Server kennt vier Viertel');
+  assert.ok(stumpf.gestalten >= 3, 'je Art mehrere Gestalten');
+  assert.equal(stumpf.spalten, stumpf.stufen * stumpf.gestalten);
+  assert.equal(stumpf.feldbreite, baum.feldbreite, 'derselbe Massstab wie der stehende Baum');
+  assert.equal(stumpf.maske, null, 'ein Baum traegt keine Spielerfarbe');
+  // Er liegt: seine Zelle ist nicht einmal halb so hoch wie die des stehenden.
+  assert.ok(stumpf.zelle[1] * 2 < baum.zelle[1], `${stumpf.zelle[1]} gegen ${baum.zelle[1]}`);
+  // Und er wird geladen.
+  const liste = readFileSync(new URL('../public/bilder.js', import.meta.url), 'utf8');
+  assert.match(liste, /'baumstumpf'/);
+});
+
 test('darstellung AC-23: der Boden liegt in fuenf Texturen vor, die sich in jedem Massstab ohne Rest wiederholen', () => {
   const boden = von('boden');
   assert.ok(boden, 'boden fehlt unter public/bilder/');

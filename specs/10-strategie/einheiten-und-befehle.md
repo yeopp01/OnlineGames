@@ -2,7 +2,7 @@
 
 **Bereich:** Strategie
 **Kuerzel:** einheiten
-**Stand:** 40/57 fertig · 16 offen · 1 zurueckgestellt
+**Stand:** 41/58 fertig · 16 offen · 1 zurueckgestellt
 
 ## Zweck
 
@@ -566,6 +566,20 @@ AC-19). Werte und Dauern sind Startwerte aus ADR-0014.
   sollte sich dann einfach möglichst nah da hin bewegen". Vorher nahm der
   Befehl das nächste *begehbare* Feld am Klick und fragte nicht, ob ein Weg
   dorthin führt.
+- **AC-65** `fertig` **Mönch heilt auf Befehl** — Ein Rechtsklick mit einem
+  Mönch auf eine verletzte Einheit, die keinem Gegner gehört — eine eigene
+  oder die eines Verbündeten —, heilt **genau diese**: er geht bis auf seine
+  Reichweite heran (vier Felder, AC-37), bleibt stehen und gibt ihr ein Leben
+  je Sekunde, bis sie voll ist; läuft sie weg, geht er nach. Danach heilt er
+  wieder von selbst, wer in seiner Nähe verletzt ist. Die Ausnahmen aus AC-37
+  bleiben: keine Belagerung, keine Gebäude, nicht sich selbst — und solange
+  das Ziel kämpft, wartet er bei ihm, statt zu heilen. Vor dem Klick steht
+  „Heilen" am Zeiger ([Bedienung](bedienung.md) AC-52), und solange ein Mönch
+  gewählt ist, trägt jeder, den er heilen könnte, seinen Lebensbalken — sonst
+  sähe man nicht, wem etwas fehlt. Ein Klick auf eine Einheit mit vollem
+  Leben bleibt ein Gang. **Aus dem Spiel (2026-11-17):**
+  „dem Mönch sollte man mit rechtsklick genau mitgeben können, wen er heilen
+  soll" — vorher heilte er nur von selbst, immer den Nächsten.
 
 ## Grenzfaelle
 

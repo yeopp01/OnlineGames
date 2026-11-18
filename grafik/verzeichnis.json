@@ -25,6 +25,7 @@
     { "name": "baustelle-3", "skript": "baustelle-3.py", "bilder": ["baustelle-3.webp", "baustelle-3-maske.webp"] },
     { "name": "baustelle-4", "skript": "baustelle-4.py", "bilder": ["baustelle-4.webp", "baustelle-4-maske.webp"] },
     { "name": "baum", "skript": "baum.py", "bilder": ["baum.webp"] },
+    { "name": "baumstumpf", "skript": "baumstumpf.py", "bilder": ["baumstumpf.webp"] },
     { "name": "dorfbewohner", "skript": "dorfbewohner.py", "bilder": ["dorfbewohner.webp", "dorfbewohner-maske.webp", "dorfbewohner-arbeiten.webp", "dorfbewohner-arbeiten-maske.webp", "dorfbewohner-sterben.webp", "dorfbewohner-sterben-maske.webp", "dorfbewohner-h.webp", "dorfbewohner-h-maske.webp", "dorfbewohner-n.webp", "dorfbewohner-n-maske.webp", "dorfbewohner-g.webp", "dorfbewohner-g-maske.webp", "dorfbewohner-s.webp", "dorfbewohner-s-maske.webp"] },
     { "name": "marktkarren", "skript": "marktkarren.py", "bilder": ["marktkarren.webp", "marktkarren-maske.webp", "marktkarren-sterben.webp", "marktkarren-sterben-maske.webp"] },
     { "name": "spaeherreiter", "skript": "spaeherreiter.py", "bilder": ["spaeherreiter.webp", "spaeherreiter-maske.webp", "spaeherreiter-angreifen.webp", "spaeherreiter-angreifen-maske.webp", "spaeherreiter-sterben.webp", "spaeherreiter-sterben-maske.webp"] },

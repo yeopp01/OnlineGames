@@ -5,7 +5,7 @@ const karten = require('./karte');
 const { suchen, nachbarfeld, erreichbar, NACHBARN: NACHBARFELDER } = require('./wege');
 const {
   EINHEITEN, SAMMELN, TIERE, GEBAEUDE, VERBESSERUNGEN, ZEITALTER, AUFSTIEGE, KLASSEN, HANDEL, HAEUSER,
-  BEVOELKERUNG_MAX, SCHLANGE_MAX, STARTAUFSTELLUNG,
+  BEVOELKERUNG_MAX, SCHLANGE_MAX, STARTAUFSTELLUNG, REPARATUR,
 } = require('./daten');
 const { bringt, staerkt, hausBringt } = require('./bringt');
 
@@ -290,6 +290,10 @@ class Welt {
     this.naechsteId = 1;
     this.einheiten = new Map();
     this.gebaeude = new Map();
+    // Reparieren (bauen AC-45): wer in diesem Takt an welchem Gebaeude
+    // steht, und was jeder Spieler an Bruchteilen eines Rohstoffs schuldet.
+    this.reparaturen = new Map();
+    this.reparaturschuld = new Map();
     // Wem ein Gebaeude gehoert hat, auch nachdem es gefallen ist (kampf AC-13).
     this.gebaeudeBesitzer = new Map();
     // Die Tore je Besitzer als Feldnummern (bauen AC-31), angelegt mit dem
@@ -704,6 +708,15 @@ class Welt {
     const wirkungen = this.wirkungen(besitzer);
     for (const s of wirkungsschluessel(art)) {
       for (const w of wirkungen) wert += w.wirkung?.[s]?.[feld] || 0;
+    }
+    // Ein Anteil am Tempo (bauen AC-46, die Pferdezucht) rechnet auf alles,
+    // was davor steht - auch auf den Zuschlag des Lehens fuer den Spaeher.
+    if (feld === 'tempo') {
+      let anteil = 0;
+      for (const s of wirkungsschluessel(art)) {
+        for (const w of wirkungen) anteil += w.wirkung?.[s]?.tempoAnteil || 0;
+      }
+      if (anteil) wert = Math.round(wert * (1 + anteil) * 1000) / 1000;
     }
     gemerkt.set(schluessel, wert);
     return wert;
@@ -1325,6 +1338,135 @@ class Welt {
     return beste;
   }
 
+  /**
+   * Ob diese Einheit dieses Gebaeude reparieren kann (bauen AC-45): sie baut
+   * ueberhaupt etwas, das Gebaeude ist fertig, gehoert keinem Gegner und hat
+   * Leben verloren. Eine Baustelle wird gebaut, nicht repariert - und eine
+   * Farm auch nicht: der Rechtsklick auf sie bestellt sie (einheiten AC-18).
+   */
+  kannReparieren(einheit, gebaeude) {
+    if (!gebaeude || !gebaeude.fertig || einheit.tot) return false;
+    if (GEBAEUDE[gebaeude.art].nahrung) return false;
+    if (!(EINHEITEN[einheit.art].baut || []).length) return false;
+    if (this.feindlich(einheit.besitzer, gebaeude.besitzer)) return false;
+    return gebaeude.leben < this.gebaeudewert(gebaeude.besitzer, gebaeude.art, 'leben');
+  }
+
+  /**
+   * Ob ein Rechtsklick dieser Einheit auf dieses Gebaeude eine Reparatur ist
+   * - in der Rangfolge von `befehl`: wer traegt, was das eigene Lager
+   * annimmt, laedt zuerst ab (einheiten AC-56).
+   */
+  repariertHier(einheit, gebaeude) {
+    if (!this.kannReparieren(einheit, gebaeude)) return false;
+    return !(gebaeude.besitzer === einheit.besitzer && einheit.ladung > 0
+      && (GEBAEUDE[gebaeude.art].annahme || []).includes(einheit.ladungsart));
+  }
+
+  reparierenBeginnen(einheit, gebaeude) {
+    this.farmVerlassen(einheit);
+    einheit.sammelt = false;
+    einheit.baut = false;
+    einheit.auftrag = { art: 'reparieren', gebaeude: gebaeude.id };
+    einheit.weg = this.wegZurBaustelle(einheit, gebaeude);
+  }
+
+  /**
+   * Ein Takt eines Reparierenden, der nicht mehr geht: steht er am Gebaeude,
+   * meldet er sich fuer diesen Takt an - gerechnet wird je Gebaeude, nach
+   * allen Einheiten (`reparaturenAbrechnen`), denn der zweite am selben
+   * Gebaeude schafft weniger als der erste.
+   */
+  reparierenTakten(einheit) {
+    const gebaeude = this.gebaeude.get(einheit.auftrag.gebaeude);
+    if (!this.kannReparieren(einheit, gebaeude)) {
+      // Fertig, gefallen oder inzwischen beim Gegner.
+      einheit.baut = false;
+      einheit.auftrag = null;
+      return;
+    }
+    if (this.abstandZu(einheit, gebaeude) <= 1.2) {
+      const leute = this.reparaturen.get(gebaeude.id);
+      if (leute) leute.push(einheit);
+      else this.reparaturen.set(gebaeude.id, [einheit]);
+      return;
+    }
+    // Nicht angekommen und kein Weg mehr: noch einmal suchen, sonst aufgeben.
+    einheit.baut = false;
+    einheit.weg = this.wegZurBaustelle(einheit, gebaeude);
+    if (!einheit.weg.length) einheit.auftrag = null;
+  }
+
+  /**
+   * Die Reparaturen dieses Takts (bauen AC-45): der erste an einem Gebaeude
+   * gibt `REPARATUR.lebenJeSekunde`, jeder weitere den Anteil `weitere`
+   * davon. Jeder zahlt, was er selbst repariert - auch am Gebaeude eines
+   * Verbuendeten. Wer nicht zahlen kann, steht und wartet (`baut` ist dann
+   * falsch, er arbeitet sichtbar nicht).
+   */
+  reparaturenAbrechnen() {
+    if (!this.reparaturen.size) return;
+    for (const [id, leute] of this.reparaturen) {
+      const gebaeude = this.gebaeude.get(id);
+      if (!gebaeude) continue;
+      const voll = this.gebaeudewert(gebaeude.besitzer, gebaeude.art, 'leben');
+      let rate = REPARATUR.lebenJeSekunde / TAKTE_PRO_SEKUNDE;
+      for (const einheit of leute) {
+        // Bruchteile eines Lebenspunkts sammeln sich am Gebaeude (`flick`):
+        // sein Leben bleibt eine ganze Zahl.
+        const offen = voll - gebaeude.leben - (gebaeude.flick || 0);
+        const punkte = Math.min(offen, rate);
+        rate = REPARATUR.lebenJeSekunde * REPARATUR.weitere / TAKTE_PRO_SEKUNDE;
+        if (punkte <= 0) {
+          einheit.baut = false;
+          continue;
+        }
+        if (this.reparaturBezahlen(einheit.besitzer, gebaeude.art, punkte / voll)) {
+          einheit.baut = false;
+          continue;
+        }
+        einheit.baut = true;
+        gebaeude.flick = (gebaeude.flick || 0) + punkte;
+      }
+      const ganz = Math.floor((gebaeude.flick || 0) + 1e-9);
+      if (ganz > 0) {
+        gebaeude.leben = Math.min(voll, gebaeude.leben + ganz);
+        gebaeude.flick -= ganz;
+        this.gebaeudeGeaendert(gebaeude);
+      }
+      if (gebaeude.leben >= voll) gebaeude.flick = 0;
+    }
+    this.reparaturen.clear();
+  }
+
+  /**
+   * Den Anteil `anteil` am vollen Leben eines Gebaeudes bezahlen: derselbe
+   * Anteil vom `kostenanteil` des Baupreises. Bruchteile eines Rohstoffs
+   * bleiben als Schuld stehen und werden faellig, sobald sie ein Ganzes
+   * sind. Zurueck kommt der Rohstoff, der fehlt - dann ist nichts bezahlt -,
+   * sonst null.
+   */
+  reparaturBezahlen(spielerId, art, anteil) {
+    const spieler = this.spielerVon(spielerId);
+    let schuld = this.reparaturschuld.get(spielerId);
+    if (!schuld) {
+      schuld = {};
+      this.reparaturschuld.set(spielerId, schuld);
+    }
+    const faellig = [];
+    for (const [rohstoff, menge] of Object.entries(GEBAEUDE[art].kosten)) {
+      const neu = (schuld[rohstoff] || 0) + menge * REPARATUR.kostenanteil * anteil;
+      const ganz = Math.floor(neu + 1e-9);
+      if (ganz > spieler[rohstoff]) return rohstoff;
+      faellig.push([rohstoff, neu, ganz]);
+    }
+    for (const [rohstoff, neu, ganz] of faellig) {
+      spieler[rohstoff] -= ganz;
+      schuld[rohstoff] = neu - ganz;
+    }
+    return null;
+  }
+
   gebaeudeGeaendert(gebaeude) {
     this.gebaeudeAenderungen.add(gebaeude.id);
   }
@@ -1854,6 +1996,9 @@ class Welt {
     // Ein eigenes Schaf in der Naehe des Klicks (einheiten AC-17) - aber nur,
     // wenn auf dem Feld selbst nichts zu sammeln ist: neben Beeren weiden Schafe.
     const schaf = sammeln || angriffslauf ? null : this.tierAn(spielerId, Number(ziel.x), Number(ziel.y));
+    // Ein Verletzter unter dem Klick, der keinem Gegner gehoert: wer heilen
+    // kann, heilt genau ihn (einheiten AC-65).
+    const verletzter = angriffslauf || feind ? null : this.verletzterAn(spielerId, Number(ziel.x), Number(ziel.y));
     // Ein Gang auf freien Boden laesst sich anhaengen (bedienung AC-14) -
     // alles andere ist ein Befehl wie ohne Umschalt.
     const nurGehen = !angriffslauf && !sammeln && !baustelle && !feind && !schaf;
@@ -1875,6 +2020,17 @@ class Welt {
       && gruppe.some((e) => this.tragkraft(e) > 0)) {
       const fehlt = this.aussaeen(this.spielerVon(spielerId), baustelle);
       if (fehlt) return { fehler: `Zu wenig ${ROHSTOFF_NAMEN[fehlt]}.` };
+    }
+
+    // Ein beschaedigtes Gebaeude (bauen AC-45): wer bauen kann, repariert.
+    // Fehlt schon der erste Rohstoff dafuer, geht niemand los, und die
+    // Absage sagt, was fehlt.
+    const flicken = !angriffslauf && !feind && baustelle
+      && gruppe.some((e) => this.repariertHier(e, baustelle)) ? baustelle : null;
+    if (flicken) {
+      const spieler = this.spielerVon(spielerId);
+      const fehlt = Object.keys(GEBAEUDE[flicken.art].kosten).find((rohstoff) => spieler[rohstoff] < 1);
+      if (fehlt) return { fehler: `Zu wenig ${ROHSTOFF_NAMEN[fehlt]} für die Reparatur.` };
     }
 
     for (const id of einheitIds.slice(0, 200)) {
@@ -1904,7 +2060,8 @@ class Welt {
         }
         continue;
       }
-      if (anhaengen && nurGehen && einheit.auftrag?.art === 'gehen' && !einheit.angriffslauf) {
+      if (anhaengen && nurGehen && einheit.auftrag?.art === 'gehen' && !einheit.angriffslauf
+        && !this.kannHeilen(einheit, verletzter)) {
         if (einheit.wegpunkte.length >= WEGPUNKTE_MAX) continue;
         aufstellung ??= this.aufstellungUm({ x: zx, y: zy }, gruppe.length);
         const von = einheit.wegpunkte.at(-1) || einheit.auftrag.feld;
@@ -1932,6 +2089,11 @@ class Welt {
         this.bekehrenBeginnen(einheit, feind);
         continue;
       }
+      // Ein Moench heilt, wen der Spieler ihm zeigt (einheiten AC-65).
+      if (this.kannHeilen(einheit, verletzter)) {
+        this.heilenBeginnen(einheit, verletzter);
+        continue;
+      }
       // Wer nur Gebaeude angreift (die Ramme, einheiten AC-35), geht zu einer
       // Einheit nur hin.
       if ((feindBau || (feind && !EINHEITEN[einheit.art].nurGebaeude))
@@ -1954,6 +2116,8 @@ class Welt {
         // wird abgeladen, danach geht es zurueck an die alte Arbeit
         // (einheiten AC-56).
         this.abgebenBeginnen(einheit, baustelle);
+      } else if (flicken && this.repariertHier(einheit, flicken)) {
+        this.reparierenBeginnen(einheit, flicken);
       } else if (schaf && this.tragkraft(einheit) > 0) {
         if (einheit.ladung > 0 && einheit.ladungsart !== 'nahrung') {
           einheit.ladung = 0;
@@ -3761,6 +3925,7 @@ class Welt {
     // Zweimal je Sekunde sehen sich stehende Kampfeinheiten um (kampf AC-2).
     if (this.takt % WACHE_TAKTE === 0) this.wacheTakten();
     for (const einheit of this.einheiten.values()) this.einheitTakten(einheit);
+    this.reparaturenAbrechnen();
     this.tuermeTakten();
     // Einmal je Sekunde heilen Moenche (einheiten AC-37).
     if (this.takt % TAKTE_PRO_SEKUNDE === 0) this.heilenTakten();
@@ -3887,15 +4052,14 @@ class Welt {
   heilenTakten() {
     for (const moench of this.einheiten.values()) {
       const heilen = EINHEITEN[moench.art].heilen;
-      if (!heilen) continue;
+      // Wer auf Befehl heilt, hat seinen eigenen Takt (einheiten AC-65).
+      if (!heilen || moench.auftrag?.art === 'heilen') continue;
       moench.heilt = null;
       if (moench.tot || moench.auftrag || moench.weg.length) continue;
       let bester = null;
       let abstand = Infinity;
       for (const e of this.einheiten.values()) {
-        if (e === moench || e.tot || e.besitzer !== moench.besitzer) continue;
-        if (e.auftrag?.art === 'angreifen' || EINHEITEN[e.art].klassen.includes('belagerung')) continue;
-        if (e.leben >= this.einheitenwert(e.besitzer, e.art, 'leben')) continue;
+        if (e.besitzer !== moench.besitzer || !this.kannHeilen(moench, e) || e.auftrag?.art === 'angreifen') continue;
         const d = Math.hypot(e.x - moench.x, e.y - moench.y);
         if (d <= heilen.reichweite && d < abstand) {
           bester = e;
@@ -3906,6 +4070,89 @@ class Welt {
       bester.leben = Math.min(this.einheitenwert(bester.besitzer, bester.art, 'leben'), bester.leben + heilen.je);
       moench.heilt = bester.id;
     }
+  }
+
+  /**
+   * Ob diese Einheit diese andere heilen kann (einheiten AC-37, AC-65): sie
+   * hat `heilen` in den Daten, die andere lebt, gehoert keinem Gegner, ist
+   * keine Belagerung, ist verletzt - und ist nicht sie selbst.
+   */
+  kannHeilen(einheit, ziel) {
+    if (!ziel || ziel === einheit || ziel.tot || !EINHEITEN[einheit.art].heilen) return false;
+    if (this.feindlich(einheit.besitzer, ziel.besitzer)) return false;
+    if (EINHEITEN[ziel.art].klassen.includes('belagerung')) return false;
+    return ziel.leben < this.einheitenwert(ziel.besitzer, ziel.art, 'leben');
+  }
+
+  /**
+   * Der naechste Verletzte hoechstens ein Feld vom Klick, der keinem Gegner
+   * gehoert und sich heilen laesst (einheiten AC-65) - gemessen wie `feindAn`.
+   * Einen Verbuendeten nur, wenn der Spieler ihn sieht (kampf AC-11).
+   */
+  verletzterAn(spielerId, x, y) {
+    let bestes = null;
+    let besterAbstand = 1.01;
+    const nebel = this.nebelGiltFuer(spielerId);
+    for (const einheit of this.einheiten.values()) {
+      if (einheit.tot || this.feindlich(spielerId, einheit.besitzer)) continue;
+      if (EINHEITEN[einheit.art].klassen.includes('belagerung')) continue;
+      if (einheit.leben >= this.einheitenwert(einheit.besitzer, einheit.art, 'leben')) continue;
+      if (nebel && einheit.besitzer !== spielerId && !this.sieht(spielerId, Math.round(einheit.x), Math.round(einheit.y))) continue;
+      const abstand = Math.hypot(einheit.x - x, einheit.y - y);
+      if (abstand < besterAbstand) {
+        besterAbstand = abstand;
+        bestes = einheit;
+      }
+    }
+    return bestes;
+  }
+
+  heilenBeginnen(einheit, ziel) {
+    einheit.auftrag = { art: 'heilen', ziel: ziel.id, fortschritt: 0 };
+    einheit.weg = [];
+    einheit.heilt = null;
+  }
+
+  /**
+   * Ein Takt des befohlenen Heilens (einheiten AC-65): ausser Reichweite
+   * hingehen (der Weg wird einmal je Sekunde neu gesucht, das Ziel laeuft),
+   * in Reichweite stehen und je Sekunde `je` Leben geben. Solange das Ziel
+   * kaempft, wartet er bei ihm - die Regel aus AC-37 gilt auch hier. Ist es
+   * voll, gefallen oder ein Gegner geworden, ist der Auftrag erledigt, und
+   * er heilt wieder von selbst, wer in seiner Naehe verletzt ist.
+   */
+  heilauftragTakten(moench) {
+    const auftrag = moench.auftrag;
+    const heilen = EINHEITEN[moench.art].heilen;
+    const ziel = this.einheiten.get(auftrag.ziel);
+    if (!this.kannHeilen(moench, ziel)) {
+      moench.auftrag = null;
+      moench.weg = [];
+      moench.heilt = null;
+      return;
+    }
+    if (Math.hypot(ziel.x - moench.x, ziel.y - moench.y) > heilen.reichweite) {
+      moench.heilt = null;
+      if (!moench.weg.length || this.takt % TAKTE_PRO_SEKUNDE === 0) {
+        moench.weg = this.wegNach(moench, this.feldVon(ziel));
+        // Kein Weg dorthin: er gibt auf, statt fuer immer zu warten.
+        if (!moench.weg.length) {
+          moench.auftrag = null;
+          return;
+        }
+      }
+      this.laufen(moench);
+      return;
+    }
+    moench.weg = [];
+    if (ziel.auftrag?.art === 'angreifen') {
+      moench.heilt = null;
+      return;
+    }
+    moench.heilt = ziel.id;
+    auftrag.fortschritt++;
+    if (auftrag.fortschritt % TAKTE_PRO_SEKUNDE) return;
+    ziel.leben = Math.min(this.einheitenwert(ziel.besitzer, ziel.art, 'leben'), ziel.leben + heilen.je);
   }
 
   /**
@@ -4037,7 +4284,7 @@ class Welt {
     const auftrag = einheit.auftrag;
     /** @type {(x: number, y: number) => boolean} */
     let passt = () => true;
-    if (auftrag?.art === 'bauen') {
+    if (auftrag?.art === 'bauen' || auftrag?.art === 'reparieren') {
       const baustelle = this.gebaeude.get(auftrag.gebaeude);
       passt = (x, y) => !baustelle || this.abstandZu({ x, y }, baustelle) <= 1.2;
     } else if (auftrag?.art === 'angreifen') {
@@ -4095,6 +4342,10 @@ class Welt {
       this.bekehrenTakten(einheit);
       return;
     }
+    if (einheit.auftrag?.art === 'heilen') {
+      this.heilauftragTakten(einheit);
+      return;
+    }
     // Faellt ein Markt der Strecke, bleibt der Karren stehen - sofort, nicht
     // erst am Ende des Weges (einheiten AC-40).
     if (einheit.auftrag?.art === 'handel' && !this.strecke(einheit)) {
@@ -4137,6 +4388,10 @@ class Welt {
         einheit.weg = this.wegZurBaustelle(einheit, baustelle);
         if (!einheit.weg.length) this.bauenWeiter(einheit);
       }
+      return;
+    }
+    if (einheit.auftrag.art === 'reparieren') {
+      this.reparierenTakten(einheit);
       return;
     }
     if (einheit.auftrag.art === 'tier') {
@@ -4298,6 +4553,20 @@ class Welt {
     return bestes;
   }
 
+  /**
+   * Jeder Vorrat, von dem schon genommen wurde, als [Feld, Viertel] - dieselbe
+   * Zahl, die eine Feldaenderung als `v` traegt (darstellung AC-31).
+   * @returns {number[][]}
+   */
+  angebrochen() {
+    const raus = [];
+    for (const [index, rest] of this.karte.vorrat) {
+      const voll = karten.VORRAT[this.karte.felder[index]];
+      if (voll && rest > 0 && rest < voll) raus.push([index, Math.ceil((rest / voll) * 4)]);
+    }
+    return raus;
+  }
+
   // Ein Takt Arbeit am Vorrat: die Rate der Vorlage, in ganzen Einheiten vom
   // Vorrat genommen (einheiten AC-15). Voll geht es zur Abgabe.
   sammelnSchritt(einheit) {
@@ -4322,11 +4591,12 @@ class Welt {
 
     // Das Bild zeigt, wie voll ein Vorrat noch ist - in Vierteln, und nur wenn
     // ein Viertel verloren geht, damit keine Nachricht je Einheit entsteht
-    // (darstellung AC-3).
+    // (darstellung AC-3). Dazu das erste Stueck: von da an ist der Vorrat
+    // angebrochen, und ein Baum liegt gefaellt da (darstellung AC-31).
     const voll = karten.VORRAT[art];
     const viertelVorher = Math.ceil((rest / voll) * 4);
     const viertelNachher = Math.ceil(((rest - 1) / voll) * 4);
-    if (rest - 1 > 0 && viertelNachher !== viertelVorher) {
+    if (rest - 1 > 0 && (viertelNachher !== viertelVorher || rest === voll)) {
       this.feldAenderungen.push({ i: index, a: art, v: viertelNachher });
     }
     if (rest - 1 <= 0) {
@@ -4432,7 +4702,7 @@ class Welt {
     if (einheit.tot) return einheit.fallrichtung === null || einheit.fallrichtung === undefined ? {} : { zr: einheit.fallrichtung };
     const auftrag = einheit.auftrag;
     const kaempft = auftrag?.art === 'angreifen' && !einheit.weg.length;
-    if (!kaempft && !(auftrag?.art === 'bekehren' && einheit.bekehrt)) return {};
+    if (!kaempft && !(auftrag?.art === 'bekehren' && einheit.bekehrt) && !(auftrag?.art === 'heilen' && einheit.heilt)) return {};
     const ziel = auftrag.gebaeude ? this.gebaeude.get(auftrag.ziel) : this.einheiten.get(auftrag.ziel);
     if (!ziel) return {};
     let { x, y } = ziel;
@@ -4470,6 +4740,9 @@ class Welt {
         // Ein Moench, der gerade bekehrt (bedienung AC-74): `w` sagt nur,
         // dass er arbeitet - heilen und bekehren klingen verschieden.
         ...(e.bekehrt ? { bk: 1 } : {}),
+        // Wer repariert (bauen AC-45): er haemmert, obwohl dort keine
+        // Baustelle steht.
+        ...(e.baut && e.auftrag?.art === 'reparieren' ? { rp: 1 } : {}),
         // Wer kaempft, nennt den Takt seines letzten Schlags (bedienung
         // AC-72): eine Schlagbewegung je Schlag, nicht eine je Bild. Die Zahl
         // aendert sich nur mit dem Schlag - der Zustand bleibt klein.
@@ -4846,6 +5119,10 @@ class Welt {
       karte: {
         groesse: this.karte.groesse,
         felder: Buffer.from(this.karte.felder).toString('base64'),
+        // Was schon angebrochen ist, mit seinem Viertel (darstellung AC-31):
+        // wer zurueckkehrt, saehe sonst jeden gefaellten Baum wieder stehen
+        // und jeden halben Goldhaufen wieder voll.
+        fuellung: this.angebrochen(),
       },
       spieler: this.spieler.map((s) => ({
         id: s.id,

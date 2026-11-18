@@ -364,6 +364,42 @@ const ZEICHEN = {
     s.fillRect(0.18 * g, 0.3 * g, 0.6 * g, 0.07 * g);
     radMalen(s, g, 0.26, 0.76, 0.15);
   },
+  // Pferdezucht (bauen AC-46): ein Hufeisen, die Oeffnung nach unten, mit
+  // sechs Nagelloechern - und drei Striche Fahrtwind in der Farbe des Spielers.
+  hufeisen(s, g, farbe) {
+    const mx = 0.56 * g;
+    const my = 0.46 * g;
+    const r = 0.26 * g;
+    const von = Math.PI * 0.68;
+    const bis = Math.PI * 2.32;
+    s.lineCap = 'butt';
+    s.strokeStyle = '#4c545c';
+    s.lineWidth = g * 0.2;
+    s.beginPath();
+    s.arc(mx, my, r, von, bis);
+    s.stroke();
+    s.strokeStyle = '#b9c2cb';
+    s.lineWidth = g * 0.14;
+    s.beginPath();
+    s.arc(mx, my, r, von + 0.03, bis - 0.03);
+    s.stroke();
+    s.fillStyle = '#3a4046';
+    for (let i = 0; i < 6; i++) {
+      const w = von + 0.3 + (i * (bis - von - 0.6)) / 5;
+      s.beginPath();
+      s.arc(mx + Math.cos(w) * r, my + Math.sin(w) * r, g * 0.026, 0, Math.PI * 2);
+      s.fill();
+    }
+    s.strokeStyle = farbe;
+    s.lineWidth = g * 0.05;
+    s.lineCap = 'round';
+    for (const [y, lang] of [[0.3, 0.16], [0.48, 0.2], [0.66, 0.14]]) {
+      s.beginPath();
+      s.moveTo(0.04 * g, y * g);
+      s.lineTo((0.04 + lang) * g, y * g);
+      s.stroke();
+    }
+  },
   // Handkarren: ein Kasten auf zwei grossen Raedern, hoch beladen.
   handkarren(s, g, farbe) {
     s.fillStyle = '#d8b25a';
@@ -1158,7 +1194,9 @@ export class Auswahlleiste {
         zeilen.push(`${einheitName(nach)}: ${kurz(nach)}`);
         zeilen.push(`bisher: ${kurz(von)}`);
       }
-      return { name: verbesserung.name, kosten: verbesserung.kosten || {}, dauer: `Forschung ${verbesserung.zeit} s`, zeilen };
+      // Wer eine Einheit austauscht, ist eine Weiterentwicklung (bedienung AC-80).
+      const name = verbesserung.wandelt ? `Weiterentwicklung: ${verbesserung.name}` : verbesserung.name;
+      return { name, kosten: verbesserung.kosten || {}, dauer: `Forschung ${verbesserung.zeit} s`, zeilen };
     }
 
     const w = werte.einheiten[art] || {};
@@ -1264,7 +1302,7 @@ export class Auswahlleiste {
       // Ein Vorrat oder ein Schaf (bedienung AC-63): was es ist, wie viel
       // noch da ist.
       const schluessel = fremd.vorrat
-        ? `v${fremd.vorrat.i}:${fremd.vorrat.art}:${fremd.vorrat.rest}:${fremd.vorrat.inSicht}`
+        ? `v${fremd.vorrat.i}:${fremd.vorrat.art}:${fremd.vorrat.rest}:${fremd.vorrat.inSicht}:${fremd.vorrat.liegt}`
         : `t${fremd.tier.i}:${fremd.tier.n}:${fremd.tier.g}:${fremd.tier.b}`;
       if (schluessel !== this.gezeigt) {
         this.vorratBauen(fremd);
@@ -1303,7 +1341,10 @@ export class Auswahlleiste {
     const werte = vorrat
       ? a.werte.vorrat?.[vorrat.art] || {}
       : { voll: a.werte.tiere?.[tier.art]?.nahrung ?? 100, rohstoff: 'nahrung' };
-    const name = vorrat ? VORRATSNAMEN[vorrat.art] || 'Vorrat' : tier.g ? 'Erlegtes Schaf' : 'Schaf';
+    // Ein Baum, von dem schon Holz genommen ist, liegt da (darstellung AC-31).
+    const name = vorrat
+      ? vorrat.liegt ? 'Gefällter Baum' : VORRATSNAMEN[vorrat.art] || 'Vorrat'
+      : tier.g ? 'Erlegtes Schaf' : 'Schaf';
     const ware = ROHSTOFF_NAMEN[werte.rohstoff] || 'Vorrat';
     const rest = vorrat ? vorrat.rest : tier.n;
     const k = element('div', 'auswahl-kopf');
@@ -1404,7 +1445,7 @@ export class Auswahlleiste {
   angebot(gebaeude) {
     const werte = this.ansicht.werte;
     const aufstiege = werte.aufstiege || {};
-    return (werte.gebaeude[gebaeude.art]?.bildetAus || [])
+    const liste = (werte.gebaeude[gebaeude.art]?.bildetAus || [])
       // Eine erforschte Verbesserung verschwindet aus dem Angebot (bauen AC-21).
       .filter((art) => !this.ansicht.verbesserungen.includes(art))
       // Von den Zeitaltern steht nur das naechste zur Wahl (bauen AC-23) -
@@ -1446,6 +1487,27 @@ export class Auswahlleiste {
         // „Aufstieg zum Lehen" - die Form steht in den Daten (bedienung AC-45).
         titel: aufstiege[art]?.titel,
       }));
+    // Eine Weiterentwicklung gehoert zu ihrer Einheit (bedienung AC-80): wer
+    // eine Einheit austauscht, die im Angebot steht, traegt `stufeVon` und
+    // `stufeNach` - sein Knopf steht dann unter dem der Einheit.
+    for (const eintrag of liste) {
+      if (!eintrag.verbesserung) continue;
+      const wandelt = werte.verbesserungen[eintrag.art].wandelt || {};
+      const von = Object.keys(wandelt).find((k) => liste.some((e) => e.art === k && !e.verbesserung && !e.aufstieg));
+      if (!von) continue;
+      eintrag.stufeVon = von;
+      eintrag.stufeNach = wandelt[von];
+    }
+    return liste;
+  }
+
+  // Hat dieses Gebaeude ueberhaupt Weiterentwicklungen - auch erforschte und
+  // solche, die erst spaeter kommen? Dann haelt seine Leiste den Platz unter
+  // den Einheiten frei, und kein Knopf wandert, wenn eine erforscht ist
+  // (bedienung AC-54, AC-80).
+  hatStufen(gebaeude) {
+    const werte = this.ansicht.werte;
+    return (werte.gebaeude[gebaeude.art]?.bildetAus || []).some((art) => werte.verbesserungen?.[art]?.wandelt);
   }
 
   // Was die Auswahl bauen kann: jedes Gebaeude, das mindestens einer baut -
@@ -1816,7 +1878,7 @@ export class Auswahlleiste {
       zeile.append(e);
     }
     if (heilen) {
-      const e = wert('Heilt', `${heilen.je} Leben/s`, `Eigene Verletzte bis ${heilen.reichweite} Felder, einen nach dem anderen – nicht wer kämpft, keine Belagerung, keine Gebäude`);
+      const e = wert('Heilt', `${heilen.je} Leben/s`, `Eigene Verletzte bis ${heilen.reichweite} Felder, einen nach dem anderen – nicht wer kämpft, keine Belagerung, keine Gebäude. Ein Rechtsklick auf einen Verletzten heilt genau ihn.`);
       e.classList.add('heilt');
       zeile.dataset.heilen = String(heilen.je);
       zeile.append(e);
@@ -1886,7 +1948,8 @@ export class Auswahlleiste {
     // Was nichts ausbildet, zeigt weder Knoepfe noch eine leere Schlange.
     if (!angebot.length && !gebaeude.s.length) return;
     const knoepfe = element('div', 'ausbilden');
-    for (const eintrag of angebot) {
+    const nameVon = (art) => FIGUREN[art]?.name || art;
+    const knopfFuer = (eintrag) => {
       const knopf = document.createElement('button');
       knopf.type = 'button';
       knopf.dataset.ausbilden = eintrag.art;
@@ -1905,6 +1968,14 @@ export class Auswahlleiste {
         knopf.setAttribute('aria-label', fehlt
           ? `${eintrag.titel} - zu wenig ${fehlt}`
           : `${eintrag.titel} (${kosten})`);
+      } else if (eintrag.stufeVon) {
+        // Eine Weiterentwicklung sagt, wer zu wem wird (bedienung AC-80).
+        const wird = `Weiterentwicklung: ${nameVon(eintrag.stufeVon)} wird ${nameVon(eintrag.stufeNach)}`;
+        knopf.classList.add('stufe');
+        knopf.dataset.stufeVon = eintrag.stufeVon;
+        knopf.setAttribute('aria-label', laeuft
+          ? `${wird} - wird schon erforscht`
+          : fehlt ? `${wird} - zu wenig ${fehlt}` : `${wird} (${kosten})`);
       } else {
         // Eine Verbesserung wird erforscht, keine Einheit ausgebildet.
         const tun = eintrag.verbesserung ? 'erforschen' : 'ausbilden';
@@ -1913,8 +1984,17 @@ export class Auswahlleiste {
           : fehlt ? `${eintrag.name} - zu wenig ${fehlt}` : `${eintrag.name} ${tun} (${kosten})`);
       }
       const preis = element('span', 'preis');
-      for (const [r, m] of Object.entries(eintrag.kosten)) preis.append(element('span', `ware ware-${r[0]}`), element('span', null, String(m)));
+      for (const [r, m] of Object.entries(eintrag.kosten)) {
+        const teile = [element('span', `ware ware-${r[0]}`), element('span', null, String(m))];
+        // Am flachen Knopf der Weiterentwicklung stehen die Posten untereinander.
+        if (eintrag.stufeVon) {
+          const posten = element('span', 'posten');
+          posten.append(...teile);
+          preis.append(posten);
+        } else preis.append(...teile);
+      }
       if (eintrag.aufstieg) knopf.append(aufstiegBildchen(58, farbe));
+      else if (eintrag.stufeVon) knopf.append(element('span', 'stufenpfeil'), bildchen(eintrag.stufeNach, 30, farbe));
       else if (eintrag.verbesserung) knopf.append(this.verbesserungBildchen(eintrag.art, 58, farbe));
       else knopf.append(bildchen(eintrag.art, 58, farbe));
       knopf.append(preis);
@@ -1927,7 +2007,25 @@ export class Auswahlleiste {
           for (let i = 0; i < zahl; i++) this.senden({ auftrag: 'ausbilden', gebaeude: gebaeude.i, einheit: eintrag.art });
         }
       });
-      knoepfe.append(knopf);
+      return knopf;
+    };
+    // Mit Weiterentwicklungen steht die Leiste in Spalten (bedienung AC-80):
+    // oben die Einheit, darunter - kleiner, mit einem Pfeil hinauf - was aus
+    // ihr wird. Der Platz darunter bleibt auch leer stehen: sonst rutschten
+    // die Einheiten, sobald die letzte Stufe erforscht ist.
+    const mitStufen = this.hatStufen(gebaeude);
+    if (mitStufen) knoepfe.classList.add('mit-stufen');
+    for (const eintrag of angebot) {
+      if (eintrag.stufeVon) continue;
+      const knopf = knopfFuer(eintrag);
+      if (!mitStufen) {
+        knoepfe.append(knopf);
+        continue;
+      }
+      const spalte = element('div', 'spalte');
+      const stufe = angebot.find((e) => e.stufeVon === eintrag.art);
+      spalte.append(knopf, stufe ? knopfFuer(stufe) : element('div', 'stufenplatz'));
+      knoepfe.append(spalte);
     }
     w.append(knoepfe);
 

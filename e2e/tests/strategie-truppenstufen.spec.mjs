@@ -11,6 +11,7 @@ import {
 } from '../helpers/strategie.mjs';
 
 const BAUEN = '10-strategie/bauen.md';
+const BEDIENUNG = '10-strategie/bedienung.md';
 const EINHEITEN = '10-strategie/einheiten-und-befehle.md';
 
 // Von links nach rechts im Bild, mit dem, was die Leiste zeigen muss - die
@@ -159,19 +160,19 @@ test.describe('Truppenstufen', () => {
     // Im Fuerstentum: die Stufen stehen im Menue, die dritte der Miliz erst
     // nach der zweiten - und der Armbrustschuetze als eigene Einheit (AC-34).
     await gebaeudeWaehlen(anna, kaserne);
-    await expect(knopf('pikenierstufe')).toHaveAttribute('aria-label', 'Pikenier erforschen (160 Nahrung, 90 Gold)');
+    await expect(knopf('pikenierstufe')).toHaveAttribute('aria-label', 'Weiterentwicklung: Speerkämpfer wird Pikenier (160 Nahrung, 90 Gold)');
     await expect(knopf('langschwertstufe'), 'erst nach der Soldatenstufe').toHaveCount(0);
     await forschen(['soldatenstufe', 'pikenierstufe']);
     await gebaeudeWaehlen(anna, kaserne);
-    await expect(knopf('langschwertstufe')).toHaveAttribute('aria-label', 'Langschwertkämpfer erforschen (150 Nahrung, 65 Gold)');
+    await expect(knopf('langschwertstufe')).toHaveAttribute('aria-label', 'Weiterentwicklung: Soldat wird Langschwertkämpfer (150 Nahrung, 65 Gold)');
     await forschen(['langschwertstufe']);
     await gebaeudeWaehlen(anna, schiessanlage);
-    await expect(knopf('bogenstufe')).toHaveAttribute('aria-label', 'Bogenschütze erforschen (125 Nahrung, 75 Gold)');
-    await expect(knopf('eliteplaenklerstufe')).toHaveAttribute('aria-label', 'Eliteplänkler erforschen (230 Holz, 130 Gold)');
+    await expect(knopf('bogenstufe')).toHaveAttribute('aria-label', 'Weiterentwicklung: Kurzbogenschütze wird Bogenschütze (125 Nahrung, 75 Gold)');
+    await expect(knopf('eliteplaenklerstufe')).toHaveAttribute('aria-label', 'Weiterentwicklung: Plänkler wird Eliteplänkler (230 Holz, 130 Gold)');
     await expect(knopf('armbrustschuetze')).toHaveAttribute('aria-label', 'Armbrustschütze ausbilden (35 Holz, 55 Gold)');
     await forschen(['bogenstufe', 'eliteplaenklerstufe']);
     await gebaeudeWaehlen(anna, stall);
-    await expect(knopf('kavalleriestufe')).toHaveAttribute('aria-label', 'Leichte Kavallerie erforschen (150 Nahrung, 50 Gold)');
+    await expect(knopf('kavalleriestufe')).toHaveAttribute('aria-label', 'Weiterentwicklung: Späherreiter wird Leichte Kavallerie (150 Nahrung, 50 Gold)');
     await forschen(['kavalleriestufe']);
 
     // Danach bilden die Gebaeude die neue Stufe aus, zum Preis der alten -
@@ -341,5 +342,103 @@ test.describe('Truppenstufen', () => {
 
     await forschen(Object.keys(ZWEITE));
     for (const art of TRAEGER) expect(await ruestung(art), art).toEqual([vorher[art][0] + 2, vorher[art][1] + 2]);
+  });
+});
+
+// Rueckmeldung aus dem Spiel (2026-11-17): "die Weiterentwicklung z.B. vom
+// Eliteplaenkler sollte klar als weiterentwicklung ersichtlich sein - und
+// eher unterhalb vom Plaenkler, sodass das etwas zugeordnet ist".
+test.describe('Weiterentwicklungen in der Leiste', () => {
+  let partie;
+  test.beforeAll(async ({ browser }, info) => {
+    partie = await partieZuZweit(browser, info, { sicht: 'aufgedeckt' });
+  });
+  test.afterAll(() => partieBeenden(partie));
+
+  test('bedienung AC-80: der Eliteplaenkler steht unter dem Plaenkler, mit einem Pfeil hinauf - und ist er erforscht, bleibt jeder Knopf, wo er war', async ({}, info) => {
+    test.setTimeout(120_000);
+    const { anna, code } = partie;
+    await rohstoffe(anna, code, 'Anna', { holz: 5000, nahrung: 5000, gold: 5000, stein: 2000, zeitalter: 2 });
+    await anna.waitForFunction(() => window.ansicht.zeitalter === 2);
+    const basis = await anna.evaluate(() => window.ansicht.spieler.get(window.ansicht.ich).basis);
+    const schiessanlage = await gebaeudeInDerNaehe(anna, code, 'Anna', 'schiessanlage', basis, { von: 7, bis: 16 });
+    const schmiede = await gebaeudeInDerNaehe(anna, code, 'Anna', 'schmiede', basis, { von: 7, bis: 18 });
+    const waehle = async (id) => {
+      await anna.waitForFunction((g) => window.ansicht.gebaeude.has(g), id);
+      await anna.evaluate((g) => {
+        const a = window.ansicht;
+        a.kamera.zoom = 1.8;
+        a.gewaehltesGebaeude = g;
+        a.ausgewaehlt.clear();
+        const m = a.gebaeudeMitte(a.gebaeude.get(g));
+        a.blickAuf(m.x, m.y);
+        a.beiAuswahl();
+      }, id);
+    };
+    const knopf = (art) => anna.locator(`[data-ausbilden="${art}"]`);
+    const lage = async (art) => {
+      const r = await knopf(art).boundingBox();
+      return { links: Math.round(r.x), oben: Math.round(r.y), rechts: Math.round(r.x + r.width), unten: Math.round(r.y + r.height) };
+    };
+
+    // Die Schmiede hat keine Weiterentwicklung: ihre Forschungen stehen in
+    // der Reihe wie bisher (bedienung AC-65).
+    await waehle(schmiede);
+    await expect(knopf('schmiedeangriff')).toHaveCount(1);
+    await expect(anna.locator('#auswahlleiste .stufe')).toHaveCount(0);
+    await expect(anna.locator('#auswahlleiste .spalte')).toHaveCount(0);
+
+    // Die Schiessanlage im Fuerstentum: drei Einheiten in einer Reihe, unter
+    // Kurzbogenschuetze und Plaenkler je ihre Weiterentwicklung, unter dem
+    // Armbrustschuetzen nichts.
+    await waehle(schiessanlage);
+    await expect(knopf('eliteplaenklerstufe')).toHaveAttribute('aria-label', 'Weiterentwicklung: Plänkler wird Eliteplänkler (230 Holz, 130 Gold)');
+    await expect(knopf('eliteplaenklerstufe')).toHaveClass(/stufe/);
+    const paare = [['bogenschuetze', 'bogenstufe'], ['plaenkler', 'eliteplaenklerstufe']];
+    for (const [einheit, stufe] of paare) {
+      const oben = await lage(einheit);
+      const unten = await lage(stufe);
+      expect(unten.oben, `${stufe} steht unter ${einheit}`).toBeGreaterThanOrEqual(oben.unten);
+      expect(unten.oben - oben.unten, 'und dicht darunter').toBeLessThan(16);
+      expect([unten.links, unten.rechts], 'in derselben Spalte').toEqual([oben.links, oben.rechts]);
+      expect(unten.unten - unten.oben, 'flacher als die Einheit').toBeLessThan((oben.unten - oben.oben) * 0.6);
+      // Der Pfeil sitzt zwischen beiden und zeigt hinauf.
+      const pfeil = await knopf(stufe).locator('.stufenpfeil').boundingBox();
+      expect(pfeil.y, 'der Pfeil beginnt ueber dem Knopf').toBeLessThan(unten.oben);
+      expect(pfeil.y, 'und unter der Einheit').toBeGreaterThanOrEqual(oben.unten - 1);
+    }
+    const reihe = await Promise.all(['bogenschuetze', 'plaenkler', 'armbrustschuetze'].map(lage));
+    expect(new Set(reihe.map((r) => r.oben)).size, 'die Einheiten stehen in einer Reihe').toBe(1);
+    await expect(knopf('armbrustschuetze').locator('xpath=..').locator('.stufe'), 'der Armbrustschuetze hat keine').toHaveCount(0);
+    for (const art of ['bogenstufe', 'eliteplaenklerstufe']) await expect(knopf(art)).toBeInViewport({ ratio: 1 });
+
+    // Die Tafel ueber dem Knopf nennt es beim Namen (bedienung AC-55).
+    await knopf('eliteplaenklerstufe').hover();
+    const tafel = anna.locator('#knopftafel');
+    await expect(tafel).toBeVisible();
+    await expect(tafel).toContainText('Weiterentwicklung: Eliteplänkler');
+    await expect(tafel).toContainText('Plänkler wird Eliteplänkler');
+    expect(await bedienteileFrei(anna)).toEqual([]);
+    await anna.waitForTimeout(300);
+    await nachweis(anna, {
+      spec: BEDIENUNG,
+      ac: 'AC-80',
+      titel: 'Die Schießanlage im Fürstentum: unter Kurzbogenschütze und Plänkler steht je ihre Weiterentwicklung mit goldenem Pfeil hinauf, unter dem Armbrustschützen nichts – die Tafel nennt „Weiterentwicklung: Eliteplänkler“',
+      test: info,
+    });
+
+    // Erforscht: der Plaenkler ist der Eliteplaenkler, und kein Knopf hat
+    // sich bewegt - der Platz darunter bleibt leer stehen (bedienung AC-54).
+    const vorher = { plaenkler: await lage('plaenkler'), armbrust: await lage('armbrustschuetze'), bogenstufe: await lage('bogenstufe') };
+    await knopf('eliteplaenklerstufe').click();
+    await zeitraffer(anna, code, 20);
+    await anna.waitForFunction(() => window.ansicht.verbesserungen.includes('eliteplaenklerstufe'), null, { timeout: 60_000 });
+    await zeitraffer(anna, code, 1);
+    await waehle(schiessanlage);
+    await expect(knopf('eliteplaenklerstufe')).toHaveCount(0);
+    await expect(knopf('eliteplaenkler')).toHaveCount(1);
+    expect(await lage('eliteplaenkler'), 'der Eliteplaenkler steht, wo der Plaenkler stand').toEqual(vorher.plaenkler);
+    expect(await lage('armbrustschuetze')).toEqual(vorher.armbrust);
+    expect(await lage('bogenstufe')).toEqual(vorher.bogenstufe);
   });
 });

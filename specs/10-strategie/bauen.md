@@ -2,7 +2,7 @@
 
 **Bereich:** Strategie
 **Kuerzel:** bauen
-**Stand:** 43/44 fertig · 1 offen
+**Stand:** 45/46 fertig · 1 offen
 
 ## Zweck
 
@@ -406,6 +406,46 @@ Spezialeinheit der Burg (kommt mit den Häusern, Stufe E), Palisade.
   Auswahl zeigt, wie viel ein Dorfbewohner tragen kann („trägt 7 Holz von
   13"). Gemessen mit einem Holzfäller über fünf Minuten: 70 Holz ohne, 78 mit
   Schubkarre, 90 mit Handkarren.
+- **AC-45** `fertig` **Dorfbewohner reparieren Gebäude** — Ein Rechtsklick
+  mit einem Dorfbewohner auf ein **fertiges, beschädigtes Gebäude, das keinem
+  Gegner gehört**, repariert es: er geht hin, hämmert, und das Gebäude bekommt
+  **12,5 Leben je Sekunde** zurück; jeder weitere am selben Gebäude schafft
+  die Hälfte davon. Bezahlt wird Punkt für Punkt, das ganze Leben eines
+  Gebäudes kostet den **halben Baupreis** — es zahlt, wer repariert, auch am
+  Gebäude eines Verbündeten. Fehlt der Rohstoff, geht niemand los, und die
+  Absage sagt, was fehlt; geht er unterwegs aus, ruht die Arbeit, bis wieder
+  etwas da ist. Ist das Gebäude ganz oder gefallen, endet der Auftrag. Am
+  Zeiger steht vorher „Reparieren" (Bedienung AC-52). Was ganz ist, bleibt
+  ein Gang, eine Baustelle wird gebaut (AC-2), eine Farm bestellt
+  (Einheiten AC-18), und wer trägt, was das Lager annimmt, lädt zuerst ab
+  (Einheiten AC-56). Halber Preis und 750 Leben je Minute sind die Regel des
+  Originals aus dem Gedächtnis, nicht aus `vorlage-aoe2.md`; der Anteil der
+  weiteren ist gesetzt — alles Startwerte in `REPARATUR`. Die KI repariert
+  nicht. **Rückmeldung des Benutzers:** „Dorfbewohner reparieren gebäude -
+  geht noch nicht oder?"
+- **AC-46** `fertig` **Pferdezucht macht Reiter schneller** — Der Stall
+  erforscht ab dem Fürstentum die **Pferdezucht** (150 Nahrung, 40 Sekunden):
+  danach ist **jede Einheit der Klasse Kavallerie ein Zehntel schneller** —
+  Späherreiter, leichte Kavallerie und Ritter, auch die, die schon stehen und
+  jede Reiterart, die noch kommt. Der Anteil rechnet auf das Tempo mit allen
+  Zuschlägen (`tempoAnteil` in der Wirkung, gelesen in
+  `welt.einheitenwert()`): der Ritter läuft 1,485 statt 1,35 Felder je
+  Sekunde, die leichte Kavallerie 1,705 statt 1,55. Fußvolk, Marktkarren und
+  die Reiter des Gegners bleiben, wie sie sind. Gemessen ist derselbe Ritt
+  über 42 Felder 29,6 statt 33,7 Sekunden lang — das 1,14-fache, nicht das
+  1,10-fache: `welt.laufen()` verliert an jedem Wegpunkt den Rest des Takts,
+  das Tempo ist im Spiel deshalb gestuft (ein Feld kostet den Ritter acht
+  Takte, mit der Pferdezucht sieben). Das gilt für jede Einheit und ist hier
+  nicht geändert. **Der Konterkreis hält damit** (Gefechtsstand, zehn
+  Paarungen mit Reitern, je 20 Startwerte, die Reiterseite mit Pferdezucht):
+  Speer und Pike schlagen jeden Reiter weiter 20 von 20, Reiter schlagen
+  beide Schützenlinien 20 von 20; nur Ritter gegen Mangonel fällt von 20 auf
+  19. An der Tafel über dem Knopf
+  steht „Kavallerie: +10 % Tempo" (Bedienung AC-55). Preis, Dauer und Wirkung
+  sind die des Originals aus dem Gedächtnis, nicht aus `vorlage-aoe2.md` —
+  Startwerte. Die KI erforscht sie nicht (ki AC-35). **Rückmeldung des
+  Benutzers:** „und vll sollte es beim angriff nochmal schnellere pferde
+  geben z.B."
 
 ## Grenzfaelle
 

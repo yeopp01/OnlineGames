@@ -181,7 +181,7 @@ Umfang hinzufügt, dort nachsehen.
 
 ## Stand
 
-**558 von 680 Kriterien fertig.** 943 Tests ohne Browser und 14 ganze Partien, 303 im Browser. Die
+**563 von 685 Kriterien fertig.** 965 Tests ohne Browser und 14 ganze Partien, 308 im Browser. Die
 Übersicht ist der Bericht: `npm run qa:report`.
 
 Gebaut ist der Unterbau: Räume, Übertragung, Karte, Wegfindung, Sammeln,
@@ -201,7 +201,7 @@ Gemessen: **3,10 Tore je Spiel, 48 % Heimsiege, 21 % Unentschieden**
 ohne Menschen null Widersprüche in den Spielen, Kader, Stärke und Markt
 stabil. Eine Saison rechnet in rund 400 ms, ein Spielstand ist nach zwei
 Saisons unter 1 MB. Der Browserlauf dauert rund 36
-Minuten für 303 Fälle (`npm run e2e:laufzeiten` zeigt, wo; die langsamsten
+Minuten für 308 Fälle (`npm run e2e:laufzeiten` zeigt, wo; die langsamsten
 Fälle sind `fahrplan AC-24` mit 108 s, zwei gegen zwei bis zur Tafel,
 `fahrplan AC-14` mit 90 s, die Ritterzeit am Stück, und `fahrplan AC-12`
 mit 84 s, eine ganze Partie gegen die KI).
@@ -819,6 +819,30 @@ Server als `zr`); **der Pfeil kommt erst nach dem Spannen** und ist kleiner
 markieren** (AC-77); **Geräusche und Musik haben je einen Schieber im
 Menü** (AC-78), und an der Abschlusstafel steht der Weg in den Vorraum
 (AC-66).
+
+**Rückmeldungen vom 2026-11-18** (Punkte 50, 53, 54, 56, 58). **Der Mönch
+heilt, wen man ihm zeigt** (einheiten AC-65): ein Rechtsklick auf einen
+eigenen oder verbündeten Verletzten ist der Auftrag `heilen` — er geht hin
+und bleibt dabei, bis der andere heil ist; wer kämpft, wird auch auf Befehl
+nicht geheilt, der Mönch wartet. **Eine Weiterentwicklung steht unter ihrer
+Einheit** (bedienung AC-80): ein flacher Knopf mit goldenem Pfeil unter dem
+Knopf der Einheit, die sie austauscht — die Leiste von Kaserne, Schießanlage
+und Stall ist dafür rund 40 Bildpunkte höher. **Dorfbewohner reparieren**
+(bauen AC-45): ein Rechtsklick auf ein beschädigtes eigenes Gebäude ist der
+Auftrag `reparieren`; `REPARATUR` in den Daten (12,5 Leben je Sekunde, jeder
+weitere die Hälfte, das ganze Leben kostet den halben Baupreis, bezahlt
+Punkt für Punkt, und es zahlt, wer repariert). Die KI repariert nicht, eine
+Farm wird nicht repariert. **Pferdezucht** (bauen AC-46): im Stall ab dem
+Fürstentum, alles Berittene 10 % schneller — ein Anteil am Tempo steht als
+`tempoAnteil` in der Wirkung und rechnet in `welt.einheitenwert()` auf
+alles davor. Die Werte beider stammen nicht aus `vorlage-aoe2.md`; die KI
+erforscht die Pferdezucht nicht. **Ein gefällter Baum liegt** (darstellung
+AC-31): mit dem ersten Stück Holz fällt er, ohne Bewegung, und wird beim
+Abbau kürzer — der Server schickt, welche Vorräte angebrochen sind
+(`welt.angebrochen()`, im Aufbau `karte.fuellung`), der Browser zeichnet
+sie aus der Tafel `baumstumpf` (je Baumart eine Zeile, je Stufe mehrere
+Gestalten). Browsertests setzen einen Vorrat mit dem Prüfgriff
+`vorratSetzen`. Die Schautafel zeigt die Liegenden nicht.
 
 1. **Stufe A** Dunkle Zeit mit Wirtschafts-KI und Prüfstand · **B** Feudalzeit
    · **C** Partieende und KI-Gegner · **D** Ritterzeit · **E** fünf Häuser ·

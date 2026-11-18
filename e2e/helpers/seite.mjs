@@ -222,6 +222,17 @@ export async function vorratLeeren(page, code, x, y) {
 }
 
 /**
+ * Den Rest eines Vorrats setzen (Pruefgriff) - ohne Meldung an die Spieler:
+ * die kommt mit dem naechsten Schlag eines Sammlers (darstellung AC-31).
+ */
+export async function vorratSetzen(page, code, x, y, rest) {
+  const antwort = await page.request.post(`http://localhost:${GRIFFHAFEN}/griff`, {
+    data: { id: code, befehl: 'vorratSetzen', werte: { x, y, rest } },
+  });
+  expect(antwort.ok(), await antwort.text()).toBe(true);
+}
+
+/**
  * Einen Spieler aufgeben lassen (Pruefgriff, e2e/server.mjs). Schickt dem
  * Server dieselbe Nachricht wie spaeter der Knopf (bedienung AC-38); alles
  * dieses Spielers faellt, und ist er der Vorletzte, endet die Partie

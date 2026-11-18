@@ -207,6 +207,17 @@ const griffe = http.createServer(async (anfrage, antwortGriff) => {
       antwortGriff.writeHead(200, { 'Content-Type': 'application/json', Connection: 'close' }).end(JSON.stringify({ ok: true }));
       return;
     }
+    // Den Rest eines Vorrats setzen - nur die Zahl. Gemeldet wird nichts: das
+    // tut der naechste Schlag eines Sammlers selbst, und genau der wird
+    // geprueft (darstellung AC-31).
+    if (befehl === 'vorratSetzen') {
+      const welt = laufend.raeume.finden(id)?.welt;
+      const index = werte.y * welt.karte.groesse + werte.x;
+      if (!welt.karte.vorrat.has(index)) throw new Error(`Kein Vorrat auf ${werte.x}, ${werte.y}.`);
+      welt.karte.vorrat.set(index, Math.max(1, Math.round(Number(werte.rest))));
+      antwortGriff.writeHead(200, { 'Content-Type': 'application/json', Connection: 'close' }).end(JSON.stringify({ ok: true }));
+      return;
+    }
     // Leben einer Einheit oder eines Gebaeudes setzen, fuer beschaedigte
     // Zustaende, solange es keinen Kampf gibt (darstellung AC-8).
     if (befehl === 'leben') {

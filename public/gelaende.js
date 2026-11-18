@@ -404,20 +404,99 @@ function brocken(stift, x, y, e, variante, hell, mittel, dunkel, glanz) {
   }
 }
 
+// Der gefaellte Baum, gezeichnet (darstellung AC-31) - der Rueckfall, wenn es
+// die Tafel `baumstumpf` nicht gibt: ein Stumpf mit heller Schnittflaeche,
+// daneben der Stamm, der mit dem Vorrat kuerzer wird, am Ende nur Scheite.
+function gefaellterBaum(stift, x, y, e, variante, fuellung) {
+  const rinde = '#4d3a2a';
+  const holz = '#d3ab72';
+  const w = streuung(variante, 41) * Math.PI * 2;
+  // In der Schraegsicht ist die Tiefe halb so hoch wie die Breite.
+  const vx = Math.cos(w);
+  const vy = Math.sin(w) * 0.5;
+  const dick = e * 0.2;
+  const sx = x - vx * e * 0.2;
+  const sy = y - vy * e * 0.2;
+  schatten(stift, x + e * 0.08, y + e * 0.04, e * 0.75);
+  // Der Stamm: ein dicker Strich mit hellem Ende.
+  const lang = e * 0.95 * Math.max(0, fuellung - 0.25) / 0.75;
+  if (lang > 0) {
+    const ax = sx + vx * e * 0.22;
+    const ay = sy + vy * e * 0.22 - dick * 0.5;
+    stift.lineCap = 'round';
+    stift.strokeStyle = ton(rinde, -0.25);
+    stift.lineWidth = dick * 1.75;
+    stift.beginPath();
+    stift.moveTo(ax, ay + dick * 0.12);
+    stift.lineTo(ax + vx * lang, ay + vy * lang + dick * 0.12);
+    stift.stroke();
+    stift.strokeStyle = rinde;
+    stift.lineWidth = dick * 1.5;
+    stift.beginPath();
+    stift.moveTo(ax, ay);
+    stift.lineTo(ax + vx * lang, ay + vy * lang);
+    stift.stroke();
+    kreis(stift, ax + vx * lang, ay + vy * lang, dick * 0.62, holz);
+    // Eben gefaellt: ein Rest der Krone am Ende.
+    if (fuellung > 0.9) {
+      ballen(stift, ax + vx * (lang + dick), ay + vy * (lang + dick), dick * 1.5, '#2c5a31', 0.2, -0.3);
+      ballen(stift, ax + vx * (lang + dick * 2.2) + dick * 0.6, ay + vy * (lang + dick * 2.2) - dick * 0.3, dick * 1.1, '#3b7440', 0.2, -0.3);
+    }
+  }
+  // Scheite: je weniger Stamm, desto mehr.
+  const scheite = Math.round((1 - fuellung) * 4) + (lang > 0 ? 0 : 2);
+  for (let i = 0; i < scheite; i++) {
+    const ecke = streuung(variante, 50 + i) * Math.PI * 2;
+    const weit = e * (0.35 + streuung(variante, 60 + i) * 0.3);
+    const px = sx + Math.cos(ecke) * weit;
+    const py = sy + Math.sin(ecke) * weit * 0.5;
+    stift.lineCap = 'butt';
+    stift.strokeStyle = ton(holz, i % 2 ? -0.12 : 0.05);
+    stift.lineWidth = dick * 0.55;
+    stift.beginPath();
+    stift.moveTo(px - dick * 0.6, py - dick * 0.2);
+    stift.lineTo(px + dick * 0.6, py + dick * 0.2);
+    stift.stroke();
+  }
+  // Der Stumpf: dunkle Flanke, helle Schnittflaeche.
+  stift.fillStyle = ton(rinde, -0.2);
+  stift.beginPath();
+  stift.ellipse(sx, sy, dick * 1.25, dick * 0.62, 0, 0, Math.PI * 2);
+  stift.fill();
+  stift.fillStyle = rinde;
+  stift.fillRect(sx - dick, sy - dick * 0.85, dick * 2, dick * 0.85);
+  stift.beginPath();
+  stift.ellipse(sx, sy, dick, dick * 0.5, 0, 0, Math.PI);
+  stift.fill();
+  stift.fillStyle = holz;
+  stift.beginPath();
+  stift.ellipse(sx, sy - dick * 0.85, dick, dick * 0.5, 0, 0, Math.PI * 2);
+  stift.fill();
+  stift.strokeStyle = ton(holz, -0.3);
+  stift.lineWidth = Math.max(0.6, dick * 0.1);
+  stift.beginPath();
+  stift.ellipse(sx, sy - dick * 0.85, dick * 0.5, dick * 0.25, 0, 0, Math.PI * 2);
+  stift.stroke();
+}
+
 /**
  * Ein Vorrat als Ding. `e` ist die Bildgroesse eines Feldes (Rautenbreite / 2),
  * `fuellung` 1 heisst voll; ein leerer werdender Vorrat wird kleiner.
+ * `gefaellt`: ein Baum, von dem schon Holz genommen wurde, liegt (darstellung
+ * AC-31) - er schrumpft nicht, sein Stamm wird kuerzer.
  */
-export function dingZeichnen(stift, art, x, y, e, index, fuellung = 1) {
-  const g = e * (0.6 + 0.4 * Math.max(0, Math.min(1, fuellung)));
+export function dingZeichnen(stift, art, x, y, e, index, fuellung = 1, gefaellt = false) {
+  const liegt = gefaellt && art === WALD;
+  const g = liegt ? e : e * (0.6 + 0.4 * Math.max(0, Math.min(1, fuellung)));
   // Weit herausgezoomt sind Einzelheiten nicht zu sehen, kosten aber Zeit:
   // dann eine einfache Form in derselben Farbe.
   if (e < 12) {
-    einfach(stift, art, x, y, g);
+    einfach(stift, art, x, y, g, liegt);
     return;
   }
   const variante = VARIANTE(index);
-  if (art === WALD) baum(stift, x, y, g, variante);
+  if (liegt) gefaellterBaum(stift, x, y, g, variante, Math.max(0.25, Math.min(1, fuellung)));
+  else if (art === WALD) baum(stift, x, y, g, variante);
   else if (art === BEERE) beerenstrauch(stift, x, y, g, variante);
   else if (art === GOLD) brocken(stift, x, y, g, variante, '#e6c874', '#c49a3e', '#8c6a2c', 'rgba(255, 246, 214, 0.6)');
   else if (art === STEIN) brocken(stift, x, y, g, variante, '#c2c0ba', '#94918a', '#64615c', null);
@@ -436,6 +515,9 @@ const ZWISCHENSPEICHER = new Bildspeicher('gelaende', 24_000_000);
 
 // Welche Tafel einen Vorrat zeigt (ADR-0016, darstellung AC-23).
 const TAFEL = { [WALD]: 'baum', [BEERE]: 'beere', [GOLD]: 'gold', [STEIN]: 'stein' };
+// Der gefaellte Baum (darstellung AC-31): Zeilen sind die Baumarten wie bei
+// `baum`, Spalten die vier Stufen, je Stufe die Gestalten nebeneinander.
+const TAFEL_GEFAELLT = 'baumstumpf';
 
 /**
  * Welche Baumart auf einem Feld steht (darstellung AC-23): Zeile der Tafel.
@@ -460,11 +542,13 @@ export function baumart(tafel, index, feld = null, salz = 0) {
  * Wie dingZeichnen, aber ueber einen Zwischenspeicher: jede Gestalt wird je
  * Zoomstufe und Fuellung (in Vierteln) einmal gezeichnet und dann kopiert.
  * `feld` ist der Ort auf der Karte ({ x, y }) - daran und am Salz der Karte
- * haengt die Baumart.
+ * haengt die Baumart. `gefaellt`: von diesem Baum ist schon Holz genommen
+ * (darstellung AC-31).
  */
-export function dingBildZeichnen(stift, art, x, y, e, index, fuellung = 1, feld = null, salz = 0) {
+export function dingBildZeichnen(stift, art, x, y, e, index, fuellung = 1, feld = null, salz = 0, gefaellt = false) {
+  const liegt = gefaellt && art === WALD;
   if (e < 12 || typeof document === 'undefined') {
-    dingZeichnen(stift, art, x, y, e, index, fuellung);
+    dingZeichnen(stift, art, x, y, e, index, fuellung, liegt);
     return;
   }
   const dichte = window.devicePixelRatio || 1;
@@ -473,14 +557,17 @@ export function dingBildZeichnen(stift, art, x, y, e, index, fuellung = 1, feld 
   // Gibt es den Vorrat gerendert (ADR-0016), kommt eine seiner Gestalten aus
   // der Tafel. Beere, Gold und Stein haben ihre Fuellstufen als Zeilen - der
   // halbleere Haufen ist derselbe Haufen, abgetragen. Ein Baum hat seine Art
-  // als Zeile und schrumpft, wenn er geschlagen wird, wie der gezeichnete.
-  const tafel = gerendert(TAFEL[art]);
+  // als Zeile; ist er gefaellt, kommt er aus der Tafel der Liegenden, in
+  // derselben Art, und seine Stufe ist die Spalte.
+  const tafel = gerendert(liegt ? TAFEL_GEFAELLT : TAFEL[art]);
   const stufen = tafel && tafel.stufen;
-  const zeile = !tafel ? 0 : stufen ? Math.min(stufen - 1, Math.round((1 - viertel) * stufen)) : baumart(tafel, index, feld, salz);
+  const stufe = stufen ? Math.min(stufen - 1, Math.round((1 - viertel) * stufen)) : 0;
+  const zeile = !tafel ? 0 : tafel.arten ? baumart(tafel, index, feld, salz) : stufe;
+  const spalte = !tafel ? 0 : (tafel.arten ? stufe * tafel.gestalten : 0) + (variante % tafel.gestalten);
   const tafelMass = tafel ? ((2 * e) / tafel.feldbreite) * (stufen ? 1 : 0.6 + 0.4 * viertel) : 0;
   const rand = tafel ? zellenRand(tafel, tafelMass) : null;
   // Die Familie ist dasselbe Bild ohne seine Groesse (darstellung AC-27).
-  const familie = `${art}|${variante}|${viertel}|${dichte}${tafel ? `|r${zeile}` : ''}`;
+  const familie = `${art}|${variante}|${viertel}|${dichte}${tafel ? `|r${zeile}` : ''}${liegt ? '|l' : ''}`;
   const schluessel = `${e.toFixed(2)}|${familie}`;
   // Breit genug fuer den Schlagschatten nach rechts.
   const breite = rand ? rand.halb * 2 : 5.2 * e;
@@ -495,8 +582,8 @@ export function dingBildZeichnen(stift, art, x, y, e, index, fuellung = 1, feld 
     bild.height = Math.ceil((oben + unten) * dichte);
     const s = bild.getContext('2d');
     s.scale(dichte, dichte);
-    if (tafel) zelleZeichnen(s, tafel, zeile, variante % tafel.gestalten, breite / 2, oben, tafelMass, null);
-    else dingZeichnen(s, art, breite / 2, oben, e, index, viertel);
+    if (tafel) zelleZeichnen(s, tafel, zeile, spalte, breite / 2, oben, tafelMass, null);
+    else dingZeichnen(s, art, breite / 2, oben, e, index, viertel, liegt);
     ZWISCHENSPEICHER.legen(schluessel, bild, familie, beginn);
   }
   // Auf ganze Bildpunkte und in Originalgroesse: sonst glaettet der Browser bei
@@ -505,8 +592,12 @@ export function dingBildZeichnen(stift, art, x, y, e, index, fuellung = 1, feld 
   stift.drawImage(bild, Math.round((x - breite / 2) * dichte) / dichte, Math.round((y - oben) * dichte) / dichte, bild.width / dichte, bild.height / dichte);
 }
 
-function einfach(stift, art, x, y, g) {
-  if (art === WALD) {
+function einfach(stift, art, x, y, g, liegt = false) {
+  if (liegt) {
+    // Ein gefaellter Baum: kein Gruen mehr, ein brauner Fleck am Boden.
+    kreis(stift, x, y - g * 0.2, g * 0.45, '#5a4532');
+    kreis(stift, x - g * 0.1, y - g * 0.3, g * 0.2, '#d3ab72');
+  } else if (art === WALD) {
     kreis(stift, x, y - g * 1.1, g * 0.6, '#2f6a3a');
     kreis(stift, x - g * 0.2, y - g * 1.3, g * 0.25, '#3f7f46');
   } else if (art === BEERE) {

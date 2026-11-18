@@ -2,7 +2,7 @@
 
 **Bereich:** Strategie
 **Kuerzel:** bedienung
-**Stand:** 74/79 fertig · 2 in QA · 3 offen
+**Stand:** 75/80 fertig · 2 in QA · 3 offen
 
 ## Zweck
 
@@ -763,6 +763,20 @@ inzwischen alle eingetragen.
   das Bild (Pause, Ende), stehen auch die Pfeile in der Luft.
   **Rückmeldung des Benutzers:** „Auch bei den Bogenschützen, der erste Pfeil
   kommt bevor sie den Bogen ziehen."
+- **AC-80** `fertig` **Weiterentwicklung unter ihrer Einheit** — Eine
+  Verbesserung, die eine Einheit austauscht (Einheiten AC-24, AC-58 bis
+  AC-62), steht in der Leiste nicht mehr in der Reihe der Einheiten, sondern
+  **unter dem Knopf der Einheit, aus der sie etwas macht**: flacher, mit dem
+  Bild der neuen Einheit, dem Preis daneben und einem goldenen Pfeil hinauf
+  zur Einheit. Der Knopf sagt, wer zu wem wird („Weiterentwicklung: Plänkler
+  wird Eliteplänkler"), und die Tafel darüber (AC-55) trägt
+  „Weiterentwicklung" im Namen. Jede andere Verbesserung bleibt in der Reihe
+  (AC-65). Ein Gebäude mit Weiterentwicklungen hält den Platz unter jeder
+  Einheit frei, auch wenn dort nichts steht — ist eine Stufe erforscht,
+  bleibt jeder Knopf, wo er war (AC-54).
+  **Rückmeldung des Benutzers:** „und die Weiterentwicklung z.B. vom
+  Eliteplänkler sollte klar als weiterentwicklung ersichtlich sein - und eher
+  unterhalb vom Plänkler, sodass das etwas zugeordnet ist".
 
 ## Grenzfaelle
 

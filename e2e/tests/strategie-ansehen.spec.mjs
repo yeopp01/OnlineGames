@@ -144,11 +144,13 @@ test.describe('Vorraete ansehen', () => {
     await anna.keyboard.press('Escape');
     await expect(leiste).toBeHidden();
 
-    // Wieder hingesehen: die Zahl faellt.
-    const wieder = await punktFuer(anna, 'v', baum.i, [40, 70, 20, 100, 8, 55, 85]);
+    // Wieder hingesehen: die Zahl faellt. Mit dem ersten Stueck Holz liegt
+    // der Baum (darstellung AC-31) - er ist flach und heisst jetzt so.
+    await anna.waitForFunction((i) => window.ansicht.fuellung.has(i), baum.i, { timeout: 20_000 });
+    const wieder = await punktFuer(anna, 'v', baum.i, [12, 20, 6, 28, 2]);
     expect(wieder, 'der Baum laesst sich neben dem Dorfbewohner treffen').not.toBeNull();
     await anna.mouse.click(wieder.x, wieder.y);
-    await expect(leiste.locator('.auswahl-kopf strong')).toHaveText('Baum');
+    await expect(leiste.locator('.auswahl-kopf strong')).toHaveText('Gefällter Baum');
     const zahl = async () => Number(await rest.getAttribute('data-rest'));
     await expect.poll(zahl, { timeout: 20_000 }).toBeLessThan(97);
     await zeitraffer(anna, code, 0);
@@ -161,7 +163,7 @@ test.describe('Vorraete ansehen', () => {
     await nachweis(anna, {
       spec: BEDIENUNG,
       ac: 'AC-63',
-      titel: 'Ein Baum angesehen, an dem ein Dorfbewohner hackt: gestrichelter Ring am Fuß, unten „Baum“ und wie viel Holz noch daran ist',
+      titel: 'Ein Baum angesehen, an dem ein Dorfbewohner hackt: er liegt, gestrichelter Ring am Fuß, unten „Gefällter Baum“ und wie viel Holz noch daran ist',
       test: info,
     });
     await zeitraffer(anna, code, 1);

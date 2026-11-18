@@ -82,7 +82,7 @@
  * `welt.wirkungen()`.
  *
  * @typedef {object} Wirkungen
- * @property {Record<string, Record<string, number>>} [wirkung] je Einheitenart oder Klasse
+ * @property {Record<string, Record<string, number>>} [wirkung] je Einheitenart oder Klasse; `tempoAnteil` ist ein Anteil am Tempo statt eines Zuschlags (bauen AC-46)
  * @property {Rohstoffe} [sammeln] Faktor je Rohstoff
  * @property {{nahrung?: number}} [farm]
  * @property {Record<string, number>} [gebaeude]
@@ -393,7 +393,7 @@ const GEBAEUDE = {
   stall: {
     seite: 1,
     groesse: 3, kosten: { holz: 175 }, bauzeit: 50, leben: 1000, wohnraum: 0, annahme: [],
-    bildetAus: ['spaeherreiter', 'ritter', 'kavalleriestufe'], zeitalter: 1,
+    bildetAus: ['spaeherreiter', 'ritter', 'kavalleriestufe', 'pferdezucht'], zeitalter: 1,
   },
   // Angriff und Ruestung je Waffengattung (bauen AC-25, AC-34, AC-39): von
   // jeder Verbesserung steht nur die naechste Stufe im Menue, hoechstens
@@ -663,6 +663,19 @@ const VERBESSERUNGEN = {
     vorstufe: 'schubkarre', zeichen: 'handkarren',
     wirkung: { dorfbewohner: { tempo: 0.08, tragkraft: 5 } },
   },
+  // Pferdezucht (bauen AC-46, Wunsch des Benutzers: "nochmal schnellere
+  // Pferde"): jeder Reiter ist ein Zehntel schneller. Das Tempo ist sonst ein
+  // Zuschlag in Feldern je Sekunde; hier ist es ein Anteil (`tempoAnteil`),
+  // damit er fuer jede Reiterart dasselbe heisst - auch fuer die, die noch
+  // kommen. Gerechnet wird er auf das Tempo mit allen Zuschlaegen
+  // (`welt.einheitenwert`). 150 Nahrung, 40 Sekunden und +10 % sind die Werte
+  // des Originals aus dem Gedaechtnis, nicht aus `vorlage-aoe2.md` -
+  // Startwerte.
+  pferdezucht: {
+    name: 'Pferdezucht', kosten: { nahrung: 150 }, zeit: 40, zeitalter: 2,
+    zeichen: 'hufeisen',
+    wirkung: { kavallerie: { tempoAnteil: 0.1 } },
+  },
   // Sicht fuer Gebaeude (kampf AC-17, Wunsch des Benutzers: Forschung
   // veraendert die Flaeche des Nebels). Kosten und Wirkung aus der Vorlage,
   // die Dauer die des Originals. `gebaeude` trifft jedes eigene Gebaeude, wie
@@ -883,7 +896,19 @@ const HAEUSER = {
   },
 };
 
+/**
+ * Reparieren (bauen AC-45): wer bauen kann, gibt einem beschaedigten Gebaeude
+ * `lebenJeSekunde` Leben zurueck; jeder weitere am selben Gebaeude nur den
+ * Anteil `weitere` davon. Das ganze Leben eines Gebaeudes kostet den Anteil
+ * `kostenanteil` seines Baupreises, bezahlt Punkt fuer Punkt.
+ *
+ * Halber Preis und 750 Leben je Minute sind die Regel des Originals; sie
+ * stehen nicht in docs/strategie/vorlage-aoe2.md, und der Anteil der weiteren
+ * ist gesetzt. Alles Startwerte.
+ */
+const REPARATUR = { lebenJeSekunde: 12.5, weitere: 0.5, kostenanteil: 0.5 };
+
 module.exports = {
   EINHEITEN, SAMMELN, TIERE, GEBAEUDE, VERBESSERUNGEN, ZEITALTER, AUFSTIEGE, KLASSEN, HANDEL, HAEUSER,
-  BEVOELKERUNG_MAX, SCHLANGE_MAX, STARTAUFSTELLUNG,
+  BEVOELKERUNG_MAX, SCHLANGE_MAX, STARTAUFSTELLUNG, REPARATUR,
 };

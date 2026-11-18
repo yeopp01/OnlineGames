@@ -389,4 +389,109 @@ test.describe('Moench', () => {
     expect(await gezaehlt('bekehren')).toBe(amEnde);
     expect(await gezaehlt('bekehrt')).toBe(schlagVorher + 1);
   });
+
+  // Rueckmeldung aus dem Spiel (2026-11-17): "dem Moench sollte man mit
+  // rechtsklick genau mitgeben koennen, wen er heilen soll".
+  test('einheiten AC-65: ein Rechtsklick auf die verletzte Miliz - am Zeiger steht "Heilen", und der Moench heilt sie statt des Dorfbewohners neben ihm', async ({}, info) => {
+    const { anna, code } = partie;
+    // Die erste Wiese: dort stehen Moench und Miliz aus AC-37 (die Karte hat
+    // nur zwei freie Wiesen). Laeuft dieser Fall allein, stellt er sie selbst hin.
+    const [wiese] = await freieWiesen(anna, 1);
+    const kuerzel = await anna.evaluate(() => {
+      const e = window.ansicht.werte.einheiten;
+      return { moench: e.moench.kuerzel, miliz: e.miliz.kuerzel, bauer: e.dorfbewohner.kuerzel };
+    });
+    const steht = (kz) => anna.evaluate(([k, w]) => {
+      const a = window.ansicht;
+      return [...a.nachher.values()].some((e) => e.k === k && e.b === a.ich && Math.hypot(e.x - w.x, e.y - w.y) < 4.5);
+    }, [kz, wiese]);
+    // Annas Moench, schraeg neben ihm ein Dorfbewohner, zwei Felder weiter die
+    // Miliz - beide in seiner Reichweite, der Dorfbewohner naeher.
+    if (!await steht(kuerzel.moench)) await einheitenAufstellen(anna, code, 'Anna', 1, { art: 'moench', x: wiese.x - 1, y: wiese.y });
+    if (!await steht(kuerzel.miliz)) await einheitenAufstellen(anna, code, 'Anna', 1, { art: 'miliz', x: wiese.x + 1, y: wiese.y });
+    await einheitenAufstellen(anna, code, 'Anna', 1, { art: 'dorfbewohner', x: wiese.x - 2, y: wiese.y + 1 });
+    const { moench, miliz, bauer } = await anna.waitForFunction(([k, w]) => {
+      const a = window.ansicht;
+      const hier = (kz) => [...a.nachher.values()].find((e) => e.k === kz && e.b === a.ich && Math.hypot(e.x - w.x, e.y - w.y) < 4.5);
+      const [moench, miliz, bauer] = [hier(k.moench), hier(k.miliz), hier(k.bauer)];
+      return moench && miliz && bauer && { moench: { i: moench.i }, miliz: { i: miliz.i }, bauer: { i: bauer.i } };
+    }, [kuerzel, wiese]).then((h) => h.jsonValue());
+    const leben = (id) => anna.evaluate((e) => window.ansicht.nachher.get(e)?.h, id);
+    const zeigerZiel = () => anna.evaluate(() => {
+      const z = window.ansicht.zeigerZiel;
+      return z && { art: z.art, text: z.text };
+    });
+    // Der Koerper der Miliz als Punkt auf der Seite - dorthin zeigt, wer sie meint.
+    const aufMiliz = () => anna.evaluate((id) => {
+      const a = window.ansicht;
+      const e = a.nachher.get(id);
+      const p = a.zuBild(e.x, e.y);
+      const r = a.leinwand.getBoundingClientRect();
+      return { x: r.left + p.x, y: r.top + p.y - a.figurenHoehe() * 0.6 };
+    }, miliz.i);
+
+    await anna.evaluate(([id, w]) => {
+      const a = window.ansicht;
+      a.gewaehltesGebaeude = null;
+      a.ausgewaehlt = new Set([id]);
+      a.beiAuswahl();
+      a.kamera.zoom = 2.5;
+      a.blickAuf(w.x - 0.5, w.y + 1.2);
+    }, [moench.i, wiese]);
+    // Aus dem Fall davor kann die Miliz noch verletzt sein: erst voll.
+    const voll = await anna.evaluate(() => {
+      const e = window.ansicht.werte.einheiten;
+      return { miliz: e.miliz.leben, bauer: e.dorfbewohner.leben };
+    });
+    await lebenSetzen(anna, code, miliz.i, voll.miliz);
+    await expect.poll(() => anna.evaluate((id) => window.ansicht.nachher.get(id)?.h, miliz.i)).toBeUndefined();
+
+    // Solange die Miliz gesund ist, waere der Rechtsklick nur ein Gang.
+    let punkt = await aufMiliz();
+    await anna.mouse.move(punkt.x, punkt.y, { steps: 3 });
+    await anna.waitForTimeout(200);
+    expect(await zeigerZiel(), 'gesund: kein Ziel').toBeNull();
+
+    // Beide verlieren Leben. Von selbst nimmt der Moench den Naechsten, den
+    // Dorfbewohner (einheiten AC-37).
+    // Erst der Dorfbewohner: sonst heilte der Moench in der Zwischenzeit die Miliz.
+    await lebenSetzen(anna, code, bauer.i, 8);
+    await lebenSetzen(anna, code, miliz.i, 12);
+    await expect.poll(() => leben(bauer.i), { timeout: 10_000 }).toBeGreaterThanOrEqual(10);
+    expect(await leben(miliz.i), 'die Miliz wartet noch').toBe(12);
+    // Der Moench ist gewaehlt: beide Verletzten tragen ihren Lebensbalken,
+    // obwohl sie nicht gewaehlt sind - so sieht man, wem etwas fehlt.
+    const balken = () => anna.evaluate(() => window.ansicht.lebensbalken.filter((b) => b.art === 'einheit').map((b) => b.i));
+    await expect.poll(async () => (await balken()).includes(miliz.i) && (await balken()).includes(bauer.i)).toBe(true);
+
+    // Der Zeiger auf der Miliz: jetzt steht "Heilen" daran. Ein Rechtsklick,
+    // und der Moench heilt sie - der Dorfbewohner bekommt solange nichts.
+    punkt = await aufMiliz();
+    await anna.mouse.move(punkt.x + 1, punkt.y, { steps: 2 });
+    await expect.poll(zeigerZiel).toEqual({ art: 'heilen', text: 'Heilen' });
+    await zeichenHalten(anna);
+    await anna.mouse.click(punkt.x + 1, punkt.y, { button: 'right' });
+    expect(await anna.evaluate(() => window.ansicht.zielzeichen?.feindlich), 'kein Angriff').toBe(false);
+    await expect.poll(() => leben(miliz.i), { timeout: 10_000 }).toBeGreaterThanOrEqual(15);
+    await zeitraffer(anna, code, 0);
+    const bauerDanach = await leben(bauer.i);
+    const milizDanach = await leben(miliz.i);
+    expect(milizDanach).toBeLessThan(voll.miliz);
+    expect(bauerDanach, 'der Dorfbewohner ist nicht weiter geheilt').toBeLessThanOrEqual(11);
+    expect(bauerDanach).toBeLessThan(voll.bauer);
+
+    // Fuer das Bild: die Welt steht, der Zeiger liegt auf der Miliz.
+    await anna.mouse.move(punkt.x, punkt.y, { steps: 2 });
+    await expect.poll(zeigerZiel).toEqual({ art: 'heilen', text: 'Heilen' });
+    expect(await bedienteileFrei(anna)).toEqual([]);
+    expect(await figurenFrei(anna)).toEqual([]);
+    await anna.waitForTimeout(150);
+    await nachweis(anna, {
+      spec: EINHEITEN,
+      ac: 'AC-65',
+      titel: 'Annas Mönch gewählt, der Zeiger auf ihrer verletzten Miliz – am Zeiger steht „Heilen“, beide Verletzten tragen ihren Lebensbalken, und er heilt die Miliz statt des Dorfbewohners neben ihm',
+      test: info,
+    });
+    await zeitraffer(anna, code, 1);
+  });
 });
