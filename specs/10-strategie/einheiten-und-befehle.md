@@ -2,7 +2,7 @@
 
 **Bereich:** Strategie
 **Kuerzel:** einheiten
-**Stand:** 49/62 fertig · 12 offen · 1 zurueckgestellt
+**Stand:** 53/62 fertig · 8 offen · 1 zurueckgestellt
 
 ## Zweck
 
@@ -634,7 +634,7 @@ der Linie, die austauscht, was schon steht. Preis, Tempo und Ausbildungszeit
 der Einheit bleiben die der Vorstufe. Die Werte stehen in
 [`vorlage-aoe2.md`](../../docs/strategie/vorlage-aoe2.md) unter „Krone".
 
-- **AC-66** `offen` **Fünf Stufen der Krone** — Zweihandkämpfer (aus dem
+- **AC-66** `fertig` **Fünf Stufen der Krone** — Zweihandkämpfer (aus dem
   Langschwertkämpfer: 65 Leben, 12 Angriff, Rüstung 1/1; 200 Nahrung, 100
   Gold, 45 s), Hellebardier (aus dem Pikenier: 60 Leben, 6 Angriff, +32
   gegen Kavallerie; 300 Nahrung, 600 Gold, 50 s), Husar (aus der leichten
@@ -650,7 +650,7 @@ der Einheit bleiben die der Vorstufe. Die Werte stehen in
   wäre eine weitere Figur und eine weitere Unbekannte im Konterkreis
   (fahrplan AC-26). **Zu messen, bevor es `fertig` heißt:** Hellebardiere
   gleicher Kosten schlagen auch Paladine (fahrplan AC-26).
-- **AC-67** `offen` **Schützen der Krone** — Beide Linien behalten ihre
+- **AC-67** `fertig` **Schützen der Krone** — Beide Linien behalten ihre
   Rolle (AC-34, AC-58). Langbogenschütze (aus dem Bogenschützen: 40 Leben,
   6 Angriff, Reichweite 5; 450 Nahrung, 350 Gold, 50 s — die Werte des
   Arbalestenschützen der Vorlage) und schwere Armbrust (aus dem
@@ -661,7 +661,7 @@ der Einheit bleiben die der Vorstufe. Die Werte stehen in
   größten Reichweite (AC-42). Gemessen wird mit fahrplan AC-26: ohne
   Rüstungen gewinnt der Langbogen gegen die schwere Armbrust gleicher
   Kosten, mit den Schützenrüstungen die Armbrust.
-- **AC-68** `offen` **Belagerung der Krone** — Belagerungsramme (aus der
+- **AC-68** `fertig` **Belagerung der Krone** — Belagerungsramme (aus der
   Ramme: 270 Leben, 4 Angriff, +175 gegen Gebäude statt +125, Fernrüstung
   195; 1000 Nahrung, 75 s) und Onager (aus dem Mangonel: 60 Leben, 55
   Angriff, Rüstung 0/8, Reichweite 8; 800 Nahrung, 500 Gold, 75 s), beide in
@@ -669,20 +669,31 @@ der Einheit bleiben die der Vorstufe. Die Werte stehen in
   ein Drittel; hier ist es eine Stufe. Was `nurGebaeude`, `flaeche` und die
   Mindestweite regeln (AC-35, AC-36), gilt unverändert. Ein Trebuchet gibt
   es nicht — an seiner Stelle steht der Drache (AC-52).
-- **AC-69** `offen` **Elitestufen der Spezialeinheiten** — Jede der fünf
+- **AC-69** `fertig` **Elitestufen der Spezialeinheiten** — Jede der fünf
   Einheiten aus der Burg (AC-45 bis AC-49) lässt sich dort einmal
   weiterentwickeln (ADR-0014 Punkt 12), sichtbar nur für ihr Haus:
   Kriegswolf 70 Leben und 9 Angriff (statt 55 und 7), Reiterschütze 75
   Leben und 6 Angriff (statt 60 und 5), Riese 220 Leben, 12 Angriff und +50
   gegen Gebäude (statt 180, 10 und +40), Meuchler 45 Leben, 8 Angriff und
   +14 gegen Dorfbewohner und Mönche (statt 35, 6 und +10), Wiedergänger 75
-  Leben, 8 Angriff und Rüstung 1/1 (statt 60, 6 und 1/0). Jede kostet 500
-  Nahrung, 400 Gold und 60 s — Startwerte ohne Vorbild. Tarnung, Preis in
-  Gefallenen und alle übrigen Regeln bleiben. Die Namen („Elite-…") sind
-  Daten und vorläufig. Eibenschütze, Pavesenschütze und Söldner bekommen
-  keine Stufe; sie stehen in gewöhnlichen Gebäuden. **Zu messen, bevor es
-  `fertig` heißt:** jede Paarung, die bei AC-45 bis AC-49 gemessen ist,
-  behält ihre Richtung, wenn beide Seiten auf ihrer Stufe der Krone stehen.
+  Leben, 8 Angriff und Rüstung 2/0 (statt 60, 6 und 1/0). Jede kostet 500
+  Nahrung, 400 Gold und 60 s — Startwerte ohne Vorbild. Die Zahlen sind die
+  der Daten; was das Haus seinen Einheiten gibt, kommt wie bisher dazu.
+  Tarnung, Preis in Gefallenen und alle übrigen Regeln bleiben: die Stufe
+  ist eine Verbesserung (`hebt`), die Art der Einheit und ihre Figur bleiben
+  (darstellung AC-32). Die Namen („Elite-…") sind Daten und vorläufig.
+  Eibenschütze, Pavesenschütze und Söldner bekommen keine Stufe; sie stehen
+  in gewöhnlichen Gebäuden. **Gemessen** (Gefechtsstand, gleiche Kosten,
+  beide Seiten, ohne Hausbonus): jede Paarung, die bei AC-45 bis AC-49
+  gemessen ist, behält ihre Richtung, wenn beide Seiten auf ihrer Stufe der
+  Krone stehen — Kriegswolf gegen Hellebardier 40 von 40 und gegen
+  Zweihandkämpfer 0; Reiterschütze gegen schwere Armbrust 31, gegen
+  Eliteplänkler und Hellebardier 0; Riese gegen Hellebardier 28, gegen
+  schwere Armbrust und Zweihandkämpfer 0; Meuchler gegen Zweihandkämpfer 0;
+  Wiedergänger (der Gefallene mitgerechnet) gegen Langbogenschütze 0 und
+  gegen schwere Armbrust 6. **Abweichung von der ersten Fassung:** der
+  Wiedergänger bekommt Nah- statt Fernrüstung (2/0 statt 1/1) — mit +1
+  gegen Pfeile schlug er den Langbogenschützen 23 von 40.
 
 ## Grenzfaelle
 

@@ -184,6 +184,28 @@ test.describe('Spiel waehlen', () => {
     await expect(page.locator('#raumEinstellungen [data-einstellung="vorrat"]')).toHaveValue('"viel"');
   });
 
+  test('karte AC-19: Gold und Stein stellt man beim Eroeffnen ein - wenig, mittel oder viel, Vorgabe mittel', async ({ page }, info) => {
+    await page.setViewportSize({ width: 1400, height: 1250 });
+    await page.goto('/');
+    await page.locator('[data-oeffnen="strategie"]').click();
+    const form = page.locator('[data-einstellungen-fuer="strategie"]');
+    const wahl = form.locator('[data-einstellung="vorkommen"]');
+    await expect(form).toContainText('Gold und Stein');
+    await expect(wahl).toHaveValue('"mittel"');
+    await expect(wahl.locator('option')).toHaveText(['wenig (nur im Dorf)', 'mittel (dazu umkämpfte Vorkommen)', 'viel (dazu eigene vor dem Dorf)']);
+    await wahl.selectOption('"viel"');
+    await wahl.scrollIntoViewIfNeeded();
+    await nachweis(page, {
+      spec: '10-strategie/karte-und-vorraete.md',
+      ac: 'AC-19',
+      titel: 'Beim Eröffnen steht „Gold und Stein“ mit drei Stufen, gewählt ist „viel (dazu eigene vor dem Dorf)“',
+      test: info,
+    });
+    await form.locator('[data-eroeffnen="strategie"]').click();
+    // Im Warteraum steht, was gewaehlt wurde.
+    await expect(page.locator('#raumEinstellungen [data-einstellung="vorkommen"]')).toHaveValue('"viel"');
+  });
+
   test('auswahl AC-8: ein unsinniger Startwert kommt als Satz vom Server zurueck', async ({ page }, info) => {
     await page.goto('/');
     await page.locator('[data-oeffnen="strategie"]').click();

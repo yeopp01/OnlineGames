@@ -1,0 +1,57 @@
+{
+  "bild": "paladin.webp",
+  "maske": "paladin-maske.webp",
+  "zelle": [
+    356,
+    278
+  ],
+  "fuss": [
+    108,
+    220
+  ],
+  "feldbreite": 132,
+  "zeilen": 8,
+  "spalten": 9,
+  "art": "figur",
+  "richtungen": 8,
+  "hoehe": 86,
+  "ablaeufe": {
+    "stehen": {
+      "spalte": 0,
+      "bilder": 1
+    },
+    "gehen": {
+      "spalte": 1,
+      "bilder": 8
+    },
+    "angreifen": {
+      "spalte": 0,
+      "bilder": 8,
+      "bild": "paladin-angreifen.webp",
+      "maske": "paladin-angreifen-maske.webp",
+      "zelle": [
+        388,
+        276
+      ],
+      "fuss": [
+        144,
+        216
+      ]
+    },
+    "sterben": {
+      "spalte": 0,
+      "bilder": 8,
+      "einmal": true,
+      "bild": "paladin-sterben.webp",
+      "maske": "paladin-sterben-maske.webp",
+      "zelle": [
+        396,
+        290
+      ],
+      "fuss": [
+        156,
+        216
+      ]
+    }
+  }
+}

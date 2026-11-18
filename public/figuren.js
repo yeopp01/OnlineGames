@@ -1103,6 +1103,17 @@ export const FIGUREN = {
   pikenier: { name: 'Pikenier', zeichnen: speerkaempfer, breite: 1.1, oben: 1.4 },
   eliteplaenkler: { name: 'Eliteplänkler', zeichnen: plaenkler, breite: 1.3, oben: 1.05 },
   leichtekavallerie: { name: 'Leichte Kavallerie', zeichnen: spaeherreiter, breite: 1.6, oben: 1.25 },
+  // Die Stufen der Krone (einheiten AC-66): gezeichnet wie ihre Vorstufe.
+  zweihandkaempfer: { name: 'Zweihandkämpfer', zeichnen: soldat, breite: 1.3, oben: 1.2 },
+  hellebardier: { name: 'Hellebardier', zeichnen: speerkaempfer, breite: 1.1, oben: 1.4 },
+  husar: { name: 'Husar', zeichnen: spaeherreiter, breite: 1.6, oben: 1.25 },
+  kavalier: { name: 'Kavalier', zeichnen: ritter, breite: 1.7, oben: 1.35 },
+  paladin: { name: 'Paladin', zeichnen: ritter, breite: 1.7, oben: 1.35 },
+  // Schuetzen und Belagerung der Krone (einheiten AC-67, AC-68).
+  langbogenschuetze: { name: 'Langbogenschütze', zeichnen: bogenschuetze, breite: 1.3, oben: 1.15 },
+  schwerearmbrust: { name: 'Schwere Armbrust', zeichnen: armbrustschuetze, breite: 1.4 },
+  belagerungsramme: { name: 'Belagerungsramme', zeichnen: ramme, breite: 1.9, stoesst: true },
+  onager: { name: 'Onager', zeichnen: mangonel, breite: 1.8, stoesst: true },
   // Einheiten der Haeuser (einheiten AC-42 bis AC-44). Auch sie gibt es
   // gezeichnet nicht eigens: ohne gerenderte Bilder steht der Eibenschuetze
   // als Bogenschuetze da, der Pavesenschuetze als Armbrustschuetze, der

@@ -93,7 +93,11 @@
  * @property {Record<string, Record<string, number>>} [bauwerk] Zuschlaege je Gebaeudeart (bauen AC-38)
  * @property {Record<string, number>} [handel] nur bei Haeusern
  * @property {Record<string, number>} [preis] Faktor auf die Kosten je Einheitenart, nur bei Haeusern (einheiten AC-44)
- * @property {Record<string, number>} [ausbildung] nur im Mannschaftsbonus
+ * @property {Record<string, number>} [ausbildung] Faktor je Gebaeudeart: im Mannschaftsbonus und bei der Wehrpflicht (bauen AC-50)
+ * @property {Record<string, Record<string, number>>} [bonus] je Einheitenart oder Klasse des Angreifers ein Zuschlag je Klasse des Ziels (bauen AC-54, AC-56)
+ * @property {{reichweite?: number, ruhe?: number}} [bekehren] Zuschlaege auf Reichweite und Ruhe des Bekehrens (bauen AC-55)
+ * @property {number} [bautempo] Faktor auf das Bauen der Dorfbewohner (bauen AC-56)
+ * @property {Record<string, Record<string, number>>} [bonusAnteil] je Einheitenart oder Klasse des Angreifers ein Anteil mehr Schaden je Klasse des Ziels (bauen AC-50)
  */
 
 /**
@@ -105,8 +109,11 @@
  * @property {string} [zeichen] das Bild im Menue
  * @property {string} [vorstufe]
  * @property {Record<string, string>} [wandelt] tauscht eine Einheitenart aus
- * @property {Record<string, string>} [nennt] wie ein Gebaeude danach heisst (bauen AC-38)
+ * @property {Record<string, string>} [nennt] wie ein Gebaeude oder eine Einheit danach heisst (bauen AC-38, einheiten AC-69)
+ * @property {string} [hebt] die Einheit, die sie auf ihre Elitestufe hebt - die Art bleibt (einheiten AC-69)
+ * @property {string[]} [haeuser] nur diese Haeuser erforschen sie (einheiten AC-69)
  * @property {Record<string, string>} [bild] mit welchem Bild es danach steht (bauen AC-38)
+ * @property {boolean} [karte] die ganze Karte gilt danach als erkundet (bauen AC-52)
  *
  * @typedef {VerbesserungNurHier & Wirkungen} Verbesserung
  */
@@ -210,8 +217,8 @@ const EINHEITEN = {
   // Die Bogenlinie: der `bogenschuetze` des Lehens heisst am Bildschirm
   // Kurzbogenschuetze; im Fuerstentum macht die Verbesserung `bogenstufe`
   // daraus den Bogenschuetzen - diese Einheit hier, mit den Werten, die bis
-  // dahin der Armbrustschuetze trug. Der Langbogenschuetze der Krone kommt
-  // mit Stufe F. Der Bezeichner des Lehens bleibt, weil Tests, Bilder und
+  // dahin der Armbrustschuetze trug. In der Krone folgt der
+  // `langbogenschuetze` (einheiten AC-67). Der Bezeichner des Lehens bleibt, weil Tests, Bilder und
   // Nachweise an ihm haengen; deshalb traegt die zweite Stufe die Zwei.
   bogenschuetze2: {
     leben: 35, tempo: 0.96, sicht: 7, tragkraft: 0, kosten: { holz: 30, gold: 45 }, zeit: 27, kuerzel: 'j',
@@ -226,7 +233,7 @@ const EINHEITEN = {
   // gegen 2 Fernruestung macht der Bolzen 7 in 3,5 s (2,0 je Sekunde), der
   // Pfeil 3 in 2 s (1,5); gegen Ungeruestete liegen beide gleich (2,6 und
   // 2,5), und der Bogen ist billiger. Keinen Bonus gegen Speer - den hat die
-  // Bogenlinie. Die schwere Armbrust der Krone kommt mit Stufe F.
+  // Bogenlinie. In der Krone folgt die `schwerearmbrust` (einheiten AC-67).
   armbrustschuetze: {
     leben: 35, tempo: 0.96, sicht: 7, tragkraft: 0, kosten: { holz: 35, gold: 55 }, zeit: 27, kuerzel: 'a',
     angriff: 9, nahruestung: 0, fernruestung: 0, reichweite: 5, nachladen: 3.5,
@@ -262,6 +269,70 @@ const EINHEITEN = {
     leben: 60, tempo: 1.55, sicht: 4, tragkraft: 0, kosten: { nahrung: 80 }, zeit: 30, kuerzel: 'v',
     angriff: 7, nahruestung: 0, fernruestung: 2, reichweite: 0, nachladen: 2,
     klassen: ['kavallerie'], zeitalter: 2, stufeVon: 'spaeherreiter',
+  },
+  // **Die Stufen der Krone** (einheiten AC-66), jede wie die des Fuerstentums:
+  // eine Verbesserung tauscht die Vorstufe aus, Preis, Tempo und
+  // Ausbildungszeit bleiben. **Eine Stufe je Linie, ausser beim Ritter** -
+  // das Original hat beim Schwert und beim Ritter zwei (Champion, Paladin);
+  // den Paladin gibt es hier (Benutzer, 2026-11-18), den Champion nicht.
+  // Leben, Angriff, Ruestung und Bonus aus den offenen
+  // Technikbaum-Daten zum Original (gelesen 2026-11-18,
+  // docs/strategie/vorlage-aoe2.md). Jede hat ihre eigene gerenderte Figur
+  // (darstellung AC-32).
+  //
+  // Die Kuerzel sind Grossbuchstaben: von a bis z ist jedes vergeben.
+  zweihandkaempfer: {
+    leben: 65, tempo: 0.9, sicht: 4, tragkraft: 0, kosten: { nahrung: 60, gold: 20 }, zeit: 21, kuerzel: 'Z',
+    angriff: 12, nahruestung: 1, fernruestung: 1, reichweite: 0, nachladen: 2,
+    klassen: ['infanterie'], zeitalter: 3, stufeVon: 'langschwertkaempfer',
+  },
+  hellebardier: {
+    leben: 60, tempo: 1.0, sicht: 4, tragkraft: 0, kosten: { nahrung: 35, holz: 25 }, zeit: 22, kuerzel: 'H',
+    angriff: 6, nahruestung: 0, fernruestung: 0, reichweite: 0, nachladen: 3,
+    klassen: ['infanterie', 'speer'], bonus: { kavallerie: 32 }, zeitalter: 3, stufeVon: 'pikenier',
+  },
+  husar: {
+    leben: 75, tempo: 1.55, sicht: 4, tragkraft: 0, kosten: { nahrung: 80 }, zeit: 30, kuerzel: 'U',
+    angriff: 7, nahruestung: 0, fernruestung: 2, reichweite: 0, nachladen: 1.9,
+    klassen: ['kavallerie'], zeitalter: 3, stufeVon: 'leichtekavallerie',
+  },
+  kavalier: {
+    leben: 120, tempo: 1.35, sicht: 4, tragkraft: 0, kosten: { nahrung: 60, gold: 75 }, zeit: 30, kuerzel: 'K',
+    angriff: 12, nahruestung: 2, fernruestung: 2, reichweite: 0, nachladen: 1.8,
+    klassen: ['kavallerie'], zeitalter: 3, stufeVon: 'ritter',
+  },
+  paladin: {
+    leben: 160, tempo: 1.35, sicht: 4, tragkraft: 0, kosten: { nahrung: 60, gold: 75 }, zeit: 30, kuerzel: 'P',
+    angriff: 14, nahruestung: 2, fernruestung: 3, reichweite: 0, nachladen: 1.9,
+    klassen: ['kavallerie'], zeitalter: 3, stufeVon: 'kavalier',
+  },
+  // Schuetzen und Belagerung der Krone (einheiten AC-67, AC-68). Der
+  // Langbogenschuetze traegt die Werte des Arbalestenschuetzen der Vorlage,
+  // die schwere Armbrust hat kein Vorbild - 12 Angriff alle 3,5 s sind ein
+  // Startwert. Belagerungsramme und Onager aus den offenen Technikbaum-Daten
+  // zum Original. Preis, Tempo und Ausbildungszeit bleiben die der Vorstufe;
+  // gesetzt ist die Sicht des Onagers (Reichweite plus zwei wie beim
+  // Mangonel).
+  langbogenschuetze: {
+    leben: 40, tempo: 0.96, sicht: 7, tragkraft: 0, kosten: { holz: 30, gold: 45 }, zeit: 27, kuerzel: 'L',
+    angriff: 6, nahruestung: 0, fernruestung: 0, reichweite: 5, nachladen: 2,
+    klassen: ['bogenschuetze'], bonus: { speer: 3 }, zeitalter: 3, stufeVon: 'bogenschuetze2',
+  },
+  schwerearmbrust: {
+    leben: 40, tempo: 0.96, sicht: 7, tragkraft: 0, kosten: { holz: 35, gold: 55 }, zeit: 27, kuerzel: 'A',
+    angriff: 12, nahruestung: 0, fernruestung: 0, reichweite: 5, nachladen: 3.5,
+    klassen: ['bogenschuetze'], zeitalter: 3, stufeVon: 'armbrustschuetze',
+  },
+  belagerungsramme: {
+    leben: 270, tempo: 0.5, sicht: 3, tragkraft: 0, kosten: { holz: 160, gold: 75 }, zeit: 36, kuerzel: 'R',
+    angriff: 4, nahruestung: 0, fernruestung: 195, reichweite: 0, nachladen: 5,
+    klassen: ['belagerung'], bonus: { gebaeude: 175 }, nurGebaeude: true, wacht: false, zeitalter: 3,
+    stufeVon: 'ramme',
+  },
+  onager: {
+    leben: 60, tempo: 0.6, sicht: 10, tragkraft: 0, kosten: { holz: 160, gold: 135 }, zeit: 46, kuerzel: 'O',
+    angriff: 55, nahruestung: 0, fernruestung: 8, reichweite: 8, mindestreichweite: 3, nachladen: 6,
+    flaeche: 1, geschoss: 7, klassen: ['belagerung', 'wurf'], zeitalter: 3, stufeVon: 'mangonel',
   },
   // **Einheiten der Haeuser** (ADR-0014, einheiten AC-42 bis AC-44). `haeuser`
   // nennt, wer sie ausbildet - gelesen neben `zeitalter`: im Menue, bei der
@@ -375,7 +446,7 @@ const EINHEITEN = {
   mangonel: {
     leben: 50, tempo: 0.6, sicht: 9, tragkraft: 0, kosten: { holz: 160, gold: 135 }, zeit: 46, kuerzel: 'n',
     angriff: 40, nahruestung: 0, fernruestung: 6, reichweite: 7, mindestreichweite: 3, nachladen: 6,
-    flaeche: 1, geschoss: 7, klassen: ['belagerung'], zeitalter: 2,
+    flaeche: 1, geschoss: 7, klassen: ['belagerung', 'wurf'], zeitalter: 2,
   },
   // Der Moench (einheiten AC-37), Werte aus der Vorlage: 100 Gold, 51 s, 30
   // Leben, Tempo 0,7, keine Ruestung. Er greift nicht an - ohne `angriff`
@@ -462,8 +533,8 @@ const GEBAEUDE = {
   // Forschung veraendern die Flaeche des Nebels). Werte aus der Vorlage, die
   // Sicht von zehn Feldern wie im Original.
   aussenposten: { seite: 1, groesse: 1, kosten: { holz: 25, stein: 25 }, bauzeit: 15, leben: 500, wohnraum: 0, annahme: [], bildetAus: [], sicht: 10, zumAufstieg: false },
-  muehle: { groesse: 2, kosten: { holz: 100 }, bauzeit: 35, leben: 1000, wohnraum: 0, annahme: ['nahrung'], bildetAus: ['pferdekummet', 'schwererPflug'] },
-  holzfaellerlager: { groesse: 2, kosten: { holz: 100 }, bauzeit: 35, leben: 1000, wohnraum: 0, annahme: ['holz'], bildetAus: ['doppelaxt', 'bogensaege'] },
+  muehle: { groesse: 2, kosten: { holz: 100 }, bauzeit: 35, leben: 1000, wohnraum: 0, annahme: ['nahrung'], bildetAus: ['pferdekummet', 'schwererPflug', 'fruchtwechsel'] },
+  holzfaellerlager: { groesse: 2, kosten: { holz: 100 }, bauzeit: 35, leben: 1000, wohnraum: 0, annahme: ['holz'], bildetAus: ['doppelaxt', 'bogensaege', 'zweimannsaege'] },
   bergbaulager: { groesse: 2, kosten: { holz: 100 }, bauzeit: 35, leben: 1000, wohnraum: 0, annahme: ['gold', 'stein'], bildetAus: ['goldbergbau', 'goldschacht', 'steinbergbau', 'steinschacht'] },
   // Eine Farm ist begehbar, traegt 175 Nahrung und wird mit 0,32 je Sekunde
   // bestellt - von hoechstens einem (einheiten AC-18).
@@ -478,7 +549,7 @@ const GEBAEUDE = {
   kaserne: {
     seite: 1,
     groesse: 3, kosten: { holz: 175 }, bauzeit: 50, leben: 1200, wohnraum: 0, annahme: [],
-    bildetAus: ['miliz', 'speerkaempfer', 'soeldner', 'soldatenstufe', 'langschwertstufe', 'pikenierstufe'],
+    bildetAus: ['miliz', 'speerkaempfer', 'soeldner', 'soldatenstufe', 'langschwertstufe', 'zweihandstufe', 'pikenierstufe', 'hellebardierstufe', 'brandstiftung', 'knappen'],
   },
   // Gebaeude der Feudalzeit (bauen AC-24): `zeitalter: 1` sperrt sie, bis die
   // Feudalzeit erreicht ist. Die Schmiede bildet keine Einheiten aus - sie
@@ -486,12 +557,12 @@ const GEBAEUDE = {
   schiessanlage: {
     seite: 1,
     groesse: 3, kosten: { holz: 175 }, bauzeit: 50, leben: 1000, wohnraum: 0, annahme: [],
-    bildetAus: ['bogenschuetze', 'plaenkler', 'armbrustschuetze', 'eibenschuetze', 'pavesenschuetze', 'bogenstufe', 'eliteplaenklerstufe'], zeitalter: 1,
+    bildetAus: ['bogenschuetze', 'plaenkler', 'armbrustschuetze', 'eibenschuetze', 'pavesenschuetze', 'bogenstufe', 'langbogenstufe', 'armbruststufe', 'eliteplaenklerstufe'], zeitalter: 1,
   },
   stall: {
     seite: 1,
     groesse: 3, kosten: { holz: 175 }, bauzeit: 50, leben: 1000, wohnraum: 0, annahme: [],
-    bildetAus: ['spaeherreiter', 'ritter', 'kavalleriestufe', 'pferdezucht'], zeitalter: 1,
+    bildetAus: ['spaeherreiter', 'ritter', 'kavalleriestufe', 'husarenstufe', 'kavalierstufe', 'paladinstufe', 'pferdezucht', 'blutlinien'], zeitalter: 1,
   },
   // Angriff und Ruestung je Waffengattung (bauen AC-25, AC-34, AC-39): von
   // jeder Verbesserung steht nur die naechste Stufe im Menue, hoechstens
@@ -499,15 +570,16 @@ const GEBAEUDE = {
   schmiede: {
     groesse: 3, kosten: { holz: 150 }, bauzeit: 40, leben: 1200, wohnraum: 0, annahme: [],
     bildetAus: ['schmiedeangriff', 'befiedertePfeile', 'eisenguss', 'bodkinpfeil',
-      'schuppenpanzer', 'kettenpanzer', 'schuppenharnisch', 'kettenharnisch', 'polsterruestung', 'lederruestung'],
+      'schuppenpanzer', 'kettenpanzer', 'schuppenharnisch', 'kettenharnisch', 'polsterruestung', 'lederruestung',
+      'hochofen', 'armschiene', 'plattenpanzer', 'plattenharnisch', 'ringpanzer'],
     zeitalter: 1,
   },
   // Gebaeude der Ritterzeit (bauen AC-28), Werte aus der Vorlage. Was sie
   // ausbilden und erforschen, kommt mit ihren Schritten: der Moench (D8),
   // Ramme und Mangonel (D6). Die Universitaet forscht Mauerwerk (bauen AC-34).
-  kloster: { groesse: 3, kosten: { holz: 175 }, bauzeit: 40, leben: 2100, wohnraum: 0, annahme: [], bildetAus: ['moench'], zeitalter: 2 },
-  universitaet: { groesse: 3, kosten: { holz: 200 }, bauzeit: 60, leben: 2100, wohnraum: 0, annahme: [], bildetAus: ['mauerwerk', 'wehrturm'], zeitalter: 2 },
-  belagerungswerkstatt: { seite: 1, groesse: 3, kosten: { holz: 200 }, bauzeit: 40, leben: 2100, wohnraum: 0, annahme: [], bildetAus: ['ramme', 'mangonel'], zeitalter: 2 },
+  kloster: { groesse: 3, kosten: { holz: 175 }, bauzeit: 40, leben: 2100, wohnraum: 0, annahme: [], bildetAus: ['moench', 'heiligkeit', 'inbrunst', 'buchdruck', 'erleuchtung'], zeitalter: 2 },
+  universitaet: { groesse: 3, kosten: { holz: 200 }, bauzeit: 60, leben: 2100, wohnraum: 0, annahme: [], bildetAus: ['mauerwerk', 'wehrturm', 'tretkran', 'chemie', 'bergfried', 'architektur', 'belagerungsingenieure'], zeitalter: 2 },
+  belagerungswerkstatt: { seite: 1, groesse: 3, kosten: { holz: 200 }, bauzeit: 40, leben: 2100, wohnraum: 0, annahme: [], bildetAus: ['ramme', 'mangonel', 'rammenstufe', 'onagerstufe'], zeitalter: 2 },
   // Ein Gebaeude, das schiesst (bauen AC-29): `angriff`, `reichweite` und
   // `nachladen` wie bei einer Einheit, Pfeile also Fernkampf. Werte aus der
   // Vorlage - 5 Angriff, Reichweite 8, alle zwei Sekunden ein Pfeil, Ruestung
@@ -559,7 +631,8 @@ const GEBAEUDE = {
   burg: {
     seite: 1,
     groesse: 4, kosten: { stein: 650 }, bauzeit: 200, leben: 4800, wohnraum: 20, annahme: [],
-    bildetAus: ['kriegswolf', 'reiterschuetze', 'riese', 'meuchler', 'wiedergaenger'], zeitalter: 2,
+    bildetAus: ['kriegswolf', 'reiterschuetze', 'riese', 'meuchler', 'wiedergaenger', 'sappeure', 'wehrpflicht',
+      'elitekriegswolf', 'elitereiterschuetze', 'eliteriese', 'elitemeuchler', 'elitewiedergaenger'], zeitalter: 2,
     angriff: 11, reichweite: 8, nachladen: 2, pfeile: 4, nahruestung: 8, fernruestung: 11, sicht: 9,
   },
   // Der Markt (bauen AC-33): Kosten, Bauzeit und Leben aus der Vorlage, ab der
@@ -569,7 +642,7 @@ const GEBAEUDE = {
   // Der Markt bildet ab der Ritterzeit den Marktkarren aus (einheiten AC-39) -
   // das Zeitalter steht an der Einheit, gebaut wird er schon in der Feudalzeit.
   markt: {
-    groesse: 4, kosten: { holz: 175 }, bauzeit: 60, leben: 1300, wohnraum: 0, annahme: [], bildetAus: ['marktkarren'], zeitalter: 1,
+    groesse: 4, kosten: { holz: 175 }, bauzeit: 60, leben: 1300, wohnraum: 0, annahme: [], bildetAus: ['marktkarren', 'kartografie', 'karawane'], zeitalter: 1,
     handel: true,
   },
 };
@@ -624,13 +697,16 @@ const ZEITALTER = [
 // AC-23). `voraussetzung` ist die Zahl fertiger eigener Gebaeude des
 // **laufenden** Zeitalters ausser Haeusern - das Dorfzentrum zaehlt mit.
 // Werte aus der Vorlage (docs/strategie/vorlage-aoe2.md).
+// `oder` nennt ein Gebaeude, das allein genuegt: in die Krone fuehren zwei
+// Gebaeude des Fuerstentums **oder eine Burg** (bauen AC-47) - wer nur die
+// Burg baut, soll nicht daran haengen, dass sie als eines zaehlt.
 // Name und Titel des Knopfes kommen aus `ZEITALTER`, damit es nur eine Stelle
 // gibt, an der ein Zeitalter heisst.
 const aufstieg = (stufe, werte) => ({ name: ZEITALTER[stufe].name, titel: `Aufstieg ${ZEITALTER[stufe].zum}`, stufe, ...werte });
 const AUFSTIEGE = {
   feudalzeit: aufstieg(1, { kosten: { nahrung: 500 }, zeit: 130, voraussetzung: 2 }),
   ritterzeit: aufstieg(2, { kosten: { nahrung: 800, gold: 200 }, zeit: 160, voraussetzung: 2 }),
-  imperialzeit: aufstieg(3, { kosten: { nahrung: 1000, gold: 800 }, zeit: 190, voraussetzung: 2 }),
+  imperialzeit: aufstieg(3, { kosten: { nahrung: 1000, gold: 800 }, zeit: 190, voraussetzung: 2, oder: { art: 'burg', text: 'eine Burg' } }),
 };
 
 // Verbesserungen: einmal je Partie, im Gebaeude wie eine Einheit eingereiht.
@@ -676,6 +752,49 @@ const VERBESSERUNGEN = {
   kavalleriestufe: {
     name: 'Leichte Kavallerie', kosten: { nahrung: 150, gold: 50 }, zeit: 45, zeitalter: 2,
     wirkung: {}, wandelt: { spaeherreiter: 'leichtekavallerie' },
+  },
+  // Die Stufen der Krone (einheiten AC-66). Kosten und Dauer aus den offenen
+  // Technikbaum-Daten zum Original (gelesen 2026-11-18). Jede verlangt ihre
+  // Vorstufe - der Ritter hat keine, er ist die erste seiner Linie.
+  zweihandstufe: {
+    name: 'Zweihandkämpfer', kosten: { nahrung: 200, gold: 100 }, zeit: 45, zeitalter: 3,
+    vorstufe: 'langschwertstufe', wirkung: {}, wandelt: { langschwertkaempfer: 'zweihandkaempfer' },
+  },
+  hellebardierstufe: {
+    name: 'Hellebardier', kosten: { nahrung: 300, gold: 600 }, zeit: 50, zeitalter: 3,
+    vorstufe: 'pikenierstufe', wirkung: {}, wandelt: { pikenier: 'hellebardier' },
+  },
+  husarenstufe: {
+    name: 'Husar', kosten: { nahrung: 500, gold: 600 }, zeit: 50, zeitalter: 3,
+    vorstufe: 'kavalleriestufe', wirkung: {}, wandelt: { leichtekavallerie: 'husar' },
+  },
+  kavalierstufe: {
+    name: 'Kavalier', kosten: { nahrung: 300, gold: 300 }, zeit: 80, zeitalter: 3,
+    wirkung: {}, wandelt: { ritter: 'kavalier' },
+  },
+  // Die zweite Stufe des Ritters und die teuerste Stufe im Spiel.
+  paladinstufe: {
+    name: 'Paladin', kosten: { nahrung: 1300, gold: 750 }, zeit: 170, zeitalter: 3,
+    vorstufe: 'kavalierstufe', wirkung: {}, wandelt: { kavalier: 'paladin' },
+  },
+  // Schuetzen und Belagerung der Krone (einheiten AC-67, AC-68). Die
+  // Armbrust und die beiden Belagerungswaffen haben im Fuerstentum keine
+  // Verbesserung, sie sind dort Einheiten - deshalb ohne `vorstufe`.
+  langbogenstufe: {
+    name: 'Langbogenschütze', kosten: { nahrung: 450, gold: 350 }, zeit: 50, zeitalter: 3,
+    vorstufe: 'bogenstufe', wirkung: {}, wandelt: { bogenschuetze2: 'langbogenschuetze' },
+  },
+  armbruststufe: {
+    name: 'Schwere Armbrust', kosten: { nahrung: 400, gold: 350 }, zeit: 50, zeitalter: 3,
+    wirkung: {}, wandelt: { armbrustschuetze: 'schwerearmbrust' },
+  },
+  rammenstufe: {
+    name: 'Belagerungsramme', kosten: { nahrung: 1000 }, zeit: 75, zeitalter: 3,
+    wirkung: {}, wandelt: { ramme: 'belagerungsramme' },
+  },
+  onagerstufe: {
+    name: 'Onager', kosten: { nahrung: 800, gold: 500 }, zeit: 75, zeitalter: 3,
+    wirkung: {}, wandelt: { mangonel: 'onager' },
   },
   // Die Verbesserungen der Feudalzeit (bauen AC-25, AC-26). Kosten und Wirkung
   // stehen in der Vorlage; die Vorlage nennt keine Forschungsdauer, deshalb
@@ -775,6 +894,73 @@ const VERBESSERUNGEN = {
     zeichen: 'hufeisen',
     wirkung: { kavallerie: { tempoAnteil: 0.1 } },
   },
+  // **Verbesserungen mit eigenem Charakter** (bauen AC-52 bis AC-56, Wunsch
+  // des Benutzers 2026-11-18: "so spannende Sachen wie Kartografie"). Preise
+  // und Wirkungen nach dem Original aus dem Gedaechtnis, nicht aus
+  // `vorlage-aoe2.md` - Startwerte. Keine davon erforscht die KI (ki AC-35).
+  //
+  // Kartografie (AC-52): im Original teilt sie die Sicht der Verbuendeten -
+  // das gilt hier ohnehin (spielziel AC-19). Sie bekommt deshalb eine eigene
+  // Wirkung: die ganze Karte gilt als erkundet (`karte`), fuer den Spieler
+  // und alle, mit denen er die Sicht teilt. Was dort steht und geht, zeigt
+  // sie nicht - gesehen wird weiter nur mit Augen.
+  kartografie: {
+    name: 'Kartografie', kosten: { nahrung: 100, gold: 100 }, zeit: 40, zeitalter: 1,
+    zeichen: 'landkarte', wirkung: {}, karte: true,
+  },
+  // Blutlinien (AC-53): alles Berittene +20 Leben, auch wer schon steht.
+  blutlinien: {
+    name: 'Blutlinien', kosten: { nahrung: 150, gold: 100 }, zeit: 50, zeitalter: 1,
+    zeichen: 'blutstropfen', wirkung: { kavallerie: { leben: 20 } },
+  },
+  // Karawane (AC-53): Marktkarren fahren um die Haelfte schneller - mehr
+  // Fahrten je Minute, nicht mehr Gold je Fahrt.
+  karawane: {
+    name: 'Karawane', kosten: { nahrung: 200, gold: 200 }, zeit: 40, zeitalter: 3,
+    zeichen: 'planwagen', wirkung: { marktkarren: { tempoAnteil: 0.5 } },
+  },
+  // Brandstiftung (AC-54): Fussvolk +2 Angriff gegen Gebaeude. Ein Zuschlag
+  // je Klasse des Ziels steht als `bonus` an der Verbesserung, gelesen ueber
+  // `welt.bonusVon()` - die Schadensformel liest ihn nicht aus der Tabelle.
+  brandstiftung: {
+    name: 'Brandstiftung', kosten: { nahrung: 75, gold: 25 }, zeit: 25, zeitalter: 1,
+    zeichen: 'fackel', wirkung: {}, bonus: { infanterie: { gebaeude: 2 } },
+  },
+  // Knappen (AC-54): Fussvolk ein Zehntel schneller, als Anteil wie die Pferdezucht.
+  knappen: {
+    name: 'Knappen', kosten: { nahrung: 100 }, zeit: 40, zeitalter: 2,
+    zeichen: 'stiefel', wirkung: { infanterie: { tempoAnteil: 0.1 } },
+  },
+  // Vier Lehren des Klosters (AC-55). Reichweite und Ruhe des Bekehrens sind
+  // keine Werte der Einheit, sondern ihres `bekehren` - Zuschlaege darauf
+  // stehen als `bekehren` an der Verbesserung, gelesen ueber `welt.bekehrwert()`.
+  heiligkeit: {
+    name: 'Heiligkeit', kosten: { gold: 175 }, zeit: 60, zeitalter: 2,
+    zeichen: 'heiligenschein', wirkung: { moench: { leben: 15 } },
+  },
+  inbrunst: {
+    name: 'Inbrunst', kosten: { gold: 140 }, zeit: 50, zeitalter: 2,
+    zeichen: 'flammenherz', wirkung: { moench: { tempoAnteil: 0.15 } },
+  },
+  buchdruck: {
+    name: 'Buchdruck', kosten: { gold: 200 }, zeit: 55, zeitalter: 3,
+    zeichen: 'buch', wirkung: {}, bekehren: { reichweite: 3 },
+  },
+  erleuchtung: {
+    name: 'Erleuchtung', kosten: { gold: 120 }, zeit: 65, zeitalter: 3,
+    zeichen: 'sonne', wirkung: {}, bekehren: { ruhe: -21 },
+  },
+  // Tretkran (AC-56): Dorfbewohner bauen ein Fuenftel schneller (`bautempo`,
+  // ein Faktor in `welt.baustelleTakten`). Repariert wird wie bisher.
+  tretkran: {
+    name: 'Tretkran', kosten: { nahrung: 300, holz: 200 }, zeit: 50, zeitalter: 2,
+    zeichen: 'kran', wirkung: {}, bautempo: 1.2,
+  },
+  // Sappeure (AC-56): Dorfbewohner +15 Angriff gegen Gebaeude.
+  sappeure: {
+    name: 'Sappeure', kosten: { nahrung: 400, holz: 200 }, zeit: 10, zeitalter: 3,
+    zeichen: 'bresche', wirkung: {}, bonus: { dorfbewohner: { gebaeude: 15 } },
+  },
   // Sicht fuer Gebaeude (kampf AC-17, Wunsch des Benutzers: Forschung
   // veraendert die Flaeche des Nebels). Kosten und Wirkung aus der Vorlage,
   // die Dauer die des Originals. `gebaeude` trifft jedes eigene Gebaeude, wie
@@ -828,7 +1014,7 @@ const VERBESSERUNGEN = {
   // Die Ruestungen der Schmiede (bauen AC-39), je Waffengattung zwei Stufen:
   // die erste ab dem Lehen, die zweite ab dem Fuerstentum und nur nach der
   // ersten. Jede gibt +1 / +1. Kosten und Dauer aus den Technikbaum-Daten zum
-  // Original. Die dritten Stufen kommen mit der Krone (Stufe F).
+  // Original. Die dritten Stufen stehen unten bei der Krone.
   schuppenpanzer: {
     name: 'Schuppenpanzer', kosten: { nahrung: 100 }, zeit: 40, zeitalter: 1,
     zeichen: 'schuppen',
@@ -859,6 +1045,122 @@ const VERBESSERUNGEN = {
     vorstufe: 'polsterruestung', zeichen: 'leder',
     wirkung: { bogenschuetze: { nahruestung: 1, fernruestung: 1 } },
   },
+  // **Die Verbesserungen der Krone** (bauen AC-48 bis AC-50). Kosten und
+  // Dauer aus den offenen Technikbaum-Daten zum Original (gelesen
+  // 2026-11-18), die Wirkungen nach dem Original.
+  //
+  // Die Schmiede (AC-48): die dritte Stufe jeder Reihe, jede verlangt ihre
+  // Vorstufe. Die Ruestungen geben +1 gegen Nah und +2 gegen Fern.
+  hochofen: {
+    name: 'Hochofen', kosten: { nahrung: 275, gold: 225 }, zeit: 100, zeitalter: 3,
+    vorstufe: 'eisenguss', zeichen: 'hochofen',
+    wirkung: { infanterie: { angriff: 2 }, kavallerie: { angriff: 2 } },
+  },
+  armschiene: {
+    name: 'Armschiene', kosten: { nahrung: 300, gold: 200 }, zeit: 40, zeitalter: 3,
+    vorstufe: 'bodkinpfeil', zeichen: 'armschiene',
+    wirkung: { bogenschuetze: { angriff: 1, reichweite: 1 } },
+  },
+  plattenpanzer: {
+    name: 'Plattenpanzer', kosten: { nahrung: 300, gold: 150 }, zeit: 70, zeitalter: 3,
+    vorstufe: 'kettenpanzer', zeichen: 'platte',
+    wirkung: { infanterie: { nahruestung: 1, fernruestung: 2 } },
+  },
+  plattenharnisch: {
+    name: 'Plattenrossharnisch', kosten: { nahrung: 350, gold: 200 }, zeit: 75, zeitalter: 3,
+    vorstufe: 'kettenharnisch', zeichen: 'rossplatte',
+    wirkung: { kavallerie: { nahruestung: 1, fernruestung: 2 } },
+  },
+  ringpanzer: {
+    name: 'Ringpanzer der Schützen', kosten: { nahrung: 250, gold: 250 }, zeit: 70, zeitalter: 3,
+    vorstufe: 'lederruestung', zeichen: 'ringweste',
+    wirkung: { bogenschuetze: { nahruestung: 1, fernruestung: 2 } },
+  },
+  // Die Wirtschaft (AC-49): die dritte Stufe fuer Farm und Holz, in den
+  // Formen von Pferdekummet und Doppelaxt.
+  fruchtwechsel: {
+    name: 'Fruchtwechsel', kosten: { nahrung: 250, holz: 250 }, zeit: 70, zeitalter: 3,
+    vorstufe: 'schwererPflug', zeichen: 'fruchtfolge',
+    wirkung: {}, farm: { nahrung: 175 },
+  },
+  zweimannsaege: {
+    name: 'Zweimannsäge', kosten: { nahrung: 300, holz: 200 }, zeit: 100, zeitalter: 3,
+    vorstufe: 'bogensaege', zeichen: 'zugsaege',
+    wirkung: {}, sammeln: { holz: 1.1 },
+  },
+  // Universitaet und Burg (AC-50). Chemie: alles, was Pfeile schiesst - die
+  // Klasse der Schuetzen und jedes Gebaeude, das schiesst (`gebaeude.angriff`
+  // gilt nur dem, siehe `welt.gebaeudewert`).
+  chemie: {
+    name: 'Chemie', kosten: { nahrung: 300, gold: 200 }, zeit: 100, zeitalter: 3,
+    zeichen: 'kolben',
+    wirkung: { bogenschuetze: { angriff: 1 } }, gebaeude: { angriff: 1 },
+  },
+  // Der Bergfried: die zweite Stufe des Turms nach dem Wehrturm (bauen AC-38).
+  // Wer spaeter erforscht ist, nennt - die Wirkungen stehen in der Reihenfolge
+  // der Forschung.
+  bergfried: {
+    name: 'Bergfried', kosten: { nahrung: 500, holz: 350 }, zeit: 75, zeitalter: 3,
+    vorstufe: 'wehrturm', zeichen: 'bergfried',
+    wirkung: {}, bauwerk: { wachturm: { leben: 750, angriff: 1, nahruestung: 1, fernruestung: 1 } },
+    nennt: { wachturm: 'Bergfried' }, bild: { wachturm: 'bergfried' },
+  },
+  architektur: {
+    name: 'Architektur', kosten: { nahrung: 300, holz: 200 }, zeit: 70, zeitalter: 3,
+    vorstufe: 'mauerwerk', zeichen: 'zirkel',
+    wirkung: {}, gebaeude: { lebenAnteil: 0.1, nahruestung: 1, fernruestung: 1 },
+  },
+  // Belagerungsingenieure: was wirft, wirft ein Feld weiter, und jede
+  // Belagerungswaffe richtet an Gebaeuden ein Fuenftel mehr an. `bonusAnteil`
+  // ist ein Anteil auf Angriff samt Zuschlag gegen die Klasse des Ziels,
+  // gerechnet als weiterer Zuschlag in `welt.bonusVon()` - die Ramme stoesst
+  // danach mit 152 statt 127, und die Leiste zeigt es als "+150 gegen Gebäude".
+  belagerungsingenieure: {
+    name: 'Belagerungsingenieure', kosten: { nahrung: 500, holz: 600 }, zeit: 45, zeitalter: 3,
+    zeichen: 'zahnrad',
+    wirkung: { wurf: { reichweite: 1 } }, bonusAnteil: { belagerung: { gebaeude: 0.2 } },
+  },
+  // Wehrpflicht: `ausbildung` wie im Mannschaftsbonus (`welt.ausbildungstempo`),
+  // ein Faktor je Gebaeudeart - nur Einheiten, keine Forschung.
+  wehrpflicht: {
+    name: 'Wehrpflicht', kosten: { nahrung: 150, gold: 150 }, zeit: 60, zeitalter: 3,
+    zeichen: 'trommel',
+    wirkung: {}, ausbildung: { kaserne: 1.33, schiessanlage: 1.33, stall: 1.33, burg: 1.33 },
+  },
+  // **Die Elitestufen der fuenf Einheiten aus der Burg** (einheiten AC-69,
+  // ADR-0014 Punkt 12). Keine neue Art und keine neue Figur, wie in der
+  // Vorlage: `hebt` nennt die Einheit, die Wirkung traegt ihre Zuschlaege,
+  // `nennt` ihren Namen danach. Tarnung, Preis in Gefallenen und jede andere
+  // Regel haengen an der Art und bleiben. `haeuser` wie an der Einheit: nur
+  // ihr Haus sieht und erforscht sie. Preis und Dauer sind Startwerte ohne
+  // Vorbild, die Namen vorlaeufig.
+  elitekriegswolf: {
+    name: 'Elite-Kriegswolf', kosten: { nahrung: 500, gold: 400 }, zeit: 60, zeitalter: 3,
+    haeuser: ['eschenbruch'], hebt: 'kriegswolf', nennt: { kriegswolf: 'Elite-Kriegswolf' },
+    wirkung: { kriegswolf: { leben: 15, angriff: 2 } },
+  },
+  elitereiterschuetze: {
+    name: 'Elite-Reiterschütze', kosten: { nahrung: 500, gold: 400 }, zeit: 60, zeitalter: 3,
+    haeuser: ['rappenstein'], hebt: 'reiterschuetze', nennt: { reiterschuetze: 'Elite-Reiterschütze' },
+    wirkung: { reiterschuetze: { leben: 15, angriff: 1 } },
+  },
+  eliteriese: {
+    name: 'Elite-Riese', kosten: { nahrung: 500, gold: 400 }, zeit: 60, zeitalter: 3,
+    haeuser: ['wehrstein'], hebt: 'riese', nennt: { riese: 'Elite-Riese' },
+    wirkung: { riese: { leben: 40, angriff: 2 } }, bonus: { riese: { gebaeude: 10 } },
+  },
+  elitemeuchler: {
+    name: 'Elite-Meuchler', kosten: { nahrung: 500, gold: 400 }, zeit: 60, zeitalter: 3,
+    haeuser: ['silberfurt'], hebt: 'meuchler', nennt: { meuchler: 'Elite-Meuchler' },
+    wirkung: { meuchler: { leben: 10, angriff: 2 } }, bonus: { meuchler: { dorf: 4, moench: 4 } },
+  },
+  elitewiedergaenger: {
+    name: 'Elite-Wiedergänger', kosten: { nahrung: 500, gold: 400 }, zeit: 60, zeitalter: 3,
+    haeuser: ['distelhag'], hebt: 'wiedergaenger', nennt: { wiedergaenger: 'Elite-Wiedergänger' },
+    // Nahruestung statt der Fernruestung der ersten Fassung: mit +1 gegen Pfeile schlug er
+    // den Langbogenschuetzen gleicher Kosten 23 von 40 statt 0 (einheiten AC-49 verlangt die Niederlage).
+    wirkung: { wiedergaenger: { leben: 15, angriff: 2, nahruestung: 1 } },
+  },
 };
 
 // Die Klassen, auf die Bonusschaden und Verbesserungen greifen (kampf AC-3,
@@ -880,6 +1182,9 @@ const KLASSEN = {
   // Belagerung (einheiten AC-35). `gebaeude` traegt jedes Gebaeude von selbst
   // (oben) - die Ramme hat ihren Bonus dagegen.
   belagerung: { name: 'Belagerung' },
+  // Mangonel und Onager: was wirft. Die Belagerungsingenieure geben ihnen
+  // Reichweite (bauen AC-50) - der Ramme nicht.
+  wurf: { name: 'Wurfmaschinen' },
   // Der Moench (einheiten AC-37) - bekehrt keine Moenche (AC-38).
   moench: { name: 'Mönche' },
   // Der Marktkarren (einheiten AC-39) - noch greift kein Bonus auf ihn.
@@ -1019,7 +1324,13 @@ const HAEUSER = {
  */
 const REPARATUR = { lebenJeSekunde: 12.5, weitere: 0.5, kostenanteil: 0.5 };
 
+// Die Gebaeude, die schiessen (bauen AC-29): wer hier einen Angriff hat.
+// Das ist eine Eigenschaft der Art, kein Wert - der Angriff selbst wird nur
+// ueber `welt.gebaeudewert()` gelesen (Waechter), und eine Verbesserung macht
+// aus keinem Haus einen Turm.
+const SCHIESSENDE = new Set(Object.keys(GEBAEUDE).filter((art) => (GEBAEUDE[art].angriff || 0) > 0));
+
 module.exports = {
-  EINHEITEN, SAMMELN, TIERE, GEBAEUDE, VERBESSERUNGEN, ZEITALTER, AUFSTIEGE, KLASSEN, HANDEL, HAEUSER,
+  EINHEITEN, SAMMELN, TIERE, GEBAEUDE, VERBESSERUNGEN, ZEITALTER, AUFSTIEGE, KLASSEN, HANDEL, HAEUSER, SCHIESSENDE,
   BEVOELKERUNG_MAX, SCHLANGE_MAX, STARTAUFSTELLUNG, REPARATUR,
 };

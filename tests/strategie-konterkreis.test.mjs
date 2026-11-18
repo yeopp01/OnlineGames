@@ -13,7 +13,7 @@ import { createRequire } from 'node:module';
 const require = createRequire(import.meta.url);
 const { gefechtSpielen, kostenSumme } = require('../server/spiele/strategie/pruefstand.js');
 const { Welt } = require('../server/spiele/strategie/welt.js');
-const { EINHEITEN } = require('../server/spiele/strategie/daten.js');
+const { EINHEITEN, VERBESSERUNGEN } = require('../server/spiele/strategie/daten.js');
 
 // Links schlaegt rechts - der Konterkreis der Feudalzeit aus der Vorlage
 // (docs/strategie/vorlage-aoe2.md).
@@ -201,6 +201,68 @@ test('fahrplan AC-25: die Armbrust ist die Antwort auf Ruestung - gegen gerueste
   const mit = gegenBogen(['polsterruestung', 'lederruestung']);
   assert.ok(ohne <= STARTWERTE / 2, `ohne Ruestung gewinnt die Armbrust ${ohne} von ${STARTWERTE} - sie soll den Bogen nicht ersetzen`);
   assert.ok(mit >= Math.ceil(STARTWERTE * 0.8), `gegen geruestete Schuetzen gewinnt die Armbrust nur ${mit} von ${STARTWERTE}`);
+});
+
+// Der Konterkreis in der Krone (fahrplan AC-26): dieselben neun Paarungen wie
+// AC-25, an jeder Stelle die Stufe der Krone, beide Seiten mit der vollen
+// Schmiede (bauen AC-48), Budget 2000. Gemessen am 2026-11-18: jede Paarung
+// 20 von 20, umgekehrt 0 - auch ohne Schmiede behaelt jede ihre Richtung.
+const SCHMIEDE_VOLL = ['schmiedeangriff', 'befiedertePfeile', 'eisenguss', 'bodkinpfeil', 'schuppenpanzer', 'kettenpanzer',
+  'schuppenharnisch', 'kettenharnisch', 'polsterruestung', 'lederruestung', 'hochofen', 'armschiene', 'plattenpanzer',
+  'plattenharnisch', 'ringpanzer'];
+const BUDGET_KRONE = 2000;
+const KREIS_KRONE = [
+  ['hellebardier', 'kavalier'],
+  ['hellebardier', 'husar'],
+  ['eliteplaenkler', 'langbogenschuetze'],
+  ['eliteplaenkler', 'schwerearmbrust'],
+  ['langbogenschuetze', 'hellebardier'],
+  ['kavalier', 'langbogenschuetze'],
+  ['kavalier', 'schwerearmbrust'],
+  ['husar', 'langbogenschuetze'],
+  ['husar', 'schwerearmbrust'],
+];
+
+function siegeInDerKrone(links, rechts) {
+  let siege = 0;
+  let ohneEnde = 0;
+  for (let startwert = 1; startwert <= STARTWERTE; startwert++) {
+    const ergebnis = gefechtSpielen({
+      links, rechts, startwert, budget: BUDGET_KRONE, minuten: 10, erforscht: { links: SCHMIEDE_VOLL, rechts: SCHMIEDE_VOLL },
+    });
+    if (ergebnis.sieger === 'links') siege += 1;
+    if (!ergebnis.sieger) ohneEnde += 1;
+  }
+  return { siege, ohneEnde };
+}
+
+test('fahrplan AC-26: der Konterkreis haelt in der Krone - jede der neun Paarungen mit der Stufe der Krone und voller Schmiede', () => {
+  for (const art of SCHMIEDE_VOLL) assert.ok(VERBESSERUNGEN[art], `${art} steht in den Daten`);
+  for (const [konter, ziel] of KREIS_KRONE) {
+    const hin = siegeInDerKrone(konter, ziel);
+    assert.equal(hin.siege, STARTWERTE, `${konter} soll ${ziel} kontern, gewinnt aber nur ${hin.siege} von ${STARTWERTE}`);
+    assert.equal(hin.ohneEnde, 0, `${konter} gegen ${ziel}: ${hin.ohneEnde} Gefechte ohne Ende`);
+    const her = siegeInDerKrone(ziel, konter);
+    assert.equal(her.siege, 0, `${ziel} wird von ${konter} gekontert, gewinnt als linke Seite aber ${her.siege} von ${STARTWERTE}`);
+  }
+});
+
+test('fahrplan AC-26: der Paladin faellt vor dem Hellebardier und schlaegt beide Schuetzenlinien - und gegen das Schwert hilft die Armbrust, nicht der Bogen', () => {
+  // Die zweite Stufe des Ritters (einheiten AC-66) steht an derselben Stelle
+  // im Kreis wie die erste. Gemessen: je 20 von 20, umgekehrt 0.
+  for (const [konter, ziel] of [['hellebardier', 'paladin'], ['paladin', 'langbogenschuetze'], ['paladin', 'schwerearmbrust']]) {
+    assert.equal(siegeInDerKrone(konter, ziel).siege, STARTWERTE, `${konter} gegen ${ziel}`);
+    assert.equal(siegeInDerKrone(ziel, konter).siege, 0, `${ziel} gegen ${konter}`);
+  }
+  // Wofuer es zwei Schuetzenlinien gibt, gilt auch in der Krone: der
+  // Zweihandkaempfer mit Plattenpanzer laeuft durch die Pfeile (gemessen 20
+  // von 20, wie der Langschwertkaempfer durch die des Fuerstentums), vor den
+  // Bolzen faellt er (gemessen 19 von 20, als linke Seite gewinnt er 3).
+  const schwelle = Math.ceil(STARTWERTE * 0.8);
+  assert.ok(siegeInDerKrone('zweihandkaempfer', 'langbogenschuetze').siege >= schwelle, 'das Schwert schlaegt den Bogen');
+  assert.ok(siegeInDerKrone('langbogenschuetze', 'zweihandkaempfer').siege <= STARTWERTE - schwelle);
+  assert.ok(siegeInDerKrone('schwerearmbrust', 'zweihandkaempfer').siege >= schwelle, 'die schwere Armbrust schlaegt das Schwert');
+  assert.ok(siegeInDerKrone('zweihandkaempfer', 'schwerearmbrust').siege <= STARTWERTE - schwelle);
 });
 
 /** Wie viele Gegner ein Stein des Mangonels im Mittel trifft, ueber alle Startwerte. */

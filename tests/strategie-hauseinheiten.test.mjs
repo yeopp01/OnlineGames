@@ -337,7 +337,7 @@ test('einheiten AC-45 bis AC-49: jedes der fuenf Haeuser hat in der Burg genau s
   const eigene = [['eschenbruch', 'kriegswolf'], ['rappenstein', 'reiterschuetze'], ['wehrstein', 'riese'], ['silberfurt', 'meuchler'], ['distelhag', 'wiedergaenger'], [undefined, null]];
   assert.deepEqual(Object.keys(HAEUSER).sort(), eigene.map(([haus]) => haus).filter(Boolean).sort());
   for (const [haus, art] of eigene) {
-    const darf = GEBAEUDE.burg.bildetAus.filter((e) => welt.hausBildetAus({ haus }, e));
+    const darf = GEBAEUDE.burg.bildetAus.filter((e) => EINHEITEN[e] && welt.hausBildetAus({ haus }, e));
     assert.deepEqual(darf, art ? [art] : [], String(haus));
   }
 });
@@ -693,4 +693,181 @@ test('einheiten AC-42: die KI bildet nicht aus, was nur ein anderes Haus ausbild
     for (const verboten of [...besonders, 'soeldner']) assert.ok(!arten.has(verboten), `${haus}: ${[...arten]}`);
     if (art !== 'burg') assert.ok(arten.size > 0, `${haus} bildet in ${art} weiter aus`);
   }
+});
+
+// ---- Die Elitestufen der Krone (einheiten AC-69) ---------------------------------
+
+const { bringt } = require('../server/spiele/strategie/bringt.js');
+const { GEBAEUDE_NAMEN } = require('../server/spiele/strategie/welt.js');
+
+// Verbesserung, Einheit, Haus, Name, Zuschlaege, Zuschlag je Zielklasse, die Werte der Spec.
+const ELITE = [
+  ['elitekriegswolf', 'kriegswolf', 'eschenbruch', 'Elite-Kriegswolf', { leben: 15, angriff: 2 }, {}, { leben: 70, angriff: 9 }],
+  ['elitereiterschuetze', 'reiterschuetze', 'rappenstein', 'Elite-Reiterschütze', { leben: 15, angriff: 1 }, {}, { leben: 75, angriff: 6 }],
+  ['eliteriese', 'riese', 'wehrstein', 'Elite-Riese', { leben: 40, angriff: 2 }, { gebaeude: 10 }, { leben: 220, angriff: 12 }],
+  ['elitemeuchler', 'meuchler', 'silberfurt', 'Elite-Meuchler', { leben: 10, angriff: 2 }, { dorf: 4, moench: 4 }, { leben: 45, angriff: 8 }],
+  ['elitewiedergaenger', 'wiedergaenger', 'distelhag', 'Elite-Wiedergänger', { leben: 15, angriff: 2, nahruestung: 1 }, {}, { leben: 75, angriff: 8, nahruestung: 2, fernruestung: 0 }],
+];
+const WERTFELDER = ['leben', 'angriff', 'nahruestung', 'fernruestung', 'reichweite', 'tempo', 'sicht', 'nachladen'];
+
+test('einheiten AC-69: jede der fuenf Einheiten aus der Burg hat ihre Elitestufe - 500 Nahrung, 400 Gold, 60 Sekunden, und die Werte der Spec', () => {
+  assert.deepEqual(Object.keys(VERBESSERUNGEN).filter((art) => VERBESSERUNGEN[art].hebt), ELITE.map(([art]) => art));
+  for (const [art, einheit, haus, name, plus, gegen, soll] of ELITE) {
+    const v = VERBESSERUNGEN[art];
+    assert.deepEqual([v.name, v.kosten, v.zeit, v.zeitalter, v.haeuser, v.hebt, v.nennt],
+      [name, { nahrung: 500, gold: 400 }, 60, 3, [haus], einheit, { [einheit]: name }], art);
+    // Dasselbe Haus wie die Einheit, im selben Gebaeude.
+    assert.deepEqual(EINHEITEN[einheit].haeuser, [haus], art);
+    assert.ok(GEBAEUDE.burg.bildetAus.includes(art), `${art} steht in der Burg`);
+    assert.deepEqual(Object.keys(GEBAEUDE).filter((g) => (GEBAEUDE[g].bildetAus || []).includes(art)), ['burg'], `${art} nur dort`);
+    // Die Stufe tauscht nichts aus: keine neue Art, also auch keine neue Figur (darstellung AC-32).
+    assert.equal(v.wandelt, undefined, art);
+    assert.equal(EINHEITEN[art], undefined, art);
+    // Die Zahlen der Spec sind die der Daten: Grundwert und Zuschlag.
+    for (const [feld, zahl] of Object.entries(soll)) assert.equal((EINHEITEN[einheit][feld] || 0) + (plus[feld] || 0), zahl, `${art}: ${feld}`);
+    for (const [klasse, zahl] of Object.entries(gegen)) assert.ok(EINHEITEN[einheit].bonus[klasse] > 0 && zahl > 0, `${art}: gegen ${klasse}`);
+
+    // Im Spiel, bei ihrem Haus: genau der Zuschlag, an genau dieser Einheit.
+    const ohne = mitGebaeude('burg', haus, 3).welt;
+    const mitStufe = mitGebaeude('burg', haus, 3).welt;
+    mitStufe.spielerVon('a').verbesserungen.push(art);
+    for (const feld of WERTFELDER) {
+      assert.equal(mitStufe.einheitenwert('a', einheit, feld) - ohne.einheitenwert('a', einheit, feld), plus[feld] || 0, `${art}: ${feld} im Spiel`);
+    }
+    const vorher = ohne.bonusVon('a', einheit);
+    const nachher = mitStufe.bonusVon('a', einheit);
+    for (const klasse of new Set([...Object.keys(vorher), ...Object.keys(nachher)])) {
+      assert.equal((nachher[klasse] || 0) - (vorher[klasse] || 0), gegen[klasse] || 0, `${art}: gegen ${klasse} im Spiel`);
+    }
+    for (const andere of Object.keys(EINHEITEN).filter((e) => e !== einheit)) {
+      for (const feld of ['leben', 'angriff']) assert.equal(mitStufe.einheitenwert('a', andere, feld), ohne.einheitenwert('a', andere, feld), `${art} aendert ${andere} nicht`);
+    }
+  }
+  // Riese und Meuchler: die Zuschlaege der Spec.
+  const riese = mitGebaeude('burg', 'wehrstein', 3).welt;
+  riese.spielerVon('a').verbesserungen.push('eliteriese');
+  assert.equal(riese.bonusVon('a', 'riese').gebaeude, 50);
+  const meuchler = mitGebaeude('burg', 'silberfurt', 3).welt;
+  meuchler.spielerVon('a').verbesserungen.push('elitemeuchler');
+  assert.deepEqual(meuchler.bonusVon('a', 'meuchler'), { dorf: 14, moench: 14 });
+  // Die drei aus gewoehnlichen Gebaeuden bekommen keine Stufe.
+  for (const art of ['eibenschuetze', 'pavesenschuetze', 'soeldner']) {
+    assert.ok(!Object.values(VERBESSERUNGEN).some((v) => v.hebt === art || v.wandelt?.[art]), art);
+  }
+});
+
+test('einheiten AC-69: nur das eigene Haus erforscht die Stufe, in der Burg und ab der Krone - wer schon steht, bekommt Leben und Namen', () => {
+  for (const [art, einheit, haus, name, plus] of ELITE) {
+    // Ein anderes Haus: abgewiesen, mit dem Namen des Hauses.
+    const fremdHaus = ELITE.find(([, , h]) => h !== haus)[2];
+    const fremd = mitGebaeude('burg', fremdHaus, 3);
+    assert.equal(bestellen(fremd.welt, fremd.gebaeude, art).fehler, `„${name}" erforscht nur Haus ${HAEUSER[haus].name}.`);
+    // Wer kein Haus hat, auch.
+    const keins = mitGebaeude('burg', null, 3);
+    assert.match(bestellen(keins.welt, keins.gebaeude, art).fehler, /erforscht nur Haus/);
+    // Nicht vor der Krone.
+    const frueh = mitGebaeude('burg', haus, 2);
+    assert.match(bestellen(frueh.welt, frueh.gebaeude, art).fehler, /ab der Krone/, art);
+    // Nicht woanders als in der Burg.
+    const kaserne = mitGebaeude('kaserne', haus, 3);
+    assert.ok(bestellen(kaserne.welt, kaserne.gebaeude, art).fehler, `${art} nicht in der Kaserne`);
+
+    const { welt, anna, gebaeude } = mitGebaeude('burg', haus, 3);
+    const steht = welt.einheitAnlegen('a', anna.basis.x + 2, anna.basis.y + 3, einheit);
+    const leben = steht.leben;
+    assert.equal(welt.kampfwerte('a')[einheit].name, undefined, `${einheit} heisst noch wie immer`);
+    const vorher = { nahrung: anna.nahrung, gold: anna.gold };
+    assert.deepEqual(bestellen(welt, gebaeude, art), {}, art);
+    assert.deepEqual([anna.nahrung, anna.gold], [vorher.nahrung - 500, vorher.gold - 400], `${art}: bezahlt`);
+    sekunden(welt, 59);
+    assert.ok(!anna.verbesserungen.includes(art), `${art}: noch nicht`);
+    sekunden(welt, 2);
+    assert.ok(anna.verbesserungen.includes(art), `${art}: erforscht`);
+    // Wer schon steht, bleibt, was er ist - und bekommt Leben und Namen.
+    assert.equal(steht.art, einheit);
+    assert.equal(steht.leben, leben + plus.leben, `${einheit}: das Leben kommt dazu`);
+    assert.equal(welt.kampfwerte('a')[einheit].name, name);
+    assert.equal(welt.kampfwerte('a')[einheit].leben, leben + plus.leben);
+    // Beim Gegner heisst sie wie immer.
+    assert.equal(welt.kampfwerte('b')[einheit].name, undefined);
+    assert.match(bestellen(welt, gebaeude, art).fehler, /nur einmal/);
+  }
+});
+
+test('einheiten AC-69: der Elite-Meuchler bleibt getarnt, der Elite-Wiedergaenger kostet weiter Gold und einen Gefallenen', () => {
+  // Die Tarnung haengt an der Art, und die bleibt.
+  const welt = new Welt(DREI, 7, { teams: { a: 1, c: 1, b: 2 } });
+  welt.spielerVon('a').verbesserungen.push('elitemeuchler');
+  const { x0, y } = streifen(welt);
+  const meuchler = welt.einheitAnlegen('a', x0, y, 'meuchler');
+  welt.einheitAnlegen('b', x0 + 3, y, 'dorfbewohner');
+  welt.sichtAktualisieren();
+  assert.equal(meuchler.leben, 45);
+  assert.ok(welt.sieht('b', x0, y));
+  assert.ok(welt.verborgen('b', meuchler));
+  assert.ok(!dabei(welt, 'b', meuchler));
+
+  // Der Preis auch.
+  const d = mitGebaeude('burg', 'distelhag', 3);
+  d.anna.verbesserungen.push('elitewiedergaenger');
+  assert.deepEqual(d.welt.auftragKosten('a', 'wiedergaenger'), { gold: 30, gefallene: 1 });
+  d.anna.gefallene = 0;
+  assert.match(bestellen(d.welt, d.gebaeude, 'wiedergaenger').fehler, /Zu wenig Gefallene/);
+  d.anna.gefallene = 1;
+  const gold = d.anna.gold;
+  assert.deepEqual(bestellen(d.welt, d.gebaeude, 'wiedergaenger'), {});
+  assert.deepEqual([d.anna.gold, d.anna.gefallene], [gold - 30, 0]);
+  // Und aus der Burg kommt er mit dem Leben der Stufe.
+  sekunden(d.welt, EINHEITEN.wiedergaenger.zeit + 2);
+  const neu = [...d.welt.einheiten.values()].find((e) => e.besitzer === 'a' && e.art === 'wiedergaenger');
+  assert.equal(neu.leben, d.welt.einheitenwert('a', 'wiedergaenger', 'leben'));
+  assert.equal(neu.leben - EINHEITEN.wiedergaenger.leben, 15, 'das Haus gibt ihm kein Leben, die Stufe 15');
+});
+
+test('einheiten AC-69: die Tafel nennt die Stufe beim neuen Namen, und der Browser erfaehrt Haus und Einheit', () => {
+  const saetze = (art) => bringt(VERBESSERUNGEN[art], GEBAEUDE_NAMEN);
+  assert.deepEqual(saetze('elitekriegswolf'), ['Elite-Kriegswolf: +15 Leben, +2 Angriff']);
+  assert.deepEqual(saetze('elitereiterschuetze'), ['Elite-Reiterschütze: +15 Leben, +1 Angriff']);
+  assert.deepEqual(saetze('eliteriese'), ['Elite-Riese: +40 Leben, +2 Angriff', 'Elite-Riese: +10 Angriff gegen Gebäude']);
+  assert.deepEqual(saetze('elitemeuchler'), ['Elite-Meuchler: +10 Leben, +2 Angriff', 'Elite-Meuchler: +4 Angriff gegen Dorfbewohner', 'Elite-Meuchler: +4 Angriff gegen Mönche']);
+  assert.deepEqual(saetze('elitewiedergaenger'), ['Elite-Wiedergänger: +15 Leben, +2 Angriff, +1 Rüstung gegen Nahkampf']);
+  // Eine Verbesserung fuer eine Klasse heisst weiter nach der Klasse.
+  assert.ok(saetze('hochofen').every((satz) => !/Elite/.test(satz)));
+
+  const welt = new Welt(ZWEI, 7, { haeuser: { a: 'eschenbruch' } });
+  const v = welt.aufbauFuer('a').werte.verbesserungen.elitekriegswolf;
+  assert.deepEqual([v.haeuser, v.hebt, v.bringt], [['eschenbruch'], 'kriegswolf', ['Elite-Kriegswolf: +15 Leben, +2 Angriff']]);
+});
+
+test('einheiten AC-69: auf der Stufe der Krone behaelt jede Paarung der fuenf ihre Richtung', () => {
+  /** Siege von `eins` aus 40: zwanzig Startwerte, beide Seiten, `eins` mit seiner Elitestufe. */
+  const siege = (eins, zwei, anzahl = null) => {
+    const stufe = [`elite${eins}`];
+    let n = 0;
+    for (let startwert = 1; startwert <= 20; startwert++) {
+      const hin = { links: eins, rechts: zwei, startwert, budget: 1200, minuten: 10, erforscht: { links: stufe } };
+      const her = { links: zwei, rechts: eins, startwert, budget: 1200, minuten: 10, erforscht: { rechts: stufe } };
+      if (anzahl) { hin.anzahl = { links: anzahl }; her.anzahl = { rechts: anzahl }; }
+      if (gefechtSpielen(hin).sieger === 'links') n += 1;
+      if (gefechtSpielen(her).sieger === 'rechts') n += 1;
+    }
+    return n;
+  };
+  // AC-45: der Wolf schlaegt, was Reiter aufhaelt, und faellt gegen das Schwert.
+  assert.equal(siege('kriegswolf', 'hellebardier'), 40);
+  assert.equal(siege('kriegswolf', 'zweihandkaempfer'), 0);
+  // AC-46: der Reiterschuetze schlaegt die Armbrust und faellt gegen Plaenkler und Speere.
+  assert.ok(siege('reiterschuetze', 'schwerearmbrust') > 24);
+  assert.equal(siege('reiterschuetze', 'eliteplaenkler'), 0);
+  assert.equal(siege('reiterschuetze', 'hellebardier'), 0);
+  // AC-47: der Riese haelt Speere auf und verliert gegen Bolzen und Schwerter.
+  assert.ok(siege('riese', 'hellebardier') > 24);
+  assert.equal(siege('riese', 'schwerearmbrust'), 0);
+  assert.equal(siege('riese', 'zweihandkaempfer'), 0);
+  // AC-48: der Meuchler verliert gegen jeden, der kaempft.
+  assert.equal(siege('meuchler', 'zweihandkaempfer'), 0);
+  // AC-49: der Wiedergaenger verliert gegen Schuetzen, der Gefallene mitgerechnet (90 je Stueck).
+  const untote = Math.floor(1200 / (kostenSumme('wiedergaenger') - 1 + kostenSumme('speerkaempfer')));
+  assert.equal(siege('wiedergaenger', 'langbogenschuetze', untote), 0);
+  assert.ok(siege('wiedergaenger', 'schwerearmbrust', untote) < 10);
 });

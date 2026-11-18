@@ -57,6 +57,17 @@ const EINTRAEGE = [
   { art: 'pikenier', titel: 'Pikenier', lage: {} },
   { art: 'eliteplaenkler', titel: 'Eliteplänkler', lage: {} },
   { art: 'leichtekavallerie', titel: 'Leichte Kavallerie', lage: {} },
+  // Die Stufen der Krone (einheiten AC-66).
+  { art: 'zweihandkaempfer', titel: 'Zweihandkämpfer', lage: {} },
+  { art: 'hellebardier', titel: 'Hellebardier', lage: {} },
+  { art: 'husar', titel: 'Husar', lage: {} },
+  { art: 'kavalier', titel: 'Kavalier', lage: {} },
+  { art: 'paladin', titel: 'Paladin', lage: {} },
+  // Die Stufen der Schuetzen und der Belagerung (einheiten AC-67, AC-68).
+  { art: 'langbogenschuetze', titel: 'Langbogen', lage: {} },
+  { art: 'schwerearmbrust', titel: 'Schwere Armbrust', lage: {} },
+  { art: 'belagerungsramme', titel: 'Belagerungsramme', lage: {} },
+  { art: 'onager', titel: 'Onager', lage: {} },
   // Einheiten der Haeuser (einheiten AC-42 bis AC-44).
   { art: 'eibenschuetze', titel: 'Eibenschütze', lage: {} },
   { art: 'pavesenschuetze', titel: 'Pavesenschütze', lage: {} },

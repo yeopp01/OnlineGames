@@ -181,7 +181,7 @@ Umfang hinzufügt, dort nachsehen.
 
 ## Stand
 
-**572 von 704 Kriterien fertig.** 991 Tests ohne Browser und 14 ganze Partien, 316 im Browser. Die
+**588 von 706 Kriterien fertig.** 1034 Tests ohne Browser und 14 ganze Partien, 330 im Browser. Die
 Übersicht ist der Bericht: `npm run qa:report`.
 
 Gebaut ist der Unterbau: Räume, Übertragung, Karte, Wegfindung, Sammeln,
@@ -882,10 +882,41 @@ in die Krone, je Linie eine Stufe — **der Ritter zwei: Kavalier und
 Paladin** (Benutzer, 2026-11-18; kein Champion) —, jede mit eigener
 gerenderter Figur, Verbesserungen, Elitestufen der Spezialeinheiten,
 Drache, Wunder, die KI in der Krone. Dazu **elf Verbesserungen mit eigenem
-Charakter** (bauen AC-52 bis AC-56, `offen`): Kartografie, Blutlinien,
+Charakter** (bauen AC-52 bis AC-56): Kartografie, Blutlinien,
 Karawane, Brandstiftung, Knappen, vier Lehren des Klosters, Tretkran,
 Sappeure. **Die Figuren der Einheiten schreibt und rendert die Sitzung
 selbst** — kein Hilfsagent mit kleinerem Modell (Benutzer, 2026-11-18).
+
+**Aus Stufe F stehen F1 bis F5** (2026-11-18): der **Aufstieg in die
+Krone** (bauen AC-47: zwei Gebäude des Fürstentums oder eine Burg allein),
+die **Stufen der Krone** — Zweihandkämpfer, Hellebardier, Husar, Kavalier
+und danach Paladin (einheiten AC-66), Langbogenschütze und schwere Armbrust
+(AC-67), Belagerungsramme und Onager (AC-68), jede mit eigener gerenderter
+Figur —, die **Elitestufen** der fünf Burgeinheiten (AC-69, sie behalten
+ihre Figur), die **Schmiede der Krone** (bauen AC-48), Fruchtwechsel und
+Zweimannsäge (AC-49), der **Bergfried** mit eigenem Bild, dazu Chemie,
+Architektur, Belagerungsingenieure und Wehrpflicht (AC-50), und die **elf
+Verbesserungen mit eigenem Charakter** (bauen AC-52 bis AC-56). **Der
+Konterkreis hält in der Krone** (fahrplan AC-26, Budget 2000, volle
+Schmiede): neun Paarungen 20 von 20, umgekehrt 0; der Paladin fällt vor dem
+Hellebardier und schlägt beide Schützenlinien; gegen das Schwert hilft die
+schwere Armbrust (19 von 20), nicht der Bogen (0 von 20). **Die KI steigt
+nicht in die Krone auf und erforscht nichts davon** (F12, offen), ebenso
+offen: Drache, Wunder, die Krone am Stück; darstellung AC-32 bleibt offen,
+bis Wunder und Drache ihre Bilder haben. Die gesetzten Werte der Krone
+stammen nicht alle aus `vorlage-aoe2.md`.
+
+**Gold und Stein sind eine Einstellung beim Eröffnen** (karte AC-18, AC-19,
+Benutzer, 2026-11-18; `vorkommen` im Steckbrief, `VORKOMMEN` in
+`karte.js`): **wenig** ist das Dorf allein (je Spieler 7 Felder Gold und 5
+Stein — die Karte von vorher, Feld für Feld), **mittel** dazu ein
+umkämpftes Vorkommen zwischen je zwei Nachbarn (11 und 8, die Vorgabe),
+**viel** dazu eigene Vorkommen 17 bis 29 Felder vor dem Dorf (19 und 12).
+Jedes hat einen Ring Gras und ist zu Fuß erreichbar; der Zufall der Karte
+wird dafür nicht angefasst. Die KI ist auf „mittel“ gemessen (Nebel über
+120 Startwerte: 111 vor Minute 60, Median 39,4, keine ohne Sieger; zu
+viert jede vor Minute 90), auf „viel“ nicht. `karte.fundorte` sagt Tests,
+was wo liegt; es geht nicht über die Leitung.
 
 1. **Stufe A** Dunkle Zeit mit Wirtschafts-KI und Prüfstand · **B** Feudalzeit
    · **C** Partieende und KI-Gegner · **D** Ritterzeit · **E** fünf Häuser ·

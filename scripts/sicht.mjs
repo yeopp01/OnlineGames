@@ -56,7 +56,7 @@ const dichte = Number(wert('dichte', 1));
 const fehler = [];
 const beobachten = (blatt) => {
   blatt.on('pageerror', (e) => fehler.push(e.message));
-  blatt.on('console', (m) => { if (m.type() === 'error') fehler.push(m.text()); });
+  blatt.on('console', (m) => { if (m.type() === 'error') fehler.push(`${m.text()} ${m.location().url || ''}`.trim()); });
 };
 
 // --spiel: eine laufende Partie zu zweit, fotografiert aus Annas Fenster.

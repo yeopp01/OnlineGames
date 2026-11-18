@@ -121,7 +121,9 @@ test.describe('Ritterzeit am Stueck', () => {
       // AC-8 (`bildetAus` traegt beides; eine Verbesserung zaehlt hier wie
       // eine Einheit der Feudalzeit). Der Markt bildet erst in der Ritterzeit
       // aus (einheiten AC-39) und gehoert deshalb auch hierher.
-      const feudal = (art) => w.gebaeude[art].bildetAus.some((e) => !w.einheiten[e] || w.einheiten[e].zeitalter <= 1);
+      // Seit bauen AC-52 forscht der Markt die Kartografie schon im Lehen -
+      // gebaut wird er trotzdem hier, fahrplan AC-14 zaehlt ihn auf.
+      const feudal = (art) => art !== 'markt' && w.gebaeude[art].bildetAus.some((e) => !w.einheiten[e] || w.einheiten[e].zeitalter <= 1);
       return w.einheiten.dorfbewohner.baut
         .filter((art) => w.gebaeude[art]?.zeitalter === 2
           || (w.gebaeude[art]?.zeitalter === 1 && !feudal(art)))

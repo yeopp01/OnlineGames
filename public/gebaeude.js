@@ -1875,6 +1875,11 @@ export const GEBAEUDE = {
   wehrturm: {
     name: 'Wehrturm', zeichnen: wachturm, halbeBreite: 1.0, trefferBreite: 1.1, trefferOben: 5.2, trefferUnten: 0.8, schussHoehe: 4.3,
   },
+  // Der Bergfried (bauen AC-50): die zweite Stufe desselben Turms, noch einmal
+  // hoeher, mit Hurde und Helm - der Pfeil beginnt an der Hurde.
+  bergfried: {
+    name: 'Bergfried', zeichnen: wachturm, halbeBreite: 1.0, trefferBreite: 1.2, trefferOben: 6.2, trefferUnten: 0.8, schussHoehe: 5.2,
+  },
   // Ein Feld, so breit wie die Raute, damit Nachbarn zur Wand werden (bauen AC-30).
   steinmauer: { name: 'Steinmauer', zeichnen: steinmauer, halbeBreite: 1.0, trefferBreite: 1.0, trefferOben: 2.0, trefferUnten: 0.6 },
   // Ein Feld wie die Mauer, etwas hoeher (bauen AC-31).

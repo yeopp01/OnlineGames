@@ -18,7 +18,7 @@
 const karten = require('./karte');
 const { suchen } = require('./wege');
 const { TAKTE_PRO_SEKUNDE } = require('./welt');
-const { EINHEITEN, GEBAEUDE, SAMMELN, AUFSTIEGE, HANDEL, HAEUSER } = require('./daten');
+const { EINHEITEN, GEBAEUDE, SAMMELN, AUFSTIEGE, HANDEL, HAEUSER, SCHIESSENDE } = require('./daten');
 
 const ENTSCHEIDEN_ALLE = TAKTE_PRO_SEKUNDE / 2;
 
@@ -599,7 +599,7 @@ class Ki {
   // gesehen hat (ki AC-13)?
   befestigt(gegner) {
     if (!gegner) return false;
-    for (const g of this.gesehen.values()) if (g.besitzer === gegner.id && GEBAEUDE[g.art].angriff) return true;
+    for (const g of this.gesehen.values()) if (g.besitzer === gegner.id && SCHIESSENDE.has(g.art)) return true;
     return false;
   }
 
@@ -1203,7 +1203,7 @@ class Ki {
       const d = Math.hypot(z.x - e.x, z.y - e.y);
       return !best || d < best.d ? { z, d } : best;
     }, null);
-    const schiessend = bauten.filter((g) => GEBAEUDE[g.art].angriff);
+    const schiessend = bauten.filter((g) => SCHIESSENDE.has(g.art));
     const draussen = kampf.filter((e) => this.heer.has(e.id));
     for (const e of stehend) {
       const ziel = (naechstes(e, schiessend) || naechstes(e, bauten))?.z;

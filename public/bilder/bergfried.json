@@ -1,0 +1,17 @@
+{
+  "bild": "bergfried.webp",
+  "maske": "bergfried-maske.webp",
+  "zelle": [
+    493,
+    454
+  ],
+  "fuss": [
+    90,
+    397
+  ],
+  "feldbreite": 132,
+  "zeilen": 1,
+  "spalten": 1,
+  "art": "gebaeude",
+  "felder": 1
+}

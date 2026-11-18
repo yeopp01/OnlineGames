@@ -1,4 +1,4 @@
-# Das Belagerungsgeraet: Ramme und Mangonel.
+# Das Belagerungsgeraet: Ramme und Mangonel, und ihre Stufen in der Krone.
 #
 # Gebaut in Metern und als Ganzes auf Spielgroesse gebracht, im selben Massstab
 # wie der Dorfbewohner. Das Geraet schaut nach -Y.
@@ -11,6 +11,13 @@
 #   Mangonel  ein offener Rahmen auf vier Raedern, in der Mitte das Seilbuendel,
 #             das den Wurfarm spannt, vorn der Bock mit dem Polster als
 #             Anschlag. Spielerfarbe: Seilbuendel, Polster, Seitenbohlen.
+#
+#   Belagerungsramme  laenger und hoeher, auf sechs Raedern. An den Waenden
+#             haengen Schilde in Spielerfarbe, ueber die Haeute laufen
+#             Eisenbaender, der Bock traegt einen Widderkopf mit Hoernern.
+#   Onager    schwerer als der Mangonel und nach vorn geschlossen: eine
+#             Schutzwand aus Bohlen mit einem Band in Spielerfarbe. Der Arm ist
+#             mit Eisen gebunden, die Schale groesser, die Winde hat Speichen.
 #
 # Keine Figur, kein Pferd: die zwei einzigen Umrisse im Spiel, die Raeder haben
 # und niemanden, der zieht (darstellung AC-14). Die Ramme ist zu, der Mangonel
@@ -43,6 +50,9 @@ SEITE = (0, math.pi / 2, 0)        # die Hochachse eines Teils zeigt dann zur Se
 ARTEN = {
     'ramme': {'zelle': (336, 224), 'fuss': (143, 153), 'rad': 0.34, 'achsen': (-0.72, 0.72), 'spur': 0.76},
     'mangonel': {'zelle': (256, 192), 'fuss': (102, 138), 'rad': 0.32, 'achsen': (-0.72, 0.72), 'spur': 0.72},
+    'belagerungsramme': {'zelle': (400, 272), 'fuss': (170, 186), 'rad': 0.36, 'achsen': (-1.02, 0, 1.02),
+                         'spur': 0.86},
+    'onager': {'zelle': (320, 248), 'fuss': (128, 176), 'rad': 0.38, 'achsen': (-0.86, 0.86), 'spur': 0.84},
 }
 
 # Die Ramme.
@@ -212,7 +222,145 @@ def _mangonel(s):
     return g
 
 
-BAU = {'ramme': _ramme, 'mangonel': _mangonel}
+def _belagerungsramme(s):
+    """Die Belagerungsramme: laenger, hoeher, auf sechs Raedern. An den
+    Waenden haengen Schilde in Spielerfarbe, ueber die Haeute laufen
+    Eisenbaender, und der Bock traegt einen Widderkopf."""
+    g = {}
+    a = _fahrgestell(s, g, 'belagerungsramme', 2.9, 0.66)
+    unten = ARTEN['belagerungsramme']['rad'] + 0.19
+    for y in (-1.36, 0, 1.36):
+        quader('querbalken', (1.45, 0.14, 0.15), s['balken'], ort=(0, y, unten - 0.07), eltern=a, fase=0.02)
+    # Das Gehaeuse: sechs Pfosten, an den Seiten vier Bohlen, oben das Raehm.
+    for x in (-0.66, 0.66):
+        aussen = 1 if x > 0 else -1
+        for y in (-1.32, 0, 1.32):
+            quader('pfosten', (0.13, 0.13, 1.0), s['balken'], ort=(x, y, unten + 0.5), eltern=a, fase=0.015)
+        for stufe in range(4):
+            quader('wandbohle', (0.05, 2.54, 0.215), s['bohle'], ort=(x * 1.05, 0, unten + 0.15 + stufe * 0.235),
+                   eltern=a, fase=0.008)
+        quader('raehm', (0.13, 2.96, 0.11), s['balken'], ort=(x, 0, unten + 1.04), eltern=a, fase=0.015)
+        # Vier Schilde je Wand: die Spielerfarbe, von jeder Seite zu sehen.
+        for y in (-0.96, -0.32, 0.32, 0.96):
+            quader('wandschild', (0.035, 0.44, 0.56), s['bemalt'], ort=(x * 1.05 + aussen * 0.045, y, unten + 0.5),
+                   eltern=a, fase=0.012)
+            kugel('schildbuckel', 0.06, s['eisen'], ort=(x * 1.05 + aussen * 0.07, y, unten + 0.54), eltern=a,
+                  streckung=(0.5, 1, 1), teile=8, ringe=6)
+    traufe, first, weit = unten + 1.02, unten + 1.8, 0.98
+    quader('firstbalken', (0.11, 3.2, 0.13), s['balken'], ort=(0, 0, first - 0.09), eltern=a, fase=0.015)
+    schraege = math.atan2(first - traufe, weit)
+    lang = math.hypot(first - traufe, weit)
+    for y in (-1.4, -0.47, 0.47, 1.4):
+        for x in (-1, 1):
+            quader('sparren', (lang, 0.08, 0.08), s['balken'], ort=(x * weit / 2, y, (first + traufe) / 2 - 0.06),
+                   drehung=(0, x * schraege, 0), eltern=a, fase=0.01)
+    # Das Dach aus Haeuten - und was faellt, wenn die Ramme bricht.
+    g['dach'] = leer('dach', (0, 0, first), a)
+
+    def flaeche(name, stoff, halb_x, vorn, hinten, hoch, dicke):
+        ecken = []
+        for y in (vorn, hinten):
+            for x in (-halb_x, 0, halb_x):
+                ecken.append((x, y, hoch - abs(x) * (first - traufe) / weit))
+        netz(name, ecken, [(0, 1, 4, 3), (1, 2, 5, 4)], stoff, eltern=g['dach'], dicke=dicke)
+
+    flaeche('haeute', s['haut'], weit + 0.07, -1.6, 1.6, 0.0, 0.04)
+    # Drei Eisenbaender quer ueber die Haeute: Brandpfeile finden keinen Halt.
+    for y in (-1.05, 0.0, 1.05):
+        flaeche('dachband', s['eisen'], weit + 0.085, y - 0.06, y + 0.06, 0.026, 0.02)
+    # Das Tuch ueber der vorderen Haelfte des Firsts und im vorderen Giebel.
+    flaeche('firsttuch', s['tuch'], 0.54, -1.5, 0.25, 0.055, 0.02)
+    neigung = (first - traufe) / weit
+    netz('giebeltuch', [(-0.6, -1.61, -0.6 * neigung), (0.6, -1.61, -0.6 * neigung), (0, -1.61, 0.02)],
+         [(0, 1, 2)], s['tuch'], eltern=g['dach'], dicke=0.02)
+    # Der Rammbock: staerker, laenger, vorn der Widderkopf.
+    g['bock_z'], g['seil_lang'] = 1.12, 0.95
+    g['bock'] = leer('bock', (0, 0, g['bock_z']), a)
+    drehkoerper('stamm', [(-1.5, 0), (-1.5, 0.15), (1.7, 0.16), (1.7, 0)], s['stamm'], drehung=QUER,
+                eltern=g['bock'], teile=14)
+    drehkoerper('kappe', [(1.64, 0), (1.64, 0.19), (1.9, 0.2), (2.08, 0.15), (2.2, 0.0)], s['eisen'], drehung=QUER,
+                eltern=g['bock'], teile=14, glatt=False)
+    for x in (-1, 1):
+        # Die Hoerner: vom Scheitel nach aussen, hinab und wieder nach vorn gerollt.
+        strang('horn', [(x * 0.12, -1.86, 0.14, 0.05), (x * 0.27, -1.72, 0.2, 0.05), (x * 0.34, -1.7, 0.04, 0.042),
+                        (x * 0.31, -1.88, -0.07, 0.032), (x * 0.23, -1.98, 0.02, 0.018)], s['eisen'],
+               eltern=g['bock'], rund=2)
+    for h in (-1.1, -0.2, 0.7, 1.4):
+        ring('stammreif', 0.166, 0.016, 0.07, s['eisen'], ort=(0, -h, 0), drehung=QUER, eltern=g['bock'], teile=14)
+    g['seile'] = []
+    for y in (-0.8, 0.8):
+        halter = leer('seil', (0, y, first - 0.16), a)
+        drehkoerper('haengeseil', [(-g['seil_lang'], 0), (-g['seil_lang'], 0.026), (0, 0.026), (0, 0)], s['seil'],
+                    eltern=halter, teile=8)
+        g['seile'].append(halter)
+    return g
+
+
+def _onager(s):
+    """Der Onager: schwerer als der Mangonel und nach vorn geschlossen - eine
+    Schutzwand aus Bohlen deckt die Mannschaft. Der Arm ist mit Eisen
+    gebunden und wirft einen groesseren Stein. Die Winkel des Arms sind die
+    des Mangonels: Drehpunkt und Polster liegen im selben Verhaeltnis."""
+    g = {}
+    a = _fahrgestell(s, g, 'onager', 2.64, 0.6)
+    unten = ARTEN['onager']['rad'] + 0.19
+    dreh = (-0.14, unten + 0.18)       # (y, z) des Seilbuendels
+    arm = 1.74
+    for y in (-1.24, 0.24, 1.24):
+        quader('querbalken', (1.35, 0.15, 0.16), s['balken'], ort=(0, y, unten - 0.08), eltern=a, fase=0.02)
+    # Die bemalten Seitenbohlen, dreimal beschlagen.
+    for x in (-0.7, 0.7):
+        quader('seitenbohle', (0.05, 2.4, 0.3), s['bemalt'], ort=(x, 0, unten - 0.05), eltern=a, fase=0.008)
+        for y in (-1.08, 0, 1.08):
+            quader('beschlag', (0.06, 0.08, 0.32), s['eisen'], ort=(x, y, unten - 0.05), eltern=a, fase=0.006)
+    # Der Bock vorn: zwei Pfosten, schraeg abgestuetzt, darauf der Querbalken mit dem Polster.
+    oben = unten + 1.18
+    for x in (-0.6, 0.6):
+        quader('pfosten', (0.14, 0.14, 1.2), s['balken'], ort=(x, -0.5, unten + 0.58), eltern=a, fase=0.015)
+        lang = math.hypot(1.14, 1.02)
+        quader('strebe', (0.1, lang, 0.1), s['balken'], ort=(x, 0.07, unten + 0.54),
+               drehung=(-math.atan2(1.02, 1.14), 0, 0), eltern=a, fase=0.012)
+    quader('anschlag', (1.44, 0.15, 0.16), s['balken'], ort=(0, -0.5, oben), eltern=a, fase=0.02)
+    drehkoerper('polster', [(-0.36, 0), (-0.36, 0.14), (-0.24, 0.18), (0.24, 0.18), (0.36, 0.14), (0.36, 0)], s['tuch'],
+                ort=(0, -0.44, oben), drehung=SEITE, eltern=a, teile=12)
+    # Die Schutzwand vor dem Bock: sieben Bohlen, in der Mitte am hoechsten,
+    # zwei Eisenriegel und dazwischen ein breites Band in Spielerfarbe.
+    for i in range(7):
+        hoch = 1.5 - 0.08 * abs(i - 3)
+        quader('schutzbohle', (0.19, 0.05, hoch), s['bohle'], ort=((i - 3) * 0.2, -0.62, unten - 0.1 + hoch / 2),
+               eltern=a, fase=0.01)
+    for z in (unten + 0.2, unten + 0.92):
+        quader('wandriegel', (1.42, 0.035, 0.09), s['eisen'], ort=(0, -0.655, z), eltern=a, fase=0.008)
+    quader('wandband', (1.38, 0.02, 0.4), s['bemalt'], ort=(0, -0.652, unten + 0.56), eltern=a, fase=0.006)
+    # Das Seilbuendel quer durch den Rahmen, an beiden Enden ein Eisenring.
+    drehkoerper('seilbuendel', [(-0.72, 0), (-0.72, 0.145), (0.72, 0.145), (0.72, 0)], s['buendel'],
+                ort=(0, dreh[0], dreh[1]), drehung=SEITE, eltern=a, teile=12)
+    for x in (-0.73, 0.73):
+        ring('buendelring', 0.155, 0.035, 0.06, s['eisen'], ort=(x, dreh[0], dreh[1]), drehung=SEITE, eltern=a,
+             teile=12)
+    # Die Winde hinten: an jedem Ende ein Kreuz aus Speichen zum Greifen.
+    drehkoerper('winde', [(-0.66, 0), (-0.66, 0.075), (0.66, 0.075), (0.66, 0)], s['balken'],
+                ort=(0, 1.14, unten + 0.17), drehung=SEITE, eltern=a, teile=10)
+    for x in (-0.745, 0.745):
+        for w in (0.6, 0.6 + math.pi / 2):
+            quader('speiche', (0.04, 0.05, 0.46), s['balken'], ort=(x, 1.14, unten + 0.17), drehung=(w, 0, 0),
+                   eltern=a, fase=0.01)
+    # Der Wurfarm: dreimal mit Eisen gebunden, am Ende die Schale mit Eisenrand.
+    g['arm'] = leer('arm', (0, dreh[0], dreh[1]), a)
+    drehkoerper('wurfarm', [(0.12, 0), (0.12, 0.085), (-arm, 0.06), (-arm, 0)], s['stamm'], drehung=QUER,
+                eltern=g['arm'], teile=10)
+    for h in (0.3, 0.75, 1.2):
+        ring('armreif', 0.089 - 0.025 * (h + 0.12) / (arm + 0.12), 0.014, 0.06, s['eisen'], ort=(0, h, 0),
+             drehung=QUER, eltern=g['arm'], teile=10)
+    kugel('schale', 0.23, s['balken'], ort=(0, arm + 0.1, 0.05), eltern=g['arm'], streckung=(1, 1, 0.55),
+          weglassen=lambda x, y, z: z > 0.1)
+    ring('schalenrand', 0.229, 0.02, 0.03, s['eisen'], ort=(0, arm + 0.1, 0.063), eltern=g['arm'], teile=14)
+    g['stein'] = leer('stein', (0, arm + 0.1, 0.13), g['arm'])
+    kugel('wurfstein', 0.165, s['stein'], eltern=g['stein'], streckung=(1, 0.92, 0.85), teile=10, ringe=7)
+    return g
+
+
+BAU = {'ramme': _ramme, 'mangonel': _mangonel, 'belagerungsramme': _belagerungsramme, 'onager': _onager}
 
 
 def bauen(art):
@@ -253,7 +401,8 @@ def stellen(g, art, ablauf, t=0.0):
         # Der Aufbau sinkt, bis er am Boden liegt.
         a.location.z = -tiefster_punkt(a) / GROESSE * _glatt(t / 0.75)
 
-    if art == 'ramme':
+    if 'bock' in g:
+        lang, bock_z = g.get('seil_lang', SEIL), g.get('bock_z', BOCK_Z)
         schwung = 0.0
         if ablauf == 'gehen':
             schwung = 0.05 * math.sin(2 * math.pi * t)
@@ -263,7 +412,7 @@ def stellen(g, art, ablauf, t=0.0):
             schwung = 0.3 * fall
         for seil in g['seile']:
             seil.rotation_euler = (schwung, 0, 0)
-        g['bock'].location = (0, SEIL * math.sin(schwung), BOCK_Z + SEIL * (1 - math.cos(schwung)))
+        g['bock'].location = (0, lang * math.sin(schwung), bock_z + lang * (1 - math.cos(schwung)))
         g['bock'].rotation_euler = (0, 0, 0)
         # Das Dach rutscht ab.
         g['dach'].rotation_euler = (0, 0.3 * fall, 0.12 * fall)

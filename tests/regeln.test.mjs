@@ -364,6 +364,121 @@ test('karte AC-17: der Aufbau der groessten Partie passt in eine Nachricht unter
   assert.ok(byte < 200 * 1024, `Aufbau ${(byte / 1024).toFixed(1)} KB`);
 });
 
+test('karte AC-18: weitere Gold- und Steinvorkommen ausserhalb des Dorfs - je Spieler gleich viele, zu Fuss erreichbar, und zwischen den Nachbarn ein umkaempftes', () => {
+  const zuFuss = (karte, von) => {
+    const g = karte.groesse;
+    const erreicht = new Uint8Array(g * g);
+    const reihe = [von.y * g + von.x];
+    erreicht[reihe[0]] = 1;
+    for (let i = 0; i < reihe.length; i++) {
+      const x = reihe[i] % g;
+      const y = (reihe[i] / g) | 0;
+      for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) {
+        const n = (y + dy) * g + x + dx;
+        if (x + dx < 0 || y + dy < 0 || x + dx >= g || y + dy >= g || erreicht[n] || karte.felder[n] !== karten.GRAS) continue;
+        erreicht[n] = 1;
+        reihe.push(n);
+      }
+    }
+    return erreicht;
+  };
+  for (const spieler of [2, 3, 4, 6, 8]) {
+    for (let startwert = 1; startwert <= 30; startwert++) {
+      const karte = karten.erzeugen(startwert, spieler, { vorkommen: 'viel' });
+      const g = karte.groesse;
+      const wo = `Startwert ${startwert}, ${spieler} Spieler`;
+      const erreicht = karte.basen.map((b) => zuFuss(karte, b));
+      // Je Basis zwei Goldfelder zu vier und ein Steinfeld zu vier, 17 bis 29 Felder vom Dorf ...
+      for (const [i, basis] of karte.basen.entries()) {
+        const eigene = karte.fundorte.filter((f) => f.basis === i);
+        assert.deepEqual(eigene.map((f) => [f.art, f.felder]), [[karten.GOLD, 4], [karten.GOLD, 4], [karten.STEIN, 4]], `${wo}, Basis ${i}`);
+        for (const f of eigene) {
+          const weit = Math.hypot(f.x - basis.x, f.y - basis.y);
+          assert.ok(weit >= 17.5 && weit <= 29, `${wo}, Basis ${i}: ein Vorkommen liegt ${weit.toFixed(1)} Felder weit`);
+        }
+      }
+      // ... und zwischen je zwei Nachbarn ein umkaempftes: vier Gold, drei Stein, von beiden etwa gleich weit.
+      const umkaempft = karte.fundorte.filter((f) => f.zwischen);
+      assert.deepEqual(umkaempft.map((f) => [f.art, f.felder]), karte.basen.flatMap(() => [[karten.GOLD, 4], [karten.STEIN, 3]]), wo);
+      for (const f of umkaempft) {
+        const [a, b] = f.zwischen.map((i) => Math.hypot(f.x - karte.basen[i].x, f.y - karte.basen[i].y));
+        assert.ok(Math.abs(a - b) <= 12, `${wo}: das umkaempfte Vorkommen liegt ${a.toFixed(1)} und ${b.toFixed(1)} von den Nachbarn`);
+        assert.ok(Math.min(a, b) >= 28, `${wo}: das umkaempfte Vorkommen liegt nur ${Math.min(a, b).toFixed(1)} vom Dorf`);
+      }
+      // Jedes Feld Gold und Stein ausserhalb der Doerfer: mit Gras ringsum und zu Fuss erreichbar.
+      let gold = 0;
+      let stein = 0;
+      for (let i = 0; i < karte.felder.length; i++) {
+        const art = karte.felder[i];
+        if (art !== karten.GOLD && art !== karten.STEIN) continue;
+        if (art === karten.GOLD) gold += 1; else stein += 1;
+        const x = i % g;
+        const y = (i / g) | 0;
+        const weiten = karte.basen.map((b) => Math.hypot(b.x - x, b.y - y));
+        const nah = Math.min(...weiten);
+        if (nah <= 16) continue;
+        assert.ok(nah >= 17, `${wo}: ein fernes Vorkommen liegt ${nah.toFixed(1)} Felder vom Dorf - das ist im Dorf`);
+        let ran = false;
+        for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1], [1, 1], [-1, -1], [1, -1], [-1, 1]]) {
+          const n = (y + dy) * g + x + dx;
+          assert.ok(karte.felder[n] === karten.GRAS || karte.felder[n] === art, `${wo}: neben dem Vorkommen bei ${x}/${y} steht kein Gras`);
+          if (erreicht[weiten.indexOf(nah)][n]) ran = true;
+        }
+        assert.ok(ran, `${wo}: das Vorkommen bei ${x}/${y} ist vom Dorf aus nicht zu Fuss erreichbar`);
+        assert.equal(karte.vorrat.get(i), karten.VORRAT[art]);
+      }
+      assert.equal(gold, 19 * spieler, wo);
+      assert.equal(stein, 12 * spieler, wo);
+    }
+  }
+});
+
+test('karte AC-19: Gold und Stein sind eine Einstellung - wenig ist das Dorf allein, mittel dazu das Umkaempfte, viel dazu die eigenen, und sonst liegt alles am selben Platz', () => {
+  const steckbrief = require('../server/spiele/strategie/steckbrief.js');
+  const wahl = steckbrief.einstellungen.find((e) => e.schluessel === 'vorkommen');
+  assert.deepEqual(wahl.werte.map((w) => w.wert), ['wenig', 'mittel', 'viel']);
+  assert.equal(wahl.vorgabe, 'mittel');
+  const zaehlen = (karte, art) => karte.felder.reduce((n, feld) => n + (feld === art ? 1 : 0), 0);
+  for (const spieler of [2, 3, 4, 6, 8]) {
+    for (let startwert = 1; startwert <= 12; startwert++) {
+      const wo = `Startwert ${startwert}, ${spieler} Spieler`;
+      const je = Object.fromEntries(['wenig', 'mittel', 'viel'].map((stufe) => [stufe, karten.erzeugen(startwert, spieler, { vorkommen: stufe })]));
+      for (const [stufe, gold, stein] of [['wenig', 7, 5], ['mittel', 11, 8], ['viel', 19, 12]]) {
+        assert.equal(zaehlen(je[stufe], karten.GOLD), gold * spieler, `${wo}, ${stufe}: Gold`);
+        assert.equal(zaehlen(je[stufe], karten.STEIN), stein * spieler, `${wo}, ${stufe}: Stein`);
+      }
+      // Wenig hat nichts ausserhalb, mittel nur Umkaempftes, viel beides.
+      assert.equal(je.wenig.fundorte.length, 0, wo);
+      assert.ok(je.mittel.fundorte.every((f) => f.zwischen), wo);
+      assert.equal(je.mittel.fundorte.length, 2 * spieler, wo);
+      assert.equal(je.viel.fundorte.filter((f) => f.basis !== undefined).length, 3 * spieler, wo);
+      // Ohne Angabe und mit Unsinn gilt die Vorgabe.
+      assert.deepEqual(karten.erzeugen(startwert, spieler).felder, je.mittel.felder, wo);
+      assert.deepEqual(karten.erzeugen(startwert, spieler, { vorkommen: 'unendlich' }).felder, je.mittel.felder, wo);
+      // Alles andere liegt am selben Platz: wo sich zwei Stufen unterscheiden, liegt in der reicheren Gold oder Stein
+      // - oder Gras, wo der Notbehelf gerodet hat, hoechstens ein paar Felder.
+      for (const [arm, reich] of [['wenig', 'mittel'], ['mittel', 'viel']]) {
+        let gerodet = 0;
+        for (let i = 0; i < je[arm].felder.length; i++) {
+          if (je[arm].felder[i] === je[reich].felder[i]) continue;
+          const neu = je[reich].felder[i];
+          if (neu === karten.GRAS) gerodet += 1;
+          else assert.ok(neu === karten.GOLD || neu === karten.STEIN, `${wo}: ${arm} und ${reich} unterscheiden sich bei Feld ${i} in etwas anderem als Gold und Stein`);
+        }
+        assert.ok(gerodet <= 60, `${wo}: ${gerodet} Felder gerodet`);
+      }
+      assert.deepEqual(je.wenig.basen, je.viel.basen, wo);
+      assert.deepEqual(je.wenig.schafe, je.viel.schafe, wo);
+    }
+  }
+  // Die Einstellung kommt in der Partie an.
+  const welt = steckbrief.erzeugen(
+    [{ id: 'aaaaaaaa', name: 'Anna' }, { id: 'bbbbbbbb', name: 'Bert' }],
+    { startwert: 7, vorkommen: 'viel', sicht: 'aufgedeckt' },
+  );
+  assert.equal(zaehlen(welt.karte, karten.GOLD), 38);
+});
+
 // Ein Dorfbewohner, zum naechsten Vorrat einer Feldart geschickt und so lange
 // getaktet, bis er dort arbeitet.
 function amVorrat(welt, art) {

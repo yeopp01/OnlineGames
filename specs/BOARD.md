@@ -7,9 +7,9 @@ Eine Zeile je Abnahmekriterium. Gepflegt wird der Status in der Spec selbst,
 hier steht er zusammengefasst. Erzeugt mit `npm run specs:board`; als Seite
 mit Bildnachweisen, Filter und Suche mit `npm run qa:report`.
 
-**Gesamt:** 572/704 fertig · 3 in Arbeit · 14 in QA · 3 geplant · 104 offen · 8 zurueckgestellt
+**Gesamt:** 588/706 fertig · 3 in Arbeit · 14 in QA · 3 geplant · 90 offen · 8 zurueckgestellt
 
-**Nachweise:** 299 Kriterien mit Bild · 281 ohne Bild, begruendet in `qa/ohne-bild.json`
+**Nachweise:** 313 Kriterien mit Bild · 283 ohne Bild, begruendet in `qa/ohne-bild.json`
 
 ## Nach Spezifikation
 
@@ -21,13 +21,13 @@ mit Bildnachweisen, Filter und Suche mit `npm run qa:report`.
 | [Anhalten und Fortsetzen](00-plattform/speichern.md)           | -         | -     | -       | 23    | -               | 3      |
 | [Spielauswahl und Einstellungen](00-plattform/spielauswahl.md) | -         | -     | -       | 5     | -               | 19     |
 | [Uebertragung](00-plattform/uebertragung.md)                   | -         | -     | 1       | 1     | -               | 8      |
-| [Bauen und Ausbilden](10-strategie/bauen.md)                   | -         | -     | -       | 11    | -               | 45     |
+| [Bauen und Ausbilden](10-strategie/bauen.md)                   | -         | -     | -       | 2     | -               | 54     |
 | [Bedienung](10-strategie/bedienung.md)                         | -         | 2     | -       | 3     | -               | 75     |
 | [Darstellung](10-strategie/darstellung.md)                     | 1         | 1     | -       | 5     | -               | 25     |
-| [Einheiten und Befehle](10-strategie/einheiten-und-befehle.md) | -         | -     | -       | 12    | 1               | 49     |
-| [Fahrplan zum Klon](10-strategie/fahrplan.md)                  | -         | 2     | -       | 5     | -               | 19     |
+| [Einheiten und Befehle](10-strategie/einheiten-und-befehle.md) | -         | -     | -       | 8     | 1               | 53     |
+| [Fahrplan zum Klon](10-strategie/fahrplan.md)                  | -         | 2     | -       | 4     | -               | 20     |
 | [Kampf](10-strategie/kampf.md)                                 | -         | -     | -       | 1     | 1               | 23     |
-| [Karte und Vorraete](10-strategie/karte-und-vorraete.md)       | -         | -     | -       | 2     | 3               | 12     |
+| [Karte und Vorraete](10-strategie/karte-und-vorraete.md)       | -         | -     | -       | 2     | 3               | 14     |
 | [KI-Spieler](10-strategie/ki.md)                               | -         | -     | -       | 7     | -               | 33     |
 | [Spielziel und Partieverlauf](10-strategie/spielziel.md)       | 1         | -     | -       | 11    | -               | 17     |
 | [Aufstellung, Taktik und Training](15-manager/aufstellung.md)  | -         | -     | -       | -     | 2               | 23     |
@@ -74,7 +74,7 @@ mit Bildnachweisen, Filter und Suche mit `npm run qa:report`.
 - **Kennwort vergessen** — [Konten und Anmeldung](00-plattform/konten.md) AC-5
 - **Automatischer Wiederaufbau** — [Uebertragung](00-plattform/uebertragung.md) AC-10
 
-## Offen (104)
+## Offen (90)
 
 - **Anmeldung ueber Google/GitHub** — [Konten und Anmeldung](00-plattform/konten.md) AC-6
 - **Bilanz je Konto** — [Konten und Anmeldung](00-plattform/konten.md) AC-14
@@ -116,16 +116,7 @@ mit Bildnachweisen, Filter und Suche mit `npm run qa:report`.
 - **Sitzungsspiele erscheinen dort nicht** — [Spielauswahl und Einstellungen](00-plattform/spielauswahl.md) AC-17
 - **Befehlsflut wird gebremst** — [Uebertragung](00-plattform/uebertragung.md) AC-4
 - **Den Drachen rufen** — [Bauen und Ausbilden](10-strategie/bauen.md) AC-35
-- **Aufstieg in die Krone** — [Bauen und Ausbilden](10-strategie/bauen.md) AC-47
-- **Schmiede der Krone** — [Bauen und Ausbilden](10-strategie/bauen.md) AC-48
-- **Wirtschaft der Krone** — [Bauen und Ausbilden](10-strategie/bauen.md) AC-49
-- **Universität und Burg der Krone** — [Bauen und Ausbilden](10-strategie/bauen.md) AC-50
 - **Das Wunder** — [Bauen und Ausbilden](10-strategie/bauen.md) AC-51
-- **Kartografie deckt die Karte auf** — [Bauen und Ausbilden](10-strategie/bauen.md) AC-52
-- **Blutlinien und Karawane** — [Bauen und Ausbilden](10-strategie/bauen.md) AC-53
-- **Knappen und Brandstiftung** — [Bauen und Ausbilden](10-strategie/bauen.md) AC-54
-- **Vier Lehren des Klosters** — [Bauen und Ausbilden](10-strategie/bauen.md) AC-55
-- **Tretkran und Sappeure** — [Bauen und Ausbilden](10-strategie/bauen.md) AC-56
 - **Das Zeitalter steht am Dorf** — [Bedienung](10-strategie/bedienung.md) AC-42
 - **Ein Gefecht hinterlässt Spuren** — [Bedienung](10-strategie/bedienung.md) AC-44
 - **Das Wappen zeigt das Haus** — [Bedienung](10-strategie/bedienung.md) AC-46
@@ -142,15 +133,10 @@ mit Bildnachweisen, Filter und Suche mit `npm run qa:report`.
 - **Der Drache fliegt und brennt** — [Einheiten und Befehle](10-strategie/einheiten-und-befehle.md) AC-52
 - **Wo er fällt, liegt Ei** — [Einheiten und Befehle](10-strategie/einheiten-und-befehle.md) AC-53
 - **Der Drache frisst** — [Einheiten und Befehle](10-strategie/einheiten-und-befehle.md) AC-54
-- **Fünf Stufen der Krone** — [Einheiten und Befehle](10-strategie/einheiten-und-befehle.md) AC-66
-- **Schützen der Krone** — [Einheiten und Befehle](10-strategie/einheiten-und-befehle.md) AC-67
-- **Belagerung der Krone** — [Einheiten und Befehle](10-strategie/einheiten-und-befehle.md) AC-68
-- **Elitestufen der Spezialeinheiten** — [Einheiten und Befehle](10-strategie/einheiten-und-befehle.md) AC-69
 - **Fünf Häuser wählbar** — [Fahrplan zum Klon](10-strategie/fahrplan.md) AC-16
 - **Kein Haus vorn** — [Fahrplan zum Klon](10-strategie/fahrplan.md) AC-18
 - **Imperialzeit spielbar** — [Fahrplan zum Klon](10-strategie/fahrplan.md) AC-19
 - **Große Partie bleibt flüssig** — [Fahrplan zum Klon](10-strategie/fahrplan.md) AC-20
-- **Konterkreis hält in der Krone** — [Fahrplan zum Klon](10-strategie/fahrplan.md) AC-26
 - **Den Drachen treffen nur Schützen** — [Kampf](10-strategie/kampf.md) AC-23
 - **Kein Spieler ist abgeschnitten** — [Karte und Vorraete](10-strategie/karte-und-vorraete.md) AC-7
 - **Vorraete sind endlich und knapp** — [Karte und Vorraete](10-strategie/karte-und-vorraete.md) AC-10

@@ -1,0 +1,57 @@
+{
+  "bild": "schwerearmbrust.webp",
+  "maske": "schwerearmbrust-maske.webp",
+  "zelle": [
+    160,
+    127
+  ],
+  "fuss": [
+    61,
+    94
+  ],
+  "feldbreite": 132,
+  "zeilen": 8,
+  "spalten": 9,
+  "art": "figur",
+  "richtungen": 8,
+  "hoehe": 86,
+  "ablaeufe": {
+    "stehen": {
+      "spalte": 0,
+      "bilder": 1
+    },
+    "gehen": {
+      "spalte": 1,
+      "bilder": 8
+    },
+    "angreifen": {
+      "spalte": 0,
+      "bilder": 8,
+      "bild": "schwerearmbrust-angreifen.webp",
+      "maske": "schwerearmbrust-angreifen-maske.webp",
+      "zelle": [
+        204,
+        151
+      ],
+      "fuss": [
+        67,
+        113
+      ]
+    },
+    "sterben": {
+      "spalte": 0,
+      "bilder": 8,
+      "einmal": true,
+      "bild": "schwerearmbrust-sterben.webp",
+      "maske": "schwerearmbrust-sterben-maske.webp",
+      "zelle": [
+        214,
+        152
+      ],
+      "fuss": [
+        90,
+        101
+      ]
+    }
+  }
+}

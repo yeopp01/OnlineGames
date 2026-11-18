@@ -2,7 +2,7 @@
 
 **Bereich:** Strategie
 **Kuerzel:** fahrplan
-**Stand:** 19/26 fertig · 2 in QA · 5 offen
+**Stand:** 20/26 fertig · 2 in QA · 4 offen
 
 ## Zweck
 
@@ -392,14 +392,22 @@ Text am Bildschirm zitieren, zieht die Runde zu E1 nach. Alle bleiben
 
 - **AC-20** `offen` **Große Partie bleibt flüssig** — Acht Spieler mit je 200 Einheiten: ein Takt
   unter 30 ms im Mittel, je Spieler unter 50 KB Übertragung je Sekunde.
-- **AC-26** `offen` **Konterkreis hält in der Krone** — Der Gefechtsstand
+- **AC-26** `fertig` **Konterkreis hält in der Krone** — Der Gefechtsstand
   mit den Stufen der Krone ([Einheiten](einheiten-und-befehle.md) AC-66,
   AC-67) und der vollen Schmiede ([Bauen](bauen.md) AC-48), Budget 2000:
   jede der neun Paarungen aus AC-25 behält ihre Richtung — 20 von 20
   Startwerten, umgekehrt 0 —, mit der Stufe der Krone an der Stelle ihrer
-  Vorstufe (Hellebardier gegen Kavalier, Kavalier und Husar gegen beide
-  Schützenlinien, Langbogen gegen Zweihandkämpfer). Wer an Angriff,
-  Rüstung, Bonus oder Nachladezeit einer Stufe dreht, fährt ihn danach.
+  Vorstufe (Hellebardier gegen Kavalier und Husar, Eliteplänkler gegen beide
+  Schützenlinien, Langbogen gegen Hellebardier, Kavalier und Husar gegen
+  beide Schützenlinien). Wer an Angriff, Rüstung, Bonus oder Nachladezeit
+  einer Stufe dreht, fährt ihn danach. Gemessen am 2026-11-18: alle neun 20
+  von 20, umgekehrt 0, auch ohne Schmiede in derselben Richtung. Der
+  **Paladin** steht an der Stelle des Kavaliers: vor dem Hellebardier fällt
+  er 20 von 20, beide Schützenlinien schlägt er 20 von 20. Die erste Fassung
+  nannte hier „Langbogen gegen Zweihandkämpfer“ — das ist keine der neun
+  Paarungen und gilt nicht: das Schwert läuft durch die Pfeile (20 von 20
+  für den Zweihandkämpfer, wie im Fürstentum der Langschwertkämpfer gegen
+  den Bogenschützen), vor der schweren Armbrust fällt es (19 von 20).
 
 **Bauabfolge (Spec-Runde 2026-11-18).** Die Krone ist als Aufstieg schon in
 den Daten, aber leer. Erst kommt, was aus vorhandenen Regeln besteht —

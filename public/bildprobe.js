@@ -101,6 +101,17 @@ const EINHEITEN = [
   { art: 'pikenier', titel: 'Pikenier', weit: 112 },
   { art: 'eliteplaenkler', titel: 'Eliteplänkler', weit: 96 },
   { art: 'leichtekavallerie', titel: 'Leichte Kavallerie', weit: 118 },
+  // Die Stufen der Krone (einheiten AC-66).
+  { art: 'zweihandkaempfer', titel: 'Zweihandkämpfer', weit: 108 },
+  { art: 'hellebardier', titel: 'Hellebardier', weit: 116 },
+  { art: 'husar', titel: 'Husar', weit: 120 },
+  { art: 'kavalier', titel: 'Kavalier', weit: 122 },
+  { art: 'paladin', titel: 'Paladin', weit: 124 },
+  // Die Stufen der Schuetzen und der Belagerung (einheiten AC-67, AC-68).
+  { art: 'langbogenschuetze', titel: 'Langbogenschütze', weit: 108 },
+  { art: 'schwerearmbrust', titel: 'Schwere Armbrust', weit: 100 },
+  { art: 'belagerungsramme', titel: 'Belagerungsramme', weit: 116, zoom: 1.35, luft: 44 },
+  { art: 'onager', titel: 'Onager', weit: 112, zoom: 1.35, luft: 44 },
   // Einheiten der Haeuser (einheiten AC-42 bis AC-44).
   { art: 'eibenschuetze', titel: 'Eibenschütze', weit: 104 },
   { art: 'pavesenschuetze', titel: 'Pavesenschütze', weit: 100 },

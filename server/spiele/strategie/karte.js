@@ -134,6 +134,116 @@ const WAELDCHEN = [
   { abstand: 11, winkel: -(5 * Math.PI) / 6, radius: 3 },
 ];
 
+// Weitere Vorkommen ausserhalb des freigeraeumten Dorfs (AC-18, Benutzer
+// 2026-11-17: "nur die Standard Gold und Stein Abbaumoeglichkeiten, da muss
+// noch bissl mehr rein"). Je Basis zwei kleine Goldfelder seitlich und ein
+// Steinfeld zur Kartenmitte hin - nach aussen liegt der Kartenrand zu nah.
+// Sie liegen im Zufallsgelaende: gesucht wird der naechste Platz, an dem das
+// Feld samt einem Ring Gras Platz hat und den man vom Dorf aus zu Fuss
+// erreicht (`freierPlatz`).
+const BLOCK = [[0, 0], [1, 0], [0, 1], [1, 1]];
+const FERNE = [
+  { art: GOLD, abstand: 19, winkel: (23 * Math.PI) / 36, form: BLOCK },
+  { art: GOLD, abstand: 22, winkel: -(11 * Math.PI) / 18, form: BLOCK },
+  { art: STEIN, abstand: 20, winkel: Math.PI, form: BLOCK },
+];
+// Und zwischen je zwei Nachbarn ein umkaempftes Vorkommen: Gold und daneben
+// Stein, auf dem Winkel genau zwischen beiden, naeher an der Mitte als die
+// Doerfer (`ring`: Anteil am Radius des Basenkreises) - von beiden gleich weit.
+const GRENZE = { ring: 0.6, gold: BLOCK, stein: [[0, 0], [1, 0], [0, 1]], versatz: 4 };
+
+// Wie viel Gold und Stein auf der Karte liegt (AC-19), eine Einstellung beim
+// Eroeffnen: wenig ist das Dorf allein (je Spieler 7 Felder Gold, 5 Stein),
+// mittel dazu das umkaempfte Vorkommen zwischen den Nachbarn (11 und 8), viel
+// dazu die eigenen ausserhalb des Dorfs (19 und 12).
+const VORKOMMEN = {
+  wenig: { ferne: false, grenze: false },
+  mittel: { ferne: false, grenze: true },
+  viel: { ferne: true, grenze: true },
+};
+const VORKOMMEN_VORGABE = 'mittel';
+
+/** Welche Felder man von (x, y) aus ueber Gras erreicht. */
+function erreichbarVon(felder, groesse, x, y) {
+  const erreicht = new Uint8Array(groesse * groesse);
+  const reihe = [y * groesse + x];
+  erreicht[reihe[0]] = 1;
+  for (let i = 0; i < reihe.length; i++) {
+    const fx = reihe[i] % groesse;
+    const fy = (reihe[i] / groesse) | 0;
+    for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) {
+      const nx = fx + dx;
+      const ny = fy + dy;
+      if (nx < 0 || ny < 0 || nx >= groesse || ny >= groesse) continue;
+      const n = ny * groesse + nx;
+      if (erreicht[n] || felder[n] !== GRAS) continue;
+      erreicht[n] = 1;
+      reihe.push(n);
+    }
+  }
+  return erreicht;
+}
+
+/** Passt die Form bei (x, y) samt einem Ring Gras, drei Felder vom Rand und zu Fuss erreichbar? */
+function passt(felder, groesse, erreichbar, form, x, y) {
+  let x0 = Infinity;
+  let y0 = Infinity;
+  let x1 = -Infinity;
+  let y1 = -Infinity;
+  for (const [dx, dy] of form) {
+    x0 = Math.min(x0, x + dx);
+    x1 = Math.max(x1, x + dx);
+    y0 = Math.min(y0, y + dy);
+    y1 = Math.max(y1, y + dy);
+  }
+  if (x0 < 3 || y0 < 3 || x1 >= groesse - 3 || y1 >= groesse - 3) return false;
+  let zuFuss = false;
+  for (let fy = y0 - 1; fy <= y1 + 1; fy++) {
+    for (let fx = x0 - 1; fx <= x1 + 1; fx++) {
+      if (felder[fy * groesse + fx] !== GRAS) return false;
+      if (erreichbar[fy * groesse + fx]) zuFuss = true;
+    }
+  }
+  return zuFuss;
+}
+
+// Wie oft der Notbehelf gerodet hat - nur fuer Messungen.
+const ZAEHLER = { notbehelf: 0 };
+
+/**
+ * Der erste der Plaetze, an dem die Form liegen kann - sonst der erste, dann
+ * freigeraeumt. Die Plaetze kommen in der Reihenfolge, in der sie recht sind.
+ */
+function freierPlatz(felder, groesse, erreichbar, form, plaetze) {
+  for (const platz of plaetze) {
+    if (passt(felder, groesse, erreichbar, form, platz.x, platz.y)) return platz;
+  }
+  // Nirgends: dann wird am ersten Platz freigeraeumt, weit genug fuer den
+  // Ring. Das kann eine Lichtung im Wald sein, zu der man sich durchschlaegt.
+  const [erster] = plaetze;
+  const x = Math.max(5, Math.min(groesse - 7, erster.x));
+  const y = Math.max(5, Math.min(groesse - 7, erster.y));
+  freiraeumen(felder, groesse, x, y, 3);
+  ZAEHLER.notbehelf += 1;
+  return { x, y };
+}
+
+/**
+ * Die Plaetze um einen Punkt: zuerst die, die von beiden Nachbarn gleich weit
+ * liegen (in Schritten von zwei Feldern), darunter von innen nach aussen.
+ */
+function umkreis(x, y, radius, a, b) {
+  const plaetze = [];
+  for (let dy = -radius; dy <= radius; dy++) {
+    for (let dx = -radius; dx <= radius; dx++) {
+      if (Math.hypot(dx, dy) > radius) continue;
+      const ungleich = Math.abs(Math.hypot(x + dx - a.x, y + dy - a.y) - Math.hypot(x + dx - b.x, y + dy - b.y));
+      plaetze.push({ x: x + dx, y: y + dy, weit: Math.hypot(dx, dy), ungleich: Math.floor(ungleich / 2) });
+    }
+  }
+  return plaetze.sort((p, q) => p.ungleich - q.ungleich || p.weit - q.weit || p.y - q.y || p.x - q.x);
+}
+
 // Auf dem Raster laesst sich nicht jede Drehung genau treffen. Von den vier
 // Feldern um die gedrehte Lage gilt das, dessen Abstand zur Basis dem
 // Sollabstand am naechsten kommt - sonst lagen in Runde 11 die Steine mal
@@ -160,7 +270,7 @@ function vorkommen(basis, eintrag) {
 /**
  * @param {number} startwert
  * @param {number} anzahlSpieler
- * @param {{kartengroesse?: string}} [einstellungen]
+ * @param {{kartengroesse?: string, vorkommen?: string}} [einstellungen]
  */
 function erzeugen(startwert, anzahlSpieler, einstellungen = {}) {
   const zufall = zufallAus(startwert);
@@ -200,6 +310,46 @@ function erzeugen(startwert, anzahlSpieler, einstellungen = {}) {
     }
   }
 
+  // Die weiteren Vorkommen (AC-18) - erst wenn jedes Dorf steht, und ohne
+  // den Zufall anzufassen: der Rest der Karte bleibt, wie er war.
+  const zuFuss = basen.map((basis) => erreichbarVon(felder, groesse, basis.x, basis.y));
+  // Wo sie liegen und wem sie zugedacht sind - fuer Tests und Messungen, es
+  // geht nicht ueber die Leitung.
+  const fundorte = [];
+  const legen = (art, form, platz, wem) => {
+    for (const [dx, dy] of form) setzen(felder, groesse, platz.x + dx, platz.y + dy, art);
+    fundorte.push({ art, x: platz.x, y: platz.y, felder: form.length, ...wem });
+  };
+  const stufe = VORKOMMEN[einstellungen.vorkommen] || VORKOMMEN[VORKOMMEN_VORGABE];
+  if (stufe.ferne) basen.forEach((basis, i) => {
+    for (const eintrag of FERNE) {
+      // Erst derselbe Abstand mit etwas anderem Winkel, dann weiter weg -
+      // naeher nie, sonst laege es im Dorf.
+      const plaetze = [];
+      for (const mehr of [0, 1, 2, 3, 4, 5, 6]) {
+        for (const dreh of [0, 0.12, -0.12, 0.24, -0.24, 0.36, -0.36, 0.48, -0.48]) {
+          plaetze.push(vorkommen(basis, { abstand: eintrag.abstand + mehr, winkel: eintrag.winkel + dreh }));
+        }
+      }
+      legen(eintrag.art, eintrag.form, freierPlatz(felder, groesse, zuFuss[i], eintrag.form, plaetze), { basis: i });
+    }
+  });
+  const ring = groesse * 0.36 * GRENZE.ring;
+  if (stufe.grenze) basen.forEach((basis, i) => {
+    const winkel = basis.winkel + Math.PI / basen.length;
+    const mx = Math.round(groesse / 2 + Math.cos(winkel) * ring);
+    const my = Math.round(groesse / 2 + Math.sin(winkel) * ring);
+    const nachbar = basen[(i + 1) % basen.length];
+    const gold = freierPlatz(felder, groesse, zuFuss[i], GRENZE.gold, umkreis(mx, my, 8, basis, nachbar));
+    const nachbarn = { zwischen: [i, (i + 1) % basen.length] };
+    legen(GOLD, GRENZE.gold, gold, nachbarn);
+    // Der Stein daneben, zur Mitte hin - quer dazu laege er einem der zwei
+    // Nachbarn naeher.
+    const sx = Math.round(gold.x - Math.cos(winkel) * GRENZE.versatz);
+    const sy = Math.round(gold.y - Math.sin(winkel) * GRENZE.versatz);
+    legen(STEIN, GRENZE.stein, freierPlatz(felder, groesse, zuFuss[i], GRENZE.stein, umkreis(sx, sy, 8, basis, nachbar)), nachbarn);
+  });
+
   const vorrat = new Map();
   for (let i = 0; i < felder.length; i++) {
     if (VORRAT[felder[i]]) vorrat.set(i, VORRAT[felder[i]]);
@@ -216,7 +366,7 @@ function erzeugen(startwert, anzahlSpieler, einstellungen = {}) {
     }
   });
 
-  return { groesse, felder, basen: basen.map(({ x, y }) => ({ x, y })), vorrat, schafe };
+  return { groesse, felder, basen: basen.map(({ x, y }) => ({ x, y })), vorrat, schafe, fundorte };
 }
 
 // Ein Gebaeude belegt seine Grundflaeche mit dieser Feldart. Die Wegsuche geht
@@ -229,7 +379,7 @@ function begehbar(karte, x, y) {
 }
 
 module.exports = {
-  GRAS, WALD, BEERE, WASSER, GOLD, STEIN, BEBAUT, VORRAT, AUSSTATTUNG, WAELDCHEN,
+  GRAS, WALD, BEERE, WASSER, GOLD, STEIN, BEBAUT, VORRAT, AUSSTATTUNG, WAELDCHEN, FERNE, GRENZE, VORKOMMEN, VORKOMMEN_VORGABE, ZAEHLER, freierPlatz,
   SCHAFE_JE_BASIS, SCHAF_NAHRUNG,
   erzeugen, begehbar, zufallAus, kartengroesse, GROESSE_MAX,
 };

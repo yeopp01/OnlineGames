@@ -1,0 +1,57 @@
+{
+  "bild": "husar.webp",
+  "maske": "husar-maske.webp",
+  "zelle": [
+    239,
+    218
+  ],
+  "fuss": [
+    80,
+    161
+  ],
+  "feldbreite": 132,
+  "zeilen": 8,
+  "spalten": 9,
+  "art": "figur",
+  "richtungen": 8,
+  "hoehe": 86,
+  "ablaeufe": {
+    "stehen": {
+      "spalte": 0,
+      "bilder": 1
+    },
+    "gehen": {
+      "spalte": 1,
+      "bilder": 8
+    },
+    "angreifen": {
+      "spalte": 0,
+      "bilder": 8,
+      "bild": "husar-angreifen.webp",
+      "maske": "husar-angreifen-maske.webp",
+      "zelle": [
+        246,
+        211
+      ],
+      "fuss": [
+        82,
+        159
+      ]
+    },
+    "sterben": {
+      "spalte": 0,
+      "bilder": 8,
+      "einmal": true,
+      "bild": "husar-sterben.webp",
+      "maske": "husar-sterben-maske.webp",
+      "zelle": [
+        291,
+        221
+      ],
+      "fuss": [
+        105,
+        163
+      ]
+    }
+  }
+}

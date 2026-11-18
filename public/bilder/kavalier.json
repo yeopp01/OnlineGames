@@ -1,0 +1,57 @@
+{
+  "bild": "kavalier.webp",
+  "maske": "kavalier-maske.webp",
+  "zelle": [
+    330,
+    273
+  ],
+  "fuss": [
+    96,
+    211
+  ],
+  "feldbreite": 132,
+  "zeilen": 8,
+  "spalten": 9,
+  "art": "figur",
+  "richtungen": 8,
+  "hoehe": 86,
+  "ablaeufe": {
+    "stehen": {
+      "spalte": 0,
+      "bilder": 1
+    },
+    "gehen": {
+      "spalte": 1,
+      "bilder": 8
+    },
+    "angreifen": {
+      "spalte": 0,
+      "bilder": 8,
+      "bild": "kavalier-angreifen.webp",
+      "maske": "kavalier-angreifen-maske.webp",
+      "zelle": [
+        372,
+        269
+      ],
+      "fuss": [
+        137,
+        207
+      ]
+    },
+    "sterben": {
+      "spalte": 0,
+      "bilder": 8,
+      "einmal": true,
+      "bild": "kavalier-sterben.webp",
+      "maske": "kavalier-sterben-maske.webp",
+      "zelle": [
+        374,
+        279
+      ],
+      "fuss": [
+        148,
+        207
+      ]
+    }
+  }
+}

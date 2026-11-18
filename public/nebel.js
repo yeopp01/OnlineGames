@@ -37,7 +37,14 @@ export class Nebel {
     this.sichtbar = new Uint8Array(groesse * groesse);
     this.gebaeude = new Uint8Array(groesse * groesse);
     this.erkundet = new Uint8Array(groesse * groesse);
-    if (erkundet) this.erkundet.fill(1);
+    // Wo ein eigenes Auge schon war. `erkundet` kann auch aus einer Karte
+    // stammen (Kartografie, bauen AC-52) - die zeigt das Gelaende, aber
+    // nicht, wer dort wohnt.
+    this.selbst = new Uint8Array(groesse * groesse);
+    if (erkundet) {
+      this.erkundet.fill(1);
+      this.selbst.fill(1);
+    }
     this.gebaeudeSchluessel = null;
     this.takt = -Infinity;
     // Ein Rand rundum, der den Stand des naechsten Felds der Kante traegt:
@@ -73,6 +80,7 @@ export class Nebel {
         if (dx * dx + dy * dy > rr) continue;
         ziel[y * g + x] = 1;
         this.erkundet[y * g + x] = 1;
+        this.selbst[y * g + x] = 1;
       }
     }
   }
@@ -148,6 +156,21 @@ export class Nebel {
   hatErkundet(x, y) {
     const i = this.index(x, y);
     return i >= 0 && this.erkundet[i] === 1;
+  }
+
+  /** War ein eigenes Auge schon dort? Die Karte allein zaehlt nicht (bauen AC-52). */
+  warDort(x, y) {
+    const i = this.index(x, y);
+    return i >= 0 && this.selbst[i] === 1;
+  }
+
+  /**
+   * Die ganze Karte gilt als erkundet (Kartografie, bauen AC-52). Gesehen ist
+   * damit nichts - das Bild wird beim naechsten Rechnen neu geschrieben.
+   */
+  karteZeigen() {
+    this.erkundet.fill(1);
+    this.takt = -Infinity;
   }
 
   /**

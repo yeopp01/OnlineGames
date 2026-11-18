@@ -5,7 +5,7 @@ const karten = require('./karte');
 const { suchen, nachbarfeld, erreichbar, NACHBARN: NACHBARFELDER } = require('./wege');
 const {
   EINHEITEN, SAMMELN, TIERE, GEBAEUDE, VERBESSERUNGEN, ZEITALTER, AUFSTIEGE, KLASSEN, HANDEL, HAEUSER,
-  BEVOELKERUNG_MAX, SCHLANGE_MAX, STARTAUFSTELLUNG, REPARATUR,
+  BEVOELKERUNG_MAX, SCHLANGE_MAX, STARTAUFSTELLUNG, REPARATUR, SCHIESSENDE,
 } = require('./daten');
 const { bringt, staerkt, hausBringt } = require('./bringt');
 
@@ -16,9 +16,8 @@ const TAKTE_PRO_SEKUNDE = 10;
 // eigenen Einheiten (kampf AC-11), mit Verbesserungen.
 const KAMPFFELDER = ['leben', 'angriff', 'nahruestung', 'fernruestung', 'reichweite', 'sicht', 'tempo'];
 const GEBAEUDEFELDER = ['leben', 'nahruestung', 'fernruestung', 'sicht', 'angriff', 'reichweite', 'nachladen'];
-// Die Gebaeude, die schiessen (bauen AC-29): wer in den Daten einen Angriff
-// hat. Einmal gezaehlt - `tuermeTakten()` laeuft in jedem Takt.
-const SCHIESSENDE = new Set(Object.keys(GEBAEUDE).filter((art) => GEBAEUDE[art].angriff > 0));
+// Die Gebaeude, die schiessen (bauen AC-29), stehen als `SCHIESSENDE` in den
+// Daten - einmal gezaehlt, `tuermeTakten()` laeuft in jedem Takt.
 // Werte eines Gebaeudes, die nur fuer eines gelten, das schiesst (gebaeudewert).
 const SCHUSSFELDER = new Set(['angriff', 'reichweite', 'nachladen']);
 const SUCHWEITE_ERSATZ = 12;
@@ -159,6 +158,15 @@ const EINHEIT_NAMEN = {
   pikenier: 'Den Pikenier',
   eliteplaenkler: 'Den Eliteplänkler',
   leichtekavallerie: 'Die leichte Kavallerie',
+  zweihandkaempfer: 'Den Zweihandkämpfer',
+  hellebardier: 'Den Hellebardier',
+  husar: 'Den Husaren',
+  kavalier: 'Den Kavalier',
+  paladin: 'Den Paladin',
+  langbogenschuetze: 'Den Langbogenschützen',
+  schwerearmbrust: 'Die schwere Armbrust',
+  belagerungsramme: 'Die Belagerungsramme',
+  onager: 'Den Onager',
   eibenschuetze: 'Den Eibenschützen',
   pavesenschuetze: 'Den Pavesenschützen',
   soeldner: 'Den Söldner',
@@ -202,6 +210,9 @@ function grundstufeVon(art) {
 function wirkungsschluessel(art) {
   return [...new Set([art, ...(EINHEITEN[art]?.klassen || [])])];
 }
+
+/** Wer keinen Zuschlag hat (`welt.bonusVon()`) - ein Objekt fuer alle, damit sich vergleichen laesst. */
+const OHNE_BONUS = /** @type {Record<string, number>} */ (Object.freeze({}));
 
 /**
  * Das Team eines Spielers aus den Einstellungen (spielziel AC-14):
@@ -388,6 +399,9 @@ class Welt {
     // Verbesserungen und dem Stand der Buendnisse, auf denen sie beruhen.
     // `buendnisStand` zaehlt jede Trennung einer Sicht (spielziel AC-25).
     this.wirkungenGemerkt = new Map();
+    // Der Zuschlag je Klasse des Ziels, je Spieler und Art (`bonusVon()`) -
+    // gemerkt, solange die Liste seiner Wirkungen dieselbe ist.
+    this.bonusGemerkt = new Map();
     this.buendnisStand = 0;
     // Wer mit wem verbuendet ist, fragt jede Kampfregel - deshalb eine Map
     // statt `spielerVon` (das sucht in der Liste).
@@ -456,6 +470,8 @@ class Welt {
     // nicht teurer: jede Einheit markiert weiter genau einmal.
     const neueSicht = () => ({
       sichtbar: new Uint32Array(felder), gebaeude: new Uint8Array(felder), erkundet: new Uint8Array(felder),
+      // Die Karte ist bekannt, ohne gesehen zu sein (Kartografie, bauen AC-52).
+      karte: false,
     });
     const jeTeam = new Map();
     this.sichten = new Map(this.spieler.map((s) => {
@@ -725,7 +741,8 @@ class Welt {
    * Gefragt wird ueberall, wo auch das Zeitalter gefragt wird.
    */
   hausBildetAus(spieler, art) {
-    const nur = EINHEITEN[art]?.haeuser;
+    // Auch eine Verbesserung kann einem Haus gehoeren (einheiten AC-69).
+    const nur = (EINHEITEN[art] || VERBESSERUNGEN[art])?.haeuser;
     return !nur || nur.includes(spieler.haus);
   }
 
@@ -820,6 +837,66 @@ class Welt {
     return wert;
   }
 
+  /**
+   * Der Zuschlag einer Einheit je Klasse des Ziels, mit den Verbesserungen
+   * ihres Spielers (bauen AC-54, AC-56): nach der Brandstiftung hat das
+   * Fussvolk +2 gegen Gebaeude. Wie `einheitenwert()` die eine Stelle - die
+   * Schadensformel liest den Bonus nicht aus der Tabelle. Ohne Aenderung ist
+   * es dasselbe Objekt wie in den Daten.
+   * @returns {Record<string, number>}
+   */
+  bonusVon(besitzer, art) {
+    const grund = EINHEITEN[art].bonus || OHNE_BONUS;
+    const liste = this.wirkungen(besitzer);
+    let gemerkt = this.bonusGemerkt.get(besitzer);
+    if (!gemerkt || gemerkt.liste !== liste) this.bonusGemerkt.set(besitzer, gemerkt = { liste, je: new Map() });
+    let bonus = gemerkt.je.get(art);
+    if (bonus) return bonus;
+    bonus = grund;
+    for (const schluessel of wirkungsschluessel(art)) {
+      for (const w of liste) {
+        for (const [klasse, zahl] of Object.entries(w.bonus?.[schluessel] || {})) {
+          if (bonus === grund) bonus = { ...grund };
+          bonus[klasse] = (bonus[klasse] || 0) + zahl;
+        }
+      }
+    }
+    // Ein Anteil mehr Schaden gegen eine Klasse (bauen AC-50, die
+    // Belagerungsingenieure): gerechnet auf Angriff samt Zuschlag und als
+    // weiterer Zuschlag gefuehrt - so zeigt ihn die Leiste, und die
+    // Schadensformel bleibt `Angriff - Ruestung + Bonus`.
+    for (const schluessel of wirkungsschluessel(art)) {
+      for (const w of liste) {
+        for (const [klasse, anteil] of Object.entries(w.bonusAnteil?.[schluessel] || {})) {
+          if (bonus === grund) bonus = { ...grund };
+          const bisher = bonus[klasse] || 0;
+          bonus[klasse] = bisher + Math.round((this.einheitenwert(besitzer, art, 'angriff') + bisher) * anteil);
+        }
+      }
+    }
+    gemerkt.je.set(art, bonus);
+    return bonus;
+  }
+
+  /**
+   * Reichweite oder Ruhe des Bekehrens mit den Verbesserungen des Spielers
+   * (bauen AC-55): nach dem Buchdruck zwoelf statt neun Felder, nach der
+   * Erleuchtung 41 statt 62 Sekunden Ruhe.
+   * @param {'reichweite' | 'ruhe'} feld
+   */
+  bekehrwert(besitzer, art, feld) {
+    let wert = EINHEITEN[art].bekehren[feld];
+    for (const w of this.wirkungen(besitzer)) wert += w.bekehren?.[feld] || 0;
+    return wert;
+  }
+
+  /** Wie schnell die Dorfbewohner dieses Spielers bauen - nach dem Tretkran das 1,2-fache (bauen AC-56). */
+  bautempo(besitzer) {
+    let faktor = 1;
+    for (const w of this.wirkungen(besitzer)) faktor *= w.bautempo || 1;
+    return faktor;
+  }
+
   // Leben einer Einheit mit allen Verbesserungen ihres Spielers (bauen AC-21).
   lebenMax(besitzer, art) {
     return this.einheitenwert(besitzer, art, 'leben');
@@ -842,6 +919,17 @@ class Welt {
       // Was sie ihn kostet, wenn sein Haus den Preis aendert (einheiten AC-44).
       const kosten = this.auftragKosten(besitzer, art);
       if (kosten !== EINHEITEN[art].kosten) tafel[art].kosten = kosten;
+      // Der Zuschlag je Klasse des Ziels, wenn eine Verbesserung ihn aendert
+      // (bauen AC-54, AC-56) - die Leiste zeigt den des Besitzers.
+      const bonus = this.bonusVon(besitzer, art);
+      if (bonus !== (EINHEITEN[art].bonus || OHNE_BONUS)) tafel[art].bonus = bonus;
+      // Wie sie bei diesem Spieler heisst, wenn eine Verbesserung sie hebt
+      // (einheiten AC-69): sein Kriegswolf ist danach ein Elite-Kriegswolf.
+      for (const w of this.wirkungen(besitzer)) if (w.nennt?.[art]) tafel[art].name = w.nennt[art];
+      // Reichweite und Ruhe des Bekehrens (bauen AC-55).
+      if (EINHEITEN[art].bekehren) {
+        tafel[art].bekehren = { reichweite: this.bekehrwert(besitzer, art, 'reichweite'), ruhe: this.bekehrwert(besitzer, art, 'ruhe') };
+      }
     }
     // Die Gebaeude in derselben Tafel (bauen AC-34): der Lebensbalken braucht
     // das volle Leben nach dem Mauerwerk. Die Namen von Einheiten und
@@ -1370,7 +1458,9 @@ class Welt {
     }
     if (!bauleute) return;
     const vorher = gebaeude.bau;
-    gebaeude.bau = Math.min(1, gebaeude.bau + (bauleute + 2) / (3 * GEBAEUDE[gebaeude.art].bauzeit * TAKTE_PRO_SEKUNDE));
+    // Mit dem Tretkran ein Fuenftel schneller (bauen AC-56).
+    const tempo = this.bautempo(gebaeude.besitzer);
+    gebaeude.bau = Math.min(1, gebaeude.bau + ((bauleute + 2) * tempo) / (3 * GEBAEUDE[gebaeude.art].bauzeit * TAKTE_PRO_SEKUNDE));
     // Ein Hauch Rechenspiel: 1 - 1e-9 zaehlt als fertig, sonst fehlt der
     // letzte Takt wegen der Rundung.
     if (gebaeude.bau >= 1 - 1e-9) gebaeude.bau = 1;
@@ -1651,7 +1741,8 @@ class Welt {
     // Und ein bestimmtes Haus (einheiten AC-42): den Eibenschuetzen bildet
     // nur sein Haus aus.
     if (!this.hausBildetAus(spieler, art)) {
-      const wer = EINHEITEN[art].haeuser.map((h) => HAEUSER[h]?.name || h).join(' oder ');
+      const wer = (EINHEITEN[art] || VERBESSERUNGEN[art]).haeuser.map((h) => HAEUSER[h]?.name || h).join(' oder ');
+      if (!EINHEITEN[art]) return { fehler: `„${VERBESSERUNGEN[art].name}" erforscht nur Haus ${wer}.` };
       return { fehler: `${EINHEIT_NAMEN[art] || art} bildet nur Haus ${wer} aus.` };
     }
     // Der Aufstieg: nur der naechste, nur einmal, und nur mit genug Gebaeuden
@@ -1667,8 +1758,13 @@ class Welt {
       const laeuft = [...this.gebaeude.values()].some((g) => g.besitzer === spielerId && g.schlange.includes(art));
       if (laeuft) return { fehler: `Der ${aufstieg.titel} läuft schon.` };
       const haben = this.gebaeudeDerZeit(spieler);
-      if (haben < aufstieg.voraussetzung) {
-        return { fehler: `Erst ${aufstieg.voraussetzung} fertige Gebäude ${ZEITALTER[spieler.zeitalter].genitiv} außer Häusern — vorhanden: ${haben}.` };
+      // Ein Gebaeude kann allein genuegen: in die Krone fuehrt auch eine
+      // fertige Burg (bauen AC-47).
+      const stattdessen = aufstieg.oder
+        && [...this.gebaeude.values()].some((g) => g.besitzer === spielerId && g.fertig && g.art === aufstieg.oder.art);
+      if (haben < aufstieg.voraussetzung && !stattdessen) {
+        const oder = aufstieg.oder ? ` oder ${aufstieg.oder.text}` : '';
+        return { fehler: `Erst ${aufstieg.voraussetzung} fertige Gebäude ${ZEITALTER[spieler.zeitalter].genitiv} außer Häusern${oder} — vorhanden: ${haben}.` };
       }
     }
     // Eine Verbesserung kann eine andere voraussetzen: Eisenguss erst nach dem
@@ -1682,6 +1778,11 @@ class Welt {
     if (VERBESSERUNGEN[art]) {
       const eingereiht = [...this.gebaeude.values()].some((g) => g.besitzer === spielerId && g.schlange.includes(art));
       if (spieler.verbesserungen.includes(art) || eingereiht) return { fehler: `${VERBESSERUNGEN[art].name} gibt es nur einmal.` };
+      // Kartografie (bauen AC-52) nur im Nebel - und nicht, wenn die Karte
+      // schon bekannt ist, weil ein Verbuendeter sie erforscht hat.
+      if (VERBESSERUNGEN[art].karte && (this.sichtArt !== 'nebel' || this.sichten?.get(spielerId)?.karte)) {
+        return { fehler: 'Die Karte ist schon bekannt.' };
+      }
     }
     const kosten = this.auftragKosten(spielerId, art);
     for (const [rohstoff, menge] of Object.entries(kosten)) {
@@ -1800,6 +1901,15 @@ class Welt {
     if (VERBESSERUNGEN[art].gebaeude) this.gebaeudeSichtNeu = true;
     this.werteGemerkt.delete(spieler.id);
     this.werteAenderungen.add(spieler.id);
+    // Kartografie (bauen AC-52): die ganze Karte gilt als erkundet - fuer ihn
+    // und jeden, mit dem er die Sicht teilt: sie haben dasselbe Sichtobjekt.
+    // Gesehen ist damit nichts, was dort steht, schickt der Server weiter
+    // erst, wenn ein Auge hinsieht (kampf AC-13).
+    const sicht = this.sichten?.get(spieler.id);
+    if (VERBESSERUNGEN[art].karte && sicht) {
+      sicht.erkundet.fill(1);
+      sicht.karte = true;
+    }
     const wirkung = VERBESSERUNGEN[art].wirkung;
     for (const einheit of this.einheiten.values()) {
       if (einheit.besitzer !== spieler.id) continue;
@@ -3616,8 +3726,11 @@ class Welt {
     const ruestung = istGebaeude
       ? this.gebaeudewert(ziel.besitzer, ziel.art, feld)
       : this.einheitenwert(ziel.besitzer, ziel.art, feld);
+    // Der Zuschlag einer Einheit mit ihren Verbesserungen (bauen AC-54,
+    // AC-56); ein Gebaeude traegt seinen in den Daten.
+    const boni = vonGebaeude ? a.bonus : this.bonusVon(angreifer.besitzer, angreifer.art);
     let bonus = 0;
-    for (const klasse of werte.klassen || []) bonus += a.bonus?.[klasse] || 0;
+    for (const klasse of werte.klassen || []) bonus += boni?.[klasse] || 0;
     return Math.max(1, wert('angriff') - ruestung + bonus);
   }
 
@@ -4005,7 +4118,8 @@ class Welt {
     const alt = this.sichten.get(id);
     const bisher = this.spieler.filter((s) => s.id !== id && this.sichten.get(s.id) === alt).map((s) => s.id);
     if (!bisher.length) return;
-    this.sichten.set(id, { sichtbar: alt.sichtbar.slice(), gebaeude: alt.gebaeude.slice(), erkundet: alt.erkundet.slice() });
+    // Auch die Karte nimmt er mit (bauen AC-52).
+    this.sichten.set(id, { sichtbar: alt.sichtbar.slice(), gebaeude: alt.gebaeude.slice(), erkundet: alt.erkundet.slice(), karte: alt.karte });
     // Mit der Sicht endet der Mannschaftsbonus in beide Richtungen
     // (spielziel AC-25): alle Wirkungen und Werte neu, und jeder bekommt
     // seine Tafel neu - die Sicht der Reiter steht darin.
@@ -4110,7 +4224,7 @@ class Welt {
       moench.bekehrt = false;
       return;
     }
-    if (Math.hypot(ziel.x - moench.x, ziel.y - moench.y) > bekehren.reichweite) {
+    if (Math.hypot(ziel.x - moench.x, ziel.y - moench.y) > this.bekehrwert(moench.besitzer, moench.art, 'reichweite')) {
       moench.bekehrt = false;
       if (!moench.weg.length || this.takt % TAKTE_PRO_SEKUNDE === 0) {
         moench.weg = this.wegNach(moench, this.feldVon(ziel));
@@ -4131,7 +4245,7 @@ class Welt {
     this.bekehrt(ziel, moench.besitzer);
     moench.auftrag = null;
     moench.bekehrt = false;
-    moench.ruhtBis = this.takt + bekehren.ruhe * TAKTE_PRO_SEKUNDE;
+    moench.ruhtBis = this.takt + this.bekehrwert(moench.besitzer, moench.art, 'ruhe') * TAKTE_PRO_SEKUNDE;
   }
 
   /**
@@ -4923,6 +5037,9 @@ class Welt {
         ...(s.farmenErneuern ? { fe: 1 } : {}),
         // Gefallene, mit denen sich bezahlen laesst (einheiten AC-49).
         ...(s.gefallene ? { gf: s.gefallene } : {}),
+        // Die Karte ist bekannt (Kartografie, bauen AC-52) - fuer jeden, der
+        // die Sicht des Forschers teilt.
+        ...(this.sichten?.get(s.id)?.karte ? { ka: 1 } : {}),
         // Untaetige Dorfbewohner, nur wenn es welche gibt (einheiten AC-21).
         ...untaetigeListe(this, s.id),
         // Arbeiter je Rohstoff, in der Reihenfolge holz, nahrung, gold, stein
@@ -5328,7 +5445,10 @@ class Welt {
           handelt: Boolean(w.handelt),
         }])),
         gebaeude: Object.fromEntries(Object.entries(GEBAEUDE).map(([art, w]) => [art, {
-          leben: w.leben, bildetAus: w.bildetAus, groesse: w.groesse, kosten: w.kosten, bauzeit: w.bauzeit,
+          // Ohne Nebel gibt es nichts aufzudecken: die Kartografie steht
+          // dann nicht im Angebot (bauen AC-52).
+          leben: w.leben, bildetAus: this.sichtArt === 'nebel' ? w.bildetAus : w.bildetAus.filter((a) => !VERBESSERUNGEN[a]?.karte),
+          groesse: w.groesse, kosten: w.kosten, bauzeit: w.bauzeit,
           // Auf welcher Seite des Baumenues es steht (bedienung AC-64).
           seite: w.seite || 0,
           // Kein Quadrat (bauen AC-37): so viele Felder in einer Reihe, davon

@@ -1,0 +1,57 @@
+{
+  "bild": "langbogenschuetze.webp",
+  "maske": "langbogenschuetze-maske.webp",
+  "zelle": [
+    177,
+    138
+  ],
+  "fuss": [
+    67,
+    104
+  ],
+  "feldbreite": 132,
+  "zeilen": 8,
+  "spalten": 9,
+  "art": "figur",
+  "richtungen": 8,
+  "hoehe": 86,
+  "ablaeufe": {
+    "stehen": {
+      "spalte": 0,
+      "bilder": 1
+    },
+    "gehen": {
+      "spalte": 1,
+      "bilder": 8
+    },
+    "angreifen": {
+      "spalte": 0,
+      "bilder": 8,
+      "bild": "langbogenschuetze-angreifen.webp",
+      "maske": "langbogenschuetze-angreifen-maske.webp",
+      "zelle": [
+        199,
+        171
+      ],
+      "fuss": [
+        53,
+        137
+      ]
+    },
+    "sterben": {
+      "spalte": 0,
+      "bilder": 8,
+      "einmal": true,
+      "bild": "langbogenschuetze-sterben.webp",
+      "maske": "langbogenschuetze-sterben-maske.webp",
+      "zelle": [
+        215,
+        154
+      ],
+      "fuss": [
+        87,
+        104
+      ]
+    }
+  }
+}

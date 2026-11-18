@@ -357,6 +357,9 @@ export class Ansicht {
     // Die Zeitgrenze in Spielminuten oder null (spielziel AC-22).
     this.zeitgrenze = Number.isInteger(nachricht.zeitgrenze) && nachricht.zeitgrenze > 0 ? nachricht.zeitgrenze : null;
     this.nebel = new Nebel(nachricht.karte.groesse, this.sichtArt === 'erkundet');
+    // Die Karte ist bekannt, ohne gesehen zu sein (Kartografie, bauen AC-52) -
+    // der Server sagt es mit jedem Zustand neu (`ka`).
+    this.karteBekannt = false;
     // Fremde Gebaeude, wie man sie zuletzt gesehen hat (kampf AC-12).
     this.erinnert = new Map();
     // Was schon angebrochen ist, bringt der Aufbau mit (darstellung AC-31) -
@@ -706,6 +709,12 @@ export class Ansicht {
       // `gf`: die eigenen Gefallenen, aus denen ein Haus ausbildet (einheiten
       // AC-49) - der Server schickt sie nur, wenn es welche gibt.
       this.vorraete = { holz, nahrung, gold, stein, bev, raum, gefallene: meine.gf || 0 };
+      // Kartografie (bauen AC-52): die ganze Karte gilt als erkundet - auch,
+      // wenn ein Verbuendeter sie erforscht hat, und nach dem Neuladen wieder.
+      if (meine.ka && !this.karteBekannt) {
+        this.karteBekannt = true;
+        this.nebel.karteZeigen();
+      }
       // Eine Verbesserung ist erforscht (bedienung AC-59).
       if ((meine.v || []).length > this.verbesserungen.length) this.ereignis('forschung');
       this.verbesserungen = meine.v || [];
@@ -2975,8 +2984,9 @@ export class Ansicht {
     this.zeigerZielZeichnen(e);
 
     for (const spieler of this.spieler.values()) {
-      // Ein fremder Name steht erst dort, wo man schon war.
-      if (this.nebelAn && spieler.id !== this.ich && !this.nebel.hatErkundet(spieler.basis.x, spieler.basis.y)) continue;
+      // Ein fremder Name steht erst dort, wo man schon war - die Karte der
+      // Kartografie verraet nicht, wer wo wohnt (bauen AC-52).
+      if (this.nebelAn && spieler.id !== this.ich && !this.nebel.warDort(spieler.basis.x, spieler.basis.y)) continue;
       this.namenZeichnen(spieler);
     }
     if (this.platzieren) this.platzVorschau(e);
@@ -3940,11 +3950,16 @@ export class Ansicht {
     // Ein eigener Moench, der ruht (bedienung AC-68): ein schmaler blauer
     // Balken ueber dem Kopf fuellt sich, bis er wieder bekehren kann - auch
     // ohne Auswahl, damit man sieht, welcher bereit ist.
-    const ruhe = einheit.r && einheit.b === this.ich ? this.werte.einheiten[this.arten[einheit.k]]?.bekehren?.ruhe : 0;
+    // Wie lange er ruht, steht in der Tafel des Besitzers: nach der
+    // Erleuchtung kuerzer (bauen AC-55).
+    const bekehrer = this.arten[einheit.k];
+    const ruhe = einheit.r && einheit.b === this.ich
+      ? (this.einheitenwerte.get(einheit.b)?.[bekehrer]?.bekehren ?? this.werte.einheiten[bekehrer]?.bekehren)?.ruhe
+      : 0;
     if (ruhe) {
       this.lebensbalken.push({
         art: 'ruhe', i: einheit.i, x: punkt.x, y: punkt.y - hoehe * (FIGUREN[this.arten[einheit.k]]?.oben ?? 1) + 1,
-        breite: Math.max(16, Math.round(hoehe * 0.9)), anteil: 1 - einheit.r / ruhe,
+        breite: Math.max(16, Math.round(hoehe * 0.9)), anteil: Math.max(0, 1 - einheit.r / ruhe),
       });
     }
 

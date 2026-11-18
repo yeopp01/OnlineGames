@@ -4,7 +4,7 @@
 const { Welt, TAKTE_PRO_SEKUNDE, GESCHWINDIGKEITEN } = require('./welt');
 const { Ki } = require('./ki');
 const { HAEUSER } = require('./daten');
-const { zufallAus } = require('./karte');
+const { zufallAus, VORKOMMEN_VORGABE } = require('./karte');
 
 // Computergegner (spielauswahl AC-18, AC-19): sie sitzen auf eigenen Plaetzen
 // und spielen nur ueber welt.nachricht, wie ein Mensch (ki AC-1). Ihre Ids
@@ -117,6 +117,16 @@ module.exports = {
         { wert: 'wenig', name: 'wenig (200 Holz, 200 Nahrung, 100 Gold, 200 Stein)' },
         { wert: 'mittel', name: 'mittel (je 500)' },
         { wert: 'viel', name: 'viel (je 1000)' },
+      ],
+    },
+    // Wie viel Gold und Stein auf der Karte liegt (karte AC-19) - die Stufen
+    // stehen als VORKOMMEN in der Karte.
+    {
+      schluessel: 'vorkommen', name: 'Gold und Stein', art: 'wahl', vorgabe: VORKOMMEN_VORGABE,
+      werte: [
+        { wert: 'wenig', name: 'wenig (nur im Dorf)' },
+        { wert: 'mittel', name: 'mittel (dazu umkämpfte Vorkommen)' },
+        { wert: 'viel', name: 'viel (dazu eigene vor dem Dorf)' },
       ],
     },
     // Ob ein Buendnis waehrend der Partie geloest werden kann (ADR-0013,

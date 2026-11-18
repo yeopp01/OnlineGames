@@ -1,0 +1,57 @@
+{
+  "bild": "zweihandkaempfer.webp",
+  "maske": "zweihandkaempfer-maske.webp",
+  "zelle": [
+    189,
+    154
+  ],
+  "fuss": [
+    51,
+    126
+  ],
+  "feldbreite": 132,
+  "zeilen": 8,
+  "spalten": 9,
+  "art": "figur",
+  "richtungen": 8,
+  "hoehe": 86,
+  "ablaeufe": {
+    "stehen": {
+      "spalte": 0,
+      "bilder": 1
+    },
+    "gehen": {
+      "spalte": 1,
+      "bilder": 8
+    },
+    "angreifen": {
+      "spalte": 0,
+      "bilder": 8,
+      "bild": "zweihandkaempfer-angreifen.webp",
+      "maske": "zweihandkaempfer-angreifen-maske.webp",
+      "zelle": [
+        267,
+        190
+      ],
+      "fuss": [
+        106,
+        140
+      ]
+    },
+    "sterben": {
+      "spalte": 0,
+      "bilder": 8,
+      "einmal": true,
+      "bild": "zweihandkaempfer-sterben.webp",
+      "maske": "zweihandkaempfer-sterben-maske.webp",
+      "zelle": [
+        251,
+        188
+      ],
+      "fuss": [
+        99,
+        130
+      ]
+    }
+  }
+}

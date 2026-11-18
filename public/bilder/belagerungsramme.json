@@ -1,0 +1,57 @@
+{
+  "bild": "belagerungsramme.webp",
+  "maske": "belagerungsramme-maske.webp",
+  "zelle": [
+    366,
+    250
+  ],
+  "fuss": [
+    160,
+    164
+  ],
+  "feldbreite": 132,
+  "zeilen": 8,
+  "spalten": 9,
+  "art": "figur",
+  "richtungen": 8,
+  "hoehe": 86,
+  "ablaeufe": {
+    "stehen": {
+      "spalte": 0,
+      "bilder": 1
+    },
+    "gehen": {
+      "spalte": 1,
+      "bilder": 8
+    },
+    "angreifen": {
+      "spalte": 0,
+      "bilder": 8,
+      "bild": "belagerungsramme-angreifen.webp",
+      "maske": "belagerungsramme-angreifen-maske.webp",
+      "zelle": [
+        382,
+        250
+      ],
+      "fuss": [
+        170,
+        164
+      ]
+    },
+    "sterben": {
+      "spalte": 0,
+      "bilder": 8,
+      "einmal": true,
+      "bild": "belagerungsramme-sterben.webp",
+      "maske": "belagerungsramme-sterben-maske.webp",
+      "zelle": [
+        382,
+        250
+      ],
+      "fuss": [
+        169,
+        164
+      ]
+    }
+  }
+}

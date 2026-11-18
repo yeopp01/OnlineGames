@@ -368,7 +368,7 @@ test('darstellung AC-24: jede gerenderte Einheit hat acht Blickrichtungen, Ablae
     schaf: ['gehen'],
   };
   // Was Raeder hat, legt sich nicht hin: es bricht zusammen.
-  const GERAETE = ['ramme', 'mangonel', 'marktkarren'];
+  const GERAETE = ['ramme', 'mangonel', 'marktkarren', 'belagerungsramme', 'onager'];
   const messung = await page.evaluate(async (erwartet) => {
     const { ablaeufeLaden, ablaufZelle, gerendert, zelleZeichnen } = await import('/bilder.js');
     const ergebnis = {};
@@ -512,7 +512,7 @@ test('darstellung AC-24: jede gerenderte Einheit hat acht Blickrichtungen, Ablae
     pruefen(m.farbeMin, `${art}: zu wenig Spielerfarbe`).toBeGreaterThan(0.04);
   }
   // Alle Einheiten der Daten und das Schaf.
-  expect(Object.keys(messung).length).toBe(27);
+  expect(Object.keys(messung).length).toBe(36);
 
   await nachweis(page.locator('#probe-einheiten'), {
     spec: DARSTELLUNG,

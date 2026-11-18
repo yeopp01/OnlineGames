@@ -2,7 +2,7 @@
 
 **Bereich:** Strategie
 **Kuerzel:** karte
-**Stand:** 12/17 fertig · 2 offen · 3 zurueckgestellt
+**Stand:** 14/19 fertig · 2 offen · 3 zurueckgestellt
 
 ## Zweck
 
@@ -80,6 +80,34 @@ Ein Spielfeld, das in jeder Partie neu ist, aber niemanden benachteiligt.
   sie nutzt (→ [Einheiten](einheiten-und-befehle.md) AC-17).
 - **AC-17** `fertig` **Karte in einer Nachricht** — Der Aufbau einer Karte von
   200 × 200 mit allen Vorräten ist gepackt unter 200 KB groß.
+- **AC-18** `fertig` **Weitere Vorkommen außerhalb des Dorfs** — Vom Benutzer
+  verlangt (2026-11-17): „nur die Standard Gold und Stein
+  Abbaumöglichkeiten, da muss noch bissl mehr rein“. Außerhalb des
+  freigeräumten Dorfs, 17 bis 29 Felder vom Dorfzentrum, hat jede Basis zwei
+  weitere Goldfelder zu je 4 Feldern (seitlich) und ein Steinfeld aus 4
+  Feldern (zur Kartenmitte hin). Zwischen je zwei Nachbarn liegt ein
+  umkämpftes Vorkommen — 4 Felder Gold, daneben 3 Felder Stein — auf dem
+  Winkel zwischen beiden und näher an der Mitte als die Dörfer, mindestens
+  28 Felder von jedem Dorf und von beiden höchstens zwölf Felder verschieden
+  weit (gemessen über 840 Karten: bei 88 von 8400 mehr als vier). Je Spieler sind das 19 Felder Gold
+  und 12 Felder Stein statt 7 und 5. Jedes Vorkommen hat einen Ring Gras um
+  sich und ist von seinem Dorf zu Fuß erreichbar, ohne einen Baum zu fällen;
+  liegt am Sollplatz Wald oder Wasser, rückt es zum nächsten freien Platz
+  (ist keiner frei — neunmal über 840 Karten —, wird am Sollplatz gerodet).
+  Der Zufall der Karte wird dafür nicht angefasst: alles andere liegt, wo es
+  vorher lag. Gemessen über 600 Karten (2, 3, 4, 6, 8 Spieler, Startwerte 1
+  bis 120): jede mit genau diesen Mengen, kein Feld ohne Weg. Das ist die
+  Stufe „viel“ aus AC-19.
+- **AC-19** `fertig` **Gold und Stein einstellbar** — Vom Benutzer verlangt
+  (2026-11-18): „man könnte ja noch Rohstoffe, wenig / mittel / viel
+  angeben“. Beim Eröffnen steht die Einstellung „Gold und Stein“ mit drei
+  Stufen: **wenig** ist das Dorf allein (je Spieler 7 Felder Gold und 5
+  Stein — die Karte von vor AC-18, Feld für Feld), **mittel** dazu das
+  umkämpfte Vorkommen zwischen je zwei Nachbarn (11 und 8), **viel** dazu die
+  eigenen Vorkommen außerhalb des Dorfs (19 und 12). Vorgabe ist mittel: wer
+  mehr will als sein Dorf hergibt, muss hinaus und es halten. Die Stufen
+  stehen als Daten in der Karte (`VORKOMMEN`); alles andere liegt in jeder
+  Stufe am selben Platz.
 
 ## Grenzfaelle
 

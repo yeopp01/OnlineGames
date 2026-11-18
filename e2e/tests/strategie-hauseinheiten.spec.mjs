@@ -390,6 +390,121 @@ test.describe('Einheiten aus der Burg', () => {
       test: info,
     });
   });
+
+  // Haengt an den Tests davor: Annas Woelfe und Cems Riesen stehen schon.
+  test('einheiten AC-69: die Elitestufe steht in der Krone unter der Einheit des eigenen Hauses - und wer schon steht, heisst danach Elite und hat mehr Leben', async ({}, info) => {
+    test.setTimeout(240_000);
+    const { anna, bert, cem, code, seiten } = partie;
+    const ELITE = ['elitekriegswolf', 'elitereiterschuetze', 'eliteriese', 'elitemeuchler', 'elitewiedergaenger'];
+    const nurDiese = async (page, name, art) => {
+      await gebaeudeWaehlen(page, ort[name].burg, 1.4);
+      for (const andere of ELITE) await expect(knopf(page, andere), `${name}: ${andere}`).toHaveCount(andere === art ? 1 : 0);
+    };
+    // Die eigene Einheit der Art, die der zweiten Wiese am naechsten steht.
+    const aufDerWiese = (page, art, wiese) => page.evaluate(([art, w]) => {
+      const a = window.ansicht;
+      const k = a.werte.einheiten[art].kuerzel;
+      const weit = (e) => Math.hypot(e.x - w.x, e.y - w.y);
+      return [...a.nachher.values()].filter((e) => e.b === a.ich && !e.s && e.k === k).sort((p, q) => weit(p) - weit(q))[0]?.i;
+    }, [art, wiese]);
+
+    // Im Fuerstentum steht keine Elitestufe im Menue.
+    await gebaeudeWaehlen(anna, ort.Anna.burg, 1.4);
+    for (const art of ELITE) await expect(knopf(anna, art), `${art} erst in der Krone`).toHaveCount(0);
+
+    for (const [i, name] of NAMEN.entries()) {
+      await rohstoffe(seiten[i], code, name, { holz: 3000, nahrung: 3000, gold: 3000, zeitalter: 3 });
+      await seiten[i].waitForFunction(() => window.ansicht.zeitalter === 3);
+      await expect(seiten[i].locator('#zeitalterwechsel')).toBeHidden({ timeout: 15_000 });
+    }
+    // Je Haus genau die eine, unter der eigenen Einheit.
+    await nurDiese(bert, 'Bert', 'elitereiterschuetze');
+    await nurDiese(cem, 'Cem', 'eliteriese');
+    await nurDiese(anna, 'Anna', 'elitekriegswolf');
+    const stufe = knopf(anna, 'elitekriegswolf');
+    await expect(stufe).toHaveAttribute('aria-label', 'Weiterentwicklung: Elite-Kriegswolf (500 Nahrung, 400 Gold)');
+    await expect(stufe).toHaveAttribute('data-stufe-von', 'kriegswolf');
+    await expect(stufe).toBeInViewport({ ratio: 1 });
+    const oben = await knopf(anna, 'kriegswolf').boundingBox();
+    const unten = await stufe.boundingBox();
+    expect(unten.y, 'unter dem Knopf des Wolfs').toBeGreaterThanOrEqual(oben.y + oben.height - 1);
+    expect(Math.abs(unten.x + unten.width / 2 - (oben.x + oben.width / 2)), 'in seiner Spalte').toBeLessThan(oben.width / 2);
+
+    // Die Tafel nennt Haus und Wirkung beim neuen Namen (bedienung AC-55).
+    await stufe.hover();
+    const tafel = anna.locator('#knopftafel');
+    await expect(tafel.locator('.kt-kopf')).toContainText('Elite-Kriegswolf');
+    await expect(tafel).toContainText('Elite-Kriegswolf: +15 Leben, +2 Angriff');
+    await expect(tafel).toContainText('Nur Haus Eschenbruch');
+    await expect(tafel).toBeInViewport({ ratio: 1 });
+    expect(await bedienteileFrei(anna)).toEqual([]);
+    await anna.waitForTimeout(300);
+    await nachweis(anna, {
+      spec: EINHEITEN,
+      ac: 'AC-69',
+      titel: 'Annas Burg in der Krone (Haus Eschenbruch): unter dem Kriegswolf steht seine Elitestufe mit goldenem Pfeil, die Tafel darüber nennt 500 Nahrung, 400 Gold, „+15 Leben, +2 Angriff“ und „Nur Haus Eschenbruch“',
+      test: info,
+    });
+    await anna.mouse.move(700, 300);
+
+    // Der Wolf, der schon steht: vorher 55 Leben und 7 Angriff.
+    if (!(await eigene(anna, 'kriegswolf')).length) await reihe(anna, code, 'Anna', ort.Anna.zweite, ['kriegswolf'], 3);
+    const wolf = await aufDerWiese(anna, 'kriegswolf', ort.Anna.zweite);
+    await waehlen(anna, [wolf], { zoom: 2.4, blick: ort.Anna.zweite });
+    expect(await leiste(anna)).toMatchObject({ name: 'Kriegswolf', leben: '55/55', angriff: '7' });
+
+    const vorher = await anna.evaluate(() => ({ ...window.ansicht.vorraete }));
+    await gebaeudeWaehlen(anna, ort.Anna.burg, 1.4);
+    await stufe.click();
+    await expect.poll(() => anna.evaluate(() => window.ansicht.vorraete.nahrung)).toBe(vorher.nahrung - 500);
+    expect(await anna.evaluate(() => window.ansicht.vorraete.gold)).toBe(vorher.gold - 400);
+    await zeitraffer(anna, code, 20);
+    await anna.waitForFunction(() => window.ansicht.verbesserungen.includes('elitekriegswolf'), null, { timeout: 60_000 });
+    await zeitraffer(anna, code, 1);
+
+    // Erforscht: die Stufe ist weg, der Knopf der Einheit bleibt und heisst neu.
+    await gebaeudeWaehlen(anna, ort.Anna.burg, 1.4);
+    await expect(stufe).toHaveCount(0);
+    await expect(knopf(anna, 'kriegswolf')).toHaveAttribute('aria-label', 'Elite-Kriegswolf ausbilden (60 Nahrung, 30 Gold)');
+    const danach = await knopf(anna, 'kriegswolf').boundingBox();
+    expect([Math.round(danach.x), Math.round(danach.y)], 'kein Knopf wandert (bedienung AC-54)').toEqual([Math.round(oben.x), Math.round(oben.y)]);
+
+    await waehlen(anna, [wolf], { zoom: 2.4, blick: ort.Anna.zweite });
+    await expect(anna.locator('.auswahl-kopf strong')).toHaveText('Elite-Kriegswolf');
+    expect(await leiste(anna)).toMatchObject({ name: 'Elite-Kriegswolf', leben: '70/70', angriff: '9', nahruestung: '0', fernruestung: '1' });
+    // Auch die anderen erfahren den neuen Namen - wer ihn ansieht, liest ihn.
+    const annaId = await anna.evaluate(() => window.ansicht.ich);
+    await expect.poll(() => bert.evaluate((b) => window.ansicht.einheitenwerte.get(b)?.kriegswolf?.name, annaId)).toBe('Elite-Kriegswolf');
+    expect(await figurenFrei(anna)).toEqual([]);
+    expect(await bedienteileFrei(anna)).toEqual([]);
+    await anna.waitForTimeout(300);
+    await nachweis(anna, {
+      spec: EINHEITEN,
+      ac: 'AC-69',
+      titel: 'Nach der Forschung: derselbe Wolf heißt in der Leiste Elite-Kriegswolf – 70 statt 55 Leben, 9 statt 7 Angriff, Rüstung 0/1; die Figur bleibt',
+      test: info,
+    });
+
+    // Cems Riese: +40 Leben, +2 Angriff, und +10 gegen Gebaeude in der Tafel.
+    await gebaeudeWaehlen(cem, ort.Cem.burg, 1.4);
+    await expect(knopf(cem, 'eliteriese')).toHaveAttribute('aria-label', 'Weiterentwicklung: Elite-Riese (500 Nahrung, 400 Gold)');
+    await knopf(cem, 'eliteriese').hover();
+    await expect(cem.locator('#knopftafel')).toContainText('Elite-Riese: +10 Angriff gegen Gebäude');
+    await expect(cem.locator('#knopftafel')).toContainText('Nur Haus Wehrstein');
+    await cem.mouse.move(700, 300);
+    if (!(await eigene(cem, 'riese')).length) await reihe(cem, code, 'Cem', ort.Cem.zweite, ['riese'], 3);
+    const riese = await aufDerWiese(cem, 'riese', ort.Cem.zweite);
+    await gebaeudeWaehlen(cem, ort.Cem.burg, 1.4);
+    await knopf(cem, 'eliteriese').click();
+    await zeitraffer(cem, code, 20);
+    await cem.waitForFunction(() => window.ansicht.verbesserungen.includes('eliteriese'), null, { timeout: 60_000 });
+    await zeitraffer(cem, code, 1);
+    await waehlen(cem, [riese], { zoom: 2.4, blick: ort.Cem.zweite });
+    await expect(cem.locator('.auswahl-kopf strong')).toHaveText('Elite-Riese');
+    expect(await leiste(cem)).toMatchObject({ name: 'Elite-Riese', leben: '220/220', angriff: '12', nahruestung: '2', fernruestung: '0' });
+    // Bert hat nicht geforscht: sein Knopf steht noch da.
+    await nurDiese(bert, 'Bert', 'elitereiterschuetze');
+  });
 });
 
 test.describe('Meuchler und Wiedergaenger', () => {

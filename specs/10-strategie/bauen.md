@@ -2,7 +2,7 @@
 
 **Bereich:** Strategie
 **Kuerzel:** bauen
-**Stand:** 45/56 fertig · 11 offen
+**Stand:** 54/56 fertig · 2 offen
 
 ## Zweck
 
@@ -461,25 +461,27 @@ Kosten und Dauer aus den offenen Technikbaum-Daten zum Original (gelesen
 Verbesserungen. Jede hat ein eigenes Bild im Menü und ihre Tafel (bedienung
 AC-55).
 
-- **AC-47** `offen` **Aufstieg in die Krone** — 1000 Nahrung, 800 Gold, 190
+- **AC-47** `fertig` **Aufstieg in die Krone** — 1000 Nahrung, 800 Gold, 190
   Sekunden; verlangt zwei fertige Gebäude des Fürstentums **oder eine
   Burg** — die Burg zählt allein. Der Auftrag steht seit Stufe B als Daten
   im Dorfzentrum; neu sind die Regel der Burg, die Tafel, die sie nennt,
   und alles, was der Aufstieg freischaltet (AC-48 bis AC-51,
   [Einheiten](einheiten-und-befehle.md) AC-66 bis AC-69).
-- **AC-48** `offen` **Schmiede der Krone** — Die dritte Stufe jeder Reihe,
+- **AC-48** `fertig` **Schmiede der Krone** — Die dritte Stufe jeder Reihe,
   jede verlangt ihre Vorstufe: Hochofen (nach Eisenguss: Infanterie und
   Kavallerie +2 Angriff; 275 Nahrung, 225 Gold, 100 s), Armschiene (nach
   Bodkinpfeil: Schützen +1 Angriff, +1 Reichweite; 300 Nahrung, 200 Gold,
   40 s), Plattenpanzer (Infanterie; 300 Nahrung, 150 Gold, 70 s),
   Plattenharnisch (Kavallerie; 350 Nahrung, 200 Gold, 75 s) und Ringpanzer
   (Schützen; 250 Nahrung, 250 Gold, 70 s) — jede Rüstung +1 gegen Nah, +2
-  gegen Fern.
-- **AC-49** `offen` **Wirtschaft der Krone** — Fruchtwechsel in der Mühle
+  gegen Fern. Im Menü heißen die zwei letzten „Plattenrossharnisch" und
+  „Ringpanzer der Schützen", wie ihre Vorstufen (AC-39) sagen, wem sie
+  gelten.
+- **AC-49** `fertig` **Wirtschaft der Krone** — Fruchtwechsel in der Mühle
   (nach dem Schweren Pflug: Farmen +175 Nahrung; 250 Nahrung, 250 Holz,
   70 s) und Zweimannsäge im Holzfällerlager (nach der Bogensäge: Holz
   +10 %; 300 Nahrung, 200 Holz, 100 s).
-- **AC-50** `offen` **Universität und Burg der Krone** — In der
+- **AC-50** `fertig` **Universität und Burg der Krone** — In der
   Universität: **Chemie** (alles, was Pfeile schießt — Schützen, Türme,
   Burg — +1 Angriff; 300 Nahrung, 200 Gold, 100 s), **Bergfried** (nach dem
   Wehrturm, AC-38: jeder eigene Turm +750 Leben, +1 Angriff, +1/+1 Rüstung,
@@ -487,7 +489,11 @@ AC-55).
   350 Holz, 75 s), **Architektur** (nach Mauerwerk: Gebäude noch einmal
   +10 % Leben und +1/+1; 300 Nahrung, 200 Holz, 70 s) und
   **Belagerungsingenieure** (Mangonel und Onager +1 Reichweite, Belagerung
-  +20 % Schaden an Gebäuden; 500 Nahrung, 600 Holz, 45 s). In der Burg:
+  +20 % Schaden an Gebäuden; 500 Nahrung, 600 Holz, 45 s — das Fünftel
+  rechnet auf Angriff samt Zuschlag gegen Gebäude und steht als weiterer
+  Zuschlag an der Einheit: die Ramme stößt mit 152 statt 127, die
+  Belagerungsramme mit 215 statt 179; die Rüstung des Gebäudes skaliert
+  nicht mit). In der Burg:
   **Wehrpflicht** (Kaserne, Schießanlage, Stall und Burg bilden 33 %
   schneller aus; 150 Nahrung, 150 Gold, 60 s). **Nicht übernommen:**
   Wehrgänge (Burg +21 % Leben) und die befestigte Mauer — die Verteidigung
@@ -513,7 +519,7 @@ Wirkungen aus dem Gedächtnis und im Spiel Startwerte. Jede hat ihr eigenes
 Bild im Menü und ihre Tafel (bedienung AC-55). **Keine davon erforscht die
 KI**, bis [KI](ki.md) AC-35 gebaut ist.
 
-- **AC-52** `offen` **Kartografie deckt die Karte auf** — Am Markt ab dem
+- **AC-52** `fertig` **Kartografie deckt die Karte auf** — Am Markt ab dem
   Lehen, 100 Nahrung, 100 Gold, 40 s (in der Vorlage inzwischen
   abgeschafft und geschenkt; der Preis ist der von früher, aus dem
   Gedächtnis). Mit ihr gilt für den Spieler und alle, mit denen er die
@@ -526,19 +532,19 @@ KI**, bis [KI](ki.md) AC-35 gebaut ist.
   eigene Wirkung. Wer ein Bündnis löst, nimmt die Karte mit (spielziel
   AC-21). Bei „Erkundet" und „Aufgedeckt" (kampf AC-16) steht der Knopf
   nicht im Menü.
-- **AC-53** `offen` **Blutlinien und Karawane** — **Blutlinien** im Stall
+- **AC-53** `fertig` **Blutlinien und Karawane** — **Blutlinien** im Stall
   ab dem Lehen (150 Nahrung, 100 Gold, 50 s): alles Berittene +20 Leben,
   auch was schon steht — der Reiterschütze eingeschlossen. **Karawane** am
   Markt in der Krone (200 Nahrung, 200 Gold, 40 s): Marktkarren fahren
   50 % schneller, eine Fahrt bringt dasselbe Gold, also die Hälfte mehr je
   Minute.
-- **AC-54** `offen` **Knappen und Brandstiftung** — In der Kaserne.
+- **AC-54** `fertig` **Knappen und Brandstiftung** — In der Kaserne.
   **Brandstiftung** ab dem Lehen (75 Nahrung, 25 Gold, 25 s): Fußvolk +2
   Angriff gegen Gebäude. **Knappen** ab dem Fürstentum (100 Nahrung, 40 s):
   Fußvolk 10 % schneller — ein Anteil am Tempo wie bei der Pferdezucht
   (AC-46). Fußvolk ist, was die Klasse Infanterie trägt, die Einheiten der
   Häuser eingeschlossen.
-- **AC-55** `offen` **Vier Lehren des Klosters** — **Heiligkeit** (175
+- **AC-55** `fertig` **Vier Lehren des Klosters** — **Heiligkeit** (175
   Gold, 60 s): der Mönch hat 45 statt 30 Leben. **Inbrunst** (140 Gold,
   50 s): er geht 15 % schneller. Beide ab dem Fürstentum. **Buchdruck**
   (200 Gold, 55 s): er bekehrt auf zwölf statt neun Felder. **Erleuchtung**
@@ -549,7 +555,7 @@ KI**, bis [KI](ki.md) AC-35 gebaut ist.
   übernommen:** Erlösung und Sühne (Gebäude und Mönche bekehren — neue
   Regeln, kein neuer Wert), Glaube, Theokratie und Kräutermedizin (hier
   wird niemand einquartiert).
-- **AC-56** `offen` **Tretkran und Sappeure** — **Tretkran** in der
+- **AC-56** `fertig` **Tretkran und Sappeure** — **Tretkran** in der
   Universität ab dem Fürstentum (300 Nahrung, 200 Holz, 50 s):
   Dorfbewohner bauen 20 % schneller; repariert wird wie bisher (AC-45).
   **Sappeure** in der Burg in der Krone (400 Nahrung, 200 Holz, 10 s):

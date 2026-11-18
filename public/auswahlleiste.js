@@ -279,6 +279,16 @@ function radMalen(s, g, x, y, r) {
  * (darstellung AC-14). Welches gezeichnet wird, steht als `zeichen` in den
  * Daten - nicht als Verzweigung nach dem Namen der Verbesserung.
  */
+/**
+ * Wen eine Verbesserung weiterentwickelt (bedienung AC-80): wen sie austauscht
+ * (`wandelt`) - oder wen sie auf seine Elitestufe hebt (`hebt`, einheiten
+ * AC-69); dann bleibt die Art, und der Knopf steht trotzdem unter ihr.
+ */
+function stufen(verbesserung) {
+  if (verbesserung?.wandelt) return verbesserung.wandelt;
+  return verbesserung?.hebt ? { [verbesserung.hebt]: verbesserung.hebt } : null;
+}
+
 const ZEICHEN = {
   // Die Wirtschaft (bauen AC-43): Hacke mit Gold, Hacke mit Stein - und fuer
   // die zweite Stufe der Stollen, in dem das eine oder das andere liegt.
@@ -814,6 +824,786 @@ const ZEICHEN = {
     }
     koecherchen(s, g, farbe);
   },
+  // Kartografie (bauen AC-52): ein Pergament mit eingerollten Enden, darauf
+  // ein gestrichelter Weg zu einem roten Kreuz und eine Windrose in der Farbe
+  // des Spielers.
+  landkarte(s, g, farbe) {
+    s.fillStyle = '#e6d3a3';
+    s.beginPath();
+    s.moveTo(0.14 * g, 0.24 * g);
+    s.quadraticCurveTo(0.5 * g, 0.14 * g, 0.86 * g, 0.24 * g);
+    s.lineTo(0.86 * g, 0.78 * g);
+    s.quadraticCurveTo(0.5 * g, 0.68 * g, 0.14 * g, 0.78 * g);
+    s.closePath();
+    s.fill();
+    s.fillStyle = '#b89a62';
+    for (const x of [0.1, 0.82]) {
+      s.beginPath();
+      s.ellipse((x + 0.04) * g, 0.51 * g, 0.045 * g, 0.29 * g, 0, 0, Math.PI * 2);
+      s.fill();
+    }
+    s.strokeStyle = '#6b4a2b';
+    s.lineWidth = g * 0.035;
+    s.lineCap = 'round';
+    s.setLineDash([g * 0.05, g * 0.05]);
+    s.beginPath();
+    s.moveTo(0.26 * g, 0.62 * g);
+    s.quadraticCurveTo(0.4 * g, 0.36 * g, 0.52 * g, 0.52 * g);
+    s.quadraticCurveTo(0.58 * g, 0.6 * g, 0.66 * g, 0.42 * g);
+    s.stroke();
+    s.setLineDash([]);
+    s.strokeStyle = '#b3261e';
+    s.lineWidth = g * 0.05;
+    s.beginPath();
+    s.moveTo(0.63 * g, 0.31 * g);
+    s.lineTo(0.75 * g, 0.43 * g);
+    s.moveTo(0.75 * g, 0.31 * g);
+    s.lineTo(0.63 * g, 0.43 * g);
+    s.stroke();
+    s.fillStyle = farbe;
+    s.beginPath();
+    s.moveTo(0.3 * g, 0.26 * g);
+    s.lineTo(0.335 * g, 0.36 * g);
+    s.lineTo(0.3 * g, 0.46 * g);
+    s.lineTo(0.265 * g, 0.36 * g);
+    s.closePath();
+    s.fill();
+    s.beginPath();
+    s.moveTo(0.2 * g, 0.36 * g);
+    s.lineTo(0.3 * g, 0.335 * g);
+    s.lineTo(0.4 * g, 0.36 * g);
+    s.lineTo(0.3 * g, 0.385 * g);
+    s.closePath();
+    s.fill();
+  },
+  // Blutlinien (bauen AC-53): ein roter Tropfen mit Glanz, darunter ein
+  // Stammbaum aus drei Strichen in der Farbe des Spielers.
+  blutstropfen(s, g, farbe) {
+    s.fillStyle = '#a81c1c';
+    s.beginPath();
+    s.moveTo(0.5 * g, 0.08 * g);
+    s.bezierCurveTo(0.56 * g, 0.26 * g, 0.74 * g, 0.36 * g, 0.74 * g, 0.5 * g);
+    s.arc(0.5 * g, 0.5 * g, 0.24 * g, 0, Math.PI);
+    s.bezierCurveTo(0.26 * g, 0.36 * g, 0.44 * g, 0.26 * g, 0.5 * g, 0.08 * g);
+    s.closePath();
+    s.fill();
+    s.fillStyle = 'rgba(255,255,255,0.45)';
+    s.beginPath();
+    s.ellipse(0.41 * g, 0.47 * g, 0.045 * g, 0.09 * g, 0.5, 0, Math.PI * 2);
+    s.fill();
+    s.strokeStyle = farbe;
+    s.lineWidth = g * 0.05;
+    s.lineCap = 'round';
+    s.beginPath();
+    s.moveTo(0.5 * g, 0.78 * g);
+    s.lineTo(0.5 * g, 0.86 * g);
+    s.moveTo(0.24 * g, 0.94 * g);
+    s.lineTo(0.24 * g, 0.86 * g);
+    s.lineTo(0.76 * g, 0.86 * g);
+    s.lineTo(0.76 * g, 0.94 * g);
+    s.stroke();
+  },
+  // Karawane (bauen AC-53): ein Planwagen von der Seite, die Plane hell und
+  // gewoelbt, davor drei Striche Fahrtwind in der Farbe des Spielers.
+  planwagen(s, g, farbe) {
+    s.fillStyle = '#efe6cf';
+    s.beginPath();
+    s.moveTo(0.3 * g, 0.56 * g);
+    s.bezierCurveTo(0.3 * g, 0.16 * g, 0.92 * g, 0.16 * g, 0.92 * g, 0.56 * g);
+    s.closePath();
+    s.fill();
+    s.strokeStyle = '#b8a888';
+    s.lineWidth = g * 0.03;
+    for (const x of [0.46, 0.61, 0.76]) {
+      s.beginPath();
+      s.moveTo(x * g, 0.56 * g);
+      s.quadraticCurveTo((x - 0.02) * g, 0.36 * g, x * g, 0.27 * g);
+      s.stroke();
+    }
+    s.fillStyle = '#8a6a44';
+    s.fillRect(0.28 * g, 0.56 * g, 0.66 * g, 0.12 * g);
+    radMalen(s, g, 0.43, 0.78, 0.13);
+    radMalen(s, g, 0.8, 0.78, 0.13);
+    s.strokeStyle = farbe;
+    s.lineWidth = g * 0.05;
+    s.lineCap = 'round';
+    for (const [y, lang] of [[0.34, 0.14], [0.5, 0.2], [0.66, 0.12]]) {
+      s.beginPath();
+      s.moveTo(0.04 * g, y * g);
+      s.lineTo((0.04 + lang) * g, y * g);
+      s.stroke();
+    }
+  },
+  // Brandstiftung (bauen AC-54): eine Fackel, schraeg gehalten, mit Flamme -
+  // der Griff traegt ein Band in der Farbe des Spielers.
+  fackel(s, g, farbe) {
+    s.strokeStyle = '#6b4a2b';
+    s.lineWidth = g * 0.1;
+    s.lineCap = 'round';
+    s.beginPath();
+    s.moveTo(0.26 * g, 0.9 * g);
+    s.lineTo(0.52 * g, 0.5 * g);
+    s.stroke();
+    s.strokeStyle = farbe;
+    s.lineCap = 'butt';
+    s.beginPath();
+    s.moveTo(0.36 * g, 0.745 * g);
+    s.lineTo(0.42 * g, 0.655 * g);
+    s.stroke();
+    s.fillStyle = '#3a3430';
+    s.beginPath();
+    s.ellipse(0.55 * g, 0.46 * g, 0.1 * g, 0.07 * g, -1, 0, Math.PI * 2);
+    s.fill();
+    s.fillStyle = '#e2571c';
+    s.beginPath();
+    s.moveTo(0.46 * g, 0.42 * g);
+    s.bezierCurveTo(0.36 * g, 0.24 * g, 0.56 * g, 0.2 * g, 0.56 * g, 0.05 * g);
+    s.bezierCurveTo(0.74 * g, 0.16 * g, 0.84 * g, 0.34 * g, 0.66 * g, 0.48 * g);
+    s.closePath();
+    s.fill();
+    s.fillStyle = '#ffd36a';
+    s.beginPath();
+    s.moveTo(0.52 * g, 0.42 * g);
+    s.bezierCurveTo(0.48 * g, 0.32 * g, 0.58 * g, 0.28 * g, 0.59 * g, 0.2 * g);
+    s.bezierCurveTo(0.68 * g, 0.28 * g, 0.7 * g, 0.38 * g, 0.62 * g, 0.45 * g);
+    s.closePath();
+    s.fill();
+  },
+  // Knappen (bauen AC-54): ein Stiefel von der Seite mit Stulpe in der Farbe
+  // des Spielers, dahinter drei Striche Fahrtwind.
+  stiefel(s, g, farbe) {
+    s.fillStyle = '#6b4a2b';
+    s.beginPath();
+    s.moveTo(0.44 * g, 0.16 * g);
+    s.lineTo(0.66 * g, 0.16 * g);
+    s.lineTo(0.66 * g, 0.58 * g);
+    s.quadraticCurveTo(0.92 * g, 0.62 * g, 0.94 * g, 0.8 * g);
+    s.lineTo(0.94 * g, 0.86 * g);
+    s.lineTo(0.42 * g, 0.86 * g);
+    s.closePath();
+    s.fill();
+    s.fillStyle = '#3d2a18';
+    s.fillRect(0.42 * g, 0.84 * g, 0.52 * g, 0.06 * g);
+    s.fillStyle = farbe;
+    s.fillRect(0.41 * g, 0.16 * g, 0.28 * g, 0.12 * g);
+    s.strokeStyle = '#d9c9a8';
+    s.lineWidth = g * 0.05;
+    s.lineCap = 'round';
+    for (const [y, lang] of [[0.4, 0.18], [0.56, 0.24], [0.72, 0.16]]) {
+      s.beginPath();
+      s.moveTo(0.06 * g, y * g);
+      s.lineTo((0.06 + lang) * g, y * g);
+      s.stroke();
+    }
+  },
+  // Heiligkeit (bauen AC-55): eine Kapuze in der Farbe des Spielers, darueber
+  // ein goldener Reif.
+  heiligenschein(s, g, farbe) {
+    s.fillStyle = farbe;
+    s.beginPath();
+    s.moveTo(0.5 * g, 0.34 * g);
+    s.bezierCurveTo(0.76 * g, 0.36 * g, 0.8 * g, 0.7 * g, 0.84 * g, 0.94 * g);
+    s.lineTo(0.16 * g, 0.94 * g);
+    s.bezierCurveTo(0.2 * g, 0.7 * g, 0.24 * g, 0.36 * g, 0.5 * g, 0.34 * g);
+    s.closePath();
+    s.fill();
+    s.fillStyle = '#2a211b';
+    s.beginPath();
+    s.ellipse(0.5 * g, 0.64 * g, 0.14 * g, 0.19 * g, 0, 0, Math.PI * 2);
+    s.fill();
+    s.strokeStyle = '#f6d667';
+    s.lineWidth = g * 0.07;
+    s.beginPath();
+    s.ellipse(0.5 * g, 0.18 * g, 0.24 * g, 0.08 * g, 0, 0, Math.PI * 2);
+    s.stroke();
+    s.strokeStyle = 'rgba(255,255,255,0.5)';
+    s.lineWidth = g * 0.025;
+    s.beginPath();
+    s.ellipse(0.5 * g, 0.165 * g, 0.24 * g, 0.08 * g, 0, Math.PI * 1.1, Math.PI * 1.9);
+    s.stroke();
+  },
+  // Inbrunst (bauen AC-55): ein Herz, aus dem eine Flamme schlaegt.
+  flammenherz(s, g, farbe) {
+    s.fillStyle = '#e2571c';
+    s.beginPath();
+    s.moveTo(0.5 * g, 0.5 * g);
+    s.bezierCurveTo(0.34 * g, 0.34 * g, 0.5 * g, 0.24 * g, 0.48 * g, 0.04 * g);
+    s.bezierCurveTo(0.66 * g, 0.16 * g, 0.7 * g, 0.34 * g, 0.5 * g, 0.5 * g);
+    s.closePath();
+    s.fill();
+    s.fillStyle = '#ffd36a';
+    s.beginPath();
+    s.moveTo(0.5 * g, 0.48 * g);
+    s.bezierCurveTo(0.43 * g, 0.38 * g, 0.5 * g, 0.32 * g, 0.5 * g, 0.2 * g);
+    s.bezierCurveTo(0.59 * g, 0.3 * g, 0.6 * g, 0.4 * g, 0.5 * g, 0.48 * g);
+    s.closePath();
+    s.fill();
+    s.fillStyle = farbe;
+    s.beginPath();
+    s.moveTo(0.5 * g, 0.94 * g);
+    s.bezierCurveTo(0.04 * g, 0.66 * g, 0.2 * g, 0.3 * g, 0.5 * g, 0.5 * g);
+    s.bezierCurveTo(0.8 * g, 0.3 * g, 0.96 * g, 0.66 * g, 0.5 * g, 0.94 * g);
+    s.closePath();
+    s.fill();
+    s.fillStyle = 'rgba(255,255,255,0.3)';
+    s.beginPath();
+    s.ellipse(0.34 * g, 0.56 * g, 0.05 * g, 0.08 * g, -0.6, 0, Math.PI * 2);
+    s.fill();
+  },
+  // Buchdruck (bauen AC-55): ein aufgeschlagenes Buch mit Zeilen, der
+  // Einband in der Farbe des Spielers.
+  buch(s, g, farbe) {
+    s.fillStyle = farbe;
+    s.beginPath();
+    s.moveTo(0.06 * g, 0.3 * g);
+    s.lineTo(0.5 * g, 0.38 * g);
+    s.lineTo(0.94 * g, 0.3 * g);
+    s.lineTo(0.94 * g, 0.84 * g);
+    s.lineTo(0.5 * g, 0.92 * g);
+    s.lineTo(0.06 * g, 0.84 * g);
+    s.closePath();
+    s.fill();
+    s.fillStyle = '#f3ead2';
+    s.beginPath();
+    s.moveTo(0.11 * g, 0.24 * g);
+    s.quadraticCurveTo(0.32 * g, 0.2 * g, 0.5 * g, 0.32 * g);
+    s.quadraticCurveTo(0.68 * g, 0.2 * g, 0.89 * g, 0.24 * g);
+    s.lineTo(0.89 * g, 0.76 * g);
+    s.quadraticCurveTo(0.68 * g, 0.72 * g, 0.5 * g, 0.84 * g);
+    s.quadraticCurveTo(0.32 * g, 0.72 * g, 0.11 * g, 0.76 * g);
+    s.closePath();
+    s.fill();
+    s.strokeStyle = '#8a7a5c';
+    s.lineWidth = g * 0.025;
+    s.lineCap = 'butt';
+    s.beginPath();
+    s.moveTo(0.5 * g, 0.32 * g);
+    s.lineTo(0.5 * g, 0.84 * g);
+    s.stroke();
+    s.strokeStyle = '#3a3430';
+    s.lineWidth = g * 0.03;
+    for (let i = 0; i < 4; i++) {
+      const y = (0.36 + i * 0.1) * g;
+      s.beginPath();
+      s.moveTo(0.18 * g, y);
+      s.lineTo(0.43 * g, y + 0.045 * g);
+      s.moveTo(0.57 * g, y + 0.045 * g);
+      s.lineTo(0.82 * g, y);
+      s.stroke();
+    }
+  },
+  // Erleuchtung (bauen AC-55): eine Sonne mit zwoelf Strahlen, die Mitte in
+  // der Farbe des Spielers.
+  sonne(s, g, farbe) {
+    s.strokeStyle = '#f6c667';
+    s.lineWidth = g * 0.06;
+    s.lineCap = 'round';
+    for (let i = 0; i < 12; i++) {
+      const w = (i * Math.PI) / 6;
+      const lang = i % 2 ? 0.36 : 0.45;
+      s.beginPath();
+      s.moveTo((0.5 + Math.cos(w) * 0.27) * g, (0.5 + Math.sin(w) * 0.27) * g);
+      s.lineTo((0.5 + Math.cos(w) * lang) * g, (0.5 + Math.sin(w) * lang) * g);
+      s.stroke();
+    }
+    s.fillStyle = '#ffd36a';
+    s.beginPath();
+    s.arc(0.5 * g, 0.5 * g, 0.22 * g, 0, Math.PI * 2);
+    s.fill();
+    s.fillStyle = farbe;
+    s.beginPath();
+    s.arc(0.5 * g, 0.5 * g, 0.1 * g, 0, Math.PI * 2);
+    s.fill();
+  },
+  // Tretkran (bauen AC-56): Mast und Ausleger, am Seil ein Steinblock, unten
+  // das Tretrad - die Fahne am Mast in der Farbe des Spielers.
+  kran(s, g, farbe) {
+    s.strokeStyle = '#8a6a44';
+    s.lineWidth = g * 0.08;
+    s.lineCap = 'butt';
+    s.beginPath();
+    s.moveTo(0.3 * g, 0.92 * g);
+    s.lineTo(0.3 * g, 0.14 * g);
+    s.stroke();
+    s.lineWidth = g * 0.07;
+    s.beginPath();
+    s.moveTo(0.26 * g, 0.26 * g);
+    s.lineTo(0.84 * g, 0.12 * g);
+    s.stroke();
+    s.lineWidth = g * 0.04;
+    s.beginPath();
+    s.moveTo(0.3 * g, 0.5 * g);
+    s.lineTo(0.56 * g, 0.19 * g);
+    s.stroke();
+    s.strokeStyle = '#d9c9a8';
+    s.lineWidth = g * 0.025;
+    s.beginPath();
+    s.moveTo(0.78 * g, 0.14 * g);
+    s.lineTo(0.78 * g, 0.54 * g);
+    s.stroke();
+    s.fillStyle = '#a9a39a';
+    s.fillRect(0.66 * g, 0.54 * g, 0.24 * g, 0.2 * g);
+    s.fillStyle = 'rgba(255,255,255,0.25)';
+    s.fillRect(0.66 * g, 0.54 * g, 0.24 * g, 0.04 * g);
+    radMalen(s, g, 0.3, 0.74, 0.17);
+    s.fillStyle = farbe;
+    s.beginPath();
+    s.moveTo(0.3 * g, 0.04 * g);
+    s.lineTo(0.12 * g, 0.09 * g);
+    s.lineTo(0.3 * g, 0.15 * g);
+    s.closePath();
+    s.fill();
+  },
+  // Sappeure (bauen AC-56): eine Mauer aus Quadern mit einer Bresche, davor
+  // ein Spaten mit einem Band in der Farbe des Spielers.
+  bresche(s, g, farbe) {
+    s.fillStyle = '#a9a39a';
+    s.fillRect(0.06 * g, 0.3 * g, 0.88 * g, 0.62 * g);
+    s.strokeStyle = '#6f6a62';
+    s.lineWidth = g * 0.025;
+    s.lineCap = 'butt';
+    for (let r = 0; r < 3; r++) {
+      const y = (0.3 + (r + 1) * 0.155) * g;
+      s.beginPath();
+      s.moveTo(0.06 * g, y);
+      s.lineTo(0.94 * g, y);
+      s.stroke();
+      for (let k = 0; k < 4; k++) {
+        const x = (0.06 + (k + (r % 2 ? 0.5 : 1)) * 0.22) * g;
+        if (x > 0.92 * g) continue;
+        s.beginPath();
+        s.moveTo(x, y - 0.155 * g);
+        s.lineTo(x, y);
+        s.stroke();
+      }
+    }
+    // Die Bresche: ein dunkles Loch, oben offen.
+    s.fillStyle = '#1d1a17';
+    s.beginPath();
+    s.moveTo(0.5 * g, 0.26 * g);
+    s.lineTo(0.62 * g, 0.44 * g);
+    s.lineTo(0.56 * g, 0.5 * g);
+    s.lineTo(0.7 * g, 0.92 * g);
+    s.lineTo(0.38 * g, 0.92 * g);
+    s.lineTo(0.46 * g, 0.6 * g);
+    s.lineTo(0.38 * g, 0.48 * g);
+    s.lineTo(0.42 * g, 0.26 * g);
+    s.closePath();
+    s.fill();
+    // Der Spaten.
+    s.strokeStyle = '#8a6a44';
+    s.lineWidth = g * 0.07;
+    s.lineCap = 'round';
+    s.beginPath();
+    s.moveTo(0.9 * g, 0.08 * g);
+    s.lineTo(0.7 * g, 0.5 * g);
+    s.stroke();
+    s.strokeStyle = farbe;
+    s.lineCap = 'butt';
+    s.beginPath();
+    s.moveTo(0.83 * g, 0.225 * g);
+    s.lineTo(0.79 * g, 0.31 * g);
+    s.stroke();
+    s.fillStyle = '#cfd6dd';
+    s.beginPath();
+    s.moveTo(0.62 * g, 0.48 * g);
+    s.lineTo(0.78 * g, 0.55 * g);
+    s.lineTo(0.68 * g, 0.74 * g);
+    s.quadraticCurveTo(0.58 * g, 0.74 * g, 0.55 * g, 0.64 * g);
+    s.closePath();
+    s.fill();
+  },
+  // Die Verbesserungen der Krone (bauen AC-48 bis AC-50).
+  // Hochofen: ein hoher Schacht aus Stein mit Eisenbaendern, unten die Glut,
+  // oben schlaegt die Flamme heraus.
+  hochofen(s, g, farbe) {
+    s.fillStyle = '#7d766d';
+    s.beginPath();
+    s.moveTo(0.2 * g, 0.94 * g);
+    s.lineTo(0.32 * g, 0.26 * g);
+    s.lineTo(0.68 * g, 0.26 * g);
+    s.lineTo(0.8 * g, 0.94 * g);
+    s.closePath();
+    s.fill();
+    s.strokeStyle = '#3f3a36';
+    s.lineWidth = g * 0.04;
+    s.lineCap = 'butt';
+    for (const y of [0.48, 0.64]) {
+      const links = 0.32 - (y - 0.26) * 0.176;
+      s.beginPath();
+      s.moveTo(links * g, y * g);
+      s.lineTo((1 - links) * g, y * g);
+      s.stroke();
+    }
+    s.fillStyle = '#1d1a17';
+    s.beginPath();
+    s.moveTo(0.37 * g, 0.94 * g);
+    s.lineTo(0.37 * g, 0.8 * g);
+    s.quadraticCurveTo(0.5 * g, 0.66 * g, 0.63 * g, 0.8 * g);
+    s.lineTo(0.63 * g, 0.94 * g);
+    s.closePath();
+    s.fill();
+    s.fillStyle = '#f08a2c';
+    s.beginPath();
+    s.moveTo(0.42 * g, 0.94 * g);
+    s.lineTo(0.42 * g, 0.84 * g);
+    s.quadraticCurveTo(0.5 * g, 0.74 * g, 0.58 * g, 0.84 * g);
+    s.lineTo(0.58 * g, 0.94 * g);
+    s.closePath();
+    s.fill();
+    s.beginPath();
+    s.moveTo(0.36 * g, 0.26 * g);
+    s.quadraticCurveTo(0.32 * g, 0.12 * g, 0.46 * g, 0.03 * g);
+    s.quadraticCurveTo(0.46 * g, 0.14 * g, 0.55 * g, 0.09 * g);
+    s.quadraticCurveTo(0.7 * g, 0.16 * g, 0.64 * g, 0.26 * g);
+    s.closePath();
+    s.fill();
+    s.fillStyle = '#ffd76a';
+    s.beginPath();
+    s.moveTo(0.44 * g, 0.26 * g);
+    s.quadraticCurveTo(0.44 * g, 0.18 * g, 0.5 * g, 0.14 * g);
+    s.quadraticCurveTo(0.58 * g, 0.2 * g, 0.56 * g, 0.26 * g);
+    s.closePath();
+    s.fill();
+    s.fillStyle = farbe;
+    s.fillRect(0.3 * g, 0.3 * g, 0.4 * g, 0.08 * g);
+  },
+  // Armschiene: eine staehlerne Schiene fuer den Unterarm, schraeg im Bild,
+  // mit zwei Riemen in der Volksfarbe.
+  armschiene(s, g, farbe) {
+    s.fillStyle = '#b9c2cb';
+    s.beginPath();
+    s.moveTo(0.1 * g, 0.62 * g);
+    s.lineTo(0.66 * g, 0.1 * g);
+    s.lineTo(0.9 * g, 0.36 * g);
+    s.lineTo(0.38 * g, 0.92 * g);
+    s.closePath();
+    s.fill();
+    s.strokeStyle = '#7f8a94';
+    s.lineWidth = g * 0.035;
+    s.lineCap = 'round';
+    s.beginPath();
+    s.moveTo(0.25 * g, 0.76 * g);
+    s.lineTo(0.77 * g, 0.24 * g);
+    s.stroke();
+    s.strokeStyle = farbe;
+    s.lineWidth = g * 0.08;
+    s.lineCap = 'butt';
+    for (const t of [0.24, 0.72]) {
+      s.beginPath();
+      s.moveTo((0.1 + 0.56 * t) * g, (0.62 - 0.52 * t) * g);
+      s.lineTo((0.38 + 0.52 * t) * g, (0.92 - 0.56 * t) * g);
+      s.stroke();
+    }
+    s.fillStyle = '#f6d667';
+    for (const t of [0.24, 0.72]) {
+      s.beginPath();
+      s.arc((0.24 + 0.54 * t) * g, (0.77 - 0.54 * t) * g, 0.03 * g, 0, Math.PI * 2);
+      s.fill();
+    }
+  },
+  // Plattenpanzer: ein heller Harnisch mit Grat, Schulterstuecken und
+  // Bauchreifen - gerade Linien statt Schuppen und Ringen.
+  platte(s, g, farbe) {
+    leib(s, g, '#d5dbe1', true);
+    s.strokeStyle = '#7f8a94';
+    s.lineWidth = g * 0.035;
+    s.lineCap = 'butt';
+    s.beginPath();
+    s.moveTo(0.5 * g, 0.31 * g);
+    s.lineTo(0.5 * g, 0.6 * g);
+    s.stroke();
+    for (const y of [0.62, 0.71, 0.8]) {
+      s.beginPath();
+      s.moveTo(0.27 * g, y * g);
+      s.quadraticCurveTo(0.5 * g, (y + 0.06) * g, 0.73 * g, y * g);
+      s.stroke();
+    }
+    for (const x of [0.19, 0.81]) {
+      s.beginPath();
+      s.arc(x * g, 0.42 * g, 0.1 * g, Math.PI * 1.05, Math.PI * 1.95);
+      s.stroke();
+    }
+    kragen(s, g, farbe);
+  },
+  // Plattenrossharnisch: der Hals in Platten, dazu eine Rossstirn.
+  rossplatte(s, g, farbe) {
+    pferdekopf(s, g, '#d5dbe1', farbe);
+    s.strokeStyle = '#7f8a94';
+    s.lineWidth = g * 0.035;
+    s.lineCap = 'butt';
+    for (const y of [0.56, 0.7, 0.84]) {
+      s.beginPath();
+      s.moveTo((0.2 - (y - 0.5) * 0.14) * g, y * g);
+      s.lineTo(0.66 * g, (y - 0.04) * g);
+      s.stroke();
+    }
+    s.fillStyle = '#d5dbe1';
+    s.beginPath();
+    s.moveTo(0.52 * g, 0.16 * g);
+    s.lineTo(0.6 * g, 0.2 * g);
+    s.lineTo(0.86 * g, 0.47 * g);
+    s.lineTo(0.8 * g, 0.5 * g);
+    s.lineTo(0.56 * g, 0.3 * g);
+    s.closePath();
+    s.fill();
+    s.fillStyle = '#1d1a18';
+    s.beginPath();
+    s.arc(0.62 * g, 0.31 * g, 0.03 * g, 0, Math.PI * 2);
+    s.fill();
+  },
+  // Ringpanzer der Schuetzen: die Weste der Schuetzen aus dunklem Geflecht.
+  ringweste(s, g, farbe) {
+    leib(s, g, '#5f666d', false);
+    ringmuster(s, g, 0.26, 0.76, 0.26, 0.9, '#aab3bb');
+    koecherchen(s, g, farbe);
+  },
+  // Fruchtwechsel: links die Aehre, rechts die Ruebe, darueber der Bogen, der
+  // vom einen zum anderen fuehrt.
+  fruchtfolge(s, g, farbe) {
+    s.fillStyle = '#6b4a2b';
+    s.fillRect(0.06 * g, 0.84 * g, 0.88 * g, 0.1 * g);
+    s.strokeStyle = '#c9a23c';
+    s.lineWidth = g * 0.04;
+    s.lineCap = 'round';
+    s.beginPath();
+    s.moveTo(0.27 * g, 0.84 * g);
+    s.lineTo(0.27 * g, 0.4 * g);
+    s.stroke();
+    s.fillStyle = '#e6c350';
+    for (let i = 0; i < 4; i++) {
+      for (const seite of [-1, 1]) {
+        s.beginPath();
+        s.ellipse((0.27 + seite * 0.07) * g, (0.42 + i * 0.09) * g, 0.055 * g, 0.03 * g, seite * -0.7, 0, Math.PI * 2);
+        s.fill();
+      }
+    }
+    s.beginPath();
+    s.ellipse(0.27 * g, 0.34 * g, 0.035 * g, 0.06 * g, 0, 0, Math.PI * 2);
+    s.fill();
+    // Die Ruebe: eine helle Knolle in der Erde, drei Blaetter daraus.
+    s.fillStyle = '#e9dcc6';
+    s.beginPath();
+    s.moveTo(0.6 * g, 0.72 * g);
+    s.quadraticCurveTo(0.72 * g, 0.62 * g, 0.84 * g, 0.72 * g);
+    s.quadraticCurveTo(0.8 * g, 0.9 * g, 0.72 * g, 0.96 * g);
+    s.quadraticCurveTo(0.64 * g, 0.9 * g, 0.6 * g, 0.72 * g);
+    s.fill();
+    s.strokeStyle = '#4f8a3a';
+    s.lineWidth = g * 0.06;
+    for (const [dx, dy] of [[-0.12, -0.2], [0, -0.28], [0.12, -0.2]]) {
+      s.beginPath();
+      s.moveTo(0.72 * g, 0.68 * g);
+      s.quadraticCurveTo((0.72 + dx * 0.3) * g, (0.68 + dy * 0.7) * g, (0.72 + dx) * g, (0.68 + dy) * g);
+      s.stroke();
+    }
+    s.strokeStyle = farbe;
+    s.lineWidth = g * 0.05;
+    s.beginPath();
+    s.moveTo(0.3 * g, 0.2 * g);
+    s.quadraticCurveTo(0.5 * g, 0.02 * g, 0.72 * g, 0.2 * g);
+    s.stroke();
+    s.fillStyle = farbe;
+    s.beginPath();
+    s.moveTo(0.8 * g, 0.28 * g);
+    s.lineTo(0.62 * g, 0.24 * g);
+    s.lineTo(0.76 * g, 0.11 * g);
+    s.closePath();
+    s.fill();
+  },
+  // Zweimannsaege: ein langes gerades Blatt mit einem Griff an jedem Ende,
+  // darunter der Stamm.
+  zugsaege(s, g, farbe) {
+    s.fillStyle = '#8a6a44';
+    s.beginPath();
+    s.ellipse(0.5 * g, 0.78 * g, 0.4 * g, 0.13 * g, 0, 0, Math.PI * 2);
+    s.fill();
+    s.fillStyle = '#c9a877';
+    s.beginPath();
+    s.ellipse(0.86 * g, 0.78 * g, 0.05 * g, 0.12 * g, 0, 0, Math.PI * 2);
+    s.fill();
+    s.fillStyle = '#b9c2cb';
+    s.beginPath();
+    s.moveTo(0.1 * g, 0.4 * g);
+    s.lineTo(0.9 * g, 0.4 * g);
+    s.lineTo(0.9 * g, 0.52 * g);
+    for (let i = 9; i >= 0; i--) {
+      const x = 0.1 + i * 0.08;
+      s.lineTo((x + 0.04) * g, 0.62 * g);
+      s.lineTo(x * g, 0.52 * g);
+    }
+    s.closePath();
+    s.fill();
+    s.strokeStyle = '#6b4a2b';
+    s.lineWidth = g * 0.07;
+    s.lineCap = 'round';
+    for (const x of [0.1, 0.9]) {
+      s.beginPath();
+      s.moveTo(x * g, 0.5 * g);
+      s.lineTo(x * g, 0.16 * g);
+      s.stroke();
+    }
+    s.strokeStyle = farbe;
+    s.lineCap = 'butt';
+    for (const x of [0.1, 0.9]) {
+      s.beginPath();
+      s.moveTo(x * g, 0.3 * g);
+      s.lineTo(x * g, 0.22 * g);
+      s.stroke();
+    }
+  },
+  // Chemie: ein bauchiger Glaskolben, halb voll in der Volksfarbe, aus dem
+  // Blasen steigen.
+  kolben(s, g, farbe) {
+    s.fillStyle = farbe;
+    s.beginPath();
+    s.arc(0.5 * g, 0.64 * g, 0.26 * g, 0.1, Math.PI - 0.1);
+    s.closePath();
+    s.fill();
+    s.strokeStyle = '#dfe8ee';
+    s.lineWidth = g * 0.05;
+    s.lineCap = 'round';
+    s.lineJoin = 'round';
+    s.beginPath();
+    s.moveTo(0.42 * g, 0.12 * g);
+    s.lineTo(0.42 * g, 0.38 * g);
+    s.arc(0.5 * g, 0.64 * g, 0.28 * g, Math.PI * 1.4, Math.PI * 1.6, true);
+    s.lineTo(0.58 * g, 0.12 * g);
+    s.stroke();
+    s.beginPath();
+    s.moveTo(0.36 * g, 0.12 * g);
+    s.lineTo(0.64 * g, 0.12 * g);
+    s.stroke();
+    s.fillStyle = '#dfe8ee';
+    for (const [x, y, r] of [[0.44, 0.56, 0.035], [0.56, 0.48, 0.028], [0.5, 0.32, 0.022]]) {
+      s.beginPath();
+      s.arc(x * g, y * g, r * g, 0, Math.PI * 2);
+      s.fill();
+    }
+  },
+  // Bergfried: ein hoher runder Turm mit Kegeldach und Wimpel - die Zinne des
+  // Wehrturms ist flach.
+  bergfried(s, g, farbe) {
+    s.fillStyle = '#8f8a82';
+    s.fillRect(0.3 * g, 0.38 * g, 0.4 * g, 0.56 * g);
+    s.fillStyle = '#a7a299';
+    s.fillRect(0.24 * g, 0.32 * g, 0.52 * g, 0.1 * g);
+    s.fillStyle = '#6f6a62';
+    s.fillRect(0.26 * g, 0.9 * g, 0.48 * g, 0.05 * g);
+    s.fillStyle = '#7a3b2e';
+    s.beginPath();
+    s.moveTo(0.2 * g, 0.33 * g);
+    s.lineTo(0.5 * g, 0.06 * g);
+    s.lineTo(0.8 * g, 0.33 * g);
+    s.closePath();
+    s.fill();
+    s.fillStyle = '#3a3531';
+    for (const y of [0.5, 0.7]) s.fillRect(0.47 * g, y * g, 0.06 * g, 0.12 * g);
+    s.strokeStyle = '#4a4440';
+    s.lineWidth = g * 0.03;
+    s.beginPath();
+    s.moveTo(0.5 * g, 0.08 * g);
+    s.lineTo(0.5 * g, 0 * g);
+    s.stroke();
+    s.fillStyle = farbe;
+    s.beginPath();
+    s.moveTo(0.52 * g, 0.0 * g);
+    s.lineTo(0.78 * g, 0.05 * g);
+    s.lineTo(0.52 * g, 0.1 * g);
+    s.closePath();
+    s.fill();
+  },
+  // Architektur: ein Zirkel ueber dem Riss eines Bogens.
+  zirkel(s, g, farbe) {
+    s.strokeStyle = '#e6d3a3';
+    s.lineWidth = g * 0.05;
+    s.lineCap = 'butt';
+    s.beginPath();
+    s.arc(0.5 * g, 0.92 * g, 0.36 * g, Math.PI, 0);
+    s.stroke();
+    s.beginPath();
+    s.moveTo(0.08 * g, 0.92 * g);
+    s.lineTo(0.92 * g, 0.92 * g);
+    s.stroke();
+    s.strokeStyle = '#b9c2cb';
+    s.lineWidth = g * 0.06;
+    s.lineCap = 'round';
+    for (const x of [0.26, 0.74]) {
+      s.beginPath();
+      s.moveTo(0.5 * g, 0.14 * g);
+      s.lineTo(x * g, 0.84 * g);
+      s.stroke();
+    }
+    s.strokeStyle = '#7f8a94';
+    s.lineWidth = g * 0.04;
+    s.beginPath();
+    s.moveTo(0.38 * g, 0.5 * g);
+    s.lineTo(0.62 * g, 0.5 * g);
+    s.stroke();
+    s.fillStyle = farbe;
+    s.beginPath();
+    s.arc(0.5 * g, 0.13 * g, 0.08 * g, 0, Math.PI * 2);
+    s.fill();
+  },
+  // Belagerungsingenieure: ein Zahnrad, die Nabe in der Volksfarbe.
+  zahnrad(s, g, farbe) {
+    s.fillStyle = '#9aa3ab';
+    s.save();
+    s.translate(0.5 * g, 0.52 * g);
+    for (let i = 0; i < 8; i++) {
+      s.rotate(Math.PI / 4);
+      s.fillRect(-0.07 * g, -0.42 * g, 0.14 * g, 0.16 * g);
+    }
+    s.restore();
+    s.beginPath();
+    s.arc(0.5 * g, 0.52 * g, 0.31 * g, 0, Math.PI * 2);
+    s.fill();
+    s.fillStyle = '#5f666d';
+    s.beginPath();
+    s.arc(0.5 * g, 0.52 * g, 0.2 * g, 0, Math.PI * 2);
+    s.fill();
+    s.fillStyle = farbe;
+    s.beginPath();
+    s.arc(0.5 * g, 0.52 * g, 0.11 * g, 0, Math.PI * 2);
+    s.fill();
+  },
+  // Wehrpflicht: die Trommel, die zu den Fahnen ruft - der Kessel in der
+  // Volksfarbe, kreuzweise geschnuert, zwei Schlegel darueber.
+  trommel(s, g, farbe) {
+    s.fillStyle = farbe;
+    s.fillRect(0.2 * g, 0.46 * g, 0.6 * g, 0.36 * g);
+    s.beginPath();
+    s.ellipse(0.5 * g, 0.82 * g, 0.3 * g, 0.1 * g, 0, 0, Math.PI * 2);
+    s.fill();
+    s.strokeStyle = '#e6d3a3';
+    s.lineWidth = g * 0.03;
+    s.lineCap = 'butt';
+    for (let i = 0; i < 3; i++) {
+      const x = 0.2 + i * 0.2;
+      s.beginPath();
+      s.moveTo(x * g, 0.5 * g);
+      s.lineTo((x + 0.1) * g, 0.84 * g);
+      s.lineTo((x + 0.2) * g, 0.5 * g);
+      s.stroke();
+    }
+    s.fillStyle = '#efe6d2';
+    s.beginPath();
+    s.ellipse(0.5 * g, 0.46 * g, 0.3 * g, 0.1 * g, 0, 0, Math.PI * 2);
+    s.fill();
+    s.strokeStyle = '#8a6a44';
+    s.lineWidth = g * 0.04;
+    s.beginPath();
+    s.ellipse(0.5 * g, 0.46 * g, 0.3 * g, 0.1 * g, 0, 0, Math.PI * 2);
+    s.stroke();
+    s.lineWidth = g * 0.05;
+    s.lineCap = 'round';
+    for (const [x0, x1] of [[0.14, 0.44], [0.86, 0.56]]) {
+      s.beginPath();
+      s.moveTo(x0 * g, 0.08 * g);
+      s.lineTo(x1 * g, 0.4 * g);
+      s.stroke();
+    }
+  },
 };
 
 // Ein Leib von vorn - mit kurzen Aermeln ein Panzerhemd, ohne eine Weste.
@@ -1120,6 +1910,15 @@ export class Auswahlleiste {
   }
 
   /**
+   * Wie eine Einheit bei ihrem Besitzer heisst: nach der Elitestufe ist sein
+   * Kriegswolf ein Elite-Kriegswolf (einheiten AC-69). Der Name kommt mit den
+   * Werten vom Server, wie beim Gebaeude.
+   */
+  einheitName(besitzer, art) {
+    return this.ansicht.einheitenwerte.get(besitzer)?.[art]?.name || FIGUREN[art]?.name || art;
+  }
+
+  /**
    * Wie ein Gebaeude bei seinem Besitzer heisst: eine Verbesserung kann ihm
    * einen neuen Namen geben (bauen AC-38 - aus dem Wachturm wird der
    * Wehrturm). Der Name kommt mit den Werten vom Server.
@@ -1193,6 +1992,8 @@ export class Auswahlleiste {
       const jetzt = werte.zeitalter?.[stufe - 1];
       if (aufstieg.voraussetzung && jetzt) {
         zeilen.push(`Verlangt ${aufstieg.voraussetzung} fertige Gebäude ${jetzt.genitiv} – Häuser, Türme und Mauern zählen nicht`);
+        // In die Krone fuehrt auch eine Burg allein (bauen AC-47).
+        if (aufstieg.oder) zeilen.push(`Oder ${aufstieg.oder.text}`);
       }
       return { name: aufstieg.titel || aufstieg.name, kosten: aufstieg.kosten || {}, dauer: `Dauer ${aufstieg.zeit} s`, zeilen };
     }
@@ -1206,7 +2007,8 @@ export class Auswahlleiste {
         zeilen.push(`bisher: ${kurz(von)}`);
       }
       // Wer eine Einheit austauscht, ist eine Weiterentwicklung (bedienung AC-80).
-      const name = verbesserung.wandelt ? `Weiterentwicklung: ${verbesserung.name}` : verbesserung.name;
+      if (verbesserung.haeuser) zeilen.push(`Nur Haus ${verbesserung.haeuser.map((h) => werte.haeuser?.[h]?.name || h).join(' oder ')}`);
+      const name = stufen(verbesserung) ? `Weiterentwicklung: ${verbesserung.name}` : verbesserung.name;
       return { name, kosten: verbesserung.kosten || {}, dauer: `Forschung ${verbesserung.zeit} s`, zeilen };
     }
 
@@ -1216,7 +2018,8 @@ export class Auswahlleiste {
     if (w.tragkraft && w.baut?.length) zeilen.push('Sammelt Rohstoffe und baut Gebäude');
     if (w.handelt) zeilen.push('Fährt zwischen zwei Märkten und bringt Gold');
     if (w.heilen) zeilen.push(`Heilt eigene Verletzte bis ${w.heilen.reichweite} Felder weit`);
-    if (w.bekehren) zeilen.push(`Bekehrt fremde Einheiten aus ${w.bekehren.reichweite} Feldern`);
+    // Mit den eigenen Verbesserungen: nach dem Buchdruck zwoelf Felder (bauen AC-55).
+    if (w.bekehren) zeilen.push(`Bekehrt fremde Einheiten aus ${(eigene[art]?.bekehren || w.bekehren).reichweite} Feldern`);
     if (w.nurGebaeude) zeilen.push('Greift nur Gebäude an');
     // Getarnt (kampf AC-22) und aus Gefallenen (einheiten AC-49).
     if (w.getarnt) zeilen.push(`Getarnt: Gegner sehen ihn erst auf ${w.getarnt} Felder`);
@@ -1224,7 +2027,9 @@ export class Auswahlleiste {
     zeilen.push(kurz(art));
     const weite = lesen('angriff') > 0 ? (lesen('reichweite') > 0 ? `Reichweite ${lesen('reichweite')}` : 'Nahkampf') : null;
     zeilen.push([weite, w.tempo ? `Tempo ${komma(lesen('tempo'))}` : null, `Sicht ${lesen('sicht')}`].filter(Boolean).join(' · '));
-    if (w.bonus) zeilen.push(Object.entries(w.bonus).map(([k, z]) => `+${z} gegen ${werte.klassen?.[k]?.name || k}`).join(', '));
+    // Der Zuschlag mit den eigenen Verbesserungen (bauen AC-54, AC-56).
+    const bonus = eigene[art]?.bonus || w.bonus;
+    if (bonus) zeilen.push(Object.entries(bonus).map(([k, z]) => `+${z} gegen ${werte.klassen?.[k]?.name || k}`).join(', '));
     if (w.haeuser) zeilen.push(`Nur Haus ${w.haeuser.map((h) => werte.haeuser?.[h]?.name || h).join(' oder ')}`);
     return { name: einheitName(art), kosten: eigene[art]?.kosten || w.kosten || {}, dauer: w.zeit ? `Ausbildung ${w.zeit} s` : null, zeilen };
   }
@@ -1413,7 +2218,7 @@ export class Auswahlleiste {
       const voll = a.lebenVoll(einheit);
       const bild = element('div', 'auswahl-bild');
       bild.append(bildchen(art, 58, farbe));
-      const kopfteil = kopf(FIGUREN[art]?.name || art, einheit.h ?? voll, voll);
+      const kopfteil = kopf(this.einheitName(einheit.b, art), einheit.h ?? voll, voll);
       kopfteil.append(this.kampfwerteZeile(einheit, art));
       const marke = this.hausMarke(einheit.b);
       if (marke) kopfteil.append(marke);
@@ -1442,7 +2247,7 @@ export class Auswahlleiste {
   // bekam jede Verbesserung den Webstuhl, auch die Soldatenstufe.
   verbesserungBildchen(art, mass, farbe) {
     const w = this.ansicht.werte.verbesserungen?.[art] || {};
-    const wandelt = Object.values(w.wandelt || {})[0];
+    const wandelt = Object.values(stufen(w) || {})[0];
     if (wandelt) return bildchen(wandelt, mass, farbe);
     // Die Verbesserungen der Feudalzeit bringen ihr Zeichen als Wert mit
     // (bauen AC-25, AC-26); der Webstuhl bleibt der Webstuhl.
@@ -1465,7 +2270,8 @@ export class Auswahlleiste {
    * wird auf dem Server - hier steht nur, was gar nicht erst angeboten wird.
    */
   hausBildetAus(art) {
-    const nur = this.ansicht.werte.einheiten[art]?.haeuser;
+    // Auch eine Verbesserung kann einem Haus gehoeren (einheiten AC-69).
+    const nur = (this.ansicht.werte.einheiten[art] || this.ansicht.werte.verbesserungen?.[art])?.haeuser;
     return !nur || nur.includes(this.ansicht.spieler.get(this.ansicht.ich)?.haus);
   }
 
@@ -1475,6 +2281,9 @@ export class Auswahlleiste {
     const liste = (werte.gebaeude[gebaeude.art]?.bildetAus || [])
       // Eine erforschte Verbesserung verschwindet aus dem Angebot (bauen AC-21).
       .filter((art) => !this.ansicht.verbesserungen.includes(art))
+      // Die Kartografie auch, wenn ein Verbuendeter sie erforscht hat: die
+      // Karte ist dann schon bekannt (bauen AC-52).
+      .filter((art) => !(werte.verbesserungen?.[art]?.karte && this.ansicht.karteBekannt))
       // Von den Zeitaltern steht nur das naechste zur Wahl (bauen AC-23) -
       // alle drei auf einmal waeren drei Knoepfe, von denen zwei absagen.
       .filter((art) => !aufstiege[art] || aufstiege[art].stufe === this.ansicht.zeitalter + 1)
@@ -1510,7 +2319,8 @@ export class Auswahlleiste {
       })
       .map((art) => ({
         art,
-        name: aufstiege[art]?.name || werte.verbesserungen?.[art]?.name || FIGUREN[art]?.name || art,
+        // Nach der Elitestufe heisst auch der Knopf der Einheit so (einheiten AC-69).
+        name: aufstiege[art]?.name || werte.verbesserungen?.[art]?.name || this.einheitName(this.ansicht.ich, art),
         // Der Preis des eigenen Hauses zuerst (einheiten AC-44): Silberfurt
         // bekommt den Soeldner billiger, und das schickt der Server je Spieler.
         kosten: this.ansicht.einheitenwerte.get(this.ansicht.ich)?.[art]?.kosten
@@ -1525,7 +2335,7 @@ export class Auswahlleiste {
     // `stufeNach` - sein Knopf steht dann unter dem der Einheit.
     for (const eintrag of liste) {
       if (!eintrag.verbesserung) continue;
-      const wandelt = werte.verbesserungen[eintrag.art].wandelt || {};
+      const wandelt = stufen(werte.verbesserungen[eintrag.art]) || {};
       const von = Object.keys(wandelt).find((k) => liste.some((e) => e.art === k && !e.verbesserung && !e.aufstieg));
       if (!von) continue;
       eintrag.stufeVon = von;
@@ -1540,7 +2350,8 @@ export class Auswahlleiste {
   // (bedienung AC-54, AC-80).
   hatStufen(gebaeude) {
     const werte = this.ansicht.werte;
-    return (werte.gebaeude[gebaeude.art]?.bildetAus || []).some((art) => werte.verbesserungen?.[art]?.wandelt);
+    // Was nur ein anderes Haus erforscht, haelt keinen Platz frei.
+    return (werte.gebaeude[gebaeude.art]?.bildetAus || []).some((art) => stufen(werte.verbesserungen?.[art]) && this.hausBildetAus(art));
   }
 
   // Was die Auswahl bauen kann: jedes Gebaeude, das mindestens einer baut -
@@ -1574,7 +2385,7 @@ export class Auswahlleiste {
     for (const [art, anzahl] of zaehlung) {
       const eintrag = element('div', 'gruppe-eintrag');
       eintrag.append(bildchen(art, 40, farbe), element('span', null, `${anzahl}`));
-      eintrag.title = `${anzahl} ${FIGUREN[art]?.name || art}`;
+      eintrag.title = `${anzahl} ${this.einheitName(this.ansicht.ich, art)}`;
       gruppe.append(eintrag);
     }
     // Kopf und Gruppe als ein Block mit Hoechstbreite, in dem die Gruppe
@@ -1767,7 +2578,7 @@ export class Auswahlleiste {
 
     const bild = element('div', 'auswahl-bild');
     bild.append(bildchen(art, 58, farbe, { ladung: einheit.l > 0 ? einheit.a : null }));
-    const kopfteil = kopf(FIGUREN[art]?.name || art, leben, voll);
+    const kopfteil = kopf(this.einheitName(einheit.b, art), leben, voll);
     kopfteil.append(this.kampfwerteZeile(einheit, art));
     w.append(bild, kopfteil);
 
@@ -1896,7 +2707,9 @@ export class Auswahlleiste {
       );
     }
     if (zuschlaege.length) zeile.dataset.zuschlag = zuschlaege.join(' ');
-    const bekehren = a.werte.einheiten[art]?.bekehren;
+    // Reichweite und Ruhe mit den Verbesserungen des Besitzers (bauen AC-55).
+    const tafelDesBesitzers = a.einheitenwerte.get(einheit?.b ?? a.ich)?.[art];
+    const bekehren = a.werte.einheiten[art]?.bekehren ? { ...a.werte.einheiten[art].bekehren, ...tafelDesBesitzers?.bekehren } : null;
     if (bekehren) {
       // Ruht er (bedienung AC-68), steht statt der Reichweite, wie lange noch.
       const ruht = einheit?.r > 0 ? einheit.r : 0;
@@ -1918,7 +2731,9 @@ export class Auswahlleiste {
     }
     // Der Bonus steht in einer eigenen Zeile - er ist der Grund, warum eine
     // Einheit gegen eine andere taugt.
-    const bonus = a.werte.einheiten[art]?.bonus;
+    // Mit den Verbesserungen des Besitzers: nach der Brandstiftung steht beim
+    // Fussvolk "+2 gegen Gebäude" (bauen AC-54).
+    const bonus = tafelDesBesitzers?.bonus || a.werte.einheiten[art]?.bonus;
     if (bonus) {
       const text = Object.entries(bonus)
         .map(([klasse, zuschlag]) => `+${zuschlag} gegen ${a.werte.klassen?.[klasse]?.name || klasse}`)
@@ -2003,7 +2818,10 @@ export class Auswahlleiste {
           : `${eintrag.titel} (${kosten})`);
       } else if (eintrag.stufeVon) {
         // Eine Weiterentwicklung sagt, wer zu wem wird (bedienung AC-80).
-        const wird = `Weiterentwicklung: ${nameVon(eintrag.stufeVon)} wird ${nameVon(eintrag.stufeNach)}`;
+        // Die Elitestufe tauscht nicht aus (einheiten AC-69): sie heisst, wie sie heisst.
+        const wird = eintrag.stufeVon === eintrag.stufeNach
+          ? `Weiterentwicklung: ${eintrag.name}`
+          : `Weiterentwicklung: ${nameVon(eintrag.stufeVon)} wird ${nameVon(eintrag.stufeNach)}`;
         knopf.classList.add('stufe');
         knopf.dataset.stufeVon = eintrag.stufeVon;
         knopf.setAttribute('aria-label', laeuft

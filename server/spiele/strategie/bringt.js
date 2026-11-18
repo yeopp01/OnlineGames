@@ -13,7 +13,7 @@
 // Verbesserungen liest (tests/waechter-wirkungen.test.mjs, ADR-0001): er
 // bekommt die fertigen Zeilen in `werte.verbesserungen[art].bringt`.
 
-const { EINHEITEN, KLASSEN, GEBAEUDE, HANDEL, ZEITALTER } = require('./daten.js');
+const { EINHEITEN, KLASSEN, HANDEL, ZEITALTER, VERBESSERUNGEN, SCHIESSENDE } = require('./daten.js');
 
 const ROHSTOFFE = { holz: 'Holz', nahrung: 'Nahrung', gold: 'Gold', stein: 'Stein' };
 const FELDER = [['leben', 'Leben'], ['angriff', 'Angriff'], ['reichweite', 'Reichweite'], ['sicht', 'Sicht'], ['tempo', 'Tempo'], ['tragkraft', 'Tragkraft']];
@@ -24,6 +24,13 @@ const prozent = (anteil) => `${Math.round(anteil * 100)} %`;
 function aufzaehlung(namen) {
   if (namen.length < 2) return namen.join('');
   return `${namen.slice(0, -1).join(', ')} und ${namen.at(-1)}`;
+}
+
+const ohneArtikel = (name) => name.replace(/^(Der|Die|Das) /, '');
+
+/** Was schiesst, beim Namen - gelesen aus den Daten, nicht aufgezaehlt. */
+function schiessende(bauwerkNamen) {
+  return [...SCHIESSENDE].map((art) => ohneArtikel(bauwerkNamen[art] || art));
 }
 
 /** Wen ein Schluessel der Wirkung meint: eine Klasse oder eine Einheitenart. */
@@ -70,8 +77,15 @@ function zuschlaege(w, grund) {
  */
 function bringt(verbesserung, bauwerkNamen = {}) {
   const zeilen = [];
+  // Wen eine Zeile meint: die Klasse - oder, hebt die Verbesserung eine
+  // Einheit (einheiten AC-69), diese beim neuen Namen: "Elite-Riese: +40 Leben".
+  const wer = (schluessel) => (EINHEITEN[schluessel] && verbesserung.nennt?.[schluessel]) || wen(schluessel);
   for (const [art, w] of Object.entries(verbesserung.bauwerk || {})) {
-    const wer = bauwerkNamen[art] || art;
+    // Hat die Vorstufe es schon umbenannt, heisst es im Satz so: "Der
+    // Wehrturm wird Bergfried" (bauen AC-50) - mit dem Artikel, den es hatte.
+    const davor = VERBESSERUNGEN[verbesserung.vorstufe || '']?.nennt?.[art];
+    const grundname = bauwerkNamen[art] || art;
+    const wer = davor ? grundname.replace(ohneArtikel(grundname), davor) : grundname;
     const neu = verbesserung.nennt?.[art];
     const text = zuschlaege(w);
     if (text) zeilen.push(`${wer}${neu ? ` wird ${neu}` : ''}: ${text} – auch jeder, der schon steht`);
@@ -83,7 +97,7 @@ function bringt(verbesserung, bauwerkNamen = {}) {
     const text = zuschlaege(w, EINHEITEN[schluessel]);
     if (!text) continue;
     if (!gruppen.has(text)) gruppen.set(text, []);
-    gruppen.get(text).push(wen(schluessel));
+    gruppen.get(text).push(wer(schluessel));
   }
   for (const [text, namen] of gruppen) zeilen.push(`${aufzaehlung(namen)}: ${text}`);
   for (const [rohstoff, faktor] of Object.entries(verbesserung.sammeln || {})) {
@@ -91,11 +105,47 @@ function bringt(verbesserung, bauwerkNamen = {}) {
   }
   if (verbesserung.farm?.nahrung) zeilen.push(`Jede neue Farm trägt ${verbesserung.farm.nahrung} Nahrung mehr`);
   if (verbesserung.gebaeude) {
-    const { sicht, ...rest } = verbesserung.gebaeude;
+    const { sicht, angriff, ...rest } = verbesserung.gebaeude;
     const text = zuschlaege(rest);
     if (text) zeilen.push(`Gebäude: ${text}`);
     if (sicht) zeilen.push(`Gebäude sehen ${sicht} Felder weiter`);
+    // Angriff gilt nur dem, was schiesst (bauen AC-50, Chemie).
+    if (angriff) zeilen.push(`${aufzaehlung(schiessende(bauwerkNamen))}: ${mit(angriff)} Angriff`);
   }
+  // Schnellere Ausbildung je Gebaeude (bauen AC-50, Wehrpflicht): gleiche
+  // Faktoren in einer Zeile.
+  const schneller = new Map();
+  for (const [art, faktor] of Object.entries(verbesserung.ausbildung || {})) {
+    if (faktor === 1) continue;
+    if (!schneller.has(faktor)) schneller.set(faktor, []);
+    schneller.get(faktor).push(ohneArtikel(bauwerkNamen[art] || art));
+  }
+  for (const [faktor, namen] of schneller) {
+    zeilen.push(`${aufzaehlung(namen)} ${namen.length > 1 ? 'bilden' : 'bildet'} ${prozent(faktor - 1)} schneller aus`);
+  }
+  // Ein Anteil mehr Schaden gegen eine Klasse (bauen AC-50).
+  for (const [schluessel, anteile] of Object.entries(verbesserung.bonusAnteil || {})) {
+    for (const [klasse, anteil] of Object.entries(anteile)) zeilen.push(`${wen(schluessel)}: +${prozent(anteil)} Schaden an ${KLASSEN[klasse]?.name || klasse}n`);
+  }
+  // Die ganze Karte (bauen AC-52).
+  if (verbesserung.karte) {
+    zeilen.push('Die ganze Karte gilt als erkundet: Gelände, Wald, Gold, Stein und Beeren – für dich und deine Verbündeten');
+    zeilen.push('Fremde Einheiten und Gebäude zeigt sie nicht');
+  }
+  // Ein Zuschlag je Klasse des Ziels (bauen AC-54, AC-56).
+  for (const [schluessel, boni] of Object.entries(verbesserung.bonus || {})) {
+    for (const [klasse, zahl] of Object.entries(boni)) zeilen.push(`${wer(schluessel)}: ${mit(zahl)} Angriff gegen ${KLASSEN[klasse]?.name || klasse}`);
+  }
+  // Reichweite und Ruhe des Bekehrens (bauen AC-55), mit den Zahlen davor
+  // und danach - gelesen an dem, der bekehrt.
+  const bekehrer = Object.values(EINHEITEN).find((e) => e.bekehren)?.bekehren;
+  if (bekehrer && verbesserung.bekehren?.reichweite) {
+    zeilen.push(`Mönche bekehren aus ${bekehrer.reichweite + verbesserung.bekehren.reichweite} statt ${bekehrer.reichweite} Feldern`);
+  }
+  if (bekehrer && verbesserung.bekehren?.ruhe) {
+    zeilen.push(`Mönche ruhen nach einer Bekehrung ${bekehrer.ruhe + verbesserung.bekehren.ruhe} statt ${bekehrer.ruhe} Sekunden`);
+  }
+  if (verbesserung.bautempo && verbesserung.bautempo !== 1) zeilen.push(`Dorfbewohner bauen ${prozent(verbesserung.bautempo - 1)} schneller`);
   return zeilen;
 }
 
@@ -130,11 +180,8 @@ function hausZeilen(wirkungen, bauwerkNamen = {}, einheitNamen = {}) {
     if (text) zeilen.push(`Gebäude: ${text}`);
     if (sicht) zeilen.push(`Gebäude sehen ${sicht} Felder weiter`);
     if (reichweite) {
-      // Nur was schiesst - gelesen aus den Daten, nicht aufgezaehlt.
-      const schiesst = Object.entries(GEBAEUDE)
-        .filter(([, g]) => (g.angriff || 0) > 0)
-        .map(([art]) => (bauwerkNamen[art] || art).replace(/^(Der|Die|Das) /, ''));
-      zeilen.push(`${aufzaehlung(schiesst)}: ${mit(reichweite)} Reichweite`);
+      // Nur was schiesst.
+      zeilen.push(`${aufzaehlung(schiessende(bauwerkNamen))}: ${mit(reichweite)} Reichweite`);
     }
   }
   if (handel?.gebuehr) zeilen.push(`Am Markt ${prozent(HANDEL.gebuehr + handel.gebuehr)} Gebühr statt ${prozent(HANDEL.gebuehr)}`);

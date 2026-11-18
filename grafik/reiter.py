@@ -210,8 +210,9 @@ def _sattel(s, g, art):
     elif art == 'kavalier':
         # Die Decke in zwei Teilen, der Saum gewellt: vorn ueber Brust und
         # Schulter, hinten ueber die Kruppe; dazwischen liegt das Sattelblatt.
-        _decke('schabracke_vorn', s['leinen'], s['tuch'], leib, breite, -0.6, -0.16, tiefe=0.46, band=0.13, welle=0.05)
-        _decke('schabracke_hinten', s['leinen'], s['tuch'], leib, breite, 0.14, 0.64, tiefe=0.46, band=0.13, welle=0.05)
+        # Der Saum ist breit: mit 0,13 trug er auf der Schautafel 0,096 Spielerfarbe.
+        _decke('schabracke_vorn', s['leinen'], s['tuch'], leib, breite, -0.6, -0.16, tiefe=0.46, band=0.2, welle=0.05)
+        _decke('schabracke_hinten', s['leinen'], s['tuch'], leib, breite, 0.14, 0.64, tiefe=0.46, band=0.2, welle=0.05)
         _decke('sattelblatt', s['leder'], None, leib, breite, -0.22, 0.2, tiefe=0.22, auftrag=0.022)
         _rossstirn(s, g['kopf'], s['eisen'], dorn=False)
         # Kette um den Hals, vom Widerrist bis hinter die Ohren.
