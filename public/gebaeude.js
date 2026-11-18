@@ -1974,6 +1974,16 @@ export function gebaeudeHoehe(art, e, groesse) {
 
 // `lage`: was Mauer und Tor von ihren Nachbarn wissen muessen -
 // { nachbarn: [[dx, dy], ...] } oder { achse: 'x' | 'y' }.
+// Als Maske gezeichnet (bedienung AC-30, darstellung AC-30): dasselbe Bild,
+// aber mit der Deckung hoch drei - vom Schlagschatten mit seiner halben
+// Deckung bleibt fast nichts, vom Mauerwerk alles. Gerechnet wird das einmal
+// je Bild im Speicher, und die Ansicht braucht je verdeckter Einheit nur noch
+// einen Zug (`source-in`) statt dreier Beschnitte mit der Maske.
+let alsMaske = false;
+export function gebaeudeAlsMaske(wert) {
+  alsMaske = Boolean(wert);
+}
+
 export function gebaeudeBildZeichnen(stift, art, x, y, e, farbe, groesse, bau = 1, rest = 1, offen = false, lage = undefined) {
   const gebaeude = GEBAEUDE[art];
   if (!gebaeude || typeof document === 'undefined') {
@@ -1993,9 +2003,9 @@ export function gebaeudeBildZeichnen(stift, art, x, y, e, farbe, groesse, bau = 
   const tafelMass = tafel ? (2 * e) / tafel.feldbreite : 0;
   const rand = tafel ? zellenRand(tafel, tafelMass) : null;
   // Die Familie ist dasselbe Bild ohne seine Groesse (darstellung AC-27).
-  const familie = tafel
+  const familie = (alsMaske ? 'maske|' : '') + (tafel
     ? `${tafel.name}|${farbe}|${dichte}|r${wahl.zellen.join(';')}`
-    : `${art}|${farbe}|${stufe}|${restStufe}|${dichte}|${offen ? 'offen' : ''}`;
+    : `${art}|${farbe}|${stufe}|${restStufe}|${dichte}|${offen ? 'offen' : ''}`);
   const schluessel = `${tafel ? tafelMass.toFixed(3) : m.toFixed(2)}|${familie}`;
   // Geholt gilt es als eben gebraucht: das am laengsten Ungenutzte geht zuerst.
   let bild = ZWISCHENSPEICHER.holen(schluessel, familie);
@@ -2013,6 +2023,11 @@ export function gebaeudeBildZeichnen(stift, art, x, y, e, farbe, groesse, bau = 
     s.scale(dichte, dichte);
     if (tafel) for (const [zeile, spalte] of wahl.zellen) zelleZeichnen(s, tafel, zeile, spalte, breite / 2, oben, tafelMass, farbe);
     else gebaeudeZeichnen(s, art, breite / 2, oben, e, farbe, groesse, stufe, restStufe, offen);
+    if (alsMaske) {
+      s.setTransform(1, 0, 0, 1, 0, 0);
+      s.globalCompositeOperation = 'destination-in';
+      for (let i = 0; i < 2; i++) s.drawImage(bild, 0, 0);
+    }
     ZWISCHENSPEICHER.legen(schluessel, bild, familie, beginn);
   }
   // Auf ganze Bildpunkte und in Originalgroesse: sonst glaettet der Browser bei

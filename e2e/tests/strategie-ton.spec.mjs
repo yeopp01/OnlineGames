@@ -107,6 +107,77 @@ test.describe('Ton', () => {
     expect(gemessen.hoch, 'und uebersteuert nicht').toBeLessThan(0.4);
   });
 
+  // Rueckmeldung des Benutzers (2026-11-17): "Dann noch die Lautstaerke im
+  // Menue regelbar machen, also leiser stellen ermoeglichen."
+  test('bedienung AC-78: im Menue stehen zwei Schieber - die Musik auf 30 % ist am Ausgang deutlich leiser, und der Browser merkt es sich', async ({}, info) => {
+    // Der mittlere Pegel ueber fuenf Sekunden - zwei Takte der Musik.
+    const mittel = () => anna.evaluate(() => new Promise((fertig) => {
+      let summe = 0;
+      let bilder = 0;
+      const beginn = performance.now();
+      const schritt = () => {
+        summe += window.ton.pegel();
+        bilder += 1;
+        if (performance.now() - beginn > 5000) fertig(summe / bilder);
+        else requestAnimationFrame(schritt);
+      };
+      schritt();
+    }));
+    const stellen = (id, prozent) => anna.locator(id).evaluate((schieber, wert) => {
+      schieber.value = String(wert);
+      schieber.dispatchEvent(new Event('input', { bubbles: true }));
+    }, prozent);
+
+    await anna.locator('#menue').click();
+    const menue = anna.locator('#spielmenue');
+    await expect(menue).toBeVisible();
+    await expect(menue.locator('label', { hasText: 'Geräusche' })).toBeVisible();
+    await expect(menue.locator('label', { hasText: 'Musik' })).toBeVisible();
+    await expect(anna.locator('#lautGeraeusche')).toHaveValue('100');
+    await expect(anna.locator('#lautMusik')).toHaveValue('100');
+    await expect(menue).toBeInViewport({ ratio: 1 });
+    const voll = await mittel();
+    expect(voll, 'die Musik ist zu hoeren').toBeGreaterThan(0.015);
+
+    // Mit der Tastatur: ein Schritt sind fuenf Prozent.
+    await anna.locator('#lautMusik').focus();
+    await anna.keyboard.press('ArrowLeft');
+    await expect(anna.locator('#lautMusik')).toHaveValue('95');
+    await expect(anna.locator('#lautMusikWert')).toHaveText('95 %');
+    await stellen('#lautMusik', 30);
+    await expect(anna.locator('#lautMusikWert')).toHaveText('30 %');
+    await stellen('#lautGeraeusche', 60);
+    await expect(anna.locator('#lautGeraeuscheWert')).toHaveText('60 %');
+    expect(await anna.evaluate(() => [window.ton.musikStaerke, window.ton.geraeuschStaerke])).toEqual([0.3, 0.6]);
+    await nachweis(anna, {
+      spec: BEDIENUNG,
+      ac: 'AC-78',
+      titel: 'Das Menü mit den zwei Schiebern: Geräusche auf 60 %, Musik auf 30 %',
+      test: info,
+    });
+    await anna.waitForTimeout(400);
+    const leise = await mittel();
+    // 30 % am Schieber sind 9 % am Regler. Gemessen wird hinter dem Begrenzer,
+    // der Lautes drueckt und Leises nicht - deshalb die weite Grenze.
+    expect(leise, 'sie spielt noch').toBeGreaterThan(0.0005);
+    expect(leise / voll, 'und ist deutlich leiser').toBeLessThan(0.3);
+    expect(await anna.evaluate(() => [localStorage.getItem('tonMusikStaerke'), localStorage.getItem('tonGeraeuschStaerke')]), 'der Browser merkt es sich').toEqual(['0.3', '0.6']);
+
+    // Nach dem Neuladen stehen die Schieber, wie sie gelassen wurden.
+    await anna.reload();
+    await anna.waitForFunction(() => window.ansicht?.laeuft && window.ansicht.nachher.size > 0);
+    await anna.locator('#menue').click();
+    await expect(anna.locator('#lautMusik')).toHaveValue('30');
+    await expect(anna.locator('#lautGeraeusche')).toHaveValue('60');
+    // Zurueck auf voll: die Faelle danach messen mit den alten Pegeln.
+    await stellen('#lautMusik', 100);
+    await stellen('#lautGeraeusche', 100);
+    await anna.locator('#menueWeiter').click();
+    await expect(menue).toBeHidden();
+    await anna.locator('#brett').click({ position: { x: 700, y: 420 } });
+    await expect.poll(() => anna.evaluate(() => window.ton.musikLaeuft)).toBe(true);
+  });
+
   test('bedienung AC-61: in der Tastenuebersicht stehen Geraeusche und Musik - Musik aus, und es wird still', async ({}, info) => {
     await anna.locator('#brett').hover();
     await anna.keyboard.press('F1');

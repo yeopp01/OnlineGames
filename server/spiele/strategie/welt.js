@@ -225,6 +225,15 @@ function kostenSumme(kosten) {
   return summe;
 }
 
+/**
+ * Eine Richtung auf der Karte als Achtel: 0 laengs +x, 2 laengs +y, 4 laengs
+ * -x, 6 laengs -y. null, wenn beide Punkte aufeinander liegen.
+ */
+function achtel(dx, dy) {
+  if (Math.abs(dx) + Math.abs(dy) < 0.01) return null;
+  return ((Math.round(Math.atan2(dy, dx) / (Math.PI / 4)) % 8) + 8) % 8;
+}
+
 // Die Punkte im Zustand, nur wenn es welche gibt - ein Zustand bleibt klein.
 function punkteFeld(punkte) {
   return punkte > 0 ? { pk: punkte } : {};
@@ -784,6 +793,7 @@ class Welt {
       angefangen: 0, // Bruchteil der naechsten Einheit Rohstoff
       /** @type {number | null} */
       schlagTakt: null, // der Takt ihres letzten Schlags oder Schusses (bedienung AC-72)
+      fallrichtung: null, // gefallen: die Richtung zu dem, der sie traf, als Achtel (bedienung AC-76)
     };
     this.einheiten.set(einheit.id, einheit);
     return einheit;
@@ -3443,6 +3453,9 @@ class Welt {
         }
       } else if (ziel.leben <= 0 && !ziel.tot) {
         this.siegZaehlen(angreifer, ziel, EINHEITEN[ziel.art].kosten);
+        // Woher der Schlag kam (bedienung AC-76): dorthin gewandt faellt er,
+        // also von dem weg, der ihn traf. Ein Turm ist ein Gebaeude mit Platz.
+        ziel.fallrichtung = angreifer ? achtel(angreifer.x - ziel.x, angreifer.y - ziel.y) : null;
         this.einheitSterben(ziel);
       } else {
         this.wehren(ziel, angreifer);
@@ -4407,6 +4420,31 @@ class Welt {
     return bestes;
   }
 
+  /**
+   * Wohin eine Einheit schaut, solange sie kaempft oder bekehrt (bedienung
+   * AC-76): die Richtung zu ihrem Ziel als Achtel der Karte - 0 laengs +x,
+   * 2 laengs +y, 4 laengs -x, 6 laengs -y. Bei einem Gebaeude zum naechsten
+   * Punkt seiner Grundflaeche: ein Tor ist vier Felder lang. Wer gefallen
+   * ist, traegt die Richtung zu dem, der ihn traf. Ohne Ziel: nichts - das
+   * Bild behaelt die Richtung, in die sie zuletzt ging.
+   */
+  richtungFeld(einheit) {
+    if (einheit.tot) return einheit.fallrichtung === null || einheit.fallrichtung === undefined ? {} : { zr: einheit.fallrichtung };
+    const auftrag = einheit.auftrag;
+    const kaempft = auftrag?.art === 'angreifen' && !einheit.weg.length;
+    if (!kaempft && !(auftrag?.art === 'bekehren' && einheit.bekehrt)) return {};
+    const ziel = auftrag.gebaeude ? this.gebaeude.get(auftrag.ziel) : this.einheiten.get(auftrag.ziel);
+    if (!ziel) return {};
+    let { x, y } = ziel;
+    if (auftrag.gebaeude) {
+      const { x0, y0, x1, y1 } = this.grundflaeche(ziel.art, ziel.x, ziel.y, ziel.quer);
+      x = Math.min(Math.max(einheit.x, x0), x1);
+      y = Math.min(Math.max(einheit.y, y0), y1);
+    }
+    const richtung = achtel(x - einheit.x, y - einheit.y);
+    return richtung === null ? {} : { zr: richtung };
+  }
+
   // Was der Browser braucht, um ein Bild zu zeichnen - mehr nicht.
   zustand() {
     const einheiten = [];
@@ -4436,6 +4474,9 @@ class Welt {
         // AC-72): eine Schlagbewegung je Schlag, nicht eine je Bild. Die Zahl
         // aendert sich nur mit dem Schlag - der Zustand bleibt klein.
         ...(e.auftrag?.art === 'angreifen' && !e.weg.length && !e.tot && e.schlagTakt !== null ? { sl: e.schlagTakt } : {}),
+        // Wohin sie dabei schaut (bedienung AC-76): zu ihrem Ziel - und wer
+        // faellt, zu dem, der ihn traf. In Achteln; aendert sich selten.
+        ...this.richtungFeld(e),
         // Ein Moench, der nach dem Bekehren ruht (einheiten AC-38): wie viele
         // Sekunden noch (bedienung AC-68) - in ganzen Sekunden, damit sich
         // der Zustand nur einmal je Sekunde aendert.

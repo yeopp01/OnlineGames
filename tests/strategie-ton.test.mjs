@@ -13,7 +13,7 @@ import { readFileSync } from 'node:fs';
 const lesen = (pfad) => readFileSync(new URL(`../${pfad}`, import.meta.url), 'utf8');
 // public/ton.js ist ein Modul fuer den Browser; Node hielte die Endung .js
 // hier fuer CommonJS. Es bindet nichts ein, also laesst es sich als Text laden.
-const { AKKORDE, GESANG_DAUER, KLAENGE, SAETZE, Ton, halbton } = await import(`data:text/javascript;base64,${Buffer.from(lesen('public/ton.js')).toString('base64')}`);
+const { AKKORDE, GESANG_DAUER, KLAENGE, SAETZE, Ton, halbton, reglerwert } = await import(`data:text/javascript;base64,${Buffer.from(lesen('public/ton.js')).toString('base64')}`);
 
 const SIGNALE = ['absage', 'angriff', 'einheit', 'forschung', 'gebaeude', 'gefallen', 'niederlage', 'sieg', 'zeitalter'];
 const GERAEUSCHE = ['einschlag', 'einsturz', 'hacken', 'hammer', 'hieb', 'pfeil', 'pickel', 'schwert', 'treffer', 'wurf'];
@@ -411,6 +411,75 @@ test('bedienung AC-61: Geraeusche und Musik sind einzeln abschaltbar, und der Br
   ohne.musikSetzen(false);
   assert.equal(ohne.musik, false);
   assert.equal(new Ton().musik, true);
+});
+
+test('bedienung AC-78: die Lautstaerke von Geraeuschen und Musik laesst sich einzeln stellen - sofort, im Quadrat, und der Browser merkt sie sich', () => {
+  const { Ausgang } = ausgangAufschreiben();
+  globalThis.AudioContext = Ausgang;
+  try {
+    const ort = speicher();
+    const ton = new Ton(ort);
+    assert.equal(ton.geraeuschStaerke, 1, 'Vorgabe: voll - so laut wie bisher');
+    assert.equal(ton.musikStaerke, 1);
+    ton.partieSetzen(true);
+    ton.entsperren();
+    clearTimeout(ton.musikUhr);
+    const voll = ton.musikRegler.gain.value;
+    assert.ok(voll > 0, 'die Musik spielt');
+    assert.equal(ton.effekte.gain.value, 1);
+
+    // Halb gestellt ist ein Viertel am Regler: das Ohr hoert Verhaeltnisse.
+    assert.equal(reglerwert(0.5), 0.25);
+    ton.staerkeSetzen('musik', 0.5);
+    assert.ok(Math.abs(ton.musikRegler.gain.value - voll * 0.25) < 1e-9, 'die laufende Musik wird sofort leiser');
+    assert.equal(ton.effekte.gain.value, 1, 'die Geraeusche sind davon nicht betroffen');
+    ton.staerkeSetzen('geraeusche', 0.2);
+    assert.ok(Math.abs(ton.effekte.gain.value - 0.04) < 1e-9);
+    assert.ok(Math.abs(ton.musikRegler.gain.value - voll * 0.25) < 1e-9, 'und die Musik nicht von den Geraeuschen');
+    // Die Schalter (AC-61) bleiben, was sie sind: leise ist nicht aus.
+    assert.equal(ton.geraeusche, true);
+    assert.equal(ton.musik, true);
+    assert.equal(ton.spielen('einheit'), true, 'leise klingt es weiter');
+
+    // Aus und wieder an: die Musik kommt mit der gestellten Staerke zurueck.
+    ton.musikSetzen(false);
+    assert.equal(ton.musikRegler.gain.value, 0);
+    ton.staerkeSetzen('musik', 0.8);
+    assert.equal(ton.musikRegler.gain.value, 0, 'eine abgeschaltete Musik weckt der Schieber nicht');
+    ton.musikSetzen(true);
+    clearTimeout(ton.musikUhr);
+    assert.ok(Math.abs(ton.musikRegler.gain.value - voll * 0.64) < 1e-9);
+
+    // Ganz zu ist still, und was ausserhalb liegt, wird begrenzt.
+    ton.staerkeSetzen('geraeusche', 0);
+    assert.equal(ton.effekte.gain.value, 0);
+    ton.staerkeSetzen('geraeusche', 7);
+    assert.equal(ton.geraeuschStaerke, 1);
+    ton.staerkeSetzen('geraeusche', -1);
+    assert.equal(ton.geraeuschStaerke, 0);
+    ton.staerkeSetzen('geraeusche', 0.35);
+
+    // Ein neues Fenster liest die Wahl - und legt seinen Ausgang damit an.
+    const zweites = new Ton(ort);
+    assert.equal(zweites.geraeuschStaerke, 0.35);
+    assert.equal(zweites.musikStaerke, 0.8);
+    zweites.partieSetzen(true);
+    zweites.entsperren();
+    clearTimeout(zweites.musikUhr);
+    assert.ok(Math.abs(zweites.effekte.gain.value - 0.35 * 0.35) < 1e-9);
+    assert.ok(Math.abs(zweites.musikRegler.gain.value - voll * 0.64) < 1e-9);
+  } finally {
+    delete globalThis.AudioContext;
+  }
+
+  // Unsinn im Speicher oder ein gesperrter Speicher: die Vorgabe, und nichts wirft.
+  assert.equal(new Ton(speicher({ tonMusikStaerke: 'laut' })).musikStaerke, 1);
+  assert.equal(new Ton(speicher({ tonMusikStaerke: '3' })).musikStaerke, 1);
+  const gesperrt = { getItem() { throw new Error('gesperrt'); }, setItem() { throw new Error('gesperrt'); } };
+  const ohne = new Ton(gesperrt);
+  assert.equal(ohne.musikStaerke, 1);
+  ohne.staerkeSetzen('musik', 0.5);
+  assert.equal(ohne.musikStaerke, 0.5, 'dann gilt es bis zum Neuladen');
 });
 
 test('bedienung AC-74: der Moench hat drei Klaenge - ein Gloeckchen je Sekunde, ein Gesang, der bis in den naechsten Ton haelt, und ein Schlag zum Uebertritt', () => {

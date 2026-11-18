@@ -6,8 +6,8 @@
 // (x nach rechts unten, y nach links unten); nur zuBild und zuWelt kennen die
 // Raute. Die Kamera liegt in Bildpunkten der Raute bei Vergroesserung 1.
 import { FIGUREN, figurBildZeichnen } from './figuren.js';
-import { GEBAEUDE, gebaeudeBildZeichnen, gebaeudeGetroffen, gebaeudeHoehe, gebaeudeSchattenZeichnen } from './gebaeude.js';
-import { bilderBereit, bilderWarten, gerendert, richtungAus, zelleZeichnen } from './bilder.js';
+import { GEBAEUDE, gebaeudeAlsMaske, gebaeudeBildZeichnen, gebaeudeGetroffen, gebaeudeHoehe, gebaeudeSchattenZeichnen } from './gebaeude.js';
+import { atlantenEin, bilderBereit, bilderWarten, gerendert, richtungAus, richtungAusAchtel, zelleZeichnen } from './bilder.js';
 import { Bildspeicher } from './bildspeicher.js';
 import { KACHEL, kachelMassstab, kachelZeichnen } from './boden.js';
 import { Nebel, NEBELRAND } from './nebel.js';
@@ -103,6 +103,11 @@ export function zoomstufe(zoom, richtung) {
 // (→ bildspeicher.js). Ohne Dreh am Rad gilt keine Frist: wer die Karte
 // schiebt, bekommt jedes Stueck sofort in seiner Groesse, wie bisher.
 const BILD_FRIST = 5;
+// Und so viele an neuen Haltungen von Figuren, immer (darstellung AC-30):
+// danach bleibt eine Figur fuer dieses Bild in der Haltung von eben. Acht,
+// weil ein Bild im Gefecht sonst vier bis sechs Millisekunden braucht und
+// sechzehn hat.
+const HALTUNGS_FRIST = 8;
 // Bodenkacheln: so viele Bildpunkte liegen hoechstens im Speicher (rund
 // 130 MB - eine Kachel in doppelter Aufloesung wiegt allein 4,5), und so lange
 // nach dem letzten Dreh am Rad rechnet das Bild keine, fuer die es einen
@@ -136,6 +141,14 @@ const SCHLAG_HALB_MAX = 0.9;
 // Bleibt der naechste Schlag so lange ueber seine Zeit aus (Spielsekunden),
 // nimmt die Figur die Waffe wieder hoch.
 const SCHLAG_UEBERFAELLIG = 0.4;
+// Der erste Schlag eines Gefechts faellt auf dem Server sofort - ausgeholt hat
+// davor niemand. Im Bild holt die Figur dann erst aus, so lange
+// (Spielsekunden, hoechstens ihre halbe Bewegung), und Pfeil oder Stein
+// fliegen erst danach (bedienung AC-79).
+const ERSTSCHLAG_VOR = 0.35;
+// Der Pfeil gegen den Massstab des Feldes (darstellung AC-28): in voller
+// Groesse war er halb so lang, wie eine Figur hoch ist.
+const PFEIL_MASS = 0.75;
 
 // Wie lange eine gerenderte Figur faellt, bei Spielgeschwindigkeit 1,0. Am
 // Boden liegt sie zwei Spielsekunden (kampf AC-10) - gut die Haelfte davon.
@@ -264,8 +277,8 @@ export class Ansicht {
     this.blicke = new Map(); // Einheit → -1 links, 1 rechts
     this.richtungen = new Map(); // Einheit → 0 bis 7, fuer gerenderte Figuren (ADR-0016)
     this.gefallen = new Map(); // Einheit → wann das Bild sie zum ersten Mal gefallen sah
-    this.schlagblicke = new Map(); // Einheit → wann zuletzt nach ihrem Gegner gesucht wurde
     this.schlaege = new Map(); // Einheit → der wievielte Schlag zuletzt zu hoeren war (bedienung AC-62)
+    this.erstschlaege = new Map(); // Einheit → der Takt eines Schlags, vor dem sie nicht ausholen konnte (bedienung AC-79)
     // Truemmer eingestuerzter Gebaeude (darstellung AC-26): das Gebaeude, wie
     // es zuletzt stand, und der Takt, bis zu dem sie liegen.
     this.ruinen = [];
@@ -317,8 +330,8 @@ export class Ansicht {
     this.blicke = new Map();
     this.richtungen = new Map();
     this.gefallen = new Map();
-    this.schlagblicke = new Map();
     this.schlaege = new Map();
+    this.erstschlaege = new Map();
     this.ruinen = [];
     this.pfeile = [];
     this.takt = 0;
@@ -394,6 +407,8 @@ export class Ansicht {
       // (darstellung AC-24). Bis dahin zeigt bild() den Ladesatz. Danach die
       // Leiste noch einmal: ihre Knopfbilder kommen aus denselben Tafeln.
       bilderWarten().then(() => {
+        // Figuren kommen von hier an aus verkleinerten Tafeln (darstellung AC-30).
+        atlantenEin();
         this.laeuft = true;
         this.beiAuswahl();
       });
@@ -479,10 +494,63 @@ export class Ansicht {
     // Wer nicht angreift (der Moench), ist still; wer schiesst oder wirft,
     // ist am Geschoss zu hoeren.
     if (!werte.angriff || werte.reichweite > 0) return;
-    if (werte.nurGebaeude) this.klangAn('treffer', punkt);
     // Nicht jeder Hieb trifft Eisen: jeder dritte geht ins Leere oder aufs Holz.
-    else if ((nummer + einheit.i) % 3 === 0) this.klangAn('hieb', punkt);
-    else this.klangAn('schwert', punkt);
+    let klingen = () => this.klangAn('schwert', punkt);
+    if (werte.nurGebaeude) klingen = () => this.klangAn('treffer', punkt);
+    else if ((nummer + einheit.i) % 3 === 0) klingen = () => this.klangAn('hieb', punkt);
+    // Der erste Hieb holt im Bild erst aus (bedienung AC-79) - so lange wartet sein Klang.
+    const warten = this.erstschlagVor(einheit) * (this.takteProSekunde || 10) * this.taktdauer;
+    if (warten) setTimeout(klingen, warten);
+    else klingen();
+  }
+
+  /**
+   * Wie lange (Spielsekunden) die Figur vor diesem Schlag im Bild erst
+   * ausholt: 0, wenn er angesagt war - dann hat sie es schon getan.
+   */
+  erstschlagVor(einheit) {
+    if (einheit.sl === undefined || this.erstschlaege.get(einheit.i) !== einheit.sl) return 0;
+    return Math.min(ERSTSCHLAG_VOR, this.schlagHalb(this.einheitenwert(einheit, 'nachladen')));
+  }
+
+  /** Eine Haelfte der Schlagbewegung in Spielsekunden (bedienung AC-72). */
+  schlagHalb(nachladen) {
+    return Math.min(nachladen / 2, Math.max(SCHLAG_HALB_MIN, Math.min(SCHLAG_HALB_MAX, nachladen * SCHLAG_ANTEIL)));
+  }
+
+  /**
+   * Welche Schlaege dieses Zustands kamen ohne Ansage (bedienung AC-79)? Der
+   * erste eines Gefechts, und jeder, vor dem die Figur die Waffe schon wieder
+   * gesenkt hatte: der Server schlaegt sofort, wenn das Ziel in Reichweite
+   * ist. Gemerkt je Einheit, damit `schlagAnteil` sie erst ausholen laesst;
+   * zurueck kommen die Orte mit dem Verzug in Millisekunden - fuer Pfeil und
+   * Stein, die keinen Schuetzen nennen. Aufgerufen, bevor `nachher` wechselt.
+   */
+  erstschlaegeMerken(nachricht) {
+    const orte = [];
+    if (this.erstschlaege.size > 800) this.erstschlaege.clear();
+    const jeSekunde = this.takteProSekunde || 10;
+    const takt = Number.isInteger(nachricht.t) ? nachricht.t : this.takt;
+    for (const e of nachricht.einheiten || []) {
+      if (e.sl === undefined) continue;
+      const alt = this.nachher.get(e.i);
+      if (alt?.sl === e.sl) continue;
+      const nachladen = this.einheitenwert(e, 'nachladen');
+      if (!(nachladen > 0)) continue;
+      // Angesagt: der Schlag folgt dem vorigen nach der Nachladezeit - die
+      // Figur stand schon im Ausholen. Frueher (ein neuer Befehl schlaegt
+      // sofort) oder spaeter stand sie in Ruhe.
+      const abstand = alt?.sl === undefined ? Infinity : (e.sl - alt.sl) / jeSekunde;
+      const angesagt = abstand > nachladen - this.schlagHalb(nachladen) && abstand <= nachladen + SCHLAG_UEBERFAELLIG;
+      // Wer eben erst ins Bild kommt, bringt einen alten Takt mit.
+      if (angesagt || takt - e.sl > 3) {
+        this.erstschlaege.delete(e.i);
+        continue;
+      }
+      this.erstschlaege.set(e.i, e.sl);
+      orte.push({ x: e.x, y: e.y, ms: this.erstschlagVor(e) * jeSekunde * this.taktdauer });
+    }
+    return orte;
   }
 
   /** Steht die Einheit an einer Baustelle, die sie bauen kann? */
@@ -508,7 +576,8 @@ export class Ansicht {
     // wie er bei sieben Feldern je Sekunde braucht - mindestens 0,15 Sekunden.
     // Mit zehn war ein Schuss ueber vier Felder 0,4 s unterwegs, kaum zu
     // sehen und im vollen Browserlauf nicht zu fotografieren (Runde 122).
-    const jetzt = performance.now();
+    // Steht das Bild (Pause, Ende), stehen auch die Pfeile.
+    const jetzt = halt ?? performance.now();
     // Angekommene fallen auch hier heraus, nicht nur beim Zeichnen: in einem
     // Tab im Hintergrund wird nicht gezeichnet, und die Liste wuechse.
     this.pfeile = this.pfeile.filter((p) => jetzt - p.start < p.dauer);
@@ -520,6 +589,9 @@ export class Ansicht {
     // Takt; im Bild fliegen sie kurz nacheinander und eine Handbreit
     // auseinander, sonst saehe man einen.
     const salve = new Map();
+    // Wer ohne Ansage schiesst, spannt im Bild erst den Bogen (bedienung
+    // AC-79): sein Pfeil wartet so lange.
+    const erste = this.erstschlaegeMerken(nachricht);
     for (const [x0, y0, zx, zy, stein] of nachricht.p || []) {
       const marke = `${x0}|${y0}|${zx}|${zy}`;
       const nummer = stein === 1 ? 0 : salve.get(marke) || 0;
@@ -534,17 +606,18 @@ export class Ansicht {
       // seiner Grundflaeche, die Hoehe kennt nur die Zeichnung.
       const oben = this.schussHoeheBei(x0, y0);
       const dauer = Math.max(150, (weite / 7) * 1000);
+      // Der Server rundet den Abschussort auf Zehntel, die Einheit auf Hundertstel.
+      const warten = erste.find((o) => Math.abs(o.x - x0) <= 0.06 && Math.abs(o.y - y0) <= 0.06)?.ms || 0;
       this.pfeile.push({
-        x0, y0, x1, y1, weite, oben, stein: stein === 1, start: jetzt + nummer * 70, dauer,
+        x0, y0, x1, y1, weite, oben, stein: stein === 1, start: jetzt + warten + nummer * 70, dauer,
       });
       // Zu hoeren (bedienung AC-62): die Sehne beim Schuetzen, der Wurfarm
-      // beim Mangonel - und der Stein dort, wo er herunterkommt.
-      if (stein === 1) {
-        this.geraeusch('wurf', x0, y0);
-        setTimeout(() => this.geraeusch('einschlag', x1, y1), dauer);
-      } else {
-        this.geraeusch('pfeil', x0, y0);
-      }
+      // beim Mangonel - und der Stein dort, wo er herunterkommt. Mit dem
+      // Bild, also nach dem Ausholen.
+      const los = stein === 1 ? () => this.geraeusch('wurf', x0, y0) : () => this.geraeusch('pfeil', x0, y0);
+      if (warten) setTimeout(los, warten);
+      else los();
+      if (stein === 1) setTimeout(() => this.geraeusch('einschlag', x1, y1), warten + dauer);
     }
     for (const aenderung of nachricht.felder || []) {
       if (this.karte.felder[aenderung.i] !== aenderung.a) {
@@ -2564,8 +2637,14 @@ export class Ansicht {
     // Stelle zwischen zwei Takten wie die Schritte der Figuren.
     const weiter = Math.max(0, this.anteil(halt ?? jetzt));
     const seit = Math.max(0, (this.takt + weiter - einheit.sl) / (this.takteProSekunde || 10));
-    const halb = Math.min(nachladen / 2, Math.max(SCHLAG_HALB_MIN, Math.min(SCHLAG_HALB_MAX, nachladen * SCHLAG_ANTEIL)));
-    if (seit < halb) return 0.5 + 0.5 * (seit / halb);
+    const halb = this.schlagHalb(nachladen);
+    // Ohne Ansage (bedienung AC-79): erst ausholen, dann der Treffer im Bild.
+    const vor = this.erstschlagVor(einheit);
+    if (vor > 0) {
+      if (seit < vor) return 0.5 * (seit / vor);
+      const aus = Math.min(halb, Math.max(0, nachladen - halb - vor));
+      if (seit - vor < aus) return 0.5 + 0.5 * ((seit - vor) / aus);
+    } else if (seit < halb) return 0.5 + 0.5 * (seit / halb);
     if (seit < nachladen - halb) return 0;
     if (seit < nachladen) return 0.5 * ((seit - (nachladen - halb)) / halb);
     // Ueberfaellig: der Schlag steht aus (das Ziel wich, der Zustand fehlt).
@@ -2623,7 +2702,7 @@ export class Ansicht {
       if (this.zoomBilder > 0 && this.scharf) this.zoomt = false;
       else this.zoomBilder += 1;
     }
-    Bildspeicher.bildBeginn(this.zoomt ? BILD_FRIST : Infinity);
+    Bildspeicher.bildBeginn(this.zoomt ? BILD_FRIST : Infinity, HALTUNGS_FRIST);
     stift.fillStyle = '#0f1216';
     stift.fillRect(0, 0, this.leinwand.clientWidth, this.leinwand.clientHeight);
 
@@ -2784,7 +2863,7 @@ export class Ansicht {
     this.reihenfolge = stehend.map((d) => ({ art: d.art, tiefe: d.tiefe, id: d.einheit?.i }));
     // Verdeckte Einheiten als Umriss in Spielerfarbe, ueber allem (bedienung AC-30).
     this.umrisse = this.verdeckte.map((v) => v.einheit.i);
-    for (const verdeckt of this.verdeckte) this.umrissZeichnen(verdeckt, e);
+    this.umrisseZeichnen(this.verdeckte, e);
     // Der Nebel liegt ueber allem, was steht, und unter den Hilfen der
     // Bedienung - Lebensbalken, Zielzeichen und Rahmen bleiben lesbar.
     this.pfeileZeichnen(stift);
@@ -2949,7 +3028,7 @@ export class Ansicht {
    * tiefer im Bild stehen (groesseres x + y), liegen ueber ihr; flache
    * (Farmen) verdecken nichts (bedienung AC-30). Das ist die grobe Auswahl
    * nach dem Trefferkasten - was wirklich verdeckt ist, entscheidet beim
-   * Zeichnen das Bild des Gebaeudes (`umrissZeichnen`).
+   * Zeichnen das Bild des Gebaeudes (`umrisseZeichnen`).
    */
   deckendeGebaeude(einheit, punkt) {
     const e = HALB_B * this.kamera.zoom;
@@ -2982,64 +3061,109 @@ export class Ansicht {
   }
 
   /**
-   * Der Umriss einer verdeckten Einheit in Spielerfarbe, ueber allem
-   * (bedienung AC-30) - aber nur dort, wo wirklich ein Gebaeude ueber ihr
+   * Die Umrisse der verdeckten Einheiten in Spielerfarbe, ueber allem
+   * (bedienung AC-30) - aber nur dort, wo wirklich ein Gebaeude ueber ihnen
    * liegt. Vorher wurde die ganze Gestalt eingefaerbt, sobald ihre Mitte im
    * Trefferkasten eines Gebaeudes lag: neben einer Baustelle, von der erst
    * das Fundament steht, stand ein ganz blauer Dorfbewohner (das erste Spiel
    * auf dem Server, 2026-11-12).
    *
-   * Zwei kleine Hilfsbilder: die Gebaeude als Maske, die Gestalt in Farbe -
-   * uebrig bleibt, was von der Gestalt unter der Maske liegt.
+   * Ein Blatt mit einem Feld je verdeckter Einheit: in das Feld kommen erst
+   * die Gebaeude, die sie verdecken, als Maske (`gebaeudeAlsMaske`: ohne
+   * Schlagschatten), dann die Gestalt in Farbe mit `source-in` - uebrig
+   * bleibt, was von ihr unter einem der Gebaeude liegt. Zum Schluss wandern
+   * die Felder ins Bild, von hinten nach vorn.
+   *
+   * Gelesen wird das Blatt erst, wenn alles darauf steht. Daran hing die
+   * Zeit, zweimal (darstellung AC-30):
+   * - Bis zum 2026-11-18 hatte jede verdeckte Einheit zwei eigene kleine
+   *   Hilfsbilder, in die jedes Mal die Gebaeude kopiert wurden. Im Chrome
+   *   mit Grafikkarte, Gefecht zwischen Haeusern: 24 bis 37 ms je Bild, sechs
+   *   Siebtel der ganzen Zeit.
+   * - Danach zwei Ebenen, so gross wie das Bild, eine davon die Maske, in die
+   *   Gebaeude um Gebaeude dazukam. Mit Grafikkarte 4 bis 5 ms - aber ohne
+   *   sie kopiert der Browser die ganze Ebene, sobald nach einer Aenderung
+   *   wieder aus ihr gelesen wird: 11 von 14 ms je Bild im Browserlauf, mehr
+   *   als mit den kleinen Hilfsbildern.
    */
-  umrissZeichnen({ einheit, punkt, hoehe, laeuft, decken }, e) {
+  umrisseZeichnen(verdeckte, e) {
+    if (!verdeckte.length) return;
     const dichte = window.devicePixelRatio || 1;
-    const spieler = this.spieler.get(einheit.b);
-    // Der Kasten um die Gestalt: breit genug fuer Reiter und Ladung.
-    const breite = Math.ceil(hoehe * 3.2);
-    const hoch = Math.ceil(hoehe * 2.3);
-    const links = Math.round(punkt.x - breite / 2);
-    const oben = Math.round(punkt.y - hoehe * 1.8);
-    if (!this.umrissbild) {
-      this.umrissbild = document.createElement('canvas');
-      this.umrissmaske = document.createElement('canvas');
-    }
-    const stifte = [this.umrissbild, this.umrissmaske].map((leinwand) => {
-      if (leinwand.width !== Math.ceil(breite * dichte) || leinwand.height !== Math.ceil(hoch * dichte)) {
-        leinwand.width = Math.ceil(breite * dichte);
-        leinwand.height = Math.ceil(hoch * dichte);
-      }
-      const s = leinwand.getContext('2d');
+    // Der Kasten um jede Gestalt, in Bildpunkten der Leinwand: breit genug
+    // fuer Reiter und Ladung. Alle Felder sind so gross wie der groesste.
+    let feldBreit = 1;
+    let feldHoch = 1;
+    const kaesten = verdeckte.map((v) => {
+      const kasten = {
+        v,
+        links: Math.floor((v.punkt.x - v.hoehe * 1.6) * dichte),
+        oben: Math.floor((v.punkt.y - v.hoehe * 1.8) * dichte),
+        breit: Math.ceil(v.hoehe * 3.2 * dichte),
+        hoch: Math.ceil(v.hoehe * 2.3 * dichte),
+      };
+      feldBreit = Math.max(feldBreit, kasten.breit);
+      feldHoch = Math.max(feldHoch, kasten.hoch);
+      return kasten;
+    });
+    const spalten = Math.max(1, Math.min(kaesten.length, Math.floor(2048 / feldBreit)));
+    const zeilen = Math.ceil(kaesten.length / spalten);
+    if (!this.umrissblatt) this.umrissblatt = document.createElement('canvas');
+    const blatt = this.umrissblatt;
+    const s = blatt.getContext('2d');
+    // Das Blatt waechst mit dem Bedarf und schrumpft erst, wenn es viermal
+    // zu gross ist - die Groesse zu setzen leert es und kostet neuen Speicher.
+    const zuKlein = blatt.width < spalten * feldBreit || blatt.height < zeilen * feldHoch;
+    const zuGross = blatt.width * blatt.height > 4 * spalten * feldBreit * zeilen * feldHoch + 65536;
+    if (zuKlein || zuGross) {
+      blatt.width = spalten * feldBreit;
+      blatt.height = zeilen * feldHoch;
+    } else {
       s.setTransform(1, 0, 0, 1, 0, 0);
       s.globalCompositeOperation = 'source-over';
-      s.clearRect(0, 0, leinwand.width, leinwand.height);
-      s.setTransform(dichte, 0, 0, dichte, -links * dichte, -oben * dichte);
-      return s;
-    });
-    const [bild, maske] = stifte;
-    for (const gebaeude of decken) {
-      const mitte = this.gebaeudeMitte(gebaeude);
-      const p = this.zuBild(mitte.x, mitte.y);
-      this.gebaeudeMalen(maske, gebaeude, p, e, '#888888');
+      s.clearRect(0, 0, spalten * feldBreit, zeilen * feldHoch);
     }
-    // Der Schlagschatten eines Gebaeudes verdeckt niemanden: zweimal mit sich
-    // selbst beschnitten bleibt von seiner halben Deckung fast nichts, von
-    // der vollen des Mauerwerks alles.
-    maske.setTransform(1, 0, 0, 1, 0, 0);
-    maske.globalCompositeOperation = 'destination-in';
-    maske.drawImage(this.umrissmaske, 0, 0);
-    maske.drawImage(this.umrissmaske, 0, 0);
-    figurBildZeichnen(bild, this.arten[einheit.k] || 'dorfbewohner', punkt.x, punkt.y, hoehe, spieler ? spieler.farbe : '#888888', {
-      blick: this.blicke.get(einheit.i) || 1,
-      richtung: this.richtungen.get(einheit.i),
-      ladung: einheit.l > 0 ? einheit.a : null,
-      schritt: laeuft ? jetztPhase(einheit.i) : 0,
-      arbeit: einheit.w && !laeuft ? this.arbeitPhase(einheit) : 0,
-    }, true);
-    bild.setTransform(1, 0, 0, 1, 0, 0);
-    bild.globalCompositeOperation = 'destination-in';
-    bild.drawImage(this.umrissmaske, 0, 0);
-    this.stift.drawImage(this.umrissbild, links, oben, this.umrissbild.width / dichte, this.umrissbild.height / dichte);
+    gebaeudeAlsMaske(true);
+    try {
+      kaesten.forEach((kasten, nummer) => {
+        const { einheit, punkt, hoehe, laeuft, decken } = kasten.v;
+        kasten.x = (nummer % spalten) * feldBreit;
+        kasten.y = Math.floor(nummer / spalten) * feldHoch;
+        s.save();
+        s.setTransform(1, 0, 0, 1, 0, 0);
+        s.beginPath();
+        s.rect(kasten.x, kasten.y, kasten.breit, kasten.hoch);
+        s.clip();
+        // Im Feld liegt der Ausschnitt des Bildes um die Gestalt.
+        s.setTransform(dichte, 0, 0, dichte, kasten.x - kasten.links, kasten.y - kasten.oben);
+        s.globalCompositeOperation = 'source-over';
+        for (const gebaeude of decken) {
+          const mitte = this.gebaeudeMitte(gebaeude);
+          this.gebaeudeMalen(s, gebaeude, this.zuBild(mitte.x, mitte.y), e, '#888888');
+        }
+        // Die Gestalt nur dort, wo die Maske deckt - mit einem Zug, denn
+        // `source-in` raeumt bei jedem Zug alles andere im Feld ab.
+        s.globalCompositeOperation = 'source-in';
+        const spieler = this.spieler.get(einheit.b);
+        figurBildZeichnen(s, this.arten[einheit.k] || 'dorfbewohner', punkt.x, punkt.y, hoehe, spieler ? spieler.farbe : '#888888', {
+          blick: this.blicke.get(einheit.i) || 1,
+          richtung: this.richtungen.get(einheit.i),
+          ladung: einheit.l > 0 ? einheit.a : null,
+          schritt: laeuft ? jetztPhase(einheit.i) : 0,
+          arbeit: einheit.w && !laeuft ? this.arbeitPhase(einheit) : 0,
+        }, true);
+        s.restore();
+      });
+    } finally {
+      gebaeudeAlsMaske(false);
+    }
+    // Hoeher im Bild heisst weiter hinten: wer vorn steht, liegt oben.
+    const stift = this.stift;
+    stift.save();
+    stift.setTransform(1, 0, 0, 1, 0, 0);
+    for (const kasten of [...kaesten].sort((a, b) => a.v.punkt.y - b.v.punkt.y)) {
+      stift.drawImage(blatt, kasten.x, kasten.y, kasten.breit, kasten.hoch, kasten.links, kasten.oben, kasten.breit, kasten.hoch);
+    }
+    stift.restore();
   }
 
   /**
@@ -3547,7 +3671,7 @@ export class Ansicht {
 
   pfeileZeichnen(stift) {
     if (!this.pfeile.length) return;
-    const jetzt = performance.now();
+    const jetzt = halt ?? performance.now();
     this.pfeile = this.pfeile.filter((p) => jetzt - p.start < p.dauer);
     const zoom = this.kamera.zoom;
     const brust = this.figurenHoehe() * 0.55;
@@ -3555,6 +3679,10 @@ export class Ansicht {
     // Nie kleiner als bei Zoom 1,2: darunter waere der Schaft unter einem
     // Bildpunkt breit und der Pfeil nicht mehr zu sehen.
     const massstab = tafel ? Math.max(0.4, (2 * HALB_B * zoom) / tafel.feldbreite) : 0;
+    // Der Pfeil ist kleiner als das Feld es vorgibt (darstellung AC-28): bei
+    // Zoom 1,5 rund 17 Bildpunkte, zwei Fuenftel einer Figur. Die Grenze nach
+    // unten haelt den Schaft ueber einem Bildpunkt.
+    const pfeilmass = tafel ? Math.max(0.3, ((2 * HALB_B * zoom) / tafel.feldbreite) * PFEIL_MASS) : 0;
     const amBoden = (p, t) => this.zuBild(p.x0 + (p.x1 - p.x0) * t, p.y0 + (p.y1 - p.y0) * t);
     const ort = (p, t) => {
       const b = amBoden(p, t);
@@ -3611,7 +3739,7 @@ export class Ansicht {
         stift.save();
         stift.translate(kopf.x, kopf.y);
         stift.rotate(Math.atan2(vorn.y - hinten.y, vorn.x - hinten.x));
-        zelleZeichnen(stift, tafel, 0, tafel.pfeil, 0, 0, massstab);
+        zelleZeichnen(stift, tafel, 0, tafel.pfeil, 0, 0, pfeilmass);
         stift.restore();
         this.geschosseGezeichnet.tafel += 1;
         continue;
@@ -3658,6 +3786,9 @@ export class Ansicht {
     if (Math.abs(dx) > 0.001) this.blicke.set(einheit.i, dx < 0 ? -1 : 1);
     // Gerenderte Figuren kennen acht Richtungen statt zwei (darstellung AC-17).
     if (laeuft) this.richtungen.set(einheit.i, richtungAus(dx, ((einheit.x - alt.x) + (einheit.y - alt.y)) / 2));
+    // Wer schlaegt, schaut auf den, den er schlaegt, und wer faellt, auf den,
+    // der ihn traf (bedienung AC-76) - der Server nennt die Richtung.
+    else if (einheit.zr !== undefined) this.zielBlick(einheit);
 
     // Gefallen (kampf AC-10): liegt zwei Sekunden am Boden, blass und ohne
     // Ring - so sieht man, wer den Kampf verloren hat, bevor er verschwindet.
@@ -3730,12 +3861,7 @@ export class Ansicht {
       }
     }
 
-    // Wer schlaegt, schaut auf den, den er schlaegt - nicht dorthin, wohin er
-    // zuletzt ging.
-    if (einheit.w && !laeuft) {
-      this.schlagRichtung(einheit);
-      this.schlagHoeren(einheit, punkt);
-    }
+    if (einheit.w && !laeuft) this.schlagHoeren(einheit, punkt);
 
     // Ein Dorfbewohner mit Ladung traegt sie sichtbar: Holzbuendel oder
     // Beerenkorb auf dem Ruecken (bedienung AC-16, darstellung AC-6).
@@ -3754,48 +3880,16 @@ export class Ansicht {
   }
 
   /**
-   * Dreht eine gerenderte Figur, die schlaegt, zu ihrem Gegner. Der Zustand
-   * nennt das Ziel nicht (nur `w`); genommen wird deshalb der naechste, der
-   * ihr Gegner ist - Einheit oder Gebaeude. Gesucht wird hoechstens alle 300
-   * Millisekunden je Einheit, nicht in jedem Bild.
+   * Dreht eine Figur zu ihrem Ziel (bedienung AC-76). Der Zustand nennt die
+   * Richtung als Achtel der Karte (`zr`) - frueher riet das Bild: es nahm den
+   * naechsten Gegner, und wer auf Befehl einen anderen schlug, schlug in die
+   * Luft. Die gezeichnete Figur kennt nur links und rechts; schaut sie genau
+   * zum Betrachter oder von ihm weg, bleibt sie, wie sie steht.
    */
-  schlagRichtung(einheit) {
-    const art = this.arten[einheit.k];
-    if (!gerendert(art)?.ablaeufe?.angreifen || !this.werte.einheiten[art]?.angriff) return;
-    const jetzt = performance.now();
-    const zuletzt = this.schlagblicke.get(einheit.i);
-    if (zuletzt !== undefined && jetzt - zuletzt < 300) return;
-    if (this.schlagblicke.size > 600) this.schlagblicke.clear();
-    this.schlagblicke.set(einheit.i, jetzt);
-    const team = this.teamVon(einheit.b);
-    const gegner = (besitzer) => besitzer !== einheit.b && (!team || team !== this.teamVon(besitzer));
-    let ziel = null;
-    let naechster = Infinity;
-    for (const anderer of this.nachher.values()) {
-      if (anderer.s || !gegner(anderer.b)) continue;
-      const abstand = Math.hypot(anderer.x - einheit.x, anderer.y - einheit.y);
-      if (abstand < naechster) {
-        naechster = abstand;
-        ziel = anderer;
-      }
-    }
-    for (const gebaeude of this.gebaeude.values()) {
-      if (!gegner(gebaeude.b)) continue;
-      const mitte = this.gebaeudeMitte(gebaeude);
-      // Gemessen bis an den Rand: ein Dorfzentrum ist vier Felder breit.
-      const abstand = Math.hypot(mitte.x - einheit.x, mitte.y - einheit.y) - mitte.groesse / 2;
-      if (abstand < naechster) {
-        naechster = abstand;
-        ziel = mitte;
-      }
-    }
-    // Weiter weg als jede Reichweite: dann schlaegt sie etwas, das hier nicht
-    // zu sehen ist, und bleibt, wie sie steht.
-    if (!ziel || naechster > 12) return;
-    const dx = ziel.x - einheit.x;
-    const dy = ziel.y - einheit.y;
-    if (Math.abs(dx) + Math.abs(dy) < 0.01) return;
-    this.richtungen.set(einheit.i, richtungAus(dx - dy, (dx + dy) / 2));
+  zielBlick(einheit) {
+    const zeile = richtungAusAchtel(einheit.zr);
+    this.richtungen.set(einheit.i, zeile);
+    if (zeile % 4) this.blicke.set(einheit.i, zeile < 4 ? 1 : -1);
   }
 
   rahmenZeichnen() {

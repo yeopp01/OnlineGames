@@ -4,6 +4,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { createRequire } from 'node:module';
+import { readFileSync } from 'node:fs';
 
 const require = createRequire(import.meta.url);
 const { Welt, TAKTE_PRO_SEKUNDE } = require('../server/spiele/strategie/welt.js');
@@ -80,3 +81,84 @@ for (const art of ['miliz', 'bogenschuetze', 'ramme']) {
     assert.equal(eintrag(welt, anna.id).sl, undefined, 'unterwegs keine Marke');
   });
 }
+
+// Wer schlaegt, schaut auf sein Ziel (bedienung AC-76): der Zustand nennt die
+// Richtung als Achtel der Karte. Vorher riet das Bild - es nahm den naechsten
+// Gegner, und wer auf Befehl einen anderen traf, schlug in die Luft.
+const ACHTEL = [[2, 0], [2, 2], [0, 2], [-2, 2], [-2, 0], [-2, -2], [0, -2], [2, -2]];
+
+test('bedienung AC-76: wer schiesst, nennt die Richtung zu seinem Ziel - in allen acht Achteln, auch wenn ein anderer Gegner naeher steht', () => {
+  ACHTEL.forEach(([dx, dy], achtel) => {
+    const welt = new Welt(ZWEI, 4711, { sicht: 'aufgedeckt' });
+    const basis = welt.spielerVon('a').basis;
+    const anna = welt.einheitAnlegen('a', basis.x, basis.y + 10, 'bogenschuetze');
+    const ziel = welt.einheitAnlegen('b', anna.x + dx, anna.y + dy, 'dorfbewohner');
+    ziel.leben = 100000;
+    // Der Naehere steht genau gegenueber: das Bild von frueher haette ihn genommen.
+    const naeher = welt.einheitAnlegen('b', anna.x - Math.sign(dx), anna.y - Math.sign(dy), 'dorfbewohner');
+    naeher.leben = 100000;
+    assert.equal(eintrag(welt, anna.id).zr, undefined, 'ohne Ziel keine Richtung');
+    welt.nachricht('a', { auftrag: 'befehl', einheiten: [anna.id], ziel: { x: ziel.x, y: ziel.y } });
+    welt.takten();
+    assert.equal(anna.auftrag?.ziel, ziel.id, 'sie schiesst auf den Befohlenen');
+    const e = eintrag(welt, anna.id);
+    assert.equal(e.w, 1, 'in Reichweite: sie kaempft');
+    assert.equal(e.zr, achtel, `Ziel bei (${dx}, ${dy}): Achtel ${achtel}`);
+  });
+});
+
+test('bedienung AC-76: wer hinlaeuft, nennt keine Richtung - am Gebaeude zeigt sie auf den naechsten Punkt der Grundflaeche', () => {
+  const welt = new Welt(ZWEI, 4711, { sicht: 'aufgedeckt' });
+  const basis = welt.spielerVon('a').basis;
+  // Ein Dorfzentrum ist vier Felder breit: wer an seiner Ecke steht, schlaegt
+  // geradeaus hinein, nicht schraeg zur Mitte.
+  const anna = welt.einheitAnlegen('a', basis.x - 6, basis.y + 12, 'miliz');
+  const haus = welt.gebaeudeAnlegen('b', 'haus', basis.x, basis.y + 11);
+  haus.leben = 100000;
+  welt.nachricht('a', { auftrag: 'befehl', einheiten: [anna.id], ziel: { x: haus.x, y: haus.y } });
+  welt.takten();
+  assert.ok(anna.weg.length, 'sie laeuft noch');
+  assert.equal(eintrag(welt, anna.id).zr, undefined, 'unterwegs keine Richtung');
+  for (let t = 0; t < 20 * TAKTE_PRO_SEKUNDE && eintrag(welt, anna.id).w !== 1; t++) welt.takten();
+  const e = eintrag(welt, anna.id);
+  assert.equal(e.w, 1, 'am Haus: sie schlaegt');
+  const { x0, y0, x1, y1 } = welt.grundflaeche('haus', haus.x, haus.y);
+  const px = Math.min(Math.max(anna.x, x0), x1);
+  const py = Math.min(Math.max(anna.y, y0), y1);
+  const soll = ((Math.round(Math.atan2(py - anna.y, px - anna.x) / (Math.PI / 4)) % 8) + 8) % 8;
+  assert.equal(e.zr, soll, 'zum naechsten Punkt der Grundflaeche');
+});
+
+test('bedienung AC-76: wer faellt, nennt die Richtung zu dem, der ihn traf', () => {
+  const welt = new Welt(ZWEI, 4711, { sicht: 'aufgedeckt' });
+  const basis = welt.spielerVon('a').basis;
+  const anna = welt.einheitAnlegen('a', basis.x, basis.y + 10, 'bogenschuetze');
+  // Bert steht laengs +y von Anna: der Pfeil kommt fuer ihn aus -y, Achtel 6.
+  const bert = welt.einheitAnlegen('b', anna.x, anna.y + 3, 'dorfbewohner');
+  bert.leben = 1;
+  welt.nachricht('a', { auftrag: 'befehl', einheiten: [anna.id], ziel: { x: bert.x, y: bert.y } });
+  let gefallen = null;
+  for (let t = 0; t < 10 * TAKTE_PRO_SEKUNDE && !gefallen; t++) {
+    welt.takten();
+    const e = eintrag(welt, bert.id);
+    if (e?.s) gefallen = e;
+  }
+  assert.ok(gefallen, 'Bert ist gefallen und liegt noch im Bild');
+  assert.equal(gefallen.zr, 6, 'er faellt dem Schuetzen zugewandt - also von ihm weg');
+  // Wer ohne Gegner faellt (Entf, Aufgeben), nennt nichts: er faellt, wie er steht.
+  const dritter = welt.einheitAnlegen('b', basis.x + 5, basis.y + 10, 'miliz');
+  welt.nachricht('b', { auftrag: 'entlassen', einheit: dritter.id });
+  assert.equal(eintrag(welt, dritter.id).s, 1);
+  assert.equal(eintrag(welt, dritter.id).zr, undefined, 'entlassen: keine Richtung');
+});
+
+test('bedienung AC-76: das Achtel der Karte ist dieselbe Zeile der Tafel wie die Richtung im Bild', async () => {
+  // public/bilder.js ist ein Modul fuer den Browser; Node hielte die Endung .js
+  // in diesem Paket fuer CommonJS. Als Daten-Adresse geladen ist es eines.
+  const quelle = readFileSync(new URL('../public/bilder.js', import.meta.url));
+  const { richtungAus, richtungAusAchtel } = await import(`data:text/javascript;base64,${quelle.toString('base64')}`);
+  ACHTEL.forEach(([dx, dy], achtel) => {
+    // Im Bild: nach rechts geht x - y, nach unten die Haelfte von x + y.
+    assert.equal(richtungAusAchtel(achtel), richtungAus(dx - dy, (dx + dy) / 2), `Achtel ${achtel}`);
+  });
+});

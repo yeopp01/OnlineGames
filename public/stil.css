@@ -199,9 +199,14 @@ button.haupt:hover {
   padding: 0.25rem 0.5rem;
 }
 
+/* Im Spielbild laesst sich nichts markieren (bedienung AC-77): wer einen
+   Rahmen ueber die Leiste zieht oder doppelt auf einen Knopf klickt, soll
+   keinen blau hinterlegten Text bekommen. Eingabefelder gibt es hier keine. */
 #spiel {
   position: fixed;
   inset: 0;
+  -webkit-user-select: none;
+  user-select: none;
 }
 
 canvas {
@@ -749,6 +754,12 @@ canvas.angriffslauf {
 #revanche {
   flex: 0 0 auto;
   min-width: 14rem;
+  pointer-events: auto;
+}
+
+/* Die Tafel laesst Klicks durch (`.abschluss`), ihre Knoepfe nicht - dieser
+   hier tat deshalb nichts (bedienung AC-66). */
+#abschlussVorraum {
   pointer-events: auto;
 }
 
@@ -1428,6 +1439,30 @@ canvas.angriffslauf {
   margin: 0;
   font-size: 0.8rem;
   line-height: 1.4;
+}
+
+/* Die Lautstaerke (bedienung AC-78): Name, Schieber, Zahl - zwei Zeilen. */
+.spielmenue .menue-ton {
+  display: grid;
+  grid-template-columns: auto 1fr 3.2rem;
+  align-items: center;
+  gap: 0.35rem 0.7rem;
+  padding: 0.5rem 0.9rem;
+  border: 1px solid #ffffff2e;
+  border-radius: 0.5rem;
+  background: #1a212b;
+  font-size: 0.9rem;
+}
+
+.spielmenue .menue-ton input {
+  width: 100%;
+  accent-color: var(--betont);
+  cursor: pointer;
+}
+
+.spielmenue .menue-ton output {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
 }
 
 .kopfzeile .menueknopf {

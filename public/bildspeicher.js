@@ -32,6 +32,11 @@ export class Bildspeicher {
   // bevor Ersatz genommen wird. Ohne `bildBeginn` gilt keine Frist - die
   // Schautafel zeichnet alles gleich.
   static frist = Infinity;
+  // Dasselbe fuer neue Haltungen einer Figur (darstellung AC-30): treffen zwei
+  // Heere aufeinander, braucht jede Figur in einer Sekunde ein Dutzend neuer
+  // Bilder - Ausholen, Schlag, Fallen, je Richtung und Farbe. Ist diese Frist
+  // um, bleibt eine Figur fuer dieses eine Bild in der Haltung von eben.
+  static haltungsfrist = Infinity;
   static verbraucht = 0;
   // Wie viele Stuecke im laufenden Bild nur als Ersatz stehen.
   static ersetzt = 0;
@@ -39,9 +44,12 @@ export class Bildspeicher {
   /**
    * Ein neues Bild des Spiels beginnt.
    * @param {number} frist  Millisekunden fuer neue Stuecke in diesem Bild
+   * @param {number} [haltungsfrist]  Millisekunden, nach denen eine Figur in
+   *   der Haltung von eben bleibt, statt eine neue zu zeichnen
    */
-  static bildBeginn(frist) {
+  static bildBeginn(frist, haltungsfrist = Infinity) {
     Bildspeicher.frist = frist;
+    Bildspeicher.haltungsfrist = haltungsfrist;
     Bildspeicher.verbraucht = 0;
     Bildspeicher.ersetzt = 0;
   }

@@ -11,7 +11,18 @@
 // (`ansicht.beiEreignis`), app.js reicht sie hierher. Was ein Name klingt,
 // steht als Daten in KLAENGE.
 
-const GEMERKT = { geraeusche: 'tonGeraeusche', musik: 'tonMusik' };
+const GEMERKT = {
+  geraeusche: 'tonGeraeusche', musik: 'tonMusik', geraeuschStaerke: 'tonGeraeuschStaerke', musikStaerke: 'tonMusikStaerke',
+};
+
+/**
+ * Vom Schieber (0 bis 1) zum Regler (bedienung AC-78): im Quadrat. Das Ohr
+ * hoert Verhaeltnisse - geradeaus gerechnet taete die untere Haelfte des
+ * Schiebers fast alles und die obere fast nichts.
+ */
+export function reglerwert(staerke) {
+  return staerke * staerke;
+}
 
 // Halbtoene ueber dem Kammerton a' (440 Hz).
 const frequenz = (halbton) => 440 * 2 ** (halbton / 12);
@@ -205,6 +216,9 @@ export class Ton {
     this.zufall = zufall;
     this.geraeusche = this.gemerkt('geraeusche');
     this.musik = this.gemerkt('musik');
+    // Wie laut, 0 bis 1 - die Stellung der Schieber im Menue (bedienung AC-78).
+    this.geraeuschStaerke = this.gemerkteStaerke('geraeuschStaerke');
+    this.musikStaerke = this.gemerkteStaerke('musikStaerke');
     this.zuletzt = new Map(); // Klang -> wann er zuletzt begann
     // Was geklungen hat, der Reihe nach - damit ein Test es lesen kann, auch
     // wo niemand zuhoert. Signale stehen im Protokoll; Kampf und Arbeit sind
@@ -232,6 +246,42 @@ export class Ton {
     try {
       this.speicher?.setItem(GEMERKT[was], an ? 'an' : 'aus');
     } catch { /* dann gilt es bis zum Neuladen */ }
+  }
+
+  gemerkteStaerke(was) {
+    try {
+      const roh = this.speicher?.getItem(GEMERKT[was]);
+      const wert = roh === null || roh === undefined || roh === '' ? 1 : Number(roh);
+      return Number.isFinite(wert) ? Math.min(1, Math.max(0, wert)) : 1;
+    } catch {
+      return 1;
+    }
+  }
+
+  /**
+   * Die Lautstaerke der Geraeusche oder der Musik stellen, 0 bis 1 (bedienung
+   * AC-78). Gilt sofort, auch fuer das, was schon klingt, und wird gemerkt.
+   * Die Schalter an und aus (AC-61) bleiben daneben, was sie sind.
+   * @param {'geraeusche' | 'musik'} was
+   */
+  staerkeSetzen(was, wert) {
+    const staerke = Number.isFinite(Number(wert)) ? Math.min(1, Math.max(0, Number(wert))) : 1;
+    const feld = was === 'musik' ? 'musikStaerke' : 'geraeuschStaerke';
+    this[feld] = staerke;
+    try {
+      this.speicher?.setItem(GEMERKT[feld], String(staerke));
+    } catch { /* dann gilt es bis zum Neuladen */ }
+    if (!this.ctx) return;
+    const jetzt = this.ctx.currentTime;
+    // Die Musik nur, wenn sie spielt: sonst steht ihr Regler auf null, und
+    // `musikPruefen` nimmt die Staerke, sobald sie beginnt.
+    if (was === 'musik' && !this.musikLaeuft) return;
+    const regler = was === 'musik' ? this.musikRegler.gain : this.effekte.gain;
+    const ziel = was === 'musik' ? MUSIK_LAUT * reglerwert(staerke) : reglerwert(staerke);
+    // Kurz gerampt statt gesprungen - ein Sprung knackt.
+    regler.cancelScheduledValues(jetzt);
+    regler.setValueAtTime(regler.value, jetzt);
+    regler.linearRampToValueAtTime(ziel, jetzt + 0.15);
   }
 
   geraeuscheSetzen(an) {
@@ -290,7 +340,7 @@ export class Ton {
 
       // Geraeusche: trocken, mit wenig Raum.
       this.effekte = ctx.createGain();
-      this.effekte.gain.value = 1;
+      this.effekte.gain.value = reglerwert(this.geraeuschStaerke);
       this.effekte.connect(this.ausgang);
       const effektHall = ctx.createGain();
       effektHall.gain.value = 0.18;
@@ -635,7 +685,7 @@ export class Ton {
     clearTimeout(this.musikUhr);
     this.musikUhr = null;
     if (soll) {
-      this.musikRegler.gain.linearRampToValueAtTime(MUSIK_LAUT, jetzt + 2);
+      this.musikRegler.gain.linearRampToValueAtTime(MUSIK_LAUT * reglerwert(this.musikStaerke), jetzt + 2);
       // Von vorn: ein neuer Satz, ab dem naechsten Augenblick.
       this.satz = null;
       this.naechsterTakt = jetzt + 0.3;

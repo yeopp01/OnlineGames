@@ -179,6 +179,14 @@
         <button id="menueWeiter" class="menue-haupt" type="button">Weiterspielen</button>
         <button id="menuePause" type="button">Pause</button>
         <button id="menueTasten" type="button">Tasten und Ton</button>
+        <div class="menue-ton" role="group" aria-label="Lautstärke">
+          <label for="lautGeraeusche">Geräusche</label>
+          <input id="lautGeraeusche" type="range" min="0" max="100" step="5" value="100">
+          <output id="lautGeraeuscheWert" for="lautGeraeusche">100 %</output>
+          <label for="lautMusik">Musik</label>
+          <input id="lautMusik" type="range" min="0" max="100" step="5" value="100">
+          <output id="lautMusikWert" for="lautMusik">100 %</output>
+        </div>
         <button id="menueVollbild" type="button" title="Im Vollbild gehören Strg + Ziffer und Esc dem Spiel">Vollbild (F11)</button>
         <button id="menueVorraum" type="button">Zurück in den Vorraum</button>
         <p id="menueVorraumHinweis" class="leise"></p>

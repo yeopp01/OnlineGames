@@ -2,7 +2,7 @@
 
 **Bereich:** Strategie
 **Kuerzel:** bedienung
-**Stand:** 70/75 fertig · 2 in QA · 3 offen
+**Stand:** 74/79 fertig · 2 in QA · 3 offen
 
 ## Zweck
 
@@ -594,7 +594,12 @@ inzwischen alle eingetragen.
   Vorraum — er steht dann auch auf der Abschlusstafel. Aufgeben und Bündnis
   lösen bleiben oben rechts mit ihrer Rückfrage. **Rückmeldung des
   Benutzers:** „wir brauchen irgendwie ein menü, ich kann zwar auf Pause
-  drücken, aber nicht zurück in die Lobby oder so."
+  drücken, aber nicht zurück in die Lobby oder so." **Nachgebessert
+  (2026-11-18):** der Knopf auf der Abschlusstafel tat nichts — die Tafel
+  lässt Klicks zur Karte durch, und nur „Revanche" nahm sie wieder an. Der
+  Browserfall klickt ihn seitdem mit der Maus. **Rückmeldung des
+  Benutzers:** „hat jeweils unten nen Button der irgendwie heißt zruück zum
+  Vorraum oder so, aber der tut nichts".
 
 - **AC-67** `fertig` **Zeitalter in der Punkteliste** — In der Punkteliste
   (AC-57) steht hinter jedem Namen das Zeitalter des Spielers als römische
@@ -711,6 +716,53 @@ inzwischen alle eingetragen.
   möglich sein, dass ein dorfbewohner sich selbst umbringt? durch entf
   taste?" und, zum Vorschlag mit Umschalt für alle: „nur entfernen, müssen
   keine massenentf sein oder so."
+- **AC-76** `fertig` **Wer schlägt, schaut aufs Ziel** — Wer schlägt oder
+  schießt, steht zu dem hin gedreht, den er trifft — auch wenn ein anderer
+  Gegner näher steht —, an einem Gebäude zum nächsten Punkt seiner
+  Grundfläche. Wer fällt, liegt zu dem hin, der ihn traf, und nicht mehr
+  dorthin, wohin er zuletzt ging. Die Richtung nennt der Server im Zustand
+  (`zr`, ein Achtel der Karte, nur an Kämpfenden und Gefallenen); vorher
+  riet der Browser sie aus dem nächsten Gegner. Wer entlassen wird (AC-75),
+  fällt, wie er stand. **Gemessen** an einem Gefecht aus 32 gegen 32 über
+  15 Sekunden: auf freiem Feld stimmten vorher 88 % der Schläge, im Dorf
+  78 %, danach 98 % und 91 % (abgelesen bis zu einer halben Sekunde nach
+  dem Schlag; der Rest ist vermutlich dieser Abstand, belegt ist das
+  nicht); Gefallene lagen vorher fast nur in zwei Richtungen, danach in
+  sechs bis sieben. **Rückmeldung des Benutzers:** „Die Richtung in die ein
+  Soldat schlägt, ist meist nicht die, in die er wirklich jemandem weh tut.
+  auch umfallen tun sie nur in eine richtug meistens".
+- **AC-77** `fertig` **Nichts lässt sich markieren** — Im Spielbild lässt
+  sich kein Text markieren: nicht mit Doppel- oder Dreifachklick auf einen
+  Namen, nicht mit einem Zug durch die Leiste, nicht mit einem Rahmen, der
+  auf der Karte beginnt und in der Leiste endet. Eingabefelder gibt es im
+  Spielbild keine; Vorraum und Warteraum bleiben, wie sie sind.
+  **Rückmeldung des Benutzers:** „dass der text z.B. bei meinen
+  dorfbewohnern die gebäudenamen so aussahen, als wären sie markiert
+  gewesen, so blau schattiert".
+- **AC-78** `fertig` **Lautstärke regelbar** — Im Menü (AC-66) stehen zwei
+  Schieber, Geräusche und Musik, von 0 bis 100 % in Schritten von 5, mit der
+  Zahl daneben. Sie wirken sofort, auch auf das, was schon klingt, einzeln,
+  und der Browser merkt sie sich; die Vorgabe ist 100 % und so laut wie
+  bisher. Der Regler folgt dem Schieber im Quadrat (50 % am Schieber ist ein
+  Viertel am Regler), damit die untere Hälfte nicht fast alles tut. Die
+  zwei Schalter an und aus (AC-61) bleiben in der Tastenübersicht: leise ist
+  nicht aus, und ein Schieber weckt keine abgeschaltete Musik.
+  **Rückmeldung des Benutzers:** „Dann noch die Lautstärke im Menü regelbar
+  machen, also leiser stellen ermöglichen." **Nicht geprüft:** wie laut es
+  sich anfühlt — das entscheidet ein Ohr.
+- **AC-79** `fertig` **Erst spannen, dann der Pfeil** — Der erste Schlag
+  eines Gefechts fällt auf dem Server in dem Takt, in dem das Ziel in
+  Reichweite ist; ausgeholt hat davor niemand (AC-72 zeigt das Ausholen nur
+  vor den folgenden). Im Bild holt die Figur dann erst aus — 0,35
+  Spielsekunden, höchstens ihre halbe Bewegung —, und Pfeil oder Stein
+  verlassen sie erst danach, samt ihrem Klang; ebenso wartet der Klang des
+  ersten Hiebs. Dasselbe gilt für jeden Schlag ohne Ansage: nach einem neuen
+  Befehl, oder wenn die Figur die Waffe schon wieder gesenkt hatte. Gerechnet
+  wird weiter sofort — das Leben des Ziels sinkt also einen Augenblick, bevor
+  der erste Pfeil ankommt; der Pfeil ist Darstellung (AC-40, ADR-0001). Steht
+  das Bild (Pause, Ende), stehen auch die Pfeile in der Luft.
+  **Rückmeldung des Benutzers:** „Auch bei den Bogenschützen, der erste Pfeil
+  kommt bevor sie den Bogen ziehen."
 
 ## Grenzfaelle
 

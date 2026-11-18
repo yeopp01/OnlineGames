@@ -39,6 +39,7 @@ npm run sicht -- --spiel --waehlen speerkaempfer --zeitalter 1  # die Auswahllei
 npm run tafel -- "t.anmutung('gebaeude', 'haus')"  # auf der Schautafel messen, Ergebnis als JSON
 npm run ton:messen   # den Ton offline rechnen: Pegel je Klang und der Musik, dazu zwei WAV zum Anhoeren
 npm run e2e:laufzeiten -- strategie   # Dauer je Datei aus dem letzten Browserlauf, die langsamsten Faelle (--neu faehrt erst einen)
+npm run tempo:partie  # Tempo im Gefecht messen: KI-Partie bis Minute 25, sichtbares Chrome mit Grafikkarte, rund fuenf Minuten (MINUTE, JE, ZOOM, NAH)
 npm run e2e:daten     # nur die Browserfaelle, die "alles aus den Daten" aufstellen - nach jedem neuen Eintrag in daten.js
 npm run pruefstand:vergleich          # KI gegen KI: Arbeitsstand neben HEAD, dieselben Partien (--saetze 2: 1-20 und 21-40)
 npm run pruefstand:vergleich -- --probe probe.cjs --saetze 3  # Austauschprobe: eine Methode nur im Arbeitsstand ersetzt, 60 Startwerte
@@ -180,7 +181,7 @@ Umfang hinzufügt, dort nachsehen.
 
 ## Stand
 
-**553 von 675 Kriterien fertig.** 938 Tests ohne Browser und 14 ganze Partien, 296 im Browser. Die
+**558 von 680 Kriterien fertig.** 943 Tests ohne Browser und 14 ganze Partien, 303 im Browser. Die
 Übersicht ist der Bericht: `npm run qa:report`.
 
 Gebaut ist der Unterbau: Räume, Übertragung, Karte, Wegfindung, Sammeln,
@@ -199,8 +200,8 @@ Gemessen: **3,10 Tore je Spiel, 48 % Heimsiege, 21 % Unentschieden**
 (Bundesliga: 3,1 / 44 % / 24 %); der Favorit gewinnt 64 %. Über sechs Saisons
 ohne Menschen null Widersprüche in den Spielen, Kader, Stärke und Markt
 stabil. Eine Saison rechnet in rund 400 ms, ein Spielstand ist nach zwei
-Saisons unter 1 MB. Der Browserlauf dauert rund 31
-Minuten für 292 Fälle (`npm run e2e:laufzeiten` zeigt, wo; die langsamsten
+Saisons unter 1 MB. Der Browserlauf dauert rund 36
+Minuten für 303 Fälle (`npm run e2e:laufzeiten` zeigt, wo; die langsamsten
 Fälle sind `fahrplan AC-24` mit 108 s, zwei gegen zwei bis zur Tafel,
 `fahrplan AC-14` mit 90 s, die Ritterzeit am Stück, und `fahrplan AC-12`
 mit 84 s, eine ganze Partie gegen die KI).
@@ -795,6 +796,29 @@ einer gerenderten Tafel** (`geschoss`, darstellung AC-28) — der gezeichnete
 Strich bleibt der Rückfall. **Offen:** ob Chrome im Vollbild `Strg`+Ziffer
 hergibt (bedienung AC-73, `in-qa`), das Baumenü auf zwei Seiten (AC-64) und
 alles an der KI.
+
+**Rückmeldungen vom 2026-11-17** (Punkte 45 bis 58; welche warten, steht im
+Steuerstand). **Ein Gefecht stockt nicht mehr** (darstellung AC-30): die
+Figuren kommen aus **verkleinerten Tafeln** — je Tafelbild und Zellgröße
+eine Fassung, die `createImageBitmap` abseits des Hauptfadens verkleinert
+(`public/bilder.js`: `atlantenEin`, `atlasHolen`; Grenze 80 Mio. Bildpunkte)
+—, die **Umrisse** Verdeckter entstehen auf einem Blatt
+(`ansicht.umrisseZeichnen`, `gebaeudeAlsMaske`), und hat ein Bild acht
+Millisekunden lang neue Figurenbilder gezeichnet, bleibt jede weitere Figur
+für dieses Bild in der **Haltung von eben** (`Bildspeicher.haltungsfrist`).
+Gemessen mit Grafikkarte (`npm run tempo:partie`): im Gefecht 60 statt 34
+Bilder je Sekunde, `zeichnen()` 4,0 statt 24,4 ms; im Browserlauf ein bis
+zwei Bilder über 50 ms in zehn Sekunden statt sieben. Auf den Rechnern der
+Spieler ist es nicht gemessen. **Wer aus einer Leinwand liest, nachdem er
+sie geändert hat, kopiert sie ohne Grafikkarte ganz** — erst alles
+schreiben, dann lesen. Im Browserlauf trennt die Zahl der Bilder über
+50 ms, nicht der längste Abstand. **Wer schlägt, schaut aufs Ziel, und wer
+fällt, fällt vom Schlag weg** (bedienung AC-76; die Richtung schickt der
+Server als `zr`); **der Pfeil kommt erst nach dem Spannen** und ist kleiner
+(AC-79, `ERSTSCHLAG_VOR`, `PFEIL_MASS`); **im Spielbild lässt sich kein Text
+markieren** (AC-77); **Geräusche und Musik haben je einen Schieber im
+Menü** (AC-78), und an der Abschlusstafel steht der Weg in den Vorraum
+(AC-66).
 
 1. **Stufe A** Dunkle Zeit mit Wirtschafts-KI und Prüfstand · **B** Feudalzeit
    · **C** Partieende und KI-Gegner · **D** Ritterzeit · **E** fünf Häuser ·

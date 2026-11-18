@@ -204,3 +204,218 @@ test.describe('Kampf im Bild', () => {
     }
   });
 });
+
+// Rueckmeldung des Benutzers (2026-11-17): "Die Richtung in die ein Soldat
+// schlaegt, ist meist nicht die, in die er wirklich jemandem weh tut. auch
+// umfallen tun sie nur in eine richtug meistens" - und: "Auch bei den
+// Bogenschuetzen, der erste Pfeil kommt bevor sie den Bogen ziehen."
+test.describe('Schlag und Ziel', () => {
+  test.describe.configure({ mode: 'serial' });
+  let partie;
+
+  test.beforeAll(async ({ browser }, info) => {
+    partie = await partieZuZweit(browser, info, { sicht: 'aufgedeckt' });
+  });
+  test.afterAll(() => partieBeenden(partie));
+
+  /** Die Einheit dieser Art und dieses Besitzers, die dem Platz am naechsten steht - sobald es sie gibt. */
+  const finden = (seite, art, eigen, ort) => seite.evaluate(async ({ art, eigen, ort }) => {
+    const a = window.ansicht;
+    const k = a.werte.einheiten[art].kuerzel;
+    const suchen = () => [...a.nachher.values()]
+      .filter((e) => e.k === k && !e.s && (e.b === a.ich) === eigen && Math.hypot(e.x - ort.x, e.y - ort.y) < 3)
+      .sort((l, r) => Math.hypot(l.x - ort.x, l.y - ort.y) - Math.hypot(r.x - ort.x, r.y - ort.y))[0];
+    while (!suchen()) await new Promise((weiter) => setTimeout(weiter, 50));
+    const e = suchen();
+    return { i: e.i, x: e.x, y: e.y };
+  }, { art, eigen, ort });
+
+  // Die Zeile der Tafel, in der eine Figur von hier nach dort schaut: 0 zum
+  // Betrachter, 2 nach rechts, 4 von ihm weg, 6 nach links. Auf dem Schirm
+  // liegt (dx, dy) der Karte bei (dx - dy, (dx + dy) / 2).
+  const zeileNach = (von, nach) => {
+    const dx = nach.x - von.x;
+    const dy = nach.y - von.y;
+    const winkel = (Math.atan2(dx + dy, dx - dy) * 180) / Math.PI;
+    return ((Math.round((90 - winkel) / 45) % 8) + 8) % 8;
+  };
+  const abstand = (l, r) => Math.min((l - r + 8) % 8, (r - l + 8) % 8);
+
+  test('bedienung AC-76: wer schiesst, schaut auf sein befohlenes Ziel, auch wenn ein anderer Gegner naeher steht - und wer faellt, liegt zu dem hin, der ihn traf', async ({}, info) => {
+    const { anna, code } = partie;
+    await anna.waitForFunction(() => window.ansicht && window.ansicht.nachher.size > 0);
+    await zeitraffer(anna, code, 1);
+    const basis = await anna.evaluate(() => window.ansicht.spieler.get(window.ansicht.ich).basis);
+    const ort = { x: basis.x + 1, y: basis.y + 10 };
+    // Zwei Rammen von Bert: sie schlagen nicht zurueck und halten Pfeile lange aus.
+    expect(await einheitenAufstellen(anna, code, 'Anna', 1, { ...ort, art: 'bogenschuetze' })).toBe(1);
+    expect(await einheitenAufstellen(anna, code, 'Bert', 1, { x: ort.x - 2, y: ort.y, art: 'ramme' })).toBe(1);
+    expect(await einheitenAufstellen(anna, code, 'Bert', 1, { x: ort.x + 5, y: ort.y, art: 'ramme' })).toBe(1);
+    const schuetze = await finden(anna, 'bogenschuetze', true, ort);
+    const nah = await finden(anna, 'ramme', false, { x: ort.x - 2, y: ort.y });
+    const fern = await finden(anna, 'ramme', false, { x: ort.x + 5, y: ort.y });
+    expect(Math.hypot(nah.x - schuetze.x, nah.y - schuetze.y), 'die eine Ramme steht naeher').toBeLessThan(Math.hypot(fern.x - schuetze.x, fern.y - schuetze.y));
+    await anna.evaluate(({ o }) => {
+      const a = window.ansicht;
+      a.kamera.zoom = 2;
+      a.blickAuf(o.x + 1, o.y);
+    }, { o: ort });
+
+    // Das befohlene Ziel bleibt das Ziel (kampf AC-25) - und dorthin schaut er.
+    await anna.evaluate(({ id, ziel }) => window.ansicht.befehlSenden([id], { x: Math.round(ziel.x), y: Math.round(ziel.y) }, false), { id: schuetze.i, ziel: fern });
+    const lage = await anna.evaluate(({ id, zielId }) => new Promise((fertig, geplatzt) => {
+      const a = window.ansicht;
+      const beginn = performance.now();
+      let schuesse = 0;
+      let zuletzt;
+      const bild = () => {
+        const e = a.nachher.get(id);
+        const z = a.nachher.get(zielId);
+        if (e?.sl !== undefined && e.sl !== zuletzt) {
+          zuletzt = e.sl;
+          schuesse += 1;
+        }
+        // Nach dem zweiten Schuss: der erste kann noch der auf die nahe sein.
+        if (schuesse >= 2 && e.zr !== undefined && a.richtungen.get(id) !== undefined) {
+          fertig({ zr: e.zr, zeile: a.richtungen.get(id), ich: { x: e.x, y: e.y }, ziel: { x: z.x, y: z.y } });
+          return;
+        }
+        if (performance.now() - beginn > 25_000) geplatzt(new Error('der Bogenschuetze schiesst nicht'));
+        else requestAnimationFrame(bild);
+      };
+      requestAnimationFrame(bild);
+    }), { id: schuetze.i, zielId: fern.i });
+    // Der Server nennt die Richtung als Achtel der Karte, das Bild nimmt die Zeile dazu.
+    expect(lage.zeile, 'die Zeile der Tafel ist die Richtung des Servers').toBe((((1 - lage.zr) % 8) + 8) % 8);
+    expect(abstand(lage.zeile, zeileNach(lage.ich, lage.ziel)), 'er schaut zur befohlenen Ramme').toBeLessThanOrEqual(1);
+    expect(abstand(lage.zeile, zeileNach(lage.ich, nah)), 'und nicht zur naeheren').toBeGreaterThanOrEqual(2);
+    expect(await figurenFrei(anna)).toEqual([]);
+    await nachweis(anna, {
+      spec: BEDIENUNG,
+      ac: 'AC-76',
+      titel: 'Annas Bogenschütze schießt auf die befohlene Ramme und schaut dorthin - die andere steht näher, auf seiner anderen Seite',
+      test: info,
+    });
+
+    // Wer faellt: ein Ritter erschlaegt einen Dorfbewohner.
+    const platz = { x: ort.x, y: ort.y + 7 };
+    expect(await einheitenAufstellen(anna, code, 'Anna', 1, { ...platz, art: 'ritter' })).toBe(1);
+    expect(await einheitenAufstellen(anna, code, 'Bert', 1, { x: platz.x + 3, y: platz.y, art: 'dorfbewohner' })).toBe(1);
+    const ritter = await finden(anna, 'ritter', true, platz);
+    const opfer = await finden(anna, 'dorfbewohner', false, { x: platz.x + 3, y: platz.y });
+    await anna.evaluate(({ id, ziel }) => window.ansicht.befehlSenden([id], { x: Math.round(ziel.x), y: Math.round(ziel.y) }, false), { id: ritter.i, ziel: opfer });
+    const fall = await anna.evaluate(({ id, ritterId }) => new Promise((fertig, geplatzt) => {
+      const a = window.ansicht;
+      const beginn = performance.now();
+      let taeter = null;
+      const bild = () => {
+        const e = a.nachher.get(id);
+        const r = a.nachher.get(ritterId);
+        if (r && e && !e.s) taeter = { x: r.x, y: r.y, opfer: { x: e.x, y: e.y } };
+        // Gefallen und im Bild schon gedreht.
+        if (e?.s && e.zr !== undefined && a.richtungen.get(id) === (((1 - e.zr) % 8) + 8) % 8) {
+          fertig({ zr: e.zr, zeile: a.richtungen.get(id), taeter });
+          return;
+        }
+        if (performance.now() - beginn > 25_000) geplatzt(new Error(`der Dorfbewohner faellt nicht oder dreht sich nicht: ${JSON.stringify({ s: e?.s, zr: e?.zr, zeile: a.richtungen.get(id) })}`));
+        else requestAnimationFrame(bild);
+      };
+      requestAnimationFrame(bild);
+    }), { id: opfer.i, ritterId: ritter.i });
+    expect(fall.taeter, 'der Ritter stand beim letzten Schlag im Bild').not.toBeNull();
+    expect(abstand(fall.zeile, zeileNach(fall.taeter.opfer, fall.taeter)), 'der Gefallene liegt zum Ritter hin gedreht').toBeLessThanOrEqual(1);
+  });
+
+  test('bedienung AC-79: beim ersten Schuss spannt der Bogenschuetze erst - der Pfeil fliegt, wenn die Sehne los ist', async ({}, info) => {
+    const { anna, code } = partie;
+    const basis = await anna.evaluate(() => window.ansicht.spieler.get(window.ansicht.ich).basis);
+    // Abseits der Rammen von eben; die Ramme hier steht ausser Sicht des Schuetzen.
+    const ort = { x: basis.x + 1, y: basis.y - 10 };
+    expect(await einheitenAufstellen(anna, code, 'Anna', 1, { ...ort, art: 'bogenschuetze' })).toBe(1);
+    expect(await einheitenAufstellen(anna, code, 'Bert', 1, { x: ort.x + 10, y: ort.y, art: 'ramme' })).toBe(1);
+    const schuetze = await finden(anna, 'bogenschuetze', true, ort);
+    const ramme = await finden(anna, 'ramme', false, { x: ort.x + 10, y: ort.y });
+    await anna.evaluate(({ o }) => {
+      const a = window.ansicht;
+      a.kamera.zoom = 2;
+      a.blickAuf(o.x + 6, o.y);
+    }, { o: ort });
+    await anna.waitForTimeout(600);
+    expect(await anna.evaluate((id) => window.ansicht.nachher.get(id).sl, schuetze.i), 'vor dem Befehl schiesst er nicht').toBeUndefined();
+
+    // Bild fuer Bild vom ersten Schuss an: wo steht die Bewegung (0 bereit,
+    // bis 0,5 ausholen, 0,5 die Sehne los), und fliegt schon ein Pfeil? Mit
+    // `anhalten` bleibt das Bild im ersten stehen, in dem der Schuss da ist.
+    const aufnehmen = (anhalten) => anna.evaluate(({ id, zielId, anhalten }) => new Promise((fertig, geplatzt) => {
+      const a = window.ansicht;
+      const ziel = a.nachher.get(zielId);
+      a.befehlSenden([id], { x: Math.round(ziel.x), y: Math.round(ziel.y) }, false);
+      const beginn = performance.now();
+      const bilder = [];
+      const bild = () => {
+        const jetzt = performance.now();
+        const e = a.nachher.get(id);
+        if (e?.sl !== undefined) {
+          // Nur seine Pfeile: der Schuetze aus dem Fall davor schiesst noch.
+          const seine = a.pfeile.filter((p) => Math.hypot(p.x0 - e.x, p.y0 - e.y) < 0.6);
+          const fliegt = seine.filter((p) => jetzt >= p.start).length;
+          bilder.push({ anteil: a.schlagAnteil(e), fliegt, wartet: seine.length - fliegt });
+          if (anhalten) {
+            a.anhalten(true);
+            fertig(bilder);
+            return;
+          }
+          if (fliegt > 0 && bilder.length > 1) {
+            fertig(bilder);
+            return;
+          }
+        }
+        if (jetzt - beginn > 30_000) geplatzt(new Error('der Bogenschuetze schiesst nicht'));
+        else requestAnimationFrame(bild);
+      };
+      requestAnimationFrame(bild);
+    }), { id: schuetze.i, zielId: ramme.i, anhalten });
+
+    const bilder = await aufnehmen(false);
+    // Gemessen beim Bauen: der Pfeil wartet 350 ms, ohne die Regel fliegt er
+    // im ersten Bild, in dem der Schuss da ist.
+    expect(bilder[0].anteil, 'im ersten Bild holt er aus').toBeLessThan(0.5);
+    expect(bilder[0].fliegt, 'und kein Pfeil ist in der Luft').toBe(0);
+    expect(bilder[0].wartet, 'der Pfeil wartet auf die Sehne').toBe(1);
+    const davor = bilder.filter((b) => b.fliegt === 0);
+    expect(davor.length, 'mehrere Bilder lang spannt er').toBeGreaterThanOrEqual(3);
+    for (let i = 1; i < davor.length; i++) expect(davor[i].anteil, 'er holt weiter aus').toBeGreaterThanOrEqual(davor[i - 1].anteil);
+    const flug = bilder.find((b) => b.fliegt > 0);
+    // Der Pfeil wartet nach der Wanduhr, die Bewegung laeuft mit den Takten:
+    // kommt ein Zustand ein paar Millisekunden spaeter, steht sie bei 0,49
+    // statt 0,5. Ein ganzer Takt Verzug waere 0,36.
+    expect(flug.anteil, 'der Pfeil fliegt, wenn die Sehne los ist').toBeGreaterThanOrEqual(0.4);
+    expect(flug.anteil, 'und nicht erst lange danach').toBeLessThan(0.8);
+
+    // Fuer das Bild: zurueck ausser Sicht, noch einmal befohlen - und im
+    // ersten Bild des Schusses bleibt es stehen.
+    await anna.evaluate(({ id, o }) => window.ansicht.befehlSenden([id], { x: o.x, y: o.y }, false), { id: schuetze.i, o: ort });
+    await anna.waitForFunction(({ id, o }) => {
+      const e = window.ansicht.nachher.get(id);
+      return e && e.sl === undefined && Math.hypot(e.x - o.x, e.y - o.y) < 1.5;
+    }, { id: schuetze.i, o: ort }, { timeout: 30_000 });
+    // Die Pfeile von eben sind angekommen (ein Flug dauert unter einer Sekunde).
+    await anna.waitForTimeout(1500);
+    const stand = await aufnehmen(true);
+    expect(stand[0].anteil, 'angehalten im Ausholen').toBeLessThan(0.5);
+    expect(stand[0]).toMatchObject({ fliegt: 0, wartet: 1 });
+    await anna.evaluate((id) => {
+      const a = window.ansicht;
+      const e = a.nachher.get(id);
+      a.blickAuf(e.x + 2, e.y);
+    }, schuetze.i);
+    await anna.waitForTimeout(300);
+    await nachweis(anna, {
+      spec: BEDIENUNG,
+      ac: 'AC-79',
+      titel: 'Der erste Schuss, im Bild angehalten: Annas Bogenschütze spannt den Bogen, sein Pfeil ist noch nicht in der Luft',
+      test: info,
+    });
+    await anna.evaluate(() => window.ansicht.anhalten(false));
+  });
+});

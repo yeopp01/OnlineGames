@@ -2,7 +2,7 @@
 
 **Bereich:** Strategie
 **Kuerzel:** darstellung
-**Stand:** 23/29 fertig · 1 in Arbeit · 1 in QA · 4 offen
+**Stand:** 24/30 fertig · 1 in Arbeit · 1 in QA · 4 offen
 
 ## Zweck
 
@@ -269,11 +269,15 @@ nicht so kindlich gemalt". Die Bauabfolge R1 bis R6 steht im
   des Mangonels kommen aus einer eigenen Tafel (`geschoss`, Skript unter
   `grafik/`): der Pfeil mit Schaft, Eisenspitze und heller Fiederung, in die
   Flugrichtung gedreht; der Stein als kantiger Brocken, der sich im Flug
-  überschlägt, mit einem Fleck Schatten am Boden unter sich. Ein Pfeil wird
-  nie kleiner gezeichnet als bei Zoom 1,2 — darunter wäre der Schaft unter
-  einem Bildpunkt breit. Ohne Tafel (`?bilder=0`) bleibt es bei Strich und
-  Kreis. **Rückmeldung des Benutzers:** „Pfeile sind noch nicht gerendert, da
-  brauchen wir noch was".
+  überschlägt, mit einem Fleck Schatten am Boden unter sich. Der Pfeil ist
+  drei Viertel so groß, wie der Maßstab des Feldes ihn gäbe (`PFEIL_MASS`):
+  bei Zoom 1,5 rund 17 Bildpunkte lang, zwei Fünftel der Höhe einer Figur —
+  vorher 22 und gut die Hälfte. Er wird nie kleiner gezeichnet als mit dem
+  Maßstab 0,3 — darunter wäre der Schaft kaum einen Bildpunkt breit; der
+  Stein bleibt, wie er war. Ohne Tafel (`?bilder=0`) bleibt es bei Strich
+  und Kreis. **Rückmeldung des Benutzers:** „Pfeile sind noch nicht
+  gerendert, da brauchen wir noch was" und, zur Größe: „ich glaube der Pfeil
+  is zu groß".
 - **AC-29** `fertig` **Nebel reicht über die Kante** — Was an der Kante der
   Karte steht, ragt mit Krone oder Dach über sie hinaus. Der Nebel reicht
   deshalb sechs Felder weiter als die Karte (`NEBELRAND` in
@@ -284,6 +288,53 @@ nicht so kindlich gemalt". Die Bauabfolge R1 bis R6 steht im
   einem Baum an der Kante, mit und ohne Nebel gelesen: jeder Bildpunkt der
   Krone jenseits des alten Rands ist gedämpft. **Rückmeldung des Benutzers
   (2026-11-15, mit Bild):** „der baum ist lustigerweise draussen und hell".
+- **AC-30** `fertig` **Gefecht ohne Hänger** — Treffen zwei Heere zwischen
+  Häusern aufeinander, bleibt kein Bild hängen. Drei Dinge sorgen dafür.
+  **Verkleinerte Tafeln:** eine Figur wird im Spiel nicht mehr aus der großen
+  Tafel geschnitten, sondern aus einer Fassung, die der Browser abseits des
+  Bildaufbaus auf die Größe der Zoomstufe verkleinert hat
+  (`createImageBitmap`, `atlasHolen` in `public/bilder.js`); bis sie da ist,
+  steht die Figur in der Größe von eben oder in ihrer Ruhestellung, und das
+  Bild gilt so lange nicht als scharf. Gehalten werden höchstens 80 Millionen
+  Bildpunkte, hinaus geht, was am längsten nicht gebraucht wurde; kann ein
+  Browser nicht verkleinern, schaltet sich der Weg ab und es wird gezeichnet
+  wie vorher. **Umrisse auf einem Blatt:** jede verdeckte Einheit
+  ([Bedienung](bedienung.md) AC-30) hat ihr Feld auf einem gemeinsamen Blatt,
+  aus dem erst gelesen wird, wenn alles darauf steht. **Eine Frist für neue
+  Haltungen:** hat ein Bild des Spiels acht Millisekunden lang neue
+  Figurenbilder gezeichnet, bleibt jede weitere Figur für dieses eine Bild in
+  ihrer Haltung von eben (`haltungsfrist` in `public/bildspeicher.js`); wer
+  noch nie zu sehen war, wird gezeichnet. **Gemessen im Chrome
+  mit Grafikkarte** (1920 × 1080, Partie bei Minute 25, dazu je Seite 40
+  Kampfeinheiten im Dorf; `npm run tempo:partie`), vorher → nachher:
+  im Gefecht 34 → 60 Bilder je Sekunde, `zeichnen()` 24,4 → 4,0 ms je Bild,
+  Bilder über 50 ms 14 → 0 in acht Sekunden (längstes 40 ms); mit 60
+  ausgewählten Einheiten 22 → 60 Bilder je Sekunde, 36,5 → 3,8 ms; nah
+  herangezoomt (Zoom 1,8) vorher Bilder bis 435 ms, jetzt 60 Bilder je
+  Sekunde und in sechzehn Sekunden zwei Bilder über 50 ms (92 ms, gleich
+  nach dem Zoomwechsel). Der Server braucht in derselben Partie je Takt
+  höchstens 5 ms. **Gemessen im Browserlauf** (ohne Grafikkarte, 150 Einheiten im
+  Bild, 35 verdeckt, 33 bis 44 im Kampf, zehn Sekunden vom ersten Schlag
+  an): vorher 57 Bilder je Sekunde mit sieben Bildern über 50 ms und einem
+  von 199 ms, jetzt 58 bis 59 mit einem oder zwei über 50 ms; `zeichnen()`
+  braucht 4,2 bis 4,8 ms je Bild und höchstens 20 bis 24 ms, die Umrisse
+  0,9 ms. Der Test verlangt höchstens sechs Bilder über 50 ms; ohne die
+  verkleinerten Tafeln sind es neun bis zehn, und `zeichnen()` braucht bis
+  76 ms. Ohne die Frist für Haltungen braucht es bis 43 ms und drei- bis
+  siebenmal über 20 statt höchstens zweimal - das fällt an keiner Grenze
+  des Tests, es ist nur gemessen. Die Abstände zwischen zwei Bildern
+  streuen im Browserlauf auch ohne das Spiel: einzelne von 50 bis 130 ms
+  liegen nicht in `zeichnen()`. Die Ursache der Hänger: der
+  Browser entpackt jede Tafel beim ersten Zeichnen auf dem Hauptfaden, im
+  Mittel 25 ms, und ein Gefecht braucht zwanzig auf einmal (Angreifen und
+  Sterben je Art, je mit Maske). **Nicht gemessen:** die Rechner der Spieler,
+  eine Bildpunktdichte über 1, andere Browser als Chrome; die Frist für
+  Haltungen mit Grafikkarte. Der erste Auftritt
+  einer Einheitenart entpackt ihre Tafel weiter einmal auf dem Hauptfaden;
+  Gebäude und Gelände kommen wie bisher aus den großen Tafeln.
+  **Rückmeldung des Benutzers (2026-11-17):** „die Performance, wenn da ein
+  paar mehr Einheiten aufm Spielfeld sind, oder wenn sie kämpfen, die muss
+  unbedingt verbessert werden - erheblich".
 
 **Was der Bildumbau ablöst.** AC-12 („gezeichnet statt flach") und die
 Messungen 1 und 3 aus AC-13 beschreiben eine Zeichnung. Sie bleiben `fertig`,

@@ -35,6 +35,7 @@
     "ausrollen": "node scripts/ausrollen.mjs",
     "sicht": "node scripts/sicht.mjs",
     "tafel": "node scripts/tafel.mjs",
+    "tempo:partie": "node scripts/sicht.mjs --spiel --breite 1920 --hoehe 1080 --kopf --dichte 1 --hafen 4297 --name partie-ende --tun scripts/partie-messen.mjs",
     "ton:messen": "node scripts/ton-messen.mjs",
     "bilder": "node scripts/bilder.mjs",
     "pruefstand:strategie": "node scripts/pruefstand-strategie.mjs",

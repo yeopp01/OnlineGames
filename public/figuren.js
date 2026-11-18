@@ -18,7 +18,7 @@
 // Kante, und nichts Dunkles mehr fast schwarz - Stiefel, Hufe, Schafskoepfe
 // sind dunkles Braun.
 
-import { ablaufZelle, gerendert, zelleZeichnen, zellenRand } from './bilder.js';
+import { ablaufZelle, atlantenAn, atlasErsatz, atlasHolen, gerendert, zelleAusAtlas, zelleZeichnen, zellenRand } from './bilder.js';
 import { Bildspeicher } from './bildspeicher.js';
 
 const HAUT = '#e2b48c';
@@ -1237,8 +1237,11 @@ const SCHRITT_STUFEN = 8;
 // Zehn Millionen Bildpunkte, rund 40 MB: bei Zoom 1 sind das dreitausend
 // Figurenbilder, ganz nah heran fuenfhundert (darstellung AC-27).
 const ZWISCHENSPEICHER = new Bildspeicher('figuren', 10_000_000);
+// Je Figur, Farbe, Richtung und Groesse der Schluessel des Bildes, das zuletzt
+// von ihr gezeichnet wurde - ihre Haltung von eben (darstellung AC-30).
+const HALTUNGEN = new Map();
 
-export function figurBildZeichnen(stift, art, x, y, hoehe, farbe, lage = {}, umriss = false) {
+export function figurBildZeichnen(stift, art, x, y, hoehe, farbe, lage = {}, umriss = false, geliehen = false) {
   if (typeof document === 'undefined') {
     figurZeichnen(stift, art, x, y, hoehe, farbe, lage);
     return;
@@ -1286,6 +1289,46 @@ export function figurBildZeichnen(stift, art, x, y, hoehe, farbe, lage = {}, umr
   const unten = rand ? rand.unten : h * 0.35;
   let bild = ZWISCHENSPEICHER.holen(schluessel, familie);
   if (!bild && ZWISCHENSPEICHER.ersatzZeichnen(stift, familie, x - breite / 2, y - oben, breite, oben + unten)) return;
+  // Hat dieses Bild des Spiels schon genug neue Bilder gezeichnet, bleibt die
+  // Figur fuer dieses eine in der Haltung von eben (darstellung AC-30): im
+  // Browserlauf zeichnete der Anfang eines Gefechts sonst sechzig neue Bilder
+  // in einem, 20 bis 60 ms. Wer noch nie zu sehen war, wird gezeichnet.
+  const sippe = `${h}|${art}|${farbe}|${richtung}|${umriss ? 'u' : ''}|${dichte}`;
+  if (!bild && !geliehen && Bildspeicher.verbraucht > Bildspeicher.haltungsfrist) {
+    const eben = ZWISCHENSPEICHER.ansehen(HALTUNGEN.get(sippe));
+    if (eben) {
+      Bildspeicher.ersetzt += 1;
+      stift.drawImage(eben, Math.round((x - eben.figurBreite / 2) * dichte) / dichte, Math.round((y - eben.figurOben) * dichte) / dichte, eben.width / dichte, eben.height / dichte);
+      return;
+    }
+  }
+  // Gerenderte Figuren kommen im Spiel aus der verkleinerten Tafel
+  // (darstellung AC-30). Ist sie in dieser Groesse noch unterwegs, steht
+  // fuer ein paar Bilder Ersatz da - und das Bild gilt so lange nicht als
+  // scharf, damit kein Bildnachweis den Ersatz festhaelt.
+  let atlas = null;
+  if (!bild && zelle && atlantenAn()) {
+    const massstab = (h / tafel.hoehe) * dichte;
+    atlas = atlasHolen(zelle.quelle, massstab, h);
+    const leihe = atlas || geliehen ? null : atlasErsatz(zelle.quelle, massstab);
+    if (leihe) {
+      // Dieselbe Tafel in der Groesse von eben, gestreckt.
+      Bildspeicher.ersetzt += 1;
+      stift.save();
+      stift.translate(x, y);
+      stift.scale(h / leihe.hoehe, h / leihe.hoehe);
+      figurBildZeichnen(stift, art, 0, 0, leihe.hoehe, farbe, lage, umriss, true);
+      stift.restore();
+      return;
+    }
+    if (!atlas && !geliehen && zelle.quelle !== tafel && (atlasHolen(tafel, massstab, h) || atlasErsatz(tafel, massstab))) {
+      // Von der Tafel dieses Ablaufs gibt es noch nichts: die Figur steht,
+      // bis sie da ist - wie sie steht, solange die Tafel durch das Netz kommt.
+      Bildspeicher.ersetzt += 1;
+      figurBildZeichnen(stift, art, x, y, hoehe, farbe, { blick: lage.blick, richtung: lage.richtung }, umriss);
+      return;
+    }
+  }
   if (!bild) {
     const beginn = performance.now();
     bild = document.createElement('canvas');
@@ -1293,7 +1336,14 @@ export function figurBildZeichnen(stift, art, x, y, hoehe, farbe, lage = {}, umr
     bild.height = Math.ceil((oben + unten) * dichte);
     const s = bild.getContext('2d');
     s.scale(dichte, dichte);
-    if (zelle) {
+    if (atlas) {
+      const massstab = (h / tafel.hoehe) * dichte;
+      zelleAusAtlas(
+        s, atlas, zelle.zeile, zelle.spalte,
+        Math.round((breite / 2) * dichte - zelle.quelle.fuss[0] * massstab), 0,
+        Math.round(zelle.quelle.zelle[0] * massstab), Math.round(zelle.quelle.zelle[1] * massstab), farbe,
+      );
+    } else if (zelle) {
       zelleZeichnen(s, zelle.quelle, zelle.zeile, zelle.spalte, breite / 2, oben, h / tafel.hoehe, farbe);
     } else {
       figurZeichnen(s, art, breite / 2, oben, h, farbe, { ...lage, schritt, arbeit, rest });
@@ -1316,8 +1366,13 @@ export function figurBildZeichnen(stift, art, x, y, hoehe, farbe, lage = {}, umr
       s.fillRect(0, 0, breite, oben + unten);
       s.globalCompositeOperation = 'source-over';
     }
+    // Wo sein Fusspunkt liegt - fuer den, der es als Haltung von eben zeichnet.
+    bild.figurBreite = breite;
+    bild.figurOben = oben;
     ZWISCHENSPEICHER.legen(schluessel, bild, familie, beginn);
   }
+  if (HALTUNGEN.size > 4000) HALTUNGEN.clear();
+  HALTUNGEN.set(sippe, schluessel);
   // Auf ganze Bildpunkte und in Originalgroesse: sonst glaettet der Browser bei
   // jedem Kopieren, und das kostete mit 100 Figuren und 30 Gebaeuden ein
   // Drittel der Bilder je Sekunde (darstellung AC-10, Runde 52).

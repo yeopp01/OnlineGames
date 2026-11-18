@@ -769,3 +769,107 @@ test.describe('Rueckkehr aus dem Vorraum', () => {
     await neu.close();
   });
 });
+
+// Rueckmeldungen aus der Partie zu zweit (2026-11-15): "das PopUp ... am Ende
+// des Spieles, hat jeweils unten nen Button der irgendwie heisst zruück zum
+// Vorraum oder so, aber der tut nichts" - und: "dass der text z.B. bei meinen
+// dorfbewohnern die gebaeudenamen so aussahen, als waeren sie markiert
+// gewesen, so blau schattiert".
+test.describe('Rueckmeldungen aus der Partie zu zweit', () => {
+  test.describe.configure({ mode: 'serial' });
+  let partie;
+
+  test.beforeAll(async ({ browser }, info) => {
+    partie = await partieZuZweit(browser, info, { sicht: 'aufgedeckt' });
+  });
+  test.afterAll(() => partieBeenden(partie));
+
+  test('bedienung AC-77: im Spielbild laesst sich nichts markieren - nicht mit Doppelklick auf den Namen, nicht mit einem Zug von der Karte ueber die Leiste', async ({}, info) => {
+    const { anna } = partie;
+    await anna.waitForFunction(() => window.ansicht?.laeuft && window.ansicht.nachher.size > 0);
+    // Das Dorfzentrum gewaehlt: die Leiste steht voller Text.
+    await anna.evaluate(() => {
+      const a = window.ansicht;
+      const dz = [...a.gebaeude.values()].find((g) => g.b === a.ich && g.art === 'dorfzentrum');
+      a.ausgewaehlt = new Set();
+      a.gewaehltesGebaeude = dz.i;
+      a.beiAuswahl();
+    });
+    const kopf = anna.locator('#auswahlleiste .auswahl-kopf').first();
+    await expect(kopf).toBeVisible();
+    const markiert = () => anna.evaluate(() => String(window.getSelection()));
+
+    // Doppelt und dreifach auf den Namen: sonst waere erst das Wort, dann die Zeile blau.
+    await kopf.dblclick();
+    expect(await markiert(), 'nach dem Doppelklick').toBe('');
+    await kopf.click({ clickCount: 3 });
+    expect(await markiert(), 'nach dem Dreifachklick').toBe('');
+    // Gezogen: in der Leiste begonnen, quer durch sie hindurch.
+    const rand = await anna.locator('#auswahlleiste').boundingBox();
+    await anna.mouse.move(rand.x + 12, rand.y + 12);
+    await anna.mouse.down();
+    await anna.mouse.move(rand.x + rand.width - 12, rand.y + rand.height - 12, { steps: 8 });
+    await anna.mouse.up();
+    expect(await markiert(), 'nach dem Ziehen durch die Leiste').toBe('');
+    // Und von der Karte aus in die Leiste hinein - so zieht man einen Rahmen zu weit.
+    await anna.mouse.move(rand.x + rand.width / 2, rand.y - 220);
+    await anna.mouse.down();
+    await anna.mouse.move(rand.x + rand.width / 2 + 60, rand.y + rand.height / 2, { steps: 8 });
+    await anna.mouse.up();
+    expect(await markiert(), 'nach dem Rahmen bis in die Leiste').toBe('');
+    // Auch die Punkteliste und die Rohstoffe oben.
+    // Die Liste laesst Klicks zur Karte durch - also mit der Maus an ihrem Ort.
+    const punkte = await anna.locator('#punkteliste').boundingBox();
+    await anna.mouse.dblclick(punkte.x + punkte.width / 2, punkte.y + punkte.height / 2);
+    expect(await markiert(), 'nach dem Doppelklick auf die Punkte').toBe('');
+
+    // Das Dorfzentrum wieder gewaehlt (der Rahmen hat die Auswahl geaendert) - fuer das Bild.
+    await anna.evaluate(() => {
+      const a = window.ansicht;
+      const dz = [...a.gebaeude.values()].find((g) => g.b === a.ich && g.art === 'dorfzentrum');
+      a.ausgewaehlt = new Set();
+      a.gewaehltesGebaeude = dz.i;
+      a.beiAuswahl();
+    });
+    await anna.locator('#auswahlleiste .auswahl-kopf').first().dblclick();
+    expect(await markiert()).toBe('');
+    await nachweis(anna, {
+      spec: BEDIENUNG,
+      ac: 'AC-77',
+      titel: 'Nach einem Doppelklick auf den Namen in der Leiste: kein Wort ist blau hinterlegt',
+      test: info,
+    });
+  });
+
+  test('bedienung AC-66: an der Abschlusstafel fuehrt Zurück in den Vorraum mit der Maus dorthin - und bietet keine Rueckkehr mehr an', async ({}, info) => {
+    const { anna, bert } = partie;
+    // Bert gibt auf, die Partie ist vorbei.
+    await bert.locator('#aufgeben').click();
+    await bert.locator('#aufgebenJa').click();
+    await expect(anna.locator('#abschluss')).toBeVisible({ timeout: 15_000 });
+    await expect(anna.locator('#partieende')).toHaveText('Du hast gewonnen');
+    const knopf = anna.locator('#abschlussVorraum');
+    await expect(knopf).toBeVisible();
+    await expect(knopf).toBeInViewport({ ratio: 1 });
+    await nachweis(anna, {
+      spec: BEDIENUNG,
+      ac: 'AC-66',
+      titel: 'Die Abschlusstafel: unter den Zahlen Revanche und Zurück in den Vorraum',
+      test: info,
+    });
+    // Unter dem Zeiger liegt der Knopf, nicht die Karte dahinter: die Tafel
+    // laesst Klicks durch, und der Knopf tat deshalb nichts.
+    const mitte = await knopf.boundingBox();
+    const getroffen = await anna.evaluate(({ x, y }) => document.elementFromPoint(x, y)?.id, { x: mitte.x + mitte.width / 2, y: mitte.y + mitte.height / 2 });
+    expect(getroffen, 'was der Zeiger trifft').toBe('abschlussVorraum');
+    await anna.mouse.click(mitte.x + mitte.width / 2, mitte.y + mitte.height / 2);
+    await expect(anna.locator('#vorraum')).toBeVisible();
+    await expect(anna.locator('#spiel')).toBeHidden();
+    // Die Partie ist vorbei: zurueckzukehren gibt es nichts.
+    await expect(anna.locator('#rueckkehr')).toBeHidden();
+    // Bert sieht seine Tafel weiter, und auch sein Knopf fuehrt hinaus.
+    await expect(bert.locator('#abschluss')).toBeVisible();
+    await bert.locator('#abschlussVorraum').click();
+    await expect(bert.locator('#vorraum')).toBeVisible();
+  });
+});

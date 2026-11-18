@@ -667,9 +667,30 @@ function menueOeffnen() {
   document.getElementById('menueVorraumHinweis').textContent = laeuft
     ? 'Die Partie läuft ohne dich weiter. Ist niemand mehr da, wartet sie 30 Minuten — der Vorraum bietet dir die Rückkehr an.'
     : 'Die Partie ist für dich vorbei.';
+  for (const [was, schieber] of lautSchieber) lautZeigen(was, schieber, was === 'musik' ? ton.musikStaerke : ton.geraeuschStaerke);
   menue.hidden = false;
   window.addEventListener('keydown', menueTaste, true);
   document.getElementById('menueWeiter').focus();
+}
+
+// Die Lautstaerke (bedienung AC-78): zwei Schieber im Menue. Sie stellen,
+// wie laut - ob ueberhaupt, bleiben die zwei Schalter unter "Tasten und Ton".
+const lautSchieber = [
+  ['geraeusche', document.getElementById('lautGeraeusche')],
+  ['musik', document.getElementById('lautMusik')],
+];
+
+function lautZeigen(was, schieber, staerke) {
+  const prozent = Math.round(staerke * 100);
+  schieber.value = String(prozent);
+  document.getElementById(was === 'musik' ? 'lautMusikWert' : 'lautGeraeuscheWert').textContent = `${prozent} %`;
+}
+
+for (const [was, schieber] of lautSchieber) {
+  schieber.addEventListener('input', () => {
+    ton.staerkeSetzen(was, Number(schieber.value) / 100);
+    lautZeigen(was, schieber, was === 'musik' ? ton.musikStaerke : ton.geraeuschStaerke);
+  });
 }
 
 function menueSchliessen() {

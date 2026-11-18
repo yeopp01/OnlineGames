@@ -11,6 +11,9 @@
 //   npm run sicht -- --spiel --tun probe.mjs   (vor dem Bild ein eigenes
 //       Stueck Ablauf: `export default async ({ anna, bert, welt, bild })`,
 //       `bild('name')` schreibt ein weiteres Bild und nennt den Pfad)
+//   npm run sicht -- --spiel --kopf --dichte 1   (ein sichtbares Fenster:
+//       nur so zeichnet Chrome mit der Grafikkarte; `--dichte` setzt die
+//       Bildpunktdichte, 1 wie bei Windows-Skalierung 100 %)
 //
 // Fuer das schnelle Hinsehen beim Zeichnen (Rueckschau nach Runde 10). Die
 // Bilder sind Wegwerfbilder und gehoeren nicht ins Repository - belegt wird
@@ -45,7 +48,11 @@ mkdirSync(ordner, { recursive: true });
 const ziel = join(ordner, `${name}.png`);
 
 const laufend = await starten(HAFEN, { konten: { datei: ':memory:', geheimnis: 's'.repeat(48) } });
-const browser = await chromium.launch();
+// --kopf: mit Fenster und Grafikkarte - ohne rechnet der Browser jedes Bild
+// auf dem Prozessor, und eine Bildrate von dort sagt nichts ueber einen
+// Rechner mit Grafikkarte. --dichte 1.25: die Skalierung von Windows.
+const browser = await chromium.launch({ headless: !argumente.includes('--kopf') });
+const dichte = Number(wert('dichte', 1));
 const fehler = [];
 const beobachten = (blatt) => {
   blatt.on('pageerror', (e) => fehler.push(e.message));
@@ -72,7 +79,7 @@ async function spielbild() {
     const [kname, ...rest] = paar.split('=');
     return { name: kname, value: rest.join('='), domain: 'localhost', path: '/' };
   });
-  const annasFenster = await browser.newContext({ viewport: { width: breite, height: hoehe } });
+  const annasFenster = await browser.newContext({ viewport: { width: breite, height: hoehe }, deviceScaleFactor: dichte });
   await annasFenster.addCookies(kekse);
   const anna = await annasFenster.newPage();
   const bert = await (await browser.newContext({ viewport: { width: breite, height: hoehe } })).newPage();
