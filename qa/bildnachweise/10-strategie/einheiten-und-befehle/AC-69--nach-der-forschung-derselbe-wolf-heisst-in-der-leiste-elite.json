@@ -1,0 +1,10 @@
+{
+  "spec": "10-strategie/einheiten-und-befehle.md",
+  "ac": "AC-69",
+  "titel": "Nach der Forschung: derselbe Wolf heißt in der Leiste Elite-Kriegswolf – 70 statt 55 Leben, 9 statt 7 Angriff, Rüstung 0/1; die Figur bleibt",
+  "datei": "e2e/tests/strategie-hauseinheiten.spec.mjs",
+  "pfad": [
+    "Einheiten aus der Burg",
+    "einheiten AC-69: die Elitestufe steht in der Krone unter der Einheit des eigenen Hauses - und wer schon steht, heisst danach Elite und hat mehr Leben"
+  ]
+}

@@ -1,0 +1,10 @@
+{
+  "spec": "10-strategie/bauen.md",
+  "ac": "AC-56",
+  "titel": "Annas Universität: der Knopf mit dem Kran, darüber die Tafel „Tretkran“ – 300 Nahrung, 200 Holz, Dorfbewohner bauen 20 % schneller, Forschung 50 s",
+  "datei": "e2e/tests/strategie-charakter.spec.mjs",
+  "pfad": [
+    "Verbesserungen mit eigenem Charakter",
+    "bauen AC-56: Tretkran in der Universitaet und Sappeure in der Burg - am Dorfbewohner steht danach „+15 gegen Gebäude“"
+  ]
+}

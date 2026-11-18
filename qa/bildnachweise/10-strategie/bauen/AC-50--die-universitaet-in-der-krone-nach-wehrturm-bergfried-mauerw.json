@@ -1,0 +1,10 @@
+{
+  "spec": "10-strategie/bauen.md",
+  "ac": "AC-50",
+  "titel": "Die Universität in der Krone nach Wehrturm, Bergfried, Mauerwerk und Chemie: Architektur und Belagerungsingenieure mit eigenen Bildern; die Tafel über den Belagerungsingenieuren nennt „Wurfmaschinen: +1 Reichweite“ und „Belagerung: +20 % Schaden an Gebäuden“",
+  "datei": "e2e/tests/strategie-krone-forschung.spec.mjs",
+  "pfad": [
+    "Krone: Stufen und Forschung",
+    "bauen AC-50: Universitaet und Burg der Krone - der Wehrturm wird zum Bergfried mit eigenem Bild, dazu Chemie, Architektur, Belagerungsingenieure und Wehrpflicht"
+  ]
+}

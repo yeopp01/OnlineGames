@@ -1,0 +1,10 @@
+{
+  "spec": "10-strategie/bauen.md",
+  "ac": "AC-47",
+  "titel": "Im Fürstentum mit einer Burg und sonst keinem Gebäude der Zeit: die Tafel über dem Aufstieg zur Krone nennt beide Wege – zwei Gebäude des Fürstentums oder eine Burg –, dazu 1000 Nahrung, 800 Gold und 190 Sekunden",
+  "datei": "e2e/tests/strategie-krone.spec.mjs",
+  "pfad": [
+    "Krone",
+    "bauen AC-47: in die Krone fuehren zwei Gebaeude des Fuerstentums oder eine Burg - die Tafel nennt beide Wege, und die Burg genuegt allein"
+  ]
+}

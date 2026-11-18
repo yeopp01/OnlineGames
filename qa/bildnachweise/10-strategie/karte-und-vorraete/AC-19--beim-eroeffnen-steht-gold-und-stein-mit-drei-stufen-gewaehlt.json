@@ -1,0 +1,10 @@
+{
+  "spec": "10-strategie/karte-und-vorraete.md",
+  "ac": "AC-19",
+  "titel": "Beim Eröffnen steht „Gold und Stein“ mit drei Stufen, gewählt ist „viel (dazu eigene vor dem Dorf)“",
+  "datei": "e2e/tests/spielauswahl.spec.mjs",
+  "pfad": [
+    "Spiel waehlen",
+    "karte AC-19: Gold und Stein stellt man beim Eroeffnen ein - wenig, mittel oder viel, Vorgabe mittel"
+  ]
+}

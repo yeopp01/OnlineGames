@@ -1,0 +1,10 @@
+{
+  "spec": "10-strategie/bauen.md",
+  "ac": "AC-48",
+  "titel": "Die Schmiede in der Krone nach beiden Vorstufen: Hochofen, Armschiene, Plattenpanzer, Plattenrossharnisch und Ringpanzer der Schützen, jede mit eigenem Bild; die Tafel über dem Hochofen nennt 275 Nahrung, 225 Gold, „Infanterie und Kavallerie: +2 Angriff“ und 100 Sekunden",
+  "datei": "e2e/tests/strategie-krone-forschung.spec.mjs",
+  "pfad": [
+    "Krone: Stufen und Forschung",
+    "bauen AC-48: die Schmiede der Krone - Hochofen, Armschiene und drei Ruestungen, jede erst nach ihrer Vorstufe und jede mit eigenem Bild"
+  ]
+}

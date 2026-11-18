@@ -1,0 +1,10 @@
+{
+  "spec": "10-strategie/bauen.md",
+  "ac": "AC-52",
+  "titel": "Annas Markt im Lehen, im Nebel: der Knopf mit der Landkarte, darüber die Tafel „Kartografie“ – 100 Nahrung, 100 Gold, die ganze Karte gilt als erkundet, fremde Einheiten und Gebäude zeigt sie nicht; die Übersichtskarte ist noch fast ganz schwarz",
+  "datei": "e2e/tests/strategie-charakter.spec.mjs",
+  "pfad": [
+    "Kartografie",
+    "bauen AC-52: die Kartografie am Markt deckt die ganze Karte auf - Gelaende, Wald, Gold und Stein, aber kein fremdes Dorf und keinen fremden Namen"
+  ]
+}

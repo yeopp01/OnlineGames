@@ -1,0 +1,10 @@
+{
+  "spec": "10-strategie/bauen.md",
+  "ac": "AC-55",
+  "titel": "Nach den vier Lehren: Annas Mönch gewählt – 45 von 45 Leben, „Bekehrt 12 Felder“ statt neun",
+  "datei": "e2e/tests/strategie-charakter.spec.mjs",
+  "pfad": [
+    "Verbesserungen mit eigenem Charakter",
+    "bauen AC-55: vier Lehren im Kloster - der Moench hat danach 45 Leben, bekehrt aus 12 Feldern und ruht 41 Sekunden"
+  ]
+}

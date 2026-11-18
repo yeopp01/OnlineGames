@@ -1,0 +1,10 @@
+{
+  "spec": "10-strategie/bauen.md",
+  "ac": "AC-49",
+  "titel": "Die Mühle in der Krone nach Pferdekummet und Schwerem Pflug: der Fruchtwechsel mit eigenem Bild, die Tafel darüber nennt 250 Nahrung, 250 Holz, „Jede neue Farm trägt 175 Nahrung mehr“ und 70 Sekunden",
+  "datei": "e2e/tests/strategie-krone-forschung.spec.mjs",
+  "pfad": [
+    "Krone: Stufen und Forschung",
+    "bauen AC-49: Fruchtwechsel in der Muehle und Zweimannsaege im Holzfaellerlager - die dritte Stufe fuer Farm und Holz"
+  ]
+}

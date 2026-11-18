@@ -1,0 +1,10 @@
+{
+  "spec": "10-strategie/bauen.md",
+  "ac": "AC-55",
+  "titel": "Annas Kloster in der Krone: neben dem Mönch vier Lehren – Heiligenschein, Flammenherz, Buch und Sonne –, über dem Buch die Tafel „Buchdruck“: 200 Gold, Mönche bekehren aus 12 statt 9 Feldern",
+  "datei": "e2e/tests/strategie-charakter.spec.mjs",
+  "pfad": [
+    "Verbesserungen mit eigenem Charakter",
+    "bauen AC-55: vier Lehren im Kloster - der Moench hat danach 45 Leben, bekehrt aus 12 Feldern und ruht 41 Sekunden"
+  ]
+}

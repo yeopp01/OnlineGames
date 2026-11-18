@@ -1,0 +1,10 @@
+{
+  "spec": "10-strategie/bauen.md",
+  "ac": "AC-50",
+  "titel": "Annas Turm nach der Verbesserung Bergfried: er heißt in der Leiste Bergfried, hat 750 Leben und einen Angriff mehr als der Wehrturm – und steht mit eigenem Bild da: Hurde, vier Ecktürmchen und ein steiler Helm",
+  "datei": "e2e/tests/strategie-krone-forschung.spec.mjs",
+  "pfad": [
+    "Krone: Stufen und Forschung",
+    "bauen AC-50: Universitaet und Burg der Krone - der Wehrturm wird zum Bergfried mit eigenem Bild, dazu Chemie, Architektur, Belagerungsingenieure und Wehrpflicht"
+  ]
+}

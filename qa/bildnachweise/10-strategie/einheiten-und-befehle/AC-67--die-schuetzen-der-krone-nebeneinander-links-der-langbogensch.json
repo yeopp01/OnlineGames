@@ -1,0 +1,10 @@
+{
+  "spec": "10-strategie/einheiten-und-befehle.md",
+  "ac": "AC-67",
+  "titel": "Die Schützen der Krone nebeneinander: links der Langbogenschütze mit dem mannshohen Bogen, rechts die schwere Armbrust mit Winde und Eisenhut – gewählt die Armbrust: 40 Leben, 12 Angriff, Reichweite 5",
+  "datei": "e2e/tests/strategie-krone-forschung.spec.mjs",
+  "pfad": [
+    "Krone: Stufen und Forschung",
+    "einheiten AC-67: Langbogenschuetze und schwere Armbrust - beide Linien der Schiessanlage bekommen in der Krone ihre Stufe, jede mit eigener Figur"
+  ]
+}

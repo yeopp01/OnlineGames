@@ -1,0 +1,10 @@
+{
+  "spec": "10-strategie/bauen.md",
+  "ac": "AC-53",
+  "titel": "Annas Markt in der Krone: der Knopf mit dem Planwagen, darüber die Tafel „Karawane“ – 200 Nahrung, 200 Gold, Karren: +50 % Tempo, Forschung 40 s",
+  "datei": "e2e/tests/strategie-charakter.spec.mjs",
+  "pfad": [
+    "Verbesserungen mit eigenem Charakter",
+    "bauen AC-53: Blutlinien im Stall und Karawane am Markt - der Ritter hat danach 20 Leben mehr, der Karren faehrt um die Haelfte schneller"
+  ]
+}

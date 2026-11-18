@@ -1,0 +1,10 @@
+{
+  "spec": "10-strategie/einheiten-und-befehle.md",
+  "ac": "AC-68",
+  "titel": "Die Belagerung der Krone: links die Belagerungsramme unter dem langen Schutzdach, rechts der Onager mit dem schweren Wurfarm – gewählt der Onager: 60 Leben, 55 Angriff, Rüstung 0/8, Reichweite 8",
+  "datei": "e2e/tests/strategie-krone-forschung.spec.mjs",
+  "pfad": [
+    "Krone: Stufen und Forschung",
+    "einheiten AC-68: Belagerungsramme und Onager - die Werkstatt tauscht Ramme und Mangonel aus, auch die, die schon stehen"
+  ]
+}

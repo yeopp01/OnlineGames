@@ -1,0 +1,10 @@
+{
+  "spec": "10-strategie/bauen.md",
+  "ac": "AC-54",
+  "titel": "Nach der Brandstiftung: Annas Speerkämpfer gewählt, unter seinen Kampfwerten steht „+15 gegen Kavallerie, +2 gegen Gebäude“",
+  "datei": "e2e/tests/strategie-charakter.spec.mjs",
+  "pfad": [
+    "Verbesserungen mit eigenem Charakter",
+    "bauen AC-54: Brandstiftung und Knappen in der Kaserne - an der Miliz steht danach „+2 gegen Gebäude“, und sie ist ein Zehntel schneller"
+  ]
+}

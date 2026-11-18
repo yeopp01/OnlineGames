@@ -1,0 +1,10 @@
+{
+  "spec": "10-strategie/bauen.md",
+  "ac": "AC-56",
+  "titel": "Nach den Sappeuren: Annas Dorfbewohner gewählt, unter seinen Kampfwerten steht „+15 gegen Gebäude“",
+  "datei": "e2e/tests/strategie-charakter.spec.mjs",
+  "pfad": [
+    "Verbesserungen mit eigenem Charakter",
+    "bauen AC-56: Tretkran in der Universitaet und Sappeure in der Burg - am Dorfbewohner steht danach „+15 gegen Gebäude“"
+  ]
+}

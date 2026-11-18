@@ -1,0 +1,10 @@
+{
+  "spec": "10-strategie/bauen.md",
+  "ac": "AC-53",
+  "titel": "Annas Stall: der Knopf mit dem Blutstropfen, darüber die Tafel „Blutlinien“ – 150 Nahrung, 100 Gold, Kavallerie: +20 Leben, Forschung 50 s",
+  "datei": "e2e/tests/strategie-charakter.spec.mjs",
+  "pfad": [
+    "Verbesserungen mit eigenem Charakter",
+    "bauen AC-53: Blutlinien im Stall und Karawane am Markt - der Ritter hat danach 20 Leben mehr, der Karren faehrt um die Haelfte schneller"
+  ]
+}

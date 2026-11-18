@@ -1,0 +1,10 @@
+{
+  "spec": "10-strategie/einheiten-und-befehle.md",
+  "ac": "AC-66",
+  "titel": "Vier Stufen der Krone in einer Reihe, jede mit eigener Figur: Zweihandkämpfer, Hellebardier, Husar, Kavalier; gewählt der Kavalier: 120 Leben, 12 Angriff, Rüstung 2/2",
+  "datei": "e2e/tests/strategie-krone.spec.mjs",
+  "pfad": [
+    "Krone",
+    "einheiten AC-66: Zweihandkaempfer, Hellebardier, Husar, Kavalier und danach der Paladin - jede Stufe der Krone tauscht ihre Vorstufe aus, auch die, die schon steht"
+  ]
+}

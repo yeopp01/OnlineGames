@@ -1,0 +1,10 @@
+{
+  "spec": "10-strategie/einheiten-und-befehle.md",
+  "ac": "AC-66",
+  "titel": "Nach der zweiten Stufe des Ritters: derselbe Reiter ist ein Paladin auf dem gepanzerten Schimmel – 160 Leben, 14 Angriff, Rüstung 2/3; daneben Zweihandkämpfer, Hellebardier und Husar",
+  "datei": "e2e/tests/strategie-krone.spec.mjs",
+  "pfad": [
+    "Krone",
+    "einheiten AC-66: Zweihandkaempfer, Hellebardier, Husar, Kavalier und danach der Paladin - jede Stufe der Krone tauscht ihre Vorstufe aus, auch die, die schon steht"
+  ]
+}
