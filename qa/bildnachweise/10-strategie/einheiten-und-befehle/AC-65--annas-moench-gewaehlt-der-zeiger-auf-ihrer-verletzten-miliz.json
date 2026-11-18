@@ -1,0 +1,10 @@
+{
+  "spec": "10-strategie/einheiten-und-befehle.md",
+  "ac": "AC-65",
+  "titel": "Annas Mönch gewählt, der Zeiger auf ihrer verletzten Miliz – am Zeiger steht „Heilen“, beide Verletzten tragen ihren Lebensbalken, und er heilt die Miliz statt des Dorfbewohners neben ihm",
+  "datei": "e2e/tests/strategie-moench.spec.mjs",
+  "pfad": [
+    "Moench",
+    "einheiten AC-65: ein Rechtsklick auf die verletzte Miliz - am Zeiger steht \"Heilen\", und der Moench heilt sie statt des Dorfbewohners neben ihm"
+  ]
+}

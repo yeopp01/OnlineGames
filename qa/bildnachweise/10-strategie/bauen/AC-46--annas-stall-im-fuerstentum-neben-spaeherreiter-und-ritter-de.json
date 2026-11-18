@@ -1,0 +1,10 @@
+{
+  "spec": "10-strategie/bauen.md",
+  "ac": "AC-46",
+  "titel": "Annas Stall im Fürstentum: neben Späherreiter und Ritter der Knopf mit dem Hufeisen, darüber die Tafel „Pferdezucht“ – 150 Nahrung, Kavallerie: +10 % Tempo, Forschung 40 s",
+  "datei": "e2e/tests/strategie-pferdezucht.spec.mjs",
+  "pfad": [
+    "Pferdezucht",
+    "bauen AC-46: der Stall erforscht im Fuerstentum die Pferdezucht - die Tafel nennt 10 % Tempo für die Kavallerie, und der Ritter ist danach schneller"
+  ]
+}

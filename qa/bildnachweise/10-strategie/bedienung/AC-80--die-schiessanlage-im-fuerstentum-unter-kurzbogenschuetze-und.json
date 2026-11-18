@@ -1,0 +1,10 @@
+{
+  "spec": "10-strategie/bedienung.md",
+  "ac": "AC-80",
+  "titel": "Die Schießanlage im Fürstentum: unter Kurzbogenschütze und Plänkler steht je ihre Weiterentwicklung mit goldenem Pfeil hinauf, unter dem Armbrustschützen nichts – die Tafel nennt „Weiterentwicklung: Eliteplänkler“",
+  "datei": "e2e/tests/strategie-truppenstufen.spec.mjs",
+  "pfad": [
+    "Weiterentwicklungen in der Leiste",
+    "bedienung AC-80: der Eliteplaenkler steht unter dem Plaenkler, mit einem Pfeil hinauf - und ist er erforscht, bleibt jeder Knopf, wo er war"
+  ]
+}

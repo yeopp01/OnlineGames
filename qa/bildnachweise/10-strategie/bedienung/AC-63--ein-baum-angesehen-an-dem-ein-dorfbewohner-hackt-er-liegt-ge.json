@@ -1,0 +1,10 @@
+{
+  "spec": "10-strategie/bedienung.md",
+  "ac": "AC-63",
+  "titel": "Ein Baum angesehen, an dem ein Dorfbewohner hackt: er liegt, gestrichelter Ring am Fuß, unten „Gefällter Baum“ und wie viel Holz noch daran ist",
+  "datei": "e2e/tests/strategie-ansehen.spec.mjs",
+  "pfad": [
+    "Vorraete ansehen",
+    "bedienung AC-63: ein Klick auf einen Baum zeigt „Baum“ und das Holz, das noch daran ist - und die Zahl faellt, waehrend ein Dorfbewohner hackt"
+  ]
+}

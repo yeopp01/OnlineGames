@@ -1,0 +1,10 @@
+{
+  "spec": "10-strategie/bauen.md",
+  "ac": "AC-45",
+  "titel": "Annas Dorfbewohner hämmert an ihrer beschädigten Kaserne: am Zeiger steht „Reparieren“, ihr Lebensbalken ist noch nicht voll, und oben fehlt schon Holz",
+  "datei": "e2e/tests/strategie-reparieren.spec.mjs",
+  "pfad": [
+    "Reparieren",
+    "bauen AC-45: ein Rechtsklick auf die beschaedigte Kaserne - am Zeiger steht „Reparieren“, ohne Holz eine Absage, dann steigt ihr Leben und das Holz sinkt"
+  ]
+}

@@ -1,0 +1,10 @@
+{
+  "spec": "10-strategie/darstellung.md",
+  "ac": "AC-31",
+  "titel": "Fünf Bäume in einer Reihe: der linke unberührt, daneben vier gefällte – eben gefällt mit ganzem Stamm und Kronenrest, dann der Stamm kürzer, zuletzt Stumpf und Scheite; angesehen ist der vierte, unten „Gefällter Baum“",
+  "datei": "e2e/tests/strategie-gefaellt.spec.mjs",
+  "pfad": [
+    "Gefaellter Baum",
+    "darstellung AC-31: mit dem ersten Stueck Holz liegt der Baum - Stumpf und Stamm in vier Stufen, flach zu treffen, und nach der Rueckkehr liegt er weiter"
+  ]
+}
