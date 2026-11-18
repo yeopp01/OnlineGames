@@ -1,0 +1,10 @@
+{
+  "spec": "10-strategie/einheiten-und-befehle.md",
+  "ac": "AC-48",
+  "titel": "Annas Reihe (Haus Silberfurt): Langschwertkämpfer, der Meuchler im dunklen Umhang und ein Dorfbewohner – gewählt der Meuchler: 35 Leben, 6 Angriff, Rüstung 0/0",
+  "datei": "e2e/tests/strategie-hauseinheiten.spec.mjs",
+  "pfad": [
+    "Meuchler und Wiedergaenger",
+    "einheiten AC-48: den Meuchler bildet nur Haus Silberfurt aus - ein Mann im dunklen Umhang, schwach im Kampf, toedlich fuer Dorfbewohner"
+  ]
+}

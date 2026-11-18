@@ -1,0 +1,10 @@
+{
+  "spec": "10-strategie/einheiten-und-befehle.md",
+  "ac": "AC-44",
+  "titel": "Cems Kaserne (Haus Silberfurt) im Fürstentum: davor der Söldner mit breitem Hut und Streitkolben, über seinem Knopf die Tafel – 64 Gold statt 80, Ausbildung 18 s",
+  "datei": "e2e/tests/strategie-hauseinheiten.spec.mjs",
+  "pfad": [
+    "Einheiten der Haeuser",
+    "einheiten AC-44: den Soeldner bildet jede Kaserne fuer Gold aus - Silberfurt fuer 64 statt 80"
+  ]
+}

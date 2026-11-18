@@ -1,7 +1,7 @@
 {
   "spec": "10-strategie/bauen.md",
   "ac": "AC-38",
-  "titel": "Annas Turm nach der Verbesserung Wehrturm: er heißt in der Leiste Wehrturm, hat 480 Leben mehr (980 von 1500, vorher beschädigt auf 500) und 7 statt 5 Angriff – das Bild ist noch das des Wachturms",
+  "titel": "Annas Turm nach der Verbesserung Wehrturm: er heißt in der Leiste Wehrturm, hat 480 Leben mehr (980 von 1500, vorher beschädigt auf 500) und 7 statt 5 Angriff – und er steht mit eigenem Bild da, höher als der Wachturm",
   "datei": "e2e/tests/strategie-truppenstufen.spec.mjs",
   "pfad": [
     "Truppenstufen",

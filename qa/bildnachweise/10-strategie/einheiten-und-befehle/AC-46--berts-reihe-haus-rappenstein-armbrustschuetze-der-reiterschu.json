@@ -1,0 +1,10 @@
+{
+  "spec": "10-strategie/einheiten-und-befehle.md",
+  "ac": "AC-46",
+  "titel": "Berts Reihe (Haus Rappenstein): Armbrustschütze, der Reiterschütze mit Bogen auf dem Rappen und ein Späherreiter – gewählt der Reiterschütze: 60+15 Leben, 5 Angriff, Rüstung 0/2, Reichweite 5",
+  "datei": "e2e/tests/strategie-hauseinheiten.spec.mjs",
+  "pfad": [
+    "Einheiten aus der Burg",
+    "einheiten AC-46: den Reiterschuetzen bildet nur Haus Rappenstein aus - ein Bogenschuetze auf dem Rappen"
+  ]
+}

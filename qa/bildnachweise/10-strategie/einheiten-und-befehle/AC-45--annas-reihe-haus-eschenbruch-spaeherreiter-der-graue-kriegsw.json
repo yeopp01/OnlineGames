@@ -1,0 +1,10 @@
+{
+  "spec": "10-strategie/einheiten-und-befehle.md",
+  "ac": "AC-45",
+  "titel": "Annas Reihe (Haus Eschenbruch): Späherreiter, der graue Kriegswolf im blauen Geschirr und ein Ritter – gewählt der Wolf: 55 Leben, 7 Angriff, Rüstung 0/1",
+  "datei": "e2e/tests/strategie-hauseinheiten.spec.mjs",
+  "pfad": [
+    "Einheiten aus der Burg",
+    "einheiten AC-45: den Kriegswolf bildet nur Haus Eschenbruch aus - in der Burg, ein Wolf im Geschirr statt eines Reiters"
+  ]
+}

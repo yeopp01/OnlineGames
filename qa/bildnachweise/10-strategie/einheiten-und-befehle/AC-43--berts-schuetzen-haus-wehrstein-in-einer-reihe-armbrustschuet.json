@@ -1,0 +1,10 @@
+{
+  "spec": "10-strategie/einheiten-und-befehle.md",
+  "ac": "AC-43",
+  "titel": "Berts Schützen (Haus Wehrstein) in einer Reihe: Armbrustschütze, der Pavesenschütze hinter dem großen gestreiften Schild und ein Kurzbogenschütze – gewählt der Pavesenschütze: 45 Leben, 4 Angriff, Rüstung 1/4, Reichweite 4",
+  "datei": "e2e/tests/strategie-hauseinheiten.spec.mjs",
+  "pfad": [
+    "Einheiten der Haeuser",
+    "einheiten AC-43: den Pavesenschuetzen bildet nur Haus Wehrstein aus - hinter dem grossen Schild, Ruestung 1/4"
+  ]
+}

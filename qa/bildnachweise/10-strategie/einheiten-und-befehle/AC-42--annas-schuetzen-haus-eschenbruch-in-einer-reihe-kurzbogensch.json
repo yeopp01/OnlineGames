@@ -1,0 +1,10 @@
+{
+  "spec": "10-strategie/einheiten-und-befehle.md",
+  "ac": "AC-42",
+  "titel": "Annas Schützen (Haus Eschenbruch) in einer Reihe: Kurzbogenschütze, Armbrustschütze und der Eibenschütze mit Kapuze und mannshohem Bogen – gewählt der Eibenschütze: 35 Leben, 6 Angriff, Reichweite 6+1",
+  "datei": "e2e/tests/strategie-hauseinheiten.spec.mjs",
+  "pfad": [
+    "Einheiten der Haeuser",
+    "einheiten AC-42: den Eibenschuetzen bildet nur Haus Eschenbruch aus - in der Schiessanlage ab dem Fuerstentum, mit eigener Figur"
+  ]
+}

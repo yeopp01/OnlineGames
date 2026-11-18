@@ -1,0 +1,10 @@
+{
+  "spec": "10-strategie/einheiten-und-befehle.md",
+  "ac": "AC-47",
+  "titel": "Cems Reihe (Haus Wehrstein): Langschwertkämpfer, der Riese mit der Keule und eine Ramme – gewählt der Riese: 180 Leben, 10 Angriff, Rüstung 2/0",
+  "datei": "e2e/tests/strategie-hauseinheiten.spec.mjs",
+  "pfad": [
+    "Einheiten aus der Burg",
+    "einheiten AC-47: den Riesen bildet nur Haus Wehrstein aus - er ueberragt einen Mann um ein Drittel, mit der Keule gegen Gebaeude"
+  ]
+}

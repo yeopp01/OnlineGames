@@ -1,0 +1,10 @@
+{
+  "spec": "10-strategie/kampf.md",
+  "ac": "AC-22",
+  "titel": "Cems Bild im Nebel: sein Dorfbewohner in der Mitte, zwei Felder daneben Annas Meuchler – ihr zweiter Meuchler steht drei Felder auf der anderen Seite, mitten in Cems Sicht, und ist nicht zu sehen",
+  "datei": "e2e/tests/strategie-hauseinheiten.spec.mjs",
+  "pfad": [
+    "Meuchler und Wiedergaenger",
+    "kampf AC-22: einen getarnten Meuchler sieht der Gegner erst auf zwei Felder - der zweite steht in seiner Sicht und fehlt im Bild"
+  ]
+}

@@ -1,0 +1,10 @@
+{
+  "spec": "10-strategie/einheiten-und-befehle.md",
+  "ac": "AC-49",
+  "titel": "Berts Reihe (Haus Distelhag): Langschwertkämpfer, der Wiedergänger – ein Untoter in zerschlissener Rüstung – und ein Speerkämpfer; gewählt der Wiedergänger: 60 Leben, 6 Angriff, Rüstung 1+1 / 0+2",
+  "datei": "e2e/tests/strategie-hauseinheiten.spec.mjs",
+  "pfad": [
+    "Meuchler und Wiedergaenger",
+    "einheiten AC-49: den Wiedergaenger bildet nur Haus Distelhag aus - fuer 30 Gold und einen eigenen Gefallenen"
+  ]
+}
