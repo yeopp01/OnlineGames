@@ -13,6 +13,12 @@
 #
 # Spielerfarbe tragen die Plane und die Decke unter dem Geschirr.
 #
+# Auf dem Heimweg traegt er Gold (einheiten AC-41): auf der Kiste steht dann
+# eine offene Truhe, gehaeuft voll, und auf dem Fass liegen Barren - beides
+# oben auf der Ladung, damit man es aus jeder Richtung sieht. Stehen und
+# Gehen mit Gold liegen in der Teiltafel `g`, wie die Ladungen des
+# Dorfbewohners.
+#
 # Die Tafel: je Zeile eine Blickrichtung wie beim Dorfbewohner, je Spalte ein
 # Bild - erst Stehen, dann acht Bilder Gehen. Im Gehen laeuft das Pferd im
 # Schritt (vier Takte: hinten links, vorn links, hinten rechts, vorn rechts),
@@ -32,6 +38,7 @@ from stoffe import gemustert
 GROESSE = 1.06 / 1.75     # Felder je Meter, wie beim Dorfbewohner
 RICHTUNGEN = 8
 SCHRITTE = 8
+WEG = (0.001, 0.001, 0.001)   # so klein, dass es im Bild fehlt
 
 # Das Pferd.
 PFERD_Y = -0.68           # Mitte des Leibs
@@ -81,6 +88,8 @@ def stoffe():
         'sack': gemustert('sack', ('#8d7f5c', '#a99a72', '#b9ab84'), groesse=45, detail=2, relief=0.35,
                           fugen=0.6, rau=0.95),
         'seil': gemustert('seil', ('#6f5d3a', '#94804f'), groesse=60, detail=2, relief=0.4, rau=0.9),
+        'gold': gemustert('gold', ('#a97a12', '#d9a62c', '#f0cd62'), groesse=30, detail=3, relief=0.3, fugen=0.4,
+                          rau=0.32, metall=0.85),
     }
 
 
@@ -202,6 +211,28 @@ def _karren(s, g, figur):
     for z in (0.03, 0.21):
         quader('kistenleiste', (0.31, 0.27, 0.03), s['balken'], ort=(-0.21, BODEN_VORN + 0.6, boden + z), eltern=k, fase=0.006)
 
+    # Das Gold des Heimwegs: eine offene Truhe auf der Kiste, Barren auf dem Fass.
+    gold = g['gold'] = leer('gold', (0, 0, 0), k)
+    tx, ty, tz = -0.21, BODEN_VORN + 0.6, boden + 0.245
+    quader('truhenboden', (0.36, 0.3, 0.03), s['balken'], ort=(tx, ty, tz + 0.015), eltern=gold, fase=0.006)
+    for x, y, mass in ((-0.17, 0, (0.026, 0.3, 0.17)), (0.17, 0, (0.026, 0.3, 0.17)), (0, -0.14, (0.36, 0.026, 0.17)),
+                       (0, 0.14, (0.36, 0.026, 0.17))):
+        quader('truhenwand', mass, s['quer'], ort=(tx + x, ty + y, tz + 0.085), eltern=gold, fase=0.006)
+    for x in (-0.1, 0.1):
+        quader('truhenband', (0.035, 0.31, 0.175), s['eisen'], ort=(tx + x, ty, tz + 0.086), eltern=gold, fase=0.004)
+    # Der Deckel steht offen nach hinten.
+    quader('truhendeckel', (0.36, 0.03, 0.3), s['quer'], ort=(tx, ty + 0.2, tz + 0.27), drehung=(-0.35, 0, 0), eltern=gold,
+           fase=0.008)
+    kugel('goldhaufen', 0.16, s['gold'], ort=(tx, ty, tz + 0.15), eltern=gold, streckung=(1.0, 0.82, 0.62), teile=14,
+          ringe=8)
+    for x, y, z, r in ((0.07, -0.04, 0.24, 0.05), (-0.08, 0.03, 0.235, 0.055), (0.0, 0.06, 0.25, 0.045),
+                       (-0.02, -0.07, 0.235, 0.045), (0.1, 0.06, 0.22, 0.04)):
+        kugel('goldstueck', r, s['gold'], ort=(tx + x, ty + y, tz + z), eltern=gold, streckung=(1.1, 0.95, 0.7), teile=8,
+              ringe=5)
+    for x, y, z, w in ((-0.25, 0.22, 0.545, 0.3), (-0.15, 0.3, 0.545, -0.5), (-0.2, 0.27, 0.6, 1.2)):
+        quader('barren', (0.2, 0.08, 0.05), s['gold'], ort=(x, BODEN_VORN + y, boden + z), drehung=(0, 0, w), eltern=gold,
+               fase=0.012)
+
     # Die Plane, mit zwei Seilen verzurrt.
     spalten, reihen = 18, 14
     ecken, seiten = [], []
@@ -236,9 +267,11 @@ def bauen():
     return g
 
 
-def stellen(g, ablauf, t=0.0):
-    """Bringt das Gespann in ein Bild eines Ablaufs; t laeuft von 0 bis 1."""
+def stellen(g, ablauf, t=0.0, gold=False):
+    """Bringt das Gespann in ein Bild eines Ablaufs; t laeuft von 0 bis 1.
+    Mit `gold` traegt es die Ladung des Heimwegs."""
     pferd.stellen(g, ablauf, t)
+    g['gold'].scale = (1, 1, 1) if gold else WEG
     rad = RAD_JE_ABLAUF * t if ablauf == 'gehen' else 0.0
     for seite in ('l', 'r'):
         g['rad_' + seite].rotation_euler = (rad, 0, 0)
@@ -272,6 +305,11 @@ def tafel(ziel):
             # Sterben laeuft einmal: das letzte Bild ist das Ende.
             stellen(g, 'sterben', bild / (SCHRITTE - 1))
             blatt.bild(zeile, spalte, teil='sterben')
+        stellen(g, 'stehen', gold=True)
+        blatt.bild(zeile, 0, teil='g')
+        for spalte, schritt in enumerate(schritte):
+            stellen(g, 'gehen', schritt / SCHRITTE, gold=True)
+            blatt.bild(zeile, 1 + spalte, teil='g')
     return blatt.schreiben({
         'art': 'figur',
         'richtungen': len(richtungen),
@@ -282,5 +320,8 @@ def tafel(ziel):
             'stehen': {'spalte': 0, 'bilder': 1},
             'gehen': {'spalte': 1, 'bilder': len(schritte)},
             'sterben': {'spalte': 0, 'bilder': len(sturz), 'einmal': True},
+            # Mit Gold: Stehen und Gehen teilen sich eine Tafel.
+            'stehen_g': {'spalte': 0, 'bilder': 1, 'teil': 'g'},
+            'gehen_g': {'spalte': 1, 'bilder': len(schritte), 'teil': 'g'},
         },
     })

@@ -38,6 +38,36 @@
         141,
         146
       ]
+    },
+    "stehen_g": {
+      "spalte": 0,
+      "bilder": 1,
+      "teil": "g",
+      "bild": "marktkarren-g.webp",
+      "maske": "marktkarren-g-maske.webp",
+      "zelle": [
+        339,
+        233
+      ],
+      "fuss": [
+        140,
+        147
+      ]
+    },
+    "gehen_g": {
+      "spalte": 1,
+      "bilder": 8,
+      "teil": "g",
+      "bild": "marktkarren-g.webp",
+      "maske": "marktkarren-g-maske.webp",
+      "zelle": [
+        339,
+        233
+      ],
+      "fuss": [
+        140,
+        147
+      ]
     }
   }
 }

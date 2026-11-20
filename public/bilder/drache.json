@@ -1,0 +1,58 @@
+{
+  "bild": "drache.webp",
+  "maske": "drache-maske.webp",
+  "zelle": [
+    422,
+    313
+  ],
+  "fuss": [
+    155,
+    222
+  ],
+  "feldbreite": 132,
+  "zeilen": 8,
+  "spalten": 9,
+  "art": "figur",
+  "richtungen": 8,
+  "hoehe": 86,
+  "flughoehe": 78,
+  "ablaeufe": {
+    "stehen": {
+      "spalte": 0,
+      "bilder": 1
+    },
+    "gehen": {
+      "spalte": 1,
+      "bilder": 8
+    },
+    "angreifen": {
+      "spalte": 0,
+      "bilder": 8,
+      "bild": "drache-angreifen.webp",
+      "maske": "drache-angreifen-maske.webp",
+      "zelle": [
+        461,
+        313
+      ],
+      "fuss": [
+        193,
+        224
+      ]
+    },
+    "sterben": {
+      "spalte": 0,
+      "bilder": 8,
+      "einmal": true,
+      "bild": "drache-sterben.webp",
+      "maske": "drache-sterben-maske.webp",
+      "zelle": [
+        422,
+        312
+      ],
+      "fuss": [
+        155,
+        226
+      ]
+    }
+  }
+}

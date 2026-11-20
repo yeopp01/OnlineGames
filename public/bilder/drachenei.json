@@ -1,0 +1,18 @@
+{
+  "bild": "drachenei.webp",
+  "maske": null,
+  "zelle": [
+    240,
+    170
+  ],
+  "fuss": [
+    96,
+    112
+  ],
+  "feldbreite": 132,
+  "zeilen": 1,
+  "spalten": 2,
+  "art": "ei",
+  "liegt": 0,
+  "allein": 1
+}

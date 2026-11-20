@@ -1,5 +1,5 @@
 # Die Baustelle: was auf dem Bauplatz steht, solange ein Gebaeude waechst -
-# je Grundflaeche (1, 2, 3 und 4 Felder im Quadrat) eine Tafel mit vier
+# je Grundflaeche (1 bis 5 Felder im Quadrat) eine Tafel mit vier
 # Spalten, von abgesteckt bis fast fertig.
 #
 #   Spalte 0  abgesteckt: Pfloecke und Schnur, das Fundament hinten begonnen,
@@ -9,7 +9,8 @@
 #   Spalte 2  das Gebaelk steht, die Waende sind halb verbrettert
 #   Spalte 3  die Waende fast zu, darueber die offenen Sparren
 #
-# Die Tafeln heissen baustelle-1 bis baustelle-4; die vier Skripte dieses
+# Die Tafeln heissen baustelle-1 bis baustelle-5 (die letzte fuer das Wunder,
+# bauen AC-51); die fuenf Skripte dieses
 # Namens rufen nur tafel_fuer() hier. Der Wimpel an der vorderen Ecke traegt in
 # jeder Spalte die Farbe des Besitzers.
 
@@ -20,7 +21,7 @@ from formen import kugel, quader
 
 STUFEN = 4
 # Wie hoch die Waende der fertigen Baustelle stehen, je Grundflaeche.
-HOCH = {1: 0.8, 2: 0.85, 3: 1.05, 4: 1.25}
+HOCH = {1: 0.8, 2: 0.85, 3: 1.05, 4: 1.25, 5: 1.45}
 SOCKEL = 0.11
 
 

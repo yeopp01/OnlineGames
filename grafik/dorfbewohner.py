@@ -21,6 +21,7 @@
 import math
 import os
 
+import drachenei
 from formen import aufsetzen, drehkoerper, glied, kugel, leer, quader
 from kette import Tafel, szene_leeren
 from stoffe import einfarbig, gemustert
@@ -29,7 +30,7 @@ GROESSE = 1.06 / 1.75     # Felder je Meter
 RICHTUNGEN = 8
 SCHRITTE = 8
 BILDER = 8                # je Ablauf, der eine eigene Tafel hat
-WAREN = ('h', 'n', 'g', 's')
+WAREN = ('h', 'n', 'g', 's', 'e')
 ZELLE = (224, 176)        # fuer den Hieb und den Sturz; geschrieben wird jede Tafel knapp
 FUSS = (90, 130)
 WEG = (0.001, 0.001, 0.001)   # so klein, dass es im Bild fehlt
@@ -81,7 +82,7 @@ def _kiepe(s, eltern, stoff):
 
 
 def _ladungen(s, g, rumpf):
-    """Die vier Ladungen, alle am Ruecken; zu sehen ist je Bild hoechstens eine."""
+    """Die fuenf Ladungen, alle am Ruecken; zu sehen ist je Bild hoechstens eine."""
     quer = (0, math.pi / 2, 0)
     g['ladung'] = {}
     # Holz: drei Scheite quer, zweimal verschnuert.
@@ -109,6 +110,11 @@ def _ladungen(s, g, rumpf):
         for x, y, z, r in ((0.01, 0, 0.15, 0.09), (0.085, 0.03, 0.13, 0.065), (-0.08, -0.02, 0.13, 0.07),
                            (0, 0.075, 0.13, 0.06), (-0.02, -0.07, 0.14, 0.055)):
             kugel('brocken', r, s[stoff], ort=(x, y, z), eltern=k, streckung=(1.1, 0.9, 0.8), teile=6, ringe=4)
+    # Das Drachenei (einheiten AC-51): es steht in der Kiepe und ragt weit
+    # heraus - dieselbe Schale mit denselben gluehenden Rissen wie am Boden.
+    e = g['ladung']['e'] = leer('ladung_e', (0, 0.27, 0.27), rumpf)
+    _kiepe(s, e, 'leder')
+    drachenei.ei(drachenei.stoffe(), eltern=e, ort=(0, 0, -0.03), hoch=0.4, neigung=(-0.08, 0.05, 0))
 
 
 def bauen():
@@ -210,7 +216,7 @@ def _mischen(a, b, u):
 def stellen(g, ablauf, t=0.0, ladung=None):
     """Bringt die Figur in ein Bild eines Ablaufs; t laeuft von 0 bis 1.
 
-    `ladung`: 'h', 'n', 'g' oder 's' - dann traegt er sie und hat keine Axt.
+    `ladung`: 'h', 'n', 'g', 's' oder 'e' (das Drachenei) - dann traegt er sie und hat keine Axt.
     """
     for name in GELENKE:
         g[name].rotation_euler = (0, 0, 0)

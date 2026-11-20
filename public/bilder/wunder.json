@@ -1,0 +1,17 @@
+{
+  "bild": "wunder.webp",
+  "maske": "wunder-maske.webp",
+  "zelle": [
+    770,
+    621
+  ],
+  "fuss": [
+    318,
+    432
+  ],
+  "feldbreite": 132,
+  "zeilen": 1,
+  "spalten": 1,
+  "art": "gebaeude",
+  "felder": 5
+}

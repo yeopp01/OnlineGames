@@ -439,3 +439,25 @@ def glut(name, hex_wert='#ff7a1e', staerke=6.0):
     flaeche.inputs['Emission Strength'].default_value = staerke
     flaeche.inputs['Roughness'].default_value = 0.8
     return stoff
+
+
+def flammenhuelle(name, hex_wert='#ff4a0c', staerke=1.3):
+    """Der Saum einer Flamme: eine Huelle, von der man nur die Innenseite
+    sieht. Von vorn schaut man durch sie auf den hellen Kern, dahinter und
+    am Rand steht ihre Rueckwand - so hat das Feuer aus jeder Richtung einen
+    gelben Kern und einen roten Saum, ohne dass etwas durchscheinen muss.
+
+    Die Staerke bleibt klein: in der Ansicht 'Standard' wird jeder Kanal bei 1
+    gekappt, und ein Rot mit Staerke 6 steht als Gelb im Bild."""
+    stoff = glut(name, hex_wert, staerke)
+    netz = stoff.node_tree
+    aus = next(k for k in netz.nodes if k.type == 'OUTPUT_MATERIAL')
+    flaeche = aus.inputs['Surface'].links[0].from_node
+    durch = netz.nodes.new('ShaderNodeBsdfTransparent')
+    lage = netz.nodes.new('ShaderNodeNewGeometry')
+    wahl = netz.nodes.new('ShaderNodeMixShader')
+    netz.links.new(lage.outputs['Backfacing'], wahl.inputs['Fac'])
+    netz.links.new(durch.outputs['BSDF'], wahl.inputs[1])
+    netz.links.new(flaeche.outputs[0], wahl.inputs[2])
+    netz.links.new(wahl.outputs['Shader'], aus.inputs['Surface'])
+    return stoff

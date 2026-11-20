@@ -98,9 +98,9 @@ test('darstellung AC-18: jede Rastergrafik unter public/bilder/ steht mit ihrem 
 });
 
 test('darstellung AC-18: ein Bild ohne Eintrag wird beanstandet', () => {
-  const funde = verzeichnisPruefen(gestellt((b) => b.bilddateien.push('drache.webp')));
+  const funde = verzeichnisPruefen(gestellt((b) => b.bilddateien.push('lindwurm.webp')));
   assert.equal(funde.length, 1);
-  assert.match(funde[0], /drache\.webp: Bild ohne Eintrag/);
+  assert.match(funde[0], /lindwurm\.webp: Bild ohne Eintrag/);
   // Auch eine Maske, die niemand nennt, ist ein Bild ohne Eintrag.
   const ohneMaske = verzeichnisPruefen(gestellt((b) => {
     b.verzeichnis.modelle.find((m) => m.name === 'haus').bilder = ['haus.webp'];
@@ -110,9 +110,9 @@ test('darstellung AC-18: ein Bild ohne Eintrag wird beanstandet', () => {
 
 test('darstellung AC-18: ein Eintrag ohne Bild wird beanstandet', () => {
   const funde = verzeichnisPruefen(gestellt((b) => {
-    b.verzeichnis.modelle.push({ name: 'drache', skript: 'haus.py', bilder: ['drache.webp'] });
+    b.verzeichnis.modelle.push({ name: 'lindwurm', skript: 'haus.py', bilder: ['lindwurm.webp'] });
   }));
-  assert.ok(funde.some((f) => /drache: Eintrag ohne Bild/.test(f)), funde.join('\n'));
+  assert.ok(funde.some((f) => /lindwurm: Eintrag ohne Bild/.test(f)), funde.join('\n'));
   // Ein Bild, das von der Platte verschwindet, faellt genauso auf.
   const geloescht = verzeichnisPruefen(gestellt((b) => {
     b.bilddateien = b.bilddateien.filter((d) => d !== 'baum.webp');
@@ -186,7 +186,7 @@ test('darstellung AC-18: npm run bilder rendert, was im Verzeichnis steht - und 
   const alle = bestand.verzeichnis.modelle.map((m) => m.name);
   assert.deepEqual(modelleWaehlen(bestand.verzeichnis), alle);
   assert.deepEqual(modelleWaehlen(bestand.verzeichnis, ['baum']), ['baum']);
-  assert.throws(() => modelleWaehlen(bestand.verzeichnis, ['drache']), /Kein Modell "drache"/);
+  assert.throws(() => modelleWaehlen(bestand.verzeichnis, ['lindwurm']), /Kein Modell "lindwurm"/);
   // Die Kette in Blender liest dieselbe Datei und fuehrt keine zweite Liste.
   const kette = readFileSync(new URL('bilder.py', grafik), 'utf8');
   assert.match(kette, /verzeichnis\.json/);
@@ -315,7 +315,10 @@ test('darstellung AC-28: Pfeil und Stein kommen aus einer Tafel - ein Pfeil, der
   assert.equal(geschoss.zeilen, 1);
   assert.equal(geschoss.pfeil, 0);
   assert.ok(geschoss.steine.length >= 4, 'der Stein ueberschlaegt sich in mehreren Lagen');
-  assert.equal(geschoss.spalten, 1 + geschoss.steine.length);
+  // Dahinter stehen die Gestalten des Drachenfeuers (einheiten AC-52) - eigene Spalten, keine doppelt.
+  const feuer = geschoss.feuer || [];
+  assert.equal(geschoss.spalten, 1 + geschoss.steine.length + feuer.length);
+  assert.ok(feuer.every((s) => s !== geschoss.pfeil && !geschoss.steine.includes(s)));
   assert.ok(!geschoss.steine.includes(geschoss.pfeil));
   assert.equal(geschoss.maske, null, 'ein Geschoss traegt keine Spielerfarbe');
   // Die Spitze des Pfeils liegt auf dem Fusspunkt, der Schaft links davon:

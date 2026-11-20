@@ -172,6 +172,36 @@
         38,
         95
       ]
+    },
+    "stehen_e": {
+      "spalte": 0,
+      "bilder": 1,
+      "teil": "e",
+      "bild": "dorfbewohner-e.webp",
+      "maske": "dorfbewohner-e-maske.webp",
+      "zelle": [
+        139,
+        125
+      ],
+      "fuss": [
+        41,
+        95
+      ]
+    },
+    "gehen_e": {
+      "spalte": 1,
+      "bilder": 8,
+      "teil": "e",
+      "bild": "dorfbewohner-e.webp",
+      "maske": "dorfbewohner-e-maske.webp",
+      "zelle": [
+        139,
+        125
+      ],
+      "fuss": [
+        41,
+        95
+      ]
     }
   }
 }
