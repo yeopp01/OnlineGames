@@ -46,6 +46,9 @@
  * @property {{reichweite: number, je: number, nicht: string[]}} [heilen]
  * @property {{reichweite: number, frueh: number, spaet: number, chance: number, ruhe: number, nicht: string[]}} [bekehren]
  * @property {boolean} [handelt]
+ * @property {{getroffenVon: string[]}} [fliegt] fliegt ohne Wegsuche; getroffen nur von Einheiten dieser Klassen und von Gebaeuden, die schiessen (kampf AC-23)
+ * @property {boolean} [feuer] sein Geschoss ist Feuer, kein Stein - nur fuer das Bild (einheiten AC-52)
+ * @property {boolean} [gerufen] wird nicht ausgebildet, sondern gerufen (bauen AC-35)
  */
 
 /**
@@ -483,6 +486,26 @@ const EINHEITEN = {
     // Pendelt zwischen zwei Maerkten und bringt Gold (einheiten AC-40) - wie
     // viel, steht unter `HANDEL.karren`.
     handelt: true,
+  },
+  // Der Drache (einheiten AC-52, ADR-0014) - statt des Trebuchets. Er wird
+  // nicht ausgebildet, sondern am Kloster gerufen (bauen AC-35, `DRACHE.rufen`);
+  // `kosten` ist der Preis des Rufens, damit er auf der Tafel und in den
+  // Punkten zaehlt wie jede andere Einheit.
+  // Startwerte aus ADR-0014: 500 Leben, Tempo 1,5, Ruestung 2 gegen Pfeile,
+  // Feuer mit Reichweite 3 alle 3 Sekunden auf ein Feld Umkreis, 15 Schaden
+  // an Einheiten, +200 gegen Gebaeude (gegen 7 Fernruestung 208 je Feuer,
+  // rund 69 je Sekunde). Nicht in der ADR und deshalb gesetzt: Sicht 10,
+  // Nahruestung 0 (kein Nahkaempfer trifft ihn, kampf AC-23), das Feuer
+  // fliegt 8 Felder je Sekunde. Es trifft wie der Stein des Mangonels alles
+  // im Umkreis, eigene auch.
+  // `fliegt` ist die Regel aus kampf AC-23: getroffen wird er nur von
+  // Schuetzen - und von Tuermen und Burgen, die gelten als Gebaeude, die
+  // schiessen.
+  drache: {
+    leben: 500, tempo: 1.5, sicht: 10, tragkraft: 0, kosten: { nahrung: 400, gold: 400 }, zeit: 180, kuerzel: 'D',
+    angriff: 15, nahruestung: 0, fernruestung: 2, reichweite: 3, nachladen: 3,
+    flaeche: 1, geschoss: 8, feuer: true, bonus: { gebaeude: 200 },
+    klassen: ['drache'], fliegt: { getroffenVon: ['bogenschuetze'] }, gerufen: true, zeitalter: 2,
   },
 };
 
@@ -1189,6 +1212,9 @@ const KLASSEN = {
   moench: { name: 'Mönche' },
   // Der Marktkarren (einheiten AC-39) - noch greift kein Bonus auf ihn.
   karren: { name: 'Karren' },
+  // Der Drache (einheiten AC-52): fliegt, und nur Schuetzen, Tuerme und
+  // Burgen treffen ihn (kampf AC-23).
+  drache: { name: 'Drachen' },
   gebaeude: { name: 'Gebäude' },
 };
 
@@ -1324,6 +1350,60 @@ const HAEUSER = {
  */
 const REPARATUR = { lebenJeSekunde: 12.5, weitere: 0.5, kostenanteil: 0.5 };
 
+/**
+ * Abruesten (einheiten AC-50, ADR-0014): eine Einheit der Klassen in
+ * `klassen` legt die Waffen ab und wird `wird` - nie umgekehrt, und nie, wer
+ * eine Klasse aus `nie` traegt (der Wiedergaenger ist Infanterie und untot).
+ * Bezahlt wird `kosten` beim Befehl; `sekunden` lang steht sie und arbeitet
+ * nicht. Erstattet wird nichts, auch nicht, wenn ein neuer Befehl die
+ * Lehrzeit abbricht - das ist gesetzt, nicht aus der ADR.
+ *
+ * 40 Nahrung und 20 Sekunden stehen in ADR-0014 (Benutzer, 2026-11-10); sie
+ * sind Startwerte und stehen nicht in docs/strategie/vorlage-aoe2.md.
+ * @type {{ kosten: Record<string, number>, sekunden: number, klassen: string[], nie: string[], wird: string }}
+ */
+const ABRUESTEN = {
+  kosten: { nahrung: 40 },
+  sekunden: 20,
+  klassen: ['infanterie', 'bogenschuetze', 'kavallerie'],
+  nie: ['untot', 'belagerung', 'moench', 'karren'],
+  wird: 'dorfbewohner',
+};
+
+/**
+ * Der Drache ausser seinen Kampfwerten (ADR-0014): Eier, Rufen, Fressen.
+ *
+ * `rufen` (bauen AC-35): ein Kloster mit Ei ruft ihn fuer `kosten`, bezahlt
+ * beim Befehl; die Uhr von `sekunden` laeuft nur, solange `moenche` eigene
+ * Moenche hoechstens `umkreis` Felder vom Rand des Klosters stehen. Aus der
+ * ADR: 400 Nahrung, 400 Gold, 180 Sekunden, fuenf Moenche. Gesetzt: der
+ * Umkreis.
+ *
+ * `fressen` (einheiten AC-54): `nahrungJeSekunde` so viel wie fuenf Bauern
+ * ernten (5 x 0,32, aus der ADR); ist die Nahrung bei null, verliert er
+ * `hungerJeSekunde` Leben - gesetzt: 5, also 100 Sekunden vom vollen Leben
+ * bis zum Fall.
+ *
+ * `ei` (einheiten AC-51): wie nah ein Traeger am Ei stehen muss, um es
+ * aufzuheben, in Feldern - gesetzt.
+ * @type {{
+ *   rufen: { kosten: Record<string, number>, sekunden: number, moenche: number, umkreis: number },
+ *   fressen: { nahrungJeSekunde: number, hungerJeSekunde: number },
+ *   ei: { greifen: number },
+ * }}
+ */
+const DRACHE = {
+  rufen: { kosten: { nahrung: 400, gold: 400 }, sekunden: 180, moenche: 5, umkreis: 3 },
+  fressen: { nahrungJeSekunde: 1.6, hungerJeSekunde: 5 },
+  ei: { greifen: 1.5 },
+};
+
+/** Ob eine Art abruesten kann (einheiten AC-50) - eine Frage der Klassen. */
+function ruestetAb(art) {
+  const klassen = EINHEITEN[art]?.klassen || [];
+  return klassen.some((k) => ABRUESTEN.klassen.includes(k)) && !klassen.some((k) => ABRUESTEN.nie.includes(k));
+}
+
 // Die Gebaeude, die schiessen (bauen AC-29): wer hier einen Angriff hat.
 // Das ist eine Eigenschaft der Art, kein Wert - der Angriff selbst wird nur
 // ueber `welt.gebaeudewert()` gelesen (Waechter), und eine Verbesserung macht
@@ -1332,5 +1412,5 @@ const SCHIESSENDE = new Set(Object.keys(GEBAEUDE).filter((art) => (GEBAEUDE[art]
 
 module.exports = {
   EINHEITEN, SAMMELN, TIERE, GEBAEUDE, VERBESSERUNGEN, ZEITALTER, AUFSTIEGE, KLASSEN, HANDEL, HAEUSER, SCHIESSENDE,
-  BEVOELKERUNG_MAX, SCHLANGE_MAX, STARTAUFSTELLUNG, REPARATUR,
+  BEVOELKERUNG_MAX, SCHLANGE_MAX, STARTAUFSTELLUNG, REPARATUR, ABRUESTEN, ruestetAb, DRACHE,
 };

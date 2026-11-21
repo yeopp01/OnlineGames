@@ -1135,6 +1135,8 @@ canvas.angriffslauf {
 .ware-n { background: #c8323c; border-radius: 50%; }
 .ware-g { background: #e0b43a; }
 .ware-s { background: #9aa0a6; }
+/* Ein Drachenei (einheiten AC-51): dunkel mit gluehendem Rand. */
+.ware-e { background: #3a3330; border-color: #ff9a2e; border-radius: 50% 50% 45% 45% / 60% 60% 40% 40%; }
 /* Gefallene (einheiten AC-49): bleich und rund wie ein Schaedel. */
 .ware-x { background: #d9d4c2; border-radius: 50% 50% 38% 38%; }
 
@@ -1629,6 +1631,28 @@ canvas.angriffslauf {
 .abriss {
   padding: 0.4rem 0.8rem !important;
   color: #ffb4a8 !important;
+}
+
+/* Abruesten (einheiten AC-50): ein Befehl mit Preis, kein Schalter. Die
+   Lehrzeit steht daneben, solange einer lernt. */
+.abruesten {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.3rem;
+}
+
+.abruesten-knopf {
+  flex-direction: row !important;
+  gap: 0.5rem;
+  padding: 0.4rem 0.8rem !important;
+  white-space: nowrap;
+}
+
+.abruesten-lehrzeit {
+  font-size: 0.85rem;
+  color: #eac070;
+  white-space: nowrap;
 }
 
 /* Farmen von selbst neu aussaeen (bauen AC-42): ein Schalter, kein Befehl -
@@ -2165,6 +2189,35 @@ button.leise-knopf {
 .vorraum .einstellungen .feld.breit,
 .warteraum .einstellungen .feld.breit {
   grid-column: span 2;
+}
+
+/* Auf einem Fenster von 768 Bildpunkten Hoehe (spielauswahl AC-23): mit der
+   Einstellung "Drache" sind es fuenf Reihen, und der Knopf stand darunter.
+   Enger nur dort - auf hoeheren Fenstern bleibt die Luft. */
+@media (max-height: 820px) {
+  .vorraum .einstellungen .feld,
+  .warteraum .einstellungen.im-raum .feld,
+  .vorraum .einstellungen button.haupt {
+    margin-bottom: 0.45rem;
+  }
+
+  .vorraum .einstellungen select,
+  .vorraum .einstellungen input,
+  .warteraum .einstellungen.im-raum select,
+  .warteraum .einstellungen.im-raum input {
+    padding-top: 0.42rem;
+    padding-bottom: 0.42rem;
+  }
+
+  /* Der Warteraum dazu mit weniger Rand: sonst ragte die Tafel 20
+     Bildpunkte unter das Fenster, und es rollte. */
+  .tafel.warteraum {
+    padding-block: 1.25rem;
+  }
+
+  .warteraum .raumeinstellungen {
+    margin-bottom: 0.8rem;
+  }
 }
 
 /* Wer nicht Gastgeber ist, liest die Werte - zwei Paare je Zeile, der Wert

@@ -95,13 +95,14 @@ test.describe('Pfeile', () => {
 
   test('darstellung AC-28: Pfeil und Stein kommen aus der gerenderten Tafel - der Pfeil in Flugrichtung gedreht, der Stein mit Schatten am Boden, kein Strich mehr', async ({}, info) => {
     const { anna } = partie;
-    // Die Tafel ist geladen: eine Zeile, der Pfeil und sechs Lagen des Steins.
+    // Die Tafel ist geladen: eine Zeile, der Pfeil, sechs Lagen des Steins
+    // und vier des Feuers, das der Drache speit (einheiten AC-52).
     const tafel = await anna.evaluate(async () => {
       const { gerendert } = await import('./bilder.js');
       const t = gerendert('geschoss');
-      return t && { zeilen: t.zeilen, spalten: t.spalten, pfeil: t.pfeil, steine: t.steine.length };
+      return t && { zeilen: t.zeilen, spalten: t.spalten, pfeil: t.pfeil, steine: t.steine.length, feuer: t.feuer?.length };
     });
-    expect(tafel).toEqual({ zeilen: 1, spalten: 7, pfeil: 0, steine: 6 });
+    expect(tafel).toEqual({ zeilen: 1, spalten: 11, pfeil: 0, steine: 6, feuer: 4 });
 
     // Drei Pfeile an drei Stellen ihrer Bahn und zwei Steine, festgehalten:
     // ein Bildschirmfoto dauert laenger als jeder Flug.

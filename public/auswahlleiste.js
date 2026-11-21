@@ -2101,11 +2101,12 @@ export class Auswahlleiste {
         if (!a.platzieren) a.bauseite = 0;
       }
       const bauplan = this.bauplan(auswahl);
-      const bezahlbar = bauplan.map((e) => this.fehlt(e.kosten)).join('|');
+      // Auch das Abruesten (einheiten AC-50) sagt vorher, was fehlt.
+      const bezahlbar = [...bauplan.map((e) => this.fehlt(e.kosten)), this.fehlt(a.werte.abruesten?.kosten || {})].join('|');
       const einzeln = auswahl.length === 1 ? auswahl[0] : null;
       const schluessel = einzeln
-        ? `e${einzeln.i}:${einzeln.h}:${einzeln.l}:${einzeln.a}:${einzeln.hd}:${einzeln.r}:${bezahlbar}:${a.platzieren?.art}:${a.verbesserungen.length}:${a.bauseite || 0}`
-        : `m${auswahl.map((e) => e.i).join(',')}:${bezahlbar}:${a.platzieren?.art}:${a.bauseite || 0}`;
+        ? `e${einzeln.i}:${einzeln.k}:${einzeln.h}:${einzeln.l}:${einzeln.a}:${einzeln.hd}:${einzeln.r}:${einzeln.ab}:${bezahlbar}:${a.platzieren?.art}:${a.verbesserungen.length}:${a.bauseite || 0}`
+        : `m${auswahl.map((e) => `${e.i}${e.k}${e.ab ? 'a' : ''}`).join(',')}:${bezahlbar}:${a.platzieren?.art}:${a.bauseite || 0}`;
       if (schluessel !== this.gezeigt) {
         this.wurzel.replaceChildren();
         if (einzeln) this.einheitBauen(einzeln, farbe);
@@ -2394,6 +2395,8 @@ export class Auswahlleiste {
     const block = element('div', 'gruppenblock');
     block.append(element('div', 'auswahl-kopf', `${auswahl.length} ausgewählt`), gruppe);
     this.wurzel.append(block);
+    const abruesten = this.abruestenBauen(auswahl);
+    if (abruesten) this.wurzel.append(abruesten);
   }
 
   // Das Baumenue (bedienung AC-25): ein Knopf je Gebaeude, ein Klick beginnt
@@ -2591,7 +2594,8 @@ export class Auswahlleiste {
       if (einheit.l > 0) {
         ladung.dataset.ware = einheit.a;
         ladung.append(element('span', `ware ware-${einheit.a}`), element('span', null, `trägt ${einheit.l} ${WAREN[einheit.a]?.name || ''}`));
-        ladung.append(element('span', 'leise', ` von ${tragkraft}`));
+        // Ein Ei ist ein Stueck, kein Teil der Tragkraft (einheiten AC-51).
+        if (einheit.a !== 'e') ladung.append(element('span', 'leise', ` von ${tragkraft}`));
       } else {
         ladung.append(element('span', 'leise', 'trägt nichts'));
       }
@@ -2599,6 +2603,57 @@ export class Auswahlleiste {
     }
     // Wer handelt, zeigt seine Strecke (einheiten AC-40).
     if (werte[art]?.handelt) w.append(this.streckeZeile(einheit));
+    // Wer die Waffen ablegen kann, bekommt den Knopf (einheiten AC-50).
+    if (einheit.b === this.ansicht.ich) {
+      const abruesten = this.abruestenBauen([einheit]);
+      if (abruesten) w.append(abruesten);
+    }
+  }
+
+  /**
+   * Abruesten (einheiten AC-50): ein Knopf fuer alle Gewaehlten, die es
+   * duerfen, mit dem Preis je Einheit - oder, solange einer lernt, wie lang
+   * noch. Ob jemand darf, sagen die Werte (`ruestetAb`); entschieden wird
+   * auf dem Server.
+   * @param {any[]} auswahl
+   */
+  abruestenBauen(auswahl) {
+    const a = this.ansicht;
+    const regel = a.werte.abruesten;
+    if (!regel) return null;
+    const duerfen = auswahl.filter((e) => e.b === a.ich && !e.s && a.werte.einheiten[a.arten[e.k]]?.ruestetAb);
+    if (!duerfen.length) return null;
+    const lernen = duerfen.filter((e) => e.ab);
+    const bereit = duerfen.filter((e) => !e.ab);
+    const zeile = element('div', 'abruesten');
+    if (lernen.length) {
+      const rest = Math.max(...lernen.map((e) => e.ab));
+      const hinweis = element('span', 'abruesten-lehrzeit', lernen.length === 1
+        ? `Rüstet ab – noch ${rest} s`
+        : `${lernen.length} rüsten ab – noch ${rest} s`);
+      hinweis.id = 'lehrzeit';
+      hinweis.dataset.sekunden = String(rest);
+      zeile.append(hinweis);
+    }
+    if (bereit.length) {
+      const fehlt = this.fehlt(regel.kosten);
+      const knopf = document.createElement('button');
+      knopf.type = 'button';
+      knopf.id = 'abruesten';
+      knopf.className = 'abruesten-knopf';
+      knopf.setAttribute('aria-disabled', fehlt ? 'true' : 'false');
+      if (fehlt) knopf.dataset.fehlt = fehlt;
+      const preis = element('span', 'preis');
+      for (const [r, m] of Object.entries(regel.kosten)) preis.append(element('span', warenklasse(r)), element('span', null, String(m)));
+      knopf.append(element('span', null, bereit.length === 1 ? 'Abrüsten' : `${bereit.length} abrüsten`), preis);
+      knopf.title = `Legt die Waffen ab und wird Dorfbewohner: ${regel.sekunden} Sekunden Lehrzeit, in denen ${bereit.length === 1 ? 'er steht' : 'sie stehen'}. Je Einheit ${Object.entries(regel.kosten).map(([r, m]) => postenText(r, m)).join(', ')}, erstattet wird nichts.`;
+      beimDruecken(knopf, () => {
+        if (fehlt) a.melden(`Zu wenig ${fehlt}.`);
+        else this.senden({ auftrag: 'abruesten', einheiten: bereit.map((e) => e.i) });
+      });
+      zeile.append(knopf);
+    }
+    return zeile;
   }
 
   /**

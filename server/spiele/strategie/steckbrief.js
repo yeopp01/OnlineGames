@@ -129,6 +129,12 @@ module.exports = {
         { wert: 'viel', name: 'viel (dazu eigene vor dem Dorf)' },
       ],
     },
+    // Der Drache statt des Trebuchets (ADR-0014, einheiten AC-52): abgeschaltet
+    // liegen keine Eier auf der Karte, und kein Kloster ruft ihn.
+    {
+      schluessel: 'drache', name: 'Drache', art: 'wahl', vorgabe: 'an',
+      werte: [{ wert: 'an', name: 'an' }, { wert: 'aus', name: 'aus' }],
+    },
     // Ob ein Buendnis waehrend der Partie geloest werden kann (ADR-0013,
     // spielauswahl AC-22). Gelesen wird es erst mit dem Loesen (spielziel AC-21).
     {

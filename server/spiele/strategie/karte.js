@@ -207,6 +207,59 @@ function passt(felder, groesse, erreichbar, form, x, y) {
   return zuFuss;
 }
 
+/**
+ * Wo die Dracheneier liegen (einheiten AC-51): eines je zwei Spieler,
+ * abgerundet, mindestens eines - fern von jedem Start. Gesucht wird auf
+ * Gras mit einem Ring Gras, `rand` Felder vom Kartenrand, von jedem Dorf zu
+ * Fuss erreichbar und den zwei naechsten Doerfern gleich weit (bis auf
+ * `gleich` Felder) - sonst laege es einem naeher als dem anderen. Davon der
+ * Platz, der vom naechsten Dorf am weitesten liegt; ein zweites Ei zaehlt
+ * dabei das erste mit. Ohne Zufall: die Karte bleibt Feld fuer Feld, wie sie
+ * war, und die Eier liegen auch dann fest, wenn der Drache abgeschaltet ist
+ * - die Welt legt sie dann nur nicht hin.
+ *
+ * `rand` und `gleich` sind gesetzt, nicht aus der ADR.
+ */
+const EIER = { rand: 6, gleich: 2 };
+function eierPlaetze(felder, groesse, basen, zuFuss) {
+  const anzahl = Math.max(1, Math.floor(basen.length / 2));
+  const frei = (x, y) => {
+    for (let dy = -1; dy <= 1; dy++) {
+      for (let dx = -1; dx <= 1; dx++) if (felder[(y + dy) * groesse + x + dx] !== GRAS) return false;
+    }
+    return true;
+  };
+  const kandidaten = (gleich) => {
+    const liste = [];
+    for (let y = EIER.rand; y < groesse - EIER.rand; y++) {
+      for (let x = EIER.rand; x < groesse - EIER.rand; x++) {
+        const i = y * groesse + x;
+        if (!zuFuss.every((z) => z[i]) || !frei(x, y)) continue;
+        const weiten = basen.map((b) => Math.hypot(x - b.x, y - b.y)).sort((a, b) => a - b);
+        if (weiten.length > 1 && weiten[1] - weiten[0] > gleich) continue;
+        liste.push({ x, y, weit: weiten[0] });
+      }
+    }
+    return liste;
+  };
+  let liste = kandidaten(EIER.gleich);
+  if (!liste.length) liste = kandidaten(Infinity);
+  const eier = [];
+  for (let n = 0; n < anzahl && liste.length; n++) {
+    let bestes = null;
+    let besteWeite = -1;
+    for (const k of liste) {
+      const weite = Math.min(k.weit, ...eier.map((e) => Math.hypot(k.x - e.x, k.y - e.y)));
+      if (weite > besteWeite) {
+        besteWeite = weite;
+        bestes = k;
+      }
+    }
+    eier.push({ x: bestes.x, y: bestes.y });
+  }
+  return eier;
+}
+
 // Wie oft der Notbehelf gerodet hat - nur fuer Messungen.
 const ZAEHLER = { notbehelf: 0 };
 
@@ -366,7 +419,10 @@ function erzeugen(startwert, anzahlSpieler, einstellungen = {}) {
     }
   });
 
-  return { groesse, felder, basen: basen.map(({ x, y }) => ({ x, y })), vorrat, schafe, fundorte };
+  // Die Dracheneier (einheiten AC-51) - zuletzt, wenn alles andere liegt.
+  const eier = eierPlaetze(felder, groesse, basen, zuFuss);
+
+  return { groesse, felder, basen: basen.map(({ x, y }) => ({ x, y })), vorrat, schafe, fundorte, eier };
 }
 
 // Ein Gebaeude belegt seine Grundflaeche mit dieser Feldart. Die Wegsuche geht
@@ -380,6 +436,6 @@ function begehbar(karte, x, y) {
 
 module.exports = {
   GRAS, WALD, BEERE, WASSER, GOLD, STEIN, BEBAUT, VORRAT, AUSSTATTUNG, WAELDCHEN, FERNE, GRENZE, VORKOMMEN, VORKOMMEN_VORGABE, ZAEHLER, freierPlatz,
-  SCHAFE_JE_BASIS, SCHAF_NAHRUNG,
+  SCHAFE_JE_BASIS, SCHAF_NAHRUNG, EIER,
   erzeugen, begehbar, zufallAus, kartengroesse, GROESSE_MAX,
 };

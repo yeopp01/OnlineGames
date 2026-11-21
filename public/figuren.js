@@ -45,6 +45,8 @@ const WAREN = {
   n: { name: 'Nahrung' },
   g: { name: 'Gold' },
   s: { name: 'Stein' },
+  // Ein Drachenei (einheiten AC-51): die Ladung des Dorfbewohners, der es heimtraegt.
+  e: { name: 'Drachenei' },
 };
 
 function kanaele(farbe) {
@@ -294,6 +296,11 @@ function ladungZeichnen(stift, ware, fein) {
       ellipse(stift, bx, by, 1.15, 1.15, licht(stift, '#c8324a', bx - 1, by - 1, bx + 1, by + 1, 0.25, -0.3), false);
       if (fein) glanz(stift, bx - 0.35, by - 0.4, 0.3, 0.25, 0.7);
     }
+  } else if (ware === 'e') {
+    // Das Drachenei auf dem Ruecken: dunkel, mit gluehenden Rissen.
+    ellipse(stift, -6, -12.5, 3.2, 4.2, licht(stift, '#3a3330', -9, -16.5, -3, -8.5, 0.18, -0.3));
+    strich(stift, [[-7.4, -15.4], [-6.2, -13], [-7, -10.6]], '#ff9a2e', 0.6);
+    if (fein) strich(stift, [[-4.6, -14.6], [-5.4, -12.2]], '#ffb347', 0.5);
   } else if (ware === 'g' || ware === 's') {
     vieleck(stift, [[-9, -13.5], [-2.5, -13.5], [-3.3, -8.5], [-8.2, -8.5]], licht(stift, LEDER, -9, -13.5, -3, -8.5));
     const brocken = ware === 'g' ? '#e8c14a' : '#9aa0a6';
@@ -1130,6 +1137,9 @@ export const FIGUREN = {
   // Meuchler und Wiedergaenger (einheiten AC-48, AC-49): gezeichnet als Soldat.
   meuchler: { name: 'Meuchler', zeichnen: soldat, breite: 1.2, oben: 1.15 },
   wiedergaenger: { name: 'Wiedergänger', zeichnen: soldat, breite: 1.3, oben: 1.2 },
+  // Der Drache (einheiten AC-52): breit wie ein Haus, hoch ueber seinem
+  // Schatten. `stoesst`: er beugt sich nicht als Ganzes vor, er speit.
+  drache: { name: 'Drache', zeichnen: drache, breite: 3, oben: 2.4, stoesst: true },
   // Belagerung (einheiten AC-35): breit statt hoch. `stoesst`: wer rammt,
   // stoesst den Bock vor, statt sich als Ganzes vorzubeugen.
   ramme: { name: 'Ramme', zeichnen: ramme, breite: 1.7, stoesst: true },
@@ -1258,6 +1268,47 @@ function marktkarren(stift, farbe, { schritt = 0, fein = true, haut = HAUT }) {
     }
   }
   ellipse(stift, rx, -4.4, 0.9, 0.95, EISEN_DUNKEL, false);
+}
+
+// ---- Der Drache (einheiten AC-52) ------------------------------------------
+// Nur fuer `?bilder=0` (darstellung AC-17): sein Aussehen kommt aus der Tafel
+// `drache` (grafik/drache.py). Gezeichnet haengt er hoch ueber seinem
+// Schatten, basaltdunkel mit ockerfarbenem Bauch; die aeussere Flughaut
+// traegt die Spielerfarbe, wie im gerenderten Bild.
+const SCHUPPE = '#3b3a3c';
+const BAUCH = '#b88a4a';
+const FLUG = 34;
+function drache(stift, farbe, { schritt = 0, fein = true, arbeit = 0 }) {
+  schatten(stift, 22);
+  stift.save();
+  const hub = Math.sin(schritt) * 1.6;
+  stift.translate(0, -FLUG + hub);
+  const schlag = Math.sin(schritt) * 6;
+  // Die Fluegel: innen dunkles Leder, aussen die Spielerfarbe.
+  for (const seite of [-1, 1]) {
+    const spitze = [seite * 30, -12 - schlag];
+    const mitte = [seite * 16, -9 - schlag * 0.5];
+    vieleck(stift, [[seite * 3, -6], mitte, [seite * 14, 2], [seite * 4, 2]], licht(stift, toenen(LEDER, -0.25), -16, -12, 16, 2, 0.1, -0.2));
+    vieleck(stift, [mitte, spitze, [seite * 26, -2], [seite * 14, 2]], licht(stift, farbe, -30, -14, 30, 2, 0.2, -0.28));
+    if (fein) strich(stift, [[seite * 3, -6], mitte, spitze], toenen(SCHUPPE, -0.2), 0.8);
+  }
+  // Der Schwanz nach hinten, der Leib, der Hals nach vorn oben.
+  strich(stift, [[-4, 0], [-11, 3], [-17, 2.4], [-21, 0]], SCHUPPE, 2.4);
+  ellipse(stift, 0, -2, 7.5, 4.4, licht(stift, SCHUPPE, -7, -6, 7, 2, 0.2, -0.3));
+  ellipse(stift, 0.6, 0.2, 5.6, 2, licht(stift, BAUCH, -5, -1, 6, 2, 0.15, -0.2), false);
+  const vor = arbeit ? Math.max(0, Math.sin(arbeit)) * 2.5 : 0;
+  strich(stift, [[5, -4], [8.5, -8], [11 + vor, -10 + vor]], SCHUPPE, 2.6);
+  ellipse(stift, 12.4 + vor, -10.6 + vor, 2.6, 1.7, licht(stift, SCHUPPE, 10, -12, 15, -9, 0.2, -0.3));
+  if (fein) {
+    strich(stift, [[11.4 + vor, -12], [9 + vor, -14.4]], '#cfc6b0', 0.6);
+    ellipse(stift, 13 + vor, -11.2 + vor, 0.45, 0.45, '#ffb347', false);
+  }
+  // Wer brennt, speit: ein Strahl nach vorn unten.
+  if (arbeit && Math.sin(arbeit) > 0.3) {
+    vieleck(stift, [[14.5 + vor, -10 + vor], [24, -2], [20, 2]], 'rgba(255, 150, 40, 0.85)', false);
+    vieleck(stift, [[14.5 + vor, -10 + vor], [21, -3], [19, -0.5]], 'rgba(255, 230, 140, 0.9)', false);
+  }
+  stift.restore();
 }
 
 const SCHRITT_STUFEN = 8;

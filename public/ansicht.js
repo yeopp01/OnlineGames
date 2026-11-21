@@ -284,6 +284,8 @@ export class Ansicht {
     // es zuletzt stand, und der Takt, bis zu dem sie liegen.
     this.ruinen = [];
     this.tiere = new Map();
+    // Die Dracheneier am Boden, die man sieht (einheiten AC-51): id -> {i, x, y, nest}.
+    this.eier = new Map();
     this.vorraete = { holz: 0, nahrung: 0, gold: 0, stein: 0, bev: 0, raum: 0, gefallene: 0 };
     // Was im letzten Bild in welcher Reihenfolge gezeichnet wurde - fuer den
     // Browserlauf (darstellung AC-7).
@@ -400,6 +402,7 @@ export class Ansicht {
     if (nachricht.ende) this.endeMerken(nachricht.ende);
     if (Number.isInteger(nachricht.t)) this.takt = nachricht.t;
     this.kuendigungenMerken(nachricht.bu);
+    this.eierMerken(nachricht.ei);
 
     // Die Uebersichtskarte malt ihr Gelaende einmal und danach nur bei
     // geaenderten Feldern - eine neue Karte ist die groesste Aenderung, die es
@@ -700,6 +703,7 @@ export class Ansicht {
     // Geaenderte Werte eines Spielers kommen nur, wenn er etwas erforscht hat.
     for (const s of nachricht.spieler) if (s.kw) this.einheitenwerte.set(s.id, s.kw);
     this.kuendigungenMerken(nachricht.bu);
+    this.eierMerken(nachricht.ei);
 
     this.ausMerken(nachricht.spieler);
     this.standMerken(nachricht.spieler);
@@ -2892,6 +2896,8 @@ export class Ansicht {
       if (this.nebelAn && !this.teiltSicht(tier.b) && !this.nebel.sieht(x, y)) continue;
       stehend.push({ tiefe: x + y, x, y, art: 'tier', tier });
     }
+    // Die Eier am Boden (einheiten AC-51): der Server schickt nur, was man sieht.
+    for (const ei of this.eier.values()) stehend.push({ tiefe: ei.x + ei.y, x: ei.x, y: ei.y, art: 'ei', ei });
     const anteil = this.anteil(jetzt);
     for (const einheit of this.nachher.values()) {
       const alt = this.vorher.get(einheit.i);
@@ -2903,7 +2909,7 @@ export class Ansicht {
     }
     // Gleiche Tiefe: der Vorrat zuerst, sonst verschwindet ein Sammler im Baum,
     // vor dem er steht.
-    const rang = { vorrat: 0, gebaeude: 1, tier: 2, einheit: 3 };
+    const rang = { vorrat: 0, ei: 0.5, gebaeude: 1, tier: 2, einheit: 3 };
     // Gleiche Tiefe: ein Gefallener liegt unter den Lebenden (kampf AC-10).
     const stufe = (d) => (d.art === 'einheit' && d.einheit.s ? 2.5 : rang[d.art]);
     stehend.sort((a, b) => a.tiefe - b.tiefe || stufe(a) - stufe(b) || a.x - b.x);
@@ -2931,6 +2937,8 @@ export class Ansicht {
         dingBildZeichnen(stift, ding.feld, p.x, p.y, e, ding.index, (this.fuellung.get(ding.index) || 4) / 4, ding, this.salz, this.fuellung.has(ding.index));
       } else if (ding.art === 'gebaeude') {
         this.gebaeudeBild(ding.gebaeude, p, e, ding.stueck);
+      } else if (ding.art === 'ei') {
+        this.eiZeichnen(stift, ding.ei, p, e);
       } else if (ding.art === 'tier') {
         const spieler = this.spieler.get(ding.tier.b);
         const tierAngesehen = this.siehtAn('t', ding.tier.i);
@@ -3701,6 +3709,44 @@ export class Ansicht {
 
   // `stueck`: bei einem langen Gebaeude der Streifen, der jetzt an der Reihe
   // ist (`gebaeudeMalen`); Balken und Rand kommen mit dem ersten.
+  /** Die Eier am Boden aus dem Zustand (einheiten AC-51) - fehlt `ei`, liegt keines in Sicht. */
+  eierMerken(liste) {
+    this.eier = new Map((liste || []).map(([i, x, y, nest]) => [i, { i, x, y, nest: Boolean(nest) }]));
+  }
+
+  /**
+   * Ein Drachenei (einheiten AC-51): in seiner Mulde, wo die Karte es
+   * hingelegt hat, sonst allein - dort, wo ein Traeger oder ein Drache fiel.
+   * Ohne Tafel ein dunkles Ei mit gluehenden Rissen.
+   */
+  eiZeichnen(stift, ei, p, e) {
+    const tafel = gerendert('drachenei');
+    if (tafel) {
+      zelleZeichnen(stift, tafel, 0, ei.nest ? tafel.liegt : tafel.allein, p.x, p.y, (2 * e) / tafel.feldbreite);
+      return;
+    }
+    const r = e * 0.16;
+    stift.save();
+    stift.fillStyle = 'rgba(0, 0, 0, 0.3)';
+    stift.beginPath();
+    stift.ellipse(p.x + r * 0.4, p.y, r * 1.3, r * 0.5, 0, 0, Math.PI * 2);
+    stift.fill();
+    stift.fillStyle = '#3a3330';
+    stift.beginPath();
+    stift.ellipse(p.x, p.y - r * 1.2, r * 0.9, r * 1.25, 0, 0, Math.PI * 2);
+    stift.fill();
+    stift.strokeStyle = '#ff9a2e';
+    stift.lineWidth = Math.max(1, r * 0.18);
+    stift.beginPath();
+    stift.moveTo(p.x - r * 0.5, p.y - r * 2);
+    stift.lineTo(p.x - r * 0.1, p.y - r * 1.3);
+    stift.lineTo(p.x - r * 0.4, p.y - r * 0.6);
+    stift.moveTo(p.x + r * 0.5, p.y - r * 1.7);
+    stift.lineTo(p.x + r * 0.2, p.y - r * 1.0);
+    stift.stroke();
+    stift.restore();
+  }
+
   gebaeudeBild(gebaeude, p, e, stueck = undefined) {
     const spieler = this.spieler.get(gebaeude.b);
     const stift = this.stift;

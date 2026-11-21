@@ -5,7 +5,7 @@ const karten = require('./karte');
 const { suchen, nachbarfeld, erreichbar, NACHBARN: NACHBARFELDER } = require('./wege');
 const {
   EINHEITEN, SAMMELN, TIERE, GEBAEUDE, VERBESSERUNGEN, ZEITALTER, AUFSTIEGE, KLASSEN, HANDEL, HAEUSER,
-  BEVOELKERUNG_MAX, SCHLANGE_MAX, STARTAUFSTELLUNG, REPARATUR, SCHIESSENDE,
+  BEVOELKERUNG_MAX, SCHLANGE_MAX, STARTAUFSTELLUNG, REPARATUR, SCHIESSENDE, ABRUESTEN, ruestetAb, DRACHE,
 } = require('./daten');
 const { bringt, staerkt, hausBringt } = require('./bringt');
 
@@ -175,6 +175,7 @@ const EINHEIT_NAMEN = {
   riese: 'Den Riesen',
   meuchler: 'Den Meuchler',
   wiedergaenger: 'Den Wiedergänger',
+  drache: 'Den Drachen',
   ramme: 'Die Ramme',
   mangonel: 'Den Mangonel',
   moench: 'Den Mönch',
@@ -275,6 +276,7 @@ function punkteFeld(punkte) {
  * @property {Record<string, string>} [haeuser] je Spieler ein Schluessel aus `HAEUSER` (spielziel AC-17)
  * @property {string} [buendnisse] 'fest' oder 'loesbar' (spielziel AC-21)
  * @property {number} [zeitgrenze] 90 oder 120 Spielminuten (spielziel AC-22)
+ * @property {string} [drache] 'an' oder 'aus' (einheiten AC-52, ADR-0014)
  * @property {number} [tempo] 1, 1.5 oder 2 (spielziel AC-23)
  */
 
@@ -347,6 +349,24 @@ class Welt {
     // Sie schlagen ein, wenn `takte` abgelaufen ist, dort, wo das Ziel beim
     // Abwurf stand.
     this.einschlaege = [];
+    // Der Drache (ADR-0014) ist eine Einstellung beim Eroeffnen (einheiten
+    // AC-52): abgeschaltet liegen keine Eier, und es gibt kein Rufen.
+    this.drachenAn = einstellungen.drache !== 'aus';
+    // Die Dracheneier (einheiten AC-51): jedes an genau einem Ort - am Boden
+    // (`x`, `y`), bei einem Traeger (`traeger`) oder in einem Kloster
+    // (`kloster`). Wo sie liegen, sagt die Karte.
+    // `nest` ist der Platz aus der Karte: dort liegt es in seiner Mulde.
+    /** @type {Map<number, {id: number, x: number, y: number, traeger: number | null, kloster: number | null, nest: {x: number, y: number}}>} */
+    this.eier = new Map();
+    if (this.drachenAn) {
+      // Eigene Nummern, nicht aus `naechsteId`: sonst verschoeben die Eier
+      // die Nummern jeder Einheit und jedes Gebaeudes, und eine Partie der
+      // KI verliefe anders als ohne sie.
+      for (const { x, y } of this.karte.eier || []) {
+        const id = this.eier.size + 1;
+        this.eier.set(id, { id, x, y, traeger: null, kloster: null, nest: { x, y } });
+      }
+    }
     // Das Ende der Partie, sobald es feststeht (spielziel AC-5, AC-20):
     // `{ gewinner, sieger, team, grund, takt }` mit `grund` "eroberung" oder
     // "zeit". `gewinner` sind alle, die gewonnen haben - ein Team samt
@@ -1074,6 +1094,11 @@ class Welt {
       const ty = Math.round(tier.y);
       if (tx >= x0 && tx <= x1 && ty >= y0 && ty <= y1) return false;
     }
+    // Auf einem Ei am Boden baut niemand (einheiten AC-51): darunter liesse
+    // es sich nicht mehr anklicken.
+    for (const ei of this.eier?.values() || []) {
+      if (ei.traeger === null && ei.kloster === null && ei.x >= x0 && ei.x <= x1 && ei.y >= y0 && ei.y <= y1) return false;
+    }
     // Begehbare Gebaeude (Farmen) belegen kein Feld der Karte - sie werden hier
     // eigens ausgeschlossen, damit niemand ueber sie baut.
     for (const gebaeude of this.gebaeude.values()) {
@@ -1697,6 +1722,8 @@ class Welt {
         return this.farmenEinstellen(spielerId, nachricht);
       case 'entlassen':
         return this.entlassen(spielerId, nachricht);
+      case 'abruesten':
+        return this.abruesten(spielerId, nachricht.einheiten);
       default:
         return this.befehl(spielerId, nachricht.einheiten, nachricht.ziel, Boolean(nachricht.angriffslauf),
           Boolean(nachricht.anhaengen));
@@ -2222,9 +2249,13 @@ class Welt {
     // Ein Verletzter unter dem Klick, der keinem Gegner gehoert: wer heilen
     // kann, heilt genau ihn (einheiten AC-65).
     const verletzter = angriffslauf || feind ? null : this.verletzterAn(spielerId, Number(ziel.x), Number(ziel.y));
+    // Ein Ei am Boden, das der Spieler sieht (einheiten AC-51), und ein
+    // eigenes Kloster, in das ein Traeger es bringt.
+    const ei = angriffslauf || feind || sammeln || baustelle || schaf ? null : this.eiAn(spielerId, Number(ziel.x), Number(ziel.y));
+    const kloster = !angriffslauf && baustelle?.fertig && baustelle.art === 'kloster' && baustelle.besitzer === spielerId ? baustelle : null;
     // Ein Gang auf freien Boden laesst sich anhaengen (bedienung AC-14) -
     // alles andere ist ein Befehl wie ohne Umschalt.
-    const nurGehen = !angriffslauf && !sammeln && !baustelle && !feind && !schaf;
+    const nurGehen = !angriffslauf && !sammeln && !baustelle && !feind && !schaf && !ei;
     // Ein Befehl fuer viele (einheiten AC-20): wer geht, bekommt ein eigenes Feld
     // um das Ziel; wer sammelt, einen eigenen Vorrat derselben Art daneben.
     const gruppe = einheitIds.slice(0, 200).map((id) => this.einheiten.get(id)).filter((e) => e && e.besitzer === spielerId);
@@ -2306,6 +2337,18 @@ class Welt {
       // Ein Karren auf einen anderen Markt faehrt die Strecke (einheiten
       // AC-40); ohne eigenen zweiten Markt bleibt es ein Gang.
       if (handelsziel && EINHEITEN[einheit.art].handelt && this.handelBeginnen(einheit, handelsziel)) continue;
+      // Wer ein Ei traegt, traegt nur das Ei (einheiten AC-51): er bringt es
+      // in ein eigenes Kloster oder geht - sammeln, bauen, kaempfen tut er
+      // nicht, sonst laege das Ei im Lager. Wer es holen kann, holt es.
+      if (this.eiVon(einheit)) {
+        if (kloster) this.eiBringenBeginnen(einheit, kloster);
+        else {
+          aufstellung ??= this.aufstellungUm({ x: zx, y: zy }, gruppe.length);
+          this.gangBeginnen(einheit, this.naechstesFreies(einheit, aufstellung) || { x: zx, y: zy }, { x: zx, y: zy }, gebiete);
+        }
+        continue;
+      }
+      if (ei && this.eiHolen(einheit, ei)) continue;
       // Ein Moench bekehrt, wer sich bekehren laesst (einheiten AC-38) - wenn
       // er nicht ruht; sonst geht er nur hin.
       if (!angriffslauf && feind && this.kannBekehren(einheit, feind)) {
@@ -2779,6 +2822,200 @@ class Welt {
     if (!einheit || einheit.besitzer !== spielerId || einheit.tot) return { fehler: 'Das ist nicht deine Einheit.' };
     this.einheitSterben(einheit);
     return {};
+  }
+
+  /**
+   * Abruesten (einheiten AC-50): jede genannte eigene Einheit, die es darf
+   * (`ruestetAb` - eine Frage der Klassen), bezahlt `ABRUESTEN.kosten` und
+   * steht `ABRUESTEN.sekunden` lang: sie arbeitet nicht, wacht nicht und
+   * schlaegt nicht zurueck (`wehren` laesst Waechter aus, die Wache Einheiten
+   * mit Auftrag). Danach ist sie Dorfbewohner (`abruestenTakten`).
+   *
+   * Bezahlt wird je Einheit der Reihe nach: reicht es fuer die dritte nicht,
+   * ruesten zwei ab, und die Absage sagt, was fehlt. Wer schon abruestet,
+   * zahlt nicht zweimal.
+   */
+  abruesten(spielerId, einheitIds) {
+    if (!Array.isArray(einheitIds)) return { fehler: 'Wer soll abrüsten?' };
+    const spieler = this.spielerVon(spielerId);
+    let fehlt = null;
+    let gezahlt = 0;
+    let darf = 0;
+    for (const id of einheitIds.slice(0, 200)) {
+      const einheit = this.einheiten.get(id);
+      if (!einheit || einheit.besitzer !== spielerId || einheit.tot || !ruestetAb(einheit.art)) continue;
+      darf++;
+      if (einheit.auftrag?.art === 'abruesten') continue;
+      fehlt = this.abruestenStarten(einheit);
+      if (fehlt) break;
+      gezahlt++;
+    }
+    if (!darf) return { fehler: 'Nur Fußvolk, Schützen und Reiter können abrüsten.' };
+    if (fehlt && !gezahlt) return { fehler: `Zu wenig ${ROHSTOFF_NAMEN[fehlt]}.` };
+    return {};
+  }
+
+  /**
+   * Die Lehrzeit beginnt: bezahlen, anhalten. `folge` ist der Auftrag danach
+   * - ein Soldat, der fuer ein Ei abruestet, holt es dann (einheiten AC-51).
+   * Gibt zurueck, welcher Rohstoff fehlt, sonst null.
+   */
+  abruestenStarten(einheit, folge = null) {
+    const spieler = this.spielerVon(einheit.besitzer);
+    const fehlt = Object.keys(ABRUESTEN.kosten).find((r) => spieler[r] < ABRUESTEN.kosten[r]);
+    if (fehlt) return fehlt;
+    for (const [r, m] of Object.entries(ABRUESTEN.kosten)) spieler[r] -= m;
+    this.anhalten(einheit);
+    einheit.auftrag = { art: 'abruesten', bis: this.takt + ABRUESTEN.sekunden * TAKTE_PRO_SEKUNDE, ...(folge ? { folge } : {}) };
+    return null;
+  }
+
+  // Alles fallen lassen, was eine Einheit gerade tut - der Weg, die Reihe,
+  // die Arbeit. Eine Ladung bleibt, wie bei jedem neuen Befehl.
+  anhalten(einheit) {
+    this.farmVerlassen(einheit);
+    einheit.weg = [];
+    einheit.wegpunkte = [];
+    einheit.angriffe = [];
+    einheit.angriffslauf = null;
+    einheit.sammelt = false;
+    einheit.baut = false;
+    einheit.bekehrt = false;
+    einheit.heilt = null;
+    einheit.unerreichbar = null;
+  }
+
+  // Die Lehrzeit ist um: aus dem Soldaten wird ein Dorfbewohner (einheiten
+  // AC-50). Das Leben behaelt seinen Anteil - ein halb toter Ritter wird ein
+  // halb toter Dorfbewohner, kein heiler.
+  abruestenTakten(einheit) {
+    if (this.takt < einheit.auftrag.bis) return;
+    const anteil = einheit.leben / this.lebenMax(einheit.besitzer, einheit.art);
+    einheit.art = ABRUESTEN.wird;
+    einheit.leben = Math.max(1, Math.round(anteil * this.lebenMax(einheit.besitzer, einheit.art)));
+    einheit.ladung = 0;
+    einheit.ladungsart = null;
+    einheit.auftrag = einheit.auftrag.folge || null;
+  }
+
+  // ---- Dracheneier (einheiten AC-51) ------------------------------------
+
+  /** Das Ei am Boden hoechstens ein Feld vom Klick, wenn der Spieler es sieht. */
+  eiAn(spielerId, x, y) {
+    for (const ei of this.eier.values()) {
+      if (ei.traeger !== null || ei.kloster !== null) continue;
+      if (Math.hypot(ei.x - x, ei.y - y) <= 1.01 && this.sieht(spielerId, ei.x, ei.y)) return ei;
+    }
+    return null;
+  }
+
+  /** Das Ei, das diese Einheit traegt - oder null. */
+  eiVon(einheit) {
+    for (const ei of this.eier.values()) if (ei.traeger === einheit.id) return ei;
+    return null;
+  }
+
+  /** Wie viele Eier in diesem Kloster liegen. */
+  eierIn(kloster) {
+    let n = 0;
+    for (const ei of this.eier.values()) if (ei.kloster === kloster.id) n++;
+    return n;
+  }
+
+  /**
+   * Ein Ei holen: ein Dorfbewohner geht hin und hebt es auf; wer abruesten
+   * kann, geht hin und ruestet dafuer ab (einheiten AC-50). Alle anderen -
+   * Moench, Ramme, Karren - gehen nur. Gibt zurueck, ob es ein Holen ist.
+   */
+  eiHolen(einheit, ei) {
+    if (einheit.art !== ABRUESTEN.wird && !ruestetAb(einheit.art)) return false;
+    einheit.auftrag = { art: 'ei', ei: ei.id };
+    einheit.weg = this.wegNach(einheit, { x: ei.x, y: ei.y });
+    return true;
+  }
+
+  eiTakten(einheit) {
+    const ei = this.eier.get(einheit.auftrag.ei);
+    // Schon aufgehoben oder im Kloster: dann gibt es nichts mehr zu holen.
+    if (!ei || ei.traeger !== null || ei.kloster !== null) {
+      einheit.auftrag = null;
+      return;
+    }
+    if (Math.hypot(einheit.x - ei.x, einheit.y - ei.y) > DRACHE.ei.greifen) {
+      const weg = this.wegNach(einheit, { x: ei.x, y: ei.y });
+      if (weg.length) einheit.weg = weg;
+      else einheit.auftrag = null;
+      return;
+    }
+    // Ein Soldat ruestet erst ab und hebt es danach auf (einheiten AC-50).
+    if (einheit.art !== ABRUESTEN.wird) {
+      if (this.abruestenStarten(einheit, { art: 'ei', ei: ei.id })) einheit.auftrag = null;
+      return;
+    }
+    // Was er sonst traegt, laesst er fallen: das Ei ist seine Ladung.
+    ei.traeger = einheit.id;
+    einheit.ladung = 1;
+    einheit.ladungsart = 'ei';
+    einheit.angefangen = 0;
+    const kloster = this.naechstesKloster(einheit);
+    if (kloster) this.eiBringenBeginnen(einheit, kloster);
+    else einheit.auftrag = null;
+  }
+
+  /** Das naechste eigene, fertige Kloster - oder null. */
+  naechstesKloster(einheit) {
+    let bestes = null;
+    let weite = Infinity;
+    for (const g of this.gebaeude.values()) {
+      if (g.besitzer !== einheit.besitzer || g.art !== 'kloster' || !g.fertig) continue;
+      const d = this.abstandZu(einheit, g);
+      if (d < weite) {
+        weite = d;
+        bestes = g;
+      }
+    }
+    return bestes;
+  }
+
+  eiBringenBeginnen(einheit, kloster) {
+    einheit.auftrag = { art: 'eiBringen', kloster: kloster.id };
+    einheit.weg = this.wegZurBaustelle(einheit, kloster);
+  }
+
+  eiBringenTakten(einheit) {
+    const ei = this.eiVon(einheit);
+    if (!ei) {
+      einheit.auftrag = null;
+      return;
+    }
+    let kloster = this.gebaeude.get(einheit.auftrag.kloster);
+    if (!kloster || kloster.besitzer !== einheit.besitzer || !kloster.fertig) {
+      kloster = this.naechstesKloster(einheit);
+      if (!kloster) {
+        einheit.auftrag = null;
+        return;
+      }
+      einheit.auftrag.kloster = kloster.id;
+    }
+    if (this.abstandZu(einheit, kloster) > 1.2) {
+      einheit.weg = this.wegZurBaustelle(einheit, kloster);
+      if (!einheit.weg.length) einheit.auftrag = null;
+      return;
+    }
+    ei.traeger = null;
+    ei.kloster = kloster.id;
+    einheit.ladung = 0;
+    einheit.ladungsart = null;
+    einheit.auftrag = null;
+    this.gebaeudeGeaendert(kloster);
+  }
+
+  /** Das Ei liegt hier am Boden - der Traeger fiel, das Kloster stuerzte. */
+  eiAblegen(ei, x, y) {
+    ei.traeger = null;
+    ei.kloster = null;
+    ei.x = Math.round(x);
+    ei.y = Math.round(y);
   }
 
   // Das naechste eigene Tier hoechstens ein Feld vom Klick entfernt.
@@ -3920,6 +4157,9 @@ class Welt {
   // mehr: kein Auftrag, keine Bevoelkerung, kein Ziel fuer einen Angriff.
   einheitSterben(einheit) {
     this.farmVerlassen(einheit);
+    // Wer ein Ei traegt und faellt, laesst es liegen (einheiten AC-51).
+    const ei = this.eiVon(einheit);
+    if (ei) this.eiAblegen(ei, einheit.x, einheit.y);
     // Fuer die Tafel (spielziel AC-8). Wer aufgibt, verliert damit alles auf
     // einmal - das ist richtig so: gefallen ist gefallen.
     const spieler = this.spielerVon(einheit.besitzer);
@@ -3954,6 +4194,13 @@ class Welt {
     for (const [id, takt] of this.eingestuerzt) if (this.takt - takt >= frist) this.eingestuerzt.delete(id);
     if (truemmer) this.eingestuerzt.set(gebaeude.id, this.takt);
     this.gebaeude.delete(gebaeude.id);
+    // Faellt ein Kloster, liegen seine Eier am Boden (einheiten AC-51) - in
+    // der Mitte seiner Grundflaeche, die eben frei wird.
+    for (const ei of this.eier.values()) {
+      if (ei.kloster !== gebaeude.id) continue;
+      const { x0, y0, x1, y1 } = this.grundflaeche(gebaeude.art, gebaeude.x, gebaeude.y, gebaeude.quer);
+      this.eiAblegen(ei, (x0 + x1) / 2, (y0 + y1) / 2);
+    }
     this.gebaeudeSichtNeu = true;
     this.freigeben(gebaeude);
     this.gebaeudeGeaendert(gebaeude);
@@ -4587,6 +4834,10 @@ class Welt {
       this.heilauftragTakten(einheit);
       return;
     }
+    if (einheit.auftrag?.art === 'abruesten') {
+      this.abruestenTakten(einheit);
+      return;
+    }
     // Faellt ein Markt der Strecke, bleibt der Karren stehen - sofort, nicht
     // erst am Ende des Weges (einheiten AC-40).
     if (einheit.auftrag?.art === 'handel' && !this.strecke(einheit)) {
@@ -4656,6 +4907,14 @@ class Welt {
     if (einheit.auftrag.art === 'abgeben') {
       if (einheit.ladung > 0) this.abladen(einheit);
       else einheit.auftrag = null;
+      return;
+    }
+    if (einheit.auftrag.art === 'ei') {
+      this.eiTakten(einheit);
+      return;
+    }
+    if (einheit.auftrag.art === 'eiBringen') {
+      this.eiBringenTakten(einheit);
       return;
     }
     if (einheit.auftrag.art !== 'sammeln') {
@@ -4995,6 +5254,9 @@ class Welt {
         // Sekunden noch (bedienung AC-68) - in ganzen Sekunden, damit sich
         // der Zustand nur einmal je Sekunde aendert.
         ...(e.ruhtBis > this.takt ? { r: Math.ceil((e.ruhtBis - this.takt) / TAKTE_PRO_SEKUNDE) } : {}),
+        // Wer abruestet (einheiten AC-50): wie viele Sekunden Lehrzeit noch -
+        // ganze Sekunden, wie beim Moench.
+        ...(e.auftrag?.art === 'abruesten' && !e.tot ? { ab: Math.ceil((e.auftrag.bis - this.takt) / TAKTE_PRO_SEKUNDE) } : {}),
         // Ein Karren auf der Strecke (einheiten AC-40): Heimat, Ziel und das
         // Gold je Fahrt - die Leiste nennt sie.
         ...(e.auftrag?.art === 'handel' ? { hd: this.streckeFuerDraht(e) } : {}),
@@ -5061,6 +5323,10 @@ class Welt {
       // Fristendes] - an alle, denn eine Kuendigung ist oeffentlich. Ist
       // `t` ueber dem Fristende, gehoert `wer` keinem Team mehr an.
       ...(this.kuendigungen.length ? { bu: this.kuendigungen.map((k) => [k.wer, k.bis]) } : {}),
+      // Die Eier am Boden (einheiten AC-51), je [id, x, y, in der Mulde] -
+      // hoechstens drei, deshalb in jedem Zustand. Getragene zeigt die
+      // Ladung des Traegers, eingelagerte das Kloster.
+      ...this.eierFeld(),
       // Das Ende, sobald es feststeht - danach schickt der Raum keinen
       // Zustand mehr (spielziel AC-5).
       ...(this.ende ? { ende: this.ende } : {}),
@@ -5078,6 +5344,15 @@ class Welt {
       this.tierAenderungen = [];
     }
     return zustand;
+  }
+
+  eierFeld() {
+    const ei = [];
+    for (const e of this.eier.values()) {
+      if (e.traeger !== null || e.kloster !== null) continue;
+      ei.push([e.id, e.x, e.y, e.x === e.nest.x && e.y === e.nest.y ? 1 : 0]);
+    }
+    return ei.length ? { ei } : {};
   }
 
   streckeFuerDraht(einheit) {
@@ -5272,6 +5547,10 @@ class Welt {
       || this.sieht(id, Math.round(x1), Math.round(y1)));
     if (pfeile.length) auszug.p = pfeile;
     else delete auszug.p;
+    // Ein Ei am Boden nur, wo er hinsieht (einheiten AC-51).
+    const eier = (voll.ei || []).filter(([, x, y]) => this.sieht(id, x, y));
+    if (eier.length) auszug.ei = eier;
+    else delete auszug.ei;
     const gebaeude = this.gebaeudeFuer(id, voll.gebaeude || []);
     if (gebaeude.length) auszug.gebaeude = gebaeude;
     else delete auszug.gebaeude;
@@ -5340,6 +5619,8 @@ class Welt {
       f: laufend ? Math.round((g.fortschritt / (this.auftragWerte(laufend).zeit * TAKTE_PRO_SEKUNDE)) * 100) / 100 : 0,
       ...(g.sammelpunkt ? { p: { x: g.sammelpunkt.x, y: g.sammelpunkt.y } } : {}),
       w: g.wartet,
+      // Eier im Kloster (einheiten AC-51) - die sieht jeder, der das Kloster sieht.
+      ...(g.art === 'kloster' && this.eier?.size && this.eierIn(g) ? { e: this.eierIn(g) } : {}),
     };
   }
 
@@ -5443,6 +5724,12 @@ class Welt {
           bekehren: w.bekehren ? { reichweite: w.bekehren.reichweite, ruhe: w.bekehren.ruhe, nicht: w.bekehren.nicht } : null,
           // Wer handelt (einheiten AC-40): die Leiste nennt seine Strecke.
           handelt: Boolean(w.handelt),
+          // Wer die Waffen ablegen kann (einheiten AC-50): die Leiste
+          // bietet es an. Entschieden wird auf dem Server.
+          ruestetAb: ruestetAb(art),
+          // Gerufen statt ausgebildet (bauen AC-35): kein Gebaeude hat ihn
+          // in seiner Leiste.
+          gerufen: Boolean(w.gerufen),
         }])),
         gebaeude: Object.fromEntries(Object.entries(GEBAEUDE).map(([art, w]) => [art, {
           // Ohne Nebel gibt es nichts aufzudecken: die Kartografie steht
@@ -5487,6 +5774,8 @@ class Welt {
         }])),
         // Die Namen der Klassen, fuer den Bonus an der Auswahl (bedienung AC-35).
         klassen: KLASSEN,
+        // Was Abruesten kostet und wie lang es dauert (einheiten AC-50).
+        abruesten: { kosten: ABRUESTEN.kosten, sekunden: ABRUESTEN.sekunden },
         // Wie lang eine gezogene Mauer hoechstens ist (bauen AC-30).
         mauerMax: MAUER_MAX,
         // Wie viele Ziele mit Umschalt hoechstens warten (bedienung AC-14) -

@@ -1,0 +1,10 @@
+{
+  "spec": "10-strategie/einheiten-und-befehle.md",
+  "ac": "AC-51",
+  "titel": "Der Dorfbewohner trägt das Drachenei auf dem Rücken zum Kloster",
+  "datei": "e2e/tests/strategie-drache.spec.mjs",
+  "pfad": [
+    "Drache",
+    "einheiten AC-51: ein Dorfbewohner hebt das Drachenei mit einem Rechtsklick auf, traegt es sichtbar auf dem Ruecken und legt es ins eigene Kloster"
+  ]
+}

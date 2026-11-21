@@ -16,6 +16,7 @@ const NAMEN = [
   'husar', 'kavalier', 'paladin', 'zweihandkaempfer', 'hellebardier',
   'langbogenschuetze', 'schwerearmbrust', 'belagerungsramme', 'onager',
   'eibenschuetze', 'pavesenschuetze', 'soeldner', 'kriegswolf', 'reiterschuetze', 'riese', 'meuchler', 'wiedergaenger',
+  'drache', 'drachenei',
   'moench', 'ramme', 'mangonel', 'schaf', 'beere', 'gold', 'stein', 'boden', 'geschoss',
   // Gebaeude (R4): jedes eine Tafel; die Baustelle je Grundflaeche eine.
   'haus', 'dorfzentrum', 'muehle', 'holzfaellerlager', 'bergbaulager', 'farm', 'kaserne', 'schiessanlage', 'stall', 'schmiede',

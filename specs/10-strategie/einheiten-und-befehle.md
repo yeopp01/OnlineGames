@@ -2,7 +2,7 @@
 
 **Bereich:** Strategie
 **Kuerzel:** einheiten
-**Stand:** 53/62 fertig · 8 offen · 1 zurueckgestellt
+**Stand:** 55/62 fertig · 6 offen · 1 zurueckgestellt
 
 ## Zweck
 
@@ -528,7 +528,7 @@ kommen aus der Blender-Sitzung (Bauabfolge E6 bis E8).
 Geschrieben in der Spec-Runde zur Stufe E, gebaut in Stufe F (fahrplan
 AC-19). Werte und Dauern sind Startwerte aus ADR-0014.
 
-- **AC-50** `offen` **Abrüsten** — Jede Einheit der Klassen Infanterie,
+- **AC-50** `fertig` **Abrüsten** — Jede Einheit der Klassen Infanterie,
   Schützen und Reiter kann auf Befehl die Waffen ablegen und
   **Dorfbewohner** werden, nie umgekehrt; Untote, Belagerung, Mönch und
   Karren nicht. Das kostet 40 Nahrung und 20 Sekunden **Lehrzeit**, in
@@ -537,13 +537,30 @@ AC-19). Werte und Dauern sind Startwerte aus ADR-0014.
   dafür ab. **Zu messen, bevor es `fertig` heißt:** eine KI, die ihre
   Dorfbewohner über Kasernen holt, gewinnt gegen die heutige nicht mehr als
   60 % (`npm run pruefstand:vergleich -- --probe`); sonst steigt der Preis.
-- **AC-51** `offen` **Das Ei liegt, wird getragen** — Auf der Karte liegen
+  **Gemessen** (2026-11-21, 40 Startwerte bis Minute 90, Seiten im
+  Wechsel): eine Kasernen-KI — ab zehn Dorfbewohnern eine Kaserne, Milizen
+  ausbilden und sofort abrüsten, bis ihr Ziel an Dorfbewohnern steht —
+  gegen die heutige KI **11 zu 27, zwei ohne Sieger: 29 %**. Der Preis
+  bleibt. Die Probe stand als Wegwerfskript neben dem Prüfstand
+  (`partieSpielen` mit ersetztem `entscheiden`), nicht als `--probe`.
+  Gesetzt: ein neuer Befehl in der Lehrzeit bricht sie ab, die 40 Nahrung
+  sind weg; das Leben behält seinen Anteil.
+- **AC-51** `fertig` **Das Ei liegt, wird getragen** — Auf der Karte liegen
   Dracheneier, eines je zwei Spieler (abgerundet, mindestens eines), fern
   von jedem Start. Ein Dorfbewohner trägt ein Ei als Ladung wie Holz und
   bringt es in ein eigenes Kloster; stirbt er, liegt es dort. Ein Ei ist
   immer an genau einem Ort: am Boden, bei einem Träger oder in einem
   Kloster; fällt das Kloster, liegt es am Boden. Das Ei ist keine
   Siegbedingung.
+  **Gesetzt** (2026-11-21, Startwerte): die Plätze rechnet die Karte ohne
+  Zufall (`eierPlaetze`, `EIER` in `karte.js`) — Gras mit einem Ring Gras,
+  sechs Felder vom Rand, von jedem Dorf zu Fuß erreichbar, von den zwei
+  nächsten Dörfern höchstens zwei Felder verschieden weit, und mehrere Eier
+  so weit auseinander wie möglich. Aufgehoben wird aus anderthalb Feldern
+  (`DRACHE.ei.greifen`). Wer ein Ei trägt, trägt nur das Ei: ein Rechtsklick
+  auf ein eigenes Kloster legt es ab, jeder andere ist ein Gang. Mönch,
+  Belagerung und Karren holen keines. Ist die Einstellung „Drache“ aus
+  (AC-52), liegt keines.
 - **AC-52** `offen` **Der Drache fliegt und brennt** — Höchstens einer je Spieler.
   Er fliegt ohne Wegsuche über Mauern, Wald und Wasser, und sein Feuer ist
   Flächenschaden wie der Stein des Mangonels (`flaeche`,

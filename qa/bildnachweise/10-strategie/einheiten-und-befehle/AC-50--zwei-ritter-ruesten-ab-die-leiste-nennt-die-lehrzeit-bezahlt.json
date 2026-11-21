@@ -1,0 +1,10 @@
+{
+  "spec": "10-strategie/einheiten-und-befehle.md",
+  "ac": "AC-50",
+  "titel": "Zwei Ritter rüsten ab: die Leiste nennt die Lehrzeit, bezahlt sind 80 Nahrung",
+  "datei": "e2e/tests/strategie-abruesten.spec.mjs",
+  "pfad": [
+    "Abruesten",
+    "einheiten AC-50: zwei gewählte Ritter rüsten mit einem Knopf ab - 40 Nahrung je Ritter, 20 Sekunden Lehrzeit, danach stehen zwei Dorfbewohner da"
+  ]
+}

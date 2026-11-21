@@ -9,10 +9,11 @@
 //
 // **`ansicht.nachher`** (Map id -> Einheit), auch `ansicht.vorher`:
 //   `i` Id · `b` Besitzer · `k` Kuerzel der Art · `x`/`y` · `l` Ladung ·
-//   `a` erster Buchstabe der Ladungsart · `h` Lebenspunkte, **absolut, und nur
+//   `a` erster Buchstabe der Ladungsart (`e` ein Drachenei, einheiten AC-51) · `h` Lebenspunkte, **absolut, und nur
 //   wenn welche fehlen** (voll wird gar nicht geschickt - der Anteil ist
 //   `h / ansicht.lebenVoll(e)`) · `w` arbeitet oder kaempft gerade (bedienung AC-31, AC-39) · `s` gefallen ·
-//   `r` ruht nach dem Bekehren (einheiten AC-38) · `hd` die Strecke eines Karrens,
+//   `r` ruht nach dem Bekehren (einheiten AC-38) · `ab` Sekunden Lehrzeit beim
+//   Abruesten, nur solange (einheiten AC-50) · `hd` die Strecke eines Karrens,
 //   `[heimatmarkt, zielmarkt, Gold je Fahrt]`, nur solange er handelt (einheiten AC-40) ·
 //   `q` wie viele Ziele mit Umschalt noch in der Reihe warten, nur wenn welche (bedienung AC-14;
 //   die Punkte selbst merkt sich der Browser in `ansicht.wegpunkte`).
@@ -57,7 +58,13 @@
 //   `n` = mangonel
 //   `g` = moench
 //   `c` = marktkarren
+//   `D` = drache
 // ### ENDE KUERZEL
+//
+// **Dracheneier** (einheiten AC-51): `ei` im Zustand, je `[id, x, y, in der
+//   Mulde]`, nur die am Boden und nur, wo man hinsieht; im Browser
+//   `ansicht.eier` (Map id -> {i, x, y, nest}). Ein Kloster mit Eiern traegt
+//   `e` (Anzahl).
 //
 // **`ansicht.gebaeude`** (Map id -> Gebaeude): `i` · `art` **ausgeschrieben**
 //   (nicht `a`!) · `b` Besitzer · `x`/`y` · `h` Leben · `u` Baufortschritt,

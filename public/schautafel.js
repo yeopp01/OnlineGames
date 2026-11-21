@@ -78,6 +78,8 @@ const EINTRAEGE = [
   { art: 'riese', titel: 'Riese', lage: {} },
   { art: 'meuchler', titel: 'Meuchler', lage: {} },
   { art: 'wiedergaenger', titel: 'Wiedergänger', lage: {} },
+  // Statt des Trebuchets (einheiten AC-52): gerufen, nicht ausgebildet.
+  { art: 'drache', titel: 'Drache', lage: {} },
   { art: 'schaf', titel: 'Schaf', lage: {}, tier: true },
   { art: 'schaf', titel: 'Kadaver, halb', lage: { liegt: true, rest: 0.5 }, tier: true },
 ];

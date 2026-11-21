@@ -226,8 +226,9 @@ test.describe('Ritterzeit am Stueck', () => {
       const woher = (eintrag) => eigene.find((g) => (w.gebaeude[g.art].bildetAus || []).includes(eintrag))?.i ?? null;
       // Ohne die Einheiten, die nur ein Haus ausbildet (einheiten AC-42 bis
       // AC-49): hier spielt das Pruefhaus, und das hat keine. Sie belegt
-      // strategie-hauseinheiten.spec.mjs.
-      const plan = Object.entries(w.einheiten).filter(([, e]) => e.zeitalter === 2 && !e.haeuser).map(([art]) => {
+      // strategie-hauseinheiten.spec.mjs. Und ohne den Drachen: der wird am
+      // Kloster gerufen (bauen AC-35), das belegt strategie-drache.spec.mjs.
+      const plan = Object.entries(w.einheiten).filter(([, e]) => e.zeitalter === 2 && !e.haeuser && !e.gerufen).map(([art]) => {
         const direkt = woher(art);
         if (direkt !== null) return { art, gebaeude: direkt, verbesserung: null };
         const [v] = Object.entries(w.verbesserungen).find(([, x]) => Object.values(x.wandelt || {}).includes(art)) || [];
