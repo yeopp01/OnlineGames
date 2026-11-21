@@ -92,6 +92,8 @@ async function starten(hafen = HAFEN, einstellungen = {}) {
   // statt spaeter eine leere Uebersicht zu zeigen.
   const spielliste = verzeichnis.lesen();
   const spiele = JSON.stringify({ spiele: spielliste });
+  /** @type {Map<string, string>} */
+  const nachgeschlagen = new Map();
   const schutz = new Schutz(einstellungen.schutz);
   const zugang = await konten({
     hafen,
@@ -122,6 +124,19 @@ async function starten(hafen = HAFEN, einstellungen = {}) {
     }
     if (anfrage.method === 'GET' && (anfrage.url || '').split('?')[0] === '/api/spiele') {
       antwort.writeHead(200, { 'Content-Type': TYPEN['.json'], 'Cache-Control': 'no-store' }).end(spiele);
+      return;
+    }
+    // Was ein Spiel zum Nachschlagen mitbringt (bedienung AC-81): einmal
+    // gerechnet, dann gemerkt - die Daten aendern sich nur mit dem Server.
+    const nachschlagen = anfrage.method === 'GET' ? /^\/api\/spiele\/([a-z]+)\/nachschlagen$/.exec((anfrage.url || '').split('?')[0]) : null;
+    if (nachschlagen) {
+      const spiel = spielliste.find((s) => s.art === nachschlagen[1] && s.nachschlagen);
+      if (!spiel) {
+        antwort.writeHead(404, { 'Content-Type': 'text/plain; charset=utf-8' }).end('Nicht gefunden');
+        return;
+      }
+      if (!nachgeschlagen.has(spiel.art)) nachgeschlagen.set(spiel.art, JSON.stringify(spiel.nachschlagen.daten()));
+      antwort.writeHead(200, { 'Content-Type': TYPEN['.json'], 'Cache-Control': 'no-store' }).end(nachgeschlagen.get(spiel.art));
       return;
     }
     // Zahlen fuer den Betreiber (→ specs betrieb AC-8): nur vom Rechner

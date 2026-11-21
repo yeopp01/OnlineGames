@@ -180,5 +180,8 @@ module.exports = {
   // Wie viele Plaetze das Spiel selbst besetzt (raeume.js, spielauswahl AC-19).
   plaetze: (einstellungen) => einstellungen.ki || 0,
   erzeugen: mitKi,
+  // Der Technologiebaum (bedienung AC-81): erst geladen, wenn ihn jemand
+  // aufschlaegt - er baut dafuer eine Welt.
+  nachschlagen: { titel: 'Technologiebaum', daten: () => require('./techbaum').techbaum() },
   reihenfolge: 1,
 };
