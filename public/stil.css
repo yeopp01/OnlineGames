@@ -1173,6 +1173,21 @@ canvas.angriffslauf {
   gap: 0.1rem;
 }
 
+/* Drei Preise passen nicht in 5,2rem (das Wunder, bauen AC-51): sie brechen
+   um, je Ware Zeichen und Zahl beisammen (bedienung AC-23). */
+.baumenue .preis {
+  flex-wrap: wrap;
+  justify-content: center;
+  row-gap: 0;
+  column-gap: 0.35rem;
+}
+
+.baumenue .preis .posten {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.2rem;
+}
+
 /* Zwei Seiten (bedienung AC-64): die Reiter stehen links uebereinander. Die
    Knoepfe der anderen Seite bleiben im Baum und sind versteckt - `display`
    der Leistenknoepfe ueberstimmte sonst das Attribut. */
@@ -1440,6 +1455,53 @@ canvas.angriffslauf {
 
 .buendnisansage .gegner {
   color: #ffb2a4;
+}
+
+/* Der Ruf am Kloster (bauen AC-35): ein Knopf wie Abruesten, in Glut. */
+.drachenruf {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  margin-top: 0.35rem;
+}
+
+.drachenruf-knopf {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.3rem 0.7rem;
+  border: 1px solid #e0874a;
+  border-radius: 0.4rem;
+  background: #3a1d10;
+  color: #ffd9a8;
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.drachenruf-knopf[aria-disabled='true'] {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.drachenruf-uhr {
+  color: #ffc27a;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.drachenruf[data-steht='1'] .drachenruf-uhr {
+  color: #ffb2a4;
+}
+
+/* Der Drache (bauen AC-35, einheiten AC-53): dieselbe Ansage, in Glut. */
+.buendnisansage .drache {
+  color: #ffc27a;
+}
+
+/* Das Wunder (spielziel AC-29): golden, die Uhr bis zum Sieg. */
+.buendnisansage .wunder {
+  color: #f2d27a;
 }
 
 /* Die Rueckfrage: genau eine, und sie liegt ueber dem Spielfeld. */

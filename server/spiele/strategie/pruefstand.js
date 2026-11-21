@@ -37,6 +37,8 @@ function pruefen(welt) {
   for (const e of welt.einheiten.values()) {
     const x = Math.round(e.x);
     const y = Math.round(e.y);
+    // Wer fliegt, darf ueber Wald und Wasser stehen (einheiten AC-52).
+    if (EINHEITEN[e.art].fliegt) continue;
     if (!karten.begehbar(welt.karte, x, y)) {
       befunde.push(`Einheit ${e.id} (${e.art}) steht auf ${x}, ${y} in einem Hindernis (Feld ${welt.karte.felder[y * welt.karte.groesse + x]})`);
     }

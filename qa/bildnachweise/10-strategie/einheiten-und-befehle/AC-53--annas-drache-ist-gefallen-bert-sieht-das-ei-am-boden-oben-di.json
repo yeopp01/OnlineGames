@@ -1,0 +1,10 @@
+{
+  "spec": "10-strategie/einheiten-und-befehle.md",
+  "ac": "AC-53",
+  "titel": "Annas Drache ist gefallen: Bert sieht das Ei am Boden, oben die Ansage, auf der Übersichtskarte ein glühender Ring an der Stelle",
+  "datei": "e2e/tests/strategie-drache.spec.mjs",
+  "pfad": [
+    "Drache",
+    "einheiten AC-53: faellt der Drache, liegt dort sein Ei - beide sehen die Ansage, die Uebersichtskarte zeigt die Stelle"
+  ]
+}

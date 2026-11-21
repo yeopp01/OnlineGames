@@ -1,0 +1,10 @@
+{
+  "spec": "10-strategie/kampf.md",
+  "ac": "AC-23",
+  "titel": "Bert (rot): sein Armbrustschütze gewählt, der Zeiger über Annas Drachen sagt „Angreifen“ - die Miliz davor ging auf denselben Klick nur hin",
+  "datei": "e2e/tests/strategie-drache.spec.mjs",
+  "pfad": [
+    "Drache",
+    "kampf AC-23: Berts Miliz kann den Drachen nicht angreifen - der Rechtsklick ist ein Gang; sein Armbrustschuetze greift an"
+  ]
+}

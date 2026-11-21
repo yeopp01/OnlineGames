@@ -20,8 +20,8 @@ const NAMEN = [
   'moench', 'ramme', 'mangonel', 'schaf', 'beere', 'gold', 'stein', 'boden', 'geschoss',
   // Gebaeude (R4): jedes eine Tafel; die Baustelle je Grundflaeche eine.
   'haus', 'dorfzentrum', 'muehle', 'holzfaellerlager', 'bergbaulager', 'farm', 'kaserne', 'schiessanlage', 'stall', 'schmiede',
-  'aussenposten', 'markt', 'kloster', 'universitaet', 'belagerungswerkstatt', 'wachturm', 'wehrturm', 'bergfried', 'burg', 'steinmauer', 'tor',
-  'baustelle-1', 'baustelle-2', 'baustelle-3', 'baustelle-4',
+  'aussenposten', 'markt', 'kloster', 'universitaet', 'belagerungswerkstatt', 'wachturm', 'wehrturm', 'bergfried', 'burg', 'steinmauer', 'tor', 'wunder',
+  'baustelle-1', 'baustelle-2', 'baustelle-3', 'baustelle-4', 'baustelle-5',
 ];
 const tafeln = new Map();
 const fehlend = [];

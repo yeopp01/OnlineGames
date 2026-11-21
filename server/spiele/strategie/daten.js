@@ -82,6 +82,8 @@
  * @property {boolean} [gezogen]
  * @property {number} [seite] Seite im Baumenue (bedienung AC-64): fehlt es, ist es die erste (Wirtschaft), 1 ist die zweite (Militaer)
  * @property {boolean} [handel]
+ * @property {number} [hoechstens] so viele je Spieler, Baustellen mitgezaehlt (bauen AC-51)
+ * @property {boolean} [wunder] steht es fertig WUNDER_SEKUNDEN lang, gewinnt sein Besitzer (spielziel AC-29)
  */
 
 /**
@@ -162,7 +164,7 @@ const EINHEITEN = {
     // Spiel. Getroffen wird er trotzdem wehrhaft.
     wacht: false,
     baut: ['haus', 'muehle', 'holzfaellerlager', 'bergbaulager', 'farm', 'kaserne', 'schiessanlage', 'stall', 'schmiede', 'aussenposten',
-      'kloster', 'universitaet', 'belagerungswerkstatt', 'wachturm', 'steinmauer', 'tor', 'burg', 'markt'],
+      'kloster', 'universitaet', 'belagerungswerkstatt', 'wachturm', 'steinmauer', 'tor', 'burg', 'markt', 'wunder'],
   },
   // Ausgebildet wird er im Stall, also ab der Feudalzeit; zu Beginn steht
   // einer in der Startaufstellung (bauen AC-22).
@@ -468,8 +470,8 @@ const EINHEITEN = {
   moench: {
     leben: 30, tempo: 0.7, sicht: 11, tragkraft: 0, kosten: { gold: 100 }, zeit: 51, kuerzel: 'g',
     angriff: 0, nahruestung: 0, fernruestung: 0, reichweite: 0, nachladen: 0,
-    klassen: ['moench'], heilen: { reichweite: 4, je: 1, nicht: ['belagerung', 'untot'] },
-    bekehren: { reichweite: 9, frueh: 4, spaet: 10, chance: 0.28, ruhe: 62, nicht: ['belagerung', 'moench', 'untot'] },
+    klassen: ['moench'], heilen: { reichweite: 4, je: 1, nicht: ['belagerung', 'untot', 'drache'] },
+    bekehren: { reichweite: 9, frueh: 4, spaet: 10, chance: 0.28, ruhe: 62, nicht: ['belagerung', 'moench', 'untot', 'drache'] },
     zeitalter: 2,
   },
   // Der Marktkarren (einheiten AC-39), Werte aus der Vorlage: 100 Holz, 50
@@ -492,9 +494,12 @@ const EINHEITEN = {
   // `kosten` ist der Preis des Rufens, damit er auf der Tafel und in den
   // Punkten zaehlt wie jede andere Einheit.
   // Startwerte aus ADR-0014: 500 Leben, Tempo 1,5, Ruestung 2 gegen Pfeile,
-  // Feuer mit Reichweite 3 alle 3 Sekunden auf ein Feld Umkreis, 15 Schaden
-  // an Einheiten, +200 gegen Gebaeude (gegen 7 Fernruestung 208 je Feuer,
-  // rund 69 je Sekunde). Nicht in der ADR und deshalb gesetzt: Sicht 10,
+  // Feuer mit Reichweite 3 alle 3 Sekunden auf ein Feld Umkreis. Die ADR
+  // nannte 15 Schaden an Einheiten und +200 gegen Gebaeude - gemessen
+  // (tests/strategie-drache.test.mjs) verlor damit die Burg allein nie, und
+  // zehn Armbrustschuetzen toeteten ihn einmal in zwanzig. Gesetzt deshalb
+  // 8 und +660: acht Stoesse fuer die Burg, das Fenster ist +640 bis +680.
+  // Nicht in der ADR und deshalb gesetzt: Sicht 10,
   // Nahruestung 0 (kein Nahkaempfer trifft ihn, kampf AC-23), das Feuer
   // fliegt 8 Felder je Sekunde. Es trifft wie der Stein des Mangonels alles
   // im Umkreis, eigene auch.
@@ -503,9 +508,9 @@ const EINHEITEN = {
   // schiessen.
   drache: {
     leben: 500, tempo: 1.5, sicht: 10, tragkraft: 0, kosten: { nahrung: 400, gold: 400 }, zeit: 180, kuerzel: 'D',
-    angriff: 15, nahruestung: 0, fernruestung: 2, reichweite: 3, nachladen: 3,
-    flaeche: 1, geschoss: 8, feuer: true, bonus: { gebaeude: 200 },
-    klassen: ['drache'], fliegt: { getroffenVon: ['bogenschuetze'] }, gerufen: true, zeitalter: 2,
+    angriff: 8, nahruestung: 0, fernruestung: 2, reichweite: 3, nachladen: 3,
+    flaeche: 1, geschoss: 8, feuer: true, bonus: { gebaeude: 660 },
+    klassen: ['drache'], fliegt: { getroffenVon: ['bogenschuetze'] }, gerufen: true, wacht: true, zeitalter: 2,
   },
 };
 
@@ -600,6 +605,16 @@ const GEBAEUDE = {
   // Gebaeude der Ritterzeit (bauen AC-28), Werte aus der Vorlage. Was sie
   // ausbilden und erforschen, kommt mit ihren Schritten: der Moench (D8),
   // Ramme und Mangonel (D6). Die Universitaet forscht Mauerwerk (bauen AC-34).
+  // Das Wunder (bauen AC-51, spielziel AC-29): Werte aus der Vorlage - fuenf
+  // mal fuenf Felder, je 1000 Holz, Stein und Gold, 4800 Leben, 3/10
+  // Ruestung. Die Bauzeit ist gesetzt: mit den 3500 Sekunden der Vorlage
+  // brauchten zwanzig Bauer 7,98 Spielminuten, verlangt sind acht bis zwoelf
+  // - 4400 zielt auf zehn (mit dem Tretkran rund 8,4). Es bildet nichts aus,
+  // schiesst nicht, gibt keinen Wohnraum; wer eines hat, baut kein zweites.
+  wunder: {
+    groesse: 5, kosten: { holz: 1000, stein: 1000, gold: 1000 }, bauzeit: 4400, leben: 4800, wohnraum: 0, annahme: [],
+    bildetAus: [], zeitalter: 3, nahruestung: 3, fernruestung: 10, hoechstens: 1, wunder: true,
+  },
   kloster: { groesse: 3, kosten: { holz: 175 }, bauzeit: 40, leben: 2100, wohnraum: 0, annahme: [], bildetAus: ['moench', 'heiligkeit', 'inbrunst', 'buchdruck', 'erleuchtung'], zeitalter: 2 },
   universitaet: { groesse: 3, kosten: { holz: 200 }, bauzeit: 60, leben: 2100, wohnraum: 0, annahme: [], bildetAus: ['mauerwerk', 'wehrturm', 'tretkran', 'chemie', 'bergfried', 'architektur', 'belagerungsingenieure'], zeitalter: 2 },
   belagerungswerkstatt: { seite: 1, groesse: 3, kosten: { holz: 200 }, bauzeit: 40, leben: 2100, wohnraum: 0, annahme: [], bildetAus: ['ramme', 'mangonel', 'rammenstufe', 'onagerstufe'], zeitalter: 2 },
@@ -1390,12 +1405,16 @@ const ABRUESTEN = {
  *   rufen: { kosten: Record<string, number>, sekunden: number, moenche: number, umkreis: number },
  *   fressen: { nahrungJeSekunde: number, hungerJeSekunde: number },
  *   ei: { greifen: number },
+ *   gefallen: { sekunden: number },
  * }}
  */
 const DRACHE = {
   rufen: { kosten: { nahrung: 400, gold: 400 }, sekunden: 180, moenche: 5, umkreis: 3 },
   fressen: { nahrungJeSekunde: 1.6, hungerJeSekunde: 5 },
   ei: { greifen: 1.5 },
+  // So lange steht die Ansage, dass ein Drache fiel (einheiten AC-53) -
+  // gesetzt, nicht aus der Vorlage.
+  gefallen: { sekunden: 20 },
 };
 
 /** Ob eine Art abruesten kann (einheiten AC-50) - eine Frage der Klassen. */

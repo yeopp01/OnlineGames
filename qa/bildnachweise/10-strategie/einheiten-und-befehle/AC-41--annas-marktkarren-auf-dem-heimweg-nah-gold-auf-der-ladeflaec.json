@@ -1,0 +1,10 @@
+{
+  "spec": "10-strategie/einheiten-und-befehle.md",
+  "ac": "AC-41",
+  "titel": "Annas Marktkarren auf dem Heimweg, nah: Gold auf der Ladefläche - auf dem Hinweg fährt er leer",
+  "datei": "e2e/tests/strategie-marktkarren.spec.mjs",
+  "pfad": [
+    "Marktkarren",
+    "einheiten AC-41: auf dem Heimweg traegt der Karren sichtbar Gold, auf dem Hinweg nicht"
+  ]
+}

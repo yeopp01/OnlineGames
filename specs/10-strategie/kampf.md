@@ -2,7 +2,7 @@
 
 **Bereich:** Strategie
 **Kuerzel:** kampf
-**Stand:** 23/25 fertig · 1 offen · 1 zurueckgestellt
+**Stand:** 24/25 fertig · 1 zurueckgestellt
 
 ## Zweck
 
@@ -242,12 +242,17 @@ aus [Spielziel](spielziel.md) AC-10, gemessen in
   `welt.verborgen`), nicht jede Regel einzeln; auch die KI fragt dort.
   Gerechnet wird mit der Sicht, zweimal je Sekunde — so lange kann ein
   Meuchler, der wegläuft, noch gesehen sein.
-- **AC-23** `offen` **Den Drachen treffen nur Schützen** — Den fliegenden
+- **AC-23** `fertig` **Den Drachen treffen nur Schützen** — Den fliegenden
   Drachen (einheiten AC-52) treffen nur Fernkämpfer mit Pfeilen, Türme und
   Burgen — kein Nahkämpfer, keine Ramme, kein Mangonel. Ein Rechtsklick
   eines Nahkämpfers auf ihn ist ein Gang dorthin, und wachende Nahkämpfer
   lassen ihn in Ruhe. Gefragt wird an derselben Stelle wie bei der Ramme
   (`nurGebaeude`): eine Regel in den Daten, kein Sonderfall je Einheit.
+  Gebaut als `fliegt: { getroffenVon: ['bogenschuetze'] }` am Drachen und
+  `welt.kannTreffen()` — die eine Stelle für Befehl, Wache und Gegenwehr;
+  wer ein `geschoss` wirft (Mangonel, Onager), trifft ihn nicht, auch nicht
+  mit der Fläche. Der Browser bekommt je Art `trifftFlieger` und zeigt am
+  Zeiger nur dann „Angreifen“.
 
 ## Grenzfaelle
 

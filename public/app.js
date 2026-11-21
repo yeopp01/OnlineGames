@@ -821,6 +821,11 @@ function buendnisZeigen() {
   buendnisKnopf.hidden = !ansicht || !ansicht.kannKuendigen();
   if (buendnisKnopf.hidden) buendnisFrageSchliessen();
   const ansagen = ansicht && ansicht.ende === null ? ansicht.buendnisAnsagen() : [];
+  // Der Drache (bauen AC-35, einheiten AC-53) steht an derselben Stelle:
+  // der Gegner soll antworten koennen.
+  const drachen = ansicht && ansicht.ende === null ? ansicht.drachenAnsagen() : [];
+  // Das Wunder (spielziel AC-29): die Uhr bis zum Sieg, fuer alle.
+  const wunder = ansicht && ansicht.ende === null ? ansicht.wunderAnsagen() : [];
   // Nur neu schreiben, was sich geaendert hat - die Uhr schlaegt je Sekunde,
   // ein Zustand kommt zehnmal so oft.
   const html = ansagen.map(({ name, rest }) => {
@@ -828,12 +833,26 @@ function buendnisZeigen() {
     return rest > 0
       ? `<span>${wer} — Gegner in <b>${rest} s</b></span>`
       : `<span class="gegner">${wer} — jetzt Gegner</span>`;
+  }).join('') + drachen.map((d) => {
+    if (d.art === 'fall') {
+      const wessen = d.name === null ? 'Dein Drache ist gefallen' : `Der Drache von ${textSicher(d.name)} ist gefallen`;
+      return `<span class="drache">${wessen} — sein Ei liegt am Boden</span>`;
+    }
+    const wer = d.name === null ? 'Du rufst den Drachen' : `${textSicher(d.name)} ruft den Drachen`;
+    const uhr = `${Math.floor(d.rest / 60)}:${String(d.rest % 60).padStart(2, '0')}`;
+    return d.steht
+      ? `<span class="drache">${wer} — steht bei <b>${uhr}</b>, ${d.moenche} von ${d.noetig} Mönchen</span>`
+      : `<span class="drache">${wer} — noch <b>${uhr}</b></span>`;
+  }).join('') + wunder.map((w) => {
+    const wessen = w.name === null ? 'Dein Wunder steht' : `Das Wunder von ${textSicher(w.name)} steht`;
+    const uhr = `${Math.floor(w.rest / 60)}:${String(w.rest % 60).padStart(2, '0')}`;
+    return `<span class="wunder">${wessen} — Sieg in <b>${uhr}</b></span>`;
   }).join('');
   if (html !== buendnisAnsageText) {
     buendnisAnsageText = html;
     buendnisAnsage.innerHTML = html;
   }
-  buendnisAnsage.hidden = ansagen.length === 0;
+  buendnisAnsage.hidden = ansagen.length + drachen.length + wunder.length === 0;
 }
 
 // Namen kommen von Mitspielern: nie als HTML.

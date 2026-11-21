@@ -1,0 +1,10 @@
+{
+  "spec": "10-strategie/bauen.md",
+  "ac": "AC-51",
+  "titel": "Annas Wunder gewählt, fünf mal fünf Felder mit goldener Kuppel; dahinter eine Baustelle desselben Wunders",
+  "datei": "e2e/tests/strategie-wunder.spec.mjs",
+  "pfad": [
+    "Wunder",
+    "bauen AC-51: in der Krone steht das Wunder im Baumenue; fertig und als Baustelle aus den gerenderten Bildern"
+  ]
+}

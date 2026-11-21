@@ -112,6 +112,7 @@ const GEBAEUDE_REIHE = [
   // Schiesst und gibt Wohnraum (bauen AC-32).
   { art: 'burg', groesse: 4, titel: 'Burg' },
   { art: 'markt', groesse: 4, titel: 'Markt' },
+  { art: 'wunder', groesse: 5, titel: 'Wunder' },
   { art: 'haus', groesse: 2, titel: 'Baustelle 20 %', bau: 0.2 },
   { art: 'haus', groesse: 2, titel: 'Baustelle 70 %', bau: 0.7 },
 ];
@@ -948,7 +949,7 @@ function umrissUnterschied(eine, andere, hoehe = figurHoeheBei(1)) {
 const TAFEL_ZU = { [WALD]: 'baum', [BEERE]: 'beere', [GOLD]: 'gold', [STEIN]: 'stein' };
 const gezeichnet = [
   ...Object.keys(FIGUREN), ...Object.keys(GEBAEUDE), ...Object.values(TAFEL_ZU), 'boden',
-  ...[1, 2, 3, 4].map((n) => `baustelle-${n}`),
+  ...[1, 2, 3, 4, 5].map((n) => `baustelle-${n}`),
 ].filter((art) => !gerendert(art));
 
 const blank = ({ eintrag, ...rest }) => rest;

@@ -193,6 +193,30 @@ export class Uebersicht {
       punkte.push({ art: 'einheit', i: e.i, b: e.b, x: p.x, y: p.y });
     }
     this.punkte = punkte;
+    // Ein Wunder (spielziel AC-29) sehen alle, auch im Nebel - der Sieg soll
+    // eine Entscheidung sein, auf die die anderen antworten koennen.
+    for (const w of ansicht.wunderuhren || []) {
+      const p = this.feldZuPunkt(w.x, w.y);
+      const groesse = Math.max(6, 5 * 1.2);
+      s.fillStyle = farbe(w.wer);
+      s.fillRect(p.x - groesse / 2, p.y - groesse / 2, groesse, groesse);
+      s.strokeStyle = '#f2c14e';
+      s.lineWidth = 2;
+      s.strokeRect(p.x - groesse / 2 - 1, p.y - groesse / 2 - 1, groesse + 2, groesse + 2);
+    }
+    // Ein Ei, wo ein Drache fiel (einheiten AC-53): das sehen alle - ein
+    // gluehender Ring, damit man es zwischen den Einheiten findet.
+    for (const ei of ansicht.eier?.values() || []) {
+      if (!ei.gefallen) continue;
+      const p = this.feldZuPunkt(ei.x, ei.y);
+      s.beginPath();
+      s.arc(p.x, p.y, 4, 0, Math.PI * 2);
+      s.fillStyle = '#2b2320';
+      s.fill();
+      s.strokeStyle = '#ff9a2e';
+      s.lineWidth = 2;
+      s.stroke();
+    }
 
     // Das Zeichen am Ziel eines Befehls steht auch hier (bedienung AC-53):
     // wer auf der Uebersicht schickt, sieht das Spielbild dort meist nicht.

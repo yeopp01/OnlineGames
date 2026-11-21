@@ -181,7 +181,7 @@ Umfang hinzufügt, dort nachsehen.
 
 ## Stand
 
-**588 von 706 Kriterien fertig.** 1034 Tests ohne Browser und 14 ganze Partien, 330 im Browser. Die
+**598 von 706 Kriterien fertig.** 1063 Tests ohne Browser und 14 ganze Partien, 341 im Browser. Die
 Übersicht ist der Bericht: `npm run qa:report`.
 
 Gebaut ist der Unterbau: Räume, Übertragung, Karte, Wegfindung, Sammeln,
@@ -902,9 +902,31 @@ Schmiede): neun Paarungen 20 von 20, umgekehrt 0; der Paladin fällt vor dem
 Hellebardier und schlägt beide Schützenlinien; gegen das Schwert hilft die
 schwere Armbrust (19 von 20), nicht der Bogen (0 von 20). **Die KI steigt
 nicht in die Krone auf und erforscht nichts davon** (F12, offen), ebenso
-offen: Drache, Wunder, die Krone am Stück; darstellung AC-32 bleibt offen,
-bis Wunder und Drache ihre Bilder haben. Die gesetzten Werte der Krone
+offen: die Krone am Stück (F13). Die gesetzten Werte der Krone
 stammen nicht alle aus `vorlage-aoe2.md`.
+
+**F6 bis F11 stehen** (2026-11-21, Opus): **Abrüsten** (einheiten AC-50,
+`ABRUESTEN`, Nachricht `abruesten`): Fußvolk, Schützen und Reiter legen
+in 20 s für 40 Nahrung die Waffen ab und werden Dorfbewohner. **Der Drache** statt des
+Trebuchets (`DRACHE` in den Daten, Einstellung `drache`): ein **Ei** liegt
+zwischen je zwei Nachbarn (`eierPlaetze` in `karte.js`), ein Dorfbewohner
+trägt es ins eigene Kloster (AC-51, Auftrag `ei`); dort **ruft** ein Knopf
+ihn für 400 Nahrung und 400 Gold in drei Minuten, wenn fünf Mönche höchstens drei Felder vom Rand stehen,
+und alle sehen die Uhr (bauen AC-35, `gerufen` an der Einheit). Er **fliegt**
+geradeaus über alles (`fliegt` an der Einheit, keine Wegsuche) und speit
+Feuer auf ein Feld Umkreis (Geschoss mit fünftem Wert 2); treffen kann ihn
+nur, wer `trifftFlieger` trägt (kampf AC-23, `welt.kannTreffen`) — im
+Browser fragt dasselbe `ansicht.feindlichAn` und `bildZiel`, und Flieger
+werden nach allem am Boden gezeichnet. **Fällt er, liegt sein Ei** dort,
+mit Ansage für alle und Ring auf der Übersichtskarte (AC-53); er **frisst**
+Nahrung, ohne Nahrung hungert er (AC-54, `DRACHE.fressen`). **Das Wunder**
+(bauen AC-51, `wunder` in `GEBAEUDE`, `hoechstens: 1`): steht es zehn
+Minuten (`WUNDER_SEKUNDEN`), gewinnt sein Team (spielziel AC-29); die Uhr
+sieht jeder, auch im Nebel. **Der Marktkarren trägt sichtbar Gold**
+(einheiten AC-41, `ladung` am Karren). Gesetzt, nicht aus der Vorlage:
+Drache Angriff 8 und +660 gegen Gebäude, Ansage 20 s, Hunger 5 Leben je
+Sekunde, Wunder 4400 s Bauzeit. einheiten AC-52 bleibt `in-qa`: ob der
+Drache KI gegen KI höchstens 60 % gewinnt, misst erst die KI der Krone (F12).
 
 **Gold und Stein sind eine Einstellung beim Eröffnen** (karte AC-18, AC-19,
 Benutzer, 2026-11-18; `vorkommen` im Steckbrief, `VORKOMMEN` in

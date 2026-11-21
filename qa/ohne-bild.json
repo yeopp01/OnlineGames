@@ -1415,6 +1415,11 @@
       "spec": "10-strategie/ki.md",
       "ac": "AC-38",
       "begruendung": "An welches Feld die KI einen Sammler schickt und wann sie ein Lager baut, ist eine Rechnung aus Entfernungen auf dem Server - Feld zur naechsten Annahme, Anteil der Sammler, die weit laufen - samt einer Ruecklage im Vorrat. Geprueft wird das gewaehlte Feld und der Bauauftrag in gebauten Lagen und der Laufweg der Holzfaeller in ganzen Partien im Pruefstand. Ein Bild zeigte Holzfaeller an einem Lager, nicht die Wege der anderen und nicht, warum das Lager dort steht."
+    },
+    {
+      "spec": "10-strategie/einheiten-und-befehle.md",
+      "ac": "AC-54",
+      "begruendung": "Dass der Drache frisst, ist ein Abzug im Vorrat ueber die Zeit: 1,6 Nahrung je Sekunde aus einem Zaehler je Spieler, und ohne Nahrung 5 Leben je Sekunde, bis er faellt. Ein Bildschirmfoto zeigt einen Stand der Nahrung in der Leiste und einen Lebensbalken, nicht die Rate, mit der beide sinken, und nicht, dass das Hungern endet, sobald wieder Nahrung da ist. Geprueft wird es im Rechenteil Sekunde fuer Sekunde (tests/strategie-drache.test.mjs); was beim Fallen im Bild steht - das Ei, die Ansage, der Ring auf der Uebersichtskarte -, weist einheiten AC-53 nach."
     }
   ]
 }

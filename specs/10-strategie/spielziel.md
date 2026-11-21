@@ -2,7 +2,7 @@
 
 **Bereich:** Strategie
 **Kuerzel:** spielziel
-**Stand:** 17/29 fertig · 1 in Arbeit · 11 offen
+**Stand:** 18/29 fertig · 1 in Arbeit · 10 offen
 
 ## Zweck
 
@@ -349,7 +349,7 @@ spielt die KI am schlechtesten.
 
 ### Stufe F — die Krone (Spec-Runde 2026-11-18)
 
-- **AC-29** `offen` **Sieg durch das Wunder** — Steht ein fertiges Wunder
+- **AC-29** `fertig` **Sieg durch das Wunder** — Steht ein fertiges Wunder
   ([Bauen](bauen.md) AC-51) zehn Spielminuten (`WUNDER_SEKUNDEN`, als
   Takte), gewinnt sein Besitzer mit seinem Team (AC-20). Mit der
   Fertigstellung sehen **alle** die Ansage mit der Uhr, an derselben Stelle
@@ -361,6 +361,13 @@ spielt die KI am schlechtesten.
   dann noch mit ihm verbündet ist. Läuft die Zeitgrenze (AC-22) zuerst ab,
   bleibt es beim Unentschieden. Eine Einstellung zum Abschalten gibt es
   nicht.
+  Gebaut: die Uhr beginnt mit dem Takt, in dem das Wunder fertig ist
+  (`wunderAb` am Gebäude), der Zustand trägt sie für alle als `wu`
+  (Besitzer, Sekunden, Mitte). Gewinner sind der Besitzer und alle, die
+  ihm in diesem Takt nicht feindlich sind (`welt.feindlich`), der Grund
+  heißt `wunder`; unter der Zeile mit dem Sieger steht „Das Wunder stand
+  zehn Minuten“. Laufen zwei Uhren im selben Takt ab, gewinnt das zuerst
+  fertige.
 
 ## Der Prüfstein
 

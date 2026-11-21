@@ -1,0 +1,10 @@
+{
+  "spec": "10-strategie/einheiten-und-befehle.md",
+  "ac": "AC-52",
+  "titel": "Annas Drache ist über den Wald geflogen und brennt Berts Milizen (rot) - der Feuerstoß mitten im Flug",
+  "datei": "e2e/tests/strategie-drache.spec.mjs",
+  "pfad": [
+    "Drache",
+    "einheiten AC-52: der Drache steigt auf, fliegt geradeaus ueber den Wald und brennt Berts Milizen"
+  ]
+}

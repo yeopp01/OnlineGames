@@ -619,7 +619,7 @@ export class Ansicht {
       // Der Server rundet den Abschussort auf Zehntel, die Einheit auf Hundertstel.
       const warten = erste.find((o) => Math.abs(o.x - x0) <= 0.06 && Math.abs(o.y - y0) <= 0.06)?.ms || 0;
       this.pfeile.push({
-        x0, y0, x1, y1, weite, oben, stein: stein === 1, start: jetzt + warten + nummer * 70, dauer,
+        x0, y0, x1, y1, weite, oben, stein: stein === 1, feuer: stein === 2, start: jetzt + warten + nummer * 70, dauer,
       });
       // Zu hoeren (bedienung AC-62): die Sehne beim Schuetzen, der Wurfarm
       // beim Mangonel - und der Stein dort, wo er herunterkommt. Mit dem
@@ -627,7 +627,7 @@ export class Ansicht {
       const los = stein === 1 ? () => this.geraeusch('wurf', x0, y0) : () => this.geraeusch('pfeil', x0, y0);
       if (warten) setTimeout(los, warten);
       else los();
-      if (stein === 1) setTimeout(() => this.geraeusch('einschlag', x1, y1), warten + dauer);
+      if (stein === 1 || stein === 2) setTimeout(() => this.geraeusch('einschlag', x1, y1), warten + dauer);
     }
     for (const aenderung of nachricht.felder || []) {
       if (this.karte.felder[aenderung.i] !== aenderung.a) {
@@ -704,6 +704,7 @@ export class Ansicht {
     for (const s of nachricht.spieler) if (s.kw) this.einheitenwerte.set(s.id, s.kw);
     this.kuendigungenMerken(nachricht.bu);
     this.eierMerken(nachricht.ei);
+    this.drachenMerken(nachricht);
 
     this.ausMerken(nachricht.spieler);
     this.standMerken(nachricht.spieler);
@@ -962,6 +963,8 @@ export class Ansicht {
    * raetseln. Leer, wenn niemand aufgegeben hat.
    */
   endeGrund() {
+    // Das Wunder (spielziel AC-29): wer es hatte, steht in der Zeile darueber.
+    if (this.ende?.grund === 'wunder') return 'Das Wunder stand zehn Minuten';
     const auf = (this.ende?.tafel || []).filter((z) => z.ag === 1);
     if (!auf.length) return '';
     if (auf.some((z) => z.id === this.ich) && auf.length === 1) return 'Du hast aufgegeben';
@@ -2061,6 +2064,8 @@ export class Ansicht {
       einheiten,
       // Lauter Rammen greifen keine Einheit an, nur Gebaeude (einheiten AC-35).
       nurGebaeude: einheiten.every((e) => wert(e).nurGebaeude),
+      // Den Drachen greift an, wer ihn trifft (kampf AC-23) - einer genuegt.
+      trifftFlieger: einheiten.some((e) => wert(e).trifftFlieger),
       // Wer gar nicht angreift (der Moench, einheiten AC-37), geht nur hin.
       friedlich,
       // Lauter Moenche, die nicht ruhen (einheiten AC-38).
@@ -2138,7 +2143,7 @@ export class Ansicht {
     // Der Server greift an, was naeher als ein Feld am gesendeten Ort steht
     // (kampf AC-1) - vor allem anderen, also auch hier.
     if (kann && ziel.art !== 'angreifen' && ziel.art !== 'bekehren') {
-      const feind = !kann.friedlich ? this.feindlichAn(ziel.sende, kann.nurGebaeude) : kann.bekehrer ? this.bekehrbarAn(ziel.sende) : null;
+      const feind = !kann.friedlich ? this.feindlichAn(ziel.sende, kann.nurGebaeude, kann.trifftFlieger) : kann.bekehrer ? this.bekehrbarAn(ziel.sende) : null;
       if (feind) ziel = { art: kann.friedlich ? 'bekehren' : 'angreifen', x: feind.x, y: feind.y, sende: ziel.sende };
       // Steht dort kein Gegner, heilt der Server den Verletzten, der naeher
       // als ein Feld am gesendeten Ort steht (einheiten AC-65).
@@ -2186,8 +2191,14 @@ export class Ansicht {
       for (const einheit of this.nachher.values()) {
         if (einheit.s || !this.feindlich(einheit.b) || !this.zuSehen(einheit.b, einheit.x, einheit.y)) continue;
         if (nicht && (this.werte.einheiten[this.arten[einheit.k]]?.klassen || []).some((klasse) => nicht.includes(klasse))) continue;
+        // Den Drachen trifft nur, wer Flieger trifft (kampf AC-23) - fuer die
+        // anderen ist der Klick auf ihn ein Gang. Getroffen wird er am Leib in
+        // der Flughoehe oder ueber seinem Schatten.
+        const fliegt = this.werte.einheiten[this.arten[einheit.k]]?.fliegt;
+        if (fliegt && !kann.bekehrer && !kann.trifftFlieger) continue;
         const p = this.zuBild(einheit.x, einheit.y);
-        const abstand = Math.hypot(p.x - px, p.y - figur * KOERPER_MITTE - py);
+        let abstand = Math.hypot(p.x - px, p.y - figur * KOERPER_MITTE - py);
+        if (fliegt) abstand = Math.min(abstand, Math.hypot(p.x - px, p.y - this.flughoeheBild() - py));
         if (abstand < weite) {
           weite = abstand;
           bestes = einheit;
@@ -2431,7 +2442,11 @@ export class Ansicht {
       const einheit = this.nachher.get(id);
       return this.werte.einheiten[this.arten[einheit.k]]?.bekehren && !einheit.r;
     });
-    const feind = !friedlich ? this.feindlichAn(ziel, nurGebaeude) : bekehrer ? this.bekehrbarAn(ziel) : null;
+    const trifftFlieger = [...this.ausgewaehlt].some((id) => {
+      const einheit = this.nachher.get(id);
+      return einheit && this.werte.einheiten[this.arten[einheit.k]]?.trifftFlieger;
+    });
+    const feind = !friedlich ? this.feindlichAn(ziel, nurGebaeude, trifftFlieger) : bekehrer ? this.bekehrbarAn(ziel) : null;
     this.zielzeichen = {
       x: feind ? feind.x : Math.round(ziel.x),
       y: feind ? feind.y : Math.round(ziel.y),
@@ -2600,7 +2615,7 @@ export class Ansicht {
     return liste;
   }
 
-  feindlichAn(ziel, nurGebaeude = false) {
+  feindlichAn(ziel, nurGebaeude = false, trifftFlieger = true) {
     let bestes = null;
     let besterAbstand = 1.01;
     for (const einheit of this.nachher.values()) {
@@ -2615,7 +2630,9 @@ export class Ansicht {
     }
     // Wie im Server: liegt eine Einheit unter dem Klick, zaehlt das Gebaeude
     // dahinter nicht - wer nur Gebaeude angreift, geht dann hin.
-    if (bestes) return nurGebaeude ? null : { x: bestes.x, y: bestes.y };
+    // Den Drachen (kampf AC-23) nur, wer ihn trifft - sonst ist es ein Gang.
+    const fliegt = bestes && this.werte.einheiten[this.arten[bestes.k]]?.fliegt;
+    if (bestes) return nurGebaeude || (fliegt && !trifftFlieger) ? null : { x: bestes.x, y: bestes.y };
     const zx = Math.round(ziel.x);
     const zy = Math.round(ziel.y);
     for (const gebaeude of this.gebaeude.values()) {
@@ -2905,7 +2922,10 @@ export class Ansicht {
       const y = alt ? alt.y + (einheit.y - alt.y) * anteil : einheit.y;
       // Fremde Einheiten zeigt nur, wer sie gerade sieht (kampf AC-11, AC-12).
       if (!this.zuSehen(einheit.b, x, y)) continue;
-      stehend.push({ tiefe: x + y, x, y, art: 'einheit', einheit, alt });
+      // Wer fliegt (einheiten AC-52), fliegt ueber Baeume und Daecher: er
+      // kommt nach allem, was am Boden steht - solange er nicht gefallen ist.
+      const fliegt = !einheit.s && this.werte.einheiten[this.arten[einheit.k]]?.fliegt;
+      stehend.push({ tiefe: fliegt ? x + y + 1e6 : x + y, x, y, art: 'einheit', einheit, alt });
     }
     // Gleiche Tiefe: der Vorrat zuerst, sonst verschwindet ein Sammler im Baum,
     // vor dem er steht.
@@ -3709,9 +3729,102 @@ export class Ansicht {
 
   // `stueck`: bei einem langen Gebaeude der Streifen, der jetzt an der Reihe
   // ist (`gebaeudeMalen`); Balken und Rand kommen mit dem ersten.
-  /** Die Eier am Boden aus dem Zustand (einheiten AC-51) - fehlt `ei`, liegt keines in Sicht. */
+  /** Wie hoch ueber dem Boden der Drache im Bild fliegt, in Bildpunkten. */
+  flughoeheBild() {
+    const drache = gerendert('drache');
+    const zoom = this.kamera.zoom;
+    return drache?.flughoehe ? (drache.flughoehe / drache.feldbreite) * 2 * HALB_B * zoom : this.figurenHoehe() * 1.5;
+  }
+
+  /**
+   * Der Feuerstoss des Drachen (einheiten AC-52): aus der Hoehe, in der er
+   * fliegt, schraeg hinab auf die Stelle, die brennt - am Ziel ein Kreis von
+   * einem Feld, die Flaeche des Schadens. Mit Tafel eine der gerenderten
+   * Flammen (`feuer` in geschoss.json), in Flugrichtung gedreht; sonst eine
+   * gluehende Kugel mit Schweif.
+   */
+  feuerZeichnen(stift, p, t, amBoden, zoom, tafel, massstab) {
+    const hoehe = this.flughoeheBild();
+    const r = Math.max(4, 0.32 * HALB_B * zoom);
+    const ort = (s) => {
+      const b = amBoden(p, s);
+      return { x: b.x, y: b.y - hoehe * (1 - s) };
+    };
+    if (tafel) {
+      const kopf = ort(t);
+      const vorn = ort(Math.max(t, 0.08));
+      const hinten = ort(Math.max(t, 0.08) - 0.08);
+      // Die Flamme flackert: je Zehntel des Flugs eine andere Gestalt.
+      const gestalt = tafel.feuer[Math.floor(t * 10) % tafel.feuer.length];
+      stift.save();
+      stift.translate(kopf.x, kopf.y);
+      stift.rotate(Math.atan2(vorn.y - hinten.y, vorn.x - hinten.x));
+      zelleZeichnen(stift, tafel, 0, gestalt, 0, 0, massstab * 0.9);
+      stift.restore();
+      this.geschosseGezeichnet.tafel += 1;
+    }
+    for (let i = tafel ? -1 : 3; i >= 0; i--) {
+      const s = Math.max(0, t - i * 0.07);
+      const b = amBoden(p, s);
+      const y = b.y - hoehe * (1 - s);
+      const rr = r * (1 - i * 0.2);
+      const verlauf = stift.createRadialGradient(b.x, y, rr * 0.1, b.x, y, rr);
+      verlauf.addColorStop(0, i ? 'rgba(255, 196, 92, 0.5)' : '#fff2b0');
+      verlauf.addColorStop(0.5, i ? 'rgba(240, 110, 30, 0.4)' : '#ff9a2e');
+      verlauf.addColorStop(1, 'rgba(180, 40, 10, 0)');
+      stift.fillStyle = verlauf;
+      stift.beginPath();
+      stift.arc(b.x, y, rr, 0, Math.PI * 2);
+      stift.fill();
+    }
+    if (t > 0.8) {
+      const b = amBoden(p, 1);
+      const a = (t - 0.8) / 0.2;
+      stift.fillStyle = `rgba(255, 120, 30, ${0.35 * (1 - a * 0.5)})`;
+      stift.beginPath();
+      stift.ellipse(b.x, b.y, 2 * HALB_B * zoom * (0.6 + 0.4 * a), 2 * HALB_H * zoom * (0.6 + 0.4 * a), 0, 0, Math.PI * 2);
+      stift.fill();
+    }
+    if (!tafel) this.geschosseGezeichnet.strich += 1;
+  }
+
+  /**
+   * Die Eier am Boden aus dem Zustand (einheiten AC-51) - fehlt `ei`, liegt
+   * keines in Sicht. `gefallen`: dort fiel ein Drache, das sehen alle
+   * (AC-53), auch auf der Uebersichtskarte.
+   */
   eierMerken(liste) {
-    this.eier = new Map((liste || []).map(([i, x, y, nest]) => [i, { i, x, y, nest: Boolean(nest) }]));
+    this.eier = new Map((liste || []).map(([i, x, y, nest, gefallen]) => [i, { i, x, y, nest: Boolean(nest), gefallen: Boolean(gefallen) }]));
+  }
+
+  /**
+   * Der Ruf des Drachen (bauen AC-35) und wo einer fiel (einheiten AC-53) -
+   * beides schickt der Server an alle, in jedem Zustand, solange es gilt.
+   */
+  drachenMerken(nachricht) {
+    this.drachenrufe = (nachricht.dr || []).map(([wer, rest, moenche, x, y]) => ({ wer, rest, moenche, x, y }));
+    this.drachenfaelle = (nachricht.df || []).map(([wer, x, y, rest]) => ({ wer, x, y, rest }));
+    // Die Wunder (spielziel AC-29): wem, wie lange noch, wo - an alle, auch im Nebel.
+    this.wunderuhren = (nachricht.wu || []).map(([wer, rest, x, y]) => ({ wer, rest, x, y }));
+  }
+
+  /** Was die Ansage oben zu den Wundern sagt (spielziel AC-29); `name` ist null fuer einen selbst. */
+  wunderAnsagen() {
+    return (this.wunderuhren || []).map((w) => ({ name: w.wer === this.ich ? null : this.spieler.get(w.wer)?.name || '?', rest: w.rest }));
+  }
+
+  /**
+   * Was die Ansage oben dazu sagt: je Ruf, wer ruft, wie lange noch und ob
+   * die Uhr steht; je Fall, wessen Drache fiel. `name` ist null fuer einen
+   * selbst.
+   */
+  drachenAnsagen() {
+    const name = (wer) => (wer === this.ich ? null : this.spieler.get(wer)?.name || '?');
+    const moenche = this.werte?.drache?.moenche || 5;
+    return [
+      ...(this.drachenrufe || []).map((r) => ({ art: 'ruf', name: name(r.wer), rest: r.rest, steht: r.moenche < moenche, moenche: r.moenche, noetig: moenche })),
+      ...(this.drachenfaelle || []).map((f) => ({ art: 'fall', name: name(f.wer) })),
+    ];
   }
 
   /**
@@ -3862,6 +3975,10 @@ export class Ansicht {
       const t = Math.min(1, (jetzt - p.start) / p.dauer);
       // Der spaetere Pfeil einer Salve ist noch nicht von der Sehne.
       if (t < 0) continue;
+      if (p.feuer) {
+        this.feuerZeichnen(stift, p, t, amBoden, zoom, tafel?.feuer ? tafel : null, massstab);
+        continue;
+      }
       if (p.stein && tafel) {
         const mitte = ort(p, t);
         const boden = amBoden(p, t);

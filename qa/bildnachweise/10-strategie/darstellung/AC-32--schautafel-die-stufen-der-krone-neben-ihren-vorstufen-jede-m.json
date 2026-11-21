@@ -1,0 +1,9 @@
+{
+  "spec": "10-strategie/darstellung.md",
+  "ac": "AC-32",
+  "titel": "Schautafel: die Stufen der Krone neben ihren Vorstufen - jede mit eigener gerenderter Figur, dazu der Drache",
+  "datei": "e2e/tests/strategie-krone-figuren.spec.mjs",
+  "pfad": [
+    "darstellung AC-32: jede Stufe der Krone hat eine eigene gerenderte Figur, die sich von ihrer Vorstufe unterscheidet; Bergfried, Wunder, Drache und Ei eigene Bilder"
+  ]
+}

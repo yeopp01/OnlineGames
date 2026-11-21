@@ -1640,6 +1640,65 @@ function burg(stift, e, farbe) {
 // Dinge, die hier getauscht werden -, in der Mitte Faesser und Saecke. Die
 // Planen sind erdig gefaerbt; die Spielerfarbe steht wie ueberall an Fahne
 // und Wimpeln.
+/**
+ * Das Wunder (bauen AC-51), gezeichnet nur fuer `?bilder=0`: drei Terrassen
+ * aus hellem Stein uebereinander, oben ein Turm mit Kuppel und der Fahne in
+ * Spielerfarbe, an der Front ein Banner - groesser und heller als die Burg,
+ * damit es niemand fuer eine haelt.
+ */
+function wunder(stift, e, farbe) {
+  const W = 2.4 * e;
+  vorbereiten(stift, e, W, W / 2);
+  const P = (u, v, z = 0) => [(u - v) * W, ((u + v - 1) * W) / 2 - z];
+  const quader = (u0, v0, u1, v1, z0, z1, links, rechts, oben, reihen) => {
+    const [L, B, R, T] = [P(u0, v1, z0), P(u1, v1, z0), P(u1, v0, z0), P(u0, v0, z0)];
+    const h = z1 - z0;
+    flaeche(stift, [L, B, hoch(B, h), hoch(L, h)], verlauf(stift, links, hoch(L, h), B, 0.06, -0.24));
+    mauerwerk(stift, L, B, h, e, { reihen, steine: 7, grund: links });
+    flaeche(stift, [B, R, hoch(R, h), hoch(B, h)], verlauf(stift, rechts, hoch(B, h), R, 0.12, -0.14));
+    mauerwerk(stift, B, R, h, e, { reihen, steine: 7, grund: rechts });
+    flaeche(stift, [L, B, R, T].map((p) => hoch(p, h)), oben);
+    return { L, B, R, T, h };
+  };
+  const stufen = [[0.06, 0, 0.7], [0.18, 0.7, 1.3], [0.3, 1.3, 1.85]];
+  for (const [r, z0, z1] of stufen) {
+    quader(r, r, 1 - r, 1 - r, z0 * e, z1 * e, '#c9bea6', '#e2d8c0', '#b3a78e', 3);
+  }
+  // Eine Treppe mitten an der linken Front, bis zur obersten Terrasse.
+  for (let i = 0; i < 6; i++) {
+    const u0 = 0.44;
+    const u1 = 0.56;
+    const v = 0.94 - i * 0.04;
+    const z = i * 0.31 * e;
+    flaeche(stift, [P(u0, v, z), P(u1, v, z), P(u1, v - 0.04, z + 0.31 * e), P(u0, v - 0.04, z + 0.31 * e)], i % 2 ? '#d8cdb4' : '#cfc3a9', false);
+  }
+  // Der Turm: vier Seiten bis hoch hinauf, dann die Kuppel.
+  const t0 = 0.4;
+  const t1 = 0.6;
+  const turm = quader(t0, t0, t1, t1, 1.85 * e, 3.9 * e, '#d6ccb3', '#ece3cd', '#c2b79e', 5);
+  // Das Banner an der linken Seite des Turms in Spielerfarbe.
+  const b0 = zwischen(hoch(turm.L, turm.h * 0.95), hoch(turm.B, turm.h * 0.95), 0.3);
+  const b1 = zwischen(hoch(turm.L, turm.h * 0.95), hoch(turm.B, turm.h * 0.95), 0.7);
+  flaeche(stift, [b0, b1, hoch(b1, -1.1 * e), zwischen(hoch(b0, -1.3 * e), hoch(b1, -1.3 * e), 0.5), hoch(b0, -1.1 * e)],
+    verlauf(stift, farbe, b0, hoch(b1, -1.2 * e), 0.12, -0.25));
+  // Die Kuppel: ein Halbrund ueber dem Turm, Gold mit Licht von links.
+  const mitte = P(0.5, 0.5, 3.9 * e);
+  const r = 0.2 * W;
+  const kuppel = stift.createRadialGradient(mitte[0] - r * 0.4, mitte[1] - r * 0.7, r * 0.1, mitte[0], mitte[1], r * 1.2);
+  kuppel.addColorStop(0, '#fff0b8');
+  kuppel.addColorStop(0.5, '#d9a93a');
+  kuppel.addColorStop(1, '#8a6418');
+  stift.fillStyle = kuppel;
+  stift.beginPath();
+  stift.ellipse(mitte[0], mitte[1], r, r * 1.05, 0, Math.PI, 0);
+  stift.ellipse(mitte[0], mitte[1], r, r * 0.5, 0, 0, Math.PI);
+  stift.fill();
+  stift.strokeStyle = 'rgba(60, 40, 10, 0.55)';
+  stift.lineWidth = Math.max(0.6, e * 0.03);
+  stift.stroke();
+  fahne(stift, [mitte[0], mitte[1] - r * 1.05], e, farbe, 1.2);
+}
+
 function markt(stift, e, farbe) {
   const W = 2.4 * e;
   vorbereiten(stift, e, W, W / 2);
@@ -1889,6 +1948,8 @@ export const GEBAEUDE = {
   burg: { name: 'Burg', zeichnen: burg, halbeBreite: 2.4, trefferBreite: 2.5, trefferOben: 4.4, trefferUnten: 1.3, schussHoehe: 3.2 },
   // Vier mal vier Felder, flach bis auf die Halle hinten (bauen AC-33).
   markt: { name: 'Markt', zeichnen: markt, halbeBreite: 2.4, trefferBreite: 2.5, trefferOben: 3.8, trefferUnten: 1.3 },
+  // Fuenf mal fuenf Felder, das hoechste Gebaeude (bauen AC-51).
+  wunder: { name: 'Wunder', zeichnen: wunder, halbeBreite: 2.4, trefferBreite: 2.5, trefferOben: 5.2, trefferUnten: 1.3 },
 };
 
 /**

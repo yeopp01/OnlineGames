@@ -1,0 +1,10 @@
+{
+  "spec": "10-strategie/bauen.md",
+  "ac": "AC-35",
+  "titel": "Anna ruft am Kloster den Drachen: fünf Mönche stehen dort, die Leiste und die Ansage oben zeigen die Uhr - Bert sieht dieselbe Ansage",
+  "datei": "e2e/tests/strategie-drache.spec.mjs",
+  "pfad": [
+    "Drache",
+    "bauen AC-35: am Kloster mit Ei ruft ein Knopf den Drachen - fuenf Moenche stehen dort, beide sehen oben die Uhr"
+  ]
+}

@@ -2,7 +2,7 @@
 
 **Bereich:** Strategie
 **Kuerzel:** einheiten
-**Stand:** 55/62 fertig · 6 offen · 1 zurueckgestellt
+**Stand:** 58/62 fertig · 1 in QA · 2 offen · 1 zurueckgestellt
 
 ## Zweck
 
@@ -281,7 +281,8 @@ Werte aus der [Vorlage](../../docs/strategie/vorlage-aoe2.md), als Daten in
 - **AC-38** `fertig` **Mönch bekehrt** — Ein Befehl auf eine fremde Einheit in
   Reichweite 9: nach einer Dauer, deren Zufall aus dem Startwert der Partie
   kommt (deterministisch), gehört sie dem Spieler des Mönchs. Danach ruht
-  der Mönch eine Weile. Gebäude, Belagerung und Mönche bekehrt er nicht.
+  der Mönch eine Weile. Gebäude, Belagerung und Mönche bekehrt er nicht,
+  den Drachen (AC-52) auch nicht — und er heilt ihn nicht (gesetzt mit F9).
   Gebaut in Runde 135. Die Vorlage nennt nur die Reichweite; der Rest ist
   gesetzt wie im Original und steht als `bekehren` in den Daten: vor vier
   Sekunden nie, danach je Sekunde mit 28 %, nach zehn sicher — gezogen beim
@@ -339,11 +340,15 @@ Werte aus der [Vorlage](../../docs/strategie/vorlage-aoe2.md), als Daten in
   bei gleicher Form: 37 Gold je Fahrt, 18,0 je Minute, 90 % des
   Dorfbewohners (mit 0,86 wären es genau 20,0). Je Minute lohnt die lange
   Strecke mehr als die kurze.
-- **AC-41** `offen` **Ladung des Karrens sichtbar** — Auf dem Heimweg trägt
+- **AC-41** `fertig` **Ladung des Karrens sichtbar** — Auf dem Heimweg trägt
   der Karren sichtbar Gold (Säcke oder Truhen auf der Ladefläche), auf dem
   Hinweg nicht. Abgetrennt von AC-40 in Runde 161: das ist eine Änderung an
   der Figur, und die Figuren baut seit 2026-11-10 eine eigene Sitzung mit
   Blender neu. Der Server schickt die Ladung schon (`l`, `a` am Karren).
+  **Gebaut** (2026-11-21): die gerenderte Figur hat eigene Bilder mit Gold
+  (`stehen_g`, `gehen_g` in `marktkarren.json`), gewählt wie beim
+  Dorfbewohner aus `a` am Karren; gezeichnet (`?bilder=0`) steht eine offene
+  Truhe mit Gold statt Fass und Sack.
 
 ### Truppenstufen der Ritterzeit (Benutzer, 2026-11-13)
 
@@ -561,7 +566,7 @@ AC-19). Werte und Dauern sind Startwerte aus ADR-0014.
   auf ein eigenes Kloster legt es ab, jeder andere ist ein Gang. Mönch,
   Belagerung und Karren holen keines. Ist die Einstellung „Drache“ aus
   (AC-52), liegt keines.
-- **AC-52** `offen` **Der Drache fliegt und brennt** — Höchstens einer je Spieler.
+- **AC-52** `in-qa` **Der Drache fliegt und brennt** — Höchstens einer je Spieler.
   Er fliegt ohne Wegsuche über Mauern, Wald und Wasser, und sein Feuer ist
   Flächenschaden wie der Stein des Mangonels (`flaeche`,
   `welt.einschlaege`). Startwerte: 500 Leben, Tempo 1,5, Rüstung 2 gegen
@@ -571,15 +576,47 @@ AC-19). Werte und Dauern sind Startwerte aus ADR-0014.
   Armbrustschützen gewinnt; zehn Armbrustschützen töten ihn und verlieren
   dabei höchstens die Hälfte; KI gegen KI gewinnt, wer zuerst ruft, nicht
   öfter als 60 %. Eine Einstellung beim Eröffnen schaltet ihn ab.
-- **AC-53** `offen` **Wo er fällt, liegt Ei** — Stirbt der Drache, liegt an
+  **Gemessen** (2026-11-21, `tests/strategie-drache.test.mjs`, zwanzig
+  Startwerte, Anflug aus zufälligem Winkel aus 14 Feldern): mit den
+  Startwerten oben verlor die Burg allein nie — 15 Schaden + 200 sind 204
+  je Stoß gegen 4800 Leben, er fiel vorher. Mit 15 Schaden an Einheiten
+  töteten zehn Armbrustschützen ihn in einem von zwanzig, denn das Feuer
+  trifft dicht stehende Schützen zu mehreren. **Gesetzt** deshalb: **8
+  Schaden an Einheiten, +660 gegen Gebäude** — acht Stöße für die Burg.
+  Damit: Burg allein verliert 20 von 20 (der Drache behält 32 Leben, knapp:
+  eine Salve mehr und er fiele), Burg mit fünf Armbrustschützen rundum
+  gewinnt 20 von 20 (sie behält 201 bis 858 Leben), zehn
+  Armbrustschützen dicht beieinander töten ihn 20 von 20 und verlieren 1
+  bis 5, im Median 2. Das Fenster ist +640 bis +680; darunter verliert der
+  Drache gegen die Burg allein, darüber fällt die Burg mit Schützen. Fünf
+  Schützen auf einer Seite der Burg retten sie nicht immer (12 von 20) —
+  der Gefechtsstand verteilt sie rundum. Ein Feuerstoß im Flug trifft noch,
+  wenn der Drache im selben Augenblick fällt. **Offen** ist das vierte
+  Ziel, KI gegen KI: die KI ruft noch keinen Drachen (F12) — deshalb
+  `in-qa`. Im Kampf ist er für die Regeln eine Einheit mit `fliegt`: er
+  geht ohne Wegsuche geradeaus, auch genau auf das geklickte Feld über
+  Wasser, wacht wie jede Kampfeinheit, wird nicht geheilt und nicht
+  bekehrt, und der Prüfstand nimmt ihn von der Regel „steht auf begehbarem
+  Feld" aus.
+- **AC-53** `fertig` **Wo er fällt, liegt Ei** — Stirbt der Drache, liegt an
   der Stelle sein Ei; alle sehen die Ansage, und die Übersichtskarte zeigt
   die Stelle. Wer es heimträgt — auch der alte Besitzer —, kann neu rufen
   und bezahlt neu. Ein eigenes Wiederbeleben gibt es nicht.
-- **AC-54** `offen` **Der Drache frisst** — Er kostet laufend Nahrung, so viel wie
+  Fällt er über Wasser oder Wald, liegt das Ei auf dem nächsten begehbaren
+  Feld (`welt.freiesBodenfeld`). Ein gefallenes Ei sieht jeder, auch im
+  Nebel, bis es jemand aufhebt (`gefallen` am Ei, fünfter Wert in `ei`),
+  auf der Übersichtskarte als glühender Ring. **Gesetzt:** die Ansage
+  steht 20 Sekunden (`DRACHE.gefallen`). Fällt das Kloster während des
+  Rufs, ist das Bezahlte fort und das Ei liegt dort.
+- **AC-54** `fertig` **Der Drache frisst** — Er kostet laufend Nahrung, so viel wie
   fünf Bauern ernten (5 × 0,32 je Sekunde, rund 96 je Minute). Ist die
   Nahrung bei null, hungert er und verliert Leben, bis er fällt — wo er
   gerade ist (dann AC-53). Das ist die Bremse statt einer Sperre durch das
   Zeitalter: früh ist er ein großer Teil der Wirtschaft, spät ein kleiner.
+  Gefressen wird in ganzen Stücken aus einem Zähler je Spieler (1,6 je
+  Sekunde, `DRACHE.fressen`). **Gesetzt:** wer hungert, verliert 5 Leben je
+  Sekunde — 500 Leben halten 100 Sekunden; sobald wieder Nahrung da ist,
+  hört es auf.
 
 ### Aus dem ersten Spiel auf dem Server (2026-11-12)
 

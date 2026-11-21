@@ -1,0 +1,10 @@
+{
+  "spec": "10-strategie/spielziel.md",
+  "ac": "AC-29",
+  "titel": "Bert (rot) im Nebel: oben die Uhr bis zu Annas Sieg, auf der Übersichtskarte ihr Wunder golden umrandet",
+  "datei": "e2e/tests/strategie-wunder.spec.mjs",
+  "pfad": [
+    "Wunder",
+    "spielziel AC-29: Bert sieht im Nebel die Uhr und das Wunder auf der Uebersichtskarte; nach zehn Minuten hat Anna gewonnen"
+  ]
+}

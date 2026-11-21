@@ -21,6 +21,8 @@ const GEBAEUDEFELDER = ['leben', 'nahruestung', 'fernruestung', 'sicht', 'angrif
 // Werte eines Gebaeudes, die nur fuer eines gelten, das schiesst (gebaeudewert).
 const SCHUSSFELDER = new Set(['angriff', 'reichweite', 'nachladen']);
 const SUCHWEITE_ERSATZ = 12;
+// Wer fliegt (einheiten AC-52) - einmal aus den Daten gelesen.
+const FLIEGER = Object.keys(EINHEITEN).filter((art) => EINHEITEN[art].fliegt);
 // So lange liegt ein Toter noch im Bild, bevor er aus dem Zustand faellt
 // (kampf AC-10): lang genug, um zu sehen, was passiert ist.
 const TOT_SEKUNDEN = 2;
@@ -90,6 +92,10 @@ const GESCHWINDIGKEITEN = [1, 1.5, 2];
 // AC-21, ADR-0013): erst danach sind die frueheren Verbuendeten Gegner. Die
 // Zahl steht im ADR - genug, um Truppen aus dem fremden Dorf zu holen.
 const KUENDIGUNG_SEKUNDEN = 60;
+// So lange muss ein fertiges Wunder stehen, bis sein Besitzer gewinnt
+// (spielziel AC-29) - zehn Spielminuten wie in der Vorlage, als Takte
+// gerechnet, also auch mit der Spielgeschwindigkeit.
+const WUNDER_SEKUNDEN = 600;
 // So lange liegen die Truemmer eines gefallenen Gebaeudes im Bild
 // (darstellung AC-26). Reine Darstellung: der Platz ist sofort frei.
 const RUINE_SEKUNDEN = 20;
@@ -140,6 +146,7 @@ const GEBAEUDE_NAMEN = {
   tor: 'Das Tor',
   burg: 'Die Burg',
   markt: 'Der Markt',
+  wunder: 'Das Wunder',
 };
 
 // Dasselbe für die Einheiten (einheiten AC-23).
@@ -354,17 +361,21 @@ class Welt {
     this.drachenAn = einstellungen.drache !== 'aus';
     // Die Dracheneier (einheiten AC-51): jedes an genau einem Ort - am Boden
     // (`x`, `y`), bei einem Traeger (`traeger`) oder in einem Kloster
-    // (`kloster`). Wo sie liegen, sagt die Karte.
+    // (`kloster`) - oder es ist ein Drache (`drache`, einheiten AC-52). Wo
+    // sie liegen, sagt die Karte. `gefallen`: hier fiel ein Drache, das
+    // sehen alle (AC-53).
     // `nest` ist der Platz aus der Karte: dort liegt es in seiner Mulde.
-    /** @type {Map<number, {id: number, x: number, y: number, traeger: number | null, kloster: number | null, nest: {x: number, y: number}}>} */
+    /** @type {Map<number, {id: number, x: number, y: number, traeger: number | null, kloster: number | null, drache: number | null, gefallen: boolean, nest: {x: number, y: number}}>} */
     this.eier = new Map();
+    /** Faelle des Drachen (einheiten AC-53): wer, wo, bis zu welchem Takt die Ansage steht. */
+    this.drachenFaelle = [];
     if (this.drachenAn) {
       // Eigene Nummern, nicht aus `naechsteId`: sonst verschoeben die Eier
       // die Nummern jeder Einheit und jedes Gebaeudes, und eine Partie der
       // KI verliefe anders als ohne sie.
       for (const { x, y } of this.karte.eier || []) {
         const id = this.eier.size + 1;
-        this.eier.set(id, { id, x, y, traeger: null, kloster: null, nest: { x, y } });
+        this.eier.set(id, { id, x, y, traeger: null, kloster: null, drache: null, gefallen: false, nest: { x, y } });
       }
     }
     // Das Ende der Partie, sobald es feststeht (spielziel AC-5, AC-20):
@@ -1097,7 +1108,7 @@ class Welt {
     // Auf einem Ei am Boden baut niemand (einheiten AC-51): darunter liesse
     // es sich nicht mehr anklicken.
     for (const ei of this.eier?.values() || []) {
-      if (ei.traeger === null && ei.kloster === null && ei.x >= x0 && ei.x <= x1 && ei.y >= y0 && ei.y <= y1) return false;
+      if (this.eiAmBoden(ei) && ei.x >= x0 && ei.x <= x1 && ei.y >= y0 && ei.y <= y1) return false;
     }
     // Begehbare Gebaeude (Farmen) belegen kein Feld der Karte - sie werden hier
     // eigens ausgeschlossen, damit niemand ueber sie baut.
@@ -1317,6 +1328,11 @@ class Welt {
     if (noetig > spieler.zeitalter) {
       return { fehler: `${GEBAEUDE_NAMEN[art] || art} gibt es erst ${ZEITALTER[noetig].ab}.` };
     }
+    // Hoechstens so viele je Spieler (bauen AC-51) - die Baustelle zaehlt mit.
+    const grenze = GEBAEUDE[art].hoechstens;
+    if (grenze && [...this.gebaeude.values()].filter((g) => g.besitzer === spielerId && g.art === art).length >= grenze) {
+      return { fehler: `${GEBAEUDE_NAMEN[art] || art} gibt es nur ${grenze === 1 ? 'einmal' : `${grenze}-mal`} je Spieler.` };
+    }
     const x = Math.round(Number(ziel.x));
     const y = Math.round(Number(ziel.y));
     // Ein Tor auf der eigenen Mauer ersetzt ihre Felder dort (bauen AC-31).
@@ -1447,6 +1463,11 @@ class Welt {
   // seiner Mitte, geht sie den Rest - die Suche allein lieferte dann keinen
   // Weg, und ein Bauer gab 0,04 Felder vor dem Ziel auf (Pruefstand, Runde 44).
   wegNach(einheit, ziel) {
+    // Wer fliegt, sucht keinen Weg (einheiten AC-52): geradeaus, ueber
+    // Mauern, Wald und Wasser.
+    if (EINHEITEN[einheit.art].fliegt) {
+      return einheit.x === ziel.x && einheit.y === ziel.y ? [] : [{ x: ziel.x, y: ziel.y }];
+    }
     const feld = this.feldVon(einheit);
     if (feld.x === ziel.x && feld.y === ziel.y) {
       return einheit.x === ziel.x && einheit.y === ziel.y ? [] : [{ x: ziel.x, y: ziel.y }];
@@ -1724,6 +1745,8 @@ class Welt {
         return this.entlassen(spielerId, nachricht);
       case 'abruesten':
         return this.abruesten(spielerId, nachricht.einheiten);
+      case 'rufen':
+        return this.rufen(spielerId, nachricht.gebaeude);
       default:
         return this.befehl(spielerId, nachricht.einheiten, nachricht.ziel, Boolean(nachricht.angriffslauf),
           Boolean(nachricht.anhaengen));
@@ -2050,6 +2073,8 @@ class Welt {
       this.baustelleTakten(gebaeude);
       return;
     }
+    // Der Ruf des Drachen laeuft neben der Schlange (bauen AC-35).
+    if (gebaeude.ruf) this.rufTakten(gebaeude, bevoelkerung);
     if (!gebaeude.schlange.length) return;
     const spieler = this.spielerVon(gebaeude.besitzer);
     const belegt = bevoelkerung.get(spieler.id) || 0;
@@ -2305,7 +2330,7 @@ class Welt {
       // fuer den, der auf Befehl angreift. Wer sich von selbst wehrt (`heimat`)
       // oder im Angriffslauf kaempft, hat keinen Befehl, an den sich etwas
       // haengen liesse: fuer ihn ist es ein Befehl wie ohne Umschalt.
-      const hinten = feind && !EINHEITEN[einheit.art].nurGebaeude ? feind : feindBau;
+      const hinten = feind && this.kannTreffen(einheit, feind) ? feind : feindBau;
       if (anhaengen && hinten && einheit.auftrag?.art === 'angreifen' && !einheit.auftrag.heimat
         && !einheit.angriffslauf && this.einheitenwert(einheit.besitzer, einheit.art, 'angriff') > 0) {
         const schon = einheit.auftrag.ziel === hinten.id || einheit.angriffe.some((a) => a.ziel === hinten.id);
@@ -2361,8 +2386,9 @@ class Welt {
         continue;
       }
       // Wer nur Gebaeude angreift (die Ramme, einheiten AC-35), geht zu einer
-      // Einheit nur hin.
-      if ((feindBau || (feind && !EINHEITEN[einheit.art].nurGebaeude))
+      // Einheit nur hin - und wer den Drachen nicht trifft (kampf AC-23), zu
+      // ihm.
+      if ((feindBau || (feind && this.kannTreffen(einheit, feind)))
         && this.einheitenwert(einheit.besitzer, einheit.art, 'angriff') > 0) {
         const opfer = feind || feindBau;
         // Mehrere Angreifer stellen sich um das Ziel herum, statt uebereinander
@@ -2427,6 +2453,9 @@ class Welt {
    * @returns {{x: number, y: number}} das Feld, zu dem es wirklich geht
    */
   gangBeginnen(einheit, feld, gemeint = feld, gebiete = []) {
+    // Wer fliegt, braucht keinen Platz in der Aufstellung am Boden: er fliegt
+    // genau dorthin, wo geklickt wurde, auch ueber Wasser (einheiten AC-52).
+    if (EINHEITEN[einheit.art].fliegt) feld = { x: gemeint.x, y: gemeint.y };
     let weg = this.wegNach(einheit, feld);
     const hier = this.feldVon(einheit);
     if (!weg.length && (hier.x !== feld.x || hier.y !== feld.y)) {
@@ -2903,10 +2932,16 @@ class Welt {
   /** Das Ei am Boden hoechstens ein Feld vom Klick, wenn der Spieler es sieht. */
   eiAn(spielerId, x, y) {
     for (const ei of this.eier.values()) {
-      if (ei.traeger !== null || ei.kloster !== null) continue;
-      if (Math.hypot(ei.x - x, ei.y - y) <= 1.01 && this.sieht(spielerId, ei.x, ei.y)) return ei;
+      if (!this.eiAmBoden(ei)) continue;
+      // Wo ein Drache fiel, sieht jeder das Ei (einheiten AC-53).
+      if (Math.hypot(ei.x - x, ei.y - y) <= 1.01 && (ei.gefallen || this.sieht(spielerId, ei.x, ei.y))) return ei;
     }
     return null;
+  }
+
+  /** Ob das Ei am Boden liegt - nicht getragen, nicht im Kloster, kein Drache. */
+  eiAmBoden(ei) {
+    return ei.traeger === null && ei.kloster === null && ei.drache === null;
   }
 
   /** Das Ei, das diese Einheit traegt - oder null. */
@@ -2937,7 +2972,7 @@ class Welt {
   eiTakten(einheit) {
     const ei = this.eier.get(einheit.auftrag.ei);
     // Schon aufgehoben oder im Kloster: dann gibt es nichts mehr zu holen.
-    if (!ei || ei.traeger !== null || ei.kloster !== null) {
+    if (!ei || !this.eiAmBoden(ei)) {
       einheit.auftrag = null;
       return;
     }
@@ -2954,6 +2989,7 @@ class Welt {
     }
     // Was er sonst traegt, laesst er fallen: das Ei ist seine Ladung.
     ei.traeger = einheit.id;
+    ei.gefallen = false;
     einheit.ladung = 1;
     einheit.ladungsart = 'ei';
     einheit.angefangen = 0;
@@ -3008,6 +3044,162 @@ class Welt {
     einheit.ladungsart = null;
     einheit.auftrag = null;
     this.gebaeudeGeaendert(kloster);
+  }
+
+  // ---- Der Drache (bauen AC-35, einheiten AC-52 bis AC-54) ---------------
+
+  /** Der lebende Drache dieses Spielers - oder null. Es gibt hoechstens einen. */
+  dracheVon(spielerId) {
+    for (const e of this.einheiten.values()) if (!e.tot && e.besitzer === spielerId && EINHEITEN[e.art].gerufen) return e;
+    return null;
+  }
+
+  /** Das Kloster, an dem dieser Spieler gerade ruft - oder null. */
+  rufVon(spielerId) {
+    for (const g of this.gebaeude.values()) if (g.ruf && g.besitzer === spielerId) return g;
+    return null;
+  }
+
+  /**
+   * Den Drachen rufen (bauen AC-35): ein eigenes, fertiges Kloster mit einem
+   * Ei, bezahlt beim Beginn. Hoechstens ein Drache je Spieler - wer einen hat
+   * oder schon ruft, ruft nicht. Ist die Einstellung "Drache" aus, gibt es
+   * den Auftrag nicht.
+   */
+  rufen(spielerId, gebaeudeId) {
+    if (!this.drachenAn) return { fehler: 'In dieser Partie gibt es keinen Drachen.' };
+    const kloster = this.gebaeude.get(gebaeudeId);
+    if (!kloster || kloster.besitzer !== spielerId) return { fehler: 'Das ist nicht dein Gebäude.' };
+    if (kloster.art !== 'kloster' || !kloster.fertig) return { fehler: 'Gerufen wird an einem fertigen Kloster.' };
+    const spieler = this.spielerVon(spielerId);
+    if (spieler.zeitalter < (EINHEITEN.drache.zeitalter || 0)) return { fehler: `Den Drachen gibt es erst ${ZEITALTER[EINHEITEN.drache.zeitalter].ab}.` };
+    const ei = [...this.eier.values()].find((e) => e.kloster === kloster.id);
+    if (!ei) return { fehler: 'Ohne Drachenei ruft niemand einen Drachen.' };
+    if (this.dracheVon(spielerId)) return { fehler: 'Du hast schon einen Drachen.' };
+    if (this.rufVon(spielerId)) return { fehler: 'Du rufst schon einen Drachen.' };
+    const kosten = DRACHE.rufen.kosten;
+    const fehlt = Object.keys(kosten).find((r) => spieler[r] < kosten[r]);
+    if (fehlt) return { fehler: `Zu wenig ${ROHSTOFF_NAMEN[fehlt]}.` };
+    for (const [r, m] of Object.entries(kosten)) spieler[r] -= m;
+    kloster.ruf = { ei: ei.id, takte: 0, moenche: this.moencheAm(kloster) };
+    this.gebaeudeGeaendert(kloster);
+    return {};
+  }
+
+  /** Wie viele eigene, lebende Moenche am Kloster stehen (bauen AC-35). */
+  moencheAm(kloster) {
+    let n = 0;
+    for (const e of this.einheiten.values()) {
+      if (e.tot || e.besitzer !== kloster.besitzer || !EINHEITEN[e.art].heilen || e.weg.length) continue;
+      if (this.abstandZu(e, kloster) <= DRACHE.rufen.umkreis) n++;
+    }
+    return n;
+  }
+
+  /**
+   * Die Uhr des Rufs laeuft nur, solange `DRACHE.rufen.moenche` eigene Moenche
+   * am Kloster stehen. Ist sie um, steigt der Drache aus dem Kloster - das
+   * Ei ist nun er. Ist kein Wohnraum frei, wartet er wie jede Einheit
+   * (bauen AC-15).
+   */
+  rufTakten(kloster, bevoelkerung) {
+    const ruf = kloster.ruf;
+    const moenche = this.takt % WACHE_TAKTE === 0 ? this.moencheAm(kloster) : ruf.moenche;
+    if (moenche !== ruf.moenche) {
+      ruf.moenche = moenche;
+      this.gebaeudeGeaendert(kloster);
+    }
+    if (moenche < DRACHE.rufen.moenche) return;
+    if (ruf.takte < DRACHE.rufen.sekunden * TAKTE_PRO_SEKUNDE) {
+      ruf.takte++;
+      return;
+    }
+    const spieler = this.spielerVon(kloster.besitzer);
+    const belegt = bevoelkerung.get(spieler.id) || 0;
+    if (belegt >= this.wohnraum(spieler)) return;
+    const ei = this.eier.get(ruf.ei);
+    const { x0, y0, x1, y1 } = this.grundflaeche(kloster.art, kloster.x, kloster.y, kloster.quer);
+    const drache = this.einheitAnlegen(spieler.id, (x0 + x1) / 2, (y0 + y1) / 2, 'drache');
+    kloster.ruf = null;
+    if (ei) {
+      ei.kloster = null;
+      ei.drache = drache.id;
+    }
+    drache.hunger = 0;
+    spieler.futter = 0;
+    spieler.ausgebildet++;
+    spieler.ausgebildetWert += kostenSumme(DRACHE.rufen.kosten);
+    bevoelkerung.set(spieler.id, belegt + 1);
+    this.gebaeudeGeaendert(kloster);
+  }
+
+  /**
+   * Der Drache frisst (einheiten AC-54): je Sekunde `nahrungJeSekunde`
+   * Nahrung, abgebucht in ganzen Stuecken. Ist keine da, hungert er und
+   * verliert `hungerJeSekunde` Leben, bis er faellt - wo er gerade ist.
+   * Kein Schlag, kein Angreifer: niemand bekommt Punkte, und gemeldet wird
+   * kein Angriff.
+   */
+  drachenFuettern() {
+    for (const drache of this.einheiten.values()) {
+      if (drache.tot || !EINHEITEN[drache.art].gerufen) continue;
+      const spieler = this.spielerVon(drache.besitzer);
+      spieler.futter = (spieler.futter || 0) + DRACHE.fressen.nahrungJeSekunde / TAKTE_PRO_SEKUNDE;
+      if (spieler.futter >= 1) {
+        const stueck = Math.floor(spieler.futter);
+        const gegessen = Math.min(stueck, Math.floor(spieler.nahrung));
+        spieler.nahrung -= gegessen;
+        spieler.futter -= stueck;
+        // Was fehlte, ist Hunger.
+        if (gegessen < stueck) drache.hungert = true;
+        else drache.hungert = false;
+      }
+      if (!drache.hungert) continue;
+      drache.hunger = (drache.hunger || 0) + DRACHE.fressen.hungerJeSekunde / TAKTE_PRO_SEKUNDE;
+      if (drache.hunger < 1) continue;
+      const verlust = Math.floor(drache.hunger);
+      drache.hunger -= verlust;
+      drache.leben -= verlust;
+      if (drache.leben <= 0) {
+        drache.fallrichtung = null;
+        this.einheitSterben(drache);
+      }
+    }
+  }
+
+  /**
+   * Faellt der Drache, liegt sein Ei dort (einheiten AC-53) - auf dem
+   * naechsten Feld, auf dem man es aufheben kann, denn er stirbt auch ueber
+   * Wasser und Wald. Alle sehen die Ansage, und das Ei steht fuer alle auf
+   * der Karte, bis es einer aufhebt.
+   */
+  dracheFaellt(drache) {
+    const ei = [...this.eier.values()].find((e) => e.drache === drache.id);
+    const feld = this.freiesBodenfeld(drache);
+    if (ei) {
+      ei.drache = null;
+      ei.gefallen = true;
+      this.eiAblegen(ei, feld.x, feld.y);
+    }
+    this.drachenFaelle = this.drachenFaelle.filter((f) => f.bis > this.takt);
+    this.drachenFaelle.push({ wer: drache.besitzer, x: feld.x, y: feld.y, bis: this.takt + DRACHE.gefallen.sekunden * TAKTE_PRO_SEKUNDE });
+  }
+
+  /** Das naechste begehbare Feld ohne Gebaeude, ringweise um einen Punkt. */
+  freiesBodenfeld(um) {
+    const mx = Math.round(um.x);
+    const my = Math.round(um.y);
+    for (let r = 0; r < this.karte.groesse; r++) {
+      for (let dy = -r; dy <= r; dy++) {
+        for (let dx = -r; dx <= r; dx++) {
+          if (Math.max(Math.abs(dx), Math.abs(dy)) !== r) continue;
+          const x = mx + dx;
+          const y = my + dy;
+          if (karten.begehbar(this.karte, x, y) && !this.gebaeudeAn(x, y)) return { x, y };
+        }
+      }
+    }
+    return { x: mx, y: my };
   }
 
   /** Das Ei liegt hier am Boden - der Traeger fiel, das Kloster stuerzte. */
@@ -3530,6 +3722,23 @@ class Welt {
   }
 
   /**
+   * Ob ein Angreifer dieses Ziel treffen kann (kampf AC-23, einheiten
+   * AC-35) - die eine Stelle fuer beide Regeln aus den Daten: wer
+   * `nurGebaeude` traegt, trifft keine Einheit; wer `fliegt`, wird nur von
+   * Einheiten mit einer Klasse aus `getroffenVon` getroffen, die keinen
+   * Stein werfen, und von Gebaeuden, die schiessen. Ein Gebaeude trifft
+   * jeder, der angreift.
+   */
+  kannTreffen(angreifer, ziel, istGebaeude = false) {
+    const werte = EINHEITEN[angreifer.art];
+    if (!werte || istGebaeude) return true;
+    if (werte.nurGebaeude) return false;
+    const fliegt = EINHEITEN[ziel.art]?.fliegt;
+    if (!fliegt) return true;
+    return !werte.geschoss && (werte.klassen || []).some((k) => fliegt.getroffenVon.includes(k));
+  }
+
+  /**
    * Die naechste fremde, lebende Einheit in Sichtweite - gesucht im Raster.
    * Wer eine Mindestreichweite hat (der Mangonel, einheiten AC-36), nimmt
    * niemanden, der naeher steht: auf den koennte er nicht werfen.
@@ -3548,6 +3757,8 @@ class Welt {
           if (!this.feindlich(einheit.besitzer, anderer.besitzer)) continue;
           // Einen Getarnten erst, wenn er entdeckt ist (kampf AC-22).
           if (this.verborgen(einheit.besitzer, anderer)) continue;
+          // Den Drachen laesst in Ruhe, wer ihn nicht trifft (kampf AC-23).
+          if (EINHEITEN[anderer.art].fliegt && !this.kannTreffen(einheit, anderer)) continue;
           const abstand = Math.hypot(anderer.x - einheit.x, anderer.y - einheit.y);
           if (abstand < mindest) continue;
           if (abstand <= besterAbstand) {
@@ -4027,7 +4238,8 @@ class Welt {
       angreifer,
       gebaeude: istGebaeude ? ziel : null,
     });
-    (this.schuesse ??= []).push([...[angreifer.x, angreifer.y, nach.x, nach.y].map((w) => Math.round(w * 10) / 10), 1]);
+    // Fuenfter Wert: 1 ist ein Stein, 2 das Feuer des Drachen (einheiten AC-52).
+    (this.schuesse ??= []).push([...[angreifer.x, angreifer.y, nach.x, nach.y].map((w) => Math.round(w * 10) / 10), EINHEITEN[angreifer.art].feuer ? 2 : 1]);
     if (this.schuesse.length > SCHUESSE_HOECHSTENS) this.schuesse.splice(0, this.schuesse.length - SCHUESSE_HOECHSTENS);
   }
 
@@ -4057,7 +4269,9 @@ class Welt {
         });
       }
       for (const einheit of this.einheiten.values()) {
-        if (einheit.tot) continue;
+        // Wer fliegt, liegt nicht unter dem Einschlag (kampf AC-23) - auch
+        // der Drache nicht unter seinem eigenen Feuer.
+        if (einheit.tot || EINHEITEN[einheit.art].fliegt) continue;
         const abstand = Math.hypot(einheit.x - stein.x, einheit.y - stein.y);
         if (abstand > flaeche) continue;
         const anteil = 1 - 0.5 * (abstand / flaeche);
@@ -4146,8 +4360,10 @@ class Welt {
     // Verbuendeten (spielziel AC-14), schlaegt niemand zurueck.
     if (!this.feindlich(einheit.besitzer, angreifer.besitzer)) return;
     if (EINHEITEN[einheit.art].wacht) return;
-    // Eine Ramme schlaegt nicht zurueck: sie trifft nur Gebaeude (einheiten AC-35).
-    if (EINHEITEN[einheit.art].nurGebaeude) return;
+    // Eine Ramme schlaegt nicht zurueck: sie trifft nur Gebaeude (einheiten
+    // AC-35). Und wen der Drache brennt, der wehrt sich nur, wenn er ihn
+    // treffen kann (kampf AC-23).
+    if (!this.kannTreffen(einheit, angreifer)) return;
     if (einheit.auftrag?.art === 'angreifen' || !this.einheitenwert(einheit.besitzer, einheit.art, 'angriff')) return;
     const stand = nachbarfeld(this.karte, this.feldVon(angreifer), einheit);
     this.angriffBeginnen(einheit, angreifer, false, stand, this.feldVon(einheit));
@@ -4160,6 +4376,8 @@ class Welt {
     // Wer ein Ei traegt und faellt, laesst es liegen (einheiten AC-51).
     const ei = this.eiVon(einheit);
     if (ei) this.eiAblegen(ei, einheit.x, einheit.y);
+    // Faellt der Drache, liegt dort sein Ei (einheiten AC-53).
+    if (EINHEITEN[einheit.art].gerufen) this.dracheFaellt(einheit);
     // Fuer die Tafel (spielziel AC-8). Wer aufgibt, verliert damit alles auf
     // einmal - das ist richtig so: gefallen ist gefallen.
     const spieler = this.spielerVon(einheit.besitzer);
@@ -4269,7 +4487,62 @@ class Welt {
     }
     if (this.zeitgrenze && this.takt >= this.zeitgrenze * 60 * TAKTE_PRO_SEKUNDE) {
       this.endeSetzen([], 'zeit');
+      return;
     }
+    // Das Wunder (spielziel AC-29): steht eines lange genug, gewinnt sein
+    // Besitzer mit allen, die ihm in diesem Takt nicht feindlich sind - wer
+    // gekuendigt hat, mit dem, der dann noch zu ihm haelt. Ausgeschiedene
+    // eines Teams gewinnen mit (AC-20). Laeuft die Zeitgrenze im selben Takt
+    // ab, steht oben das Unentschieden.
+    const wunder = this.wunderReif();
+    if (wunder) {
+      const besitzer = wunder.besitzer;
+      const gewinner = this.spieler.filter((s) => !this.feindlich(besitzer, s.id)).map((s) => s.id);
+      const team = gewinner.length > 1 ? this.spielerVon(besitzer).team || null : null;
+      this.endeSetzen(gewinner, 'wunder', team);
+    }
+  }
+
+  /**
+   * Die Wunder und ihre Uhren (spielziel AC-29): je fertigem Wunder der Takt,
+   * in dem es fertig wurde. Faellt es, ist die Uhr mit ihm fort; ein neues
+   * beginnt von vorn. Gesetzt wird beim ersten Blick, so gilt es auch fuer
+   * eines, das ein Test fertig hinstellt.
+   */
+  wunderUhren() {
+    const uhren = [];
+    for (const g of this.gebaeude.values()) {
+      if (!g.fertig || !GEBAEUDE[g.art].wunder) continue;
+      g.wunderAb ??= this.takt;
+      uhren.push({ gebaeude: g, rest: g.wunderAb + WUNDER_SEKUNDEN * TAKTE_PRO_SEKUNDE - this.takt });
+    }
+    return uhren;
+  }
+
+  /** Das Wunder, dessen Uhr abgelaufen ist - bei mehreren das zuerst fertige. */
+  wunderReif() {
+    let reif = null;
+    for (const uhr of this.wunderUhren()) {
+      if (uhr.rest > 0) continue;
+      if (!reif || uhr.gebaeude.wunderAb < reif.wunderAb) reif = uhr.gebaeude;
+    }
+    return reif;
+  }
+
+  /**
+   * Was alle von den Wundern wissen (spielziel AC-29), auch im Nebel: wem es
+   * gehoert, wie lange noch, und wo seine Mitte steht - fuer die Ansage und
+   * die Uebersichtskarte. `wu: [[besitzer, restSekunden, x, y]]`.
+   */
+  wunderFeld() {
+    const uhren = this.wunderUhren();
+    if (!uhren.length) return {};
+    return {
+      wu: uhren.map(({ gebaeude: g, rest }) => {
+        const { x0, y0, x1, y1 } = this.grundflaeche(g.art, g.x, g.y, g.quer);
+        return [g.besitzer, Math.max(0, Math.ceil(rest / TAKTE_PRO_SEKUNDE)), (x0 + x1) / 2, (y0 + y1) / 2];
+      }),
+    };
   }
 
   /**
@@ -4411,6 +4684,7 @@ class Welt {
     if (this.takt % WACHE_TAKTE === 0) this.wacheTakten();
     for (const einheit of this.einheiten.values()) this.einheitTakten(einheit);
     this.reparaturenAbrechnen();
+    this.drachenFuettern();
     this.tuermeTakten();
     // Einmal je Sekunde heilen Moenche (einheiten AC-37).
     if (this.takt % TAKTE_PRO_SEKUNDE === 0) this.heilenTakten();
@@ -4665,7 +4939,8 @@ class Welt {
     const g = this.karte.groesse;
     const schluessel = (x, y) => y * g + x;
     for (const e of this.einheiten.values()) {
-      if (e.tot || e.weg.length) continue;
+      // Wer fliegt, steht niemandem im Weg (einheiten AC-52).
+      if (e.tot || e.weg.length || EINHEITEN[e.art].fliegt) continue;
       stehend.push(e);
       const k = schluessel(Math.round(e.x), Math.round(e.y));
       if (!raster.has(k)) raster.set(k, []);
@@ -5323,6 +5598,12 @@ class Welt {
       // Fristendes] - an alle, denn eine Kuendigung ist oeffentlich. Ist
       // `t` ueber dem Fristende, gehoert `wer` keinem Team mehr an.
       ...(this.kuendigungen.length ? { bu: this.kuendigungen.map((k) => [k.wer, k.bis]) } : {}),
+      // Der Ruf des Drachen (bauen AC-35), je [wer, Restsekunden, Moenche am
+      // Kloster, x, y der Klostermitte] - an alle: der Gegner soll antworten
+      // koennen. Und wo eben ein Drache fiel (einheiten AC-53), je [wer, x,
+      // y, Restsekunden der Ansage].
+      ...this.drachenFelder(),
+      ...this.wunderFeld(),
       // Die Eier am Boden (einheiten AC-51), je [id, x, y, in der Mulde] -
       // hoechstens drei, deshalb in jedem Zustand. Getragene zeigt die
       // Ladung des Traegers, eingelagerte das Kloster.
@@ -5346,11 +5627,27 @@ class Welt {
     return zustand;
   }
 
+  drachenFelder() {
+    const felder = {};
+    const rufe = [];
+    for (const g of this.gebaeude.values()) {
+      if (!g.ruf) continue;
+      const { x0, y0, x1, y1 } = this.grundflaeche(g.art, g.x, g.y, g.quer);
+      const rest = Math.ceil((DRACHE.rufen.sekunden * TAKTE_PRO_SEKUNDE - g.ruf.takte) / TAKTE_PRO_SEKUNDE);
+      rufe.push([g.besitzer, rest, g.ruf.moenche, (x0 + x1) / 2, (y0 + y1) / 2]);
+    }
+    if (rufe.length) felder.dr = rufe;
+    const faelle = this.drachenFaelle.filter((f) => f.bis > this.takt);
+    if (faelle.length) felder.df = faelle.map((f) => [f.wer, f.x, f.y, Math.ceil((f.bis - this.takt) / TAKTE_PRO_SEKUNDE)]);
+    return felder;
+  }
+
   eierFeld() {
     const ei = [];
     for (const e of this.eier.values()) {
-      if (e.traeger !== null || e.kloster !== null) continue;
-      ei.push([e.id, e.x, e.y, e.x === e.nest.x && e.y === e.nest.y ? 1 : 0]);
+      if (!this.eiAmBoden(e)) continue;
+      // Fuenfter Wert: hier fiel ein Drache - das sehen alle (einheiten AC-53).
+      ei.push([e.id, e.x, e.y, e.x === e.nest.x && e.y === e.nest.y ? 1 : 0, ...(e.gefallen ? [1] : [])]);
     }
     return ei.length ? { ei } : {};
   }
@@ -5548,7 +5845,7 @@ class Welt {
     if (pfeile.length) auszug.p = pfeile;
     else delete auszug.p;
     // Ein Ei am Boden nur, wo er hinsieht (einheiten AC-51).
-    const eier = (voll.ei || []).filter(([, x, y]) => this.sieht(id, x, y));
+    const eier = (voll.ei || []).filter(([, x, y, , gefallen]) => gefallen || this.sieht(id, x, y));
     if (eier.length) auszug.ei = eier;
     else delete auszug.ei;
     const gebaeude = this.gebaeudeFuer(id, voll.gebaeude || []);
@@ -5730,6 +6027,10 @@ class Welt {
           // Gerufen statt ausgebildet (bauen AC-35): kein Gebaeude hat ihn
           // in seiner Leiste.
           gerufen: Boolean(w.gerufen),
+          // Wer fliegt, und ob diese Art einen Flieger trifft (kampf AC-23):
+          // das Zeichen am Ziel und die Leiste fragen danach.
+          fliegt: Boolean(w.fliegt),
+          trifftFlieger: FLIEGER.some((f) => this.kannTreffen({ art }, { art: f })),
         }])),
         gebaeude: Object.fromEntries(Object.entries(GEBAEUDE).map(([art, w]) => [art, {
           // Ohne Nebel gibt es nichts aufzudecken: die Kartografie steht
@@ -5776,6 +6077,8 @@ class Welt {
         klassen: KLASSEN,
         // Was Abruesten kostet und wie lang es dauert (einheiten AC-50).
         abruesten: { kosten: ABRUESTEN.kosten, sekunden: ABRUESTEN.sekunden },
+        // Den Drachen rufen (bauen AC-35) - nur, wenn es ihn gibt.
+        ...(this.drachenAn ? { drache: { kosten: DRACHE.rufen.kosten, sekunden: DRACHE.rufen.sekunden, moenche: DRACHE.rufen.moenche } } : {}),
         // Wie lang eine gezogene Mauer hoechstens ist (bauen AC-30).
         mauerMax: MAUER_MAX,
         // Wie viele Ziele mit Umschalt hoechstens warten (bedienung AC-14) -
@@ -5818,5 +6121,5 @@ function mauerLinie(von, bis) {
 module.exports = {
   mauerLinie, MAUER_MAX,
   Welt, TAKTE_PRO_SEKUNDE, STARTVORRAT, ROHSTOFFE, VERFOLGUNG_FELDER, WACHE_TAKTE,
-  ZEITGRENZEN, GESCHWINDIGKEITEN, KUENDIGUNG_SEKUNDEN, GEBAEUDE_NAMEN, EINHEIT_NAMEN,
+  ZEITGRENZEN, GESCHWINDIGKEITEN, KUENDIGUNG_SEKUNDEN, WUNDER_SEKUNDEN, GEBAEUDE_NAMEN, EINHEIT_NAMEN,
 };

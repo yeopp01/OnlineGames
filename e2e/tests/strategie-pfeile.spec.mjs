@@ -137,7 +137,9 @@ test.describe('Pfeile', () => {
     const nachher = await anna.evaluate(() => ({ ...window.ansicht.geschosseGezeichnet }));
     expect(nachher.tafel - vorher.tafel, 'alle sechs kommen aus der Tafel').toBeGreaterThanOrEqual(6);
     expect(nachher.strich, 'keiner als Strich oder Kreis').toBe(vorher.strich);
-    expect(await anna.evaluate(() => window.ansicht.pfeile.length)).toBe(6);
+    // Gezaehlt die festgehaltenen: der Bogenschuetze aus dem Fall davor
+    // schiesst weiter, und unter Last kam ein echter Pfeil dazwischen.
+    expect(await anna.evaluate(() => window.ansicht.pfeile.filter((q) => q.dauer === 1e9).length)).toBe(6);
     await nachweis(anna, {
       spec: DARSTELLUNG,
       ac: 'AC-28',

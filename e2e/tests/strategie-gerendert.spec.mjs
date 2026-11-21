@@ -79,7 +79,9 @@ test.describe('Gerenderte Gebaeude', () => {
     await anna.waitForFunction((ids) => ids.every((id) => window.ansicht.gebaeude.has(id)), gestellt.map((g) => g.id));
 
     // Jedes einmal ins Bild holen und zaehlen, was aus den Tafeln kam.
-    const messung = await anna.evaluate(async (ids) => {
+    // Die Groessen der Baustellen aus den Daten - das Wunder (bauen AC-51)
+    // brachte die fuenfte.
+    const messung = await anna.evaluate(async ([ids, groessen]) => {
       const { bilderFehlend, gerendert } = await import('/bilder.js');
       const a = window.ansicht;
       a.gewaehltesGebaeude = null;
@@ -92,14 +94,14 @@ test.describe('Gerenderte Gebaeude', () => {
         await bild();
       }
       const arten = Object.keys(a.werte.gebaeude);
-      const tafeln = [...arten, ...[1, 2, 3, 4].map((n) => `baustelle-${n}`)];
+      const tafeln = [...arten, ...groessen.map((n) => `baustelle-${n}`)];
       return {
         fehlend: bilderFehlend(),
         ohneTafel: arten.filter((art) => !gerendert(art)),
         gezeichnet: Object.fromEntries(tafeln.map((name) => [name, gerendert(name)?.gezeichnet ?? 0])),
-        stufen: Object.fromEntries([1, 2, 3, 4].map((n) => [n, gerendert(`baustelle-${n}`)?.stufen ?? 0])),
+        stufen: Object.fromEntries(groessen.map((n) => [n, gerendert(`baustelle-${n}`)?.stufen ?? 0])),
       };
-    }, gestellt.map((g) => g.id));
+    }, [gestellt.map((g) => g.id), groessen]);
     info.annotations.push({ type: 'messung', description: JSON.stringify(messung) });
     console.log(`darstellung AC-22 im Spiel: ${JSON.stringify(messung)}`);
     expect(messung.fehlend, 'Tafeln, die nicht geladen wurden').toEqual([]);

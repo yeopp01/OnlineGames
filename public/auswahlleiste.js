@@ -48,6 +48,12 @@ function bildchen(art, groesse, farbe, lage = {}) {
     const stand = lage.ladung && tafel.ablaeufe[`stehen_${lage.ladung}`] ? `stehen_${lage.ladung}` : 'stehen';
     const zelle = ablaufZelle(tafel, 1, stand);
     zelleEinpassen(stift, zelle.quelle, zelle.zeile, zelle.spalte, groesse, farbe);
+  } else if (FIGUREN[art]?.fliegt) {
+    // Wer fliegt (einheiten AC-52), wird ueber seinem Schatten gezeichnet und
+    // ist mit den Fluegeln 60 Einheiten breit: kleiner und tiefer gesetzt,
+    // damit der Leib in der Mitte des Bildchens steht und nicht darueber.
+    const hoehe = (groesse * 24) / 66;
+    figurZeichnen(stift, art, groesse / 2, groesse / 2 + (38 * hoehe) / 24, hoehe, farbe, lage);
   } else {
     figurZeichnen(stift, art, groesse / 2, groesse * 0.95, groesse * 0.95, farbe, lage);
   }
@@ -2061,7 +2067,9 @@ export class Auswahlleiste {
       const laeuft = angebot.filter((e) => e.verbesserung && this.forschungLaeuft(e.art)).map((e) => e.art).join(',');
       // Und wie viele Gefallene da sind, wenn hier etwas daraus ersteht (einheiten AC-49).
       const gefallene = angebot.some((e) => e.kosten?.gefallene) ? a.vorraete.gefallene : '';
-      const schluessel = `g${gebaeude.i}:${gebaeude.h}:${gebaeude.n}:${gebaeude.br || 0}:${a.farmenErneuern}:${gebaeude.s.join(',')}:${gebaeude.w}:${bezahlbar}:${a.verbesserungen.join(',')}:${a.zeitalter}:${handel}:${laeuft}:${gefallene}`;
+      // Am Kloster der Ruf des Drachen (bauen AC-35): Ei, Uhr, Moenche.
+      const drache = gebaeude.art === 'kloster' && a.werte.drache ? this.drachenrufSchluessel(gebaeude) : '';
+      const schluessel = `g${gebaeude.i}:${gebaeude.h}:${gebaeude.n}:${gebaeude.br || 0}:${a.farmenErneuern}:${gebaeude.s.join(',')}:${gebaeude.w}:${bezahlbar}:${a.verbesserungen.join(',')}:${a.zeitalter}:${handel}:${laeuft}:${gefallene}:${drache}`;
       if (schluessel !== this.gezeigt) {
         this.gebaeudeBauen(gebaeude, angebot, farbe);
         this.gezeigt = schluessel;
@@ -2446,8 +2454,14 @@ export class Auswahlleiste {
       // (bedienung AC-55), ein zweiter Hinweis des Browsers laege darueber.
       knopf.setAttribute('aria-label', fehlt ? `${eintrag.name} - zu wenig ${fehlt}` : `${eintrag.name} bauen (${kosten})`);
       if (this.ansicht.platzieren?.art === eintrag.art) knopf.classList.add('aktiv');
+      // Je Ware Zeichen und Zahl zusammen: drei Preise (das Wunder, bauen
+      // AC-51) brechen in eine zweite Zeile um, ohne sie zu trennen.
       const preis = element('span', 'preis');
-      for (const [r, m] of Object.entries(eintrag.kosten)) preis.append(element('span', warenklasse(r)), element('span', null, String(m)));
+      for (const [r, m] of Object.entries(eintrag.kosten)) {
+        const posten = element('span', 'posten');
+        posten.append(element('span', warenklasse(r)), element('span', null, String(m)));
+        preis.append(posten);
+      }
       knopf.append(gebaeudeBildchen(this.ansicht.bildVon(this.ansicht.ich, eintrag.art), 52, farbe, eintrag.groesse), element('span', 'bauname', eintrag.name), preis);
       // Die Taste nach B (bedienung AC-27), in der Reihenfolge des Menues.
       const nummer = bauplan.indexOf(eintrag);
@@ -2562,6 +2576,79 @@ export class Auswahlleiste {
       handel.append(spalte);
     }
     return handel;
+  }
+
+  /**
+   * Der Ruf des Drachen an diesem Kloster (bauen AC-35): laeuft er hier, wie
+   * lange noch und wie viele Moenche dastehen. Den Ruf nennt der Server je
+   * Spieler mit der Mitte des Klosters - daran wird er erkannt.
+   * @param {any} gebaeude
+   */
+  drachenrufHier(gebaeude) {
+    const a = this.ansicht;
+    const mitte = a.gebaeudeMitte(gebaeude);
+    return (a.drachenrufe || []).find((/** @type {any} */ r) => r.wer === a.ich
+      && Math.abs(r.x - mitte.x) < 1 && Math.abs(r.y - mitte.y) < 1) || null;
+  }
+
+  /** Ob der Spieler einen lebenden Drachen hat (einheiten AC-52). */
+  hatDrachen() {
+    const a = this.ansicht;
+    return [...a.nachher.values()].some((/** @type {any} */ e) => e.b === a.ich && !e.s && a.werte.einheiten[a.arten[e.k]]?.fliegt);
+  }
+
+  /** @param {any} gebaeude */
+  drachenrufSchluessel(gebaeude) {
+    const ruf = this.drachenrufHier(gebaeude);
+    const anderswo = (this.ansicht.drachenrufe || []).some((/** @type {any} */ r) => r.wer === this.ansicht.ich) && !ruf;
+    return `${gebaeude.e || 0}:${ruf ? `${ruf.rest}/${ruf.moenche}` : ''}:${anderswo}:${this.hatDrachen()}:${this.fehlt(this.ansicht.werte.drache.kosten)}`;
+  }
+
+  /**
+   * Die Zeile am Kloster (bauen AC-35): ohne Ei ein Satz, wie man eines
+   * bekommt; mit Ei der Knopf mit dem Preis; waehrend des Rufs die Uhr und
+   * die Moenche, die fehlen. Entschieden wird auf dem Server.
+   * @param {any} gebaeude
+   */
+  drachenrufBauen(gebaeude) {
+    const a = this.ansicht;
+    const regel = a.werte.drache;
+    const zeile = element('div', 'drachenruf');
+    zeile.id = 'drachenruf';
+    const ruf = this.drachenrufHier(gebaeude);
+    if (ruf) {
+      const uhr = `${Math.floor(ruf.rest / 60)}:${String(ruf.rest % 60).padStart(2, '0')}`;
+      const steht = ruf.moenche < regel.moenche;
+      zeile.dataset.steht = steht ? '1' : '0';
+      zeile.append(element('span', 'drachenruf-uhr', steht
+        ? `Ruft den Drachen – steht bei ${uhr}: ${ruf.moenche} von ${regel.moenche} Mönchen am Kloster`
+        : `Ruft den Drachen – noch ${uhr}`));
+      return zeile;
+    }
+    if (!gebaeude.e) {
+      zeile.append(element('span', 'leise', 'Kein Drachenei – ein Dorfbewohner trägt es mit einem Rechtsklick her'));
+      return zeile;
+    }
+    const anderswo = (a.drachenrufe || []).some((/** @type {any} */ r) => r.wer === a.ich);
+    const grund = this.hatDrachen() ? 'Du hast schon einen Drachen' : anderswo ? 'Du rufst schon an einem anderen Kloster' : '';
+    const fehlt = this.fehlt(regel.kosten);
+    const knopf = document.createElement('button');
+    knopf.type = 'button';
+    knopf.id = 'drachenrufen';
+    knopf.className = 'drachenruf-knopf';
+    knopf.setAttribute('aria-disabled', fehlt || grund ? 'true' : 'false');
+    if (fehlt) knopf.dataset.fehlt = fehlt;
+    const preis = element('span', 'preis');
+    for (const [r, m] of Object.entries(regel.kosten)) preis.append(element('span', warenklasse(r)), element('span', null, String(m)));
+    knopf.append(element('span', null, 'Drachen rufen'), preis);
+    knopf.title = grund || `${regel.sekunden} Sekunden, solange ${regel.moenche} eigene Mönche am Kloster stehen. Alle sehen die Uhr. Bezahlt wird beim Beginn: ${Object.entries(regel.kosten).map(([r, m]) => postenText(r, m)).join(', ')}.`;
+    beimDruecken(knopf, () => {
+      if (grund) a.melden(`${grund}.`);
+      else if (fehlt) a.melden(`Zu wenig ${fehlt}.`);
+      else this.senden({ auftrag: 'rufen', gebaeude: gebaeude.i });
+    });
+    zeile.append(knopf);
+    return zeile;
   }
 
   fehlt(kosten) {
@@ -2847,6 +2934,8 @@ export class Auswahlleiste {
 
     // Am Markt wird getauscht (bauen AC-33).
     if (a.werte.gebaeude[gebaeude.art]?.handel) w.append(this.handelBauen(gebaeude));
+    // Am Kloster wird der Drache gerufen (bauen AC-35).
+    if (gebaeude.art === 'kloster' && a.werte.drache) w.append(this.drachenrufBauen(gebaeude));
 
     // Was nichts ausbildet, zeigt weder Knoepfe noch eine leere Schlange.
     if (!angebot.length && !gebaeude.s.length) return;

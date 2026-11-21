@@ -193,4 +193,44 @@ test.describe('Marktkarren', () => {
     await anna.waitForFunction(([v, g]) => window.ansicht.vorraete.gold >= v + g, [vorher, gold], { timeout: 60_000 });
     await zeitraffer(anna, code, 1);
   });
+
+  test('einheiten AC-41: auf dem Heimweg traegt der Karren sichtbar Gold, auf dem Hinweg nicht', async ({}, info) => {
+    test.setTimeout(150_000);
+    const { anna, code } = partie;
+    // Nach dem Abladen faehrt er von selbst wieder los - leer.
+    await anna.waitForFunction((e) => window.ansicht.nachher.get(e)?.l === 0, karren.i, { timeout: 60_000 });
+    const hinweg = await anna.evaluate((e) => {
+      const k = window.ansicht.nachher.get(e);
+      return { l: k.l, a: k.a ?? null };
+    }, karren.i);
+    expect(hinweg.l, 'auf dem Hinweg leer').toBe(0);
+    // Die gerenderte Figur hat eigene Bilder mit Gold auf der Ladeflaeche.
+    const teile = await anna.evaluate(async () => Object.keys((await import('/bilder.js')).gerendert('marktkarren')?.ablaeufe || {}));
+    expect(teile).toEqual(expect.arrayContaining(['gehen_g', 'stehen_g']));
+
+    await zeitraffer(anna, code, 10);
+    await anna.waitForFunction((e) => window.ansicht.nachher.get(e)?.l > 0, karren.i, { timeout: 60_000 });
+    await zeitraffer(anna, code, 1);
+    const heimweg = await anna.evaluate((e) => {
+      const k = window.ansicht.nachher.get(e);
+      return { l: k.l, a: k.a };
+    }, karren.i);
+    expect(heimweg.a, 'die Ladung ist Gold').toBe('g');
+    expect(heimweg.l).toBeGreaterThan(0);
+
+    await karrenWaehlen(anna, karren.i);
+    await anna.evaluate(() => { window.ansicht.kamera.zoom = 3; });
+    await anna.evaluate((e) => {
+      const k = window.ansicht.nachher.get(e);
+      window.ansicht.blickAuf(k.x - 0.3, k.y - 0.3);
+    }, karren.i);
+    expect(await figurenFrei(anna)).toEqual([]);
+    await anna.waitForTimeout(150);
+    await nachweis(anna, {
+      spec: EINHEITEN,
+      ac: 'AC-41',
+      titel: 'Annas Marktkarren auf dem Heimweg, nah: Gold auf der Ladefläche - auf dem Hinweg fährt er leer',
+      test: info,
+    });
+  });
 });

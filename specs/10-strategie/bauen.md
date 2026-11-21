@@ -2,7 +2,7 @@
 
 **Bereich:** Strategie
 **Kuerzel:** bauen
-**Stand:** 54/56 fertig · 2 offen
+**Stand:** 56/56 fertig
 
 ## Zweck
 
@@ -314,7 +314,7 @@ Spezialeinheit der Burg (kommt mit den Häusern, Stufe E), Palisade.
 
 ### Stufe F — das Ritual (aus ADR-0014)
 
-- **AC-35** `offen` **Den Drachen rufen** — Ein Kloster mit einem Ei
+- **AC-35** `fertig` **Den Drachen rufen** — Ein Kloster mit einem Ei
   ([Einheiten](einheiten-und-befehle.md) AC-51) bietet den Auftrag „Drachen
   rufen": 400 Nahrung und 400 Gold, bezahlt beim Beginn, 180 Sekunden. Die
   Uhr läuft nur, solange **fünf eigene Mönche am Kloster** stehen; fällt
@@ -324,6 +324,13 @@ Spezialeinheit der Burg (kommt mit den Häusern, Stufe E), Palisade.
   Schützen ausbilden. Gerechnet: in 180 Sekunden bildet eine Schießanlage
   sechs Armbrustschützen aus (27 s das Stück). Höchstens ein Drache je
   Spieler; ist die Einstellung „Drache" aus, gibt es den Auftrag nicht.
+  Am Kloster steht der Knopf „Drachen rufen" mit dem Preis, während des
+  Rufs die Uhr mit den Mönchen, die fehlen; oben die Ansage für alle („Anna
+  ruft den Drachen — noch 2:58", steht die Uhr: „… steht bei 2:10, 4 von
+  5 Mönchen"). Am Kloster heißt: ein eigener Mönch, der steht, höchstens
+  drei Felder vom Rand (`DRACHE.rufen.umkreis`, **gesetzt**). Ist die Uhr
+  um und kein Wohnraum frei, wartet der Drache, bis welcher frei ist —
+  wie jede Einheit.
 
 ### Aus dem ersten Spiel auf dem Server (2026-11-12)
 
@@ -499,7 +506,7 @@ AC-55).
   Wehrgänge (Burg +21 % Leben) und die befestigte Mauer — die Verteidigung
   ist schon stark, zwei Burgen und Türme nebeneinander knackt die KI nicht
   ([KI](ki.md) AC-23); dazu alles mit Schießpulver.
-- **AC-51** `offen` **Das Wunder** — Ein Gebäude der Krone, fünf mal fünf
+- **AC-51** `fertig` **Das Wunder** — Ein Gebäude der Krone, fünf mal fünf
   Felder, je 1000 Holz, Stein und Gold, 4800 Leben, Rüstung 3/10, 3500
   Sekunden Bauzeit für einen einzelnen Bauer; höchstens eines je Spieler.
   Es bildet nichts aus, schießt nicht und gibt keinen Wohnraum. Eigenes
@@ -508,6 +515,14 @@ AC-55).
   [Spielziel](spielziel.md) AC-29. **Zu messen, bevor es `fertig` heißt:**
   wie lange zwanzig Bauer brauchen — Ziel acht bis zwölf Spielminuten,
   sonst ändert sich die Bauzeit.
+  **Gemessen** (2026-11-21, `tests/strategie-wunder.test.mjs`, zwanzig
+  Bauer zwei Felder vom Rand): mit 3500 Sekunden **7,98 Spielminuten** —
+  knapp unter dem Ziel, denn 20 Bauer bauen nach `3 t / (n + 2)` 22/3-mal
+  so schnell wie einer. **Gesetzt** deshalb: **4400 Sekunden**, gemessen
+  **10,03 Spielminuten**; mit dem Tretkran (bauen AC-56) gerechnet rund
+  8,4, nicht gemessen. Die Grenze „höchstens eines“ steht als `hoechstens`
+  in den Daten, die Baustelle zählt mit. Im Baumenü steht es auf der Seite
+  Wirtschaft.
 
 ### Verbesserungen mit eigenem Charakter (Benutzer, 2026-11-18)
 

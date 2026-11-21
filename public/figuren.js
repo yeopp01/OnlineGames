@@ -1139,7 +1139,9 @@ export const FIGUREN = {
   wiedergaenger: { name: 'Wiedergänger', zeichnen: soldat, breite: 1.3, oben: 1.2 },
   // Der Drache (einheiten AC-52): breit wie ein Haus, hoch ueber seinem
   // Schatten. `stoesst`: er beugt sich nicht als Ganzes vor, er speit.
-  drache: { name: 'Drache', zeichnen: drache, breite: 3, oben: 2.4, stoesst: true },
+  // `fliegt`: der Speicher der gezeichneten Figur reicht bis `oben` - sonst
+  // schnitt er ihn bei 1,3 Hoehen ab, und vom Drachen blieb der Schatten.
+  drache: { name: 'Drache', zeichnen: drache, breite: 3, oben: 2.4, stoesst: true, fliegt: true },
   // Belagerung (einheiten AC-35): breit statt hoch. `stoesst`: wer rammt,
   // stoesst den Bock vor, statt sich als Ganzes vorzubeugen.
   ramme: { name: 'Ramme', zeichnen: ramme, breite: 1.7, stoesst: true },
@@ -1201,7 +1203,7 @@ export function figurZeichnen(stift, art, x, y, hoehe, farbe, lage = {}) {
 // halten (darstellung AC-14).
 const PONY = '#a07a50';
 const PONY_MAEHNE = '#5a4330';
-function marktkarren(stift, farbe, { schritt = 0, fein = true, haut = HAUT }) {
+function marktkarren(stift, farbe, { ladung = null, schritt = 0, fein = true, haut = HAUT }) {
   schatten(stift, 16);
   const RAD = '#5e4630';
   const BRETT = '#7a5533';
@@ -1240,10 +1242,20 @@ function marktkarren(stift, farbe, { schritt = 0, fein = true, haut = HAUT }) {
   if (fein) {
     for (const x of [-12.6, -8.6, -4.8]) strich(stift, [[x, -7.4], [x + 0.1, -11]], '#4a321e', 0.45);
   }
-  // Ein Fass und ein Sack ragen vorn unter der Plane hervor.
-  ellipse(stift, -2.6, -12.6, 1.9, 2.2, licht(stift, '#8a6238', -4.4, -14.8, -0.8, -10.4, 0.25, -0.3));
-  if (fein) strich(stift, [[-4.3, -12.6], [-0.9, -12.6]], EISEN_DUNKEL, 0.5);
-  rund(stift, [[-6.6, -11.2], [-6, -14.6], [-4.4, -15.4], [-3.8, -11.2]], licht(stift, LEINEN, -6.6, -15.4, -3.8, -11.2, 0.25, -0.25));
+  if (ladung === 'g') {
+    // Auf dem Heimweg (einheiten AC-41): eine offene Truhe, darin Gold.
+    vieleck(stift, [[-6.6, -11.2], [-1, -11.2], [-1.2, -14.2], [-6.4, -14.2]], licht(stift, '#6b4a2a', -6.6, -14.2, -1, -11.2, 0.2, -0.3));
+    if (fein) for (const x of [-5.2, -2.4]) strich(stift, [[x, -11.3], [x, -14.1]], EISEN_DUNKEL, 0.5);
+    rund(stift, [[-6.4, -14.2], [-5.2, -16.2], [-2.6, -16.6], [-1.2, -14.2]], licht(stift, '#f2c14e', -6, -16.6, -1.4, -14.2, 0.35, -0.3), false);
+    if (fein) {
+      for (const [x, y] of [[-4.8, -15.4], [-3.2, -15.9], [-2.2, -15]]) ellipse(stift, x, y, 0.45, 0.35, '#fff2b0', false);
+    }
+  } else {
+    // Ein Fass und ein Sack ragen vorn unter der Plane hervor.
+    ellipse(stift, -2.6, -12.6, 1.9, 2.2, licht(stift, '#8a6238', -4.4, -14.8, -0.8, -10.4, 0.25, -0.3));
+    if (fein) strich(stift, [[-4.3, -12.6], [-0.9, -12.6]], EISEN_DUNKEL, 0.5);
+    rund(stift, [[-6.6, -11.2], [-6, -14.6], [-4.4, -15.4], [-3.8, -11.2]], licht(stift, LEINEN, -6.6, -15.4, -3.8, -11.2, 0.25, -0.25));
+  }
   // Die Plane: ein Bogen ueber dem hinteren Teil, mit Reifen darunter.
   const plane = [[-16.8, -11], [-16.2, -17.4], [-12.6, -20.6], [-8.4, -20.6], [-6.4, -17.2], [-6.4, -11]];
   umriss(stift, () => rund(stift, plane, 'rgba(0,0,0,0)', true));
@@ -1363,7 +1375,7 @@ export function figurBildZeichnen(stift, art, x, y, hoehe, farbe, lage = {}, umr
   const rand = zelle ? zellenRand(zelle.quelle, h / tafel.hoehe) : null;
   // Platz fuer Reiter, Ladung auf dem Ruecken und Schatten.
   const breite = rand ? rand.halb * 2 : h * 2.2 * (figur.breite || 1);
-  const oben = rand ? rand.oben : h * 1.3;
+  const oben = rand ? rand.oben : h * (figur.fliegt ? figur.oben + 0.4 : 1.3);
   const unten = rand ? rand.unten : h * 0.35;
   let bild = ZWISCHENSPEICHER.holen(schluessel, familie);
   if (!bild && ZWISCHENSPEICHER.ersatzZeichnen(stift, familie, x - breite / 2, y - oben, breite, oben + unten)) return;
