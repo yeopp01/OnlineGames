@@ -26,6 +26,34 @@ Punkt unten sucht, sucht dort nach „Punkt <n> (Benutzer“.
 
 ## Zuletzt fortgeschrieben
 
+**2026-11-22, nachts (Benutzer schläft: „sobald die Agenten fertig sind,
+darfst du sehr gerne die sachen die gefunden wurden angehen und umsetzen und
+das Spiel besser machen“ — kein Push, kein Ausrollen ohne ihn):**
+Steuerstand und Haken sind `8915326`. Agent (a) hat gemessen, nichts
+committet: **Kampfdauer in Spielsekunden = Vorlage** (Miliz–Miliz 18,1 s
+gegen 18,0; Ritter–Ritter 21,7 gegen 21,6; Gebäude genau gerechnet). Die
+Ursache für „schnell kaputt“ ist also nicht die Rechnung. Vermutet:
+(1) **keine Trefferchance** (AoE Bogen 80 %, kampf AC-8 verbietet Zufall —
+Probe mit Schaden × 0,8: Bogen–Speer 16,1 statt 12,1 s, Konterkreis des
+Lehens hält), (2) Pfeile treffen sofort, (3) acht schlagen auf den
+Vordersten, (4) kleine Heere der KI. **Unsere 1,0 ist AoE-„langsam“; AoE DE
+„Normal“ ist 1,7** — in echter Zeit dauern Kämpfe hier länger. Spielgeschwindigkeit
+1,5 als Vorgabe stünde gegen die Rückmeldung. **Reiterschütze bekommt
+beide Schmiedelinien** (Nah +4 und Schützen +3; AoE nur Schützen) —
+Entscheidung des Benutzers. **Laufregel reißt den Konterkreis** (einheiten
+AC-42 19/20, fahrplan AC-25 13/20 statt ≤10, AC-26 zweimal); Abtrennen als
+todo lehnte die Berechtigungsprüfung ab — **Grenzen lockert nur der
+Benutzer**. Gefechtsstand-Seitenfehler: Spirale nicht gespiegelt
+(`pruefstand.js`), Reichweite gegen die schon bewegte Lage (Welt), Rest aus
+der Reihenfolge der Einheiten. **Jetzt läuft Agent (d) im Arbeitsbaum
+`../OnlineGames-regeln` (Zweig `strategie-regeln`)**: Laufregel,
+Seitengleichheit, Pfeile beim Ankommen, dann nur gesetzte Werte (nicht aus
+der Vorlage) drehen, bis jede Grenze ohne Lockern hält; Patches des Agenten
+(a) unter `scratchpad/uebergabe/`. Agent (c) Technologiebaum im Arbeitsbaum
+`../OnlineGames-techbaum` (Zweig `strategie-techbaum`) läuft. Im Hauptordner
+liegen unversionierte Dateien einer Managersitzung (ADR-0018,
+`docs/manager/`, Skill `manager-weiterbauen`) — nicht anfassen.
+
 **2026-11-22:** F6 bis F11 nach `main` gepusht und ausgerollt (Benutzer hat
 es heute freigegeben: ‚gut, dann ausrollen - und anschließend deine anderen
 Punkte eigenständig angehen'). Er will Hilfsagenten statt langer eigener
