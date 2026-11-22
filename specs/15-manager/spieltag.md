@@ -2,7 +2,7 @@
 
 **Bereich:** Manager
 **Kuerzel:** spieltag
-**Stand:** 30/31 fertig · 1 offen
+**Stand:** 31/31 fertig
 
 ## Zweck
 
@@ -161,11 +161,22 @@ Erst M2 lässt Fähigkeiten an den Gewichten drehen
   wie vor dem Spiel: ein Wechsel in Minute 0 ist dasselbe Spiel, als hätte
   dieselbe Elf in diesem System begonnen. Im Bericht steht die Startelf
   weiter auf ihren alten Plätzen.
-- **AC-33** `offen` **Eingreifen lohnt maßvoll** — Ein Mensch, der gut
+- **AC-33** `fertig` **Eingreifen lohnt maßvoll** — Ein Mensch, der gut
   eingreift, holt über eine Saison höchstens drei bis fünf Punkte mehr als die
   Automatik — sonst wäre „Sofort“ eine Strafe. Gemessen mit einer Regel, die
   so eingreift, wie ein aufmerksamer Mensch es täte, gegen dieselbe Saison
-  ohne Eingriff.
+  ohne Eingriff. **Gemessen gepaart je Spiel** (2026-11-22): jedes eigene
+  Ligaspiel am Anpfiff abgeschrieben, einmal mit Automatik, einmal mit
+  Eingriff zu Ende gerechnet — eine ganze zweite Saison zu vergleichen
+  streut zu stark (ein anderes Ergebnis ändert Moral, Verletzungen und
+  Markt, über 20 Saisons −14 bis +33 Punkte). Über 40 Saisons: wer zur
+  Halbzeit nach Lage spricht und ab Minute 60 umstellt wie ein Verein des
+  Servers, holt **+0,9 Punkte** (± 0,4); wer bei Rückstand ganz offensiv mit
+  vollem Pressing spielt und bei Führung mauert, **+2,8** (± 0,6). Bei 0:1 in
+  Minute 60 hebt „Offensiv“ den Ausgleich von 26 auf 31 % und das 0:2 von
+  28 auf 32 %. Die Grenze von fünf ist eng gebaut: auch mit vierfacher
+  Wirkung der Ausrichtung blieb es bei 3,4, mit Angriff ohne Kosten für die
+  Abwehr bei 4,1 — erst eine geschenkte Stärke nach der Ansprache riss sie.
 
 ### Nachwirkung
 

@@ -178,3 +178,108 @@ test('spieltag AC-31: ohne den Schalter stellt niemand um, und die Welt bleibt b
   assert.equal(ich.umstellen, undefined);
   assert.equal(gegner.umstellen, gegner.taktik.ausrichtung);
 });
+
+/**
+ * Ein Mensch, der eingreift - als Regel auf einem Spiel. `mild` spricht zur
+ * Halbzeit nach Lage und Moral und stellt ab Minute 60 um wie ein Verein des
+ * Servers; `hart` dazu bei Rueckstand ganz offensiv mit vollem Pressing, bei
+ * Fuehrung Mauern.
+ */
+function mensch(spiel, i, art) {
+  const welche = i === 0 ? 'heim' : 'gast';
+  const grund = spiel.seiten[i].taktik.ausrichtung;
+  const abstand = () => spiel.seiten[i].tore - spiel.seiten[1 - i].tore;
+  spielen(spiel, 45);
+  if (!spiel.vorbei) {
+    const moral = spiel.seiten[i].auf.reduce((s, x) => s + x.moral, 0) / spiel.seiten[i].auf.length;
+    const lage = Math.sign(abstand());
+    const ansprache = lage < 0 ? 'laut' : lage > 0 ? 'ruhig' : moral < WIRKUNG.ansprache.stark - 10 ? 'aufbauen' : 'laut';
+    assert.deepEqual(eingreifen(spiel, welche, { ansprache }), { ok: true });
+  }
+  while (!spiel.vorbei) {
+    if (spiel.minute >= 60) {
+      const d = abstand();
+      let taktik;
+      if (art === 'hart') taktik = d < 0 ? { ausrichtung: 5, pressing: 5 } : d > 0 ? { ausrichtung: 1, pressing: 2 } : { ausrichtung: grund };
+      else {
+        const u = WIRKUNG.umstellen;
+        const schritt = d <= -2 ? u.deutlich : d === -1 ? u.rueckstand : d === 1 ? u.fuehrung : 0;
+        taktik = { ausrichtung: Math.min(5, Math.max(1, grund + schritt)) };
+      }
+      assert.deepEqual(eingreifen(spiel, welche, { taktik }), { ok: true });
+    }
+    spielen(spiel, spiel.minute + 5);
+  }
+  return abpfiff(spiel);
+}
+
+/**
+ * Punkte je 34 Ligaspiele mehr als die Automatik - gepaart: jedes eigene
+ * Spiel am Anpfiff abgeschrieben, einmal mit Automatik, einmal mit Eingriff.
+ * Die Saison selbst laeuft mit dem Eingriff weiter.
+ */
+function mehrJeSaison(art, startwerte) {
+  const { Karriere, TERMINE } = require('../server/spiele/manager/karriere.js');
+  const punkte = (e, i) => (e.tore[i] > e.tore[1 - i] ? 3 : e.tore[i] === e.tore[1 - i] ? 1 : 0);
+  let mehr = 0;
+  let spiele = 0;
+  for (const startwert of startwerte) {
+    const k = Karriere.neu({ startwert, vereinId: 'v5', name: 'Eingreifen' });
+    const anfang = k.saison;
+    while (k.saison === anfang && k.manager[0].status !== 'entlassen') {
+      const termin = TERMINE[k.termin];
+      if (termin.art !== 'liga' || !k.eigenesSpielAm('v5', termin)?.gegnerId) {
+        assert.ok(k.weiter().ok);
+        continue;
+      }
+      assert.ok(k.anpfeifen('m1').ok);
+      const { spiel, seite } = k.offen.live;
+      const i = seite === 'heim' ? 0 : 1;
+      mehr -= punkte(abpfiff(structuredClone(spiel)), i);
+      mehr += punkte(mensch(spiel, i, art), i);
+      spiele += 1;
+      assert.ok(k.weiter().ok);
+    }
+  }
+  return (mehr / spiele) * 34;
+}
+
+test('spieltag AC-33: wer eingreift, holt mehr als die Automatik, aber hoechstens fuenf Punkte je Saison', () => {
+  // Gemessen (2026-11-22, je 40 Saisons): mild +0,9 (± 0,4), hart +2,8
+  // (± 0,6); die Ansprache allein +0,8, das Umstellen allein +1,0.
+  const startwerte = Array.from({ length: 20 }, (_, i) => i + 1);
+  const mild = mehrJeSaison('mild', startwerte);
+  const hart = mehrJeSaison('hart', startwerte);
+  assert.ok(mild > 0, `mild ${mild.toFixed(2)}`);
+  assert.ok(hart > mild, `hart ${hart.toFixed(2)}, mild ${mild.toFixed(2)}`);
+  assert.ok(hart <= 5, `hart ${hart.toFixed(2)} - dann waere "Sofort" eine Strafe`);
+});
+
+test('spieltag AC-33: bei 0:1 in Minute 60 hebt Angriff den Ausgleich - und das 0:2', () => {
+  const zaehler = { ohne: [0, 0], 4: [0, 0], 5: [0, 0] };
+  let n = 0;
+  for (let i = 0; n < 1500; i++) {
+    const heim = vereine[i % vereine.length];
+    const gast = vereine[(i * 7 + 3) % vereine.length];
+    if (heim.id === gast.id) continue;
+    const spiel = anpfiff(heim, gast, zufallAus(7000 + i), { aufstellungen: { heim: aufstellung(heim), gast: aufstellung(gast) } });
+    spielen(spiel, 60);
+    if (spiel.seiten[0].tore - spiel.seiten[1].tore !== -1) continue;
+    n += 1;
+    const text = JSON.stringify(spiel);
+    for (const art of Object.keys(zaehler)) {
+      const s = JSON.parse(text);
+      if (art !== 'ohne') eingreifen(s, 'heim', { taktik: { ausrichtung: Number(art) } });
+      const e = abpfiff(s);
+      if (e.tore[0] >= e.tore[1]) zaehler[art][0] += 1;
+      if (e.tore[1] - e.tore[0] >= 2) zaehler[art][1] += 1;
+    }
+  }
+  // Gemessen (2026-11-22, 3000 Spiele): Ausgleich 26,3 / 28,9 / 30,6 %,
+  // das 0:2 27,7 / 29,1 / 31,9 % - ohne, Offensiv 4, Offensiv 5.
+  const bericht = JSON.stringify(zaehler);
+  assert.ok(zaehler[4][0] > zaehler.ohne[0] && zaehler[5][0] > zaehler[4][0], `Ausgleich: ${bericht}`);
+  assert.ok(zaehler[5][1] > zaehler.ohne[1], `das 0:2: ${bericht}`);
+  // Maßvoll: hoechstens acht Punkte mehr Ausgleich.
+  assert.ok((zaehler[5][0] - zaehler.ohne[0]) / n <= 0.08, `Ausgleich: ${bericht}`);
+});

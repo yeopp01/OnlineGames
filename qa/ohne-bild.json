@@ -1338,6 +1338,11 @@
     },
     {
       "spec": "15-manager/spieltag.md",
+      "ac": "AC-33",
+      "begruendung": "Was Eingreifen bringt, ist eine Summe ueber eine Saison: Punkte je 34 Ligaspiele mit Eingriff gegen dieselben Spiele mit Automatik, gepaart am Anpfiff abgeschrieben, ueber zwanzig Saisons. Die Unterschiede liegen bei einem bis drei Punkten im Jahr, also bei wenigen Hundertsteln Punkten je Spiel - kein einzelnes Spiel und kein Bildschirm zeigt sie. Wie ein Mensch eingreift, zeigen die Bilder zu oberflaeche AC-20 und AC-21, sobald die Oberflaeche dafuer steht."
+    },
+    {
+      "spec": "15-manager/spieltag.md",
       "ac": "AC-32",
       "begruendung": "Eine Regel der Spielrechnung: wer nach einem Systemwechsel auf welchen Platz kommt und was das kostet. Belegt mit einer Gleichheit ueber vierzig Spiele - ein Wechsel in Minute 0 ergibt Ereignis fuer Ereignis dasselbe Spiel, als haette dieselbe Elf in diesem System begonnen - und mit einem Wechsel zur Halbzeit in ein System, das die Elf kaum kennt. Ein Bild zeigte elf Namen auf neuen Plaetzen, aber nicht, dass sie nach der Regel vor dem Spiel gestellt sind und der Wechsel kostet. Den Knopf dafuer im laufenden Spiel zeigt das Bild zu oberflaeche AC-20."
     },
