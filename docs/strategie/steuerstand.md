@@ -26,6 +26,40 @@ Punkt unten sucht, sucht dort nach „Punkt <n> (Benutzer“.
 
 ## Zuletzt fortgeschrieben
 
+**2026-11-22, Nachmittag — Entscheidungen des Benutzers (durchgeklickt):**
+1. **Regelpaket übernehmen, Lücken schließen:** Laufregel, Seitengleichheit,
+   Pfeilflug (Patches `scratchpad/uebergabe2/`, `uebergabe3/`, Zweig
+   `strategie-regeln`). ki AC-25: die Wache nimmt auch eigene Einheiten aus
+   (wie heute Gebäude, `EIGENES_NAH`). **Angepasst werden dürfen nur
+   fahrplan AC-15 (A*-Gleichstände) und die eine Konterkreis-Paarung
+   (Hellebardier gegen Langbogen, fahrplan AC-26)**; der Nebeltest (105 von
+   120) bleibt hart.
+2. **Kampfdauer:** erst Pfeilflug, dann nach einer Testpartie urteilen —
+   keine Trefferchance, kein ×0,8 jetzt.
+3. **Häuser-Balance (spielziel AC-18) nach dem Regelpaket.**
+4. **Spielgeschwindigkeit: Vorgabe 1,5** (ADR-0013 und spielziel AC-23
+   nachziehen; die Wahl 1,0/1,5/2,0 bleibt).
+5. **Drache der KI: nur Krone, Variante A** (`scratchpad/ki-krone/ac29/`).
+6. **einheiten AC-52 gepaart messen:** „der Drache tauscht den Sieger
+   gegenüber derselben Partie ohne ihn in höchstens 20 %“.
+7. **ki AC-28 (Hauseinheiten der KI) nach dem Regelpaket neu messen.**
+8. **Reiterschütze nur Schützenlinie der Schmiede** (wie die Vorlage).
+9. **Notfallklingel bauen, wie die Vorlage** (mehr Pfeile je Besatzung,
+   drinnen heilen, beim Fall heraus). **Hinein über einen Knopf
+   „Einquartieren“ in der Leiste der Einheit, dann das Gebäude anklicken**
+   (Benutzer: „nen button bei den aktionen der einheiten, der iwie
+   einquartieren heißt, da draufdrücken, und dann das gebäude wo sie rein
+   sollen“). Die KI nutzt es zuerst nicht.
+10. **Punkt 10:** die KI gibt weiter auf, auch mit stehendem Dorfzentrum.
+11. **Aufgeräumt:** Arbeitsbäume `-techbaum`, `-bildumbau`, `-krone` samt
+    Zweigen gelöscht; `-kikrone`, `-regeln` bleiben bis zum Regelpaket,
+    `strategie-mauerring` und `-ki-antwort` geparkt.
+12. **Ausrollen nach Dorfzentrum + ganzem Browserlauf:** pushen nach `main`,
+    `npm run ausrollen`, danach eine Partie auf dem Server und das Packen
+    (permessageDeflate hinter dem Proxy) prüfen. Das Regelpaket später.
+13. **Reitertempo 1,55 passt.** Ton: noch nicht gehört.
+Altes Bild AC-57 (Militärseite) darf weg (Benutzer: „Ja, entfernen“).
+
 **2026-11-22, Nachmittag:** **Speichern S1 (dann S2) läuft als Agent** im
 Arbeitsbaum `../OnlineGames-speichern` (Zweig `strategie-speichern`,
 `E2E_HAFEN=4394`): speichern AC-1, AC-2, AC-5, AC-16, AC-17 — Welt und KI
