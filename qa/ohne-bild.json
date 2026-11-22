@@ -758,6 +758,11 @@
     },
     {
       "spec": "15-manager/spieltag.md",
+      "ac": "AC-26",
+      "begruendung": "Die Schnittstelle des Rechenteils: ein Spiel stueckweise gerechnet und zwischen den Stuecken als JSON gesichert ist Ereignis fuer Ereignis dasselbe wie am Stueck, und eingreifen() wirkt erst ab dem naechsten Abschnitt. Das ist ein Vergleich zweier Rechnungen, die Oberflaeche dazu kommt erst mit M1 und bringt dort ihre eigenen Bilder."
+    },
+    {
+      "spec": "15-manager/spieltag.md",
       "ac": "AC-2",
       "begruendung": "Chancenverteilung nach Mittelfeldstaerke ueber 400 Begegnungen. Ein Spiel zeigt Chancen, keinen Zusammenhang."
     },

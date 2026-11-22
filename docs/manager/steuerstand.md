@@ -38,10 +38,18 @@ fortgesetzt, 9 von 9 gleich (Probe im Scratchpad, nicht eingecheckt).
 
 ## Als Nächstes
 
-1. M0.4 committen, sobald `npm run check` grün ist; Managerfälle im
-   Browser (`E2E_HAFEN=4277`), weil `netz.js` betroffen ist.
-2. **M0.5** die Begegnung anhaltbar: `anpfiff/spielen/eingreifen/abpfiff`,
-   der Zufall als Wert (`{a}`) — Gleichstandsprobe nach jedem Schritt.
+1. M0.4 ist `2048878` (check grün, 1094 Tests; Managerfälle im Browser
+   49/49 — die Prüfgriffe in `e2e/server.mjs` lasen noch die alten Felder,
+   der Wächter deckt `e2e/` nicht ab).
+2. **M0.5 gebaut** (spieltag AC-26, `tests/manager-anhalten.test.mjs`, zwei
+   Gegenproben fallen): `anpfiff/spielen/eingreifen/abpfiff`, die Seite ist
+   ein Datenwert ohne Verein und ohne Map, der Zufall `{a}` wird geteilt,
+   nicht kopiert (ein Spieltag zieht alle Spiele aus einer Quelle).
+   Gleichstand hält, Kennzahlen unverändert. **Rechenzeit:** die erste
+   Fassung war rund 20 % langsamer (`seiteAnlegen` mit `find` je Spieler);
+   jetzt ein Durchgang über den Kader, und `mannschaftsteile()` (Vorschau)
+   legt Noten-Werte gar nicht an — unter Volllast HEAD 531, neu 541 ms je
+   Saison, 3000 Begegnungen 268–282 gegen 276–309 ms.
 3. M0.6 (`// @ts-check`, typedefs), M0.7 (`public/manager.js` in Module),
    dann M1 (Spieltag live; Halbzeit bei 1366 × 768 ganz sichtbar, Tore im
    Verlaufsband lesbar, Halbzeitzeile leiser, Vereinsfarben als Akzent).

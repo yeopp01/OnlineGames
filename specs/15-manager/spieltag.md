@@ -2,7 +2,7 @@
 
 **Bereich:** Manager
 **Kuerzel:** spieltag
-**Stand:** 23/23 fertig
+**Stand:** 24/24 fertig
 
 ## Zweck
 
@@ -95,6 +95,16 @@ Platz steht.
 - **AC-18** `fertig` **Die zweite Gelbe ist Gelb-Rot** — Nie zwei gelbe Karten
   ohne Platzverweis, nie eine dritte. Wer schon Gelb hat, geht vorsichtiger in
   den Zweikampf. _(Gemessen: 0,08 Gelb-Rot und 0,06 Rot je Spiel.)_
+- **AC-26** `fertig` **Ein Spiel lässt sich anhalten** — Ein Spiel ist ein
+  Datenwert: `anpfiff()` legt es an, `spielen()` rechnet bis zu einer Minute
+  und keinen Abschnitt darüber hinaus, `eingreifen()` wechselt oder dreht an
+  Ausrichtung, Härte und Pressing — wirksam ab dem nächsten Abschnitt, das
+  System bleibt —, `abpfiff()` gibt das Ergebnis. Dazwischen übersteht es eine
+  Sicherung als JSON, der Zufall eingeschlossen (`zufall.a`). Ohne Eingriff
+  kommt stückweise genau heraus, was `begegnung()` am Stück rechnet, auch mit
+  Verlängerung und Elfmeterschießen. Was nicht geht, weist `eingreifen()` mit
+  einem Satz ab und ändert nichts. Die Grundlage für das Spiel zum Zusehen
+  und Eingreifen (Plan, M1).
 
 ### Nachwirkung
 
