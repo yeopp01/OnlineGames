@@ -33,14 +33,26 @@ function kartengroesse(anzahlSpieler, einstellung = 'normal') {
 
 // Zufall mit Startwert: dieselbe Zahl ergibt dieselbe Karte. Praktisch, um
 // einen Fehler noch einmal genauso hervorzurufen.
+//
+// Der Stand der Folge ist eine Zahl (`stand()`), damit eine gesicherte Partie
+// genau dort weiterwuerfelt, wo sie aufhoerte (speichern AC-2): eine Funktion
+// laesst sich nicht ablegen, ihr Stand schon.
 function zufallAus(startwert) {
   let a = startwert >>> 0;
-  return function () {
+  function zufall() {
     a = (a + 0x6d2b79f5) >>> 0;
     let t = Math.imul(a ^ (a >>> 15), 1 | a);
     t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
     return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
-  };
+  }
+  zufall.stand = () => a;
+  return zufall;
+}
+
+// Ein Zufall, der bei einem abgelegten Stand weitermacht (speichern AC-2):
+// der Stand ist die Zahl vor dem naechsten Wurf, also derselbe Anfang.
+function zufallAusStand(stand) {
+  return zufallAus(stand);
 }
 
 function setzen(felder, groesse, x, y, art) {
@@ -437,5 +449,5 @@ function begehbar(karte, x, y) {
 module.exports = {
   GRAS, WALD, BEERE, WASSER, GOLD, STEIN, BEBAUT, VORRAT, AUSSTATTUNG, WAELDCHEN, FERNE, GRENZE, VORKOMMEN, VORKOMMEN_VORGABE, ZAEHLER, freierPlatz,
   SCHAFE_JE_BASIS, SCHAF_NAHRUNG, EIER,
-  erzeugen, begehbar, zufallAus, kartengroesse, GROESSE_MAX,
+  erzeugen, begehbar, zufallAus, zufallAusStand, kartengroesse, GROESSE_MAX,
 };

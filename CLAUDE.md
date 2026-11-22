@@ -181,7 +181,7 @@ Umfang hinzufügt, dort nachsehen.
 
 ## Stand
 
-**609 von 715 Kriterien fertig.** 1086 Tests ohne Browser und 17 ganze Partien, 350 im Browser. Die
+**614 von 715 Kriterien fertig.** 1102 Tests ohne Browser und 37 ganze Partien, 350 im Browser. Die
 Übersicht ist der Bericht: `npm run qa:report`.
 
 Gebaut ist der Unterbau: Räume, Übertragung, Karte, Wegfindung, Sammeln,
@@ -987,6 +987,24 @@ wird dafür nicht angefasst. Die KI ist auf „mittel“ gemessen (Nebel über
 120 Startwerte: 111 vor Minute 60, Median 39,4, keine ohne Sieger; zu
 viert jede vor Minute 90), auf „viel“ nicht. `karte.fundorte` sagt Tests,
 was wo liegt; es geht nicht über die Leitung.
+
+**Speichern S1 steht: die Partie als Wert** (speichern AC-1, AC-2, AC-5,
+AC-16, AC-17; ADR-0017). `welt.sichern()` gibt Bytes — acht Bytes Kopf
+(`FAST` und die Fassung), dahinter Welt und KIs in **einem**
+`v8.serialize`, gepackt (`server/spiele/strategie/stand.js`) —, und
+`steckbrief.laden(bytes)` baut beides ohne Konstruktor wieder auf.
+Gesichert wird jedes eigene Feld; weg bleibt nur, was in `GEMERKT` in
+`welt.js` steht. **Ein neues Feld an Welt, Spieler, Einheit, Gebäude oder
+KI ist eine neue Form**: `tests/waechter-stand.test.mjs` verlangt dann
+`FASSUNG + 1` und `npm run stand:abbild -- --schreiben`; ein Stand einer
+anderen Fassung wird mit einem Satz für den Bildschirm abgelehnt
+(`StandFehler`), hochgezogen wird nicht. Gleich heißt **Wert für Wert**
+(`tests/gleichwertig.mjs`), nicht Byte für Byte. Über zwanzig Startwerte
+läuft eine geladene Partie 3000 Takte lang Takt für Takt wie die
+ununterbrochene, samt dem, was der Server jedem schickt
+(`tests/partien/speichern-gleichlauf-*.test.mjs`). Gemessen: acht Spieler
+je 200 Einheiten rund 100 KB, sichern 20 ms, laden 15 ms. Abgelegt wird
+noch nirgends, im Bild steht nichts davon (S2, S3).
 
 1. **Stufe A** Dunkle Zeit mit Wirtschafts-KI und Prüfstand · **B** Feudalzeit
    · **C** Partieende und KI-Gegner · **D** Ritterzeit · **E** fünf Häuser ·

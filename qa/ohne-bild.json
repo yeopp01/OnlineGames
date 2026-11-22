@@ -1440,6 +1440,31 @@
       "spec": "10-strategie/fahrplan.md",
       "ac": "AC-20",
       "begruendung": "Dass eine grosse Partie fluessig bleibt, sind zwei Messungen auf dem Server: wie lange ein Takt mit acht Spielern und je 200 Einheiten rechnet - Welt, Auszug je Spieler, JSON und Packen -, und wie viele Bytes je Sekunde jeder Spieler davon bekommt. Geprueft wird es im Nebel auf der grossen Karte mit Sammlern und zwei Heeren je Spieler im Angriffslauf, der schnellste von drei Abschnitten zu je 100 Takten fuer die Zeit und der groesste Wert ueber jeden Abschnitt und jeden Spieler fuer die Bytes (tests/strategie-grosse-partie.test.mjs); dass der Server permessage-deflate anbietet, prueft tests/netz.test.mjs ueber den echten Weg. Ein Bildschirm zeigt eine Partie, aber weder Millisekunden auf dem Server noch Bytes auf der Leitung - und ein Browserbild mit 1600 Einheiten sagte ueber beides nichts, denn die Bildrate des Browsers ist eine andere Frage (darstellung AC-30)."
+    },
+    {
+      "spec": "00-plattform/speichern.md",
+      "ac": "AC-1",
+      "begruendung": "Ein Spielstand als Wert ist eine Eigenschaft der Rechnung auf dem Server: welt.sichern() gibt Bytes zurueck, steckbrief.laden(bytes) baut daraus Welt und KIs ohne Konstruktor wieder auf, und kein Teil des Spiels oeffnet dafuer eine Datei (geprueft am Quelltext von stand.js, welt.js, ki.js, steckbrief.js, karte.js und wege.js). Belegt im Rechenteil an einer Partie KI gegen KI und an einer ohne KI (tests/strategie-speichern.test.mjs). Im Browser gibt es in Schritt S1 nichts davon zu sehen - weder einen Knopf noch eine Liste; was ein Spieler vom Fortsetzen sieht, kommt mit S3 (AC-7 bis AC-11) und wird dort im Bild nachgewiesen."
+    },
+    {
+      "spec": "00-plattform/speichern.md",
+      "ac": "AC-2",
+      "begruendung": "Dass eine geladene Partie dieselbe ist, ist ein Vergleich Wert fuer Wert zweier Welten auf dem Server: ueber zwanzig Startwerte mit Haeusern, jeder vierte zwei gegen zwei, gesichert zwischen Minute 5 und 30, verglichen gleich nach dem Laden, in jedem der 3000 folgenden Takte am Auszug je Spieler und danach an Welt und KIs ganz (tests/partien/speichern-gleichlauf.mjs), dazu dass Verbuendete nach dem Laden wieder ein Sichtfeld teilen (tests/strategie-speichern.test.mjs). Ein Bildschirm zeigt eine Partie, nicht die zweite, gegen die sie laeuft - und zwei gleich aussehende Bilder sagten nichts ueber ein Feld, das erst Minuten spaeter etwas aendert."
+    },
+    {
+      "spec": "00-plattform/speichern.md",
+      "ac": "AC-5",
+      "begruendung": "Die Groesse eines Stands sind Bytes auf dem Server: gemessen an KI gegen KI in Minute 12 (18 KB) und an der groessten Partie des Spiels, acht Spieler auf der grossen Karte im Nebel mit je 200 Einheiten (rund 100 KB), beide unter 1 MB (tests/strategie-speichern.test.mjs). Ein Bildschirm zeigt keine Bytes."
+    },
+    {
+      "spec": "00-plattform/speichern.md",
+      "ac": "AC-16",
+      "begruendung": "Die Fassungsnummer steht in den ersten acht Bytes eines Stands (Marke FAST und die Nummer, stand.fassungVon) und ist im Rechenteil belegt; dass sie mit jeder neuen Form steigt, verlangt tests/waechter-stand.test.mjs gegen das Abbild server/spiele/strategie/stand-abbild.json. Das ist Buchfuehrung ueber das Format der Ablage, kein Aussehen."
+    },
+    {
+      "spec": "00-plattform/speichern.md",
+      "ac": "AC-17",
+      "begruendung": "Die Ablehnung geschieht beim Laden auf dem Server, bevor etwas entpackt wird: ein Stand einer neueren, einer aelteren Fassung, fremde und beschaedigte Bytes werfen einen StandFehler mit dem Satz fuer den Bildschirm, und keine halbe Welt entsteht (tests/strategie-speichern.test.mjs). In Schritt S1 gibt es keine Stelle im Browser, die einen Stand laedt; den Satz zeigt erst die Liste im Vorraum (S3), und dort weist ihn das Bild zu AC-6 nach."
     }
   ]
 }

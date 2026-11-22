@@ -2239,6 +2239,31 @@ ihn, mit Gegenprobe an beiden Formen. Fünf Bilder neu, alle angesehen.
 Neueste oben. Eine Zeile je Runde: Nummer, Datum, Kriterien, Ergebnis,
 wichtigste Erkenntnis.
 
+- **S1, speichern AC-1, AC-2, AC-5, AC-16, AC-17** · 2026-11-22 · **Die
+  Partie als Wert** (Arbeitsbaum `strategie-speichern`, ADR-0017).
+  `welt.sichern()` gibt Bytes (Kopf `FAST` + Fassung, dahinter
+  `v8.serialize` gepackt), `steckbrief.laden()` baut Welt und KIs ohne
+  Konstruktor wieder auf. Gesichert wird jedes eigene Feld, nicht eine Liste
+  von Hand; weg bleibt nur `GEMERKT`. **Gelernt:** (1) Welt und KIs müssen
+  in **einem** `v8.serialize` stehen — getrennt trügen sie Kopien, wo die
+  Partie ein Ding hat (Verbündete teilen ein Sichtfeld). (2) **Gleich heißt
+  Wert für Wert, nicht Byte für Byte:** V8 schreibt eine Zahl je nach innerer
+  Form als ganze oder als Kommazahl und ein frisch gelesenes Feld anders als
+  ein frisch angelegtes; erst ab dem zweiten Laden sind die Bytes gleich
+  (`tests/gleichwertig.mjs` vergleicht samt geteilter Dinge). (3) Der Zufall
+  der KI ist ein Abschluss — ohne `zufall.stand()` lief die geladene Partie
+  nach wenigen Takten anders (Gegenprobe). (4) **Nur Welt und KIs zu
+  vergleichen reicht nicht:** ein weggelassenes `bekannt` (was der Browser
+  schon kennt) ändert die Partie nie, nur das, was der Server schickt — erst
+  der Vergleich von `zustandJeSpieler` in jedem der 3000 Takte fand es
+  (Gegenprobe: Takt 16765). (5) Ein neues Feld kommt von selbst in den
+  Stand, aber ein **alter** Stand kennt es nicht — deshalb ein Abbild der
+  Form je Fassung (`stand-abbild.json`, `npm run stand:abbild`) und ein
+  Wächter, der die neue Nummer verlangt; ein Feld, das nur in seltenen Lagen
+  entsteht und die Probepartie nicht erreicht, sieht er nicht. Gemessen:
+  sechs KIs auf der großen Karte bei Minute 40 121 KB, sichern 12 ms, laden
+  3 ms; acht Spieler je 200 Einheiten rund 100 KB, 20 und 15 ms. Nicht
+  gemessen: Stände aus der Krone, mit Menschen, über Node-Fassungen hinweg.
 - **F12, ki AC-40** · 2026-11-22 · **Die KI geht aufs Wunder** (Arbeitsbaum
   `strategie-ki-krone`). `ki.fremdesWunder` liest das Wunder aus der Ansage
   (`welt.wunderUhren`), das Heer zielt darauf, stehende Einheiten auch,

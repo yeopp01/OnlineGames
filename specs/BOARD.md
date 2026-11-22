@@ -7,9 +7,9 @@ Eine Zeile je Abnahmekriterium. Gepflegt wird der Status in der Spec selbst,
 hier steht er zusammengefasst. Erzeugt mit `npm run specs:board`; als Seite
 mit Bildnachweisen, Filter und Suche mit `npm run qa:report`.
 
-**Gesamt:** 609/715 fertig · 3 in Arbeit · 15 in QA · 3 geplant · 77 offen · 8 zurueckgestellt
+**Gesamt:** 614/715 fertig · 3 in Arbeit · 15 in QA · 3 geplant · 72 offen · 8 zurueckgestellt
 
-**Nachweise:** 330 Kriterien mit Bild · 288 ohne Bild, begruendet in `qa/ohne-bild.json`
+**Nachweise:** 330 Kriterien mit Bild · 293 ohne Bild, begruendet in `qa/ohne-bild.json`
 
 ## Nach Spezifikation
 
@@ -18,7 +18,7 @@ mit Bildnachweisen, Filter und Suche mit `npm run qa:report`.
 | [Konten und Anmeldung](00-plattform/konten.md)                 | -         | 1     | 2       | 3     | -               | 14     |
 | [Raeume und Partien](00-plattform/raeume.md)                   | -         | 2     | -       | 3     | -               | 13     |
 | [Schutz vor Fremdnutzung](00-plattform/schutz.md)              | -         | 1     | -       | 4     | -               | 7      |
-| [Anhalten und Fortsetzen](00-plattform/speichern.md)           | -         | -     | -       | 23    | -               | 3      |
+| [Anhalten und Fortsetzen](00-plattform/speichern.md)           | -         | -     | -       | 18    | -               | 8      |
 | [Spielauswahl und Einstellungen](00-plattform/spielauswahl.md) | -         | -     | -       | 5     | -               | 19     |
 | [Uebertragung](00-plattform/uebertragung.md)                   | -         | -     | 1       | 1     | -               | 8      |
 | [Bauen und Ausbilden](10-strategie/bauen.md)                   | -         | -     | -       | -     | -               | 56     |
@@ -75,7 +75,7 @@ mit Bildnachweisen, Filter und Suche mit `npm run qa:report`.
 - **Kennwort vergessen** — [Konten und Anmeldung](00-plattform/konten.md) AC-5
 - **Automatischer Wiederaufbau** — [Uebertragung](00-plattform/uebertragung.md) AC-10
 
-## Offen (77)
+## Offen (72)
 
 - **Anmeldung ueber Google/GitHub** — [Konten und Anmeldung](00-plattform/konten.md) AC-6
 - **Bilanz je Konto** — [Konten und Anmeldung](00-plattform/konten.md) AC-14
@@ -87,11 +87,8 @@ mit Bildnachweisen, Filter und Suche mit `npm run qa:report`.
 - **Partien haben eine Höchstdauer** — [Schutz vor Fremdnutzung](00-plattform/schutz.md) AC-10
 - **Statische Dateien haben eigene Bremse** — [Schutz vor Fremdnutzung](00-plattform/schutz.md) AC-11
 - **Auffälligkeiten sind sichtbar** — [Schutz vor Fremdnutzung](00-plattform/schutz.md) AC-12
-- **Ein Spielstand ist ein Datenwert** — [Anhalten und Fortsetzen](00-plattform/speichern.md) AC-1
-- **Laden ergibt exakt dieselbe Welt** — [Anhalten und Fortsetzen](00-plattform/speichern.md) AC-2
 - **Selbsttätig jede Minute** — [Anhalten und Fortsetzen](00-plattform/speichern.md) AC-3
 - **Gesichert wird auch beim Anhalten** — [Anhalten und Fortsetzen](00-plattform/speichern.md) AC-4
-- **Ein Spielstand bleibt klein** — [Anhalten und Fortsetzen](00-plattform/speichern.md) AC-5
 - **Kaputter Spielstand nimmt nichts mit** — [Anhalten und Fortsetzen](00-plattform/speichern.md) AC-6
 - **Anhalten ist jederzeit möglich** — [Anhalten und Fortsetzen](00-plattform/speichern.md) AC-7
 - **Wegklicken ist dasselbe wie Anhalten** — [Anhalten und Fortsetzen](00-plattform/speichern.md) AC-8
@@ -102,8 +99,6 @@ mit Bildnachweisen, Filter und Suche mit `npm run qa:report`.
 - **Nur Eigentümer öffnet, benennt, löscht** — [Anhalten und Fortsetzen](00-plattform/speichern.md) AC-13
 - **Mitspieler dürfen mitbauen, nicht besitzen** — [Anhalten und Fortsetzen](00-plattform/speichern.md) AC-14
 - **Gelöschtes Konto nimmt Spielstände mit** — [Anhalten und Fortsetzen](00-plattform/speichern.md) AC-15
-- **Jeder Spielstand trägt eine Fassungsnummer** — [Anhalten und Fortsetzen](00-plattform/speichern.md) AC-16
-- **Unbekannte Fassung wird abgelehnt** — [Anhalten und Fortsetzen](00-plattform/speichern.md) AC-17
 - **Ältere Fassungen werden hochgezogen** — [Anhalten und Fortsetzen](00-plattform/speichern.md) AC-18
 - **Sichern verlangt Einigkeit** — [Anhalten und Fortsetzen](00-plattform/speichern.md) AC-22
 - **Der Gastgeber besitzt den Stand** — [Anhalten und Fortsetzen](00-plattform/speichern.md) AC-23

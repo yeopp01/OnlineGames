@@ -491,6 +491,43 @@ class Ki {
     this.forschungZurueck = new Map();
   }
 
+  /**
+   * Die KI als reiner Wert (speichern AC-1, ADR-0017): ihr ganzes Gedaechtnis
+   * - was sie gesehen hat, wo der Feind steht, wer marschiert. Ohne das finge
+   * sie nach dem Laden bei null an. Die Welt gehoert nicht dazu, sie kommt
+   * beim Laden wieder dazu; der Zufall geht als sein Stand hinein.
+   * @returns {Record<string, any>}
+   */
+  alsWert() {
+    const wert = {};
+    for (const [feld, inhalt] of Object.entries(this)) {
+      if (feld === 'welt') continue;
+      if (feld === 'zufall') {
+        wert.zufall = this.zufall.stand();
+        continue;
+      }
+      if (typeof inhalt === 'function') throw new Error(`ki.${feld} ist eine Funktion - sie laesst sich nicht sichern (speichern AC-1)`);
+      wert[feld] = inhalt;
+    }
+    return wert;
+  }
+
+  /**
+   * Die KI aus ihrem Wert, an einer geladenen Welt - ohne Konstruktor: der
+   * schickte ihr Nachrichten an die Welt.
+   * @param {InstanceType<typeof import('./welt').Welt>} welt
+   * @param {Record<string, any>} wert
+   * @returns {Ki}
+   */
+  static ausWert(welt, wert) {
+    const ki = Object.create(Ki.prototype);
+    ki.welt = welt;
+    for (const [feld, inhalt] of Object.entries(wert)) {
+      ki[feld] = feld === 'zufall' ? karten.zufallAusStand(inhalt) : inhalt;
+    }
+    return ki;
+  }
+
   get spieler() {
     return this.welt.spielerVon(this.spielerId);
   }
