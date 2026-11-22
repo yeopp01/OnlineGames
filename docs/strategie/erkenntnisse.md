@@ -253,7 +253,7 @@ etwas anderem gearbeitet.
   ihre eigenen 200 Startwerte und ki AC-4, der **Pfeilflug** ki AC-25 (zwei
   gegen zwei, Startwert 8). **Gelernt:** (1) Der Pfeilflug kostet den
   Nebeltest 6 Partien (111 → 105 von 120 vor Minute 60, Median 39,4 →
-  39,0, je eine ohne Sieger) und verschiebt den Konterkreis der Krone: die
+  39,0, ohne Sieger 0 → 1) und verschiebt den Konterkreis der Krone: die
   schwere Armbrust schlägt den Zweihandkämpfer mit 12 alle 3,5 s nur noch 7
   von 20 — mit 13 alle 3,7 s 19 und kein Kavalier fällt; das hebt den
   Elite-Reiterschützen gegen sie nur noch auf 16 von 40, mit +20 statt +15
