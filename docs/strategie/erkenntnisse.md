@@ -2211,6 +2211,60 @@ ihn, mit Gegenprobe an beiden Formen. Fünf Bilder neu, alle angesehen.
 Neueste oben. Eine Zeile je Runde: Nummer, Datum, Kriterien, Ergebnis,
 wichtigste Erkenntnis.
 
+- **F12, ki AC-40** · 2026-11-22 · **Die KI geht aufs Wunder** (Arbeitsbaum
+  `strategie-ki-krone`). `ki.fremdesWunder` liest das Wunder aus der Ansage
+  (`welt.wunderUhren`), das Heer zielt darauf, stehende Einheiten auch,
+  außer ein Feind steht höchstens drei Felder entfernt. **Gelernt:** (1) „mit
+  allem sofort“ ist dasselbe wie „überlegen“ (AC-18) — und das heißt dort
+  Nachschub zu zweit. Vor einem Wunder, das sein eigenes Heer deckt, fiel
+  jedes Paar auf dem Weg (Startwert 8: keiner kam an); wer nicht überlegen
+  ist, sammelt jetzt zehn. (2) Ein geschenktes Wunder ist kein gebautes: im
+  Test bekommt es die KI mit weniger Punkten, sonst misst der Test, ob ein
+  schwächeres Heer ein stärkeres schlägt (immer KI 2: vier von zehn nicht
+  getroffen, alle vier bei mehr Punkten für KI 2). Gemessen 20 von 22, die
+  Grenze von 85 % ist gesetzt. (3) **ki AC-28 bleibt offen** — als Patch im
+  Scratchpad: jede KI mit Burg und Hauseinheit hielt nicht (16 KIs nicht,
+  davon 12 ohne Burg: wer verliert, spart die 650 Stein nicht zusammen, wer
+  schnell gewinnt, baut sie nach dem ersten Aufbruch zu spät), und der Nebel
+  stand damit genau auf den Grenzen (105 vor Minute 60, eine ohne Sieger).
+- **F12, ki AC-39** · 2026-11-22 · **Die KI steigt in die Krone auf**
+  (Arbeitsbaum `strategie-ki-krone`). `ki.kronePruefen` nach dem Muster der
+  Ritterzeit: Kloster als zweites Gebäude, Rücklage ab 42 Dorfbewohnern,
+  Aufstieg bei freiem Dorfzentrum. **Gelernt:** (1) Der Aufstieg selbst
+  kostet die Partie nichts — was ihn teuer macht, sind die Werte, die
+  schon in den Daten auf die Krone warteten: `BURGEN_JE_ZEITALTER` gibt
+  dort drei Burgen statt einer, und jede Burg zieht Stein, Bauer und
+  Rammen (AC-23) nach sich. Ohne Schwelle stieg die KI im Median in Minute
+  36 auf, baute 199 statt 139 Burgen und 800 statt 564 Rammen, und die
+  Partien wurden länger: 102 statt 109 vor Minute 60, zu viert Startwert
+  15 ohne Sieger. (2) Eine Schwelle in Spielminuten (`KRONE_AB_MINUTE`
+  40) hielt beides und ließ AC-39 stehen: von 25 Partien über 45 Minuten
+  erreicht in 24 eine KI die Krone. Die Schwelle ist gesetzt, nicht aus
+  der Vorlage — eine Krone, die keine zweite Burg auslöst, wäre die
+  sauberere Lösung, verschöbe aber AC-33 und ist nicht gemessen.
+- **F12, ki AC-35** · 2026-11-22 · **Die KI forscht** (Arbeitsbaum
+  `strategie-ki-krone`). Gebaut als `ki.forschenPruefen` in drei Gruppen
+  (Schwerpunkt, Militär nach Zahl, Wirtschaft), höchstens zwei zugleich.
+  Nebel über 120: 112 vor Minute 60, Median 38,4, alle mit Sieger; im
+  Schnitt 14,9 Verbesserungen und 3,5 Truppenstufen je KI. **Gelernt:**
+  (1) Forschen frisst das Gold, das der Handel braucht — ki AC-26 riss
+  (Startwert 2: 54 statt 607 Gold), obwohl jede Partiegrenze hielt; der
+  Handel ist der empfindlichste Messpunkt für jede neue Ausgabe der KI.
+  (2) Der Abfall kam nicht nur vom Gold: der erste Markt stand zum Gegner
+  hin, sein Bauer fiel, und `BAUSTELLE_FEIND_FERN` schickte keinen zweiten
+  — eine Schutzregel, die in dieser Lage eine Baustelle für immer liegen
+  lässt. Jetzt steht er auf der abgewandten Seite. (3) `welt.randfeld`
+  fragt nicht, ob das Feld erreichbar ist; ein Karren stand deshalb eine
+  ganze Partie hinter Wald (einheiten AC-40, Regel der Welt nachgezogen).
+  (4) „Lebt zehn Minuten im Fürstentum" muss das Dorf meinen, nicht
+  irgendeine Einheit: eine im Lehen überrannte KI kommt mit dem schon
+  bezahlten Aufstieg ins Fürstentum und hat nichts mehr zu bezahlen.
+  (5) Jede Änderung verschiebt den Verlauf, und dann trifft eine alte
+  Lücke einen anderen Startwert: `ki.unterwegs()` hielt einen Sammler in
+  1,9 Feldern für angekommen, obwohl er seit den Standplätzen von seinem
+  Platz aus sammelt — die Welt gab auf, die KI sperrte den Baum nicht
+  (ki AC-10, Startwert 19: 22,5 s untätig). „Angekommen" fragt jetzt den
+  Platz, wie die Welt.
 - **202** · 2026-11-12 · **Die anderen Häuser gestärkt, der Schütze
   teurer** (Benutzer: „den anderen noch Boni geben, statt Eschenbruch
   weiter zu nerven“, dazu „die Bogenschützen um 5 teurer“). Drei Fassungen

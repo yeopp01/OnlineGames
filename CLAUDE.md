@@ -181,7 +181,7 @@ Umfang hinzufügt, dort nachsehen.
 
 ## Stand
 
-**604 von 712 Kriterien fertig.** 1070 Tests ohne Browser und 14 ganze Partien, 348 im Browser. Die
+**607 von 712 Kriterien fertig.** 1084 Tests ohne Browser und 17 ganze Partien, 348 im Browser. Die
 Übersicht ist der Bericht: `npm run qa:report`.
 
 Gebaut ist der Unterbau: Räume, Übertragung, Karte, Wegfindung, Sammeln,
@@ -509,8 +509,37 @@ Schützen, jede +1/+1. **Der Konterkreis hält auch damit** (fahrplan AC-25,
 Budget 1200): neun Paarungen 20 von 20, umgekehrt 0 — auch Reiter gegen
 beide Schützenlinien. Die Armbrust verliert ohne Rüstungen gegen den Bogen
 (6 von 20) und gewinnt mit den Schützenrüstungen (20 von 20). **Die KI
-bildet die neuen Einheiten aus, erforscht aber nichts** — das ist ki AC-35
-(`offen`, als Nächstes). **Die Burg wartet auf den Handel nur bei echter
+forscht** (ki AC-35, 2026-11-22, `ki.forschenPruefen`): zuerst die Stufe
+ihrer Schwerpunkt-Einheit, dann jede Stufe und jede Wirkung auf eine Art
+oder Klasse, von der sie mindestens drei hält, dann die Wirtschaft ab vier
+Arbeitern; höchstens zwei zugleich, die erste des Militärs liegt in der
+Rücklage (`FORSCHEN_*`, alle sechs Zahlen gesetzt). Sie forscht nicht,
+solange ein Markt oder der nächste Karren fehlt oder das Gold knapp ist
+und keine vier Karren fahren — sonst riss ki AC-26. Dazu steht ihr erster
+Markt auf der vom Gegner abgewandten Seite (`ki.marktplatzDaheim`), und ein
+Karren, dessen nächstes Randfeld hinter Wald liegt, fährt ein anderes an
+(einheiten AC-40, Regel der Welt in `welt.handelTakten`). Gemessen im
+Nebel über 120: 112 vor Minute 60, Median 38,4, alle mit Sieger; je KI im
+Fürstentum 14,9 Verbesserungen, 3,5 Truppenstufen. **Die KI steigt in
+die Krone auf** (ki AC-39, `ki.kronePruefen`): im Fürstentum nach dem
+ersten Aufbruch, mit 42 Dorfbewohnern, einer Burg oder zwei Gebäuden des
+Fürstentums (sonst baut sie ein Kloster dazu) und **nicht vor Spielminute
+40** (`KRONE_AB_MINUTE`, gesetzt) — früher baut sie in der Krone ihre
+zweite und dritte Burg, und der Nebel fiel auf 102 von 120 vor Minute 60.
+Gemessen: Nebel 109 vor Minute 60, Median 38,4, alle mit Sieger; von 25
+Partien über 45 Minuten in 24 eine KI in der Krone, im Median ab Minute
+47; zu viert alle vor Minute 90. **Die KI geht aufs Wunder** (ki AC-40,
+`ki.fremdesWunder`): steht das fertige Wunder eines Gegners, ist es Ziel
+jedes Aufbruchs und jedes Stehenden (eine Einheit nur, wenn sie drei Felder
+daneben steht, `WUNDER_EINHEIT_NAH`, gesetzt), die Rammen gehen darauf; wer
+nicht überlegen ist, sammelt zehn statt Nachschub zu zweit. Gemessen: schenkt
+der Test der KI mit weniger Punkten in Minute 30 ein Wunder, verliert es in
+20 von 22 Partien vor Ablauf der Uhr Leben (`tests/partien/ki-wunder.test.mjs`,
+verlangt 85 %, gesetzt); gegen ein stärkeres Heer kommt sie nicht durch.
+**Die Hauseinheiten (ki AC-28) bleiben aus** (`NOCH_NICHT` für alle): jede
+KI mit Burg und Einheit daraus hielt nicht (16 KIs ohne), und der Nebel
+stand damit auf den Grenzen (105 vor Minute 60, eine ohne Sieger).
+**Die Burg wartet auf den Handel nur bei echter
 Goldnot** (ki AC-33): wer aus Neigung handelt, baut sie gleich und verkauft
 den Stein dafür nicht (`ki.steinFuerBauwerk`) — Silberfurt baute sonst in 16
 Partien eine Burg, jetzt sechs, und gewinnt 36 statt 30 %. Dabei fiel ki
@@ -901,7 +930,7 @@ Konterkreis hält in der Krone** (fahrplan AC-26, Budget 2000, volle
 Schmiede): neun Paarungen 20 von 20, umgekehrt 0; der Paladin fällt vor dem
 Hellebardier und schlägt beide Schützenlinien; gegen das Schwert hilft die
 schwere Armbrust (19 von 20), nicht der Bogen (0 von 20). **Die KI steigt
-nicht in die Krone auf und erforscht nichts davon** (F12, offen), ebenso
+seit F12 in die Krone auf, erforscht ihre Stufen und geht aufs Wunder** (ki AC-35, AC-39, AC-40);
 offen: die Krone am Stück (F13). Die gesetzten Werte der Krone
 stammen nicht alle aus `vorlage-aoe2.md`.
 
