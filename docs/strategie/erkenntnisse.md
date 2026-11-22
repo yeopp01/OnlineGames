@@ -2211,6 +2211,22 @@ ihn, mit Gegenprobe an beiden Formen. Fünf Bilder neu, alle angesehen.
 Neueste oben. Eine Zeile je Runde: Nummer, Datum, Kriterien, Ergebnis,
 wichtigste Erkenntnis.
 
+- **F12, ki AC-40** · 2026-11-22 · **Die KI geht aufs Wunder** (Arbeitsbaum
+  `strategie-ki-krone`). `ki.fremdesWunder` liest das Wunder aus der Ansage
+  (`welt.wunderUhren`), das Heer zielt darauf, stehende Einheiten auch,
+  außer ein Feind steht höchstens drei Felder entfernt. **Gelernt:** (1) „mit
+  allem sofort“ ist dasselbe wie „überlegen“ (AC-18) — und das heißt dort
+  Nachschub zu zweit. Vor einem Wunder, das sein eigenes Heer deckt, fiel
+  jedes Paar auf dem Weg (Startwert 8: keiner kam an); wer nicht überlegen
+  ist, sammelt jetzt zehn. (2) Ein geschenktes Wunder ist kein gebautes: im
+  Test bekommt es die KI mit weniger Punkten, sonst misst der Test, ob ein
+  schwächeres Heer ein stärkeres schlägt (immer KI 2: vier von zehn nicht
+  getroffen, alle vier bei mehr Punkten für KI 2). Gemessen 20 von 22, die
+  Grenze von 85 % ist gesetzt. (3) **ki AC-28 bleibt offen** — als Patch im
+  Scratchpad: jede KI mit Burg und Hauseinheit hielt nicht (16 KIs nicht,
+  davon 12 ohne Burg: wer verliert, spart die 650 Stein nicht zusammen, wer
+  schnell gewinnt, baut sie nach dem ersten Aufbruch zu spät), und der Nebel
+  stand damit genau auf den Grenzen (105 vor Minute 60, eine ohne Sieger).
 - **F12, ki AC-39** · 2026-11-22 · **Die KI steigt in die Krone auf**
   (Arbeitsbaum `strategie-ki-krone`). `ki.kronePruefen` nach dem Muster der
   Ritterzeit: Kloster als zweites Gebäude, Rücklage ab 42 Dorfbewohnern,

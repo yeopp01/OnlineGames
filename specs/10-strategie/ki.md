@@ -2,7 +2,7 @@
 
 **Bereich:** Strategie
 **Kuerzel:** ki
-**Stand:** 35/40 fertig · 5 offen
+**Stand:** 36/40 fertig · 4 offen
 
 ## Zweck
 
@@ -795,7 +795,7 @@ nicht die Regeln.
   KIs. Zu viert alle zwanzig vor Minute 90; ki AC-27 und AC-30 halten
   (`tests/strategie-ki-krone.test.mjs`, `tests/partien/ki-im-nebel.test.mjs`).
   Die Stufen der Krone erforscht sie über AC-35 ohne weitere Regel.
-- **AC-40** `offen` **Die KI geht aufs Wunder** — Steht ein fertiges
+- **AC-40** `fertig` **Die KI geht aufs Wunder** — Steht ein fertiges
   Wunder eines Gegners (die Ansage kennt jeder,
   [Spielziel](spielziel.md) AC-29), ist es das Ziel ihres nächsten
   Aufbruchs, und sie bricht dafür sofort auf, mit allem außer der Wache
@@ -803,6 +803,30 @@ nicht die Regeln.
   Belegt im Prüfstand: einer KI wird im Test ein fertiges Wunder
   hingestellt, und die andere steht vor Ablauf der Uhr davor und schlägt
   darauf ein.
+  **Gebaut am 2026-11-22** als `ki.fremdesWunder` in `ki.heerPruefen`:
+  das Wunder kommt aus `welt.wunderUhren` (die Ansage), sein Besitzer ist
+  der Gegner, wer steht, geht darauf — auf eine Einheit nur, wenn sie
+  höchstens drei Felder entfernt steht (`WUNDER_EINHEIT_NAH`, gesetzt) —,
+  und die Rammen gehen auf das Wunder statt auf das, was schießt. Auf
+  Rammen und ein größeres Heer gegen Türme wartet sie nicht. **Nachschub
+  nicht zu zweit:** wer nicht überlegen ist (AC-18), sammelt zehn
+  (`HEER_BEFESTIGT`) und bricht dann mit allen außer der Wache auf — mit
+  dem Nachschub zu zweit wie bei Überlegenheit fielen die Paare auf dem
+  Weg, und in Startwert 8 kam keiner an. **Im Test**
+  bekommt die KI mit weniger Punkten in Minute 30 das Wunder geschenkt
+  (wer eines baut, hat 3000 Rohstoffe nicht ins Heer gesteckt), über 24
+  Startwerte; gezählt werden die Partien, die bis dahin laufen und nicht
+  vorher mit dem Fall des Besitzers enden. **Gemessen:** in 20 von 22 verliert
+  das Wunder vor Ablauf der Uhr Leben, im Median nach einer halben Minute; in den
+  Startwerten 14 und 15 fielen die Wellen rund 20 Felder vor dem Wunder
+  unter seinem Heer (Probe mit Wellen zu acht). Verlangt sind 85 % (gesetzt). In sechs der 20
+  gewinnt das Wunder trotzdem: angeschlagen ist nicht gefallen. Bekommt
+  stattdessen immer KI 2 das Wunder, auch wenn sie stärker ist, trifft die
+  andere in vier von zehn nicht (Startwerte 1 bis 12 ohne 2 und 6; die vier
+  sind die, in denen KI 2 mehr Punkte hat) — gegen ein stärkeres Heer kommt
+  sie nicht durch. Die KI baut kein Wunder; ob sie
+  es gegen einen Menschen erreicht, ist nicht gemessen
+  (`tests/partien/ki-wunder.test.mjs`).
 
 ## Grenzfaelle
 

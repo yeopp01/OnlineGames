@@ -1430,6 +1430,11 @@
       "spec": "10-strategie/ki.md",
       "ac": "AC-39",
       "begruendung": "Wann die KI in die Krone aufsteigt, ist eine Entscheidung auf dem Server aus Zeitalter, erstem Aufbruch, Zahl der Dorfbewohner, freiem Dorfzentrum, Gebaeuden des Fuerstentums und Spielminute, und davor eine Ruecklage, die Nahrung und Gold fuer den Aufstieg zurueckhaelt. Geprueft wird sie in gebauten Lagen mit je einer Gegenprobe fuer jede fehlende Bedingung (tests/strategie-ki-krone.test.mjs) und ueber 120 ganze Partien im Nebel, in denen gezaehlt wird, wer wann die Krone erreicht. Ein Bild zeigte ein Dorfzentrum mit dem Aufstieg in der Schlange - dasselbe wie bei einem Menschen, nachgewiesen bei bauen AC-47 -, nicht, dass die KI ihn zur richtigen Zeit und aus den richtigen Gruenden bestellt hat."
+    },
+    {
+      "spec": "10-strategie/ki.md",
+      "ac": "AC-40",
+      "begruendung": "Dass die KI aufs Wunder geht, ist eine Wahl des Ziels in ihrer Entscheidung auf dem Server: das fertige Wunder eines Gegners aus der Ansage, die jeder hat, statt des Dorfzentrums, ein Aufbruch mit allem ausser der Wache, ein gesammeltes Heer statt Nachschub zu zweit und auf das Wunder statt auf jede Einheit, die nicht dicht daneben steht. Geprueft wird es in 24 ganzen Partien im Pruefstand, in denen der KI mit weniger Punkten in Minute 30 ein Wunder hingestellt wird und gezaehlt wird, ob und wann es Leben verliert (tests/partien/ki-wunder.test.mjs). Ein Bild zeigte ein Heer vor einem Wunder - dasselbe wie das eines Menschen, und nicht, warum es dorthin ging und nicht zum Dorfzentrum. Wie das Wunder und seine Uhr im Bild stehen, weisen bauen AC-51 und spielziel AC-29 nach."
     }
   ]
 }

@@ -214,6 +214,9 @@ const UEBERLEGEN = 3;
 // 19 mit Sieger, die letzte Partie unentschieden; zu zweit alle 20, die
 // laengste nach 62 Minuten; zu viert alle 20, die laengste nach 78.
 const MARSCH_MINDESTENS = 2;
+// Vor einem fremden Wunder (ki AC-40) greift ein Stehender eine Einheit nur
+// an, wenn sie so nah ist (Felder, gesetzt) - sonst das Wunder.
+const WUNDER_EINHEIT_NAH = 3;
 // So weit vor dem fremden Dorfzentrum endet der Marsch. Nicht auf ihm: ein
 // Befehl auf ein fremdes Gebaeude ist ein Angriff auf genau dieses Gebaeude
 // und **kein** Angriffslauf (welt.befehl) - unterwegs wuerde dann niemand
@@ -1269,13 +1272,17 @@ class Ki {
     const rammen = eigene.filter((e) => !e.tot && this.belagert(e));
     this.wahrnehmen();
     if (!kampf.length && !rammen.length) return;
-    const gegner = this.naechsterGegner();
-    this.rammenFuehren(rammen, kampf, gegner);
+    // Steht ein fertiges Wunder eines Gegners (ki AC-40), ist sein Besitzer
+    // der Gegner und das Wunder das Ziel - die Ansage kennt jeder.
+    const wunder = this.fremdesWunder();
+    const gegner = wunder ? this.welt.spielerVon(wunder.besitzer) : this.naechsterGegner();
+    this.rammenFuehren(rammen, kampf, gegner, wunder);
     if (!kampf.length) return;
     // Keinen Gegner gesehen (ki AC-13): das Heer erkundet selbst, im
     // Angriffslauf zum naechsten nie gesehenen Punkt des Rings - sonst stuende
     // es, wenn der Spaeher gefallen ist, fuer immer daheim.
-    const ziel = gegner ? this.gegnerZiel(gegner) : this.erkundungspunkt(this.spieler.basis);
+    const ziel = wunder ? { x: wunder.x, y: wunder.y }
+      : gegner ? this.gegnerZiel(gegner) : this.erkundungspunkt(this.spieler.basis);
     if (!ziel) return;
 
     // Nachsetzen: wer steht, geht auf das Ziel. Nicht `untaetig()` - das
@@ -1329,7 +1336,12 @@ class Ki {
         const frei = (z) => !this.gesperrt(ZIEL + z.id);
         const einheit = naechstes(e, seineEinheiten.filter(frei));
         const bau = naechstes(e, seineGebaeude.filter(frei));
-        const treffer = einheit && (!bau || einheit.d <= bau.d + 6) ? einheit.z : bau?.z;
+        // Vor einem Wunder (ki AC-40) auf das Wunder - auf eine Einheit nur,
+        // wenn sie dicht daneben steht: sonst jagte das Heer seine Verteidiger
+        // ueber die Karte, waehrend die Uhr ablaeuft.
+        const treffer = wunder
+          ? (einheit && einheit.d <= WUNDER_EINHEIT_NAH ? einheit.z : wunder)
+          : einheit && (!bau || einheit.d <= bau.d + 6) ? einheit.z : bau?.z;
         const weiter = treffer ? null : suchen();
         this.senden({ auftrag: 'befehl', einheiten: [e.id], ziel: treffer ? { x: Math.round(treffer.x), y: Math.round(treffer.y) } : { x: weiter.x, y: weiter.y } });
         if (treffer) this.heerZiel.set(e.id, { id: treffer.id, takt: this.welt.takt });
@@ -1340,13 +1352,21 @@ class Ki {
     // so wacht die Wache dort, wo das Dorf ist.
     const daheim = kampf.filter((e) => !this.heer.has(e.id));
     // Ueberlegen (ki AC-18), zieht los, wer daheim ist - bis auf die Wache.
-    const alle = this.ueberlegen();
+    // Gegen ein Wunder (ki AC-40) wie ueberlegen: alle bis auf die Wache,
+    // sofort, und ohne auf ein groesseres Heer oder Rammen zu warten - die
+    // Uhr laeuft.
+    const ueberlegen = this.ueberlegen();
+    const alle = Boolean(wunder) || ueberlegen;
+    // Nachschub zum Wunder aber nicht zu zweit: wer nicht ueberlegen ist,
+    // sammelt ein ganzes Heer - Paar um Paar fiel sonst auf dem Weg vor dem
+    // Heer, das das Wunder deckt (Startwert 8, Probe: keiner kam an).
+    const troepfeln = alle && !(wunder && !ueberlegen);
     // Gegen eine Befestigung, die schiesst, ein groesseres Heer (ki AC-23):
     // je acht fielen sonst Welle um Welle unter der Burg.
     // Auch wer ueberlegen ist, troepfelt dann nicht zu zweit nach: unter einer
     // Burg zaehlt nicht, wie viele Kaempfer der Gegner noch hat.
-    const befestigt = this.befestigt(gegner);
-    const heer = befestigt ? HEER_BEFESTIGT : HEER;
+    const befestigt = !wunder && this.befestigt(gegner);
+    const heer = befestigt || !troepfeln && wunder ? HEER_BEFESTIGT : HEER;
     const jetzt = this.welt.takt;
     // Ein Zug, dessen Rammen gefallen sind oder der zu lange wartet, ist
     // vorbei - die Rammen fuehrt dann `rammenFuehren` heim oder ans Ziel.
@@ -1356,7 +1376,7 @@ class Ki {
     // Das Warten auf Rammen laeuft ab, auch wenn das Heer inzwischen
     // geschrumpft ist - sonst laege die Ruecklage fuer immer.
     const abgelaufen = this.rammeWartet !== null && jetzt - this.rammeWartet >= RAMME_WARTEN_SEKUNDEN * TAKTE_PRO_SEKUNDE;
-    if (daheim.length < (this.zug || (alle && !befestigt) ? WACHE + MARSCH_MINDESTENS : heer + WACHE)) {
+    if (daheim.length < (this.zug || (troepfeln && !befestigt) ? WACHE + MARSCH_MINDESTENS : heer + WACHE)) {
       if (abgelaufen) this.rammeWartet = null;
       return;
     }
@@ -1436,7 +1456,7 @@ class Ki {
    * Heer niemand mehr draussen, kehren sie um und warten auf den naechsten
    * Zug.
    */
-  rammenFuehren(rammen, kampf, gegner) {
+  rammenFuehren(rammen, kampf, gegner, wunder = null) {
     if (this.zug) return;
     const stehend = rammen.filter((e) => this.heer.has(e.id) && !e.auftrag && !e.weg.length);
     if (!stehend.length) return;
@@ -1456,7 +1476,9 @@ class Ki {
     const schiessend = bauten.filter((g) => SCHIESSENDE.has(g.art));
     const draussen = kampf.filter((e) => this.heer.has(e.id));
     for (const e of stehend) {
-      const ziel = (naechstes(e, schiessend) || naechstes(e, bauten))?.z;
+      // Vor einem Wunder (ki AC-40) gehen die Rammen darauf, nicht auf das,
+      // was schiesst.
+      const ziel = wunder || (naechstes(e, schiessend) || naechstes(e, bauten))?.z;
       if (!ziel) continue;
       const weit = Math.hypot(ziel.x - e.x, ziel.y - e.y);
       if (!draussen.some((k) => Math.hypot(ziel.x - k.x, ziel.y - k.y) <= weit + RAMME_HINTER)) continue;
@@ -1525,6 +1547,24 @@ class Ki {
       }
     }
     return gegner;
+  }
+
+  /**
+   * Das fertige Wunder eines Gegners (ki AC-40), das als erstes reif wird -
+   * oder `null`. Gelesen aus der Ansage, die jeder hat (`welt.wunderFeld`,
+   * spielziel AC-29), auch im Nebel; dorthin zielt sie wie auf ein
+   * gesehenes Gebaeude (`gesehen`), sonst fiele es beim Hinsehen nicht auf.
+   */
+  fremdesWunder() {
+    let bestes = null;
+    for (const { gebaeude: g, rest } of this.welt.wunderUhren()) {
+      if (!this.welt.feindlich(this.spielerId, g.besitzer) || this.welt.spielerVon(g.besitzer)?.aus) continue;
+      if (!bestes || rest < bestes.rest) bestes = { g, rest };
+    }
+    if (!bestes) return null;
+    const { g } = bestes;
+    if (!this.gesehen.has(g.id)) this.gesehen.set(g.id, { id: g.id, art: g.art, x: g.x, y: g.y, besitzer: g.besitzer });
+    return this.gesehen.get(g.id);
   }
 
   // Worauf das Heer zielt: das Dorfzentrum des Gegners, sonst irgendein
