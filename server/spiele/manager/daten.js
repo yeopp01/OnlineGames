@@ -169,6 +169,24 @@
  * @property {number[]|null} elfmeter
  * @property {boolean} vorbei
  * @property {Ereignis[]} ereignisse
+ * @property {Szenenstand|null} [szenen]  nur im Spiel, das jemand sieht (spieltag AC-27)
+ *
+ * @typedef {object} Szene  eine Chance, erzaehlt (szenen.js)
+ * @property {number} minute
+ * @property {'heim'|'gast'} seite
+ * @property {string} verein
+ * @property {string} art          `konter`, `flanke` ... (`ARTEN` in szenen.js)
+ * @property {string} zone         `strafraum-links`, `vorfeld-mitte` ...
+ * @property {{abschluss: string, vorlage: string|null, torwart: string|null}} beteiligte
+ * @property {string} ausgang      `tor`, `gehalten`, `vorbei`, `pfosten`, `geblockt`, `abseits`
+ * @property {string} satz         mit Namen, fertig zum Zeigen
+ *
+ * @typedef {object} Szenenstand  was ein Spiel mit Szenen zusaetzlich traegt
+ * @property {Zufallsstand} zufall  eine eigene Quelle - die des Spiels bleibt unberuehrt (AC-28)
+ * @property {[string, string]} namen  Heim, Gast
+ * @property {Object<string, string>} genannt  je Spieler der Name im Satz: Nachname, bei Doppel der ganze
+ * @property {Szene[]} liste
+ * @property {string[]} benutzt   `art/ausgang/nummer` der schon gesagten Saetze
  *
  * @typedef {{minute: number, art: string, verein?: string, spielerId?: string, [feld: string]: any}} Ereignis  Tor, Karte, Wechsel ...
  *

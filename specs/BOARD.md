@@ -7,9 +7,9 @@ Eine Zeile je Abnahmekriterium. Gepflegt wird der Status in der Spec selbst,
 hier steht er zusammengefasst. Erzeugt mit `npm run specs:board`; als Seite
 mit Bildnachweisen, Filter und Suche mit `npm run qa:report`.
 
-**Gesamt:** 614/735 fertig · 3 in Arbeit · 15 in QA · 3 geplant · 92 offen · 8 zurueckgestellt
+**Gesamt:** 617/735 fertig · 3 in Arbeit · 15 in QA · 3 geplant · 89 offen · 8 zurueckgestellt
 
-**Nachweise:** 331 Kriterien mit Bild · 292 ohne Bild, begruendet in `qa/ohne-bild.json`
+**Nachweise:** 331 Kriterien mit Bild · 295 ohne Bild, begruendet in `qa/ohne-bild.json`
 
 ## Nach Spezifikation
 
@@ -39,7 +39,7 @@ mit Bildnachweisen, Filter und Suche mit `npm run qa:report`.
 | [Liga und Saison](15-manager/liga.md)                          | -         | -     | -       | -     | -               | 18     |
 | [Pokal](15-manager/pokal.md)                                   | -         | -     | -       | -     | -               | 8      |
 | [Prüfstand](15-manager/pruefstand.md)                          | -         | -     | -       | -     | -               | 1      |
-| [Spieltag](15-manager/spieltag.md)                             | -         | -     | -       | 7     | -               | 24     |
+| [Spieltag](15-manager/spieltag.md)                             | -         | -     | -       | 4     | -               | 27     |
 | [Spielziel und Abgrenzung](15-manager/spielziel.md)            | -         | -     | -       | 2     | -               | 15     |
 | [Transfermarkt](15-manager/transfer.md)                        | -         | -     | -       | -     | 1               | 24     |
 | [Verträge](15-manager/vertraege.md)                            | -         | -     | -       | -     | -               | 11     |
@@ -76,7 +76,7 @@ mit Bildnachweisen, Filter und Suche mit `npm run qa:report`.
 - **Kennwort vergessen** — [Konten und Anmeldung](00-plattform/konten.md) AC-5
 - **Automatischer Wiederaufbau** — [Uebertragung](00-plattform/uebertragung.md) AC-10
 
-## Offen (92)
+## Offen (89)
 
 - **Anmeldung ueber Google/GitHub** — [Konten und Anmeldung](00-plattform/konten.md) AC-6
 - **Bilanz je Konto** — [Konten und Anmeldung](00-plattform/konten.md) AC-14
@@ -156,9 +156,6 @@ mit Bildnachweisen, Filter und Suche mit `npm run qa:report`.
 - **Vorspulen spielt mit Automatik** — [Karriere: Saison um Saison](15-manager/karriere.md) AC-31
 - **Der Browser weiß nichts voraus** — [Karriere: Saison um Saison](15-manager/karriere.md) AC-32
 - **Mehrere Menschen in einer Welt** — [Karriere: Saison um Saison](15-manager/karriere.md) AC-16
-- **Jede Chance ist eine Szene** — [Spieltag](15-manager/spieltag.md) AC-27
-- **Szenen ändern kein Ergebnis** — [Spieltag](15-manager/spieltag.md) AC-28
-- **Der Server schreibt die Sätze** — [Spieltag](15-manager/spieltag.md) AC-29
 - **Die Kabine wirkt verschieden** — [Spieltag](15-manager/spieltag.md) AC-30
 - **Auch die anderen stellen um** — [Spieltag](15-manager/spieltag.md) AC-31
 - **Das System im Spiel wechseln** — [Spieltag](15-manager/spieltag.md) AC-32

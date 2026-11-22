@@ -2,7 +2,7 @@
 
 **Bereich:** Manager
 **Kuerzel:** spieltag
-**Stand:** 24/31 fertig · 7 offen
+**Stand:** 27/31 fertig · 4 offen
 
 ## Zweck
 
@@ -115,20 +115,23 @@ Fehlschusses und Satz werden danach aus einer eigenen Zufallsquelle gezogen.
 Erst M2 lässt Fähigkeiten an den Gewichten drehen
 (→ [Plan](../../docs/manager/plan.md), M1).
 
-- **AC-27** `offen` **Jede Chance ist eine Szene** — Jede Chance, die
-  `abschnitt()` zählt, hat eine Art (Konter, Flanke, Steilpass, Fernschuss,
+- **AC-27** `fertig` **Jede Chance ist eine Szene** — In einem Spiel mit
+  Szenen — dem, das jemand sieht; die übrige Welt rechnet ohne — hat jede
+  Chance, die `abschnitt()` zählt, eine Art (Konter, Flanke, Steilpass, Fernschuss,
   Ecke, Freistoß, Elfmeter, Einzelaktion, Abstauber), eine Zone, die
   Beteiligten (Abschluss, Vorlage, Torwart) und einen Ausgang (Tor, gehalten,
   vorbei, Pfosten, geblockt, Abseits). Die Beteiligten standen in dieser
   Minute auf dem Platz (wie AC-17), Tor heißt Tor in der Rechnung und
   umgekehrt.
-- **AC-28** `offen` **Szenen ändern kein Ergebnis** — Mit und ohne Szenen
+- **AC-28** `fertig` **Szenen ändern kein Ergebnis** — Mit und ohne Szenen
   kommt über 2000 Spiele dasselbe Ergebnis heraus, Ereignis für Ereignis;
-  die Gleichstandsprobe (manager AC-17) hält.
-- **AC-29** `offen` **Der Server schreibt die Sätze** — Je Art und Ausgang
+  die Gleichstandsprobe ([Spielziel](spielziel.md) AC-17) hält.
+- **AC-29** `fertig` **Der Server schreibt die Sätze** — Je Art und Ausgang
   mindestens sechs Sätze in `texte.js`, mit Namen statt Platzhaltern
   eingesetzt; kein Platzhalter bleibt stehen, kein Satz kommt in einem Spiel
-  zweimal. Der Browser setzt nichts zusammen.
+  zweimal. Genannt wird der Nachname, und kommt er in der Begegnung zweimal
+  vor, der ganze Name — kein Name steht für zwei Spieler. Der Browser setzt
+  nichts zusammen.
 - **AC-30** `offen` **Die Kabine wirkt verschieden** — Zur Halbzeit eine von
   drei Ansprachen: ruhig bleiben, aufbauen, laut werden. Laut hebt bei
   Rückstand und drückt bei Führung, aufbauen hilft einer Elf mit schwacher

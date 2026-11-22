@@ -24,6 +24,7 @@ const {
   TOR, ABW, MIT, ANG, PLAETZE, TEIL, tagesform, niveau, einsatzbereit, eignung,
 } = require('./kader');
 const { ziehen } = require('./zufall');
+const { kleiden, szenenAnlegen } = require('./szenen');
 
 /** @typedef {import('./daten').Verein} Verein */
 /** @typedef {import('./daten').Spieler} Spieler */
@@ -41,6 +42,8 @@ const { ziehen } = require('./zufall');
  * @property {{heim?: 'auto'|'verletzung', gast?: 'auto'|'verletzung'}} [wechselregeln]
  * @property {boolean} [neutral]       kein Heimvorteil (Pokalfinale)
  * @property {boolean} [entscheidung]  bei Gleichstand Verlaengerung und Elfmeterschiessen
+ * @property {import('./daten').Zufall|import('./daten').Zufallsstand} [szenen]  eine eigene Quelle: dann wird
+ *   jede Chance eine Szene (spieltag AC-27). Nur fuer das Spiel, das jemand sieht - die Welt rechnet ohne.
  */
 
 const SCHEIBE = 5;
@@ -314,7 +317,11 @@ function ersatzFuer(seite, platz) {
     .sort((a, b) => aufDerBank(seite, b, platz) - aufDerBank(seite, a, platz))[0] || null;
 }
 
-function abschnitt(seiten, von, heimfaktoren, zufall, ereignisse, anzahlAbschnitte) {
+/**
+ * Ein Abschnitt von fuenf Minuten. Mit `roh` merkt er sich jede Chance fuer
+ * die Szenen (szenen.js) - gemerkt, nicht gezogen: der Zufall bleibt derselbe.
+ */
+function abschnitt(seiten, von, heimfaktoren, zufall, ereignisse, anzahlAbschnitte, roh = null) {
   const [a, b] = [staerkeRechnen(seiten[0], heimfaktoren[0]), staerkeRechnen(seiten[1], heimfaktoren[1])];
   const h = WIRKUNG.hebel;
   const anteil = a.mittelfeld ** h / (a.mittelfeld ** h + b.mittelfeld ** h);
@@ -330,21 +337,32 @@ function abschnitt(seiten, von, heimfaktoren, zufall, ereignisse, anzahlAbschnit
     const chancen = Math.floor(erwartet) + (zufall() < erwartet % 1 ? 1 : 0);
     const abwehr = (1.15 * gegner.abwehr + 0.55 * gegner.torwart) / 1.7;
     const treffer = Math.min(0.5, (eigen.angriff ** h / (eigen.angriff ** h + abwehr ** h)) * WIRKUNG.verwertung);
+    const auf = roh && chancen ? seite.auf.slice() : null;
+    const gegen = roh && chancen ? seiten[1 - i].auf.slice() : null;
+    const merken = (tor) => roh && roh.push({ seite: i, von, auf, gegen, tor });
     for (let c = 0; c < chancen; c++) {
       seite.chancen += 1;
-      if (zufall() >= treffer) continue;
+      if (zufall() >= treffer) {
+        merken(null);
+        continue;
+      }
       const schuetze = gewichtetWaehlen(seite.auf, (s) => TREFFERNEIGUNG[s.position] * (s.staerke / 70), zufall);
-      if (!schuetze) continue;
+      if (!schuetze) {
+        merken(null);
+        continue;
+      }
       seite.tore += 1;
       const vorlage = zufall() < 0.7
         ? gewichtetWaehlen(seite.auf.filter((s) => s.id !== schuetze.id), (s) => VORLAGENEIGUNG[s.position], zufall)
         : null;
       const minute = minuteFuer(seite, schuetze.id, von, zufall);
       if (vorlage) seite.letzte[vorlage.id] = Math.max(seite.letzte[vorlage.id] || 0, minute);
-      ereignisse.push({
+      const tor = {
         minute, art: 'tor', verein: seite.id, spielerId: schuetze.id, spieler: schuetze.name,
         ...(vorlage ? { vorlageId: vorlage.id, vorlage: vorlage.name } : {}),
-      });
+      };
+      ereignisse.push(tor);
+      merken(tor);
     }
   });
 
@@ -479,10 +497,11 @@ function notenGeben(seiten, ergebnis, zufall) {
  * @returns {Spiel}
  */
 function anpfiff(heim, gast, zufall, einstellungen) {
-  const { aufstellungen, taktiken = {}, wechselregeln = {}, neutral = false, entscheidung = false } = einstellungen;
+  const { aufstellungen, taktiken = {}, wechselregeln = {}, neutral = false, entscheidung = false, szenen } = einstellungen;
   const stand = typeof zufall === 'function' ? zufall.stand : zufall;
   if (!stand || !Number.isInteger(stand.a)) throw new Error('anpfiff() braucht eine Quelle aus zufallAus() oder ihren Stand.');
-  return {
+  /** @type {Spiel} */
+  const spiel = {
     heim: heim.id,
     gast: gast.id,
     zufall: stand,
@@ -505,6 +524,9 @@ function anpfiff(heim, gast, zufall, einstellungen) {
     vorbei: false,
     ereignisse: [],
   };
+  // Nur wenn gefragt - sonst traegt der Spielstand das Feld nicht.
+  if (szenen) spiel.szenen = szenenAnlegen(typeof szenen === 'function' ? szenen.stand : szenen, [heim.name, gast.name], spiel.seiten);
+  return spiel;
 }
 
 /**
@@ -522,8 +544,16 @@ function spielen(spiel, bisMinute) {
   const [heim, gast] = spiel.seiten;
   const naechsteEnde = () => (spiel.abschnitte + 1) * SCHEIBE;
 
+  const roh = spiel.szenen ? [] : null;
+  const gekleidet = () => {
+    if (!roh) return;
+    kleiden(spiel, roh);
+    roh.length = 0;
+  };
+
   while (spiel.abschnitte < SCHEIBEN && naechsteEnde() <= bisMinute) {
-    spiel.besitz += abschnitt(spiel.seiten, spiel.abschnitte * SCHEIBE + 1, heimfaktoren, zufall, spiel.ereignisse, SCHEIBEN);
+    spiel.besitz += abschnitt(spiel.seiten, spiel.abschnitte * SCHEIBE + 1, heimfaktoren, zufall, spiel.ereignisse, SCHEIBEN, roh);
+    gekleidet();
     spiel.abschnitte += 1;
     spiel.minute = spiel.abschnitte * SCHEIBE;
   }
@@ -537,7 +567,8 @@ function spielen(spiel, bisMinute) {
     spiel.verlaengerung = true;
   }
   while (spiel.abschnitte < SCHEIBEN + VERLAENGERUNG && naechsteEnde() <= bisMinute) {
-    abschnitt(spiel.seiten, spiel.abschnitte * SCHEIBE + 1, heimfaktoren, zufall, spiel.ereignisse, VERLAENGERUNG);
+    abschnitt(spiel.seiten, spiel.abschnitte * SCHEIBE + 1, heimfaktoren, zufall, spiel.ereignisse, VERLAENGERUNG, roh);
+    gekleidet();
     spiel.abschnitte += 1;
     spiel.minute = spiel.abschnitte * SCHEIBE;
   }
@@ -620,6 +651,7 @@ function abpfiff(spiel) {
     for (const [id, { von, bis }] of Object.entries(seite.minuten)) ergebnis.einsaetze[id] = (bis ?? dauer) - von;
   }
   ergebnis.noten = notenGeben(seiten, ergebnis, zufall);
+  if (spiel.szenen) ergebnis.szenen = spiel.szenen.liste;
   return ergebnis;
 }
 

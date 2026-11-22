@@ -1297,6 +1297,21 @@
       "begruendung": "Punkte mit fremdem und eingespieltem System, verglichen ueber je 1.200 Spiele, und die Spielpraxis nach einem Spiel. Wie weit das System sitzt, zeigt der Balken im Bild zu aufstellung AC-21."
     },
     {
+      "spec": "15-manager/spieltag.md",
+      "ac": "AC-27",
+      "begruendung": "Dass jede Chance eine Szene ist, ist ein Abgleich ueber 300 Spiele: je Seite so viele Szenen wie Chancen, je Tor eine Torszene mit demselben Schuetzen und derselben Vorlage, jede Art nur in ihren Zonen und mit ihren Ausgaengen, und Schuetze, Vorlage und Torwart nach den Spielminuten der Seite in dieser Minute auf dem Platz. Ein Bildschirm zeigt eine Szene, nicht dass keine fehlt und keiner der Genannten schon draussen war. Wie eine Szene im Ticker steht, zeigt das Bild zu oberflaeche AC-19."
+    },
+    {
+      "spec": "15-manager/spieltag.md",
+      "ac": "AC-28",
+      "begruendung": "Dass Szenen kein Ergebnis aendern, ist ein Vergleich zweier Rechnungen derselben 2.000 Spiele, einmal mit und einmal ohne Szenen: Ergebnis fuer Ergebnis gleich, Ereignis fuer Ereignis, und der Zufall des Spieltags zieht danach gleich weiter; dazu 60 Spiele stueckweise mit Sicherung als JSON gegen dasselbe Spiel am Stueck. Ein Bild zeigt eine der beiden Rechnungen, nie, dass die andere gleich ist."
+    },
+    {
+      "spec": "15-manager/spieltag.md",
+      "ac": "AC-29",
+      "begruendung": "Gezaehlt in der Tabelle der Saetze (je Art und Ausgang sechs, keiner doppelt, nur bekannte Platzhalter, ein Tor nennt immer den Schuetzen) und ueber 2.000 Spiele (kein Platzhalter bleibt stehen, kein Satz zweimal in einem Spiel, kein Name steht fuer zwei Spieler); dazu ein Abgleich, dass keine Datei unter public/ einen Platzhalter oder die Saetze traegt. Ein Bildschirm zeigt einige Saetze, nicht dass keiner fehlt und keiner im Browser entsteht. Wie die Saetze im Ticker stehen, zeigt das Bild zu oberflaeche AC-19."
+    },
+    {
       "spec": "15-manager/aufstellung.md",
       "ac": "AC-19",
       "begruendung": "Was eine Woche Schwerpunkt bringt und kostet - eine Rechenregel ueber Wochen. Wie das Geuebte waechst, zeigt das Bild zu aufstellung AC-21."
