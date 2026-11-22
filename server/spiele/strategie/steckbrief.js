@@ -46,6 +46,19 @@ function laden(bytes) {
   return kisAnhaengen(welt, inhalt.kis.map((wert) => Ki.ausWert(welt, wert)));
 }
 
+// Spielzeit und Karte fuer die Liste im Vorraum - als fertige Saetze, der
+// Browser rechnet nichts davon nach.
+const KARTEN = { klein: 'klein', normal: 'normal', gross: 'groß' };
+/** @param {{ takt: number }} welt @param {Record<string, any>} einstellungen */
+function angaben(welt, einstellungen = {}) {
+  const sekunden = Math.floor((welt.takt || 0) / TAKTE_PRO_SEKUNDE);
+  const uhr = `${Math.floor(sekunden / 60)}:${String(sekunden % 60).padStart(2, '0')}`;
+  return [
+    { name: 'Spielzeit', wert: uhr },
+    { name: 'Karte', wert: KARTEN[einstellungen.kartengroesse] || KARTEN.normal },
+  ];
+}
+
 // Die Teams aus der Wahl je Platz (spielauswahl AC-22): der Raum reicht sie
 // unter `jePlatz` durch, Menschen unter ihrer Id, die KIs als `platz1` ...
 // (raeume.js `spielplatz`) - hier wird daraus `ki1` ... Die Welt liest
@@ -204,6 +217,9 @@ module.exports = {
   // Die Fassung des Stands (speichern AC-17) - die Ablage schreibt sie in die
   // Liste, damit ein Stand, der nicht mehr passt, schon dort zu erkennen ist.
   standFassung: stand.FASSUNG,
+  // Was die Liste "Deine Partien" zu einem Stand zeigt (speichern AC-9): der
+  // Raum legt es beim Sichern daneben, ohne zu wissen, was es heisst.
+  angaben,
   // Der Technologiebaum (bedienung AC-81): erst geladen, wenn ihn jemand
   // aufschlaegt - er baut dafuer eine Welt.
   nachschlagen: { titel: 'Technologiebaum', daten: () => require('./techbaum').techbaum() },

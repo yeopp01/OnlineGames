@@ -30,6 +30,7 @@ const kennung = () => randomBytes(12).toString('base64url');
  * @property {number|null} [fassung] die Fassung des Stands, wenn das Spiel sie nennt
  * @property {unknown} [beteiligte]  wer mitspielt - Namen und ob Mensch (AC-26)
  * @property {unknown} [einstellungen] womit die Partie eroeffnet wurde
+ * @property {unknown} [angaben]     was die Liste zeigt, vom Spiel gesagt (Spielzeit, Karte)
  */
 
 /**
@@ -40,6 +41,7 @@ const kennung = () => randomBytes(12).toString('base64url');
  * @property {string|null} name
  * @property {unknown} beteiligte
  * @property {unknown} einstellungen
+ * @property {unknown} angaben
  * @property {number} angelegt
  * @property {number} geaendert
  */
@@ -53,6 +55,7 @@ function zeileLesen(z) {
     name: z.name ?? null,
     beteiligte: JSON.parse(z.beteiligte || 'null'),
     einstellungen: JSON.parse(z.einstellungen || 'null'),
+    angaben: JSON.parse(z.angaben || 'null'),
     angelegt: z.angelegt,
     geaendert: z.geaendert,
   };
@@ -68,6 +71,8 @@ class Partiestaende {
   constructor(db, uhr = () => Date.now()) {
     this.db = db;
     this.uhr = uhr;
+    // Wie viele ein Konto halten darf - der Raum sagt es beim Start (AC-27).
+    this.jeKonto = JE_KONTO;
     db.exec(`
       CREATE TABLE IF NOT EXISTS partiestand (
         id            TEXT PRIMARY KEY,
@@ -83,6 +88,10 @@ class Partiestaende {
         vorher        BLOB
       )`);
     db.exec('CREATE INDEX IF NOT EXISTS partiestand_konto ON partiestand (konto)');
+    // Seit S3 sagt das Spiel, was die Liste zeigt. Eine Datei von vorher
+    // bekommt die Spalte nachgetragen; ihre Staende stehen dann ohne Angaben.
+    const spalten = /** @type {Array<{ name: string }>} */ (db.prepare('PRAGMA table_info(partiestand)').all());
+    if (!spalten.some((sp) => sp.name === 'angaben')) db.exec('ALTER TABLE partiestand ADD COLUMN angaben TEXT');
   }
 
   /** @param {string} konto */
@@ -100,17 +109,17 @@ class Partiestaende {
    */
   ablegen(konto, wert, beschreibung) {
     if (!konto) return { fehler: 'Ein Spielstand gehört einem Konto.' };
-    if (this.anzahl(konto) >= JE_KONTO) {
-      return { fehler: `Mehr als ${JE_KONTO} Spielstände je Konto gehen nicht. Lösche einen alten.` };
+    if (this.anzahl(konto) >= this.jeKonto) {
+      return { fehler: `Mehr als ${this.jeKonto} Spielstände je Konto gehen nicht. Lösche einen alten.` };
     }
     const id = kennung();
     const jetzt = this.uhr();
     this.db.prepare(`
-      INSERT INTO partiestand (id, konto, art, fassung, name, beteiligte, einstellungen, angelegt, geaendert, wert, vorher)
-      VALUES (?, ?, ?, ?, NULL, ?, ?, ?, ?, ?, NULL)`)
+      INSERT INTO partiestand (id, konto, art, fassung, name, beteiligte, einstellungen, angaben, angelegt, geaendert, wert, vorher)
+      VALUES (?, ?, ?, ?, NULL, ?, ?, ?, ?, ?, ?, NULL)`)
       .run(id, konto, beschreibung.art, beschreibung.fassung ?? null,
         JSON.stringify(beschreibung.beteiligte ?? null), JSON.stringify(beschreibung.einstellungen ?? null),
-        jetzt, jetzt, wert);
+        JSON.stringify(beschreibung.angaben ?? null), jetzt, jetzt, wert);
     return { id };
   }
 
@@ -125,10 +134,10 @@ class Partiestaende {
    */
   schreiben(konto, id, wert, beschreibung) {
     const { changes } = this.db.prepare(`
-      UPDATE partiestand SET vorher = wert, wert = ?, fassung = ?, beteiligte = ?, einstellungen = ?, geaendert = ?
+      UPDATE partiestand SET vorher = wert, wert = ?, fassung = ?, beteiligte = ?, einstellungen = ?, angaben = ?, geaendert = ?
       WHERE id = ? AND konto = ?`)
       .run(wert, beschreibung.fassung ?? null, JSON.stringify(beschreibung.beteiligte ?? null),
-        JSON.stringify(beschreibung.einstellungen ?? null), this.uhr(), id, konto);
+        JSON.stringify(beschreibung.einstellungen ?? null), JSON.stringify(beschreibung.angaben ?? null), this.uhr(), id, konto);
     return changes === 1;
   }
 
@@ -139,7 +148,7 @@ class Partiestaende {
    */
   liste(konto) {
     return this.db.prepare(`
-      SELECT id, art, fassung, name, beteiligte, einstellungen, angelegt, geaendert
+      SELECT id, art, fassung, name, beteiligte, einstellungen, angaben, angelegt, geaendert
       FROM partiestand WHERE konto = ? ORDER BY geaendert DESC`).all(konto).map(zeileLesen);
   }
 

@@ -2638,3 +2638,150 @@ button.leise-knopf {
 button.tb-oeffnen {
   white-space: nowrap;
 }
+
+/* ---- Deine Partien (speichern AC-7, AC-9) ---------------------------------
+   Unter den Spielkarten, eine Zeile je Stand: links was er ist, rechts
+   Fortsetzen und Loeschen, alles in einer Zeile. Hoechstens fuenf - so
+   bleibt der Vorraum auf 1366 x 768 ohne Rollen (spielauswahl AC-23,
+   speichern AC-27; mit zwei Zeilen je Stand rollte er). Klappt jemand eine Spielkarte
+   zum Eroeffnen auf, tritt die Liste zurueck: die Einstellungen brauchen
+   den Platz. */
+.partien {
+  margin-top: 0.9rem;
+}
+
+.partien[hidden],
+.vorraum #angemeldet:has(.einstellungen:not([hidden])) .partien {
+  display: none;
+}
+
+.partien h3 {
+  margin: 0 0 0.3rem;
+  color: var(--leise);
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.partienliste {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.partienliste li {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  padding: 0.25rem 0;
+  border-bottom: 1px solid var(--rand);
+}
+
+.partienliste li:last-child {
+  border-bottom: none;
+}
+
+.partietext {
+  display: flex;
+  flex: 1;
+  align-items: baseline;
+  gap: 0.6rem;
+  min-width: 0;
+  line-height: 1.3;
+}
+
+.partietext strong {
+  flex: 0 0 auto;
+  font-size: 0.92rem;
+}
+
+.partieangaben {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  color: var(--leise);
+  font-size: 0.82rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.partienliste button {
+  padding: 0.3rem 0.8rem;
+  font-size: 0.85rem;
+  white-space: nowrap;
+}
+
+.partienliste button.haupt {
+  flex: 0 0 auto;
+}
+
+.partienliste button.sicher {
+  border-color: #b4473f;
+  color: #ffd2c9;
+}
+
+.partienmeldung {
+  margin: 0 0 0.5rem;
+  padding: 0.45rem 0.7rem;
+  border: 1px solid #4a90d988;
+  border-radius: 8px;
+  background: #182433;
+  font-size: 0.88rem;
+}
+
+.partienmeldung.fehler {
+  border-color: #b4473f88;
+  background: #3a2226;
+  color: #f2b8b8;
+}
+
+.partienmeldung[hidden],
+.partienvoll[hidden] {
+  display: none;
+}
+
+.partienvoll {
+  margin: 0.3rem 0 0;
+  color: #e3bf6a;
+  font-size: 0.85rem;
+}
+
+/* ---- Ein Hinweis, der bleibt (speichern AC-6, AC-27) ----------------------
+   Oben rechts unter den Knoepfen, nicht in der Mitte (bedienung AC-41): was
+   hier steht, betrifft die ganze Partie - dass sie nicht gesichert wird,
+   oder dass ein aelterer Stand geladen wurde. Er bleibt, bis man ihn
+   wegklickt; die Partie laeuft darunter weiter. */
+.spielhinweis {
+  position: fixed;
+  right: 1rem;
+  top: 4.2rem;
+  width: min(24rem, calc(100vw - 2rem));
+  margin: 0;
+  padding: 0.75rem 1rem 0.8rem;
+  border: 1px solid #f0b35a88;
+  border-radius: 0.6rem;
+  background: #12161ef2;
+  color: #e6e9ee;
+  box-shadow: 0 6px 22px #000b;
+  z-index: 15;
+}
+
+.spielhinweis[hidden] {
+  display: none;
+}
+
+/* Steht schon die Ansage eines Buendnisses dort, darunter. */
+.buendnisansage:not([hidden]) ~ .spielhinweis {
+  top: 9.5rem;
+}
+
+.spielhinweis p {
+  margin: 0 0 0.6rem;
+  line-height: 1.4;
+}
+
+.spielhinweis button {
+  padding: 0.35rem 0.9rem;
+  font-size: 0.88rem;
+}

@@ -23,6 +23,12 @@ const PAUSEN_JE_SPIELER = 2;
 // Sichern (speichern AC-3): eine laufende Partie legt jede Minute ihren Stand
 // am Konto des Eroeffnenden ab - ein Absturz kostet hoechstens eine Minute.
 const SICHERN_MS = 60 * 1000;
+// Wegklicken ist Anhalten (speichern AC-8): sitzt ein Mensch allein in der
+// Partie und ist zwei Minuten fort, wird gesichert und der Raum geschlossen -
+// er setzt aus der Liste fort, nicht mit dem alten Code (AC-9). Zu mehreren
+// bleibt es bei der halben Stunde (raeume AC-17): dort wartet die Partie auf
+// die anderen, und gemeinsam fortsetzen kommt erst mit S4.
+const WEG_MS = 2 * 60 * 1000;
 
 function codeErzeugen() {
   let code = '';
@@ -129,6 +135,10 @@ class Raum {
     // wird fuer diese Partie nichts mehr abgelegt - sonst kaeme ein
     // geloeschter Stand jede Minute wieder.
     this.ohneStand = false;
+    // Warum nicht gesichert wird - der Satz, den der Gastgeber sieht (AC-27).
+    /** @type {string | null} */
+    this.ohneStandGrund = null;
+    this.ohneStandGesagt = false;
   }
 
   // Was je Platz gewaehlt wird, aus dem Steckbrief (`jePlatz`). Leer: nichts.
@@ -209,6 +219,18 @@ class Raum {
       draht,
       verbunden: true,
     };
+    this.spieler.push(spieler);
+    this.beruehrt = Date.now();
+    return { spieler };
+  }
+
+  // Wer eine gesicherte Partie fortsetzt, sitzt auf seinem alten Platz
+  // (speichern AC-9): die Id steht im Stand, das Spiel kennt ihn darunter.
+  // Ein neues Token - das alte gehoerte zum alten Raum.
+  /** @param {string} id @param {string} name */
+  aufnehmen(id, name, draht) {
+    if (this.gestartet) return { fehler: 'Die Partie läuft schon.' };
+    const spieler = { id, name: namePruefen(name), token: randomUUID(), draht, verbunden: true };
     this.spieler.push(spieler);
     this.beruehrt = Date.now();
     return { spieler };
@@ -300,10 +322,76 @@ class Raum {
     // Eine neue Partie hat noch keinen Stand - auch die Revanche nicht.
     this.standId = null;
     this.ohneStand = false;
+    this.ohneStandGrund = null;
+    this.ohneStandGesagt = false;
     this.gesichertUm = Date.now();
     this.uhr = setInterval(() => this.schlag(), 1000 / this.jeSekunde);
     this.beruehrt = Date.now();
+    this.platzPruefen();
     return {};
+  }
+
+  // ---- Fortsetzen (speichern AC-9 bis AC-11) --------------------------------
+  // Ein neuer Raum mit neuem Code nimmt die geladene Partie auf (AC-9). Er
+  // beginnt angehalten: wer fortsetzt, sieht erst, wo er steht, und spielt
+  // weiter, wenn er "Weiter" sagt (ADR-0017). Der Stand bleibt derselbe -
+  // jedes Sichern ersetzt ihn, statt einen zweiten anzulegen.
+  /**
+   * @param {any} welt   was `laden` im Steckbrief lieferte
+   * @param {string} standId
+   * @param {{ id: string, name: string }} wer
+   */
+  fortsetzenMit(welt, standId, wer) {
+    if (this.gestartet) return { fehler: 'Die Partie läuft schon.' };
+    this.welt = welt;
+    this.sendenJe((id) => (this.welt.aufbauFuer ? this.welt.aufbauFuer(id) : this.welt.aufbau()));
+    // Die Partie steht gleich nach dem Laden (AC-9) - `schlag` schickt dann
+    // nichts. Ein Zustand jetzt, sonst saehe man bis "Weiter" eine leere Karte.
+    this.zustandSenden();
+    this.jeSekunde = takteJeSekunde(this.spiel, this.einstellungen);
+    this.beginn = Date.now();
+    this.gerechnet = 0;
+    this.pausen = {};
+    // Allein gegen den Computer: ohne Frist (AC-20).
+    this.pause = { von: wer.id, name: wer.name, bis: this.spieler.length > 1 ? Date.now() + this.pauseMs : null };
+    this.standId = standId;
+    this.ohneStand = false;
+    this.ohneStandGrund = null;
+    this.ohneStandGesagt = false;
+    this.gesichertUm = Date.now();
+    this.uhr = setInterval(() => this.schlag(), 1000 / this.jeSekunde);
+    this.beruehrt = Date.now();
+    this.senden(this.pausenstand());
+    // Der Browser merkt sich die Kamera je Stand (AC-10) - `fortgesetzt` sagt
+    // ihm, dass er sie jetzt zurueckholen soll.
+    this.senden({ typ: 'stand', id: standId, fortgesetzt: true });
+    return {};
+  }
+
+  // ---- Aufhoeren (speichern AC-7) -------------------------------------------
+  // "Aufhören und später weiterspielen": sichern, und erst wenn das ging,
+  // erfahren es alle - den Raum schliesst, wer ihn haelt (`Raeume.schliessen`).
+  // Zu mehreren nicht: dort verlangt Sichern Einigkeit (AC-22, S4).
+  aufhoeren() {
+    if (!this.laeuft) return { fehler: 'Es läuft keine Partie.' };
+    if (this.spieler.length > 1) return { fehler: 'Zu mehreren lässt sich noch nicht gemeinsam aufhören.' };
+    if (!this.ablage || !this.eigentuemer || typeof this.welt.sichern !== 'function') {
+      return { fehler: 'Diese Partie lässt sich nicht sichern.' };
+    }
+    if (this.ohneStand) return { fehler: this.ohneStandGrund || 'Diese Partie wird nicht gesichert.' };
+    if (!this.sichern()) return { fehler: this.ohneStandGrund || 'Die Partie ließ sich nicht sichern.' };
+    this.senden({ typ: 'aufgehoert', stand: this.standId });
+    return {};
+  }
+
+  /** Jedem den Zustand, den er sehen darf - gibt es keinen je Spieler, allen denselben. */
+  zustandSenden() {
+    if (this.welt.zustandJeSpieler) {
+      const je = this.welt.zustandJeSpieler(this.spieler.map((s) => s.id));
+      this.sendenJe((id) => je.get(id));
+    } else {
+      this.senden(this.welt.zustand());
+    }
   }
 
   schlag() {
@@ -341,12 +429,7 @@ class Raum {
       this.welt.takten();
       if (this.welt.vorbei) break;
     }
-    if (this.welt.zustandJeSpieler) {
-      const je = this.welt.zustandJeSpieler(this.spieler.map((s) => s.id));
-      this.sendenJe((id) => je.get(id));
-    } else {
-      this.senden(this.welt.zustand());
-    }
+    this.zustandSenden();
     // `vorbei` gehoert zur Form dessen, was `erzeugen` liefert, nicht zu
     // einem einzelnen Spiel (ADR-0006): sagt es, die Partie sei entschieden,
     // haelt der Raum seine Uhr an. **Was** entscheidet, weiss nur das Spiel -
@@ -394,29 +477,58 @@ class Raum {
       fassung: Number.isInteger(this.spiel.standFassung) ? this.spiel.standFassung : null,
       beteiligte: this.plaetzeBeteiligt(),
       einstellungen: { ...this.einstellungen, platzwahl: this.platzwahl },
+      // Was die Liste im Vorraum zeigt (Spielzeit, Karte ...) - das Spiel
+      // sagt es, der Raum reicht es durch.
+      angaben: typeof this.spiel.angaben === 'function' ? this.spiel.angaben(this.welt, this.einstellungen) : null,
     };
     if (this.standId) {
       if (this.ablage.schreiben(this.eigentuemer, this.standId, wert, beschreibung)) return true;
       // Geloescht, waehrend die Partie lief: dabei bleibt es.
       this.standId = null;
       this.ohneStand = true;
+      this.ohneStandGrund = 'Der Spielstand dieser Partie wurde gelöscht – sie wird nicht mehr gesichert.';
       return false;
     }
     const abgelegt = this.ablage.ablegen(this.eigentuemer, wert, beschreibung);
     if ('fehler' in abgelegt) {
       // Am Konto liegen schon fuenf (AC-12): diese Partie wird nicht
-      // gesichert - kein alter Stand wird stillschweigend geopfert. Gesagt
-      // wird es erst mit der Liste im Vorraum (S3).
+      // gesichert - kein alter Stand wird stillschweigend geopfert. Der
+      // Gastgeber erfaehrt es (AC-27).
       this.ohneStand = true;
+      this.ohneStandSagen(`Diese Partie wird nicht gesichert: ${abgelegt.fehler}`);
       return false;
     }
     this.standId = abgelegt.id;
+    // Ab jetzt merkt sich der Browser die Kamera zu diesem Stand (AC-10).
+    this.senden({ typ: 'stand', id: abgelegt.id });
     return true;
   }
 
-  /** Wer an der Partie beteiligt ist - Menschen mit Namen, dazu die Plaetze des Spiels. */
+  // Liegen am Konto schon so viele Staende, wie die Ablage nimmt, wird diese
+  // Partie nicht gesichert - das sagt der Raum gleich beim Start, nicht erst
+  // nach der ersten Minute (AC-27). Geprueft wird hier nur die Zahl; ob
+  // abgelegt wird, entscheidet weiter die Ablage.
+  platzPruefen() {
+    if (!this.ablage || !this.eigentuemer || typeof this.welt.sichern !== 'function') return;
+    const hoechstens = this.ablage.jeKonto;
+    if (!Number.isInteger(hoechstens) || this.ablage.anzahl(this.eigentuemer) < hoechstens) return;
+    this.ohneStand = true;
+    this.ohneStandSagen(`Diese Partie wird nicht gesichert: an deinem Konto liegen schon ${hoechstens} Spielstände. Lösche einen im Vorraum, dann wird die nächste gesichert.`);
+  }
+
+  /** Einmal je Partie, an den Gastgeber - ihm gehoert der Stand. @param {string} text */
+  ohneStandSagen(text) {
+    this.ohneStandGrund = text;
+    if (this.ohneStandGesagt) return;
+    this.ohneStandGesagt = true;
+    const wer = this.gastgeber;
+    // `ohneStand`: der Browser bietet "Später weiterspielen" dann nicht an.
+    if (wer && wer.draht && wer.draht.readyState === 1) wer.draht.send(JSON.stringify({ typ: 'hinweis', text, ohneStand: true }));
+  }
+
+  /** Wer an der Partie beteiligt ist - Menschen mit Namen und Platz, dazu die Plaetze des Spiels. */
   plaetzeBeteiligt() {
-    const menschen = this.spieler.map((s) => ({ name: s.name, mensch: true }));
+    const menschen = this.spieler.map((s) => ({ name: s.name, mensch: true, platz: s.id }));
     const besetzt = vomSpielBesetzt(this.spiel, this.einstellungen);
     const name = (nummer) => (typeof this.spiel.platzname === 'function' ? this.spiel.platzname(nummer) : `Platz ${nummer}`);
     const andere = Array.from({ length: besetzt }, (_, i) => ({ name: name(i + 1), mensch: false }));
@@ -478,6 +590,9 @@ class Raum {
       // Je Platz, was gewaehlt ist (spielauswahl AC-22) - alle sehen es.
       jePlatz: this.platzliste,
       plaetze: this.plaetze.map((p) => ({ ...p, wahl: this.wahlVon(p.platz) })),
+      // Ob diese Partie gesichert werden kann - dann bietet das Spielbild
+      // "Aufhören und später weiterspielen" an (speichern AC-7).
+      sichert: Boolean(this.ablage && this.eigentuemer && typeof this.spiel.laden === 'function'),
     };
   }
 
@@ -503,7 +618,9 @@ class Raeume {
     // Wohin die Raeume ihre Staende legen (server/partiestaende.js) - ohne
     // Ablage wird nichts gesichert.
     this.ablage = null;
-    this.aufraeumer = setInterval(() => this.aufraeumen(), 60 * 1000);
+    this.wegMs = WEG_MS;
+    // Alle 15 Sekunden, damit aus "nach zwei Minuten" nicht drei werden (AC-8).
+    this.aufraeumer = setInterval(() => this.aufraeumen(), 15 * 1000);
     this.aufraeumer.unref?.();
   }
 
@@ -530,9 +647,24 @@ class Raeume {
     return this.nachCode.get(codeLesen(code)) || null;
   }
 
+  /**
+   * Der Raum, in dem ein Stand gerade laeuft (speichern AC-11) - oder null.
+   * @param {string} konto @param {string} standId
+   */
+  mitStand(konto, standId) {
+    for (const raum of this.nachCode.values()) {
+      if (raum.standId === standId && raum.eigentuemer === konto) return raum;
+    }
+    return null;
+  }
+
   schliessen(raum) {
     if (!this.nachCode.has(raum.code)) return;
     raum.beenden();
+    // Ein geschlossener Raum legt nichts mehr ab - sonst schriebe ihn das
+    // Abreissen der letzten Verbindung noch einmal, nachdem sein Stand
+    // schon anderswo weiterlaeuft (AC-11).
+    raum.ablage = null;
     this.nachCode.delete(raum.code);
     // Der Schutz muss auch dann mitzaehlen, wenn ein Raum von selbst
     // verfaellt und nicht, weil jemand ihn verlassen hat.
@@ -574,6 +706,10 @@ class Raeume {
       // ein Raum ohne Befehl (raeume AC-17) - `beruehrt` steht dann auf dem
       // Augenblick, in dem der letzte ging.
       if (raum.leer && !raum.laeuft && jetzt - raum.beruehrt > 60 * 1000) this.schliessen(raum);
+      // Allein und weggeklickt (speichern AC-8): gesichert und zu. Laesst sich
+      // nichts sichern, wartet sie wie jede verlassene Partie - so geht nichts
+      // verloren, was nicht auch das Warten verloere.
+      else if (raum.leer && raum.laeuft && raum.spieler.length === 1 && jetzt - raum.beruehrt >= this.wegMs && raum.sichern()) this.schliessen(raum);
       // Wer allein angehalten hat und noch am Tisch sitzt, wird nicht
       // abgeraeumt (speichern AC-20): die Pause ist dort unbegrenzt, und eine
       // Uhr, die steht, kostet keine Rechenzeit.
@@ -596,5 +732,5 @@ class Raeume {
 
 module.exports = {
   Raeume, Raum, codeErzeugen, codeZeigen, codeLesen, namePruefen, spielplatz,
-  MAX_SPIELER, MIN_SPIELER, CODE_LAENGE, ZEICHEN, plaetzePruefen,
+  MAX_SPIELER, MIN_SPIELER, CODE_LAENGE, ZEICHEN, plaetzePruefen, WEG_MS,
 };
