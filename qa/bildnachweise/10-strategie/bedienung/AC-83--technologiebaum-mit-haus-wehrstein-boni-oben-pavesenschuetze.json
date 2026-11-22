@@ -1,0 +1,10 @@
+{
+  "spec": "10-strategie/bedienung.md",
+  "ac": "AC-83",
+  "titel": "Technologiebaum mit Haus Wehrstein: Boni oben, Pavesenschütze und Riese golden, die Einheiten der anderen Häuser blass, gestärkte Gebäude mit Zeichen",
+  "datei": "e2e/tests/strategie-techbaum.spec.mjs",
+  "pfad": [
+    "Technologiebaum",
+    "bedienung AC-83: das eigene Haus ist vorgewaehlt - was ihm fehlt, ist blass, was nur es hat, golden, was es staerkt, traegt ein Zeichen"
+  ]
+}
