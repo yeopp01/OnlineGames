@@ -2,7 +2,7 @@
 // `npm run manager:messen` (Kennzahlen) und tests/manager-gleichstand.test.mjs
 // (Fingerabdruck) lesen (→ docs/manager/plan.md, M0.2).
 //
-// Die Begegnung wird beobachtet, BEVOR die Karriere sie laedt: karriere.js
+// Die Begegnung wird beobachtet, BEVOR die Karriere sie laedt: ablauf.js
 // holt sich `begegnung` beim Laden. Wer diese Datei einbindet, darf
 // karriere.js vorher nicht geladen haben.
 import { createHash } from 'node:crypto';

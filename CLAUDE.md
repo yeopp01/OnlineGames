@@ -130,7 +130,9 @@ server/  raeume.js   Räume, Beitritt, Rückkehr nach Abbruch
                       spieltag.js die Begegnung in Fünf-Minuten-Abschnitten, Taktik
                       liga.js Spielplan, Tabelle · pokal.js · kalender.js 42 Termine
                       finanzen.js · vertraege.js · vorstand.js · transfer.js Markt, KI-Handel
-                      karriere.js Saison um Saison · spielstaende.js SQLite am Konto
+                      karriere.js setzt die Karriere zusammen: welt.js Zustand,
+                      ablauf.js Saison um Saison, zuege.js Befehle, sicht.js Ansichten
+                      spielstaende.js SQLite am Konto
                       netz.js der Anfrageweg (nur mit Anmeldung)
 public/  app.js      Verbindung, Vorraum, Warteraum
          ansicht.js  zeichnet die Welt, nimmt Maus und Tastatur
