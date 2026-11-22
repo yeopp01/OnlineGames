@@ -167,6 +167,22 @@ export async function uhrStellen(page, code, minuten) {
 }
 
 /**
+ * Das Sichern der Partien schalten und die Ablage leeren (Pruefgriff,
+ * e2e/server.mjs). Der Browserlauf sichert sonst nicht - wer es braucht,
+ * schaltet es ein und am Ende wieder aus. `anfrage` ist `page.request` oder
+ * der `request` von Playwright.
+ * @param {{ post: Function }} anfrage
+ * @param {{ an?: boolean, leeren?: boolean, jeKonto?: number }} werte
+ */
+export async function staendeSchalten(anfrage, werte) {
+  const antwort = await anfrage.post(`http://localhost:${GRIFFHAFEN}/griff`, {
+    data: { befehl: 'staende', werte },
+  });
+  expect(antwort.ok(), await antwort.text()).toBe(true);
+  return (await antwort.json()).anzahl;
+}
+
+/**
  * Rohstoffe eines Spielers im Raum setzen (Pruefgriff, e2e/server.mjs).
  * `werte.gesammelt` (`{ gold: 1234 }`) setzt, was er ueber die Partie
  * gesammelt hat - davon haengen Tafel und Punkte ab (bedienung AC-47).

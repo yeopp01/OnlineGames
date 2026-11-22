@@ -1,0 +1,10 @@
+{
+  "spec": "00-plattform/speichern.md",
+  "ac": "AC-27",
+  "titel": "Vorraum auf 1366 x 768 mit fuenf Partien: darunter Alle 5 Plaetze belegt, eine neue Partie wird erst gesichert, wenn du eine loeschst",
+  "datei": "e2e/tests/strategie-fortsetzen.spec.mjs",
+  "pfad": [
+    "Aufhoeren und spaeter weiterspielen",
+    "speichern AC-27: liegen fuenf Staende am Konto, sagt es der Vorraum und die neue Partie, dass sie nicht gesichert wird"
+  ]
+}

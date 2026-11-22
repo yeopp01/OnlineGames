@@ -69,6 +69,11 @@ function pruefen(steckbrief, ordner) {
   if (steckbrief.standFassung !== undefined && !(Number.isInteger(steckbrief.standFassung) && steckbrief.standFassung >= 1)) {
     throw new Error(`${wo}: standFassung muss eine ganze Zahl ab 1 sein.`);
   }
+  // Was die Liste "Deine Partien" zu einem Stand zeigt (speichern AC-9):
+  // (partie, einstellungen) => [{ name, wert }]. Freiwillig.
+  if (steckbrief.angaben !== undefined && typeof steckbrief.angaben !== 'function') {
+    throw new Error(`${wo}: angaben muss eine Funktion (partie, einstellungen) => [{ name, wert }] sein.`);
+  }
 }
 
 function lesen(wurzel = __dirname) {
@@ -97,6 +102,7 @@ function lesen(wurzel = __dirname) {
       // Ausliefern weg wie `erzeugen`.
       ...(steckbrief.laden ? { laden: steckbrief.laden } : {}),
       ...(steckbrief.standFassung ? { standFassung: steckbrief.standFassung } : {}),
+      ...(steckbrief.angaben ? { angaben: steckbrief.angaben } : {}),
       // Beim Ausliefern bleibt nur der Titel; die Daten holt der Browser einzeln.
       ...(steckbrief.nachschlagen ? { nachschlagen: { titel: steckbrief.nachschlagen.titel, daten: steckbrief.nachschlagen.daten } } : {}),
       reihenfolge: Number.isInteger(steckbrief.reihenfolge) ? steckbrief.reihenfolge : 100,

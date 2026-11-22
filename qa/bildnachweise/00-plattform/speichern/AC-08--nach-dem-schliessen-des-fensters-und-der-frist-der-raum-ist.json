@@ -1,0 +1,10 @@
+{
+  "spec": "00-plattform/speichern.md",
+  "ac": "AC-8",
+  "titel": "Nach dem Schliessen des Fensters und der Frist: der Raum ist zu, sein Code fuehrt nirgendwohin, die Partie steht unter Deine Partien zum Fortsetzen",
+  "datei": "e2e/tests/strategie-fortsetzen.spec.mjs",
+  "pfad": [
+    "Aufhoeren und spaeter weiterspielen",
+    "speichern AC-8: wer das Fenster schliesst, verliert nichts - nach der Frist ist gesichert, der Raum zu, und die Partie steht im Vorraum"
+  ]
+}

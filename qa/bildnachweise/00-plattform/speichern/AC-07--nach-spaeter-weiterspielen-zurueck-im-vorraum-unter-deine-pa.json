@@ -1,0 +1,10 @@
+{
+  "spec": "00-plattform/speichern.md",
+  "ac": "AC-7",
+  "titel": "Nach Spaeter weiterspielen: zurueck im Vorraum, unter Deine Partien die eine Partie mit Spielzeit, Karte, Beteiligten und Uhrzeit, darueber Gesichert",
+  "datei": "e2e/tests/strategie-fortsetzen.spec.mjs",
+  "pfad": [
+    "Aufhoeren und spaeter weiterspielen",
+    "speichern AC-7: Spaeter weiterspielen sichert, schliesst den Raum und fuehrt in den Vorraum, wo die Partie unter Deine Partien steht"
+  ]
+}

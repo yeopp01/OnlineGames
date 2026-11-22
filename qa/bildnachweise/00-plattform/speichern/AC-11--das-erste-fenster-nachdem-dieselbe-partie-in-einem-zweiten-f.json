@@ -1,0 +1,10 @@
+{
+  "spec": "00-plattform/speichern.md",
+  "ac": "AC-11",
+  "titel": "Das erste Fenster, nachdem dieselbe Partie in einem zweiten fortgesetzt wurde: oben rechts steht, dass sie hier beendet und gesichert ist, mit Zurueck in den Vorraum",
+  "datei": "e2e/tests/strategie-fortsetzen.spec.mjs",
+  "pfad": [
+    "Aufhoeren und spaeter weiterspielen",
+    "speichern AC-11: wird derselbe Stand an anderer Stelle fortgesetzt, ist die erste Sitzung beendet und sagt das"
+  ]
+}

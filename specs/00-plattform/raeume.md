@@ -75,7 +75,9 @@ Name eintragen → Partie eroeffnen → Code weitergeben
   ("Diesen Raumcode gibt es nicht", das erste Spiel auf dem Server,
   2026-11-12). Kehrt einer zurueck (AC-10), geht sie weiter, wo sie stand —
   nachgeholt wird nichts. Nach 30 Minuten ohne jeden am Tisch wird sie
-  geschlossen (wie AC-13). Sie **sperrt niemanden aus**: steht eine Grenze
+  geschlossen (wie AC-13). Allein gegen den Computer und mit einem
+  gesicherten Stand sind es zwei Minuten: dann steht die Partie im Vorraum
+  unter „Deine Partien“ ([Speichern](speichern.md) AC-8). Sie **sperrt niemanden aus**: steht eine Grenze
   des Schutzes dem Eroeffnen im Weg, weicht die am laengsten verlassene
   Partie — zuerst eine desselben Anschlusses. Fuer den Betreiber zaehlt sie
   nicht als laufend; ein Ausrollen wartet nicht auf sie. Ein Raum vor dem

@@ -1,0 +1,10 @@
+{
+  "spec": "00-plattform/speichern.md",
+  "ac": "AC-27",
+  "titel": "Neue Partie bei fuenf Staenden: oben rechts steht, dass sie nicht gesichert wird, und Spaeter weiterspielen fehlt",
+  "datei": "e2e/tests/strategie-fortsetzen.spec.mjs",
+  "pfad": [
+    "Aufhoeren und spaeter weiterspielen",
+    "speichern AC-27: liegen fuenf Staende am Konto, sagt es der Vorraum und die neue Partie, dass sie nicht gesichert wird"
+  ]
+}

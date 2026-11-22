@@ -9,8 +9,10 @@
 // Art im Stand steht, nach `laden` (ADR-0006).
 //
 // Oeffnen heisst hier: der Server laedt den Stand und sagt, ob es ging - und
-// ob es der vorige war, weil der neueste kaputt ist (AC-6). Fortsetzen in
-// einem neuen Raum kommt mit der Liste im Vorraum (S3, AC-7 bis AC-11).
+// ob es der vorige war, weil der neueste kaputt ist (AC-6). Fortgesetzt wird
+// nicht hier, sondern ueber die Verbindung (`fortsetzen` in server/index.js):
+// dort entsteht der neue Raum (AC-9). Die Liste sagt dazu, wie viele ein Konto
+// halten darf - der Vorraum meldet, wenn es voll ist (AC-27).
 
 const PFAD = '/api/partien';
 
@@ -71,7 +73,7 @@ function partienWeg({ ablage, schutz, adresseVon, sitzung, spiele }) {
 
     if (teile.length === 0) {
       if (methode !== 'GET') return fehlerhaft(antwort, 'Falsche Methode.', 405);
-      return antworten(antwort, 200, { partien: ablage.liste(konto) });
+      return antworten(antwort, 200, { partien: ablage.liste(konto), hoechstens: ablage.jeKonto });
     }
     const [id, was] = teile;
     if (teile.length > 2) return fehlerhaft(antwort, 'Unbekannte Abfrage.', 404);
