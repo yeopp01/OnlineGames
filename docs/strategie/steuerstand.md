@@ -26,6 +26,24 @@ Punkt unten sucht, sucht dort nach „Punkt <n> (Benutzer“.
 
 ## Zuletzt fortgeschrieben
 
+**2026-11-22, Vormittag:** **F13 fertig und zusammengeführt** (`4910410`,
+Zweig `strategie-krone-am-stueck`, Arbeitsbaum `../OnlineGames-krone`):
+fahrplan AC-19 (`e2e/tests/strategie-krone-am-stueck.spec.mjs`, zwei
+Fälle: Krone mit Stufen, Elite-Kriegswolf, Wunder bis zum Sieg; Drache
+reißt ein Mauerstück) und AC-20 (`tests/strategie-grosse-partie.test.mjs`:
+acht Spieler je 200 im Nebel, Takt 5,5 ms, gepackt ≤ 30,5 KB/s je Spieler,
+wie `ws` packt rund 10; **ungepackt 160–182, bei „Aufgedeckt“ gepackt
+147 — die Grenze hält nur im Nebel**). Mittel: `perMessageDeflate:
+{ threshold: 1024 }` in `server/index.js` — **auf dem VPS nicht geprüft**
+(Proxy, Speicher je Verbindung). Board 609/715. Browserlauf danach 348/350:
+darstellung AC-10 „gerendert“ 44,9 Bilder/s (AC-30 übersprungen, hängt
+daran). **Gegenprobe mit/ohne Packen unentschieden:** erst schien ohne
+Packen besser (gerendert 58–59 gegen 52–58, im Gehen 54–56 gegen 43–55),
+dann fiel alles auf 25–45, auch ohne — eine Managersitzung fuhr zugleich
+Browsertests (`.claude/worktrees/manager`). **Neu messen, wenn der Rechner
+frei ist**, dann entscheiden (zlib Stufe 1 als Kandidat). Nicht committet:
+nichts offen.
+
 **2026-11-22, Morgen:** **F12 teilweise zusammengeführt** (`c3f7173`,
 Bilder `568f82d`): ki AC-35 (forscht), AC-39 (Krone), AC-40 (Wunder);
 `npm run check` grün (1084 Tests, 17 Partien), Browserlauf 347/348
