@@ -3,10 +3,11 @@
 // scripts/manager-dynamik-messung.mjs - derselben Stelle, aus der
 // `npm run manager:dynamik` die Bandtabelle druckt.
 //
-// Die Baender reissen heute; die Kriterien stehen auf `offen`, die Tests auf
-// `todo`. Wer einen Schritt des Plans baut, nimmt das `todo` weg, sobald sein
-// Band ueber diese Welt haelt - und prueft mit `npm run manager:dynamik`
-// ueber mehrere Startwerte, dass es nicht nur hier haelt.
+// Was noch reisst, steht auf `offen` und der Test auf `todo` (finanzen
+// AC-17 und AC-18 halten seit Schritt 2). Wer einen Schritt des Plans baut,
+// nimmt das `todo` weg, sobald sein Band ueber diese Welt haelt - und prueft
+// mit `npm run manager:dynamik` ueber mehrere Startwerte, dass es nicht nur
+// hier haelt.
 import { test, before } from 'node:test';
 import assert from 'node:assert/strict';
 import { baenderPruefen, weltVerfolgen } from '../scripts/manager-dynamik-messung.mjs';
@@ -38,11 +39,11 @@ test('die Dynamikmessung zaehlt Wechsel aus den Akten und Jugend nach Jahrgang',
   for (const l of welt.jugend) assert.equal(l.verlauf[17], l.staerke17);
 });
 
-test('finanzen AC-17: hoechstens zwei Vereine je Liga unter -3 Mio, jede Saison', { todo: 'reisst heute - Schritt 2 des Plans, Haushalt der KI' }, () => {
+test('finanzen AC-17: hoechstens zwei Vereine je Liga unter -3 Mio, jede Saison', () => {
   pruefen('finanzen AC-17');
 });
 
-test('finanzen AC-18: der Median der Konten bleibt je Liga im Plus', { todo: 'reisst heute - Schritt 2 des Plans, Haushalt der KI' }, () => {
+test('finanzen AC-18: der Median der Konten bleibt je Liga im Plus', () => {
   pruefen('finanzen AC-18');
 });
 

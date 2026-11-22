@@ -14,6 +14,7 @@ const {
   TOR, POSITIONEN, MINDESTBESTAND, KADERPLAN, KADER_MAX, SYSTEME, marktwert, niveau,
 } = require('./kader');
 const vertraege = require('./vertraege');
+const finanzen = require('./finanzen');
 const { fensterOffen } = require('./kalender');
 
 /** @typedef {import('./daten').Verein} Verein */
@@ -31,6 +32,41 @@ const { fensterOffen } = require('./kalender');
 
 // So gross will ein Verein der KI seinen Kader halten.
 const KI_KADER_ZIEL = 23;
+
+// Der Haushalt der anderen Vereine (→ docs/manager/dynamik/plan.md,
+// Schritt 2): ihre Gehaltssumme bleibt unter einem Anteil der erwarteten
+// Einnahmen (finanzen.erwarteteEinnahmen). Ohne Grenze verlaengerte die KI
+// zum Wunschgehalt und stopfte Loecher auch mit leerem Konto - Liga 2 stand
+// ab Saison 7 im Median im Minus, 3 bis 5 Vereine je Saison unter der
+// Abzugsgrenze. Mit der Grenze allein (85 %) hielt das, aber die Konten
+// wuchsen ohne Ende: Median Liga 1 nach 20 Saisons 82 bis 112 Mio. Deshalb
+// darf, was ueber einer Ruecklage liegt, in Gehaelter gehen. Gemessen (20
+// Saisons, Startwerte 4711, 20260910, 77, 1234): Median Liga 1 nach 20
+// Saisons 44,9 bis 56,1 Mio (1,6 bis 2,1 Jahreseinnahmen), Liga 2 7,8 bis
+// 8,2 Mio, je Liga hoechstens zwei unter -3 Mio. Abbau in 5 Jahren liess
+// 53 bis 58 Mio, in 10 Jahren 65 bis 79; eine Stufe (ueber der Ruecklage
+// 125 %) 43 bis 69 Mio, Liga 2 nur 3,8 bis 5,0, und ein reicher Verein mit
+// teurem Kader kaufte nie (transfer AC-16). Reiche Vereine sparen auch ohne
+// jede Grenze weiter (Gehalt/Einnahmen rund 0,9): sie fragen nicht mehr
+// nach, als ihr Kader braucht. Mehr im Plan unter "Stand".
+const HAUSHALT = {
+  // Hoechstens dieser Anteil der erwarteten Einnahmen geht an Gehaelter.
+  anteil: 0.85,
+  // So viele erwartete Jahreseinnahmen behaelt ein Verein als Ruecklage, ...
+  ruecklage: 0.5,
+  // ... was darueber liegt, darf in so vielen Jahren in Gehaelter gehen.
+  abbauJahre: 2,
+  // Ein Loch im Kader wird auch ueber der Grenze und mit leerem Konto
+  // gestopft - mit einem, der hoechstens so viel will.
+  lochGehalt: 400,
+};
+
+/** Wie viel Gehalt im Jahr ein Verein der KI sich leistet (in Tausend). */
+function gehaltsgrenze(verein) {
+  const einnahmen = finanzen.erwarteteEinnahmen(verein);
+  const ueberschuss = Math.max(0, verein.konto - HAUSHALT.ruecklage * einnahmen);
+  return HAUSHALT.anteil * einnahmen + ueberschuss / HAUSHALT.abbauJahre;
+}
 
 // Wie sehr ein Verein an einem Spieler haengt: wer auf seiner Position der
 // Beste ist, wird teuer; der vierte Torwart ist zu haben.
@@ -269,6 +305,59 @@ function kiAngebote(welt, mensch, zufall) {
 }
 
 /**
+ * Wen ein Verein der KI fuer eine Position holen wuerde: der Vereinslose oder
+ * der Spieler eines anderen Vereins mit der meisten Staerke fuers Geld - oder
+ * niemand. Wer unter dem Mindestbestand steht und sich keinen leisten kann,
+ * nimmt den billigsten Vereinslosen - ueber der Gehaltsgrenze und mit leerem
+ * Konto.
+ */
+function besterZugang(welt, verein, position, loch) {
+  const schwelle = loch ? 0 : schwaechsterStamm(verein, position) + 3;
+  const gehaltssumme = verein.spieler.reduce((s, x) => s + (x.vertrag?.gehalt || 0), 0);
+  const budget = verein.konto - gehaltssumme * 0.3;
+  const grenze = gehaltsgrenze(verein);
+
+  const kandidaten = [];
+  const not = verein.spieler.filter((s) => s.position === position).length < MINDESTBESTAND[position];
+  let notnagel = null;
+  for (const spieler of welt.freie) {
+    // Wer zum Saisonende aufhoert, wird nicht mehr geholt.
+    if (spieler.position !== position || spieler.staerke < schwelle || spieler.alter > 32 || spieler.karriereende) continue;
+    if (!vertraege.wechselbereit(spieler, verein).ok) continue;
+    const gehalt = vertraege.gehaltswunsch(spieler);
+    if ((verein.konto < gehalt || gehaltssumme + gehalt > grenze) && !(loch && gehalt <= HAUSHALT.lochGehalt)) {
+      if (not && (!notnagel || gehalt < vertraege.gehaltswunsch(notnagel))) notnagel = spieler;
+      continue;
+    }
+    kandidaten.push({ spieler, verkaeufer: null, preis: 0 });
+  }
+  if (budget > 0) {
+    for (const anderer of welt.vereine) {
+      if (anderer === verein || welt.menschFuehrt(anderer.id) || anderer.spieler.length <= 18) continue;
+      for (const spieler of anderer.spieler) {
+        // Wer auf der Liste steht, ist auch mit 32 noch zu haben und muss
+        // nur besser sein als der Schwaechste der Stammelf.
+        const liste = Boolean(spieler.transferliste);
+        if (spieler.position !== position || spieler.alter > (liste ? 32 : 30) || spieler.karriereende) continue;
+        if (spieler.staerke < Math.max(liste ? schwelle - 3 : schwelle, 1)) continue;
+        if (bestandNachAbgang(anderer, spieler) < MINDESTBESTAND[position]) continue;
+        if (!vertraege.wechselbereit(spieler, verein).ok) continue;
+        if (gehaltssumme + vertraege.gehaltswunsch(spieler) > grenze) continue;
+        const preis = forderung(anderer, spieler, welt.saison);
+        if (preis > budget) continue;
+        kandidaten.push({ spieler, verkaeufer: anderer, preis });
+      }
+    }
+  }
+  if (!kandidaten.length && notnagel) kandidaten.push({ spieler: notnagel, verkaeufer: null, preis: 0 });
+  // Die meiste Staerke fuers Geld: ein Punkt Staerke ist viel wert, eine
+  // Million auch.
+  return kandidaten
+    .map((k) => ({ ...k, nutzen: k.spieler.staerke - k.preis / 1500 - Math.max(0, k.spieler.alter - 28) }))
+    .sort((a, b) => b.nutzen - a.nutzen)[0] || null;
+}
+
+/**
  * Die anderen Vereine handeln - mit den Vereinslosen und untereinander, nie
  * mit dem Menschen (der bekommt Angebote). Je Verein hoechstens ein Wechsel
  * je Aufruf; ein Loch im Kader wird immer gestopft, eine Verstaerkung nur ab
@@ -286,49 +375,23 @@ function kiTransfers(welt, zufall, { verstaerkung = 0.3 } = {}) {
     .map(({ v }) => v);
 
   for (const verein of reihenfolge) {
-    const loch = POSITIONEN.find((p) => verein.spieler.filter((s) => s.position === p).length < KADERPLAN[p]);
-    if (!loch && zufall() > verstaerkung) continue;
+    const loecher = POSITIONEN.filter((p) => verein.spieler.filter((s) => s.position === p).length < KADERPLAN[p]);
+    if (!loecher.length && zufall() > verstaerkung) continue;
 
+    // Ein Loch, fuer das niemand zu haben ist - meist im Tor, Vereinslose
+    // Torhueter sind selten -, sperrt die anderen nicht: sonst schrumpfte ein
+    // Kader auf den Mindestbestand.
     const vereinsniveau = niveau(verein);
-    const position = loch || POSITIONEN
+    const positionen = loecher.length ? loecher : [POSITIONEN
       .map((p) => ({ p, luecke: vereinsniveau - schwaechsterStamm(verein, p) }))
-      .sort((a, b) => b.luecke - a.luecke)[0].p;
-    const schwelle = loch ? 0 : schwaechsterStamm(verein, position) + 3;
-    const gehaltssumme = verein.spieler.reduce((s, x) => s + (x.vertrag?.gehalt || 0), 0);
-    const budget = verein.konto - gehaltssumme * 0.3;
-
-    const kandidaten = [];
-    for (const spieler of welt.freie) {
-      // Wer zum Saisonende aufhoert, wird nicht mehr geholt.
-      if (spieler.position !== position || spieler.staerke < schwelle || spieler.alter > 32 || spieler.karriereende) continue;
-      if (!vertraege.wechselbereit(spieler, verein).ok) continue;
-      // Ein Loch wird auch mit leerem Konto gestopft - mit einem, der wenig kostet.
-      const gehalt = vertraege.gehaltswunsch(spieler);
-      if (verein.konto < gehalt && !(loch && gehalt <= 400)) continue;
-      kandidaten.push({ spieler, verkaeufer: null, preis: 0 });
+      .sort((a, b) => b.luecke - a.luecke)[0].p];
+    let bester = null;
+    let position = null;
+    for (const p of positionen) {
+      bester = besterZugang(welt, verein, p, loecher.length > 0);
+      position = p;
+      if (bester) break;
     }
-    if (budget > 0) {
-      for (const anderer of welt.vereine) {
-        if (anderer === verein || welt.menschFuehrt(anderer.id) || anderer.spieler.length <= 18) continue;
-        for (const spieler of anderer.spieler) {
-          // Wer auf der Liste steht, ist auch mit 32 noch zu haben und muss
-          // nur besser sein als der Schwaechste der Stammelf.
-          const liste = Boolean(spieler.transferliste);
-          if (spieler.position !== position || spieler.alter > (liste ? 32 : 30) || spieler.karriereende) continue;
-          if (spieler.staerke < Math.max(liste ? schwelle - 3 : schwelle, 1)) continue;
-          if (bestandNachAbgang(anderer, spieler) < MINDESTBESTAND[position]) continue;
-          if (!vertraege.wechselbereit(spieler, verein).ok) continue;
-          const preis = forderung(anderer, spieler, welt.saison);
-          if (preis > budget) continue;
-          kandidaten.push({ spieler, verkaeufer: anderer, preis });
-        }
-      }
-    }
-    // Die meiste Staerke fuers Geld: ein Punkt Staerke ist viel wert, eine
-    // Million auch.
-    const bester = kandidaten
-      .map((k) => ({ ...k, nutzen: k.spieler.staerke - k.preis / 1500 - Math.max(0, k.spieler.alter - 28) }))
-      .sort((a, b) => b.nutzen - a.nutzen)[0];
     if (!bester) continue;
     const laufzeit = Math.min(vertraege.laufzeitMax(bester.spieler), bester.spieler.alter <= 26 ? 3 : 2);
     wechseln(welt, {
@@ -370,9 +433,18 @@ function kiVertraege(welt, zufall) {
       .sort((a, b) => wert(b) - wert(a));
     // Platz lassen fuer zwei aus der Jugend - sonst waechst der Kader Jahr um Jahr.
     const platz = Math.max(0, KI_KADER_ZIEL - 2 - bleiben);
-    for (const spieler of kandidaten.slice(0, platz)) {
+    // Ueber der Gehaltsgrenze wird nicht verlaengert; der Naechste, der passt, kommt dran.
+    const grenze = gehaltsgrenze(verein);
+    let summe = verein.spieler.filter((s) => s.vertrag && s.vertrag.bis > welt.saison).reduce((a, s) => a + s.vertrag.gehalt, 0);
+    let verlaengert = 0;
+    for (const spieler of kandidaten) {
+      if (verlaengert >= platz) break;
+      const gehalt = vertraege.gehaltswunsch(spieler);
+      if (summe + gehalt > grenze) continue;
       const laufzeit = Math.min(vertraege.laufzeitMax(spieler), 1 + Math.floor(zufall() * 3));
-      spieler.vertrag = { bis: welt.saison + laufzeit, gehalt: vertraege.gehaltswunsch(spieler) };
+      spieler.vertrag = { bis: welt.saison + laufzeit, gehalt };
+      summe += gehalt;
+      verlaengert += 1;
     }
   }
 }
@@ -398,7 +470,7 @@ function kiSparen(welt) {
 }
 
 module.exports = {
-  KI_KADER_ZIEL,
+  KI_KADER_ZIEL, HAUSHALT, gehaltsgrenze,
   wichtigkeit, forderung, bestandNachAbgang, schwaechsterStamm, finden,
   marktliste, kaufPruefen, wechseln, freistellen, kiAngebote, kiTransfers, kiVertraege, kiSparen,
 };

@@ -297,6 +297,10 @@ let karriereCache = null;
 function zweiSaisons() {
   if (karriereCache) return karriereCache;
   const k = neu('v5');
+  // Ein Junger, dessen Vertrag auslaeuft: sonst haengt vertraege AC-6 und AC-7
+  // daran, ob die Alten mit auslaufendem Vertrag zufaellig aufhoeren.
+  const jung = eigen(k).spieler.find((s) => s.alter < 28 && s.vertrag.bis > 1);
+  jung.vertrag.bis = 1;
   const auslaufend = eigen(k).spieler.filter((s) => s.vertrag.bis <= 1).map((s) => ({ id: s.id, name: s.name }));
   const alter = new Map(k.vereine.flatMap((v) => v.spieler.map((s) => [s.id, s.alter])));
   bis(k, ist('winterpause'));

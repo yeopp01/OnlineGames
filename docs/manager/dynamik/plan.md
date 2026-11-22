@@ -51,6 +51,49 @@ Fingerabdruck (`npm run manager:gleichstand`, spielziel AC-17).
 6. **Reichtum**: nach Schritt 2 neu messen; bleibt es, Unterhalt des
    Stadions je Platz.
 
+## Stand
+
+**Schritt 2 steht** (finanzen AC-17, AC-18 `fertig`). `HAUSHALT` in
+`transfer.js`, `finanzen.erwarteteEinnahmen()` und `sponsorBasis()`:
+
+- Gehaltsgrenze der KI = `0,85 × erwartete Einnahmen + max(0, Konto −
+  0,5 × erwartete Einnahmen) / 2` — über einer halben Jahreseinnahme als
+  Rücklage darf das Überschüssige in zwei Jahren in Gehälter gehen
+  (`anteil` 0,85 aus der Durchsicht gesetzt; `ruecklage` 0,5 und
+  `abbauJahre` 2 über einen Vergleich gewählt, siehe unten).
+- Verpflichten und Verlängern achten auf die Grenze (aus Gegenprobe b);
+  ein Loch wird weiter mit einem Billigen gestopft (`lochGehalt` 400, alt).
+- `kiTransfers` probiert jede Position mit Loch, nicht nur die erste;
+  unter `MINDESTBESTAND` greift als Notnagel der billigste Vereinslose.
+
+Gemessen mit `npm run manager:dynamik -- --saisons 20 --startwerte
+4711,20260910,77,1234`:
+
+| | HEAD `05b39b2` | Schritt 2 |
+| --- | --- | --- |
+| finanzen AC-17 (≤ 2 je Liga unter −3 Mio) | reißt an allen vier | hält an allen vier (4711: L1 genau 2) |
+| finanzen AC-18 (Konto-Median > 0) | reißt an allen vier | hält an allen vier |
+| Konto-Median L1 / L2, Saison 20 | 8,5 / −10,9 Mio | 44,9–56,1 / 7,8–8,2 Mio |
+| Niveau L1 / L2, Saison 20 | ~69,4–70 / 57,8 | 69,2–69,7 / 57,3–57,8 |
+| kleinster Kader | 13 | 14 |
+| Tore / Heimsiege / Unentschieden | 3,20 / 47,1 % / 22,0 % | 3,16 / 48,5 % / 20,6 % |
+
+Konto-Median Liga 1 in Saison 5 / 10 / 20: 4711 28,0 / 50,1 / 44,9 ·
+20260910 19,0 / 32,6 / 48,7 · 77 34,0 / 43,6 / 56,1 · 1234 23,1 / 32,4 /
+48,7 — rund zwei Jahreseinnahmen (L1 in Saison 20 26–29 Mio; 77 liegt
+beim 2,1-fachen). Das größte Konto
+in Saison 20 liegt bei 145 bis 339 Mio: **Reichtum einzelner bleibt**
+(Schritt 6). Verworfen, L1-Median Saison 20: ohne Abbau über der Rücklage
+40–70 (L2 nur 3–4), Stufe Rücklage 1 × / Anteil 1,0 74–90, Abbau in 5 Jahren
+53–58, in 10 Jahren 65–79, Rücklage 1 × / 3 Jahre 41–67; eine Stufenregel
+ließ den reichen Verein in transfer AC-16 nichts kaufen. Reiche Vereine
+sparen auch ohne Grenze (Gehalt zu Einnahmen rund 0,9) — ihre Nachfrage
+begrenzt der Kader, nicht das Geld.
+
+Weiter rot: transfer AC-26 (Gehalt zu Marktwert, Saison 1 44 %), kader
+AC-23 (Spieler ab 85), kader AC-24 (Alter 24,6–25,0) — Schritte 3 und 4.
+Tore und Unentschieden bewegen sich um rund einen Standardfehler.
+
 ## Wovon Auf- und Abwertung heute abhängt (`kader.entwickeln`)
 
 Zweimal je Saison (Winter × 0,4 ohne Altern, Sommer × 0,6 mit Altern),

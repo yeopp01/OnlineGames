@@ -1137,6 +1137,16 @@
       "begruendung": "Pokalpraemien als Buchung, geprueft fuer alle 32 Teilnehmer einer Runde. Wie Buchungen im Buch stehen, zeigt finanzen AC-8."
     },
     {
+      "spec": "15-manager/finanzen.md",
+      "ac": "AC-17",
+      "begruendung": "Eine Grenze ueber zwanzig Saisons einer Welt ohne Menschen: nach jedem der 840 Termine wird je Liga gezaehlt, wie viele Vereine unter -3 Mio stehen, und es duerfen nie mehr als zwei sein. Das ist eine Folge von Kontostaenden aller 36 Vereine ueber zwanzig Jahre, gerechnet ohne Browser; ein Bildschirm zeigt das Konto des eigenen Vereins an einem Tag, nicht die anderen und nicht die Jahre. Belegt im Rechenteil am Startwert 20260910, mit npm run manager:dynamik zusaetzlich an 4711, 77 und 1234."
+    },
+    {
+      "spec": "15-manager/finanzen.md",
+      "ac": "AC-18",
+      "begruendung": "Der Median der Konten je Liga am Ende jeder von zwanzig Saisons ohne Menschen liegt ueber null. Das ist eine Kennzahl ueber alle 18 Vereine einer Liga und zwanzig Jahre, gerechnet ohne Browser; die Oberflaeche zeigt nur das eigene Konto in der laufenden Saison, keinen Median und keine Folge von Jahren. Belegt im Rechenteil am Startwert 20260910, mit npm run manager:dynamik zusaetzlich an 4711, 77 und 1234."
+    },
+    {
       "spec": "15-manager/vorstand.md",
       "ac": "AC-1",
       "begruendung": "Die Zuordnung von Kaderrang zu Ziel als Regel ueber beide Ligen. Das Ziel des eigenen Vereins zeigt das Bild zu vorstand AC-9."

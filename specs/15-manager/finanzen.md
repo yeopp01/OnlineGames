@@ -2,7 +2,7 @@
 
 **Bereich:** Manager
 **Kuerzel:** finanzen
-**Stand:** 16/18 fertig · 2 offen
+**Stand:** 18/18 fertig
 
 ## Zweck
 
@@ -69,12 +69,12 @@ Verein im Schnitt der Liga, über die ersten drei Saisons zweier Startwerte:
 
 - **AC-7** `fertig` **Niemand geht grundlos pleite** — Über drei Saisons ohne
   Menschen steht keine Liga im Schnitt im Minus.
-- **AC-17** `offen` **Höchstens zwei tief im Minus** — Über zwanzig Saisons
+- **AC-17** `fertig` **Höchstens zwei tief im Minus** — Über zwanzig Saisons
   ohne Menschen stehen in jeder Saison je Liga höchstens zwei Vereine
   zeitweise unter der Abzugsgrenze von −3 Mio (→ AC-10). Gezählt wird nach
   jedem Termin, je Verein in der Liga, in der er die Saison begann. Schärfer
   als AC-7, das drei Saisons und den Schnitt der Liga sieht.
-- **AC-18** `offen` **Der Median bleibt im Plus** — Über zwanzig Saisons ohne
+- **AC-18** `fertig` **Der Median bleibt im Plus** — Über zwanzig Saisons ohne
   Menschen liegt am Ende jeder Saison der Median der Konten je Liga über
   null: mehr als die Hälfte der Vereine hat Geld, nicht nur die reichen
   wenigen.
