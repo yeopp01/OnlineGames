@@ -227,18 +227,15 @@ die Laufregel lockern? fahrplan AC-15 für A* lockern?
 
 ## Nächste Schritte, in dieser Reihenfolge
 
-1. **Ganzer Browserlauf** im Hauptordner, allein (kein fremdes `check`,
-   keine Last): `E2E_HAFEN=4391 npm run check:alles:neu:kurz`, dann
-   `npm run qa:abweichung`, alles über 1 % ansehen. Tempofälle
-   (darstellung AC-10, AC-30) streuen auf diesem Rechner — nicht lockern.
-2. **Grün:** Bilder committen, `strategie` nach `main` pushen,
-   `npm run ausrollen` (nie `--sofort`), `npm run ausrollen -- --stand`,
-   eine Partie auf dem Server eröffnen und das Packen
-   (permessageDeflate hinter dem Proxy) prüfen. **Rot:** nicht ausrollen,
-   Gründe aufschreiben.
-3. `strategie-speichern` zusammenführen (nicht ausrollen ohne sein Wort),
-   dann **S3** als Agent: „Deine Partien“, Fortsetzen, Meldung zu
-   speichern AC-6, Browsertests mit eigenem Hafen.
+1. ~~Browserlauf, Ausrollen~~ erledigt (`b90686f` auf dem Server).
+2. ~~`strategie-speichern` zusammenführen~~ erledigt (`05effa1`,
+   check:kurz grün: 1119 Tests, 37 Partien; Board 619/716). **Speichern
+   wird erst nach S3 ausgerollt** (Benutzer, 2026-11-22).
+3. **S3 läuft als Agent** (seit 2026-11-22 ~15 Uhr) im Arbeitsbaum
+   `../OnlineGames-speichern`, Zweig `strategie-speichern` ab `05effa1`,
+   `E2E_HAFEN=4394`: speichern AC-6 bis AC-11, Meldung bei fünf Ständen.
+   Danach: Bericht prüfen, zusammenführen, ganzer Browserlauf allein,
+   ausrollen nur auf sein Wort. Nichts doppelt anfangen.
 4. **Regelpaket** als Agent (Entscheidung 1 oben): Laufregel,
    Seitengleichheit, Pfeilflug; ki AC-25 mit eigenen Einheiten; Reiterschütze
    nur Schützenlinie; `ki.farmbauer` klären. Nur fahrplan AC-15 und die
