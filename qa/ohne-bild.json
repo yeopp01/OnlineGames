@@ -1157,6 +1157,16 @@
       "begruendung": "Eine Eigenschaft der Marktwertformel: fuer jeden Geburtstag von 17 auf 18 bis 35 auf 36 und die Staerken 45, 60, 75 und 90 kostet ein Jahr mehr bei gleicher Staerke und gleichem Talent hoechstens 15 % des Werts. Das ist ein Vergleich desselben Spielers mit sich selbst ein Jahr spaeter, den es im Spiel so nie gibt - wer altert, aendert auch seine Staerke; ein Bildschirm zeigt den Wert eines Spielers an einem Tag. Belegt im Rechenteil an der Formel (kader.marktwert), unabhaengig von einer Welt."
     },
     {
+      "spec": "15-manager/kader.md",
+      "ac": "AC-24",
+      "begruendung": "Das Durchschnittsalter aller Vereinsspieler beider Ligen am letzten Termin vor dem Altern, ab der zweiten von zwanzig Saisons ohne Menschen zwischen 23 und 25. Das ist ein Mittel ueber rund 800 Spieler und zwanzig Jahre, gerechnet ohne Browser; die Oberflaeche zeigt den eigenen Kader und einzelne fremde an einem Tag, kein Mittel ueber alle Vereine und keine Folge von Jahren. Belegt im Rechenteil am Startwert 20260910, mit npm run manager:dynamik zusaetzlich an 4711 und 77 (an 1234 in drei Saisons 23,0 statt 23)."
+    },
+    {
+      "spec": "15-manager/kader.md",
+      "ac": "AC-25",
+      "begruendung": "Zwei Mittel ueber zwanzig Saisons ohne Menschen: wie weit die Siebzehnjaehrigen aus dem eigenen Nachwuchs unter dem Niveau ihres Vereins ankommen (hoechstens 15) und welchen Anteil der Pflichtspielminuten die Zwanzigjaehrigen in Vereinen spielen (mindestens 30 %). Das sind Zahlen ueber alle 36 Vereine und zwanzig Jahrgaenge, gerechnet ohne Browser; die Oberflaeche zeigt die eigene Jugend und die Einsaetze des eigenen Kaders, keinen Vergleich ueber alle Vereine und keine Folge von Jahren. Belegt im Rechenteil am Startwert 20260910, mit npm run manager:dynamik zusaetzlich an 4711, 77 und 1234."
+    },
+    {
       "spec": "15-manager/vorstand.md",
       "ac": "AC-1",
       "begruendung": "Die Zuordnung von Kaderrang zu Ziel als Regel ueber beide Ligen. Das Ziel des eigenen Vereins zeigt das Bild zu vorstand AC-9."

@@ -686,7 +686,8 @@ class Ablauf {
       }
     }
     // Unter den Vereinslosen hoert auf, wer es angekuendigt hat, wer zu alt ist und wer nicht mehr mag.
-    this.freie = this.freie.filter((s) => s.karriereende !== saison && !kader.hoertAuf(s, zufall) && s.alter <= 34);
+    // Zu alt ist seit Schritt 4 ueber 35 statt ueber 34 - mit 36 hoert ohnehin jeder auf (kader AC-17).
+    this.freie = this.freie.filter((s) => s.karriereende !== saison && !kader.hoertAuf(s, zufall) && s.alter <= 35);
 
     this.saison = saison + 1;
     this.termin = 0;

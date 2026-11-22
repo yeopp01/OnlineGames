@@ -1101,8 +1101,14 @@ test('liga AC-7: die Torjaegerliste zaehlt je Liga, auch nach einem Wechsel', ()
   assert.equal(summe(1), tore(1));
   assert.equal(summe(2), tore(2));
 
+  // Ein Stuermer, nicht der beste Schuetze ueberhaupt: ein Mittelfeldspieler trifft
+  // je Einsatz rund 0,15-mal und blieb seit Schritt 4 (Startwert 4711) zwanzig
+  // Spiele ohne Tor - geprueft wird die Liste, nicht das Glueck.
   const [id, eintrag] = Object.entries(k.torjaeger[1]).sort((a, b) => b[1].tore - a[1].tore)
-    .find(([sid]) => { const g = transfer.finden(k, sid); return g?.verein && g.verein.id !== ich(k).vereinId && g.verein.liga === 1; });
+    .find(([sid]) => {
+      const g = transfer.finden(k, sid);
+      return g?.verein && g.verein.id !== ich(k).vereinId && g.verein.liga === 1 && g.spieler.position === ANG;
+    });
   const gefunden = transfer.finden(k, id);
   transfer.wechseln(k, { kaeufer: eigen(k), verkaeufer: gefunden.verein, spieler: gefunden.spieler, abloese: 0, laufzeit: 1 });
   gefunden.spieler.staerke = 99;
@@ -1349,13 +1355,22 @@ test('vertraege AC-8: die anderen verlaengern gezielt', () => {
     verein.konto = konto;
     for (const s of verein.spieler) s.vertrag.bis = 1;
     const bester = verein.spieler.filter((s) => s.alter <= 26).sort((a, b) => b.staerke - a.staerke)[0];
+    const vereinsniveau = kader.niveau(verein);
     transfer.kiVertraege(k, zufallAus(2));
-    return { anzahl: verein.spieler.filter((s) => s.vertrag.bis > 1).length, bester };
+    const verlaengerte = verein.spieler.filter((s) => s.vertrag.bis > 1);
+    return { anzahl: verlaengerte.length, bester, schwaechster: Math.min(...verlaengerte.map((s) => s.staerke)), vereinsniveau };
   };
-  const normal = verlaengert(5000);
+  // Im Plus mit Rueckhalt: bei 5 Mio bindet die Gehaltsgrenze (finanzen AC-17,
+  // HAUSHALT) ebenso wie im Minus, und beide verlaengern dieselben zehn - seit
+  // der Startwelt von Schritt 4 liegen so viele nah am Niveau. Verglichen wird
+  // die Regel fuer das Minus, nicht die Grenze.
+  const normal = verlaengert(40000);
   assert.ok(normal.anzahl > 5 && normal.anzahl <= transfer.KI_KADER_ZIEL - 2, `${normal.anzahl} verlaengert`);
   assert.ok(normal.bester.vertrag.bis > 1, 'der beste Junge wurde nicht verlaengert');
-  assert.ok(verlaengert(-5000).anzahl < normal.anzahl, 'im Minus wird genauso verlaengert');
+  const minus = verlaengert(-5000);
+  assert.ok(minus.anzahl < normal.anzahl, 'im Minus wird genauso verlaengert');
+  assert.ok(minus.schwaechster >= minus.vereinsniveau - 4, `im Minus verlaengert bis Staerke ${minus.schwaechster}, Niveau ${minus.vereinsniveau}`);
+  assert.ok(normal.schwaechster < minus.vereinsniveau - 4, 'im Plus verlaengert nur die Besten');
 });
 
 test('vertraege AC-10: die Abstiegsklausel senkt die Gehaelter', () => {

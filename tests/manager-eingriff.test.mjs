@@ -20,10 +20,13 @@ const aufstellung = (v) => {
   const elf = kader.elfStellen(v, v.taktik.system);
   return { elf, bank: kader.bankStellen(v, elf), system: v.taktik.system };
 };
-const JE_LAGE = 1500;
+// 4000 statt 1500: die Wirkung bei Rueckstand und starker Moral ist rund
+// +0,018 Punkte (6000 je Lage, vor und nach Schritt 4 gleich), mit 1500
+// streute sie seit der neuen Startwelt (Schritt 4) auf +0,003.
+const JE_LAGE = 4000;
 const LAGEN = { '-1': 'Rückstand', 0: 'Gleichstand', 1: 'Führung' };
 
-/** Je Halbzeitstand 1500 Spiele, in denen die Heimelf diese Moral hat - als Sicherung zur Pause. */
+/** Je Halbzeitstand JE_LAGE Spiele, in denen die Heimelf diese Moral hat - als Sicherung zur Pause. */
 function halbzeiten(moral) {
   const lagen = { '-1': [], 0: [], 1: [] };
   for (let i = 0; Object.values(lagen).some((l) => l.length < JE_LAGE); i++) {
@@ -63,9 +66,9 @@ test('spieltag AC-30: die Kabine wirkt je Lage verschieden, keine Ansprache ist 
   const beste = Object.values(messung).map((z) => ANSPRACHEN.reduce((a, b) => (z[b] > z[a] ? b : a)));
   const bericht = JSON.stringify(messung, (k, v) => (typeof v === 'number' ? Number(v.toFixed(3)) : v), 1);
   assert.ok(new Set(beste).size >= 2, `immer dieselbe: ${bericht}`);
-  // Gemessen (2026-11-22, je Lage 1500): bei Rueckstand laut +0,02, bei
-  // Fuehrung mit starker Moral -0,03; aufbauen bei schwacher Moral +0,02 bis
-  // +0,04, bei starker genau nichts.
+  // Gemessen (2026-11-22, je Lage 4000, Schritt 4): bei Rueckstand laut +0,014
+  // und +0,027, bei Fuehrung zusammen -0,033; aufbauen bei schwacher Moral
+  // +0,02 bis +0,04, bei starker genau nichts.
   for (const moral of [30, 85]) {
     const rueck = messung[`Moral ${moral}, Rückstand`];
     assert.ok(rueck.laut - rueck.ohne >= 0.01, `laut hebt bei Rückstand: ${bericht}`);

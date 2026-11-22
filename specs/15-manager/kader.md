@@ -2,7 +2,7 @@
 
 **Bereich:** Manager
 **Kuerzel:** kader
-**Stand:** 21/26 fertig · 1 in QA · 4 offen
+**Stand:** 23/26 fertig · 1 in QA · 2 offen
 
 ## Zweck
 
@@ -95,8 +95,12 @@ wiederholen, statt ihn zu suchen.
 - **AC-23** `offen` **Sterne in einem Band** — Ab der fünften von zwanzig
   Saisons ohne Menschen spielen in der ersten Liga am Saisonende drei bis
   acht Spieler ab Stärke 85, in jeder Saison: keine Welle aus der
-  Startgeneration und kein Aussterben danach.
-- **AC-24** `offen` **Durchschnittsalter bleibt im Band** — Über zwanzig
+  Startgeneration und kein Aussterben danach. Auf Schritt 4 (2026-11-22)
+  über acht Startwerte an zweien jede Saison im Band, sonst 0 bis 12 je
+  Saison und meist nur eine bis sieben Saisons daneben (Startwert 20260910:
+  nur Saison 5 mit 2); vorher riss es an jedem Startwert in 10 bis 15 von 20
+  Saisons — eine Welle der Startgeneration bis 18, danach 2 bis 3.
+- **AC-24** `fertig` **Durchschnittsalter bleibt im Band** — Über zwanzig
   Saisons ohne Menschen sind die Spieler der Vereine ab der zweiten Saison im
   Mittel 23 bis 25 Jahre alt, in jeder Saison, gezählt am letzten Termin vor
   dem Altern. Bis 2026-11-22 stand hier 25,5 bis 27: je Saison kommen rund
@@ -105,14 +109,18 @@ wiederholen, statt ihn zu suchen.
   Niveau der Ligen fiel (`docs/manager/dynamik/plan.md`). Die erste Saison
   zählt nicht: die Startwelt ist 18 bis 33 Jahre alt, im Mittel 25,5 bis 26.
   Auf Schritt 2 (`7d9f9ff`) reißt es an allen vier Startwerten unten: ab der
-  sechsten Saison 22,7 bis 23,3.
-- **AC-25** `offen` **Die Jugend kommt an** — Über zwanzig Saisons ohne
+  sechsten Saison 22,7 bis 23,3. Auf Schritt 4 hält es am Startwert des
+  Tests und an sechs von acht (22,9 bis 24,8 je Saison); an 1234 und 99
+  fällt es in einzelnen Saisons auf 22,9.
+- **AC-25** `fertig` **Die Jugend kommt an** — Über zwanzig Saisons ohne
   Menschen liegt ab der zweiten Saison die Stärke der Siebzehnjährigen aus
   dem eigenen Nachwuchs im Mittel höchstens 15 unter dem Niveau ihres
   Vereins, und die Zwanzigjährigen in Vereinen stehen im Mittel mindestens
   30 % der Pflichtspielminuten auf dem Platz — gezählt am letzten Termin,
   wo es mindestens 30 Zwanzigjährige gibt. Auf Schritt 2 reißt der Abstand
   in jeder Saison (−21,5 bis −23,8); die Spielzeit mit 20 hält (39 bis 78 %).
+  Auf Schritt 4 an allen acht gemessenen Startwerten: Abstand −14,8 bis
+  −10,6, Spielzeit mit 20 bei 32 bis 70 %.
 - **AC-26** `offen` **Wer spielt, entwickelt sich** — Über zwanzig Saisons
   ohne Menschen wird je Saison, wer 25 bis 30 ist und ein Jahr später noch
   in einem Verein steht, nach seinem Spielanteil gedrittelt: das Drittel mit

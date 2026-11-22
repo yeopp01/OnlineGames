@@ -33,6 +33,36 @@ const { fensterOffen } = require('./kalender');
 // So gross will ein Verein der KI seinen Kader halten.
 const KI_KADER_ZIEL = 23;
 
+// Wie alt ein Spieler sein darf, den die KI holt oder behaelt (→
+// docs/manager/dynamik/plan.md, Schritt 4). Seit die Jugend staerker ankommt,
+// verdraengt sie die Aelteren; damit das Durchschnittsalter nicht unter 23
+// faellt (kader AC-24), haelt die KI an ihnen fester. Gesetzt, gemessen nur
+// gegen die Baender.
+const ALTERSBLICK = {
+  // Vereinslose bis 34 statt 32, Spieler anderer Vereine bis 32 statt 30.
+  freieBis: 34,
+  andereBis: 32,
+  // Jedes Jahr ueber 28 kostet beim Holen einen halben Punkt statt eines ganzen,
+  nutzenAb: 28,
+  nutzenJe: 0.5,
+  // beim Verlaengern einen statt zwei.
+  wertAb: 28,
+  wertJe: 1,
+  // Verlaengert wird bis 35 statt 33, wer hoechstens 6 statt 2 unter dem Niveau liegt.
+  aelterBis: 35,
+  aelterUnterNiveau: 6,
+  // Aeltere als 30 nur, wer mindestens ein Viertel der erwarteten
+  // Jahreseinnahmen auf dem Konto hat. Ohne diese Ruecklage rutschte ein
+  // armer Verein der Liga 2 ins Bodenlose (Startwert 4711: -35 Mio nach 20
+  // Saisons, 2026: -16 Mio; vorher nie unter -1,7): die Aelteren fuellten die
+  // Gehaltsgrenze, die Jugend kam ausserhalb der Grenze dazu, und die Zinsen
+  // taten den Rest. Mit der Ruecklage ueber acht Startwerte nie unter -2,7 Mio,
+  // die Baender wie ohne sie. Gesetzt (0,5 hielt auch, kostete aber kader AC-23).
+  // Mit dem Loch unten in kiVertraege dazu: mit beiden nie unter -2,8 Mio, ohne
+  // die Ruecklage 2026 -9,2, ohne das Loch 2026 -24,1.
+  aelterRuecklage: 0.25,
+};
+
 // Der Haushalt der anderen Vereine (→ docs/manager/dynamik/plan.md,
 // Schritt 2): ihre Gehaltssumme bleibt unter einem Anteil der erwarteten
 // Einnahmen (finanzen.erwarteteEinnahmen). Ohne Grenze verlaengerte die KI
@@ -322,7 +352,7 @@ function besterZugang(welt, verein, position, loch) {
   let notnagel = null;
   for (const spieler of welt.freie) {
     // Wer zum Saisonende aufhoert, wird nicht mehr geholt.
-    if (spieler.position !== position || spieler.staerke < schwelle || spieler.alter > 32 || spieler.karriereende) continue;
+    if (spieler.position !== position || spieler.staerke < schwelle || spieler.alter > ALTERSBLICK.freieBis || spieler.karriereende) continue;
     if (!vertraege.wechselbereit(spieler, verein).ok) continue;
     const gehalt = vertraege.gehaltswunsch(spieler);
     if ((verein.konto < gehalt || gehaltssumme + gehalt > grenze) && !(loch && gehalt <= HAUSHALT.lochGehalt)) {
@@ -335,10 +365,10 @@ function besterZugang(welt, verein, position, loch) {
     for (const anderer of welt.vereine) {
       if (anderer === verein || welt.menschFuehrt(anderer.id) || anderer.spieler.length <= 18) continue;
       for (const spieler of anderer.spieler) {
-        // Wer auf der Liste steht, ist auch mit 32 noch zu haben und muss
-        // nur besser sein als der Schwaechste der Stammelf.
+        // Wer auf der Liste steht, muss nur besser sein als der Schwaechste
+        // der Stammelf.
         const liste = Boolean(spieler.transferliste);
-        if (spieler.position !== position || spieler.alter > (liste ? 32 : 30) || spieler.karriereende) continue;
+        if (spieler.position !== position || spieler.alter > ALTERSBLICK.andereBis || spieler.karriereende) continue;
         if (spieler.staerke < Math.max(liste ? schwelle - 3 : schwelle, 1)) continue;
         if (bestandNachAbgang(anderer, spieler) < MINDESTBESTAND[position]) continue;
         if (!vertraege.wechselbereit(spieler, verein).ok) continue;
@@ -353,7 +383,8 @@ function besterZugang(welt, verein, position, loch) {
   // Die meiste Staerke fuers Geld: ein Punkt Staerke ist viel wert, eine
   // Million auch.
   return kandidaten
-    .map((k) => ({ ...k, nutzen: k.spieler.staerke - k.preis / 1500 - Math.max(0, k.spieler.alter - 28) }))
+    .map((k) => ({ ...k, nutzen: k.spieler.staerke - k.preis / 1500
+        - ALTERSBLICK.nutzenJe * Math.max(0, k.spieler.alter - ALTERSBLICK.nutzenAb) }))
     .sort((a, b) => b.nutzen - a.nutzen)[0] || null;
 }
 
@@ -423,12 +454,13 @@ function kiVertraege(welt, zufall) {
     const vereinsniveau = niveau(verein);
     // Wer im Minus steht, behaelt nur, wen er wirklich braucht.
     const klamm = verein.konto < 0;
+    const knapp = verein.konto < ALTERSBLICK.aelterRuecklage * finanzen.erwarteteEinnahmen(verein);
     const bleiben = verein.spieler.filter((s) => s.vertrag && s.vertrag.bis > welt.saison).length;
-    const wert = (s) => s.staerke - Math.max(0, s.alter - 28) * 2;
+    const wert = (s) => s.staerke - Math.max(0, s.alter - ALTERSBLICK.wertAb) * ALTERSBLICK.wertJe;
     const kandidaten = verein.spieler
       .filter((s) => s.vertrag && s.vertrag.bis <= welt.saison)
       .filter((s) => (s.alter <= 30 && s.staerke >= vereinsniveau - (klamm ? 4 : 12))
-        || (s.alter <= 33 && s.staerke >= vereinsniveau + (klamm ? 2 : -2))
+        || (!knapp && s.alter <= ALTERSBLICK.aelterBis && s.staerke >= vereinsniveau - ALTERSBLICK.aelterUnterNiveau)
         || (!klamm && s.jugend && s.alter <= 21))
       .sort((a, b) => wert(b) - wert(a));
     // Platz lassen fuer zwei aus der Jugend - sonst waechst der Kader Jahr um Jahr.
@@ -440,7 +472,16 @@ function kiVertraege(welt, zufall) {
     for (const spieler of kandidaten) {
       if (verlaengert >= platz) break;
       const gehalt = vertraege.gehaltswunsch(spieler);
-      if (summe + gehalt > grenze) continue;
+      // Faellt die Position sonst unter den Mindestbestand, wird ein Billiger
+      // auch ueber der Grenze verlaengert - wie ein Loch in besterZugang
+      // gestopft wird. Sonst ging der Jugendspieler fuer 100 und kam ein
+      // Vereinsloser fuer 800 als Notnagel: die Gehaelter blieben ueber der
+      // Grenze, und ein Verein der Liga 2 stand nach 20 Saisons bei -24 Mio
+      // (Startwert 2026, Schritt 4).
+      const bleibtDort = verein.spieler
+        .filter((s) => s.position === spieler.position && s.vertrag && s.vertrag.bis > welt.saison).length;
+      const loch = bleibtDort < MINDESTBESTAND[spieler.position] && gehalt <= HAUSHALT.lochGehalt;
+      if (summe + gehalt > grenze && !loch) continue;
       const laufzeit = Math.min(vertraege.laufzeitMax(spieler), 1 + Math.floor(zufall() * 3));
       spieler.vertrag = { bis: welt.saison + laufzeit, gehalt };
       summe += gehalt;

@@ -206,6 +206,125 @@ mit 1,1 (±0,7) — gestrichen, nicht gelockert. Der Test dauert 19 statt 9,5 s.
 Weiter rot: kader AC-23 bis AC-26 (Schritte 4 und 5), finanzen AC-19
 (Schritt 6 — der Reichtum ist mit Schritt 3 **schlimmer** geworden).
 
+**Schritt 4 steht** (kader AC-24, AC-25 `fertig`; AC-23 bleibt `offen`,
+knapp). Gehalt und Marktwert sind unverändert. Alle Werte unten sind
+**gesetzt** und nur gegen die Bänder gemessen, nicht aus einer Vorlage:
+
+- **Startwelt** (`STARTWELT` in `kader.js`): Alter 17 bis 32 statt 18 bis
+  33 (sonst liegt Saison 2 über 25). Das Talent der Vereinsspieler hängt zu
+  55 % am Ruf des Vereins (wie das der Jugend) und nur zu 45 % an der Güte
+  der Startelf, Streuung 9,6 — sonst bringt die Startgeneration eine Welle
+  von Sternen (bis 18 ab Stärke 85), die mit ihr ausstirbt (danach 2 bis 3).
+- **Jugend** (`JUGEND`): kommt 5 bis 17 statt 18 bis 32 unter ihrem Talent
+  an; damit sie dafür nicht zum Stern wird, liegt die Mitte des Talents 3
+  tiefer und streut weiter (15 statt 12), Grenzen 50 bis 97. Hat der Kader
+  nur für einen Platz, kommt der Stärkere.
+- **Abbau ab 29 halbiert** und stetig: 29 bis 31 im Mittel −1 statt −2, ab 32
+  −2 statt −3,5.
+- **Karriereende sanfter davor**: mit 33 / 34 / 35 hören 8 / 20 / 35 % auf
+  statt 15 / 35 / 60 %, mit 36 jeder. **Ein Jahr später** (Schluss mit 37)
+  hielt das Alter besser, bricht aber kader AC-17 („mit 36 ist Schluss“) —
+  nicht gebaut, braucht sein Wort. Vereinslose bleiben bis 35 statt 34.
+- **Die KI hält an Älteren fester** (`ALTERSBLICK` in `transfer.js`):
+  Vereinslose bis 34 statt 32, Spieler anderer Vereine bis 32 statt 30;
+  beim Holen kostet jedes Jahr über 28 einen halben Punkt statt eines
+  ganzen, beim Verlängern einen statt zwei; verlängert wird bis 35 statt
+  33, wer höchstens 6 unter dem Niveau liegt (statt 2 darüber). Seit die
+  Jugend stärker ankommt, verdrängt sie die Älteren — ohne das fiel das
+  Alter unter 23.
+
+**Die Schuldenspirale und ihre zwei Riegel.** Mit `ALTERSBLICK` allein
+rutschte ein armer Verein der Liga 2 ins Bodenlose (4711: −35 Mio nach 20
+Saisons, 2026: −16; vorher nie unter −1,7): die Älteren füllten die
+Gehaltsgrenze, die Jugend kam außerhalb dazu, die Zinsen taten den Rest.
+Zwei Regeln:
+
+- `aelterRuecklage` 0,25 — Ältere als 30 verlängert nur, wer ein Viertel
+  der erwarteten Jahreseinnahmen auf dem Konto hat (0,5 hielt auch, kostete
+  aber kader AC-23).
+- **Loch beim Verlängern** (`kiVertraege`): fiele eine Position unter den
+  Mindestbestand, wird ein Billiger (≤ `lochGehalt` 400) auch über der
+  Grenze verlängert — wie `besterZugang` ein Loch stopft. Sonst ging der
+  Jugendspieler für 100 und kam ein Vereinsloser für 800 als Notnagel.
+
+Über acht Startwerte mit beiden nie unter −2,8 Mio; ohne die Rücklage
+(Startwert 2026) −9,2, ohne das Loch −24,1.
+
+Gemessen mit `scripts/manager-dynamik-messung.mjs` über acht Startwerte
+(4711, 20260910, 77, 1234, 5, 99, 31337, 2026), Anzahl der Startwerte, an
+denen das Band in jeder Saison hält:
+
+| Band | Schritt 3 (vier Startwerte) | Schritt 4 (acht) |
+| --- | --- | --- |
+| kader AC-23 (3–8 ab 85, ab S5) | 0 von 4, je 10–15 von 20 Saisons daneben | 2 von 8, je Saison 0–12 (20260910: nur S5 mit 2; 77: 7 Saisons) |
+| kader AC-24 (Alter 23–25, ab S2) | 0 von 4, je 4–6 Saisons unten | **6 von 8**, 22,9–24,8 (1234: 3 Saisons 23,0; 99: 22,9) |
+| kader AC-25 (Jugend) | 0 von 4, 19 von 20 Saisons | **8 von 8**: Abstand −14,8 bis −10,6, Spielzeit mit 20 32–70 % |
+| finanzen AC-17, AC-18, transfer AC-26, AC-27 | halten | halten an allen acht |
+| finanzen AC-19 (Reichtum) | ab S5–7 gerissen, 11–14 Saisons | nur 20260910 S11 (4,6-fach) |
+| kader AC-26 (Entwicklung ab 25) | reißt, −0,01 bis −0,28 | reißt **stärker**, −0,17 bis −0,34 (Schritt 5) |
+
+Liga 1 / Liga 2 in Saison 20 (`npm run manager:dynamik`, vier
+Startwerte): Niveau 70,2 / 57,4; Alter L1 23,6 statt 23,5, L2 23,1 statt
+22,7; Spieler ab 85 in L1 2,3–6,3 statt einer Welle bis 18 und danach 2–3;
+Konto-Median L1 19–22 statt 22–39 Mio, L2 7–8,5 statt rund 6; größtes Konto
+68–148 statt bis 321 Mio, der reichste Verein in S20 88–140 statt 190–277;
+kleinstes Konto L2 −0,4 statt −1,7; Gehalt zu Einnahmen L1 0,95–1,03 statt
+0,87–0,99; kleinster Kader 14.
+
+**Nebenwirkungen, nicht beabsichtigt und nicht geprüft:**
+
+- **Der Markt halbiert sich**: Wechsel je Verein und Saison L1 1,4–2,6
+  statt 3,1–5,1, L2 0,3–1,4 statt 1,0–2,5; eingenommene Ablösen L1 12–26
+  statt 40–70 Mio. Vermutlich hält die KI ihre Älteren und braucht weniger.
+- **Mehr starke Vereinslose**: ab Stärke 65 41–53 statt 27 (zusammen 80
+  statt 75).
+- **Der Händler-Hebel wächst** (`haendler-m`, acht Saisons, Gewinn je
+  Saison 4711 / 77): Liga 1 Mitte 16,4 / 18,4 → **35,1** / 22,9 Mio,
+  Liga 1 Bester 14,6 / 9,1 → 20,7 / 26,0, Liga 2 Mitte 13,2 / 15,1 → 20,6 /
+  20,0. Vermutet: die starken Vereinslosen. Gehört zu Schritt 6.
+
+`npm run manager:messen` (3 / 9 Startwerte, Schritt 3 → Schritt 4): Tore
+3,23 → 3,18 / 3,19; Heimsiege 47,7 → 47,3 / 47,3 %; Unentschieden 20,6 →
+21,5 / 21,8 %; Favorit 52,5 → 51,6 / 51,1 %; Einwechslungen 2,91 → 2,81 /
+2,86; Stärke L1 69,2 → 69,6 / 69,7; Vereinslose 65 → 79 / 77; Konto L1
+27,4 → 24,9 / 24,4 Mio; Rechenzeit 202 / 182 ms je Saison, Spielstand 434 /
+432 KB.
+
+**Tests, die mit der neuen Welt rissen** (keiner gelockert, jeder an seine
+Aussage gebunden):
+
+- **kader AC-5** (`tests/manager.test.mjs`): „alt“ war ab 33 — die
+  Startwelt reicht nur bis 32. Jetzt 31 und 32, die Jahre mit
+  Altersabzug, und jede Gruppe muss über 20 Spieler haben.
+- **spieltag AC-6**: verglichen werden Tore **je Einsatz** statt in Summe.
+  Im 4-4-2 stehen doppelt so viele im Mittelfeld wie im Sturm; die Summe
+  kippte schon vor Schritt 4 an Startwert 1234 (Mittelfeld 429, Sturm 390 —
+  je Einsatz 0,17 gegen 0,38). **Eine Auslegung des Kriteriums**
+  („Stürmer treffen am häufigsten“) — der Benutzer mag widersprechen.
+- **liga AC-7** (`tests/manager-spiel.test.mjs`): der Test nimmt den besten
+  Torschützen eines fremden Vereins, gibt ihm Stärke 99 und erwartet Tore.
+  An 4711 war das seit Schritt 4 ein Mittelfeldspieler, der 20 Spiele ohne
+  Tor blieb; jetzt der beste **Stürmer**.
+- **vertraege AC-8**: bei 5 Mio und bei −5 Mio verlängerten beide dieselben
+  zehn — die Gehaltsgrenze (23 314) bindet in beiden, nicht die Regel für
+  das Minus (Verlängerte je Konto −5 / 5 / 10 / 20 / 40 Mio: 10, 10, 10, 11,
+  18; auf Schritt 3 10, 11, 11, 13, 18). Jetzt im Plus mit 40 Mio, und
+  geprüft wird dazu, was „im Minus nur die Besten“ sagt: der Schwächste,
+  der im Minus verlängert wird, liegt höchstens 4 unter dem Niveau, im Plus
+  darunter.
+- **spieltag AC-30** (`tests/manager-eingriff.test.mjs`): 4000 statt 1500
+  Spiele je Lage. Die Wirkung von „laut“ bei Rückstand und starker Moral ist
+  rund +0,018 Punkte (6000 je Lage, auf Schritt 3 und 4 gleich); mit 1500
+  streute sie auf +0,003, verlangt sind 0,01. Der Test dauert 17 statt 6 s.
+- **Fingerabdruck** (`tests/manager-gleichstand.json`) neu geschrieben.
+
+**Nicht geprüft:** Partien mit Menschen; ob AC-23 mit Rauschen besser als
+mit „jede Saison“ gemessen wäre (das Band nicht gelockert, die Frage gehört
+dem Benutzer); warum AC-24 an 1234 und 99 knapp reißt.
+
+Weiter rot: kader AC-23 (knapp), kader AC-26 (Schritt 5), finanzen AC-19
+(Schritt 6, viel besser).
+
 ## Wovon Auf- und Abwertung heute abhängt (`kader.entwickeln`)
 
 Zweimal je Saison (Winter × 0,4 ohne Altern, Sommer × 0,6 mit Altern),

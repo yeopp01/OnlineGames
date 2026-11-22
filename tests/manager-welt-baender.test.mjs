@@ -5,7 +5,7 @@
 //
 // Was noch reisst, steht auf `offen` und der Test auf `todo` (finanzen
 // AC-17 und AC-18 halten seit Schritt 2, transfer AC-26 und AC-27 seit
-// Schritt 3). Wer einen Schritt des Plans baut,
+// Schritt 3, kader AC-24 und AC-25 seit Schritt 4). Wer einen Schritt des Plans baut,
 // nimmt das `todo` weg, sobald sein Band ueber diese Welt haelt - und prueft
 // mit `npm run manager:dynamik` ueber mehrere Startwerte, dass es nicht nur
 // hier haelt.
@@ -56,11 +56,11 @@ test('transfer AC-26: mit 24 bis 28 ist ein Jahresgehalt 15 bis 25 % des Marktwe
   pruefen('transfer AC-26');
 });
 
-test('kader AC-23: ab Saison 5 drei bis acht Spieler ab Staerke 85 in Liga 1', { todo: 'reisst heute - Schritt 4 des Plans, Starttalent' }, () => {
+test('kader AC-23: ab Saison 5 drei bis acht Spieler ab Staerke 85 in Liga 1', { todo: 'reisst seit Schritt 4 nur noch knapp: hier nur Saison 5 mit 2, ueber acht Startwerte 0 bis 12 je Saison, an zwei von acht jede Saison im Band - Rauschen, das Band verlangt jede Saison' }, () => {
   pruefen('kader AC-23');
 });
 
-test('kader AC-24: das Durchschnittsalter bleibt ab Saison 2 zwischen 23 und 25', { todo: 'reisst heute unten (22,8 bis 23,0) - Schritt 4 des Plans, Abbau ab 29 und Karriereende' }, () => {
+test('kader AC-24: das Durchschnittsalter bleibt ab Saison 2 zwischen 23 und 25', () => {
   pruefen('kader AC-24');
 });
 
@@ -68,11 +68,11 @@ test('transfer AC-27: ein Geburtstag kostet hoechstens 15 % des Marktwerts', () 
   pruefen('transfer AC-27');
 });
 
-test('finanzen AC-19: das groesste Konto der Liga 1 bleibt unter vier Jahreseinnahmen', { todo: 'reisst heute ab Saison 5 bis 7 - Schritt 6 des Plans, Reichtum' }, () => {
+test('finanzen AC-19: das groesste Konto der Liga 1 bleibt unter vier Jahreseinnahmen', { todo: 'reisst seit Schritt 4 hier nur noch in Saison 11 (4,6-fach) - Schritt 6 des Plans, Reichtum' }, () => {
   pruefen('finanzen AC-19');
 });
 
-test('kader AC-25: die Jugend kommt hoechstens 15 unter dem Niveau an und spielt mit 20', { todo: 'reisst heute, mit 17 rund 22 unter dem Niveau - Schritt 4 des Plans, Jugend' }, () => {
+test('kader AC-25: die Jugend kommt hoechstens 15 unter dem Niveau an und spielt mit 20', () => {
   pruefen('kader AC-25');
 });
 
