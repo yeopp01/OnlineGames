@@ -2,7 +2,7 @@
 
 **Bereich:** Strategie
 **Kuerzel:** einheiten
-**Stand:** 58/62 fertig · 1 in QA · 2 offen · 1 zurueckgestellt
+**Stand:** 58/63 fertig · 1 in QA · 3 offen · 1 zurueckgestellt
 
 ## Zweck
 
@@ -88,6 +88,17 @@ Befehl bewirkt.
 - **AC-19** `fertig` **Werte nach der Vorlage** — Dorfbewohner, Späherreiter und
   Miliz haben die Werte aus der Tabelle; der Späher ist anderthalbmal so
   schnell wie ein Dorfbewohner.
+- **AC-70** `offen` **Kein Verlust am Wegpunkt** — Eine Einheit legt in
+  jedem Takt genau ihr Tempo zurück, auch wenn sie dabei an einem Wegpunkt
+  ankommt: der Rest des Takts geht zum nächsten weiter. Zehn Felder gerade
+  dauern bei Tempo 1,0 also 100 Takte, schräg 142 — aufgerundet auf den
+  nächsten ganzen Takt, nicht mehr. Heute endet der Takt am Wegpunkt: Tempo
+  1,0 braucht 110 und 150 Takte, jede Einheit ist rund 9 % langsamer als
+  ihr Wert. Getriebene Schafe laufen nach derselben Regel. **Was fehlt:**
+  gebaut ist es als Patch (2026-11-22, nicht eingecheckt), aber mit der
+  Regel reißen Grenzen, die nur der Benutzer lockert: der Langbogen gegen
+  den Hellebardier in der Krone (fahrplan AC-26, Werte der Vorlage), dazu
+  einheiten AC-42 und fahrplan AC-25.
 - **AC-20** `fertig` **Ein Befehl für viele** — Mehrere ausgewählte Einheiten, zum selben Punkt
   geschickt, stellen sich dort nebeneinander auf, statt auf einem Feld zu
   stehen. Mehrere Sammler auf einem Vorrat verteilen sich auf die Nachbarn

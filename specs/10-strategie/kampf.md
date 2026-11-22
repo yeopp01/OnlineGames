@@ -2,7 +2,7 @@
 
 **Bereich:** Strategie
 **Kuerzel:** kampf
-**Stand:** 24/25 fertig · 1 zurueckgestellt
+**Stand:** 24/27 fertig · 2 offen · 1 zurueckgestellt
 
 ## Zweck
 
@@ -223,6 +223,39 @@ aus [Spielziel](spielziel.md) AC-10, gemessen in
   den fliehenden Dorfbewohner laufen und schlug einen anderen — lief das
   Ziel schräg davon, galt es für einen Takt als unerreichbar (42 von 90
   gemessenen Verfolgungen).
+
+- **AC-26** `offen` **Gleiche Heere, gleiche Chancen** — Stehen sich zwei
+  gleiche Heere gegenüber, gewinnt jede Seite gleich oft: über 200
+  Startwerte je Einheitenart liegt der Abstand zwischen links und rechts
+  innerhalb des Dreifachen der Streuung eines Münzwurfs. Die Welt bleibt
+  dabei bestimmt — dieselbe Partie zweimal gerechnet verläuft Takt für Takt
+  gleich. Heute gewinnt bei gleichen Heeren meist eine Seite: über 200
+  Startwerte Miliz 116 zu 84, Bogen 21 zu 179, Ritter 80 zu 120. **Was
+  fehlt:** gebaut ist es als Patch (2026-11-22, nicht eingecheckt:
+  Reihenfolge je Takt gemischt, Reichweite gegen die Lage zu Beginn des
+  Takts, Gleichstände ohne Himmelsrichtung), aber damit reißen Grenzen, die
+  nur der Benutzer lockert — mit den Gleichständen in der Wegsuche fahrplan
+  AC-15, ohne sie die 200 Startwerte selbst, dazu ki AC-4.
+
+- **AC-27** `offen` **Pfeile treffen beim Ankommen** — Der Schuss eines
+  Fernkämpfers oder eines Turms trifft nicht im Takt des Abschusses,
+  sondern wenn der Pfeil ankommt: so viele Takte später, wie er mit sieben
+  Feldern je Sekunde für die Strecke braucht, mindestens einen. Der
+  Schaden wird beim Abschuss gerechnet und beim Ankommen abgerechnet. Ein
+  Pfeil trifft sicher — auch ein Ziel, das inzwischen weitergelaufen ist,
+  und auch, wenn der Schütze inzwischen fiel. Fällt das Ziel vorher,
+  verpufft er. Nahkampf trifft im Takt des Schlags, der Stein des Mangonels
+  fliegt wie bisher (AC-19). **Aus dem Spiel auf dem Server (2026-11-13,
+  Punkt 25):** „die Pfeile der Burg kommt irgendwie SOFORT beim opfer an" —
+  der Schaden fällt im Takt des Schusses, der Pfeil im Bild fliegt danach
+  noch eine halbe Sekunde. **Was fehlt:** gebaut ist es als Patch
+  (2026-11-22, nicht eingecheckt), aber damit reißt ki AC-25 (zwei gegen
+  zwei, Startwert 8: zwei Angriffsläufe, die der Test zum Verbündeten
+  zählt — die Wache von KI 4 verteidigt dort einen eigenen Dorfbewohner am
+  Platz des ausgeschiedenen Verbündeten), und der Nebeltest steht genau an
+  seiner Grenze (105 von 120 vor Minute 60). Ob der Test die Verteidigung
+  eigener Einheiten ausnehmen darf wie die eigener Gebäude, entscheidet der
+  Benutzer.
 
 ### Stufe E und F — Häuser und Drache
 
