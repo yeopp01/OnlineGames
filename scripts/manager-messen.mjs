@@ -35,7 +35,7 @@ if (argumente.includes('--json')) {
   console.log(`  Stärke 1. Liga      ${z(mittel.staerkeErsteLiga, 1)}`);
   console.log(`  Kader               ${z(mittel.kaderMin, 1)} bis ${z(mittel.kaderMax, 1)} Spieler`);
   console.log(`  Vereinslose         ${z(mittel.vereinslose, 0)}`);
-  // Konten rechnen in Tausend, wie im Spiel (geld() in public/manager.js).
+  // Konten rechnen in Tausend, wie im Spiel (geld() in public/manager/teile.js).
   console.log(`  Konto 1. Liga       ${z(mittel.kontoErsteLiga / 1000, 1)} Mio im Mittel`);
   console.log(`  Rechenzeit          ${z(mittel.msJeSaison, 0)} ms je Saison`);
   console.log(`  Spielstand          ${z(mittel.spielstandKB, 0)} KB`);

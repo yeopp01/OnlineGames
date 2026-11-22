@@ -41,7 +41,7 @@ const DATEIEN = [
 ];
 
 const STRENG = [
-  'public/manager.html', 'public/manager.js',
+  'public/manager.html',
   ...readdirSync(new URL('../server/spiele/manager/', import.meta.url)).map((name) => `server/spiele/manager/${name}`),
   ...(() => {
     try {

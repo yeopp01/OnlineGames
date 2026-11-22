@@ -46,8 +46,6 @@ const OFFEN = {
   'figuren.js': 'Zeichencode, wird abgeloest',
   'gebaeude.js': 'Zeichencode, wird abgeloest',
   'schautafel.js': 'Zeichencode, wird abgeloest',
-  // Wird in M0.7 in Module zerlegt (docs/manager/plan.md) - dann je Modul.
-  'manager.js': 'wird in M0.7 zerlegt',
 };
 
 // Im Server noch ohne Marke: die vier Teile der Karriere. Sie sind Klassen,
@@ -99,10 +97,28 @@ test('waechter: im Server fehlt die Marke nur den Dateien unter OFFEN_SERVER', (
   assert.deepEqual(alle.filter((pfad) => !traegtMarke(pfad)).map(kurz).sort(), Object.keys(OFFEN_SERVER).sort());
 });
 
+// Die Dateien des Browsers, auch in Unterordnern (public/manager/), als Pfad
+// unter public/ - so stehen sie in OFFEN.
+const OEFFENTLICH = join(WURZEL, 'public');
+const imBrowser = () => dateien(OEFFENTLICH).map((pfad) => relative(OEFFENTLICH, pfad).split(sep).join('/'));
+
 test('waechter: im Browser fehlt die Marke nur den Dateien unter OFFEN', () => {
-  const alle = readdirSync(join(WURZEL, 'public')).filter((name) => name.endsWith('.js'));
-  const ohne = alle.filter((name) => !traegtMarke(join(WURZEL, 'public', name)));
+  const alle = imBrowser();
+  // Die Module des Managerspiels liegen in einem Unterordner - findet der
+  // Waechter sie nicht, prueft er sie nicht.
+  assert.ok(alle.includes('manager/kern.js'), 'public/manager/ nicht gefunden');
+  assert.equal(readdirSync(OEFFENTLICH).includes('manager.js'), false, 'public/manager.js ist zerlegt (M0.7)');
+  const ohne = alle.filter((name) => !traegtMarke(join(OEFFENTLICH, name)));
   assert.deepEqual(ohne.sort(), Object.keys(OFFEN).filter((name) => alle.includes(name)).sort());
+});
+
+test('waechter: der Pruefer liest jede Datei des Browsers, auch in Unterordnern', () => {
+  // Was `public/tsconfig.json` nicht aufnimmt, prueft er nicht - die Marke
+  // allein genuegt nicht.
+  const lauf = spawnSync(process.execPath, [TSC, '-p', 'public/tsconfig.json', '--listFilesOnly'], { cwd: WURZEL, encoding: 'utf8' });
+  const gelesen = new Set(lauf.stdout.split(/\r?\n/).filter(Boolean).map((pfad) => kurz(pfad.replace(/\//g, sep))));
+  const fehlt = imBrowser().map((name) => `public/${name}`).filter((pfad) => !gelesen.has(pfad));
+  assert.deepEqual(fehlt, []);
 });
 
 test('waechter: der Pruefer findet einen vertippten Feldnamen - aber nur mit Marke', () => {

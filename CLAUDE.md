@@ -138,7 +138,7 @@ server/  raeume.js   Räume, Beitritt, Rückkehr nach Abbruch
                       netz.js der Anfrageweg (nur mit Anmeldung)
 public/  app.js      Verbindung, Vorraum, Warteraum
          ansicht.js  zeichnet die Welt, nimmt Maus und Tastatur
-         manager.js  das Managerspiel (/manager.html), acht Blätter
+         manager/    das Managerspiel (/manager.html): kern, teile, je Blatt ein Modul
 specs/   was das Produkt ist, mit Abnahmekriterien
 docs/adr/ warum es so gebaut ist
 qa/      bildnachweise/ Bilder je Kriterium (eingecheckt) · ohne-bild.json Begründungen
