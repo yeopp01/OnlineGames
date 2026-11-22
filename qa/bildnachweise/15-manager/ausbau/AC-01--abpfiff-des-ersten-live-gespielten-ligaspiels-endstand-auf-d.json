@@ -1,0 +1,10 @@
+{
+  "spec": "15-manager/ausbau.md",
+  "ac": "AC-1",
+  "titel": "Abpfiff des ersten live gespielten Ligaspiels: Endstand auf der Tafel, jedes Tor im Band, rechts der Wechsel aus der Kabine mit wirkt ab Minute 46",
+  "datei": "e2e/tests/manager-m1-am-stueck.spec.mjs",
+  "pfad": [
+    "Stufe M1 am Stueck",
+    "ausbau AC-1: ein Spiel live vom Anpfiff bis zum Bericht, dann vorspulen bis zur Winterpause"
+  ]
+}

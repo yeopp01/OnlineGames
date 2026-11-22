@@ -2,7 +2,7 @@
 
 **Bereich:** Manager
 **Kuerzel:** ausbau
-**Stand:** 0/1 fertig · 1 offen
+**Stand:** 1/1 fertig
 
 ## Zweck
 
@@ -30,12 +30,14 @@ nicht will, spult vor und hat, was es heute gibt.
 | M1.6 | Was Eingreifen bringt, gegen die Automatik gemessen | spieltag AC-33 |
 | M1.7 | Am Stück im Browser, danach Rückschau | ausbau AC-1 |
 
-Abgelöst wird bedienung AC-4 („Ticker läuft, Ergebnis steht"), sobald
-bedienung AC-19 steht — nicht vorher.
+bedienung AC-4 („Ticker läuft, Ergebnis steht") bleibt `fertig`: es gilt
+für den Bericht nach „Weiter", wo die Rechnung fertig ist und der Ticker nur
+nacherzählt. Für ein live gespieltes Spiel gilt seit M1 bedienung AC-19.
+Einen Status „abgelöst" kennt `scripts/specs-lesen.mjs` nicht.
 
 ## Abnahmekriterien
 
-- **AC-1** `offen` **Stufe M1 am Stück** — Ein Browsertest spielt ein
+- **AC-1** `fertig` **Stufe M1 am Stück** — Ein Browsertest spielt ein
   eigenes Spiel live: anpfeifen, Szenen im Ticker und Tore im Band sehen, zur
   Halbzeit eine Ansprache halten und wechseln, die zweite Hälfte schnell und
   den Rest sofort, Abpfiff, Bericht. Danach spult er bis zur Winterpause vor,

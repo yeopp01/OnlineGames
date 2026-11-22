@@ -6,7 +6,10 @@
 // davon nichts - "Weiter" rechnet wie immer.
 // Methoden der Karriere; zusammengesetzt in karriere.js.
 const { TERMINE } = require('./welt');
-const { spielen, eingreifen, abpfiff } = require('./spieltag');
+const {
+  spielen, eingreifen, abpfiff, WECHSEL_MAX, HALBZEIT,
+} = require('./spieltag');
+const { farbenVon, trikots } = require('./farben');
 
 class Live {
   /**
@@ -73,21 +76,32 @@ class Live {
     const name = (id) => this.vereinVon(id).name;
     const eigene = spiel.seiten[seite === 'heim' ? 0 : 1];
     const bis = (e) => e.minute <= spiel.minute;
+    // In welcher Farbe wer spielt - bei zu aehnlichen der Gast in seiner zweiten (bedienung AC-22).
+    const trikot = trikots(farbenVon(this.startwert, spiel.heim), farbenVon(this.startwert, spiel.gast));
     return {
-      heim: { id: spiel.heim, name: name(spiel.heim) },
-      gast: { id: spiel.gast, name: name(spiel.gast) },
+      heim: { id: spiel.heim, name: name(spiel.heim), trikot: trikot.heim },
+      gast: { id: spiel.gast, name: name(spiel.gast), trikot: trikot.gast },
       seite,
       minute: spiel.minute,
+      halbzeit: HALBZEIT,
       vorbei: spiel.vorbei,
       verlaengerung: spiel.verlaengerung,
       elfmeter: spiel.elfmeter,
       tore: [spiel.seiten[0].tore, spiel.seiten[1].tore],
+      chancen: [spiel.seiten[0].chancen, spiel.seiten[1].chancen],
+      // Je Abschnitt der Anteil des Heims - fuer das Verlaufsband (oberflaeche AC-19).
+      anteile: spiel.anteile || [],
       ereignisse: spiel.ereignisse.filter(bis),
       szenen: (spiel.szenen?.liste || []).filter(bis),
       eigene: {
-        auf: eigene.auf.map((s) => ({ id: s.id, name: s.name, platz: s.platz })),
-        bank: eigene.bank.map((s) => ({ id: s.id, name: s.name, position: s.position })),
+        auf: eigene.auf.map((s) => ({
+          id: s.id, name: s.name, platz: s.platz, staerke: Math.round(s.staerke), frische: Math.round(eigene.frische[s.id] ?? 100), gelb: s.id in eigene.gelbe,
+        })),
+        bank: eigene.bank.map((s) => ({
+          id: s.id, name: s.name, position: s.position, staerke: Math.round(s.staerke), frische: Math.round(eigene.frische[s.id] ?? 100),
+        })),
         wechsel: eigene.wechsel,
+        wechselMax: WECHSEL_MAX,
         taktik: eigene.taktik,
         ansprache: eigene.ansprache ?? null,
       },

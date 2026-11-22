@@ -1,0 +1,10 @@
+{
+  "spec": "15-manager/bedienung.md",
+  "ac": "AC-19",
+  "titel": "Das erste Ligaspiel live in der zweiten Haelfte, angehalten: oben die Tafel mit Stand und Uhr, darunter das Band mit den Abschnitten bis zur Minute, links der Ticker, unten das Tempo",
+  "datei": "e2e/tests/manager-live.spec.mjs",
+  "pfad": [
+    "Das Spiel live",
+    "oberflaeche AC-19: Tafel, Band und Ticker laufen, Sofort rechnet wie Weiter"
+  ]
+}

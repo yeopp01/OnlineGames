@@ -12,6 +12,7 @@ const transfer = require('./transfer');
 const { terminTitel, fensterOffen, fensterText } = require('./kalender');
 const { mannschaftsteile, AUSRICHTUNGEN } = require('./spieltag');
 const { TERMINE } = require('./welt');
+const { farbenVon } = require('./farben');
 
 // Wer ohne Manager schaut - eine Welt, in der kein Mensch einen Verein fuehrt.
 const OHNE_MANAGER = {
@@ -289,6 +290,8 @@ class Sicht {
       verein: eigener && {
         id: eigener.id,
         name: eigener.name,
+        // Zwei Farben, aus Startwert und Kennung - der Kopf traegt sie (bedienung AC-22).
+        farben: farbenVon(this.startwert, eigener.id),
         liga: eigener.liga,
         platz: this.platz(eigener.id),
         konto: eigener.konto,

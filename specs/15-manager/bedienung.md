@@ -2,7 +2,7 @@
 
 **Bereich:** Manager
 **Kuerzel:** oberflaeche
-**Stand:** 16/20 fertig · 4 offen
+**Stand:** 20/20 fertig
 
 ## Zweck
 
@@ -47,7 +47,8 @@ gescrollt, gemessen (→ [ADR-0010](../../docs/adr/0010-playwright.md)).
   mit Stärke und Kondition. Wer müde ist, fällt ins Auge.
 - **AC-4** `fertig` **Ticker läuft, Ergebnis steht** — Tore, Karten und Wechsel
   erscheinen nacheinander, aber die Rechnung ist längst fertig. Das Tempo ist
-  einstellbar, „sofort" eingeschlossen.
+  einstellbar, „sofort" eingeschlossen. Das gilt für den Bericht nach
+  „Weiter"; ein live gespieltes Spiel zeigt AC-19.
 - **AC-6** `fertig` **Beträge lesbar als Zahl** — Über tausend wird aus 12400
   „12,4 Mio".
 - **AC-7** `fertig` **Absagen stehen als Satz** — Was der Server ablehnt,
@@ -94,22 +95,22 @@ Vorbild ist der [Spieltag-Entwurf](../../docs/manager/entwurf/spieltag.html).
 Der Browser zeigt, was der Server schickt — er rechnet keine Szene und
 schreibt keinen Satz (→ [Spieltag](spieltag.md) AC-29).
 
-- **AC-19** `offen` **Das Spiel läuft im Bild** — Ein live gespieltes Spiel
+- **AC-19** `fertig` **Das Spiel läuft im Bild** — Ein live gespieltes Spiel
   zeigt eine Anzeigetafel mit beiden Vereinen, Stand und Uhr, darunter den
   Ticker Szene für Szene und ein Verlaufsband über 90 Minuten, in dem jedes
   Tor mit Minute und Schütze lesbar steht. Das Tempo lässt sich wählen:
   Normal, Schnell, Sofort und Pause. „Sofort" rechnet bis zum Abpfiff wie
   heute.
-- **AC-20** `offen` **Wechseln im laufenden Spiel** — Während das Spiel läuft
+- **AC-20** `fertig` **Wechseln im laufenden Spiel** — Während das Spiel läuft
   oder steht, lassen sich Spieler wechseln und Ausrichtung, Härte und
   Pressing verstellen. Was geändert ist, steht mit „wirkt ab Minute …" da;
   was der Server abweist (der vierte Wechsel, ein Gesperrter), steht als
   Grund im Bild.
-- **AC-21** `offen` **Die Halbzeit hält an** — Zur Pause hält das Spiel von
+- **AC-21** `fertig` **Die Halbzeit hält an** — Zur Pause hält das Spiel von
   selbst an und zeigt die Kabine: Statistik der ersten Hälfte, drei
   Ansprachen und die Wechsel. Auf 1366 × 768 steht die Kabine ganz im Bild,
   ohne zu rollen. Die Zeile „Halbzeit" im Ticker ist leiser als ein Tor.
-- **AC-22** `offen` **Der Verein färbt die Seite** — Jeder Verein hat zwei
+- **AC-22** `fertig` **Der Verein färbt die Seite** — Jeder Verein hat zwei
   Farben; die eigene trägt der Kopf, auf der Anzeigetafel und im Verlaufsband
   stehen beide Vereine in ihren. Für jeden Verein der Welt gemessen: Schrift
   auf Vereinsfarbe hält 4,5 : 1, und zwei Vereine einer Begegnung sind im

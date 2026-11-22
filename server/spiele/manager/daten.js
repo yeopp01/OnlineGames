@@ -174,6 +174,7 @@
  * @property {number} abschnitte   gespielte Abschnitte zu fuenf Minuten
  * @property {number} minute
  * @property {number} besitz       Summe der Ballbesitzanteile je Abschnitt
+ * @property {number[]} [anteile]   Spielanteil des Heims je Abschnitt in Prozent, nur mit Szenen (oberflaeche AC-19)
  * @property {boolean} verlaengerung
  * @property {number[]|null} elfmeter
  * @property {boolean} vorbei

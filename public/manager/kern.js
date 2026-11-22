@@ -49,6 +49,8 @@ export const lage = {
   markt: null, // die Marktliste, nur bei Bedarf geholt
   laeuft: false, // waehrend eines Termins: keine zweite Anfrage
   tickerUhr: undefined, // die Uhr des laufenden Tickers
+  // Das live gespielte Spiel ist abgepfiffen, das Bild zeigt es noch zu Ende (live.js).
+  nachspiel: false,
 };
 
 export const ansicht = {
@@ -153,8 +155,11 @@ export function dialogZu() {
 
 // ------------------------------------------------------------ Weiter
 
+/** Waehrend ein Spiel live laeuft, gibt es kein Weiter - erst wird es zu Ende gespielt. */
+const imSpiel = () => Boolean(lage.stand && (lage.stand.laufend || lage.nachspiel));
+
 async function weiter() {
-  if (lage.laeuft || !lage.stand || lage.stand.status !== 'laeuft') return;
+  if (lage.laeuft || !lage.stand || lage.stand.status !== 'laeuft' || imSpiel()) return;
   lage.laeuft = true;
   kopfZeichnen();
   $('lauf').textContent = 'rechnet ...';
@@ -179,7 +184,7 @@ async function weiter() {
 }
 
 async function vorspulen(bis) {
-  if (lage.laeuft || !lage.stand || lage.stand.status !== 'laeuft') return;
+  if (lage.laeuft || !lage.stand || lage.stand.status !== 'laeuft' || imSpiel()) return;
   lage.laeuft = true;
   kopfZeichnen();
   $('lauf').textContent = 'rechnet ...';
@@ -202,10 +207,26 @@ $('vorEnde').addEventListener('click', () => vorspulen('saisonende'));
 /** @param {string} id */
 const knopfVon = (id) => /** @type {HTMLButtonElement} */ ($(id));
 
+/**
+ * Der eigene Verein faerbt die Seite (bedienung AC-22): zwei Farben vom
+ * Server, dazu die Schrift, die auf ihnen lesbar ist. Ohne Farben bleibt die
+ * Vorgabe aus manager.css.
+ * @param {{eins: string, zwei: string, schrift: string, schriftZwei: string} | undefined} farben
+ */
+function vereinsfarbenSetzen(farben) {
+  if (!farben) return;
+  const stil = document.documentElement.style;
+  stil.setProperty('--verein-1', farben.eins);
+  stil.setProperty('--verein-2', farben.zwei);
+  stil.setProperty('--verein-schrift', farben.schrift);
+  stil.setProperty('--verein-2-schrift', farben.schriftZwei);
+}
+
 export function kopfZeichnen() {
   const { stand } = lage;
   const v = stand.verein;
   const n = stand.naechster;
+  vereinsfarbenSetzen(v.farben);
   $('vereinName').textContent = v.name;
   let gegner = '';
   if (n.spiel && n.spiel.gegner) gegner = `: ${n.spiel.daheim ? 'daheim gegen' : 'auswärts bei'} ${n.spiel.gegner}`;
@@ -227,6 +248,10 @@ export function kopfZeichnen() {
     knopf.textContent = n.art === 'saisonende' ? 'Saison abschließen' : n.art === 'vorbereitung' ? `Saison ${stand.saison} starten` : `Weiter: ${n.titel}`;
     knopf.disabled = lage.laeuft;
   }
+  // Live spielen geht nur, wenn der naechste Termin ein eigenes Spiel hat.
+  const live = knopfVon('live');
+  live.hidden = !(n.spiel && n.spiel.gegner) || stand.status !== 'laeuft';
+  live.disabled = lage.laeuft;
   const winter = stand.kalender.findIndex((t) => t.art === 'winterpause');
   knopfVon('vorWinter').disabled = lage.laeuft || stand.status !== 'laeuft' || stand.termin.index >= winter;
   knopfVon('vorEnde').disabled = lage.laeuft || stand.status !== 'laeuft' || n.art === 'saisonende';
@@ -242,7 +267,10 @@ export function zeichnen() {
   if (!lage.stand || !lage.stand.verein) return;
   clearInterval(lage.tickerUhr);
   kopfZeichnen();
-  BLAETTER[lage.blatt]();
+  // Ein Spiel, das live laeuft, nimmt die ganze Seite - Kopf und Reiter sind
+  // so lange weg, wie es dauert (oberflaeche AC-19).
+  document.body.classList.toggle('imspiel', imSpiel());
+  BLAETTER[imSpiel() ? 'live' : lage.blatt]();
   // Verweise zwischen den Blaettern, gleich auf welchem Blatt sie stehen.
   alle('[data-gehe]').forEach((knopf) => knopf.addEventListener('click', () => {
     lage.blatt = knopf.dataset.gehe;
@@ -277,7 +305,7 @@ document.addEventListener('keydown', (e) => {
   // nirgends, ist es das Dokument selbst, und das kennt kein `matches()`.
   const ziel = e.target instanceof Element ? e.target : null;
   if ($('spiel').hidden || !$('dialog').hidden || ziel?.matches('input, select, textarea')) return;
-  if (e.code === 'Space') {
+  if (e.code === 'Space' && !imSpiel()) {
     e.preventDefault();
     weiter();
   }

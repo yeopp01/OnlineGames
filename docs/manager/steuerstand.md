@@ -8,110 +8,89 @@ Der [Plan](plan.md) sagt, was gebaut wird, die
 
 ## Wo
 
-Arbeitsbaum `.claude/worktrees/manager` (in `.git/info/exclude`, nur
-örtlich), Zweig `manager`, abgezweigt von `strategie` bei `4910410`.
-`node_modules` ist eine Junction auf das des Hauptordners — **nie
-`rm -rf` auf den Arbeitsbaum**, erst `cmd //c rmdir` auf die Junction.
-Browserläufe mit eigenem Hafen (`E2E_HAFEN=4277`). Nichts gepusht.
+Zwei Arbeitsbäume (in `.git/info/exclude`, nur örtlich), beide mit
+`node_modules` als **Junction** auf das des Hauptordners — **nie `rm -rf`
+auf einen Arbeitsbaum**, erst `cmd //c rmdir` auf die Junction.
 
-## Zuletzt
+- `.claude/worktrees/manager`, Zweig `manager`: Stufe M0 (M0.1 bis M0.8),
+  zuletzt der Hilfsagent M0.7 (`107844e` Module, `88e734c` Tagesform und
+  Eignung auf dem Server; sein Browserlauf schrieb Bilder, ungesichert).
+- `.claude/worktrees/manager-m1`, Zweig `manager-m1`: **Stufe M1**, aus
+  `manager` gemergt bei `b6a5a96`. Browserläufe mit eigenem Hafen
+  (`E2E_HAFEN=4277`), nur wenn kein anderer Lauf rechnet.
 
-**2026-11-22:** M0.1 (`d3432a9`), M0.8 (`f08206d`, hell nach dem Entwurf),
-M0.2 (`75e7c52`, Gleichstandsprobe, spielziel AC-17) und M0.3 (`0f77b48`,
-`karriere.js` geteilt in welt / ablauf / zuege / sicht) sind committet.
-Gemessen vor dem Umbau: 3,07 Tore, 46,4 % Heimsiege, 22,0 % Remis, Favorit
-(Niveau +0,5, jede Paarung) 51,7 %, ohne Remis 66,2 %; Konto 1. Liga
-14,2 Mio; 182 ms je Saison, Spielstand 420 KB. Konten rechnen in Tausend.
+Nichts gepusht, nichts ausgerollt — beides nur auf sein Wort.
 
-**M0.4 gebaut** (karriere AC-29, Fassung 4): `manager[]` mit `managerId`
-(nicht `id` wie im Plan-Entwurf; `kontoId` und `bereit` kommen erst mit
-M3), jeder Zug `(managerId, …)` über `amZug()`, Ansichten
-`zustand/markt/vorschau/vereinAnsicht(managerId, …)`, Lesen über
-`managerMit`, `managerVon`, `menschFuehrt`, `wartetAufStelle`. `netz.js`
-und `spielstaende.js` nehmen `manager[0]` — nach außen gleich. Wächter
-`tests/waechter-manager-mehrzahl.test.mjs` (Gegenprobe fällt).
-**Gleichstand:** Welt in allen sechs Läufen gleich, Mensch in den drei mit
-Menschen gleich; nur die drei ohne Menschen haben neu einen leeren Abdruck
-(es gibt dort keinen Manager mehr) — neu geschrieben. Einmalig gegen den
-Code von `0f77b48`: ein Stand der Fassung 3, mit altem und neuem Code
-fortgesetzt, 9 von 9 gleich (Probe im Scratchpad, nicht eingecheckt).
+## Entscheidungen des Benutzers
+
+- Das helle Kleid aus Fables Entwurf (`docs/manager/entwurf/`) gilt.
+- Überspringen und Vorspulen bleiben; **einzelne Spiele lassen sich live
+  spielen**, wer will.
+
+## Stand M1 (2026-11-22)
+
+| Schritt | Commit | Was |
+| --- | --- | --- |
+| Specs | `eaa8e97` | M1-Kriterien in spieltag, karriere, bedienung, ausbau |
+| M1.1 | `7313891` | Szenen auf dem Server (spieltag AC-27 bis AC-29) |
+| M1.2 | `932237f` | live: anpfeifen, spielen, abpfeifen (karriere AC-30 bis AC-32) |
+| AC-32 + AC-30 | `4bc9f59` | System wechseln im Spiel, Ansprache zur Halbzeit |
+| AC-31 | `173c4e3` | Vereine des Servers stellen ab Minute 60 um |
+| AC-33 | `ba685fd` | eingreifen lohnt, aber nicht grenzenlos |
+
+**AC-31 verschiebt die Welt:** 3,20 Tore je Spiel statt 3,06 (sechs
+Startwerte zu zwei Saisons), Gleichstand neu geschrieben.
+
+**M1.3, M1.4 und M1.7 — die Oberfläche (oberflaeche AC-19 bis AC-22,
+ausbau AC-1), Commit folgt nach grünem check:** `public/manager/live.js`
+(Tafel, Band, Ticker, Tempo, Eingreifen mit „wirkt ab Minute", Kabine),
+Knopf „Live spielen" neben Weiter, CSS unter `.live`. Browsertests
+`e2e/tests/manager-live.spec.mjs` (AC-19 bis AC-22) und
+`manager-m1-am-stueck.spec.mjs` (ausbau AC-1), sechs von sechs grün auf
+Hafen 4278, alle Bilder angesehen. **Stufe M1 ist damit erreicht.**
+
+- **Vereinsfarben** (`server/spiele/manager/farben.js`): 36 Paare, je
+  Verein aus Startwert und Vereinsnummer gezogen — nicht im Spielstand,
+  also Gleichstand unverändert und alte Stände bekommen Farben ohne neue
+  Fassung. Erste Farbe dunkel mit weißer Schrift, zweite hell mit Tinte;
+  sind sich die ersten Farben einer Begegnung näher als ΔE 30 (CIE76),
+  trägt der Gast sein Ausweichtrikot. Gemessen: 228 von 1260 Begegnungen
+  mit Ausweichtrikot, knappstes Paar 30,6.
+- **Das Band zeigt, wer drückt:** Chancen (½) und Tore (+½) je Abschnitt,
+  der Spielanteil nur als Grundlinie — der Anteil allein war flach
+  (|Anteil − 50| im Median 4, höchstens 16, im Spiel fast unbewegt).
+- Gefunden und behoben: die globale Klasse `.verlauf` (Akte) drückte das
+  Band auf 60 px → `.spielverlauf`; nach einer abgewiesenen Auswechslung
+  blieb der Spieler gewählt; der Rand ragte auf 1366 × 768 5 px heraus.
 
 ## Als Nächstes
 
-1. M0.4 ist `2048878` (check grün, 1094 Tests; Managerfälle im Browser
-   49/49 — die Prüfgriffe in `e2e/server.mjs` lasen noch die alten Felder,
-   der Wächter deckt `e2e/` nicht ab).
-2. **M0.5 ist `1756ccd`** (check grün, 1100 Tests; ein erster Lauf fiel
-   unter fremder Volllast in `schutz`/`netz`, einzeln und im zweiten Lauf
-   grün) (spieltag AC-26, `tests/manager-anhalten.test.mjs`, zwei
-   Gegenproben fallen): `anpfiff/spielen/eingreifen/abpfiff`, die Seite ist
-   ein Datenwert ohne Verein und ohne Map, der Zufall `{a}` wird geteilt,
-   nicht kopiert (ein Spieltag zieht alle Spiele aus einer Quelle).
-   Gleichstand hält, Kennzahlen unverändert. **Rechenzeit:** die erste
-   Fassung war rund 20 % langsamer (`seiteAnlegen` mit `find` je Spieler);
-   jetzt ein Durchgang über den Kader, und `mannschaftsteile()` (Vorschau)
-   legt Noten-Werte gar nicht an — unter Volllast HEAD 531, neu 541 ms je
-   Saison, 3000 Begegnungen 268–282 gegen 276–309 ms.
-3. **M0.6 gebaut, nicht committet:** `daten.js` mit den Formen (Verein,
-   Spieler, Taktik, Manager, Karrierezustand, Platzspieler, Seite, Spiel,
-   Ereignis, Zufall); `// @ts-check` in allen Dateien außer welt, ablauf,
-   zuege, sicht (`OFFEN_SERVER` im Wächter, Grund: `this` in den
-   Teilklassen; gezählt rund 250 Meldungen). `GanzeKarriere` in
-   `karriere.js` = Zustand & vier Teile, `Karriere` dort entsprechend
-   gecastet — wer eine Karriere von außen bekommt (netz, spielstaende), ist
-   geprüft. **Falle:** ein Objekt, das in JS später ein Feld bekommt, darf
-   jedes Feld tragen — `seite.wechsl` fiel erst mit `@type {Seite}` auf.
-   Zwei Gegenproben (spieltag, finanzen) fallen. `welt.js` ohne Änderung:
-   Klassenfelder würden die Schlüsselreihenfolge von `sichern()` verschieben.
-   Danach M0.7 (`public/manager.js` in Module),
-   dann M1 (Spieltag live; Halbzeit bei 1366 × 768 ganz sichtbar, Tore im
-   Verlaufsband lesbar, Halbzeitzeile leiser, Vereinsfarben als Akzent).
+1. Commit in `manager-m1`, wenn `npm run check` grün ist.
+2. `manager` (M0.7: `107844e`, `88e734c`, `5f07a80`) in `manager-m1`
+   mergen; Konflikt in diesem Steuerstand, vielleicht in `sicht.js`
+   (`spielerZeigen`, Eignung, Form) und `public/manager/*`.
+3. Ein ganzer Browserlauf ohne fremde Last (M0.7 sah sechs rote Fälle des
+   Strategiespiels unter Last — nicht unsere).
+4. Rückschau M1 (Lücken als Kriterien), ADR-0018 nachziehen, in
+   `CLAUDE.md` „die Arbeit daran ruht" anpassen — mit dem Benutzer.
+
+## Nicht geprüft
+
+- Nachwirkung nach einem Systemwechsel (Spielpraxis im neuen System).
+- Die KI hält keine Ansprache.
+- Keine Konferenz anderer Spiele während des eigenen (karriere AC-32).
+- Die Live-Ansicht in anderen Browsern als Chrome, kleiner als 1366 × 768.
+- Das Ausweichtrikot ist gerechnet und im Knotentest geprüft, im Browser
+  nie gesehen (die Testbegegnung braucht es nicht).
+- Auf der Bank steht die Gruppe (TOR, ABW …), auf dem Platz die Position
+  (TW, IV …) — zwei Kürzel für den Torwart, nicht vereinheitlicht.
 
 ## Für M3 vorgemerkt
 
 - **Ein Entlassener behält `vereinId`**: sein alter Verein bekommt bis zur
   neuen Stelle keine KI-Taktik und keinen KI-Stadionausbau
-  (`managerVon` findet ihn). So rechnete schon Fassung 3; für die
-  Gleichstandsprobe erhalten. Ändern als bewusste Änderung mit neuen
+  (`managerVon` findet ihn). Ändern als bewusste Änderung mit neuen
   Abdrücken.
 - `weiter()` zieht für alle Manager dieselbe Zufallsquelle (Angebote,
   Entlassung) — mit zwei Menschen je Manager eine eigene.
 - `bericht.eigenes` und `saisonende.eigener` tragen nur einen Manager.
-
-## Entschieden
-
-- **2026-11-22, Freigabe des Plans:** „Bitte baue die Vorschläge von fable,
-  gerne auf nem eigenen branch oder worktree, losgelöst von den fading
-  allies änderungen". **Ausgelegt** als Zustimmung zu den Empfehlungen E1
-  bis E7 im Plan, Abschnitt 3 — dem Benutzer als Auslegung genannt; ohne
-  Widerspruch gilt sie.
-- **2026-11-22, ein Aussehen:** auf „Es braucht ein Aussehen für alles":
-  „korrekt - und da finde ich die Farben aus dem ENtwurf von Fable
-  ehrlicherweise sehr gut." → das ganze Managerspiel wird hell nach dem
-  Entwurf, nicht der Entwurf dunkel.
-- **2026-11-22, Überspringen bleibt:** „aber, dass man ganze spiele
-  einfach überskippen/simulieren kann, is echt nice, sowas sollten wir
-  beibehalten, aber wenn man will, sollte es eben auch einzelspiele geben
-  zum spielen." → M1: „bis zur Winterpause" und „bis vor das Saisonende"
-  bleiben, der Ticker „sofort" auch; live gespielt wird ein Spiel nur,
-  wenn man es will. Dann: „ich lass dich mal alleine" — eigenständig
-  weiter, kein Push und kein Ausrollen ohne ihn.
-
-## Fragen an den Benutzer
-
-Keine offen.
-
-## Bekannte Fallen
-
-- Der Haken zum Sitzungsbeginn legt den Steuerstand des **Strategiespiels**
-  vor. Für eine Runde am Managerspiel gilt diese Datei.
-- `CLAUDE.md` sagt noch „die Arbeit daran ruht" — ändern, sobald M0 steht.
-- Die Namenslisten in `kader.js` nicht anfassen, solange die
-  Gleichstandsprobe gelten soll.
-- Ersetzungen per Skript: ein einzelnes Wort als Text trifft auch
-  gleichlautende Schlüssel (`verlaengern`) — danach den Diff auf
-  `data-`, `dataset.` und `zug('` durchsehen.
-- Markdown mit Backticks nie in `node -e "…"` schreiben — die Shell führt
-  sie aus. Mit dem Edit-Werkzeug oder einer Skriptdatei.
-- Unter fremder Last reißen Zeitmessungen des Strategiespiels in
-  `npm run check`; allein wiederholen, bevor etwas geändert wird.

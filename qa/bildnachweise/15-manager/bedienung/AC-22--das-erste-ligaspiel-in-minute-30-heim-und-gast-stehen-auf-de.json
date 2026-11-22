@@ -1,0 +1,10 @@
+{
+  "spec": "15-manager/bedienung.md",
+  "ac": "AC-22",
+  "titel": "Das erste Ligaspiel in Minute 30: Heim und Gast stehen auf der Tafel und im Band in den zwei Farben ihres Vereins, die der Server aus dem Startwert rechnet",
+  "datei": "e2e/tests/manager-live.spec.mjs",
+  "pfad": [
+    "Das Spiel live",
+    "oberflaeche AC-22: der Verein faerbt Kopf, Tafel und Band"
+  ]
+}

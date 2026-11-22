@@ -26,10 +26,12 @@
   --rasen: #3f7d4e;
   --rasen-hell: #4b8c5a;
 
-  /* Der eigene Verein. Kommt spaeter vom Server, je Verein zwei Farben. */
+  /* Der eigene Verein - die Vorgabe, bis der Server seine zwei Farben
+     schickt (bedienung AC-22, server/spiele/manager/farben.js). */
   --verein-1: #0f4c81;
   --verein-2: #f2c230;
   --verein-schrift: #ffffff;
+  --verein-2-schrift: #1c2128;
 
   --betont: var(--verein-1);
   --gut: #2c6a3a;
@@ -229,10 +231,13 @@ button:focus-visible {
 .kopf button.haupt {
   background: var(--verein-2);
   border-color: var(--verein-2);
-  color: var(--schrift);
+  color: var(--verein-2-schrift);
 }
 
-.kopf button.haupt:hover:not(:disabled) { background: #f7d35e; border-color: #f7d35e; }
+.kopf button.haupt:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--verein-2) 82%, #ffffff);
+  border-color: color-mix(in srgb, var(--verein-2) 82%, #ffffff);
+}
 .kopf select { border-color: var(--tafel); }
 .kopf button:focus-visible,
 .kopf select:focus-visible { outline-color: var(--verein-2); }
@@ -334,7 +339,7 @@ main#inhalt {
   padding: 0 0.35rem;
   border-radius: 9px;
   background: var(--verein-2);
-  color: var(--schrift);
+  color: var(--verein-2-schrift);
   font-family: var(--text);
   font-size: 0.75rem;
   font-weight: 700;
@@ -1046,3 +1051,190 @@ td.aktionen button { padding: 0.15rem 0.5rem; font-size: 0.8rem; margin-right: 0
   .einschaetzung { grid-column: 1 / -1; grid-row: 2; justify-self: center; }
   .vergleich .zeile { grid-template-columns: 2rem minmax(0, 1fr) 4.8rem minmax(0, 1fr) 2rem; gap: 0.35rem; }
 }
+
+/* ------------------------------------------------ Das Spiel live (M1) */
+
+/* Ein Spiel, das live laeuft, nimmt die ganze Seite (oberflaeche AC-19):
+   oben die Tafel, darunter das Band, links der Ticker, rechts das
+   Eingreifen, unten das Tempo. Die Seite rollt nicht - Ticker und rechte
+   Spalte rollen in sich, damit die Kabine auf 1366 x 768 ganz zu sehen ist
+   (AC-21). Formen und Farben nach docs/manager/entwurf/spieltag.html. */
+body.manager.imspiel { padding: 0; }
+body.imspiel .kopf { display: none; }
+body.imspiel main#inhalt { max-width: none; margin: 0; padding: 0; }
+
+/* Heim und Gast: die Trikots schickt der Server und live.js setzt sie als
+   --heim-* und --gast-* an .live (AC-22). Die Regeln hier sind die Vorgabe
+   fuer einen Stand ohne Trikots. Im Ausweichtrikot ist der Grund hell - im
+   Band umrandet ihn dann die erste Farbe. */
+.live {
+  --gegner-1: #7a1f2b;
+  --gegner-2: #f1ece0;
+  --gegner-schrift: #ffffff;
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+}
+
+.live.eigen-heim {
+  --heim-1: var(--verein-1); --heim-2: var(--verein-2); --heim-schrift: var(--verein-schrift);
+  --gast-1: var(--gegner-1); --gast-2: var(--gegner-2); --gast-schrift: var(--gegner-schrift);
+}
+
+.live.eigen-gast {
+  --heim-1: var(--gegner-1); --heim-2: var(--gegner-2); --heim-schrift: var(--gegner-schrift);
+  --gast-1: var(--verein-1); --gast-2: var(--verein-2); --gast-schrift: var(--verein-schrift);
+}
+
+.live h2 { margin: 0 0 0.5rem; font-size: 1.3rem; }
+
+/* Anzeigetafel: eine Stecktafel, Ziffern auf dunklen Platten. */
+.live .tafel { display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); flex: none; }
+.live .seite { display: flex; flex-direction: column; justify-content: center; padding: 0.45rem 1.5rem; min-width: 0; }
+.live .seite.heim { background: var(--heim-1); color: var(--heim-schrift); border-bottom: 7px solid var(--heim-2); }
+.live .seite.gast { background: var(--gast-1); color: var(--gast-schrift); border-bottom: 7px solid var(--gast-2); text-align: right; }
+.live .verein {
+  font-family: var(--schmal); font-stretch: 78%; font-weight: 700;
+  font-size: 2.1rem; line-height: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.live .lage { margin-top: 0.35rem; font-size: 0.9rem; opacity: 0.9; }
+.live .stand {
+  display: grid; grid-template-columns: auto auto auto; align-items: center; gap: 0.45rem;
+  padding: 0.5rem 1.1rem 0.35rem; background: var(--schrift);
+}
+.live .platte {
+  position: relative; width: 3.5rem; height: 4rem; border-radius: 3px;
+  background: var(--platte); color: #f6f4ec; display: grid; place-items: center;
+  font-family: var(--schmal); font-stretch: 75%; font-weight: 700; font-size: 3.3rem; line-height: 1;
+  box-shadow: inset 0 0 0 1px #3a4149;
+}
+.live .platte::after {
+  content: ""; position: absolute; left: 0; right: 0; top: 50%;
+  border-top: 1px solid #0d1013; border-bottom: 1px solid #3a4149;
+}
+.live .doppelpunkt { color: #8d969f; font-family: var(--schmal); font-size: 2.3rem; font-weight: 700; }
+.live .uhr {
+  grid-column: 1 / -1; text-align: center; color: #d9dcd4; white-space: nowrap;
+  font-family: var(--schmal); font-stretch: 80%; font-size: 1.05rem; letter-spacing: 0.04em;
+}
+.live .uhr b { color: #f2c230; font-weight: 700; }
+
+/* Verlaufsband: je fuenf Minuten ein Abschnitt, Ausschlag nach oben fuer
+   Heim, nach unten fuer Gast; darueber und darunter die Torschuetzen. */
+.live .spielverlauf {
+  flex: none; display: grid; grid-template-columns: 7rem minmax(0, 1fr) 7rem; align-items: center; gap: 0.75rem;
+  padding: 0.3rem 1.5rem; background: var(--tafel); border-bottom: 1px solid var(--rand);
+}
+.live .spielverlauf small { color: var(--leise); font-size: 0.8rem; line-height: 1.2; }
+.live .spielverlauf small:last-child { text-align: right; }
+.live .band { display: grid; gap: 2px; height: 40px; position: relative; }
+.live .band::before { content: ""; position: absolute; left: 0; right: 0; top: 50%; border-top: 1px solid var(--rand); }
+.live .abschnitt { position: relative; }
+.live .abschnitt i { position: absolute; left: 0; right: 0; display: block; }
+.live .abschnitt i.heim { bottom: 50%; background: var(--heim-1); }
+.live .abschnitt i.gast { top: 50%; background: var(--gast-1); }
+.live[data-ausweich='gast'] .abschnitt i.gast { box-shadow: inset 0 0 0 1.5px var(--gast-2); }
+.live[data-ausweich='gast'] .abschnitt .tor.gast { border-color: var(--gast-2); }
+.live .abschnitt.offen { outline: 1px dashed var(--rand); outline-offset: -1px; }
+.live .abschnitt.jetzt { background: var(--zeile); }
+.live .abschnitt.pause { border-right: 2px solid var(--schrift); margin-right: -2px; }
+.live .abschnitt .tor {
+  position: absolute; left: 50%; width: 11px; height: 11px; margin-left: -5.5px;
+  border-radius: 50%; background: var(--tafel); border: 3px solid var(--schrift);
+}
+.live .abschnitt .tor.heim { top: -2px; border-color: var(--heim-1); }
+.live .abschnitt .tor.gast { bottom: -2px; border-color: var(--gast-1); }
+.live .torzeile { display: grid; min-height: 1rem; font-size: 0.75rem; line-height: 1.15; }
+.live .torname { white-space: nowrap; font-weight: 600; justify-self: center; }
+.live .torzeile.heim .torname { align-self: end; }
+
+/* Hauptteil: Ticker links, Eingreifen rechts, beide rollen in sich. */
+.live .livespiel { flex: 1; min-height: 0; display: grid; grid-template-columns: minmax(0, 1fr) 31rem; }
+.live .liveticker { overflow-y: auto; padding: 0.9rem 1.5rem 1.5rem; }
+.live .rand { overflow-y: auto; padding: 0.6rem 1.1rem 0.8rem; border-left: 1px solid var(--rand); background: var(--tafel); }
+
+/* Die juengste Szene: der eine laute Punkt der Seite. */
+.live .laufend {
+  display: grid; grid-template-columns: 4rem 1fr; gap: 0 1rem;
+  padding: 0.8rem 1rem 0.9rem; margin-bottom: 1rem; background: var(--tafel);
+  border-left: 8px solid var(--rand);
+}
+.live .laufend.heim { border-left-color: var(--heim-1); }
+.live .laufend.gast { border-left-color: var(--gast-1); }
+.live .laufend .minute { font-family: var(--schmal); font-stretch: 75%; font-weight: 700; font-size: 2.7rem; line-height: 0.95; }
+.live .laufend .art { font-weight: 600; color: var(--leise); }
+.live .laufend p { margin: 0.15rem 0 0; font-size: 1.2rem; line-height: 1.35; max-width: 36em; }
+
+.live .zeilen { list-style: none; margin: 0; padding: 0; }
+.live .zeilen li {
+  display: grid; grid-template-columns: 3.4rem 6.4rem minmax(0, 1fr); gap: 0 1rem; align-items: baseline;
+  padding: 0.45rem 1rem; border-top: 1px solid var(--rand);
+}
+.live .zeilen .minute { font-family: var(--schmal); font-stretch: 78%; font-weight: 700; font-size: 1.2rem; }
+.live .zeilen .art { color: var(--leise); font-size: 0.9rem; }
+.live .zeilen p { margin: 0; max-width: 44em; }
+/* Ein Tor ist die lauteste Zeile, die Halbzeit eine leise (AC-21). */
+.live .zeilen li.tor { background: var(--tafel); padding-top: 0.7rem; padding-bottom: 0.7rem; }
+.live .zeilen li.tor.heim { box-shadow: inset 8px 0 0 var(--heim-1); }
+.live .zeilen li.tor.gast { box-shadow: inset 8px 0 0 var(--gast-1); }
+.live .zeilen li.tor p { font-size: 1.15rem; font-weight: 600; }
+.live .zeilen li.tor p span { display: block; font-weight: 400; font-size: 0.95rem; color: var(--leise); }
+.live .zeilen li.ruhezeile { color: var(--leise); font-size: 0.88rem; }
+.live .zeilen li.ruhezeile .minute { font-size: 1rem; font-weight: 500; }
+
+.live .abpfiff { padding: 0.9rem 1rem 1rem; margin-bottom: 1rem; background: var(--tafel); border-left: 8px solid var(--schrift); }
+
+/* Die Kabine zur Halbzeit. */
+.live .kabine { background: var(--tafel); border-left: 8px solid var(--schrift); padding: 0.9rem 1.1rem 1rem; margin-bottom: 1rem; }
+.live .kabine > p { margin: 0 0 0.8rem; max-width: 40em; }
+.live .ansprachen { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.65rem; }
+.live .ansprachen button { text-align: left; background: var(--grund); padding: 0.6rem 0.75rem 0.7rem; }
+.live .ansprachen button strong { display: block; font-family: var(--schmal); font-stretch: 82%; font-size: 1.2rem; }
+.live .ansprachen button span { display: block; font-size: 0.86rem; color: var(--leise); margin-top: 0.15rem; }
+/* Die gehaltene Ansprache bleibt voll zu lesen, die anderen sind gesperrt. */
+.live .ansprachen button[aria-pressed='true'] { background: var(--verein-1); color: var(--verein-schrift); opacity: 1; }
+.live .ansprachen button[aria-pressed='true'] span { color: inherit; }
+.live .kabinefuss { display: flex; justify-content: space-between; align-items: flex-end; gap: 1rem; margin-top: 0.9rem; flex-wrap: wrap; }
+.live .haelfte { display: grid; grid-template-columns: 4rem auto 4rem; gap: 0.15rem 1rem; margin: 0; font-size: 0.95rem; }
+.live .haelfte dt { grid-column: 2; color: var(--leise); text-align: center; }
+.live .haelfte dd { margin: 0; font-weight: 600; }
+.live .haelfte dd.h { grid-column: 1; text-align: right; }
+.live .haelfte dd.g { grid-column: 3; }
+
+/* Eingreifen. */
+.live .eingriff h2 { margin-bottom: 0.3rem; }
+.live .ab { margin: 0 0 0.5rem; font-size: 0.88rem; color: var(--leise); }
+.live .ab b { color: var(--schrift); }
+.live .grund { margin: 0 0 0.5rem; padding: 0.35rem 0.6rem; font-size: 0.88rem; color: var(--schlecht); border-left: 4px solid var(--schlecht); background: #fbeeed; }
+.live .geaendert { list-style: none; margin: 0 0 0.5rem; padding: 0; font-size: 0.85rem; }
+.live .geaendert li span { color: var(--leise); }
+.live .stellwerk { display: grid; grid-template-columns: 5.6rem 1fr; gap: 0.3rem 0.6rem; align-items: center; margin: 0 0 0.6rem; }
+.live .stellwerk > span { font-size: 0.88rem; }
+.live .stufen { display: grid; grid-template-columns: repeat(5, 1fr); border: 1px solid var(--schrift); }
+.live .stufen button { border: 0; border-left: 1px solid var(--rand); border-radius: 0; padding: 0.22rem 0; font-size: 0.78rem; }
+.live .stufen button:first-child { border-left: 0; }
+.live .stufen button[aria-pressed='true'] { background: var(--verein-1); color: var(--verein-schrift); font-weight: 600; }
+.live .aufbank { display: grid; grid-template-columns: 1fr 1fr; gap: 0.8rem; align-items: start; }
+.live .aufbank table { font-size: 0.82rem; table-layout: fixed; }
+.live .aufbank caption { text-align: left; font-weight: 600; padding: 0 0 0.2rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.live .aufbank caption small { font-weight: 400; color: var(--leise); }
+.live .aufbank td { padding: 0.06rem 0.2rem; text-align: left; overflow: hidden; text-overflow: ellipsis; }
+.live .aufbank td:first-child { width: 2.1rem; color: var(--leise); padding-left: 0; }
+.live .aufbank td.zahl { width: 1.8rem; text-align: right; }
+.live .aufbank td.frische { width: 2.4rem; }
+.live .aufbank .namelink { max-width: 100%; overflow: hidden; text-overflow: ellipsis; vertical-align: bottom; }
+.live .frischebalken { display: block; height: 6px; background: #dfe3dc; }
+.live .frischebalken i { display: block; height: 100%; background: var(--rasen); }
+.live tr.muede .frischebalken i { background: var(--muede); }
+.live tr.gewaehlt td { background: var(--ich); }
+
+/* Fuss: das Tempo. */
+.live .livefuss {
+  flex: none; display: flex; gap: 1.5rem; align-items: center;
+  padding: 0.45rem 1.5rem; background: var(--schrift); color: #e9ebe4; font-size: 0.9rem;
+}
+.live .tempowahl { display: grid; grid-template-columns: repeat(4, auto); border: 1px solid #6a737c; }
+.live .tempowahl button { border: 0; border-left: 1px solid #6a737c; border-radius: 0; background: transparent; color: inherit; padding: 0.3rem 0.9rem; }
+.live .tempowahl button:first-child { border-left: 0; }
+.live .tempowahl button:hover:not(:disabled):not([aria-pressed='true']) { background: #333a42; }
+.live .tempowahl button[aria-pressed='true'] { background: #e9ebe4; color: var(--schrift); font-weight: 600; }

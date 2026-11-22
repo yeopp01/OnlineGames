@@ -14,6 +14,7 @@ import { blattLiga } from './liga.js';
 import { blattPokal } from './pokal.js';
 import { blattTransfer } from './transfer.js';
 import { blattFinanzen } from './finanzen.js';
+import { blattLive } from './live.js';
 
 Object.assign(BLAETTER, {
   buero: blattBuero,
@@ -24,6 +25,7 @@ Object.assign(BLAETTER, {
   pokal: blattPokal,
   transfer: blattTransfer,
   finanzen: blattFinanzen,
+  live: blattLive,
 });
 
 // ---------------------------------------------------------- Anmeldung

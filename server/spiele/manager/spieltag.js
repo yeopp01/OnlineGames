@@ -576,7 +576,9 @@ function spielen(spiel, bisMinute) {
 
   while (spiel.abschnitte < SCHEIBEN && naechsteEnde() <= bisMinute) {
     umstellen(spiel);
-    spiel.besitz += abschnitt(spiel.seiten, spiel.abschnitte * SCHEIBE + 1, heimfaktoren, zufall, spiel.ereignisse, SCHEIBEN, roh);
+    const anteil = abschnitt(spiel.seiten, spiel.abschnitte * SCHEIBE + 1, heimfaktoren, zufall, spiel.ereignisse, SCHEIBEN, roh);
+    spiel.besitz += anteil;
+    anteilMerken(spiel, anteil);
     gekleidet();
     spiel.abschnitte += 1;
     spiel.minute = spiel.abschnitte * SCHEIBE;
@@ -592,7 +594,7 @@ function spielen(spiel, bisMinute) {
   }
   while (spiel.abschnitte < SCHEIBEN + VERLAENGERUNG && naechsteEnde() <= bisMinute) {
     umstellen(spiel);
-    abschnitt(spiel.seiten, spiel.abschnitte * SCHEIBE + 1, heimfaktoren, zufall, spiel.ereignisse, VERLAENGERUNG, roh);
+    anteilMerken(spiel, abschnitt(spiel.seiten, spiel.abschnitte * SCHEIBE + 1, heimfaktoren, zufall, spiel.ereignisse, VERLAENGERUNG, roh));
     gekleidet();
     spiel.abschnitte += 1;
     spiel.minute = spiel.abschnitte * SCHEIBE;
@@ -601,6 +603,18 @@ function spielen(spiel, bisMinute) {
   if (heim.tore === gast.tore) spiel.elfmeter = elfmeterschiessen(spiel.seiten, zufall, spiel.ereignisse);
   spiel.vorbei = true;
   return spiel;
+}
+
+/**
+ * Der Spielanteil des Heims je Abschnitt in Prozent - fuer das Verlaufsband
+ * des Live-Spiels (oberflaeche AC-19). Nur ein Spiel mit Szenen traegt ihn:
+ * gezogen wird dafuer nichts, ein Spiel rechnet mit und ohne gleich.
+ * @param {Spiel} spiel
+ * @param {number} anteil  zwischen 0 und 1
+ */
+function anteilMerken(spiel, anteil) {
+  if (!spiel.szenen) return;
+  (spiel.anteile ||= []).push(Math.round(anteil * 100));
 }
 
 /**

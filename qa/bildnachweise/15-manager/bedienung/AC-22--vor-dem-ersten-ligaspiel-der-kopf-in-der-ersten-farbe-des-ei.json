@@ -1,0 +1,10 @@
+{
+  "spec": "15-manager/bedienung.md",
+  "ac": "AC-22",
+  "titel": "Vor dem ersten Ligaspiel: der Kopf in der ersten Farbe des eigenen Vereins, der Knopf Weiter in der zweiten mit dunkler Schrift",
+  "datei": "e2e/tests/manager-live.spec.mjs",
+  "pfad": [
+    "Das Spiel live",
+    "oberflaeche AC-22: der Verein faerbt Kopf, Tafel und Band"
+  ]
+}

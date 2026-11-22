@@ -201,3 +201,24 @@ test('karriere AC-32: die Antwort kennt nichts nach der gezeigten Minute', () =>
     assert.ok(antwort.ok, antwort.fehler);
   }
 });
+
+test('karriere AC-32: Spielanteil und Chancen fuer das Band gehen nur bis zur gerechneten Minute', () => {
+  const k = neueKarriere();
+  bisZumSpiel(k);
+  let antwort = k.anpfeifen(ICH);
+  assert.deepEqual(antwort.laufend.anteile, []);
+  assert.deepEqual(antwort.laufend.chancen, [0, 0]);
+  for (let bis = 5; k.offen; bis += 5) {
+    antwort = k.liveSpielen(ICH, { bis });
+    assert.ok(antwort.ok, antwort.fehler);
+    const { laufend } = antwort;
+    // Je gerechnetem Abschnitt ein Anteil, keiner darueber hinaus.
+    assert.equal(laufend.anteile.length, Math.min(laufend.minute, laufend.verlaengerung ? 120 : 90) / 5);
+    for (const a of laufend.anteile) assert.ok(a >= 0 && a <= 100, `Anteil ${a}`);
+    const chancen = (seite) => laufend.szenen.filter((s) => s.seite === seite).length;
+    assert.deepEqual(laufend.chancen, [chancen('heim'), chancen('gast')], 'eine Szene je Chance, bis jetzt');
+    for (const s of laufend.eigene.auf) assert.ok(s.frische > 0 && s.frische <= 100 && s.staerke > 0);
+  }
+  assert.equal(antwort.laufend.halbzeit, 45);
+  assert.equal(antwort.laufend.eigene.wechselMax, 3);
+});
