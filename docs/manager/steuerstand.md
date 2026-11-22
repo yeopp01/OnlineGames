@@ -38,33 +38,33 @@ fortgesetzt, 9 von 9 gleich (Probe im Scratchpad, nicht eingecheckt).
 
 ## Als Nächstes
 
-1. M0.4 ist `2048878` (check grün, 1094 Tests; Managerfälle im Browser
-   49/49 — die Prüfgriffe in `e2e/server.mjs` lasen noch die alten Felder,
-   der Wächter deckt `e2e/` nicht ab).
-2. **M0.5 ist `1756ccd`** (check grün, 1100 Tests; ein erster Lauf fiel
-   unter fremder Volllast in `schutz`/`netz`, einzeln und im zweiten Lauf
-   grün) (spieltag AC-26, `tests/manager-anhalten.test.mjs`, zwei
-   Gegenproben fallen): `anpfiff/spielen/eingreifen/abpfiff`, die Seite ist
-   ein Datenwert ohne Verein und ohne Map, der Zufall `{a}` wird geteilt,
-   nicht kopiert (ein Spieltag zieht alle Spiele aus einer Quelle).
-   Gleichstand hält, Kennzahlen unverändert. **Rechenzeit:** die erste
-   Fassung war rund 20 % langsamer (`seiteAnlegen` mit `find` je Spieler);
-   jetzt ein Durchgang über den Kader, und `mannschaftsteile()` (Vorschau)
-   legt Noten-Werte gar nicht an — unter Volllast HEAD 531, neu 541 ms je
-   Saison, 3000 Begegnungen 268–282 gegen 276–309 ms.
-3. **M0.6 gebaut, nicht committet:** `daten.js` mit den Formen (Verein,
-   Spieler, Taktik, Manager, Karrierezustand, Platzspieler, Seite, Spiel,
-   Ereignis, Zufall); `// @ts-check` in allen Dateien außer welt, ablauf,
-   zuege, sicht (`OFFEN_SERVER` im Wächter, Grund: `this` in den
-   Teilklassen; gezählt rund 250 Meldungen). `GanzeKarriere` in
-   `karriere.js` = Zustand & vier Teile, `Karriere` dort entsprechend
-   gecastet — wer eine Karriere von außen bekommt (netz, spielstaende), ist
-   geprüft. **Falle:** ein Objekt, das in JS später ein Feld bekommt, darf
-   jedes Feld tragen — `seite.wechsl` fiel erst mit `@type {Seite}` auf.
-   Zwei Gegenproben (spieltag, finanzen) fallen. `welt.js` ohne Änderung:
-   Klassenfelder würden die Schlüsselreihenfolge von `sichern()` verschieben.
-   Danach M0.7 (`public/manager.js` in Module),
-   dann M1 (Spieltag live; Halbzeit bei 1366 × 768 ganz sichtbar, Tore im
+1. M0.4 ist `2048878`, M0.5 `1756ccd` (spieltag AC-26), M0.6 `78f24f0`
+   (`daten.js` mit den Formen, `// @ts-check` außer welt, ablauf, zuege,
+   sicht — `OFFEN_SERVER`, Grund `this` in den Teilklassen). Einzelheiten
+   in den Commit-Texten. **Falle aus M0.6:** ein Objekt, das in JS später
+   ein Feld bekommt, darf jedes Feld tragen — erst `@type` fängt Tippfehler.
+2. **M0.7 ist `107844e` und `88e734c`.** Runde 1: `public/manager.js`
+   (1523 Zeilen) ist `public/manager/` — `kern.js` (Zustand `lage`,
+   Anfragen, Blattwechsel über `BLAETTER`, Kopf, Tasten, Dialog, Meldung),
+   `teile.js` (Spielerzeile, Geld, Balken, Text), je Blatt ein Modul,
+   `start.js` als Einstieg. Alle mit `// @ts-check`, `manager.js` nicht
+   mehr in `OFFEN`; der Wächter liest Unterordner von `public/` und prüft
+   mit `tsc --listFilesOnly`, dass `public/tsconfig.json` sie aufnimmt.
+   **Module haben keine globalen Namen:** der Browserlauf greift über
+   `window.managerspiel` (`kennung`, `oeffnen`). Runde 2: `form()` und
+   `eignung()` rechnet der Server — `sicht.spielerZeigen` schickt `form`
+   und `eignung` je Platz des gewählten Systems, `verein.plaetze` die
+   Plätze; Eignungstabelle, Plätze aller Systeme und `laufbahn` je Spieler
+   fallen weg (aufstellung AC-25, neuer Test). **Antwort eines Zugs:**
+   zu Beginn 30,9 → 29,9 KB, nach 15 Terminen 55,2 → 54,2 KB, Saison 4
+   81,9 → 80,0 KB (gzip 4,3/8,8/12,5 → 4,2/8,5/12,0). Gleichstand
+   unverändert, `check` grün (1102 + 17), Managerfälle im Browser 49/49,
+   Managerbilder höchstens 0,01 % (nur die Millisekunden im Kopf) — nicht
+   eingecheckt. **Offen:** der ganze Browserlauf war unter fremder Last
+   nicht grün (337 von 351, sechs Strategiefälle, beim Wiederholen andere)
+   — mit den Managermodulen hat keiner etwas zu tun, sauber wiederholt ist
+   er nicht. `kader.eignungstabelle()` hat keinen Leser mehr.
+3. Danach M1 (Spieltag live; Halbzeit bei 1366 × 768 ganz sichtbar, Tore im
    Verlaufsband lesbar, Halbzeitzeile leiser, Vereinsfarben als Akzent).
 
 ## Für M3 vorgemerkt
