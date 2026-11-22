@@ -26,6 +26,8 @@ const FLIEGER = Object.keys(EINHEITEN).filter((art) => EINHEITEN[art].fliegt);
 // So lange liegt ein Toter noch im Bild, bevor er aus dem Zustand faellt
 // (kampf AC-10): lang genug, um zu sehen, was passiert ist.
 const TOT_SEKUNDEN = 2;
+// Die Grenze eines Gebaeudes in Worten (bauen AC-51, AC-57).
+const MALE = ['', 'einmal', 'zweimal', 'dreimal'];
 // So viele Ziele haengt Umschalt hoechstens an einen Gang (bedienung AC-14):
 // eine Grenze, damit ein Zustand nicht mit jedem Klick waechst (ADR-0005).
 const WEGPUNKTE_MAX = 20;
@@ -806,6 +808,13 @@ class Welt {
     return GEBAEUDE[art].zeitalter || 0;
   }
 
+  // Ab wann ein Dorfbewohner es bauen kann: sein Zeitalter, oder spaeter,
+  // wenn die Daten es sagen - das zweite Dorfzentrum erst in der Krone
+  // (bauen AC-57). Zum Aufstieg zaehlt weiter `gebaeudeZeitalter`.
+  bauZeitalter(art) {
+    return Math.max(this.gebaeudeZeitalter(art), GEBAEUDE[art].bauenAb || 0);
+  }
+
   /**
    * Fertige eigene Gebaeude des laufenden Zeitalters, ausser denen mit
    * `zumAufstieg: false` (Haeuser, Tuerme, Mauern) - die Voraussetzung des
@@ -1324,14 +1333,18 @@ class Welt {
     if (!bauer.length) return { fehler: 'Niemand in der Auswahl kann das bauen.' };
     const spieler = this.spielerVon(spielerId);
     // Erst das Zeitalter, dann der Platz (bauen AC-24).
-    const noetig = this.gebaeudeZeitalter(art);
+    const noetig = this.bauZeitalter(art);
     if (noetig > spieler.zeitalter) {
+      // Was es schon gibt, nur noch nicht zu bauen (bauen AC-57): das
+      // Dorfzentrum steht seit dem Anfang.
+      if (noetig > this.gebaeudeZeitalter(art)) return { fehler: `${GEBAEUDE_NAMEN[art] || art} lässt sich erst ${ZEITALTER[noetig].ab} bauen.` };
       return { fehler: `${GEBAEUDE_NAMEN[art] || art} gibt es erst ${ZEITALTER[noetig].ab}.` };
     }
-    // Hoechstens so viele je Spieler (bauen AC-51) - die Baustelle zaehlt mit.
+    // Hoechstens so viele je Spieler (bauen AC-51) - die Baustelle zaehlt mit,
+    // beim Dorfzentrum auch das erste (bauen AC-57).
     const grenze = GEBAEUDE[art].hoechstens;
     if (grenze && [...this.gebaeude.values()].filter((g) => g.besitzer === spielerId && g.art === art).length >= grenze) {
-      return { fehler: `${GEBAEUDE_NAMEN[art] || art} gibt es nur ${grenze === 1 ? 'einmal' : `${grenze}-mal`} je Spieler.` };
+      return { fehler: `${GEBAEUDE_NAMEN[art] || art} gibt es nur ${MALE[grenze] || `${grenze}-mal`} je Spieler.` };
     }
     const x = Math.round(Number(ziel.x));
     const y = Math.round(Number(ziel.y));
@@ -1375,7 +1388,7 @@ class Welt {
       .filter((e) => e && e.besitzer === spielerId && (EINHEITEN[e.art].baut || []).includes(art));
     if (!bauer.length) return { fehler: 'Niemand in der Auswahl kann das bauen.' };
     const spieler = this.spielerVon(spielerId);
-    const noetig = this.gebaeudeZeitalter(art);
+    const noetig = this.bauZeitalter(art);
     if (noetig > spieler.zeitalter) {
       return { fehler: `${GEBAEUDE_NAMEN[art] || art} gibt es erst ${ZEITALTER[noetig].ab}.` };
     }
@@ -6053,6 +6066,9 @@ class Welt {
           // Ein Tor laesst Eigene durch und darf auf die eigene Mauer (bauen AC-31).
           tor: Boolean(w.tor), ersetzt: w.ersetzt || null,
           zeitalter: w.zeitalter || 0,
+          // Das zweite Dorfzentrum erst in der Krone, hoechstens zwei (bauen
+          // AC-57): das Baumenue zeigt es erst dann, die Tafel nennt die Grenze.
+          bauenAb: w.bauenAb || 0, hoechstens: w.hoechstens || 0,
           // Acht Felder ueber den Rand (kampf AC-11, AC-15).
           sicht: w.sicht,
           // Ein Turm zeigt an der Auswahl, was er kann (bauen AC-29).

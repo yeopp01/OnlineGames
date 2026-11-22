@@ -453,6 +453,7 @@ immer nur ein Prozess.
 | F11 | Das Wunder und der Sieg nach zehn Minuten | bauen AC-51, spielziel AC-29 |
 | F12 | Die KI in der Krone: steigt auf, erforscht, geht aufs Wunder, holt Eier und ruft | ki AC-35, AC-39, AC-40, AC-29 |
 | F13 | Die Krone am Stück im Browser; die große Partie bleibt flüssig — **fertig** (2026-11-22) | fahrplan AC-19, AC-20 |
+| F14 | Zweites Dorfzentrum (Punkt 39): in der Krone eines mehr, höchstens zwei, im Baumenü bei der Wirtschaft (bedienung AC-64 geändert) — **fertig** (2026-11-22) | bauen AC-57 |
 
 **Was Stufe F nicht hereinholt.** Die zweite Stufe für das Schwert
 (Champion; der Paladin ist seit dem 2026-11-18 dabei, einheiten AC-66),
