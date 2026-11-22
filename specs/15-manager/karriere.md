@@ -2,7 +2,7 @@
 
 **Bereich:** Manager
 **Kuerzel:** karriere
-**Stand:** 25/26 fertig · 1 offen
+**Stand:** 26/27 fertig · 1 offen
 
 ## Zweck
 
@@ -97,7 +97,16 @@ anmelden → Verein wählen → [ aufstellen · Taktik · Transfer · Verträge 
   der Fassung 2, noch ohne Positionen, lädt weiter: jeder Spieler bekommt eine
   Stammposition, so wie ein Neuer im Verein, die Stärksten zuerst; die
   gemerkte Aufstellung fällt weg. Beim nächsten Schreiben ist er einer der
-  Fassung 3.
+  jetzigen Fassung.
+- **AC-29** `fertig` **Manager stehen als Liste** — Die Welt gehört
+  niemandem: was einem Menschen gehört — Verein, Vorstand, Post, Buch,
+  Angebote, Stellen —, steht in seinem Eintrag in `manager[]` (Fassung 4),
+  jeder Zug und jede Ansicht nennt den Manager, und Post und Buchungen gehen
+  an den Manager des betroffenen Vereins. Ein Spielstand der Fassung 3 wird
+  angehoben und läuft danach genau so weiter wie vorher; eine Welt ohne
+  Menschen hat eine leere Liste. Am Bildschirm ändert sich nichts — der
+  Anfrageweg kennt weiter genau einen Menschen je Spielstand
+  (→ [Plan](../../docs/manager/plan.md) M0.4).
 
 ### Der Anfrageweg
 

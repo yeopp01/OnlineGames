@@ -1257,6 +1257,11 @@
       "begruendung": "Braucht einen Spielstand aus einer anderen Fassung in der Datenbank. Der Test aendert die Fassung direkt; ueber die Oberflaeche entsteht er erst mit dem naechsten Update."
     },
     {
+      "spec": "15-manager/karriere.md",
+      "ac": "AC-29",
+      "begruendung": "Eine Zusage ueber die Bauart des Spielstands, nicht ueber das Bild: die Manager stehen als Liste darin, jeder Zug nennt seinen Manager, und ein Stand der Fassung 3 laeuft nach dem Anheben genau so weiter wie vorher. Fuer den einen Menschen aendert sich am Bildschirm nichts - das ist der Sinn des Umbaus; die Oberflaeche ist dieselbe, die die Bilder zu oberflaeche AC-1 und folgenden zeigen. Belegt mit dem gesicherten Stand vor und nach dem Anheben und einem Waechter ueber den Quelltext."
+    },
+    {
       "spec": "15-manager/spielziel.md",
       "ac": "AC-15",
       "begruendung": "Dass keine Einstellung fuer jeden die beste ist, zeigt nur ein Vergleich vieler Spiele mit verschiedenen Einstellungen. Die Regler selbst zeigt das Bild zu aufstellung AC-21."

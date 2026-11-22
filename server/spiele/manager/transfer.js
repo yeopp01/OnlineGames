@@ -81,11 +81,11 @@ const SORTIERUNG = {
  * Vereinslosen, mit Forderung und der Antwort, ob sie kommen wuerden. Wer den
  * Mindestbestand seines Vereins haelt, steht gar nicht erst drin.
  *
+ * @param {object|null} eigener  der Verein, der fragt - fuer "wuerde kommen"
  * @param {object} filter  position, liga ('1', '2', 'frei'), maxAlter,
  *   minStaerke, maxPreis, sortierung, anzahl
  */
-function marktliste(welt, filter = {}) {
-  const eigener = welt.vereine.find((v) => v.id === welt.vereinId);
+function marktliste(welt, eigener, filter = {}) {
   const liste = [];
   const aufnehmen = (spieler, verein) => {
     const wert = marktwert(spieler);
@@ -113,7 +113,7 @@ function marktliste(welt, filter = {}) {
     });
   };
   for (const verein of welt.vereine) {
-    if (verein.id === welt.vereinId) continue;
+    if (verein === eigener) continue;
     if (filter.liga === 'frei') continue;
     if (filter.liga && String(verein.liga) !== String(filter.liga)) continue;
     for (const spieler of verein.spieler) {
@@ -267,7 +267,7 @@ function kiTransfers(welt, zufall, { verstaerkung = 0.3 } = {}) {
   kiSparen(welt);
   const wechsel = [];
   const reihenfolge = welt.vereine
-    .filter((v) => v.id !== welt.vereinId)
+    .filter((v) => !welt.menschFuehrt(v.id))
     .map((v) => ({ v, los: zufall() }))
     .sort((a, b) => a.los - b.los)
     .map(({ v }) => v);
@@ -296,7 +296,7 @@ function kiTransfers(welt, zufall, { verstaerkung = 0.3 } = {}) {
     }
     if (budget > 0) {
       for (const anderer of welt.vereine) {
-        if (anderer === verein || anderer.id === welt.vereinId || anderer.spieler.length <= 18) continue;
+        if (anderer === verein || welt.menschFuehrt(anderer.id) || anderer.spieler.length <= 18) continue;
         for (const spieler of anderer.spieler) {
           // Wer auf der Liste steht, ist auch mit 32 noch zu haben und muss
           // nur besser sein als der Schwaechste der Stammelf.
@@ -343,7 +343,7 @@ function kiTransfers(welt, zufall, { verstaerkung = 0.3 } = {}) {
  */
 function kiVertraege(welt, zufall) {
   for (const verein of welt.vereine) {
-    if (verein.id === welt.vereinId) continue;
+    if (welt.menschFuehrt(verein.id)) continue;
     const vereinsniveau = niveau(verein);
     // Wer im Minus steht, behaelt nur, wen er wirklich braucht.
     const klamm = verein.konto < 0;
@@ -371,7 +371,7 @@ function kiVertraege(welt, zufall) {
  */
 function kiSparen(welt) {
   for (const verein of welt.vereine) {
-    if (verein.id === welt.vereinId) continue;
+    if (welt.menschFuehrt(verein.id)) continue;
     if (verein.konto >= 0) {
       for (const spieler of verein.spieler) spieler.transferliste = null;
       continue;

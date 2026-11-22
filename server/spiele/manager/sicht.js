@@ -13,10 +13,17 @@ const { terminTitel, fensterOffen, fensterText } = require('./kalender');
 const { mannschaftsteile, AUSRICHTUNGEN } = require('./spieltag');
 const { TERMINE } = require('./welt');
 
+// Wer ohne Manager schaut - eine Welt, in der kein Mensch einen Verein fuehrt.
+const OHNE_MANAGER = {
+  managerId: null, name: null, vereinId: null, status: 'laeuft', stellen: [], vorstand: null, sponsorAngebote: [],
+  angebote: [], nachrichten: [], buch: [], kasse: null, vorjahr: null, zuletzt: null, entwicklungen: [],
+};
+
 class Sicht {
   // ------------------------------------------------------------ Berichte
 
-  paarungZeigen(p) {
+  /** @param {(vereinId: string) => boolean} eigen  wessen Spiel als eigenes gilt */
+  paarungZeigen(p, eigen = (id) => this.menschFuehrt(id)) {
     return {
       heim: p.heim,
       gast: p.gast,
@@ -26,18 +33,20 @@ class Sicht {
       sieger: p.sieger ?? null,
       verlaengerung: Boolean(p.verlaengerung),
       elfmeter: p.elfmeter ?? null,
-      eigenes: p.heim === this.vereinId || p.gast === this.vereinId,
+      eigenes: eigen(p.heim) || eigen(p.gast),
     };
   }
 
-  markt(filter) {
-    return { ...transfer.marktliste(this, filter), fenster: { offen: fensterOffen(TERMINE[this.termin]), text: fensterText(TERMINE[this.termin]) } };
+  markt(managerId, filter) {
+    const manager = this.managerMit(managerId);
+    const eigener = manager ? this.vereinVon(manager.vereinId) : null;
+    return { ...transfer.marktliste(this, eigener, filter), fenster: { offen: fensterOffen(TERMINE[this.termin]), text: fensterText(TERMINE[this.termin]) } };
   }
 
   // ---------------------------------------------------- Fuer den Browser
 
-  eigenesSpielAm(termin) {
-    const eigener = this.verein;
+  eigenesSpielAm(vereinId, termin) {
+    const eigener = this.vereinVon(vereinId);
     if (!eigener) return null;
     const zeigen = (p) => {
       const daheim = p.heim === eigener.id;
@@ -71,10 +80,11 @@ class Sicht {
    * Einschaetzung folgt derselben Regel, mit der sich die anderen Vereine auf
    * ihren Gegner einstellen (→ kiTaktik).
    */
-  vorschau() {
-    const eigener = this.verein;
+  vorschau(managerId) {
+    const manager = this.managerMit(managerId);
+    const eigener = manager ? this.vereinVon(manager.vereinId) : null;
     const termin = TERMINE[this.termin];
-    const spiel = eigener && this.eigenesSpielAm(termin);
+    const spiel = eigener && this.eigenesSpielAm(eigener.id, termin);
     const gegner = spiel && spiel.gegnerId ? this.vereinVon(spiel.gegnerId) : null;
     if (!gegner) return null;
     const neutral = termin.art === 'pokal' && termin.runde === pokal.RUNDEN.length;
@@ -228,22 +238,24 @@ class Sicht {
     };
   }
 
-  tabelleZeigen(nummer) {
+  tabelleZeigen(nummer, vereinId = null) {
     return liga.sortiert(this.tabellen[nummer]).map((z, i) => ({
       platz: i + 1,
       ...z,
       wertung: liga.wertung(z),
       zone: nummer === 1 ? (i === 0 ? 'meister' : i >= 18 - liga.AUF_UND_AB ? 'abstieg' : null) : (i < liga.AUF_UND_AB ? 'aufstieg' : null),
-      eigenes: z.id === this.vereinId,
+      eigenes: z.id === vereinId,
     }));
   }
 
   /** Was der Browser zu sehen bekommt: der eigene Verein ganz, die Welt im Ueberblick. */
-  zustand() {
-    const eigener = this.verein;
+  zustand(managerId) {
+    const m = this.managerMit(managerId) || OHNE_MANAGER;
+    const eigener = this.vereinVon(m.vereinId);
+    const eigen = (id) => id === m.vereinId;
     const termin = TERMINE[this.termin];
     const kalender = TERMINE.map((t, i) => ({
-      index: i, titel: terminTitel(t), art: t.art, erledigt: i < this.termin, spiel: this.eigenesSpielAm(t),
+      index: i, titel: terminTitel(t), art: t.art, erledigt: i < this.termin, spiel: this.eigenesSpielAm(m.vereinId, t),
     }));
     const torjaeger = (nummer) => Object.values(this.torjaeger[nummer])
       .sort((a, b) => b.tore - a.tore || a.name.localeCompare(b.name)).slice(0, 20);
@@ -251,16 +263,16 @@ class Sicht {
 
     return {
       fassung: this.fassung,
-      name: this.name,
+      name: m.name,
       startwert: this.startwert,
       saison: this.saison,
-      status: this.status,
+      status: m.status,
       termin: { index: this.termin, titel: terminTitel(termin), art: termin.art },
       naechster: kalender[this.termin],
-      vorschau: this.vorschau(),
+      vorschau: this.vorschau(managerId),
       kalender,
       fenster: { offen: fensterOffen(termin), text: fensterText(termin) },
-      stellen: this.stellen.map((id) => {
+      stellen: m.stellen.map((id) => {
         const v = this.vereinVon(id);
         return { id, name: v.name, liga: v.liga, niveau: Math.round(kader.niveau(v)), reputation: v.reputation };
       }),
@@ -268,7 +280,7 @@ class Sicht {
         id: eigener.id,
         name: eigener.name,
         liga: eigener.liga,
-        platz: this.platz(),
+        platz: this.platz(eigener.id),
         konto: eigener.konto,
         reputation: eigener.reputation,
         niveau: Math.round(kader.niveau(eigener)),
@@ -289,25 +301,25 @@ class Sicht {
         fernsehgeld: finanzen.fernsehgeld(eigener),
         spieler: eigener.spieler.map((s) => this.spielerZeigen(s)),
       },
-      vorstand: this.vorstand,
-      sponsorAngebote: this.sponsorAngebote,
+      vorstand: m.vorstand,
+      sponsorAngebote: m.sponsorAngebote,
       ausbau: finanzen.AUSBAU,
-      kasse: this.kasse,
-      vorjahr: this.vorjahr,
-      angebote: this.angebote,
-      tabellen: { 1: this.tabelleZeigen(1), 2: this.tabelleZeigen(2) },
+      kasse: m.kasse,
+      vorjahr: m.vorjahr,
+      angebote: m.angebote,
+      tabellen: { 1: this.tabelleZeigen(1, m.vereinId), 2: this.tabelleZeigen(2, m.vereinId) },
       torjaeger: { 1: torjaeger(1), 2: torjaeger(2) },
       pokal: {
         aktuell: this.pokal.aktuell,
         sieger: this.pokal.sieger ? this.vereinVon(this.pokal.sieger).name : null,
-        runden: this.pokal.runden.map((r) => ({ name: r.name, paarungen: r.paarungen.map((p) => this.paarungZeigen(p)) })),
+        runden: this.pokal.runden.map((r) => ({ name: r.name, paarungen: r.paarungen.map((p) => this.paarungZeigen(p, eigen)) })),
       },
-      nachrichten: this.nachrichten.slice(-80).reverse(),
-      buch: this.buch.slice(-80).reverse(),
+      nachrichten: m.nachrichten.slice(-80).reverse(),
+      buch: m.buch.slice(-80).reverse(),
       ticker: this.ticker.slice(0, 25),
       historie: this.historie.slice(0, 10),
-      zuletzt: this.zuletzt,
-      entwicklungen: this.entwicklungen || [],
+      zuletzt: m.zuletzt,
+      entwicklungen: m.entwicklungen || [],
       systeme: kader.SYSTEME_NAMEN,
       plaetze: kader.PLAETZE,
       rollen: kader.ROLLEN,
@@ -318,10 +330,10 @@ class Sicht {
   }
 
   /** Ein anderer Verein, wie ihn ein Beobachter sieht: Kader, Werte, Preise. */
-  vereinAnsicht(vereinId) {
+  vereinAnsicht(managerId, vereinId) {
     const verein = this.vereinVon(vereinId);
     if (!verein) return { fehler: 'Diesen Verein gibt es nicht.' };
-    const fremd = verein.id !== this.vereinId;
+    const fremd = verein.id !== this.managerMit(managerId)?.vereinId;
     return {
       id: verein.id,
       name: verein.name,

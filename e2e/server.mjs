@@ -55,20 +55,23 @@ if (!antwort.ok) {
 // Stunden entstehen - ein Verletzter, ein Vorstand ohne Geduld. Sie aendern
 // einen offenen Spielstand direkt und schreiben ihn zurueck. Es gibt sie nur
 // in diesem Testserver, auf einem eigenen Hafen; der Spielserver kennt sie nicht.
+// Ein Spielstand hat bisher genau einen Menschen (karriere AC-29).
+const ich = (k) => k.manager[0];
+const eigen = (k) => k.vereinVon(k.manager[0].vereinId);
 const GRIFFE = {
-  vertrauen: (k, { wert }) => { k.vorstand.vertrauen = wert; },
-  konto: (k, { wert }) => { k.verein.konto = wert; },
+  vertrauen: (k, { wert }) => { ich(k).vorstand.vertrauen = wert; },
+  konto: (k, { wert }) => { eigen(k).konto = wert; },
   // Ein Feldspieler mit dem laengsten Vertrag wird so alt, dass er sicher aufhoert.
   altern: (k, { alter = 35 }) => {
-    const spieler = k.verein.spieler
-      .filter((s) => s.position !== 'TOR' && !(k.verein.aufstellung?.ids || []).includes(s.id))
+    const spieler = eigen(k).spieler
+      .filter((s) => s.position !== 'TOR' && !(eigen(k).aufstellung?.ids || []).includes(s.id))
       .sort((a, b) => (b.vertrag?.bis ?? 0) - (a.vertrag?.bis ?? 0))[0];
     spieler.alter = alter;
     return { spieler: spieler.name };
   },
   verletzen: (k, { position = 'MIT', wochen = 3 }) => {
-    const spieler = k.verein.spieler
-      .filter((s) => s.position === position && !(k.verein.aufstellung?.ids || []).includes(s.id))
+    const spieler = eigen(k).spieler
+      .filter((s) => s.position === position && !(eigen(k).aufstellung?.ids || []).includes(s.id))
       .sort((a, b) => b.staerke - a.staerke)[0];
     spieler.verletzt = wochen;
     return { spieler: spieler.name };

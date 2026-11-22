@@ -7,9 +7,9 @@ Eine Zeile je Abnahmekriterium. Gepflegt wird der Status in der Spec selbst,
 hier steht er zusammengefasst. Erzeugt mit `npm run specs:board`; als Seite
 mit Bildnachweisen, Filter und Suche mit `npm run qa:report`.
 
-**Gesamt:** 612/718 fertig · 3 in Arbeit · 15 in QA · 3 geplant · 77 offen · 8 zurueckgestellt
+**Gesamt:** 613/719 fertig · 3 in Arbeit · 15 in QA · 3 geplant · 77 offen · 8 zurueckgestellt
 
-**Nachweise:** 331 Kriterien mit Bild · 290 ohne Bild, begruendet in `qa/ohne-bild.json`
+**Nachweise:** 331 Kriterien mit Bild · 291 ohne Bild, begruendet in `qa/ohne-bild.json`
 
 ## Nach Spezifikation
 
@@ -34,7 +34,7 @@ mit Bildnachweisen, Filter und Suche mit `npm run qa:report`.
 | [Bedienung des Managerspiels](15-manager/bedienung.md)         | -         | -     | -       | -     | -               | 16     |
 | [Finanzen](15-manager/finanzen.md)                             | -         | -     | -       | -     | -               | 16     |
 | [Kader und Spieler](15-manager/kader.md)                       | -         | 1     | -       | -     | -               | 21     |
-| [Karriere: Saison um Saison](15-manager/karriere.md)           | -         | -     | -       | 1     | -               | 25     |
+| [Karriere: Saison um Saison](15-manager/karriere.md)           | -         | -     | -       | 1     | -               | 26     |
 | [Liga und Saison](15-manager/liga.md)                          | -         | -     | -       | -     | -               | 18     |
 | [Pokal](15-manager/pokal.md)                                   | -         | -     | -       | -     | -               | 8      |
 | [Prüfstand](15-manager/pruefstand.md)                          | -         | -     | -       | -     | -               | 1      |

@@ -46,34 +46,34 @@ function koerperLesen(anfrage) {
 const ganzeZahl = (wert) => (Number.isInteger(wert) ? wert : null);
 const zahlOderNichts = (wert) => (wert === undefined || wert === null || wert === '' ? undefined : Number(wert));
 
-// Die Zuege. Jeder bekommt die Karriere und die Nachricht und gibt zurueck,
-// was geschah - oder den Satz, warum nicht.
+// Die Zuege. Jeder bekommt die Karriere, die Nachricht und den Manager, der
+// zieht, und gibt zurueck, was geschah - oder den Satz, warum nicht.
 const ZUEGE = {
   weiter: (k) => k.weiter(),
   vorspulen: (k, n) => k.vorspulen({ anzahl: ganzeZahl(n.anzahl), bis: typeof n.bis === 'string' ? n.bis : null }),
-  taktik: (k, n) => k.taktikSetzen({
+  taktik: (k, n, m) => k.taktikSetzen(m, {
     system: typeof n.system === 'string' ? n.system : undefined,
     ausrichtung: zahlOderNichts(n.ausrichtung),
     haerte: zahlOderNichts(n.haerte),
     pressing: zahlOderNichts(n.pressing),
   }),
-  aufstellung: (k, n) => {
-    if (Array.isArray(n.ids)) return k.aufstellen(n.ids.map(String), String(n.system || k.verein?.taktik.system));
-    return n.frei ? k.aufstellungFreigeben() : k.aufstellenAutomatisch();
+  aufstellung: (k, n, m) => {
+    if (Array.isArray(n.ids)) return k.aufstellen(m, n.ids.map(String), n.system ? String(n.system) : undefined);
+    return n.frei ? k.aufstellungFreigeben(m) : k.aufstellenAutomatisch(m);
   },
-  wechselregel: (k, n) => k.wechselregelSetzen(n.regel),
-  training: (k, n) => k.trainingSetzen(Number(n.wert)),
-  schwerpunkt: (k, n) => k.schwerpunktSetzen(String(n.schwerpunkt)),
-  eintritt: (k, n) => k.eintrittSetzen(Number(n.preis)),
-  sponsor: (k, n) => k.sponsorWaehlen(String(n.id)),
-  stadion: (k, n) => k.stadionAusbauen(Number(n.stufe)),
-  kaufen: (k, n) => k.kaufen(String(n.spielerId), Number(n.gebot), Number(n.laufzeit)),
-  verlaengern: (k, n) => k.verlaengern(String(n.spielerId), Number(n.laufzeit)),
-  freistellen: (k, n) => k.spielerFreistellen(String(n.spielerId)),
-  transferliste: (k, n) => k.transferlisteSetzen(String(n.spielerId), Boolean(n.an)),
-  annehmen: (k, n) => k.angebotAnnehmen(String(n.angebotId)),
-  ablehnen: (k, n) => k.angebotAblehnen(String(n.angebotId)),
-  stelle: (k, n) => k.stelleAntreten(String(n.vereinId)),
+  wechselregel: (k, n, m) => k.wechselregelSetzen(m, n.regel),
+  training: (k, n, m) => k.trainingSetzen(m, Number(n.wert)),
+  schwerpunkt: (k, n, m) => k.schwerpunktSetzen(m, String(n.schwerpunkt)),
+  eintritt: (k, n, m) => k.eintrittSetzen(m, Number(n.preis)),
+  sponsor: (k, n, m) => k.sponsorWaehlen(m, String(n.id)),
+  stadion: (k, n, m) => k.stadionAusbauen(m, Number(n.stufe)),
+  kaufen: (k, n, m) => k.kaufen(m, String(n.spielerId), Number(n.gebot), Number(n.laufzeit)),
+  verlaengern: (k, n, m) => k.verlaengern(m, String(n.spielerId), Number(n.laufzeit)),
+  freistellen: (k, n, m) => k.spielerFreistellen(m, String(n.spielerId)),
+  transferliste: (k, n, m) => k.transferlisteSetzen(m, String(n.spielerId), Boolean(n.an)),
+  annehmen: (k, n, m) => k.angebotAnnehmen(m, String(n.angebotId)),
+  ablehnen: (k, n, m) => k.angebotAblehnen(m, String(n.angebotId)),
+  stelle: (k, n, m) => k.stelleAntreten(m, String(n.vereinId)),
 };
 
 // Zuege, die viel rechnen koennen, gehen durch die engere Bremse.
@@ -157,7 +157,7 @@ function manager({ schutz, adresseVon, db, sitzung }) {
       const name = typeof n.name === 'string' && n.name.trim() ? n.name.trim().slice(0, 40) : 'Neue Karriere';
       const angelegt = staende.anlegen(konto, { startwert, vereinId: typeof n.vereinId === 'string' ? n.vereinId : null, name });
       if (angelegt.fehler) return fehlerhaft(antwort, angelegt.fehler, 409);
-      return antworten(antwort, 200, { id: angelegt.id, zustand: angelegt.karriere.zustand() });
+      return antworten(antwort, 200, { id: angelegt.id, zustand: angelegt.karriere.zustand(angelegt.karriere.manager[0]?.managerId) });
     }
 
     const id = teile[1];
@@ -165,6 +165,9 @@ function manager({ schutz, adresseVon, db, sitzung }) {
     if (!geoeffnet) return fehlerhaft(antwort, 'Diesen Spielstand gibt es nicht.', 404);
     if (geoeffnet.fehler) return fehlerhaft(antwort, geoeffnet.fehler, 409);
     const { karriere } = geoeffnet;
+    // Ein Spielstand hat bisher genau einen Menschen (M0.4: die Welt kennt
+    // schon mehrere, der Anfrageweg noch nicht).
+    const managerId = karriere.manager[0]?.managerId ?? null;
     const was = teile[2];
 
     if (methode === 'DELETE' && !was) {
@@ -172,14 +175,14 @@ function manager({ schutz, adresseVon, db, sitzung }) {
       return antworten(antwort, 200, { ok: true });
     }
     if (methode === 'GET') {
-      if (!was) return antworten(antwort, 200, { id, zustand: karriere.zustand() });
-      if (was === 'markt') return antworten(antwort, 200, { markt: karriere.markt(marktFilter(url.searchParams)) });
+      if (!was) return antworten(antwort, 200, { id, zustand: karriere.zustand(managerId) });
+      if (was === 'markt') return antworten(antwort, 200, { markt: karriere.markt(managerId, marktFilter(url.searchParams)) });
       if (was === 'spieler' && teile[3]) {
         const akte = karriere.spielerAkte(teile[3]);
         return akte.fehler ? fehlerhaft(antwort, akte.fehler, 404) : antworten(antwort, 200, { spieler: akte });
       }
       if (was === 'verein' && teile[3]) {
-        const ansicht = karriere.vereinAnsicht(teile[3]);
+        const ansicht = karriere.vereinAnsicht(managerId, teile[3]);
         return ansicht.fehler ? fehlerhaft(antwort, ansicht.fehler, 404) : antworten(antwort, 200, { verein: ansicht });
       }
       return fehlerhaft(antwort, 'Unbekannte Abfrage.', 404);
@@ -191,11 +194,11 @@ function manager({ schutz, adresseVon, db, sitzung }) {
     if (TEUER.has(was) && !schutz.rechnenErlaubt(adresse)) {
       return fehlerhaft(antwort, 'Zu viele Berechnungen. Bitte kurz warten.', 429);
     }
-    const ergebnis = zug(karriere, n) || {};
+    const ergebnis = zug(karriere, n, managerId) || {};
     if (!ergebnis.fehler) staende.schreiben(konto, id, karriere);
     // Immer den ganzen Zustand zurueck: der Browser soll nicht raten muessen,
     // was ein Zug alles bewegt hat.
-    return antworten(antwort, ergebnis.fehler ? 400 : 200, { ...ergebnis, zustand: karriere.zustand() });
+    return antworten(antwort, ergebnis.fehler ? 400 : 200, { ...ergebnis, zustand: karriere.zustand(managerId) });
   }
 
   return {

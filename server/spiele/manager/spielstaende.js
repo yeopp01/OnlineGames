@@ -20,6 +20,10 @@ const LEERLAUF_MS = 30 * 60 * 1000;
 // Vorlesen. Erraten hilft ohnehin nicht: geoeffnet wird nur am eigenen Konto.
 const kennung = () => randomBytes(12).toString('base64url');
 
+// Ein Spielstand gehoert einem Konto und hat bisher genau einen Menschen -
+// sein Verein steht in der Liste der Spielstaende.
+const eigenerVerein = (karriere) => karriere.vereinVon(karriere.manager[0]?.vereinId);
+
 class Spielstaende {
   constructor(db, uhr = () => Date.now()) {
     this.db = db;
@@ -55,13 +59,14 @@ class Spielstaende {
     const { anzahl } = this.db.prepare('SELECT COUNT(*) AS anzahl FROM manager_spielstand WHERE konto = ?').get(konto);
     if (anzahl >= JE_KONTO) return { fehler: `Mehr als ${JE_KONTO} Spielstände je Konto gehen nicht. Lösche einen alten.` };
     const karriere = Karriere.neu({ startwert, vereinId, name });
-    if (!karriere.verein) return { fehler: 'Diesen Verein gibt es nicht.' };
+    const verein = eigenerVerein(karriere);
+    if (!verein) return { fehler: 'Diesen Verein gibt es nicht.' };
     const id = kennung();
     const jetzt = this.uhr();
     this.db.prepare(`
       INSERT INTO manager_spielstand (id, konto, name, verein, liga, saison, datum, fassung, daten, angelegt, geändert)
       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`)
-      .run(id, konto, name, karriere.verein.name, karriere.verein.liga, karriere.saison,
+      .run(id, konto, name, verein.name, verein.liga, karriere.saison,
         terminTitel(karriere.termine[karriere.termin]), FASSUNG, JSON.stringify(karriere.sichern()), jetzt, jetzt);
     this.offen.set(id, { konto, karriere, beruehrt: jetzt });
     this.aufraeumen();
@@ -96,7 +101,7 @@ class Spielstaende {
   }
 
   schreiben(konto, id, karriere) {
-    const verein = karriere.verein;
+    const verein = eigenerVerein(karriere);
     // Die Fassung wird mitgeschrieben: ein angehobener Stand ist danach einer der jetzigen.
     this.db.prepare(`
       UPDATE manager_spielstand SET verein = ?, liga = ?, saison = ?, datum = ?, fassung = ?, daten = ?, geändert = ?

@@ -37,7 +37,7 @@ class Ablauf {
         spieler.saison = kader.leereSaisonwerte();
         spieler.gelbe = 0;
       }
-      if (verein.id !== this.vereinId) {
+      if (!this.menschFuehrt(verein.id)) {
         verein.taktik.system = kader.bestesSystem(verein, verein.taktik.system);
         verein.aufstellung = null;
       }
@@ -51,14 +51,15 @@ class Ablauf {
     const sponsorZufall = quelle(this.startwert, this.saison, 0, ZWECK.sponsor);
     for (const verein of this.vereine) {
       const angebote = finanzen.sponsorAngebote(verein, sponsorZufall, this.saison);
-      if (verein.id === this.vereinId) this.sponsorAngebote = angebote;
+      const manager = this.managerVon(verein.id);
+      if (manager) manager.sponsorAngebote = angebote;
       else verein.sponsor = angebote[1];
     }
-    this.angebote = [];
-    if (this.verein) {
-      this.vorstand.ziel = vorstand.saisonziel(this.vereine, this.verein);
-      this.vorjahr = this.kasse && this.kasse.saison === this.saison - 1 ? this.kasse : null;
-      this.kasse = { saison: this.saison, posten: {} };
+    for (const m of this.manager) {
+      m.angebote = [];
+      m.vorstand.ziel = vorstand.saisonziel(this.vereine, this.vereinVon(m.vereinId));
+      m.vorjahr = m.kasse && m.kasse.saison === this.saison - 1 ? m.kasse : null;
+      m.kasse = { saison: this.saison, posten: {} };
     }
   }
 
@@ -67,12 +68,11 @@ class Ablauf {
    * Vorbereitung oder Saisonende. Ein Zug, ein Termin.
    */
   weiter() {
-    if (this.status === 'entlassen') return { fehler: 'Du bist entlassen. Wähle zuerst einen neuen Verein.' };
+    if (this.wartetAufStelle()) return { fehler: 'Du bist entlassen. Wähle zuerst einen neuen Verein.' };
     const termin = TERMINE[this.termin];
     const zufall = (zweck) => quelle(this.startwert, this.saison, this.termin, zweck);
     const lauf = { verletzt: new Set() };
-    const eigener = this.verein;
-    const kontoVorher = eigener ? eigener.konto : 0;
+    const kontoVorher = new Map(this.manager.map((m) => [m, this.vereinVon(m.vereinId).konto]));
 
     this.notkader(zufall(ZWECK.jugend));
     let bericht;
@@ -88,35 +88,44 @@ class Ablauf {
 
     if (termin.art === 'saisonende') {
       bericht = this.saisonWechsel();
-      this.zuletzt = { titel: terminTitel(termin), ...bericht };
-      return { ok: true, bericht: this.zuletzt };
+      return this.berichtMerken(termin, bericht);
     }
 
     if (fensterOffen(termin)) transfer.kiTransfers(this, zufall(ZWECK.transfer));
     this.termin += 1;
 
-    if (eigener && this.status === 'laeuft') {
+    // Je Manager dieselbe Quelle fuer Angebote und Stellen - mit einem
+    // Manager wie in Fassung 3. Fuer mehrere (M3) bekommt jeder seine eigene.
+    for (const m of this.manager) {
+      if (m.status !== 'laeuft') continue;
+      const eigener = this.vereinVon(m.vereinId);
       const offen = fensterOffen(TERMINE[this.termin]);
-      this.angebote = offen ? this.angebote.filter((a) => a.gueltigBis >= this.termin) : [];
+      m.angebote = offen ? m.angebote.filter((a) => a.gueltigBis >= this.termin) : [];
       if (offen) {
         for (const angebot of transfer.kiAngebote(this, eigener, zufall(ZWECK.angebote))) {
-          this.angebote = this.angebote.filter((a) => a.vereinId !== angebot.vereinId);
-          this.angebote.push(angebot);
-          this.melden('transfer', `${angebot.verein} bietet ${geld(angebot.gebot)} für ${angebot.spieler} `
+          m.angebote = m.angebote.filter((a) => a.vereinId !== angebot.vereinId);
+          m.angebote.push(angebot);
+          this.melden(m, 'transfer', `${angebot.verein} bietet ${geld(angebot.gebot)} für ${angebot.spieler} `
             + `(Marktwert ${geld(angebot.wert)}).`);
         }
       }
-      vorstand.nachKasse(this.vorstand, eigener.konto);
-      if (eigener.konto < 0 && kontoVorher >= 0) {
-        this.melden('finanzen', `Das Konto ist im Minus (${geld(eigener.konto)}). Unter ${geld(finanzen.PUNKTABZUG_GRENZE)} `
+      vorstand.nachKasse(m.vorstand, eigener.konto);
+      if (eigener.konto < 0 && kontoVorher.get(m) >= 0) {
+        this.melden(m, 'finanzen', `Das Konto ist im Minus (${geld(eigener.konto)}). Unter ${geld(finanzen.PUNKTABZUG_GRENZE)} `
           + `kostet es zur Winterpause und vor der Saison ${finanzen.PUNKTABZUG} Punkte.`);
       }
-      if (termin.art === 'liga' && vorstand.entlassen(this.vorstand, termin.nr)) {
-        this.entlassen('Nach dem Absturz in der Tabelle hat der Vorstand das Vertrauen verloren.', zufall(ZWECK.stellen));
+      if (termin.art === 'liga' && vorstand.entlassen(m.vorstand, termin.nr)) {
+        this.entlassen(m, 'Nach dem Absturz in der Tabelle hat der Vorstand das Vertrauen verloren.', zufall(ZWECK.stellen));
       }
     }
-    this.zuletzt = { titel: terminTitel(termin), ...bericht };
-    return { ok: true, bericht: this.zuletzt };
+    return this.berichtMerken(termin, bericht);
+  }
+
+  /** Der Bericht des Termins - jeder Manager sieht ihn als „zuletzt". */
+  berichtMerken(termin, bericht) {
+    const zuletzt = { titel: terminTitel(termin), ...bericht };
+    for (const m of this.manager) m.zuletzt = zuletzt;
+    return { ok: true, bericht: zuletzt };
   }
 
   /**
@@ -132,7 +141,7 @@ class Ablauf {
     if (halt && TERMINE[this.termin].art === halt) return { fehler: `${terminTitel(TERMINE[this.termin])} steht schon an.` };
     const saison = this.saison;
     let gerechnet = 0;
-    while (this.status === 'laeuft' && this.saison === saison) {
+    while (!this.wartetAufStelle() && this.saison === saison) {
       if (halt && TERMINE[this.termin].art === halt) break;
       if (!halt && gerechnet >= Math.min(anzahl, 60)) break;
       const ergebnis = this.weiter();
@@ -145,12 +154,14 @@ class Ablauf {
   // ------------------------------------------------------------ Termine
 
   vorbereitung() {
-    const eigener = this.verein;
-    if (eigener && !eigener.sponsor) {
-      eigener.sponsor = this.sponsorAngebote[1];
-      this.melden('finanzen', `Du hast keinen Sponsor gewählt - der Vorstand hat ${eigener.sponsor.name} unterschrieben.`);
+    for (const m of this.manager) {
+      const eigener = this.vereinVon(m.vereinId);
+      if (!eigener.sponsor) {
+        eigener.sponsor = m.sponsorAngebote[1];
+        this.melden(m, 'finanzen', `Du hast keinen Sponsor gewählt - der Vorstand hat ${eigener.sponsor.name} unterschrieben.`);
+      }
+      m.sponsorAngebote = [];
     }
-    this.sponsorAngebote = [];
     // Das Trainingslager: alle kommen frisch in die Saison, und das System
     // sitzt wenigstens zur Haelfte.
     for (const verein of this.vereine) {
@@ -159,7 +170,7 @@ class Ablauf {
       systeme[verein.taktik.system] = Math.max(systeme[verein.taktik.system] ?? 0, 50);
     }
     this.punktabzugPruefen('vor dem Saisonstart');
-    if (eigener) this.melden('liga', `Saison ${this.saison} beginnt. Ziel des Vorstands: ${this.vorstand.ziel.text}.`);
+    for (const m of this.manager) this.melden(m, 'liga', `Saison ${this.saison} beginnt. Ziel des Vorstands: ${m.vorstand.ziel.text}.`);
     return { art: 'vorbereitung', text: `Die Saison ${this.saison} beginnt.` };
   }
 
@@ -169,7 +180,8 @@ class Ablauf {
       // Ein erster Teil der Entwicklung - Auf- und Abwertungen warten nicht
       // bis zum Sommer.
       const eintraege = kader.entwickeln(verein, zufall, this.pflichtspiele(verein), { anteil: 0.4, altern: false });
-      if (verein.id === this.vereinId) this.entwicklungMerken('Winterpause', 'Entwicklung in der Hinrunde', eintraege);
+      const manager = this.managerVon(verein.id);
+      if (manager) this.entwicklungMerken(manager, 'Winterpause', 'Entwicklung in der Hinrunde', eintraege);
     }
     // Wer zum Saisonende aufhoert, steht jetzt fest - gerechnet mit dem Alter,
     // das er dann hat, und auch mit gueltigem Vertrag. So weiss der Manager es,
@@ -177,20 +189,21 @@ class Ablauf {
     for (const verein of this.vereine) {
       const gehen = verein.spieler.filter((s) => !s.karriereende && kader.hoertAuf({ ...s, alter: s.alter + 1 }, zufall));
       for (const s of gehen) s.karriereende = this.saison;
-      if (verein.id === this.vereinId && gehen.length) {
-        this.melden('verein', `Zum Saisonende hören auf: ${gehen.map((s) => `${s.name} (${s.alter + 1})`).join(', ')}. `
+      const manager = this.managerVon(verein.id);
+      if (manager && gehen.length) {
+        this.melden(manager, 'verein', `Zum Saisonende hören auf: ${gehen.map((s) => `${s.name} (${s.alter + 1})`).join(', ')}. `
           + 'Sie spielen die Saison zu Ende, verlängern aber nicht mehr.');
       }
     }
     this.punktabzugPruefen('zur Winterpause');
-    const eigener = this.verein;
-    if (eigener) {
+    for (const m of this.manager) {
+      const eigener = this.vereinVon(m.vereinId);
       const auslaufend = eigener.spieler.filter((s) => s.vertrag && s.vertrag.bis <= this.saison && !s.karriereende);
       if (auslaufend.length) {
-        this.melden('verein', `Zum Saisonende laufen ${auslaufend.length} Verträge aus: `
+        this.melden(m, 'verein', `Zum Saisonende laufen ${auslaufend.length} Verträge aus: `
           + `${auslaufend.map((s) => s.name).join(', ')}. Wer nicht verlängert, geht.`);
       }
-      this.melden('transfer', `Winterpause. ${fensterText({ art: 'winterpause' })}.`);
+      this.melden(m, 'transfer', `Winterpause. ${fensterText({ art: 'winterpause' })}.`);
     }
     return { art: 'winterpause', text: `Winterpause nach dem ${WINTERPAUSE_NACH}. Spieltag.` };
   }
@@ -200,7 +213,7 @@ class Ablauf {
    * dem, wonach gerechnet wurde. Das Kaderblatt zeigt die letzten vier; das
    * Postfach zaehlt, wer besser und wer schlechter wurde.
    */
-  entwicklungMerken(anlass, ueberschrift, eintraege) {
+  entwicklungMerken(manager, anlass, ueberschrift, eintraege) {
     const bericht = {
       saison: this.saison,
       anlass,
@@ -217,22 +230,23 @@ class Ablauf {
         stufe: e.stufe,
       })).sort((a, b) => (b.nachher - b.vorher) - (a.nachher - a.vorher) || b.nachher - a.nachher),
     };
-    this.entwicklungen = [bericht, ...(this.entwicklungen || [])].slice(0, 4);
+    manager.entwicklungen = [bericht, ...(manager.entwicklungen || [])].slice(0, 4);
     const zaehlen = (passt) => bericht.spieler.filter(passt).length;
     const deutlich = [...bericht.spieler].sort((a, b) => Math.abs(b.nachher - b.vorher) - Math.abs(a.nachher - a.vorher))
       .filter((e) => e.nachher !== e.vorher).slice(0, 4);
-    this.melden('verein', `${ueberschrift}: ${zaehlen((e) => e.nachher > e.vorher)} besser, ${zaehlen((e) => e.nachher < e.vorher)} schlechter, `
+    this.melden(manager, 'verein', `${ueberschrift}: ${zaehlen((e) => e.nachher > e.vorher)} besser, ${zaehlen((e) => e.nachher < e.vorher)} schlechter, `
       + `${zaehlen((e) => e.nachher === e.vorher)} unverändert - die ganze Liste steht im Kader.`
       + `${deutlich.length ? ` Am deutlichsten: ${deutlich.map((e) => `${e.name} ${e.vorher}→${e.nachher}`).join(', ')}.` : ''}`);
   }
 
   aufstellungFuer(verein) {
-    if (verein.id === this.vereinId) {
+    const manager = this.managerVon(verein.id);
+    if (manager) {
       const {
         elf, system, nachgerueckt, verworfen,
       } = kader.elfFuerSpiel(verein);
-      for (const n of nachgerueckt) this.melden('spiel', `${n.rein} rückte für ${n.raus} in die Elf (${n.platz}).`);
-      if (verworfen) this.melden('spiel', 'Deine Aufstellung liess sich nicht halten - es spielte die beste Elf.');
+      for (const n of nachgerueckt) this.melden(manager, 'spiel', `${n.rein} rückte für ${n.raus} in die Elf (${n.platz}).`);
+      if (verworfen) this.melden(manager, 'spiel', 'Deine Aufstellung liess sich nicht halten - es spielte die beste Elf.');
       return { elf, bank: kader.bankStellen(verein, elf), system };
     }
     const elf = kader.elfStellen(verein, verein.taktik.system);
@@ -240,24 +254,29 @@ class Ablauf {
   }
 
   spielen(heim, gast, zufall, optionen, lauf) {
-    if (heim.id !== this.vereinId) this.kiTaktik(heim, gast, !optionen.neutral);
-    if (gast.id !== this.vereinId) this.kiTaktik(gast, heim, false);
+    if (!this.menschFuehrt(heim.id)) this.kiTaktik(heim, gast, !optionen.neutral);
+    if (!this.menschFuehrt(gast.id)) this.kiTaktik(gast, heim, false);
     const aufstellungen = { heim: this.aufstellungFuer(heim), gast: this.aufstellungFuer(gast) };
     const ergebnis = begegnung(heim, gast, zufall, { aufstellungen, ...optionen });
     for (const e of ergebnis.ereignisse) if (e.art === 'verletzung') lauf.verletzt.add(e.spielerId);
     const folgen = { heim: nachwirkung(heim, ergebnis), gast: nachwirkung(gast, ergebnis) };
-    const eigene = heim.id === this.vereinId ? folgen.heim : gast.id === this.vereinId ? folgen.gast : [];
-    for (const folge of eigene) {
-      this.melden('spiel', folge.art === 'sperre'
-        ? `${folge.spieler} ist gesperrt (${folge.grund}) und fehlt ${folge.spiele === 1 ? 'im nächsten Spiel' : `${folge.spiele} Spiele`}.`
-        : `${folge.spieler} hat sich verletzt und fällt ${folge.wochen === 1 ? 'eine Woche' : `${folge.wochen} Wochen`} aus.`);
+    for (const [seite, verein] of [['heim', heim], ['gast', gast]]) {
+      const manager = this.managerVon(verein.id);
+      if (!manager) continue;
+      for (const folge of folgen[seite]) {
+        this.melden(manager, 'spiel', folge.art === 'sperre'
+          ? `${folge.spieler} ist gesperrt (${folge.grund}) und fehlt ${folge.spiele === 1 ? 'im nächsten Spiel' : `${folge.spiele} Spiele`}.`
+          : `${folge.spieler} hat sich verletzt und fällt ${folge.wochen === 1 ? 'eine Woche' : `${folge.wochen} Wochen`} aus.`);
+      }
     }
     return { ergebnis, folgen };
   }
 
   ligaspieltag(nr, zufall, lauf) {
+    // `eigenes` im Bericht ist das Spiel eines Menschen - mit mehreren (M3)
+    // braucht jeder seinen eigenen Bericht.
     const bericht = { art: 'liga', nr, ligen: {}, eigenes: null };
-    let eigenes = null;
+    const eigene = [];
     for (const nummer of [1, 2]) {
       const tabelle = this.tabellen[nummer];
       const rang = new Map(liga.sortiert(tabelle).map((z, i) => [z.id, i]));
@@ -284,24 +303,27 @@ class Ablauf {
           }
         });
 
-        if (heim.id === this.vereinId || gast.id === this.vereinId) {
+        for (const verein of [heim, gast]) {
+          const manager = this.managerVon(verein.id);
+          if (!manager) continue;
           bericht.eigenes = this.spielBericht(ergebnis, heim, gast, kasse.zuschauer, 'liga');
-          eigenes = { ergebnis, heim, gast };
+          eigene.push({ manager, ergebnis, heim, gast });
         }
       }
       bericht.ligen[nummer] = paarungen.map((p) => this.paarungZeigen(p));
     }
     // Erst wenn der ganze Spieltag gerechnet ist, steht der Platz fest - und
     // erst dann urteilen Postfach und Vorstand.
-    if (eigenes) {
-      const { ergebnis, heim, gast } = eigenes;
-      this.eigenesSpielMelden(ergebnis, heim, gast, `${nr}. Spieltag`, true);
-      const eigener = this.verein;
+    for (const {
+      manager, ergebnis, heim, gast,
+    } of eigene) {
+      this.eigenesSpielMelden(manager, ergebnis, heim, gast, `${nr}. Spieltag`, true);
+      const eigener = this.vereinVon(manager.vereinId);
       const i = heim.id === eigener.id ? 0 : 1;
       const gegner = i === 0 ? gast : heim;
-      vorstand.nachLigaspiel(this.vorstand, {
+      vorstand.nachLigaspiel(manager.vorstand, {
         ergebnis: ergebnis.tore[i] > ergebnis.tore[1 - i] ? 'sieg' : ergebnis.tore[i] < ergebnis.tore[1 - i] ? 'niederlage' : 'unentschieden',
-        platz: this.platz(),
+        platz: this.platz(eigener.id),
         spieltag: nr,
         gegnerStaerker: kader.niveau(gegner) > kader.niveau(eigener) + 2 || gegner.liga < eigener.liga,
       });
@@ -328,12 +350,14 @@ class Ablauf {
       Object.assign(paarung, {
         tore: ergebnis.tore, sieger: ergebnis.sieger, verlaengerung: ergebnis.verlaengerung, elfmeter: ergebnis.elfmeter,
       });
-      if (heim.id === this.vereinId || gast.id === this.vereinId) {
+      for (const verein of [heim, gast]) {
+        const manager = this.managerVon(verein.id);
+        if (!manager) continue;
         bericht.eigenes = this.spielBericht(ergebnis, heim, gast, zuschauer, 'pokal');
-        this.eigenesSpielMelden(ergebnis, heim, gast, `Pokal, ${runde.name}`, false);
-        const eigener = this.verein;
+        this.eigenesSpielMelden(manager, ergebnis, heim, gast, `Pokal, ${runde.name}`, false);
+        const eigener = verein;
         const gegner = heim.id === eigener.id ? gast : heim;
-        vorstand.nachPokalspiel(this.vorstand, {
+        vorstand.nachPokalspiel(manager.vorstand, {
           weiter: ergebnis.sieger === eigener.id,
           gegnerLigaTiefer: gegner.liga > eigener.liga,
           finaleGewonnen: finale && ergebnis.sieger === eigener.id,
@@ -345,15 +369,16 @@ class Ablauf {
       this.pokal.sieger = sieger.id;
       this.buchen(sieger, 'praemien', pokal.SIEGERPRAEMIE, 'Pokalsieg');
       sieger.reputation = Math.min(100, sieger.reputation + 5);
-      this.melden('liga', `${sieger.name} gewinnt den Pokal.`);
+      for (const m of this.manager) this.melden(m, 'liga', `${sieger.name} gewinnt den Pokal.`);
     } else {
       const naechste = this.pokal.runden[nummer];
       naechste.paarungen = pokal.auslosen(pokal.siegerDerRunde(runde), quelle(this.startwert, this.saison, this.termin, ZWECK.auslosung));
       this.pokal.aktuell = nummer;
-      const eigene = naechste.paarungen.find((p) => p.heim === this.vereinId || p.gast === this.vereinId);
-      if (eigene) {
-        const daheim = eigene.heim === this.vereinId;
-        this.melden('liga', `Pokal, ${naechste.name}: ${daheim ? 'daheim gegen' : 'auswärts bei'} `
+      for (const m of this.manager) {
+        const eigene = naechste.paarungen.find((p) => p.heim === m.vereinId || p.gast === m.vereinId);
+        if (!eigene) continue;
+        const daheim = eigene.heim === m.vereinId;
+        this.melden(m, 'liga', `Pokal, ${naechste.name}: ${daheim ? 'daheim gegen' : 'auswärts bei'} `
           + `${this.vereinVon(daheim ? eigene.gast : eigene.heim).name}.`);
       }
     }
@@ -391,8 +416,9 @@ class Ablauf {
       if (zins) this.buchen(verein, 'zinsen', zins, 'Dispozinsen');
       this.buchen(verein, 'gehaelter', -finanzen.gehaelter(verein), 'Gehälter');
       const fertig = finanzen.ausbauWeiter(verein);
-      if (fertig && verein.id === this.vereinId) {
-        this.melden('finanzen', `Der Stadionausbau ist fertig: ${fertig.toLocaleString('de-DE')} neue Plätze, `
+      const manager = this.managerVon(verein.id);
+      if (fertig && manager) {
+        this.melden(manager, 'finanzen', `Der Stadionausbau ist fertig: ${fertig.toLocaleString('de-DE')} neue Plätze, `
           + `jetzt ${verein.stadion.plaetze.toLocaleString('de-DE')}.`);
       }
     }
@@ -404,7 +430,8 @@ class Ablauf {
       for (const spieler of verein.spieler) {
         if (spieler.verletzt <= 0 || lauf.verletzt.has(spieler.id)) continue;
         spieler.verletzt -= 1;
-        if (spieler.verletzt === 0 && verein.id === this.vereinId) this.melden('verein', `${spieler.name} ist wieder fit.`);
+        const manager = spieler.verletzt === 0 && this.managerVon(verein.id);
+        if (manager) this.melden(manager, 'verein', `${spieler.name} ist wieder fit.`);
       }
     }
     for (const spieler of this.freie) spieler.verletzt = Math.max(0, spieler.verletzt - 1);
@@ -418,8 +445,9 @@ class Ablauf {
       if (bereit.length >= 11 && bereit.some((s) => s.position === kader.TOR)) continue;
       erzeuger = erzeuger || this.erzeuger(zufall);
       const neu = kader.notfallJugend(verein, erzeuger);
-      if (verein.id === this.vereinId) {
-        this.melden('verein', `Zu wenige einsatzbereite Spieler: ${neu.map((s) => `${s.name} (${s.position})`).join(', ')} `
+      const manager = this.managerVon(verein.id);
+      if (manager) {
+        this.melden(manager, 'verein', `Zu wenige einsatzbereite Spieler: ${neu.map((s) => `${s.name} (${s.position})`).join(', ')} `
           + 'rücken aus der A-Jugend nach.');
       }
     }
@@ -430,8 +458,9 @@ class Ablauf {
       if (verein.konto >= finanzen.PUNKTABZUG_GRENZE) continue;
       const zeile = this.tabellen[verein.liga].find((z) => z.id === verein.id);
       zeile.abzug = (zeile.abzug || 0) + finanzen.PUNKTABZUG;
-      if (verein.id === this.vereinId || verein.liga === this.verein?.liga) {
-        this.melden('liga', `${verein.name}: ${finanzen.PUNKTABZUG} Punkte Abzug ${anlass} - das Konto steht bei ${geld(verein.konto)}.`);
+      for (const m of this.manager) {
+        if (verein.id !== m.vereinId && verein.liga !== this.vereinVon(m.vereinId).liga) continue;
+        this.melden(m, 'liga', `${verein.name}: ${finanzen.PUNKTABZUG} Punkte Abzug ${anlass} - das Konto steht bei ${geld(verein.konto)}.`);
       }
     }
   }
@@ -456,7 +485,6 @@ class Ablauf {
    */
   saisonWechsel() {
     const zufall = quelle(this.startwert, this.saison, this.termin, ZWECK.saisonende);
-    const eigener = this.verein;
     const saison = this.saison;
     const endstand = { 1: liga.sortiert(this.tabellen[1]), 2: liga.sortiert(this.tabellen[2]) };
     const { absteiger, aufsteiger } = liga.aufUndAbstieg(this.tabellen[1], this.tabellen[2]);
@@ -474,17 +502,21 @@ class Ablauf {
     for (const id of aufsteiger) this.vereinVon(id).reputation = Math.min(100, this.vereinVon(id).reputation + 8);
     this.kiStadion();
 
-    let bilanz = null;
-    if (eigener && this.status === 'laeuft') {
+    // Die Bilanz je Manager. Der Bericht der Saison traegt eine davon als
+    // `eigener` - mit mehreren (M3) braucht jeder seinen eigenen Bericht.
+    const bilanzen = new Map();
+    for (const m of this.manager) {
+      if (m.status !== 'laeuft') continue;
+      const eigener = this.vereinVon(m.vereinId);
       const platz = endstand[eigener.liga].findIndex((z) => z.id === eigener.id) + 1;
-      const urteil = vorstand.saisonbilanz(this.vorstand, platz);
-      bilanz = {
-        verein: eigener.name, liga: eigener.liga, platz, ziel: this.vorstand.ziel, ...urteil,
+      const urteil = vorstand.saisonbilanz(m.vorstand, platz);
+      bilanzen.set(m, {
+        verein: eigener.name, liga: eigener.liga, platz, ziel: m.vorstand.ziel, ...urteil,
         aufgestiegen: aufsteiger.includes(eigener.id), abgestiegen: absteiger.includes(eigener.id),
-      };
-      this.melden('vorstand', urteil.erreicht
+      });
+      this.melden(m, 'vorstand', urteil.erreicht
         ? `Saisonziel erreicht: Platz ${platz}. Der Vorstand ist zufrieden.`
-        : `Saisonziel verfehlt: Platz ${platz} statt ${this.vorstand.ziel.platz}. Das Vertrauen sinkt.`);
+        : `Saisonziel verfehlt: Platz ${platz} statt ${m.vorstand.ziel.platz}. Das Vertrauen sinkt.`);
     }
 
     const zusammenfassung = {
@@ -493,7 +525,7 @@ class Ablauf {
       pokalsieger: this.pokal.sieger ? name(this.pokal.sieger) : null,
       absteiger: absteiger.map(name),
       aufsteiger: aufsteiger.map(name),
-      eigener: bilanz,
+      eigener: [...bilanzen.values()].at(-1) ?? null,
       tabellen: {
         1: endstand[1].map((z) => ({ id: z.id, name: z.name, punkte: liga.wertung(z), tore: z.tore, gegentore: z.gegentore })),
         2: endstand[2].map((z) => ({ id: z.id, name: z.name, punkte: liga.wertung(z), tore: z.tore, gegentore: z.gegentore })),
@@ -501,8 +533,10 @@ class Ablauf {
     };
     this.historie.unshift(zusammenfassung);
     for (const alt of this.historie.slice(TABELLEN_IN_HISTORIE)) delete alt.tabellen;
-    this.melden('liga', `Saison ${saison} vorbei. Meister: ${zusammenfassung.meister[1]}. `
-      + `Absteiger: ${zusammenfassung.absteiger.join(', ')}. Aufsteiger: ${zusammenfassung.aufsteiger.join(', ')}.`);
+    for (const m of this.manager) {
+      this.melden(m, 'liga', `Saison ${saison} vorbei. Meister: ${zusammenfassung.meister[1]}. `
+        + `Absteiger: ${zusammenfassung.absteiger.join(', ')}. Aufsteiger: ${zusammenfassung.aufsteiger.join(', ')}.`);
+    }
 
     // Auf- und Abstieg. Das Fernsehgeld der neuen Saison richtet sich nach
     // dem Platz - Aufsteiger stehen in der ersten Liga hinten an, Absteiger
@@ -519,10 +553,12 @@ class Ablauf {
         if (spieler.vertrag) spieler.vertrag.gehalt = Math.round(spieler.vertrag.gehalt * ABSTIEGSKLAUSEL);
       }
     }
-    if (bilanz?.aufgestiegen) this.melden('verein', `Aufgestiegen! ${eigener.name} spielt nächste Saison in der ersten Liga.`);
-    if (bilanz?.abgestiegen) {
-      this.melden('verein', `Abgestiegen. ${eigener.name} spielt nächste Saison in der zweiten Liga. `
-        + `Die Abstiegsklausel senkt alle Gehälter um ${Math.round((1 - ABSTIEGSKLAUSEL) * 100)} %.`);
+    for (const [m, bilanz] of bilanzen) {
+      if (bilanz.aufgestiegen) this.melden(m, 'verein', `Aufgestiegen! ${bilanz.verein} spielt nächste Saison in der ersten Liga.`);
+      if (bilanz.abgestiegen) {
+        this.melden(m, 'verein', `Abgestiegen. ${bilanz.verein} spielt nächste Saison in der zweiten Liga. `
+          + `Die Abstiegsklausel senkt alle Gehälter um ${Math.round((1 - ABSTIEGSKLAUSEL) * 100)} %.`);
+      }
     }
 
     // Entwicklung: jeder ein Jahr aelter, die Jungen besser, die Alten nicht.
@@ -532,7 +568,8 @@ class Ablauf {
     for (const verein of this.vereine) {
       const eintraege = kader.entwickeln(verein, zufall, this.pflichtspiele(verein), { anteil: 0.6 });
       for (const e of eintraege) this.saisonFesthalten(e.spieler, verein, ligaDerSaison.get(verein.id), e.alter);
-      if (verein.id === this.vereinId) this.entwicklungMerken('Saisonende', 'Entwicklung über die Saison', eintraege);
+      const manager = this.managerVon(verein.id);
+      if (manager) this.entwicklungMerken(manager, 'Saisonende', 'Entwicklung über die Saison', eintraege);
     }
     kader.entwickeln({ spieler: this.freie, technikSumme: 0, trainingswochen: 0 }, zufall, 0);
     // Wer in der Saison gespielt hat und jetzt ohne Verein ist, bekommt die Saison beim Verein, von dem er kam.
@@ -548,8 +585,9 @@ class Ablauf {
       const aufhoeren = verein.spieler.filter((s) => s.karriereende === saison);
       verein.spieler = verein.spieler.filter((s) => !aufhoeren.includes(s));
       if (verein.aufstellung && aufhoeren.some((s) => verein.aufstellung.ids.includes(s.id))) verein.aufstellung = null;
-      if (verein.id === this.vereinId && aufhoeren.length) {
-        this.melden('verein', `Karriereende: ${aufhoeren.map((s) => `${s.name} (${s.alter})`).join(', ')}.`);
+      const manager = this.managerVon(verein.id);
+      if (manager && aufhoeren.length) {
+        this.melden(manager, 'verein', `Karriereende: ${aufhoeren.map((s) => `${s.name} (${s.alter})`).join(', ')}.`);
       }
     }
     // Vertraege: die anderen verlaengern, wen sie wollen. Wer danach ohne
@@ -558,8 +596,9 @@ class Ablauf {
     for (const verein of this.vereine) {
       const gehen = verein.spieler.filter((s) => !s.vertrag || s.vertrag.bis <= saison);
       for (const spieler of gehen) transfer.freistellen(this, verein, spieler);
-      if (verein.id === this.vereinId && gehen.length) {
-        this.melden('verein', `Vertrag ausgelaufen, verlassen den Verein: ${gehen.map((s) => s.name).join(', ')}.`);
+      const manager = this.managerVon(verein.id);
+      if (manager && gehen.length) {
+        this.melden(manager, 'verein', `Vertrag ausgelaufen, verlassen den Verein: ${gehen.map((s) => s.name).join(', ')}.`);
       }
     }
     // Unter den Vereinslosen hoert auf, wer es angekuendigt hat, wer zu alt ist und wer nicht mehr mag.
@@ -578,11 +617,12 @@ class Ablauf {
     // Jugend: zwei je Verein, solange Platz im Kader ist.
     const erzeuger = this.erzeuger(quelle(this.startwert, this.saison, 0, ZWECK.jugend));
     for (const verein of this.vereine) {
-      const grenze = verein.id === this.vereinId ? kader.KADER_MAX : transfer.KI_KADER_ZIEL + 1;
+      const manager = this.managerVon(verein.id);
+      const grenze = manager ? kader.KADER_MAX : transfer.KI_KADER_ZIEL + 1;
       const jugend = kader.jugendErzeugen(verein, zufall, erzeuger).slice(0, Math.max(0, grenze - verein.spieler.length));
       verein.spieler.push(...jugend);
-      if (verein.id === this.vereinId && jugend.length) {
-        this.melden('verein', `Aus der Jugend rücken auf: ${jugend.map((s) => `${s.name} (${s.rolle}, Stärke ${s.staerke}, Talent ${s.talent})`).join(', ')}.`);
+      if (manager && jugend.length) {
+        this.melden(manager, 'verein', `Aus der Jugend rücken auf: ${jugend.map((s) => `${s.name} (${s.rolle}, Stärke ${s.staerke}, Talent ${s.talent})`).join(', ')}.`);
       }
     }
     // Der Markt der Vereinslosen: nicht zu voll, nie leer.
@@ -598,14 +638,17 @@ class Ablauf {
     transfer.kiTransfers(this, markt, { verstaerkung: 0.7 });
     transfer.kiTransfers(this, markt, { verstaerkung: 0.4 });
 
-    this.angebote = [];
-    if (bilanz?.entlassen) {
-      this.entlassen('Nach einer verfehlten Saison trennt sich der Vorstand von dir.', quelle(this.startwert, this.saison, 0, ZWECK.stellen));
+    for (const m of this.manager) {
+      m.angebote = [];
+      if (bilanzen.get(m)?.entlassen) {
+        this.entlassen(m, 'Nach einer verfehlten Saison trennt sich der Vorstand von dir.', quelle(this.startwert, this.saison, 0, ZWECK.stellen));
+      }
     }
     this.saisonVorbereiten();
-    if (this.verein && this.status === 'laeuft') {
-      this.melden('vorstand', `Saison ${this.saison}: Der Vorstand erwartet ${this.vorstand.ziel.text} `
-        + `(Platz ${this.vorstand.ziel.platz} oder besser in der ${this.verein.liga}. Liga). Wähle einen Sponsor.`);
+    for (const m of this.manager) {
+      if (m.status !== 'laeuft') continue;
+      this.melden(m, 'vorstand', `Saison ${this.saison}: Der Vorstand erwartet ${m.vorstand.ziel.text} `
+        + `(Platz ${m.vorstand.ziel.platz} oder besser in der ${this.vereinVon(m.vereinId).liga}. Liga). Wähle einen Sponsor.`);
     }
     return { art: 'saisonende', ...zusammenfassung };
   }
@@ -616,7 +659,7 @@ class Ablauf {
    */
   kiStadion() {
     for (const verein of this.vereine) {
-      if (verein.id === this.vereinId || verein.stadion.ausbau) continue;
+      if (this.menschFuehrt(verein.id) || verein.stadion.ausbau) continue;
       if (verein.konto < 25000 || finanzen.auslastung(verein, { stimmung: 0.6 }) < 0.9) continue;
       const plan = [...finanzen.AUSBAU].reverse()
         .find((a) => verein.konto - a.kosten >= 12000 && finanzen.ausbauPruefen(verein, a.stufe).ok);
@@ -626,15 +669,15 @@ class Ablauf {
     }
   }
 
-  entlassen(grund, zufall) {
-    const alter = this.verein;
-    this.status = 'entlassen';
-    this.stellen = vorstand.stellenangebote(this.vereine, alter, zufall);
+  entlassen(manager, grund, zufall) {
+    const alter = this.vereinVon(manager.vereinId);
+    manager.status = 'entlassen';
+    manager.stellen = vorstand.stellenangebote(this.vereine, alter, zufall);
     alter.aufstellung = null;
     alter.taktik.system = kader.bestesSystem(alter, alter.taktik.system);
-    this.angebote = [];
-    this.melden('vorstand', `${grund} Du bist bei ${alter.name} entlassen. `
-      + `${this.stellen.length} Vereine bieten dir eine Stelle an.`);
+    manager.angebote = [];
+    this.melden(manager, 'vorstand', `${grund} Du bist bei ${alter.name} entlassen. `
+      + `${manager.stellen.length} Vereine bieten dir eine Stelle an.`);
   }
 
   spielBericht(ergebnis, heim, gast, zuschauer, wettbewerb) {
@@ -676,8 +719,8 @@ class Ablauf {
   }
 
   /** @param {boolean} ligaspiel  in der Liga mit Platz, im Pokal mit weiter oder raus */
-  eigenesSpielMelden(ergebnis, heim, gast, titel, ligaspiel) {
-    const daheim = heim.id === this.vereinId;
+  eigenesSpielMelden(manager, ergebnis, heim, gast, titel, ligaspiel) {
+    const daheim = heim.id === manager.vereinId;
     const gegner = daheim ? gast : heim;
     const [eigene, fremde] = daheim ? ergebnis.tore : [ergebnis.tore[1], ergebnis.tore[0]];
     let ausgang = eigene > fremde ? 'Sieg' : eigene < fremde ? 'Niederlage' : 'Unentschieden';
@@ -686,9 +729,9 @@ class Ablauf {
       const [ie, ifr] = daheim ? ergebnis.elfmeter : [ergebnis.elfmeter[1], ergebnis.elfmeter[0]];
       zusatz = ` n.V., ${ie}:${ifr} im Elfmeterschießen`;
     }
-    if (!ligaspiel) ausgang = ergebnis.sieger === this.vereinId ? 'Weiter' : 'Ausgeschieden';
-    this.melden('spiel', `${titel}: ${ausgang}, ${eigene}:${fremde}${zusatz} ${daheim ? 'gegen' : 'bei'} ${gegner.name}.`
-      + (ligaspiel ? ` Platz ${this.platz()}.` : ''));
+    if (!ligaspiel) ausgang = ergebnis.sieger === manager.vereinId ? 'Weiter' : 'Ausgeschieden';
+    this.melden(manager, 'spiel', `${titel}: ${ausgang}, ${eigene}:${fremde}${zusatz} ${daheim ? 'gegen' : 'bei'} ${gegner.name}.`
+      + (ligaspiel ? ` Platz ${this.platz(manager.vereinId)}.` : ''));
   }
 
   /**

@@ -17,9 +17,9 @@ const { zufallAus } = require('./zufall');
 
 // Die Fassung des Spielstands. Aendert sich seine Bauart, steigt sie - und
 // ein alter Stand wird abgelehnt statt halb geladen (speichern AC-17).
-const FASSUNG = 3;
+const FASSUNG = 4;
 // Aeltere Fassungen, die sich beim Laden anheben lassen (→ anheben).
-const LADBARE_FASSUNGEN = [2, FASSUNG];
+const LADBARE_FASSUNGEN = [2, 3, FASSUNG];
 const TERMINE = saisonKalender();
 const NACHRICHTEN_MAX = 160;
 const BUCH_MAX = 260;
@@ -78,36 +78,24 @@ class Karriere {
     const eigener = welt.vereine.find((v) => v.id === vereinId) || null;
     const karriere = new Karriere({
       fassung: FASSUNG,
-      name,
       startwert,
       saison: 1,
       termin: 0,
-      vereinId: eigener ? eigener.id : null,
       vereine: welt.vereine,
       freie: welt.freie,
       zaehler: welt.zaehler,
-      status: 'laeuft',
-      stellen: [],
       plaene: {},
       tabellen: {},
       torjaeger: {},
       pokal: null,
-      vorstand: eigener ? { ziel: null, vertrauen: vorstand.VERTRAUEN_START } : null,
-      sponsorAngebote: [],
-      angebote: [],
       ticker: [],
-      nachrichten: [],
-      buch: [],
-      kasse: null,
-      vorjahr: null,
       historie: [],
-      zuletzt: null,
-      entwicklungen: [],
+      manager: eigener ? [neuerManager('m1', name, eigener.id)] : [],
     });
     karriere.saisonVorbereiten();
-    if (eigener) {
-      karriere.melden('verein', `Willkommen bei ${eigener.name}. Der Vorstand erwartet in dieser Saison: `
-        + `${karriere.vorstand.ziel.text} (Platz ${karriere.vorstand.ziel.platz} oder besser).`);
+    for (const m of karriere.manager) {
+      karriere.melden(m, 'verein', `Willkommen bei ${karriere.vereinVon(m.vereinId).name}. Der Vorstand erwartet in dieser Saison: `
+        + `${m.vorstand.ziel.text} (Platz ${m.vorstand.ziel.platz} oder besser).`);
     }
     return karriere;
   }
@@ -118,15 +106,34 @@ class Karriere {
     return TERMINE;
   }
 
-  get verein() {
-    return this.vereine.find((v) => v.id === this.vereinId) || null;
-  }
-
   vereinVon(id) {
     return this.vereine.find((v) => v.id === id) || null;
   }
 
-  platz(vereinId = this.vereinId) {
+  managerMit(managerId) {
+    return this.manager.find((m) => m.managerId === managerId) || null;
+  }
+
+  /**
+   * Der Manager, der diesen Verein fuehrt - auch, wenn er dort eben
+   * entlassen wurde: bis er eine neue Stelle antritt, gilt der alte Verein
+   * als seiner (so rechnete es Fassung 3, die Gleichstandsprobe haelt daran).
+   */
+  managerVon(vereinId) {
+    return this.manager.find((m) => m.vereinId === vereinId) || null;
+  }
+
+  /** Fuehrt ein Mensch diesen Verein? Sonst entscheidet der Rechner. */
+  menschFuehrt(vereinId) {
+    return this.manager.some((m) => m.vereinId === vereinId);
+  }
+
+  /** Ist ein Manager entlassen? Dann steht die Welt, bis er eine Stelle hat. */
+  wartetAufStelle() {
+    return this.manager.some((m) => m.status === 'entlassen');
+  }
+
+  platz(vereinId) {
     const verein = this.vereinVon(vereinId);
     if (!verein) return null;
     return liga.sortiert(this.tabellen[verein.liga]).findIndex((z) => z.id === vereinId) + 1;
@@ -147,27 +154,28 @@ class Karriere {
 
   // ------------------------------------------------------ Buch und Post
 
-  melden(art, text) {
-    if (!this.vereinId) return;
-    this.nachrichten.push({
+  /** Eine Nachricht in die Post dieses Managers. */
+  melden(manager, art, text) {
+    manager.nachrichten.push({
       saison: this.saison, termin: this.termin, datum: terminTitel(TERMINE[this.termin]), art, text,
     });
-    if (this.nachrichten.length > NACHRICHTEN_MAX) this.nachrichten.splice(0, this.nachrichten.length - NACHRICHTEN_MAX);
+    if (manager.nachrichten.length > NACHRICHTEN_MAX) manager.nachrichten.splice(0, manager.nachrichten.length - NACHRICHTEN_MAX);
   }
 
-  /** Geld bewegen. Beim Menschen mit Buchung und Saisonposten, bei allen anderen nur das Konto. */
+  /** Geld bewegen. Fuehrt ein Mensch den Verein, mit Buchung und Saisonposten, sonst nur das Konto. */
   buchen(verein, kategorie, betrag, zweck) {
     const gerundet = Math.round(betrag);
     if (!gerundet) return;
     verein.konto += gerundet;
-    if (verein.id !== this.vereinId || !this.kasse) return;
-    const posten = this.kasse.posten[kategorie] || (this.kasse.posten[kategorie] = { ein: 0, aus: 0 });
+    const manager = this.managerVon(verein.id);
+    if (!manager || !manager.kasse) return;
+    const posten = manager.kasse.posten[kategorie] || (manager.kasse.posten[kategorie] = { ein: 0, aus: 0 });
     if (gerundet > 0) posten.ein += gerundet;
     else posten.aus -= gerundet;
-    this.buch.push({
+    manager.buch.push({
       saison: this.saison, datum: terminTitel(TERMINE[this.termin]), kategorie, betrag: gerundet, zweck,
     });
-    if (this.buch.length > BUCH_MAX) this.buch.splice(0, this.buch.length - BUCH_MAX);
+    if (manager.buch.length > BUCH_MAX) manager.buch.splice(0, manager.buch.length - BUCH_MAX);
   }
 
   // --------------------------------------------------- Sichern und Laden
@@ -186,12 +194,41 @@ class Karriere {
   }
 }
 
+/** Ein Manager, wie er einen Verein uebernimmt. */
+function neuerManager(managerId, name, vereinId) {
+  return {
+    managerId,
+    name,
+    vereinId,
+    status: 'laeuft',
+    stellen: [],
+    vorstand: { ziel: null, vertrauen: vorstand.VERTRAUEN_START },
+    sponsorAngebote: [],
+    angebote: [],
+    nachrichten: [],
+    buch: [],
+    kasse: null,
+    vorjahr: null,
+    zuletzt: null,
+    entwicklungen: [],
+  };
+}
+
+// Was in Fassung 3 dem einen Menschen gehoerte und in Fassung 4 im Manager steht.
+const MENSCHENFELDER = ['name', 'vereinId', 'status', 'stellen', 'vorstand', 'sponsorAngebote', 'angebote',
+  'nachrichten', 'buch', 'kasse', 'vorjahr', 'zuletzt', 'entwicklungen'];
+
 /**
  * Ein Spielstand der Fassung 2 kannte keine Positionen. Beim Laden bekommt
  * jeder Spieler eine, so wie ein Neuer im Verein: die, von der es im Kader
  * gemessen am Plan am wenigsten gibt - die Staerksten zuerst, damit sie die
  * tragenden Rollen bekommen. Gemerkte Aufstellungen passen zu keinen Plaetzen
- * und fallen weg. Danach ist es ein Stand der jetzigen Fassung.
+ * und fallen weg.
+ *
+ * Fassung 3 hielt den einen Menschen als Felder des Spielstands. Fassung 4
+ * hat eine Liste von Managern: die Felder wandern in `manager[0]`, eine
+ * Welt ohne Menschen hat eine leere Liste. Danach ist es ein Stand der
+ * jetzigen Fassung.
  */
 function anheben(daten) {
   if (daten.fassung === 2) {
@@ -207,6 +244,15 @@ function anheben(daten) {
       verein.aufstellung = null;
     }
     verteilen(daten.freie, false);
+    daten.fassung = 3;
+  }
+  if (daten.fassung === 3) {
+    const mensch = {};
+    for (const feld of MENSCHENFELDER) {
+      mensch[feld] = daten[feld];
+      delete daten[feld];
+    }
+    daten.manager = mensch.vereinId ? [{ managerId: 'm1', ...mensch }] : [];
     daten.fassung = FASSUNG;
   }
   return daten;
@@ -214,5 +260,5 @@ function anheben(daten) {
 
 module.exports = {
   Karriere, FASSUNG, LADBARE_FASSUNGEN, TERMINE, TABELLEN_IN_HISTORIE, FREIE_MIN, FREIE_MAX, ABSTIEGSKLAUSEL,
-  ZWECK, geld, quelle, mischen, zahlOder, anheben,
+  ZWECK, MENSCHENFELDER, geld, quelle, mischen, zahlOder, anheben,
 };
