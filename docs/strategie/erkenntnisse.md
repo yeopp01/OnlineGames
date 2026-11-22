@@ -243,6 +243,34 @@ etwas anderem gearbeitet.
 
 ## Offene Fäden
 
+- **Laufregel, Seitengleichheit, Pfeilflug (2026-11-22, Zweig
+  `strategie-regeln`) — nur als `offen` eingecheckt**: einheiten AC-70,
+  kampf AC-26 und AC-27 stehen mit „Was fehlt“ in den Specs, der Code
+  liegt als Patch beim Benutzer. Keine der drei Regeln hält allein alle
+  Grenzen, und keine Teilmenge davon: die **Laufregel** reißt den
+  Konterkreis (Langbogen gegen Hellebardier, Werte der Vorlage), die
+  **Seitengleichheit** mit den Gleichständen in A* fahrplan AC-15, ohne sie
+  ihre eigenen 200 Startwerte und ki AC-4, der **Pfeilflug** ki AC-25 (zwei
+  gegen zwei, Startwert 8). **Gelernt:** (1) Der Pfeilflug kostet den
+  Nebeltest 6 Partien (111 → 105 von 120 vor Minute 60, Median 39,4 →
+  39,0, je eine ohne Sieger) und verschiebt den Konterkreis der Krone: die
+  schwere Armbrust schlägt den Zweihandkämpfer mit 12 alle 3,5 s nur noch 7
+  von 20 — mit 13 alle 3,7 s 19 und kein Kavalier fällt; das hebt den
+  Elite-Reiterschützen gegen sie nur noch auf 16 von 40, mit +20 statt +15
+  Leben 30; der Elite-Wiedergänger braucht dann +10 statt +15, sonst
+  schlägt er den Langbogen. Gesetzte Werte, die nur mit dem Pfeilflug
+  nötig sind — sie liegen mit ihm im Patch. (2) Der Fall in ki AC-25 ist
+  Verteidigung: die Wache von KI 4 zieht zu einem eigenen Dorfbewohner, den
+  KI 2 am Platz des ausgeschiedenen Verbündeten schlägt; der Test nimmt nur
+  eigene Gebäude am Marschziel aus. (3) Schaden in ganzen Schlägen — 57 bis
+  63 Leben sind gegen 9 Angriff dieselben acht Schläge. (4) Die Spirale des
+  Gefechtsstands allein zu spiegeln macht es schlimmer (Miliz 63 zu 137
+  statt 116 zu 84). (5) Mit dem Pfeilflug zählt ein Test, der Treffer des
+  Mangonels aus `schlaege` liest, auch landende Pfeile — nach Geschossart
+  filtern. Gemessen heute an HEAD, 200 Startwerte links zu rechts: Miliz
+  116:84, Speer 105:94, Späher 103:97, Bogen 21:179, Plänkler 128:71,
+  Ritter 80:120; fahrplan AC-15 mindestens 85,2 s später (Grenze 60).
+
 - **einheiten AC-31 (800 Angreifer unter 1 ms) reißt wieder** (Runden 188,
   189): zweimal in drei vollen Läufen 1,03 ms, allein jedes Mal grün
   (etwa 0,3 ms). Er misst schon den besten von fünf Durchgängen; Grenze
