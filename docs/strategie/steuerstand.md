@@ -244,9 +244,13 @@ die Laufregel lockern? fahrplan AC-15 für A* lockern?
    Kamera je Stand im Browser; neuer Raumcode im angehaltenen Bild;
    raeume AC-18 kann einen schon geschlossenen Einzelraum anbieten
    („Diesen Raumcode gibt es nicht“). Im Bild AC-9 doppelt „Weiter“ oben
-   und „Weiterspielen“ in der Mitte. **Jetzt:** ganzer Browserlauf allein
-   (`E2E_HAFEN=4391 npm run check:alles:neu:kurz`), `qa:abweichung`;
-   ausrollen nur auf sein Wort.
+   und „Weiterspielen“ in der Mitte. **Browserlauf danach** (51,7 min):
+   357 grün, rot nur darstellung AC-30 mit 49,4 Bildern/s (Grenze 50,
+   Streuung, nicht gelockert), keine Zip-Fehler; `qa:abweichung` 31 über
+   1 %, angesehen (Kamera, Ablauf, Zufall); `check:kurz` grün (1126
+   Tests, 37 Partien); Bilder lokal committet `55bbb31`. **Nicht
+   gepusht, nicht ausgerollt** — das Ausrollen des Speicherns braucht
+   sein Wort, dazu die Fragen oben.
 4. **Regelpaket** als Agent (Entscheidung 1 oben): Laufregel,
    Seitengleichheit, Pfeilflug; ki AC-25 mit eigenen Einheiten; Reiterschütze
    nur Schützenlinie; `ki.farmbauer` klären. Nur fahrplan AC-15 und die
