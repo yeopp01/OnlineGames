@@ -31,6 +31,12 @@ Arbeitsbaum `../OnlineGames-speichern` (Zweig `strategie-speichern`,
 `E2E_HAFEN=4394`): speichern AC-1, AC-2, AC-5, AC-16, AC-17 — Welt und KI
 als Wert, gleicher Lauf nach dem Laden über zwanzig Startwerte. Nichts
 doppelt anfangen. Notfallklingel gegen ADR-0012 gehalten (offene Fragen).
+**bedienung AC-64 entschieden** (Benutzer: „Ac 64 passt seine
+Empfehlung"): Wirtschaft höchstens elf, Militär nach „Kampfeinheiten“,
+das Dorfzentrum unter Wirtschaft. Ein Agent zieht das im Arbeitsbaum
+`../OnlineGames-dorfzentrum` nach (`E2E_HAFEN=4395`); danach führe ich
+zusammen, dann `check:alles:neu:kurz` und `qa:abweichung` — erst, wenn
+kein anderer Lauf rechnet.
 
 **2026-11-22, Mittag:** **Zweites Dorfzentrum (Punkt 39) gebaut, NICHT
 zusammengeführt** — Zweig `strategie-dorfzentrum` `8e0986d`, Arbeitsbaum
