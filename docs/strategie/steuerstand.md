@@ -26,6 +26,32 @@ Punkt unten sucht, sucht dort nach „Punkt <n> (Benutzer“.
 
 ## Zuletzt fortgeschrieben
 
+**2026-11-22, früher Morgen:** **Agent (d) fertig, nichts committet** —
+Arbeitsbaum `../OnlineGames-regeln` ungesichert, Patch
+`scratchpad/uebergabe2/alles.patch` (+ `LIESMICH.txt`). Gebaut: einheiten
+AC-70 (Laufregel, 10 Felder = 100 Takte), kampf AC-26 (Seitengleichheit:
+Reihenfolge je Takt gemischt `welt.reihe`, `taktX/taktY`, Gleichstände in
+A*, `nachbarfeld`, Spirale), kampf AC-27 (Pfeil trifft beim Ankommen,
+`welt.pfeileImFlug`, `PFEIL_TEMPO` 7 gesetzt); Werte gesetzt: Söldner Tempo
+0,95, schwere Armbrust 13, Elite-Wiedergänger +10 Leben, Elite-Reiterschütze
++20; `ki.farmbauer`. **Rot, nur der Benutzer lockert:** fahrplan AC-15
+(57,2 statt ≥60 s, Ursache neue A*-Gleichstände), fahrplan AC-26
+Hellebardier gegen Langbogen umgekehrt 1/20, Nebel 103 statt ≥105 (HEAD
+111; ohne Pfeilflug 106, mit altem A* 109). **spielziel AC-18 reißt schon
+an HEAD** (Rappenstein 78, Eschenbruch 61, Distelhag 63, Wehrstein 28,
+Silberfurt 20 %). **Agent (e): keine Teilmenge ist grün** — committet auf
+`strategie-regeln` nur die Doku (`88bf6d8`, `d87d84f`: einheiten AC-70,
+kampf AC-26, AC-27 als `offen`). Code als Patch unter
+`scratchpad/uebergabe3/` (`pfeilflug-und-werte-code.patch` gilt auf
+8915326). Laufregel reißt den Konterkreis; A*-Gleichstände reißen fahrplan
+AC-15, ohne sie hält die Seitengleichheit nicht (ki AC-4 auch); Pfeilflug
+reißt ki AC-25 (zwei gegen zwei, Startwert 8: die Wache verteidigt einen
+eigenen Dorfbewohner am Platz des toten Verbündeten — `EIGENES_NAH` nimmt
+nur Gebäude aus) und steht im Nebel genau auf 105. **Seitenfehler an HEAD
+über 200 Startwerte: Bogen 21:179**, Ritter 80:120. Fragen an den
+Benutzer: darf ki AC-25 auch eigene Einheiten ausnehmen? Konterkreis für
+die Laufregel lockern? fahrplan AC-15 für A* lockern?
+
 **2026-11-22, später in der Nacht:** **Technologiebaum zusammengeführt**
 (`cf197cd`, bedienung AC-81 bis AC-86, `npm run check` grün; der ganze
 Browserlauf steht noch aus — einmal für alles nach dem Zusammenführen der
