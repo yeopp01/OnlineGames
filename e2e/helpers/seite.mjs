@@ -95,7 +95,7 @@ export async function karriereBeginnen(page, { vereinId = 'v5', name = 'Browserl
   await page.locator('#neuName').fill(name);
   await page.locator(`[data-verein="${vereinId}"]`).click();
   await expect(page.locator('#weiter')).toHaveText('Saison 1 starten');
-  return page.evaluate(() => kennung);
+  return page.evaluate(() => window.managerspiel.kennung);
 }
 
 export async function aufBlatt(page, name) {
@@ -130,11 +130,11 @@ export async function vorspulen(page, bis) {
  * entstehen (Verletzung, Entlassung). Danach holt die Seite den Stand neu.
  */
 export async function griff(page, befehl, werte = {}) {
-  const id = await page.evaluate(() => kennung);
+  const id = await page.evaluate(() => window.managerspiel.kennung);
   const antwort = await page.request.post(`http://localhost:${GRIFFHAFEN}/griff`, { data: { id, befehl, werte } });
   const inhalt = await antwort.text();
   expect(antwort.ok(), inhalt).toBe(true);
-  await page.evaluate((kennungImTest) => oeffnen(kennungImTest), id);
+  await page.evaluate((kennungImTest) => window.managerspiel.oeffnen(kennungImTest), id);
   await expect(page.locator('#reiter [data-blatt="buero"]')).toHaveAttribute('aria-pressed', 'true');
   return JSON.parse(inhalt);
 }

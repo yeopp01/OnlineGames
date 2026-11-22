@@ -199,7 +199,14 @@ class Sicht {
     };
   }
 
-  spielerZeigen(s) {
+  /**
+   * Ein Spieler des eigenen Vereins, wie das Kader- und Mannschaftsblatt ihn
+   * zeigt. Was er auf den Plaetzen des Systems bringt, rechnet der Server
+   * (aufstellung AC-23, AC-25): `form` ist die Tagesform, `eignung` je Platz
+   * in der Reihenfolge von `plaetze` - auf zwei Stellen, so stehen sie in
+   * kader.eignung. Die Laufbahn steht in der Akte, nicht hier.
+   */
+  spielerZeigen(s, plaetze) {
     return {
       id: s.id,
       name: s.name,
@@ -226,8 +233,9 @@ class Sicht {
         gelbe: s.saison.gelbe,
         platzverweise: s.saison.platzverweise,
       },
-      laufbahn: s.laufbahn,
       wert: kader.marktwert(s),
+      form: Math.round(kader.tagesform(s) * 1000) / 1000,
+      eignung: plaetze.map((platz) => Math.round(kader.eignung(s, platz) * 100) / 100),
       bereit: kader.einsatzbereit(s),
       ausfall: kader.ausfallgrund(s),
       gehaltswunsch: vertraege.gehaltswunsch(s),
@@ -297,11 +305,13 @@ class Sicht {
         aufstellung: eigener.aufstellung,
         // Fuer "Beste Elf" und zum Vergleich: so wuerde der Rechner heute aufstellen.
         besteElf: kader.elfStellen(eigener, eigener.taktik.system).map((s) => s.id),
+        // Die elf Plaetze des gewaehlten Systems - an ihnen haengt `eignung` je Spieler.
+        plaetze: kader.PLAETZE[eigener.taktik.system],
         staerke: this.staerkeZeigen(eigener),
         gehaltJahr,
         gehaltJeTermin: finanzen.gehaelter(eigener),
         fernsehgeld: finanzen.fernsehgeld(eigener),
-        spieler: eigener.spieler.map((s) => this.spielerZeigen(s)),
+        spieler: eigener.spieler.map((s) => this.spielerZeigen(s, kader.PLAETZE[eigener.taktik.system])),
       },
       vorstand: m.vorstand,
       sponsorAngebote: m.sponsorAngebote,
@@ -323,9 +333,7 @@ class Sicht {
       zuletzt: m.zuletzt,
       entwicklungen: m.entwicklungen || [],
       systeme: kader.SYSTEME_NAMEN,
-      plaetze: kader.PLAETZE,
       rollen: kader.ROLLEN,
-      eignung: { tabelle: kader.eignungstabelle(), neben: kader.NEBENROLLE },
       ausrichtungen: AUSRICHTUNGEN,
       schwerpunkte: kader.SCHWERPUNKTE,
     };
