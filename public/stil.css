@@ -1419,6 +1419,12 @@ canvas.angriffslauf {
   display: none;
 }
 
+/* Steht die Partie, sagt das Feld in der Mitte "Weiterspielen" - oben noch
+   ein "Weiter" daneben waere derselbe Knopf zweimal. F3 bleibt. */
+.aufgeben.imPausefeld {
+  display: none;
+}
+
 /* Die Ansage einer Kuendigung (spielziel AC-24): oben rechts unter dem
    Knopf, der sie ausloest - nicht in der Mitte, wo Absage, Angriff und
    Zeitalter stehen (bedienung AC-41). Sie bleibt, solange die Frist laeuft;

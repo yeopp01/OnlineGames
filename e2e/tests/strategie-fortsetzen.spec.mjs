@@ -262,7 +262,9 @@ test.describe('Aufhoeren und spaeter weiterspielen', () => {
     await expect(anna.seite.locator('#menueVorraumHinweis')).toContainText('Nach zwei Minuten wird sie gesichert und geschlossen');
     await anna.seite.keyboard.press('Escape');
     expect(anna.fehler, 'Die Seite hat Fehler gemeldet').toEqual([]);
-    await anna.kontext.close();
+    // Nur das Fenster zu, der Browser bleibt: was er sich gemerkt hat, bleibt.
+    const { kontext } = anna;
+    await anna.seite.close();
     anna = null;
 
     // Die zwei Minuten verkuerzt, dann einmal aufgeraeumt - sonst alle 15 s.
@@ -271,8 +273,21 @@ test.describe('Aufhoeren und spaeter weiterspielen', () => {
     await griffStaende(playwright, { aufraeumen: true });
     await griffStaende(playwright, { wegMs: WEG_MS });
 
-    anna = await fenster(browser, info);
-    const { seite } = anna;
+    const seite = await kontext.newPage();
+    anna = { kontext, seite, fehler: fehlerSammeln(seite) };
+    await seite.goto('/');
+    await expect(seite.locator('#angemeldet')).toBeVisible();
+    // Die Frist, die der Server eben verkuerzt hat, ist im Browser verstrichen:
+    // der Vorraum bietet die geschlossene Partie nicht mehr zur Rueckkehr an.
+    await seite.evaluate((weg) => {
+      const gemerkt = JSON.parse(localStorage.getItem('letztePartie'));
+      localStorage.setItem('letztePartie', JSON.stringify({ ...gemerkt, zeit: gemerkt.zeit - weg - 1000 }));
+    }, WEG_MS);
+    await seite.reload();
+    await expect(seite.locator('#angemeldet')).toBeVisible();
+    // Erst wenn die Seite den gemerkten Platz verworfen hat, ist sie so weit.
+    await expect.poll(() => seite.evaluate(() => localStorage.getItem('letztePartie')), { message: 'der Platz ist vergessen' }).toBeNull();
+    await expect(seite.locator('#rueckkehr')).toBeHidden();
     await expect(seite.locator('#partien')).toBeVisible();
     await expect(zeilen(seite)).toHaveCount(1);
     // Der Raum ist zu: sein Code fuehrt nirgendwohin.

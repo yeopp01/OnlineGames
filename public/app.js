@@ -49,6 +49,13 @@ let kehrtZurueck = false;
 // Die laufende Partie, auch ueber das Schliessen des Fensters hinweg
 // (raeume AC-18). Der Sitzungsspeicher traegt nur das Neuladen.
 const LETZTE_PARTIE = 'letztePartie';
+// Wie lange der Server eine Partie haelt, nachdem der letzte gegangen ist:
+// zu mehreren eine halbe Stunde (raeume AC-17), allein und gesichert zwei
+// Minuten - danach ist sie zu und steht unter "Deine Partien" (speichern
+// AC-8, `WEG_MS` in server/raeume.js). Laenger angeboten, fuehrte die
+// Rueckkehr ins Leere.
+const PARTIE_WARTET_MS = 30 * 60 * 1000;
+const ALLEIN_WARTET_MS = 2 * 60 * 1000;
 // Zu welchem gesicherten Stand diese Partie gehoert (speichern AC-10) - der
 // Server nennt ihn, sobald es einen gibt. Darunter merkt sich der Browser
 // die Kamera.
@@ -217,7 +224,8 @@ function empfangen(nachricht) {
       // Ab jetzt laeuft eine Partie: wer das Fenster schliesst, findet sie
       // im Vorraum wieder (raeume AC-18).
       if (meinPlatz && !nachricht.ende) {
-        try { localStorage.setItem(LETZTE_PARTIE, JSON.stringify({ ...meinPlatz, zeit: Date.now() })); } catch { /* dann ohne */ }
+        const wartet = aufhoerenMoeglich() ? ALLEIN_WARTET_MS : PARTIE_WARTET_MS;
+        try { localStorage.setItem(LETZTE_PARTIE, JSON.stringify({ ...meinPlatz, zeit: Date.now(), wartet })); } catch { /* dann ohne */ }
       }
       break;
 
@@ -738,6 +746,8 @@ function pauseZeigen(nachricht) {
   if (ansicht) ansicht.anhalten(an);
   pauseFeld.hidden = !an;
   pauseKnopf.textContent = an ? 'Weiter' : 'Pause';
+  // Oben nicht doppelt, was mitten im Bild steht.
+  pauseKnopf.classList.toggle('imPausefeld', an);
   if (!an) return;
   document.getElementById('pauseWer').textContent = `${nachricht.name} hat die Partie angehalten.`;
   const frist = document.getElementById('pauseFrist');
@@ -1703,11 +1713,13 @@ function platzVergessen() {
 }
 
 // Eine Partie, die noch laufen kann: der Server haelt sie eine halbe Stunde,
-// nachdem der letzte gegangen ist (raeume AC-13, AC-17).
+// nachdem der letzte gegangen ist (raeume AC-13, AC-17) - allein und
+// gesichert zwei Minuten (`wartet`, oben bei LETZTE_PARTIE).
 function letztePartie() {
   try {
     const gemerkt = JSON.parse(localStorage.getItem(LETZTE_PARTIE) || 'null');
-    if (gemerkt && gemerkt.code && gemerkt.token && Date.now() - gemerkt.zeit < 30 * 60 * 1000) return gemerkt;
+    const wartet = gemerkt?.wartet || PARTIE_WARTET_MS;
+    if (gemerkt && gemerkt.code && gemerkt.token && Date.now() - gemerkt.zeit < wartet) return gemerkt;
     if (gemerkt) localStorage.removeItem(LETZTE_PARTIE);
   } catch { /* unlesbar ist wie leer */ }
   return null;
