@@ -14,7 +14,10 @@ auf einen Arbeitsbaum**, erst `cmd //c rmdir` auf die Junction.
 
 - `.claude/worktrees/manager`, Zweig `manager`: Stufe M0 (M0.1 bis M0.8),
   zuletzt der Hilfsagent M0.7 (`107844e` Module, `88e734c` Tagesform und
-  Eignung auf dem Server; sein Browserlauf schrieb Bilder, ungesichert).
+  Eignung auf dem Server, `5f07a80` sein Steuerstand — Einzelheiten dort
+  und in den Commit-Texten). Module haben keine globalen Namen: der
+  Browserlauf greift über `window.managerspiel`. `kader.eignungstabelle()`
+  hat keinen Leser mehr.
 - `.claude/worktrees/manager-m1`, Zweig `manager-m1`: **Stufe M1**, aus
   `manager` gemergt bei `b6a5a96`. Browserläufe mit eigenem Hafen
   (`E2E_HAFEN=4277`), nur wenn kein anderer Lauf rechnet.
@@ -65,13 +68,11 @@ Hafen 4278, alle Bilder angesehen. **Stufe M1 ist damit erreicht.**
 
 ## Als Nächstes
 
-1. Commit in `manager-m1`, wenn `npm run check` grün ist.
-2. `manager` (M0.7: `107844e`, `88e734c`, `5f07a80`) in `manager-m1`
-   mergen; Konflikt in diesem Steuerstand, vielleicht in `sicht.js`
-   (`spielerZeigen`, Eignung, Form) und `public/manager/*`.
-3. Ein ganzer Browserlauf ohne fremde Last (M0.7 sah sechs rote Fälle des
+1. M1 ist `c3ce667` (check grün, 1128 Tests, 17 Partien); `manager`
+   ist ganz gemergt (nur der Steuerstand kam noch dazu).
+2. Ein ganzer Browserlauf ohne fremde Last (M0.7 sah sechs rote Fälle des
    Strategiespiels unter Last — nicht unsere).
-4. Rückschau M1 (Lücken als Kriterien), ADR-0018 nachziehen, in
+3. Rückschau M1 (Lücken als Kriterien), ADR-0018 nachziehen, in
    `CLAUDE.md` „die Arbeit daran ruht" anpassen — mit dem Benutzer.
 
 ## Nicht geprüft
