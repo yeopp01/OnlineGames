@@ -2,7 +2,7 @@
 
 **Bereich:** Manager
 **Kuerzel:** oberflaeche
-**Stand:** 16/16 fertig
+**Stand:** 16/20 fertig · 4 offen
 
 ## Zweck
 
@@ -87,3 +87,30 @@ gescrollt, gemessen (→ [ADR-0010](../../docs/adr/0010-playwright.md)).
   der Spielstände und auf allen acht Blättern hält jeder sichtbare Text
   gegen seinen Grund mindestens 4,5 : 1, große Schrift 3 : 1 (WCAG AA);
   ausgenommen ist nur, was gesperrt ist.
+
+### Das Spiel im Bild (Stufe M1)
+
+Vorbild ist der [Spieltag-Entwurf](../../docs/manager/entwurf/spieltag.html).
+Der Browser zeigt, was der Server schickt — er rechnet keine Szene und
+schreibt keinen Satz (→ [Spieltag](spieltag.md) AC-29).
+
+- **AC-19** `offen` **Das Spiel läuft im Bild** — Ein live gespieltes Spiel
+  zeigt eine Anzeigetafel mit beiden Vereinen, Stand und Uhr, darunter den
+  Ticker Szene für Szene und ein Verlaufsband über 90 Minuten, in dem jedes
+  Tor mit Minute und Schütze lesbar steht. Das Tempo lässt sich wählen:
+  Normal, Schnell, Sofort und Pause. „Sofort" rechnet bis zum Abpfiff wie
+  heute.
+- **AC-20** `offen` **Wechseln im laufenden Spiel** — Während das Spiel läuft
+  oder steht, lassen sich Spieler wechseln und Ausrichtung, Härte und
+  Pressing verstellen. Was geändert ist, steht mit „wirkt ab Minute …" da;
+  was der Server abweist (der vierte Wechsel, ein Gesperrter), steht als
+  Grund im Bild.
+- **AC-21** `offen` **Die Halbzeit hält an** — Zur Pause hält das Spiel von
+  selbst an und zeigt die Kabine: Statistik der ersten Hälfte, drei
+  Ansprachen und die Wechsel. Auf 1366 × 768 steht die Kabine ganz im Bild,
+  ohne zu rollen. Die Zeile „Halbzeit" im Ticker ist leiser als ein Tor.
+- **AC-22** `offen` **Der Verein färbt die Seite** — Jeder Verein hat zwei
+  Farben; die eigene trägt der Kopf, auf der Anzeigetafel und im Verlaufsband
+  stehen beide Vereine in ihren. Für jeden Verein der Welt gemessen: Schrift
+  auf Vereinsfarbe hält 4,5 : 1, und zwei Vereine einer Begegnung sind im
+  Band voneinander zu unterscheiden.

@@ -2,7 +2,7 @@
 
 **Bereich:** Manager
 **Kuerzel:** spieltag
-**Stand:** 24/24 fertig
+**Stand:** 24/31 fertig · 7 offen
 
 ## Zweck
 
@@ -20,7 +20,8 @@ Platz steht.
 | Gehört dazu                                   | Gehört nicht dazu                            |
 | --------------------------------------------- | -------------------------------------------- |
 | Chancen, Tore, Vorlagen, Karten, Wechsel      | Tabelle und Kasse → [Liga](liga.md)          |
-| Nachwirkung auf Kondition, Moral, Statistik   | Spielverlauf zum Zusehen (wird es nicht)     |
+| Nachwirkung auf Kondition, Moral, Statistik   | Wie das Spiel im Bild läuft → [Bedienung](bedienung.md) |
+| Szenen, Sätze, Eingreifen, Kabine             |                                              |
 | Noten je Spieler                              | Verlängerung und Elfmeter → [Pokal](pokal.md) |
 
 ## Abnahmekriterien
@@ -105,6 +106,49 @@ Platz steht.
   Verlängerung und Elfmeterschießen. Was nicht geht, weist `eingreifen()` mit
   einem Satz ab und ändert nichts. Die Grundlage für das Spiel zum Zusehen
   und Eingreifen (Plan, M1).
+
+### Das Spiel zum Zusehen (Stufe M1)
+
+Die Szene ist in M1 **Kleidung, keine Rechnung**: ob eine Chance ein Tor
+wird, entscheidet die Rechnung von heute; Art, Zone, Ausgang eines
+Fehlschusses und Satz werden danach aus einer eigenen Zufallsquelle gezogen.
+Erst M2 lässt Fähigkeiten an den Gewichten drehen
+(→ [Plan](../../docs/manager/plan.md), M1).
+
+- **AC-27** `offen` **Jede Chance ist eine Szene** — Jede Chance, die
+  `abschnitt()` zählt, hat eine Art (Konter, Flanke, Steilpass, Fernschuss,
+  Ecke, Freistoß, Elfmeter, Einzelaktion, Abstauber), eine Zone, die
+  Beteiligten (Abschluss, Vorlage, Torwart) und einen Ausgang (Tor, gehalten,
+  vorbei, Pfosten, geblockt, Abseits). Die Beteiligten standen in dieser
+  Minute auf dem Platz (wie AC-17), Tor heißt Tor in der Rechnung und
+  umgekehrt.
+- **AC-28** `offen` **Szenen ändern kein Ergebnis** — Mit und ohne Szenen
+  kommt über 2000 Spiele dasselbe Ergebnis heraus, Ereignis für Ereignis;
+  die Gleichstandsprobe (manager AC-17) hält.
+- **AC-29** `offen` **Der Server schreibt die Sätze** — Je Art und Ausgang
+  mindestens sechs Sätze in `texte.js`, mit Namen statt Platzhaltern
+  eingesetzt; kein Platzhalter bleibt stehen, kein Satz kommt in einem Spiel
+  zweimal. Der Browser setzt nichts zusammen.
+- **AC-30** `offen` **Die Kabine wirkt verschieden** — Zur Halbzeit eine von
+  drei Ansprachen: ruhig bleiben, aufbauen, laut werden. Laut hebt bei
+  Rückstand und drückt bei Führung, aufbauen hilft einer Elf mit schwacher
+  Moral und verpufft bei starker. Gemessen je Lage über 1500 Spiele: keine
+  Ansprache ist in jeder Lage die beste. Stellwerte in `WIRKUNG.ansprache`.
+- **AC-31** `offen` **Auch die anderen stellen um** — Ab Minute 60 stellt ein
+  Verein des Servers bei Rückstand offensiver, bei knapper Führung
+  defensiver — über `eingreifen()`, wie ein Mensch. Die Tore je Spiel bleiben
+  zwischen 2,7 und 3,5, die Kennzahlen der übrigen Kriterien halten. Das
+  ändert die Welt: eigene Runde, neue Abdrücke der Gleichstandsprobe mit
+  Begründung.
+- **AC-32** `offen` **Das System im Spiel wechseln** — Im laufenden Spiel
+  lässt sich auch das System wechseln, mit neuen Plätzen ab dem nächsten
+  Abschnitt; ein System, das die Elf nicht kennt, kostet wie vor dem Spiel
+  (AC-25). Bis dahin weist `eingreifen()` es ab (AC-26).
+- **AC-33** `offen` **Eingreifen lohnt maßvoll** — Ein Mensch, der gut
+  eingreift, holt über eine Saison höchstens drei bis fünf Punkte mehr als die
+  Automatik — sonst wäre „Sofort“ eine Strafe. Gemessen mit einer Regel, die
+  so eingreift, wie ein aufmerksamer Mensch es täte, gegen dieselbe Saison
+  ohne Eingriff.
 
 ### Nachwirkung
 
