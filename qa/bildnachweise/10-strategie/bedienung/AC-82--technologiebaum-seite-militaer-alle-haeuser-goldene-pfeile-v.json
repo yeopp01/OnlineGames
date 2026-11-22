@@ -1,0 +1,10 @@
+{
+  "spec": "10-strategie/bedienung.md",
+  "ac": "AC-82",
+  "titel": "Technologiebaum, Seite Militär, alle Häuser: goldene Pfeile von Einheit zu Stufe (Miliz bis Zweihandkämpfer, Ritter bis Paladin), an Spezialeinheiten ihr Haus",
+  "datei": "e2e/tests/strategie-techbaum.spec.mjs",
+  "pfad": [
+    "Technologiebaum",
+    "bedienung AC-82: Stufen mit goldenem, Verbesserungen mit grauem Pfeil - von der Vorstufe abwaerts"
+  ]
+}

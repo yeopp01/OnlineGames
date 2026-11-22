@@ -1,0 +1,10 @@
+{
+  "spec": "10-strategie/bedienung.md",
+  "ac": "AC-81",
+  "titel": "Technologiebaum, Seite Wirtschaft, alle Häuser: Gebäude als Spalten, Landsitz bis Krone als Zeilen, rechts die weiteren Gebäude",
+  "datei": "e2e/tests/strategie-techbaum.spec.mjs",
+  "pfad": [
+    "Technologiebaum",
+    "bedienung AC-81: jedes Gebaeude, jede Einheit und jede Verbesserung genau einmal, in Zeilen nach Zeitalter"
+  ]
+}

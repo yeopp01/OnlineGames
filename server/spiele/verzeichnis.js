@@ -55,6 +55,12 @@ function pruefen(steckbrief, ordner) {
   if (steckbrief.platzname !== undefined && typeof steckbrief.platzname !== 'function') {
     throw new Error(`${wo}: platzname muss eine Funktion (nummer) => Text sein.`);
   }
+  // Etwas zum Nachschlagen, etwa ein Technologiebaum (bedienung AC-81).
+  // Freiwillig; die Plattform kennt nur den Titel und reicht die Daten durch.
+  const nachschlagen = steckbrief.nachschlagen;
+  if (nachschlagen !== undefined && (typeof nachschlagen?.titel !== 'string' || !nachschlagen.titel || typeof nachschlagen.daten !== 'function')) {
+    throw new Error(`${wo}: nachschlagen braucht titel (Text) und daten (Funktion).`);
+  }
 }
 
 function lesen(wurzel = __dirname) {
@@ -79,6 +85,8 @@ function lesen(wurzel = __dirname) {
       ...(steckbrief.plaetze ? { plaetze: steckbrief.plaetze } : {}),
       ...(steckbrief.jePlatz ? { jePlatz: steckbrief.jePlatz } : {}),
       ...(steckbrief.platzname ? { platzname: steckbrief.platzname } : {}),
+      // Beim Ausliefern bleibt nur der Titel; die Daten holt der Browser einzeln.
+      ...(steckbrief.nachschlagen ? { nachschlagen: { titel: steckbrief.nachschlagen.titel, daten: steckbrief.nachschlagen.daten } } : {}),
       reihenfolge: Number.isInteger(steckbrief.reihenfolge) ? steckbrief.reihenfolge : 100,
     });
   }

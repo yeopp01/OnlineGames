@@ -1,0 +1,10 @@
+{
+  "spec": "10-strategie/bedienung.md",
+  "ac": "AC-84",
+  "titel": "Am Riesen festgehaltene Tafel: Preis, Werte mit Wehrsteins Boni, ab dem Fürstentum – dieselbe Tafel wie an der Leiste",
+  "datei": "e2e/tests/strategie-techbaum.spec.mjs",
+  "pfad": [
+    "Technologiebaum",
+    "bedienung AC-84: die Tafel der Leiste an jedem Eintrag - zeigen, Tastatur, festhalten und Esc"
+  ]
+}

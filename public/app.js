@@ -3,6 +3,7 @@ import { Auswahlleiste } from './auswahlleiste.js';
 import { Uebersicht } from './uebersicht.js';
 import { Tasten } from './tasten.js';
 import { Ton } from './ton.js';
+import { Technologiebaum } from './techbaum.js';
 
 const teile = {
   vorraum: document.getElementById('vorraum'),
@@ -123,6 +124,7 @@ function empfangen(nachricht) {
       binGastgeber = nachricht.gastgeber === ich;
       spielerlisteZeichnen(nachricht);
       raumEinstellungenZeichnen(nachricht);
+      techbaumImWarteraum(nachricht);
       break;
 
     case 'aufbau':
@@ -720,16 +722,71 @@ document.getElementById('menueTasten').addEventListener('click', () => {
   menueSchliessen();
   tastenhilfe?.uebersichtZeigen(true);
 });
+document.getElementById('menueTechbaum').addEventListener('click', () => {
+  menueSchliessen();
+  techbaumImSpiel();
+});
 document.getElementById('menueVorraum').addEventListener('click', zumVorraum);
 document.getElementById('abschlussVorraum').addEventListener('click', zumVorraum);
 // F10 vor allem anderen: der Browser oeffnet damit sonst sein eigenes Menue.
 window.addEventListener('keydown', (e) => {
-  if (e.key !== 'F10' || teile.spiel.hidden || !ansicht) return;
+  // Ueber dem Technologiebaum nicht: ihm gehoert dann die Tastatur.
+  if (e.key !== 'F10' || teile.spiel.hidden || !ansicht || techbaum.offen) return;
   e.preventDefault();
   e.stopPropagation();
   if (menue.hidden) menueOeffnen();
   else menueSchliessen();
 }, true);
+
+// ---- Der Technologiebaum (bedienung AC-81 bis AC-86) -----------------------
+// Aus dem Menue im Spiel und aus dem Warteraum. Eine Ebene ueber der Seite,
+// kein eigener Tab: die Partie laeuft darunter weiter, wie unter dem Menue.
+const techbaum = new Technologiebaum();
+
+function techbaumImSpiel() {
+  if (!ansicht || teile.spiel.hidden) return;
+  const mein = ansicht.spieler.get(ansicht.ich);
+  // Solange der Baum offen ist, schiebt die Maus am Rand nicht die Karte
+  // darunter (bedienung AC-9) - die Wahl des Spielers bleibt, wie sie war.
+  const randSchieben = ansicht.randSchieben;
+  ansicht.randSchieben = false;
+  techbaum.oeffnen({
+    haus: mein?.haus || null,
+    farbe: mein?.farbe,
+    danach: () => { ansicht.randSchieben = randSchieben; },
+  });
+}
+
+// Im Warteraum nur, wenn das Spiel des Raums etwas zum Nachschlagen hat -
+// das sagt die Liste der Spiele, nicht der Raum (ADR-0006).
+/** @type {Promise<any[]> | null} */
+let spieleGeholt = null;
+let letzterRaum = null;
+const techbaumKnopf = document.getElementById('techbaumOeffnen');
+
+function spieleHolen() {
+  if (!spieleGeholt) {
+    spieleGeholt = fetch('/api/spiele').then((a) => a.json()).then((d) => d.spiele || []);
+    spieleGeholt.catch(() => { spieleGeholt = null; });
+  }
+  return spieleGeholt;
+}
+
+function techbaumImWarteraum(nachricht) {
+  letzterRaum = nachricht;
+  spieleHolen().then((spiele) => {
+    const spiel = spiele.find((s) => s.art === nachricht.art);
+    techbaumKnopf.hidden = !spiel?.nachschlagen;
+    if (spiel?.nachschlagen) techbaumKnopf.textContent = spiel.nachschlagen.titel;
+  }).catch(() => { techbaumKnopf.hidden = true; });
+}
+
+techbaumKnopf.addEventListener('click', () => {
+  // Mit dem eigenen Haus, wenn es gewaehlt ist - Zufall ist keins.
+  const platz = (letzterRaum?.plaetze || []).find((p) => p.platz === ich);
+  const haus = platz?.wahl?.haus;
+  techbaum.oeffnen({ haus: typeof haus === 'string' && haus !== 'zufall' ? haus : null });
+});
 
 // ---- Vollbild (bedienung AC-73) --------------------------------------------
 // Im Fenster gehoeren Strg+1 bis 8 dem Browser - er wechselt damit den Tab,
