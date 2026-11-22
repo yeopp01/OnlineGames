@@ -83,6 +83,7 @@
  * @property {number} [seite] Seite im Baumenue (bedienung AC-64): fehlt es, ist es die erste (Wirtschaft), 1 ist die zweite (Militaer)
  * @property {boolean} [handel]
  * @property {number} [hoechstens] so viele je Spieler, Baustellen mitgezaehlt (bauen AC-51)
+ * @property {number} [bauenAb] erst ab diesem Zeitalter neu zu bauen, wenn das spaeter ist als `zeitalter` - zu dem es weiter gehoert, beim Aufstieg und im Technologiebaum (bauen AC-57)
  * @property {boolean} [wunder] steht es fertig WUNDER_SEKUNDEN lang, gewinnt sein Besitzer (spielziel AC-29)
  */
 
@@ -164,7 +165,10 @@ const EINHEITEN = {
     // Spiel. Getroffen wird er trotzdem wehrhaft.
     wacht: false,
     baut: ['haus', 'muehle', 'holzfaellerlager', 'bergbaulager', 'farm', 'kaserne', 'schiessanlage', 'stall', 'schmiede', 'aussenposten',
-      'kloster', 'universitaet', 'belagerungswerkstatt', 'wachturm', 'steinmauer', 'tor', 'burg', 'markt', 'wunder'],
+      'kloster', 'universitaet', 'belagerungswerkstatt', 'wachturm', 'steinmauer', 'tor', 'burg', 'markt', 'wunder',
+      // Zuletzt: es kommt erst mit der Krone (bauen AC-57), und keine Taste
+      // davor verschiebt sich.
+      'dorfzentrum'],
   },
   // Ausgebildet wird er im Stall, also ab der Feudalzeit; zu Beginn steht
   // einer in der Startaufstellung (bauen AC-22).
@@ -547,9 +551,17 @@ const TIERE = {
 const ALLE = ['holz', 'nahrung', 'gold', 'stein'];
 /** @type {Record<string, Gebaeudewerte>} */
 const GEBAEUDE = {
+  // Eines steht zu Beginn; ein zweites baut ein Dorfbewohner erst in der
+  // Krone (bauen AC-57, Benutzer: "im Kronezeitalter noch EIN zweites").
+  // `bauenAb` statt `zeitalter`: das Dorfzentrum bleibt ein Gebaeude der
+  // Dunklen Zeit - es zaehlt zum ersten Aufstieg (bauen AC-23) und steht im
+  // Technologiebaum in der ersten Zeile. `hoechstens: 2` zaehlt das erste mit.
+  // Im Baumenue und im Technologiebaum steht es auf der Militaerseite
+  // (`seite: 1`): die Wirtschaft traegt in der Krone schon zehn, mehr erlaubt
+  // bedienung AC-64 nicht, und es bildet eine Einheit mit Angriff aus.
   dorfzentrum: {
     groesse: 4, kosten: { holz: 275, stein: 100 }, bauzeit: 150, leben: 2400, wohnraum: 5,
-    annahme: ALLE,
+    seite: 1, annahme: ALLE, bauenAb: 3, hoechstens: 2,
     bildetAus: ['dorfbewohner', 'webstuhl', 'stadtwache', 'stadtpatrouille', 'schubkarre', 'handkarren', 'feudalzeit', 'ritterzeit', 'imperialzeit'],
   },
   // `zumAufstieg: false`: zaehlt nicht zu den zwei Gebaeuden, die ein Aufstieg

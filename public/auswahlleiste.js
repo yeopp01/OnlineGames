@@ -1977,6 +1977,13 @@ export class Auswahlleiste {
       if (lesen('angriff') > 0) zeilen.push(`Schießt von selbst: ${lesen('angriff')} Angriff, Reichweite ${lesen('reichweite')}`);
       if (w.tor) zeilen.push('Lässt die eigenen Einheiten durch');
       if (w.gezogen) zeilen.push('Wird von Feld zu Feld gezogen');
+      // Die Grenze je Spieler (bauen AC-51, AC-57). Was es gibt, bevor es zu
+      // bauen ist, stand schon beim Start - das erste Dorfzentrum zaehlt mit.
+      if (w.hoechstens === 1) zeilen.push('Nur eines je Spieler');
+      else if (w.hoechstens) {
+        const mit = (w.bauenAb || 0) > (w.zeitalter || 0) ? ', das erste mitgezählt' : '';
+        zeilen.push(`Höchstens ${['', 'eines', 'zwei', 'drei'][w.hoechstens] || w.hoechstens} je Spieler${mit}`);
+      }
       zeilen.push(`${lesen('leben')} Leben · Sicht ${lesen('sicht')}`);
       return { name: this.gebaeudeName(a.ich, art), kosten: w.kosten || {}, dauer: w.bauzeit ? `Bauzeit ${w.bauzeit} s` : null, zeilen };
     }
@@ -2366,14 +2373,16 @@ export class Auswahlleiste {
 
   // Was die Auswahl bauen kann: jedes Gebaeude, das mindestens einer baut -
   // und das im erreichten Zeitalter schon zu haben ist (bauen AC-24). Was
-  // spaeter kommt, steht gar nicht erst im Menue.
+  // spaeter kommt, steht gar nicht erst im Menue - auch das zweite
+  // Dorfzentrum vor der Krone nicht (`bauenAb`, bauen AC-57).
   bauplan(auswahl) {
     const werte = this.ansicht.werte;
     const arten = new Set();
     for (const e of auswahl) {
       if (e.b !== this.ansicht.ich) continue;
       for (const art of werte.einheiten[this.ansicht.arten[e.k]]?.baut || []) {
-        if ((werte.gebaeude[art]?.zeitalter || 0) <= this.ansicht.zeitalter) arten.add(art);
+        const g = werte.gebaeude[art];
+        if (Math.max(g?.zeitalter || 0, g?.bauenAb || 0) <= this.ansicht.zeitalter) arten.add(art);
       }
     }
     return [...arten].map((art) => ({

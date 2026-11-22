@@ -1,0 +1,10 @@
+{
+  "spec": "10-strategie/bauen.md",
+  "ac": "AC-57",
+  "titel": "In der Krone: Annas zweites Dorfzentrum fertig und gewählt, daneben das erste; die Leiste bildet Dorfbewohner aus wie am ersten",
+  "datei": "e2e/tests/strategie-dorfzentrum.spec.mjs",
+  "pfad": [
+    "Zweites Dorfzentrum",
+    "bauen AC-57: in der Krone steht das Dorfzentrum im Baumenue, ein zweites wird gesetzt und fertig, ein drittes abgewiesen"
+  ]
+}
