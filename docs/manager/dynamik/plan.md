@@ -136,6 +136,76 @@ Saison 6 sind es 22,7–23,3 — reißt also auch das Band 23 bis 25 unten) —
 Schritte 3 und 4.
 Tore und Unentschieden bewegen sich um rund einen Standardfehler.
 
+**Schritt 3 steht, anders als oben geplant** (transfer AC-26, AC-27
+`fertig`). Gebaut ist die Gegenprobe **m3**, nicht „Exponent 5, Gehalt
+flacher“: das Gehalt bleibt, wie es ist (Vorgabe der Freigabe), nur der
+Marktwert steigt. In `kader.js`:
+
+- `WERT_JE_GEHALT = 2,3` — der Marktwert ist das 2,3-Fache von vorher, bei
+  gleichem Gehalt. **Gesetzt**, aus der Gegenprobe m3 (19–20 % in beiden
+  Ligen), nicht weiter abgestimmt.
+- `ALTERSPUNKTE` — der Altersfaktor linear zwischen Stützpunkten (21: 1,35,
+  26: 1,15, 30: 0,75, dann 31 bis 35 je Jahr 0,65 / 0,56 / 0,48 / 0,41 /
+  0,35; ab 35 bleibt er stehen). Die Stützpunkte ab 31 sind **gesetzt**, so
+  dicht, dass kein Jahr mehr als 15 % kostet: größter Verlust 34 auf 35
+  mit 14,7 %, 28 auf 29 jetzt 11,8 % statt 35 %. Dass 35 und 36 gleich viel
+  wert sind, ist eine Folge, keine Absicht — mit 36 hört fast jeder auf.
+- `STARTKONTO` ×2,3 (Liga 1 `g · 110 · 2,3`, Liga 2 `g · 60 · 2,3`). **Nicht
+  geplant, nötig:** mit doppelten Werten und altem Startkonto bekam ein
+  Verein der ersten Liga im ersten Fenster in 30 Startwerten 27-mal kein
+  einziges Angebot statt 9-mal, denn ein Gebot darf höchstens 70 % des
+  Kontos sein (transfer AC-11) — transfer AC-11 und AC-20 fielen. Der
+  Faktor ist **gesetzt** (derselbe wie beim Wert), nicht abgestimmt.
+
+Gemessen mit `npm run manager:dynamik -- --saisons 20 --startwerte
+4711,20260910,77,1234`, Schritt 2 (`6196e2b`) gegen Schritt 3:
+
+| Band | Schritt 2 | Schritt 3 |
+| --- | --- | --- |
+| finanzen AC-17 | hält an allen vier | hält, an allen vier nie einer unter −3 Mio |
+| finanzen AC-18 | hält; Median S20 L1 44,9–56,1, L2 7,8–8,2 Mio | hält; L1 20,0–46,1, L2 5,3–6,7 Mio |
+| transfer AC-26 | reißt (Saison 1 44 %) | **hält**, jede Saison 18–21 % |
+| transfer AC-27 | reißt (−15 / −35 / −54 %) | **hält**, höchstens 14,7 % |
+| kader AC-23 | reißt | reißt (S5–20: 1 bis 21 ab Stärke 85) |
+| kader AC-24 | reißt unten (S20 23,1–23,2) | reißt unten (Minimum 22,78–22,89; S20 23,0–23,3) |
+| finanzen AC-19 | reißt ab S10–16; S20 4,7–8,1-fach | **reißt früher**, ab S5–7; S20 4,9–8,3-fach, größtes Konto 190–321 Mio |
+| kader AC-25, AC-26 | reißen | reißen (Jugend rund 21 bis 24 unter dem Niveau) |
+
+`npm run manager:messen`, HEAD → m3 ohne Startkonto → Schritt 3, über 3 / 9
+Startwerte: Tore 3,16 → 3,21 → 3,23 / 3,16 → 3,19 → 3,20; Heimsiege 48,5
+→ 47,3 → 47,7 / 46,2 → 46,9 → 46,9 %; Unentschieden 20,6 → 22,2 → 20,6 /
+22,4 → 22,1 → 22,2 %; Favorit 52,0 → 51,1 → 52,5 / 51,3 → 51,5 → 50,5 % —
+innerhalb der Streuung. Stärke L1 68,0 → 69,2 / 68,5 → 69,7, kleinster
+Kader 16,3 → 17,7 / 16,6 → 17,6, Konto L1 14,6 → 27,4 / 14,8 → 26,5 Mio
+(das Startkonto). **Nicht erklärt:** Einwechslungen je Spiel 3,17 → 2,91 /
+3,18 → 2,79 (mit m3 allein 3,42 / 3,40; kein Test sieht sie, spieltag
+AC-12 nennt 1,7 bis 2,0 je Mannschaft und lag schon vorher daneben), und
+die Rechenzeit 190 → 227 / 154 → 240 ms je Saison (Spielstand 403 → 411 /
+407 → 416 KB).
+
+**Was es mit dem Markt macht** (eigene Messung, Scratchpad): Angebote an
+einen menschlichen Verein je Lauf 58–117 vorher, 27–68 mit m3 allein,
+32–49 mit Schritt 3 — sie bleiben im Lauf **rund halbiert**, denn die
+70-%-Grenze am Konto wächst nicht mit, sobald die Konten im Gleichgewicht
+sind. Gebot zu Marktwert 0,96–0,97. Der **Händler-Hebel** (ein Mensch, der
+nur kauft und verkauft) je Saison, vorher → m3 → Schritt 3: Liga 1 Mitte
+18,6 → 23,5 → 18,1 Mio, Liga 1 Bester 16,1 → 19,4 → 15,9, **Liga 2 Mitte
+8,8 → 18,1 → 15,2 Mio — fast doppelt**; geholt/verkauft je Saison 5,5/3,3,
+4,5/3,1, 4,6/3,1. Ein Handgeld für Vereinslose ist **nicht gebaut**.
+`besterZugang` wiegt den Preis weiter mit `preis / 1500` gegen die Stärke —
+bei doppelten Preisen heißt das: die KI scheut teure Spieler doppelt so
+stark. **Nicht geprüft**, ob das so bleiben soll.
+
+**spieltag AC-33 als Messung umgestellt** (`tests/manager-eingriff.test.mjs`):
+über 20 Startwerte war „mild“ schon auf Schritt 2 nur +0,5 (±0,6), mit
+Schritt 3 −0,4 — der Test hing am Zufall. Jetzt 40 Startwerte (mild +2,0
+±0,5, hart +2,2 ±0,6), verlangt wird mild > 0, hart > 0 und hart ≤ 5;
+„hart mehr als mild“ steht nicht im Kriterium und hält über 60 Saisons nur
+mit 1,1 (±0,7) — gestrichen, nicht gelockert. Der Test dauert 19 statt 9,5 s.
+
+Weiter rot: kader AC-23 bis AC-26 (Schritte 4 und 5), finanzen AC-19
+(Schritt 6 — der Reichtum ist mit Schritt 3 **schlimmer** geworden).
+
 ## Wovon Auf- und Abwertung heute abhängt (`kader.entwickeln`)
 
 Zweimal je Saison (Winter × 0,4 ohne Altern, Sommer × 0,6 mit Altern),

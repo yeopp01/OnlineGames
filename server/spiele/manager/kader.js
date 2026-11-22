@@ -172,18 +172,40 @@ function jahresgehalt(staerke) {
 }
 
 /**
- * Marktwert in Tausend. Waechst steiler als das Gehalt: ein Spitzenspieler
- * ist nicht doppelt so viel wert wie ein guter, sondern ein Vielfaches.
- * Alter und ungenutztes Talent verschieben ihn.
+ * Der Marktwert im Verhaeltnis zum Gehalt (Schritt 3 der Spieldynamik,
+ * docs/manager/dynamik/plan.md): mit 24 bis 28 ist ein Jahresgehalt rund ein
+ * Fuenftel des Werts (transfer AC-26). Das Gehalt bleibt, der Wert steigt.
+ */
+const WERT_JE_GEHALT = 2.3;
+
+/**
+ * Altersfaktor des Marktwerts, linear zwischen den Stuetzpunkten, ausserhalb
+ * der erste und der letzte Wert. Bis 30 aus der Gegenprobe m3; danach je Jahr
+ * ein Punkt, damit kein Geburtstag mehr als 15 % kostet (transfer AC-27) -
+ * die Werte ab 31 sind gesetzt, nicht aus einer Vorlage.
+ */
+const ALTERSPUNKTE = [[21, 1.35], [26, 1.15], [30, 0.75], [31, 0.65], [32, 0.56], [33, 0.48], [34, 0.41], [35, 0.35]];
+
+function altersfaktor(alter) {
+  if (alter <= ALTERSPUNKTE[0][0]) return ALTERSPUNKTE[0][1];
+  for (let i = 1; i < ALTERSPUNKTE.length; i++) {
+    const [bis, nach] = ALTERSPUNKTE[i];
+    const [von, vor] = ALTERSPUNKTE[i - 1];
+    if (alter <= bis) return vor + ((nach - vor) * (alter - von)) / (bis - von);
+  }
+  return ALTERSPUNKTE[ALTERSPUNKTE.length - 1][1];
+}
+
+/**
+ * Marktwert in Tausend. Waechst mit der vierten Potenz der Staerke wie das
+ * Gehalt, aber um `WERT_JE_GEHALT` hoeher: ein Spitzenspieler ist nicht
+ * doppelt so viel wert wie ein guter, sondern ein Vielfaches. Alter
+ * (`altersfaktor`) und ungenutztes Talent verschieben ihn.
  */
 function marktwert(spieler) {
   const grund = (spieler.staerke / 10) ** 4 / 0.9;
-  const nachAlter = spieler.alter <= 23 ? 1.35
-    : spieler.alter <= 28 ? 1.15
-      : spieler.alter <= 31 ? 0.75
-        : 0.35;
   const luft = 1 + Math.max(0, spieler.talent - spieler.staerke) / 60;
-  return Math.max(20, Math.round(grund * nachAlter * luft));
+  return Math.max(20, Math.round(grund * altersfaktor(spieler.alter) * luft * WERT_JE_GEHALT));
 }
 
 /**
@@ -290,8 +312,12 @@ function vereinErzeugen(zufall, { id, name, liga, guete, neueId, neuerName }) {
 }
 
 // Startwerte je Liga, aus der Guete des Vereins. Ausgerichtet an der
-// Messung ueber mehrere Saisons (→ specs/15-manager/finanzen.md).
-const STARTKONTO = { 1: (g) => g * 110, 2: (g) => g * 60 };
+// Messung ueber mehrere Saisons (→ specs/15-manager/finanzen.md). Das
+// Startkonto waechst mit dem Marktwert (`WERT_JE_GEHALT`): sonst kann im
+// ersten Fenster fast kein Verein mehr ein Gebot zahlen (hoechstens 70 % des
+// Kontos, transfer AC-11) - ein Verein der ersten Liga bekam in 30
+// Startwerten 27-mal kein einziges Angebot statt 9-mal.
+const STARTKONTO = { 1: (g) => g * 110 * WERT_JE_GEHALT, 2: (g) => g * 60 * WERT_JE_GEHALT };
 const STADIONPLAETZE = { 1: (g) => g * 380, 2: (g) => g * 230 };
 const EINTRITT = { 1: 22, 2: 14 };
 

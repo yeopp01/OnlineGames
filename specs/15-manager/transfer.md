@@ -2,7 +2,7 @@
 
 **Bereich:** Manager
 **Kuerzel:** transfer
-**Stand:** 24/27 fertig · 2 offen · 1 zurueckgestellt
+**Stand:** 26/27 fertig · 1 zurueckgestellt
 
 ## Zweck
 
@@ -28,17 +28,21 @@ und die anderen Vereine handeln nach denselben Regeln, auch untereinander.
   Bruchteil dessen, was derselbe Spieler mit 25 gekostet hätte.
 - **AC-3** `fertig` **Ungenutztes Talent hebt ihn** — Wer sein Talent noch
   nicht erreicht hat, ist teurer als einer, der es ausgeschöpft hat.
-- **AC-26** `offen` **Gehalt ein Fünftel des Werts** — Wer 24 bis 28 Jahre
+- **AC-26** `fertig` **Gehalt ein Fünftel des Werts** — Wer 24 bis 28 Jahre
   alt ist, verdient im Jahr 15 bis 25 % seines Marktwerts, gemittelt über
   alle in Vereinen, am letzten Termin jeder von zwanzig Saisons ohne
   Menschen. Eine Ablöse wiegt damit vier bis sechs Jahresgehälter. Gezählt
   wird das Vertragsgehalt — was der Verein zahlt —, nicht der Gehaltswunsch
-  (→ [Verträge](vertraege.md) AC-2).
-- **AC-27** `offen` **Kein Geburtstag als Klippe** — Bei gleicher Stärke und
+  (→ [Verträge](vertraege.md) AC-2). Seit Schritt 3 (Marktwert ×2,3) an
+  den Startwerten 20260910, 4711, 77 und 1234 in jeder Saison 18 bis 21 %;
+  auf Schritt 2 waren es in Saison 1 44 %.
+- **AC-27** `fertig` **Kein Geburtstag als Klippe** — Bei gleicher Stärke und
   gleichem Talent kostet ein Jahr mehr höchstens 15 % des Marktwerts, für
   jedes Alter von 17 bis 36 und die Stärken 45, 60, 75 und 90. Wer 28 wird,
-  verliert nicht über Nacht ein Drittel. Auf Schritt 2 reißt es an drei
-  Geburtstagen: 23 auf 24 −15 %, 28 auf 29 −35 %, 31 auf 32 −54 %.
+  verliert nicht über Nacht ein Drittel. Auf Schritt 2 riss es an drei
+  Geburtstagen: 23 auf 24 −15 %, 28 auf 29 −35 %, 31 auf 32 −54 %. Seit
+  Schritt 3 (Altersfaktor linear zwischen Stützpunkten) höchstens 14,7 %
+  (34 auf 35), 28 auf 29 −11,8 %; ab 35 bleibt der Faktor stehen.
 - **AC-4** `fertig` **Forderung über dem Marktwert** — Ein Verein verkauft
   nicht gern, und einen Stammspieler noch weniger gern als den vierten Torwart.
   Billiger wird es nur auf der Transferliste und im letzten Vertragsjahr.

@@ -1147,6 +1147,16 @@
       "begruendung": "Der Median der Konten je Liga am Ende jeder von zwanzig Saisons ohne Menschen liegt ueber null. Das ist eine Kennzahl ueber alle 18 Vereine einer Liga und zwanzig Jahre, gerechnet ohne Browser; die Oberflaeche zeigt nur das eigene Konto in der laufenden Saison, keinen Median und keine Folge von Jahren. Belegt im Rechenteil am Startwert 20260910, mit npm run manager:dynamik zusaetzlich an 4711, 77 und 1234."
     },
     {
+      "spec": "15-manager/transfer.md",
+      "ac": "AC-26",
+      "begruendung": "Ein Verhaeltnis ueber zwanzig Saisons ohne Menschen: am Ende jeder Saison das Vertragsgehalt geteilt durch den Marktwert, gemittelt ueber alle Vereinsspieler von 24 bis 28, muss zwischen 15 und 25 % liegen. Das ist ein Mittel ueber mehrere hundert Spieler aller 36 Vereine und zwanzig Jahre, gerechnet ohne Browser; die Oberflaeche zeigt Gehalt und Wert einzelner Spieler an einem Tag, kein Mittel und keine Folge von Jahren. Belegt im Rechenteil am Startwert 20260910, mit npm run manager:dynamik zusaetzlich an 4711, 77 und 1234."
+    },
+    {
+      "spec": "15-manager/transfer.md",
+      "ac": "AC-27",
+      "begruendung": "Eine Eigenschaft der Marktwertformel: fuer jeden Geburtstag von 17 auf 18 bis 35 auf 36 und die Staerken 45, 60, 75 und 90 kostet ein Jahr mehr bei gleicher Staerke und gleichem Talent hoechstens 15 % des Werts. Das ist ein Vergleich desselben Spielers mit sich selbst ein Jahr spaeter, den es im Spiel so nie gibt - wer altert, aendert auch seine Staerke; ein Bildschirm zeigt den Wert eines Spielers an einem Tag. Belegt im Rechenteil an der Formel (kader.marktwert), unabhaengig von einer Welt."
+    },
+    {
       "spec": "15-manager/vorstand.md",
       "ac": "AC-1",
       "begruendung": "Die Zuordnung von Kaderrang zu Ziel als Regel ueber beide Ligen. Das Ziel des eigenen Vereins zeigt das Bild zu vorstand AC-9."

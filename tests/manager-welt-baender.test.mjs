@@ -4,7 +4,8 @@
 // `npm run manager:dynamik` die Bandtabelle druckt.
 //
 // Was noch reisst, steht auf `offen` und der Test auf `todo` (finanzen
-// AC-17 und AC-18 halten seit Schritt 2). Wer einen Schritt des Plans baut,
+// AC-17 und AC-18 halten seit Schritt 2, transfer AC-26 und AC-27 seit
+// Schritt 3). Wer einen Schritt des Plans baut,
 // nimmt das `todo` weg, sobald sein Band ueber diese Welt haelt - und prueft
 // mit `npm run manager:dynamik` ueber mehrere Startwerte, dass es nicht nur
 // hier haelt.
@@ -51,7 +52,7 @@ test('finanzen AC-18: der Median der Konten bleibt je Liga im Plus', () => {
   pruefen('finanzen AC-18');
 });
 
-test('transfer AC-26: mit 24 bis 28 ist ein Jahresgehalt 15 bis 25 % des Marktwerts', { todo: 'reisst heute - Schritt 3 des Plans, Preisgefuege' }, () => {
+test('transfer AC-26: mit 24 bis 28 ist ein Jahresgehalt 15 bis 25 % des Marktwerts', () => {
   pruefen('transfer AC-26');
 });
 
@@ -59,15 +60,15 @@ test('kader AC-23: ab Saison 5 drei bis acht Spieler ab Staerke 85 in Liga 1', {
   pruefen('kader AC-23');
 });
 
-test('kader AC-24: das Durchschnittsalter bleibt ab Saison 2 zwischen 23 und 25', { todo: 'reisst heute unten (22,7) - Schritt 4 des Plans, Abbau ab 29 und Karriereende' }, () => {
+test('kader AC-24: das Durchschnittsalter bleibt ab Saison 2 zwischen 23 und 25', { todo: 'reisst heute unten (22,8 bis 23,0) - Schritt 4 des Plans, Abbau ab 29 und Karriereende' }, () => {
   pruefen('kader AC-24');
 });
 
-test('transfer AC-27: ein Geburtstag kostet hoechstens 15 % des Marktwerts', { todo: 'reisst heute mit 28 und 31 - Schritt 3 des Plans, Altersfaktor' }, () => {
+test('transfer AC-27: ein Geburtstag kostet hoechstens 15 % des Marktwerts', () => {
   pruefen('transfer AC-27');
 });
 
-test('finanzen AC-19: das groesste Konto der Liga 1 bleibt unter vier Jahreseinnahmen', { todo: 'reisst heute ab Saison 10 bis 16 - Schritt 6 des Plans, Reichtum' }, () => {
+test('finanzen AC-19: das groesste Konto der Liga 1 bleibt unter vier Jahreseinnahmen', { todo: 'reisst heute ab Saison 5 bis 7 - Schritt 6 des Plans, Reichtum' }, () => {
   pruefen('finanzen AC-19');
 });
 

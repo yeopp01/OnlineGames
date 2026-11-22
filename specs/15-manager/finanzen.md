@@ -85,6 +85,8 @@ Verein im Schnitt der Liga, über die ersten drei Saisons zweier Startwerte:
   Wer dauerhaft gewinnt, darf reich sein, aber nicht ohne Ende horten. Auf
   Schritt 2 reißt es an allen vier Startwerten zwischen der zehnten und der
   sechzehnten Saison; in der zwanzigsten 4,7- bis 8,1-fach (146 bis 339 Mio).
+  Seit Schritt 3 (Marktwert und Startkonto ×2,3) reißt es früher, ab der
+  fünften bis siebten Saison; in der zwanzigsten 4,9- bis 8,3-fach.
 - **AC-9** `fertig` **Ein Minus wird gemeldet** — Wer ins Minus rutscht,
   erfährt es, samt der Grenze, ab der es Punkte kostet.
 - **AC-10** `fertig` **Tiefes Minus kostet Punkte** — Siehe
