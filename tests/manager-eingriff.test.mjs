@@ -1,9 +1,12 @@
-// Eingreifen im laufenden Spiel (Stufe M1): die Ansprache zur Halbzeit.
+// Eingreifen im laufenden Spiel (Stufe M1): die Ansprache zur Halbzeit und
+// die Vereine des Servers, die ab Minute 60 umstellen.
 // Gemessen wird gepaart - derselbe Halbzeitstand, einmal je Ansprache zu
 // Ende gerechnet, mit demselben Zufall. So zaehlt nur, was die Ansprache tut.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { createRequire } from 'node:module';
+// Vor der Karriere geladen: die Messung beobachtet die Begegnungen.
+import { kennzahlen, laufen } from '../scripts/manager-messung.mjs';
 
 const require = createRequire(import.meta.url);
 const kader = require('../server/spiele/manager/kader.js');
@@ -95,4 +98,83 @@ test('spieltag AC-30: angesprochen wird einmal, in der Halbzeit, und der Verein 
   assert.deepEqual(eingreifen(geladen, 'heim', { ansprache: 'ruhig' }), { fehler: 'Die Ansprache ist gehalten.' });
   abpfiff(spiel);
   assert.equal(JSON.stringify(heim), vorher);
+});
+
+/** Die Regel aus AC-31, von Hand - so, wie ein Mensch sie am Bildschirm befolgte. */
+function vonHand(spiel, grund) {
+  const w = WIRKUNG.umstellen;
+  if (spiel.minute < w.ab) return;
+  spiel.seiten.forEach((seite, i) => {
+    const abstand = seite.tore - spiel.seiten[1 - i].tore;
+    const schritt = abstand <= -2 ? w.deutlich : abstand === -1 ? w.rueckstand : abstand === 1 ? w.fuehrung : 0;
+    const ziel = Math.min(5, Math.max(1, grund[i] + schritt));
+    if (ziel !== seite.taktik.ausrichtung) {
+      assert.deepEqual(eingreifen(spiel, i === 0 ? 'heim' : 'gast', { taktik: { ausrichtung: ziel } }), { ok: true });
+    }
+  });
+}
+
+test('spieltag AC-31: ein Verein des Servers stellt ab Minute 60 um - genau wie ein Mensch, der eingreift', () => {
+  const gesehen = { rueckstand: 0, deutlich: 0, fuehrung: 0 };
+  let anders = 0;
+  for (let i = 0; i < 200; i++) {
+    const heim = vereine[i % vereine.length];
+    const gast = vereine[(i * 5 + 1) % vereine.length];
+    if (heim.id === gast.id) continue;
+    const einstellungen = { aufstellungen: { heim: aufstellung(heim), gast: aufstellung(gast) } };
+    const selbst = anpfiff(heim, gast, zufallAus(500 + i), { ...einstellungen, umstellen: { heim: true, gast: true } });
+    const mensch = anpfiff(heim, gast, zufallAus(500 + i), einstellungen);
+    const grund = selbst.seiten.map((s) => s.taktik.ausrichtung);
+    while (!selbst.vorbei) {
+      const ziel = selbst.minute + 5;
+      vonHand(mensch, grund);
+      spielen(selbst, ziel);
+      spielen(mensch, ziel);
+      // Abschnitt fuer Abschnitt dasselbe Spiel, dieselbe Taktik.
+      assert.deepEqual(selbst.seiten.map((s) => s.taktik), mensch.seiten.map((s) => s.taktik), `Spiel ${i}, Minute ${ziel}`);
+      assert.equal(JSON.stringify(selbst.ereignisse), JSON.stringify(mensch.ereignisse));
+      selbst.seiten.forEach((s, j) => {
+        const abstand = s.tore - selbst.seiten[1 - j].tore;
+        // Vor Minute 60 bleibt jede Elf, wie sie begann.
+        if (selbst.minute < 65) assert.equal(s.taktik.ausrichtung, grund[j], `Spiel ${i}, Minute ${selbst.minute}: vor 60 umgestellt`);
+        if (s.taktik.ausrichtung !== grund[j]) anders += 1;
+        if (selbst.minute === 60) {
+          if (abstand === -1) gesehen.rueckstand += 1;
+          if (abstand <= -2) gesehen.deutlich += 1;
+          if (abstand === 1) gesehen.fuehrung += 1;
+        }
+      });
+    }
+    assert.deepEqual(abpfiff(selbst), abpfiff(mensch));
+  }
+  // Jede Lage kam vor, und umgestellt wurde wirklich.
+  for (const [lage, n] of Object.entries(gesehen)) assert.ok(n >= 15, `${lage} nur ${n}-mal`);
+  assert.ok(anders > 300, `nur ${anders} Abschnitte umgestellt`);
+});
+
+test('spieltag AC-31: ohne den Schalter stellt niemand um, und die Welt bleibt bei 2,7 bis 3,5 Toren', () => {
+  for (let i = 0; i < 40; i++) {
+    const heim = vereine[i % vereine.length];
+    const gast = vereine[(i * 3 + 2) % vereine.length];
+    if (heim.id === gast.id) continue;
+    const e = abpfiff(anpfiff(heim, gast, zufallAus(900 + i), { aufstellungen: { heim: aufstellung(heim), gast: aufstellung(gast) } }));
+    assert.deepEqual([e.taktik.heim.ausrichtung, e.taktik.gast.ausrichtung], [heim.taktik.ausrichtung, gast.taktik.ausrichtung]);
+  }
+  // Eine Saison ohne Menschen: jeder Verein stellt um. Gemessen (2026-11-22,
+  // zwei Saisons, sechs Startwerte): 3,20 Tore statt 3,06, Heimsiege 47,1 %
+  // statt 47,6, Unentschieden 22,2 statt 21,7, der Favorit gewinnt 51,7 %
+  // statt 51,4.
+  const z = kennzahlen(laufen({ startwert: 4711, saisons: 1 }), 1);
+  assert.ok(z.toreJeSpiel >= 2.7 && z.toreJeSpiel <= 3.5, `Tore je Spiel ${z.toreJeSpiel}`);
+  assert.ok(z.unentschieden >= 0.15 && z.unentschieden <= 0.3, `Unentschieden ${z.unentschieden}`);
+  // Im Spiel eines Menschen stellt nur der Gegner von selbst um.
+  const { Karriere, TERMINE } = require('../server/spiele/manager/karriere.js');
+  const k = Karriere.neu({ startwert: 4711, vereinId: 'v5', name: 'Umstellen' });
+  while (!k.eigenesSpielAm('v5', TERMINE[k.termin])?.gegnerId) assert.ok(k.weiter().ok);
+  assert.ok(k.anpfeifen('m1').ok);
+  const { spiel, seite } = k.offen.live;
+  const ich = spiel.seiten[seite === 'heim' ? 0 : 1];
+  const gegner = spiel.seiten[seite === 'heim' ? 1 : 0];
+  assert.equal(ich.umstellen, undefined);
+  assert.equal(gegner.umstellen, gegner.taktik.ausrichtung);
 });

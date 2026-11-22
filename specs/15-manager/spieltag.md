@@ -2,7 +2,7 @@
 
 **Bereich:** Manager
 **Kuerzel:** spieltag
-**Stand:** 29/31 fertig · 2 offen
+**Stand:** 30/31 fertig · 1 offen
 
 ## Zweck
 
@@ -142,12 +142,18 @@ Erst M2 lässt Fähigkeiten an den Gewichten drehen
   Punkte je Spiel, bei Führung mit starker Moral −0,03; aufbauen bei
   schwacher Moral +0,02 bis +0,04, bei starker genau nichts — die Wirkung
   ist klein, gewollt (AC-33). Die KI hält keine Ansprache.
-- **AC-31** `offen` **Auch die anderen stellen um** — Ab Minute 60 stellt ein
+- **AC-31** `fertig` **Auch die anderen stellen um** — Ab Minute 60 stellt ein
   Verein des Servers bei Rückstand offensiver, bei knapper Führung
   defensiver — über `eingreifen()`, wie ein Mensch. Die Tore je Spiel bleiben
   zwischen 2,7 und 3,5, die Kennzahlen der übrigen Kriterien halten. Das
   ändert die Welt: eigene Runde, neue Abdrücke der Gleichstandsprobe mit
-  Begründung.
+  Begründung. Gebaut als Einstellung `umstellen` je Seite, gesetzt für jeden
+  Verein ohne Menschen; vor jedem Abschnitt ab Minute 60 ein Schritt
+  offensiver bei einem Tor Rückstand, zwei bei mehr, einer defensiver bei
+  einem Tor Führung, sonst die Ausrichtung vom Anpfiff (`WIRKUNG.umstellen`,
+  gesetzt). Gemessen (2026-11-22, zwei Saisons, sechs Startwerte): 3,20 Tore
+  je Spiel statt 3,06, Heimsiege 47,1 statt 47,6 %, Unentschieden 22,2 statt
+  21,7 %, der Favorit gewinnt 51,7 statt 51,4 %.
 - **AC-32** `fertig` **Das System im Spiel wechseln** — Im laufenden Spiel
   lässt sich auch das System wechseln, mit neuen Plätzen ab dem nächsten
   Abschnitt; ein System, das die Elf nicht kennt, kostet wie vor dem Spiel

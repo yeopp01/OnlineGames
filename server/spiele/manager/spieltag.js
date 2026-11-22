@@ -44,6 +44,8 @@ const { kleiden, szenenAnlegen } = require('./szenen');
  * @property {boolean} [entscheidung]  bei Gleichstand Verlaengerung und Elfmeterschiessen
  * @property {import('./daten').Zufall|import('./daten').Zufallsstand} [szenen]  eine eigene Quelle: dann wird
  *   jede Chance eine Szene (spieltag AC-27). Nur fuer das Spiel, das jemand sieht - die Welt rechnet ohne.
+ * @property {{heim?: boolean, gast?: boolean}} [umstellen]  diese Seite fuehrt der Server: sie stellt
+ *   ab Minute 60 nach dem Spielstand um (spieltag AC-31)
  */
 
 const SCHEIBE = 5;
@@ -88,6 +90,11 @@ const WIRKUNG = {
   // ab `stark`; `ruhig` hilft einer Elf, die fuehrt. Gesetzt, gemessen in
   // tests/manager-anhalten.test.mjs.
   ansprache: { laut: 12, aufbauen: 18, stark: 70, ruhig: 6 },
+  // Wie ein Verein des Servers im Spiel umstellt (AC-31): ab Minute `ab`,
+  // vor jedem Abschnitt, Schritte Ausrichtung gegen die eigene Vorgabe - bei
+  // einem Tor Rueckstand, bei zweien und mehr, bei einem Tor Fuehrung. Wer
+  // hoeher fuehrt oder gleich steht, spielt, wie er begann. Gesetzt.
+  umstellen: { ab: 60, rueckstand: 1, deutlich: 2, fuehrung: -1 },
 };
 const ANSPRACHEN = ['ruhig', 'aufbauen', 'laut'];
 // Mehr Leute auf einer Position wiegen schwerer - im Sturm am meisten, im
@@ -507,7 +514,9 @@ function notenGeben(seiten, ergebnis, zufall) {
  * @returns {Spiel}
  */
 function anpfiff(heim, gast, zufall, einstellungen) {
-  const { aufstellungen, taktiken = {}, wechselregeln = {}, neutral = false, entscheidung = false, szenen } = einstellungen;
+  const {
+    aufstellungen, taktiken = {}, wechselregeln = {}, neutral = false, entscheidung = false, szenen, umstellen = {},
+  } = einstellungen;
   const stand = typeof zufall === 'function' ? zufall.stand : zufall;
   if (!stand || !Number.isInteger(stand.a)) throw new Error('anpfiff() braucht eine Quelle aus zufallAus() oder ihren Stand.');
   /** @type {Spiel} */
@@ -534,6 +543,10 @@ function anpfiff(heim, gast, zufall, einstellungen) {
     vorbei: false,
     ereignisse: [],
   };
+  // Die Ausrichtung, mit der ein Verein des Servers begann: an ihr misst er
+  // ab Minute 60, wie weit er umstellt (AC-31).
+  if (umstellen.heim) spiel.seiten[0].umstellen = spiel.seiten[0].taktik.ausrichtung;
+  if (umstellen.gast) spiel.seiten[1].umstellen = spiel.seiten[1].taktik.ausrichtung;
   // Nur wenn gefragt - sonst traegt der Spielstand das Feld nicht.
   if (szenen) spiel.szenen = szenenAnlegen(typeof szenen === 'function' ? szenen.stand : szenen, [heim.name, gast.name], spiel.seiten);
   return spiel;
@@ -562,6 +575,7 @@ function spielen(spiel, bisMinute) {
   };
 
   while (spiel.abschnitte < SCHEIBEN && naechsteEnde() <= bisMinute) {
+    umstellen(spiel);
     spiel.besitz += abschnitt(spiel.seiten, spiel.abschnitte * SCHEIBE + 1, heimfaktoren, zufall, spiel.ereignisse, SCHEIBEN, roh);
     gekleidet();
     spiel.abschnitte += 1;
@@ -577,6 +591,7 @@ function spielen(spiel, bisMinute) {
     spiel.verlaengerung = true;
   }
   while (spiel.abschnitte < SCHEIBEN + VERLAENGERUNG && naechsteEnde() <= bisMinute) {
+    umstellen(spiel);
     abschnitt(spiel.seiten, spiel.abschnitte * SCHEIBE + 1, heimfaktoren, zufall, spiel.ereignisse, VERLAENGERUNG, roh);
     gekleidet();
     spiel.abschnitte += 1;
@@ -625,6 +640,25 @@ function eingreifen(spiel, welche, { wechsel = null, taktik = null, ansprache = 
   if (neuesSystem) systemWechseln(seite, neuesSystem);
   if (ansprache) ansprechen(seite, spiel.seiten[welche === 'heim' ? 1 : 0], ansprache);
   return { ok: true };
+}
+
+/**
+ * Ein Verein des Servers stellt um (AC-31) - vor jedem Abschnitt ab Minute
+ * 60, ueber `eingreifen()` wie ein Mensch: nichts, was ein Mensch nicht auch
+ * koennte. Vorher geschieht nichts, damit ein Spiel ohne diese Seiten genau
+ * so rechnet wie bisher.
+ * @param {Spiel} spiel
+ */
+function umstellen(spiel) {
+  const w = WIRKUNG.umstellen;
+  if (spiel.minute < w.ab) return;
+  spiel.seiten.forEach((seite, i) => {
+    if (seite.umstellen === undefined) return;
+    const abstand = seite.tore - spiel.seiten[1 - i].tore;
+    const schritt = abstand <= -2 ? w.deutlich : abstand === -1 ? w.rueckstand : abstand === 1 ? w.fuehrung : 0;
+    const ziel = Math.min(5, Math.max(1, seite.umstellen + schritt));
+    if (ziel !== seite.taktik.ausrichtung) eingreifen(spiel, i === 0 ? 'heim' : 'gast', { taktik: { ausrichtung: ziel } });
+  });
 }
 
 /**

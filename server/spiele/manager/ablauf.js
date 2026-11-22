@@ -301,16 +301,18 @@ class Ablauf {
     if (!this.menschFuehrt(heim.id)) this.kiTaktik(heim, gast, !optionen.neutral);
     if (!this.menschFuehrt(gast.id)) this.kiTaktik(gast, heim, false);
     const aufstellungen = { heim: this.aufstellungFuer(heim), gast: this.aufstellungFuer(gast) };
+    // Wen kein Mensch fuehrt, der stellt ab Minute 60 selbst um (spieltag AC-31).
+    const umstellen = { heim: !this.menschFuehrt(heim.id), gast: !this.menschFuehrt(gast.id) };
     const manager = live && this.managerMit(live.managerId);
     const seite = manager && (manager.vereinId === heim.id ? 'heim' : manager.vereinId === gast.id ? 'gast' : null);
     if (seite) {
       const szenen = quelle(this.startwert, this.saison, this.termin, ZWECK.szenen);
-      const spiel = anpfiff(heim, gast, { a: zufall.stand.a }, { aufstellungen, ...optionen, szenen });
+      const spiel = anpfiff(heim, gast, { a: zufall.stand.a }, { aufstellungen, ...optionen, umstellen, szenen });
       kontext.live = { managerId: manager.managerId, stelle: kontext.spiele.length, seite, spiel };
     }
     // Auch fuer das live gespielte Spiel einmal mit Automatik: das schiebt
     // die Quelle so weit, wie es heute jedes Spiel tut.
-    const ergebnis = begegnung(heim, gast, zufall, { aufstellungen, ...optionen });
+    const ergebnis = begegnung(heim, gast, zufall, { aufstellungen, ...optionen, umstellen });
     kontext.spiele.push({ ...eintrag, ergebnis: seite ? null : ergebnis });
   }
 

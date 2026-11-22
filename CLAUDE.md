@@ -185,7 +185,7 @@ Umfang hinzufügt, dort nachsehen.
 
 ## Stand
 
-**622 von 735 Kriterien fertig.** 1118 Tests ohne Browser und 17 ganze Partien, 351 im Browser. Die
+**623 von 735 Kriterien fertig.** 1120 Tests ohne Browser und 17 ganze Partien, 351 im Browser. Die
 Übersicht ist der Bericht: `npm run qa:report`.
 
 Gebaut ist der Unterbau: Räume, Übertragung, Karte, Wegfindung, Sammeln,
@@ -200,8 +200,10 @@ Karriereende, Finanzen mit Sponsor und Stadion, Vorstand mit Entlassung —
 und 35 Vereine, die nach denselben Regeln spielen und handeln. Der Spielstand
 liegt in SQLite am Konto; ohne Anmeldung geht im Managerspiel nichts.
 
-Gemessen: **3,10 Tore je Spiel, 48 % Heimsiege, 21 % Unentschieden**
-(Bundesliga: 3,1 / 44 % / 24 %); der Favorit gewinnt 64 %. Über sechs Saisons
+Gemessen: **3,20 Tore je Spiel, 47 % Heimsiege, 22 % Unentschieden**
+(Bundesliga: 3,1 / 44 % / 24 %); der Favorit gewinnt 66 % der entschiedenen
+Spiele — seit die Vereine des Servers ab Minute 60 umstellen (spieltag
+AC-31; vorher 3,06 / 48 % / 22 % / 66 %, sechs Startwerte zu zwei Saisons). Über sechs Saisons
 ohne Menschen null Widersprüche in den Spielen, Kader, Stärke und Markt
 stabil. Eine Saison rechnet in rund 400 ms, ein Spielstand ist nach zwei
 Saisons unter 1 MB. Der Browserlauf dauert rund 36

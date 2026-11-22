@@ -152,6 +152,7 @@
  * @property {{system: number, pressing: number, abwehr: number, angriff: number}} geuebt  0 bis 1
  * @property {Object<string, number>} systeme  wie gut die Elf jedes System kennt, 0 bis 1 - fuer den Wechsel im Spiel
  * @property {'ruhig'|'aufbauen'|'laut'} [ansprache]  zur Halbzeit gehalten (spieltag AC-30)
+ * @property {number} [umstellen]  nur ein Verein des Servers: seine Ausrichtung beim Anpfiff, an der er ab Minute 60 umstellt (spieltag AC-31)
  * @property {'auto'|'verletzung'} wechselregel
  * @property {Object<string, number>} frische   Kondition im Spiel
  * @property {Object<string, {von: number, bis: number|null}>} minuten
