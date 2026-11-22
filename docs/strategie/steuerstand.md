@@ -26,6 +26,19 @@ Punkt unten sucht, sucht dort nach „Punkt <n> (Benutzer“.
 
 ## Zuletzt fortgeschrieben
 
+**2026-11-22, später in der Nacht:** **Technologiebaum zusammengeführt**
+(`cf197cd`, bedienung AC-81 bis AC-86, `npm run check` grün; der ganze
+Browserlauf steht noch aus — einmal für alles nach dem Zusammenführen der
+Regeln und der KI). **F12 läuft als Agent im Arbeitsbaum
+`../OnlineGames-kikrone` (Zweig `strategie-ki-krone`)**: erforschen (ki
+AC-35), Krone, Hauseinheiten (ki AC-28), Wunder/Ei/Drache (ki AC-39, AC-40,
+AC-29, einheiten AC-52), gemessen auf den alten Regeln. Danach: beide Zweige
+(`strategie-regeln`, `strategie-ki-krone`) zusammenführen, **eine
+gemeinsame Messrunde** (Partien, Nebel 120, zwei gegen zwei, Häuser),
+`npm run check:alles:neu:kurz`, `qa:abweichung`. Arbeitsbaum
+`../OnlineGames-techbaum` kann weg (Zweig gemergt) — nur auf Wort des
+Benutzers löschen.
+
 **2026-11-22, nachts (Benutzer schläft: „sobald die Agenten fertig sind,
 darfst du sehr gerne die sachen die gefunden wurden angehen und umsetzen und
 das Spiel besser machen“ — kein Push, kein Ausrollen ohne ihn):**
