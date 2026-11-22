@@ -94,13 +94,24 @@ test.describe('Das Aussehen', () => {
     await karriereBeginnen(page);
 
     // Das Kleid: Kreide als Grund, der Kopf in der Farbe des Vereins, die schmale Schrift.
-    const kleid = await page.evaluate(() => ({
-      grund: getComputedStyle(document.body).backgroundColor,
-      kopf: getComputedStyle(document.querySelector('.kopf')).backgroundColor,
-      schrift: getComputedStyle(document.querySelector('#vereinName')).fontFamily,
-    }));
+    // Welche Farbe der Verein traegt, zieht der Server (oberflaeche AC-22).
+    const kleid = await page.evaluate(() => {
+      const probe = document.createElement('div');
+      probe.style.background = 'var(--verein-1)';
+      document.body.append(probe);
+      const verein = getComputedStyle(probe).backgroundColor;
+      probe.remove();
+      return {
+        grund: getComputedStyle(document.body).backgroundColor,
+        kopf: getComputedStyle(document.querySelector('.kopf')).backgroundColor,
+        verein,
+        vereinGesetzt: document.documentElement.style.getPropertyValue('--verein-1'),
+        schrift: getComputedStyle(document.querySelector('#vereinName')).fontFamily,
+      };
+    });
     expect(kleid.grund).toBe('rgb(238, 240, 234)');
-    expect(kleid.kopf).toBe('rgb(15, 76, 129)');
+    expect(kleid.vereinGesetzt).toMatch(/^#[0-9a-f]{6}$/i);
+    expect(kleid.kopf).toBe(kleid.verein);
     expect(kleid.schrift).toMatch(/^Bahnschrift/);
 
     // Mit Inhalt: bis zur Winterpause gespielt, damit Tabellen, Noten,
