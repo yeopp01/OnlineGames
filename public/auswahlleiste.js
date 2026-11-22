@@ -28,11 +28,11 @@ function postenText(rohstoff, menge) {
 }
 
 /** Die Klasse des Farbflecks zu einem Rohstoff - Gold und Gefallene beginnen gleich. */
-function warenklasse(rohstoff) {
+export function warenklasse(rohstoff) {
   return `ware ware-${rohstoff === 'gefallene' ? 'x' : rohstoff[0]}`;
 }
 
-function bildchen(art, groesse, farbe, lage = {}) {
+export function bildchen(art, groesse, farbe, lage = {}) {
   const leinwand = document.createElement('canvas');
   const dichte = window.devicePixelRatio || 1;
   leinwand.width = groesse * dichte;
@@ -62,7 +62,7 @@ function bildchen(art, groesse, farbe, lage = {}) {
 
 // Der Aufstieg als Bild: ein Torbogen mit Zinnen, davor eine Fahne in der
 // Volksfarbe - das naechste Zeitalter oeffnet sich (bauen AC-23).
-function aufstiegBildchen(groesse, farbe) {
+export function aufstiegBildchen(groesse, farbe) {
   const leinwand = document.createElement('canvas');
   const dichte = window.devicePixelRatio || 1;
   leinwand.width = groesse * dichte;
@@ -1745,7 +1745,7 @@ function zeichenBildchen(zeichen, groesse, farbe) {
   return leinwand;
 }
 
-function gebaeudeBildchen(art, groesse, farbe, n) {
+export function gebaeudeBildchen(art, groesse, farbe, n) {
   const leinwand = document.createElement('canvas');
   const dichte = window.devicePixelRatio || 1;
   leinwand.width = groesse * dichte;
@@ -2029,7 +2029,8 @@ export class Auswahlleiste {
     if (w.nurGebaeude) zeilen.push('Greift nur Gebäude an');
     // Getarnt (kampf AC-22) und aus Gefallenen (einheiten AC-49).
     if (w.getarnt) zeilen.push(`Getarnt: Gegner sehen ihn erst auf ${w.getarnt} Felder`);
-    if (w.kosten?.gefallene) zeilen.push(`Ersteht aus eigenen Gefallenen – vorhanden: ${a.vorraete.gefallene || 0}`);
+    // Ohne Partie (im Technologiebaum, bedienung AC-84) gibt es keinen Vorrat.
+    if (w.kosten?.gefallene) zeilen.push(a.vorraete ? `Ersteht aus eigenen Gefallenen – vorhanden: ${a.vorraete.gefallene || 0}` : 'Ersteht aus eigenen Gefallenen');
     zeilen.push(kurz(art));
     const weite = lesen('angriff') > 0 ? (lesen('reichweite') > 0 ? `Reichweite ${lesen('reichweite')}` : 'Nahkampf') : null;
     zeilen.push([weite, w.tempo ? `Tempo ${komma(lesen('tempo'))}` : null, `Sicht ${lesen('sicht')}`].filter(Boolean).join(' · '));

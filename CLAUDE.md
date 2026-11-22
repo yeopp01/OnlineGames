@@ -181,7 +181,7 @@ Umfang hinzufügt, dort nachsehen.
 
 ## Stand
 
-**598 von 706 Kriterien fertig.** 1063 Tests ohne Browser und 14 ganze Partien, 341 im Browser. Die
+**604 von 712 Kriterien fertig.** 1070 Tests ohne Browser und 14 ganze Partien, 348 im Browser. Die
 Übersicht ist der Bericht: `npm run qa:report`.
 
 Gebaut ist der Unterbau: Räume, Übertragung, Karte, Wegfindung, Sammeln,
@@ -927,6 +927,16 @@ sieht jeder, auch im Nebel. **Der Marktkarren trägt sichtbar Gold**
 Drache Angriff 8 und +660 gegen Gebäude, Ansage 20 s, Hunger 5 Leben je
 Sekunde, Wunder 4400 s Bauzeit. einheiten AC-52 bleibt `in-qa`: ob der
 Drache KI gegen KI höchstens 60 % gewinnt, misst erst die KI der Krone (F12).
+
+**Der Technologiebaum** (bedienung AC-81 bis AC-86, 2026-11-22): eine
+Ebene über dem Spiel, aus dem Menü und im Warteraum neben „Partie starten",
+zwei Seiten wie das Baumenü, Zeilen je Zeitalter, Spalten je Gebäude,
+goldener Pfeil für Stufen, grauer für Vorstufen; je Haus blass, golden und
+mit ▲, was es stärkt; an jedem Eintrag die Tafel der Leiste. Gerechnet auf
+dem Server (`server/spiele/strategie/techbaum.js`, Werte je Haus aus
+`welt.kampfwerte()`), geholt über `GET /api/spiele/<art>/nachschlagen` —
+der Steckbrief trägt `nachschlagen`, `index.js` kennt kein Spiel. Im
+Browserlauf steht dort auch das Prüfhaus.
 
 **Gold und Stein sind eine Einstellung beim Eröffnen** (karte AC-18, AC-19,
 Benutzer, 2026-11-18; `vorkommen` im Steckbrief, `VORKOMMEN` in
