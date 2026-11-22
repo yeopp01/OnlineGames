@@ -7,9 +7,9 @@ Eine Zeile je Abnahmekriterium. Gepflegt wird der Status in der Spec selbst,
 hier steht er zusammengefasst. Erzeugt mit `npm run specs:board`; als Seite
 mit Bildnachweisen, Filter und Suche mit `npm run qa:report`.
 
-**Gesamt:** 638/747 fertig · 3 in Arbeit · 16 in QA · 3 geplant · 79 offen · 8 zurueckgestellt
+**Gesamt:** 639/748 fertig · 3 in Arbeit · 16 in QA · 3 geplant · 79 offen · 8 zurueckgestellt
 
-**Nachweise:** 336 Kriterien mit Bild · 311 ohne Bild, begruendet in `qa/ohne-bild.json`
+**Nachweise:** 336 Kriterien mit Bild · 312 ohne Bild, begruendet in `qa/ohne-bild.json`
 
 ## Nach Spezifikation
 
@@ -41,7 +41,7 @@ mit Bildnachweisen, Filter und Suche mit `npm run qa:report`.
 | [Prüfstand](15-manager/pruefstand.md)                          | -         | -     | -       | -     | -               | 1      |
 | [Spieltag](15-manager/spieltag.md)                             | -         | -     | -       | -     | -               | 31     |
 | [Spielziel und Abgrenzung](15-manager/spielziel.md)            | -         | -     | -       | 2     | -               | 15     |
-| [Transfermarkt](15-manager/transfer.md)                        | -         | 1     | -       | -     | 1               | 28     |
+| [Transfermarkt](15-manager/transfer.md)                        | -         | 1     | -       | -     | 1               | 29     |
 | [Verträge](15-manager/vertraege.md)                            | -         | -     | -       | -     | -               | 11     |
 | [Vorstand](15-manager/vorstand.md)                             | -         | -     | -       | -     | -               | 10     |
 | [Betrieb](20-betrieb/betrieb.md)                               | 1         | 4     | -       | 5     | -               | 2      |

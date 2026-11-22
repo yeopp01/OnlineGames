@@ -185,7 +185,7 @@ Umfang hinzufügt, dort nachsehen.
 
 ## Stand
 
-**638 von 747 Kriterien fertig.** 1139 Tests ohne Browser und 17 ganze Partien, 351 im Browser. Die
+**639 von 748 Kriterien fertig.** 1142 Tests ohne Browser und 17 ganze Partien, 351 im Browser. Die
 Übersicht ist der Bericht: `npm run qa:report`.
 
 Gebaut ist der Unterbau: Räume, Übertragung, Karte, Wegfindung, Sammeln,
@@ -223,7 +223,13 @@ ein vergleichbarer Vereinsloser zu haben ist. Damit lohnt der Handel mit
 Vereinslosen nicht mehr (transfer AC-28: 5 % und −19 % der Einnahmen
 statt 127 % und 210 %), die erste Liga wechselt 2,9 bis 4,0 Spieler je
 Verein und Saison statt 1,6 bis 2,2 (AC-29), und der Reichste hat
-höchstens das 3,7-Fache einer Jahreseinnahme (finanzen AC-19). Offen:
+höchstens das 3,7-Fache einer Jahreseinnahme (finanzen AC-19). Weil ein
+Gebot seitdem die Gehaltsgrenze prüft, bekam ein Mensch kaum noch
+Angebote (zweite Liga 0,25 je Saison); jetzt zieht ein Verein auf
+Spieler außerhalb der Liste mit 0,8 statt 0,06 (`ANGEBOTE`), und wessen
+Angebot noch gilt, bietet nicht neu — mindestens 2 Angebote je Saison in
+der ersten, 1 in der zweiten Liga (transfer AC-31, gemessen 6,5 / 3,0 /
+1,3 im kleinsten Fall). Offen:
 kader AC-23 (Sterne) und AC-26 (Entwicklung ab 25).
 
 **Stellschrauben des Managerspiels** stehen gesammelt in `WIRKUNG` in

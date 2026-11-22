@@ -141,7 +141,9 @@ class Ablauf {
       const offen = fensterOffen(TERMINE[this.termin]);
       m.angebote = offen ? m.angebote.filter((a) => a.gueltigBis >= this.termin) : [];
       if (offen) {
-        for (const angebot of transfer.kiAngebote(this, eigener, zufall(ZWECK.angebote))) {
+        // Wessen Angebot noch gilt, bietet nicht neu (transfer AC-31).
+        const wartet = new Set(m.angebote.map((a) => a.vereinId));
+        for (const angebot of transfer.kiAngebote(this, eigener, zufall(ZWECK.angebote), wartet)) {
           m.angebote = m.angebote.filter((a) => a.vereinId !== angebot.vereinId);
           m.angebote.push(angebot);
           this.melden(m, 'transfer', `${angebot.verein} bietet ${geld(angebot.gebot)} für ${angebot.spieler} `

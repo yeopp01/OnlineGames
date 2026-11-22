@@ -1167,6 +1167,11 @@
       "begruendung": "Eine Zahl ueber zwanzig Saisons einer Welt ohne Menschen: je Saison ab der zweiten die Zugaenge der ersten Liga aus den Akten der Spieler, geteilt durch die Zahl ihrer Vereine, mindestens 1,5. Das ist eine Summe ueber alle 18 Vereine einer Liga und zwanzig Jahre, gerechnet ohne Browser; der Ticker im Spiel zeigt die letzten vierzig Wechsel, keine Zahl je Verein und keine Folge von Jahren. Belegt im Rechenteil am Startwert 20260910, mit npm run manager:dynamik zusaetzlich an 4711, 77, 1234, 5, 99, 31337 und 2026."
     },
     {
+      "spec": "15-manager/transfer.md",
+      "ac": "AC-31",
+      "begruendung": "Eine Rate ueber zehn Saisons: ein Bot verwaltet einen Verein, setzt niemanden auf die Liste und nimmt kein Angebot an, und gezaehlt wird jedes neue Angebot im Postfach, geteilt durch die Saisons - in der ersten Liga mindestens zwei, in der zweiten mindestens eines, an jedem Startwert. Ein Bildschirm zeigt das Postfach an einem Termin mit null bis drei Angeboten, nicht, wie viele ueber Jahre kommen; dass Angebote dort stehen, zeigt das Bild zu transfer AC-11. Belegt im Rechenteil (tests/manager-angebote.test.mjs) an 4711, 1234 und 31337, mit docs/manager/dynamik/angebote.cjs an allen acht Startwerten."
+    },
+    {
       "spec": "15-manager/finanzen.md",
       "ac": "AC-19",
       "begruendung": "Eine Grenze ueber zwanzig Saisons einer Welt ohne Menschen: am Ende jeder Saison das groesste Konto der ersten Liga geteilt durch die Einnahmen dieses Vereins in der Saison ohne Abloesen, unter dem Vierfachen. Das ist ein Vergleich zwischen allen 18 Vereinen einer Liga ueber zwanzig Jahre, gerechnet ohne Browser; die Oberflaeche zeigt das eigene Konto und die eigenen Einnahmen, nicht das Konto der anderen und keine Folge von Jahren. Belegt im Rechenteil am Startwert 20260910, mit npm run manager:dynamik zusaetzlich an 4711, 77, 1234, 5, 99, 31337 und 2026."

@@ -2,7 +2,7 @@
 
 **Bereich:** Manager
 **Kuerzel:** transfer
-**Stand:** 28/30 fertig · 1 in QA · 1 zurueckgestellt
+**Stand:** 29/31 fertig · 1 in QA · 1 zurueckgestellt
 
 ## Zweck
 
@@ -93,6 +93,25 @@ und die anderen Vereine handeln nach denselben Regeln, auch untereinander.
 - **AC-23** `fertig` **Freistellen kostet Abfindung** — Ein Spieler lässt sich
   jederzeit freistellen; er geht zu den Vereinslosen, und die Hälfte seiner
   restlichen Gehälter wird fällig.
+- **AC-31** `fertig` **Auch ohne Liste kommen Angebote** — Wer einen Verein
+  nur verwaltet — Verträge verlängert, niemanden auf die Liste setzt, kein
+  Angebot annimmt —, bekommt über die ersten zehn Saisons im Mittel
+  mindestens zwei Angebote je Saison in der ersten Liga (an ihrem besten
+  Verein und in ihrer Mitte) und mindestens eines in der Mitte der zweiten,
+  an jedem der acht Startwerte 4711, 20260910, 77, 1234, 5, 99, 31337 und
+  2026. Gezählt wird jedes neue Angebot im Postfach. Bis Schritt 6 des
+  Plans bekam derselbe Mensch im kleinsten Fall 2,4 / 2,1 / 1,5, danach
+  0,6 / 0,2 / 0,0: seitdem prüft ein Gebot die Gehaltsgrenze, und die
+  Vereine stehen im Median knapp über ihr. Die Grenze bleibt; gezogen wird
+  öfter — auf einen Spieler, der nicht auf der Liste steht, mit 0,8 statt
+  0,06 je Verein und Termin (`ANGEBOTE.sonst`), auf einen der Liste
+  unverändert mit 0,14 (→ AC-20, AC-28) —, und wessen Angebot noch gilt,
+  bietet nicht neu (→ AC-11). Gemessen im kleinsten Fall 6,5 / 3,0 / 1,3,
+  im Mittel 9,8 / 7,3 / 1,7; es sind meist dieselben ein, zwei Spieler, um
+  die mehrere Vereine werben (0,9 / 1,0 / 0,3 verschiedene je Saison).
+  Ab der elften Saison wird es in der zweiten Liga weniger (über zwanzig
+  Saisons im Mittel 0,9), weil der Kader eines Verwalters, der nie kauft,
+  schwächer wird. Die Grenzen sind gesetzt, kein Wert aus Anstoss 3.
 
 ### Die anderen
 

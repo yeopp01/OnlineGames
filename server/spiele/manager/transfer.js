@@ -123,6 +123,22 @@ const MARKT = {
   freiNaeher: 3,
 };
 
+// Wie oft ein Verein dem Menschen bietet (transfer AC-31, plan.md
+// "Angebote an den Menschen"). Seit Schritt 6 prueft ein Gebot die
+// Gehaltsgrenze, und die Vereine stehen im Median bei 1,03 ihrer Grenze -
+// von hundert Geboten, die das Konto erlaubte, blieben 18 bis 47. Ein Mensch, der nichts
+// auf die Liste setzt, bekam damit in Liga 2 im Mittel 0,25 Angebote je
+// Saison (vorher 2,40). Die Grenze bleibt, gezogen wird oefter:
+// - liste: so oft darf ein Verein auf einen Spieler der Transferliste
+//   bieten - unveraendert, daran haengt der Haendler (transfer AC-28);
+// - sonst: so oft auf einen, der nicht auf der Liste steht (vorher 0,06).
+// Ein Verein, dessen Angebot noch gilt, bietet nicht neu.
+// Gemessen (acht Startwerte, zehn Saisons): je Saison L1 Bester 9,8,
+// L1 Mitte 7,3, L2 Mitte 1,7 Angebote, das kleinste je Startwert 6,5 / 3,0 /
+// 1,3. Der Haendler (transfer AC-28, Mitte der ersten und zweiten Liga)
+// verdient -5 und -5 % seiner Einnahmen statt 5 und -19 %. Gesetzt.
+const ANGEBOTE = { liste: 0.14, sonst: 0.8 };
+
 /** Hat dieser Verein so viel, dass er niemanden verkaufen muss? */
 function satt(verein) {
   return verein.konto > MARKT.sattAb * finanzen.erwarteteEinnahmen(verein);
@@ -333,16 +349,22 @@ function freistellen(welt, verein, spieler) {
  * Was die anderen Vereine vom Menschen wollen. Ein Verein bietet auf einen
  * Spieler, der besser ist als der schwaechste seiner Stammelf auf dieser
  * Position - auf einen, der auf der Transferliste steht, schon eher.
+ * `wartet` sind die Vereine, deren Angebot noch gilt: sie bieten nicht neu.
+ * @param {Set<number>} [wartet]
  */
-function kiAngebote(welt, mensch, zufall) {
+function kiAngebote(welt, mensch, zufall, wartet = new Set()) {
   const angebote = [];
   for (const verein of welt.vereine) {
     if (verein.id === mensch.id) continue;
     if (verein.spieler.length >= KADER_MAX) continue;
+    if (wartet.has(verein.id)) continue;
     const aufListe = mensch.spieler.filter((s) => s.transferliste);
-    if (zufall() > (aufListe.length ? 0.14 : 0.06)) continue;
+    const wurf = zufall();
+    const liste = aufListe.length > 0 && wurf <= ANGEBOTE.liste;
+    if (!liste && wurf > ANGEBOTE.sonst) continue;
 
     const kandidaten = mensch.spieler
+      .filter((s) => liste || !s.transferliste)
       .filter((s) => bestandNachAbgang(mensch, s) >= MINDESTBESTAND[s.position])
       .filter((s) => vertraege.wechselbereit(s, verein).ok && !s.karriereende)
       .filter((s) => s.staerke > schwaechsterStamm(verein, s.position) + (s.transferliste ? -2 : 3))
@@ -575,7 +597,7 @@ function kiSparen(welt) {
 }
 
 module.exports = {
-  KI_KADER_ZIEL, HAUSHALT, MARKT, gehaltsgrenze, satt,
+  KI_KADER_ZIEL, HAUSHALT, MARKT, ANGEBOTE, gehaltsgrenze, satt,
   wichtigkeit, forderung, bestandNachAbgang, schwaechsterStamm, finden,
   marktliste, kaufPruefen, wechseln, freistellen, kiAngebote, besterZugang, kiTransfers, kiVertraege, kiSparen,
 };

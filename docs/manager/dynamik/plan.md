@@ -399,6 +399,9 @@ Saison, Spielstand 434 → 427 KB. Fingerabdruck neu geschrieben.
 - **Angebote an einen Menschen rund zehnmal seltener** (beim Händler 80
   → 8 in zwanzig Saisons). Wer nicht handelt, sondern einen guten Spieler
   hat, bekommt vermutlich weiter Angebote — gemessen ist nur der Händler.
+  *Nachgemessen: auch der Verwalter bekam kaum noch welche (L2 Mitte 0,25
+  je Saison) — behoben mit transfer AC-31, siehe „Angebote an den
+  Menschen" unten.*
 - **Kein Mensch hat gegen die Regel „satt“ gespielt**; dass er bei satten
   Vereinen nur noch von der Liste kaufen kann, mag ihn überraschen.
 - Die Grenze im Händler-Test zieht kein Handgeld ab — der Gewinn ist eher
@@ -413,6 +416,123 @@ Saison, Spielstand 434 → 427 KB. Fingerabdruck neu geschrieben.
 - Die Absage „… muss nicht verkaufen und gibt … nicht ab.“ steht wie jede
   andere Absage; das reicht.
 - transfer AC-30 wird `fertig` erst mit einem Bildnachweis davon.
+
+### Angebote an den Menschen (transfer AC-31, 2026-11-23)
+
+**Anlass:** nach Schritt 6 bekam ein Mensch kaum noch Angebote. Gemessen
+mit einem Verwalter (`angebote.cjs`: verlängert, was im letzten
+Vertragsjahr steht und höchstens 31 ist, setzt niemanden auf die Liste,
+nimmt kein Angebot an — die Welt läuft also wie ohne Angebote), zehn
+Saisons, acht Startwerte, neue Angebote je Saison:
+
+| Verein | `4afef8e` (vor Schritt 6) | `f618ad4` (Schritt 6) |
+| --- | --- | --- |
+| L1 Bester | 2,95 (kleinster 2,4) | 1,44 (0,6) |
+| L1 Mitte | 3,39 (2,1) | 0,91 (0,2) |
+| L2 Mitte | 2,40 (1,5) | 0,25 (0,0) |
+
+**Die Ursache, je Regel gezählt** (`f618ad4`, vier Startwerte, zehn
+Saisons; ein Zähler ersetzt `kiAngebote` und spielt dieselben Würfe nach,
+die Welt bleibt gleich). Je Saison, wie viele Gebote übrig blieben:
+
+| Regel | L1 Bester | L1 Mitte | L2 Mitte |
+| --- | --- | --- | --- |
+| nur Konto (wie vor Schritt 6) | 3,20 | 3,58 | 2,25 |
+| dazu nur `freiNaeher` | 3,15 (−2 %) | 3,33 (−7 %) | 2,13 (−5 %) |
+| dazu nur die Gehaltsgrenze | 1,50 (−53 %) | 0,97 (−73 %) | 0,40 (−82 %) |
+| beides (so gebaut) | 1,45 | 0,72 | 0,28 |
+| beides, Gehalt des Schwächsten frei (Tausch) | 1,50 | 0,82 | 0,28 |
+| beides, nächster Kandidat statt des ersten | 1,63 | 0,90 | 0,28 |
+| Tausch und nächster Kandidat | 1,80 | 1,02 | 0,30 |
+
+**Es ist die Gehaltsgrenze in `kiAngebote`**, nicht `freiNaeher` und nicht
+der Überschuss an Vereinslosen: die Vereine stehen an Termin 5 und 25 im
+Median bei 1,03 (erste Liga) und 1,05 (zweite) ihrer Grenze, 63 und 81 %
+darüber. Tausch und nächster Kandidat helfen nicht. Austauschproben am
+ganzen Ablauf (Angebote: acht Startwerte, zehn Saisons, Mittel; Händler
+nach `tests/manager-haendler.test.mjs`, drei Startwerte, zwölf Saisons,
+Gewinn als Anteil an den Einnahmen, Grenze 10 %):
+
+| Probe | Angebote L1 Bester / L1 Mitte / L2 Mitte | Händler L1 Mitte / L2 Mitte |
+| --- | --- | --- |
+| `f618ad4` | 1,44 / 0,91 / 0,25 | 5,1 / −19,3 % |
+| ohne Gehaltsprüfung beim Gebot | 2,98 / 3,13 / 1,95 | **87,7** / 136,1 % |
+| dazu `freiNaeher` ohne Gehaltsgrenze (jeder Vereinslose zählt) | 2,50 / 2,24 / 0,44 | **20,9** / −10,6 % |
+| Ziehen 0,20 statt 0,06, mit Liste 0,40 statt 0,14 | 4,56 / 3,33 / 0,71 | **13,3** / −12,8 % |
+| Ziehen 0,30, mit Liste 0,60 | 6,89 / 4,72 / 1,09 | **13,8** / −9,2 % |
+| getrennt: Liste 0,14, sonst 0,20 | 4,56 / 3,33 / 0,71 | −4,2 / −17,3 % |
+| getrennt, sonst 0,30 | 6,89 / 4,72 / 1,09 | 5,4 / −11,6 % |
+| getrennt, sonst 0,40 | 8,74 / 6,13 / 1,44 | −5,1 / −18,7 % |
+| getrennt, sonst 0,50 | 10,59 / 7,33 / 1,75 | 8,7 / −15,8 % |
+| getrennt, und wessen Angebot gilt, bietet nicht neu: 0,5 | 7,71 / 5,47 / 1,24 | 5,0 / −15,8 % |
+| dasselbe mit 0,7 | 9,25 / 6,51 / 1,63 | nicht gemessen |
+| **dasselbe mit 0,8 (gebaut)** | **9,81 / 7,34 / 1,71** | **−5,4 / −5,3 %** |
+| dasselbe mit 0,9 | 10,36 / 7,69 / 1,80 | −4,8 / 0,3 % |
+| dasselbe mit 1,0 | 10,84 / 8,05 / 1,91 | −8,8 / 0,3 % |
+
+Die Gehaltsprüfung wegzunehmen öffnet den Händler wieder; öfter ziehen
+für alles auch (ab 0,20 reißt transfer AC-28). Getrennt gezogen hält er:
+wer auf der Liste steht, wird wie bisher mit 0,14 gezogen, der Händler
+bekommt nur auf seine Stammspieler mehr Gebote. Ohne die Regel „wessen
+Angebot gilt, bietet nicht neu" ersetzt ein Verein sein eigenes Angebot
+Termin für Termin: bei 0,5 sind es 10,59 statt 7,71 Meldungen (L1
+Bester) für fast dieselben Spieler (verschieden 0,78 und 0,72). 0,8 statt
+0,5 oder 0,7, weil die zweite Liga sonst an einzelnen Startwerten unter 1
+fällt — kleinster Wert mit 0,5: 0,8, mit 0,7: 1,0, mit 0,8: 1,3.
+
+**Gebaut** (`ANGEBOTE` in `transfer.js`, beide Werte **gesetzt**, kein
+Wert aus Anstoss 3): je Verein und Termin ein Wurf; bis 0,14 darf er auf
+die Liste bieten (wie bisher), sonst bis 0,8 auf einen, der nicht auf der
+Liste steht (vorher 0,06). Ein Verein, dessen Angebot noch gilt, bietet
+nicht neu (`kiAngebote(…, wartet)`, aus `ablauf.js`) — sonst ersetzte er
+sein eigenes Angebot jeden Termin, mit einer neuen Meldung. Konto,
+Gehaltsgrenze und `freiNaeher` bleiben, für Mensch und KI gleich.
+
+**Das Band** (transfer AC-31, Benutzer: „kein absichtlich hartes
+Pflaster"): mindestens 2 je Saison in der ersten Liga (bester Verein und
+Mitte), mindestens 1 in der Mitte der zweiten, Mittel der ersten zehn
+Saisons an jedem der acht Startwerte — das hielt `4afef8e` an allen acht
+(kleinster Wert 2,4 / 2,1 / 1,5), `f618ad4` an keinem in der zweiten Liga.
+Zehn Saisons, weil es danach weniger wird: über zwanzig Saisons in der
+zweiten Liga im Mittel 0,89 (0,70 bis 1,15) — der Kader eines Verwalters,
+der nie kauft, wird schwächer, um ihn wirbt niemand mehr.
+
+**Gemessen danach** (`node docs/manager/dynamik/angebote.cjs`, je
+Startwert 4711, 20260910, 77, 1234, 5, 99, 31337, 2026):
+
+| Verein | `f618ad4` | gebaut |
+| --- | --- | --- |
+| L1 Bester | 0,6 1,9 1,8 1,1 2,3 0,8 1,8 1,2 — Mittel 1,44 | 6,5 13,5 9,4 6,8 11,8 8,3 11,2 11,0 — Mittel 9,81 |
+| L1 Mitte | 0,2 1,2 1,2 0,5 1,0 0,9 0,6 1,7 — Mittel 0,91 | 3,0 9,6 9,0 3,1 9,0 8,3 5,2 11,5 — Mittel 7,34 |
+| L2 Mitte | 0,1 0,2 0,4 0,4 0,2 0,5 0,0 0,2 — Mittel 0,25 | 1,7 1,9 1,4 1,7 1,8 2,3 1,3 1,6 — Mittel 1,71 |
+
+Verschiedene Spieler, auf die geboten wird, je Saison: 0,33 / 0,35 / 0,12
+→ 0,89 / 0,95 / 0,28 (vor Schritt 6 1,00 / 1,09 / 0,65) — **die meisten
+Angebote gelten denselben ein, zwei Spielern**, um die mehrere Vereine
+nacheinander werben. In der ersten Liga sind es damit drei- bis viermal so
+viele Meldungen wie vor Schritt 6; eine Obergrenze hat das Band nicht.
+
+**Händler** (transfer AC-28, `tests/manager-haendler.test.mjs`, drei
+Startwerte, zwölf Saisons): L1 Mitte 5,1 → −5,4 %, L2 Mitte −19,3 →
+−5,3 % der Einnahmen. Über alle acht Startwerte (gleicher Bot): L1 Mitte
+1,0 → −3,5 % (Gewinn je Saison 0,22 → −0,79 Mio), L1 Bester 1,5 → −2,3 %
+(0,41 → −0,66 Mio), L2 Mitte −21,6 → −14,1 % (−2,11 → −1,42 Mio). Er
+bekommt mehr Angebote, aber auf seine Stammspieler, nicht auf die Ware.
+`haendler.cjs` (zwölf Saisons, acht Startwerte) Gewinn je Saison: 222 →
+−794 T, 415 → −661 T, −2107 → −1422 T.
+
+**Die Bänder ohne Menschen sind unverändert** — `npm run manager:dynamik
+-- --saisons 20` an den acht Startwerten gibt Zeile für Zeile dieselbe
+Ausgabe (nur die Rechenzeit nicht), denn ohne Menschen wird
+`kiAngebote` nicht gerufen. `npm run manager:messen` ebenso: Tore 3,24,
+Heimsiege 47,3 %, Unentschieden 22,2 %, vor und nach. Im Fingerabdruck
+(`manager:gleichstand`) ändert sich nur der Teil „mensch" der Läufe mit
+Mensch; er ist neu geschrieben.
+
+**Nicht geprüft:** wie es sich für einen Menschen anfühlt, der handelt
+(kauft, die Liste nutzt, Angebote annimmt) — gemessen ist nur der
+Verwalter und der Händler; ob die vielen Meldungen im Postfach der ersten
+Liga stören; die Oberfläche (kein Browserlauf).
 
 ## Wovon Auf- und Abwertung heute abhängt (`kader.entwickeln`)
 
