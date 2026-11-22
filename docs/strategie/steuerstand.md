@@ -32,6 +32,20 @@ Board 610/716). Der ganze Browserlauf wartet auf ein fremdes `check:kurz`
 (Managersitzung); danach `E2E_HAFEN=4391 npm run check:alles:neu:kurz`,
 `qa:abweichung`, bei Grün pushen und ausrollen (Punkt 12 unten), sonst
 Gründe aufschreiben. Erst danach `strategie-speichern` zusammenführen.
+**Lauf 1 (12:05, 1,2 h statt 50 min):** 344 grün, 3 rot — spielziel
+AC-20 und einheiten AC-42 nur am Aufräumen („trace recording“ 60 s,
+Zip abgeschnitten), darstellung AC-10 39,9 Bilder/s. Die drei Dateien
+laufen einzeln mit `QA_NACHWEIS=1` nach. **Ergebnis:** mit Aufzeichnung
+fallen dort fünf Fälle am Zip („file data stream has unexpected number
+of bytes“), einer an „AudioContext … audio device“; **mit `--trace off`
+15 von 15 grün**, Bilder so geschrieben. Ursache die Umgebung: Sitzung
+„WinDisc“ (kein Bildschirm), alle Audiogeräte „Unknown“ (Dock ab?).
+darstellung AC-10 39,9 Bilder/s — rot, nicht gelockert. `qa:abweichung`
+34 über 1 %, angesehen: Kamera/Ablauf, neu nur Taste L und Dorfzentrum
+in der Wirtschaft. `npm run check` grün. Bilder committet, **nicht
+gepusht, nicht ausgerollt** — der Lauf war nicht grün; der Benutzer
+entscheidet, ob AC-10 auf diesem Rechner das Ausrollen aufhält, oder es
+läuft einmal neu, wenn Bildschirm und Ton wieder dran sind.
 
 **2026-11-22, Nachmittag — Entscheidungen des Benutzers (durchgeklickt):**
 1. **Regelpaket übernehmen, Lücken schließen:** Laufregel, Seitengleichheit,
