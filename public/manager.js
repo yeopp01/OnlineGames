@@ -17,17 +17,17 @@ const TEIL = {
 const SCHWERPUNKTE = {
   keiner: 'kein Schwerpunkt',
   system: 'System einspielen',
-  pressing: 'Pressing ueben',
-  abwehr: 'Abwehr ueben',
-  angriff: 'Angriff ueben',
+  pressing: 'Pressing üben',
+  abwehr: 'Abwehr üben',
+  angriff: 'Angriff üben',
 };
 const POSTEN = {
   zuschauer: 'Zuschauer',
   fernsehen: 'Fernsehgeld',
   sponsor: 'Sponsor',
-  praemien: 'Praemien',
+  praemien: 'Prämien',
   transfers: 'Transfers',
-  gehaelter: 'Gehaelter',
+  gehaelter: 'Gehälter',
   stadion: 'Stadionausbau',
   abfindungen: 'Abfindungen',
   zinsen: 'Zinsen',
@@ -50,8 +50,8 @@ const ansicht = {
 
 // Nach welcher Regel ein Spieler sich entwickelt hat - dieselben Stufen wie kader.entwickeln.
 const STUFEN = {
-  jung: 'bis 20: waechst auf sein Talent zu',
-  reifend: '21 bis 24: waechst noch, langsamer',
+  jung: 'bis 20: wächst auf sein Talent zu',
+  reifend: '21 bis 24: wächst noch, langsamer',
   bestes: '25 bis 28: bleibt, wie er ist',
   nachlassend: '29 bis 31: baut ab',
   alt: 'ab 32: baut deutlich ab',
@@ -103,7 +103,7 @@ async function anfragen(pfad, { methode = 'GET', koerper } = {}) {
     melden('Der Server antwortet nicht.', true);
     return { fehler: 'Der Server antwortet nicht.' };
   }
-  const daten = await antwort.json().catch(() => ({ fehler: 'Unverstaendliche Antwort.' }));
+  const daten = await antwort.json().catch(() => ({ fehler: 'Unverständliche Antwort.' }));
   if (antwort.status === 401) {
     zeigen('anmeldung');
     return daten;
@@ -184,9 +184,9 @@ async function startseite() {
           <small>${text(s.verein)} · ${s.liga}. Liga · Saison ${s.saison} · ${text(s.datum)}
             ${s.ladbar ? '' : ' · <span class="schlecht">aus einer anderen Fassung</span>'}</small></div>
         <button data-fortsetzen="${s.id}" class="haupt" ${s.ladbar ? '' : 'disabled'}>Fortsetzen</button>
-        <button data-loeschen="${s.id}" class="leise">Loeschen</button>
+        <button data-loeschen="${s.id}" class="leise">Löschen</button>
       </div>`).join('')
-    : '<p class="unterzeile">Noch kein Spielstand. Unten faengt eine Karriere an.</p>';
+    : '<p class="unterzeile">Noch kein Spielstand. Unten fängt eine Karriere an.</p>';
   $('spielstaende').querySelectorAll('[data-fortsetzen]').forEach((knopf) => {
     knopf.addEventListener('click', () => oeffnen(knopf.dataset.fortsetzen));
   });
@@ -195,14 +195,14 @@ async function startseite() {
       // Zweimal klicken statt eines Browser-Dialogs: der blockiert die Seite.
       if (!knopf.classList.contains('warnung')) {
         knopf.classList.add('warnung');
-        knopf.textContent = 'Wirklich loeschen?';
+        knopf.textContent = 'Wirklich löschen?';
         return;
       }
       await anfragen(`/api/manager/spielstaende/${knopf.dataset.loeschen}`, { methode: 'DELETE' });
       startseite();
     });
   });
-  $('neuHinweis').textContent = liste.length >= 5 ? 'Fuenf Spielstaende sind das Hoechste - loesche einen, um neu anzufangen.' : '';
+  $('neuHinweis').textContent = liste.length >= 5 ? 'Fünf Spielstände sind das Höchste - lösche einen, um neu anzufangen.' : '';
   if (!$('vereinswahl').children.length) vereineZeigen();
 }
 
@@ -215,7 +215,7 @@ async function vereineZeigen() {
     <button class="vereinskarte" data-verein="${v.id}">
       <b>${text(v.name)}</b>
       <small>Kader ${v.niveau} · erwartet Platz ${v.erwartet}</small>
-      <small>Konto ${geld(v.konto)} · ${zahl(v.plaetze)} Plaetze · Kaderwert ${geld(v.kaderwert)}</small>
+      <small>Konto ${geld(v.konto)} · ${zahl(v.plaetze)} Plätze · Kaderwert ${geld(v.kaderwert)}</small>
     </button>`;
   $('vereinswahl').innerHTML = [1, 2].map((nummer) => `
     <section>
@@ -279,7 +279,7 @@ async function weiter() {
   }
   if (stand.status === 'entlassen') {
     blatt = 'buero';
-    melden('Der Vorstand hat dich entlassen. Im Buero warten drei Angebote.', true);
+    melden('Der Vorstand hat dich entlassen. Im Büro warten drei Angebote.', true);
   }
   zeichnen();
 }
@@ -295,7 +295,7 @@ async function vorspulen(bis) {
   $('lauf').textContent = daten.fehler ? '' : `${daten.gerechnet} Termine in ${Math.round(performance.now() - begonnen)} ms`;
   markt = null;
   blatt = 'buero';
-  if (stand.status === 'entlassen') melden('Der Vorstand hat dich entlassen. Im Buero warten drei Angebote.', true);
+  if (stand.status === 'entlassen') melden('Der Vorstand hat dich entlassen. Im Büro warten drei Angebote.', true);
   zeichnen();
 }
 
@@ -371,7 +371,7 @@ function blattBuero() {
 
   const hinweise = [];
   if (stand.termin.index === 0 && !v.sponsor && stand.sponsorAngebote.length) {
-    hinweise.push('<p class="warnung-text">Noch kein Sponsor fuer diese Saison - <button class="klein" data-gehe="finanzen">zu den Finanzen</button></p>');
+    hinweise.push('<p class="warnung-text">Noch kein Sponsor für diese Saison - <button class="klein" data-gehe="finanzen">zu den Finanzen</button></p>');
   }
   const entwicklung = (stand.entwicklungen || [])[0];
   if (entwicklung && stand.zuletzt && ['winterpause', 'saisonende'].includes(stand.zuletzt.art)) {
@@ -381,7 +381,7 @@ function blattBuero() {
       - <button class="klein" data-gehe="kader" data-anker="entwicklung">ansehen</button></p>`);
   }
   if (stand.angebote.length) {
-    hinweise.push(`<p>${stand.angebote.length} ${stand.angebote.length === 1 ? 'Angebot' : 'Angebote'} fuer deine Spieler - <button class="klein" data-gehe="transfer">ansehen</button></p>`);
+    hinweise.push(`<p>${stand.angebote.length} ${stand.angebote.length === 1 ? 'Angebot' : 'Angebote'} für deine Spieler - <button class="klein" data-gehe="transfer">ansehen</button></p>`);
   }
 
   inhalt.innerHTML = `
@@ -390,10 +390,10 @@ function blattBuero() {
     <div class="zweispalten">
       <div>
         <section class="karte" id="naechsterTermin">
-          <h2>Als Naechstes: ${text(n.titel)}</h2>
-          <p>${n.spiel && n.spiel.gegner ? `${n.spiel.daheim ? 'Daheim gegen' : 'Auswaerts bei'} <b>${text(n.spiel.gegner)}</b>`
-            : n.spiel && n.spiel.frei ? 'Ohne dich - du bist nicht mehr dabei.' : n.art === 'saisonende' ? 'Die Saison wird abgeschlossen: Praemien, Auf- und Abstieg, Vertraege, Jugend.'
-              : n.art === 'vorbereitung' ? 'Die Saison beginnt mit dem Trainingslager.' : n.art === 'winterpause' ? 'Winterpause: frische Beine, und der Markt oeffnet.' : ''}</p>
+          <h2>Als Nächstes: ${text(n.titel)}</h2>
+          <p>${n.spiel && n.spiel.gegner ? `${n.spiel.daheim ? 'Daheim gegen' : 'Auswärts bei'} <b>${text(n.spiel.gegner)}</b>`
+            : n.spiel && n.spiel.frei ? 'Ohne dich - du bist nicht mehr dabei.' : n.art === 'saisonende' ? 'Die Saison wird abgeschlossen: Prämien, Auf- und Abstieg, Verträge, Jugend.'
+              : n.art === 'vorbereitung' ? 'Die Saison beginnt mit dem Trainingslager.' : n.art === 'winterpause' ? 'Winterpause: frische Beine, und der Markt öffnet.' : ''}</p>
           <p class="unterzeile">${text(stand.fenster.text)}</p>
           ${stand.vorschau ? '<p><button class="klein" data-gehe="spieltag" data-spieltag="vorschau">Vorschau auf den Gegner</button></p>' : ''}
           ${hinweise.join('')}
@@ -461,7 +461,7 @@ const eignung = (s, platz) => (s.rolle === platz ? 1 : s.nebenrolle === platz ? 
 const passtInsFach = (s, platz) => (platz === 'TW') === (s.position === 'TOR');
 const wertAuf = (s, platz) => form(s) * eignung(s, platz);
 const plaetzeJetzt = () => stand.plaetze[stand.verein.taktik.system];
-const FACH = 'Ins Tor gehoert ein Torwart, ins Feld keiner.';
+const FACH = 'Ins Tor gehört ein Torwart, ins Feld keiner.';
 
 // Die beste Elf rechnet der Server - dieselbe, die er ohne Abgabe spielen liesse.
 const besteElf = () => [...stand.verein.besteElf];
@@ -490,7 +490,7 @@ function aufPlatz(id, index) {
 /**
  * Ein Klick genuegt: von der Bank kommt ein Spieler auf den Platz, auf dem er
  * gegenueber dem, der dort steht, am meisten bringt; aus der Elf weicht er
- * dem Besten von der Bank fuer seinen Platz.
+ * dem Besten von der Bank für seinen Platz.
  */
 function tauschen(id) {
   const spieler = spielerVon(id);
@@ -502,7 +502,7 @@ function tauschen(id) {
     const ersatz = stand.verein.spieler
       .filter((s) => s.bereit && !elfLokal.includes(s.id) && passtInsFach(s, platz))
       .sort((a, b) => wertAuf(b, platz) - wertAuf(a, platz))[0];
-    if (!ersatz) return melden(`Fuer ${platz} sitzt niemand mehr auf der Bank.`);
+    if (!ersatz) return melden(`Für ${platz} sitzt niemand mehr auf der Bank.`);
     elfLokal[index] = ersatz.id;
     return zeichnen();
   }
@@ -580,7 +580,7 @@ function blattMannschaft() {
   const gleich = merk && merk.system === v.taktik.system && merk.ids.length === elfLokal.length && merk.ids.every((id, i) => id === elfLokal[i]);
   const vonHand = !merk && elfLokal.join() !== besteElf().join();
   const status = gleich ? '<span class="gut">abgegeben · gilt bis zum Widerruf</span>'
-    : merk || vonHand ? '<span class="schlecht">geaendert, noch nicht abgegeben</span>'
+    : merk || vonHand ? '<span class="schlecht">geändert, noch nicht abgegeben</span>'
       : '<span class="leise">keine feste Elf · vor jedem Spiel stellt der Rechner die beste</span>';
 
   // Je Mannschaftsteil eine Reihe, darin die Plaetze von links nach rechts.
@@ -618,14 +618,14 @@ function blattMannschaft() {
           <button id="freigeben" class="leise" ${merk ? '' : 'disabled'}>freigeben</button>
         </div>
         <p class="unterzeile">Ziehe einen Spieler von der Bank auf einen Platz oder von Platz zu Platz - oder klicke ihn an: von der Bank
-          kommt er dorthin, wo er am meisten bringt, aus der Elf weicht er dem Besten fuer seinen Platz. Auf einer fremden Position bringt
-          ein Spieler weniger; die Zahl im Trikot ist, was er dort bringt. Eine abgegebene Elf gilt, bis du sie aenderst; faellt einer aus,
-          rueckt auf seinen Platz, wer dort am meisten bringt.</p>
+          kommt er dorthin, wo er am meisten bringt, aus der Elf weicht er dem Besten für seinen Platz. Auf einer fremden Position bringt
+          ein Spieler weniger; die Zahl im Trikot ist, was er dort bringt. Eine abgegebene Elf gilt, bis du sie änderst; fällt einer aus,
+          rückt auf seinen Platz, wer dort am meisten bringt.</p>
 
         <div class="regler">
           <label><span>Ausrichtung</span><input type="range" id="ausrichtung" min="1" max="5" value="${v.taktik.ausrichtung}" />
             <span>${text(stand.ausrichtungen[v.taktik.ausrichtung - 1])}</span></label>
-          <label><span>Haerte</span><input type="range" id="haerte" min="1" max="5" value="${v.taktik.haerte}" /><span>${v.taktik.haerte} / 5</span></label>
+          <label><span>Härte</span><input type="range" id="haerte" min="1" max="5" value="${v.taktik.haerte}" /><span>${v.taktik.haerte} / 5</span></label>
           <label><span>Pressing</span><input type="range" id="pressing" min="1" max="5" value="${v.taktik.pressing}" /><span>${v.taktik.pressing} / 5</span></label>
           <label><span>Training</span><input type="range" id="training" min="0" max="100" step="10" value="${v.training}" />
             <span>${v.training < 34 ? 'Kondition' : v.training > 66 ? 'Technik' : 'gemischt'}</span></label>
@@ -637,25 +637,25 @@ function blattMannschaft() {
               <option value="verletzung"${v.wechselregel === 'verletzung' ? ' selected' : ''}>nur bei Verletzung</option>
             </select><span></span></label>
         </div>
-        <p class="unterzeile">Offensiv oeffnet das Spiel fuer beide Seiten - das hilft dem Staerkeren; Mauern verriegelt es - das hilft dem
-          Schwaecheren. Pressing staerkt das Mittelfeld und kostet Kondition, geuebtes Pressing weniger. Haerte staerkt die Abwehr und kostet
+        <p class="unterzeile">Offensiv öffnet das Spiel für beide Seiten - das hilft dem Stärkeren; Mauern verriegelt es - das hilft dem
+          Schwächeren. Pressing stärkt das Mittelfeld und kostet Kondition, geübtes Pressing weniger. Härte stärkt die Abwehr und kostet
           Karten. Training entscheidet zwischen frischen Beinen jede Woche und besseren Spielern zur Winterpause und am Saisonende; ein
-          Schwerpunkt kostet davon ein Viertel. Automatisch gewechselt wird nach 60, 70 und 80 Minuten, wer muede ist.</p>
+          Schwerpunkt kostet davon ein Viertel. Automatisch gewechselt wird nach 60, 70 und 80 Minuten, wer müde ist.</p>
 
         <div class="karte" id="einstudiert">
-          <h2>Eingeuebt</h2>
+          <h2>Eingeübt</h2>
           ${[[`System ${v.taktik.system}`, v.einstudiert.systeme[v.taktik.system] ?? 0], ['Pressing', v.einstudiert.pressing],
     ['Abwehr', v.einstudiert.abwehr], ['Angriff', v.einstudiert.angriff]].map(([name, wert]) => `<div class="uebung" data-uebung="${name.split(' ')[0].toLowerCase()}">
             <span>${text(name)}</span>
             <div class="balken-rahmen"><div class="balken ${wert < 40 ? 'tief' : wert < 70 ? 'mittel' : ''}" style="width:${Math.round(wert)}%"></div></div>
             <b>${Math.round(wert)} %</b></div>`).join('')}
           <p class="unterzeile">Ein System, das nicht sitzt, kostet bis zu sieben Prozent. Jedes Spiel darin und der Schwerpunkt "System einspielen"
-            bringen es naeher; was nicht geuebt wird, verblasst.</p>
+            bringen es näher; was nicht geübt wird, verblasst.</p>
         </div>
       </section>
 
       <section id="bankBereich">
-        <h2>Bank und Tribuene <span class="leise">${bank.length} Spieler</span></h2>
+        <h2>Bank und Tribüne <span class="leise">${bank.length} Spieler</span></h2>
         <div class="tabellenrahmen">
           <table id="bank"><thead><tr><th class="links">Pos</th><th class="links">Spieler</th><th>Alt</th><th>St</th><th>Kon</th><th>Mor</th><th>Note</th></tr></thead>
           <tbody>${bank.map((s) => `<tr data-spieler="${s.id}" data-ziehbar class="bankzeile ${s.bereit ? '' : 'leise'}">
@@ -707,7 +707,7 @@ function blattMannschaft() {
 // Ein Name, der die Akte des Spielers oeffnet.
 const namensknopf = (id, name) => `<button class="namelink" data-akte="${id}">${text(name)}</button>`;
 
-/** Die Staerke ueber die Saisons als kleine Linie, jeder Punkt mit Wert und Saison. */
+/** Die Stärke über die Saisons als kleine Linie, jeder Punkt mit Wert und Saison. */
 function verlaufZeichnen(werte, saisons) {
   const breite = 320;
   const hoehe = 76;
@@ -716,7 +716,7 @@ function verlaufZeichnen(werte, saisons) {
   const hoch = Math.max(...werte) + 3;
   const x = (i) => rand + (i * (breite - 2 * rand)) / Math.max(1, werte.length - 1);
   const y = (w) => hoehe - 16 - ((w - tief) / (hoch - tief)) * (hoehe - 32);
-  return `<svg class="verlauf" viewBox="0 0 ${breite} ${hoehe}" role="img" aria-label="Staerke ueber die Saisons">
+  return `<svg class="verlauf" viewBox="0 0 ${breite} ${hoehe}" role="img" aria-label="Stärke über die Saisons">
     <polyline points="${werte.map((w, i) => `${x(i).toFixed(1)},${y(w).toFixed(1)}`).join(' ')}" fill="none" stroke="currentColor" stroke-width="2" />
     ${werte.map((w, i) => `<circle cx="${x(i).toFixed(1)}" cy="${y(w).toFixed(1)}" r="3" fill="currentColor" />
       <text x="${x(i).toFixed(1)}" y="${(y(w) - 7).toFixed(1)}" text-anchor="middle">${w}</text>
@@ -724,7 +724,7 @@ function verlaufZeichnen(werte, saisons) {
   </svg>`;
 }
 
-/** Die Akte eines Spielers: Saison fuer Saison, jeder Wechsel, die laufende Saison. */
+/** Die Akte eines Spielers: Saison für Saison, jeder Wechsel, die laufende Saison. */
 async function akteZeigen(id) {
   const daten = await anfragen(`/api/manager/spielstaende/${kennung}/spieler/${id}`);
   const a = daten.spieler;
@@ -735,8 +735,8 @@ async function akteZeigen(id) {
     <td>${x.spiele}</td><td>${x.tore}</td><td>${x.vorlagen}</td><td>${note(x.note)}</td><td>${x.staerke}</td><td>${x.alter}</td></tr>`;
   dialog(`
     <h2 id="spielerakte">${text(a.name)}</h2>
-    <p class="unterzeile">${rolleText(a)} · ${a.alter} Jahre · Staerke ${a.staerke} · Talent ${a.talent} · ${text(a.verein)}${a.liga ? ` (${a.liga}. Liga)` : ''}
-      · Wert ${geld(a.wert)}${a.vertragBis ? ` · Vertrag bis Saison ${a.vertragBis}` : ''}${a.karriereende ? ' · <span class="schlecht">hoert zum Saisonende auf</span>' : ''}</p>
+    <p class="unterzeile">${rolleText(a)} · ${a.alter} Jahre · Stärke ${a.staerke} · Talent ${a.talent} · ${text(a.verein)}${a.liga ? ` (${a.liga}. Liga)` : ''}
+      · Wert ${geld(a.wert)}${a.vertragBis ? ` · Vertrag bis Saison ${a.vertragBis}` : ''}${a.karriereende ? ' · <span class="schlecht">hört zum Saisonende auf</span>' : ''}</p>
     ${a.stationen.length ? verlaufZeichnen([...a.stationen.map((x) => x.staerke), a.staerke], [...a.stationen.map((x) => x.saison), a.saison.saison]) : ''}
     <div class="tabellenrahmen"><table id="stationen"><thead><tr><th>Saison</th><th class="links">Verein</th><th>Liga</th>
       <th>Sp</th><th>T</th><th>V</th><th>Note</th><th>St</th><th>Alt</th></tr></thead>
@@ -750,7 +750,7 @@ async function akteZeigen(id) {
     ${a.wechsel.length ? `<ul class="liste-einfach" id="wechselAkte">${[...a.wechsel].reverse().map((w) => `<li>Saison ${w.saison} · ${text(w.datum)}:
       ${text(w.von)} → ${text(w.zu)}${w.abloese ? ` · ${geld(w.abloese)}` : ''}</li>`).join('')}</ul>`
     : '<p class="unterzeile" id="wechselAkte">Kein Wechsel aufgezeichnet.</p>'}
-    <p class="unterzeile">Aufgezeichnet wird Saison fuer Saison seit dieser Fassung des Spiels. Wer in einer Saison wechselt, dessen Saison
+    <p class="unterzeile">Aufgezeichnet wird Saison für Saison seit dieser Fassung des Spiels. Wer in einer Saison wechselt, dessen Saison
       steht bei dem Verein, bei dem er sie beendet.</p>`);
 }
 
@@ -762,7 +762,7 @@ document.addEventListener('click', (e) => {
 
 const veraenderung = (d) => (d > 0 ? `<span class="gut">+${d}</span>` : d < 0 ? `<span class="schlecht">-${-d}</span>` : '<span class="leise">0</span>');
 
-/** Die eigene Staerke auf einen Blick - und die des naechsten Gegners, wenn ein eigenes Spiel ansteht. */
+/** Die eigene Stärke auf einen Blick - und die des naechsten Gegners, wenn ein eigenes Spiel ansteht. */
 function staerkeZeigen() {
   const s = stand.verein.staerke;
   const v = stand.vorschau;
@@ -773,7 +773,7 @@ function staerkeZeigen() {
   const zeile = (name, zellen) => `<tr><td class="links">${name}</td>${zellen.map((z) => `<td>${z}</td>`).join('')}</tr>`;
   const wo = v ? (v.neutral ? 'neutraler Platz' : v.daheim ? 'daheim' : 'auswaerts') : '';
   return `<section id="staerke" class="karte">
-    <h2>Staerke <span class="leise">Kader ${s.niveau} · Platz ${s.rang} von ${s.vereine} in der ${stand.verein.liga}. Liga</span></h2>
+    <h2>Stärke <span class="leise">Kader ${s.niveau} · Platz ${s.rang} von ${s.vereine} in der ${stand.verein.liga}. Liga</span></h2>
     <div class="tabellenrahmen"><table id="staerkeTabelle">
       <thead><tr><th class="links"></th>${spalten.map(([, name]) => `<th>${name}</th>`).join('')}</tr></thead>
       <tbody>
@@ -782,10 +782,10 @@ function staerkeZeigen() {
         ${gegner ? zeile('<span class="leise">Vorteil</span>', eigen.map((z, i) => veraenderung(z - gegner[i]))) : ''}
       </tbody>
     </table></div>
-    <p class="unterzeile">${v ? `Naechster Gegner: ${text(v.titel)}, ${wo} - ${EINSCHAETZUNG[v.einschaetzung]}.
-      <button class="klein" data-gehe="spieltag" data-spieltag="vorschau">zur Vorschau</button><br />` : 'Als Naechstes steht kein eigenes Spiel an. '}
-      Kader ist der Schnitt der fuenfzehn Besten; Tor bis Angriff bringt die Elf, die heute spielen wuerde - mit Tagesform, System
-      und Eingeuebtem, gerechnet wie im Spiel.</p>
+    <p class="unterzeile">${v ? `Nächster Gegner: ${text(v.titel)}, ${wo} - ${EINSCHAETZUNG[v.einschaetzung]}.
+      <button class="klein" data-gehe="spieltag" data-spieltag="vorschau">zur Vorschau</button><br />` : 'Als Nächstes steht kein eigenes Spiel an. '}
+      Kader ist der Schnitt der fünfzehn Besten; Tor bis Angriff bringt die Elf, die heute spielen würde - mit Tagesform, System
+      und Eingeübtem, gerechnet wie im Spiel.</p>
   </section>`;
 }
 
@@ -804,9 +804,9 @@ function entwicklungZeigen(berichte) {
     ${berichte.length > 1 ? `<div class="umschalter breit">${berichte.map((x, i) => `<button class="reiterKnopf" data-entwicklung="${i}"
       aria-pressed="${i === wahl}">${text(x.anlass)} S${x.saison}</button>`).join('')}</div>` : ''}
     <p><span class="gut">${zaehlen((e) => e.nachher > e.vorher)} besser</span> · <span class="schlecht">${zaehlen((e) => e.nachher < e.vorher)} schlechter</span>
-      · ${zaehlen((e) => e.nachher === e.vorher)} unveraendert</p>
+      · ${zaehlen((e) => e.nachher === e.vorher)} unverändert</p>
     <div class="tabellenrahmen"><table id="entwicklungsliste"><thead><tr>
-      <th class="links">Pos</th><th class="links">Spieler</th><th>Alt</th><th>Tal</th><th title="Anteil an den moeglichen Minuten">Spielzeit</th>
+      <th class="links">Pos</th><th class="links">Spieler</th><th>Alt</th><th>Tal</th><th title="Anteil an den möglichen Minuten">Spielzeit</th>
       <th>vorher</th><th>nachher</th><th>±</th><th class="links">Regel</th>
     </tr></thead><tbody>
     ${b.spieler.map((e) => `<tr data-entwickelt="${e.id}" class="${spielerVon(e.id) ? '' : 'leise'}">
@@ -817,11 +817,11 @@ function entwicklungZeigen(berichte) {
       <td class="links leise">${STUFEN[e.stufe] || ''}</td>
     </tr>`).join('')}
     </tbody></table></div>
-    <p class="unterzeile">So wird gerechnet: bis 20 waechst ein Spieler um 20 bis 50 % des Abstands zu seinem Talent - je mehr er spielt und
+    <p class="unterzeile">So wird gerechnet: bis 20 wächst ein Spieler um 20 bis 50 % des Abstands zu seinem Talent - je mehr er spielt und
       je mehr Technik trainiert wird, desto mehr; von 21 bis 24 um 10 bis 32 %. Von 25 bis 28 bleibt er etwa, wie er ist, mit viel
       Techniktraining und Luft zum Talent einen Punkt besser. Von 29 bis 31 verliert er 1 bis 3 Punkte, ab 32 2 bis 5. Zur Winterpause
-      kommen 40 % davon, am Saisonende der Rest; ueber sein Talent waechst keiner. Spielzeit zaehlt voll ab 60 % der moeglichen Minuten.
-      Das Alter ist das waehrend der Saison - danach ist jeder ein Jahr aelter, und ab 29 sinkt das Talent um zwei.</p>
+      kommen 40 % davon, am Saisonende der Rest; über sein Talent wächst keiner. Spielzeit zählt voll ab 60 % der möglichen Minuten.
+      Das Alter ist das während der Saison - danach ist jeder ein Jahr älter, und ab 29 sinkt das Talent um zwei.</p>
   </section>`;
 }
 
@@ -833,17 +833,17 @@ function blattKader() {
   inhalt.innerHTML = `
     ${staerkeZeigen()}
     <section>
-      <h2>Kader <span class="leise">${v.spieler.length} Spieler · Gehaelter ${geld(v.gehaltJahr)} im Jahr ·
+      <h2>Kader <span class="leise">${v.spieler.length} Spieler · Gehälter ${geld(v.gehaltJahr)} im Jahr ·
         Kaderwert ${geld(v.spieler.reduce((s, x) => s + x.wert, 0))}</span></h2>
       <div class="tabellenrahmen">
         <table id="kader"><thead><tr>
           <th class="links">Pos</th><th class="links">Spieler</th><th>Alt</th><th>St</th>
-          <th title="Veraenderung bei der letzten Entwicklung">±</th><th>Tal</th><th>Kon</th><th>Mor</th>
+          <th title="Veränderung bei der letzten Entwicklung">±</th><th>Tal</th><th>Kon</th><th>Mor</th>
           <th>Sp</th><th>T</th><th>V</th><th>Note</th><th>Vertrag</th><th>Gehalt</th><th>Wert</th><th class="links"></th>
         </tr></thead><tbody>
         ${spieler.map((s) => `<tr data-spieler="${s.id}" class="${s.bereit ? '' : 'leise'}">
           <td class="links">${rolleText(s)}</td>
-          <td class="links">${namensknopf(s.id, s.name)}${s.ausfall ? ` <small class="schlecht">${text(s.ausfall)}</small>` : ''}${s.jugend && s.alter <= 19 ? ' <small class="marke">Jugend</small>' : ''}${s.transferliste ? ' <small class="marke">Liste</small>' : ''}${s.karriereende ? ' <small class="marke ende">hoert auf</small>' : ''}</td>
+          <td class="links">${namensknopf(s.id, s.name)}${s.ausfall ? ` <small class="schlecht">${text(s.ausfall)}</small>` : ''}${s.jugend && s.alter <= 19 ? ' <small class="marke">Jugend</small>' : ''}${s.transferliste ? ' <small class="marke">Liste</small>' : ''}${s.karriereende ? ' <small class="marke ende">hört auf</small>' : ''}</td>
           <td>${s.alter}</td><td><b>${s.staerke}</b></td><td>${zuletzt.has(s.id) ? veraenderung(zuletzt.get(s.id)) : ''}</td>
           <td class="leise">${s.talent}</td>
           <td class="${s.kondition < 70 ? 'schlecht' : ''}">${s.kondition}</td><td>${s.moral}</td>
@@ -853,14 +853,14 @@ function blattKader() {
           <td class="aktionen">
             <button data-liste="${s.id}" class="${s.transferliste ? 'an' : ''}">${s.transferliste ? 'von der Liste' : 'auf die Liste'}</button>
             <button data-freistellen="${s.id}" class="leise">freistellen</button>
-            ${s.verlaengerbar ? `<button data-verlaengern="${s.id}">verlaengern</button>` : ''}
+            ${s.verlaengerbar ? `<button data-verlaengern="${s.id}">verlängern</button>` : ''}
           </td>
         </tr>`).join('')}
         </tbody></table>
       </div>
-      <p class="unterzeile">Rot: der Vertrag endet mit dieser Saison, danach ist der Spieler weg. Verlaengert wird ab dem vorletzten Jahr,
-        zum Gehalt, das der Spieler nennt. Wer auf der Liste steht, bekommt oefter Angebote. Freistellen kostet die Haelfte der restlichen Gehaelter.
-        ± ist die Veraenderung bei der letzten Entwicklung.</p>
+      <p class="unterzeile">Rot: der Vertrag endet mit dieser Saison, danach ist der Spieler weg. Verlängert wird ab dem vorletzten Jahr,
+        zum Gehalt, das der Spieler nennt. Wer auf der Liste steht, bekommt öfter Angebote. Freistellen kostet die Hälfte der restlichen Gehälter.
+        ± ist die Veränderung bei der letzten Entwicklung.</p>
     </section>
     ${entwicklungZeigen(berichte)}`;
 
@@ -896,8 +896,8 @@ function blattKader() {
 function verlaengernDialog(s) {
   const ab = Math.max(s.vertrag.bis, stand.saison);
   dialog(`
-    <h2>${text(s.name)} verlaengern</h2>
-    <p>${rolleText(s)}, ${s.alter} Jahre, Staerke ${s.staerke}. Vertrag bis Saison ${s.vertrag.bis}, bisher ${geld(s.vertrag.gehalt)} im Jahr.</p>
+    <h2>${text(s.name)} verlängern</h2>
+    <p>${rolleText(s)}, ${s.alter} Jahre, Stärke ${s.staerke}. Vertrag bis Saison ${s.vertrag.bis}, bisher ${geld(s.vertrag.gehalt)} im Jahr.</p>
     <p>Er will <b>${geld(s.gehaltswunsch)}</b> im Jahr. Wie lange?</p>
     <div class="reihe">${Array.from({ length: s.laufzeitMax }, (_, i) => i + 1)
       .map((j) => `<button class="haupt" data-laufzeit="${j}">${jahre(j)} · bis Saison ${ab + j}</button>`).join('')}</div>`,
@@ -905,14 +905,14 @@ function verlaengernDialog(s) {
     const daten = await zug('verlaengern', { spielerId: s.id, laufzeit: Number(knopf.dataset.laufzeit) });
     if (!daten.ok) return;
     dialogZu();
-    melden(`${s.name} verlaengert bis Saison ${daten.bis}.`);
+    melden(`${s.name} verlängert bis Saison ${daten.bis}.`);
     zeichnen();
   })));
 }
 
 // ------------------------------------------------------------ Spieltag
 
-// Zeichen fuer den Ticker als kleine Formen statt Emoji: Emoji sehen auf jedem
+// Zeichen für den Ticker als kleine Formen statt Emoji: Emoji sehen auf jedem
 // System anders aus, unter Windows wird aus dem Ball ein Globus.
 const BALL = '<svg class="ball" viewBox="0 0 32 32" aria-hidden="true"><circle cx="16" cy="16" r="14" fill="#e6e9ee"/>'
   + '<path d="M16 8l6 4.4-2.3 7H12.3l-2.3-7z" fill="#14171c"/></svg>';
@@ -928,7 +928,7 @@ const ZEICHEN = {
 };
 
 // Im Pokal zwei Zeilen je Paarung wie auf einem Turnierbaum: drei Runden
-// nebeneinander lassen fuer eine Zeile je Paarung zu wenig Platz fuer die Namen.
+// nebeneinander lassen für eine Zeile je Paarung zu wenig Platz für die Namen.
 function pokalPaarung(p) {
   const seite = (id, name, tore) => `<div class="seite ${p.sieger && p.sieger === id ? 'sieger' : ''}">
     <span class="name">${text(name)}</span><span class="tore">${p.tore ? tore : ''}</span></div>`;
@@ -956,7 +956,7 @@ function tickerZeile(e, spiel) {
   let was = text(e.spieler);
   if (e.art === 'tor' && e.vorlage) was += ` <span class="leise">Vorlage ${text(e.vorlage)}</span>`;
   if (e.art === 'wechsel') {
-    was = `${text(e.rein)} <span class="leise">fuer</span> ${text(e.spieler)}${e.grund === 'verletzung' ? ' <span class="leise">(verletzt)</span>' : ''}`;
+    was = `${text(e.rein)} <span class="leise">für</span> ${text(e.spieler)}${e.grund === 'verletzung' ? ' <span class="leise">(verletzt)</span>' : ''}`;
   }
   if (e.art === 'verletzung') was += ` <span class="leise">${e.dauer === 1 ? 'eine Woche' : `${e.dauer} Wochen`}</span>`;
   const minute = e.minute > 120 ? '' : `${e.minute}'`;
@@ -972,7 +972,7 @@ function tickerFolge(spiel) {
   const schritte = [
     { ab: 46, marke: () => mitStand('Halbzeit') },
     { ab: 91, marke: () => mitStand(spiel.verlaengerung ? 'Nach 90 Minuten' : 'Abpfiff') },
-    { ab: 121, marke: () => mitStand(spiel.elfmeter ? 'Nach Verlaengerung' : 'Abpfiff nach Verlaengerung') },
+    { ab: 121, marke: () => mitStand(spiel.elfmeter ? 'Nach Verlängerung' : 'Abpfiff nach Verlängerung') },
   ].slice(0, spiel.verlaengerung ? 3 : 2);
   let naechster = 0;
   const bis = (minute) => {
@@ -982,14 +982,14 @@ function tickerFolge(spiel) {
   for (const e of spiel.ereignisse || []) {
     bis(e.minute);
     if (e.minute > 120 && !elfer) {
-      folge.push({ marke: 'Elfmeterschiessen' });
+      folge.push({ marke: 'Elfmeterschießen' });
       elfer = true;
     }
     folge.push(e);
     if (e.art === 'tor') stand[e.verein === spiel.heim.id ? 0 : 1] += 1;
   }
   bis(Infinity);
-  if (spiel.elfmeter) folge.push({ marke: `Abpfiff · ${spiel.elfmeter[0]} : ${spiel.elfmeter[1]} im Elfmeterschiessen` });
+  if (spiel.elfmeter) folge.push({ marke: `Abpfiff · ${spiel.elfmeter[0]} : ${spiel.elfmeter[1]} im Elfmeterschießen` });
   return folge;
 }
 
@@ -997,12 +997,12 @@ function berichtZeigen(b) {
   const e = b.eigenes;
   let html = `<h2>${text(b.titel)}</h2>`;
   if (b.art === 'vorbereitung' || b.art === 'winterpause') html += `<p class="unterzeile">${text(b.text)}</p>`;
-  if (b.art === 'saisonende') html += '<p class="unterzeile">Die Saison ist vorbei - die Bilanz steht im Buero.</p>';
+  if (b.art === 'saisonende') html += '<p class="unterzeile">Die Saison ist vorbei - die Bilanz steht im Büro.</p>';
   if (b.art === 'pokal' && !e) html += '<p class="unterzeile">Ohne dich.</p>';
   if (e) {
     let zusatz = '';
-    if (e.elfmeter) zusatz = `n.V., ${e.elfmeter[0]}:${e.elfmeter[1]} im Elfmeterschiessen · `;
-    else if (e.verlaengerung) zusatz = 'nach Verlaengerung · ';
+    if (e.elfmeter) zusatz = `n.V., ${e.elfmeter[0]}:${e.elfmeter[1]} im Elfmeterschießen · `;
+    else if (e.verlaengerung) zusatz = 'nach Verlängerung · ';
     html += `
       <div class="ergebnis">
         <div class="leise">${e.wettbewerb === 'pokal' ? 'Pokal' : 'Liga'} · ${e.zuschauer ? `${zahl(e.zuschauer)} Zuschauer` : 'neutraler Platz'}</div>
@@ -1041,7 +1041,7 @@ function vorschauZeigen(v) {
   const verein = (s, seite) => `<div class="verein ${seite}">
       <b>${text(s.name)}</b>
       <small>${s.platz ? `Platz ${s.platz} · ${s.punkte} Pkt` : `${s.liga}. Liga`} · Kader ${s.niveau} · ${s.system}</small>
-      ${s.form.length ? `<span class="form" title="die letzten Ligaspiele, das juengste rechts">${s.form.map((f) => `<i class="form-${f}" title="${AUSGANG[f]}">${f}</i>`).join('')}</span>`
+      ${s.form.length ? `<span class="form" title="die letzten Ligaspiele, das jüngste rechts">${s.form.map((f) => `<i class="form-${f}" title="${AUSGANG[f]}">${f}</i>`).join('')}</span>`
     : '<small class="leise">noch kein Ligaspiel</small>'}
     </div>`;
   // Die Balken beginnen bei 40: darunter spielt niemand, und fuenf Punkte Unterschied sollen zu sehen sein.
@@ -1065,7 +1065,7 @@ function vorschauZeigen(v) {
     <h2>${text(v.titel)} <span class="leise">· ${wo}</span></h2>
     <div class="gegenueber">${verein(v.eigen, 'links')}<div class="einschaetzung ${v.einschaetzung}">${EINSCHAETZUNG[v.einschaetzung]}</div>${verein(v.gegner, 'rechts')}</div>
     <div class="vergleich">${vergleich}</div>
-    <p class="unterzeile">Die Elf, die heute spielen wuerde - mit Tagesform, System und Eingeuebtem, ohne Heimvorteil und Taktik.
+    <p class="unterzeile">Die Elf, die heute spielen würde - mit Tagesform, System und Eingeübtem, ohne Heimvorteil und Taktik.
       Das Mittelfeld teilt die Chancen, Angriff gegen Abwehr und Torwart entscheidet, was daraus wird.</p>
     <p id="bisher">${v.bisher.length ? `Bisher: ${bisher}` : '<span class="leise">In dieser Saison noch nicht gegeneinander gespielt.</span>'}</p>
     <p class="ausfaelle">Es fehlen bei dir: ${ausfaelle(v.eigen)}<br />bei ${text(v.gegner.name)}: ${ausfaelle(v.gegner)}</p>
@@ -1147,10 +1147,10 @@ function blattLiga() {
           <td>${z.spiele}</td><td>${z.siege}</td><td>${z.unentschieden}</td><td>${z.niederlagen}</td>
           <td>${z.tore}:${z.gegentore}</td><td>${z.tore - z.gegentore > 0 ? '+' : ''}${z.tore - z.gegentore}</td>
           <td><b>${z.wertung}</b></td></tr>`).join('')}</tbody></table></div>
-        <p class="unterzeile">${nummer === 1 ? 'Gruen: Meister · Rot: die drei Absteiger' : 'Gruen: die drei Aufsteiger'} · Ein Klick auf einen Verein zeigt seinen Kader.</p>
+        <p class="unterzeile">${nummer === 1 ? 'Grün: Meister · Rot: die drei Absteiger' : 'Grün: die drei Aufsteiger'} · Ein Klick auf einen Verein zeigt seinen Kader.</p>
       </section>
       <section>
-        <h2>Torjaeger ${nummer}. Liga</h2>
+        <h2>Torjäger ${nummer}. Liga</h2>
         ${stand.torjaeger[nummer].length ? `<table id="torjaeger"><thead><tr><th>#</th><th class="links">Spieler</th><th class="links">Verein</th><th>Tore</th></tr></thead>
           <tbody>${stand.torjaeger[nummer].map((t, i) => `<tr><td>${i + 1}</td><td class="links">${text(t.name)}</td>
             <td class="links leise">${text(t.verein)}</td><td><b>${t.tore}</b></td></tr>`).join('')}</tbody></table>`
@@ -1178,13 +1178,13 @@ async function vereinAnsehen(id) {
   if (!v) return;
   dialog(`
     <h2 id="vereinsansicht">${text(v.name)}</h2>
-    <p class="unterzeile">${v.liga}. Liga · Platz ${v.platz} · Kader ${v.niveau} · Ruf ${v.reputation} · ${zahl(v.plaetze)} Plaetze · spielt ${v.system}</p>
+    <p class="unterzeile">${v.liga}. Liga · Platz ${v.platz} · Kader ${v.niveau} · Ruf ${v.reputation} · ${zahl(v.plaetze)} Plätze · spielt ${v.system}</p>
     <div class="tabellenrahmen"><table><thead><tr><th class="links">Pos</th><th class="links">Spieler</th><th>Alt</th><th>St</th>
       <th>Sp</th><th>T</th><th>Wert</th><th>Forderung</th><th>Vertrag</th></tr></thead>
     <tbody>${v.spieler.map((s) => `<tr><td class="links">${rolleText(s)}</td>
-      <td class="links">${namensknopf(s.id, s.name)}${s.ausfall ? ` <small class="schlecht">${text(s.ausfall)}</small>` : ''}${s.karriereende ? ' <small class="marke ende">hoert auf</small>' : ''}</td>
+      <td class="links">${namensknopf(s.id, s.name)}${s.ausfall ? ` <small class="schlecht">${text(s.ausfall)}</small>` : ''}${s.karriereende ? ' <small class="marke ende">hört auf</small>' : ''}</td>
       <td>${s.alter}</td><td><b>${s.staerke}</b></td><td>${s.spiele}</td><td>${s.tore}</td><td>${geld(s.wert)}</td>
-      <td>${s.forderung === null ? '–' : s.verkaeuflich ? geld(s.forderung) : '<span class="leise">unverkaeuflich</span>'}</td>
+      <td>${s.forderung === null ? '–' : s.verkaeuflich ? geld(s.forderung) : '<span class="leise">unverkäuflich</span>'}</td>
       <td>${s.vertragBis ?? '–'}</td></tr>`).join('')}</tbody></table></div>
     <p class="unterzeile">Kaufen geht im Transfermarkt, solange das Fenster offen ist.</p>`);
 }
@@ -1242,10 +1242,10 @@ function blattTransfer() {
 
   inhalt.innerHTML = `
     <p id="fensterStatus" class="${markt.fenster.offen ? 'gut' : 'leise'}">${text(markt.fenster.text)}</p>
-    ${stand.angebote.length ? `<section id="angebote"><h2>Angebote fuer deine Spieler</h2>
+    ${stand.angebote.length ? `<section id="angebote"><h2>Angebote für deine Spieler</h2>
       ${stand.angebote.map((a) => `<div class="angebot">
         <span><strong>${text(a.verein)}</strong> (${a.liga}. Liga) bietet <strong>${geld(a.gebot)}</strong>
-          fuer ${namensknopf(a.spielerId, a.spieler)} (${a.rolle || a.position}, Staerke ${a.staerke}, Wert ${geld(a.wert)})</span>
+          für ${namensknopf(a.spielerId, a.spieler)} (${a.rolle || a.position}, Stärke ${a.staerke}, Wert ${geld(a.wert)})</span>
         <button data-annehmen="${a.id}" class="haupt">Annehmen</button>
         <button data-ablehnen="${a.id}" class="leise">Ablehnen</button>
       </div>`).join('')}</section>` : ''}
@@ -1258,10 +1258,10 @@ function blattTransfer() {
         <label class="feld"><span>Liga</span><select id="filterLiga">
           ${[['', 'alle'], ['1', '1. Liga'], ['2', '2. Liga'], ['frei', 'vereinslos']].map(([wert, name]) => `<option value="${wert}"${f.liga === wert ? ' selected' : ''}>${name}</option>`).join('')}
         </select></label>
-        <label class="feld"><span>hoechstens Alter</span><input id="filterAlter" inputmode="numeric" value="${text(f.maxAlter)}" /></label>
-        <label class="feld"><span>mindestens Staerke</span><input id="filterStaerke" inputmode="numeric" value="${text(f.minStaerke)}" /></label>
+        <label class="feld"><span>höchstens Alter</span><input id="filterAlter" inputmode="numeric" value="${text(f.maxAlter)}" /></label>
+        <label class="feld"><span>mindestens Stärke</span><input id="filterStaerke" inputmode="numeric" value="${text(f.minStaerke)}" /></label>
         <label class="feld"><span>Sortierung</span><select id="filterSortierung">
-          ${[['staerke', 'Staerke'], ['preis', 'Preis'], ['alter', 'Alter'], ['talent', 'Talent']].map(([wert, name]) => `<option value="${wert}"${f.sortierung === wert ? ' selected' : ''}>${name}</option>`).join('')}
+          ${[['staerke', 'Stärke'], ['preis', 'Preis'], ['alter', 'Alter'], ['talent', 'Talent']].map(([wert, name]) => `<option value="${wert}"${f.sortierung === wert ? ' selected' : ''}>${name}</option>`).join('')}
         </select></label>
         <button id="filterBezahlbar" class="${f.bezahlbar ? 'an' : ''}">${f.bezahlbar ? '✓ ' : ''}nur bezahlbare</button>
       </div>
@@ -1273,7 +1273,7 @@ function blattTransfer() {
         const grund = gesperrt(s);
         return `<tr data-markt="${s.id}">
           <td class="links">${rolleText(s)}</td>
-          <td class="links">${namensknopf(s.id, s.name)}${s.transferliste ? ' <small class="marke">Liste</small>' : ''}${s.karriereende ? ' <small class="marke ende">hoert auf</small>' : ''}</td>
+          <td class="links">${namensknopf(s.id, s.name)}${s.transferliste ? ' <small class="marke">Liste</small>' : ''}${s.karriereende ? ' <small class="marke ende">hört auf</small>' : ''}</td>
           <td class="links leise">${text(s.verein)}${s.liga ? ` <small>(${s.liga}.)</small>` : ''}</td>
           <td>${s.alter}</td><td><b>${s.staerke}</b></td><td class="leise">${s.talent}</td>
           <td>${geld(s.gehalt)}</td><td>${geld(s.wert)}</td>
@@ -1286,13 +1286,13 @@ function blattTransfer() {
       ${markt.gesamt > markt.liste.length && markt.liste.length < 200
     ? `<p><button id="mehrMarkt">weitere zeigen <span class="leise">· ${markt.liste.length} von ${markt.gesamt}</span></button></p>` : ''}
       <p class="unterzeile">Die Forderung ist der Preis, zu dem der Verein abgibt; weniger bringt eine Absage. Vereinslose kosten keine
-        Abloese, nur Gehalt. Nicht jeder will zu jedem Verein - wer nicht will, laesst sich nicht holen.</p>
+        Ablöse, nur Gehalt. Nicht jeder will zu jedem Verein - wer nicht will, lässt sich nicht holen.</p>
     </section>
 
     <section>
       <h2>Wechsel</h2>
       <ul class="liste-einfach" id="wechselTicker">${stand.ticker.map((t) => `<li>S${t.saison}: <b>${text(t.spieler)}</b> (${t.rolle || t.position}, ${t.staerke})
-        <span class="leise">${text(t.von)} → ${text(t.zu)}</span> · ${t.abloese ? geld(t.abloese) : 'ablosefrei'}</li>`).join('')
+        <span class="leise">${text(t.von)} → ${text(t.zu)}</span> · ${t.abloese ? geld(t.abloese) : 'ablösefrei'}</li>`).join('')
         || '<li class="leise">Noch kein Wechsel.</li>'}</ul>
     </section>`;
 
@@ -1323,8 +1323,8 @@ function blattTransfer() {
 function kaufDialog(s) {
   dialog(`
     <h2>${text(s.name)} holen</h2>
-    <p>${rolleText(s)}, ${s.alter} Jahre, Staerke ${s.staerke}, Talent ${s.talent} · ${text(s.verein)}</p>
-    <p>${s.vereinId ? `${text(s.verein)} verlangt <b>${geld(s.forderung)}</b>.` : 'Vereinslos - keine Abloese.'}
+    <p>${rolleText(s)}, ${s.alter} Jahre, Stärke ${s.staerke}, Talent ${s.talent} · ${text(s.verein)}</p>
+    <p>${s.vereinId ? `${text(s.verein)} verlangt <b>${geld(s.forderung)}</b>.` : 'Vereinslos - keine Ablöse.'}
       Er will <b>${geld(s.gehalt)}</b> im Jahr.</p>
     ${s.vereinId ? `<label class="feld klein"><span>Gebot in Tausend</span><input id="gebot" inputmode="numeric" value="${s.forderung}" /></label>` : ''}
     <p class="unterzeile">Wie lange soll der Vertrag laufen?</p>
@@ -1335,7 +1335,7 @@ function kaufDialog(s) {
     const daten = await zug('kaufen', { spielerId: s.id, gebot, laufzeit: Number(knopf.dataset.laufzeit) });
     if (!daten.ok) return;
     dialogZu();
-    melden(`${daten.spieler.name} ist da - ${geld(daten.abloese)} Abloese.`);
+    melden(`${daten.spieler.name} ist da - ${geld(daten.abloese)} Ablöse.`);
     markt = null;
     zeichnen();
   })));
@@ -1364,7 +1364,7 @@ function blattFinanzen() {
             <td class="schlecht"><b>${geld(-summe(jetzt, 'aus'))}</b></td>
             ${vorjahr ? `<td class="leise">${geld(summe(vorjahr, 'ein') - summe(vorjahr, 'aus'))}</td>` : ''}</tr>
         </tbody></table>
-        <p class="unterzeile">Konto ${geld(v.konto)} · Gehaelter ${geld(v.gehaltJahr)} im Jahr, ${geld(v.gehaltJeTermin)} je Termin ·
+        <p class="unterzeile">Konto ${geld(v.konto)} · Gehälter ${geld(v.gehaltJahr)} im Jahr, ${geld(v.gehaltJeTermin)} je Termin ·
           Fernsehgeld ${geld(v.fernsehgeld)} je Ligaspiel. Unter -3 Mio kostet es zur Winterpause und vor der Saison 6 Punkte.</p>
 
         <h2 style="margin-top:1.5rem">Buch</h2>
@@ -1380,9 +1380,9 @@ function blattFinanzen() {
         <div class="karte" id="sponsor">
           <h2>Sponsor</h2>
           ${v.sponsor ? `<p><b>${text(v.sponsor.name)}</b> (${text(v.sponsor.art)}): ${geld(v.sponsor.jeSpiel)} je Ligaspiel, ${geld(v.sponsor.jeSieg)} je Sieg.</p>`
-            : stand.sponsorAngebote.length ? `<p class="unterzeile">Drei Angebote fuer die Saison ${stand.saison}. Wer nicht waehlt, bekommt den ausgewogenen.</p>
+            : stand.sponsorAngebote.length ? `<p class="unterzeile">Drei Angebote für die Saison ${stand.saison}. Wer nicht wählt, bekommt den ausgewogenen.</p>
               <div class="vereinsliste" id="sponsorAngebote">${stand.sponsorAngebote.map((a) => `<button class="vereinskarte" data-sponsor="${a.id}">
-                <b>${text(a.name)} · ${text(a.art)}</b><small>${geld(a.jeSpiel)} je Ligaspiel · ${geld(a.jeSieg)} je Sieg · ueber 34 Spiele ${geld(a.jeSpiel * 34)} sicher</small>
+                <b>${text(a.name)} · ${text(a.art)}</b><small>${geld(a.jeSpiel)} je Ligaspiel · ${geld(a.jeSieg)} je Sieg · über 34 Spiele ${geld(a.jeSpiel * 34)} sicher</small>
               </button>`).join('')}</div>` : '<p class="unterzeile">Kein Sponsor.</p>'}
         </div>
 
@@ -1396,12 +1396,12 @@ function blattFinanzen() {
 
         <div class="karte" id="stadion">
           <h2>Stadion</h2>
-          <p>${zahl(v.stadion.plaetze)} Plaetze.
-            ${v.stadion.ausbau ? `Im Bau: ${zahl(v.stadion.ausbau.plaetze)} Plaetze, fertig in ${v.stadion.ausbau.rest} ${v.stadion.ausbau.rest === 1 ? 'Woche' : 'Wochen'}.` : ''}</p>
+          <p>${zahl(v.stadion.plaetze)} Plätze.
+            ${v.stadion.ausbau ? `Im Bau: ${zahl(v.stadion.ausbau.plaetze)} Plätze, fertig in ${v.stadion.ausbau.rest} ${v.stadion.ausbau.rest === 1 ? 'Woche' : 'Wochen'}.` : ''}</p>
           ${v.stadion.ausbau ? '' : `<div class="reihe">${stand.ausbau.map((a) => `<button data-ausbau="${a.stufe}" ${v.konto < a.kosten ? 'disabled title="Zu teuer."' : ''}>
-            +${zahl(a.plaetze)} Plaetze · ${geld(a.kosten)} · ${a.termine} Wochen</button>`).join('')}</div>
+            +${zahl(a.plaetze)} Plätze · ${geld(a.kosten)} · ${a.termine} Wochen</button>`).join('')}</div>
             ${v.konto < Math.min(...stand.ausbau.map((a) => a.kosten))
-    ? `<p class="unterzeile">Fuer den kleinsten Ausbau fehlen ${geld(Math.min(...stand.ausbau.map((a) => a.kosten)) - v.konto)}.</p>` : ''}`}
+    ? `<p class="unterzeile">Für den kleinsten Ausbau fehlen ${geld(Math.min(...stand.ausbau.map((a) => a.kosten)) - v.konto)}.</p>` : ''}`}
         </div>
       </section>
     </div>`;
@@ -1431,9 +1431,9 @@ function kopfZeichnen() {
   const n = stand.naechster;
   $('vereinName').textContent = v.name;
   let gegner = '';
-  if (n.spiel && n.spiel.gegner) gegner = `: ${n.spiel.daheim ? 'daheim gegen' : 'auswaerts bei'} ${n.spiel.gegner}`;
+  if (n.spiel && n.spiel.gegner) gegner = `: ${n.spiel.daheim ? 'daheim gegen' : 'auswärts bei'} ${n.spiel.gegner}`;
   else if (n.spiel && n.spiel.frei) gegner = ': ohne dich';
-  $('kopfLage').textContent = `${v.liga}. Liga · Saison ${stand.saison} · als Naechstes ${n.titel}${gegner}`;
+  $('kopfLage').textContent = `${v.liga}. Liga · Saison ${stand.saison} · als Nächstes ${n.titel}${gegner}`;
   const zeile = stand.tabellen[v.liga].find((z) => z.eigenes);
   $('kopfPlatz').textContent = zeile && zeile.spiele ? zeile.platz : '–';
   $('kopfKonto').textContent = geld(v.konto);
@@ -1447,7 +1447,7 @@ function kopfZeichnen() {
     knopf.textContent = 'Entlassen';
     knopf.disabled = true;
   } else {
-    knopf.textContent = n.art === 'saisonende' ? 'Saison abschliessen' : n.art === 'vorbereitung' ? `Saison ${stand.saison} starten` : `Weiter: ${n.titel}`;
+    knopf.textContent = n.art === 'saisonende' ? 'Saison abschließen' : n.art === 'vorbereitung' ? `Saison ${stand.saison} starten` : `Weiter: ${n.titel}`;
     knopf.disabled = laeuft;
   }
   const winter = stand.kalender.findIndex((t) => t.art === 'winterpause');

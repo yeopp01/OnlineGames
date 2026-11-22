@@ -229,7 +229,7 @@ class Karriere {
    * Vorbereitung oder Saisonende. Ein Zug, ein Termin.
    */
   weiter() {
-    if (this.status === 'entlassen') return { fehler: 'Du bist entlassen. Waehle zuerst einen neuen Verein.' };
+    if (this.status === 'entlassen') return { fehler: 'Du bist entlassen. Wähle zuerst einen neuen Verein.' };
     const termin = TERMINE[this.termin];
     const zufall = (zweck) => quelle(this.startwert, this.saison, this.termin, zweck);
     const lauf = { verletzt: new Set() };
@@ -264,7 +264,7 @@ class Karriere {
         for (const angebot of transfer.kiAngebote(this, eigener, zufall(ZWECK.angebote))) {
           this.angebote = this.angebote.filter((a) => a.vereinId !== angebot.vereinId);
           this.angebote.push(angebot);
-          this.melden('transfer', `${angebot.verein} bietet ${geld(angebot.gebot)} fuer ${angebot.spieler} `
+          this.melden('transfer', `${angebot.verein} bietet ${geld(angebot.gebot)} für ${angebot.spieler} `
             + `(Marktwert ${geld(angebot.wert)}).`);
         }
       }
@@ -310,7 +310,7 @@ class Karriere {
     const eigener = this.verein;
     if (eigener && !eigener.sponsor) {
       eigener.sponsor = this.sponsorAngebote[1];
-      this.melden('finanzen', `Du hast keinen Sponsor gewaehlt - der Vorstand hat ${eigener.sponsor.name} unterschrieben.`);
+      this.melden('finanzen', `Du hast keinen Sponsor gewählt - der Vorstand hat ${eigener.sponsor.name} unterschrieben.`);
     }
     this.sponsorAngebote = [];
     // Das Trainingslager: alle kommen frisch in die Saison, und das System
@@ -340,8 +340,8 @@ class Karriere {
       const gehen = verein.spieler.filter((s) => !s.karriereende && kader.hoertAuf({ ...s, alter: s.alter + 1 }, zufall));
       for (const s of gehen) s.karriereende = this.saison;
       if (verein.id === this.vereinId && gehen.length) {
-        this.melden('verein', `Zum Saisonende hoeren auf: ${gehen.map((s) => `${s.name} (${s.alter + 1})`).join(', ')}. `
-          + 'Sie spielen die Saison zu Ende, verlaengern aber nicht mehr.');
+        this.melden('verein', `Zum Saisonende hören auf: ${gehen.map((s) => `${s.name} (${s.alter + 1})`).join(', ')}. `
+          + 'Sie spielen die Saison zu Ende, verlängern aber nicht mehr.');
       }
     }
     this.punktabzugPruefen('zur Winterpause');
@@ -349,8 +349,8 @@ class Karriere {
     if (eigener) {
       const auslaufend = eigener.spieler.filter((s) => s.vertrag && s.vertrag.bis <= this.saison && !s.karriereende);
       if (auslaufend.length) {
-        this.melden('verein', `Zum Saisonende laufen ${auslaufend.length} Vertraege aus: `
-          + `${auslaufend.map((s) => s.name).join(', ')}. Wer nicht verlaengert, geht.`);
+        this.melden('verein', `Zum Saisonende laufen ${auslaufend.length} Verträge aus: `
+          + `${auslaufend.map((s) => s.name).join(', ')}. Wer nicht verlängert, geht.`);
       }
       this.melden('transfer', `Winterpause. ${fensterText({ art: 'winterpause' })}.`);
     }
@@ -384,7 +384,7 @@ class Karriere {
     const deutlich = [...bericht.spieler].sort((a, b) => Math.abs(b.nachher - b.vorher) - Math.abs(a.nachher - a.vorher))
       .filter((e) => e.nachher !== e.vorher).slice(0, 4);
     this.melden('verein', `${ueberschrift}: ${zaehlen((e) => e.nachher > e.vorher)} besser, ${zaehlen((e) => e.nachher < e.vorher)} schlechter, `
-      + `${zaehlen((e) => e.nachher === e.vorher)} unveraendert - die ganze Liste steht im Kader.`
+      + `${zaehlen((e) => e.nachher === e.vorher)} unverändert - die ganze Liste steht im Kader.`
       + `${deutlich.length ? ` Am deutlichsten: ${deutlich.map((e) => `${e.name} ${e.vorher}→${e.nachher}`).join(', ')}.` : ''}`);
   }
 
@@ -393,7 +393,7 @@ class Karriere {
       const {
         elf, system, nachgerueckt, verworfen,
       } = kader.elfFuerSpiel(verein);
-      for (const n of nachgerueckt) this.melden('spiel', `${n.rein} rueckte fuer ${n.raus} in die Elf (${n.platz}).`);
+      for (const n of nachgerueckt) this.melden('spiel', `${n.rein} rückte für ${n.raus} in die Elf (${n.platz}).`);
       if (verworfen) this.melden('spiel', 'Deine Aufstellung liess sich nicht halten - es spielte die beste Elf.');
       return { elf, bank: kader.bankStellen(verein, elf), system };
     }
@@ -411,8 +411,8 @@ class Karriere {
     const eigene = heim.id === this.vereinId ? folgen.heim : gast.id === this.vereinId ? folgen.gast : [];
     for (const folge of eigene) {
       this.melden('spiel', folge.art === 'sperre'
-        ? `${folge.spieler} ist gesperrt (${folge.grund}) und fehlt ${folge.spiele === 1 ? 'im naechsten Spiel' : `${folge.spiele} Spiele`}.`
-        : `${folge.spieler} hat sich verletzt und faellt ${folge.wochen === 1 ? 'eine Woche' : `${folge.wochen} Wochen`} aus.`);
+        ? `${folge.spieler} ist gesperrt (${folge.grund}) und fehlt ${folge.spiele === 1 ? 'im nächsten Spiel' : `${folge.spiele} Spiele`}.`
+        : `${folge.spieler} hat sich verletzt und fällt ${folge.wochen === 1 ? 'eine Woche' : `${folge.wochen} Wochen`} aus.`);
     }
     return { ergebnis, folgen };
   }
@@ -442,7 +442,7 @@ class Karriere {
           if (verein.sponsor) {
             const sieg = ergebnis.tore[i] > ergebnis.tore[1 - i];
             this.buchen(verein, 'sponsor', verein.sponsor.jeSpiel + (sieg ? verein.sponsor.jeSieg : 0),
-              `${verein.sponsor.name}${sieg ? ', mit Siegpraemie' : ''}`);
+              `${verein.sponsor.name}${sieg ? ', mit Siegprämie' : ''}`);
           }
         });
 
@@ -515,7 +515,7 @@ class Karriere {
       const eigene = naechste.paarungen.find((p) => p.heim === this.vereinId || p.gast === this.vereinId);
       if (eigene) {
         const daheim = eigene.heim === this.vereinId;
-        this.melden('liga', `Pokal, ${naechste.name}: ${daheim ? 'daheim gegen' : 'auswaerts bei'} `
+        this.melden('liga', `Pokal, ${naechste.name}: ${daheim ? 'daheim gegen' : 'auswärts bei'} `
           + `${this.vereinVon(daheim ? eigene.gast : eigene.heim).name}.`);
       }
     }
@@ -546,15 +546,15 @@ class Karriere {
       + this.pokal.runden.reduce((summe, r) => summe + r.paarungen.filter(dabei).length, 0);
   }
 
-  /** Nach jedem Termin: Gehaelter, Zinsen, Bauzeit - fuer alle Vereine gleich. */
+  /** Nach jedem Termin: Gehälter, Zinsen, Bauzeit - fuer alle Vereine gleich. */
   laufendeKosten() {
     for (const verein of this.vereine) {
       const zins = finanzen.zinsen(verein);
       if (zins) this.buchen(verein, 'zinsen', zins, 'Dispozinsen');
-      this.buchen(verein, 'gehaelter', -finanzen.gehaelter(verein), 'Gehaelter');
+      this.buchen(verein, 'gehaelter', -finanzen.gehaelter(verein), 'Gehälter');
       const fertig = finanzen.ausbauWeiter(verein);
       if (fertig && verein.id === this.vereinId) {
-        this.melden('finanzen', `Der Stadionausbau ist fertig: ${fertig.toLocaleString('de-DE')} neue Plaetze, `
+        this.melden('finanzen', `Der Stadionausbau ist fertig: ${fertig.toLocaleString('de-DE')} neue Plätze, `
           + `jetzt ${verein.stadion.plaetze.toLocaleString('de-DE')}.`);
       }
     }
@@ -582,7 +582,7 @@ class Karriere {
       const neu = kader.notfallJugend(verein, erzeuger);
       if (verein.id === this.vereinId) {
         this.melden('verein', `Zu wenige einsatzbereite Spieler: ${neu.map((s) => `${s.name} (${s.position})`).join(', ')} `
-          + 'ruecken aus der A-Jugend nach.');
+          + 'rücken aus der A-Jugend nach.');
       }
     }
   }
@@ -627,7 +627,7 @@ class Karriere {
     for (const nummer of [1, 2]) {
       endstand[nummer].forEach((zeile, i) => {
         const verein = this.vereinVon(zeile.id);
-        this.buchen(verein, 'praemien', finanzen.saisonpraemie(nummer, i + 1), `Saisonpraemie fuer Platz ${i + 1}`);
+        this.buchen(verein, 'praemien', finanzen.saisonpraemie(nummer, i + 1), `Saisonprämie für Platz ${i + 1}`);
         // Wer besser abschneidet, als man ihm zutraute, gewinnt an Ruf.
         verein.reputation = Math.round(Math.min(100, Math.max(5, verein.reputation + (verein.tvRang - (i + 1)) * 0.6)));
       });
@@ -681,10 +681,10 @@ class Karriere {
         if (spieler.vertrag) spieler.vertrag.gehalt = Math.round(spieler.vertrag.gehalt * ABSTIEGSKLAUSEL);
       }
     }
-    if (bilanz?.aufgestiegen) this.melden('verein', `Aufgestiegen! ${eigener.name} spielt naechste Saison in der ersten Liga.`);
+    if (bilanz?.aufgestiegen) this.melden('verein', `Aufgestiegen! ${eigener.name} spielt nächste Saison in der ersten Liga.`);
     if (bilanz?.abgestiegen) {
-      this.melden('verein', `Abgestiegen. ${eigener.name} spielt naechste Saison in der zweiten Liga. `
-        + `Die Abstiegsklausel senkt alle Gehaelter um ${Math.round((1 - ABSTIEGSKLAUSEL) * 100)} %.`);
+      this.melden('verein', `Abgestiegen. ${eigener.name} spielt nächste Saison in der zweiten Liga. `
+        + `Die Abstiegsklausel senkt alle Gehälter um ${Math.round((1 - ABSTIEGSKLAUSEL) * 100)} %.`);
     }
 
     // Entwicklung: jeder ein Jahr aelter, die Jungen besser, die Alten nicht.
@@ -694,7 +694,7 @@ class Karriere {
     for (const verein of this.vereine) {
       const eintraege = kader.entwickeln(verein, zufall, this.pflichtspiele(verein), { anteil: 0.6 });
       for (const e of eintraege) this.saisonFesthalten(e.spieler, verein, ligaDerSaison.get(verein.id), e.alter);
-      if (verein.id === this.vereinId) this.entwicklungMerken('Saisonende', 'Entwicklung ueber die Saison', eintraege);
+      if (verein.id === this.vereinId) this.entwicklungMerken('Saisonende', 'Entwicklung über die Saison', eintraege);
     }
     kader.entwickeln({ spieler: this.freie, technikSumme: 0, trainingswochen: 0 }, zufall, 0);
     // Wer in der Saison gespielt hat und jetzt ohne Verein ist, bekommt die Saison beim Verein, von dem er kam.
@@ -744,7 +744,7 @@ class Karriere {
       const jugend = kader.jugendErzeugen(verein, zufall, erzeuger).slice(0, Math.max(0, grenze - verein.spieler.length));
       verein.spieler.push(...jugend);
       if (verein.id === this.vereinId && jugend.length) {
-        this.melden('verein', `Aus der Jugend ruecken auf: ${jugend.map((s) => `${s.name} (${s.rolle}, Staerke ${s.staerke}, Talent ${s.talent})`).join(', ')}.`);
+        this.melden('verein', `Aus der Jugend rücken auf: ${jugend.map((s) => `${s.name} (${s.rolle}, Stärke ${s.staerke}, Talent ${s.talent})`).join(', ')}.`);
       }
     }
     // Der Markt der Vereinslosen: nicht zu voll, nie leer.
@@ -767,7 +767,7 @@ class Karriere {
     this.saisonVorbereiten();
     if (this.verein && this.status === 'laeuft') {
       this.melden('vorstand', `Saison ${this.saison}: Der Vorstand erwartet ${this.vorstand.ziel.text} `
-        + `(Platz ${this.vorstand.ziel.platz} oder besser in der ${this.verein.liga}. Liga). Waehle einen Sponsor.`);
+        + `(Platz ${this.vorstand.ziel.platz} oder besser in der ${this.verein.liga}. Liga). Wähle einen Sponsor.`);
     }
     return { art: 'saisonende', ...zusammenfassung };
   }
@@ -862,7 +862,7 @@ class Karriere {
     let zusatz = ergebnis.verlaengerung ? ' n.V.' : '';
     if (ergebnis.elfmeter) {
       const [ie, ifr] = daheim ? ergebnis.elfmeter : [ergebnis.elfmeter[1], ergebnis.elfmeter[0]];
-      zusatz = ` n.V., ${ie}:${ifr} im Elfmeterschiessen`;
+      zusatz = ` n.V., ${ie}:${ifr} im Elfmeterschießen`;
     }
     if (!ligaspiel) ausgang = ergebnis.sieger === this.vereinId ? 'Weiter' : 'Ausgeschieden';
     this.melden('spiel', `${titel}: ${ausgang}, ${eigene}:${fremde}${zusatz} ${daheim ? 'gegen' : 'bei'} ${gegner.name}.`
@@ -872,8 +872,8 @@ class Karriere {
   // ---------------------------------------------------------- Anweisungen
 
   mensch() {
-    if (!this.verein) return { fehler: 'In dieser Welt fuehrt kein Mensch einen Verein.' };
-    if (this.status === 'entlassen') return { fehler: 'Du bist entlassen. Waehle zuerst einen neuen Verein.' };
+    if (!this.verein) return { fehler: 'In dieser Welt führt kein Mensch einen Verein.' };
+    if (this.status === 'entlassen') return { fehler: 'Du bist entlassen. Wähle zuerst einen neuen Verein.' };
     return null;
   }
 
@@ -948,7 +948,7 @@ class Karriere {
   trainingSetzen(wert) {
     const halt = this.mensch();
     if (halt) return halt;
-    if (!Number.isFinite(wert)) return { fehler: 'Kein gueltiger Wert.' };
+    if (!Number.isFinite(wert)) return { fehler: 'Kein gültiger Wert.' };
     this.verein.training = Math.min(100, Math.max(0, Math.round(wert)));
     return { ok: true, training: this.verein.training };
   }
@@ -957,7 +957,7 @@ class Karriere {
     const halt = this.mensch();
     if (halt) return halt;
     const geprueft = finanzen.eintrittPruefen(preis);
-    if (geprueft === null) return { fehler: 'Kein gueltiger Eintrittspreis.' };
+    if (geprueft === null) return { fehler: 'Kein gültiger Eintrittspreis.' };
     this.verein.eintritt = geprueft;
     return { ok: true, eintritt: geprueft };
   }
@@ -965,12 +965,12 @@ class Karriere {
   sponsorWaehlen(id) {
     const halt = this.mensch();
     if (halt) return halt;
-    if (this.termin !== 0 || this.verein.sponsor) return { fehler: 'Der Sponsorvertrag fuer diese Saison steht schon.' };
+    if (this.termin !== 0 || this.verein.sponsor) return { fehler: 'Der Sponsorvertrag für diese Saison steht schon.' };
     const angebot = this.sponsorAngebote.find((a) => a.id === id);
     if (!angebot) return { fehler: 'Dieses Sponsorangebot gibt es nicht.' };
     this.verein.sponsor = angebot;
     this.sponsorAngebote = [];
-    this.melden('finanzen', `${angebot.name} ist Sponsor fuer die Saison ${this.saison}: ${geld(angebot.jeSpiel)} je Ligaspiel, `
+    this.melden('finanzen', `${angebot.name} ist Sponsor für die Saison ${this.saison}: ${geld(angebot.jeSpiel)} je Ligaspiel, `
       + `${geld(angebot.jeSieg)} je Sieg.`);
     return { ok: true, sponsor: angebot };
   }
@@ -981,8 +981,8 @@ class Karriere {
     const plan = finanzen.ausbauPruefen(this.verein, stufe);
     if (plan.fehler) return plan;
     this.verein.stadion.ausbau = { plaetze: plan.plaetze, rest: plan.termine };
-    this.buchen(this.verein, 'stadion', -plan.kosten, `Stadionausbau um ${plan.plaetze.toLocaleString('de-DE')} Plaetze`);
-    this.melden('finanzen', `Der Stadionausbau beginnt: ${plan.plaetze.toLocaleString('de-DE')} Plaetze in ${plan.termine} Wochen.`);
+    this.buchen(this.verein, 'stadion', -plan.kosten, `Stadionausbau um ${plan.plaetze.toLocaleString('de-DE')} Plätze`);
+    this.melden('finanzen', `Der Stadionausbau beginnt: ${plan.plaetze.toLocaleString('de-DE')} Plätze in ${plan.termine} Wochen.`);
     return { ok: true, ausbau: this.verein.stadion.ausbau };
   }
 
@@ -994,8 +994,8 @@ class Karriere {
     if (urteil.fehler) return urteil;
     const { spieler, verkaeufer, abloese } = urteil;
     transfer.wechseln(this, { kaeufer: eigener, verkaeufer, spieler, abloese, laufzeit });
-    this.melden('transfer', `${spieler.name} (${spieler.position}, Staerke ${spieler.staerke}) kommt `
-      + `${verkaeufer ? `von ${verkaeufer.name} fuer ${geld(abloese)}` : 'ablosefrei'}, Vertrag bis Saison ${spieler.vertrag.bis}, `
+    this.melden('transfer', `${spieler.name} (${spieler.position}, Stärke ${spieler.staerke}) kommt `
+      + `${verkaeufer ? `von ${verkaeufer.name} für ${geld(abloese)}` : 'ablösefrei'}, Vertrag bis Saison ${spieler.vertrag.bis}, `
       + `${geld(spieler.vertrag.gehalt)} im Jahr.`);
     return { ok: true, spieler: { id: spieler.id, name: spieler.name }, abloese };
   }
@@ -1004,10 +1004,10 @@ class Karriere {
     const halt = this.mensch();
     if (halt) return halt;
     const spieler = this.spielerVon(spielerId);
-    if (!spieler) return { fehler: 'Dieser Spieler gehoert nicht zum Kader.' };
+    if (!spieler) return { fehler: 'Dieser Spieler gehört nicht zum Kader.' };
     const ergebnis = vertraege.verlaengern(spieler, laufzeit, this.saison);
     if (ergebnis.fehler) return ergebnis;
-    this.melden('verein', `${spieler.name} verlaengert bis Saison ${ergebnis.bis}, ${geld(ergebnis.gehalt)} im Jahr.`);
+    this.melden('verein', `${spieler.name} verlängert bis Saison ${ergebnis.bis}, ${geld(ergebnis.gehalt)} im Jahr.`);
     return ergebnis;
   }
 
@@ -1016,13 +1016,13 @@ class Karriere {
     if (halt) return halt;
     const eigener = this.verein;
     const spieler = this.spielerVon(spielerId);
-    if (!spieler) return { fehler: 'Dieser Spieler gehoert nicht zum Kader.' };
+    if (!spieler) return { fehler: 'Dieser Spieler gehört nicht zum Kader.' };
     if (transfer.bestandNachAbgang(eigener, spieler) < kader.MINDESTBESTAND[spieler.position]) {
       return { fehler: `Ohne ${spieler.name} bleiben zu wenige auf ${spieler.position}.` };
     }
     const abfindung = vertraege.abfindung(spieler, this.saison);
     transfer.freistellen(this, eigener, spieler);
-    this.buchen(eigener, 'abfindungen', -abfindung, `Abfindung fuer ${spieler.name}`);
+    this.buchen(eigener, 'abfindungen', -abfindung, `Abfindung für ${spieler.name}`);
     this.melden('verein', `${spieler.name} ist freigestellt. Abfindung: ${geld(abfindung)}.`);
     return { ok: true, abfindung };
   }
@@ -1031,7 +1031,7 @@ class Karriere {
     const halt = this.mensch();
     if (halt) return halt;
     const spieler = this.spielerVon(spielerId);
-    if (!spieler) return { fehler: 'Dieser Spieler gehoert nicht zum Kader.' };
+    if (!spieler) return { fehler: 'Dieser Spieler gehört nicht zum Kader.' };
     spieler.transferliste = an ? this.saison : null;
     return { ok: true, transferliste: Boolean(an) };
   }
@@ -1061,7 +1061,7 @@ class Karriere {
       kaeufer, verkaeufer: eigener, spieler, abloese: angebot.gebot, laufzeit: Math.min(3, vertraege.laufzeitMax(spieler)),
     });
     this.angebote = this.angebote.filter((a) => a.spielerId !== spieler.id);
-    this.melden('transfer', `${spieler.name} wechselt fuer ${geld(angebot.gebot)} zu ${kaeufer.name}.`);
+    this.melden('transfer', `${spieler.name} wechselt für ${geld(angebot.gebot)} zu ${kaeufer.name}.`);
     return { ok: true, erloes: angebot.gebot };
   }
 

@@ -143,11 +143,11 @@ function kaufPruefen(welt, kaeufer, spielerId, gebot, laufzeit) {
   const gefunden = finden(welt, spielerId);
   if (!gefunden) return { fehler: 'Diesen Spieler gibt es nicht.' };
   const { spieler, verein: verkaeufer } = gefunden;
-  if (verkaeufer && verkaeufer.id === kaeufer.id) return { fehler: `${spieler.name} spielt schon fuer dich.` };
+  if (verkaeufer && verkaeufer.id === kaeufer.id) return { fehler: `${spieler.name} spielt schon für dich.` };
   if (verkaeufer && !fensterOffen(welt.termine[welt.termin])) {
     return { fehler: 'Das Transferfenster ist geschlossen. Vereinslose kannst du jederzeit holen.' };
   }
-  if (!Number.isFinite(gebot) || gebot < 0) return { fehler: 'Kein gueltiges Gebot.' };
+  if (!Number.isFinite(gebot) || gebot < 0) return { fehler: 'Kein gültiges Gebot.' };
   const falscheLaufzeit = vertraege.laufzeitPruefen(spieler, laufzeit);
   if (falscheLaufzeit) return { fehler: falscheLaufzeit };
   if (kaeufer.spieler.length >= KADER_MAX) return { fehler: `Der Kader ist voll (${KADER_MAX} Spieler).` };
@@ -183,7 +183,7 @@ function wechseln(welt, { kaeufer, verkaeufer, spieler, abloese, laufzeit }) {
   } else {
     welt.freie = welt.freie.filter((s) => s !== spieler);
   }
-  welt.buchen(kaeufer, 'transfers', -abloese, `${spieler.name} ${verkaeufer ? `von ${verkaeufer.name}` : '(ablosefrei)'}`);
+  welt.buchen(kaeufer, 'transfers', -abloese, `${spieler.name} ${verkaeufer ? `von ${verkaeufer.name}` : '(ablösefrei)'}`);
   spieler.vertrag = vertraege.neuerVertrag(spieler, laufzeit, welt.saison);
   spieler.transferliste = null;
   spieler.moral = Math.min(100, spieler.moral + 8);
@@ -329,7 +329,7 @@ function kiTransfers(welt, zufall, { verstaerkung = 0.3 } = {}) {
         .filter((s) => s.position === position && s !== bester.spieler)
         .sort((a, b) => a.staerke - b.staerke)[0];
       if (weg && bestandNachAbgang(verein, weg) >= MINDESTBESTAND[position]) {
-        welt.buchen(verein, 'abfindungen', -vertraege.abfindung(weg, welt.saison), `Abfindung fuer ${weg.name}`);
+        welt.buchen(verein, 'abfindungen', -vertraege.abfindung(weg, welt.saison), `Abfindung für ${weg.name}`);
         freistellen(welt, verein, weg);
       }
     }

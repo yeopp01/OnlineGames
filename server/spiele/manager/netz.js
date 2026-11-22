@@ -28,7 +28,7 @@ function koerperLesen(anfrage) {
     anfrage.on('data', (stueck) => {
       roh += stueck;
       if (roh.length > KOERPER_MAX) {
-        scheitern(new Error('Die Nachricht ist zu gross.'));
+        scheitern(new Error('Die Nachricht ist zu groß.'));
         anfrage.destroy();
       }
     });
@@ -36,7 +36,7 @@ function koerperLesen(anfrage) {
       try {
         fertig(roh ? JSON.parse(roh) : {});
       } catch {
-        scheitern(new Error('Unverstaendliche Nachricht.'));
+        scheitern(new Error('Unverständliche Nachricht.'));
       }
     });
     anfrage.on('error', scheitern);
@@ -115,7 +115,7 @@ function manager({ schutz, adresseVon, db, sitzung }) {
     // Die Bremse vor der Anmeldung: wer ohne Konto haemmert, kostet trotzdem.
     if (!schutz.zugErlaubt(adresse)) return fehlerhaft(antwort, 'Zu schnell hintereinander.', 429);
     const angemeldet = await sitzung(anfrage.headers);
-    if (!angemeldet) return fehlerhaft(antwort, 'Zum Managerspiel ist eine Anmeldung noetig.', 401);
+    if (!angemeldet) return fehlerhaft(antwort, 'Zum Managerspiel ist eine Anmeldung nötig.', 401);
     const konto = angemeldet.user.id;
 
     // Die Vereinswahl vor dem Anlegen: beide Ligen, mit dem, was man wissen muss.
@@ -152,7 +152,7 @@ function manager({ schutz, adresseVon, db, sitzung }) {
       const n = await koerperLesen(anfrage);
       // Die Bremse steht hinter dem Lesen, aber vor dem Rechnen: eine neue
       // Welt sind 36 Vereine und 750 Spieler.
-      if (!schutz.rechnenErlaubt(adresse)) return fehlerhaft(antwort, 'Zu viele neue Spielstaende. Bitte kurz warten.', 429);
+      if (!schutz.rechnenErlaubt(adresse)) return fehlerhaft(antwort, 'Zu viele neue Spielstände. Bitte kurz warten.', 429);
       const startwert = ganzeZahl(n.startwert) ?? Math.floor(Math.random() * 1e9);
       const name = typeof n.name === 'string' && n.name.trim() ? n.name.trim().slice(0, 40) : 'Neue Karriere';
       const angelegt = staende.anlegen(konto, { startwert, vereinId: typeof n.vereinId === 'string' ? n.vereinId : null, name });

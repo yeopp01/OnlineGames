@@ -26,8 +26,8 @@ const AUSBAU = [
 ];
 const SPONSOREN = [
   'Nordlicht Energie', 'Brauhaus Kessler', 'Baumarkt Keller', 'Autohaus Brenner', 'Sparkasse am Fluss',
-  'Moebel Wendt', 'Stahlwerk Obermann', 'Fruchtsaft Anders', 'Versicherung Treu', 'Reisebuero Sonne',
-  'Kaffeeroesterei Adler', 'Spedition Lange', 'Elektro Faber', 'Stadtwerke', 'Landmolkerei',
+  'Möbel Wendt', 'Stahlwerk Obermann', 'Fruchtsaft Anders', 'Versicherung Treu', 'Reisebüro Sonne',
+  'Kaffeerösterei Adler', 'Spedition Lange', 'Elektro Faber', 'Stadtwerke', 'Landmolkerei',
 ];
 
 /**
@@ -90,8 +90,8 @@ function ausbauPruefen(verein, stufe) {
   const plan = AUSBAU.find((a) => a.stufe === stufe);
   if (!plan) return { fehler: 'Diese Ausbaustufe gibt es nicht.' };
   if (verein.stadion.ausbau) return { fehler: 'Es wird schon gebaut.' };
-  if (verein.stadion.plaetze + plan.plaetze > PLAETZE_MAX) return { fehler: `Mehr als ${PLAETZE_MAX.toLocaleString('de-DE')} Plaetze genehmigt die Stadt nicht.` };
-  if (verein.konto < plan.kosten) return { fehler: 'Fuer den Ausbau reicht das Geld nicht.' };
+  if (verein.stadion.plaetze + plan.plaetze > PLAETZE_MAX) return { fehler: `Mehr als ${PLAETZE_MAX.toLocaleString('de-DE')} Plätze genehmigt die Stadt nicht.` };
+  if (verein.konto < plan.kosten) return { fehler: 'Für den Ausbau reicht das Geld nicht.' };
   return { ok: true, ...plan };
 }
 

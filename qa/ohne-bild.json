@@ -1262,6 +1262,11 @@
       "begruendung": "Dass keine Einstellung fuer jeden die beste ist, zeigt nur ein Vergleich vieler Spiele mit verschiedenen Einstellungen. Die Regler selbst zeigt das Bild zu aufstellung AC-21."
     },
     {
+      "spec": "15-manager/spielziel.md",
+      "ac": "AC-16",
+      "begruendung": "Eine Regel ueber alle Texte im Quelltext des Managerspiels: jede Zeichenkette, die auf den Bildschirm kommen kann, hat echte Umlaute. Ein Bild zeigt davon eine Stichprobe von einem Blatt, die Regel gilt fuer alle Blaetter, Absagen und Nachrichten - auch fuer die, die in keinem Browserfall erscheinen. Belegt im Waechter, der jede Zeichenkette dieser Dateien liest, und in seiner Gegenprobe, die zeigt, dass er Text in Vorlagen findet und Schluessel stehen laesst. Wie die Blaetter danach aussehen, zeigen die Bilder der anderen Kriterien."
+    },
+    {
       "spec": "15-manager/spieltag.md",
       "ac": "AC-23",
       "begruendung": "Die Wirkung der Ausrichtung auf Chancen und Punkte fuer Favorit und Aussenseiter, gemessen ueber je 1.200 Spiele. Den Regler zeigt das Bild zu aufstellung AC-21."

@@ -531,7 +531,7 @@ function nachwirkung(verein, ergebnis) {
       if (spieler.gelbe >= GELBSPERRE) {
         spieler.gelbe -= GELBSPERRE;
         spieler.sperre += 1;
-        folgen.push({ art: 'sperre', spieler: spieler.name, spiele: 1, grund: 'fuenfte gelbe Karte' });
+        folgen.push({ art: 'sperre', spieler: spieler.name, spiele: 1, grund: 'fünfte gelbe Karte' });
       }
     }
     if (e.art === 'gelbrot') {

@@ -56,7 +56,7 @@ test('karriere AC-23: ohne Anmeldung geht nichts', async () => {
   for (const [pfad, methode] of [['spielstaende', 'GET'], ['spielstaende', 'POST'], ['vereine?startwert=1', 'GET'], ['spielstaende/abc/weiter', 'POST']]) {
     const { status, daten } = await fragen(pfad, { methode, kekse: null, koerper: methode === 'POST' ? {} : undefined });
     assert.equal(status, 401, `${methode} ${pfad}`);
-    assert.equal(daten.fehler, 'Zum Managerspiel ist eine Anmeldung noetig.');
+    assert.equal(daten.fehler, 'Zum Managerspiel ist eine Anmeldung nötig.');
   }
 });
 
@@ -143,7 +143,7 @@ test('karriere AC-25: fuenf Spielstaende je Konto', async () => {
   for (let i = 0; i < 5; i++) assert.equal((await anlegen({ name: `Bert ${i}` }, bert.kekse)).status, 200);
   const sechster = await anlegen({ name: 'Bert 6' }, bert.kekse);
   assert.equal(sechster.status, 409);
-  assert.equal(sechster.daten.fehler, 'Mehr als 5 Spielstaende je Konto gehen nicht. Loesche einen alten.');
+  assert.equal(sechster.daten.fehler, 'Mehr als 5 Spielstände je Konto gehen nicht. Lösche einen alten.');
 });
 
 test('karriere AC-24 und karriere AC-20: fremde und unbekannte Spielstaende sehen gleich aus', async () => {

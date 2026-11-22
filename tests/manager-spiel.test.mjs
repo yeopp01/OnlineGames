@@ -83,10 +83,10 @@ test('kader AC-21: das Karriereende wird zur Winterpause angekuendigt', () => {
   assert.equal(alt.karriereende ?? null, null, 'vor der Winterpause steht noch nichts fest');
   k.weiter();
   assert.equal(alt.karriereende, 1);
-  assert.ok(k.nachrichten.some((n) => n.text.startsWith('Zum Saisonende hoeren auf:') && n.text.includes(alt.name)));
+  assert.ok(k.nachrichten.some((n) => n.text.startsWith('Zum Saisonende hören auf:') && n.text.includes(alt.name)));
   const gezeigt = k.zustand().verein.spieler.find((s) => s.id === alt.id);
   assert.deepEqual([gezeigt.karriereende, gezeigt.verlaengerbar], [true, false]);
-  assert.equal(k.verlaengern(alt.id, 1).fehler, `${alt.name} hoert zum Saisonende auf und verlaengert nicht mehr.`);
+  assert.equal(k.verlaengern(alt.id, 1).fehler, `${alt.name} hört zum Saisonende auf und verlängert nicht mehr.`);
   // Die Unter-33-Jaehrigen kuendigt niemand an.
   assert.ok(k.vereine.flatMap((v) => v.spieler).filter((s) => s.karriereende).every((s) => s.alter >= 29));
 
@@ -432,7 +432,7 @@ test('aufstellung AC-17: ein Ausfall rueckt nach, und wer zurueck ist, spielt wi
   assert.deepEqual(gespielt.map((s) => s.platz), plaetze);
   assert.ok(!merk.includes(gespielt[index].id), 'auf dem Platz steht keiner von der Bank');
   gespielt.forEach((s, i) => { if (i !== index) assert.equal(s.id, merk[i]); });
-  assert.ok(k.nachrichten.some((n) => n.text.includes(`fuer ${faellt.name} in die Elf`)));
+  assert.ok(k.nachrichten.some((n) => n.text.includes(`für ${faellt.name} in die Elf`)));
   assert.deepEqual(k.verein.aufstellung.ids, merk, 'die gemerkte Elf wurde veraendert');
 
   assert.equal(faellt.verletzt, 0);
@@ -1297,8 +1297,8 @@ test('vertraege AC-4: der Mensch verlaengert zum genannten Gehalt', () => {
   const spieler = k.verein.spieler.find((s) => s.vertrag.bis === 2 && s.moral >= 25 && s.alter <= 30);
   const wunsch = vertraege.gehaltswunsch(spieler);
   assert.deepEqual(k.verlaengern(spieler.id, 3), { ok: true, bis: 5, gehalt: wunsch });
-  assert.ok(k.nachrichten.at(-1).text.includes('verlaengert bis Saison 5'));
-  assert.match(k.verlaengern(spieler.id, 1).fehler, /laeuft noch bis Saison 5/);
+  assert.ok(k.nachrichten.at(-1).text.includes('verlängert bis Saison 5'));
+  assert.match(k.verlaengern(spieler.id, 1).fehler, /läuft noch bis Saison 5/);
 });
 
 // ------------------------------------------------------------- Vorstand
@@ -1370,7 +1370,7 @@ test('manager AC-11: Saison um Saison, Spieler altern', () => {
 
 test('kader AC-14: das Postfach meldet die Jugend', () => {
   const { nachEnde, k } = zweiSaisons();
-  assert.ok(nachEnde.post.some((t) => t.startsWith('Aus der Jugend ruecken auf: ')));
+  assert.ok(nachEnde.post.some((t) => t.startsWith('Aus der Jugend rücken auf: ')));
   assert.ok(k.verein.spieler.some((s) => s.jugend && s.alter === 17));
 });
 

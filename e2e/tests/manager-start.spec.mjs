@@ -158,7 +158,7 @@ test.describe('Anfangen und weiterspielen', () => {
     await karriereBeginnen(page);
     await griff(page, 'vertrauen', { wert: 100 });
     await vorspulen(page, 'winterpause');
-    await expect(page.locator('#kopfLage')).toContainText('als Naechstes Winterpause');
+    await expect(page.locator('#kopfLage')).toContainText('als Nächstes Winterpause');
     await expect(page.locator('#vorWinter')).toBeDisabled();
     // Vorbereitung, 17 Spieltage, zwei Pokalrunden.
     await expect(page.locator('#lauf')).toContainText('20 Termine in');
@@ -213,7 +213,7 @@ test.describe('Anfangen und weiterspielen', () => {
     await karriereBeginnen(page);
     await griff(page, 'vertrauen', { wert: 100 });
     await vorspulen(page, 'saisonende');
-    await expect(page.locator('#weiter')).toHaveText('Saison abschliessen');
+    await expect(page.locator('#weiter')).toHaveText('Saison abschließen');
     await weiter(page);
     await expect(page.locator('#weiter')).toHaveText('Saison 2 starten');
     await expect(page.locator('#bilanz')).toContainText('Saison 1 ist vorbei');

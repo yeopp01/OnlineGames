@@ -750,14 +750,14 @@ test('vertraege AC-2: der Spieler nennt sein Gehalt', () => {
 test('vertraege AC-3: die Laufzeit richtet sich nach dem Alter', () => {
   assert.deepEqual([30, 31, 32, 33, 36].map((alter) => vertraege.laufzeitMax({ alter })), [4, 2, 2, 1, 1]);
   assert.equal(vertraege.laufzeitPruefen({ alter: 25, name: 'A' }, 4), null);
-  assert.match(vertraege.laufzeitPruefen({ alter: 33, name: 'A' }, 2), /hoechstens fuer 1 Jahr/);
+  assert.match(vertraege.laufzeitPruefen({ alter: 33, name: 'A' }, 2), /höchstens für 1 Jahr/);
   assert.match(vertraege.laufzeitPruefen({ alter: 25, name: 'A' }, 0), /mindestens/);
   assert.match(vertraege.laufzeitPruefen({ alter: 25, name: 'A' }, 1.5), /mindestens/);
 });
 
 test('vertraege AC-4 und vertraege AC-5: verlaengert wird kurz vor Schluss, und nicht von Unzufriedenen', () => {
   const spieler = (bis, moral = 60) => ({ name: 'Ole', alter: 26, staerke: 70, talent: 72, moral, vertrag: { bis, gehalt: 1 } });
-  assert.match(vertraege.verlaengern(spieler(4), 2, 2).fehler, /laeuft noch bis Saison 4/);
+  assert.match(vertraege.verlaengern(spieler(4), 2, 2).fehler, /läuft noch bis Saison 4/);
   const naechstes = spieler(3);
   assert.deepEqual(vertraege.verlaengern(naechstes, 2, 2), { ok: true, bis: 5, gehalt: vertraege.gehaltswunsch(naechstes) });
   const dieses = spieler(2);
