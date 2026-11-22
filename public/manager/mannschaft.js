@@ -21,12 +21,13 @@ const SCHWERPUNKTE = {
   angriff: 'Angriff üben',
 };
 
-const form = (s) => s.staerke * (0.6 + (s.kondition / 100) * 0.4) * (0.9 + (s.moral / 100) * 0.2);
-// Wie gut einer auf einem Platz ist - die Tabelle kommt vom Server, gerechnet wird dort.
-const eignung = (s, platz) => (s.rolle === platz ? 1 : s.nebenrolle === platz ? lage.stand.eignung.neben : lage.stand.eignung.tabelle[s.rolle][platz]);
+// Wie gut einer auf dem Platz mit dieser Nummer ist und was er dort bringt -
+// Tagesform und Eignung rechnet der Server (sicht.spielerZeigen), der Browser
+// liest sie nur ab.
+const eignung = (s, index) => s.eignung[index];
 const passtInsFach = (s, platz) => (platz === 'TW') === (s.position === 'TOR');
-const wertAuf = (s, platz) => form(s) * eignung(s, platz);
-const plaetzeJetzt = () => lage.stand.plaetze[lage.stand.verein.taktik.system];
+const wertAuf = (s, index) => s.form * eignung(s, index);
+const plaetzeJetzt = () => lage.stand.verein.plaetze;
 const FACH = 'Ins Tor gehört ein Torwart, ins Feld keiner.';
 
 /**
@@ -66,7 +67,7 @@ function tauschen(id) {
     const platz = plaetze[index];
     const ersatz = lage.stand.verein.spieler
       .filter((s) => s.bereit && !elf.includes(s.id) && passtInsFach(s, platz))
-      .sort((a, b) => wertAuf(b, platz) - wertAuf(a, platz))[0];
+      .sort((a, b) => wertAuf(b, index) - wertAuf(a, index))[0];
     if (!ersatz) return melden(`Für ${platz} sitzt niemand mehr auf der Bank.`);
     elf[index] = ersatz.id;
     return zeichnen();
@@ -74,7 +75,7 @@ function tauschen(id) {
   const gewinn = (platz, i) => {
     if (!passtInsFach(spieler, platz)) return -Infinity;
     const dort = spielerVon(elf[i]);
-    return wertAuf(spieler, platz) - (dort ? wertAuf(dort, platz) : 0);
+    return wertAuf(spieler, i) - (dort ? wertAuf(dort, i) : 0);
   };
   const ziel = plaetze.map((platz, i) => ({ i, wert: gewinn(platz, i) })).sort((a, b) => b.wert - a.wert)[0];
   return aufPlatz(id, ziel.i);
@@ -156,7 +157,7 @@ export function blattMannschaft() {
   const platzfeld = ({ platz, i }) => {
     const s = spielerVon(elfLokal[i]);
     if (!s) return `<div class="platzfeld" data-platz="${i}"><span class="platzname">${platz}</span><span class="leer">frei</span></div>`;
-    const e = eignung(s, platz);
+    const e = eignung(s, i);
     return `<div class="platzfeld lage-${platz.toLowerCase()}" data-platz="${i}">
       <span class="platzname">${platz}</span>
       <button class="trikot ${s.kondition < 70 ? 'muede' : ''} ${e < 1 ? 'fremd' : ''}" data-spieler="${s.id}" data-ziehbar

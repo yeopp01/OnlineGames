@@ -583,6 +583,33 @@ test('aufstellung AC-24: der Rechner besetzt die Plaetze nach Eignung', () => {
   assert.deepEqual(k.zustand('m1').verein.besteElf, kader.elfStellen(eigen(k), eigen(k).taktik.system).map((s) => s.id));
 });
 
+test('aufstellung AC-25: der Server schickt, was jeder auf jedem Platz bringt', () => {
+  // Das Trikot zeigt, was einer auf seinem Platz bringt - gerechnet auf dem
+  // Server, der Browser liest es ab (M0.7). Je Spieler die Tagesform und die
+  // Eignung fuer jeden der elf Plaetze des gewaehlten Systems.
+  const k = neu();
+  for (const system of ['4-4-2', '3-5-2']) {
+    k.taktikSetzen('m1', { system });
+    const { verein } = k.zustand('m1');
+    assert.equal(verein.taktik.system, system);
+    assert.deepEqual(verein.plaetze, kader.PLAETZE[system]);
+    for (const gezeigt of verein.spieler) {
+      const s = eigen(k).spieler.find((x) => x.id === gezeigt.id);
+      assert.ok(Math.abs(gezeigt.form - kader.tagesform(s)) < 1e-3, `${s.name}: Form ${gezeigt.form}`);
+      assert.equal(gezeigt.eignung.length, 11);
+      verein.plaetze.forEach((platz, i) => {
+        assert.ok(Math.abs(gezeigt.eignung[i] - kader.eignung(s, platz)) < 0.005, `${s.name} auf ${platz}`);
+        // Was im Trikot steht, ist dasselbe wie mit der ungerundeten Eignung.
+        assert.equal(Math.round(s.staerke * gezeigt.eignung[i]), Math.round(s.staerke * kader.eignung(s, platz)), `${s.name} auf ${platz}`);
+      });
+    }
+  }
+  // Die Tabelle der Eignungen und die Plaetze aller Systeme gehen nicht mehr mit.
+  const zustand = k.zustand('m1');
+  assert.equal('eignung' in zustand, false);
+  assert.equal('plaetze' in zustand, false);
+});
+
 test('aufstellung AC-20: die anderen stellen sich auf den Gegner ein', () => {
   const k = neu();
   const [stark, schwach] = [k.vereinVon('v1'), k.vereinVon('v18')];
