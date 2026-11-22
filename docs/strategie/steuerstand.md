@@ -26,6 +26,13 @@ Punkt unten sucht, sucht dort nach „Punkt <n> (Benutzer“.
 
 ## Zuletzt fortgeschrieben
 
+**2026-11-22, Mittag (Benutzer einige Stunden offline):** **Dorfzentrum
+zusammengeführt** (`180df88`, bauen AC-57, F14, bedienung AC-64 auf elf;
+Board 610/716). Der ganze Browserlauf wartet auf ein fremdes `check:kurz`
+(Managersitzung); danach `E2E_HAFEN=4391 npm run check:alles:neu:kurz`,
+`qa:abweichung`, bei Grün pushen und ausrollen (Punkt 12 unten), sonst
+Gründe aufschreiben. Erst danach `strategie-speichern` zusammenführen.
+
 **2026-11-22, Nachmittag — Entscheidungen des Benutzers (durchgeklickt):**
 1. **Regelpaket übernehmen, Lücken schließen:** Laufregel, Seitengleichheit,
    Pfeilflug (Patches `scratchpad/uebergabe2/`, `uebergabe3/`, Zweig
@@ -167,155 +174,79 @@ nur Gebäude aus) und steht im Nebel genau auf 105. **Seitenfehler an HEAD
 Benutzer: darf ki AC-25 auch eigene Einheiten ausnehmen? Konterkreis für
 die Laufregel lockern? fahrplan AC-15 für A* lockern?
 
-**2026-11-22, später in der Nacht:** **Technologiebaum zusammengeführt**
-(`cf197cd`, bedienung AC-81 bis AC-86, `npm run check` grün; der ganze
-Browserlauf steht noch aus — einmal für alles nach dem Zusammenführen der
-Regeln und der KI). **F12 läuft als Agent im Arbeitsbaum
-`../OnlineGames-kikrone` (Zweig `strategie-ki-krone`)**: erforschen (ki
-AC-35), Krone, Hauseinheiten (ki AC-28), Wunder/Ei/Drache (ki AC-39, AC-40,
-AC-29, einheiten AC-52), gemessen auf den alten Regeln. Danach: beide Zweige
-(`strategie-regeln`, `strategie-ki-krone`) zusammenführen, **eine
-gemeinsame Messrunde** (Partien, Nebel 120, zwei gegen zwei, Häuser),
-`npm run check:alles:neu:kurz`, `qa:abweichung`. Arbeitsbaum
-`../OnlineGames-techbaum` kann weg (Zweig gemergt) — nur auf Wort des
-Benutzers löschen.
-
-**2026-11-22, nachts (Benutzer schläft: „sobald die Agenten fertig sind,
-darfst du sehr gerne die sachen die gefunden wurden angehen und umsetzen und
-das Spiel besser machen“ — kein Push, kein Ausrollen ohne ihn):**
-Steuerstand und Haken sind `8915326`. Agent (a) hat gemessen, nichts
-committet: **Kampfdauer in Spielsekunden = Vorlage** (Miliz–Miliz 18,1 s
-gegen 18,0; Ritter–Ritter 21,7 gegen 21,6; Gebäude genau gerechnet). Die
-Ursache für „schnell kaputt“ ist also nicht die Rechnung. Vermutet:
-(1) **keine Trefferchance** (AoE Bogen 80 %, kampf AC-8 verbietet Zufall —
-Probe mit Schaden × 0,8: Bogen–Speer 16,1 statt 12,1 s, Konterkreis des
-Lehens hält), (2) Pfeile treffen sofort, (3) acht schlagen auf den
-Vordersten, (4) kleine Heere der KI. **Unsere 1,0 ist AoE-„langsam“; AoE DE
-„Normal“ ist 1,7** — in echter Zeit dauern Kämpfe hier länger. Spielgeschwindigkeit
-1,5 als Vorgabe stünde gegen die Rückmeldung. **Reiterschütze bekommt
-beide Schmiedelinien** (Nah +4 und Schützen +3; AoE nur Schützen) —
-Entscheidung des Benutzers. **Laufregel reißt den Konterkreis** (einheiten
-AC-42 19/20, fahrplan AC-25 13/20 statt ≤10, AC-26 zweimal); Abtrennen als
-todo lehnte die Berechtigungsprüfung ab — **Grenzen lockert nur der
-Benutzer**. Gefechtsstand-Seitenfehler: Spirale nicht gespiegelt
-(`pruefstand.js`), Reichweite gegen die schon bewegte Lage (Welt), Rest aus
-der Reihenfolge der Einheiten. **Jetzt läuft Agent (d) im Arbeitsbaum
-`../OnlineGames-regeln` (Zweig `strategie-regeln`)**: Laufregel,
-Seitengleichheit, Pfeile beim Ankommen, dann nur gesetzte Werte (nicht aus
-der Vorlage) drehen, bis jede Grenze ohne Lockern hält; Patches des Agenten
-(a) unter `scratchpad/uebergabe/`. Agent (c) Technologiebaum im Arbeitsbaum
-`../OnlineGames-techbaum` (Zweig `strategie-techbaum`) läuft. Im Hauptordner
-liegen unversionierte Dateien einer Managersitzung (ADR-0018,
-`docs/manager/`, Skill `manager-weiterbauen`) — nicht anfassen.
-
-**2026-11-22:** F6 bis F11 nach `main` gepusht und ausgerollt (Benutzer hat
-es heute freigegeben: ‚gut, dann ausrollen - und anschließend deine anderen
-Punkte eigenständig angehen'). Er will Hilfsagenten statt langer eigener
-Verläufe (‚nutze lieber subagenten, die verlieren den kontext nicht durch
-compacten'). Er bestätigt die Laufregel (9 % zu langsam, ‚das passt nicht
-ganz') und meldet: ‚die einheiten sind auch immer alle relativ schnell
-kaputt, das hat bei AoE teilweise ziemlich lange gedauert'. Laufen in
-Hilfsagenten: (a) Laufregel, Kampfdauer gegen die Vorlage, Pfeile treffen
-beim Ankommen (Punkt 25), Seitengleichheit des Gefechtsstands; (b) dieser
-Umbau des Steuerstands; (c) der Technologiebaum. Danach: F12 als eigener
-KI-Block mit neuer Messung (ki AC-35, ki AC-28, einheiten AC-52,
-pruefstand:haeuser, Test zu spielziel AC-18), dann F13, dann zweites
-Dorfzentrum (Punkt 39), Speichern (ADR-0017), Notfallklingel (erst gegen
-ADR-0012 halten).
-
-**2026-11-21, 02:55 (Opus):** F6 bis F11 gebaut und committet (`bba1e2b`,
-`7013cf0`, Bilder `b45fbd8`, Steuerstand `9194fe7`), `npm run check` grün
-(1063 Tests, 14 Partien). Ganze Partien unverändert: Nebel 120 — 111 vor
-Minute 60, Median 39,4, keine ohne Sieger; zwei gegen zwei alle vor Minute
-90. Was F6 bis F11 sind und welche Werte gesetzt statt aus der Vorlage
-stammen: `CLAUDE.md` („F6 bis F11 stehen“).
-
 ---
 
 ## Stand
 
-- **Zweig `strategie`, HEAD `9194fe7`** = `main` = `origin/main` = Server
-  (`npm run ausrollen -- --stand` zeigt es). 598 von 706 Kriterien fertig,
-  1063 Tests ohne Browser, 14 ganze Partien, 341 im Browser (Zahlen in
-  `CLAUDE.md`, Board `specs/BOARD.md`).
-- **Arbeitsbäume:** Hauptordner `OnlineGames` (`strategie`);
-  `OnlineGames-techbaum` (`strategie-techbaum`, Hilfsagent c, Technologiebaum);
-  `OnlineGames-bildumbau` (`strategie-bildumbau`, steht alt auf `a9a4d9a`,
-  wird nicht mehr gebraucht — Entfernen nur auf Wort des Benutzers). Eine
-  Probekopie `basis` im Scratchpad (losgelöst auf `9194fe7`) gehört einem
-  Hilfsagenten.
-- **Parallel:** eine andere Sitzung arbeitet an `server/`, `tests/`,
-  `specs/`, `public/` (am 2026-11-22 uncommittet: `server/spiele/strategie/welt.js`,
-  dazu der Managerausbau `docs/adr/0018-manager-ausbau.md`, `docs/manager/`,
-  `.claude/skills/manager-weiterbauen/`). Nicht anfassen, was einem anderen
-  gehört.
-- **Stufe F:** F1 bis F11 stehen. Offen: **F12** (die KI in der Krone) und
-  **F13** (die Krone am Stück im Browser).
+- **Zweig `strategie`, HEAD `180df88`** (Dorfzentrum zusammengeführt);
+  `main` = `origin/main` = Server stehen noch auf `9194fe7` (F6 bis F11).
+  610 von 716 Kriterien fertig, 1095 Tests ohne Browser, 17 ganze Partien,
+  351 im Browser (Zahlen in `CLAUDE.md`, Board `specs/BOARD.md`).
+- **Arbeitsbäume neben dem Hauptordner:** `-speichern`
+  (`strategie-speichern` `6f955c2`, S1+S2, nach dem Ausrollen
+  zusammenführen); `-regeln` (`strategie-regeln` `d87d84f`, Doku des
+  Regelpakets, Code als Patch im Scratchpad); `-kikrone`
+  (`strategie-ki-krone` `2cefbd5`, Drachenpatch ungesichert); `-dorfzentrum`
+  (gemergt, kann weg — nur auf sein Wort). Geparkt ohne Arbeitsbaum:
+  `strategie-mauerring`, `strategie-ki-antwort`. Unter
+  `.claude/worktrees/manager*` arbeitet die Managersitzung — nicht anfassen.
+- **Stufe F:** F1 bis F14 stehen bis auf ki AC-28, ki AC-29, einheiten AC-52.
 
-### Was nicht `fertig` ist (Spec-Stand 2026-11-22)
+### Was nicht `fertig` ist (Spec-Stand 2026-11-22 mittags)
 
 | Spec | Kriterien |
 | --- | --- |
-| bedienung | AC-36 `in-qa` (Militär bei Spielgröße erkennbar), AC-73 `in-qa` (Vollbild gibt `Strg`+Ziffer — der Benutzer muss es selbst probieren), AC-42, AC-44, AC-46 `offen` |
-| darstellung | AC-6 `in-qa`, AC-24 `in-arbeit`, AC-11, AC-19, AC-20, AC-21 `offen` |
-| einheiten | AC-52 `in-qa` (Drache gewinnt KI gegen KI höchstens 60 % — misst erst F12), AC-10, AC-32 `offen` |
-| fahrplan | AC-21, AC-22 `in-qa`; AC-16, AC-18, AC-19, AC-20 `offen` |
+| bedienung | AC-36, AC-73 `in-qa` (AC-73: Vollbild gibt `Strg`+Ziffer — probiert der Benutzer selbst); AC-42, AC-44, AC-46 `offen` |
+| darstellung | AC-6 `in-qa`, AC-24 `in-arbeit`; AC-11, AC-19, AC-20, AC-21 `offen` |
+| einheiten | AC-52 `in-qa` (Drache, gepaart messen); AC-10, AC-32, AC-70 (Laufregel) `offen` |
+| fahrplan | AC-21, AC-22 `in-qa`; AC-16, AC-18 `offen` |
+| kampf | AC-26 (Seitengleichheit), AC-27 (Pfeilflug) `offen` — Regelpaket |
 | karte | AC-7, AC-10 `offen` |
-| ki | AC-20, AC-28 (Spezialeinheit), AC-29 (Drache rufen), AC-31 (antwortet auf das Heer), AC-35 (forscht), AC-39 (Krone), AC-40 (Wunder) `offen` |
-| spielziel | AC-1 `in-arbeit`; AC-2, AC-3, AC-4, AC-10 bis AC-13, AC-15, AC-16, AC-18 `offen` (AC-18: Häuser 30 bis 70 %, Test in `npm run check` fehlt) |
+| ki | AC-20, AC-28 (Hauseinheiten), AC-29 (Drache), AC-31 (antwortet auf das Heer) `offen` |
+| spielziel | AC-1 `in-arbeit`; AC-2 bis AC-4, AC-10 bis AC-13, AC-15, AC-16, AC-18 `offen` (AC-18: Häuser 30 bis 70 %) |
 
 ---
 
 ## Nächste Schritte, in dieser Reihenfolge
 
-1. **Hilfsagenten abwarten und ihre Berichte einarbeiten:** (a) Laufregel,
-   Kampfdauer, Pfeile beim Ankommen (Punkt 25), Seitengleichheit;
-   (b) dieser Umbau; (c) Technologiebaum. Nichts davon doppelt anfangen.
-2. **F12 — die KI in der Krone, als eigener KI-Block mit neuer Messung:**
-   ki AC-35 (forscht), ki AC-28 (Spezialeinheit, `NOCH_NICHT` auflösen),
-   ki AC-39 (Krone), dazu ki AC-29 (Drache) und ki AC-40 (Wunder) prüfen;
-   einheiten AC-52 messen; `npm run pruefstand:haeuser` neu; der Test zu
-   spielziel AC-18 in `npm run check`. Mit hinein, wenn die Grenzen es
-   tragen: ki AC-31 (Punkt 35), Punkte 19, 22, 24, Bauplatz nur auf
-   Gesehenem. Danach Nebeltest (120), zu viert, Teams.
-3. **F13** — die Krone am Stück im Browser.
-4. **Zweites Dorfzentrum** (Punkt 39): Kriterium anlegen, Daten.
-5. **Speichern** nach ADR-0017 (S1 bis S4), danach Liste offener Spiele
-   (Punkt 18 der ersten Liste).
-6. **Notfallklingel** (Punkt 17 der ersten Liste) — erst gegen ADR-0012
-   halten, Umfang nennen, sein Wort abwarten.
-7. Danach, ohne feste Reihenfolge: Haltungen (15b), dichter stehen (18),
-   Gebäude angreifen ohne Einheiten (40), Abläufe für Holzhacken und
-   Feldarbeit (Blender), alte Texte mit Umlauten.
+1. **Ganzer Browserlauf** im Hauptordner, allein (kein fremdes `check`,
+   keine Last): `E2E_HAFEN=4391 npm run check:alles:neu:kurz`, dann
+   `npm run qa:abweichung`, alles über 1 % ansehen. Tempofälle
+   (darstellung AC-10, AC-30) streuen auf diesem Rechner — nicht lockern.
+2. **Grün:** Bilder committen, `strategie` nach `main` pushen,
+   `npm run ausrollen` (nie `--sofort`), `npm run ausrollen -- --stand`,
+   eine Partie auf dem Server eröffnen und das Packen
+   (permessageDeflate hinter dem Proxy) prüfen. **Rot:** nicht ausrollen,
+   Gründe aufschreiben.
+3. `strategie-speichern` zusammenführen (nicht ausrollen ohne sein Wort),
+   dann **S3** als Agent: „Deine Partien“, Fortsetzen, Meldung zu
+   speichern AC-6, Browsertests mit eigenem Hafen.
+4. **Regelpaket** als Agent (Entscheidung 1 oben): Laufregel,
+   Seitengleichheit, Pfeilflug; ki AC-25 mit eigenen Einheiten; Reiterschütze
+   nur Schützenlinie; `ki.farmbauer` klären. Nur fahrplan AC-15 und die
+   Paarung Hellebardier gegen Langbogen dürfen angepasst werden.
+5. Danach: Häuser-Balance (spielziel AC-18), ki AC-28, Drache Variante A
+   (`scratchpad/ki-krone/ac29/`), einheiten AC-52 gepaart (höchstens 20 %).
+6. Vorgabe Spielgeschwindigkeit 1,5 (ADR-0013, spielziel AC-23).
+7. Notfallklingel mit Knopf „Einquartieren“ (Entscheidung 9).
+8. Ohne feste Reihenfolge: Haltungen (15b), dichter stehen (18), Gebäude
+   angreifen ohne Einheiten (40), Abläufe Holzhacken und Feldarbeit
+   (Blender), alte Texte mit Umlauten.
 
 ---
 
 ## Offene Fragen an den Benutzer
 
-- **Punkt 10:** soll die KI mit stehendem Dorfzentrum überhaupt aufgeben?
+Beantwortet am 2026-11-22 nachmittags (Punkt 10, Reitertempo,
+Spielgeschwindigkeit, Notfallklingel, Arbeitsbäume): siehe „Zuletzt
+fortgeschrieben“.
+
 - **Punkt 17 (Nachfrage):** welches Lager, wie weit, mit Umschalt, trug der
   Bauer etwas?
-- **Punkt 23:** wie klingt der Ton?
-- **Reitertempo 1,55** (Späherreiter ab dem Lehen) ist gesetzt, nicht aus
-  der Vorlage — passt es ihm im Spiel?
-- **Spielgeschwindigkeit 1,5 als Vorgabe?** Nur fragen.
-- **Notfallklingel — gegen ADR-0012 gehalten (2026-11-22):** steht nicht
-  in „Wird nicht gebaut“; der Unterschlupf ist in bauen.md nur
-  aufgeschoben („kommt später“), braucht also kein neues ADR. Umfang,
-  geschätzt ein Block wie der Drache, rund sechs Kriterien in bauen.md:
-  (1) `unterschlupf` als Daten (Dorfzentrum 15, Wachturm/Wehrturm 5,
-  Burg 20 wie die Vorlage), Einheit drinnen verschwindet von der Karte und
-  aus der Sicht der Gegner; (2) je Dorfbewohner oder Schütze drinnen ein
-  Pfeil mehr (Dorfzentrum schießt erst mit Besatzung? — Vorlage: es
-  schießt immer, Besatzung mehr); (3) Drinnen heilt langsam; (4) fällt das
-  Gebäude, kommen alle heraus; „Alle heraus“-Knopf; (5) **Klingel** am
-  Dorfzentrum (Knopf + Taste): jeder Dorfbewohner in den nächsten
-  Unterschlupf, zweiter Druck zurück an die alte Arbeit; (6) Hinein mit
-  Alt+Rechtsklick (der Rechtsklick auf ein Lager ist schon „abgeben“).
-  Die KI nutzt es zuerst nicht (sonst neue Messrunde). **Sein Wort
-  abwarten**, insbesondere zu (2) und (6).
-- **Arbeitsbaum `OnlineGames-bildumbau` und alte Zweige** (`strategie-bildumbau`,
-  `strategie-ki-antwort`, `strategie-mauerring`) — entfernen? Nur auf sein Wort.
+- **Punkt 23:** wie klingt der Ton? (noch nicht gehört)
+- **Arbeitsbaum `-dorfzentrum`** ist gemergt — entfernen?
+- **Speichern ausrollen?** S1 und S2 liegen fertig auf
+  `strategie-speichern`; ausgerollt wird erst auf sein Wort.
 - **Berechtigungen für die Schleife:** `.claude/settings.json` trägt nur der
   Benutzer ein (die Haken darin sind Teil des Projekts). Nicht umgehen.
 - Ruhen mit dem Managerspiel: **Mailversand** (konten AC-4, AC-5), **mehrere
