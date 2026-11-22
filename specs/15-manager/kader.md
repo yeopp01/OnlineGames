@@ -2,7 +2,7 @@
 
 **Bereich:** Manager
 **Kuerzel:** kader
-**Stand:** 21/22 fertig · 1 in QA
+**Stand:** 21/24 fertig · 1 in QA · 2 offen
 
 ## Zweck
 
@@ -92,6 +92,13 @@ wiederholen, statt ihn zu suchen.
   Vertrag mehr hat, geht zu den Vereinslosen (→ [Verträge](vertraege.md)).
 - **AC-16** `fertig` **Jeder Spieler hat einen Marktwert** — Er folgt Stärke,
   Alter und ungenutztem Talent (→ [Transfer](transfer.md) AC-1 bis AC-3).
+- **AC-23** `offen` **Sterne in einem Band** — Ab der fünften von zwanzig
+  Saisons ohne Menschen spielen in der ersten Liga am Saisonende drei bis
+  acht Spieler ab Stärke 85, in jeder Saison: keine Welle aus der
+  Startgeneration und kein Aussterben danach.
+- **AC-24** `offen` **Durchschnittsalter bleibt im Band** — Über zwanzig
+  Saisons ohne Menschen sind die Spieler der Vereine im Mittel 25,5 bis 27
+  Jahre alt, in jeder Saison, gezählt am letzten Termin vor dem Altern.
 - **AC-17** `fertig` **Karriereende** — Ab 33 wird es Jahr für Jahr
   wahrscheinlicher, mit 36 ist Schluss — auch mit gültigem Vertrag
   (→ AC-21).

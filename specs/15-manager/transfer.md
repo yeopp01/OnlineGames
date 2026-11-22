@@ -2,7 +2,7 @@
 
 **Bereich:** Manager
 **Kuerzel:** transfer
-**Stand:** 24/25 fertig · 1 zurueckgestellt
+**Stand:** 24/26 fertig · 1 offen · 1 zurueckgestellt
 
 ## Zweck
 
@@ -28,6 +28,12 @@ und die anderen Vereine handeln nach denselben Regeln, auch untereinander.
   Bruchteil dessen, was derselbe Spieler mit 25 gekostet hätte.
 - **AC-3** `fertig` **Ungenutztes Talent hebt ihn** — Wer sein Talent noch
   nicht erreicht hat, ist teurer als einer, der es ausgeschöpft hat.
+- **AC-26** `offen` **Gehalt ein Fünftel des Werts** — Wer 24 bis 28 Jahre
+  alt ist, verdient im Jahr 15 bis 25 % seines Marktwerts, gemittelt über
+  alle in Vereinen, am letzten Termin jeder von zwanzig Saisons ohne
+  Menschen. Eine Ablöse wiegt damit vier bis sechs Jahresgehälter. Gezählt
+  wird das Vertragsgehalt — was der Verein zahlt —, nicht der Gehaltswunsch
+  (→ [Verträge](vertraege.md) AC-2).
 - **AC-4** `fertig` **Forderung über dem Marktwert** — Ein Verein verkauft
   nicht gern, und einen Stammspieler noch weniger gern als den vierten Torwart.
   Billiger wird es nur auf der Transferliste und im letzten Vertragsjahr.

@@ -22,6 +22,16 @@ modulintern) — stattdessen `spieler.laufbahn.wechsel` oder `welt.ticker`
 lesen. Die Geldposten `transfersEin/Aus` stimmen. Die Jugendtabelle ist nicht
 nach Jahrgang bereinigt (Anteile sind Untergrenzen).
 
+**Nachfolger (Schritt 0 des Plans):** `npm run manager:dynamik -- --saisons 20
+--startwerte 4711,20260910,77,1234` (`scripts/manager-dynamik.mjs`, gerechnet
+in `scripts/manager-dynamik-messung.mjs`). Beide Fehler sind dort behoben:
+Wechsel kommen aus `spieler.laufbahn.wechsel`, die Jugend steht nach
+Jahrgang, und im Nenner steht nur, wer das Alter in der Messung erreichen
+konnte. Am Ende druckt es die fünf Bänder (finanzen AC-17, AC-18, transfer
+AC-26, kader AC-23, AC-24) je Startwert als „hält“ oder „reißt“; dieselbe
+Prüfung steht in `tests/manager-welt-baender.test.mjs`. Die Zahlen unten
+stammen noch aus `dynamik.cjs`.
+
 ## Was trägt
 
 - **Wettbewerb:** 8 bis 11 verschiedene Meister in 20 Saisons,

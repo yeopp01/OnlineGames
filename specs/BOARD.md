@@ -7,7 +7,7 @@ Eine Zeile je Abnahmekriterium. Gepflegt wird der Status in der Spec selbst,
 hier steht er zusammengefasst. Erzeugt mit `npm run specs:board`; als Seite
 mit Bildnachweisen, Filter und Suche mit `npm run qa:report`.
 
-**Gesamt:** 629/735 fertig · 3 in Arbeit · 15 in QA · 3 geplant · 77 offen · 8 zurueckgestellt
+**Gesamt:** 629/740 fertig · 3 in Arbeit · 15 in QA · 3 geplant · 82 offen · 8 zurueckgestellt
 
 **Nachweise:** 336 Kriterien mit Bild · 302 ohne Bild, begruendet in `qa/ohne-bild.json`
 
@@ -33,15 +33,15 @@ mit Bildnachweisen, Filter und Suche mit `npm run qa:report`.
 | [Aufstellung, Taktik und Training](15-manager/aufstellung.md)  | -         | -     | -       | -     | 2               | 23     |
 | [Ausbau](15-manager/ausbau.md)                                 | -         | -     | -       | -     | -               | 1      |
 | [Bedienung des Managerspiels](15-manager/bedienung.md)         | -         | -     | -       | -     | -               | 20     |
-| [Finanzen](15-manager/finanzen.md)                             | -         | -     | -       | -     | -               | 16     |
-| [Kader und Spieler](15-manager/kader.md)                       | -         | 1     | -       | -     | -               | 21     |
+| [Finanzen](15-manager/finanzen.md)                             | -         | -     | -       | 2     | -               | 16     |
+| [Kader und Spieler](15-manager/kader.md)                       | -         | 1     | -       | 2     | -               | 21     |
 | [Karriere: Saison um Saison](15-manager/karriere.md)           | -         | -     | -       | 1     | -               | 29     |
 | [Liga und Saison](15-manager/liga.md)                          | -         | -     | -       | -     | -               | 18     |
 | [Pokal](15-manager/pokal.md)                                   | -         | -     | -       | -     | -               | 8      |
 | [Prüfstand](15-manager/pruefstand.md)                          | -         | -     | -       | -     | -               | 1      |
 | [Spieltag](15-manager/spieltag.md)                             | -         | -     | -       | -     | -               | 31     |
 | [Spielziel und Abgrenzung](15-manager/spielziel.md)            | -         | -     | -       | 2     | -               | 15     |
-| [Transfermarkt](15-manager/transfer.md)                        | -         | -     | -       | -     | 1               | 24     |
+| [Transfermarkt](15-manager/transfer.md)                        | -         | -     | -       | 1     | 1               | 24     |
 | [Verträge](15-manager/vertraege.md)                            | -         | -     | -       | -     | -               | 11     |
 | [Vorstand](15-manager/vorstand.md)                             | -         | -     | -       | -     | -               | 10     |
 | [Betrieb](20-betrieb/betrieb.md)                               | 1         | 4     | -       | 5     | -               | 2      |
@@ -76,7 +76,7 @@ mit Bildnachweisen, Filter und Suche mit `npm run qa:report`.
 - **Kennwort vergessen** — [Konten und Anmeldung](00-plattform/konten.md) AC-5
 - **Automatischer Wiederaufbau** — [Uebertragung](00-plattform/uebertragung.md) AC-10
 
-## Offen (77)
+## Offen (82)
 
 - **Anmeldung ueber Google/GitHub** — [Konten und Anmeldung](00-plattform/konten.md) AC-6
 - **Bilanz je Konto** — [Konten und Anmeldung](00-plattform/konten.md) AC-14
@@ -147,9 +147,14 @@ mit Bildnachweisen, Filter und Suche mit `npm run qa:report`.
 - **Fünf Häuser mit Profil** — [Spielziel und Partieverlauf](10-strategie/spielziel.md) AC-16
 - **Kein Haus gewinnt gegen alle** — [Spielziel und Partieverlauf](10-strategie/spielziel.md) AC-18
 - **Ein Aussteiger blockiert nicht** — [Spielziel und Partieverlauf](10-strategie/spielziel.md) AC-15
+- **Höchstens zwei tief im Minus** — [Finanzen](15-manager/finanzen.md) AC-17
+- **Der Median bleibt im Plus** — [Finanzen](15-manager/finanzen.md) AC-18
+- **Sterne in einem Band** — [Kader und Spieler](15-manager/kader.md) AC-23
+- **Durchschnittsalter bleibt im Band** — [Kader und Spieler](15-manager/kader.md) AC-24
 - **Mehrere Menschen in einer Welt** — [Karriere: Saison um Saison](15-manager/karriere.md) AC-16
 - **Mehrere Manager, eine Welt** — [Spielziel und Abgrenzung](15-manager/spielziel.md) AC-1
 - **Der Termin wartet auf alle** — [Spielziel und Abgrenzung](15-manager/spielziel.md) AC-2
+- **Gehalt ein Fünftel des Werts** — [Transfermarkt](15-manager/transfer.md) AC-26
 - **Neustart beendet Partien, angekündigt** — [Betrieb](20-betrieb/betrieb.md) AC-5
 - **Fehler ins Protokoll, Geheimnisse nie** — [Betrieb](20-betrieb/betrieb.md) AC-9
 - **Absturz trifft nicht alle Partien** — [Betrieb](20-betrieb/betrieb.md) AC-10
