@@ -192,8 +192,12 @@ die Laufregel lockern? fahrplan AC-15 für A* lockern?
 
 ## Stand
 
-- **Zweig `strategie`, HEAD `180df88`** (Dorfzentrum zusammengeführt);
-  `main` = `origin/main` = Server stehen noch auf `9194fe7` (F6 bis F11).
+- **Zweig `strategie` = `main` = `origin/main` = Server auf `b90686f`**
+  (Dorfzentrum, ausgerollt 2026-11-22 14:15 mit Freigabe trotz rotem
+  Lauf). Von außen geprüft: `/api/spiele` 200, wss steht, der Proxy
+  handelt `permessage-deflate` aus. **Nicht geprüft:** eine echte Partie
+  auf dem Server (Eröffnen braucht ein Konto) und wie stark dort gepackt
+  wird.
   610 von 716 Kriterien fertig, 1095 Tests ohne Browser, 17 ganze Partien,
   351 im Browser (Zahlen in `CLAUDE.md`, Board `specs/BOARD.md`).
 - **Arbeitsbäume neben dem Hauptordner:** `-speichern`
@@ -258,9 +262,10 @@ fortgeschrieben“.
 - **Punkt 17 (Nachfrage):** welches Lager, wie weit, mit Umschalt, trug der
   Bauer etwas?
 - **Punkt 23:** wie klingt der Ton? (noch nicht gehört)
-- **Arbeitsbaum `-dorfzentrum`** ist gemergt — entfernen?
-- **Speichern ausrollen?** S1 und S2 liegen fertig auf
-  `strategie-speichern`; ausgerollt wird erst auf sein Wort.
+- Beantwortet 2026-11-22, 14 Uhr: **ausrollen trotz rotem Lauf** („Ja,
+  du darfst“); **Überflüssiges entfernen** — `-dorfzentrum` und `-regeln`
+  samt Zweigen weg, `-kikrone` bleibt (ungesicherter Drachenpatch);
+  **Speichern erst nach S3 ausrollen**.
 - **Berechtigungen für die Schleife:** `.claude/settings.json` trägt nur der
   Benutzer ein (die Haken darin sind Teil des Projekts). Nicht umgehen.
 - Ruhen mit dem Managerspiel: **Mailversand** (konten AC-4, AC-5), **mehrere
@@ -452,6 +457,10 @@ Archiv. Alles hier Fehlende aus diesen Listen ist gebaut (Liste unten).
   Bilder/s, Grenze 50) — Streuung, nicht anfassen.
 - **Probekopie im Scratchpad:** ihr `node_modules` ist eine **Junction** auf
   das des Hauptordners. Vor dem Löschen zuerst
+  **Dasselbe gilt für Arbeitsbäume:** `git worktree remove --force` auf
+  einen Arbeitsbaum mit dieser Junction leerte am 2026-11-22 das
+  `node_modules` des Hauptordners (auch das der Managersitzung) — zuerst
+  die Junction mit `cmd //c rmdir` lösen, dann entfernen; sonst `npm ci`.
   `cmd //c rmdir "<…>scratchpadprobe
 ode_modules"`, **nie `rm -rf` auf den
   Ordner mit der Junction.**
