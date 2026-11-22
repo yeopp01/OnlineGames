@@ -26,6 +26,25 @@ Punkt unten sucht, sucht dort nach „Punkt <n> (Benutzer“.
 
 ## Zuletzt fortgeschrieben
 
+**2026-11-22, Morgen:** **F12 teilweise zusammengeführt** (`c3f7173`,
+Bilder `568f82d`): ki AC-35 (forscht), AC-39 (Krone), AC-40 (Wunder);
+`npm run check` grün (1084 Tests, 17 Partien), Browserlauf 347/348
+(darstellung AC-30 47,7 Bilder/s — bekannte Streuung, Stand ändert nichts
+im Browser), `qa:abweichung` 24 über 1 %, angesehen, nur Kamera/Uhr. Board
+607/715. **Nicht fertig aus F12:** ki AC-29 / einheiten AC-52 (Drache) —
+Patch `scratchpad/ki-krone/ac29/` (Variante A: Nebel 107, aber nur 6 Rufe
+in 120 Partien; Variante „ab Fürstentum“: 83 % Erstrufer gewinnt, Nebel
+101). **Gepaarte Messung:** derselbe Startwert ohne Drache — der Erstrufer
+gewinnt 39 von 48 auch ohne ihn; die 60-%-Grenze misst den Vorsprung, nicht
+den Drachen → **Frage an den Benutzer**: AC-52 gepaart messen („Drache
+tauscht den Sieger in höchstens X %“)? ki AC-28 v2 (Hauseinheiten) Patch
+`scratchpad/ki-krone/ac28-v2/` — Nebel 105, eine ohne Sieger, 16 KIs ohne
+Burgeinheit. **spielziel AC-18 fällt:** Eschenbruch 78, Rappenstein 64,
+Distelhag 54, Wehrstein 29, Silberfurt 26 % (200 Partien auf `2cefbd5`) —
+Ausgleich gegen Eschenbruch wäre die nächste Balance-Runde, Benutzer
+fragen. Arbeitsbäume `OnlineGames-kikrone` (ungesicherter Drachenpatch),
+`OnlineGames-regeln`, `OnlineGames-techbaum` — löschen nur auf sein Wort.
+
 **2026-11-22, früher Morgen:** **Agent (d) fertig, nichts committet** —
 Arbeitsbaum `../OnlineGames-regeln` ungesichert, Patch
 `scratchpad/uebergabe2/alles.patch` (+ `LIESMICH.txt`). Gebaut: einheiten
