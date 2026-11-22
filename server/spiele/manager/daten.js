@@ -123,6 +123,12 @@
  * @property {object[]} ticker
  * @property {object[]} historie
  * @property {Manager[]} manager
+ * @property {OffenerTermin} [offen]  nur solange ein eigenes Spiel live laeuft (live.js)
+ *
+ * @typedef {object} OffenerTermin  ein gerechneter Termin, der auf den Abpfiff wartet
+ * @property {number[]} kontoVorher   je Manager das Konto vor dem Termin
+ * @property {{stelle: number, liga?: number, kasse: object|null, ergebnis: object|null}[]} spiele  in der Reihenfolge des Rechnens
+ * @property {{managerId: string, stelle: number, seite: 'heim'|'gast', spiel: Spiel}|null} live
  *
  * @typedef {object} Platzspieler  was ein Spiel von einem Spieler liest (spieltag.js, `knapp`)
  * @property {string} id

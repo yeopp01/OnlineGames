@@ -51,6 +51,18 @@ const zahlOderNichts = (wert) => (wert === undefined || wert === null || wert ==
 // zieht, und gibt zurueck, was geschah - oder den Satz, warum nicht.
 const ZUEGE = {
   weiter: (k) => k.weiter(),
+  // Das eigene Spiel live: anpfeifen rechnet den Termin, spiel rechnet weiter
+  // bis zu einer Minute, mit Wechsel oder Taktik (karriere AC-30 bis AC-32).
+  anpfeifen: (k, n, m) => k.anpfeifen(m),
+  spiel: (k, n, m) => k.liveSpielen(m, {
+    bis: ganzeZahl(n.bis),
+    wechsel: n.wechsel && typeof n.wechsel === 'object' ? { raus: String(n.wechsel.raus), rein: String(n.wechsel.rein) } : null,
+    taktik: n.taktik && typeof n.taktik === 'object' ? {
+      ausrichtung: zahlOderNichts(n.taktik.ausrichtung),
+      haerte: zahlOderNichts(n.taktik.haerte),
+      pressing: zahlOderNichts(n.taktik.pressing),
+    } : null,
+  }),
   vorspulen: (k, n) => k.vorspulen({ anzahl: ganzeZahl(n.anzahl), bis: typeof n.bis === 'string' ? n.bis : null }),
   taktik: (k, n, m) => k.taktikSetzen(m, {
     system: typeof n.system === 'string' ? n.system : undefined,

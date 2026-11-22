@@ -11,7 +11,7 @@ const finanzen = require('./finanzen');
 const vorstand = require('./vorstand');
 const transfer = require('./transfer');
 const { terminTitel, fensterOffen, fensterText, WINTERPAUSE_NACH } = require('./kalender');
-const { begegnung, nachwirkung } = require('./spieltag');
+const { anpfiff, begegnung, nachwirkung } = require('./spieltag');
 const { TERMINE, TABELLEN_IN_HISTORIE, FREIE_MIN, FREIE_MAX, ABSTIEGSKLAUSEL, ZWECK, geld, quelle, mischen } = require('./welt');
 
 class Ablauf {
@@ -69,16 +69,55 @@ class Ablauf {
    */
   weiter() {
     if (this.wartetAufStelle()) return { fehler: 'Du bist entlassen. Wähle zuerst einen neuen Verein.' };
+    // Liegt ein eigenes Spiel angehalten, spielt "Weiter" es mit Automatik zu
+    // Ende - wie jedes Spiel, das niemand live sieht (karriere AC-31).
+    if (this.offen) return this.offenesSpielBeenden();
+    return this.terminRechnen(null);
+  }
+
+  /**
+   * Der erste Teil eines Termins: jedes Spiel wird gerechnet, verbucht wird
+   * noch nichts. Mit `live` bleibt das Spiel dieses Managers am Anpfiff
+   * stehen, und der zweite Teil wartet in `this.offen` auf den Abpfiff
+   * (karriere AC-30). Ohne `live` folgt er sofort.
+   *
+   * Ein Spieltag zieht alle Spiele aus einer Quelle. Das eigene Spiel bekommt
+   * deshalb eine Abschrift ihres Stands, und die Quelle rechnet es einmal mit
+   * Automatik weiter - so liegen die übrigen Ergebnisse fest, was immer im
+   * eigenen Spiel geschieht.
+   *
+   * @param {{managerId: string}|null} live
+   */
+  terminRechnen(live) {
+    const termin = TERMINE[this.termin];
+    const zufall = (zweck) => quelle(this.startwert, this.saison, this.termin, zweck);
+    const kontext = { kontoVorher: this.manager.map((m) => this.vereinVon(m.vereinId).konto), spiele: [], live: null };
+
+    this.notkader(zufall(ZWECK.jugend));
+    if (termin.art === 'liga') this.ligaRechnen(termin.nr, zufall(ZWECK.liga), kontext, live);
+    else if (termin.art === 'pokal') this.pokalRechnen(termin.runde, zufall(ZWECK.pokal), kontext, live);
+
+    if (kontext.live) {
+      this.offen = kontext;
+      return { ok: true, laufend: this.laufendZeigen(live.managerId) };
+    }
+    return this.terminAbschliessen(kontext);
+  }
+
+  /**
+   * Der zweite Teil: verbuchen in der Reihenfolge, in der gerechnet wurde,
+   * dann alles, was nach jedem Termin geschieht.
+   */
+  terminAbschliessen(kontext) {
     const termin = TERMINE[this.termin];
     const zufall = (zweck) => quelle(this.startwert, this.saison, this.termin, zweck);
     const lauf = { verletzt: new Set() };
-    const kontoVorher = new Map(this.manager.map((m) => [m, this.vereinVon(m.vereinId).konto]));
+    const kontoVorher = new Map(this.manager.map((m, i) => [m, kontext.kontoVorher[i]]));
 
-    this.notkader(zufall(ZWECK.jugend));
     let bericht;
     if (termin.art === 'vorbereitung') bericht = this.vorbereitung();
-    else if (termin.art === 'liga') bericht = this.ligaspieltag(termin.nr, zufall(ZWECK.liga), lauf);
-    else if (termin.art === 'pokal') bericht = this.pokalrunde(termin.runde, zufall(ZWECK.pokal), lauf);
+    else if (termin.art === 'liga') bericht = this.ligaVerbuchen(termin.nr, kontext.spiele, lauf);
+    else if (termin.art === 'pokal') bericht = this.pokalVerbuchen(termin.runde, kontext.spiele, lauf);
     else if (termin.art === 'winterpause') bericht = this.winterpause(zufall(ZWECK.saisonende));
     else bericht = { art: 'saisonende' };
 
@@ -253,11 +292,30 @@ class Ablauf {
     return { elf, bank: kader.bankStellen(verein, elf), system: verein.taktik.system };
   }
 
-  spielen(heim, gast, zufall, optionen, lauf) {
+  /**
+   * Ein Spiel rechnen, ohne etwas zu verbuchen. Fuehrt `live` den Verein
+   * eines Menschen, bekommt dessen Spiel eine Abschrift des Zufalls und eine
+   * eigene Quelle fuer die Szenen und bleibt am Anpfiff stehen.
+   */
+  spielRechnen(heim, gast, zufall, optionen, kontext, eintrag, live) {
     if (!this.menschFuehrt(heim.id)) this.kiTaktik(heim, gast, !optionen.neutral);
     if (!this.menschFuehrt(gast.id)) this.kiTaktik(gast, heim, false);
     const aufstellungen = { heim: this.aufstellungFuer(heim), gast: this.aufstellungFuer(gast) };
+    const manager = live && this.managerMit(live.managerId);
+    const seite = manager && (manager.vereinId === heim.id ? 'heim' : manager.vereinId === gast.id ? 'gast' : null);
+    if (seite) {
+      const szenen = quelle(this.startwert, this.saison, this.termin, ZWECK.szenen);
+      const spiel = anpfiff(heim, gast, { a: zufall.stand.a }, { aufstellungen, ...optionen, szenen });
+      kontext.live = { managerId: manager.managerId, stelle: kontext.spiele.length, seite, spiel };
+    }
+    // Auch fuer das live gespielte Spiel einmal mit Automatik: das schiebt
+    // die Quelle so weit, wie es heute jedes Spiel tut.
     const ergebnis = begegnung(heim, gast, zufall, { aufstellungen, ...optionen });
+    kontext.spiele.push({ ...eintrag, ergebnis: seite ? null : ergebnis });
+  }
+
+  /** Was ein gerechnetes Spiel mit den Vereinen macht - der Teil des Verbuchens. */
+  spielFolgen(heim, gast, ergebnis, lauf) {
     for (const e of ergebnis.ereignisse) if (e.art === 'verletzung') lauf.verletzt.add(e.spielerId);
     const folgen = { heim: nachwirkung(heim, ergebnis), gast: nachwirkung(gast, ergebnis) };
     for (const [seite, verein] of [['heim', heim], ['gast', gast]]) {
@@ -269,25 +327,38 @@ class Ablauf {
           : `${folge.spieler} hat sich verletzt und fällt ${folge.wochen === 1 ? 'eine Woche' : `${folge.wochen} Wochen`} aus.`);
       }
     }
-    return { ergebnis, folgen };
+    return folgen;
   }
 
-  ligaspieltag(nr, zufall, lauf) {
+  /** Jedes Spiel des Spieltags rechnen - die Kasse zuerst, wie immer. */
+  ligaRechnen(nr, zufall, kontext, live) {
+    for (const nummer of [1, 2]) {
+      const tabelle = this.tabellen[nummer];
+      const rang = new Map(liga.sortiert(tabelle).map((z, i) => [z.id, i]));
+      this.plaene[nummer][nr - 1].forEach((paarung, stelle) => {
+        const heim = this.vereinVon(paarung.heim);
+        const gast = this.vereinVon(paarung.gast);
+        const gespielt = tabelle.find((z) => z.id === heim.id).spiele > 0;
+        const stimmung = gespielt ? 1 - rang.get(heim.id) / (tabelle.length - 1) : 0.5;
+        const kasse = finanzen.heimspiel(heim, zufall, { stimmung, gegner: gast });
+        this.spielRechnen(heim, gast, zufall, {}, kontext, { liga: nummer, stelle, kasse }, live);
+      });
+    }
+  }
+
+  ligaVerbuchen(nr, spiele, lauf) {
     // `eigenes` im Bericht ist das Spiel eines Menschen - mit mehreren (M3)
     // braucht jeder seinen eigenen Bericht.
     const bericht = { art: 'liga', nr, ligen: {}, eigenes: null };
     const eigene = [];
     for (const nummer of [1, 2]) {
       const tabelle = this.tabellen[nummer];
-      const rang = new Map(liga.sortiert(tabelle).map((z, i) => [z.id, i]));
       const paarungen = this.plaene[nummer][nr - 1];
-      for (const paarung of paarungen) {
+      for (const { stelle, kasse, ergebnis } of spiele.filter((s) => s.liga === nummer)) {
+        const paarung = paarungen[stelle];
         const heim = this.vereinVon(paarung.heim);
         const gast = this.vereinVon(paarung.gast);
-        const gespielt = tabelle.find((z) => z.id === heim.id).spiele > 0;
-        const stimmung = gespielt ? 1 - rang.get(heim.id) / (tabelle.length - 1) : 0.5;
-        const kasse = finanzen.heimspiel(heim, zufall, { stimmung, gegner: gast });
-        const { ergebnis } = this.spielen(heim, gast, zufall, {}, lauf);
+        this.spielFolgen(heim, gast, ergebnis, lauf);
         paarung.tore = ergebnis.tore;
         liga.verbuchen(tabelle, ergebnis);
         this.torjaegerZaehlen(nummer, ergebnis, heim, gast);
@@ -331,22 +402,33 @@ class Ablauf {
     return bericht;
   }
 
-  pokalrunde(nummer, zufall, lauf) {
+  pokalRechnen(nummer, zufall, kontext, live) {
+    const runde = this.pokal.runden[nummer - 1];
+    const finale = nummer === pokal.RUNDEN.length;
+    runde.paarungen.forEach((paarung, stelle) => {
+      const heim = this.vereinVon(paarung.heim);
+      const gast = this.vereinVon(paarung.gast);
+      // Im Finale auf neutralem Platz verdient niemand am Eintritt.
+      const kasse = finale ? null : finanzen.heimspiel(heim, zufall, { stimmung: 0.6, gegner: gast, pokal: true });
+      this.spielRechnen(heim, gast, zufall, { entscheidung: true, neutral: finale }, kontext, { stelle, kasse }, live);
+    });
+  }
+
+  pokalVerbuchen(nummer, spiele, lauf) {
     const runde = this.pokal.runden[nummer - 1];
     const finale = nummer === pokal.RUNDEN.length;
     const bericht = { art: 'pokal', runde: nummer, name: runde.name, paarungen: [], eigenes: null };
-    for (const paarung of runde.paarungen) {
+    for (const { stelle, kasse, ergebnis } of spiele) {
+      const paarung = runde.paarungen[stelle];
       const heim = this.vereinVon(paarung.heim);
       const gast = this.vereinVon(paarung.gast);
-      let zuschauer = 0;
-      if (!finale) {
-        const kasse = finanzen.heimspiel(heim, zufall, { stimmung: 0.6, gegner: gast, pokal: true });
-        zuschauer = kasse.zuschauer;
+      const zuschauer = kasse ? kasse.zuschauer : 0;
+      if (kasse) {
         this.buchen(heim, 'zuschauer', kasse.einnahmen,
           `Pokal gegen ${gast.name}, ${zuschauer.toLocaleString('de-DE')} Zuschauer`);
       }
       for (const verein of [heim, gast]) this.buchen(verein, 'praemien', pokal.PRAEMIE[nummer - 1], `Pokal: ${runde.name}`);
-      const { ergebnis } = this.spielen(heim, gast, zufall, { entscheidung: true, neutral: finale }, lauf);
+      this.spielFolgen(heim, gast, ergebnis, lauf);
       Object.assign(paarung, {
         tore: ergebnis.tore, sieger: ergebnis.sieger, verlaengerung: ergebnis.verlaengerung, elfmeter: ergebnis.elfmeter,
       });

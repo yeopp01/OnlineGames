@@ -61,6 +61,7 @@ const OFFEN_SERVER = {
   'server/spiele/manager/ablauf.js': 'Teil der Karriere, `this` ungeprueft',
   'server/spiele/manager/zuege.js': 'Teil der Karriere, `this` ungeprueft',
   'server/spiele/manager/sicht.js': 'Teil der Karriere, `this` ungeprueft',
+  'server/spiele/manager/live.js': 'Teil der Karriere, `this` ungeprueft',
 };
 
 function pruefen(...argumente) {

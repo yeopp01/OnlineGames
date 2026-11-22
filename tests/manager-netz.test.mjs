@@ -195,6 +195,42 @@ test('karriere AC-14 und manager AC-5: der Spielstand ueberlebt den Neustart', a
   assert.equal(weiter.daten.zustand.termin.index, 6);
 });
 
+test('karriere AC-32 und karriere AC-30: live ueber den Server - die Antwort kennt nichts voraus', async () => {
+  const emil = await konto(HAFEN, laufend, { email: 'emil@manager.test', name: 'Emil' });
+  const { id } = (await anlegen({ name: 'Live' }, emil.kekse)).daten;
+  let antwort;
+  do antwort = await zug(id, 'weiter', {}, emil.kekse);
+  while (antwort.daten.zustand.termin.art !== 'liga');
+  const vorher = antwort.daten.zustand;
+
+  antwort = await zug(id, 'anpfeifen', {}, emil.kekse);
+  assert.equal(antwort.status, 200, antwort.daten.fehler);
+  assert.equal(antwort.daten.laufend.minute, 0);
+  assert.deepEqual(antwort.daten.zustand.laufend, antwort.daten.laufend);
+  const gesperrt = await zug(id, 'taktik', { ausrichtung: 5 }, emil.kekse);
+  assert.deepEqual([gesperrt.status, gesperrt.daten.fehler], [400, 'Erst das laufende Spiel zu Ende spielen.']);
+
+  // Aus der Datenbank gelesen, liegt das Spiel noch am selben Fleck.
+  antwort = await zug(id, 'spiel', { bis: 40, taktik: { ausrichtung: 4 } }, emil.kekse);
+  laufend.manager.staende.offen.clear();
+  const geladen = (await fragen(`spielstaende/${id}`, { kekse: emil.kekse })).daten.zustand;
+  assert.deepEqual(geladen.laufend, antwort.daten.laufend);
+  assert.equal(geladen.laufend.eigene.taktik.ausrichtung, 4);
+
+  for (let bis = 45; antwort.daten.zustand.laufend; bis += 5) {
+    const { laufend: live, zustand } = antwort.daten;
+    for (const e of [...live.ereignisse, ...live.szenen]) assert.ok(e.minute <= live.minute, `${e.minute}' nach ${live.minute}'`);
+    assert.equal(antwort.daten.bericht, undefined);
+    assert.deepEqual([zustand.tabellen, zustand.torjaeger, zustand.termin, zustand.zuletzt], [vorher.tabellen, vorher.torjaeger, vorher.termin, vorher.zuletzt]);
+    antwort = await zug(id, 'spiel', { bis }, emil.kekse);
+    assert.equal(antwort.status, 200, antwort.daten.fehler);
+  }
+  // Abgepfiffen: jetzt der Bericht, der Termin ist um.
+  assert.equal(antwort.daten.bericht.art, 'liga');
+  assert.equal(antwort.daten.zustand.termin.index, vorher.termin.index + 1);
+  assert.notDeepEqual(antwort.daten.zustand.tabellen, vorher.tabellen);
+});
+
 test('karriere AC-19: Zuege werden gebremst, vor der Anmeldung', async () => {
   const eng = await starten(4282, { schutz: { zuegeJeMinute: 3 }, konten: { datei: ':memory:', geheimnis: GEHEIMNIS } });
   try {

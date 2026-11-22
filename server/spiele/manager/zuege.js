@@ -24,6 +24,8 @@ class Zuege {
     const manager = this.managerMit(managerId);
     if (!manager) return { fehler: 'In dieser Welt führt kein Mensch einen Verein.' };
     if (manager.status === 'entlassen') return { fehler: 'Du bist entlassen. Wähle zuerst einen neuen Verein.' };
+    // Waehrend ein eigenes Spiel laeuft, greift man nur in das Spiel ein.
+    if (this.offen) return { fehler: 'Erst das laufende Spiel zu Ende spielen.' };
     return { manager, verein: this.vereinVon(manager.vereinId) };
   }
 

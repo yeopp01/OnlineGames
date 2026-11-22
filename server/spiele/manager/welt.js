@@ -29,6 +29,9 @@ const FREIE_MAX = 90;
 const ABSTIEGSKLAUSEL = 0.75;
 const ZWECK = {
   liga: 1, pokal: 2, transfer: 3, saisonende: 4, auslosung: 5, sponsor: 6, jugend: 7, angebote: 8, start: 9, stellen: 10,
+  // Die Szenen des Spiels, das jemand live sieht - eine eigene Quelle, damit
+  // sie am Ergebnis nichts aendern (spieltag AC-28).
+  szenen: 11,
 };
 
 // Betraege stehen in Tausend. Ueber tausend wird daraus eine Million -

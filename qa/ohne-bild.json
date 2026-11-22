@@ -1267,6 +1267,21 @@
       "begruendung": "Eine Zusage ueber die Bauart des Spielstands, nicht ueber das Bild: die Manager stehen als Liste darin, jeder Zug nennt seinen Manager, und ein Stand der Fassung 3 laeuft nach dem Anheben genau so weiter wie vorher. Fuer den einen Menschen aendert sich am Bildschirm nichts - das ist der Sinn des Umbaus; die Oberflaeche ist dieselbe, die die Bilder zu oberflaeche AC-1 und folgenden zeigen. Belegt mit dem gesicherten Stand vor und nach dem Anheben und einem Waechter ueber den Quelltext."
     },
     {
+      "spec": "15-manager/karriere.md",
+      "ac": "AC-30",
+      "begruendung": "Eine Regel ueber die Reihenfolge auf dem Server: der Termin wird in zwei Teilen gerechnet, erst alle Spiele, dann das Verbuchen, und mit einem live gespielten Spiel wartet der zweite Teil im Spielstand auf den Abpfiff. Was daran zu pruefen ist - dass die uebrigen Ergebnisse feststehen, was immer im eigenen Spiel geschieht, dass Tabelle, Torjaeger und Pokal bis zum Abpfiff unveraendert bleiben, dass das angehaltene Spiel Sichern und Laden aus der Datenbank uebersteht -, ist ein Vergleich zweier Spielstaende und steht in keinem Bild. Der Knopf, der ein Spiel live startet, und das laufende Spiel im Bild sind oberflaeche AC-19 und haben dort ihr Bild."
+    },
+    {
+      "spec": "15-manager/karriere.md",
+      "ac": "AC-31",
+      "begruendung": "Eine Gleichheit zweier Rechnungen: eine Saison vorgespult und dieselbe Saison mit jedem eigenen Spiel live in Schritten zu fuenf Minuten ergeben denselben Spielstand, Feld fuer Feld, ebenso ein angepfiffenes Spiel, das danach mit Weiter oder bis zur Winterpause zu Ende gerechnet wird. Ein Bildschirm zeigte nur das Ergebnis eines der beiden Wege - dass es dem des anderen gleicht, sieht man nur im Vergleich der gesicherten Staende."
+    },
+    {
+      "spec": "15-manager/karriere.md",
+      "ac": "AC-32",
+      "begruendung": "Die Spec sagt es selbst: geprueft an der Antwort, nicht am Bild. Das Kriterium handelt davon, was der Server waehrend eines laufenden Spiels hinausschickt - kein Ereignis nach der gezeigten Minute, kein Endstand, kein Ergebnis der uebrigen Spiele, keine neue Tabelle. Ein Bild zeigte, was die Seite davon darstellt, aber nicht, was sie ueber die Leitung bekommen hat und verbergen koennte; deshalb wird jede Antwort des Anfragewegs Schritt fuer Schritt gelesen."
+    },
+    {
       "spec": "15-manager/spielziel.md",
       "ac": "AC-15",
       "begruendung": "Dass keine Einstellung fuer jeden die beste ist, zeigt nur ein Vergleich vieler Spiele mit verschiedenen Einstellungen. Die Regler selbst zeigt das Bild zu aufstellung AC-21."

@@ -270,6 +270,8 @@ class Sicht {
       termin: { index: this.termin, titel: terminTitel(termin), art: termin.art },
       naechster: kalender[this.termin],
       vorschau: this.vorschau(managerId),
+      // Das eigene Spiel, solange es live laeuft - nur bis zur gezeigten Minute.
+      laufend: this.laufendZeigen(m.managerId),
       kalender,
       fenster: { offen: fensterOffen(termin), text: fensterText(termin) },
       stellen: m.stellen.map((id) => {
