@@ -1,3 +1,4 @@
+// @ts-check
 'use strict';
 
 // Die Spielstaende des Managerspiels: in SQLite, an einem Konto
@@ -10,6 +11,8 @@
 // Neustart kostet deshalb nichts.
 const { randomBytes } = require('node:crypto');
 const { Karriere, FASSUNG, LADBARE_FASSUNGEN } = require('./karriere');
+
+/** @typedef {import('./karriere').GanzeKarriere} GanzeKarriere */
 const { terminTitel } = require('./kalender');
 
 const JE_KONTO = 5;
@@ -77,7 +80,7 @@ class Spielstaende {
    * Einen Spielstand oeffnen - nur am eigenen Konto. Ein fremder und ein
    * nicht vorhandener sehen gleich aus: ob es ihn gibt, geht niemanden etwas an.
    *
-   * @returns {{karriere: Karriere}|{fehler: string}|null}
+   * @returns {{karriere: GanzeKarriere, fehler?: undefined}|{fehler: string, karriere?: undefined}|null}
    */
   oeffnen(konto, id) {
     const offen = this.offen.get(id);

@@ -82,11 +82,13 @@ angesehen, bevor etwas eingecheckt wird.
 
 **TypeScript ist der Prüfer, nicht die Sprache** (`npm run typen`, als
 Wächter in `npm test`). Geprüft wird, was in der ersten Zeile `// @ts-check`
-trägt: der Server ohne das Managerspiel, im Browser bisher `nebel.js`,
-`uebersicht.js` und `auswahlleiste.js`. Die Formen der Tabellen stehen als
-`@typedef` oben in `server/spiele/strategie/daten.js` — **ein neues Feld wird
-dort eingetragen**, sonst meldet der Prüfer es. Welche Dateien noch fehlen und
-warum, steht unter `OFFEN` in `tests/waechter-typen.test.mjs`.
+trägt: der Server bis auf die vier Teile der Karriere im Managerspiel, im
+Browser bisher `nebel.js`, `uebersicht.js` und `auswahlleiste.js`. Die Formen
+der Tabellen stehen als `@typedef` oben in `server/spiele/strategie/daten.js`,
+die des Managerspiels (Verein, Spieler, Manager, ein laufendes Spiel) in
+`server/spiele/manager/daten.js` — **ein neues Feld wird dort eingetragen**,
+sonst meldet der Prüfer es. Welche Dateien noch fehlen und warum, steht unter
+`OFFEN` und `OFFEN_SERVER` in `tests/waechter-typen.test.mjs`.
 
 ### Die wichtigste Regel
 

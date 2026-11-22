@@ -1,3 +1,4 @@
+// @ts-check
 'use strict';
 
 // Vertraege: Laufzeit und Jahresgehalt. Ein Vertrag gilt bis einschliesslich

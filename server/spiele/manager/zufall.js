@@ -1,3 +1,4 @@
+// @ts-check
 'use strict';
 
 // Zufall mit Startwert - derselbe Wert ergibt dieselbe Saison. Gleiche

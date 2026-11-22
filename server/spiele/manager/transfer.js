@@ -1,3 +1,4 @@
+// @ts-check
 'use strict';
 
 // Der Transfermarkt. Ein Angebot, eine Antwort - kein Berater, kein
@@ -14,6 +15,19 @@ const {
 } = require('./kader');
 const vertraege = require('./vertraege');
 const { fensterOffen } = require('./kalender');
+
+/** @typedef {import('./daten').Verein} Verein */
+/** @typedef {import('./daten').Spieler} Spieler */
+/**
+ * @typedef {object} Marktfilter
+ * @property {string} [position]
+ * @property {'1'|'2'|'frei'|string} [liga]
+ * @property {number} [maxAlter]
+ * @property {number} [minStaerke]
+ * @property {number} [maxPreis]
+ * @property {string} [sortierung]
+ * @property {number} [anzahl]
+ */
 
 // So gross will ein Verein der KI seinen Kader halten.
 const KI_KADER_ZIEL = 23;
@@ -81,9 +95,8 @@ const SORTIERUNG = {
  * Vereinslosen, mit Forderung und der Antwort, ob sie kommen wuerden. Wer den
  * Mindestbestand seines Vereins haelt, steht gar nicht erst drin.
  *
- * @param {object|null} eigener  der Verein, der fragt - fuer "wuerde kommen"
- * @param {object} filter  position, liga ('1', '2', 'frei'), maxAlter,
- *   minStaerke, maxPreis, sortierung, anzahl
+ * @param {Verein|null} eigener  der Verein, der fragt - fuer "wuerde kommen"
+ * @param {Marktfilter} [filter]
  */
 function marktliste(welt, eigener, filter = {}) {
   const liste = [];

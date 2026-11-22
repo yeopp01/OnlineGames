@@ -1,3 +1,4 @@
+// @ts-check
 'use strict';
 
 // Eine Begegnung, Minute fuer Minute. Der Server rechnet sie, der Browser
@@ -23,6 +24,24 @@ const {
   TOR, ABW, MIT, ANG, PLAETZE, TEIL, tagesform, niveau, einsatzbereit, eignung,
 } = require('./kader');
 const { ziehen } = require('./zufall');
+
+/** @typedef {import('./daten').Verein} Verein */
+/** @typedef {import('./daten').Spieler} Spieler */
+/** @typedef {import('./daten').Taktik} Taktik */
+/** @typedef {import('./daten').Zufall} Zufall */
+/** @typedef {import('./daten').Zufallsstand} Zufallsstand */
+/** @typedef {{torwart: number, abwehr: number, mittelfeld: number, angriff: number}} Teile  Staerke je Mannschaftsteil */
+/** @typedef {import('./daten').Spiel} Spiel */
+/** @typedef {import('./daten').Seite} Seite */
+/** @typedef {import('./daten').Platzspieler} Platzspieler */
+/**
+ * @typedef {object} Einstellungen
+ * @property {{heim: import('./daten').Aufstellung, gast: import('./daten').Aufstellung}} aufstellungen
+ * @property {{heim?: Partial<Taktik>, gast?: Partial<Taktik>}} [taktiken]
+ * @property {{heim?: 'auto'|'verletzung', gast?: 'auto'|'verletzung'}} [wechselregeln]
+ * @property {boolean} [neutral]       kein Heimvorteil (Pokalfinale)
+ * @property {boolean} [entscheidung]  bei Gleichstand Verlaengerung und Elfmeterschiessen
+ */
 
 const SCHEIBE = 5;
 const SCHEIBEN = 18;
@@ -106,6 +125,7 @@ function aufDemPlatz(spieler, platz) {
 /**
  * Was ein Spiel von einem Spieler liest - nicht mehr. So bleibt ein
  * laufendes Spiel ein kleiner Datenwert, den man sichern kann.
+ * @returns {Platzspieler}
  */
 function knapp(s, position = s.position, platz = undefined, staerke = s.staerke) {
   return {
@@ -118,6 +138,10 @@ function knapp(s, position = s.position, platz = undefined, staerke = s.staerke)
  * und danach nicht mehr gebraucht. Die Objekte je Spieler behalten die
  * Reihenfolge, in der sie angelegt werden - darauf zaehlen Einsaetze und Noten.
  * `fuerNoten` legt an, was erst `abpfiff()` braucht; die Vorschau braucht es nicht.
+ *
+ * @param {Verein} verein
+ * @param {{elf: Spieler[], bank: Spieler[], system?: string, taktik?: Partial<Taktik>, wechselregel?: string}} aufstellung
+ * @param {boolean} [fuerNoten]
  */
 function seiteAnlegen(verein, {
   elf, bank, system, taktik, wechselregel,
@@ -138,6 +162,7 @@ function seiteAnlegen(verein, {
     knappeBank.push(knapp(s));
     frische[s.id] = s.kondition;
   }
+  /** @type {Seite} */
   const seite = {
     id: verein.id,
     niveau: 0,
@@ -299,7 +324,7 @@ function abschnitt(seiten, von, heimfaktoren, zufall, ereignisse, anzahlAbschnit
   const chancenJeAbschnitt = (CHANCEN_JE_SPIEL / SCHEIBEN) * offen * (0.85 + zufall() * 0.3);
 
   // Chancen und Tore.
-  [[0, a, b, anteil], [1, b, a, 1 - anteil]].forEach(([i, eigen, gegner, teilhabe]) => {
+  /** @type {[number, Teile, Teile, number][]} */ ([[0, a, b, anteil], [1, b, a, 1 - anteil]]).forEach(([i, eigen, gegner, teilhabe]) => {
     const seite = seiten[i];
     const erwartet = chancenJeAbschnitt * teilhabe;
     const chancen = Math.floor(erwartet) + (zufall() < erwartet % 1 ? 1 : 0);
@@ -445,17 +470,13 @@ function notenGeben(seiten, ergebnis, zufall) {
 /**
  * Legt ein Spiel an. Liest die Vereine, aendert sie nicht.
  *
- * @param {object} heim  Verein
- * @param {object} gast  Verein
- * @param {Function|{a: number}} zufall  eine Quelle aus `zufallAus` oder ihr Stand.
+ * @param {Verein} heim
+ * @param {Verein} gast
+ * @param {Zufall|Zufallsstand} zufall  eine Quelle aus `zufallAus` oder ihr Stand.
  *   Der Stand wird geteilt, nicht kopiert: ein Spieltag zieht mehrere Spiele
  *   aus einer Quelle, und jedes zieht dort weiter, wo das letzte aufhoerte.
- * @param {object} einstellungen
- *   aufstellungen: { heim: {elf, bank}, gast: {elf, bank} }
- *   taktiken:      { heim, gast }
- *   wechselregeln: { heim, gast }
- *   neutral:       kein Heimvorteil (Pokalfinale)
- *   entscheidung:  bei Gleichstand Verlaengerung und Elfmeterschiessen
+ * @param {Einstellungen} einstellungen
+ * @returns {Spiel}
  */
 function anpfiff(heim, gast, zufall, einstellungen) {
   const { aufstellungen, taktiken = {}, wechselregeln = {}, neutral = false, entscheidung = false } = einstellungen;
@@ -490,7 +511,9 @@ function anpfiff(heim, gast, zufall, einstellungen) {
  * Rechnet ein Spiel bis zu dieser Minute - ganze Abschnitte, keiner ueber die
  * Minute hinaus. Ab Minute 90 entscheidet sich, ob es weitergeht; mit
  * `Infinity` bis zum Ende, Elfmeterschiessen eingeschlossen.
- * @returns {object} dasselbe Spiel
+ * @param {Spiel} spiel
+ * @param {number} bisMinute
+ * @returns {Spiel} dasselbe Spiel
  */
 function spielen(spiel, bisMinute) {
   if (spiel.vorbei) return spiel;
@@ -529,8 +552,9 @@ function spielen(spiel, bisMinute) {
  * Haerte oder Pressing. Wirkt ab dem naechsten Abschnitt. Das System bleibt:
  * an ihm haengen die Plaetze der Elf.
  *
+ * @param {Spiel} spiel  aus `anpfiff()`
  * @param {'heim'|'gast'} welche
- * @param {{ wechsel?: {raus: string, rein: string}, taktik?: object }} was
+ * @param {{ wechsel?: {raus: string, rein: string}, taktik?: Partial<Taktik> }} [was]
  * @returns {{ok: true}|{fehler: string}}
  */
 function eingreifen(spiel, welche, { wechsel = null, taktik = null } = {}) {
@@ -559,6 +583,7 @@ function eingreifen(spiel, welche, { wechsel = null, taktik = null } = {}) {
 /**
  * Das Ergebnis eines Spiels - rechnet zu Ende, was noch fehlt.
  * Dieselbe Form, die `begegnung()` immer zurueckgab.
+ * @param {Spiel} spiel
  */
 function abpfiff(spiel) {
   spielen(spiel, Infinity);

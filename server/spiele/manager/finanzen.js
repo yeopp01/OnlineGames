@@ -1,3 +1,4 @@
+// @ts-check
 'use strict';
 
 // Geld: Zuschauer, Fernsehen, Sponsor, Gehaelter, Stadion, Zinsen, Praemien.
@@ -5,6 +6,8 @@
 const { TERMINE_JE_SAISON } = require('./kalender');
 const { EINTRITT } = require('./kader');
 const { eines } = require('./zufall');
+
+/** @typedef {import('./daten').Verein} Verein */
 
 // Fernsehgeld je Ligaspiel fuer einen Verein aus der Mitte der Tabelle. Wer
 // in der Vorsaison oben stand, bekommt mehr (bis 1,4-fach), wer unten stand,
@@ -34,8 +37,8 @@ const SPONSOREN = [
  * Wie voll das Stadion wird. Ruf und Tabellenplatz ziehen, ein hoher Preis
  * haelt ab, ein reizvoller Gegner lockt. Gedeckelt bei ausverkauft.
  *
- * @param {object} verein  Gastgeber
- * @param {object} [umstaende]  { stimmung 0..1, gegner, pokal }
+ * @param {Verein} verein  Gastgeber
+ * @param {{stimmung?: number, gegner?: Verein|null, pokal?: boolean}} [umstaende]  Stimmung 0..1
  */
 function auslastung(verein, { stimmung = 0.5, gegner = null, pokal = false } = {}) {
   const basis = 0.5 + verein.reputation / 250;

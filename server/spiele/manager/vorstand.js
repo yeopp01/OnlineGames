@@ -1,3 +1,4 @@
+// @ts-check
 'use strict';
 
 // Der Vorstand: er setzt vor jeder Saison ein Ziel und misst den Manager

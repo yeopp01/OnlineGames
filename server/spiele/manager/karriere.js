@@ -1,3 +1,4 @@
+// @ts-check
 'use strict';
 
 // Eine Karriere: ein Mensch fuehrt einen Verein durch Saison um Saison.
@@ -20,6 +21,21 @@ for (const teil of [Ablauf, Zuege, Sicht]) {
   }
 }
 
+/**
+ * Die ganze Karriere fuer den Pruefer: Zustand und alle vier Teile. Wer
+ * eine Karriere bekommt, schreibt `@param {GanzeKarriere}`.
+ * @typedef {import('./daten').Karrierezustand & InstanceType<typeof Karriere> & InstanceType<typeof Ablauf> & InstanceType<typeof Zuege> & InstanceType<typeof Sicht>} GanzeKarriere
+ */
+
+/**
+ * @type {{
+ *   new (zustand: object): GanzeKarriere,
+ *   neu(einstellungen: {startwert: number, vereinId?: string|null, name?: string}): GanzeKarriere,
+ *   laden(daten: object): GanzeKarriere,
+ * }}
+ */
+const GanzeKarriere = /** @type {any} */ (Karriere);
+
 module.exports = {
-  Karriere, FASSUNG, LADBARE_FASSUNGEN, TERMINE, geld, quelle, anheben,
+  Karriere: GanzeKarriere, FASSUNG, LADBARE_FASSUNGEN, TERMINE, geld, quelle, anheben,
 };

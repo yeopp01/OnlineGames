@@ -10,8 +10,8 @@
 //
 // Geprueft wird nur, was in der ersten Zeile `// @ts-check` traegt. Damit
 // das nicht still zurueckfaellt, haelt dieser Waechter zwei Listen fest: im
-// Server fehlt die Marke nur dem Managerspiel, im Browser nur den Dateien
-// unter `OFFEN` - mit dem Grund, warum sie noch fehlen.
+// Server fehlt die Marke nur den Dateien unter `OFFEN_SERVER`, im Browser
+// denen unter `OFFEN` - je mit dem Grund, warum sie noch fehlen.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
@@ -46,8 +46,21 @@ const OFFEN = {
   'figuren.js': 'Zeichencode, wird abgeloest',
   'gebaeude.js': 'Zeichencode, wird abgeloest',
   'schautafel.js': 'Zeichencode, wird abgeloest',
-  // Das Managerspiel ruht.
-  'manager.js': 'ruht',
+  // Wird in M0.7 in Module zerlegt (docs/manager/plan.md) - dann je Modul.
+  'manager.js': 'wird in M0.7 zerlegt',
+};
+
+// Im Server noch ohne Marke: die vier Teile der Karriere. Sie sind Klassen,
+// deren Methoden karriere.js auf eine zusammensetzt - in jedem Teil kennt der
+// Pruefer `this` nur als diesen Teil, nicht als die ganze Karriere (gezaehlt
+// am 2026-11-22: rund 250 Meldungen, fast alle "Property ... does not
+// exist"). Wer eine Karriere von aussen bekommt, ist geprueft: `GanzeKarriere`
+// in karriere.js setzt Zustand und Teile zusammen.
+const OFFEN_SERVER = {
+  'server/spiele/manager/welt.js': 'Teil der Karriere, `this` ungeprueft',
+  'server/spiele/manager/ablauf.js': 'Teil der Karriere, `this` ungeprueft',
+  'server/spiele/manager/zuege.js': 'Teil der Karriere, `this` ungeprueft',
+  'server/spiele/manager/sicht.js': 'Teil der Karriere, `this` ungeprueft',
 };
 
 function pruefen(...argumente) {
@@ -80,10 +93,10 @@ test('waechter: der Pruefer meldet im Browser nichts', () => {
   assert.equal(ausgang, 0);
 });
 
-test('waechter: im Server wird jede Datei geprueft, nur das Managerspiel nicht', () => {
-  const alle = dateien(join(WURZEL, 'server')).filter((pfad) => !kurz(pfad).startsWith('server/spiele/manager/'));
-  assert.ok(alle.length >= 13, `nur ${alle.length} Dateien gefunden`);
-  assert.deepEqual(alle.filter((pfad) => !traegtMarke(pfad)).map(kurz), []);
+test('waechter: im Server fehlt die Marke nur den Dateien unter OFFEN_SERVER', () => {
+  const alle = dateien(join(WURZEL, 'server'));
+  assert.ok(alle.length >= 30, `nur ${alle.length} Dateien gefunden`);
+  assert.deepEqual(alle.filter((pfad) => !traegtMarke(pfad)).map(kurz).sort(), Object.keys(OFFEN_SERVER).sort());
 });
 
 test('waechter: im Browser fehlt die Marke nur den Dateien unter OFFEN', () => {

@@ -1,9 +1,13 @@
+// @ts-check
 'use strict';
 
 // Vereine und Spieler: Erzeugung, Werte, Aufstellung, Training, Entwicklung.
 // Alle Namen sind erfunden - echte Vereine und Spieler sind lizenzpflichtig,
 // und erfundene kosten nichts (→ docs/adr/0008-zweites-spiel-manager.md).
 const { zufallAus, zahl, umMitte, eines } = require('./zufall');
+
+/** @typedef {import('./daten').Verein} Verein */
+/** @typedef {import('./daten').Zufall} Zufall */
 
 const TOR = 'TOR';
 const ABW = 'ABW';
@@ -651,6 +655,8 @@ const altersstufe = (alter) => (alter <= 20 ? 'jung' : alter <= 24 ? 'reifend' :
  * Winterpause gibt es einen Teil davon, am Saisonende den Rest; erst dann ist
  * jeder ein Jahr aelter.
  *
+ * @param {Verein} verein
+ * @param {Zufall} zufall
  * @param {number} spieleDesVereins  wie viele Pflichtspiele der Verein bestritt
  * @param {{anteil?: number, altern?: boolean}} [schritt]
  * @returns {object[]} jeder Spieler mit Staerke vorher und nachher und dem, wonach gerechnet wurde:

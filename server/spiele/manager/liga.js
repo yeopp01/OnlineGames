@@ -1,3 +1,4 @@
+// @ts-check
 'use strict';
 
 // Die Liga: Spielplan, Tabelle, Auf- und Abstieg. Ohne eigenen Zustand -

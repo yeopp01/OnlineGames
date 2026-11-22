@@ -1,3 +1,4 @@
+// @ts-check
 'use strict';
 
 // Der Anfrageweg des Managerspiels. Er liegt hier und nicht in `index.js`,
@@ -98,7 +99,7 @@ function marktFilter(suche) {
  * (→ docs/adr/0005-grenzen-statt-vertrauen.md).
  *
  * @param {object} teile
- * @param {object} teile.schutz
+ * @param {{zugErlaubt(adresse: string): boolean, rechnenErlaubt(adresse: string): boolean}} teile.schutz  aus server/schutz.js
  * @param {Function} teile.adresseVon
  * @param {import('node:sqlite').DatabaseSync} teile.db  die Datenbank der Konten
  * @param {Function} teile.sitzung  (kopfzeilen) => Promise<{user}|null>
