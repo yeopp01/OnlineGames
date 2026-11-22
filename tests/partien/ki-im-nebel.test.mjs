@@ -349,3 +349,20 @@ test('ki AC-35: ueber 120 Startwerte hat jede KI, die das Fuerstentum erreicht u
   assert.ok(gezaehlt >= STARTWERTE, `nur ${gezaehlt} KIs gezaehlt`);
   assert.deepEqual(fehlt, [], 'zu wenig erforscht');
 });
+
+// Die KI steigt in die Krone auf (ki AC-39): von den Partien, die laenger als
+// 45 Spielminuten dauern (oder ohne Sieger bleiben), erreicht in mindestens
+// der Haelfte eine KI die Krone. Gezaehlt zur vollen Spielminute.
+const KRONE_AB_MINUTE = 45;
+test('ki AC-39: ueber 120 Startwerte erreicht in mindestens der Haelfte der Partien ueber 45 Minuten eine KI die Krone', async (t) => {
+  const enden = await allePartien();
+  const lang = enden.filter((e) => e.takt === null || e.takt > KRONE_AB_MINUTE * TAKTE_JE_MINUTE);
+  const mitKrone = lang.filter((e) => Object.values(e.forschung).some((f) => f.krone !== null));
+  const kronen = enden.flatMap((e) => Object.values(e.forschung).filter((f) => f.krone !== null).map((f) => f.krone / TAKTE_JE_MINUTE)).sort((a, b) => a - b);
+  const mitte = kronen.length ? kronen[Math.floor(kronen.length / 2)] : null;
+  t.diagnostic(`${lang.length} Partien ueber ${KRONE_AB_MINUTE} Minuten, in ${mitKrone.length} davon eine KI in der Krone; ${kronen.length} KIs in der Krone, im Median ab Minute ${mitte}, die erste ab ${kronen[0] ?? '-'}`);
+  // Gegenprobe zum Messaufbau: es gibt lange Partien.
+  assert.ok(lang.length >= 10, `nur ${lang.length} Partien ueber ${KRONE_AB_MINUTE} Minuten`);
+  assert.ok(2 * mitKrone.length >= lang.length, `${mitKrone.length} von ${lang.length} mit Krone`);
+});
+

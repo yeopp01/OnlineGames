@@ -181,7 +181,7 @@ Umfang hinzufügt, dort nachsehen.
 
 ## Stand
 
-**605 von 712 Kriterien fertig.** 1079 Tests ohne Browser und 15 ganze Partien, 348 im Browser. Die
+**606 von 712 Kriterien fertig.** 1084 Tests ohne Browser und 16 ganze Partien, 348 im Browser. Die
 Übersicht ist der Bericht: `npm run qa:report`.
 
 Gebaut ist der Unterbau: Räume, Übertragung, Karte, Wegfindung, Sammeln,
@@ -520,7 +520,15 @@ Markt auf der vom Gegner abgewandten Seite (`ki.marktplatzDaheim`), und ein
 Karren, dessen nächstes Randfeld hinter Wald liegt, fährt ein anderes an
 (einheiten AC-40, Regel der Welt in `welt.handelTakten`). Gemessen im
 Nebel über 120: 112 vor Minute 60, Median 38,4, alle mit Sieger; je KI im
-Fürstentum 14,9 Verbesserungen, 3,5 Truppenstufen. **Die Burg wartet auf den Handel nur bei echter
+Fürstentum 14,9 Verbesserungen, 3,5 Truppenstufen. **Die KI steigt in
+die Krone auf** (ki AC-39, `ki.kronePruefen`): im Fürstentum nach dem
+ersten Aufbruch, mit 42 Dorfbewohnern, einer Burg oder zwei Gebäuden des
+Fürstentums (sonst baut sie ein Kloster dazu) und **nicht vor Spielminute
+40** (`KRONE_AB_MINUTE`, gesetzt) — früher baut sie in der Krone ihre
+zweite und dritte Burg, und der Nebel fiel auf 102 von 120 vor Minute 60.
+Gemessen: Nebel 109 vor Minute 60, Median 38,4, alle mit Sieger; von 25
+Partien über 45 Minuten in 24 eine KI in der Krone, im Median ab Minute
+47; zu viert alle vor Minute 90. **Die Burg wartet auf den Handel nur bei echter
 Goldnot** (ki AC-33): wer aus Neigung handelt, baut sie gleich und verkauft
 den Stein dafür nicht (`ki.steinFuerBauwerk`) — Silberfurt baute sonst in 16
 Partien eine Burg, jetzt sechs, und gewinnt 36 statt 30 %. Dabei fiel ki
@@ -911,7 +919,7 @@ Konterkreis hält in der Krone** (fahrplan AC-26, Budget 2000, volle
 Schmiede): neun Paarungen 20 von 20, umgekehrt 0; der Paladin fällt vor dem
 Hellebardier und schlägt beide Schützenlinien; gegen das Schwert hilft die
 schwere Armbrust (19 von 20), nicht der Bogen (0 von 20). **Die KI steigt
-nicht in die Krone auf und erforscht nichts davon** (F12, offen), ebenso
+seit F12 in die Krone auf und erforscht ihre Stufen** (ki AC-35, AC-39);
 offen: die Krone am Stück (F13). Die gesetzten Werte der Krone
 stammen nicht alle aus `vorlage-aoe2.md`.
 

@@ -2211,6 +2211,21 @@ ihn, mit Gegenprobe an beiden Formen. Fünf Bilder neu, alle angesehen.
 Neueste oben. Eine Zeile je Runde: Nummer, Datum, Kriterien, Ergebnis,
 wichtigste Erkenntnis.
 
+- **F12, ki AC-39** · 2026-11-22 · **Die KI steigt in die Krone auf**
+  (Arbeitsbaum `strategie-ki-krone`). `ki.kronePruefen` nach dem Muster der
+  Ritterzeit: Kloster als zweites Gebäude, Rücklage ab 42 Dorfbewohnern,
+  Aufstieg bei freiem Dorfzentrum. **Gelernt:** (1) Der Aufstieg selbst
+  kostet die Partie nichts — was ihn teuer macht, sind die Werte, die
+  schon in den Daten auf die Krone warteten: `BURGEN_JE_ZEITALTER` gibt
+  dort drei Burgen statt einer, und jede Burg zieht Stein, Bauer und
+  Rammen (AC-23) nach sich. Ohne Schwelle stieg die KI im Median in Minute
+  36 auf, baute 199 statt 139 Burgen und 800 statt 564 Rammen, und die
+  Partien wurden länger: 102 statt 109 vor Minute 60, zu viert Startwert
+  15 ohne Sieger. (2) Eine Schwelle in Spielminuten (`KRONE_AB_MINUTE`
+  40) hielt beides und ließ AC-39 stehen: von 25 Partien über 45 Minuten
+  erreicht in 24 eine KI die Krone. Die Schwelle ist gesetzt, nicht aus
+  der Vorlage — eine Krone, die keine zweite Burg auslöst, wäre die
+  sauberere Lösung, verschöbe aber AC-33 und ist nicht gemessen.
 - **F12, ki AC-35** · 2026-11-22 · **Die KI forscht** (Arbeitsbaum
   `strategie-ki-krone`). Gebaut als `ki.forschenPruefen` in drei Gruppen
   (Schwerpunkt, Militär nach Zahl, Wirtschaft), höchstens zwei zugleich.

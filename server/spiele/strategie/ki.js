@@ -40,6 +40,16 @@ const ZIEL_DORFBEWOHNER = 22;
 // 74 Minuten). Die Vorgabe des Benutzers fuer die schwere KI: 40 bis 50 im
 // letzten Zeitalter.
 const DORFBEWOHNER_JE_ZEITALTER = [ZIEL_DORFBEWOHNER, 32, 42, 50];
+// Die Krone (ki AC-39) erst mit dem vollen Dorf des Fuerstentums.
+const KRONE_DORF = DORFBEWOHNER_JE_ZEITALTER[2];
+// Fehlt das zweite Gebaeude des Fuerstentums fuer die Krone, dieses: das
+// billigste, und das Kloster braucht sie fuer den Drachen (ki AC-29).
+const KRONE_GEBAEUDE = 'kloster';
+// Und nicht vor dieser Spielminute (gesetzt): ohne sie stieg die KI im Median
+// in Minute 36 auf, baute danach ihre zweite und dritte Burg (AC-33) - 199
+// statt 139 Burgen in 120 Partien -, und nur 102 Partien endeten vor Minute
+// 60 (Grenze 105, fahrplan AC-11).
+const KRONE_AB_MINUTE = 40;
 function zielDorfbewohner(zeitalter) {
   return DORFBEWOHNER_JE_ZEITALTER[Math.min(zeitalter, DORFBEWOHNER_JE_ZEITALTER.length - 1)];
 }
@@ -402,6 +412,7 @@ class Ki {
     // (ki AC-9). `null` heisst: noch nicht.
     this.feudalTakt = null;
     this.ritterTakt = null;
+    this.kroneTakt = null;
     // Wer marschiert (ki AC-11), wie oft ein Heer aufgebrochen ist und in
     // welchem Takt das erste - daran misst der Pruefstand.
     this.heer = new Set();
@@ -535,7 +546,7 @@ class Ki {
     // drankommt (Durchsicht Runde 143): wer laufend Gefallene ersetzte, stand
     // nie mit freiem Dorfzentrum da und stieg nie auf.
     if (zentrum && imZentrum < 2 && dorfbewohner.length + imZentrum < ziel
-      && this.spieler.nahrung >= EINHEITEN.dorfbewohner.kosten.nahrung && !this.ritterzeitBereit()) {
+      && this.spieler.nahrung >= EINHEITEN.dorfbewohner.kosten.nahrung && !this.ritterzeitBereit() && !this.kroneBereit()) {
       this.senden({ auftrag: 'ausbilden', gebaeude: zentrum.id, einheit: 'dorfbewohner' });
     }
 
@@ -544,6 +555,8 @@ class Ki {
     this.feudalzeitPruefen(zentrum, dorfbewohner);
     if (this.ritterTakt === null && this.spieler.zeitalter > 1) this.ritterTakt = welt.takt;
     this.ritterzeitPruefen(zentrum, gebaeude, dorfbewohner);
+    if (this.kroneTakt === null && this.spieler.zeitalter > 2) this.kroneTakt = welt.takt;
+    this.kronePruefen(zentrum, gebaeude, dorfbewohner);
     this.forschenPruefen(eigene, gebaeude, dorfbewohner);
     this.militaerPruefen(gebaeude, dorfbewohner);
     this.belagerungPruefen(eigene, gebaeude, dorfbewohner);
@@ -613,7 +626,7 @@ class Ki {
    * das Militaer allein zurueckzuhalten reichte beim Startwert 4.
    */
   ruecklage() {
-    const ruecklage = { ...this.ruecklageRitterzeit() };
+    const ruecklage = { ...this.ruecklageRitterzeit(), ...this.ruecklageKrone() };
     if (this.marktFehlt) ruecklage.holz = (ruecklage.holz || 0) + GEBAEUDE.markt.kosten.holz;
     // Die ersten Karren (ki AC-26): was einer kostet, und solange das Gold
     // dafuer fehlt, dazu die Ware fuer einen Verkauf.
@@ -646,6 +659,73 @@ class Ki {
       if (g.besitzer === this.spielerId && g.schlange.includes('ritterzeit')) return {};
     }
     return AUFSTIEGE.ritterzeit.kosten;
+  }
+
+  /** Die Dorfbewohner, die leben - fuer Ruecklage und Krone (ki AC-39). */
+  dorfZahl() {
+    let n = 0;
+    for (const e of this.welt.einheiten.values()) if (e.besitzer === this.spielerId && e.art === 'dorfbewohner' && !e.tot) n += 1;
+    return n;
+  }
+
+  /**
+   * Gespart wird fuer die Krone (ki AC-39) wie fuer die Ritterzeit: nach dem
+   * ersten Aufbruch, und erst mit dem vollen Dorf des Fuerstentums
+   * (`KRONE_DORF`) - vorher gingen 1800 Rohstoffe am Militaer und an den
+   * Dorfbewohnern vorbei. Bestellt ist bezahlt.
+   */
+  ruecklageKrone() {
+    if (this.spieler.zeitalter !== 2 || this.angriffTakt === null || !this.kroneZeit()) return {};
+    if (this.dorfZahl() < KRONE_DORF) return {};
+    for (const g of this.welt.gebaeude.values()) {
+      if (g.besitzer === this.spielerId && g.schlange.includes('imperialzeit')) return {};
+    }
+    return AUFSTIEGE.imperialzeit.kosten;
+  }
+
+  /**
+   * Der Aufstieg in die Krone (ki AC-39): im Fuerstentum, nach dem ersten
+   * Aufbruch, mit `KRONE_DORF` Dorfbewohnern, einer Burg oder zwei fertigen
+   * Gebaeuden des Fuerstentums, freiem Dorfzentrum und bezahlt. Fehlt beides,
+   * baut sie `KRONE_GEBAEUDE` - die Burg baut sie ohnehin (ki AC-33), die
+   * Werkstatt fuer die Rammen (ki AC-23) auch. Die Voraussetzung prueft der
+   * Server noch einmal (bauen AC-47).
+   */
+  kronePruefen(zentrum, gebaeude, dorfbewohner) {
+    const spieler = this.spieler;
+    if (!zentrum || spieler.zeitalter !== 2 || this.angriffTakt === null || !this.kroneZeit()) return;
+    if (dorfbewohner.length < KRONE_DORF) return;
+    const aufstieg = AUFSTIEGE.imperialzeit;
+    const stattdessen = gebaeude.some((g) => g.fertig && g.art === aufstieg.oder?.art);
+    if (!stattdessen && this.welt.gebaeudeDerZeit(spieler) < aufstieg.voraussetzung) {
+      const derZeit = gebaeude.filter((g) => this.welt.gebaeudeZeitalter(g.art) === 2 && GEBAEUDE[g.art].zumAufstieg !== false);
+      if (derZeit.length < aufstieg.voraussetzung && !derZeit.some((g) => g.art === KRONE_GEBAEUDE)) {
+        this.bauen(KRONE_GEBAEUDE, this.platzBeiBasis(KRONE_GEBAEUDE), dorfbewohner);
+      }
+      return;
+    }
+    if (zentrum.schlange.length) return;
+    if (!this.kroneBereit()) return;
+    this.senden({ auftrag: 'ausbilden', gebaeude: zentrum.id, einheit: 'imperialzeit' });
+  }
+
+  /** Ob die Spielzeit fuer die Krone reicht (`KRONE_AB_MINUTE`). */
+  kroneZeit() {
+    return this.welt.takt >= KRONE_AB_MINUTE * 60 * TAKTE_PRO_SEKUNDE;
+  }
+
+  /** Alles fuer die Krone da: nach dem ersten Aufbruch, volles Dorf, bezahlt, Burg oder zwei Gebaeude des Fuerstentums. */
+  kroneBereit() {
+    const spieler = this.spieler;
+    if (spieler.zeitalter !== 2 || this.angriffTakt === null || !this.kroneZeit()) return false;
+    const aufstieg = AUFSTIEGE.imperialzeit;
+    if (Object.entries(aufstieg.kosten).some(([r, menge]) => spieler[r] < menge)) return false;
+    if (this.dorfZahl() < KRONE_DORF) return false;
+    if (this.welt.gebaeudeDerZeit(spieler) >= aufstieg.voraussetzung) return true;
+    for (const g of this.welt.gebaeude.values()) {
+      if (g.besitzer === this.spielerId && g.fertig && g.art === aufstieg.oder?.art) return true;
+    }
+    return false;
   }
 
   /**
@@ -751,7 +831,7 @@ class Ki {
     const rollen = this.rollen(dorfbewohner);
     const fertig = (art) => gebaeude.filter((g) => g.art === art && g.fertig).length;
     const dorfVoll = dorfbewohner.length >= zielDorfbewohner(spieler.zeitalter);
-    const aufstiegSteht = Object.keys(this.ruecklageRitterzeit()).length > 0;
+    const aufstiegSteht = Object.keys(this.ruecklageRitterzeit()).length > 0 || Object.keys(this.ruecklageKrone()).length > 0;
     const liste = new Map();
     for (const g of gebaeude) {
       if (!g.fertig || g.schlange.some((a) => VERBESSERUNGEN[a])) continue;
@@ -2658,7 +2738,7 @@ class Ki {
 }
 
 module.exports = {
-  Ki, ENTSCHEIDEN_ALLE, ZIEL_DORFBEWOHNER, DORFBEWOHNER_JE_ZEITALTER, zielDorfbewohner, FEUDALZEIT_NAHRUNG, AN_SCHAFEN, AN_BEEREN, MILITAER,
+  Ki, ENTSCHEIDEN_ALLE, ZIEL_DORFBEWOHNER, DORFBEWOHNER_JE_ZEITALTER, zielDorfbewohner, KRONE_DORF, KRONE_GEBAEUDE, KRONE_AB_MINUTE, FEUDALZEIT_NAHRUNG, AN_SCHAFEN, AN_BEEREN, MILITAER,
   HEER, WACHE, UEBERLEGEN, MARSCH_MINDESTENS, HEER_ABSTAND, WACHE_NAH, FEIND_FERN, STURM_UMKREIS, STURM_HOECHSTENS, STURM_FEINDE, STURM_SEKUNDEN, STURM_LEINE, STURM_SCHWACH, VERGEBEN_ABSTAND, MILITAER_HOLZ, UEBERSCHUSS, MANGEL, UMVERTEILEN_SEKUNDEN, UNERREICHBAR_SEKUNDEN, MILITAER_HOECHSTENS, MILITAER_JE_ZEITALTER, plan,
   MILITAER_UEBERFLUSS_AB, MILITAER_UEBERFLUSS_HOLZ, MILITAER_UEBERFLUSS_KAMPF, MILITAER_ALLERHOECHSTENS,
   GOLD_KNAPP, PLATZ_RINGE, KARREN, HANDEL_ABSTAENDE, HANDEL_MINDESTENS, VERKAUF_RUECKLAGE, KARREN_WARTEN_SEKUNDEN, FEIND_VERGESSEN,

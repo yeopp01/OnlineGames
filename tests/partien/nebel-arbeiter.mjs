@@ -44,8 +44,10 @@ const enden = workerData.startwerte.map((startwert) => {
     welt0 = welt;
     if (welt.takt % TAKTE_JE_MINUTE === 0) {
       for (const s of welt.spieler) {
-        const f = (forschung[s.id] ??= { fuerst: null, bruch: null, verbesserungen: [] });
+        const f = (forschung[s.id] ??= { fuerst: null, krone: null, bruch: null, verbesserungen: [] });
         if (f.fuerst === null && s.zeitalter >= 2) f.fuerst = welt.takt;
+        // Wann sie die Krone erreichte (ki AC-39), zur vollen Spielminute.
+        if (f.krone === null && s.zeitalter >= 3) f.krone = welt.takt;
         if (f.fuerst === null || f.bruch !== null) continue;
         let dorf = 0;
         for (const e of welt.einheiten.values()) if (e.besitzer === s.id && !e.tot && e.art === 'dorfbewohner') dorf += 1;

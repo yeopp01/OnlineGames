@@ -1425,6 +1425,11 @@
       "spec": "10-strategie/ki.md",
       "ac": "AC-35",
       "begruendung": "Was die KI erforscht und wann, ist eine Auswahl aus den Daten der Verbesserungen in ihrer Entscheidung auf dem Server: welche Stufe eine Einheit tauscht, die sie ausbildet, welche Wirkung eine Klasse trifft, von der sie mindestens drei haelt, was davon bezahlt ist und was fuer Aufstieg, Karren und Rammen zurueckliegt. Geprueft wird die Reihenfolge der Bestellungen in gebauten Lagen je Haus mit Gegenproben fuer knappen Vorrat, fehlende Vorstufe und das Warten auf Rammen (tests/strategie-ki-forschen.test.mjs) und das Erforschte ueber 120 ganze Partien im Nebel. Ein Bild zeigte eine Schmiede mit einer Verbesserung in der Schlange - dasselbe wie bei einem Menschen, nachgewiesen bei bauen AC-25 und AC-39 -, nicht, warum die KI gerade diese gewaehlt hat."
+    },
+    {
+      "spec": "10-strategie/ki.md",
+      "ac": "AC-39",
+      "begruendung": "Wann die KI in die Krone aufsteigt, ist eine Entscheidung auf dem Server aus Zeitalter, erstem Aufbruch, Zahl der Dorfbewohner, freiem Dorfzentrum, Gebaeuden des Fuerstentums und Spielminute, und davor eine Ruecklage, die Nahrung und Gold fuer den Aufstieg zurueckhaelt. Geprueft wird sie in gebauten Lagen mit je einer Gegenprobe fuer jede fehlende Bedingung (tests/strategie-ki-krone.test.mjs) und ueber 120 ganze Partien im Nebel, in denen gezaehlt wird, wer wann die Krone erreicht. Ein Bild zeigte ein Dorfzentrum mit dem Aufstieg in der Schlange - dasselbe wie bei einem Menschen, nachgewiesen bei bauen AC-47 -, nicht, dass die KI ihn zur richtigen Zeit und aus den richtigen Gruenden bestellt hat."
     }
   ]
 }

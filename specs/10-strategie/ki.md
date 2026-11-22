@@ -2,7 +2,7 @@
 
 **Bereich:** Strategie
 **Kuerzel:** ki
-**Stand:** 34/40 fertig · 6 offen
+**Stand:** 35/40 fertig · 5 offen
 
 ## Zweck
 
@@ -409,9 +409,10 @@ nicht die Regeln.
   bis 40 und über 41 bis 80 je eine Partie ohne Sieger, und zu viert
   endete Startwert 7 nicht vor Minute 90 (fahrplan AC-24) — siehe Lücke
   bei AC-23. Auch eine zweite erst zwanzig Minuten nach der ersten ließ
-  Startwert 14 ohne Sieger und zu viert Startwert 5. **Die KI steigt bis heute nicht in die Krone auf** (Stufe
-  F): die zweite und dritte Burg baut sie deshalb in keiner ganzen Partie,
-  belegt sind sie nur in der gebauten Lage.
+  Startwert 14 ohne Sieger und zu viert Startwert 5. **Seit AC-39 (2026-11-22) steigt die KI in die Krone
+  auf**, nicht vor Spielminute 40 — früher bauten zweite und dritte Burg
+  die Partien zu lang (199 statt 139 Burgen in 120 Partien); mit der
+  Schwelle 154 Burgen bei 138 KIs.
   Angelegt am 2026-11-13 (Benutzer: „Und ki muss auch burgen bauen,
   definitiv"); die Spezialeinheit aus der Burg bleibt AC-28.
   **Nachgezogen am 2026-11-13 mit den Truppenstufen:** „der Handel geht
@@ -767,7 +768,7 @@ nicht die Regeln.
 
 ### Stufe F — die Krone (Spec-Runde 2026-11-18)
 
-- **AC-39** `offen` **KI steigt zur Krone auf** — Im Fürstentum, nach ihrem
+- **AC-39** `fertig` **KI steigt zur Krone auf** — Im Fürstentum, nach ihrem
   ersten Aufbruch, mit freiem Dorfzentrum, 42 Dorfbewohnern (AC-24) und
   einer Burg oder zwei Gebäuden des Fürstentums spart sie 1000 Nahrung und
   800 Gold an und steigt auf. Danach gelten die Werte, die schon in den
@@ -777,6 +778,23 @@ nicht die Regeln.
   (fahrplan AC-11) und zu viert halten, und von den Partien, die länger als
   45 Spielminuten dauern, erreicht in mindestens der Hälfte eine KI die
   Krone.
+  **Gebaut am 2026-11-22** als `ki.kronePruefen`, `ki.kroneBereit` und
+  `ki.ruecklageKrone`: die zwei Gebäude des Fürstentums ergänzt sie mit
+  einem Kloster (`KRONE_GEBAEUDE`), solange keine Burg steht; ab 42
+  Dorfbewohnern (`KRONE_DORF`, aus AC-24) liegen die Kosten des Aufstiegs
+  aus den Daten in der Rücklage, und das Dorfzentrum bildet keine
+  Dorfbewohner mehr aus, solange der Aufstieg bezahlbar wäre. **Und nicht
+  vor Spielminute 40** (`KRONE_AB_MINUTE`, gesetzt): ohne diese Schwelle
+  stieg sie im Median in Minute 36 auf, baute danach ihre zweite und
+  dritte Burg (AC-33) — 199 statt 139 Burgen in 120 Partien, 800 statt 564
+  Rammen —, und nur 102 Partien endeten vor Minute 60 (Grenze 105); zu
+  viert blieb Startwert 15 ohne Sieger. **Gemessen mit der Schwelle** im
+  Nebel über 120: 109 vor Minute 60, Median 38,4, alle mit Sieger; von 25
+  Partien über 45 Minuten erreicht in 24 eine KI die Krone, 39 KIs
+  insgesamt, im Median ab Minute 47, die erste ab 44; 154 Burgen bei 138
+  KIs. Zu viert alle zwanzig vor Minute 90; ki AC-27 und AC-30 halten
+  (`tests/strategie-ki-krone.test.mjs`, `tests/partien/ki-im-nebel.test.mjs`).
+  Die Stufen der Krone erforscht sie über AC-35 ohne weitere Regel.
 - **AC-40** `offen` **Die KI geht aufs Wunder** — Steht ein fertiges
   Wunder eines Gegners (die Ansage kennt jeder,
   [Spielziel](spielziel.md) AC-29), ist es das Ziel ihres nächsten
