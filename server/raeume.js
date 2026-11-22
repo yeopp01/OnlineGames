@@ -20,6 +20,9 @@ const LEERLAUF_MS = 30 * 60 * 1000;
 // begrenzt - zweimal je Spieler und Partie, hoechstens fuenf Minuten am Stueck.
 const PAUSE_MS = 5 * 60 * 1000;
 const PAUSEN_JE_SPIELER = 2;
+// Sichern (speichern AC-3): eine laufende Partie legt jede Minute ihren Stand
+// am Konto des Eroeffnenden ab - ein Absturz kostet hoechstens eine Minute.
+const SICHERN_MS = 60 * 1000;
 
 function codeErzeugen() {
   let code = '';
@@ -111,6 +114,21 @@ class Raum {
     this.pause = null;
     this.pausen = {}; // Spieler -> wie oft er in dieser Partie angehalten hat
     this.pauseMs = PAUSE_MS;
+    // Sichern (speichern AC-3, AC-4, ADR-0017): die Ablage bekommt der Raum
+    // von `Raeume`, den Stand selbst schreibt das Spiel (`sichern()` an dem,
+    // was `erzeugen` liefert) - was darin steht, weiss der Raum nicht.
+    // Das Konto, das eroeffnet hat - setzt `index.js` nach der Anmeldung.
+    /** @type {string | null} */
+    this.eigentuemer = null;
+    /** @type {InstanceType<typeof import('./partiestaende').Partiestaende> | null} */
+    this.ablage = null;
+    this.sichernMs = SICHERN_MS;
+    this.gesichertUm = 0;
+    this.standId = null;
+    // Gab es den Stand nicht mehr (geloescht) oder war am Konto kein Platz,
+    // wird fuer diese Partie nichts mehr abgelegt - sonst kaeme ein
+    // geloeschter Stand jede Minute wieder.
+    this.ohneStand = false;
   }
 
   // Was je Platz gewaehlt wird, aus dem Steckbrief (`jePlatz`). Leer: nichts.
@@ -221,6 +239,9 @@ class Raum {
       delete this.platzwahl[spieler.id];
     }
     this.beruehrt = Date.now();
+    // Geht der letzte Mensch, steht gleich die Uhr: der Stand von jetzt, nicht
+    // der von bis zu einer Minute vorher (speichern AC-4).
+    if (this.leer) this.sichern();
   }
 
   get leer() {
@@ -276,6 +297,10 @@ class Raum {
     // Vorrat an Pausen.
     this.pause = null;
     this.pausen = {};
+    // Eine neue Partie hat noch keinen Stand - auch die Revanche nicht.
+    this.standId = null;
+    this.ohneStand = false;
+    this.gesichertUm = Date.now();
     this.uhr = setInterval(() => this.schlag(), 1000 / this.jeSekunde);
     this.beruehrt = Date.now();
     return {};
@@ -327,7 +352,80 @@ class Raum {
     // haelt der Raum seine Uhr an. **Was** entscheidet, weiss nur das Spiel -
     // der Raum fragt bloss. Der letzte Zustand ist schon unterwegs und traegt
     // das Ergebnis.
-    if (this.welt.vorbei) this.beenden();
+    if (this.welt.vorbei) {
+      this.beenden();
+      // Eine entschiedene Partie setzt niemand fort: ihr Stand geht mit
+      // (ADR-0017 Punkt 3).
+      this.standLoeschen();
+    } else if (Date.now() - this.gesichertUm >= this.sichernMs) {
+      this.sichern();
+    }
+  }
+
+  // ---- Sichern (speichern AC-3, AC-4, AC-6) ---------------------------------
+  // Der Raum weiss, **wann** gesichert wird, das Spiel, **was**: `sichern()`
+  // liefert Bytes, `laden(bytes)` im Steckbrief liest sie (ADR-0006). Bevor
+  // ein Stand den vorigen ersetzt, wird er einmal geladen - ein Stand, der
+  // sich nicht laden laesst, nimmt den vorigen nicht mit (AC-6).
+
+  /** @returns {boolean} ob ein Stand abgelegt wurde */
+  sichern() {
+    if (!this.ablage || !this.eigentuemer || this.ohneStand || !this.laeuft) return false;
+    if (typeof this.welt.sichern !== 'function') return false;
+    // Zuerst die Uhr: scheitert es, wird nicht in jedem Schlag neu versucht.
+    this.gesichertUm = Date.now();
+    // Was immer dabei scheitert - das Spiel beim Schreiben oder Proben, die
+    // Datei beim Ablegen -, die Partie laeuft weiter, und der vorige Stand
+    // bleibt, wie er war.
+    try {
+      const wert = this.welt.sichern();
+      if (typeof this.spiel.laden === 'function') this.spiel.laden(wert);
+      return this.standAblegen(wert);
+    } catch (fehler) {
+      console.warn(`Raum ${this.code}: Stand nicht abgelegt - ${fehler instanceof Error ? fehler.message : fehler}`);
+      return false;
+    }
+  }
+
+  /** @param {Uint8Array} wert */
+  standAblegen(wert) {
+    const beschreibung = {
+      art: this.art,
+      fassung: Number.isInteger(this.spiel.standFassung) ? this.spiel.standFassung : null,
+      beteiligte: this.plaetzeBeteiligt(),
+      einstellungen: { ...this.einstellungen, platzwahl: this.platzwahl },
+    };
+    if (this.standId) {
+      if (this.ablage.schreiben(this.eigentuemer, this.standId, wert, beschreibung)) return true;
+      // Geloescht, waehrend die Partie lief: dabei bleibt es.
+      this.standId = null;
+      this.ohneStand = true;
+      return false;
+    }
+    const abgelegt = this.ablage.ablegen(this.eigentuemer, wert, beschreibung);
+    if ('fehler' in abgelegt) {
+      // Am Konto liegen schon fuenf (AC-12): diese Partie wird nicht
+      // gesichert - kein alter Stand wird stillschweigend geopfert. Gesagt
+      // wird es erst mit der Liste im Vorraum (S3).
+      this.ohneStand = true;
+      return false;
+    }
+    this.standId = abgelegt.id;
+    return true;
+  }
+
+  /** Wer an der Partie beteiligt ist - Menschen mit Namen, dazu die Plaetze des Spiels. */
+  plaetzeBeteiligt() {
+    const menschen = this.spieler.map((s) => ({ name: s.name, mensch: true }));
+    const besetzt = vomSpielBesetzt(this.spiel, this.einstellungen);
+    const name = (nummer) => (typeof this.spiel.platzname === 'function' ? this.spiel.platzname(nummer) : `Platz ${nummer}`);
+    const andere = Array.from({ length: besetzt }, (_, i) => ({ name: name(i + 1), mensch: false }));
+    return [...menschen, ...andere];
+  }
+
+  standLoeschen() {
+    if (this.ablage && this.eigentuemer && this.standId) this.ablage.loeschen(this.eigentuemer, this.standId);
+    this.standId = null;
   }
 
   // ---- Anhalten (speichern AC-19 bis AC-21) --------------------------------
@@ -344,6 +442,8 @@ class Raum {
     this.pausen[wer.id] = bisher + 1;
     this.pause = { von: wer.id, name: wer.name, bis: begrenzt ? Date.now() + this.pauseMs : null };
     this.beruehrt = Date.now();
+    // Wer anhaelt, steht vielleicht gleich auf (speichern AC-4).
+    this.sichern();
     return {};
   }
 
@@ -400,6 +500,9 @@ class Raeume {
   constructor() {
     this.nachCode = new Map();
     this.beimSchliessen = null;
+    // Wohin die Raeume ihre Staende legen (server/partiestaende.js) - ohne
+    // Ablage wird nichts gesichert.
+    this.ablage = null;
     this.aufraeumer = setInterval(() => this.aufraeumen(), 60 * 1000);
     this.aufraeumer.unref?.();
   }
@@ -408,8 +511,19 @@ class Raeume {
     let code = codeErzeugen();
     while (this.nachCode.has(code)) code = codeErzeugen();
     const raum = new Raum(code, spiel);
+    raum.ablage = this.ablage;
     this.nachCode.set(code, raum);
     return raum;
+  }
+
+  /**
+   * Jede laufende Partie sichern - beim Herunterfahren (speichern AC-4).
+   * @returns {number} wie viele Staende abgelegt wurden
+   */
+  allesSichern() {
+    let gesichert = 0;
+    for (const raum of this.nachCode.values()) if (raum.sichern()) gesichert += 1;
+    return gesichert;
   }
 
   finden(code) {
@@ -470,7 +584,12 @@ class Raeume {
 
   halt() {
     clearInterval(this.aufraeumer);
-    for (const raum of this.nachCode.values()) raum.beenden();
+    // Wer haelt, sichert vorher (`allesSichern`) - danach legt kein Raum mehr
+    // ab, auch nicht, wenn beim Schliessen noch Verbindungen abreissen.
+    for (const raum of this.nachCode.values()) {
+      raum.beenden();
+      raum.ablage = null;
+    }
     this.nachCode.clear();
   }
 }

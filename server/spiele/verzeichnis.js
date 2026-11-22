@@ -61,6 +61,14 @@ function pruefen(steckbrief, ordner) {
   if (nachschlagen !== undefined && (typeof nachschlagen?.titel !== 'string' || !nachschlagen.titel || typeof nachschlagen.daten !== 'function')) {
     throw new Error(`${wo}: nachschlagen braucht titel (Text) und daten (Funktion).`);
   }
+  // Fortsetzen (ADR-0017): wer `laden(bytes)` anbietet, laesst seine Partien
+  // sichern, und `standFassung` nennt die Fassung des Stands. Beides freiwillig.
+  if (steckbrief.laden !== undefined && typeof steckbrief.laden !== 'function') {
+    throw new Error(`${wo}: laden muss eine Funktion (bytes) => Partie sein.`);
+  }
+  if (steckbrief.standFassung !== undefined && !(Number.isInteger(steckbrief.standFassung) && steckbrief.standFassung >= 1)) {
+    throw new Error(`${wo}: standFassung muss eine ganze Zahl ab 1 sein.`);
+  }
 }
 
 function lesen(wurzel = __dirname) {
@@ -85,6 +93,10 @@ function lesen(wurzel = __dirname) {
       ...(steckbrief.plaetze ? { plaetze: steckbrief.plaetze } : {}),
       ...(steckbrief.jePlatz ? { jePlatz: steckbrief.jePlatz } : {}),
       ...(steckbrief.platzname ? { platzname: steckbrief.platzname } : {}),
+      // Fuer die Ablage der Partiestaende (ADR-0017); `laden` faellt beim
+      // Ausliefern weg wie `erzeugen`.
+      ...(steckbrief.laden ? { laden: steckbrief.laden } : {}),
+      ...(steckbrief.standFassung ? { standFassung: steckbrief.standFassung } : {}),
       // Beim Ausliefern bleibt nur der Titel; die Daten holt der Browser einzeln.
       ...(steckbrief.nachschlagen ? { nachschlagen: { titel: steckbrief.nachschlagen.titel, daten: steckbrief.nachschlagen.daten } } : {}),
       reihenfolge: Number.isInteger(steckbrief.reihenfolge) ? steckbrief.reihenfolge : 100,

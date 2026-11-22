@@ -1465,6 +1465,26 @@
       "spec": "00-plattform/speichern.md",
       "ac": "AC-17",
       "begruendung": "Die Ablehnung geschieht beim Laden auf dem Server, bevor etwas entpackt wird: ein Stand einer neueren, einer aelteren Fassung, fremde und beschaedigte Bytes werfen einen StandFehler mit dem Satz fuer den Bildschirm, und keine halbe Welt entsteht (tests/strategie-speichern.test.mjs). In Schritt S1 gibt es keine Stelle im Browser, die einen Stand laedt; den Satz zeigt erst die Liste im Vorraum (S3), und dort weist ihn das Bild zu AC-6 nach."
+    },
+    {
+      "spec": "00-plattform/speichern.md",
+      "ac": "AC-3",
+      "begruendung": "Selbsttaetiges Sichern ist ein Zeitplan auf dem Server: der Raum legt jede Minute Wanduhr den Stand am Konto des Eroeffnenden in SQLite ab, eine Zeile je Partie, die bei jedem Sichern ersetzt wird, und eine entschiedene Partie loescht ihre Zeile (tests/speichern-ablage.test.mjs: nach jeder Minute liegt der Stand hoechstens 600 Takte hinter der laufenden Welt). Im Browser geschieht dabei nichts - kein Knopf, keine Meldung; was ein Spieler von gespeicherten Partien sieht, ist die Liste im Vorraum, die mit S3 kommt (Auswahl und Liste stehen in spielauswahl.md) und dort im Bild nachgewiesen wird."
+    },
+    {
+      "spec": "00-plattform/speichern.md",
+      "ac": "AC-4",
+      "begruendung": "Gesichert wird bei drei Ereignissen auf dem Server: beim Anhalten, wenn der letzte Mensch den Raum verlaesst, und beim Herunterfahren (SIGTERM und SIGINT rufen raeume.allesSichern()). Belegt im Rechenteil an den Takten der abgelegten Staende und gegen den echten Server, der nach dem Herunterfahren auf derselben Datenbank neu startet und den Stand mit genau dem Takt beim Herunterfahren oeffnet (tests/speichern-ablage.test.mjs). Ein Herunterfahren hat keinen Bildschirm, und die Pause im Bild weist schon speichern AC-19 nach - das Sichern dabei ist eine Zeile in der Datenbank."
+    },
+    {
+      "spec": "00-plattform/speichern.md",
+      "ac": "AC-12",
+      "begruendung": "Dass ein Stand einem Konto gehoert, ist die Spalte konto der Tabelle partiestand in der SQLite-Datei der Konten, gesetzt aus der Sitzung dessen, der eroeffnet hat; ohne Anmeldung antwortet /api/partien mit 401, und mehr als fuenf Staende je Konto werden nicht angelegt (tests/speichern-ablage.test.mjs). Die Liste, in der ein Spieler seine Staende sieht, kommt mit S3 in den Vorraum und wird dort im Bild nachgewiesen; hier geht es um die Zuordnung in der Datenbank, die kein Bildschirm zeigt."
+    },
+    {
+      "spec": "00-plattform/speichern.md",
+      "ac": "AC-13",
+      "begruendung": "Die Pruefung des Eigentuemers steckt in jeder Abfrage der Ablage (WHERE id = ? AND konto = ?) und wird bei jedem Oeffnen, Umbenennen und Loeschen ueber /api/partien gegen die Sitzung gerechnet, nicht nur beim Anzeigen der Liste. Belegt gegen den echten Server mit zwei Konten: Bert bekommt fuer Annas Stand dieselbe 404 wie fuer eine unbekannte Id, Anna oeffnet, benennt und loescht (tests/speichern-ablage.test.mjs; die Gegenprobe ohne konto in der Abfrage laesst den Test fallen). Eine Ablehnung auf dem Server ist eine Antwort mit Statuscode, kein Aussehen - ein Bild zeigte nur, dass ein Knopf fehlt, nicht dass der Server ablehnt."
     }
   ]
 }

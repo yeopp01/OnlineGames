@@ -10,6 +10,8 @@ const { Raeume, MAX_SPIELER, codeZeigen, plaetzePruefen } = require('./raeume');
 const { Schutz, adresseVon } = require('./schutz');
 const { konten } = require('./konten');
 const { manager } = require('./spiele/manager/netz');
+const { Partiestaende } = require('./partiestaende');
+const { partienWeg } = require('./partien-netz');
 const verzeichnis = require('./spiele/verzeichnis');
 const partieEinstellungen = require('./spiele/einstellungen');
 
@@ -106,6 +108,18 @@ async function starten(hafen = HAFEN, einstellungen = {}) {
 
   // Das Managerspiel bringt seinen eigenen Anfrageweg mit - hier steht nur,
   // dass es ihn gibt (→ docs/adr/0006-mehrere-spiele.md).
+  // Die gespeicherten Partien liegen in derselben Datei wie die Konten
+  // (ADR-0017); die Raeume legen dort ab, der Anfrageweg liest am Konto.
+  const ablage = new Partiestaende(zugang.db);
+  raeume.ablage = ablage;
+  const partien = partienWeg({
+    ablage,
+    schutz,
+    adresseVon: (a) => adresseVon(a, HINTER_PROXY),
+    sitzung: zugang.sitzung,
+    spiele: spielliste,
+  });
+
   const spielManager = manager({
     schutz,
     adresseVon: (a) => adresseVon(a, HINTER_PROXY),
@@ -151,6 +165,7 @@ async function starten(hafen = HAFEN, einstellungen = {}) {
       antwort.writeHead(200, { 'Content-Type': TYPEN['.json'], 'Cache-Control': 'no-store' }).end(JSON.stringify(zahlen));
       return;
     }
+    if (partien.behandeln(anfrage, antwort)) return;
     if (spielManager.behandeln(anfrage, antwort)) return;
     ausliefern(anfrage, antwort);
   });
@@ -370,11 +385,25 @@ async function starten(hafen = HAFEN, einstellungen = {}) {
   await new Promise((fertig) => server.listen(hafen, () => fertig(undefined)));
   console.log(`OnlineGames laeuft auf http://localhost:${hafen}/ (bis zu ${MAX_SPIELER} Spieler je Raum)`);
 
-  return { server, wss, raeume, schutz, zugang, manager: spielManager };
+  // Beim Herunterfahren legt jede laufende Partie ihren Stand ab
+  // (speichern AC-4) - zurueck kommt, wie viele es waren.
+  const herunterfahren = () => raeume.allesSichern();
+
+  return { server, wss, raeume, schutz, zugang, manager: spielManager, ablage, herunterfahren };
 }
 
 if (require.main === module) {
-  starten(HAFEN, { konten: kontenAusUmgebung() }).catch((fehler) => {
+  starten(HAFEN, { konten: kontenAusUmgebung() }).then((laufend) => {
+    // `docker stop` beim Ausrollen schickt SIGTERM (ueber `init: true` in
+    // betrieb/docker-compose.yml), Strg+C ist SIGINT: vorher sichern.
+    for (const signal of ['SIGTERM', 'SIGINT']) {
+      process.once(signal, () => {
+        const gesichert = laufend.herunterfahren();
+        if (gesichert) console.log(`${gesichert} laufende Partien gesichert.`);
+        process.exit(0);
+      });
+    }
+  }).catch((fehler) => {
     console.error('Start fehlgeschlagen:', fehler.message);
     process.exit(1);
   });

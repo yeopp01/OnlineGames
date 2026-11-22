@@ -2239,6 +2239,26 @@ ihn, mit Gegenprobe an beiden Formen. Fünf Bilder neu, alle angesehen.
 Neueste oben. Eine Zeile je Runde: Nummer, Datum, Kriterien, Ergebnis,
 wichtigste Erkenntnis.
 
+- **S2, speichern AC-3, AC-4, AC-12, AC-13 (AC-6 in Arbeit)** · 2026-11-22 ·
+  **Die Ablage am Konto** (`server/partiestaende.js`, `server/partien-netz.js`).
+  Eine Zeile je Partie, `wert` und `vorher` in einer Anweisung getauscht,
+  jede Abfrage mit `AND konto = ?`; gesichert jede Minute, beim Anhalten,
+  wenn der Letzte geht, und beim Herunterfahren, jeder Stand vorher einmal
+  mit `laden` geprobt. **Gelernt:** (1) **Die Uhr der Tests in kleinen
+  Schritten ticken:** `t.mock.timers.tick(60000)` ist ein Schlag mit einer
+  Wanduhr, und der Raum holt höchstens eine Sekunde nach — es kamen zehn
+  Takte statt sechshundert. Ein Hilfsmittel tickt in Schritten von 100 ms.
+  (2) **`verzeichnis.lesen()` kopiert nur Felder, die es kennt** — ein neues
+  Feld im Steckbrief (`laden`, `standFassung`) kommt beim Raum nicht an,
+  bis es dort steht; der Stand hatte `fassung: null`. (3) **Beim Schließen
+  des Servers geht die Datenbank vor den Verbindungen zu**, und der letzte,
+  der geht, wollte noch sichern („database is not open“). `Raeume.halt()`
+  nimmt deshalb jedem Raum die Ablage, und das Ablegen fängt seinen Fehler
+  — eine Warnung statt eines Absturzes. (4) Gegenproben für jede Regel, die
+  ein Test trägt: ohne `konto` in der Abfrage, ohne Probe mit `laden`, ohne
+  `vorher`, ohne Sichern beim Gehen — jede lässt ihren Test fallen.
+  (5) Schreiben in die SQLite-Datei der Konten kostet 4 bis 6 ms (ohne WAL),
+  mit WAL rund 1 ms; nicht umgestellt, weil die Konten es nicht sind.
 - **S1, speichern AC-1, AC-2, AC-5, AC-16, AC-17** · 2026-11-22 · **Die
   Partie als Wert** (Arbeitsbaum `strategie-speichern`, ADR-0017).
   `welt.sichern()` gibt Bytes (Kopf `FAST` + Fassung, dahinter

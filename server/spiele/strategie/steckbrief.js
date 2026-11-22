@@ -201,6 +201,9 @@ module.exports = {
   // Fortsetzen (ADR-0017): der Raum fragt die Welt nach `sichern()` und den
   // Steckbrief nach `laden(bytes)` - mehr weiss er vom Stand nicht (ADR-0006).
   laden,
+  // Die Fassung des Stands (speichern AC-17) - die Ablage schreibt sie in die
+  // Liste, damit ein Stand, der nicht mehr passt, schon dort zu erkennen ist.
+  standFassung: stand.FASSUNG,
   // Der Technologiebaum (bedienung AC-81): erst geladen, wenn ihn jemand
   // aufschlaegt - er baut dafuer eine Welt.
   nachschlagen: { titel: 'Technologiebaum', daten: () => require('./techbaum').techbaum() },

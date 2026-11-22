@@ -181,7 +181,7 @@ Umfang hinzufügt, dort nachsehen.
 
 ## Stand
 
-**614 von 715 Kriterien fertig.** 1102 Tests ohne Browser und 37 ganze Partien, 350 im Browser. Die
+**618 von 715 Kriterien fertig.** 1110 Tests ohne Browser und 37 ganze Partien, 350 im Browser. Die
 Übersicht ist der Bericht: `npm run qa:report`.
 
 Gebaut ist der Unterbau: Räume, Übertragung, Karte, Wegfindung, Sammeln,
@@ -1003,8 +1003,30 @@ anderen Fassung wird mit einem Satz für den Bildschirm abgelehnt
 läuft eine geladene Partie 3000 Takte lang Takt für Takt wie die
 ununterbrochene, samt dem, was der Server jedem schickt
 (`tests/partien/speichern-gleichlauf-*.test.mjs`). Gemessen: acht Spieler
-je 200 Einheiten rund 100 KB, sichern 20 ms, laden 15 ms. Abgelegt wird
-noch nirgends, im Bild steht nichts davon (S2, S3).
+je 200 Einheiten rund 100 KB, sichern 20 ms, laden 15 ms.
+
+**Speichern S2 steht: die Ablage am Konto** (speichern AC-3, AC-4, AC-12,
+AC-13; AC-6 `in-arbeit`, bis die Oberfläche den kaputten Stand meldet).
+`server/partiestaende.js` legt je Partie **eine** Zeile in der SQLite-Datei
+der Konten ab (Tabelle `partiestand`), höchstens fünf je Konto
+(`JE_KONTO`); jede Abfrage trägt `AND konto = ?`. Jedes Sichern ersetzt
+`wert` und schiebt den alten nach `vorher` — in einer Anweisung; lässt sich
+`wert` nicht laden, öffnet sich `vorher`. **Wann gesichert wird, weiß der
+Raum, was darin steht, das Spiel** (ADR-0006): `raum.sichern()` jede Minute
+Wanduhr (`SICHERN_MS`), beim Anhalten, wenn der letzte Mensch geht, und
+beim Herunterfahren (`raeume.allesSichern()`, in `index.js` an SIGTERM und
+SIGINT — `docker stop` mit `init: true`). Jeden neuen Stand probt der Raum
+vor dem Ablegen einmal mit `spiel.laden` — ein kaputter ersetzt den
+vorigen nicht. Ist das Konto voll, wird die neue Partie nicht gesichert
+(kein alter Stand wird geopfert, im Bild steht noch nichts); eine
+entschiedene Partie löscht ihren Stand. Den Weg `/api/partien` (Liste,
+Öffnen, Umbenennen, Löschen) gibt es nur mit Anmeldung, ein fremder Stand
+bekommt dieselbe 404 wie ein unbekannter (`server/partien-netz.js`). Der
+Steckbrief bringt `laden` und `standFassung` mit (`verzeichnis.js` kopiert
+nur Felder, die es kennt). Gemessen: in die Datenbank schreiben 4 bis 6 ms
+für 18 bis 121 KB, öffnen unter 1 ms — mit Sichern und Probe kostet eine
+große Partie einmal je Minute rund 40 ms in einem Schlag. Im Bild steht
+davon noch nichts (S3).
 
 1. **Stufe A** Dunkle Zeit mit Wirtschafts-KI und Prüfstand · **B** Feudalzeit
    · **C** Partieende und KI-Gegner · **D** Ritterzeit · **E** fünf Häuser ·
