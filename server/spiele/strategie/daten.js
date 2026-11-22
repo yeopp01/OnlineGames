@@ -80,7 +80,7 @@
  * @property {number} [pfeiler] Felder je Ende, die niemand betritt (bauen AC-37)
  * @property {string} [ersetzt]
  * @property {boolean} [gezogen]
- * @property {number} [seite] Seite im Baumenue (bedienung AC-64): fehlt es, ist es die erste (Wirtschaft), 1 ist die zweite (Militaer)
+ * @property {number} [seite] Seite im Baumenue (bedienung AC-64): fehlt es, ist es die erste (Wirtschaft, hoechstens elf), 1 ist die zweite (Militaer, hoechstens zehn: was Kampfeinheiten ausbildet, schiesst oder sperrt)
  * @property {boolean} [handel]
  * @property {number} [hoechstens] so viele je Spieler, Baustellen mitgezaehlt (bauen AC-51)
  * @property {number} [bauenAb] erst ab diesem Zeitalter neu zu bauen, wenn das spaeter ist als `zeitalter` - zu dem es weiter gehoert, beim Aufstieg und im Technologiebaum (bauen AC-57)
@@ -556,12 +556,13 @@ const GEBAEUDE = {
   // `bauenAb` statt `zeitalter`: das Dorfzentrum bleibt ein Gebaeude der
   // Dunklen Zeit - es zaehlt zum ersten Aufstieg (bauen AC-23) und steht im
   // Technologiebaum in der ersten Zeile. `hoechstens: 2` zaehlt das erste mit.
-  // Im Baumenue und im Technologiebaum steht es auf der Militaerseite
-  // (`seite: 1`): die Wirtschaft traegt in der Krone schon zehn, mehr erlaubt
-  // bedienung AC-64 nicht, und es bildet eine Einheit mit Angriff aus.
+  // Im Baumenue und im Technologiebaum steht es bei der Wirtschaft (ohne
+  // `seite`), dort als elftes und letztes in der Krone: der Dorfbewohner ist
+  // keine Kampfeinheit, und die Wirtschaft traegt elf (bedienung AC-64,
+  // geaendert am 2026-11-22 vom Benutzer).
   dorfzentrum: {
     groesse: 4, kosten: { holz: 275, stein: 100 }, bauzeit: 150, leben: 2400, wohnraum: 5,
-    seite: 1, annahme: ALLE, bauenAb: 3, hoechstens: 2,
+    annahme: ALLE, bauenAb: 3, hoechstens: 2,
     bildetAus: ['dorfbewohner', 'webstuhl', 'stadtwache', 'stadtpatrouille', 'schubkarre', 'handkarren', 'feudalzeit', 'ritterzeit', 'imperialzeit'],
   },
   // `zumAufstieg: false`: zaehlt nicht zu den zwei Gebaeuden, die ein Aufstieg

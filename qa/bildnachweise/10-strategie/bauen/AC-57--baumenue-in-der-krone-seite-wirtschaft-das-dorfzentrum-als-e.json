@@ -1,7 +1,7 @@
 {
   "spec": "10-strategie/bauen.md",
   "ac": "AC-57",
-  "titel": "Baumenü in der Krone, Seite Militär: das Dorfzentrum als letzter Eintrag mit Taste L, die Tafel nennt höchstens zwei je Spieler",
+  "titel": "Baumenü in der Krone, Seite Wirtschaft: das Dorfzentrum als elfter und letzter Eintrag mit Taste L, die Tafel nennt höchstens zwei je Spieler",
   "datei": "e2e/tests/strategie-dorfzentrum.spec.mjs",
   "pfad": [
     "Zweites Dorfzentrum",

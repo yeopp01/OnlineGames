@@ -52,8 +52,9 @@ test('bauen AC-57: das Dorfzentrum ist erst in der Krone zu bauen, hoechstens zw
   assert.deepEqual([d.zeitalter || 0, d.bauenAb, d.hoechstens], [0, 3, 2]);
   assert.ok(EINHEITEN.dorfbewohner.baut.includes('dorfzentrum'), 'der Dorfbewohner baut es');
   assert.equal(EINHEITEN.dorfbewohner.baut.at(-1), 'dorfzentrum', 'zuletzt: keine Taste davor verschiebt sich');
-  // Die Wirtschaft traegt in der Krone schon zehn (bedienung AC-64).
-  assert.equal(d.seite, 1, 'im Baumenue beim Militaer');
+  // Der Dorfbewohner ist keine Kampfeinheit, die Wirtschaft traegt elf
+  // (bedienung AC-64, geaendert am 2026-11-22).
+  assert.equal(d.seite || 0, 0, 'im Baumenue bei der Wirtschaft');
   const { welt } = lage();
   assert.equal(welt.gebaeudeZeitalter('dorfzentrum'), 0, 'zum Aufstieg und im Technologiebaum zaehlt es zum Landsitz');
   assert.equal(welt.bauZeitalter('dorfzentrum'), 3);
@@ -165,7 +166,8 @@ test('bauen AC-57: das Dorfzentrum zaehlt weiter zum Aufstieg aus dem Landsitz, 
   const gruppe = techbaum().seiten.flatMap((s) => s.gruppen).find((g) => g.gebaeude === 'dorfzentrum');
   assert.ok(gruppe, 'das Dorfzentrum hat seine Gruppe');
   assert.equal(gruppe.zeitalter, 0, 'in der Zeile des Landsitzes');
-  assert.ok(techbaum().seiten[1].gruppen.some((g) => g.gebaeude === 'dorfzentrum'), 'auf der Seite Militaer wie im Baumenue (bedienung AC-81)');
+  assert.ok(techbaum().seiten[0].gruppen.some((g) => g.gebaeude === 'dorfzentrum'), 'auf der Seite Wirtschaft wie im Baumenue (bedienung AC-81)');
+  assert.equal(techbaum().seiten[0].gruppen[0].gebaeude, 'dorfzentrum', 'als erste Spalte, wie vor bauen AC-57');
 });
 
 test('bauen AC-57: die KI baut kein Dorfzentrum - auch reich in der Krone nicht', () => {

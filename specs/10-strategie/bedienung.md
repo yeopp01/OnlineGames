@@ -555,7 +555,8 @@ inzwischen alle eingetragen.
   schafe".
 - **AC-64** `fertig` **Baumenü auf zwei Seiten** — Das Baumenü eines
   Dorfbewohners (AC-25) hat zwei Seiten: **Wirtschaft** (Haus, Mühle, Lager,
-  Farm, Schmiede, Kloster, Universität, Markt) und **Militär** (Kaserne,
+  Farm, Schmiede, Kloster, Universität, Markt, in der Krone Wunder und
+  zweites Dorfzentrum) und **Militär** (Kaserne,
   Schießanlage, Stall, Außenposten, Belagerungswerkstatt, Wachturm,
   Steinmauer, Tor, Burg). Zwei Reiter links wechseln die Seite. Wer neu zu
   bauen beginnt, sieht die Wirtschaft: nach jeder neuen Auswahl und nachdem
@@ -568,9 +569,20 @@ inzwischen alle eingetragen.
   alle achtzehn Gebäude im Menü, sichtbar sind die neun der offenen Seite in
   höchstens zwei Reihen (vorher drei Reihen zu sechs: auf 1366 × 768 fast die
   halbe Bildhöhe); was Kampfeinheiten ausbildet, schießt oder sperrt, steht
-  auf der Militärseite, und keine Seite trägt mehr als zehn Gebäude.
+  auf der Militärseite, und die Wirtschaft trägt höchstens elf Gebäude, das
+  Militär höchstens zehn. **Eine Kampfeinheit** ist eine Einheit mit Angriff
+  über null, die kein Dorfbewohner ist (Klasse `dorf`) — wie bei der KI
+  (`ki.kaempft()`), nur zählt hier die Belagerung mit. Der Dorfbewohner
+  (Angriff 3) ist keine, der Mönch und der Marktkarren (Angriff 0) auch
+  nicht: Dorfzentrum, Kloster und Markt stehen bei der Wirtschaft. In der
+  Krone sind es elf und neun.
   **Rückmeldung des Benutzers:** „gebäude muss man irgendwie beim
   dorfbewohner etwas organisieren, dass das nicht zu breit wird."
+  **Geändert 2026-11-22** (Benutzer: „Ac 64 passt seine Empfehlung"): vorher
+  höchstens zehn je Seite, und als Kampfeinheit galt jede Einheit mit
+  Angriff, auch der Dorfbewohner — damit stand das zweite Dorfzentrum (bauen AC-57) beim Militär,
+  und dessen Seite des Technologiebaums ragte auf 1366 × 768 aus dem Rahmen
+  (AC-86).
 - **AC-65** `fertig` **Forschung erkennbar, laufende grau** — Ein Knopf, der
   forscht (eine Verbesserung oder der Aufstieg), trägt einen goldenen Rand
   und eine goldene Ecke — am Knopf wie in der Schlange —, ein Knopf, der eine

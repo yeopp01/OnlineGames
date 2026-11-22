@@ -36,19 +36,26 @@ test.describe('Zweites Dorfzentrum', () => {
     await expect(knopf).toHaveCount(0);
     await anna.keyboard.press('Escape');
 
-    // In der Krone: auf der Seite Militaer, als letzter Eintrag, Taste L -
-    // die Wirtschaft traegt dort schon zehn (bedienung AC-64).
+    // In der Krone: auf der Seite Wirtschaft, als elfter und letzter Eintrag,
+    // Taste L - der Dorfbewohner ist keine Kampfeinheit (bedienung AC-64,
+    // geaendert am 2026-11-22).
     await rohstoffe(anna, code, 'Anna', { zeitalter: 3 });
     await anna.keyboard.press('b');
     await expect(anna.locator('#baumenue [data-bauen="haus"]')).toBeVisible();
-    await expect(knopf, 'nicht auf der Seite Wirtschaft').toBeHidden();
+    await expect(anna.locator('[data-bauseite="0"]')).toHaveAttribute('aria-pressed', 'true');
+    await expect(knopf, 'auf der Seite Wirtschaft').toBeVisible();
     await anna.locator('[data-bauseite="1"]').click();
+    await expect(knopf, 'nicht beim Militaer').toBeHidden();
+    await anna.locator('[data-bauseite="0"]').click();
     await expect(knopf).toBeVisible();
     const lage = await anna.evaluate(() => {
       const knoepfe = [...document.querySelectorAll('#baumenue [data-bauen]')].filter((k) => k.getClientRects().length);
-      return { letzter: knoepfe.at(-1)?.dataset.bauen, taste: document.querySelector('#baumenue [data-bauen="dorfzentrum"]').textContent };
+      const reihen = new Set(knoepfe.map((k) => Math.round(k.getBoundingClientRect().top))).size;
+      return { letzter: knoepfe.at(-1)?.dataset.bauen, zahl: knoepfe.length, reihen, taste: document.querySelector('#baumenue [data-bauen="dorfzentrum"]').textContent };
     });
     expect(lage.letzter).toBe('dorfzentrum');
+    expect(lage.zahl, 'elf auf der Wirtschaft').toBe(11);
+    expect(lage.reihen, 'in hoechstens zwei Reihen (bedienung AC-64)').toBeLessThanOrEqual(2);
     expect(lage.taste).toContain('L');
     await anna.mouse.move(700, 300);
     await knopf.hover();
@@ -67,7 +74,7 @@ test.describe('Zweites Dorfzentrum', () => {
     await nachweis(anna, {
       spec: BAUEN,
       ac: 'AC-57',
-      titel: 'Baumenü in der Krone, Seite Militär: das Dorfzentrum als letzter Eintrag mit Taste L, die Tafel nennt höchstens zwei je Spieler',
+      titel: 'Baumenü in der Krone, Seite Wirtschaft: das Dorfzentrum als elfter und letzter Eintrag mit Taste L, die Tafel nennt höchstens zwei je Spieler',
       test: info,
     });
 

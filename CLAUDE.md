@@ -181,7 +181,7 @@ Umfang hinzufügt, dort nachsehen.
 
 ## Stand
 
-**609 von 716 Kriterien fertig.** 1094 Tests ohne Browser und 17 ganze Partien, 351 im Browser. Die
+**610 von 716 Kriterien fertig.** 1095 Tests ohne Browser und 17 ganze Partien, 351 im Browser. Die
 Übersicht ist der Bericht: `npm run qa:report`.
 
 Gebaut ist der Unterbau: Räume, Übertragung, Karte, Wegfindung, Sammeln,
@@ -945,12 +945,15 @@ Die gesetzten Werte der Krone stammen nicht alle aus `vorlage-aoe2.md`.
 **F14: ein zweites Dorfzentrum in der Krone** (bauen AC-57, Punkt 39):
 `bauenAb: 3` und `hoechstens: 2` am Dorfzentrum, das erste zählt mit;
 `welt.bauZeitalter()` sagt, ab wann gebaut wird, `gebaeudeZeitalter()`
-bleibt beim Landsitz (Aufstieg, Technologiebaum). Im Baumenü der letzte
-Eintrag des Militärs, Taste `L` — die Wirtschaft trägt in der Krone schon
-zehn (bedienung AC-64) —, im Technologiebaum deshalb auch dort; die KI baut
-keines. **Noch nicht fertig:** dort ragt die Militärseite des Baums auf
-1366 × 768 aus dem Rahmen (bedienung AC-86 rot) — welche der drei Regeln
-(AC-64, AC-81, AC-86) nachgibt, entscheidet der Benutzer.
+bleibt beim Landsitz (Aufstieg, Technologiebaum). Im Baumenü der elfte
+und letzte Eintrag der Wirtschaft, Taste `L`, im Technologiebaum dort die
+erste Spalte; die KI baut keines. **bedienung AC-64 geändert** (Benutzer,
+2026-11-22: „Ac 64 passt seine Empfehlung"): die Wirtschaft trägt
+höchstens elf, das Militär höchstens zehn, und beim Militär steht, was
+**Kampfeinheiten** ausbildet — Angriff über null und kein Dorfbewohner
+(Klasse `dorf`), die Belagerung mitgezählt. In der Krone sind es elf und
+neun. Beim Militär ragte die Seite des Baums auf 1366 × 768 aus dem Rahmen
+(bedienung AC-86).
 
 **F6 bis F11 stehen** (2026-11-21, Opus): **Abrüsten** (einheiten AC-50,
 `ABRUESTEN`, Nachricht `abruesten`): Fußvolk, Schützen und Reiter legen

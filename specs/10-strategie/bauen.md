@@ -2,7 +2,7 @@
 
 **Bereich:** Strategie
 **Kuerzel:** bauen
-**Stand:** 56/57 fertig · 1 in Arbeit
+**Stand:** 57/57 fertig
 
 ## Zweck
 
@@ -582,7 +582,7 @@ KI**, bis [KI](ki.md) AC-35 gebaut ist.
 „Ich glaube es macht Sinn, dass man im Kronezeitalter noch EIN zweites
 Dorfzentrum bauen kann" — entschieden: genau eines zusätzlich, als Daten.
 
-- **AC-57** `in-arbeit` **Zweites Dorfzentrum in der Krone** — ab der Krone
+- **AC-57** `fertig` **Zweites Dorfzentrum in der Krone** — ab der Krone
   baut ein Dorfbewohner ein Dorfzentrum (275 Holz, 100 Stein, 150 s, wie
   das erste); **höchstens zwei je Spieler, das erste mitgezählt**, die
   Baustelle zählt wie beim Wunder (AC-51). Vorher steht es nicht im
@@ -591,22 +591,23 @@ Dorfzentrum bauen kann" — entschieden: genau eines zusätzlich, als Daten.
   gefallen, sind wieder zwei möglich. Das zweite bildet aus, forscht, nimmt
   jeden Rohstoff an und gibt Wohnraum wie das erste; ein Aufstieg und eine
   Verbesserung laufen trotzdem nur in einem. Im Baumenü steht es auf der
-  Seite Militär als letzter Eintrag (Taste `L`) — die Wirtschaft trägt in
-  der Krone schon zehn, mehr erlaubt [Bedienung](bedienung.md) AC-64 nicht,
-  und es bildet eine Einheit mit Angriff aus; der Technologiebaum zeigt es
-  deshalb auch dort (AC-81: dieselbe Seite wie im Baumenü). Die Tafel nennt
+  Seite Wirtschaft als elfter und letzter Eintrag (Taste `L` — die Tasten
+  zählen über beide Seiten, es ist das zwanzigste Gebäude des
+  Dorfbewohners): der Dorfbewohner ist keine Kampfeinheit, und die
+  Wirtschaft trägt bis zu elf ([Bedienung](bedienung.md) AC-64, geändert am
+  2026-11-22). Der Technologiebaum zeigt es auf derselben Seite (AC-81), als
+  erste Spalte wie vor diesem Kriterium. Die Tafel nennt
   „Höchstens zwei je Spieler, das erste mitgezählt". In den Daten heißt es
   `bauenAb: 3` und `hoechstens: 2`; `zeitalter` bleibt der Landsitz — zum
   Aufstieg (AC-23) und im Technologiebaum zählt das Dorfzentrum dort. Die
   KI baut kein zweites. Leertaste und `H` springen wie bisher zu einem
   Dorfzentrum — die Leertaste zu dem, das dem Startplatz am nächsten steht
   ([Bedienung](bedienung.md) AC-10), `H` zum ersten fertigen; zwischen
-  beiden durchgeschaltet wird nicht. **Offen (2026-11-22):** auf der
-  Militärseite des Technologiebaums ragen damit Außenposten, Wachturm, Tor
-  und Steinmauer auf 1366 × 768 aus dem Rahmen ([Bedienung](bedienung.md)
-  AC-86 im Browser rot). Die Seite Wirtschaft verbieten AC-64 (höchstens
-  zehn je Seite, was Einheiten mit Angriff ausbildet, beim Militär) und
-  AC-81 (Baum und Baumenü auf derselben Seite) — entscheidet der Benutzer.
+  beiden durchgeschaltet wird nicht. **Entschieden 2026-11-22** (Benutzer:
+  „Ac 64 passt seine Empfehlung"): zuerst stand es beim Militär, und dessen
+  Seite des Technologiebaums ragte auf 1366 × 768 aus dem Rahmen
+  ([Bedienung](bedienung.md) AC-86); AC-64 erlaubt seitdem elf Gebäude auf
+  der Wirtschaft.
 
 **Was wartet, und warum.** **Daumenring** (Schützen laden schneller nach):
 verschiebt beide Schützenlinien im Konterkreis und kommt deshalb erst
