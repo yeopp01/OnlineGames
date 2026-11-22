@@ -8,9 +8,20 @@ Der [Plan](plan.md) sagt, was gebaut wird, die
 
 ## Wo
 
-Zwei Arbeitsbäume (in `.git/info/exclude`, nur örtlich), beide mit
+Zwei Arbeitsbäume (in `.git/info/exclude`, nur örtlich). `manager` hat
 `node_modules` als **Junction** auf das des Hauptordners — **nie `rm -rf`
-auf einen Arbeitsbaum**, erst `cmd //c rmdir` auf die Junction.
+auf einen Arbeitsbaum**, erst `cmd //c rmdir` auf die Junction;
+`manager-m1` hat seit 2026-11-22 ein eigenes (`npm ci`, dazu Firefox und
+WebKit für Playwright).
+
+**Zwei andere Sitzungen arbeiten zugleich:** die Strategiesitzung im
+Hauptordner, und **dieselbe Sitzung** (`onlinegames-1e`) baut im Arbeitsbaum
+`C:/Users/danie/OnlineGames-dynamik` (Zweig `manager-dynamik` ab
+`b45d20a`, Hafen 4279) die Spieldynamik des Managers. **Abgesprochen:**
+dort `server/spiele/manager/*`, der Fingerabdruck (`manager:gleichstand`)
+und die Specs finanzen, kader, transfer; hier `public/manager/*`. Sie
+zieht `manager-m1` später zu sich. Was hier den Server bräuchte, wird
+dort angefragt, nicht gebaut. Vor einem langen Browserlauf fragen.
 
 - `.claude/worktrees/manager`, Zweig `manager`: Stufe M0 (M0.1 bis M0.8),
   zuletzt der Hilfsagent M0.7 (`107844e` Module, `88e734c` Tagesform und
@@ -20,7 +31,7 @@ auf einen Arbeitsbaum**, erst `cmd //c rmdir` auf die Junction.
   hat keinen Leser mehr.
 - `.claude/worktrees/manager-m1`, Zweig `manager-m1`: **Stufe M1**, aus
   `manager` gemergt bei `b6a5a96`. Browserläufe mit eigenem Hafen
-  (`E2E_HAFEN=4277`), nur wenn kein anderer Lauf rechnet.
+  (`E2E_HAFEN=4278`), nur wenn kein anderer Lauf rechnet.
 
 Nichts gepusht, nichts ausgerollt — beides nur auf sein Wort.
 
@@ -66,32 +77,49 @@ Hafen 4278, alle Bilder angesehen. **Stufe M1 ist damit erreicht.**
   Band auf 60 px → `.spielverlauf`; nach einer abgewiesenen Auswechslung
   blieb der Spieler gewählt; der Rand ragte auf 1366 × 768 5 px heraus.
 
+## Nachgeprüft am Abend (Benutzer: „bitte prüfe die ungeprüften Themen")
+
+- **Ausweichtrikot im Browser:** neuer Fall in oberflaeche AC-22 — v25
+  auswärts bei v34, beide erste Farbe #5c5f66; der Gast trägt Weiß mit
+  grauem Rand, im Band (13 von 18 Abschnitten Gast) und auf der Tafel.
+  Gefunden und behoben: der weiße Streifen am Ticker war unsichtbar (jetzt
+  hohl mit Rand), Torschützen in Nachbarzellen überdeckten sich (jetzt
+  zwei Spuren). Bild `bedienung/AC-22--abpfiff-eines-spiels-zweier-grauer…`.
+- **TOR/TW:** die Bank zeigt TW wie der Platz, die übrigen Gruppen mit
+  Tafel (Abwehr, Mittelfeld, Angriff).
+- **Fenstergrößen** (Wegwerfprobe in der Kabine, Chrome): 1024 × 768,
+  1280 × 720, 1366 × 768, 1920 × 1080 — nichts quer, nichts
+  abgeschnitten, die Kabine ganz im Bild. Dabei die Ansprachen-Karten
+  oben bündig gesetzt.
+- **Firefox und WebKit** (die sieben Live-Fälle, 1400 × 950, eigene
+  Wegwerf-Konfiguration unter `e2e/.ergebnisse/`): Firefox 7 von 7.
+  WebKit 6 von 7 — rot nur die Farbmessung am Kopf: `getComputedStyle`
+  liefert im Teilbaum `#spiel`, der beim Setzen der Farben noch `hidden`
+  war, das alte Blau, das Fehlerbild desselben Laufs zeigt den Kopf aber
+  in Vereinsfarbe. Ein Messfehler von WebKit, kein Darstellungsfehler;
+  nicht umgebaut.
+- **KI-Ansprache:** spieltag AC-33 misst die Ansprache allein mit
+  +0,8 Punkten je Saison. Eine KI-Ansprache änderte die Welt und den
+  Fingerabdruck — Gebiet von `manager-dynamik`, dort vorschlagen, nicht
+  hier bauen.
+- **Konferenz:** fehlt mit Absicht — `tests/manager-live.test.mjs`
+  prüft, dass während des eigenen Spiels nichts von anderen zu sehen ist.
+
 ## Als Nächstes
 
-1. M1 ist `c3ce667` (check grün, 1128 Tests, 17 Partien); `manager`
-   ist ganz gemergt (`c1408fe`). Alle 54 Managerfälle im Browser grün,
-   nachdem oberflaeche AC-18 den Kopf gegen `--verein-1` prüft statt
-   gegen das alte feste Blau (`e8352b8`). Die übrigen Managerbilder
-   zeigen noch das Blau — die Bildunterschriften stimmen trotzdem.
-2. Ein ganzer Browserlauf ohne fremde Last (M0.7 sah sechs rote Fälle des
-   Strategiespiels unter Last — nicht unsere). **`node_modules` dieses
-   Arbeitsbaums ist seit 2026-11-22 14:20 eine eigene Installation**, keine
-   Junction mehr: das `node_modules` des Hauptordners war um 14:12 leer
-   (vermutlich eine gelöschte Probekopie mit Junction) — nicht von hier
-   repariert.
+1. Die alten Managerbilder zeigen noch das blaue Kopfband (Unterschriften
+   stimmen) — mit `QA_NACHWEIS=1` nur die Managerdateien neu, dann
+   `qa:abweichung`.
+2. Ein ganzer Browserlauf aller Spiele — nur nach Absprache mit den zwei
+   anderen Sitzungen.
 3. Rückschau M1 (Lücken als Kriterien), ADR-0018 nachziehen, in
    `CLAUDE.md` „die Arbeit daran ruht" anpassen — mit dem Benutzer.
 
 ## Nicht geprüft
 
 - Nachwirkung nach einem Systemwechsel (Spielpraxis im neuen System).
-- Die KI hält keine Ansprache.
-- Keine Konferenz anderer Spiele während des eigenen (karriere AC-32).
-- Die Live-Ansicht in anderen Browsern als Chrome, kleiner als 1366 × 768.
-- Das Ausweichtrikot ist gerechnet und im Knotentest geprüft, im Browser
-  nie gesehen (die Testbegegnung braucht es nicht).
-- Auf der Bank steht die Gruppe (TOR, ABW …), auf dem Platz die Position
-  (TW, IV …) — zwei Kürzel für den Torwart, nicht vereinheitlicht.
+- Echtes Safari auf einem Mac (nur Playwrights WebKit unter Windows),
+  Fenster kleiner als 1024 × 768.
 
 ## Für M3 vorgemerkt
 

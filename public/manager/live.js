@@ -17,6 +17,8 @@ import { text } from './teile.js';
 const TEMPO = { normal: 1000, schnell: 280 };
 const TEMPI = [['pause', 'Pause'], ['normal', 'Normal'], ['schnell', 'Schnell'], ['sofort', 'Sofort']];
 const ABSCHNITT = 5;
+/** @type {Record<string, string>} */
+const BANKTEIL = { TOR: 'Torwart', ABW: 'Abwehr', MIT: 'Mittelfeld', ANG: 'Angriff' };
 
 const ARTNAME = {
   konter: 'Konter',
@@ -337,8 +339,18 @@ function bandMalen(d, bis) {
       const zelle = Math.min(anzahl - 1, Math.floor((e.minute - 1) / ABSCHNITT));
       jeZelle.set(zelle, [...(jeZelle.get(zelle) || []), `${e.minute}. ${text(e.spieler)}`]);
     }
-    return `<div class="torzeile ${seite}" style="grid-template-columns: repeat(${anzahl}, 1fr)">${[...jeZelle]
-      .map(([zelle, namen]) => `<span class="torname" style="grid-column:${zelle + 1}">${namen.join('<br>')}</span>`).join('')}</div>`;
+    // Ein Name ist breiter als sein Abschnitt: trifft auch der Nachbar, steht
+    // der zweite eine Zeile weiter vom Band weg, sonst laufen beide ineinander.
+    let vorige = -2;
+    let spur = 0;
+    const namen = [...jeZelle].sort(([a], [b]) => a - b).map(([zelle, liste]) => {
+      spur = zelle - vorige === 1 && spur === 0 ? 1 : 0;
+      vorige = zelle;
+      return { zelle, liste, spur };
+    });
+    const zeile = (s) => (seite === 'heim' ? 2 - s : 1 + s);
+    return `<div class="torzeile ${seite}" style="grid-template-columns: repeat(${anzahl}, 1fr)">${namen
+      .map(({ zelle, liste, spur: s }) => `<span class="torname" style="grid-column:${zelle + 1};grid-row:${zeile(s)}">${liste.join('<br>')}</span>`).join('')}</div>`;
   };
   $('liveBand').innerHTML = `${torzeile('heim')}
     <div class="band" style="grid-template-columns: repeat(${anzahl}, 1fr)">${zellen.join('')}</div>
@@ -508,8 +520,10 @@ function randMalen() {
   const auf = e.auf.map((s) => `<tr data-spieler="${s.id}" class="${muede(s)} ${live.raus === s.id ? 'gewaehlt' : ''}">
       <td>${text(s.platz)}</td><td><button type="button" class="namelink" data-raus="${s.id}" ${zu ? 'disabled' : ''}>${text(s.name)}</button>${s.gelb ? ' <i class="kartenzeichen gelb" title="verwarnt"></i>' : ''}</td>
       <td class="zahl">${s.staerke}</td><td class="frische">${frische(s)}</td></tr>`).join('');
+  // Auf der Bank steht der Mannschaftsteil; ein Torwart kann nur ins Tor,
+  // deshalb dasselbe Kuerzel wie auf dem Platz - "TOR" las sich als Treffer.
   const bank = e.bank.map((s) => `<tr data-spieler="${s.id}" class="${muede(s)}">
-      <td>${text(s.position)}</td><td><button type="button" class="namelink" data-rein="${s.id}" ${zu || !live.raus ? 'disabled' : ''}>${text(s.name)}</button></td>
+      <td title="${BANKTEIL[s.position] || ''}">${s.position === 'TOR' ? 'TW' : text(s.position)}</td><td><button type="button" class="namelink" data-rein="${s.id}" ${zu || !live.raus ? 'disabled' : ''}>${text(s.name)}</button></td>
       <td class="zahl">${s.staerke}</td><td class="frische">${frische(s)}</td></tr>`).join('');
   const gewaehlt = e.auf.find((s) => s.id === live.raus);
   rand.innerHTML = `<div class="eingriff">

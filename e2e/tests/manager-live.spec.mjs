@@ -317,4 +317,52 @@ test.describe('Das Spiel live', () => {
       test: info,
     });
   });
+
+  test('oberflaeche AC-22: zwei aehnliche Vereine - der Gast traegt sein Ausweichtrikot', async ({ page }, info) => {
+    test.setTimeout(120_000);
+    const rgb = (hex) => {
+      const n = parseInt(hex.slice(1), 16);
+      return `rgb(${(n >> 16) & 255}, ${(n >> 8) & 255}, ${n & 255})`;
+    };
+    // Bei Startwert 4711 spielt v25 am ersten Spieltag bei v34 - beide tragen
+    // als erste Farbe dasselbe Grau, also weicht der Gast aus: weiss mit
+    // grauem Rand. Der eigene Verein ist der Gast, und er drueckt in 13 von
+    // 18 Abschnitten (vorher in Node gerechnet; v1 gegen v10 endet 3:0, dort
+    // stuende kein einziger heller Balken).
+    await page.setViewportSize(LAPTOP);
+    await karriereBeginnen(page, { vereinId: 'v25' });
+    await tempo(page, 0);
+    await weiter(page);
+    const anpfiff = page.waitForResponse((r) => r.url().endsWith('/anpfeifen'));
+    await page.locator('#live').click();
+    const { laufend } = (await (await anpfiff).json()).zustand;
+    expect(laufend.seite).toBe('gast');
+    expect(laufend.gast.trikot.ausweich).toBe(true);
+    expect(laufend.heim.trikot.ausweich).toBe(false);
+    await expect(page.locator('.live')).toHaveAttribute('data-ausweich', 'gast');
+
+    await tempoWaehlen(page, 'sofort');
+    await expect(page.locator('#liveUhr')).toContainText('Abpfiff');
+    for (const seite of ['heim', 'gast']) {
+      const t = laufend[seite].trikot;
+      expect(await page.locator(`#liveTafel .seite.${seite}`).evaluate((el) => getComputedStyle(el).backgroundColor)).toBe(rgb(t.grund));
+      expect(await page.locator(`#liveTafel .seite.${seite}`).evaluate((el) => getComputedStyle(el).color)).toBe(rgb(t.schrift));
+    }
+    // Ein heller Balken auf hellem Band braucht einen Rand in der dunklen Farbe des Gasts.
+    const gastBalken = page.locator('#liveBand .abschnitt i.gast');
+    expect(await gastBalken.count()).toBeGreaterThan(0);
+    for (const balken of await gastBalken.all()) {
+      const stil = await balken.evaluate((el) => ({ grund: getComputedStyle(el).backgroundColor, rand: getComputedStyle(el).boxShadow }));
+      expect(stil.grund).toBe(rgb(laufend.gast.trikot.grund));
+      expect(stil.rand).toContain(rgb(laufend.gast.trikot.akzent));
+    }
+
+    await page.mouse.move(5, 760);
+    await nachweis(page, {
+      spec: BEDIENUNG,
+      ac: 'AC-22',
+      titel: 'Abpfiff eines Spiels zweier grauer Vereine: der eigene Verein ist Gast im weissen Ausweichtrikot, im Band hell mit grauem Rand, auf der Tafel weiss neben grau',
+      test: info,
+    });
+  });
 });

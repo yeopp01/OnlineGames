@@ -1,0 +1,10 @@
+{
+  "spec": "15-manager/bedienung.md",
+  "ac": "AC-22",
+  "titel": "Abpfiff eines Spiels zweier grauer Vereine: der eigene Verein ist Gast im weissen Ausweichtrikot, im Band hell mit grauem Rand, auf der Tafel weiss neben grau",
+  "datei": "e2e/tests/manager-live.spec.mjs",
+  "pfad": [
+    "Das Spiel live",
+    "oberflaeche AC-22: zwei aehnliche Vereine - der Gast traegt sein Ausweichtrikot"
+  ]
+}

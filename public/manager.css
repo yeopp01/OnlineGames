@@ -1135,6 +1135,13 @@ body.imspiel main#inhalt { max-width: none; margin: 0; padding: 0; }
 .live .abschnitt i.gast { top: 50%; background: var(--gast-1); }
 .live[data-ausweich='gast'] .abschnitt i.gast { box-shadow: inset 0 0 0 1.5px var(--gast-2); }
 .live[data-ausweich='gast'] .abschnitt .tor.gast { border-color: var(--gast-2); }
+/* Im Ausweichtrikot ist die erste Farbe hell - der Strich ist hell mit Rand
+   in der zweiten, wie die Balken im Band. Die zweite allein glich dem Heim,
+   wenn beide dieselbe erste Farbe tragen. */
+.live[data-ausweich='gast'] .zeilen li.tor.gast {
+  box-shadow: inset 2px 0 0 var(--gast-2), inset 8px 0 0 var(--gast-1), inset 10px 0 0 var(--gast-2);
+}
+.live[data-ausweich='gast'] .laufend.gast { border-left-color: var(--gast-2); }
 .live .abschnitt.offen { outline: 1px dashed var(--rand); outline-offset: -1px; }
 .live .abschnitt.jetzt { background: var(--zeile); }
 .live .abschnitt.pause { border-right: 2px solid var(--schrift); margin-right: -2px; }
@@ -1188,7 +1195,12 @@ body.imspiel main#inhalt { max-width: none; margin: 0; padding: 0; }
 .live .kabine { background: var(--tafel); border-left: 8px solid var(--schrift); padding: 0.9rem 1.1rem 1rem; margin-bottom: 1rem; }
 .live .kabine > p { margin: 0 0 0.8rem; max-width: 40em; }
 .live .ansprachen { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.65rem; }
-.live .ansprachen button { text-align: left; background: var(--grund); padding: 0.6rem 0.75rem 0.7rem; }
+/* Oben ausgerichtet: ein Knopf zentriert seinen Inhalt sonst, und bei
+   ungleich langen Texten stehen die Ueberschriften auf drei Hoehen. */
+.live .ansprachen button {
+  display: flex; flex-direction: column; justify-content: flex-start;
+  text-align: left; background: var(--grund); padding: 0.6rem 0.75rem 0.7rem;
+}
 .live .ansprachen button strong { display: block; font-family: var(--schmal); font-stretch: 82%; font-size: 1.2rem; }
 .live .ansprachen button span { display: block; font-size: 0.86rem; color: var(--leise); margin-top: 0.15rem; }
 /* Die gehaltene Ansprache bleibt voll zu lesen, die anderen sind gesperrt. */
