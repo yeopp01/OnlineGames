@@ -1420,6 +1420,11 @@
       "spec": "10-strategie/einheiten-und-befehle.md",
       "ac": "AC-54",
       "begruendung": "Dass der Drache frisst, ist ein Abzug im Vorrat ueber die Zeit: 1,6 Nahrung je Sekunde aus einem Zaehler je Spieler, und ohne Nahrung 5 Leben je Sekunde, bis er faellt. Ein Bildschirmfoto zeigt einen Stand der Nahrung in der Leiste und einen Lebensbalken, nicht die Rate, mit der beide sinken, und nicht, dass das Hungern endet, sobald wieder Nahrung da ist. Geprueft wird es im Rechenteil Sekunde fuer Sekunde (tests/strategie-drache.test.mjs); was beim Fallen im Bild steht - das Ei, die Ansage, der Ring auf der Uebersichtskarte -, weist einheiten AC-53 nach."
+    },
+    {
+      "spec": "10-strategie/ki.md",
+      "ac": "AC-35",
+      "begruendung": "Was die KI erforscht und wann, ist eine Auswahl aus den Daten der Verbesserungen in ihrer Entscheidung auf dem Server: welche Stufe eine Einheit tauscht, die sie ausbildet, welche Wirkung eine Klasse trifft, von der sie mindestens drei haelt, was davon bezahlt ist und was fuer Aufstieg, Karren und Rammen zurueckliegt. Geprueft wird die Reihenfolge der Bestellungen in gebauten Lagen je Haus mit Gegenproben fuer knappen Vorrat, fehlende Vorstufe und das Warten auf Rammen (tests/strategie-ki-forschen.test.mjs) und das Erforschte ueber 120 ganze Partien im Nebel. Ein Bild zeigte eine Schmiede mit einer Verbesserung in der Schlange - dasselbe wie bei einem Menschen, nachgewiesen bei bauen AC-25 und AC-39 -, nicht, warum die KI gerade diese gewaehlt hat."
     }
   ]
 }

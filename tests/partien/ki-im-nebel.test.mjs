@@ -60,8 +60,8 @@ import { Worker } from 'node:worker_threads';
 import { createRequire } from 'node:module';
 
 const require = createRequire(import.meta.url);
-const { HAEUSER, GEBAEUDE, EINHEITEN } = require('../../server/spiele/strategie/daten.js');
-const { FESTUNG, WERKSTATT, RAMME, RAMMEN } = require('../../server/spiele/strategie/ki.js');
+const { HAEUSER, GEBAEUDE, EINHEITEN, VERBESSERUNGEN } = require('../../server/spiele/strategie/daten.js');
+const { FESTUNG, WERKSTATT, RAMME, RAMMEN, zielDorfbewohner } = require('../../server/spiele/strategie/ki.js');
 
 const MINUTEN = 90;
 const STARTWERTE = 120;
@@ -70,6 +70,9 @@ const FAEDEN = 6;
 const VOR_MINUTE_60 = (STARTWERTE * 35) / 40;
 const OHNE_SIEGER_HOECHSTENS = 1;
 const TAKTE_JE_MINUTE = 600;
+// Unter so vielen Dorfbewohnern ist ein Dorf geschlagen (ki AC-35): weniger
+// als die Haelfte dessen, was die KI im Fuerstentum anstrebt (21 von 42).
+const BRUCH = Math.ceil(zielDorfbewohner(2) / 2);
 
 // Die Haeuser je Startwert, aus den Daten: KI 1 der Reihe nach, KI 2 um eins
 // bis vier dahinter - nie dasselbe, und jedes geordnete Paar gleich oft.
@@ -81,7 +84,7 @@ const haeuserFuer = (s) => ({
 const HAEUSER_JE_STARTWERT = Object.fromEntries(Array.from({ length: STARTWERTE }, (_, i) => [i + 1, haeuserFuer(i + 1)]));
 
 const rechnen = (startwerte) => new Promise((fertig, fehler) => {
-  const faden = new Worker(new URL('./nebel-arbeiter.mjs', import.meta.url), { workerData: { startwerte, minuten: MINUTEN, haeuser: HAEUSER_JE_STARTWERT } });
+  const faden = new Worker(new URL('./nebel-arbeiter.mjs', import.meta.url), { workerData: { startwerte, minuten: MINUTEN, haeuser: HAEUSER_JE_STARTWERT, bruch: BRUCH } });
   faden.once('message', fertig);
   faden.once('error', fehler);
 });
@@ -299,4 +302,50 @@ test('ki AC-33 und ki AC-23: ueber 120 Startwerte bauen die KIs Burgen und Ramme
   // Anteilig zu zwei in sechzehn Partien: eine je acht.
   const jeHaus = (2 * STARTWERTE) / NAMEN.length;
   for (const haus of NAMEN) assert.ok(burgenJeHaus[haus] >= jeHaus / 8, `${haus}: ${burgenJeHaus[haus] || 0} Burgen in ${jeHaus} Partien`);
+});
+
+// Die KI forscht (ki AC-35): jede KI, die das Fuerstentum erreicht und danach
+// noch zehn Minuten lebt, hat mindestens drei Verbesserungen erforscht,
+// darunter eine Truppenstufe (`wandelt`). "Lebt" heisst: ihr Dorf steht -
+// gezaehlt bis zur vollen Spielminute, in der sie weniger als die Haelfte der
+// Dorfbewohner hat, die sie im Fuerstentum anstrebt (`BRUCH`, 21 von 42),
+// oder bis zum Ende. Eine KI, die im Lehen ueberrannt wurde und mit dem schon
+// bezahlten Aufstieg ins Fuerstentum kommt, haelt formal noch Einheiten, aber
+// nichts, das sie bezahlen koennte: in Startwert 94 fiel Wehrstein in Minute
+// 20 und 21 von 32 auf 14 Dorfbewohner, kam in Minute 24 mit 15 ins
+// Fuerstentum, stand bei 5 Gold und unter 40 Nahrung und hatte in Minute 33
+// kein Heer mehr; Distelhag in Startwert 83 ebenso (32 auf 22 in Minute 23,
+// mit 16 ins Fuerstentum). Mit der Grenze 10 statt 21 zaehlten beide und
+// rissen den Test mit zwei Verbesserungen.
+//
+// Gemessen am 2026-11-22 (120 Startwerte, Grenze 21): 140 KIs gezaehlt, im
+// Schnitt 14,9 Verbesserungen und 3,5 Truppenstufen, keine darunter. Mit der
+// Grenze 10 waren es 154, alle bis auf die zwei oben. Der Stand davor
+// erforschte nichts - 0 von 203.
+const FORSCHEN_MINUTEN = 10;
+const FORSCHEN_MINDESTENS = 3;
+test('ki AC-35: ueber 120 Startwerte hat jede KI, die das Fuerstentum erreicht und danach zehn Minuten lebt, mindestens drei Verbesserungen erforscht, darunter eine Truppenstufe', async (t) => {
+  const enden = await allePartien();
+  let gezaehlt = 0;
+  let stufen = 0;
+  let verbesserungen = 0;
+  const fehlt = [];
+  for (const e of enden) {
+    const schluss = e.takt ?? MINUTEN * TAKTE_JE_MINUTE;
+    for (const [id, f] of Object.entries(e.forschung)) {
+      if (f.fuerst === null) continue;
+      const lebt = (f.bruch ?? schluss) - f.fuerst;
+      if (lebt < FORSCHEN_MINUTEN * TAKTE_JE_MINUTE) continue;
+      gezaehlt += 1;
+      const erforscht = f.verbesserungen.filter((v) => VERBESSERUNGEN[v]);
+      const stufe = erforscht.filter((v) => VERBESSERUNGEN[v].wandelt).length;
+      verbesserungen += erforscht.length;
+      stufen += stufe;
+      if (erforscht.length < FORSCHEN_MINDESTENS || !stufe) fehlt.push(`Startwert ${e.startwert} ${id} (${e.haeuser[id]}): ${erforscht.join(', ') || 'nichts'}`);
+    }
+  }
+  t.diagnostic(`${gezaehlt} KIs gezaehlt, im Schnitt ${(verbesserungen / gezaehlt).toFixed(1)} Verbesserungen und ${(stufen / gezaehlt).toFixed(1)} Truppenstufen`);
+  // Gegenprobe zum Messaufbau: die meisten KIs kommen ins Fuerstentum und leben danach.
+  assert.ok(gezaehlt >= STARTWERTE, `nur ${gezaehlt} KIs gezaehlt`);
+  assert.deepEqual(fehlt, [], 'zu wenig erforscht');
 });

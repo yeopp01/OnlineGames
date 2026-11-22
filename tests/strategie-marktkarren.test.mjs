@@ -9,6 +9,7 @@ import { createRequire } from 'node:module';
 const require = createRequire(import.meta.url);
 const { Welt, TAKTE_PRO_SEKUNDE } = require('../server/spiele/strategie/welt.js');
 const { EINHEITEN, GEBAEUDE } = require('../server/spiele/strategie/daten.js');
+const karten = require('../server/spiele/strategie/karte.js');
 
 const ZWEI = [{ id: 'a', name: 'Anna' }, { id: 'b', name: 'Bert' }];
 const sekunden = (welt, s) => { for (let t = 0; t < s * TAKTE_PRO_SEKUNDE; t++) welt.takten(); };
@@ -326,4 +327,34 @@ test('einheiten AC-40: der Zustand traegt die Strecke - Heimat, Ziel und das Gol
   assert.deepEqual(draht().hd, [heimat.id, ziel.id, welt.handelsgewinn(heimat, ziel)]);
   welt.nachricht('a', { einheiten: [k.id], ziel: { x: k.x + 2, y: k.y } });
   assert.equal(draht().hd, undefined, 'ein neuer Befehl beendet die Strecke');
+});
+
+test('einheiten AC-40: liegt das naechste Randfeld des Zielmarkts hinter Wald, faehrt er an ein anderes - statt stehenzubleiben', () => {
+  const { welt, anna, heimat, markt, karren, schicken } = handelswelt();
+  const ziel = markt('a', 30);
+  const k = karren();
+  // Das Randfeld, das dem Karren am naechsten liegt, bleibt Gras, aber rundum
+  // waechst Wald: dorthin fuehrt kein Weg. Die anderen Seiten bleiben frei.
+  const g = welt.karte.groesse;
+  const rand = welt.randfeld(ziel, k);
+  for (let dy = -1; dy <= 1; dy++) {
+    for (let dx = -1; dx <= 1; dx++) {
+      const x = rand.x + dx;
+      const y = rand.y + dy;
+      if ((dx || dy) && !welt.gebaeudeAn(x, y)) {
+        welt.karte.felder[y * g + x] = karten.WALD;
+        welt.karte.vorrat.set(y * g + x, karten.VORRAT[karten.WALD]);
+      }
+    }
+  }
+  welt.karte.felder[rand.y * g + rand.x] = karten.GRAS;
+  assert.deepEqual(welt.randfeld(ziel, k), rand, 'das naechste Randfeld ist das eingeschlossene');
+  assert.equal(welt.wegNach(k, rand).length, 0, 'und dorthin gibt es keinen Weg');
+  schicken(k, ziel);
+  assert.equal(k.auftrag?.art, 'handel');
+  const gold = anna.gold;
+  bis(welt, () => k.ladung > 0, 300);
+  assert.ok(welt.abstandZu(k, ziel) <= 3.5, 'geladen am Zielmarkt, von einer anderen Seite');
+  bis(welt, () => anna.gold > gold, 300);
+  assert.equal(anna.gold, gold + welt.handelsgewinn(heimat, ziel), 'und das Gold kommt heim');
 });

@@ -181,7 +181,7 @@ Umfang hinzufügt, dort nachsehen.
 
 ## Stand
 
-**604 von 712 Kriterien fertig.** 1070 Tests ohne Browser und 14 ganze Partien, 348 im Browser. Die
+**605 von 712 Kriterien fertig.** 1079 Tests ohne Browser und 15 ganze Partien, 348 im Browser. Die
 Übersicht ist der Bericht: `npm run qa:report`.
 
 Gebaut ist der Unterbau: Räume, Übertragung, Karte, Wegfindung, Sammeln,
@@ -509,8 +509,18 @@ Schützen, jede +1/+1. **Der Konterkreis hält auch damit** (fahrplan AC-25,
 Budget 1200): neun Paarungen 20 von 20, umgekehrt 0 — auch Reiter gegen
 beide Schützenlinien. Die Armbrust verliert ohne Rüstungen gegen den Bogen
 (6 von 20) und gewinnt mit den Schützenrüstungen (20 von 20). **Die KI
-bildet die neuen Einheiten aus, erforscht aber nichts** — das ist ki AC-35
-(`offen`, als Nächstes). **Die Burg wartet auf den Handel nur bei echter
+forscht** (ki AC-35, 2026-11-22, `ki.forschenPruefen`): zuerst die Stufe
+ihrer Schwerpunkt-Einheit, dann jede Stufe und jede Wirkung auf eine Art
+oder Klasse, von der sie mindestens drei hält, dann die Wirtschaft ab vier
+Arbeitern; höchstens zwei zugleich, die erste des Militärs liegt in der
+Rücklage (`FORSCHEN_*`, alle sechs Zahlen gesetzt). Sie forscht nicht,
+solange ein Markt oder der nächste Karren fehlt oder das Gold knapp ist
+und keine vier Karren fahren — sonst riss ki AC-26. Dazu steht ihr erster
+Markt auf der vom Gegner abgewandten Seite (`ki.marktplatzDaheim`), und ein
+Karren, dessen nächstes Randfeld hinter Wald liegt, fährt ein anderes an
+(einheiten AC-40, Regel der Welt in `welt.handelTakten`). Gemessen im
+Nebel über 120: 112 vor Minute 60, Median 38,4, alle mit Sieger; je KI im
+Fürstentum 14,9 Verbesserungen, 3,5 Truppenstufen. **Die Burg wartet auf den Handel nur bei echter
 Goldnot** (ki AC-33): wer aus Neigung handelt, baut sie gleich und verkauft
 den Stein dafür nicht (`ki.steinFuerBauwerk`) — Silberfurt baute sonst in 16
 Partien eine Burg, jetzt sechs, und gewinnt 36 statt 30 %. Dabei fiel ki

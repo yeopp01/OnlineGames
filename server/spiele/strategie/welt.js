@@ -2655,6 +2655,13 @@ class Welt {
     if (this.abstandZu(einheit, markt) > 3.5) {
       const stand = this.randfeld(markt, einheit);
       einheit.weg = stand ? this.wegNach(einheit, stand) : [];
+      // Das naechste Randfeld kann abseits liegen - hinter Wald, im Winkel
+      // zweier Gebaeude. Dann faehrt er an das naechste, das er erreicht
+      // (einheiten AC-40), solange es am Markt liegt.
+      if (!einheit.weg.length && stand) {
+        const nah = this.naechstesErreichbare(einheit, stand);
+        if (nah && this.abstandZu(nah, markt) <= 3.5) einheit.weg = this.wegNach(einheit, nah);
+      }
       // Kein Weg dorthin: er bleibt stehen, statt in jedem Takt zu suchen.
       if (!einheit.weg.length) einheit.auftrag = null;
       return;

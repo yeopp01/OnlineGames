@@ -2211,6 +2211,29 @@ ihn, mit Gegenprobe an beiden Formen. Fünf Bilder neu, alle angesehen.
 Neueste oben. Eine Zeile je Runde: Nummer, Datum, Kriterien, Ergebnis,
 wichtigste Erkenntnis.
 
+- **F12, ki AC-35** · 2026-11-22 · **Die KI forscht** (Arbeitsbaum
+  `strategie-ki-krone`). Gebaut als `ki.forschenPruefen` in drei Gruppen
+  (Schwerpunkt, Militär nach Zahl, Wirtschaft), höchstens zwei zugleich.
+  Nebel über 120: 112 vor Minute 60, Median 38,4, alle mit Sieger; im
+  Schnitt 14,9 Verbesserungen und 3,5 Truppenstufen je KI. **Gelernt:**
+  (1) Forschen frisst das Gold, das der Handel braucht — ki AC-26 riss
+  (Startwert 2: 54 statt 607 Gold), obwohl jede Partiegrenze hielt; der
+  Handel ist der empfindlichste Messpunkt für jede neue Ausgabe der KI.
+  (2) Der Abfall kam nicht nur vom Gold: der erste Markt stand zum Gegner
+  hin, sein Bauer fiel, und `BAUSTELLE_FEIND_FERN` schickte keinen zweiten
+  — eine Schutzregel, die in dieser Lage eine Baustelle für immer liegen
+  lässt. Jetzt steht er auf der abgewandten Seite. (3) `welt.randfeld`
+  fragt nicht, ob das Feld erreichbar ist; ein Karren stand deshalb eine
+  ganze Partie hinter Wald (einheiten AC-40, Regel der Welt nachgezogen).
+  (4) „Lebt zehn Minuten im Fürstentum" muss das Dorf meinen, nicht
+  irgendeine Einheit: eine im Lehen überrannte KI kommt mit dem schon
+  bezahlten Aufstieg ins Fürstentum und hat nichts mehr zu bezahlen.
+  (5) Jede Änderung verschiebt den Verlauf, und dann trifft eine alte
+  Lücke einen anderen Startwert: `ki.unterwegs()` hielt einen Sammler in
+  1,9 Feldern für angekommen, obwohl er seit den Standplätzen von seinem
+  Platz aus sammelt — die Welt gab auf, die KI sperrte den Baum nicht
+  (ki AC-10, Startwert 19: 22,5 s untätig). „Angekommen" fragt jetzt den
+  Platz, wie die Welt.
 - **202** · 2026-11-12 · **Die anderen Häuser gestärkt, der Schütze
   teurer** (Benutzer: „den anderen noch Boni geben, statt Eschenbruch
   weiter zu nerven“, dazu „die Bogenschützen um 5 teurer“). Drei Fassungen

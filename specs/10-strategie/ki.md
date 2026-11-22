@@ -2,7 +2,7 @@
 
 **Bereich:** Strategie
 **Kuerzel:** ki
-**Stand:** 33/40 fertig · 7 offen
+**Stand:** 34/40 fertig · 6 offen
 
 ## Zweck
 
@@ -78,7 +78,14 @@ nicht die Regeln.
   40 Feldern abschneidet, wird verworfen (`ki.sperrtEin`). Beim Startwert 12
   schloss eine Mühle zwei Holzfäller in eine Lücke am Waldrand ein, 346 s
   bis zum Ende; dieselbe Lücke schloss vorher ein Holzfällerlager, an dem
-  sie neben sich abliefern konnten — deshalb fiel es nie auf.
+  sie neben sich abliefern konnten — deshalb fiel es nie auf. **Seit dem
+  2026-11-22** gilt ein Sammler erst als angekommen, wenn er auf seinem
+  Standplatz steht ([Einheiten](einheiten-und-befehle.md) AC-30), nicht
+  schon in 1,9 Feldern Abstand: beim Startwert 19 stand ein Dorfbewohner
+  neben dem Baum, zu seinem Platz führte kein Weg, die Welt gab den Auftrag
+  auf, und die KI schickte ihn alle fünf Takte an denselben Baum, ohne ihn
+  zu sperren — 22,5 s untätig in Minute 28. Jetzt wird der Baum gesperrt,
+  und er nimmt einen anderen.
 
 ### Kampf und Partieende (Stufe C)
 
@@ -365,6 +372,16 @@ nicht die Regeln.
   von Minute 56 bis 85 keinen Platz für den Markt, hatte bis Minute 90
   einen Karren und keine Ramme. Vorher, auf dem vereinten Stand: 2 von 40
   Nebelpartien ohne Sieger; danach keine (siehe AC-23).
+  **Seit 2026-11-22 (mit AC-35):** der erste Markt steht am Dorf **auf der
+  Seite, die vom Gegner abgewandt ist** (`ki.marktplatzDaheim`, nur Plätze,
+  die mindestens so weit vom nächsten gesehenen gegnerischen Dorf liegen
+  wie das eigene Dorfzentrum). Anlass war Startwert 2: der Markt stand zehn
+  Felder zum Gegner hin, sein Bauer fiel, und weil Feinde in der Nähe
+  waren, kam kein zweiter (`BAUSTELLE_FEIND_FERN`) — 54 statt 607 Gold.
+  Danach 438. Dazu eine Regel der Welt (einheiten AC-40): liegt das
+  nächste Randfeld des Zielmarkts hinter Wald, fährt der Karren an das
+  nächste erreichbare am Markt, statt stehenzubleiben (Startwert 3: 217
+  statt 21 Gold).
 
 - **AC-33** `fertig` **Die KI baut Burgen** — Im Fürstentum baut die KI
   eine Burg, sobald ihr erstes Heer aufgebrochen ist: sechs Felder vor ihrem
@@ -526,7 +543,7 @@ nicht die Regeln.
   wieder. **Rückmeldung des Benutzers:** „ich greife früh immer mit dem
   Späher die KI an und kann immer gleich 2 dorfbewohner töten, da muss sie
   gleich konsequent mit den dorfbewohnern auf den späher draufgehn".
-- **AC-35** `offen` **Die KI forscht** — Bis zu den Truppenstufen
+- **AC-35** `fertig` **Die KI forscht** — Bis zu den Truppenstufen
   (einheiten AC-58 bis AC-62, bauen AC-38, AC-39) erforscht die KI nichts:
   sie bildet im Fürstentum die Einheiten des Lehens aus und ist jedem
   Menschen unterlegen, der einmal in die Schmiede geht. Die KI erforscht,
@@ -549,6 +566,41 @@ nicht die Regeln.
   Angelegt am 2026-11-13 (Benutzer: direkt nach den Truppenstufen, die
   vorher auf den Server gehen). Die Grenzen „drei" und „zehn Minuten" sind
   Startwerte und werden beim Bauen gemessen.
+  **Gebaut am 2026-11-22** als `ki.forschenPruefen` und `ki.forschungen`:
+  Gruppe 0 die Stufe der Schwerpunkt-Einheit (bei Wehrstein der Wehrturm),
+  Gruppe 1 jede andere Stufe einer Einheit, die sie ausbildet, und jede
+  Verbesserung, deren Wirkung eine Art oder Klasse trifft, von der sie mindestens drei hält
+  (`FORSCHEN_MINDESTENS`), Gruppe 2 die Wirtschaft ab vier Arbeitern
+  (`FORSCHEN_ARBEITER`); eine Stufe zählt doppelt (`FORSCHEN_STUFE`).
+  Höchstens zwei zugleich, in verschiedenen Gebäuden; das Dorfzentrum
+  forscht nur bei vollem Dorf und leerer Schlange. Für die erste des
+  Militärs liegt der Preis zurück (`forschungFehlt` in der Rücklage),
+  höchstens 90 Sekunden, dann steht sie 180 zurück; jede weitere braucht
+  100 über ihrem Preis (`FORSCHEN_PUFFER`). Alle sechs Zahlen sind gesetzt.
+  **„Lebt" heißt: das Dorf steht** — gezählt bis zur ersten vollen
+  Spielminute mit weniger als der Hälfte der Dorfbewohner, die sie im
+  Fürstentum anstrebt (21 von 42), sonst bis zum Ende. Eine KI, die im Lehen
+  überrannt wurde und mit dem schon bezahlten Aufstieg ins Fürstentum kommt,
+  hält formal noch Einheiten, aber nichts, das sie bezahlen könnte (Startwert
+  94: Wehrstein mit 15 Dorfbewohnern ins Fürstentum, 5 Gold, zehn Minuten
+  später kein Heer). Diese Grenze ist gesetzt. Gemessen über 120
+  Startwerte statt vierzig (`tests/partien/ki-im-nebel.test.mjs`): 140 KIs
+  gezählt, im Schnitt 14,9 Verbesserungen und 3,5 Truppenstufen, keine
+  unter der Grenze. Über sechzig Startwerte im Duell, je Startwert beide
+  Seiten, gewann die forschende KI 80 von 120 Partien (gemessen vor den
+  Regeln zum Handel unten). Nebel 112 vor Minute 60 (vorher 111), Median
+  38,4 (39,4), alle mit Sieger; zu viert alle vor Minute 90.
+  **Forschen kostet das Gold für den Handel** — gefunden an AC-26, das mit
+  dem ersten Entwurf riss (Gold in 14 Minuten bei den Startwerten 2, 3, 6
+  und 8: 54, 21, 17 und 30 statt 607, 344, 51 und 228). Deshalb forscht
+  sie nicht, solange ein Markt oder der nächste Karren fehlt, und nicht,
+  solange das Gold in Reichweite knapp ist und noch keine vier Karren
+  fahren; wer aus Neigung handelt (Silberfurt), forscht bei vollem Gold
+  weiter. Mit den zwei Regeln bei AC-26 (Markt vom Gegner weg, Karren am
+  verstellten Randfeld) danach: 438, 217, 17 und 30, und AC-26 hält
+  wieder. Startwert 6 und 8 bleiben schwach — bei 6 gewinnt die andere KI
+  in Minute 24,9, bei 8 wird die handelnde überrannt; die Grenze lässt
+  zwei solche Partien zu.
 
 ### Stufe E — Häuser
 
