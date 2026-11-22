@@ -26,6 +26,20 @@ Punkt unten sucht, sucht dort nach „Punkt <n> (Benutzer“.
 
 ## Zuletzt fortgeschrieben
 
+**2026-11-22, Mittag:** **Zweites Dorfzentrum (Punkt 39) gebaut, NICHT
+zusammengeführt** — Zweig `strategie-dorfzentrum` `8e0986d`, Arbeitsbaum
+`../OnlineGames-dorfzentrum`; bauen AC-57 und F14 `in-arbeit`. Daten:
+`bauenAb: 3, hoechstens: 2` am Dorfzentrum (nicht `zeitalter: 3`, sonst
+kippt der Aufstieg), `welt.bauZeitalter()`, KI baut keines; 1094 Tests grün.
+**Klemmt an drei bestehenden Kriterien:** bedienung AC-64 (höchstens zehn
+je Seite — die Wirtschaft hat in der Krone schon zehn; Militärseite für
+alles, was Einheiten mit Angriff ausbildet, und der Dorfbewohner hat 3),
+AC-81 (Technologiebaum gleiche Seite wie das Baumenü), AC-86 (auf
+1366 × 768 ragt nichts heraus — mit der Spalte auf der Militärseite ragen
+Außenposten, Wachturm, Tor, Mauer heraus, Browserfall rot). **Frage an den
+Benutzer**, Empfehlung: AC-64 auf elf Gebäude der Wirtschaft und „Kampf-
+einheiten“ ändern, dann steht das Dorfzentrum unter Wirtschaft.
+
 **2026-11-22, Vormittag:** **F13 fertig und zusammengeführt** (`4910410`,
 Zweig `strategie-krone-am-stueck`, Arbeitsbaum `../OnlineGames-krone`):
 fahrplan AC-19 (`e2e/tests/strategie-krone-am-stueck.spec.mjs`, zwei
