@@ -231,11 +231,22 @@ die Laufregel lockern? fahrplan AC-15 für A* lockern?
 2. ~~`strategie-speichern` zusammenführen~~ erledigt (`05effa1`,
    check:kurz grün: 1119 Tests, 37 Partien; Board 619/716). **Speichern
    wird erst nach S3 ausgerollt** (Benutzer, 2026-11-22).
-3. **S3 läuft als Agent** (seit 2026-11-22 ~15 Uhr) im Arbeitsbaum
-   `../OnlineGames-speichern`, Zweig `strategie-speichern` ab `05effa1`,
-   `E2E_HAFEN=4394`: speichern AC-6 bis AC-11, Meldung bei fünf Ständen.
-   Danach: Bericht prüfen, zusammenführen, ganzer Browserlauf allein,
-   ausrollen nur auf sein Wort. Nichts doppelt anfangen.
+3. **S3 fertig und zusammengeführt** (`01b51ec`, Merge `6a934a4`; Board
+   626/717, check:kurz des Agenten grün: 1126 Tests, 37 Partien):
+   speichern AC-6 bis AC-11 und neu AC-27 (fünf Stände: Hinweis, kein
+   sechster) — `e2e/tests/strategie-fortsetzen.spec.mjs`,
+   `tests/speichern-fortsetzen.test.mjs`. Nebenbei: `raum.zustandSenden()`
+   (angehaltene Partie schickt einen Zustand, auch bei der Pause).
+   **Gesetzt, Fragen an den Benutzer:** Aufhören/Fortsetzen und die
+   Zwei-Minuten-Frist nur allein gegen die KI (zu mehreren 30 min wie
+   bisher); „Später weiterspielen“ ohne Rückfrage; bei AC-11 sichert die
+   alte Sitzung zuerst; nie still verdrängen; Löschen mit zweitem Klick;
+   Kamera je Stand im Browser; neuer Raumcode im angehaltenen Bild;
+   raeume AC-18 kann einen schon geschlossenen Einzelraum anbieten
+   („Diesen Raumcode gibt es nicht“). Im Bild AC-9 doppelt „Weiter“ oben
+   und „Weiterspielen“ in der Mitte. **Jetzt:** ganzer Browserlauf allein
+   (`E2E_HAFEN=4391 npm run check:alles:neu:kurz`), `qa:abweichung`;
+   ausrollen nur auf sein Wort.
 4. **Regelpaket** als Agent (Entscheidung 1 oben): Laufregel,
    Seitengleichheit, Pfeilflug; ki AC-25 mit eigenen Einheiten; Reiterschütze
    nur Schützenlinie; `ki.farmbauer` klären. Nur fahrplan AC-15 und die
