@@ -44,7 +44,9 @@
     "pruefstand:vergleich": "node scripts/pruefstand-vergleich.mjs",
     "pruefstand:verlauf": "node scripts/pruefstand-verlauf.mjs",
     "pruefstand:haeuser": "node scripts/pruefstand-haeuser.mjs",
-    "konterkreis:strategie": "node scripts/konterkreis-strategie.mjs"
+    "konterkreis:strategie": "node scripts/konterkreis-strategie.mjs",
+    "manager:messen": "node scripts/manager-messen.mjs",
+    "manager:gleichstand": "node scripts/manager-gleichstand.mjs"
   },
   "dependencies": {
     "better-auth": "^1.7.2",

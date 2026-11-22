@@ -1,0 +1,42 @@
+{
+  "laeufe": {
+    "startwerte": [
+      4711,
+      20260910,
+      77
+    ],
+    "ohneMenschen": {
+      "saisons": 2
+    },
+    "mitMensch": {
+      "vereinId": "v5",
+      "termine": 21
+    }
+  },
+  "abdruecke": {
+    "ohneMenschen 4711": {
+      "welt": "68227044133786fc",
+      "mensch": "a7613e4544132500"
+    },
+    "mitMensch 4711": {
+      "welt": "7dff58711f851366",
+      "mensch": "ed71484daaea9b1b"
+    },
+    "ohneMenschen 20260910": {
+      "welt": "6cd85e77d5636223",
+      "mensch": "ec7a46941302c211"
+    },
+    "mitMensch 20260910": {
+      "welt": "85028c0bf6ad1514",
+      "mensch": "a7bce826a8e78334"
+    },
+    "ohneMenschen 77": {
+      "welt": "8991815fb6170f44",
+      "mensch": "d81f2f8715ddde85"
+    },
+    "mitMensch 77": {
+      "welt": "815cb0356dd66446",
+      "mensch": "17f43cb877438f78"
+    }
+  }
+}

@@ -16,24 +16,25 @@ Browserläufe mit eigenem Hafen (`E2E_HAFEN=4277`). Nichts gepusht.
 
 ## Zuletzt
 
-**2026-11-22:** **M0.1 fertig** (`d3432a9`): spielziel AC-16, der Wächter
-liest das Managerspiel streng (jede Zeichenkette, Vorlagen, Text zwischen
-Tags, Attribute), alle Bildschirmtexte mit echten Umlauten, Schlüssel
-(`data-verlaengern`, `zug('verlaengern')`, Kategorie `gehaelter`)
-umschrieben. 48 Browserfälle des Managers grün, Bilder neu, angesehen —
-nur Texte. `npm run check` grün bis auf fahrplan AC-20 (Zeitmessung des
-Strategiespiels, 36 statt 30 ms unter fremder Last; allein grün).
+**2026-11-22:** M0.1 (`d3432a9`, Umlaute, spielziel AC-16) und M0.8
+vorgezogen (`f08206d`, hell nach dem Entwurf, oberflaeche AC-18: jeder Text
+auf acht Blättern hält 4,5 : 1, gemessen im Browser) sind committet.
+**M0.2 gebaut** (spielziel AC-17): `npm run manager:messen` (Kennzahlen
+über drei Startwerte, zwei Saisons) und die **Gleichstandsprobe**
+`tests/manager-gleichstand.test.mjs` — je Startwert zwei Läufe, je Lauf ein
+SHA-256 über Welt und Mensch (`teile()` liest Fassung 3 und 4). Gemessen
+vor dem Umbau: 3,07 Tore, 46,4 % Heimsiege, 22,0 % Remis, Favorit (Niveau
++0,5, jede Paarung) 51,7 %, ohne Remis 66,2 %; Konto 1. Liga 14,2 Mio im
+Mittel; 182 ms je Saison, Spielstand 420 KB. Konten rechnen in Tausend.
 
 ## Als Nächstes
 
-1. **M0.8 Ein Aussehen** (vorgezogen, Entscheidung unten): `public/manager.css`
-   auf die Farben und Schrift des [Entwurfs](entwurf/spieltag.html) — hell,
-   Kreide, Tinte, Bahnschrift schmal für Überschriften und Zahlen. Kriterium
-   in `specs/15-manager/oberflaeche.md`, alle Bilder des Managers neu,
-   jedes über 1 % ansehen. Dabei den Entwurf selbst nachbessern: Halbzeit
-   bei 1366 × 768 (Eingreifen ganz sichtbar), Tore im Verlaufsband lesbar,
-   Halbzeitzeile im Ticker leiser, Vereinsfarben als Akzent statt Platte.
-2. M0.2 Messen und Gleichstandsprobe, dann M0.3 bis M0.7.
+1. M0.2 committen, sobald `npm run check` grün ist.
+2. **M0.3** `karriere.js` teilen (welt / ablauf / zuege / sicht) — nach
+   jedem Schritt `node --test tests/manager-gleichstand.test.mjs`.
+3. M0.4 bis M0.7, dann M1 (Spieltag live; Halbzeit bei 1366 × 768 ganz
+   sichtbar, Tore im Verlaufsband lesbar, Halbzeitzeile leiser,
+   Vereinsfarben als Akzent).
 
 ## Entschieden
 
