@@ -1,0 +1,10 @@
+{
+  "spec": "10-strategie/fahrplan.md",
+  "ac": "AC-19",
+  "titel": "Annas gerufener Drache hat ein Stück aus Berts Steinmauer gebrannt - die Lücke liegt in Trümmern, zu beiden Seiten steht die Mauer",
+  "datei": "e2e/tests/strategie-krone-am-stueck.spec.mjs",
+  "pfad": [
+    "Drache gegen Mauer",
+    "fahrplan AC-19: das Ei ins Kloster, fuenf Moenche, den Drachen gerufen - und mit ihm ein Stueck aus Berts Steinmauer gerissen"
+  ]
+}

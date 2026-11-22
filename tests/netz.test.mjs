@@ -151,6 +151,21 @@ test('raeume AC-8 / uebertragung AC-5 / uebertragung AC-6 / uebertragung AC-7: A
   bert.zu();
 });
 
+// Die Grenze von fahrplan AC-20 haelt nur gepackt: ungepackt sind acht
+// Spieler mit je 200 Einheiten rund 160 KB je Sekunde und Spieler
+// (tests/strategie-grosse-partie.test.mjs). Hier: der Server bietet es an,
+// und ein Kunde, der es kann - wie jeder Browser -, bekommt es.
+test('fahrplan AC-20: der Server packt, was er schickt (permessage-deflate)', async () => {
+  const anna = gastgeber();
+  await anna.offen();
+  assert.match(anna.draht.extensions, /permessage-deflate/);
+  // Und es bleibt lesbar: der Raum kommt an wie zuvor.
+  anna.senden({ typ: 'erstellen', name: 'Anna' });
+  const du = await anna.warteAuf(istTyp('du'));
+  assert.match(du.code, /^[A-Z0-9]{6}$/);
+  anna.zu();
+});
+
 test('einheiten AC-12: erst die Ablieferung fuellt den Vorrat', async () => {
   const anna = gastgeber();
   await anna.offen();

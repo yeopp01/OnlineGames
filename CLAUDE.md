@@ -181,7 +181,7 @@ Umfang hinzufügt, dort nachsehen.
 
 ## Stand
 
-**607 von 715 Kriterien fertig.** 1084 Tests ohne Browser und 17 ganze Partien, 348 im Browser. Die
+**609 von 715 Kriterien fertig.** 1086 Tests ohne Browser und 17 ganze Partien, 350 im Browser. Die
 Übersicht ist der Bericht: `npm run qa:report`.
 
 Gebaut ist der Unterbau: Räume, Übertragung, Karte, Wegfindung, Sammeln,
@@ -931,8 +931,17 @@ Schmiede): neun Paarungen 20 von 20, umgekehrt 0; der Paladin fällt vor dem
 Hellebardier und schlägt beide Schützenlinien; gegen das Schwert hilft die
 schwere Armbrust (19 von 20), nicht der Bogen (0 von 20). **Die KI steigt
 seit F12 in die Krone auf, erforscht ihre Stufen und geht aufs Wunder** (ki AC-35, AC-39, AC-40);
-offen: die Krone am Stück (F13). Die gesetzten Werte der Krone
-stammen nicht alle aus `vorlage-aoe2.md`.
+**F13 ist fertig** (2026-11-22): die Krone am Stück im Browser (fahrplan
+AC-19, `strategie-krone-am-stueck.spec.mjs`) — Aufstieg, je
+Militärgebäude eine Stufe, die Schmiede, der Elite-Kriegswolf Eschenbruchs,
+ein Wunder bis zum Sieg; ein zweiter Fall ruft den Drachen und brennt ein
+Stück aus einer Mauer. **Die große Partie bleibt flüssig** (fahrplan AC-20,
+`tests/strategie-grosse-partie.test.mjs`): acht Spieler mit je 200
+Einheiten im Nebel, ein Takt samt Auszug und Packen 5,5 bis 5,8 ms; je
+Spieler 160 bis 182 KB je Sekunde als JSON — deshalb packt der Server mit
+permessage-deflate (`server/index.js`), höchstens 30,5 KB je Sekunde.
+Bei „Aufgedeckt“ sind es gepackt rund 147 KB — die Grenze gilt im Nebel.
+Die gesetzten Werte der Krone stammen nicht alle aus `vorlage-aoe2.md`.
 
 **F6 bis F11 stehen** (2026-11-21, Opus): **Abrüsten** (einheiten AC-50,
 `ABRUESTEN`, Nachricht `abruesten`): Fußvolk, Schützen und Reiter legen

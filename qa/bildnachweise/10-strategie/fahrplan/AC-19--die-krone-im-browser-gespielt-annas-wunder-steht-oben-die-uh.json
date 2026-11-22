@@ -1,0 +1,10 @@
+{
+  "spec": "10-strategie/fahrplan.md",
+  "ac": "AC-19",
+  "titel": "Die Krone im Browser gespielt: Annas Wunder steht, oben die Uhr bis zum Sieg; davor die Stufen der Krone - Hellebardier, schwere Armbrust, Kavalier, Belagerungsramme - und der Elite-Kriegswolf ihres Hauses",
+  "datei": "e2e/tests/strategie-krone-am-stueck.spec.mjs",
+  "pfad": [
+    "Krone am Stueck",
+    "fahrplan AC-19: Aufstieg in die Krone, je Militaergebaeude eine Stufe, die Schmiede, die Elitestufe des Hauses und ein Wunder bis zum Sieg - im Browser gespielt"
+  ]
+}

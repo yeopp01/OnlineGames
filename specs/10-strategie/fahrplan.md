@@ -2,7 +2,7 @@
 
 **Bereich:** Strategie
 **Kuerzel:** fahrplan
-**Stand:** 20/26 fertig · 2 in QA · 4 offen
+**Stand:** 22/26 fertig · 2 in QA · 2 offen
 
 ## Zweck
 
@@ -377,7 +377,7 @@ Text am Bildschirm zitieren, zieht die Runde zu E1 nach. Alle bleiben
 
 ### Stufe F — Imperialzeit
 
-- **AC-19** `offen` **Imperialzeit spielbar** — Die Krone (Imperialzeit) mit Wunder und
+- **AC-19** `fertig` **Imperialzeit spielbar** — Die Krone (Imperialzeit) mit Wunder und
   Siegbedingung, den Einheitenstufen und Verbesserungen der Vorlage und
   den Elitestufen der fünf Spezialeinheiten (ADR-0014 Punkt 12: eine
   Verbesserung mit `wandelt` in der Burg, wie Soldat die Miliz). **Statt
@@ -389,9 +389,30 @@ Text am Bildschirm zitieren, zieht die Runde zu E1 nach. Alle bleiben
   Stufe in jedem Militärgebäude und eine Verbesserung der Schmiede, bildet
   die Elitestufe seines Hauses aus und baut ein Wunder, dessen Uhr zum Sieg
   läuft; ein zweiter ruft den Drachen und reißt mit ihm eine Mauer ein.
+  Gebaut am 2026-11-22 (F13, `e2e/tests/strategie-krone-am-stueck.spec.mjs`):
+  Eschenbruch steigt im Dorfzentrum auf, erforscht in Kaserne, Schießanlage,
+  Stall, Werkstatt und Burg je eine Stufe der Krone samt Vorstufen —
+  welche, lesen die Daten (Hellebardier, schwere Armbrust, Kavalier,
+  Belagerungsramme, Elite-Kriegswolf) — und eine Verbesserung der Schmiede
+  der Krone, bildet je eine Einheit aus und baut mit zwanzig Dorfbewohnern
+  ein Wunder; die Uhr läuft bei Anna und Bert, zehn Minuten später hat Anna
+  gewonnen. Der zweite trägt das Ei ins Kloster, ruft den Drachen mit fünf
+  Mönchen und brennt ein Stück aus einer Mauer aus fünf, die Stücke daneben
+  stehen. Gebäude der früheren Zeitalter und die Rohstoffe stellt der
+  Prüfgriff. Die Elitestufe der Burg ist eine Verbesserung mit `hebt`,
+  nicht mit `wandelt` (einheiten AC-69).
 
-- **AC-20** `offen` **Große Partie bleibt flüssig** — Acht Spieler mit je 200 Einheiten: ein Takt
+- **AC-20** `fertig` **Große Partie bleibt flüssig** — Acht Spieler mit je 200 Einheiten: ein Takt
   unter 30 ms im Mittel, je Spieler unter 50 KB Übertragung je Sekunde.
+  Gemessen am 2026-11-22 im Nebel auf der großen Karte, je Spieler 80
+  Sammler und zwei Heere im Angriffslauf, die sich in der Mitte und am Dorf
+  des Nachbarn treffen: ein Takt samt Auszug, JSON und Packen 5,5 bis 5,8 ms.
+  Die Zustände sind als JSON 160 bis 182 KB je Sekunde und Spieler — die
+  Grenze hält erst **gepackt**: der Server schickt mit permessage-deflate,
+  höchstens 30,5 KB je Sekunde, wenn jeder Zustand für sich gepackt wird,
+  rund 10 mit dem vorigen als Wörterbuch. Bei „Aufgedeckt“ bekommt jeder alle 1600 Einheiten, gepackt
+  rund 147 KB je Sekunde — die Grenze gilt im Nebel. Über den Proxy des
+  Servers ist das Packen nicht gemessen.
 - **AC-26** `fertig` **Konterkreis hält in der Krone** — Der Gefechtsstand
   mit den Stufen der Krone ([Einheiten](einheiten-und-befehle.md) AC-66,
   AC-67) und der vollen Schmiede ([Bauen](bauen.md) AC-48), Budget 2000:
@@ -431,7 +452,7 @@ immer nur ein Prozess.
 | F10 | Tod und Ei; er frisst | einheiten AC-53, AC-54 |
 | F11 | Das Wunder und der Sieg nach zehn Minuten | bauen AC-51, spielziel AC-29 |
 | F12 | Die KI in der Krone: steigt auf, erforscht, geht aufs Wunder, holt Eier und ruft | ki AC-35, AC-39, AC-40, AC-29 |
-| F13 | Die Krone am Stück im Browser; die große Partie bleibt flüssig | fahrplan AC-19, AC-20 |
+| F13 | Die Krone am Stück im Browser; die große Partie bleibt flüssig — **fertig** (2026-11-22) | fahrplan AC-19, AC-20 |
 
 **Was Stufe F nicht hereinholt.** Die zweite Stufe für das Schwert
 (Champion; der Paladin ist seit dem 2026-11-18 dabei, einheiten AC-66),
