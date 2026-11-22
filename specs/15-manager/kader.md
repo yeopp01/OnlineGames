@@ -2,7 +2,7 @@
 
 **Bereich:** Manager
 **Kuerzel:** kader
-**Stand:** 21/24 fertig · 1 in QA · 2 offen
+**Stand:** 21/26 fertig · 1 in QA · 4 offen
 
 ## Zweck
 
@@ -97,8 +97,29 @@ wiederholen, statt ihn zu suchen.
   acht Spieler ab Stärke 85, in jeder Saison: keine Welle aus der
   Startgeneration und kein Aussterben danach.
 - **AC-24** `offen` **Durchschnittsalter bleibt im Band** — Über zwanzig
-  Saisons ohne Menschen sind die Spieler der Vereine im Mittel 25,5 bis 27
-  Jahre alt, in jeder Saison, gezählt am letzten Termin vor dem Altern.
+  Saisons ohne Menschen sind die Spieler der Vereine ab der zweiten Saison im
+  Mittel 23 bis 25 Jahre alt, in jeder Saison, gezählt am letzten Termin vor
+  dem Altern. Bis 2026-11-22 stand hier 25,5 bis 27: je Saison kommen rund
+  72 Siebzehnjährige aus der Jugend in die Kader, rund 40 % der Spieler sind
+  20 oder jünger, und keine gemessene Variante kam über 25,1, ohne dass das
+  Niveau der Ligen fiel (`docs/manager/dynamik/plan.md`). Die erste Saison
+  zählt nicht: die Startwelt ist 18 bis 33 Jahre alt, im Mittel 25,5 bis 26.
+  Auf Schritt 2 (`7d9f9ff`) reißt es an allen vier Startwerten unten: ab der
+  sechsten Saison 22,7 bis 23,3.
+- **AC-25** `offen` **Die Jugend kommt an** — Über zwanzig Saisons ohne
+  Menschen liegt ab der zweiten Saison die Stärke der Siebzehnjährigen aus
+  dem eigenen Nachwuchs im Mittel höchstens 15 unter dem Niveau ihres
+  Vereins, und die Zwanzigjährigen in Vereinen stehen im Mittel mindestens
+  30 % der Pflichtspielminuten auf dem Platz — gezählt am letzten Termin,
+  wo es mindestens 30 Zwanzigjährige gibt. Auf Schritt 2 reißt der Abstand
+  in jeder Saison (−21,5 bis −23,8); die Spielzeit mit 20 hält (39 bis 78 %).
+- **AC-26** `offen` **Wer spielt, entwickelt sich** — Über zwanzig Saisons
+  ohne Menschen wird je Saison, wer 25 bis 30 ist und ein Jahr später noch
+  in einem Verein steht, nach seinem Spielanteil gedrittelt: das Drittel mit
+  der meisten Spielzeit legt bis zum nächsten Saisonende im Mittel
+  mindestens einen Punkt Stärke mehr zu als das mit der wenigsten. Auf
+  Schritt 2 reißt es in jeder Saison (−0,6 bis +0,5): die Spielzeit wirkt
+  heute nur bis 24.
 - **AC-17** `fertig` **Karriereende** — Ab 33 wird es Jahr für Jahr
   wahrscheinlicher, mit 36 ist Schluss — auch mit gültigem Vertrag
   (→ AC-21).

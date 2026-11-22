@@ -2,7 +2,7 @@
 
 **Bereich:** Manager
 **Kuerzel:** transfer
-**Stand:** 24/26 fertig · 1 offen · 1 zurueckgestellt
+**Stand:** 24/27 fertig · 2 offen · 1 zurueckgestellt
 
 ## Zweck
 
@@ -34,6 +34,11 @@ und die anderen Vereine handeln nach denselben Regeln, auch untereinander.
   Menschen. Eine Ablöse wiegt damit vier bis sechs Jahresgehälter. Gezählt
   wird das Vertragsgehalt — was der Verein zahlt —, nicht der Gehaltswunsch
   (→ [Verträge](vertraege.md) AC-2).
+- **AC-27** `offen` **Kein Geburtstag als Klippe** — Bei gleicher Stärke und
+  gleichem Talent kostet ein Jahr mehr höchstens 15 % des Marktwerts, für
+  jedes Alter von 17 bis 36 und die Stärken 45, 60, 75 und 90. Wer 28 wird,
+  verliert nicht über Nacht ein Drittel. Auf Schritt 2 reißt es an drei
+  Geburtstagen: 23 auf 24 −15 %, 28 auf 29 −35 %, 31 auf 32 −54 %.
 - **AC-4** `fertig` **Forderung über dem Marktwert** — Ein Verein verkauft
   nicht gern, und einen Stammspieler noch weniger gern als den vierten Torwart.
   Billiger wird es nur auf der Transferliste und im letzten Vertragsjahr.

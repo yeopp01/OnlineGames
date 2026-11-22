@@ -2,7 +2,7 @@
 
 **Bereich:** Manager
 **Kuerzel:** finanzen
-**Stand:** 18/18 fertig
+**Stand:** 18/19 fertig · 1 offen
 
 ## Zweck
 
@@ -78,6 +78,13 @@ Verein im Schnitt der Liga, über die ersten drei Saisons zweier Startwerte:
   Menschen liegt am Ende jeder Saison der Median der Konten je Liga über
   null: mehr als die Hälfte der Vereine hat Geld, nicht nur die reichen
   wenigen.
+- **AC-19** `offen` **Reichtum hat eine Grenze** — Über zwanzig Saisons ohne
+  Menschen hat am Ende jeder Saison der reichste Verein der ersten Liga
+  weniger als das Vierfache dessen auf dem Konto, was er in dieser Saison
+  eingenommen hat, alle Posten des Finanzblatts ohne Ablösen (→ AC-15).
+  Wer dauerhaft gewinnt, darf reich sein, aber nicht ohne Ende horten. Auf
+  Schritt 2 reißt es an allen vier Startwerten zwischen der zehnten und der
+  sechzehnten Saison; in der zwanzigsten 4,7- bis 8,1-fach (146 bis 339 Mio).
 - **AC-9** `fertig` **Ein Minus wird gemeldet** — Wer ins Minus rutscht,
   erfährt es, samt der Grenze, ab der es Punkte kostet.
 - **AC-10** `fertig` **Tiefes Minus kostet Punkte** — Siehe

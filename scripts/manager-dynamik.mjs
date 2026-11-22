@@ -1,7 +1,7 @@
 // npm run manager:dynamik [-- --saisons 20 --startwerte 4711,20260910,77,1234]
 // Die Spieldynamik des Managerspiels ohne Menschen ueber viele Saisons: Geld
 // je Liga, Staerke, Markt, Entwicklung, Jugend nach Jahrgang - und am Ende
-// die fuenf Baender aus docs/manager/dynamik/plan.md, je Startwert "haelt"
+// die Baender aus docs/manager/dynamik/plan.md, je Startwert "haelt"
 // oder "reisst". Schreibt nichts, aendert nichts am Spiel.
 import { baenderPruefen, median, mittel, weltVerfolgen } from './manager-dynamik-messung.mjs';
 
@@ -140,7 +140,7 @@ for (const [i, b] of jeWelt[0].entries()) {
   for (const [j, baender] of jeWelt.entries()) {
     const x = baender[i];
     const gerissen = x.reihe.filter((r) => !x.pruefen(r)).length;
-    const urteil = x.haelt ? 'hält' : `reißt (Saison ${x.riss.saison}: ${x.riss.wert}), gerissen in ${gerissen} Saisons`;
+    const urteil = x.haelt ? 'hält' : `reißt (${x.riss.wo}: ${x.riss.wert}), gerissen in ${gerissen} von ${x.reihe.length}`;
     console.log(`    ${String(STARTWERTE[j]).padEnd(10)} ${urteil}`);
   }
 }

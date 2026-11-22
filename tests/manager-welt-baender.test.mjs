@@ -1,4 +1,4 @@
-// Die fuenf Baender der Spieldynamik ueber zwanzig Saisons ohne Menschen
+// Die Baender der Spieldynamik ueber zwanzig Saisons ohne Menschen
 // (→ docs/manager/dynamik/plan.md). Eine Welt fuer alle, gerechnet von
 // scripts/manager-dynamik-messung.mjs - derselben Stelle, aus der
 // `npm run manager:dynamik` die Bandtabelle druckt.
@@ -22,10 +22,14 @@ before(() => {
   baender = new Map(baenderPruefen(welt).map((b) => [b.kriterium, b]));
 });
 
+// Je Saison ein Eintrag; die Wertklippen je Alter (17 auf 18 bis 35 auf 36),
+// die Entwicklung je Saison bis zur vorletzten (sie vergleicht mit der naechsten).
+const LAENGE = { 'transfer AC-27': 19, 'kader AC-26': SAISONS - 1 };
+
 const pruefen = (kriterium) => {
   const b = baender.get(kriterium);
-  assert.equal(b.reihe.length, SAISONS);
-  assert.ok(b.haelt, `${b.grenze} - reisst in Saison ${b.riss?.saison}: ${b.riss?.wert}`);
+  assert.equal(b.reihe.length, LAENGE[kriterium] ?? SAISONS);
+  assert.ok(b.haelt, `${b.grenze} - reisst (${b.riss?.wo}): ${b.riss?.wert}`);
 };
 
 test('die Dynamikmessung zaehlt Wechsel aus den Akten und Jugend nach Jahrgang', () => {
@@ -55,6 +59,22 @@ test('kader AC-23: ab Saison 5 drei bis acht Spieler ab Staerke 85 in Liga 1', {
   pruefen('kader AC-23');
 });
 
-test('kader AC-24: das Durchschnittsalter bleibt zwischen 25,5 und 27', { todo: 'reisst heute - Schritt 4 des Plans, Abbau ab 29 und Karriereende' }, () => {
+test('kader AC-24: das Durchschnittsalter bleibt ab Saison 2 zwischen 23 und 25', { todo: 'reisst heute unten (22,7) - Schritt 4 des Plans, Abbau ab 29 und Karriereende' }, () => {
   pruefen('kader AC-24');
+});
+
+test('transfer AC-27: ein Geburtstag kostet hoechstens 15 % des Marktwerts', { todo: 'reisst heute mit 28 und 31 - Schritt 3 des Plans, Altersfaktor' }, () => {
+  pruefen('transfer AC-27');
+});
+
+test('finanzen AC-19: das groesste Konto der Liga 1 bleibt unter vier Jahreseinnahmen', { todo: 'reisst heute ab Saison 10 bis 16 - Schritt 6 des Plans, Reichtum' }, () => {
+  pruefen('finanzen AC-19');
+});
+
+test('kader AC-25: die Jugend kommt hoechstens 15 unter dem Niveau an und spielt mit 20', { todo: 'reisst heute, mit 17 rund 22 unter dem Niveau - Schritt 4 des Plans, Jugend' }, () => {
+  pruefen('kader AC-25');
+});
+
+test('kader AC-26: wer mit 25 bis 30 viel spielt, legt einen Punkt mehr zu', { todo: 'reisst heute, die Spielzeit wirkt nur bis 24 - Schritt 5 des Plans, Entwicklung' }, () => {
+  pruefen('kader AC-26');
 });

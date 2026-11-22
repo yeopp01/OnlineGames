@@ -23,7 +23,47 @@ und fasst `server/spiele/manager/*` und den Fingerabdruck nicht an.
    Marktwerts** (heute 47 bis 54 %).
 4. **Spieler ab Stärke 85 in Liga 1** ab Saison 5 zwischen rund 3 und 8
    (heute 19 in Saison 8, dann 2 bis 3,5).
-5. **Durchschnittsalter 25,5 bis 27** (heute fällt es auf 23,2 bis 24).
+5. **Durchschnittsalter 23 bis 25** ab Saison 2 (kader AC-24). Bis
+   2026-11-22 abends stand hier 25,5 bis 27; geändert auf die Empfehlung
+   hin (Benutzer: „ja, bitte fortfahren"): je Saison kommen rund 72
+   Siebzehnjährige in die Kader, rund 40 % der Spieler sind 20 oder jünger,
+   und keine Variante der Gegenproben kam über 25,1, ohne Niveau zu
+   verlieren. Die erste Saison zählt nicht (Startwelt 18 bis 33, im Mittel
+   25,5 bis 26).
+
+Vier weitere, seit dem 2026-11-22 abends (Benutzer: „ja, bitte
+fortfahren"), mit der Ausgangszahl auf Schritt 2 (`7d9f9ff`, Startwerte
+4711, 20260910, 77, 1234):
+
+6. **Kein Geburtstag als Klippe** (transfer AC-27): bei gleicher Stärke
+   und gleichem Talent kostet ein Jahr höchstens 15 % des Marktwerts,
+   geprüft an der Formel für jedes Alter 17 bis 36 und Stärke 45, 60, 75,
+   90. Schritt 2: 23 → 24 −15 %, 28 → 29 −35 %, 31 → 32 −54 %.
+7. **Reichtum hat eine Grenze** (finanzen AC-19): das größte Konto der
+   Liga 1 am Saisonende unter dem Vierfachen der Einnahmen dieses Vereins
+   in der Saison (ohne Ablösen). Schritt 2: reißt ab Saison 13 / 13 / 16 /
+   10, in Saison 20 4,7- / 5,1- / 5,0- / 8,1-fach (242 / 146 / 155 / 339
+   Mio). Schritt 6.
+8. **Die Jugend kommt an** (kader AC-25): ab Saison 2 liegen die
+   Siebzehnjährigen aus dem eigenen Nachwuchs im Mittel höchstens 15 unter
+   dem Niveau ihres Vereins, und die Zwanzigjährigen spielen im Mittel
+   mindestens 30 % der Pflichtspielminuten (gezählt, wo es mindestens 30
+   gibt — in Saison 4 ist die Startwelt schon 21 und die erste Jugend erst
+   19). Schritt 2: Abstand −21,5 bis −23,8 in jeder Saison, reißt; die
+   Spielzeit mit 20 hält (39 bis 78 %). Gemessen über die Saisons 6 bis 20,
+   Spielanteil nach Alter: 17 9–10 %, 18 23–25 %, 19 39–42 %, 20 52 %, 21
+   61–63 %, 22 65–67 % — beim eigenen Nachwuchs gleich. Die 30 % mit 20
+   sind also kein Hebel, sondern ein Riegel: Schritt 4 darf die Jugend
+   nicht auf die Bank schieben.
+9. **Wer spielt, entwickelt sich** (kader AC-26): wer mit 25 bis 30 ein
+   Jahr später noch im Verein steht, nach Spielanteil gedrittelt — das
+   obere Drittel legt im Mittel mindestens einen Punkt mehr zu als das
+   untere. Schritt 2: −0,6 bis +0,5 je Saison, Mittel rund −0,1 — die
+   Spielzeit wirkt in `kader.entwickeln` nur bis 24. Schritt 5.
+
+Gemessen werden alle in `scripts/manager-dynamik-messung.mjs`
+(`GRENZEN`, `baenderPruefen`), die Tests in
+`tests/manager-welt-baender.test.mjs` (Startwert 20260910).
 
 Und wie immer: Tore, Heimsiege, Unentschieden bleiben (`npm run
 manager:messen`, zuletzt 3,20 Tore), jede Änderung bekommt einen neuen
@@ -91,7 +131,9 @@ sparen auch ohne Grenze (Gehalt zu Einnahmen rund 0,9) — ihre Nachfrage
 begrenzt der Kader, nicht das Geld.
 
 Weiter rot: transfer AC-26 (Gehalt zu Marktwert, Saison 1 44 %), kader
-AC-23 (Spieler ab 85), kader AC-24 (Alter 24,6–25,0) — Schritte 3 und 4.
+AC-23 (Spieler ab 85), kader AC-24 (Alter: 24,6–25,0 ist nur Saison 2, ab
+Saison 6 sind es 22,7–23,3 — reißt also auch das Band 23 bis 25 unten) —
+Schritte 3 und 4.
 Tore und Unentschieden bewegen sich um rund einen Standardfehler.
 
 ## Wovon Auf- und Abwertung heute abhängt (`kader.entwickeln`)
