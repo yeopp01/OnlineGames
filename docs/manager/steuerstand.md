@@ -69,9 +69,16 @@ Hafen 4278, alle Bilder angesehen. **Stufe M1 ist damit erreicht.**
 ## Als Nächstes
 
 1. M1 ist `c3ce667` (check grün, 1128 Tests, 17 Partien); `manager`
-   ist ganz gemergt (nur der Steuerstand kam noch dazu).
+   ist ganz gemergt (`c1408fe`). Alle 54 Managerfälle im Browser grün,
+   nachdem oberflaeche AC-18 den Kopf gegen `--verein-1` prüft statt
+   gegen das alte feste Blau (`e8352b8`). Die übrigen Managerbilder
+   zeigen noch das Blau — die Bildunterschriften stimmen trotzdem.
 2. Ein ganzer Browserlauf ohne fremde Last (M0.7 sah sechs rote Fälle des
-   Strategiespiels unter Last — nicht unsere).
+   Strategiespiels unter Last — nicht unsere). **`node_modules` dieses
+   Arbeitsbaums ist seit 2026-11-22 14:20 eine eigene Installation**, keine
+   Junction mehr: das `node_modules` des Hauptordners war um 14:12 leer
+   (vermutlich eine gelöschte Probekopie mit Junction) — nicht von hier
+   repariert.
 3. Rückschau M1 (Lücken als Kriterien), ADR-0018 nachziehen, in
    `CLAUDE.md` „die Arbeit daran ruht" anpassen — mit dem Benutzer.
 
