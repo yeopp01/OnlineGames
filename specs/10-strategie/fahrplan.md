@@ -390,8 +390,17 @@ Text am Bildschirm zitieren, zieht die Runde zu E1 nach. Alle bleiben
   die Elitestufe seines Hauses aus und baut ein Wunder, dessen Uhr zum Sieg
   läuft; ein zweiter ruft den Drachen und reißt mit ihm eine Mauer ein.
 
-- **AC-20** `offen` **Große Partie bleibt flüssig** — Acht Spieler mit je 200 Einheiten: ein Takt
+- **AC-20** `fertig` **Große Partie bleibt flüssig** — Acht Spieler mit je 200 Einheiten: ein Takt
   unter 30 ms im Mittel, je Spieler unter 50 KB Übertragung je Sekunde.
+  Gemessen am 2026-11-22 im Nebel auf der großen Karte, je Spieler 80
+  Sammler und zwei Heere im Angriffslauf, die sich in der Mitte und am Dorf
+  des Nachbarn treffen: ein Takt samt Auszug, JSON und Packen 5,5 bis 5,8 ms.
+  Die Zustände sind als JSON 160 bis 182 KB je Sekunde und Spieler — die
+  Grenze hält erst **gepackt**: der Server schickt mit permessage-deflate,
+  höchstens 30,5 KB je Sekunde, wenn jeder Zustand für sich gepackt wird,
+  rund 10 mit dem vorigen als Wörterbuch. Bei „Aufgedeckt“ bekommt jeder alle 1600 Einheiten, gepackt
+  rund 147 KB je Sekunde — die Grenze gilt im Nebel. Über den Proxy des
+  Servers ist das Packen nicht gemessen.
 - **AC-26** `fertig` **Konterkreis hält in der Krone** — Der Gefechtsstand
   mit den Stufen der Krone ([Einheiten](einheiten-und-befehle.md) AC-66,
   AC-67) und der vollen Schmiede ([Bauen](bauen.md) AC-48), Budget 2000:

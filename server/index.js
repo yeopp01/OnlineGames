@@ -162,6 +162,11 @@ async function starten(hafen = HAFEN, einstellungen = {}) {
   const wss = new WebSocketServer({
     server,
     maxPayload: NACHRICHT_MAX,
+    // Die Zustaende gehen gepackt hinaus (fahrplan AC-20): acht Spieler mit
+    // je 200 Einheiten sind im Nebel rund 160 KB je Sekunde und Spieler als
+    // JSON, gepackt rund 26 - der Browser entpackt von selbst. Kleine
+    // Nachrichten bleiben ungepackt; `maxPayload` gilt fuer das Entpackte.
+    perMessageDeflate: { threshold: 1024 },
     // Abweisen, bevor der Handshake laeuft - eine abgelehnte Verbindung soll
     // billiger sein als eine angenommene.
     verifyClient: ({ req }, erlauben) => {
