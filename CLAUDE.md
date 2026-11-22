@@ -185,7 +185,7 @@ Umfang hinzufügt, dort nachsehen.
 
 ## Stand
 
-**635 von 744 Kriterien fertig.** 1134 Tests ohne Browser und 17 ganze Partien, 351 im Browser. Die
+**638 von 747 Kriterien fertig.** 1139 Tests ohne Browser und 17 ganze Partien, 351 im Browser. Die
 Übersicht ist der Bericht: `npm run qa:report`.
 
 Gebaut ist der Unterbau: Räume, Übertragung, Karte, Wegfindung, Sammeln,
@@ -211,6 +211,20 @@ Minuten für 308 Fälle (inzwischen 316, rund 42 Minuten) (`npm run e2e:laufzeit
 Fälle sind `fahrplan AC-24` mit 108 s, zwei gegen zwei bis zur Tafel,
 `fahrplan AC-14` mit 90 s, die Ritterzeit am Stück, und `fahrplan AC-12`
 mit 84 s, eine ganze Partie gegen die KI).
+
+**Spieldynamik des Managers** ([Plan](docs/manager/dynamik/plan.md),
+Schritte 2 bis 4 und 6): Haushalt der KI (`HAUSHALT`), Preisgefüge
+(Marktwert ×2,3, Alter linear), Startwelt und Jugend (`STARTWELT`,
+`JUGEND`, `ALTERSBLICK`) und der Markt (`MARKT` in `transfer.js`): wer
+mehr als dreimal seine Jahreseinnahmen hat, verkauft nur von der Liste
+(transfer AC-30, `in-qa` bis zum Zeichen in der Marktliste), wer reich
+ist, sucht in jedem Fenster, und niemand bietet auf einen Spieler, wenn
+ein vergleichbarer Vereinsloser zu haben ist. Damit lohnt der Handel mit
+Vereinslosen nicht mehr (transfer AC-28: 5 % und −19 % der Einnahmen
+statt 127 % und 210 %), die erste Liga wechselt 2,9 bis 4,0 Spieler je
+Verein und Saison statt 1,6 bis 2,2 (AC-29), und der Reichste hat
+höchstens das 3,7-Fache einer Jahreseinnahme (finanzen AC-19). Offen:
+kader AC-23 (Sterne) und AC-26 (Entwicklung ab 25).
 
 **Stellschrauben des Managerspiels** stehen gesammelt in `WIRKUNG` in
 `server/spiele/manager/spieltag.js`. Wer daran dreht, misst danach: keine

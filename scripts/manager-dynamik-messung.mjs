@@ -182,6 +182,8 @@ export const GRENZEN = {
   // die Startwelt schon 21 und die erste Jugend erst 19).
   jugend: { abstand: 15, alter: 20, spielanteil: 0.3, mindestens: 30, abSaison: 2 },
   entwicklung: { alter: [25, 30], unterschied: 1 },
+  // Ab Saison 2: in der ersten Saison stopfen alle die Loecher der Startwelt.
+  markt: { liga: 1, wechsel: 1.5, abSaison: 2 },
 };
 
 const zahl = (x, n = 1) => x.toFixed(n).replace('.', ',');
@@ -235,6 +237,8 @@ const drittel = (liste, schluessel) => {
  *    einem Verein steht und am letzten Termin der naechsten Saison wieder,
  *    nach Spielanteil gedrittelt - das Mittel der Staerkeaenderung im oberen
  *    Drittel minus das im unteren
+ * 10. je Saison die Wechsel der ersten Liga (Zugaenge aus den Akten, auch
+ *    abloesefreie) geteilt durch die Zahl ihrer Vereine, ab Saison 2
  */
 export function baenderPruefen(welt) {
   const s = welt.saisons;
@@ -244,7 +248,7 @@ export function baenderPruefen(welt) {
     const wo = riss && (riss.saison !== undefined ? `Saison ${riss.saison}` : `mit ${riss.alter}`);
     return { kriterium, titel, grenze, reihe, pruefen, haelt: !riss, riss: riss ? { saison: riss.saison, wo, wert: zeigen(riss) } : null };
   };
-  const { tiefImMinus, gehaltAnteil, sterne, alter, wertklippe, reichtum, jugend, entwicklung } = GRENZEN;
+  const { tiefImMinus, gehaltAnteil, sterne, alter, wertklippe, reichtum, jugend, entwicklung, markt } = GRENZEN;
   const altersgruppe = (x) => x.spieler.filter((p) => p.alter >= gehaltAnteil.alter[0] && p.alter <= gehaltAnteil.alter[1] && p.wert > 0);
   return [
     band('finanzen AC-17', 'Höchstens zwei tief im Minus', `je Liga höchstens ${tiefImMinus.hoechstens} unter ${tiefImMinus.konto / 1000} Mio`,
@@ -301,5 +305,9 @@ export function baenderPruefen(welt) {
       }),
       (r) => r.wert >= entwicklung.unterschied,
       (r) => `${zahl(r.wert, 2)} (oben ${zahl(r.oben, 2)}, unten ${zahl(r.unten, 2)})`),
+    band('transfer AC-29', 'Der Markt bleibt in Bewegung', `Liga ${markt.liga}: je Verein mindestens ${zahl(markt.wechsel)} Wechsel je Saison ab Saison ${markt.abSaison}`,
+      je((x) => ({ wert: x.ligen[markt.liga].wechsel.length / x.ligen[markt.liga].konten.length })),
+      (r) => r.saison < markt.abSaison || r.wert >= markt.wechsel,
+      (r) => `${zahl(r.wert, 2)} je Verein`),
   ];
 }

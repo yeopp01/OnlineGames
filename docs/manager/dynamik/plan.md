@@ -325,6 +325,95 @@ dem Benutzer); warum AC-24 an 1234 und 99 knapp reißt.
 Weiter rot: kader AC-23 (knapp), kader AC-26 (Schritt 5), finanzen AC-19
 (Schritt 6, viel besser).
 
+**Schritt 6 steht** (transfer AC-28, AC-29, finanzen AC-19 `fertig`;
+transfer AC-30 `in-qa`). Gehalt, Marktwert-Formel und Entwicklung sind
+unverändert, die Regeln gelten für Mensch und KI gleich.
+
+**Erst die Ursache gemessen** (Scratchpad, HEAD `4afef8e`):
+
+- **Reichtum:** die Reichsten wurden reich aus dem Transferertrag — netto
+  4 bis 9 Mio je Saison aus Ablösen, aufgefüllt mit Vereinslosen —, nicht
+  aus dem Stadion. Wer reich ist, gibt seine Spieler trotzdem ab.
+- **Der halbierte Markt:** die Gehaltsgrenze sperrte jede Verstärkung,
+  solange der Schwächste noch im Kader stand — sein Gehalt zählte mit,
+  obwohl er danach ginge. Schwache Saisons in der ersten Liga 0,4 bis 1,2
+  Wechsel je Verein.
+- **Der Händler-Hebel:** die Vereine kauften beim Menschen, was sie als
+  Vereinslosen billiger hätten haben können.
+
+**Gebaut** (`MARKT` in `transfer.js`, alle Werte **gesetzt**, kein Wert
+aus Anstoss 3):
+
+- `sattAb` 3 — ein Verein des Servers mit mehr als dem Dreifachen seiner
+  erwarteten Jahreseinnahmen verkauft nur, wer auf seiner Liste steht —
+  dem Menschen (`kaufPruefen`, Absage „… muss nicht verkaufen und gibt …
+  nicht ab.“) und den anderen (`besterZugang`).
+- `reichAb` 1 — wer mehr als eine Jahreseinnahme hat, sucht in jedem
+  Fenster nach einer Verstärkung.
+- `freiNaeher` 3 — ein Verein bietet nicht auf einen Spieler (auch nicht
+  auf den des Menschen), wenn ein Vereinsloser derselben Position zu haben
+  ist, der höchstens 3 schwächer ist und in seine Gehaltsgrenze passt.
+- **Tausch:** bei einer Verstärkung zählt das Gehalt des Schwächsten als
+  frei; steht der Verein danach über der Grenze, wird der Schwächste gegen
+  Abfindung freigestellt (transfer AC-23). Auch `kiAngebote` prüft jetzt
+  die Gehaltsgrenze.
+- Ein Handgeld für Vereinslose ist **nicht gebaut** — mit `freiNaeher`
+  nicht nötig.
+
+Gemessen über acht Startwerte (4711, 20260910, 77, 1234, 5, 99, 31337,
+2026), zwanzig Saisons:
+
+| Band | HEAD `4afef8e` | Schritt 6 |
+| --- | --- | --- |
+| transfer AC-29 (L1 ≥ 1,5 Wechsel je Verein ab S2) | 0 von 8; Mittel 1,6–2,2, schwächste Saison 0,4–1,2 | **8 von 8**; Mittel 2,9–4,0, schwächste 2,0–3,1 |
+| finanzen AC-19 (Reichster < 4× Einnahmen) | 7 von 8 (20260910 S11 4,6-fach) | **8 von 8**, höchstens 2,9- bis 3,7-fach |
+| finanzen AC-17, AC-18, transfer AC-26, AC-27, kader AC-25 | halten | halten an allen acht (kader AC-25 knapp: −14,7 bei Grenze −15) |
+| kader AC-24 | 6 von 8 | 6 von 8, dieselben (1234: 22,91; 99: 22,98) |
+| kader AC-23 | 2 von 8 | 1 von 8, je Startwert 1 bis 3 Saisons daneben |
+| kader AC-26 | reißt | reißt (Schritt 5) |
+
+`npm run manager:dynamik` (vier Startwerte, Saison 20), Basis → Schritt 6:
+Wechsel je Verein L1 1,95 → 3,19, L2 0,65 → 0,77 (vor Schritt 3: 3,68 und
+1,36 — **die zweite Liga kommt nicht zurück**, dort ist das Geld knapp und
+die meisten Zugänge sind Vereinslose); Anteil Vereinsloser an den Zugängen
+L1 26 → 18 %; Konto-Median L1 22,3 → 20,9 Mio, L2 7,2 Mio (kleinstes
+−3,3); größtes Konto L1 326,9 → 158,4 Mio (höchstens 165,4), L2 42,1
+(höchstens 108,1); Ablöse je Wechsel L1 11,54 → 11,65 Mio, L2 3,22.
+
+**Händler-Hebel** (`haendler.cjs`, zwanzig Saisons, Gewinn je Saison):
+Liga 1 Mitte 22,9 → 0,4 Mio, Liga 1 Bester 16,1 → 0,1, Liga 2 Mitte
+15,5 → −2,0. Angebote an den Händler in zwanzig Saisons 80 / 71 / 62 →
+8 / 22 / 3. Belegt in `tests/manager-haendler.test.mjs` (zwölf Saisons,
+drei Startwerte, Gewinn höchstens ein Zehntel der Einnahmen ohne
+Ablösen): erste Liga 5,1 %, zweite −19 %; auf HEAD 126,7 % und 210,1 %
+(Gegenprobe, die Testdatei gegen eine Kopie von HEAD).
+
+`npm run manager:messen` (vor → nach): Tore 3,18 → 3,24, Heimsiege
+47,3 %, Unentschieden 21,5 → 22,2 %, Favorit 51,6 → 52,3 %,
+Einwechslungen 2,81 → 2,77, Stärke L1 69,6 → 69,8, Kader 18,3–23,0,
+Vereinslose 79, Konto L1 24,9 → 24,6 Mio, Rechenzeit 312 → 220 ms je
+Saison, Spielstand 434 → 427 KB. Fingerabdruck neu geschrieben.
+
+**Nebenwirkungen, nicht geprüft:**
+
+- **Angebote an einen Menschen rund zehnmal seltener** (beim Händler 80
+  → 8 in zwanzig Saisons). Wer nicht handelt, sondern einen guten Spieler
+  hat, bekommt vermutlich weiter Angebote — gemessen ist nur der Händler.
+- **Kein Mensch hat gegen die Regel „satt“ gespielt**; dass er bei satten
+  Vereinen nur noch von der Liste kaufen kann, mag ihn überraschen.
+- Die Grenze im Händler-Test zieht kein Handgeld ab — der Gewinn ist eher
+  zu hoch gerechnet, der Test also eher zu streng.
+- kader AC-23 reißt seit Schritt 6 öfter (1 statt 2 von 8).
+
+**Für die Oberfläche** (`public/manager/*`, nicht in diesem Schritt):
+
+- In der Marktliste ein Zeichen „verkauft nicht“ an jedem Spieler eines
+  satten Vereins, der nicht auf der Liste steht — der Server muss es dafür
+  mitschicken (`transfer.satt(verein)`).
+- Die Absage „… muss nicht verkaufen und gibt … nicht ab.“ steht wie jede
+  andere Absage; das reicht.
+- transfer AC-30 wird `fertig` erst mit einem Bildnachweis davon.
+
 ## Wovon Auf- und Abwertung heute abhängt (`kader.entwickeln`)
 
 Zweimal je Saison (Winter × 0,4 ohne Altern, Sommer × 0,6 mit Altern),

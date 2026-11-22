@@ -5,7 +5,8 @@
 //
 // Was noch reisst, steht auf `offen` und der Test auf `todo` (finanzen
 // AC-17 und AC-18 halten seit Schritt 2, transfer AC-26 und AC-27 seit
-// Schritt 3, kader AC-24 und AC-25 seit Schritt 4). Wer einen Schritt des Plans baut,
+// Schritt 3, kader AC-24 und AC-25 seit Schritt 4, finanzen AC-19 und
+// transfer AC-29 seit Schritt 6). Wer einen Schritt des Plans baut,
 // nimmt das `todo` weg, sobald sein Band ueber diese Welt haelt - und prueft
 // mit `npm run manager:dynamik` ueber mehrere Startwerte, dass es nicht nur
 // hier haelt.
@@ -56,7 +57,7 @@ test('transfer AC-26: mit 24 bis 28 ist ein Jahresgehalt 15 bis 25 % des Marktwe
   pruefen('transfer AC-26');
 });
 
-test('kader AC-23: ab Saison 5 drei bis acht Spieler ab Staerke 85 in Liga 1', { todo: 'reisst seit Schritt 4 nur noch knapp: hier nur Saison 5 mit 2, ueber acht Startwerte 0 bis 12 je Saison, an zwei von acht jede Saison im Band - Rauschen, das Band verlangt jede Saison' }, () => {
+test('kader AC-23: ab Saison 5 drei bis acht Spieler ab Staerke 85 in Liga 1', { todo: 'reisst seit Schritt 6 knapp: hier nur Saison 5 mit 1, ueber acht Startwerte 0 bis 9 je Saison, an einem von acht jede Saison im Band, an den anderen ein bis drei Saisons darunter - das Band verlangt jede Saison' }, () => {
   pruefen('kader AC-23');
 });
 
@@ -68,7 +69,7 @@ test('transfer AC-27: ein Geburtstag kostet hoechstens 15 % des Marktwerts', () 
   pruefen('transfer AC-27');
 });
 
-test('finanzen AC-19: das groesste Konto der Liga 1 bleibt unter vier Jahreseinnahmen', { todo: 'reisst seit Schritt 4 hier nur noch in Saison 11 (4,6-fach) - Schritt 6 des Plans, Reichtum' }, () => {
+test('finanzen AC-19: das groesste Konto der Liga 1 bleibt unter vier Jahreseinnahmen', () => {
   pruefen('finanzen AC-19');
 });
 
@@ -78,4 +79,8 @@ test('kader AC-25: die Jugend kommt hoechstens 15 unter dem Niveau an und spielt
 
 test('kader AC-26: wer mit 25 bis 30 viel spielt, legt einen Punkt mehr zu', { todo: 'reisst heute, die Spielzeit wirkt nur bis 24 - Schritt 5 des Plans, Entwicklung' }, () => {
   pruefen('kader AC-26');
+});
+
+test('transfer AC-29: in Liga 1 wechseln ab Saison 2 je Verein mindestens 1,5 Spieler je Saison', () => {
+  pruefen('transfer AC-29');
 });

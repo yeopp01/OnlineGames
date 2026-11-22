@@ -1157,6 +1157,21 @@
       "begruendung": "Eine Eigenschaft der Marktwertformel: fuer jeden Geburtstag von 17 auf 18 bis 35 auf 36 und die Staerken 45, 60, 75 und 90 kostet ein Jahr mehr bei gleicher Staerke und gleichem Talent hoechstens 15 % des Werts. Das ist ein Vergleich desselben Spielers mit sich selbst ein Jahr spaeter, den es im Spiel so nie gibt - wer altert, aendert auch seine Staerke; ein Bildschirm zeigt den Wert eines Spielers an einem Tag. Belegt im Rechenteil an der Formel (kader.marktwert), unabhaengig von einer Welt."
     },
     {
+      "spec": "15-manager/transfer.md",
+      "ac": "AC-28",
+      "begruendung": "Dass ein Geschaeftsmodell nicht traegt, ist eine Bilanz ueber zwoelf Saisons: ein Bot holt in der Mitte der ersten und der zweiten Liga Vereinslose, setzt sie auf die Liste und nimmt jedes Angebot, und am Ende steht der Erloes abzueglich der Gehaelter gegen die Einnahmen des Vereins aus dem Spielbetrieb, gemittelt ueber drei Startwerte. Das sind Hunderte Termine und Dutzende Wechsel, gerechnet ohne Browser; ein Bildschirm zeigt ein Angebot im Postfach oder einen Kontostand an einem Tag, nicht, was sich ueber Jahre daraus ergibt. Belegt im Rechenteil (tests/manager-haendler.test.mjs), mit docs/manager/dynamik/haendler.cjs zusaetzlich ueber zwanzig Saisons."
+    },
+    {
+      "spec": "15-manager/transfer.md",
+      "ac": "AC-29",
+      "begruendung": "Eine Zahl ueber zwanzig Saisons einer Welt ohne Menschen: je Saison ab der zweiten die Zugaenge der ersten Liga aus den Akten der Spieler, geteilt durch die Zahl ihrer Vereine, mindestens 1,5. Das ist eine Summe ueber alle 18 Vereine einer Liga und zwanzig Jahre, gerechnet ohne Browser; der Ticker im Spiel zeigt die letzten vierzig Wechsel, keine Zahl je Verein und keine Folge von Jahren. Belegt im Rechenteil am Startwert 20260910, mit npm run manager:dynamik zusaetzlich an 4711, 77, 1234, 5, 99, 31337 und 2026."
+    },
+    {
+      "spec": "15-manager/finanzen.md",
+      "ac": "AC-19",
+      "begruendung": "Eine Grenze ueber zwanzig Saisons einer Welt ohne Menschen: am Ende jeder Saison das groesste Konto der ersten Liga geteilt durch die Einnahmen dieses Vereins in der Saison ohne Abloesen, unter dem Vierfachen. Das ist ein Vergleich zwischen allen 18 Vereinen einer Liga ueber zwanzig Jahre, gerechnet ohne Browser; die Oberflaeche zeigt das eigene Konto und die eigenen Einnahmen, nicht das Konto der anderen und keine Folge von Jahren. Belegt im Rechenteil am Startwert 20260910, mit npm run manager:dynamik zusaetzlich an 4711, 77, 1234, 5, 99, 31337 und 2026."
+    },
+    {
       "spec": "15-manager/kader.md",
       "ac": "AC-24",
       "begruendung": "Das Durchschnittsalter aller Vereinsspieler beider Ligen am letzten Termin vor dem Altern, ab der zweiten von zwanzig Saisons ohne Menschen zwischen 23 und 25. Das ist ein Mittel ueber rund 800 Spieler und zwanzig Jahre, gerechnet ohne Browser; die Oberflaeche zeigt den eigenen Kader und einzelne fremde an einem Tag, kein Mittel ueber alle Vereine und keine Folge von Jahren. Belegt im Rechenteil am Startwert 20260910, mit npm run manager:dynamik zusaetzlich an 4711 und 77 (an 1234 in drei Saisons 23,0 statt 23)."
