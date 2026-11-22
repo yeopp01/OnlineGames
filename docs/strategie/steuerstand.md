@@ -40,9 +40,12 @@ darstellung AC-10 „gerendert“ 44,9 Bilder/s (AC-30 übersprungen, hängt
 daran). **Gegenprobe mit/ohne Packen unentschieden:** erst schien ohne
 Packen besser (gerendert 58–59 gegen 52–58, im Gehen 54–56 gegen 43–55),
 dann fiel alles auf 25–45, auch ohne — eine Managersitzung fuhr zugleich
-Browsertests (`.claude/worktrees/manager`). **Neu messen, wenn der Rechner
-frei ist**, dann entscheiden (zlib Stufe 1 als Kandidat). Nicht committet:
-nichts offen.
+Browsertests (`.claude/worktrees/manager`), danach ein fremdes `check:kurz`.
+**Auf dem freien Rechner (Last ~20 %) nachgemessen:** mit Packen 44,5 und
+33,2, ohne 34,7 und 35,6 Bilder/s — gleich schlecht, das Packen erklärt es
+nicht; die Bildrate des Rechners ist heute insgesamt gesunken (früh 55).
+**Packen bleibt.** Die Tempofälle (darstellung AC-10, AC-30) hängen am
+Rechner; nicht gelockert.
 
 **2026-11-22, Morgen:** **F12 teilweise zusammengeführt** (`c3f7173`,
 Bilder `568f82d`): ki AC-35 (forscht), AC-39 (Krone), AC-40 (Wunder);
