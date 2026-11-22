@@ -26,6 +26,23 @@ Punkt unten sucht, sucht dort nach „Punkt <n> (Benutzer“.
 
 ## Zuletzt fortgeschrieben
 
+**2026-11-22, Abend — Durchsicht Managerspiel (Benutzer: „Kannst du vom
+Fussballmanagerspiel nochmal die Spieldynamiken dir angucken, ob die
+passen/sinnvoll sind, etc. - also was Spieler kosten, wie sie sich
+entwickeln, etc."):** Durchsicht (Fable) und Plan (Opus) **vom Benutzer
+freigegeben** („ja, es geht los … gerne auch subagenten triggern“, Bänder
+bestätigt: „kein absichtlich hartes Pflaster“). **Alles dazu liegt jetzt
+im Arbeitsbaum `C:/Users/danie/OnlineGames-dynamik`, Zweig
+`manager-dynamik` ab `manager-m1` `b45d20a`** (eigenes node_modules,
+Browser `E2E_HAFEN=4279`): `docs/manager/dynamik/durchsicht.md`,
+`plan.md` (Bänder, Schritte 0 bis 6, Wunsch nach individuellen Spielern
+mit stufenlosen Neigungen), Messskripte — committet `7aa606a`; die Kopien
+auf `strategie` sind entfernt. **Abgestimmt mit der Managersitzung**
+(`manager-m1`, Hafen 4278): sie fasst `server/spiele/manager/*` und den
+Fingerabdruck nicht an, ich `public/manager/*` nicht; `manager-m1` wird
+später in `manager-dynamik` gezogen. Schritt 0 und die Gegenproben aus
+Schritt 1 laufen als Hilfsagenten (Stand im Plan).
+
 **2026-11-22, Mittag (Benutzer einige Stunden offline):** **Dorfzentrum
 zusammengeführt** (`180df88`, bauen AC-57, F14, bedienung AC-64 auf elf;
 Board 610/716). Der ganze Browserlauf wartet auf ein fremdes `check:kurz`
@@ -192,17 +209,16 @@ die Laufregel lockern? fahrplan AC-15 für A* lockern?
 
 ## Stand
 
-- **Zweig `strategie` = `main` = `origin/main` = Server auf `b90686f`**
-  (Dorfzentrum, ausgerollt 2026-11-22 14:15 mit Freigabe trotz rotem
-  Lauf). Von außen geprüft: `/api/spiele` 200, wss steht, der Proxy
-  handelt `permessage-deflate` aus. **Nicht geprüft:** eine echte Partie
-  auf dem Server (Eröffnen braucht ein Konto) und wie stark dort gepackt
-  wird.
-  610 von 716 Kriterien fertig, 1095 Tests ohne Browser, 17 ganze Partien,
-  351 im Browser (Zahlen in `CLAUDE.md`, Board `specs/BOARD.md`).
-- **Arbeitsbäume neben dem Hauptordner:** `-speichern`
-  (`strategie-speichern` `6f955c2`, S1+S2, nach dem Ausrollen
-  zusammenführen); `-regeln` (`strategie-regeln` `d87d84f`, Doku des
+- **Zweig `strategie` = `main` = `origin/main` = Server auf `ab49274`**
+  (Speichern S1 bis S3 samt zwei Fixes, ausgerollt 2026-11-22 16:24 auf
+  sein Wort: „ja, bitte ausrollen. gerne die anderen sachen noch
+  mitfixen“). Von außen erreichbar, wss steht; in der Konten-SQLite des
+  Servers steht die Tabelle `partiestand`, noch leer. **Nicht geprüft:**
+  eine echte Partie auf dem Server sichern und öffnen (braucht ein Konto
+  dort — kein Testkonto ungefragt angelegt) und wie stark gepackt wird.
+  626 von 717 Kriterien fertig, 1126 Tests ohne Browser, 37 ganze
+  Partien, 358 im Browser (Zahlen in `CLAUDE.md`, Board `specs/BOARD.md`).
+- **Arbeitsbäume neben dem Hauptordner:** `-regeln` (`strategie-regeln` `d87d84f`, Doku des
   Regelpakets, Code als Patch im Scratchpad); `-kikrone`
   (`strategie-ki-krone` `2cefbd5`, Drachenpatch ungesichert); `-dorfzentrum`
   (gemergt, kann weg — nur auf sein Wort). Geparkt ohne Arbeitsbaum:
@@ -248,9 +264,16 @@ die Laufregel lockern? fahrplan AC-15 für A* lockern?
    357 grün, rot nur darstellung AC-30 mit 49,4 Bildern/s (Grenze 50,
    Streuung, nicht gelockert), keine Zip-Fehler; `qa:abweichung` 31 über
    1 %, angesehen (Kamera, Ablauf, Zufall); `check:kurz` grün (1126
-   Tests, 37 Partien); Bilder lokal committet `55bbb31`. **Nicht
-   gepusht, nicht ausgerollt** — das Ausrollen des Speicherns braucht
-   sein Wort, dazu die Fragen oben.
+   Tests, 37 Partien); Bilder `55bbb31`. **Ausgerollt** mit `ab49274`
+   (Benutzer: „ja, bitte ausrollen. gerne die anderen sachen noch
+   mitfixen“ — gegen die gesetzten Entscheidungen nichts eingewandt).
+   Die zwei Fixes: oben verschwindet der Pausenknopf, solange das Feld
+   in der Mitte steht (Klasse `imPausefeld`, nicht `hidden` — daran
+   hängt das Menü; F3 bleibt); der Browser merkt sich mit dem Platz,
+   wie lange die Partie wartet (`wartet`: allein mit Sichern 2 min,
+   sonst 30), und bietet danach keine Rückkehr mehr an — belegt in
+   speichern AC-8, Gegenprobe fällt. Pause, Fortsetzen und
+   Rückmeldungen im Browser 35 grün, `check:kurz` grün (1126, 37).
 4. **Regelpaket** als Agent (Entscheidung 1 oben): Laufregel,
    Seitengleichheit, Pfeilflug; ki AC-25 mit eigenen Einheiten; Reiterschütze
    nur Schützenlinie; `ki.farmbauer` klären. Nur fahrplan AC-15 und die
