@@ -1327,6 +1327,16 @@
       "begruendung": "Gezaehlt in der Tabelle der Saetze (je Art und Ausgang sechs, keiner doppelt, nur bekannte Platzhalter, ein Tor nennt immer den Schuetzen) und ueber 2.000 Spiele (kein Platzhalter bleibt stehen, kein Satz zweimal in einem Spiel, kein Name steht fuer zwei Spieler); dazu ein Abgleich, dass keine Datei unter public/ einen Platzhalter oder die Saetze traegt. Ein Bildschirm zeigt einige Saetze, nicht dass keiner fehlt und keiner im Browser entsteht. Wie die Saetze im Ticker stehen, zeigt das Bild zu oberflaeche AC-19."
     },
     {
+      "spec": "15-manager/spieltag.md",
+      "ac": "AC-30",
+      "begruendung": "Dass die Ansprache je Lage verschieden wirkt, ist eine Zahl: Punkte je Spiel ueber 1500 gepaarte Halbzeiten je Lage und Moral, einmal ohne und einmal mit jeder der drei Ansprachen zu Ende gerechnet, mit demselben Zufall. Die Unterschiede liegen bei zwei bis vier Hundertstel Punkten - kein einzelnes Spiel und kein Bildschirm zeigt sie. Wie die Kabine zur Halbzeit aussieht, zeigt das Bild zu oberflaeche AC-21, sobald die Oberflaeche dafuer steht."
+    },
+    {
+      "spec": "15-manager/spieltag.md",
+      "ac": "AC-32",
+      "begruendung": "Eine Regel der Spielrechnung: wer nach einem Systemwechsel auf welchen Platz kommt und was das kostet. Belegt mit einer Gleichheit ueber vierzig Spiele - ein Wechsel in Minute 0 ergibt Ereignis fuer Ereignis dasselbe Spiel, als haette dieselbe Elf in diesem System begonnen - und mit einem Wechsel zur Halbzeit in ein System, das die Elf kaum kennt. Ein Bild zeigte elf Namen auf neuen Plaetzen, aber nicht, dass sie nach der Regel vor dem Spiel gestellt sind und der Wechsel kostet. Den Knopf dafuer im laufenden Spiel zeigt das Bild zu oberflaeche AC-20."
+    },
+    {
       "spec": "15-manager/aufstellung.md",
       "ac": "AC-19",
       "begruendung": "Was eine Woche Schwerpunkt bringt und kostet - eine Rechenregel ueber Wochen. Wie das Geuebte waechst, zeigt das Bild zu aufstellung AC-21."

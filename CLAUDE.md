@@ -185,7 +185,7 @@ Umfang hinzufügt, dort nachsehen.
 
 ## Stand
 
-**620 von 735 Kriterien fertig.** 1114 Tests ohne Browser und 17 ganze Partien, 351 im Browser. Die
+**622 von 735 Kriterien fertig.** 1118 Tests ohne Browser und 17 ganze Partien, 351 im Browser. Die
 Übersicht ist der Bericht: `npm run qa:report`.
 
 Gebaut ist der Unterbau: Räume, Übertragung, Karte, Wegfindung, Sammeln,

@@ -60,7 +60,9 @@ const RICHTIG = ['dauer', 'bau', 'mauer', 'neue', 'feuer', 'aktuell', 'quelle', 
   // aus dem Managerspiel
   'zuschauer', 'vertrau', 'zuerst', 'teuer', 'quell', 'value', 'true', 'query', 'blue', 'queue',
   // aus den Saetzen des Spieltags (texte.js)
-  'quer', 'lauer'];
+  'quer', 'lauer',
+  // die Ansprache zur Halbzeit (spieltag AC-30)
+  'aufbau'];
 const richtig = (wort) => RICHTIG.some((stamm) => wort.toLowerCase().startsWith(stamm));
 
 // Umschriebenes ß laesst sich nicht an Buchstaben erkennen ("Klasse" ist

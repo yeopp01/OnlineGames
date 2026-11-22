@@ -2,7 +2,7 @@
 
 **Bereich:** Manager
 **Kuerzel:** spieltag
-**Stand:** 27/31 fertig · 4 offen
+**Stand:** 29/31 fertig · 2 offen
 
 ## Zweck
 
@@ -99,8 +99,8 @@ Platz steht.
 - **AC-26** `fertig` **Ein Spiel lässt sich anhalten** — Ein Spiel ist ein
   Datenwert: `anpfiff()` legt es an, `spielen()` rechnet bis zu einer Minute
   und keinen Abschnitt darüber hinaus, `eingreifen()` wechselt oder dreht an
-  Ausrichtung, Härte und Pressing — wirksam ab dem nächsten Abschnitt, das
-  System bleibt —, `abpfiff()` gibt das Ergebnis. Dazwischen übersteht es eine
+  Ausrichtung, Härte und Pressing, seit AC-32 auch am System — wirksam ab dem
+  nächsten Abschnitt —, `abpfiff()` gibt das Ergebnis. Dazwischen übersteht es eine
   Sicherung als JSON, der Zufall eingeschlossen (`zufall.a`). Ohne Eingriff
   kommt stückweise genau heraus, was `begegnung()` am Stück rechnet, auch mit
   Verlängerung und Elfmeterschießen. Was nicht geht, weist `eingreifen()` mit
@@ -132,21 +132,29 @@ Erst M2 lässt Fähigkeiten an den Gewichten drehen
   zweimal. Genannt wird der Nachname, und kommt er in der Begegnung zweimal
   vor, der ganze Name — kein Name steht für zwei Spieler. Der Browser setzt
   nichts zusammen.
-- **AC-30** `offen` **Die Kabine wirkt verschieden** — Zur Halbzeit eine von
+- **AC-30** `fertig` **Die Kabine wirkt verschieden** — Zur Halbzeit eine von
   drei Ansprachen: ruhig bleiben, aufbauen, laut werden. Laut hebt bei
   Rückstand und drückt bei Führung, aufbauen hilft einer Elf mit schwacher
   Moral und verpufft bei starker. Gemessen je Lage über 1500 Spiele: keine
   Ansprache ist in jeder Lage die beste. Stellwerte in `WIRKUNG.ansprache`.
+  Sie wirkt auf die Moral im Spiel, nicht auf die im Verein, und wird je
+  Seite einmal gehalten. Gemessen (2026-11-22): laut bei Rückstand +0,02
+  Punkte je Spiel, bei Führung mit starker Moral −0,03; aufbauen bei
+  schwacher Moral +0,02 bis +0,04, bei starker genau nichts — die Wirkung
+  ist klein, gewollt (AC-33). Die KI hält keine Ansprache.
 - **AC-31** `offen` **Auch die anderen stellen um** — Ab Minute 60 stellt ein
   Verein des Servers bei Rückstand offensiver, bei knapper Führung
   defensiver — über `eingreifen()`, wie ein Mensch. Die Tore je Spiel bleiben
   zwischen 2,7 und 3,5, die Kennzahlen der übrigen Kriterien halten. Das
   ändert die Welt: eigene Runde, neue Abdrücke der Gleichstandsprobe mit
   Begründung.
-- **AC-32** `offen` **Das System im Spiel wechseln** — Im laufenden Spiel
+- **AC-32** `fertig` **Das System im Spiel wechseln** — Im laufenden Spiel
   lässt sich auch das System wechseln, mit neuen Plätzen ab dem nächsten
   Abschnitt; ein System, das die Elf nicht kennt, kostet wie vor dem Spiel
-  (AC-25). Bis dahin weist `eingreifen()` es ab (AC-26).
+  (AC-25). Wer auf dem Platz steht, bekommt den Platz nach derselben Regel
+  wie vor dem Spiel: ein Wechsel in Minute 0 ist dasselbe Spiel, als hätte
+  dieselbe Elf in diesem System begonnen. Im Bericht steht die Startelf
+  weiter auf ihren alten Plätzen.
 - **AC-33** `offen` **Eingreifen lohnt maßvoll** — Ein Mensch, der gut
   eingreift, holt über eine Saison höchstens drei bis fünf Punkte mehr als die
   Automatik — sonst wäre „Sofort“ eine Strafe. Gemessen mit einer Regel, die

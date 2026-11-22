@@ -52,12 +52,15 @@ const zahlOderNichts = (wert) => (wert === undefined || wert === null || wert ==
 const ZUEGE = {
   weiter: (k) => k.weiter(),
   // Das eigene Spiel live: anpfeifen rechnet den Termin, spiel rechnet weiter
-  // bis zu einer Minute, mit Wechsel oder Taktik (karriere AC-30 bis AC-32).
+  // bis zu einer Minute, mit Wechsel, Taktik oder - zur Halbzeit - der
+  // Ansprache (karriere AC-30 bis AC-32, spieltag AC-30).
   anpfeifen: (k, n, m) => k.anpfeifen(m),
   spiel: (k, n, m) => k.liveSpielen(m, {
     bis: ganzeZahl(n.bis),
+    ansprache: typeof n.ansprache === 'string' ? n.ansprache : null,
     wechsel: n.wechsel && typeof n.wechsel === 'object' ? { raus: String(n.wechsel.raus), rein: String(n.wechsel.rein) } : null,
     taktik: n.taktik && typeof n.taktik === 'object' ? {
+      system: typeof n.taktik.system === 'string' ? n.taktik.system : undefined,
       ausrichtung: zahlOderNichts(n.taktik.ausrichtung),
       haerte: zahlOderNichts(n.taktik.haerte),
       pressing: zahlOderNichts(n.taktik.pressing),

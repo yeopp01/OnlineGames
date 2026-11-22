@@ -21,7 +21,7 @@
 // `begegnung()` aendert an den Vereinen nichts - sie liest nur. Was bleibt,
 // traegt `nachwirkung()` nach.
 const {
-  TOR, ABW, MIT, ANG, PLAETZE, TEIL, tagesform, niveau, einsatzbereit, eignung,
+  TOR, ABW, MIT, ANG, PLAETZE, TEIL, tagesform, niveau, einsatzbereit, eignung, plaetzeBesetzen,
 } = require('./kader');
 const { ziehen } = require('./zufall');
 const { kleiden, szenenAnlegen } = require('./szenen');
@@ -49,6 +49,7 @@ const { kleiden, szenenAnlegen } = require('./szenen');
 const SCHEIBE = 5;
 const SCHEIBEN = 18;
 const VERLAENGERUNG = 6;
+const HALBZEIT = (SCHEIBEN / 2) * SCHEIBE;
 const HEIMVORTEIL = 1.1;
 const CHANCEN_JE_SPIEL = 19;
 // Erwartete Karten je Mannschaft bei mittlerer Haerte.
@@ -81,7 +82,14 @@ const AUSRICHTUNGEN = ['Mauern', 'Defensiv', 'Ausgewogen', 'Kontrollierte Offens
 // `tempo`: wie viel mehr Chancen ein offenes Spiel fuer beide Seiten hat.
 const WIRKUNG = {
   angriff: 0.03, abwehr: 0.06, tempo: 0.12, pressing: 0.04, haerte: 0.05, geuebt: 0.06, hebel: 1.5, verwertung: 0.34,
+  // Die Ansprache zur Halbzeit (AC-30), in Punkten Moral fuer die zweite
+  // Halbzeit: `laut` hebt bei Rueckstand, drueckt bei Fuehrung, ein Drittel
+  // davon bei Gleichstand; `aufbauen` hilft nach schwacher Moral und verpufft
+  // ab `stark`; `ruhig` hilft einer Elf, die fuehrt. Gesetzt, gemessen in
+  // tests/manager-anhalten.test.mjs.
+  ansprache: { laut: 12, aufbauen: 18, stark: 70, ruhig: 6 },
 };
+const ANSPRACHEN = ['ruhig', 'aufbauen', 'laut'];
 // Mehr Leute auf einer Position wiegen schwerer - im Sturm am meisten, im
 // Mittelfeld am wenigsten. Sonst gewaenne immer, wer das Mittelfeld fuellt.
 const ANZAHL_GEWICHT = { [ABW]: [0.70, 0.075], [MIT]: [0.84, 0.04], [ANG]: [0.76, 0.08] };
@@ -175,6 +183,8 @@ function seiteAnlegen(verein, {
     spieler: {},
     taktik: geprueft,
     geuebt: eingeuebt(verein, geprueft.system),
+    // Wie gut die Elf jedes System kennt - fuer einen Wechsel im Spiel (AC-32).
+    systeme: Object.fromEntries(Object.keys(PLAETZE).map((name) => [name, eingeuebt(verein, name).system])),
     wechselregel: wechselregel === 'verletzung' ? 'verletzung' : 'auto',
     frische,
     minuten,
@@ -585,16 +595,20 @@ function spielen(spiel, bisMinute) {
  *
  * @param {Spiel} spiel  aus `anpfiff()`
  * @param {'heim'|'gast'} welche
- * @param {{ wechsel?: {raus: string, rein: string}, taktik?: Partial<Taktik> }} [was]
+ * @param {{ wechsel?: {raus: string, rein: string}|null, taktik?: Partial<Taktik>|null, ansprache?: string|null }} [was]
  * @returns {{ok: true}|{fehler: string}}
  */
-function eingreifen(spiel, welche, { wechsel = null, taktik = null } = {}) {
+function eingreifen(spiel, welche, { wechsel = null, taktik = null, ansprache = null } = {}) {
   if (spiel.vorbei) return { fehler: 'Das Spiel ist vorbei.' };
   if (welche !== 'heim' && welche !== 'gast') return { fehler: 'Heim oder Gast?' };
   const seite = spiel.seiten[welche === 'heim' ? 0 : 1];
-  if (taktik && taktik.system !== undefined && taktik.system !== seite.taktik.system) {
-    return { fehler: 'Das System lässt sich im Spiel nicht wechseln.' };
+  if (ansprache !== null) {
+    if (!ANSPRACHEN.includes(ansprache)) return { fehler: 'Ruhig bleiben, aufbauen oder laut werden?' };
+    if (spiel.minute !== HALBZEIT || spiel.verlaengerung) return { fehler: 'Angesprochen wird in der Halbzeit.' };
+    if (seite.ansprache) return { fehler: 'Die Ansprache ist gehalten.' };
   }
+  const neuesSystem = taktik && taktik.system !== undefined && taktik.system !== seite.taktik.system ? taktik.system : null;
+  if (neuesSystem !== null && !PLAETZE[neuesSystem]) return { fehler: `Unbekanntes System: ${neuesSystem}` };
   let ein = null;
   if (wechsel) {
     if (spiel.minute === 0) return { fehler: 'Gewechselt wird erst nach dem Anpfiff.' };
@@ -606,9 +620,44 @@ function eingreifen(spiel, welche, { wechsel = null, taktik = null } = {}) {
     if ((rein.position === TOR) !== (raus.platz === 'TW')) return { fehler: 'Ins Tor gehört ein Torwart, ins Feld keiner.' };
     ein = { raus, rein };
   }
-  if (taktik) seite.taktik = taktikPruefen({ ...seite.taktik, ...taktik, system: seite.taktik.system });
+  if (taktik) seite.taktik = taktikPruefen({ ...seite.taktik, ...taktik, system: neuesSystem ?? seite.taktik.system });
   if (ein) einwechseln(seite, ein.raus, ein.rein, spiel.minute, spiel.ereignisse, 'trainer');
+  if (neuesSystem) systemWechseln(seite, neuesSystem);
+  if (ansprache) ansprechen(seite, spiel.seiten[welche === 'heim' ? 1 : 0], ansprache);
   return { ok: true };
+}
+
+/**
+ * Die Ansprache zur Halbzeit (AC-30): sie bewegt die Moral derer, die auf
+ * dem Platz stehen oder noch kommen koennen - fuer dieses Spiel. Der Verein
+ * bleibt unberuehrt; was danach bleibt, traegt `nachwirkung()` nach.
+ */
+function ansprechen(seite, gegner, art) {
+  const w = WIRKUNG.ansprache;
+  const lage = Math.sign(seite.tore - gegner.tore);
+  const um = (s) => {
+    if (art === 'laut') return lage < 0 ? w.laut : lage > 0 ? -w.laut : Math.round(w.laut / 3);
+    if (art === 'aufbauen') return Math.round(w.aufbauen * Math.max(0, 1 - s.moral / w.stark));
+    return lage > 0 ? w.ruhig : 0;
+  };
+  for (const s of [...seite.auf, ...seite.bank]) s.moral = Math.min(100, Math.max(10, s.moral + um(s)));
+  seite.ansprache = art;
+}
+
+/**
+ * Ein anderes System im laufenden Spiel (AC-32): wer auf dem Platz steht,
+ * bekommt den Platz, auf dem er im neuen System am meisten bringt - nach
+ * derselben Regel wie vor dem Spiel, mit der Frische von jetzt. Und es
+ * kostet, was es vor dem Spiel kostete: so viel, wie die Elf es kennt (AC-25).
+ */
+function systemWechseln(seite, system) {
+  const plaetze = PLAETZE[system];
+  // Mit den Werten aus dem Verein, nicht denen des alten Platzes.
+  const roh = seite.auf.map((s) => ({ ...s, ...(seite.spieler[s.id] || {}) }));
+  const jetzt = roh.map((s) => ({ ...s, kondition: seite.frische[s.id] ?? s.kondition }));
+  const besetzt = plaetzeBesetzen(plaetze, jetzt);
+  seite.auf = besetzt.flatMap((s, i) => (s ? [aufDemPlatz(roh[jetzt.indexOf(s)], plaetze[i])] : []));
+  seite.geuebt = { ...seite.geuebt, system: seite.systeme[system] ?? 0.5 };
 }
 
 /**
@@ -755,5 +804,5 @@ function nachwirkung(verein, ergebnis) {
 module.exports = {
   begegnung, anpfiff, spielen, eingreifen, abpfiff, nachwirkung, taktikPruefen, eingeuebt, ermuedung, mannschaftsteile,
   TAKTIK_VORGABE, AUSRICHTUNGEN, HEIMVORTEIL, ERMUEDUNG_JE_MINUTE, SPIELPRAXIS, WIRKUNG, ANZAHL_GEWICHT,
-  GELBSPERRE, ROTSPERRE, GELBROTSPERRE, WECHSEL_MAX, SCHEIBEN,
+  GELBSPERRE, ROTSPERRE, GELBROTSPERRE, WECHSEL_MAX, SCHEIBEN, HALBZEIT, ANSPRACHEN,
 };

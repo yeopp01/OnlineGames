@@ -28,9 +28,9 @@ class Live {
    * Eingriff. Ist es aus, schliesst der Termin.
    *
    * @param {string} managerId
-   * @param {{bis?: number|null, wechsel?: {raus: string, rein: string}|null, taktik?: object|null}} zug
+   * @param {{bis?: number|null, wechsel?: {raus: string, rein: string}|null, taktik?: object|null, ansprache?: string|null}} zug
    */
-  liveSpielen(managerId, { bis = null, wechsel = null, taktik = null } = {}) {
+  liveSpielen(managerId, { bis = null, wechsel = null, taktik = null, ansprache = null } = {}) {
     const offen = this.offen;
     if (!offen) return { fehler: 'Es läuft kein Spiel.' };
     const manager = this.managerMit(managerId);
@@ -38,8 +38,8 @@ class Live {
     const { spiel } = offen.live;
     // Was der Zug nicht nennt, bleibt, wie es ist.
     const geaendert = taktik && Object.fromEntries(Object.entries(taktik).filter(([, wert]) => wert !== undefined && wert !== null));
-    if (wechsel || (geaendert && Object.keys(geaendert).length)) {
-      const eingriff = eingreifen(spiel, offen.live.seite, { wechsel, taktik: geaendert });
+    if (wechsel || ansprache || (geaendert && Object.keys(geaendert).length)) {
+      const eingriff = eingreifen(spiel, offen.live.seite, { wechsel, taktik: geaendert, ansprache });
       if (eingriff.fehler) return eingriff;
     }
     if (bis !== null) {
@@ -89,6 +89,7 @@ class Live {
         bank: eigene.bank.map((s) => ({ id: s.id, name: s.name, position: s.position })),
         wechsel: eigene.wechsel,
         taktik: eigene.taktik,
+        ansprache: eigene.ansprache ?? null,
       },
     };
   }

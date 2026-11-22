@@ -141,8 +141,8 @@ test('spieltag AC-26: was nicht geht, weist eingreifen() ab und aendert nichts',
   };
   abgewiesen({ taktik: { ausrichtung: 1 } }, 'beide', 'Heim oder Gast?');
   abgewiesen({ wechsel: { raus: feld().id, rein: ersatz().id } }, 'gast', 'Gewechselt wird erst nach dem Anpfiff.');
-  const anderes = seite.taktik.system === '4-4-2' ? '3-5-2' : '4-4-2';
-  abgewiesen({ taktik: { system: anderes } }, 'gast', 'Das System lässt sich im Spiel nicht wechseln.');
+  // Ein anderes System geht seit spieltag AC-32 - eines, das es nicht gibt, nicht.
+  abgewiesen({ taktik: { system: '2-2-6' } }, 'gast', 'Unbekanntes System: 2-2-6');
 
   spielen(spiel, 30);
   abgewiesen({ wechsel: { raus: 'niemand', rein: ersatz().id } }, 'gast', 'Dieser Spieler steht nicht auf dem Platz.');
@@ -159,4 +159,60 @@ test('spieltag AC-26: was nicht geht, weist eingreifen() ab und aendert nichts',
 
   spielen(spiel, Infinity);
   abgewiesen({ taktik: { ausrichtung: 1 } }, 'heim', 'Das Spiel ist vorbei.');
+});
+
+// ------------------------------------------------- spieltag AC-32
+
+const { widersprueche } = await import('./manager-hilfe.mjs');
+
+test('spieltag AC-32: ein Systemwechsel in Minute 0 ist dasselbe wie mit diesem System begonnen', () => {
+  let verglichen = 0;
+  for (let i = 0; i < 40; i++) {
+    const heim = vereine[i % vereine.length];
+    const gast = vereine[(i + 5) % vereine.length];
+    const neu = heim.taktik.system === '3-5-2' ? '4-3-3' : '3-5-2';
+    const start = aufstellung(heim);
+    // Dieselben elf, fuer das neue System so gestellt, wie es vor dem Spiel geschaehe.
+    const elf = kader.plaetzeBesetzen(kader.PLAETZE[neu], start.elf).filter(Boolean);
+    if (elf.length !== 11) continue;
+    const zufall = zufallAus(100 + i);
+
+    const gewechselt = anpfiff(heim, gast, { a: zufall.stand.a }, einstellungenFuer(heim, gast));
+    assert.deepEqual(eingreifen(gewechselt, 'heim', { taktik: { system: neu } }), { ok: true });
+    const so = abpfiff(gewechselt);
+
+    const begonnen = abpfiff(anpfiff(heim, gast, { a: zufall.stand.a }, {
+      aufstellungen: { heim: { ...start, elf, system: neu }, gast: aufstellung(gast) },
+      taktiken: { heim: { ...heim.taktik, system: neu } },
+    }));
+    assert.deepEqual(so.ereignisse, begonnen.ereignisse, `Spiel ${i}`);
+    assert.deepEqual([so.tore, so.eingespielt, so.taktik], [begonnen.tore, begonnen.eingespielt, begonnen.taktik]);
+    verglichen += 1;
+  }
+  assert.ok(verglichen >= 30, `${verglichen} verglichen`);
+});
+
+test('spieltag AC-32: neue Plaetze ab dem naechsten Abschnitt, und es kostet, was die Elf nicht kennt', () => {
+  const heim = structuredClone(vereine[3]);
+  const gast = vereine[8];
+  const neu = heim.taktik.system === '4-3-3' ? '3-5-2' : '4-3-3';
+  heim.einstudiert = { ...heim.einstudiert, systeme: { ...heim.einstudiert.systeme, [neu]: 10 } };
+  const spiel = anpfiff(heim, gast, zufallAus(7), einstellungenFuer(heim, gast));
+  spielen(spiel, 45);
+  const vorher = spiel.ereignisse.length;
+  const aufVorher = spiel.seiten[0].auf.map((s) => s.id).sort();
+  assert.deepEqual(eingreifen(spiel, 'heim', { taktik: { system: neu } }), { ok: true });
+  const seite = spiel.seiten[0];
+  // Dieselben Leute, auf den Plaetzen des neuen Systems; nichts Vergangenes geaendert.
+  assert.deepEqual(seite.auf.map((s) => s.id).sort(), aufVorher);
+  assert.deepEqual(seite.auf.map((s) => s.platz).sort(), kader.PLAETZE[neu].slice(0, seite.auf.length).sort());
+  assert.equal(spiel.ereignisse.length, vorher);
+  assert.equal(seite.geuebt.system, 0.1, 'kennt die Elf es kaum, kostet es fast die ganzen sieben Prozent');
+  assert.equal(seite.taktik.system, neu);
+
+  const ergebnis = abpfiff(spiel);
+  assert.deepEqual(widersprueche(ergebnis), []);
+  assert.equal(ergebnis.taktik.heim.system, neu);
+  // Die Startelf steht im Bericht weiter auf ihren alten Plaetzen.
+  assert.deepEqual(ergebnis.aufstellung.heim.plaetze, kader.PLAETZE[heim.taktik.system]);
 });
