@@ -60,6 +60,21 @@ Punkt unten sucht, sucht dort nach „Punkt <n> (Benutzer“.
 13. **Reitertempo 1,55 passt.** Ton: noch nicht gehört.
 Altes Bild AC-57 (Militärseite) darf weg (Benutzer: „Ja, entfernen“).
 
+**2026-11-22, später Nachmittag:** **Speichern S1 und S2 fertig, NICHT
+zusammengeführt** — `strategie-speichern` `da39f1e` (S1: `welt.sichern()`,
+`steckbrief.laden()`, „FAST“ + Fassung + deflateRaw(v8.serialize), über 20
+Startwerte Takt für Takt gleich) und `6f955c2` (S2: `server/partiestaende.js`
+in der Konten-SQLite, `wert`/`vorher`, höchstens 5 je Konto,
+`/api/partien`, Sichern je Spielminute, beim Leeren und Anhalten,
+SIGTERM/SIGINT → `allesSichern()`); check:kurz grün, 1110 Tests, 37
+Partien; Board dort 618/715. speichern AC-6 `in-arbeit` (Meldung im Bild
+kommt mit S3). Gesetzt vom Agenten: bei 5 Ständen wird die neue Partie
+nicht gesichert (noch ohne Meldung), Stand 18–121 KB, Sichern 2–20 ms,
+geschätzt 40 ms einmal je Minute in einer großen Partie (nicht gemessen),
+kein WAL. **Erst nach dem Ausrollen zusammenführen** (der Benutzer hat das
+Ausrollen von Dorfzentrum + Browserlauf freigegeben, nicht das Speichern),
+dann S3 (Oberfläche, Browser mit eigenem Hafen).
+
 **2026-11-22, Nachmittag:** **Speichern S1 (dann S2) läuft als Agent** im
 Arbeitsbaum `../OnlineGames-speichern` (Zweig `strategie-speichern`,
 `E2E_HAFEN=4394`): speichern AC-1, AC-2, AC-5, AC-16, AC-17 — Welt und KI
