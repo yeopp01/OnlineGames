@@ -2,7 +2,7 @@
 
 **Bereich:** Manager
 **Kuerzel:** oberflaeche
-**Stand:** 15/15 fertig
+**Stand:** 16/16 fertig
 
 ## Zweck
 
@@ -79,3 +79,11 @@ gescrollt, gemessen (→ [ADR-0010](../../docs/adr/0010-playwright.md)).
 - **AC-16** `fertig` **Die Saisonbilanz** — Nach dem Saisonende zeigt das Büro
   Meister, Pokalsieger, Auf- und Absteiger, den eigenen Platz gegen das Ziel
   und die Abschlusstabelle.
+- **AC-18** `fertig` **Hell und lesbar** — Das Managerspiel trägt das Kleid
+  des [Spieltag-Entwurfs](../../docs/manager/entwurf/spieltag.html): Kreide
+  als Grund, Tinte als Schrift, der Kopf als Platte in der Farbe des eigenen
+  Vereins, Überschriften und große Zahlen in einer schmalen Schrift.
+  Kräftig sind nur Verein und Rasen. Hell heißt nicht blass: auf der Seite
+  der Spielstände und auf allen acht Blättern hält jeder sichtbare Text
+  gegen seinen Grund mindestens 4,5 : 1, große Schrift 3 : 1 (WCAG AA);
+  ausgenommen ist nur, was gesperrt ist.

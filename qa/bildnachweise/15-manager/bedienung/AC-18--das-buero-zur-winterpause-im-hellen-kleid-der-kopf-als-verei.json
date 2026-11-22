@@ -1,0 +1,10 @@
+{
+  "spec": "15-manager/bedienung.md",
+  "ac": "AC-18",
+  "titel": "Das Buero zur Winterpause im hellen Kleid: der Kopf als Vereinsplatte, Kreide als Grund, jeder Text auf neun Seiten mindestens 4,5 zu 1",
+  "datei": "e2e/tests/manager-aussehen.spec.mjs",
+  "pfad": [
+    "Das Aussehen",
+    "oberflaeche AC-18: hell nach dem Entwurf, jeder Text haelt 4,5 zu 1"
+  ]
+}

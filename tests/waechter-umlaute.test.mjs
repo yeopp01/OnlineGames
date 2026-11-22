@@ -199,6 +199,23 @@ function texteStreng(inhalt, html) {
       if (hatTags || /\s/.test(teil) || /^[A-ZÄÖÜ]/.test(teil.trim())) texte.push(teil);
     }
   }
+  if (!html) texte.push(...zweigeEinerWahl(inhalt));
+  return texte;
+}
+
+/**
+ * Ein einzelnes kleines Wort ist sonst ein Schluessel - ausser es steht in
+ * einer Kette `a ? 'x' : b ? 'y' : 'z'` neben einem Zweig, der Text ist
+ * ('neutraler Platz' : ... : 'auswaerts'). Gelesen je Zeile.
+ */
+function zweigeEinerWahl(inhalt) {
+  const texte = [];
+  for (const zeile of inhalt.split('\n')) {
+    if (/^\s*(\/\/|\*)/.test(zeile)) continue;
+    const zweige = [...zeile.matchAll(/[?:]\s*'([^'\\]*)'/g)].map((m) => m[1]);
+    if (zweige.length < 2) continue;
+    if (zweige.some((z) => /\s/.test(z.trim()) || /^[A-ZÄÖÜ]/.test(z))) texte.push(...zweige);
+  }
   return texte;
 }
 
@@ -225,6 +242,8 @@ test('manager AC-16: die strenge Lesart findet Text in Vorlagen und laesst Schlu
   assert.deepEqual(lesen('x = `<button data-loeschen="${s.id}" class="leise">Loeschen</button>`;'), ['Loeschen']);
   assert.deepEqual(lesen("zug('verlaengern', { id });"), []);
   assert.deepEqual(lesen('x = `${a} bietet ${b} fuer ${c}`;'), ['fuer']);
+  assert.deepEqual(lesen("const wo = v.neutral ? 'neutraler Platz' : v.daheim ? 'daheim' : 'auswaerts';"), ['auswaerts']);
+  assert.deepEqual(lesen("const art = heim ? 'naechster' : 'erledigt';"), []);
   assert.deepEqual(lesen("const r = /aeh|oeh/g; const t = 'Fuer dich';"), ['Fuer']);
   assert.deepEqual(lesen("// Kommentar mit Naechstes\nconst a = 'gut';"), []);
   assert.deepEqual(lesen("db.prepare('INSERT INTO t VALUES (?)');"), []);

@@ -771,7 +771,7 @@ function staerkeZeigen() {
   const eigen = werte(s.niveau, s.teile);
   const gegner = v ? werte(v.gegner.niveau, v.gegner.teile) : null;
   const zeile = (name, zellen) => `<tr><td class="links">${name}</td>${zellen.map((z) => `<td>${z}</td>`).join('')}</tr>`;
-  const wo = v ? (v.neutral ? 'neutraler Platz' : v.daheim ? 'daheim' : 'auswaerts') : '';
+  const wo = v ? (v.neutral ? 'neutraler Platz' : v.daheim ? 'daheim' : 'auswärts') : '';
   return `<section id="staerke" class="karte">
     <h2>Stärke <span class="leise">Kader ${s.niveau} · Platz ${s.rang} von ${s.vereine} in der ${stand.verein.liga}. Liga</span></h2>
     <div class="tabellenrahmen"><table id="staerkeTabelle">
@@ -914,8 +914,8 @@ function verlaengernDialog(s) {
 
 // Zeichen für den Ticker als kleine Formen statt Emoji: Emoji sehen auf jedem
 // System anders aus, unter Windows wird aus dem Ball ein Globus.
-const BALL = '<svg class="ball" viewBox="0 0 32 32" aria-hidden="true"><circle cx="16" cy="16" r="14" fill="#e6e9ee"/>'
-  + '<path d="M16 8l6 4.4-2.3 7H12.3l-2.3-7z" fill="#14171c"/></svg>';
+const BALL = '<svg class="ball" viewBox="0 0 32 32" aria-hidden="true"><circle cx="16" cy="16" r="14" fill="#fbfbf8" stroke="#1c2128" stroke-width="2"/>'
+  + '<path d="M16 8l6 4.4-2.3 7H12.3l-2.3-7z" fill="#1c2128"/></svg>';
 const ZEICHEN = {
   tor: BALL,
   gelb: '<i class="kartenzeichen gelb"></i>',
@@ -1037,7 +1037,7 @@ const TEILE = [['torwart', 'Torwart'], ['abwehr', 'Abwehr'], ['mittelfeld', 'Mit
 const AUSGANG = { S: 'Sieg', U: 'Unentschieden', N: 'Niederlage' };
 
 function vorschauZeigen(v) {
-  const wo = v.neutral ? 'neutraler Platz' : v.daheim ? 'daheim' : 'auswaerts';
+  const wo = v.neutral ? 'neutraler Platz' : v.daheim ? 'daheim' : 'auswärts';
   const verein = (s, seite) => `<div class="verein ${seite}">
       <b>${text(s.name)}</b>
       <small>${s.platz ? `Platz ${s.platz} · ${s.punkte} Pkt` : `${s.liga}. Liga`} · Kader ${s.niveau} · ${s.system}</small>
