@@ -2,7 +2,7 @@
 
 **Bereich:** Plattform
 **Kuerzel:** speichern
-**Stand:** 3/26 fertig · 23 offen
+**Stand:** 12/26 fertig · 1 in Arbeit · 13 offen
 
 ## Zweck
 
@@ -43,18 +43,18 @@ nicht das Sichern, sondern das Wiederzusammenkommen.
 
 ### Sichern
 
-- **AC-1** `offen` **Ein Spielstand ist ein Datenwert** — Die Welt liefert über `sichern()` einen
+- **AC-1** `fertig` **Ein Spielstand ist ein Datenwert** — Die Welt liefert über `sichern()` einen
   Wert, aus dem `laden()` dieselbe Welt wieder herstellt. Kein Zugriff auf
   Dateien im Spiel selbst.
-- **AC-2** `offen` **Laden ergibt exakt dieselbe Welt** — Sichern, laden, sichern: der zweite Wert
+- **AC-2** `fertig` **Laden ergibt exakt dieselbe Welt** — Sichern, laden, sichern: der zweite Wert
   ist gleich dem ersten. Ohne diese Zusicherung schleichen sich Verluste ein,
   die erst nach Wochen auffallen.
-- **AC-3** `offen` **Selbsttätig jede Minute** — Ein Absturz kostet höchstens eine Minute Arbeit.
-- **AC-4** `offen` **Gesichert wird auch beim Anhalten** — Und beim geordneten Herunterfahren des
+- **AC-3** `fertig` **Selbsttätig jede Minute** — Ein Absturz kostet höchstens eine Minute Arbeit.
+- **AC-4** `fertig` **Gesichert wird auch beim Anhalten** — Und beim geordneten Herunterfahren des
   Servers.
-- **AC-5** `offen` **Ein Spielstand bleibt klein** — Unter 1 MB. Was oft geschrieben wird, muss
+- **AC-5** `fertig` **Ein Spielstand bleibt klein** — Unter 1 MB. Was oft geschrieben wird, muss
   klein sein; das ist eine Anforderung an das Spiel, nicht an die Ablage.
-- **AC-6** `offen` **Kaputter Spielstand nimmt nichts mit** — Lässt er sich nicht laden, sagt
+- **AC-6** `in-arbeit` **Kaputter Spielstand nimmt nichts mit** — Lässt er sich nicht laden, sagt
   das die Oberfläche, und der vorherige Stand ist noch da. Es wird also
   mindestens ein Stand zurückgehalten.
 
@@ -75,9 +75,9 @@ nicht das Sichern, sondern das Wiederzusammenkommen.
 
 ### Eigentum
 
-- **AC-12** `offen` **Ein Spielstand gehört einem Konto** — Das ist der zweite und stärkere Grund
+- **AC-12** `fertig` **Ein Spielstand gehört einem Konto** — Das ist der zweite und stärkere Grund
   für [Konten](konten.md) AC-16: ohne Konto gäbe es niemanden, dem er gehört.
-- **AC-13** `offen` **Nur Eigentümer öffnet, benennt, löscht** — Geprüft auf dem Server bei
+- **AC-13** `fertig` **Nur Eigentümer öffnet, benennt, löscht** — Geprüft auf dem Server bei
   jedem Zugriff, nicht nur beim Anzeigen der Liste.
 - **AC-14** `offen` **Mitspieler dürfen mitbauen, nicht besitzen** — Wer per Code dazukommt, darf
   im Spiel handeln, aber den Stand weder löschen noch umbenennen noch allein
@@ -87,9 +87,9 @@ nicht das Sichern, sondern das Wiederzusammenkommen.
 
 ### Über Änderungen hinweg
 
-- **AC-16** `offen` **Jeder Spielstand trägt eine Fassungsnummer** — Ohne sie ist beim ersten
+- **AC-16** `fertig` **Jeder Spielstand trägt eine Fassungsnummer** — Ohne sie ist beim ersten
   Update nicht mehr feststellbar, was ein alter Stand bedeutet.
-- **AC-17** `offen` **Unbekannte Fassung wird abgelehnt** — Lieber „dieser
+- **AC-17** `fertig` **Unbekannte Fassung wird abgelehnt** — Lieber „dieser
   Stand stammt aus einer neueren Fassung" als eine halb geladene Welt.
 - **AC-18** `offen` **Ältere Fassungen werden hochgezogen** — Solange es fachlich geht.
   Geht es nicht, ist das eine Entscheidung für ein ADR.

@@ -8,6 +8,7 @@ const {
   BEVOELKERUNG_MAX, SCHLANGE_MAX, STARTAUFSTELLUNG, REPARATUR, SCHIESSENDE, ABRUESTEN, ruestetAb, DRACHE,
 } = require('./daten');
 const { bringt, staerkt, hausBringt } = require('./bringt');
+const stand = require('./stand');
 
 const TAKTE_PRO_SEKUNDE = 10;
 // Welche Werte die Auswahlleiste je Einheit zeigt (bedienung AC-35). Leben
@@ -308,6 +309,13 @@ function punkteFeld(punkte) {
  * @property {[number, number]} [av] der Vorrat, den dieser Spieler ansieht: Feld und Rest (bedienung AC-63)
  */
 
+// Was beim Sichern wegbleibt (speichern AC-1): nur Gemerktes, das beim
+// ersten Lesen aus den uebrigen Feldern neu entsteht. Wer hier etwas
+// eintraegt, das nicht so entsteht, verliert es beim Laden -
+// `tests/partien/speichern-gleichlauf.mjs` rechnet eine geladene Partie
+// gegen die ununterbrochene.
+const GEMERKT = ['werteGemerkt', 'wirkungenGemerkt', 'bonusGemerkt'];
+
 class Welt {
   /**
    * @param {{id: string, name: string}[]} spielerListe
@@ -515,6 +523,67 @@ class Welt {
     this.gebaeudeSichtNeu = true;
     if (this.sichtArt !== 'nebel') for (const sicht of this.sichten.values()) sicht.erkundet.fill(1);
     this.sichtAktualisieren();
+  }
+
+  /**
+   * Die Welt als reiner Wert (speichern AC-1, ADR-0017): jedes eigene Feld,
+   * wie es ist - Zahlen, Texte, Listen, `Map`, `Set`, Bytefelder. Kein Feld
+   * wird von Hand aufgezaehlt; was dazukommt, ist von selbst dabei, und
+   * `tests/waechter-stand.test.mjs` verlangt dafuer eine neue Fassung.
+   * Weg bleibt nur, was gemerkt ist (`GEMERKT`) und beim ersten Lesen neu
+   * entsteht, und was der Steckbrief angehaengt hat (`takten` mit den KIs).
+   * Der Zufall ist eine Funktion und geht als sein Stand hinein.
+   *
+   * Flach: die Inhalte sind dieselben Dinge wie in der Welt. Abgelegt wird
+   * gleich danach, in einem Zug mit den KIs (`stand.schreiben`) - so bleibt
+   * erhalten, wer auf dasselbe zeigt.
+   * @returns {Record<string, any>}
+   */
+  alsWert() {
+    const wert = {};
+    for (const [feld, inhalt] of Object.entries(this)) {
+      if (GEMERKT.includes(feld)) continue;
+      if (feld === 'zufall') {
+        wert.zufall = this.zufall.stand();
+        continue;
+      }
+      if (typeof inhalt === 'function') {
+        // Angehaengt vom Steckbrief (die KIs vor jedem Takt): eine Methode
+        // der Welt, eigens belegt. Kommt beim Laden mit dem Steckbrief wieder.
+        if (typeof Welt.prototype[feld] === 'function') continue;
+        throw new Error(`welt.${feld} ist eine Funktion - sie laesst sich nicht sichern (speichern AC-1)`);
+      }
+      wert[feld] = inhalt;
+    }
+    return wert;
+  }
+
+  /**
+   * Die Welt aus ihrem Wert (`alsWert`), ohne Konstruktor: der wuerfelte die
+   * Karte neu und stellte Dorfzentren auf. Die Felder kommen in derselben
+   * Reihenfolge zurueck, damit ein zweites Sichern denselben Wert ergibt
+   * (speichern AC-2) - Byte fuer Byte erst ab dem zweiten Laden, siehe
+   * `tests/gleichwertig.mjs`.
+   * @param {Record<string, any>} wert
+   * @returns {Welt}
+   */
+  static ausWert(wert) {
+    const welt = Object.create(Welt.prototype);
+    for (const [feld, inhalt] of Object.entries(wert)) {
+      welt[feld] = feld === 'zufall' ? karten.zufallAusStand(inhalt) : inhalt;
+    }
+    for (const feld of GEMERKT) welt[feld] = new Map();
+    return welt;
+  }
+
+  /**
+   * Der Spielstand als Bytes (speichern AC-1, AC-16) - ohne KIs. Eine Welt
+   * aus dem Steckbrief mit KIs belegt das neu und nimmt sie mit; geladen wird
+   * ueber den Steckbrief (`laden`).
+   * @returns {Buffer}
+   */
+  sichern() {
+    return stand.schreiben({ welt: this.alsWert(), kis: [] });
   }
 
   /**
@@ -6143,6 +6212,6 @@ function mauerLinie(von, bis) {
 
 module.exports = {
   mauerLinie, MAUER_MAX,
-  Welt, TAKTE_PRO_SEKUNDE, STARTVORRAT, ROHSTOFFE, VERFOLGUNG_FELDER, WACHE_TAKTE,
+  Welt, GEMERKT, TAKTE_PRO_SEKUNDE, STARTVORRAT, ROHSTOFFE, VERFOLGUNG_FELDER, WACHE_TAKTE,
   ZEITGRENZEN, GESCHWINDIGKEITEN, KUENDIGUNG_SEKUNDEN, WUNDER_SEKUNDEN, GEBAEUDE_NAMEN, EINHEIT_NAMEN,
 };

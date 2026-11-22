@@ -2239,6 +2239,51 @@ ihn, mit Gegenprobe an beiden Formen. Fünf Bilder neu, alle angesehen.
 Neueste oben. Eine Zeile je Runde: Nummer, Datum, Kriterien, Ergebnis,
 wichtigste Erkenntnis.
 
+- **S2, speichern AC-3, AC-4, AC-12, AC-13 (AC-6 in Arbeit)** · 2026-11-22 ·
+  **Die Ablage am Konto** (`server/partiestaende.js`, `server/partien-netz.js`).
+  Eine Zeile je Partie, `wert` und `vorher` in einer Anweisung getauscht,
+  jede Abfrage mit `AND konto = ?`; gesichert jede Minute, beim Anhalten,
+  wenn der Letzte geht, und beim Herunterfahren, jeder Stand vorher einmal
+  mit `laden` geprobt. **Gelernt:** (1) **Die Uhr der Tests in kleinen
+  Schritten ticken:** `t.mock.timers.tick(60000)` ist ein Schlag mit einer
+  Wanduhr, und der Raum holt höchstens eine Sekunde nach — es kamen zehn
+  Takte statt sechshundert. Ein Hilfsmittel tickt in Schritten von 100 ms.
+  (2) **`verzeichnis.lesen()` kopiert nur Felder, die es kennt** — ein neues
+  Feld im Steckbrief (`laden`, `standFassung`) kommt beim Raum nicht an,
+  bis es dort steht; der Stand hatte `fassung: null`. (3) **Beim Schließen
+  des Servers geht die Datenbank vor den Verbindungen zu**, und der letzte,
+  der geht, wollte noch sichern („database is not open“). `Raeume.halt()`
+  nimmt deshalb jedem Raum die Ablage, und das Ablegen fängt seinen Fehler
+  — eine Warnung statt eines Absturzes. (4) Gegenproben für jede Regel, die
+  ein Test trägt: ohne `konto` in der Abfrage, ohne Probe mit `laden`, ohne
+  `vorher`, ohne Sichern beim Gehen — jede lässt ihren Test fallen.
+  (5) Schreiben in die SQLite-Datei der Konten kostet 4 bis 6 ms (ohne WAL),
+  mit WAL rund 1 ms; nicht umgestellt, weil die Konten es nicht sind.
+- **S1, speichern AC-1, AC-2, AC-5, AC-16, AC-17** · 2026-11-22 · **Die
+  Partie als Wert** (Arbeitsbaum `strategie-speichern`, ADR-0017).
+  `welt.sichern()` gibt Bytes (Kopf `FAST` + Fassung, dahinter
+  `v8.serialize` gepackt), `steckbrief.laden()` baut Welt und KIs ohne
+  Konstruktor wieder auf. Gesichert wird jedes eigene Feld, nicht eine Liste
+  von Hand; weg bleibt nur `GEMERKT`. **Gelernt:** (1) Welt und KIs müssen
+  in **einem** `v8.serialize` stehen — getrennt trügen sie Kopien, wo die
+  Partie ein Ding hat (Verbündete teilen ein Sichtfeld). (2) **Gleich heißt
+  Wert für Wert, nicht Byte für Byte:** V8 schreibt eine Zahl je nach innerer
+  Form als ganze oder als Kommazahl und ein frisch gelesenes Feld anders als
+  ein frisch angelegtes; erst ab dem zweiten Laden sind die Bytes gleich
+  (`tests/gleichwertig.mjs` vergleicht samt geteilter Dinge). (3) Der Zufall
+  der KI ist ein Abschluss — ohne `zufall.stand()` lief die geladene Partie
+  nach wenigen Takten anders (Gegenprobe). (4) **Nur Welt und KIs zu
+  vergleichen reicht nicht:** ein weggelassenes `bekannt` (was der Browser
+  schon kennt) ändert die Partie nie, nur das, was der Server schickt — erst
+  der Vergleich von `zustandJeSpieler` in jedem der 3000 Takte fand es
+  (Gegenprobe: Takt 16765). (5) Ein neues Feld kommt von selbst in den
+  Stand, aber ein **alter** Stand kennt es nicht — deshalb ein Abbild der
+  Form je Fassung (`stand-abbild.json`, `npm run stand:abbild`) und ein
+  Wächter, der die neue Nummer verlangt; ein Feld, das nur in seltenen Lagen
+  entsteht und die Probepartie nicht erreicht, sieht er nicht. Gemessen:
+  sechs KIs auf der großen Karte bei Minute 40 121 KB, sichern 12 ms, laden
+  3 ms; acht Spieler je 200 Einheiten rund 100 KB, 20 und 15 ms. Nicht
+  gemessen: Stände aus der Krone, mit Menschen, über Node-Fassungen hinweg.
 - **F12, ki AC-40** · 2026-11-22 · **Die KI geht aufs Wunder** (Arbeitsbaum
   `strategie-ki-krone`). `ki.fremdesWunder` liest das Wunder aus der Ansage
   (`welt.wunderUhren`), das Heer zielt darauf, stehende Einheiten auch,
