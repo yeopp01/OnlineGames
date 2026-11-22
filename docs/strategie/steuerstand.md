@@ -26,6 +26,12 @@ Punkt unten sucht, sucht dort nach „Punkt <n> (Benutzer“.
 
 ## Zuletzt fortgeschrieben
 
+**2026-11-22, Nachmittag:** **Speichern S1 (dann S2) läuft als Agent** im
+Arbeitsbaum `../OnlineGames-speichern` (Zweig `strategie-speichern`,
+`E2E_HAFEN=4394`): speichern AC-1, AC-2, AC-5, AC-16, AC-17 — Welt und KI
+als Wert, gleicher Lauf nach dem Laden über zwanzig Startwerte. Nichts
+doppelt anfangen. Notfallklingel gegen ADR-0012 gehalten (offene Fragen).
+
 **2026-11-22, Mittag:** **Zweites Dorfzentrum (Punkt 39) gebaut, NICHT
 zusammengeführt** — Zweig `strategie-dorfzentrum` `8e0986d`, Arbeitsbaum
 `../OnlineGames-dorfzentrum`; bauen AC-57 und F14 `in-arbeit`. Daten:
@@ -238,7 +244,21 @@ stammen: `CLAUDE.md` („F6 bis F11 stehen“).
 - **Reitertempo 1,55** (Späherreiter ab dem Lehen) ist gesetzt, nicht aus
   der Vorlage — passt es ihm im Spiel?
 - **Spielgeschwindigkeit 1,5 als Vorgabe?** Nur fragen.
-- **Notfallklingel:** Umfang nennen, sobald gegen ADR-0012 gehalten.
+- **Notfallklingel — gegen ADR-0012 gehalten (2026-11-22):** steht nicht
+  in „Wird nicht gebaut“; der Unterschlupf ist in bauen.md nur
+  aufgeschoben („kommt später“), braucht also kein neues ADR. Umfang,
+  geschätzt ein Block wie der Drache, rund sechs Kriterien in bauen.md:
+  (1) `unterschlupf` als Daten (Dorfzentrum 15, Wachturm/Wehrturm 5,
+  Burg 20 wie die Vorlage), Einheit drinnen verschwindet von der Karte und
+  aus der Sicht der Gegner; (2) je Dorfbewohner oder Schütze drinnen ein
+  Pfeil mehr (Dorfzentrum schießt erst mit Besatzung? — Vorlage: es
+  schießt immer, Besatzung mehr); (3) Drinnen heilt langsam; (4) fällt das
+  Gebäude, kommen alle heraus; „Alle heraus“-Knopf; (5) **Klingel** am
+  Dorfzentrum (Knopf + Taste): jeder Dorfbewohner in den nächsten
+  Unterschlupf, zweiter Druck zurück an die alte Arbeit; (6) Hinein mit
+  Alt+Rechtsklick (der Rechtsklick auf ein Lager ist schon „abgeben“).
+  Die KI nutzt es zuerst nicht (sonst neue Messrunde). **Sein Wort
+  abwarten**, insbesondere zu (2) und (6).
 - **Arbeitsbaum `OnlineGames-bildumbau` und alte Zweige** (`strategie-bildumbau`,
   `strategie-ki-antwort`, `strategie-mauerring`) — entfernen? Nur auf sein Wort.
 - **Berechtigungen für die Schleife:** `.claude/settings.json` trägt nur der
