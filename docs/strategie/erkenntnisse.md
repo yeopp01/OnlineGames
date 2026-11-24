@@ -245,9 +245,13 @@ etwas anderem gearbeitet.
 
 - **Nach dem Regelpaket offen** (2026-11-24): (1) In Schützengefechten
   gleicher Kosten endet die Mehrheit ohne Sieger — Bogen 115, Plänkler 127
-  von 200: beide Seiten laufen leer, weil Pfeile im Flug auf ein schon
-  gefallenes Ziel verpuffen. Bei der Miliz sind es 43 von 200; warum dort,
-  ist nicht untersucht. (2) `trifft()` in `ki.forschenPruefen` zählt den
+  von 200, Miliz 43. Nachgemessen (40 Startwerte je Art, Budget 600): jedes
+  davon ist ein **beidseitiger Untergang**, keines läuft auf die Zeit —
+  Bogen 21, Plänkler 27, Miliz 9 von 40. Die letzten Schützen beider Seiten
+  schießen fast zugleich, und ein Pfeil im Flug trifft auch, wenn sein
+  Schütze inzwischen gefallen ist; bei der Miliz fallen die letzten zwei im
+  selben Takt, weil Wirkungen am Ende des Takts abgerechnet werden. Kein
+  Fehler, aber der Gefechtsstand zählt es als „ohne Sieger“. (2) `trifft()` in `ki.forschenPruefen` zählt den
   Reiterschützen noch unter `kavallerie`, die Welt seit einheiten AC-71
   unter den Schützen — ohne Wirkung, solange die KI keine Hauseinheit
   ausbildet (`NOCH_NICHT`); mit ki AC-28 nachziehen. (3) Der eine Sieg des
