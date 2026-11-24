@@ -185,7 +185,7 @@ Umfang hinzufügt, dort nachsehen.
 
 ## Stand
 
-**673 von 758 Kriterien fertig.** 1222 Tests ohne Browser und 37 ganze Partien, 370 im Browser. Die
+**674 von 758 Kriterien fertig.** 1241 Tests ohne Browser und 39 ganze Partien, 370 im Browser. Die
 Übersicht ist der Bericht: `npm run qa:report`.
 
 Gebaut ist der Unterbau: Räume, Übertragung, Karte, Wegfindung, Sammeln,
@@ -577,9 +577,25 @@ nicht überlegen ist, sammelt zehn statt Nachschub zu zweit. Gemessen: schenkt
 der Test der KI mit weniger Punkten in Minute 30 ein Wunder, verliert es in
 20 von 22 Partien vor Ablauf der Uhr Leben (`tests/partien/ki-wunder.test.mjs`,
 verlangt 85 %, gesetzt); gegen ein stärkeres Heer kommt sie nicht durch.
-**Die Hauseinheiten (ki AC-28) bleiben aus** (`NOCH_NICHT` für alle): jede
-KI mit Burg und Einheit daraus hielt nicht (16 KIs ohne), und der Nebel
-stand damit auf den Grenzen (105 vor Minute 60, eine ohne Sieger).
+**Die KI ruft den Drachen** (ki AC-29, Variante A, 2026-11-24,
+`ki.drachePruefen`, `ki.eierSuchen`): in der Krone, im Fürstentum nur
+unterlegen, überlegen nie; ihr Späher sucht Eier ab dem Fürstentum, wenn sie
+nicht überlegen ist — ab dem Landsitz lief zwei gegen zwei Startwert 17 bis
+Minute 90. Gemessen im Nebel: 105 von 120 vor Minute 60 (genau die
+Grenze), Median 39,0, keine ohne Sieger; 20 KIs mit Ei im Kloster, ein Ruf.
+Mit ki AC-28 und dem Holer-Fix 109, Median 38,2, keine ohne Sieger, 19
+KIs mit Ei, ein Ruf, ein Drache; ohne Drachen 106, Median 38,0, keine.
+**Zwei gegen zwei ist die empfindlichste Grenze** — Team-Tests zuerst fahren.
+einheiten AC-52 gepaart misst damit nichts (eine Partie mit Ruf).
+**Die KI bildet die Einheit ihres Hauses aus der Burg aus** (ki AC-28,
+`in-qa`, 2026-11-24, `ki.burgPruefen`): ein Viertel der Kampfeinheiten,
+mindestens zwei, die ersten ohne Rücklage. Dazu gibt sie einen Eiholer
+frei, der steht, sobald sie auf den Drachen verzichtet (sonst fiel ki
+AC-10). Nebel 109 vor Minute 60, Median 38,2, keine ohne Sieger; zwei gegen zwei 20 von 20; jede KI mit Burg, die
+danach zehn Minuten lebt, hat eine (60 von 60). Söldner, Eibenschütze und
+Pavesenschütze bleiben in `NOCH_NICHT` (einzeln frei: 106 mit rotem ki
+AC-35, 110, 105). Der Wortlaut verlangt eine Burg bei jeder KI — das hält
+ki AC-33 nicht; die Entscheidung liegt beim Benutzer.
 **Die Burg wartet auf den Handel nur bei echter
 Goldnot** (ki AC-33): wer aus Neigung handelt, baut sie gleich und verkauft
 den Stein dafür nicht (`ki.steinFuerBauwerk`) — Silberfurt baute sonst in 16
@@ -714,7 +730,9 @@ Armbrustschütze 30 statt 25 Holz, Silberfurt Gold +15 %, Distelhag
 Fernrüstung +2. Über 200 Partien jetzt Eschenbruch 66, Distelhag 58,
 Rappenstein 50, Wehrstein 48, Silberfurt 29 % — Silberfurt einen Punkt
 unter spielziel AC-18 (30 bis 70 %), innerhalb der Streuung; der Test dazu
-in `npm run check` fehlt.
+in `npm run check` fehlt. **Am 2026-11-24** (Regelpaket, Burgeinheiten
+der KI): Eschenbruch 71, Rappenstein 65, Distelhag 53, Wehrstein 34,
+Silberfurt 25 % — zwei außerhalb, Hauswerte nicht angefasst.
 **Voller Wohnraum fällt auf** (bedienung AC-43): wartet ein eigener
 Auftrag, steht die Bevölkerung oben rot umrandet, auch ohne Auswahl
 (`ansicht.wartetEtwas()`). **Gruppentasten** (bedienung AC-5): `Strg`
@@ -932,10 +950,8 @@ in der Rohstoffleiste. Jede der acht hat ihre gerenderte Figur, der
 Wehrturm sein eigenes Bild (bauen AC-38). **Abweichungen von der ersten
 Fassung der Spec**, nach dem Gefechtsstand gesetzt: Reiterschütze
 Reichweite 5 und Fernrüstung 2, Riese 180 Leben und Rüstung 2/0, Söldner
-60 Leben. **Die KI bildet vorerst keine Hauseinheit aus** (`NOCH_NICHT` in
-`ki.js`): mit dem Söldner fiel der Nebeltest auf 97, mit den zwei Schützen
-auf 102 von 120 (Grenze 105); `npm run pruefstand:haeuser` ist damit nicht
-neu gemessen. Der Gefechtsstand ist nicht seitengleich — bei gleichen
+60 Leben. **Die KI bildet seit dem 2026-11-24 die fünf aus der Burg aus**
+(ki AC-28, siehe oben); Söldner und die zwei Schützen nicht. Der Gefechtsstand ist nicht seitengleich — bei gleichen
 Heeren gewinnt die rechte Seite 32 von 40 —, nicht untersucht.
 **Je zwei Figuren unterscheiden sich um ein Drittel** (darstellung AC-14),
 auch die neuen: der Reiterschütze trägt deshalb einen hellen Filzmantel

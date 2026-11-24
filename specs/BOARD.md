@@ -7,9 +7,9 @@ Eine Zeile je Abnahmekriterium. Gepflegt wird der Status in der Spec selbst,
 hier steht er zusammengefasst. Erzeugt mit `npm run specs:board`; als Seite
 mit Bildnachweisen, Filter und Suche mit `npm run qa:report`.
 
-**Gesamt:** 673/758 fertig · 3 in Arbeit · 18 in QA · 3 geplant · 53 offen · 8 zurueckgestellt
+**Gesamt:** 674/758 fertig · 3 in Arbeit · 19 in QA · 3 geplant · 51 offen · 8 zurueckgestellt
 
-**Nachweise:** 348 Kriterien mit Bild · 335 ohne Bild, begruendet in `qa/ohne-bild.json`
+**Nachweise:** 348 Kriterien mit Bild · 336 ohne Bild, begruendet in `qa/ohne-bild.json`
 
 ## Nach Spezifikation
 
@@ -28,7 +28,7 @@ mit Bildnachweisen, Filter und Suche mit `npm run qa:report`.
 | [Fahrplan zum Klon](10-strategie/fahrplan.md)                  | -         | 2     | -       | 2     | -               | 22     |
 | [Kampf](10-strategie/kampf.md)                                 | -         | -     | -       | -     | 1               | 26     |
 | [Karte und Vorraete](10-strategie/karte-und-vorraete.md)       | -         | -     | -       | 2     | 3               | 14     |
-| [KI-Spieler](10-strategie/ki.md)                               | -         | -     | -       | 4     | -               | 36     |
+| [KI-Spieler](10-strategie/ki.md)                               | -         | 1     | -       | 2     | -               | 37     |
 | [Spielziel und Partieverlauf](10-strategie/spielziel.md)       | 1         | -     | -       | 10    | -               | 18     |
 | [Aufstellung, Taktik und Training](15-manager/aufstellung.md)  | -         | -     | -       | -     | 2               | 23     |
 | [Ausbau](15-manager/ausbau.md)                                 | -         | -     | -       | -     | -               | 1      |
@@ -52,7 +52,7 @@ mit Bildnachweisen, Filter und Suche mit `npm run qa:report`.
 - **Zeitalter gliedern die Partie** — [Spielziel und Partieverlauf](10-strategie/spielziel.md) AC-1
 - **Zahlen sind abrufbar** — [Betrieb](20-betrieb/betrieb.md) AC-8
 
-## In QA (18)
+## In QA (19)
 
 - **Einladungscodes erzeugen und zuruecknehmen** — [Konten und Anmeldung](00-plattform/konten.md) AC-20
 - **Verwaister Raum wird geschlossen** — [Raeume und Partien](00-plattform/raeume.md) AC-12
@@ -64,6 +64,7 @@ mit Bildnachweisen, Filter und Suche mit `npm run qa:report`.
 - **Der Drache fliegt und brennt** — [Einheiten und Befehle](10-strategie/einheiten-und-befehle.md) AC-52
 - **Läuft auf dem VPS** — [Fahrplan zum Klon](10-strategie/fahrplan.md) AC-21
 - **Aktualisieren ist ein Befehl** — [Fahrplan zum Klon](10-strategie/fahrplan.md) AC-22
+- **KI bildet Spezialeinheit aus** — [KI-Spieler](10-strategie/ki.md) AC-28
 - **Alle Namen sind erfunden** — [Kader und Spieler](15-manager/kader.md) AC-7
 - **Durchschnittsalter bleibt im Band** — [Kader und Spieler](15-manager/kader.md) AC-24
 - **Wer spielt, entwickelt sich** — [Kader und Spieler](15-manager/kader.md) AC-26
@@ -79,7 +80,7 @@ mit Bildnachweisen, Filter und Suche mit `npm run qa:report`.
 - **Kennwort vergessen** — [Konten und Anmeldung](00-plattform/konten.md) AC-5
 - **Automatischer Wiederaufbau** — [Uebertragung](00-plattform/uebertragung.md) AC-10
 
-## Offen (53)
+## Offen (51)
 
 - **Anmeldung ueber Google/GitHub** — [Konten und Anmeldung](00-plattform/konten.md) AC-6
 - **Bilanz je Konto** — [Konten und Anmeldung](00-plattform/konten.md) AC-14
@@ -112,9 +113,7 @@ mit Bildnachweisen, Filter und Suche mit `npm run qa:report`.
 - **Kein Spieler ist abgeschnitten** — [Karte und Vorraete](10-strategie/karte-und-vorraete.md) AC-7
 - **Vorraete sind endlich und knapp** — [Karte und Vorraete](10-strategie/karte-und-vorraete.md) AC-10
 - **KI liest die Zustandsnachricht** — [KI-Spieler](10-strategie/ki.md) AC-20
-- **KI bildet Spezialeinheit aus** — [KI-Spieler](10-strategie/ki.md) AC-28
 - **KI antwortet auf das Heer** — [KI-Spieler](10-strategie/ki.md) AC-31
-- **Die KI ruft den Drachen** — [KI-Spieler](10-strategie/ki.md) AC-29
 - **Partiedauer 25 bis 45 Minuten** — [Spielziel und Partieverlauf](10-strategie/spielziel.md) AC-2
 - **Kein Aus nach drei Minuten** — [Spielziel und Partieverlauf](10-strategie/spielziel.md) AC-3
 - **Aufholen ist möglich** — [Spielziel und Partieverlauf](10-strategie/spielziel.md) AC-4

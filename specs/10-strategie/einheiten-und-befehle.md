@@ -592,8 +592,11 @@ AC-19). Werte und Dauern sind Startwerte aus ADR-0014.
   Schaden an Einheiten, +200 gegen Gebäude. **Drei Ziele im Gefechtsstand**
   (ADR-0014): eine Burg allein verliert gegen ihn, eine Burg mit fünf
   Armbrustschützen gewinnt; zehn Armbrustschützen töten ihn und verlieren
-  dabei höchstens die Hälfte; KI gegen KI gewinnt, wer zuerst ruft, nicht
-  öfter als 60 %. Eine Einstellung beim Eröffnen schaltet ihn ab.
+  dabei höchstens die Hälfte; KI gegen KI tauscht der Drache den Sieger
+  gegenüber derselben Partie ohne ihn in höchstens 20 % der Partien mit Ruf
+  (gepaart: je Startwert dieselben Häuser einmal mit, einmal ohne Drache;
+  Benutzer, 2026-11-22 — vorher „wer zuerst ruft, gewinnt nicht öfter als
+  60 %"). Eine Einstellung beim Eröffnen schaltet ihn ab.
   **Gemessen** (2026-11-21, `tests/strategie-drache.test.mjs`, zwanzig
   Startwerte, Anflug aus zufälligem Winkel aus 14 Feldern): mit den
   Startwerten oben verlor die Burg allein nie — 15 Schaden + 200 sind 204
@@ -611,7 +614,16 @@ AC-19). Werte und Dauern sind Startwerte aus ADR-0014.
   der Gefechtsstand verteilt sie rundum. Ein Feuerstoß im Flug trifft noch,
   wenn der Drache im selben Augenblick fällt. **Offen** ist das vierte
   Ziel, KI gegen KI: die KI ruft noch keinen Drachen (F12) — deshalb
-  `in-qa`. Im Kampf ist er für die Regeln eine Einheit mit `fliegt`: er
+  `in-qa`. **Gepaart gemessen am 2026-11-24** (ki AC-29 Variante A,
+  Startwerte 1–120, Häuser des Nebeltests, je mit und ohne Drache): mit
+  dem Stand, der eingecheckt ist (der Späher sucht ab dem Fürstentum),
+  **eine Partie mit Ruf** (Startwert 46), ihr Sieger bleibt derselbe —
+  0 von 1. Zu wenig, um etwas zu sagen. Und der Maßstab liegt am
+  Rauschen: über alle 120 Paare ist der Sieger in **15 getauscht (13 %)**
+  (dazu Startwert 107, ohne Drache ohne Sieger),
+  alle ohne Ruf — schon dass Eier auf der Karte liegen und gesucht
+  werden, verschiebt den Verlauf (ein Entwurf davor: 23 von 120, zwei
+  Partien mit Ruf). Deshalb weiter `in-qa`. Im Kampf ist er für die Regeln eine Einheit mit `fliegt`: er
   geht ohne Wegsuche geradeaus, auch genau auf das geklickte Feld über
   Wasser, wacht wie jede Kampfeinheit, wird nicht geheilt und nicht
   bekehrt, und der Prüfstand nimmt ihn von der Regel „steht auf begehbarem

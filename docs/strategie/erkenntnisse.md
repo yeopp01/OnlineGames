@@ -243,6 +243,66 @@ etwas anderem gearbeitet.
 
 ## Offene Fäden
 
+- **KI-Runde nach dem Regelpaket** (2026-11-24, Zweig `strategie-ki-runde`):
+  (1) **Zwei gegen zwei ist die empfindlichste Grenze.** Am Stand vor der
+  Runde war Drache an Partie für Partie gleich Drache aus — jede Störung,
+  auch eine, die nur einen Späher früher losschickt, verschiebt alle
+  Zufallsfolgen, und die langen Partien (bis 87,7) gehen über Minute 90.
+  Startwert 17 lief mit dem Späher ab dem Landsitz ab Minute 1,2 anders.
+  Wer an der KI dreht, fährt die Team-Tests zuerst, nicht zuletzt — sie
+  brauchen 20 Minuten, der Nebel 6. (2) **Die Rammen der Krone zählten
+  nicht** (`belagerungPruefen` fragte `e.art === RAMME`): nach der
+  Belagerungsramme fehlten ihr immer drei, die Ausbildung ruhte bis zum
+  Ende (Startwert 17, Minute 75 bis 90 keine Kampfeinheit, acht Rammen
+  daheim). Was eine Linie meint, fragt die Daten (`nurGebaeude`), nicht
+  den Namen der ersten Stufe. (3) **Holzfäller standen, wenn im Umkreis
+  `REICHWEITE` kein Baum mehr war** — jetzt ein zweiter Versuch bis 45
+  Felder (`WEITER`); die Gegenprobe reißt auch ki AC-10/AC-12 über zwanzig
+  Startwerte. (4) Gepaart misst einheiten AC-52 nichts, solange kaum
+  gerufen wird: über 120 Startwerte eine Partie mit Ruf, aber 15 mit
+  getauschtem Sieger ohne Ruf (dazu Startwert 107: ohne Drache kein Sieger) —
+  der Späher auf Eiersuche allein verschiebt
+  die Partie. (5) **ki AC-28: die fünf aus der Burg halten, die drei aus
+  gewöhnlichen Gebäuden nicht sicher.** Seit dem Regelpaket stehen die
+  Burgeinheiten frei (`ki.burgPruefen`, Nebel 108 statt 105); einzeln frei
+  dazu: Söldner 106, aber ki AC-35 fällt (Startwert 14, Wehrstein forscht
+  keine Truppenstufe — der Söldner aus der Kaserne nimmt ihm Gold, das die
+  Stufe gebraucht hätte; vermutet, nicht gemessen), Eibenschütze 110 und
+  alles grün, Pavesenschütze 105 — auf der Grenze, also nicht übernommen
+  (die Grenzen halten an den Startwerten, nicht aus Abstand). Vor dem
+  Regelpaket fielen Söldner auf 97 und die zwei Schützen auf 102. Der
+  Wortlaut von AC-28 verlangt eine Burg bei jeder KI zehn Minuten nach dem
+  Fürstentum: am Stand vor der Runde fehlte sie 15 von 150 — das misst ki
+  AC-33, nicht die Hauseinheit. Belegt ist deshalb die engere Form (wer
+  eine Burg hat und zehn Minuten danach lebt, bildet aus: 60 von 60).
+  Ohne Rücklage für die ersten zwei: sonst fand Wehrstein die 120 Nahrung
+  des Riesen nicht (vor dem Regelpaket Startwert 18 ohne Riesen bis zum
+  Sieg in Minute 57); in den Zählungen ohne die Zehn-Minuten-Grenze bleibt
+  Wehrstein das Haus, dem die Einheit am häufigsten fehlt (vier von fünf).
+  Ohne Drachen fehlt sie auch in der engeren Form einmal (51 von 52,
+  Startwert 58): nach der Burg nie 120 Nahrung und 100 Gold zugleich, die
+  Burg fällt nach neun Minuten. Eine Rücklage für den Riesen hätte das
+  übrige Militär gebremst — nicht versucht.
+  (6) **Ein Merker, der einen Dorfbewohner von der Arbeit ausnimmt, braucht
+  einen Weg zurück.** `03a6297` (ki AC-29) wurde committet, ohne
+  `tests/strategie-ki.test.mjs` ganz zu fahren — ki AC-10 fiel dort
+  (Startwert 20: ein Eiholer stand 37,9 s, weil `drachePruefen` vor
+  der Holerprüfung zurückkehrte, sobald die KI nicht mehr unterlegen war).
+  Der erste Fix gab jeden Holer frei, auch den gehenden — dann kippte
+  `unterlegen()` von Takt zu Takt, der Holer wurde hin und her geschickt,
+  und zwei gegen zwei, Startwert 12, lief bis Minute 90 ohne Sieger. Frei
+  wird jetzt nur, wer steht. Nach einer Änderung an der KI laufen alle
+  `tests/strategie-ki*.test.mjs`, nicht nur die des Kriteriums.
+  (7) **Die Häuser nach dem Regelpaket** (`npm run pruefstand:haeuser`,
+  200 Partien, 467 s mit sechs Fäden): Eschenbruch 71, Rappenstein 65,
+  Distelhag 53, Wehrstein 34, Silberfurt 25 % — spielziel AC-18 reißt an
+  beiden Enden. Den Eibenschützen dazu frei: Eschenbruch 74, Silberfurt
+  24 % — die Hauseinheit verstärkt den Abstand, statt ihn auszugleichen.
+  Die linke Seite gewinnt 137 von 198 entschiedenen Partien; der
+  Gefechtsstand ist seit kampf AC-26 nahezu seitengleich (Bogen 43:42), die Partie
+  offenbar nicht (Karte, Startplätze? nicht untersucht). Als Test in
+  `npm run check` kostet `--je 8` (80 Partien) rund 190 s und streut je
+  Haus um gut zehn Punkte; die vollen 200 rund acht Minuten.
 - **Nach dem Regelpaket offen** (2026-11-24): (1) In Schützengefechten
   gleicher Kosten endet die Mehrheit ohne Sieger — Bogen 115, Plänkler 127
   von 200, Miliz 43. Nachgemessen (40 Startwerte je Art, Budget 600): jedes
@@ -251,10 +311,8 @@ etwas anderem gearbeitet.
   schießen fast zugleich, und ein Pfeil im Flug trifft auch, wenn sein
   Schütze inzwischen gefallen ist; bei der Miliz fallen die letzten zwei im
   selben Takt, weil Wirkungen am Ende des Takts abgerechnet werden. Kein
-  Fehler, aber der Gefechtsstand zählt es als „ohne Sieger“. (2) `trifft()` in `ki.forschenPruefen` zählt den
-  Reiterschützen noch unter `kavallerie`, die Welt seit einheiten AC-71
-  unter den Schützen — ohne Wirkung, solange die KI keine Hauseinheit
-  ausbildet (`NOCH_NICHT`); mit ki AC-28 nachziehen. (3) Der eine Sieg des
+  Fehler, aber der Gefechtsstand zählt es als „ohne Sieger“. (2) ~~`trifft()` zählt den Reiterschützen als
+  Kavallerie~~ — behoben in `adb352f` (`welt.wirktUnter`). (3) Der eine Sieg des
   Hellebardiers gegen den Langbogen (Startwert 10, fahrplan AC-26) ist
   nicht erklärt.
 - **einheiten AC-31 (800 Angreifer unter 1 ms) reißt wieder** (Runden 188,

@@ -199,7 +199,15 @@ spielt die KI am schlechtesten.
   liegt einen Punkt unter der Grenze, innerhalb der Streuung (±5 Punkte);
   mit 50 Gold statt 30 Holz für die Schützen lag es bei 31 %, dann fiel
   aber ki AC-26 (Erkenntnisse, Runde 202). Offen bleibt der Test in
-  `npm run check`.
+  `npm run check`. **Gemessen am 2026-11-24** (nach Regelpaket,
+  Hauseinheiten der Burg, ki AC-28 und dem Holer-Fix, 200 Partien, 467 s
+  mit sechs Fäden): Eschenbruch **71**, Rappenstein 65, Distelhag 53,
+  Wehrstein 34, Silberfurt **25 %** — zwei Häuser außerhalb der Grenze.
+  Silberfurt verliert gegen jedes Haus (3:17, 4:16, 5:15, 8:12),
+  Eschenbruch schlägt Wehrstein 17:2 und Silberfurt 17:3. Die linke Seite
+  gewinnt 137 von 198 entschiedenen Partien (kampf AC-26 hielt im
+  Gefechtsstand, hier nicht untersucht). Nichts an den Hauswerten
+  geändert — das entscheidet der Benutzer.
 - **AC-25** `fertig` **Mannschaftsbonus nur im Bündnis** — Der Mannschaftsbonus
   eines Hauses gilt für es selbst und für alle, mit denen es die Sicht
   teilt (`welt.teiltSicht`) — zwei Verbündete desselben Hauses bekommen ihn

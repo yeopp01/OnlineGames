@@ -105,6 +105,22 @@ test('ki AC-23: aus der Werkstatt bildet sie Rammen aus, bis so viele stehen, wi
   assert.equal(ausbilden(gesendet, RAMME).length, 1, 'die letzte nur einmal bestellt');
 });
 
+test('ki AC-23: auch die Rammen der Krone zaehlen - stehen genug Belagerungsrammen, bestellt sie keine und nichts liegt zurueck', () => {
+  // Nach der `rammenstufe` heisst keine Ramme mehr so: zaehlte sie nur
+  // `ramme`, fehlten immer alle, und die Ausbildung ruhte bis zum Ende (zwei
+  // gegen zwei, Startwert 17, bis 2026-11-24).
+  const { welt, a, b, ki, gesendet } = lage({ zeitalter: 3 });
+  const stufe = Object.keys(EINHEITEN).find((e) => EINHEITEN[e].nurGebaeude && EINHEITEN[e].stufeVon === RAMME);
+  assert.ok(stufe, 'die Krone hat eine Stufe der Ramme');
+  bauBei(welt, 'a', WERKSTATT, a.basis, 8);
+  bauBei(welt, 'b', FESTUNG, b.basis, 7, a.basis);
+  welt.takt += 1;
+  aufstellen(welt, a, stufe, RAMMEN);
+  ki.belagerungPruefen(eigene(welt, 'a'), gebaeudeVon(welt, 'a'), dorf(welt, 'a'));
+  assert.equal(ausbilden(gesendet, RAMME).length, 0, 'keine weitere Ramme');
+  assert.equal(ki.belagerungFehlt, null, 'nichts liegt fuer Rammen zurueck');
+});
+
 test('ki AC-23: eine Ramme ist keine Kampfeinheit - sie zaehlt nicht zum Heer und steht nicht Wache', () => {
   const { welt, a, ki } = lage();
   const [ramme] = aufstellen(welt, a, RAMME, 1);
