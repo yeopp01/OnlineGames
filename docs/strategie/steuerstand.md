@@ -29,11 +29,17 @@ Punkt unten sucht, sucht dort nach „Punkt <n> (Benutzer“.
 **2026-11-24, Abend — alles nach main** (Benutzer: „wir haben nur main auf
 github, alle andren branches nur lokal, deshalb müssen wir alles nach main
 mergen, und dann pushen“). `f6da5fd` (Vorgabe 1,5) nach `main` gepusht —
-**nicht ausgerollt**. Offen vor dem Zusammenführen: `manager-zusammen`
-(`6a6ac25`, Board 673/758, enthält manager, manager-dynamik, manager-m1)
-gehört der Sitzung onlinegames-d5 — gefragt, ob fertig (ihr Arbeitsbaum
-`OnlineGames-zusammen` hat uncommittete Bilder); `strategie-ki-runde`
-(Agent läuft, ki AC-29 Fassung 3 committet) kommt nach seinem Bericht.
+**nicht ausgerollt**. Danach `manager-zusammen` (`6a6ac25`, mit
+manager, manager-dynamik, manager-m1) echt gemergt als `27ad41f` (28
+Managerbilder von der Managerseite), check:kurz grün (1222 Tests, 2 todo
+im Manager, 37 Partien), gepusht: **origin/main = main = strategie =
+`27ad41f` = Server** (ausgerollt auf sein Wort „ja pls deploy“, Konten
+gesichert nach `sicherung/20261124-170135`, von außen erreichbar, wss
+steht). Laufen als Agenten: KI-Runde (a3e32aa7f88464c7c,
+`OnlineGames-kirunde`, `strategie-ki-runde`, Hafen 4421, Fassung 3) und
+Glocke/Haltungen (a884146e4d0f2d010, `OnlineGames-glocke`,
+`strategie-glocke`, Hafen 4431, Fassung beim Mergen auf 4 umnummerieren).
+Nach beiden: ganzer Browserlauf allein, qa:abweichung, pushen.
 **Nicht nach main:** `strategie-ki-antwort` („nicht wirksam“) und
 `strategie-mauerring` („reißt die Grenzen“) — geparkt, ein Merge bräche
 den Nebeltest.
