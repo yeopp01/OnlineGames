@@ -365,6 +365,16 @@ kauft, weiß nicht alles.
   Anführer, Trainingsfleißig, Lebemann. Wirken auf Moralschwankung, Karten,
   Gehaltsforderung und Wechselbereitschaft, Entwicklung, und (M4) auf
   Ereignisse.
+  **Abgegrenzt mit `manager-dynamik` (2026-11-24):** gewürfelt wird nur
+  einmal — die **Neigungen** je Spieler (stufenlos um 1,0, etwa 0,8 bis
+  1,2, aus Kennung und Startwert), gebaut dort in `kader.js` und in der
+  Entwicklung. Der Charakter ist ihr **Name**: `charakter(spieler)` leitet
+  ihn aus der stärksten Abweichung ab, gespeichert und gewürfelt wird er
+  nicht; liegt alles nahe 1,0, steht ein ruhiger Name. Gegensätze sind eine
+  Achse (Söldner/Vereinstreu, Trainingsfleißig/Lebemann). Die Neigungen
+  verlassen den Server nie; an den Browser geht nur der Name, und nur, wo
+  er bekannt ist. Wer zuerst nach `main` kommt, nimmt Fassung 5, der
+  andere 6.
 - **Form:** aus den Noten der letzten fünf Spiele, je Stufe ein Prozent
   Tagesform. Klein mit Absicht — sie soll in der Aufstellung eine Frage
   stellen, nicht die Stärke ersetzen.
