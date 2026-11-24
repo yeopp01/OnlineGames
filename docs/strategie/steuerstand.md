@@ -26,6 +26,18 @@ Punkt unten sucht, sucht dort nach „Punkt <n> (Benutzer“.
 
 ## Zuletzt fortgeschrieben
 
+**2026-11-24, Abend — alles nach main** (Benutzer: „wir haben nur main auf
+github, alle andren branches nur lokal, deshalb müssen wir alles nach main
+mergen, und dann pushen“). `f6da5fd` (Vorgabe 1,5) nach `main` gepusht —
+**nicht ausgerollt**. Offen vor dem Zusammenführen: `manager-zusammen`
+(`6a6ac25`, Board 673/758, enthält manager, manager-dynamik, manager-m1)
+gehört der Sitzung onlinegames-d5 — gefragt, ob fertig (ihr Arbeitsbaum
+`OnlineGames-zusammen` hat uncommittete Bilder); `strategie-ki-runde`
+(Agent läuft, ki AC-29 Fassung 3 committet) kommt nach seinem Bericht.
+**Nicht nach main:** `strategie-ki-antwort` („nicht wirksam“) und
+`strategie-mauerring` („reißt die Grenzen“) — geparkt, ein Merge bräche
+den Nebeltest.
+
 **Strategie, 2026-11-24 — speichern AC-18 gebaut** (Benutzer, auf die
 Frage, ob AC-18 vor dem Regelpaket kommt: „Gibts grade noch was zu tun?
 Dann gerne angehen.“ — gelesen als Zustimmung, ADR-0017 Punkt 7 zu ändern;
@@ -73,26 +85,20 @@ vorgespult auf `ace9811`, gepusht (`7a0bf0a..ace9811`), ausgerollt.
 ki AC-25 bleibt bei Dorfbewohnern, die S4-Entscheidungen gelten — kein
 Einwand. Jetzt: Spielgeschwindigkeit 1,5, dann die KI-Runde als Agent.
 
-**Managerspiel, Spieldynamik (Stand 2026-11-24):** alles im Arbeitsbaum
-`C:/Users/danie/OnlineGames-dynamik`, Zweig `manager-dynamik`, nicht
-gepusht; Plan, Bänder und jede Messung in `docs/manager/dynamik/plan.md`
-dort. Freigegeben vom Benutzer („ja, es geht los“, „kein absichtlich
-hartes Pflaster“, „ja, bitte fortfahren“, am 2026-11-24 „gibts noch was
-zu tun? Dann gerne angehen“). Committet: Schritt 0 `05b39b2`, 2
-`7d9f9ff` (Haushalt), Bänder `6196e2b`, 3 `294c389` (Preise), 4
-`4afef8e` (Alter, Jugend), 6 `f618ad4` (Markt, Händler, Reichtum),
-transfer AC-31 `44fe9d9` (Angebote an den Menschen ohne Liste; Ursache
-war die Gehaltsgrenze in `kiAngebote`, nicht `freiNaeher`). **Läuft als
-Agent:** dasselbe Angebot je Spieler höchstens einmal je Fenster, Obergrenze
-5 je Saison in L1 (gemessen 8,6 Angebote auf 0,95 Spieler — Spam), und
-kader AC-24 auf `in-qa` (hält 6/8). **Offen:** kader AC-23 (Sterne, 1/8),
-AC-26 (Entwicklung nach Einsatz) — beides Schritt 5 mit den Neigungen;
-Abgrenzung zu M2 „Spieler mit Gesicht“ der Managersitzung (`manager-m1`,
-Hafen 4278; sie fasst `server/spiele/manager/*` nicht an, ich
-`public/manager/*` nicht). transfer AC-30 („satt“) `in-qa` bis zum
-Zeichen in der Marktliste. Auslegung spieltag AC-6 (Tore je Einsatz) dem
-Benutzer gesagt, ohne Einwand. Liga 2 hat kein Band für Wechsel (0,77 je
-Verein). Kein ganzes `npm run check` im Arbeitsbaum (feste Häfen).
+**Managerspiel, zusammengeführt nach `main` (2026-11-24, auf sein Wort
+„ja bitte mal alles zum manager zusammenführen nach main“):** Arbeitsbaum
+`C:/Users/danie/OnlineGames-zusammen`, Zweig `manager-zusammen` von
+`ace9811`: `4020a4b` (M1), `39b125c` (Spieldynamik), `531e932`
+(Managerbilder neu), `6a6ac25` (Board 673/758). `main` lokal darauf
+vorgespult, **nicht gepusht, nicht ausgerollt**. `strategie` (`f6da5fd`,
+Spielgeschwindigkeit 1,5) zieht nicht mit — vor dem nächsten Zusammenführen
+`main` in `strategie` mergen. Geprüft: check:kurz grün (1222 Tests, 37
+Partien), Managerbrowserlauf 55/55, Gleichstand „gleich“. Offen beim
+Benutzer: transfer AC-31 (Empfehlung 3 je Fenster), kader AC-24 (`in-qa`
+oder Jugend 75 %); Bildunterschrift karriere AC-09 verspricht mehr, als der
+Ausschnitt zeigt (schon in M1). Arbeitsbäume `-dynamik`, `-zusammen` und
+`manager*` können weg — nur auf sein Wort; in `manager-m1` liegen 61
+uncommittete Bildnachweis-JSON, nicht mitgenommen.
 
 **2026-11-22, Nachmittag — Entscheidungen des Benutzers (durchgeklickt):**
 1. **Regelpaket übernehmen, Lücken schließen:** Laufregel, Seitengleichheit,

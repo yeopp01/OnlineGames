@@ -3771,3 +3771,204 @@ Minute 60, Median 39,4, keine ohne Sieger; zwei gegen zwei alle vor Minute
 90. Was F6 bis F11 sind und welche Werte gesetzt statt aus der Vorlage
 stammen: `CLAUDE.md` („F6 bis F11 stehen“).
 
+
+
+## Ausgelagert am 2026-11-24
+
+**2026-11-22, Abend — Durchsicht Managerspiel (Benutzer: „Kannst du vom
+Fussballmanagerspiel nochmal die Spieldynamiken dir angucken, ob die
+passen/sinnvoll sind, etc. - also was Spieler kosten, wie sie sich
+entwickeln, etc."):** Durchsicht (Fable) und Plan (Opus) **vom Benutzer
+freigegeben** („ja, es geht los … gerne auch subagenten triggern“, Bänder
+bestätigt: „kein absichtlich hartes Pflaster“). **Alles dazu liegt jetzt
+im Arbeitsbaum `C:/Users/danie/OnlineGames-dynamik`, Zweig
+`manager-dynamik` ab `manager-m1` `b45d20a`** (eigenes node_modules,
+Browser `E2E_HAFEN=4279`): `docs/manager/dynamik/durchsicht.md`,
+`plan.md` (Bänder, Schritte 0 bis 6, Wunsch nach individuellen Spielern
+mit stufenlosen Neigungen), Messskripte — committet `7aa606a`; die Kopien
+auf `strategie` sind entfernt. **Abgestimmt mit der Managersitzung**
+(`manager-m1`, Hafen 4278): sie fasst `server/spiele/manager/*` und den
+Fingerabdruck nicht an, ich `public/manager/*` nicht; `manager-m1` wird
+später in `manager-dynamik` gezogen. **Schritt 0 committet** (`05b39b2`:
+`npm run manager:dynamik`, `scripts/manager-dynamik-messung.mjs`, Bänder
+als finanzen AC-17/18, transfer AC-26, kader AC-23/24, Tests als `todo`).
+**Gegenproben 1** (Scratchpad `gegenproben/`): Gehaltsgrenze (b) hält
+Band 1/2, hortet aber (Konto-Median L1 S20 117 Mio); Liga 2 höher starten
+widerlegt; Gehalt flacher verteuert L2. **Gegenproben 2**
+(`gegenproben2/`, Agent fertig): **m3** (Marktwert ×2,3, Altersfaktor
+linear) hält Band 3 in beiden Ligen (19–20 %), Geburtstagssprung −53 →
+−28 %, Ablösen etwa doppelt; **K4** (m3 + Starttalent t1b + Jugend breiter
+t2 + Abbau ab 29 halb, g1) hält auf Schritt 2 auch Band 4 (3,4–7,1) —
+Patch `gegenproben2/patches/k4-auf-schritt2.patch`. **Band 5 (Alter
+25,5–27) reißt bei jeder Variante** (bestenfalls 25,1 mit Niveauverlust):
+72 Siebzehnjährige je Saison, rund 40 % der Spieler ≤ 20 —
+**Frage an den Benutzer:** Band auf ~23–25 oder Jugend als eigener
+U-Kader. **Schritt 2 (Haushalt) committet** `7d9f9ff`: Gehaltsgrenze
+0,85 × erwartete Einnahmen + Abbau über einer Rücklage von 0,5
+Jahreseinnahmen in 2 Jahren (`HAUSHALT` in `transfer.js`); finanzen AC-17
+und AC-18 `fertig`, an allen vier Startwerten; Konto-Median S20 L1 45–56,
+L2 8 Mio; Tore 3,16, Heim 48,5 %, Remis 20,6 %; größtes Konto noch 145–339
+Mio (Schritt 6). `manager-netz` danach allein grün (12/12; der hängende Lauf
+auf sein Wort beendet). **Benutzer 2026-11-22 abends „ja, bitte
+fortfahren" auf die Empfehlungen:** Altersband 23–25 statt 25,5–27, vier
+weitere Bänder (Wertklippen ≤ 15 %, Reichtum < 4× Einnahmen, Jugend,
+Entwicklung ab 25) als Kriterien. **Bänder `6196e2b`** (transfer AC-27,
+finanzen AC-19, kader AC-25, AC-26 neu), **Schritt 3 `294c389`**:
+Marktwert ×2,3, `ALTERSPUNKTE` linear (größter Geburtstag −14,7 %),
+`STARTKONTO` ×2,3 (sonst rissen transfer AC-11/20); transfer AC-26 und
+AC-27 `fertig`, Board dort 633/744. Folgen: Reichtum schlimmer (größtes
+Konto 190–321 Mio, Band ab S5–7 gerissen), Händler-Hebel L2 8,8 → 15,2
+Mio je Saison, Angebote an Menschen etwa halbiert, Einwechslungen 3,2 →
+2,8 (unerklärt). Altersband reißt weiter unten (22,7–23,3). **Schritt 4
+`4afef8e`**: Startwelt 17–32 mit Talent nach Ruf, Jugend 5–17 unter
+Talent, Abbau ab 29 halb, Karriereende später, `ALTERSBLICK` in der KI
+(mit `aelterRuecklage` und Lochregel gegen eine Schuldenspirale); kader
+AC-25 `fertig` (8/8), **AC-24 `fertig` obwohl nur 6/8 Startwerte** (1234
+und 99 einzelne Saisons 22,9–23,0) → Benutzer fragen; AC-23 (Sterne) 2/8,
+offen. Auslegung spieltag AC-6 geändert (Tore je Einsatz statt Summe) →
+Benutzer prüfen lassen. Markt halbiert, Händler L1 bis 35 Mio je Saison.
+**Schritt 6 `f618ad4`** (`MARKT` in `transfer.js`: `sattAb` 3 — über
+drei Jahreseinnahmen nur von der Liste, auch gegen den Menschen;
+`reichAb` 1; `freiNaeher` 3 — kein Gebot, wenn ein Vereinsloser ≤ 3
+schwächer passt; Tausch des Schwächsten; kein Handgeld): transfer AC-28
+(Händler ≤ 1/10 der Einnahmen), AC-29 (L1 ≥ 1,5 Wechsel) und finanzen
+AC-19 `fertig` an 8/8, transfer AC-30 `in-qa` (Zeichen in der
+Marktliste fehlt); Board dort 638/747; Händler L1 22,9 → 0,4 Mio je
+Saison. **Nachgemessen von mir** (`scratchpad/angebote.cjs`, ein Mensch,
+der nur verlängert, 4 Startwerte × 10 Saisons): Angebote je Saison L1
+Bester 2,90 → 1,45, L1 Mitte 3,73 → 0,72, **L2 Mitte 2,45 → 0,28** —
+vermutlich `freiNaeher` gegen den Überschuss starker Vereinsloser aus
+Schritt 4 (41–53 ab Stärke 65). **Reparatur als Agent angesetzt** (Band
+für Angebote an einen Menschen, Händler-Band muss halten). Schritt 5
+(Neigungen) wartet: Abgrenzung zu M2 „Spieler mit Gesicht“ klären.
+Fragen an den Benutzer offen: kader AC-24 bei 6/8 auf `in-qa`?
+Auslegung spieltag AC-6 (Tore je Einsatz)? „satt“ als Regel gegen den
+Menschen?
+
+**2026-11-22, Mittag (Benutzer einige Stunden offline):** **Dorfzentrum
+zusammengeführt** (`180df88`, bauen AC-57, F14, bedienung AC-64 auf elf;
+Board 610/716). Der ganze Browserlauf wartet auf ein fremdes `check:kurz`
+(Managersitzung); danach `E2E_HAFEN=4391 npm run check:alles:neu:kurz`,
+`qa:abweichung`, bei Grün pushen und ausrollen (Punkt 12 unten), sonst
+Gründe aufschreiben. Erst danach `strategie-speichern` zusammenführen.
+**Lauf 1 (12:05, 1,2 h statt 50 min):** 344 grün, 3 rot — spielziel
+AC-20 und einheiten AC-42 nur am Aufräumen („trace recording“ 60 s,
+Zip abgeschnitten), darstellung AC-10 39,9 Bilder/s. Die drei Dateien
+laufen einzeln mit `QA_NACHWEIS=1` nach. **Ergebnis:** mit Aufzeichnung
+fallen dort fünf Fälle am Zip („file data stream has unexpected number
+of bytes“), einer an „AudioContext … audio device“; **mit `--trace off`
+15 von 15 grün**, Bilder so geschrieben. Ursache die Umgebung: Sitzung
+„WinDisc“ (kein Bildschirm), alle Audiogeräte „Unknown“ (Dock ab?).
+darstellung AC-10 39,9 Bilder/s — rot, nicht gelockert. `qa:abweichung`
+34 über 1 %, angesehen: Kamera/Ablauf, neu nur Taste L und Dorfzentrum
+in der Wirtschaft. `npm run check` grün. Bilder committet, **nicht
+gepusht, nicht ausgerollt** — der Lauf war nicht grün; der Benutzer
+entscheidet, ob AC-10 auf diesem Rechner das Ausrollen aufhält, oder es
+läuft einmal neu, wenn Bildschirm und Ton wieder dran sind.
+
+**2026-11-22, später Nachmittag:** **Speichern S1 und S2 fertig, NICHT
+zusammengeführt** — `strategie-speichern` `da39f1e` (S1: `welt.sichern()`,
+`steckbrief.laden()`, „FAST“ + Fassung + deflateRaw(v8.serialize), über 20
+Startwerte Takt für Takt gleich) und `6f955c2` (S2: `server/partiestaende.js`
+in der Konten-SQLite, `wert`/`vorher`, höchstens 5 je Konto,
+`/api/partien`, Sichern je Spielminute, beim Leeren und Anhalten,
+SIGTERM/SIGINT → `allesSichern()`); check:kurz grün, 1110 Tests, 37
+Partien; Board dort 618/715. speichern AC-6 `in-arbeit` (Meldung im Bild
+kommt mit S3). Gesetzt vom Agenten: bei 5 Ständen wird die neue Partie
+nicht gesichert (noch ohne Meldung), Stand 18–121 KB, Sichern 2–20 ms,
+geschätzt 40 ms einmal je Minute in einer großen Partie (nicht gemessen),
+kein WAL. **Erst nach dem Ausrollen zusammenführen** (der Benutzer hat das
+Ausrollen von Dorfzentrum + Browserlauf freigegeben, nicht das Speichern),
+dann S3 (Oberfläche, Browser mit eigenem Hafen).
+
+**2026-11-22, Nachmittag:** **Speichern S1 (dann S2) läuft als Agent** im
+Arbeitsbaum `../OnlineGames-speichern` (Zweig `strategie-speichern`,
+`E2E_HAFEN=4394`): speichern AC-1, AC-2, AC-5, AC-16, AC-17 — Welt und KI
+als Wert, gleicher Lauf nach dem Laden über zwanzig Startwerte. Nichts
+doppelt anfangen. Notfallklingel gegen ADR-0012 gehalten (offene Fragen).
+**bedienung AC-64 entschieden** (Benutzer: „Ac 64 passt seine
+Empfehlung"): Wirtschaft höchstens elf, Militär nach „Kampfeinheiten“,
+das Dorfzentrum unter Wirtschaft. Ein Agent zieht das im Arbeitsbaum
+`../OnlineGames-dorfzentrum` nach (`E2E_HAFEN=4395`); danach führe ich
+zusammen, dann `check:alles:neu:kurz` und `qa:abweichung` — erst, wenn
+kein anderer Lauf rechnet.
+
+**2026-11-22, Mittag:** **Zweites Dorfzentrum (Punkt 39) gebaut, NICHT
+zusammengeführt** — Zweig `strategie-dorfzentrum` `8e0986d`, Arbeitsbaum
+`../OnlineGames-dorfzentrum`; bauen AC-57 und F14 `in-arbeit`. Daten:
+`bauenAb: 3, hoechstens: 2` am Dorfzentrum (nicht `zeitalter: 3`, sonst
+kippt der Aufstieg), `welt.bauZeitalter()`, KI baut keines; 1094 Tests grün.
+**Klemmt an drei bestehenden Kriterien:** bedienung AC-64 (höchstens zehn
+je Seite — die Wirtschaft hat in der Krone schon zehn; Militärseite für
+alles, was Einheiten mit Angriff ausbildet, und der Dorfbewohner hat 3),
+AC-81 (Technologiebaum gleiche Seite wie das Baumenü), AC-86 (auf
+1366 × 768 ragt nichts heraus — mit der Spalte auf der Militärseite ragen
+Außenposten, Wachturm, Tor, Mauer heraus, Browserfall rot). **Frage an den
+Benutzer**, Empfehlung: AC-64 auf elf Gebäude der Wirtschaft und „Kampf-
+einheiten“ ändern, dann steht das Dorfzentrum unter Wirtschaft.
+
+**2026-11-22, Vormittag:** **F13 fertig und zusammengeführt** (`4910410`,
+Zweig `strategie-krone-am-stueck`, Arbeitsbaum `../OnlineGames-krone`):
+fahrplan AC-19 (`e2e/tests/strategie-krone-am-stueck.spec.mjs`, zwei
+Fälle: Krone mit Stufen, Elite-Kriegswolf, Wunder bis zum Sieg; Drache
+reißt ein Mauerstück) und AC-20 (`tests/strategie-grosse-partie.test.mjs`:
+acht Spieler je 200 im Nebel, Takt 5,5 ms, gepackt ≤ 30,5 KB/s je Spieler,
+wie `ws` packt rund 10; **ungepackt 160–182, bei „Aufgedeckt“ gepackt
+147 — die Grenze hält nur im Nebel**). Mittel: `perMessageDeflate:
+{ threshold: 1024 }` in `server/index.js` — **auf dem VPS nicht geprüft**
+(Proxy, Speicher je Verbindung). Board 609/715. Browserlauf danach 348/350:
+darstellung AC-10 „gerendert“ 44,9 Bilder/s (AC-30 übersprungen, hängt
+daran). **Gegenprobe mit/ohne Packen unentschieden:** erst schien ohne
+Packen besser (gerendert 58–59 gegen 52–58, im Gehen 54–56 gegen 43–55),
+dann fiel alles auf 25–45, auch ohne — eine Managersitzung fuhr zugleich
+Browsertests (`.claude/worktrees/manager`), danach ein fremdes `check:kurz`.
+**Auf dem freien Rechner (Last ~20 %) nachgemessen:** mit Packen 44,5 und
+33,2, ohne 34,7 und 35,6 Bilder/s — gleich schlecht, das Packen erklärt es
+nicht; die Bildrate des Rechners ist heute insgesamt gesunken (früh 55).
+**Packen bleibt.** Die Tempofälle (darstellung AC-10, AC-30) hängen am
+Rechner; nicht gelockert.
+
+**2026-11-22, Morgen:** **F12 teilweise zusammengeführt** (`c3f7173`,
+Bilder `568f82d`): ki AC-35 (forscht), AC-39 (Krone), AC-40 (Wunder);
+`npm run check` grün (1084 Tests, 17 Partien), Browserlauf 347/348
+(darstellung AC-30 47,7 Bilder/s — bekannte Streuung, Stand ändert nichts
+im Browser), `qa:abweichung` 24 über 1 %, angesehen, nur Kamera/Uhr. Board
+607/715. **Nicht fertig aus F12:** ki AC-29 / einheiten AC-52 (Drache) —
+Patch `scratchpad/ki-krone/ac29/` (Variante A: Nebel 107, aber nur 6 Rufe
+in 120 Partien; Variante „ab Fürstentum“: 83 % Erstrufer gewinnt, Nebel
+101). **Gepaarte Messung:** derselbe Startwert ohne Drache — der Erstrufer
+gewinnt 39 von 48 auch ohne ihn; die 60-%-Grenze misst den Vorsprung, nicht
+den Drachen → **Frage an den Benutzer**: AC-52 gepaart messen („Drache
+tauscht den Sieger in höchstens X %“)? ki AC-28 v2 (Hauseinheiten) Patch
+`scratchpad/ki-krone/ac28-v2/` — Nebel 105, eine ohne Sieger, 16 KIs ohne
+Burgeinheit. **spielziel AC-18 fällt:** Eschenbruch 78, Rappenstein 64,
+Distelhag 54, Wehrstein 29, Silberfurt 26 % (200 Partien auf `2cefbd5`) —
+Ausgleich gegen Eschenbruch wäre die nächste Balance-Runde, Benutzer
+fragen. Arbeitsbäume `OnlineGames-kikrone` (ungesicherter Drachenpatch),
+`OnlineGames-regeln`, `OnlineGames-techbaum` — löschen nur auf sein Wort.
+
+**2026-11-22, früher Morgen:** **Agent (d) fertig, nichts committet** —
+Arbeitsbaum `../OnlineGames-regeln` ungesichert, Patch
+`scratchpad/uebergabe2/alles.patch` (+ `LIESMICH.txt`). Gebaut: einheiten
+AC-70 (Laufregel, 10 Felder = 100 Takte), kampf AC-26 (Seitengleichheit:
+Reihenfolge je Takt gemischt `welt.reihe`, `taktX/taktY`, Gleichstände in
+A*, `nachbarfeld`, Spirale), kampf AC-27 (Pfeil trifft beim Ankommen,
+`welt.pfeileImFlug`, `PFEIL_TEMPO` 7 gesetzt); Werte gesetzt: Söldner Tempo
+0,95, schwere Armbrust 13, Elite-Wiedergänger +10 Leben, Elite-Reiterschütze
++20; `ki.farmbauer`. **Rot, nur der Benutzer lockert:** fahrplan AC-15
+(57,2 statt ≥60 s, Ursache neue A*-Gleichstände), fahrplan AC-26
+Hellebardier gegen Langbogen umgekehrt 1/20, Nebel 103 statt ≥105 (HEAD
+111; ohne Pfeilflug 106, mit altem A* 109). **spielziel AC-18 reißt schon
+an HEAD** (Rappenstein 78, Eschenbruch 61, Distelhag 63, Wehrstein 28,
+Silberfurt 20 %). **Agent (e): keine Teilmenge ist grün** — committet auf
+`strategie-regeln` nur die Doku (`88bf6d8`, `d87d84f`: einheiten AC-70,
+kampf AC-26, AC-27 als `offen`). Code als Patch unter
+`scratchpad/uebergabe3/` (`pfeilflug-und-werte-code.patch` gilt auf
+8915326). Laufregel reißt den Konterkreis; A*-Gleichstände reißen fahrplan
+AC-15, ohne sie hält die Seitengleichheit nicht (ki AC-4 auch); Pfeilflug
+reißt ki AC-25 (zwei gegen zwei, Startwert 8: die Wache verteidigt einen
+eigenen Dorfbewohner am Platz des toten Verbündeten — `EIGENES_NAH` nimmt
+nur Gebäude aus) und steht im Nebel genau auf 105. **Seitenfehler an HEAD
+über 200 Startwerte: Bogen 21:179**, Ritter 80:120. Fragen an den
+Benutzer: darf ki AC-25 auch eigene Einheiten ausnehmen? Konterkreis für
+die Laufregel lockern? fahrplan AC-15 für A* lockern?
