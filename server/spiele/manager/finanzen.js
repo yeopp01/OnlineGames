@@ -1,3 +1,4 @@
+// @ts-check
 'use strict';
 
 // Geld: Zuschauer, Fernsehen, Sponsor, Gehaelter, Stadion, Zinsen, Praemien.
@@ -5,6 +6,8 @@
 const { TERMINE_JE_SAISON } = require('./kalender');
 const { EINTRITT } = require('./kader');
 const { eines } = require('./zufall');
+
+/** @typedef {import('./daten').Verein} Verein */
 
 // Fernsehgeld je Ligaspiel fuer einen Verein aus der Mitte der Tabelle. Wer
 // in der Vorsaison oben stand, bekommt mehr (bis 1,4-fach), wer unten stand,
@@ -26,16 +29,16 @@ const AUSBAU = [
 ];
 const SPONSOREN = [
   'Nordlicht Energie', 'Brauhaus Kessler', 'Baumarkt Keller', 'Autohaus Brenner', 'Sparkasse am Fluss',
-  'Moebel Wendt', 'Stahlwerk Obermann', 'Fruchtsaft Anders', 'Versicherung Treu', 'Reisebuero Sonne',
-  'Kaffeeroesterei Adler', 'Spedition Lange', 'Elektro Faber', 'Stadtwerke', 'Landmolkerei',
+  'Möbel Wendt', 'Stahlwerk Obermann', 'Fruchtsaft Anders', 'Versicherung Treu', 'Reisebüro Sonne',
+  'Kaffeerösterei Adler', 'Spedition Lange', 'Elektro Faber', 'Stadtwerke', 'Landmolkerei',
 ];
 
 /**
  * Wie voll das Stadion wird. Ruf und Tabellenplatz ziehen, ein hoher Preis
  * haelt ab, ein reizvoller Gegner lockt. Gedeckelt bei ausverkauft.
  *
- * @param {object} verein  Gastgeber
- * @param {object} [umstaende]  { stimmung 0..1, gegner, pokal }
+ * @param {Verein} verein  Gastgeber
+ * @param {{stimmung?: number, gegner?: Verein|null, pokal?: boolean}} [umstaende]  Stimmung 0..1
  */
 function auslastung(verein, { stimmung = 0.5, gegner = null, pokal = false } = {}) {
   const basis = 0.5 + verein.reputation / 250;
@@ -65,7 +68,7 @@ function zinsen(verein) {
  * Ruf und die erste Liga bringen mehr Geld.
  */
 function sponsorAngebote(verein, zufall, saison) {
-  const basis = verein.liga === 1 ? 75 + verein.reputation * 1.9 : 50 + verein.reputation * 1.3;
+  const basis = sponsorBasis(verein);
   const arten = [
     { art: 'sicher', jeSpiel: 1.15, jeSieg: 0.4 },
     { art: 'ausgewogen', jeSpiel: 1.0, jeSieg: 1.0 },
@@ -80,6 +83,11 @@ function sponsorAngebote(verein, zufall, saison) {
   }));
 }
 
+/** Was ein Sponsor je Ligaspiel zahlt, bevor er sich fuer eine Art entscheidet. */
+function sponsorBasis(verein) {
+  return verein.liga === 1 ? 75 + verein.reputation * 1.9 : 50 + verein.reputation * 1.3;
+}
+
 /** Fernsehgeld fuer ein Ligaspiel, nach Liga und Rang der Vorsaison. */
 function fernsehgeld(verein) {
   return Math.round(FERNSEHGELD[verein.liga] * (1.4 - (0.8 * (Math.min(18, verein.tvRang) - 1)) / 17));
@@ -90,8 +98,8 @@ function ausbauPruefen(verein, stufe) {
   const plan = AUSBAU.find((a) => a.stufe === stufe);
   if (!plan) return { fehler: 'Diese Ausbaustufe gibt es nicht.' };
   if (verein.stadion.ausbau) return { fehler: 'Es wird schon gebaut.' };
-  if (verein.stadion.plaetze + plan.plaetze > PLAETZE_MAX) return { fehler: `Mehr als ${PLAETZE_MAX.toLocaleString('de-DE')} Plaetze genehmigt die Stadt nicht.` };
-  if (verein.konto < plan.kosten) return { fehler: 'Fuer den Ausbau reicht das Geld nicht.' };
+  if (verein.stadion.plaetze + plan.plaetze > PLAETZE_MAX) return { fehler: `Mehr als ${PLAETZE_MAX.toLocaleString('de-DE')} Plätze genehmigt die Stadt nicht.` };
+  if (verein.konto < plan.kosten) return { fehler: 'Für den Ausbau reicht das Geld nicht.' };
   return { ok: true, ...plan };
 }
 
@@ -111,6 +119,24 @@ function eintrittPruefen(preis) {
   return Math.min(PREIS_MAX, Math.max(PREIS_MIN, Math.round(preis)));
 }
 
+/**
+ * Was ein Verein in einer Saison ungefaehr einnimmt - die Grundlage, an der
+ * die anderen Vereine ihre Gehaelter ausrichten (transfer.gehaltsgrenze):
+ * 17 Heimspiele bei mittlerer Stimmung zum jetzigen Eintritt, 34-mal
+ * Fernsehgeld, der ausgewogene Sponsor mit 13 Siegen, die Praemie fuer Platz
+ * 9. Ohne Pokal und Transfers - gemessen liegt die Schaetzung 4 bis 10 % unter
+ * dem, was tatsaechlich hereinkommt.
+ *
+ * @param {Verein} verein
+ */
+function erwarteteEinnahmen(verein) {
+  const zuschauer = (17 * verein.stadion.plaetze * auslastung(verein) * verein.eintritt) / 1000;
+  const fernsehen = 34 * fernsehgeld(verein);
+  const basis = sponsorBasis(verein);
+  const sponsor = 34 * basis + 13 * basis * 0.5;
+  return Math.round(zuschauer + fernsehen + sponsor + saisonpraemie(verein.liga, 9));
+}
+
 /** Praemie am Saisonende nach Liga und Platz, der Meister bekommt einen Zuschlag. */
 function saisonpraemie(liga, platz, anzahl = 18) {
   return Math.round(SAISONPRAEMIE[liga] * ((anzahl + 1 - platz) / anzahl)) + (platz === 1 ? MEISTERPRAEMIE[liga] : 0);
@@ -120,5 +146,5 @@ module.exports = {
   FERNSEHGELD, REFERENZPREIS, PREIS_MIN, PREIS_MAX, ZINS_JE_TERMIN, PUNKTABZUG_GRENZE, PUNKTABZUG,
   PLAETZE_MAX, AUSBAU, SAISONPRAEMIE, MEISTERPRAEMIE,
   auslastung, heimspiel, gehaelter, zinsen, sponsorAngebote, fernsehgeld, ausbauPruefen, ausbauWeiter,
-  eintrittPruefen, saisonpraemie,
+  eintrittPruefen, saisonpraemie, sponsorBasis, erwarteteEinnahmen,
 };

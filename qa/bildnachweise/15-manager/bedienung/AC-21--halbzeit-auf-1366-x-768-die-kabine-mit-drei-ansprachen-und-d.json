@@ -1,0 +1,10 @@
+{
+  "spec": "15-manager/bedienung.md",
+  "ac": "AC-21",
+  "titel": "Halbzeit auf 1366 x 768: die Kabine mit drei Ansprachen und der Statistik der ersten Haelfte, rechts Platz und Bank zum Wechseln, nichts rollt",
+  "datei": "e2e/tests/manager-live.spec.mjs",
+  "pfad": [
+    "Das Spiel live",
+    "oberflaeche AC-21: die Halbzeit haelt an, die Kabine steht ganz im Bild"
+  ]
+}

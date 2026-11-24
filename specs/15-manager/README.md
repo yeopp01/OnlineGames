@@ -20,6 +20,7 @@ Strategiespiels (→ [ADR-0008](../../docs/adr/0008-zweites-spiel-manager.md)).
 | [Karriere](karriere.md)                           | Der Ablauf, Zug für Zug, und der Spielstand        |
 | [Bedienung](bedienung.md)                         | Wie schnell kommt eine Absicht zum Klick?          |
 | [Prüfstand](pruefstand.md)                        | Ein Werkzeug, das verschwunden ist                 |
+| [Ausbau](ausbau.md)                               | In welcher Reihenfolge das Spiel wächst (M1–M7)    |
 
 ## Spielbar unter `/manager.html`
 

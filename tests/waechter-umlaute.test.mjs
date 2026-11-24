@@ -15,11 +15,16 @@
 // `melden(` und den Feldern `name`, `beschreibung`, `titel`, `text`,
 // `hinweis`. Ausdruecke in `${...}` zaehlen nicht - das sind Bezeichner.
 //
-// Das Managerspiel ruht: `manager.js` und `manager.html` liest er nicht. Wer
-// dort wieder arbeitet, nimmt sie in DATEIEN auf.
+// Das Managerspiel baut seine Blaetter aus Vorlagen mit HTML darin
+// (`<h2>Als Naechstes …</h2>`) - dort greift keines der Muster oben. Seine
+// Dateien stehen deshalb unter STRENG und werden ganz gelesen: jede
+// Zeichenkette, auch die Stuecke einer Vorlage zwischen `${…}`, ohne Tags.
+// Bildschirmtext ist, was ein Leerzeichen hat, mit einem Grossbuchstaben
+// beginnt oder zwischen zwei Tags steht; ein einzelnes kleines Wort ist ein
+// Schluessel (`'verlaengern'`) und bleibt umschrieben (Plan M0.1).
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { readFileSync } from 'node:fs';
+import { readFileSync, readdirSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 
 const WURZEL = fileURLToPath(new URL('../', import.meta.url));
@@ -35,11 +40,29 @@ const DATEIEN = [
   'server/spiele/strategie/welt.js', 'server/spiele/strategie/daten.js',
 ];
 
+const STRENG = [
+  'public/manager.html',
+  ...readdirSync(new URL('../server/spiele/manager/', import.meta.url)).map((name) => `server/spiele/manager/${name}`),
+  ...(() => {
+    try {
+      return readdirSync(new URL('../public/manager/', import.meta.url)).map((name) => `public/manager/${name}`);
+    } catch {
+      return [];
+    }
+  })(),
+].filter((datei) => /\.(js|html)$/.test(datei));
+
 // Anfaenge richtig geschriebener Woerter mit ae, oe oder ue ("aktuellen",
 // "Dauer"). Die Liste waechst, wenn ein neues Wort sie braucht - das ist
 // billiger als eine schlauere Regel.
 const RICHTIG = ['dauer', 'bau', 'mauer', 'neue', 'feuer', 'aktuell', 'quelle', 'steuer', 'abenteuer',
-  'treue', 'sauer', 'trauer', 'schaue', 'steinmauer'];
+  'treue', 'sauer', 'trauer', 'schaue', 'steinmauer',
+  // aus dem Managerspiel
+  'zuschauer', 'vertrau', 'zuerst', 'teuer', 'quell', 'value', 'true', 'query', 'blue', 'queue',
+  // aus den Saetzen des Spieltags (texte.js)
+  'quer', 'lauer',
+  // die Ansprache zur Halbzeit (spieltag AC-30)
+  'aufbau'];
 const richtig = (wort) => RICHTIG.some((stamm) => wort.toLowerCase().startsWith(stamm));
 
 // Umschriebenes ß laesst sich nicht an Buchstaben erkennen ("Klasse" ist
@@ -85,6 +108,150 @@ function texteAusJs(inhalt) {
   });
   return texte;
 }
+
+/**
+ * Alle Zeichenketten einer JavaScript-Datei, Vorlagen als ein Stueck mit
+ * `\u0000` an der Stelle jedes `${…}` - die Ausdruecke darin werden selbst
+ * wieder gelesen. Kommentare und regulaere Ausdruecke zaehlen nicht.
+ */
+function zeichenketten(quelle) {
+  const stuecke = [];
+  let i = 0;
+  let letztes = '';
+  const regexDavor = (z) => !z || /[(,=:[!&|?{};+\-*%<>~^]/.test(z);
+
+  function vorlage() {
+    // i steht hinter dem oeffnenden Backtick
+    let text = '';
+    while (i < quelle.length) {
+      const z = quelle[i];
+      if (z === '\\') { text += quelle.slice(i, i + 2); i += 2; continue; }
+      if (z === '`') { i++; break; }
+      if (z === '$' && quelle[i + 1] === '{') {
+        i += 2;
+        text += '\u0000';
+        code(1);
+        continue;
+      }
+      text += z;
+      i++;
+    }
+    stuecke.push(text);
+  }
+
+  function code(tiefe) {
+    while (i < quelle.length) {
+      const z = quelle[i];
+      const n = quelle[i + 1];
+      if (z === '/' && n === '/') { while (i < quelle.length && quelle[i] !== '\n') i++; continue; }
+      if (z === '/' && n === '*') { i = quelle.indexOf('*/', i + 2); i = i < 0 ? quelle.length : i + 2; continue; }
+      if (z === '/' && regexDavor(letztes)) {
+        i++;
+        let klasse = false;
+        while (i < quelle.length && (quelle[i] !== '/' || klasse)) {
+          if (quelle[i] === '\\') i++;
+          else if (quelle[i] === '[') klasse = true;
+          else if (quelle[i] === ']') klasse = false;
+          i++;
+        }
+        i++;
+        while (/[a-z]/.test(quelle[i] || '')) i++;
+        letztes = 'x';
+        continue;
+      }
+      if (z === '"' || z === "'") {
+        let text = '';
+        i++;
+        while (i < quelle.length && quelle[i] !== z) {
+          if (quelle[i] === '\\') { text += quelle.slice(i, i + 2); i += 2; continue; }
+          text += quelle[i++];
+        }
+        i++;
+        stuecke.push(text);
+        letztes = 'x';
+        continue;
+      }
+      if (z === '`') { i++; vorlage(); letztes = 'x'; continue; }
+      if (z === '{') tiefe++;
+      if (z === '}') {
+        tiefe--;
+        if (tiefe === 0) { i++; return; }
+      }
+      if (!/\s/.test(z)) letztes = /[\w$)\]]/.test(z) ? 'x' : z;
+      // `return /x/` - nach einem Schluesselwort beginnt ein Ausdruck
+      if (/\breturn$|\btypeof$/.test(quelle.slice(Math.max(0, i - 6), i + 1))) letztes = '(';
+      i++;
+    }
+  }
+
+  code(Infinity);
+  return stuecke;
+}
+
+/** Was aus einer Datei des Managerspiels auf den Bildschirm kommen kann. */
+function texteStreng(inhalt, html) {
+  const texte = [];
+  for (const stueck of html ? [inhalt] : zeichenketten(inhalt)) {
+    const ohneSkript = stueck.replace(/<script[\s\S]*?<\/script>/g, '').replace(/<style[\s\S]*?<\/style>/g, '')
+      .replace(/<!--[\s\S]*?-->/g, '');
+    for (const m of ohneSkript.matchAll(/(?:title|aria-label|placeholder|alt)="([^"\u0000]*)"/g)) texte.push(m[1]);
+    const hatTags = /<\/?[a-z][^>]*>/i.test(ohneSkript);
+    const ohneTags = ohneSkript.replace(/<[^>]*>/g, '\u0000').replace(/<[^>\u0000]*$/, '').replace(/^[^<\u0000]*>/, '');
+    for (const teil of ohneTags.split('\u0000')) {
+      if (!teil.trim()) continue;
+      // Leerzeichen am Rand zaehlen: ` fuer ` zwischen zwei Ausdruecken ist Text.
+      if (hatTags || /\s/.test(teil) || /^[A-ZÄÖÜ]/.test(teil.trim())) texte.push(teil);
+    }
+  }
+  if (!html) texte.push(...zweigeEinerWahl(inhalt));
+  return texte;
+}
+
+/**
+ * Ein einzelnes kleines Wort ist sonst ein Schluessel - ausser es steht in
+ * einer Kette `a ? 'x' : b ? 'y' : 'z'` neben einem Zweig, der Text ist
+ * ('neutraler Platz' : ... : 'auswaerts'). Gelesen je Zeile.
+ */
+function zweigeEinerWahl(inhalt) {
+  const texte = [];
+  for (const zeile of inhalt.split('\n')) {
+    if (/^\s*(\/\/|\*)/.test(zeile)) continue;
+    const zweige = [...zeile.matchAll(/[?:]\s*'([^'\\]*)'/g)].map((m) => m[1]);
+    if (zweige.length < 2) continue;
+    if (zweige.some((z) => /\s/.test(z.trim()) || /^[A-ZÄÖÜ]/.test(z))) texte.push(...zweige);
+  }
+  return texte;
+}
+
+test('manager AC-16: kein Text des Managerspiels umschreibt einen Umlaut (Waechter, streng)', () => {
+  const treffer = [];
+  for (const datei of STRENG) {
+    const inhalt = readFileSync(WURZEL + datei, 'utf8');
+    for (const text of texteStreng(inhalt, datei.endsWith('.html'))) {
+      const woerter = umschrieben(text);
+      if (woerter.length) treffer.push(`${datei}: ${woerter.join(', ')} - «${text.trim().slice(0, 80)}»`);
+    }
+  }
+  assert.deepEqual(treffer, [], [
+    'Diese Texte des Managerspiels umschreiben Umlaute oder ß.',
+    'Ist ein Wort richtig geschrieben, gehoert es in RICHTIG; ist es ein Schluessel, schreibt man es klein und ohne Leerzeichen.',
+    '', ...treffer,
+  ].join('\n'));
+});
+
+test('manager AC-16: die strenge Lesart findet Text in Vorlagen und laesst Schluessel stehen', () => {
+  const lesen = (q) => texteStreng(q, false).flatMap(umschrieben);
+  assert.deepEqual(lesen('x = `<h2>Als Naechstes: ${text(n.titel)}</h2>`;'), ['Naechstes']);
+  assert.deepEqual(lesen("x = `${v ? `Naechster Gegner` : 'Als Naechstes nichts'}`;"), ['Naechster', 'Naechstes']);
+  assert.deepEqual(lesen('x = `<button data-loeschen="${s.id}" class="leise">Loeschen</button>`;'), ['Loeschen']);
+  assert.deepEqual(lesen("zug('verlaengern', { id });"), []);
+  assert.deepEqual(lesen('x = `${a} bietet ${b} fuer ${c}`;'), ['fuer']);
+  assert.deepEqual(lesen("const wo = v.neutral ? 'neutraler Platz' : v.daheim ? 'daheim' : 'auswaerts';"), ['auswaerts']);
+  assert.deepEqual(lesen("const art = heim ? 'naechster' : 'erledigt';"), []);
+  assert.deepEqual(lesen("const r = /aeh|oeh/g; const t = 'Fuer dich';"), ['Fuer']);
+  assert.deepEqual(lesen("// Kommentar mit Naechstes\nconst a = 'gut';"), []);
+  assert.deepEqual(lesen("db.prepare('INSERT INTO t VALUES (?)');"), []);
+});
 
 test('auswahl AC-21: kein Text auf dem Bildschirm umschreibt einen Umlaut (Waechter)', () => {
   const treffer = [];

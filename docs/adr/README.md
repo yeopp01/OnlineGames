@@ -24,3 +24,4 @@ Nachfolgerin.
 | 0015 | [Der Statthalter: Teile des eigenen Reichs der KI uebergeben, mit Knoepfen](0015-statthalter.md) | entschieden |
 | 0016 | [Gerenderte Bilder aus eigenen Modellen statt gezeichnetem Code](0016-gerenderte-bilder.md) | entschieden |
 | 0017 | [Eine Strategiepartie laesst sich fortsetzen](0017-strategiepartien-fortsetzen.md) | entschieden |
+| 0018 | [Das Managerspiel wird ausgebaut, sieben Zeilen fallen halb](0018-manager-ausbau.md) | vorgeschlagen |

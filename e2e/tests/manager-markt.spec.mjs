@@ -120,7 +120,7 @@ test.describe('Transfermarkt', () => {
       test: info,
     });
     expect((await holen(page)).ok()).toBe(true);
-    await expect(page.locator('#meldung')).toContainText('0 T Abloese');
+    await expect(page.locator('#meldung')).toContainText('0 T Ablöse');
     await expect(page.locator('#kopfKonto')).toHaveText(konto);
   });
 
@@ -305,7 +305,7 @@ test.describe('Kader und Vertraege', () => {
     const antwort = page.waitForResponse((r) => r.url().endsWith('/verlaengern'));
     await page.locator('#dialog [data-laufzeit="1"]').click();
     expect((await antwort).ok()).toBe(true);
-    await expect(page.locator('#meldung')).toContainText('verlaengert bis Saison');
+    await expect(page.locator('#meldung')).toContainText('verlängert bis Saison');
   });
 });
 
@@ -323,7 +323,7 @@ test.describe('Kasse', () => {
     await aufBlatt(page, 'finanzen');
     const buch = page.locator('#buch .buchzeile');
     await expect.poll(() => buch.count()).toBeGreaterThan(4);
-    for (const wort of ['Gehaelter', 'Fernsehgeld']) await expect(page.locator('#buch')).toContainText(wort);
+    for (const wort of ['Gehälter', 'Fernsehgeld']) await expect(page.locator('#buch')).toContainText(wort);
     await expect(page.locator('#buch')).toContainText('von ');
     await expect(page.locator('#posten tr[data-posten="gehaelter"] td').nth(2)).toContainText('-');
     await expect(page.locator('#posten tr[data-posten="transfers"] td').nth(2)).toContainText('-');
@@ -380,7 +380,7 @@ test.describe('Kasse', () => {
     const antwort = page.waitForResponse((r) => r.url().endsWith('/stadion'));
     await page.locator('#stadion [data-ausbau="1"]').click();
     expect((await antwort).ok()).toBe(true);
-    await expect(page.locator('#stadion')).toContainText('Im Bau: 2.500 Plaetze, fertig in 3 Wochen');
+    await expect(page.locator('#stadion')).toContainText('Im Bau: 2.500 Plätze, fertig in 3 Wochen');
     await nachweis(page, {
       spec: FINANZEN,
       ac: 'AC-14',

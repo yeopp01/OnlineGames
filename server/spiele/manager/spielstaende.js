@@ -1,3 +1,4 @@
+// @ts-check
 'use strict';
 
 // Die Spielstaende des Managerspiels: in SQLite, an einem Konto
@@ -10,6 +11,8 @@
 // Neustart kostet deshalb nichts.
 const { randomBytes } = require('node:crypto');
 const { Karriere, FASSUNG, LADBARE_FASSUNGEN } = require('./karriere');
+
+/** @typedef {import('./karriere').GanzeKarriere} GanzeKarriere */
 const { terminTitel } = require('./kalender');
 
 const JE_KONTO = 5;
@@ -19,6 +22,10 @@ const LEERLAUF_MS = 30 * 60 * 1000;
 // 16 Zeichen aus 96 Bit Zufall - der Schluessel zum Spielstand, kein Code zum
 // Vorlesen. Erraten hilft ohnehin nicht: geoeffnet wird nur am eigenen Konto.
 const kennung = () => randomBytes(12).toString('base64url');
+
+// Ein Spielstand gehoert einem Konto und hat bisher genau einen Menschen -
+// sein Verein steht in der Liste der Spielstaende.
+const eigenerVerein = (karriere) => karriere.vereinVon(karriere.manager[0]?.vereinId);
 
 class Spielstaende {
   constructor(db, uhr = () => Date.now()) {
@@ -37,7 +44,7 @@ class Spielstaende {
         fassung   INTEGER NOT NULL,
         daten     TEXT NOT NULL,
         angelegt  INTEGER NOT NULL,
-        geaendert INTEGER NOT NULL
+        geändert INTEGER NOT NULL
       )`);
     db.exec('CREATE INDEX IF NOT EXISTS manager_spielstand_konto ON manager_spielstand (konto)');
     this.aufraeumer = setInterval(() => this.aufraeumen(), 5 * 60 * 1000);
@@ -46,22 +53,23 @@ class Spielstaende {
 
   liste(konto) {
     return this.db.prepare(`
-      SELECT id, name, verein, liga, saison, datum, fassung, angelegt, geaendert
-      FROM manager_spielstand WHERE konto = ? ORDER BY geaendert DESC`).all(konto)
+      SELECT id, name, verein, liga, saison, datum, fassung, angelegt, geändert
+      FROM manager_spielstand WHERE konto = ? ORDER BY geändert DESC`).all(konto)
       .map((z) => ({ ...z, ladbar: LADBARE_FASSUNGEN.includes(z.fassung) }));
   }
 
   anlegen(konto, { startwert, vereinId, name }) {
     const { anzahl } = this.db.prepare('SELECT COUNT(*) AS anzahl FROM manager_spielstand WHERE konto = ?').get(konto);
-    if (anzahl >= JE_KONTO) return { fehler: `Mehr als ${JE_KONTO} Spielstaende je Konto gehen nicht. Loesche einen alten.` };
+    if (anzahl >= JE_KONTO) return { fehler: `Mehr als ${JE_KONTO} Spielstände je Konto gehen nicht. Lösche einen alten.` };
     const karriere = Karriere.neu({ startwert, vereinId, name });
-    if (!karriere.verein) return { fehler: 'Diesen Verein gibt es nicht.' };
+    const verein = eigenerVerein(karriere);
+    if (!verein) return { fehler: 'Diesen Verein gibt es nicht.' };
     const id = kennung();
     const jetzt = this.uhr();
     this.db.prepare(`
-      INSERT INTO manager_spielstand (id, konto, name, verein, liga, saison, datum, fassung, daten, angelegt, geaendert)
+      INSERT INTO manager_spielstand (id, konto, name, verein, liga, saison, datum, fassung, daten, angelegt, geändert)
       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`)
-      .run(id, konto, name, karriere.verein.name, karriere.verein.liga, karriere.saison,
+      .run(id, konto, name, verein.name, verein.liga, karriere.saison,
         terminTitel(karriere.termine[karriere.termin]), FASSUNG, JSON.stringify(karriere.sichern()), jetzt, jetzt);
     this.offen.set(id, { konto, karriere, beruehrt: jetzt });
     this.aufraeumen();
@@ -72,7 +80,7 @@ class Spielstaende {
    * Einen Spielstand oeffnen - nur am eigenen Konto. Ein fremder und ein
    * nicht vorhandener sehen gleich aus: ob es ihn gibt, geht niemanden etwas an.
    *
-   * @returns {{karriere: Karriere}|{fehler: string}|null}
+   * @returns {{karriere: GanzeKarriere, fehler?: undefined}|{fehler: string, karriere?: undefined}|null}
    */
   oeffnen(konto, id) {
     const offen = this.offen.get(id);
@@ -88,7 +96,7 @@ class Spielstaende {
     try {
       karriere = Karriere.laden(JSON.parse(zeile.daten));
     } catch (fehler) {
-      return { fehler: fehler.code === 'FASSUNG' ? fehler.message : 'Dieser Spielstand laesst sich nicht laden.' };
+      return { fehler: fehler.code === 'FASSUNG' ? fehler.message : 'Dieser Spielstand lässt sich nicht laden.' };
     }
     this.offen.set(id, { konto, karriere, beruehrt: this.uhr() });
     this.aufraeumen();
@@ -96,10 +104,10 @@ class Spielstaende {
   }
 
   schreiben(konto, id, karriere) {
-    const verein = karriere.verein;
+    const verein = eigenerVerein(karriere);
     // Die Fassung wird mitgeschrieben: ein angehobener Stand ist danach einer der jetzigen.
     this.db.prepare(`
-      UPDATE manager_spielstand SET verein = ?, liga = ?, saison = ?, datum = ?, fassung = ?, daten = ?, geaendert = ?
+      UPDATE manager_spielstand SET verein = ?, liga = ?, saison = ?, datum = ?, fassung = ?, daten = ?, geändert = ?
       WHERE id = ? AND konto = ?`)
       .run(verein ? verein.name : null, verein ? verein.liga : null, karriere.saison,
         terminTitel(karriere.termine[karriere.termin]), FASSUNG, JSON.stringify(karriere.sichern()), this.uhr(), id, konto);

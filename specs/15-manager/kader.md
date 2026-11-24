@@ -2,7 +2,7 @@
 
 **Bereich:** Manager
 **Kuerzel:** kader
-**Stand:** 21/22 fertig · 1 in QA
+**Stand:** 29/33 fertig · 3 in QA · 1 offen
 
 ## Zweck
 
@@ -92,6 +92,60 @@ wiederholen, statt ihn zu suchen.
   Vertrag mehr hat, geht zu den Vereinslosen (→ [Verträge](vertraege.md)).
 - **AC-16** `fertig` **Jeder Spieler hat einen Marktwert** — Er folgt Stärke,
   Alter und ungenutztem Talent (→ [Transfer](transfer.md) AC-1 bis AC-3).
+- **AC-23** `offen` **Sterne in einem Band** — Ab der fünften von zwanzig
+  Saisons ohne Menschen spielen in der ersten Liga am Saisonende drei bis
+  acht Spieler ab Stärke 85, in jeder Saison: keine Welle aus der
+  Startgeneration und kein Aussterben danach. Auf Schritt 4 (2026-11-22)
+  über acht Startwerte an zweien jede Saison im Band, sonst 0 bis 12 je
+  Saison und meist nur eine bis sieben Saisons daneben (Startwert 20260910:
+  nur Saison 5 mit 2); vorher riss es an jedem Startwert in 10 bis 15 von 20
+  Saisons — eine Welle der Startgeneration bis 18, danach 2 bis 3.
+  Auf Schritt 5 (Neigungen, Entwicklung nach Einsatz, 2026-11-24) hält es an
+  einem von acht (4711); an den anderen reißt es zuerst in Saison 5 bis 9,
+  mit 2 bis 10 Sternen, in 1 bis 14 von 20 Saisons — meist oben: wer spielt,
+  wächst jetzt auch nach 24 weiter.
+- **AC-24** `in-qa` **Durchschnittsalter bleibt im Band** — Über zwanzig
+  Saisons ohne Menschen sind die Spieler der Vereine ab der zweiten Saison im
+  Mittel 23 bis 25 Jahre alt, in jeder Saison, gezählt am letzten Termin vor
+  dem Altern. Bis 2026-11-22 stand hier 25,5 bis 27: je Saison kommen rund
+  72 Siebzehnjährige aus der Jugend in die Kader, rund 40 % der Spieler sind
+  20 oder jünger, und keine gemessene Variante kam über 25,1, ohne dass das
+  Niveau der Ligen fiel (`docs/manager/dynamik/plan.md`). Die erste Saison
+  zählt nicht: die Startwelt ist 18 bis 33 Jahre alt, im Mittel 25,5 bis 26.
+  Auf Schritt 2 (`7d9f9ff`) reißt es an allen vier Startwerten unten: ab der
+  sechsten Saison 22,7 bis 23,3. Auf Schritt 4 hält es am Startwert des
+  Tests und an sechs von acht (22,9 bis 24,8 je Saison); an 1234 und 99
+  fällt es in einzelnen Saisons auf 22,9.
+  **`in-qa` seit dem 2026-11-24:** auf Schritt 4 hielt es an sechs von acht
+  Startwerten; **auf Schritt 5 an keinem** — an jedem liegen 3 bis 8 von 20
+  Saisons bei 22,7 bis 23,0, zuerst in Saison 7 bis 9. Gemessen: die 25-
+  bis 28-Jährigen mit wenig Einsatz gehen häufiger (27,3 statt 16,9
+  Abgänge je Saison an drei Startwerten). Jede Stellschraube an der
+  Entwicklung, die das Alter hebt, reißt AC-26; nur ein seltenerer zweiter
+  Jugendspieler hebt es ohne das, reißt aber transfer AC-31 und änderte
+  AC-14 (`docs/manager/dynamik/plan.md`). `fertig` erst, wenn
+  es an allen acht hält. Der Test bleibt, wie er ist, als `todo`.
+- **AC-25** `fertig` **Die Jugend kommt an** — Über zwanzig Saisons ohne
+  Menschen liegt ab der zweiten Saison die Stärke der Siebzehnjährigen aus
+  dem eigenen Nachwuchs im Mittel höchstens 15 unter dem Niveau ihres
+  Vereins, und die Zwanzigjährigen in Vereinen stehen im Mittel mindestens
+  30 % der Pflichtspielminuten auf dem Platz — gezählt am letzten Termin,
+  wo es mindestens 30 Zwanzigjährige gibt. Auf Schritt 2 reißt der Abstand
+  in jeder Saison (−21,5 bis −23,8); die Spielzeit mit 20 hält (39 bis 78 %).
+  Auf Schritt 4 an allen acht gemessenen Startwerten: Abstand −14,8 bis
+  −10,6, Spielzeit mit 20 bei 32 bis 70 %.
+- **AC-26** `in-qa` **Wer spielt, entwickelt sich** — Über zwanzig Saisons
+  ohne Menschen wird je Saison, wer 25 bis 30 ist und ein Jahr später noch
+  in einem Verein steht, nach seinem Spielanteil gedrittelt: das Drittel mit
+  der meisten Spielzeit legt bis zum nächsten Saisonende im Mittel
+  mindestens einen Punkt Stärke mehr zu als das mit der wenigsten. Auf
+  Schritt 2 reißt es in jeder Saison (−0,6 bis +0,5): die Spielzeit wirkt
+  heute nur bis 24. Auf Schritt 4 an keinem von acht (−0,30 bis −0,08).
+  **Auf Schritt 5 hält es an fünf von acht**: an 4711, 1234 und 99 liegen
+  ein bis zwei von 19 Saisons bei 0,88 bis 0,96. Die Spielzeit zählt jetzt
+  auch ab 25 (`ENTWICKLUNG` in `kader.js`: 5,5 Punkte je Anteil an allen
+  Minuten unter 70 %, 1,5 darüber, dazu die Noten → AC-30). Mit 7 statt 5,5
+  hielt es an allen acht, riss aber transfer AC-28 und AC-31.
 - **AC-17** `fertig` **Karriereende** — Ab 33 wird es Jahr für Jahr
   wahrscheinlicher, mit 36 ist Schluss — auch mit gültigem Vertrag
   (→ AC-21).
@@ -112,3 +166,61 @@ wiederholen, statt ihn zu suchen.
   keine elf einsatzbereiten Spieler oder keinen Torwart, rücken Spieler aus der
   A-Jugend nach. Ein Spiel fällt nie aus, auch nicht für einen Verein ohne
   Geld.
+
+### Neigungen
+
+Was einen Spieler neben Stärke und Talent ausmacht. Die Wirkungen stehen in
+einer Tabelle (`NEIGUNGEN` in `server/spiele/manager/neigungen.js`), gemessen
+mit `node docs/manager/dynamik/neigungen.cjs` (fünf Saisons, acht Startwerte,
+rund 20 Sekunden).
+
+| Achse | + | − | Wirkung bei Neigung 1 (bei −1 umgekehrt) |
+| --- | --- | --- | --- |
+| entwicklung | Trainingsfleißig | Lebemann | +0,5 Stärke je Saison |
+| wechsel | Söldner | Vereinstreu | +6 % Gehaltswunsch beim Verlängern, 2 Punkte mehr Abstand nach unten |
+| heim | — | — | Tagesform daheim +3 %, auswärts −3 %, neutral nichts |
+| nerven | Profi | — | Streuung der Note −40 % |
+| karten | Heißsporn | — | angelegt, wirkt noch nicht |
+| moral | Sensibel | — | angelegt, wirkt noch nicht |
+| mitspieler | Anführer | — | angelegt, wirkt noch nicht |
+
+- **AC-27** `fertig` **Spieler haben Neigungen** — Jeder Spieler hat auf
+  sieben Achsen eine Neigung von −1 bis 1, normalverteilt um null mit
+  Streuung 0,35. Sie kommt aus Kennung und Startwert über einen Hash und wird
+  nicht gespeichert: kein Feld am Spieler, keine neue Fassung des
+  Spielstands, dieselbe Karriere hat dieselben Neigungen. Ohne Startwert ist
+  jede null. Daraus der **Charakter**: der Name der stärksten Abweichung ab
+  0,5, sonst „Ausgeglichen". Gemessen über 6080 Spieler und acht Startwerte:
+  Ausgeglichen 52,2 %, jeder der acht Namen 5,2 bis 6,7 %. „Profi" heißt,
+  wer die ruhigsten Nerven hat — er liefert Woche für Woche dieselbe
+  Leistung (→ AC-33).
+- **AC-28** `fertig` **Neigungen bleiben verdeckt** — Keine Antwort des
+  Servers trägt eine Neigung oder einen Wert, der aus einer folgt; den
+  Charakter sieht der Manager nur an den eigenen Spielern. Nicht verdeckt:
+  der Startwert steht im Zustand, aus ihm ließen sich die Neigungen
+  nachrechnen.
+- **AC-29** `fertig` **Fleiß verschiebt Entwicklung** — Zwei Spieler, die
+  sich nur in der Kennung unterscheiden, entwickeln sich je Saison um 0,5
+  Stärke je Einheit Neigung auseinander, verteilt auf Winter und Sommer wie
+  die Entwicklung selbst; das Talent bleibt die Grenze nach oben. Gemessen
+  in der Welt: 0,51 ± 0,06 Punkte je Jahr und Einheit (15 620 Spielerjahre,
+  bis 28, nicht am Talent).
+- **AC-30** `fertig` **Gute Noten fördern Entwicklung** — Wer in der Saison
+  mindestens fünf Noten hat, legt je Notenstufe besser als 3,5 im Schnitt
+  0,6 Stärke zu und verliert je schlechtere ebenso viel, in jedem Alter.
+  Darunter zählt die Leistung nicht.
+- **AC-31** `fertig` **Heimliebe wirkt daheim** — Die Tagesform eines
+  Spielers steigt daheim um 3 % je Einheit Neigung und fällt auswärts um
+  ebenso viel; auf neutralem Platz wirkt sie nicht. Die Heimquote der Liga
+  verschiebt sich nicht, weil die Neigung um null liegt: gemessen 47,56 %
+  Heimsiege mit, 47,71 % ohne (25 680 Spiele). In den Noten ist die Wirkung
+  nicht zu sehen (0,009 ± 0,007 Notenstufen je Einheit).
+- **AC-32** `fertig` **Söldner fordern mehr** — Beim Verlängern am eigenen
+  Verein will ein Spieler 6 % mehr Gehalt je Einheit Neigung (der Söldner
+  mehr, der Vereinstreue weniger), und er nimmt 2 Punkte mehr Abstand nach
+  unten hin, bevor er einen schwächeren Verein ablehnt. Ein Neuzugang vom
+  Markt bekommt, was der Markt zahlt, ohne Neigung.
+- **AC-33** `fertig` **Ruhige Nerven, ruhige Noten** — Ruhige Nerven
+  machen die Note um 40 % je Einheit Neigung weniger streuend, fahrige
+  streuender; am Ergebnis eines Spiels ändert das nichts. In der Welt
+  gemessen: −0,063 ± 0,005 Notenstufen Streuung je Einheit (6025 Spieler).

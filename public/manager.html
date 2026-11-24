@@ -27,7 +27,7 @@
       <p class="unterzeile">Noch kein Konto? Registriert wird mit Einladungscode auf der <a href="/">Startseite</a>.</p>
     </main>
 
-    <!-- Angemeldet: Spielstaende und neue Karriere -->
+    <!-- Angemeldet: Spielstände und neue Karriere -->
     <main id="start" class="mitte" hidden>
       <div class="kopfreihe">
         <div>
@@ -38,7 +38,7 @@
       </div>
 
       <section>
-        <h2>Deine Spielstaende</h2>
+        <h2>Deine Spielstände</h2>
         <div id="spielstaende" class="spielstaende"></div>
       </section>
 
@@ -76,6 +76,7 @@
         </div>
         <div class="anpfiff">
           <button id="weiter" class="haupt gross">Weiter</button>
+          <button id="live" hidden>Live spielen</button>
           <button id="vorWinter">bis zur Winterpause</button>
           <button id="vorEnde">bis vor das Saisonende</button>
           <label class="feld klein tempo">
@@ -83,14 +84,14 @@
             <select id="tempo">
               <option value="0">sofort</option>
               <option value="2600" selected>schnell</option>
-              <option value="7000">gemuetlich</option>
+              <option value="7000">gemütlich</option>
             </select>
           </label>
           <span id="lauf" class="unterzeile"></span>
-          <button id="zurStart" class="leise">Spielstaende</button>
+          <button id="zurStart" class="leise">Spielstände</button>
         </div>
         <nav class="reiter" id="reiter">
-          <button class="reiterKnopf" data-blatt="buero" aria-pressed="true">Buero</button>
+          <button class="reiterKnopf" data-blatt="buero" aria-pressed="true">Büro</button>
           <button class="reiterKnopf" data-blatt="mannschaft" aria-pressed="false">Mannschaft</button>
           <button class="reiterKnopf" data-blatt="kader" aria-pressed="false">Kader</button>
           <button class="reiterKnopf" data-blatt="spieltag" aria-pressed="false">Spieltag</button>
@@ -106,12 +107,12 @@
 
     <div id="dialog" class="ueberlagerung" hidden>
       <div class="dialog" role="dialog" aria-modal="true">
-        <button id="dialogZu" class="leise zu" aria-label="Schliessen">×</button>
+        <button id="dialogZu" class="leise zu" aria-label="Schließen">×</button>
         <div class="dialog-inhalt"></div>
       </div>
     </div>
 
     <div id="meldung" class="meldung" hidden></div>
-    <script src="manager.js"></script>
+    <script type="module" src="manager/start.js"></script>
   </body>
 </html>

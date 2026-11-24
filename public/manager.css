@@ -5,21 +5,45 @@
    langen Listen. Ein fixierter Kasten scrollt nicht und laesst den Body
    nicht mitwachsen; die Marktliste war 7.325 px hoch, der Body 80 px.
 
-   Zwei Spiele, zwei Oberflaechen. Geteilt werden nur die Farben, und die
-   stehen hier noch einmal - lieber doppelt als heimlich gekoppelt. */
+   Zwei Spiele, zwei Oberflaechen, und seit oberflaeche AC-18 auch zwei
+   Kleider: das Managerspiel ist hell nach dem Entwurf des Spieltags
+   (docs/manager/entwurf/spieltag.html) - Kreide als Grund, Tinte als
+   Schrift, kraeftig sind nur die Vereinsfarben und der Rasen.
+
+   Die Namen der Farben sind die alten (`--grund`, `--tafel`, ...), damit
+   jede Regel unten weiter stimmt; die Werte sind die des Entwurfs. */
 
 :root {
-  /* Regler, Auswahllisten und Rollbalken im dunklen Kleid des Browsers. */
-  color-scheme: dark;
-  --grund: #14171c;
-  --tafel: #1d222a;
-  --rand: #2c333d;
-  --schrift: #e6e9ee;
-  --leise: #97a1b0;
-  --betont: #4a90d9;
-  --gut: #8fd0a0;
-  --schlecht: #d99a9a;
-  --warnung: #d9b36a;
+  color-scheme: light;
+  --grund: #eef0ea;      /* Kreide */
+  --tafel: #fbfbf8;      /* Blatt: Karten, Felder, Dialoge */
+  --rand: #cdd2cc;       /* Linie */
+  --schrift: #1c2128;    /* Tinte */
+  --leise: #5b646d;
+  --zeile: #e4e8e0;      /* Zeile unter der Maus */
+  --ich: #dde6f0;        /* die eigene Zeile */
+  --platte: #20252b;     /* Ziffern der Anzeigetafel */
+  --rasen: #3f7d4e;
+  --rasen-hell: #4b8c5a;
+
+  /* Der eigene Verein - die Vorgabe, bis der Server seine zwei Farben
+     schickt (bedienung AC-22, server/spiele/manager/farben.js). */
+  --verein-1: #0f4c81;
+  --verein-2: #f2c230;
+  --verein-schrift: #ffffff;
+  --verein-2-schrift: #1c2128;
+
+  --betont: var(--verein-1);
+  --gut: #2c6a3a;
+  --schlecht: #b3261e;
+  --warnung: #8a5a00;
+  --gelb: #e3bb12;
+  --rot: #c4262e;
+  --muede: #b9621b;
+
+  /* Bahnschrift liegt auf jedem Windows ab 10, gespielt wird am PC. */
+  --schmal: Bahnschrift, "DIN Alternate", "Roboto Condensed", "Arial Narrow", sans-serif;
+  --text: "Segoe UI Variable Text", "Segoe UI", system-ui, sans-serif;
 }
 
 * {
@@ -44,19 +68,28 @@ body.manager {
   padding: 0 0 5rem;
   background: var(--grund);
   color: var(--schrift);
-  font: 16px/1.5 system-ui, -apple-system, "Segoe UI", sans-serif;
+  font: 16px/1.5 var(--text);
+  font-variant-numeric: tabular-nums;
 }
 
 a { color: var(--betont); }
 
+h1,
+h2 {
+  font-family: var(--schmal);
+  font-stretch: 82%;
+  font-weight: 700;
+  line-height: 1.1;
+}
+
 h1 {
   margin: 0;
-  font-size: 1.6rem;
-  letter-spacing: -0.01em;
+  font-size: 1.9rem;
+  letter-spacing: 0.01em;
 }
 
 h2 {
-  font-size: 1.05rem;
+  font-size: 1.3rem;
   margin: 0 0 0.6rem;
 }
 
@@ -81,27 +114,28 @@ section + section { margin-top: 1.75rem; }
 
 /* ------------------------------------------------- Knoepfe und Felder */
 
+/* Knoepfe wie im Entwurf: eckig, Tinte als Rand, der Hauptknopf voll. */
 button {
   padding: 0.5rem 1rem;
-  background: #262d38;
-  border: 1px solid var(--rand);
-  border-radius: 8px;
+  background: var(--tafel);
+  border: 1px solid var(--schrift);
+  border-radius: 2px;
   color: var(--schrift);
   font: inherit;
   cursor: pointer;
 }
 
-button:hover:not(:disabled) { border-color: #3d4756; }
+button:hover:not(:disabled):not([aria-pressed='true']) { background: var(--zeile); }
 button:disabled { opacity: 0.45; cursor: default; }
 
 button.haupt {
-  background: var(--betont);
-  border-color: var(--betont);
-  color: #0d1117;
+  background: var(--schrift);
+  border-color: var(--schrift);
+  color: var(--tafel);
   font-weight: 600;
 }
 
-button.haupt:hover:not(:disabled) { background: #5c9ee0; }
+button.haupt:hover:not(:disabled) { background: var(--betont); border-color: var(--betont); }
 button.leise { color: var(--leise); }
 button.klein { padding: 0.2rem 0.55rem; font-size: 0.82rem; }
 button.warnung { border-color: var(--warnung); color: var(--warnung); }
@@ -116,9 +150,9 @@ input,
 select {
   width: 100%;
   padding: 0.5rem 0.6rem;
-  background: #12151a;
-  border: 1px solid var(--rand);
-  border-radius: 8px;
+  background: var(--tafel);
+  border: 1px solid #9aa29a;
+  border-radius: 2px;
   color: var(--schrift);
   font: inherit;
 }
@@ -170,14 +204,43 @@ button:focus-visible {
 
 .mitte.schmal { max-width: 28rem; }
 
+/* Der Kopf ist die Platte des eigenen Vereins - wie die Heimseite der
+   Anzeigetafel im Entwurf. Der offene Reiter steht in der Farbe des
+   Grundes und geht in die Seite darunter ueber. */
 .kopf {
   position: sticky;
   top: 0;
   z-index: 5;
-  background: var(--grund);
-  padding: 0.9rem clamp(0.75rem, 4vw, 2rem) 0.5rem;
-  border-bottom: 1px solid var(--rand);
+  background: var(--verein-1);
+  color: var(--verein-schrift);
+  padding: 0.9rem clamp(0.75rem, 4vw, 2rem) 0;
 }
+
+.kopf .unterzeile,
+.kopf .feld span,
+.kopfzahlen small { color: rgba(255, 255, 255, 0.82); }
+
+.kopf button:not(.haupt):not(.reiterKnopf) {
+  background: transparent;
+  border-color: rgba(255, 255, 255, 0.7);
+  color: var(--verein-schrift);
+}
+
+.kopf button:not(.haupt):not(.reiterKnopf):hover:not(:disabled) { background: rgba(255, 255, 255, 0.12); }
+
+.kopf button.haupt {
+  background: var(--verein-2);
+  border-color: var(--verein-2);
+  color: var(--verein-2-schrift);
+}
+
+.kopf button.haupt:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--verein-2) 82%, #ffffff);
+  border-color: color-mix(in srgb, var(--verein-2) 82%, #ffffff);
+}
+.kopf select { border-color: var(--tafel); }
+.kopf button:focus-visible,
+.kopf select:focus-visible { outline-color: var(--verein-2); }
 
 .kopfreihe,
 .anpfiff,
@@ -195,27 +258,25 @@ main#inhalt {
   flex-wrap: wrap;
 }
 
-.kopf h1 { font-size: 1.35rem; }
-.kopf .unterzeile { margin-bottom: 0.3rem; }
+.kopf h1 { font-size: 2rem; font-stretch: 78%; line-height: 1; }
+.kopf .unterzeile { margin: 0.35rem 0 0.3rem; }
 
 .kopfzahlen {
   display: flex;
-  gap: 1.25rem;
+  gap: 1.4rem;
   text-align: right;
 }
 
 .kopfzahlen span {
   display: block;
-  font-size: 1.35rem;
-  font-variant-numeric: tabular-nums;
+  font-family: var(--schmal);
+  font-stretch: 80%;
+  font-weight: 700;
+  font-size: 1.7rem;
+  line-height: 1.1;
 }
 
-.kopfzahlen small {
-  color: var(--leise);
-  font-size: 0.72rem;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-}
+.kopfzahlen small { font-size: 0.8rem; }
 
 .anpfiff {
   display: flex;
@@ -229,10 +290,7 @@ main#inhalt {
 
 .reiter {
   display: flex;
-  gap: 0.3rem;
-  padding: 0.25rem;
-  background: #12151a;
-  border-radius: 9px;
+  gap: 2px;
   overflow-x: auto;
 }
 
@@ -241,25 +299,48 @@ main#inhalt {
   padding: 0.45rem 0.6rem;
   background: none;
   border: none;
+  border-radius: 0;
   color: var(--leise);
   font-size: 0.9rem;
   white-space: nowrap;
 }
 
+.reiterKnopf:hover:not(:disabled):not([aria-pressed='true']) { background: var(--zeile); }
+
 .reiterKnopf[aria-pressed='true'] {
-  background: #262d38;
-  color: var(--schrift);
+  background: var(--schrift);
+  color: var(--tafel);
   font-weight: 600;
+}
+
+/* Im Kopf: Reiter auf der Platte, der offene in der Farbe der Seite. */
+.kopf .reiter { margin-top: 0.2rem; }
+
+.kopf .reiterKnopf {
+  padding: 0.5rem 0.6rem 0.6rem;
+  color: rgba(255, 255, 255, 0.86);
+  font-family: var(--schmal);
+  font-stretch: 85%;
+  font-size: 1.05rem;
+  letter-spacing: 0.01em;
+}
+
+.kopf .reiterKnopf:hover:not(:disabled):not([aria-pressed='true']) { background: rgba(255, 255, 255, 0.12); }
+
+.kopf .reiterKnopf[aria-pressed='true'] {
+  background: var(--grund);
+  color: var(--schrift);
 }
 
 .zaehler {
   display: inline-block;
-  min-width: 1.2rem;
-  margin-left: 0.3rem;
-  padding: 0 0.3rem;
+  min-width: 1.3rem;
+  margin-left: 0.35rem;
+  padding: 0 0.35rem;
   border-radius: 9px;
-  background: var(--warnung);
-  color: #14171c;
+  background: var(--verein-2);
+  color: var(--verein-2-schrift);
+  font-family: var(--text);
   font-size: 0.75rem;
   font-weight: 700;
 }
@@ -268,13 +349,14 @@ main#inhalt { padding: 1rem clamp(0.75rem, 4vw, 2rem); }
 
 .umschalter {
   display: flex;
-  gap: 0.3rem;
+  gap: 0;
   max-width: 20rem;
   margin-bottom: 1rem;
-  padding: 0.25rem;
-  background: #12151a;
-  border-radius: 9px;
+  border: 1px solid var(--schrift);
+  background: var(--tafel);
 }
+
+.umschalter .reiterKnopf + .reiterKnopf { border-left: 1px solid var(--rand); }
 
 .umschalter.breit { max-width: 32rem; }
 
@@ -299,7 +381,7 @@ main#inhalt { padding: 1rem clamp(0.75rem, 4vw, 2rem); }
 .karte {
   background: var(--tafel);
   border: 1px solid var(--rand);
-  border-radius: 12px;
+  border-radius: 2px;
   padding: 0.9rem 1rem;
 }
 
@@ -331,14 +413,14 @@ thead th {
   color: var(--leise);
   font-weight: 500;
   font-size: 0.8rem;
-  background: var(--grund);
+  background: transparent;
 }
 
-tbody tr:hover { background: var(--tafel); }
+tbody tr:hover { background: var(--zeile); }
 
 tr.ich td,
 tr.naechster td {
-  background: #23303f;
+  background: var(--ich);
   font-weight: 600;
 }
 
@@ -366,7 +448,7 @@ tr.abstieg td:first-child { box-shadow: inset 3px 0 0 var(--schlecht); }
   margin-left: 0.25rem;
   padding: 0 0.35rem;
   border: 1px solid var(--rand);
-  border-radius: 6px;
+  border-radius: 2px;
   color: var(--leise);
   font-size: 0.72rem;
 }
@@ -412,9 +494,13 @@ td.aktionen button { padding: 0.15rem 0.5rem; font-size: 0.8rem; margin-right: 0
 /* ---------------------------------------------------------- Aufstellung */
 
 .platz {
-  background: radial-gradient(circle at 50% -10%, #23402c, #1b2f22 70%);
-  border: 1px solid var(--rand);
-  border-radius: 12px;
+  /* Rasen in Bahnen wie im Entwurf, die Farbe darunter fuer jede Messung.
+     Die helle Bahn ist dunkler als im Entwurf: weisse Schrift haelt darauf
+     4,56 : 1 (gerechnet), auf #4b8c5a waeren es 4,0. */
+  background-color: var(--rasen);
+  background-image: repeating-linear-gradient(180deg, var(--rasen) 0 3.2rem, #44834f 3.2rem 6.4rem);
+  border: 0;
+  border-radius: 2px;
   padding: 1rem 0.75rem;
   display: grid;
   /* minmax(0, ...): sonst waechst die Spalte auf die Breite der Reihe, statt die Trikots enger zu machen. */
@@ -434,9 +520,9 @@ td.aktionen button { padding: 0.15rem 0.5rem; font-size: 0.8rem; margin-right: 0
   flex: 0 1 6.4rem;
   min-width: 0;
   padding: 0.4rem 0.35rem;
-  border-radius: 8px;
-  background: #1d222a;
-  border: 1px solid var(--rand);
+  border-radius: 2px;
+  background: var(--tafel);
+  border: 1px solid var(--schrift);
   cursor: pointer;
   text-align: center;
   font-size: 0.78rem;
@@ -463,7 +549,7 @@ td.aktionen button { padding: 0.15rem 0.5rem; font-size: 0.8rem; margin-right: 0
 .platzfeld.lage-om { margin-bottom: 1.1rem; }
 
 .platzname {
-  color: #9fc5a8;
+  color: #ffffff;
   font-size: 0.66rem;
   font-weight: 700;
   letter-spacing: 0.06em;
@@ -479,16 +565,16 @@ td.aktionen button { padding: 0.15rem 0.5rem; font-size: 0.8rem; margin-right: 0
 
 .platzfeld .leer {
   padding: 0.9rem 0;
-  border: 1px dashed var(--rand);
-  border-radius: 8px;
-  color: var(--leise);
+  border: 1px dashed rgba(243, 245, 238, 0.7);
+  border-radius: 2px;
+  color: #ffffff;
   font-size: 0.78rem;
   text-align: center;
 }
 
 .platzfeld.ziel,
 #bankBereich.ziel {
-  outline: 2px dashed var(--betont);
+  outline: 2px dashed var(--verein-2);
   outline-offset: 3px;
 }
 
@@ -505,8 +591,8 @@ td.aktionen button { padding: 0.15rem 0.5rem; font-size: 0.8rem; margin-right: 0
   z-index: 40;
   padding: 0.3rem 0.65rem;
   background: var(--tafel);
-  border: 1px solid var(--betont);
-  border-radius: 8px;
+  border: 1px solid var(--schrift);
+  border-radius: 2px;
   font-size: 0.85rem;
   pointer-events: none;
   white-space: nowrap;
@@ -520,7 +606,7 @@ td.aktionen button { padding: 0.15rem 0.5rem; font-size: 0.8rem; margin-right: 0
   white-space: nowrap;
 }
 .trikot .wert { display: block; color: var(--leise); font-size: 0.72rem; }
-.trikot.muede { border-color: #7a5a2a; }
+.trikot.muede { border-color: var(--muede); box-shadow: inset 0 -3px 0 var(--muede); }
 
 .regler {
   display: grid;
@@ -551,8 +637,8 @@ td.aktionen button { padding: 0.15rem 0.5rem; font-size: 0.8rem; margin-right: 0
 
 .balken-rahmen {
   height: 0.6rem;
-  background: #12151a;
-  border-radius: 4px;
+  background: #dfe3dc;
+  border-radius: 0;
   overflow: hidden;
 }
 
@@ -561,7 +647,7 @@ td.aktionen button { padding: 0.15rem 0.5rem; font-size: 0.8rem; margin-right: 0
   background: var(--gut);
 }
 
-.balken.mittel { background: var(--warnung); }
+.balken.mittel { background: var(--muede); }
 .balken.tief { background: var(--schlecht); }
 
 /* ------------------------------------------------------------- Spieltag */
@@ -571,13 +657,16 @@ td.aktionen button { padding: 0.15rem 0.5rem; font-size: 0.8rem; margin-right: 0
   padding: 1.25rem 1rem;
   background: var(--tafel);
   border: 1px solid var(--rand);
-  border-radius: 12px;
+  border-radius: 2px;
   margin-bottom: 1.25rem;
 }
 
 .ergebnis .stand {
-  font-size: 2.6rem;
-  font-variant-numeric: tabular-nums;
+  font-family: var(--schmal);
+  font-stretch: 78%;
+  font-weight: 700;
+  font-size: 3rem;
+  line-height: 1;
   letter-spacing: 0.02em;
 }
 
@@ -639,10 +728,10 @@ td.aktionen button { padding: 0.15rem 0.5rem; font-size: 0.8rem; margin-right: 0
   border-radius: 2px;
 }
 
-.kartenzeichen.gelb { background: #e8c547; }
-.kartenzeichen.rot { background: #d9534f; }
+.kartenzeichen.gelb { background: var(--gelb); }
+.kartenzeichen.rot { background: var(--rot); }
 .kartenzeichen.dahinter { margin-left: -0.2rem; transform: rotate(14deg); }
-.kreuz { color: #d9534f; font-size: 1.15rem; line-height: 1; }
+.kreuz { color: var(--rot); font-size: 1.15rem; line-height: 1; }
 .pfeile { color: var(--betont); }
 
 @keyframes auftauchen {
@@ -660,9 +749,9 @@ td.aktionen button { padding: 0.15rem 0.5rem; font-size: 0.8rem; margin-right: 0
 }
 
 .paarung .heim { text-align: right; }
-.paarung .stand { text-align: center; color: var(--betont); font-variant-numeric: tabular-nums; }
+.paarung .stand { text-align: center; color: var(--schrift); font-weight: 600; font-variant-numeric: tabular-nums; }
 .paarung .stand small { color: var(--leise); }
-.paarung.eigenes { background: #23303f; }
+.paarung.eigenes { background: var(--ich); }
 .paarung .sieger { font-weight: 600; }
 
 .pokal {
@@ -679,10 +768,10 @@ td.aktionen button { padding: 0.15rem 0.5rem; font-size: 0.8rem; margin-right: 0
   padding: 0.35rem 0.65rem;
   background: var(--tafel);
   border: 1px solid var(--rand);
-  border-radius: 8px;
+  border-radius: 2px;
 }
 
-.paarung.pokalpaarung.eigenes { background: #23303f; border-color: #35506e; }
+.paarung.pokalpaarung.eigenes { background: var(--ich); border-color: var(--betont); box-shadow: inset 4px 0 0 var(--betont); }
 
 .pokalpaarung .seite {
   display: flex;
@@ -690,7 +779,7 @@ td.aktionen button { padding: 0.15rem 0.5rem; font-size: 0.8rem; margin-right: 0
   gap: 0.75rem;
 }
 
-.pokalpaarung .tore { color: var(--betont); font-variant-numeric: tabular-nums; }
+.pokalpaarung .tore { color: var(--schrift); font-weight: 600; font-variant-numeric: tabular-nums; }
 
 .pokalpaarung .zusatz {
   display: block;
@@ -719,7 +808,7 @@ td.aktionen button { padding: 0.15rem 0.5rem; font-size: 0.8rem; margin-right: 0
 .einschaetzung {
   padding: 0.25rem 0.75rem;
   border: 1px solid var(--rand);
-  border-radius: 999px;
+  border-radius: 2px;
   font-size: 0.85rem;
   white-space: nowrap;
 }
@@ -740,7 +829,7 @@ td.aktionen button { padding: 0.15rem 0.5rem; font-size: 0.8rem; margin-right: 0
   height: 1.3rem;
   border-radius: 4px;
   background: var(--leise);
-  color: #14171c;
+  color: #ffffff;
   font-size: 0.7rem;
   font-style: normal;
   font-weight: 700;
@@ -771,13 +860,13 @@ td.aktionen button { padding: 0.15rem 0.5rem; font-size: 0.8rem; margin-right: 0
   display: flex;
   height: 0.7rem;
   overflow: hidden;
-  background: #12151a;
-  border-radius: 4px;
+  background: #dfe3dc;
+  border-radius: 0;
 }
 
 .balken-links { justify-content: flex-end; }
 .balken-links div,
-.balken-rechts div { height: 100%; background: #3a4452; }
+.balken-rechts div { height: 100%; background: #9aa29a; }
 .balken-links div.vorn { background: var(--gut); }
 .balken-rechts div.vorn { background: var(--schlecht); }
 
@@ -797,8 +886,9 @@ td.aktionen button { padding: 0.15rem 0.5rem; font-size: 0.8rem; margin-right: 0
 
 .angebot {
   border: 1px solid var(--rand);
-  border-left: 3px solid var(--betont);
-  border-radius: 8px;
+  border-left: 4px solid var(--betont);
+  border-radius: 2px;
+  background: var(--tafel);
   padding: 0.6rem 0.85rem;
   margin-bottom: 0.6rem;
   display: flex;
@@ -862,7 +952,7 @@ td.aktionen button { padding: 0.15rem 0.5rem; font-size: 0.8rem; margin-right: 0
   padding: 0.7rem 0.85rem;
   background: var(--tafel);
   border: 1px solid var(--rand);
-  border-radius: 10px;
+  border-radius: 2px;
 }
 
 .spielstand > div { flex: 1 1 16rem; }
@@ -880,7 +970,7 @@ td.aktionen button { padding: 0.15rem 0.5rem; font-size: 0.8rem; margin-right: 0
   padding: 0.6rem 0.85rem;
   background: var(--tafel);
   border: 1px solid var(--rand);
-  border-radius: 10px;
+  border-radius: 2px;
   cursor: pointer;
   color: inherit;
   font: inherit;
@@ -897,8 +987,9 @@ td.aktionen button { padding: 0.15rem 0.5rem; font-size: 0.8rem; margin-right: 0
   transform: translateX(-50%);
   background: var(--tafel);
   border: 1px solid var(--rand);
-  border-left: 3px solid var(--betont);
-  border-radius: 8px;
+  border-left: 6px solid var(--betont);
+  border-radius: 2px;
+  box-shadow: 0 6px 24px rgba(28, 33, 40, 0.18);
   padding: 0.6rem 1rem;
   max-width: min(38rem, 92vw);
   z-index: 30;
@@ -914,7 +1005,7 @@ td.aktionen button { padding: 0.15rem 0.5rem; font-size: 0.8rem; margin-right: 0
   align-items: flex-start;
   justify-content: center;
   padding: 4rem 1rem 1rem;
-  background: rgba(8, 10, 13, 0.7);
+  background: rgba(28, 33, 40, 0.55);
   overflow-y: auto;
 }
 
@@ -923,8 +1014,8 @@ td.aktionen button { padding: 0.15rem 0.5rem; font-size: 0.8rem; margin-right: 0
   width: min(46rem, 100%);
   padding: 1.25rem 1.4rem;
   background: var(--grund);
-  border: 1px solid var(--rand);
-  border-radius: 12px;
+  border: 1px solid var(--schrift);
+  border-radius: 2px;
 }
 
 .dialog .zu {
@@ -960,3 +1051,202 @@ td.aktionen button { padding: 0.15rem 0.5rem; font-size: 0.8rem; margin-right: 0
   .einschaetzung { grid-column: 1 / -1; grid-row: 2; justify-self: center; }
   .vergleich .zeile { grid-template-columns: 2rem minmax(0, 1fr) 4.8rem minmax(0, 1fr) 2rem; gap: 0.35rem; }
 }
+
+/* ------------------------------------------------ Das Spiel live (M1) */
+
+/* Ein Spiel, das live laeuft, nimmt die ganze Seite (oberflaeche AC-19):
+   oben die Tafel, darunter das Band, links der Ticker, rechts das
+   Eingreifen, unten das Tempo. Die Seite rollt nicht - Ticker und rechte
+   Spalte rollen in sich, damit die Kabine auf 1366 x 768 ganz zu sehen ist
+   (AC-21). Formen und Farben nach docs/manager/entwurf/spieltag.html. */
+body.manager.imspiel { padding: 0; }
+body.imspiel .kopf { display: none; }
+body.imspiel main#inhalt { max-width: none; margin: 0; padding: 0; }
+
+/* Heim und Gast: die Trikots schickt der Server und live.js setzt sie als
+   --heim-* und --gast-* an .live (AC-22). Die Regeln hier sind die Vorgabe
+   fuer einen Stand ohne Trikots. Im Ausweichtrikot ist der Grund hell - im
+   Band umrandet ihn dann die erste Farbe. */
+.live {
+  --gegner-1: #7a1f2b;
+  --gegner-2: #f1ece0;
+  --gegner-schrift: #ffffff;
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+}
+
+.live.eigen-heim {
+  --heim-1: var(--verein-1); --heim-2: var(--verein-2); --heim-schrift: var(--verein-schrift);
+  --gast-1: var(--gegner-1); --gast-2: var(--gegner-2); --gast-schrift: var(--gegner-schrift);
+}
+
+.live.eigen-gast {
+  --heim-1: var(--gegner-1); --heim-2: var(--gegner-2); --heim-schrift: var(--gegner-schrift);
+  --gast-1: var(--verein-1); --gast-2: var(--verein-2); --gast-schrift: var(--verein-schrift);
+}
+
+.live h2 { margin: 0 0 0.5rem; font-size: 1.3rem; }
+
+/* Anzeigetafel: eine Stecktafel, Ziffern auf dunklen Platten. */
+.live .tafel { display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); flex: none; }
+.live .seite { display: flex; flex-direction: column; justify-content: center; padding: 0.45rem 1.5rem; min-width: 0; }
+.live .seite.heim { background: var(--heim-1); color: var(--heim-schrift); border-bottom: 7px solid var(--heim-2); }
+.live .seite.gast { background: var(--gast-1); color: var(--gast-schrift); border-bottom: 7px solid var(--gast-2); text-align: right; }
+.live .verein {
+  font-family: var(--schmal); font-stretch: 78%; font-weight: 700;
+  font-size: 2.1rem; line-height: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.live .lage { margin-top: 0.35rem; font-size: 0.9rem; opacity: 0.9; }
+.live .stand {
+  display: grid; grid-template-columns: auto auto auto; align-items: center; gap: 0.45rem;
+  padding: 0.5rem 1.1rem 0.35rem; background: var(--schrift);
+}
+.live .platte {
+  position: relative; width: 3.5rem; height: 4rem; border-radius: 3px;
+  background: var(--platte); color: #f6f4ec; display: grid; place-items: center;
+  font-family: var(--schmal); font-stretch: 75%; font-weight: 700; font-size: 3.3rem; line-height: 1;
+  box-shadow: inset 0 0 0 1px #3a4149;
+}
+.live .platte::after {
+  content: ""; position: absolute; left: 0; right: 0; top: 50%;
+  border-top: 1px solid #0d1013; border-bottom: 1px solid #3a4149;
+}
+.live .doppelpunkt { color: #8d969f; font-family: var(--schmal); font-size: 2.3rem; font-weight: 700; }
+.live .uhr {
+  grid-column: 1 / -1; text-align: center; color: #d9dcd4; white-space: nowrap;
+  font-family: var(--schmal); font-stretch: 80%; font-size: 1.05rem; letter-spacing: 0.04em;
+}
+.live .uhr b { color: #f2c230; font-weight: 700; }
+
+/* Verlaufsband: je fuenf Minuten ein Abschnitt, Ausschlag nach oben fuer
+   Heim, nach unten fuer Gast; darueber und darunter die Torschuetzen. */
+.live .spielverlauf {
+  flex: none; display: grid; grid-template-columns: 7rem minmax(0, 1fr) 7rem; align-items: center; gap: 0.75rem;
+  padding: 0.3rem 1.5rem; background: var(--tafel); border-bottom: 1px solid var(--rand);
+}
+.live .spielverlauf small { color: var(--leise); font-size: 0.8rem; line-height: 1.2; }
+.live .spielverlauf small:last-child { text-align: right; }
+.live .band { display: grid; gap: 2px; height: 40px; position: relative; }
+.live .band::before { content: ""; position: absolute; left: 0; right: 0; top: 50%; border-top: 1px solid var(--rand); }
+.live .abschnitt { position: relative; }
+.live .abschnitt i { position: absolute; left: 0; right: 0; display: block; }
+.live .abschnitt i.heim { bottom: 50%; background: var(--heim-1); }
+.live .abschnitt i.gast { top: 50%; background: var(--gast-1); }
+.live[data-ausweich='gast'] .abschnitt i.gast { box-shadow: inset 0 0 0 1.5px var(--gast-2); }
+.live[data-ausweich='gast'] .abschnitt .tor.gast { border-color: var(--gast-2); }
+/* Im Ausweichtrikot ist die erste Farbe hell - der Strich ist hell mit Rand
+   in der zweiten, wie die Balken im Band. Die zweite allein glich dem Heim,
+   wenn beide dieselbe erste Farbe tragen. */
+.live[data-ausweich='gast'] .zeilen li.tor.gast {
+  box-shadow: inset 2px 0 0 var(--gast-2), inset 8px 0 0 var(--gast-1), inset 10px 0 0 var(--gast-2);
+}
+.live[data-ausweich='gast'] .laufend.gast { border-left-color: var(--gast-2); }
+.live .abschnitt.offen { outline: 1px dashed var(--rand); outline-offset: -1px; }
+.live .abschnitt.jetzt { background: var(--zeile); }
+.live .abschnitt.pause { border-right: 2px solid var(--schrift); margin-right: -2px; }
+.live .abschnitt .tor {
+  position: absolute; left: 50%; width: 11px; height: 11px; margin-left: -5.5px;
+  border-radius: 50%; background: var(--tafel); border: 3px solid var(--schrift);
+}
+.live .abschnitt .tor.heim { top: -2px; border-color: var(--heim-1); }
+.live .abschnitt .tor.gast { bottom: -2px; border-color: var(--gast-1); }
+.live .torzeile { display: grid; min-height: 1rem; font-size: 0.75rem; line-height: 1.15; }
+.live .torname { white-space: nowrap; font-weight: 600; justify-self: center; }
+.live .torzeile.heim .torname { align-self: end; }
+
+/* Hauptteil: Ticker links, Eingreifen rechts, beide rollen in sich. */
+.live .livespiel { flex: 1; min-height: 0; display: grid; grid-template-columns: minmax(0, 1fr) 31rem; }
+.live .liveticker { overflow-y: auto; padding: 0.9rem 1.5rem 1.5rem; }
+.live .rand { overflow-y: auto; padding: 0.6rem 1.1rem 0.8rem; border-left: 1px solid var(--rand); background: var(--tafel); }
+
+/* Die juengste Szene: der eine laute Punkt der Seite. */
+.live .laufend {
+  display: grid; grid-template-columns: 4rem 1fr; gap: 0 1rem;
+  padding: 0.8rem 1rem 0.9rem; margin-bottom: 1rem; background: var(--tafel);
+  border-left: 8px solid var(--rand);
+}
+.live .laufend.heim { border-left-color: var(--heim-1); }
+.live .laufend.gast { border-left-color: var(--gast-1); }
+.live .laufend .minute { font-family: var(--schmal); font-stretch: 75%; font-weight: 700; font-size: 2.7rem; line-height: 0.95; }
+.live .laufend .art { font-weight: 600; color: var(--leise); }
+.live .laufend p { margin: 0.15rem 0 0; font-size: 1.2rem; line-height: 1.35; max-width: 36em; }
+
+.live .zeilen { list-style: none; margin: 0; padding: 0; }
+.live .zeilen li {
+  display: grid; grid-template-columns: 3.4rem 6.4rem minmax(0, 1fr); gap: 0 1rem; align-items: baseline;
+  padding: 0.45rem 1rem; border-top: 1px solid var(--rand);
+}
+.live .zeilen .minute { font-family: var(--schmal); font-stretch: 78%; font-weight: 700; font-size: 1.2rem; }
+.live .zeilen .art { color: var(--leise); font-size: 0.9rem; }
+.live .zeilen p { margin: 0; max-width: 44em; }
+/* Ein Tor ist die lauteste Zeile, die Halbzeit eine leise (AC-21). */
+.live .zeilen li.tor { background: var(--tafel); padding-top: 0.7rem; padding-bottom: 0.7rem; }
+.live .zeilen li.tor.heim { box-shadow: inset 8px 0 0 var(--heim-1); }
+.live .zeilen li.tor.gast { box-shadow: inset 8px 0 0 var(--gast-1); }
+.live .zeilen li.tor p { font-size: 1.15rem; font-weight: 600; }
+.live .zeilen li.tor p span { display: block; font-weight: 400; font-size: 0.95rem; color: var(--leise); }
+.live .zeilen li.ruhezeile { color: var(--leise); font-size: 0.88rem; }
+.live .zeilen li.ruhezeile .minute { font-size: 1rem; font-weight: 500; }
+
+.live .abpfiff { padding: 0.9rem 1rem 1rem; margin-bottom: 1rem; background: var(--tafel); border-left: 8px solid var(--schrift); }
+
+/* Die Kabine zur Halbzeit. */
+.live .kabine { background: var(--tafel); border-left: 8px solid var(--schrift); padding: 0.9rem 1.1rem 1rem; margin-bottom: 1rem; }
+.live .kabine > p { margin: 0 0 0.8rem; max-width: 40em; }
+.live .ansprachen { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.65rem; }
+/* Oben ausgerichtet: ein Knopf zentriert seinen Inhalt sonst, und bei
+   ungleich langen Texten stehen die Ueberschriften auf drei Hoehen. */
+.live .ansprachen button {
+  display: flex; flex-direction: column; justify-content: flex-start;
+  text-align: left; background: var(--grund); padding: 0.6rem 0.75rem 0.7rem;
+}
+.live .ansprachen button strong { display: block; font-family: var(--schmal); font-stretch: 82%; font-size: 1.2rem; }
+.live .ansprachen button span { display: block; font-size: 0.86rem; color: var(--leise); margin-top: 0.15rem; }
+/* Die gehaltene Ansprache bleibt voll zu lesen, die anderen sind gesperrt. */
+.live .ansprachen button[aria-pressed='true'] { background: var(--verein-1); color: var(--verein-schrift); opacity: 1; }
+.live .ansprachen button[aria-pressed='true'] span { color: inherit; }
+.live .kabinefuss { display: flex; justify-content: space-between; align-items: flex-end; gap: 1rem; margin-top: 0.9rem; flex-wrap: wrap; }
+.live .haelfte { display: grid; grid-template-columns: 4rem auto 4rem; gap: 0.15rem 1rem; margin: 0; font-size: 0.95rem; }
+.live .haelfte dt { grid-column: 2; color: var(--leise); text-align: center; }
+.live .haelfte dd { margin: 0; font-weight: 600; }
+.live .haelfte dd.h { grid-column: 1; text-align: right; }
+.live .haelfte dd.g { grid-column: 3; }
+
+/* Eingreifen. */
+.live .eingriff h2 { margin-bottom: 0.3rem; }
+.live .ab { margin: 0 0 0.5rem; font-size: 0.88rem; color: var(--leise); }
+.live .ab b { color: var(--schrift); }
+.live .grund { margin: 0 0 0.5rem; padding: 0.35rem 0.6rem; font-size: 0.88rem; color: var(--schlecht); border-left: 4px solid var(--schlecht); background: #fbeeed; }
+.live .geaendert { list-style: none; margin: 0 0 0.5rem; padding: 0; font-size: 0.85rem; }
+.live .geaendert li span { color: var(--leise); }
+.live .stellwerk { display: grid; grid-template-columns: 5.6rem 1fr; gap: 0.3rem 0.6rem; align-items: center; margin: 0 0 0.6rem; }
+.live .stellwerk > span { font-size: 0.88rem; }
+.live .stufen { display: grid; grid-template-columns: repeat(5, 1fr); border: 1px solid var(--schrift); }
+.live .stufen button { border: 0; border-left: 1px solid var(--rand); border-radius: 0; padding: 0.22rem 0; font-size: 0.78rem; }
+.live .stufen button:first-child { border-left: 0; }
+.live .stufen button[aria-pressed='true'] { background: var(--verein-1); color: var(--verein-schrift); font-weight: 600; }
+.live .aufbank { display: grid; grid-template-columns: 1fr 1fr; gap: 0.8rem; align-items: start; }
+.live .aufbank table { font-size: 0.82rem; table-layout: fixed; }
+.live .aufbank caption { text-align: left; font-weight: 600; padding: 0 0 0.2rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.live .aufbank caption small { font-weight: 400; color: var(--leise); }
+.live .aufbank td { padding: 0.06rem 0.2rem; text-align: left; overflow: hidden; text-overflow: ellipsis; }
+.live .aufbank td:first-child { width: 2.1rem; color: var(--leise); padding-left: 0; }
+.live .aufbank td.zahl { width: 1.8rem; text-align: right; }
+.live .aufbank td.frische { width: 2.4rem; }
+.live .aufbank .namelink { max-width: 100%; overflow: hidden; text-overflow: ellipsis; vertical-align: bottom; }
+.live .frischebalken { display: block; height: 6px; background: #dfe3dc; }
+.live .frischebalken i { display: block; height: 100%; background: var(--rasen); }
+.live tr.muede .frischebalken i { background: var(--muede); }
+.live tr.gewaehlt td { background: var(--ich); }
+
+/* Fuss: das Tempo. */
+.live .livefuss {
+  flex: none; display: flex; gap: 1.5rem; align-items: center;
+  padding: 0.45rem 1.5rem; background: var(--schrift); color: #e9ebe4; font-size: 0.9rem;
+}
+.live .tempowahl { display: grid; grid-template-columns: repeat(4, auto); border: 1px solid #6a737c; }
+.live .tempowahl button { border: 0; border-left: 1px solid #6a737c; border-radius: 0; background: transparent; color: inherit; padding: 0.3rem 0.9rem; }
+.live .tempowahl button:first-child { border-left: 0; }
+.live .tempowahl button:hover:not(:disabled):not([aria-pressed='true']) { background: #333a42; }
+.live .tempowahl button[aria-pressed='true'] { background: #e9ebe4; color: var(--schrift); font-weight: 600; }

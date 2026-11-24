@@ -169,11 +169,11 @@ test('kader AC-21: das Karriereende wird zur Winterpause angekuendigt', async ({
   await tempo(page, 0);
   await vorspulen(page, 'winterpause');
   await weiter(page);
-  await expect(page.locator('#postfach')).toContainText('Zum Saisonende hoeren auf:');
+  await expect(page.locator('#postfach')).toContainText('Zum Saisonende hören auf:');
   await expect(page.locator('#postfach')).toContainText(spieler);
   await aufBlatt(page, 'kader');
   const zeile = page.locator('#kader tbody tr', { hasText: spieler });
-  await expect(zeile.locator('.marke', { hasText: 'hoert auf' })).toBeVisible();
+  await expect(zeile.locator('.marke', { hasText: 'hört auf' })).toBeVisible();
   await expect(zeile.locator('[data-verlaengern]')).toHaveCount(0);
   await zeile.scrollIntoViewIfNeeded();
   await nachweis(page, {

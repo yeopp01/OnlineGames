@@ -13,6 +13,7 @@ const require = createRequire(import.meta.url);
 const { starten } = require('../server/index.js');
 const { Spielstaende, LEERLAUF_MS, IM_SPEICHER } = require('../server/spiele/manager/spielstaende.js');
 const { DatabaseSync } = require('node:sqlite');
+const neigungen = require('../server/spiele/manager/neigungen.js');
 
 const HAFEN = 4281;
 const GEHEIMNIS = 'm'.repeat(48);
@@ -56,7 +57,7 @@ test('karriere AC-23: ohne Anmeldung geht nichts', async () => {
   for (const [pfad, methode] of [['spielstaende', 'GET'], ['spielstaende', 'POST'], ['vereine?startwert=1', 'GET'], ['spielstaende/abc/weiter', 'POST']]) {
     const { status, daten } = await fragen(pfad, { methode, kekse: null, koerper: methode === 'POST' ? {} : undefined });
     assert.equal(status, 401, `${methode} ${pfad}`);
-    assert.equal(daten.fehler, 'Zum Managerspiel ist eine Anmeldung noetig.');
+    assert.equal(daten.fehler, 'Zum Managerspiel ist eine Anmeldung nötig.');
   }
 });
 
@@ -124,6 +125,66 @@ test('karriere AC-18: jeder Zug ueber den Server', async () => {
   assert.equal((await zug(id, 'zaubern')).status, 404);
 });
 
+test('kader AC-28: keine Antwort traegt eine Neigung, den Charakter nur der eigene Kader', async () => {
+  const edda = await konto(HAFEN, laufend, { email: 'edda@manager.test', name: 'Edda' });
+  const angelegt = await anlegen({ name: 'Neigungen' }, edda.kekse);
+  const { id } = angelegt.daten;
+  const antworten = [angelegt.daten];
+  // Ein halbes Jahr: Spiele mit Noten, Entwicklung zur Winterpause, ein Fenster mit Markt.
+  antworten.push((await zug(id, 'vorspulen', { bis: 'winterpause' }, edda.kekse)).daten);
+  antworten.push((await zug(id, 'weiter', {}, edda.kekse)).daten);
+  const { zustand } = antworten.at(-1);
+  assert.equal(antworten[1].zustand.termin.art, 'winterpause');
+  const eigene = zustand.verein.spieler;
+  const fremderVerein = (await fragen(`spielstaende/${id}/verein/v1`, { kekse: edda.kekse })).daten;
+  antworten.push(fremderVerein);
+  antworten.push((await fragen(`spielstaende/${id}/markt?anzahl=200`, { kekse: edda.kekse })).daten);
+  antworten.push((await fragen(`spielstaende/${id}/markt?liga=frei&anzahl=200`, { kekse: edda.kekse })).daten);
+  antworten.push((await fragen(`spielstaende/${id}/spieler/${eigene[0].id}`, { kekse: edda.kekse })).daten);
+  antworten.push((await fragen(`spielstaende/${id}/spieler/${fremderVerein.verein.spieler[0].id}`, { kekse: edda.kekse })).daten);
+  antworten.push((await fragen('spielstaende', { kekse: edda.kekse })).daten);
+
+  // Jede Zahl, die aus einer Neigung kommt - roh oder als Faktor -, je Spieler, der irgendwo genannt wird.
+  const ids = new Set();
+  const zahlen = [];
+  const schluessel = new Set();
+  const charaktere = [];
+  const gehen = (wert, weg) => {
+    if (typeof wert === 'number') zahlen.push([wert, weg]);
+    else if (Array.isArray(wert)) wert.forEach((x, i) => gehen(x, `${weg}[${i}]`));
+    else if (wert && typeof wert === 'object') {
+      if (typeof wert.id === 'string') ids.add(wert.id);
+      if ('charakter' in wert) charaktere.push([wert.id, weg]);
+      for (const [k, x] of Object.entries(wert)) {
+        schluessel.add(k);
+        gehen(x, `${weg}.${k}`);
+      }
+    }
+  };
+  antworten.forEach((a, i) => gehen(a, `antwort${i}`));
+  const startwert = 4711;
+  const verboten = [];
+  for (const sid of ids) {
+    for (const achse of neigungen.ACHSEN) verboten.push(neigungen.neigung(startwert, sid, achse));
+    verboten.push(neigungen.fleiss(startwert, sid), neigungen.gehaltsfaktor(startwert, sid), neigungen.abstandMehr(startwert, sid),
+      neigungen.heimform(startwert, sid, true), neigungen.heimform(startwert, sid, false), neigungen.notenstreuung(startwert, sid));
+  }
+  // Auf zwoelf Stellen verglichen: eine Neigung hat ihre Stellen aus dem Hash, eine gerundete Zahl des Spiels nicht.
+  const stellen = (x) => x.toFixed(12);
+  const verbotenSatz = new Set(verboten.filter((v) => !Number.isInteger(v)).map(stellen));
+  const gefunden = zahlen.filter(([x]) => !Number.isInteger(x) && verbotenSatz.has(stellen(x)));
+  assert.deepEqual(gefunden, [], 'eine Neigung ging hinaus');
+  assert.ok(ids.size > 250, `nur ${ids.size} Kennungen gesehen`);
+  for (const name of ['neigung', 'neigungen', ...neigungen.ACHSEN.filter((a) => !['heim', 'moral', 'wechsel'].includes(a))]) {
+    assert.ok(!schluessel.has(name), `Feld ${name} in einer Antwort`);
+  }
+  // Der Charakter steht nur am eigenen Kader - nicht am Markt, nicht in der Akte, nicht beim Gegner.
+  const eigen = new Set(eigene.map((s) => s.id));
+  assert.ok(charaktere.length >= eigene.length);
+  for (const [sid, weg] of charaktere) assert.ok(eigen.has(sid) && weg.includes('.zustand.verein.spieler['), `Charakter an ${weg}`);
+  for (const s of eigene) assert.ok([...neigungen.NAMEN.map(([, , n]) => n), neigungen.AUSGEGLICHEN].includes(s.charakter), s.charakter);
+});
+
 test('karriere AC-15: ein Konto sieht seine Spielstaende', async () => {
   const { daten } = await anlegen({ name: 'Zum Loeschen', vereinId: 'v22' });
   let liste = (await fragen('spielstaende')).daten.spielstaende;
@@ -143,7 +204,7 @@ test('karriere AC-25: fuenf Spielstaende je Konto', async () => {
   for (let i = 0; i < 5; i++) assert.equal((await anlegen({ name: `Bert ${i}` }, bert.kekse)).status, 200);
   const sechster = await anlegen({ name: 'Bert 6' }, bert.kekse);
   assert.equal(sechster.status, 409);
-  assert.equal(sechster.daten.fehler, 'Mehr als 5 Spielstaende je Konto gehen nicht. Loesche einen alten.');
+  assert.equal(sechster.daten.fehler, 'Mehr als 5 Spielstände je Konto gehen nicht. Lösche einen alten.');
 });
 
 test('karriere AC-24 und karriere AC-20: fremde und unbekannte Spielstaende sehen gleich aus', async () => {
@@ -193,6 +254,42 @@ test('karriere AC-14 und manager AC-5: der Spielstand ueberlebt den Neustart', a
   const weiter = await zug(id, 'weiter');
   assert.equal(weiter.status, 200);
   assert.equal(weiter.daten.zustand.termin.index, 6);
+});
+
+test('karriere AC-32 und karriere AC-30: live ueber den Server - die Antwort kennt nichts voraus', async () => {
+  const emil = await konto(HAFEN, laufend, { email: 'emil@manager.test', name: 'Emil' });
+  const { id } = (await anlegen({ name: 'Live' }, emil.kekse)).daten;
+  let antwort;
+  do antwort = await zug(id, 'weiter', {}, emil.kekse);
+  while (antwort.daten.zustand.termin.art !== 'liga');
+  const vorher = antwort.daten.zustand;
+
+  antwort = await zug(id, 'anpfeifen', {}, emil.kekse);
+  assert.equal(antwort.status, 200, antwort.daten.fehler);
+  assert.equal(antwort.daten.laufend.minute, 0);
+  assert.deepEqual(antwort.daten.zustand.laufend, antwort.daten.laufend);
+  const gesperrt = await zug(id, 'taktik', { ausrichtung: 5 }, emil.kekse);
+  assert.deepEqual([gesperrt.status, gesperrt.daten.fehler], [400, 'Erst das laufende Spiel zu Ende spielen.']);
+
+  // Aus der Datenbank gelesen, liegt das Spiel noch am selben Fleck.
+  antwort = await zug(id, 'spiel', { bis: 40, taktik: { ausrichtung: 4 } }, emil.kekse);
+  laufend.manager.staende.offen.clear();
+  const geladen = (await fragen(`spielstaende/${id}`, { kekse: emil.kekse })).daten.zustand;
+  assert.deepEqual(geladen.laufend, antwort.daten.laufend);
+  assert.equal(geladen.laufend.eigene.taktik.ausrichtung, 4);
+
+  for (let bis = 45; antwort.daten.zustand.laufend; bis += 5) {
+    const { laufend: live, zustand } = antwort.daten;
+    for (const e of [...live.ereignisse, ...live.szenen]) assert.ok(e.minute <= live.minute, `${e.minute}' nach ${live.minute}'`);
+    assert.equal(antwort.daten.bericht, undefined);
+    assert.deepEqual([zustand.tabellen, zustand.torjaeger, zustand.termin, zustand.zuletzt], [vorher.tabellen, vorher.torjaeger, vorher.termin, vorher.zuletzt]);
+    antwort = await zug(id, 'spiel', { bis }, emil.kekse);
+    assert.equal(antwort.status, 200, antwort.daten.fehler);
+  }
+  // Abgepfiffen: jetzt der Bericht, der Termin ist um.
+  assert.equal(antwort.daten.bericht.art, 'liga');
+  assert.equal(antwort.daten.zustand.termin.index, vorher.termin.index + 1);
+  assert.notDeepEqual(antwort.daten.zustand.tabellen, vorher.tabellen);
 });
 
 test('karriere AC-19: Zuege werden gebremst, vor der Anmeldung', async () => {

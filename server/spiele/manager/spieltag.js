@@ -1,3 +1,4 @@
+// @ts-check
 'use strict';
 
 // Eine Begegnung, Minute fuer Minute. Der Server rechnet sie, der Browser
@@ -20,12 +21,40 @@
 // `begegnung()` aendert an den Vereinen nichts - sie liest nur. Was bleibt,
 // traegt `nachwirkung()` nach.
 const {
-  TOR, ABW, MIT, ANG, PLAETZE, TEIL, tagesform, niveau, einsatzbereit, eignung,
+  TOR, ABW, MIT, ANG, PLAETZE, TEIL, tagesform, niveau, einsatzbereit, eignung, plaetzeBesetzen,
 } = require('./kader');
+const { ziehen } = require('./zufall');
+const neigungen = require('./neigungen');
+const { kleiden, szenenAnlegen } = require('./szenen');
+
+/** @typedef {import('./daten').Verein} Verein */
+/** @typedef {import('./daten').Spieler} Spieler */
+/** @typedef {import('./daten').Taktik} Taktik */
+/** @typedef {import('./daten').Zufall} Zufall */
+/** @typedef {import('./daten').Zufallsstand} Zufallsstand */
+/** @typedef {{torwart: number, abwehr: number, mittelfeld: number, angriff: number}} Teile  Staerke je Mannschaftsteil */
+/** @typedef {import('./daten').Spiel} Spiel */
+/** @typedef {import('./daten').Seite} Seite */
+/** @typedef {import('./daten').Platzspieler} Platzspieler */
+/**
+ * @typedef {object} Einstellungen
+ * @property {{heim: import('./daten').Aufstellung, gast: import('./daten').Aufstellung}} aufstellungen
+ * @property {{heim?: Partial<Taktik>, gast?: Partial<Taktik>}} [taktiken]
+ * @property {{heim?: 'auto'|'verletzung', gast?: 'auto'|'verletzung'}} [wechselregeln]
+ * @property {boolean} [neutral]       kein Heimvorteil (Pokalfinale)
+ * @property {boolean} [entscheidung]  bei Gleichstand Verlaengerung und Elfmeterschiessen
+ * @property {import('./daten').Zufall|import('./daten').Zufallsstand} [szenen]  eine eigene Quelle: dann wird
+ *   jede Chance eine Szene (spieltag AC-27). Nur fuer das Spiel, das jemand sieht - die Welt rechnet ohne.
+ * @property {{heim?: boolean, gast?: boolean}} [umstellen]  diese Seite fuehrt der Server: sie stellt
+ *   ab Minute 60 nach dem Spielstand um (spieltag AC-31)
+ * @property {number|null} [startwert]  der Karriere: dann wirken die Neigungen `heim` und `nerven`
+ *   (kader AC-31, AC-33); ohne ihn spielt jeder ohne Neigung
+ */
 
 const SCHEIBE = 5;
 const SCHEIBEN = 18;
 const VERLAENGERUNG = 6;
+const HALBZEIT = (SCHEIBEN / 2) * SCHEIBE;
 const HEIMVORTEIL = 1.1;
 const CHANCEN_JE_SPIEL = 19;
 // Erwartete Karten je Mannschaft bei mittlerer Haerte.
@@ -58,7 +87,19 @@ const AUSRICHTUNGEN = ['Mauern', 'Defensiv', 'Ausgewogen', 'Kontrollierte Offens
 // `tempo`: wie viel mehr Chancen ein offenes Spiel fuer beide Seiten hat.
 const WIRKUNG = {
   angriff: 0.03, abwehr: 0.06, tempo: 0.12, pressing: 0.04, haerte: 0.05, geuebt: 0.06, hebel: 1.5, verwertung: 0.34,
+  // Die Ansprache zur Halbzeit (AC-30), in Punkten Moral fuer die zweite
+  // Halbzeit: `laut` hebt bei Rueckstand, drueckt bei Fuehrung, ein Drittel
+  // davon bei Gleichstand; `aufbauen` hilft nach schwacher Moral und verpufft
+  // ab `stark`; `ruhig` hilft einer Elf, die fuehrt. Gesetzt, gemessen in
+  // tests/manager-anhalten.test.mjs.
+  ansprache: { laut: 12, aufbauen: 18, stark: 70, ruhig: 6 },
+  // Wie ein Verein des Servers im Spiel umstellt (AC-31): ab Minute `ab`,
+  // vor jedem Abschnitt, Schritte Ausrichtung gegen die eigene Vorgabe - bei
+  // einem Tor Rueckstand, bei zweien und mehr, bei einem Tor Fuehrung. Wer
+  // hoeher fuehrt oder gleich steht, spielt, wie er begann. Gesetzt.
+  umstellen: { ab: 60, rueckstand: 1, deutlich: 2, fuehrung: -1 },
 };
+const ANSPRACHEN = ['ruhig', 'aufbauen', 'laut'];
 // Mehr Leute auf einer Position wiegen schwerer - im Sturm am meisten, im
 // Mittelfeld am wenigsten. Sonst gewaenne immer, wer das Mittelfeld fuellt.
 const ANZAHL_GEWICHT = { [ABW]: [0.70, 0.075], [MIT]: [0.84, 0.04], [ANG]: [0.76, 0.08] };
@@ -99,42 +140,115 @@ function ermuedung(taktik, geuebtesPressing = 0) {
  * Kopie - der Verein selbst bleibt unberuehrt.
  */
 function aufDemPlatz(spieler, platz) {
-  return {
-    ...spieler, position: TEIL[platz], platz, staerke: spieler.staerke * eignung(spieler, platz),
-  };
+  return knapp(spieler, TEIL[platz], platz, spieler.staerke * eignung(spieler, platz));
 }
 
+/**
+ * Was ein Spiel von einem Spieler liest - nicht mehr. So bleibt ein
+ * laufendes Spiel ein kleiner Datenwert, den man sichern kann.
+ * @returns {Platzspieler}
+ */
+function knapp(s, position = s.position, platz = undefined, staerke = s.staerke) {
+  /** @type {Platzspieler} */
+  const p = {
+    id: s.id, name: s.name, position, platz, rolle: s.rolle, nebenrolle: s.nebenrolle, staerke, moral: s.moral, kondition: s.kondition,
+  };
+  // Die Form aus der Neigung `heim` reist mit, wenn er eingewechselt wird.
+  if (s.form !== undefined) p.form = s.form;
+  return p;
+}
+
+/**
+ * Setzt die Form aus der Neigung `heim` an einen Platzspieler - nur, wenn sie
+ * etwas aendert; sonst traegt der Spielstand das Feld nicht.
+ * @param {Platzspieler} p
+ * @param {{startwert: number|null, daheim: boolean|null}} [neigung]
+ */
+function formSetzen(p, neigung) {
+  if (!neigung) return p;
+  const form = neigungen.heimform(neigung.startwert, p.id, neigung.daheim);
+  if (form !== 1) p.form = form;
+  return p;
+}
+
+/**
+ * Eine Seite des Spiels. Ein reiner Datenwert: der Verein wird hier gelesen
+ * und danach nicht mehr gebraucht. Die Objekte je Spieler behalten die
+ * Reihenfolge, in der sie angelegt werden - darauf zaehlen Einsaetze und Noten.
+ * `fuerNoten` legt an, was erst `abpfiff()` braucht; die Vorschau braucht es nicht.
+ *
+ * @param {Verein} verein
+ * @param {{elf: Spieler[], bank: Spieler[], system?: string, taktik?: Partial<Taktik>, wechselregel?: string}} aufstellung
+ * @param {boolean} [fuerNoten]
+ * @param {{startwert: number|null, daheim: boolean|null}} [neigung]  fuer `heim` und `nerven`; `daheim` null im neutralen Spiel
+ */
 function seiteAnlegen(verein, {
   elf, bank, system, taktik, wechselregel,
-}) {
+}, fuerNoten = false, neigung = undefined) {
   const geprueft = taktikPruefen(taktik);
   // Die Plaetze kommen aus dem System der Aufstellung; ohne eines aus der Taktik.
   const plaetze = PLAETZE[system] || PLAETZE[geprueft.system] || PLAETZE['4-4-2'];
-  return {
-    verein,
+  const auf = [];
+  const frische = {};
+  const minuten = {};
+  for (let i = 0; i < elf.length; i++) {
+    auf.push(formSetzen(aufDemPlatz(elf[i], plaetze[i]), neigung));
+    frische[elf[i].id] = elf[i].kondition;
+    minuten[elf[i].id] = { von: 0, bis: null };
+  }
+  const knappeBank = [];
+  for (const s of bank) {
+    knappeBank.push(formSetzen(knapp(s), neigung));
+    frische[s.id] = s.kondition;
+  }
+  /** @type {Seite} */
+  const seite = {
     id: verein.id,
-    auf: elf.map((s, i) => aufDemPlatz(s, plaetze[i])),
-    plaetze: elf.map((s, i) => plaetze[i]),
-    bank: bank.slice(),
+    niveau: 0,
+    auf,
+    plaetze: plaetze.slice(0, elf.length),
+    bank: knappeBank,
+    spieler: {},
     taktik: geprueft,
     geuebt: eingeuebt(verein, geprueft.system),
+    // Wie gut die Elf jedes System kennt - fuer einen Wechsel im Spiel (AC-32).
+    systeme: Object.fromEntries(Object.keys(PLAETZE).map((name) => [name, eingeuebt(verein, name).system])),
     wechselregel: wechselregel === 'verletzung' ? 'verletzung' : 'auto',
-    frische: new Map([...elf, ...bank].map((s) => [s.id, s.kondition])),
-    minuten: new Map(elf.map((s) => [s.id, { von: 0, bis: null }])),
-    gelbe: new Map(),
-    letzte: new Map(),
+    frische,
+    minuten,
+    gelbe: {},
+    letzte: {},
     tore: 0,
     chancen: 0,
     wechsel: 0,
-    // Wer vor dem Anpfiff gesperrt war, sitzt dieses Spiel ab.
-    gesperrt: verein.spieler.filter((s) => s.sperre > 0).map((s) => s.id),
+    gesperrt: [],
   };
+  for (const s of verein.spieler) {
+    // Wer vor dem Anpfiff gesperrt war, sitzt dieses Spiel ab.
+    if (s.sperre > 0) seite.gesperrt.push(s.id);
+    // Wer spielte und nicht mehr auf dem Platz steht, wird mit seinen Werten im Verein benotet.
+    if (fuerNoten && s.id in frische) seite.spieler[s.id] = { position: s.position, staerke: s.staerke };
+  }
+  if (fuerNoten) {
+    seite.niveau = niveau(verein);
+    // Wer nicht (mehr) im Kader steht, wird mit den Werten der Aufstellung benotet.
+    for (const s of elf) if (!(s.id in seite.spieler)) seite.spieler[s.id] = { position: s.position, staerke: s.staerke };
+    for (const s of bank) if (!(s.id in seite.spieler)) seite.spieler[s.id] = { position: s.position, staerke: s.staerke };
+    // Die Nerven streuen die Note - nur wer davon abweicht, traegt das Feld.
+    if (neigung) {
+      for (const [id, werte] of Object.entries(seite.spieler)) {
+        const nerven = neigungen.notenstreuung(neigung.startwert, id);
+        if (nerven !== 1) werte.nerven = nerven;
+      }
+    }
+  }
+  return seite;
 }
 
 function teil(seite, position) {
   const leute = seite.auf.filter((s) => s.position === position);
   if (!leute.length) return position === TOR ? 20 : 35;
-  return leute.reduce((summe, s) => summe + tagesform(s, seite.frische.get(s.id)), 0) / leute.length;
+  return leute.reduce((summe, s) => summe + tagesform(s, seite.frische[s.id]), 0) / leute.length;
 }
 
 /**
@@ -147,7 +261,7 @@ function teile(seite) {
   const summe = { [TOR]: 0, [ABW]: 0, [MIT]: 0, [ANG]: 0 };
   const anzahl = { [TOR]: 0, [ABW]: 0, [MIT]: 0, [ANG]: 0 };
   for (const spieler of seite.auf) {
-    summe[spieler.position] += tagesform(spieler, seite.frische.get(spieler.id));
+    summe[spieler.position] += tagesform(spieler, seite.frische[spieler.id]);
     anzahl[spieler.position] += 1;
   }
   const gewichtet = (position) => {
@@ -215,14 +329,14 @@ function gewichtetWaehlen(liste, gewichtVon, zufall) {
  */
 function minuteFuer(seite, spielerId, von, zufall) {
   const gezogen = von + Math.floor(zufall() * SCHEIBE);
-  const minute = Math.max(gezogen, seite.letzte.get(spielerId) || 0);
-  seite.letzte.set(spielerId, minute);
+  const minute = Math.max(gezogen, seite.letzte[spielerId] || 0);
+  seite.letzte[spielerId] = minute;
   return minute;
 }
 
 function vomPlatz(seite, spieler, minute) {
   seite.auf = seite.auf.filter((s) => s.id !== spieler.id);
-  seite.minuten.get(spieler.id).bis = minute;
+  seite.minuten[spieler.id].bis = minute;
 }
 
 function einwechseln(seite, raus, rein, minute, ereignisse, grund) {
@@ -230,8 +344,8 @@ function einwechseln(seite, raus, rein, minute, ereignisse, grund) {
   seite.bank = seite.bank.filter((s) => s.id !== rein.id);
   // Der Neue uebernimmt den Platz des Alten.
   seite.auf.push(aufDemPlatz(rein, raus.platz));
-  seite.minuten.set(rein.id, { von: minute, bis: null });
-  seite.letzte.set(rein.id, minute);
+  seite.minuten[rein.id] = { von: minute, bis: null };
+  seite.letzte[rein.id] = minute;
   seite.wechsel += 1;
   ereignisse.push({
     minute, art: 'wechsel', verein: seite.id, spielerId: raus.id, spieler: raus.name, reinId: rein.id, rein: rein.name, platz: raus.platz, grund,
@@ -239,7 +353,7 @@ function einwechseln(seite, raus, rein, minute, ereignisse, grund) {
 }
 
 /** Was einer von der Bank jetzt auf diesem Platz bringt. */
-const aufDerBank = (seite, spieler, platz) => tagesform(spieler, seite.frische.get(spieler.id)) * eignung(spieler, platz);
+const aufDerBank = (seite, spieler, platz) => tagesform(spieler, seite.frische[spieler.id]) * eignung(spieler, platz);
 
 /** Der Beste von der Bank fuer einen Platz - ins Tor nur ein Torwart, ins Feld keiner. */
 function ersatzFuer(seite, platz) {
@@ -248,7 +362,11 @@ function ersatzFuer(seite, platz) {
     .sort((a, b) => aufDerBank(seite, b, platz) - aufDerBank(seite, a, platz))[0] || null;
 }
 
-function abschnitt(seiten, von, heimfaktoren, zufall, ereignisse, anzahlAbschnitte) {
+/**
+ * Ein Abschnitt von fuenf Minuten. Mit `roh` merkt er sich jede Chance fuer
+ * die Szenen (szenen.js) - gemerkt, nicht gezogen: der Zufall bleibt derselbe.
+ */
+function abschnitt(seiten, von, heimfaktoren, zufall, ereignisse, anzahlAbschnitte, roh = null) {
   const [a, b] = [staerkeRechnen(seiten[0], heimfaktoren[0]), staerkeRechnen(seiten[1], heimfaktoren[1])];
   const h = WIRKUNG.hebel;
   const anteil = a.mittelfeld ** h / (a.mittelfeld ** h + b.mittelfeld ** h);
@@ -258,27 +376,38 @@ function abschnitt(seiten, von, heimfaktoren, zufall, ereignisse, anzahlAbschnit
   const chancenJeAbschnitt = (CHANCEN_JE_SPIEL / SCHEIBEN) * offen * (0.85 + zufall() * 0.3);
 
   // Chancen und Tore.
-  [[0, a, b, anteil], [1, b, a, 1 - anteil]].forEach(([i, eigen, gegner, teilhabe]) => {
+  /** @type {[number, Teile, Teile, number][]} */ ([[0, a, b, anteil], [1, b, a, 1 - anteil]]).forEach(([i, eigen, gegner, teilhabe]) => {
     const seite = seiten[i];
     const erwartet = chancenJeAbschnitt * teilhabe;
     const chancen = Math.floor(erwartet) + (zufall() < erwartet % 1 ? 1 : 0);
     const abwehr = (1.15 * gegner.abwehr + 0.55 * gegner.torwart) / 1.7;
     const treffer = Math.min(0.5, (eigen.angriff ** h / (eigen.angriff ** h + abwehr ** h)) * WIRKUNG.verwertung);
+    const auf = roh && chancen ? seite.auf.slice() : null;
+    const gegen = roh && chancen ? seiten[1 - i].auf.slice() : null;
+    const merken = (tor) => roh && roh.push({ seite: i, von, auf, gegen, tor });
     for (let c = 0; c < chancen; c++) {
       seite.chancen += 1;
-      if (zufall() >= treffer) continue;
+      if (zufall() >= treffer) {
+        merken(null);
+        continue;
+      }
       const schuetze = gewichtetWaehlen(seite.auf, (s) => TREFFERNEIGUNG[s.position] * (s.staerke / 70), zufall);
-      if (!schuetze) continue;
+      if (!schuetze) {
+        merken(null);
+        continue;
+      }
       seite.tore += 1;
       const vorlage = zufall() < 0.7
         ? gewichtetWaehlen(seite.auf.filter((s) => s.id !== schuetze.id), (s) => VORLAGENEIGUNG[s.position], zufall)
         : null;
       const minute = minuteFuer(seite, schuetze.id, von, zufall);
-      if (vorlage) seite.letzte.set(vorlage.id, Math.max(seite.letzte.get(vorlage.id) || 0, minute));
-      ereignisse.push({
+      if (vorlage) seite.letzte[vorlage.id] = Math.max(seite.letzte[vorlage.id] || 0, minute);
+      const tor = {
         minute, art: 'tor', verein: seite.id, spielerId: schuetze.id, spieler: schuetze.name,
         ...(vorlage ? { vorlageId: vorlage.id, vorlage: vorlage.name } : {}),
-      });
+      };
+      ereignisse.push(tor);
+      merken(tor);
     }
   });
 
@@ -288,15 +417,15 @@ function abschnitt(seiten, von, heimfaktoren, zufall, ereignisse, anzahlAbschnit
     const karte = (KARTEN_JE_SPIEL * (1 + 0.39 * (seite.taktik.haerte - 3))) / (11 * SCHEIBEN);
     const verletzung = (VERLETZUNG_JE_SPIEL * (1 + 0.33 * (gegner.taktik.haerte - 3))) / SCHEIBEN;
     for (const spieler of seite.auf.slice()) {
-      if (zufall() < karte * (seite.gelbe.has(spieler.id) ? VORBELASTET : 1)) {
+      if (zufall() < karte * ((spieler.id in seite.gelbe) ? VORBELASTET : 1)) {
         const minute = minuteFuer(seite, spieler.id, von, zufall);
         if (zufall() < ROT_ANTEIL) {
           ereignisse.push({ minute, art: 'rot', verein: seite.id, spielerId: spieler.id, spieler: spieler.name });
           vomPlatz(seite, spieler, minute);
           continue;
         }
-        const gelbe = (seite.gelbe.get(spieler.id) || 0) + 1;
-        seite.gelbe.set(spieler.id, gelbe);
+        const gelbe = (seite.gelbe[spieler.id] || 0) + 1;
+        seite.gelbe[spieler.id] = gelbe;
         ereignisse.push({ minute, art: gelbe === 2 ? 'gelbrot' : 'gelb', verein: seite.id, spielerId: spieler.id, spieler: spieler.name });
         if (gelbe === 2) {
           vomPlatz(seite, spieler, minute);
@@ -321,10 +450,10 @@ function abschnitt(seiten, von, heimfaktoren, zufall, ereignisse, anzahlAbschnit
   if (anzahlAbschnitte === SCHEIBEN && [60, 70, 80].includes(ende)) {
     for (const seite of seiten) {
       if (seite.wechselregel !== 'auto' || seite.wechsel >= WECHSEL_MAX) continue;
-      const jetzt = (s) => tagesform(s, seite.frische.get(s.id));
+      const jetzt = (s) => tagesform(s, seite.frische[s.id]);
       const muede = seite.auf
-        .filter((s) => s.position !== TOR && seite.frische.get(s.id) < WECHSEL_FRISCHE)
-        .sort((x, y) => seite.frische.get(x.id) - seite.frische.get(y.id))[0];
+        .filter((s) => s.position !== TOR && seite.frische[s.id] < WECHSEL_FRISCHE)
+        .sort((x, y) => seite.frische[x.id] - seite.frische[y.id])[0];
       if (!muede) continue;
       const ersatz = ersatzFuer(seite, muede.platz);
       if (ersatz && aufDerBank(seite, ersatz, muede.platz) >= jetzt(muede) * WECHSEL_ABSTAND) {
@@ -336,7 +465,7 @@ function abschnitt(seiten, von, heimfaktoren, zufall, ereignisse, anzahlAbschnit
   for (const seite of seiten) {
     const verlust = ermuedung(seite.taktik, seite.geuebt.pressing) * SCHEIBE;
     for (const spieler of seite.auf) {
-      seite.frische.set(spieler.id, Math.max(30, seite.frische.get(spieler.id) - verlust));
+      seite.frische[spieler.id] = Math.max(30, seite.frische[spieler.id] - verlust);
     }
   }
   return anteil;
@@ -371,11 +500,11 @@ function notenGeben(seiten, ergebnis, zufall) {
   seiten.forEach((seite, i) => {
     const eigene = ergebnis.tore[i];
     const fremde = ergebnis.tore[1 - i];
-    const vereinsniveau = niveau(seite.verein) || 60;
-    for (const [id, { von, bis }] of seite.minuten) {
+    const vereinsniveau = seite.niveau || 60;
+    for (const [id, { von, bis }] of Object.entries(seite.minuten)) {
       const minuten = (bis ?? ergebnis.dauer) - von;
       if (minuten < 20) continue;
-      const spieler = [...seite.auf, ...seite.bank, ...seite.verein.spieler].find((s) => s.id === id);
+      const spieler = seite.auf.find((s) => s.id === id) || seite.spieler[id];
       let note = 3.5 - 0.25 * Math.max(-3, Math.min(3, eigene - fremde)) - (spieler.staerke - vereinsniveau) / 40;
       if (spieler.position === TOR || spieler.position === ABW) note += fremde === 0 ? -0.5 : 0.25 * fremde;
       for (const e of ergebnis.ereignisse) {
@@ -385,68 +514,260 @@ function notenGeben(seiten, ergebnis, zufall) {
         if (e.art === 'gelb' && e.spielerId === id) note += 0.2;
         if ((e.art === 'rot' || e.art === 'gelbrot') && e.spielerId === id) note += 1.5;
       }
-      note += (zufall() - 0.5) * 1.2;
+      note += (zufall() - 0.5) * 1.2 * (seite.spieler[id]?.nerven ?? 1);
       noten[id] = Math.round(Math.min(6, Math.max(1, note)) * 2) / 2;
     }
   });
   return noten;
 }
 
+// ------------------------------------------------- Ein Spiel zum Anhalten
+//
+// Ein Spiel ist ein Datenwert: `anpfiff()` legt es an und rechnet nichts,
+// `spielen()` rechnet Abschnitt fuer Abschnitt bis zu einer Minute,
+// `eingreifen()` wechselt oder dreht an der Taktik, und das wirkt ab dem
+// naechsten Abschnitt, `abpfiff()` gibt das Ergebnis. Dazwischen laesst es
+// sich sichern und laden - der Zufall steht als Wert darin (`zufall.a`).
+// `begegnung()` ist alle vier hintereinander und rechnet genau wie vorher.
+
 /**
- * Rechnet eine Begegnung.
+ * Legt ein Spiel an. Liest die Vereine, aendert sie nicht.
  *
- * @param {object} heim  Verein
- * @param {object} gast  Verein
- * @param {Function} zufall
- * @param {object} einstellungen
- *   aufstellungen: { heim: {elf, bank}, gast: {elf, bank} }
- *   taktiken:      { heim, gast }
- *   wechselregeln: { heim, gast }
- *   neutral:       kein Heimvorteil (Pokalfinale)
- *   entscheidung:  bei Gleichstand Verlaengerung und Elfmeterschiessen
+ * @param {Verein} heim
+ * @param {Verein} gast
+ * @param {Zufall|Zufallsstand} zufall  eine Quelle aus `zufallAus` oder ihr Stand.
+ *   Der Stand wird geteilt, nicht kopiert: ein Spieltag zieht mehrere Spiele
+ *   aus einer Quelle, und jedes zieht dort weiter, wo das letzte aufhoerte.
+ * @param {Einstellungen} einstellungen
+ * @returns {Spiel}
  */
-function begegnung(heim, gast, zufall, einstellungen) {
-  const { aufstellungen, taktiken = {}, wechselregeln = {}, neutral = false, entscheidung = false } = einstellungen;
-  const seiten = [
-    seiteAnlegen(heim, { ...aufstellungen.heim, taktik: taktiken.heim || heim.taktik, wechselregel: wechselregeln.heim || heim.wechselregel }),
-    seiteAnlegen(gast, { ...aufstellungen.gast, taktik: taktiken.gast || gast.taktik, wechselregel: wechselregeln.gast || gast.wechselregel }),
-  ];
-  const heimfaktoren = neutral ? [1, 1] : [HEIMVORTEIL, 1];
-  const ereignisse = [];
-  let besitz = 0;
-  let dauer = SCHEIBEN * SCHEIBE;
-
-  for (let s = 0; s < SCHEIBEN; s++) besitz += abschnitt(seiten, s * SCHEIBE + 1, heimfaktoren, zufall, ereignisse, SCHEIBEN);
-
-  let verlaengerung = false;
-  let elfmeter = null;
-  if (entscheidung && seiten[0].tore === seiten[1].tore) {
-    verlaengerung = true;
-    dauer = 120;
-    for (let s = 0; s < VERLAENGERUNG; s++) abschnitt(seiten, 90 + s * SCHEIBE + 1, heimfaktoren, zufall, ereignisse, VERLAENGERUNG);
-    if (seiten[0].tore === seiten[1].tore) elfmeter = elfmeterschiessen(seiten, zufall, ereignisse);
-  }
-
-  ereignisse.sort((x, y) => x.minute - y.minute);
-  const tore = [seiten[0].tore, seiten[1].tore];
-  let sieger = null;
-  if (tore[0] !== tore[1]) sieger = tore[0] > tore[1] ? heim.id : gast.id;
-  else if (elfmeter) sieger = elfmeter[0] > elfmeter[1] ? heim.id : gast.id;
-
-  const ergebnis = {
+function anpfiff(heim, gast, zufall, einstellungen) {
+  const {
+    aufstellungen, taktiken = {}, wechselregeln = {}, neutral = false, entscheidung = false, szenen, umstellen = {}, startwert = null,
+  } = einstellungen;
+  // Ohne Startwert keine Neigung - die Vorschau und Tests ohne Karriere rechnen wie vorher.
+  const neigung = (daheim) => (startwert === null ? undefined : { startwert, daheim: neutral ? null : daheim });
+  const stand = typeof zufall === 'function' ? zufall.stand : zufall;
+  if (!stand || !Number.isInteger(stand.a)) throw new Error('anpfiff() braucht eine Quelle aus zufallAus() oder ihren Stand.');
+  /** @type {Spiel} */
+  const spiel = {
     heim: heim.id,
     gast: gast.id,
+    zufall: stand,
+    neutral,
+    entscheidung,
+    seiten: [
+      seiteAnlegen(heim, { ...aufstellungen.heim, taktik: taktiken.heim || heim.taktik, wechselregel: wechselregeln.heim || heim.wechselregel }, true, neigung(true)),
+      seiteAnlegen(gast, { ...aufstellungen.gast, taktik: taktiken.gast || gast.taktik, wechselregel: wechselregeln.gast || gast.wechselregel }, true, neigung(false)),
+    ],
+    aufstellung: {
+      heim: { elf: aufstellungen.heim.elf.map((s) => s.id), bank: aufstellungen.heim.bank.map((s) => s.id) },
+      gast: { elf: aufstellungen.gast.elf.map((s) => s.id), bank: aufstellungen.gast.bank.map((s) => s.id) },
+    },
+    // Gespielte Abschnitte, regulaer und in der Verlaengerung; die Minute danach.
+    abschnitte: 0,
+    minute: 0,
+    besitz: 0,
+    verlaengerung: false,
+    elfmeter: null,
+    vorbei: false,
+    ereignisse: [],
+  };
+  // Die Ausrichtung, mit der ein Verein des Servers begann: an ihr misst er
+  // ab Minute 60, wie weit er umstellt (AC-31).
+  if (umstellen.heim) spiel.seiten[0].umstellen = spiel.seiten[0].taktik.ausrichtung;
+  if (umstellen.gast) spiel.seiten[1].umstellen = spiel.seiten[1].taktik.ausrichtung;
+  // Nur wenn gefragt - sonst traegt der Spielstand das Feld nicht.
+  if (szenen) spiel.szenen = szenenAnlegen(typeof szenen === 'function' ? szenen.stand : szenen, [heim.name, gast.name], spiel.seiten);
+  return spiel;
+}
+
+/**
+ * Rechnet ein Spiel bis zu dieser Minute - ganze Abschnitte, keiner ueber die
+ * Minute hinaus. Ab Minute 90 entscheidet sich, ob es weitergeht; mit
+ * `Infinity` bis zum Ende, Elfmeterschiessen eingeschlossen.
+ * @param {Spiel} spiel
+ * @param {number} bisMinute
+ * @returns {Spiel} dasselbe Spiel
+ */
+function spielen(spiel, bisMinute) {
+  if (spiel.vorbei) return spiel;
+  const zufall = () => ziehen(spiel.zufall);
+  const heimfaktoren = spiel.neutral ? [1, 1] : [HEIMVORTEIL, 1];
+  const [heim, gast] = spiel.seiten;
+  const naechsteEnde = () => (spiel.abschnitte + 1) * SCHEIBE;
+
+  const roh = spiel.szenen ? [] : null;
+  const gekleidet = () => {
+    if (!roh) return;
+    kleiden(spiel, roh);
+    roh.length = 0;
+  };
+
+  while (spiel.abschnitte < SCHEIBEN && naechsteEnde() <= bisMinute) {
+    umstellen(spiel);
+    const anteil = abschnitt(spiel.seiten, spiel.abschnitte * SCHEIBE + 1, heimfaktoren, zufall, spiel.ereignisse, SCHEIBEN, roh);
+    spiel.besitz += anteil;
+    anteilMerken(spiel, anteil);
+    gekleidet();
+    spiel.abschnitte += 1;
+    spiel.minute = spiel.abschnitte * SCHEIBE;
+  }
+  if (spiel.abschnitte < SCHEIBEN) return spiel;
+
+  if (!spiel.verlaengerung) {
+    if (!spiel.entscheidung || heim.tore !== gast.tore) {
+      spiel.vorbei = true;
+      return spiel;
+    }
+    spiel.verlaengerung = true;
+  }
+  while (spiel.abschnitte < SCHEIBEN + VERLAENGERUNG && naechsteEnde() <= bisMinute) {
+    umstellen(spiel);
+    anteilMerken(spiel, abschnitt(spiel.seiten, spiel.abschnitte * SCHEIBE + 1, heimfaktoren, zufall, spiel.ereignisse, VERLAENGERUNG, roh));
+    gekleidet();
+    spiel.abschnitte += 1;
+    spiel.minute = spiel.abschnitte * SCHEIBE;
+  }
+  if (spiel.abschnitte < SCHEIBEN + VERLAENGERUNG || bisMinute <= spiel.minute) return spiel;
+  if (heim.tore === gast.tore) spiel.elfmeter = elfmeterschiessen(spiel.seiten, zufall, spiel.ereignisse);
+  spiel.vorbei = true;
+  return spiel;
+}
+
+/**
+ * Der Spielanteil des Heims je Abschnitt in Prozent - fuer das Verlaufsband
+ * des Live-Spiels (oberflaeche AC-19). Nur ein Spiel mit Szenen traegt ihn:
+ * gezogen wird dafuer nichts, ein Spiel rechnet mit und ohne gleich.
+ * @param {Spiel} spiel
+ * @param {number} anteil  zwischen 0 und 1
+ */
+function anteilMerken(spiel, anteil) {
+  if (!spiel.szenen) return;
+  (spiel.anteile ||= []).push(Math.round(anteil * 100));
+}
+
+/**
+ * Greift in ein laufendes Spiel ein - ein Wechsel, eine andere Ausrichtung,
+ * Haerte oder Pressing. Wirkt ab dem naechsten Abschnitt. Das System bleibt:
+ * an ihm haengen die Plaetze der Elf.
+ *
+ * @param {Spiel} spiel  aus `anpfiff()`
+ * @param {'heim'|'gast'} welche
+ * @param {{ wechsel?: {raus: string, rein: string}|null, taktik?: Partial<Taktik>|null, ansprache?: string|null }} [was]
+ * @returns {{ok: true}|{fehler: string}}
+ */
+function eingreifen(spiel, welche, { wechsel = null, taktik = null, ansprache = null } = {}) {
+  if (spiel.vorbei) return { fehler: 'Das Spiel ist vorbei.' };
+  if (welche !== 'heim' && welche !== 'gast') return { fehler: 'Heim oder Gast?' };
+  const seite = spiel.seiten[welche === 'heim' ? 0 : 1];
+  if (ansprache !== null) {
+    if (!ANSPRACHEN.includes(ansprache)) return { fehler: 'Ruhig bleiben, aufbauen oder laut werden?' };
+    if (spiel.minute !== HALBZEIT || spiel.verlaengerung) return { fehler: 'Angesprochen wird in der Halbzeit.' };
+    if (seite.ansprache) return { fehler: 'Die Ansprache ist gehalten.' };
+  }
+  const neuesSystem = taktik && taktik.system !== undefined && taktik.system !== seite.taktik.system ? taktik.system : null;
+  if (neuesSystem !== null && !PLAETZE[neuesSystem]) return { fehler: `Unbekanntes System: ${neuesSystem}` };
+  let ein = null;
+  if (wechsel) {
+    if (spiel.minute === 0) return { fehler: 'Gewechselt wird erst nach dem Anpfiff.' };
+    if (seite.wechsel >= WECHSEL_MAX) return { fehler: `Mehr als ${WECHSEL_MAX} Wechsel gehen nicht.` };
+    const raus = seite.auf.find((s) => s.id === wechsel.raus);
+    const rein = seite.bank.find((s) => s.id === wechsel.rein);
+    if (!raus) return { fehler: 'Dieser Spieler steht nicht auf dem Platz.' };
+    if (!rein) return { fehler: 'Dieser Spieler sitzt nicht auf der Bank.' };
+    if ((rein.position === TOR) !== (raus.platz === 'TW')) return { fehler: 'Ins Tor gehört ein Torwart, ins Feld keiner.' };
+    ein = { raus, rein };
+  }
+  if (taktik) seite.taktik = taktikPruefen({ ...seite.taktik, ...taktik, system: neuesSystem ?? seite.taktik.system });
+  if (ein) einwechseln(seite, ein.raus, ein.rein, spiel.minute, spiel.ereignisse, 'trainer');
+  if (neuesSystem) systemWechseln(seite, neuesSystem);
+  if (ansprache) ansprechen(seite, spiel.seiten[welche === 'heim' ? 1 : 0], ansprache);
+  return { ok: true };
+}
+
+/**
+ * Ein Verein des Servers stellt um (AC-31) - vor jedem Abschnitt ab Minute
+ * 60, ueber `eingreifen()` wie ein Mensch: nichts, was ein Mensch nicht auch
+ * koennte. Vorher geschieht nichts, damit ein Spiel ohne diese Seiten genau
+ * so rechnet wie bisher.
+ * @param {Spiel} spiel
+ */
+function umstellen(spiel) {
+  const w = WIRKUNG.umstellen;
+  if (spiel.minute < w.ab) return;
+  spiel.seiten.forEach((seite, i) => {
+    if (seite.umstellen === undefined) return;
+    const abstand = seite.tore - spiel.seiten[1 - i].tore;
+    const schritt = abstand <= -2 ? w.deutlich : abstand === -1 ? w.rueckstand : abstand === 1 ? w.fuehrung : 0;
+    const ziel = Math.min(5, Math.max(1, seite.umstellen + schritt));
+    if (ziel !== seite.taktik.ausrichtung) eingreifen(spiel, i === 0 ? 'heim' : 'gast', { taktik: { ausrichtung: ziel } });
+  });
+}
+
+/**
+ * Die Ansprache zur Halbzeit (AC-30): sie bewegt die Moral derer, die auf
+ * dem Platz stehen oder noch kommen koennen - fuer dieses Spiel. Der Verein
+ * bleibt unberuehrt; was danach bleibt, traegt `nachwirkung()` nach.
+ */
+function ansprechen(seite, gegner, art) {
+  const w = WIRKUNG.ansprache;
+  const lage = Math.sign(seite.tore - gegner.tore);
+  const um = (s) => {
+    if (art === 'laut') return lage < 0 ? w.laut : lage > 0 ? -w.laut : Math.round(w.laut / 3);
+    if (art === 'aufbauen') return Math.round(w.aufbauen * Math.max(0, 1 - s.moral / w.stark));
+    return lage > 0 ? w.ruhig : 0;
+  };
+  for (const s of [...seite.auf, ...seite.bank]) s.moral = Math.min(100, Math.max(10, s.moral + um(s)));
+  seite.ansprache = art;
+}
+
+/**
+ * Ein anderes System im laufenden Spiel (AC-32): wer auf dem Platz steht,
+ * bekommt den Platz, auf dem er im neuen System am meisten bringt - nach
+ * derselben Regel wie vor dem Spiel, mit der Frische von jetzt. Und es
+ * kostet, was es vor dem Spiel kostete: so viel, wie die Elf es kennt (AC-25).
+ */
+function systemWechseln(seite, system) {
+  const plaetze = PLAETZE[system];
+  // Mit den Werten aus dem Verein, nicht denen des alten Platzes.
+  const roh = seite.auf.map((s) => ({ ...s, ...(seite.spieler[s.id] || {}) }));
+  const jetzt = roh.map((s) => ({ ...s, kondition: seite.frische[s.id] ?? s.kondition }));
+  const besetzt = plaetzeBesetzen(plaetze, jetzt);
+  seite.auf = besetzt.flatMap((s, i) => (s ? [aufDemPlatz(roh[jetzt.indexOf(s)], plaetze[i])] : []));
+  seite.geuebt = { ...seite.geuebt, system: seite.systeme[system] ?? 0.5 };
+}
+
+/**
+ * Das Ergebnis eines Spiels - rechnet zu Ende, was noch fehlt.
+ * Dieselbe Form, die `begegnung()` immer zurueckgab.
+ * @param {Spiel} spiel
+ */
+function abpfiff(spiel) {
+  spielen(spiel, Infinity);
+  const zufall = () => ziehen(spiel.zufall);
+  const { seiten, besitz } = spiel;
+  const dauer = spiel.verlaengerung ? 120 : SCHEIBEN * SCHEIBE;
+  const tore = [seiten[0].tore, seiten[1].tore];
+  let sieger = null;
+  if (tore[0] !== tore[1]) sieger = tore[0] > tore[1] ? spiel.heim : spiel.gast;
+  else if (spiel.elfmeter) sieger = spiel.elfmeter[0] > spiel.elfmeter[1] ? spiel.heim : spiel.gast;
+
+  const ergebnis = {
+    heim: spiel.heim,
+    gast: spiel.gast,
     tore,
     chancen: [seiten[0].chancen, seiten[1].chancen],
     besitz: [Math.round((besitz / SCHEIBEN) * 100), 100 - Math.round((besitz / SCHEIBEN) * 100)],
-    verlaengerung,
-    elfmeter,
+    verlaengerung: spiel.verlaengerung,
+    elfmeter: spiel.elfmeter,
     sieger,
     dauer,
-    ereignisse,
+    // Stabil sortiert: in einem Abschnitt stehen Tore vor Karten, auch bei gleicher Minute.
+    ereignisse: [...spiel.ereignisse].sort((x, y) => x.minute - y.minute),
     aufstellung: {
-      heim: { elf: aufstellungen.heim.elf.map((s) => s.id), plaetze: seiten[0].plaetze, bank: aufstellungen.heim.bank.map((s) => s.id) },
-      gast: { elf: aufstellungen.gast.elf.map((s) => s.id), plaetze: seiten[1].plaetze, bank: aufstellungen.gast.bank.map((s) => s.id) },
+      heim: { elf: spiel.aufstellung.heim.elf, plaetze: seiten[0].plaetze, bank: spiel.aufstellung.heim.bank },
+      gast: { elf: spiel.aufstellung.gast.elf, plaetze: seiten[1].plaetze, bank: spiel.aufstellung.gast.bank },
     },
     einsaetze: {},
     gesperrt: { heim: seiten[0].gesperrt, gast: seiten[1].gesperrt },
@@ -454,10 +775,16 @@ function begegnung(heim, gast, zufall, einstellungen) {
     eingespielt: { heim: Math.round(seiten[0].geuebt.system * 100), gast: Math.round(seiten[1].geuebt.system * 100) },
   };
   for (const seite of seiten) {
-    for (const [id, { von, bis }] of seite.minuten) ergebnis.einsaetze[id] = (bis ?? dauer) - von;
+    for (const [id, { von, bis }] of Object.entries(seite.minuten)) ergebnis.einsaetze[id] = (bis ?? dauer) - von;
   }
   ergebnis.noten = notenGeben(seiten, ergebnis, zufall);
+  if (spiel.szenen) ergebnis.szenen = spiel.szenen.liste;
   return ergebnis;
+}
+
+/** Rechnet eine Begegnung am Stueck - siehe `anpfiff()` fuer die Einstellungen. */
+function begegnung(heim, gast, zufall, einstellungen) {
+  return abpfiff(spielen(anpfiff(heim, gast, zufall, einstellungen), Infinity));
 }
 
 /**
@@ -531,7 +858,7 @@ function nachwirkung(verein, ergebnis) {
       if (spieler.gelbe >= GELBSPERRE) {
         spieler.gelbe -= GELBSPERRE;
         spieler.sperre += 1;
-        folgen.push({ art: 'sperre', spieler: spieler.name, spiele: 1, grund: 'fuenfte gelbe Karte' });
+        folgen.push({ art: 'sperre', spieler: spieler.name, spiele: 1, grund: 'fünfte gelbe Karte' });
       }
     }
     if (e.art === 'gelbrot') {
@@ -553,7 +880,7 @@ function nachwirkung(verein, ergebnis) {
 }
 
 module.exports = {
-  begegnung, nachwirkung, taktikPruefen, eingeuebt, ermuedung, mannschaftsteile,
+  begegnung, anpfiff, spielen, eingreifen, abpfiff, nachwirkung, taktikPruefen, eingeuebt, ermuedung, mannschaftsteile,
   TAKTIK_VORGABE, AUSRICHTUNGEN, HEIMVORTEIL, ERMUEDUNG_JE_MINUTE, SPIELPRAXIS, WIRKUNG, ANZAHL_GEWICHT,
-  GELBSPERRE, ROTSPERRE, GELBROTSPERRE, WECHSEL_MAX, SCHEIBEN,
+  GELBSPERRE, ROTSPERRE, GELBROTSPERRE, WECHSEL_MAX, SCHEIBEN, HALBZEIT, ANSPRACHEN,
 };

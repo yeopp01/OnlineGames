@@ -2,7 +2,7 @@
 
 **Bereich:** Manager
 **Kuerzel:** spieltag
-**Stand:** 23/23 fertig
+**Stand:** 31/31 fertig
 
 ## Zweck
 
@@ -20,7 +20,8 @@ Platz steht.
 | Gehört dazu                                   | Gehört nicht dazu                            |
 | --------------------------------------------- | -------------------------------------------- |
 | Chancen, Tore, Vorlagen, Karten, Wechsel      | Tabelle und Kasse → [Liga](liga.md)          |
-| Nachwirkung auf Kondition, Moral, Statistik   | Spielverlauf zum Zusehen (wird es nicht)     |
+| Nachwirkung auf Kondition, Moral, Statistik   | Wie das Spiel im Bild läuft → [Bedienung](bedienung.md) |
+| Szenen, Sätze, Eingreifen, Kabine             |                                              |
 | Noten je Spieler                              | Verlängerung und Elfmeter → [Pokal](pokal.md) |
 
 ## Abnahmekriterien
@@ -95,6 +96,87 @@ Platz steht.
 - **AC-18** `fertig` **Die zweite Gelbe ist Gelb-Rot** — Nie zwei gelbe Karten
   ohne Platzverweis, nie eine dritte. Wer schon Gelb hat, geht vorsichtiger in
   den Zweikampf. _(Gemessen: 0,08 Gelb-Rot und 0,06 Rot je Spiel.)_
+- **AC-26** `fertig` **Ein Spiel lässt sich anhalten** — Ein Spiel ist ein
+  Datenwert: `anpfiff()` legt es an, `spielen()` rechnet bis zu einer Minute
+  und keinen Abschnitt darüber hinaus, `eingreifen()` wechselt oder dreht an
+  Ausrichtung, Härte und Pressing, seit AC-32 auch am System — wirksam ab dem
+  nächsten Abschnitt —, `abpfiff()` gibt das Ergebnis. Dazwischen übersteht es eine
+  Sicherung als JSON, der Zufall eingeschlossen (`zufall.a`). Ohne Eingriff
+  kommt stückweise genau heraus, was `begegnung()` am Stück rechnet, auch mit
+  Verlängerung und Elfmeterschießen. Was nicht geht, weist `eingreifen()` mit
+  einem Satz ab und ändert nichts. Die Grundlage für das Spiel zum Zusehen
+  und Eingreifen (Plan, M1).
+
+### Das Spiel zum Zusehen (Stufe M1)
+
+Die Szene ist in M1 **Kleidung, keine Rechnung**: ob eine Chance ein Tor
+wird, entscheidet die Rechnung von heute; Art, Zone, Ausgang eines
+Fehlschusses und Satz werden danach aus einer eigenen Zufallsquelle gezogen.
+Erst M2 lässt Fähigkeiten an den Gewichten drehen
+(→ [Plan](../../docs/manager/plan.md), M1).
+
+- **AC-27** `fertig` **Jede Chance ist eine Szene** — In einem Spiel mit
+  Szenen — dem, das jemand sieht; die übrige Welt rechnet ohne — hat jede
+  Chance, die `abschnitt()` zählt, eine Art (Konter, Flanke, Steilpass, Fernschuss,
+  Ecke, Freistoß, Elfmeter, Einzelaktion, Abstauber), eine Zone, die
+  Beteiligten (Abschluss, Vorlage, Torwart) und einen Ausgang (Tor, gehalten,
+  vorbei, Pfosten, geblockt, Abseits). Die Beteiligten standen in dieser
+  Minute auf dem Platz (wie AC-17), Tor heißt Tor in der Rechnung und
+  umgekehrt.
+- **AC-28** `fertig` **Szenen ändern kein Ergebnis** — Mit und ohne Szenen
+  kommt über 2000 Spiele dasselbe Ergebnis heraus, Ereignis für Ereignis;
+  die Gleichstandsprobe ([Spielziel](spielziel.md) AC-17) hält.
+- **AC-29** `fertig` **Der Server schreibt die Sätze** — Je Art und Ausgang
+  mindestens sechs Sätze in `texte.js`, mit Namen statt Platzhaltern
+  eingesetzt; kein Platzhalter bleibt stehen, kein Satz kommt in einem Spiel
+  zweimal. Genannt wird der Nachname, und kommt er in der Begegnung zweimal
+  vor, der ganze Name — kein Name steht für zwei Spieler. Der Browser setzt
+  nichts zusammen.
+- **AC-30** `fertig` **Die Kabine wirkt verschieden** — Zur Halbzeit eine von
+  drei Ansprachen: ruhig bleiben, aufbauen, laut werden. Laut hebt bei
+  Rückstand und drückt bei Führung, aufbauen hilft einer Elf mit schwacher
+  Moral und verpufft bei starker. Gemessen je Lage über 1500 Spiele: keine
+  Ansprache ist in jeder Lage die beste. Stellwerte in `WIRKUNG.ansprache`.
+  Sie wirkt auf die Moral im Spiel, nicht auf die im Verein, und wird je
+  Seite einmal gehalten. Gemessen (2026-11-22): laut bei Rückstand +0,02
+  Punkte je Spiel, bei Führung mit starker Moral −0,03; aufbauen bei
+  schwacher Moral +0,02 bis +0,04, bei starker genau nichts — die Wirkung
+  ist klein, gewollt (AC-33). Die KI hält keine Ansprache.
+- **AC-31** `fertig` **Auch die anderen stellen um** — Ab Minute 60 stellt ein
+  Verein des Servers bei Rückstand offensiver, bei knapper Führung
+  defensiver — über `eingreifen()`, wie ein Mensch. Die Tore je Spiel bleiben
+  zwischen 2,7 und 3,5, die Kennzahlen der übrigen Kriterien halten. Das
+  ändert die Welt: eigene Runde, neue Abdrücke der Gleichstandsprobe mit
+  Begründung. Gebaut als Einstellung `umstellen` je Seite, gesetzt für jeden
+  Verein ohne Menschen; vor jedem Abschnitt ab Minute 60 ein Schritt
+  offensiver bei einem Tor Rückstand, zwei bei mehr, einer defensiver bei
+  einem Tor Führung, sonst die Ausrichtung vom Anpfiff (`WIRKUNG.umstellen`,
+  gesetzt). Gemessen (2026-11-22, zwei Saisons, sechs Startwerte): 3,20 Tore
+  je Spiel statt 3,06, Heimsiege 47,1 statt 47,6 %, Unentschieden 22,2 statt
+  21,7 %, der Favorit gewinnt 51,7 statt 51,4 %.
+- **AC-32** `fertig` **Das System im Spiel wechseln** — Im laufenden Spiel
+  lässt sich auch das System wechseln, mit neuen Plätzen ab dem nächsten
+  Abschnitt; ein System, das die Elf nicht kennt, kostet wie vor dem Spiel
+  (AC-25). Wer auf dem Platz steht, bekommt den Platz nach derselben Regel
+  wie vor dem Spiel: ein Wechsel in Minute 0 ist dasselbe Spiel, als hätte
+  dieselbe Elf in diesem System begonnen. Im Bericht steht die Startelf
+  weiter auf ihren alten Plätzen.
+- **AC-33** `fertig` **Eingreifen lohnt maßvoll** — Ein Mensch, der gut
+  eingreift, holt über eine Saison höchstens drei bis fünf Punkte mehr als die
+  Automatik — sonst wäre „Sofort“ eine Strafe. Gemessen mit einer Regel, die
+  so eingreift, wie ein aufmerksamer Mensch es täte, gegen dieselbe Saison
+  ohne Eingriff. **Gemessen gepaart je Spiel** (2026-11-22): jedes eigene
+  Ligaspiel am Anpfiff abgeschrieben, einmal mit Automatik, einmal mit
+  Eingriff zu Ende gerechnet — eine ganze zweite Saison zu vergleichen
+  streut zu stark (ein anderes Ergebnis ändert Moral, Verletzungen und
+  Markt, über 20 Saisons −14 bis +33 Punkte). Über 40 Saisons: wer zur
+  Halbzeit nach Lage spricht und ab Minute 60 umstellt wie ein Verein des
+  Servers, holt **+0,9 Punkte** (± 0,4); wer bei Rückstand ganz offensiv mit
+  vollem Pressing spielt und bei Führung mauert, **+2,8** (± 0,6). Bei 0:1 in
+  Minute 60 hebt „Offensiv“ den Ausgleich von 26 auf 31 % und das 0:2 von
+  28 auf 32 %. Die Grenze von fünf ist eng gebaut: auch mit vierfacher
+  Wirkung der Ausrichtung blieb es bei 3,4, mit Angriff ohne Kosten für die
+  Abwehr bei 4,1 — erst eine geschenkte Stärke nach der Ansprache riss sie.
 
 ### Nachwirkung
 

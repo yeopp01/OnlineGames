@@ -1,0 +1,87 @@
+// Die Baender der Spieldynamik ueber zwanzig Saisons ohne Menschen
+// (→ docs/manager/dynamik/plan.md). Eine Welt fuer alle, gerechnet von
+// scripts/manager-dynamik-messung.mjs - derselben Stelle, aus der
+// `npm run manager:dynamik` die Bandtabelle druckt.
+//
+// Was noch reisst, steht auf `offen` und der Test auf `todo` (finanzen
+// AC-17 und AC-18 halten seit Schritt 2, transfer AC-26 und AC-27 seit
+// Schritt 3, kader AC-24 und AC-25 seit Schritt 4, finanzen AC-19 und
+// transfer AC-29 seit Schritt 6, kader AC-26 seit Schritt 5; kader AC-24 haelt
+// seit Schritt 5 hier nicht mehr). Wer einen Schritt des Plans baut,
+// nimmt das `todo` weg, sobald sein Band ueber diese Welt haelt - und prueft
+// mit `npm run manager:dynamik` ueber mehrere Startwerte, dass es nicht nur
+// hier haelt.
+import { test, before } from 'node:test';
+import assert from 'node:assert/strict';
+import { baenderPruefen, weltVerfolgen } from '../scripts/manager-dynamik-messung.mjs';
+
+const STARTWERT = 20260910;
+const SAISONS = 20;
+let welt;
+let baender;
+
+before(() => {
+  welt = weltVerfolgen({ startwert: STARTWERT, saisons: SAISONS });
+  baender = new Map(baenderPruefen(welt).map((b) => [b.kriterium, b]));
+});
+
+// Je Saison ein Eintrag; die Wertklippen je Alter (17 auf 18 bis 35 auf 36),
+// die Entwicklung je Saison bis zur vorletzten (sie vergleicht mit der naechsten).
+const LAENGE = { 'transfer AC-27': 19, 'kader AC-26': SAISONS - 1 };
+
+const pruefen = (kriterium) => {
+  const b = baender.get(kriterium);
+  assert.equal(b.reihe.length, LAENGE[kriterium] ?? SAISONS);
+  assert.ok(b.haelt, `${b.grenze} - reisst (${b.riss?.wo}): ${b.riss?.wert}`);
+};
+
+test('die Dynamikmessung zaehlt Wechsel aus den Akten und Jugend nach Jahrgang', () => {
+  assert.equal(welt.saisons.length, SAISONS);
+  for (const s of welt.saisons) {
+    for (const liga of [1, 2]) assert.ok(s.ligen[liga].wechsel.length > 0, `Saison ${s.saison}, Liga ${liga}: kein Wechsel gezaehlt`);
+  }
+  const jahrgaenge = new Set(welt.jugend.map((l) => l.jahrgang));
+  assert.ok(!jahrgaenge.has(1), 'in Saison 1 kommt noch niemand aus der Jugend');
+  assert.equal(jahrgaenge.size, SAISONS - 1, 'jede weitere Saison bringt einen Jahrgang');
+  for (const l of welt.jugend) assert.equal(l.verlauf[17], l.staerke17);
+});
+
+test('finanzen AC-17: hoechstens zwei Vereine je Liga unter -3 Mio, jede Saison', () => {
+  pruefen('finanzen AC-17');
+});
+
+test('finanzen AC-18: der Median der Konten bleibt je Liga im Plus', () => {
+  pruefen('finanzen AC-18');
+});
+
+test('transfer AC-26: mit 24 bis 28 ist ein Jahresgehalt 15 bis 25 % des Marktwerts', () => {
+  pruefen('transfer AC-26');
+});
+
+test('kader AC-23: ab Saison 5 drei bis acht Spieler ab Staerke 85 in Liga 1', { todo: 'reisst seit Schritt 5 meist oben: hier nur Saison 5 mit 2, ueber acht Startwerte 2 bis 10 je Saison, an einem von acht jede Saison im Band, an den anderen in 1 bis 14 von 20 Saisons daneben' }, () => {
+  pruefen('kader AC-23');
+});
+
+test('kader AC-24: das Durchschnittsalter bleibt ab Saison 2 zwischen 23 und 25', { todo: 'reisst seit Schritt 5 unten: wer ab 25 auf der Bank sitzt, baut ab (kader AC-26) und wird ersetzt - hier Saison 9 mit 22,9, ueber acht Startwerte in 3 bis 8 von 20 Saisons 22,7 bis 23,0' }, () => {
+  pruefen('kader AC-24');
+});
+
+test('transfer AC-27: ein Geburtstag kostet hoechstens 15 % des Marktwerts', () => {
+  pruefen('transfer AC-27');
+});
+
+test('finanzen AC-19: das groesste Konto der Liga 1 bleibt unter vier Jahreseinnahmen', () => {
+  pruefen('finanzen AC-19');
+});
+
+test('kader AC-25: die Jugend kommt hoechstens 15 unter dem Niveau an und spielt mit 20', () => {
+  pruefen('kader AC-25');
+});
+
+test('kader AC-26: wer mit 25 bis 30 viel spielt, legt einen Punkt mehr zu', () => {
+  pruefen('kader AC-26');
+});
+
+test('transfer AC-29: in Liga 1 wechseln ab Saison 2 je Verein mindestens 1,5 Spieler je Saison', () => {
+  pruefen('transfer AC-29');
+});

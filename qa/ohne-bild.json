@@ -758,6 +758,11 @@
     },
     {
       "spec": "15-manager/spieltag.md",
+      "ac": "AC-26",
+      "begruendung": "Die Schnittstelle des Rechenteils: ein Spiel stueckweise gerechnet und zwischen den Stuecken als JSON gesichert ist Ereignis fuer Ereignis dasselbe wie am Stueck, und eingreifen() wirkt erst ab dem naechsten Abschnitt. Das ist ein Vergleich zweier Rechnungen, die Oberflaeche dazu kommt erst mit M1 und bringt dort ihre eigenen Bilder."
+    },
+    {
+      "spec": "15-manager/spieltag.md",
       "ac": "AC-2",
       "begruendung": "Chancenverteilung nach Mittelfeldstaerke ueber 400 Begegnungen. Ein Spiel zeigt Chancen, keinen Zusammenhang."
     },
@@ -1132,6 +1137,91 @@
       "begruendung": "Pokalpraemien als Buchung, geprueft fuer alle 32 Teilnehmer einer Runde. Wie Buchungen im Buch stehen, zeigt finanzen AC-8."
     },
     {
+      "spec": "15-manager/finanzen.md",
+      "ac": "AC-17",
+      "begruendung": "Eine Grenze ueber zwanzig Saisons einer Welt ohne Menschen: nach jedem der 840 Termine wird je Liga gezaehlt, wie viele Vereine unter -3 Mio stehen, und es duerfen nie mehr als zwei sein. Das ist eine Folge von Kontostaenden aller 36 Vereine ueber zwanzig Jahre, gerechnet ohne Browser; ein Bildschirm zeigt das Konto des eigenen Vereins an einem Tag, nicht die anderen und nicht die Jahre. Belegt im Rechenteil am Startwert 20260910, mit npm run manager:dynamik zusaetzlich an 4711, 77 und 1234."
+    },
+    {
+      "spec": "15-manager/finanzen.md",
+      "ac": "AC-18",
+      "begruendung": "Der Median der Konten je Liga am Ende jeder von zwanzig Saisons ohne Menschen liegt ueber null. Das ist eine Kennzahl ueber alle 18 Vereine einer Liga und zwanzig Jahre, gerechnet ohne Browser; die Oberflaeche zeigt nur das eigene Konto in der laufenden Saison, keinen Median und keine Folge von Jahren. Belegt im Rechenteil am Startwert 20260910, mit npm run manager:dynamik zusaetzlich an 4711, 77 und 1234."
+    },
+    {
+      "spec": "15-manager/transfer.md",
+      "ac": "AC-26",
+      "begruendung": "Ein Verhaeltnis ueber zwanzig Saisons ohne Menschen: am Ende jeder Saison das Vertragsgehalt geteilt durch den Marktwert, gemittelt ueber alle Vereinsspieler von 24 bis 28, muss zwischen 15 und 25 % liegen. Das ist ein Mittel ueber mehrere hundert Spieler aller 36 Vereine und zwanzig Jahre, gerechnet ohne Browser; die Oberflaeche zeigt Gehalt und Wert einzelner Spieler an einem Tag, kein Mittel und keine Folge von Jahren. Belegt im Rechenteil am Startwert 20260910, mit npm run manager:dynamik zusaetzlich an 4711, 77 und 1234."
+    },
+    {
+      "spec": "15-manager/transfer.md",
+      "ac": "AC-27",
+      "begruendung": "Eine Eigenschaft der Marktwertformel: fuer jeden Geburtstag von 17 auf 18 bis 35 auf 36 und die Staerken 45, 60, 75 und 90 kostet ein Jahr mehr bei gleicher Staerke und gleichem Talent hoechstens 15 % des Werts. Das ist ein Vergleich desselben Spielers mit sich selbst ein Jahr spaeter, den es im Spiel so nie gibt - wer altert, aendert auch seine Staerke; ein Bildschirm zeigt den Wert eines Spielers an einem Tag. Belegt im Rechenteil an der Formel (kader.marktwert), unabhaengig von einer Welt."
+    },
+    {
+      "spec": "15-manager/transfer.md",
+      "ac": "AC-28",
+      "begruendung": "Dass ein Geschaeftsmodell nicht traegt, ist eine Bilanz ueber zwoelf Saisons: ein Bot holt in der Mitte der ersten und der zweiten Liga Vereinslose, setzt sie auf die Liste und nimmt jedes Angebot, und am Ende steht der Erloes abzueglich der Gehaelter gegen die Einnahmen des Vereins aus dem Spielbetrieb, gemittelt ueber drei Startwerte. Das sind Hunderte Termine und Dutzende Wechsel, gerechnet ohne Browser; ein Bildschirm zeigt ein Angebot im Postfach oder einen Kontostand an einem Tag, nicht, was sich ueber Jahre daraus ergibt. Belegt im Rechenteil (tests/manager-haendler.test.mjs), mit docs/manager/dynamik/haendler.cjs zusaetzlich ueber zwanzig Saisons."
+    },
+    {
+      "spec": "15-manager/transfer.md",
+      "ac": "AC-29",
+      "begruendung": "Eine Zahl ueber zwanzig Saisons einer Welt ohne Menschen: je Saison ab der zweiten die Zugaenge der ersten Liga aus den Akten der Spieler, geteilt durch die Zahl ihrer Vereine, mindestens 1,5. Das ist eine Summe ueber alle 18 Vereine einer Liga und zwanzig Jahre, gerechnet ohne Browser; der Ticker im Spiel zeigt die letzten vierzig Wechsel, keine Zahl je Verein und keine Folge von Jahren. Belegt im Rechenteil am Startwert 20260910, mit npm run manager:dynamik zusaetzlich an 4711, 77, 1234, 5, 99, 31337 und 2026."
+    },
+    {
+      "spec": "15-manager/transfer.md",
+      "ac": "AC-31",
+      "begruendung": "Eine Rate ueber zehn Saisons: ein Bot verwaltet einen Verein, setzt niemanden auf die Liste und nimmt kein Angebot an, und gezaehlt wird jedes neue Angebot im Postfach, geteilt durch die Saisons - in der ersten Liga mindestens zwei, in der zweiten mindestens eines, an jedem Startwert. Ein Bildschirm zeigt das Postfach an einem Termin mit null bis drei Angeboten, nicht, wie viele ueber Jahre kommen; dass Angebote dort stehen, zeigt das Bild zu transfer AC-11. Belegt im Rechenteil (tests/manager-angebote.test.mjs) an 4711, 1234 und 31337, mit docs/manager/dynamik/angebote.cjs an allen acht Startwerten."
+    },
+    {
+      "spec": "15-manager/finanzen.md",
+      "ac": "AC-19",
+      "begruendung": "Eine Grenze ueber zwanzig Saisons einer Welt ohne Menschen: am Ende jeder Saison das groesste Konto der ersten Liga geteilt durch die Einnahmen dieses Vereins in der Saison ohne Abloesen, unter dem Vierfachen. Das ist ein Vergleich zwischen allen 18 Vereinen einer Liga ueber zwanzig Jahre, gerechnet ohne Browser; die Oberflaeche zeigt das eigene Konto und die eigenen Einnahmen, nicht das Konto der anderen und keine Folge von Jahren. Belegt im Rechenteil am Startwert 20260910, mit npm run manager:dynamik zusaetzlich an 4711, 77, 1234, 5, 99, 31337 und 2026."
+    },
+    {
+      "spec": "15-manager/kader.md",
+      "ac": "AC-24",
+      "begruendung": "Das Durchschnittsalter aller Vereinsspieler beider Ligen am letzten Termin vor dem Altern, ab der zweiten von zwanzig Saisons ohne Menschen zwischen 23 und 25. Das ist ein Mittel ueber rund 800 Spieler und zwanzig Jahre, gerechnet ohne Browser; die Oberflaeche zeigt den eigenen Kader und einzelne fremde an einem Tag, kein Mittel ueber alle Vereine und keine Folge von Jahren. Gemessen mit npm run manager:dynamik an acht Startwerten; seit Schritt 5 haelt es an keinem in jeder Saison (22,7 bis 23,0), der Test im Rechenteil steht deshalb als todo."
+    },
+    {
+      "spec": "15-manager/kader.md",
+      "ac": "AC-25",
+      "begruendung": "Zwei Mittel ueber zwanzig Saisons ohne Menschen: wie weit die Siebzehnjaehrigen aus dem eigenen Nachwuchs unter dem Niveau ihres Vereins ankommen (hoechstens 15) und welchen Anteil der Pflichtspielminuten die Zwanzigjaehrigen in Vereinen spielen (mindestens 30 %). Das sind Zahlen ueber alle 36 Vereine und zwanzig Jahrgaenge, gerechnet ohne Browser; die Oberflaeche zeigt die eigene Jugend und die Einsaetze des eigenen Kaders, keinen Vergleich ueber alle Vereine und keine Folge von Jahren. Belegt im Rechenteil am Startwert 20260910, mit npm run manager:dynamik zusaetzlich an 4711, 77 und 1234."
+    },
+    {
+      "spec": "15-manager/kader.md",
+      "ac": "AC-27",
+      "begruendung": "Jeder Spieler hat sieben Neigungen von -1 bis 1, abgeleitet aus Kennung und Startwert, und daraus einen von neun Charakteren. Das Kriterium ist die Verteilung ueber rund 750 Spieler je Welt und acht Startwerte und dass nichts davon im Spielstand liegt - Zahlen ueber alle Vereine und ein Blick in die gesicherten Bytes. Der Server schickt den Charakter der eigenen Spieler mit; ob und wo die Oberflaeche ihn zeigt, baut die Managersitzung (public/manager) - ein Bild davon belegte ohnehin nicht die Verteilung. Belegt im Rechenteil."
+    },
+    {
+      "spec": "15-manager/kader.md",
+      "ac": "AC-28",
+      "begruendung": "Dass keine Antwort des Servers eine Neigung traegt, ist eine Aussage ueber alle Antworten, nicht ueber ein Bild: der Test geht jede Zahl in Zustand, Markt, Vereinsansicht, Akten und Spielstandliste durch und vergleicht sie mit den Neigungen und jedem Faktor daraus. Ein Bildschirm zeigt nur, was ankommt - nicht, was fehlt. Belegt ueber den Anfrageweg, mit Gegenprobe."
+    },
+    {
+      "spec": "15-manager/kader.md",
+      "ac": "AC-29",
+      "begruendung": "Eine Verschiebung der Entwicklung um 0,5 Staerke je Saison und Einheit Neigung, gemessen als Mittel ueber 3000 Wuerfe an zwei Spielern, die sich nur in der Kennung unterscheiden. Ein Spieler waechst in einer Saison um ganze Punkte mit Zufall darin; eine halbe Stufe im Mittel zeigt kein einzelner Bericht. Belegt im Rechenteil, in der Welt mit docs/manager/dynamik/neigungen.cjs."
+    },
+    {
+      "spec": "15-manager/kader.md",
+      "ac": "AC-30",
+      "begruendung": "Ein Zuschlag auf die Entwicklung nach dem Notenschnitt der Saison, als Mittel ueber 3000 Wuerfe derselben Lage mit Schnitt 2 und 5. Der Entwicklungsbericht (kader AC-20) zeigt Vorher und Nachher eines Spielers, nicht welcher Teil davon aus den Noten kam. Belegt im Rechenteil."
+    },
+    {
+      "spec": "15-manager/kader.md",
+      "ac": "AC-31",
+      "begruendung": "Ein Faktor auf die Tagesform je nach Spielort, der im Spiel nicht angezeigt wird, und eine Heimquote ueber 25 680 Spiele mit und ohne ihn. Die Tagesform ist eine Rechengroesse der Begegnung; kein Blatt zeigt sie, und eine Quote ueber Ligen und Jahre zeigt kein Einzelbild. Belegt im Rechenteil am Anpfiff, die Quote mit docs/manager/dynamik/neigungen.cjs."
+    },
+    {
+      "spec": "15-manager/kader.md",
+      "ac": "AC-32",
+      "begruendung": "Ein Faktor auf den Gehaltswunsch beim Verlaengern und eine Schwelle beim Wechsel zu einem schwaecheren Verein, je nach verdeckter Neigung. Im Vertragsblatt steht nur der fertige Wunsch; ob er aus der Neigung kommt, zeigt erst der Vergleich mit demselben Spieler ohne sie, und den gibt es auf dem Bildschirm nicht. Belegt im Rechenteil an Soeldner und Vereinstreuem."
+    },
+    {
+      "spec": "15-manager/kader.md",
+      "ac": "AC-33",
+      "begruendung": "Eine schmalere oder breitere Streuung der Noten bei gleichem Spielausgang, gemessen ueber 600 Spiele je Lage mit und ohne die Achse. Eine Streuung ist eine Eigenschaft vieler Noten eines Spielers, keine einzelne Note auf dem Spielbericht. Belegt im Rechenteil, in der Welt mit docs/manager/dynamik/neigungen.cjs."
+    },
+    {
       "spec": "15-manager/vorstand.md",
       "ac": "AC-1",
       "begruendung": "Die Zuordnung von Kaderrang zu Ziel als Regel ueber beide Ligen. Das Ziel des eigenen Vereins zeigt das Bild zu vorstand AC-9."
@@ -1257,9 +1347,39 @@
       "begruendung": "Braucht einen Spielstand aus einer anderen Fassung in der Datenbank. Der Test aendert die Fassung direkt; ueber die Oberflaeche entsteht er erst mit dem naechsten Update."
     },
     {
+      "spec": "15-manager/karriere.md",
+      "ac": "AC-29",
+      "begruendung": "Eine Zusage ueber die Bauart des Spielstands, nicht ueber das Bild: die Manager stehen als Liste darin, jeder Zug nennt seinen Manager, und ein Stand der Fassung 3 laeuft nach dem Anheben genau so weiter wie vorher. Fuer den einen Menschen aendert sich am Bildschirm nichts - das ist der Sinn des Umbaus; die Oberflaeche ist dieselbe, die die Bilder zu oberflaeche AC-1 und folgenden zeigen. Belegt mit dem gesicherten Stand vor und nach dem Anheben und einem Waechter ueber den Quelltext."
+    },
+    {
+      "spec": "15-manager/karriere.md",
+      "ac": "AC-30",
+      "begruendung": "Eine Regel ueber die Reihenfolge auf dem Server: der Termin wird in zwei Teilen gerechnet, erst alle Spiele, dann das Verbuchen, und mit einem live gespielten Spiel wartet der zweite Teil im Spielstand auf den Abpfiff. Was daran zu pruefen ist - dass die uebrigen Ergebnisse feststehen, was immer im eigenen Spiel geschieht, dass Tabelle, Torjaeger und Pokal bis zum Abpfiff unveraendert bleiben, dass das angehaltene Spiel Sichern und Laden aus der Datenbank uebersteht -, ist ein Vergleich zweier Spielstaende und steht in keinem Bild. Der Knopf, der ein Spiel live startet, und das laufende Spiel im Bild sind oberflaeche AC-19 und haben dort ihr Bild."
+    },
+    {
+      "spec": "15-manager/karriere.md",
+      "ac": "AC-31",
+      "begruendung": "Eine Gleichheit zweier Rechnungen: eine Saison vorgespult und dieselbe Saison mit jedem eigenen Spiel live in Schritten zu fuenf Minuten ergeben denselben Spielstand, Feld fuer Feld, ebenso ein angepfiffenes Spiel, das danach mit Weiter oder bis zur Winterpause zu Ende gerechnet wird. Ein Bildschirm zeigte nur das Ergebnis eines der beiden Wege - dass es dem des anderen gleicht, sieht man nur im Vergleich der gesicherten Staende."
+    },
+    {
+      "spec": "15-manager/karriere.md",
+      "ac": "AC-32",
+      "begruendung": "Die Spec sagt es selbst: geprueft an der Antwort, nicht am Bild. Das Kriterium handelt davon, was der Server waehrend eines laufenden Spiels hinausschickt - kein Ereignis nach der gezeigten Minute, kein Endstand, kein Ergebnis der uebrigen Spiele, keine neue Tabelle. Ein Bild zeigte, was die Seite davon darstellt, aber nicht, was sie ueber die Leitung bekommen hat und verbergen koennte; deshalb wird jede Antwort des Anfragewegs Schritt fuer Schritt gelesen."
+    },
+    {
       "spec": "15-manager/spielziel.md",
       "ac": "AC-15",
       "begruendung": "Dass keine Einstellung fuer jeden die beste ist, zeigt nur ein Vergleich vieler Spiele mit verschiedenen Einstellungen. Die Regler selbst zeigt das Bild zu aufstellung AC-21."
+    },
+    {
+      "spec": "15-manager/spielziel.md",
+      "ac": "AC-16",
+      "begruendung": "Eine Regel ueber alle Texte im Quelltext des Managerspiels: jede Zeichenkette, die auf den Bildschirm kommen kann, hat echte Umlaute. Ein Bild zeigt davon eine Stichprobe von einem Blatt, die Regel gilt fuer alle Blaetter, Absagen und Nachrichten - auch fuer die, die in keinem Browserfall erscheinen. Belegt im Waechter, der jede Zeichenkette dieser Dateien liest, und in seiner Gegenprobe, die zeigt, dass er Text in Vorlagen findet und Schluessel stehen laesst. Wie die Blaetter danach aussehen, zeigen die Bilder der anderen Kriterien."
+    },
+    {
+      "spec": "15-manager/spielziel.md",
+      "ac": "AC-17",
+      "begruendung": "Eine Zusage ueber die Rechnung, nicht ueber die Oberflaeche: derselbe Startwert ergibt nach einem Umbau Zug fuer Zug denselben Spielstand. Belegt wird das mit zwei Fingerabdruecken ueber den ganzen gesicherten Stand - Welt und Mensch - nach sechs Laeufen ohne Browser. Ein Bild zeigte einen einzigen Termin und koennte eine Abweichung im Kader eines fremden Vereins oder im Buch der Saison nicht zeigen."
     },
     {
       "spec": "15-manager/spieltag.md",
@@ -1275,6 +1395,41 @@
       "spec": "15-manager/spieltag.md",
       "ac": "AC-25",
       "begruendung": "Punkte mit fremdem und eingespieltem System, verglichen ueber je 1.200 Spiele, und die Spielpraxis nach einem Spiel. Wie weit das System sitzt, zeigt der Balken im Bild zu aufstellung AC-21."
+    },
+    {
+      "spec": "15-manager/spieltag.md",
+      "ac": "AC-27",
+      "begruendung": "Dass jede Chance eine Szene ist, ist ein Abgleich ueber 300 Spiele: je Seite so viele Szenen wie Chancen, je Tor eine Torszene mit demselben Schuetzen und derselben Vorlage, jede Art nur in ihren Zonen und mit ihren Ausgaengen, und Schuetze, Vorlage und Torwart nach den Spielminuten der Seite in dieser Minute auf dem Platz. Ein Bildschirm zeigt eine Szene, nicht dass keine fehlt und keiner der Genannten schon draussen war. Wie eine Szene im Ticker steht, zeigt das Bild zu oberflaeche AC-19."
+    },
+    {
+      "spec": "15-manager/spieltag.md",
+      "ac": "AC-28",
+      "begruendung": "Dass Szenen kein Ergebnis aendern, ist ein Vergleich zweier Rechnungen derselben 2.000 Spiele, einmal mit und einmal ohne Szenen: Ergebnis fuer Ergebnis gleich, Ereignis fuer Ereignis, und der Zufall des Spieltags zieht danach gleich weiter; dazu 60 Spiele stueckweise mit Sicherung als JSON gegen dasselbe Spiel am Stueck. Ein Bild zeigt eine der beiden Rechnungen, nie, dass die andere gleich ist."
+    },
+    {
+      "spec": "15-manager/spieltag.md",
+      "ac": "AC-29",
+      "begruendung": "Gezaehlt in der Tabelle der Saetze (je Art und Ausgang sechs, keiner doppelt, nur bekannte Platzhalter, ein Tor nennt immer den Schuetzen) und ueber 2.000 Spiele (kein Platzhalter bleibt stehen, kein Satz zweimal in einem Spiel, kein Name steht fuer zwei Spieler); dazu ein Abgleich, dass keine Datei unter public/ einen Platzhalter oder die Saetze traegt. Ein Bildschirm zeigt einige Saetze, nicht dass keiner fehlt und keiner im Browser entsteht. Wie die Saetze im Ticker stehen, zeigt das Bild zu oberflaeche AC-19."
+    },
+    {
+      "spec": "15-manager/spieltag.md",
+      "ac": "AC-30",
+      "begruendung": "Dass die Ansprache je Lage verschieden wirkt, ist eine Zahl: Punkte je Spiel ueber 1500 gepaarte Halbzeiten je Lage und Moral, einmal ohne und einmal mit jeder der drei Ansprachen zu Ende gerechnet, mit demselben Zufall. Die Unterschiede liegen bei zwei bis vier Hundertstel Punkten - kein einzelnes Spiel und kein Bildschirm zeigt sie. Wie die Kabine zur Halbzeit aussieht, zeigt das Bild zu oberflaeche AC-21, sobald die Oberflaeche dafuer steht."
+    },
+    {
+      "spec": "15-manager/spieltag.md",
+      "ac": "AC-31",
+      "begruendung": "Das Kriterium ist eine Regel der Rechnung und eine Zahl ueber die Welt: dass ein Verein des Servers ab Minute 60 nach dem Spielstand umstellt, und zwar Abschnitt fuer Abschnitt genau so, als griffe ein Mensch mit eingreifen() ein, und dass die Tore je Spiel dabei zwischen 2,7 und 3,5 bleiben. Ein Bild zeigte bestenfalls eine geaenderte Ausrichtung im Spielbericht - nicht, wann und warum sie kam, und nichts ueber eine Saison mit hunderten Spielen. Was ein Mensch vom Umstellen des Gegners im laufenden Spiel sieht, zeigt die Oberflaeche zu oberflaeche AC-20."
+    },
+    {
+      "spec": "15-manager/spieltag.md",
+      "ac": "AC-33",
+      "begruendung": "Was Eingreifen bringt, ist eine Summe ueber eine Saison: Punkte je 34 Ligaspiele mit Eingriff gegen dieselben Spiele mit Automatik, gepaart am Anpfiff abgeschrieben, ueber zwanzig Saisons. Die Unterschiede liegen bei einem bis drei Punkten im Jahr, also bei wenigen Hundertsteln Punkten je Spiel - kein einzelnes Spiel und kein Bildschirm zeigt sie. Wie ein Mensch eingreift, zeigen die Bilder zu oberflaeche AC-20 und AC-21, sobald die Oberflaeche dafuer steht."
+    },
+    {
+      "spec": "15-manager/spieltag.md",
+      "ac": "AC-32",
+      "begruendung": "Eine Regel der Spielrechnung: wer nach einem Systemwechsel auf welchen Platz kommt und was das kostet. Belegt mit einer Gleichheit ueber vierzig Spiele - ein Wechsel in Minute 0 ergibt Ereignis fuer Ereignis dasselbe Spiel, als haette dieselbe Elf in diesem System begonnen - und mit einem Wechsel zur Halbzeit in ein System, das die Elf kaum kennt. Ein Bild zeigte elf Namen auf neuen Plaetzen, aber nicht, dass sie nach der Regel vor dem Spiel gestellt sind und der Wechsel kostet. Den Knopf dafuer im laufenden Spiel zeigt das Bild zu oberflaeche AC-20."
     },
     {
       "spec": "15-manager/aufstellung.md",

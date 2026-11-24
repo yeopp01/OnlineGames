@@ -82,11 +82,13 @@ angesehen, bevor etwas eingecheckt wird.
 
 **TypeScript ist der Prüfer, nicht die Sprache** (`npm run typen`, als
 Wächter in `npm test`). Geprüft wird, was in der ersten Zeile `// @ts-check`
-trägt: der Server ohne das Managerspiel, im Browser bisher `nebel.js`,
-`uebersicht.js` und `auswahlleiste.js`. Die Formen der Tabellen stehen als
-`@typedef` oben in `server/spiele/strategie/daten.js` — **ein neues Feld wird
-dort eingetragen**, sonst meldet der Prüfer es. Welche Dateien noch fehlen und
-warum, steht unter `OFFEN` in `tests/waechter-typen.test.mjs`.
+trägt: der Server bis auf die vier Teile der Karriere im Managerspiel, im
+Browser bisher `nebel.js`, `uebersicht.js` und `auswahlleiste.js`. Die Formen
+der Tabellen stehen als `@typedef` oben in `server/spiele/strategie/daten.js`,
+die des Managerspiels (Verein, Spieler, Manager, ein laufendes Spiel) in
+`server/spiele/manager/daten.js` — **ein neues Feld wird dort eingetragen**,
+sonst meldet der Prüfer es. Welche Dateien noch fehlen und warum, steht unter
+`OFFEN` und `OFFEN_SERVER` in `tests/waechter-typen.test.mjs`.
 
 ### Die wichtigste Regel
 
@@ -130,11 +132,13 @@ server/  raeume.js   Räume, Beitritt, Rückkehr nach Abbruch
                       spieltag.js die Begegnung in Fünf-Minuten-Abschnitten, Taktik
                       liga.js Spielplan, Tabelle · pokal.js · kalender.js 42 Termine
                       finanzen.js · vertraege.js · vorstand.js · transfer.js Markt, KI-Handel
-                      karriere.js Saison um Saison · spielstaende.js SQLite am Konto
+                      karriere.js setzt die Karriere zusammen: welt.js Zustand,
+                      ablauf.js Saison um Saison, zuege.js Befehle, sicht.js Ansichten
+                      spielstaende.js SQLite am Konto
                       netz.js der Anfrageweg (nur mit Anmeldung)
 public/  app.js      Verbindung, Vorraum, Warteraum
          ansicht.js  zeichnet die Welt, nimmt Maus und Tastatur
-         manager.js  das Managerspiel (/manager.html), acht Blätter
+         manager/    das Managerspiel (/manager.html): kern, teile, je Blatt ein Modul
 specs/   was das Produkt ist, mit Abnahmekriterien
 docs/adr/ warum es so gebaut ist
 qa/      bildnachweise/ Bilder je Kriterium (eingecheckt) · ohne-bild.json Begründungen
@@ -181,7 +185,7 @@ Umfang hinzufügt, dort nachsehen.
 
 ## Stand
 
-**637 von 718 Kriterien fertig.** 1154 Tests ohne Browser und 37 ganze Partien, 363 im Browser. Die
+**673 von 758 Kriterien fertig.** 1222 Tests ohne Browser und 37 ganze Partien, 370 im Browser. Die
 Übersicht ist der Bericht: `npm run qa:report`.
 
 Gebaut ist der Unterbau: Räume, Übertragung, Karte, Wegfindung, Sammeln,
@@ -196,8 +200,10 @@ Karriereende, Finanzen mit Sponsor und Stadion, Vorstand mit Entlassung —
 und 35 Vereine, die nach denselben Regeln spielen und handeln. Der Spielstand
 liegt in SQLite am Konto; ohne Anmeldung geht im Managerspiel nichts.
 
-Gemessen: **3,10 Tore je Spiel, 48 % Heimsiege, 21 % Unentschieden**
-(Bundesliga: 3,1 / 44 % / 24 %); der Favorit gewinnt 64 %. Über sechs Saisons
+Gemessen: **3,20 Tore je Spiel, 47 % Heimsiege, 22 % Unentschieden**
+(Bundesliga: 3,1 / 44 % / 24 %); der Favorit gewinnt 66 % der entschiedenen
+Spiele — seit die Vereine des Servers ab Minute 60 umstellen (spieltag
+AC-31; vorher 3,06 / 48 % / 22 % / 66 %, sechs Startwerte zu zwei Saisons). Über sechs Saisons
 ohne Menschen null Widersprüche in den Spielen, Kader, Stärke und Markt
 stabil. Eine Saison rechnet in rund 400 ms, ein Spielstand ist nach zwei
 Saisons unter 1 MB. Der Browserlauf dauert rund 36
@@ -205,6 +211,41 @@ Minuten für 308 Fälle (inzwischen 316, rund 42 Minuten) (`npm run e2e:laufzeit
 Fälle sind `fahrplan AC-24` mit 108 s, zwei gegen zwei bis zur Tafel,
 `fahrplan AC-14` mit 90 s, die Ritterzeit am Stück, und `fahrplan AC-12`
 mit 84 s, eine ganze Partie gegen die KI).
+
+**Spieldynamik des Managers** ([Plan](docs/manager/dynamik/plan.md),
+Schritte 2 bis 6): Haushalt der KI (`HAUSHALT`), Preisgefüge
+(Marktwert ×2,3, Alter linear), Startwelt und Jugend (`STARTWELT`,
+`JUGEND`, `ALTERSBLICK`) und der Markt (`MARKT` in `transfer.js`): wer
+mehr als dreimal seine Jahreseinnahmen hat, verkauft nur von der Liste
+(transfer AC-30, `in-qa` bis zum Zeichen in der Marktliste), wer reich
+ist, sucht in jedem Fenster, und niemand bietet auf einen Spieler, wenn
+ein vergleichbarer Vereinsloser zu haben ist. Damit lohnt der Handel mit
+Vereinslosen nicht mehr (transfer AC-28: 5 % und −19 % der Einnahmen
+statt 127 % und 210 %), die erste Liga wechselt 2,9 bis 4,0 Spieler je
+Verein und Saison statt 1,6 bis 2,2 (AC-29), und der Reichste hat
+höchstens das 3,7-Fache einer Jahreseinnahme (finanzen AC-19). Weil ein
+Gebot seitdem die Gehaltsgrenze prüft, bekam ein Mensch kaum noch
+Angebote (zweite Liga 0,25 je Saison); jetzt zieht ein Verein auf
+Spieler außerhalb der Liste mit 0,8 statt 0,06 (`ANGEBOTE`), und wessen
+Angebot noch gilt, bietet nicht neu — mindestens 2 Angebote je Saison in
+der ersten, 1 in der zweiten Liga (transfer AC-31, gemessen 6,5 / 3,0 /
+1,3 im kleinsten Fall); je Fenster bietet ein Verein höchstens einmal auf
+denselben Spieler. Die vielen Meldungen kommen von mehreren Vereinen auf
+dieselben ein, zwei Spieler; eine Obergrenze hält mit der zweiten Liga
+nicht zugleich (Plan, Nachbesserung). **Schritt 5, die Neigungen**
+(`server/spiele/manager/neigungen.js`, kader AC-27 bis AC-33): sieben
+Achsen je Spieler aus Kennung und Startwert über einen Hash — **kein Feld,
+keine neue Fassung** —, Wirkungen in `NEIGUNGEN`: Fleiß ±0,5 Stärke je
+Saison, Söldner ±6 % Gehaltswunsch beim Verlängern und ±2 Punkte Abstand
+nach unten, Heimliebe ±3 % Tagesform (Heimquote 47,56 % mit, 47,71 % ohne),
+Nerven ±40 % Streuung der Note; karten, moral, mitspieler angelegt ohne
+Wirkung. `charakter()` nennt die stärkste Abweichung ab 0,5, sonst
+„Ausgeglichen" (52 %, jeder der acht Namen 5 bis 7 %); hinaus geht nur er,
+nur an den eigenen Spielern (kader AC-28, Wächter im Anfrageweg). Die
+Entwicklung ist stetig, zählt den Einsatz auch ab 25 und die Noten ab fünf.
+Gemessen über acht Startwerte: kader AC-26 hält an 5 (vorher 0), AC-24 an
+keinem (vorher 6, jetzt 22,7 bis 23,0), AC-23 an einem wie vorher.
+`docs/manager/dynamik/neigungen.cjs` misst jede Achse in der Welt.
 
 **Stellschrauben des Managerspiels** stehen gesammelt in `WIRKUNG` in
 `server/spiele/manager/spieltag.js`. Wer daran dreht, misst danach: keine
