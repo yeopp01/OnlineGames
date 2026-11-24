@@ -2,7 +2,7 @@
 
 **Bereich:** Manager
 **Kuerzel:** finanzen
-**Stand:** 16/16 fertig
+**Stand:** 19/19 fertig
 
 ## Zweck
 
@@ -69,6 +69,32 @@ Verein im Schnitt der Liga, über die ersten drei Saisons zweier Startwerte:
 
 - **AC-7** `fertig` **Niemand geht grundlos pleite** — Über drei Saisons ohne
   Menschen steht keine Liga im Schnitt im Minus.
+- **AC-17** `fertig` **Höchstens zwei tief im Minus** — Über zwanzig Saisons
+  ohne Menschen stehen in jeder Saison je Liga höchstens zwei Vereine
+  zeitweise unter der Abzugsgrenze von −3 Mio (→ AC-10). Gezählt wird nach
+  jedem Termin, je Verein in der Liga, in der er die Saison begann. Schärfer
+  als AC-7, das drei Saisons und den Schnitt der Liga sieht.
+- **AC-18** `fertig` **Der Median bleibt im Plus** — Über zwanzig Saisons ohne
+  Menschen liegt am Ende jeder Saison der Median der Konten je Liga über
+  null: mehr als die Hälfte der Vereine hat Geld, nicht nur die reichen
+  wenigen.
+- **AC-19** `fertig` **Reichtum hat eine Grenze** — Über zwanzig Saisons ohne
+  Menschen hat am Ende jeder Saison der reichste Verein der ersten Liga
+  weniger als das Vierfache dessen auf dem Konto, was er in dieser Saison
+  eingenommen hat, alle Posten des Finanzblatts ohne Ablösen (→ AC-15).
+  Wer dauerhaft gewinnt, darf reich sein, aber nicht ohne Ende horten. Auf
+  Schritt 2 reißt es an allen vier Startwerten zwischen der zehnten und der
+  sechzehnten Saison; in der zwanzigsten 4,7- bis 8,1-fach (146 bis 339 Mio).
+  Seit Schritt 3 (Marktwert und Startkonto ×2,3) reißt es früher, ab der
+  fünften bis siebten Saison; in der zwanzigsten 4,9- bis 8,3-fach.
+  Gemessen vor Schritt 6: die Reichsten wurden reich, weil sie Spieler für
+  Ablöse verkauften und mit Vereinslosen auffüllten — netto 4 bis 9 Mio
+  Transferertrag je Saison —, nicht über das Stadion. Seit Schritt 6 hält
+  es an acht Startwerten (4711, 20260910, 77, 1234, 5, 99, 31337, 2026),
+  höchstens 2,9- bis 3,7-fach, das größte Konto 98 bis 158 Mio in der
+  zwanzigsten Saison: wer satt ist, verkauft nicht mehr (→
+  [Transfermarkt](transfer.md) AC-30), und wer reich ist, kauft in jedem
+  Fenster (AC-29).
 - **AC-9** `fertig` **Ein Minus wird gemeldet** — Wer ins Minus rutscht,
   erfährt es, samt der Grenze, ab der es Punkte kostet.
 - **AC-10** `fertig` **Tiefes Minus kostet Punkte** — Siehe

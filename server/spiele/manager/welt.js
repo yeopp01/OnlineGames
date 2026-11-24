@@ -208,6 +208,7 @@ function neuerManager(managerId, name, vereinId) {
     vorstand: { ziel: null, vertrauen: vorstand.VERTRAUEN_START },
     sponsorAngebote: [],
     angebote: [],
+    geboten: [],
     nachrichten: [],
     buch: [],
     kasse: null,
@@ -219,7 +220,7 @@ function neuerManager(managerId, name, vereinId) {
 
 // Was in Fassung 3 dem einen Menschen gehoerte und in Fassung 4 im Manager steht.
 const MENSCHENFELDER = ['name', 'vereinId', 'status', 'stellen', 'vorstand', 'sponsorAngebote', 'angebote',
-  'nachrichten', 'buch', 'kasse', 'vorjahr', 'zuletzt', 'entwicklungen'];
+  'nachrichten', 'buch', 'kasse', 'vorjahr', 'zuletzt', 'entwicklungen', 'geboten'];
 
 /**
  * Ein Spielstand der Fassung 2 kannte keine Positionen. Beim Laden bekommt

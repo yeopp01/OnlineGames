@@ -75,7 +75,10 @@ test('kader AC-5: Alter formt Staerke und Talent', () => {
   const alle = welt(4711).flatMap((v) => v.spieler);
   const jung = alle.filter((s) => s.alter <= 21);
   const scheitel = alle.filter((s) => s.alter >= 26 && s.alter <= 28);
-  const alt = alle.filter((s) => s.alter >= 33);
+  // Die Startwelt kennt seit Schritt 4 nur 17 bis 32 (kader.STARTWELT) - alt
+  // sind hier 31 und 32, die Jahre mit Altersabzug.
+  const alt = alle.filter((s) => s.alter >= 31);
+  for (const gruppe of [jung, scheitel, alt]) assert.ok(gruppe.length > 20, `zu wenige: ${gruppe.length}`);
   assert.ok(schnitt(jung, (s) => s.staerke) < schnitt(scheitel, (s) => s.staerke));
   assert.ok(schnitt(alt, (s) => s.staerke) < schnitt(scheitel, (s) => s.staerke));
   for (const spieler of alle) assert.ok(spieler.talent >= spieler.staerke);
@@ -262,11 +265,20 @@ test('spieltag AC-6: Stuermer treffen am haeufigsten, der Torwart nie', () => {
   const vereine = erste(4711);
   const position = new Map(vereine.flatMap((v) => v.spieler.map((s) => [s.id, s.position])));
   const zaehler = { [TOR]: 0, [ABW]: 0, [MIT]: 0, [ANG]: 0 };
-  for (const e of reihe(300, (zufall, i) => spiel(vereine[i % 18], vereine[(i + 5) % 18], zufall))) {
+  const einsaetze = { [TOR]: 0, [ABW]: 0, [MIT]: 0, [ANG]: 0 };
+  for (const e of reihe(300, (zufall, i) => {
+    const [heim, gast] = [vereine[i % 18], vereine[(i + 5) % 18]];
+    for (const v of [heim, gast]) for (const s of elfStellen(v, v.taktik.system)) einsaetze[s.position] += 1;
+    return spiel(heim, gast, zufall);
+  })) {
     for (const x of e.ereignisse) if (x.art === 'tor') zaehler[position.get(x.spielerId)] += 1;
   }
   assert.equal(zaehler[TOR], 0);
-  assert.ok(zaehler[ANG] > zaehler[MIT] && zaehler[MIT] > zaehler[ABW], JSON.stringify(zaehler));
+  // Je Einsatz, nicht in Summe: im 4-4-2 stehen doppelt so viele im Mittelfeld
+  // wie im Sturm, und die Summe kippte schon vor Schritt 4 an manchem
+  // Startwert (1234: Mittelfeld 429, Sturm 390 - je Einsatz 0,17 gegen 0,38).
+  const quote = (p) => zaehler[p] / einsaetze[p];
+  assert.ok(quote(ANG) > quote(MIT) && quote(MIT) > quote(ABW), JSON.stringify({ zaehler, einsaetze }));
 });
 
 test('spieltag AC-22: Tore haben Vorlagen aus der eigenen Mannschaft', () => {

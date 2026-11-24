@@ -13,6 +13,7 @@ const require = createRequire(import.meta.url);
 const { starten } = require('../server/index.js');
 const { Spielstaende, LEERLAUF_MS, IM_SPEICHER } = require('../server/spiele/manager/spielstaende.js');
 const { DatabaseSync } = require('node:sqlite');
+const neigungen = require('../server/spiele/manager/neigungen.js');
 
 const HAFEN = 4281;
 const GEHEIMNIS = 'm'.repeat(48);
@@ -122,6 +123,66 @@ test('karriere AC-18: jeder Zug ueber den Server', async () => {
   assert.equal(fremd.status, 200);
   assert.ok(fremd.daten.verein.spieler.length >= 16 && fremd.daten.verein.spieler.every((s) => s.forderung > 0));
   assert.equal((await zug(id, 'zaubern')).status, 404);
+});
+
+test('kader AC-28: keine Antwort traegt eine Neigung, den Charakter nur der eigene Kader', async () => {
+  const edda = await konto(HAFEN, laufend, { email: 'edda@manager.test', name: 'Edda' });
+  const angelegt = await anlegen({ name: 'Neigungen' }, edda.kekse);
+  const { id } = angelegt.daten;
+  const antworten = [angelegt.daten];
+  // Ein halbes Jahr: Spiele mit Noten, Entwicklung zur Winterpause, ein Fenster mit Markt.
+  antworten.push((await zug(id, 'vorspulen', { bis: 'winterpause' }, edda.kekse)).daten);
+  antworten.push((await zug(id, 'weiter', {}, edda.kekse)).daten);
+  const { zustand } = antworten.at(-1);
+  assert.equal(antworten[1].zustand.termin.art, 'winterpause');
+  const eigene = zustand.verein.spieler;
+  const fremderVerein = (await fragen(`spielstaende/${id}/verein/v1`, { kekse: edda.kekse })).daten;
+  antworten.push(fremderVerein);
+  antworten.push((await fragen(`spielstaende/${id}/markt?anzahl=200`, { kekse: edda.kekse })).daten);
+  antworten.push((await fragen(`spielstaende/${id}/markt?liga=frei&anzahl=200`, { kekse: edda.kekse })).daten);
+  antworten.push((await fragen(`spielstaende/${id}/spieler/${eigene[0].id}`, { kekse: edda.kekse })).daten);
+  antworten.push((await fragen(`spielstaende/${id}/spieler/${fremderVerein.verein.spieler[0].id}`, { kekse: edda.kekse })).daten);
+  antworten.push((await fragen('spielstaende', { kekse: edda.kekse })).daten);
+
+  // Jede Zahl, die aus einer Neigung kommt - roh oder als Faktor -, je Spieler, der irgendwo genannt wird.
+  const ids = new Set();
+  const zahlen = [];
+  const schluessel = new Set();
+  const charaktere = [];
+  const gehen = (wert, weg) => {
+    if (typeof wert === 'number') zahlen.push([wert, weg]);
+    else if (Array.isArray(wert)) wert.forEach((x, i) => gehen(x, `${weg}[${i}]`));
+    else if (wert && typeof wert === 'object') {
+      if (typeof wert.id === 'string') ids.add(wert.id);
+      if ('charakter' in wert) charaktere.push([wert.id, weg]);
+      for (const [k, x] of Object.entries(wert)) {
+        schluessel.add(k);
+        gehen(x, `${weg}.${k}`);
+      }
+    }
+  };
+  antworten.forEach((a, i) => gehen(a, `antwort${i}`));
+  const startwert = 4711;
+  const verboten = [];
+  for (const sid of ids) {
+    for (const achse of neigungen.ACHSEN) verboten.push(neigungen.neigung(startwert, sid, achse));
+    verboten.push(neigungen.fleiss(startwert, sid), neigungen.gehaltsfaktor(startwert, sid), neigungen.abstandMehr(startwert, sid),
+      neigungen.heimform(startwert, sid, true), neigungen.heimform(startwert, sid, false), neigungen.notenstreuung(startwert, sid));
+  }
+  // Auf zwoelf Stellen verglichen: eine Neigung hat ihre Stellen aus dem Hash, eine gerundete Zahl des Spiels nicht.
+  const stellen = (x) => x.toFixed(12);
+  const verbotenSatz = new Set(verboten.filter((v) => !Number.isInteger(v)).map(stellen));
+  const gefunden = zahlen.filter(([x]) => !Number.isInteger(x) && verbotenSatz.has(stellen(x)));
+  assert.deepEqual(gefunden, [], 'eine Neigung ging hinaus');
+  assert.ok(ids.size > 250, `nur ${ids.size} Kennungen gesehen`);
+  for (const name of ['neigung', 'neigungen', ...neigungen.ACHSEN.filter((a) => !['heim', 'moral', 'wechsel'].includes(a))]) {
+    assert.ok(!schluessel.has(name), `Feld ${name} in einer Antwort`);
+  }
+  // Der Charakter steht nur am eigenen Kader - nicht am Markt, nicht in der Akte, nicht beim Gegner.
+  const eigen = new Set(eigene.map((s) => s.id));
+  assert.ok(charaktere.length >= eigene.length);
+  for (const [sid, weg] of charaktere) assert.ok(eigen.has(sid) && weg.includes('.zustand.verein.spieler['), `Charakter an ${weg}`);
+  for (const s of eigene) assert.ok([...neigungen.NAMEN.map(([, , n]) => n), neigungen.AUSGEGLICHEN].includes(s.charakter), s.charakter);
 });
 
 test('karriere AC-15: ein Konto sieht seine Spielstaende', async () => {

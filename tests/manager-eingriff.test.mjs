@@ -20,10 +20,13 @@ const aufstellung = (v) => {
   const elf = kader.elfStellen(v, v.taktik.system);
   return { elf, bank: kader.bankStellen(v, elf), system: v.taktik.system };
 };
-const JE_LAGE = 1500;
+// 4000 statt 1500: die Wirkung bei Rueckstand und starker Moral ist rund
+// +0,018 Punkte (6000 je Lage, vor und nach Schritt 4 gleich), mit 1500
+// streute sie seit der neuen Startwelt (Schritt 4) auf +0,003.
+const JE_LAGE = 4000;
 const LAGEN = { '-1': 'Rückstand', 0: 'Gleichstand', 1: 'Führung' };
 
-/** Je Halbzeitstand 1500 Spiele, in denen die Heimelf diese Moral hat - als Sicherung zur Pause. */
+/** Je Halbzeitstand JE_LAGE Spiele, in denen die Heimelf diese Moral hat - als Sicherung zur Pause. */
 function halbzeiten(moral) {
   const lagen = { '-1': [], 0: [], 1: [] };
   for (let i = 0; Object.values(lagen).some((l) => l.length < JE_LAGE); i++) {
@@ -63,9 +66,9 @@ test('spieltag AC-30: die Kabine wirkt je Lage verschieden, keine Ansprache ist 
   const beste = Object.values(messung).map((z) => ANSPRACHEN.reduce((a, b) => (z[b] > z[a] ? b : a)));
   const bericht = JSON.stringify(messung, (k, v) => (typeof v === 'number' ? Number(v.toFixed(3)) : v), 1);
   assert.ok(new Set(beste).size >= 2, `immer dieselbe: ${bericht}`);
-  // Gemessen (2026-11-22, je Lage 1500): bei Rueckstand laut +0,02, bei
-  // Fuehrung mit starker Moral -0,03; aufbauen bei schwacher Moral +0,02 bis
-  // +0,04, bei starker genau nichts.
+  // Gemessen (2026-11-22, je Lage 4000, Schritt 4): bei Rueckstand laut +0,014
+  // und +0,027, bei Fuehrung zusammen -0,033; aufbauen bei schwacher Moral
+  // +0,02 bis +0,04, bei starker genau nichts.
   for (const moral of [30, 85]) {
     const rueck = messung[`Moral ${moral}, Rückstand`];
     assert.ok(rueck.laut - rueck.ohne >= 0.01, `laut hebt bei Rückstand: ${bericht}`);
@@ -247,11 +250,16 @@ function mehrJeSaison(art, startwerte) {
 test('spieltag AC-33: wer eingreift, holt mehr als die Automatik, aber hoechstens fuenf Punkte je Saison', () => {
   // Gemessen (2026-11-22, je 40 Saisons): mild +0,9 (± 0,4), hart +2,8
   // (± 0,6); die Ansprache allein +0,8, das Umstellen allein +1,0.
-  const startwerte = Array.from({ length: 20 }, (_, i) => i + 1);
+  // Ueber die Startwerte 1 bis 20 stand mild schon vor Schritt 3 der
+  // Spieldynamik (Marktwert x2,3) bei +0,5 (± 0,6), danach bei -0,4 -
+  // zwanzig Saisons tragen "mehr als null" nicht. Ueber 1 bis 40 mild +2,0 (± 0,5),
+  // hart +2,2 (± 0,6). "Hart mehr als mild" steht nicht im Kriterium und
+  // haelt auch ueber 60 Saisons nur mit 1,1 (± 0,7) - deshalb nicht geprueft.
+  const startwerte = Array.from({ length: 40 }, (_, i) => i + 1);
   const mild = mehrJeSaison('mild', startwerte);
   const hart = mehrJeSaison('hart', startwerte);
   assert.ok(mild > 0, `mild ${mild.toFixed(2)}`);
-  assert.ok(hart > mild, `hart ${hart.toFixed(2)}, mild ${mild.toFixed(2)}`);
+  assert.ok(hart > 0, `hart ${hart.toFixed(2)}`);
   assert.ok(hart <= 5, `hart ${hart.toFixed(2)} - dann waere "Sofort" eine Strafe`);
 });
 

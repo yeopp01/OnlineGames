@@ -140,10 +140,17 @@ class Ablauf {
       const eigener = this.vereinVon(m.vereinId);
       const offen = fensterOffen(TERMINE[this.termin]);
       m.angebote = offen ? m.angebote.filter((a) => a.gueltigBis >= this.termin) : [];
+      // Ein Verein bietet je Fenster hoechstens einmal auf denselben Spieler
+      // (transfer AC-31); mit dem Fenster ist es vergessen. Ein Spielstand
+      // von vorher kennt das Feld nicht.
+      m.geboten = offen ? m.geboten || [] : [];
       if (offen) {
-        for (const angebot of transfer.kiAngebote(this, eigener, zufall(ZWECK.angebote))) {
+        // Wessen Angebot noch gilt, bietet nicht neu (transfer AC-31).
+        const wartet = new Set(m.angebote.map((a) => a.vereinId));
+        for (const angebot of transfer.kiAngebote(this, eigener, zufall(ZWECK.angebote), wartet, new Set(m.geboten))) {
           m.angebote = m.angebote.filter((a) => a.vereinId !== angebot.vereinId);
           m.angebote.push(angebot);
+          m.geboten.push(`${angebot.vereinId}:${angebot.spielerId}`);
           this.melden(m, 'transfer', `${angebot.verein} bietet ${geld(angebot.gebot)} für ${angebot.spieler} `
             + `(Marktwert ${geld(angebot.wert)}).`);
         }
@@ -218,7 +225,7 @@ class Ablauf {
       for (const s of verein.spieler) s.kondition = Math.min(100, s.kondition + 15);
       // Ein erster Teil der Entwicklung - Auf- und Abwertungen warten nicht
       // bis zum Sommer.
-      const eintraege = kader.entwickeln(verein, zufall, this.pflichtspiele(verein), { anteil: 0.4, altern: false });
+      const eintraege = kader.entwickeln(verein, zufall, this.pflichtspiele(verein), { anteil: 0.4, altern: false, startwert: this.startwert });
       const manager = this.managerVon(verein.id);
       if (manager) this.entwicklungMerken(manager, 'Winterpause', 'Entwicklung in der Hinrunde', eintraege);
     }
@@ -307,12 +314,12 @@ class Ablauf {
     const seite = manager && (manager.vereinId === heim.id ? 'heim' : manager.vereinId === gast.id ? 'gast' : null);
     if (seite) {
       const szenen = quelle(this.startwert, this.saison, this.termin, ZWECK.szenen);
-      const spiel = anpfiff(heim, gast, { a: zufall.stand.a }, { aufstellungen, ...optionen, umstellen, szenen });
+      const spiel = anpfiff(heim, gast, { a: zufall.stand.a }, { aufstellungen, ...optionen, umstellen, szenen, startwert: this.startwert });
       kontext.live = { managerId: manager.managerId, stelle: kontext.spiele.length, seite, spiel };
     }
     // Auch fuer das live gespielte Spiel einmal mit Automatik: das schiebt
     // die Quelle so weit, wie es heute jedes Spiel tut.
-    const ergebnis = begegnung(heim, gast, zufall, { aufstellungen, ...optionen, umstellen });
+    const ergebnis = begegnung(heim, gast, zufall, { aufstellungen, ...optionen, umstellen, startwert: this.startwert });
     kontext.spiele.push({ ...eintrag, ergebnis: seite ? null : ergebnis });
   }
 
@@ -650,12 +657,12 @@ class Ablauf {
     // der sie gespielt wurde, nicht der, in die der Verein jetzt wechselt.
     const ligaDerSaison = new Map([1, 2].flatMap((nummer) => endstand[nummer].map((z) => [z.id, nummer])));
     for (const verein of this.vereine) {
-      const eintraege = kader.entwickeln(verein, zufall, this.pflichtspiele(verein), { anteil: 0.6 });
+      const eintraege = kader.entwickeln(verein, zufall, this.pflichtspiele(verein), { anteil: 0.6, startwert: this.startwert });
       for (const e of eintraege) this.saisonFesthalten(e.spieler, verein, ligaDerSaison.get(verein.id), e.alter);
       const manager = this.managerVon(verein.id);
       if (manager) this.entwicklungMerken(manager, 'Saisonende', 'Entwicklung über die Saison', eintraege);
     }
-    kader.entwickeln({ spieler: this.freie, technikSumme: 0, trainingswochen: 0 }, zufall, 0);
+    kader.entwickeln({ spieler: this.freie, technikSumme: 0, trainingswochen: 0 }, zufall, 0, { startwert: this.startwert });
     // Wer in der Saison gespielt hat und jetzt ohne Verein ist, bekommt die Saison beim Verein, von dem er kam.
     for (const spieler of this.freie) {
       if (!spieler.saison.spiele) continue;
@@ -686,7 +693,8 @@ class Ablauf {
       }
     }
     // Unter den Vereinslosen hoert auf, wer es angekuendigt hat, wer zu alt ist und wer nicht mehr mag.
-    this.freie = this.freie.filter((s) => s.karriereende !== saison && !kader.hoertAuf(s, zufall) && s.alter <= 34);
+    // Zu alt ist seit Schritt 4 ueber 35 statt ueber 34 - mit 36 hoert ohnehin jeder auf (kader AC-17).
+    this.freie = this.freie.filter((s) => s.karriereende !== saison && !kader.hoertAuf(s, zufall) && s.alter <= 35);
 
     this.saison = saison + 1;
     this.termin = 0;

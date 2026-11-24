@@ -68,7 +68,7 @@ function zinsen(verein) {
  * Ruf und die erste Liga bringen mehr Geld.
  */
 function sponsorAngebote(verein, zufall, saison) {
-  const basis = verein.liga === 1 ? 75 + verein.reputation * 1.9 : 50 + verein.reputation * 1.3;
+  const basis = sponsorBasis(verein);
   const arten = [
     { art: 'sicher', jeSpiel: 1.15, jeSieg: 0.4 },
     { art: 'ausgewogen', jeSpiel: 1.0, jeSieg: 1.0 },
@@ -81,6 +81,11 @@ function sponsorAngebote(verein, zufall, saison) {
     jeSpiel: Math.round(basis * a.jeSpiel * (0.95 + zufall() * 0.1)),
     jeSieg: Math.round(basis * 0.5 * a.jeSieg),
   }));
+}
+
+/** Was ein Sponsor je Ligaspiel zahlt, bevor er sich fuer eine Art entscheidet. */
+function sponsorBasis(verein) {
+  return verein.liga === 1 ? 75 + verein.reputation * 1.9 : 50 + verein.reputation * 1.3;
 }
 
 /** Fernsehgeld fuer ein Ligaspiel, nach Liga und Rang der Vorsaison. */
@@ -114,6 +119,24 @@ function eintrittPruefen(preis) {
   return Math.min(PREIS_MAX, Math.max(PREIS_MIN, Math.round(preis)));
 }
 
+/**
+ * Was ein Verein in einer Saison ungefaehr einnimmt - die Grundlage, an der
+ * die anderen Vereine ihre Gehaelter ausrichten (transfer.gehaltsgrenze):
+ * 17 Heimspiele bei mittlerer Stimmung zum jetzigen Eintritt, 34-mal
+ * Fernsehgeld, der ausgewogene Sponsor mit 13 Siegen, die Praemie fuer Platz
+ * 9. Ohne Pokal und Transfers - gemessen liegt die Schaetzung 4 bis 10 % unter
+ * dem, was tatsaechlich hereinkommt.
+ *
+ * @param {Verein} verein
+ */
+function erwarteteEinnahmen(verein) {
+  const zuschauer = (17 * verein.stadion.plaetze * auslastung(verein) * verein.eintritt) / 1000;
+  const fernsehen = 34 * fernsehgeld(verein);
+  const basis = sponsorBasis(verein);
+  const sponsor = 34 * basis + 13 * basis * 0.5;
+  return Math.round(zuschauer + fernsehen + sponsor + saisonpraemie(verein.liga, 9));
+}
+
 /** Praemie am Saisonende nach Liga und Platz, der Meister bekommt einen Zuschlag. */
 function saisonpraemie(liga, platz, anzahl = 18) {
   return Math.round(SAISONPRAEMIE[liga] * ((anzahl + 1 - platz) / anzahl)) + (platz === 1 ? MEISTERPRAEMIE[liga] : 0);
@@ -123,5 +146,5 @@ module.exports = {
   FERNSEHGELD, REFERENZPREIS, PREIS_MIN, PREIS_MAX, ZINS_JE_TERMIN, PUNKTABZUG_GRENZE, PUNKTABZUG,
   PLAETZE_MAX, AUSBAU, SAISONPRAEMIE, MEISTERPRAEMIE,
   auslastung, heimspiel, gehaelter, zinsen, sponsorAngebote, fernsehgeld, ausbauPruefen, ausbauWeiter,
-  eintrittPruefen, saisonpraemie,
+  eintrittPruefen, saisonpraemie, sponsorBasis, erwarteteEinnahmen,
 };

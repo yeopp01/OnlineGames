@@ -24,6 +24,7 @@ const {
   TOR, ABW, MIT, ANG, PLAETZE, TEIL, tagesform, niveau, einsatzbereit, eignung, plaetzeBesetzen,
 } = require('./kader');
 const { ziehen } = require('./zufall');
+const neigungen = require('./neigungen');
 const { kleiden, szenenAnlegen } = require('./szenen');
 
 /** @typedef {import('./daten').Verein} Verein */
@@ -46,6 +47,8 @@ const { kleiden, szenenAnlegen } = require('./szenen');
  *   jede Chance eine Szene (spieltag AC-27). Nur fuer das Spiel, das jemand sieht - die Welt rechnet ohne.
  * @property {{heim?: boolean, gast?: boolean}} [umstellen]  diese Seite fuehrt der Server: sie stellt
  *   ab Minute 60 nach dem Spielstand um (spieltag AC-31)
+ * @property {number|null} [startwert]  der Karriere: dann wirken die Neigungen `heim` und `nerven`
+ *   (kader AC-31, AC-33); ohne ihn spielt jeder ohne Neigung
  */
 
 const SCHEIBE = 5;
@@ -146,9 +149,26 @@ function aufDemPlatz(spieler, platz) {
  * @returns {Platzspieler}
  */
 function knapp(s, position = s.position, platz = undefined, staerke = s.staerke) {
-  return {
+  /** @type {Platzspieler} */
+  const p = {
     id: s.id, name: s.name, position, platz, rolle: s.rolle, nebenrolle: s.nebenrolle, staerke, moral: s.moral, kondition: s.kondition,
   };
+  // Die Form aus der Neigung `heim` reist mit, wenn er eingewechselt wird.
+  if (s.form !== undefined) p.form = s.form;
+  return p;
+}
+
+/**
+ * Setzt die Form aus der Neigung `heim` an einen Platzspieler - nur, wenn sie
+ * etwas aendert; sonst traegt der Spielstand das Feld nicht.
+ * @param {Platzspieler} p
+ * @param {{startwert: number|null, daheim: boolean|null}} [neigung]
+ */
+function formSetzen(p, neigung) {
+  if (!neigung) return p;
+  const form = neigungen.heimform(neigung.startwert, p.id, neigung.daheim);
+  if (form !== 1) p.form = form;
+  return p;
 }
 
 /**
@@ -160,10 +180,11 @@ function knapp(s, position = s.position, platz = undefined, staerke = s.staerke)
  * @param {Verein} verein
  * @param {{elf: Spieler[], bank: Spieler[], system?: string, taktik?: Partial<Taktik>, wechselregel?: string}} aufstellung
  * @param {boolean} [fuerNoten]
+ * @param {{startwert: number|null, daheim: boolean|null}} [neigung]  fuer `heim` und `nerven`; `daheim` null im neutralen Spiel
  */
 function seiteAnlegen(verein, {
   elf, bank, system, taktik, wechselregel,
-}, fuerNoten = false) {
+}, fuerNoten = false, neigung = undefined) {
   const geprueft = taktikPruefen(taktik);
   // Die Plaetze kommen aus dem System der Aufstellung; ohne eines aus der Taktik.
   const plaetze = PLAETZE[system] || PLAETZE[geprueft.system] || PLAETZE['4-4-2'];
@@ -171,13 +192,13 @@ function seiteAnlegen(verein, {
   const frische = {};
   const minuten = {};
   for (let i = 0; i < elf.length; i++) {
-    auf.push(aufDemPlatz(elf[i], plaetze[i]));
+    auf.push(formSetzen(aufDemPlatz(elf[i], plaetze[i]), neigung));
     frische[elf[i].id] = elf[i].kondition;
     minuten[elf[i].id] = { von: 0, bis: null };
   }
   const knappeBank = [];
   for (const s of bank) {
-    knappeBank.push(knapp(s));
+    knappeBank.push(formSetzen(knapp(s), neigung));
     frische[s.id] = s.kondition;
   }
   /** @type {Seite} */
@@ -213,6 +234,13 @@ function seiteAnlegen(verein, {
     // Wer nicht (mehr) im Kader steht, wird mit den Werten der Aufstellung benotet.
     for (const s of elf) if (!(s.id in seite.spieler)) seite.spieler[s.id] = { position: s.position, staerke: s.staerke };
     for (const s of bank) if (!(s.id in seite.spieler)) seite.spieler[s.id] = { position: s.position, staerke: s.staerke };
+    // Die Nerven streuen die Note - nur wer davon abweicht, traegt das Feld.
+    if (neigung) {
+      for (const [id, werte] of Object.entries(seite.spieler)) {
+        const nerven = neigungen.notenstreuung(neigung.startwert, id);
+        if (nerven !== 1) werte.nerven = nerven;
+      }
+    }
   }
   return seite;
 }
@@ -486,7 +514,7 @@ function notenGeben(seiten, ergebnis, zufall) {
         if (e.art === 'gelb' && e.spielerId === id) note += 0.2;
         if ((e.art === 'rot' || e.art === 'gelbrot') && e.spielerId === id) note += 1.5;
       }
-      note += (zufall() - 0.5) * 1.2;
+      note += (zufall() - 0.5) * 1.2 * (seite.spieler[id]?.nerven ?? 1);
       noten[id] = Math.round(Math.min(6, Math.max(1, note)) * 2) / 2;
     }
   });
@@ -515,8 +543,10 @@ function notenGeben(seiten, ergebnis, zufall) {
  */
 function anpfiff(heim, gast, zufall, einstellungen) {
   const {
-    aufstellungen, taktiken = {}, wechselregeln = {}, neutral = false, entscheidung = false, szenen, umstellen = {},
+    aufstellungen, taktiken = {}, wechselregeln = {}, neutral = false, entscheidung = false, szenen, umstellen = {}, startwert = null,
   } = einstellungen;
+  // Ohne Startwert keine Neigung - die Vorschau und Tests ohne Karriere rechnen wie vorher.
+  const neigung = (daheim) => (startwert === null ? undefined : { startwert, daheim: neutral ? null : daheim });
   const stand = typeof zufall === 'function' ? zufall.stand : zufall;
   if (!stand || !Number.isInteger(stand.a)) throw new Error('anpfiff() braucht eine Quelle aus zufallAus() oder ihren Stand.');
   /** @type {Spiel} */
@@ -527,8 +557,8 @@ function anpfiff(heim, gast, zufall, einstellungen) {
     neutral,
     entscheidung,
     seiten: [
-      seiteAnlegen(heim, { ...aufstellungen.heim, taktik: taktiken.heim || heim.taktik, wechselregel: wechselregeln.heim || heim.wechselregel }, true),
-      seiteAnlegen(gast, { ...aufstellungen.gast, taktik: taktiken.gast || gast.taktik, wechselregel: wechselregeln.gast || gast.wechselregel }, true),
+      seiteAnlegen(heim, { ...aufstellungen.heim, taktik: taktiken.heim || heim.taktik, wechselregel: wechselregeln.heim || heim.wechselregel }, true, neigung(true)),
+      seiteAnlegen(gast, { ...aufstellungen.gast, taktik: taktiken.gast || gast.taktik, wechselregel: wechselregeln.gast || gast.wechselregel }, true, neigung(false)),
     ],
     aufstellung: {
       heim: { elf: aufstellungen.heim.elf.map((s) => s.id), bank: aufstellungen.heim.bank.map((s) => s.id) },
