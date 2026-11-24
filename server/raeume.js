@@ -16,6 +16,7 @@ const ZEICHEN = 'BCDFGHJKLMNPQRSTVWXZ23456789';
 // der nichts kostet, gehoert vorgelegt.
 const CODE_LAENGE = 6;
 const LEERLAUF_MS = 30 * 60 * 1000;
+const FESTE_EINSTELLUNGEN = 'Die Einstellungen stehen fest – die Partie wird fortgesetzt.';
 // Anhalten (speichern AC-20): sitzen mehrere Menschen in der Partie, ist es
 // begrenzt - zweimal je Spieler und Partie, hoechstens fuenf Minuten am Stueck.
 const PAUSE_MS = 5 * 60 * 1000;
@@ -27,7 +28,7 @@ const SICHERN_MS = 60 * 1000;
 // Partie und ist zwei Minuten fort, wird gesichert und der Raum geschlossen -
 // er setzt aus der Liste fort, nicht mit dem alten Code (AC-9). Zu mehreren
 // bleibt es bei der halben Stunde (raeume AC-17): dort wartet die Partie auf
-// die anderen, und gemeinsam fortsetzen kommt erst mit S4.
+// die anderen - gemeinsam aufgehoert wird nur, wenn alle zustimmen (AC-22).
 const WEG_MS = 2 * 60 * 1000;
 
 function codeErzeugen() {
@@ -93,6 +94,10 @@ function namePruefen(name) {
   return sauber || 'Namenlos';
 }
 
+// Derselbe Name, wie ihn jemand wieder eintippt: Leerzeichen und Gross-
+// und Kleinschreibung zaehlen nicht (speichern AC-24).
+const gleicherName = (a, b) => namePruefen(a).toLowerCase() === namePruefen(b).toLowerCase();
+
 class Raum {
   constructor(code, spiel = null) {
     this.code = code;
@@ -139,6 +144,20 @@ class Raum {
     /** @type {string | null} */
     this.ohneStandGrund = null;
     this.ohneStandGesagt = false;
+    // Fortsetzen zu mehreren (speichern AC-24): bis zum Start wartet der
+    // geladene Stand hier, und der Warteraum zeigt die Plaetze von damals.
+    /** @type {null | { welt: any, standId: string, plaetze: Array<{ platz: string, name: string, konto: string | null }>, stillgelegt: string | null }} */
+    this.fortsetzung = null;
+    // Stillgelegte Plaetze (AC-25): sie gehoeren zur Partie, aber niemand
+    // sitzt dort - ihre Einheiten stehen. Sie kommen mit in den naechsten Stand.
+    /** @type {Array<{ id: string, name: string, konto: string | null }>} */
+    this.abwesend = [];
+    // Wer aufhoeren will und wer schon zugestimmt hat (AC-22).
+    /** @type {null | { von: string, name: string, ja: Set<string> }} */
+    this.aufhoerWunsch = null;
+    // Gemeinsam aufgehoert und gesichert - den Raum schliesst, wer ihn haelt.
+    this.aufgehoert = false;
+    this.geschlossen = false;
   }
 
   // Was je Platz gewaehlt wird, aus dem Steckbrief (`jePlatz`). Leer: nichts.
@@ -146,12 +165,21 @@ class Raum {
     return (this.spiel && this.spiel.jePlatz) || [];
   }
 
-  // Alle Plaetze, die Menschen zuerst, dann die des Spiels.
+  // Alle Plaetze, die Menschen zuerst, dann die des Spiels. Wird eine Partie
+  // fortgesetzt, sind es die Plaetze von damals, auch die noch leeren (AC-24).
   get plaetze() {
     const besetzt = vomSpielBesetzt(this.spiel, this.einstellungen);
     const name = (nummer) => (this.spiel && typeof this.spiel.platzname === 'function' ? this.spiel.platzname(nummer) : `Platz ${nummer}`);
+    const f = this.fortsetzung;
+    const menschen = f
+      ? f.plaetze.map((p) => ({
+        platz: p.platz, name: p.name, mensch: true,
+        ...(this.spieler.some((s) => s.id === p.platz) ? {} : { fehlt: true }),
+        ...(f.stillgelegt === p.platz ? { stillgelegt: true } : {}),
+      }))
+      : this.spieler.map((s) => ({ platz: s.id, name: s.name, mensch: true }));
     return [
-      ...this.spieler.map((s) => ({ platz: s.id, name: s.name, mensch: true })),
+      ...menschen,
       ...Array.from({ length: besetzt }, (_, i) => ({ platz: spielplatz(i + 1), name: name(i + 1), mensch: false })),
     ];
   }
@@ -165,6 +193,7 @@ class Raum {
   // auch fuer die des Spiels. Bis zum Start, wie die Einstellungen (AC-10).
   waehlen(wer, platz, aenderung) {
     if (this.gestartet) return { fehler: 'Die Partie läuft schon.' };
+    if (this.fortsetzung) return { fehler: FESTE_EINSTELLUNGEN };
     if (!this.platzliste.length) return { fehler: 'In diesem Spiel gibt es je Platz nichts zu wählen.' };
     if (!this.plaetze.some((p) => p.platz === platz)) return { fehler: 'Diesen Platz gibt es nicht.' };
     if (wer !== this.gastgeber && wer.id !== platz) return { fehler: 'Für andere Plätze wählt nur der Gastgeber.' };
@@ -187,6 +216,7 @@ class Raum {
   einstellen(wer, aenderung) {
     if (this.gestartet) return { fehler: 'Die Partie läuft schon.' };
     if (wer !== this.gastgeber) return { fehler: 'Nur der Gastgeber ändert die Einstellungen.' };
+    if (this.fortsetzung) return { fehler: FESTE_EINSTELLUNGEN };
     if (!aenderung || typeof aenderung !== 'object' || Array.isArray(aenderung)) {
       return { fehler: 'Die Einstellungen sind unverständlich.' };
     }
@@ -209,12 +239,17 @@ class Raum {
     return this.welt !== null;
   }
 
-  beitreten(name, draht) {
+  // `konto`: wer angemeldet beitritt - es kommt mit in den Stand, damit er
+  // seinen Platz zurueckbekommt und eingeladen wird (speichern AC-23, AC-26).
+  /** @param {unknown} name @param {any} draht @param {string | null} [konto] */
+  beitreten(name, draht, konto = null) {
     if (this.gestartet) return { fehler: 'Die Partie läuft schon.' };
+    if (this.fortsetzung) return this.platzZurueck(name, draht, konto);
     if (this.spieler.length >= this.hoechstens) return { fehler: 'Der Raum ist voll.' };
     const spieler = {
       id: randomUUID().slice(0, 8),
       name: namePruefen(name),
+      konto: konto || null,
       token: randomUUID(),
       draht,
       verbunden: true,
@@ -227,13 +262,96 @@ class Raum {
   // Wer eine gesicherte Partie fortsetzt, sitzt auf seinem alten Platz
   // (speichern AC-9): die Id steht im Stand, das Spiel kennt ihn darunter.
   // Ein neues Token - das alte gehoerte zum alten Raum.
-  /** @param {string} id @param {string} name */
-  aufnehmen(id, name, draht) {
+  /** @param {string} id @param {string} name @param {any} draht @param {string | null} [konto] */
+  aufnehmen(id, name, draht, konto = null) {
     if (this.gestartet) return { fehler: 'Die Partie läuft schon.' };
-    const spieler = { id, name: namePruefen(name), token: randomUUID(), draht, verbunden: true };
+    const spieler = { id, name: namePruefen(name), konto: konto || null, token: randomUUID(), draht, verbunden: true };
     this.spieler.push(spieler);
     this.beruehrt = Date.now();
     return { spieler };
+  }
+
+  // ---- Fortsetzen zu mehreren (speichern AC-23 bis AC-25) -------------------
+  // Der Raum wartet auf die Plaetze von damals. Wer mit dem Konto von damals
+  // kommt, bekommt seinen Platz; sonst zaehlt der Name - aber wer angemeldet
+  // ist, nimmt ueber den Namen keinen Platz, der einem Konto gehoerte. Wem der
+  // Stand gehoert, sitzt wieder vorn: er ist der Gastgeber.
+
+  /**
+   * @param {any} welt   was `laden` im Steckbrief lieferte
+   * @param {string} standId
+   * @param {Array<{ platz: string, name: string, konto: string | null }>} plaetze
+   */
+  fortsetzungVorbereiten(welt, standId, plaetze) {
+    this.fortsetzung = { welt, standId, plaetze, stillgelegt: null };
+    this.beruehrt = Date.now();
+  }
+
+  /** Die Plaetze von damals, an denen noch niemand sitzt. */
+  get fehlendePlaetze() {
+    if (!this.fortsetzung) return [];
+    return this.fortsetzung.plaetze.filter((p) => !this.spieler.some((s) => s.id === p.platz));
+  }
+
+  /** Sitzt der, dem der Stand gehoert, am Platz des Gastgebers? @param {any} wer */
+  istBesitzer(wer) {
+    return Boolean(wer && wer === this.gastgeber && this.eigentuemer && wer.konto === this.eigentuemer);
+  }
+
+  /** @param {unknown} name @param {any} draht @param {string | null} konto */
+  platzZurueck(name, draht, konto) {
+    const f = /** @type {NonNullable<Raum['fortsetzung']>} */ (this.fortsetzung);
+    const frei = this.fehlendePlaetze;
+    if (!frei.length) return { fehler: 'Der Raum ist voll.' };
+    const platz = (konto && frei.find((p) => p.konto === konto))
+      || frei.find((p) => gleicherName(p.name, name) && (!p.konto || !konto));
+    if (!platz) {
+      return {
+        fehler: `Diese Partie wird fortgesetzt – mitspielen kann nur, wer damals dabei war. Es fehlen noch: ${frei.map((p) => p.name).join(', ')}. Tritt mit deinem Namen oder Konto von damals bei.`,
+      };
+    }
+    const spieler = { id: platz.platz, name: platz.name, konto: konto || platz.konto || null, token: randomUUID(), draht, verbunden: true };
+    if (platz.konto && platz.konto === this.eigentuemer) this.spieler.unshift(spieler);
+    else this.spieler.push(spieler);
+    // Wer doch noch kommt, ist nicht mehr stillgelegt (AC-25).
+    if (f.stillgelegt === platz.platz) f.stillgelegt = null;
+    this.beruehrt = Date.now();
+    return { spieler };
+  }
+
+  // Sind alle bis auf einen da, legt der Gastgeber dessen Platz still (AC-25):
+  // die Partie laeuft ohne ihn, seine Einheiten stehen. `null` hebt es auf.
+  /** @param {any} wer @param {unknown} platz */
+  stilllegen(wer, platz) {
+    if (!this.fortsetzung || this.gestartet) return { fehler: 'Stilllegen geht nur, solange eine fortgesetzte Partie auf ihre Spieler wartet.' };
+    if (!this.istBesitzer(wer)) return { fehler: 'Nur der Gastgeber legt einen Platz still.' };
+    if (platz === null) {
+      this.fortsetzung.stillgelegt = null;
+      return {};
+    }
+    const fehlen = this.fehlendePlaetze;
+    if (!fehlen.some((p) => p.platz === platz)) return { fehler: 'An diesem Platz sitzt schon jemand.' };
+    if (fehlen.length > 1) return { fehler: 'Stilllegen geht erst, wenn alle bis auf einen da sind.' };
+    this.fortsetzung.stillgelegt = /** @type {string} */ (platz);
+    this.beruehrt = Date.now();
+    return {};
+  }
+
+  // Gestartet wird, wenn jeder Platz besetzt oder stillgelegt ist - und nur
+  // von dem, dem der Stand gehoert (AC-23, AC-14).
+  fortsetzungStarten() {
+    const f = /** @type {NonNullable<Raum['fortsetzung']>} */ (this.fortsetzung);
+    const gastgeber = this.gastgeber;
+    if (!this.istBesitzer(gastgeber)) return { fehler: 'Fortsetzen darf nur, wem der Spielstand gehört.' };
+    const fehlen = this.fehlendePlaetze.filter((p) => p.platz !== f.stillgelegt);
+    if (fehlen.length) {
+      return {
+        fehler: `Es fehlen noch: ${fehlen.map((p) => p.name).join(', ')}. Fehlt nur noch einer, kannst du seinen Platz stilllegen.`,
+      };
+    }
+    this.abwesend = f.plaetze.filter((p) => p.platz === f.stillgelegt).map((p) => ({ id: p.platz, name: p.name, konto: p.konto }));
+    this.fortsetzung = null;
+    return this.fortsetzenMit(f.welt, f.standId, gastgeber);
   }
 
   // Nach einem Absturz kommt derselbe Spieler mit seinem Token zurueck und
@@ -255,15 +373,19 @@ class Raum {
     spieler.verbunden = false;
     spieler.draht = null;
     // Vor dem Start gibt es nichts zu bewahren - der Platz wird sofort frei,
-    // samt seiner Wahl.
+    // samt seiner Wahl. Wartet eine fortgesetzte Partie, bleibt die Wahl:
+    // sie gehoert zum Stand, und der Platz wartet auf ihn (AC-24).
     if (!this.gestartet) {
       this.spieler = this.spieler.filter((s) => s !== spieler);
-      delete this.platzwahl[spieler.id];
+      if (!this.fortsetzung) delete this.platzwahl[spieler.id];
     }
     this.beruehrt = Date.now();
+    // Wer geht, stimmt nicht mehr mit ab (AC-22): vielleicht sind jetzt alle
+    // Verbliebenen einverstanden.
+    if (this.aufhoerWunsch) this.aufhoerenPruefen();
     // Geht der letzte Mensch, steht gleich die Uhr: der Stand von jetzt, nicht
     // der von bis zu einer Minute vorher (speichern AC-4).
-    if (this.leer) this.sichern();
+    if (this.leer && !this.aufgehoert) this.sichern();
   }
 
   get leer() {
@@ -283,6 +405,9 @@ class Raum {
   // der Raum fragt bloss.
   starten(startwert) {
     if (this.gestartet && !this.welt.vorbei) return { fehler: 'Die Partie läuft schon.' };
+    // Eine gesicherte Partie zu mehreren: nicht neu erzeugt, sondern die von
+    // damals, sobald alle Plaetze besetzt sind (speichern AC-24).
+    if (this.fortsetzung) return this.fortsetzungStarten();
     // Wer die Verbindung verloren hat, spielt die Revanche nicht mit: sein
     // Platz waere ein Gegner, der nichts tut. Waehrend einer laufenden Partie
     // bleibt er stehen (damit er mit seinem Token zurueckkehren kann) - hier
@@ -321,6 +446,8 @@ class Raum {
     this.pausen = {};
     // Eine neue Partie hat noch keinen Stand - auch die Revanche nicht.
     this.standId = null;
+    this.abwesend = [];
+    this.aufhoerWunsch = null;
     this.ohneStand = false;
     this.ohneStandGrund = null;
     this.ohneStandGesagt = false;
@@ -352,6 +479,7 @@ class Raum {
     this.beginn = Date.now();
     this.gerechnet = 0;
     this.pausen = {};
+    this.aufhoerWunsch = null;
     // Allein gegen den Computer: ohne Frist (AC-20).
     this.pause = { von: wer.id, name: wer.name, bis: this.spieler.length > 1 ? Date.now() + this.pauseMs : null };
     this.standId = standId;
@@ -368,20 +496,75 @@ class Raum {
     return {};
   }
 
-  // ---- Aufhoeren (speichern AC-7) -------------------------------------------
+  // ---- Aufhoeren (speichern AC-7, AC-22) ------------------------------------
   // "Aufhören und später weiterspielen": sichern, und erst wenn das ging,
   // erfahren es alle - den Raum schliesst, wer ihn haelt (`Raeume.schliessen`).
-  // Zu mehreren nicht: dort verlangt Sichern Einigkeit (AC-22, S4).
-  aufhoeren() {
+  // Allein geht es sofort (AC-7). Zu mehreren ist es ein Vorschlag, und
+  // gesichert wird erst, wenn alle Verbundenen zugestimmt haben (AC-22) - ein
+  // Einzelner beendet die Runde nicht, weil er gerade verliert. Die Partie
+  // laeuft waehrenddessen weiter; ein Nein verwirft den Vorschlag.
+  /** @param {any} wer */
+  aufhoeren(wer) {
     if (!this.laeuft) return { fehler: 'Es läuft keine Partie.' };
-    if (this.spieler.length > 1) return { fehler: 'Zu mehreren lässt sich noch nicht gemeinsam aufhören.' };
     if (!this.ablage || !this.eigentuemer || typeof this.welt.sichern !== 'function') {
       return { fehler: 'Diese Partie lässt sich nicht sichern.' };
     }
     if (this.ohneStand) return { fehler: this.ohneStandGrund || 'Diese Partie wird nicht gesichert.' };
-    if (!this.sichern()) return { fehler: this.ohneStandGrund || 'Die Partie ließ sich nicht sichern.' };
-    this.senden({ typ: 'aufgehoert', stand: this.standId });
+    if (!this.aufhoerWunsch) this.aufhoerWunsch = { von: wer.id, name: wer.name, ja: new Set() };
+    this.aufhoerWunsch.ja.add(wer.id);
+    this.beruehrt = Date.now();
+    return this.aufhoerenPruefen();
+  }
+
+  /** Ein Nein verwirft den Vorschlag - alle erfahren, von wem. @param {any} wer */
+  aufhoerenAblehnen(wer) {
+    if (!this.aufhoerWunsch) return {};
+    this.aufhoerWunsch = null;
+    this.senden({ typ: 'aufhoerfrage', von: null, abgelehnt: wer.name });
     return {};
+  }
+
+  /** Was alle ueber den Vorschlag erfahren: von wem, wer schon ja sagte, wer noch fehlt. */
+  aufhoerstand() {
+    const wunsch = this.aufhoerWunsch;
+    if (!wunsch) return { typ: 'aufhoerfrage', von: null };
+    const verbunden = this.spieler.filter((s) => s.verbunden);
+    return {
+      typ: 'aufhoerfrage',
+      von: wunsch.von,
+      name: wunsch.name,
+      ja: verbunden.filter((s) => wunsch.ja.has(s.id)).map((s) => s.id),
+      fehlen: verbunden.filter((s) => !wunsch.ja.has(s.id)).map((s) => s.name),
+    };
+  }
+
+  // Sind alle Verbundenen einverstanden, wird gesichert und allen gesagt, bei
+  // wem der Stand liegt - fortsetzen kann nur er (AC-23).
+  aufhoerenPruefen() {
+    const wunsch = this.aufhoerWunsch;
+    if (!wunsch || !this.laeuft) {
+      this.aufhoerWunsch = null;
+      return {};
+    }
+    const verbunden = this.spieler.filter((s) => s.verbunden);
+    if (!verbunden.length) {
+      this.aufhoerWunsch = null;
+      return {};
+    }
+    if (verbunden.some((s) => !wunsch.ja.has(s.id))) {
+      this.senden(this.aufhoerstand());
+      return {};
+    }
+    this.aufhoerWunsch = null;
+    if (!this.sichern()) {
+      const text = this.ohneStandGrund || 'Die Partie ließ sich nicht sichern.';
+      this.senden({ typ: 'aufhoerfrage', von: null, fehler: text });
+      return { fehler: text };
+    }
+    this.aufgehoert = true;
+    const bei = [...this.spieler, ...this.abwesend].find((s) => s.konto && s.konto === this.eigentuemer) || this.gastgeber;
+    this.sendenJe((id) => ({ typ: 'aufgehoert', stand: this.standId, bei: bei ? bei.name : null, deiner: Boolean(bei && bei.id === id) }));
+    return { aufgehoert: true };
   }
 
   /** Jedem den Zustand, den er sehen darf - gibt es keinen je Spieler, allen denselben. */
@@ -476,6 +659,9 @@ class Raum {
       art: this.art,
       fassung: Number.isInteger(this.spiel.standFassung) ? this.spiel.standFassung : null,
       beteiligte: this.plaetzeBeteiligt(),
+      // Mit Konto - nur in der Zeile der Ablage, nie in der Liste (AC-26).
+      // Stillgelegte gehoeren dazu: beim naechsten Fortsetzen wartet ihr Platz.
+      plaetze: [...this.spieler, ...this.abwesend].map((s) => ({ platz: s.id, name: s.name, konto: s.konto || null })),
       einstellungen: { ...this.einstellungen, platzwahl: this.platzwahl },
       // Was die Liste im Vorraum zeigt (Spielzeit, Karte ...) - das Spiel
       // sagt es, der Raum reicht es durch.
@@ -528,7 +714,7 @@ class Raum {
 
   /** Wer an der Partie beteiligt ist - Menschen mit Namen und Platz, dazu die Plaetze des Spiels. */
   plaetzeBeteiligt() {
-    const menschen = this.spieler.map((s) => ({ name: s.name, mensch: true, platz: s.id }));
+    const menschen = [...this.spieler, ...this.abwesend].map((s) => ({ name: s.name, mensch: true, platz: s.id }));
     const besetzt = vomSpielBesetzt(this.spiel, this.einstellungen);
     const name = (nummer) => (typeof this.spiel.platzname === 'function' ? this.spiel.platzname(nummer) : `Platz ${nummer}`);
     const andere = Array.from({ length: besetzt }, (_, i) => ({ name: name(i + 1), mensch: false }));
@@ -593,6 +779,9 @@ class Raum {
       // Ob diese Partie gesichert werden kann - dann bietet das Spielbild
       // "Aufhören und später weiterspielen" an (speichern AC-7).
       sichert: Boolean(this.ablage && this.eigentuemer && typeof this.spiel.laden === 'function'),
+      // Eine fortgesetzte Partie wartet auf die Plaetze von damals (AC-24);
+      // welche fehlen, steht an den Plaetzen.
+      ...(this.fortsetzung ? { fortsetzung: { stillgelegt: this.fortsetzung.stillgelegt } } : {}),
     };
   }
 
@@ -653,13 +842,35 @@ class Raeume {
    */
   mitStand(konto, standId) {
     for (const raum of this.nachCode.values()) {
-      if (raum.standId === standId && raum.eigentuemer === konto) return raum;
+      const stand = raum.fortsetzung ? raum.fortsetzung.standId : raum.standId;
+      if (stand === standId && raum.eigentuemer === konto) return raum;
     }
     return null;
   }
 
+  /**
+   * Wohin ein Konto eingeladen ist (speichern AC-23): fortgesetzte Partien,
+   * die auf einen Platz mit diesem Konto warten. Wem der Stand gehoert, steht
+   * nicht darin - er setzt aus seiner Liste fort.
+   * @param {string} konto
+   * @returns {Array<{ code: string, anzeige: string, von: string | null, art: string | null }>}
+   */
+  einladungenFuer(konto) {
+    /** @type {Array<{ code: string, anzeige: string, von: string | null, art: string | null }>} */
+    const liste = [];
+    if (!konto) return liste;
+    for (const raum of this.nachCode.values()) {
+      if (!raum.fortsetzung || raum.gestartet || raum.eigentuemer === konto) continue;
+      if (!raum.fehlendePlaetze.some((p) => p.konto === konto)) continue;
+      const besitzer = raum.fortsetzung.plaetze.find((p) => p.konto === raum.eigentuemer);
+      liste.push({ code: raum.code, anzeige: codeZeigen(raum.code), von: besitzer ? besitzer.name : null, art: raum.art });
+    }
+    return liste;
+  }
+
   schliessen(raum) {
     if (!this.nachCode.has(raum.code)) return;
+    raum.geschlossen = true;
     raum.beenden();
     // Ein geschlossener Raum legt nichts mehr ab - sonst schriebe ihn das
     // Abreissen der letzten Verbindung noch einmal, nachdem sein Stand

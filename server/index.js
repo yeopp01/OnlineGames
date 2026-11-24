@@ -118,6 +118,7 @@ async function starten(hafen = HAFEN, einstellungen = {}) {
     adresseVon: (a) => adresseVon(a, HINTER_PROXY),
     sitzung: zugang.sitzung,
     spiele: spielliste,
+    raeume,
   });
 
   const spielManager = manager({
@@ -203,6 +204,15 @@ async function starten(hafen = HAFEN, einstellungen = {}) {
     // nur auf langsameren Maschinen. Wer die Anmeldung braucht, wartet unten
     // an seiner Stelle auf das Versprechen.
     const sitzungBald = zugang.sitzung(anfrage.headers).catch(() => null);
+    // Das Konto, sobald die Anmeldung gelesen ist - wer beitritt, traegt es
+    // in den Stand (speichern AC-26). Beitreten wartet darauf nicht, ausser
+    // in eine fortgesetzte Partie, die ihre Plaetze nach dem Konto vergibt.
+    /** @type {string | null} */
+    let kontoJetzt = null;
+    sitzungBald.then((angemeldet) => {
+      kontoJetzt = angemeldet ? angemeldet.user.id : null;
+      if (kontoJetzt && spieler && !spieler.konto) spieler.konto = kontoJetzt;
+    });
     const eimer = schutz.eimerFuerVerbindung();
     schutz.verbindungOffen(adresse);
 
@@ -242,7 +252,7 @@ async function starten(hafen = HAFEN, einstellungen = {}) {
       raum.eigentuemer = angemeldet.user.id;
       schutz.raumAuf(adresse);
       // Der Anzeigename kommt aus dem Konto, nicht aus der Nachricht.
-      const ergebnis = raum.beitreten(angemeldet.user.name, draht);
+      const ergebnis = raum.beitreten(angemeldet.user.name, draht, angemeldet.user.id);
       spieler = ergebnis.spieler;
       draht.send(JSON.stringify({
         typ: 'du',
@@ -272,6 +282,17 @@ async function starten(hafen = HAFEN, einstellungen = {}) {
       // wird dann, was sie eben noch hatte. Beendet wird sie erst, wenn der
       // Stand sich hier laden laesst: sonst verloere man beide.
       const vorige = raeume.mitStand(konto, id);
+      // Wartet die Partie schon auf ihre Spieler (AC-24), setzt sich der
+      // Besitzer wieder an seinen Platz - geladen wird sie nicht ein zweites Mal.
+      if (vorige && vorige.fortsetzung) {
+        const ergebnis = vorige.platzZurueck(angemeldet.user.name, draht, konto);
+        if (ergebnis.fehler) return fehler('Diese Partie wartet schon in einem anderen Fenster auf ihre Spieler.');
+        raum = vorige;
+        spieler = ergebnis.spieler;
+        draht.send(JSON.stringify({ typ: 'du', id: spieler.id, token: spieler.token, code: raum.code, anzeige: codeZeigen(raum.code) }));
+        raum.senden(raum.vorraum());
+        return;
+      }
       if (vorige) vorige.sichern();
       const offen = ablage.oeffnen(konto, id, (bytes, zeile) => {
         const spiel = verzeichnis.eroeffenbar(spielliste, zeile.art);
@@ -283,12 +304,18 @@ async function starten(hafen = HAFEN, einstellungen = {}) {
       // dazu steht im Vorraum, und keiner der beiden wird angefasst.
       if (!('geladen' in offen)) return fehler(`Dieser Spielstand lässt sich nicht laden. ${offen.fehler}`);
       const beteiligte = Array.isArray(offen.zeile.beteiligte) ? offen.zeile.beteiligte : [];
-      const menschen = beteiligte.filter((b) => b && b.mensch);
-      // Zu mehreren fortsetzen kommt mit S4 (AC-22 bis AC-25) - bis dahin
-      // nur, wer allein gespielt hat.
-      if (menschen.length !== 1 || typeof menschen[0].platz !== 'string') {
-        return fehler('Partien zu mehreren lassen sich noch nicht fortsetzen.');
-      }
+      const menschen = beteiligte.filter((b) => b && b.mensch && typeof b.platz === 'string');
+      if (!menschen.length) return fehler('Dieser Spielstand nennt keinen Platz, an dem du sitzt.');
+      // Die Plaetze mit Konto (AC-26); ein Stand von vor S4 kennt nur Namen.
+      // Der Besitzer sitzt am Platz mit seinem Konto, sonst am ersten - wer
+      // eroeffnet, sass dort.
+      const gesichert = Array.isArray(offen.zeile.plaetze) ? offen.zeile.plaetze : [];
+      const plaetze = menschen.map((m) => {
+        const p = gesichert.find((g) => g && g.platz === m.platz);
+        return { platz: m.platz, name: m.name, konto: p && typeof p.konto === 'string' ? p.konto : null };
+      });
+      const eigener = plaetze.find((p) => p.konto === konto) || plaetze[0];
+      eigener.konto = konto;
       if (vorige) {
         const draehte = vorige.spieler.map((s) => s.draht).filter(Boolean);
         vorige.senden({ typ: 'abgeloest', text: 'Diese Partie wurde an anderer Stelle fortgesetzt. Hier ist sie beendet, gesichert ist sie.' });
@@ -310,7 +337,18 @@ async function starten(hafen = HAFEN, einstellungen = {}) {
       raum.adresse = adresse;
       raum.eigentuemer = konto;
       schutz.raumAuf(adresse);
-      spieler = raum.aufnehmen(menschen[0].platz, menschen[0].name, draht).spieler;
+      // Zu mehreren wartet der Warteraum auf die Plaetze von damals (AC-24);
+      // gestartet wird dort, wie eine neue Partie.
+      if (plaetze.length > 1) {
+        raum.fortsetzungVorbereiten(partie, id, plaetze);
+        const ergebnis = raum.platzZurueck(eigener.name, draht, konto);
+        if (ergebnis.fehler) return fehler(ergebnis.fehler);
+        spieler = ergebnis.spieler;
+        draht.send(JSON.stringify({ typ: 'du', id: spieler.id, token: spieler.token, code: raum.code, anzeige: codeZeigen(raum.code) }));
+        raum.senden(raum.vorraum());
+        return;
+      }
+      spieler = raum.aufnehmen(eigener.platz, eigener.name, draht, konto).spieler;
       draht.send(JSON.stringify({
         typ: 'du',
         id: spieler.id,
@@ -336,6 +374,32 @@ async function starten(hafen = HAFEN, einstellungen = {}) {
       if (!schutz.fehlversuch(adresse)) draht.close(1008, 'zu viele Fehlversuche');
     };
 
+    /** @param {any} gesucht @param {any} nachricht @param {string | null} konto */
+    function hineinsetzen(gesucht, nachricht, konto) {
+      const ergebnis = gesucht.beitreten(nachricht.name, draht, konto);
+      if (ergebnis.fehler) return fehler(ergebnis.fehler);
+      raum = gesucht;
+      spieler = ergebnis.spieler;
+      draht.send(JSON.stringify({ typ: 'du', id: spieler.id, token: spieler.token, code: raum.code, anzeige: codeZeigen(raum.code) }));
+      raum.senden(raum.vorraum());
+    }
+
+    // In eine fortgesetzte Partie vergibt der Raum die Plaetze nach dem Konto
+    // (AC-24) - dafuer wird auf die Anmeldung gewartet.
+    let beitrittLaeuft = false;
+    /** @param {any} gesucht @param {any} nachricht */
+    async function beitretenAngemeldet(gesucht, nachricht) {
+      beitrittLaeuft = true;
+      try {
+        const angemeldet = await sitzungBald;
+        if (draht.readyState !== 1 || raum) return;
+        if (gesucht.geschlossen) return fehler('Diesen Raumcode gibt es nicht mehr.');
+        hineinsetzen(gesucht, nachricht, angemeldet ? angemeldet.user.id : null);
+      } finally {
+        beitrittLaeuft = false;
+      }
+    }
+
     draht.on('message', (roh) => {
       // Wer schneller redet, als jede Bedienung es kann, wird getrennt.
       if (!schutz.nachrichtErlaubt(eimer)) {
@@ -349,6 +413,12 @@ async function starten(hafen = HAFEN, einstellungen = {}) {
         return fehler('Unverständliche Nachricht.');
       }
       if (!nachricht || typeof nachricht.typ !== 'string') return;
+      // Geschlossen, waehrend man darin sass (gemeinsam aufgehoert, AC-22):
+      // diese Verbindung gehoert keinem Raum mehr.
+      if (raum && raum.geschlossen) {
+        raum = null;
+        spieler = null;
+      }
 
       switch (nachricht.typ) {
         case 'erstellen': {
@@ -362,15 +432,14 @@ async function starten(hafen = HAFEN, einstellungen = {}) {
           break;
         }
         case 'beitreten': {
-          if (raum) return;
+          if (raum || beitrittLaeuft) return;
           const gesucht = raeume.finden(nachricht.code);
           if (!gesucht) return codeDaneben();
-          const ergebnis = gesucht.beitreten(nachricht.name, draht);
-          if (ergebnis.fehler) return fehler(ergebnis.fehler);
-          raum = gesucht;
-          spieler = ergebnis.spieler;
-          draht.send(JSON.stringify({ typ: 'du', id: spieler.id, token: spieler.token, code: raum.code, anzeige: codeZeigen(raum.code) }));
-          raum.senden(raum.vorraum());
+          if (gesucht.fortsetzung) {
+            beitretenAngemeldet(gesucht, nachricht);
+            break;
+          }
+          hineinsetzen(gesucht, nachricht, kontoJetzt);
           break;
         }
         case 'zurueck': {
@@ -397,6 +466,8 @@ async function starten(hafen = HAFEN, einstellungen = {}) {
           if (raum.pause && raum.gestartet) raum.zustandSenden();
           // Und zu welchem Stand sich der Browser die Kamera merkt (speichern AC-10).
           if (raum.standId) draht.send(JSON.stringify({ typ: 'stand', id: raum.standId }));
+          // Und ob gerade jemand aufhoeren will (AC-22).
+          if (raum.aufhoerWunsch) draht.send(JSON.stringify(raum.aufhoerstand()));
           raum.senden(raum.vorraum());
           break;
         }
@@ -443,13 +514,28 @@ async function starten(hafen = HAFEN, einstellungen = {}) {
         case 'aufhoeren': {
           // "Aufhören und später weiterspielen" (speichern AC-7): gesichert,
           // dann ist der Raum zu - fortgesetzt wird aus der Liste, in einem
-          // neuen Raum (AC-9).
+          // neuen Raum (AC-9). Zu mehreren erst, wenn alle zugestimmt haben
+          // (AC-22) - bis dahin ist es ein Vorschlag, den alle sehen.
           if (!raum || !spieler || !raum.gestartet) return;
-          const ergebnis = raum.aufhoeren();
+          const ergebnis = raum.aufhoeren(spieler);
           if (ergebnis.fehler) return fehler(ergebnis.fehler);
+          if (!raum.aufgehoert) break;
           raeume.schliessen(raum);
           raum = null;
           spieler = null;
+          break;
+        }
+        case 'aufhoerenNein': {
+          if (!raum || !spieler || !raum.gestartet) return;
+          raum.aufhoerenAblehnen(spieler);
+          break;
+        }
+        case 'stilllegen': {
+          // Ein fehlender Platz einer fortgesetzten Partie (speichern AC-25).
+          if (!raum || !spieler) return;
+          const ergebnis = raum.stilllegen(spieler, nachricht.platz === undefined ? null : nachricht.platz);
+          if (ergebnis.fehler) return fehler(ergebnis.fehler);
+          raum.senden(raum.vorraum());
           break;
         }
         case 'befehl': {
@@ -469,8 +555,13 @@ async function starten(hafen = HAFEN, einstellungen = {}) {
 
     draht.on('close', () => {
       schutz.verbindungZu(adresse);
-      if (!raum) return;
+      if (!raum || raum.geschlossen) return;
       raum.verlassen(draht);
+      // Wer ging, war vielleicht der Letzte, der noch nicht zugestimmt hatte.
+      if (raum.aufgehoert) {
+        raeume.schliessen(raum);
+        return;
+      }
       raum.senden(raum.vorraum());
       // Eine laufende Partie bleibt stehen, auch wenn der letzte geht: wer
       // allein gegen den Computer spielt und neu laedt, kam sonst nie zurueck
