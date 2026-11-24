@@ -2,7 +2,7 @@
 
 **Bereich:** Manager
 **Kuerzel:** kader
-**Stand:** 23/26 fertig · 1 in QA · 2 offen
+**Stand:** 22/26 fertig · 2 in QA · 2 offen
 
 ## Zweck
 
@@ -100,7 +100,7 @@ wiederholen, statt ihn zu suchen.
   Saison und meist nur eine bis sieben Saisons daneben (Startwert 20260910:
   nur Saison 5 mit 2); vorher riss es an jedem Startwert in 10 bis 15 von 20
   Saisons — eine Welle der Startgeneration bis 18, danach 2 bis 3.
-- **AC-24** `fertig` **Durchschnittsalter bleibt im Band** — Über zwanzig
+- **AC-24** `in-qa` **Durchschnittsalter bleibt im Band** — Über zwanzig
   Saisons ohne Menschen sind die Spieler der Vereine ab der zweiten Saison im
   Mittel 23 bis 25 Jahre alt, in jeder Saison, gezählt am letzten Termin vor
   dem Altern. Bis 2026-11-22 stand hier 25,5 bis 27: je Saison kommen rund
@@ -112,6 +112,9 @@ wiederholen, statt ihn zu suchen.
   sechsten Saison 22,7 bis 23,3. Auf Schritt 4 hält es am Startwert des
   Tests und an sechs von acht (22,9 bis 24,8 je Saison); an 1234 und 99
   fällt es in einzelnen Saisons auf 22,9.
+  **`in-qa` seit dem 2026-11-24:** es hält an sechs von acht Startwerten —
+  an 1234 und 99 liegt je eine Saison bei 22,9 bis 23,0 — und wird erst
+  `fertig`, wenn es an allen acht hält. Der Test bleibt, wie er ist.
 - **AC-25** `fertig` **Die Jugend kommt an** — Über zwanzig Saisons ohne
   Menschen liegt ab der zweiten Saison die Stärke der Siebzehnjährigen aus
   dem eigenen Nachwuchs im Mittel höchstens 15 unter dem Niveau ihres

@@ -140,12 +140,17 @@ class Ablauf {
       const eigener = this.vereinVon(m.vereinId);
       const offen = fensterOffen(TERMINE[this.termin]);
       m.angebote = offen ? m.angebote.filter((a) => a.gueltigBis >= this.termin) : [];
+      // Ein Verein bietet je Fenster hoechstens einmal auf denselben Spieler
+      // (transfer AC-31); mit dem Fenster ist es vergessen. Ein Spielstand
+      // von vorher kennt das Feld nicht.
+      m.geboten = offen ? m.geboten || [] : [];
       if (offen) {
         // Wessen Angebot noch gilt, bietet nicht neu (transfer AC-31).
         const wartet = new Set(m.angebote.map((a) => a.vereinId));
-        for (const angebot of transfer.kiAngebote(this, eigener, zufall(ZWECK.angebote), wartet)) {
+        for (const angebot of transfer.kiAngebote(this, eigener, zufall(ZWECK.angebote), wartet, new Set(m.geboten))) {
           m.angebote = m.angebote.filter((a) => a.vereinId !== angebot.vereinId);
           m.angebote.push(angebot);
+          m.geboten.push(`${angebot.vereinId}:${angebot.spielerId}`);
           this.melden(m, 'transfer', `${angebot.verein} bietet ${geld(angebot.gebot)} für ${angebot.spieler} `
             + `(Marktwert ${geld(angebot.wert)}).`);
         }

@@ -7,7 +7,7 @@ Eine Zeile je Abnahmekriterium. Gepflegt wird der Status in der Spec selbst,
 hier steht er zusammengefasst. Erzeugt mit `npm run specs:board`; als Seite
 mit Bildnachweisen, Filter und Suche mit `npm run qa:report`.
 
-**Gesamt:** 639/748 fertig · 3 in Arbeit · 16 in QA · 3 geplant · 79 offen · 8 zurueckgestellt
+**Gesamt:** 638/748 fertig · 3 in Arbeit · 17 in QA · 3 geplant · 79 offen · 8 zurueckgestellt
 
 **Nachweise:** 336 Kriterien mit Bild · 312 ohne Bild, begruendet in `qa/ohne-bild.json`
 
@@ -34,7 +34,7 @@ mit Bildnachweisen, Filter und Suche mit `npm run qa:report`.
 | [Ausbau](15-manager/ausbau.md)                                 | -         | -     | -       | -     | -               | 1      |
 | [Bedienung des Managerspiels](15-manager/bedienung.md)         | -         | -     | -       | -     | -               | 20     |
 | [Finanzen](15-manager/finanzen.md)                             | -         | -     | -       | -     | -               | 19     |
-| [Kader und Spieler](15-manager/kader.md)                       | -         | 1     | -       | 2     | -               | 23     |
+| [Kader und Spieler](15-manager/kader.md)                       | -         | 2     | -       | 2     | -               | 22     |
 | [Karriere: Saison um Saison](15-manager/karriere.md)           | -         | -     | -       | 1     | -               | 29     |
 | [Liga und Saison](15-manager/liga.md)                          | -         | -     | -       | -     | -               | 18     |
 | [Pokal](15-manager/pokal.md)                                   | -         | -     | -       | -     | -               | 8      |
@@ -52,7 +52,7 @@ mit Bildnachweisen, Filter und Suche mit `npm run qa:report`.
 - **Zeitalter gliedern die Partie** — [Spielziel und Partieverlauf](10-strategie/spielziel.md) AC-1
 - **Zahlen sind abrufbar** — [Betrieb](20-betrieb/betrieb.md) AC-8
 
-## In QA (16)
+## In QA (17)
 
 - **Einladungscodes erzeugen und zuruecknehmen** — [Konten und Anmeldung](00-plattform/konten.md) AC-20
 - **Verwaister Raum wird geschlossen** — [Raeume und Partien](00-plattform/raeume.md) AC-12
@@ -65,6 +65,7 @@ mit Bildnachweisen, Filter und Suche mit `npm run qa:report`.
 - **Läuft auf dem VPS** — [Fahrplan zum Klon](10-strategie/fahrplan.md) AC-21
 - **Aktualisieren ist ein Befehl** — [Fahrplan zum Klon](10-strategie/fahrplan.md) AC-22
 - **Alle Namen sind erfunden** — [Kader und Spieler](15-manager/kader.md) AC-7
+- **Durchschnittsalter bleibt im Band** — [Kader und Spieler](15-manager/kader.md) AC-24
 - **Wer satt ist, verkauft nicht** — [Transfermarkt](15-manager/transfer.md) AC-30
 - **Nur über HTTPS** — [Betrieb](20-betrieb/betrieb.md) AC-1
 - **Dienst startet selbst neu** — [Betrieb](20-betrieb/betrieb.md) AC-3

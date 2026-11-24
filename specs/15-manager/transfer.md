@@ -112,6 +112,13 @@ und die anderen Vereine handeln nach denselben Regeln, auch untereinander.
   Ab der elften Saison wird es in der zweiten Liga weniger (über zwanzig
   Saisons im Mittel 0,9), weil der Kader eines Verwalters, der nie kauft,
   schwächer wird. Die Grenzen sind gesetzt, kein Wert aus Anstoss 3.
+  Ein Verein bietet je Transferfenster höchstens einmal auf denselben
+  Spieler — abgelehnt oder abgelaufen zählt mit (`geboten` am Manager,
+  mit dem Fenster vergessen). Eine Obergrenze (höchstens fünf je Saison in
+  der ersten Liga) steht nicht: sie hält mit der Untergrenze der zweiten
+  Liga nicht zugleich, denn dort kommt das eine Angebot je Saison meist
+  von mehreren Vereinen auf denselben Spieler (→ Plan, „Angebote an den
+  Menschen“).
 
 ### Die anderen
 

@@ -101,6 +101,7 @@
  * @property {object} vorstand
  * @property {Sponsor[]|null} sponsorAngebote
  * @property {object[]} angebote
+ * @property {string[]} [geboten]  `<vereinId>:<spielerId>`, die im laufenden Fenster schon ein Angebot hatten
  * @property {object[]} nachrichten
  * @property {object[]} buch
  * @property {object} kasse

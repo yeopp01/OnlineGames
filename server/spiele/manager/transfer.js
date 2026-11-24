@@ -350,9 +350,13 @@ function freistellen(welt, verein, spieler) {
  * Spieler, der besser ist als der schwaechste seiner Stammelf auf dieser
  * Position - auf einen, der auf der Transferliste steht, schon eher.
  * `wartet` sind die Vereine, deren Angebot noch gilt: sie bieten nicht neu.
+ * `geboten` sind die Paare `<vereinId>:<spielerId>`, die in diesem Fenster
+ * schon ein Angebot hatten - angenommen, abgelehnt oder abgelaufen: auf
+ * denselben Spieler bietet derselbe Verein erst im naechsten Fenster wieder.
  * @param {Set<number>} [wartet]
+ * @param {Set<string>} [geboten]
  */
-function kiAngebote(welt, mensch, zufall, wartet = new Set()) {
+function kiAngebote(welt, mensch, zufall, wartet = new Set(), geboten = new Set()) {
   const angebote = [];
   for (const verein of welt.vereine) {
     if (verein.id === mensch.id) continue;
@@ -365,6 +369,7 @@ function kiAngebote(welt, mensch, zufall, wartet = new Set()) {
 
     const kandidaten = mensch.spieler
       .filter((s) => liste || !s.transferliste)
+      .filter((s) => !geboten.has(`${verein.id}:${s.id}`))
       .filter((s) => bestandNachAbgang(mensch, s) >= MINDESTBESTAND[s.position])
       .filter((s) => vertraege.wechselbereit(s, verein).ok && !s.karriereende)
       .filter((s) => s.staerke > schwaechsterStamm(verein, s.position) + (s.transferliste ? -2 : 3))

@@ -529,6 +529,57 @@ Heimsiege 47,3 %, Unentschieden 22,2 %, vor und nach. Im Fingerabdruck
 (`manager:gleichstand`) ändert sich nur der Teil „mensch" der Läufe mit
 Mensch; er ist neu geschrieben.
 
+**Nachbesserung (2026-11-24): Wiederholung und Obergrenze.** Anlass: am
+besten Verein der ersten Liga 8,6 Angebote je Saison auf 0,95 verschiedene
+Spieler — rund neun Meldungen je Spieler, vor Schritt 6 rund drei.
+Verlangt war: ein Verein bietet je Fenster höchstens einmal auf denselben
+Spieler, dann `ANGEBOTE.sonst` so tief wie möglich, und eine Obergrenze
+von 5 je Saison in der ersten Liga an jedem Startwert.
+
+*Die Regel* steht (`m.geboten` in `ablauf.js`, `kiAngebote(…, geboten)`),
+**ändert aber nichts**: über vier Startwerte, zehn Saisons gab es kein
+einziges zweites Gebot desselben Vereins auf denselben Spieler im selben
+Fenster — die Fenster sind vier und zwei Termine lang, ein Angebot gilt
+zwei, und wessen Angebot gilt, bietet nicht neu. Die Zahlen mit und ohne
+Regel sind gleich, im Fingerabdruck ändert sich nur das neue Feld. Die
+Regel hält es, wenn sich das ändert (Gegenprobe: ohne „bietet nicht neu“
+42 zweite Gebote an 4711, mit der Regel null). Die Wiederholung kommt von
+**verschiedenen Vereinen** auf dieselben ein, zwei Spieler: an 4711 je
+Spieler und Fenster 2,0 Angebote, an 1234 2,6, an 77 3,2, an 31337 4,5.
+
+*Untergrenze und Obergrenze halten nicht zugleich* (acht Startwerte,
+zehn Saisons, Mittel je Saison, kleinster und größter Startwert):
+
+| Hebel | L1 Bester (größter) | L1 Mitte (kleinster) | L2 Mitte (kleinster) |
+| --- | --- | --- | --- |
+| verlangt | ≤ 5 | ≥ 2 | ≥ 1 |
+| `sonst` 0,2 | 3,86 (6,3) | 2,75 (1,0) | 0,64 (0,4) |
+| `sonst` 0,3 | 5,58 (8,7) | 3,94 (1,4) | 0,89 (0,6) |
+| `sonst` 0,5 | 7,71 (11,3) | 5,47 (2,0) | 1,24 (0,8) |
+| `sonst` 0,6 | 8,40 (12,3) | 6,05 (2,6) | 1,41 (1,1) |
+| `sonst` 0,8 (gebaut) | 9,81 (13,5) | 7,34 (3,0) | 1,71 (1,3) |
+| je Spieler und Fenster ein Angebot, gleich von wem, 0,8 | 8,66 (14,3) | 4,80 (2,4) | 0,69 (0,5) |
+| dasselbe, 1,0 | 9,46 (15,3) | 5,26 (2,7) | 0,71 (0,5) |
+| höchstens 2 neue je Fenster, 0,8 | 3,90 (4,0) | 3,08 (1,6) | 0,55 (0,4) |
+| höchstens 3 neue je Fenster, 0,8 | 5,71 (6,0) | 4,40 (2,0) | 0,74 (0,6) |
+
+Die erste Liga ≤ 5 an jedem Startwert verlangt `sonst` um 0,2 (20260910
+liegt immer am höchsten: 6,3 bei 0,2), die zweite ≥ 1 verlangt 0,6. Jeder
+Hebel gegen die Wiederholung nimmt der zweiten Liga ihr Angebot: dort
+werben in den wenigen Fenstern, in denen ein Spieler gefragt ist, mehrere
+Vereine nacheinander um ihn — **das eine Angebot je Saison der zweiten
+Liga ist selbst Wiederholung** (0,28 verschiedene Spieler je Saison bei
+1,71 Angeboten). Mehr verschiedene Spieler gibt es dort nicht: je Spieler
+eines, gleich von wem, bringt 0,35 verschiedene je Saison, auch mit 1,0.
+Gezogen wird also weiter mit 0,8, eine Obergrenze steht nicht im
+Kriterium; die Entscheidung — die Untergrenze der zweiten Liga anders
+fassen (etwa verschiedene Spieler oder Fenster mit Angebot) oder die
+Wiederholung hinnehmen — liegt beim Benutzer.
+
+*kader AC-24* (Alter 23 bis 25) steht seitdem auf `in-qa`: es hält an
+sechs von acht Startwerten, an 1234 und 99 liegt je eine Saison bei 22,9
+bis 23,0. Der Test bleibt.
+
 **Nicht geprüft:** wie es sich für einen Menschen anfühlt, der handelt
 (kauft, die Liste nutzt, Angebote annimmt) — gemessen ist nur der
 Verwalter und der Händler; ob die vielen Meldungen im Postfach der ersten

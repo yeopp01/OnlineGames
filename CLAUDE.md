@@ -185,7 +185,7 @@ Umfang hinzufügt, dort nachsehen.
 
 ## Stand
 
-**639 von 748 Kriterien fertig.** 1142 Tests ohne Browser und 17 ganze Partien, 351 im Browser. Die
+**638 von 748 Kriterien fertig.** 1143 Tests ohne Browser und 17 ganze Partien, 351 im Browser. Die
 Übersicht ist der Bericht: `npm run qa:report`.
 
 Gebaut ist der Unterbau: Räume, Übertragung, Karte, Wegfindung, Sammeln,
@@ -229,8 +229,11 @@ Angebote (zweite Liga 0,25 je Saison); jetzt zieht ein Verein auf
 Spieler außerhalb der Liste mit 0,8 statt 0,06 (`ANGEBOTE`), und wessen
 Angebot noch gilt, bietet nicht neu — mindestens 2 Angebote je Saison in
 der ersten, 1 in der zweiten Liga (transfer AC-31, gemessen 6,5 / 3,0 /
-1,3 im kleinsten Fall). Offen:
-kader AC-23 (Sterne) und AC-26 (Entwicklung ab 25).
+1,3 im kleinsten Fall); je Fenster bietet ein Verein höchstens einmal auf
+denselben Spieler. Die vielen Meldungen kommen von mehreren Vereinen auf
+dieselben ein, zwei Spieler; eine Obergrenze hält mit der zweiten Liga
+nicht zugleich (Plan, Nachbesserung). Offen: kader AC-23 (Sterne), AC-24
+(Alter, `in-qa`: 6 von 8 Startwerten) und AC-26 (Entwicklung ab 25).
 
 **Stellschrauben des Managerspiels** stehen gesammelt in `WIRKUNG` in
 `server/spiele/manager/spieltag.js`. Wer daran dreht, misst danach: keine

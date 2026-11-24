@@ -28,7 +28,7 @@ const { Karriere } = require('../server/spiele/manager/karriere.js');
  */
 export const MENSCHENFELDER = [
   'name', 'vereinId', 'status', 'stellen', 'vorstand', 'sponsorAngebote', 'angebote',
-  'nachrichten', 'buch', 'kasse', 'vorjahr', 'zuletzt', 'entwicklungen',
+  'nachrichten', 'buch', 'kasse', 'vorjahr', 'zuletzt', 'entwicklungen', 'geboten',
 ];
 
 /** Teilt einen gesicherten Stand in Welt und Mensch, unabhaengig von der Fassung. */
