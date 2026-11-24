@@ -2,7 +2,7 @@
 
 **Bereich:** Strategie
 **Kuerzel:** ki
-**Stand:** 36/40 fertig · 4 offen
+**Stand:** 37/40 fertig · 3 offen
 
 ## Zweck
 
@@ -779,12 +779,34 @@ nicht die Regeln.
 
 ### Stufe F — der Drache (aus ADR-0014)
 
-- **AC-29** `offen` **Die KI ruft den Drachen** — Die KI holt Eier, bewacht ihr
+- **AC-29** `fertig` **Die KI ruft den Drachen** — Die KI holt Eier, bewacht ihr
   Kloster und ruft den Drachen, wenn sie Ei, Kloster und fünf Mönche hat.
   Sieht sie die Ansage eines fremden Rituals oder einen fremden Drachen,
   stellt sie Schützen dagegen und schickt ihr Heer zum fremden Kloster.
-  KI gegen KI: wer zuerst ruft, gewinnt nicht öfter als 60 %
-  ([Einheiten](einheiten-und-befehle.md) AC-52).
+  Ob der Drache KI gegen KI die Partie entscheidet, misst
+  [Einheiten](einheiten-und-befehle.md) AC-52 (seit dem 2026-11-22 gepaart,
+  Benutzer).
+  **Variante A** (Benutzer, 2026-11-22: „nur Krone, Variante A"): gerufen
+  wird in der Krone (`DRACHE_ZEITALTER`), im Fürstentum nur, wer unterlegen
+  ist (`ki.unterlegen()`: sie sieht mehr fremde Kampfeinheiten, als sie
+  hat), und wer überlegen ist (AC-18), ruft nie. Kloster, Ei und Mönche
+  gibt es nach derselben Regel; nur ihr Späher sucht Eier schon im
+  Fürstentum, solange sie nicht überlegen ist (`ki.eierSuchen`). **Gebaut am 2026-11-24** als `ki.drachePruefen`, nach
+  dem Regelpaket von Hand aus dem Entwurf übernommen; der Spielstand hat
+  dafür Fassung 3. Belegt in gebauten Lagen mit Gegenprobe je Bedingung
+  (`tests/strategie-ki-drache.test.mjs`) und im Nebel über 120 Startwerte
+  (`tests/partien/ki-im-nebel.test.mjs`). **Gemessen** (Startwerte 1–120,
+  Häuser des Nebeltests, 2026-11-24): mit Drache 105 vor Minute 60 — genau
+  die Grenze —, Median 39,0, keine ohne Sieger; ohne Drache 107, 38,5, eine
+  (Startwert 107). 20 KIs bringen ein Ei ins Kloster, eine ruft (Minute
+  54): in der Krone fehlen ihr meist 400 Nahrung und 400 Gold zugleich.
+  Zwei gegen zwei über zwanzig Startwerte jede mit Sieger vor Minute 90.
+  Ritt der Späher schon im Landsitz los, lief zwei gegen zwei Startwert 17
+  ab Minute 1,2 anders als ohne Drache und bis Minute 90 ohne Sieger;
+  suchte er im Fürstentum nur, wenn sie unterlegen war, fanden 6 KIs ein
+  Ei (Grenze des Tests 15), und Startwerte 12 und 18 liefen bis Minute 90. Der Entwurf ab dem Fürstentum für alle hatte vor dem
+  Regelpaket 101 vor Minute 60 — die Partien verlängerte, dass die KI, die
+  vorn lag, Mönche und den zurückgelegten Preis statt ihres Heers bezahlte.
 
 ### Stufe F — die Krone (Spec-Runde 2026-11-18)
 

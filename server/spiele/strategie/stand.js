@@ -25,7 +25,7 @@ const zlib = require('node:zlib');
 // Spielers, einer Einheit, eines Gebaeudes oder der KI dazukommt oder
 // wegfaellt - `tests/waechter-stand.test.mjs` vergleicht die Form mit dem
 // Abbild in `server/spiele/strategie/stand-abbild.json` und verlangt es.
-const FASSUNG = 2;
+const FASSUNG = 3;
 
 // Je Fassung n der Schritt nach n + 1 (speichern AC-18): eine Funktion, die
 // den entpackten Inhalt `{ welt, kis }` der Fassung n an Ort und Stelle zu
@@ -55,6 +55,23 @@ const SCHRITTE = {
       einheit.reihe = 0;
       einheit.taktX = einheit.x;
       einheit.taktY = einheit.y;
+    }
+  },
+  // 2 -> 3, die KI ruft den Drachen (ki AC-29): sie hat noch kein Ei
+  // gesehen, holt keins, sucht keins und hat nie gerufen - ein alter Stand
+  // beginnt damit, wo eine neue KI beginnt.
+  2: ({ kis }) => {
+    for (const ki of kis) {
+      ki.eierBekannt = new Map();
+      ki.eiHoler = null;
+      ki.eiGesperrt = new Map();
+      ki.rufFehlt = null;
+      ki.rufWartet = null;
+      ki.drachenGesehen = new Map();
+      ki.rufTakt = null;
+      ki.eiSuche = null;
+      ki.eiSucher = null;
+      ki.eiSucheFertig = new Set();
     }
   },
 };

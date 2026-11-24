@@ -243,6 +243,26 @@ etwas anderem gearbeitet.
 
 ## Offene Fäden
 
+- **KI-Runde nach dem Regelpaket** (2026-11-24, Zweig `strategie-ki-runde`):
+  (1) **Zwei gegen zwei ist die empfindlichste Grenze.** Am Stand vor der
+  Runde war Drache an Partie für Partie gleich Drache aus — jede Störung,
+  auch eine, die nur einen Späher früher losschickt, verschiebt alle
+  Zufallsfolgen, und die langen Partien (bis 87,7) gehen über Minute 90.
+  Startwert 17 lief mit dem Späher ab dem Landsitz ab Minute 1,2 anders.
+  Wer an der KI dreht, fährt die Team-Tests zuerst, nicht zuletzt — sie
+  brauchen 20 Minuten, der Nebel 6. (2) **Die Rammen der Krone zählten
+  nicht** (`belagerungPruefen` fragte `e.art === RAMME`): nach der
+  Belagerungsramme fehlten ihr immer drei, die Ausbildung ruhte bis zum
+  Ende (Startwert 17, Minute 75 bis 90 keine Kampfeinheit, acht Rammen
+  daheim). Was eine Linie meint, fragt die Daten (`nurGebaeude`), nicht
+  den Namen der ersten Stufe. (3) **Holzfäller standen, wenn im Umkreis
+  `REICHWEITE` kein Baum mehr war** — jetzt ein zweiter Versuch bis 45
+  Felder (`WEITER`); die Gegenprobe reißt auch ki AC-10/AC-12 über zwanzig
+  Startwerte. (4) Gepaart misst einheiten AC-52 nichts, solange kaum
+  gerufen wird: über 120 Startwerte eine Partie mit Ruf, aber 15 mit
+  getauschtem Sieger ohne Ruf (dazu Startwert 107: ohne Drache kein Sieger) —
+  der Späher auf Eiersuche allein verschiebt
+  die Partie.
 - **Nach dem Regelpaket offen** (2026-11-24): (1) In Schützengefechten
   gleicher Kosten endet die Mehrheit ohne Sieger — Bogen 115, Plänkler 127
   von 200, Miliz 43. Nachgemessen (40 Startwerte je Art, Budget 600): jedes
@@ -251,10 +271,8 @@ etwas anderem gearbeitet.
   schießen fast zugleich, und ein Pfeil im Flug trifft auch, wenn sein
   Schütze inzwischen gefallen ist; bei der Miliz fallen die letzten zwei im
   selben Takt, weil Wirkungen am Ende des Takts abgerechnet werden. Kein
-  Fehler, aber der Gefechtsstand zählt es als „ohne Sieger“. (2) `trifft()` in `ki.forschenPruefen` zählt den
-  Reiterschützen noch unter `kavallerie`, die Welt seit einheiten AC-71
-  unter den Schützen — ohne Wirkung, solange die KI keine Hauseinheit
-  ausbildet (`NOCH_NICHT`); mit ki AC-28 nachziehen. (3) Der eine Sieg des
+  Fehler, aber der Gefechtsstand zählt es als „ohne Sieger“. (2) ~~`trifft()` zählt den Reiterschützen als
+  Kavallerie~~ — behoben in `adb352f` (`welt.wirktUnter`). (3) Der eine Sieg des
   Hellebardiers gegen den Langbogen (Startwert 10, fahrplan AC-26) ist
   nicht erklärt.
 - **einheiten AC-31 (800 Angreifer unter 1 ms) reißt wieder** (Runden 188,

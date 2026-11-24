@@ -18,7 +18,7 @@
 const karten = require('./karte');
 const { suchen } = require('./wege');
 const { TAKTE_PRO_SEKUNDE, wirktUnter } = require('./welt');
-const { EINHEITEN, GEBAEUDE, SAMMELN, AUFSTIEGE, HANDEL, HAEUSER, SCHIESSENDE, VERBESSERUNGEN } = require('./daten');
+const { EINHEITEN, GEBAEUDE, SAMMELN, AUFSTIEGE, HANDEL, HAEUSER, SCHIESSENDE, VERBESSERUNGEN, DRACHE } = require('./daten');
 
 const ENTSCHEIDEN_ALLE = TAKTE_PRO_SEKUNDE / 2;
 
@@ -90,6 +90,14 @@ const LAGER_ANTEIL = 4;
 const ANMARSCH = 0.25;
 // So weit darf ein Vorrat von der Basis liegen, damit die KI ihn nutzt.
 const REICHWEITE = 30;
+// Ist darin kein Baum mehr, sucht sie bis hierhin weiter. Bis zum 2026-11-24
+// blieb es bei REICHWEITE: zwei gegen zwei, Startwert 17, Drache an - ab
+// Minute 74 stand bei KI 3 kein Baum mehr naeher als 30,1 Felder, 18 bis 20
+// Dorfbewohner standen, das Holz blieb unter der Ruecklage fuer drei Rammen,
+// und die Ausbildung ruhte bis Minute 90 (`belagerungFehlt`). Nur Holz:
+// Gold und Stein weiter draussen liegen an den umkaempften Vorkommen, das ist
+// nicht gemessen.
+const WEITER = { holz: 45 };
 // So viele arbeiten hoechstens an den Schafen und an den Beeren - mehr stehen
 // sich im Weg; wer darueber hinaus Nahrung holt, bekommt eine Farm.
 const AN_SCHAFEN = 6;
@@ -217,6 +225,55 @@ const MARSCH_MINDESTENS = 2;
 // Vor einem fremden Wunder (ki AC-40) greift ein Stehender eine Einheit nur
 // an, wenn sie so nah ist (Felder, gesetzt) - sonst das Wunder.
 const WUNDER_EINHEIT_NAH = 3;
+// Der Drache (ki AC-29). So viele Moenche bildet sie aus: die Zahl, die das
+// Rufen verlangt (bauen AC-35), aus den Daten.
+const DRACHE_MOENCHE = DRACHE.rufen.moenche;
+// Ab diesem Zeitalter bildet sie Moenche fuer den Drachen aus und ruft ihn
+// (gesetzt): in der Krone, nicht schon im Fuerstentum, wo ihn die Welt
+// erlaubt - dort sucht nur ihr Spaeher Eier (`eierSuchen`). Ab dem
+// Fuerstentum kosteten Moenche und der zurueckgelegte Preis gerade die KI,
+// die vorn lag, den schnellen Sieg (Nebel 101 statt 109 vor Minute 60).
+// Davor ruft nur, wer unterlegen ist (Variante A, Benutzer 2026-11-22;
+// `unterlegen()`), wer ueberlegen ist, nie. Gemessen 2026-11-24 nach dem
+// Regelpaket, Startwerte 1-120 mit den Haeusern des Nebeltests, Drache an:
+// 105 vor Minute 60 (die Grenze), Median 39,0, keine ohne Sieger; aus: 107,
+// 38,5, eine (107). 20 KIs mit Ei im Kloster, ein Ruf: in der Krone fehlen
+// meist 400 Nahrung und 400 Gold zugleich (Startwerte 24, 28, 116 Minute
+// fuer Minute angesehen). Zwei gegen zwei 1-20 alle mit Sieger.
+const DRACHE_ZEITALTER = 3;
+// So nah stellt sie die Moenche ans Kloster (Felder vom Rand, gesetzt) -
+// unter `DRACHE.rufen.umkreis`, damit ein Schritt beiseite nicht zaehlt.
+const MOENCH_NAH = 2;
+// So lange gilt ein fremder Drache als Gefahr, nachdem sie ihn zuletzt sah
+// (gesetzt).
+const DRACHE_GEFAHR_SEKUNDEN = 120;
+// So viel Nahrung liegt zurueck, solange ihr Drache lebt: eine Minute Futter
+// (`DRACHE.fressen`) - sonst haette das Militaer sie gegessen, und er
+// hungerte (einheiten AC-54).
+const DRACHE_FUTTER = Math.ceil(DRACHE.fressen.nahrungJeSekunde * 60);
+// Ein Ei, zu dem der Traeger nicht kam oder auf dem Weg fiel, so lange
+// auslassen (gesetzt).
+const EI_GESPERRT_SEKUNDEN = 120;
+// So lange liegt der Preis des Rufs zurueck, wenn die Moenche stehen, dann
+// so lange nicht, und wieder von vorn (beide gesetzt): ohne Gold auf der
+// Karte stuende das Militaer sonst fuer immer still, und nur einmal
+// zurueckgelegt rief sie oft nie (Startwert 3: fuenf Moenche ab Minute 70).
+const RUF_WARTEN_SEKUNDEN = 180;
+const RUF_PAUSE_SEKUNDEN = 120;
+// So nah ans Kloster ruft sie ihre Wache, solange der eigene Ruf laeuft
+// (Felder vom Rand, gesetzt).
+const KLOSTER_WACHE_NAH = 4;
+// Wo sie ein Ei sucht (ki AC-29): Die Eier liegen zwischen je zwei
+// Nachbarn, von beiden gleich weit und fern von jedem Dorf (einheiten
+// AC-51) - das weiss jeder, der die Karte kennt, nicht aber wo genau. Der
+// Spaeher reitet deshalb Punkte ab, die von ihrem Dorf und einem fremden
+// hoechstens EI_SUCHE_GLEICH Felder verschieden weit liegen, die fernsten
+// zuerst, im Raster von EI_SUCHE_RASTER Feldern. Beide gesetzt.
+const EI_SUCHE_GLEICH = 4;
+// So lange darf ein Dorfbewohner zum Ei unterwegs sein (ki AC-29), in
+// Sekunden - gesetzt.
+const EI_WEG_SEKUNDEN = 180;
+const EI_SUCHE_RASTER = 4;
 // So weit vor dem fremden Dorfzentrum endet der Marsch. Nicht auf ihm: ein
 // Befehl auf ein fremdes Gebaeude ist ein Angriff auf genau dieses Gebaeude
 // und **kein** Angriffslauf (welt.befehl) - unterwegs wuerde dann niemand
@@ -489,6 +546,22 @@ class Ki {
     this.forschungWartet = null;
     // Verbesserungen, die zu lange warteten, bis zu welchem Takt sie zurueckstehen.
     this.forschungZurueck = new Map();
+    // Der Drache (ki AC-29): die Eier am Boden, die sie gesehen hat, wo sie
+    // sie sah; wer gerade eins holt und welches; welche Eier zurueckstehen,
+    // bis zu welchem Takt; was fuer den Ruf zurueckliegt und seit wann; je
+    // Gegner, wann sie zuletzt seinen Drachen sah; und wann sie zum ersten
+    // Mal rief (Pruefstand).
+    this.eierBekannt = new Map();
+    this.eiHoler = null;
+    this.eiGesperrt = new Map();
+    this.rufFehlt = null;
+    this.rufWartet = null;
+    this.drachenGesehen = new Map();
+    this.rufTakt = null;
+    // Wohin der Spaeher ein Ei sucht und wer (ki AC-29), und wo er schon war.
+    this.eiSuche = null;
+    this.eiSucher = null;
+    this.eiSucheFertig = new Set();
   }
 
   /**
@@ -553,7 +626,9 @@ class Ki {
     // Wer gemeinsam auf einen Angreifer geht (ki AC-36), ist so lange fuer
     // nichts anderes da - sonst holte ihn die naechste Baustelle wieder weg.
     const ohneSturm = (liste) => (this.sturm ? liste.filter((e) => !this.sturm.wer.has(e.id)) : liste);
-    let dorfbewohner = ohneSturm(eigene.filter((e) => e.art === 'dorfbewohner' && !e.tot));
+    // Wer ein Ei holt oder traegt (ki AC-29), ebenso - sonst schickte ihn die
+    // Umverteilung mit dem Ei ins Holz.
+    let dorfbewohner = ohneSturm(eigene.filter((e) => e.art === 'dorfbewohner' && !e.tot && !this.holtEi(e)));
     const gebaeude = [...welt.gebaeude.values()].filter((g) => g.besitzer === this.spielerId);
     const zentrum = gebaeude.find((g) => g.art === 'dorfzentrum' && g.fertig);
 
@@ -598,6 +673,7 @@ class Ki {
     if (this.kroneTakt === null && this.spieler.zeitalter > 2) this.kroneTakt = welt.takt;
     this.kronePruefen(zentrum, gebaeude, dorfbewohner);
     this.forschenPruefen(eigene, gebaeude, dorfbewohner);
+    this.drachePruefen(eigene, gebaeude, dorfbewohner);
     this.militaerPruefen(gebaeude, dorfbewohner);
     this.belagerungPruefen(eigene, gebaeude, dorfbewohner);
     this.bauwerkePruefen(gebaeude, dorfbewohner);
@@ -679,6 +755,9 @@ class Ki {
     for (const [r, menge] of Object.entries(this.lagerFehlt || {})) ruecklage[r] = (ruecklage[r] || 0) + menge;
     // Die erste Verbesserung des Militaers (ki AC-35).
     for (const [r, menge] of Object.entries(this.forschungFehlt || {})) ruecklage[r] = (ruecklage[r] || 0) + menge;
+    // Der Ruf des Drachen, wenn die Moenche stehen, und sein Futter (ki AC-29).
+    for (const [r, menge] of Object.entries(this.rufFehlt || {})) ruecklage[r] = (ruecklage[r] || 0) + menge;
+    if (this.welt.drachenAn && this.welt.dracheVon(this.spielerId)) ruecklage.nahrung = (ruecklage.nahrung || 0) + DRACHE_FUTTER;
     return ruecklage;
   }
 
@@ -936,6 +1015,158 @@ class Ki {
     return this.welt.gebaeudeDerZeit(spieler) >= AUFSTIEGE.ritterzeit.voraussetzung;
   }
 
+  /** Ob diese Einheit ein Ei holt oder traegt (ki AC-29). */
+  holtEi(e) {
+    const art = e.auftrag?.art;
+    return art === 'ei' || art === 'eiBringen' || e.ladungsart === 'ei' || e.id === this.eiHoler?.einheit;
+  }
+
+  /** Ob diese Art einen Drachen treffen kann (kampf AC-23) - aus den Daten. */
+  trifftDrachen(art) {
+    const getroffenVon = EINHEITEN.drache.fliegt?.getroffenVon || [];
+    return Boolean(EINHEITEN[art]) && (EINHEITEN[art].klassen || []).some((k) => getroffenVon.includes(k));
+  }
+
+  /**
+   * Ob ihr ein Drache droht (ki AC-29): ein Gegner ruft ihn - die Ansage
+   * sieht jeder -, oder sie hat einen fremden Drachen eben gesehen.
+   */
+  dracheDroht() {
+    const welt = this.welt;
+    if (!welt.drachenAn) return false;
+    for (const [besitzer, takt] of this.drachenGesehen) {
+      if (welt.takt - takt < DRACHE_GEFAHR_SEKUNDEN * TAKTE_PRO_SEKUNDE && welt.feindlich(this.spielerId, besitzer)) return true;
+    }
+    for (const g of welt.gebaeude.values()) if (g.ruf && welt.feindlich(this.spielerId, g.besitzer)) return true;
+    return false;
+  }
+
+  /**
+   * Der Drache (ki AC-29): ab dem Fuerstentum, nach dem ersten Aufbruch.
+   * Kennt sie ein Ei am Boden, baut sie ein Kloster am Dorf, schickt einen
+   * Dorfbewohner hin, und der bringt es ins Kloster (einheiten AC-51). Liegt
+   * es dort, bildet sie Moenche aus, bis `DRACHE_MOENCHE` stehen, und stellt
+   * sie ans Kloster; dann legt sie den Preis zurueck und ruft (bauen AC-35).
+   * Solange gerufen wird, steht die Wache am Kloster. Was die Welt dazu
+   * verlangt, prueft der Server noch einmal.
+   */
+  drachePruefen(eigene, gebaeude, dorfbewohner) {
+    const welt = this.welt;
+    this.rufFehlt = null;
+    if (!welt.drachenAn || this.spieler.zeitalter < (EINHEITEN.drache.zeitalter || 0) || this.angriffTakt === null) return;
+    if (welt.dracheVon(this.spielerId)) return;
+    const ruf = welt.rufVon(this.spielerId);
+    if (ruf) {
+      this.klosterBewachen(eigene, ruf);
+      return;
+    }
+    // Wer ueberlegen ist (ki AC-18), braucht ihn nicht: Kloster, Moenche und
+    // der Preis des Rufs kosteten sie nur den Sieg, den sie schon hat.
+    if (this.ueberlegen()) return;
+    // Vor der Krone (DRACHE_ZEITALTER) nur, wer hinten liegt.
+    if (this.spieler.zeitalter < DRACHE_ZEITALTER && !this.unterlegen()) return;
+    const kloster = gebaeude.find((g) => g.art === 'kloster' && g.fertig);
+    const klosterImBau = gebaeude.some((g) => g.art === 'kloster' && !g.fertig);
+    const eigeneIds = new Set(gebaeude.map((g) => g.id));
+    const imKloster = [...welt.eier.values()].find((ei) => ei.kloster !== null && eigeneIds.has(ei.kloster));
+    const traeger = eigene.find((e) => !e.tot && e.ladungsart === 'ei');
+    const takt = welt.takt;
+    if (!imKloster) {
+      if (!traeger && !this.eierBekannt.size) return;
+      if (!kloster) {
+        if (!klosterImBau) this.bauen('kloster', this.platzBeiBasis('kloster'), dorfbewohner);
+        return;
+      }
+      if (traeger) {
+        if (!traeger.auftrag) this.befehl(traeger, { x: kloster.x, y: kloster.y });
+        return;
+      }
+      // Holt schon einer? Ein Ei, das sie nicht sieht, laesst sich nicht
+      // aufheben (einheiten AC-51) - der Holer geht erst hin und hebt es auf,
+      // sobald er es sieht. Kommt er in EI_WEG_SEKUNDEN nicht dazu, oder
+      // faellt er, ist der Versuch gescheitert, und das Ei steht eine Weile
+      // zurueck.
+      if (this.eiHoler) {
+        const holer = welt.einheiten.get(this.eiHoler.einheit);
+        const ei = welt.eier.get(this.eiHoler.ei);
+        const lebt = holer && !holer.tot && ei && welt.eiAmBoden(ei);
+        if (lebt && holer.auftrag?.art === 'ei') return;
+        if (lebt && takt - this.eiHoler.seit < EI_WEG_SEKUNDEN * TAKTE_PRO_SEKUNDE) {
+          if (welt.sieht(this.spielerId, ei.x, ei.y)) this.befehl(holer, { x: ei.x, y: ei.y });
+          else if (!holer.weg.length) this.befehl(holer, { x: ei.x, y: ei.y });
+          if (holer.auftrag?.art === 'ei' || holer.weg.length) return;
+        }
+        this.eiGesperrt.set(this.eiHoler.ei, takt + EI_GESPERRT_SEKUNDEN * TAKTE_PRO_SEKUNDE);
+        this.eiHoler = null;
+      }
+      const { basis } = this.spieler;
+      const ei = [...this.eierBekannt.values()]
+        .filter((e) => !(this.eiGesperrt.get(e.id) > takt))
+        .sort((a, b) => Math.hypot(a.x - basis.x, a.y - basis.y) - Math.hypot(b.x - basis.x, b.y - basis.y))[0];
+      if (!ei) return;
+      const wer = this.bauer(dorfbewohner);
+      if (!wer) return;
+      this.befehl(wer, { x: ei.x, y: ei.y });
+      if (wer.auftrag?.art === 'ei' || wer.weg.length) this.eiHoler = { einheit: wer.id, ei: ei.id, seit: takt };
+      else this.eiGesperrt.set(ei.id, takt + EI_GESPERRT_SEKUNDEN * TAKTE_PRO_SEKUNDE);
+      return;
+    }
+    // Es liegt: der Holer ist frei fuer seine Arbeit.
+    this.eiHoler = null;
+    const heimat = welt.gebaeude.get(imKloster.kloster);
+    if (!heimat) return;
+    // Die Moenche: ausbilden, bis genug stehen, und ans Kloster stellen.
+    const moenche = eigene.filter((e) => !e.tot && EINHEITEN[e.art].heilen);
+    const bestellt = heimat.schlange.filter((a) => a === 'moench').length;
+    if (moenche.length + bestellt < DRACHE_MOENCHE && heimat.schlange.length < 2) {
+      const ruecklage = this.ruecklage();
+      const kosten = welt.auftragKosten(this.spielerId, 'moench');
+      if (Object.entries(kosten).every(([r, menge]) => this.spieler[r] - (ruecklage[r] || 0) >= menge)) {
+        this.senden({ auftrag: 'ausbilden', gebaeude: heimat.id, einheit: 'moench' });
+      }
+    }
+    const { y0, x1, y1 } = welt.grundflaeche(heimat.art, heimat.x, heimat.y, heimat.quer);
+    for (const m of moenche) {
+      if (m.auftrag || m.weg.length || welt.abstandZu(m, heimat) <= MOENCH_NAH) continue;
+      this.befehl(m, { x: x1 + 1, y: Math.round((y0 + y1) / 2) });
+    }
+    if (welt.moencheAm(heimat) < DRACHE_MOENCHE) {
+      this.rufWartet = null;
+      return;
+    }
+    // Der Ruf: bezahlt, sonst liegt sein Preis zurueck - eine Weile.
+    const kosten = DRACHE.rufen.kosten;
+    if (Object.entries(kosten).every(([r, menge]) => this.spieler[r] >= menge)) {
+      if (!this.senden({ auftrag: 'rufen', gebaeude: heimat.id }).fehler) {
+        if (this.rufTakt === null) this.rufTakt = takt;
+        this.rufWartet = null;
+      }
+      return;
+    }
+    if (this.rufWartet === null) this.rufWartet = takt;
+    // Im Wechsel: RUF_WARTEN_SEKUNDEN liegt der Preis zurueck, dann
+    // RUF_PAUSE_SEKUNDEN nicht - sonst saesse sie ohne Gold auf dem, was sie
+    // hat, und baute kein Heer mehr.
+    const zyklus = (RUF_WARTEN_SEKUNDEN + RUF_PAUSE_SEKUNDEN) * TAKTE_PRO_SEKUNDE;
+    if ((takt - this.rufWartet) % zyklus < RUF_WARTEN_SEKUNDEN * TAKTE_PRO_SEKUNDE) this.rufFehlt = kosten;
+  }
+
+  /**
+   * Solange sie ruft (ki AC-29), steht ihre Wache am Kloster: die
+   * Kampfeinheiten daheim, die dem Kloster am naechsten stehen.
+   */
+  klosterBewachen(eigene, kloster) {
+    const welt = this.welt;
+    const daheim = eigene.filter((e) => !e.tot && this.kaempft(e) && !this.heer.has(e.id) && !EINHEITEN[e.art].gerufen)
+      .sort((a, b) => welt.abstandZu(a, kloster) - welt.abstandZu(b, kloster))
+      .slice(0, WACHE);
+    const { x0, y1 } = welt.grundflaeche(kloster.art, kloster.x, kloster.y, kloster.quer);
+    for (const e of daheim) {
+      if (e.auftrag || e.weg.length || welt.abstandZu(e, kloster) <= KLOSTER_WACHE_NAH) continue;
+      this.befehl(e, { x: x0, y: y1 + 2 });
+    }
+  }
+
   /**
    * Nach dem Aufstieg ein Militaergebaeude, dann ohne Pause Kampfeinheiten
    * (ki AC-9). Welche, steht in den Daten des Gebaeudes - so bekommt die KI
@@ -975,8 +1206,16 @@ class Ki {
     // (Runde 95, gemessen).
     // Der Schwerpunkt des Hauses zuerst (ki AC-27): reicht der Vorrat nur
     // fuer einen Auftrag, bekommt ihn dieses Gebaeude.
+    // Droht ein Drache (ki AC-29), zuerst, was ihn trifft: die Gebaeude, die
+    // Schuetzen ausbilden - und fehlt eins, baut sie es.
+    const droht = this.dracheDroht();
+    const trifft = (g) => Number(droht && GEBAEUDE[g.art].bildetAus.some((art) => this.trifftDrachen(art)));
     const meine = gebaeude.filter((g) => MILITAER.includes(g.art) || g.art === 'kaserne')
-      .sort((a, b) => Number(b.art === schwerpunkt) - Number(a.art === schwerpunkt));
+      .sort((a, b) => trifft(b) - trifft(a) || Number(b.art === schwerpunkt) - Number(a.art === schwerpunkt));
+    if (droht && !meine.some(trifft)) {
+      const art = MILITAER.find((a) => GEBAEUDE[a].bildetAus.some((e) => this.trifftDrachen(e)));
+      if (art && !gebaeude.some((g) => g.art === art)) this.bauen(art, this.platzBeiBasis(art), dorfbewohner);
+    }
     for (const g of meine) {
       if (!g.fertig || g.schlange.length >= MILITAER_SCHLANGE) continue;
       const art = this.naechsteKampfeinheit(g, ruecklage);
@@ -1124,6 +1363,14 @@ class Ki {
     return Boolean(ziel) && this.welt.takt - this.blockZuletzt(ziel) < UEBERLEGEN_FRISCH;
   }
 
+  // Unterlegen (ki AC-29): der naechste Gegner hat mehr Kampfeinheiten, als
+  // sie hat - gezaehlt wie fuer `ueberlegen`, was sie zuletzt sah.
+  unterlegen() {
+    this.wahrnehmen();
+    const gegner = this.naechsterGegner();
+    return Boolean(gegner) && this.gesehenVon(gegner.id) > this.kampfeinheitenVon(this.spielerId);
+  }
+
   // Wann sie den Block um diesen Ort zuletzt sah.
   blockZuletzt(ort) {
     if (!this.blockGesehen) return -Infinity;
@@ -1173,7 +1420,21 @@ class Ki {
     for (const [id, f] of this.feindeGesehen) {
       if (!jetzt.has(id) && welt.sieht(this.spielerId, f.x, f.y)) this.feindeGesehen.delete(id);
     }
+    // Eier (ki AC-29): wo eins am Boden liegt, das sie sieht - oder wo ein
+    // Drache fiel, das sehen alle (einheiten AC-53). Wo sie hinsieht und es
+    // nicht mehr liegt, streicht sie es.
+    if (welt.drachenAn) {
+      for (const ei of welt.eier.values()) {
+        if (welt.eiAmBoden(ei) && (ei.gefallen || welt.sieht(ich, ei.x, ei.y))) this.eierBekannt.set(ei.id, { id: ei.id, x: ei.x, y: ei.y });
+      }
+      for (const [id, bekannt] of this.eierBekannt) {
+        const ei = welt.eier.get(id);
+        const liegt = ei && welt.eiAmBoden(ei) && ei.x === bekannt.x && ei.y === bekannt.y;
+        if (!liegt && welt.sieht(ich, bekannt.x, bekannt.y)) this.eierBekannt.delete(id);
+      }
+    }
     for (const e of sichtbar) {
+      if (EINHEITEN[e.art].gerufen) this.drachenGesehen.set(e.besitzer, welt.takt);
       // Auch Dorfbewohner: wo die Holzfaeller des Gegners standen, weiss
       // sie, wie ein Mensch es weiss - das Heer sucht sie dort (heerPruefen).
       // Fuer die Ueberlegenheit zaehlen sie nicht (gesehenVon) - und auch
@@ -1238,6 +1499,7 @@ class Ki {
     const spaeher = eigene.find((e) => e.art === 'spaeherreiter' && !e.tot && !this.heer.has(e.id));
     if (!spaeher) return;
     if (this.alleGegnerBekannt()) {
+      if (this.eierSuchen(eigene)) return;
       // Gefunden: heim. Bliebe er stehen, griffe er an, was ihm in Sicht
       // kommt (kampf AC-2) - im fremden Dorf dessen Dorfbewohner, und die
       // liefen davon (ki AC-14). In Runde 112 kostete das beide KIs Nahrung
@@ -1266,6 +1528,94 @@ class Ki {
     this.erkundung = punkt;
     this.erkunder = spaeher.id;
     this.senden({ auftrag: 'befehl', einheiten: [spaeher.id], ziel: feld });
+  }
+
+  /**
+   * Ein Ei suchen (ki AC-29): sobald sie die Gegner kennt und kein Ei, keines
+   * im eigenen Kloster liegt und kein eigener Drache fliegt, reitet der
+   * Spaeher (oder wer aus seiner Linie stammt) die Punkte zwischen ihrem
+   * Dorf und den fremden ab, die sie kennt. Gibt `true` zurueck, solange er
+   * sucht; sonst geht es weiter wie vorher.
+   */
+  eierSuchen(eigene) {
+    const welt = this.welt;
+    const aus = () => {
+      this.eiSuche = null;
+      this.eiSucher = null;
+      return false;
+    };
+    if (!welt.drachenAn) return aus();
+    // Erst ab dem Fuerstentum, wo die Welt den Drachen erlaubt, und nicht,
+    // wer ueberlegen ist (er riefe ihn nicht, drachePruefen). Frueher ritt der
+    // Spaeher schon im Landsitz los (zwei gegen zwei, Startwert 17: ab Minute
+    // 1,2 eine andere Partie als ohne Drache, bis Minute 90 ohne Sieger statt
+    // Ende 40,2). Strenger - im Fuerstentum nur, wer unterlegen ist, wie beim
+    // Rufen - fanden 6 statt 27 KIs ein Ei, und zwei gegen zwei liefen
+    // Startwerte 12 und 18 bis Minute 90 (gemessen 2026-11-24).
+    if (this.spieler.zeitalter < (EINHEITEN.drache.zeitalter || 0) || this.ueberlegen()) return aus();
+    if (this.eierBekannt.size || welt.dracheVon(this.spielerId) || welt.rufVon(this.spielerId)) return aus();
+    const eigeneKloster = new Set();
+    for (const g of welt.gebaeude.values()) if (g.besitzer === this.spielerId && g.art === 'kloster') eigeneKloster.add(g.id);
+    for (const ei of welt.eier.values()) if (eigeneKloster.has(ei.kloster) || (ei.traeger !== null && welt.einheiten.get(ei.traeger)?.besitzer === this.spielerId)) return aus();
+    const linie = (art) => {
+      while (EINHEITEN[art]?.stufeVon) art = EINHEITEN[art].stufeVon;
+      return art;
+    };
+    // Der Spaeher, sobald er die Gegner kennt - meist im Lehen, lange vor dem
+    // Drachen; ist er gefallen und geht sie der Drache an, ein Reiter von
+    // daheim, der nicht im Heer steht.
+    const frei = (e) => !e.tot && !this.heer.has(e.id);
+    let spaeher = eigene.find((e) => frei(e) && linie(e.art) === 'spaeherreiter');
+    const drachenZeit = this.spieler.zeitalter >= (EINHEITEN.drache.zeitalter || 0) && this.angriffTakt !== null;
+    if (!spaeher && drachenZeit) {
+      spaeher = eigene.find((e) => e.id === this.eiSucher && frei(e))
+        || eigene.find((e) => frei(e) && this.kaempft(e) && (EINHEITEN[e.art].klassen || []).includes('kavallerie'));
+    }
+    if (!spaeher) return aus();
+    if (this.eiSuche && this.eiSucher === spaeher.id) {
+      const unterwegs = spaeher.weg.length > 2 || spaeher.auftrag?.art === 'angreifen';
+      if (unterwegs && !welt.erkundet(this.spielerId, this.eiSuche.x, this.eiSuche.y)) return true;
+      this.eiSucheFertig.add(this.eiSuche.y * welt.karte.groesse + this.eiSuche.x);
+    }
+    const punkt = this.eiSuchpunkt();
+    if (!punkt) return aus();
+    const feld = this.freiesFeldUm(punkt, spaeher);
+    if (!feld) {
+      this.eiSucheFertig.add(punkt.y * welt.karte.groesse + punkt.x);
+      return aus();
+    }
+    this.eiSuche = punkt;
+    this.eiSucher = spaeher.id;
+    this.senden({ auftrag: 'befehl', einheiten: [spaeher.id], ziel: feld });
+    return true;
+  }
+
+  // Der naechste Punkt, an dem ein Ei liegen kann (ki AC-29): von ihrem Dorf
+  // und einem fremden, das sie gesehen hat, fast gleich weit, noch nicht
+  // erkundet - der fernste von beiden Doerfern zuerst.
+  eiSuchpunkt() {
+    const welt = this.welt;
+    const g = welt.karte.groesse;
+    const { basis } = this.spieler;
+    const doerfer = new Map();
+    for (const b of this.gesehen.values()) {
+      if (!welt.feindlich(this.spielerId, b.besitzer)) continue;
+      if (!doerfer.has(b.besitzer) || b.art === 'dorfzentrum') doerfer.set(b.besitzer, b);
+    }
+    let bester = null;
+    for (const d of doerfer.values()) {
+      for (let y = EI_SUCHE_RASTER; y < g - EI_SUCHE_RASTER; y += EI_SUCHE_RASTER) {
+        for (let x = EI_SUCHE_RASTER; x < g - EI_SUCHE_RASTER; x += EI_SUCHE_RASTER) {
+          if (welt.erkundet(this.spielerId, x, y) || this.eiSucheFertig.has(y * g + x)) continue;
+          const eigen = Math.hypot(x - basis.x, y - basis.y);
+          const fremd = Math.hypot(x - d.x, y - d.y);
+          if (Math.abs(eigen - fremd) > EI_SUCHE_GLEICH) continue;
+          const weit = Math.min(eigen, fremd);
+          if (!bester || weit > bester.weit) bester = { x, y, weit };
+        }
+      }
+    }
+    return bester ? { x: bester.x, y: bester.y } : null;
   }
 
   // Kennt sie von jedem, der noch spielt, ein Gebaeude?
@@ -1557,7 +1907,11 @@ class Ki {
     }
     const fertig = werkstaetten.find((g) => g.fertig);
     if (!fertig) return;
-    const stehen = eigene.filter((e) => !e.tot && e.art === RAMME).length + fertig.schlange.filter((a) => a === RAMME).length;
+    // Gezaehlt wird jede Ramme, auch die der Krone: nach der Belagerungsramme
+    // (`rammenstufe`, wandelt) hiess keine mehr `ramme` - es fehlten fuer sie
+    // immer drei, und die Ausbildung ruhte bis zum Ende (zwei gegen zwei,
+    // Startwert 17: Minute 75 bis 90 keine Kampfeinheit, acht Rammen daheim).
+    const stehen = eigene.filter((e) => !e.tot && this.belagert(e)).length + fertig.schlange.filter((a) => EINHEITEN[a]?.nurGebaeude).length;
     if (stehen >= RAMMEN) return;
     const ruecklage = this.ruecklage();
     if (dringend) this.belagerungFehlt = EINHEITEN[RAMME].kosten;
@@ -1602,6 +1956,15 @@ class Ki {
       if (!this.welt.feindlich(this.spielerId, g.besitzer) || this.welt.spielerVon(g.besitzer)?.aus) continue;
       if (!bestes || rest < bestes.rest) bestes = { g, rest };
     }
+    // Ruft ein Gegner seinen Drachen (ki AC-29), ist sein Kloster das Ziel
+    // wie ein Wunder - auch diese Ansage sieht jeder (bauen AC-35).
+    if (!bestes && this.welt.drachenAn) {
+      for (const g of this.welt.gebaeude.values()) {
+        if (!g.ruf || !this.welt.feindlich(this.spielerId, g.besitzer) || this.welt.spielerVon(g.besitzer)?.aus) continue;
+        const rest = DRACHE.rufen.sekunden * TAKTE_PRO_SEKUNDE - g.ruf.takte;
+        if (!bestes || rest < bestes.rest) bestes = { g, rest };
+      }
+    }
     if (!bestes) return null;
     const { g } = bestes;
     if (!this.gesehen.has(g.id)) this.gesehen.set(g.id, { id: g.id, art: g.art, x: g.x, y: g.y, besitzer: g.besitzer });
@@ -1614,7 +1977,11 @@ class Ki {
   gegnerZiel(gegner) {
     const seine = [...this.gesehen.values()].filter((g) => g.besitzer === gegner.id);
     const zentrum = seine.find((g) => g.art === 'dorfzentrum');
-    const gebaeude = zentrum || seine[0];
+    // Hat sie seinen Drachen eben gesehen (ki AC-29), zuerst sein Kloster.
+    const gesehen = this.drachenGesehen.get(gegner.id);
+    const kloster = gesehen !== undefined && this.welt.takt - gesehen < DRACHE_GEFAHR_SEKUNDEN * TAKTE_PRO_SEKUNDE
+      ? seine.find((g) => g.art === 'kloster') : null;
+    const gebaeude = kloster || zentrum || seine[0];
     if (gebaeude) return { x: gebaeude.x, y: gebaeude.y };
     const ort = this.feindOrt.get(gegner.id);
     return ort ? this.suchziel(ort) : null;
@@ -1828,7 +2195,7 @@ class Ki {
     // Startwert 4 drehte er vier Felder vor dem fremden Dorfzentrum um, weil
     // daheim ein fremder Spaeher einen Dorfbewohner schlug.
     const wache = eigene.filter((e) => !e.tot && !this.heer.has(e.id) && this.kaempft(e)
-      && !(this.erkundung && e.id === this.erkunder));
+      && !(this.erkundung && e.id === this.erkunder) && !(this.eiSuche && e.id === this.eiSucher));
     const ziehen = wache.filter((e) => Math.hypot(e.x - ort.x, e.y - ort.y) > WACHE_NAH
       && e.auftrag?.art !== 'angreifen');
     const vergeben = [];
@@ -2175,7 +2542,8 @@ class Ki {
     // naechsten Baum, von dem aus es zwanzig Felder bis zur Annahme sind.
     const annahme = [...this.welt.gebaeude.values()].filter((g) => g.besitzer === this.spielerId && g.fertig
       && GEBAEUDE[g.art].annahme.includes(rohstoff));
-    const feld = this.naechstesFeld(einheit, FELD_FUER[rohstoff], annahme);
+    const feld = this.naechstesFeld(einheit, FELD_FUER[rohstoff], annahme)
+      || (WEITER[rohstoff] ? this.naechstesFeld(einheit, FELD_FUER[rohstoff], annahme, WEITER[rohstoff]) : null);
     return feld ? this.zumFeld(einheit, feld) && this.unterwegs(einheit) : false;
   }
 
@@ -2271,7 +2639,7 @@ class Ki {
   // `annahme`: Gebaeude, die den Rohstoff nehmen. Dann zaehlt vor allem der
   // Weg vom Feld zur naechsten Annahme - den geht der Sammler mit jeder
   // Ladung -, der Anmarsch nur mit ANMARSCH.
-  naechstesFeld(von, arten, annahme = null) {
+  naechstesFeld(von, arten, annahme = null, reichweite = REICHWEITE) {
     const { karte } = this.welt;
     const { basis } = this.spieler;
     let bestes = null;
@@ -2280,7 +2648,7 @@ class Ki {
       if (!arten.includes(karte.felder[index]) || this.gesperrt(index)) continue;
       const x = index % karte.groesse;
       const y = (index / karte.groesse) | 0;
-      if (Math.hypot(x - basis.x, y - basis.y) > REICHWEITE) continue;
+      if (Math.hypot(x - basis.x, y - basis.y) > reichweite) continue;
       let abstand = Math.hypot(x - von.x, y - von.y);
       if (annahme && annahme.length) {
         let zurAnnahme = Infinity;
@@ -2837,7 +3205,7 @@ class Ki {
 }
 
 module.exports = {
-  Ki, ENTSCHEIDEN_ALLE, ZIEL_DORFBEWOHNER, DORFBEWOHNER_JE_ZEITALTER, zielDorfbewohner, KRONE_DORF, KRONE_GEBAEUDE, KRONE_AB_MINUTE, FEUDALZEIT_NAHRUNG, AN_SCHAFEN, AN_BEEREN, MILITAER,
+  Ki, ENTSCHEIDEN_ALLE, REICHWEITE, WEITER, ZIEL_DORFBEWOHNER, DORFBEWOHNER_JE_ZEITALTER, zielDorfbewohner, KRONE_DORF, KRONE_GEBAEUDE, KRONE_AB_MINUTE, FEUDALZEIT_NAHRUNG, AN_SCHAFEN, AN_BEEREN, MILITAER,
   HEER, WACHE, UEBERLEGEN, MARSCH_MINDESTENS, HEER_ABSTAND, WACHE_NAH, FEIND_FERN, STURM_UMKREIS, STURM_HOECHSTENS, STURM_FEINDE, STURM_SEKUNDEN, STURM_LEINE, STURM_SCHWACH, VERGEBEN_ABSTAND, MILITAER_HOLZ, UEBERSCHUSS, MANGEL, UMVERTEILEN_SEKUNDEN, UNERREICHBAR_SEKUNDEN, MILITAER_HOECHSTENS, MILITAER_JE_ZEITALTER, plan,
   MILITAER_UEBERFLUSS_AB, MILITAER_UEBERFLUSS_HOLZ, MILITAER_UEBERFLUSS_KAMPF, MILITAER_ALLERHOECHSTENS,
   GOLD_KNAPP, PLATZ_RINGE, KARREN, HANDEL_ABSTAENDE, HANDEL_MINDESTENS, VERKAUF_RUECKLAGE, KARREN_WARTEN_SEKUNDEN, FEIND_VERGESSEN,
@@ -2845,4 +3213,5 @@ module.exports = {
   FESTUNG, BURGEN_JE_ZEITALTER, BURG_ABSTAND_SEKUNDEN, BURG_STEINSAMMLER, BURG_VOR, BURG_BAUER,
   FARM_WEIT, MUEHLE_RAUM, LAGER_AB, LAGER_ARBEITER, LAGER_ANTEIL, LAGER_RUECKLAGE, ANMARSCH,
   FORSCHEN_ZUGLEICH, FORSCHEN_PUFFER, FORSCHEN_MINDESTENS, FORSCHEN_ARBEITER, FORSCHEN_STUFE, FORSCHEN_WARTEN, FORSCHEN_ZURUECK,
+  WUNDER_EINHEIT_NAH, DRACHE_ZEITALTER, DRACHE_MOENCHE, MOENCH_NAH, DRACHE_GEFAHR_SEKUNDEN, DRACHE_FUTTER, EI_GESPERRT_SEKUNDEN, RUF_WARTEN_SEKUNDEN, RUF_PAUSE_SEKUNDEN, KLOSTER_WACHE_NAH, EI_WEG_SEKUNDEN, EI_SUCHE_GLEICH, EI_SUCHE_RASTER,
 };

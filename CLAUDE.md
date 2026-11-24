@@ -181,7 +181,7 @@ Umfang hinzufügt, dort nachsehen.
 
 ## Stand
 
-**637 von 718 Kriterien fertig.** 1154 Tests ohne Browser und 37 ganze Partien, 363 im Browser. Die
+**638 von 718 Kriterien fertig.** 1154 Tests ohne Browser und 37 ganze Partien, 363 im Browser. Die
 Übersicht ist der Bericht: `npm run qa:report`.
 
 Gebaut ist der Unterbau: Räume, Übertragung, Karte, Wegfindung, Sammeln,
@@ -536,6 +536,14 @@ nicht überlegen ist, sammelt zehn statt Nachschub zu zweit. Gemessen: schenkt
 der Test der KI mit weniger Punkten in Minute 30 ein Wunder, verliert es in
 20 von 22 Partien vor Ablauf der Uhr Leben (`tests/partien/ki-wunder.test.mjs`,
 verlangt 85 %, gesetzt); gegen ein stärkeres Heer kommt sie nicht durch.
+**Die KI ruft den Drachen** (ki AC-29, Variante A, 2026-11-24,
+`ki.drachePruefen`, `ki.eierSuchen`): in der Krone, im Fürstentum nur
+unterlegen, überlegen nie; ihr Späher sucht Eier ab dem Fürstentum, wenn sie
+nicht überlegen ist — ab dem Landsitz lief zwei gegen zwei Startwert 17 bis
+Minute 90. Gemessen im Nebel: 105 von 120 vor Minute 60 (genau die
+Grenze), Median 39,0, keine ohne Sieger; 20 KIs mit Ei im Kloster, ein Ruf.
+**Zwei gegen zwei ist die empfindlichste Grenze** — Team-Tests zuerst fahren.
+einheiten AC-52 gepaart misst damit nichts (eine Partie mit Ruf).
 **Die Hauseinheiten (ki AC-28) bleiben aus** (`NOCH_NICHT` für alle): jede
 KI mit Burg und Einheit daraus hielt nicht (16 KIs ohne), und der Nebel
 stand damit auf den Grenzen (105 vor Minute 60, eine ohne Sieger).

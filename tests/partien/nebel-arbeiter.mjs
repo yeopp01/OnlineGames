@@ -54,6 +54,22 @@ const enden = workerData.startwerte.map((startwert) => {
         if (dorf < BRUCH) f.bruch = welt.takt;
       }
     }
+    // Der Drache (ki AC-29, einheiten AC-52): wann ein Ei zum ersten Mal in
+    // ihrem Kloster lag, wann sie zum ersten Mal rief und wann ihr Drache
+    // zum ersten Mal stand - alle sechs Spielsekunden nachgesehen.
+    if (welt.drachenAn && welt.takt % 60 === 0) {
+      for (const s of welt.spieler) {
+        const f = (forschung[s.id] ??= { fuerst: null, krone: null, bruch: null, verbesserungen: [] });
+        f.ei ??= null;
+        f.ruf ??= null;
+        f.drache ??= null;
+        if (f.ei === null) {
+          for (const ei of welt.eier.values()) if (ei.kloster !== null && welt.gebaeude.get(ei.kloster)?.besitzer === s.id) f.ei = welt.takt;
+        }
+        if (f.ruf === null && welt.rufVon(s.id)) f.ruf = welt.takt;
+        if (f.drache === null && welt.dracheVon(s.id)) f.drache = welt.takt;
+      }
+    }
     for (const g of welt.gebaeude.values()) {
       if (!g.fertig || fertig.has(g.id)) continue;
       fertig.add(g.id);

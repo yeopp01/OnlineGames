@@ -366,3 +366,33 @@ test('ki AC-39: ueber 120 Startwerte erreicht in mindestens der Haelfte der Part
   assert.ok(2 * mitKrone.length >= lang.length, `${mitKrone.length} von ${lang.length} mit Krone`);
 });
 
+
+// Der Drache (ki AC-29): in ganzen Partien bringt die KI Eier ins Kloster -
+// gerufen wird selten, denn gerufen wird erst in der Krone oder unterlegen
+// (Variante A, Benutzer 2026-11-22), und dort fehlen ihr meist 400 Nahrung
+// und 400 Gold zugleich. Gezaehlt alle sechs Spielsekunden.
+// Gemessen 2026-11-24 (Startwerte 1-120): 27 KIs mit Ei im Kloster, zwei
+// Rufe (Startwert 108 ab Minute 51,9, Startwert 97 ab 63,7), zwei Drachen.
+const EIER_MINDESTENS = 15;
+test('ki AC-29: ueber 120 Startwerte bringen die KIs Eier in ihr Kloster, und keine ruft vor dem Fuerstentum', async (t) => {
+  const enden = await allePartien();
+  let eier = 0;
+  let rufe = 0;
+  let drachen = 0;
+  const zeiten = [];
+  const zufrueh = [];
+  for (const e of enden) {
+    for (const [id, w] of Object.entries(e.forschung)) {
+      if (w.ei != null) eier += 1;
+      if (w.drache != null) drachen += 1;
+      if (w.ruf == null) continue;
+      rufe += 1;
+      zeiten.push(+(w.ruf / TAKTE_JE_MINUTE).toFixed(1));
+      if (w.fuerst == null || w.ruf < w.fuerst) zufrueh.push(`${e.startwert}/${id}`);
+    }
+  }
+  zeiten.sort((a, b) => a - b);
+  t.diagnostic(`${eier} KIs mit Ei im Kloster, ${rufe} riefen (ab Minute ${zeiten.join(', ') || '-'}), ${drachen} Drachen`);
+  assert.ok(eier >= EIER_MINDESTENS, `nur ${eier} KIs mit Ei im Kloster`);
+  assert.deepEqual(zufrueh, [], 'gerufen vor dem Fuerstentum');
+});

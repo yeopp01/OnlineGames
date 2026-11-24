@@ -10,7 +10,7 @@ const require = createRequire(import.meta.url);
 const karten = require('../server/spiele/strategie/karte.js');
 const { Welt } = require('../server/spiele/strategie/welt.js');
 const {
-  Ki, ENTSCHEIDEN_ALLE, ZIEL_DORFBEWOHNER, DORFBEWOHNER_JE_ZEITALTER, FEUDALZEIT_NAHRUNG, AN_SCHAFEN, AN_BEEREN, MILITAER,
+  Ki, ENTSCHEIDEN_ALLE, REICHWEITE, WEITER, ZIEL_DORFBEWOHNER, DORFBEWOHNER_JE_ZEITALTER, FEUDALZEIT_NAHRUNG, AN_SCHAFEN, AN_BEEREN, MILITAER,
   HEER, WACHE, UEBERLEGEN, MARSCH_MINDESTENS, HEER_ABSTAND, WACHE_NAH, FEIND_FERN, VERGEBEN_ABSTAND, MILITAER_HOLZ, UEBERSCHUSS, MANGEL, UNERREICHBAR_SEKUNDEN, plan,
 } = require('../server/spiele/strategie/ki.js');
 const { TAKTE_PRO_SEKUNDE } = require('../server/spiele/strategie/welt.js');
@@ -1251,6 +1251,26 @@ test('ki AC-12: fehlt nach dem Aufstieg Nahrung und ist keine Farm frei, baut di
   assert.ok(!farmBestellt(0, 50), 'in der Dunklen Zeit keine Farm ueber den Plan hinaus');
   assert.ok(!farmBestellt(1, MANGEL + 100), 'mit genug Nahrung keine');
   assert.ok(farmBestellt(1, 50), 'nach dem Aufstieg, hungrig und ohne freie Farm: eine Farm');
+});
+
+test('ki AC-10: steht in ihrer Reichweite kein Baum mehr, schickt sie den Holzfaeller zum naechsten dahinter', () => {
+  // Zwei gegen zwei, Startwert 17 (2026-11-24): ab Minute 74 stand bei KI 3
+  // kein Baum naeher als 30,1 Felder, 18 bis 20 Dorfbewohner standen, und
+  // ohne Holz ruhte die Ausbildung bis Minute 90.
+  const welt = new Welt(ZWEI, 7);
+  const ki = new Ki(welt, 'a');
+  const { basis } = welt.spielerVon('a');
+  const g = welt.karte.groesse;
+  const weit = (i) => Math.hypot((i % g) - basis.x, ((i / g) | 0) - basis.y);
+  for (const i of welt.karte.vorrat.keys()) {
+    if (welt.karte.felder[i] === karten.WALD && weit(i) <= REICHWEITE) welt.karte.felder[i] = karten.GRAS;
+  }
+  const rest = [...welt.karte.vorrat.keys()].filter((i) => welt.karte.felder[i] === karten.WALD && weit(i) <= WEITER.holz);
+  assert.ok(rest.length, `ein Baum zwischen ${REICHWEITE} und ${WEITER.holz} Feldern`);
+  const faeller = [...welt.einheiten.values()].find((e) => e.besitzer === 'a' && e.art === 'dorfbewohner');
+  assert.ok(ki.schicken(faeller, 'holz'), 'er geht los');
+  const ziel = faeller.auftrag?.ziel || faeller.weg[faeller.weg.length - 1];
+  assert.ok(Math.hypot(ziel.x - basis.x, ziel.y - basis.y) > REICHWEITE - 2, 'zu einem Baum ausserhalb der Reichweite');
 });
 
 test('ki AC-10: fuehrt kein Weg zum naechsten Rand des Lagers, liefert der Holzfaeller anderswo ab', () => {
