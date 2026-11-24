@@ -218,7 +218,10 @@ async function partieMit(browser, info, gaeste, { startwert = 4711, breite = 140
   if (sicht) await anna.locator('[data-einstellung="sicht"]').selectOption(JSON.stringify(sicht));
   if (buendnisse) await anna.locator('[data-einstellung="buendnisse"]').selectOption(JSON.stringify(buendnisse));
   if (zeitgrenze) await anna.locator('[data-einstellung="zeitgrenze"]').selectOption(JSON.stringify(zeitgrenze));
-  if (geschwindigkeit) await anna.locator('[data-einstellung="tempo"]').selectOption(JSON.stringify(geschwindigkeit));
+  // Ohne Angabe 1,0, nicht die Vorgabe 1,5: Faelle, die nicht von der
+  // Geschwindigkeit handeln, behalten so ihre gemessenen Zeiten - wie sie
+  // ohne Angabe das Haus ohne Boni spielen.
+  await anna.locator('[data-einstellung="tempo"]').selectOption(JSON.stringify(geschwindigkeit || 1));
   await anna.locator('[data-eroeffnen="strategie"]').click();
   await expect(anna.locator('#raumcode')).toHaveText(/^[A-Z0-9]{3}-[A-Z0-9]{3}$/);
   const code = (await anna.locator('#raumcode').textContent()).trim();

@@ -298,7 +298,7 @@ spielt die KI am schlechtesten.
   Bild `e2e/tests/strategie-zeitgrenze.spec.mjs` (die Uhr stellt der
   Prüfgriff `uhr` vor).
 - **AC-23** `fertig` **Spielgeschwindigkeit ist eine Einstellung** — 1,0, 1,5
-  oder 2,0, Vorgabe 1,0. Eine Spielsekunde bleibt zehn Takte; schneller
+  oder 2,0, Vorgabe 1,5 (Benutzer, 2026-11-22; vorher 1,0). Eine Spielsekunde bleibt zehn Takte; schneller
   heißt, der Raum rechnet mehr Takte je echte Sekunde. Die Zahl erfährt er
   vom Steckbrief (`takte(einstellungen)`), nicht aus einer Verzweigung
   (ADR-0006). Prüfbar: bei 1,5 vergehen in zehn echten Sekunden fünfzehn

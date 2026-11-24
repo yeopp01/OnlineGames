@@ -108,7 +108,8 @@ lohnt sich also, ist aber auch länger zu schützen.
   (spielziel AC-5), und das bräche eine zweistündige Partie zu viert
   mittendrin ab. Prüfstand, Tests und KI gegen KI geben ihre Grenze
   ausdrücklich mit; dort bleibt sie, wie die Schleife sie festlegt.
-- **Spielgeschwindigkeit:** 1,0 (wie heute), 1,5 oder 2,0, Vorgabe 1,0. Eine
+- **Spielgeschwindigkeit:** 1,0 (wie heute), 1,5 oder 2,0, Vorgabe 1,0 —
+  **seit dem 2026-11-24 Vorgabe 1,5** (Nachtrag unten). Eine
   Spielsekunde bleibt zehn Takte; schneller heißt nur, dass der Raum mehr
   Takte je echte Sekunde rechnet. Alle Zeiten in Daten, Specs und im Bild
   sind **Spielzeit**. Der Raum erfährt vom Steckbrief nur, wie viele Takte
@@ -145,3 +146,13 @@ lohnt sich also, ist aber auch länger zu schützen.
   überholt. Angepasst werden sie in der Runde, die ihren Nachfolger baut.
 - Die Bauabfolge steht im [Fahrplan](../../specs/10-strategie/fahrplan.md)
   als D10 bis D14.
+
+## Nachtrag 2026-11-24: Vorgabe der Spielgeschwindigkeit 1,5
+
+Nach dem ersten Spiel auf dem Server war 1,0 zäh; der Benutzer hat am
+2026-11-22 entschieden: „Spielgeschwindigkeit: Vorgabe 1,5" — die Wahl
+1,0 / 1,5 / 2,0 bleibt. Die Werte heißen seitdem ohne Zusatz („1,0" statt
+„1,0 (normal)"), denn das Formular wählt die Vorgabe vor. Die Welt selbst
+rechnet ohne Angabe weiter mit 1,0 (`welt.js`), ebenso Prüfstand und
+Browsertests, die nicht von der Geschwindigkeit handeln (`partieMit`) —
+ihre Zeiten sind in Spielzeit gemessen und ändern sich dadurch nicht.

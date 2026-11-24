@@ -185,10 +185,12 @@ module.exports = {
     },
     // Wie schnell die Partie laeuft (spielziel AC-23, ADR-0013). Die Werte
     // kommen aus GESCHWINDIGKEITEN in der Welt, damit beide dieselbe Liste
-    // kennen.
+    // kennen. Vorgabe 1,5 (Benutzer, 2026-11-22: nach dem ersten Spiel auf
+    // dem Server war 1,0 zaeh); das Formular waehlt sie vor, deshalb steht
+    // an keinem Wert ein Zusatz wie "normal".
     {
-      schluessel: 'tempo', name: 'Spielgeschwindigkeit', art: 'wahl', vorgabe: 1,
-      werte: GESCHWINDIGKEITEN.map((wert) => ({ wert, name: wert.toFixed(1).replace('.', ',') + (wert === 1 ? ' (normal)' : '') })),
+      schluessel: 'tempo', name: 'Spielgeschwindigkeit', art: 'wahl', vorgabe: 1.5,
+      werte: GESCHWINDIGKEITEN.map((wert) => ({ wert, name: wert.toFixed(1).replace('.', ',') })),
     },
   ],
   // Je Platz ein Team oder keins (spielauswahl AC-22). Wer im selben Team

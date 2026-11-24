@@ -20,17 +20,17 @@ const { starten } = require('../server/index.js');
 
 const ZWEI = [{ id: 'a1', name: 'Anna' }, { id: 'b1', name: 'Bert' }];
 
-test('spielziel AC-23: beim Eroeffnen 1,0, 1,5 oder 2,0, Vorgabe 1,0', () => {
+test('spielziel AC-23: beim Eroeffnen 1,0, 1,5 oder 2,0, Vorgabe 1,5', () => {
   const e = STECKBRIEF.einstellungen.find((x) => x.schluessel === 'tempo');
   assert.ok(e, 'die Einstellung steht im Steckbrief');
   assert.equal(e.art, 'wahl');
-  assert.equal(e.vorgabe, 1);
+  assert.equal(e.vorgabe, 1.5, 'Vorgabe 1,5 (Benutzer, 2026-11-22)');
   // Was die Welt kennt, steht zur Wahl - und umgekehrt.
   assert.deepEqual(e.werte.map((w) => w.wert), GESCHWINDIGKEITEN);
   assert.deepEqual(GESCHWINDIGKEITEN, [1, 1.5, 2], 'die Werte aus ADR-0013');
   // Auf dem Bildschirm mit Komma (spielauswahl AC-21 gilt sinngemaess).
-  assert.match(e.werte.find((w) => w.wert === 1.5).name, /^1,5/);
-  assert.match(e.werte.find((w) => w.wert === 1).name, /normal/);
+  // Ohne Zusatz: "normal" an 1,0 hiesse neben der Vorgabe 1,5 das Falsche.
+  assert.deepEqual(e.werte.map((w) => w.name), ['1,0', '1,5', '2,0']);
 });
 
 test('spielziel AC-23: der Steckbrief sagt dem Raum 10, 15 oder 20 Takte je echte Sekunde', () => {
