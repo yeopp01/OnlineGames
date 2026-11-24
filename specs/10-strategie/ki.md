@@ -2,7 +2,7 @@
 
 **Bereich:** Strategie
 **Kuerzel:** ki
-**Stand:** 37/40 fertig · 3 offen
+**Stand:** 37/40 fertig · 1 in QA · 2 offen
 
 ## Zweck
 
@@ -663,7 +663,7 @@ nicht die Regeln.
   Handel ab 1500 Gold selbst Karren ausbilden. Ein Versuch, den Markt früher
   zu bauen, brachte 2,3 gegen 1,3 und riss fahrplan AC-11 (33 von 40 vor
   Minute 60). **Vorerst**: die Ursache bleibt offen und gehört zur KI.
-- **AC-28** `offen` **KI bildet Spezialeinheit aus** — In der Ritterzeit
+- **AC-28** `in-qa` **KI bildet Spezialeinheit aus** — In der Ritterzeit
   baut die KI eine Burg und bildet dort die Spezialeinheit ihres Hauses
   aus, als Teil ihres Heeres. Dafür braucht sie 650 Stein — **die KI
   sammelt bis heute keinen Stein**; das gehört zu diesem Kriterium. Über
@@ -672,6 +672,35 @@ nicht die Regeln.
   ausgebildet. Ohne das misst fahrplan AC-18 nichts. **Seit AC-33
   (2026-11-13)** sammelt die KI Stein und baut die Burg; offen bleibt hier
   die Spezialeinheit daraus.
+  **Gebaut am 2026-11-24** (KI-Runde nach dem Regelpaket, `ki.burgPruefen`):
+  aus jeder fertigen Burg mit leerer Schlange die Einheit des Hauses —
+  welche, sagen `GEBAEUDE.burg.bildetAus` und `haeuser` an der Einheit —,
+  sparsam: höchstens ein Viertel der Kampfeinheiten
+  (`HAUSEINHEIT_ANTEIL`), aber immer zwei (`HAUSEINHEIT_MINDESTENS`, beide
+  gesetzt), die ersten zwei ohne Rücklage, vor dem übrigen Militär; ruht,
+  solange das Heer auf Rammen wartet. Söldner, Eibenschütze und
+  Pavesenschütze bleiben in `NOCH_NICHT`. Gemessen im Nebel über 120
+  (mit dem Holer-Fix aus AC-29): 109 vor Minute 60, Median 38,2, keine
+  ohne Sieger (vorher 105, 39,0, keine); zwei gegen zwei 20 von 20;
+  ausgebildet Kriegswolf 571, Wiedergänger 418, Meuchler 292,
+  Reiterschütze 221, Riese 127. **Belegt ist eine engere
+  Form** (`tests/partien/ki-im-nebel.test.mjs`): jede KI, deren erste Burg
+  steht und die danach zehn Minuten lebt, bildet die Einheit ihres Hauses
+  aus — 60 KIs, keine ohne. Ohne Drachen hält auch sie nicht ganz: 51
+  von 52 (Startwert 58, KI 2 mit dem Riesen — nach ihrer Burg hat sie
+  nie 120 Nahrung und 100 Gold zugleich, und nach neun Minuten fällt die
+  Burg; kein Fehler der Regel, sie ist arm). Der Wortlaut oben verlangt dazu, dass jede KI
+  zehn Minuten nach dem Fürstentum eine Burg hat; das ist ki AC-33, und es
+  hält nicht (Zahl in `erkenntnisse.md`, KI-Runde nach dem Regelpaket).
+  Deshalb `in-qa`, bis der Benutzer den Wortlaut auf die engere Form setzt
+  oder die Burg für jede KI verlangt. **Die drei übrigen einzeln frei**
+  (je dieselben 120 Startwerte, die fünf aus der Burg frei): Söldner 106,
+  39,5, keine ohne Sieger, aber ki AC-35 fällt (Startwert 14, Wehrstein
+  ohne Truppenstufe); Eibenschütze 110, 37,8, alles grün; Pavesenschütze
+  105, 38,6, alles grün — genau auf der Grenze. Der Eibenschütze frei in
+  `npm run pruefstand:haeuser` (200 Partien, mit dem Holer-Fix):
+  Eschenbruch 74 statt 71 % — er stärkt das ohnehin stärkste Haus und
+  bleibt deshalb gesperrt. Zu viert ist keiner der drei gemessen.
 - **AC-30** `fertig` **Wehrstein baut Türme** — Die KI, die Wehrstein
   spielt, baut ab der Feudalzeit Wachtürme an ihrem Dorf, mehr als jedes
   andere Haus. Dafür sammelt sie Stein (125 je Turm; vom Start sind 200
@@ -807,6 +836,18 @@ nicht die Regeln.
   Ei (Grenze des Tests 15), und Startwerte 12 und 18 liefen bis Minute 90. Der Entwurf ab dem Fürstentum für alle hatte vor dem
   Regelpaket 101 vor Minute 60 — die Partien verlängerte, dass die KI, die
   vorn lag, Mönche und den zurückgelegten Preis statt ihres Heers bezahlte.
+  **Nachgetragen am 2026-11-24:** mit dem Stand oben fiel ki AC-10
+  (Startwert 20, KI 2: ein Dorfbewohner stand 37,9 s am Ziel seines
+  Eis — sie war bei Minute 29 nicht mehr unterlegen, und `holtEi` nahm
+  ihn weiter von jeder Arbeit aus). Seitdem gibt sie einen Holer frei,
+  sobald sie verzichtet und er steht; wer noch geht, geht weiter, und
+  ein Ei in der Hand trägt er heim. Den Gehenden gleich freizugeben,
+  kippte mit `unterlegen()` von Takt zu Takt und ließ zwei gegen zwei,
+  Startwert 12, bis Minute 90 ohne Sieger. Gemessen danach (mit AC-28):
+  Nebel 109 vor Minute 60, Median 38,2, keine ohne Sieger; zwei gegen
+  zwei 20 von 20; ki AC-10 hält. Dieselben 120 Startwerte ohne Drachen
+  (Einstellung `drache: 'aus'`): 106 vor Minute 60, Median 38,0, keine
+  ohne Sieger.
 
 ### Stufe F — die Krone (Spec-Runde 2026-11-18)
 

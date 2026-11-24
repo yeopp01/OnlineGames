@@ -12,7 +12,7 @@ const require = createRequire(import.meta.url);
 const { Welt, TAKTE_PRO_SEKUNDE } = require('../server/spiele/strategie/welt.js');
 const { GEBAEUDE, EINHEITEN, HAEUSER, VERBESSERUNGEN, KLASSEN } = require('../server/spiele/strategie/daten.js');
 const { gefechtSpielen, kostenSumme } = require('../server/spiele/strategie/pruefstand.js');
-const { Ki } = require('../server/spiele/strategie/ki.js');
+const { Ki, NOCH_NICHT } = require('../server/spiele/strategie/ki.js');
 
 const ZWEI = [{ id: 'a', name: 'Anna' }, { id: 'b', name: 'Bert' }];
 const sekunden = (welt, s) => { for (let t = 0; t < s * TAKTE_PRO_SEKUNDE; t++) welt.takten(); };
@@ -717,24 +717,27 @@ test('einheiten AC-49: gegen Schuetzen des Fuerstentums verliert der Wiedergaeng
 
 // ---- Die KI --------------------------------------------------------------------
 
-test('einheiten AC-42: die KI bildet nicht aus, was nur ein anderes Haus ausbildet - und die Einheiten der Haeuser vorerst gar nicht', () => {
+test('einheiten AC-42: die KI bildet nicht aus, was nur ein anderes Haus ausbildet - und die zurueckgestellten Hauseinheiten nicht', () => {
   const besonders = Object.keys(EINHEITEN).filter((art) => EINHEITEN[art].haeuser);
   assert.ok(besonders.length >= 5, String(besonders));
-  for (const [haus, art] of [['eschenbruch', 'schiessanlage'], ['wehrstein', 'schiessanlage'], [null, 'schiessanlage'], ['silberfurt', 'kaserne'], ['rappenstein', 'burg']]) {
-    const { welt, gebaeude } = mitGebaeude(art, haus);
+  for (const [haus, art, eigene] of [['eschenbruch', 'schiessanlage'], ['wehrstein', 'schiessanlage'], [null, 'schiessanlage'], ['silberfurt', 'kaserne'], ['rappenstein', 'burg', 'reiterschuetze']]) {
+    const { welt, anna, gebaeude } = mitGebaeude(art, haus);
     const ki = new Ki(welt, 'a');
     // Mit viel und mit wenig Gold: die KI geht ihre Liste durch und nennt
-    // nie, was nur ein anderes Haus ausbildet - und bis ki AC-28 auch die
-    // eigene Hauseinheit und den Soeldner nicht (im Nebel 97 und 102 statt
-    // 111 von 120 Partien vor Minute 60, gemessen 2026-11-18).
+    // nie, was nur ein anderes Haus ausbildet. Zurueckgestellt bleibt, was in
+    // NOCH_NICHT steht (Soeldner, Eiben- und Pavesenschuetze: im Nebel 106 mit
+    // rotem ki AC-35, 110 und 105, gemessen 2026-11-24); die Einheit der Burg
+    // bildet sie seit ki AC-28 aus.
     const arten = new Set();
     for (const gold of [3000, 80, 60, 45, 40]) {
       welt.spielerVon('a').gold = gold;
       const gewaehlt = ki.naechsteKampfeinheit(gebaeude, {});
       if (gewaehlt) arten.add(gewaehlt);
     }
-    for (const verboten of [...besonders, 'soeldner']) assert.ok(!arten.has(verboten), `${haus}: ${[...arten]}`);
+    const verboten = [...besonders.filter((b) => !welt.hausBildetAus(anna, b)), ...NOCH_NICHT];
+    for (const v of verboten) assert.ok(!arten.has(v), `${haus}: ${[...arten]}`);
     if (art !== 'burg') assert.ok(arten.size > 0, `${haus} bildet in ${art} weiter aus`);
+    if (eigene) assert.ok(arten.has(eigene), `${haus} bildet in der Burg ${eigene} aus: ${[...arten]}`);
   }
 });
 

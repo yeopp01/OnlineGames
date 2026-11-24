@@ -7,7 +7,7 @@ Eine Zeile je Abnahmekriterium. Gepflegt wird der Status in der Spec selbst,
 hier steht er zusammengefasst. Erzeugt mit `npm run specs:board`; als Seite
 mit Bildnachweisen, Filter und Suche mit `npm run qa:report`.
 
-**Gesamt:** 638/718 fertig · 3 in Arbeit · 15 in QA · 3 geplant · 51 offen · 8 zurueckgestellt
+**Gesamt:** 638/718 fertig · 3 in Arbeit · 16 in QA · 3 geplant · 50 offen · 8 zurueckgestellt
 
 **Nachweise:** 342 Kriterien mit Bild · 305 ohne Bild, begruendet in `qa/ohne-bild.json`
 
@@ -28,7 +28,7 @@ mit Bildnachweisen, Filter und Suche mit `npm run qa:report`.
 | [Fahrplan zum Klon](10-strategie/fahrplan.md)                  | -         | 2     | -       | 2     | -               | 22     |
 | [Kampf](10-strategie/kampf.md)                                 | -         | -     | -       | -     | 1               | 26     |
 | [Karte und Vorraete](10-strategie/karte-und-vorraete.md)       | -         | -     | -       | 2     | 3               | 14     |
-| [KI-Spieler](10-strategie/ki.md)                               | -         | -     | -       | 3     | -               | 37     |
+| [KI-Spieler](10-strategie/ki.md)                               | -         | 1     | -       | 2     | -               | 37     |
 | [Spielziel und Partieverlauf](10-strategie/spielziel.md)       | 1         | -     | -       | 10    | -               | 18     |
 | [Aufstellung, Taktik und Training](15-manager/aufstellung.md)  | -         | -     | -       | -     | 2               | 23     |
 | [Bedienung des Managerspiels](15-manager/bedienung.md)         | -         | -     | -       | -     | -               | 15     |
@@ -51,7 +51,7 @@ mit Bildnachweisen, Filter und Suche mit `npm run qa:report`.
 - **Zeitalter gliedern die Partie** — [Spielziel und Partieverlauf](10-strategie/spielziel.md) AC-1
 - **Zahlen sind abrufbar** — [Betrieb](20-betrieb/betrieb.md) AC-8
 
-## In QA (15)
+## In QA (16)
 
 - **Einladungscodes erzeugen und zuruecknehmen** — [Konten und Anmeldung](00-plattform/konten.md) AC-20
 - **Verwaister Raum wird geschlossen** — [Raeume und Partien](00-plattform/raeume.md) AC-12
@@ -63,6 +63,7 @@ mit Bildnachweisen, Filter und Suche mit `npm run qa:report`.
 - **Der Drache fliegt und brennt** — [Einheiten und Befehle](10-strategie/einheiten-und-befehle.md) AC-52
 - **Läuft auf dem VPS** — [Fahrplan zum Klon](10-strategie/fahrplan.md) AC-21
 - **Aktualisieren ist ein Befehl** — [Fahrplan zum Klon](10-strategie/fahrplan.md) AC-22
+- **KI bildet Spezialeinheit aus** — [KI-Spieler](10-strategie/ki.md) AC-28
 - **Alle Namen sind erfunden** — [Kader und Spieler](15-manager/kader.md) AC-7
 - **Nur über HTTPS** — [Betrieb](20-betrieb/betrieb.md) AC-1
 - **Dienst startet selbst neu** — [Betrieb](20-betrieb/betrieb.md) AC-3
@@ -75,7 +76,7 @@ mit Bildnachweisen, Filter und Suche mit `npm run qa:report`.
 - **Kennwort vergessen** — [Konten und Anmeldung](00-plattform/konten.md) AC-5
 - **Automatischer Wiederaufbau** — [Uebertragung](00-plattform/uebertragung.md) AC-10
 
-## Offen (51)
+## Offen (50)
 
 - **Anmeldung ueber Google/GitHub** — [Konten und Anmeldung](00-plattform/konten.md) AC-6
 - **Bilanz je Konto** — [Konten und Anmeldung](00-plattform/konten.md) AC-14
@@ -108,7 +109,6 @@ mit Bildnachweisen, Filter und Suche mit `npm run qa:report`.
 - **Kein Spieler ist abgeschnitten** — [Karte und Vorraete](10-strategie/karte-und-vorraete.md) AC-7
 - **Vorraete sind endlich und knapp** — [Karte und Vorraete](10-strategie/karte-und-vorraete.md) AC-10
 - **KI liest die Zustandsnachricht** — [KI-Spieler](10-strategie/ki.md) AC-20
-- **KI bildet Spezialeinheit aus** — [KI-Spieler](10-strategie/ki.md) AC-28
 - **KI antwortet auf das Heer** — [KI-Spieler](10-strategie/ki.md) AC-31
 - **Partiedauer 25 bis 45 Minuten** — [Spielziel und Partieverlauf](10-strategie/spielziel.md) AC-2
 - **Kein Aus nach drei Minuten** — [Spielziel und Partieverlauf](10-strategie/spielziel.md) AC-3

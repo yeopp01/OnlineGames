@@ -396,3 +396,45 @@ test('ki AC-29: ueber 120 Startwerte bringen die KIs Eier in ihr Kloster, und ke
   assert.ok(eier >= EIER_MINDESTENS, `nur ${eier} KIs mit Ei im Kloster`);
   assert.deepEqual(zufrueh, [], 'gerufen vor dem Fuerstentum');
 });
+
+// Die KI bildet die Einheit ihres Hauses aus der Burg aus (ki AC-28): jede KI,
+// deren erste Burg fertig ist und die danach zehn Minuten lebt (bis ihr Dorf
+// zusammenbricht wie bei ki AC-35 oder die Partie endet), hat mindestens eine
+// ausgebildet. Welche Einheit zum Haus gehoert, sagen die Daten der Burg.
+//
+// Gemessen am 2026-11-24 (Stand nach dem Regelpaket, die fuenf aus der Burg
+// frei, Soeldner und die zwei Schuetzen weiter in `NOCH_NICHT`): siehe ki.md.
+const BURG_MINUTEN = 10;
+const AUS_BURG = new Set(GEBAEUDE.burg.bildetAus.filter((a) => EINHEITEN[a]?.haeuser));
+test('ki AC-28: ueber 120 Startwerte bildet jede KI, deren Burg steht und die danach zehn Minuten lebt, die Einheit ihres Hauses aus', async (t) => {
+  const enden = await allePartien();
+  let gezaehlt = 0;
+  // Zum Vergleich mit dem Wortlaut des Kriteriums: wer zehn Minuten im
+  // Fuerstentum lebt, aber keine Burg hat (das ist ki AC-33, nicht AC-28).
+  let fuerst = 0;
+  let fuerstOhneBurg = 0;
+  const jeArt = {};
+  const fehlt = [];
+  for (const e of enden) {
+    const schluss = e.takt ?? MINUTEN * TAKTE_JE_MINUTE;
+    for (const id of Object.keys(e.haeuser)) {
+      const neu = e.neu[id] || {};
+      for (const [art, m] of Object.entries(neu)) if (AUS_BURG.has(art)) jeArt[art] = (jeArt[art] || 0) + m;
+      const f = e.forschung[id];
+      if (f && f.fuerst !== null && (f.bruch ?? schluss) - f.fuerst >= BURG_MINUTEN * TAKTE_JE_MINUTE) {
+        fuerst += 1;
+        if (f.burg == null) fuerstOhneBurg += 1;
+      }
+      if (!f || f.burg == null) continue;
+      if ((f.bruch ?? schluss) - f.burg < BURG_MINUTEN * TAKTE_JE_MINUTE) continue;
+      gezaehlt += 1;
+      const aus = Object.entries(neu).filter(([a]) => AUS_BURG.has(a)).reduce((n, [, m]) => n + m, 0);
+      if (!aus) fehlt.push(`Startwert ${e.startwert} ${id} (${e.haeuser[id]})`);
+    }
+  }
+  t.diagnostic(`${gezaehlt} KIs mit Burg und zehn Minuten danach; ausgebildet je Art ${JSON.stringify(jeArt)}; zehn Minuten im Fuerstentum ${fuerst}, davon ohne Burg ${fuerstOhneBurg}`);
+  // Gegenprobe zum Messaufbau: es gibt solche KIs, und zwar viele (gemessen
+  // 60 - die meisten Burgen stehen spaet, oder die Partie endet bald danach).
+  assert.ok(gezaehlt >= 40, `nur ${gezaehlt} KIs gezaehlt`);
+  assert.deepEqual(fehlt, [], 'ohne Einheit des Hauses');
+});

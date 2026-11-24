@@ -171,10 +171,14 @@ const MILITAER_SCHLANGE = 2;
 // Ohne ihn, aber mit Eiben- und Pavesenschuetze (genommen, wenn das Gold
 // fuer die Armbrust nicht reicht) waren es 102 - auch unter der Grenze von
 // 105 (beides gemessen 2026-11-18). Wann sich welche Einheit eines Hauses
-// lohnt, ist ki AC-28 - bis dahin auch nichts aus der Burg: bestellt wird
-// dort ohnehin nichts, aber "kann nie wieder etwas tun" (ki AC-19) fragt
-// jedes Gebaeude.
-const NOCH_NICHT = new Set(['soeldner', 'eibenschuetze', 'pavesenschuetze', 'kriegswolf', 'reiterschuetze', 'riese', 'meuchler', 'wiedergaenger']);
+// lohnt, ist ki AC-28: aus der Burg bildet sie seitdem aus (`burgPruefen`),
+// sparsam; was hier steht, weiter nicht.
+const NOCH_NICHT = new Set(['soeldner', 'eibenschuetze', 'pavesenschuetze']);
+// Die Einheit ihres Hauses aus der Burg (ki AC-28), sparsam: so viele, dass
+// sie hoechstens `HAUSEINHEIT_ANTEIL` ihrer Kampfeinheiten sind, aber
+// immer `HAUSEINHEIT_MINDESTENS`. Beide Zahlen gesetzt.
+const HAUSEINHEIT_ANTEIL = 0.25;
+const HAUSEINHEIT_MINDESTENS = 2;
 // Was sie erforscht (ki AC-35), gelesen aus den Daten der Verbesserung, nie
 // nach dem Namen: eine Stufe (`wandelt`) fuer die Einheiten, die sie haelt,
 // eine `wirkung` (oder ein `bonus`) auf eine Art oder Klasse, die sie haelt,
@@ -672,6 +676,9 @@ class Ki {
     this.ritterzeitPruefen(zentrum, gebaeude, dorfbewohner);
     if (this.kroneTakt === null && this.spieler.zeitalter > 2) this.kroneTakt = welt.takt;
     this.kronePruefen(zentrum, gebaeude, dorfbewohner);
+    // Die Einheit des Hauses vor allem anderen Militaer (ki AC-28): sie ist
+    // teuer, und hinter den anderen fand sie selten den Vorrat dafuer.
+    this.burgPruefen(eigene, gebaeude, dorfbewohner);
     this.forschenPruefen(eigene, gebaeude, dorfbewohner);
     this.drachePruefen(eigene, gebaeude, dorfbewohner);
     this.militaerPruefen(gebaeude, dorfbewohner);
@@ -1060,16 +1067,27 @@ class Ki {
       this.klosterBewachen(eigene, ruf);
       return;
     }
+    const traeger = eigene.find((e) => !e.tot && e.ladungsart === 'ei');
     // Wer ueberlegen ist (ki AC-18), braucht ihn nicht: Kloster, Moenche und
-    // der Preis des Rufs kosteten sie nur den Sieg, den sie schon hat.
-    if (this.ueberlegen()) return;
-    // Vor der Krone (DRACHE_ZEITALTER) nur, wer hinten liegt.
-    if (this.spieler.zeitalter < DRACHE_ZEITALTER && !this.unterlegen()) return;
+    // der Preis des Rufs kosteten sie nur den Sieg, den sie schon hat. Vor
+    // der Krone (DRACHE_ZEITALTER) nur, wer hinten liegt. Ein Ei in der Hand
+    // bringt der Traeger trotzdem heim, und wer hingeht, geht weiter; wer
+    // dort steht, ist wieder frei - bis zum 2026-11-24 blieb er stehen, weil
+    // `holtEi` ihn weiter von jeder Arbeit ausnahm (ki AC-10, Startwert 20,
+    // KI 2: 37,9 s untaetig, als sie bei Minute 29 nicht mehr unterlegen
+    // war). Auch den Gehenden freizugeben, kippte mit `unterlegen()` von
+    // Takt zu Takt hin und her und liess zwei gegen zwei, Startwert 12,
+    // ohne Sieger.
+    const verzichtet = this.ueberlegen() || (this.spieler.zeitalter < DRACHE_ZEITALTER && !this.unterlegen());
+    if (verzichtet && this.eiHoler) {
+      const holer = welt.einheiten.get(this.eiHoler.einheit);
+      if (!holer || holer.tot || (!holer.auftrag && !holer.weg.length)) this.eiHoler = null;
+    }
+    if (verzichtet && !traeger) return;
     const kloster = gebaeude.find((g) => g.art === 'kloster' && g.fertig);
     const klosterImBau = gebaeude.some((g) => g.art === 'kloster' && !g.fertig);
     const eigeneIds = new Set(gebaeude.map((g) => g.id));
     const imKloster = [...welt.eier.values()].find((ei) => ei.kloster !== null && eigeneIds.has(ei.kloster));
-    const traeger = eigene.find((e) => !e.tot && e.ladungsart === 'ei');
     const takt = welt.takt;
     if (!imKloster) {
       if (!traeger && !this.eierBekannt.size) return;
@@ -1113,6 +1131,7 @@ class Ki {
     }
     // Es liegt: der Holer ist frei fuer seine Arbeit.
     this.eiHoler = null;
+    if (verzichtet) return;
     const heimat = welt.gebaeude.get(imKloster.kloster);
     if (!heimat) return;
     // Die Moenche: ausbilden, bis genug stehen, und ans Kloster stellen.
@@ -1253,6 +1272,45 @@ class Ki {
         : this.spieler.gold >= MILITAER_GOLD * (schwerpunkt === 'kaserne' ? KASERNE_GOLD : 1) ? 'schiessanlage'
           : schwerpunkt === 'kaserne' ? 'kaserne' : 'stall';
       this.bauen(art, this.platzBeiBasis(art), dorfbewohner);
+    }
+  }
+
+  /**
+   * Aus jeder fertigen Burg mit leerer Schlange die Einheit ihres Hauses
+   * (ki AC-28) - welche, sagen die Daten der Burg und `haeuser` an der
+   * Einheit. Sparsam: solange die Einheiten aus der Burg (auch eingereihte)
+   * weniger als `HAUSEINHEIT_ANTEIL` ihrer Kampfeinheiten sind oder weniger
+   * als `HAUSEINHEIT_MINDESTENS`; bezahlt nach Ruecklage und dem naechsten
+   * Dorfbewohner wie jede Ausbildung (`militaerPruefen`). Wartet das Heer
+   * auf Rammen, ruht auch sie.
+   */
+  burgPruefen(eigene, gebaeude, dorfbewohner) {
+    if (this.belagerungFehlt) return;
+    const burgen = gebaeude.filter((g) => g.art === 'burg' && g.fertig && !g.schlange.length);
+    if (!burgen.length) return;
+    const aus = new Set(GEBAEUDE.burg.bildetAus.filter((a) => EINHEITEN[a]));
+    let haus = 0;
+    let kampf = 0;
+    for (const e of eigene) {
+      if (e.tot || !this.kaempft(e)) continue;
+      kampf += 1;
+      if (aus.has(e.art)) haus += 1;
+    }
+    for (const g of gebaeude) for (const a of g.schlange) if (aus.has(a)) haus += 1;
+    // Die ersten `HAUSEINHEIT_MINDESTENS` ohne Ruecklage: hinter der fuer
+    // Krone, Rammen und Forschung fand das Haus mit dem Riesen dessen 120 Nahrung
+    // nicht (Startwert 18, Stand vor dem Regelpaket: bis zum Sieg in Minute
+    // 57 kein Riese).
+    const ruecklage = haus < HAUSEINHEIT_MINDESTENS ? {} : this.ruecklage();
+    if (haus >= HAUSEINHEIT_MINDESTENS && dorfbewohner.length < zielDorfbewohner(this.spieler.zeitalter)) {
+      for (const [r, menge] of Object.entries(EINHEITEN.dorfbewohner.kosten)) ruecklage[r] = (ruecklage[r] || 0) + menge;
+    }
+    for (const g of burgen) {
+      if (haus >= Math.max(HAUSEINHEIT_MINDESTENS, HAUSEINHEIT_ANTEIL * kampf)) return;
+      const art = this.naechsteKampfeinheit(g, haus < HAUSEINHEIT_MINDESTENS ? {} : ruecklage);
+      if (!art) continue;
+      this.senden({ auftrag: 'ausbilden', gebaeude: g.id, einheit: art });
+      haus += 1;
     }
   }
 
@@ -3205,7 +3263,7 @@ class Ki {
 }
 
 module.exports = {
-  Ki, ENTSCHEIDEN_ALLE, REICHWEITE, WEITER, ZIEL_DORFBEWOHNER, DORFBEWOHNER_JE_ZEITALTER, zielDorfbewohner, KRONE_DORF, KRONE_GEBAEUDE, KRONE_AB_MINUTE, FEUDALZEIT_NAHRUNG, AN_SCHAFEN, AN_BEEREN, MILITAER,
+  Ki, ENTSCHEIDEN_ALLE, REICHWEITE, WEITER, ZIEL_DORFBEWOHNER, DORFBEWOHNER_JE_ZEITALTER, zielDorfbewohner, KRONE_DORF, KRONE_GEBAEUDE, NOCH_NICHT, HAUSEINHEIT_ANTEIL, HAUSEINHEIT_MINDESTENS, KRONE_AB_MINUTE, FEUDALZEIT_NAHRUNG, AN_SCHAFEN, AN_BEEREN, MILITAER,
   HEER, WACHE, UEBERLEGEN, MARSCH_MINDESTENS, HEER_ABSTAND, WACHE_NAH, FEIND_FERN, STURM_UMKREIS, STURM_HOECHSTENS, STURM_FEINDE, STURM_SEKUNDEN, STURM_LEINE, STURM_SCHWACH, VERGEBEN_ABSTAND, MILITAER_HOLZ, UEBERSCHUSS, MANGEL, UMVERTEILEN_SEKUNDEN, UNERREICHBAR_SEKUNDEN, MILITAER_HOECHSTENS, MILITAER_JE_ZEITALTER, plan,
   MILITAER_UEBERFLUSS_AB, MILITAER_UEBERFLUSS_HOLZ, MILITAER_UEBERFLUSS_KAMPF, MILITAER_ALLERHOECHSTENS,
   GOLD_KNAPP, PLATZ_RINGE, KARREN, HANDEL_ABSTAENDE, HANDEL_MINDESTENS, VERKAUF_RUECKLAGE, KARREN_WARTEN_SEKUNDEN, FEIND_VERGESSEN,

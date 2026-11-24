@@ -74,6 +74,11 @@ const enden = workerData.startwerte.map((startwert) => {
       if (!g.fertig || fertig.has(g.id)) continue;
       fertig.add(g.id);
       if (erster) continue;
+      // Wann ihre erste Burg fertig war (ki AC-28: danach die Einheit des Hauses).
+      if (g.art === 'burg') {
+        const f = (forschung[g.besitzer] ??= { fuerst: null, krone: null, bruch: null, verbesserungen: [] });
+        f.burg ??= welt.takt;
+      }
       gebaut[g.besitzer] ??= {};
       gebaut[g.besitzer][g.art] = (gebaut[g.besitzer][g.art] || 0) + 1;
     }

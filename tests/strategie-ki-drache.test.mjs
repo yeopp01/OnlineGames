@@ -296,3 +296,48 @@ test('ki AC-29: liegt das Ei, das sie kennt, im Nebel, geht der Holer erst hin u
   assert.equal(ei.traeger, holer.id, 'er traegt es');
   assert.ok(!l.ki.eiGesperrt.has(ei.id), 'nicht gesperrt');
 });
+
+// Startwert 20, KI 2 (2026-11-24): im Fuerstentum unterlegen schickte sie
+// einen Holer ins Nebelfeld des Eis; bei Minute 29 war sie nicht mehr
+// unterlegen, und er stand 37,9 s am leeren Ziel, weil `holtEi` ihn weiter
+// von jeder Arbeit ausnahm (ki AC-10 fiel). Wer noch geht, bleibt Holer:
+// sonst kippt es mit `unterlegen()` hin und her (zwei gegen zwei,
+// Startwert 12, ohne Sieger).
+test('ki AC-29 und ki AC-10: wer nicht mehr unterlegen ist, gibt den Holer frei, sobald er steht - und ein Ei in der Hand bringt der Traeger trotzdem heim', () => {
+  const l = lage({ kloster: false, zeitalter: 2, einstellungen: { sicht: 'nebel' } });
+  const ei = eiNahe(l.welt, l.a, 30);
+  // Ob sie unterlegen ist, haengt im Nebel daran, ob sie den Gegner kennt -
+  // hier gesetzt; wie sie es misst, prueft der Test davor.
+  let unterlegen = true;
+  l.ki.unterlegen = () => unterlegen;
+  bauen(l.welt, 'a', 'kloster', 6);
+  l.welt.sichtAktualisieren();
+  l.ki.eierBekannt.set(ei.id, { id: ei.id, x: ei.x, y: ei.y });
+  pruefen(l);
+  assert.ok(l.ki.unterlegen(), 'unterlegen');
+  const holer = l.welt.einheiten.get(l.ki.eiHoler?.einheit);
+  assert.ok(holer, 'einer geht hin');
+  assert.ok(l.ki.holtEi(holer), 'solange er hingeht, ist er fuer nichts anderes da');
+  // Bei Minute 29 ist sie es nicht mehr: wer noch geht, geht weiter ...
+  unterlegen = false;
+  pruefen(l);
+  assert.equal(l.ki.eiHoler?.einheit, holer.id, 'unterwegs bleibt er Holer');
+  // ... wer am leeren Ziel steht, ist frei.
+  holer.auftrag = null;
+  holer.weg = [];
+  pruefen(l);
+  assert.equal(l.ki.eiHoler, null, 'der Holer ist frei');
+  assert.ok(!l.ki.holtEi(holer), 'und wieder Dorfbewohner fuer jede Arbeit');
+
+  // Traegt einer das Ei schon, bringt er es ins Kloster, auch wenn sie verzichtet.
+  const t = lage({ zeitalter: 2 });
+  const ei2 = eiNahe(t.welt, t.a);
+  const traeger = dorf(t.welt, 'a')[0];
+  Object.assign(ei2, { traeger: traeger.id });
+  traeger.ladungsart = 'ei';
+  traeger.auftrag = null;
+  traeger.weg = [];
+  pruefen(t);
+  assert.ok(!t.ki.unterlegen());
+  assert.ok(traeger.auftrag || traeger.weg.length, 'der Traeger geht zum Kloster');
+});
