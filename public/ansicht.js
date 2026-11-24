@@ -209,6 +209,11 @@ export class Ansicht {
     // Der Angriffslauf (kampf AC-4) ist eine Betriebsart: G schaltet sie ein,
     // der naechste Rechtsklick fuehrt sie aus und schaltet sie wieder aus.
     this.angriffslauf = false;
+    // Einquartieren (bauen AC-58) ebenso: der Knopf oder E schaltet es ein,
+    // der naechste Linksklick auf ein eigenes Gebaeude fuehrt es aus.
+    this.einquartierenAn = false;
+    // Ob die eigene Notfallklingel laeutet (bauen AC-61, `gl` am Spieler).
+    this.glocke = false;
     this.beiAuswahl = () => {};
     // Nach jedem Bild und bei geaenderten Feldern - fuer die Uebersichtskarte (bedienung AC-11).
     this.nachBild = () => {};
@@ -324,6 +329,8 @@ export class Ansicht {
     // (bedienung AC-14). Wie viele davon noch warten, sagt der Server (`q`).
     this.wegpunkte = new Map();
     this.angriffslauf = false;
+    this.einquartierenAn = false;
+    this.glocke = false;
     this.platzieren = null;
     this.bauseite = 0;
     this.untaetige = [];
@@ -727,6 +734,7 @@ export class Ansicht {
       // `gf`: die eigenen Gefallenen, aus denen ein Haus ausbildet (einheiten
       // AC-49) - der Server schickt sie nur, wenn es welche gibt.
       this.vorraete = { holz, nahrung, gold, stein, bev, raum, gefallene: meine.gf || 0 };
+      this.glocke = meine.gl === 1;
       // Kartografie (bauen AC-52): die ganze Karte gilt als erkundet - auch,
       // wenn ein Verbuendeter sie erforscht hat, und nach dem Neuladen wieder.
       if (meine.ka && !this.karteBekannt) {
@@ -1338,6 +1346,12 @@ export class Ansicht {
         else if (e.button === 2) this.platzierenBeenden();
         return;
       }
+      // Einquartieren (bauen AC-58): links das Gebaeude, rechts bricht ab.
+      if (this.einquartierenAn) {
+        if (e.button === 0) this.einquartierenKlick(e.offsetX, e.offsetY);
+        else this.einquartierenSetzen(false);
+        return;
+      }
       if (e.button === 0) {
         this.zug = { vonX: e.offsetX, vonY: e.offsetY, bisX: e.offsetX, bisY: e.offsetY };
         this.leinwand.setPointerCapture(e.pointerId);
@@ -1419,6 +1433,7 @@ export class Ansicht {
       // Esc hebt erst die Platzierung auf, dann die Auswahl (bedienung AC-15).
       if (e.key === 'Escape') {
         if (this.angriffslauf) this.angriffslaufSetzen(false);
+        else if (this.einquartierenAn) this.einquartierenSetzen(false);
         else if (this.platzieren) this.platzierenBeenden();
         else {
           this.ausgewaehlt.clear();
@@ -2428,6 +2443,44 @@ export class Ansicht {
     this.angriffslauf = an;
     this.leinwand.classList.toggle('angriffslauf', an);
     if (an) this.melden('Angriffslauf: Ziel mit Rechtsklick wählen');
+  }
+
+  /**
+   * Einquartieren an oder aus (bauen AC-58): eine Betriebsart wie der
+   * Angriffslauf, sie haelt bis zum naechsten Klick. Nur mit eigenen
+   * Einheiten, die irgendwo hinein duerfen - welche, sagen die Werte
+   * (`quartiere`); entschieden wird auf dem Server.
+   */
+  einquartierenSetzen(an) {
+    if (an && !this.einquartierbare().length) return false;
+    if (this.einquartierenAn === an) return true;
+    this.einquartierenAn = an;
+    if (an && this.angriffslauf) this.angriffslaufSetzen(false);
+    this.leinwand.classList.toggle('einquartieren', an);
+    if (an) this.melden('Einquartieren: ein eigenes Dorfzentrum, einen Turm oder eine Burg anklicken');
+    this.beiAuswahl();
+    return true;
+  }
+
+  /** Die gewaehlten eigenen Einheiten, die in ein Gebaeude duerfen. */
+  einquartierbare() {
+    return [...this.ausgewaehlt].filter((id) => {
+      const e = this.nachher.get(id);
+      return e && e.b === this.ich && !e.s && this.werte.einheiten[this.arten[e.k]]?.quartiere?.length;
+    });
+  }
+
+  /** Der Klick nach dem Knopf: das eigene Gebaeude unter dem Zeiger. */
+  einquartierenKlick(px, py) {
+    const einheiten = this.einquartierbare();
+    this.einquartierenSetzen(false);
+    const gebaeude = this.gebaeudeUnter(px, py);
+    if (!gebaeude) {
+      this.melden('Einquartieren geht nur in ein eigenes Gebäude.');
+      return;
+    }
+    this.beiAuftrag({ auftrag: 'einquartieren', einheiten, gebaeude: gebaeude.i });
+    this.zielzeichenSetzen(this.gebaeudeMitte(gebaeude));
   }
 
   /**

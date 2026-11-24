@@ -203,6 +203,14 @@ function trifftHinterDerReichweite(haus, art) {
   const anna = welt.spielerVon('a');
   const p = platz(welt, art, anna.basis, 8);
   const turm = welt.gebaeudeAnlegen('a', art, p.x, p.y);
+  // Das Dorfzentrum schiesst nur mit Besatzung (bauen AC-59): einer hinein.
+  if (GEBAEUDE[art].schiesstBesetzt) {
+    const feld = welt.freiesFeldAm(turm);
+    const bewohner = welt.einheitAnlegen('a', feld.x, feld.y, 'dorfbewohner');
+    assert.deepEqual(welt.einquartieren('a', [bewohner.id], turm.id), {});
+    for (let t = 0; t < 3 * TAKTE_PRO_SEKUNDE && !turm.insassen; t++) welt.takten();
+    assert.equal(turm.insassen?.length, 1, `${art} ist besetzt`);
+  }
   const { x1, y0 } = welt.grundflaeche(art, turm.x, turm.y);
   const abstand = GEBAEUDE[art].reichweite + 1;
   assert.ok(welt.platzPruefen(EIN_FELD, x1 + abstand, y0), 'das Feld des Ziels ist frei');

@@ -39,7 +39,9 @@ export const BELEGUNG = [
   ['Strg oder Alt + 1 bis 9', 'Auswahl unter der Ziffer ablegen – Strg nur im Vollbild, im Fenster wechselt der Browser damit den Tab'],
   ['1 bis 9', 'abgelegte Auswahl zurückholen'],
   ['G, dann Rechtsklick', 'Angriffslauf: hingehen und unterwegs angreifen'],
-  ['Esc', 'Angriffslauf oder Platzieren abbrechen, Auswahl aufheben'],
+  ['E, dann Klick auf ein eigenes Gebäude', 'Einquartieren: ins Dorfzentrum, in einen Turm oder die Burg'],
+  ['Y X C V', 'Haltung: Angreifen, Verteidigen, Stellung halten, Nicht angreifen'],
+  ['Esc', 'Angriffslauf, Einquartieren oder Platzieren abbrechen, Auswahl aufheben'],
   ['Entf', 'die gewählte Einheit oder das gewählte Gebäude entfernen – eines je Druck'],
   ['F3 oder Pause', 'Partie anhalten, weiterspielen'],
   ['F10', 'Menü'],
@@ -177,6 +179,26 @@ export class Tasten {
       if (a.platzieren) a.platzierenBeenden();
       a.angriffslaufSetzen(!a.angriffslauf);
       return true;
+    }
+    // E schaltet das Einquartieren ein (bauen AC-58): der naechste
+    // Linksklick waehlt das Gebaeude. Ohne Einheit, die hinein darf, nichts.
+    if (taste === 'e' && a.ausgewaehlt.size) {
+      if (a.einquartierenAn) a.einquartierenSetzen(false);
+      else if (a.einquartierbare().length) {
+        if (a.platzieren) a.platzierenBeenden();
+        a.einquartierenSetzen(true);
+      } else return false;
+      return true;
+    }
+    // Y X C V setzen die Haltung (kampf AC-28) - ueber den Knopf, damit
+    // Taste und Klick dasselbe tun. Nebeneinander links unten, wie die Knoepfe.
+    const haltung = { y: 'angriff', x: 'verteidigung', c: 'stellung', v: 'passiv' }[taste];
+    if (haltung && a.ausgewaehlt.size) {
+      const knopf = this.wurzel.querySelector(`[data-befehl="haltung-${haltung}"]`);
+      if (knopf instanceof HTMLElement) {
+        knopf.click();
+        return true;
+      }
     }
     if (taste === 'h') {
       const zentrum = [...a.gebaeude.values()].find((g) => g.b === a.ich && g.art === 'dorfzentrum' && g.u === undefined);

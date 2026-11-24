@@ -86,7 +86,11 @@ Rüstung 1/7, Sicht 9; die **Burg** 11 Angriff, Reichweite 8, eine Salve alle
 2026-11-13:** hier stand „ein Pfeil alle 2 s" — eine leere Burg schießt im
 Original eine Salve (das Wiki nennt fünf Pfeile, ein Beitrag zur Definitive
 Edition vier zu zusammen 44); gebaut sind vier. Mit Besatzung schießen
-beide mehr Pfeile — der Unterschlupf ist hier nicht gebaut.
+beide mehr Pfeile — **gebaut seit dem 2026-11-24** (bauen AC-58 bis AC-61):
+je Dorfbewohner, Fußsoldat oder Schütze darin ein Pfeil mehr, Reiter nur in
+die Burg und ohne Pfeil; drinnen heilt jeder. Abweichung: das Dorfzentrum
+schießt hier nur mit Besatzung (5 Angriff, Reichweite 6, alle 2 s, gesetzt),
+damit KI gegen KI unverändert bleibt — im Original schießt es auch leer.
 
 Der **Markt** tauscht je 100 Holz, Nahrung oder Stein gegen Gold. Grundpreis
 100, Stein 130; Kauf zum Grundpreis plus 30 %, Verkauf minus 30 %. Jeder

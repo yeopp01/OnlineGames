@@ -1,0 +1,10 @@
+{
+  "spec": "10-strategie/bauen.md",
+  "ac": "AC-61",
+  "titel": "Die Notfallklingel läutet: alle drei Dorfbewohner sind im Dorfzentrum, der Knopf heißt jetzt „Entwarnung\"",
+  "datei": "e2e/tests/strategie-einquartieren.spec.mjs",
+  "pfad": [
+    "Einquartieren",
+    "bauen AC-61: die Notfallklingel am Dorfzentrum ruft die Dorfbewohner hinein, die Entwarnung lässt sie heraus"
+  ]
+}

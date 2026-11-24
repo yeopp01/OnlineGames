@@ -1,0 +1,10 @@
+{
+  "spec": "10-strategie/bauen.md",
+  "ac": "AC-60",
+  "titel": "Der Wachturm liegt in Trümmern, die zwei Dorfbewohner von drinnen stehen gewählt daneben",
+  "datei": "e2e/tests/strategie-einquartieren.spec.mjs",
+  "pfad": [
+    "Einquartieren",
+    "bauen AC-60: fällt ein Wachturm mit zwei Dorfbewohnern darin, stehen beide lebend daneben"
+  ]
+}

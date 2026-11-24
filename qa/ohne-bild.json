@@ -1597,6 +1597,21 @@
       "begruendung": "Dass ein Pfeil trifft, wenn er ankommt, ist eine Frage des Takts: der Schaden faellt zwei bis acht Takte nach dem Abschuss statt im selben, ein Unterschied von zwei Zehnteln bis acht Zehnteln einer Sekunde. Ein Bildschirmfoto zeigt einen Pfeil auf dem Weg und einen Lebensbalken, aber nicht, in welchem Takt der Balken kuerzer wurde - und ob ein Pfeil sicher trifft, verpufft, wenn das Ziel vorher faellt, oder noch trifft, wenn der Schuetze schon fiel, sind Folgen von Takten, keine Lage. Geprueft im Rechenteil Takt fuer Takt (tests/strategie-pfeilflug.test.mjs): Ankunft bei zwei, drei und vier Feldern genau im errechneten Takt, ein laufendes Ziel getroffen, ein gefallenes Ziel nicht noch einmal und kein Nachbar statt seiner, der Zustand nennt die Takte bis zum Einschlag; dass der Pfeil im Bild erst nach dem Spannen fliegt, zeigt weiter das Bild zu bedienung AC-79."
     },
     {
+      "spec": "10-strategie/kampf.md",
+      "ac": "AC-29",
+      "begruendung": "Die Haltung Angriff ist eine Strecke ueber die Zeit: die Einheit folgt ihrem selbst gewaehlten Ziel ueber die fuenf Felder von kampf AC-3 hinaus, bis es faellt oder aus ihrer Sicht ist, und bleibt dann dort stehen, statt zurueckzugehen. Ein Einzelbild zeigt eine Einheit irgendwo auf der Wiese - weder ihren Ausgangsplatz noch, dass sie nicht umkehrt. Der Rechenteil misst in jedem Takt den Abstand zum Ausgangsplatz (mit Angriff ueber fuenf Felder, mit Verteidigung nie) und dass sie nach dem Verlust der Sicht nicht zurueckgeht; dass Befehl und Angriffslauf vorgehen, ebenso. Wie die Haltung gewaehlt wird und wo sie steht, zeigt das Bild zu kampf AC-28."
+    },
+    {
+      "spec": "10-strategie/kampf.md",
+      "ac": "AC-30",
+      "begruendung": "Stellung halten ist das Ausbleiben einer Bewegung: die Einheit nimmt nur ein Ziel, das sie von ihrem Platz aus trifft, und geht keinen Schritt danach; laeuft es aus der Reichweite, laesst sie ab. Ein Bildschirmfoto zeigt eine stehende Einheit - genauso sieht jede aus, die gerade nichts tut. Der Rechenteil prueft Takt fuer Takt, dass sich die Stellung nicht bewegt, dass ein Gegner ausserhalb der Reichweite nicht genommen wird und dass ein Ziel, das sich entfernt, im selben Takt aufgegeben wird. Die Wahl im Bild zeigt kampf AC-28."
+    },
+    {
+      "spec": "10-strategie/kampf.md",
+      "ac": "AC-31",
+      "begruendung": "Nicht angreifen ist das Ausbleiben einer Gegenwehr: die Einheit wacht nicht und schlaegt nicht zurueck, wenn sie getroffen wird, und ein Angriff, den sie eben von selbst begonnen hatte, endet mit dem Setzen der Haltung. Ein Bild zeigt eine Einheit mit fehlendem Leben neben einem Gegner, aber nicht, dass sie nicht zurueckschlaegt - das ist eine Aussage ueber viele Takte. Der Rechenteil laesst einen Gegner neben ihr zuschlagen und prueft, dass sie kein Ziel nimmt und keinen Schaden austeilt. Die Wahl im Bild zeigt kampf AC-28."
+    },
+    {
       "spec": "10-strategie/ki.md",
       "ac": "AC-35",
       "begruendung": "Was die KI erforscht und wann, ist eine Auswahl aus den Daten der Verbesserungen in ihrer Entscheidung auf dem Server: welche Stufe eine Einheit tauscht, die sie ausbildet, welche Wirkung eine Klasse trifft, von der sie mindestens drei haelt, was davon bezahlt ist und was fuer Aufstieg, Karren und Rammen zurueckliegt. Geprueft wird die Reihenfolge der Bestellungen in gebauten Lagen je Haus mit Gegenproben fuer knappen Vorrat, fehlende Vorstufe und das Warten auf Rammen (tests/strategie-ki-forschen.test.mjs) und das Erforschte ueber 120 ganze Partien im Nebel. Ein Bild zeigte eine Schmiede mit einer Verbesserung in der Schlange - dasselbe wie bei einem Menschen, nachgewiesen bei bauen AC-25 und AC-39 -, nicht, warum die KI gerade diese gewaehlt hat."

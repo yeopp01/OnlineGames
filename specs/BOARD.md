@@ -7,9 +7,9 @@ Eine Zeile je Abnahmekriterium. Gepflegt wird der Status in der Spec selbst,
 hier steht er zusammengefasst. Erzeugt mit `npm run specs:board`; als Seite
 mit Bildnachweisen, Filter und Suche mit `npm run qa:report`.
 
-**Gesamt:** 673/758 fertig · 3 in Arbeit · 18 in QA · 3 geplant · 53 offen · 8 zurueckgestellt
+**Gesamt:** 681/766 fertig · 3 in Arbeit · 18 in QA · 3 geplant · 53 offen · 8 zurueckgestellt
 
-**Nachweise:** 348 Kriterien mit Bild · 335 ohne Bild, begruendet in `qa/ohne-bild.json`
+**Nachweise:** 353 Kriterien mit Bild · 338 ohne Bild, begruendet in `qa/ohne-bild.json`
 
 ## Nach Spezifikation
 
@@ -21,12 +21,12 @@ mit Bildnachweisen, Filter und Suche mit `npm run qa:report`.
 | [Anhalten und Fortsetzen](00-plattform/speichern.md)           | -         | -     | -       | 1     | -               | 26     |
 | [Spielauswahl und Einstellungen](00-plattform/spielauswahl.md) | -         | -     | -       | 5     | -               | 19     |
 | [Uebertragung](00-plattform/uebertragung.md)                   | -         | -     | 1       | 1     | -               | 8      |
-| [Bauen und Ausbilden](10-strategie/bauen.md)                   | -         | -     | -       | -     | -               | 57     |
+| [Bauen und Ausbilden](10-strategie/bauen.md)                   | -         | -     | -       | -     | -               | 61     |
 | [Bedienung](10-strategie/bedienung.md)                         | -         | 2     | -       | 3     | -               | 81     |
 | [Darstellung](10-strategie/darstellung.md)                     | 1         | 1     | -       | 4     | -               | 26     |
 | [Einheiten und Befehle](10-strategie/einheiten-und-befehle.md) | -         | 1     | -       | 2     | 1               | 60     |
 | [Fahrplan zum Klon](10-strategie/fahrplan.md)                  | -         | 2     | -       | 2     | -               | 22     |
-| [Kampf](10-strategie/kampf.md)                                 | -         | -     | -       | -     | 1               | 26     |
+| [Kampf](10-strategie/kampf.md)                                 | -         | -     | -       | -     | 1               | 30     |
 | [Karte und Vorraete](10-strategie/karte-und-vorraete.md)       | -         | -     | -       | 2     | 3               | 14     |
 | [KI-Spieler](10-strategie/ki.md)                               | -         | -     | -       | 4     | -               | 36     |
 | [Spielziel und Partieverlauf](10-strategie/spielziel.md)       | 1         | -     | -       | 10    | -               | 18     |

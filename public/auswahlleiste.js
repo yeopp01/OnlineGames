@@ -1813,6 +1813,29 @@ function beimDruecken(knopf, tun) {
   });
 }
 
+/** Die Haltungen in der Reihenfolge der Knoepfe (kampf AC-28). */
+const HALTUNGEN = ['angriff', 'verteidigung', 'stellung', 'passiv'];
+/** Der Buchstabe auf der Leitung (`ht`) - ohne ihn gilt die Vorgabe. */
+const HALTUNG_BUCHSTABE = { a: 'angriff', s: 'stellung', p: 'passiv' };
+const HALTUNG_TEXT = {
+  angriff: { knopf: 'Angreifen', name: 'Angriff', taste: 'Y', zeilen: [
+    'Greift an, was in Sicht kommt, und verfolgt es, bis es fällt oder aus der Sicht ist',
+    'Bleibt danach stehen, wo er ist',
+  ] },
+  verteidigung: { knopf: 'Verteidigen', name: 'Verteidigung', taste: 'X', zeilen: [
+    'Greift an, was in Sicht kommt, verfolgt es höchstens fünf Felder und kehrt zurück',
+    'Die Vorgabe',
+  ] },
+  stellung: { knopf: 'Stellung halten', name: 'Stellung halten', taste: 'C', zeilen: [
+    'Greift nur an, was er von seinem Platz aus trifft',
+    'Geht keinen Schritt danach',
+  ] },
+  passiv: { knopf: 'Nicht angreifen', name: 'Nicht angreifen', taste: 'V', zeilen: [
+    'Greift nie von selbst an und wehrt sich nicht',
+    'Ein Befehl gilt trotzdem',
+  ] },
+};
+
 /** Name und Lebensbalken, fuer Einheit und Gebaeude gleich. */
 function kopf(name, leben, voll) {
   const k = element('div', 'auswahl-kopf');
@@ -1847,7 +1870,7 @@ export class Auswahlleiste {
     wurzel.after(this.tafel);
     this.tafelFuer = null;
     this.tafelStand = null;
-    const knopfVon = (ziel) => ziel?.closest?.('[data-ausbilden], [data-bauen], [data-haus]') || null;
+    const knopfVon = (ziel) => ziel?.closest?.('[data-ausbilden], [data-bauen], [data-haus], [data-befehl]') || null;
     wurzel.addEventListener('mouseover', (e) => this.tafelZeigen(knopfVon(e.target)));
     wurzel.addEventListener('mouseleave', () => this.tafelZeigen(null));
     wurzel.addEventListener('focusin', (e) => this.tafelZeigen(knopfVon(e.target)));
@@ -1867,6 +1890,7 @@ export class Auswahlleiste {
     if (!knopf) this.tafelFuer = null;
     else if (knopf.dataset.bauen) this.tafelFuer = { typ: 'bauen', art: knopf.dataset.bauen };
     else if (knopf.dataset.haus) this.tafelFuer = { typ: 'haus', art: knopf.dataset.haus };
+    else if (knopf.dataset.befehl) this.tafelFuer = { typ: 'befehl', art: knopf.dataset.befehl };
     else this.tafelFuer = { typ: 'ausbilden', art: knopf.dataset.ausbilden };
     this.tafelNachfuehren();
   }
@@ -1953,6 +1977,8 @@ export class Auswahlleiste {
         : `${lesen('leben')} Leben · greift nicht an · ${ruestung}`;
     };
 
+    if (typ === 'befehl') return this.befehlTafel(art);
+
     if (typ === 'haus') {
       const haus = werte.haeuser?.[art] || {};
       const zeilen = [...(haus.bringt || [])];
@@ -1974,7 +2000,9 @@ export class Auswahlleiste {
       if (einheiten.length) zeilen.push(`Bildet aus: ${einheiten.join(', ')}`);
       if (forschung.length) zeilen.push(`Erforscht: ${forschung.join(', ')}`);
       if (w.handel) zeilen.push(`Tauscht ${aufzaehlung((werte.handel?.waren || []).map((r) => ROHSTOFF_NAMEN[r] || r))} gegen Gold`);
-      if (lesen('angriff') > 0) zeilen.push(`Schießt von selbst: ${lesen('angriff')} Angriff, Reichweite ${lesen('reichweite')}`);
+      if (lesen('angriff') > 0 && w.schiesstBesetzt) zeilen.push(`Schießt mit Besatzung: ${lesen('angriff')} Angriff, Reichweite ${lesen('reichweite')}`);
+      else if (lesen('angriff') > 0) zeilen.push(`Schießt von selbst: ${lesen('angriff')} Angriff, Reichweite ${lesen('reichweite')}`);
+      if (w.besatzung) zeilen.push(`Nimmt bis zu ${w.besatzung} eigene Einheiten auf`);
       if (w.tor) zeilen.push('Lässt die eigenen Einheiten durch');
       if (w.gezogen) zeilen.push('Wird von Feld zu Feld gezogen');
       // Die Grenze je Spieler (bauen AC-51, AC-57). Was es gibt, bevor es zu
@@ -2077,7 +2105,7 @@ export class Auswahlleiste {
       const gefallene = angebot.some((e) => e.kosten?.gefallene) ? a.vorraete.gefallene : '';
       // Am Kloster der Ruf des Drachen (bauen AC-35): Ei, Uhr, Moenche.
       const drache = gebaeude.art === 'kloster' && a.werte.drache ? this.drachenrufSchluessel(gebaeude) : '';
-      const schluessel = `g${gebaeude.i}:${gebaeude.h}:${gebaeude.n}:${gebaeude.br || 0}:${a.farmenErneuern}:${gebaeude.s.join(',')}:${gebaeude.w}:${bezahlbar}:${a.verbesserungen.join(',')}:${a.zeitalter}:${handel}:${laeuft}:${gefallene}:${drache}`;
+      const schluessel = `g${gebaeude.i}:${gebaeude.h}:${gebaeude.n}:${gebaeude.br || 0}:${a.farmenErneuern}:${gebaeude.s.join(',')}:${gebaeude.w}:${bezahlbar}:${a.verbesserungen.join(',')}:${a.zeitalter}:${handel}:${laeuft}:${gefallene}:${drache}:${gebaeude.bs || 0}:${a.glocke}`;
       if (schluessel !== this.gezeigt) {
         this.gebaeudeBauen(gebaeude, angebot, farbe);
         this.gezeigt = schluessel;
@@ -2121,8 +2149,8 @@ export class Auswahlleiste {
       const bezahlbar = [...bauplan.map((e) => this.fehlt(e.kosten)), this.fehlt(a.werte.abruesten?.kosten || {})].join('|');
       const einzeln = auswahl.length === 1 ? auswahl[0] : null;
       const schluessel = einzeln
-        ? `e${einzeln.i}:${einzeln.k}:${einzeln.h}:${einzeln.l}:${einzeln.a}:${einzeln.hd}:${einzeln.r}:${einzeln.ab}:${bezahlbar}:${a.platzieren?.art}:${a.verbesserungen.length}:${a.bauseite || 0}`
-        : `m${auswahl.map((e) => `${e.i}${e.k}${e.ab ? 'a' : ''}`).join(',')}:${bezahlbar}:${a.platzieren?.art}:${a.bauseite || 0}`;
+        ? `e${einzeln.i}:${einzeln.k}:${einzeln.h}:${einzeln.l}:${einzeln.a}:${einzeln.hd}:${einzeln.r}:${einzeln.ab}:${bezahlbar}:${a.platzieren?.art}:${a.verbesserungen.length}:${a.bauseite || 0}:${einzeln.ht}:${a.einquartierenAn}`
+        : `m${auswahl.map((e) => `${e.i}${e.k}${e.ab ? 'a' : ''}${e.ht || ''}`).join(',')}:${bezahlbar}:${a.platzieren?.art}:${a.bauseite || 0}:${a.einquartierenAn}`;
       if (schluessel !== this.gezeigt) {
         this.wurzel.replaceChildren();
         if (einzeln) this.einheitBauen(einzeln, farbe);
@@ -2247,7 +2275,8 @@ export class Auswahlleiste {
       if (marke) kopfteil.append(marke);
       w.append(kopfteil);
       const wert = (feld) => a.einheitenwerte.get(gebaeude.b)?.[gebaeude.art]?.[feld] ?? a.werte.gebaeude[gebaeude.art]?.[feld] ?? 0;
-      if (wert('angriff') > 0) w.append(this.kampfwerteZeile(gebaeude, gebaeude.art, wert, (feld) => a.werte.gebaeude[gebaeude.art]?.[feld] ?? 0));
+      const schiesst = !a.werte.gebaeude[gebaeude.art]?.schiesstBesetzt || gebaeude.bs;
+      if (wert('angriff') > 0 && schiesst) w.append(this.kampfwerteZeile(gebaeude, gebaeude.art, wert, (feld) => a.werte.gebaeude[gebaeude.art]?.[feld] ?? 0));
     }
     const zeile = element('div', 'ladung');
     zeile.id = 'besitzer';
@@ -2412,6 +2441,10 @@ export class Auswahlleiste {
     // Baumenue auf eine Spalte, und die Leiste ragte oben aus dem Fenster.
     const block = element('div', 'gruppenblock');
     block.append(element('div', 'auswahl-kopf', `${auswahl.length} ausgewählt`), gruppe);
+    // Haltungen und Einquartieren unter die Gruppe, im selben Block: daneben
+    // nahmen sie dem Baumenue die Breite (bedienung AC-23, bauen AC-57).
+    const befehle = this.befehleBauen(auswahl);
+    if (befehle) block.append(befehle);
     this.wurzel.append(block);
     const abruesten = this.abruestenBauen(auswahl);
     if (abruesten) this.wurzel.append(abruesten);
@@ -2704,7 +2737,130 @@ export class Auswahlleiste {
     if (einheit.b === this.ansicht.ich) {
       const abruesten = this.abruestenBauen([einheit]);
       if (abruesten) w.append(abruesten);
+      // Unter Namen und Kampfwerte, nicht daneben: eine Spalte mehr nahm dem
+      // Baumenue des Dorfbewohners eine Reihe (bauen AC-57).
+      const befehle = this.befehleBauen([einheit]);
+      if (befehle) kopfteil.append(befehle);
     }
+  }
+
+  /**
+   * Die Befehle an der Auswahl: vier Haltungen (kampf AC-28) und
+   * Einquartieren (bauen AC-58). Wer was darf, sagen die Werte (`haltung`,
+   * `quartiere`); entschieden wird auf dem Server.
+   * @param {any[]} auswahl
+   */
+  befehleBauen(auswahl) {
+    const a = this.ansicht;
+    const eigene = auswahl.filter((e) => e.b === a.ich && !e.s);
+    const mitHaltung = eigene.filter((e) => a.werte.einheiten[a.arten[e.k]]?.haltung);
+    const quartierbar = eigene.filter((e) => a.werte.einheiten[a.arten[e.k]]?.quartiere?.length);
+    if (!mitHaltung.length && !quartierbar.length) return null;
+    const block = element('div', 'befehle');
+    const knopfFuer = (befehl, text, gedrueckt, tun) => {
+      const knopf = document.createElement('button');
+      knopf.type = 'button';
+      knopf.className = 'befehl-knopf';
+      knopf.dataset.befehl = befehl;
+      knopf.textContent = text;
+      if (gedrueckt !== null) knopf.setAttribute('aria-pressed', gedrueckt ? 'true' : 'false');
+      beimDruecken(knopf, tun);
+      return knopf;
+    };
+    if (mitHaltung.length) {
+      const gilt = new Set(mitHaltung.map((e) => HALTUNG_BUCHSTABE[e.ht] || 'verteidigung'));
+      const jetzt = gilt.size === 1 ? [...gilt][0] : null;
+      const reihe = element('div', 'haltungen');
+      reihe.id = 'haltungen';
+      reihe.setAttribute('role', 'group');
+      reihe.setAttribute('aria-label', 'Haltung');
+      for (const h of HALTUNGEN) {
+        reihe.append(knopfFuer(`haltung-${h}`, HALTUNG_TEXT[h].knopf, jetzt === h,
+          () => this.senden({ auftrag: 'haltung', einheiten: mitHaltung.map((e) => e.i), haltung: h })));
+      }
+      block.append(reihe);
+    }
+    if (quartierbar.length) {
+      const knopf = knopfFuer('einquartieren', quartierbar.length === 1 ? 'Einquartieren' : `${quartierbar.length} einquartieren`,
+        a.einquartierenAn, () => a.einquartierenSetzen(!a.einquartierenAn));
+      knopf.id = 'einquartieren';
+      block.append(knopf);
+    }
+    return block;
+  }
+
+  /**
+   * Besatzung und Notfallklingel am eigenen Gebaeude (bauen AC-58, AC-61):
+   * wie viele drin sind, `Alle heraus`, und am Dorfzentrum die Glocke.
+   * @param {any} gebaeude
+   */
+  besatzungBauen(gebaeude) {
+    const a = this.ansicht;
+    const w = a.werte.gebaeude[gebaeude.art] || {};
+    if (!w.besatzung || gebaeude.b !== a.ich || gebaeude.u !== undefined) return null;
+    const block = element('div', 'befehle');
+    const zeile = element('div', 'besatzung');
+    zeile.id = 'besatzung';
+    zeile.dataset.besatzung = String(gebaeude.bs || 0);
+    zeile.append(element('span', null, `Besatzung ${gebaeude.bs || 0} / ${w.besatzung}`));
+    if (w.schiesstBesetzt && !gebaeude.bs) zeile.append(element('div', 'leise', 'schießt erst mit Besatzung'));
+    block.append(zeile);
+    const knoepfe = element('div', 'haltungen');
+    const knopfFuer = (befehl, text, gesperrt, tun) => {
+      const knopf = document.createElement('button');
+      knopf.type = 'button';
+      knopf.className = 'befehl-knopf';
+      knopf.dataset.befehl = befehl;
+      knopf.id = befehl;
+      knopf.textContent = text;
+      knopf.setAttribute('aria-disabled', gesperrt ? 'true' : 'false');
+      beimDruecken(knopf, tun);
+      return knopf;
+    };
+    knoepfe.append(knopfFuer('heraus', 'Alle heraus', !gebaeude.bs, () => {
+      if (gebaeude.bs) this.senden({ auftrag: 'heraus', gebaeude: gebaeude.i });
+      else a.melden('Niemand ist drinnen.');
+    }));
+    if (w.glocke) {
+      const befehl = a.glocke ? 'entwarnung' : 'glocke';
+      const knopf = knopfFuer(befehl, a.glocke ? 'Entwarnung' : 'Notfallklingel', false,
+        () => this.senden({ auftrag: 'glocke', gebaeude: gebaeude.i }));
+      if (a.glocke) knopf.setAttribute('aria-pressed', 'true');
+      knoepfe.append(knopf);
+    }
+    block.append(knoepfe);
+    return block;
+  }
+
+  /** Was auf der Tafel eines Befehlsknopfs steht (bauen AC-58, AC-61, kampf AC-28). */
+  befehlTafel(befehl) {
+    const regel = this.ansicht.werte.einquartieren || {};
+    const leer = { kosten: {} };
+    if (befehl === 'einquartieren') {
+      return { ...leer, name: 'Einquartieren', dauer: 'Taste E', zeilen: [
+        'Danach ein eigenes Dorfzentrum, einen Turm oder eine Burg anklicken',
+        `Drinnen trifft sie niemand, und sie heilen 1 Leben alle ${regel.heilen ?? 2} s`,
+        'Je Dorfbewohner, Fußsoldat oder Schütze darin schießt das Gebäude einen Pfeil mehr',
+        'Reiter nur in die Burg, Belagerung und Karren nie',
+      ] };
+    }
+    if (befehl === 'heraus') {
+      return { ...leer, name: 'Alle heraus', dauer: null, zeilen: ['Jeder darin kommt auf ein freies Feld am Gebäude'] };
+    }
+    if (befehl === 'glocke') {
+      return { ...leer, name: 'Notfallklingel', dauer: null, zeilen: [
+        `Jeder Dorfbewohner bis ${regel.glocke ?? 20} Felder vom Dorfzentrum geht in das nächste eigene Gebäude mit Platz`,
+        'Jeder merkt sich seine Arbeit – die Entwarnung schickt ihn zurück',
+      ] };
+    }
+    if (befehl === 'entwarnung') {
+      return { ...leer, name: 'Entwarnung', dauer: null, zeilen: [
+        'Wer von der Glocke hineingeschickt wurde, kommt heraus und geht an seine alte Arbeit',
+      ] };
+    }
+    const h = befehl.replace('haltung-', '');
+    const text = HALTUNG_TEXT[h];
+    return { ...leer, name: `Haltung: ${text?.name || h}`, dauer: text ? `Taste ${text.taste}` : null, zeilen: text?.zeilen || [] };
   }
 
   /**
@@ -2910,7 +3066,8 @@ export class Auswahlleiste {
     // (bauen AC-29, bedienung AC-35) - aus der Tafel seines Besitzers.
     const a = this.ansicht;
     const gebaeudewert = (feld) => a.einheitenwerte.get(gebaeude.b)?.[gebaeude.art]?.[feld] ?? a.werte.gebaeude[gebaeude.art]?.[feld] ?? 0;
-    if (gebaeudewert('angriff') > 0) w.append(this.kampfwerteZeile(gebaeude, gebaeude.art, gebaeudewert, (feld) => a.werte.gebaeude[gebaeude.art]?.[feld] ?? 0));
+    const schiesst = !a.werte.gebaeude[gebaeude.art]?.schiesstBesetzt || gebaeude.bs;
+    if (gebaeudewert('angriff') > 0 && schiesst) w.append(this.kampfwerteZeile(gebaeude, gebaeude.art, gebaeudewert, (feld) => a.werte.gebaeude[gebaeude.art]?.[feld] ?? 0));
     // Eine Farm zeigt, wie viel Nahrung sie noch traegt (einheiten AC-18).
     const vorrat = this.ansicht.farmVoll(gebaeude);
     if (vorrat && gebaeude.n !== undefined) {
@@ -2946,6 +3103,11 @@ export class Auswahlleiste {
     if (a.werte.gebaeude[gebaeude.art]?.handel) w.append(this.handelBauen(gebaeude));
     // Am Kloster wird der Drache gerufen (bauen AC-35).
     if (gebaeude.art === 'kloster' && a.werte.drache) w.append(this.drachenrufBauen(gebaeude));
+    // Einquartierte und die Notfallklingel (bauen AC-58, AC-61).
+    // Unter den Namen, nicht daneben: eine Spalte mehr drueckte die Knoepfe
+    // der Ausbildung am Dorfzentrum in eine Spalte (bauen AC-57).
+    const besatzung = this.besatzungBauen(gebaeude);
+    if (besatzung) kopfteil.append(besatzung);
 
     // Was nichts ausbildet, zeigt weder Knoepfe noch eine leere Schlange.
     if (!angebot.length && !gebaeude.s.length) return;
