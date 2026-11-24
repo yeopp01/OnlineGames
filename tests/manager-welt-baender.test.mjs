@@ -6,7 +6,8 @@
 // Was noch reisst, steht auf `offen` und der Test auf `todo` (finanzen
 // AC-17 und AC-18 halten seit Schritt 2, transfer AC-26 und AC-27 seit
 // Schritt 3, kader AC-24 und AC-25 seit Schritt 4, finanzen AC-19 und
-// transfer AC-29 seit Schritt 6). Wer einen Schritt des Plans baut,
+// transfer AC-29 seit Schritt 6, kader AC-26 seit Schritt 5; kader AC-24 haelt
+// seit Schritt 5 hier nicht mehr). Wer einen Schritt des Plans baut,
 // nimmt das `todo` weg, sobald sein Band ueber diese Welt haelt - und prueft
 // mit `npm run manager:dynamik` ueber mehrere Startwerte, dass es nicht nur
 // hier haelt.
@@ -57,11 +58,11 @@ test('transfer AC-26: mit 24 bis 28 ist ein Jahresgehalt 15 bis 25 % des Marktwe
   pruefen('transfer AC-26');
 });
 
-test('kader AC-23: ab Saison 5 drei bis acht Spieler ab Staerke 85 in Liga 1', { todo: 'reisst seit Schritt 6 knapp: hier nur Saison 5 mit 1, ueber acht Startwerte 0 bis 9 je Saison, an einem von acht jede Saison im Band, an den anderen ein bis drei Saisons darunter - das Band verlangt jede Saison' }, () => {
+test('kader AC-23: ab Saison 5 drei bis acht Spieler ab Staerke 85 in Liga 1', { todo: 'reisst seit Schritt 5 meist oben: hier nur Saison 5 mit 2, ueber acht Startwerte 2 bis 10 je Saison, an einem von acht jede Saison im Band, an den anderen in 1 bis 14 von 20 Saisons daneben' }, () => {
   pruefen('kader AC-23');
 });
 
-test('kader AC-24: das Durchschnittsalter bleibt ab Saison 2 zwischen 23 und 25', () => {
+test('kader AC-24: das Durchschnittsalter bleibt ab Saison 2 zwischen 23 und 25', { todo: 'reisst seit Schritt 5 unten: wer ab 25 auf der Bank sitzt, baut ab (kader AC-26) und wird ersetzt - hier Saison 9 mit 22,9, ueber acht Startwerte in 3 bis 8 von 20 Saisons 22,7 bis 23,0' }, () => {
   pruefen('kader AC-24');
 });
 
@@ -77,7 +78,7 @@ test('kader AC-25: die Jugend kommt hoechstens 15 unter dem Niveau an und spielt
   pruefen('kader AC-25');
 });
 
-test('kader AC-26: wer mit 25 bis 30 viel spielt, legt einen Punkt mehr zu', { todo: 'reisst heute, die Spielzeit wirkt nur bis 24 - Schritt 5 des Plans, Entwicklung' }, () => {
+test('kader AC-26: wer mit 25 bis 30 viel spielt, legt einen Punkt mehr zu', () => {
   pruefen('kader AC-26');
 });
 

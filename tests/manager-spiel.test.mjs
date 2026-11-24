@@ -1390,7 +1390,7 @@ test('vertraege AC-10: die Abstiegsklausel senkt die Gehaelter', () => {
 test('vertraege AC-4: der Mensch verlaengert zum genannten Gehalt', () => {
   const k = neu();
   const spieler = eigen(k).spieler.find((s) => s.vertrag.bis === 2 && s.moral >= 25 && s.alter <= 30);
-  const wunsch = vertraege.gehaltswunsch(spieler);
+  const wunsch = vertraege.gehaltswunsch(spieler, k.startwert);
   assert.deepEqual(k.verlaengern('m1', spieler.id, 3), { ok: true, bis: 5, gehalt: wunsch });
   assert.ok(ich(k).nachrichten.at(-1).text.includes('verlängert bis Saison 5'));
   assert.match(k.verlaengern('m1', spieler.id, 1).fehler, /läuft noch bis Saison 5/);

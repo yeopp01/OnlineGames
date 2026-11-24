@@ -158,7 +158,7 @@ class Zuege {
     if (fehler) return { fehler };
     const spieler = this.spielerVon(verein, spielerId);
     if (!spieler) return { fehler: 'Dieser Spieler gehört nicht zum Kader.' };
-    const ergebnis = vertraege.verlaengern(spieler, laufzeit, this.saison);
+    const ergebnis = vertraege.verlaengern(spieler, laufzeit, this.saison, this.startwert);
     if (ergebnis.fehler) return ergebnis;
     this.melden(manager, 'verein', `${spieler.name} verlängert bis Saison ${ergebnis.bis}, ${geld(ergebnis.gehalt)} im Jahr.`);
     return ergebnis;

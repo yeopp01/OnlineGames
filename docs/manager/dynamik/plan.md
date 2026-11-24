@@ -585,7 +585,94 @@ bis 23,0. Der Test bleibt.
 Verwalter und der Händler; ob die vielen Meldungen im Postfach der ersten
 Liga stören; die Oberfläche (kein Browserlauf).
 
-## Wovon Auf- und Abwertung heute abhängt (`kader.entwickeln`)
+### Schritt 5: Neigungen und Entwicklung nach Einsatz (2026-11-24)
+
+**Neigungen** (`server/spiele/manager/neigungen.js`, kader AC-27 bis
+AC-33): sieben Achsen je Spieler, aus Kennung und Startwert über einen Hash
+(FNV-Art, Box–Muller, Streuung 0,35, bei ±1 abgeschnitten). **Kein Feld am
+Spieler, keine neue Fassung des Spielstands** — dieselbe Karriere hat
+dieselben Neigungen, ohne Startwert ist jede null (Vorschau, Tests ohne
+Karriere, der Markt).
+
+| Achse | + | − | Wirkung bei 1 | gemessen je Einheit Neigung |
+| --- | --- | --- | --- | --- |
+| entwicklung | Trainingsfleißig | Lebemann | +0,5 Stärke je Saison | 0,509 ± 0,056 Punkte je Jahr (n = 15 620 Spielerjahre bis 28, nicht am Talent) |
+| wechsel | Söldner | Vereinstreu | Gehaltswunsch beim Verlängern ×(1 + 0,06), Abstand nach unten 14 + 2 | 0,060 (so gebaut) |
+| heim | — | — | Tagesform daheim +3 %, auswärts −3 % | Note auswärts − daheim 0,009 ± 0,007 — **nicht von null zu trennen** |
+| nerven | Profi | — | Streuung der Note ×(1 − 0,4) | Streuung der Noten −0,063 ± 0,005 Notenstufen (n = 6025) |
+| karten | Heißsporn | — | — (angelegt) | — |
+| moral | Sensibel | — | — (angelegt) | — |
+| mitspieler | Anführer | — | — (angelegt) | — |
+
+`charakter(spieler, startwert)` gibt den Namen der stärksten benannten
+Abweichung ab 0,5, sonst „Ausgeglichen". Über 6080 Spieler zu Beginn
+(Vereine und Vereinslose, acht Startwerte): Ausgeglichen 52,2 %, Söldner
+6,7, Anführer 6,4, Lebemann 6,1, Sensibel 6,0, Vereinstreu 5,9,
+Trainingsfleißig 5,8, Heißsporn 5,8, Profi 5,2 % (gerechnet: 52,3 %
+ausgeglichen, je Name 7,6 % vor Überlappung). **Profi** heißt, wer die
+ruhigsten Nerven hat — wer Woche für Woche dieselbe Note liefert; das ist
+die Achse, die im Spiel etwas Messbares tut und kein eigenes Gegenstück
+braucht.
+
+**Verdeckt** (kader AC-28): die rohen Werte verlassen den Server nie; der
+Zustand trägt `charakter` und `gehaltswunsch` nur an den eigenen
+Spielern. Der Wächter in `tests/manager-netz.test.mjs` geht jede Zahl in
+Zustand, Markt (200 und Vereinslose), Vereinsansicht, zwei Akten und
+Spielstandliste durch und vergleicht sie auf zwölf Stellen mit jeder
+Neigung und jedem Faktor daraus; die Gegenprobe (ein Feld `fl` mit dem
+Fleiß an den eigenen Spielern) fällt. **Restrisiko:** `startwert` steht im
+Zustand, wer den Hash nachbaut, rechnet die Neigungen aus.
+
+**Entwicklung** (`ENTWICKLUNG` in `kader.js`): der Zufall ist stetig
+(Dreieck aus zwei Würfen, gleiche Varianz), gerundet wird zufällig
+(`zufaelligGerundet`: im Mittel kommt an, was gerechnet wurde) statt einen
+Rest am Spieler zu tragen; ab 25 zählt der Anteil an allen Minuten — 5,5
+Punkte je Anteil unter 70 %, 1,5 darüber; der Notenschnitt zählt ab fünf
+Noten mit 0,6 je Stufe um 3,5 (kader AC-30), dazu der Fleiß. Das Talent
+bleibt die Obergrenze.
+
+**Gemessen** (`npm run manager:dynamik -- --saisons 20`, acht Startwerte):
+
+| Band | Schritt 4 (HEAD `7ec832e`) | Schritt 5 |
+| --- | --- | --- |
+| kader AC-23 Sterne 3 bis 8 | 1 von 8 (77) | 1 von 8 (4711); sonst zuerst S5 bis S9, 2 bis 10, 1 bis 14 von 20 Saisons |
+| kader AC-24 Alter 23 bis 25 | 6 von 8 (1234, 99 rissen) | **0 von 8**: 22,7 bis 23,0 in 3 bis 8 von 20 Saisons, zuerst S7 bis S9 |
+| kader AC-25 Jugend | 8 von 8 | 8 von 8 |
+| kader AC-26 Einsatz ≥ 1 | 0 von 8 (−0,30 bis −0,08) | **5 von 8**; 4711 (S9 0,94, 2 von 19), 1234 (S9 0,88, 1), 99 (S10 0,96, 2) |
+| finanzen AC-17, 18, 19 | 8 von 8 | 8 von 8 |
+| transfer AC-26, 27, 29 | 8 von 8 | 8 von 8 |
+
+Je Startwert, AC-23 (erster Riss, gerissene Saisons von 20): 4711 hält;
+20260910 S5: 2 (1); 77 S9: 9 (6); 1234 S7: 9 (11); 5 S5: 2 (6); 99 S7: 10
+(14); 31337 S8: 10 (7); 2026 S7: 9 (5). AC-24: 4711 S8: 23,0 (6);
+20260910 S9: 22,9 (5); 77 S7: 23,0 (6); 1234 S9: 22,7 (7); 5 S9: 22,9 (3);
+99 S8: 22,9 (7); 31337 S7: 22,9 (8); 2026 S7: 23,0 (5).
+
+**`einsatz` gegen den Markt:** 5,5 hält alles in `npm test`; 6 reißt
+transfer AC-28 (L1 10,5 %) und AC-31 (31337: 0,20); 6,5 AC-31 (0,80); 7
+reißt AC-28 L1 (14 %), AC-28 L2 und AC-31 L2 an 31337 (0,70) — und ist die
+einzige Einstellung, mit der AC-26 an allen acht hielt. Gewählt 5,5.
+
+**Heimquote:** `docs/manager/dynamik/neigungen.cjs` (fünf Saisons, acht
+Startwerte, rund 20 s) rechnet jede Welt mit und ohne `heim`: 47,56 %
+Heimsiege von 25 680 mit, 47,71 % ohne — die Achse verschiebt die Quote
+nicht, weil sie um null liegt.
+
+**`npm run manager:messen`** vorher → nachher: Tore 3,24 → 3,24,
+Heimsiege 48,0 → 48,0 %, Unentschieden 22,2 → 21,6 %, Favorit 52,3 %
+(67,1 % ohne Remis) → 51,3 % (65,3 %), Gelb 3,04 → 3,02, Platzverweise
+0,142 → 0,149, Wechsel 2,77 → 2,72, Verletzungen 0,260 → 0,256, Stärke
+der ersten Liga 69,8 → 69,6, Konto 24,6 → 25,1 Mio.
+
+**Nicht geprüft:** wie sich die Neigungen für einen Menschen anfühlen
+(keine Oberfläche gebaut — `public/manager` gehört der Managersitzung);
+die Bereitschaft im Markt hängt über `abstandMehr` an der Neigung, das
+Gehalt dort nicht — nur der Abstand ist dort gemessen (transfer AC-31 an
+acht); `heim` ist in den Noten nicht zu sehen; die Wirkung der Nerven ist
+klein (eine Zehntelstufe Streuung zwischen −0,8 und +0,8). karten, moral
+und mitspieler wirken nicht.
+
+## Wovon Auf- und Abwertung vor Schritt 5 abhing (`kader.entwickeln`)
 
 Zweimal je Saison (Winter × 0,4 ohne Altern, Sommer × 0,6 mit Altern),
 gerundet:
@@ -614,7 +701,7 @@ Schritt für 25- bis 28-Jährige meist 0 (× 0,4 gerundet).
 Dazu: „da is vmtl noch bissl potential nen bessren randomfaktor
 reinzubringen" (zur Entwicklung).
 
-Vorschlag für Schritt 5 (noch nicht gebaut, ergänzt M2 „Spieler mit
+Vorschlag für Schritt 5 (gebaut am 2026-11-24, siehe Stand; Bruchteile werden zufällig gerundet statt mitgeführt — ergänzt M2 „Spieler mit
 Gesicht" in [`../plan.md`](../plan.md)): **stufenlose Neigungen statt eines
 einzigen Charakters** — je Spieler wenige Werte um 0 (etwa `fleiss`,
 `geldgier`, `heimliebe`, `nerven`), einmal aus dem Startwert gezogen,

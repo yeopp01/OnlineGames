@@ -218,7 +218,7 @@ function marktliste(welt, eigener, filter = {}) {
   const liste = [];
   const aufnehmen = (spieler, verein) => {
     const wert = marktwert(spieler);
-    const bereit = eigener ? vertraege.wechselbereit(spieler, eigener) : { ok: true };
+    const bereit = eigener ? vertraege.wechselbereit(spieler, eigener, welt.startwert) : { ok: true };
     liste.push({
       id: spieler.id,
       name: spieler.name,
@@ -292,7 +292,7 @@ function kaufPruefen(welt, kaeufer, spielerId, gebot, laufzeit) {
     const verlangt = forderung(verkaeufer, spieler, welt.saison);
     if (gebot < verlangt) return { fehler: `${verkaeufer.name} verlangt ${verlangt} T.` };
   }
-  const bereit = vertraege.wechselbereit(spieler, kaeufer);
+  const bereit = vertraege.wechselbereit(spieler, kaeufer, welt.startwert);
   if (!bereit.ok) return { fehler: bereit.grund };
   return { ok: true, spieler, verkaeufer, abloese: verkaeufer ? Math.round(gebot) : 0 };
 }
@@ -371,7 +371,7 @@ function kiAngebote(welt, mensch, zufall, wartet = new Set(), geboten = new Set(
       .filter((s) => liste || !s.transferliste)
       .filter((s) => !geboten.has(`${verein.id}:${s.id}`))
       .filter((s) => bestandNachAbgang(mensch, s) >= MINDESTBESTAND[s.position])
-      .filter((s) => vertraege.wechselbereit(s, verein).ok && !s.karriereende)
+      .filter((s) => vertraege.wechselbereit(s, verein, welt.startwert).ok && !s.karriereende)
       .filter((s) => s.staerke > schwaechsterStamm(verein, s.position) + (s.transferliste ? -2 : 3))
       .sort((a, b) => Number(Boolean(b.transferliste)) - Number(Boolean(a.transferliste)) || b.staerke - a.staerke);
     const wunsch = kandidaten[0];
@@ -387,7 +387,7 @@ function kiAngebote(welt, mensch, zufall, wartet = new Set(), geboten = new Set(
     if (summe + vertraege.gehaltswunsch(wunsch) > grenze) continue;
     const umsonst = welt.freie.some((s) => s.position === wunsch.position && !s.karriereende
       && s.alter <= ALTERSBLICK.freieBis && s.staerke >= wunsch.staerke - MARKT.freiNaeher
-      && vertraege.wechselbereit(s, verein).ok && summe + vertraege.gehaltswunsch(s) <= grenze);
+      && vertraege.wechselbereit(s, verein, welt.startwert).ok && summe + vertraege.gehaltswunsch(s) <= grenze);
     if (umsonst) continue;
     angebote.push({
       id: `a${welt.saison}-${welt.termin}-${verein.id}`,
@@ -434,7 +434,7 @@ function besterZugang(welt, verein, position, loch) {
   for (const spieler of welt.freie) {
     // Wer zum Saisonende aufhoert, wird nicht mehr geholt.
     if (spieler.position !== position || spieler.staerke < schwelle || spieler.alter > ALTERSBLICK.freieBis || spieler.karriereende) continue;
-    if (!vertraege.wechselbereit(spieler, verein).ok) continue;
+    if (!vertraege.wechselbereit(spieler, verein, welt.startwert).ok) continue;
     const gehalt = vertraege.gehaltswunsch(spieler);
     if ((verein.konto < gehalt || belastet + gehalt > grenze) && !(loch && gehalt <= HAUSHALT.lochGehalt)) {
       if (not && (!notnagel || gehalt < vertraege.gehaltswunsch(notnagel))) notnagel = spieler;
@@ -454,7 +454,7 @@ function besterZugang(welt, verein, position, loch) {
         if (spieler.position !== position || spieler.alter > ALTERSBLICK.andereBis || spieler.karriereende) continue;
         if (spieler.staerke < Math.max(liste ? schwelle - 3 : schwelle, 1)) continue;
         if (bestandNachAbgang(anderer, spieler) < MINDESTBESTAND[position]) continue;
-        if (!vertraege.wechselbereit(spieler, verein).ok) continue;
+        if (!vertraege.wechselbereit(spieler, verein, welt.startwert).ok) continue;
         if (belastet + vertraege.gehaltswunsch(spieler) > grenze) continue;
         const preis = forderung(anderer, spieler, welt.saison);
         if (preis > budget) continue;
@@ -562,7 +562,7 @@ function kiVertraege(welt, zufall) {
     let verlaengert = 0;
     for (const spieler of kandidaten) {
       if (verlaengert >= platz) break;
-      const gehalt = vertraege.gehaltswunsch(spieler);
+      const gehalt = vertraege.gehaltswunsch(spieler, welt.startwert);
       // Faellt die Position sonst unter den Mindestbestand, wird ein Billiger
       // auch ueber der Grenze verlaengert - wie ein Loch in besterZugang
       // gestopft wird. Sonst ging der Jugendspieler fuer 100 und kam ein

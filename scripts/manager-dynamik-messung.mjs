@@ -94,7 +94,7 @@ export function weltVerfolgen({ startwert, saisons }) {
             const moeglich = Math.max(1, k.pflichtspiele(v) * 90);
             return v.spieler.map((s) => ({
               id: s.id, liga: v.liga, alter: s.alter, staerke: s.staerke, talent: s.talent,
-              gehalt: s.vertrag?.gehalt ?? 0, wunsch: gehaltswunsch(s), wert: kader.marktwert(s),
+              gehalt: s.vertrag?.gehalt ?? 0, wunsch: gehaltswunsch(s, k.startwert), wert: kader.marktwert(s),
               anteil: s.saison.minuten / moeglich,
             }));
           }),

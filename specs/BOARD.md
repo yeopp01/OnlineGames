@@ -7,9 +7,9 @@ Eine Zeile je Abnahmekriterium. Gepflegt wird der Status in der Spec selbst,
 hier steht er zusammengefasst. Erzeugt mit `npm run specs:board`; als Seite
 mit Bildnachweisen, Filter und Suche mit `npm run qa:report`.
 
-**Gesamt:** 638/748 fertig · 3 in Arbeit · 17 in QA · 3 geplant · 79 offen · 8 zurueckgestellt
+**Gesamt:** 645/755 fertig · 3 in Arbeit · 18 in QA · 3 geplant · 78 offen · 8 zurueckgestellt
 
-**Nachweise:** 336 Kriterien mit Bild · 312 ohne Bild, begruendet in `qa/ohne-bild.json`
+**Nachweise:** 336 Kriterien mit Bild · 319 ohne Bild, begruendet in `qa/ohne-bild.json`
 
 ## Nach Spezifikation
 
@@ -34,7 +34,7 @@ mit Bildnachweisen, Filter und Suche mit `npm run qa:report`.
 | [Ausbau](15-manager/ausbau.md)                                 | -         | -     | -       | -     | -               | 1      |
 | [Bedienung des Managerspiels](15-manager/bedienung.md)         | -         | -     | -       | -     | -               | 20     |
 | [Finanzen](15-manager/finanzen.md)                             | -         | -     | -       | -     | -               | 19     |
-| [Kader und Spieler](15-manager/kader.md)                       | -         | 2     | -       | 2     | -               | 22     |
+| [Kader und Spieler](15-manager/kader.md)                       | -         | 3     | -       | 1     | -               | 29     |
 | [Karriere: Saison um Saison](15-manager/karriere.md)           | -         | -     | -       | 1     | -               | 29     |
 | [Liga und Saison](15-manager/liga.md)                          | -         | -     | -       | -     | -               | 18     |
 | [Pokal](15-manager/pokal.md)                                   | -         | -     | -       | -     | -               | 8      |
@@ -52,7 +52,7 @@ mit Bildnachweisen, Filter und Suche mit `npm run qa:report`.
 - **Zeitalter gliedern die Partie** — [Spielziel und Partieverlauf](10-strategie/spielziel.md) AC-1
 - **Zahlen sind abrufbar** — [Betrieb](20-betrieb/betrieb.md) AC-8
 
-## In QA (17)
+## In QA (18)
 
 - **Einladungscodes erzeugen und zuruecknehmen** — [Konten und Anmeldung](00-plattform/konten.md) AC-20
 - **Verwaister Raum wird geschlossen** — [Raeume und Partien](00-plattform/raeume.md) AC-12
@@ -66,6 +66,7 @@ mit Bildnachweisen, Filter und Suche mit `npm run qa:report`.
 - **Aktualisieren ist ein Befehl** — [Fahrplan zum Klon](10-strategie/fahrplan.md) AC-22
 - **Alle Namen sind erfunden** — [Kader und Spieler](15-manager/kader.md) AC-7
 - **Durchschnittsalter bleibt im Band** — [Kader und Spieler](15-manager/kader.md) AC-24
+- **Wer spielt, entwickelt sich** — [Kader und Spieler](15-manager/kader.md) AC-26
 - **Wer satt ist, verkauft nicht** — [Transfermarkt](15-manager/transfer.md) AC-30
 - **Nur über HTTPS** — [Betrieb](20-betrieb/betrieb.md) AC-1
 - **Dienst startet selbst neu** — [Betrieb](20-betrieb/betrieb.md) AC-3
@@ -78,7 +79,7 @@ mit Bildnachweisen, Filter und Suche mit `npm run qa:report`.
 - **Kennwort vergessen** — [Konten und Anmeldung](00-plattform/konten.md) AC-5
 - **Automatischer Wiederaufbau** — [Uebertragung](00-plattform/uebertragung.md) AC-10
 
-## Offen (79)
+## Offen (78)
 
 - **Anmeldung ueber Google/GitHub** — [Konten und Anmeldung](00-plattform/konten.md) AC-6
 - **Bilanz je Konto** — [Konten und Anmeldung](00-plattform/konten.md) AC-14
@@ -150,7 +151,6 @@ mit Bildnachweisen, Filter und Suche mit `npm run qa:report`.
 - **Kein Haus gewinnt gegen alle** — [Spielziel und Partieverlauf](10-strategie/spielziel.md) AC-18
 - **Ein Aussteiger blockiert nicht** — [Spielziel und Partieverlauf](10-strategie/spielziel.md) AC-15
 - **Sterne in einem Band** — [Kader und Spieler](15-manager/kader.md) AC-23
-- **Wer spielt, entwickelt sich** — [Kader und Spieler](15-manager/kader.md) AC-26
 - **Mehrere Menschen in einer Welt** — [Karriere: Saison um Saison](15-manager/karriere.md) AC-16
 - **Mehrere Manager, eine Welt** — [Spielziel und Abgrenzung](15-manager/spielziel.md) AC-1
 - **Der Termin wartet auf alle** — [Spielziel und Abgrenzung](15-manager/spielziel.md) AC-2

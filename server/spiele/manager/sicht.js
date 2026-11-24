@@ -8,6 +8,7 @@ const liga = require('./liga');
 const pokal = require('./pokal');
 const finanzen = require('./finanzen');
 const vertraege = require('./vertraege');
+const neigungen = require('./neigungen');
 const transfer = require('./transfer');
 const { terminTitel, fensterOffen, fensterText } = require('./kalender');
 const { mannschaftsteile, AUSRICHTUNGEN } = require('./spieltag');
@@ -239,7 +240,8 @@ class Sicht {
       eignung: plaetze.map((platz) => Math.round(kader.eignung(s, platz) * 100) / 100),
       bereit: kader.einsatzbereit(s),
       ausfall: kader.ausfallgrund(s),
-      gehaltswunsch: vertraege.gehaltswunsch(s),
+      gehaltswunsch: vertraege.gehaltswunsch(s, this.startwert),
+      charakter: neigungen.charakter(s, this.startwert),
       laufzeitMax: vertraege.laufzeitMax(s),
       verlaengerbar: Boolean(s.vertrag && s.vertrag.bis <= this.saison + 1 && s.karriereende !== this.saison),
       karriereende: s.karriereende === this.saison,

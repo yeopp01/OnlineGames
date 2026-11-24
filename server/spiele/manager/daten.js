@@ -141,6 +141,7 @@
  * @property {number} staerke      auf dem Platz: mit der Eignung fuer ihn
  * @property {number} moral
  * @property {number} kondition
+ * @property {number} [form]       Faktor aus der Neigung `heim`, nur wenn er nicht 1 ist (kader AC-31)
  *
  * @typedef {object} Seite  eine Mannschaft in einem laufenden Spiel
  * @property {string} id           der Verein
@@ -148,7 +149,7 @@
  * @property {Platzspieler[]} auf
  * @property {string[]} plaetze    die Plaetze der Startelf, wie aufgestellt
  * @property {Platzspieler[]} bank
- * @property {Object<string, {position: Position, staerke: number}>} spieler  Werte im Verein, fuer die Noten
+ * @property {Object<string, {position: Position, staerke: number, nerven?: number}>} spieler  Werte im Verein, fuer die Noten; `nerven` streut die Note (kader AC-33)
  * @property {Taktik} taktik
  * @property {{system: number, pressing: number, abwehr: number, angriff: number}} geuebt  0 bis 1
  * @property {Object<string, number>} systeme  wie gut die Elf jedes System kennt, 0 bis 1 - fuer den Wechsel im Spiel

@@ -185,7 +185,7 @@ Umfang hinzufügt, dort nachsehen.
 
 ## Stand
 
-**638 von 748 Kriterien fertig.** 1143 Tests ohne Browser und 17 ganze Partien, 351 im Browser. Die
+**645 von 755 Kriterien fertig.** 1150 Tests ohne Browser und 17 ganze Partien, 351 im Browser. Die
 Übersicht ist der Bericht: `npm run qa:report`.
 
 Gebaut ist der Unterbau: Räume, Übertragung, Karte, Wegfindung, Sammeln,
@@ -213,7 +213,7 @@ Fälle sind `fahrplan AC-24` mit 108 s, zwei gegen zwei bis zur Tafel,
 mit 84 s, eine ganze Partie gegen die KI).
 
 **Spieldynamik des Managers** ([Plan](docs/manager/dynamik/plan.md),
-Schritte 2 bis 4 und 6): Haushalt der KI (`HAUSHALT`), Preisgefüge
+Schritte 2 bis 6): Haushalt der KI (`HAUSHALT`), Preisgefüge
 (Marktwert ×2,3, Alter linear), Startwelt und Jugend (`STARTWELT`,
 `JUGEND`, `ALTERSBLICK`) und der Markt (`MARKT` in `transfer.js`): wer
 mehr als dreimal seine Jahreseinnahmen hat, verkauft nur von der Liste
@@ -232,8 +232,20 @@ der ersten, 1 in der zweiten Liga (transfer AC-31, gemessen 6,5 / 3,0 /
 1,3 im kleinsten Fall); je Fenster bietet ein Verein höchstens einmal auf
 denselben Spieler. Die vielen Meldungen kommen von mehreren Vereinen auf
 dieselben ein, zwei Spieler; eine Obergrenze hält mit der zweiten Liga
-nicht zugleich (Plan, Nachbesserung). Offen: kader AC-23 (Sterne), AC-24
-(Alter, `in-qa`: 6 von 8 Startwerten) und AC-26 (Entwicklung ab 25).
+nicht zugleich (Plan, Nachbesserung). **Schritt 5, die Neigungen**
+(`server/spiele/manager/neigungen.js`, kader AC-27 bis AC-33): sieben
+Achsen je Spieler aus Kennung und Startwert über einen Hash — **kein Feld,
+keine neue Fassung** —, Wirkungen in `NEIGUNGEN`: Fleiß ±0,5 Stärke je
+Saison, Söldner ±6 % Gehaltswunsch beim Verlängern und ±2 Punkte Abstand
+nach unten, Heimliebe ±3 % Tagesform (Heimquote 47,56 % mit, 47,71 % ohne),
+Nerven ±40 % Streuung der Note; karten, moral, mitspieler angelegt ohne
+Wirkung. `charakter()` nennt die stärkste Abweichung ab 0,5, sonst
+„Ausgeglichen" (52 %, jeder der acht Namen 5 bis 7 %); hinaus geht nur er,
+nur an den eigenen Spielern (kader AC-28, Wächter im Anfrageweg). Die
+Entwicklung ist stetig, zählt den Einsatz auch ab 25 und die Noten ab fünf.
+Gemessen über acht Startwerte: kader AC-26 hält an 5 (vorher 0), AC-24 an
+keinem (vorher 6, jetzt 22,7 bis 23,0), AC-23 an einem wie vorher.
+`docs/manager/dynamik/neigungen.cjs` misst jede Achse in der Welt.
 
 **Stellschrauben des Managerspiels** stehen gesammelt in `WIRKUNG` in
 `server/spiele/manager/spieltag.js`. Wer daran dreht, misst danach: keine

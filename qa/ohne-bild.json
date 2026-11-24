@@ -1179,12 +1179,47 @@
     {
       "spec": "15-manager/kader.md",
       "ac": "AC-24",
-      "begruendung": "Das Durchschnittsalter aller Vereinsspieler beider Ligen am letzten Termin vor dem Altern, ab der zweiten von zwanzig Saisons ohne Menschen zwischen 23 und 25. Das ist ein Mittel ueber rund 800 Spieler und zwanzig Jahre, gerechnet ohne Browser; die Oberflaeche zeigt den eigenen Kader und einzelne fremde an einem Tag, kein Mittel ueber alle Vereine und keine Folge von Jahren. Belegt im Rechenteil am Startwert 20260910, mit npm run manager:dynamik zusaetzlich an 4711 und 77 (an 1234 in drei Saisons 23,0 statt 23)."
+      "begruendung": "Das Durchschnittsalter aller Vereinsspieler beider Ligen am letzten Termin vor dem Altern, ab der zweiten von zwanzig Saisons ohne Menschen zwischen 23 und 25. Das ist ein Mittel ueber rund 800 Spieler und zwanzig Jahre, gerechnet ohne Browser; die Oberflaeche zeigt den eigenen Kader und einzelne fremde an einem Tag, kein Mittel ueber alle Vereine und keine Folge von Jahren. Gemessen mit npm run manager:dynamik an acht Startwerten; seit Schritt 5 haelt es an keinem in jeder Saison (22,7 bis 23,0), der Test im Rechenteil steht deshalb als todo."
     },
     {
       "spec": "15-manager/kader.md",
       "ac": "AC-25",
       "begruendung": "Zwei Mittel ueber zwanzig Saisons ohne Menschen: wie weit die Siebzehnjaehrigen aus dem eigenen Nachwuchs unter dem Niveau ihres Vereins ankommen (hoechstens 15) und welchen Anteil der Pflichtspielminuten die Zwanzigjaehrigen in Vereinen spielen (mindestens 30 %). Das sind Zahlen ueber alle 36 Vereine und zwanzig Jahrgaenge, gerechnet ohne Browser; die Oberflaeche zeigt die eigene Jugend und die Einsaetze des eigenen Kaders, keinen Vergleich ueber alle Vereine und keine Folge von Jahren. Belegt im Rechenteil am Startwert 20260910, mit npm run manager:dynamik zusaetzlich an 4711, 77 und 1234."
+    },
+    {
+      "spec": "15-manager/kader.md",
+      "ac": "AC-27",
+      "begruendung": "Jeder Spieler hat sieben Neigungen von -1 bis 1, abgeleitet aus Kennung und Startwert, und daraus einen von neun Charakteren. Das Kriterium ist die Verteilung ueber rund 750 Spieler je Welt und acht Startwerte und dass nichts davon im Spielstand liegt - Zahlen ueber alle Vereine und ein Blick in die gesicherten Bytes. Der Server schickt den Charakter der eigenen Spieler mit; ob und wo die Oberflaeche ihn zeigt, baut die Managersitzung (public/manager) - ein Bild davon belegte ohnehin nicht die Verteilung. Belegt im Rechenteil."
+    },
+    {
+      "spec": "15-manager/kader.md",
+      "ac": "AC-28",
+      "begruendung": "Dass keine Antwort des Servers eine Neigung traegt, ist eine Aussage ueber alle Antworten, nicht ueber ein Bild: der Test geht jede Zahl in Zustand, Markt, Vereinsansicht, Akten und Spielstandliste durch und vergleicht sie mit den Neigungen und jedem Faktor daraus. Ein Bildschirm zeigt nur, was ankommt - nicht, was fehlt. Belegt ueber den Anfrageweg, mit Gegenprobe."
+    },
+    {
+      "spec": "15-manager/kader.md",
+      "ac": "AC-29",
+      "begruendung": "Eine Verschiebung der Entwicklung um 0,5 Staerke je Saison und Einheit Neigung, gemessen als Mittel ueber 3000 Wuerfe an zwei Spielern, die sich nur in der Kennung unterscheiden. Ein Spieler waechst in einer Saison um ganze Punkte mit Zufall darin; eine halbe Stufe im Mittel zeigt kein einzelner Bericht. Belegt im Rechenteil, in der Welt mit docs/manager/dynamik/neigungen.cjs."
+    },
+    {
+      "spec": "15-manager/kader.md",
+      "ac": "AC-30",
+      "begruendung": "Ein Zuschlag auf die Entwicklung nach dem Notenschnitt der Saison, als Mittel ueber 3000 Wuerfe derselben Lage mit Schnitt 2 und 5. Der Entwicklungsbericht (kader AC-20) zeigt Vorher und Nachher eines Spielers, nicht welcher Teil davon aus den Noten kam. Belegt im Rechenteil."
+    },
+    {
+      "spec": "15-manager/kader.md",
+      "ac": "AC-31",
+      "begruendung": "Ein Faktor auf die Tagesform je nach Spielort, der im Spiel nicht angezeigt wird, und eine Heimquote ueber 25 680 Spiele mit und ohne ihn. Die Tagesform ist eine Rechengroesse der Begegnung; kein Blatt zeigt sie, und eine Quote ueber Ligen und Jahre zeigt kein Einzelbild. Belegt im Rechenteil am Anpfiff, die Quote mit docs/manager/dynamik/neigungen.cjs."
+    },
+    {
+      "spec": "15-manager/kader.md",
+      "ac": "AC-32",
+      "begruendung": "Ein Faktor auf den Gehaltswunsch beim Verlaengern und eine Schwelle beim Wechsel zu einem schwaecheren Verein, je nach verdeckter Neigung. Im Vertragsblatt steht nur der fertige Wunsch; ob er aus der Neigung kommt, zeigt erst der Vergleich mit demselben Spieler ohne sie, und den gibt es auf dem Bildschirm nicht. Belegt im Rechenteil an Soeldner und Vereinstreuem."
+    },
+    {
+      "spec": "15-manager/kader.md",
+      "ac": "AC-33",
+      "begruendung": "Eine schmalere oder breitere Streuung der Noten bei gleichem Spielausgang, gemessen ueber 600 Spiele je Lage mit und ohne die Achse. Eine Streuung ist eine Eigenschaft vieler Noten eines Spielers, keine einzelne Note auf dem Spielbericht. Belegt im Rechenteil, in der Welt mit docs/manager/dynamik/neigungen.cjs."
     },
     {
       "spec": "15-manager/vorstand.md",

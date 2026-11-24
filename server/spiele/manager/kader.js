@@ -5,6 +5,7 @@
 // Alle Namen sind erfunden - echte Vereine und Spieler sind lizenzpflichtig,
 // und erfundene kosten nichts (→ docs/adr/0008-zweites-spiel-manager.md).
 const { zufallAus, zahl, umMitte, eines } = require('./zufall');
+const neigungen = require('./neigungen');
 
 /** @typedef {import('./daten').Verein} Verein */
 /** @typedef {import('./daten').Zufall} Zufall */
@@ -213,7 +214,8 @@ function marktwert(spieler) {
  * schwer genug, dass Konditionstraining eine echte Wahl gegen Technik ist.
  */
 function tagesform(spieler, frische = spieler.kondition) {
-  return spieler.staerke * (0.6 + (frische / 100) * 0.4) * (0.9 + (spieler.moral / 100) * 0.2);
+  // `form` traegt nur ein Platzspieler mit Neigung `heim` (spieltag.js, kader AC-31).
+  return spieler.staerke * (0.6 + (frische / 100) * 0.4) * (0.9 + (spieler.moral / 100) * 0.2) * (spieler.form ?? 1);
 }
 
 /** Wie gut ein Verein ist: der Schnitt seiner fuenfzehn Besten. */
@@ -713,35 +715,92 @@ function trainieren(verein) {
 const altersstufe = (alter) => (alter <= 20 ? 'jung' : alter <= 24 ? 'reifend' : alter <= 28 ? 'bestes' : alter <= 31 ? 'nachlassend' : 'alt');
 
 /**
+ * Die Stellwerte der Entwicklung (kader AC-26, AC-29, AC-30) - gesetzt und
+ * gemessen in Schritt 5 (→ docs/manager/dynamik/plan.md).
+ * - `mitte`: ab 25 der Anteil an allen Pflichtspielminuten, der weder hebt
+ *   noch senkt - 70 %, ein Stammspieler mit Pausen
+ * - `einsatz`: Punkte je Saison je vollem Anteil unter der Mitte - wer nie
+ *   spielt, verliert 3,85 Punkte im Jahr
+ * - `einsatzOben`: dasselbe darueber, kleiner, weil die meisten Stammspieler
+ *   ab 25 schon am Talent stehen - wer jede Minute spielt, gewinnt 0,45
+ * - `streuungBestes`, `streuungNachlassend`: Varianz des Zufalls mit 25 bis
+ *   28 und mit 29 bis 31; kleiner als frueher (2/3 und 1/3), sonst ging der
+ *   Einsatz im Rauschen unter (kader AC-26 riss in einzelnen Saisons)
+ * - `leistung`: Punkte je Saison je Note besser als 3,5 im Schnitt der Saison
+ *   bis dahin, gezaehlt ab `mindestNoten` benoteten Spielen
+ * Gemessen ueber acht Startwerte und zwanzig Saisons (plan.md, Schritt 5):
+ * kader AC-25 haelt an allen acht, AC-26 an fuenf (sonst 0,88 bis 0,96),
+ * AC-24 an keinem (in 3 bis 8 Saisons 22,7 bis 23,0). Mit `einsatz` 7 hielt
+ * AC-26 an allen acht, dafuer rissen transfer AC-28 und AC-31.
+ */
+const ENTWICKLUNG = {
+  mitte: 0.7, einsatz: 5.5, einsatzOben: 1.5,
+  streuungBestes: 0.3, streuungNachlassend: 0.15,
+  leistung: 0.6, mindestNoten: 5,
+};
+
+/**
+ * Ein stetiger Zufall um eine Mitte, mit derselben Varianz wie ein ganzzahliger
+ * Wuerfel: die Summe zweier gleichverteilter Werte, ein Dreieck.
+ * @param {Zufall} zufall
+ * @param {number} mitte
+ * @param {number} varianz
+ */
+const stetig = (zufall, mitte, varianz) => mitte + (zufall() + zufall() - 1) * Math.sqrt(6 * varianz);
+
+/**
+ * Auf eine ganze Zahl, ohne den Bruchteil zu verlieren: aufgerundet mit der
+ * Wahrscheinlichkeit des Bruchteils. Im Mittel kommt genau an, was gerechnet
+ * wurde - auch ueber die Winterpause, ohne einen Rest am Spieler zu speichern.
+ * @param {number} wert
+ * @param {Zufall} zufall
+ */
+const zufaelligGerundet = (wert, zufall) => Math.floor(wert + zufall());
+
+/**
  * Entwicklung: Junge wachsen auf ihr Talent zu - schneller, wer spielt und wer
- * Technik trainiert hat. Ab 29 geht es abwaerts, auch mit Training. Zur
- * Winterpause gibt es einen Teil davon, am Saisonende den Rest; erst dann ist
- * jeder ein Jahr aelter.
+ * Technik trainiert hat. Ab 29 geht es abwaerts, auch mit Training. Ab 25
+ * zaehlt der Spielanteil fuer sich: wer spielt, haelt sich, wer sitzt, baut
+ * ab (kader AC-26). Fuer jeden zaehlen die Noten der Saison und sein Fleiss
+ * (`neigungen.fleiss`). Zur Winterpause gibt es einen Teil davon, am
+ * Saisonende den Rest; erst dann ist jeder ein Jahr aelter.
  *
  * @param {Verein} verein
  * @param {Zufall} zufall
  * @param {number} spieleDesVereins  wie viele Pflichtspiele der Verein bestritt
- * @param {{anteil?: number, altern?: boolean}} [schritt]
+ * @param {{anteil?: number, altern?: boolean, startwert?: number|null}} [schritt]
+ *   `startwert` der Karriere fuer die Neigungen; ohne ihn rechnet jeder neutral
  * @returns {object[]} jeder Spieler mit Staerke vorher und nachher und dem, wonach gerechnet wurde:
  *   Alter und Talent vor dem Schritt, Anteil an der Spielzeit, Techniktraining, Altersstufe
  */
-function entwickeln(verein, zufall, spieleDesVereins, { anteil = 1, altern = true } = {}) {
+function entwickeln(verein, zufall, spieleDesVereins, { anteil = 1, altern = true, startwert = null } = {}) {
   const technik = verein.trainingswochen ? verein.technikSumme / verein.trainingswochen : 0.5;
   const moeglicheMinuten = Math.max(1, spieleDesVereins * 90 * 0.6);
   const eintraege = [];
   for (const spieler of verein.spieler) {
     const spielanteil = Math.min(1, spieler.saison.minuten / moeglicheMinuten);
+    const anteilVoll = Math.min(1, spieler.saison.minuten / Math.max(1, spieleDesVereins * 90));
     const luft = Math.max(0, spieler.talent - spieler.staerke);
     let plus;
-    if (spieler.alter <= 20) plus = luft * (0.2 + 0.15 * spielanteil + 0.15 * technik) + zahl(zufall, -1, 2);
-    else if (spieler.alter <= 24) plus = luft * (0.1 + 0.12 * spielanteil + 0.1 * technik) + zahl(zufall, -1, 1);
-    else if (spieler.alter <= 28) plus = zahl(zufall, -1, 1) + (technik > 0.6 && luft > 0 ? 1 : 0);
-    // Der Abbau ist seit Schritt 4 halb so stark (→ docs/manager/dynamik/plan.md):
-    // im Mittel 1 statt 2 mit 29 bis 31, 2 statt 3,5 ab 32 - gesetzt, gegen
-    // kader AC-23 und AC-24 gemessen, damit die Spitze nicht mit 30 abtritt.
-    else if (spieler.alter <= 31) plus = -2 * zufall();
-    else plus = -1 - 2 * zufall();
-    plus = Math.round(plus * anteil);
+    if (spieler.alter <= 20) plus = luft * (0.2 + 0.15 * spielanteil + 0.15 * technik) + stetig(zufall, 0.5, 1.25);
+    else if (spieler.alter <= 24) plus = luft * (0.1 + 0.12 * spielanteil + 0.1 * technik) + stetig(zufall, 0, 2 / 3);
+    else {
+      if (spieler.alter <= 28) plus = stetig(zufall, 0, ENTWICKLUNG.streuungBestes) + (technik > 0.6 && luft > 0 ? 1 : 0);
+      // Der Abbau ist seit Schritt 4 halb so stark (→ docs/manager/dynamik/plan.md):
+      // im Mittel 1 statt 2 mit 29 bis 31, 2 statt 3,5 ab 32 - gesetzt, gegen
+      // kader AC-23 und AC-24 gemessen, damit die Spitze nicht mit 30 abtritt.
+      else if (spieler.alter <= 31) plus = stetig(zufall, -1, ENTWICKLUNG.streuungNachlassend);
+      else plus = -1 - 2 * zufall();
+      // Ab 25 zaehlt die Spielzeit fuer sich (kader AC-26): ueber der Mitte
+      // ein wenig mehr, darunter deutlich weniger - gemessen am Anteil an
+      // allen Minuten, nicht an 60 % davon wie bei den Jungen.
+      const ueber = anteilVoll - ENTWICKLUNG.mitte;
+      plus += (ueber >= 0 ? ENTWICKLUNG.einsatzOben : ENTWICKLUNG.einsatz) * ueber;
+    }
+    const { notenSumme, noten } = spieler.saison;
+    if (noten >= ENTWICKLUNG.mindestNoten) plus += ENTWICKLUNG.leistung * (3.5 - notenSumme / noten);
+    plus += neigungen.fleiss(startwert, spieler.id);
+    plus = zufaelligGerundet(plus * anteil, zufall);
     const vorher = spieler.staerke;
     const { alter, talent } = spieler;
     const obergrenze = Math.max(spieler.staerke, spieler.talent);
@@ -786,5 +845,5 @@ module.exports = {
   namensgeber, spielerErzeugen, weltErzeugen, freieErzeugen, jugendErzeugen, notfallJugend,
   einsatzbereit, ausfallgrund,
   plaetzeBesetzen, elfStellen, elfWert, bankStellen, bestesSystem, elfPruefen, elfFuerSpiel,
-  trainieren, entwickeln, altersstufe, hoertAuf,
+  trainieren, entwickeln, altersstufe, hoertAuf, ENTWICKLUNG,
 };
