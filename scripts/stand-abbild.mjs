@@ -86,7 +86,11 @@ export function formErmitteln() {
     dazu('karte', wert.karte);
     for (const s of wert.spieler) dazu('spieler', s);
     for (const e of wert.einheiten.values()) dazu('einheit', e);
-    for (const g of wert.gebaeude.values()) dazu('gebaeude', g);
+    for (const g of wert.gebaeude.values()) {
+      dazu('gebaeude', g);
+      // Wer einquartiert ist, steht nicht in `einheiten` (bauen AC-58).
+      for (const e of g.insassen || []) dazu('einheit', e);
+    }
     for (const t of wert.tiere.values()) dazu('tier', t);
     for (const ei of wert.eier?.values() || []) dazu('ei', ei);
     for (const sicht of wert.sichten.values()) dazu('sicht', sicht);
@@ -168,6 +172,13 @@ function probepartie() {
     if (platz) partie.einheitAnlegen(mensch.id, platz.x, platz.y, art);
   }
   takten(60 * TAKTE_PRO_SEKUNDE);
+  // Die Glocke laeutet, einige sind schon drin, andere unterwegs, und die
+  // Kampfeinheiten halten Stellung (bauen AC-58, AC-61, kampf AC-30).
+  const dz = [...partie.gebaeude.values()].find((g) => g.besitzer === mensch.id && g.art === 'dorfzentrum' && g.fertig);
+  if (dz) partie.glocke(mensch.id, dz.id);
+  const kaempfer = [...partie.einheiten.values()].filter((e) => e.besitzer === mensch.id && partie.haltungMoeglich(e));
+  partie.haltungSetzen(mensch.id, kaempfer.map((e) => e.id), 'stellung');
+  takten(3 * TAKTE_PRO_SEKUNDE);
   return partie;
 }
 

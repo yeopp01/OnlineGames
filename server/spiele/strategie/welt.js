@@ -5,7 +5,7 @@ const karten = require('./karte');
 const { suchen, nachbarfeld, erreichbar, NACHBARN: NACHBARFELDER } = require('./wege');
 const {
   EINHEITEN, SAMMELN, TIERE, GEBAEUDE, VERBESSERUNGEN, ZEITALTER, AUFSTIEGE, KLASSEN, HANDEL, HAEUSER,
-  BEVOELKERUNG_MAX, SCHLANGE_MAX, STARTAUFSTELLUNG, REPARATUR, SCHIESSENDE, ABRUESTEN, ruestetAb, DRACHE,
+  BEVOELKERUNG_MAX, SCHLANGE_MAX, STARTAUFSTELLUNG, REPARATUR, SCHIESSENDE, ABRUESTEN, ruestetAb, DRACHE, EINQUARTIEREN,
 } = require('./daten');
 const { bringt, staerkt, hausBringt } = require('./bringt');
 const stand = require('./stand');
@@ -84,6 +84,9 @@ const LAGER_SUCHE_PAUSE = 50;
 // So weit folgt eine Einheit einem Fluechtenden, gemessen von dem Platz, an
 // dem sie stand (kampf AC-3).
 const VERFOLGUNG_FELDER = 5;
+// Die vier Haltungen einer Kampfeinheit (kampf AC-28 bis AC-31). Ohne Feld
+// an der Einheit gilt die Verteidigung - das Verhalten von vorher.
+const HALTUNGEN = ['angriff', 'verteidigung', 'stellung', 'passiv'];
 // Wie lange eine Partie hoechstens dauern darf, ist eine Einstellung
 // (spielziel AC-22, ADR-0013): keine, 90 oder 120 Spielminuten, Vorgabe
 // keine. Steht nach Ablauf keine Entscheidung, endet sie unentschieden
@@ -793,7 +796,10 @@ class Welt {
       for (const w of wirkungen) anteil += w.gebaeude?.lebenAnteil || 0;
       return Math.round(grund * (1 + anteil));
     }
-    if (SCHUSSFELDER.has(feld) && !SCHIESSENDE.has(art)) return grund;
+    // Das Dorfzentrum schiesst mit Besatzung (bauen AC-59) und bekommt
+    // deshalb dieselben Zuschlaege wie ein Turm - auch wenn es fuer die KI
+    // nicht zu SCHIESSENDE zaehlt.
+    if (SCHUSSFELDER.has(feld) && !SCHIESSENDE.has(art) && !GEBAEUDE[art].schiesstBesetzt) return grund;
     let wert = grund;
     for (const w of wirkungen) wert += w.gebaeude?.[feld] || 0;
     return wert;
@@ -1860,6 +1866,293 @@ class Welt {
     this.gebaeudeAenderungen.add(gebaeude.id);
   }
 
+  // ---- Einquartieren und die Notfallklingel (bauen AC-58 bis AC-61) -----
+
+  /**
+   * Ob dieses Gebaeude diese Einheit aufnimmt (bauen AC-58): es hat
+   * `besatzung` in den Daten, gehoert ihrem Besitzer, ist fertig und steht;
+   * keine Klasse der Einheit steht in `EINQUARTIEREN.nie` oder im
+   * `besatzungOhne` des Gebaeudes. Wer ein Ei traegt, traegt nur das Ei
+   * (einheiten AC-51). Ob noch Platz ist, sagt `besatzungFrei`.
+   */
+  nimmtAuf(gebaeude, einheit) {
+    if (!gebaeude || !gebaeude.fertig || gebaeude.leben <= 0 || this.gebaeude.get(gebaeude.id) !== gebaeude) return false;
+    if (!einheit || einheit.tot || einheit.besitzer !== gebaeude.besitzer) return false;
+    return Welt.nimmtArtAuf(gebaeude.art, einheit.art) && !this.eiVon(einheit);
+  }
+
+  /** Dieselbe Frage nach den Arten allein - fuer die Leiste im Browser (`quartiere` im Aufbau). */
+  static nimmtArtAuf(gebaeudeArt, einheitArt) {
+    const daten = GEBAEUDE[gebaeudeArt];
+    if (!daten?.besatzung) return false;
+    const ohne = [...EINQUARTIEREN.nie, ...(daten.besatzungOhne || [])];
+    return !EINHEITEN[einheitArt].klassen.some((k) => ohne.includes(k));
+  }
+
+  /** Freie Plaetze: die Hoechstzahl weniger der Besatzung und wer schon dorthin unterwegs ist. */
+  besatzungFrei(gebaeude) {
+    let belegt = gebaeude.insassen?.length || 0;
+    for (const e of this.einheiten.values()) {
+      if (!e.tot && e.auftrag?.art === 'einquartieren' && e.auftrag.gebaeude === gebaeude.id) belegt++;
+    }
+    return GEBAEUDE[gebaeude.art].besatzung - belegt;
+  }
+
+  /**
+   * Der Knopf "Einquartieren" und danach ein Klick auf ein eigenes Gebaeude
+   * (bauen AC-58): wer hineinpasst, geht hin, die Naechsten zuerst. Wer
+   * keinen Platz mehr findet, bleibt, wo er ist, und die Absage sagt es.
+   */
+  einquartieren(spielerId, ids, gebaeudeId) {
+    const gebaeude = this.gebaeude.get(gebaeudeId);
+    if (!gebaeude || gebaeude.besitzer !== spielerId) return { fehler: 'Einquartieren geht nur in ein eigenes Gebäude.' };
+    if (!GEBAEUDE[gebaeude.art].besatzung) return { fehler: 'Dieses Gebäude nimmt niemanden auf.' };
+    if (!gebaeude.fertig) return { fehler: 'Das Gebäude ist noch nicht fertig.' };
+    if (!Array.isArray(ids)) return {};
+    const gruppe = ids.slice(0, 200).map((id) => this.einheiten.get(id)).filter((e) => e && e.besitzer === spielerId && !e.tot);
+    const schon = (e) => e.auftrag?.art === 'einquartieren' && e.auftrag.gebaeude === gebaeude.id;
+    const passend = gruppe.filter((e) => this.nimmtAuf(gebaeude, e) && !schon(e));
+    if (!passend.length) {
+      return gruppe.length && !gruppe.every(schon) ? { fehler: 'Diese Einheiten nimmt das Gebäude nicht auf.' } : {};
+    }
+    const frei = this.besatzungFrei(gebaeude);
+    if (frei <= 0) return { fehler: 'Das Gebäude ist voll.' };
+    passend.sort((a, b) => this.abstandZu(a, gebaeude) - this.abstandZu(b, gebaeude) || a.id - b.id);
+    for (const e of passend.slice(0, frei)) {
+      // Von Hand einquartiert, gehoert er nicht mehr zur Glocke.
+      delete e.vorGlocke;
+      this.einquartierenBeginnen(e, gebaeude);
+    }
+    if (passend.length > frei) return { fehler: `Das Gebäude ist voll — ${passend.length - frei} bleiben draußen.` };
+    return {};
+  }
+
+  einquartierenBeginnen(einheit, gebaeude) {
+    this.farmVerlassen(einheit);
+    einheit.sammelt = false;
+    einheit.baut = false;
+    einheit.bekehrt = false;
+    einheit.heilt = null;
+    einheit.unerreichbar = null;
+    einheit.angriffslauf = null;
+    einheit.wegpunkte = [];
+    einheit.angriffe = [];
+    einheit.auftrag = { art: 'einquartieren', gebaeude: gebaeude.id };
+    einheit.weg = this.abstandZu(einheit, gebaeude) <= EINQUARTIEREN.hinein ? [] : this.wegZurBaustelle(einheit, gebaeude);
+  }
+
+  /**
+   * Angekommen: hinein, wenn noch Platz ist. Nicht angekommen und kein Weg
+   * mehr: noch einmal suchen, sonst aufgeben - wie bei der Reparatur.
+   */
+  einquartierenTakten(einheit) {
+    const gebaeude = this.gebaeude.get(einheit.auftrag.gebaeude);
+    if (this.abstandZu(einheit, gebaeude) <= EINQUARTIEREN.hinein) {
+      if ((gebaeude.insassen?.length || 0) < GEBAEUDE[gebaeude.art].besatzung) this.hinein(einheit, gebaeude);
+      else einheit.auftrag = null;
+      return;
+    }
+    einheit.weg = this.wegZurBaustelle(einheit, gebaeude);
+    if (!einheit.weg.length) einheit.auftrag = null;
+  }
+
+  /**
+   * Hinein (bauen AC-58): die Einheit verlaesst die Karte und steht in
+   * `gebaeude.insassen` - kein Ziel, kein Umriss, keine Sicht, nichts auf
+   * der Leitung ausser der Zahl am Gebaeude. Sie zaehlt weiter zur
+   * Bevoelkerung.
+   */
+  hinein(einheit, gebaeude) {
+    einheit.auftrag = null;
+    einheit.weg = [];
+    einheit.sammelt = false;
+    einheit.baut = false;
+    einheit.heilt = null;
+    (gebaeude.insassen ??= []).push(einheit);
+    this.einheiten.delete(einheit.id);
+    this.gebaeudeGeaendert(gebaeude);
+  }
+
+  /**
+   * Heraus (bauen AC-58, AC-60): je Einheit ein freies Feld am Gebaeude, wie
+   * fuer einen Neuen aus der Schlange. `nur` waehlt aus, wer geht. Gibt
+   * zurueck, wer herauskam.
+   */
+  herausLassen(gebaeude, nur = null) {
+    const insassen = gebaeude.insassen || [];
+    const raus = nur ? insassen.filter(nur) : insassen;
+    if (!raus.length) return [];
+    const bleiben = insassen.filter((e) => !raus.includes(e));
+    if (bleiben.length) gebaeude.insassen = bleiben;
+    else delete gebaeude.insassen;
+    for (const e of raus) {
+      const feld = this.freiesFeldAm(gebaeude) || { x: e.x, y: e.y };
+      e.x = feld.x;
+      e.y = feld.y;
+      e.taktX = e.x;
+      e.taktY = e.y;
+      e.auftrag = null;
+      e.weg = [];
+      this.einheiten.set(e.id, e);
+    }
+    this.gebaeudeGeaendert(gebaeude);
+    return raus;
+  }
+
+  /** Der Knopf "Alle heraus" am Gebaeude (bauen AC-58). */
+  heraus(spielerId, gebaeudeId) {
+    const gebaeude = this.gebaeude.get(gebaeudeId);
+    if (!gebaeude || gebaeude.besitzer !== spielerId) return { fehler: 'Das ist nicht dein Gebäude.' };
+    if (!gebaeude.insassen?.length) return { fehler: 'Im Gebäude ist niemand.' };
+    this.herausLassen(gebaeude);
+    return {};
+  }
+
+  /**
+   * Mehr Pfeile (bauen AC-59): je Dorfbewohner, Fusssoldat oder Schuetze
+   * drinnen einer mehr je Schuss - Reiter, Moenche und Tiere schiessen
+   * nicht mit.
+   */
+  besatzungsPfeile(gebaeude) {
+    if (!gebaeude.insassen) return 0;
+    let n = 0;
+    for (const e of gebaeude.insassen) {
+      const klassen = EINHEITEN[e.art].klassen;
+      if (klassen.some((k) => EINQUARTIEREN.pfeile.includes(k)) && !klassen.some((k) => EINQUARTIEREN.pfeilOhne.includes(k))) n++;
+    }
+    return n;
+  }
+
+  /** Drinnen heilt jeder ein Leben alle `EINQUARTIEREN.heilen` Sekunden (bauen AC-58). */
+  besatzungHeilen() {
+    for (const gebaeude of this.gebaeude.values()) {
+      if (!gebaeude.insassen) continue;
+      for (const e of gebaeude.insassen) {
+        const voll = this.lebenMax(e.besitzer, e.art);
+        if (e.leben < voll) e.leben = Math.min(voll, e.leben + 1);
+      }
+    }
+  }
+
+  /**
+   * Wo ein Dorfbewohner eben arbeitete - dorthin schickt ihn die Entwarnung
+   * (bauen AC-61): das Feld des Vorrats, das Schaf, die Farm, die Baustelle,
+   * das Gebaeude, das er flickte; sonst sein Feld.
+   */
+  arbeitsort(einheit) {
+    const auftrag = einheit.auftrag;
+    if (auftrag?.art === 'sammeln' && auftrag.feld) return { x: auftrag.feld.x, y: auftrag.feld.y };
+    if (auftrag?.art === 'tier') {
+      const tier = this.tiere.get(auftrag.tier);
+      if (tier) return { x: Math.round(tier.x), y: Math.round(tier.y) };
+    }
+    if (auftrag && ['farm', 'bauen', 'reparieren'].includes(auftrag.art)) {
+      const gebaeude = this.gebaeude.get(auftrag.gebaeude);
+      if (gebaeude) return { x: gebaeude.x, y: gebaeude.y };
+    }
+    return { x: Math.round(einheit.x), y: Math.round(einheit.y) };
+  }
+
+  /**
+   * Die Notfallklingel am Dorfzentrum (bauen AC-61): jeder eigene
+   * Dorfbewohner bis `EINQUARTIEREN.glocke` Felder vom Rand geht ins
+   * naechste eigene Gebaeude, das ihn aufnimmt und Platz hat, und merkt
+   * sich seine Arbeit. Der zweite Druck ist die Entwarnung. Die KI laeutet
+   * nicht.
+   */
+  glocke(spielerId, gebaeudeId) {
+    const spieler = this.spielerVon(spielerId);
+    const dz = this.gebaeude.get(gebaeudeId);
+    if (!spieler || !dz || dz.besitzer !== spielerId || !GEBAEUDE[dz.art].glocke) {
+      return { fehler: 'Die Glocke hängt am eigenen Dorfzentrum.' };
+    }
+    if (spieler.glocke) return this.entwarnung(spieler);
+    if (!dz.fertig) return { fehler: 'Das Gebäude ist noch nicht fertig.' };
+    const ziele = [...this.gebaeude.values()].filter((g) => g.besitzer === spielerId && g.fertig && GEBAEUDE[g.art].besatzung);
+    const frei = new Map(ziele.map((g) => [g.id, this.besatzungFrei(g)]));
+    const { x0, y0, x1, y1 } = this.grundflaeche(dz.art, dz.x, dz.y, dz.quer);
+    for (const e of [...this.einheiten.values()]) {
+      if (e.tot || e.besitzer !== spielerId || !EINHEITEN[e.art].klassen.includes('dorf')) continue;
+      if (e.auftrag?.art === 'einquartieren') continue;
+      if (Math.hypot(Math.max(x0 - e.x, 0, e.x - x1), Math.max(y0 - e.y, 0, e.y - y1)) > EINQUARTIEREN.glocke) continue;
+      let ziel = null;
+      let bester = Infinity;
+      for (const g of ziele) {
+        if (frei.get(g.id) <= 0 || !this.nimmtAuf(g, e)) continue;
+        const abstand = this.abstandZu(e, g);
+        if (abstand < bester) {
+          bester = abstand;
+          ziel = g;
+        }
+      }
+      if (!ziel) continue;
+      e.vorGlocke = this.arbeitsort(e);
+      this.einquartierenBeginnen(e, ziel);
+      frei.set(ziel.id, frei.get(ziel.id) - 1);
+    }
+    spieler.glocke = true;
+    return {};
+  }
+
+  /**
+   * Die Entwarnung (bauen AC-61): wer von der Glocke hineingeschickt wurde,
+   * kommt heraus - auch wer noch unterwegs ist - und geht an seine alte
+   * Arbeit, als haette der Spieler ihn dorthin geklickt. Wer inzwischen
+   * einen anderen Befehl bekam, gehoert nicht mehr dazu.
+   */
+  entwarnung(spieler) {
+    delete spieler.glocke;
+    const zurueck = [];
+    for (const gebaeude of this.gebaeude.values()) {
+      if (gebaeude.besitzer === spieler.id && gebaeude.insassen) zurueck.push(...this.herausLassen(gebaeude, (e) => Boolean(e.vorGlocke)));
+    }
+    for (const e of this.einheiten.values()) {
+      if (e.besitzer === spieler.id && e.vorGlocke && !zurueck.includes(e)) zurueck.push(e);
+    }
+    for (const e of zurueck) {
+      const ziel = e.vorGlocke;
+      delete e.vorGlocke;
+      if (!e.tot) this.befehl(spieler.id, [e.id], ziel);
+    }
+    return {};
+  }
+
+  // ---- Haltungen (kampf AC-28 bis AC-31) ----------------------------------
+
+  /**
+   * Eine Haltung hat, wer von selbst wacht und Einheiten angreift: die
+   * Kampfeinheiten samt Mangonel - nicht der Dorfbewohner, der Moench, der
+   * Karren, die Ramme.
+   */
+  haltungMoeglich(einheit) {
+    return Welt.haltungFuer(einheit.art);
+  }
+
+  /** Nach der Art allein, wie die Leiste es fragt (`haltung` im Aufbau). */
+  static haltungFuer(art) {
+    const daten = EINHEITEN[art];
+    return Boolean(daten.wacht) && !daten.nurGebaeude && (daten.angriff || 0) > 0;
+  }
+
+  haltungSetzen(spielerId, ids, haltung) {
+    if (!HALTUNGEN.includes(haltung)) return { fehler: 'Diese Haltung gibt es nicht.' };
+    if (!Array.isArray(ids)) return {};
+    let gesetzt = 0;
+    for (const id of ids.slice(0, 200)) {
+      const e = this.einheiten.get(id);
+      if (!e || e.besitzer !== spielerId || e.tot || !this.haltungMoeglich(e)) continue;
+      if (haltung === 'verteidigung') delete e.haltung;
+      else e.haltung = haltung;
+      // Wer sich eben von selbst wehrte und jetzt nicht angreifen soll, laesst ab.
+      if (haltung === 'passiv' && e.auftrag?.art === 'angreifen' && e.auftrag.heimat && !e.angriffslauf) {
+        e.auftrag = null;
+        e.weg = [];
+      }
+      gesetzt++;
+    }
+    return gesetzt ? {} : { fehler: 'Eine Haltung haben nur Kampfeinheiten.' };
+  }
+
   // Alles, was der Browser waehrend der Partie schickt, kommt hier an. Der
   // Server kennt die Arten nicht (ADR-0006).
   nachricht(spielerId, nachricht) {
@@ -1893,6 +2186,14 @@ class Welt {
         return this.abruesten(spielerId, nachricht.einheiten);
       case 'rufen':
         return this.rufen(spielerId, nachricht.gebaeude);
+      case 'einquartieren':
+        return this.einquartieren(spielerId, nachricht.einheiten, nachricht.gebaeude);
+      case 'heraus':
+        return this.heraus(spielerId, nachricht.gebaeude);
+      case 'glocke':
+        return this.glocke(spielerId, nachricht.gebaeude);
+      case 'haltung':
+        return this.haltungSetzen(spielerId, nachricht.einheiten, nachricht.haltung);
       default:
         return this.befehl(spielerId, nachricht.einheiten, nachricht.ziel, Boolean(nachricht.angriffslauf),
           Boolean(nachricht.anhaengen));
@@ -2213,6 +2514,10 @@ class Welt {
       if (e.tot) continue;
       zahl.set(e.besitzer, (zahl.get(e.besitzer) || 0) + 1);
     }
+    // Wer einquartiert ist, zaehlt mit (bauen AC-58).
+    for (const g of this.gebaeude.values()) {
+      if (g.insassen) zahl.set(g.besitzer, (zahl.get(g.besitzer) || 0) + g.insassen.length);
+    }
     return zahl;
   }
 
@@ -2497,6 +2802,8 @@ class Welt {
       }
       einheit.wegpunkte = [];
       einheit.angriffe = [];
+      // Wer einen neuen Befehl bekommt, gehoert nicht mehr zur Glocke (bauen AC-61).
+      delete einheit.vorGlocke;
       this.farmVerlassen(einheit);
       einheit.sammelt = false;
       einheit.baut = false;
@@ -3090,6 +3397,7 @@ class Welt {
     if (this.takt < einheit.auftrag.bis) return;
     const anteil = einheit.leben / this.lebenMax(einheit.besitzer, einheit.art);
     einheit.art = ABRUESTEN.wird;
+    delete einheit.haltung;
     einheit.leben = Math.max(1, Math.round(anteil * this.lebenMax(einheit.besitzer, einheit.art)));
     einheit.ladung = 0;
     einheit.ladungsart = null;
@@ -3957,13 +4265,21 @@ class Welt {
       }
       if (einheit.auftrag || einheit.weg.length) continue;
       if (!EINHEITEN[einheit.art].wacht) continue;
+      // Wer nicht angreifen soll, wacht nicht (kampf AC-31).
+      if (einheit.haltung === 'passiv') continue;
       wachen.push(einheit);
     }
     if (!wachen.length) return;
     const raster = this.einheitenRaster();
     const funde = [];
+    // Wer Stellung haelt, nimmt nur, was er von seinem Platz aus trifft
+    // (kampf AC-30) - im Angriffslauf gilt der Befehl, nicht die Haltung.
+    const stellung = (einheit) => einheit.haltung === 'stellung' && !einheit.angriffslauf;
     for (const einheit of wachen) {
-      const feind = this.feindInSicht(einheit, raster, this.einheitenwert(einheit.besitzer, einheit.art, 'sicht'));
+      const sicht = stellung(einheit)
+        ? (this.einheitenwert(einheit.besitzer, einheit.art, 'reichweite') || 1) + SCHLAGRAND
+        : this.einheitenwert(einheit.besitzer, einheit.art, 'sicht');
+      const feind = this.feindInSicht(einheit, raster, sicht);
       if (feind) funde.push({ einheit, feind });
     }
     if (!funde.length) return;
@@ -3988,7 +4304,7 @@ class Welt {
       }
     }
     for (const { einheit, feind } of funde) {
-      const stand = this.einheitenwert(einheit.besitzer, einheit.art, 'reichweite')
+      const stand = this.einheitenwert(einheit.besitzer, einheit.art, 'reichweite') || stellung(einheit)
         ? null
         : this.naechstesFreies(einheit, felderJeZiel.get(feind.id))
           || nachbarfeld(this.karte, this.feldVon(feind), einheit);
@@ -4009,7 +4325,9 @@ class Welt {
   tuermeTakten() {
     if (!SCHIESSENDE.size) return;
     for (const turm of this.gebaeude.values()) {
-      if (!SCHIESSENDE.has(turm.art) || !turm.fertig || turm.leben <= 0) continue;
+      // Ein Dorfzentrum schiesst nur mit Besatzung (bauen AC-59).
+      const besetzt = GEBAEUDE[turm.art].schiesstBesetzt;
+      if (!(SCHIESSENDE.has(turm.art) || (besetzt && this.besatzungsPfeile(turm))) || !turm.fertig || turm.leben <= 0) continue;
       if (turm.nachladen > 0) {
         turm.nachladen--;
         continue;
@@ -4051,7 +4369,8 @@ class Welt {
       // Eine Salve (bauen AC-32): so viele Pfeile, wie `pfeile` in den Daten
       // sagt, alle auf dasselbe Ziel und jeder fuer sich gegen die Ruestung
       // gerechnet. Ohne den Eintrag ist es einer - der Wachturm.
-      const pfeile = GEBAEUDE[turm.art].pfeile || 1;
+      // Dazu einer je Einquartiertem, der mitschiesst (bauen AC-59).
+      const pfeile = (besetzt ? 0 : GEBAEUDE[turm.art].pfeile || 1) + this.besatzungsPfeile(turm);
       for (let i = 0; i < pfeile; i++) this.schlagen(turm, ziel, false);
     }
   }
@@ -4142,10 +4461,21 @@ class Welt {
         }
       }
     }
+    // Wer angreifen soll, verfolgt bis zum Fall oder bis das Ziel aus seiner
+    // Sicht ist, und bleibt dann stehen (kampf AC-29). Im Angriffslauf gilt
+    // der Befehl, nicht die Haltung.
+    const haltung = auftrag.heimat && !einheit.angriffslauf ? einheit.haltung : undefined;
+    if (haltung === 'angriff') {
+      if (!auftrag.gebaeude
+        && Math.hypot(ziel.x - einheit.x, ziel.y - einheit.y) > this.einheitenwert(einheit.besitzer, einheit.art, 'sicht')) {
+        einheit.auftrag = null;
+        einheit.weg = [];
+        return;
+      }
     // Eine Verfolgung, die niemand befohlen hat, endet fuenf Felder vom
     // Ausgangsplatz (kampf AC-3) - sonst zieht ein einzelner Reiter ein ganzes
     // Heer quer ueber die Karte. Die Einheit kehrt dorthin zurueck.
-    if (auftrag.heimat
+    } else if (auftrag.heimat
       && Math.hypot(einheit.x - auftrag.heimat.x, einheit.y - auftrag.heimat.y) > VERFOLGUNG_FELDER) {
       einheit.auftrag = null;
       // Im Angriffslauf geht es nicht zurueck, sondern weiter: das Marschziel
@@ -4165,6 +4495,14 @@ class Welt {
     // Zu nah fuer den Mangonel (einheiten AC-36): er faehrt zurueck, bis das
     // Ziel wieder weit genug weg ist, und wirft erst dann.
     const mindest = EINHEITEN[einheit.art].mindestreichweite || 0;
+    // Wer Stellung haelt, geht keinem nach (kampf AC-30): ist das Ziel
+    // ausser Reichweite oder zu nah fuer den Wurf, laesst er es.
+    if (haltung === 'stellung'
+      && (abstand > reichweite + (auftrag.gebaeude ? SCHLAGRAND_BAU : SCHLAGRAND) || (mindest && abstand < mindest))) {
+      einheit.auftrag = null;
+      einheit.weg = [];
+      return;
+    }
     if (mindest && abstand < mindest) {
       if (!auftrag.zurueck || !einheit.weg.length) {
         const stand = this.abstandsplatz(einheit, ziel, auftrag.gebaeude, mindest);
@@ -4504,8 +4842,13 @@ class Welt {
 
   schlaegeAbrechnen() {
     if (!this.schlaege.length) return;
-    for (const schlag of this.schlaege) schlag.ziel.leben -= schlag.schaden;
-    for (const { angreifer, ziel, gebaeude } of this.schlaege) {
+    // Wer im selben Takt einquartiert wurde, steht nicht mehr auf der Karte
+    // und wird nicht getroffen (bauen AC-58).
+    const trifft = (schlag) => schlag.gebaeude || this.einheiten.get(schlag.ziel.id) === schlag.ziel;
+    for (const schlag of this.schlaege) if (trifft(schlag)) schlag.ziel.leben -= schlag.schaden;
+    for (const schlag of this.schlaege) {
+      if (!trifft(schlag)) continue;
+      const { angreifer, ziel, gebaeude } = schlag;
       this.angriffMelden(ziel, gebaeude, angreifer);
       if (gebaeude) {
         if (!this.gebaeude.has(ziel.id)) continue;
@@ -4627,6 +4970,8 @@ class Welt {
     const frist = RUINE_SEKUNDEN * TAKTE_PRO_SEKUNDE;
     for (const [id, takt] of this.eingestuerzt) if (this.takt - takt >= frist) this.eingestuerzt.delete(id);
     if (truemmer) this.eingestuerzt.set(gebaeude.id, this.takt);
+    // Faellt es, kommen alle heraus (bauen AC-60) - neben die Truemmer.
+    if (gebaeude.insassen) this.herausLassen(gebaeude);
     this.gebaeude.delete(gebaeude.id);
     // Faellt ein Kloster, liegen seine Eier am Boden (einheiten AC-51) - in
     // der Mitte seiner Grundflaeche, die eben frei wird.
@@ -4801,6 +5146,10 @@ class Welt {
     if (!spieler) return { fehler: 'Diesen Spieler gibt es hier nicht.' };
     if (this.ende) return { fehler: 'Die Partie ist schon zu Ende.' };
     if (spieler.aus) return { fehler: 'Du bist schon ausgeschieden.' };
+    // Wer einquartiert ist, kommt zuerst heraus und faellt mit (bauen AC-60).
+    for (const gebaeude of this.gebaeude.values()) {
+      if (gebaeude.besitzer === spielerId && gebaeude.insassen) this.herausLassen(gebaeude);
+    }
     // Die Einheiten fallen, wie sie im Kampf fallen: sie liegen zwei Sekunden
     // im Bild, statt zu verschwinden (kampf AC-10).
     for (const einheit of this.einheiten.values()) {
@@ -4951,6 +5300,8 @@ class Welt {
     this.tuermeTakten();
     // Einmal je Sekunde heilen Moenche (einheiten AC-37).
     if (this.takt % TAKTE_PRO_SEKUNDE === 0) this.heilenTakten();
+    // Drinnen heilt es langsam (bauen AC-58).
+    if (this.takt % (EINQUARTIEREN.heilen * TAKTE_PRO_SEKUNDE) === 0) this.besatzungHeilen();
     // Ebenso oft treten Stehende auseinander (einheiten AC-29).
     if (this.takt % WACHE_TAKTE === 0) this.ausweichen();
     this.einschlaegeTakten();
@@ -5399,6 +5750,13 @@ class Welt {
       einheit.weg = [];
       return;
     }
+    // Faellt das Gebaeude, in das er will, oder nimmt es ihn nicht mehr,
+    // bleibt er stehen (bauen AC-58).
+    if (einheit.auftrag?.art === 'einquartieren' && !this.nimmtAuf(this.gebaeude.get(einheit.auftrag.gebaeude), einheit)) {
+      einheit.auftrag = null;
+      einheit.weg = [];
+      return;
+    }
     if (einheit.weg.length) {
       einheit.sammelt = false;
       einheit.baut = false;
@@ -5438,6 +5796,10 @@ class Welt {
     }
     if (einheit.auftrag.art === 'reparieren') {
       this.reparierenTakten(einheit);
+      return;
+    }
+    if (einheit.auftrag.art === 'einquartieren') {
+      this.einquartierenTakten(einheit);
       return;
     }
     if (einheit.auftrag.art === 'tier') {
@@ -5813,6 +6175,9 @@ class Welt {
         // Gefallen: der Browser legt ihn hin, bis der Server ihn nimmt
         // (kampf AC-10).
         ...(e.tot ? { s: 1 } : {}),
+        // Die Haltung, nur wenn es nicht die Verteidigung ist (kampf AC-28):
+        // a Angriff, s Stellung, p nicht angreifen.
+        ...(e.haltung ? { ht: e.haltung[0] } : {}),
       });
     }
     const felder = this.feldAenderungen;
@@ -5843,6 +6208,8 @@ class Welt {
         ...(s.zeitalter ? { z: s.zeitalter } : {}),
         // Farmen werden von selbst neu ausgesaet (bauen AC-42) - nur wenn an.
         ...(s.farmenErneuern ? { fe: 1 } : {}),
+        // Die Glocke laeutet (bauen AC-61) - der Knopf heisst dann Entwarnung.
+        ...(s.glocke ? { gl: 1 } : {}),
         // Gefallene, mit denen sich bezahlen laesst (einheiten AC-49).
         ...(s.gefallene ? { gf: s.gefallene } : {}),
         // Die Karte ist bekannt (Kartografie, bauen AC-52) - fuer jeden, der
@@ -6187,6 +6554,8 @@ class Welt {
       f: laufend ? Math.round((g.fortschritt / (this.auftragWerte(laufend).zeit * TAKTE_PRO_SEKUNDE)) * 100) / 100 : 0,
       ...(g.sammelpunkt ? { p: { x: g.sammelpunkt.x, y: g.sammelpunkt.y } } : {}),
       w: g.wartet,
+      // Wie viele drin sind (bauen AC-58) - nur wenn es welche gibt.
+      ...(g.insassen?.length ? { bs: g.insassen.length } : {}),
       // Eier im Kloster (einheiten AC-51) - die sieht jeder, der das Kloster sieht.
       ...(g.art === 'kloster' && this.eier?.size && this.eierIn(g) ? { e: this.eierIn(g) } : {}),
     };
@@ -6302,6 +6671,11 @@ class Welt {
           // das Zeichen am Ziel und die Leiste fragen danach.
           fliegt: Boolean(w.fliegt),
           trifftFlieger: FLIEGER.some((f) => this.kannTreffen({ art }, { art: f })),
+          // In welche Gebaeude sie sich einquartieren laesst (bauen AC-58)
+          // und ob sie eine Haltung hat (kampf AC-28) - die Leiste bietet
+          // danach die Knoepfe an.
+          quartiere: Object.keys(GEBAEUDE).filter((g) => Welt.nimmtArtAuf(g, art)),
+          haltung: Welt.haltungFuer(art),
         }])),
         gebaeude: Object.fromEntries(Object.entries(GEBAEUDE).map(([art, w]) => [art, {
           // Ohne Nebel gibt es nichts aufzudecken: die Kartografie steht
@@ -6331,6 +6705,9 @@ class Welt {
           gezogen: Boolean(w.gezogen),
           // An ihm wird getauscht (bauen AC-33).
           handel: Boolean(w.handel),
+          // So viele nimmt es auf, schiesst es nur mit ihnen, haengt dort die
+          // Glocke (bauen AC-58, AC-59, AC-61) - die Leiste bietet es an.
+          besatzung: w.besatzung || 0, schiesstBesetzt: Boolean(w.schiesstBesetzt), glocke: Boolean(w.glocke),
         }])),
         // Wie viel ein Handel tauscht und welche Waren (bauen AC-33). Die
         // Preise rechnet der Server (`hp` je Spieler).
@@ -6351,6 +6728,8 @@ class Welt {
         klassen: KLASSEN,
         // Was Abruesten kostet und wie lang es dauert (einheiten AC-50).
         abruesten: { kosten: ABRUESTEN.kosten, sekunden: ABRUESTEN.sekunden },
+        // Wie weit die Glocke ruft (bauen AC-61) - die Tafel am Knopf nennt es.
+        einquartieren: { glocke: EINQUARTIEREN.glocke, heilen: EINQUARTIEREN.heilen },
         // Den Drachen rufen (bauen AC-35) - nur, wenn es ihn gibt.
         ...(this.drachenAn ? { drache: { kosten: DRACHE.rufen.kosten, sekunden: DRACHE.rufen.sekunden, moenche: DRACHE.rufen.moenche } } : {}),
         // Wie lang eine gezogene Mauer hoechstens ist (bauen AC-30).

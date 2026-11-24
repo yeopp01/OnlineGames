@@ -1,0 +1,10 @@
+{
+  "spec": "10-strategie/bauen.md",
+  "ac": "AC-58",
+  "titel": "Drei Dorfbewohner sind im Dorfzentrum: die Leiste nennt Besatzung 3 / 15 und bietet „Alle heraus\"",
+  "datei": "e2e/tests/strategie-einquartieren.spec.mjs",
+  "pfad": [
+    "Einquartieren",
+    "bauen AC-58: drei Dorfbewohner mit dem Knopf Einquartieren ins Dorfzentrum - sie verschwinden, am Gebäude steht Besatzung 3 / 15, Alle heraus stellt sie wieder hin"
+  ]
+}

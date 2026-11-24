@@ -33,7 +33,8 @@ test('bedienung AC-64: jedes Gebaeude des Dorfbewohners steht auf einer von zwei
   for (const art of baut) {
     const w = GEBAEUDE[art];
     const kaempfer = w.bildetAus.some(kampfeinheit);
-    if (kaempfer || w.angriff || w.tor || w.gezogen) assert.equal(w.seite, 1, `${art} gehoert zum Militaer`);
+    // Das Dorfzentrum schiesst nur mit Besatzung (bauen AC-59) und bleibt bei der Wirtschaft.
+    if (kaempfer || (w.angriff && !w.schiesstBesetzt) || w.tor || w.gezogen) assert.equal(w.seite, 1, `${art} gehoert zum Militaer`);
   }
   // Wer keine Kampfeinheit ist, obwohl er etwas ausbildet oder schlaegt.
   assert.equal(EINHEITEN.dorfbewohner.angriff > 0 && !kampfeinheit('dorfbewohner'), true, 'der Dorfbewohner schlaegt, ist aber keine');

@@ -185,7 +185,7 @@ Umfang hinzufügt, dort nachsehen.
 
 ## Stand
 
-**674 von 758 Kriterien fertig.** 1241 Tests ohne Browser und 39 ganze Partien, 370 im Browser. Die
+**682 von 766 Kriterien fertig.** 1262 Tests ohne Browser und 39 ganze Partien, 374 im Browser. Die
 Übersicht ist der Bericht: `npm run qa:report`.
 
 Gebaut ist der Unterbau: Räume, Übertragung, Karte, Wegfindung, Sammeln,
@@ -1130,6 +1130,32 @@ mitspielte, sieht im Vorraum die Einladung mit dem neuen Code
 einer, legt der Gastgeber ihn still (`stilllegen`): seine Einheiten bleiben
 ohne Herrn stehen. Fortgesetzt zu mehreren beginnt die Partie angehalten.
 Der Browserlauf meldet dafür ein zweites Konto an (`ZWEITES_KONTO`, Dora).
+
+**Einquartieren und Notfallklingel** (bauen AC-58 bis AC-61, Entscheidung 9
+des Benutzers, Zweig `strategie-glocke`): Dorfzentrum (15), Wachturm (5)
+und Burg (20) nehmen eigene Einheiten auf — `besatzung` und
+`besatzungOhne` an den Gebäuden, `EINQUARTIEREN` in den Daten (nie:
+Belagerung, Karren, Drache; Reiter nur in die Burg). Der Knopf
+„Einquartieren" (Taste `E`) an der Auswahl, dann ein Linksklick auf das
+Gebäude (Nachricht `einquartieren`); hinein ist, wer 1,2 Felder vom Rand
+steht. Drinnen trifft ihn niemand, er heilt ein Leben alle zwei Sekunden;
+je Dorfbewohner, Fußsoldat oder Schütze schießt das Gebäude einen Pfeil
+mehr. **Das Dorfzentrum schießt nur mit Besatzung** (`schiesstBesetzt`, 5
+Angriff, Reichweite 6, alle 2 s) — sonst änderte sich jede KI-Messung, und
+`SCHIESSENDE` zählt es deshalb nicht. Fällt das Gebäude oder gibt sein
+Besitzer auf, stehen alle lebend daneben; „Alle heraus" (`heraus`) tut
+dasselbe auf Wunsch. Die **Notfallklingel** am Dorfzentrum (`glocke`,
+noch einmal = Entwarnung) schickt jeden Dorfbewohner in 20 Feldern ins
+nächste Gebäude mit Platz und danach an seine alte Arbeit. Auf der
+Leitung: `bs` am Gebäude (auch für Gegner, die es sehen), `gl` am
+Spieler. Die KI quartiert nicht ein. **Haltungen** (kampf AC-28 bis AC-31,
+Punkt 15b): Angriff, Verteidigung (Vorgabe, das alte Verhalten), Stellung
+halten, Nicht angreifen — `einheit.haltung`, Nachricht `haltung`, auf der
+Leitung `ht` nur abweichend (`a`, `s`, `p`); vier Knöpfe an der Auswahl,
+Tasten `Y` `X` `C` `V`. Sie gelten nur für das, was eine Kampfeinheit von
+selbst tut. **Befehle an der Auswahl stehen unter dem Kopf**, nicht daneben:
+eine Spalte mehr nahm dem Baumenü die Breite (bauen AC-57, bedienung AC-23).
+Der Stand hat dafür Fassung 3 (`SCHRITTE[2]`).
 
 1. **Stufe A** Dunkle Zeit mit Wirtschafts-KI und Prüfstand · **B** Feudalzeit
    · **C** Partieende und KI-Gegner · **D** Ritterzeit · **E** fünf Häuser ·

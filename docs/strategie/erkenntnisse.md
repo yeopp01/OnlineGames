@@ -2283,6 +2283,34 @@ ihn, mit Gegenprobe an beiden Formen. Fünf Bilder neu, alle angesehen.
 Neueste oben. Eine Zeile je Runde: Nummer, Datum, Kriterien, Ergebnis,
 wichtigste Erkenntnis.
 
+- **Glocke und Haltungen, bauen AC-58 bis AC-61, kampf AC-28 bis AC-31** ·
+  2026-11-24 · Zweig `strategie-glocke`. Einquartieren mit Knopf und Taste
+  `E`, Besatzung schießt mit, alle heraus beim Fall, Notfallklingel mit
+  Entwarnung; vier Haltungen mit Knöpfen und `Y` `X` `C` `V`. Stand
+  `FASSUNG = 3`, `SCHRITTE[2]` leer (`haltung`, `insassen`, `vorGlocke`,
+  `glocke` gibt es nur, wenn gesetzt). **Gelernt:** (1) **Eine Spalte mehr in der Leiste nimmt dem
+  Baumenü die Breite:** neben Name und Kampfwerten gestellt, drückte der
+  Knopf „Einquartieren" das Baumenü des Dorfbewohners von zwei auf drei
+  Reihen (bauen AC-57), die große Gruppe ragte auf 1366 × 768 aus dem
+  Fenster (bedienung AC-23), und die Besatzung am Dorfzentrum stellte die
+  Ausbildung in eine Spalte. Gefunden haben es die Browserfälle anderer
+  Kriterien, nicht die eigenen — Befehle stehen jetzt **unter** dem Kopf
+  bzw. der Gruppe. (2) **`h` fehlt bei vollem Leben** auf der Leitung — ein
+  Test, der „heilt" über `e.h` misst, braucht `e.h ?? Infinity`.
+  (3) **Das Dorfzentrum schießt nur mit Besatzung** und zählt nicht zu
+  `SCHIESSENDE`: sonst hielte die KI jedes Dorfzentrum für einen Turm, und
+  `pruefstand:vergleich` wäre nicht gleich geblieben. (4) **Eine Gegenprobe
+  bleibt grün:** die Regel „Stellung halten wacht nur in Reichweite"
+  (`stellung` in `wacheTakten`) — ohne sie hält die Einheit trotzdem
+  Stellung, weil das Nachsetzen gesperrt ist; belegt ist AC-30 über die
+  zweite Probe (Nachsetzen), die fällt. (5) **Wer am Gebäude nur ein Feld
+  im zweiten Ring findet, weil der erste belegt ist, gibt auf** — gesetzt
+  ist „hinein" ab 1,2 Feldern vom Rand; ein umstelltes Dorfzentrum nimmt
+  niemanden mehr auf. (6) **`angriff` an einem Gebäude heißt für vier
+  Tests „schießt"** (Baumenü-Seite, Hausboni): das Dorfzentrum mit
+  `schiesstBesetzt` fiel dort durch, erst `npm run check` zeigte es —
+  die Zuschläge für schießende Gebäude gelten jetzt auch für das besetzte
+  Dorfzentrum (`gebaeudewert`), es bleibt bei der Wirtschaft. **Gemessen:** Nebel 107 von 120 vor Minute 60, Median 38,5, keine ohne Sieger; `pruefstand:vergleich` gleich (154 gegen 156 ms je 1000 Takte), Konterkreis hält.
 - **Regelpaket, einheiten AC-70, AC-71, kampf AC-26, AC-27** · 2026-11-24 ·
   Zweig `strategie-regelpaket`. Die Laufregel trägt den Rest eines Takts
   über den Wegpunkt, jeder Takt schlägt in gewürfelter Reihenfolge

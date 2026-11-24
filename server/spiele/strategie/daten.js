@@ -86,6 +86,10 @@
  * @property {number} [hoechstens] so viele je Spieler, Baustellen mitgezaehlt (bauen AC-51)
  * @property {number} [bauenAb] erst ab diesem Zeitalter neu zu bauen, wenn das spaeter ist als `zeitalter` - zu dem es weiter gehoert, beim Aufstieg und im Technologiebaum (bauen AC-57)
  * @property {boolean} [wunder] steht es fertig WUNDER_SEKUNDEN lang, gewinnt sein Besitzer (spielziel AC-29)
+ * @property {number} [besatzung] so viele Einheiten nimmt es auf (bauen AC-58)
+ * @property {string[]} [besatzungOhne] Klassen, die es nicht aufnimmt - dazu immer EINQUARTIEREN.nie
+ * @property {boolean} [glocke] hier haengt die Notfallklingel (bauen AC-61)
+ * @property {boolean} [schiesstBesetzt] es schiesst nur mit Besatzung, einen Pfeil je Schuetze darin (bauen AC-59) - nicht in SCHIESSENDE
  */
 
 /**
@@ -575,6 +579,14 @@ const GEBAEUDE = {
   dorfzentrum: {
     groesse: 4, kosten: { holz: 275, stein: 100 }, bauzeit: 150, leben: 2400, wohnraum: 5,
     annahme: ALLE, bauenAb: 3, hoechstens: 2,
+    // Unterschlupf fuer 15 wie in der Vorlage (bauen AC-58), ohne Reiter
+    // und Tiere. Es schiesst nur mit Besatzung (bauen AC-59): 5 Angriff,
+    // Reichweite 6, alle zwei Sekunden ein Pfeil je Schuetze darin -
+    // gesetzt, nicht aus der Vorlage (dort schiesst es leer einen Pfeil).
+    besatzung: 15, besatzungOhne: ['kavallerie', 'tier'],
+    angriff: 5, reichweite: 6, nachladen: 2, schiesstBesetzt: true,
+    // Die Notfallklingel (bauen AC-61) haengt hier.
+    glocke: true,
     bildetAus: ['dorfbewohner', 'webstuhl', 'stadtwache', 'stadtpatrouille', 'schubkarre', 'handkarren', 'feudalzeit', 'ritterzeit', 'imperialzeit'],
   },
   // `zumAufstieg: false`: zaehlt nicht zu den zwei Gebaeuden, die ein Aufstieg
@@ -655,6 +667,8 @@ const GEBAEUDE = {
     seite: 1,
     groesse: 1, kosten: { holz: 25, stein: 125 }, bauzeit: 80, leben: 1020, wohnraum: 0, annahme: [], bildetAus: [], zeitalter: 1,
     angriff: 5, reichweite: 8, nachladen: 2, nahruestung: 1, fernruestung: 7, sicht: 9, zumAufstieg: false,
+    // Unterschlupf fuer fuenf wie in der Vorlage (bauen AC-58).
+    besatzung: 5, besatzungOhne: ['kavallerie', 'tier'],
   },
   // Die Steinmauer (bauen AC-30): ein Feld je Baustelle, gezogen statt
   // gesetzt (`gezogen`), Werte aus der Vorlage - 5 Stein, 8 Sekunden, 1800
@@ -689,14 +703,15 @@ const GEBAEUDE = {
   // hier einer, falsch aus der Vorlage abgeschrieben (Benutzer: "Alle 2
   // sekunden ein pfeil is eher der wachturm oder?"). Sicht 9 statt der 11 des Originals: ein Feld ueber
   // die Reichweite wie beim Wachturm, und der Aussenposten bleibt das Gebaeude,
-  // das am weitesten sieht (kampf AC-18). Die Spezialeinheit kommt mit den
-  // Voelkern (Stufe E), der Unterschlupf ist nicht gebaut.
+  // das am weitesten sieht (kampf AC-18). Unterschlupf fuer 20 (bauen AC-58,
+  // gesetzt, nicht aus der Vorlage), Reiter eingeschlossen.
   burg: {
     seite: 1,
     groesse: 4, kosten: { stein: 650 }, bauzeit: 200, leben: 4800, wohnraum: 20, annahme: [],
     bildetAus: ['kriegswolf', 'reiterschuetze', 'riese', 'meuchler', 'wiedergaenger', 'sappeure', 'wehrpflicht',
       'elitekriegswolf', 'elitereiterschuetze', 'eliteriese', 'elitemeuchler', 'elitewiedergaenger'], zeitalter: 2,
     angriff: 11, reichweite: 8, nachladen: 2, pfeile: 4, nahruestung: 8, fernruestung: 11, sicht: 9,
+    besatzung: 20,
   },
   // Der Markt (bauen AC-33): Kosten, Bauzeit und Leben aus der Vorlage, ab der
   // Feudalzeit wie dort. Vier mal vier Felder wie im Original. `handel` sagt,
@@ -1444,6 +1459,21 @@ const DRACHE = {
   gefallen: { sekunden: 20 },
 };
 
+// Einquartieren (bauen AC-58 bis AC-61). Nie hinein: was belagert, handelt
+// oder fliegt. Einen Pfeil mehr je Schuss bringt, wer zu Fuss kaempft oder
+// schiesst und kein Reiter ist (`pfeile`, `pfeilOhne`) - der
+// Reiterschuetze nicht, wie in der Vorlage. Drinnen heilt jeder ein Leben je
+// `heilen` Sekunden; die Glocke ruft die Dorfbewohner aus `glocke` Feldern
+// vom Rand des Dorfzentrums. Heilen und Glocke gesetzt, nicht aus der Vorlage.
+const EINQUARTIEREN = {
+  nie: ['belagerung', 'karren', 'drache'],
+  pfeile: ['dorf', 'infanterie', 'bogenschuetze'],
+  pfeilOhne: ['kavallerie'],
+  heilen: 2,
+  glocke: 20,
+  hinein: 1.2,
+};
+
 /** Ob eine Art abruesten kann (einheiten AC-50) - eine Frage der Klassen. */
 function ruestetAb(art) {
   const klassen = EINHEITEN[art]?.klassen || [];
@@ -1454,9 +1484,11 @@ function ruestetAb(art) {
 // Das ist eine Eigenschaft der Art, kein Wert - der Angriff selbst wird nur
 // ueber `welt.gebaeudewert()` gelesen (Waechter), und eine Verbesserung macht
 // aus keinem Haus einen Turm.
-const SCHIESSENDE = new Set(Object.keys(GEBAEUDE).filter((art) => (GEBAEUDE[art].angriff || 0) > 0));
+// Das Dorfzentrum zaehlt nicht dazu: es schiesst nur mit Besatzung (bauen
+// AC-59), und die KI quartiert nicht ein - fuer sie ist es kein Turm.
+const SCHIESSENDE = new Set(Object.keys(GEBAEUDE).filter((art) => (GEBAEUDE[art].angriff || 0) > 0 && !GEBAEUDE[art].schiesstBesetzt));
 
 module.exports = {
   EINHEITEN, SAMMELN, TIERE, GEBAEUDE, VERBESSERUNGEN, ZEITALTER, AUFSTIEGE, KLASSEN, HANDEL, HAEUSER, SCHIESSENDE,
-  BEVOELKERUNG_MAX, SCHLANGE_MAX, STARTAUFSTELLUNG, REPARATUR, ABRUESTEN, ruestetAb, DRACHE,
+  BEVOELKERUNG_MAX, SCHLANGE_MAX, STARTAUFSTELLUNG, REPARATUR, ABRUESTEN, ruestetAb, DRACHE, EINQUARTIEREN,
 };

@@ -235,6 +235,10 @@ canvas {
 
 /* Angriffslauf eingeschaltet (kampf AC-4): der Zeiger sagt, dass der naechste
    Rechtsklick etwas anderes tut als sonst. */
+canvas.einquartieren {
+  cursor: alias;
+}
+
 canvas.angriffslauf {
   cursor: cell;
 }
@@ -1772,6 +1776,52 @@ canvas.angriffslauf {
   font-size: 0.85rem;
   color: #eac070;
   white-space: nowrap;
+}
+
+/* Befehle an der Auswahl (kampf AC-28, bauen AC-58, AC-61): die vier
+   Haltungen als kleine Reihe, die gueltige golden wie ein Schalter, der an
+   ist; darunter Einquartieren. Am Gebaeude dieselbe Form fuer die Besatzung. */
+.befehle {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.25rem;
+}
+
+/* Unter Kopf oder Gruppe, nicht daneben - sonst verliert das Baumenue
+   seine Breite (bauen AC-57, bedienung AC-23). */
+.auswahl-kopf .befehle,
+.gruppenblock .befehle {
+  margin-top: 0.4rem;
+}
+
+.besatzung {
+  font-size: 0.85rem;
+}
+
+.besatzung .leise {
+  color: var(--leise);
+}
+
+.haltungen {
+  display: grid;
+  grid-template-columns: repeat(2, auto);
+  gap: 0.25rem;
+}
+
+.befehl-knopf {
+  padding: 0.25rem 0.6rem !important;
+  font-size: 0.8rem !important;
+  white-space: nowrap;
+}
+
+.befehl-knopf[aria-pressed='true'] {
+  color: #f2c14e !important;
+  border-color: #f2c14e99 !important;
+}
+
+.befehl-knopf[aria-disabled='true'] {
+  opacity: 0.55;
 }
 
 /* Farmen von selbst neu aussaeen (bauen AC-42): ein Schalter, kein Befehl -

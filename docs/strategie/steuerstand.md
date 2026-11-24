@@ -40,6 +40,20 @@ steht). Laufen als Agenten: KI-Runde (a3e32aa7f88464c7c,
 Glocke/Haltungen (a884146e4d0f2d010, `OnlineGames-glocke`,
 `strategie-glocke`, Hafen 4431, Fassung beim Mergen auf 4 umnummerieren).
 Nach beiden: ganzer Browserlauf allein, qa:abweichung, pushen.
+**KI-Runde gemergt** als `3eb0302` (check:kurz grün, 1241 Tests, 39
+Partien; gepusht `27ad41f..3eb0302`, nicht ausgerollt): ki AC-29 fertig
+(Nebel mit Drache 109/120, Median 38,2; ohne 106), ki AC-28 `in-qa`
+(Burgeinheiten frei, Söldner/Eiben-/Pavesenschütze in `NOCH_NICHT`),
+Häuser 71/65/53/34/25 % — spielziel AC-18 reißt; Vorschläge des Agenten
+(Eschenbruch Holz 0 oder Reichweite ab Krone, Silberfurt Gold +20 %) beim
+Benutzer. einheiten AC-52 gepaart belegt nichts (1 Ruf in 120).
+**Glocke gemergt** (Merge in Arbeit, Agent mit API-Fehler beendet nach
+seinem Bericht): `9b541da`, bauen AC-58 bis AC-61, kampf AC-28 bis AC-31;
+**Fassung 4** mit leerem `SCHRITTE[3]`, `strategie-3.fast` bleibt der der
+KI-Runde, `strategie-4.fast` neu. Board 682/766. Der Agent hatte nach
+seiner letzten Korrektur kein ganzes check gefahren. Fragen an den
+Benutzer: Dorfzentrum leer schießt nicht, Wehrstein +1 auch am besetzten
+Dorfzentrum, „hinein“ nur aus 1,2 Feldern (umstellt = niemand hinein).
 **Nicht nach main:** `strategie-ki-antwort` („nicht wirksam“) und
 `strategie-mauerring` („reißt die Grenzen“) — geparkt, ein Merge bräche
 den Nebeltest.

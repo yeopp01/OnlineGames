@@ -1,0 +1,10 @@
+{
+  "spec": "10-strategie/kampf.md",
+  "ac": "AC-28",
+  "titel": "Drei Speerkämpfer halten Stellung: der Knopf ist golden, die anderen drei Haltungen daneben",
+  "datei": "e2e/tests/strategie-haltungen.spec.mjs",
+  "pfad": [
+    "Haltungen",
+    "kampf AC-28: drei Speerkämpfer haben vier Knöpfe für die Haltung - Verteidigen ist gedrückt, Y X C V schalten um, die Wahl steht an jeder Einheit"
+  ]
+}

@@ -2,7 +2,7 @@
 
 **Bereich:** Strategie
 **Kuerzel:** bauen
-**Stand:** 57/57 fertig
+**Stand:** 61/61 fertig
 
 ## Zweck
 
@@ -79,7 +79,7 @@ Feudalzeit wie dort.
 | Belagerungswerkstatt | Ritter | 200 Holz | 40 s | 2100 | Ramme, Mangonel |
 | Burg | Ritter | 650 Stein | 200 s | 4800 | schießt (11 Angriff, Reichweite 8), +20 Bevölkerung |
 
-**Nicht in Stufe D:** Unterschlupf (Einheiten in Gebäuden bergen), die
+**Nicht in Stufe D:** die
 Spezialeinheit der Burg (kommt mit den Häusern, Stufe E), Palisade.
 
 ## Abnahmekriterien
@@ -246,8 +246,8 @@ Spezialeinheit der Burg (kommt mit den Häusern, Stufe E), Palisade.
   Wachturm, und der Außenposten bleibt das Gebäude, das am weitesten sieht
   (kampf AC-18). Gezeichnet als Ringmauer mit vier Ecktürmen und hohem
   Bergfried, Banner und Fahne in Spielerfarbe, das Tor vorn rechts; im
-  Baumenü die Taste F. Spezialeinheit und Unterschlupf kommen später (Stufe
-  E, nicht gebaut). **Seit 2026-11-13 schießt sie eine Salve** (Benutzer:
+  Baumenü die Taste F. Die Spezialeinheit kam mit den Häusern (Stufe E), der
+  Unterschlupf mit der Notfallklingel (AC-58 bis AC-61). **Seit 2026-11-13 schießt sie eine Salve** (Benutzer:
   „Im Original hat die Burg eher 4/5 Pfeile alle 2 Sekunden"): vier Pfeile
   alle zwei Sekunden auf dasselbe Ziel, jeder für sich gegen die Rüstung
   gerechnet (`pfeile` in den Daten; ohne den Eintrag ist es einer, der
@@ -608,6 +608,54 @@ Dorfzentrum bauen kann" — entschieden: genau eines zusätzlich, als Daten.
   Seite des Technologiebaums ragte auf 1366 × 768 aus dem Rahmen
   ([Bedienung](bedienung.md) AC-86); AC-64 erlaubt seitdem elf Gebäude auf
   der Wirtschaft.
+
+### Einquartieren und Notfallklingel (Benutzer, Entscheidung 9)
+
+„Nen button bei den aktionen der einheiten, der iwie einquartieren heißt, da
+draufdrücken, und dann das gebäude wo sie rein sollen" (2026-11-22), gebaut
+wie die Vorlage: mehr Pfeile je Besatzung, drinnen heilen, beim Fall heraus.
+Die KI nutzt es nicht.
+
+- **AC-58** `fertig` **Einheiten einquartieren** — Dorfzentrum (15
+  Plätze), Wachturm (5) und Burg (20) nehmen eigene Einheiten auf; die Zahl
+  steht als `besatzung` in den Daten, was nicht hinein darf als
+  `besatzungOhne` (Dorfzentrum und Wachturm: Reiter und Tiere) und für alle
+  in `EINQUARTIEREN.nie` (Belagerung, Marktkarren, Drache). Der Knopf
+  „Einquartieren" (Taste `E`) an der Auswahl, dann ein Linksklick auf das
+  eigene fertige Gebäude: wer darf, geht hin und ist drinnen, sobald er
+  höchstens 1,2 Felder vom Rand steht (`EINQUARTIEREN.hinein`, gesetzt).
+  Drinnen ist er von der Karte verschwunden — niemand trifft ihn, ein
+  laufender Angriff auf ihn endet —, er zählt weiter zur Bevölkerung, und
+  er heilt ein Leben alle zwei Sekunden (`EINQUARTIEREN.heilen`, gesetzt).
+  Am Gebäude steht die Zahl („Besatzung 3 / 15") und der Knopf „Alle
+  heraus": jeder bekommt ein freies Feld am Gebäude wie ein Neuer aus der
+  Schlange. Abgewiesen wird ein fremdes Gebäude, eine Baustelle, ein
+  Gebäude ohne `besatzung`, eine Art, die nicht hinein darf, und wer
+  keinen Platz mehr findet. Die Zahl schickt der Server als `bs` am
+  Gebäude — auch einem Gegner, der das Gebäude sieht (in der Vorlage sieht
+  er die Fahne am Gebäude).
+- **AC-59** `fertig` **Besatzung schießt mit** — Je Dorfbewohner,
+  Fußsoldat oder Schütze darin (`EINQUARTIEREN.pfeile`, Reiter nicht)
+  schießt das Gebäude einen Pfeil mehr. Der Wachturm schießt seinen einen
+  und dazu je Insasse einen, die Burg ihre Salve und dazu je Insasse einen.
+  **Das Dorfzentrum schießt nur mit Besatzung** (`schiesstBesetzt`), einen
+  Pfeil je Schütze darin, 5 Angriff auf sechs Felder alle zwei Sekunden
+  (gesetzt; in der Vorlage schießt es auch leer einen Pfeil — hier nicht,
+  damit KI gegen KI unverändert bleibt). Gezielt, getroffen und gerechnet
+  wird wie beim Wachturm (AC-29); Zuschläge für Gebäude, die schießen
+  (Wehrstein +1 Reichweite), gelten auch für das besetzte Dorfzentrum.
+- **AC-60** `fertig` **Fällt es, kommen alle heraus** — Fällt ein
+  Gebäude mit Besatzung oder gibt sein Besitzer auf, stehen alle darin
+  lebend auf freien Feldern daneben, im selben Takt.
+- **AC-61** `fertig` **Die Notfallklingel** — Am Dorfzentrum
+  (`glocke` in den Daten) ein Knopf „Notfallklingel": jeder eigene
+  Dorfbewohner in 20 Feldern (`EINQUARTIEREN.glocke`, gesetzt) geht in
+  das nächste eigene Gebäude mit freiem Platz, und jeder merkt sich seine
+  Arbeit. Solange sie läutet, heißt der Knopf „Entwarnung": wer drinnen ist
+  oder unterwegs, kommt heraus und geht an seine alte Arbeit zurück. Wer
+  inzwischen einen anderen Befehl bekommen hat, gehört nicht mehr dazu. Ob
+  sie läutet, schickt der Server als `gl` am Spieler. Die KI läutet nicht
+  und quartiert nicht ein.
 
 **Was wartet, und warum.** **Daumenring** (Schützen laden schneller nach):
 verschiebt beide Schützenlinien im Konterkreis und kommt deshalb erst

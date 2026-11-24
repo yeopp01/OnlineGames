@@ -25,7 +25,7 @@ const zlib = require('node:zlib');
 // Spielers, einer Einheit, eines Gebaeudes oder der KI dazukommt oder
 // wegfaellt - `tests/waechter-stand.test.mjs` vergleicht die Form mit dem
 // Abbild in `server/spiele/strategie/stand-abbild.json` und verlangt es.
-const FASSUNG = 3;
+const FASSUNG = 4;
 
 // Je Fassung n der Schritt nach n + 1 (speichern AC-18): eine Funktion, die
 // den entpackten Inhalt `{ welt, kis }` der Fassung n an Ort und Stelle zu
@@ -74,6 +74,12 @@ const SCHRITTE = {
       ki.eiSucheFertig = new Set();
     }
   },
+  // 3 -> 4, Einquartieren, Notfallklingel und Haltungen (bauen AC-58 bis
+  // AC-61, kampf AC-28 bis AC-31): `gebaeude.insassen`, `spieler.glocke`,
+  // `einheit.vorGlocke` und `einheit.haltung` gibt es nur, solange jemand
+  // drin ist, die Glocke laeutet oder eine Haltung nicht die Vorgabe ist -
+  // ein alter Stand hat nichts davon und ist so schon richtig.
+  3: () => {},
 };
 
 const MARKE = Buffer.from('FAST', 'latin1');

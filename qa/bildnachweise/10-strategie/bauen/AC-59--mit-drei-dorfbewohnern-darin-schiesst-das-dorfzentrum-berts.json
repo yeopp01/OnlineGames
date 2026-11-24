@@ -1,0 +1,10 @@
+{
+  "spec": "10-strategie/bauen.md",
+  "ac": "AC-59",
+  "titel": "Mit drei Dorfbewohnern darin schießt das Dorfzentrum: Berts Dorfbewohner rechts davon hat Leben verloren",
+  "datei": "e2e/tests/strategie-einquartieren.spec.mjs",
+  "pfad": [
+    "Einquartieren",
+    "bauen AC-59: leer schießt das Dorfzentrum nicht, mit drei Dorfbewohnern darin trifft es einen fremden Dorfbewohner daneben"
+  ]
+}

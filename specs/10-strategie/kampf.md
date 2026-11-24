@@ -2,7 +2,7 @@
 
 **Bereich:** Strategie
 **Kuerzel:** kampf
-**Stand:** 26/27 fertig · 1 zurueckgestellt
+**Stand:** 30/31 fertig · 1 zurueckgestellt
 
 ## Zweck
 
@@ -267,6 +267,32 @@ aus [Spielziel](spielziel.md) AC-10, gemessen in
   (einheiten AC-44, AC-67, AC-69): schwere Armbrust 13 alle 3,7 s,
   Elite-Reiterschütze +20 und Elite-Wiedergänger +10 Leben, Söldner Tempo
   0,95.
+
+### Haltungen (Benutzer, Punkt 15b)
+
+„Da sollte es irgendwie nen Modus geben, wie angreifen, stand halten, etwas
+defensiv" — vier Haltungen wie in der Vorlage. Sie gelten nur für das, was
+eine Kampfeinheit **von selbst** tut; ein Befehl und der Angriffslauf gehen
+vor.
+
+- **AC-28** `fertig` **Vier Haltungen** — Jede Kampfeinheit (wacht,
+  Angriff über null, keine Ramme) hat eine Haltung: Angriff, Verteidigung,
+  Stellung halten, Nicht angreifen. **Verteidigung ist die Vorgabe** — das
+  Verhalten von AC-2 und AC-3, damit jede Messung der KI bleibt, wie sie
+  ist. Gesetzt wird sie mit der Nachricht `haltung` für die Auswahl, im
+  Bild mit vier Knöpfen an der Auswahl (Tasten `Y`, `X`, `C`, `V`),
+  der gültige hervorgehoben. Auf der Leitung steht `ht` nur, wenn es nicht
+  die Vorgabe ist (`a`, `s`, `p`). Dorfbewohner, Mönche, Karren,
+  Rammen bekommen keine; wer abrüstet, verliert sie.
+- **AC-29** `fertig` **Angriff verfolgt weiter** — Wer von selbst
+  angreift, verfolgt sein Ziel, bis es fällt oder aus seiner Sicht ist —
+  ohne die fünf Felder von AC-3 — und bleibt dann stehen, wo er ist.
+- **AC-30** `fertig` **Stellung halten** — Wer Stellung hält, nimmt
+  nur ein Ziel, das er von seinem Platz aus trifft, geht keinen Schritt
+  danach und lässt es, sobald es außer Reichweite ist.
+- **AC-31** `fertig` **Nicht angreifen** — Wer nicht angreifen soll,
+  wacht nicht und wehrt sich nicht; ein Angriff, den er eben von selbst
+  begonnen hatte, endet, sobald die Haltung gesetzt ist.
 
 ### Stufe E und F — Häuser und Drache
 
