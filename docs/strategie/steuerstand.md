@@ -129,9 +129,12 @@ Altes Bild AC-57 (Militärseite) darf weg (Benutzer: „Ja, entfernen“).
 
 ## Stand
 
-- **Neuer: `strategie` auf `1d7ea48` (Glocke), `main` = `origin/main` auf
-  `3eb0302`, Server auf `27ad41f`** — siehe „Zuletzt fortgeschrieben". Der
-  Absatz hier drunter ist der Stand vom Morgen.
+- **Neuer: `strategie` = `main` auf `a0c1039`** (Block „ja bitte, und
+  eigenständig“, ganzer Lauf grün bis auf darstellung AC-10), nach
+  `origin/main` gepusht und ausgerollt auf sein Wort („ja … und dann
+  bitte ausrollen“; Konten gesichert nach `sicherung/20261124-225127`,
+  von außen erreichbar, wss steht) — siehe „Zuletzt fortgeschrieben". Der Absatz hier
+  drunter ist der Stand vom Morgen.
 - **Zweig `strategie` = `main` = `origin/main` = Server auf `ace9811`**
   (Regelpaket, speichern AC-18 und S4, ausgerollt 2026-11-24 auf sein
   Wort „ja bitte weitermachen“). In der Konten-SQLite des Servers steht
@@ -140,12 +143,15 @@ Altes Bild AC-57 (Militärseite) darf weg (Benutzer: „Ja, entfernen“).
   ungefragt angelegt) und wie stark gepackt wird. 637 von 718 Kriterien
   fertig, 1154 Tests ohne Browser, 37 ganze Partien, 363 im Browser
   (Zahlen in `CLAUDE.md`, Board `specs/BOARD.md`).
-- **Arbeitsbäume neben dem Hauptordner:** `-regeln` (`strategie-regeln` `d87d84f`, Doku des
-  Regelpakets, Code als Patch im Scratchpad); `-kikrone`
-  (`strategie-ki-krone` `2cefbd5`, Drachenpatch ungesichert); `-dorfzentrum`
-  (gemergt, kann weg — nur auf sein Wort). Geparkt ohne Arbeitsbaum:
-  `strategie-mauerring`, `strategie-ki-antwort`. Unter
-  `.claude/worktrees/manager*` arbeitet die Managersitzung — nicht anfassen.
+- **Aufgeräumt 2026-11-24 nachts** (Benutzer: „können wir alle zweige
+  aufräumen? ggf. auch worktrees“): es gibt nur noch `main` und
+  `strategie`, keinen Arbeitsbaum neben dem Hauptordner (auch die des
+  Managers nicht — alles war in `strategie` enthalten). Nicht Gemergtes
+  steht als örtliches Schild: `archiv/strategie-mauerring`,
+  `archiv/strategie-ki-antwort`, `archiv/strategie-ki-krone-entwurf`
+  (der vorher ungesicherte Drachenentwurf, als Commit). Schilder nicht
+  gepusht. Ein Push über HTTPS mit rund 400 MB Bildern brach mit 408 ab —
+  `http.postBuffer` steht örtlich auf 500 MB.
 - **Stufe F:** F1 bis F14 stehen bis auf ki AC-28, ki AC-29, einheiten AC-52.
 
 ### Was nicht `fertig` ist (Spec-Stand 2026-11-22 mittags)
