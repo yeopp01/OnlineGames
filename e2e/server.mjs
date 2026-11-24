@@ -5,7 +5,7 @@
 import http from 'node:http';
 import { randomBytes } from 'node:crypto';
 import { createRequire } from 'node:module';
-import { KONTO } from './helpers/konto.mjs';
+import { KONTO, ZWEITES_KONTO } from './helpers/konto.mjs';
 // Vor dem Server: der Steckbrief liest die Haeuser beim Laden (spielziel AC-26).
 import './helpers/pruefhaus.mjs';
 
@@ -47,15 +47,18 @@ laufend.raeume.ablage = null;
 
 // Ein Konto zum Anmelden. Genau der Weg, den auch der Browser geht:
 // Einladungscode, Registrieren - nur ohne Formular.
-const einladung = laufend.zugang.einladungen.anlegen('Browserlauf');
-const antwort = await fetch(`http://localhost:${hafen}/api/auth/sign-up/email`, {
-  method: 'POST',
-  headers: { 'Content-Type': 'application/json', Origin: `http://localhost:${hafen}` },
-  body: JSON.stringify({ email: KONTO.email, password: KONTO.kennwort, name: KONTO.name, einladung }),
-});
-if (!antwort.ok) {
-  console.error(`Konto fuer den Browserlauf nicht angelegt: HTTP ${antwort.status} ${await antwort.text()}`);
-  process.exit(1);
+// Das zweite nur fuer gemeinsame gesicherte Partien (speichern AC-23, AC-24).
+for (const k of [KONTO, ZWEITES_KONTO]) {
+  const einladung = laufend.zugang.einladungen.anlegen('Browserlauf');
+  const antwort = await fetch(`http://localhost:${hafen}/api/auth/sign-up/email`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', Origin: `http://localhost:${hafen}` },
+    body: JSON.stringify({ email: k.email, password: k.kennwort, name: k.name, einladung }),
+  });
+  if (!antwort.ok) {
+    console.error(`Konto ${k.name} fuer den Browserlauf nicht angelegt: HTTP ${antwort.status} ${await antwort.text()}`);
+    process.exit(1);
+  }
 }
 
 // Pruefgriffe: Zustaende, die ueber die Oberflaeche nur mit Glueck oder nach

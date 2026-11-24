@@ -9,3 +9,12 @@ export const KONTO = {
   kennwort: 'einLangesKennwortFuerDenBrowserlauf',
   name: 'Anna',
 };
+
+// Ein zweites Konto, nur fuer gemeinsame Partien, die gesichert werden
+// (speichern AC-23, AC-24): wer mit Konto mitspielte, wird beim Fortsetzen im
+// Vorraum eingeladen. Angemeldet wird damit nur in diesem einen Fall.
+export const ZWEITES_KONTO = {
+  email: 'dora@browserlauf.test',
+  kennwort: 'einZweitesKennwortFuerDenBrowserlauf',
+  name: 'Dora',
+};

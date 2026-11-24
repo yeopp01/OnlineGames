@@ -1,0 +1,10 @@
+{
+  "spec": "00-plattform/speichern.md",
+  "ac": "AC-25",
+  "titel": "Fortgesetzt ohne Bert, bei Anna: die Uhr laeuft, im Bild Berts Dorf mit Dorfzentrum und Dorfbewohnern, die stehen bleiben",
+  "datei": "e2e/tests/strategie-fortsetzen-mehrere.spec.mjs",
+  "pfad": [
+    "Zu mehreren aufhoeren und spaeter weiterspielen",
+    "speichern AC-25: fehlt nur noch Bert, legt Anna seinen Platz still - die Partie laeuft, seine Einheiten bleiben stehen"
+  ]
+}

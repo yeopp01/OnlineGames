@@ -1,0 +1,10 @@
+{
+  "spec": "00-plattform/speichern.md",
+  "ac": "AC-23",
+  "titel": "Doras Vorraum, angemeldet: oben Anna setzt eure Partie fort mit dem neuen Raumcode und Beitreten - der Stand liegt bei Anna, Dora hat keine eigene Liste",
+  "datei": "e2e/tests/strategie-fortsetzen-mehrere.spec.mjs",
+  "pfad": [
+    "Zu mehreren aufhoeren und spaeter weiterspielen",
+    "speichern AC-23: wer mit Konto mitspielte, sieht im Vorraum die Einladung mit dem neuen Code"
+  ]
+}

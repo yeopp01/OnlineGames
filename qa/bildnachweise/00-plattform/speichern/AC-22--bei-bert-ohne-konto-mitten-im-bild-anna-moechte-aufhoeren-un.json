@@ -1,0 +1,10 @@
+{
+  "spec": "00-plattform/speichern.md",
+  "ac": "AC-22",
+  "titel": "Bei Bert, ohne Konto: mitten im Bild Anna moechte aufhoeren und spaeter weiterspielen, Dora ist einverstanden, gewartet wird auf Bert - Weiterspielen und Einverstanden",
+  "datei": "e2e/tests/strategie-fortsetzen-mehrere.spec.mjs",
+  "pfad": [
+    "Zu mehreren aufhoeren und spaeter weiterspielen",
+    "speichern AC-22: zu mehreren wird erst gesichert, wenn alle einverstanden sind - jeder sieht, wer vorschlug und auf wen gewartet wird"
+  ]
+}
