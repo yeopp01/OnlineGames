@@ -118,8 +118,12 @@ wiederholen, statt ihn zu suchen.
   fällt es in einzelnen Saisons auf 22,9.
   **`in-qa` seit dem 2026-11-24:** auf Schritt 4 hielt es an sechs von acht
   Startwerten; **auf Schritt 5 an keinem** — an jedem liegen 3 bis 8 von 20
-  Saisons bei 22,7 bis 23,0, zuerst in Saison 7 bis 9. Warum, ist nicht
-  gemessen. `fertig` erst, wenn
+  Saisons bei 22,7 bis 23,0, zuerst in Saison 7 bis 9. Gemessen: die 25-
+  bis 28-Jährigen mit wenig Einsatz gehen häufiger (27,3 statt 16,9
+  Abgänge je Saison an drei Startwerten). Jede Stellschraube an der
+  Entwicklung, die das Alter hebt, reißt AC-26; nur ein seltenerer zweiter
+  Jugendspieler hebt es ohne das, reißt aber transfer AC-31 und änderte
+  AC-14 (`docs/manager/dynamik/plan.md`). `fertig` erst, wenn
   es an allen acht hält. Der Test bleibt, wie er ist, als `todo`.
 - **AC-25** `fertig` **Die Jugend kommt an** — Über zwanzig Saisons ohne
   Menschen liegt ab der zweiten Saison die Stärke der Siebzehnjährigen aus

@@ -672,6 +672,60 @@ acht); `heim` ist in den Noten nicht zu sehen; die Wirkung der Nerven ist
 klein (eine Zehntelstufe Streuung zwischen −0,8 und +0,8). karten, moral
 und mitspieler wirken nicht.
 
+### Nachbesserung kader AC-24 nach Schritt 5 (2026-11-24): nicht gemeinsam
+
+Verlangt war AC-24 an mindestens 6 von 8, AC-26 nicht unter 5 von 8, kein
+anderes Band reißt, keines gelockert. **Nicht gefunden — der Stand bleibt
+`7f75a8c`.**
+
+**Ursache gemessen** (`alter-probe.cjs` im Scratchpad, Startwerte 4711, 77,
+31337, zwanzig Saisons, am Saisonende): das Mittel ab Saison 2 fällt von
+23,58 auf 23,34. Die 25- bis 28-Jährigen verlassen ihren Verein häufiger —
+16,9 statt 27,3 je Saison, davon zu den Vereinslosen 5,3 statt 9,0 —, ihr
+Anteil bleibt fast gleich (19,9 → 19,6 %), die 29- bis 31-Jährigen sinken
+von 12,9 auf 11,1 %. Karriereenden unverändert, rund 12 je Saison, alle ab
+32. Die Delle liegt bei jedem Startwert in den Saisons 5 bis 11. Die
+Vermutung „Bankspieler über 25 werden schneller schwächer und gehen" trifft
+zu. Zerlegt über acht Startwerte: ganz ohne Einsatz- und Notenanteil hält
+AC-24 an 6 von 8 (AC-26 0), mit nur dem Notenanteil an 4 von 8 — beide
+Anteile senken das Alter, die Neigungen kaum.
+
+Acht Startwerte, zwanzig Saisons (`band-alle.mjs` im Scratchpad):
+
+| Variante | AC-24 | AC-26 | Alter, kleinstes je Startwert | Weiteres |
+| --- | --- | --- | --- | --- |
+| `7f75a8c` | 0 | 5 | 22,62–22,87 | — |
+| Notenanteil erst ab 25 | 0 | 5 | — | AC-23 0 |
+| `mitte` 0,5 | 0 | 0 | 22,84–22,98 | AC-25 5 |
+| Abbau ab 30 mit 2 statt 5,5 | 0 | 2 | — | — |
+| Abbau gedeckelt: Anteil unter 30 % zählt wie 30 % | 0 | 2 | — | — |
+| `einsatz` 3 / `einsatzOben` 3 | 0 | 0 | — | — |
+| `einsatz` 4 / `einsatzOben` 4 | 0 | 2 | — | — |
+| `einsatz` 3, `einsatzOben` 5, `mitte` 0,6 | **6** | 0 (0,40–0,66) | 22,86–23,10 | AC-25 6, transfer AC-29 6 |
+| Verlängern bis 16 unter Niveau (statt 12) | 0 | **8** | 22,66–23,00 | — |
+| dasselbe mit `einsatz` 3,5 / 2,5 | 2 / 1 | 2 / 0 | — | — |
+| dasselbe mit `einsatzOben` 4 / 5 (+`einsatz` 4,5) | 0 / 1 | 7 / 6 | 22,73–23,06 | AC-25 6 / 7 |
+| dasselbe mit `einsatz` 3, `einsatzOben` 5, `mitte` 0,6 | 6 | 0 | 22,95–23,07 | AC-25 6 |
+| ohne Altersabzug im Markt (`nutzenJe`, `wertJe` 0) | 0 | 6 | 22,77–22,94 | — |
+| Ältere länger geholt (`andereBis` 34, `nutzenAb` 31) | 0 | 8 | 22,68–22,93 | — |
+| Jugend nur bis zur Kadergröße 22 / 21 | 0 / 1 | 4 / 4 | 22,60–23,01 | — |
+| **zweiter Jugendspieler nur zu 75 %** | **8** | **8** | 23,02–23,23 | alle 8; an acht anderen Startwerten 7 und 6 (ohne: 0 und 6) |
+| zweiter Jugendspieler zu 70 % / 80 % | 7 / 4 | 7 / 8 | 23,08–23,34 / 22,85–23,19 | — |
+
+Jede Stellschraube an der Entwicklung tauscht AC-24 gegen AC-26; jede am
+Markt gibt AC-26 Luft, hebt das Alter aber nicht. Das Alter hebt nur
+weniger Jugend — und die reißt transfer AC-31 (Mitte der zweiten Liga,
+`angebote.cjs`, verlangt 1 an jedem der acht): `7f75a8c` kleinster 1,00
+(Startwert 77), mit 75 % 0,20 (31337), mit 70 % 0,90 (77). Dazu stünde
+kader AC-14 („rücken zwei Siebzehnjährige auf“, `fertig`) nicht mehr. Mit
+75 % sonst: transfer AC-28 grün, `manager:messen` Tore 3,23, Heimsiege
+47,7 %, Remis 22,1 %, Favorit 51,4 %, Stärke L1 69,9.
+
+Nebenbei gemessen: ein einziger zusätzlicher Zufallszug in der Jugend
+(Wert 1, ändert nichts als die Folge) verschiebt AC-25 von 8 auf 5 von 8
+und AC-26 von 5 auf 6 — die Bänder AC-24 bis AC-26 stehen am Rand der
+Streuung. transfer AC-31 hält an `7f75a8c` mit 1,00 genau auf der Grenze.
+
 ## Wovon Auf- und Abwertung vor Schritt 5 abhing (`kader.entwickeln`)
 
 Zweimal je Saison (Winter × 0,4 ohne Altern, Sommer × 0,6 mit Altern),
