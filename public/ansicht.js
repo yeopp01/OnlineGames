@@ -582,10 +582,13 @@ export class Ansicht {
     // erfaehrt, wenn ich inzwischen etwas anderes oder nichts mehr ansehe.
     if (nachricht.av) this.vorratRest = { i: nachricht.av[0], rest: nachricht.av[1] };
     this.ansehenAbgleichen();
-    // Pfeile (bedienung AC-40): jeder fliegt vom Schuetzen zum Ziel, so lange,
-    // wie er bei sieben Feldern je Sekunde braucht - mindestens 0,15 Sekunden.
-    // Mit zehn war ein Schuss ueber vier Felder 0,4 s unterwegs, kaum zu
-    // sehen und im vollen Browserlauf nicht zu fotografieren (Runde 122).
+    // Pfeile (bedienung AC-40): jeder fliegt vom Schuetzen zum Ziel und
+    // landet, wenn der Server ihn treffen laesst (kampf AC-27): der sechste
+    // Wert sagt, wie viele Takte nach diesem Zustand. Der Server fliegt ihn
+    // mit sieben Feldern je Sekunde - mit zehn war ein Schuss ueber vier
+    // Felder 0,4 s unterwegs, kaum zu sehen und im vollen Browserlauf nicht
+    // zu fotografieren (Runde 122). Ohne sechsten Wert fliegt er so lange,
+    // wie er bei sieben Feldern je Sekunde braucht, mindestens 0,15 s.
     // Steht das Bild (Pause, Ende), stehen auch die Pfeile.
     const jetzt = halt ?? performance.now();
     // Angekommene fallen auch hier heraus, nicht nur beim Zeichnen: in einem
@@ -602,7 +605,7 @@ export class Ansicht {
     // Wer ohne Ansage schiesst, spannt im Bild erst den Bogen (bedienung
     // AC-79): sein Pfeil wartet so lange.
     const erste = this.erstschlaegeMerken(nachricht);
-    for (const [x0, y0, zx, zy, stein] of nachricht.p || []) {
+    for (const [x0, y0, zx, zy, stein, nach] of nachricht.p || []) {
       const marke = `${x0}|${y0}|${zx}|${zy}`;
       const nummer = stein === 1 ? 0 : salve.get(marke) || 0;
       salve.set(marke, nummer + 1);
@@ -615,19 +618,29 @@ export class Ansicht {
       // Ein Turm schiesst von oben (bauen AC-29): der Server schickt die Mitte
       // seiner Grundflaeche, die Hoehe kennt nur die Zeichnung.
       const oben = this.schussHoeheBei(x0, y0);
-      const dauer = Math.max(150, (weite / 7) * 1000);
       // Der Server rundet den Abschussort auf Zehntel, die Einheit auf Hundertstel.
       const warten = erste.find((o) => Math.abs(o.x - x0) <= 0.06 && Math.abs(o.y - y0) <= 0.06)?.ms || 0;
+      let start = jetzt + warten + nummer * 70;
+      let dauer = Math.max(150, (weite / 7) * 1000);
+      if (Number.isInteger(nach)) {
+        // Gelandet wird, wenn der Treffer faellt: der Zustand jenes Takts
+        // kommt nach `nach` Takten, die Figuren stehen einen Takt spaeter
+        // dort, wo er sie zeigt. Ausholen und Salve verschieben nur den
+        // Abschuss, nicht die Landung - der Pfeil fliegt dann schneller.
+        const ende = jetzt + (nach + 1) * this.taktdauer;
+        start = Math.max(jetzt, Math.min(start, ende - 150));
+        dauer = Math.max(1, ende - start);
+      }
       this.pfeile.push({
-        x0, y0, x1, y1, weite, oben, stein: stein === 1, feuer: stein === 2, start: jetzt + warten + nummer * 70, dauer,
+        x0, y0, x1, y1, weite, oben, stein: stein === 1, feuer: stein === 2, start, dauer, ab: jetzt,
       });
       // Zu hoeren (bedienung AC-62): die Sehne beim Schuetzen, der Wurfarm
       // beim Mangonel - und der Stein dort, wo er herunterkommt. Mit dem
       // Bild, also nach dem Ausholen.
       const los = stein === 1 ? () => this.geraeusch('wurf', x0, y0) : () => this.geraeusch('pfeil', x0, y0);
-      if (warten) setTimeout(los, warten);
+      if (start > jetzt) setTimeout(los, start - jetzt);
       else los();
-      if (stein === 1 || stein === 2) setTimeout(() => this.geraeusch('einschlag', x1, y1), warten + dauer);
+      if (stein === 1 || stein === 2) setTimeout(() => this.geraeusch('einschlag', x1, y1), start - jetzt + dauer);
     }
     for (const aenderung of nachricht.felder || []) {
       if (this.karte.felder[aenderung.i] !== aenderung.a) {

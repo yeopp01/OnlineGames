@@ -156,7 +156,7 @@ test.describe('Krone: Stufen und Forschung', () => {
     expect(await eigeneTafeln([['bogenschuetze2', 'langbogenschuetze'], ['armbrustschuetze', 'schwerearmbrust']]), 'eigene Tafeln').toEqual([true, true]);
 
     expect(await zeigt(wiese, 'langbogenschuetze')).toMatchObject({ name: 'Langbogenschütze', leben: '40/40', angriff: '6', reichweite: '5' });
-    expect(await zeigt(wiese, 'schwerearmbrust')).toMatchObject({ name: 'Schwere Armbrust', leben: '40/40', angriff: '12', reichweite: '5' });
+    expect(await zeigt(wiese, 'schwerearmbrust')).toMatchObject({ name: 'Schwere Armbrust', leben: '40/40', angriff: '13', reichweite: '5' });
     expect(await figurenFrei(anna)).toEqual([]);
     expect(await bedienteileFrei(anna)).toEqual([]);
     await anna.waitForTimeout(300);

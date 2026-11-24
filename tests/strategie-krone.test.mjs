@@ -249,7 +249,7 @@ test('einheiten AC-67: Langbogenschuetze und schwere Armbrust - Werte, Preis der
   const l = EINHEITEN.langbogenschuetze;
   const s = EINHEITEN.schwerearmbrust;
   assert.deepEqual([l.leben, l.angriff, l.reichweite, l.nachladen], [40, 6, 5, 2]);
-  assert.deepEqual([s.leben, s.angriff, s.reichweite, s.nachladen], [40, 12, 5, 3.5]);
+  assert.deepEqual([s.leben, s.angriff, s.reichweite, s.nachladen], [40, 13, 5, 3.5]);
   // Die Rollen bleiben (einheiten AC-34, AC-58): der Bogen traegt den Zuschlag
   // gegen Speere, die Armbrust den schweren Bolzen.
   assert.deepEqual(l.bonus, { speer: 3 });
@@ -272,11 +272,11 @@ test('einheiten AC-67: gegen Geruestete schlaegt der Bolzen haerter, gegen Speer
   const { welt } = reich(3);
   const schaden = (wer, wen) => welt.schaden({ besitzer: 'a', art: wer }, { besitzer: 'b', art: wen }, false);
   const jeSekunde = (wer, wen) => schaden(wer, wen) / EINHEITEN[wer].nachladen;
-  // Gegen 3 Fernruestung des Paladins: 9 in 3,5 s gegen 3 in 2 s.
-  assert.equal(schaden('schwerearmbrust', 'paladin'), 12 - 3);
+  // Gegen 3 Fernruestung des Paladins: 10 in 3,5 s gegen 3 in 2 s.
+  assert.equal(schaden('schwerearmbrust', 'paladin'), 13 - 3);
   assert.equal(schaden('langbogenschuetze', 'paladin'), 6 - 3);
   assert.ok(jeSekunde('schwerearmbrust', 'paladin') > jeSekunde('langbogenschuetze', 'paladin'));
-  // Gegen den Hellebardier traegt der Zuschlag gegen Speere: 9 in 2 s gegen 12 in 3,5 s.
+  // Gegen den Hellebardier traegt der Zuschlag gegen Speere: 9 in 2 s gegen 13 in 3,5 s.
   assert.equal(schaden('langbogenschuetze', 'hellebardier'), 6 + 3);
   assert.ok(jeSekunde('langbogenschuetze', 'hellebardier') > jeSekunde('schwerearmbrust', 'hellebardier'));
   // Und jede schiesst haerter als ihre Vorstufe.

@@ -61,14 +61,20 @@ test.describe('Pfeile', () => {
       const jetzt = performance.now();
       const p = window.ansicht.pfeile.find((q) => !q.stein && jetzt >= q.start && (jetzt - q.start) / q.dauer < 0.5);
       if (!p) return null;
-      const gemessen = { dauer: p.dauer, weite: p.weite, x0: p.x0, y0: p.y0, x1: p.x1, y1: p.y1 };
+      const gemessen = { dauer: p.dauer, landung: p.start + p.dauer - p.ab, takt: window.ansicht.taktdauer, weite: p.weite, x0: p.x0, y0: p.y0, x1: p.x1, y1: p.y1 };
       p.dauer = 1e9;
       p.start = jetzt - 0.45e9;
       return gemessen;
     }, null, { timeout: 20_000, polling: 10 }).then((h) => h.jsonValue());
     expect(pfeil.weite, 'ein Schuss ueber mehr als ein Feld').toBeGreaterThan(1);
-    // Sieben Felder je Sekunde, mindestens 0,15 Sekunden.
-    expect(pfeil.dauer).toBeCloseTo(Math.max(150, (pfeil.weite / 7) * 1000), 0);
+    // Er landet, wenn der Server ihn treffen laesst (kampf AC-27): so viele
+    // Takte nach dem Zustand mit dem Schuss, wie er bei sieben Feldern je
+    // Sekunde fliegt. Das Spannen des Bogens (bedienung AC-79) verschiebt nur
+    // den Abschuss - der erste Pfeil fliegt dann kuerzer, landet aber zur
+    // selben Zeit. Einen Takt Spiel, weil der Server die Lage genauer kennt.
+    const flug = Math.max(1, Math.round((pfeil.weite / 7) * 10)) * pfeil.takt;
+    expect(Math.abs(pfeil.landung - flug), `gelandet nach ${pfeil.landung} ms statt ${flug}`).toBeLessThanOrEqual(pfeil.takt);
+    expect(pfeil.dauer, 'mindestens 0,15 Sekunden in der Luft').toBeGreaterThanOrEqual(150);
     const schuetze = await anna.evaluate((k) => {
       const a = window.ansicht;
       const e = [...a.nachher.values()].find((x) => x.k === k && x.b === a.ich);

@@ -41,6 +41,19 @@ function sekunden(welt, s) {
   for (let t = 0; t < Math.round(s * TAKTE_PRO_SEKUNDE); t++) welt.takten();
 }
 
+// Ein Pfeil trifft, wenn er ankommt (kampf AC-27): so lange takten, bis
+// keiner mehr fliegt - hoechstens zwei Sekunden, das ist mehr als jeder Flug
+// in Reichweite.
+function landen(welt) {
+  for (let t = 0; welt.pfeileImFlug.length && t < 2 * TAKTE_PRO_SEKUNDE; t++) welt.takten();
+  assert.equal(welt.pfeileImFlug.length, 0, 'alle Pfeile angekommen');
+}
+
+/** So lange takten, bis die Uhr der Welt `takt` zeigt. */
+function bisTakt(welt, takt) {
+  while (welt.takt < takt) welt.takten();
+}
+
 test('bauen AC-29: der Wachturm mit den Werten der Vorlage - ab der Feudalzeit, vom Dorfbewohner gebaut', () => {
   const t = GEBAEUDE.wachturm;
   assert.deepEqual(t.kosten, { holz: 25, stein: 125 });
@@ -61,10 +74,14 @@ test('bauen AC-29: ein fertiger Turm schiesst von selbst, der erste Pfeil sofort
   const { welt, turm } = mitTurm();
   const miliz = fremd(welt, turm, 6);
   welt.takten();
+  const erster = welt.takt;
+  assert.equal(welt.pfeileImFlug.length, 1, 'der erste Pfeil im ersten Takt');
+  landen(welt);
   // Miliz 40 Leben, Fernruestung 1: ein Pfeil nimmt 5 - 1 = 4.
-  assert.equal(miliz.leben, 36, 'der erste Pfeil im ersten Takt');
+  assert.equal(miliz.leben, 36, 'der erste Pfeil trifft');
   // Zehn Sekunden: Pfeile bei 0, 2, 4, 6 und 8 Sekunden - fuenf.
-  sekunden(welt, 10 - 1 / TAKTE_PRO_SEKUNDE);
+  bisTakt(welt, erster + 10 * TAKTE_PRO_SEKUNDE - 1);
+  landen(welt);
   assert.equal(miliz.leben, 40 - 5 * 4, 'fuenf Pfeile in zehn Sekunden');
   assert.equal(miliz.auftrag, null, 'die Miliz hat keinen Befehl bekommen - der Turm schoss von selbst');
 });
@@ -73,6 +90,7 @@ test('bauen AC-29: die Reichweite ist acht Felder vom Rand des Turms, keines meh
   const { welt, turm } = mitTurm();
   const nah = fremd(welt, turm, 8);
   welt.takten();
+  landen(welt);
   assert.equal(nah.leben, 36, 'auf acht Feldern getroffen');
   const zweite = mitTurm();
   const fern = fremd(zweite.welt, zweite.turm, 8.6);
@@ -85,11 +103,14 @@ test('bauen AC-29: zuerst auf den Naechsten, und er bleibt dabei, solange das Zi
   const weiter = fremd(welt, turm, 7);
   const naeher = fremd(welt, turm, 3);
   welt.takten();
+  const erster = welt.takt;
+  landen(welt);
   assert.equal(naeher.leben, 36, 'der Naehere zuerst');
   assert.equal(weiter.leben, 40);
   // Ein Dritter kommt noch naeher: der Turm bleibt bei seinem Ziel.
   const ganzNah = fremd(welt, turm, 2);
-  sekunden(welt, 2);
+  bisTakt(welt, erster + 2 * TAKTE_PRO_SEKUNDE);
+  landen(welt);
   assert.equal(naeher.leben, 32, 'beim alten Ziel geblieben');
   assert.equal(ganzNah.leben, 40);
 });
@@ -146,8 +167,10 @@ test('kampf AC-20: der Pfeil fliegt aus dem Turm, und wer getroffen wird, laesst
   bauer.auftrag = { art: 'gehen', feld: { x: bauer.x, y: bauer.y + 30 } };
   welt.schuesse = [];
   welt.takten();
-  assert.equal(bauer.leben, 20, 'getroffen');
   const pfeil = welt.schuesse.at(-1);
+  // Er laeuft weiter, der Pfeil trifft ihn trotzdem (kampf AC-27).
+  landen(welt);
+  assert.equal(bauer.leben, 20, 'getroffen');
   assert.deepEqual(pfeil.slice(0, 2), [turm.x, turm.y], 'der Pfeil beginnt in der Mitte des Turms');
   // Mit der Axt auf 1020 Leben Stein loszugehen, waere der schnellste Tod.
   assert.notEqual(bauer.auftrag?.art, 'angreifen', 'kein Gegenangriff auf den Turm');

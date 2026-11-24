@@ -78,7 +78,9 @@ test.describe('Tuerme', () => {
     const kuerzel = await anna.evaluate(() => window.ansicht.werte.einheiten.miliz.kuerzel);
     const miliz = () => anna.evaluate((k) => [...window.ansicht.nachher.values()].find((e) => e.k === k && e.b !== window.ansicht.ich), kuerzel);
     await anna.waitForFunction((k) => [...window.ansicht.nachher.values()].some((e) => e.k === k && e.b !== window.ansicht.ich), kuerzel);
-    const lebenVorher = (await miliz()).h;
+    // Unverletzt schickt der Server kein `h` - seit dem Pfeilflug (kampf
+    // AC-27) ist sie hier noch nicht getroffen.
+    const lebenVorher = (await miliz()).h ?? (await anna.evaluate(() => window.ansicht.werte.einheiten.miliz.leben));
 
     // Den Turm waehlen: die Leiste zeigt seine Kampfwerte aus den Daten.
     await anna.evaluate(([g, o]) => {
@@ -98,7 +100,7 @@ test.describe('Tuerme', () => {
     await bedienteileFrei(anna);
 
     // Er schiesst: die Miliz verliert Leben, und Pfeile fliegen.
-    await expect.poll(async () => (await miliz())?.h ?? 0, { timeout: 15_000 }).toBeLessThan(lebenVorher);
+    await expect.poll(async () => (await miliz())?.h ?? Infinity, { timeout: 15_000 }).toBeLessThan(lebenVorher);
     await anna.waitForFunction(() => window.ansicht.pfeile.length > 0, null, { timeout: 10_000 });
     // Ein Pfeil auf knapp halbem Weg, im Bild festgehalten - nicht auf dem
     // Server -, wie an der Burg (strategie-burg.spec.mjs). Vorher wurde er im
@@ -128,6 +130,6 @@ test.describe('Tuerme', () => {
       });
     }
     // Anna hat der Miliz keinen Befehl gegeben - und der Turm hat getroffen.
-    expect((await miliz())?.h ?? 0).toBeLessThan(lebenVorher);
+    expect((await miliz())?.h ?? Infinity).toBeLessThan(lebenVorher);
   });
 });

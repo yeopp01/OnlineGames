@@ -18,6 +18,19 @@ function sekunden(welt, s) {
   for (let t = 0; t < Math.round(s * TAKTE_PRO_SEKUNDE); t++) welt.takten();
 }
 
+// Ein Pfeil trifft, wenn er ankommt (kampf AC-27): so lange takten, bis
+// keiner mehr fliegt - hoechstens zwei Sekunden, das ist mehr als jeder Flug
+// in Reichweite.
+function landen(welt) {
+  for (let t = 0; welt.pfeileImFlug.length && t < 2 * TAKTE_PRO_SEKUNDE; t++) welt.takten();
+  assert.equal(welt.pfeileImFlug.length, 0, 'alle Pfeile angekommen');
+}
+
+/** So lange takten, bis die Uhr der Welt `takt` zeigt. */
+function bisTakt(welt, takt) {
+  while (welt.takt < takt) welt.takten();
+}
+
 /**
  * Annas Burg in der Kartenmitte, links und rechts davon je zehn freie Felder
  * fuer die Ziele - der Platz kommt aus `platzPruefen`, nicht aus einer eigenen
@@ -98,13 +111,18 @@ test('bauen AC-32: die Burg schiesst von selbst eine Salve - vier Pfeile, jeder 
   assert.equal(jeSalve, 36);
   welt.schuesse = [];
   welt.takten();
-  assert.equal(ritter.leben, voll - jeSalve, 'die erste Salve im ersten Takt');
+  const erster = welt.takt;
+  assert.equal(welt.pfeileImFlug.length, 4, 'die erste Salve im ersten Takt');
   assert.equal(welt.schuesse.length, 4, 'vier Pfeile gehen in den Zustand');
-  // Nach dem ersten Takt noch vier Sekunden: die dritte Salve faellt genau
-  // bei 4 s; einen Takt vorher waren es erst zwei.
-  sekunden(welt, 4 - 1 / TAKTE_PRO_SEKUNDE);
+  landen(welt);
+  assert.equal(ritter.leben, voll - jeSalve, 'die erste Salve trifft');
+  // Die dritte Salve geht genau bei 4 s los; einen Takt vorher waren es
+  // erst zwei.
+  bisTakt(welt, erster + 4 * TAKTE_PRO_SEKUNDE - 1);
+  landen(welt);
   assert.equal(ritter.leben, voll - 2 * jeSalve, 'Salven bei 0 und 2 Sekunden');
   welt.takten();
+  landen(welt);
   assert.ok(ritter.tot, 'die dritte bei 4 Sekunden: 108 sind mehr, als er hat');
 });
 
@@ -114,6 +132,7 @@ test('bauen AC-32: Gegenprobe - der Wachturm schiesst weiter einen Pfeil, und ei
   const miliz = welt.einheitAnlegen('b', rand.x1 + 5, rand.y0, 'miliz');
   // Miliz 40 Leben, Fernruestung 1: vier Pfeile zu je 10.
   welt.takten();
+  landen(welt);
   assert.ok(miliz.tot, 'vier mal zehn sind ihr ganzes Leben');
 });
 
@@ -123,6 +142,7 @@ test('bauen AC-32: acht Felder vom Rand der Burg, auf jeder Seite - achteinhalb 
     const x = seite === 'rechts' ? nah.rand.x1 + 8 : nah.rand.x0 - 8;
     const getroffen = nah.welt.einheitAnlegen('b', x, nah.rand.y0 + 1, 'ritter');
     nah.welt.takten();
+    landen(nah.welt);
     assert.equal(getroffen.leben, 100 - 36, `${seite}: auf acht Feldern getroffen`);
 
     // Gegenprobe: gemessen wird vom Rand, nicht von der Mitte und nicht von

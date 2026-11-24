@@ -25,6 +25,7 @@ let erledigt = null; // Suchnummer, in der das Feld fertig wurde
 let suche = 0;
 let haufenFeld = new Int32Array(1024);
 let haufenRang = new Float64Array(1024);
+let haufenNeben = new Float64Array(1024);
 
 function puffer(g) {
   if (g * g === flaeche) return;
@@ -63,22 +64,41 @@ function suchen(karte, start, ziel, frei = null) {
     suche = 1;
   }
 
+  // Gleichstand im Rang entscheidet nicht die Lage im Haufen und nicht die
+  // Reihenfolge der Richtungen, sondern die Lage des Feldes zur Linie von
+  // Start zu Ziel: erst weiter vorn, dann links davon (kampf AC-26). Beides
+  // bleibt gleich, wenn man Start und Ziel um einen Punkt dreht - zwei
+  // gespiegelte Heere gehen gespiegelte Wege. Vorher hing an DX und DY, ob
+  // ein Weg gleicher Laenge erst gerade oder erst schraeg ging, und die eine
+  // Seite des Gefechtsstands kam damit anders an als die andere.
+  const vx = ziel.x - start.x;
+  const vy = ziel.y - start.y;
+  const neben = (x, y) => {
+    const rx = x - start.x;
+    const ry = y - start.y;
+    return -(rx * vx + ry * vy) * 262144 + (rx * vy - ry * vx);
+  };
+  const vor = (rangA, nebenA, rangB, nebenB) =>
+    rangA < rangB || (rangA === rangB && nebenA < nebenB);
   let laenge = 0;
-  const rein = (feld, rang) => {
+  const rein = (feld, rang, zweit) => {
     if (laenge === haufenFeld.length) {
       const f = new Int32Array(laenge * 2); f.set(haufenFeld); haufenFeld = f;
       const r = new Float64Array(laenge * 2); r.set(haufenRang); haufenRang = r;
+      const n = new Float64Array(laenge * 2); n.set(haufenNeben); haufenNeben = n;
     }
     let i = laenge++;
     while (i > 0) {
       const eltern = (i - 1) >> 1;
-      if (haufenRang[eltern] <= rang) break;
+      if (!vor(rang, zweit, haufenRang[eltern], haufenNeben[eltern])) break;
       haufenFeld[i] = haufenFeld[eltern];
       haufenRang[i] = haufenRang[eltern];
+      haufenNeben[i] = haufenNeben[eltern];
       i = eltern;
     }
     haufenFeld[i] = feld;
     haufenRang[i] = rang;
+    haufenNeben[i] = zweit;
   };
   const raus = () => {
     const oben = haufenFeld[0];
@@ -86,26 +106,29 @@ function suchen(karte, start, ziel, frei = null) {
     if (laenge > 0) {
       const feld = haufenFeld[laenge];
       const rang = haufenRang[laenge];
+      const zweit = haufenNeben[laenge];
       let i = 0;
       for (;;) {
         const l = 2 * i + 1;
         if (l >= laenge) break;
         const r = l + 1;
-        const klein = r < laenge && haufenRang[r] < haufenRang[l] ? r : l;
-        if (haufenRang[klein] >= rang) break;
+        const klein = r < laenge && vor(haufenRang[r], haufenNeben[r], haufenRang[l], haufenNeben[l]) ? r : l;
+        if (!vor(haufenRang[klein], haufenNeben[klein], rang, zweit)) break;
         haufenFeld[i] = haufenFeld[klein];
         haufenRang[i] = haufenRang[klein];
+        haufenNeben[i] = haufenNeben[klein];
         i = klein;
       }
       haufenFeld[i] = feld;
       haufenRang[i] = rang;
+      haufenNeben[i] = zweit;
     }
     return oben;
   };
 
   kosten[startIndex] = 0;
   besucht[startIndex] = suche;
-  rein(startIndex, schaetzung(start.x, start.y, ziel.x, ziel.y));
+  rein(startIndex, schaetzung(start.x, start.y, ziel.x, ziel.y), 0);
   let gefunden = false;
 
   while (laenge) {
@@ -135,7 +158,7 @@ function suchen(karte, start, ziel, frei = null) {
       besucht[nachbar] = suche;
       kosten[nachbar] = neu;
       woher[nachbar] = jetzt;
-      rein(nachbar, neu + schaetzung(nx, ny, ziel.x, ziel.y));
+      rein(nachbar, neu + schaetzung(nx, ny, ziel.x, ziel.y), neben(nx, ny));
     }
   }
 
@@ -188,17 +211,24 @@ function erreichbar(karte, start, frei = null) {
 }
 
 // Vorrat steht auf einem Feld, das man nicht betreten kann. Gesucht ist also
-// das begehbare Nachbarfeld, das am naechsten am Sammler liegt.
+// das begehbare Nachbarfeld, das am naechsten am Sammler liegt. Zwei gleich
+// nahe entscheidet die Seite der Linie vom Sammler zum Feld, nicht die
+// Reihenfolge von DX und DY (kampf AC-26).
 function nachbarfeld(karte, feld, von) {
   let bestes = null;
   let besterAbstand = Infinity;
+  let besteSeite = 0;
+  const lx = feld.x - von.x;
+  const ly = feld.y - von.y;
   for (let r = 0; r < 8; r++) {
     const nx = feld.x + DX[r];
     const ny = feld.y + DY[r];
     if (!begehbar(karte, nx, ny)) continue;
     const abstand = Math.hypot(nx - von.x, ny - von.y);
-    if (abstand < besterAbstand) {
-      besterAbstand = abstand;
+    const seite = (nx - von.x) * ly - (ny - von.y) * lx;
+    if (abstand < besterAbstand - 1e-9 || (abstand <= besterAbstand + 1e-9 && seite < besteSeite)) {
+      besterAbstand = Math.min(abstand, besterAbstand);
+      besteSeite = seite;
       bestes = { x: nx, y: ny };
     }
   }

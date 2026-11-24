@@ -102,18 +102,17 @@ function ritt(mitZucht) {
   return { takte, strecke: Math.hypot(ritter.x - start.x, ritter.y - start.y) };
 }
 
-// Gemessen 337 gegen 296 Takte, das 1,14-fache und nicht das 1,10-fache:
-// `welt.laufen()` verliert an jedem Wegpunkt den Rest des Takts, ein Feld
-// kostet den Ritter also acht ganze Takte (1 / 0,135 = 7,4) und mit der
-// Pferdezucht sieben (1 / 0,1485 = 6,7). Das Tempo im Spiel ist dadurch
-// gestuft - fuer jede Einheit, nicht erst seit dieser Verbesserung.
-test('bauen AC-46: derselbe Ritt dauert mit der Pferdezucht spuerbar kuerzer - um ein Zehntel bis ein Sechstel', () => {
+// Gemessen 313 gegen 285 Takte, das 1,098-fache (einheiten AC-70). Bis zum
+// 2026-11-22 verfiel an jedem Wegpunkt der Rest des Takts, ein Feld kostete
+// den Ritter acht ganze Takte und mit der Pferdezucht sieben: 337 gegen 296,
+// das 1,14-fache.
+test('bauen AC-46: derselbe Ritt dauert mit der Pferdezucht spuerbar kuerzer - um ein Zehntel', () => {
   const ohne = ritt(false);
   const mit = ritt(true);
   assert.ok(ohne.strecke > 15, `ein Weg, der zaehlt: ${ohne.strecke.toFixed(1)} Felder`);
   assert.ok(Math.abs(mit.strecke - ohne.strecke) < 1.5, 'dasselbe Ziel');
   const anteil = ohne.takte / mit.takte;
-  assert.ok(anteil > 1.07 && anteil < 1.17, `ohne ${ohne.takte} Takte, mit ${mit.takte}: das ${anteil.toFixed(3)}-fache`);
+  assert.ok(anteil > 1.07 && anteil < 1.13, `ohne ${ohne.takte} Takte, mit ${mit.takte}: das ${anteil.toFixed(3)}-fache`);
 });
 
 test('bauen AC-46: an der Tafel steht, was sie bringt - Kavallerie: +10 % Tempo', () => {

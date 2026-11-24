@@ -233,13 +233,11 @@ test('bauen AC-53: mit der Karawane faehrt der Marktkarren um die Haelfte schnel
   assert.equal(ohne.tempo, EINHEITEN.marktkarren.tempo);
   assert.equal(mit.tempo, EINHEITEN.marktkarren.tempo * 1.5);
   assert.equal(mit.gold, ohne.gold, 'dasselbe Gold je Fahrt');
-  // Gestuft wie jedes Tempo (`welt.laufen()` verliert an jedem Wegpunkt den
-  // Rest des Takts): zehn Takte je Feld werden sieben, das 1,43-fache.
+  // Gemessen 100 Takte ohne, 67 mit, das 1,49-fache (einheiten AC-70: der
+  // Rest des Takts geht am Wegpunkt weiter). Vorher 110 und 70, das 1,57-fache,
+  // weil an jedem Feld der Rest des Takts verfiel.
   const anteil = ohne.takte / mit.takte;
-  // Gemessen 110 Takte ohne, 70 mit: gegangen wird in ganzen Takten, und an
-  // jedem Feld verfaellt der Rest des Takts - ohne die Karawane sind das elf
-  // Takte je Feld statt zehn, mit ihr sieben. Deshalb etwas mehr als 1,5.
-  assert.ok(anteil > 1.4 && anteil < 1.65, `ohne ${ohne.takte} Takte, mit ${mit.takte}: das ${anteil.toFixed(3)}-fache`);
+  assert.ok(anteil > 1.45 && anteil < 1.55, `ohne ${ohne.takte} Takte, mit ${mit.takte}: das ${anteil.toFixed(3)}-fache`);
   assert.deepEqual(bringt(VERBESSERUNGEN.karawane), ['Karren: +50 % Tempo']);
 });
 
@@ -312,17 +310,16 @@ test('bauen AC-54: mit den Knappen ist das Fussvolk ein Zehntel schneller - auch
   assert.deepEqual(bringt(VERBESSERUNGEN.knappen), ['Infanterie: +10 % Tempo']);
 });
 
-// Das Tempo im Spiel ist gestuft (`welt.laufen()` verliert an jedem Wegpunkt
-// den Rest des Takts): ein Feld kostet ganze Takte. Gemessen ueber zehn
-// Felder, 2026-11-18: der Speerkaempfer geradeaus 110 -> 100 Takte, schraeg
-// 150 -> 130; die Miliz 120 -> 110 und 160 -> 150. Hier schraeg ueber den
-// Platz.
+// Gemessen ueber zehn Felder schraeg, 2026-11-22: die Miliz 158 -> 143
+// Takte, das 1,105-fache (einheiten AC-70). Bis dahin verfiel an jedem
+// Wegpunkt der Rest des Takts, und dieselbe Messung ergab 160 -> 150, das
+// 1,07-fache. Hier schraeg ueber den Platz.
 test('bauen AC-54: derselbe Gang dauert mit den Knappen kuerzer - die Miliz und der Speerkaempfer, schraeg ueber den Platz', () => {
   for (const art of ['miliz', 'speerkaempfer']) {
     const ohne = gang(art, null);
     const mit = gang(art, 'knappen');
     const anteil = ohne / mit;
-    assert.ok(anteil > 1.04 && anteil < 1.2, `${art}: ohne ${ohne} Takte, mit ${mit}: das ${anteil.toFixed(3)}-fache`);
+    assert.ok(anteil > 1.07 && anteil < 1.13, `${art}: ohne ${ohne} Takte, mit ${mit}: das ${anteil.toFixed(3)}-fache`);
   }
 });
 

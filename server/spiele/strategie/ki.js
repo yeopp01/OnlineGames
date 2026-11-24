@@ -2026,21 +2026,22 @@ class Ki {
   }
 
   // Wer baut: ein Holzfaeller ohne Ladung, sonst irgendeiner ohne Ladung.
-  bauer(dorfbewohner) {
+  // Fuer eine Farm sagt `vorzug`, wer (`farmbauer`).
+  bauer(dorfbewohner, vorzug = 'holz') {
     return dorfbewohner.find((e) => this.untaetig(e))
-      || dorfbewohner.find((e) => this.rolle(e) === 'holz' && e.ladung === 0)
+      || dorfbewohner.find((e) => this.rolle(e) === vorzug && e.ladung === 0)
       || dorfbewohner.find((e) => this.rolle(e) !== 'bau' && e.ladung === 0)
       || dorfbewohner.find((e) => this.rolle(e) !== 'bau');
   }
 
-  bauen(art, platz, dorfbewohner, anzahl = 1) {
+  bauen(art, platz, dorfbewohner, anzahl = 1, vorzug = 'holz') {
     if (!platz || !dorfbewohner.length) return false;
     for (const [rohstoff, menge] of Object.entries(GEBAEUDE[art].kosten)) {
       if (this.spieler[rohstoff] < menge) return false;
     }
     const bauer = [];
     for (let i = 0; i < anzahl; i++) {
-      const naechster = this.bauer(dorfbewohner.filter((e) => !bauer.includes(e)));
+      const naechster = this.bauer(dorfbewohner.filter((e) => !bauer.includes(e)), vorzug);
       if (naechster) bauer.push(naechster);
     }
     if (!bauer.length) return false;
@@ -2093,6 +2094,23 @@ class Ki {
     this.bauen(art, this.platzBei(art, mitte), dorfbewohner);
   }
 
+  /**
+   * Wer eine Farm baut, bestellt sie danach selbst: er wechselt zur Nahrung.
+   * Er kommt deshalb von dem Rohstoff, der am weitesten ueber dem Plan liegt
+   * (ki AC-4). Baute ihn immer ein Holzfaeller, fehlte er dem Holz - beim
+   * Startwert 3 hatte KI 1 bei Minute 10 drei Holzfaeller statt sieben; baute
+   * ihn immer, wer Nahrung holt, blieb nach den letzten Schafen beim
+   * Startwert 1 das Holz zwei ueber dem Plan. Aufgefallen mit kampf AC-26,
+   * als die Reihenfolge der Einheiten im Takt zu wechseln begann.
+   */
+  farmbauer(rollen, soll) {
+    let bester = 'holz';
+    for (const r of ['nahrung', 'gold']) {
+      if ((rollen[r] || 0) - (soll[r] || 0) > (rollen[bester] || 0) - (soll[bester] || 0)) bester = r;
+    }
+    return bester;
+  }
+
   farmenPruefen(rollen, gebaeude, dorfbewohner) {
     // Nach dem Aufstieg kommt das Militaergebaeude vor der naechsten Farm:
     // beide kosten Holz, und beim Startwert 15 standen am Ende 640 Gold neben
@@ -2119,7 +2137,7 @@ class Ki {
     // jede Farm mit einem Feld Abstand zu allem "irgendwo" um sie herum.
     const platz = this.farmplatz(gebaeude);
     if (platz) {
-      this.bauen('farm', platz, dorfbewohner);
+      this.bauen('farm', platz, dorfbewohner, 1, this.farmbauer(rollen, plan(dorfbewohner.length)));
       return;
     }
     // Dort ist alles belegt: eine weitere Muehle, wo Platz fuer Farmen ist.
@@ -2133,7 +2151,7 @@ class Ki {
       return;
     }
     // Auch dafuer nichts: lieber eine ferne Farm als Hunger.
-    this.bauen('farm', this.platzBei('farm', basis, 3), dorfbewohner);
+    this.bauen('farm', this.platzBei('farm', basis, 3), dorfbewohner, 1, this.farmbauer(rollen, plan(dorfbewohner.length)));
   }
 
   /**

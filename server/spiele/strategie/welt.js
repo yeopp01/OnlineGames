@@ -68,6 +68,10 @@ const MELDUNG_PAUSE = 200;
 // Hoechstens so viele Pfeile warten auf den naechsten Zustand (bedienung
 // AC-40) - genug fuer zwanzig Takte Zeitraffer mit grossen Heeren.
 const SCHUESSE_HOECHSTENS = 400;
+// So schnell fliegt ein Pfeil, Felder je Sekunde (kampf AC-27): so lange
+// wie im Bild (bedienung AC-40), dort seit Runde 122 sieben. Gesetzt, nicht
+// aus der Vorlage - die nennt fuer Pfeile keine Geschwindigkeit.
+const PFEIL_TEMPO = 7;
 const MELDUNG_ABSTAND = 15;
 
 // Wie lange einer, der keinen Weg zu irgendeinem Lager fand, wartet, bevor
@@ -306,6 +310,34 @@ function punkteFeld(punkte) {
  * @property {[number, number]} [av] der Vorrat, den dieser Spieler ansieht: Feld und Rest (bedienung AC-63)
  */
 
+// Ein Takt auf dem Weg (einheiten AC-70): `rest` Felder entlang `obj.weg`,
+// und wer dabei einen Wegpunkt erreicht, geht mit dem Rest zum naechsten
+// weiter. Am letzten Wegpunkt endet der Takt. `runden` (etwa 100) rundet
+// eine Lage zwischen zwei Wegpunkten auf so viele Teile je Feld.
+function wegGehen(obj, rest, runden = 0) {
+  while (rest > 0 && obj.weg.length) {
+    const naechstes = obj.weg[0];
+    const dx = naechstes.x - obj.x;
+    const dy = naechstes.y - obj.y;
+    const abstand = Math.hypot(dx, dy);
+    // Ein Milliardstel Feld Spiel: zehnmal 0,1 ergibt 0,9999999999999999,
+    // und ohne die Zugabe kostete dieser Rest einen ganzen Takt mehr.
+    if (abstand > rest + 1e-9) {
+      obj.x += (dx / abstand) * rest;
+      obj.y += (dy / abstand) * rest;
+      if (runden) {
+        obj.x = Math.round(obj.x * runden) / runden;
+        obj.y = Math.round(obj.y * runden) / runden;
+      }
+      return;
+    }
+    obj.x = naechstes.x;
+    obj.y = naechstes.y;
+    obj.weg.shift();
+    rest -= abstand;
+  }
+}
+
 class Welt {
   /**
    * @param {{id: string, name: string}[]} spielerListe
@@ -318,6 +350,12 @@ class Welt {
     // Zufall der Partie (einheiten AC-38: wie lange ein Bekehren dauert) -
     // aus dem Startwert, aber nicht dieselbe Folge wie die der Karte.
     this.zufall = karten.zufallAus((startwert ^ 0x5bd1e995) >>> 0);
+    // Die Reihenfolge, in der die Einheiten ihren Takt rechnen, je Takt neu
+    // gemischt (kampf AC-26) - eine eigene Folge, damit sie die des Bekehrens
+    // nicht verschiebt.
+    this.reihenZufall = karten.zufallAus((startwert ^ 0x2c1b3c6d) >>> 0);
+    /** @type {any[]} die Einheiten in der Reihenfolge des laufenden Takts */
+    this.reihe = [];
     const start = STARTVORRAT[einstellungen.vorrat] || STARTVORRAT.wenig;
     this.takt = 0;
     this.naechsteId = 1;
@@ -356,6 +394,9 @@ class Welt {
     // Sie schlagen ein, wenn `takte` abgelaufen ist, dort, wo das Ziel beim
     // Abwurf stand.
     this.einschlaege = [];
+    // Pfeile im Flug (kampf AC-27): jeder trifft, wenn er ankommt - wie ein
+    // Stein, aber sicher und genau das Ziel, auf das er geschossen wurde.
+    this.pfeileImFlug = [];
     // Der Drache (ADR-0014) ist eine Einstellung beim Eroeffnen (einheiten
     // AC-52): abgeschaltet liegen keine Eier, und es gibt kein Rufen.
     this.drachenAn = einstellungen.drache !== 'aus';
@@ -1031,6 +1072,9 @@ class Welt {
       /** @type {number | null} */
       schlagTakt: null, // der Takt ihres letzten Schlags oder Schusses (bedienung AC-72)
       fallrichtung: null, // gefallen: die Richtung zu dem, der sie traf, als Achtel (bedienung AC-76)
+      taktX: x, // die Lage zu Beginn des laufenden Takts, fuer die Reichweite (kampf AC-26)
+      reihe: 0, // der Platz in der Reihenfolge des laufenden Takts (kampf AC-26)
+      taktY: y,
       /** @type {Set<object> | null} */
       entdeckt: null, // getarnt: die Sichten, die sie entdeckt haben (kampf AC-22)
     };
@@ -2512,7 +2556,9 @@ class Welt {
   }
 
   // Freie Felder um ein Ziel, nach Abstand - das Ziel selbst zuerst, wenn frei
-  // (einheiten AC-20). Genug fuer n Einheiten, oder so viele es gibt.
+  // (einheiten AC-20). Genug fuer n Einheiten, oder so viele es gibt. Die
+  // Mitte steht an der Liste (`mitte`): `naechstesFreies` entscheidet daran
+  // einen Gleichstand.
   aufstellungUm(ziel, n) {
     const felder = [];
     for (let r = 0; r < 12 && felder.length < n; r++) {
@@ -2526,18 +2572,30 @@ class Welt {
       ring.sort((a, b) => a.d - b.d || a.y - b.y || a.x - b.x);
       for (const f of ring) felder.push({ x: f.x, y: f.y, frei: true });
     }
-    return felder;
+    return Object.assign(felder, { mitte: { x: ziel.x, y: ziel.y } });
   }
 
   // Das naechste noch freie Feld der Aufstellung - wer nahe steht, nimmt nahe Felder.
+  // Gleich nahe Felder entscheidet ihre Lage zur Linie von der Einheit zur
+  // Mitte: erst das rechts davon, dann das zur Mitte hin. Die Reihenfolge der
+  // Liste haengt an der Himmelsrichtung, diese Regel nicht - gespiegelte
+  // Heere nehmen gespiegelte Felder (kampf AC-26).
   naechstesFreies(einheit, aufstellung) {
+    const mitte = /** @type {{mitte?: {x: number, y: number}}} */ (aufstellung).mitte;
+    const mx = mitte ? mitte.x - einheit.x : 0;
+    const my = mitte ? mitte.y - einheit.y : 0;
     let bestes = null;
     let besterAbstand = Infinity;
+    let besteLage = 0;
     for (const f of aufstellung) {
       if (!f.frei) continue;
-      const abstand = Math.hypot(f.x - einheit.x, f.y - einheit.y);
-      if (abstand < besterAbstand) {
-        besterAbstand = abstand;
+      const fx = f.x - einheit.x;
+      const fy = f.y - einheit.y;
+      const abstand = Math.hypot(fx, fy);
+      const lage = (fx * my - fy * mx) * 1e6 - (fx * mx + fy * my);
+      if (abstand < besterAbstand - 1e-9 || (abstand <= besterAbstand + 1e-9 && lage < besteLage)) {
+        besterAbstand = Math.min(abstand, besterAbstand);
+        besteLage = lage;
         bestes = f;
       }
     }
@@ -3302,19 +3360,10 @@ class Welt {
     // Getriebene Schafe laufen; eine Aenderung geht nur, wenn sie sich bewegen.
     for (const tier of this.tiere.values()) {
       if (!tier.weg.length || tier.geschlachtet) continue;
-      const tempo = TIERE[tier.art].tempo / TAKTE_PRO_SEKUNDE;
-      const ziel = tier.weg[0];
-      const dx = ziel.x - tier.x;
-      const dy = ziel.y - tier.y;
-      const abstand = Math.hypot(dx, dy);
-      if (abstand <= tempo) {
-        tier.x = ziel.x;
-        tier.y = ziel.y;
-        tier.weg.shift();
-      } else {
-        tier.x = Math.round((tier.x + (dx / abstand) * tempo) * 100) / 100;
-        tier.y = Math.round((tier.y + (dy / abstand) * tempo) * 100) / 100;
-      }
+      // Dieselbe Regel wie fuer Einheiten (einheiten AC-70): der Rest des
+      // Takts geht am Wegpunkt weiter. Zwischen zwei Wegpunkten steht ein
+      // Schaf auf Hundertstel gerundet - so wenig geht ueber die Leitung.
+      wegGehen(tier, TIERE[tier.art].tempo / TAKTE_PRO_SEKUNDE, 100);
       this.tierAenderungen.push(tier.id);
     }
     // Einmal je Sekunde: fremde Schafe in Sichtweite wechseln den Besitzer,
@@ -3581,7 +3630,8 @@ class Welt {
   // selbst ist keines - darauf stellt sich niemand.
   angriffsfelder(ziel, anzahl, istGebaeude) {
     const mitte = istGebaeude ? { x: ziel.x, y: ziel.y } : this.feldVon(ziel);
-    return this.aufstellungUm(mitte, anzahl + 1).filter((f) => f.x !== mitte.x || f.y !== mitte.y);
+    const felder = this.aufstellungUm(mitte, anzahl + 1).filter((f) => f.x !== mitte.x || f.y !== mitte.y);
+    return Object.assign(felder, { mitte });
   }
 
   /**
@@ -3761,8 +3811,12 @@ class Welt {
           if (EINHEITEN[anderer.art].fliegt && !this.kannTreffen(einheit, anderer)) continue;
           const abstand = Math.hypot(anderer.x - einheit.x, anderer.y - einheit.y);
           if (abstand < mindest) continue;
-          if (abstand <= besterAbstand) {
-            besterAbstand = abstand;
+          // Bei gleichem Abstand der mit der kleineren Nummer, nicht der, den
+          // das Raster zuletzt nennt - das hing an der Himmelsrichtung, und
+          // gespiegelte Heere waehlten verschieden (kampf AC-26).
+          if (abstand < besterAbstand - 1e-9
+            || (abstand <= besterAbstand + 1e-9 && (!bestes || anderer.id < bestes.id))) {
+            besterAbstand = Math.min(abstand, besterAbstand);
             bestes = anderer;
           }
         }
@@ -3779,7 +3833,7 @@ class Welt {
    */
   wacheTakten() {
     const wachen = [];
-    for (const einheit of this.einheiten.values()) {
+    for (const einheit of this.reiheJetzt()) {
       if (einheit.tot || einheit.auftrag?.art === 'angreifen') continue;
       // Wer im Angriffslauf ist, sieht sich auch **unterwegs** um (kampf AC-4);
       // alle anderen nur im Stehen - ein Sammler soll seine Arbeit nicht
@@ -3811,7 +3865,7 @@ class Welt {
     for (const { feind } of funde) {
       if (!felderJeZiel.has(feind.id)) felderJeZiel.set(feind.id, this.angriffsfelder(feind, 8, false));
     }
-    for (const andere of this.einheiten.values()) {
+    for (const andere of this.reiheJetzt()) {
       const auftrag = andere.auftrag;
       if (andere.tot || auftrag?.art !== 'angreifen' || auftrag.gebaeude || !auftrag.platz) continue;
       const felder = felderJeZiel.get(auftrag.ziel);
@@ -3991,9 +4045,12 @@ class Welt {
     }
     const fern = this.einheitenwert(einheit.besitzer, einheit.art, 'reichweite');
     const reichweite = fern || 1;
+    // Eine Einheit als Ziel misst von ihrer Lage zu Beginn des Takts (kampf
+    // AC-26): wer vorher in der Liste steht und schon auf den anderen zuging,
+    // braechte ihn sonst einen Takt frueher in Reichweite als sich selbst.
     const abstand = auftrag.gebaeude
       ? this.abstandZu(einheit, ziel)
-      : Math.hypot(ziel.x - einheit.x, ziel.y - einheit.y);
+      : Math.hypot((ziel.taktX ?? ziel.x) - einheit.x, (ziel.taktY ?? ziel.y) - einheit.y);
     // Zu nah fuer den Mangonel (einheiten AC-36): er faehrt zurueck, bis das
     // Ziel wieder weit genug weg ist, und wirft erst dann.
     const mindest = EINHEITEN[einheit.art].mindestreichweite || 0;
@@ -4193,30 +4250,55 @@ class Welt {
       this.steinWerfen(angreifer, ziel, istGebaeude, geschoss);
       return;
     }
-    this.schlaege.push({
-      angreifer, ziel, schaden: this.schaden(angreifer, ziel, istGebaeude), gebaeude: istGebaeude,
-    });
-    // Ein Schuss eines Fernkaempfers geht als Pfeil in den naechsten Zustand
-    // (bedienung AC-40): von wo nach wo. Gerechnet ist er schon - der Pfeil
-    // ist Darstellung (ADR-0001).
+    const schaden = this.schaden(angreifer, ziel, istGebaeude);
     // Ein Turm schiesst ebenso Pfeile, aus der Mitte seiner Grundflaeche.
     const vonGebaeude = !EINHEITEN[angreifer.art];
     const fern = vonGebaeude
       ? this.gebaeudewert(angreifer.besitzer, angreifer.art, 'reichweite')
       : this.einheitenwert(angreifer.besitzer, angreifer.art, 'reichweite');
-    if (fern > 0) {
-      const mitte = (g) => {
-        const { x0, y0, x1, y1 } = this.grundflaeche(g.art, g.x, g.y, g.quer);
-        return { x: (x0 + x1) / 2, y: (y0 + y1) / 2 };
-      };
-      const von = vonGebaeude ? mitte(angreifer) : angreifer;
-      const nach = istGebaeude ? mitte(ziel) : ziel;
-      (this.schuesse ??= []).push([von.x, von.y, nach.x, nach.y].map((w) => Math.round(w * 10) / 10));
-      // Ohne Zustand - im Pruefstand fragt keiner danach - wuechse die Liste
-      // eine ganze Partie lang. Was weiter zurueckliegt als die letzten
-      // SCHUESSE_HOECHSTENS, sieht ohnehin keiner mehr fliegen.
-      if (this.schuesse.length > SCHUESSE_HOECHSTENS) this.schuesse.splice(0, this.schuesse.length - SCHUESSE_HOECHSTENS);
+    if (!(fern > 0)) {
+      this.schlaege.push({ angreifer, ziel, schaden, gebaeude: istGebaeude });
+      return;
     }
+    const mitte = (g) => {
+      const { x0, y0, x1, y1 } = this.grundflaeche(g.art, g.x, g.y, g.quer);
+      return { x: (x0 + x1) / 2, y: (y0 + y1) / 2 };
+    };
+    const von = vonGebaeude ? mitte(angreifer) : angreifer;
+    const nach = istGebaeude ? mitte(ziel) : ziel;
+    // Der Pfeil trifft, wenn er ankommt (kampf AC-27): so viele Takte, wie er
+    // mit PFEIL_TEMPO Feldern je Sekunde braucht. Gerechnet ist der Schaden
+    // beim Abschuss, abgerechnet wird er beim Ankommen - mit den Schlaegen
+    // jenes Takts. Er trifft sicher, auch ein Ziel, das inzwischen gelaufen
+    // ist; faellt es vorher, verpufft er.
+    const takte = this.flugTakte(von, nach, PFEIL_TEMPO);
+    this.pfeileImFlug.push({ angreifer, ziel, schaden, gebaeude: istGebaeude, takte });
+    // Ein Schuss geht als Pfeil in den naechsten Zustand (bedienung AC-40):
+    // von wo nach wo, als fuenfter Wert 0 (ein Pfeil), als sechster, wie viele
+    // Takte nach diesem Zustand er einschlaegt - damit der Browser ihn dann
+    // landen laesst. Der Pfeil ist Darstellung (ADR-0001).
+    this.schussMerken(von, nach, 0, takte);
+  }
+
+  /**
+   * Wie viele Takte ein Geschoss von `von` nach `nach` fliegt, mit `tempo`
+   * Feldern je Sekunde - mindestens einer: dann trifft es im selben Takt.
+   */
+  flugTakte(von, nach, tempo) {
+    return Math.max(1, Math.round((Math.hypot(nach.x - von.x, nach.y - von.y) / tempo) * TAKTE_PRO_SEKUNDE));
+  }
+
+  /**
+   * Ein Geschoss fuer den naechsten Zustand: `[x0, y0, x1, y1, art, nach]` -
+   * art 0 ein Pfeil, 1 ein Stein, 2 Feuer; `nach` die Takte vom Zustand bis
+   * zum Einschlag (kampf AC-27).
+   */
+  schussMerken(von, nach, art, takte) {
+    (this.schuesse ??= []).push([...[von.x, von.y, nach.x, nach.y].map((w) => Math.round(w * 10) / 10), art, takte - 1]);
+    // Ohne Zustand - im Pruefstand fragt keiner danach - wuechse die Liste
+    // eine ganze Partie lang. Was weiter zurueckliegt als die letzten
+    // SCHUESSE_HOECHSTENS, sieht ohnehin keiner mehr fliegen.
+    if (this.schuesse.length > SCHUESSE_HOECHSTENS) this.schuesse.splice(0, this.schuesse.length - SCHUESSE_HOECHSTENS);
   }
 
   /**
@@ -4230,17 +4312,16 @@ class Welt {
       const { x0, y0, x1, y1 } = this.grundflaeche(ziel.art, ziel.x, ziel.y, ziel.quer);
       nach = { x: (x0 + x1) / 2, y: (y0 + y1) / 2 };
     }
-    const weite = Math.hypot(nach.x - angreifer.x, nach.y - angreifer.y);
+    const takte = this.flugTakte(angreifer, nach, geschoss);
     this.einschlaege.push({
       x: nach.x,
       y: nach.y,
-      takte: Math.max(1, Math.round((weite / geschoss) * TAKTE_PRO_SEKUNDE)),
+      takte,
       angreifer,
       gebaeude: istGebaeude ? ziel : null,
     });
     // Fuenfter Wert: 1 ist ein Stein, 2 das Feuer des Drachen (einheiten AC-52).
-    (this.schuesse ??= []).push([...[angreifer.x, angreifer.y, nach.x, nach.y].map((w) => Math.round(w * 10) / 10), EINHEITEN[angreifer.art].feuer ? 2 : 1]);
-    if (this.schuesse.length > SCHUESSE_HOECHSTENS) this.schuesse.splice(0, this.schuesse.length - SCHUESSE_HOECHSTENS);
+    this.schussMerken(angreifer, nach, EINHEITEN[angreifer.art].feuer ? 2 : 1, takte);
   }
 
   /**
@@ -4253,37 +4334,61 @@ class Welt {
    * trifft noch.
    */
   einschlaegeTakten() {
-    if (!this.einschlaege.length) return;
+    this.einschlaege = this.fliegen(this.einschlaege, (stein) => this.steinTrifft(stein));
+    this.pfeileImFlug = this.fliegen(this.pfeileImFlug, (pfeil) => this.pfeilTrifft(pfeil));
+  }
+
+  /**
+   * Was fliegt, ist einen Takt weiter (kampf AC-19, AC-27): was ankommt,
+   * schlaegt ein, der Rest bleibt in der Liste.
+   */
+  fliegen(liste, einschlagen) {
+    if (!liste.length) return liste;
     const bleiben = [];
-    for (const stein of this.einschlaege) {
-      stein.takte--;
-      if (stein.takte > 0) {
-        bleiben.push(stein);
-        continue;
-      }
-      const { angreifer } = stein;
-      const flaeche = EINHEITEN[angreifer.art].flaeche;
-      if (stein.gebaeude && this.gebaeude.has(stein.gebaeude.id)) {
-        this.schlaege.push({
-          angreifer, ziel: stein.gebaeude, schaden: this.schaden(angreifer, stein.gebaeude, true), gebaeude: true,
-        });
-      }
-      for (const einheit of this.einheiten.values()) {
-        // Wer fliegt, liegt nicht unter dem Einschlag (kampf AC-23) - auch
-        // der Drache nicht unter seinem eigenen Feuer.
-        if (einheit.tot || EINHEITEN[einheit.art].fliegt) continue;
-        const abstand = Math.hypot(einheit.x - stein.x, einheit.y - stein.y);
-        if (abstand > flaeche) continue;
-        const anteil = 1 - 0.5 * (abstand / flaeche);
-        this.schlaege.push({
-          angreifer,
-          ziel: einheit,
-          schaden: Math.max(1, Math.round(this.schaden(angreifer, einheit, false) * anteil)),
-          gebaeude: false,
-        });
-      }
+    for (const geschoss of liste) {
+      geschoss.takte--;
+      if (geschoss.takte > 0) bleiben.push(geschoss);
+      else einschlagen(geschoss);
     }
-    this.einschlaege = bleiben;
+    return bleiben;
+  }
+
+  /**
+   * Ein Pfeil kommt an (kampf AC-27): er trifft sein Ziel mit dem Schaden,
+   * der beim Abschuss gerechnet wurde - wenn es noch steht. Wer inzwischen
+   * fiel oder fort ist, schluckt ihn: der Pfeil verpufft, kein zweites Ziel.
+   * Ebenso, wer inzwischen kein Gegner mehr ist (bekehrt, verbuendet). Auch
+   * ein Schuetze, der inzwischen fiel, trifft noch.
+   */
+  pfeilTrifft({ angreifer, ziel, schaden, gebaeude }) {
+    const steht = gebaeude ? this.gebaeude.get(ziel.id) === ziel : !ziel.tot && this.einheiten.get(ziel.id) === ziel;
+    if (!steht || !this.feindlich(angreifer.besitzer, ziel.besitzer)) return;
+    this.schlaege.push({ angreifer, ziel, schaden, gebaeude });
+  }
+
+  /** Ein Stein schlaegt ein (kampf AC-19). */
+  steinTrifft(stein) {
+    const { angreifer } = stein;
+    const flaeche = EINHEITEN[angreifer.art].flaeche;
+    if (stein.gebaeude && this.gebaeude.has(stein.gebaeude.id)) {
+      this.schlaege.push({
+        angreifer, ziel: stein.gebaeude, schaden: this.schaden(angreifer, stein.gebaeude, true), gebaeude: true,
+      });
+    }
+    for (const einheit of this.einheiten.values()) {
+      // Wer fliegt, liegt nicht unter dem Einschlag (kampf AC-23) - auch
+      // der Drache nicht unter seinem eigenen Feuer.
+      if (einheit.tot || EINHEITEN[einheit.art].fliegt) continue;
+      const abstand = Math.hypot(einheit.x - stein.x, einheit.y - stein.y);
+      if (abstand > flaeche) continue;
+      const anteil = 1 - 0.5 * (abstand / flaeche);
+      this.schlaege.push({
+        angreifer,
+        ziel: einheit,
+        schaden: Math.max(1, Math.round(this.schaden(angreifer, einheit, false) * anteil)),
+        gebaeude: false,
+      });
+    }
   }
 
   schlaegeAbrechnen() {
@@ -4671,6 +4776,52 @@ class Welt {
     }
   }
 
+  /**
+   * Die Einheiten in der Reihenfolge, in der sie diesen Takt rechnen (kampf
+   * AC-26). Wer zuerst rechnet, geht zuerst und entscheidet nach der Lage
+   * derer, die noch nicht gegangen sind - liefe die Liste immer in der
+   * Reihenfolge des Anlegens, gewaenne bei gleichen Heeren der, dessen
+   * Einheiten spaeter angelegt wurden: im Gefechtsstand die Seite rechts,
+   * Miliz gegen Miliz 160 von 200. Deshalb je Takt neu gemischt, aus dem
+   * Startwert - dieselbe Partie bleibt dieselbe.
+   *
+   * Dazu merkt sich jede Einheit, wo sie zu Beginn des Takts stand
+   * (`taktX`, `taktY`): danach misst die Reichweite eines Angreifers,
+   * nicht nach der Lage, in die das Ziel in diesem Takt schon gegangen ist.
+   *
+   * Die Map `einheiten` bleibt in der Reihenfolge des Anlegens - wer die
+   * gemischte braucht (Wache, Ausweichen), fragt `reiheJetzt()`.
+   */
+  reihenfolge() {
+    const reihe = [...this.einheiten.values()];
+    for (let i = reihe.length - 1; i > 0; i--) {
+      const j = Math.floor(this.reihenZufall() * (i + 1));
+      const tausch = reihe[i];
+      reihe[i] = reihe[j];
+      reihe[j] = tausch;
+    }
+    for (const [i, einheit] of reihe.entries()) {
+      einheit.reihe = i;
+      einheit.taktX = einheit.x;
+      einheit.taktY = einheit.y;
+    }
+    this.reihe = reihe;
+    return reihe;
+  }
+
+  /**
+   * Die gemischte Reihenfolge dieses Takts (kampf AC-26), ohne wen es nicht
+   * mehr gibt; wer im Takt dazukam, steht hinten.
+   */
+  reiheJetzt() {
+    const reihe = (this.reihe || []).filter((e) => this.einheiten.get(e.id) === e);
+    if (reihe.length < this.einheiten.size) {
+      const drin = new Set(reihe);
+      for (const e of this.einheiten.values()) if (!drin.has(e)) reihe.push(e);
+    }
+    return reihe;
+  }
+
   takten() {
     // Eine entschiedene Partie rechnet nicht weiter. Der Raum haelt seine Uhr
     // an (`vorbei`); dies ist die zweite Sperre, fuer den Pruefstand und fuer
@@ -4680,9 +4831,10 @@ class Welt {
     const bevoelkerung = this.bevoelkerung();
     for (const gebaeude of this.gebaeude.values()) this.gebaeudeTakten(gebaeude, bevoelkerung);
     this.tiereTakten();
+    const reihe = this.reihenfolge();
     // Zweimal je Sekunde sehen sich stehende Kampfeinheiten um (kampf AC-2).
     if (this.takt % WACHE_TAKTE === 0) this.wacheTakten();
-    for (const einheit of this.einheiten.values()) this.einheitTakten(einheit);
+    for (const einheit of reihe) this.einheitTakten(einheit);
     this.reparaturenAbrechnen();
     this.drachenFuettern();
     this.tuermeTakten();
@@ -4938,7 +5090,7 @@ class Welt {
     // `${x},${y}` kostete dabei die Haelfte der Zeit (Runde 100, gemessen).
     const g = this.karte.groesse;
     const schluessel = (x, y) => y * g + x;
-    for (const e of this.einheiten.values()) {
+    for (const e of this.reiheJetzt()) {
       // Wer fliegt, steht niemandem im Weg (einheiten AC-52).
       if (e.tot || e.weg.length || EINHEITEN[e.art].fliegt) continue;
       stehend.push(e);
@@ -4997,10 +5149,14 @@ class Welt {
       // Die hoehere Nummer weicht - deterministisch, ohne Zufall. Findet sie
       // keinen Platz (ein Bauer an einer voll besetzten Baustelle), versucht es
       // der andere; sonst blieben beide aufeinander, obwohl einer Platz haette
-      // (Durchsicht Runde 89).
-      for (const wer of o.id > e.id ? [o, e] : [e, o]) {
+      // (Durchsicht Runde 89). Gehoeren sie verschiedenen Spielern, weicht,
+      // wer in diesem Takt spaeter an der Reihe ist: die Nummern des zweiten
+      // Spielers sind im Gefechtsstand alle hoeher, und seine Seite trat
+      // sonst immer beiseite (kampf AC-26).
+      const spaeter = e.besitzer === o.besitzer ? o.id > e.id : o.reihe > e.reihe;
+      for (const wer of spaeter ? [o, e] : [e, o]) {
         if (ohnePlatz.has(wer.id) || !this.darfAusweichen(wer)) continue;
-        const feld = this.ausweichfeld(wer, belegung());
+        const feld = this.ausweichfeld(wer, belegung(), wer === e ? o : e);
         if (!feld) {
           ohnePlatz.add(wer.id);
           continue;
@@ -5041,10 +5197,18 @@ class Welt {
    * heisst: begehbar, kein Gebaeude, niemand steht dort oder ist dorthin
    * unterwegs.
    */
-  ausweichfeld(einheit, belegt) {
+  ausweichfeld(einheit, belegt, anderer = null) {
     const fx = Math.round(einheit.x);
     const fy = Math.round(einheit.y);
     const auftrag = einheit.auftrag;
+    // Gleich nahe Felder entscheidet die Lage zum Ziel des Angriffs, sonst zu
+    // dem, dem ausgewichen wird: erst rechts der Linie dorthin, dann naeher
+    // daran. Die Reihenfolge der Schleife hing an der Himmelsrichtung, und
+    // gespiegelte Heere traten verschieden beiseite (kampf AC-26).
+    const bezug = (auftrag?.art === 'angreifen' && this.angriffsziel(auftrag)) || anderer;
+    const bx = bezug ? bezug.x - einheit.x : 0;
+    const by = bezug ? bezug.y - einheit.y : 0;
+    let besteLage = 0;
     /** @type {(x: number, y: number) => boolean} */
     let passt = () => true;
     if (auftrag?.art === 'bauen' || auftrag?.art === 'reparieren') {
@@ -5073,8 +5237,12 @@ class Welt {
         if (dx && dy && (!karten.begehbar(this.karte, x, fy) || !karten.begehbar(this.karte, fx, y)
           || this.gebaeudeAn(x, fy) || this.gebaeudeAn(fx, y))) continue;
         const d = Math.hypot(x - einheit.x, y - einheit.y);
-        if (d < bester) {
-          bester = d;
+        const rx = x - einheit.x;
+        const ry = y - einheit.y;
+        const lage = (rx * by - ry * bx) * 1e6 - (rx * bx + ry * by);
+        if (d < bester - 1e-9 || (d <= bester + 1e-9 && lage < besteLage)) {
+          bester = Math.min(d, bester);
+          besteLage = lage;
           bestes = { x, y };
         }
       }
@@ -5201,21 +5369,13 @@ class Welt {
     else this.sammelnBeginnen(einheit);
   }
 
-  // Tempo aus den Daten, in Feldern je Sekunde (einheiten AC-19).
+  // Tempo aus den Daten, in Feldern je Sekunde (einheiten AC-19). Wer in
+  // einem Takt an einem Wegpunkt ankommt, geht mit dem Rest des Takts zum
+  // naechsten weiter (einheiten AC-70): bis zum 2026-11-22 endete der Takt
+  // am Wegpunkt, und Tempo 1,0 brauchte 11 statt 10 Takte je Feld - jede
+  // Einheit war rund 9 % langsamer als ihr Wert in den Daten.
   laufen(einheit) {
-    const tempo = this.einheitenwert(einheit.besitzer, einheit.art, 'tempo') / TAKTE_PRO_SEKUNDE;
-    const naechstes = einheit.weg[0];
-    const dx = naechstes.x - einheit.x;
-    const dy = naechstes.y - einheit.y;
-    const abstand = Math.hypot(dx, dy);
-    if (abstand <= tempo) {
-      einheit.x = naechstes.x;
-      einheit.y = naechstes.y;
-      einheit.weg.shift();
-      return;
-    }
-    einheit.x += (dx / abstand) * tempo;
-    einheit.y += (dy / abstand) * tempo;
+    wegGehen(einheit, this.einheitenwert(einheit.besitzer, einheit.art, 'tempo') / TAKTE_PRO_SEKUNDE);
   }
 
   // Steht die Einheit am Vorrat, faengt sie an zu arbeiten; sonst laeuft sie

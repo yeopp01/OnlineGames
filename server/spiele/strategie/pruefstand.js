@@ -214,15 +214,20 @@ function kostenSumme(art) {
 }
 
 // Freie Felder um einen Punkt, ringweise nach aussen: begehbar, kein Gebaeude,
-// nicht schon belegt.
-function freieFelder(welt, um, anzahl, belegt) {
+// nicht schon belegt. `spiegel` -1 legt die Spirale gespiegelt aus (kampf
+// AC-26): beide Heere stehen dann Feld fuer Feld gleich zum Gegner, und der
+// Erste einer Seite steht ihm so nah wie der Erste der anderen. Bis zum
+// 2026-11-22 lagen beide Spiralen gleich herum - in jedem Ring begann
+// die Seite rechts mit dem Feld, das dem Gegner am naechsten lag, die linke
+// mit dem fernsten.
+function freieFelder(welt, um, anzahl, belegt, spiegel = 1) {
   const felder = [];
   for (let r = 0; felder.length < anzahl && r < 30; r++) {
     for (let dy = -r; dy <= r && felder.length < anzahl; dy++) {
       for (let dx = -r; dx <= r && felder.length < anzahl; dx++) {
         if (Math.max(Math.abs(dx), Math.abs(dy)) !== r) continue;
-        const x = Math.round(um.x) + dx;
-        const y = Math.round(um.y) + dy;
+        const x = Math.round(um.x) + spiegel * dx;
+        const y = Math.round(um.y) + spiegel * dy;
         if (belegt.has(`${x},${y}`) || !karten.begehbar(welt.karte, x, y) || welt.gebaeudeAn(x, y)) continue;
         belegt.add(`${x},${y}`);
         felder.push({ x, y });
@@ -360,7 +365,7 @@ function gefechtSpielen({ links, rechts, startwert, budget = 600, minuten = 5, a
       ? { x: feld.x + querWeg, y: feld.y + laengsWeg }
       : { x: feld.x + laengsWeg, y: feld.y + querWeg };
     seite.anzahl = anzahl?.[seite.id] ?? Math.floor(budget / kostenSumme(seite.art));
-    seite.felder = freieFelder(welt, seite.um, seite.anzahl, belegt);
+    seite.felder = freieFelder(welt, seite.um, seite.anzahl, belegt, seite.zeichen);
     if (seite.felder.length < seite.anzahl) throw new Error(`Startwert ${startwert}: zu wenig Platz fuer ${seite.anzahl} ${seite.art}`);
     seite.ids = seite.felder.map((f) => welt.einheitAnlegen(seite.id, f.x, f.y, seite.art).id);
   }

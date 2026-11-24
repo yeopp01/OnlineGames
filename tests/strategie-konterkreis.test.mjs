@@ -274,7 +274,9 @@ function trefferJeStein() {
     const vorher = this.schlaege.length;
     steine += this.einschlaege.filter((stein) => stein.takte === 1).length;
     urform.call(this);
-    treffer += this.schlaege.slice(vorher).filter((s) => !s.gebaeude && s.ziel.besitzer !== s.angreifer.besitzer).length;
+    // Nur Steine: seit kampf AC-27 landen hier auch die Pfeile der Bogenschuetzen.
+    treffer += this.schlaege.slice(vorher)
+      .filter((s) => EINHEITEN[s.angreifer.art]?.geschoss && !s.gebaeude && s.ziel.besitzer !== s.angreifer.besitzer).length;
   };
   try {
     const { siege } = siegeLinks('mangonel', 'bogenschuetze');

@@ -703,10 +703,10 @@ const { GEBAEUDE_NAMEN } = require('../server/spiele/strategie/welt.js');
 // Verbesserung, Einheit, Haus, Name, Zuschlaege, Zuschlag je Zielklasse, die Werte der Spec.
 const ELITE = [
   ['elitekriegswolf', 'kriegswolf', 'eschenbruch', 'Elite-Kriegswolf', { leben: 15, angriff: 2 }, {}, { leben: 70, angriff: 9 }],
-  ['elitereiterschuetze', 'reiterschuetze', 'rappenstein', 'Elite-Reiterschütze', { leben: 15, angriff: 1 }, {}, { leben: 75, angriff: 6 }],
+  ['elitereiterschuetze', 'reiterschuetze', 'rappenstein', 'Elite-Reiterschütze', { leben: 20, angriff: 1 }, {}, { leben: 80, angriff: 6 }],
   ['eliteriese', 'riese', 'wehrstein', 'Elite-Riese', { leben: 40, angriff: 2 }, { gebaeude: 10 }, { leben: 220, angriff: 12 }],
   ['elitemeuchler', 'meuchler', 'silberfurt', 'Elite-Meuchler', { leben: 10, angriff: 2 }, { dorf: 4, moench: 4 }, { leben: 45, angriff: 8 }],
-  ['elitewiedergaenger', 'wiedergaenger', 'distelhag', 'Elite-Wiedergänger', { leben: 15, angriff: 2, nahruestung: 1 }, {}, { leben: 75, angriff: 8, nahruestung: 2, fernruestung: 0 }],
+  ['elitewiedergaenger', 'wiedergaenger', 'distelhag', 'Elite-Wiedergänger', { leben: 10, angriff: 2, nahruestung: 1 }, {}, { leben: 70, angriff: 8, nahruestung: 2, fernruestung: 0 }],
 ];
 const WERTFELDER = ['leben', 'angriff', 'nahruestung', 'fernruestung', 'reichweite', 'tempo', 'sicht', 'nachladen'];
 
@@ -821,16 +821,16 @@ test('einheiten AC-69: der Elite-Meuchler bleibt getarnt, der Elite-Wiedergaenge
   sekunden(d.welt, EINHEITEN.wiedergaenger.zeit + 2);
   const neu = [...d.welt.einheiten.values()].find((e) => e.besitzer === 'a' && e.art === 'wiedergaenger');
   assert.equal(neu.leben, d.welt.einheitenwert('a', 'wiedergaenger', 'leben'));
-  assert.equal(neu.leben - EINHEITEN.wiedergaenger.leben, 15, 'das Haus gibt ihm kein Leben, die Stufe 15');
+  assert.equal(neu.leben - EINHEITEN.wiedergaenger.leben, 10, 'das Haus gibt ihm kein Leben, die Stufe 10');
 });
 
 test('einheiten AC-69: die Tafel nennt die Stufe beim neuen Namen, und der Browser erfaehrt Haus und Einheit', () => {
   const saetze = (art) => bringt(VERBESSERUNGEN[art], GEBAEUDE_NAMEN);
   assert.deepEqual(saetze('elitekriegswolf'), ['Elite-Kriegswolf: +15 Leben, +2 Angriff']);
-  assert.deepEqual(saetze('elitereiterschuetze'), ['Elite-Reiterschütze: +15 Leben, +1 Angriff']);
+  assert.deepEqual(saetze('elitereiterschuetze'), ['Elite-Reiterschütze: +20 Leben, +1 Angriff']);
   assert.deepEqual(saetze('eliteriese'), ['Elite-Riese: +40 Leben, +2 Angriff', 'Elite-Riese: +10 Angriff gegen Gebäude']);
   assert.deepEqual(saetze('elitemeuchler'), ['Elite-Meuchler: +10 Leben, +2 Angriff', 'Elite-Meuchler: +4 Angriff gegen Dorfbewohner', 'Elite-Meuchler: +4 Angriff gegen Mönche']);
-  assert.deepEqual(saetze('elitewiedergaenger'), ['Elite-Wiedergänger: +15 Leben, +2 Angriff, +1 Rüstung gegen Nahkampf']);
+  assert.deepEqual(saetze('elitewiedergaenger'), ['Elite-Wiedergänger: +10 Leben, +2 Angriff, +1 Rüstung gegen Nahkampf']);
   // Eine Verbesserung fuer eine Klasse heisst weiter nach der Klasse.
   assert.ok(saetze('hochofen').every((satz) => !/Elite/.test(satz)));
 

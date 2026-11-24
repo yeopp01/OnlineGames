@@ -313,8 +313,9 @@ const EINHEITEN = {
   },
   // Schuetzen und Belagerung der Krone (einheiten AC-67, AC-68). Der
   // Langbogenschuetze traegt die Werte des Arbalestenschuetzen der Vorlage,
-  // die schwere Armbrust hat kein Vorbild - 12 Angriff alle 3,5 s sind ein
-  // Startwert. Belagerungsramme und Onager aus den offenen Technikbaum-Daten
+  // die schwere Armbrust hat kein Vorbild - 13 Angriff alle 3,5 s sind ein
+  // Startwert (12 bis 2026-11-22: seit kampf AC-27 trifft der Bolzen erst beim
+  // Ankommen, und gegen den Zweihandkaempfer gewann sie nur noch 14 von 20). Belagerungsramme und Onager aus den offenen Technikbaum-Daten
   // zum Original. Preis, Tempo und Ausbildungszeit bleiben die der Vorstufe;
   // gesetzt ist die Sicht des Onagers (Reichweite plus zwei wie beim
   // Mangonel).
@@ -325,7 +326,7 @@ const EINHEITEN = {
   },
   schwerearmbrust: {
     leben: 40, tempo: 0.96, sicht: 7, tragkraft: 0, kosten: { holz: 35, gold: 55 }, zeit: 27, kuerzel: 'A',
-    angriff: 12, nahruestung: 0, fernruestung: 0, reichweite: 5, nachladen: 3.5,
+    angriff: 13, nahruestung: 0, fernruestung: 0, reichweite: 5, nachladen: 3.5,
     klassen: ['bogenschuetze'], zeitalter: 3, stufeVon: 'armbrustschuetze',
   },
   belagerungsramme: {
@@ -367,8 +368,13 @@ const EINHEITEN = {
   // 60 Leben statt der 55 aus der Spec: mit 55 faellt er einen Schlag frueher
   // als der Langschwertkaempfer und verliert gegen ihn 71 von 80 Gefechten;
   // mit 60 gewinnt er 44 von 80 (einheiten AC-44: keiner ueber 60 %).
+  // Tempo 0,95 statt 1,0 (2026-11-22): seit Laufregel und Pfeilflug
+  // (einheiten AC-70, kampf AC-27) erreicht er bei gleich vielen Schlaegen
+  // bis zum Fall als der Schnellere zuerst das Ziel und gewann 28 von 40;
+  // mit 0,95 gewinnt er 19 von 40. Leben hilft nicht: 57 bis 63 sind acht
+  // Schlaege des Langschwerts wie bei 60.
   soeldner: {
-    leben: 60, tempo: 1.0, sicht: 4, tragkraft: 0, kosten: { gold: 80 }, zeit: 18, kuerzel: 'q',
+    leben: 60, tempo: 0.95, sicht: 4, tragkraft: 0, kosten: { gold: 80 }, zeit: 18, kuerzel: 'q',
     angriff: 9, nahruestung: 1, fernruestung: 1, reichweite: 0, nachladen: 2,
     klassen: ['infanterie'], zeitalter: 2,
   },
@@ -1180,7 +1186,8 @@ const VERBESSERUNGEN = {
   elitereiterschuetze: {
     name: 'Elite-Reiterschütze', kosten: { nahrung: 500, gold: 400 }, zeit: 60, zeitalter: 3,
     haeuser: ['rappenstein'], hebt: 'reiterschuetze', nennt: { reiterschuetze: 'Elite-Reiterschütze' },
-    wirkung: { reiterschuetze: { leben: 15, angriff: 1 } },
+    // +20 Leben statt +15 (2026-11-22): mit der schweren Armbrust auf 13 schlug er sie mit +15 nur 7 von 40, mit +20 29.
+    wirkung: { reiterschuetze: { leben: 20, angriff: 1 } },
   },
   eliteriese: {
     name: 'Elite-Riese', kosten: { nahrung: 500, gold: 400 }, zeit: 60, zeitalter: 3,
@@ -1197,7 +1204,8 @@ const VERBESSERUNGEN = {
     haeuser: ['distelhag'], hebt: 'wiedergaenger', nennt: { wiedergaenger: 'Elite-Wiedergänger' },
     // Nahruestung statt der Fernruestung der ersten Fassung: mit +1 gegen Pfeile schlug er
     // den Langbogenschuetzen gleicher Kosten 23 von 40 statt 0 (einheiten AC-49 verlangt die Niederlage).
-    wirkung: { wiedergaenger: { leben: 15, angriff: 2, nahruestung: 1 } },
+    // +10 Leben statt +15 (2026-11-22): seit kampf AC-27 schlug er ihn mit +15 noch 3 von 40.
+    wirkung: { wiedergaenger: { leben: 10, angriff: 2, nahruestung: 1 } },
   },
 };
 
