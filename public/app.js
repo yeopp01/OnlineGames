@@ -66,6 +66,9 @@ let ohneStand = false;
 const KAMERA = 'kamera:';
 // Was der Vorraum nach dem Neuladen sagt (speichern AC-7).
 const VORRAUM_SATZ = 'vorraumSatz';
+// Wer mitgespielt hat, dem gehoert der Stand nicht (speichern AC-23): sein
+// Satz steht im Vorraum auch ohne Anmeldung, bei den Einladungen.
+const EINLADUNG_SATZ = 'einladungSatz';
 
 teile.name.value = localStorage.getItem('name') || '';
 
@@ -144,6 +147,7 @@ function empfangen(nachricht) {
       binGastgeber = nachricht.gastgeber === ich;
       spielerlisteZeichnen(nachricht);
       raumEinstellungenZeichnen(nachricht);
+      fortsetzungZeigen(nachricht);
       techbaumImWarteraum(nachricht);
       break;
 
@@ -224,7 +228,7 @@ function empfangen(nachricht) {
       // Ab jetzt laeuft eine Partie: wer das Fenster schliesst, findet sie
       // im Vorraum wieder (raeume AC-18).
       if (meinPlatz && !nachricht.ende) {
-        const wartet = aufhoerenMoeglich() ? ALLEIN_WARTET_MS : PARTIE_WARTET_MS;
+        const wartet = alleinGesichert() ? ALLEIN_WARTET_MS : PARTIE_WARTET_MS;
         try { localStorage.setItem(LETZTE_PARTIE, JSON.stringify({ ...meinPlatz, zeit: Date.now(), wartet })); } catch { /* dann ohne */ }
       }
       break;
@@ -279,15 +283,30 @@ function empfangen(nachricht) {
       aufgebenZeigen();
       break;
 
+    case 'aufhoerfrage':
+      aufhoerfrageZeigen(nachricht);
+      break;
+
     case 'aufgehoert':
       // Gesichert und geschlossen (speichern AC-7): zurueck in den Vorraum,
       // wo die Partie unter "Deine Partien" steht. Der alte Code fuehrt
-      // nirgendwohin (AC-9) - also nichts davon merken.
+      // nirgendwohin (AC-9) - also nichts davon merken. Zu mehreren liegt
+      // der Stand bei einem (AC-23): die anderen erfahren, bei wem.
       if (nachricht.stand) standId = nachricht.stand;
       kameraMerken();
       gehtWeg = true;
       platzVergessen();
-      try { sessionStorage.setItem(VORRAUM_SATZ, 'Gesichert. Weiter geht es hier, wann du willst.'); } catch { /* dann ohne Satz */ }
+      try {
+        if (nachricht.deiner === false) {
+          const bei = nachricht.bei || 'dem Gastgeber';
+          sessionStorage.setItem(EINLADUNG_SATZ, `Gesichert bei ${bei}. Setzt ${bei} die Partie fort, bekommst du einen neuen Code.`);
+        } else {
+          const allein = (letzterRaum?.spieler || []).length <= 1;
+          sessionStorage.setItem(VORRAUM_SATZ, allein
+            ? 'Gesichert. Weiter geht es hier, wann du willst.'
+            : 'Gesichert. Weiter geht es hier, wann ihr wollt – die anderen bekommen beim Fortsetzen einen neuen Code.');
+        }
+      } catch { /* dann ohne Satz */ }
       location.reload();
       break;
 
@@ -665,16 +684,23 @@ function aufgebenZeigen() {
   aufhoerenKnopf.hidden = aufgebenKnopf.hidden || !aufhoerenMoeglich();
 }
 
-// ---- Aufhoeren und spaeter weiterspielen (speichern AC-7) -------------------
+// ---- Aufhoeren und spaeter weiterspielen (speichern AC-7, AC-22) ------------
 // Neben Pause und Aufgeben. Ohne Rueckfrage: es geht nichts verloren, die
 // Partie steht danach unter "Deine Partien". Angeboten nur, wo der Server
-// sichern kann (`sichert`), allein am Tisch und dem Gastgeber - zu mehreren
-// verlangt Sichern Einigkeit (AC-22, S4).
+// sichern kann (`sichert`). Allein geht es sofort (AC-7); zu mehreren ist der
+// Klick ein Vorschlag, und gesichert wird erst, wenn alle Verbundenen
+// zugestimmt haben (AC-22) - das Feld in der Mitte fragt sie.
 const aufhoerenKnopf = document.getElementById('aufhoeren');
+const aufhoerfeld = document.getElementById('aufhoerfeld');
 
 function aufhoerenMoeglich() {
-  return Boolean(letzterRaum && letzterRaum.sichert) && binGastgeber
-    && (letzterRaum.spieler || []).length === 1 && !ohneStand;
+  return Boolean(letzterRaum && letzterRaum.sichert) && !ohneStand;
+}
+
+// Allein am Tisch und gesichert: dann schliesst der Server die Partie zwei
+// Minuten nach dem letzten Abschied (speichern AC-8).
+function alleinGesichert() {
+  return aufhoerenMoeglich() && binGastgeber && (letzterRaum.spieler || []).length === 1;
 }
 
 aufhoerenKnopf.addEventListener('click', () => {
@@ -683,6 +709,35 @@ aufhoerenKnopf.addEventListener('click', () => {
   kameraMerken();
   senden({ typ: 'aufhoeren' });
 });
+
+function aufhoerfrageZeigen(nachricht) {
+  if (!nachricht.von) {
+    aufhoerfeld.hidden = true;
+    aufhoerenKnopf.disabled = false;
+    // Wer nein sagte, steht fuer alle im Bild - der Vorschlag ist weg.
+    if (nachricht.abgelehnt) spielMelden(`${nachricht.abgelehnt} will weiterspielen – es wird nicht aufgehört.`);
+    else if (nachricht.fehler) spielMelden(nachricht.fehler);
+    return;
+  }
+  const ja = (nachricht.ja || []).includes(ich);
+  document.getElementById('aufhoerWer').textContent = nachricht.von === ich
+    ? 'Du möchtest aufhören und später weiterspielen.'
+    : `${nachricht.name} möchte aufhören und später weiterspielen.`;
+  const fehlen = nachricht.fehlen || [];
+  document.getElementById('aufhoerFehlen').textContent = fehlen.length
+    ? `Gesichert wird, wenn alle einverstanden sind. Warten auf: ${fehlen.join(', ')}.`
+    : 'Alle sind einverstanden – es wird gesichert.';
+  document.getElementById('aufhoerenJa').hidden = ja;
+  document.getElementById('aufhoerenNein').textContent = ja ? 'Doch weiterspielen' : 'Weiterspielen';
+  aufhoerenKnopf.disabled = true;
+  aufhoerfeld.hidden = false;
+}
+
+document.getElementById('aufhoerenJa').addEventListener('click', () => {
+  kameraMerken();
+  senden({ typ: 'aufhoeren' });
+});
+document.getElementById('aufhoerenNein').addEventListener('click', () => senden({ typ: 'aufhoerenNein' }));
 
 // ---- Die Kamera je Stand (speichern AC-10) --------------------------------
 // Im Browser, nicht im Stand: wohin jemand sieht, gehoert nicht zur Welt.
@@ -805,7 +860,7 @@ function menueOeffnen() {
   // Verbindung wird sie gesichert und geschlossen.
   document.getElementById('menueVorraumHinweis').textContent = !laeuft
     ? 'Die Partie ist für dich vorbei.'
-    : aufhoerenMoeglich()
+    : alleinGesichert()
       ? 'Die Partie läuft ohne dich weiter. Nach zwei Minuten wird sie gesichert und geschlossen — fortsetzen kannst du sie im Vorraum unter „Deine Partien“.'
       : 'Die Partie läuft ohne dich weiter. Ist niemand mehr da, wartet sie 30 Minuten — der Vorraum bietet dir die Rückkehr an.';
   for (const [was, schieber] of lautSchieber) lautZeigen(was, schieber, was === 'musik' ? ton.musikStaerke : ton.geraeuschStaerke);
@@ -1199,9 +1254,11 @@ function raumEinstellungenZeichnen(nachricht) {
   teile.raumEinstellungen.hidden = liste.length === 0 || nachricht.gestartet;
   if (liste.length === 0) return;
 
-  if (nachricht.gastgeber !== ich) {
+  if (nachricht.gastgeber !== ich || nachricht.fortsetzung) {
     gastgeberFelder = null;
-    teile.einstellungsHinweis.textContent = 'Der Gastgeber kann sie bis zum Start ändern.';
+    teile.einstellungsHinweis.textContent = nachricht.fortsetzung
+      ? 'Sie stehen fest – die Partie wird fortgesetzt.'
+      : 'Der Gastgeber kann sie bis zum Start ändern.';
     const tafel = document.createElement('dl');
     tafel.className = 'werte';
     for (const e of liste) {
@@ -1256,22 +1313,60 @@ function spielerlisteZeichnen(nachricht) {
   const plaetze = nachricht.plaetze
     || (nachricht.spieler || []).map((s) => ({ platz: s.id, name: s.name, mensch: true, wahl: {} }));
   const jePlatz = nachricht.gestartet ? [] : nachricht.jePlatz || [];
+  // Eine fortgesetzte Partie (speichern AC-24): die Plaetze von damals, die
+  // Wahl steht fest. Fehlt nur noch einer, legt der Gastgeber ihn still (AC-25).
+  const fortsetzung = Boolean(nachricht.fortsetzung) && !nachricht.gestartet;
+  const fehlend = plaetze.filter((p) => p.fehlt);
   teile.spielerliste.innerHTML = '';
   for (const eintrag of plaetze) {
     const zeile = document.createElement('li');
     zeile.dataset.platz = eintrag.platz;
     if (!eintrag.mensch) zeile.classList.add('vom-spiel');
-    else if (verbunden.get(eintrag.platz) === false) zeile.classList.add('weg');
+    else if (eintrag.fehlt || verbunden.get(eintrag.platz) === false) zeile.classList.add('weg');
+    if (eintrag.stillgelegt) zeile.classList.add('stillgelegt');
     const punkt = document.createElement('span');
     punkt.className = 'punkt';
     const name = document.createElement('span');
     name.className = 'name';
     name.textContent = `${eintrag.name}${eintrag.platz === ich ? ' (du)' : ''}`;
     zeile.append(punkt, name);
-    const darf = eintrag.platz === ich || nachricht.gastgeber === ich;
+    if (fortsetzung && eintrag.fehlt) {
+      const marke = document.createElement('span');
+      marke.className = 'platzlage';
+      marke.textContent = eintrag.stillgelegt ? 'stillgelegt – seine Einheiten bleiben stehen' : 'fehlt noch';
+      zeile.append(marke);
+      if (binGastgeber && fehlend.length === 1) {
+        const knopf = document.createElement('button');
+        knopf.type = 'button';
+        knopf.className = 'leise-knopf';
+        knopf.dataset.stilllegen = eintrag.platz;
+        knopf.textContent = eintrag.stillgelegt ? 'Doch warten' : 'Stilllegen';
+        knopf.addEventListener('click', () => {
+          melden('', teile.wartemeldung);
+          senden({ typ: 'stilllegen', platz: eintrag.stillgelegt ? null : eintrag.platz });
+        });
+        zeile.append(knopf);
+      }
+    }
+    const darf = !fortsetzung && (eintrag.platz === ich || nachricht.gastgeber === ich);
     for (const e of jePlatz) zeile.append(platzwahlFeld(e, eintrag, darf));
     teile.spielerliste.append(zeile);
   }
+}
+
+// Was der Warteraum einer fortgesetzten Partie dazu sagt (speichern AC-24,
+// AC-25): wer fehlt, und was der Knopf jetzt tut.
+function fortsetzungZeigen(nachricht) {
+  const hinweis = document.getElementById('fortsetzungHinweis');
+  const fortsetzung = Boolean(nachricht.fortsetzung) && !nachricht.gestartet;
+  document.getElementById('starten').textContent = fortsetzung ? 'Partie fortsetzen' : 'Partie starten';
+  hinweis.hidden = !fortsetzung;
+  if (!fortsetzung) return;
+  const fehlend = (nachricht.plaetze || []).filter((p) => p.fehlt && !p.stillgelegt);
+  const wer = fehlend.map((p) => p.name).join(', ');
+  hinweis.textContent = fehlend.length === 0
+    ? 'Eine gesicherte Partie: alle Plätze sind besetzt oder stillgelegt.'
+    : `Eine gesicherte Partie: wer damals mitspielte, kommt mit seinem Konto oder seinem Namen an seinen Platz zurück. Es fehlen noch: ${wer}.${fehlend.length === 1 && binGastgeber ? ' Kommt niemand mehr, kannst du den Platz stilllegen.' : ''}`;
 }
 
 function platzwahlFeld(e, eintrag, darf) {
@@ -1513,8 +1608,55 @@ async function sitzungPruefen() {
     await spieleLaden();
     await partienLaden();
   }
+  einladungenLaden();
   return wer;
 }
+
+// ---- Einladungen (speichern AC-23) -------------------------------------------
+// Setzt jemand eine Partie fort, in der man mit Konto sass, steht sie hier mit
+// ihrem neuen Code - wer ohne Konto spielte, bekommt den Code vom Gastgeber.
+// Gefragt wird alle zehn Sekunden, solange der Vorraum offen ist.
+const einladungenTeil = document.getElementById('einladungen');
+const einladungsliste = document.getElementById('einladungsliste');
+const EINLADUNGEN_MS = 10 * 1000;
+let einladungsSatz = null;
+try {
+  einladungsSatz = sessionStorage.getItem(EINLADUNG_SATZ);
+  sessionStorage.removeItem(EINLADUNG_SATZ);
+} catch { /* dann ohne Satz */ }
+
+async function einladungenLaden() {
+  /** @type {Array<{ code: string, anzeige: string, von: string | null }>} */
+  let einladungen = [];
+  if (!teile.angemeldet.hidden) {
+    try {
+      const antwort = await fetch('/api/einladungen');
+      if (antwort.ok) einladungen = (await antwort.json()).einladungen || [];
+    } catch { /* dann keine */ }
+  }
+  const satz = document.getElementById('einladungSatz');
+  satz.textContent = einladungsSatz || '';
+  satz.hidden = !einladungsSatz;
+  einladungsliste.replaceChildren(...einladungen.map((e) => {
+    const zeile = document.createElement('li');
+    const text = document.createElement('span');
+    text.textContent = `${e.von || 'Jemand'} setzt eure Partie fort – Raum ${e.anzeige}.`;
+    const knopf = document.createElement('button');
+    knopf.type = 'button';
+    knopf.dataset.einladung = e.code;
+    knopf.textContent = 'Beitreten';
+    knopf.addEventListener('click', () => {
+      teile.code.value = e.anzeige;
+      einladungsSatz = null;
+      document.getElementById('beitreten').click();
+    });
+    zeile.append(text, knopf);
+    return zeile;
+  }));
+  einladungenTeil.hidden = !einladungsSatz && einladungen.length === 0;
+}
+
+setInterval(() => { if (!teile.vorraum.hidden) einladungenLaden(); }, EINLADUNGEN_MS);
 
 // ---- Deine Partien (speichern AC-7, AC-9) ---------------------------------
 // Was am Konto gesichert liegt, das Neueste zuerst: was das Spiel dazu sagt

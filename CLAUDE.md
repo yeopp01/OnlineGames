@@ -181,7 +181,7 @@ Umfang hinzufügt, dort nachsehen.
 
 ## Stand
 
-**631 von 718 Kriterien fertig.** 1148 Tests ohne Browser und 37 ganze Partien, 358 im Browser. Die
+**637 von 718 Kriterien fertig.** 1154 Tests ohne Browser und 37 ganze Partien, 363 im Browser. Die
 Übersicht ist der Bericht: `npm run qa:report`.
 
 Gebaut ist der Unterbau: Räume, Übertragung, Karte, Wegfindung, Sammeln,
@@ -1054,10 +1054,25 @@ AC-26, `reihenZufall`), **ein Pfeil trifft beim Ankommen** (kampf AC-27,
 `welt.pfeileImFlug`, `PFEIL_TEMPO`), und **der Reiterschütze rüstet als
 Schütze** (einheiten AC-71, `schmiedelinie` in den Daten). Der Stand hat
 dafür Fassung 2. Gemessen links zu rechts über 200 Startwerte: Bogen
-vorher 21:179, danach 43:42 — 115 ohne Sieger, weil beide leer laufen.
+vorher 21:179, danach 43:42 — 115 ohne Sieger, weil beide zugleich fallen (ein Pfeil im Flug trifft auch nach dem Fall seines Schützen).
 Angepasst mit Freigabe nur fahrplan AC-15 (50 statt 60 Sekunden) und
 Hellebardier gegen Langbogen (höchstens 1 von 20); der Nebel steht bei 107
 von 120 vor Minute 60, Median 38,5, alle mit Sieger.
+
+**Speichern S4 steht: zu mehreren** (speichern AC-14, AC-22 bis AC-26).
+Zu mehreren ist „Später weiterspielen“ ein Vorschlag an alle (Nachrichten
+`aufhoeren`, `aufhoerenNein`; an alle `aufhoerfrage` mit Name und wer
+fehlt): gesichert wird erst, wenn jeder Verbundene zugestimmt hat, ein Nein
+verwirft ihn, die Partie läuft dabei weiter. Die Plätze der Menschen mit
+Konto stehen in der Zeile der Ablage (Spalte `plaetze`, nie im Browser),
+nicht in der Welt. Fortsetzen kann nur der Eigentümer; der Warteraum zeigt
+die Plätze von damals („fehlt noch“), Konto oder Name holt den eigenen
+zurück, Einstellungen und Wahl je Platz stehen fest. Wer mit Konto
+mitspielte, sieht im Vorraum die Einladung mit dem neuen Code
+(`GET /api/einladungen`, alle zehn Sekunden) — keine Mail. Fehlt nur noch
+einer, legt der Gastgeber ihn still (`stilllegen`): seine Einheiten bleiben
+ohne Herrn stehen. Fortgesetzt zu mehreren beginnt die Partie angehalten.
+Der Browserlauf meldet dafür ein zweites Konto an (`ZWEITES_KONTO`, Dora).
 
 1. **Stufe A** Dunkle Zeit mit Wirtschafts-KI und Prüfstand · **B** Feudalzeit
    · **C** Partieende und KI-Gegner · **D** Ritterzeit · **E** fünf Häuser ·

@@ -31,6 +31,17 @@ const kennung = () => randomBytes(12).toString('base64url');
  * @property {unknown} [beteiligte]  wer mitspielt - Namen und ob Mensch (AC-26)
  * @property {unknown} [einstellungen] womit die Partie eroeffnet wurde
  * @property {unknown} [angaben]     was die Liste zeigt, vom Spiel gesagt (Spielzeit, Karte)
+ * @property {Platz[]} [plaetze]     wer an welchem Platz sitzt, mit Konto (AC-24, AC-26)
+ */
+
+/**
+ * Ein Platz eines Menschen in der Partie. Das Konto steht nur hier, nie in
+ * der Liste fuer den Browser - es ist der Schluessel, mit dem einer seinen
+ * Platz zurueckbekommt (AC-24) und eingeladen wird (AC-23).
+ * @typedef {object} Platz
+ * @property {string} platz          die Kennung des Platzes in der Partie
+ * @property {string} name           der Name, mit dem er dort sass
+ * @property {string|null} konto     sein Konto, wenn er angemeldet war
  */
 
 /**
@@ -44,6 +55,7 @@ const kennung = () => randomBytes(12).toString('base64url');
  * @property {unknown} angaben
  * @property {number} angelegt
  * @property {number} geaendert
+ * @property {Platz[]} [plaetze]     nur beim Oeffnen, nie in der Liste
  */
 
 /** @param {Record<string, any>} z @returns {Zeile} */
@@ -92,6 +104,9 @@ class Partiestaende {
     // bekommt die Spalte nachgetragen; ihre Staende stehen dann ohne Angaben.
     const spalten = /** @type {Array<{ name: string }>} */ (db.prepare('PRAGMA table_info(partiestand)').all());
     if (!spalten.some((sp) => sp.name === 'angaben')) db.exec('ALTER TABLE partiestand ADD COLUMN angaben TEXT');
+    // Seit S4 stehen die Plaetze der Menschen mit Konto in der Zeile (AC-26).
+    // Ein Stand von vorher hat sie nicht; er setzt sich nur allein fort.
+    if (!spalten.some((sp) => sp.name === 'plaetze')) db.exec('ALTER TABLE partiestand ADD COLUMN plaetze TEXT');
   }
 
   /** @param {string} konto */
@@ -115,11 +130,11 @@ class Partiestaende {
     const id = kennung();
     const jetzt = this.uhr();
     this.db.prepare(`
-      INSERT INTO partiestand (id, konto, art, fassung, name, beteiligte, einstellungen, angaben, angelegt, geaendert, wert, vorher)
-      VALUES (?, ?, ?, ?, NULL, ?, ?, ?, ?, ?, ?, NULL)`)
+      INSERT INTO partiestand (id, konto, art, fassung, name, beteiligte, einstellungen, angaben, plaetze, angelegt, geaendert, wert, vorher)
+      VALUES (?, ?, ?, ?, NULL, ?, ?, ?, ?, ?, ?, ?, NULL)`)
       .run(id, konto, beschreibung.art, beschreibung.fassung ?? null,
         JSON.stringify(beschreibung.beteiligte ?? null), JSON.stringify(beschreibung.einstellungen ?? null),
-        JSON.stringify(beschreibung.angaben ?? null), jetzt, jetzt, wert);
+        JSON.stringify(beschreibung.angaben ?? null), JSON.stringify(beschreibung.plaetze ?? null), jetzt, jetzt, wert);
     return { id };
   }
 
@@ -134,10 +149,11 @@ class Partiestaende {
    */
   schreiben(konto, id, wert, beschreibung) {
     const { changes } = this.db.prepare(`
-      UPDATE partiestand SET vorher = wert, wert = ?, fassung = ?, beteiligte = ?, einstellungen = ?, angaben = ?, geaendert = ?
+      UPDATE partiestand SET vorher = wert, wert = ?, fassung = ?, beteiligte = ?, einstellungen = ?, angaben = ?, plaetze = ?, geaendert = ?
       WHERE id = ? AND konto = ?`)
       .run(wert, beschreibung.fassung ?? null, JSON.stringify(beschreibung.beteiligte ?? null),
-        JSON.stringify(beschreibung.einstellungen ?? null), JSON.stringify(beschreibung.angaben ?? null), this.uhr(), id, konto);
+        JSON.stringify(beschreibung.einstellungen ?? null), JSON.stringify(beschreibung.angaben ?? null),
+        JSON.stringify(beschreibung.plaetze ?? null), this.uhr(), id, konto);
     return changes === 1;
   }
 
@@ -167,7 +183,7 @@ class Partiestaende {
   oeffnen(konto, id, laden) {
     const roh = /** @type {Record<string, any> | undefined} */ (this.db.prepare('SELECT * FROM partiestand WHERE id = ? AND konto = ?').get(id, konto));
     if (!roh) return null;
-    const zeile = zeileLesen(roh);
+    const zeile = { ...zeileLesen(roh), plaetze: JSON.parse(roh.plaetze || 'null') ?? [] };
     let fehlerNeu;
     try {
       return { zeile, geladen: laden(roh.wert, zeile), vorher: false };

@@ -15,6 +15,9 @@
 // halten darf - der Vorraum meldet, wenn es voll ist (AC-27).
 
 const PFAD = '/api/partien';
+// Wohin man eingeladen ist (speichern AC-23): fortgesetzte Partien, die auf
+// einen Platz mit dem eigenen Konto warten - nur mit Anmeldung, nur die eigenen.
+const EINLADUNGEN = '/api/einladungen';
 
 function antworten(antwort, code, wert) {
   antwort.writeHead(code, { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'no-store' });
@@ -53,8 +56,9 @@ function koerperLesen(anfrage) {
  * @param {(anfrage: import('node:http').IncomingMessage) => string} teile.adresseVon
  * @param {(kopfzeilen: import('node:http').IncomingHttpHeaders) => Promise<{ user: { id: string } } | null>} teile.sitzung
  * @param {Array<{ art: string, laden?: (bytes: Uint8Array) => unknown }>} teile.spiele  die Steckbriefe
+ * @param {{ einladungenFuer(konto: string): unknown[] }} [teile.raeume]  wer auf wen wartet (AC-23)
  */
-function partienWeg({ ablage, schutz, adresseVon, sitzung, spiele }) {
+function partienWeg({ ablage, schutz, adresseVon, sitzung, spiele, raeume }) {
   /**
    * @param {import('node:http').IncomingMessage} anfrage
    * @param {import('node:http').ServerResponse} antwort
@@ -70,6 +74,11 @@ function partienWeg({ ablage, schutz, adresseVon, sitzung, spiele }) {
     const angemeldet = await sitzung(anfrage.headers);
     if (!angemeldet) return fehlerhaft(antwort, 'Gespeicherte Partien gibt es nur mit Anmeldung.', 401);
     const konto = angemeldet.user.id;
+
+    if (url.pathname === EINLADUNGEN) {
+      if (methode !== 'GET') return fehlerhaft(antwort, 'Falsche Methode.', 405);
+      return antworten(antwort, 200, { einladungen: raeume ? raeume.einladungenFuer(konto) : [] });
+    }
 
     if (teile.length === 0) {
       if (methode !== 'GET') return fehlerhaft(antwort, 'Falsche Methode.', 405);
@@ -90,7 +99,8 @@ function partienWeg({ ablage, schutz, adresseVon, sitzung, spiele }) {
       if (!offen) return fehlerhaft(antwort, GIBT_ES_NICHT, 404);
       const geladen = 'geladen' in offen;
       return antworten(antwort, 200, {
-        partie: offen.zeile,
+        // Die Konten der Plaetze gehen nicht in den Browser (AC-26).
+        partie: { ...offen.zeile, plaetze: undefined },
         ladbar: geladen,
         vorher: geladen ? offen.vorher : false,
         ...(offen.fehler ? { fehler: offen.fehler } : {}),
@@ -110,7 +120,7 @@ function partienWeg({ ablage, schutz, adresseVon, sitzung, spiele }) {
     /** Gibt true zurueck, wenn die Anfrage hier hingehoert. */
     behandeln(anfrage, antwort) {
       const pfad = (anfrage.url || '').split('?')[0];
-      if (pfad !== PFAD && !pfad.startsWith(`${PFAD}/`)) return false;
+      if (pfad !== PFAD && pfad !== EINLADUNGEN && !pfad.startsWith(`${PFAD}/`)) return false;
       behandeln(anfrage, antwort).catch((fehler) => {
         if (!antwort.headersSent) fehlerhaft(antwort, fehler.message || 'Fehler', 400);
       });

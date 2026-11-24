@@ -28,6 +28,7 @@ const UEBER_ALLEM = {
   aufgebenfrage: 'Rueckfrage, die eine Antwort verlangt (spielziel AC-6)',
   pausefeld: 'solange die Partie angehalten ist, nimmt der Server keinen Befehl an - das Feld sagt, wer angehalten hat, und traegt den einen Knopf, der dann zaehlt (speichern AC-19)',
   buendnisfrage: 'Rueckfrage, die eine Antwort verlangt (spielziel AC-24)',
+  aufhoerfeld: 'Rueckfrage, die eine Antwort verlangt - zu mehreren wird erst gesichert, wenn alle zugestimmt haben (speichern AC-22)',
   spielmenue: 'Fenster auf den Knopf Menue oder F10, mittig ueber allem, Esc und Weiterspielen schliessen (bedienung AC-65)',
 };
 

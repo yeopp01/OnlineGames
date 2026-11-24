@@ -194,6 +194,23 @@ button.haupt:hover {
   margin: 0;
 }
 
+/* Eine fortgesetzte Partie (speichern AC-24, AC-25): wer fehlt, steht grau
+   mit seiner Lage daneben; ein stillgelegter Platz ist durchgestrichen. */
+.spieler .platzlage {
+  color: var(--leise);
+  font-size: 0.88rem;
+  font-style: italic;
+}
+
+.spieler li.stillgelegt .name {
+  text-decoration: line-through;
+}
+
+.fortsetzunghinweis {
+  margin: 0.4rem 0 1rem;
+  color: var(--leise);
+}
+
 .spieler .platzwahl-feld select {
   width: auto;
   padding: 0.25rem 0.5rem;
@@ -436,6 +453,33 @@ canvas.angriffslauf {
 
 .rueckkehr p {
   margin: 0;
+}
+
+/* Einladungen in fortgesetzte Partien (speichern AC-23): wie die Rueckkehr. */
+.einladungen {
+  border-color: var(--betont);
+}
+
+.einladungen[hidden] {
+  display: none;
+}
+
+.einladungen p {
+  margin: 0 0 0.6rem;
+}
+
+.einladungen ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.einladungen li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.3rem 0;
 }
 
 /* Untaetige Dorfbewohner (bedienung AC-28): unten links, ueber dem Spielfeld. */
@@ -1646,6 +1690,13 @@ canvas.angriffslauf {
   background: #c8a24a;
   border-color: #c8a24a;
   color: #1a1408;
+}
+
+/* Aufhoeren zu mehreren (speichern AC-22): unter dem Pausenfeld, damit beide
+   lesbar bleiben, wenn eine angehaltene Partie gefragt wird. */
+.aufhoerfeld {
+  top: 46%;
+  max-width: min(30rem, calc(100vw - 2rem));
 }
 
 .bauname {

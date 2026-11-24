@@ -115,7 +115,7 @@ test('speichern AC-7: "Aufhören und später weiterspielen" sichert, schließt d
   await alleLoeschen();
 });
 
-test('speichern AC-7: zu mehreren lässt sich noch nicht gemeinsam aufhören - die Partie läuft weiter', async () => {
+test('speichern AC-22: zu mehreren ist Aufhören erst ein Vorschlag - die Partie läuft weiter, bis alle zustimmen', async () => {
   const wer = await verbunden();
   wer.senden({ typ: 'erstellen', name: 'Anna', einstellungen: { ki: 1, sicht: 'aufgedeckt' } });
   const du = await wer.warteAuf(istTyp('du'));
@@ -128,8 +128,10 @@ test('speichern AC-7: zu mehreren lässt sich noch nicht gemeinsam aufhören - d
   const raum = laufend.raeume.finden(du.code);
   assert.equal(raum.vorraum().sichert, true, 'gesichert wird sie - nur Aufhoeren verlangt Einigkeit (AC-22)');
   wer.senden({ typ: 'aufhoeren' });
-  const fehler = await wer.warteAuf(istTyp('fehler'));
-  assert.match(fehler.text, /mehreren/);
+  const frage = await bert.warteAuf(istTyp('aufhoerfrage'));
+  assert.equal(frage.name, 'Anna');
+  assert.deepEqual(frage.fehlen, ['Bert']);
+  await warte(200);
   assert.equal(laufend.raeume.finden(du.code), raum, 'der Raum bleibt offen');
   assert.ok(raum.laeuft);
   wer.zu();

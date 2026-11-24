@@ -1,0 +1,10 @@
+{
+  "spec": "00-plattform/speichern.md",
+  "ac": "AC-24",
+  "titel": "Anna setzt fort: der Warteraum zeigt Anna, Dora und Bert von damals, Dora und Bert fehlen noch, darunter wer zurueckkommt, der Knopf heisst Partie fortsetzen",
+  "datei": "e2e/tests/strategie-fortsetzen-mehrere.spec.mjs",
+  "pfad": [
+    "Zu mehreren aufhoeren und spaeter weiterspielen",
+    "speichern AC-24: der Warteraum der fortgesetzten Partie zeigt die Plaetze von damals und wer noch fehlt"
+  ]
+}
