@@ -15,7 +15,12 @@ import { ablaeufeLaden, bilderWarten, gerendert } from './bilder.js';
 import { FIGUREN, figurBildZeichnen } from './figuren.js';
 import { GEBAEUDE, gebaeudeBildZeichnen, gebaeudeSchattenZeichnen } from './gebaeude.js';
 import { KACHEL, kachelZeichnen } from './boden.js';
-import { ZOOM_NAH, figurHoeheBei, tierHoeheBei } from './ansicht.js';
+import { figurHoeheBei, tierHoeheBei } from './ansicht.js';
+
+// So gross zeigt und misst die Schautafel jedes Stueck: die Naehe, in der
+// das Spiel bis zum 2026-11-24 endete. Das Rad geht seitdem bis 3,6
+// (ZOOM_NAH in ansicht.js); die Messungen der Tafel bleiben bei diesem Mass.
+const TAFEL_NAH = 2.5;
 import {
   BEERE, GOLD, GRAS as BODEN_GRAS, STEIN, WALD, WASSER, dingBildZeichnen, raute,
 } from './gelaende.js';
@@ -224,7 +229,7 @@ function anordnen(breiten) {
 // Einheiten: gross wie beim naechsten Zoom, daneben in Spielgroesse (Zoom 1).
 const ABSTAND = 10;
 const figurMasse = EINTRAEGE.map((eintrag) => ({
-  gross: rahmen((s, x, y) => figurMalen(s, eintrag, x, y, ZOOM_NAH, FARBEN[0])),
+  gross: rahmen((s, x, y) => figurMalen(s, eintrag, x, y, TAFEL_NAH, FARBEN[0])),
   klein: rahmen((s, x, y) => figurMalen(s, eintrag, x, y, 1, FARBEN[0])),
 }));
 const figurBreite = (m) => m.gross.links + m.gross.rechts + ABSTAND + m.klein.links + m.klein.rechts;
@@ -321,7 +326,7 @@ for (const z of zellen) {
   stift.fillRect(z.x, z.y, z.breite, z.hoehe);
 }
 for (const z of zellen) {
-  figurMalen(stift, z.eintrag, z.gross.x, z.gross.y, ZOOM_NAH, z.farbe);
+  figurMalen(stift, z.eintrag, z.gross.x, z.gross.y, TAFEL_NAH, z.farbe);
   figurMalen(stift, z.eintrag, z.klein.x, z.klein.y, 1, z.farbe);
   name(z.titel, z.x + z.breite / 2, z.y + z.hoehe + 20);
 }
@@ -804,7 +809,7 @@ function ueberstand() {
   return zellen.filter((z) => z.farbe === FARBEN[0]).map((z) => {
     const [, s] = blattMit(BREITE, h);
     const dy = rand - z.y;
-    figurMalen(s, z.eintrag, z.gross.x, z.gross.y + dy, ZOOM_NAH, z.farbe);
+    figurMalen(s, z.eintrag, z.gross.x, z.gross.y + dy, TAFEL_NAH, z.farbe);
     figurMalen(s, z.eintrag, z.klein.x, z.klein.y + dy, 1, z.farbe);
     const { data } = s.getImageData(0, 0, BREITE, h);
     let links = BREITE;

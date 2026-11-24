@@ -8,7 +8,8 @@
 //
 // Drei Ursachen, drei Pruefungen:
 // 1. Der Zoom lief nach einem Anschlag auf einem anderen Raster, und jedes
-//    Bild im Speicher war das falsche → das Rad geht in elf festen Stufen.
+//    Bild im Speicher war das falsche → das Rad geht in festen Stufen
+//    (elf bis 2,5, seit dem 2026-11-24 dreizehn bis 3,6).
 // 2. Die Speicher zaehlten Stuecke und warfen das zuerst Gezeichnete hinaus
 //    → auf dem Rueckweg durch alle Stufen wird kein Stueck neu gezeichnet.
 // 3. Alle Bodenkacheln einer neuen Aufloesung entstanden in einem Bild →
@@ -18,7 +19,7 @@ import { einheitenAufstellen, expect, gebaeudeAufstellen, test, vorratLeeren, ze
 import { partieBeenden, partieZuZweit, WALDFELD } from '../helpers/strategie.mjs';
 
 const DARSTELLUNG = '10-strategie/darstellung.md';
-const STUFEN = [0.4, 0.5, 0.6, 0.7, 0.85, 1, 1.2, 1.5, 1.8, 2.1, 2.5];
+const STUFEN = [0.4, 0.5, 0.6, 0.7, 0.85, 1, 1.2, 1.5, 1.8, 2.1, 2.5, 3, 3.6];
 
 test.describe('Zoomen ohne Stocken', () => {
   test.describe.configure({ mode: 'serial' });
@@ -30,7 +31,7 @@ test.describe('Zoomen ohne Stocken', () => {
   });
   test.afterAll(() => partieBeenden(partie));
 
-  test('darstellung AC-27: das Rad geht in elf festen Stufen, auf dem Rueckweg wird kein Stueck neu gezeichnet, und der Boden schaerft nach, statt das Bild anzuhalten', async ({}, info) => {
+  test('darstellung AC-27: das Rad geht in dreizehn festen Stufen bis 3,6, auf dem Rueckweg wird kein Stueck neu gezeichnet, und der Boden schaerft nach, statt das Bild anzuhalten', async ({}, info) => {
     test.setTimeout(240_000);
     const { anna, code } = partie;
     await anna.waitForFunction(() => window.ansicht && window.ansicht.nachher.size > 0);
@@ -169,21 +170,21 @@ test.describe('Zoomen ohne Stocken', () => {
         await scharfWarten();
       }
     };
-    await fahrt(1, 4);
-    await fahrt(-1, 11);
+    await fahrt(1, 6);
+    await fahrt(-1, 13);
     await fahrt(1, 5);
     expect(gesehen).toEqual([
-      1.8, 2.1, 2.5, 2.5,
-      2.1, 1.8, 1.5, 1.2, 1, 0.85, 0.7, 0.6, 0.5, 0.4, 0.4,
+      1.8, 2.1, 2.5, 3, 3.6, 3.6,
+      3, 2.5, 2.1, 1.8, 1.5, 1.2, 1, 0.85, 0.7, 0.6, 0.5, 0.4, 0.4,
       0.5, 0.6, 0.7, 0.85, 1,
     ]);
-    expect([...new Set(gesehen)].sort((x, y) => x - y), 'nur die elf Stufen').toEqual(STUFEN);
+    expect([...new Set(gesehen)].sort((x, y) => x - y), 'nur die dreizehn Stufen').toEqual(STUFEN);
     const kalt = await stand();
 
     // ---- 2. Der Rueckweg: nichts wird neu gezeichnet -----------------------
     // Dieselbe Fahrt noch einmal, zuegig: ein Dreh alle hundert Millisekunden.
     await anna.evaluate(() => { window.mitschrift.length = 0; });
-    for (const [richtung, drehs] of [[-1, 5], [1, 10], [-1, 5]]) {
+    for (const [richtung, drehs] of [[-1, 5], [1, 12], [-1, 7]]) {
       for (let i = 0; i < drehs; i++) {
         await drehen(richtung);
         await anna.waitForTimeout(100);
@@ -208,14 +209,14 @@ test.describe('Zoomen ohne Stocken', () => {
     expect(mittel, 'mittlere Zeichenzeit je Bild in Millisekunden').toBeLessThan(25);
 
     // Ganz nah: alles steht scharf da.
-    for (let i = 0; i < 5; i++) await drehen(1);
-    expect(await zoom()).toBe(2.5);
+    for (let i = 0; i < 7; i++) await drehen(1);
+    expect(await zoom()).toBe(3.6);
     await scharfWarten();
     await anna.mouse.move(700, 900);
     await nachweis(anna, {
       spec: DARSTELLUNG,
       ac: 'AC-27',
-      titel: 'Nach zwei Fahrten durch alle elf Zoomstufen ganz nah: Boden, Häuser und Dorfbewohner stehen scharf im Bild',
+      titel: 'Nach zwei Fahrten durch alle dreizehn Zoomstufen ganz nah bei 3,6: Boden, Häuser und Dorfbewohner stehen scharf im Bild',
       test: info,
     });
 

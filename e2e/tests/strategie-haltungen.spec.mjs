@@ -9,6 +9,21 @@ import { einheitenAufstellen, expect, test } from '../helpers/seite.mjs';
 import { partieBeenden, partieZuZweit, waehlen } from '../helpers/strategie.mjs';
 
 const KAMPF = '10-strategie/kampf.md';
+const BEDIENUNG = '10-strategie/bedienung.md';
+
+/** Was ein Knopf ohne Wort ist (bedienung AC-87): Name, Text, Bild und Mass. */
+function knopfArt(page, wahl) {
+  return page.locator(wahl).evaluateAll((knoepfe) => knoepfe.map((k) => {
+    const r = k.getBoundingClientRect();
+    return {
+      name: k.getAttribute('aria-label'),
+      text: [...k.childNodes].filter((n) => n.nodeType === Node.TEXT_NODE).map((n) => n.textContent.trim()).join(''),
+      bild: k.querySelector('canvas') !== null,
+      breite: Math.round(r.width),
+      hoehe: Math.round(r.height),
+    };
+  }));
+}
 
 /** Die Haltung je Einheit, wie sie beim Browser ankommt (ohne `ht`: Verteidigung). */
 function haltungen(page, ids) {
@@ -38,7 +53,8 @@ test.describe('Haltungen', () => {
 
     // Vier Knoepfe in einer Gruppe, die Vorgabe gedrueckt.
     const knoepfe = anna.locator('#haltungen [data-befehl^="haltung-"]');
-    await expect(knoepfe).toHaveText(['Angreifen', 'Verteidigen', 'Stellung halten', 'Nicht angreifen']);
+    expect(await knoepfe.evaluateAll((k) => k.map((x) => x.getAttribute('aria-label'))))
+      .toEqual(['Angreifen', 'Verteidigen', 'Stellung halten', 'Nicht angreifen']);
     await expect(anna.locator('[data-befehl="haltung-verteidigung"]')).toHaveAttribute('aria-pressed', 'true');
     expect(await haltungen(anna, ids), 'die Vorgabe steht nicht auf der Leitung').toEqual(['-', '-', '-']);
 
@@ -81,5 +97,64 @@ test.describe('Haltungen', () => {
     });
     await waehlen(anna, [bauer]);
     await expect(anna.locator('#haltungen')).toHaveCount(0);
+  });
+
+  test('bedienung AC-87: die Befehle an der Auswahl sind Bildknöpfe ohne Wort - der Name steht in der Tafel und im aria-label, die gewählte Haltung ist golden', async ({}, info) => {
+    test.setTimeout(120_000);
+    const { anna } = partie;
+    const { ids, platz } = await anna.evaluate(() => {
+      const a = window.ansicht;
+      const k = a.werte.einheiten.speerkaempfer.kuerzel;
+      const eigene = [...a.nachher.values()].filter((e) => e.b === a.ich && e.k === k);
+      return { ids: eigene.map((e) => e.i), platz: { x: eigene[0].x, y: eigene[0].y } };
+    });
+    expect(ids.length).toBe(3);
+    await waehlen(anna, ids, { zoom: 1.8, blick: platz });
+
+    // Einquartieren und die vier Haltungen: je ein Bild, kein Wort, quadratisch.
+    const wahl = '.auswahlleiste .befehl-knopf';
+    await expect(anna.locator(wahl)).toHaveCount(5);
+    const knoepfe = await knopfArt(anna, wahl);
+    expect(knoepfe.map((k) => k.name)).toEqual(['Angreifen', 'Verteidigen', 'Stellung halten', 'Nicht angreifen', '3 einquartieren']);
+    for (const k of knoepfe) {
+      expect(k.text, k.name).toBe('');
+      expect(k.bild, k.name).toBe(true);
+      expect(Math.abs(k.breite - k.hoehe), k.name).toBeLessThanOrEqual(1);
+    }
+    // Die Zahl steht als kleines Zeichen am Einquartieren-Knopf.
+    await expect(anna.locator('#einquartieren .befehl-zahl')).toHaveText('3');
+    // Die gewaehlte Haltung hebt sich ab: goldener Rand.
+    const rand = (befehl) => anna.locator('[data-befehl="' + befehl + '"]').evaluate((k) => getComputedStyle(k).borderTopColor);
+    expect(await rand('haltung-verteidigung')).not.toBe(await rand('haltung-angriff'));
+
+    // Was der Knopf tut, steht in der Tafel.
+    await anna.mouse.move(700, 300);
+    await anna.locator('[data-befehl="haltung-angriff"]').hover();
+    await expect(anna.locator('#knopftafel')).toContainText('Haltung: Angriff');
+    await expect(anna.locator('#knopftafel')).toBeInViewport({ ratio: 1 });
+    await expect(anna.locator('.auswahlleiste')).toBeInViewport({ ratio: 1 });
+    await nachweis(anna, {
+      spec: BEDIENUNG,
+      ac: 'AC-87',
+      titel: 'Drei Speerkämpfer gewählt: Einquartieren mit der Zahl 3 und die vier Haltungen als Bildknöpfe, über „Angriff" steht die Tafel',
+      test: info,
+    });
+    await anna.mouse.move(700, 300);
+
+    // Am Dorfzentrum: Alle heraus und die Glocke, ebenso ohne Wort.
+    const dz = await anna.evaluate(() => {
+      const a = window.ansicht;
+      return [...a.gebaeude.values()].find((g) => g.b === a.ich && g.art === 'dorfzentrum').i;
+    });
+    await anna.evaluate((id) => {
+      const a = window.ansicht;
+      a.ausgewaehlt = new Set();
+      a.gewaehltesGebaeude = id;
+      a.beiAuswahl();
+    }, dz);
+    await expect(anna.locator('#heraus')).toBeVisible();
+    const amGebaeude = await knopfArt(anna, '.befehlsreihe .befehl-knopf');
+    expect(amGebaeude.map((k) => k.name)).toEqual(['Alle heraus', 'Notfallklingel']);
+    for (const k of amGebaeude) expect(k.text, k.name).toBe('');
   });
 });

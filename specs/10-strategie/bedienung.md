@@ -2,7 +2,7 @@
 
 **Bereich:** Strategie
 **Kuerzel:** bedienung
-**Stand:** 81/86 fertig · 2 in QA · 3 offen
+**Stand:** 83/88 fertig · 2 in QA · 3 offen
 
 ## Zweck
 
@@ -842,6 +842,24 @@ inzwischen alle eingetragen.
   steht die ganze Breite einer Seite ohne Rollen nebeneinander, kein Eintrag
   ist abgeschnitten und keine Tafel ragt aus dem Fenster; was nicht in die
   Höhe passt, rollt im Baum, nicht die Seite.
+
+### Bildknöpfe und Glocke (Benutzer, 2026-11-24)
+
+„Nein, irgendeinen knopf, nicht wo ausquartieren drauf steht, sondern ein
+knopf, lass dir was einfallen" (2026-11-24).
+
+- **AC-87** `fertig` **Befehle als Bildknöpfe** — Einquartieren, Alle
+  heraus, Notfallklingel, Entwarnung und die vier Haltungen (kampf AC-28
+  bis AC-31) sind quadratische Knöpfe mit einem Bild wie die übrigen der
+  Leiste, ohne Wort darauf. Was der Knopf tut, steht in der Tafel darüber
+  (AC-55) samt Taste, und als `aria-label` am Knopf. Die gewählte Haltung
+  und die läutende Glocke sind hervorgehoben. Auf 1366 × 768 (AC-23) ragt
+  nichts aus dem Fenster.
+- **AC-88** `fertig` **Die Glocke klingt** — Wird die Notfallklingel
+  geläutet, hört der Spieler eine Glocke, bei der Entwarnung einen anderen,
+  helleren Klang ([Bauen](bauen.md) AC-61) — nur der, dem das Dorfzentrum
+  gehört, ausgelöst vom Wechsel von `gl`, nicht vom Klick. Erzeugt im
+  Browser wie jeder Klang (AC-59), gemessen mit `npm run ton:messen`.
 
 ## Grenzfaelle
 

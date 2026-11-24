@@ -441,8 +441,10 @@ function kachelAusTexturen(tafel, karte, x0, y0, massstab, halbB, halbH, salz) {
   return leinwand;
 }
 
-/** Stufe der Kachelaufloesung zu einem Zoom - nur drei, damit wenig neu entsteht. */
+/** Stufe der Kachelaufloesung zu einem Zoom - nur vier, damit wenig neu entsteht. */
 export function kachelMassstab(zoom) {
+  // Ab 3,0 in dreifacher Aufloesung - das ist die der Tafel (132 je Feld).
+  if (zoom > 2.75) return 3;
   if (zoom > 1.45) return 2;
   if (zoom < 0.7) return 0.5;
   return 1;

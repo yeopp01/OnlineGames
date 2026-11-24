@@ -1,0 +1,10 @@
+{
+  "spec": "10-strategie/bauen.md",
+  "ac": "AC-62",
+  "titel": "Drei Dorfbewohner im Dorfzentrum: je einer mit Bild und Lebensbalken in der Leiste, über dem ersten die Tafel",
+  "datei": "e2e/tests/strategie-einquartieren.spec.mjs",
+  "pfad": [
+    "Einquartieren",
+    "bauen AC-62 / darstellung AC-33: drei Dorfbewohner im Dorfzentrum stehen mit Bild und Leben in der Leiste, ein Klick auf einen lässt nur ihn heraus - über dem Dach die Zahl"
+  ]
+}

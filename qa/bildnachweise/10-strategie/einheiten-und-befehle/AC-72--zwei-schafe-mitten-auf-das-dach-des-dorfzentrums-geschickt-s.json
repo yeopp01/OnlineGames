@@ -1,0 +1,10 @@
+{
+  "spec": "10-strategie/einheiten-und-befehle.md",
+  "ac": "AC-72",
+  "titel": "Zwei Schafe, mitten auf das Dach des Dorfzentrums geschickt, stehen jetzt an seinem Rand - vorher blieben sie stehen",
+  "datei": "e2e/tests/strategie-tiere.spec.mjs",
+  "pfad": [
+    "Schafe auf ein Gebaeude geschickt",
+    "einheiten AC-72: zwei Schafe, mitten auf das Dorfzentrum geschickt, gehen bis an seinen Rand"
+  ]
+}

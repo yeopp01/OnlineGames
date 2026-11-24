@@ -81,16 +81,19 @@ export function tierHoeheBei(zoom) {
   return Math.max(9, HALB_B * 0.9 * zoom);
 }
 
-// Wie weit das Rad heraus- und heranholt. Naeher als ZOOM_NAH steht im Spiel
-// nichts im Bild - so gross zeigt die Schautafel jedes Stueck.
+// Wie weit das Rad heraus- und heranholt. Die Tafeln sind mit 132
+// Bildpunkten je Feld gerendert, ein Feld ist bei Zoom 1 genau 44 breit: bis
+// 3,0 ist jedes Bild scharf, 3,6 vergroessert es um ein Fuenftel (Benutzer,
+// 2026-11-24: "wäre es denkbar, dass man noch näher ranzoomen kann?" -
+// vorher endete das Rad bei 2,5).
 export const ZOOM_FERN = 0.4;
-export const ZOOM_NAH = 2.5;
+export const ZOOM_NAH = 3.6;
 // Das Rad geht in festen Stufen (darstellung AC-27), jede rund das 1,2-fache
-// der vorigen: elf Werte von fern bis nah - und nur fuer diese elf entstehen
+// der vorigen: dreizehn Werte von fern bis nah - und nur fuer diese entstehen
 // Bilder. Frueher nahm jeder Dreh den Wert von eben mal 1,15: nach einem
 // Anschlag am Rand lag der Zoom auf einem anderen Raster, und jedes Bild im
 // Speicher war das falsche.
-export const ZOOMSTUFEN = [ZOOM_FERN, 0.5, 0.6, 0.7, 0.85, 1, 1.2, 1.5, 1.8, 2.1, ZOOM_NAH];
+export const ZOOMSTUFEN = [ZOOM_FERN, 0.5, 0.6, 0.7, 0.85, 1, 1.2, 1.5, 1.8, 2.1, 2.5, 3, ZOOM_NAH];
 
 /** Die naechste Zoomstufe nach innen (`richtung` 1) oder aussen (-1). */
 export function zoomstufe(zoom, richtung) {
@@ -734,7 +737,13 @@ export class Ansicht {
       // `gf`: die eigenen Gefallenen, aus denen ein Haus ausbildet (einheiten
       // AC-49) - der Server schickt sie nur, wenn es welche gibt.
       this.vorraete = { holz, nahrung, gold, stein, bev, raum, gefallene: meine.gf || 0 };
-      this.glocke = meine.gl === 1;
+      // Die Glocke klingt beim Wechsel, nicht beim Klick (bedienung AC-88):
+      // `gl` bekommt nur der Besitzer, und nach dem Neuladen meldet der erste
+      // Zustand nichts (`meldet`).
+      const glocke = meine.gl === 1;
+      if (glocke && !this.glocke) this.ereignis('glocke');
+      if (!glocke && this.glocke) this.ereignis('entwarnung');
+      this.glocke = glocke;
       // Kartografie (bauen AC-52): die ganze Karte gilt als erkundet - auch,
       // wenn ein Verbuendeter sie erforscht hat, und nach dem Neuladen wieder.
       if (meine.ka && !this.karteBekannt) {
@@ -3005,6 +3014,8 @@ export class Ansicht {
     // Lebensbalken sammeln die Zeichnungen unterwegs; gemalt werden sie danach,
     // ueber allem, damit kein Baum sie verdeckt (darstellung AC-8).
     this.lebensbalken = [];
+    // Das Schild mit der Zahl der Besatzung (darstellung AC-33), ebenso.
+    this.besatzungsschilder = [];
     // Wer heilen kann, sieht, wer verletzt ist (einheiten AC-65): die
     // gewaehlten Heiler, einmal je Bild gesammelt.
     this.heilerGewaehlt = [];
@@ -3064,6 +3075,7 @@ export class Ansicht {
     this.pfeileZeichnen(stift);
     if (this.nebelAn) this.nebelZeichnen(stift);
     for (const balken of this.lebensbalken) this.lebensbalkenZeichnen(balken);
+    for (const schild of this.besatzungsschilder) this.besatzungsschildZeichnen(schild);
     if (vorratRing) {
       stift.strokeStyle = '#ffffff';
       stift.lineWidth = 2;
@@ -3434,6 +3446,45 @@ export class Ansicht {
     stift.fillRect(links - 1, oben - 1, breite + 2, hoch + 2);
     stift.fillStyle = ruhe ? '#6fb4ea' : anteil < 1 / 3 ? '#c8463c' : '#5daa45';
     stift.fillRect(links, oben, Math.max(1, Math.round(breite * Math.max(0, Math.min(1, anteil)))), hoch);
+  }
+
+  /**
+   * Das Schild der Besatzung (darstellung AC-33): ein dunkles Feld mit einer
+   * kleinen Gestalt in der Farbe des Besitzers und der Zahl daneben, unten
+   * mittig auf `y`. Ohne Besatzung gibt es keines.
+   * @param {{ x: number, y: number, zahl: number, farbe: string }} schild
+   */
+  besatzungsschildZeichnen({ x, y, zahl, farbe }) {
+    const stift = this.stift;
+    stift.save();
+    stift.font = '700 12px system-ui, sans-serif';
+    const text = String(zahl);
+    const breite = Math.round(stift.measureText(text).width) + 22;
+    const hoch = 17;
+    const links = Math.round(x - breite / 2);
+    const oben = Math.round(y - hoch);
+    stift.fillStyle = 'rgba(16, 18, 20, 0.85)';
+    stift.strokeStyle = farbe;
+    stift.lineWidth = 1.5;
+    stift.beginPath();
+    stift.roundRect(links, oben, breite, hoch, 4);
+    stift.fill();
+    stift.stroke();
+    // Die Gestalt: Kopf und Rumpf.
+    stift.fillStyle = farbe;
+    stift.beginPath();
+    stift.arc(links + 8, oben + 5.5, 2.6, 0, Math.PI * 2);
+    stift.fill();
+    stift.beginPath();
+    stift.moveTo(links + 3.5, oben + hoch - 2.5);
+    stift.quadraticCurveTo(links + 8, oben + 6.5, links + 12.5, oben + hoch - 2.5);
+    stift.closePath();
+    stift.fill();
+    stift.fillStyle = '#f1f3f5';
+    stift.textAlign = 'left';
+    stift.textBaseline = 'middle';
+    stift.fillText(text, links + 16, oben + hoch / 2 + 0.5);
+    stift.restore();
   }
 
   // Der Sammelpunkt des gewaehlten Gebaeudes: eine Fahne in Spielerfarbe und
@@ -3940,7 +3991,9 @@ export class Ansicht {
     const fertig = (gebaeude.u ?? 1) >= 1;
     const beschaedigt = fertig && lebenVoll && gebaeude.h < lebenVoll;
     const angesehen = this.siehtAn('g', gebaeude.i);
-    if (lebenVoll && (this.gewaehltesGebaeude === gebaeude.i || angesehen || beschaedigt)) {
+    const mitBalken = lebenVoll && (this.gewaehltesGebaeude === gebaeude.i || angesehen || beschaedigt);
+    const besetzt = fertig && (gebaeude.bs ?? 0) > 0;
+    if (mitBalken || besetzt) {
       const zeichnung = GEBAEUDE[this.bildart(gebaeude)];
       const m = zeichnung ? (e * groesse * 0.95) / zeichnung.halbeBreite : e;
       // Knapp ueber dem Dach - die Trefferhoehe reicht bis zur Fahnenspitze, drei
@@ -3948,9 +4001,18 @@ export class Ansicht {
       // Gerendert: knapp ueber dem, was im Bild wirklich deckt.
       const hoch = gebaeudeHoehe(this.bildart(gebaeude), e, groesse);
       const oben = hoch ?? (zeichnung?.flach ? e * groesse * 0.6 : (zeichnung?.trefferOben ?? 3) * m * 0.75);
-      this.lebensbalken.push({
-        art: 'gebaeude', i: gebaeude.i, x: p.x, y: p.y - oben - 4, breite: Math.round(Math.min(e * groesse * 0.6, 140)), anteil: (gebaeude.h ?? lebenVoll) / lebenVoll,
-      });
+      if (mitBalken) {
+        this.lebensbalken.push({
+          art: 'gebaeude', i: gebaeude.i, x: p.x, y: p.y - oben - 4, breite: Math.round(Math.min(e * groesse * 0.6, 140)), anteil: (gebaeude.h ?? lebenVoll) / lebenVoll,
+        });
+      }
+      // Die Besatzung steht ueber dem Dach, ueber einem Balken noch darueber
+      // (darstellung AC-33) - fuer jeden, der das Gebaeude sieht.
+      if (besetzt) {
+        this.besatzungsschilder.push({
+          i: gebaeude.i, x: p.x, y: p.y - oben - (mitBalken ? 14 : 6), zahl: gebaeude.bs, farbe: spieler ? spieler.farbe : '#888888',
+        });
+      }
     }
     if (this.gewaehltesGebaeude === gebaeude.i || angesehen) {
       // Ausgewaehlt: ein heller Rand um die Grundflaeche, wie die Ellipse bei
@@ -3979,6 +4041,11 @@ export class Ansicht {
     for (const balken of this.lebensbalken) {
       if (balken.art !== 'gebaeude' || Math.abs(balken.x - p.x) > balken.breite / 2 + 30) continue;
       if (oben > balken.y - 22 && oben < balken.y + 14) oben = balken.y - 11;
+    }
+    // Ebenso ueber dem Schild der Besatzung (darstellung AC-33).
+    for (const schild of this.besatzungsschilder) {
+      if (Math.abs(schild.x - p.x) > 50) continue;
+      if (oben > schild.y - 30 && oben < schild.y + 14) oben = schild.y - 21;
     }
     // Unter der Kopfleiste stuende er ueber ihrer Schrift.
     if (oben < KOPFLEISTE) return;

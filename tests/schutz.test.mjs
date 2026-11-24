@@ -51,6 +51,14 @@ function verbinde(angemeldet = false) {
 }
 
 const warte = (ms) => new Promise((fertig) => setTimeout(fertig, ms));
+// Wartet auf einen Zustand statt nach der Uhr: unter Last (npm test rechnet
+// viele Dateien zugleich) kam die Antwort nicht immer in 80 ms.
+async function bis(bedingung, ms = 5000) {
+  const ende = Date.now() + ms;
+  while (!bedingung() && Date.now() < ende) await warte(10);
+  return bedingung();
+}
+const antwort = (k, ...typen) => bis(() => k.eingang.some((n) => typen.includes(n.typ)));
 
 test('schutz AC-1: der tropfende Eimer laeuft nach und begrenzt die Spitze', () => {
   let jetzt = 0;
@@ -111,7 +119,7 @@ test('schutz AC-4: eine Adresse haelt nur begrenzt viele Partien offen', async (
     const k = verbinde(true);
     await k.offen();
     k.senden({ typ: 'erstellen', name: `Anna${i}` });
-    await warte(80);
+    await antwort(k, 'du', 'fehler');
     assert.ok(k.eingang.some((n) => n.typ === 'du'), `Partie ${i + 1} wurde eroeffnet`);
     eroeffner.push(k);
   }
@@ -119,25 +127,27 @@ test('schutz AC-4: eine Adresse haelt nur begrenzt viele Partien offen', async (
   const dritter = verbinde(true);
   await dritter.offen();
   dritter.senden({ typ: 'erstellen', name: 'Anna3' });
-  await warte(80);
+  await antwort(dritter, 'du', 'fehler');
   const abgelehnt = dritter.eingang.find((n) => n.typ === 'fehler');
   assert.ok(abgelehnt, 'die dritte Partie wird abgelehnt');
   assert.match(abgelehnt.text, /Zu viele offene Partien/);
   assert.equal(dritter.eingang.some((n) => n.typ === 'du'), false);
 
   // Wird eine Partie geschlossen, ist der Platz wieder frei.
+  const ersterCode = eroeffner[0].eingang.find((n) => n.typ === 'du').code;
   eroeffner[0].zu();
-  await warte(200);
+  await bis(() => laufend.raeume.finden(ersterCode) === null);
   const vierter = verbinde(true);
   await vierter.offen();
   vierter.senden({ typ: 'erstellen', name: 'Anna4' });
-  await warte(80);
+  await antwort(vierter, 'du', 'fehler');
   assert.ok(vierter.eingang.some((n) => n.typ === 'du'), 'der frei gewordene Platz wird genutzt');
 
+  const codes = [vierter, eroeffner[1]].map((k) => k.eingang.find((n) => n.typ === 'du').code);
   dritter.zu();
   vierter.zu();
   eroeffner[1].zu();
-  await warte(100);
+  await bis(() => codes.every((c) => laufend.raeume.finden(c) === null));
 });
 
 test('raeume AC-17 / schutz AC-4: eine verlassene Partie sperrt niemanden aus - steht die Grenze im Weg, weicht die aelteste', async () => {
@@ -148,19 +158,19 @@ test('raeume AC-17 / schutz AC-4: eine verlassene Partie sperrt niemanden aus - 
     const anna = verbinde(true);
     await anna.offen();
     anna.senden({ typ: 'erstellen', name: 'Anna' });
-    await warte(80);
+    await antwort(anna, 'du', 'fehler');
     const du = anna.eingang.find((n) => n.typ === 'du');
     assert.ok(du, `Partie ${i + 1} wurde eroeffnet`);
     const bert = verbinde();
     await bert.offen();
     bert.senden({ typ: 'beitreten', code: du.code, name: 'Bert' });
-    await warte(80);
+    await antwort(bert, 'du', 'fehler');
     anna.senden({ typ: 'start', startwert: 7 });
-    await warte(200);
+    await antwort(anna, 'aufbau');
     assert.ok(anna.eingang.some((n) => n.typ === 'aufbau'), 'sie laeuft');
     anna.zu();
     bert.zu();
-    await warte(150);
+    await bis(() => laufend.raeume.finden(du.code)?.leer);
     assert.ok(laufend.raeume.finden(du.code), 'verlassen, aber noch da');
     codes.push(du.code);
   }
@@ -168,7 +178,7 @@ test('raeume AC-17 / schutz AC-4: eine verlassene Partie sperrt niemanden aus - 
   const neu = verbinde(true);
   await neu.offen();
   neu.senden({ typ: 'erstellen', name: 'Anna' });
-  await warte(100);
+  await antwort(neu, 'du', 'fehler');
   assert.ok(neu.eingang.some((n) => n.typ === 'du'), 'die dritte Partie wird eroeffnet');
   assert.equal(laufend.raeume.finden(codes[0]), null, 'die aeltere verlassene ist gewichen');
   assert.ok(laufend.raeume.finden(codes[1]), 'die juengere wartet weiter');
@@ -179,13 +189,13 @@ test('raeume AC-17 / schutz AC-4: eine verlassene Partie sperrt niemanden aus - 
   const vierter = verbinde(true);
   await vierter.offen();
   vierter.senden({ typ: 'erstellen', name: 'Anna' });
-  await warte(100);
+  await antwort(vierter, 'du', 'fehler');
   assert.ok(vierter.eingang.some((n) => n.typ === 'du'));
   assert.equal(laufend.raeume.finden(codes[1]), null);
   const fuenfter = verbinde(true);
   await fuenfter.offen();
   fuenfter.senden({ typ: 'erstellen', name: 'Anna' });
-  await warte(100);
+  await antwort(fuenfter, 'du', 'fehler');
   assert.match(fuenfter.eingang.find((n) => n.typ === 'fehler').text, /Zu viele offene Partien/);
 
   neu.zu();

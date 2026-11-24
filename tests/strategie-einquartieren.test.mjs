@@ -176,6 +176,55 @@ function salve(welt, gebaeude) {
   return welt.pfeileImFlug.length - vorher;
 }
 
+test('bauen AC-62: ein Klick auf einen Einzelnen laesst nur ihn heraus - fremde und falsche Kennungen werden abgewiesen', () => {
+  const welt = new Welt(ZWEI, 7);
+  const dz = dorfzentrum(welt);
+  const leute = dorfbewohner(welt);
+  hinein(welt, leute.map((e) => e.id), dz);
+  bis(welt, () => (dz.insassen?.length || 0) === leute.length);
+  const [erster, ...rest] = leute;
+  assert.deepEqual(welt.nachricht('b', { auftrag: 'heraus', gebaeude: dz.id, einheit: erster.id }), { fehler: 'Das ist nicht dein Gebäude.' });
+  assert.deepEqual(welt.nachricht('a', { auftrag: 'heraus', gebaeude: dz.id, einheit: 99999 }), { fehler: 'Diese Einheit ist nicht im Gebäude.' });
+  assert.deepEqual(welt.nachricht('a', { auftrag: 'heraus', gebaeude: dz.id, einheit: String(erster.id) }), { fehler: 'Diese Einheit ist nicht im Gebäude.' });
+  assert.equal(dz.insassen.length, leute.length, 'nach den Absagen ist niemand heraus');
+  assert.deepEqual(welt.nachricht('a', { auftrag: 'heraus', gebaeude: dz.id, einheit: erster.id }), {});
+  assert.equal(welt.einheiten.get(erster.id), erster, 'er steht wieder auf der Karte');
+  assert.ok(welt.abstandZu(erster, dz) <= 2, 'am Gebaeude');
+  assert.deepEqual(dz.insassen.map((e) => e.id).sort(), rest.map((e) => e.id).sort(), 'die anderen bleiben drin');
+  for (const e of rest) assert.equal(welt.einheiten.has(e.id), false);
+});
+
+test('bauen AC-62: wer drin ist, geht mit Art und Leben an den Besitzer - ein Gegner, der das Gebaeude sieht, bekommt nur die Zahl', () => {
+  const welt = new Welt(ZWEI, 7);
+  const dz = dorfzentrum(welt);
+  const leute = dorfbewohner(welt);
+  hinein(welt, leute.map((e) => e.id), dz);
+  bis(welt, () => (dz.insassen?.length || 0) === leute.length);
+  // Bert steht daneben und sieht das Dorfzentrum.
+  daneben(welt, dz, 2, 'dorfbewohner', 'b');
+  welt.sichtAktualisieren();
+  assert.ok(welt.siehtGebaeude('b', dz), 'Bert sieht es');
+  const imAufbau = (id) => welt.aufbauFuer(id).gebaeude.find((g) => g.i === dz.id);
+  assert.deepEqual(imAufbau('a').bi, dz.insassen.map((e) => [e.id, 'dorfbewohner', e.leben]), 'in der Reihenfolge des Eintretens');
+  assert.equal(imAufbau('a').bi.length, leute.length);
+  assert.equal(imAufbau('b').bs, leute.length, 'die Zahl sieht er');
+  assert.equal(imAufbau('b').bi, undefined, 'wer drin ist, nicht');
+
+  // Verletzt hinein: drinnen heilt er, und jede Heilung geht hinaus.
+  dz.insassen[0].leben -= 7;
+  welt.gebaeudeGeaendert(dz);
+  welt.zustandJeSpieler(['a', 'b']);
+  sekunden(welt, EINQUARTIEREN.heilen);
+  const jetzt = welt.zustandJeSpieler(['a', 'b']);
+  const eigen = jetzt.get('a').gebaeude?.find((g) => g.i === dz.id);
+  assert.ok(eigen, 'die Heilung meldet das Gebaeude als geaendert');
+  assert.equal(eigen.bi[0][2], welt.lebenMax('a', 'dorfbewohner') - 6, 'ein Leben mehr');
+  const fremd = jetzt.get('b').gebaeude?.find((g) => g.i === dz.id);
+  assert.ok(fremd, 'Bert bekommt die Aenderung auch');
+  assert.equal(fremd.bi, undefined, 'aber ohne die Liste');
+  assert.equal(fremd.bs, leute.length);
+});
+
 test('bauen AC-59: das Dorfzentrum schiesst nur mit Besatzung, einen Pfeil je Schuetze darin', () => {
   const leer = new Welt(ZWEI, 7);
   assert.equal(salve(leer, dorfzentrum(leer)), 0, 'leer schiesst es nicht');

@@ -153,3 +153,29 @@ test('einheiten AC-22: ein fremdes Schaf, das nur eigene Einheiten sehen, wechse
   sekunden(zweite, 1.1);
   assert.equal(bertsSchaf.besitzer, 'b');
 });
+
+// ---- Ein Klick auf ein Gebaeude (einheiten AC-72) ---------------------------------
+// Benutzer, 2026-11-24: "schafe sind noch sehr empfindlich, da darf ich nicht
+// genau aufs haus klicken, sonst gehen sie nicht hin - sondern ich muss ganz
+// knapp vors haus klicken". Zu einem Feld unter einem Gebaeude fuehrt kein
+// Weg; die Einheiten gehen seit einheiten AC-64 so nah heran, wie es geht,
+// die Schafe blieben stehen.
+
+test('einheiten AC-72: ein Schaf, mitten auf das eigene Dorfzentrum geschickt, geht bis an seinen Rand', () => {
+  const { welt, schafe } = aufbauen();
+  const zentrum = [...welt.gebaeude.values()].find((b) => b.besitzer === 'a' && b.art === 'dorfzentrum');
+  const mitte = { x: zentrum.x + 1, y: zentrum.y + 1 };
+  assert.equal(welt.gebaeudeAn(mitte.x, mitte.y), zentrum, 'der Klick liegt auf dem Dorfzentrum');
+  // Zwei Schafe fort vom Dorf, damit sie wirklich laufen muessen.
+  const herde = schafe.slice(0, 2);
+  herde.forEach((s, i) => { s.x = zentrum.x + 9 + i; s.y = zentrum.y + 1; s.weg = []; });
+  welt.befehl('a', herde.map((s) => s.id), mitte);
+  for (const s of herde) assert.ok(s.weg.length > 0, `Schaf ${s.id} hat einen Weg`);
+  sekunden(welt, 20);
+  const amRand = (s) => Math.max(zentrum.x - s.x, s.x - (zentrum.x + 3), zentrum.y - s.y, s.y - (zentrum.y + 3));
+  for (const s of herde) {
+    assert.ok(amRand(s) <= 1.01, `Schaf ${s.id} steht am Dorfzentrum (${amRand(s).toFixed(2)} Felder vom Rand)`);
+    assert.ok(!welt.gebaeudeAn(Math.round(s.x), Math.round(s.y)), 'und nicht darin');
+  }
+  assert.notDeepEqual({ x: herde[0].x, y: herde[0].y }, { x: herde[1].x, y: herde[1].y }, 'jedes auf seinem eigenen Feld');
+});

@@ -2,7 +2,7 @@
 
 **Bereich:** Strategie
 **Kuerzel:** darstellung
-**Stand:** 26/32 fertig · 1 in Arbeit · 1 in QA · 4 offen
+**Stand:** 27/33 fertig · 1 in Arbeit · 1 in QA · 4 offen
 
 ## Zweck
 
@@ -247,9 +247,11 @@ nicht so kindlich gemalt". Die Bauabfolge R1 bis R6 steht im
   werden, aber man kann trotzdem drüberreiten/gehen" und „nach dem sieg
   sollten die gebäude des gegners der aufgegeben hat, automatisch ne ruine
   werden".
-- **AC-27** `fertig` **Zoomen ohne Stocken** — Das Mausrad geht in elf
-  festen Stufen von 0,4 bis 2,5 (jede rund das 1,2-fache der vorigen, Zoom 1
-  ist eine davon); nach einem Anschlag am Rand liegt der Zoom wieder auf
+- **AC-27** `fertig` **Zoomen ohne Stocken** — Das Mausrad geht in dreizehn
+  festen Stufen von 0,4 bis 3,6 (jede rund das 1,2-fache der vorigen, Zoom 1
+  ist eine davon; 3 und 3,6 seit dem 2026-11-24 — Benutzer: „und wäre es
+  denkbar, dass man noch näher ranzoomen kann?" —, ab 3 liegt der Boden in
+  seiner gerenderten Auflösung); nach einem Anschlag am Rand liegt der Zoom wieder auf
   denselben Werten. Figuren, Gebäude, Vorräte und Bodenkacheln liegen je
   Stufe als fertige Bilder im Speicher, gezählt nach Bildpunkten, und hinaus
   geht, was am längsten nicht gebraucht wurde: wer durch alle Stufen und
@@ -397,6 +399,12 @@ auf `in-qa`, bis die Modelle Schild und Waffe neben dem Körper tragen.
   (AC-69) behalten die Figur ihrer Einheit, wie in der Vorlage. Bergfried
   und Wunder haben eigene Bilder ([Bauen](bauen.md) AC-50, AC-51), der
   Drache und sein Ei ebenso (einheiten AC-51, AC-52).
+
+- **AC-33** `fertig` **Besatzung am Gebäude** — Ein Gebäude mit
+  Besatzung trägt im Spielbild über dem Dach ein Schild mit der Zahl der
+  Insassen, für jeden, der das Gebäude sieht (`bs`, [Bauen](bauen.md)
+  AC-58) — in der Vorlage weht dort eine Fahne. Ohne Besatzung steht
+  nichts da.
 
 ## Grenzfaelle
 

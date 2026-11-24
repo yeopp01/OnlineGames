@@ -10,6 +10,7 @@ import { einheitenAufstellen, expect, test, zeitraffer } from '../helpers/seite.
 import { aufSeite, gebaeudeInDerNaehe, partieBeenden, partieZuZweit, waehlen } from '../helpers/strategie.mjs';
 
 const BAUEN = '10-strategie/bauen.md';
+const DARSTELLUNG = '10-strategie/darstellung.md';
 
 /** Das Gebaeude waehlen, wie ein Klick darauf - ohne Einheiten. */
 function gebaeudeWaehlen(page, id) {
@@ -63,7 +64,7 @@ test.describe('Einquartieren', () => {
 
     // Der Knopf an der Auswahl, mit der Zahl und einer Tafel.
     const knopf = anna.locator('#einquartieren');
-    await expect(knopf).toHaveText('3 einquartieren');
+    await expect(knopf).toHaveAttribute('aria-label', '3 einquartieren');
     await expect(knopf).toHaveAttribute('aria-pressed', 'false');
     await anna.mouse.move(700, 300);
     await knopf.hover();
@@ -228,15 +229,20 @@ test.describe('Einquartieren', () => {
       window.ansicht.blickAuf(m.x, m.y);
     }, mitte);
     const glocke = anna.locator('#glocke');
-    await expect(glocke).toHaveText(/Notfallklingel/);
+    await expect(glocke).toHaveAttribute('aria-label', 'Notfallklingel');
     await anna.mouse.move(700, 300);
     await glocke.hover();
     await expect(anna.locator('#knopftafel')).toContainText('20 Felder');
+    // Was zu hoeren war (bedienung AC-88): gezaehlt im Ton, je Klang.
+    const gehoert = (seite, name) => seite.evaluate((n) => window.ton.gezaehlt.get(n) || 0, name);
+    const vorher = { anna: await gehoert(anna, 'glocke'), bert: await gehoert(partie.bert, 'glocke') };
     await glocke.click();
 
     // Sie laeutet: der Knopf heisst jetzt Entwarnung, und alle gehen hinein.
     const entwarnung = anna.locator('#entwarnung');
-    await expect(entwarnung).toHaveText(/Entwarnung/);
+    await expect(entwarnung).toHaveAttribute('aria-label', 'Entwarnung');
+    await expect.poll(() => gehoert(anna, 'glocke'), 'Anna hört ihre Glocke').toBe(vorher.anna + 1);
+    expect(await gehoert(partie.bert, 'glocke'), 'Bert hört Annas Glocke nicht').toBe(vorher.bert);
     await expect(entwarnung).toHaveAttribute('aria-pressed', 'true');
     await zeitraffer(anna, code, 4);
     await expect.poll(() => draussen(anna, bauern), { timeout: 30_000 }).toBe(0);
@@ -250,9 +256,78 @@ test.describe('Einquartieren', () => {
       test: info,
     });
 
+    const entwarnt = await gehoert(anna, 'entwarnung');
     await entwarnung.click();
+    await expect.poll(() => gehoert(anna, 'entwarnung'), 'Anna hört die Entwarnung').toBe(entwarnt + 1);
     await expect.poll(() => draussen(anna, bauern)).toBe(3);
     await expect(anna.locator('#glocke')).toBeVisible();
     expect(await besatzung(anna, dz)).toBe(0);
+  });
+
+  test('bauen AC-62 / darstellung AC-33: drei Dorfbewohner im Dorfzentrum stehen mit Bild und Leben in der Leiste, ein Klick auf einen lässt nur ihn heraus - über dem Dach die Zahl', async ({}, info) => {
+    test.setTimeout(120_000);
+    const { anna, bert, code } = partie;
+    await expect.poll(() => draussen(anna, bauern)).toBe(3);
+    await anna.evaluate(({ ids, dz }) => window.ansicht.beiAuftrag({ auftrag: 'einquartieren', einheiten: ids, gebaeude: dz }), { ids: bauern, dz });
+    await zeitraffer(anna, code, 4);
+    await expect.poll(() => besatzung(anna, dz), { timeout: 30_000 }).toBe(3);
+    await zeitraffer(anna, code, 1);
+
+    await gebaeudeWaehlen(anna, dz);
+    await anna.evaluate((m) => {
+      window.ansicht.kamera.zoom = 1.8;
+      window.ansicht.blickAuf(m.x, m.y);
+    }, mitte);
+    const leute = anna.locator('#insassen button.insasse');
+    await expect(leute).toHaveCount(3);
+    const drin = await leute.evaluateAll((k) => k.map((x) => Number(x.dataset.einheit)));
+    expect(drin.sort()).toEqual([...bauern].sort());
+    await expect(leute.first()).toHaveAttribute('aria-label', 'Dorfbewohner heraus');
+    await expect(leute.first().locator('canvas')).toHaveCount(1);
+    await expect(leute.first().locator('.insasse-leben > span')).toHaveCount(1);
+
+    // Die Tafel nennt Namen und Leben.
+    await anna.mouse.move(700, 300);
+    await leute.first().hover();
+    await expect(anna.locator('#knopftafel')).toContainText('Dorfbewohner');
+    await expect(anna.locator('#knopftafel')).toContainText(/Leben \d+ \/ \d+/);
+    await expect(anna.locator('#knopftafel')).toBeInViewport({ ratio: 1 });
+    await nachweis(anna, {
+      spec: BAUEN,
+      ac: 'AC-62',
+      titel: 'Drei Dorfbewohner im Dorfzentrum: je einer mit Bild und Lebensbalken in der Leiste, über dem ersten die Tafel',
+      test: info,
+    });
+    await anna.mouse.move(700, 300);
+
+    // Bert sieht die Zahl ueber dem Dach (darstellung AC-33). Wer drin ist,
+    // verbirgt der Server nur im Nebel (bauen AC-62, tests/strategie-einquartieren.test.mjs) -
+    // diese Partie ist aufgedeckt.
+    await bert.evaluate((m) => {
+      window.ansicht.kamera.zoom = 1.8;
+      window.ansicht.blickAuf(m.x, m.y);
+    }, mitte);
+    const schild = (seite) => seite.evaluate((id) => window.ansicht.besatzungsschilder?.find((s) => s.i === id)?.zahl ?? 0, dz);
+    await expect.poll(() => schild(bert)).toBe(3);
+    await expect.poll(() => schild(anna)).toBe(3);
+    await nachweis(bert, {
+      spec: DARSTELLUNG,
+      ac: 'AC-33',
+      titel: 'Bert sieht über Annas Dorfzentrum das Schild mit der Zahl 3',
+      test: info,
+    });
+
+    // Ein Klick auf einen: nur er kommt heraus.
+    const einer = Number(await leute.first().getAttribute('data-einheit'));
+    await leute.first().click();
+    await expect.poll(() => draussen(anna, [einer])).toBe(1);
+    expect(await besatzung(anna, dz)).toBe(2);
+    await expect(leute).toHaveCount(2);
+    await expect.poll(() => schild(anna)).toBe(2);
+
+    await anna.locator('#heraus').click();
+    await expect.poll(() => draussen(anna, bauern)).toBe(3);
+    await expect.poll(() => schild(anna)).toBe(0);
+    await expect(anna.locator('#insassen')).toHaveCount(0);
   });
 });

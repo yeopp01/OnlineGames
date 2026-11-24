@@ -26,6 +26,39 @@ Punkt unten sucht, sucht dort nach „Punkt <n> (Benutzer“.
 
 ## Zuletzt fortgeschrieben
 
+**2026-11-24, später Abend — Glocke gemergt, Schafe und Zoom (nicht
+committet).** Merge `1d7ea48` auf `strategie` (Glocke, Fassung 4), **nicht
+gepusht** — `main`/`origin/main` stehen auf `3eb0302`. check:kurz zweimal
+rot nur an Zeitmessungen unter Last (karte AC-15, schutz AC-4; einheiten
+AC-31, kampf AC-15), jede einzeln grün, nichts gelockert. Danach,
+uncommittet: **einheiten AC-72** (Schafe auf ein Gebäude geschickt gehen
+bis an den Rand, `naechstesErreichbare` auch für Tiere; Test, Gegenprobe,
+Bild) und **Zoom bis 3,6** (Benutzer: „und wäre es denkbar, dass man noch
+näher ranzoomen kann?"): 13 Stufen, ab 2,75 Bodenmaßstab 3 (native 132 px
+je Feld), Schautafel bleibt bei 2,5 (`TAFEL_NAH`), darstellung AC-27
+nachgezogen, Zoomtest grün ohne Verdrängung (Gelände 19,8 von 24 Mio.,
+Kacheln 24,5 von 32). **Der Block „ja bitte, und eigenständig" ist gebaut** (uncommittet bis
+zum ganzen Lauf): bauen AC-62 (Insassen in der Leiste, Einzelne heraus;
+`bi` nur im Nebel verborgen, bei „Aufgedeckt“ alle alles, Spec
+präzisiert), darstellung AC-33 (Schild mit der Zahl über dem Dach),
+bedienung AC-87 (Bildknöpfe, `BEFEHLSZEICHEN`, Name in Tafel und
+`aria-label`), bedienung AC-88 (Glocke vier Schläge d/a, Entwarnung
+einer; ausgelöst vom Wechsel von `gl`; Spitze 0,51 und 0,22, Angriff
+0,55 — gemessen, nicht gehört). Board 687/771. **Ganzer Lauf
+gefahren** (check:alles:neu:kurz allein, 57 min, 362 grün); danach
+nachgebessert: bedienung AC-55 (die Maus stand auf dem neuen Platz des
+Aufstiegsknopfs, Tafel offen — Maus weg), darstellung AC-33 im Testnamen
+genannt, schutz AC-4 und raeume AC-17 warten auf Zustände statt nach der
+Uhr (8 von 8 grün). darstellung AC-10 streut kopflos 26 bis 58 Bilder/s
+bei 2 bis 6 ms JavaScript — nicht gelockert, altes Bild bleibt.
+check:kurz grün (1267 Tests, 39 Partien). qa:abweichung 145 über 1 %:
+Stichproben angesehen — „nah" vom neuen Zoom, 5 bis 17 % die Bildknöpfe,
+sonst Zeitpunkte. Managerbilder auf HEAD zurück. **Committet auf
+`strategie`, nicht gepusht** — pushen/ausrollen nur auf sein Wort. **Fragen an ihn:** wie klingt die
+Glocke; leeres Dorfzentrum schießt nicht; Wehrstein +1 am besetzten
+Dorfzentrum; hinein nur aus 1,2 Feldern; Häuser 71/65/53/34/25;
+Wortlaut ki AC-28; `strategie-ki-antwort` löschen?
+
 **2026-11-24, Abend — alles nach main** (Benutzer: „wir haben nur main auf
 github, alle andren branches nur lokal, deshalb müssen wir alles nach main
 mergen, und dann pushen“). `f6da5fd` (Vorgabe 1,5) nach `main` gepusht —
@@ -57,68 +90,6 @@ Dorfzentrum, „hinein“ nur aus 1,2 Feldern (umstellt = niemand hinein).
 **Nicht nach main:** `strategie-ki-antwort` („nicht wirksam“) und
 `strategie-mauerring` („reißt die Grenzen“) — geparkt, ein Merge bräche
 den Nebeltest.
-
-**Strategie, 2026-11-24 — speichern AC-18 gebaut** (Benutzer, auf die
-Frage, ob AC-18 vor dem Regelpaket kommt: „Gibts grade noch was zu tun?
-Dann gerne angehen.“ — gelesen als Zustimmung, ADR-0017 Punkt 7 zu ändern;
-Nachtrag mit seinem Wortlaut in der ADR). Anlass war seine Frage, ob ein
-Stand nach drei Tagen noch aufgeht, wenn dazwischen ausgerollt wurde —
-vorher nicht, sobald eine Runde ein Feld anlegt. Jetzt: `SCHRITTE[n]` in
-`stand.js`, Probestand je Fassung unter `tests/staende/` (nie neu
-schreiben), `tests/strategie-hochziehen.test.mjs`, Wächter verlangt
-Schritt und Probestand. Dabei gefunden: das Abbild der Fassung 1 kannte
-`einheit.nachladen` und `einheit.hungert` nicht (erst beim ersten Schlag
-bzw. am Drachen gesetzt) — nachgetragen, die Probepartie gehört jetzt zur
-Formermittlung. **Für das Regelpaket heißt das: jedes neue Feld braucht
-`FASSUNG = 2` und `SCHRITTE[1]`**, der Probestand 1 liegt schon.
-Nachricht der Sitzung onlinegames-d5 (wollte manager-m1 erreichen)
-beantwortet: „nicht ich“. **Vorfall:** `KONTEN_GEHEIMNIS` des Servers
-stand einmal im Protokoll einer Sitzung — nie wieder Umgebungen oder
-`.env` des Servers ausgeben; ob es getauscht werden soll, entscheidet der
-Benutzer (gesagt). AC-18 committet als `07136e5`, nicht gepusht.
-**Regelpaket läuft als Agent** (ae25eb22bd1ec8f04) in `OnlineGames-regeln`,
-Zweig `strategie-regelpaket`: Patch `e0a6155`, Merge von `strategie`
-`ee0a396`; uncommittet `FASSUNG = 2`, `SCHRITTE[1]` (`reihenZufall`,
-`reihe`, `pfeileImFlug`, je Einheit `reihe`, `taktX`, `taktY`), Probestand
-`strategie-2.fast`. **Fertig gemeldet: `299b62b`** (+ `748e5c0`
-Erkenntnisse), Board 631/718, check:kurz des Agenten grün (1148, 37).
-Nebel 107/120, Median 38,5, 0 ohne Sieger. Remis im Gefechtsstand
-nachgemessen: alle beidseitiger Untergang, keines auf Zeit. **Abweichung
-von Entscheidung 1:** ki AC-25 nimmt nur eigene Dorfbewohner aus (mit
-allen eigenen Einheiten fiel Startwert 10), Gegenprobe dazu bleibt grün
-= nicht belegt — Frage an den Benutzer. Noch offen: ganzer Browserlauf
-allein (wartet auf den S4-Agenten), Merge und Ausrollen nur auf sein Wort.
-**S4 fertig gemeldet** (`OnlineGames-s4`, Zweig `strategie-speichern-s4`,
-`dc7118c`): AC-14, AC-22 bis AC-26 `fertig`, 77/77 betroffene
-Browserfälle, sieben Gegenproben fallen; acht gesetzte Entscheidungen
-(Einladung im Vorraum statt Mail, Stilllegen ohne KI, ein Nein verwirft,
-fortgesetzt zu mehreren beginnt angehalten …) als Fragen an den Benutzer.
-**Prüfzweig `strategie-zusammen`** (`edd0203`, im Arbeitsbaum
-`OnlineGames-regeln`) = Regelpaket + S4, Board 637/718. **Browserlauf
-dort 359 grün, rot nur darstellung AC-10** (47,5 Bilder/s, Grenze 50) —
-fällt einzeln auch auf `strategie` (37,2 und 47,0), Rechnerstreuung, nicht
-gelockert. `qa:abweichung` 33 über 1 %, die meisten angesehen (Laufregel
-verschiebt Figuren), alle stimmig. `check:kurz` grün (1154 Tests, 37
-Partien). Bilder committet als `ace9811`. **Auf sein Wort** („ja bitte
-weitermachen“, auf „Sag ja, dann mache ich das“): `strategie` und `main`
-vorgespult auf `ace9811`, gepusht (`7a0bf0a..ace9811`), ausgerollt.
-ki AC-25 bleibt bei Dorfbewohnern, die S4-Entscheidungen gelten — kein
-Einwand. Jetzt: Spielgeschwindigkeit 1,5, dann die KI-Runde als Agent.
-
-**Managerspiel, zusammengeführt nach `main` (2026-11-24, auf sein Wort
-„ja bitte mal alles zum manager zusammenführen nach main“):** Arbeitsbaum
-`C:/Users/danie/OnlineGames-zusammen`, Zweig `manager-zusammen` von
-`ace9811`: `4020a4b` (M1), `39b125c` (Spieldynamik), `531e932`
-(Managerbilder neu), `6a6ac25` (Board 673/758). `main` lokal darauf
-vorgespult, **nicht gepusht, nicht ausgerollt**. `strategie` (`f6da5fd`,
-Spielgeschwindigkeit 1,5) zieht nicht mit — vor dem nächsten Zusammenführen
-`main` in `strategie` mergen. Geprüft: check:kurz grün (1222 Tests, 37
-Partien), Managerbrowserlauf 55/55, Gleichstand „gleich“. Offen beim
-Benutzer: transfer AC-31 (Empfehlung 3 je Fenster), kader AC-24 (`in-qa`
-oder Jugend 75 %); Bildunterschrift karriere AC-09 verspricht mehr, als der
-Ausschnitt zeigt (schon in M1). Arbeitsbäume `-dynamik`, `-zusammen` und
-`manager*` können weg — nur auf sein Wort; in `manager-m1` liegen 61
-uncommittete Bildnachweis-JSON, nicht mitgenommen.
 
 **2026-11-22, Nachmittag — Entscheidungen des Benutzers (durchgeklickt):**
 1. **Regelpaket übernehmen, Lücken schließen:** Laufregel, Seitengleichheit,
@@ -158,6 +129,9 @@ Altes Bild AC-57 (Militärseite) darf weg (Benutzer: „Ja, entfernen“).
 
 ## Stand
 
+- **Neuer: `strategie` auf `1d7ea48` (Glocke), `main` = `origin/main` auf
+  `3eb0302`, Server auf `27ad41f`** — siehe „Zuletzt fortgeschrieben". Der
+  Absatz hier drunter ist der Stand vom Morgen.
 - **Zweig `strategie` = `main` = `origin/main` = Server auf `ace9811`**
   (Regelpaket, speichern AC-18 und S4, ausgerollt 2026-11-24 auf sein
   Wort „ja bitte weitermachen“). In der Konten-SQLite des Servers steht

@@ -292,7 +292,7 @@ test('darstellung AC-23: der Boden liegt in fuenf Texturen vor, die sich in jede
   // Der Browser verkleinert sie fuer seine drei Kachelmassstaebe (0,5 / 1 / 2
   // bei 44 Bildpunkten je Feld): die Kanten muessen dabei ganze Bildpunkte
   // bleiben, sonst wiederholt sich das Muster mit einer Naht.
-  for (const massstab of [0.5, 1, 2]) {
+  for (const massstab of [0.5, 1, 2, 3]) {
     const faktor = (massstab * 44) / boden.feldbreite;
     assert.ok(Number.isInteger(breite * faktor) && Number.isInteger(hoehe * faktor), `Massstab ${massstab}: ${breite * faktor} x ${hoehe * faktor}`);
   }

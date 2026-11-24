@@ -56,6 +56,8 @@ test.describe('Rueckmeldungen aus dem ersten Spiel', () => {
 
   test('bedienung AC-55: ueber dem Webstuhl steht, was er bringt - und ueber dem Dorfbewohner, was er kann', async ({}, info) => {
     await zurBasis(1.6);
+    // Die Maus steht noch, wo der Start geklickt wurde - dort liegt jetzt ein Knopf der Leiste.
+    await anna.mouse.move(700, 200);
     await zentrumWaehlen();
     const tafel = anna.locator('#knopftafel');
     await expect(tafel).toBeHidden();

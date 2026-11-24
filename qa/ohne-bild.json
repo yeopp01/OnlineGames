@@ -1695,6 +1695,11 @@
       "spec": "00-plattform/speichern.md",
       "ac": "AC-26",
       "begruendung": "Die Beteiligten stehen in der Zeile der Ablage: die neue Spalte plaetze der Tabelle partiestand haelt je Mensch Platz, Name und Konto, nachgetragen per ALTER TABLE in Dateien von vorher (server/partiestaende.js). Belegt gegen den echten Server: nach dem Sichern zu dritt stehen alle drei Plaetze mit ihren Konten in der Datenbank, und /api/partien gibt nur die Namen heraus, nie die Konten (tests/speichern-zu-mehreren.test.mjs, zwei Gegenproben - ohne das Ausblenden in partien-netz.js und ohne das Schreiben der Spalte - fallen). Die Konten gehen absichtlich nie in den Browser; was der Spieler davon sieht, die Namen in der Liste und die Plaetze im Warteraum, weisen speichern AC-7 und AC-24 im Bild nach."
+    },
+    {
+      "spec": "10-strategie/bedienung.md",
+      "ac": "AC-88",
+      "begruendung": "Das Kriterium ist Schall: geläutet vier schwere Glockenschläge im Wechsel von d und a, bei der Entwarnung ein einzelner, hellerer und kürzerer Schlag. Ein Bildschirmfoto zeigt keinen Ton - das Bild zur Glocke (der Knopf, der zur Entwarnung wird, die Dorfbewohner im Dorfzentrum) weist bauen AC-61 nach. Belegt durch Zählen im Browserlauf: im Fall bauen AC-61 in e2e/tests/strategie-einquartieren.spec.mjs zählt der Ton bei Anna nach dem Läuten genau eine Glocke und nach der Entwarnung genau eine Entwarnung, bei Bert keine; der Rechenteil (tests/strategie-ton.test.mjs) prüft vier gegen einen Schlag, den tieferen und längeren Klang des Läutens, den Mindestabstand gegen Doppelklicks und dass das Spielbild beim Wechsel von gl läutet, nicht beim Klick. Gemessen mit npm run ton:messen: Glocke Spitze 0,51, Entwarnung 0,22 - unter der Angriffsmeldung (0,55). Nicht geprüft: wie es klingt - das entscheidet ein Ohr."
     }
   ]
 }

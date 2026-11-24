@@ -2,7 +2,7 @@
 
 **Bereich:** Strategie
 **Kuerzel:** bauen
-**Stand:** 61/61 fertig
+**Stand:** 62/62 fertig
 
 ## Zweck
 
@@ -656,6 +656,16 @@ Die KI nutzt es nicht.
   inzwischen einen anderen Befehl bekommen hat, gehört nicht mehr dazu. Ob
   sie läutet, schickt der Server als `gl` am Spieler. Die KI läutet nicht
   und quartiert nicht ein.
+- **AC-62** `fertig` **Wer drinnen ist, sichtbar** — Ist ein eigenes
+  Gebäude mit Besatzung gewählt, steht in der Leiste je Insasse ein Bild
+  seiner Art mit einem Lebensbalken, in der Reihenfolge, in der sie hinein
+  sind (Benutzer, 2026-11-24). Ein Klick auf ein Bild lässt nur diesen
+  heraus (Nachricht `heraus` mit `einheit`); die Tafel darüber nennt Art
+  und Leben. Wer drin ist, schickt der Server als `bi` — je Insasse
+  Kennung, Art und Leben — nur dem Besitzer und denen, mit denen er die
+  Sicht teilt; ein Gegner, der das Gebäude sieht, bekommt im Nebel nur
+  die Zahl `bs` (AC-58). Bei „Aufgedeckt“ bekommen alle denselben Zustand,
+  wie bei den Vorräten ([Kampf](kampf.md) AC-13).
 
 **Was wartet, und warum.** **Daumenring** (Schützen laden schneller nach):
 verschiebt beide Schützenlinien im Konterkreis und kommt deshalb erst

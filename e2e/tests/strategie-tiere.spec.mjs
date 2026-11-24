@@ -193,3 +193,52 @@ test.describe('Schafe', () => {
     await anna.keyboard.press('Escape');
   });
 });
+
+// Benutzer, 2026-11-24: "da darf ich nicht genau aufs haus klicken, sonst
+// gehen sie nicht hin" (einheiten AC-72).
+test.describe('Schafe auf ein Gebaeude geschickt', () => {
+  let partie;
+  test.beforeAll(async ({ browser }, info) => {
+    partie = await partieZuZweit(browser, info, { sicht: 'aufgedeckt' });
+  });
+  test.afterAll(() => partieBeenden(partie));
+
+  test('einheiten AC-72: zwei Schafe, mitten auf das Dorfzentrum geschickt, gehen bis an seinen Rand', async ({}, info) => {
+    const { anna, code } = partie;
+    await anna.waitForFunction(() => window.ansicht && window.ansicht.tiere.size > 0);
+    const lage = await anna.evaluate(() => {
+      const a = window.ansicht;
+      const zentrum = [...a.gebaeude.values()].find((b) => b.b === a.ich && b.art === 'dorfzentrum');
+      const herde = [...a.tiere.values()].filter((t) => t.b === a.ich && !t.g)
+        .sort((p, q) => Math.hypot(q.x - zentrum.x, q.y - zentrum.y) - Math.hypot(p.x - zentrum.x, p.y - zentrum.y))
+        .slice(0, 2).map((t) => t.i);
+      a.ausgewaehlt.clear();
+      a.gewaehltesGebaeude = null;
+      for (const i of herde) a.ausgewaehlt.add(i);
+      a.kamera.zoom = 1.8;
+      a.blickAuf(zentrum.x + 2, zentrum.y + 2);
+      return { herde, zentrum: { i: zentrum.i, x: zentrum.x, y: zentrum.y } };
+    });
+    await anna.waitForTimeout(200);
+    // Mitten auf das Dach - nicht knapp davor.
+    const mitte = await anna.evaluate((z) => window.ansicht.zuBild(z.x + 1.5, z.y + 1.5), lage.zentrum);
+    await anna.mouse.click(mitte.x, mitte.y, { button: 'right' });
+    await zeitraffer(anna, code, 8);
+    await anna.waitForFunction(({ herde, zentrum }) => {
+      const a = window.ansicht;
+      return herde.every((i) => {
+        const t = a.tiere.get(i);
+        const rand = Math.max(zentrum.x - t.x, t.x - (zentrum.x + 3), zentrum.y - t.y, t.y - (zentrum.y + 3));
+        return t && rand <= 1.01;
+      });
+    }, lage, { timeout: 30_000 });
+    await zeitraffer(anna, code, 0);
+    await anna.waitForTimeout(400);
+    await nachweis(anna, {
+      spec: EINHEITEN,
+      ac: 'AC-72',
+      titel: 'Zwei Schafe, mitten auf das Dach des Dorfzentrums geschickt, stehen jetzt an seinem Rand - vorher blieben sie stehen',
+      test: info,
+    });
+  });
+});

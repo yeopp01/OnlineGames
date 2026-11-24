@@ -1,0 +1,10 @@
+{
+  "spec": "10-strategie/darstellung.md",
+  "ac": "AC-33",
+  "titel": "Bert sieht über Annas Dorfzentrum das Schild mit der Zahl 3",
+  "datei": "e2e/tests/strategie-einquartieren.spec.mjs",
+  "pfad": [
+    "Einquartieren",
+    "bauen AC-62 / darstellung AC-33: drei Dorfbewohner im Dorfzentrum stehen mit Bild und Leben in der Leiste, ein Klick auf einen lässt nur ihn heraus - über dem Dach die Zahl"
+  ]
+}

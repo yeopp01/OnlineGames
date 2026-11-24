@@ -185,7 +185,7 @@ Umfang hinzufügt, dort nachsehen.
 
 ## Stand
 
-**682 von 766 Kriterien fertig.** 1262 Tests ohne Browser und 39 ganze Partien, 374 im Browser. Die
+**687 von 771 Kriterien fertig.** 1267 Tests ohne Browser und 39 ganze Partien, 376 im Browser. Die
 Übersicht ist der Bericht: `npm run qa:report`.
 
 Gebaut ist der Unterbau: Räume, Übertragung, Karte, Wegfindung, Sammeln,
@@ -1156,6 +1156,20 @@ Tasten `Y` `X` `C` `V`. Sie gelten nur für das, was eine Kampfeinheit von
 selbst tut. **Befehle an der Auswahl stehen unter dem Kopf**, nicht daneben:
 eine Spalte mehr nahm dem Baumenü die Breite (bauen AC-57, bedienung AC-23).
 Der Stand hat dafür Fassung 3 (`SCHRITTE[2]`).
+**Wer drinnen ist, steht in der Leiste** (bauen AC-62): je Insasse ein
+Bild mit Lebensbalken, ein Klick lässt nur ihn heraus (`heraus` mit
+`einheit`); die Liste geht als `bi` nur an Besitzer und Verbündete, im
+Nebel bekommt ein Gegner nur `bs` — **bei „Aufgedeckt“ alle alles**.
+Über dem Dach steht für jeden, der das Gebäude sieht, ein Schild mit
+der Zahl (darstellung AC-33, `ansicht.besatzungsschilder`). **Befehle an
+der Auswahl sind Bildknöpfe ohne Wort** (bedienung AC-87, Benutzer:
+„irgendeinen knopf, nicht wo ausquartieren drauf steht“): Turm mit
+Pfeil hinein und heraus, Glocke, Glocke mit Haken, gekreuzte Schwerter,
+Schild, Banner, durchgestrichenes Schwert (`BEFEHLSZEICHEN` in
+`public/auswahlleiste.js`); der Name steht in der Tafel und als
+`aria-label` — Browsertests suchen ihn dort, nicht im Text. **Die Glocke
+klingt** (bedienung AC-88): vier Schläge beim Läuten, einer bei der
+Entwarnung, ausgelöst vom Wechsel von `gl`, nicht vom Klick.
 
 1. **Stufe A** Dunkle Zeit mit Wirtschafts-KI und Prüfstand · **B** Feudalzeit
    · **C** Partieende und KI-Gegner · **D** Ritterzeit · **E** fünf Häuser ·

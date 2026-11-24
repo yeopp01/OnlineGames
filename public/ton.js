@@ -118,10 +118,19 @@ export const KLAENGE = {
   bekehren: { art: 'gesang', abstand: 1250, laut: 0.18 },
   // Der Uebertritt: ein heller Schlag, der nachklingt.
   bekehrt: { art: 'uebertritt', abstand: 400, laut: 0.14 },
+
+  // ---- Die Notfallklingel (AC-88) ------------------------------------------
+  // Gelaeutet: vier schwere Schlaege, hoch und tief im Wechsel, wie eine
+  // Sturmglocke. Entwarnung: ein einzelner, hellerer und kuerzerer Schlag.
+  glocke: { art: 'sturmglocke', abstand: 2000, laut: 0.14 },
+  entwarnung: { art: 'entwarnglocke', abstand: 1000, laut: 0.14 },
 };
 
 /** Wie lange ein Ton des Gesangs klingt, in Sekunden - laenger als sein Abstand. */
 export const GESANG_DAUER = 1.6;
+
+/** Abstand der Schlaege der Sturmglocke in Sekunden (bedienung AC-88). */
+export const GLOCKE_TAKT = 0.34;
 
 // ---- Die Musik als Noten (bedienung AC-60) ---------------------------------
 // d-Moll, vier Viertel, 96 Schlaege in der Minute. Ein Takt je Eintrag; die
@@ -642,6 +651,32 @@ export class Ton {
       this.stimme(ctx, ziel, { f: grund * faktor * (1 + (this.zufall() - 0.5) * 0.004), t, d: dauer, laut: laut * anteil, an: 0.004 });
     }
     this.stoss(ctx, ziel, t, { art: 'highpass', f: 5000, q: 0.7, d: 0.03, laut: laut * 0.4, an: 0.001 });
+  }
+
+  // ---- Die Notfallklingel (bedienung AC-88) ---------------------------------
+
+  /**
+   * Ein Schlag einer grossen Glocke: Unterton, Grundton, kleine Terz, Quinte
+   * und Oktave, darueber zwei unreine Teiltoene - und das Klacken des
+   * Kloeppels. Je tiefer der Teilton, desto laenger klingt er nach.
+   */
+  glockenschlag(ctx, ziel, t, f, laut, dauer) {
+    for (const [faktor, anteil, d] of [[0.5, 0.45, 1], [1, 1, 0.8], [1.19, 0.55, 0.6], [1.5, 0.35, 0.5], [2, 0.5, 0.45], [2.52, 0.18, 0.3], [3.01, 0.1, 0.2]]) {
+      this.stimme(ctx, ziel, { f: f * faktor * (1 + (this.zufall() - 0.5) * 0.003), t, d: dauer * d, laut: laut * anteil, an: 0.003 });
+    }
+    this.stoss(ctx, ziel, t, { art: 'bandpass', f: f * 4, q: 1.2, d: 0.025, laut: laut * 0.5, an: 0.001 });
+  }
+
+  /** Gelaeutet: vier Schlaege, d und a im Wechsel, je 0,34 Sekunden auseinander. */
+  sturmglocke(ctx, ziel, t, laut) {
+    const hoch = frequenz(halbton('d5'));
+    const tief = frequenz(halbton('a4'));
+    [hoch, tief, hoch, tief].forEach((f, i) => this.glockenschlag(ctx, ziel, t + i * GLOCKE_TAKT, f, laut, 1.6));
+  }
+
+  /** Entwarnung: ein einzelner Schlag, eine Quinte hoeher und kuerzer. */
+  entwarnglocke(ctx, ziel, t, laut) {
+    this.glockenschlag(ctx, ziel, t, frequenz(halbton('a5')), laut, 1.1);
   }
 
   // ---- Musik (bedienung AC-60) ----------------------------------------------

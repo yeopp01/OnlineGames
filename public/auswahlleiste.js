@@ -1739,6 +1739,291 @@ function koecherchen(s, g, farbe) {
   }
 }
 
+/**
+ * Ein Turm aus Stein mit offenem Tor - Einquartieren und Heraus
+ * (bedienung AC-87). Links steht er, rechts bleibt Platz fuer den Pfeil.
+ * @param {CanvasRenderingContext2D} s
+ * @param {number} g
+ */
+function turmMalen(s, g) {
+  s.fillStyle = '#8f897f';
+  s.fillRect(0.12 * g, 0.3 * g, 0.46 * g, 0.62 * g);
+  for (let i = 0; i < 3; i++) s.fillRect((0.12 + i * 0.18) * g, 0.18 * g, 0.1 * g, 0.14 * g);
+  s.fillStyle = '#6f6a62';
+  s.fillRect(0.12 * g, 0.3 * g, 0.46 * g, 0.04 * g);
+  s.fillRect(0.5 * g, 0.34 * g, 0.08 * g, 0.58 * g);
+  s.fillStyle = '#231e1a';
+  s.beginPath();
+  s.moveTo(0.25 * g, 0.92 * g);
+  s.lineTo(0.25 * g, 0.66 * g);
+  s.arc(0.35 * g, 0.66 * g, 0.1 * g, Math.PI, 0);
+  s.lineTo(0.45 * g, 0.92 * g);
+  s.closePath();
+  s.fill();
+}
+
+/**
+ * Ein waagrechter Pfeil in der Farbe des Spielers, die Spitze bei `bis`.
+ * @param {CanvasRenderingContext2D} s
+ * @param {number} g
+ * @param {number} von
+ * @param {number} bis
+ * @param {number} y
+ * @param {string} farbe
+ */
+function pfeilMalen(s, g, von, bis, y, farbe) {
+  const r = Math.sign(bis - von);
+  s.strokeStyle = '#111';
+  s.fillStyle = farbe;
+  s.lineWidth = g * 0.03;
+  s.lineJoin = 'round';
+  s.beginPath();
+  s.moveTo(von * g, (y - 0.06) * g);
+  s.lineTo((bis - r * 0.16) * g, (y - 0.06) * g);
+  s.lineTo((bis - r * 0.16) * g, (y - 0.14) * g);
+  s.lineTo(bis * g, y * g);
+  s.lineTo((bis - r * 0.16) * g, (y + 0.14) * g);
+  s.lineTo((bis - r * 0.16) * g, (y + 0.06) * g);
+  s.lineTo(von * g, (y + 0.06) * g);
+  s.closePath();
+  s.fill();
+  s.stroke();
+}
+
+/**
+ * Eine Glocke aus Bronze mit Kloeppel.
+ * @param {CanvasRenderingContext2D} s
+ * @param {number} g
+ */
+function glockeMalen(s, g) {
+  s.strokeStyle = '#6b4a2b';
+  s.lineWidth = g * 0.07;
+  s.lineCap = 'round';
+  s.beginPath();
+  s.moveTo(0.5 * g, 0.08 * g);
+  s.lineTo(0.5 * g, 0.18 * g);
+  s.stroke();
+  const verlauf = s.createLinearGradient(0.2 * g, 0, 0.8 * g, 0);
+  verlauf.addColorStop(0, '#9a6f22');
+  verlauf.addColorStop(0.45, '#f2c86a');
+  verlauf.addColorStop(1, '#8a5f1a');
+  s.fillStyle = verlauf;
+  s.beginPath();
+  s.moveTo(0.4 * g, 0.2 * g);
+  s.quadraticCurveTo(0.5 * g, 0.12 * g, 0.6 * g, 0.2 * g);
+  s.quadraticCurveTo(0.68 * g, 0.3 * g, 0.7 * g, 0.56 * g);
+  s.quadraticCurveTo(0.74 * g, 0.68 * g, 0.84 * g, 0.74 * g);
+  s.lineTo(0.16 * g, 0.74 * g);
+  s.quadraticCurveTo(0.26 * g, 0.68 * g, 0.3 * g, 0.56 * g);
+  s.quadraticCurveTo(0.32 * g, 0.3 * g, 0.4 * g, 0.2 * g);
+  s.closePath();
+  s.fill();
+  s.fillStyle = '#6e4c14';
+  s.fillRect(0.16 * g, 0.72 * g, 0.68 * g, 0.05 * g);
+  s.beginPath();
+  s.arc(0.5 * g, 0.83 * g, 0.07 * g, 0, Math.PI * 2);
+  s.fill();
+}
+
+/**
+ * Ein Schwert, das Heft bei (x0, y0), die Spitze bei (x1, y1).
+ * @param {CanvasRenderingContext2D} s
+ * @param {number} g
+ * @param {number} x0
+ * @param {number} y0
+ * @param {number} x1
+ * @param {number} y1
+ * @param {string} farbe
+ */
+function schwertMalen(s, g, x0, y0, x1, y1, farbe) {
+  const l = Math.hypot(x1 - x0, y1 - y0);
+  const ux = (x1 - x0) / l;
+  const uy = (y1 - y0) / l;
+  /** @type {(t: number, q: number) => [number, number]} */
+  const p = (t, q) => [(x0 + ux * t - uy * q) * g, (y0 + uy * t + ux * q) * g];
+  s.fillStyle = '#d4dae0';
+  s.strokeStyle = '#59616a';
+  s.lineWidth = g * 0.025;
+  s.lineJoin = 'round';
+  s.beginPath();
+  s.moveTo(...p(0.2, -0.045));
+  s.lineTo(...p(l - 0.08, -0.045));
+  s.lineTo(...p(l, 0));
+  s.lineTo(...p(l - 0.08, 0.045));
+  s.lineTo(...p(0.2, 0.045));
+  s.closePath();
+  s.fill();
+  s.stroke();
+  s.lineCap = 'round';
+  s.strokeStyle = farbe;
+  s.lineWidth = g * 0.07;
+  s.beginPath();
+  s.moveTo(...p(0.18, -0.14));
+  s.lineTo(...p(0.18, 0.14));
+  s.stroke();
+  s.strokeStyle = '#6b4a2b';
+  s.beginPath();
+  s.moveTo(...p(0.03, 0));
+  s.lineTo(...p(0.15, 0));
+  s.stroke();
+}
+
+/**
+ * Ein Schild in der Farbe des Spielers mit eisernem Rand.
+ * @param {CanvasRenderingContext2D} s
+ * @param {number} g
+ * @param {string} farbe
+ */
+function schildMalen(s, g, farbe) {
+  s.beginPath();
+  s.moveTo(0.2 * g, 0.14 * g);
+  s.lineTo(0.8 * g, 0.14 * g);
+  s.lineTo(0.8 * g, 0.46 * g);
+  s.quadraticCurveTo(0.78 * g, 0.78 * g, 0.5 * g, 0.94 * g);
+  s.quadraticCurveTo(0.22 * g, 0.78 * g, 0.2 * g, 0.46 * g);
+  s.closePath();
+  s.fillStyle = farbe;
+  s.fill();
+  s.strokeStyle = '#b9c2cb';
+  s.lineWidth = g * 0.07;
+  s.lineJoin = 'round';
+  s.stroke();
+  s.fillStyle = '#ffffff44';
+  s.fillRect(0.46 * g, 0.18 * g, 0.08 * g, 0.66 * g);
+  s.fillRect(0.24 * g, 0.38 * g, 0.52 * g, 0.08 * g);
+}
+
+/**
+ * Die Bildchen der Befehle an der Auswahl (bedienung AC-87): ein Knopf ohne
+ * Wort, was er tut, steht in der Tafel und als `aria-label` (Benutzer:
+ * „irgendeinen knopf, nicht wo ausquartieren drauf steht“).
+ * @type {Record<string, (s: CanvasRenderingContext2D, g: number, farbe: string) => void>}
+ */
+const BEFEHLSZEICHEN = {
+  // Hinein: der Pfeil zeigt ins offene Tor.
+  einquartieren(s, g, farbe) {
+    turmMalen(s, g);
+    pfeilMalen(s, g, 0.96, 0.42, 0.8, farbe);
+  },
+  // Heraus: derselbe Turm, der Pfeil kommt aus dem Tor.
+  heraus(s, g, farbe) {
+    turmMalen(s, g);
+    pfeilMalen(s, g, 0.36, 0.96, 0.8, farbe);
+  },
+  // Die Notfallklingel: die Glocke, rechts und links der Schall.
+  glocke(s, g, farbe) {
+    glockeMalen(s, g);
+    s.strokeStyle = farbe;
+    s.lineWidth = g * 0.06;
+    s.lineCap = 'round';
+    for (const [mitte, winkel] of [[0.24, Math.PI], [0.76, 0]]) {
+      for (const r of [0.1, 0.19]) {
+        s.beginPath();
+        s.arc(mitte * g, 0.46 * g, r * g, winkel - 0.5, winkel + 0.5);
+        s.stroke();
+      }
+    }
+  },
+  // Die Entwarnung: die Glocke still, davor ein gruener Haken.
+  entwarnung(s, g) {
+    glockeMalen(s, g);
+    s.lineCap = 'round';
+    s.lineJoin = 'round';
+    const haken = () => {
+      s.beginPath();
+      s.moveTo(0.52 * g, 0.66 * g);
+      s.lineTo(0.66 * g, 0.82 * g);
+      s.lineTo(0.92 * g, 0.48 * g);
+      s.stroke();
+    };
+    s.strokeStyle = '#142014';
+    s.lineWidth = g * 0.17;
+    haken();
+    s.strokeStyle = '#6fd06f';
+    s.lineWidth = g * 0.09;
+    haken();
+  },
+  // Angriff: zwei gekreuzte Schwerter.
+  'haltung-angriff'(s, g, farbe) {
+    schwertMalen(s, g, 0.16, 0.86, 0.88, 0.14, farbe);
+    schwertMalen(s, g, 0.84, 0.86, 0.12, 0.14, farbe);
+  },
+  // Verteidigung, die Vorgabe: der Schild.
+  'haltung-verteidigung'(s, g, farbe) {
+    schildMalen(s, g, farbe);
+  },
+  // Stellung halten: ein Banner, in den Boden gerammt.
+  'haltung-stellung'(s, g, farbe) {
+    s.fillStyle = '#5a4630';
+    s.beginPath();
+    s.ellipse(0.4 * g, 0.9 * g, 0.28 * g, 0.07 * g, 0, 0, Math.PI * 2);
+    s.fill();
+    s.strokeStyle = '#8a6a44';
+    s.lineWidth = g * 0.07;
+    s.lineCap = 'round';
+    s.beginPath();
+    s.moveTo(0.3 * g, 0.9 * g);
+    s.lineTo(0.3 * g, 0.08 * g);
+    s.stroke();
+    s.fillStyle = farbe;
+    s.strokeStyle = '#111';
+    s.lineWidth = g * 0.025;
+    s.lineJoin = 'round';
+    s.beginPath();
+    s.moveTo(0.34 * g, 0.12 * g);
+    s.lineTo(0.88 * g, 0.12 * g);
+    s.lineTo(0.76 * g, 0.29 * g);
+    s.lineTo(0.88 * g, 0.46 * g);
+    s.lineTo(0.34 * g, 0.46 * g);
+    s.closePath();
+    s.fill();
+    s.stroke();
+  },
+  // Nicht angreifen: das Schwert gesenkt, durchgestrichen.
+  'haltung-passiv'(s, g, farbe) {
+    schwertMalen(s, g, 0.5, 0.1, 0.5, 0.92, farbe);
+    s.strokeStyle = '#cfcfcf';
+    s.lineWidth = g * 0.08;
+    s.lineCap = 'round';
+    s.beginPath();
+    s.arc(0.5 * g, 0.5 * g, 0.39 * g, 0, Math.PI * 2);
+    s.stroke();
+    s.beginPath();
+    s.moveTo(0.23 * g, 0.23 * g);
+    s.lineTo(0.77 * g, 0.77 * g);
+    s.stroke();
+  },
+};
+
+/**
+ * Das Bildchen eines Befehlsknopfs (bedienung AC-87).
+ * @param {string} befehl
+ * @param {number} groesse
+ * @param {string} farbe
+ */
+function befehlBildchen(befehl, groesse, farbe) {
+  const { leinwand, stift } = knopfleinwand(groesse);
+  BEFEHLSZEICHEN[befehl]?.(stift, groesse, farbe);
+  return leinwand;
+}
+
+/**
+ * Ein Befehlsknopf mit Bild statt Wort (bedienung AC-87): der Text steht
+ * als `aria-label` am Knopf und in der Tafel (`data-befehl`).
+ * @param {string} befehl
+ * @param {string} text
+ * @param {string} farbe
+ */
+function befehlKnopf(befehl, text, farbe) {
+  const knopf = document.createElement('button');
+  knopf.type = 'button';
+  knopf.className = 'befehl-knopf';
+  knopf.dataset.befehl = befehl;
+  knopf.setAttribute('aria-label', text);
+  knopf.append(befehlBildchen(befehl, 30, farbe));
+  return knopf;
+}
+
 function zeichenBildchen(zeichen, groesse, farbe) {
   const { leinwand, stift } = knopfleinwand(groesse);
   ZEICHEN[zeichen](stift, groesse, farbe);
@@ -2757,12 +3042,9 @@ export class Auswahlleiste {
     const quartierbar = eigene.filter((e) => a.werte.einheiten[a.arten[e.k]]?.quartiere?.length);
     if (!mitHaltung.length && !quartierbar.length) return null;
     const block = element('div', 'befehle');
+    const farbe = a.spieler.get(a.ich)?.farbe || '#888888';
     const knopfFuer = (befehl, text, gedrueckt, tun) => {
-      const knopf = document.createElement('button');
-      knopf.type = 'button';
-      knopf.className = 'befehl-knopf';
-      knopf.dataset.befehl = befehl;
-      knopf.textContent = text;
+      const knopf = befehlKnopf(befehl, text, farbe);
       if (gedrueckt !== null) knopf.setAttribute('aria-pressed', gedrueckt ? 'true' : 'false');
       beimDruecken(knopf, tun);
       return knopf;
@@ -2784,6 +3066,7 @@ export class Auswahlleiste {
       const knopf = knopfFuer('einquartieren', quartierbar.length === 1 ? 'Einquartieren' : `${quartierbar.length} einquartieren`,
         a.einquartierenAn, () => a.einquartierenSetzen(!a.einquartierenAn));
       knopf.id = 'einquartieren';
+      if (quartierbar.length > 1) knopf.append(element('span', 'befehl-zahl', String(quartierbar.length)));
       block.append(knopf);
     }
     return block;
@@ -2805,14 +3088,37 @@ export class Auswahlleiste {
     zeile.append(element('span', null, `Besatzung ${gebaeude.bs || 0} / ${w.besatzung}`));
     if (w.schiesstBesetzt && !gebaeude.bs) zeile.append(element('div', 'leise', 'schießt erst mit Besatzung'));
     block.append(zeile);
-    const knoepfe = element('div', 'haltungen');
+    const farbe = a.spieler.get(a.ich)?.farbe || '#888888';
+    // Wer drinnen ist (bauen AC-62): je Insasse sein Bild mit Lebensbalken,
+    // ein Klick laesst nur ihn heraus. `bi` schickt der Server nur dem
+    // Besitzer und Verbuendeten.
+    if (gebaeude.bi?.length) {
+      const leute = element('div', 'insassen');
+      leute.id = 'insassen';
+      for (const [id, art, leben] of gebaeude.bi) {
+        const knopf = document.createElement('button');
+        knopf.type = 'button';
+        knopf.className = 'insasse';
+        knopf.dataset.befehl = `insasse-${id}`;
+        knopf.dataset.einheit = String(id);
+        const voll = a.einheitenwerte.get(a.ich)?.[art]?.leben || a.werte.einheiten[art]?.leben || leben;
+        knopf.setAttribute('aria-label', `${this.einheitName(a.ich, art)} heraus`);
+        const balken = element('span', 'insasse-leben');
+        const fuellung = element('span');
+        const anteil = Math.max(0, Math.min(1, leben / voll));
+        fuellung.style.width = `${Math.round(anteil * 100)}%`;
+        fuellung.style.background = anteil > 0.5 ? '#5fbf4a' : anteil > 0.25 ? '#e0b03a' : '#d0453a';
+        balken.append(fuellung);
+        knopf.append(bildchen(art, 26, farbe), balken);
+        beimDruecken(knopf, () => this.senden({ auftrag: 'heraus', gebaeude: gebaeude.i, einheit: id }));
+        leute.append(knopf);
+      }
+      block.append(leute);
+    }
+    const knoepfe = element('div', 'befehlsreihe');
     const knopfFuer = (befehl, text, gesperrt, tun) => {
-      const knopf = document.createElement('button');
-      knopf.type = 'button';
-      knopf.className = 'befehl-knopf';
-      knopf.dataset.befehl = befehl;
+      const knopf = befehlKnopf(befehl, text, farbe);
       knopf.id = befehl;
-      knopf.textContent = text;
       knopf.setAttribute('aria-disabled', gesperrt ? 'true' : 'false');
       beimDruecken(knopf, tun);
       return knopf;
@@ -2836,6 +3142,20 @@ export class Auswahlleiste {
   befehlTafel(befehl) {
     const regel = this.ansicht.werte.einquartieren || {};
     const leer = { kosten: {} };
+    if (befehl.startsWith('insasse-')) {
+      // Ein Einzelner im Gebaeude (bauen AC-62): wer er ist und wie es ihm geht.
+      const a = this.ansicht;
+      const id = Number(befehl.slice('insasse-'.length));
+      let eintrag = null;
+      for (const g of a.gebaeude.values()) eintrag ||= g.bi?.find((/** @type {any[]} */ e) => e[0] === id);
+      if (!eintrag) return { ...leer, name: 'Insasse', dauer: null, zeilen: [] };
+      const [, art, leben] = eintrag;
+      const voll = a.einheitenwerte.get(a.ich)?.[art]?.leben || a.werte.einheiten[art]?.leben || leben;
+      return { ...leer, name: this.einheitName(a.ich, art), dauer: 'Klick: nur er kommt heraus', zeilen: [
+        `Leben ${leben} / ${voll}`,
+        `Drinnen heilt er 1 Leben alle ${regel.heilen ?? 2} s`,
+      ] };
+    }
     if (befehl === 'einquartieren') {
       return { ...leer, name: 'Einquartieren', dauer: 'Taste E', zeilen: [
         'Danach ein eigenes Dorfzentrum, einen Turm oder eine Burg anklicken',
@@ -2845,7 +3165,7 @@ export class Auswahlleiste {
       ] };
     }
     if (befehl === 'heraus') {
-      return { ...leer, name: 'Alle heraus', dauer: null, zeilen: ['Jeder darin kommt auf ein freies Feld am Gebäude'] };
+      return { ...leer, name: 'Alle heraus', dauer: 'Ein Klick auf ein Bild darüber lässt nur diesen heraus', zeilen: ['Jeder darin kommt auf ein freies Feld am Gebäude'] };
     }
     if (befehl === 'glocke') {
       return { ...leer, name: 'Notfallklingel', dauer: null, zeilen: [

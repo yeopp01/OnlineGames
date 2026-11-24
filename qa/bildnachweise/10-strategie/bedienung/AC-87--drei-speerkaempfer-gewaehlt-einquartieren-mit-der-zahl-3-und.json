@@ -1,0 +1,10 @@
+{
+  "spec": "10-strategie/bedienung.md",
+  "ac": "AC-87",
+  "titel": "Drei Speerkämpfer gewählt: Einquartieren mit der Zahl 3 und die vier Haltungen als Bildknöpfe, über „Angriff\" steht die Tafel",
+  "datei": "e2e/tests/strategie-haltungen.spec.mjs",
+  "pfad": [
+    "Haltungen",
+    "bedienung AC-87: die Befehle an der Auswahl sind Bildknöpfe ohne Wort - der Name steht in der Tafel und im aria-label, die gewählte Haltung ist golden"
+  ]
+}

@@ -13,13 +13,15 @@ import { readFileSync } from 'node:fs';
 const lesen = (pfad) => readFileSync(new URL(`../${pfad}`, import.meta.url), 'utf8');
 // public/ton.js ist ein Modul fuer den Browser; Node hielte die Endung .js
 // hier fuer CommonJS. Es bindet nichts ein, also laesst es sich als Text laden.
-const { AKKORDE, GESANG_DAUER, KLAENGE, SAETZE, Ton, halbton, reglerwert } = await import(`data:text/javascript;base64,${Buffer.from(lesen('public/ton.js')).toString('base64')}`);
+const { AKKORDE, GESANG_DAUER, GLOCKE_TAKT, KLAENGE, SAETZE, Ton, halbton, reglerwert } = await import(`data:text/javascript;base64,${Buffer.from(lesen('public/ton.js')).toString('base64')}`);
 
 const SIGNALE = ['absage', 'angriff', 'einheit', 'forschung', 'gebaeude', 'gefallen', 'niederlage', 'sieg', 'zeitalter'];
 const GERAEUSCHE = ['einschlag', 'einsturz', 'hacken', 'hammer', 'hieb', 'pfeil', 'pickel', 'schwert', 'treffer', 'wurf'];
 // Der Moench (bedienung AC-74): eigene Abstaende - ein Gloeckchen je Sekunde,
 // ein Gesang, der haelt.
 const MOENCH = ['bekehren', 'bekehrt', 'heilen'];
+// Die Notfallklingel (bedienung AC-88): gelaeutet und entwarnt.
+const GLOCKE = ['entwarnung', 'glocke'];
 
 function speicher(anfang = {}) {
   const werte = new Map(Object.entries(anfang));
@@ -69,7 +71,7 @@ function ausgangAufschreiben() {
       return ort;
     }
     createOscillator() {
-      const s = knoten({ frequency: wert(), detune: wert(), type: 'sine', start() {}, stop() { this.aus = true; } });
+      const s = knoten({ frequency: wert(), detune: wert(), type: 'sine', start(t) { this.beginn = t; }, stop(t) { this.aus = true; this.ende = t; } });
       schwinger.push(s);
       return s;
     }
@@ -85,7 +87,7 @@ function ausgangAufschreiben() {
 }
 
 test('bedienung AC-59: jedes Ereignis hat seinen Klang - und was im Spiel gemeldet wird, hat einen', () => {
-  assert.deepEqual(Object.keys(KLAENGE).sort(), [...SIGNALE, ...GERAEUSCHE, ...MOENCH].sort());
+  assert.deepEqual(Object.keys(KLAENGE).sort(), [...SIGNALE, ...GERAEUSCHE, ...MOENCH, ...GLOCKE].sort());
   const gleich = new Set();
   for (const name of SIGNALE) {
     const klang = KLAENGE[name];
@@ -542,4 +544,62 @@ test('bedienung AC-74: das Spielbild nennt die Klaenge des Moenchs - Heilen und 
   assert.match(ansicht, /einheit\.bk\) this\.klangAn\('bekehren', punkt\)/);
   assert.match(ansicht, /else this\.klangAn\('heilen', punkt\)/);
   assert.match(ansicht, /frueher\.b !== einheit\.b && !einheit\.s\) this\.geraeusch\('bekehrt', einheit\.x, einheit\.y\)/);
+});
+
+test('bedienung AC-88: die Glocke klingt - gelaeutet vier schwere Schlaege im Wechsel, entwarnt ein einzelner hellerer, kuerzerer', () => {
+  const { Ausgang, schwinger } = ausgangAufschreiben();
+  globalThis.AudioContext = Ausgang;
+  let jetzt = 0;
+  const ton = new Ton(speicher(), { uhr: () => jetzt, zufall: zufallMit(9) });
+  try {
+    ton.entsperren();
+    /** Was ein Klang an Schwingern anlegt: Schlaege, tiefster Ton, Dauer. */
+    const hoeren = (name) => {
+      jetzt += 5000;
+      schwinger.length = 0;
+      assert.equal(ton.spielen(name), true, name);
+      const beginne = [...new Set(schwinger.map((x) => Math.round(x.beginn * 100)))];
+      return {
+        schlaege: beginne.length,
+        tiefster: Math.min(...schwinger.map((x) => x.frequency.erst)),
+        grund: Math.max(...schwinger.filter((x) => x.beginn === schwinger[0].beginn).map((x) => x.frequency.erst)),
+        dauer: Math.max(...schwinger.map((x) => x.ende)) - Math.min(...schwinger.map((x) => x.beginn)),
+      };
+    };
+    for (const name of GLOCKE) {
+      const klang = KLAENGE[name];
+      assert.equal(typeof ton[klang.art], 'function', name + ': ' + klang.art);
+      assert.ok(klang.laut > 0 && klang.laut <= 0.5, name + ': ' + klang.laut);
+      // Die Glocke ist eine Warnung, kein Gefecht: die Musik bleibt, wie sie ist.
+      assert.equal(klang.kampf, undefined, name);
+    }
+    assert.notEqual(KLAENGE.glocke.art, KLAENGE.entwarnung.art, 'zwei verschiedene Klaenge');
+
+    const gelaeutet = hoeren('glocke');
+    const entwarnt = hoeren('entwarnung');
+    assert.equal(gelaeutet.schlaege, 4, 'vier Schlaege');
+    assert.equal(entwarnt.schlaege, 1, 'ein Schlag');
+    assert.ok(gelaeutet.tiefster < entwarnt.tiefster, gelaeutet.tiefster + ' gegen ' + entwarnt.tiefster);
+    assert.ok(gelaeutet.dauer > entwarnt.dauer + 0.5, gelaeutet.dauer + ' gegen ' + entwarnt.dauer);
+    // Die Schlaege folgen schneller, als einer verklingt - das ist das Laeuten.
+    assert.ok(GLOCKE_TAKT < 0.5, String(GLOCKE_TAKT));
+    // Ein Doppelklick laeutet nicht zweimal uebereinander.
+    jetzt += 5000;
+    assert.equal(ton.spielen('glocke'), true);
+    jetzt += 300;
+    assert.equal(ton.spielen('glocke'), false);
+    assert.ok(KLAENGE.glocke.abstand >= 4 * GLOCKE_TAKT * 1000, String(KLAENGE.glocke.abstand));
+    assert.deepEqual(ton.protokoll, [], 'gezaehlt, nicht protokolliert');
+    assert.equal(ton.gezaehlt.get('glocke'), 2);
+  } finally {
+    delete globalThis.AudioContext;
+  }
+});
+
+test('bedienung AC-88: das Spielbild laeutet beim Wechsel von gl - nicht beim Klick, und nur beim Besitzer', () => {
+  const ansicht = lesen('public/ansicht.js');
+  assert.match(ansicht, /const glocke = meine\.gl === 1;[^]*?if \(glocke && !this\.glocke\) this\.ereignis\('glocke'\);\s+if \(!glocke && this\.glocke\) this\.ereignis\('entwarnung'\);/);
+  // Der Knopf schickt nur die Nachricht - geklungen wird, was der Server bestaetigt.
+  const leiste = lesen('public/auswahlleiste.js');
+  assert.doesNotMatch(leiste, /ton\.spielen\('glocke'|ereignis\('glocke'/);
 });

@@ -1999,12 +1999,20 @@ class Welt {
     return raus;
   }
 
-  /** Der Knopf "Alle heraus" am Gebaeude (bauen AC-58). */
-  heraus(spielerId, gebaeudeId) {
+  /**
+   * Der Knopf "Alle heraus" am Gebaeude (bauen AC-58) - oder, mit `einheitId`,
+   * ein Klick auf das Bild eines Einzelnen in der Leiste (bauen AC-62).
+   */
+  heraus(spielerId, gebaeudeId, einheitId) {
     const gebaeude = this.gebaeude.get(gebaeudeId);
     if (!gebaeude || gebaeude.besitzer !== spielerId) return { fehler: 'Das ist nicht dein Gebäude.' };
     if (!gebaeude.insassen?.length) return { fehler: 'Im Gebäude ist niemand.' };
-    this.herausLassen(gebaeude);
+    if (einheitId === undefined || einheitId === null) {
+      this.herausLassen(gebaeude);
+      return {};
+    }
+    if (!gebaeude.insassen.some((e) => e.id === einheitId)) return { fehler: 'Diese Einheit ist nicht im Gebäude.' };
+    this.herausLassen(gebaeude, (e) => e.id === einheitId);
     return {};
   }
 
@@ -2027,10 +2035,16 @@ class Welt {
   besatzungHeilen() {
     for (const gebaeude of this.gebaeude.values()) {
       if (!gebaeude.insassen) continue;
+      let geheilt = false;
       for (const e of gebaeude.insassen) {
         const voll = this.lebenMax(e.besitzer, e.art);
-        if (e.leben < voll) e.leben = Math.min(voll, e.leben + 1);
+        if (e.leben < voll) {
+          e.leben = Math.min(voll, e.leben + 1);
+          geheilt = true;
+        }
       }
+      // Die Lebensbalken in der Leiste (bauen AC-62) wachsen mit.
+      if (geheilt) this.gebaeudeGeaendert(gebaeude);
     }
   }
 
@@ -2189,7 +2203,7 @@ class Welt {
       case 'einquartieren':
         return this.einquartieren(spielerId, nachricht.einheiten, nachricht.gebaeude);
       case 'heraus':
-        return this.heraus(spielerId, nachricht.gebaeude);
+        return this.heraus(spielerId, nachricht.gebaeude, nachricht.einheit);
       case 'glocke':
         return this.glocke(spielerId, nachricht.gebaeude);
       case 'haltung':
@@ -2770,7 +2784,14 @@ class Welt {
       const tier = this.tiere.get(id);
       if (tier) {
         if (tier.besitzer !== spielerId || tier.geschlachtet) continue;
-        tier.weg = suchen(this.karte, { x: Math.round(tier.x), y: Math.round(tier.y) }, { x: zx, y: zy }, this.toreVon(tier.besitzer));
+        const von = { x: Math.round(tier.x), y: Math.round(tier.y) };
+        tier.weg = suchen(this.karte, von, { x: zx, y: zy }, this.toreVon(tier.besitzer));
+        // Fuehrt kein Weg zum Klick - etwa mitten auf ein Gebaeude -, geht es
+        // so nah heran, wie es geht, wie eine Einheit (einheiten AC-72, AC-64).
+        if (!tier.weg.length && (von.x !== zx || von.y !== zy)) {
+          const nah = this.naechstesErreichbare(tier, { x: zx, y: zy }, gebiete);
+          if (nah) tier.weg = suchen(this.karte, von, nah, this.toreVon(tier.besitzer));
+        }
         continue;
       }
       const einheit = this.einheiten.get(id);
@@ -6391,7 +6412,7 @@ class Welt {
         if (alt && geaendert.has(g.id)) alt.veraltet = true;
         continue;
       }
-      if (!alt || alt.veraltet || geaendert.has(g.id)) raus.push(this.gebaeudeFuerDraht(g.id));
+      if (!alt || alt.veraltet || geaendert.has(g.id)) raus.push(this.ohneInsassen(this.gebaeudeFuerDraht(g.id)));
       bekannt.set(g.id, { art: g.art, x: g.x, y: g.y });
     }
     for (const [gid, ort] of bekannt) {
@@ -6514,7 +6535,8 @@ class Welt {
       const { hp, ...rest } = s;
       return rest;
     });
-    return { ...voll, spieler, gebaeude: sichtbar.map((g) => this.gebaeudeFuerDraht(g.id)) };
+    const draht = (g) => (this.teiltSicht(id, g.besitzer) ? this.gebaeudeFuerDraht(g.id) : this.ohneInsassen(this.gebaeudeFuerDraht(g.id)));
+    return { ...voll, spieler, gebaeude: sichtbar.map(draht) };
   }
 
   // Gebaeude mit Schlange und Fortschritt (bauen AC-10), fuer die
@@ -6556,9 +6578,20 @@ class Welt {
       w: g.wartet,
       // Wie viele drin sind (bauen AC-58) - nur wenn es welche gibt.
       ...(g.insassen?.length ? { bs: g.insassen.length } : {}),
+      // Wer drin ist, je [id, art, Leben] (bauen AC-62). Im Nebel bekommen es
+      // nur der Besitzer und wer mit ihm sieht (`ohneInsassen`) - die Zahl
+      // `bs` sieht jeder, der das Gebaeude sieht.
+      ...(g.insassen?.length ? { bi: g.insassen.map((e) => [e.id, e.art, Math.ceil(e.leben)]) } : {}),
       // Eier im Kloster (einheiten AC-51) - die sieht jeder, der das Kloster sieht.
       ...(g.art === 'kloster' && this.eier?.size && this.eierIn(g) ? { e: this.eierIn(g) } : {}),
     };
+  }
+
+  /** Ein fremdes Gebaeude ohne die Liste derer darin (bauen AC-62). */
+  ohneInsassen(draht) {
+    if (!draht.bi) return draht;
+    const { bi, ...rest } = draht;
+    return rest;
   }
 
   tierFuerDraht(id) {

@@ -2,7 +2,7 @@
 
 **Bereich:** Strategie
 **Kuerzel:** einheiten
-**Stand:** 60/64 fertig · 1 in QA · 2 offen · 1 zurueckgestellt
+**Stand:** 61/65 fertig · 1 in QA · 2 offen · 1 zurueckgestellt
 
 ## Zweck
 
@@ -805,6 +805,14 @@ der Einheit bleiben die der Vorstufe. Die Werte stehen in
   (2026-11-24, beide Seiten mit der Schmiede bis zum Fürstentum, 20
   Startwerte je Seite): gegen Armbrustschützen gleicher Kosten 37 von 40,
   mit beiden Linien 40; gegen Eliteplänkler 0, mit beiden Linien auch.
+- **AC-72** `fertig` **Schafe gehen bis zum Rand** — Führt zu dem
+  Feld, auf das ein Schaf getrieben wird (AC-22), kein Weg — mitten auf ein
+  Gebäude, in den Wald, ins Wasser —, geht es nach der Regel von AC-64 zu dem
+  erreichbaren Feld, das dem Klick am nächsten liegt; aus einer Herde jedes
+  auf ein eigenes. **Benutzer, 2026-11-24:** „schafe sind noch sehr
+  empfindlich, da darf ich nicht genau aufs haus klicken, sonst gehen sie
+  nicht hin - sondern ich muss ganz knapp vors haus klicken". Vorher suchte
+  das Schaf einen Weg genau zum Klick, bekam keinen und blieb stehen.
 
 ## Grenzfaelle
 
