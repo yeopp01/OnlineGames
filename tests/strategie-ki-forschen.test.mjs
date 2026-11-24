@@ -215,3 +215,17 @@ test('ki AC-35: das Dorfzentrum forscht erst, wenn ihre Dorfbewohner stehen - so
   zentrum.schlange.push('dorfbewohner');
   assert.equal(ausDemZentrum().length, 0, 'nicht, solange es ausbildet');
 });
+
+test('ki AC-35: der Reiterschuetze zaehlt fuer die Schmiede als Schuetze, nicht als Reiter (einheiten AC-71)', () => {
+  // Rappenstein mit sechs Reiterschuetzen und sonst keinem Heer: die
+  // Schuetzenlinie der Schmiede lohnt, die Reiterlinie nicht - die Welt
+  // liesse sie an ihm nicht wirken (`welt.wirktUnter`).
+  const l = lage({ haus: 'rappenstein' });
+  bauen(l.welt, l.a, 'schmiede', 10);
+  aufstellen(l.welt, l.a, 'reiterschuetze', 6, 7);
+  const namen = l.ki.forschungen(eigene(l.welt, 'a'), gebaeudeVon(l.welt, 'a'), dorf(l.welt, 'a')).map((k) => k.name);
+  assert.ok(namen.includes('polsterruestung'), `die Schuetzenruestung steht zur Wahl (${namen.join(', ')})`);
+  for (const name of ['schuppenharnisch', 'schmiedeangriff']) {
+    assert.ok(!namen.includes(name), `${name} wirkt am Reiterschuetzen nicht und steht nicht zur Wahl`);
+  }
+});

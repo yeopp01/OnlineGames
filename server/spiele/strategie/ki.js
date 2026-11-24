@@ -17,7 +17,7 @@
 
 const karten = require('./karte');
 const { suchen } = require('./wege');
-const { TAKTE_PRO_SEKUNDE } = require('./welt');
+const { TAKTE_PRO_SEKUNDE, wirktUnter } = require('./welt');
 const { EINHEITEN, GEBAEUDE, SAMMELN, AUFSTIEGE, HANDEL, HAEUSER, SCHIESSENDE, VERBESSERUNGEN } = require('./daten');
 
 const ENTSCHEIDEN_ALLE = TAKTE_PRO_SEKUNDE / 2;
@@ -858,12 +858,16 @@ class Ki {
     const arten = new Map();
     for (const e of eigene) if (!e.tot) arten.set(e.art, (arten.get(e.art) || 0) + 1);
     for (const g of gebaeude) for (const a of g.schlange) if (EINHEITEN[a]) arten.set(a, (arten.get(a) || 0) + 1);
-    // Wie viele Kampfeinheiten ein Schluessel trifft - ihre Art oder eine Klasse.
-    const trifft = (schluessel) => {
+    // Wie viele Kampfeinheiten ein Schluessel einer Verbesserung trifft -
+    // ihre Art oder eine Klasse, und nur, wo die Welt ihn auch wirken laesst:
+    // der Reiterschuetze zieht aus der Schmiede nur als Schuetze, nicht als
+    // Reiter (einheiten AC-71, `welt.wirktUnter`).
+    const trifft = (schluessel, v) => {
       let n = 0;
       for (const [art, zahl] of arten) {
         const w = EINHEITEN[art];
         if (art === 'dorfbewohner' || w.nurGebaeude) continue;
+        if (!wirktUnter(art, schluessel, v)) continue;
         if (art === schluessel || (w.klassen || []).includes(schluessel)) n += zahl;
       }
       return n;
@@ -903,7 +907,7 @@ class Ki {
         } else {
           const schluessel = [...Object.keys(v.wirkung || {}), ...Object.keys(v.bonus || {}), ...Object.keys(v.bonusAnteil || {})]
             .filter((k) => k !== 'dorfbewohner');
-          wert = Math.max(0, ...schluessel.map(trifft));
+          wert = Math.max(0, ...schluessel.map((k) => trifft(k, v)));
           if (wert >= FORSCHEN_MINDESTENS) gruppe = 1;
           else {
             // Die Wirtschaft: woran ihre Dorfbewohner arbeiten.
