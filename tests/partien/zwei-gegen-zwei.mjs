@@ -43,6 +43,15 @@ export const MINUTEN = 90;
  * 37,2 von dem des schon ausgeschiedenen Verbuendeten -, und zaehlte als
  * Angriffslauf zu ihm. Eine KI, die zum Verbuendeten zieht, zielt vier Felder
  * vor dessen Dorfzentrum; dort steht nichts Eigenes.
+ *
+ * Dasselbe gilt fuer einen eigenen Dorfbewohner am Marschziel (Benutzer,
+ * 2026-11-22, Entscheidung 1 zum Regelpaket): gefunden mit dem Pfeilflug
+ * (kampf AC-27), Startwert 8 - die Wache von KI 4 verteidigte (ki AC-14)
+ * einen eigenen Dorfbewohner, den KI 2 am Platz des schon ausgeschiedenen
+ * Verbuendeten KI 3 schlug. Nur Dorfbewohner, wie in ki AC-14: mit jeder
+ * eigenen Einheit, die nicht mitzieht, hatte Startwert 10 nur noch 9
+ * Angriffslaeufe zu Gegnern (verlangt mehr als 10; 2026-11-24) - welche
+ * Einheiten an jenen Zielen standen, ist nicht untersucht.
  */
 const EIGENES_NAH = 6;
 
@@ -72,7 +81,8 @@ export function zweiGegenZwei(startwert) {
         if (n?.auftrag === 'befehl' && n.angriffslauf && n.ziel) {
           const weit = (b) => Math.hypot(b.x - n.ziel.x, b.y - n.ziel.y);
           const andere = welt.spieler.filter((s) => s.id !== id).sort((a, b) => weit(a.basis) - weit(b.basis));
-          const daheim = [...welt.gebaeude.values()].some((g) => g.besitzer === id && weit(g) < EIGENES_NAH);
+          const daheim = [...welt.gebaeude.values()].some((g) => g.besitzer === id && weit(g) < EIGENES_NAH)
+            || [...welt.einheiten.values()].some((e) => e.besitzer === id && e.art === 'dorfbewohner' && weit(e) < EIGENES_NAH);
           if (!daheim && andere.length && weit(andere[0].basis) < weit(welt.spielerVon(id).basis)) {
             if (welt.feindlich(id, andere[0].id)) z.laeufeFremd++;
             else z.laeufeVerbuendet++;

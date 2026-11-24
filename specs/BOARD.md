@@ -7,9 +7,9 @@ Eine Zeile je Abnahmekriterium. Gepflegt wird der Status in der Spec selbst,
 hier steht er zusammengefasst. Erzeugt mit `npm run specs:board`; als Seite
 mit Bildnachweisen, Filter und Suche mit `npm run qa:report`.
 
-**Gesamt:** 627/717 fertig · 3 in Arbeit · 15 in QA · 3 geplant · 61 offen · 8 zurueckgestellt
+**Gesamt:** 631/718 fertig · 3 in Arbeit · 15 in QA · 3 geplant · 58 offen · 8 zurueckgestellt
 
-**Nachweise:** 338 Kriterien mit Bild · 298 ohne Bild, begruendet in `qa/ohne-bild.json`
+**Nachweise:** 338 Kriterien mit Bild · 302 ohne Bild, begruendet in `qa/ohne-bild.json`
 
 ## Nach Spezifikation
 
@@ -24,9 +24,9 @@ mit Bildnachweisen, Filter und Suche mit `npm run qa:report`.
 | [Bauen und Ausbilden](10-strategie/bauen.md)                   | -         | -     | -       | -     | -               | 57     |
 | [Bedienung](10-strategie/bedienung.md)                         | -         | 2     | -       | 3     | -               | 81     |
 | [Darstellung](10-strategie/darstellung.md)                     | 1         | 1     | -       | 4     | -               | 26     |
-| [Einheiten und Befehle](10-strategie/einheiten-und-befehle.md) | -         | 1     | -       | 3     | 1               | 58     |
+| [Einheiten und Befehle](10-strategie/einheiten-und-befehle.md) | -         | 1     | -       | 2     | 1               | 60     |
 | [Fahrplan zum Klon](10-strategie/fahrplan.md)                  | -         | 2     | -       | 2     | -               | 22     |
-| [Kampf](10-strategie/kampf.md)                                 | -         | -     | -       | 2     | 1               | 24     |
+| [Kampf](10-strategie/kampf.md)                                 | -         | -     | -       | -     | 1               | 26     |
 | [Karte und Vorraete](10-strategie/karte-und-vorraete.md)       | -         | -     | -       | 2     | 3               | 14     |
 | [KI-Spieler](10-strategie/ki.md)                               | -         | -     | -       | 4     | -               | 36     |
 | [Spielziel und Partieverlauf](10-strategie/spielziel.md)       | 1         | -     | -       | 10    | -               | 18     |
@@ -75,7 +75,7 @@ mit Bildnachweisen, Filter und Suche mit `npm run qa:report`.
 - **Kennwort vergessen** — [Konten und Anmeldung](00-plattform/konten.md) AC-5
 - **Automatischer Wiederaufbau** — [Uebertragung](00-plattform/uebertragung.md) AC-10
 
-## Offen (61)
+## Offen (58)
 
 - **Anmeldung ueber Google/GitHub** — [Konten und Anmeldung](00-plattform/konten.md) AC-6
 - **Bilanz je Konto** — [Konten und Anmeldung](00-plattform/konten.md) AC-14
@@ -108,12 +108,9 @@ mit Bildnachweisen, Filter und Suche mit `npm run qa:report`.
 - **Bewegung statt Verschieben** — [Darstellung](10-strategie/darstellung.md) AC-20
 - **Spielerfarbe als Akzent** — [Darstellung](10-strategie/darstellung.md) AC-21
 - **Einheiten blockieren sich nicht** — [Einheiten und Befehle](10-strategie/einheiten-und-befehle.md) AC-10
-- **Kein Verlust am Wegpunkt** — [Einheiten und Befehle](10-strategie/einheiten-und-befehle.md) AC-70
 - **Marschierende laufen nicht aufeinander** — [Einheiten und Befehle](10-strategie/einheiten-und-befehle.md) AC-32
 - **Fünf Häuser wählbar** — [Fahrplan zum Klon](10-strategie/fahrplan.md) AC-16
 - **Kein Haus vorn** — [Fahrplan zum Klon](10-strategie/fahrplan.md) AC-18
-- **Gleiche Heere, gleiche Chancen** — [Kampf](10-strategie/kampf.md) AC-26
-- **Pfeile treffen beim Ankommen** — [Kampf](10-strategie/kampf.md) AC-27
 - **Kein Spieler ist abgeschnitten** — [Karte und Vorraete](10-strategie/karte-und-vorraete.md) AC-7
 - **Vorraete sind endlich und knapp** — [Karte und Vorraete](10-strategie/karte-und-vorraete.md) AC-10
 - **KI liest die Zustandsnachricht** — [KI-Spieler](10-strategie/ki.md) AC-20

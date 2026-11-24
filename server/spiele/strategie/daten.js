@@ -33,6 +33,7 @@
  * @property {number} nachladen Sekunden zwischen zwei Schlaegen
  * @property {string[]} klassen als was die Einheit getroffen wird
  * @property {Record<string, number>} [bonus] Zuschlag je Klasse des Ziels
+ * @property {string} [schmiedelinie] nur diese ihrer Klassen zieht aus den Verbesserungen der Schmiede; fehlt es, jede (einheiten AC-71)
  * @property {boolean} [wacht] fehlt es, wacht jede Einheit mit einem Angriff
  * @property {number} [getarnt] Felder: erst so nah an einer Einheit oder einem Gebaeude des Gegners zaehlt sie fuer ihn als gesehen (kampf AC-22)
  * @property {string[]} [baut]
@@ -317,9 +318,12 @@ const EINHEITEN = {
   },
   // Schuetzen und Belagerung der Krone (einheiten AC-67, AC-68). Der
   // Langbogenschuetze traegt die Werte des Arbalestenschuetzen der Vorlage,
-  // die schwere Armbrust hat kein Vorbild - 13 Angriff alle 3,5 s sind ein
-  // Startwert (12 bis 2026-11-22: seit kampf AC-27 trifft der Bolzen erst beim
-  // Ankommen, und gegen den Zweihandkaempfer gewann sie nur noch 14 von 20). Belagerungsramme und Onager aus den offenen Technikbaum-Daten
+  // die schwere Armbrust hat kein Vorbild - 13 Angriff alle 3,7 s sind ein
+  // Startwert (12 alle 3,5 s bis 2026-11-22: seit kampf AC-27 trifft der Bolzen
+  // erst beim Ankommen, und gegen den Zweihandkaempfer gewann sie nur noch 14
+  // von 20). Mit dem ganzen Regelpaket gemessen: gegen den Zweihandkaempfer 18
+  // von 20, als rechte Seite verliert sie 3; alle 3,5 s waeren es 20 und 0.
+  // Belagerungsramme und Onager aus den offenen Technikbaum-Daten
   // zum Original. Preis, Tempo und Ausbildungszeit bleiben die der Vorstufe;
   // gesetzt ist die Sicht des Onagers (Reichweite plus zwei wie beim
   // Mangonel).
@@ -330,7 +334,7 @@ const EINHEITEN = {
   },
   schwerearmbrust: {
     leben: 40, tempo: 0.96, sicht: 7, tragkraft: 0, kosten: { holz: 35, gold: 55 }, zeit: 27, kuerzel: 'A',
-    angriff: 13, nahruestung: 0, fernruestung: 0, reichweite: 5, nachladen: 3.5,
+    angriff: 13, nahruestung: 0, fernruestung: 0, reichweite: 5, nachladen: 3.7,
     klassen: ['bogenschuetze'], zeitalter: 3, stufeVon: 'armbrustschuetze',
   },
   belagerungsramme: {
@@ -397,17 +401,19 @@ const EINHEITEN = {
     klassen: ['tier'], zeitalter: 2, haeuser: ['eschenbruch'],
   },
   // Der Reiterschuetze: schiesst vom Pferd und wird als Reiter und als
-  // Schuetze getroffen - Speer und Plaenkler haben beide ihren Bonus. Mit
-  // zwei Klassen bekommt er auch beide Linien der Schmiede; das ist die eine
-  // Regel der Wirkungen (Schluessel = Art oder Klasse), keine Ausnahme fuer
-  // ihn. Reichweite 5 und Fernruestung 2 statt 4 und 0 aus der Spec: mit den
+  // Schuetze getroffen - Speer und Plaenkler haben beide ihren Bonus. Aus der
+  // Schmiede zieht er nur die Linie der Schuetzen, wie in der Vorlage
+  // (`schmiedelinie`, einheiten AC-71; Benutzer, 2026-11-22, Entscheidung 8) -
+  // bis dahin bekam er mit zwei Klassen beide Linien und so jede Stufe des
+  // Angriffs doppelt. Was die Kavallerie sonst staerkt (Blutlinien,
+  // Pferdezucht, das Haus), gilt weiter. Reichweite 5 und Fernruestung 2 statt 4 und 0 aus der Spec: mit den
   // Startwerten verlor er gegen Armbrustschuetzen 40 von 40 - im Gefecht
   // haelt niemand Abstand, das Pferd nuetzt dort nichts. So gewinnt er 39 von
   // 40 und verliert gegen Plaenkler und Speerkaempfer 40 von 40.
   reiterschuetze: {
     leben: 60, tempo: 1.4, sicht: 6, tragkraft: 0, kosten: { holz: 40, gold: 70 }, zeit: 34, kuerzel: 'h',
     angriff: 5, nahruestung: 0, fernruestung: 2, reichweite: 5, nachladen: 2,
-    klassen: ['kavallerie', 'bogenschuetze'], zeitalter: 2, haeuser: ['rappenstein'],
+    klassen: ['kavallerie', 'bogenschuetze'], schmiedelinie: 'bogenschuetze', zeitalter: 2, haeuser: ['rappenstein'],
   },
   // Der Riese: viel Leben, langsam, +40 gegen Gebaeude - 50 je Schlag alle
   // drei Sekunden, zwei Drittel einer Ramme, aber er schlaegt auch Einheiten.

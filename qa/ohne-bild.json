@@ -1427,6 +1427,11 @@
       "begruendung": "Dass am Wegpunkt kein Rest des Takts verfaellt, ist ein Unterschied von einem Zehntel Feld je Takt in der Rechnung des Servers: Tempo 1,0 braucht fuer zehn Felder 100 statt 110 Takte. Ein Bildschirmfoto zeigt eine Einheit an einem Ort, nicht wie viele Takte sie fuer den Weg dorthin gebraucht hat - und ein Vorher-Nachher-Bild unterschiede sich um ein Zehntel Feld, das im Bild niemand von einem anderen Startort trennen kann. Geprueft wird es im Rechenteil Takt fuer Takt (tests/strategie-laufen.test.mjs): Takte je Strecke fuer acht Einheiten gerade und schraeg, und die Lage nach einem Takt ueber mehrere Wegpunkte und um eine Ecke."
     },
     {
+      "spec": "10-strategie/einheiten-und-befehle.md",
+      "ac": "AC-71",
+      "begruendung": "Dass der Reiterschuetze aus der Schmiede nur die Linie der Schuetzen zieht, ist eine Rechenregel der Werte auf dem Server (welt.einheitenwert, bonusVon): welche Verbesserung auf welche Klasse einer Einheit wirkt. Im Bild steht danach ein Angriff von 6 statt 7 oder eine Ruestung von 0 statt 1 in der Leiste - dieselbe Ziffer, die jede andere Zahl auch zeigt; ob sie aus einer oder aus zwei Linien kommt, laesst sich an einem Bildschirm nicht sehen. Belegt ist es im Rechenteil-Test: jede Verbesserung der Reiterlinie aendert nichts, jede der Schuetzenlinie genau ihre Summe, Blutlinien und Pferdezucht wirken weiter."
+    },
+    {
       "spec": "10-strategie/kampf.md",
       "ac": "AC-26",
       "begruendung": "Dass gleiche Heere auf beiden Seiten gleich oft gewinnen, ist ein Verhaeltnis ueber 200 Gefechte je Einheitenart, keine Lage im Bild: ein Bildschirmfoto zeigt ein Gefecht, und ob die linke oder die rechte Seite gewinnt, sagt ueber die Regel nichts. Auch die drei Regeln darunter haben kein Aussehen - in welcher Reihenfolge die Einheiten eines Takts rechnen, ob die Reichweite gegen die Lage zu Beginn des Takts misst und welcher von zwei gleich langen Wegen genommen wird. Geprueft im Rechenteil (tests/strategie-seitengleich.test.mjs): 200 Startwerte je Art gegen die Streuung eines Muenzwurfs, dieselbe Partie zweimal Takt fuer Takt gleich, die Reihenfolge je Takt neu, die Reichweite gegen die schon gegangene Lage, und ein um die Mitte gedrehter Weg ist der gedrehte Weg."

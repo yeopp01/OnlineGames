@@ -300,7 +300,12 @@ test('bauen AC-39: jede Ruestung gibt ihrer Gattung +1 / +1 - jeder Stufe, und n
       welt.erforschen(anna, verbesserung);
       erwartet = Object.fromEntries(alle.map((art) => {
         const [nah, fern] = erwartet[art];
-        return [art, EINHEITEN[art].klassen.includes(Object.keys(VERBESSERUNGEN[verbesserung].wirkung)[0]) ? [nah + 1, fern + 1] : [nah, fern]];
+        // Wer eine `schmiedelinie` traegt, ruestet nur in dieser einen Klasse
+        // (einheiten AC-71): der Reiterschuetze als Schuetze, nicht als Reiter.
+        const gattung = Object.keys(VERBESSERUNGEN[verbesserung].wirkung)[0];
+        const linie = EINHEITEN[art].schmiedelinie;
+        const trifft = EINHEITEN[art].klassen.includes(gattung) && (!linie || gattung === linie);
+        return [art, trifft ? [nah + 1, fern + 1] : [nah, fern]];
       }));
       for (const art of alle) assert.deepEqual(ruestung(art), erwartet[art], `${art} nach ${verbesserung}`);
     }

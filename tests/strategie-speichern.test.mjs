@@ -176,8 +176,10 @@ test('speichern AC-17: ein Stand einer neueren Fassung wird abgelehnt, mit dem S
 });
 
 test('speichern AC-17: ein Stand einer aelteren Fassung ohne Weg dorthin wird abgelehnt, nicht halb geladen', () => {
+  // Fassung 0 hat es nie gegeben - von ihr fuehrt kein Schritt weg. Die
+  // Fassungen darueber haben seit AC-18 jede einen (SCHRITTE).
   abgelehnt(
-    mitFassung(mitten().sichern(), stand.FASSUNG - 1),
+    mitFassung(mitten().sichern(), 0),
     'aelter',
     'Dieser Spielstand stammt aus einer älteren Fassung des Spiels und lässt sich nicht mehr fortsetzen.',
   );

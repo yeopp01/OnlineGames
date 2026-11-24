@@ -223,6 +223,12 @@ const KREIS_KRONE = [
   ['husar', 'schwerearmbrust'],
 ];
 
+// Die eine Ausnahme (Benutzer, 2026-11-22, Entscheidung 1 zum Regelpaket):
+// seit kampf AC-26 und AC-27 gewinnt der Hellebardier als linke Seite gegen den
+// Langbogen einmal (Startwert 10), der Langbogen weiter 20 von 20. Jede andere
+// Paarung bleibt bei 0.
+const AUSNAHME_KRONE = { 'hellebardier:langbogenschuetze': 1 };
+
 function siegeInDerKrone(links, rechts) {
   let siege = 0;
   let ohneEnde = 0;
@@ -243,7 +249,8 @@ test('fahrplan AC-26: der Konterkreis haelt in der Krone - jede der neun Paarung
     assert.equal(hin.siege, STARTWERTE, `${konter} soll ${ziel} kontern, gewinnt aber nur ${hin.siege} von ${STARTWERTE}`);
     assert.equal(hin.ohneEnde, 0, `${konter} gegen ${ziel}: ${hin.ohneEnde} Gefechte ohne Ende`);
     const her = siegeInDerKrone(ziel, konter);
-    assert.equal(her.siege, 0, `${ziel} wird von ${konter} gekontert, gewinnt als linke Seite aber ${her.siege} von ${STARTWERTE}`);
+    const erlaubt = AUSNAHME_KRONE[`${ziel}:${konter}`] || 0;
+    assert.ok(her.siege <= erlaubt, `${ziel} wird von ${konter} gekontert, gewinnt als linke Seite aber ${her.siege} von ${STARTWERTE}`);
   }
 });
 

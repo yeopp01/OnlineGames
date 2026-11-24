@@ -2,7 +2,7 @@
 
 **Bereich:** Strategie
 **Kuerzel:** kampf
-**Stand:** 24/27 fertig · 2 offen · 1 zurueckgestellt
+**Stand:** 26/27 fertig · 1 zurueckgestellt
 
 ## Zweck
 
@@ -224,38 +224,49 @@ aus [Spielziel](spielziel.md) AC-10, gemessen in
   Ziel schräg davon, galt es für einen Takt als unerreichbar (42 von 90
   gemessenen Verfolgungen).
 
-- **AC-26** `offen` **Gleiche Heere, gleiche Chancen** — Stehen sich zwei
+- **AC-26** `fertig` **Gleiche Heere, gleiche Chancen** — Stehen sich zwei
   gleiche Heere gegenüber, gewinnt jede Seite gleich oft: über 200
   Startwerte je Einheitenart liegt der Abstand zwischen links und rechts
   innerhalb des Dreifachen der Streuung eines Münzwurfs. Die Welt bleibt
   dabei bestimmt — dieselbe Partie zweimal gerechnet verläuft Takt für Takt
-  gleich. Heute gewinnt bei gleichen Heeren meist eine Seite: über 200
-  Startwerte Miliz 116 zu 84, Bogen 21 zu 179, Ritter 80 zu 120. **Was
-  fehlt:** gebaut ist es als Patch (2026-11-22, nicht eingecheckt:
-  Reihenfolge je Takt gemischt, Reichweite gegen die Lage zu Beginn des
-  Takts, Gleichstände ohne Himmelsrichtung), aber damit reißen Grenzen, die
-  nur der Benutzer lockert — mit den Gleichständen in der Wegsuche fahrplan
-  AC-15, ohne sie die 200 Startwerte selbst, dazu ki AC-4.
+  gleich. Drei Regeln tragen es: die **Reihenfolge**, in der die Einheiten
+  eines Takts handeln, wird jeden Takt neu gemischt, aus einem eigenen
+  Zufall des Startwerts (`welt.reihe`, `welt.reihenZufall`); die
+  **Reichweite** misst gegen die Lage zu Beginn des Takts, nicht gegen die,
+  die ein Ziel in diesem Takt schon gegangen ist (`taktX`, `taktY`); und
+  **Gleichstände** — zwei Wege gleicher Länge, zwei Ziele gleichen
+  Abstands, zwei freie Plätze — hängen nicht an der Himmelsrichtung.
+  Gemessen am 2026-11-24 im Gefechtsstand (200 Startwerte, links : rechts,
+  Ritter mit Budget 1200, sonst 600), vorher → nachher: Miliz 116:84 →
+  78:79, Speer 105:94 → 106:93, Späher 103:97 → 89:93, Bogen 21:179 →
+  43:42, Plänkler 128:71 → 30:43, Ritter 80:120 → 99:92.
+  Vorher hielten Bogen und Plänkler die Grenze nicht, der Ritter knapp.
+  Seitdem bleiben mehr Gefechte ohne Sieger (Bogen 115, Plänkler 127,
+  Miliz 43 von 200, vorher höchstens eines): am Ende steht auf keiner
+  Seite einer mehr. Unter Schützen trägt dazu bei, dass ein Pfeil im Flug auch
+  trifft, wenn sein Schütze schon fiel (AC-27); warum es bei der Miliz so
+  oft aufgeht, ist nicht untersucht.
 
-- **AC-27** `offen` **Pfeile treffen beim Ankommen** — Der Schuss eines
+- **AC-27** `fertig` **Pfeile treffen beim Ankommen** — Der Schuss eines
   Fernkämpfers oder eines Turms trifft nicht im Takt des Abschusses,
   sondern wenn der Pfeil ankommt: so viele Takte später, wie er mit sieben
-  Feldern je Sekunde für die Strecke braucht, mindestens einen. Der
-  Schaden wird beim Abschuss gerechnet und beim Ankommen abgerechnet. Ein
-  Pfeil trifft sicher — auch ein Ziel, das inzwischen weitergelaufen ist,
-  und auch, wenn der Schütze inzwischen fiel. Fällt das Ziel vorher,
-  verpufft er. Nahkampf trifft im Takt des Schlags, der Stein des Mangonels
-  fliegt wie bisher (AC-19). **Aus dem Spiel auf dem Server (2026-11-13,
-  Punkt 25):** „die Pfeile der Burg kommt irgendwie SOFORT beim opfer an" —
-  der Schaden fällt im Takt des Schusses, der Pfeil im Bild fliegt danach
-  noch eine halbe Sekunde. **Was fehlt:** gebaut ist es als Patch
-  (2026-11-22, nicht eingecheckt), aber damit reißt ki AC-25 (zwei gegen
-  zwei, Startwert 8: zwei Angriffsläufe, die der Test zum Verbündeten
-  zählt — die Wache von KI 4 verteidigt dort einen eigenen Dorfbewohner am
-  Platz des ausgeschiedenen Verbündeten), und der Nebeltest steht genau an
-  seiner Grenze (105 von 120 vor Minute 60). Ob der Test die Verteidigung
-  eigener Einheiten ausnehmen darf wie die eigener Gebäude, entscheidet der
-  Benutzer.
+  Feldern je Sekunde für die Strecke braucht (`PFEIL_TEMPO`, gesetzt, nicht
+  aus der Vorlage), mindestens einen. Der Schaden wird beim Abschuss
+  gerechnet und beim Ankommen mit den Schlägen jenes Takts abgerechnet
+  (`welt.pfeileImFlug`, geflogen wird mit den Steinen in
+  `welt.einschlaegeTakten`). Ein Pfeil trifft sicher — auch ein Ziel, das
+  inzwischen weitergelaufen ist, und auch, wenn der Schütze inzwischen
+  fiel. Fällt das Ziel vorher, verpufft er: kein zweites Ziel, kein Schlag
+  auf den Gefallenen. Nahkampf trifft im Takt des Schlags, der Stein des
+  Mangonels fliegt wie bisher (AC-19). Jeder Schuss im Zustand trägt als
+  sechsten Wert die Takte bis zum Einschlag, und der Browser lässt den
+  Pfeil in diesem Takt landen. **Aus dem Spiel auf dem Server
+  (2026-11-13, Punkt 25):** „die Pfeile der Burg kommt irgendwie SOFORT
+  beim opfer an" — der Schaden fiel im Takt des Schusses, der Pfeil im
+  Bild flog danach noch eine halbe Sekunde. Mit dem Pfeilflug gesetzt
+  (einheiten AC-44, AC-67, AC-69): schwere Armbrust 13 alle 3,7 s,
+  Elite-Reiterschütze +20 und Elite-Wiedergänger +10 Leben, Söldner Tempo
+  0,95.
 
 ### Stufe E und F — Häuser und Drache
 

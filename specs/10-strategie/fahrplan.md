@@ -197,9 +197,16 @@ Zustandsnachricht umbaut und damit jeden Browsertest berührt: was dort heute
   einen Angriff aus Nahkämpfern messbar. Rammen brechen sie auf. Gemessen
   in der Belagerung (`belagerungSpielen`, Runde 139): zehn Soldaten nehmen
   ein freies Dorfzentrum in 88 bis 98 Sekunden, hinter einem Ring zwei
-  Felder vor dem Rand erst in 178 bis 263 — verlangt ist je Startwert
+  Felder vor dem Rand erst in 178 bis 263 — verlangt war je Startwert
   mindestens eine Minute. Zehn Soldaten mit zwei Rammen schaffen es in
-  jedem Startwert vor sechzehn Soldaten, die dasselbe kosten.
+  jedem Startwert vor sechzehn Soldaten, die dasselbe kosten. **Seit dem
+  Regelpaket 50 Sekunden** (Benutzer, 2026-11-22, Entscheidung 1): die
+  Wegsuche löst Gleichstände nach Richtung auf ([Kampf](kampf.md) AC-26),
+  die Soldaten gehen durch eine Bresche, und das Dorfzentrum fällt
+  früher — gemessen 2026-11-24 frei 87,5 bis 96,9 Sekunden, hinter dem
+  Ring 147 bis 248, je Startwert 57,2 bis 151,7 später (mit der alten
+  Wegsuche allein 84,8 bis 169,4). 50 ist mehr als das Fünffache dessen,
+  was die Startwerte ohne Mauer auseinanderliegen (9,4 Sekunden).
 - **AC-23** `fertig` **Der Konterkreis der Ritterzeit** — Im Gefechtsstand bei
   gleichen Kosten, je zwanzig Startwerte, in beiden Richtungen: Speer gegen
   Ritter, Mangonel gegen einen Haufen Bogenschützen, Ritter gegen Mangonel
@@ -429,6 +436,14 @@ Text am Bildschirm zitieren, zieht die Runde zu E1 nach. Alle bleiben
   Paarungen und gilt nicht: das Schwert läuft durch die Pfeile (20 von 20
   für den Zweihandkämpfer, wie im Fürstentum der Langschwertkämpfer gegen
   den Bogenschützen), vor der schweren Armbrust fällt es (19 von 20).
+  **Eine Ausnahme seit dem Regelpaket** (Benutzer, 2026-11-22, Entscheidung
+  1): als linke Seite gewinnt der Hellebardier gegen den Langbogen
+  höchstens 1 von 20 statt 0. Seit [Kampf](kampf.md) AC-26 schlägt jeder
+  Takt in gewürfelter Reihenfolge, und seit AC-27 trifft ein Pfeil erst
+  beim Ankommen; der eine Sieg ist Startwert 10 nach 35 Sekunden —
+  warum er dort kippt, ist nicht untersucht. Gemessen 2026-11-24: 20 von 20
+  für den Langbogen, umgekehrt 1; alle anderen Paarungen 20 und 0; gegen
+  den Zweihandkämpfer gewinnt die schwere Armbrust 18 von 20, umgekehrt 3.
 
 **Bauabfolge (Spec-Runde 2026-11-18).** Die Krone ist als Aufstieg schon in
 den Daten, aber leer. Erst kommt, was aus vorhandenen Regeln besteht —

@@ -249,7 +249,7 @@ test('einheiten AC-67: Langbogenschuetze und schwere Armbrust - Werte, Preis der
   const l = EINHEITEN.langbogenschuetze;
   const s = EINHEITEN.schwerearmbrust;
   assert.deepEqual([l.leben, l.angriff, l.reichweite, l.nachladen], [40, 6, 5, 2]);
-  assert.deepEqual([s.leben, s.angriff, s.reichweite, s.nachladen], [40, 13, 5, 3.5]);
+  assert.deepEqual([s.leben, s.angriff, s.reichweite, s.nachladen], [40, 13, 5, 3.7]);
   // Die Rollen bleiben (einheiten AC-34, AC-58): der Bogen traegt den Zuschlag
   // gegen Speere, die Armbrust den schweren Bolzen.
   assert.deepEqual(l.bonus, { speer: 3 });

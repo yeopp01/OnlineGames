@@ -25,7 +25,7 @@ const zlib = require('node:zlib');
 // Spielers, einer Einheit, eines Gebaeudes oder der KI dazukommt oder
 // wegfaellt - `tests/waechter-stand.test.mjs` vergleicht die Form mit dem
 // Abbild in `server/spiele/strategie/stand-abbild.json` und verlangt es.
-const FASSUNG = 1;
+const FASSUNG = 2;
 
 // Je Fassung n der Schritt nach n + 1 (speichern AC-18): eine Funktion, die
 // den entpackten Inhalt `{ welt, kis }` der Fassung n an Ort und Stelle zu
@@ -40,7 +40,24 @@ const FASSUNG = 1;
 // weiterlaufen.
 /** @typedef {{ welt: Record<string, any>, kis: Record<string, any>[] }} Inhalt */
 /** @type {Record<number, ((inhalt: Inhalt) => void) | string>} */
-const SCHRITTE = {};
+const SCHRITTE = {
+  // 1 -> 2, das Regelpaket (kampf AC-26, AC-27): die Reihenfolge eines Takts
+  // wird je Takt gemischt, aus einem eigenen Zufall des Startwerts - er
+  // beginnt, wo der einer neuen Partie beginnt; jede Einheit merkt sich ihren
+  // Platz darin und ihre Lage zu Beginn des Takts; Pfeile fliegen, bis sie
+  // ankommen - ein alter Stand hat keinen in der Luft, denn dort traf jeder
+  // im Takt des Schusses.
+  1: ({ welt }) => {
+    welt.reihenZufall = (welt.startwert ^ 0x2c1b3c6d) >>> 0;
+    welt.reihe = [];
+    welt.pfeileImFlug = [];
+    for (const einheit of welt.einheiten.values()) {
+      einheit.reihe = 0;
+      einheit.taktX = einheit.x;
+      einheit.taktY = einheit.y;
+    }
+  },
+};
 
 const MARKE = Buffer.from('FAST', 'latin1');
 const KOPF = 8;

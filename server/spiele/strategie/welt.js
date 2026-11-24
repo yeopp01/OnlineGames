@@ -226,6 +226,20 @@ function wirkungsschluessel(art) {
   return [...new Set([art, ...(EINHEITEN[art]?.klassen || [])])];
 }
 
+/** Die Verbesserungen der Schmiede (bauen AC-39, AC-48) - gelesen aus dem Gebaeude, das sie erforscht. */
+const AUS_DER_SCHMIEDE = new Set((GEBAEUDE.schmiede?.bildetAus || []).map((k) => VERBESSERUNGEN[k]).filter(Boolean));
+
+/**
+ * Ob eine Wirkung unter diesem Schluessel bei der Art zaehlt. Fast immer ja;
+ * nur wer eine `schmiedelinie` traegt, zieht aus der Schmiede allein unter
+ * seiner Art und dieser einen Klasse (einheiten AC-71): der Reiterschuetze
+ * ruestet als Schuetze, nicht dazu als Reiter.
+ */
+function wirktUnter(art, schluessel, wirkung) {
+  const linie = EINHEITEN[art]?.schmiedelinie;
+  return !linie || schluessel === art || schluessel === linie || !AUS_DER_SCHMIEDE.has(wirkung);
+}
+
 /** Wer keinen Zuschlag hat (`welt.bonusVon()`) - ein Objekt fuer alle, damit sich vergleichen laesst. */
 const OHNE_BONUS = /** @type {Record<string, number>} */ (Object.freeze({}));
 
@@ -976,14 +990,14 @@ class Welt {
     let wert = EINHEITEN[art][feld] || 0;
     const wirkungen = this.wirkungen(besitzer);
     for (const s of wirkungsschluessel(art)) {
-      for (const w of wirkungen) wert += w.wirkung?.[s]?.[feld] || 0;
+      for (const w of wirkungen) if (wirktUnter(art, s, w)) wert += w.wirkung?.[s]?.[feld] || 0;
     }
     // Ein Anteil am Tempo (bauen AC-46, die Pferdezucht) rechnet auf alles,
     // was davor steht - auch auf den Zuschlag des Lehens fuer den Spaeher.
     if (feld === 'tempo') {
       let anteil = 0;
       for (const s of wirkungsschluessel(art)) {
-        for (const w of wirkungen) anteil += w.wirkung?.[s]?.tempoAnteil || 0;
+        for (const w of wirkungen) if (wirktUnter(art, s, w)) anteil += w.wirkung?.[s]?.tempoAnteil || 0;
       }
       if (anteil) wert = Math.round(wert * (1 + anteil) * 1000) / 1000;
     }
@@ -1009,6 +1023,7 @@ class Welt {
     bonus = grund;
     for (const schluessel of wirkungsschluessel(art)) {
       for (const w of liste) {
+        if (!wirktUnter(art, schluessel, w)) continue;
         for (const [klasse, zahl] of Object.entries(w.bonus?.[schluessel] || {})) {
           if (bonus === grund) bonus = { ...grund };
           bonus[klasse] = (bonus[klasse] || 0) + zahl;
@@ -1021,6 +1036,7 @@ class Welt {
     // Schadensformel bleibt `Angriff - Ruestung + Bonus`.
     for (const schluessel of wirkungsschluessel(art)) {
       for (const w of liste) {
+        if (!wirktUnter(art, schluessel, w)) continue;
         for (const [klasse, anteil] of Object.entries(w.bonusAnteil?.[schluessel] || {})) {
           if (bonus === grund) bonus = { ...grund };
           const bisher = bonus[klasse] || 0;
@@ -2093,7 +2109,9 @@ class Welt {
     const wirkung = VERBESSERUNGEN[art].wirkung;
     for (const einheit of this.einheiten.values()) {
       if (einheit.besitzer !== spieler.id) continue;
-      for (const schluessel of wirkungsschluessel(einheit.art)) einheit.leben += wirkung[schluessel]?.leben || 0;
+      for (const schluessel of wirkungsschluessel(einheit.art)) {
+        if (wirktUnter(einheit.art, schluessel, VERBESSERUNGEN[art])) einheit.leben += wirkung[schluessel]?.leben || 0;
+      }
     }
     // Pferdekummet legt auf jede Farm nach, auch auf die, die schon steht
     // (bauen AC-26) - sonst lohnte es sich erst beim naechsten Feld.

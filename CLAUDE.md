@@ -181,7 +181,7 @@ Umfang hinzufügt, dort nachsehen.
 
 ## Stand
 
-**627 von 717 Kriterien fertig.** 1132 Tests ohne Browser und 37 ganze Partien, 358 im Browser. Die
+**631 von 718 Kriterien fertig.** 1148 Tests ohne Browser und 37 ganze Partien, 358 im Browser. Die
 Übersicht ist der Bericht: `npm run qa:report`.
 
 Gebaut ist der Unterbau: Räume, Übertragung, Karte, Wegfindung, Sammeln,
@@ -1045,6 +1045,19 @@ nur Felder, die es kennt). Gemessen: in die Datenbank schreiben 4 bis 6 ms
 für 18 bis 121 KB, öffnen unter 1 ms — mit Sichern und Probe kostet eine
 große Partie einmal je Minute rund 40 ms in einem Schlag. Im Bild steht
 davon noch nichts (S3).
+
+**Das Regelpaket steht** (2026-11-24, Zweig `strategie-regelpaket`,
+Benutzer, 2026-11-22): **die Laufregel** trägt den Rest eines Takts über
+den Wegpunkt (einheiten AC-70, `welt.wegGehen`), **jeder Takt schlägt in
+gewürfelter Reihenfolge** und A* löst Gleichstände nach Richtung (kampf
+AC-26, `reihenZufall`), **ein Pfeil trifft beim Ankommen** (kampf AC-27,
+`welt.pfeileImFlug`, `PFEIL_TEMPO`), und **der Reiterschütze rüstet als
+Schütze** (einheiten AC-71, `schmiedelinie` in den Daten). Der Stand hat
+dafür Fassung 2. Gemessen links zu rechts über 200 Startwerte: Bogen
+vorher 21:179, danach 43:42 — 115 ohne Sieger, weil beide leer laufen.
+Angepasst mit Freigabe nur fahrplan AC-15 (50 statt 60 Sekunden) und
+Hellebardier gegen Langbogen (höchstens 1 von 20); der Nebel steht bei 107
+von 120 vor Minute 60, Median 38,5, alle mit Sieger.
 
 1. **Stufe A** Dunkle Zeit mit Wirtschafts-KI und Prüfstand · **B** Feudalzeit
    · **C** Partieende und KI-Gegner · **D** Ritterzeit · **E** fünf Häuser ·

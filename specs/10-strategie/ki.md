@@ -40,7 +40,13 @@ nicht die Regeln.
 - **AC-4** `fertig` **Baut die Wirtschaft auf** — Bildet ohne Pause Dorfbewohner aus, baut ein
   Haus, bevor die Bevölkerung voll ist, und verteilt Dorfbewohner auf
   Nahrung, Holz und Gold nach einem festen Plan der Dunklen Zeit. Ist das
-  Ziel von 22 Dorfbewohnern erreicht, spart sie für die Feudalzeit.
+  Ziel von 22 Dorfbewohnern erreicht, spart sie für die Feudalzeit. Wer
+  eine Farm baut, bestellt sie danach und wechselt damit zur Nahrung; er
+  kommt deshalb von dem Rohstoff, der am weitesten über dem Plan liegt
+  (`ki.farmbauer`, seit dem Regelpaket 2026-11-24 — mit der gemischten
+  Reihenfolge, kampf AC-26, fiel der Plan sonst: baut immer ein
+  Holzfäller, fehlt er dem Holz, baut immer, wer Nahrung holt, steht nach
+  den letzten Schafen zu viel am Holz; Gegenprobe beider fällt).
 - **AC-5** `fertig` **Lager an die Vorräte** — Baut Holzfällerlager am nächsten Wald,
   Bergbaulager am Gold, Mühle an den Beeren, und Farmen, sobald Schafe und
   Beeren nicht mehr reichen: wenn der Plan mehr Dorfbewohner an der Nahrung
@@ -339,6 +345,20 @@ nicht die Regeln.
   niemand; die KI sendet dafür keine Nachricht, und weil sie bei jeder
   Entscheidung `feindlich` fragt, ist ein Gekündigter danach ihr Gegner,
   ohne dass sie davon wissen muss — der Test dazu gehört zu AC-21.
+  **Ein Marsch zu Eigenem ist Verteidigung** (ki AC-14), auch zu einem
+  eigenen Dorfbewohner: steht am Marschziel eines Angriffslaufs in sechs
+  Feldern ein eigenes Gebäude oder ein eigener Dorfbewohner, zählt der Test
+  ihn zu keinem Dorf (`EIGENES_NAH` in `tests/partien/zwei-gegen-zwei.mjs`;
+  Dorfbewohner seit dem Regelpaket, Benutzer, 2026-11-22). Gefunden mit dem
+  Pfeilflug allein, Startwert 8: die Wache von KI 4 verteidigte einen
+  eigenen Dorfbewohner, den KI 2 am Platz des ausgeschiedenen Verbündeten
+  KI 3 schlug. **Nur Dorfbewohner, wie in ki AC-14:** mit jeder eigenen
+  Einheit, die nicht mitzieht, hatte Startwert 10 nur noch 9
+  Angriffsläufe zu Gegnern (verlangt mehr als 10). Gemessen 2026-11-24
+  mit dem ganzen Regelpaket: alle zwanzig Startwerte grün — **auch ohne
+  die Ausnahme für Dorfbewohner** (Gegenprobe grün): der Fall von Startwert
+  8 kommt mit Laufregel und gemischter Reihenfolge nicht mehr vor, die
+  Ausnahme ist an diesen Startwerten unbelegt.
 - **AC-26** `fertig` **Die KI handelt mit Karren** — Fehlt ihr in der
   Ritterzeit das Gold, baut sie einen zweiten Markt weit vom ersten oder
   fährt zu einem verbündeten, und bildet Karren aus. Gemessen über ganze

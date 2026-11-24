@@ -280,12 +280,55 @@ test('einheiten AC-46: den Reiterschuetzen bildet nur Haus Rappenstein aus - get
   assert.equal(welt.schaden(speer, a), EINHEITEN.speerkaempfer.angriff + EINHEITEN.speerkaempfer.bonus.kavallerie - r.nahruestung);
   const [plaenkler, b] = paar(welt, 'plaenkler', 'reiterschuetze');
   assert.equal(welt.schaden(plaenkler, b), Math.max(1, EINHEITEN.plaenkler.angriff + EINHEITEN.plaenkler.bonus.bogenschuetze - r.fernruestung));
-  // Mit zwei Klassen bekommt er beide Linien der Schmiede und die Pferdezucht.
+  // Aus der Schmiede nur die Linie der Schuetzen (einheiten AC-71), die
+  // Pferdezucht als Reiter.
   const vorher = { angriff: welt.einheitenwert('a', 'reiterschuetze', 'angriff'), tempo: welt.einheitenwert('a', 'reiterschuetze', 'tempo') };
   welt.spielerVon('a').verbesserungen.push('schmiedeangriff', 'befiedertePfeile', 'pferdezucht');
   welt.werteGemerkt.clear();
-  assert.equal(welt.einheitenwert('a', 'reiterschuetze', 'angriff'), vorher.angriff + 2);
+  assert.equal(welt.einheitenwert('a', 'reiterschuetze', 'angriff'), vorher.angriff + 1);
   assert.ok(welt.einheitenwert('a', 'reiterschuetze', 'tempo') > vorher.tempo);
+});
+
+// ---- Der Reiterschuetze ruestet als Schuetze (einheiten AC-71) -----------------
+
+/** Die Verbesserungen der Schmiede, nach der Klasse, die sie staerken. */
+function schmiedeFuer(klasse) {
+  return GEBAEUDE.schmiede.bildetAus.filter((k) => VERBESSERUNGEN[k]?.wirkung?.[klasse]);
+}
+
+test('einheiten AC-71: der Reiterschuetze zieht aus der Schmiede nur die Linie der Schuetzen - Angriff und Ruestung der Reiter nicht, Blutlinien und Pferdezucht schon', () => {
+  assert.equal(EINHEITEN.reiterschuetze.schmiedelinie, 'bogenschuetze');
+  const reiter = schmiedeFuer('kavallerie').filter((k) => !VERBESSERUNGEN[k].wirkung.bogenschuetze);
+  const schuetzen = schmiedeFuer('bogenschuetze');
+  assert.ok(reiter.length >= 6, `Reiterlinie der Schmiede: ${reiter.join(', ')}`);
+  assert.ok(schuetzen.length >= 6, `Schuetzenlinie der Schmiede: ${schuetzen.join(', ')}`);
+  const FELDER = ['angriff', 'nahruestung', 'fernruestung', 'reichweite', 'sicht', 'leben', 'tempo'];
+  const werte = (erforscht) => {
+    const welt = new Welt(ZWEI, 7, { sicht: 'aufgedeckt', haeuser: { a: 'rappenstein' } });
+    welt.spielerVon('a').zeitalter = 3;
+    welt.spielerVon('a').verbesserungen.push(...erforscht);
+    return Object.fromEntries(FELDER.map((f) => [f, welt.einheitenwert('a', 'reiterschuetze', f)]));
+  };
+  const ohne = werte([]);
+  // Die Reiterlinie aendert an ihm nichts ...
+  assert.deepEqual(werte(reiter), ohne);
+  // ... die der Schuetzen alles, was sie dem Bogenschuetzen gibt.
+  const mitSchuetzen = werte(schuetzen);
+  for (const feld of FELDER) {
+    const plus = schuetzen.reduce((n, k) => n + (VERBESSERUNGEN[k].wirkung.bogenschuetze[feld] || 0), 0);
+    assert.equal(mitSchuetzen[feld] - ohne[feld], plus, feld);
+  }
+  // Was sonst die Kavallerie staerkt, gilt weiter.
+  assert.equal(werte(['blutlinien']).leben - ohne.leben, VERBESSERUNGEN.blutlinien.wirkung.kavallerie.leben);
+  assert.ok(werte(['pferdezucht']).tempo > ohne.tempo);
+  // Und ein Reiter ohne `schmiedelinie` bekommt die Reiterlinie wie bisher.
+  const ritter = (erforscht) => {
+    const welt = new Welt(ZWEI, 7, { sicht: 'aufgedeckt' });
+    welt.spielerVon('a').zeitalter = 3;
+    welt.spielerVon('a').verbesserungen.push(...erforscht);
+    return welt.einheitenwert('a', 'ritter', 'angriff');
+  };
+  assert.ok(ritter(reiter) > ritter([]));
 });
 
 test('einheiten AC-46: der Reiterschuetze schlaegt Armbrustschuetzen gleicher Kosten und faellt gegen Plaenkler und Speerkaempfer', () => {

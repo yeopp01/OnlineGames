@@ -2,7 +2,7 @@
 
 **Bereich:** Strategie
 **Kuerzel:** einheiten
-**Stand:** 58/63 fertig · 1 in QA · 3 offen · 1 zurueckgestellt
+**Stand:** 60/64 fertig · 1 in QA · 2 offen · 1 zurueckgestellt
 
 ## Zweck
 
@@ -88,17 +88,17 @@ Befehl bewirkt.
 - **AC-19** `fertig` **Werte nach der Vorlage** — Dorfbewohner, Späherreiter und
   Miliz haben die Werte aus der Tabelle; der Späher ist anderthalbmal so
   schnell wie ein Dorfbewohner.
-- **AC-70** `offen` **Kein Verlust am Wegpunkt** — Eine Einheit legt in
+- **AC-70** `fertig` **Kein Verlust am Wegpunkt** — Eine Einheit legt in
   jedem Takt genau ihr Tempo zurück, auch wenn sie dabei an einem Wegpunkt
   ankommt: der Rest des Takts geht zum nächsten weiter. Zehn Felder gerade
   dauern bei Tempo 1,0 also 100 Takte, schräg 142 — aufgerundet auf den
-  nächsten ganzen Takt, nicht mehr. Heute endet der Takt am Wegpunkt: Tempo
-  1,0 braucht 110 und 150 Takte, jede Einheit ist rund 9 % langsamer als
-  ihr Wert. Getriebene Schafe laufen nach derselben Regel. **Was fehlt:**
-  gebaut ist es als Patch (2026-11-22, nicht eingecheckt), aber mit der
-  Regel reißen Grenzen, die nur der Benutzer lockert: der Langbogen gegen
-  den Hellebardier in der Krone (fahrplan AC-26, Werte der Vorlage), dazu
-  einheiten AC-42 und fahrplan AC-25.
+  nächsten ganzen Takt, nicht mehr. Bis zum Regelpaket (2026-11-24) endete
+  der Takt am Wegpunkt: Tempo 1,0 brauchte 110 und 150 Takte, jede Einheit
+  war rund 9 % langsamer als ihr Wert, und eine Verbesserung um 50 %
+  (Karawane) wirkte als 57 %, weil die Stufung der Takte mitschob.
+  Getriebene Schafe laufen nach derselben Regel. Mit der Regel steht die
+  Ausnahme in fahrplan AC-26 (Hellebardier gegen Langbogen) und der neue
+  Wert in fahrplan AC-15 — beide vom Benutzer freigegeben (2026-11-22).
 - **AC-20** `fertig` **Ein Befehl für viele** — Mehrere ausgewählte Einheiten, zum selben Punkt
   geschickt, stellen sich dort nebeneinander auf, statt auf einem Feld zu
   stehen. Mehrere Sammler auf einem Vorrat verteilen sich auf die Nachbarn
@@ -456,15 +456,17 @@ kommen aus der Blender-Sitzung (Bauabfolge E6 bis E8).
   0 von 20.
 - **AC-44** `fertig` **Söldner für Gold** — Kaserne ab der Ritterzeit, jedes Haus;
   kostet **nur Gold** und ist schnell da. Werte: 80 Gold (Silberfurt: 64),
-  18 s, **60 Leben** (Startwert 55), Angriff 9, Rüstung 1/1, Tempo 1,0,
-  Nachladezeit 2 s. **Entscheidung:** er verwandelt Gold in Truppen, ohne
+  18 s, **60 Leben** (Startwert 55), Angriff 9, Rüstung 1/1, **Tempo 0,95**
+  (Startwert 1,0), Nachladezeit 2 s. **Entscheidung:** er verwandelt Gold in Truppen, ohne
   Nahrung und Holz, und ist dabei nicht besser als der Kämpfer seiner Zeit
   — bei gleichen Kosten gewinnt keiner von beiden mehr als 60 %. **Der
   Maßstab ist der Langschwertkämpfer**, nicht der Soldat des Lehens: der
   Söldner kommt im Fürstentum, und dort steht ihm die Stufe gegenüber.
   Gemessen (2026-11-18, jede Art einmal links und einmal rechts): mit 60
   Leben gewinnt er 21 von 40; mit den 55 des Startwerts lag er außerhalb
-  der Grenze. Der Preis für Silberfurt ist ein
+  der Grenze. **Seit Laufregel und Pfeilflug** (AC-70, kampf AC-27,
+  Regelpaket 2026-11-24) gewann er mit Tempo 1,0 28 von 40 — der
+  Schnellere ist zuerst am Ziel; mit 0,95 gewinnt er 19 von 40. Der Preis für Silberfurt ist ein
   Bonus des Hauses in den Daten (`preis` in den `boni`, gelesen in
   `welt.auftragKosten`), keine Verzweigung; das Haus sagt es in Worten
   („Den Söldner gibt es 20 % billiger").
@@ -489,10 +491,10 @@ kommen aus der Blender-Sitzung (Bauabfolge E6 bis E8).
   verlor er gegen Armbrustschützen 0 von 40 — das Abstandhalten, das die
   Entscheidung tragen sollte, gibt es im Spiel nicht, er steht und schießt
   wie jeder Schütze; mit Reichweite 5 und Fernrüstung 2 gewinnt er 39 von
-  40, gegen Plänkler und Speerkämpfer bleibt es bei 0. Mit zwei Klassen
-  bekommt er beide Schmiedelinien und die Pferdezucht, in Haus Rappenstein
-  75 Leben — die Regel „Schlüssel = Art oder Klasse" ist dafür nicht
-  aufgebrochen.
+  40, gegen Plänkler und Speerkämpfer bleibt es bei 0. Aus der Schmiede
+  zieht er nur die Linie der Schützen (AC-71); was die Kavallerie sonst
+  stärkt — Pferdezucht, Blutlinien, das Haus —, gilt für ihn; in Haus
+  Rappenstein 75 Leben.
 - **AC-47** `fertig` **Riese aus der Burg** — Spezialeinheit von Haus Wehrstein:
   viel Leben, langsam, ein großer Bonus gegen Gebäude — der Bonus der Ramme
   auf zwei Beinen, aber er schlägt auch Einheiten und wehrt sich. Werte:
@@ -724,8 +726,12 @@ der Einheit bleiben die der Vorstufe. Die Werte stehen in
   Rolle (AC-34, AC-58). Langbogenschütze (aus dem Bogenschützen: 40 Leben,
   6 Angriff, Reichweite 5; 450 Nahrung, 350 Gold, 50 s — die Werte des
   Arbalestenschützen der Vorlage) und schwere Armbrust (aus dem
-  Armbrustschützen: 40 Leben, 12 Angriff alle 3,5 s, Reichweite 5; 400
-  Nahrung, 350 Gold, 50 s — Startwerte ohne Vorbild). Der Eliteplänkler
+  Armbrustschützen: 40 Leben, 13 Angriff alle 3,7 s, Reichweite 5; 400
+  Nahrung, 350 Gold, 50 s — Startwerte ohne Vorbild; 12 Angriff alle 3,5 s
+  bis zum Regelpaket: mit Laufregel und Pfeilflug gewann sie damit gegen
+  den Zweihandkämpfer gleicher Kosten nur 14 von 20, umgekehrt 10; mit 13
+  alle 3,7 s 18, umgekehrt 3 — gemessen 2026-11-24 mit voller Schmiede,
+  Budget 2000; alle 3,5 s wären es 20 und 0). Der Eliteplänkler
   bekommt keine weitere Stufe; in der Vorlage haben sie nur einzelne
   Völker. Der Eibenschütze bleibt voll erforscht die Einheit mit der
   größten Reichweite (AC-42). Gemessen wird mit fahrplan AC-26: ohne
@@ -742,10 +748,10 @@ der Einheit bleiben die der Vorstufe. Die Werte stehen in
 - **AC-69** `fertig` **Elitestufen der Spezialeinheiten** — Jede der fünf
   Einheiten aus der Burg (AC-45 bis AC-49) lässt sich dort einmal
   weiterentwickeln (ADR-0014 Punkt 12), sichtbar nur für ihr Haus:
-  Kriegswolf 70 Leben und 9 Angriff (statt 55 und 7), Reiterschütze 75
+  Kriegswolf 70 Leben und 9 Angriff (statt 55 und 7), Reiterschütze 80
   Leben und 6 Angriff (statt 60 und 5), Riese 220 Leben, 12 Angriff und +50
   gegen Gebäude (statt 180, 10 und +40), Meuchler 45 Leben, 8 Angriff und
-  +14 gegen Dorfbewohner und Mönche (statt 35, 6 und +10), Wiedergänger 75
+  +14 gegen Dorfbewohner und Mönche (statt 35, 6 und +10), Wiedergänger 70
   Leben, 8 Angriff und Rüstung 2/0 (statt 60, 6 und 1/0). Jede kostet 500
   Nahrung, 400 Gold und 60 s — Startwerte ohne Vorbild. Die Zahlen sind die
   der Daten; was das Haus seinen Einheiten gibt, kommt wie bisher dazu.
@@ -763,7 +769,30 @@ der Einheit bleiben die der Vorstufe. Die Werte stehen in
   Wiedergänger (der Gefallene mitgerechnet) gegen Langbogenschütze 0 und
   gegen schwere Armbrust 6. **Abweichung von der ersten Fassung:** der
   Wiedergänger bekommt Nah- statt Fernrüstung (2/0 statt 1/1) — mit +1
-  gegen Pfeile schlug er den Langbogenschützen 23 von 40.
+  gegen Pfeile schlug er den Langbogenschützen 23 von 40. **Seit dem
+  Regelpaket** (Laufregel, Pfeilflug, 2026-11-24) gibt die Stufe dem
+  Wiedergänger +10 statt +15 Leben (mit +15 schlug er den
+  Langbogenschützen 3 von 40) und dem Reiterschützen +20 statt +15 (mit
+  +15 schlug er die schwere Armbrust 2 von 40). Gemessen mit dem ganzen
+  Paket: Kriegswolf 40 und 0, Reiterschütze gegen schwere Armbrust 32,
+  gegen Eliteplänkler und Hellebardier 0, Riese gegen Hellebardier 25,
+  gegen schwere Armbrust und Zweihandkämpfer 0, Meuchler 0, Wiedergänger
+  gegen Langbogenschütze und schwere Armbrust 0.
+- **AC-71** `fertig` **Reiterschütze rüstet als Schütze** — Aus den
+  Verbesserungen der Schmiede zieht der Reiterschütze (AC-46) nur die Linie
+  der Schützen — Befiederte Pfeile, Bodkinpfeil, Armschiene und die drei
+  Schützenrüstungen —, nicht Angriff und Rüstung
+  der Reiter, obwohl er auch Klasse `kavallerie` trägt; wie in der Vorlage
+  (Benutzer, 2026-11-22, Entscheidung 8). Getroffen wird er weiter als
+  Reiter und als Schütze, und was die Kavallerie außerhalb der Schmiede
+  stärkt — Blutlinien, Pferdezucht, die Boni des Hauses —, gilt für ihn.
+  Die Regel steht als Datenfeld an der Einheit (`schmiedelinie:
+  'bogenschuetze'`), die Verbesserungen der Schmiede liest die Welt aus
+  dem, was die Schmiede erforscht (`wirktUnter` in `welt.js`). Bis dahin
+  bekam er jede Stufe des Angriffs doppelt, aus beiden Linien. Gemessen
+  (2026-11-24, beide Seiten mit der Schmiede bis zum Fürstentum, 20
+  Startwerte je Seite): gegen Armbrustschützen gleicher Kosten 37 von 40,
+  mit beiden Linien 40; gegen Eliteplänkler 0, mit beiden Linien auch.
 
 ## Grenzfaelle
 
