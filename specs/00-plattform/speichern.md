@@ -2,7 +2,7 @@
 
 **Bereich:** Plattform
 **Kuerzel:** speichern
-**Stand:** 20/27 fertig · 7 offen
+**Stand:** 26/27 fertig · 1 offen
 
 ## Zweck
 
@@ -67,9 +67,10 @@ nicht das Sichern, sondern das Wiederzusammenkommen.
   neben Pause und Aufgeben, ohne Rückfrage — es geht nichts verloren. Im
   Vorraum stehen danach unter „Deine Partien“ je Stand Spiel, Spielzeit,
   Karte, Beteiligte und Zeitpunkt, mit „Fortsetzen“ und „Löschen“ (Löschen
-  fragt mit einem zweiten Klick nach). **Gesetzt (2026-11-22): nur allein
-  gegen die KI** — zu mehreren gehört das Aufhören zu AC-22, bis dahin
-  fehlt der Knopf, und der Server weist es ab.
+  fragt mit einem zweiten Klick nach). **Allein gegen die KI** sichert der
+  Knopf sofort. **Zu mehreren hört man gemeinsam auf** (AC-22): der Knopf
+  schlägt es allen vor, und gesichert wird erst, wenn jeder Verbundene
+  zugestimmt hat.
 - **AC-8** `fertig` **Wegklicken ist dasselbe wie Anhalten** — Wer den Browser schließt, verliert
   nichts. Nach zwei Minuten ohne Verbindung wird gesichert und der Raum
   geschlossen. **Gesetzt: nur allein** — zu mehreren wartet die Partie
@@ -100,7 +101,7 @@ nicht das Sichern, sondern das Wiederzusammenkommen.
   für [Konten](konten.md) AC-16: ohne Konto gäbe es niemanden, dem er gehört.
 - **AC-13** `fertig` **Nur Eigentümer öffnet, benennt, löscht** — Geprüft auf dem Server bei
   jedem Zugriff, nicht nur beim Anzeigen der Liste.
-- **AC-14** `offen` **Mitspieler dürfen mitbauen, nicht besitzen** — Wer per Code dazukommt, darf
+- **AC-14** `fertig` **Mitspieler dürfen mitbauen, nicht besitzen** — Wer per Code dazukommt, darf
   im Spiel handeln, aber den Stand weder löschen noch umbenennen noch allein
   fortsetzen.
 - **AC-15** `offen` **Gelöschtes Konto nimmt Spielstände mit** — Deckungsgleich mit
@@ -142,19 +143,25 @@ Sitzung und macht sie später wieder aufrufbar.
   abgeräumt, solange der Spieler am Tisch sitzt.
 - **AC-21** `fertig` **Fortsetzen kann jeder** — Auch wer nicht angehalten hat. Sonst hält eine
   abgerissene Verbindung die Partie für alle an.
-- **AC-22** `offen` **Sichern verlangt Einigkeit** — Eine Mehrspielerpartie wird nur gesichert,
+- **AC-22** `fertig` **Sichern verlangt Einigkeit** — Eine Mehrspielerpartie wird nur gesichert,
   wenn alle Verbundenen zustimmen. Ein einzelner darf die Runde nicht
   beenden, weil er gerade verliert.
-- **AC-23** `offen` **Der Gastgeber besitzt den Stand** — Er taucht in seiner Liste auf, und nur er
+- **AC-23** `fertig` **Der Gastgeber besitzt den Stand** — Er taucht in seiner Liste auf, und nur er
   kann ihn fortsetzen. Die Mitspieler bekommen beim Fortsetzen einen neuen
-  Code zugeschickt.
-- **AC-24** `offen` **Fortsetzen wartet auf dieselben Plätze** — Der Warteraum zeigt die Plätze der
+  Code zugeschickt. **Gesetzt (2026-11-24):** „zugeschickt“ heißt ohne
+  Mail — wer mit Konto mitspielte, sieht im Vorraum eine Einladung mit dem
+  neuen Code und „Beitreten“; wer ohne Konto mitspielte, bekommt den Code
+  vom Gastgeber.
+- **AC-24** `fertig` **Fortsetzen wartet auf dieselben Plätze** — Der Warteraum zeigt die Plätze der
   ursprünglichen Partie. Wer sich mit dem Konto oder Namen von damals
   meldet, bekommt seinen Platz zurück.
-- **AC-25** `offen` **Fehlender Spieler blockiert nicht ewig** — Sind alle bis auf einen da,
+- **AC-25** `fertig` **Fehlender Spieler blockiert nicht ewig** — Sind alle bis auf einen da,
   kann der Gastgeber dessen Platz stilllegen: Einheiten bleiben stehen, die
-  Partie läuft.
-- **AC-26** `offen` **Beteiligte stehen im Spielstand** — Damit später nachvollziehbar
+  Partie läuft. **Gesetzt (2026-11-24):** „stehen bleiben“ heißt, sie
+  bleiben auf der Karte, niemand steuert sie, keine KI übernimmt; was sie
+  zuletzt taten, tun sie weiter. Stillgelegt wird nur, solange genau einer
+  fehlt, und wer stillgelegt ist, kommt in diese Sitzung nicht zurück.
+- **AC-26** `fertig` **Beteiligte stehen im Spielstand** — Damit später nachvollziehbar
   ist, wer eingeladen werden muss.
 
 ## Grenzfaelle

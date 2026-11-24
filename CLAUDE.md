@@ -181,7 +181,7 @@ Umfang hinzufügt, dort nachsehen.
 
 ## Stand
 
-**627 von 717 Kriterien fertig.** 1132 Tests ohne Browser und 37 ganze Partien, 358 im Browser. Die
+**633 von 717 Kriterien fertig.** 1138 Tests ohne Browser und 37 ganze Partien, 363 im Browser. Die
 Übersicht ist der Bericht: `npm run qa:report`.
 
 Gebaut ist der Unterbau: Räume, Übertragung, Karte, Wegfindung, Sammeln,
@@ -1045,6 +1045,21 @@ nur Felder, die es kennt). Gemessen: in die Datenbank schreiben 4 bis 6 ms
 für 18 bis 121 KB, öffnen unter 1 ms — mit Sichern und Probe kostet eine
 große Partie einmal je Minute rund 40 ms in einem Schlag. Im Bild steht
 davon noch nichts (S3).
+
+**Speichern S4 steht: zu mehreren** (speichern AC-14, AC-22 bis AC-26).
+Zu mehreren ist „Später weiterspielen“ ein Vorschlag an alle (Nachrichten
+`aufhoeren`, `aufhoerenNein`; an alle `aufhoerfrage` mit Name und wer
+fehlt): gesichert wird erst, wenn jeder Verbundene zugestimmt hat, ein Nein
+verwirft ihn, die Partie läuft dabei weiter. Die Plätze der Menschen mit
+Konto stehen in der Zeile der Ablage (Spalte `plaetze`, nie im Browser),
+nicht in der Welt. Fortsetzen kann nur der Eigentümer; der Warteraum zeigt
+die Plätze von damals („fehlt noch“), Konto oder Name holt den eigenen
+zurück, Einstellungen und Wahl je Platz stehen fest. Wer mit Konto
+mitspielte, sieht im Vorraum die Einladung mit dem neuen Code
+(`GET /api/einladungen`, alle zehn Sekunden) — keine Mail. Fehlt nur noch
+einer, legt der Gastgeber ihn still (`stilllegen`): seine Einheiten bleiben
+ohne Herrn stehen. Fortgesetzt zu mehreren beginnt die Partie angehalten.
+Der Browserlauf meldet dafür ein zweites Konto an (`ZWEITES_KONTO`, Dora).
 
 1. **Stufe A** Dunkle Zeit mit Wirtschafts-KI und Prüfstand · **B** Feudalzeit
    · **C** Partieende und KI-Gegner · **D** Ritterzeit · **E** fünf Häuser ·

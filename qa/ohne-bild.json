@@ -1490,6 +1490,16 @@
       "spec": "00-plattform/speichern.md",
       "ac": "AC-13",
       "begruendung": "Die Pruefung des Eigentuemers steckt in jeder Abfrage der Ablage (WHERE id = ? AND konto = ?) und wird bei jedem Oeffnen, Umbenennen und Loeschen ueber /api/partien gegen die Sitzung gerechnet, nicht nur beim Anzeigen der Liste. Belegt gegen den echten Server mit zwei Konten: Bert bekommt fuer Annas Stand dieselbe 404 wie fuer eine unbekannte Id, Anna oeffnet, benennt und loescht (tests/speichern-ablage.test.mjs; die Gegenprobe ohne konto in der Abfrage laesst den Test fallen). Eine Ablehnung auf dem Server ist eine Antwort mit Statuscode, kein Aussehen - ein Bild zeigte nur, dass ein Knopf fehlt, nicht dass der Server ablehnt."
+    },
+    {
+      "spec": "00-plattform/speichern.md",
+      "ac": "AC-14",
+      "begruendung": "Dass ein Mitspieler mitbaut, aber nichts besitzt, ist eine Zugangsregel auf dem Server: der Stand liegt nur am Konto des Gastgebers, und Loeschen, Umbenennen und Oeffnen ueber /api/partien sowie fortsetzen ueber die Verbindung werden fuer ein anderes Konto abgelehnt - mit derselben 404 wie fuer einen unbekannten Stand bzw. mit dem Satz, dass der Stand jemand anderem gehoert; im Spiel handelt er wie jeder andere (tests/speichern-zu-mehreren.test.mjs, Gegenprobe ohne die Pruefung des Besitzers faellt). Ein Bildschirm zeigte nur, dass der Mitspieler den Stand nicht in seiner Liste hat und also keinen Knopf dafuer - die Ablehnung dessen, was seine Oberflaeche gar nicht anbietet, ist eine Antwort des Servers, kein Aussehen."
+    },
+    {
+      "spec": "00-plattform/speichern.md",
+      "ac": "AC-26",
+      "begruendung": "Die Beteiligten stehen in der Zeile der Ablage: die neue Spalte plaetze der Tabelle partiestand haelt je Mensch Platz, Name und Konto, nachgetragen per ALTER TABLE in Dateien von vorher (server/partiestaende.js). Belegt gegen den echten Server: nach dem Sichern zu dritt stehen alle drei Plaetze mit ihren Konten in der Datenbank, und /api/partien gibt nur die Namen heraus, nie die Konten (tests/speichern-zu-mehreren.test.mjs, zwei Gegenproben - ohne das Ausblenden in partien-netz.js und ohne das Schreiben der Spalte - fallen). Die Konten gehen absichtlich nie in den Browser; was der Spieler davon sieht, die Namen in der Liste und die Plaetze im Warteraum, weisen speichern AC-7 und AC-24 im Bild nach."
     }
   ]
 }
