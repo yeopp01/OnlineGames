@@ -1,3 +1,4 @@
+// @ts-check
 'use strict';
 
 // Geld: Zuschauer, Fernsehen, Sponsor, Gehaelter, Stadion, Zinsen, Praemien.
@@ -5,6 +6,8 @@
 const { TERMINE_JE_SAISON } = require('./kalender');
 const { EINTRITT } = require('./kader');
 const { eines } = require('./zufall');
+
+/** @typedef {import('./daten').Verein} Verein */
 
 // Fernsehgeld je Ligaspiel fuer einen Verein aus der Mitte der Tabelle. Wer
 // in der Vorsaison oben stand, bekommt mehr (bis 1,4-fach), wer unten stand,
@@ -26,16 +29,16 @@ const AUSBAU = [
 ];
 const SPONSOREN = [
   'Nordlicht Energie', 'Brauhaus Kessler', 'Baumarkt Keller', 'Autohaus Brenner', 'Sparkasse am Fluss',
-  'Moebel Wendt', 'Stahlwerk Obermann', 'Fruchtsaft Anders', 'Versicherung Treu', 'Reisebuero Sonne',
-  'Kaffeeroesterei Adler', 'Spedition Lange', 'Elektro Faber', 'Stadtwerke', 'Landmolkerei',
+  'Möbel Wendt', 'Stahlwerk Obermann', 'Fruchtsaft Anders', 'Versicherung Treu', 'Reisebüro Sonne',
+  'Kaffeerösterei Adler', 'Spedition Lange', 'Elektro Faber', 'Stadtwerke', 'Landmolkerei',
 ];
 
 /**
  * Wie voll das Stadion wird. Ruf und Tabellenplatz ziehen, ein hoher Preis
  * haelt ab, ein reizvoller Gegner lockt. Gedeckelt bei ausverkauft.
  *
- * @param {object} verein  Gastgeber
- * @param {object} [umstaende]  { stimmung 0..1, gegner, pokal }
+ * @param {Verein} verein  Gastgeber
+ * @param {{stimmung?: number, gegner?: Verein|null, pokal?: boolean}} [umstaende]  Stimmung 0..1
  */
 function auslastung(verein, { stimmung = 0.5, gegner = null, pokal = false } = {}) {
   const basis = 0.5 + verein.reputation / 250;
@@ -90,8 +93,8 @@ function ausbauPruefen(verein, stufe) {
   const plan = AUSBAU.find((a) => a.stufe === stufe);
   if (!plan) return { fehler: 'Diese Ausbaustufe gibt es nicht.' };
   if (verein.stadion.ausbau) return { fehler: 'Es wird schon gebaut.' };
-  if (verein.stadion.plaetze + plan.plaetze > PLAETZE_MAX) return { fehler: `Mehr als ${PLAETZE_MAX.toLocaleString('de-DE')} Plaetze genehmigt die Stadt nicht.` };
-  if (verein.konto < plan.kosten) return { fehler: 'Fuer den Ausbau reicht das Geld nicht.' };
+  if (verein.stadion.plaetze + plan.plaetze > PLAETZE_MAX) return { fehler: `Mehr als ${PLAETZE_MAX.toLocaleString('de-DE')} Plätze genehmigt die Stadt nicht.` };
+  if (verein.konto < plan.kosten) return { fehler: 'Für den Ausbau reicht das Geld nicht.' };
   return { ok: true, ...plan };
 }
 

@@ -1,3 +1,4 @@
+// @ts-check
 'use strict';
 
 // Der Saisonkalender. Eine Saison ist eine Folge von Terminen, und ein Zug

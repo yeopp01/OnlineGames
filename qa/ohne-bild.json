@@ -758,6 +758,11 @@
     },
     {
       "spec": "15-manager/spieltag.md",
+      "ac": "AC-26",
+      "begruendung": "Die Schnittstelle des Rechenteils: ein Spiel stueckweise gerechnet und zwischen den Stuecken als JSON gesichert ist Ereignis fuer Ereignis dasselbe wie am Stueck, und eingreifen() wirkt erst ab dem naechsten Abschnitt. Das ist ein Vergleich zweier Rechnungen, die Oberflaeche dazu kommt erst mit M1 und bringt dort ihre eigenen Bilder."
+    },
+    {
+      "spec": "15-manager/spieltag.md",
       "ac": "AC-2",
       "begruendung": "Chancenverteilung nach Mittelfeldstaerke ueber 400 Begegnungen. Ein Spiel zeigt Chancen, keinen Zusammenhang."
     },
@@ -1257,9 +1262,39 @@
       "begruendung": "Braucht einen Spielstand aus einer anderen Fassung in der Datenbank. Der Test aendert die Fassung direkt; ueber die Oberflaeche entsteht er erst mit dem naechsten Update."
     },
     {
+      "spec": "15-manager/karriere.md",
+      "ac": "AC-29",
+      "begruendung": "Eine Zusage ueber die Bauart des Spielstands, nicht ueber das Bild: die Manager stehen als Liste darin, jeder Zug nennt seinen Manager, und ein Stand der Fassung 3 laeuft nach dem Anheben genau so weiter wie vorher. Fuer den einen Menschen aendert sich am Bildschirm nichts - das ist der Sinn des Umbaus; die Oberflaeche ist dieselbe, die die Bilder zu oberflaeche AC-1 und folgenden zeigen. Belegt mit dem gesicherten Stand vor und nach dem Anheben und einem Waechter ueber den Quelltext."
+    },
+    {
+      "spec": "15-manager/karriere.md",
+      "ac": "AC-30",
+      "begruendung": "Eine Regel ueber die Reihenfolge auf dem Server: der Termin wird in zwei Teilen gerechnet, erst alle Spiele, dann das Verbuchen, und mit einem live gespielten Spiel wartet der zweite Teil im Spielstand auf den Abpfiff. Was daran zu pruefen ist - dass die uebrigen Ergebnisse feststehen, was immer im eigenen Spiel geschieht, dass Tabelle, Torjaeger und Pokal bis zum Abpfiff unveraendert bleiben, dass das angehaltene Spiel Sichern und Laden aus der Datenbank uebersteht -, ist ein Vergleich zweier Spielstaende und steht in keinem Bild. Der Knopf, der ein Spiel live startet, und das laufende Spiel im Bild sind oberflaeche AC-19 und haben dort ihr Bild."
+    },
+    {
+      "spec": "15-manager/karriere.md",
+      "ac": "AC-31",
+      "begruendung": "Eine Gleichheit zweier Rechnungen: eine Saison vorgespult und dieselbe Saison mit jedem eigenen Spiel live in Schritten zu fuenf Minuten ergeben denselben Spielstand, Feld fuer Feld, ebenso ein angepfiffenes Spiel, das danach mit Weiter oder bis zur Winterpause zu Ende gerechnet wird. Ein Bildschirm zeigte nur das Ergebnis eines der beiden Wege - dass es dem des anderen gleicht, sieht man nur im Vergleich der gesicherten Staende."
+    },
+    {
+      "spec": "15-manager/karriere.md",
+      "ac": "AC-32",
+      "begruendung": "Die Spec sagt es selbst: geprueft an der Antwort, nicht am Bild. Das Kriterium handelt davon, was der Server waehrend eines laufenden Spiels hinausschickt - kein Ereignis nach der gezeigten Minute, kein Endstand, kein Ergebnis der uebrigen Spiele, keine neue Tabelle. Ein Bild zeigte, was die Seite davon darstellt, aber nicht, was sie ueber die Leitung bekommen hat und verbergen koennte; deshalb wird jede Antwort des Anfragewegs Schritt fuer Schritt gelesen."
+    },
+    {
       "spec": "15-manager/spielziel.md",
       "ac": "AC-15",
       "begruendung": "Dass keine Einstellung fuer jeden die beste ist, zeigt nur ein Vergleich vieler Spiele mit verschiedenen Einstellungen. Die Regler selbst zeigt das Bild zu aufstellung AC-21."
+    },
+    {
+      "spec": "15-manager/spielziel.md",
+      "ac": "AC-16",
+      "begruendung": "Eine Regel ueber alle Texte im Quelltext des Managerspiels: jede Zeichenkette, die auf den Bildschirm kommen kann, hat echte Umlaute. Ein Bild zeigt davon eine Stichprobe von einem Blatt, die Regel gilt fuer alle Blaetter, Absagen und Nachrichten - auch fuer die, die in keinem Browserfall erscheinen. Belegt im Waechter, der jede Zeichenkette dieser Dateien liest, und in seiner Gegenprobe, die zeigt, dass er Text in Vorlagen findet und Schluessel stehen laesst. Wie die Blaetter danach aussehen, zeigen die Bilder der anderen Kriterien."
+    },
+    {
+      "spec": "15-manager/spielziel.md",
+      "ac": "AC-17",
+      "begruendung": "Eine Zusage ueber die Rechnung, nicht ueber die Oberflaeche: derselbe Startwert ergibt nach einem Umbau Zug fuer Zug denselben Spielstand. Belegt wird das mit zwei Fingerabdruecken ueber den ganzen gesicherten Stand - Welt und Mensch - nach sechs Laeufen ohne Browser. Ein Bild zeigte einen einzigen Termin und koennte eine Abweichung im Kader eines fremden Vereins oder im Buch der Saison nicht zeigen."
     },
     {
       "spec": "15-manager/spieltag.md",
@@ -1275,6 +1310,41 @@
       "spec": "15-manager/spieltag.md",
       "ac": "AC-25",
       "begruendung": "Punkte mit fremdem und eingespieltem System, verglichen ueber je 1.200 Spiele, und die Spielpraxis nach einem Spiel. Wie weit das System sitzt, zeigt der Balken im Bild zu aufstellung AC-21."
+    },
+    {
+      "spec": "15-manager/spieltag.md",
+      "ac": "AC-27",
+      "begruendung": "Dass jede Chance eine Szene ist, ist ein Abgleich ueber 300 Spiele: je Seite so viele Szenen wie Chancen, je Tor eine Torszene mit demselben Schuetzen und derselben Vorlage, jede Art nur in ihren Zonen und mit ihren Ausgaengen, und Schuetze, Vorlage und Torwart nach den Spielminuten der Seite in dieser Minute auf dem Platz. Ein Bildschirm zeigt eine Szene, nicht dass keine fehlt und keiner der Genannten schon draussen war. Wie eine Szene im Ticker steht, zeigt das Bild zu oberflaeche AC-19."
+    },
+    {
+      "spec": "15-manager/spieltag.md",
+      "ac": "AC-28",
+      "begruendung": "Dass Szenen kein Ergebnis aendern, ist ein Vergleich zweier Rechnungen derselben 2.000 Spiele, einmal mit und einmal ohne Szenen: Ergebnis fuer Ergebnis gleich, Ereignis fuer Ereignis, und der Zufall des Spieltags zieht danach gleich weiter; dazu 60 Spiele stueckweise mit Sicherung als JSON gegen dasselbe Spiel am Stueck. Ein Bild zeigt eine der beiden Rechnungen, nie, dass die andere gleich ist."
+    },
+    {
+      "spec": "15-manager/spieltag.md",
+      "ac": "AC-29",
+      "begruendung": "Gezaehlt in der Tabelle der Saetze (je Art und Ausgang sechs, keiner doppelt, nur bekannte Platzhalter, ein Tor nennt immer den Schuetzen) und ueber 2.000 Spiele (kein Platzhalter bleibt stehen, kein Satz zweimal in einem Spiel, kein Name steht fuer zwei Spieler); dazu ein Abgleich, dass keine Datei unter public/ einen Platzhalter oder die Saetze traegt. Ein Bildschirm zeigt einige Saetze, nicht dass keiner fehlt und keiner im Browser entsteht. Wie die Saetze im Ticker stehen, zeigt das Bild zu oberflaeche AC-19."
+    },
+    {
+      "spec": "15-manager/spieltag.md",
+      "ac": "AC-30",
+      "begruendung": "Dass die Ansprache je Lage verschieden wirkt, ist eine Zahl: Punkte je Spiel ueber 1500 gepaarte Halbzeiten je Lage und Moral, einmal ohne und einmal mit jeder der drei Ansprachen zu Ende gerechnet, mit demselben Zufall. Die Unterschiede liegen bei zwei bis vier Hundertstel Punkten - kein einzelnes Spiel und kein Bildschirm zeigt sie. Wie die Kabine zur Halbzeit aussieht, zeigt das Bild zu oberflaeche AC-21, sobald die Oberflaeche dafuer steht."
+    },
+    {
+      "spec": "15-manager/spieltag.md",
+      "ac": "AC-31",
+      "begruendung": "Das Kriterium ist eine Regel der Rechnung und eine Zahl ueber die Welt: dass ein Verein des Servers ab Minute 60 nach dem Spielstand umstellt, und zwar Abschnitt fuer Abschnitt genau so, als griffe ein Mensch mit eingreifen() ein, und dass die Tore je Spiel dabei zwischen 2,7 und 3,5 bleiben. Ein Bild zeigte bestenfalls eine geaenderte Ausrichtung im Spielbericht - nicht, wann und warum sie kam, und nichts ueber eine Saison mit hunderten Spielen. Was ein Mensch vom Umstellen des Gegners im laufenden Spiel sieht, zeigt die Oberflaeche zu oberflaeche AC-20."
+    },
+    {
+      "spec": "15-manager/spieltag.md",
+      "ac": "AC-33",
+      "begruendung": "Was Eingreifen bringt, ist eine Summe ueber eine Saison: Punkte je 34 Ligaspiele mit Eingriff gegen dieselben Spiele mit Automatik, gepaart am Anpfiff abgeschrieben, ueber zwanzig Saisons. Die Unterschiede liegen bei einem bis drei Punkten im Jahr, also bei wenigen Hundertsteln Punkten je Spiel - kein einzelnes Spiel und kein Bildschirm zeigt sie. Wie ein Mensch eingreift, zeigen die Bilder zu oberflaeche AC-20 und AC-21, sobald die Oberflaeche dafuer steht."
+    },
+    {
+      "spec": "15-manager/spieltag.md",
+      "ac": "AC-32",
+      "begruendung": "Eine Regel der Spielrechnung: wer nach einem Systemwechsel auf welchen Platz kommt und was das kostet. Belegt mit einer Gleichheit ueber vierzig Spiele - ein Wechsel in Minute 0 ergibt Ereignis fuer Ereignis dasselbe Spiel, als haette dieselbe Elf in diesem System begonnen - und mit einem Wechsel zur Halbzeit in ein System, das die Elf kaum kennt. Ein Bild zeigte elf Namen auf neuen Plaetzen, aber nicht, dass sie nach der Regel vor dem Spiel gestellt sind und der Wechsel kostet. Den Knopf dafuer im laufenden Spiel zeigt das Bild zu oberflaeche AC-20."
     },
     {
       "spec": "15-manager/aufstellung.md",

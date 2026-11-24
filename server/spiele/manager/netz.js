@@ -1,3 +1,4 @@
+// @ts-check
 'use strict';
 
 // Der Anfrageweg des Managerspiels. Er liegt hier und nicht in `index.js`,
@@ -28,7 +29,7 @@ function koerperLesen(anfrage) {
     anfrage.on('data', (stueck) => {
       roh += stueck;
       if (roh.length > KOERPER_MAX) {
-        scheitern(new Error('Die Nachricht ist zu gross.'));
+        scheitern(new Error('Die Nachricht ist zu groß.'));
         anfrage.destroy();
       }
     });
@@ -36,7 +37,7 @@ function koerperLesen(anfrage) {
       try {
         fertig(roh ? JSON.parse(roh) : {});
       } catch {
-        scheitern(new Error('Unverstaendliche Nachricht.'));
+        scheitern(new Error('Unverständliche Nachricht.'));
       }
     });
     anfrage.on('error', scheitern);
@@ -46,34 +47,49 @@ function koerperLesen(anfrage) {
 const ganzeZahl = (wert) => (Number.isInteger(wert) ? wert : null);
 const zahlOderNichts = (wert) => (wert === undefined || wert === null || wert === '' ? undefined : Number(wert));
 
-// Die Zuege. Jeder bekommt die Karriere und die Nachricht und gibt zurueck,
-// was geschah - oder den Satz, warum nicht.
+// Die Zuege. Jeder bekommt die Karriere, die Nachricht und den Manager, der
+// zieht, und gibt zurueck, was geschah - oder den Satz, warum nicht.
 const ZUEGE = {
   weiter: (k) => k.weiter(),
+  // Das eigene Spiel live: anpfeifen rechnet den Termin, spiel rechnet weiter
+  // bis zu einer Minute, mit Wechsel, Taktik oder - zur Halbzeit - der
+  // Ansprache (karriere AC-30 bis AC-32, spieltag AC-30).
+  anpfeifen: (k, n, m) => k.anpfeifen(m),
+  spiel: (k, n, m) => k.liveSpielen(m, {
+    bis: ganzeZahl(n.bis),
+    ansprache: typeof n.ansprache === 'string' ? n.ansprache : null,
+    wechsel: n.wechsel && typeof n.wechsel === 'object' ? { raus: String(n.wechsel.raus), rein: String(n.wechsel.rein) } : null,
+    taktik: n.taktik && typeof n.taktik === 'object' ? {
+      system: typeof n.taktik.system === 'string' ? n.taktik.system : undefined,
+      ausrichtung: zahlOderNichts(n.taktik.ausrichtung),
+      haerte: zahlOderNichts(n.taktik.haerte),
+      pressing: zahlOderNichts(n.taktik.pressing),
+    } : null,
+  }),
   vorspulen: (k, n) => k.vorspulen({ anzahl: ganzeZahl(n.anzahl), bis: typeof n.bis === 'string' ? n.bis : null }),
-  taktik: (k, n) => k.taktikSetzen({
+  taktik: (k, n, m) => k.taktikSetzen(m, {
     system: typeof n.system === 'string' ? n.system : undefined,
     ausrichtung: zahlOderNichts(n.ausrichtung),
     haerte: zahlOderNichts(n.haerte),
     pressing: zahlOderNichts(n.pressing),
   }),
-  aufstellung: (k, n) => {
-    if (Array.isArray(n.ids)) return k.aufstellen(n.ids.map(String), String(n.system || k.verein?.taktik.system));
-    return n.frei ? k.aufstellungFreigeben() : k.aufstellenAutomatisch();
+  aufstellung: (k, n, m) => {
+    if (Array.isArray(n.ids)) return k.aufstellen(m, n.ids.map(String), n.system ? String(n.system) : undefined);
+    return n.frei ? k.aufstellungFreigeben(m) : k.aufstellenAutomatisch(m);
   },
-  wechselregel: (k, n) => k.wechselregelSetzen(n.regel),
-  training: (k, n) => k.trainingSetzen(Number(n.wert)),
-  schwerpunkt: (k, n) => k.schwerpunktSetzen(String(n.schwerpunkt)),
-  eintritt: (k, n) => k.eintrittSetzen(Number(n.preis)),
-  sponsor: (k, n) => k.sponsorWaehlen(String(n.id)),
-  stadion: (k, n) => k.stadionAusbauen(Number(n.stufe)),
-  kaufen: (k, n) => k.kaufen(String(n.spielerId), Number(n.gebot), Number(n.laufzeit)),
-  verlaengern: (k, n) => k.verlaengern(String(n.spielerId), Number(n.laufzeit)),
-  freistellen: (k, n) => k.spielerFreistellen(String(n.spielerId)),
-  transferliste: (k, n) => k.transferlisteSetzen(String(n.spielerId), Boolean(n.an)),
-  annehmen: (k, n) => k.angebotAnnehmen(String(n.angebotId)),
-  ablehnen: (k, n) => k.angebotAblehnen(String(n.angebotId)),
-  stelle: (k, n) => k.stelleAntreten(String(n.vereinId)),
+  wechselregel: (k, n, m) => k.wechselregelSetzen(m, n.regel),
+  training: (k, n, m) => k.trainingSetzen(m, Number(n.wert)),
+  schwerpunkt: (k, n, m) => k.schwerpunktSetzen(m, String(n.schwerpunkt)),
+  eintritt: (k, n, m) => k.eintrittSetzen(m, Number(n.preis)),
+  sponsor: (k, n, m) => k.sponsorWaehlen(m, String(n.id)),
+  stadion: (k, n, m) => k.stadionAusbauen(m, Number(n.stufe)),
+  kaufen: (k, n, m) => k.kaufen(m, String(n.spielerId), Number(n.gebot), Number(n.laufzeit)),
+  verlaengern: (k, n, m) => k.verlaengern(m, String(n.spielerId), Number(n.laufzeit)),
+  freistellen: (k, n, m) => k.spielerFreistellen(m, String(n.spielerId)),
+  transferliste: (k, n, m) => k.transferlisteSetzen(m, String(n.spielerId), Boolean(n.an)),
+  annehmen: (k, n, m) => k.angebotAnnehmen(m, String(n.angebotId)),
+  ablehnen: (k, n, m) => k.angebotAblehnen(m, String(n.angebotId)),
+  stelle: (k, n, m) => k.stelleAntreten(m, String(n.vereinId)),
 };
 
 // Zuege, die viel rechnen koennen, gehen durch die engere Bremse.
@@ -98,7 +114,7 @@ function marktFilter(suche) {
  * (→ docs/adr/0005-grenzen-statt-vertrauen.md).
  *
  * @param {object} teile
- * @param {object} teile.schutz
+ * @param {{zugErlaubt(adresse: string): boolean, rechnenErlaubt(adresse: string): boolean}} teile.schutz  aus server/schutz.js
  * @param {Function} teile.adresseVon
  * @param {import('node:sqlite').DatabaseSync} teile.db  die Datenbank der Konten
  * @param {Function} teile.sitzung  (kopfzeilen) => Promise<{user}|null>
@@ -115,7 +131,7 @@ function manager({ schutz, adresseVon, db, sitzung }) {
     // Die Bremse vor der Anmeldung: wer ohne Konto haemmert, kostet trotzdem.
     if (!schutz.zugErlaubt(adresse)) return fehlerhaft(antwort, 'Zu schnell hintereinander.', 429);
     const angemeldet = await sitzung(anfrage.headers);
-    if (!angemeldet) return fehlerhaft(antwort, 'Zum Managerspiel ist eine Anmeldung noetig.', 401);
+    if (!angemeldet) return fehlerhaft(antwort, 'Zum Managerspiel ist eine Anmeldung nötig.', 401);
     const konto = angemeldet.user.id;
 
     // Die Vereinswahl vor dem Anlegen: beide Ligen, mit dem, was man wissen muss.
@@ -152,12 +168,12 @@ function manager({ schutz, adresseVon, db, sitzung }) {
       const n = await koerperLesen(anfrage);
       // Die Bremse steht hinter dem Lesen, aber vor dem Rechnen: eine neue
       // Welt sind 36 Vereine und 750 Spieler.
-      if (!schutz.rechnenErlaubt(adresse)) return fehlerhaft(antwort, 'Zu viele neue Spielstaende. Bitte kurz warten.', 429);
+      if (!schutz.rechnenErlaubt(adresse)) return fehlerhaft(antwort, 'Zu viele neue Spielstände. Bitte kurz warten.', 429);
       const startwert = ganzeZahl(n.startwert) ?? Math.floor(Math.random() * 1e9);
       const name = typeof n.name === 'string' && n.name.trim() ? n.name.trim().slice(0, 40) : 'Neue Karriere';
       const angelegt = staende.anlegen(konto, { startwert, vereinId: typeof n.vereinId === 'string' ? n.vereinId : null, name });
       if (angelegt.fehler) return fehlerhaft(antwort, angelegt.fehler, 409);
-      return antworten(antwort, 200, { id: angelegt.id, zustand: angelegt.karriere.zustand() });
+      return antworten(antwort, 200, { id: angelegt.id, zustand: angelegt.karriere.zustand(angelegt.karriere.manager[0]?.managerId) });
     }
 
     const id = teile[1];
@@ -165,6 +181,9 @@ function manager({ schutz, adresseVon, db, sitzung }) {
     if (!geoeffnet) return fehlerhaft(antwort, 'Diesen Spielstand gibt es nicht.', 404);
     if (geoeffnet.fehler) return fehlerhaft(antwort, geoeffnet.fehler, 409);
     const { karriere } = geoeffnet;
+    // Ein Spielstand hat bisher genau einen Menschen (M0.4: die Welt kennt
+    // schon mehrere, der Anfrageweg noch nicht).
+    const managerId = karriere.manager[0]?.managerId ?? null;
     const was = teile[2];
 
     if (methode === 'DELETE' && !was) {
@@ -172,14 +191,14 @@ function manager({ schutz, adresseVon, db, sitzung }) {
       return antworten(antwort, 200, { ok: true });
     }
     if (methode === 'GET') {
-      if (!was) return antworten(antwort, 200, { id, zustand: karriere.zustand() });
-      if (was === 'markt') return antworten(antwort, 200, { markt: karriere.markt(marktFilter(url.searchParams)) });
+      if (!was) return antworten(antwort, 200, { id, zustand: karriere.zustand(managerId) });
+      if (was === 'markt') return antworten(antwort, 200, { markt: karriere.markt(managerId, marktFilter(url.searchParams)) });
       if (was === 'spieler' && teile[3]) {
         const akte = karriere.spielerAkte(teile[3]);
         return akte.fehler ? fehlerhaft(antwort, akte.fehler, 404) : antworten(antwort, 200, { spieler: akte });
       }
       if (was === 'verein' && teile[3]) {
-        const ansicht = karriere.vereinAnsicht(teile[3]);
+        const ansicht = karriere.vereinAnsicht(managerId, teile[3]);
         return ansicht.fehler ? fehlerhaft(antwort, ansicht.fehler, 404) : antworten(antwort, 200, { verein: ansicht });
       }
       return fehlerhaft(antwort, 'Unbekannte Abfrage.', 404);
@@ -191,11 +210,11 @@ function manager({ schutz, adresseVon, db, sitzung }) {
     if (TEUER.has(was) && !schutz.rechnenErlaubt(adresse)) {
       return fehlerhaft(antwort, 'Zu viele Berechnungen. Bitte kurz warten.', 429);
     }
-    const ergebnis = zug(karriere, n) || {};
+    const ergebnis = zug(karriere, n, managerId) || {};
     if (!ergebnis.fehler) staende.schreiben(konto, id, karriere);
     // Immer den ganzen Zustand zurueck: der Browser soll nicht raten muessen,
     // was ein Zug alles bewegt hat.
-    return antworten(antwort, ergebnis.fehler ? 400 : 200, { ...ergebnis, zustand: karriere.zustand() });
+    return antworten(antwort, ergebnis.fehler ? 400 : 200, { ...ergebnis, zustand: karriere.zustand(managerId) });
   }
 
   return {

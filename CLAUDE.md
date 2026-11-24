@@ -82,11 +82,13 @@ angesehen, bevor etwas eingecheckt wird.
 
 **TypeScript ist der Prüfer, nicht die Sprache** (`npm run typen`, als
 Wächter in `npm test`). Geprüft wird, was in der ersten Zeile `// @ts-check`
-trägt: der Server ohne das Managerspiel, im Browser bisher `nebel.js`,
-`uebersicht.js` und `auswahlleiste.js`. Die Formen der Tabellen stehen als
-`@typedef` oben in `server/spiele/strategie/daten.js` — **ein neues Feld wird
-dort eingetragen**, sonst meldet der Prüfer es. Welche Dateien noch fehlen und
-warum, steht unter `OFFEN` in `tests/waechter-typen.test.mjs`.
+trägt: der Server bis auf die vier Teile der Karriere im Managerspiel, im
+Browser bisher `nebel.js`, `uebersicht.js` und `auswahlleiste.js`. Die Formen
+der Tabellen stehen als `@typedef` oben in `server/spiele/strategie/daten.js`,
+die des Managerspiels (Verein, Spieler, Manager, ein laufendes Spiel) in
+`server/spiele/manager/daten.js` — **ein neues Feld wird dort eingetragen**,
+sonst meldet der Prüfer es. Welche Dateien noch fehlen und warum, steht unter
+`OFFEN` und `OFFEN_SERVER` in `tests/waechter-typen.test.mjs`.
 
 ### Die wichtigste Regel
 
@@ -130,11 +132,13 @@ server/  raeume.js   Räume, Beitritt, Rückkehr nach Abbruch
                       spieltag.js die Begegnung in Fünf-Minuten-Abschnitten, Taktik
                       liga.js Spielplan, Tabelle · pokal.js · kalender.js 42 Termine
                       finanzen.js · vertraege.js · vorstand.js · transfer.js Markt, KI-Handel
-                      karriere.js Saison um Saison · spielstaende.js SQLite am Konto
+                      karriere.js setzt die Karriere zusammen: welt.js Zustand,
+                      ablauf.js Saison um Saison, zuege.js Befehle, sicht.js Ansichten
+                      spielstaende.js SQLite am Konto
                       netz.js der Anfrageweg (nur mit Anmeldung)
 public/  app.js      Verbindung, Vorraum, Warteraum
          ansicht.js  zeichnet die Welt, nimmt Maus und Tastatur
-         manager.js  das Managerspiel (/manager.html), acht Blätter
+         manager/    das Managerspiel (/manager.html): kern, teile, je Blatt ein Modul
 specs/   was das Produkt ist, mit Abnahmekriterien
 docs/adr/ warum es so gebaut ist
 qa/      bildnachweise/ Bilder je Kriterium (eingecheckt) · ohne-bild.json Begründungen
@@ -196,8 +200,10 @@ Karriereende, Finanzen mit Sponsor und Stadion, Vorstand mit Entlassung —
 und 35 Vereine, die nach denselben Regeln spielen und handeln. Der Spielstand
 liegt in SQLite am Konto; ohne Anmeldung geht im Managerspiel nichts.
 
-Gemessen: **3,10 Tore je Spiel, 48 % Heimsiege, 21 % Unentschieden**
-(Bundesliga: 3,1 / 44 % / 24 %); der Favorit gewinnt 64 %. Über sechs Saisons
+Gemessen: **3,20 Tore je Spiel, 47 % Heimsiege, 22 % Unentschieden**
+(Bundesliga: 3,1 / 44 % / 24 %); der Favorit gewinnt 66 % der entschiedenen
+Spiele — seit die Vereine des Servers ab Minute 60 umstellen (spieltag
+AC-31; vorher 3,06 / 48 % / 22 % / 66 %, sechs Startwerte zu zwei Saisons). Über sechs Saisons
 ohne Menschen null Widersprüche in den Spielen, Kader, Stärke und Markt
 stabil. Eine Saison rechnet in rund 400 ms, ein Spielstand ist nach zwei
 Saisons unter 1 MB. Der Browserlauf dauert rund 36

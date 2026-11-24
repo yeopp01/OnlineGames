@@ -2,7 +2,7 @@
 
 **Bereich:** Manager
 **Kuerzel:** manager
-**Stand:** 13/15 fertig · 2 offen
+**Stand:** 15/17 fertig · 2 offen
 
 ## Zweck
 
@@ -94,3 +94,24 @@ Jede Zeile rechts ist eine Woche, die wir nicht ausgeben.
   _(Gemessen über zehn Saisons und drei Startwerte: Schnitt der ersten Liga
   zwischen 68 und 71, Kader 12 bis 23 Spieler, 45 bis 90 Vereinslose, null
   Widersprüche in 19.000 Spielen.)_
+
+### Wie es geschrieben ist
+
+- **AC-16** `fertig` **Texte mit echten Umlauten** — Was das Managerspiel auf
+  den Bildschirm bringt — Seite, Blätter, Absagen und Nachrichten des
+  Servers —, schreibt „Verlängern" und „für", nicht „Verlaengern" und
+  „fuer". Bezeichner und Schlüssel bleiben umschrieben. Ein Wächter liest
+  jede Zeichenkette der Dateien des Managerspiels, auch die Stücke zwischen
+  den Ausdrücken einer Vorlage (Plan M0.1).
+
+### Wie es umgebaut wird
+
+- **AC-17** `fertig` **Umbau ohne Wirkung belegt** — Ein Umbau, der das Spiel
+  nicht ändern soll, ändert es nicht: je Startwert läuft eine Karriere zwei
+  Saisons ohne Menschen und eine mit einem Menschen, der nichts tut, bis zur
+  Winterpause. Danach müssen zwei Fingerabdrücke gleich sein — der der Welt
+  (Vereine, Spieler, Tabellen, Pokal, Markt) und der des Menschen (Kasse,
+  Postfach, Vorstand). Soll eine Änderung das Spiel ändern, wird der
+  Fingerabdruck neu geschrieben (`npm run manager:gleichstand -- --neu`), und
+  der Commit sagt, warum. Die Kennzahlen des Spiels misst
+  `npm run manager:messen`.

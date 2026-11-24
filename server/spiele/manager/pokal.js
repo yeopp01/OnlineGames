@@ -1,3 +1,4 @@
+// @ts-check
 'use strict';
 
 // Der Pokal: 32 Vereine, K.-o.-System in fuenf Runden. Wer unentschieden
@@ -5,6 +6,8 @@
 // ein Pokalspiel hat immer einen Sieger. Das Finale ist neutral, ohne
 // Heimvorteil.
 const { RUNDEN } = require('./kalender');
+
+/** @typedef {import('./daten').Verein} Verein */
 
 const TEILNEHMER = 32;
 // Praemie in Tausend fuer das Erreichen einer Runde, dazu die fuer den Sieg.
@@ -14,7 +17,7 @@ const SIEGERPRAEMIE = 3500;
 /**
  * Wer spielt mit: die ganze erste Liga und die vierzehn Besten der zweiten.
  *
- * @param {object[]} vereine
+ * @param {Verein[]} vereine
  * @param {string[]} rangZweite  Vereine der zweiten Liga, vom Besten abwaerts
  */
 function teilnehmer(vereine, rangZweite) {

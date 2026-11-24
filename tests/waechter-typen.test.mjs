@@ -10,8 +10,8 @@
 //
 // Geprueft wird nur, was in der ersten Zeile `// @ts-check` traegt. Damit
 // das nicht still zurueckfaellt, haelt dieser Waechter zwei Listen fest: im
-// Server fehlt die Marke nur dem Managerspiel, im Browser nur den Dateien
-// unter `OFFEN` - mit dem Grund, warum sie noch fehlen.
+// Server fehlt die Marke nur den Dateien unter `OFFEN_SERVER`, im Browser
+// denen unter `OFFEN` - je mit dem Grund, warum sie noch fehlen.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
@@ -46,8 +46,20 @@ const OFFEN = {
   'figuren.js': 'Zeichencode, wird abgeloest',
   'gebaeude.js': 'Zeichencode, wird abgeloest',
   'schautafel.js': 'Zeichencode, wird abgeloest',
-  // Das Managerspiel ruht.
-  'manager.js': 'ruht',
+};
+
+// Im Server noch ohne Marke: die vier Teile der Karriere. Sie sind Klassen,
+// deren Methoden karriere.js auf eine zusammensetzt - in jedem Teil kennt der
+// Pruefer `this` nur als diesen Teil, nicht als die ganze Karriere (gezaehlt
+// am 2026-11-22: rund 250 Meldungen, fast alle "Property ... does not
+// exist"). Wer eine Karriere von aussen bekommt, ist geprueft: `GanzeKarriere`
+// in karriere.js setzt Zustand und Teile zusammen.
+const OFFEN_SERVER = {
+  'server/spiele/manager/welt.js': 'Teil der Karriere, `this` ungeprueft',
+  'server/spiele/manager/ablauf.js': 'Teil der Karriere, `this` ungeprueft',
+  'server/spiele/manager/zuege.js': 'Teil der Karriere, `this` ungeprueft',
+  'server/spiele/manager/sicht.js': 'Teil der Karriere, `this` ungeprueft',
+  'server/spiele/manager/live.js': 'Teil der Karriere, `this` ungeprueft',
 };
 
 function pruefen(...argumente) {
@@ -80,16 +92,34 @@ test('waechter: der Pruefer meldet im Browser nichts', () => {
   assert.equal(ausgang, 0);
 });
 
-test('waechter: im Server wird jede Datei geprueft, nur das Managerspiel nicht', () => {
-  const alle = dateien(join(WURZEL, 'server')).filter((pfad) => !kurz(pfad).startsWith('server/spiele/manager/'));
-  assert.ok(alle.length >= 13, `nur ${alle.length} Dateien gefunden`);
-  assert.deepEqual(alle.filter((pfad) => !traegtMarke(pfad)).map(kurz), []);
+test('waechter: im Server fehlt die Marke nur den Dateien unter OFFEN_SERVER', () => {
+  const alle = dateien(join(WURZEL, 'server'));
+  assert.ok(alle.length >= 30, `nur ${alle.length} Dateien gefunden`);
+  assert.deepEqual(alle.filter((pfad) => !traegtMarke(pfad)).map(kurz).sort(), Object.keys(OFFEN_SERVER).sort());
 });
 
+// Die Dateien des Browsers, auch in Unterordnern (public/manager/), als Pfad
+// unter public/ - so stehen sie in OFFEN.
+const OEFFENTLICH = join(WURZEL, 'public');
+const imBrowser = () => dateien(OEFFENTLICH).map((pfad) => relative(OEFFENTLICH, pfad).split(sep).join('/'));
+
 test('waechter: im Browser fehlt die Marke nur den Dateien unter OFFEN', () => {
-  const alle = readdirSync(join(WURZEL, 'public')).filter((name) => name.endsWith('.js'));
-  const ohne = alle.filter((name) => !traegtMarke(join(WURZEL, 'public', name)));
+  const alle = imBrowser();
+  // Die Module des Managerspiels liegen in einem Unterordner - findet der
+  // Waechter sie nicht, prueft er sie nicht.
+  assert.ok(alle.includes('manager/kern.js'), 'public/manager/ nicht gefunden');
+  assert.equal(readdirSync(OEFFENTLICH).includes('manager.js'), false, 'public/manager.js ist zerlegt (M0.7)');
+  const ohne = alle.filter((name) => !traegtMarke(join(OEFFENTLICH, name)));
   assert.deepEqual(ohne.sort(), Object.keys(OFFEN).filter((name) => alle.includes(name)).sort());
+});
+
+test('waechter: der Pruefer liest jede Datei des Browsers, auch in Unterordnern', () => {
+  // Was `public/tsconfig.json` nicht aufnimmt, prueft er nicht - die Marke
+  // allein genuegt nicht.
+  const lauf = spawnSync(process.execPath, [TSC, '-p', 'public/tsconfig.json', '--listFilesOnly'], { cwd: WURZEL, encoding: 'utf8' });
+  const gelesen = new Set(lauf.stdout.split(/\r?\n/).filter(Boolean).map((pfad) => kurz(pfad.replace(/\//g, sep))));
+  const fehlt = imBrowser().map((name) => `public/${name}`).filter((pfad) => !gelesen.has(pfad));
+  assert.deepEqual(fehlt, []);
 });
 
 test('waechter: der Pruefer findet einen vertippten Feldnamen - aber nur mit Marke', () => {

@@ -1,3 +1,4 @@
+// @ts-check
 'use strict';
 
 // Vertraege: Laufzeit und Jahresgehalt. Ein Vertrag gilt bis einschliesslich
@@ -25,7 +26,7 @@ function laufzeitMax(spieler) {
 
 function laufzeitPruefen(spieler, laufzeit) {
   if (!Number.isInteger(laufzeit) || laufzeit < 1) return 'Die Laufzeit muss mindestens ein Jahr sein.';
-  if (laufzeit > laufzeitMax(spieler)) return `${spieler.name} unterschreibt hoechstens fuer ${laufzeitMax(spieler)} ${laufzeitMax(spieler) === 1 ? 'Jahr' : 'Jahre'}.`;
+  if (laufzeit > laufzeitMax(spieler)) return `${spieler.name} unterschreibt höchstens für ${laufzeitMax(spieler)} ${laufzeitMax(spieler) === 1 ? 'Jahr' : 'Jahre'}.`;
   return null;
 }
 
@@ -34,12 +35,12 @@ function laufzeitPruefen(spieler, laufzeit) {
  * Jahr endet; wer tief unzufrieden ist, lehnt ab.
  */
 function verlaengern(spieler, laufzeit, saison) {
-  if (spieler.karriereende) return { fehler: `${spieler.name} hoert zum Saisonende auf und verlaengert nicht mehr.` };
+  if (spieler.karriereende) return { fehler: `${spieler.name} hört zum Saisonende auf und verlängert nicht mehr.` };
   if (!spieler.vertrag) return { fehler: `${spieler.name} hat keinen Vertrag.` };
-  if (spieler.vertrag.bis > saison + 1) return { fehler: `Der Vertrag von ${spieler.name} laeuft noch bis Saison ${spieler.vertrag.bis}.` };
+  if (spieler.vertrag.bis > saison + 1) return { fehler: `Der Vertrag von ${spieler.name} läuft noch bis Saison ${spieler.vertrag.bis}.` };
   const falsch = laufzeitPruefen(spieler, laufzeit);
   if (falsch) return { fehler: falsch };
-  if (spieler.moral < 25) return { fehler: `${spieler.name} will den Verein verlassen und verlaengert nicht.` };
+  if (spieler.moral < 25) return { fehler: `${spieler.name} will den Verein verlassen und verlängert nicht.` };
   const gehalt = gehaltswunsch(spieler);
   spieler.vertrag = { bis: Math.max(spieler.vertrag.bis, saison) + laufzeit, gehalt };
   return { ok: true, bis: spieler.vertrag.bis, gehalt };

@@ -2,7 +2,7 @@
 
 **Bereich:** Manager
 **Kuerzel:** karriere
-**Stand:** 25/26 fertig · 1 offen
+**Stand:** 29/30 fertig · 1 offen
 
 ## Zweck
 
@@ -68,6 +68,27 @@ anmelden → Verein wählen → [ aufstellen · Taktik · Transfer · Verträge 
   die nächste mit neuem Spielplan, neuer Auslosung, neuen Sponsorangeboten und
   neuem Ziel. Weiter geht es immer.
 
+### Das eigene Spiel (Stufe M1)
+
+Überspringen bleibt (Benutzer, 2026-11-22: „dass man ganze spiele einfach
+überskippen/simulieren kann, is echt nice, sowas sollten wir beibehalten,
+aber wenn man will, sollte es eben auch einzelspiele geben zum spielen").
+Live gespielt wird nur, wenn man es will.
+
+- **AC-30** `fertig` **Das eigene Spiel wartet** — Wer „Live spielen" wählt,
+  bekommt das eigene Spiel angehalten am Anpfiff; alle anderen Spiele des
+  Termins sind dann schon gerechnet, ihre Ergebnisse aber noch nicht zu
+  sehen. Der Termin schließt erst mit dem Abpfiff des eigenen Spiels. Ein
+  Spiel, das angehalten liegt, übersteht Sichern und Laden (spieltag AC-26).
+- **AC-31** `fertig` **Vorspulen spielt mit Automatik** — „Weiter", „bis zur
+  Winterpause" und „bis vor das Saisonende" rechnen das eigene Spiel wie
+  heute in einem Stück, mit der Wechselregel und ohne Eingriff — dasselbe
+  Ergebnis wie ein live gespieltes Spiel, in dem niemand eingreift.
+- **AC-32** `fertig` **Der Browser weiß nichts voraus** — Während das eigene
+  Spiel läuft, schickt der Server nur, was bis zur angezeigten Minute
+  geschehen ist: kein späteres Ereignis, kein Endstand, keine Ergebnisse der
+  übrigen Spiele. Geprüft an der Antwort, nicht am Bild.
+
 ### Spielstand
 
 - **AC-10** `fertig` **Zustand ist ein Datenwert** — `sichern()` gibt ihn
@@ -97,7 +118,16 @@ anmelden → Verein wählen → [ aufstellen · Taktik · Transfer · Verträge 
   der Fassung 2, noch ohne Positionen, lädt weiter: jeder Spieler bekommt eine
   Stammposition, so wie ein Neuer im Verein, die Stärksten zuerst; die
   gemerkte Aufstellung fällt weg. Beim nächsten Schreiben ist er einer der
-  Fassung 3.
+  jetzigen Fassung.
+- **AC-29** `fertig` **Manager stehen als Liste** — Die Welt gehört
+  niemandem: was einem Menschen gehört — Verein, Vorstand, Post, Buch,
+  Angebote, Stellen —, steht in seinem Eintrag in `manager[]` (Fassung 4),
+  jeder Zug und jede Ansicht nennt den Manager, und Post und Buchungen gehen
+  an den Manager des betroffenen Vereins. Ein Spielstand der Fassung 3 wird
+  angehoben und läuft danach genau so weiter wie vorher; eine Welt ohne
+  Menschen hat eine leere Liste. Am Bildschirm ändert sich nichts — der
+  Anfrageweg kennt weiter genau einen Menschen je Spielstand
+  (→ [Plan](../../docs/manager/plan.md) M0.4).
 
 ### Der Anfrageweg
 

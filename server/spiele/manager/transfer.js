@@ -1,3 +1,4 @@
+// @ts-check
 'use strict';
 
 // Der Transfermarkt. Ein Angebot, eine Antwort - kein Berater, kein
@@ -14,6 +15,19 @@ const {
 } = require('./kader');
 const vertraege = require('./vertraege');
 const { fensterOffen } = require('./kalender');
+
+/** @typedef {import('./daten').Verein} Verein */
+/** @typedef {import('./daten').Spieler} Spieler */
+/**
+ * @typedef {object} Marktfilter
+ * @property {string} [position]
+ * @property {'1'|'2'|'frei'|string} [liga]
+ * @property {number} [maxAlter]
+ * @property {number} [minStaerke]
+ * @property {number} [maxPreis]
+ * @property {string} [sortierung]
+ * @property {number} [anzahl]
+ */
 
 // So gross will ein Verein der KI seinen Kader halten.
 const KI_KADER_ZIEL = 23;
@@ -81,11 +95,10 @@ const SORTIERUNG = {
  * Vereinslosen, mit Forderung und der Antwort, ob sie kommen wuerden. Wer den
  * Mindestbestand seines Vereins haelt, steht gar nicht erst drin.
  *
- * @param {object} filter  position, liga ('1', '2', 'frei'), maxAlter,
- *   minStaerke, maxPreis, sortierung, anzahl
+ * @param {Verein|null} eigener  der Verein, der fragt - fuer "wuerde kommen"
+ * @param {Marktfilter} [filter]
  */
-function marktliste(welt, filter = {}) {
-  const eigener = welt.vereine.find((v) => v.id === welt.vereinId);
+function marktliste(welt, eigener, filter = {}) {
   const liste = [];
   const aufnehmen = (spieler, verein) => {
     const wert = marktwert(spieler);
@@ -113,7 +126,7 @@ function marktliste(welt, filter = {}) {
     });
   };
   for (const verein of welt.vereine) {
-    if (verein.id === welt.vereinId) continue;
+    if (verein === eigener) continue;
     if (filter.liga === 'frei') continue;
     if (filter.liga && String(verein.liga) !== String(filter.liga)) continue;
     for (const spieler of verein.spieler) {
@@ -143,11 +156,11 @@ function kaufPruefen(welt, kaeufer, spielerId, gebot, laufzeit) {
   const gefunden = finden(welt, spielerId);
   if (!gefunden) return { fehler: 'Diesen Spieler gibt es nicht.' };
   const { spieler, verein: verkaeufer } = gefunden;
-  if (verkaeufer && verkaeufer.id === kaeufer.id) return { fehler: `${spieler.name} spielt schon fuer dich.` };
+  if (verkaeufer && verkaeufer.id === kaeufer.id) return { fehler: `${spieler.name} spielt schon für dich.` };
   if (verkaeufer && !fensterOffen(welt.termine[welt.termin])) {
     return { fehler: 'Das Transferfenster ist geschlossen. Vereinslose kannst du jederzeit holen.' };
   }
-  if (!Number.isFinite(gebot) || gebot < 0) return { fehler: 'Kein gueltiges Gebot.' };
+  if (!Number.isFinite(gebot) || gebot < 0) return { fehler: 'Kein gültiges Gebot.' };
   const falscheLaufzeit = vertraege.laufzeitPruefen(spieler, laufzeit);
   if (falscheLaufzeit) return { fehler: falscheLaufzeit };
   if (kaeufer.spieler.length >= KADER_MAX) return { fehler: `Der Kader ist voll (${KADER_MAX} Spieler).` };
@@ -183,7 +196,7 @@ function wechseln(welt, { kaeufer, verkaeufer, spieler, abloese, laufzeit }) {
   } else {
     welt.freie = welt.freie.filter((s) => s !== spieler);
   }
-  welt.buchen(kaeufer, 'transfers', -abloese, `${spieler.name} ${verkaeufer ? `von ${verkaeufer.name}` : '(ablosefrei)'}`);
+  welt.buchen(kaeufer, 'transfers', -abloese, `${spieler.name} ${verkaeufer ? `von ${verkaeufer.name}` : '(ablösefrei)'}`);
   spieler.vertrag = vertraege.neuerVertrag(spieler, laufzeit, welt.saison);
   spieler.transferliste = null;
   spieler.moral = Math.min(100, spieler.moral + 8);
@@ -267,7 +280,7 @@ function kiTransfers(welt, zufall, { verstaerkung = 0.3 } = {}) {
   kiSparen(welt);
   const wechsel = [];
   const reihenfolge = welt.vereine
-    .filter((v) => v.id !== welt.vereinId)
+    .filter((v) => !welt.menschFuehrt(v.id))
     .map((v) => ({ v, los: zufall() }))
     .sort((a, b) => a.los - b.los)
     .map(({ v }) => v);
@@ -296,7 +309,7 @@ function kiTransfers(welt, zufall, { verstaerkung = 0.3 } = {}) {
     }
     if (budget > 0) {
       for (const anderer of welt.vereine) {
-        if (anderer === verein || anderer.id === welt.vereinId || anderer.spieler.length <= 18) continue;
+        if (anderer === verein || welt.menschFuehrt(anderer.id) || anderer.spieler.length <= 18) continue;
         for (const spieler of anderer.spieler) {
           // Wer auf der Liste steht, ist auch mit 32 noch zu haben und muss
           // nur besser sein als der Schwaechste der Stammelf.
@@ -329,7 +342,7 @@ function kiTransfers(welt, zufall, { verstaerkung = 0.3 } = {}) {
         .filter((s) => s.position === position && s !== bester.spieler)
         .sort((a, b) => a.staerke - b.staerke)[0];
       if (weg && bestandNachAbgang(verein, weg) >= MINDESTBESTAND[position]) {
-        welt.buchen(verein, 'abfindungen', -vertraege.abfindung(weg, welt.saison), `Abfindung fuer ${weg.name}`);
+        welt.buchen(verein, 'abfindungen', -vertraege.abfindung(weg, welt.saison), `Abfindung für ${weg.name}`);
         freistellen(welt, verein, weg);
       }
     }
@@ -343,7 +356,7 @@ function kiTransfers(welt, zufall, { verstaerkung = 0.3 } = {}) {
  */
 function kiVertraege(welt, zufall) {
   for (const verein of welt.vereine) {
-    if (verein.id === welt.vereinId) continue;
+    if (welt.menschFuehrt(verein.id)) continue;
     const vereinsniveau = niveau(verein);
     // Wer im Minus steht, behaelt nur, wen er wirklich braucht.
     const klamm = verein.konto < 0;
@@ -371,7 +384,7 @@ function kiVertraege(welt, zufall) {
  */
 function kiSparen(welt) {
   for (const verein of welt.vereine) {
-    if (verein.id === welt.vereinId) continue;
+    if (welt.menschFuehrt(verein.id)) continue;
     if (verein.konto >= 0) {
       for (const spieler of verein.spieler) spieler.transferliste = null;
       continue;

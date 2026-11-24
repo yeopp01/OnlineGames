@@ -1,9 +1,13 @@
+// @ts-check
 'use strict';
 
 // Vereine und Spieler: Erzeugung, Werte, Aufstellung, Training, Entwicklung.
 // Alle Namen sind erfunden - echte Vereine und Spieler sind lizenzpflichtig,
 // und erfundene kosten nichts (→ docs/adr/0008-zweites-spiel-manager.md).
 const { zufallAus, zahl, umMitte, eines } = require('./zufall');
+
+/** @typedef {import('./daten').Verein} Verein */
+/** @typedef {import('./daten').Zufall} Zufall */
 
 const TOR = 'TOR';
 const ABW = 'ABW';
@@ -130,7 +134,7 @@ const ORTE = [
   'Hallwangen', 'Isenbruck', 'Kesselstein', 'Lauterbrunn', 'Marienfels', 'Neudorf',
   'Oberwiesen', 'Pfaffenrode', 'Rabenau', 'Sonnewalde', 'Trebbin', 'Wolfsried',
 ];
-const ZUSAETZE = ['FC', 'SV', 'VfB', 'SC', 'TSV', 'Eintracht', 'Union', 'Borussia', 'Fortuna', 'Rot-Weiss'];
+const ZUSAETZE = ['FC', 'SV', 'VfB', 'SC', 'TSV', 'Eintracht', 'Union', 'Borussia', 'Fortuna', 'Rot-Weiß'];
 
 // 60 mal 60 sind 3.600 Namen - genug fuer tausend Spieler zugleich, auch
 // nach vielen Saisons mit Jugend und Karriereenden.
@@ -152,7 +156,7 @@ const NACHNAMEN = [
   'Eggers', 'Fassbender', 'Grothe', 'Hammer', 'Illig', 'Kaltenbach',
   'Lorenzen', 'Marquardt', 'Niemeyer', 'Oswald', 'Pieper', 'Rademacher',
   'Stolze', 'Tiedemann', 'Albers', 'Brandt', 'Conrad', 'Dierks', 'Engel',
-  'Fuchs', 'Graf', 'Hansen', 'Imhof', 'Jaeger', 'Kruse', 'Lange', 'Maas',
+  'Fuchs', 'Graf', 'Hansen', 'Imhof', 'Jäger', 'Kruse', 'Lange', 'Maas',
   'Nagel', 'Otte', 'Pohl', 'Reuter', 'Sander', 'Timm', 'Voss',
 ];
 
@@ -547,7 +551,7 @@ function elfPruefen(verein, ids, system) {
   const elf = [];
   for (const [i, id] of ids.entries()) {
     const spieler = verein.spieler.find((s) => s.id === id);
-    if (!spieler) return { ok: false, fehler: 'Ein Spieler gehoert nicht zum Kader.' };
+    if (!spieler) return { ok: false, fehler: 'Ein Spieler gehört nicht zum Kader.' };
     const grund = ausfallgrund(spieler);
     if (grund) return { ok: false, fehler: `${spieler.name} ist ${grund}.` };
     if (!passtInsFach(spieler, plaetze[i])) {
@@ -651,6 +655,8 @@ const altersstufe = (alter) => (alter <= 20 ? 'jung' : alter <= 24 ? 'reifend' :
  * Winterpause gibt es einen Teil davon, am Saisonende den Rest; erst dann ist
  * jeder ein Jahr aelter.
  *
+ * @param {Verein} verein
+ * @param {Zufall} zufall
  * @param {number} spieleDesVereins  wie viele Pflichtspiele der Verein bestritt
  * @param {{anteil?: number, altern?: boolean}} [schritt]
  * @returns {object[]} jeder Spieler mit Staerke vorher und nachher und dem, wonach gerechnet wurde:

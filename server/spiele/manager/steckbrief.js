@@ -1,3 +1,4 @@
+// @ts-check
 'use strict';
 
 // Wie das Managerspiel in der Uebersicht steht (→ server/spiele/verzeichnis.js).

@@ -1,0 +1,10 @@
+{
+  "spec": "15-manager/bedienung.md",
+  "ac": "AC-20",
+  "titel": "Rechts das Eingreifen im angehaltenen Spiel: Ausrichtung, Haerte und Pressing verstellt, drei Wechsel mit \"wirkt ab Minute\", der vierte abgewiesen mit dem Grund des Servers",
+  "datei": "e2e/tests/manager-live.spec.mjs",
+  "pfad": [
+    "Das Spiel live",
+    "oberflaeche AC-20: wechseln und umstellen im laufenden Spiel"
+  ]
+}
