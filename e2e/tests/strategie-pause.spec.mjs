@@ -34,7 +34,8 @@ test.describe('Anhalten und Fortsetzen', () => {
       // Zu zweit hoechstens fuenf Minuten (AC-20).
       await expect(seite.locator('#pauseFrist')).toHaveText(/^Geht in (5:00|4:5\d) von selbst weiter\.$/);
     }
-    await expect(anna.locator('#pause')).toHaveText('Weiter');
+    // Oben kein zweites "Weiter" neben dem Feld in der Mitte.
+    await expect(anna.locator('#pause')).toBeHidden();
 
     const vorher = [await uhr(anna), await uhr(bert)];
     const takt = await bert.evaluate(() => window.ansicht.takt);
@@ -45,7 +46,7 @@ test.describe('Anhalten und Fortsetzen', () => {
     await nachweis(anna, {
       spec: SPEICHERN,
       ac: 'AC-19',
-      titel: 'Anna hat auf Pause geklickt: mitten im Bild steht Anna hat die Partie angehalten, darunter die Frist und Weiterspielen, oben rechts heisst der Knopf Weiter',
+      titel: 'Anna hat auf Pause geklickt: mitten im Bild steht Anna hat die Partie angehalten, darunter die Frist und Weiterspielen, oben rechts kein zweiter Knopf dafuer',
       test: info,
     });
   });

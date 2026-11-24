@@ -2,7 +2,7 @@
 
 **Bereich:** Strategie
 **Kuerzel:** bedienung
-**Stand:** 75/80 fertig · 2 in QA · 3 offen
+**Stand:** 81/86 fertig · 2 in QA · 3 offen
 
 ## Zweck
 
@@ -555,7 +555,8 @@ inzwischen alle eingetragen.
   schafe".
 - **AC-64** `fertig` **Baumenü auf zwei Seiten** — Das Baumenü eines
   Dorfbewohners (AC-25) hat zwei Seiten: **Wirtschaft** (Haus, Mühle, Lager,
-  Farm, Schmiede, Kloster, Universität, Markt) und **Militär** (Kaserne,
+  Farm, Schmiede, Kloster, Universität, Markt, in der Krone Wunder und
+  zweites Dorfzentrum) und **Militär** (Kaserne,
   Schießanlage, Stall, Außenposten, Belagerungswerkstatt, Wachturm,
   Steinmauer, Tor, Burg). Zwei Reiter links wechseln die Seite. Wer neu zu
   bauen beginnt, sieht die Wirtschaft: nach jeder neuen Auswahl und nachdem
@@ -568,9 +569,20 @@ inzwischen alle eingetragen.
   alle achtzehn Gebäude im Menü, sichtbar sind die neun der offenen Seite in
   höchstens zwei Reihen (vorher drei Reihen zu sechs: auf 1366 × 768 fast die
   halbe Bildhöhe); was Kampfeinheiten ausbildet, schießt oder sperrt, steht
-  auf der Militärseite, und keine Seite trägt mehr als zehn Gebäude.
+  auf der Militärseite, und die Wirtschaft trägt höchstens elf Gebäude, das
+  Militär höchstens zehn. **Eine Kampfeinheit** ist eine Einheit mit Angriff
+  über null, die kein Dorfbewohner ist (Klasse `dorf`) — wie bei der KI
+  (`ki.kaempft()`), nur zählt hier die Belagerung mit. Der Dorfbewohner
+  (Angriff 3) ist keine, der Mönch und der Marktkarren (Angriff 0) auch
+  nicht: Dorfzentrum, Kloster und Markt stehen bei der Wirtschaft. In der
+  Krone sind es elf und neun.
   **Rückmeldung des Benutzers:** „gebäude muss man irgendwie beim
   dorfbewohner etwas organisieren, dass das nicht zu breit wird."
+  **Geändert 2026-11-22** (Benutzer: „Ac 64 passt seine Empfehlung"): vorher
+  höchstens zehn je Seite, und als Kampfeinheit galt jede Einheit mit
+  Angriff, auch der Dorfbewohner — damit stand das zweite Dorfzentrum (bauen AC-57) beim Militär,
+  und dessen Seite des Technologiebaums ragte auf 1366 × 768 aus dem Rahmen
+  (AC-86).
 - **AC-65** `fertig` **Forschung erkennbar, laufende grau** — Ein Knopf, der
   forscht (eine Verbesserung oder der Aufstieg), trägt einen goldenen Rand
   und eine goldene Ecke — am Knopf wie in der Schlange —, ein Knopf, der eine
@@ -777,6 +789,59 @@ inzwischen alle eingetragen.
   **Rückmeldung des Benutzers:** „und die Weiterentwicklung z.B. vom
   Eliteplänkler sollte klar als weiterentwicklung ersichtlich sein - und eher
   unterhalb vom Plänkler, sodass das etwas zugeordnet ist".
+
+- **AC-81** `fertig` **Technologiebaum aus den Daten** — Es gibt eine
+  Übersicht über alles, was eine Partie hergibt: jedes Gebäude, jede Einheit,
+  jede Stufe und jede Verbesserung genau einmal, in zwei Seiten wie das
+  Baummenü (AC-64: Wirtschaft und Militär), in Zeilen nach Zeitalter
+  (Landsitz, Lehen, Fürstentum, Krone) und in Spalten je Gebäude. Gerechnet
+  wird sie auf dem Server aus den Daten (`server/spiele/strategie/techbaum.js`)
+  und ausgeliefert unter `/api/spiele/<art>/nachschlagen`, angemeldet oder
+  nicht — der Steckbrief sagt mit `nachschlagen`, ob ein Spiel so etwas hat
+  (ADR-0006). Was ein Eintrag bringt, steht in denselben Sätzen wie im Spiel
+  (`bringt.js`, AC-55); der Browser liest daraus keine Wirkung. Was weder
+  ausbildet noch erforscht (Haus, Mauer, Farm, Wunder …), steht als
+  „Weitere Gebäude" am Ende der Seite; der Drache steht beim Kloster, als
+  gerufen, nicht ausgebildet.
+  **Wunsch des Benutzers:** „was noch nett wäre, wenn man so ne übersicht
+  anklicken könnte, was es alles an einheiten und weiterentwicklungen, etc.
+  gibt - ggf. pro Haus".
+- **AC-82** `fertig` **Linien zeigen die Folge** — Was aufeinander folgt,
+  steht untereinander und ist mit einem Pfeil verbunden: eine Einheit und
+  ihre Stufen (Miliz → Soldat → Langschwertkämpfer → Zweihandkämpfer, der
+  Ritter → Kavalier → Paladin) mit goldenem Pfeil wie in der Leiste (AC-80),
+  eine Verbesserung und ihre `vorstufe` (Schmiedeangriff → Eisenguss → …)
+  mit grauem. Jeder Pfeil zeigt auf etwas, das im Baum steht, und nie
+  aufwärts in ein früheres Zeitalter. Die Zeile eines Eintrags ist sein
+  eigenes Zeitalter, aber nie früher als das seines Gebäudes.
+- **AC-83** `fertig` **Ein Haus im Baum** — Oben wählt man „Alle Häuser" oder
+  eines der fünf. Mit einem Haus ist, was es nicht hat, blass (die
+  Spezialeinheiten der anderen), was nur es hat, golden umrandet, und was es
+  stärkt, trägt ein kleines ▲; darüber stehen Wahlspruch, Boni und
+  Mannschaftsbonus in den Worten des Servers. Die Werte jeder Einheit kommen
+  vom Server je Haus und Zeitalter (`welt.kampfwerte()`, mit `boniAb`) —
+  Eschenbruchs Schützen schießen erst ab dem Fürstentum weiter. Mit „Alle
+  Häuser" steht an jeder Spezialeinheit, wem sie gehört. Im Spiel ist das
+  eigene Haus vorgewählt, im Warteraum das gewählte, wenn es nicht Zufall
+  ist.
+- **AC-84** `fertig` **Tafel an jedem Eintrag** — Wer mit der Maus auf einen
+  Eintrag zeigt oder ihn mit der Tastatur erreicht, sieht dieselbe Tafel wie
+  über einem Knopf der Leiste (AC-55): Name, Preis, Wirkung in Zahlen, Dauer,
+  und bei Einheiten die Kampfwerte. Darunter, wo es zutrifft, „Gibt es ab dem
+  …", „Haus … hat das nicht", „Von Haus … gestärkt" oder wie der Drache
+  gerufen wird. Ein Klick hält die Tafel fest (für den Laptop ohne Maus), ein
+  zweiter oder `Esc` löst sie.
+- **AC-85** `fertig` **Aus Menü und Warteraum** — Der Baum öffnet sich im
+  Spiel aus dem Menü (AC-66, „Technologiebaum") und im Warteraum über einen
+  Knopf neben „Starten", als Ebene über der Seite, nicht als neuer Tab: die
+  Partie läuft darunter weiter wie unter dem Menü, das Vollbild bleibt, und
+  es braucht keine zweite Verbindung. Solange er offen ist, gehen Tasten
+  nicht an das Spiel, und die Maus am Rand schiebt die Karte nicht (AC-9);
+  `Esc` und „Schließen" schließen ihn, und man steht wieder in der Partie.
+- **AC-86** `fertig` **Baum passt auf Laptop** — Auf 1366 × 768 (AC-23)
+  steht die ganze Breite einer Seite ohne Rollen nebeneinander, kein Eintrag
+  ist abgeschnitten und keine Tafel ragt aus dem Fenster; was nicht in die
+  Höhe passt, rollt im Baum, nicht die Seite.
 
 ## Grenzfaelle
 

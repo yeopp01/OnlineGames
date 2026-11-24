@@ -28,11 +28,11 @@ function postenText(rohstoff, menge) {
 }
 
 /** Die Klasse des Farbflecks zu einem Rohstoff - Gold und Gefallene beginnen gleich. */
-function warenklasse(rohstoff) {
+export function warenklasse(rohstoff) {
   return `ware ware-${rohstoff === 'gefallene' ? 'x' : rohstoff[0]}`;
 }
 
-function bildchen(art, groesse, farbe, lage = {}) {
+export function bildchen(art, groesse, farbe, lage = {}) {
   const leinwand = document.createElement('canvas');
   const dichte = window.devicePixelRatio || 1;
   leinwand.width = groesse * dichte;
@@ -62,7 +62,7 @@ function bildchen(art, groesse, farbe, lage = {}) {
 
 // Der Aufstieg als Bild: ein Torbogen mit Zinnen, davor eine Fahne in der
 // Volksfarbe - das naechste Zeitalter oeffnet sich (bauen AC-23).
-function aufstiegBildchen(groesse, farbe) {
+export function aufstiegBildchen(groesse, farbe) {
   const leinwand = document.createElement('canvas');
   const dichte = window.devicePixelRatio || 1;
   leinwand.width = groesse * dichte;
@@ -1745,7 +1745,7 @@ function zeichenBildchen(zeichen, groesse, farbe) {
   return leinwand;
 }
 
-function gebaeudeBildchen(art, groesse, farbe, n) {
+export function gebaeudeBildchen(art, groesse, farbe, n) {
   const leinwand = document.createElement('canvas');
   const dichte = window.devicePixelRatio || 1;
   leinwand.width = groesse * dichte;
@@ -1977,6 +1977,13 @@ export class Auswahlleiste {
       if (lesen('angriff') > 0) zeilen.push(`Schießt von selbst: ${lesen('angriff')} Angriff, Reichweite ${lesen('reichweite')}`);
       if (w.tor) zeilen.push('Lässt die eigenen Einheiten durch');
       if (w.gezogen) zeilen.push('Wird von Feld zu Feld gezogen');
+      // Die Grenze je Spieler (bauen AC-51, AC-57). Was es gibt, bevor es zu
+      // bauen ist, stand schon beim Start - das erste Dorfzentrum zaehlt mit.
+      if (w.hoechstens === 1) zeilen.push('Nur eines je Spieler');
+      else if (w.hoechstens) {
+        const mit = (w.bauenAb || 0) > (w.zeitalter || 0) ? ', das erste mitgezählt' : '';
+        zeilen.push(`Höchstens ${['', 'eines', 'zwei', 'drei'][w.hoechstens] || w.hoechstens} je Spieler${mit}`);
+      }
       zeilen.push(`${lesen('leben')} Leben · Sicht ${lesen('sicht')}`);
       return { name: this.gebaeudeName(a.ich, art), kosten: w.kosten || {}, dauer: w.bauzeit ? `Bauzeit ${w.bauzeit} s` : null, zeilen };
     }
@@ -2029,7 +2036,8 @@ export class Auswahlleiste {
     if (w.nurGebaeude) zeilen.push('Greift nur Gebäude an');
     // Getarnt (kampf AC-22) und aus Gefallenen (einheiten AC-49).
     if (w.getarnt) zeilen.push(`Getarnt: Gegner sehen ihn erst auf ${w.getarnt} Felder`);
-    if (w.kosten?.gefallene) zeilen.push(`Ersteht aus eigenen Gefallenen – vorhanden: ${a.vorraete.gefallene || 0}`);
+    // Ohne Partie (im Technologiebaum, bedienung AC-84) gibt es keinen Vorrat.
+    if (w.kosten?.gefallene) zeilen.push(a.vorraete ? `Ersteht aus eigenen Gefallenen – vorhanden: ${a.vorraete.gefallene || 0}` : 'Ersteht aus eigenen Gefallenen');
     zeilen.push(kurz(art));
     const weite = lesen('angriff') > 0 ? (lesen('reichweite') > 0 ? `Reichweite ${lesen('reichweite')}` : 'Nahkampf') : null;
     zeilen.push([weite, w.tempo ? `Tempo ${komma(lesen('tempo'))}` : null, `Sicht ${lesen('sicht')}`].filter(Boolean).join(' · '));
@@ -2365,14 +2373,16 @@ export class Auswahlleiste {
 
   // Was die Auswahl bauen kann: jedes Gebaeude, das mindestens einer baut -
   // und das im erreichten Zeitalter schon zu haben ist (bauen AC-24). Was
-  // spaeter kommt, steht gar nicht erst im Menue.
+  // spaeter kommt, steht gar nicht erst im Menue - auch das zweite
+  // Dorfzentrum vor der Krone nicht (`bauenAb`, bauen AC-57).
   bauplan(auswahl) {
     const werte = this.ansicht.werte;
     const arten = new Set();
     for (const e of auswahl) {
       if (e.b !== this.ansicht.ich) continue;
       for (const art of werte.einheiten[this.ansicht.arten[e.k]]?.baut || []) {
-        if ((werte.gebaeude[art]?.zeitalter || 0) <= this.ansicht.zeitalter) arten.add(art);
+        const g = werte.gebaeude[art];
+        if (Math.max(g?.zeitalter || 0, g?.bauenAb || 0) <= this.ansicht.zeitalter) arten.add(art);
       }
     }
     return [...arten].map((art) => ({

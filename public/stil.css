@@ -1419,6 +1419,12 @@ canvas.angriffslauf {
   display: none;
 }
 
+/* Steht die Partie, sagt das Feld in der Mitte "Weiterspielen" - oben noch
+   ein "Weiter" daneben waere derselbe Knopf zweimal. F3 bleibt. */
+.aufgeben.imPausefeld {
+  display: none;
+}
+
 /* Die Ansage einer Kuendigung (spielziel AC-24): oben rechts unter dem
    Knopf, der sie ausloest - nicht in der Mitte, wo Absage, Angriff und
    Zeitalter stehen (bedienung AC-41). Sie bleibt, solange die Frist laeuft;
@@ -2321,4 +2327,467 @@ button.leise-knopf {
   text-align: right;
   font-weight: 600;
   font-variant-numeric: tabular-nums;
+}
+
+/* ---- Technologiebaum (bedienung AC-81 bis AC-86) ------------------------ */
+/* Eine Ebene ueber allem - im Spiel und im Warteraum. Die Partie laeuft
+   darunter weiter; gerollt wird nur im Raster, nie die Seite (AC-86). */
+
+.techbaum {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  display: flex;
+  padding: 0.6rem;
+  background: #0b0d10b8;
+  --tb-alter: 5.4rem;
+  --tb-spalte: 3.45rem;
+  --tb-luecke: 0.45rem;
+}
+
+.techbaum[hidden] {
+  display: none;
+}
+
+.tb-flaeche {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 0;
+  border: 1px solid #ffffff2e;
+  border-radius: 0.7rem;
+  background: #12161cf7;
+  box-shadow: 0 8px 28px #000c;
+  color: var(--schrift);
+}
+
+.tb-kopf {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.4rem 0.9rem;
+  padding: 0.55rem 0.8rem 0.4rem;
+  border-bottom: 1px solid #ffffff1a;
+}
+
+.tb-kopf h2 {
+  margin: 0;
+  font-size: 1.05rem;
+}
+
+.tb-seiten,
+.tb-haeuser {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3rem;
+}
+
+.tb-haeuser {
+  flex: 1;
+}
+
+.techbaum .tb-reiter,
+.techbaum .tb-haus,
+.techbaum .tb-zu {
+  padding: 0.3rem 0.65rem;
+  border: 1px solid #ffffff2e;
+  border-radius: 0.45rem;
+  background: #1a212b;
+  font-size: 0.82rem;
+}
+
+.techbaum .tb-reiter.an,
+.techbaum .tb-haus.an {
+  border-color: var(--betont);
+  background: #223044;
+  font-weight: 600;
+}
+
+.techbaum .tb-haus.an:not([data-tb-haus=""]) {
+  border-color: #e0b43a;
+}
+
+.techbaum .tb-zu {
+  margin-left: auto;
+}
+
+.tb-hauszeile {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.15rem 0.9rem;
+  margin: 0;
+  padding: 0.35rem 0.8rem;
+  border-bottom: 1px solid #ffffff1a;
+  font-size: 0.78rem;
+  line-height: 1.35;
+}
+
+.tb-hauszeile .tb-wahlspruch,
+.tb-legende {
+  color: var(--leise);
+}
+
+.tb-rahmen {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  padding: 0.4rem 0.6rem 0.6rem;
+}
+
+.tb-raster {
+  position: relative;
+  display: grid;
+  grid-template-rows: auto repeat(4, minmax(4.6rem, auto));
+  column-gap: 0.2rem;
+  min-width: min-content;
+}
+
+.tb-laden {
+  margin: 2rem auto;
+  color: var(--leise);
+}
+
+.tb-zeile {
+  grid-column: 1 / -1;
+  border-top: 1px solid #ffffff14;
+  pointer-events: none;
+}
+
+.tb-alter {
+  grid-column: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 0.25rem;
+  padding: 0.3rem 0.4rem 0.3rem 0;
+  font-size: 0.85rem;
+}
+
+.techbaum .tb-aufstieg {
+  padding: 0.1rem;
+  border: 1px solid #ffffff2e;
+  border-radius: 0.35rem;
+  background: #1a212b;
+  line-height: 0;
+}
+
+.tb-gebaeude {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 0 0.3rem;
+  padding: 0.2rem 0.2rem 0.3rem;
+  border-radius: 0.45rem 0.45rem 0 0;
+  background: #1f2732;
+  font-size: 0.78rem;
+  text-align: center;
+  cursor: default;
+}
+
+.tb-gname {
+  font-weight: 600;
+}
+
+.tb-ab {
+  flex-basis: 100%;
+  color: var(--leise);
+  font-size: 0.68rem;
+}
+
+.tb-band {
+  border-radius: 0 0 0.45rem 0.45rem;
+  background: #ffffff08;
+  pointer-events: none;
+}
+
+/* Vor dem Zeitalter des Gebaeudes gibt es nichts daraus. */
+.tb-vorher {
+  background: repeating-linear-gradient(135deg, #00000040 0 6px, transparent 6px 12px);
+  pointer-events: none;
+}
+
+.tb-zelle {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.55rem;
+  padding: 0.35rem 0;
+}
+
+.techbaum .tb-knoten {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.1rem;
+  width: 100%;
+  max-width: 4.6rem;
+  padding: 0.2rem 0.1rem 0.25rem;
+  border: 1px solid #ffffff24;
+  border-radius: 0.4rem;
+  background: #1a212b;
+  font-size: 0.66rem;
+  line-height: 1.12;
+}
+
+.techbaum .tb-knoten:hover,
+.techbaum .tb-knoten:focus-visible,
+.techbaum .tb-gebaeude:focus-visible,
+.techbaum .tb-aufstieg:hover {
+  border-color: var(--betont);
+  background: #223044;
+  outline: none;
+}
+
+.techbaum .tb-knoten.tb-typ-stufe {
+  border-color: #e0b43a66;
+}
+
+.tb-bild {
+  position: relative;
+  line-height: 0;
+}
+
+.tb-name {
+  overflow-wrap: break-word;
+  hyphens: auto;
+  text-align: center;
+  max-width: 100%;
+}
+
+.tb-elite {
+  position: absolute;
+  right: -0.3rem;
+  bottom: -0.1rem;
+  padding: 0.05rem 0.2rem;
+  border-radius: 0.25rem;
+  background: #e0b43a;
+  color: #14171c;
+  font-size: 0.55rem;
+  font-weight: 700;
+  line-height: 1.1;
+}
+
+.tb-nurhaus {
+  color: #e0b43a;
+  font-size: 0.6rem;
+}
+
+/* Ein Haus gewaehlt (AC-83): was ihm fehlt, ist blass; was nur es hat,
+   golden umrandet; was es staerkt, traegt das Dreieck. */
+.techbaum .tb-knoten.fehlt {
+  opacity: 0.3;
+  filter: grayscale(1);
+}
+
+.techbaum .tb-knoten.eigen {
+  border: 2px solid #e0b43a;
+  box-shadow: 0 0 8px #e0b43a66;
+}
+
+.tb-staerker-kopf {
+  color: #7ad67a;
+  font-size: 0.7rem;
+  line-height: 1;
+}
+
+.tb-staerker {
+  position: absolute;
+  top: -0.2rem;
+  right: -0.45rem;
+  color: #7ad67a;
+  font-size: 0.75rem;
+  line-height: 1;
+  text-shadow: 0 0 3px #000;
+}
+
+.tb-pfeile {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 2;
+  pointer-events: none;
+  overflow: visible;
+}
+
+.tb-pfeil {
+  fill: none;
+  stroke: #9aa3ae;
+  stroke-width: 1.6;
+}
+
+.tb-pfeil.gold {
+  stroke: #e0b43a;
+}
+
+.techbaum .tb-tafel {
+  z-index: 41;
+}
+
+.techbaum .tb-tafel.angeheftet {
+  border-color: var(--betont);
+}
+
+.kt-hinweis {
+  margin-top: 0.25rem;
+  color: #f0c67a;
+  font-size: 0.8rem;
+}
+
+/* Der Weg in den Baum im Warteraum (AC-85): neben dem Start. */
+button.tb-oeffnen {
+  white-space: nowrap;
+}
+
+/* ---- Deine Partien (speichern AC-7, AC-9) ---------------------------------
+   Unter den Spielkarten, eine Zeile je Stand: links was er ist, rechts
+   Fortsetzen und Loeschen, alles in einer Zeile. Hoechstens fuenf - so
+   bleibt der Vorraum auf 1366 x 768 ohne Rollen (spielauswahl AC-23,
+   speichern AC-27; mit zwei Zeilen je Stand rollte er). Klappt jemand eine Spielkarte
+   zum Eroeffnen auf, tritt die Liste zurueck: die Einstellungen brauchen
+   den Platz. */
+.partien {
+  margin-top: 0.9rem;
+}
+
+.partien[hidden],
+.vorraum #angemeldet:has(.einstellungen:not([hidden])) .partien {
+  display: none;
+}
+
+.partien h3 {
+  margin: 0 0 0.3rem;
+  color: var(--leise);
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.partienliste {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.partienliste li {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  padding: 0.25rem 0;
+  border-bottom: 1px solid var(--rand);
+}
+
+.partienliste li:last-child {
+  border-bottom: none;
+}
+
+.partietext {
+  display: flex;
+  flex: 1;
+  align-items: baseline;
+  gap: 0.6rem;
+  min-width: 0;
+  line-height: 1.3;
+}
+
+.partietext strong {
+  flex: 0 0 auto;
+  font-size: 0.92rem;
+}
+
+.partieangaben {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  color: var(--leise);
+  font-size: 0.82rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.partienliste button {
+  padding: 0.3rem 0.8rem;
+  font-size: 0.85rem;
+  white-space: nowrap;
+}
+
+.partienliste button.haupt {
+  flex: 0 0 auto;
+}
+
+.partienliste button.sicher {
+  border-color: #b4473f;
+  color: #ffd2c9;
+}
+
+.partienmeldung {
+  margin: 0 0 0.5rem;
+  padding: 0.45rem 0.7rem;
+  border: 1px solid #4a90d988;
+  border-radius: 8px;
+  background: #182433;
+  font-size: 0.88rem;
+}
+
+.partienmeldung.fehler {
+  border-color: #b4473f88;
+  background: #3a2226;
+  color: #f2b8b8;
+}
+
+.partienmeldung[hidden],
+.partienvoll[hidden] {
+  display: none;
+}
+
+.partienvoll {
+  margin: 0.3rem 0 0;
+  color: #e3bf6a;
+  font-size: 0.85rem;
+}
+
+/* ---- Ein Hinweis, der bleibt (speichern AC-6, AC-27) ----------------------
+   Oben rechts unter den Knoepfen, nicht in der Mitte (bedienung AC-41): was
+   hier steht, betrifft die ganze Partie - dass sie nicht gesichert wird,
+   oder dass ein aelterer Stand geladen wurde. Er bleibt, bis man ihn
+   wegklickt; die Partie laeuft darunter weiter. */
+.spielhinweis {
+  position: fixed;
+  right: 1rem;
+  top: 4.2rem;
+  width: min(24rem, calc(100vw - 2rem));
+  margin: 0;
+  padding: 0.75rem 1rem 0.8rem;
+  border: 1px solid #f0b35a88;
+  border-radius: 0.6rem;
+  background: #12161ef2;
+  color: #e6e9ee;
+  box-shadow: 0 6px 22px #000b;
+  z-index: 15;
+}
+
+.spielhinweis[hidden] {
+  display: none;
+}
+
+/* Steht schon die Ansage eines Buendnisses dort, darunter. */
+.buendnisansage:not([hidden]) ~ .spielhinweis {
+  top: 9.5rem;
+}
+
+.spielhinweis p {
+  margin: 0 0 0.6rem;
+  line-height: 1.4;
+}
+
+.spielhinweis button {
+  padding: 0.35rem 0.9rem;
+  font-size: 0.88rem;
 }

@@ -7,9 +7,9 @@ Eine Zeile je Abnahmekriterium. Gepflegt wird der Status in der Spec selbst,
 hier steht er zusammengefasst. Erzeugt mit `npm run specs:board`; als Seite
 mit Bildnachweisen, Filter und Suche mit `npm run qa:report`.
 
-**Gesamt:** 598/709 fertig · 3 in Arbeit · 15 in QA · 3 geplant · 82 offen · 8 zurueckgestellt
+**Gesamt:** 627/717 fertig · 3 in Arbeit · 15 in QA · 3 geplant · 61 offen · 8 zurueckgestellt
 
-**Nachweise:** 323 Kriterien mit Bild · 284 ohne Bild, begruendet in `qa/ohne-bild.json`
+**Nachweise:** 338 Kriterien mit Bild · 298 ohne Bild, begruendet in `qa/ohne-bild.json`
 
 ## Nach Spezifikation
 
@@ -18,17 +18,17 @@ mit Bildnachweisen, Filter und Suche mit `npm run qa:report`.
 | [Konten und Anmeldung](00-plattform/konten.md)                 | -         | 1     | 2       | 3     | -               | 14     |
 | [Raeume und Partien](00-plattform/raeume.md)                   | -         | 2     | -       | 3     | -               | 13     |
 | [Schutz vor Fremdnutzung](00-plattform/schutz.md)              | -         | 1     | -       | 4     | -               | 7      |
-| [Anhalten und Fortsetzen](00-plattform/speichern.md)           | -         | -     | -       | 23    | -               | 3      |
+| [Anhalten und Fortsetzen](00-plattform/speichern.md)           | -         | -     | -       | 7     | -               | 20     |
 | [Spielauswahl und Einstellungen](00-plattform/spielauswahl.md) | -         | -     | -       | 5     | -               | 19     |
 | [Uebertragung](00-plattform/uebertragung.md)                   | -         | -     | 1       | 1     | -               | 8      |
-| [Bauen und Ausbilden](10-strategie/bauen.md)                   | -         | -     | -       | -     | -               | 56     |
-| [Bedienung](10-strategie/bedienung.md)                         | -         | 2     | -       | 3     | -               | 75     |
+| [Bauen und Ausbilden](10-strategie/bauen.md)                   | -         | -     | -       | -     | -               | 57     |
+| [Bedienung](10-strategie/bedienung.md)                         | -         | 2     | -       | 3     | -               | 81     |
 | [Darstellung](10-strategie/darstellung.md)                     | 1         | 1     | -       | 4     | -               | 26     |
 | [Einheiten und Befehle](10-strategie/einheiten-und-befehle.md) | -         | 1     | -       | 3     | 1               | 58     |
-| [Fahrplan zum Klon](10-strategie/fahrplan.md)                  | -         | 2     | -       | 4     | -               | 20     |
+| [Fahrplan zum Klon](10-strategie/fahrplan.md)                  | -         | 2     | -       | 2     | -               | 22     |
 | [Kampf](10-strategie/kampf.md)                                 | -         | -     | -       | 2     | 1               | 24     |
 | [Karte und Vorraete](10-strategie/karte-und-vorraete.md)       | -         | -     | -       | 2     | 3               | 14     |
-| [KI-Spieler](10-strategie/ki.md)                               | -         | -     | -       | 7     | -               | 33     |
+| [KI-Spieler](10-strategie/ki.md)                               | -         | -     | -       | 4     | -               | 36     |
 | [Spielziel und Partieverlauf](10-strategie/spielziel.md)       | 1         | -     | -       | 10    | -               | 18     |
 | [Aufstellung, Taktik und Training](15-manager/aufstellung.md)  | -         | -     | -       | -     | 2               | 23     |
 | [Bedienung des Managerspiels](15-manager/bedienung.md)         | -         | -     | -       | -     | -               | 15     |
@@ -75,7 +75,7 @@ mit Bildnachweisen, Filter und Suche mit `npm run qa:report`.
 - **Kennwort vergessen** — [Konten und Anmeldung](00-plattform/konten.md) AC-5
 - **Automatischer Wiederaufbau** — [Uebertragung](00-plattform/uebertragung.md) AC-10
 
-## Offen (82)
+## Offen (61)
 
 - **Anmeldung ueber Google/GitHub** — [Konten und Anmeldung](00-plattform/konten.md) AC-6
 - **Bilanz je Konto** — [Konten und Anmeldung](00-plattform/konten.md) AC-14
@@ -87,24 +87,8 @@ mit Bildnachweisen, Filter und Suche mit `npm run qa:report`.
 - **Partien haben eine Höchstdauer** — [Schutz vor Fremdnutzung](00-plattform/schutz.md) AC-10
 - **Statische Dateien haben eigene Bremse** — [Schutz vor Fremdnutzung](00-plattform/schutz.md) AC-11
 - **Auffälligkeiten sind sichtbar** — [Schutz vor Fremdnutzung](00-plattform/schutz.md) AC-12
-- **Ein Spielstand ist ein Datenwert** — [Anhalten und Fortsetzen](00-plattform/speichern.md) AC-1
-- **Laden ergibt exakt dieselbe Welt** — [Anhalten und Fortsetzen](00-plattform/speichern.md) AC-2
-- **Selbsttätig jede Minute** — [Anhalten und Fortsetzen](00-plattform/speichern.md) AC-3
-- **Gesichert wird auch beim Anhalten** — [Anhalten und Fortsetzen](00-plattform/speichern.md) AC-4
-- **Ein Spielstand bleibt klein** — [Anhalten und Fortsetzen](00-plattform/speichern.md) AC-5
-- **Kaputter Spielstand nimmt nichts mit** — [Anhalten und Fortsetzen](00-plattform/speichern.md) AC-6
-- **Anhalten ist jederzeit möglich** — [Anhalten und Fortsetzen](00-plattform/speichern.md) AC-7
-- **Wegklicken ist dasselbe wie Anhalten** — [Anhalten und Fortsetzen](00-plattform/speichern.md) AC-8
-- **Fortsetzen öffnet einen neuen Raum** — [Anhalten und Fortsetzen](00-plattform/speichern.md) AC-9
-- **Fortsetzen, wo aufgehört wurde** — [Anhalten und Fortsetzen](00-plattform/speichern.md) AC-10
-- **Ein Spielstand läuft nur einmal** — [Anhalten und Fortsetzen](00-plattform/speichern.md) AC-11
-- **Ein Spielstand gehört einem Konto** — [Anhalten und Fortsetzen](00-plattform/speichern.md) AC-12
-- **Nur Eigentümer öffnet, benennt, löscht** — [Anhalten und Fortsetzen](00-plattform/speichern.md) AC-13
 - **Mitspieler dürfen mitbauen, nicht besitzen** — [Anhalten und Fortsetzen](00-plattform/speichern.md) AC-14
 - **Gelöschtes Konto nimmt Spielstände mit** — [Anhalten und Fortsetzen](00-plattform/speichern.md) AC-15
-- **Jeder Spielstand trägt eine Fassungsnummer** — [Anhalten und Fortsetzen](00-plattform/speichern.md) AC-16
-- **Unbekannte Fassung wird abgelehnt** — [Anhalten und Fortsetzen](00-plattform/speichern.md) AC-17
-- **Ältere Fassungen werden hochgezogen** — [Anhalten und Fortsetzen](00-plattform/speichern.md) AC-18
 - **Sichern verlangt Einigkeit** — [Anhalten und Fortsetzen](00-plattform/speichern.md) AC-22
 - **Der Gastgeber besitzt den Stand** — [Anhalten und Fortsetzen](00-plattform/speichern.md) AC-23
 - **Fortsetzen wartet auf dieselben Plätze** — [Anhalten und Fortsetzen](00-plattform/speichern.md) AC-24
@@ -128,19 +112,14 @@ mit Bildnachweisen, Filter und Suche mit `npm run qa:report`.
 - **Marschierende laufen nicht aufeinander** — [Einheiten und Befehle](10-strategie/einheiten-und-befehle.md) AC-32
 - **Fünf Häuser wählbar** — [Fahrplan zum Klon](10-strategie/fahrplan.md) AC-16
 - **Kein Haus vorn** — [Fahrplan zum Klon](10-strategie/fahrplan.md) AC-18
-- **Imperialzeit spielbar** — [Fahrplan zum Klon](10-strategie/fahrplan.md) AC-19
-- **Große Partie bleibt flüssig** — [Fahrplan zum Klon](10-strategie/fahrplan.md) AC-20
 - **Gleiche Heere, gleiche Chancen** — [Kampf](10-strategie/kampf.md) AC-26
 - **Pfeile treffen beim Ankommen** — [Kampf](10-strategie/kampf.md) AC-27
 - **Kein Spieler ist abgeschnitten** — [Karte und Vorraete](10-strategie/karte-und-vorraete.md) AC-7
 - **Vorraete sind endlich und knapp** — [Karte und Vorraete](10-strategie/karte-und-vorraete.md) AC-10
 - **KI liest die Zustandsnachricht** — [KI-Spieler](10-strategie/ki.md) AC-20
-- **Die KI forscht** — [KI-Spieler](10-strategie/ki.md) AC-35
 - **KI bildet Spezialeinheit aus** — [KI-Spieler](10-strategie/ki.md) AC-28
 - **KI antwortet auf das Heer** — [KI-Spieler](10-strategie/ki.md) AC-31
 - **Die KI ruft den Drachen** — [KI-Spieler](10-strategie/ki.md) AC-29
-- **KI steigt zur Krone auf** — [KI-Spieler](10-strategie/ki.md) AC-39
-- **Die KI geht aufs Wunder** — [KI-Spieler](10-strategie/ki.md) AC-40
 - **Partiedauer 25 bis 45 Minuten** — [Spielziel und Partieverlauf](10-strategie/spielziel.md) AC-2
 - **Kein Aus nach drei Minuten** — [Spielziel und Partieverlauf](10-strategie/spielziel.md) AC-3
 - **Aufholen ist möglich** — [Spielziel und Partieverlauf](10-strategie/spielziel.md) AC-4

@@ -8,6 +8,7 @@ const {
   BEVOELKERUNG_MAX, SCHLANGE_MAX, STARTAUFSTELLUNG, REPARATUR, SCHIESSENDE, ABRUESTEN, ruestetAb, DRACHE,
 } = require('./daten');
 const { bringt, staerkt, hausBringt } = require('./bringt');
+const stand = require('./stand');
 
 const TAKTE_PRO_SEKUNDE = 10;
 // Welche Werte die Auswahlleiste je Einheit zeigt (bedienung AC-35). Leben
@@ -26,6 +27,8 @@ const FLIEGER = Object.keys(EINHEITEN).filter((art) => EINHEITEN[art].fliegt);
 // So lange liegt ein Toter noch im Bild, bevor er aus dem Zustand faellt
 // (kampf AC-10): lang genug, um zu sehen, was passiert ist.
 const TOT_SEKUNDEN = 2;
+// Die Grenze eines Gebaeudes in Worten (bauen AC-51, AC-57).
+const MALE = ['', 'einmal', 'zweimal', 'dreimal'];
 // So viele Ziele haengt Umschalt hoechstens an einen Gang (bedienung AC-14):
 // eine Grenze, damit ein Zustand nicht mit jedem Klick waechst (ADR-0005).
 const WEGPUNKTE_MAX = 20;
@@ -338,6 +341,17 @@ function wegGehen(obj, rest, runden = 0) {
   }
 }
 
+// Was beim Sichern wegbleibt (speichern AC-1): nur Gemerktes, das beim
+// ersten Lesen aus den uebrigen Feldern neu entsteht. Wer hier etwas
+// eintraegt, das nicht so entsteht, verliert es beim Laden -
+// `tests/partien/speichern-gleichlauf.mjs` rechnet eine geladene Partie
+// gegen die ununterbrochene.
+const GEMERKT = ['werteGemerkt', 'wirkungenGemerkt', 'bonusGemerkt'];
+
+// Die Zufaelle der Partie sind Funktionen und gehen als ihr Stand hinein
+// (speichern AC-1): der des Bekehrens und der der Reihenfolge (kampf AC-26).
+const ZUFAELLE = ['zufall', 'reihenZufall'];
+
 class Welt {
   /**
    * @param {{id: string, name: string}[]} spielerListe
@@ -554,6 +568,67 @@ class Welt {
     this.gebaeudeSichtNeu = true;
     if (this.sichtArt !== 'nebel') for (const sicht of this.sichten.values()) sicht.erkundet.fill(1);
     this.sichtAktualisieren();
+  }
+
+  /**
+   * Die Welt als reiner Wert (speichern AC-1, ADR-0017): jedes eigene Feld,
+   * wie es ist - Zahlen, Texte, Listen, `Map`, `Set`, Bytefelder. Kein Feld
+   * wird von Hand aufgezaehlt; was dazukommt, ist von selbst dabei, und
+   * `tests/waechter-stand.test.mjs` verlangt dafuer eine neue Fassung.
+   * Weg bleibt nur, was gemerkt ist (`GEMERKT`) und beim ersten Lesen neu
+   * entsteht, und was der Steckbrief angehaengt hat (`takten` mit den KIs).
+   * Die Zufaelle sind Funktionen und gehen als ihr Stand hinein (`ZUFAELLE`).
+   *
+   * Flach: die Inhalte sind dieselben Dinge wie in der Welt. Abgelegt wird
+   * gleich danach, in einem Zug mit den KIs (`stand.schreiben`) - so bleibt
+   * erhalten, wer auf dasselbe zeigt.
+   * @returns {Record<string, any>}
+   */
+  alsWert() {
+    const wert = {};
+    for (const [feld, inhalt] of Object.entries(this)) {
+      if (GEMERKT.includes(feld)) continue;
+      if (ZUFAELLE.includes(feld)) {
+        wert[feld] = inhalt.stand();
+        continue;
+      }
+      if (typeof inhalt === 'function') {
+        // Angehaengt vom Steckbrief (die KIs vor jedem Takt): eine Methode
+        // der Welt, eigens belegt. Kommt beim Laden mit dem Steckbrief wieder.
+        if (typeof Welt.prototype[feld] === 'function') continue;
+        throw new Error(`welt.${feld} ist eine Funktion - sie laesst sich nicht sichern (speichern AC-1)`);
+      }
+      wert[feld] = inhalt;
+    }
+    return wert;
+  }
+
+  /**
+   * Die Welt aus ihrem Wert (`alsWert`), ohne Konstruktor: der wuerfelte die
+   * Karte neu und stellte Dorfzentren auf. Die Felder kommen in derselben
+   * Reihenfolge zurueck, damit ein zweites Sichern denselben Wert ergibt
+   * (speichern AC-2) - Byte fuer Byte erst ab dem zweiten Laden, siehe
+   * `tests/gleichwertig.mjs`.
+   * @param {Record<string, any>} wert
+   * @returns {Welt}
+   */
+  static ausWert(wert) {
+    const welt = Object.create(Welt.prototype);
+    for (const [feld, inhalt] of Object.entries(wert)) {
+      welt[feld] = ZUFAELLE.includes(feld) ? karten.zufallAusStand(inhalt) : inhalt;
+    }
+    for (const feld of GEMERKT) welt[feld] = new Map();
+    return welt;
+  }
+
+  /**
+   * Der Spielstand als Bytes (speichern AC-1, AC-16) - ohne KIs. Eine Welt
+   * aus dem Steckbrief mit KIs belegt das neu und nimmt sie mit; geladen wird
+   * ueber den Steckbrief (`laden`).
+   * @returns {Buffer}
+   */
+  sichern() {
+    return stand.schreiben({ welt: this.alsWert(), kis: [] });
   }
 
   /**
@@ -845,6 +920,13 @@ class Welt {
   // Zeitalter eines Gebaeudes; ohne Angabe die Dunkle Zeit.
   gebaeudeZeitalter(art) {
     return GEBAEUDE[art].zeitalter || 0;
+  }
+
+  // Ab wann ein Dorfbewohner es bauen kann: sein Zeitalter, oder spaeter,
+  // wenn die Daten es sagen - das zweite Dorfzentrum erst in der Krone
+  // (bauen AC-57). Zum Aufstieg zaehlt weiter `gebaeudeZeitalter`.
+  bauZeitalter(art) {
+    return Math.max(this.gebaeudeZeitalter(art), GEBAEUDE[art].bauenAb || 0);
   }
 
   /**
@@ -1368,14 +1450,18 @@ class Welt {
     if (!bauer.length) return { fehler: 'Niemand in der Auswahl kann das bauen.' };
     const spieler = this.spielerVon(spielerId);
     // Erst das Zeitalter, dann der Platz (bauen AC-24).
-    const noetig = this.gebaeudeZeitalter(art);
+    const noetig = this.bauZeitalter(art);
     if (noetig > spieler.zeitalter) {
+      // Was es schon gibt, nur noch nicht zu bauen (bauen AC-57): das
+      // Dorfzentrum steht seit dem Anfang.
+      if (noetig > this.gebaeudeZeitalter(art)) return { fehler: `${GEBAEUDE_NAMEN[art] || art} lässt sich erst ${ZEITALTER[noetig].ab} bauen.` };
       return { fehler: `${GEBAEUDE_NAMEN[art] || art} gibt es erst ${ZEITALTER[noetig].ab}.` };
     }
-    // Hoechstens so viele je Spieler (bauen AC-51) - die Baustelle zaehlt mit.
+    // Hoechstens so viele je Spieler (bauen AC-51) - die Baustelle zaehlt mit,
+    // beim Dorfzentrum auch das erste (bauen AC-57).
     const grenze = GEBAEUDE[art].hoechstens;
     if (grenze && [...this.gebaeude.values()].filter((g) => g.besitzer === spielerId && g.art === art).length >= grenze) {
-      return { fehler: `${GEBAEUDE_NAMEN[art] || art} gibt es nur ${grenze === 1 ? 'einmal' : `${grenze}-mal`} je Spieler.` };
+      return { fehler: `${GEBAEUDE_NAMEN[art] || art} gibt es nur ${MALE[grenze] || `${grenze}-mal`} je Spieler.` };
     }
     const x = Math.round(Number(ziel.x));
     const y = Math.round(Number(ziel.y));
@@ -1419,7 +1505,7 @@ class Welt {
       .filter((e) => e && e.besitzer === spielerId && (EINHEITEN[e.art].baut || []).includes(art));
     if (!bauer.length) return { fehler: 'Niemand in der Auswahl kann das bauen.' };
     const spieler = this.spielerVon(spielerId);
-    const noetig = this.gebaeudeZeitalter(art);
+    const noetig = this.bauZeitalter(art);
     if (noetig > spieler.zeitalter) {
       return { fehler: `${GEBAEUDE_NAMEN[art] || art} gibt es erst ${ZEITALTER[noetig].ab}.` };
     }
@@ -2713,6 +2799,13 @@ class Welt {
     if (this.abstandZu(einheit, markt) > 3.5) {
       const stand = this.randfeld(markt, einheit);
       einheit.weg = stand ? this.wegNach(einheit, stand) : [];
+      // Das naechste Randfeld kann abseits liegen - hinter Wald, im Winkel
+      // zweier Gebaeude. Dann faehrt er an das naechste, das er erreicht
+      // (einheiten AC-40), solange es am Markt liegt.
+      if (!einheit.weg.length && stand) {
+        const nah = this.naechstesErreichbare(einheit, stand);
+        if (nah && this.abstandZu(nah, markt) <= 3.5) einheit.weg = this.wegNach(einheit, nah);
+      }
       // Kein Weg dorthin: er bleibt stehen, statt in jedem Takt zu suchen.
       if (!einheit.weg.length) einheit.auftrag = null;
       return;
@@ -6206,6 +6299,9 @@ class Welt {
           // Ein Tor laesst Eigene durch und darf auf die eigene Mauer (bauen AC-31).
           tor: Boolean(w.tor), ersetzt: w.ersetzt || null,
           zeitalter: w.zeitalter || 0,
+          // Das zweite Dorfzentrum erst in der Krone, hoechstens zwei (bauen
+          // AC-57): das Baumenue zeigt es erst dann, die Tafel nennt die Grenze.
+          bauenAb: w.bauenAb || 0, hoechstens: w.hoechstens || 0,
           // Acht Felder ueber den Rand (kampf AC-11, AC-15).
           sicht: w.sicht,
           // Ein Turm zeigt an der Auswahl, was er kann (bauen AC-29).
@@ -6280,6 +6376,6 @@ function mauerLinie(von, bis) {
 
 module.exports = {
   mauerLinie, MAUER_MAX,
-  Welt, TAKTE_PRO_SEKUNDE, STARTVORRAT, ROHSTOFFE, VERFOLGUNG_FELDER, WACHE_TAKTE,
+  Welt, GEMERKT, TAKTE_PRO_SEKUNDE, STARTVORRAT, ROHSTOFFE, VERFOLGUNG_FELDER, WACHE_TAKTE,
   ZEITGRENZEN, GESCHWINDIGKEITEN, KUENDIGUNG_SEKUNDEN, WUNDER_SEKUNDEN, GEBAEUDE_NAMEN, EINHEIT_NAMEN,
 };

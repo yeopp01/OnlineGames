@@ -1,0 +1,10 @@
+{
+  "spec": "10-strategie/bedienung.md",
+  "ac": "AC-85",
+  "titel": "Der Technologiebaum aus dem Menü im Spiel, als Ebene über der laufenden Partie – Wehrstein vorgewählt",
+  "datei": "e2e/tests/strategie-techbaum.spec.mjs",
+  "pfad": [
+    "Technologiebaum",
+    "bedienung AC-85: aus dem Menue im Spiel - die Partie laeuft darunter, keine Taste erreicht sie, Esc fuehrt zurueck"
+  ]
+}

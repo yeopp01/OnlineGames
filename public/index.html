@@ -48,6 +48,12 @@
             <button id="abmelden" class="leise">abmelden</button>
           </p>
           <ul id="spiele" class="spiele"></ul>
+          <section id="partien" class="partien" aria-labelledby="partienTitel" hidden>
+            <h3 id="partienTitel">Deine Partien</h3>
+            <p id="partienMeldung" class="partienmeldung" role="status" hidden></p>
+            <ul id="partienliste" class="partienliste"></ul>
+            <p id="partienVoll" class="partienvoll" hidden></p>
+          </section>
         </div>
 
         <div id="abgemeldet">
@@ -112,6 +118,7 @@
       </section>
       <div class="reihe">
         <button id="starten" class="haupt">Partie starten</button>
+        <button id="techbaumOeffnen" class="tb-oeffnen" type="button" hidden>Technologiebaum</button>
       </div>
       <p id="wartemeldung" class="meldung" hidden></p>
     </main>
@@ -143,6 +150,10 @@
           <li><b>Rechtsklick</b> auf freien Boden schickt sie dorthin; alle Tasten zeigt <kbd>?</kbd>.</li>
         </ol>
         <button id="erklaerungZu" class="haupt" type="button">Verstanden</button>
+      </aside>
+      <aside id="spielhinweis" class="spielhinweis" role="status" hidden>
+        <p id="spielhinweisText"></p>
+        <button id="spielhinweisZu" type="button">Verstanden</button>
       </aside>
       <div id="tastenuebersicht" class="tastenuebersicht" role="dialog" aria-label="Tastenübersicht" hidden></div>
       <div id="spielstand" class="spielstand" role="dialog" aria-label="Spielstand" hidden>
@@ -188,6 +199,7 @@
           <input id="lautMusik" type="range" min="0" max="100" step="5" value="100">
           <output id="lautMusikWert" for="lautMusik">100 %</output>
         </div>
+        <button id="menueTechbaum" type="button">Technologiebaum</button>
         <button id="menueVollbild" type="button" title="Im Vollbild gehören Strg + Ziffer und Esc dem Spiel">Vollbild (F11)</button>
         <button id="menueVorraum" type="button">Zurück in den Vorraum</button>
         <p id="menueVorraumHinweis" class="leise"></p>
@@ -236,6 +248,7 @@
           <span id="hinweis" class="hinweis">Ziehen wählt aus · Rechtsklick befiehlt · WASD schiebt die Karte</span>
           <button id="menue" class="aufgeben menueknopf" type="button" title="Menü (F10)" aria-haspopup="dialog">Menü</button>
           <button id="pause" class="aufgeben" type="button" title="Die Partie anhalten oder weiterspielen (F3)">Pause</button>
+          <button id="aufhoeren" class="aufgeben" type="button" title="Aufhören und später weiterspielen – die Partie wird gesichert und geschlossen, fortgesetzt wird im Vorraum unter „Deine Partien“" hidden>Später weiterspielen</button>
           <button id="buendnisloesen" class="aufgeben" type="button" title="Das Bündnis lösen - nach 60 Sekunden seid ihr Gegner" hidden>Bündnis lösen</button>
           <button id="aufgeben" class="aufgeben" type="button" title="Die Partie aufgeben">Aufgeben</button>
         </span>

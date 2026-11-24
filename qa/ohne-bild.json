@@ -1435,6 +1435,76 @@
       "spec": "10-strategie/kampf.md",
       "ac": "AC-27",
       "begruendung": "Dass ein Pfeil trifft, wenn er ankommt, ist eine Frage des Takts: der Schaden faellt zwei bis acht Takte nach dem Abschuss statt im selben, ein Unterschied von zwei Zehnteln bis acht Zehnteln einer Sekunde. Ein Bildschirmfoto zeigt einen Pfeil auf dem Weg und einen Lebensbalken, aber nicht, in welchem Takt der Balken kuerzer wurde - und ob ein Pfeil sicher trifft, verpufft, wenn das Ziel vorher faellt, oder noch trifft, wenn der Schuetze schon fiel, sind Folgen von Takten, keine Lage. Geprueft im Rechenteil Takt fuer Takt (tests/strategie-pfeilflug.test.mjs): Ankunft bei zwei, drei und vier Feldern genau im errechneten Takt, ein laufendes Ziel getroffen, ein gefallenes Ziel nicht noch einmal und kein Nachbar statt seiner, der Zustand nennt die Takte bis zum Einschlag; dass der Pfeil im Bild erst nach dem Spannen fliegt, zeigt weiter das Bild zu bedienung AC-79."
+    },
+    {
+      "spec": "10-strategie/ki.md",
+      "ac": "AC-35",
+      "begruendung": "Was die KI erforscht und wann, ist eine Auswahl aus den Daten der Verbesserungen in ihrer Entscheidung auf dem Server: welche Stufe eine Einheit tauscht, die sie ausbildet, welche Wirkung eine Klasse trifft, von der sie mindestens drei haelt, was davon bezahlt ist und was fuer Aufstieg, Karren und Rammen zurueckliegt. Geprueft wird die Reihenfolge der Bestellungen in gebauten Lagen je Haus mit Gegenproben fuer knappen Vorrat, fehlende Vorstufe und das Warten auf Rammen (tests/strategie-ki-forschen.test.mjs) und das Erforschte ueber 120 ganze Partien im Nebel. Ein Bild zeigte eine Schmiede mit einer Verbesserung in der Schlange - dasselbe wie bei einem Menschen, nachgewiesen bei bauen AC-25 und AC-39 -, nicht, warum die KI gerade diese gewaehlt hat."
+    },
+    {
+      "spec": "10-strategie/ki.md",
+      "ac": "AC-39",
+      "begruendung": "Wann die KI in die Krone aufsteigt, ist eine Entscheidung auf dem Server aus Zeitalter, erstem Aufbruch, Zahl der Dorfbewohner, freiem Dorfzentrum, Gebaeuden des Fuerstentums und Spielminute, und davor eine Ruecklage, die Nahrung und Gold fuer den Aufstieg zurueckhaelt. Geprueft wird sie in gebauten Lagen mit je einer Gegenprobe fuer jede fehlende Bedingung (tests/strategie-ki-krone.test.mjs) und ueber 120 ganze Partien im Nebel, in denen gezaehlt wird, wer wann die Krone erreicht. Ein Bild zeigte ein Dorfzentrum mit dem Aufstieg in der Schlange - dasselbe wie bei einem Menschen, nachgewiesen bei bauen AC-47 -, nicht, dass die KI ihn zur richtigen Zeit und aus den richtigen Gruenden bestellt hat."
+    },
+    {
+      "spec": "10-strategie/ki.md",
+      "ac": "AC-40",
+      "begruendung": "Dass die KI aufs Wunder geht, ist eine Wahl des Ziels in ihrer Entscheidung auf dem Server: das fertige Wunder eines Gegners aus der Ansage, die jeder hat, statt des Dorfzentrums, ein Aufbruch mit allem ausser der Wache, ein gesammeltes Heer statt Nachschub zu zweit und auf das Wunder statt auf jede Einheit, die nicht dicht daneben steht. Geprueft wird es in 24 ganzen Partien im Pruefstand, in denen der KI mit weniger Punkten in Minute 30 ein Wunder hingestellt wird und gezaehlt wird, ob und wann es Leben verliert (tests/partien/ki-wunder.test.mjs). Ein Bild zeigte ein Heer vor einem Wunder - dasselbe wie das eines Menschen, und nicht, warum es dorthin ging und nicht zum Dorfzentrum. Wie das Wunder und seine Uhr im Bild stehen, weisen bauen AC-51 und spielziel AC-29 nach."
+    },
+    {
+      "spec": "10-strategie/fahrplan.md",
+      "ac": "AC-20",
+      "begruendung": "Dass eine grosse Partie fluessig bleibt, sind zwei Messungen auf dem Server: wie lange ein Takt mit acht Spielern und je 200 Einheiten rechnet - Welt, Auszug je Spieler, JSON und Packen -, und wie viele Bytes je Sekunde jeder Spieler davon bekommt. Geprueft wird es im Nebel auf der grossen Karte mit Sammlern und zwei Heeren je Spieler im Angriffslauf, der schnellste von drei Abschnitten zu je 100 Takten fuer die Zeit und der groesste Wert ueber jeden Abschnitt und jeden Spieler fuer die Bytes (tests/strategie-grosse-partie.test.mjs); dass der Server permessage-deflate anbietet, prueft tests/netz.test.mjs ueber den echten Weg. Ein Bildschirm zeigt eine Partie, aber weder Millisekunden auf dem Server noch Bytes auf der Leitung - und ein Browserbild mit 1600 Einheiten sagte ueber beides nichts, denn die Bildrate des Browsers ist eine andere Frage (darstellung AC-30)."
+    },
+    {
+      "spec": "00-plattform/speichern.md",
+      "ac": "AC-1",
+      "begruendung": "Ein Spielstand als Wert ist eine Eigenschaft der Rechnung auf dem Server: welt.sichern() gibt Bytes zurueck, steckbrief.laden(bytes) baut daraus Welt und KIs ohne Konstruktor wieder auf, und kein Teil des Spiels oeffnet dafuer eine Datei (geprueft am Quelltext von stand.js, welt.js, ki.js, steckbrief.js, karte.js und wege.js). Belegt im Rechenteil an einer Partie KI gegen KI und an einer ohne KI (tests/strategie-speichern.test.mjs). Im Browser gibt es in Schritt S1 nichts davon zu sehen - weder einen Knopf noch eine Liste; was ein Spieler vom Fortsetzen sieht, kommt mit S3 (AC-7 bis AC-11) und wird dort im Bild nachgewiesen."
+    },
+    {
+      "spec": "00-plattform/speichern.md",
+      "ac": "AC-2",
+      "begruendung": "Dass eine geladene Partie dieselbe ist, ist ein Vergleich Wert fuer Wert zweier Welten auf dem Server: ueber zwanzig Startwerte mit Haeusern, jeder vierte zwei gegen zwei, gesichert zwischen Minute 5 und 30, verglichen gleich nach dem Laden, in jedem der 3000 folgenden Takte am Auszug je Spieler und danach an Welt und KIs ganz (tests/partien/speichern-gleichlauf.mjs), dazu dass Verbuendete nach dem Laden wieder ein Sichtfeld teilen (tests/strategie-speichern.test.mjs). Ein Bildschirm zeigt eine Partie, nicht die zweite, gegen die sie laeuft - und zwei gleich aussehende Bilder sagten nichts ueber ein Feld, das erst Minuten spaeter etwas aendert."
+    },
+    {
+      "spec": "00-plattform/speichern.md",
+      "ac": "AC-5",
+      "begruendung": "Die Groesse eines Stands sind Bytes auf dem Server: gemessen an KI gegen KI in Minute 12 (18 KB) und an der groessten Partie des Spiels, acht Spieler auf der grossen Karte im Nebel mit je 200 Einheiten (rund 100 KB), beide unter 1 MB (tests/strategie-speichern.test.mjs). Ein Bildschirm zeigt keine Bytes."
+    },
+    {
+      "spec": "00-plattform/speichern.md",
+      "ac": "AC-16",
+      "begruendung": "Die Fassungsnummer steht in den ersten acht Bytes eines Stands (Marke FAST und die Nummer, stand.fassungVon) und ist im Rechenteil belegt; dass sie mit jeder neuen Form steigt, verlangt tests/waechter-stand.test.mjs gegen das Abbild server/spiele/strategie/stand-abbild.json. Das ist Buchfuehrung ueber das Format der Ablage, kein Aussehen."
+    },
+    {
+      "spec": "00-plattform/speichern.md",
+      "ac": "AC-17",
+      "begruendung": "Die Ablehnung geschieht beim Laden auf dem Server, bevor etwas entpackt wird: ein Stand einer neueren Fassung, einer aelteren ohne Weg dorthin (AC-18), fremde und beschaedigte Bytes werfen einen StandFehler mit dem Satz fuer den Bildschirm, und keine halbe Welt entsteht (tests/strategie-speichern.test.mjs). In Schritt S1 gibt es keine Stelle im Browser, die einen Stand laedt; den Satz zeigt erst die Liste im Vorraum (S3), und dort weist ihn das Bild zu AC-6 nach."
+    },
+    {
+      "spec": "00-plattform/speichern.md",
+      "ac": "AC-3",
+      "begruendung": "Selbsttaetiges Sichern ist ein Zeitplan auf dem Server: der Raum legt jede Minute Wanduhr den Stand am Konto des Eroeffnenden in SQLite ab, eine Zeile je Partie, die bei jedem Sichern ersetzt wird, und eine entschiedene Partie loescht ihre Zeile (tests/speichern-ablage.test.mjs: nach jeder Minute liegt der Stand hoechstens 600 Takte hinter der laufenden Welt). Im Browser geschieht dabei nichts - kein Knopf, keine Meldung; was ein Spieler von gespeicherten Partien sieht, ist die Liste im Vorraum, die mit S3 kommt (Auswahl und Liste stehen in spielauswahl.md) und dort im Bild nachgewiesen wird."
+    },
+    {
+      "spec": "00-plattform/speichern.md",
+      "ac": "AC-4",
+      "begruendung": "Gesichert wird bei drei Ereignissen auf dem Server: beim Anhalten, wenn der letzte Mensch den Raum verlaesst, und beim Herunterfahren (SIGTERM und SIGINT rufen raeume.allesSichern()). Belegt im Rechenteil an den Takten der abgelegten Staende und gegen den echten Server, der nach dem Herunterfahren auf derselben Datenbank neu startet und den Stand mit genau dem Takt beim Herunterfahren oeffnet (tests/speichern-ablage.test.mjs). Ein Herunterfahren hat keinen Bildschirm, und die Pause im Bild weist schon speichern AC-19 nach - das Sichern dabei ist eine Zeile in der Datenbank."
+    },
+    {
+      "spec": "00-plattform/speichern.md",
+      "ac": "AC-18",
+      "begruendung": "Hochziehen geschieht beim Laden auf dem Server, zwischen Entpacken und Aufbau der Welt: SCHRITTE in stand.js macht den Inhalt einer alten Fassung Schritt fuer Schritt zu dem der laufenden. Belegt an eingecheckten Probestaenden je Fassung (tests/staende/, vom Code jener Fassung geschrieben): nach dem Hochziehen traegt jedes Ding die Felder der laufenden Form und keines mehr, und die Partie laeuft fuenf Minuten weiter; den Weg ueber mehrere Schritte, den fehlenden Schritt und den, der wirft, pruefen eingeschleuste Schritte (tests/strategie-hochziehen.test.mjs, Gegenprobe ohne Hochziehen faellt). Ein Bildschirm zeigte nur, dass sich eine Partie oeffnet - das weist speichern AC-9 nach -, nicht, aus welcher Fassung sie kam und welche Felder ein Schritt ergaenzt hat."
+    },
+    {
+      "spec": "00-plattform/speichern.md",
+      "ac": "AC-12",
+      "begruendung": "Dass ein Stand einem Konto gehoert, ist die Spalte konto der Tabelle partiestand in der SQLite-Datei der Konten, gesetzt aus der Sitzung dessen, der eroeffnet hat; ohne Anmeldung antwortet /api/partien mit 401, und mehr als fuenf Staende je Konto werden nicht angelegt (tests/speichern-ablage.test.mjs). Die Liste, in der ein Spieler seine Staende sieht, kommt mit S3 in den Vorraum und wird dort im Bild nachgewiesen; hier geht es um die Zuordnung in der Datenbank, die kein Bildschirm zeigt."
+    },
+    {
+      "spec": "00-plattform/speichern.md",
+      "ac": "AC-13",
+      "begruendung": "Die Pruefung des Eigentuemers steckt in jeder Abfrage der Ablage (WHERE id = ? AND konto = ?) und wird bei jedem Oeffnen, Umbenennen und Loeschen ueber /api/partien gegen die Sitzung gerechnet, nicht nur beim Anzeigen der Liste. Belegt gegen den echten Server mit zwei Konten: Bert bekommt fuer Annas Stand dieselbe 404 wie fuer eine unbekannte Id, Anna oeffnet, benennt und loescht (tests/speichern-ablage.test.mjs; die Gegenprobe ohne konto in der Abfrage laesst den Test fallen). Eine Ablehnung auf dem Server ist eine Antwort mit Statuscode, kein Aussehen - ein Bild zeigte nur, dass ein Knopf fehlt, nicht dass der Server ablehnt."
     }
   ]
 }

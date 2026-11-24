@@ -1,0 +1,10 @@
+{
+  "spec": "00-plattform/speichern.md",
+  "ac": "AC-10",
+  "titel": "Fortgesetzt: die Kamera steht naeher herangezoomt zwischen Dorf und Kartenmitte, wie vor dem Aufhoeren, nicht auf dem Dorfzentrum",
+  "datei": "e2e/tests/strategie-fortsetzen.spec.mjs",
+  "pfad": [
+    "Aufhoeren und spaeter weiterspielen",
+    "speichern AC-10: fortgesetzt steht die Kamera dort, wo vor dem Aufhoeren hingesehen wurde"
+  ]
+}

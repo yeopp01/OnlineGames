@@ -5,6 +5,7 @@ const { Welt, TAKTE_PRO_SEKUNDE, GESCHWINDIGKEITEN } = require('./welt');
 const { Ki } = require('./ki');
 const { HAEUSER } = require('./daten');
 const { zufallAus, VORKOMMEN_VORGABE } = require('./karte');
+const stand = require('./stand');
 
 // Computergegner (spielauswahl AC-18, AC-19): sie sitzen auf eigenen Plaetzen
 // und spielen nur ueber welt.nachricht, wie ein Mensch (ki AC-1). Ihre Ids
@@ -18,14 +19,44 @@ function mitKi(spieler, einstellungen) {
     haeuser: haeuserAus(einstellungen, spieler, kis),
   });
   if (!kis.length) return welt;
-  const lenker = kis.map((k) => new Ki(welt, k.id));
+  return kisAnhaengen(welt, kis.map((k) => new Ki(welt, k.id)));
+}
+
+// Vor jedem Takt entscheiden die KIs - so wie im Pruefstand (fahrplan AC-4).
+// Und sie gehoeren zum Stand (ADR-0017): gesichert wird die Welt samt ihrem
+// Gedaechtnis, in einem Zug, damit erhalten bleibt, wer auf dasselbe zeigt.
+function kisAnhaengen(welt, lenker) {
   const takten = welt.takten.bind(welt);
-  // Vor jedem Takt entscheiden die KIs - so wie im Pruefstand (fahrplan AC-4).
   welt.takten = () => {
     for (const ki of lenker) ki.takt();
     takten();
   };
+  welt.sichern = () => stand.schreiben({ welt: welt.alsWert(), kis: lenker.map((ki) => ki.alsWert()) });
   return welt;
+}
+
+// Eine Partie aus ihrem Stand (speichern AC-1, AC-2): dieselbe Welt, dieselben
+// KIs, und sie laeuft Takt fuer Takt weiter wie die, die gesichert wurde.
+// Ein Stand einer anderen Fassung wird abgelehnt (AC-17) - `stand.lesen`
+// wirft einen `StandFehler` mit dem Satz fuer den Bildschirm.
+function laden(bytes) {
+  const inhalt = stand.lesen(bytes);
+  const welt = Welt.ausWert(inhalt.welt);
+  if (!inhalt.kis.length) return welt;
+  return kisAnhaengen(welt, inhalt.kis.map((wert) => Ki.ausWert(welt, wert)));
+}
+
+// Spielzeit und Karte fuer die Liste im Vorraum - als fertige Saetze, der
+// Browser rechnet nichts davon nach.
+const KARTEN = { klein: 'klein', normal: 'normal', gross: 'groß' };
+/** @param {{ takt: number }} welt @param {Record<string, any>} einstellungen */
+function angaben(welt, einstellungen = {}) {
+  const sekunden = Math.floor((welt.takt || 0) / TAKTE_PRO_SEKUNDE);
+  const uhr = `${Math.floor(sekunden / 60)}:${String(sekunden % 60).padStart(2, '0')}`;
+  return [
+    { name: 'Spielzeit', wert: uhr },
+    { name: 'Karte', wert: KARTEN[einstellungen.kartengroesse] || KARTEN.normal },
+  ];
 }
 
 // Die Teams aus der Wahl je Platz (spielauswahl AC-22): der Raum reicht sie
@@ -180,5 +211,17 @@ module.exports = {
   // Wie viele Plaetze das Spiel selbst besetzt (raeume.js, spielauswahl AC-19).
   plaetze: (einstellungen) => einstellungen.ki || 0,
   erzeugen: mitKi,
+  // Fortsetzen (ADR-0017): der Raum fragt die Welt nach `sichern()` und den
+  // Steckbrief nach `laden(bytes)` - mehr weiss er vom Stand nicht (ADR-0006).
+  laden,
+  // Die Fassung des Stands (speichern AC-17) - die Ablage schreibt sie in die
+  // Liste, damit ein Stand, der nicht mehr passt, schon dort zu erkennen ist.
+  standFassung: stand.FASSUNG,
+  // Was die Liste "Deine Partien" zu einem Stand zeigt (speichern AC-9): der
+  // Raum legt es beim Sichern daneben, ohne zu wissen, was es heisst.
+  angaben,
+  // Der Technologiebaum (bedienung AC-81): erst geladen, wenn ihn jemand
+  // aufschlaegt - er baut dafuer eine Welt.
+  nachschlagen: { titel: 'Technologiebaum', daten: () => require('./techbaum').techbaum() },
   reihenfolge: 1,
 };

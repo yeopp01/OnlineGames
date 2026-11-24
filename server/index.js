@@ -10,6 +10,8 @@ const { Raeume, MAX_SPIELER, codeZeigen, plaetzePruefen } = require('./raeume');
 const { Schutz, adresseVon } = require('./schutz');
 const { konten } = require('./konten');
 const { manager } = require('./spiele/manager/netz');
+const { Partiestaende } = require('./partiestaende');
+const { partienWeg } = require('./partien-netz');
 const verzeichnis = require('./spiele/verzeichnis');
 const partieEinstellungen = require('./spiele/einstellungen');
 
@@ -92,6 +94,8 @@ async function starten(hafen = HAFEN, einstellungen = {}) {
   // statt spaeter eine leere Uebersicht zu zeigen.
   const spielliste = verzeichnis.lesen();
   const spiele = JSON.stringify({ spiele: spielliste });
+  /** @type {Map<string, string>} */
+  const nachgeschlagen = new Map();
   const schutz = new Schutz(einstellungen.schutz);
   const zugang = await konten({
     hafen,
@@ -104,6 +108,18 @@ async function starten(hafen = HAFEN, einstellungen = {}) {
 
   // Das Managerspiel bringt seinen eigenen Anfrageweg mit - hier steht nur,
   // dass es ihn gibt (→ docs/adr/0006-mehrere-spiele.md).
+  // Die gespeicherten Partien liegen in derselben Datei wie die Konten
+  // (ADR-0017); die Raeume legen dort ab, der Anfrageweg liest am Konto.
+  const ablage = new Partiestaende(zugang.db);
+  raeume.ablage = ablage;
+  const partien = partienWeg({
+    ablage,
+    schutz,
+    adresseVon: (a) => adresseVon(a, HINTER_PROXY),
+    sitzung: zugang.sitzung,
+    spiele: spielliste,
+  });
+
   const spielManager = manager({
     schutz,
     adresseVon: (a) => adresseVon(a, HINTER_PROXY),
@@ -124,6 +140,19 @@ async function starten(hafen = HAFEN, einstellungen = {}) {
       antwort.writeHead(200, { 'Content-Type': TYPEN['.json'], 'Cache-Control': 'no-store' }).end(spiele);
       return;
     }
+    // Was ein Spiel zum Nachschlagen mitbringt (bedienung AC-81): einmal
+    // gerechnet, dann gemerkt - die Daten aendern sich nur mit dem Server.
+    const nachschlagen = anfrage.method === 'GET' ? /^\/api\/spiele\/([a-z]+)\/nachschlagen$/.exec((anfrage.url || '').split('?')[0]) : null;
+    if (nachschlagen) {
+      const spiel = spielliste.find((s) => s.art === nachschlagen[1] && s.nachschlagen);
+      if (!spiel) {
+        antwort.writeHead(404, { 'Content-Type': 'text/plain; charset=utf-8' }).end('Nicht gefunden');
+        return;
+      }
+      if (!nachgeschlagen.has(spiel.art)) nachgeschlagen.set(spiel.art, JSON.stringify(spiel.nachschlagen.daten()));
+      antwort.writeHead(200, { 'Content-Type': TYPEN['.json'], 'Cache-Control': 'no-store' }).end(nachgeschlagen.get(spiel.art));
+      return;
+    }
     // Zahlen fuer den Betreiber (→ specs betrieb AC-8): nur vom Rechner
     // selbst. Was ueber den Proxy kommt, traegt die Adresse des Fragenden im
     // Kopf und bekommt dieselbe Antwort wie jeder unbekannte Pfad.
@@ -136,6 +165,7 @@ async function starten(hafen = HAFEN, einstellungen = {}) {
       antwort.writeHead(200, { 'Content-Type': TYPEN['.json'], 'Cache-Control': 'no-store' }).end(JSON.stringify(zahlen));
       return;
     }
+    if (partien.behandeln(anfrage, antwort)) return;
     if (spielManager.behandeln(anfrage, antwort)) return;
     ausliefern(anfrage, antwort);
   });
@@ -147,6 +177,11 @@ async function starten(hafen = HAFEN, einstellungen = {}) {
   const wss = new WebSocketServer({
     server,
     maxPayload: NACHRICHT_MAX,
+    // Die Zustaende gehen gepackt hinaus (fahrplan AC-20): acht Spieler mit
+    // je 200 Einheiten sind im Nebel rund 160 KB je Sekunde und Spieler als
+    // JSON, gepackt rund 26 - der Browser entpackt von selbst. Kleine
+    // Nachrichten bleiben ungepackt; `maxPayload` gilt fuer das Entpackte.
+    perMessageDeflate: { threshold: 1024 },
     // Abweisen, bevor der Handshake laeuft - eine abgelehnte Verbindung soll
     // billiger sein als eine angenommene.
     verifyClient: ({ req }, erlauben) => {
@@ -219,6 +254,83 @@ async function starten(hafen = HAFEN, einstellungen = {}) {
       raum.senden(raum.vorraum());
     }
 
+    // Fortsetzen (speichern AC-6, AC-9 bis AC-11): ein gesicherter Stand am
+    // eigenen Konto kommt in einen **neuen** Raum mit neuem Code. Was im Stand
+    // steht, laedt das Spiel (`laden` im Steckbrief) - hier steht nur, wer
+    // ihn oeffnen darf und wohin er kommt (ADR-0006).
+    async function fortsetzen(nachricht) {
+      const angemeldet = await sitzungBald;
+      if (draht.readyState !== 1) return;
+      if (raum) return;
+      if (!angemeldet) return fehler('Gespeicherte Partien gibt es nur mit Anmeldung.');
+      // Laden rechnet - die engere Bremse, wie beim Anfrageweg.
+      if (!schutz.rechnenErlaubt(adresse)) return fehler('Zu viele Anfragen. Bitte kurz warten.');
+      const konto = angemeldet.user.id;
+      const id = typeof nachricht.id === 'string' ? nachricht.id : '';
+
+      // Laeuft der Stand schon (AC-11), sichert jene Sitzung zuerst - geladen
+      // wird dann, was sie eben noch hatte. Beendet wird sie erst, wenn der
+      // Stand sich hier laden laesst: sonst verloere man beide.
+      const vorige = raeume.mitStand(konto, id);
+      if (vorige) vorige.sichern();
+      const offen = ablage.oeffnen(konto, id, (bytes, zeile) => {
+        const spiel = verzeichnis.eroeffenbar(spielliste, zeile.art);
+        if (!spiel || typeof spiel.laden !== 'function') throw new Error('Dieses Spiel lässt sich nicht fortsetzen.');
+        return { spiel, partie: spiel.laden(bytes) };
+      });
+      if (!offen) return fehler('Diesen Spielstand gibt es nicht.');
+      // Weder der neueste noch der vorige liess sich laden (AC-6): der Satz
+      // dazu steht im Vorraum, und keiner der beiden wird angefasst.
+      if (!('geladen' in offen)) return fehler(`Dieser Spielstand lässt sich nicht laden. ${offen.fehler}`);
+      const beteiligte = Array.isArray(offen.zeile.beteiligte) ? offen.zeile.beteiligte : [];
+      const menschen = beteiligte.filter((b) => b && b.mensch);
+      // Zu mehreren fortsetzen kommt mit S4 (AC-22 bis AC-25) - bis dahin
+      // nur, wer allein gespielt hat.
+      if (menschen.length !== 1 || typeof menschen[0].platz !== 'string') {
+        return fehler('Partien zu mehreren lassen sich noch nicht fortsetzen.');
+      }
+      if (vorige) {
+        const draehte = vorige.spieler.map((s) => s.draht).filter(Boolean);
+        vorige.senden({ typ: 'abgeloest', text: 'Diese Partie wurde an anderer Stelle fortgesetzt. Hier ist sie beendet, gesichert ist sie.' });
+        raeume.schliessen(vorige);
+        for (const d of draehte) d.close(4001, 'abgeloest');
+      }
+
+      let erlaubt = schutz.raumErlaubt(adresse);
+      if (!erlaubt.ok && raeume.verlasseneSchliessen((r) => r.adresse === adresse)) erlaubt = schutz.raumErlaubt(adresse);
+      if (!erlaubt.ok && raeume.verlasseneSchliessen()) erlaubt = schutz.raumErlaubt(adresse);
+      if (!erlaubt.ok) return fehler(erlaubt.grund);
+
+      const { spiel, partie } = offen.geladen;
+      const { platzwahl, ...gespeichert } = /** @type {Record<string, any>} */ (offen.zeile.einstellungen || {});
+      raum = raeume.anlegen(spiel);
+      raum.einstellungen = gespeichert;
+      raum.platzwahl = platzwahl && typeof platzwahl === 'object' ? platzwahl : {};
+      raum.einstellungsliste = spiel.einstellungen;
+      raum.adresse = adresse;
+      raum.eigentuemer = konto;
+      schutz.raumAuf(adresse);
+      spieler = raum.aufnehmen(menschen[0].platz, menschen[0].name, draht).spieler;
+      draht.send(JSON.stringify({
+        typ: 'du',
+        id: spieler.id,
+        token: spieler.token,
+        code: raum.code,
+        anzeige: codeZeigen(raum.code),
+        stand: id,
+      }));
+      raum.senden(raum.vorraum());
+      raum.fortsetzenMit(partie, id, spieler);
+      // Der neueste Stand war kaputt, der davor ging (AC-6) - das wird gesagt,
+      // sonst wundert man sich ueber die fehlende Minute.
+      if (offen.vorher) {
+        draht.send(JSON.stringify({
+          typ: 'hinweis',
+          text: `Der letzte Stand ließ sich nicht laden (${offen.fehler}). Weiter geht es mit dem davor.`,
+        }));
+      }
+    }
+
     const codeDaneben = () => {
       fehler('Diesen Raumcode gibt es nicht.');
       if (!schutz.fehlversuch(adresse)) draht.close(1008, 'zu viele Fehlversuche');
@@ -242,6 +354,11 @@ async function starten(hafen = HAFEN, einstellungen = {}) {
         case 'erstellen': {
           if (raum) return;
           eroeffnen(nachricht);
+          break;
+        }
+        case 'fortsetzen': {
+          if (raum) return;
+          fortsetzen(nachricht);
           break;
         }
         case 'beitreten': {
@@ -275,6 +392,11 @@ async function starten(hafen = HAFEN, einstellungen = {}) {
           if (raum.gestartet) draht.send(JSON.stringify(raum.welt.aufbauFuer ? raum.welt.aufbauFuer(spieler.id) : raum.welt.aufbau()));
           // Wer in eine angehaltene Partie zurueckkommt, sieht, dass sie steht.
           if (raum.pause) draht.send(JSON.stringify(raum.pausenstand()));
+          // Eine stehende Partie schickt keinen Zustand von selbst - ohne ihn
+          // saehe, wer zurueckkommt, bis zum Fortsetzen eine leere Karte.
+          if (raum.pause && raum.gestartet) raum.zustandSenden();
+          // Und zu welchem Stand sich der Browser die Kamera merkt (speichern AC-10).
+          if (raum.standId) draht.send(JSON.stringify({ typ: 'stand', id: raum.standId }));
           raum.senden(raum.vorraum());
           break;
         }
@@ -318,6 +440,18 @@ async function starten(hafen = HAFEN, einstellungen = {}) {
           raum.senden(raum.pausenstand());
           break;
         }
+        case 'aufhoeren': {
+          // "Aufhören und später weiterspielen" (speichern AC-7): gesichert,
+          // dann ist der Raum zu - fortgesetzt wird aus der Liste, in einem
+          // neuen Raum (AC-9).
+          if (!raum || !spieler || !raum.gestartet) return;
+          const ergebnis = raum.aufhoeren();
+          if (ergebnis.fehler) return fehler(ergebnis.fehler);
+          raeume.schliessen(raum);
+          raum = null;
+          spieler = null;
+          break;
+        }
         case 'befehl': {
           if (!raum || !spieler || !raum.gestartet) return;
           // Angehalten: Befehle werden verworfen, nicht aufgehoben (AC-19).
@@ -350,11 +484,25 @@ async function starten(hafen = HAFEN, einstellungen = {}) {
   await new Promise((fertig) => server.listen(hafen, () => fertig(undefined)));
   console.log(`OnlineGames laeuft auf http://localhost:${hafen}/ (bis zu ${MAX_SPIELER} Spieler je Raum)`);
 
-  return { server, wss, raeume, schutz, zugang, manager: spielManager };
+  // Beim Herunterfahren legt jede laufende Partie ihren Stand ab
+  // (speichern AC-4) - zurueck kommt, wie viele es waren.
+  const herunterfahren = () => raeume.allesSichern();
+
+  return { server, wss, raeume, schutz, zugang, manager: spielManager, ablage, herunterfahren };
 }
 
 if (require.main === module) {
-  starten(HAFEN, { konten: kontenAusUmgebung() }).catch((fehler) => {
+  starten(HAFEN, { konten: kontenAusUmgebung() }).then((laufend) => {
+    // `docker stop` beim Ausrollen schickt SIGTERM (ueber `init: true` in
+    // betrieb/docker-compose.yml), Strg+C ist SIGINT: vorher sichern.
+    for (const signal of ['SIGTERM', 'SIGINT']) {
+      process.once(signal, () => {
+        const gesichert = laufend.herunterfahren();
+        if (gesichert) console.log(`${gesichert} laufende Partien gesichert.`);
+        process.exit(0);
+      });
+    }
+  }).catch((fehler) => {
     console.error('Start fehlgeschlagen:', fehler.message);
     process.exit(1);
   });

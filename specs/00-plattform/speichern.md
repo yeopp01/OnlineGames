@@ -2,7 +2,7 @@
 
 **Bereich:** Plattform
 **Kuerzel:** speichern
-**Stand:** 3/26 fertig · 23 offen
+**Stand:** 20/27 fertig · 7 offen
 
 ## Zweck
 
@@ -43,41 +43,62 @@ nicht das Sichern, sondern das Wiederzusammenkommen.
 
 ### Sichern
 
-- **AC-1** `offen` **Ein Spielstand ist ein Datenwert** — Die Welt liefert über `sichern()` einen
+- **AC-1** `fertig` **Ein Spielstand ist ein Datenwert** — Die Welt liefert über `sichern()` einen
   Wert, aus dem `laden()` dieselbe Welt wieder herstellt. Kein Zugriff auf
   Dateien im Spiel selbst.
-- **AC-2** `offen` **Laden ergibt exakt dieselbe Welt** — Sichern, laden, sichern: der zweite Wert
+- **AC-2** `fertig` **Laden ergibt exakt dieselbe Welt** — Sichern, laden, sichern: der zweite Wert
   ist gleich dem ersten. Ohne diese Zusicherung schleichen sich Verluste ein,
   die erst nach Wochen auffallen.
-- **AC-3** `offen` **Selbsttätig jede Minute** — Ein Absturz kostet höchstens eine Minute Arbeit.
-- **AC-4** `offen` **Gesichert wird auch beim Anhalten** — Und beim geordneten Herunterfahren des
+- **AC-3** `fertig` **Selbsttätig jede Minute** — Ein Absturz kostet höchstens eine Minute Arbeit.
+- **AC-4** `fertig` **Gesichert wird auch beim Anhalten** — Und beim geordneten Herunterfahren des
   Servers.
-- **AC-5** `offen` **Ein Spielstand bleibt klein** — Unter 1 MB. Was oft geschrieben wird, muss
+- **AC-5** `fertig` **Ein Spielstand bleibt klein** — Unter 1 MB. Was oft geschrieben wird, muss
   klein sein; das ist eine Anforderung an das Spiel, nicht an die Ablage.
-- **AC-6** `offen` **Kaputter Spielstand nimmt nichts mit** — Lässt er sich nicht laden, sagt
+- **AC-6** `fertig` **Kaputter Spielstand nimmt nichts mit** — Lässt er sich nicht laden, sagt
   das die Oberfläche, und der vorherige Stand ist noch da. Es wird also
-  mindestens ein Stand zurückgehalten.
+  mindestens ein Stand zurückgehalten. Geht der davor, wird mit ihm
+  fortgesetzt, und oben rechts im Spiel steht, dass es der vorige ist; gehen
+  beide nicht, sagt es der Vorraum, und der Stand bleibt liegen.
 
 ### Anhalten und Fortsetzen
 
-- **AC-7** `offen` **Anhalten ist jederzeit möglich** — Ein Knopf im Spiel: sichern, Raum
-  schließen, zurück zur Übersicht.
-- **AC-8** `offen` **Wegklicken ist dasselbe wie Anhalten** — Wer den Browser schließt, verliert
+- **AC-7** `fertig` **Anhalten ist jederzeit möglich** — Ein Knopf im Spiel: sichern, Raum
+  schließen, zurück zur Übersicht. Er heißt „Später weiterspielen“ und steht
+  neben Pause und Aufgeben, ohne Rückfrage — es geht nichts verloren. Im
+  Vorraum stehen danach unter „Deine Partien“ je Stand Spiel, Spielzeit,
+  Karte, Beteiligte und Zeitpunkt, mit „Fortsetzen“ und „Löschen“ (Löschen
+  fragt mit einem zweiten Klick nach). **Gesetzt (2026-11-22): nur allein
+  gegen die KI** — zu mehreren gehört das Aufhören zu AC-22, bis dahin
+  fehlt der Knopf, und der Server weist es ab.
+- **AC-8** `fertig` **Wegklicken ist dasselbe wie Anhalten** — Wer den Browser schließt, verliert
   nichts. Nach zwei Minuten ohne Verbindung wird gesichert und der Raum
-  geschlossen.
-- **AC-9** `offen` **Fortsetzen öffnet einen neuen Raum** — Mit neuem Code. Der alte Code führt
-  nirgendwohin — er war nie der Weg zurück.
-- **AC-10** `offen` **Fortsetzen, wo aufgehört wurde** — Auch die
-  Kameraposition, damit man sich nicht neu zurechtfinden muss.
-- **AC-11** `offen` **Ein Spielstand läuft nur einmal** — Wird derselbe Stand ein zweites Mal
+  geschlossen. **Gesetzt: nur allein** — zu mehreren wartet die Partie
+  weiter dreißig Minuten auf die Rückkehr ([Räume](raeume.md) AC-17). Das
+  Menü sagt es, bevor man geht.
+- **AC-9** `fertig` **Fortsetzen öffnet einen neuen Raum** — Mit neuem Code. Der alte Code führt
+  nirgendwohin — er war nie der Weg zurück. Fortgesetzt geht es ohne
+  Warteraum gleich ins Spiel, und die Partie steht, bis jemand „Weiter“
+  drückt; im Bild steht der neue Code. Der Stand bleibt derselbe: was danach
+  gesichert wird, ersetzt ihn.
+- **AC-10** `fertig` **Fortsetzen, wo aufgehört wurde** — Auch die
+  Kameraposition, damit man sich nicht neu zurechtfinden muss. Die Kamera
+  merkt sich der Browser je Stand (Mitte und Zoom) — auf einem anderen Gerät
+  beginnt sie am Dorf.
+- **AC-11** `fertig` **Ein Spielstand läuft nur einmal** — Wird derselbe Stand ein zweites Mal
   geöffnet, wird die erste Sitzung beendet. Zwei laufende Welten aus einer
-  Vorlage würden einander überschreiben.
+  Vorlage würden einander überschreiben. Die erste wird vorher gesichert,
+  die zweite lädt danach, und im ersten Fenster steht, was geschah.
+- **AC-27** `fertig` **Volles Konto wird gesagt** — Liegen schon so viele
+  Stände am Konto, wie es halten darf (fünf), steht das im Vorraum unter
+  „Deine Partien“, und eine neue Partie sagt beim Start oben rechts, dass sie
+  nicht gesichert wird; „Später weiterspielen“ fehlt dann. Kein Stand wird
+  dafür still verdrängt.
 
 ### Eigentum
 
-- **AC-12** `offen` **Ein Spielstand gehört einem Konto** — Das ist der zweite und stärkere Grund
+- **AC-12** `fertig` **Ein Spielstand gehört einem Konto** — Das ist der zweite und stärkere Grund
   für [Konten](konten.md) AC-16: ohne Konto gäbe es niemanden, dem er gehört.
-- **AC-13** `offen` **Nur Eigentümer öffnet, benennt, löscht** — Geprüft auf dem Server bei
+- **AC-13** `fertig` **Nur Eigentümer öffnet, benennt, löscht** — Geprüft auf dem Server bei
   jedem Zugriff, nicht nur beim Anzeigen der Liste.
 - **AC-14** `offen` **Mitspieler dürfen mitbauen, nicht besitzen** — Wer per Code dazukommt, darf
   im Spiel handeln, aber den Stand weder löschen noch umbenennen noch allein
@@ -87,12 +108,17 @@ nicht das Sichern, sondern das Wiederzusammenkommen.
 
 ### Über Änderungen hinweg
 
-- **AC-16** `offen` **Jeder Spielstand trägt eine Fassungsnummer** — Ohne sie ist beim ersten
+- **AC-16** `fertig` **Jeder Spielstand trägt eine Fassungsnummer** — Ohne sie ist beim ersten
   Update nicht mehr feststellbar, was ein alter Stand bedeutet.
-- **AC-17** `offen` **Unbekannte Fassung wird abgelehnt** — Lieber „dieser
+- **AC-17** `fertig` **Unbekannte Fassung wird abgelehnt** — Lieber „dieser
   Stand stammt aus einer neueren Fassung" als eine halb geladene Welt.
-- **AC-18** `offen` **Ältere Fassungen werden hochgezogen** — Solange es fachlich geht.
-  Geht es nicht, ist das eine Entscheidung für ein ADR.
+- **AC-18** `fertig` **Ältere Fassungen werden hochgezogen** — Solange es fachlich geht.
+  Geht es nicht, ist das eine Entscheidung für ein ADR. Je Fassung ein
+  Schritt zur nächsten (`SCHRITTE` in `server/spiele/strategie/stand.js`),
+  oder ein Satz, der die ADR nennt — dann wird abgelehnt wie bei AC-17. Je
+  Fassung liegt ein Probestand unter `tests/staende/`, geschrieben vom Code
+  jener Fassung; geladen trägt er die Form der laufenden und läuft fünf
+  Minuten weiter.
 
 ### Anhalten zu mehreren
 

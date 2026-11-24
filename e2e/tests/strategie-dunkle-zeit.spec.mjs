@@ -98,7 +98,9 @@ test.describe('Dunkle Zeit am Stueck', () => {
     // erreicht, ihre Gebaeude stehen deshalb nicht im Menue (bauen AC-24).
     const arten = await anna.evaluate(() => {
       const w = window.ansicht.werte;
-      return w.einheiten.dorfbewohner.baut.filter((art) => (w.gebaeude[art]?.zeitalter || 0) === 0);
+      // Nur was der Landsitz bauen laesst: das zweite Dorfzentrum gehoert dem
+      // Landsitz (zeitalter 0), kommt aber erst ab der Krone ins Menue (bauen AC-57).
+      return w.einheiten.dorfbewohner.baut.filter((art) => Math.max(w.gebaeude[art]?.zeitalter || 0, w.gebaeude[art]?.bauenAb || 0) === 0);
     });
     // Ein Bauer baut eins nach dem anderen, jedes bis es steht.
     for (const [nummerBau, art] of arten.entries()) {

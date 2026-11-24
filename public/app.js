@@ -3,6 +3,7 @@ import { Auswahlleiste } from './auswahlleiste.js';
 import { Uebersicht } from './uebersicht.js';
 import { Tasten } from './tasten.js';
 import { Ton } from './ton.js';
+import { Technologiebaum } from './techbaum.js';
 
 const teile = {
   vorraum: document.getElementById('vorraum'),
@@ -48,6 +49,23 @@ let kehrtZurueck = false;
 // Die laufende Partie, auch ueber das Schliessen des Fensters hinweg
 // (raeume AC-18). Der Sitzungsspeicher traegt nur das Neuladen.
 const LETZTE_PARTIE = 'letztePartie';
+// Wie lange der Server eine Partie haelt, nachdem der letzte gegangen ist:
+// zu mehreren eine halbe Stunde (raeume AC-17), allein und gesichert zwei
+// Minuten - danach ist sie zu und steht unter "Deine Partien" (speichern
+// AC-8, `WEG_MS` in server/raeume.js). Laenger angeboten, fuehrte die
+// Rueckkehr ins Leere.
+const PARTIE_WARTET_MS = 30 * 60 * 1000;
+const ALLEIN_WARTET_MS = 2 * 60 * 1000;
+// Zu welchem gesicherten Stand diese Partie gehoert (speichern AC-10) - der
+// Server nennt ihn, sobald es einen gibt. Darunter merkt sich der Browser
+// die Kamera.
+let standId = null;
+// Diese Partie wird nicht gesichert (speichern AC-27) - dann gibt es auch
+// kein "Später weiterspielen".
+let ohneStand = false;
+const KAMERA = 'kamera:';
+// Was der Vorraum nach dem Neuladen sagt (speichern AC-7).
+const VORRAUM_SATZ = 'vorraumSatz';
 
 teile.name.value = localStorage.getItem('name') || '';
 
@@ -112,7 +130,10 @@ function empfangen(nachricht) {
       kehrtZurueck = false;
       document.getElementById('rueckkehr').hidden = true;
       teile.raumcode.textContent = nachricht.anzeige || nachricht.code;
-      zeigen('warteraum');
+      // Fortgesetzt (speichern AC-9): kein Warteraum - die Partie steht schon,
+      // ihr Aufbau kommt gleich hinterher.
+      if (nachricht.stand) standId = nachricht.stand;
+      else zeigen('warteraum');
       break;
 
     case 'raum':
@@ -123,6 +144,7 @@ function empfangen(nachricht) {
       binGastgeber = nachricht.gastgeber === ich;
       spielerlisteZeichnen(nachricht);
       raumEinstellungenZeichnen(nachricht);
+      techbaumImWarteraum(nachricht);
       break;
 
     case 'aufbau':
@@ -202,7 +224,8 @@ function empfangen(nachricht) {
       // Ab jetzt laeuft eine Partie: wer das Fenster schliesst, findet sie
       // im Vorraum wieder (raeume AC-18).
       if (meinPlatz && !nachricht.ende) {
-        try { localStorage.setItem(LETZTE_PARTIE, JSON.stringify({ ...meinPlatz, zeit: Date.now() })); } catch { /* dann ohne */ }
+        const wartet = aufhoerenMoeglich() ? ALLEIN_WARTET_MS : PARTIE_WARTET_MS;
+        try { localStorage.setItem(LETZTE_PARTIE, JSON.stringify({ ...meinPlatz, zeit: Date.now(), wartet })); } catch { /* dann ohne */ }
       }
       break;
 
@@ -235,7 +258,55 @@ function empfangen(nachricht) {
       if (ansicht.spielstandOffen) spielstandZeigen();
       break;
 
+    case 'stand':
+      standId = nachricht.id;
+      // Fortgesetzt (speichern AC-10): dort weiter, wo man hinsah. Die
+      // Nachricht kommt nach Aufbau und Pause, die Kamera steht also schon
+      // auf dem eigenen Dorf - und wird hier versetzt.
+      if (nachricht.fortgesetzt) {
+        kameraHolen();
+        // Der neue Raum steht dabei (AC-9) - der alte Code gilt nicht mehr.
+        const raum = meinPlatz?.anzeige ? ` Neuer Raum: ${meinPlatz.anzeige}.` : '';
+        if (!pauseFeld.hidden) document.getElementById('pauseWer').textContent = `Die Partie ist geladen und steht.${raum}`;
+      }
+      break;
+
+    case 'hinweis':
+      // Was die ganze Partie betrifft (speichern AC-6, AC-27): bleibt stehen,
+      // bis man es wegklickt.
+      if (nachricht.ohneStand) ohneStand = true;
+      spielhinweisZeigen(nachricht.text);
+      aufgebenZeigen();
+      break;
+
+    case 'aufgehoert':
+      // Gesichert und geschlossen (speichern AC-7): zurueck in den Vorraum,
+      // wo die Partie unter "Deine Partien" steht. Der alte Code fuehrt
+      // nirgendwohin (AC-9) - also nichts davon merken.
+      if (nachricht.stand) standId = nachricht.stand;
+      kameraMerken();
+      gehtWeg = true;
+      platzVergessen();
+      try { sessionStorage.setItem(VORRAUM_SATZ, 'Gesichert. Weiter geht es hier, wann du willst.'); } catch { /* dann ohne Satz */ }
+      location.reload();
+      break;
+
+    case 'abgeloest':
+      // Derselbe Stand laeuft jetzt anderswo (speichern AC-11): hier ist die
+      // Partie zu. Kein "Verbindung weg" - der Satz sagt, was geschah.
+      gehtWeg = true;
+      platzVergessen();
+      standId = null;
+      if (ansicht) ansicht.anhalten(true);
+      // Hier ist nichts mehr anzuhalten oder aufzugeben.
+      aufhoerenKnopf.hidden = true;
+      aufgebenKnopf.hidden = true;
+      pauseKnopf.hidden = true;
+      spielhinweisZeigen(nachricht.text, { knopf: 'Zurück in den Vorraum', dann: zumVorraum });
+      break;
+
     case 'fehler':
+      aufhoerenKnopf.disabled = false;
       // Die Partie, in die es zurueckgehen sollte, gibt es nicht mehr: den
       // Platz vergessen, sonst kaeme die Absage bei jedem Neuladen wieder
       // (raeume AC-18; das erste Spiel auf dem Server, 2026-11-12).
@@ -591,7 +662,71 @@ function aufgebenZeigen() {
   aufgebenKnopf.hidden = !ansicht || ansicht.aus || ansicht.ende !== null;
   // Wer nicht mehr spielt, haelt auch nicht an (speichern AC-19).
   pauseKnopf.hidden = aufgebenKnopf.hidden;
+  aufhoerenKnopf.hidden = aufgebenKnopf.hidden || !aufhoerenMoeglich();
 }
+
+// ---- Aufhoeren und spaeter weiterspielen (speichern AC-7) -------------------
+// Neben Pause und Aufgeben. Ohne Rueckfrage: es geht nichts verloren, die
+// Partie steht danach unter "Deine Partien". Angeboten nur, wo der Server
+// sichern kann (`sichert`), allein am Tisch und dem Gastgeber - zu mehreren
+// verlangt Sichern Einigkeit (AC-22, S4).
+const aufhoerenKnopf = document.getElementById('aufhoeren');
+
+function aufhoerenMoeglich() {
+  return Boolean(letzterRaum && letzterRaum.sichert) && binGastgeber
+    && (letzterRaum.spieler || []).length === 1 && !ohneStand;
+}
+
+aufhoerenKnopf.addEventListener('click', () => {
+  if (aufhoerenKnopf.disabled) return;
+  aufhoerenKnopf.disabled = true;
+  kameraMerken();
+  senden({ typ: 'aufhoeren' });
+});
+
+// ---- Die Kamera je Stand (speichern AC-10) --------------------------------
+// Im Browser, nicht im Stand: wohin jemand sieht, gehoert nicht zur Welt.
+// Gemerkt wird der Punkt der Karte in der Mitte des Bilds und der Zoom -
+// so passt es auch in ein anders grosses Fenster.
+function kameraMerken() {
+  if (!ansicht || !standId || teile.spiel.hidden) return;
+  const leinwand = ansicht.leinwand;
+  const mitte = ansicht.zuWelt(leinwand.clientWidth / 2, leinwand.clientHeight / 2);
+  if (!Number.isFinite(mitte.x) || !Number.isFinite(mitte.y)) return;
+  const wert = { x: Math.round(mitte.x * 100) / 100, y: Math.round(mitte.y * 100) / 100, zoom: ansicht.kamera.zoom };
+  try { localStorage.setItem(KAMERA + standId, JSON.stringify(wert)); } catch { /* dann ab dem Dorf */ }
+}
+
+function kameraHolen() {
+  if (!ansicht || !standId) return;
+  let wert = null;
+  try { wert = JSON.parse(localStorage.getItem(KAMERA + standId) || 'null'); } catch { /* unlesbar ist wie leer */ }
+  if (!wert || ![wert.x, wert.y, wert.zoom].every(Number.isFinite) || wert.zoom <= 0 || wert.zoom > 4) return;
+  ansicht.kamera.zoom = wert.zoom;
+  ansicht.blickAuf(wert.x, wert.y);
+}
+
+setInterval(kameraMerken, 2000);
+window.addEventListener('pagehide', kameraMerken);
+
+// ---- Ein Hinweis, der bleibt (speichern AC-6, AC-27) ----------------------
+const spielhinweis = document.getElementById('spielhinweis');
+const spielhinweisZu = document.getElementById('spielhinweisZu');
+let spielhinweisDann = null;
+
+function spielhinweisZeigen(text, { knopf = 'Verstanden', dann = null } = {}) {
+  document.getElementById('spielhinweisText').textContent = text;
+  spielhinweisZu.textContent = knopf;
+  spielhinweisDann = dann;
+  spielhinweis.hidden = false;
+}
+
+spielhinweisZu.addEventListener('click', () => {
+  spielhinweis.hidden = true;
+  const dann = spielhinweisDann;
+  spielhinweisDann = null;
+  if (dann) dann();
+});
 
 // ---- Anhalten (speichern AC-19 bis AC-21) --------------------------------
 // Der Knopf steht neben Aufgeben, die Tasten sind F3 (wie in der Vorlage) und
@@ -611,6 +746,8 @@ function pauseZeigen(nachricht) {
   if (ansicht) ansicht.anhalten(an);
   pauseFeld.hidden = !an;
   pauseKnopf.textContent = an ? 'Weiter' : 'Pause';
+  // Oben nicht doppelt, was mitten im Bild steht.
+  pauseKnopf.classList.toggle('imPausefeld', an);
   if (!an) return;
   document.getElementById('pauseWer').textContent = `${nachricht.name} hat die Partie angehalten.`;
   const frist = document.getElementById('pauseFrist');
@@ -664,9 +801,13 @@ function menueOeffnen() {
   pause.textContent = pauseFeld.hidden ? 'Pause' : 'Weiterspielen lassen';
   // Wer noch spielt, kann zurueckkommen - das sagt der Satz darunter.
   const laeuft = ansicht.ende === null && !ansicht.aus;
-  document.getElementById('menueVorraumHinweis').textContent = laeuft
-    ? 'Die Partie läuft ohne dich weiter. Ist niemand mehr da, wartet sie 30 Minuten — der Vorraum bietet dir die Rückkehr an.'
-    : 'Die Partie ist für dich vorbei.';
+  // Allein und gesichert (speichern AC-8): nach zwei Minuten ohne
+  // Verbindung wird sie gesichert und geschlossen.
+  document.getElementById('menueVorraumHinweis').textContent = !laeuft
+    ? 'Die Partie ist für dich vorbei.'
+    : aufhoerenMoeglich()
+      ? 'Die Partie läuft ohne dich weiter. Nach zwei Minuten wird sie gesichert und geschlossen — fortsetzen kannst du sie im Vorraum unter „Deine Partien“.'
+      : 'Die Partie läuft ohne dich weiter. Ist niemand mehr da, wartet sie 30 Minuten — der Vorraum bietet dir die Rückkehr an.';
   for (const [was, schieber] of lautSchieber) lautZeigen(was, schieber, was === 'musik' ? ton.musikStaerke : ton.geraeuschStaerke);
   menue.hidden = false;
   window.addEventListener('keydown', menueTaste, true);
@@ -720,16 +861,71 @@ document.getElementById('menueTasten').addEventListener('click', () => {
   menueSchliessen();
   tastenhilfe?.uebersichtZeigen(true);
 });
+document.getElementById('menueTechbaum').addEventListener('click', () => {
+  menueSchliessen();
+  techbaumImSpiel();
+});
 document.getElementById('menueVorraum').addEventListener('click', zumVorraum);
 document.getElementById('abschlussVorraum').addEventListener('click', zumVorraum);
 // F10 vor allem anderen: der Browser oeffnet damit sonst sein eigenes Menue.
 window.addEventListener('keydown', (e) => {
-  if (e.key !== 'F10' || teile.spiel.hidden || !ansicht) return;
+  // Ueber dem Technologiebaum nicht: ihm gehoert dann die Tastatur.
+  if (e.key !== 'F10' || teile.spiel.hidden || !ansicht || techbaum.offen) return;
   e.preventDefault();
   e.stopPropagation();
   if (menue.hidden) menueOeffnen();
   else menueSchliessen();
 }, true);
+
+// ---- Der Technologiebaum (bedienung AC-81 bis AC-86) -----------------------
+// Aus dem Menue im Spiel und aus dem Warteraum. Eine Ebene ueber der Seite,
+// kein eigener Tab: die Partie laeuft darunter weiter, wie unter dem Menue.
+const techbaum = new Technologiebaum();
+
+function techbaumImSpiel() {
+  if (!ansicht || teile.spiel.hidden) return;
+  const mein = ansicht.spieler.get(ansicht.ich);
+  // Solange der Baum offen ist, schiebt die Maus am Rand nicht die Karte
+  // darunter (bedienung AC-9) - die Wahl des Spielers bleibt, wie sie war.
+  const randSchieben = ansicht.randSchieben;
+  ansicht.randSchieben = false;
+  techbaum.oeffnen({
+    haus: mein?.haus || null,
+    farbe: mein?.farbe,
+    danach: () => { ansicht.randSchieben = randSchieben; },
+  });
+}
+
+// Im Warteraum nur, wenn das Spiel des Raums etwas zum Nachschlagen hat -
+// das sagt die Liste der Spiele, nicht der Raum (ADR-0006).
+/** @type {Promise<any[]> | null} */
+let spieleGeholt = null;
+let letzterRaum = null;
+const techbaumKnopf = document.getElementById('techbaumOeffnen');
+
+function spieleHolen() {
+  if (!spieleGeholt) {
+    spieleGeholt = fetch('/api/spiele').then((a) => a.json()).then((d) => d.spiele || []);
+    spieleGeholt.catch(() => { spieleGeholt = null; });
+  }
+  return spieleGeholt;
+}
+
+function techbaumImWarteraum(nachricht) {
+  letzterRaum = nachricht;
+  spieleHolen().then((spiele) => {
+    const spiel = spiele.find((s) => s.art === nachricht.art);
+    techbaumKnopf.hidden = !spiel?.nachschlagen;
+    if (spiel?.nachschlagen) techbaumKnopf.textContent = spiel.nachschlagen.titel;
+  }).catch(() => { techbaumKnopf.hidden = true; });
+}
+
+techbaumKnopf.addEventListener('click', () => {
+  // Mit dem eigenen Haus, wenn es gewaehlt ist - Zufall ist keins.
+  const platz = (letzterRaum?.plaetze || []).find((p) => p.platz === ich);
+  const haus = platz?.wahl?.haus;
+  techbaum.oeffnen({ haus: typeof haus === 'string' && haus !== 'zufall' ? haus : null });
+});
 
 // ---- Vollbild (bedienung AC-73) --------------------------------------------
 // Im Fenster gehoeren Strg+1 bis 8 dem Browser - er wechselt damit den Tab,
@@ -1315,8 +1511,137 @@ async function sitzungPruefen() {
     // Wer angemeldet ist, tritt auch unter seinem Kontonamen bei.
     if (!teile.name.value) teile.name.value = wer.name;
     await spieleLaden();
+    await partienLaden();
   }
   return wer;
+}
+
+// ---- Deine Partien (speichern AC-7, AC-9) ---------------------------------
+// Was am Konto gesichert liegt, das Neueste zuerst: was das Spiel dazu sagt
+// (Spielzeit, Karte), wer mitspielt und wann zuletzt gesichert wurde. Ein
+// Klick setzt fort - in einem neuen Raum mit neuem Code, angehalten, bis man
+// "Weiter" sagt.
+const partienTeil = document.getElementById('partien');
+const partienliste = document.getElementById('partienliste');
+const partienMeldung = document.getElementById('partienMeldung');
+const partienVoll = document.getElementById('partienVoll');
+
+function partienMelden(text, fehler = false) {
+  partienMeldung.textContent = text;
+  partienMeldung.hidden = !text;
+  partienMeldung.classList.toggle('fehler', Boolean(text) && fehler);
+  if (text) partienTeil.hidden = false;
+}
+
+function zeitpunktText(ms) {
+  const wann = new Date(ms);
+  const uhr = wann.toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' });
+  const heute = new Date();
+  const gestern = new Date(heute.getFullYear(), heute.getMonth(), heute.getDate() - 1);
+  if (wann.toDateString() === heute.toDateString()) return `heute ${uhr}`;
+  if (wann.toDateString() === gestern.toDateString()) return `gestern ${uhr}`;
+  return `${wann.toLocaleDateString('de-DE')} ${uhr}`;
+}
+
+function partieZeile(partie, spiele) {
+  const zeile = document.createElement('li');
+  zeile.dataset.partie = partie.id;
+  const text = document.createElement('div');
+  text.className = 'partietext';
+  const titel = document.createElement('strong');
+  titel.textContent = partie.name || spiele.find((s) => s.art === partie.art)?.name || partie.art;
+  const angaben = (Array.isArray(partie.angaben) ? partie.angaben : [])
+    .filter((a) => a && a.name && a.wert !== undefined && a.wert !== null)
+    .map((a) => `${a.name} ${a.wert}`);
+  const beteiligte = (Array.isArray(partie.beteiligte) ? partie.beteiligte : [])
+    .map((b) => b && b.name).filter(Boolean).join(', ');
+  const unten = document.createElement('span');
+  unten.className = 'partieangaben';
+  unten.textContent = [...angaben, beteiligte, zeitpunktText(partie.geaendert)].filter(Boolean).join(' · ');
+  text.append(titel, unten);
+
+  const weiter = document.createElement('button');
+  weiter.type = 'button';
+  weiter.className = 'haupt';
+  weiter.dataset.fortsetzen = partie.id;
+  weiter.textContent = 'Fortsetzen';
+  weiter.addEventListener('click', () => partieFortsetzen(partie.id));
+
+  // Loeschen fragt einmal nach: der zweite Klick auf denselben Knopf.
+  const weg = document.createElement('button');
+  weg.type = 'button';
+  weg.className = 'leise';
+  weg.dataset.loeschen = partie.id;
+  weg.textContent = 'Löschen';
+  weg.addEventListener('click', () => {
+    if (!weg.classList.contains('sicher')) {
+      weg.classList.add('sicher');
+      weg.textContent = 'Wirklich löschen?';
+      return;
+    }
+    partieLoeschen(partie.id);
+  });
+  zeile.append(text, weiter, weg);
+  return zeile;
+}
+
+async function partienLaden() {
+  let daten;
+  try {
+    const antwort = await fetch('/api/partien');
+    if (!antwort.ok) return;
+    daten = await antwort.json();
+  } catch {
+    return;
+  }
+  const partien = Array.isArray(daten.partien) ? daten.partien : [];
+  const spiele = await spieleHolen().catch(() => []);
+  partienliste.replaceChildren(...partien.map((p) => partieZeile(p, spiele)));
+  // Sind alle Plaetze belegt, wird die naechste Partie nicht gesichert
+  // (speichern AC-27) - das steht hier, bevor sie beginnt.
+  const hoechstens = daten.hoechstens;
+  const voll = Number.isInteger(hoechstens) && partien.length >= hoechstens;
+  partienVoll.textContent = voll
+    ? `Alle ${hoechstens} Plätze belegt — eine neue Partie wird erst gesichert, wenn du eine löschst.`
+    : '';
+  partienVoll.hidden = !voll;
+  let satz = null;
+  try {
+    satz = sessionStorage.getItem(VORRAUM_SATZ);
+    sessionStorage.removeItem(VORRAUM_SATZ);
+  } catch { /* dann ohne Satz */ }
+  if (satz) partienMelden(satz);
+  partienTeil.hidden = partien.length === 0 && partienMeldung.hidden;
+  // Kameras von Staenden, die es nicht mehr gibt, vergessen (AC-10).
+  try {
+    const da = new Set(partien.map((p) => KAMERA + p.id));
+    for (let i = localStorage.length - 1; i >= 0; i -= 1) {
+      const schluessel = localStorage.key(i);
+      if (schluessel && schluessel.startsWith(KAMERA) && !da.has(schluessel)) localStorage.removeItem(schluessel);
+    }
+  } catch { /* dann bleiben sie liegen */ }
+}
+
+function partieFortsetzen(id) {
+  partienMelden('');
+  meldeort = partienMeldung;
+  verbinden(() => senden({ typ: 'fortsetzen', id }));
+}
+
+async function partieLoeschen(id) {
+  partienMelden('');
+  try {
+    const antwort = await fetch(`/api/partien/${encodeURIComponent(id)}`, { method: 'DELETE' });
+    if (!antwort.ok) {
+      const daten = await antwort.json().catch(() => ({}));
+      partienMelden(daten.fehler || 'Der Spielstand ließ sich nicht löschen.', true);
+      return;
+    }
+  } catch {
+    partienMelden('Der Spielstand ließ sich nicht löschen.', true);
+    return;
+  }
+  await partienLaden();
 }
 
 function reiter(aufRegistrieren) {
@@ -1388,11 +1713,13 @@ function platzVergessen() {
 }
 
 // Eine Partie, die noch laufen kann: der Server haelt sie eine halbe Stunde,
-// nachdem der letzte gegangen ist (raeume AC-13, AC-17).
+// nachdem der letzte gegangen ist (raeume AC-13, AC-17) - allein und
+// gesichert zwei Minuten (`wartet`, oben bei LETZTE_PARTIE).
 function letztePartie() {
   try {
     const gemerkt = JSON.parse(localStorage.getItem(LETZTE_PARTIE) || 'null');
-    if (gemerkt && gemerkt.code && gemerkt.token && Date.now() - gemerkt.zeit < 30 * 60 * 1000) return gemerkt;
+    const wartet = gemerkt?.wartet || PARTIE_WARTET_MS;
+    if (gemerkt && gemerkt.code && gemerkt.token && Date.now() - gemerkt.zeit < wartet) return gemerkt;
     if (gemerkt) localStorage.removeItem(LETZTE_PARTIE);
   } catch { /* unlesbar ist wie leer */ }
   return null;

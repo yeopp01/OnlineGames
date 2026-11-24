@@ -351,6 +351,11 @@ Werte aus der [Vorlage](../../docs/strategie/vorlage-aoe2.md), als Daten in
   bei gleicher Form: 37 Gold je Fahrt, 18,0 je Minute, 90 % des
   Dorfbewohners (mit 0,86 wären es genau 20,0). Je Minute lohnt die lange
   Strecke mehr als die kurze.
+  **Seit 2026-11-22:** liegt das nächste Randfeld eines Markts hinter Wald
+  oder im Winkel zweier Gebäude, fährt der Karren an das nächste Feld, das
+  er erreicht, solange es höchstens dreieinhalb Felder vom Markt liegt
+  (`welt.handelTakten`, `naechstesErreichbare`) — vorher stand er still
+  (KI-Partie Startwert 3: 21 statt 217 Gold in 14 Minuten).
 - **AC-41** `fertig` **Ladung des Karrens sichtbar** — Auf dem Heimweg trägt
   der Karren sichtbar Gold (Säcke oder Truhen auf der Ladefläche), auf dem
   Hinweg nicht. Abgetrennt von AC-40 in Runde 161: das ist eine Änderung an

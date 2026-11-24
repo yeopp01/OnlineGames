@@ -1,0 +1,10 @@
+{
+  "spec": "00-plattform/speichern.md",
+  "ac": "AC-6",
+  "titel": "Der neueste Stand war kaputt: fortgesetzt mit dem davor, oben rechts steht Der letzte Stand liess sich nicht laden, weiter mit dem davor",
+  "datei": "e2e/tests/strategie-fortsetzen.spec.mjs",
+  "pfad": [
+    "Aufhoeren und spaeter weiterspielen",
+    "speichern AC-6: ist der neueste Stand kaputt, geht es mit dem davor weiter, und das Spiel sagt es"
+  ]
+}

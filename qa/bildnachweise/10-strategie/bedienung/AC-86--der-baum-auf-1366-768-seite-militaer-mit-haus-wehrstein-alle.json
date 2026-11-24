@@ -1,0 +1,10 @@
+{
+  "spec": "10-strategie/bedienung.md",
+  "ac": "AC-86",
+  "titel": "Der Baum auf 1366 × 768, Seite Militär mit Haus Wehrstein: alle Gebäude nebeneinander, ohne Rollen quer",
+  "datei": "e2e/tests/strategie-techbaum.spec.mjs",
+  "pfad": [
+    "Technologiebaum",
+    "bedienung AC-86: auf 1366 x 768 steht jede Seite in voller Breite, nichts abgeschnitten, Tafeln im Fenster"
+  ]
+}

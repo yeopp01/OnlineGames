@@ -181,7 +181,7 @@ Umfang hinzufügt, dort nachsehen.
 
 ## Stand
 
-**598 von 709 Kriterien fertig.** 1063 Tests ohne Browser und 14 ganze Partien, 341 im Browser. Die
+**627 von 717 Kriterien fertig.** 1132 Tests ohne Browser und 37 ganze Partien, 358 im Browser. Die
 Übersicht ist der Bericht: `npm run qa:report`.
 
 Gebaut ist der Unterbau: Räume, Übertragung, Karte, Wegfindung, Sammeln,
@@ -509,8 +509,37 @@ Schützen, jede +1/+1. **Der Konterkreis hält auch damit** (fahrplan AC-25,
 Budget 1200): neun Paarungen 20 von 20, umgekehrt 0 — auch Reiter gegen
 beide Schützenlinien. Die Armbrust verliert ohne Rüstungen gegen den Bogen
 (6 von 20) und gewinnt mit den Schützenrüstungen (20 von 20). **Die KI
-bildet die neuen Einheiten aus, erforscht aber nichts** — das ist ki AC-35
-(`offen`, als Nächstes). **Die Burg wartet auf den Handel nur bei echter
+forscht** (ki AC-35, 2026-11-22, `ki.forschenPruefen`): zuerst die Stufe
+ihrer Schwerpunkt-Einheit, dann jede Stufe und jede Wirkung auf eine Art
+oder Klasse, von der sie mindestens drei hält, dann die Wirtschaft ab vier
+Arbeitern; höchstens zwei zugleich, die erste des Militärs liegt in der
+Rücklage (`FORSCHEN_*`, alle sechs Zahlen gesetzt). Sie forscht nicht,
+solange ein Markt oder der nächste Karren fehlt oder das Gold knapp ist
+und keine vier Karren fahren — sonst riss ki AC-26. Dazu steht ihr erster
+Markt auf der vom Gegner abgewandten Seite (`ki.marktplatzDaheim`), und ein
+Karren, dessen nächstes Randfeld hinter Wald liegt, fährt ein anderes an
+(einheiten AC-40, Regel der Welt in `welt.handelTakten`). Gemessen im
+Nebel über 120: 112 vor Minute 60, Median 38,4, alle mit Sieger; je KI im
+Fürstentum 14,9 Verbesserungen, 3,5 Truppenstufen. **Die KI steigt in
+die Krone auf** (ki AC-39, `ki.kronePruefen`): im Fürstentum nach dem
+ersten Aufbruch, mit 42 Dorfbewohnern, einer Burg oder zwei Gebäuden des
+Fürstentums (sonst baut sie ein Kloster dazu) und **nicht vor Spielminute
+40** (`KRONE_AB_MINUTE`, gesetzt) — früher baut sie in der Krone ihre
+zweite und dritte Burg, und der Nebel fiel auf 102 von 120 vor Minute 60.
+Gemessen: Nebel 109 vor Minute 60, Median 38,4, alle mit Sieger; von 25
+Partien über 45 Minuten in 24 eine KI in der Krone, im Median ab Minute
+47; zu viert alle vor Minute 90. **Die KI geht aufs Wunder** (ki AC-40,
+`ki.fremdesWunder`): steht das fertige Wunder eines Gegners, ist es Ziel
+jedes Aufbruchs und jedes Stehenden (eine Einheit nur, wenn sie drei Felder
+daneben steht, `WUNDER_EINHEIT_NAH`, gesetzt), die Rammen gehen darauf; wer
+nicht überlegen ist, sammelt zehn statt Nachschub zu zweit. Gemessen: schenkt
+der Test der KI mit weniger Punkten in Minute 30 ein Wunder, verliert es in
+20 von 22 Partien vor Ablauf der Uhr Leben (`tests/partien/ki-wunder.test.mjs`,
+verlangt 85 %, gesetzt); gegen ein stärkeres Heer kommt sie nicht durch.
+**Die Hauseinheiten (ki AC-28) bleiben aus** (`NOCH_NICHT` für alle): jede
+KI mit Burg und Einheit daraus hielt nicht (16 KIs ohne), und der Nebel
+stand damit auf den Grenzen (105 vor Minute 60, eine ohne Sieger).
+**Die Burg wartet auf den Handel nur bei echter
 Goldnot** (ki AC-33): wer aus Neigung handelt, baut sie gleich und verkauft
 den Stein dafür nicht (`ki.steinFuerBauwerk`) — Silberfurt baute sonst in 16
 Partien eine Burg, jetzt sechs, und gewinnt 36 statt 30 %. Dabei fiel ki
@@ -877,7 +906,7 @@ Kriegswolf ist 1,3-fach so groß wie zuerst (`MASS` in `grafik/wolf.py`,
 `BILDER_PROBE=2 npm run bilder -- <name>` (eine Richtung, rund 2,5 Minuten)
 und misst mit `npm run tafel -- "t.unterschiede('figur').filter((p) => p.anteil < 0.4)"`,
 bevor er zwanzig Minuten voll rendert.
-**Stufe F ist spezifiziert** (Bauabfolge F1 bis F13 im Fahrplan): Aufstieg
+**Stufe F ist spezifiziert** (Bauabfolge F1 bis F14 im Fahrplan): Aufstieg
 in die Krone, je Linie eine Stufe — **der Ritter zwei: Kavalier und
 Paladin** (Benutzer, 2026-11-18; kein Champion) —, jede mit eigener
 gerenderter Figur, Verbesserungen, Elitestufen der Spezialeinheiten,
@@ -901,9 +930,30 @@ Konterkreis hält in der Krone** (fahrplan AC-26, Budget 2000, volle
 Schmiede): neun Paarungen 20 von 20, umgekehrt 0; der Paladin fällt vor dem
 Hellebardier und schlägt beide Schützenlinien; gegen das Schwert hilft die
 schwere Armbrust (19 von 20), nicht der Bogen (0 von 20). **Die KI steigt
-nicht in die Krone auf und erforscht nichts davon** (F12, offen), ebenso
-offen: die Krone am Stück (F13). Die gesetzten Werte der Krone
-stammen nicht alle aus `vorlage-aoe2.md`.
+seit F12 in die Krone auf, erforscht ihre Stufen und geht aufs Wunder** (ki AC-35, AC-39, AC-40);
+**F13 ist fertig** (2026-11-22): die Krone am Stück im Browser (fahrplan
+AC-19, `strategie-krone-am-stueck.spec.mjs`) — Aufstieg, je
+Militärgebäude eine Stufe, die Schmiede, der Elite-Kriegswolf Eschenbruchs,
+ein Wunder bis zum Sieg; ein zweiter Fall ruft den Drachen und brennt ein
+Stück aus einer Mauer. **Die große Partie bleibt flüssig** (fahrplan AC-20,
+`tests/strategie-grosse-partie.test.mjs`): acht Spieler mit je 200
+Einheiten im Nebel, ein Takt samt Auszug und Packen 5,5 bis 5,8 ms; je
+Spieler 160 bis 182 KB je Sekunde als JSON — deshalb packt der Server mit
+permessage-deflate (`server/index.js`), höchstens 30,5 KB je Sekunde.
+Bei „Aufgedeckt“ sind es gepackt rund 147 KB — die Grenze gilt im Nebel.
+Die gesetzten Werte der Krone stammen nicht alle aus `vorlage-aoe2.md`.
+**F14: ein zweites Dorfzentrum in der Krone** (bauen AC-57, Punkt 39):
+`bauenAb: 3` und `hoechstens: 2` am Dorfzentrum, das erste zählt mit;
+`welt.bauZeitalter()` sagt, ab wann gebaut wird, `gebaeudeZeitalter()`
+bleibt beim Landsitz (Aufstieg, Technologiebaum). Im Baumenü der elfte
+und letzte Eintrag der Wirtschaft, Taste `L`, im Technologiebaum dort die
+erste Spalte; die KI baut keines. **bedienung AC-64 geändert** (Benutzer,
+2026-11-22: „Ac 64 passt seine Empfehlung"): die Wirtschaft trägt
+höchstens elf, das Militär höchstens zehn, und beim Militär steht, was
+**Kampfeinheiten** ausbildet — Angriff über null und kein Dorfbewohner
+(Klasse `dorf`), die Belagerung mitgezählt. In der Krone sind es elf und
+neun. Beim Militär ragte die Seite des Baums auf 1366 × 768 aus dem Rahmen
+(bedienung AC-86).
 
 **F6 bis F11 stehen** (2026-11-21, Opus): **Abrüsten** (einheiten AC-50,
 `ABRUESTEN`, Nachricht `abruesten`): Fußvolk, Schützen und Reiter legen
@@ -928,6 +978,16 @@ Drache Angriff 8 und +660 gegen Gebäude, Ansage 20 s, Hunger 5 Leben je
 Sekunde, Wunder 4400 s Bauzeit. einheiten AC-52 bleibt `in-qa`: ob der
 Drache KI gegen KI höchstens 60 % gewinnt, misst erst die KI der Krone (F12).
 
+**Der Technologiebaum** (bedienung AC-81 bis AC-86, 2026-11-22): eine
+Ebene über dem Spiel, aus dem Menü und im Warteraum neben „Partie starten",
+zwei Seiten wie das Baumenü, Zeilen je Zeitalter, Spalten je Gebäude,
+goldener Pfeil für Stufen, grauer für Vorstufen; je Haus blass, golden und
+mit ▲, was es stärkt; an jedem Eintrag die Tafel der Leiste. Gerechnet auf
+dem Server (`server/spiele/strategie/techbaum.js`, Werte je Haus aus
+`welt.kampfwerte()`), geholt über `GET /api/spiele/<art>/nachschlagen` —
+der Steckbrief trägt `nachschlagen`, `index.js` kennt kein Spiel. Im
+Browserlauf steht dort auch das Prüfhaus.
+
 **Gold und Stein sind eine Einstellung beim Eröffnen** (karte AC-18, AC-19,
 Benutzer, 2026-11-18; `vorkommen` im Steckbrief, `VORKOMMEN` in
 `karte.js`): **wenig** ist das Dorf allein (je Spieler 7 Felder Gold und 5
@@ -939,6 +999,52 @@ wird dafür nicht angefasst. Die KI ist auf „mittel“ gemessen (Nebel über
 120 Startwerte: 111 vor Minute 60, Median 39,4, keine ohne Sieger; zu
 viert jede vor Minute 90), auf „viel“ nicht. `karte.fundorte` sagt Tests,
 was wo liegt; es geht nicht über die Leitung.
+
+**Speichern S1 steht: die Partie als Wert** (speichern AC-1, AC-2, AC-5,
+AC-16, AC-17; ADR-0017). `welt.sichern()` gibt Bytes — acht Bytes Kopf
+(`FAST` und die Fassung), dahinter Welt und KIs in **einem**
+`v8.serialize`, gepackt (`server/spiele/strategie/stand.js`) —, und
+`steckbrief.laden(bytes)` baut beides ohne Konstruktor wieder auf.
+Gesichert wird jedes eigene Feld; weg bleibt nur, was in `GEMERKT` in
+`welt.js` steht. **Ein neues Feld an Welt, Spieler, Einheit, Gebäude oder
+KI ist eine neue Form**: `tests/waechter-stand.test.mjs` verlangt dann
+`FASSUNG + 1`, `SCHRITTE[alt]` in `stand.js` (was ein alter Stand für das
+Feld bekommt) und `npm run stand:abbild -- --schreiben`, das auch den
+Probestand der neuen Fassung unter `tests/staende/` ablegt. **Ein älterer
+Stand wird hochgezogen** (speichern AC-18, Nachtrag zu ADR-0017 Punkt 7,
+2026-11-24): Schritt für Schritt bis zur laufenden Fassung; ohne Weg
+dorthin oder aus einer neueren Fassung wird er mit einem Satz für den
+Bildschirm abgelehnt (`StandFehler`). Jeder eingecheckte Probestand lädt
+und läuft fünf Minuten weiter (`tests/strategie-hochziehen.test.mjs`) —
+**er wird nie neu geschrieben**. Gleich heißt **Wert für Wert**
+(`tests/gleichwertig.mjs`), nicht Byte für Byte. Über zwanzig Startwerte
+läuft eine geladene Partie 3000 Takte lang Takt für Takt wie die
+ununterbrochene, samt dem, was der Server jedem schickt
+(`tests/partien/speichern-gleichlauf-*.test.mjs`). Gemessen: acht Spieler
+je 200 Einheiten rund 100 KB, sichern 20 ms, laden 15 ms.
+
+**Speichern S2 steht: die Ablage am Konto** (speichern AC-3, AC-4, AC-12,
+AC-13; AC-6 `in-arbeit`, bis die Oberfläche den kaputten Stand meldet).
+`server/partiestaende.js` legt je Partie **eine** Zeile in der SQLite-Datei
+der Konten ab (Tabelle `partiestand`), höchstens fünf je Konto
+(`JE_KONTO`); jede Abfrage trägt `AND konto = ?`. Jedes Sichern ersetzt
+`wert` und schiebt den alten nach `vorher` — in einer Anweisung; lässt sich
+`wert` nicht laden, öffnet sich `vorher`. **Wann gesichert wird, weiß der
+Raum, was darin steht, das Spiel** (ADR-0006): `raum.sichern()` jede Minute
+Wanduhr (`SICHERN_MS`), beim Anhalten, wenn der letzte Mensch geht, und
+beim Herunterfahren (`raeume.allesSichern()`, in `index.js` an SIGTERM und
+SIGINT — `docker stop` mit `init: true`). Jeden neuen Stand probt der Raum
+vor dem Ablegen einmal mit `spiel.laden` — ein kaputter ersetzt den
+vorigen nicht. Ist das Konto voll, wird die neue Partie nicht gesichert
+(kein alter Stand wird geopfert, im Bild steht noch nichts); eine
+entschiedene Partie löscht ihren Stand. Den Weg `/api/partien` (Liste,
+Öffnen, Umbenennen, Löschen) gibt es nur mit Anmeldung, ein fremder Stand
+bekommt dieselbe 404 wie ein unbekannter (`server/partien-netz.js`). Der
+Steckbrief bringt `laden` und `standFassung` mit (`verzeichnis.js` kopiert
+nur Felder, die es kennt). Gemessen: in die Datenbank schreiben 4 bis 6 ms
+für 18 bis 121 KB, öffnen unter 1 ms — mit Sichern und Probe kostet eine
+große Partie einmal je Minute rund 40 ms in einem Schlag. Im Bild steht
+davon noch nichts (S3).
 
 1. **Stufe A** Dunkle Zeit mit Wirtschafts-KI und Prüfstand · **B** Feudalzeit
    · **C** Partieende und KI-Gegner · **D** Ritterzeit · **E** fünf Häuser ·

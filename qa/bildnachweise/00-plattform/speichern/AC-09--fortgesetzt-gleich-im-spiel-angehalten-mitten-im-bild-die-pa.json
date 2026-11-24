@@ -1,0 +1,10 @@
+{
+  "spec": "00-plattform/speichern.md",
+  "ac": "AC-9",
+  "titel": "Fortgesetzt: gleich im Spiel, angehalten, mitten im Bild Die Partie ist geladen und steht mit dem neuen Raumcode und Weiterspielen",
+  "datei": "e2e/tests/strategie-fortsetzen.spec.mjs",
+  "pfad": [
+    "Aufhoeren und spaeter weiterspielen",
+    "speichern AC-9: Fortsetzen oeffnet einen neuen Raum mit neuem Code, angehalten bis Weiter - der alte Code fuehrt nirgendwohin"
+  ]
+}

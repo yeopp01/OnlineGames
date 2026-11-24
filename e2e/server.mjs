@@ -38,6 +38,13 @@ const laufend = await starten(hafen, {
   },
 });
 
+// Der Browserlauf sichert keine Partien (speichern AC-3), ausser ein Test
+// schaltet es ein (Griff `staende`): alle Faelle spielen mit demselben Konto,
+// nach fuenf Partien stuende sonst in jeder weiteren der Hinweis "fuenf
+// Spielstaende" (speichern AC-27) und im Vorraum die Liste - und jedes Bild
+// hinge an der Reihenfolge der Faelle. Gesichert wird in tests/ geprueft.
+laufend.raeume.ablage = null;
+
 // Ein Konto zum Anmelden. Genau der Weg, den auch der Browser geht:
 // Einladungscode, Registrieren - nur ohne Formular.
 const einladung = laufend.zugang.einladungen.anlegen('Browserlauf');
@@ -263,6 +270,42 @@ const griffe = http.createServer(async (anfrage, antwortGriff) => {
       if (!spieler?.draht) throw new Error(`${werte.name} hat in Raum ${id} keine Verbindung.`);
       spieler.draht.close();
       antwortGriff.writeHead(200, { 'Content-Type': 'application/json', Connection: 'close' }).end(JSON.stringify({ ok: true }));
+      return;
+    }
+    // Das Sichern ein- oder ausschalten und die Ablage leeren (speichern AC-7
+    // bis AC-11, AC-27). `jeKonto` setzt, wie viele ein Konto halten darf -
+    // fuer den Hinweis, ohne fuenf Partien zu spielen. `kaputt` verdirbt den
+    // letzten Stand jeder Partie, der vorige bleibt (speichern AC-6) - so
+    // kaputt, wie ihn ein abgerissenes Schreiben hinterliesse.
+    if (befehl === 'staende') {
+      if (werte.kaputt) laufend.ablage.db.exec("UPDATE partiestand SET wert = X'46415354'");
+      if (werte.leeren) laufend.ablage.db.exec('DELETE FROM partiestand');
+      if (typeof werte.an === 'boolean') laufend.raeume.ablage = werte.an ? laufend.ablage : null;
+      if (Number.isInteger(werte.jeKonto)) laufend.ablage.jeKonto = werte.jeKonto;
+      // Die zwei Minuten nach dem Wegklicken (AC-8) - im Bild nicht abzuwarten.
+      // `wegMs` setzt die Frist, `aufraeumen` raeumt sofort statt alle 15 s.
+      if (Number.isInteger(werte.wegMs)) laufend.raeume.wegMs = werte.wegMs;
+      if (werte.aufraeumen) laufend.raeume.aufraeumen();
+      // Bis `auffuellen` Staende am Konto liegen, Abschriften des neuesten -
+      // je eine Stunde aelter und zehn Minuten kuerzer gespielt. Fuenf echte
+      // Partien kosteten Minuten; die Liste und der Hinweis (AC-27) sehen nur
+      // die Zeilen.
+      if (Number.isInteger(werte.auffuellen)) {
+        const vorlage = laufend.ablage.db.prepare('SELECT * FROM partiestand ORDER BY geaendert DESC LIMIT 1').get();
+        if (!vorlage) throw new Error('Es gibt keinen Stand zum Abschreiben.');
+        const da = laufend.ablage.db.prepare('SELECT COUNT(*) AS n FROM partiestand WHERE konto = ?').get(vorlage.konto).n;
+        const spalten = Object.keys(vorlage);
+        const schreiben = laufend.ablage.db.prepare(
+          `INSERT INTO partiestand (${spalten.join(', ')}) VALUES (${spalten.map(() => '?').join(', ')})`);
+        for (let i = 1; i <= werte.auffuellen - da; i++) {
+          const angaben = (JSON.parse(vorlage.angaben || '[]') || []).map((a) => (a.name === 'Spielzeit' ? { ...a, wert: `${10 * i}:00` } : a));
+          const zeile = { ...vorlage, id: randomBytes(12).toString('base64url'), angaben: JSON.stringify(angaben),
+            angelegt: vorlage.angelegt - i * 3_600_000, geaendert: vorlage.geaendert - i * 3_600_000 };
+          schreiben.run(...spalten.map((s) => zeile[s]));
+        }
+      }
+      const zeilen = laufend.ablage.db.prepare('SELECT COUNT(*) AS n FROM partiestand').get();
+      antwortGriff.writeHead(200, { 'Content-Type': 'application/json', Connection: 'close' }).end(JSON.stringify({ ok: true, anzahl: zeilen.n }));
       return;
     }
     if (befehl === 'zeitraffer') {

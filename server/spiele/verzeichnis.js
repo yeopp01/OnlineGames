@@ -55,6 +55,25 @@ function pruefen(steckbrief, ordner) {
   if (steckbrief.platzname !== undefined && typeof steckbrief.platzname !== 'function') {
     throw new Error(`${wo}: platzname muss eine Funktion (nummer) => Text sein.`);
   }
+  // Etwas zum Nachschlagen, etwa ein Technologiebaum (bedienung AC-81).
+  // Freiwillig; die Plattform kennt nur den Titel und reicht die Daten durch.
+  const nachschlagen = steckbrief.nachschlagen;
+  if (nachschlagen !== undefined && (typeof nachschlagen?.titel !== 'string' || !nachschlagen.titel || typeof nachschlagen.daten !== 'function')) {
+    throw new Error(`${wo}: nachschlagen braucht titel (Text) und daten (Funktion).`);
+  }
+  // Fortsetzen (ADR-0017): wer `laden(bytes)` anbietet, laesst seine Partien
+  // sichern, und `standFassung` nennt die Fassung des Stands. Beides freiwillig.
+  if (steckbrief.laden !== undefined && typeof steckbrief.laden !== 'function') {
+    throw new Error(`${wo}: laden muss eine Funktion (bytes) => Partie sein.`);
+  }
+  if (steckbrief.standFassung !== undefined && !(Number.isInteger(steckbrief.standFassung) && steckbrief.standFassung >= 1)) {
+    throw new Error(`${wo}: standFassung muss eine ganze Zahl ab 1 sein.`);
+  }
+  // Was die Liste "Deine Partien" zu einem Stand zeigt (speichern AC-9):
+  // (partie, einstellungen) => [{ name, wert }]. Freiwillig.
+  if (steckbrief.angaben !== undefined && typeof steckbrief.angaben !== 'function') {
+    throw new Error(`${wo}: angaben muss eine Funktion (partie, einstellungen) => [{ name, wert }] sein.`);
+  }
 }
 
 function lesen(wurzel = __dirname) {
@@ -79,6 +98,13 @@ function lesen(wurzel = __dirname) {
       ...(steckbrief.plaetze ? { plaetze: steckbrief.plaetze } : {}),
       ...(steckbrief.jePlatz ? { jePlatz: steckbrief.jePlatz } : {}),
       ...(steckbrief.platzname ? { platzname: steckbrief.platzname } : {}),
+      // Fuer die Ablage der Partiestaende (ADR-0017); `laden` faellt beim
+      // Ausliefern weg wie `erzeugen`.
+      ...(steckbrief.laden ? { laden: steckbrief.laden } : {}),
+      ...(steckbrief.standFassung ? { standFassung: steckbrief.standFassung } : {}),
+      ...(steckbrief.angaben ? { angaben: steckbrief.angaben } : {}),
+      // Beim Ausliefern bleibt nur der Titel; die Daten holt der Browser einzeln.
+      ...(steckbrief.nachschlagen ? { nachschlagen: { titel: steckbrief.nachschlagen.titel, daten: steckbrief.nachschlagen.daten } } : {}),
       reihenfolge: Number.isInteger(steckbrief.reihenfolge) ? steckbrief.reihenfolge : 100,
     });
   }

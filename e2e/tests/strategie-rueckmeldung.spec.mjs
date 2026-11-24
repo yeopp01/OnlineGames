@@ -651,7 +651,7 @@ test.describe('Rueckkehr aus dem Vorraum', () => {
     await expect(menue).toBeHidden();
     await anna.locator('#menue').click();
     await expect(menue).toBeVisible();
-    await expect(menue.locator('button')).toHaveText(['Weiterspielen', 'Pause', 'Tasten und Ton', 'Vollbild (F11)', 'Zurück in den Vorraum']);
+    await expect(menue.locator('button')).toHaveText(['Weiterspielen', 'Pause', 'Tasten und Ton', 'Technologiebaum', 'Vollbild (F11)', 'Zurück in den Vorraum']);
     await expect(anna.locator('#menueVorraumHinweis')).toContainText('wartet sie 30 Minuten');
     // Die Partie laeuft darunter weiter: die Uhr zaehlt.
     const uhr = () => anna.evaluate(() => window.ansicht.takt);

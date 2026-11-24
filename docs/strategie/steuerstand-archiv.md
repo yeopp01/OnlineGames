@@ -3705,3 +3705,69 @@ node scripts/ausrollen.mjs                         # nur in OnlineGames-bildumba
   Manager-Liga** ruhen mit dem Managerspiel.
 
 Entschieden und hier gestrichen: der Name des Spiels ist **Fading Allies**.
+
+## Ausgelagert am 2026-11-22 mittags (Zuletzt fortgeschrieben, Nacht zum 22.)
+
+**2026-11-22, später in der Nacht:** **Technologiebaum zusammengeführt**
+(`cf197cd`, bedienung AC-81 bis AC-86, `npm run check` grün; der ganze
+Browserlauf steht noch aus — einmal für alles nach dem Zusammenführen der
+Regeln und der KI). **F12 läuft als Agent im Arbeitsbaum
+`../OnlineGames-kikrone` (Zweig `strategie-ki-krone`)**: erforschen (ki
+AC-35), Krone, Hauseinheiten (ki AC-28), Wunder/Ei/Drache (ki AC-39, AC-40,
+AC-29, einheiten AC-52), gemessen auf den alten Regeln. Danach: beide Zweige
+(`strategie-regeln`, `strategie-ki-krone`) zusammenführen, **eine
+gemeinsame Messrunde** (Partien, Nebel 120, zwei gegen zwei, Häuser),
+`npm run check:alles:neu:kurz`, `qa:abweichung`. Arbeitsbaum
+`../OnlineGames-techbaum` kann weg (Zweig gemergt) — nur auf Wort des
+Benutzers löschen.
+
+**2026-11-22, nachts (Benutzer schläft: „sobald die Agenten fertig sind,
+darfst du sehr gerne die sachen die gefunden wurden angehen und umsetzen und
+das Spiel besser machen“ — kein Push, kein Ausrollen ohne ihn):**
+Steuerstand und Haken sind `8915326`. Agent (a) hat gemessen, nichts
+committet: **Kampfdauer in Spielsekunden = Vorlage** (Miliz–Miliz 18,1 s
+gegen 18,0; Ritter–Ritter 21,7 gegen 21,6; Gebäude genau gerechnet). Die
+Ursache für „schnell kaputt“ ist also nicht die Rechnung. Vermutet:
+(1) **keine Trefferchance** (AoE Bogen 80 %, kampf AC-8 verbietet Zufall —
+Probe mit Schaden × 0,8: Bogen–Speer 16,1 statt 12,1 s, Konterkreis des
+Lehens hält), (2) Pfeile treffen sofort, (3) acht schlagen auf den
+Vordersten, (4) kleine Heere der KI. **Unsere 1,0 ist AoE-„langsam“; AoE DE
+„Normal“ ist 1,7** — in echter Zeit dauern Kämpfe hier länger. Spielgeschwindigkeit
+1,5 als Vorgabe stünde gegen die Rückmeldung. **Reiterschütze bekommt
+beide Schmiedelinien** (Nah +4 und Schützen +3; AoE nur Schützen) —
+Entscheidung des Benutzers. **Laufregel reißt den Konterkreis** (einheiten
+AC-42 19/20, fahrplan AC-25 13/20 statt ≤10, AC-26 zweimal); Abtrennen als
+todo lehnte die Berechtigungsprüfung ab — **Grenzen lockert nur der
+Benutzer**. Gefechtsstand-Seitenfehler: Spirale nicht gespiegelt
+(`pruefstand.js`), Reichweite gegen die schon bewegte Lage (Welt), Rest aus
+der Reihenfolge der Einheiten. **Jetzt läuft Agent (d) im Arbeitsbaum
+`../OnlineGames-regeln` (Zweig `strategie-regeln`)**: Laufregel,
+Seitengleichheit, Pfeile beim Ankommen, dann nur gesetzte Werte (nicht aus
+der Vorlage) drehen, bis jede Grenze ohne Lockern hält; Patches des Agenten
+(a) unter `scratchpad/uebergabe/`. Agent (c) Technologiebaum im Arbeitsbaum
+`../OnlineGames-techbaum` (Zweig `strategie-techbaum`) läuft. Im Hauptordner
+liegen unversionierte Dateien einer Managersitzung (ADR-0018,
+`docs/manager/`, Skill `manager-weiterbauen`) — nicht anfassen.
+
+**2026-11-22:** F6 bis F11 nach `main` gepusht und ausgerollt (Benutzer hat
+es heute freigegeben: ‚gut, dann ausrollen - und anschließend deine anderen
+Punkte eigenständig angehen'). Er will Hilfsagenten statt langer eigener
+Verläufe (‚nutze lieber subagenten, die verlieren den kontext nicht durch
+compacten'). Er bestätigt die Laufregel (9 % zu langsam, ‚das passt nicht
+ganz') und meldet: ‚die einheiten sind auch immer alle relativ schnell
+kaputt, das hat bei AoE teilweise ziemlich lange gedauert'. Laufen in
+Hilfsagenten: (a) Laufregel, Kampfdauer gegen die Vorlage, Pfeile treffen
+beim Ankommen (Punkt 25), Seitengleichheit des Gefechtsstands; (b) dieser
+Umbau des Steuerstands; (c) der Technologiebaum. Danach: F12 als eigener
+KI-Block mit neuer Messung (ki AC-35, ki AC-28, einheiten AC-52,
+pruefstand:haeuser, Test zu spielziel AC-18), dann F13, dann zweites
+Dorfzentrum (Punkt 39), Speichern (ADR-0017), Notfallklingel (erst gegen
+ADR-0012 halten).
+
+**2026-11-21, 02:55 (Opus):** F6 bis F11 gebaut und committet (`bba1e2b`,
+`7013cf0`, Bilder `b45fbd8`, Steuerstand `9194fe7`), `npm run check` grün
+(1063 Tests, 14 Partien). Ganze Partien unverändert: Nebel 120 — 111 vor
+Minute 60, Median 39,4, keine ohne Sieger; zwei gegen zwei alle vor Minute
+90. Was F6 bis F11 sind und welche Werte gesetzt statt aus der Vorlage
+stammen: `CLAUDE.md` („F6 bis F11 stehen“).
+

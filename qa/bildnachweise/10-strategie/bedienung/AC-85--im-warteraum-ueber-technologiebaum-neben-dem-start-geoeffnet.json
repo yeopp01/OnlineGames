@@ -1,0 +1,9 @@
+{
+  "spec": "10-strategie/bedienung.md",
+  "ac": "AC-85",
+  "titel": "Im Warteraum über „Technologiebaum“ neben dem Start geöffnet: das gewählte Haus Distelhag vorgewählt",
+  "datei": "e2e/tests/strategie-techbaum.spec.mjs",
+  "pfad": [
+    "bedienung AC-85: im Warteraum neben dem Start - mit dem gewaehlten Haus, Zufall ist keins"
+  ]
+}

@@ -18,7 +18,7 @@
 const karten = require('./karte');
 const { suchen } = require('./wege');
 const { TAKTE_PRO_SEKUNDE } = require('./welt');
-const { EINHEITEN, GEBAEUDE, SAMMELN, AUFSTIEGE, HANDEL, HAEUSER, SCHIESSENDE } = require('./daten');
+const { EINHEITEN, GEBAEUDE, SAMMELN, AUFSTIEGE, HANDEL, HAEUSER, SCHIESSENDE, VERBESSERUNGEN } = require('./daten');
 
 const ENTSCHEIDEN_ALLE = TAKTE_PRO_SEKUNDE / 2;
 
@@ -40,6 +40,16 @@ const ZIEL_DORFBEWOHNER = 22;
 // 74 Minuten). Die Vorgabe des Benutzers fuer die schwere KI: 40 bis 50 im
 // letzten Zeitalter.
 const DORFBEWOHNER_JE_ZEITALTER = [ZIEL_DORFBEWOHNER, 32, 42, 50];
+// Die Krone (ki AC-39) erst mit dem vollen Dorf des Fuerstentums.
+const KRONE_DORF = DORFBEWOHNER_JE_ZEITALTER[2];
+// Fehlt das zweite Gebaeude des Fuerstentums fuer die Krone, dieses: das
+// billigste, und das Kloster braucht sie fuer den Drachen (ki AC-29).
+const KRONE_GEBAEUDE = 'kloster';
+// Und nicht vor dieser Spielminute (gesetzt): ohne sie stieg die KI im Median
+// in Minute 36 auf, baute danach ihre zweite und dritte Burg (AC-33) - 199
+// statt 139 Burgen in 120 Partien -, und nur 102 Partien endeten vor Minute
+// 60 (Grenze 105, fahrplan AC-11).
+const KRONE_AB_MINUTE = 40;
 function zielDorfbewohner(zeitalter) {
   return DORFBEWOHNER_JE_ZEITALTER[Math.min(zeitalter, DORFBEWOHNER_JE_ZEITALTER.length - 1)];
 }
@@ -157,6 +167,31 @@ const MILITAER_SCHLANGE = 2;
 // dort ohnehin nichts, aber "kann nie wieder etwas tun" (ki AC-19) fragt
 // jedes Gebaeude.
 const NOCH_NICHT = new Set(['soeldner', 'eibenschuetze', 'pavesenschuetze', 'kriegswolf', 'reiterschuetze', 'riese', 'meuchler', 'wiedergaenger']);
+// Was sie erforscht (ki AC-35), gelesen aus den Daten der Verbesserung, nie
+// nach dem Namen: eine Stufe (`wandelt`) fuer die Einheiten, die sie haelt,
+// eine `wirkung` (oder ein `bonus`) auf eine Art oder Klasse, die sie haelt,
+// `sammeln`, `farm` oder die Tragkraft der Dorfbewohner fuer ihre Arbeit, ein
+// `bauwerk` fuer das Bauwerk ihres Schwerpunkts. Die Reihenfolge: zuerst, was
+// ihrem Schwerpunkt nuetzt (ki AC-27), dann das Militaer nach der Zahl, die
+// es trifft, dann die Wirtschaft. Erst nach dem ersten Aufbruch - vorher
+// geht jede Ladung ins erste Heer (ki AC-11) -, und nur, was nach Ruecklage
+// und Puffer bezahlt ist.
+//
+// Hoechstens so viele Verbesserungen zugleich in ihren Schlangen, je Gebaeude eine.
+const FORSCHEN_ZUGLEICH = 2;
+// So viel bleibt nach dem Bezahlen von jedem Rohstoff, den sie kostet - fuer die Ausbildung.
+const FORSCHEN_PUFFER = 100;
+// Fuer weniger Einheiten, als eine Verbesserung des Militaers trifft, erforscht sie sie nicht.
+const FORSCHEN_MINDESTENS = 3;
+// Ebenso die Wirtschaft: so viele muessen an dem Rohstoff arbeiten (oder Farmen stehen).
+const FORSCHEN_ARBEITER = 4;
+// Eine Stufe (`wandelt`) zaehlt schon fuer eine Einheit der Linie und so
+// viel mal so viel wie eine Verbesserung, die dieselbe Zahl trifft.
+const FORSCHEN_STUFE = 2;
+// So lange legt sie fuer die erste Verbesserung des Militaers zurueck, in Sekunden ...
+const FORSCHEN_WARTEN = 90;
+// ... und so lange steht sie danach zurueck, wenn es nicht reichte.
+const FORSCHEN_ZURUECK = 180;
 // Was ein Militaergebaeude an Holz kostet - dafuer wird es zurueckgehalten.
 const MILITAER_HOLZ = Math.max(...MILITAER.map((art) => GEBAEUDE[art].kosten.holz || 0));
 
@@ -179,6 +214,9 @@ const UEBERLEGEN = 3;
 // 19 mit Sieger, die letzte Partie unentschieden; zu zweit alle 20, die
 // laengste nach 62 Minuten; zu viert alle 20, die laengste nach 78.
 const MARSCH_MINDESTENS = 2;
+// Vor einem fremden Wunder (ki AC-40) greift ein Stehender eine Einheit nur
+// an, wenn sie so nah ist (Felder, gesetzt) - sonst das Wunder.
+const WUNDER_EINHEIT_NAH = 3;
 // So weit vor dem fremden Dorfzentrum endet der Marsch. Nicht auf ihm: ein
 // Befehl auf ein fremdes Gebaeude ist ein Angriff auf genau dieses Gebaeude
 // und **kein** Angriffslauf (welt.befehl) - unterwegs wuerde dann niemand
@@ -377,6 +415,7 @@ class Ki {
     // (ki AC-9). `null` heisst: noch nicht.
     this.feudalTakt = null;
     this.ritterTakt = null;
+    this.kroneTakt = null;
     // Wer marschiert (ki AC-11), wie oft ein Heer aufgebrochen ist und in
     // welchem Takt das erste - daran misst der Pruefstand.
     this.heer = new Set();
@@ -444,6 +483,49 @@ class Ki {
     this.belagerungFehlt = null;
     // In welchem Takt die erste Burg fertig war (ki AC-33) - `null`: noch keine.
     this.burgTakt = null;
+    // Was fuer die erste Verbesserung des Militaers zurueckliegt (ki AC-35),
+    // und seit wann sie wartet - `null`: nichts.
+    this.forschungFehlt = null;
+    this.forschungWartet = null;
+    // Verbesserungen, die zu lange warteten, bis zu welchem Takt sie zurueckstehen.
+    this.forschungZurueck = new Map();
+  }
+
+  /**
+   * Die KI als reiner Wert (speichern AC-1, ADR-0017): ihr ganzes Gedaechtnis
+   * - was sie gesehen hat, wo der Feind steht, wer marschiert. Ohne das finge
+   * sie nach dem Laden bei null an. Die Welt gehoert nicht dazu, sie kommt
+   * beim Laden wieder dazu; der Zufall geht als sein Stand hinein.
+   * @returns {Record<string, any>}
+   */
+  alsWert() {
+    const wert = {};
+    for (const [feld, inhalt] of Object.entries(this)) {
+      if (feld === 'welt') continue;
+      if (feld === 'zufall') {
+        wert.zufall = this.zufall.stand();
+        continue;
+      }
+      if (typeof inhalt === 'function') throw new Error(`ki.${feld} ist eine Funktion - sie laesst sich nicht sichern (speichern AC-1)`);
+      wert[feld] = inhalt;
+    }
+    return wert;
+  }
+
+  /**
+   * Die KI aus ihrem Wert, an einer geladenen Welt - ohne Konstruktor: der
+   * schickte ihr Nachrichten an die Welt.
+   * @param {InstanceType<typeof import('./welt').Welt>} welt
+   * @param {Record<string, any>} wert
+   * @returns {Ki}
+   */
+  static ausWert(welt, wert) {
+    const ki = Object.create(Ki.prototype);
+    ki.welt = welt;
+    for (const [feld, inhalt] of Object.entries(wert)) {
+      ki[feld] = feld === 'zufall' ? karten.zufallAusStand(inhalt) : inhalt;
+    }
+    return ki;
   }
 
   get spieler() {
@@ -504,7 +586,7 @@ class Ki {
     // drankommt (Durchsicht Runde 143): wer laufend Gefallene ersetzte, stand
     // nie mit freiem Dorfzentrum da und stieg nie auf.
     if (zentrum && imZentrum < 2 && dorfbewohner.length + imZentrum < ziel
-      && this.spieler.nahrung >= EINHEITEN.dorfbewohner.kosten.nahrung && !this.ritterzeitBereit()) {
+      && this.spieler.nahrung >= EINHEITEN.dorfbewohner.kosten.nahrung && !this.ritterzeitBereit() && !this.kroneBereit()) {
       this.senden({ auftrag: 'ausbilden', gebaeude: zentrum.id, einheit: 'dorfbewohner' });
     }
 
@@ -513,6 +595,9 @@ class Ki {
     this.feudalzeitPruefen(zentrum, dorfbewohner);
     if (this.ritterTakt === null && this.spieler.zeitalter > 1) this.ritterTakt = welt.takt;
     this.ritterzeitPruefen(zentrum, gebaeude, dorfbewohner);
+    if (this.kroneTakt === null && this.spieler.zeitalter > 2) this.kroneTakt = welt.takt;
+    this.kronePruefen(zentrum, gebaeude, dorfbewohner);
+    this.forschenPruefen(eigene, gebaeude, dorfbewohner);
     this.militaerPruefen(gebaeude, dorfbewohner);
     this.belagerungPruefen(eigene, gebaeude, dorfbewohner);
     this.bauwerkePruefen(gebaeude, dorfbewohner);
@@ -581,7 +666,7 @@ class Ki {
    * das Militaer allein zurueckzuhalten reichte beim Startwert 4.
    */
   ruecklage() {
-    const ruecklage = { ...this.ruecklageRitterzeit() };
+    const ruecklage = { ...this.ruecklageRitterzeit(), ...this.ruecklageKrone() };
     if (this.marktFehlt) ruecklage.holz = (ruecklage.holz || 0) + GEBAEUDE.markt.kosten.holz;
     // Die ersten Karren (ki AC-26): was einer kostet, und solange das Gold
     // dafuer fehlt, dazu die Ware fuer einen Verkauf.
@@ -592,6 +677,8 @@ class Ki {
     for (const [r, menge] of Object.entries(this.belagerungFehlt || {})) ruecklage[r] = (ruecklage[r] || 0) + menge;
     // Ein Lager, zu dem viele weit laufen (ki AC-38).
     for (const [r, menge] of Object.entries(this.lagerFehlt || {})) ruecklage[r] = (ruecklage[r] || 0) + menge;
+    // Die erste Verbesserung des Militaers (ki AC-35).
+    for (const [r, menge] of Object.entries(this.forschungFehlt || {})) ruecklage[r] = (ruecklage[r] || 0) + menge;
     return ruecklage;
   }
 
@@ -614,6 +701,73 @@ class Ki {
     return AUFSTIEGE.ritterzeit.kosten;
   }
 
+  /** Die Dorfbewohner, die leben - fuer Ruecklage und Krone (ki AC-39). */
+  dorfZahl() {
+    let n = 0;
+    for (const e of this.welt.einheiten.values()) if (e.besitzer === this.spielerId && e.art === 'dorfbewohner' && !e.tot) n += 1;
+    return n;
+  }
+
+  /**
+   * Gespart wird fuer die Krone (ki AC-39) wie fuer die Ritterzeit: nach dem
+   * ersten Aufbruch, und erst mit dem vollen Dorf des Fuerstentums
+   * (`KRONE_DORF`) - vorher gingen 1800 Rohstoffe am Militaer und an den
+   * Dorfbewohnern vorbei. Bestellt ist bezahlt.
+   */
+  ruecklageKrone() {
+    if (this.spieler.zeitalter !== 2 || this.angriffTakt === null || !this.kroneZeit()) return {};
+    if (this.dorfZahl() < KRONE_DORF) return {};
+    for (const g of this.welt.gebaeude.values()) {
+      if (g.besitzer === this.spielerId && g.schlange.includes('imperialzeit')) return {};
+    }
+    return AUFSTIEGE.imperialzeit.kosten;
+  }
+
+  /**
+   * Der Aufstieg in die Krone (ki AC-39): im Fuerstentum, nach dem ersten
+   * Aufbruch, mit `KRONE_DORF` Dorfbewohnern, einer Burg oder zwei fertigen
+   * Gebaeuden des Fuerstentums, freiem Dorfzentrum und bezahlt. Fehlt beides,
+   * baut sie `KRONE_GEBAEUDE` - die Burg baut sie ohnehin (ki AC-33), die
+   * Werkstatt fuer die Rammen (ki AC-23) auch. Die Voraussetzung prueft der
+   * Server noch einmal (bauen AC-47).
+   */
+  kronePruefen(zentrum, gebaeude, dorfbewohner) {
+    const spieler = this.spieler;
+    if (!zentrum || spieler.zeitalter !== 2 || this.angriffTakt === null || !this.kroneZeit()) return;
+    if (dorfbewohner.length < KRONE_DORF) return;
+    const aufstieg = AUFSTIEGE.imperialzeit;
+    const stattdessen = gebaeude.some((g) => g.fertig && g.art === aufstieg.oder?.art);
+    if (!stattdessen && this.welt.gebaeudeDerZeit(spieler) < aufstieg.voraussetzung) {
+      const derZeit = gebaeude.filter((g) => this.welt.gebaeudeZeitalter(g.art) === 2 && GEBAEUDE[g.art].zumAufstieg !== false);
+      if (derZeit.length < aufstieg.voraussetzung && !derZeit.some((g) => g.art === KRONE_GEBAEUDE)) {
+        this.bauen(KRONE_GEBAEUDE, this.platzBeiBasis(KRONE_GEBAEUDE), dorfbewohner);
+      }
+      return;
+    }
+    if (zentrum.schlange.length) return;
+    if (!this.kroneBereit()) return;
+    this.senden({ auftrag: 'ausbilden', gebaeude: zentrum.id, einheit: 'imperialzeit' });
+  }
+
+  /** Ob die Spielzeit fuer die Krone reicht (`KRONE_AB_MINUTE`). */
+  kroneZeit() {
+    return this.welt.takt >= KRONE_AB_MINUTE * 60 * TAKTE_PRO_SEKUNDE;
+  }
+
+  /** Alles fuer die Krone da: nach dem ersten Aufbruch, volles Dorf, bezahlt, Burg oder zwei Gebaeude des Fuerstentums. */
+  kroneBereit() {
+    const spieler = this.spieler;
+    if (spieler.zeitalter !== 2 || this.angriffTakt === null || !this.kroneZeit()) return false;
+    const aufstieg = AUFSTIEGE.imperialzeit;
+    if (Object.entries(aufstieg.kosten).some(([r, menge]) => spieler[r] < menge)) return false;
+    if (this.dorfZahl() < KRONE_DORF) return false;
+    if (this.welt.gebaeudeDerZeit(spieler) >= aufstieg.voraussetzung) return true;
+    for (const g of this.welt.gebaeude.values()) {
+      if (g.besitzer === this.spielerId && g.fertig && g.art === aufstieg.oder?.art) return true;
+    }
+    return false;
+  }
+
   /**
    * Der Aufstieg in die Ritterzeit (ki AC-21): zwei fertige Gebaeude der
    * Feudalzeit, das Dorfzentrum frei, 800 Nahrung und 200 Gold. Fehlt das
@@ -632,6 +786,142 @@ class Ki {
     if (zentrum.schlange.length) return;
     if (!this.ritterzeitBereit()) return;
     this.senden({ auftrag: 'ausbilden', gebaeude: zentrum.id, einheit: 'ritterzeit' });
+  }
+
+  /**
+   * Eine Verbesserung bestellen (ki AC-35): die erste aus `forschungen()`,
+   * die nach Ruecklage und `FORSCHEN_PUFFER` bezahlt ist. Nicht vor dem
+   * ersten Aufbruch, nicht solange das Heer auf Rammen wartet (ki AC-23)
+   * und nicht, solange dem Handel Markt oder Karren fehlen (ki AC-26) - die
+   * Ruecklage fuer Aufstieg, Markt, Karren und Rammen gibt sie dafuer nicht
+   * aus. Hoechstens eine Bestellung je Entscheidung. Mit der Ruecklage
+   * allein reichte es beim Handel nicht: der Karren wird nach dem Forschen
+   * entschieden und gegen den ganzen Vorrat bezahlt, und mit leerem Gold
+   * brachte der Handel in drei von acht Partien keine 90 Gold mehr.
+   */
+  forschenPruefen(eigene, gebaeude, dorfbewohner) {
+    this.forschungFehlt = null;
+    if (this.angriffTakt === null || this.belagerungFehlt || this.marktFehlt || this.karrenFehlt) return;
+    // Ist das Gold wirklich knapp, wartet sie, bis der Handel laeuft - auch
+    // zwischen dem ersten und dem zweiten Markt, wenn nichts mehr fehlt als
+    // die Baustelle. Wer nur aus Neigung frueh handelt, forscht weiter.
+    if (this.handelSeit !== null && this.goldInReichweite() < GOLD_KNAPP && !this.handelLaeuft(eigene)) return;
+    const laufend = gebaeude.reduce((n, g) => n + g.schlange.filter((a) => VERBESSERUNGEN[a]).length, 0);
+    if (laufend >= FORSCHEN_ZUGLEICH) return;
+    const takt = this.welt.takt;
+    const liste = this.forschungen(eigene, gebaeude, dorfbewohner)
+      .filter((k) => !(this.forschungZurueck.get(k.name) > takt));
+    const ruecklage = this.ruecklage();
+    const vorrat = (r) => this.spieler[r] - (ruecklage[r] || 0);
+    for (const [i, k] of liste.entries()) {
+      // Die erste des Militaers braucht keinen Puffer - fuer sie liegt zurueck.
+      const puffer = i === 0 && k.gruppe <= 1 ? 0 : FORSCHEN_PUFFER;
+      const kosten = this.welt.auftragKosten(this.spielerId, k.name);
+      if (Object.entries(kosten).some(([r, menge]) => vorrat(r) < menge + puffer)) continue;
+      this.senden({ auftrag: 'ausbilden', gebaeude: k.gebaeude.id, einheit: k.name });
+      this.forschungWartet = null;
+      return;
+    }
+    // Nichts bezahlt: fuer die erste des Militaers wird zurueckgelegt, solange
+    // keine laeuft - hoechstens `FORSCHEN_WARTEN` Sekunden, dann steht sie
+    // `FORSCHEN_ZURUECK` Sekunden zurueck. Ohne Ruecklage nahm das Militaer
+    // jede Ladung, und mehr als die Haelfte der KIs forschte nie.
+    const erste = liste[0];
+    if (!erste || erste.gruppe > 1 || laufend) return;
+    if (this.forschungWartet?.name !== erste.name) this.forschungWartet = { name: erste.name, seit: takt };
+    if (takt - this.forschungWartet.seit > FORSCHEN_WARTEN * TAKTE_PRO_SEKUNDE) {
+      this.forschungZurueck.set(erste.name, takt + FORSCHEN_ZURUECK * TAKTE_PRO_SEKUNDE);
+      this.forschungWartet = null;
+      return;
+    }
+    this.forschungFehlt = this.welt.auftragKosten(this.spielerId, erste.name);
+  }
+
+  /**
+   * Was sie jetzt erforschen wuerde, in ihrer Reihenfolge (ki AC-35): je
+   * Verbesserung `{ name, gebaeude, gruppe, wert }` - Gruppe 0 nuetzt dem
+   * Schwerpunkt, 1 dem Militaer, 2 der Wirtschaft; innerhalb der Gruppe
+   * zuerst, was am meisten trifft. Nur was Zeitalter und Haus erlauben,
+   * dessen `vorstufe` erforscht ist und das noch nirgends eingereiht ist,
+   * und nur in einem Gebaeude, in dem keine Verbesserung steht. Ein
+   * Gebaeude, das Dorfbewohner ausbildet, forscht erst, wenn ihr Ziel an
+   * Dorfbewohnern steht, seine Schlange leer ist und kein Aufstieg ansteht -
+   * sonst stuende dort der Ersatz oder der Aufstieg hinter der Verbesserung.
+   */
+  forschungen(eigene, gebaeude, dorfbewohner) {
+    const spieler = this.spieler;
+    const welt = this.welt;
+    const erforscht = new Set(spieler.verbesserungen);
+    const eingereiht = new Set(gebaeude.flatMap((g) => g.schlange));
+    const { schwerpunkt } = this.neigung;
+    // Was sie haelt und was schon in ihren Schlangen steht, nach Art.
+    const arten = new Map();
+    for (const e of eigene) if (!e.tot) arten.set(e.art, (arten.get(e.art) || 0) + 1);
+    for (const g of gebaeude) for (const a of g.schlange) if (EINHEITEN[a]) arten.set(a, (arten.get(a) || 0) + 1);
+    // Wie viele Kampfeinheiten ein Schluessel trifft - ihre Art oder eine Klasse.
+    const trifft = (schluessel) => {
+      let n = 0;
+      for (const [art, zahl] of arten) {
+        const w = EINHEITEN[art];
+        if (art === 'dorfbewohner' || w.nurGebaeude) continue;
+        if (art === schluessel || (w.klassen || []).includes(schluessel)) n += zahl;
+      }
+      return n;
+    };
+    const rollen = this.rollen(dorfbewohner);
+    const fertig = (art) => gebaeude.filter((g) => g.art === art && g.fertig).length;
+    const dorfVoll = dorfbewohner.length >= zielDorfbewohner(spieler.zeitalter);
+    const aufstiegSteht = Object.keys(this.ruecklageRitterzeit()).length > 0 || Object.keys(this.ruecklageKrone()).length > 0;
+    const liste = new Map();
+    for (const g of gebaeude) {
+      if (!g.fertig || g.schlange.some((a) => VERBESSERUNGEN[a])) continue;
+      const bildet = GEBAEUDE[g.art].bildetAus || [];
+      if (bildet.includes('dorfbewohner') && (!dorfVoll || aufstiegSteht || g.schlange.length)) continue;
+      for (const name of bildet) {
+        const v = VERBESSERUNGEN[name];
+        if (!v || erforscht.has(name) || eingereiht.has(name)) continue;
+        if ((v.zeitalter || 0) > spieler.zeitalter || !welt.hausBildetAus(spieler, name)) continue;
+        if (v.vorstufe && !erforscht.has(v.vorstufe)) continue;
+        let gruppe = null;
+        let wert = 0;
+        if (v.wandelt) {
+          // Eine Stufe: nur die naechste einer Einheit, die sie hier ausbildet.
+          for (const von of Object.keys(v.wandelt)) {
+            let grund = von;
+            while (EINHEITEN[grund]?.stufeVon) grund = EINHEITEN[grund].stufeVon;
+            if (!bildet.includes(grund) || !this.bildetAus(grund) || welt.einheitenStufe(spieler, grund) !== von) continue;
+            wert = Math.max(wert, arten.get(von) || 0);
+          }
+          // Eine Stufe tauscht jede Einheit der Linie aus, auch jede kuenftige -
+          // sie zaehlt `FORSCHEN_STUFE`-fach gegen eine Verbesserung der Schmiede.
+          if (g.art === schwerpunkt && wert >= 1) gruppe = 0;
+          else if (wert >= 1) gruppe = 1;
+          wert *= FORSCHEN_STUFE;
+        } else if (v.bauwerk) {
+          for (const art of Object.keys(v.bauwerk)) if (art === schwerpunkt) wert = Math.max(wert, fertig(art));
+          if (wert >= 1) gruppe = 0;
+        } else {
+          const schluessel = [...Object.keys(v.wirkung || {}), ...Object.keys(v.bonus || {}), ...Object.keys(v.bonusAnteil || {})]
+            .filter((k) => k !== 'dorfbewohner');
+          wert = Math.max(0, ...schluessel.map(trifft));
+          if (wert >= FORSCHEN_MINDESTENS) gruppe = 1;
+          else {
+            // Die Wirtschaft: woran ihre Dorfbewohner arbeiten.
+            const tragen = v.wirkung?.dorfbewohner?.tragkraft ? dorfbewohner.length : 0;
+            const sammeln = Math.max(0, ...Object.keys(v.sammeln || {}).map((r) => rollen[r] || 0));
+            const farm = v.farm ? fertig('farm') : 0;
+            wert = Math.max(tragen, sammeln, farm);
+            if (wert >= FORSCHEN_ARBEITER) gruppe = 2;
+          }
+        }
+        if (gruppe === null) continue;
+        // Steht dasselbe Gebaeude mehrfach, das mit der kuerzesten Schlange.
+        const da = liste.get(name);
+        if (da && da.gebaeude.schlange.length <= g.schlange.length) continue;
+        liste.set(name, { name, gebaeude: g, gruppe, wert });
+      }
+    }
+    return [...liste.values()].sort((a, b) => a.gruppe - b.gruppe || b.wert - a.wert);
   }
 
   /** Alles fuer die Ritterzeit da: nach dem ersten Angriff, bezahlt, zwei fertige Gebaeude der Feudalzeit. */
@@ -1019,13 +1309,17 @@ class Ki {
     const rammen = eigene.filter((e) => !e.tot && this.belagert(e));
     this.wahrnehmen();
     if (!kampf.length && !rammen.length) return;
-    const gegner = this.naechsterGegner();
-    this.rammenFuehren(rammen, kampf, gegner);
+    // Steht ein fertiges Wunder eines Gegners (ki AC-40), ist sein Besitzer
+    // der Gegner und das Wunder das Ziel - die Ansage kennt jeder.
+    const wunder = this.fremdesWunder();
+    const gegner = wunder ? this.welt.spielerVon(wunder.besitzer) : this.naechsterGegner();
+    this.rammenFuehren(rammen, kampf, gegner, wunder);
     if (!kampf.length) return;
     // Keinen Gegner gesehen (ki AC-13): das Heer erkundet selbst, im
     // Angriffslauf zum naechsten nie gesehenen Punkt des Rings - sonst stuende
     // es, wenn der Spaeher gefallen ist, fuer immer daheim.
-    const ziel = gegner ? this.gegnerZiel(gegner) : this.erkundungspunkt(this.spieler.basis);
+    const ziel = wunder ? { x: wunder.x, y: wunder.y }
+      : gegner ? this.gegnerZiel(gegner) : this.erkundungspunkt(this.spieler.basis);
     if (!ziel) return;
 
     // Nachsetzen: wer steht, geht auf das Ziel. Nicht `untaetig()` - das
@@ -1079,7 +1373,12 @@ class Ki {
         const frei = (z) => !this.gesperrt(ZIEL + z.id);
         const einheit = naechstes(e, seineEinheiten.filter(frei));
         const bau = naechstes(e, seineGebaeude.filter(frei));
-        const treffer = einheit && (!bau || einheit.d <= bau.d + 6) ? einheit.z : bau?.z;
+        // Vor einem Wunder (ki AC-40) auf das Wunder - auf eine Einheit nur,
+        // wenn sie dicht daneben steht: sonst jagte das Heer seine Verteidiger
+        // ueber die Karte, waehrend die Uhr ablaeuft.
+        const treffer = wunder
+          ? (einheit && einheit.d <= WUNDER_EINHEIT_NAH ? einheit.z : wunder)
+          : einheit && (!bau || einheit.d <= bau.d + 6) ? einheit.z : bau?.z;
         const weiter = treffer ? null : suchen();
         this.senden({ auftrag: 'befehl', einheiten: [e.id], ziel: treffer ? { x: Math.round(treffer.x), y: Math.round(treffer.y) } : { x: weiter.x, y: weiter.y } });
         if (treffer) this.heerZiel.set(e.id, { id: treffer.id, takt: this.welt.takt });
@@ -1090,13 +1389,21 @@ class Ki {
     // so wacht die Wache dort, wo das Dorf ist.
     const daheim = kampf.filter((e) => !this.heer.has(e.id));
     // Ueberlegen (ki AC-18), zieht los, wer daheim ist - bis auf die Wache.
-    const alle = this.ueberlegen();
+    // Gegen ein Wunder (ki AC-40) wie ueberlegen: alle bis auf die Wache,
+    // sofort, und ohne auf ein groesseres Heer oder Rammen zu warten - die
+    // Uhr laeuft.
+    const ueberlegen = this.ueberlegen();
+    const alle = Boolean(wunder) || ueberlegen;
+    // Nachschub zum Wunder aber nicht zu zweit: wer nicht ueberlegen ist,
+    // sammelt ein ganzes Heer - Paar um Paar fiel sonst auf dem Weg vor dem
+    // Heer, das das Wunder deckt (Startwert 8, Probe: keiner kam an).
+    const troepfeln = alle && !(wunder && !ueberlegen);
     // Gegen eine Befestigung, die schiesst, ein groesseres Heer (ki AC-23):
     // je acht fielen sonst Welle um Welle unter der Burg.
     // Auch wer ueberlegen ist, troepfelt dann nicht zu zweit nach: unter einer
     // Burg zaehlt nicht, wie viele Kaempfer der Gegner noch hat.
-    const befestigt = this.befestigt(gegner);
-    const heer = befestigt ? HEER_BEFESTIGT : HEER;
+    const befestigt = !wunder && this.befestigt(gegner);
+    const heer = befestigt || !troepfeln && wunder ? HEER_BEFESTIGT : HEER;
     const jetzt = this.welt.takt;
     // Ein Zug, dessen Rammen gefallen sind oder der zu lange wartet, ist
     // vorbei - die Rammen fuehrt dann `rammenFuehren` heim oder ans Ziel.
@@ -1106,7 +1413,7 @@ class Ki {
     // Das Warten auf Rammen laeuft ab, auch wenn das Heer inzwischen
     // geschrumpft ist - sonst laege die Ruecklage fuer immer.
     const abgelaufen = this.rammeWartet !== null && jetzt - this.rammeWartet >= RAMME_WARTEN_SEKUNDEN * TAKTE_PRO_SEKUNDE;
-    if (daheim.length < (this.zug || (alle && !befestigt) ? WACHE + MARSCH_MINDESTENS : heer + WACHE)) {
+    if (daheim.length < (this.zug || (troepfeln && !befestigt) ? WACHE + MARSCH_MINDESTENS : heer + WACHE)) {
       if (abgelaufen) this.rammeWartet = null;
       return;
     }
@@ -1186,7 +1493,7 @@ class Ki {
    * Heer niemand mehr draussen, kehren sie um und warten auf den naechsten
    * Zug.
    */
-  rammenFuehren(rammen, kampf, gegner) {
+  rammenFuehren(rammen, kampf, gegner, wunder = null) {
     if (this.zug) return;
     const stehend = rammen.filter((e) => this.heer.has(e.id) && !e.auftrag && !e.weg.length);
     if (!stehend.length) return;
@@ -1206,7 +1513,9 @@ class Ki {
     const schiessend = bauten.filter((g) => SCHIESSENDE.has(g.art));
     const draussen = kampf.filter((e) => this.heer.has(e.id));
     for (const e of stehend) {
-      const ziel = (naechstes(e, schiessend) || naechstes(e, bauten))?.z;
+      // Vor einem Wunder (ki AC-40) gehen die Rammen darauf, nicht auf das,
+      // was schiesst.
+      const ziel = wunder || (naechstes(e, schiessend) || naechstes(e, bauten))?.z;
       if (!ziel) continue;
       const weit = Math.hypot(ziel.x - e.x, ziel.y - e.y);
       if (!draussen.some((k) => Math.hypot(ziel.x - k.x, ziel.y - k.y) <= weit + RAMME_HINTER)) continue;
@@ -1275,6 +1584,24 @@ class Ki {
       }
     }
     return gegner;
+  }
+
+  /**
+   * Das fertige Wunder eines Gegners (ki AC-40), das als erstes reif wird -
+   * oder `null`. Gelesen aus der Ansage, die jeder hat (`welt.wunderFeld`,
+   * spielziel AC-29), auch im Nebel; dorthin zielt sie wie auf ein
+   * gesehenes Gebaeude (`gesehen`), sonst fiele es beim Hinsehen nicht auf.
+   */
+  fremdesWunder() {
+    let bestes = null;
+    for (const { gebaeude: g, rest } of this.welt.wunderUhren()) {
+      if (!this.welt.feindlich(this.spielerId, g.besitzer) || this.welt.spielerVon(g.besitzer)?.aus) continue;
+      if (!bestes || rest < bestes.rest) bestes = { g, rest };
+    }
+    if (!bestes) return null;
+    const { g } = bestes;
+    if (!this.gesehen.has(g.id)) this.gesehen.set(g.id, { id: g.id, art: g.art, x: g.x, y: g.y, besitzer: g.besitzer });
+    return this.gesehen.get(g.id);
   }
 
   // Worauf das Heer zielt: das Dorfzentrum des Gegners, sonst irgendein
@@ -1877,7 +2204,16 @@ class Ki {
   unterwegs(einheit) {
     if (einheit.weg.length) return true;
     const a = einheit.auftrag;
-    if (a?.art === 'sammeln') return Math.hypot(einheit.x - a.feld.x, einheit.y - a.feld.y) <= 1.9;
+    // Gesammelt wird vom eigenen Platz aus (einheiten AC-30): wer neben dem
+    // Baum steht, aber nicht auf seinem Platz, und keinen Weg dorthin hat,
+    // ist nicht angekommen - die Welt gibt den Auftrag im naechsten Takt
+    // auf. Galt er nach dem Abstand als da, schickte die KI ihn alle fuenf
+    // Takte an denselben Baum (Startwert 19, Minute 28: 22,5 s untaetig,
+    // ki AC-10). Ohne Platz bleibt es beim Abstand.
+    if (a?.art === 'sammeln') {
+      if (a.stand) return einheit.x === a.stand.x && einheit.y === a.stand.y;
+      return Math.hypot(einheit.x - a.feld.x, einheit.y - a.feld.y) <= 1.9;
+    }
     if (a?.art === 'tier') {
       const tier = this.welt.tiere.get(a.tier);
       return Boolean(tier) && Math.hypot(einheit.x - tier.x, einheit.y - tier.y) <= 1.5;
@@ -2223,7 +2559,7 @@ class Ki {
     this.marktFehlt = false;
     this.karrenFehlt = false;
     if (!maerkte.length) {
-      this.marktBauen(() => this.platzBeiBasis('markt'), dorfbewohner, 1);
+      this.marktBauen(() => this.marktplatzDaheim(), dorfbewohner, 1);
       return;
     }
     const { basis } = spieler;
@@ -2328,13 +2664,34 @@ class Ki {
    * deren Punkt am weitesten von jedem gegnerischen Dorf liegt - von dem,
    * das sie kennt (ki AC-13): wo sie zuletzt etwas von ihm sah (`feindOrt`).
    */
-  fernerMarktplatz(heimat) {
-    const { karte } = this.welt;
+  // Wo sie die Doerfer ihrer Gegner gesehen hat, die noch spielen.
+  gegnerOrte() {
     this.wahrnehmen();
-    const gegner = [...this.feindOrt].filter(([id]) => {
+    return [...this.feindOrt].filter(([id]) => {
       const s = this.welt.spielerVon(id);
       return s && !s.aus && this.welt.feindlich(this.spielerId, id);
     }).map(([, ort]) => ort);
+  }
+
+  // Der erste Markt steht am Dorf, auf der Seite, die vom Gegner abgewandt
+  // ist (ki AC-26): zum Gegner hin stand er beim Startwert 2 zehn Felder vor
+  // dem Dorf, seine zwei Bauer fielen einem Streifzug, und mit Feinden in
+  // der Naehe schickt sie keinen Ersatz (`BAUSTELLE_FEIND_FERN`) - zehn
+  // Minuten ohne Markt, ohne Gold, ohne Karren. Findet sie dort keinen
+  // Platz, nimmt sie jeden am Dorf.
+  marktplatzDaheim() {
+    const gegner = this.gegnerOrte();
+    if (!gegner.length) return this.platzBeiBasis('markt');
+    const { basis } = this.spieler;
+    const fern = (x, y) => Math.min(...gegner.map((o) => Math.hypot(x - o.x, y - o.y)));
+    const grenze = fern(basis.x, basis.y);
+    const taugt = (x, y) => fern(x, y) >= grenze;
+    return this.platzBei('markt', basis, 4, taugt) || this.platzBei('markt', basis, 4 + PLATZ_RINGE, taugt) || this.platzBeiBasis('markt');
+  }
+
+  fernerMarktplatz(heimat) {
+    const { karte } = this.welt;
+    const gegner = this.gegnerOrte();
     for (const d of HANDEL_ABSTAENDE) {
       const punkte = [];
       for (let i = 0; i < 16; i++) {
@@ -2476,11 +2833,12 @@ class Ki {
 }
 
 module.exports = {
-  Ki, ENTSCHEIDEN_ALLE, ZIEL_DORFBEWOHNER, DORFBEWOHNER_JE_ZEITALTER, zielDorfbewohner, FEUDALZEIT_NAHRUNG, AN_SCHAFEN, AN_BEEREN, MILITAER,
+  Ki, ENTSCHEIDEN_ALLE, ZIEL_DORFBEWOHNER, DORFBEWOHNER_JE_ZEITALTER, zielDorfbewohner, KRONE_DORF, KRONE_GEBAEUDE, KRONE_AB_MINUTE, FEUDALZEIT_NAHRUNG, AN_SCHAFEN, AN_BEEREN, MILITAER,
   HEER, WACHE, UEBERLEGEN, MARSCH_MINDESTENS, HEER_ABSTAND, WACHE_NAH, FEIND_FERN, STURM_UMKREIS, STURM_HOECHSTENS, STURM_FEINDE, STURM_SEKUNDEN, STURM_LEINE, STURM_SCHWACH, VERGEBEN_ABSTAND, MILITAER_HOLZ, UEBERSCHUSS, MANGEL, UMVERTEILEN_SEKUNDEN, UNERREICHBAR_SEKUNDEN, MILITAER_HOECHSTENS, MILITAER_JE_ZEITALTER, plan,
   MILITAER_UEBERFLUSS_AB, MILITAER_UEBERFLUSS_HOLZ, MILITAER_UEBERFLUSS_KAMPF, MILITAER_ALLERHOECHSTENS,
   GOLD_KNAPP, PLATZ_RINGE, KARREN, HANDEL_ABSTAENDE, HANDEL_MINDESTENS, VERKAUF_RUECKLAGE, KARREN_WARTEN_SEKUNDEN, FEIND_VERGESSEN,
   WERKSTATT, RAMME, RAMMEN, RAMMEN_MIT, HEER_BEFESTIGT, SAMMEL_ABSTAND, RAMME_WARTEN_SEKUNDEN, ZUG_WARTEN_SEKUNDEN, HANDEL_VOR,
   FESTUNG, BURGEN_JE_ZEITALTER, BURG_ABSTAND_SEKUNDEN, BURG_STEINSAMMLER, BURG_VOR, BURG_BAUER,
   FARM_WEIT, MUEHLE_RAUM, LAGER_AB, LAGER_ARBEITER, LAGER_ANTEIL, LAGER_RUECKLAGE, ANMARSCH,
+  FORSCHEN_ZUGLEICH, FORSCHEN_PUFFER, FORSCHEN_MINDESTENS, FORSCHEN_ARBEITER, FORSCHEN_STUFE, FORSCHEN_WARTEN, FORSCHEN_ZURUECK,
 };

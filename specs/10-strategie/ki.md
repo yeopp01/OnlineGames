@@ -2,7 +2,7 @@
 
 **Bereich:** Strategie
 **Kuerzel:** ki
-**Stand:** 33/40 fertig · 7 offen
+**Stand:** 36/40 fertig · 4 offen
 
 ## Zweck
 
@@ -78,7 +78,14 @@ nicht die Regeln.
   40 Feldern abschneidet, wird verworfen (`ki.sperrtEin`). Beim Startwert 12
   schloss eine Mühle zwei Holzfäller in eine Lücke am Waldrand ein, 346 s
   bis zum Ende; dieselbe Lücke schloss vorher ein Holzfällerlager, an dem
-  sie neben sich abliefern konnten — deshalb fiel es nie auf.
+  sie neben sich abliefern konnten — deshalb fiel es nie auf. **Seit dem
+  2026-11-22** gilt ein Sammler erst als angekommen, wenn er auf seinem
+  Standplatz steht ([Einheiten](einheiten-und-befehle.md) AC-30), nicht
+  schon in 1,9 Feldern Abstand: beim Startwert 19 stand ein Dorfbewohner
+  neben dem Baum, zu seinem Platz führte kein Weg, die Welt gab den Auftrag
+  auf, und die KI schickte ihn alle fünf Takte an denselben Baum, ohne ihn
+  zu sperren — 22,5 s untätig in Minute 28. Jetzt wird der Baum gesperrt,
+  und er nimmt einen anderen.
 
 ### Kampf und Partieende (Stufe C)
 
@@ -365,6 +372,16 @@ nicht die Regeln.
   von Minute 56 bis 85 keinen Platz für den Markt, hatte bis Minute 90
   einen Karren und keine Ramme. Vorher, auf dem vereinten Stand: 2 von 40
   Nebelpartien ohne Sieger; danach keine (siehe AC-23).
+  **Seit 2026-11-22 (mit AC-35):** der erste Markt steht am Dorf **auf der
+  Seite, die vom Gegner abgewandt ist** (`ki.marktplatzDaheim`, nur Plätze,
+  die mindestens so weit vom nächsten gesehenen gegnerischen Dorf liegen
+  wie das eigene Dorfzentrum). Anlass war Startwert 2: der Markt stand zehn
+  Felder zum Gegner hin, sein Bauer fiel, und weil Feinde in der Nähe
+  waren, kam kein zweiter (`BAUSTELLE_FEIND_FERN`) — 54 statt 607 Gold.
+  Danach 438. Dazu eine Regel der Welt (einheiten AC-40): liegt das
+  nächste Randfeld des Zielmarkts hinter Wald, fährt der Karren an das
+  nächste erreichbare am Markt, statt stehenzubleiben (Startwert 3: 217
+  statt 21 Gold).
 
 - **AC-33** `fertig` **Die KI baut Burgen** — Im Fürstentum baut die KI
   eine Burg, sobald ihr erstes Heer aufgebrochen ist: sechs Felder vor ihrem
@@ -392,9 +409,10 @@ nicht die Regeln.
   bis 40 und über 41 bis 80 je eine Partie ohne Sieger, und zu viert
   endete Startwert 7 nicht vor Minute 90 (fahrplan AC-24) — siehe Lücke
   bei AC-23. Auch eine zweite erst zwanzig Minuten nach der ersten ließ
-  Startwert 14 ohne Sieger und zu viert Startwert 5. **Die KI steigt bis heute nicht in die Krone auf** (Stufe
-  F): die zweite und dritte Burg baut sie deshalb in keiner ganzen Partie,
-  belegt sind sie nur in der gebauten Lage.
+  Startwert 14 ohne Sieger und zu viert Startwert 5. **Seit AC-39 (2026-11-22) steigt die KI in die Krone
+  auf**, nicht vor Spielminute 40 — früher bauten zweite und dritte Burg
+  die Partien zu lang (199 statt 139 Burgen in 120 Partien); mit der
+  Schwelle 154 Burgen bei 138 KIs.
   Angelegt am 2026-11-13 (Benutzer: „Und ki muss auch burgen bauen,
   definitiv"); die Spezialeinheit aus der Burg bleibt AC-28.
   **Nachgezogen am 2026-11-13 mit den Truppenstufen:** „der Handel geht
@@ -526,7 +544,7 @@ nicht die Regeln.
   wieder. **Rückmeldung des Benutzers:** „ich greife früh immer mit dem
   Späher die KI an und kann immer gleich 2 dorfbewohner töten, da muss sie
   gleich konsequent mit den dorfbewohnern auf den späher draufgehn".
-- **AC-35** `offen` **Die KI forscht** — Bis zu den Truppenstufen
+- **AC-35** `fertig` **Die KI forscht** — Bis zu den Truppenstufen
   (einheiten AC-58 bis AC-62, bauen AC-38, AC-39) erforscht die KI nichts:
   sie bildet im Fürstentum die Einheiten des Lehens aus und ist jedem
   Menschen unterlegen, der einmal in die Schmiede geht. Die KI erforscht,
@@ -549,6 +567,41 @@ nicht die Regeln.
   Angelegt am 2026-11-13 (Benutzer: direkt nach den Truppenstufen, die
   vorher auf den Server gehen). Die Grenzen „drei" und „zehn Minuten" sind
   Startwerte und werden beim Bauen gemessen.
+  **Gebaut am 2026-11-22** als `ki.forschenPruefen` und `ki.forschungen`:
+  Gruppe 0 die Stufe der Schwerpunkt-Einheit (bei Wehrstein der Wehrturm),
+  Gruppe 1 jede andere Stufe einer Einheit, die sie ausbildet, und jede
+  Verbesserung, deren Wirkung eine Art oder Klasse trifft, von der sie mindestens drei hält
+  (`FORSCHEN_MINDESTENS`), Gruppe 2 die Wirtschaft ab vier Arbeitern
+  (`FORSCHEN_ARBEITER`); eine Stufe zählt doppelt (`FORSCHEN_STUFE`).
+  Höchstens zwei zugleich, in verschiedenen Gebäuden; das Dorfzentrum
+  forscht nur bei vollem Dorf und leerer Schlange. Für die erste des
+  Militärs liegt der Preis zurück (`forschungFehlt` in der Rücklage),
+  höchstens 90 Sekunden, dann steht sie 180 zurück; jede weitere braucht
+  100 über ihrem Preis (`FORSCHEN_PUFFER`). Alle sechs Zahlen sind gesetzt.
+  **„Lebt" heißt: das Dorf steht** — gezählt bis zur ersten vollen
+  Spielminute mit weniger als der Hälfte der Dorfbewohner, die sie im
+  Fürstentum anstrebt (21 von 42), sonst bis zum Ende. Eine KI, die im Lehen
+  überrannt wurde und mit dem schon bezahlten Aufstieg ins Fürstentum kommt,
+  hält formal noch Einheiten, aber nichts, das sie bezahlen könnte (Startwert
+  94: Wehrstein mit 15 Dorfbewohnern ins Fürstentum, 5 Gold, zehn Minuten
+  später kein Heer). Diese Grenze ist gesetzt. Gemessen über 120
+  Startwerte statt vierzig (`tests/partien/ki-im-nebel.test.mjs`): 140 KIs
+  gezählt, im Schnitt 14,9 Verbesserungen und 3,5 Truppenstufen, keine
+  unter der Grenze. Über sechzig Startwerte im Duell, je Startwert beide
+  Seiten, gewann die forschende KI 80 von 120 Partien (gemessen vor den
+  Regeln zum Handel unten). Nebel 112 vor Minute 60 (vorher 111), Median
+  38,4 (39,4), alle mit Sieger; zu viert alle vor Minute 90.
+  **Forschen kostet das Gold für den Handel** — gefunden an AC-26, das mit
+  dem ersten Entwurf riss (Gold in 14 Minuten bei den Startwerten 2, 3, 6
+  und 8: 54, 21, 17 und 30 statt 607, 344, 51 und 228). Deshalb forscht
+  sie nicht, solange ein Markt oder der nächste Karren fehlt, und nicht,
+  solange das Gold in Reichweite knapp ist und noch keine vier Karren
+  fahren; wer aus Neigung handelt (Silberfurt), forscht bei vollem Gold
+  weiter. Mit den zwei Regeln bei AC-26 (Markt vom Gegner weg, Karren am
+  verstellten Randfeld) danach: 438, 217, 17 und 30, und AC-26 hält
+  wieder. Startwert 6 und 8 bleiben schwach — bei 6 gewinnt die andere KI
+  in Minute 24,9, bei 8 wird die handelnde überrannt; die Grenze lässt
+  zwei solche Partien zu.
 
 ### Stufe E — Häuser
 
@@ -715,7 +768,7 @@ nicht die Regeln.
 
 ### Stufe F — die Krone (Spec-Runde 2026-11-18)
 
-- **AC-39** `offen` **KI steigt zur Krone auf** — Im Fürstentum, nach ihrem
+- **AC-39** `fertig` **KI steigt zur Krone auf** — Im Fürstentum, nach ihrem
   ersten Aufbruch, mit freiem Dorfzentrum, 42 Dorfbewohnern (AC-24) und
   einer Burg oder zwei Gebäuden des Fürstentums spart sie 1000 Nahrung und
   800 Gold an und steigt auf. Danach gelten die Werte, die schon in den
@@ -725,7 +778,24 @@ nicht die Regeln.
   (fahrplan AC-11) und zu viert halten, und von den Partien, die länger als
   45 Spielminuten dauern, erreicht in mindestens der Hälfte eine KI die
   Krone.
-- **AC-40** `offen` **Die KI geht aufs Wunder** — Steht ein fertiges
+  **Gebaut am 2026-11-22** als `ki.kronePruefen`, `ki.kroneBereit` und
+  `ki.ruecklageKrone`: die zwei Gebäude des Fürstentums ergänzt sie mit
+  einem Kloster (`KRONE_GEBAEUDE`), solange keine Burg steht; ab 42
+  Dorfbewohnern (`KRONE_DORF`, aus AC-24) liegen die Kosten des Aufstiegs
+  aus den Daten in der Rücklage, und das Dorfzentrum bildet keine
+  Dorfbewohner mehr aus, solange der Aufstieg bezahlbar wäre. **Und nicht
+  vor Spielminute 40** (`KRONE_AB_MINUTE`, gesetzt): ohne diese Schwelle
+  stieg sie im Median in Minute 36 auf, baute danach ihre zweite und
+  dritte Burg (AC-33) — 199 statt 139 Burgen in 120 Partien, 800 statt 564
+  Rammen —, und nur 102 Partien endeten vor Minute 60 (Grenze 105); zu
+  viert blieb Startwert 15 ohne Sieger. **Gemessen mit der Schwelle** im
+  Nebel über 120: 109 vor Minute 60, Median 38,4, alle mit Sieger; von 25
+  Partien über 45 Minuten erreicht in 24 eine KI die Krone, 39 KIs
+  insgesamt, im Median ab Minute 47, die erste ab 44; 154 Burgen bei 138
+  KIs. Zu viert alle zwanzig vor Minute 90; ki AC-27 und AC-30 halten
+  (`tests/strategie-ki-krone.test.mjs`, `tests/partien/ki-im-nebel.test.mjs`).
+  Die Stufen der Krone erforscht sie über AC-35 ohne weitere Regel.
+- **AC-40** `fertig` **Die KI geht aufs Wunder** — Steht ein fertiges
   Wunder eines Gegners (die Ansage kennt jeder,
   [Spielziel](spielziel.md) AC-29), ist es das Ziel ihres nächsten
   Aufbruchs, und sie bricht dafür sofort auf, mit allem außer der Wache
@@ -733,6 +803,30 @@ nicht die Regeln.
   Belegt im Prüfstand: einer KI wird im Test ein fertiges Wunder
   hingestellt, und die andere steht vor Ablauf der Uhr davor und schlägt
   darauf ein.
+  **Gebaut am 2026-11-22** als `ki.fremdesWunder` in `ki.heerPruefen`:
+  das Wunder kommt aus `welt.wunderUhren` (die Ansage), sein Besitzer ist
+  der Gegner, wer steht, geht darauf — auf eine Einheit nur, wenn sie
+  höchstens drei Felder entfernt steht (`WUNDER_EINHEIT_NAH`, gesetzt) —,
+  und die Rammen gehen auf das Wunder statt auf das, was schießt. Auf
+  Rammen und ein größeres Heer gegen Türme wartet sie nicht. **Nachschub
+  nicht zu zweit:** wer nicht überlegen ist (AC-18), sammelt zehn
+  (`HEER_BEFESTIGT`) und bricht dann mit allen außer der Wache auf — mit
+  dem Nachschub zu zweit wie bei Überlegenheit fielen die Paare auf dem
+  Weg, und in Startwert 8 kam keiner an. **Im Test**
+  bekommt die KI mit weniger Punkten in Minute 30 das Wunder geschenkt
+  (wer eines baut, hat 3000 Rohstoffe nicht ins Heer gesteckt), über 24
+  Startwerte; gezählt werden die Partien, die bis dahin laufen und nicht
+  vorher mit dem Fall des Besitzers enden. **Gemessen:** in 20 von 22 verliert
+  das Wunder vor Ablauf der Uhr Leben, im Median nach einer halben Minute; in den
+  Startwerten 14 und 15 fielen die Wellen rund 20 Felder vor dem Wunder
+  unter seinem Heer (Probe mit Wellen zu acht). Verlangt sind 85 % (gesetzt). In sechs der 20
+  gewinnt das Wunder trotzdem: angeschlagen ist nicht gefallen. Bekommt
+  stattdessen immer KI 2 das Wunder, auch wenn sie stärker ist, trifft die
+  andere in vier von zehn nicht (Startwerte 1 bis 12 ohne 2 und 6; die vier
+  sind die, in denen KI 2 mehr Punkte hat) — gegen ein stärkeres Heer kommt
+  sie nicht durch. Die KI baut kein Wunder; ob sie
+  es gegen einen Menschen erreicht, ist nicht gemessen
+  (`tests/partien/ki-wunder.test.mjs`).
 
 ## Grenzfaelle
 
