@@ -175,7 +175,7 @@ test('speichern AC-17: ein Stand einer neueren Fassung wird abgelehnt, mit dem S
   abgelehnt(mitFassung(mitten().sichern(), stand.FASSUNG + 1), 'neuer', 'Dieser Spielstand stammt aus einer neueren Fassung des Spiels.');
 });
 
-test('speichern AC-17: ein Stand einer aelteren Fassung wird abgelehnt, nicht halb geladen', () => {
+test('speichern AC-17: ein Stand einer aelteren Fassung ohne Weg dorthin wird abgelehnt, nicht halb geladen', () => {
   abgelehnt(
     mitFassung(mitten().sichern(), stand.FASSUNG - 1),
     'aelter',

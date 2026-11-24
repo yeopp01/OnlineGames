@@ -1464,7 +1464,7 @@
     {
       "spec": "00-plattform/speichern.md",
       "ac": "AC-17",
-      "begruendung": "Die Ablehnung geschieht beim Laden auf dem Server, bevor etwas entpackt wird: ein Stand einer neueren, einer aelteren Fassung, fremde und beschaedigte Bytes werfen einen StandFehler mit dem Satz fuer den Bildschirm, und keine halbe Welt entsteht (tests/strategie-speichern.test.mjs). In Schritt S1 gibt es keine Stelle im Browser, die einen Stand laedt; den Satz zeigt erst die Liste im Vorraum (S3), und dort weist ihn das Bild zu AC-6 nach."
+      "begruendung": "Die Ablehnung geschieht beim Laden auf dem Server, bevor etwas entpackt wird: ein Stand einer neueren Fassung, einer aelteren ohne Weg dorthin (AC-18), fremde und beschaedigte Bytes werfen einen StandFehler mit dem Satz fuer den Bildschirm, und keine halbe Welt entsteht (tests/strategie-speichern.test.mjs). In Schritt S1 gibt es keine Stelle im Browser, die einen Stand laedt; den Satz zeigt erst die Liste im Vorraum (S3), und dort weist ihn das Bild zu AC-6 nach."
     },
     {
       "spec": "00-plattform/speichern.md",
@@ -1475,6 +1475,11 @@
       "spec": "00-plattform/speichern.md",
       "ac": "AC-4",
       "begruendung": "Gesichert wird bei drei Ereignissen auf dem Server: beim Anhalten, wenn der letzte Mensch den Raum verlaesst, und beim Herunterfahren (SIGTERM und SIGINT rufen raeume.allesSichern()). Belegt im Rechenteil an den Takten der abgelegten Staende und gegen den echten Server, der nach dem Herunterfahren auf derselben Datenbank neu startet und den Stand mit genau dem Takt beim Herunterfahren oeffnet (tests/speichern-ablage.test.mjs). Ein Herunterfahren hat keinen Bildschirm, und die Pause im Bild weist schon speichern AC-19 nach - das Sichern dabei ist eine Zeile in der Datenbank."
+    },
+    {
+      "spec": "00-plattform/speichern.md",
+      "ac": "AC-18",
+      "begruendung": "Hochziehen geschieht beim Laden auf dem Server, zwischen Entpacken und Aufbau der Welt: SCHRITTE in stand.js macht den Inhalt einer alten Fassung Schritt fuer Schritt zu dem der laufenden. Belegt an eingecheckten Probestaenden je Fassung (tests/staende/, vom Code jener Fassung geschrieben): nach dem Hochziehen traegt jedes Ding die Felder der laufenden Form und keines mehr, und die Partie laeuft fuenf Minuten weiter; den Weg ueber mehrere Schritte, den fehlenden Schritt und den, der wirft, pruefen eingeschleuste Schritte (tests/strategie-hochziehen.test.mjs, Gegenprobe ohne Hochziehen faellt). Ein Bildschirm zeigte nur, dass sich eine Partie oeffnet - das weist speichern AC-9 nach -, nicht, aus welcher Fassung sie kam und welche Felder ein Schritt ergaenzt hat."
     },
     {
       "spec": "00-plattform/speichern.md",

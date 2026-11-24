@@ -181,7 +181,7 @@ Umfang hinzufügt, dort nachsehen.
 
 ## Stand
 
-**626 von 717 Kriterien fertig.** 1126 Tests ohne Browser und 37 ganze Partien, 358 im Browser. Die
+**627 von 717 Kriterien fertig.** 1132 Tests ohne Browser und 37 ganze Partien, 358 im Browser. Die
 Übersicht ist der Bericht: `npm run qa:report`.
 
 Gebaut ist der Unterbau: Räume, Übertragung, Karte, Wegfindung, Sammeln,
@@ -1008,9 +1008,15 @@ AC-16, AC-17; ADR-0017). `welt.sichern()` gibt Bytes — acht Bytes Kopf
 Gesichert wird jedes eigene Feld; weg bleibt nur, was in `GEMERKT` in
 `welt.js` steht. **Ein neues Feld an Welt, Spieler, Einheit, Gebäude oder
 KI ist eine neue Form**: `tests/waechter-stand.test.mjs` verlangt dann
-`FASSUNG + 1` und `npm run stand:abbild -- --schreiben`; ein Stand einer
-anderen Fassung wird mit einem Satz für den Bildschirm abgelehnt
-(`StandFehler`), hochgezogen wird nicht. Gleich heißt **Wert für Wert**
+`FASSUNG + 1`, `SCHRITTE[alt]` in `stand.js` (was ein alter Stand für das
+Feld bekommt) und `npm run stand:abbild -- --schreiben`, das auch den
+Probestand der neuen Fassung unter `tests/staende/` ablegt. **Ein älterer
+Stand wird hochgezogen** (speichern AC-18, Nachtrag zu ADR-0017 Punkt 7,
+2026-11-24): Schritt für Schritt bis zur laufenden Fassung; ohne Weg
+dorthin oder aus einer neueren Fassung wird er mit einem Satz für den
+Bildschirm abgelehnt (`StandFehler`). Jeder eingecheckte Probestand lädt
+und läuft fünf Minuten weiter (`tests/strategie-hochziehen.test.mjs`) —
+**er wird nie neu geschrieben**. Gleich heißt **Wert für Wert**
 (`tests/gleichwertig.mjs`), nicht Byte für Byte. Über zwanzig Startwerte
 läuft eine geladene Partie 3000 Takte lang Takt für Takt wie die
 ununterbrochene, samt dem, was der Server jedem schickt

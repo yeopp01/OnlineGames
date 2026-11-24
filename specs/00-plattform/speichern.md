@@ -2,7 +2,7 @@
 
 **Bereich:** Plattform
 **Kuerzel:** speichern
-**Stand:** 19/27 fertig · 8 offen
+**Stand:** 20/27 fertig · 7 offen
 
 ## Zweck
 
@@ -112,8 +112,13 @@ nicht das Sichern, sondern das Wiederzusammenkommen.
   Update nicht mehr feststellbar, was ein alter Stand bedeutet.
 - **AC-17** `fertig` **Unbekannte Fassung wird abgelehnt** — Lieber „dieser
   Stand stammt aus einer neueren Fassung" als eine halb geladene Welt.
-- **AC-18** `offen` **Ältere Fassungen werden hochgezogen** — Solange es fachlich geht.
-  Geht es nicht, ist das eine Entscheidung für ein ADR.
+- **AC-18** `fertig` **Ältere Fassungen werden hochgezogen** — Solange es fachlich geht.
+  Geht es nicht, ist das eine Entscheidung für ein ADR. Je Fassung ein
+  Schritt zur nächsten (`SCHRITTE` in `server/spiele/strategie/stand.js`),
+  oder ein Satz, der die ADR nennt — dann wird abgelehnt wie bei AC-17. Je
+  Fassung liegt ein Probestand unter `tests/staende/`, geschrieben vom Code
+  jener Fassung; geladen trägt er die Form der laufenden und läuft fünf
+  Minuten weiter.
 
 ### Anhalten zu mehreren
 

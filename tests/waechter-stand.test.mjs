@@ -1,5 +1,5 @@
 // Waechter: kein Feld kommt still in den Spielstand oder faellt still heraus
-// (speichern AC-16, AC-17; ADR-0017 Punkt 7).
+// (speichern AC-16 bis AC-18; ADR-0017 Punkt 7 mit Nachtrag).
 //
 // Gesichert wird jedes eigene Feld der Welt und der KI, nicht eine Liste von
 // Hand - ein neues Feld ist also im naechsten Stand von selbst dabei. Die
@@ -10,12 +10,13 @@
 // Form gegen das eingecheckte Abbild aendert - wie sie ermittelt wird, steht
 // in `scripts/stand-abbild.mjs`.
 import { test } from 'node:test';
+import { existsSync } from 'node:fs';
 import assert from 'node:assert/strict';
 import { createRequire } from 'node:module';
-import { formErmitteln, abbildLesen, formUnterschied } from '../scripts/stand-abbild.mjs';
+import { formErmitteln, abbildLesen, formUnterschied, probestandPfad } from '../scripts/stand-abbild.mjs';
 
 const require = createRequire(import.meta.url);
-const { FASSUNG } = require('../server/spiele/strategie/stand.js');
+const { FASSUNG, SCHRITTE } = require('../server/spiele/strategie/stand.js');
 const { GEMERKT } = require('../server/spiele/strategie/welt.js');
 
 const abbild = abbildLesen();
@@ -56,5 +57,27 @@ test('speichern AC-1: weg bleibt nur Gemerktes, das beim ersten Lesen neu entste
   for (const feld of GEMERKT) {
     assert.match(feld, /Gemerkt$/, `${feld} steht in GEMERKT, ist aber nichts Gemerktes`);
     assert.ok(!form.welt.includes(feld), `${feld} ist gemerkt und gehoert nicht in den Stand`);
+  }
+});
+
+test('speichern AC-18: fuer jede alte Fassung steht ein Schritt zur naechsten - oder ein Satz mit der ADR, die ihn verbietet', () => {
+  for (let fassung = 1; fassung < FASSUNG; fassung++) {
+    const schritt = SCHRITTE[fassung];
+    assert.ok(
+      typeof schritt === 'function' || (typeof schritt === 'string' && /ADR-d{4}/.test(schritt)),
+      `SCHRITTE[${fassung}] fehlt in server/spiele/strategie/stand.js - ein Stand der Fassung ${fassung} liesse sich sonst nicht oeffnen`,
+    );
+  }
+  for (const nummer of Object.keys(SCHRITTE).map(Number)) {
+    assert.ok(nummer >= 1 && nummer < FASSUNG, `SCHRITTE[${nummer}] fuehrt ueber die laufende Fassung ${FASSUNG} hinaus`);
+  }
+});
+
+test('speichern AC-18: zu jeder Fassung liegt ein Probestand, geschrieben vom Code jener Fassung', () => {
+  for (let fassung = 1; fassung <= FASSUNG; fassung++) {
+    assert.ok(
+      existsSync(probestandPfad(fassung)),
+      `tests/staende/strategie-${fassung}.fast fehlt - npm run stand:abbild -- --schreiben legt ihn an, solange der Code noch Fassung ${fassung} schreibt`,
+    );
   }
 });

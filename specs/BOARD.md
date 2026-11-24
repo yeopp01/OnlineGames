@@ -7,9 +7,9 @@ Eine Zeile je Abnahmekriterium. Gepflegt wird der Status in der Spec selbst,
 hier steht er zusammengefasst. Erzeugt mit `npm run specs:board`; als Seite
 mit Bildnachweisen, Filter und Suche mit `npm run qa:report`.
 
-**Gesamt:** 626/717 fertig · 3 in Arbeit · 15 in QA · 3 geplant · 62 offen · 8 zurueckgestellt
+**Gesamt:** 627/717 fertig · 3 in Arbeit · 15 in QA · 3 geplant · 61 offen · 8 zurueckgestellt
 
-**Nachweise:** 338 Kriterien mit Bild · 297 ohne Bild, begruendet in `qa/ohne-bild.json`
+**Nachweise:** 338 Kriterien mit Bild · 298 ohne Bild, begruendet in `qa/ohne-bild.json`
 
 ## Nach Spezifikation
 
@@ -18,7 +18,7 @@ mit Bildnachweisen, Filter und Suche mit `npm run qa:report`.
 | [Konten und Anmeldung](00-plattform/konten.md)                 | -         | 1     | 2       | 3     | -               | 14     |
 | [Raeume und Partien](00-plattform/raeume.md)                   | -         | 2     | -       | 3     | -               | 13     |
 | [Schutz vor Fremdnutzung](00-plattform/schutz.md)              | -         | 1     | -       | 4     | -               | 7      |
-| [Anhalten und Fortsetzen](00-plattform/speichern.md)           | -         | -     | -       | 8     | -               | 19     |
+| [Anhalten und Fortsetzen](00-plattform/speichern.md)           | -         | -     | -       | 7     | -               | 20     |
 | [Spielauswahl und Einstellungen](00-plattform/spielauswahl.md) | -         | -     | -       | 5     | -               | 19     |
 | [Uebertragung](00-plattform/uebertragung.md)                   | -         | -     | 1       | 1     | -               | 8      |
 | [Bauen und Ausbilden](10-strategie/bauen.md)                   | -         | -     | -       | -     | -               | 57     |
@@ -75,7 +75,7 @@ mit Bildnachweisen, Filter und Suche mit `npm run qa:report`.
 - **Kennwort vergessen** — [Konten und Anmeldung](00-plattform/konten.md) AC-5
 - **Automatischer Wiederaufbau** — [Uebertragung](00-plattform/uebertragung.md) AC-10
 
-## Offen (62)
+## Offen (61)
 
 - **Anmeldung ueber Google/GitHub** — [Konten und Anmeldung](00-plattform/konten.md) AC-6
 - **Bilanz je Konto** — [Konten und Anmeldung](00-plattform/konten.md) AC-14
@@ -89,7 +89,6 @@ mit Bildnachweisen, Filter und Suche mit `npm run qa:report`.
 - **Auffälligkeiten sind sichtbar** — [Schutz vor Fremdnutzung](00-plattform/schutz.md) AC-12
 - **Mitspieler dürfen mitbauen, nicht besitzen** — [Anhalten und Fortsetzen](00-plattform/speichern.md) AC-14
 - **Gelöschtes Konto nimmt Spielstände mit** — [Anhalten und Fortsetzen](00-plattform/speichern.md) AC-15
-- **Ältere Fassungen werden hochgezogen** — [Anhalten und Fortsetzen](00-plattform/speichern.md) AC-18
 - **Sichern verlangt Einigkeit** — [Anhalten und Fortsetzen](00-plattform/speichern.md) AC-22
 - **Der Gastgeber besitzt den Stand** — [Anhalten und Fortsetzen](00-plattform/speichern.md) AC-23
 - **Fortsetzen wartet auf dieselben Plätze** — [Anhalten und Fortsetzen](00-plattform/speichern.md) AC-24

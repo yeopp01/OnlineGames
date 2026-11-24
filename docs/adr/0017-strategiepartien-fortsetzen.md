@@ -69,10 +69,29 @@ trotzdem.
 
 **7. Ein Stand gilt für die Fassung, die ihn geschrieben hat.** Er trägt eine
 Fassungsnummer; eine andere wird abgelehnt, mit einem Satz, der es sagt
-(speichern AC-16, AC-17). Hochgezogen wird nicht (AC-18): die Regeln der
-Partie ändern sich mit jeder Runde, und eine Partie lebt Tage, nicht Monate.
+(speichern AC-16, AC-17). ~~Hochgezogen wird nicht (AC-18): die Regeln der
+Partie ändern sich mit jeder Runde, und eine Partie lebt Tage, nicht Monate.~~
 Ein Wächter vergleicht die Form des Stands mit einem eingecheckten Abbild und
 verlangt eine neue Nummer, wenn ein Feld dazukommt oder wegfällt.
+
+**Nachtrag 2026-11-24 — ältere Stände werden hochgezogen (AC-18).** Der
+Benutzer hat gefragt, ob sich ein Stand nach drei Tagen noch öffnen lässt,
+wenn dazwischen ausgerollt wurde; nach Punkt 7 nicht, sobald eine Runde ein
+Feld anlegt — und das tut fast jede. Auf den Vorschlag, AC-18 zu bauen:
+„Gibts grade noch was zu tun? Dann gerne angehen." Seitdem gilt: zu jeder
+alten Fassung n steht in `SCHRITTE[n]` (`server/spiele/strategie/stand.js`)
+eine Funktion, die den entpackten Inhalt an Ort und Stelle zur Fassung
+n + 1 macht — meist ein neues Feld mit dem Wert, den eine neue Partie
+hätte. Lässt sich ein Schritt fachlich nicht gehen (eine Regel, die eine
+laufende Partie nicht nachträglich bekommen kann), steht dort ein Satz mit
+der ADR, die das entscheidet, und der Stand wird abgelehnt wie bisher. Der
+Wächter verlangt zu jeder alten Fassung einen Eintrag und zu jeder Fassung
+einen Probestand unter `tests/staende/`, geschrieben vom Code jener Fassung
+und nie neu; `tests/strategie-hochziehen.test.mjs` lädt jeden, prüft die
+Form und lässt ihn fünf Minuten weiterlaufen. Wer ein Feld anlegt, schreibt
+also: `FASSUNG + 1`, `SCHRITTE[alt]`, `npm run stand:abbild -- --schreiben`
+— in dieser Reihenfolge, denn der Probestand der alten Fassung muss vor der
+Änderung des Codes liegen; für Fassung 1 liegt er.
 
 ## Wie die Welt ein Wert wird
 
@@ -151,8 +170,9 @@ die Fassungsnummer zu erhöhen.
 | S3 | „Deine Partien" im Vorraum, Fortsetzen allein gegen die KI, „Aufhören und später weiterspielen" | AC-7 bis AC-11 |
 | S4 | Zu mehreren: Warteraum mit den Plätzen von damals, Startklick, stillgelegter Platz, Einigkeit beim Aufhören | AC-14, AC-22 bis AC-26 |
 
-AC-18 (ältere Fassungen hochziehen) wird für das Strategiespiel mit einer
-Begründung geschlossen, nicht gebaut. AC-15 hängt an den Konten.
+~~AC-18 (ältere Fassungen hochziehen) wird für das Strategiespiel mit einer
+Begründung geschlossen, nicht gebaut.~~ AC-18 ist gebaut (Nachtrag zu Punkt
+7, 2026-11-24). AC-15 hängt an den Konten.
 
 ## Dem Benutzer vorgelegt und so angenommen
 

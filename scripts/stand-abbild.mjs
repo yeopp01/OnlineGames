@@ -5,8 +5,8 @@
 // aus dem Stand. Aber ein **alter** Stand kennt es nicht: wer ihn laedt,
 // bekaeme eine Welt, der ein Feld fehlt, das der Code voraussetzt. Deshalb
 // steigt mit jeder neuen Form die Fassung (`FASSUNG` in
-// `server/spiele/strategie/stand.js`), und ein Stand einer anderen Fassung
-// wird abgelehnt (AC-17).
+// `server/spiele/strategie/stand.js`): ein Stand einer neueren Fassung wird
+// abgelehnt (AC-17), einer aelteren ueber `SCHRITTE` hochgezogen (AC-18).
 //
 // `tests/waechter-stand.test.mjs` vergleicht die Form mit dem Abbild in
 // `server/spiele/strategie/stand-abbild.json`. Dort steht je Fassung die
@@ -15,7 +15,8 @@
 //
 //   npm run stand:abbild              zeigt, was sich gegen das Abbild geaendert hat
 //   npm run stand:abbild -- --schreiben  traegt die Form der laufenden Fassung ein -
-//                                        nur, wenn es sie dort noch nicht gibt
+//                                        nur, wenn es sie dort noch nicht gibt - und
+//                                        legt ihren Probestand unter tests/staende/ ab
 //
 // Woher die Form kommt: eine Partie KI gegen KI bis Minute 12, jede Minute
 // angesehen; dazu jedes Gebaeude und jede Einheit aus den Daten einmal
@@ -26,7 +27,7 @@
 // nicht erreicht, sieht dieser Abgleich nicht; ein solches Feld ist aber
 // ohnehin eines, das fehlen darf.
 import { createRequire } from 'node:module';
-import { readFileSync, writeFileSync } from 'node:fs';
+import { readFileSync, writeFileSync, existsSync, mkdirSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 
 const require = createRequire(import.meta.url);
@@ -37,6 +38,14 @@ const { Welt, GEMERKT, TAKTE_PRO_SEKUNDE } = require('../server/spiele/strategie
 const { EINHEITEN, GEBAEUDE } = require('../server/spiele/strategie/daten.js');
 
 export const ABBILD = fileURLToPath(new URL('../server/spiele/strategie/stand-abbild.json', import.meta.url));
+
+// Je Fassung ein Probestand, geschrieben vom Code **dieser** Fassung und nie
+// neu (speichern AC-18): an ihm zeigt `tests/strategie-hochziehen.test.mjs`,
+// dass ein alter Stand hochgezogen laedt und weiterlaeuft. Er entsteht mit
+// `npm run stand:abbild -- --schreiben`, zusammen mit dem Abbild der Fassung -
+// also bevor die naechste Fassung den Code aendert.
+export const STAENDE = fileURLToPath(new URL('../tests/staende/', import.meta.url));
+export const probestandPfad = (fassung) => `${STAENDE}strategie-${fassung}.fast`;
 
 const ARTEN = ['welt', 'karte', 'spieler', 'einheit', 'gebaeude', 'tier', 'ei', 'sicht', 'ki'];
 
@@ -110,6 +119,10 @@ export function formErmitteln() {
   partie.zustandJeSpieler(ids);
   ansehen(partie);
 
+  // Die Partie des Probestands: dort kaempfen Einheiten, die sonst nur
+  // dastehen - erst ein Schlag setzt `nachladen`, erst der Drache `hungert`.
+  ansehen(probepartie());
+
   const vier = steckbrief.erzeugen([], { ki: 4, startwert: 8, teams: { ki1: 1, ki2: 1, ki3: 2, ki4: 2 } });
   for (let i = 0; i < 100; i++) vier.takten();
   ansehen(vier);
@@ -119,6 +132,52 @@ export function formErmitteln() {
   for (const feld of gesetzteFelder('server/spiele/strategie/ki.js')) if (feld !== 'welt') felder.ki.add(feld);
 
   return Object.fromEntries(ARTEN.map((art) => [art, [...felder[art]].sort()]));
+}
+
+/**
+ * Der Probestand der laufenden Fassung: ein Mensch, der nichts tut, gegen
+ * zwei KIs bis Minute 12, dann jedes Gebaeude und jede Einheit aus den Daten
+ * beim Menschen aufgestellt (das Tor quer) und noch eine Minute gerechnet -
+ * so traegt der Stand moeglichst viele Arten von Dingen, an denen ein Schritt
+ * etwas aendern muss.
+ * @returns {Buffer}
+ */
+export function probestandErzeugen() {
+  return probepartie().sichern();
+}
+
+/** Die Partie hinter dem Probestand - auch die Form liest an ihr. */
+function probepartie() {
+  const partie = steckbrief.erzeugen([{ id: 'a1b2c3d4', name: 'Anna' }], { ki: 2, startwert: 5 });
+  const ids = partie.spieler.map((s) => s.id);
+  const takten = (takte) => {
+    for (let i = 0; i < takte && !partie.ende; i++) {
+      partie.takten();
+      partie.zustandJeSpieler(ids);
+    }
+  };
+  takten(12 * 60 * TAKTE_PRO_SEKUNDE);
+  const mensch = partie.spieler.find((s) => s.id === 'a1b2c3d4');
+  for (const art of Object.keys(GEBAEUDE)) {
+    const quer = Boolean(GEBAEUDE[art].laenge);
+    const platz = freierPlatz(partie, art, mensch.basis, quer);
+    if (platz) partie.gebaeudeAnlegen(mensch.id, art, platz.x, platz.y, true, quer);
+  }
+  for (const art of Object.keys(EINHEITEN)) {
+    const platz = freierPlatz(partie, 'haus', mensch.basis);
+    if (platz) partie.einheitAnlegen(mensch.id, platz.x, platz.y, art);
+  }
+  takten(60 * TAKTE_PRO_SEKUNDE);
+  return partie;
+}
+
+/** Den Probestand der laufenden Fassung ablegen, wenn es ihn noch nicht gibt. */
+function probestandAblegen() {
+  const pfad = probestandPfad(stand.FASSUNG);
+  if (existsSync(pfad)) return console.log(`Probestand der Fassung ${stand.FASSUNG} liegt schon da.`);
+  mkdirSync(STAENDE, { recursive: true });
+  writeFileSync(pfad, probestandErzeugen());
+  console.log(`Probestand der Fassung ${stand.FASSUNG} abgelegt: tests/staende/strategie-${stand.FASSUNG}.fast`);
 }
 
 export function abbildLesen() {
@@ -161,9 +220,11 @@ if (process.argv[1] && fileURLToPath(import.meta.url) === process.argv[1]) {
     process.exitCode = 1;
   } else if (eingetragen) {
     console.log(`Fassung ${stand.FASSUNG} steht schon so im Abbild.`);
+    probestandAblegen();
   } else {
     abbild[stand.FASSUNG] = form;
     writeFileSync(ABBILD, `${JSON.stringify(abbild, null, 2)}\n`);
     console.log(`Fassung ${stand.FASSUNG} eingetragen.`);
+    probestandAblegen();
   }
 }
