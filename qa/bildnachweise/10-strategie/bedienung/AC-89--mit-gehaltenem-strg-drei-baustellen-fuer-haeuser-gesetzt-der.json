@@ -1,0 +1,9 @@
+{
+  "spec": "10-strategie/bedienung.md",
+  "ac": "AC-89",
+  "titel": "Mit gehaltenem Strg drei Baustellen für Häuser gesetzt, der Bauplatz liegt weiter grün unter dem Zeiger",
+  "datei": "e2e/tests/strategie-bauen-reihe.spec.mjs",
+  "pfad": [
+    "bedienung AC-89: mit Strg bleibt der Bauplatz genauso in der Hand - drei Haeuser, alle werden fertig"
+  ]
+}

@@ -1355,7 +1355,7 @@ export class Ansicht {
           const lage = this.platzLage();
           if (lage) this.platzieren.von = { x: lage.x, y: lage.y };
           this.leinwand.setPointerCapture(e.pointerId);
-        } else if (e.button === 0) this.platzierenKlick(e.shiftKey);
+        } else if (e.button === 0) this.platzierenKlick(e.shiftKey || e.ctrlKey);
         else if (e.button === 2) this.platzierenBeenden();
         return;
       }
@@ -1978,8 +1978,8 @@ export class Ansicht {
     // die Vorschau es gezeigt hat.
     const quer = this.werte.gebaeude[lage.art]?.laenge ? lage.quer : undefined;
     this.bauenSenden([...this.ausgewaehlt], lage.art, { x: lage.x, y: lage.y }, anhaengen, quer);
-    // Mit Umschalt bleibt der Bauplatz in der Hand fuer die naechste
-    // Baustelle (bedienung AC-48); ohne legt der Klick ihn weg.
+    // Mit Umschalt oder Strg bleibt der Bauplatz in der Hand fuer die
+    // naechste Baustelle (bedienung AC-48, AC-89); ohne legt der Klick ihn weg.
     if (!anhaengen) this.platzierenBeenden();
   }
 

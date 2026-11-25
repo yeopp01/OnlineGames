@@ -2,7 +2,7 @@
 
 **Bereich:** Strategie
 **Kuerzel:** bedienung
-**Stand:** 83/88 fertig · 2 in QA · 3 offen
+**Stand:** 84/89 fertig · 2 in QA · 3 offen
 
 ## Zweck
 
@@ -860,6 +860,20 @@ knopf, lass dir was einfallen" (2026-11-24).
   helleren Klang ([Bauen](bauen.md) AC-61) — nur der, dem das Dorfzentrum
   gehört, ausgelöst vom Wechsel von `gl`, nicht vom Klick. Erzeugt im
   Browser wie jeder Klang (AC-59), gemessen mit `npm run ton:messen`.
+
+### Aus dem Spiel vom 2026-11-25
+
+„wenn ich mit einem dorfbewohner strg drücke, dann möchte ich mehrere
+häuser hintereinander bauen können." (Benutzer, 2026-11-25)
+
+- **AC-89** `fertig` **Reihe bauen auch mit Strg** — Was Umschalt beim
+  Setzen einer Baustelle tut (AC-48), tut `Strg` genauso: der Bauplatz
+  bleibt in der Hand, die Bauleute bauen die Baustellen der Reihe nach.
+  Nur beim Setzen — Auswahl und Rechtsklick behalten Umschalt allein, und
+  `Strg` mit einer Ziffer bleibt die Gruppentaste (AC-5). Die
+  Tastenübersicht nennt beide. **Messbar:** ein Browsertest setzt mit
+  gehaltenem `Strg` drei Häuser, der Bauplatz liegt danach noch in der
+  Hand, und alle drei werden fertig.
 
 ## Grenzfaelle
 

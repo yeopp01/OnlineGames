@@ -15,6 +15,28 @@ const BEDIENUNG = '10-strategie/bedienung.md';
 const baustellen = (page) => page.evaluate(() => [...window.ansicht.gebaeude.values()]
   .filter((g) => g.b === window.ansicht.ich && g.art === 'haus' && g.u !== undefined).length);
 
+// Drei Haeuser mit gehaltener Taste setzen; nach jedem Klick bleibt der
+// Bauplatz in der Hand.
+async function dreiSetzen(anna, basis, taste) {
+  const vorher = await baustellen(anna);
+  await anna.locator('[data-bauen="haus"]').click();
+  expect(await anna.evaluate(() => window.ansicht.platzieren)).toEqual({ art: 'haus' });
+  await anna.keyboard.down(taste);
+  for (let i = 1; i <= 3; i++) {
+    // Der naechste freie Platz kennt die eben gesetzten erst, wenn der
+    // Server sie geschickt hat - deshalb nach jedem Klick auf sie warten.
+    const frei = await platzImBild(anna, { n: 2, um: basis, abstand: 5 });
+    expect(frei, `Platz ${i} im Bild`).toBeTruthy();
+    await anna.mouse.move(frei.bild.x, frei.bild.y, { steps: 3 });
+    await expect.poll(() => anna.evaluate(() => window.ansicht.platzLage()?.taugt)).toBe(true);
+    await anna.mouse.click(frei.bild.x, frei.bild.y);
+    await expect.poll(() => baustellen(anna), `Baustelle ${i}`).toBe(vorher + i);
+    expect(await anna.evaluate(() => window.ansicht.platzieren), 'der Bauplatz bleibt in der Hand').toEqual({ art: 'haus' });
+  }
+  await anna.keyboard.up(taste);
+  return vorher;
+}
+
 test('bedienung AC-48: mit Umschalt bleibt der Bauplatz in der Hand - drei Haeuser gesetzt, der Dorfbewohner baut sie der Reihe nach', async ({ browser }, info) => {
   // Handelt nicht vom Nebel.
   const partie = await partieZuZweit(browser, info, { sicht: 'aufgedeckt' });
@@ -25,23 +47,7 @@ test('bedienung AC-48: mit Umschalt bleibt der Bauplatz in der Hand - drei Haeus
     await dorfbewohnerAnklicken(anna);
     await zeitraffer(anna, code, 0);
     const basis = await anna.evaluate(() => window.ansicht.spieler.get(window.ansicht.ich).basis);
-    const vorher = await baustellen(anna);
-
-    await anna.locator('[data-bauen="haus"]').click();
-    expect(await anna.evaluate(() => window.ansicht.platzieren)).toEqual({ art: 'haus' });
-    await anna.keyboard.down('Shift');
-    for (let i = 1; i <= 3; i++) {
-      // Der naechste freie Platz kennt die eben gesetzten erst, wenn der
-      // Server sie geschickt hat - deshalb nach jedem Klick auf sie warten.
-      const frei = await platzImBild(anna, { n: 2, um: basis, abstand: 5 });
-      expect(frei, `Platz ${i} im Bild`).toBeTruthy();
-      await anna.mouse.move(frei.bild.x, frei.bild.y, { steps: 3 });
-      await expect.poll(() => anna.evaluate(() => window.ansicht.platzLage()?.taugt)).toBe(true);
-      await anna.mouse.click(frei.bild.x, frei.bild.y);
-      await expect.poll(() => baustellen(anna), `Baustelle ${i}`).toBe(vorher + i);
-      expect(await anna.evaluate(() => window.ansicht.platzieren), 'der Bauplatz bleibt in der Hand').toEqual({ art: 'haus' });
-    }
-    await anna.keyboard.up('Shift');
+    const vorher = await dreiSetzen(anna, basis, 'Shift');
     // Losgelassen liegt er weiter in der Hand: erst ein Klick ohne Umschalt,
     // Rechtsklick oder Esc legt ihn weg. Fuer das Bild ueber einen vierten Platz.
     const vierter = await platzImBild(anna, { n: 2, um: basis, abstand: 5 });
@@ -58,6 +64,44 @@ test('bedienung AC-48: mit Umschalt bleibt der Bauplatz in der Hand - drei Haeus
     expect(await anna.evaluate(() => window.ansicht.platzieren)).toBeNull();
 
     // Ohne weiteren Befehl werden alle drei fertig.
+    await zeitraffer(anna, code, 20);
+    await expect.poll(() => baustellen(anna), { timeout: 60_000 }).toBe(vorher);
+    const haeuser = await anna.evaluate(() => [...window.ansicht.gebaeude.values()]
+      .filter((g) => g.b === window.ansicht.ich && g.art === 'haus').length);
+    expect(haeuser).toBeGreaterThanOrEqual(3);
+  } finally {
+    await partieBeenden(partie);
+  }
+});
+
+test('bedienung AC-89: mit Strg bleibt der Bauplatz genauso in der Hand - drei Haeuser, alle werden fertig', async ({ browser }, info) => {
+  // Rueckmeldung des Benutzers (2026-11-25): "wenn ich mit einem
+  // dorfbewohner strg drücke, dann möchte ich mehrere häuser hintereinander
+  // bauen können."
+  const partie = await partieZuZweit(browser, info, { sicht: 'aufgedeckt' });
+  try {
+    const { anna, code } = partie;
+    await rohstoffe(anna, code, 'Anna', { holz: 500 });
+    await expect(anna.locator('[data-rohstoff="holz"] b')).toHaveText('500');
+    await dorfbewohnerAnklicken(anna);
+    await zeitraffer(anna, code, 0);
+    const basis = await anna.evaluate(() => window.ansicht.spieler.get(window.ansicht.ich).basis);
+    const vorher = await dreiSetzen(anna, basis, 'Control');
+    // Losgelassen liegt der Bauplatz weiter in der Hand, wie bei Umschalt.
+    const vierter = await platzImBild(anna, { n: 2, um: basis, abstand: 5 });
+    expect(vierter, 'ein vierter Platz im Bild').toBeTruthy();
+    await anna.mouse.move(vierter.bild.x, vierter.bild.y, { steps: 3 });
+    await expect.poll(() => anna.evaluate(() => window.ansicht.platzLage()?.taugt)).toBe(true);
+    // Die Tastenuebersicht nennt beide Tasten.
+    await expect(anna.locator('#tastenuebersicht')).toContainText('Umschalt oder Strg beim Bauen');
+    await nachweis(anna, {
+      spec: BEDIENUNG,
+      ac: 'AC-89',
+      titel: 'Mit gehaltenem Strg drei Baustellen für Häuser gesetzt, der Bauplatz liegt weiter grün unter dem Zeiger',
+      test: info,
+    });
+    await anna.keyboard.press('Escape');
+    expect(await anna.evaluate(() => window.ansicht.platzieren)).toBeNull();
     await zeitraffer(anna, code, 20);
     await expect.poll(() => baustellen(anna), { timeout: 60_000 }).toBe(vorher);
     const haeuser = await anna.evaluate(() => [...window.ansicht.gebaeude.values()]

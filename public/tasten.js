@@ -23,7 +23,7 @@ export const BELEGUNG = [
   ['Doppelklick', 'alle Einheiten dieser Art im Bild'],
   ['Rechtsklick', 'hingehen, sammeln, bauen – oder Sammelpunkt setzen'],
   ['Umschalt + Rechtsklick', 'Ziel hinten anhängen, der Reihe nach abgehen'],
-  ['Umschalt beim Bauen', 'weitere Baustellen setzen, der Reihe nach bauen'],
+  ['Umschalt oder Strg beim Bauen', 'weitere Baustellen setzen, der Reihe nach bauen'],
   ['Umschalt + Klick auf eine Einheit im Gebäude', 'fünf auf einmal ausbilden'],
   ['R (Tor in der Hand)', 'das Tor drehen'],
   ['W A S D, Pfeile', 'Karte schieben'],

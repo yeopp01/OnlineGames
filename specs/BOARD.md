@@ -7,9 +7,9 @@ Eine Zeile je Abnahmekriterium. Gepflegt wird der Status in der Spec selbst,
 hier steht er zusammengefasst. Erzeugt mit `npm run specs:board`; als Seite
 mit Bildnachweisen, Filter und Suche mit `npm run qa:report`.
 
-**Gesamt:** 688/772 fertig · 3 in Arbeit · 19 in QA · 3 geplant · 51 offen · 8 zurueckgestellt
+**Gesamt:** 689/773 fertig · 3 in Arbeit · 19 in QA · 3 geplant · 51 offen · 8 zurueckgestellt
 
-**Nachweise:** 358 Kriterien mit Bild · 340 ohne Bild, begruendet in `qa/ohne-bild.json`
+**Nachweise:** 359 Kriterien mit Bild · 340 ohne Bild, begruendet in `qa/ohne-bild.json`
 
 ## Nach Spezifikation
 
@@ -22,7 +22,7 @@ mit Bildnachweisen, Filter und Suche mit `npm run qa:report`.
 | [Spielauswahl und Einstellungen](00-plattform/spielauswahl.md) | -         | -     | -       | 5     | -               | 19     |
 | [Uebertragung](00-plattform/uebertragung.md)                   | -         | -     | 1       | 1     | -               | 8      |
 | [Bauen und Ausbilden](10-strategie/bauen.md)                   | -         | -     | -       | -     | -               | 62     |
-| [Bedienung](10-strategie/bedienung.md)                         | -         | 2     | -       | 3     | -               | 83     |
+| [Bedienung](10-strategie/bedienung.md)                         | -         | 2     | -       | 3     | -               | 84     |
 | [Darstellung](10-strategie/darstellung.md)                     | 1         | 1     | -       | 4     | -               | 27     |
 | [Einheiten und Befehle](10-strategie/einheiten-und-befehle.md) | -         | 1     | -       | 2     | 1               | 61     |
 | [Fahrplan zum Klon](10-strategie/fahrplan.md)                  | -         | 2     | -       | 2     | -               | 22     |
