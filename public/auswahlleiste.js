@@ -3219,7 +3219,7 @@ export class Auswahlleiste {
       const preis = element('span', 'preis');
       for (const [r, m] of Object.entries(regel.kosten)) preis.append(element('span', warenklasse(r)), element('span', null, String(m)));
       knopf.append(element('span', null, bereit.length === 1 ? 'Abrüsten' : `${bereit.length} abrüsten`), preis);
-      knopf.title = `Legt die Waffen ab und wird Dorfbewohner: ${regel.sekunden} Sekunden Lehrzeit, in denen ${bereit.length === 1 ? 'er steht' : 'sie stehen'}. Je Einheit ${Object.entries(regel.kosten).map(([r, m]) => postenText(r, m)).join(', ')}, erstattet wird nichts.`;
+      knopf.title = `Legt die Waffen ab und wird Dorfbewohner: ${regel.sekunden} Sekunden Lehrzeit, in denen ${bereit.length === 1 ? 'er steht' : 'sie stehen'}. Je Einheit ${Object.entries(regel.kosten).map(([r, m]) => postenText(r, m)).join(', ')}; ein neuer Befehl bricht ab und gibt sie zurück.`;
       beimDruecken(knopf, () => {
         if (fehlt) a.melden(`Zu wenig ${fehlt}.`);
         else this.senden({ auftrag: 'abruesten', einheiten: bereit.map((e) => e.i) });

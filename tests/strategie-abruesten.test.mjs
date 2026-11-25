@@ -1,7 +1,8 @@
 // Abruesten (→ specs/10-strategie/einheiten-und-befehle.md AC-50, ADR-0014):
 // eine Einheit der Klassen Infanterie, Schuetzen und Reiter legt die Waffen
 // ab und wird Dorfbewohner - 40 Nahrung, 20 Sekunden Lehrzeit, in denen sie
-// steht und nicht arbeitet, erstattet wird nichts. Untote, Belagerung, Moench
+// steht und nicht arbeitet. Erstattet wird nur, was ein neuer Befehl
+// abbricht (Benutzer, 2026-11-25). Untote, Belagerung, Moench
 // und Karren nicht, und nie umgekehrt.
 //
 // Die Messung, die AC-50 vor `fertig` verlangt (eine KI, die ihre
@@ -69,7 +70,7 @@ test('einheiten AC-50: ein Ritter ruestet ab - 40 Nahrung beim Befehl, 20 Sekund
   assert.equal(welt.spielerVon('a').nahrung, nahrung - 40, 'erstattet wird nichts');
 });
 
-test('einheiten AC-50: in der Lehrzeit wacht er nicht und schlaegt nicht zurueck; ein neuer Befehl bricht sie ab, und die Nahrung ist weg', () => {
+test('einheiten AC-50: in der Lehrzeit wacht er nicht und schlaegt nicht zurueck; ein neuer Befehl bricht sie ab, und die Nahrung kommt zurueck', () => {
   const welt = neueWelt();
   const basis = welt.spielerVon('a').basis;
   const miliz = welt.einheitAnlegen('a', basis.x + 5, basis.y + 5, 'miliz');
@@ -84,11 +85,39 @@ test('einheiten AC-50: in der Lehrzeit wacht er nicht und schlaegt nicht zurueck
   assert.equal(miliz.auftrag?.art, 'abruesten', 'und lernt weiter');
   assert.equal(feind.leben, welt.lebenMax('b', 'miliz'), 'sie schlaegt nicht zurueck');
 
-  // Ein Gang bricht die Lehrzeit ab - die 40 Nahrung kommen nicht zurueck.
+  // Ein Gang bricht die Lehrzeit ab - die 40 Nahrung kommen zurueck
+  // (Benutzer, 2026-11-25), wie beim Abbrechen einer Ausbildung.
+  assert.equal(welt.spielerVon('a').nahrung, nahrung - 40, 'bezahlt beim Befehl');
   welt.nachricht('a', { einheiten: [miliz.id], ziel: { x: basis.x + 2, y: basis.y + 8 } });
   assert.notEqual(miliz.auftrag?.art, 'abruesten');
   assert.equal(miliz.art, 'miliz');
-  assert.equal(welt.spielerVon('a').nahrung, nahrung - 40);
+  assert.equal(welt.spielerVon('a').nahrung, nahrung, 'erstattet');
+});
+
+test('einheiten AC-50: erstattet wird nur, wer abbricht - nicht ein zweites Abruesten, nicht Unbeteiligte, nicht wer entlassen wird, nicht nach der Lehrzeit', () => {
+  const welt = neueWelt();
+  const basis = welt.spielerVon('a').basis;
+  const [eins, zwei, drei] = [0, 1, 2].map((i) => welt.einheitAnlegen('a', basis.x + 5 + i, basis.y + 5, 'speerkaempfer'));
+  const nichtDabei = welt.einheitAnlegen('a', basis.x + 5, basis.y + 7, 'speerkaempfer');
+  const spieler = welt.spielerVon('a');
+  spieler.nahrung = 500;
+  welt.nachricht('a', { auftrag: 'abruesten', einheiten: [eins.id, zwei.id, drei.id] });
+  assert.equal(spieler.nahrung, 380);
+  // Noch einmal abruesten: kein Abbruch, kein zweites Bezahlen.
+  welt.nachricht('a', { auftrag: 'abruesten', einheiten: [eins.id, zwei.id] });
+  assert.equal(spieler.nahrung, 380);
+  // Ein Gang fuer einen Lehrling und einen, der nicht lernt: 40 zurueck.
+  welt.nachricht('a', { einheiten: [eins.id, nichtDabei.id], ziel: { x: basis.x + 2, y: basis.y + 9 } });
+  assert.equal(spieler.nahrung, 420);
+  // Entlassen ist kein Abbruch, den man erstattet.
+  assert.equal(welt.nachricht('a', { auftrag: 'entlassen', einheit: zwei.id }).fehler, undefined);
+  assert.ok(zwei.tot, 'entlassen');
+  assert.equal(spieler.nahrung, 420);
+  // Nach der Lehrzeit ist er Dorfbewohner; ein Befehl erstattet nichts mehr.
+  takten(welt, ABRUESTEN.sekunden + 1);
+  assert.equal(drei.art, 'dorfbewohner');
+  welt.nachricht('a', { einheiten: [drei.id], ziel: { x: basis.x + 3, y: basis.y + 9 } });
+  assert.equal(spieler.nahrung, 420);
 });
 
 test('einheiten AC-50: wer nicht darf, wird abgewiesen - Fremde, Moench, Ramme, Dorfbewohner; ohne Nahrung ruestet keiner ab, mit Nahrung fuer zwei ruesten zwei ab', () => {

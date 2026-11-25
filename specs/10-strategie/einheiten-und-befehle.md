@@ -566,8 +566,10 @@ AC-19). Werte und Dauern sind Startwerte aus ADR-0014.
   gegen die heutige KI **11 zu 27, zwei ohne Sieger: 29 %**. Der Preis
   bleibt. Die Probe stand als Wegwerfskript neben dem Prüfstand
   (`partieSpielen` mit ersetztem `entscheiden`), nicht als `--probe`.
-  Gesetzt: ein neuer Befehl in der Lehrzeit bricht sie ab, die 40 Nahrung
-  sind weg; das Leben behält seinen Anteil.
+  Ein neuer Befehl in der Lehrzeit bricht sie ab, und die 40 Nahrung
+  kommen zurück wie beim Abbrechen einer Ausbildung (Benutzer, 2026-11-25;
+  vorher gesetzt: sie waren weg); wer dabei fällt oder entlassen wird,
+  bekommt nichts. Das Leben behält seinen Anteil.
 - **AC-51** `fertig` **Das Ei liegt, wird getragen** — Auf der Karte liegen
   Dracheneier, eines je zwei Spieler (abgerundet, mindestens eines), fern
   von jedem Start. Ein Dorfbewohner trägt ein Ei als Ladung wie Holz und

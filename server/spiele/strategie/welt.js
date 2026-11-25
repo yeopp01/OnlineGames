@@ -2180,7 +2180,31 @@ class Welt {
 
   // Alles, was der Browser waehrend der Partie schickt, kommt hier an. Der
   // Server kennt die Arten nicht (ADR-0006).
+  //
+  // Bricht ein Befehl eine Lehrzeit ab (einheiten AC-50), kommt die Nahrung
+  // zurueck - wie beim Abbrechen einer Ausbildung (Benutzer, 2026-11-25:
+  // "wenn man eine einheit die sich abruestet bewegt, geht die abruestung
+  // verloren, aber die nahrung wird nicht mehr gutgeschrieben"). Gefragt wird
+  // an dieser einen Stelle, nicht in jedem Befehl: welcher es auch ist, er
+  // hat den Auftrag ersetzt. Wer dabei faellt, entlassen oder bekehrt wird,
+  // bekommt nichts.
   nachricht(spielerId, nachricht) {
+    const lehrlinge = [];
+    for (const id of Array.isArray(nachricht?.einheiten) ? nachricht.einheiten.slice(0, 200) : []) {
+      const einheit = this.einheiten.get(id);
+      if (einheit?.besitzer === spielerId && einheit.auftrag?.art === 'abruesten') lehrlinge.push([einheit, einheit.auftrag]);
+    }
+    const antwort = this.nachrichtAusfuehren(spielerId, nachricht);
+    for (const [einheit, auftrag] of lehrlinge) {
+      if (einheit.auftrag === auftrag || einheit.tot || einheit.besitzer !== spielerId) continue;
+      if (this.einheiten.get(einheit.id) !== einheit) continue;
+      const spieler = this.spielerVon(spielerId);
+      for (const [r, m] of Object.entries(ABRUESTEN.kosten)) spieler[r] += m;
+    }
+    return antwort;
+  }
+
+  nachrichtAusfuehren(spielerId, nachricht) {
     switch (nachricht.auftrag) {
       case 'ausbilden':
         return this.ausbilden(spielerId, nachricht.gebaeude, nachricht.einheit);
