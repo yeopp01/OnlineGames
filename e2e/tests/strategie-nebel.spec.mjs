@@ -228,6 +228,80 @@ test.describe('Nebel', () => {
       test: info,
     });
   });
+
+  test('kampf AC-32: nach dem Neuladen ist das Erkundete noch erkundet und das gesehene fremde Dorfzentrum noch erinnert', async ({}, info) => {
+    // Rueckmeldung des Benutzers (2026-11-25): "beim weiterspielen ist der
+    // nebel, den ich mir angeguckt habe verschwunden." Der Aufbau nach dem
+    // Fortsetzen, nach einer Rueckkehr und nach dem Neuladen ist derselbe.
+    const { anna } = partie;
+    // Der Spaeher bei Berts Dorf geht (Entf): das Dorfzentrum liegt im Nebel,
+    // in der Erinnerung steht es noch.
+    const fremd = await anna.evaluate(() => {
+      const a = window.ansicht;
+      const basis = [...a.spieler.values()].find((s) => s.id !== a.ich).basis;
+      const reiter = [...a.nachher.entries()].find(([, e]) => e.b === a.ich && Math.hypot(e.x - basis.x, e.y - basis.y) < 8);
+      a.gewaehltesGebaeude = null;
+      a.ausgewaehlt = new Set([reiter[0]]);
+      a.beiAuswahl();
+      return basis;
+    });
+    await anna.keyboard.press('Delete');
+    const vorher = await anna.waitForFunction(() => {
+      const a = window.ansicht;
+      const dorf = [...a.erinnert.values()].find((g) => g.art === 'dorfzentrum' && g.b !== a.ich);
+      if (!dorf || a.siehtGebaeude(dorf)) return false;
+      const n = a.nebel;
+      const gedaempft = [];
+      for (let i = 0; i < n.erkundet.length; i++) if (n.erkundet[i] && !n.sichtbar[i] && !n.gebaeude[i]) gedaempft.push(i);
+      return { dorf: dorf.i, gedaempft, stufen: n.zaehlen(), basis: [...a.spieler.values()].find((s) => s.id !== a.ich).basis };
+    }, null, { timeout: 15_000 }).then((h) => h.jsonValue());
+    expect(vorher.gedaempft.length, 'Erkundetes ausser Sicht gibt es').toBeGreaterThan(100);
+
+    await anna.reload();
+    await anna.waitForFunction(() => window.ansicht?.nachher?.size > 0 && window.ansicht.nebel, null, { timeout: 15_000 });
+    await expect(anna.locator('#spiel')).toBeVisible();
+    const nachher = await anna.waitForFunction((v) => {
+      const a = window.ansicht;
+      a.nebel.rechnen(a, true);
+      const behalten = v.gedaempft.filter((i) => a.nebel.erkundet[i]).length;
+      const dorf = a.erinnert.get(v.dorf);
+      return {
+        behalten,
+        stufen: a.nebel.zaehlen(),
+        erinnert: Boolean(dorf),
+        gezeigt: a.gezeigteGebaeude().some((g) => g.i === v.dorf),
+        gesehen: dorf ? a.siehtGebaeude(dorf) : null,
+        // Wo der Spaeher stand, war Annas eigenes Auge - nicht nur eine Karte.
+        nameBekannt: a.nebel.warDort(v.basis.x - 5, v.basis.y),
+      };
+    }, vorher, { timeout: 5_000 }).then((h) => h.jsonValue());
+    // Der Browser hat die Sicht an den Orten gerechnet, an denen er den
+    // Spaeher zeichnete, der Server an denen seiner halben Sekunden - im
+    // Zeitraffer weichen die Raender um ein, zwei Felder ab (gemessen: 117
+    // von 119). Verloren war vorher alles.
+    expect(nachher.behalten / vorher.gedaempft.length, 'das Erkundete ist nach dem Neuladen noch erkundet').toBeGreaterThanOrEqual(0.95);
+    expect(nachher.stufen.erkundet, 'gedaempft fast wie vorher').toBeGreaterThanOrEqual(0.95 * vorher.stufen.erkundet);
+    expect(nachher.erinnert, 'Berts Dorfzentrum steht in der Erinnerung').toBe(true);
+    expect(nachher.gesehen, 'gesehen wird es nicht').toBe(false);
+    expect(nachher.gezeigt, 'und steht doch im Bild').toBe(true);
+    expect(nachher.nameBekannt, 'dort war Annas Auge').toBe(true);
+
+    await anna.evaluate((b) => {
+      const a = window.ansicht;
+      a.ausgewaehlt = new Set();
+      a.beiAuswahl();
+      a.kamera.zoom = 0.9;
+      a.blickAuf(b.x - 6, b.y);
+    }, fremd);
+    await anna.waitForTimeout(400);
+    expect(await bedienteileFrei(anna)).toEqual([]);
+    await nachweis(anna, {
+      spec: KAMPF,
+      ac: 'AC-32',
+      titel: 'Nach dem Neuladen: was Annas Späher bei Berts Dorf gesehen hat, liegt weiter gedämpft da, und das Dorfzentrum steht im Nebel, wie er es zuletzt sah - auch auf der Übersichtskarte',
+      test: info,
+    });
+  });
 });
 
 // Die Sicht als Einstellung (kampf AC-16): eroeffnet "Erkundet", ist die Karte

@@ -2,7 +2,7 @@
 
 **Bereich:** Strategie
 **Kuerzel:** kampf
-**Stand:** 30/31 fertig · 1 zurueckgestellt
+**Stand:** 31/32 fertig · 1 zurueckgestellt
 
 ## Zweck
 
@@ -267,6 +267,17 @@ aus [Spielziel](spielziel.md) AC-10, gemessen in
   (einheiten AC-44, AC-67, AC-69): schwere Armbrust 13 alle 3,7 s,
   Elite-Reiterschütze +20 und Elite-Wiedergänger +10 Leben, Söldner Tempo
   0,95.
+- **AC-32** `fertig` **Erkundetes übersteht das Fortsetzen** — Wer eine
+  Partie fortsetzt, neu lädt oder nach einem Abbruch zurückkehrt, sieht das Gelände,
+  das er erkundet hatte, wieder erkundet, und die fremden Gebäude im Nebel
+  so, wie er sie zuletzt sah (AC-12) — auch eines, das inzwischen im Nebel
+  gefallen ist. Der Server weiß beides (`sicht.erkundet`, `welt.bekannt`)
+  und schickt es mit dem Aufbau (`ek`, `er`); der Browser fing vorher
+  schwarz an. Mit der Kartografie (bauen AC-52) ist alles erkundet — wo
+  das eigene Auge war, weiß der Server dann nicht mehr, und fremde Namen
+  stehen erst wieder, wenn man hinsieht. **Aus dem Spiel auf dem Server
+  (2026-11-25):** „beim weiterspielen ist der nebel, den ich mir angeguckt
+  habe verschwunden".
 
 ### Haltungen (Benutzer, Punkt 15b)
 

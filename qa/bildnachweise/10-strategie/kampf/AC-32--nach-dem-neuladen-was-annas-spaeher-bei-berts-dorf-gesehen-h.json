@@ -1,0 +1,10 @@
+{
+  "spec": "10-strategie/kampf.md",
+  "ac": "AC-32",
+  "titel": "Nach dem Neuladen: was Annas Späher bei Berts Dorf gesehen hat, liegt weiter gedämpft da, und das Dorfzentrum steht im Nebel, wie er es zuletzt sah - auch auf der Übersichtskarte",
+  "datei": "e2e/tests/strategie-nebel.spec.mjs",
+  "pfad": [
+    "Nebel",
+    "kampf AC-32: nach dem Neuladen ist das Erkundete noch erkundet und das gesehene fremde Dorfzentrum noch erinnert"
+  ]
+}

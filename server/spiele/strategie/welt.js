@@ -291,6 +291,17 @@ function achtel(dx, dy) {
 }
 
 // Die Punkte im Zustand, nur wenn es welche gibt - ein Zustand bleibt klein.
+/**
+ * Ein Feld aus Nullen und Einsen als Bits, acht je Byte, das erste Feld im
+ * niedrigsten Bit (kampf AC-32) - fuer die Leitung, nicht fuer den Stand.
+ * @param {Uint8Array} felder
+ */
+function bitsPacken(felder) {
+  const bits = new Uint8Array(Math.ceil(felder.length / 8));
+  for (let i = 0; i < felder.length; i++) if (felder[i]) bits[i >> 3] |= 1 << (i & 7);
+  return bits;
+}
+
 function punkteFeld(punkte) {
   return punkte > 0 ? { pk: punkte } : {};
 }
@@ -6515,19 +6526,39 @@ class Welt {
 
   /**
    * Der Aufbau je Spieler (kampf AC-13): fremde Gebaeude nur, wenn er sie
-   * sieht. Wer zurueckkehrt, faengt mit seinem Wissen neu an - was er im Nebel
-   * erinnerte, sieht er erst wieder, wenn er hinsieht.
+   * sieht. Wer zurueckkehrt oder fortsetzt, bekommt mit, was er weiss
+   * (kampf AC-32): das Erkundete (`ek`) und die fremden Gebaeude, die er im
+   * Nebel erinnert (`er`) - so, wie er sie zuletzt sah, auch gefallene.
    */
   aufbauFuer(id) {
     const voll = this.aufbau();
     if (!this.nebelGiltFuer(id)) return voll;
     if (!this.bekannt) this.bekannt = new Map();
+    const vorher = this.bekannt.get(id);
     const bekannt = new Map();
     this.bekannt.set(id, bekannt);
     // Die Karte im Aufbau ist die heutige - Aufgeschobenes ist darin enthalten.
     this.felderOffen?.delete(id);
     const sichtbar = [...this.gebaeude.values()].filter((g) => this.teiltSicht(id, g.besitzer) || this.siehtGebaeude(id, g));
     for (const g of sichtbar) if (!this.teiltSicht(id, g.besitzer)) bekannt.set(g.id, { art: g.art, x: g.x, y: g.y });
+    // Was er im Nebel erinnert: Art und Ort, wie zuletzt gesehen - nicht das
+    // heutige Leben, das verriete, was dort geschah. Beim naechsten Hinsehen
+    // schickt `gebaeudeFuer` den echten Stand nach (`veraltet`) oder das
+    // Verschwinden.
+    const erinnert = [];
+    for (const [gid, ort] of vorher || []) {
+      if (bekannt.has(gid)) continue;
+      const besitzer = this.gebaeudeBesitzer.get(gid);
+      if (besitzer === undefined || this.teiltSicht(id, besitzer)) continue;
+      const g = this.gebaeude.get(gid);
+      bekannt.set(gid, { ...ort, veraltet: true });
+      erinnert.push({
+        i: gid, art: ort.art, b: besitzer, x: ort.x, y: ort.y, ...(g?.quer ? { qu: 1 } : {}),
+        h: this.gebaeudewert(besitzer, ort.art, 'leben'),
+      });
+    }
+    const sicht = this.sichten?.get(id);
+    const erkundet = sicht && !sicht.karte && this.sichtArt === 'nebel' ? { ek: Buffer.from(bitsPacken(sicht.erkundet)).toString('base64') } : {};
     // Fremde Marktpreise verrieten, was der andere getauscht hat - wie seine
     // Vorraete bleiben sie bei ihm (bauen AC-33).
     const spieler = voll.spieler.map((s) => {
@@ -6536,7 +6567,7 @@ class Welt {
       return rest;
     });
     const draht = (g) => (this.teiltSicht(id, g.besitzer) ? this.gebaeudeFuerDraht(g.id) : this.ohneInsassen(this.gebaeudeFuerDraht(g.id)));
-    return { ...voll, spieler, gebaeude: sichtbar.map(draht) };
+    return { ...voll, spieler, gebaeude: sichtbar.map(draht), ...(erinnert.length ? { er: erinnert } : {}), ...erkundet };
   }
 
   // Gebaeude mit Schlange und Fortschritt (bauen AC-10), fuer die

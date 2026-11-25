@@ -351,3 +351,54 @@ test('kampf AC-11: aufgedeckt gibt es keinen Nebel - der Klick auf den fernen Ge
   assert.equal(reiter.auftrag?.art, 'angreifen');
   assert.equal(reiter.auftrag.ziel, hirte.id);
 });
+
+test('kampf AC-32: fortgesetzt bringt der Aufbau das Erkundete und die erinnerten fremden Gebaeude mit - auch eines, das im Nebel fiel', () => {
+  const steckbrief = require('../server/spiele/strategie/steckbrief.js');
+  const welt = new Welt(ZWEI, 4711);
+  const p = abseits(welt);
+  const g = welt.karte.groesse;
+  // Annas Spaeher sieht zwei Haeuser Berts.
+  const spaeher = welt.einheitAnlegen('a', p.x, p.y, 'spaeherreiter');
+  const stehen = welt.gebaeudeAnlegen('b', 'haus', p.x + 3, p.y, true);
+  const fallen = welt.gebaeudeAnlegen('b', 'haus', p.x - 3, p.y, true);
+  welt.sichtAktualisieren();
+  assert.ok(welt.siehtGebaeude('a', stehen) && welt.siehtGebaeude('a', fallen), 'beide gesehen');
+  welt.aufbauFuer('a');
+  // Er reitet fort, und im Nebel faellt eines der beiden.
+  welt.einheiten.delete(spaeher.id);
+  welt.gebaeudeZerstoeren(fallen);
+  welt.sichtAktualisieren();
+  assert.equal(welt.siehtGebaeude('a', stehen), false, 'jetzt im Nebel');
+  const bertsDorf = welt.spielerVon('b').basis;
+  assert.equal(welt.erkundet('a', bertsDorf.x, bertsDorf.y), false, 'Berts Dorf kennt Anna nicht');
+
+  // Aufhoeren und fortsetzen: gesichert, geladen, neuer Aufbau.
+  const geladen = steckbrief.laden(welt.sichern());
+  const aufbau = geladen.aufbauFuer('a');
+  const bits = Buffer.from(aufbau.ek, 'base64');
+  const erkundet = (x, y) => Boolean(bits[(y * g + x) >> 3] & (1 << ((y * g + x) & 7)));
+  for (let i = 0; i < g * g; i++) {
+    assert.equal(erkundet(i % g, Math.floor(i / g)), geladen.erkundet('a', i % g, Math.floor(i / g)), `Feld ${i} wie auf dem Server`);
+  }
+  assert.equal(erkundet(p.x, p.y), true, 'wo der Spaeher stand, ist erkundet');
+  assert.equal(erkundet(bertsDorf.x, bertsDorf.y), false, 'Berts Dorf bleibt schwarz');
+  const er = new Map((aufbau.er || []).map((b) => [b.i, b]));
+  assert.deepEqual(Object.keys(er.get(stehen.id) || {}).sort(), ['art', 'b', 'h', 'i', 'x', 'y']);
+  assert.deepEqual([er.get(stehen.id).art, er.get(stehen.id).b, er.get(stehen.id).x, er.get(stehen.id).y], ['haus', 'b', stehen.x, stehen.y]);
+  assert.ok(er.has(fallen.id), 'das im Nebel gefallene steht in der Erinnerung noch');
+  assert.ok(!aufbau.gebaeude.some((b) => b.i === stehen.id || b.i === fallen.id), 'als gesehen schickt er keines');
+
+  // Wieder hingesehen: das stehende kommt mit dem echten Stand, das gefallene als weg.
+  geladen.einheitAnlegen('a', p.x, p.y, 'spaeherreiter');
+  geladen.sichtAktualisieren();
+  const zustand = geladen.zustandJeSpieler(['a']).get('a');
+  const geschickt = new Map((zustand.gebaeude || []).map((b) => [b.i, b]));
+  assert.equal(geschickt.get(stehen.id)?.art, 'haus', 'das stehende kommt nach');
+  assert.equal(geschickt.get(fallen.id)?.weg, true, 'das gefallene ist weg');
+
+  // Bei "Aufgedeckt" gibt es nichts zu erinnern.
+  const offen = new Welt(ZWEI, 4711, { sicht: 'aufgedeckt' });
+  const ohne = offen.aufbauFuer('a');
+  assert.equal(ohne.ek, undefined);
+  assert.equal(ohne.er, undefined);
+});

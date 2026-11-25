@@ -26,6 +26,29 @@ Punkt unten sucht, sucht dort nach „Punkt <n> (Benutzer“.
 
 ## Zuletzt fortgeschrieben
 
+**2026-11-25 — Nebel nach dem Fortsetzen, Strg, Ei (nach `c77ed09`).**
+`strategie` ist `c77ed09`, `main` = `origin/main` = Server `a0c1039`.
+Rückmeldungen aus seinem Spiel heute: (1) **„beim weiterspielen ist der
+nebel … verschwunden"** — kampf AC-32 gebaut (`welt.aufbauFuer` schickt
+`ek` = Erkundetes als Bits in Base64 und `er` = erinnerte fremde Gebäude
+aus `welt.bekannt`, markiert `veraltet`; `nebel.erkundetSetzen`,
+`ansicht.erinnert` aus `er`), Rechenteil-Test mit Gegenprobe, Browserfall
+in `strategie-nebel.spec.mjs` mit Bild, Board 688/772; `check:kurz` lief,
+**Commit steht aus**. Mit Kartografie kein `ek`. (2) **„wenn ich mit einem
+dorfbewohner strg drücke, dann möchte ich mehrere häuser hintereinander
+bauen können"** — als bedienung AC-89 geplant: `platzierenKlick(e.shiftKey
+|| e.ctrlKey)` in `ansicht.js` (~1358), Zeile in `tasten.js`, Browserfall
+nach dem Muster `strategie-bauen-reihe.spec.mjs`. (3) **„ich hab
+kartografie aber das drachenei finde ich trotzdem nicht"** — bisher so
+gewollt (Ei nur in Sicht, welt.js ~6517). **Freigegeben** („ja bitte das
+mit dem ei so machen"): mit Kartografie steht an jedem Nest ein gedämpftes
+Ei im Nebel und ein Punkt auf der Übersichtskarte, erinnert wie ein
+Gebäude — es verschwindet erst, wenn man das Feld wieder sieht. Neues
+Kriterium in einheiten-und-befehle.md. (4) Frage beantwortet: der Drache
+frisst schon (1,6 Nahrung/s, einheiten AC-54). **Zoom weiter als 3,6** ist
+weiter offen (Bilder zoom3.6/zoom5.2 in `%TEMP%/onlinegames-sicht`).
+Pushen/Ausrollen nur auf sein Wort.
+
 **2026-11-24, später Abend — Glocke gemergt, Schafe und Zoom (nicht
 committet).** Merge `1d7ea48` auf `strategie` (Glocke, Fassung 4), **nicht
 gepusht** — `main`/`origin/main` stehen auf `3eb0302`. check:kurz zweimal

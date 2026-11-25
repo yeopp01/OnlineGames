@@ -165,6 +165,21 @@ export class Nebel {
   }
 
   /**
+   * Was schon erkundet war, aus dem Aufbau (kampf AC-32): nach einer Rueckkehr
+   * oder dem Fortsetzen faengt der Browser nicht schwarz an. Ohne Kartografie
+   * war dort ein eigenes Auge (oder das eines Verbuendeten).
+   * @param {Uint8Array} bits acht Felder je Byte, das erste im niedrigsten Bit
+   */
+  erkundetSetzen(bits) {
+    for (let i = 0; i < this.erkundet.length; i++) {
+      if (!(bits[i >> 3] & (1 << (i & 7)))) continue;
+      this.erkundet[i] = 1;
+      this.selbst[i] = 1;
+    }
+    this.takt = -Infinity;
+  }
+
+  /**
    * Die ganze Karte gilt als erkundet (Kartografie, bauen AC-52). Gesehen ist
    * damit nichts - das Bild wird beim naechsten Rechnen neu geschrieben.
    */

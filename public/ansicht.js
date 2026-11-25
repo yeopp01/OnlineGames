@@ -372,8 +372,12 @@ export class Ansicht {
     // Die Karte ist bekannt, ohne gesehen zu sein (Kartografie, bauen AC-52) -
     // der Server sagt es mit jedem Zustand neu (`ka`).
     this.karteBekannt = false;
-    // Fremde Gebaeude, wie man sie zuletzt gesehen hat (kampf AC-12).
-    this.erinnert = new Map();
+    // Fremde Gebaeude, wie man sie zuletzt gesehen hat (kampf AC-12) - nach
+    // einer Rueckkehr oder dem Fortsetzen aus dem Aufbau (kampf AC-32).
+    this.erinnert = new Map(Array.isArray(nachricht.er) ? nachricht.er.map((b) => [b.i, b]) : []);
+    // Das Erkundete, wie es der Server kennt (kampf AC-32): acht Felder je
+    // Byte, das erste im niedrigsten Bit.
+    if (typeof nachricht.ek === 'string') this.nebel.erkundetSetzen(Uint8Array.from(atob(nachricht.ek), (z) => z.charCodeAt(0)));
     // Was schon angebrochen ist, bringt der Aufbau mit (darstellung AC-31) -
     // nach einer Rueckkehr staende sonst jeder gefaellte Baum wieder.
     this.fuellung = new Map(Array.isArray(nachricht.karte.fuellung) ? nachricht.karte.fuellung : []);
