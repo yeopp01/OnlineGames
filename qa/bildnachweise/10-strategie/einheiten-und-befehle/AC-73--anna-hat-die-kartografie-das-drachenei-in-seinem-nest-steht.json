@@ -1,0 +1,10 @@
+{
+  "spec": "10-strategie/einheiten-und-befehle.md",
+  "ac": "AC-73",
+  "titel": "Anna hat die Kartografie: das Drachenei in seinem Nest steht gedämpft im Nebel, auf der Übersichtskarte ein Punkt mit hellem Rand an jedem Nest",
+  "datei": "e2e/tests/strategie-drache.spec.mjs",
+  "pfad": [
+    "Nester mit der Kartografie",
+    "einheiten AC-73: mit der Kartografie steht an jedem Nest ein Ei im Nebel und ein Punkt auf der Uebersichtskarte - leer gesehen ist es fort"
+  ]
+}

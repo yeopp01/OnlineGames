@@ -241,3 +241,95 @@ test.describe('Drache', () => {
   });
 });
 
+
+// Rueckmeldung des Benutzers: "ich hab kartografie aber das drachenei finde
+// ich trotzdem nicht". Mit der Kartografie stehen die Nester auf der Karte -
+// ein Ei im Nebel aus der Erinnerung, bis man das Nest leer sieht.
+test.describe('Nester mit der Kartografie', () => {
+  let partie;
+  test.beforeAll(async ({ browser }, info) => {
+    // Im Nebel - sonst steht jedes Ei ohnehin im Bild.
+    partie = await partieZuZweit(browser, info);
+    await partie.anna.waitForFunction(() => window.ansicht && window.ansicht.nachher.size > 0);
+  });
+  test.afterAll(() => partieBeenden(partie));
+
+  test('einheiten AC-73: mit der Kartografie steht an jedem Nest ein Ei im Nebel und ein Punkt auf der Uebersichtskarte - leer gesehen ist es fort', async ({}, info) => {
+    test.setTimeout(240_000);
+    const { anna, code } = partie;
+    await rohstoffe(anna, code, 'Anna', { holz: 5000, nahrung: 5000, gold: 5000, stein: 2000, zeitalter: 1 });
+    await anna.waitForFunction(() => window.ansicht.zeitalter === 1);
+    await expect(anna.locator('#zeitalterwechsel')).toBeHidden({ timeout: 15_000 });
+    const basis = await anna.evaluate(() => window.ansicht.spieler.get(window.ansicht.ich).basis);
+    expect(await anna.evaluate(() => window.ansicht.nester.size), 'ohne Kartografie kein Nest').toBe(0);
+
+    // Die Kartografie am Markt erforschen.
+    const markt = await gebaeudeInDerNaehe(anna, code, 'Anna', 'markt', basis, { von: 6, bis: 16 });
+    await anna.waitForFunction((g) => window.ansicht.gebaeude.has(g), markt);
+    await anna.evaluate((g) => {
+      const a = window.ansicht;
+      a.gewaehltesGebaeude = g;
+      a.ausgewaehlt.clear();
+      const m = a.gebaeudeMitte(a.gebaeude.get(g));
+      a.blickAuf(m.x, m.y);
+      a.beiAuswahl();
+    }, markt);
+    await anna.locator('[data-ausbilden="kartografie"]').click();
+    await zeitraffer(anna, code, 20);
+    await anna.waitForFunction(() => window.ansicht.verbesserungen.includes('kartografie'), null, { timeout: 120_000 });
+    await zeitraffer(anna, code, 1);
+
+    // Jedes Nest ist bekannt; das naechste liegt im Nebel, der Server schickt
+    // dort kein Ei - gezeichnet wird es aus der Erinnerung.
+    await anna.waitForFunction(() => window.ansicht.nester.size > 0);
+    const nest = await anna.evaluate((b) => {
+      const a = window.ansicht;
+      return [...a.nester.values()].sort((p, q) => Math.hypot(p.x - b.x, p.y - b.y) - Math.hypot(q.x - b.x, q.y - b.y))[0];
+    }, basis);
+    const lage = () => anna.evaluate((n) => {
+      const a = window.ansicht;
+      return {
+        voll: a.nester.get(`${n.x},${n.y}`).voll,
+        gesehen: a.nebel.sieht(n.x, n.y),
+        vomServer: a.eiAm(n.x, n.y),
+        erinnert: a.erinnerteNester().some((e) => e.x === n.x && e.y === n.y),
+        aufKarte: window.uebersicht.nestpunkte.some((e) => e.x === n.x && e.y === n.y),
+      };
+    }, nest);
+    await expect.poll(lage).toEqual({ voll: true, gesehen: false, vomServer: false, erinnert: true, aufKarte: true });
+    await anna.evaluate((n) => {
+      const a = window.ansicht;
+      a.ausgewaehlt.clear();
+      a.gewaehltesGebaeude = null;
+      a.beiAuswahl();
+      a.kamera.zoom = 2;
+      a.blickAuf(n.x, n.y);
+    }, nest);
+    await anna.mouse.move(700, 300);
+    await anna.waitForTimeout(300);
+    await nachweis(anna, {
+      spec: EINHEITEN,
+      ac: 'AC-73',
+      titel: 'Anna hat die Kartografie: das Drachenei in seinem Nest steht gedämpft im Nebel, auf der Übersichtskarte ein Punkt mit hellem Rand an jedem Nest',
+      test: info,
+    });
+
+    // Ein Dorfbewohner kommt hin: jetzt schickt der Server das Ei, die
+    // Erinnerung tritt zurueck - kein zweites Ei an derselben Stelle.
+    expect(await einheitenAufstellen(anna, code, 'Anna', 1, { art: 'dorfbewohner', x: nest.x - 3, y: nest.y + 1 })).toBe(1);
+    await expect.poll(lage, { timeout: 15_000 }).toEqual({ voll: true, gesehen: true, vomServer: true, erinnert: false, aufKarte: true });
+    const dorf = await anna.evaluate(() => window.ansicht.werte.einheiten.dorfbewohner.kuerzel);
+    const traeger = await anna.waitForFunction(({ n, dorf }) => {
+      const a = window.ansicht;
+      const nah = [...a.nachher.values()].filter((e) => e.b === a.ich && e.k === dorf && Math.hypot(e.x - n.x, e.y - n.y) < 7);
+      return nah.length ? nah[0].i : null;
+    }, { n: nest, dorf }).then((h) => h.jsonValue());
+
+    // Er hebt es auf: das Nest ist leer gesehen, auch auf der Uebersichtskarte fort.
+    await waehlen(anna, [traeger], { zoom: 2, blick: { x: nest.x, y: nest.y } });
+    const wo = await aufSeite(anna, { feld: { x: nest.x, y: nest.y } });
+    await anna.mouse.click(wo.x, wo.y, { button: 'right' });
+    await anna.waitForFunction((id) => window.ansicht.nachher.get(id)?.a === 'e', traeger, { timeout: 30_000 });
+    await expect.poll(lage, { timeout: 15_000 }).toEqual({ voll: false, gesehen: true, vomServer: false, erinnert: false, aufKarte: false });
+  });
+});

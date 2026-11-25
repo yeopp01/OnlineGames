@@ -165,3 +165,42 @@ test('einheiten AC-51: im Nebel sieht nur, wer hinsieht - das Ei steht nicht im 
   assert.deepEqual(welt.zustandJeSpieler(['a', 'b']).get('a').ei, [[ei.id, ei.x, ei.y, 1]], 'mit dem Spaeher daneben schon');
   assert.ok(spaeher);
 });
+
+test('einheiten AC-73: mit der Kartografie schickt der Server die Nester - jedem im Sichtteam alle, gesehen nur, wo ein Auge ist; ohne sie und ohne Drachen keine', () => {
+  const DREI = [...ZWEI, { id: 'c', name: 'Carla' }];
+  const welt = new Welt(DREI, 7, { sicht: 'nebel', teams: { a: 1, b: 2, c: 1 } });
+  const anna = welt.spielerVon('a');
+  const nester = welt.karte.eier.map(({ x, y }) => `${x},${y}`).sort();
+  assert.ok(nester.length >= 1);
+  welt.sichtAktualisieren();
+  const zustand = () => welt.zustandJeSpieler(['a', 'b', 'c']);
+  for (const [id, z] of zustand()) assert.equal(z.en, undefined, `${id}: ohne Kartografie keine Nester`);
+
+  welt.erforschen(anna, 'kartografie');
+  let z = zustand();
+  assert.deepEqual(z.get('a').en.map(([x, y]) => `${x},${y}`).sort(), nester, 'Anna: jedes Nest');
+  assert.deepEqual(z.get('c').en.map(([x, y]) => `${x},${y}`).sort(), nester, 'Carla teilt die Sicht und die Karte');
+  assert.equal(z.get('b').en, undefined, 'Bert hat keine Karte');
+  assert.ok(z.get('a').en.every((n) => n.length === 2), 'gesehen ist keines - kein Auge dort');
+  assert.equal(z.get('a').ei, undefined, 'und das Ei selbst kommt nicht');
+
+  // Ein Spaeher am ersten Nest: dieses ist gesehen, und das Ei kommt mit.
+  const [nest] = welt.karte.eier;
+  welt.einheitAnlegen('a', nest.x + 1, nest.y, 'spaeherreiter');
+  welt.sichtAktualisieren();
+  z = zustand().get('a');
+  assert.deepEqual(z.en.find(([x, y]) => x === nest.x && y === nest.y), [nest.x, nest.y, 1]);
+  assert.ok(z.ei.some(([, x, y]) => x === nest.x && y === nest.y), 'das Ei in Sicht, in derselben Nachricht');
+  // Wird es fortgetragen, steht im Nest keines mehr - das sagt nur `ei`.
+  const ei = [...welt.eier.values()].find((e) => e.nest.x === nest.x && e.nest.y === nest.y);
+  ei.x += 3;
+  z = zustand().get('a');
+  assert.deepEqual(z.en.find(([x, y]) => x === nest.x && y === nest.y), [nest.x, nest.y, 1], 'das Nest bleibt ein Nest');
+  assert.ok(!z.ei?.some(([, x, y]) => x === nest.x && y === nest.y), 'leer');
+
+  // Ohne Drachen gibt es keine Nester.
+  const ohne = new Welt(DREI, 7, { sicht: 'nebel', drache: 'aus', teams: { a: 1, b: 2, c: 1 } });
+  ohne.sichtAktualisieren();
+  ohne.erforschen(ohne.spielerVon('a'), 'kartografie');
+  assert.equal(ohne.zustandJeSpieler(['a']).get('a').en, undefined);
+});

@@ -294,6 +294,9 @@ export class Ansicht {
     this.tiere = new Map();
     // Die Dracheneier am Boden, die man sieht (einheiten AC-51): id -> {i, x, y, nest}.
     this.eier = new Map();
+    // Die Nester, die die Kartografie zeigt (einheiten AC-73): Feld -> {x, y,
+    // voll}. `voll` ist die Erinnerung: wahr, bis er das Nest leer sieht.
+    this.nester = new Map();
     this.vorraete = { holz: 0, nahrung: 0, gold: 0, stein: 0, bev: 0, raum: 0, gefallene: 0 };
     // Was im letzten Bild in welcher Reihenfolge gezeichnet wurde - fuer den
     // Browserlauf (darstellung AC-7).
@@ -417,6 +420,7 @@ export class Ansicht {
     if (Number.isInteger(nachricht.t)) this.takt = nachricht.t;
     this.kuendigungenMerken(nachricht.bu);
     this.eierMerken(nachricht.ei);
+    this.nester = new Map();
 
     // Die Uebersichtskarte malt ihr Gelaende einmal und danach nur bei
     // geaenderten Feldern - eine neue Karte ist die groesste Aenderung, die es
@@ -731,6 +735,7 @@ export class Ansicht {
     for (const s of nachricht.spieler) if (s.kw) this.einheitenwerte.set(s.id, s.kw);
     this.kuendigungenMerken(nachricht.bu);
     this.eierMerken(nachricht.ei);
+    this.nesterMerken(nachricht.en);
     this.drachenMerken(nachricht);
 
     this.ausMerken(nachricht.spieler);
@@ -2994,6 +2999,11 @@ export class Ansicht {
     }
     // Die Eier am Boden (einheiten AC-51): der Server schickt nur, was man sieht.
     for (const ei of this.eier.values()) stehend.push({ tiefe: ei.x + ei.y, x: ei.x, y: ei.y, art: 'ei', ei });
+    // Dazu die erinnerten in den Nestern (einheiten AC-73) - gedaempft wie
+    // alles Erkundete, weil der Nebel darueber liegt.
+    for (const nest of this.erinnerteNester()) {
+      stehend.push({ tiefe: nest.x + nest.y, x: nest.x, y: nest.y, art: 'ei', ei: { x: nest.x, y: nest.y, nest: true } });
+    }
     const anteil = this.anteil(jetzt);
     for (const einheit of this.nachher.values()) {
       const alt = this.vorher.get(einheit.i);
@@ -3916,6 +3926,34 @@ export class Ansicht {
    */
   eierMerken(liste) {
     this.eier = new Map((liste || []).map(([i, x, y, nest, gefallen]) => [i, { i, x, y, nest: Boolean(nest), gefallen: Boolean(gefallen) }]));
+  }
+
+  /**
+   * Die Nester mit der Kartografie (einheiten AC-73): `[x, y]` oder
+   * `[x, y, 1]`, wenn er das Nest gerade sieht. Leer wird ein Nest nur aus
+   * derselben Nachricht wie die Eier in Sicht - die eigene Rechnung des
+   * Nebels liefe dem Server um einen Takt voraus und haette ein Nest leer
+   * genannt, dessen Ei der Server noch gar nicht geschickt hatte.
+   */
+  nesterMerken(liste) {
+    for (const [x, y, gesehen] of liste || []) {
+      const feld = `${x},${y}`;
+      let nest = this.nester.get(feld);
+      if (!nest) this.nester.set(feld, (nest = { x, y, voll: true }));
+      if (gesehen) nest.voll = this.eiAm(x, y);
+    }
+  }
+
+  eiAm(x, y) {
+    for (const ei of this.eier.values()) if (ei.x === x && ei.y === y) return true;
+    return false;
+  }
+
+  // Die Nester, deren Ei er erinnert und gerade nicht vom Server hat -
+  // nur, solange der Nebel gilt: danach schickt der Server jedes Ei.
+  erinnerteNester() {
+    if (!this.nebelAn) return [];
+    return [...this.nester.values()].filter((nest) => nest.voll && !this.eiAm(nest.x, nest.y));
   }
 
   /**

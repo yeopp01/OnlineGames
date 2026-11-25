@@ -2,7 +2,7 @@
 
 **Bereich:** Strategie
 **Kuerzel:** einheiten
-**Stand:** 61/65 fertig · 1 in QA · 2 offen · 1 zurueckgestellt
+**Stand:** 62/66 fertig · 1 in QA · 2 offen · 1 zurueckgestellt
 
 ## Zweck
 
@@ -815,6 +815,25 @@ der Einheit bleiben die der Vorstufe. Die Werte stehen in
   empfindlich, da darf ich nicht genau aufs haus klicken, sonst gehen sie
   nicht hin - sondern ich muss ganz knapp vors haus klicken". Vorher suchte
   das Schaf einen Weg genau zum Klick, bekam keinen und blieb stehen.
+- **AC-73** `fertig` **Kartografie zeigt die Nester** — Wer die
+  Kartografie hat ([Bauen](bauen.md) AC-52), sieht an jedem Nest (AC-51)
+  ein Ei, gedämpft im Nebel wie alles Erkundete, und auf der
+  Übersichtskarte einen Punkt — so, wie die Karte zu Beginn war. Es ist
+  eine **Erinnerung wie ein fremdes Gebäude** (Kampf AC-12): sieht er das
+  Nest und es ist leer, verschwindet es aus Bild und Übersicht; wird ein Ei
+  im Nebel fortgetragen, erfährt er es erst beim Hinsehen. Wo das Ei jetzt
+  ist, verrät der Server nicht (Kampf AC-13): er schickt mit der
+  Kartografie die Plätze der Nester und je Nest, ob der Spieler es gerade
+  sieht — leer wird ein Nest im Browser nur aus derselben Nachricht, die
+  die Eier in Sicht trägt. **Benutzer, 2026-11-25:** „ich hab kartografie
+  aber das drachenei finde ich trotzdem nicht" — „ja bitte das mit dem ei
+  so machen". **Gesetzt:** nach dem Neuladen steht ein schon leer
+  gesehenes Nest wieder da, bis es noch einmal gesehen wird — die
+  Erinnerung liegt im Browser, nicht im Spielstand. **Messbar:** ohne
+  Kartografie schickt der Server keine Nester; mit ihr jedem im Sichtteam
+  alle, gesehen nur, wo ein Auge ist; im Browser steht im Nebel an jedem
+  Nest ein Ei und auf der Übersicht ein Punkt, ein leer gesehenes Nest
+  verschwindet.
 
 ## Grenzfaelle
 

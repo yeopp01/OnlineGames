@@ -6542,6 +6542,12 @@ class Welt {
     const eier = (voll.ei || []).filter(([, x, y, , gefallen]) => gefallen || this.sieht(id, x, y));
     if (eier.length) auszug.ei = eier;
     else delete auszug.ei;
+    // Mit der Kartografie die Nester (einheiten AC-73): wo sie liegen und ob
+    // er sie gerade sieht - nicht, ob dort noch ein Ei liegt. Das erfaehrt
+    // er aus `ei` derselben Nachricht, nur wo er hinsieht.
+    if (this.drachenAn && this.sichten?.get(id)?.karte && this.karte.eier?.length) {
+      auszug.en = this.karte.eier.map(({ x, y }) => (this.sieht(id, x, y) ? [x, y, 1] : [x, y]));
+    }
     const gebaeude = this.gebaeudeFuer(id, voll.gebaeude || []);
     if (gebaeude.length) auszug.gebaeude = gebaeude;
     else delete auszug.gebaeude;

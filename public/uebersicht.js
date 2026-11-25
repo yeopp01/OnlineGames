@@ -39,6 +39,7 @@ export class Uebersicht {
     this.punkte = [];
     this.rahmen = [];
     this.zielpunkt = null;
+    this.nestpunkte = [];
     this.binden();
   }
 
@@ -217,6 +218,23 @@ export class Uebersicht {
       s.lineWidth = 2;
       s.stroke();
     }
+    // Die Nester mit der Kartografie (einheiten AC-73): ein Ei, das dort
+    // liegt oder an das er sich erinnert - kleiner und ohne Glut als das
+    // eines gefallenen Drachen.
+    const nestpunkte = [];
+    for (const nest of (ansicht.nebelAn && ansicht.nester?.values()) || []) {
+      if (!nest.voll) continue;
+      nestpunkte.push({ x: nest.x, y: nest.y });
+      const p = this.feldZuPunkt(nest.x, nest.y);
+      s.beginPath();
+      s.arc(p.x, p.y, 3, 0, Math.PI * 2);
+      s.fillStyle = '#2b2320';
+      s.fill();
+      s.strokeStyle = '#d9b46a';
+      s.lineWidth = 1.5;
+      s.stroke();
+    }
+    this.nestpunkte = nestpunkte;
 
     // Das Zeichen am Ziel eines Befehls steht auch hier (bedienung AC-53):
     // wer auf der Uebersicht schickt, sieht das Spielbild dort meist nicht.
