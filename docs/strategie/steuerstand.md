@@ -26,6 +26,17 @@ Punkt unten sucht, sucht dort nach „Punkt <n> (Benutzer“.
 
 ## Zuletzt fortgeschrieben
 
+**2026-11-25, Nachmittag — `8c9a297` einheiten AC-74** (Benutzer: „wenn
+der drache jemandem nachfliegt ist das etwas hibbelig"; nicht gepusht).
+Außer Reichweite nimmt ein Flieger jeden Takt die Lage des Ziels ohne
+Wegsuche, in Reichweite gleitet er hinterher (`welt.nachfliegen`,
+`FLUG_ABSTAND` 0,5); im Bild nie die Standhaltung, Feueratem nur im Schlag
+(`ansicht.fliegt`, `figurPhasen`). Kein neues Feld, keine neue Fassung.
+`strategie-drache.spec.mjs` 8 von 8 zweimal, check:kurz grün (1273 Tests,
+39 Partien), qa:abweichung: AC-74 neu, kampf AC-23 und einheiten AC-53
+je 75 % (Drache steht anders) — angesehen. Board 691/775. Weiter offen
+und gefragt: (a) Späherlinie, (b) „Ei ablegen" (siehe darunter).
+
 **2026-11-25, Mittag — Stand nach `c4cf38b`** (nicht gepusht, `main` =
 Server `a0c1039`). Committet auf `strategie`: `f9fa0a5` kampf AC-32 (Nebel
 nach dem Fortsetzen), `c63afd9` Abrüsten-Abbruch erstattet die Nahrung,
@@ -482,6 +493,11 @@ ode_modules"`, **nie `rm -rf` auf den
   Ordner mit der Junction.**
 - **`zeitraffer 0` hält auch die Sicht an**: was der Prüfgriff danach
   aufstellt, bleibt für den Gegner im Nebel. Erst sehen lassen, dann anhalten.
+- **`lebenSetzen` tötet niemanden** (setzt mindestens 1). Wer im
+  Browserfall eine Einheit loswerden will, lässt den Besitzer sie entlassen:
+  `ansicht.beiAuftrag({ auftrag: 'entlassen', einheit: id })` auf seiner
+  Seite. Und wer einen Drachen verfolgen lässt, holt ihn danach an seinen
+  Platz zurück — sonst stehen die Fälle danach woanders (kampf AC-23).
 
 **Tests**
 
