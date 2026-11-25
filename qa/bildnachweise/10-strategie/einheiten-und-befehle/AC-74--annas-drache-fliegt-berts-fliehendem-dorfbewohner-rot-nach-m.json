@@ -1,0 +1,10 @@
+{
+  "spec": "10-strategie/einheiten-und-befehle.md",
+  "ac": "AC-74",
+  "titel": "Annas Drache fliegt Berts fliehendem Dorfbewohner (rot) nach, mit gehobenen Flügeln - kein Standbild dazwischen",
+  "datei": "e2e/tests/strategie-drache.spec.mjs",
+  "pfad": [
+    "Drache",
+    "einheiten AC-74: der Drache fliegt Berts fliehendem Dorfbewohner nach - im Bild schlaegt er dabei immer mit den Fluegeln und speit nur im Schlag"
+  ]
+}

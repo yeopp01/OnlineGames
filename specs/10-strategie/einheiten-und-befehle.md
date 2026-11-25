@@ -2,7 +2,7 @@
 
 **Bereich:** Strategie
 **Kuerzel:** einheiten
-**Stand:** 62/66 fertig · 1 in QA · 2 offen · 1 zurueckgestellt
+**Stand:** 63/67 fertig · 1 in QA · 2 offen · 1 zurueckgestellt
 
 ## Zweck
 
@@ -834,6 +834,21 @@ der Einheit bleiben die der Vorstufe. Die Werte stehen in
   alle, gesehen nur, wo ein Auge ist; im Browser steht im Nebel an jedem
   Nest ein Ei und auf der Übersicht ein Punkt, ein leer gesehenes Nest
   verschwindet.
+- **AC-74** `fertig` **Der Drache verfolgt ohne Stocken** — Greift der
+  Drache (AC-52) eine Einheit an, die läuft, fliegt er ihr in jedem Takt
+  nach, ohne Wegsuche und ohne den Platz von eben. Ist sie in Reichweite,
+  gleitet er so weit hinterher, dass er einen halben Schritt innerhalb der
+  Reichweite bleibt (`FLUG_ABSTAND`), und speit dabei weiter — ein Schütze
+  am Boden bleibt zum Schießen stehen, der Drache nicht. Gemessen wird zu
+  der Lage, die das Ziel am Ende des Takts hat (die Reihenfolge ist
+  gewürfelt, Kampf AC-26). Im Bild steht ein Flieger nie mit angelegten
+  Flügeln: er schlägt mit ihnen, auch auf der Stelle, und zeigt das Speien
+  nur, solange ein Schlag läuft. **Benutzer, 2026-11-25:** „wenn der
+  drache jemandem nachfliegt ist das etwas hibbelig". Vorher flog er zwei
+  Takte und stand zwei — im Bild fünfmal je Sekunde Flug und Stand.
+  **Messbar:** läuft das Ziel vom Drachen fort, hält er in 30 Sekunden
+  höchstens einmal an (vorher 13-mal); im Browser zeigt die Figur dabei
+  kein Standbild.
 
 ## Grenzfaelle
 

@@ -2850,6 +2850,27 @@ export class Ansicht {
     return seit < nachladen + SCHLAG_UEBERFAELLIG ? 0.5 : 0;
   }
 
+  /** Ob eine Einheit fliegt (einheiten AC-52) - gefallen fliegt keiner. */
+  fliegt(einheit) {
+    return !einheit.s && Boolean(this.werte.einheiten[this.arten[einheit.k]]?.fliegt);
+  }
+
+  /**
+   * Schritt und Arbeit einer Figur im Bild: wer geht, geht, wer steht und
+   * arbeitet, arbeitet. Ein Flieger (einheiten AC-74) steht nie in der Luft:
+   * er schlaegt mit den Fluegeln, auch auf der Stelle und beim Gleiten hinter
+   * seinem Ziel, und speit nur, solange ein Schlag laeuft. Sonst wechselte
+   * sein Bild beim Verfolgen fuenfmal je Sekunde zwischen Flug und
+   * angelegten Fluegeln.
+   */
+  figurPhasen(einheit, laeuft) {
+    if (this.fliegt(einheit)) {
+      const speit = Boolean(einheit.w) && this.schlagAnteil(einheit) > 0;
+      return { schritt: speit ? 0 : jetztPhase(einheit.i), arbeit: speit ? this.arbeitPhase(einheit) : 0 };
+    }
+    return { schritt: laeuft ? jetztPhase(einheit.i) : 0, arbeit: einheit.w && !laeuft ? this.arbeitPhase(einheit) : 0 };
+  }
+
   /**
    * Die Phase fuer `arbeit` einer Figur: wer kaempft, nach dem Schlag des
    * Servers, wer arbeitet, nach der Uhr. Nie 0 - das hiesse "arbeitet nicht".
@@ -3370,8 +3391,7 @@ export class Ansicht {
           blick: this.blicke.get(einheit.i) || 1,
           richtung: this.richtungen.get(einheit.i),
           ladung: einheit.l > 0 ? einheit.a : null,
-          schritt: laeuft ? jetztPhase(einheit.i) : 0,
-          arbeit: einheit.w && !laeuft ? this.arbeitPhase(einheit) : 0,
+          ...this.figurPhasen(einheit, laeuft),
         }, true);
         s.restore();
       });
@@ -4330,7 +4350,7 @@ export class Ansicht {
       }
     }
 
-    if (einheit.w && !laeuft) this.schlagHoeren(einheit, punkt);
+    if (einheit.w && (!laeuft || this.fliegt(einheit))) this.schlagHoeren(einheit, punkt);
 
     // Ein Dorfbewohner mit Ladung traegt sie sichtbar: Holzbuendel oder
     // Beerenkorb auf dem Ruecken (bedienung AC-16, darstellung AC-6).
@@ -4338,10 +4358,9 @@ export class Ansicht {
       blick: this.blicke.get(einheit.i) || 1,
       richtung: this.richtungen.get(einheit.i),
       ladung: einheit.l > 0 ? einheit.a : null,
-      schritt: laeuft ? jetztPhase(einheit.i) : 0,
       // Wer arbeitet, bewegt sich dabei (bedienung AC-31) - wer kaempft,
       // einmal je Schlag (bedienung AC-72).
-      arbeit: einheit.w && !laeuft ? this.arbeitPhase(einheit) : 0,
+      ...this.figurPhasen(einheit, laeuft),
     });
     // Steht jemand hinter einem Gebaeude, kommt er danach als Umriss darueber.
     const decken = this.deckendeGebaeude(einheit, punkt);

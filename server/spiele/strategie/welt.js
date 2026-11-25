@@ -39,6 +39,10 @@ const BAU_NAEHE = 8;
 // Felder) zuschlaegt; am Rand einer Grundflaeche messen wir genauer.
 const SCHLAGRAND = 0.5;
 const SCHLAGRAND_BAU = 0.2;
+// So weit innerhalb seiner Reichweite haelt sich ein Flieger an einer
+// Einheit, die er verfolgt (einheiten AC-74), in Feldern: genug, dass ein
+// Schritt des Ziels ihn nicht aus der Reichweite bringt.
+const FLUG_ABSTAND = 0.5;
 // So oft sieht sich eine stehende Kampfeinheit um (kampf AC-2): zweimal je
 // Sekunde. Jeder Takt waere fuenfmal so teuer und im Spiel nicht zu merken.
 const WACHE_TAKTE = 5;
@@ -4600,6 +4604,15 @@ class Welt {
     if (nahGenug && (fern || !auftrag.gebaeude || !einheit.weg.length)) auftrag.angekommen = true;
     if (!nahGenug || (einheit.weg.length && !fern && !auftrag.angekommen)) {
       auftrag.tritt = false;
+      // Wer fliegt, braucht keinen Platz am Boden und keine Wegsuche
+      // (einheiten AC-74): er nimmt in jedem Takt die Lage des Ziels, statt
+      // zum Feld zu fliegen, wo es beim Befehl stand, und verliert keinen
+      // Takt mit Suchen. Sonst flog der Drache zwei Takte und stand zwei.
+      if (!auftrag.gebaeude && EINHEITEN[einheit.art].fliegt) {
+        einheit.weg = [{ x: ziel.x, y: ziel.y }];
+        this.laufen(einheit);
+        return;
+      }
       if (einheit.weg.length) {
         this.laufen(einheit);
         return;
@@ -4656,6 +4669,10 @@ class Welt {
       auftrag.tritt = false;
     }
     einheit.weg = [];
+    // In Reichweite bleibt ein Flieger am Ziel (einheiten AC-74): laeuft es
+    // weiter, gleitet er hinterher und speit dabei - ein Bodenschuetze
+    // bleibt zum Schiessen stehen, der Drache haette sonst gestockt.
+    if (!auftrag.gebaeude && EINHEITEN[einheit.art].fliegt) this.nachfliegen(einheit, ziel, reichweite);
     if (einheit.nachladen > 0) {
       einheit.nachladen--;
       return;
@@ -4669,6 +4686,32 @@ class Welt {
     // dazu aus (bedienung AC-72).
     einheit.schlagTakt = this.takt;
     this.schlagen(einheit, ziel, auftrag.gebaeude);
+  }
+
+  /**
+   * Ein Flieger in Reichweite folgt seinem Ziel (einheiten AC-74): so weit,
+   * dass er `FLUG_ABSTAND` innerhalb der Reichweite bleibt, hoechstens so weit
+   * wie in einem Takt. Steht das Ziel, steht er.
+   *
+   * Gemessen wird zu der Lage, die das Ziel am Ende dieses Takts hat: ist es
+   * in diesem Takt noch nicht gegangen (kampf AC-26, gewuerfelte
+   * Reihenfolge), wird sein Schritt vorweggenommen. Sonst stand der Drache
+   * in jedem Takt, in dem er vor dem Ziel an der Reihe war.
+   */
+  nachfliegen(einheit, ziel, reichweite) {
+    let nach = ziel;
+    if (ziel.weg?.length && ziel.x === ziel.taktX && ziel.y === ziel.taktY) {
+      nach = { x: ziel.x, y: ziel.y, weg: ziel.weg.slice(0, 2) };
+      wegGehen(nach, this.einheitenwert(ziel.besitzer, ziel.art, 'tempo') / TAKTE_PRO_SEKUNDE);
+    }
+    const dx = nach.x - einheit.x;
+    const dy = nach.y - einheit.y;
+    const abstand = Math.hypot(dx, dy);
+    const zuviel = abstand - (reichweite - FLUG_ABSTAND);
+    if (zuviel <= 0) return;
+    const schritt = Math.min(zuviel, this.einheitenwert(einheit.besitzer, einheit.art, 'tempo') / TAKTE_PRO_SEKUNDE);
+    einheit.x += (dx / abstand) * schritt;
+    einheit.y += (dy / abstand) * schritt;
   }
 
   /**

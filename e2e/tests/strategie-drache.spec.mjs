@@ -169,7 +169,109 @@ test.describe('Drache', () => {
       titel: 'Annas Drache ist über den Wald geflogen und brennt Berts Milizen (rot) - der Feuerstoß mitten im Flug',
       test: info,
     });
+    // Der festgehaltene Feuerstoss fliegt weiter - sonst steht er in jedem Bild danach.
+    await anna.evaluate(() => {
+      for (const p of window.ansicht.pfeile) if (p.dauer >= 1e9) p.dauer = 1;
+    });
     await zeitraffer(anna, code, 1);
+  });
+
+  // Benutzer, 2026-11-25: "wenn der drache jemandem nachfliegt ist das etwas
+  // hibbelig". Vorher wechselte das Bild fuenfmal je Sekunde zwischen Flug
+  // und angelegten Fluegeln. Dass er in der Welt nicht mehr stockt, prueft
+  // tests/strategie-drache.test.mjs (mit Gegenprobe); hier: was das Bild zeigt.
+  test('einheiten AC-74: der Drache fliegt Berts fliehendem Dorfbewohner nach - im Bild schlaegt er dabei immer mit den Fluegeln und speit nur im Schlag', async ({}, info) => {
+    test.setTimeout(120_000);
+    const { anna, bert, code } = partie;
+    // Zur Kartenmitte hin: vier Felder vom Drachen steht er, sechzehn flieht er.
+    const { d, rx, ry } = await anna.evaluate((id) => {
+      const a = window.ansicht;
+      const dr = a.nachher.get(id);
+      const m = a.karte.groesse / 2;
+      const l = Math.hypot(m - dr.x, m - dr.y);
+      return { d: { x: dr.x, y: dr.y }, rx: (m - dr.x) / l, ry: (m - dr.y) / l };
+    }, drache);
+    const stand = { x: Math.round(d.x + rx * 4), y: Math.round(d.y + ry * 4) };
+    expect(await einheitenAufstellen(anna, code, 'Bert', 1, { art: 'dorfbewohner', ...stand })).toBe(1);
+    const opfer = await anna.waitForFunction((st) => {
+      const a = window.ansicht;
+      const dorf = a.werte.einheiten.dorfbewohner.kuerzel;
+      const o = [...a.nachher.values()].find((e) => e.b !== a.ich && e.k === dorf && !e.s && Math.hypot(e.x - st.x, e.y - st.y) < 2.5);
+      return o ? o.i : null;
+    }, stand).then((h) => h.jsonValue());
+    await lebenSetzen(anna, code, opfer, 400);
+
+    // Was das Bild fuer den Drachen zeichnet, Bild fuer Bild mitgeschrieben.
+    await anna.evaluate((id) => {
+      const a = window.ansicht;
+      a.probeFlug = [];
+      const vorher = a.figurPhasen;
+      a.figurPhasen = function (einheit, laeuft) {
+        const lage = vorher.call(this, einheit, laeuft);
+        if (einheit.i === id && this.probeFlug) this.probeFlug.push({ ...lage, x: einheit.x, y: einheit.y, w: Boolean(einheit.w) });
+        return lage;
+      };
+    }, drache);
+
+    await waehlen(anna, [drache], { zoom: 1.6, blick: stand });
+    const auf = await aufSeite(anna, { einheit: opfer });
+    await anna.mouse.click(auf.x, auf.y, { button: 'right' });
+    await anna.waitForFunction((id) => window.ansicht.nachher.get(id)?.w, drache, { timeout: 30_000 });
+    // Bert laesst ihn fliehen, vom Drachen fort.
+    const flucht = { x: Math.round(d.x + rx * 20), y: Math.round(d.y + ry * 20) };
+    await waehlen(bert, [opfer], { zoom: 1.2, blick: flucht });
+    await bert.evaluate((f) => window.ansicht.befehlenAufFeld(f.x, f.y), flucht);
+    await anna.evaluate(() => {
+      window.ansicht.probeFlug = [];
+    });
+    await anna.waitForTimeout(3500);
+    await anna.evaluate((f) => window.ansicht.blickAuf(f.x, f.y), { x: d.x + rx * 7, y: d.y + ry * 7 });
+    const flug = await anna.evaluate(() => window.ansicht.probeFlug);
+    await anna.evaluate(() => {
+      window.ansicht.probeFlug = null;
+    });
+
+    expect(flug.length, 'Bilder mitgeschrieben').toBeGreaterThan(60);
+    const weg = Math.hypot(flug.at(-1).x - flug[0].x, flug.at(-1).y - flug[0].y);
+    expect(weg, 'er ist ihm nachgeflogen').toBeGreaterThan(1.5);
+    expect(flug.filter((l) => !l.schritt && !l.arbeit).length, 'kein Bild mit angelegten Fluegeln').toBe(0);
+    expect(flug.some((l) => l.arbeit > 0), 'er speit dabei').toBe(true);
+    expect(flug.some((l) => l.schritt > 0 && l.w), 'zwischen zwei Schlaegen fliegt er im Angriff').toBe(true);
+
+    await nachweis(anna, {
+      spec: EINHEITEN,
+      ac: 'AC-74',
+      titel: 'Annas Drache fliegt Berts fliehendem Dorfbewohner (rot) nach, mit gehobenen Flügeln - kein Standbild dazwischen',
+      test: info,
+    });
+    // Aufgeraeumt: der Drache greift nicht mehr von selbst an - sonst jagt er
+    // die Milizen von eben, und der naechste Fall klickt daneben; sie bleiben,
+    // damit Bert ihn sieht -, und Bert entlaesst den Dorfbewohner.
+    await anna.evaluate((id) => window.ansicht.beiAuftrag({ auftrag: 'haltung', einheiten: [id], haltung: 'passiv' }), drache);
+    await bert.evaluate((id) => window.ansicht.beiAuftrag({ auftrag: 'entlassen', einheit: id }), opfer);
+    await anna.waitForFunction((id) => {
+      const o = window.ansicht.nachher.get(id);
+      return !o || o.s;
+    }, opfer, { timeout: 30_000 });
+    // Zurueck an seinen Platz von vorher: die Flucht fuehrte ihn zwischen
+    // Annas Moenche am Kloster, dort trifft der naechste Fall einen Moench.
+    await waehlen(anna, [drache], { zoom: 1.2, blick: d });
+    await anna.evaluate((z) => window.ansicht.befehlenAufFeld(z.x, z.y), d);
+    await anna.waitForFunction(([id, z]) => {
+      const e = window.ansicht.nachher.get(id);
+      return e && Math.hypot(e.x - z.x, e.y - z.y) < 1.5;
+    }, [drache, d], { timeout: 30_000 });
+    // Erst weiter, wenn er eine Sekunde lang still steht.
+    await anna.waitForFunction((id) => {
+      const d = window.ansicht.nachher.get(id);
+      const jetzt = performance.now();
+      const v = window.probeStill;
+      if (!v || Math.hypot(v.x - d.x, v.y - d.y) > 0.01) {
+        window.probeStill = { x: d.x, y: d.y, seit: jetzt };
+        return false;
+      }
+      return jetzt - v.seit > 1000;
+    }, drache, { timeout: 30_000, polling: 100 });
   });
 
   test('kampf AC-23: Berts Miliz kann den Drachen nicht angreifen - der Rechtsklick ist ein Gang; sein Armbrustschuetze greift an', async ({}, info) => {

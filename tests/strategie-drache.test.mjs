@@ -400,3 +400,47 @@ test('einheiten AC-53: faellt das Kloster waehrend des Rufs, ist das Gold fort u
   takten(welt, 200);
   assert.equal(welt.dracheVon('a'), null);
 });
+
+test('einheiten AC-74: der Drache fliegt einem Fliehenden ohne Stocken nach und speit dabei weiter', () => {
+  const welt = neueWelt();
+  welt.spielerVon('a').zeitalter = 2;
+  // Eine freie Reihe von zwanzig Feldern neben Berts Dorf.
+  const b = welt.spielerVon('b').basis;
+  let start = null;
+  for (let r = 6; r < 40 && !start; r++) {
+    for (let dx = -r; dx <= r && !start; dx++) {
+      const x = Math.round(b.x) + dx;
+      const y = Math.round(b.y) + r;
+      let frei = true;
+      for (let k = 0; k < 20; k++) if (!karten.begehbar(welt.karte, x + k, y) || welt.gebaeudeAn(x + k, y)) frei = false;
+      if (frei) start = { x, y };
+    }
+  }
+  assert.ok(start, 'freies Land');
+  const drache = welt.einheitAnlegen('a', start.x, start.y, 'drache');
+  const opfer = welt.einheitAnlegen('b', start.x + 4, start.y, 'dorfbewohner');
+  drache.leben = 9999;
+  opfer.leben = 9999;
+  welt.befehl('a', [drache.id], { x: opfer.x, y: opfer.y });
+  assert.equal(drache.auftrag?.art, 'angreifen');
+  // Der Dorfbewohner flieht geradeaus, vom Drachen fort.
+  welt.befehl('b', [opfer.id], { x: start.x + 19, y: start.y });
+  let halte = 0;
+  let flog = null;
+  let inReichweite = 0;
+  const reichweite = EINHEITEN.drache.reichweite;
+  for (let t = 0; t < 15 * TAKTE_PRO_SEKUNDE; t++) {
+    const x0 = drache.x;
+    const y0 = drache.y;
+    welt.takten();
+    assert.deepEqual(pruefen(welt), []);
+    const fliegt = Math.hypot(drache.x - x0, drache.y - y0) > 1e-6;
+    if (flog === true && !fliegt) halte++;
+    flog = fliegt;
+    if (Math.hypot(opfer.x - drache.x, opfer.y - drache.y) <= reichweite) inReichweite++;
+  }
+  assert.ok(opfer.weg.length || opfer.x > start.x + 15, 'er flieht noch oder ist weit gelaufen');
+  assert.ok(halte <= 1, `hoechstens ein Halt, solange er flieht - ${halte}`);
+  assert.ok(inReichweite >= 12 * TAKTE_PRO_SEKUNDE, `meist in Reichweite - ${inReichweite} Takte`);
+  assert.ok(opfer.leben < 9999 - 8 * 3, `er speit weiter - ${9999 - opfer.leben} Schaden`);
+});
