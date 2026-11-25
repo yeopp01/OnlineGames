@@ -342,3 +342,35 @@ test('karriere AC-22: der Arbeitsspeicher bleibt frei', () => {
     db.close();
   }
 });
+
+// Die Tabelle auf dem Server stammt von vor dem 2026-11-22 und hat die Spalte
+// `geaendert`; eine Ersetzung der Bildschirmtexte hatte sie im Code zu
+// `geändert` gemacht, und das Managerspiel zeigte nur "no such column".
+// `CREATE TABLE IF NOT EXISTS` aendert eine bestehende Tabelle nicht - also
+// wird hier eine angelegt, wie sie auf der Platte liegt.
+for (const spalte of ['geaendert', 'geändert']) {
+  test(`karriere AC-14: eine Datenbank mit der Spalte ${spalte === 'geaendert' ? 'des Servers' : 'mit Umlaut'} laesst sich weiter benutzen`, () => {
+    const db = new DatabaseSync(':memory:');
+    db.exec(`CREATE TABLE manager_spielstand (id TEXT PRIMARY KEY, konto TEXT NOT NULL, name TEXT NOT NULL,
+      verein TEXT, liga INTEGER, saison INTEGER, datum TEXT, fassung INTEGER NOT NULL, daten TEXT NOT NULL,
+      angelegt INTEGER NOT NULL, "${spalte}" INTEGER NOT NULL)`);
+    db.prepare(`INSERT INTO manager_spielstand VALUES ('alt', 'k1', 'Alt', 'V', 1, 1, 'x', 0, '{}', 1, 1)`).run();
+    let jetzt = 10;
+    const staende = new Spielstaende(db, () => jetzt);
+    try {
+      assert.deepEqual(staende.liste('k1').map((z) => z.id), ['alt']);
+      const { id, karriere } = staende.anlegen('k1', { startwert: 1, vereinId: 'v3', name: 'Neu' });
+      jetzt = 20;
+      karriere.weiter();
+      staende.schreiben('k1', id, karriere);
+      const liste = staende.liste('k1');
+      assert.deepEqual(liste.map((z) => z.id), [id, 'alt'], 'der zuletzt geschriebene steht oben');
+      assert.equal(liste[0].geaendert, 20);
+      const spalten = db.prepare('PRAGMA table_info(manager_spielstand)').all().map((s) => s.name);
+      assert.ok(spalten.includes('geaendert') && !spalten.includes('geändert'), spalten.join(', '));
+    } finally {
+      staende.halt();
+      db.close();
+    }
+  });
+}

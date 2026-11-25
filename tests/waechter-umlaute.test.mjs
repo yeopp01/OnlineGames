@@ -188,10 +188,15 @@ function zeichenketten(quelle) {
   return stuecke;
 }
 
+const SQL = /^\s*(SELECT|INSERT|UPDATE|DELETE|CREATE|ALTER|PRAGMA)\b/;
+
 /** Was aus einer Datei des Managerspiels auf den Bildschirm kommen kann. */
 function texteStreng(inhalt, html) {
   const texte = [];
   for (const stueck of html ? [inhalt] : zeichenketten(inhalt)) {
+    // SQL ist kein Text: `geaendert` ist dort ein Spaltenname, und mit einem
+    // Umlaut darin fand die Datenbank des Servers die Spalte nicht mehr.
+    if (SQL.test(stueck)) continue;
     const ohneSkript = stueck.replace(/<script[\s\S]*?<\/script>/g, '').replace(/<style[\s\S]*?<\/style>/g, '')
       .replace(/<!--[\s\S]*?-->/g, '');
     for (const m of ohneSkript.matchAll(/(?:title|aria-label|placeholder|alt)="([^"\u0000]*)"/g)) texte.push(m[1]);
@@ -251,6 +256,8 @@ test('manager AC-16: die strenge Lesart findet Text in Vorlagen und laesst Schlu
   assert.deepEqual(lesen("const r = /aeh|oeh/g; const t = 'Fuer dich';"), ['Fuer']);
   assert.deepEqual(lesen("// Kommentar mit Naechstes\nconst a = 'gut';"), []);
   assert.deepEqual(lesen("db.prepare('INSERT INTO t VALUES (?)');"), []);
+  assert.deepEqual(lesen('db.prepare(`  SELECT id, geaendert FROM t ORDER BY geaendert DESC`);'), []);
+  assert.deepEqual(lesen("const t = 'Zuletzt geaendert';"), ['geaendert']);
 });
 
 test('auswahl AC-21: kein Text auf dem Bildschirm umschreibt einen Umlaut (Waechter)', () => {

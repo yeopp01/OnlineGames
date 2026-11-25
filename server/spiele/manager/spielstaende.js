@@ -44,8 +44,16 @@ class Spielstaende {
         fassung   INTEGER NOT NULL,
         daten     TEXT NOT NULL,
         angelegt  INTEGER NOT NULL,
-        geändert INTEGER NOT NULL
+        geaendert INTEGER NOT NULL
       )`);
+    // Vom 2026-11-22 bis zum 2026-11-25 hiess die Spalte `geändert` - eine
+    // Ersetzung der Bildschirmtexte hatte sie mitgenommen. Wer seine Datenbank
+    // in dieser Zeit angelegt hat, bekommt den alten Namen zurueck; auf dem
+    // Server stand sie nie so, dort fehlte die neue Spalte.
+    const spalten = db.prepare('PRAGMA table_info(manager_spielstand)').all().map((s) => s.name);
+    if (spalten.includes('geändert') && !spalten.includes('geaendert')) {
+      db.exec('ALTER TABLE manager_spielstand RENAME COLUMN "geändert" TO geaendert');
+    }
     db.exec('CREATE INDEX IF NOT EXISTS manager_spielstand_konto ON manager_spielstand (konto)');
     this.aufraeumer = setInterval(() => this.aufraeumen(), 5 * 60 * 1000);
     this.aufraeumer.unref?.();
@@ -53,8 +61,8 @@ class Spielstaende {
 
   liste(konto) {
     return this.db.prepare(`
-      SELECT id, name, verein, liga, saison, datum, fassung, angelegt, geändert
-      FROM manager_spielstand WHERE konto = ? ORDER BY geändert DESC`).all(konto)
+      SELECT id, name, verein, liga, saison, datum, fassung, angelegt, geaendert
+      FROM manager_spielstand WHERE konto = ? ORDER BY geaendert DESC`).all(konto)
       .map((z) => ({ ...z, ladbar: LADBARE_FASSUNGEN.includes(z.fassung) }));
   }
 
@@ -67,7 +75,7 @@ class Spielstaende {
     const id = kennung();
     const jetzt = this.uhr();
     this.db.prepare(`
-      INSERT INTO manager_spielstand (id, konto, name, verein, liga, saison, datum, fassung, daten, angelegt, geändert)
+      INSERT INTO manager_spielstand (id, konto, name, verein, liga, saison, datum, fassung, daten, angelegt, geaendert)
       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`)
       .run(id, konto, name, verein.name, verein.liga, karriere.saison,
         terminTitel(karriere.termine[karriere.termin]), FASSUNG, JSON.stringify(karriere.sichern()), jetzt, jetzt);
@@ -107,7 +115,7 @@ class Spielstaende {
     const verein = eigenerVerein(karriere);
     // Die Fassung wird mitgeschrieben: ein angehobener Stand ist danach einer der jetzigen.
     this.db.prepare(`
-      UPDATE manager_spielstand SET verein = ?, liga = ?, saison = ?, datum = ?, fassung = ?, daten = ?, geändert = ?
+      UPDATE manager_spielstand SET verein = ?, liga = ?, saison = ?, datum = ?, fassung = ?, daten = ?, geaendert = ?
       WHERE id = ? AND konto = ?`)
       .run(verein ? verein.name : null, verein ? verein.liga : null, karriere.saison,
         terminTitel(karriere.termine[karriere.termin]), FASSUNG, JSON.stringify(karriere.sichern()), this.uhr(), id, konto);
