@@ -26,6 +26,24 @@ Punkt unten sucht, sucht dort nach „Punkt <n> (Benutzer“.
 
 ## Zuletzt fortgeschrieben
 
+**2026-11-25, Mittag — Stand nach `c4cf38b`** (nicht gepusht, `main` =
+Server `a0c1039`). Committet auf `strategie`: `f9fa0a5` kampf AC-32 (Nebel
+nach dem Fortsetzen), `c63afd9` Abrüsten-Abbruch erstattet die Nahrung,
+`d79de94` bedienung AC-89 (Reihe bauen mit Strg), `c4cf38b` einheiten AC-73
+(Kartografie zeigt Nester: `en` im Auszug, `ansicht.nester`,
+`uebersicht.nestpunkte`). check:kurz: rot nur karte AC-15, einheiten AC-31
+(Zeit unter Last), speichern AC-12 (ECONNRESET) — einzeln 41 von 41 grün.
+Board 690/774. **Offen, beim Benutzer gefragt:** (a) **Späherlinie sieht
+weiter** („die sichtweite der einheiten ist irgendwie sehr kurz, auch
+später") — Werte sonst wie die Vorlage, Bild bei Zoom 1,5 ~21 Felder
+breit (Vorlage ~20); empfohlen Späher +2 im Lehen und +2 im Fürstentum
+(`ZEITALTER[].wirkung`), leichte Kavallerie 8, Husar 10, danach Nebeltest
+und Teams; (b) **„Ei ablegen"** („Wie lässt der dorfbewohner es wieder
+los?" — heute nur durch Fallen, Entf oder Einsturz des Klosters):
+empfohlen ein Bildknopf wie „Reliquie ablegen". Weiter offen:
+Übersicht der Aufträge oben links (bedienung AC-90 geplant), Zoom über
+3,6, vor dem Pushen Browserdateien oder ganzer Lauf allein.
+
 **2026-11-25 — Nebel nach dem Fortsetzen, Strg, Ei (nach `c77ed09`).**
 `strategie` ist `c77ed09`, `main` = `origin/main` = Server `a0c1039`.
 Rückmeldungen aus seinem Spiel heute: (1) **„beim weiterspielen ist der
