@@ -1,0 +1,10 @@
+{
+  "spec": "10-strategie/einheiten-und-befehle.md",
+  "ac": "AC-75",
+  "titel": "Der Dorfbewohner trägt das Drachenei: an der Auswahl der Bildknopf „Ei ablegen“, darüber seine Tafel",
+  "datei": "e2e/tests/strategie-drache.spec.mjs",
+  "pfad": [
+    "Ei ablegen",
+    "einheiten AC-75: wer das Ei traegt, hat einen Bildknopf \"Ei ablegen\" - ein Druck legt es auf sein Feld, der Knopf verschwindet"
+  ]
+}

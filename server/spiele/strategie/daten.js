@@ -278,9 +278,11 @@ const EINHEITEN = {
   // Tempo 1,55 und nicht die 1,5 des Originals: so schnell laeuft der
   // Spaeherreiter hier schon ab dem Lehen (einheiten AC-57), und eine
   // Verbesserung, die ihn bremst, verstuende niemand. Die Wirkung des Lehens
-  // gilt der Art `spaeherreiter` und kommt hier nicht dazu.
+  // gilt der Art `spaeherreiter` und kommt hier nicht dazu - deshalb auch
+  // Sicht 8 als eigener Wert, so weit wie der Spaeherreiter im Fuerstentum
+  // (einheiten AC-76, gesetzt, nicht aus der Vorlage).
   leichtekavallerie: {
-    leben: 60, tempo: 1.55, sicht: 4, tragkraft: 0, kosten: { nahrung: 80 }, zeit: 30, kuerzel: 'v',
+    leben: 60, tempo: 1.55, sicht: 8, tragkraft: 0, kosten: { nahrung: 80 }, zeit: 30, kuerzel: 'v',
     angriff: 7, nahruestung: 0, fernruestung: 2, reichweite: 0, nachladen: 2,
     klassen: ['kavallerie'], zeitalter: 2, stufeVon: 'spaeherreiter',
   },
@@ -305,8 +307,10 @@ const EINHEITEN = {
     angriff: 6, nahruestung: 0, fernruestung: 0, reichweite: 0, nachladen: 3,
     klassen: ['infanterie', 'speer'], bonus: { kavallerie: 32 }, zeitalter: 3, stufeVon: 'pikenier',
   },
+  // Sicht 10: die Spaeherlinie sieht in der Krone noch zwei Felder weiter
+  // (einheiten AC-76, gesetzt).
   husar: {
-    leben: 75, tempo: 1.55, sicht: 4, tragkraft: 0, kosten: { nahrung: 80 }, zeit: 30, kuerzel: 'U',
+    leben: 75, tempo: 1.55, sicht: 10, tragkraft: 0, kosten: { nahrung: 80 }, zeit: 30, kuerzel: 'U',
     angriff: 7, nahruestung: 0, fernruestung: 2, reichweite: 0, nachladen: 1.9,
     klassen: ['kavallerie'], zeitalter: 3, stufeVon: 'leichtekavallerie',
   },
@@ -760,13 +764,20 @@ const BEVOELKERUNG_MAX = 200;
 // und gelesen ueber `welt.wirkungen()`. Der Spaeherreiter laeuft ab der
 // Feudalzeit 1,55 statt 1,2 Felder je Sekunde, wie in der Vorlage (einheiten
 // AC-57) - in der Dunklen Zeit ist er ein Kundschafter, danach ein Reiter.
+// Er sieht im Lehen und noch einmal im Fuerstentum zwei Felder weiter, 4 ->
+// 6 -> 8 (einheiten AC-76, Benutzer 2026-11-25: "die sichtweite der
+// einheiten ist irgendwie sehr kurz, auch später"). Wie das Original nach
+// dem Gedaechtnis, nicht aus docs/strategie/vorlage-aoe2.md.
 const ZEITALTER = [
   { id: 'dunkel', name: 'Landsitz', artikel: 'der Landsitz', genitiv: 'des Landsitzes', ab: 'ab dem Landsitz', zum: 'zum Landsitz' },
   {
     id: 'feudal', name: 'Lehen', artikel: 'das Lehen', genitiv: 'des Lehens', ab: 'ab dem Lehen', zum: 'zum Lehen',
-    wirkung: { spaeherreiter: { tempo: 0.35 } },
+    wirkung: { spaeherreiter: { tempo: 0.35, sicht: 2 } },
   },
-  { id: 'ritter', name: 'Fürstentum', artikel: 'das Fürstentum', genitiv: 'des Fürstentums', ab: 'ab dem Fürstentum', zum: 'zum Fürstentum' },
+  {
+    id: 'ritter', name: 'Fürstentum', artikel: 'das Fürstentum', genitiv: 'des Fürstentums', ab: 'ab dem Fürstentum', zum: 'zum Fürstentum',
+    wirkung: { spaeherreiter: { sicht: 2 } },
+  },
   { id: 'imperial', name: 'Krone', artikel: 'die Krone', genitiv: 'der Krone', ab: 'ab der Krone', zum: 'zur Krone' },
 ];
 

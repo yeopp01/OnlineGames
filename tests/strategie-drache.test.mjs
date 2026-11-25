@@ -174,7 +174,12 @@ test('einheiten AC-52: sein Feuer brennt alles im Umkreis eines Feldes, eigene a
     welt.einheitAnlegen('b', mitte.x + 0.8, mitte.y, 'miliz'),
     welt.einheitAnlegen('a', mitte.x, mitte.y + 0.9, 'dorfbewohner'),
   ];
-  const fern = welt.einheitAnlegen('b', mitte.x + 3, mitte.y, 'miliz');
+  // Sie steht still, und kein Spaeher steht neben ihr: als Wache liefe sie
+  // auf den Dorfbewohner los, und Annas Spaeherreiter am Dorf schlug sie -
+  // dann belegte sie nicht mehr, dass das Feuer drei Felder daneben nicht
+  // brennt (aufgefallen mit einheiten AC-76, das seine Sicht vergroesserte).
+  for (const e of [...welt.einheiten.values()]) if (e.art === 'spaeherreiter') welt.einheiten.delete(e.id);
+  const fern = Object.assign(welt.einheitAnlegen('b', mitte.x + 3, mitte.y, 'miliz'), { haltung: 'passiv' });
   welt.befehl('a', [drache.id], { x: mitte.x, y: mitte.y });
   let feuer = null;
   for (let t = 0; t < 10 * TAKTE_PRO_SEKUNDE && !feuer; t++) {

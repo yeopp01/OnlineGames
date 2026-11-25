@@ -2239,6 +2239,8 @@ class Welt {
         return this.abruesten(spielerId, nachricht.einheiten);
       case 'rufen':
         return this.rufen(spielerId, nachricht.gebaeude);
+      case 'eiAblegen':
+        return this.eiAblegenBefehl(spielerId, nachricht.einheiten);
       case 'einquartieren':
         return this.einquartieren(spielerId, nachricht.einheiten, nachricht.gebaeude);
       case 'heraus':
@@ -3745,6 +3747,31 @@ class Welt {
     ei.kloster = null;
     ei.x = Math.round(x);
     ei.y = Math.round(y);
+  }
+
+  /**
+   * Der Traeger legt das Ei ab, wo er steht (einheiten AC-75): danach ist er
+   * ein Dorfbewohner ohne Ladung und Auftrag, und das Ei liegt am Boden wie
+   * bei einem Gefallenen - jeder kann es wieder aufheben. Wer kein Ei
+   * traegt, wird uebergangen.
+   */
+  eiAblegenBefehl(spielerId, einheitIds) {
+    if (!Array.isArray(einheitIds)) return { fehler: 'Wer soll das Ei ablegen?' };
+    let abgelegt = 0;
+    for (const id of einheitIds.slice(0, 200)) {
+      const einheit = this.einheiten.get(id);
+      if (!einheit || einheit.besitzer !== spielerId || einheit.tot) continue;
+      const ei = this.eiVon(einheit);
+      if (!ei) continue;
+      this.anhalten(einheit);
+      this.eiAblegen(ei, einheit.x, einheit.y);
+      einheit.ladung = 0;
+      einheit.ladungsart = null;
+      einheit.auftrag = null;
+      abgelegt++;
+    }
+    if (!abgelegt) return { fehler: 'Niemand trägt ein Ei.' };
+    return {};
   }
 
   // Das naechste eigene Tier hoechstens ein Feld vom Klick entfernt.

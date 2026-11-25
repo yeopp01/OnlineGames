@@ -204,3 +204,42 @@ test('einheiten AC-73: mit der Kartografie schickt der Server die Nester - jedem
   ohne.erforschen(ohne.spielerVon('a'), 'kartografie');
   assert.equal(ohne.zustandJeSpieler(['a']).get('a').en, undefined);
 });
+
+test('einheiten AC-75: wer ein Ei traegt, legt es auf Befehl auf sein Feld - danach traegt er nichts, und ein anderer, auch ein Gegner, hebt es auf', () => {
+  const welt = neueWelt();
+  const [ei] = welt.eier.values();
+  const [dorf, zweiter] = [...welt.einheiten.values()].filter((e) => e.besitzer === 'a' && e.art === 'dorfbewohner');
+  dorf.x = ei.x - 1;
+  dorf.y = ei.y;
+  welt.befehl('a', [dorf.id], { x: ei.x, y: ei.y });
+  bis(welt, () => ei.traeger === dorf.id, 10, 'er hebt es auf');
+  takten(welt, 2);
+
+  // Wer keines traegt, wird abgewiesen; ein Fremder darf nicht fuer ihn ablegen.
+  assert.ok(welt.nachricht('a', { auftrag: 'eiAblegen', einheiten: [zweiter.id] }).fehler, 'der zweite traegt keines');
+  assert.ok(welt.nachricht('b', { auftrag: 'eiAblegen', einheiten: [dorf.id] }).fehler, 'Bert befiehlt Annas Traeger nicht');
+  assert.equal(ei.traeger, dorf.id, 'er traegt es noch');
+
+  const feld = { x: Math.round(dorf.x), y: Math.round(dorf.y) };
+  assert.deepEqual(welt.nachricht('a', { auftrag: 'eiAblegen', einheiten: [zweiter.id, dorf.id] }), {}, 'in einer Gruppe legt der Traeger ab');
+  assert.deepEqual(orte(ei), ['boden']);
+  assert.deepEqual({ x: ei.x, y: ei.y }, feld, 'auf seinem Feld');
+  assert.equal(dorf.ladung, 0);
+  assert.equal(dorf.ladungsart, null);
+  assert.equal(dorf.auftrag, null, 'ohne Auftrag');
+  assert.equal(welt.zustand().einheiten.find((e) => e.i === dorf.id).l, 0, 'der Zustand nennt keine Ladung mehr');
+  assert.deepEqual(welt.zustand().ei.map((e) => e.slice(0, 3)), [[ei.id, feld.x, feld.y]], 'es liegt im Zustand');
+  takten(welt, 3);
+  assert.deepEqual(orte(ei), ['boden'], 'er hebt es nicht von selbst wieder auf');
+
+  // Bert holt es sich - Anna geht vorher vom Feld, sonst waere sein
+  // Rechtsklick ein Angriff auf sie.
+  welt.befehl('a', [dorf.id], { x: feld.x - 4, y: feld.y });
+  takten(welt, 5);
+  assert.deepEqual(orte(ei), ['boden'], 'im Vorbeigehen hebt sie es nicht auf');
+  const [bert] = [...welt.einheiten.values()].filter((e) => e.besitzer === 'b' && e.art === 'dorfbewohner');
+  bert.x = ei.x + 1;
+  bert.y = ei.y;
+  welt.befehl('b', [bert.id], { x: ei.x, y: ei.y });
+  bis(welt, () => ei.traeger === bert.id, 10, 'der Gegner hebt es auf');
+});

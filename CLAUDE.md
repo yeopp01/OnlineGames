@@ -185,7 +185,7 @@ Umfang hinzufügt, dort nachsehen.
 
 ## Stand
 
-**691 von 775 Kriterien fertig.** 1273 Tests ohne Browser und 39 ganze Partien, 380 im Browser. Die
+**693 von 777 Kriterien fertig.** 1275 Tests ohne Browser und 39 ganze Partien, 381 im Browser. Die
 Übersicht ist der Bericht: `npm run qa:report`.
 
 Gebaut ist der Unterbau: Räume, Übertragung, Karte, Wegfindung, Sammeln,
@@ -1130,6 +1130,17 @@ mitspielte, sieht im Vorraum die Einladung mit dem neuen Code
 einer, legt der Gastgeber ihn still (`stilllegen`): seine Einheiten bleiben
 ohne Herrn stehen. Fortgesetzt zu mehreren beginnt die Partie angehalten.
 Der Browserlauf meldet dafür ein zweites Konto an (`ZWEITES_KONTO`, Dora).
+
+**Rückmeldungen vom 2026-11-25** (nach dem Spiel mit Glocke): **Die
+Späherlinie sieht weiter** (einheiten AC-76, Benutzer: „die sichtweite der
+einheiten ist irgendwie sehr kurz, auch später“): der Späherreiter +2 im
+Lehen und noch einmal im Fürstentum (4 → 6 → 8, `ZEITALTER[].wirkung`),
+leichte Kavallerie 8, Husar 10 — **nach dem Gedächtnis des Originals, nicht
+aus `vorlage-aoe2.md`**. Gemessen danach: Nebel 108 von 120 vor Minute 60,
+Median 38,0, eine ohne Sieger (Startwert 23 — genau die Grenze, vorher
+keine); zwei gegen zwei 20 von 20. **„Ei ablegen“** (AC-75, Nachricht
+`eiAblegen`): ein Bildknopf an jedem, der ein Drachenei trägt, legt es auf
+sein Feld; aufheben kann es jeder, auch ein Gegner.
 
 **Einquartieren und Notfallklingel** (bauen AC-58 bis AC-61, Entscheidung 9
 des Benutzers, Zweig `strategie-glocke`): Dorfzentrum (15), Wachturm (5)

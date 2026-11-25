@@ -435,3 +435,66 @@ test.describe('Nester mit der Kartografie', () => {
     await expect.poll(lage, { timeout: 15_000 }).toEqual({ voll: false, gesehen: true, vomServer: false, erinnert: false, aufKarte: false });
   });
 });
+
+// Rueckmeldung des Benutzers: "Wie laesst der dorfbewohner es wieder los?"
+// Ein Bildknopf an der Auswahl legt das Ei auf das Feld des Traegers.
+test.describe('Ei ablegen', () => {
+  let partie;
+  test.beforeAll(async ({ browser }, info) => {
+    // Handelt nicht vom Nebel; kein Kloster, damit der Traeger stehen bleibt.
+    partie = await partieZuZweit(browser, info, { sicht: 'aufgedeckt' });
+  });
+  test.afterAll(() => partieBeenden(partie));
+
+  test('einheiten AC-75: wer das Ei traegt, hat einen Bildknopf "Ei ablegen" - ein Druck legt es auf sein Feld, der Knopf verschwindet', async ({}, info) => {
+    test.setTimeout(120_000);
+    const { anna, code } = partie;
+    await anna.waitForFunction(() => window.ansicht && window.ansicht.eier.size > 0);
+    const ei = await anna.evaluate(() => [...window.ansicht.eier.values()][0]);
+    expect(await einheitenAufstellen(anna, code, 'Anna', 1, { art: 'dorfbewohner', x: ei.x - 3, y: ei.y + 1 })).toBe(1);
+    const dorf = await anna.evaluate(() => window.ansicht.werte.einheiten.dorfbewohner.kuerzel);
+    const traeger = await anna.waitForFunction(({ ei, dorf }) => {
+      const a = window.ansicht;
+      const nah = [...a.nachher.values()].filter((e) => e.b === a.ich && e.k === dorf && Math.hypot(e.x - ei.x, e.y - ei.y) < 6);
+      return nah.length ? nah[0].i : null;
+    }, { ei, dorf }).then((h) => h.jsonValue());
+
+    await waehlen(anna, [traeger], { zoom: 2, blick: { x: ei.x, y: ei.y } });
+    await expect(anna.locator('#eiAblegen'), 'ohne Ei kein Knopf').toHaveCount(0);
+    const wo = await aufSeite(anna, { feld: { x: ei.x, y: ei.y } });
+    await anna.mouse.click(wo.x, wo.y, { button: 'right' });
+    await anna.waitForFunction((id) => window.ansicht.nachher.get(id)?.a === 'e' && window.ansicht.eier.size === 0, traeger, { timeout: 30_000 });
+
+    // Der Knopf: ein Bild, kein Wort, der Name in aria-label und Tafel.
+    const knopf = anna.locator('#eiAblegen');
+    await expect(knopf).toHaveAttribute('aria-label', 'Ei ablegen');
+    const art = await knopf.evaluate((k) => ({
+      text: [...k.childNodes].filter((n) => n.nodeType === Node.TEXT_NODE).map((n) => n.textContent.trim()).join(''),
+      bild: k.querySelector('canvas') !== null,
+    }));
+    expect(art).toEqual({ text: '', bild: true });
+    await anna.mouse.move(700, 300);
+    await knopf.hover();
+    await expect(anna.locator('#knopftafel')).toContainText('Ei ablegen');
+    await expect(anna.locator('#knopftafel')).toContainText('Legt das Drachenei hier auf den Boden');
+    await expect(anna.locator('#knopftafel')).toBeInViewport({ ratio: 1 });
+    await nachweis(anna, {
+      spec: EINHEITEN,
+      ac: 'AC-75',
+      titel: 'Der Dorfbewohner trägt das Drachenei: an der Auswahl der Bildknopf „Ei ablegen“, darüber seine Tafel',
+      test: info,
+    });
+
+    // Gedrueckt: das Ei liegt auf seinem Feld, er traegt nichts, der Knopf ist fort.
+    const feld = await anna.evaluate((id) => {
+      const e = window.ansicht.nachher.get(id);
+      return { x: Math.round(e.x), y: Math.round(e.y) };
+    }, traeger);
+    await knopf.click();
+    await anna.waitForFunction((id) => window.ansicht.nachher.get(id)?.l === 0 && window.ansicht.eier.size === 1, traeger, { timeout: 15_000 });
+    const liegt = await anna.evaluate(() => [...window.ansicht.eier.values()][0]);
+    expect({ x: liegt.x, y: liegt.y }, 'auf dem Feld des Traegers').toEqual(feld);
+    await expect(knopf).toHaveCount(0);
+    await expect(anna.locator('.auswahlleiste')).toContainText('trägt nichts');
+  });
+});

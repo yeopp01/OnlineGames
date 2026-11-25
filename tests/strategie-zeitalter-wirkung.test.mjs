@@ -54,13 +54,13 @@ test('einheiten AC-57: gemessen am Gang - je Takt 0,155 Felder statt 0,12', () =
 });
 
 test('einheiten AC-57: mit dem Aufstieg geht die Tafel der Werte neu hinaus, und am Knopf steht, was er staerkt', () => {
-  assert.deepEqual(staerkt(ZEITALTER[1].wirkung), [{ art: 'spaeherreiter', text: '+0,35 Tempo' }]);
+  assert.deepEqual(staerkt(ZEITALTER[1].wirkung), [{ art: 'spaeherreiter', text: '+2 Sicht, +0,35 Tempo' }]);
   assert.deepEqual(staerkt(undefined), []);
 
   const welt = new Welt(ZWEI, 7);
   const aufbau = welt.aufbau();
-  assert.deepEqual(aufbau.werte.aufstiege.feudalzeit.staerkt, [{ art: 'spaeherreiter', text: '+0,35 Tempo' }]);
-  assert.deepEqual(aufbau.werte.aufstiege.ritterzeit.staerkt, [], 'die Ritterzeit staerkt selbst nichts');
+  assert.deepEqual(aufbau.werte.aufstiege.feudalzeit.staerkt, [{ art: 'spaeherreiter', text: '+2 Sicht, +0,35 Tempo' }]);
+  assert.deepEqual(aufbau.werte.aufstiege.ritterzeit.staerkt, [{ art: 'spaeherreiter', text: '+2 Sicht' }], 'die Ritterzeit nur die Sicht (einheiten AC-76)');
   assert.equal(welt.kampfwerte('a').spaeherreiter.tempo, 1.2);
 
   // Ein echter Aufstieg ueber das Dorfzentrum.
@@ -80,4 +80,33 @@ test('einheiten AC-57: mit dem Aufstieg geht die Tafel der Werte neu hinaus, und
   assert.equal(anna.zeitalter, 1);
   assert.ok(tafel, 'mit dem Aufstieg kommt die Tafel');
   nahe(tafel.spaeherreiter.tempo, 1.55, 'in der Tafel');
+});
+
+test('einheiten AC-76: die Spaeherlinie sieht weiter - Spaeherreiter 4, 6, 8 mit den Zeitaltern, leichte Kavallerie 8, Husar 10; sonst sieht niemand weiter', () => {
+  const welt = new Welt(ZWEI, 7, { sicht: 'nebel' });
+  const anna = welt.spielerVon('a');
+  const vorher = Object.fromEntries(Object.keys(EINHEITEN).map((art) => [art, welt.einheitenwert('a', art, 'sicht')]));
+  assert.equal(vorher.spaeherreiter, 4, 'im Landsitz der Wert der Vorlage');
+  for (const [zeitalter, soll] of [[1, 6], [2, 8], [3, 8]]) {
+    anna.zeitalter = zeitalter;
+    assert.equal(welt.einheitenwert('a', 'spaeherreiter', 'sicht'), soll, `Zeitalter ${zeitalter}`);
+    assert.equal(welt.einheitenwert('b', 'spaeherreiter', 'sicht'), 4, 'Bert ist nicht aufgestiegen');
+    for (const art of Object.keys(EINHEITEN)) {
+      if (art !== 'spaeherreiter') assert.equal(welt.einheitenwert('a', art, 'sicht'), vorher[art], `${art} im Zeitalter ${zeitalter}`);
+    }
+  }
+  assert.equal(welt.einheitenwert('a', 'leichtekavallerie', 'sicht'), 8);
+  assert.equal(welt.einheitenwert('a', 'husar', 'sicht'), 10);
+
+  // Gemessen an den Sichtfeldern: ein Reiter allein im Fuerstentum sieht
+  // 8 Felder weit, aber nicht 9.
+  const reiter = [...welt.einheiten.values()].find((e) => e.besitzer === 'a' && e.art === 'spaeherreiter');
+  const mitte = Math.floor(welt.karte.groesse / 2);
+  for (const e of [...welt.einheiten.values()]) if (e.besitzer === 'a' && e !== reiter) welt.einheiten.delete(e.id);
+  for (const g of [...welt.gebaeude.values()]) if (g.besitzer === 'a') welt.gebaeude.delete(g.id);
+  Object.assign(reiter, { x: mitte, y: mitte });
+  welt.sichtAktualisieren();
+  const sieht = (dx) => welt.sieht('a', mitte + dx, mitte);
+  assert.equal(sieht(8), true, '8 Felder');
+  assert.equal(sieht(9), false, 'nicht 9');
 });

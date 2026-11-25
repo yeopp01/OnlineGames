@@ -1943,6 +1943,37 @@ const BEFEHLSZEICHEN = {
     s.lineWidth = g * 0.09;
     haken();
   },
+  // Ei ablegen (einheiten AC-75): das Ei ueber dem Boden, der Pfeil zeigt
+  // hinunter.
+  eiAblegen(s, g, farbe) {
+    s.fillStyle = '#5a4630';
+    s.beginPath();
+    s.ellipse(0.42 * g, 0.88 * g, 0.32 * g, 0.07 * g, 0, 0, Math.PI * 2);
+    s.fill();
+    const verlauf = s.createRadialGradient(0.34 * g, 0.3 * g, 0.03 * g, 0.42 * g, 0.44 * g, 0.34 * g);
+    verlauf.addColorStop(0, '#f6efd9');
+    verlauf.addColorStop(1, '#b8a47a');
+    s.fillStyle = verlauf;
+    s.strokeStyle = '#3a2e1e';
+    s.lineWidth = g * 0.03;
+    s.beginPath();
+    s.ellipse(0.42 * g, 0.46 * g, 0.22 * g, 0.3 * g, 0, 0, Math.PI * 2);
+    s.fill();
+    s.stroke();
+    s.fillStyle = '#7a5a3a';
+    for (const [x, y, r] of [[0.36, 0.36, 0.03], [0.5, 0.5, 0.035], [0.4, 0.6, 0.025], [0.52, 0.3, 0.02]]) {
+      s.beginPath();
+      s.arc(x * g, y * g, r * g, 0, Math.PI * 2);
+      s.fill();
+    }
+    // Der Pfeil rechts daneben, senkrecht nach unten.
+    s.save();
+    // Gedreht um eine Vierteldrehung: aus (x, y) wird (1,68 g - y, x).
+    s.translate(1.68 * g, 0);
+    s.rotate(Math.PI / 2);
+    pfeilMalen(s, g, 0.16, 0.8, 0.84, farbe);
+    s.restore();
+  },
   // Angriff: zwei gekreuzte Schwerter.
   'haltung-angriff'(s, g, farbe) {
     schwertMalen(s, g, 0.16, 0.86, 0.88, 0.14, farbe);
@@ -2435,7 +2466,7 @@ export class Auswahlleiste {
       const einzeln = auswahl.length === 1 ? auswahl[0] : null;
       const schluessel = einzeln
         ? `e${einzeln.i}:${einzeln.k}:${einzeln.h}:${einzeln.l}:${einzeln.a}:${einzeln.hd}:${einzeln.r}:${einzeln.ab}:${bezahlbar}:${a.platzieren?.art}:${a.verbesserungen.length}:${a.bauseite || 0}:${einzeln.ht}:${a.einquartierenAn}`
-        : `m${auswahl.map((e) => `${e.i}${e.k}${e.ab ? 'a' : ''}${e.ht || ''}`).join(',')}:${bezahlbar}:${a.platzieren?.art}:${a.bauseite || 0}:${a.einquartierenAn}`;
+        : `m${auswahl.map((e) => `${e.i}${e.k}${e.ab ? 'a' : ''}${e.ht || ''}${e.a === 'e' && e.l > 0 ? 'e' : ''}`).join(',')}:${bezahlbar}:${a.platzieren?.art}:${a.bauseite || 0}:${a.einquartierenAn}`;
       if (schluessel !== this.gezeigt) {
         this.wurzel.replaceChildren();
         if (einzeln) this.einheitBauen(einzeln, farbe);
@@ -3040,7 +3071,9 @@ export class Auswahlleiste {
     const eigene = auswahl.filter((e) => e.b === a.ich && !e.s);
     const mitHaltung = eigene.filter((e) => a.werte.einheiten[a.arten[e.k]]?.haltung);
     const quartierbar = eigene.filter((e) => a.werte.einheiten[a.arten[e.k]]?.quartiere?.length);
-    if (!mitHaltung.length && !quartierbar.length) return null;
+    // Wer ein Ei traegt, kann es ablegen (einheiten AC-75).
+    const eiTraeger = eigene.filter((e) => e.a === 'e' && e.l > 0);
+    if (!mitHaltung.length && !quartierbar.length && !eiTraeger.length) return null;
     const block = element('div', 'befehle');
     const farbe = a.spieler.get(a.ich)?.farbe || '#888888';
     const knopfFuer = (befehl, text, gedrueckt, tun) => {
@@ -3067,6 +3100,12 @@ export class Auswahlleiste {
         a.einquartierenAn, () => a.einquartierenSetzen(!a.einquartierenAn));
       knopf.id = 'einquartieren';
       if (quartierbar.length > 1) knopf.append(element('span', 'befehl-zahl', String(quartierbar.length)));
+      block.append(knopf);
+    }
+    if (eiTraeger.length) {
+      const knopf = knopfFuer('eiAblegen', 'Ei ablegen', null,
+        () => this.senden({ auftrag: 'eiAblegen', einheiten: eiTraeger.map((e) => e.i) }));
+      knopf.id = 'eiAblegen';
       block.append(knopf);
     }
     return block;
@@ -3162,6 +3201,12 @@ export class Auswahlleiste {
         `Drinnen trifft sie niemand, und sie heilen 1 Leben alle ${regel.heilen ?? 2} s`,
         'Je Dorfbewohner, Fußsoldat oder Schütze darin schießt das Gebäude einen Pfeil mehr',
         'Reiter nur in die Burg, Belagerung und Karren nie',
+      ] };
+    }
+    if (befehl === 'eiAblegen') {
+      return { ...leer, name: 'Ei ablegen', dauer: null, zeilen: [
+        'Legt das Drachenei hier auf den Boden',
+        'Jeder Dorfbewohner kann es wieder aufheben – auch ein fremder',
       ] };
     }
     if (befehl === 'heraus') {

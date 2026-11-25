@@ -604,29 +604,37 @@ test.describe('Rueckmeldungen aus dem ersten Spiel', () => {
     await expect(leiste).toBeHidden();
   });
 
-  test('einheiten AC-57: ueber dem Aufstieg steht, dass der Spaeherreiter schneller wird',async ({}, info) => {
+  test('einheiten AC-57 und einheiten AC-76: ueber dem Aufstieg steht, dass der Spaeherreiter schneller wird und weiter sieht',async ({}, info) => {
     await zurBasis(1.6);
     await zentrumWaehlen();
     const tafel = anna.locator('#knopftafel');
     await anna.locator('[data-aufstieg="feudalzeit"]').hover();
     await expect(tafel).toBeVisible();
-    await expect(tafel).toContainText('Späherreiter: +0,35 Tempo');
+    await expect(tafel).toContainText('Späherreiter: +2 Sicht, +0,35 Tempo');
     await nachweis(anna, {
       spec: EINHEITEN,
       ac: 'AC-57',
       titel: 'Die Maus ueber dem Aufstieg: in der Tafel steht Spaeherreiter plus 0,35 Tempo',
       test: info,
     });
+    await nachweis(anna, {
+      spec: EINHEITEN,
+      ac: 'AC-76',
+      titel: 'Dieselbe Tafel: der Spaeherreiter sieht mit dem Lehen zwei Felder weiter',
+      test: info,
+    });
     await anna.mouse.move(700, 300);
     await expect(tafel).toBeHidden();
-    // Noch steht Anna in der Dunklen Zeit: der Reiter traegt den Wert der
-    // Vorlage. Dass er nach dem Aufstieg 1,55 laeuft, misst
-    // tests/strategie-zeitalter-wirkung.test.mjs.
-    expect(await anna.evaluate(() => {
+    // Noch steht Anna in der Dunklen Zeit: der Reiter traegt die Werte der
+    // Vorlage. Dass er nach dem Aufstieg 1,55 laeuft und 6 Felder sieht,
+    // misst tests/strategie-zeitalter-wirkung.test.mjs.
+    const werte = await anna.evaluate(() => {
       const a = window.ansicht;
       const reiter = [...a.nachher.values()].find((e) => e.b === a.ich && a.arten[e.k] === 'spaeherreiter');
-      return a.einheitenwert(reiter, 'tempo');
-    })).toBeCloseTo(1.2, 3);
+      return { tempo: a.einheitenwert(reiter, 'tempo'), sicht: a.einheitenwert(reiter, 'sicht') };
+    });
+    expect(werte.tempo).toBeCloseTo(1.2, 3);
+    expect(werte.sicht).toBe(4);
   });
 });
 

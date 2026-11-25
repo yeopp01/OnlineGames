@@ -2,7 +2,7 @@
 
 **Bereich:** Strategie
 **Kuerzel:** einheiten
-**Stand:** 63/67 fertig · 1 in QA · 2 offen · 1 zurueckgestellt
+**Stand:** 65/69 fertig · 1 in QA · 2 offen · 1 zurueckgestellt
 
 ## Zweck
 
@@ -583,7 +583,8 @@ AC-19). Werte und Dauern sind Startwerte aus ADR-0014.
   nächsten Dörfern höchstens zwei Felder verschieden weit, und mehrere Eier
   so weit auseinander wie möglich. Aufgehoben wird aus anderthalb Feldern
   (`DRACHE.ei.greifen`). Wer ein Ei trägt, trägt nur das Ei: ein Rechtsklick
-  auf ein eigenes Kloster legt es ab, jeder andere ist ein Gang. Mönch,
+  auf ein eigenes Kloster legt es ab, jeder andere ist ein Gang (auf den
+  Boden legt es der Knopf „Ei ablegen“, AC-75). Mönch,
   Belagerung und Karren holen keines. Ist die Einstellung „Drache“ aus
   (AC-52), liegt keines.
 - **AC-52** `in-qa` **Der Drache fliegt und brennt** — Höchstens einer je Spieler.
@@ -849,6 +850,39 @@ der Einheit bleiben die der Vorstufe. Die Werte stehen in
   **Messbar:** läuft das Ziel vom Drachen fort, hält er in 30 Sekunden
   höchstens einmal an (vorher 13-mal); im Browser zeigt die Figur dabei
   kein Standbild.
+- **AC-75** `fertig` **Das Ei wieder ablegen** — Wer ein Ei trägt (AC-51),
+  bekommt an der Auswahl einen Bildknopf „Ei ablegen“ wie die übrigen
+  Befehle (bedienung AC-87): ein Ei mit einem Pfeil nach unten, der Name
+  in der Tafel und im `aria-label`. Ein Druck legt das Ei dort auf den
+  Boden, wo der Träger steht — gerundet auf sein Feld, wie beim Fallen —,
+  und der Träger ist danach ein Dorfbewohner ohne Ladung und ohne Auftrag.
+  Jeder kann das Ei wieder aufheben, auch ein Gegner. Sind mehrere
+  gewählt, legt jeder Träger darunter seines ab; wer keines trägt, bleibt,
+  wie er ist. Ein fremder oder gefallener Träger wird nicht angenommen.
+  **Benutzer, 2026-11-25:** „Wie lässt der dorfbewohner es wieder los?“ —
+  „ja bitte“ (auf den Vorschlag eines Bildknopfs). Vorher ließ er es nur
+  los, wenn er fiel, entlassen wurde oder das Kloster einstürzte, in dem
+  es lag. **Messbar:** nach dem Befehl liegt das Ei am Boden auf dem Feld
+  des Trägers, der trägt nichts, und ein anderer Dorfbewohner hebt es auf;
+  ein Befehl an einen, der kein Ei trägt, wird mit einem Satz abgewiesen;
+  im Browser steht der Knopf nur an einem Träger und verschwindet mit dem
+  Druck.
+- **AC-76** `fertig` **Die Späherlinie sieht weiter** — Der Späherreiter
+  sieht im Landsitz 4 Felder weit, ab dem Lehen 6 und ab dem Fürstentum 8;
+  die leichte Kavallerie sieht 8, der Husar 10. Wie das Tempo (AC-57) ist
+  es eine Wirkung des Zeitalters (`ZEITALTER[].wirkung`), gilt nur dem, der
+  aufgestiegen ist, und steht in der Tafel des Aufstiegs. Alle anderen
+  Einheiten behalten ihre Sicht. **Benutzer, 2026-11-25:** „die sichtweite
+  der einheiten ist irgendwie sehr kurz, auch später“ — „ja bitte“ (auf
+  den Vorschlag, die Späherlinie wachsen zu lassen; die übrigen Werte
+  entsprechen der Vorlage). **Gesetzt** nach dem Gedächtnis des Originals,
+  nicht aus `docs/strategie/vorlage-aoe2.md`. **Messbar:** der Server
+  rechnet die Sichtweite je Zeitalter und Stufe wie oben, die Sichtfelder
+  eines Späherreiters im Fürstentum reichen 8 Felder weit, und die KI hält
+  danach die Ersatzgrenze im Nebel (fahrplan AC-11) und zwei gegen zwei.
+  **Gemessen danach:** Nebel 108 von 120 vor Minute 60, Median 38,0, eine
+  ohne Sieger (Startwert 23; vorher 109, 38,2, keine); zwei gegen zwei 20
+  von 20 mit siegreichem Team.
 
 ## Grenzfaelle
 

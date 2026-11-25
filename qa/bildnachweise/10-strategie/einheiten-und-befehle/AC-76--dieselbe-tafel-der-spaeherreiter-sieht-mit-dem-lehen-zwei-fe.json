@@ -1,0 +1,10 @@
+{
+  "spec": "10-strategie/einheiten-und-befehle.md",
+  "ac": "AC-76",
+  "titel": "Dieselbe Tafel: der Spaeherreiter sieht mit dem Lehen zwei Felder weiter",
+  "datei": "e2e/tests/strategie-rueckmeldung.spec.mjs",
+  "pfad": [
+    "Rueckmeldungen aus dem ersten Spiel",
+    "einheiten AC-57 und einheiten AC-76: ueber dem Aufstieg steht, dass der Spaeherreiter schneller wird und weiter sieht"
+  ]
+}

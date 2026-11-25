@@ -26,6 +26,18 @@ Punkt unten sucht, sucht dort nach „Punkt <n> (Benutzer“.
 
 ## Zuletzt fortgeschrieben
 
+**2026-11-25, Abend — einheiten AC-75 und AC-76 committet** (nicht
+gepusht, `main` = Server `a0c1039`). AC-75 „Ei ablegen“: Bildknopf an
+jedem Eiträger, Nachricht `eiAblegen`, legt es auf sein Feld, aufheben
+kann jeder. AC-76 Späherlinie sieht weiter: Späherreiter 4 → 6 → 8 über
+`ZEITALTER[].wirkung`, leichte Kavallerie 8, Husar 10 — nach dem
+Gedächtnis, nicht aus der Vorlage. Gemessen: Nebel 108 von 120, Median
+38,0, **eine ohne Sieger (Startwert 23) — genau die Grenze**, vorher
+keine; zwei gegen zwei 20 von 20. Nebenbei `strategie-drache.test.mjs`
+(Feuer drei Felder daneben): Annas Späherreiter schlug die ferne Miliz —
+Testaufbau, nicht die Regel; Späher raus, Miliz passiv. check:kurz grün
+(1275, 39). Board 693/777. Vor dem Pushen: ganzer Browserlauf allein.
+
 **2026-11-25, Nachmittag — `8c9a297` einheiten AC-74** (Benutzer: „wenn
 der drache jemandem nachfliegt ist das etwas hibbelig"; nicht gepusht).
 Außer Reichweite nimmt ein Flieger jeden Takt die Lage des Ziels ohne
@@ -34,8 +46,9 @@ Wegsuche, in Reichweite gleitet er hinterher (`welt.nachfliegen`,
 (`ansicht.fliegt`, `figurPhasen`). Kein neues Feld, keine neue Fassung.
 `strategie-drache.spec.mjs` 8 von 8 zweimal, check:kurz grün (1273 Tests,
 39 Partien), qa:abweichung: AC-74 neu, kampf AC-23 und einheiten AC-53
-je 75 % (Drache steht anders) — angesehen. Board 691/775. Weiter offen
-und gefragt: (a) Späherlinie, (b) „Ei ablegen" (siehe darunter).
+je 75 % (Drache steht anders) — angesehen. Board 691/775. **Danach
+freigegeben** (Benutzer: „ja bitte"): (a) Späherlinie sieht weiter, (b)
+„Ei ablegen" als Bildknopf — beides in Arbeit (siehe darunter).
 
 **2026-11-25, Mittag — Stand nach `c4cf38b`** (nicht gepusht, `main` =
 Server `a0c1039`). Committet auf `strategie`: `f9fa0a5` kampf AC-32 (Nebel
